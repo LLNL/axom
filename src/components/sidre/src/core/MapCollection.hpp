@@ -43,14 +43,14 @@
  *          the API described below or pass it as a template parameter to
  *          an existing class below if that works.
  *
- *          IMPORTANT: These classes should be robust against any potential
+ *          \attention These classes should be robust against any potential
  *                     user interaction. They don't report errors and leave
  *                     checking of return values to calling code.
  *
- *          IMPORTANT: Template parameter type must provide a method
+ *          \attention Template parameter type must provide a method
  *                     "getName()" that returns a reference to a string object.
  *
- *          IMPORTANT: The common interface each collection class provides
+ *          \attention The common interface each collection class provides
  *                     is as follows:
  *
  *          \verbatim

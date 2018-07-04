@@ -15,7 +15,7 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-/*
+/**
  * \file slam_set_rangeset.cpp
  *
  * \brief Unit tests for Slam's RangeSet
@@ -204,18 +204,119 @@ TEST(slam_range_set,iterate)
     std::stringstream sstr;
 
     typedef SetType::iterator SetIterator;
-    for(SetIterator it = s.begin(), itEnd = s.end() ; it != itEnd ; ++it)
+
+    EXPECT_EQ(SetIterator(s.offset(), s), s.begin());
+
+    //iter++ access
     {
-      SetPosition position = std::distance(s.begin(), it);
-      SetElement expected = position + lowerIndex;
-      EXPECT_EQ( expected, *it )
-        << "Iterator dereference should be equal "
-        << "to its translated position in the windowed range set";
-      sstr << *it << "\t";
+      int idx = 0;
+      for (SetIterator it = s.begin(), itEnd = s.end() ;
+           it != itEnd ;
+           ++it, ++idx)
+      {
+        SetElement expected = idx + lowerIndex;
+        EXPECT_EQ(expected, *it)
+          << "Iterator dereference should be equal "
+          << "to its translated position in the windowed range set";
+        sstr << *it << "\t";
+      }
     }
+
+    //iter+n access
+    {
+      SetIterator beginIter = s.begin();
+      for (int idx = 0 ; idx < s.size() ; ++idx)
+      {
+        SetIterator iter = beginIter + idx;
+
+        //SetPosition position = std::distance(s.begin(), iter);
+        SetElement expected = idx + lowerIndex;
+        EXPECT_EQ(expected, *iter)
+          << "Iterator dereference should be equal "
+          << "to its translated position in the windowed range set";
+        sstr << *iter << "\t";
+      }
+    }
+
+    //iter-n access
+    {
+      SetIterator endIter = s.end();
+      for (int idx = 1 ; idx <= s.size() ; ++idx)
+      {
+        SetIterator iter = endIter - idx;
+
+        //SetPosition position = std::distance(s.begin(), iter);
+        SetElement expected = upperIndex - idx;
+        EXPECT_EQ(expected, *iter)
+          << "Iterator dereference should be equal "
+          << "to its translated position in the windowed range set";
+        sstr << *iter << "\t";
+      }
+    }
+
+    //iter+=n access
+    {
+      for (int idx = 0 ; idx < s.size() ; ++idx)
+      {
+        SetIterator iter = s.begin();
+        iter += idx;
+        SetElement expected = idx + lowerIndex;
+        EXPECT_EQ(expected, *iter)
+          << "Iterator dereference should be equal "
+          << "to its translated position in the windowed range set";
+        sstr << *iter << "\t";
+      }
+    }
+
+    //iter-=n access
+    {
+      for (int idx = 1 ; idx <= s.size() ; ++idx)
+      {
+        SetIterator iter = s.end();
+        iter -= idx;
+        SetElement expected = upperIndex - idx;
+        EXPECT_EQ(expected, *iter)
+          << "Iterator dereference should be equal "
+          << "to its translated position in the windowed range set";
+        sstr << *iter << "\t";
+      }
+    }
+
+    //iter[n] access
+    {
+      SetIterator beginIter = s.begin();
+      for (int idx = 0 ; idx < s.size() ; ++idx)
+      {
+        SetElement expected = idx + lowerIndex;
+        EXPECT_EQ(expected, beginIter[idx])
+          << "Iterator dereference should be equal "
+          << "to its translated position in the windowed range set";
+        sstr << beginIter[idx] << "\t";
+      }
+    }
+
+    //std::distance calculation
+    //iter+n access
+    {
+      int idx = 0;
+      for (SetIterator it = s.begin(), itEnd = s.end() ;
+           it != itEnd ;
+           ++it, ++idx)
+      {
+        SetElement position = std::distance(s.begin(), it);
+        SetElement expected = idx;
+        EXPECT_EQ(expected, position)
+          << "Iterator distance should be equal "
+          << "to the number of times it's been incremented";
+        sstr << idx << "\t";
+      }
+    }
+
+    EXPECT_TRUE(s.isValid(true));
+
     SLIC_INFO(sstr.str());
   }
-#endif
+#endif //AXOM_USE_CXX11
 }
 
 TEST(slam_range_set,out_of_range)
@@ -227,16 +328,11 @@ TEST(slam_range_set,out_of_range)
 #ifdef AXOM_DEBUG
   // NOTE: AXOM_DEBUG is disabled in release mode,
   // so this test will only fail in debug mode
-
-  // add this line to avoid a warning in the output about thread safety
-  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   EXPECT_DEATH_IF_SUPPORTED(  s.at(upperIndex),   "");
   EXPECT_DEATH_IF_SUPPORTED(  s.at(MAX_SET_SIZE), "");
 #else
   SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif
-
-  SLIC_INFO("done.");
 }
 
 TEST(slam_generic_range_set,virtual_parent_set)
@@ -340,7 +436,6 @@ TEST(slam_generic_range_set,concrete_parent_set)
   //-- it does not differentiate based on whether a set is a subset of another
   // set
   EXPECT_EQ(childSet, nonChildSet);
-
 }
 
 //----------------------------------------------------------------------
@@ -353,6 +448,10 @@ int main(int argc, char* argv[])
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
+#ifdef AXOM_DEBUG
+  // add this line to avoid a warning in the output about thread safety
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+#endif
 
   UnitTestLogger logger;  // create & initialize test logger,
 

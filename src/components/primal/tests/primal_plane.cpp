@@ -16,7 +16,7 @@
  */
 
 #include "primal/Plane.hpp"
-#include "axom_utils/vector_utilities.hpp"
+#include "axom_utils/matvecops.hpp"
 
 #include "gtest/gtest.h"
 

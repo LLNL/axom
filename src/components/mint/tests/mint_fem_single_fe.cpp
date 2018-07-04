@@ -24,7 +24,8 @@
 #include "axom_utils/Determinants.hpp" // for numerics::determinant()
 
 // Mint includes
-#include "mint/CellType.hpp"
+#include "mint/CellTypes.hpp"
+#include "mint/config.hpp"
 #include "mint/FEBasis.hpp"
 #include "mint/Field.hpp"
 #include "mint/FieldData.hpp"
@@ -67,7 +68,7 @@ void compute_centroid( mint::FiniteElement* fe, double* centroid )
   numerics::Matrix< double > physical_nodes(
     ndims, nnodes, fe->getPhysicalNodes(), true );
 
-  if ( fe->getCellType() == MINT_PYRAMID )
+  if ( fe->getCellType() == mint::PYRAMID )
   {
 
     // Hard-code expected centroid from VTK, since averaging the nodes
@@ -106,46 +107,38 @@ void compute_centroid( mint::FiniteElement* fe, double* centroid )
 }
 
 /*!
- * \brief Helper method to construct a single element (unstructured) mesh of
- *  the given cell type.
+ * \brief Helper method to construct a single element of the specified type.
  *
  * \note Constructs the mesh element by scaling and rotating the reference
  *  element.
- *
- * \tparam BasisType the FEM basis of the element, e.g., MINT_LAGRANGE_BASIS
- * \tparam CellType the cell type of the element, e.g., MINT_QUAD
- *
- * \post mesh != AXOM_NULLPTR
- * \post mesh->getNumberOfCells()==1
- * \post mesh->getNumberOfNodes()==N
  *
  * \note Ownership of the returned pointer is propagated to the caller. The
  *  calling method is therefore responsible for managing and properly
  *  deallocating the returned mesh object.
  *
  * \tparam BasisType basis bound to the FiniteElemen, e.g., MINT_LAGRANGE_BASIS
- * \tparam CellType the corresponding cell type, e.g., MINT_QUAD
- *
- * \see get_fe_mesh()
+ * \tparam CELLTYPE the corresponding cell type, e.g., MINT_QUAD
  */
-template < int BasisType, int CellType >
-mint::UnstructuredMesh< CellType >* single_element_mesh( )
+template < int BasisType, mint::CellType CELLTYPE >
+void get_single_fe( mint::FiniteElement*& fe )
 {
-  typedef typename mint::UnstructuredMesh< CellType > MeshType;
-  typedef typename mint::FEBasis< BasisType,CellType > FEMType;
+  EXPECT_TRUE( fe==AXOM_NULLPTR );
+
+  typedef typename mint::FEBasis< BasisType,CELLTYPE > FEMType;
   typedef typename FEMType::ShapeFunctionType ShapeFunctionType;
 
-  const double SCALE = 10.0;
-  const double ANGLE = 0.785398; // 45 degrees
-  const double SINT  = sin( ANGLE );
-  const double COST  = cos( ANGLE );
+  const bool zero_copy = true;
+  const double SCALE   = 10.0;
+  const double ANGLE   = 0.785398; // 45 degrees
+  const double SINT    = sin( ANGLE );
+  const double COST    = cos( ANGLE );
 
   const int ndims = ShapeFunctionType::dimension();
   EXPECT_TRUE( ndims==2 || ndims==3 );
 
   const int ndofs = ShapeFunctionType::numDofs();
 
-  int* cell = new int[ ndofs ];
+  mint::IndexType* cell = new mint::IndexType[ ndofs ];
 
   double* center = new double[ ndims ];
   ShapeFunctionType::center( center );
@@ -153,14 +146,10 @@ mint::UnstructuredMesh< CellType >* single_element_mesh( )
   double* nodes  = new double[ ndofs*ndims ];
   ShapeFunctionType::coords( nodes );
 
-  MeshType* m = new MeshType( ndims );
-
   double centroid[]  = { 0.0, 0.0, 0.0}; // used to compute the pyramid apex
 
   for ( int i=0 ; i < ndofs ; ++i )
   {
-
-    cell[ i ]    = i;
     double* node = &nodes[ i*ndims ];
 
     // scale & rotate cell from the reference space to get a  test cell
@@ -174,14 +163,14 @@ mint::UnstructuredMesh< CellType >* single_element_mesh( )
       node[ 2 ] *= SCALE;
     }
 
-    if ( CellType==MINT_PYRAMID && i < 4 )
+    if ( CELLTYPE==mint::PYRAMID && i < 4 )
     {
       centroid[ 0 ] += node[ 0 ];
       centroid[ 1 ] += node[ 1 ];
       centroid[ 2 ] += node[ 2 ];
     }
 
-    if ( CellType==MINT_PYRAMID && i==4 )
+    if ( CELLTYPE==mint::PYRAMID && i==4 )
     {
       // generate right pyramid, ensure the apex is prependicular to the
       // base of the pyramid to facilitate testing.
@@ -190,60 +179,23 @@ mint::UnstructuredMesh< CellType >* single_element_mesh( )
       node[ 2 ] = 0.25*centroid[ 2 ] + SCALE;
     }
 
-    m->insertNode( node );
   }
 
-  m->insertCell( cell, CellType, ndofs );
+  numerics::Matrix< double > m( ndims, ndofs, nodes, zero_copy );
+  fe = new mint::FiniteElement( m, CELLTYPE );
+  mint::bind_basis< BasisType, CELLTYPE >( *fe );
+  EXPECT_FALSE( fe->getBasisType()==MINT_UNDEFINED_BASIS );
 
 #ifdef MINT_FEM_DEBUG
-  std::string vtkFile = std::string( mint::cell::name[ CellType ] ) + ".vtk";
-  mint::write_vtk( m, vtkFile );
+  std::string vtkFile = std::string( mint::getCellInfo( CELLTYPE ).name ) +
+                        ".vtk";
+  mint::write_vtk(  *fe, vtkFile );
 #endif
 
   // clean up
   delete [] center;
   delete [] nodes;
   delete [] cell;
-
-  return ( m );
-}
-
-/*!
- * \brief Constructs a finite element mesh consisting of a single element.
- *
- * \param [out] m pointer to the mesh object
- * \param [out] fe finite element object bound to the mesh
- *
- * \note Ownership of the mesh and finite element objects is propagated to the
- *  caller. The calling method is therefore responsible for managing and
- *  properly deallocating these objects.
- *
- * \tparam BasisType basis bound to the FiniteElemen, e.g., MINT_LAGRANGE_BASIS
- * \tparam CellType the corresponding cell type, e.g., MINT_QUAD
- *
- * \see single_element_mesh()
- */
-template < int BasisType, int CellType >
-void get_fe_mesh( mint::UnstructuredMesh< CellType >*& m,
-                  mint::FiniteElement*& fe )
-{
-  EXPECT_TRUE(  m==AXOM_NULLPTR );
-  EXPECT_TRUE(  fe==AXOM_NULLPTR );
-
-  // STEP 0: construct a mesh with a single element
-  m = single_element_mesh< BasisType, CellType >( );
-
-  EXPECT_TRUE( m != AXOM_NULLPTR );
-  EXPECT_EQ(  mint::cell::num_nodes[ CellType ],  m->getNumberOfNodes() );
-  EXPECT_EQ(  1,                                  m->getNumberOfCells() );
-
-  // STEP 1: construct FE instance.
-  fe = new mint::FiniteElement( m, 0 );
-  EXPECT_TRUE(  fe != AXOM_NULLPTR );
-  EXPECT_TRUE(  fe->getBasisType()==MINT_UNDEFINED_BASIS );
-
-  mint::bind_basis< BasisType, CellType >( *fe );
-  EXPECT_FALSE( fe->getBasisType()==MINT_UNDEFINED_BASIS );
 }
 
 /*!
@@ -422,7 +374,7 @@ void test_inverse_map( mint::FiniteElement* fe, double TOL=1.e-9 )
   for ( int i=0 ; i < nnodes ; ++i )
   {
 
-    if ( fe->getCellType()==MINT_PYRAMID && i==4 )
+    if ( fe->getCellType()==mint::PYRAMID && i==4 )
     {
       // skip inverse map at the apex of the pyramid, system is singular
       continue;
@@ -470,35 +422,31 @@ void test_inverse_map( mint::FiniteElement* fe, double TOL=1.e-9 )
  *
  * \see check_reference_element()
  */
-template < int BasisType, int CellType >
+template < int BasisType, mint::CellType CELLTYPE >
 void check_shape( )
 {
-  EXPECT_TRUE(  (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
-  EXPECT_TRUE(  (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
+  const int cell_value = mint::cellTypeToInt( CELLTYPE );
+  EXPECT_TRUE( (cell_value >= 0) && (cell_value < mint::NUM_CELL_TYPES) );
+  EXPECT_TRUE( (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
 
   SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
-                         << mint::cell::name[ CellType ] );
+                         << mint::getCellInfo( CELLTYPE ).name );
 
-  typedef typename mint::FEBasis< BasisType, CellType > FEMType;
+  typedef typename mint::FEBasis< BasisType, CELLTYPE > FEMType;
   typedef typename FEMType::ShapeFunctionType ShapeFunctionType;
-  typedef typename mint::UnstructuredMesh< CellType > MeshType;
 
   // STEP 0: construct finite element mesh
-  MeshType* m             = AXOM_NULLPTR;
   mint::FiniteElement* fe = AXOM_NULLPTR;
+  get_single_fe< BasisType, CELLTYPE >( fe );
 
-  get_fe_mesh< BasisType, CellType >( m, fe );
-  EXPECT_TRUE(  m != AXOM_NULLPTR );
-  EXPECT_TRUE(  fe != AXOM_NULLPTR );
-  EXPECT_EQ(  mint::cell::num_nodes[ CellType ],  m->getNumberOfNodes() );
-  EXPECT_EQ(  1,                                  m->getNumberOfCells() );
+  EXPECT_TRUE( fe != AXOM_NULLPTR );
+  EXPECT_EQ( mint::getCellInfo( CELLTYPE ).num_nodes,  fe->getNumNodes() );
 
   // STEP 1: test FE instance
   check_reference_element< ShapeFunctionType >( fe );
 
   // STEP 2: clean up
   delete fe;
-  delete m;
 }
 
 /*!
@@ -509,31 +457,27 @@ void check_shape( )
  * \param [in] TOL optional user-supplied tolerance. Default is 1.e-9.
  *
  * \tparam BasisType basis bound to the FiniteElemen, e.g., MINT_LAGRANGE_BASIS
- * \tparam CellType the corresponding cell type, e.g., MINT_QUAD
+ * \tparam CELLTYPE the corresponding cell type, e.g., MINT_QUAD
  */
-template < int BasisType, int CellType >
+template < int BasisType, mint::CellType CELLTYPE >
 void check_jacobian( double TOL=1.e-9 )
 {
-  EXPECT_TRUE(  (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
+  const int cell_value = mint::cellTypeToInt( CELLTYPE );
+  EXPECT_TRUE( (cell_value >= 0) && (cell_value < mint::NUM_CELL_TYPES) );
   EXPECT_TRUE(  (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
 
   SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
-                         << mint::cell::name[ CellType ] );
+                         << mint::getCellInfo( CELLTYPE ).name );
 
   const double LTOL = 0.0-TOL;
   double det = 0.0;
 
-  typedef typename mint::UnstructuredMesh< CellType > MeshType;
-
-  // STEP 0: construct a mesh with a single element
-  MeshType* m             = AXOM_NULLPTR;
+  // STEP 0: construct a single element
   mint::FiniteElement* fe = AXOM_NULLPTR;
+  get_single_fe< BasisType, CELLTYPE >( fe );
 
-  get_fe_mesh< BasisType, CellType >( m, fe );
-  EXPECT_TRUE(  m != AXOM_NULLPTR );
   EXPECT_TRUE(  fe != AXOM_NULLPTR );
-  EXPECT_EQ(  mint::cell::num_nodes[ CellType ],  m->getNumberOfNodes() );
-  EXPECT_EQ(  1,                                  m->getNumberOfCells() );
+  EXPECT_EQ(  mint::getCellInfo( CELLTYPE ).num_nodes, fe->getNumNodes() );
 
   // STEP 1: construct a Matrix object to store the jacobian
   const int ndims = fe->getPhysicalDimension();
@@ -578,7 +522,6 @@ void check_jacobian( double TOL=1.e-9 )
   // STEP 5: clean up
   delete []  rp;
   delete fe;
-  delete m;
 }
 
 /*!
@@ -587,37 +530,32 @@ void check_jacobian( double TOL=1.e-9 )
  * \param [in] TOL optional user-supplied tolerance. Default is 1.e-9.
  *
  * \tparam BasisType basis bound to the FiniteElemen, e.g., MINT_LAGRANGE_BASIS
- * \tparam CellType the corresponding cell type, e.g., MINT_QUAD
+ * \tparam CELLTYPE the corresponding cell type, e.g., MINT_QUAD
  *
  * \see test_forward_map()
  */
-template < int BasisType, int CellType >
+template < int BasisType, mint::CellType CELLTYPE >
 void check_forward_map( double TOL=1.e-9 )
 {
-  EXPECT_TRUE(  (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
-  EXPECT_TRUE(  (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
+  const int cell_value = mint::cellTypeToInt( CELLTYPE );
+  EXPECT_TRUE( (cell_value >= 0) && (cell_value < mint::NUM_CELL_TYPES) );
+  EXPECT_TRUE( (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
 
   SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
-                         << mint::cell::name[ CellType ] );
-
-  typedef typename mint::UnstructuredMesh< CellType > MeshType;
+                         << mint::getCellInfo( CELLTYPE ).name );
 
   // STEP 0: construct a mesh with a single element
-  MeshType* m             = AXOM_NULLPTR;
   mint::FiniteElement* fe = AXOM_NULLPTR;
 
-  get_fe_mesh< BasisType, CellType >( m, fe );
-  EXPECT_TRUE(  m != AXOM_NULLPTR );
+  get_single_fe< BasisType, CELLTYPE >( fe );
   EXPECT_TRUE(  fe != AXOM_NULLPTR );
-  EXPECT_EQ(  mint::cell::num_nodes[ CellType ],  m->getNumberOfNodes() );
-  EXPECT_EQ(  1,                                  m->getNumberOfCells() );
+  EXPECT_EQ(  mint::getCellInfo( CELLTYPE ).num_nodes,  fe->getNumNodes() );
 
   // STEP 1: check forward mapping
   test_forward_map( fe, TOL );
 
   // STEP 2: clean up
   delete fe;
-  delete m;
 }
 
 /*!
@@ -626,37 +564,32 @@ void check_forward_map( double TOL=1.e-9 )
  * \param [in] TOL optional user-supplied tolerange. Default is 1.e-9.
  *
  * \tparam BasisType basis bound to the FiniteElemen, e.g., MINT_LAGRANGE_BASIS
- * \tparam CellType the corresponding cell type, e.g., MINT_QUAD
+ * \tparam CELLTYPE the corresponding cell type, e.g., MINT_QUAD
  *
  * \see test_inverse_map()
  */
-template < int BasisType, int CellType >
+template < int BasisType, mint::CellType CELLTYPE >
 void check_inverse_map( double TOL=1.e-9 )
 {
-  EXPECT_TRUE(  (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
-  EXPECT_TRUE(  (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
+  const int cell_value = mint::cellTypeToInt( CELLTYPE );
+  EXPECT_TRUE( (cell_value >= 0) && (cell_value < mint::NUM_CELL_TYPES) );
+  EXPECT_TRUE( (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
 
   SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
-                         << mint::cell::name[ CellType ] );
-
-  typedef typename mint::UnstructuredMesh< CellType > MeshType;
+                         << mint::getCellInfo( CELLTYPE ).name );
 
   // STEP 0: construct a mesh with a single element
-  MeshType* m             = AXOM_NULLPTR;
   mint::FiniteElement* fe = AXOM_NULLPTR;
 
-  get_fe_mesh< BasisType, CellType >( m, fe );
-  EXPECT_TRUE(  m != AXOM_NULLPTR );
+  get_single_fe< BasisType, CELLTYPE >( fe );
   EXPECT_TRUE(  fe != AXOM_NULLPTR );
-  EXPECT_EQ(  mint::cell::num_nodes[ CellType ],  m->getNumberOfNodes() );
-  EXPECT_EQ(  1,                                  m->getNumberOfCells() );
+  EXPECT_EQ(  mint::getCellInfo( CELLTYPE ).num_nodes,  fe->getNumNodes() );
 
   // STEP 1: check inverse map
   test_inverse_map( fe, TOL );
 
   // STEP 2: clean up
   delete fe;
-  delete m;
 }
 
 /*!
@@ -665,28 +598,24 @@ void check_inverse_map( double TOL=1.e-9 )
  * \param [in] TOL optional user-supplied tolerance. Default is 1.e-9.
  *
  * \tparam BasisType basis bound to the FiniteElemen, e.g., MINT_LAGRANGE_BASIS
- * \tparam CellType the corresponding cell type, e.g., MINT_QUAD
+ * \tparam CELLTYPE the corresponding cell type, e.g., MINT_QUAD
  */
-template < int BasisType, int CellType >
+template < int BasisType, mint::CellType CELLTYPE >
 void point_in_cell( double TOL=1.e-9 )
 {
-  EXPECT_TRUE(  (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
-  EXPECT_TRUE(  (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
+  const int cell_value = mint::cellTypeToInt( CELLTYPE );
+  EXPECT_TRUE( (cell_value >= 0) && (cell_value < mint::NUM_CELL_TYPES) );
+  EXPECT_TRUE( (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
 
   SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
-                         << mint::cell::name[ CellType ] );
-
-  typedef typename mint::UnstructuredMesh< CellType > MeshType;
+                         << mint::getCellInfo( CELLTYPE ).name );
 
   // STEP 0: construct a mesh with a single element
-  MeshType* m             = AXOM_NULLPTR;
   mint::FiniteElement* fe = AXOM_NULLPTR;
 
-  get_fe_mesh< BasisType, CellType >( m, fe );
-  EXPECT_TRUE(  m != AXOM_NULLPTR );
+  get_single_fe< BasisType, CELLTYPE >( fe );
   EXPECT_TRUE(  fe != AXOM_NULLPTR );
-  EXPECT_EQ(  mint::cell::num_nodes[ CellType ],  m->getNumberOfNodes() );
-  EXPECT_EQ(  1,                                  m->getNumberOfCells() );
+  EXPECT_EQ(  mint::getCellInfo( CELLTYPE ).num_nodes,  fe->getNumNodes() );
 
   // STEP 0: test variables
   const int nnodes = fe->getNumNodes();
@@ -702,7 +631,7 @@ void point_in_cell( double TOL=1.e-9 )
   for ( int i=0 ; i < nnodes ; ++i )
   {
 
-    if ( fe->getCellType()==MINT_PYRAMID && i==4 )
+    if ( fe->getCellType()==mint::PYRAMID && i==4 )
     {
       // skip inverse map at the apex of the pyramid, system is singular
       continue;
@@ -776,7 +705,6 @@ void point_in_cell( double TOL=1.e-9 )
   delete [] xc;
   delete [] rp;
   delete fe;
-  delete m;
 }
 
 /*!
@@ -835,37 +763,31 @@ double interp( const double* f, const double* wgts, int N )
  * \param [in] TOL optional user-supplied tolerance. Default is 1.e-9.
  *
  * \tparam BasisType basis bound to the FiniteElemen, e.g., MINT_LAGRANGE_BASIS
- * \tparam CellType the corresponding cell type, e.g., MINT_QUAD
+ * \tparam CELLTYPE the corresponding cell type, e.g., MINT_QUAD
  */
-template < int BasisType, int CellType >
+template < int BasisType, mint::CellType CELLTYPE >
 void check_interp( double TOL=1.e-9 )
 {
-  EXPECT_TRUE(  (CellType >= 0) && (CellType < MINT_NUM_CELL_TYPES) );
-  EXPECT_TRUE(  (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
+  const int cell_value = mint::cellTypeToInt( CELLTYPE );
+  EXPECT_TRUE( (cell_value >= 0) && (cell_value < mint::NUM_CELL_TYPES) );
+  EXPECT_TRUE( (BasisType >= 0) && (BasisType < MINT_NUM_BASIS_TYPES) );
 
   SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
-                         << mint::cell::name[ CellType ] );
-
-  typedef typename mint::UnstructuredMesh< CellType > MeshType;
+                         << mint::getCellInfo( CELLTYPE ).name );
 
   // STEP 0: construct a mesh with a single element
-  MeshType* m             = AXOM_NULLPTR;
   mint::FiniteElement* fe = AXOM_NULLPTR;
 
-  get_fe_mesh< BasisType, CellType >( m, fe );
-  EXPECT_TRUE(  m != AXOM_NULLPTR );
-  EXPECT_TRUE(  fe != AXOM_NULLPTR );
-  EXPECT_EQ(  mint::cell::num_nodes[ CellType ],  m->getNumberOfNodes() );
-  EXPECT_EQ(  1,                                  m->getNumberOfCells() );
+  get_single_fe< BasisType, CELLTYPE >( fe );
+  EXPECT_TRUE( fe != AXOM_NULLPTR );
+  EXPECT_EQ( mint::getCellInfo( CELLTYPE ).num_nodes, fe->getNumNodes() );
 
   const int ndims  = fe->getPhysicalDimension();
   const int nnodes = fe->getNumNodes();
   double* wgts = new double[ nnodes ];
 
   // STEP 1: setup a nodal field to interpolate
-  mint::FieldData* PD = m->getNodeFieldData();
-  PD->addField( new mint::FieldVariable< double >("foo",nnodes) );
-  double* f = PD->getField( "foo" )->getDoublePtr();
+  double* f = new double[ nnodes ];
 
   numerics::Matrix< double > nodes( ndims,nnodes,fe->getPhysicalNodes(),true );
 
@@ -899,7 +821,6 @@ void check_interp( double TOL=1.e-9 )
   EXPECT_NEAR( fexpected, finterp, TOL );
 
   // STEP 6: clean up
-  delete m;
   delete fe;
   delete [] xc;
   delete [] wgts;
@@ -912,14 +833,11 @@ void check_interp( double TOL=1.e-9 )
 //------------------------------------------------------------------------------
 TEST( mint_single_fe, check_override_max_newton )
 {
-  typedef mint::UnstructuredMesh< MINT_QUAD > MeshType;
-
   const int MAX_NEWTON = 42; // test value to override max newton
 
   // STEP 0: construct a mesh with a single element
-  MeshType* m             = AXOM_NULLPTR;
   mint::FiniteElement* fe = AXOM_NULLPTR;
-  get_fe_mesh< MINT_LAGRANGE_BASIS, MINT_QUAD >( m, fe );
+  get_single_fe< MINT_LAGRANGE_BASIS, mint::QUAD >( fe );
 
   EXPECT_FALSE( MAX_NEWTON==fe->getMaxSolverIterations() );
 
@@ -929,11 +847,10 @@ TEST( mint_single_fe, check_override_max_newton )
 
   // clean up
   delete fe;
-  delete m;
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_single_fe, matrix_constructor_deepcopy )
+TEST( mint_fem_single_fe, matrix_constructor_deepcopy )
 {
   // STEP 0: constants used in the test
   const int NROWS = 2;
@@ -947,7 +864,7 @@ TEST( mint_single_fe, matrix_constructor_deepcopy )
   M.fillColumn( 2,  3.0 );
 
   // STEP 2: construct FE object by making a deep-copy
-  mint::FiniteElement fe( M, MINT_TRIANGLE );
+  mint::FiniteElement fe( M, mint::TRIANGLE );
   EXPECT_FALSE( fe.usesExternalBuffer() );
 
   // STEP 3: ensure FE and Matrix objects are pointing to the same buffer
@@ -974,7 +891,7 @@ TEST( mint_single_fe, matrix_constructor_deepcopy )
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_single_fe, matrix_constructor_shallowcopy)
+TEST( mint_fem_single_fe, matrix_constructor_shallowcopy)
 {
   // STEP 0: constants used in the test
   const int NROWS = 2;
@@ -988,7 +905,7 @@ TEST( mint_single_fe, matrix_constructor_shallowcopy)
   M.fillColumn( 2,  3.0 );
 
   // STEP 2: construct FE object by making a shallow-copy
-  mint::FiniteElement* fe = new mint::FiniteElement( M, MINT_TRIANGLE, true );
+  mint::FiniteElement* fe = new mint::FiniteElement( M, mint::TRIANGLE, true );
   EXPECT_TRUE( fe->usesExternalBuffer() );
 
   // STEP 3: ensure FE and Matrix objects are pointing to the same buffer
@@ -1019,87 +936,87 @@ TEST( mint_single_fe, matrix_constructor_shallowcopy)
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_single_fe, check_fe_shape_function )
+TEST( mint_fem_single_fe, check_fe_shape_function )
 {
-  check_shape< MINT_LAGRANGE_BASIS, MINT_QUAD >( );
-  check_shape< MINT_LAGRANGE_BASIS, MINT_TRIANGLE >( );
-  check_shape< MINT_LAGRANGE_BASIS, MINT_TET >( );
-  check_shape< MINT_LAGRANGE_BASIS, MINT_HEX >( );
-  check_shape< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
-  check_shape< MINT_LAGRANGE_BASIS, MINT_PYRAMID >( );
+  check_shape< MINT_LAGRANGE_BASIS, mint::QUAD >( );
+  check_shape< MINT_LAGRANGE_BASIS, mint::TRIANGLE >( );
+  check_shape< MINT_LAGRANGE_BASIS, mint::TET >( );
+  check_shape< MINT_LAGRANGE_BASIS, mint::HEX >( );
+  check_shape< MINT_LAGRANGE_BASIS, mint::PRISM >( );
+  check_shape< MINT_LAGRANGE_BASIS, mint::PYRAMID >( );
 
-  check_shape< MINT_LAGRANGE_BASIS, MINT_QUAD9 >( );
-  check_shape< MINT_LAGRANGE_BASIS, MINT_HEX27 > ( );
+  check_shape< MINT_LAGRANGE_BASIS, mint::QUAD9 >( );
+  check_shape< MINT_LAGRANGE_BASIS, mint::HEX27 > ( );
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_single_fe, check_fe_jacobian )
+TEST( mint_fem_single_fe, check_fe_jacobian )
 {
-  check_jacobian< MINT_LAGRANGE_BASIS, MINT_QUAD >( );
-  check_jacobian< MINT_LAGRANGE_BASIS, MINT_TRIANGLE >( );
-  check_jacobian< MINT_LAGRANGE_BASIS, MINT_TET >( );
-  check_jacobian< MINT_LAGRANGE_BASIS, MINT_HEX >( );
-  check_jacobian< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
-  check_jacobian< MINT_LAGRANGE_BASIS, MINT_PYRAMID >( );
+  check_jacobian< MINT_LAGRANGE_BASIS, mint::QUAD >( );
+  check_jacobian< MINT_LAGRANGE_BASIS, mint::TRIANGLE >( );
+  check_jacobian< MINT_LAGRANGE_BASIS, mint::TET >( );
+  check_jacobian< MINT_LAGRANGE_BASIS, mint::HEX >( );
+  check_jacobian< MINT_LAGRANGE_BASIS, mint::PRISM >( );
+  check_jacobian< MINT_LAGRANGE_BASIS, mint::PYRAMID >( );
 
-  check_jacobian< MINT_LAGRANGE_BASIS, MINT_QUAD9 >( );
-  check_jacobian< MINT_LAGRANGE_BASIS, MINT_HEX27 >( );
+  check_jacobian< MINT_LAGRANGE_BASIS, mint::QUAD9 >( );
+  check_jacobian< MINT_LAGRANGE_BASIS, mint::HEX27 >( );
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_single_fe, check_fe_forward_map )
+TEST( mint_fem_single_fe, check_fe_forward_map )
 {
-  check_forward_map< MINT_LAGRANGE_BASIS, MINT_QUAD >( );
-  check_forward_map< MINT_LAGRANGE_BASIS, MINT_TRIANGLE >( );
-  check_forward_map< MINT_LAGRANGE_BASIS, MINT_TET >( );
-  check_forward_map< MINT_LAGRANGE_BASIS, MINT_HEX >( );
-  check_forward_map< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
-  check_forward_map< MINT_LAGRANGE_BASIS, MINT_PYRAMID >( 1.e-5 );
+  check_forward_map< MINT_LAGRANGE_BASIS, mint::QUAD >( );
+  check_forward_map< MINT_LAGRANGE_BASIS, mint::TRIANGLE >( );
+  check_forward_map< MINT_LAGRANGE_BASIS, mint::TET >( );
+  check_forward_map< MINT_LAGRANGE_BASIS, mint::HEX >( );
+  check_forward_map< MINT_LAGRANGE_BASIS, mint::PRISM >( );
+  check_forward_map< MINT_LAGRANGE_BASIS, mint::PYRAMID >( 1.e-5 );
 
-  check_forward_map< MINT_LAGRANGE_BASIS, MINT_QUAD9 >( );
-  check_forward_map< MINT_LAGRANGE_BASIS, MINT_HEX27 >( );
+  check_forward_map< MINT_LAGRANGE_BASIS, mint::QUAD9 >( );
+  check_forward_map< MINT_LAGRANGE_BASIS, mint::HEX27 >( );
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_single_fe, check_fe_inverse_map )
+TEST( mint_fem_single_fe, check_fe_inverse_map )
 {
-  check_inverse_map< MINT_LAGRANGE_BASIS, MINT_QUAD >( );
-  check_inverse_map< MINT_LAGRANGE_BASIS, MINT_TRIANGLE >( );
-  check_inverse_map< MINT_LAGRANGE_BASIS, MINT_TET >( );
-  check_inverse_map< MINT_LAGRANGE_BASIS, MINT_HEX >( );
-  check_inverse_map< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
-  check_inverse_map< MINT_LAGRANGE_BASIS, MINT_PYRAMID >( 1.e-5 );
+  check_inverse_map< MINT_LAGRANGE_BASIS, mint::QUAD >( );
+  check_inverse_map< MINT_LAGRANGE_BASIS, mint::TRIANGLE >( );
+  check_inverse_map< MINT_LAGRANGE_BASIS, mint::TET >( );
+  check_inverse_map< MINT_LAGRANGE_BASIS, mint::HEX >( );
+  check_inverse_map< MINT_LAGRANGE_BASIS, mint::PRISM >( );
+  check_inverse_map< MINT_LAGRANGE_BASIS, mint::PYRAMID >( 1.e-5 );
 
-  check_inverse_map< MINT_LAGRANGE_BASIS, MINT_QUAD9 >( );
-  check_inverse_map< MINT_LAGRANGE_BASIS, MINT_HEX27 >( );
+  check_inverse_map< MINT_LAGRANGE_BASIS, mint::QUAD9 >( );
+  check_inverse_map< MINT_LAGRANGE_BASIS, mint::HEX27 >( );
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_single_fe, check_fe_point_in_cell )
+TEST( mint_fem_single_fe, check_fe_point_in_cell )
 {
-  point_in_cell< MINT_LAGRANGE_BASIS, MINT_QUAD >( );
-  point_in_cell< MINT_LAGRANGE_BASIS, MINT_TRIANGLE >( );
-  point_in_cell< MINT_LAGRANGE_BASIS, MINT_TET >( );
-  point_in_cell< MINT_LAGRANGE_BASIS, MINT_HEX >( );
-  point_in_cell< MINT_LAGRANGE_BASIS, MINT_PRISM >( );
-  point_in_cell< MINT_LAGRANGE_BASIS, MINT_PYRAMID >( );
+  point_in_cell< MINT_LAGRANGE_BASIS, mint::QUAD >( );
+  point_in_cell< MINT_LAGRANGE_BASIS, mint::TRIANGLE >( );
+  point_in_cell< MINT_LAGRANGE_BASIS, mint::TET >( );
+  point_in_cell< MINT_LAGRANGE_BASIS, mint::HEX >( );
+  point_in_cell< MINT_LAGRANGE_BASIS, mint::PRISM >( );
+  point_in_cell< MINT_LAGRANGE_BASIS, mint::PYRAMID >( );
 
-  point_in_cell< MINT_LAGRANGE_BASIS, MINT_QUAD9 >( );
-  point_in_cell< MINT_LAGRANGE_BASIS, MINT_HEX27 >( 1.e-7 );
+  point_in_cell< MINT_LAGRANGE_BASIS, mint::QUAD9 >( );
+  point_in_cell< MINT_LAGRANGE_BASIS, mint::HEX27 >( 1.e-7 );
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_single_fe, check_fe_interp )
+TEST( mint_fem_single_fe, check_fe_interp )
 {
-  check_interp< MINT_LAGRANGE_BASIS, MINT_QUAD >(     1.e-24 );
-  check_interp< MINT_LAGRANGE_BASIS, MINT_TRIANGLE >( 1.e-12 );
-  check_interp< MINT_LAGRANGE_BASIS, MINT_TET >(      1.e-12 );
-  check_interp< MINT_LAGRANGE_BASIS, MINT_HEX >(      1.e-24 );
-  check_interp< MINT_LAGRANGE_BASIS, MINT_PRISM >(    1.e-12 );
-  check_interp< MINT_LAGRANGE_BASIS, MINT_PYRAMID >(  1.e-12 );
+  check_interp< MINT_LAGRANGE_BASIS, mint::QUAD >(     1.e-24 );
+  check_interp< MINT_LAGRANGE_BASIS, mint::TRIANGLE >( 1.e-12 );
+  check_interp< MINT_LAGRANGE_BASIS, mint::TET >(      1.e-12 );
+  check_interp< MINT_LAGRANGE_BASIS, mint::HEX >(      1.e-24 );
+  check_interp< MINT_LAGRANGE_BASIS, mint::PRISM >(    1.e-12 );
+  check_interp< MINT_LAGRANGE_BASIS, mint::PYRAMID >(  1.e-12 );
 
-  check_interp< MINT_LAGRANGE_BASIS, MINT_QUAD9 >(    1.e-24 );
-  check_interp< MINT_LAGRANGE_BASIS, MINT_HEX27 >(    1.e-24 );
+  check_interp< MINT_LAGRANGE_BASIS, mint::QUAD9 >(    1.e-24 );
+  check_interp< MINT_LAGRANGE_BASIS, mint::HEX27 >(    1.e-24 );
 }
 
 //------------------------------------------------------------------------------

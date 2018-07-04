@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+/// @cond INCLUDE_DETAIL
 namespace axom
 {
 namespace sidre
@@ -57,6 +58,7 @@ std::vector<std::string> split(const std::string& s, char c,
 std::string::size_type find_exclusive( const std::string& s, char c);
 
 } // end namespace detail
+/// @endcond
 
 } // end namespace sidre
 

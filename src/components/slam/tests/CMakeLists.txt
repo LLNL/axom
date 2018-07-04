@@ -24,14 +24,17 @@ set(gtest_slam_tests
     slam_set_RangeSet.cpp
     slam_set_IndirectionSet.cpp
     slam_set_BitSet.cpp
+    slam_set_DynamicSet.cpp
 
     # test relations
-    slam_relation_DynamicVariable.cpp
     slam_relation_StaticVariable.cpp
     slam_relation_StaticConstant.cpp
+    slam_relation_DynamicVariable.cpp
+    slam_relation_DynamicConstant.cpp
 
     # test maps
     slam_Map.cpp
+    slam_map_DynamicMap.cpp
 
     # test integration of sets, relations and maps
     slam_AccessingRelationDataInMap.cpp

@@ -366,7 +366,7 @@ void generateNodeZoneRelation(HexMesh* mesh)
   // TODO: This function to invert a relation should be moved into Slam
 
   typedef Repository::IntsRegistry::BufferType IndexBuf;
-  typedef HexMesh::ZoneToNodeRelation::RelationSet RelationSet;
+  typedef HexMesh::ZoneToNodeRelation::RelationSubset RelationSubset;
 
   /// Step 1: Compute the cardinalities of each node by looping through zone to
   // node relation
@@ -374,7 +374,7 @@ void generateNodeZoneRelation(HexMesh* mesh)
                        .addBuffer("node_zone_begins", mesh->nodes.size() + 1 );
   for(IndexType zIdx = 0 ; zIdx < mesh->numZones() ; ++zIdx)
   {
-    RelationSet nSet = mesh->zoneToNodeRelation[zIdx];
+    RelationSubset nSet = mesh->zoneToNodeRelation[zIdx];
     for(IndexType idx = 0 ; idx < nSet.size() ; ++idx)
     {
       ++nzBegins[ nSet[idx] ];
@@ -401,7 +401,7 @@ void generateNodeZoneRelation(HexMesh* mesh)
                                   nzBegins[mesh->numNodes()] );
   for(IndexType zIdx = 0 ; zIdx < mesh->numZones() ; ++zIdx)
   {
-    RelationSet nSet = mesh->zoneToNodeRelation[zIdx];
+    RelationSubset nSet = mesh->zoneToNodeRelation[zIdx];
     for(IndexType idx = 0 ; idx < nSet.size() ; ++idx)
     {
       const IndexType nIdx = nSet[idx];
@@ -433,7 +433,7 @@ void generateNodeZoneRelation(HexMesh* mesh)
 
 void computeZoneBarycenters(HexMesh* mesh)
 {
-  typedef HexMesh::ZoneToNodeRelation::RelationSet NodeSet;
+  typedef HexMesh::ZoneToNodeRelation::RelationSubset NodeSet;
 
   // Compute the zone positions as the the averages
   // of the positions of the nodes around each zone
@@ -470,7 +470,7 @@ void createZoneRadiusField (HexMesh* mesh)
 DataType computeNodalErrors(HexMesh* mesh)
 {
   // Compute the node average version, and the approximation error
-  typedef HexMesh::NodeToZoneRelation::RelationSet ZoneSet;
+  typedef HexMesh::NodeToZoneRelation::RelationSubset ZoneSet;
 
 
   mesh->nodeFieldAvg   = HexMesh::NodeField(&mesh->nodes);

@@ -34,7 +34,6 @@
 #include "slic/slic.hpp"
 
 #include "slam/Set.hpp"
-#include "slam/NullSet.hpp"
 
 #include "slam/SizePolicies.hpp"
 #include "slam/OffsetPolicies.hpp"
@@ -267,15 +266,15 @@ public:
     iter& operator+=(PositionType n)    { advance(n); return *this; }
     iter& operator-=(PositionType n)    { advance(-n); return *this; }
 
-    iter operator+(PositionType n)
+    iter operator+(PositionType n) const
     {
-      iter ret = *this; advance(n);
+      iter ret = *this; ret.advance(n);
       return ret;
     }
 
-    iter operator-(PositionType n)
+    iter operator-(PositionType n) const
     {
-      iter ret = *this; advance(-n);
+      iter ret = *this; ret.advance(-n);
       return ret;
     }
 

@@ -40,6 +40,10 @@
 #define AXOM_SRC_DIR "@AXOM_SRC_DIR@"
 #define AXOM_BIN_DIR "@AXOM_BIN_DIR@"
 
+/*
+ * Platform specific defintions
+ */
+#cmakedefine AXOM_NO_INT64_T
 
 /*
  * Compiler tests

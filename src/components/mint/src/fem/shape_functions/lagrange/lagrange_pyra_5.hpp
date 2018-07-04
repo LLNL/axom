@@ -19,7 +19,7 @@
 #define MINT_LAGRANGE_PYRA_5_HPP_
 
 // Mint includes
-#include "mint/CellType.hpp"
+#include "mint/CellTypes.hpp"
 #include "mint/FEBasisTypes.hpp"
 #include "mint/ShapeFunction.hpp"
 
@@ -55,12 +55,12 @@ namespace mint
  * \see ShapeFunction
  */
 template < >
-class Lagrange< MINT_PYRAMID > :
-  public ShapeFunction< Lagrange< MINT_PYRAMID > >
+class Lagrange< mint::PYRAMID > :
+  public ShapeFunction< Lagrange< mint::PYRAMID > >
 {
 public:
 
-  static int getCellType() { return MINT_PYRAMID; }
+  static CellType getCellType() { return mint::PYRAMID; }
 
   static int getType() { return MINT_LAGRANGE_BASIS; }
 

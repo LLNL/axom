@@ -22,8 +22,8 @@
  *
  */
 
-#ifndef COMMONTYPES_HPP_
-#define COMMONTYPES_HPP_
+#ifndef AXOM_TYPES_HPP_
+#define AXOM_TYPES_HPP_
 
 
 #include "axom/config.hpp"           // defines AXOM_USE_CXX11
@@ -61,8 +61,12 @@ typedef detail::int64_t int64;      /*!< 64-bit signed integer type     */
 typedef detail::uint64_t uint64;    /*!< 64-bit unsigned integer type   */
 #endif
 
+typedef float float32;
+typedef double float64;
+
+
 } // end namespace common
 } // end namespace axom
 
 
-#endif // COMMONTYPES_HPP_
+#endif // AXOM_TYPES_HPP_

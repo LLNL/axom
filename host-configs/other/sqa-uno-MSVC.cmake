@@ -43,9 +43,6 @@ string(REPLACE "\\" "/" HOME "$ENV{USERPROFILE}")
 #set(HDF5_DIR    ... CACHE PATH "")
 set(CONDUIT_DIR "${HOME}/Projects/install/conduit-no-hdf5" CACHE PATH "")
 
-# Boost headers
-set(BOOST_DIR "${HOME}/Code/boost" CACHE PATH "")
-
 # Note: Doxygen assumes graphviz 'dot' is in PATH
 set(DOXYGEN_EXECUTABLE "${HOME}/Chocolatey/bin/doxygen.exe" CACHE PATH "") 
 

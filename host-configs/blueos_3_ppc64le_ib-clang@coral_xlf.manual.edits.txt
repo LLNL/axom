@@ -25,7 +25,7 @@ set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 set(BLT_FORTRAN_FLAGS "-WF,-C!" CACHE STRING "")
 
 # Adds a missing rpath for libraries associated with the fortran compiler
-set(BLT_EXE_LINKER_FLAGS "-Wl,-rpath,/usr/tce/packages/xl/xl-beta-2017.10.13/lib" CACHE STRING "")
+set(BLT_EXE_LINKER_FLAGS "-Wl,-rpath,/usr/tce/packages/xl/xl-2018.05.18/lib/" CACHE STRING "")
 
 ##############################################################################
 # MPI - manually added for now
@@ -33,12 +33,12 @@ set(BLT_EXE_LINKER_FLAGS "-Wl,-rpath,/usr/tce/packages/xl/xl-beta-2017.10.13/lib
 
 set(ENABLE_MPI ON CACHE BOOL "")
 
-set(MPI_HOME                 "/usr/tce/packages/spectrum-mpi/spectrum-mpi-2017.08.24-clang-coral-2017.10.13/" CACHE PATH "")
+set(MPI_HOME                 "/usr/tce/packages/spectrum-mpi/spectrum-mpi-2018.04.27-clang-coral-2018.05.23/" CACHE PATH "")
 set(MPI_C_COMPILER           "${MPI_HOME}/bin/mpicc"   CACHE PATH "")
 set(MPI_CXX_COMPILER         "${MPI_HOME}/bin/mpicxx"  CACHE PATH "")
 set(MPI_Fortran_COMPILER     "${MPI_HOME}/bin/mpifort" CACHE PATH "")
 
-set(MPIEXEC              "mpirun" CACHE PATH "")
+set(MPIEXEC              "${MPI_HOME}/bin/mpirun" CACHE PATH "")
 set(MPIEXEC_NUMPROC_FLAG "-np" CACHE PATH "")
 
 

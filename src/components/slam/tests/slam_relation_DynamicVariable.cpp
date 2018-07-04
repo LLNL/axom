@@ -16,7 +16,7 @@
  */
 
 /**
- * \file testDynamicVariableRelation.cpp
+ * \file slam_relation_DynamicVariable.cpp
  *
  * \brief Unit tests for Slam's DynamicVariableRelation class
  */
@@ -230,7 +230,6 @@ TEST(slam_relation_dynamic_variable,iterate_relation)
 }
 
 
-
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 #include "slic/UnitTestLogger.hpp"
@@ -238,14 +237,13 @@ using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])
 {
-  int result = 0;
-
   ::testing::InitGoogleTest(&argc, argv);
 
   // create & initialize test logger. finalized when exiting main scope
   UnitTestLogger logger;
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Info);
 
-  result = RUN_ALL_TESTS();
+  int result = RUN_ALL_TESTS();
 
   return result;
 }

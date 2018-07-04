@@ -36,6 +36,7 @@ set(slam_headers
     OrderedSet.hpp
     RangeSet.hpp
     #ProductSet.hpp
+    DynamicSet.hpp
     Set.hpp
     BitSet.hpp
     internal/BitTwiddle.hpp
@@ -44,9 +45,12 @@ set(slam_headers
     Relation.hpp
     StaticRelation.hpp
     DynamicVariableRelation.hpp
+    DynamicConstantRelation.hpp
 
     # SRM Map headers
     Map.hpp
+    MapBase.hpp
+    DynamicMap.hpp
     )
 
 set(slam_sources

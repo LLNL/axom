@@ -352,15 +352,11 @@ using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])
 {
-  int result = 0;
-
   ::testing::InitGoogleTest(&argc, argv);
 
   UnitTestLogger logger;  // create & initialize test logger,
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Info);
 
-  // finalized when exiting main scope
-
-  result = RUN_ALL_TESTS();
-
+  int result = RUN_ALL_TESTS();
   return result;
 }

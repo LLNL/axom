@@ -24,9 +24,10 @@
 // Axom Utils includes
 #include "axom_utils/Utilities.hpp"    // for abs()
 #include "axom_utils/linear_solve.hpp" // for linear_solve()
+#include "axom_utils/matvecops.hpp"    // for matrix/vector operators
 
 // Mint includes
-#include "mint/CellType.hpp"           // for cell type definitions
+#include "mint/CellTypes.hpp"          // for cell type definitions
 #include "mint/Lagrange.hpp"           // For Lagrange ShapeFunctions
 #include "mint/Mesh.hpp"               // for mesh data structure
 #include "mint/ShapeFunction.hpp"      // For ShapeFunction definition
@@ -64,34 +65,9 @@ bool diverged( const double* xi, int N )
 //------------------------------------------------------------------------------
 // FINITE ELEMENT CLASS IMPLEMENTATION
 //------------------------------------------------------------------------------
-FiniteElement::FiniteElement( const Mesh* mesh, int cellIdx ) :
-  m_dim( mesh->getDimension() ),
-  m_ctype( mesh->getMeshCellType( cellIdx ) ),
-  m_shape_func_type( MINT_UNDEFINED_BASIS ),
-  m_maxNewtonIterations( -1 ),
-  m_numnodes( mesh->getMeshNumberOfCellNodes( cellIdx ) ),
-  m_jac( AXOM_NULLPTR ),
-  m_xyz( AXOM_NULLPTR ),
-  m_phi( AXOM_NULLPTR ),
-  m_phidot( AXOM_NULLPTR ),
-  m_usingExternal( false ),
-  m_shapeFunction( AXOM_NULLPTR ),
-  m_shapeFunctionDerivatives( AXOM_NULLPTR ),
-  m_reference_min( -1 ),
-  m_reference_max( -1 ),
-  m_reference_dim( -1 ),
-  m_numdofs( -1 ),
-  m_reference_coords( AXOM_NULLPTR ),
-  m_reference_center( AXOM_NULLPTR )
-{
-  this->setUp( );
-  this->getCellCoords( mesh, cellIdx );
-}
 
-//------------------------------------------------------------------------------
 FiniteElement::FiniteElement( numerics::Matrix< double >& M,
-                              int cellType,
-                              bool useExternal ) :
+                              CellType cellType, bool useExternal ) :
   m_dim( M.getNumRows() ),
   m_ctype( cellType ),
   m_shape_func_type( MINT_UNDEFINED_BASIS ),
@@ -267,7 +243,7 @@ void FiniteElement::computePhysicalCoords( const double* xr, double* xp )
   numerics::Matrix< double > coords_matrix( m_dim, m_numnodes, m_xyz, true );
 
   // STEP 2: compute the global (physical) coordinates
-  numerics::vector_multiply( coords_matrix, m_phi, xp );
+  numerics::matrix_vector_multiply( coords_matrix, m_phi, xp );
 }
 
 //------------------------------------------------------------------------------
@@ -368,23 +344,6 @@ void FiniteElement::tearDown()
 }
 
 //------------------------------------------------------------------------------
-void FiniteElement::getCellCoords( const Mesh* m, int cellIdx )
-{
-  SLIC_ASSERT(  m != AXOM_NULLPTR );
-  SLIC_ASSERT(  (cellIdx >= 0) && (cellIdx < m->getMeshNumberOfCells() ) );
-
-  // TODO: iron out this code
-  int cell[ MINT_MAX_NUM_NODES ];
-  m->getMeshCell( cellIdx, cell );
-
-  for ( int i=0 ; i < m_numnodes ; ++i )
-  {
-    m->getMeshNode( cell[ i ], &m_xyz[ i*m_dim ]  );
-  }
-
-}
-
-//------------------------------------------------------------------------------
 bool FiniteElement::inReferenceElement( const double* xi, double TOL )
 {
   SLIC_ASSERT( xi != AXOM_NULLPTR );
@@ -394,12 +353,12 @@ bool FiniteElement::inReferenceElement( const double* xi, double TOL )
 
   bool is_inside = true;
 
-  switch ( m_ctype )
+  switch ( m_ctype  )
   {
-  case MINT_TRIANGLE:
-  case MINT_TET:
-  case MINT_PRISM:
-  case MINT_PYRAMID:
+  case mint::TRIANGLE:
+  case mint::TET:
+  case mint::PRISM:
+  case mint::PYRAMID:
     this->evaluateShapeFunctions( xi, m_phi );
     for ( int i=0 ; is_inside && (i < m_numdofs) ; ++i )
     {

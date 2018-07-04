@@ -65,9 +65,9 @@ class DataStore
 public:
 
   /*!
-   * \brief Default ctor initializes DataStore object and creates root Group.
+   * \brief Default ctor initializes DataStore object and creates a root Group.
    *
-   * Ctor also initializes SLIC logging environment if it is not already
+   * The ctor also initializes SLIC logging environment if it is not already
    * initialized.
    */
   DataStore();
@@ -116,8 +116,8 @@ public:
   }
 
   /*!
-   * \brief Return (non-const) pointer to Buffer object with given index,
-   *        or AXOM_NULLPTR if none exists.
+   * \brief Return (non-const) pointer to Buffer object with the given
+   *        index, or AXOM_NULLPTR if none exists.
    */
   Buffer* getBuffer( IndexType idx ) const;
 
@@ -172,19 +172,36 @@ public:
 //@}
 
 //@{
-//!  @name Methods for iterating over Buffers in DataStore
+//!  @name Methods for iterating over Buffers in the DataStore.
+//!
+//! Using these methods, a code can get the first Buffer index and each
+//! succeeding index.  This allows Buffer iteration using the same
+//! constructs in C++, C, and Fortran.  Example:
+//!
+//!      for (sidre::IndexType idx = ds->getFirstValidBufferIndex();
+//!           sidre::indexIsValid(idx);
+//!           idx = ds->getNextValidBufferIndex(idx))
+//!      {
+//!          Buffer * buf = ds->getBuffer(idx);
+//!
+//!          /// code here using buf
+//!      }
 
   /*!
    * \brief Return first valid Buffer index.
    *
-   *        sidre::InvalidIndex is returned if Group has no Buffers.
+   * sidre::InvalidIndex is returned if Group has no Buffers.
+   *
+   * \sa axom::sidre::indexIsValid()
    */
   IndexType getFirstValidBufferIndex() const;
 
   /*!
    * \brief Return next valid Buffer index after given index.
    *
-   *        sidre::InvalidIndex is returned if there is no valid next index.
+   * sidre::InvalidIndex is returned if there is no valid next index.
+   *
+   * \sa axom::sidre::indexIsValid()
    */
   IndexType getNextValidBufferIndex(IndexType idx) const;
 
@@ -248,8 +265,8 @@ public:
    * \brief Remove Attribute from the DataStore and destroy it and
    *        its data.
    *
-   * XXX    Note that Attribute destruction detaches it from all Views to
-   *        which it is attached.
+   * \note Destruction of an Attribute detaches it from all Views to
+   *       which it is attached.
    */
   void destroyAttribute( const std::string & name );
 
@@ -257,8 +274,8 @@ public:
    * \brief Remove Attribute with given index from the DataStore and
    *        destroy it and its data.
    *
-   *        Note that Attribute destruction detaches it from all Views to
-   *        which it is attached.
+   * \note Destruction of an Attribute detaches it from all Views to
+   *       which it is attached.
    */
   void destroyAttribute( IndexType idx );
 
@@ -266,8 +283,8 @@ public:
    * \brief Remove Attribute from the DataStore and destroy it and
    *        its data.
    *
-   * XXX    Note that Attribute destruction detaches it from all Views to
-   *        which it is attached.
+   * \note Destruction of an Attribute detaches it from all Views to
+   *       which it is attached.
    */
   void destroyAttribute( Attribute* attr );
 
@@ -275,15 +292,15 @@ public:
    * \brief Remove all Attributes from the DataStore and destroy them
    *        and their data.
    *
-   * XXX    Note that Attribute destruction detaches it from all Views to
-   *        which it is attached.
+   * \note Destruction of an Attribute detaches it from all Views to
+   *       which it is attached.
    */
   void destroyAllAttributes();
 
 //@}
 
 //@{
-//!  @name Attribute access and iteration methods.
+//!  @name Attribute access methods.
 
   /*!
    * \brief Return pointer to non-const Attribute with given index.
@@ -314,25 +331,6 @@ public:
   const Attribute* getAttribute( const std::string& name ) const;
 
   /*!
-   * \brief Return first valid Attribute index in DataStore object
-   *        (i.e., smallest index over all Attributes).
-   *
-   * sidre::InvalidIndex is returned if DataStore has no Attributes.
-   */
-  IndexType getFirstValidAttributeIndex() const;
-
-  /*!
-   * \brief Return next valid Attribute index in DataStore object after given
-   * index
-   *        (i.e., smallest index over all Attribute indices larger than given
-   * one).
-   *
-   * sidre::InvalidIndex is returned if there is no valid index greater
-   * than given one.
-   */
-  IndexType getNextValidAttributeIndex(IndexType idx) const;
-
-  /*!
    * \brief Copy Attribute and default value to Conduit node.
    *        Return true if attributes were copied.
    */
@@ -344,18 +342,58 @@ public:
   void loadAttributeLayout(Node& node);
 
 //@}
+
+//@{
+//!  @name Methods for iterating over Attributes in the DataStore.
+//!
+//! Using these methods, a code can get the first Attribute index and each
+//! succeeding index.  This allows Attribute iteration using the same
+//! constructs in C++, C, and Fortran.  Example:
+//!
+//!      for (sidre::IndexType idx = ds->getFirstValidAttributeIndex();
+//!           sidre::indexIsValid(idx);
+//!           idx = ds->getNextValidAttributeIndex(idx))
+//!      {
+//!          Attribute * attr = ds->getAttribute(idx);
+//!
+//!          /// code here using attr
+//!      }
+
+  /*!
+   * \brief Return first valid Attribute index in DataStore object
+   *        (i.e., smallest index over all Attributes).
+   *
+   * sidre::InvalidIndex is returned if DataStore has no Attributes.
+   *
+   * \sa axom::sidre::indexIsValid()
+   */
+  IndexType getFirstValidAttributeIndex() const;
+
+  /*!
+   * \brief Return next valid Attribute index in DataStore object after given
+   * index (i.e., smallest index over all Attribute indices larger than given
+   * one).
+   *
+   * sidre::InvalidIndex is returned if there is no valid index greater
+   * than given one.
+   *
+   * \sa axom::sidre::indexIsValid()
+   */
+  IndexType getNextValidAttributeIndex(IndexType idx) const;
+
+//@}
 //----------------
 
 
   /*!
-   * \brief Print JSON description of DataStore Group hierarchy (starting at
-   *        root) and Buffer descriptions to std::cout.
+   * \brief Print JSON description of the DataStore Group hierarchy (starting
+   *        at root) and Buffer descriptions to std::cout.
    */
   void print() const;
 
   /*!
-   * \brief Print JSON description of DataStore Group hierarchy (starting at
-   *        root) and Buffer descriptions to given output stream.
+   * \brief Print JSON description of the DataStore Group hierarchy (starting
+   *        at root) and Buffer descriptions to given output stream.
    */
   void print(std::ostream& os) const;
 

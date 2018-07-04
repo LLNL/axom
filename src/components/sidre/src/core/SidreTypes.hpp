@@ -28,6 +28,7 @@
 
 #include "SidreDataTypeIds.h"
 #include "conduit.hpp"
+#include "axom/Types.hpp"
 
 namespace axom
 {
@@ -63,7 +64,13 @@ typedef long int SidreLength;
  * \brief Common invalid index identifier used in sidre.
  */
 const IndexType InvalidIndex = -1;
-///
+
+/*!
+ * \brief Returns true if idx is valid, else false.
+ *
+ * Used for the loop test when iterating over the
+ * Buffers or Attributes in a DataStore or the Views or Groups in a Group.
+ */
 inline bool indexIsValid(IndexType idx)
 {
   return idx != InvalidIndex;
@@ -73,7 +80,10 @@ inline bool indexIsValid(IndexType idx)
  * \brief Common invalid name (string) identifier used in sidre.
  */
 const std::string InvalidName;
-///
+
+/*!
+ * \brief Returns true if name is valid, else false.
+ */
 inline bool nameIsValid(const std::string& name)
 {
   return name != InvalidName;
@@ -109,76 +119,68 @@ enum DataTypeId
   DOUBLE_ID = SIDRE_DOUBLE_ID
 };
 
+/// @cond INCLUDE_DETAIL
+
 /*!
  * \brief The detail namespace contains code that is either used internally by
  *  the sidre implementation or is under evaluation.
  */
 namespace detail
 {
-/*!
- * \brief Typedefs for sidre types.
- */
-typedef conduit_int8 sidre_int8;
-typedef conduit_int16 sidre_int16;
-typedef conduit_int32 sidre_int32;
-typedef conduit_int64 sidre_int64;
-
-typedef conduit_uint8 sidre_uint8;
-typedef conduit_uint16 sidre_uint16;
-typedef conduit_uint32 sidre_uint32;
-typedef conduit_uint64 sidre_uint64;
-
-typedef conduit_float32 sidre_float32;
-typedef conduit_float64 sidre_float64;
 
 /*!
  * \brief Type traits to assist in converting compiler types to the appropriate
  *  data type ids.
  */
-template<typename T> struct SidreTT {};
-template<> struct SidreTT<sidre_int8>
+template<typename T> struct SidreTT
+{
+  static const DataTypeId id = NO_TYPE_ID;
+};
+
+template<> struct SidreTT<common::int8>
 {
   static const DataTypeId id = INT8_ID;
 };
-template<> struct SidreTT<sidre_int16>
+template<> struct SidreTT<common::int16>
 {
   static const DataTypeId id = INT16_ID;
 };
-template<> struct SidreTT<sidre_int32>
+template<> struct SidreTT<common::int32>
 {
   static const DataTypeId id = INT32_ID;
 };
-template<> struct SidreTT<sidre_int64>
+template<> struct SidreTT<common::int64>
 {
   static const DataTypeId id = INT64_ID;
 };
 
-template<> struct SidreTT<sidre_uint8>
+template<> struct SidreTT<common::uint8>
 {
   static const DataTypeId id = UINT8_ID;
 };
-template<> struct SidreTT<sidre_uint16>
+template<> struct SidreTT<common::uint16>
 {
   static const DataTypeId id = UINT16_ID;
 };
-template<> struct SidreTT<sidre_uint32>
+template<> struct SidreTT<common::uint32>
 {
   static const DataTypeId id = UINT32_ID;
 };
-template<> struct SidreTT<sidre_uint64>
+template<> struct SidreTT<common::uint64>
 {
   static const DataTypeId id = UINT64_ID;
 };
 
-template<> struct SidreTT<sidre_float32>
+template<> struct SidreTT<common::float32>
 {
   static const DataTypeId id = FLOAT32_ID;
 };
-template<> struct SidreTT<sidre_float64>
+template<> struct SidreTT<common::float64>
 {
   static const DataTypeId id = FLOAT64_ID;
 };
-}
+} /* end namespace detail */
+/// @endcond
 
 /*!
  * \brief TypeID is used to identify the type of a buffer (SIDRE_INT8_ID, etc).

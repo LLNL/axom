@@ -51,6 +51,7 @@ changes are made, this guide should be updated accordingly.
 
    dev_summary
    jira
+   release
    semantic_versioning
    gitflow_branching
    bitbucket

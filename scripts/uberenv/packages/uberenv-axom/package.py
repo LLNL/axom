@@ -57,6 +57,8 @@ class UberenvAxom(Package):
 
     depends_on("hdf5~cxx~shared~fortran", when="+hdf5")
 
+    depends_on("conduit~shared") # needed so we can optionally use ^conduit@master
+
     depends_on("conduit~shared+cmake+hdf5",when="+cmake+hdf5")
     depends_on("conduit~shared~cmake+hdf5",when="~cmake+hdf5")
     depends_on("conduit~shared+cmake~hdf5",when="+cmake~hdf5")
@@ -68,7 +70,7 @@ class UberenvAxom(Package):
     depends_on("mfem~mpi",   when="+mfem")
 
     # optional tpl builds
-    depends_on("cmake@3.8.2",when="+cmake")
+    depends_on("cmake@3.9.6",when="+cmake")
 
     depends_on("python",    when="+devtools")
     depends_on("doxygen",   when="+devtools")
@@ -257,11 +259,6 @@ class UberenvAxom(Package):
             cfg.write(cmake_cache_entry("MPI_CXX_COMPILER",mpicc))
             cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER",mpif90))
             cfg.write(cmake_cache_entry("MPIEXEC",mpiexec))
-
-        # Note: We are disabling CXX11 for default configurations on chaos5 intel/clang builds, machine is being retired
-        if "chaos_5_x86_64_ib" in sys_type and (("intel" in spec.compiler.name) or ("clang" in spec.compiler.name)):
-            cfg.write("# Disable CXX11 on chaos5 intel/clang builds\n")
-            cfg.write(cmake_cache_entry("BLT_CXX_STD","c++98"))
 
         cfg.write("##################################\n")
         cfg.write("# end uberenv host-config\n")

@@ -38,13 +38,14 @@
 
 
 // C/C++ includes
+#include <fstream>
 #include <iostream>
 #include <utility>
 #include <vector>
 
 using namespace axom;
 
-typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+typedef mint::UnstructuredMesh< mint::SINGLE_SHAPE > UMesh;
 typedef primal::Triangle<double, 3> Triangle3;
 
 typedef primal::Point<double, 3> Point3;
@@ -237,14 +238,14 @@ bool checkTT(Triangle3& t1, Triangle3& t2)
 
 inline Triangle3 getMeshTriangle(int i, mint::Mesh* surface_mesh)
 {
-  SLIC_ASSERT(surface_mesh->getMeshNumberOfCellNodes(i) == 3);
-  primal::Point<int, 3> triCell;
+  SLIC_ASSERT(surface_mesh->getCellType( i ) == mint::TRIANGLE );
+  primal::Point<mint::IndexType, 3> triCell;
   Triangle3 tri;
-  surface_mesh->getMeshCell(i, triCell.data());
+  surface_mesh->getCell(i, triCell.data());
 
-  surface_mesh->getMeshNode(triCell[0], tri[0].data());
-  surface_mesh->getMeshNode(triCell[1], tri[1].data());
-  surface_mesh->getMeshNode(triCell[2], tri[2].data());
+  surface_mesh->getNode(triCell[0], tri[0].data());
+  surface_mesh->getNode(triCell[1], tri[1].data());
+  surface_mesh->getNode(triCell[2], tri[2].data());
 
   return tri;
 }
@@ -258,7 +259,7 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
   // degenerate triangles.
   std::vector< std::pair<int, int> > retval;
 
-  const int ncells = surface_mesh->getMeshNumberOfCells();
+  const int ncells = surface_mesh->getNumberOfCells();
   SLIC_INFO("Checking mesh with a total of "<< ncells<< " cells.");
 
   Triangle3 t1 = Triangle3();
@@ -301,9 +302,9 @@ void announceMeshProblems(int triangleCount,
                           int intersectPairCount,
                           int degenerateCount)
 {
-  std::cout << triangleCount << " triangles, with " << intersectPairCount <<
-    " intersecting tri pairs, " << degenerateCount << " degenerate tris." <<
-    std::endl;
+  std::cout << triangleCount << " triangles, with " << intersectPairCount
+            << " intersecting tri pairs, " << degenerateCount
+            <<  " degenerate tris." <<  std::endl;
 }
 
 void saveProblemFlagsToMesh(mint::Mesh* mesh,
@@ -311,16 +312,11 @@ void saveProblemFlagsToMesh(mint::Mesh* mesh,
                             const std::vector<int> & d)
 {
   // Create new Field variables to hold degenerate and intersecting info
-  const int num_cells = mesh->getMeshNumberOfCells();
-
-  mint::FieldVariable<int>* intersect =
-    new mint::FieldVariable<int>("nbr_intersection", num_cells);
-  mesh->getCellFieldData()->addField(intersect);
-  int* intersectptr = intersect->getIntPtr();
-  mint::FieldVariable<int>* dgn =
-    new mint::FieldVariable<int>("degenerate_triangles", num_cells);
-  mesh->getCellFieldData()->addField(dgn);
-  int* dgnptr = dgn->getIntPtr();
+  const int num_cells = mesh->getNumberOfCells();
+  int* intersectptr =
+    mesh->createField< int >("nbr_intersection", mint::CELL_CENTERED );
+  int* dgnptr =
+    mesh->createField< int >("degenerate_triangles", mint::CELL_CENTERED );
 
   // Initialize everything to 0
   for (int i = 0 ; i < num_cells ; ++i)
@@ -441,7 +437,7 @@ int main( int argc, char** argv )
   reader->read();
 
   // Get surface mesh
-  TriangleMesh* surface_mesh = new TriangleMesh( 3 );
+  UMesh* surface_mesh = new UMesh( 3, mint::TRIANGLE );
   reader->getMesh( surface_mesh );
 
   // Delete the reader
@@ -449,8 +445,24 @@ int main( int argc, char** argv )
   reader = AXOM_NULLPTR;
 
   SLIC_INFO(
-    "Mesh has " << surface_mesh->getMeshNumberOfNodes() << " vertices and "
-                <<  surface_mesh->getMeshNumberOfCells() << " triangles.");
+    "Mesh has " << surface_mesh->getNumberOfNodes() << " vertices and "
+                <<  surface_mesh->getNumberOfCells() << " triangles.");
+
+  // Vertex welding
+  {
+    axom::utilities::Timer timer(true);
+
+    quest::weldTriMeshVertices(&surface_mesh, params.weldThreshold);
+
+    timer.stop();
+    SLIC_INFO("Vertex welding took "
+              << timer.elapsedTimeInSec() << " seconds.");
+    SLIC_INFO("After welding, mesh has "
+              << surface_mesh->getNumberOfNodes() << " vertices and "
+              <<  surface_mesh->getNumberOfCells() << " triangles.");
+
+    mint::write_vtk(surface_mesh, params.weldMeshName() );
+  }
 
   // Detect collisions
   {
@@ -475,7 +487,7 @@ int main( int argc, char** argv )
     SLIC_INFO("Detecting intersecting triangles took "
               << timer.elapsedTimeInSec() << " seconds.");
 
-    announceMeshProblems(surface_mesh->getMeshNumberOfCells(),
+    announceMeshProblems(surface_mesh->getNumberOfCells(),
                          collisions.size(), degenerate.size());
 
     saveProblemFlagsToMesh(surface_mesh, collisions, degenerate);
@@ -489,22 +501,6 @@ int main( int argc, char** argv )
     {
       SLIC_ERROR("Couldn't write results to "<< params.collisionsTextName());
     }
-  }
-
-  // Vertex welding
-  {
-    axom::utilities::Timer timer(true);
-
-    quest::weldTriMeshVertices(&surface_mesh, params.weldThreshold);
-
-    timer.stop();
-    SLIC_INFO("Vertex welding took "
-              << timer.elapsedTimeInSec() << " seconds.");
-    SLIC_INFO("After welding, mesh has "
-              << surface_mesh->getMeshNumberOfNodes() << " vertices and "
-              <<  surface_mesh->getMeshNumberOfCells() << " triangles.");
-
-    mint::write_vtk(surface_mesh, params.weldMeshName() );
   }
 
   // Delete the mesh

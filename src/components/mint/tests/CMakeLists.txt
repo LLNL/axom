@@ -13,11 +13,45 @@
 #------------------------------------------------------------------------------
 
 set( mint_tests
+
+     ## core tests
+     mint_core_array.cpp
+
+     ## mesh tests
+     mint_mesh.cpp
+     mint_mesh_blueprint.cpp
+     mint_mesh_cell_types.cpp
+     mint_mesh_connectivity_array.cpp
+     mint_mesh_coordinates.cpp
+     mint_mesh_curvilinear_mesh.cpp
      mint_mesh_extent.cpp
-     mint_shape_functions.cpp
-     mint_single_fe.cpp
-     mint_write_vtk.cpp
+     mint_mesh_field.cpp
+     mint_mesh_field_data.cpp
+     mint_mesh_field_types.cpp
+     mint_mesh_field_variable.cpp
+     mint_mesh_particle_mesh.cpp
+     mint_mesh_rectilinear_mesh.cpp
+     mint_mesh_uniform_mesh.cpp
+     mint_mesh_unstructured_mesh.cpp
+
+     ## fem tests
+     mint_fem_shape_functions.cpp
+     mint_fem_single_fe.cpp
+
+     ## util tests
+     mint_util_write_vtk.cpp
    )
+
+## lists all axom depencies used for testing
+set( mint_test_dependencies
+     axom_utils
+     slic
+     mint
+     )
+
+if ( ${MINT_USE_SIDRE} )
+  list(APPEND mint_test_dependencies sidre conduit)
+endif()
 
 foreach( test ${mint_tests} )
 
@@ -27,7 +61,7 @@ foreach( test ${mint_tests} )
         NAME       ${test_name}_test
         SOURCES    ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-        DEPENDS_ON axom_utils slic mint gtest
+        DEPENDS_ON ${mint_test_dependencies} gtest
         FOLDER     axom/mint/tests
         )
 

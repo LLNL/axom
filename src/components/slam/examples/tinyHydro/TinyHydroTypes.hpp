@@ -81,13 +81,13 @@ namespace tinyHydro {
   typedef axom::slam::policies::CompileTimeStride<PositionType, NODES_PER_ZONE>               ZNStride;
   typedef axom::slam::policies::ConstantCardinality<PositionType, ZNStride>                   ZNCard;
   typedef axom::slam::StaticRelation<ZNCard, STLIndirection, ZoneSet, NodeSet>                ZoneToNodeRelation;
-  typedef ZoneToNodeRelation::RelationSet                                                     ZNodeSet;
+  typedef ZoneToNodeRelation::RelationSubset                                                  ZNodeSet;
 
 
   typedef axom::slam::policies::CompileTimeStride<PositionType, FACES_PER_ZONE>               ZFStride;
   typedef axom::slam::policies::ConstantCardinality<PositionType, ZFStride>                   ZFCard;
   typedef axom::slam::StaticRelation<ZFCard, STLIndirection, ZoneSet, FaceSet>                ZoneToFaceRelation;
-  typedef ZoneToFaceRelation::RelationSet                                                     ZFaceSet;
+  typedef ZoneToFaceRelation::RelationSubset                                                  ZFaceSet;
 
 
   typedef axom::slam::policies::CompileTimeSize<ZoneSet::PositionType, NUM_DOMAIN_BOUNDARIES> NUM_BD_SZ;

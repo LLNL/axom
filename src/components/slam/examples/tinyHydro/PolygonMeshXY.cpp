@@ -189,8 +189,8 @@ namespace tinyHydro {
     for(int i = 0; i< zones.size(); ++i)
     {
       VectorXY p = getZonePos(i);
-      ZoneToNodeRelation::RelationSet zNodes = zoneToNodes[i];
-      ZoneToNodeRelation::RelationSet zFaces = zoneToFaces[i];
+      ZoneToNodeRelation::RelationSubset zNodes = zoneToNodes[i];
+      ZoneToNodeRelation::RelationSubset zFaces = zoneToFaces[i];
       zonesStr  << "\n\t Zone " << i
                 << fmt::format("-- pos ({},{})", p.x, p.y)
                 << " -- vol " << zoneVol(i)

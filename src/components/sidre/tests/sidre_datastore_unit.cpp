@@ -26,36 +26,11 @@ using axom::sidre::Group;
 using axom::sidre::Buffer;
 using axom::sidre::IndexType;
 using axom::sidre::InvalidIndex;
+using axom::sidre::indexIsValid;
 
 #include <map>
 
 //------------------------------------------------------------------------------
-
-// This is a group of unit tests to run through the Sidre DataStore API, and
-// test for pre and post conditions.  The tests will only use public APIs unless
-// I'm told differently.
-
-// Public APIs to exercise:
-//
-//   DataStore();
-//   ~DataStore();
-//   Buffer * createBuffer();
-//   Buffer * createBuffer( TypeID type, SidreLength num_elems );
-//   void destroyBuffer( Buffer * buff );
-//   void destroyBuffer( IndexType idx );
-//   void destroyAllBuffers();
-
-// Public APIs for getting state:
-//
-//   Group * getRoot()
-//   size_t getNumBuffers() const
-//   bool hasBuffer( IndexType idx ) const
-//   Buffer * getBuffer( IndexType idx ) const;
-//   IndexType getFirstValidBufferIndex() const;
-//   IndexType getNextValidBufferIndex(IndexType idx) const;
-//   void info(Node& n) const;
-
-// I will assume print() works, and I don't plan to use it.
 
 void verifyEmptyGroupNamed( Group* dg, std::string name )
 {
@@ -93,7 +68,7 @@ void verifyBufferIdentity(DataStore* ds,
   // Does ds contain the buffer IDs and pointers we expect?
   int iteratedCount = 0;
   IndexType idx = ds->getFirstValidBufferIndex();
-  while(InvalidIndex != idx && iteratedCount < bufcount)
+  while(indexIsValid(idx) && iteratedCount < bufcount)
   {
     EXPECT_TRUE(bs.count(idx) == 1);
     if (bs.count(idx) == 1)

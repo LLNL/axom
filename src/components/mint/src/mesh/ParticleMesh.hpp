@@ -15,233 +15,511 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#ifndef PARTICLEMESH_HXX_
-#define PARTICLEMESH_HXX_
+#ifndef MINT_PARTICLEMESH_HPP_
+#define MINT_PARTICLEMESH_HPP_
 
-#include "mint/Mesh.hpp"
-#include "mint/CellType.hpp"
-#include "mint/MeshCoordinates.hpp"
-#include "slic/slic.hpp"
+#include "axom/Macros.hpp"   // for axom macros
 
-#include <cstddef> // for AXOM_NULLPTR
+#include "mint/config.hpp"   // for mint compile-time definitions
+#include "mint/Mesh.hpp"     // for mint::Mesh base class
+
+#include "slic/slic.hpp"     // for slic Macros
 
 namespace axom
 {
+
+// Sidre Forward Declarations
+namespace sidre
+{
+class Group;
+}
+
 namespace mint
 {
 
+// Mint Forward Declarations
+class MeshCoordinates;
+
+/*!
+ * \class ParticleMesh
+ *
+ * \brief Provides the ability to store and operate on a set of particles.
+ *
+ *  The ParticleMesh class derives from the top-level Mesh base class and
+ *  provides the ability to store and operate on a collection of particles and
+ *  associated data. Each particle has a position and may have associated
+ *  scalar, vector and tensor fields.
+ *
+ *  A ParticleMesh object may be constructed using (a) native storage, (b)
+ *  external storage, or, (c) from a Sidre blueprint conforming hierarchy:
+ *
+ *  * <b> Native Storage </b> <br />
+ *
+ *    When using native storage, the ParticleMesh object owns all memory
+ *    associated with the particle data. The storage can grow dynamically as
+ *    needed by the application, i.e., adding more particles. Once the
+ *    ParticleMesh object goes out-of-scope, all memory associated with it is
+ *    returned to the system.
+ *
+ *  * <b> External Storage </b> <br />
+ *
+ *    A ParticleMesh may also be constructed from external, user-supplied
+ *    buffers. In this case, all memory associated with the particle data
+ *    is owned by the caller. Consequently, the number of particles and
+ *    associated data cannot grow dynamically.
+ *
+ *  * <b> Sidre </b> <br />
+ *
+ *    A ParticleMesh may also be constructed from a Sidre hierarchy that is
+ *    conforming to the <a href="http://llnl-conduit.readthedocs.io/en/latest/">
+ *    mesh blueprint </a> conventions. In this case, all operations are
+ *    supported, including dynamically adding new particles and growing the
+ *    associated storage. However, Sidre owns all the memory. Once the
+ *    ParticleMesh object goes out-of-scope, the data remains persistent in
+ *    Sidre.
+ *
+ * \see mint::Mesh
+ */
 class ParticleMesh : public Mesh
 {
 
 public:
 
   /*!
-   * \brief Constructs a ParticleMesh instance.
-   * \param [in] dimension the ambient dimension of the particle mesh.
+   * \brief Default constructor. Disabled.
    */
-  explicit ParticleMesh( int dimension );
+  ParticleMesh( ) = delete;
+
+/// \name Native Storage Constructors
+/// @{
 
   /*!
-   * \brief Constructs a ParticleMesh instance.
+   * \brief Constructs a ParticleMesh instance of specified dimension that
+   *  holds the specified number of particles.
+   *
    * \param [in] dimension the ambient dimension of the particle mesh.
-   * \param [in] blockId the block ID.
-   * \param [in] partId the partition ID.
+   * \param [in] numParticles the number of particles in this
+   * \param [in] capacity max particle capacity (optional)
+   *
+   * \pre 1 <= dimension <= 3
+   * \pre numParticles >= 0
+   *
+   * \post getNumParticles() == numParticles
+   * \post getNumParticles() <= capacity()
+   * \post hasSidreGroup() == false
    */
-  ParticleMesh( int dimension, int blockId, int partId );
+  ParticleMesh( int dimension,
+                IndexType numParticles,
+                IndexType capacity=USE_DEFAULT );
+
+/// @}
+
+/// \name External Storage Constructors
+/// @{
+
+  /*!
+   * \brief Creates a ParticleMesh instance that points to the supplied external
+   *  particle position buffers.
+   *
+   * \param [in] numParticles the number of particles in the supplied buffers.
+   * \param [in] x pointer to the particle x-coordinate positions
+   * \param [in] y pointer to the particle y-coordinate positions (optional)
+   * \param [in] z pointer to the particle z-coordinate positions (optional)
+   *
+   * \note This constructor wraps the supplied particle position buffers.
+   *  Consequently, the resulting ParticleMesh object does not own the memory
+   *  associated with the particle positions.
+   *
+   * \warning All calls to shrink(), append(), resize() and reserve will fail
+   *  on a ParticleMesh instance that is constructed using this constructor.
+   *
+   * \note The supplied buffers must have sufficient storage for numParticles
+   *
+   * \pre x != AXOM_NULLPTR
+   * \pre y != AXOM_NULLPTR, if dimension==2 || dimension==3
+   * \pre z != AXOM_NULLPTR, if dimension==3
+   * \pre numParticles >= 1
+   *
+   * \post 1 <= getDimension() <= 3
+   * \post getNumParticles() == numParticles
+   */
+  ParticleMesh( IndexType numParticles,
+                double* x,
+                double* y=AXOM_NULLPTR,
+                double* z=AXOM_NULLPTR    );
+
+/// @}
+
+#ifdef MINT_USE_SIDRE
+/// \name Sidre Storage Constructors
+/// @{
+
+  /*!
+   * \brief Creates a ParticleMesh instance from a given Sidre group that holds
+   *  particle mesh data that according to the conventions of the computational
+   *  mesh blueprint.
+   *
+   * \param [in] group pointer to the blueprint root group in Sidre
+   * \param [in] topo the name of the associated topology (optional)
+   *
+   * \note The supplied group is expected to contain particle mesh data
+   *  that is valid and conforming to the conventions described in the mesh
+   *  <a href="http://llnl-conduit.readthedocs.io/en/latest/"> blueprint </a>.
+   *
+   * \note If a topology name is not provided, the implementation will construct
+   *  a mesh based on the 1st topology group under the parent "topologies"
+   *  group.
+   *
+   * \note When using this constructor, all data is owned by Sidre. Once the
+   *  ParticleMesh object goes out-of-scope, the data remains persistent in
+   *  Sidre.
+   *
+   * \pre group != AXOM_NULLPTR
+   * \pre blueprint::isValidRootGroup( group )
+   * \post hasSidreGroup() == true
+   */
+  explicit ParticleMesh( sidre::Group* group, const std::string& topo="" );
+
+  /*!
+   * \brief Creates a ParticleMesh object on an empty Sidre group.
+   *
+   * \param [in] dimension the ambient dimension of the particle mesh.
+   * \param [in] numParticles the number of particles this instance holds
+   * \param [in] group pointer to a group in Sidre where
+   * \param [in] topo the name of the associated topology (optional)
+   * \param [in] coordset the name of the coordset group in Sidre (optional)
+   * \param [in] capacity max particle capacity (optional).
+   *
+   * \note If a topology and coordset name is not provided, internal defaults
+   *  will be used by the implementation.
+   *
+   * \note When using this constructor, all data is owned by Sidre. Once the
+   *  ParticleMesh object goes out-of-scope, the data remains persistent in
+   *  Sidre.
+   *
+   * \pre 1 <= dimension <= 3
+   * \pre group != AXOM_NULLPTR
+   * \pre group->getNumViews()==0
+   * \pre group->getNumGroups()==0
+   *
+   * \post hasSidreGroup()==true
+   */
+  /// @{
+
+  ParticleMesh( int dimension,
+                IndexType numParticles,
+                sidre::Group* group,
+                const std::string& topo,
+                const std::string& coordset,
+                IndexType capacity=USE_DEFAULT );
+
+  ParticleMesh( int dimension,
+                IndexType numParticles,
+                sidre::Group* group,
+                IndexType capacity=USE_DEFAULT );
+  /// @}
+
+/// @}
+
+#endif  /* MINT_USE_SIDRE */
+
+/// \name Virtual methods
+/// @{
 
   /*!
    * \brief Destructor.
    */
   virtual ~ParticleMesh();
 
-  /// \name Virtual Mesh API
+/// \name Cells
+/// @{
+
+  /*!
+   * \brief Return the number of cells in the mesh.
+   */
+  virtual IndexType getNumberOfCells() const final override
+  { return getNumberOfNodes(); }
+
+  /*!
+   * \brief Return the capacity for cells.
+   */
+  virtual IndexType getCellCapacity() const final override
+  { return getNodeCapacity(); }
+
+  virtual
+  IndexType getNumberOfCellNodes( IndexType AXOM_NOT_USED(cellID) = 0 )
+  const final override
+  { return 1; }
+
+  virtual
+  CellType getCellType( IndexType AXOM_NOT_USED(cellID)=0 ) const final override
+  { return VERTEX; }
+
+  virtual
+  IndexType getCell( IndexType cellID, IndexType* cell ) const final override;
+
+/// @}
+
+/// \name Nodes
+/// @{
+
+  /*!
+   * \brief Return the number of nodes in the mesh.
+   */
+  virtual IndexType getNumberOfNodes() const final override
+  { return m_positions->numNodes(); }
+
+  /*!
+   * \brief Return the capacity for nodes.
+   */
+  virtual IndexType getNodeCapacity() const final override
+  { return m_positions->capacity(); }
+
+  /*!
+   * \brief Copy the coordinates of the given node into the provided buffer.
+   *
+   * \param [in] nodeID the ID of the node in question.
+   * \param [in] coords the buffer to copy the coordinates into, of length at
+   *  least getDimension().
+   *
+   * \pre 0 <= nodeID < getNumberOfNodes()
+   * \pre coords != AXOM_NULLPTR
+   */
+  virtual void getNode( IndexType nodeID, double* node ) const final override
+  { m_positions->getCoordinates( nodeID, node ); }
+
+  /*!
+   * \brief Returns pointer to the particle positions in the specified dimension
+   *
+   * \param[in] dim the specified dimension
+   * \return coord pointer
+   *
+   * \pre 1 <= dim <= 3
+   * \post coord != AXOM_NULLPTR
+   */
   /// @{
 
-  /*!
-   * \brief Returns the total number of nodes in the mesh.
-   * \return numNodes the total number of nodes.
-   * \post numNodes >= 0
-   * \warning This is a virtual method -- do not call inside a loop.
-   */
-  virtual int getMeshNumberOfNodes() const
-  { return this->getNumberOfParticles(); };
+  virtual double* getCoordinateArray( int dim ) final override
+  { return m_positions->getCoordinateArray( dim ); }
 
-  /*!
-   * \brief Returns the total number of cells in the mesh.
-   * \return numCells the total number of cells.
-   * \post numCells >= 0
-   * \warning This is a virtual method -- do not call inside a loop.
-   */
-  virtual int getMeshNumberOfCells() const
-  { return this->getNumberOfParticles(); };
-
-  /*!
-   * \brief Returns the number of nodes for the given cell.
-   * \param cellIdx the index of the cell in query.
-   * \return numCellNodes the number of nodes in the given cell.
-   * \warning this is a virtual method, downcast to the derived class and use
-   *  the non-virtual API instead to avoid the overhead of a virtual call.
-   */
-  virtual int getMeshNumberOfCellNodes( int /*cellIdx*/ ) const { return 1; };
-
-  /*!
-   * \brief Returns the cell connectivity of the given cell.
-   * \param [in] cellIdx the index of the cell in query.
-   * \param [out] cell user-supplied buffer to store cell connectivity info.
-   * \note cell must have sufficient size to hold the connectivity information.
-   * \pre cellIdx >= 0 && cellIdx < this->getMeshNumberOfCells()
-   * \pre cell != AXOM_NULLPTR.
-   * \warning this is a virtual method, downcast to the derived class and use
-   *  the non-virtual API instead to avoid the overhead of a virtual call.
-   */
-  virtual void getMeshCell( int cellIdx, int* cell ) const {
-    cell[0]=cellIdx;
-  };
-
-  /*!
-   * \brief Returns the cell type of the cell associated with the given Id.
-   * \param [in] cellIdx the index of the cell in query.
-   * \return cellType the cell type of the cell at the given index.
-   */
-  virtual int getMeshCellType( int /*cellIdx*/ ) const { return MINT_VERTEX; };
-
-  /*!
-   * \brief Returns the coordinates of the given node.
-   * \param [in] nodeIdx the index of the node in query.
-   * \param [in] coordinates user-supplied buffer to store the node coordinates.
-   * \pre nodeIdx >= && nodeIdx < this->getMeshNumberOfNodes()
-   * \warning this is a virtual method, downcast to the derived class and use
-   *  the non-virtual API instead to avoid the overhead of a virtual call.
-   */
-  virtual void getMeshNode( int nodeIdx, double* coordinates ) const
-  { this->getParticleCoordinates( nodeIdx, coordinates ); };
-
-  /*!
-   * \brief Returns the coordinate of a mesh node.
-   * \param [in] nodeIdx the index of the node in query.
-   * \param [in] dim the dimension of the coordinate to return, e.g., x, y or z
-   * \return c the coordinate value of the node at
-   * \pre dim >= 0 && dim < m_ndims
-   */
-  virtual double getMeshNodeCoordinate( int nodeIdx, int dim ) const
-  { return this->getParticlesCoordinatesArray(dim)[ nodeIdx ]; };
+  virtual const double* getCoordinateArray( int dim ) const final override
+  { return m_positions->getCoordinateArray( dim ); }
 
   /// @}
 
-  /*!
-   * \brief Returns the total number of particles in this mesh instance.
-   * \return N the total number of particles.
-   */
-  int getNumberOfParticles() const
-  { return m_particle_coordinates->getNumberOfPoints(); }
+/// @}
+
+/// \name Faces
+/// @{
 
   /*!
-   * \brief Returns the particle coordinates array for the given dimension.
-   * \param [in] idim the requested dimension.
-   * \return coords pointer to the coorindates array.
-   * \pre idim >= 0 && idim < this->getDimension()
+   * \brief Return the number of faces in the mesh.
    */
-  double* getParticlesCoordinatesArray( int idim ) const;
+  virtual IndexType getNumberOfFaces() const final override
+  { return 0; }
 
   /*!
-   * \brief Inserts a particle in to the particle mesh.
-   * \param [in] x the x--coordinate of the particle.
-   * \pre this->getDimension() == 1
+   * \brief Return the capacity for faces.
    */
-  void insertParticle( double x );
+  virtual IndexType getFaceCapacity() const final override
+  { return 0; }
+
+/// @}
+
+/// \name Edges
+/// @{
 
   /*!
-   * \brief Inserts a particle in to the particle mesh.
-   * \param [in] x the x--coordinate of the particle.
-   * \param [in] y the y--coordinate of the particle.
-   * \pre this->getDimension() == 2
+   * \brief Return the number of edges in the mesh.
    */
-  void insertParticle( double x, double y );
+  virtual IndexType getNumberOfEdges() const final override
+  { return 0; }
 
   /*!
-   * \brief Inserts a particle in this particle mesh instance.
-   * \param [in] x the x--coordinate of the particle.
-   * \param [in] y the y--coordinate of the particle.
-   * \param [in] z the z--coordinate of the particle.
-   * \pre this->getDimension() == 3.
+   * \brief Return the capacity for edges.
    */
-  void insertParticle( double x, double y, double z );
+  virtual IndexType getEdgeCapacity() const final override
+  { return 0; }
+
+/// @}
 
   /*!
-   * \brief Gets the particle particle coordinates of a given particle.
-   * \param [in] partIdx the index of the particle in question.
-   * \param [in] part_coords user-supplied buffer for the particle coordinates.
-   * \pre partIdx >= 0 && partIdx < this->getNumberOfParticles()
+   * \brief Return true iff particle positions are stored in external arrays.
+   * \return status true iff the particle positions point to external buffers.
    */
-  void getParticleCoordinates( int partIdx, double part_coords[3] ) const;
+  virtual bool isExternal() const final override
+  { return m_positions->isExternal(); }
+
+/// @}
+
+/// \name Attribute get/set Methods
+/// @{
+
+/// \name Nodes
+/// @{
+
+  /*!
+   * \brief Return the node resize ratio.
+   */
+  double getNodeResizeRatio() const
+  { return m_positions->getResizeRatio(); }
+
+  /*!
+   * \brief Increase the number of particles this ParticleMesh instance can hold
+   * \param [in] newSize the number of particles this instance will now hold
+   * \post getNumParticles() == newSize
+   */
+  void resize( IndexType newSize );
+
+  /*!
+   * \brief Increase the max particle capacity of this ParticleMesh instance
+   * \param [in] newCapacity
+   */
+  void reserve( IndexType newCapacity );
+
+  /*!
+   * \brief Shrinks the max particle capacity to the actual number of particles.
+   *
+   * \post getNumberOfNodes() == capacity()
+   * \post f->getCapacity() == getNumberOfNodes() for all particle fields.
+   */
+  void shrink();
+
+/// @}
+
+  /*!
+   * \brief Return true iff the mesh holds no particles.
+   */
+  bool empty() const
+  { return m_positions->empty(); }
+
+  /*!
+   * \brief Return true iff the particle positions are stored in sidre.
+   */
+  bool isInSidre() const
+  { return m_positions->isInSidre(); }
+
+/// \name Data Access Methods
+/// @{
+
+  /*!
+   * \brief Appends a new particle to the ParticleMesh
+   *
+   * \param [in] x the x-coordinate of the particle position
+   * \param [in] y the y-coordinate of the particle position (valid in 2-D)
+   * \param [in] z the z-coordinate of the particle position (valid in 3-D)
+   *
+   * \post increments the number of particles by one.
+   */
+  /// @{
+
+  void append( double x );
+  void append( double x, double y );
+  void append( double x, double y, double z );
+
+  /// @}
+
+/// @}
 
 private:
 
   /*!
-   * \brief Default constructor. Does nothing.
-   * \note Made private to prevent users from calling it.
+   * \brief Helper method to initialize a ParticleMesh instance.
+   * \note Called from the constructor.
    */
-  ParticleMesh();
+  void initialize();
 
-  MeshCoordinates* m_particle_coordinates;
+  /*!
+   * \brief Checks if the internal data array are consistent.
+   * \return status true if the consistency checks pass, else, false.
+   */
+  bool checkConsistency();
+
+  MeshCoordinates* m_positions;
 
   DISABLE_COPY_AND_ASSIGNMENT(ParticleMesh);
   DISABLE_MOVE_AND_ASSIGNMENT(ParticleMesh);
 };
 
+//------------------------------------------------------------------------------
+// IN-LINE METHOD IMPLEMENTATION
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+inline IndexType ParticleMesh::getCell( IndexType cellID,
+                                        IndexType* cell ) const
+{
+  SLIC_ASSERT( cell != AXOM_NULLPTR );
+  SLIC_ASSERT( 0 <= cellID && cellID <= getNumberOfCells() );
+  cell[0] = cellID;
+  return 1;
+}
+
+//------------------------------------------------------------------------------
+inline void ParticleMesh::append( double x )
+{
+  SLIC_ASSERT( m_positions != AXOM_NULLPTR );
+  SLIC_ERROR_IF( m_ndims != 1,
+                 "ParticleMesh::append(x) is only valid in 1-D" );
+
+  m_positions->append( x );
+  m_mesh_fields[ NODE_CENTERED ]->resize( m_positions->numNodes( ) );
+
+  SLIC_ASSERT( checkConsistency() );
+}
+
+//------------------------------------------------------------------------------
+inline void ParticleMesh::append( double x, double y )
+{
+  SLIC_ASSERT( m_positions != AXOM_NULLPTR );
+  SLIC_ERROR_IF( m_ndims != 2,
+                 "ParticleMesh::append(x,y) is only valid in 2-D" );
+
+  m_positions->append( x, y );
+  m_mesh_fields[ NODE_CENTERED ]->resize( m_positions->numNodes( ) );
+
+  SLIC_ASSERT( checkConsistency() );
+}
+
+//------------------------------------------------------------------------------
+inline void ParticleMesh::append( double x, double y, double z )
+{
+  SLIC_ASSERT( m_positions != AXOM_NULLPTR );
+  SLIC_ERROR_IF( m_ndims != 3,
+                 "ParticleMesh::append(x,y,z) is only valid in 3-D" );
+
+  m_positions->append( x, y, z );
+  m_mesh_fields[ NODE_CENTERED ]->resize( m_positions->numNodes( ) );
+
+  SLIC_ASSERT( checkConsistency() );
+}
+
+//------------------------------------------------------------------------------
+inline void ParticleMesh::resize( IndexType newSize )
+{
+  SLIC_ASSERT( m_positions != AXOM_NULLPTR );
+  m_positions->resize( newSize );
+  m_mesh_fields[ NODE_CENTERED ]->resize( newSize );
+  SLIC_ASSERT( checkConsistency() );
+}
+
+//------------------------------------------------------------------------------
+inline void ParticleMesh::reserve( IndexType newCapacity )
+{
+  SLIC_ASSERT( m_positions != AXOM_NULLPTR );
+  m_positions->reserve( newCapacity );
+  m_mesh_fields[ NODE_CENTERED ]->reserve( newCapacity );
+}
+
+//------------------------------------------------------------------------------
+inline void ParticleMesh::shrink( )
+{
+  SLIC_ASSERT( m_positions != AXOM_NULLPTR );
+  m_positions->shrink();
+  m_mesh_fields[ NODE_CENTERED ]->shrink( );
+}
+
 } /* namespace mint */
 } /* namespace axom */
 
-//------------------------------------------------------------------------------
-//      In-lined Method Implementations
-//------------------------------------------------------------------------------
-namespace axom
-{
-namespace mint
-{
-
-inline double* ParticleMesh::getParticlesCoordinatesArray( int idim ) const
-{
-  SLIC_ASSERT( idim >= 0 && idim < this->getDimension() );
-  return m_particle_coordinates->getCoordinateArray( idim );
-}
-
-//------------------------------------------------------------------------------
-inline void ParticleMesh::insertParticle( double x )
-{
-  SLIC_ASSERT( this->getDimension() == 1 );
-  m_particle_coordinates->insertPoint( x );
-}
-
-//------------------------------------------------------------------------------
-inline void ParticleMesh::insertParticle( double x, double y )
-{
-  SLIC_ASSERT( this->getDimension() == 2 );
-  m_particle_coordinates->insertPoint( x, y );
-}
-
-//------------------------------------------------------------------------------
-inline void ParticleMesh::insertParticle( double x, double y, double z )
-{
-  SLIC_ASSERT( this->getDimension() == 3);
-  m_particle_coordinates->insertPoint( x, y, z );
-}
-
-//------------------------------------------------------------------------------
-inline void ParticleMesh::getParticleCoordinates( int partIdx,
-                                                  double part_coords[3] ) const
-{
-  SLIC_ASSERT( partIdx >= 0 && partIdx < this->getNumberOfParticles() );
-
-  for ( int i=0 ; i < this->getDimension() ; ++i )
-  {
-    double* px = this->getParticlesCoordinatesArray( i );
-    part_coords[ i ] = px[ partIdx ];
-  }
-
-}
-
-} /* namespace mint */
-} /* namespace axom */
-
-#endif /* PARTICLEMESH_HXX_ */
+#endif /* MINT_PARTICLEMESH_HPP_ */

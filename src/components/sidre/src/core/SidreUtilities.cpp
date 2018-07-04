@@ -35,6 +35,7 @@
 // Other axom headers
 #include "slic/slic.hpp"
 
+/// @cond INCLUDE_DETAIL
 namespace axom
 {
 namespace sidre
@@ -107,3 +108,4 @@ std::string::size_type find_exclusive( const std::string& s, char c)
 } //end namespace sidre
 
 } // end namespace axom
+/// @endcond

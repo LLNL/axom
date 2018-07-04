@@ -15,36 +15,39 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include "axom_utils/Utilities.hpp"     // for utilities::max
-#include "gtest/gtest.h"                // for TEST and EXPECT_* macros
-#include "mint/CellType.hpp"            // for cell::vtk_types
-#include "mint/CurvilinearMesh.hpp"     // for CurvilinearMesh
-#include "mint/Field.hpp"               // for Field
-#include "mint/FieldData.hpp"           // for FieldData
-#include "mint/FieldTypes.hpp"          // for *_FIELD_TYPE
-#include "mint/FieldVariable.hpp"       // for FieldVariable
-#include "mint/Mesh.hpp"                // for Mesh
-#include "mint/ParticleMesh.hpp"        // for ParticleMesh
-#include "mint/RectilinearMesh.hpp"     // for RectilinearMesh
-#include "mint/UniformMesh.hpp"         // for UniformMesh
-#include "mint/UnstructuredMesh.hpp"    // for UnstructuredMesh
-#include "mint/vtk_utils.hpp"           // for write_vtk
-#include "slic/slic.hpp"                // for slic macros
-#include "slic/UnitTestLogger.hpp"      // for UnitTestLogger
+// Axom utils
+#include "axom_utils/Utilities.hpp"     /* for utilities::max */
 
-#include <cmath>                        // for std::exp
-#include <cstdio>                       // for std::remove
-#include <fstream>                      // for std::ifstream
-#include <iomanip>                      // for std::setfill, std::setw
-#include <string>                       // for std::string
-#include <sstream>                      // for std::stringstream
-#include <set>                          // for std::set
+// Mint includes
+#include "mint/config.hpp"              /* for IndexType, int64 */
+#include "mint/CellTypes.hpp"           /* for cell::vtk_types */
+#include "mint/CurvilinearMesh.hpp"     /* for CurvilinearMesh */
+#include "mint/Field.hpp"               /* for Field */
+#include "mint/FieldData.hpp"           /* for FieldData */
+#include "mint/FieldTypes.hpp"          /* for *_FIELD_TYPE */
+#include "mint/FieldVariable.hpp"       /* for FieldVariable */
+#include "mint/Mesh.hpp"                /* for Mesh */
+#include "mint/ParticleMesh.hpp"        /* for ParticleMesh */
+#include "mint/RectilinearMesh.hpp"     /* for RectilinearMesh */
+#include "mint/UniformMesh.hpp"         /* for UniformMesh */
+#include "mint/UnstructuredMesh.hpp"    /* for UnstructuredMesh */
+#include "mint/vtk_utils.hpp"           /* for write_vtk */
 
-#if __cplusplus >= 201103L
-#include <random>                       // for random number generator
-#else
-#include <cstdlib>                      // for rand
-#endif
+// Slic includes
+#include "slic/slic.hpp"                /* for slic macros */
+#include "slic/UnitTestLogger.hpp"      /* for UnitTestLogger */
+
+// C/C++ includes
+#include <cmath>                        /* for std::exp */
+#include <cstdio>                       /* for std::remove */
+#include <fstream>                      /* for std::ifstream */
+#include <iomanip>                      /* for std::setfill, std::setw */
+#include <string>                       /* for std::string */
+#include <sstream>                      /* for std::stringstream */
+#include <set>                          /* for std::set */
+
+// gtest includes
+#include "gtest/gtest.h"                /* for TEST and EXPECT_* macros */
 
 #ifndef DELETE_VTK_FILES
   #define DELETE_VTK_FILES 1
@@ -62,54 +65,31 @@ namespace internal
 {
 
 /*!
- * \brief Return a random double between min and max.
- * \param [in] min the lower bound.
- * \param [in] max the upper bound.
- */
-double randomD(double min, double max)
-{
-#if __cplusplus >= 201103L
-  static std::random_device rd;
-  static std::mt19937_64 mt( rd() );
-  static std::uniform_real_distribution< double > dist(0.0, 1.0);
-  double temp = dist(mt);
-#else
-  double temp = ( double( rand() ) / RAND_MAX );
-#endif
-  return temp * (max - min) + min;
-}
-
-/*!
  * \brief Creates artificial 1 dimensional mesh data.
  * \param [in] mesh the mesh to populate.
  * \pre mesh != AXOM_NULLPTR
  */
 void create_scalar_data( Mesh* mesh )
 {
-  const int mesh_dim = mesh->getDimension();
-  const int mesh_num_nodes = mesh->getMeshNumberOfNodes();
-  const int mesh_num_cells = mesh->getMeshNumberOfCells();
+  const IndexType mesh_num_nodes = mesh->getNumberOfNodes();
+  const IndexType mesh_num_cells = mesh->getNumberOfCells();
 
-  Field* node_field_d = new FieldVariable< double >( "node_scalars_double",
-                                                     mesh_num_nodes, 1 );
-  Field* node_field_i = new FieldVariable< int >( "node_scalars_int",
-                                                  mesh_num_nodes, 1 );
-  double* double_ptr = node_field_d->getDoublePtr();
-  int* int_ptr = node_field_i->getIntPtr();
+  double* double_ptr = AXOM_NULLPTR;
+  int* int_ptr    = AXOM_NULLPTR;
+
+  double_ptr = mesh->createField< double >( "node_scalars_double",
+                                            mint::NODE_CENTERED );
+  int_ptr = mesh->createField< int >( "node_scalars_int",
+                                      mint::NODE_CENTERED );
+
   for ( int idx = 0 ; idx < mesh_num_nodes ; ++idx )
   {
-    double x = mesh->getMeshNodeCoordinate( idx, 0 );
-    double y = 0;
-    double z = 0;
+    double coords[] = { 0, 0, 0 };
+    mesh->getNode( idx, coords );
 
-    if ( mesh_dim > 1)
-    {
-      y = mesh->getMeshNodeCoordinate( idx, 1 );
-    }
-    if ( mesh_dim > 2)
-    {
-      z = mesh->getMeshNodeCoordinate( idx, 2 );
-    }
+    const double x = coords[0];
+    const double y = coords[1];
+    const double z = coords[2];
 
     double r2 = (x * x) + (y * y) + (z * z);
     r2 = std::exp(-r2 / 100.0);
@@ -117,22 +97,25 @@ void create_scalar_data( Mesh* mesh )
     double_ptr[ idx ] = temp;
     int_ptr[ idx ] = static_cast<int>(temp);
   }
-  mesh->getNodeFieldData()->addField( node_field_d );
-  mesh->getNodeFieldData()->addField( node_field_i );
 
-  Field* cell_field_d = new FieldVariable< double >( "cell_scalars_double",
-                                                     mesh_num_cells, 1 );
-  Field* cell_field_i = new FieldVariable< int >( "cell_scalars_int",
-                                                  mesh_num_cells, 1 );
-  double_ptr = cell_field_d->getDoublePtr();
-  int_ptr = cell_field_i->getIntPtr();
+  /* Particle meshes can only have node centered fields. */
+  if ( mesh->getMeshType() == PARTICLE_MESH )
+  {
+    return;
+  }
+
+  double_ptr = mesh->createField< double >( "cell_scalars_double",
+                                            mint::CELL_CENTERED  );
+
+  int_ptr    = mesh->createField< int >( "cell_scalars_int",
+                                         mint::CELL_CENTERED );
+
   for ( int idx = 0 ; idx < mesh_num_cells ; ++idx )
   {
     double_ptr[ idx ] = idx;
     int_ptr[ idx ] = idx;
   }
-  mesh->getCellFieldData()->addField( cell_field_d );
-  mesh->getCellFieldData()->addField( cell_field_i );
+
 }
 
 /*!
@@ -142,36 +125,31 @@ void create_scalar_data( Mesh* mesh )
  */
 void create_vector_data( Mesh* mesh )
 {
-  const int mesh_dim = mesh->getDimension();
-  const int mesh_num_nodes = mesh->getMeshNumberOfNodes();
-  const int mesh_num_cells = mesh->getMeshNumberOfCells();
+  const IndexType num_nodes = mesh->getNumberOfNodes();
+  const IndexType num_cells = mesh->getNumberOfCells();
 
-  Field* node_field_3d = new FieldVariable< double >( "node_vectors_3double",
-                                                      mesh_num_nodes, 3 );
-  Field* node_field_3i = new FieldVariable< int >( "node_vectors_3int",
-                                                   mesh_num_nodes, 3 );
-  Field* node_field_2d = new FieldVariable< double >( "node_vectors_2double",
-                                                      mesh_num_nodes, 2 );
-  Field* node_field_2i = new FieldVariable< int >( "node_vectors_2int",
-                                                   mesh_num_nodes, 2 );
-  double* double_ptr3 = node_field_3d->getDoublePtr();
-  int* int_ptr3 = node_field_3i->getIntPtr();
-  double* double_ptr2 = node_field_2d->getDoublePtr();
-  int* int_ptr2 = node_field_2i->getIntPtr();
-  for ( int idx = 0 ; idx < mesh_num_nodes ; ++idx )
+  double* double_ptr3 = AXOM_NULLPTR;
+  double* double_ptr2 = AXOM_NULLPTR;
+  int* int_ptr3    = AXOM_NULLPTR;
+  int* int_ptr2    = AXOM_NULLPTR;
+
+  double_ptr3 = mesh->createField< double >( "node_vectors_3double",
+                                             mint::NODE_CENTERED, 3 );
+  int_ptr3    = mesh->createField< int >( "node_vectors_3int",
+                                          mint::NODE_CENTERED, 3 );
+  double_ptr2 = mesh->createField< double >( "node_vectors_2double",
+                                             mint::NODE_CENTERED, 2);
+  int_ptr2    =  mesh->createField< int >( "node_vectors_2int",
+                                           mint::NODE_CENTERED, 2 );
+
+  for ( int idx = 0 ; idx < num_nodes ; ++idx )
   {
-    double x = mesh->getMeshNodeCoordinate( idx, 0 );
-    double y = 0;
-    double z = 0;
+    double coords[] = { 0, 0, 0 };
+    mesh->getNode( idx, coords );
 
-    if ( mesh_dim > 1)
-    {
-      y = mesh->getMeshNodeCoordinate( idx, 1 );
-    }
-    if ( mesh_dim > 2)
-    {
-      z = mesh->getMeshNodeCoordinate( idx, 2 );
-    }
+    const double x = coords[0];
+    const double y = coords[1];
+    const double z = coords[2];
 
     double r2 = (x * x) + (y * y) + (z * z);
     r2 = std::exp(-r2 / 100.0);
@@ -193,24 +171,23 @@ void create_vector_data( Mesh* mesh )
     int_ptr2[ 2 * idx ] = static_cast<int>(v1);
     int_ptr2[ 2 * idx + 1 ] = static_cast<int>(v2);
   }
-  mesh->getNodeFieldData()->addField( node_field_3d );
-  mesh->getNodeFieldData()->addField( node_field_3i );
-  mesh->getNodeFieldData()->addField( node_field_2d );
-  mesh->getNodeFieldData()->addField( node_field_2i );
 
-  Field* cell_field_3d = new FieldVariable< double >( "cell_vectors_3double",
-                                                      mesh_num_cells, 3 );
-  Field* cell_field_3i = new FieldVariable< int >( "cell_vectors_3int",
-                                                   mesh_num_cells, 3 );
-  Field* cell_field_2d = new FieldVariable< double >( "cell_vectors_2double",
-                                                      mesh_num_cells, 2 );
-  Field* cell_field_2i = new FieldVariable< int >( "cell_vectors_2int",
-                                                   mesh_num_cells, 2 );
-  double_ptr3 = cell_field_3d->getDoublePtr();
-  int_ptr3 = cell_field_3i->getIntPtr();
-  double_ptr2 = cell_field_2d->getDoublePtr();
-  int_ptr2 = cell_field_2i->getIntPtr();
-  for ( int idx = 0 ; idx < mesh_num_cells ; ++idx )
+  /* Particle meshes can only have node centered fields. */
+  if ( mesh->getMeshType() == PARTICLE_MESH )
+  {
+    return;
+  }
+
+  double_ptr3 = mesh->createField< double >( "cell_vectors_3double",
+                                             mint::CELL_CENTERED,3 );
+  int_ptr3    = mesh->createField< int >( "cell_vectors_3int",
+                                          mint::CELL_CENTERED, 3 );
+  double_ptr2 = mesh->createField< double >( "cell_vectors_2double",
+                                             mint::CELL_CENTERED,2);
+  int_ptr2    = mesh->createField< int >( "cell_vectors_2int",
+                                          mint::CELL_CENTERED, 2 );
+
+  for ( int idx = 0 ; idx < num_cells ; ++idx )
   {
     double_ptr3[ 3 * idx ] = idx;
     double_ptr3[ 3 * idx + 1 ] = idx + 1;
@@ -226,10 +203,7 @@ void create_vector_data( Mesh* mesh )
     int_ptr2[ 2 * idx ] = idx;
     int_ptr2[ 2 * idx + 1 ] = idx + 1;
   }
-  mesh->getCellFieldData()->addField( cell_field_3d );
-  mesh->getCellFieldData()->addField( cell_field_3i );
-  mesh->getCellFieldData()->addField( cell_field_2d );
-  mesh->getCellFieldData()->addField( cell_field_2i );
+
 }
 
 /*!
@@ -239,30 +213,25 @@ void create_vector_data( Mesh* mesh )
  */
 void create_multidim_data( Mesh* mesh )
 {
-  const int mesh_dim = mesh->getDimension();
-  const int mesh_num_nodes = mesh->getMeshNumberOfNodes();
-  const int mesh_num_cells = mesh->getMeshNumberOfCells();
+  const IndexType num_nodes = mesh->getNumberOfNodes();
+  const IndexType num_cells = mesh->getNumberOfCells();
 
-  Field* node_field_d = new FieldVariable< double >( "node_multidim_double",
-                                                     mesh_num_nodes, 4);
-  Field* node_field_i = new FieldVariable< int >( "node_multidim_int",
-                                                  mesh_num_nodes, 4);
-  double* double_ptr = node_field_d->getDoublePtr();
-  int* int_ptr = node_field_i->getIntPtr();
-  for ( int idx = 0 ; idx < mesh_num_nodes ; ++idx )
+  double* double_ptr = AXOM_NULLPTR;
+  int* int_ptr    = AXOM_NULLPTR;
+
+  double_ptr = mesh->createField< double >( "node_multidim_double",
+                                            mint::NODE_CENTERED, 4 );
+  int_ptr    = mesh->createField< int >( "node_multidim_int",
+                                         mint::NODE_CENTERED, 4 );
+
+  for ( int idx = 0 ; idx < num_nodes ; ++idx )
   {
-    double x = mesh->getMeshNodeCoordinate( idx, 0 );
-    double y = 0;
-    double z = 0;
+    double coords[] = { 0, 0, 0 };
+    mesh->getNode( idx, coords );
 
-    if ( mesh_dim > 1)
-    {
-      y = mesh->getMeshNodeCoordinate( idx, 1 );
-    }
-    if ( mesh_dim > 2)
-    {
-      z = mesh->getMeshNodeCoordinate( idx, 2 );
-    }
+    const double x = coords[0];
+    const double y = coords[1];
+    const double z = coords[2];
 
     double r2 = (x * x) + (y * y) + (z * z);
     r2 = std::exp(-r2 / 100.0);
@@ -281,16 +250,19 @@ void create_multidim_data( Mesh* mesh )
     int_ptr[4 * idx + 2] = static_cast<int>(v3);
     int_ptr[4 * idx + 3] = static_cast<int>(v4);
   }
-  mesh->getNodeFieldData()->addField( node_field_d );
-  mesh->getNodeFieldData()->addField( node_field_i );
 
-  Field* cell_field_d = new FieldVariable< double >( "cell_multidim_double",
-                                                     mesh_num_cells, 4 );
-  Field* cell_field_i = new FieldVariable< int >( "cell_multidim_int",
-                                                  mesh_num_cells, 4 );
-  double_ptr = cell_field_d->getDoublePtr();
-  int_ptr = cell_field_i->getIntPtr();
-  for ( int idx = 0 ; idx < mesh_num_cells ; ++idx )
+  /* Particle meshes can only have node centered fields. */
+  if ( mesh->getMeshType() == PARTICLE_MESH )
+  {
+    return;
+  }
+
+  double_ptr = mesh->createField< double >( "cell_multidim_double",
+                                            mint::CELL_CENTERED, 4 );
+  int_ptr    = mesh->createField< int >( "cell_multidim_int",
+                                         mint::CELL_CENTERED, 4 );
+
+  for ( int idx = 0 ; idx < num_cells ; ++idx )
   {
     double_ptr[ 4 * idx  + 0] = idx;
     double_ptr[ 4 * idx  + 1] = idx + 1;
@@ -302,8 +274,7 @@ void create_multidim_data( Mesh* mesh )
     int_ptr[ 4 * idx  + 2] = idx + 2;
     int_ptr[ 4 * idx  + 3] = idx + 3;
   }
-  mesh->getCellFieldData()->addField( cell_field_d );
-  mesh->getCellFieldData()->addField( cell_field_i );
+
 }
 
 /*!
@@ -312,7 +283,7 @@ void create_multidim_data( Mesh* mesh )
  * \param [in] path the path of the file to be written.
  * \pre mesh != AXOM_NULLPTR
  */
-void populate_and_write( Mesh* mesh, std::string const path )
+void populate_and_write( Mesh* mesh, const std::string& path )
 {
   create_scalar_data( mesh );
   create_vector_data( mesh );
@@ -342,11 +313,11 @@ void check_header( std::ifstream& file )
  * \param [in] offset the offset into the field to start at.
  * \pre field != AXOM_NULLPTR
  */
-void check_scalar( Field* const field, std::ifstream& file,
-                   axom::common::uint32 offset = 0 )
+void check_scalar( const Field* field, std::ifstream& file,
+                   unsigned int offset = 0 )
 {
-  const int num_components = field->getNumComponents();
-  const int num_values = field->getNumTuples();
+  const int num_components   = field->getNumComponents( );
+  const IndexType num_values = field->getNumTuples( );
 
   std::string buffer;
   file >> buffer;
@@ -356,18 +327,18 @@ void check_scalar( Field* const field, std::ifstream& file,
 
   if ( field->getType() == DOUBLE_FIELD_TYPE )
   {
-    double* field_data = field->getDoublePtr();
-    for ( int idx = 0 ; idx < num_values ; ++idx )
+    const double* field_data = Field::getDataPtr< double >( field );
+    for ( IndexType idx = 0 ; idx < num_values ; ++idx )
     {
       double temp;
       file >> temp;
       EXPECT_DOUBLE_EQ( temp, field_data[ num_components * idx + offset ] );
     }
   }
-  else if ( field->getType() == INTEGER_FIELD_TYPE )
+  else if ( field->getType() == INT32_FIELD_TYPE )
   {
-    int* field_data = field->getIntPtr();
-    for ( int idx = 0 ; idx < num_values ; ++idx )
+    const int* field_data = Field::getDataPtr< int >( field );
+    for ( IndexType idx = 0 ; idx < num_values ; ++idx )
     {
       int temp;
       file >> temp;
@@ -383,16 +354,16 @@ void check_scalar( Field* const field, std::ifstream& file,
  * \pre mesh != AXOM_NULLPTR
  * \pre field->getNumComponents() == 2 || field->getNumComponents() == 3
  */
-void check_vector_data( Field* const field, std::ifstream& file )
+void check_vector_data( const Field* field, std::ifstream& file )
 {
-  const int num_components = field->getNumComponents();
-  const int num_values = field->getNumTuples();
+  const int num_components   = field->getNumComponents();
+  const IndexType num_values = field->getNumTuples();
 
   if ( field->getType() == DOUBLE_FIELD_TYPE )
   {
-    double* field_data = field->getDoublePtr();
+    const double* field_data = Field::getDataPtr< double >( field );
     double temp;
-    for ( int idx = 0 ; idx < num_values ; ++idx )
+    for ( IndexType idx = 0 ; idx < num_values ; ++idx )
     {
       for ( int dim = 0 ; dim < num_components ; ++dim )
       {
@@ -407,11 +378,11 @@ void check_vector_data( Field* const field, std::ifstream& file )
       }
     }
   }
-  else if ( field->getType() == INTEGER_FIELD_TYPE )
+  else if ( field->getType() == INT32_FIELD_TYPE )
   {
-    int* field_data = field->getIntPtr();
+    const int* field_data = Field::getDataPtr< int >( field );
     int temp;
-    for ( int idx = 0 ; idx < num_values ; ++idx )
+    for ( IndexType idx = 0 ; idx < num_values ; ++idx )
     {
       for ( int dim = 0 ; dim < num_components ; ++dim )
       {
@@ -435,7 +406,7 @@ void check_vector_data( Field* const field, std::ifstream& file )
  * \pre mesh != AXOM_NULLPTR
  * \pre field->getNumComponents() > 3
  */
-void check_multidim_data( Field* const field, std::ifstream& file )
+void check_multidim_data( const Field* field, std::ifstream& file )
 {
   const int num_components = field->getNumComponents();
   const int field_type = field->getType();
@@ -458,7 +429,7 @@ void check_multidim_data( Field* const field, std::ifstream& file )
     }
     else if ( d_type == "int" )
     {
-      EXPECT_EQ( field_type, INTEGER_FIELD_TYPE );
+      EXPECT_EQ( field_type, INT32_FIELD_TYPE );
     }
     else
     {
@@ -475,11 +446,11 @@ void check_multidim_data( Field* const field, std::ifstream& file )
  * \param [in] file the file to parse.
  * \pre field_data != AXOM_NULLPTR
  */
-void check_fieldData( FieldData* const field_data, std::ifstream& file )
+void check_fieldData( const FieldData* field_data, std::ifstream& file )
 {
   std::set< std::string > fields_read;
   std::string type, name, d_type;
-  int cur_pos;
+  size_t cur_pos;
   while ( file.good() )
   {
     file >> type >> name >> d_type;
@@ -487,7 +458,7 @@ void check_fieldData( FieldData* const field_data, std::ifstream& file )
     if ( field_data->hasField( name ) )
     {
       fields_read.insert( name );
-      Field* field = field_data->getField( name );
+      const Field* field = field_data->getField( name );
 
       if ( d_type == "double" )
       {
@@ -495,11 +466,11 @@ void check_fieldData( FieldData* const field_data, std::ifstream& file )
       }
       else if ( d_type == "int" )
       {
-        EXPECT_EQ( field->getType(), INTEGER_FIELD_TYPE );
+        EXPECT_EQ( field->getType(), INT32_FIELD_TYPE );
       }
       else
       {
-        EXPECT_TRUE(false) << "Unknown field data type: " << d_type;
+        EXPECT_TRUE( false ) << "Unknown field data type: " << d_type;
       }
 
       if ( type == "SCALARS" )
@@ -517,13 +488,12 @@ void check_fieldData( FieldData* const field_data, std::ifstream& file )
     else
     {
       size_t underscore_pos = name.size() - 4;
-      ASSERT_NE( underscore_pos, std::string::npos) << name;
       std::string true_name = name.substr( 0, underscore_pos );
       EXPECT_EQ( name.substr(underscore_pos), "_000" );
       ASSERT_TRUE( field_data->hasField( true_name ) ) << true_name;
       fields_read.insert( true_name );
 
-      Field* field = field_data->getField( true_name );
+      const Field* field = field_data->getField( true_name );
 
       if ( d_type == "double" )
       {
@@ -531,7 +501,7 @@ void check_fieldData( FieldData* const field_data, std::ifstream& file )
       }
       else if ( d_type == "int" )
       {
-        EXPECT_EQ( field->getType(), INTEGER_FIELD_TYPE );
+        EXPECT_EQ( field->getType(), INT32_FIELD_TYPE );
       }
       else
       {
@@ -542,7 +512,7 @@ void check_fieldData( FieldData* const field_data, std::ifstream& file )
       check_multidim_data( field, file );
     }
 
-    cur_pos = static_cast<int>(file.tellg());
+    cur_pos = file.tellg();
     file >> type;
     file.seekg( cur_pos );
     if ( type == "CELL_DATA" || type == "POINT_DATA" )
@@ -552,7 +522,7 @@ void check_fieldData( FieldData* const field_data, std::ifstream& file )
   }
 
   EXPECT_EQ( static_cast< int >( fields_read.size() ),
-             field_data->getNumberOfFields() );
+             field_data->getNumFields() );
   for ( std::set< std::string >::iterator it = fields_read.begin() ;
         it != fields_read.end() ; ++it )
   {
@@ -566,23 +536,23 @@ void check_fieldData( FieldData* const field_data, std::ifstream& file )
  * \param [in] file the file to parse.
  * \pre mesh != AXOM_NULLPTR
  */
-void check_data(Mesh* const mesh, std::ifstream& file )
+void check_data( const Mesh* mesh, std::ifstream& file )
 {
   std::string data_type;
-  int data_size;
+  IndexType data_size;
   while ( file.good() )
   {
     file >> data_type >> data_size;
     if ( data_type == "POINT_DATA" )
     {
-      EXPECT_EQ( data_size, mesh->getMeshNumberOfNodes() );
-      FieldData* node_data = mesh->getNodeFieldData();
+      EXPECT_EQ( data_size, mesh->getNumberOfNodes() );
+      const FieldData* node_data = mesh->getFieldData( mint::NODE_CENTERED );
       check_fieldData( node_data, file );
     }
     else if ( data_type == "CELL_DATA" )
     {
-      EXPECT_EQ( data_size, mesh->getMeshNumberOfCells() );
-      FieldData* cell_data = mesh->getCellFieldData();
+      EXPECT_EQ( data_size, mesh->getNumberOfCells() );
+      const FieldData* cell_data = mesh->getFieldData( mint::CELL_CENTERED );
       check_fieldData( cell_data, file );
     }
   }
@@ -594,27 +564,26 @@ void check_data(Mesh* const mesh, std::ifstream& file )
  * \param [in] file the file to parse.
  * \pre mesh != AXOM_NULLPTR
  */
-void check_uniform_mesh( UniformMesh* const u_mesh, std::ifstream& file )
+void check_uniform_mesh( const UniformMesh* u_mesh, std::ifstream& file )
 {
   std::string buffer;
   file >> buffer;
-  EXPECT_EQ(  buffer, "DATASET" );
+  EXPECT_EQ( buffer, "DATASET" );
   file >> buffer;
-  EXPECT_EQ(  buffer, "STRUCTURED_POINTS" );
+  EXPECT_EQ( buffer, "STRUCTURED_POINTS" );
 
-  int ext_size[3];
+  IndexType ext_size[3];
   u_mesh->getExtentSize( ext_size );
   file >> buffer;
   EXPECT_EQ( buffer, "DIMENSIONS" );
   for ( int i = 0 ; i < 3 ; ++i )
   {
-    int temp;
+    IndexType temp;
     file >> temp;
     EXPECT_EQ( temp, ext_size[ i ] );
   }
 
-  double origin[3];
-  u_mesh->getOrigin( origin );
+  const double* origin = u_mesh->getOrigin( );
   file >> buffer;
   EXPECT_EQ( buffer, "ORIGIN" );
   for ( int i = 0 ; i < 3 ; ++i )
@@ -624,8 +593,7 @@ void check_uniform_mesh( UniformMesh* const u_mesh, std::ifstream& file )
     EXPECT_DOUBLE_EQ( temp, origin[ i ] );
   }
 
-  double spacing[3];
-  u_mesh->getSpacing( spacing );
+  const double* spacing = u_mesh->getSpacing( );
   file >> buffer;
   EXPECT_EQ( buffer, "SPACING" );
   for ( int i = 0 ; i < 3 ; ++i )
@@ -642,7 +610,7 @@ void check_uniform_mesh( UniformMesh* const u_mesh, std::ifstream& file )
  * \param [in] file the file to parse.
  * \pre mesh != AXOM_NULLPTR
  */
-void check_rectilinear_mesh( RectilinearMesh* const r_mesh,
+void check_rectilinear_mesh( const RectilinearMesh* r_mesh,
                              std::ifstream& file )
 {
   std::string buffer;
@@ -651,13 +619,13 @@ void check_rectilinear_mesh( RectilinearMesh* const r_mesh,
   file >> buffer;
   EXPECT_EQ(  buffer, "RECTILINEAR_GRID" );
 
-  int ext_size[3];
+  IndexType ext_size[3];
   r_mesh->getExtentSize( ext_size );
   file >> buffer;
   EXPECT_EQ( buffer, "DIMENSIONS" );
   for ( int i = 0 ; i < 3 ; ++i )
   {
-    int temp;
+    IndexType temp;
     file >> temp;
     EXPECT_EQ( temp, ext_size[ i ] );
   }
@@ -665,7 +633,7 @@ void check_rectilinear_mesh( RectilinearMesh* const r_mesh,
   std::string coord_names[3] = { "X_COORDINATES", "Y_COORDINATES",
                                  "Z_COORDINATES" };
   std::string extracted_name, extracted_type;
-  int extracted_size;
+  IndexType extracted_size;
   double extracted_coord;
   for ( int dim = 0 ; dim < r_mesh->getDimension() ; ++dim )
   {
@@ -675,7 +643,7 @@ void check_rectilinear_mesh( RectilinearMesh* const r_mesh,
     EXPECT_EQ(  extracted_type, "double" );
 
     const double* coord_array = r_mesh->getCoordinateArray( dim );
-    for (int i = 0 ; i < ext_size[ dim ] ; ++i )
+    for (IndexType i = 0 ; i < ext_size[ dim ] ; ++i )
     {
       file >> extracted_coord;
       EXPECT_EQ( extracted_coord, coord_array[ i ] );
@@ -699,33 +667,36 @@ void check_rectilinear_mesh( RectilinearMesh* const r_mesh,
  * \param [in] file the file to parse.
  * \pre mesh != AXOM_NULLPTR
  */
-void check_points( Mesh* const mesh, std::ifstream& file )
+void check_points( const Mesh* mesh, std::ifstream& file )
 {
-  const int num_nodes = mesh->getMeshNumberOfNodes();
-  const int mesh_dim = mesh->getDimension();
+  const IndexType num_nodes = mesh->getNumberOfNodes();
 
   std::string extracted_name, extracted_type;
-  int extracted_size;
+  IndexType extracted_size;
   file >> extracted_name >> extracted_size >> extracted_type;
   EXPECT_EQ(  extracted_name, "POINTS" );
   EXPECT_EQ(  extracted_size, num_nodes );
   EXPECT_EQ(  extracted_type, "double" );
 
-  double extracted_coord;
-  for ( int nodeIdx = 0 ; nodeIdx < num_nodes ; ++nodeIdx )
+  double extracted_coord = 0.0;
+  for ( IndexType idx = 0 ; idx < num_nodes ; ++idx )
   {
+    double coords[] = { 0, 0, 0 };
+    mesh->getNode( idx, coords );
+
+    const double x = coords[0];
+    const double y = coords[1];
+    const double z = coords[2];
+
     file >> extracted_coord;
-    EXPECT_EQ( extracted_coord, mesh->getMeshNodeCoordinate( nodeIdx, 0 ) );
-    for ( int dim = 1 ; dim < mesh_dim ; ++dim )
-    {
-      file >> extracted_coord;
-      EXPECT_EQ( extracted_coord, mesh->getMeshNodeCoordinate( nodeIdx, dim ) );
-    }
-    for ( int dim = 0 ; dim < 3 - mesh_dim ; ++dim )
-    {
-      file >> extracted_coord;
-      EXPECT_EQ( extracted_coord, 0.0 );
-    }
+    EXPECT_EQ( extracted_coord, x );
+
+    file >> extracted_coord;
+    EXPECT_EQ( extracted_coord, y );
+
+    file >> extracted_coord;
+    EXPECT_EQ( extracted_coord, z );
+
   }
 }
 
@@ -735,41 +706,41 @@ void check_points( Mesh* const mesh, std::ifstream& file )
  * \param [in] file the file to parse.
  * \pre mesh != AXOM_NULLPTR
  */
-void check_cells( Mesh* const mesh, std::ifstream& file )
+void check_cells( const Mesh* mesh, std::ifstream& file )
 {
-  const int num_cells = mesh->getMeshNumberOfCells();
+  const IndexType num_cells = mesh->getNumberOfCells();
 
   /* First need to get total size of the connectivity array. */
   /* If the mesh only has one cell type we can calculate this directly. */
-  int max_cell_nodes = mesh->getMeshNumberOfCellNodes( 0 );
-  int total_size = ( max_cell_nodes + 1 ) * num_cells;
+  int max_cell_nodes = mesh->getNumberOfCellNodes( 0 );
+  IndexType total_size = ( max_cell_nodes + 1 ) * num_cells;
 
   /* If the mesh has mixed cells then we need to loop over the elements. */
-  if ( mesh->getMeshType() == MINT_UNSTRUCTURED_MIXED_ELEMENT_MESH )
+  if ( mesh->hasMixedCellTypes() )
   {
     total_size = num_cells;
-    for ( int cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
+    for ( IndexType cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
     {
-      const int num_cell_nodes = mesh->getMeshNumberOfCellNodes( cellIdx );
+      const int num_cell_nodes = mesh->getNumberOfCellNodes( cellIdx );
       max_cell_nodes = utilities::max(num_cell_nodes, max_cell_nodes);
       total_size += num_cell_nodes;
     }
   }
 
   std::string type;
-  int extracted_cells, extracted_size;
+  IndexType extracted_cells, extracted_size;
   file >> type >> extracted_cells >> extracted_size;
-  EXPECT_EQ(  type,             "CELLS" );
-  EXPECT_EQ(  extracted_cells,  num_cells );
-  EXPECT_EQ(  extracted_size,   total_size );
+  EXPECT_EQ( type, "CELLS" );
+  EXPECT_EQ( extracted_cells, num_cells );
+  EXPECT_EQ( extracted_size, total_size );
 
   /* Write out the mesh cell connectivity. */
-  int temp;
-  int* cell_nodes = new int[ max_cell_nodes ];
-  for ( int cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
+  IndexType temp;
+  IndexType* cell_nodes = new IndexType[ max_cell_nodes ];
+  for ( IndexType cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
   {
-    const int num_cell_nodes = mesh->getMeshNumberOfCellNodes( cellIdx );
-    mesh->getMeshCell( cellIdx, cell_nodes );
+    const int num_cell_nodes = mesh->getNumberOfCellNodes( cellIdx );
+    mesh->getCell( cellIdx, cell_nodes );
 
     file >> temp;
     EXPECT_EQ( temp, num_cell_nodes );
@@ -779,18 +750,20 @@ void check_cells( Mesh* const mesh, std::ifstream& file )
       EXPECT_EQ( temp, cell_nodes[ i ] );
     }
   }
-  delete[] cell_nodes;
 
   /* Write out the mesh cell types. */
   file >> type >> extracted_cells;
-  EXPECT_EQ(  type,             "CELL_TYPES");
-  EXPECT_EQ(  extracted_cells,  num_cells );
-  for ( int cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
+  EXPECT_EQ( type, "CELL_TYPES" );
+  EXPECT_EQ( extracted_cells,  num_cells );
+  for ( IndexType cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
   {
-    int cell_type = mesh->getMeshCellType( cellIdx );
+    CellType cell_type = mesh->getCellType( cellIdx );
     file >> temp;
-    EXPECT_EQ( temp, cell::vtk_types[ cell_type ] );
+    EXPECT_EQ( temp, getCellInfo( cell_type ).vtk_type );
   }
+
+  delete [] cell_nodes;
+  cell_nodes = AXOM_NULLPTR;
 }
 
 /*!
@@ -799,7 +772,7 @@ void check_cells( Mesh* const mesh, std::ifstream& file )
  * \param [in] file the file to parse.
  * \pre mesh != AXOM_NULLPTR
  */
-void check_curvilinear_mesh( CurvilinearMesh* const c_mesh,
+void check_curvilinear_mesh( const CurvilinearMesh* c_mesh,
                              std::ifstream& file )
 {
   std::string buffer;
@@ -808,13 +781,13 @@ void check_curvilinear_mesh( CurvilinearMesh* const c_mesh,
   file >> buffer;
   EXPECT_EQ(  buffer, "STRUCTURED_GRID" );
 
-  int ext_size[3];
+  IndexType ext_size[3];
   c_mesh->getExtentSize( ext_size );
   file >> buffer;
   EXPECT_EQ( buffer, "DIMENSIONS" );
   for ( int i = 0 ; i < 3 ; ++i )
   {
-    int temp;
+    IndexType temp;
     file >> temp;
     EXPECT_EQ( temp, ext_size[ i ] );
   }
@@ -828,7 +801,7 @@ void check_curvilinear_mesh( CurvilinearMesh* const c_mesh,
  * \param [in] file the file to parse.
  * \pre mesh != AXOM_NULLPTR
  */
-void check_unstructured_mesh( Mesh* const mesh, std::ifstream& file )
+void check_unstructured_mesh( const Mesh* mesh, std::ifstream& file )
 {
   std::string buffer;
   file >> buffer;
@@ -850,10 +823,10 @@ void check_unstructured_mesh( Mesh* const mesh, std::ifstream& file )
  * \brief Creates a 3D UniformMesh and writes it out to disk using
  *  mint::write_vtk and then reads the file back in to check for correctness.
  */
-TEST( mint_write_vtk, UniformMesh3D )
+TEST( mint_util_write_vtk, UniformMesh3D )
 {
   const std::string path = "uniformMesh3D.vtk";
-  const int ext[6] = { 0, 10, 0, 10, 0, 10 };
+  const int64 ext[6] = { 0, 10, 0, 10, 0, 10 };
   const double origin[3] = { -5.0, -10.0, -15.0 };
   const double corner[3] = { 5.0, 10.0, 15.0 };
   UniformMesh* u_mesh = new UniformMesh( 3, ext, origin, corner );
@@ -876,10 +849,10 @@ TEST( mint_write_vtk, UniformMesh3D )
  * \brief Creates a 2D UniformMesh and writes it out to disk using
  *  mint::write_vtk and then reads the file back in to check for correctness.
  */
-TEST( mint_write_vtk, UniformMesh2D )
+TEST( mint_util_write_vtk, UniformMesh2D )
 {
   const std::string path = "uniformMesh2D.vtk";
-  const int ext[4] = { 0, 10, 0, 10 };
+  const int64 ext[4] = { 0, 10, 0, 10 };
   const double origin[2] = { -5.0, -10.0 };
   const double corner[2] = { 5.0, 10.0 };
   UniformMesh* u_mesh = new UniformMesh( 2, ext, origin, corner );
@@ -902,10 +875,10 @@ TEST( mint_write_vtk, UniformMesh2D )
  * \brief Creates a 1D UniformMesh and writes it out to disk using
  *  mint::write_vtk and then reads the file back in to check for correctness.
  */
-TEST( mint_write_vtk, UniformMesh1D )
+TEST( mint_util_write_vtk, UniformMesh1D )
 {
   const std::string path = "uniformMesh1D.vtk";
-  const int ext[2] = { 0, 10 };
+  const int64 ext[2] = { 0, 10 };
   const double origin[1] = { -5.0 };
   const double corner[1] = { 5.0 };
   UniformMesh* u_mesh = new UniformMesh( 1, ext, origin, corner );
@@ -928,19 +901,20 @@ TEST( mint_write_vtk, UniformMesh1D )
  * \brief Creates a 3D RectilinearMesh and writes it out to disk using
  *  mint::write_vtk and then reads the file back in to check for correctness.
  */
-TEST( mint_write_vtk, RectilinearMesh3D )
+TEST( mint_util_write_vtk, RectilinearMesh3D )
 {
   const std::string path = "rectilinearMesh3D.vtk";
-  int ext[6] = { 0, 10, 0, 11, 0, 12 };
+  int64 ext[6] = { 0, 10, 0, 11, 0, 12 };
   RectilinearMesh* r_mesh = new RectilinearMesh( 3, ext );
 
-  int ext_size[3];
+  IndexType ext_size[3];
   r_mesh->getExtentSize( ext_size );
   for ( int dim = 0 ; dim < 3 ; ++dim )
   {
-    for ( int i = 0 ; i < ext_size[ dim ] ; ++i )
+    double* x = r_mesh->getCoordinateArray( dim );
+    for ( IndexType i = 0 ; i < ext_size[ dim ] ; ++i )
     {
-      r_mesh->setCoordinate( dim, i, i * i / 10.0);
+      x[ i ] = i * i / 10.0;
     }
   }
 
@@ -962,19 +936,20 @@ TEST( mint_write_vtk, RectilinearMesh3D )
  * \brief Creates a 2D RectilinearMesh and writes it out to disk using
  *  mint::write_vtk and then reads the file back in to check for correctness.
  */
-TEST( mint_write_vtk, RectilinearMesh2D )
+TEST( mint_util_write_vtk, RectilinearMesh2D )
 {
   const std::string path = "rectilinearMesh2D.vtk";
-  int ext[4] = { 0, 10, 0, 11 };
+  int64 ext[4] = { 0, 10, 0, 11 };
   RectilinearMesh* r_mesh = new RectilinearMesh( 2, ext );
 
-  int ext_size[3];
+  IndexType ext_size[3];
   r_mesh->getExtentSize( ext_size );
   for ( int dim = 0 ; dim < 2 ; ++dim )
   {
-    for ( int i = 0 ; i < ext_size[ dim ] ; ++i )
+    double* x = r_mesh->getCoordinateArray( dim );
+    for ( IndexType i = 0 ; i < ext_size[ dim ] ; ++i )
     {
-      r_mesh->setCoordinate( dim, i, i * i / 10.0);
+      x[ i ] = i * i / 10.0;
     }
   }
 
@@ -996,19 +971,20 @@ TEST( mint_write_vtk, RectilinearMesh2D )
  * \brief Creates a 1D RectilinearMesh and writes it out to disk using
  *  mint::write_vtk and then reads the file back in to check for correctness.
  */
-TEST( mint_write_vtk, RectilinearMesh1D )
+TEST( mint_util_write_vtk, RectilinearMesh1D )
 {
   const std::string path = "rectilinearMesh1D.vtk";
-  int ext[2] = { 0, 10 };
+  int64 ext[2] = { 0, 10 };
   RectilinearMesh* r_mesh = new RectilinearMesh( 1, ext );
 
-  int ext_size[3];
+  IndexType ext_size[3];
   r_mesh->getExtentSize( ext_size );
   for ( int dim = 0 ; dim < 1 ; ++dim )
   {
-    for ( int i = 0 ; i < ext_size[ dim ] ; ++i )
+    double* x = r_mesh->getCoordinateArray( dim );
+    for ( IndexType i = 0 ; i < ext_size[ dim ] ; ++i )
     {
-      r_mesh->setCoordinate( dim, i, i * i / 10.0);
+      x[ i ] = i * i / 10.0;
     }
   }
 
@@ -1030,24 +1006,30 @@ TEST( mint_write_vtk, RectilinearMesh1D )
  * \brief Creates a 3D CurvilinearMesh and writes it out to disk using
  *  mint::write_vtk and then reads the file back in to check for correctness.
  */
-TEST( mint_write_vtk, CurvilinearMesh3D )
+TEST( mint_util_write_vtk, CurvilinearMesh3D )
 {
   const std::string path = "curvilinearMesh3D.vtk";
-  int ext[6] = { 0, 10, 0, 11, 0, 12 };
+  int64 ext[6] = { 0, 10, 0, 11, 0, 12 };
   CurvilinearMesh* c_mesh = new CurvilinearMesh( 3, ext );
 
-  int ext_size[3];
+  IndexType ext_size[3];
   c_mesh->getExtentSize( ext_size );
-  for ( int idx = 0 ; idx < ext_size[0] ; ++idx )
+  double* x_coords = c_mesh->getCoordinateArray( X_COORDINATE );
+  double* y_coords = c_mesh->getCoordinateArray( Y_COORDINATE );
+  double* z_coords = c_mesh->getCoordinateArray( Z_COORDINATE );
+  for ( IndexType i = 0 ; i < ext_size[0] ; ++i )
   {
-    for ( int idy = 0 ; idy < ext_size[1] ; ++idy )
+    for ( IndexType j = 0 ; j < ext_size[1] ; ++j )
     {
-      for ( int idz = 0 ; idz < ext_size[2] ; ++idz )
+      for ( IndexType k = 0 ; k < ext_size[2] ; ++k )
       {
-        double x = idx + internal::randomD( -0.45, 0.45 );
-        double y = idy + internal::randomD( -0.45, 0.45 );
-        double z = idz + internal::randomD( -0.45, 0.45 );
-        c_mesh->setNode( idx, idy, idz, x, y, z );
+        IndexType idx = c_mesh->getLinearIndex( i, j, k );
+        double x = i + utilities::random_real( -0.45, 0.45 );
+        double y = j + utilities::random_real( -0.45, 0.45 );
+        double z = k + utilities::random_real( -0.45, 0.45 );
+        x_coords[ idx ] = x;
+        y_coords[ idx ] = y;
+        z_coords[ idx ] = z;
       }
     }
   }
@@ -1070,21 +1052,25 @@ TEST( mint_write_vtk, CurvilinearMesh3D )
  * \brief Creates a 2D CurvilinearMesh and writes it out to disk using
  *  mint::write_vtk and then reads the file back in to check for correctness.
  */
-TEST( mint_write_vtk, CurvilinearMesh2D )
+TEST( mint_util_write_vtk, CurvilinearMesh2D )
 {
   const std::string path = "curvilinearMesh2D.vtk";
-  int ext[6] = { 0, 2, 0, 2 };
+  int64 ext[6] = { 0, 2, 0, 2 };
   CurvilinearMesh* c_mesh = new CurvilinearMesh( 2, ext );
 
-  int ext_size[3];
+  IndexType ext_size[3];
   c_mesh->getExtentSize( ext_size );
-  for ( int idx = 0 ; idx < ext_size[0] ; ++idx )
+  double* x_coords = c_mesh->getCoordinateArray( X_COORDINATE );
+  double* y_coords = c_mesh->getCoordinateArray( Y_COORDINATE );
+  for ( IndexType i = 0 ; i < ext_size[0] ; ++i )
   {
-    for ( int idy = 0 ; idy < ext_size[1] ; ++idy )
+    for ( IndexType j = 0 ; j < ext_size[1] ; ++j )
     {
-      double x = idx + internal::randomD( -0.45, 0.45 );
-      double y = idy + internal::randomD( -0.45, 0.45 );
-      c_mesh->setNode( idx, idy, x, y );
+      IndexType idx = c_mesh->getLinearIndex( i, j );
+      double x = i + utilities::random_real( -0.45, 0.45 );
+      double y = j + utilities::random_real( -0.45, 0.45 );
+      x_coords[ idx ] = x;
+      y_coords[ idx ] = y;
     }
   }
 
@@ -1107,18 +1093,19 @@ TEST( mint_write_vtk, CurvilinearMesh2D )
  *  mint::write_vtk and then reads the file back in to check for correctness.
  * \note Mesh, but not mesh data will display in Visit.
  */
-TEST( mint_write_vtk, CurvilinearMesh1D )
+TEST( mint_util_write_vtk, CurvilinearMesh1D )
 {
   const std::string path = "curvilinearMesh1D.vtk";
-  int ext[6] = { 0, 1 };
+  int64 ext[6] = { 0, 1 };
   CurvilinearMesh* c_mesh = new CurvilinearMesh( 1, ext );
 
-  int ext_size[3];
+  IndexType ext_size[3];
   c_mesh->getExtentSize( ext_size );
-  for ( int idx = 0 ; idx < ext_size[0] ; ++idx )
+  double* x_coords = c_mesh->getCoordinateArray( X_COORDINATE );
+  for ( IndexType idx = 0 ; idx < ext_size[0] ; ++idx )
   {
-    double x = idx + internal::randomD( -0.45, 0.45 );
-    c_mesh->setNode( idx, x );
+    double x = idx + utilities::random_real( -0.45, 0.45 );
+    x_coords[ idx ] = x;
   }
 
   internal::populate_and_write( c_mesh, path );
@@ -1139,36 +1126,39 @@ TEST( mint_write_vtk, CurvilinearMesh1D )
  * \brief Creates a 3D UnstructuredMesh and writes it out to disk using
  *  mint::write_vtk and then reads the file back in to check for correctness.
  */
-TEST( mint_write_vtk, UnstructuredMesh3D )
+TEST( mint_util_write_vtk, UnstructuredMesh3D )
 {
   const std::string path = "unstructuredMesh3D.vtk";
-  UnstructuredMesh< MINT_HEX >* u_mesh = new UnstructuredMesh< MINT_HEX >( 3 );
+  const IndexType nx = 11;
+  const IndexType ny = 12;
+  const IndexType nz = 13;
+  const IndexType nNodes = nx * ny * nz;
+  const IndexType nCells = (nx-1) * (ny-1) * (nz-1);
+  UnstructuredMesh< SINGLE_SHAPE >* u_mesh =
+    new UnstructuredMesh< SINGLE_SHAPE >( 3, HEX, nNodes, nCells );
 
-  int nx = 11;
-  int ny = 12;
-  int nz = 13;
-  for ( int idx = 0 ; idx < nx ; ++idx )
+  for ( IndexType idx = 0 ; idx < nx ; ++idx )
   {
-    for ( int idy = 0 ; idy < ny ; ++idy )
+    for ( IndexType idy = 0 ; idy < ny ; ++idy )
     {
-      for ( int idz = 0 ; idz < nz ; ++idz )
+      for ( IndexType idz = 0 ; idz < nz ; ++idz )
       {
-        double x = idx + internal::randomD( -0.45, 0.45 );
-        double y = idy + internal::randomD( -0.45, 0.45 );
-        double z = idz + internal::randomD( -0.45, 0.45 );
-        u_mesh->insertNode( x, y, z );
+        double x = idx + utilities::random_real( -0.45, 0.45 );
+        double y = idy + utilities::random_real( -0.45, 0.45 );
+        double z = idz + utilities::random_real( -0.45, 0.45 );
+        u_mesh->appendNode( x, y, z );
       }
     }
   }
 
-  int cell[8];
-  for ( int idx = 0 ; idx < nx - 1 ; ++idx )
+  IndexType cell[8];
+  for ( IndexType idx = 0 ; idx < nx - 1 ; ++idx )
   {
-    for ( int idy = 0 ; idy < ny - 1 ; ++idy )
+    for ( IndexType idy = 0 ; idy < ny - 1 ; ++idy )
     {
-      for ( int idz = 0 ; idz < nz - 1 ; ++idz )
+      for ( IndexType idz = 0 ; idz < nz - 1 ; ++idz )
       {
-        int index = idx * ny * nz + idy * nz + idz;
+        IndexType index = idx * ny * nz + idy * nz + idz;
         cell[0] = index;
         cell[1] = index + ny * nz;
         cell[2] = index + nz + ny * nz;
@@ -1178,7 +1168,7 @@ TEST( mint_write_vtk, UnstructuredMesh3D )
         cell[6] = cell[2] + 1;
         cell[7] = cell[3] + 1;
 
-        u_mesh->insertCell( cell, MINT_HEX, 8 );
+        u_mesh->appendCell( cell );
       }
     }
   }
@@ -1201,36 +1191,38 @@ TEST( mint_write_vtk, UnstructuredMesh3D )
  * \brief Creates a 2D UnstructuredMesh and writes it out to disk using
  *  mint::write_vtk and then reads the file back in to check for correctness.
  */
-TEST( mint_write_vtk, UnstructuredMesh2D )
+TEST( mint_util_write_vtk, UnstructuredMesh2D )
 {
   const std::string path = "unstructuredMesh2D.vtk";
-  UnstructuredMesh< MINT_QUAD >* u_mesh =
-    new UnstructuredMesh< MINT_QUAD >( 2 );
+  const IndexType nx = 11;
+  const IndexType ny = 12;
+  const IndexType nNodes = nx * ny;
+  const IndexType nCells = (nx-1) * (ny-1);
+  UnstructuredMesh< SINGLE_SHAPE >* u_mesh =
+    new UnstructuredMesh< SINGLE_SHAPE >( 2, QUAD, nNodes, nCells );
 
-  int nx = 11;
-  int ny = 12;
-  for ( int idx = 0 ; idx < nx ; ++idx )
+  for ( IndexType idx = 0 ; idx < nx ; ++idx )
   {
-    for ( int idy = 0 ; idy < ny ; ++idy )
+    for ( IndexType idy = 0 ; idy < ny ; ++idy )
     {
-      double x = idx + internal::randomD( -0.45, 0.45 );
-      double y = idy + internal::randomD( -0.45, 0.45 );
-      u_mesh->insertNode( x, y );
+      double x = idx + utilities::random_real( -0.45, 0.45 );
+      double y = idy + utilities::random_real( -0.45, 0.45 );
+      u_mesh->appendNode( x, y );
     }
   }
 
-  int cell[4];
-  for ( int idx = 0 ; idx < nx - 1 ; ++idx )
+  IndexType cell[4];
+  for ( IndexType idx = 0 ; idx < nx - 1 ; ++idx )
   {
-    for ( int idy = 0 ; idy < ny - 1 ; ++idy )
+    for ( IndexType idy = 0 ; idy < ny - 1 ; ++idy )
     {
-      int index = idx * ny + idy;
+      IndexType index = idx * ny + idy;
       cell[0] = index;
       cell[1] = index + ny;
       cell[2] = index + ny + 1;
       cell[3] = index + 1;
 
-      u_mesh->insertCell( cell, MINT_QUAD, 8 );
+      u_mesh->appendCell( cell );
     }
   }
 
@@ -1252,25 +1244,25 @@ TEST( mint_write_vtk, UnstructuredMesh2D )
  * \brief Creates a 1D UnstructuredMesh and writes it out to disk using
  *  mint::write_vtk and then reads the file back in to check for correctness.
  */
-TEST( mint_write_vtk, UnstructuredMesh1D )
+TEST( mint_util_write_vtk, UnstructuredMesh1D )
 {
   const std::string path = "unstructuredMesh1D.vtk";
-  UnstructuredMesh< MINT_SEGMENT >* u_mesh =
-    new UnstructuredMesh< MINT_SEGMENT >( 1 );
+  const IndexType nx = 11;
+  UnstructuredMesh< SINGLE_SHAPE >* u_mesh =
+    new UnstructuredMesh< SINGLE_SHAPE >( 1, SEGMENT, nx, nx - 1 );
 
-  int nx = 11;
-  for ( int idx = 0 ; idx < nx ; ++idx )
+  for ( IndexType idx = 0 ; idx < nx ; ++idx )
   {
-    double x = idx + internal::randomD( 0.45, 0.45 );
-    u_mesh->insertNode( x );
+    double x = idx + utilities::random_real( -0.45, 0.45 );
+    u_mesh->appendNode( x );
   }
 
-  int cell[2];
-  for ( int idx = 0 ; idx < nx - 1 ; ++idx )
+  IndexType cell[2];
+  for ( IndexType idx = 0 ; idx < nx - 1 ; ++idx )
   {
     cell[0] = idx;
     cell[1] = idx + 1;
-    u_mesh->insertCell( cell, MINT_SEGMENT, 2 );
+    u_mesh->appendCell( cell, mint::SEGMENT );
   }
 
   internal::populate_and_write( u_mesh, path );
@@ -1293,40 +1285,43 @@ TEST( mint_write_vtk, UnstructuredMesh1D )
  *  correctness. The UnstructuredMesh consists of one hexahedron with pyramids
  *  on the faces.
  */
-TEST( mint_write_vtk, UnstructuredMixedMesh3D )
+TEST( mint_util_write_vtk, UnstructuredMixedMesh3D )
 {
   const std::string path = "unstructuredMixedMesh3D.vtk";
-  UnstructuredMesh< MINT_MIXED_CELL >* u_mesh = new UnstructuredMesh<
-    MINT_MIXED_CELL >( 3 );
+  const IndexType nx = 2;
+  const IndexType ny = 2;
+  const IndexType nz = 2;
+  const IndexType nNodes = nx * ny * nz;
+  const IndexType nCells = (nx-1) * (ny-1) * (nz-1);
+
+  UnstructuredMesh< MIXED_SHAPE >* u_mesh =
+    new UnstructuredMesh< MIXED_SHAPE >( 3, nNodes, nCells );
 
   /* Create the nodes for the hexahedron. */
-  int nx = 2;
-  int ny = 2;
-  int nz = 2;
-  for ( int idx = 0 ; idx < nx ; ++idx )
+  for ( IndexType idx = 0 ; idx < nx ; ++idx )
   {
-    for ( int idy = 0 ; idy < ny ; ++idy )
+    for ( IndexType idy = 0 ; idy < ny ; ++idy )
     {
-      for ( int idz = 0 ; idz < nz ; ++idz )
+      for ( IndexType idz = 0 ; idz < nz ; ++idz )
       {
-        double x = idx + internal::randomD( -0.45, 0.45 );
-        double y = idy + internal::randomD( -0.45, 0.45 );
-        double z = idz + internal::randomD( -0.45, 0.45 );
-        u_mesh->insertNode( x, y, z );
+        double x = idx + utilities::random_real( -0.45, 0.45 );
+        double y = idy + utilities::random_real( -0.45, 0.45 );
+        double z = idz + utilities::random_real( -0.45, 0.45 );
+        u_mesh->appendNode( x, y, z );
       }
     }
   }
 
   /* Create the nodes for the pyramids. */
-  u_mesh->insertNode( -1.0, 0.5,  0.5 );
-  u_mesh->insertNode( 2.0,  0.5,  0.5 );
-  u_mesh->insertNode( 0.5,  -1.0, 0.5 );
-  u_mesh->insertNode( 0.5,  2.0,  0.5 );
-  u_mesh->insertNode( 0.5,  0.5,  -1.0 );
-  u_mesh->insertNode( 0.5,  0.5,  2.0 );
+  u_mesh->appendNode( -1.0, 0.5, 0.5 );
+  u_mesh->appendNode( 2.0, 0.5, 0.5 );
+  u_mesh->appendNode( 0.5, -1.0, 0.5 );
+  u_mesh->appendNode( 0.5, 2.0, 0.5 );
+  u_mesh->appendNode( 0.5, 0.5, -1.0 );
+  u_mesh->appendNode( 0.5, 0.5, 2.0 );
 
   /* Create the hexahedron. */
-  int hex[8];
+  IndexType hex[8];
   hex[0] = 0;
   hex[1] = 4;
   hex[2] = 6;
@@ -1335,16 +1330,16 @@ TEST( mint_write_vtk, UnstructuredMixedMesh3D )
   hex[5] = 5;
   hex[6] = 7;
   hex[7] = 3;
-  u_mesh->insertCell( hex, MINT_HEX, 8 );
+  u_mesh->appendCell( hex, HEX );
 
   /* Create the pyramid for the -x face. */
-  int pyramid[5];
+  IndexType pyramid[5];
   pyramid[0] = hex[0];
   pyramid[1] = hex[4];
   pyramid[2] = hex[7];
   pyramid[3] = hex[3];
   pyramid[4] = 8;
-  u_mesh->insertCell( pyramid, MINT_PYRAMID, 5 );
+  u_mesh->appendCell( pyramid, PYRAMID );
 
   /* Create the pyramid for the +x face. */
   pyramid[0] = hex[1];
@@ -1352,7 +1347,7 @@ TEST( mint_write_vtk, UnstructuredMixedMesh3D )
   pyramid[2] = hex[6];
   pyramid[3] = hex[5];
   pyramid[4] = 9;
-  u_mesh->insertCell( pyramid, MINT_PYRAMID, 5 );
+  u_mesh->appendCell( pyramid, PYRAMID );
 
   /* Create the pyramid for the -y face. */
   pyramid[0] = hex[0];
@@ -1360,7 +1355,7 @@ TEST( mint_write_vtk, UnstructuredMixedMesh3D )
   pyramid[2] = hex[5];
   pyramid[3] = hex[4];
   pyramid[4] = 10;
-  u_mesh->insertCell( pyramid, MINT_PYRAMID, 5 );
+  u_mesh->appendCell( pyramid, PYRAMID );
 
   /* Create the pyramid for the +x face. */
   pyramid[0] = hex[2];
@@ -1368,7 +1363,7 @@ TEST( mint_write_vtk, UnstructuredMixedMesh3D )
   pyramid[2] = hex[7];
   pyramid[3] = hex[6];
   pyramid[4] = 11;
-  u_mesh->insertCell( pyramid, MINT_PYRAMID, 5 );
+  u_mesh->appendCell( pyramid, PYRAMID );
 
   /* Create the pyramid for the -z face. */
   pyramid[0] = hex[3];
@@ -1376,7 +1371,7 @@ TEST( mint_write_vtk, UnstructuredMixedMesh3D )
   pyramid[2] = hex[1];
   pyramid[3] = hex[0];
   pyramid[4] = 12;
-  u_mesh->insertCell( pyramid, MINT_PYRAMID, 5 );
+  u_mesh->appendCell( pyramid, PYRAMID );
 
   /* Create the pyramid for the +z face. */
   pyramid[0] = hex[4];
@@ -1384,7 +1379,7 @@ TEST( mint_write_vtk, UnstructuredMixedMesh3D )
   pyramid[2] = hex[6];
   pyramid[3] = hex[7];
   pyramid[4] = 13;
-  u_mesh->insertCell( pyramid, MINT_PYRAMID, 5 );
+  u_mesh->appendCell( pyramid, PYRAMID );
 
   internal::populate_and_write( u_mesh, path );
   std::ifstream file( path.c_str() );
@@ -1406,63 +1401,65 @@ TEST( mint_write_vtk, UnstructuredMixedMesh3D )
  *  correctness. The UnstructuredMesh consists of one quadrilateral with
  *  triangles on the faces.
  */
-TEST( mint_write_vtk, UnstructuredMixedMesh2D )
+TEST( mint_util_write_vtk, UnstructuredMixedMesh2D )
 {
   const std::string path = "unstructuredMixedMesh2D.vtk";
-  UnstructuredMesh< MINT_MIXED_CELL >* u_mesh = new UnstructuredMesh<
-    MINT_MIXED_CELL >( 2 );
+  const IndexType nx = 2;
+  const IndexType ny = 2;
+  const IndexType nNodes = nx * ny;
+  const IndexType nCells = (nx-1) * (ny-1);
+  UnstructuredMesh< MIXED_SHAPE >* u_mesh =
+    new UnstructuredMesh< MIXED_SHAPE >( 2, nNodes, nCells );
 
-  /* Create the nodes for the hexahedron. */
-  int nx = 2;
-  int ny = 2;
-  for ( int idx = 0 ; idx < nx ; ++idx )
+  /* Create the nodes for the quad. */
+  for ( IndexType idx = 0 ; idx < nx ; ++idx )
   {
-    for ( int idy = 0 ; idy < ny ; ++idy )
+    for ( IndexType idy = 0 ; idy < ny ; ++idy )
     {
-      double x = idx + internal::randomD( -0.45, 0.45 );
-      double y = idy + internal::randomD( -0.45, 0.45 );
-      u_mesh->insertNode( x, y );
+      double x = idx + utilities::random_real( -0.45, 0.45 );
+      double y = idy + utilities::random_real( -0.45, 0.45 );
+      u_mesh->appendNode( x, y );
     }
   }
 
-  /* Create the nodes for the pyramids. */
-  u_mesh->insertNode( -1.0, 0.5 );
-  u_mesh->insertNode( 2.0,  0.5 );
-  u_mesh->insertNode( 0.5,  -1.0 );
-  u_mesh->insertNode( 0.5,  2.0 );
+  /* Create the nodes for the triangles. */
+  u_mesh->appendNode( -1.0, 0.5 );
+  u_mesh->appendNode( 2.0, 0.5 );
+  u_mesh->appendNode( 0.5, -1.0 );
+  u_mesh->appendNode( 0.5, 2.0 );
 
-  /* Create the hexahedron. */
-  int quad[4];
+  /* Create the quad. */
+  IndexType quad[4];
   quad[0] = 0;
   quad[1] = 2;
   quad[2] = 3;
   quad[3] = 1;
-  u_mesh->insertCell( quad, MINT_QUAD, 4 );
+  u_mesh->appendCell( quad, QUAD );
 
-  /* Create the pyramid for the -x face. */
-  int triangle[3];
+  /* Create the triangle for the -x face. */
+  IndexType triangle[3];
   triangle[0] = quad[0];
   triangle[1] = quad[3];
   triangle[2] = 4;
-  u_mesh->insertCell( triangle, MINT_TRIANGLE, 3 );
+  u_mesh->appendCell( triangle, TRIANGLE );
 
-  /* Create the pyramid for the +x face. */
+  /* Create the triangle for the +x face. */
   triangle[0] = quad[2];
   triangle[1] = quad[1];
   triangle[2] = 5;
-  u_mesh->insertCell( triangle, MINT_TRIANGLE, 3 );
+  u_mesh->appendCell( triangle, TRIANGLE );
 
-  /* Create the pyramid for the -y face. */
+  /* Create the triangle for the -y face. */
   triangle[0] = quad[1];
   triangle[1] = quad[0];
   triangle[2] = 6;
-  u_mesh->insertCell( triangle, MINT_TRIANGLE, 3 );
+  u_mesh->appendCell( triangle, TRIANGLE );
 
-  /* Create the pyramid for the +y face. */
+  /* Create the triangle for the +y face. */
   triangle[0] = quad[3];
   triangle[1] = quad[2];
   triangle[2] = 7;
-  u_mesh->insertCell( triangle, MINT_TRIANGLE, 3 );
+  u_mesh->appendCell( triangle, TRIANGLE );
 
   internal::populate_and_write( u_mesh, path );
   std::ifstream file( path.c_str() );
@@ -1482,17 +1479,21 @@ TEST( mint_write_vtk, UnstructuredMixedMesh2D )
  * \brief Creates a 3D ParticleMesh and writes it out to disk using
  *  mint::write_vtk and then reads the file back in to check for correctness.
  */
-TEST( mint_write_vtk, ParticleMesh3D )
+TEST( mint_util_write_vtk, ParticleMesh3D )
 {
   const std::string path = "particleMesh3D.vtk";
-  ParticleMesh* p_mesh = new ParticleMesh( 3 );
+  const IndexType nParticles = 1000;
+  ParticleMesh* p_mesh = new ParticleMesh( 3, nParticles );
 
-  for ( int i = 0 ; i < 1000 ; ++i )
+  double* x = p_mesh->getCoordinateArray( X_COORDINATE );
+  double* y = p_mesh->getCoordinateArray( Y_COORDINATE );
+  double* z = p_mesh->getCoordinateArray( Z_COORDINATE );
+
+  for ( IndexType i = 0 ; i < nParticles ; ++i )
   {
-    double x = 10.0 * internal::randomD( 0.0, 1.0 );
-    double y = 10.0 * internal::randomD( 0.0, 1.0 );
-    double z = 10.0 * internal::randomD( 0.0, 1.0 );
-    p_mesh->insertParticle( x, y, z );
+    x[ i ] = 10.0 * utilities::random_real( 0.0, 1.0 );
+    y[ i ] = 10.0 * utilities::random_real( 0.0, 1.0 );
+    z[ i ] = 10.0 * utilities::random_real( 0.0, 1.0 );
   }
 
   internal::populate_and_write( p_mesh, path );
@@ -1513,16 +1514,19 @@ TEST( mint_write_vtk, ParticleMesh3D )
  * \brief Creates a 2D ParticleMesh and writes it out to disk using
  *  mint::write_vtk and then reads the file back in to check for correctness.
  */
-TEST( mint_write_vtk, ParticleMesh2D )
+TEST( mint_util_write_vtk, ParticleMesh2D )
 {
   const std::string path = "particleMesh2D.vtk";
-  ParticleMesh* p_mesh = new ParticleMesh( 2 );
+  const IndexType nParticles = 1000;
+  ParticleMesh* p_mesh = new ParticleMesh( 2, nParticles );
 
-  for ( int i = 0 ; i < 1000 ; ++i )
+  double* x = p_mesh->getCoordinateArray( X_COORDINATE );
+  double* y = p_mesh->getCoordinateArray( Y_COORDINATE );
+
+  for ( IndexType i = 0 ; i < nParticles ; ++i )
   {
-    double x = 10.0 * internal::randomD( 0.0, 1.0 );
-    double y = 10.0 * internal::randomD( 0.0, 1.0 );
-    p_mesh->insertParticle( x, y );
+    x[ i ] = 10.0 * utilities::random_real( 0.0, 1.0 );
+    y[ i ] = 10.0 * utilities::random_real( 0.0, 1.0 );
   }
 
   internal::populate_and_write( p_mesh, path );
@@ -1543,15 +1547,17 @@ TEST( mint_write_vtk, ParticleMesh2D )
  * \brief Creates a 1D ParticleMesh and writes it out to disk using
  *  mint::write_vtk and then reads the file back in to check for correctness.
  */
-TEST( mint_write_vtk, ParticleMesh1D )
+TEST( mint_util_write_vtk, ParticleMesh1D )
 {
   const std::string path = "particleMesh1D.vtk";
-  ParticleMesh* p_mesh = new ParticleMesh( 1 );
+  const IndexType nParticles = 1000;
+  ParticleMesh* p_mesh = new ParticleMesh( 1, nParticles );
 
-  for ( int i = 0 ; i < 1000 ; ++i )
+  double* x = p_mesh->getCoordinateArray( X_COORDINATE );
+
+  for ( IndexType i = 0 ; i < nParticles ; ++i )
   {
-    double x = 10.0 * internal::randomD( 0.0, 1.0 );
-    p_mesh->insertParticle( x );
+    x[ i ] = 10.0 * utilities::random_real( 0.0, 1.0 );
   }
 
   internal::populate_and_write( p_mesh, path );
@@ -1568,6 +1574,9 @@ TEST( mint_write_vtk, ParticleMesh1D )
 #endif
 }
 
+} /* end namespace mint */
+} /* end namespace axom */
+
 //------------------------------------------------------------------------------
 using axom::slic::UnitTestLogger;
 
@@ -1579,6 +1588,3 @@ int main( int argc, char* argv[] )
   result = RUN_ALL_TESTS();
   return result;
 }
-
-} /* end namespace mint */
-} /* end namespace axom */

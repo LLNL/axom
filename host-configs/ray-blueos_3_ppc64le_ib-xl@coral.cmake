@@ -7,25 +7,25 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsa/axom/thirdparty_libs/builds/2018_05_01_15_58_27/spack/opt/spack/blueos_3_ppc64le_ib/xl-coral/cmake-3.8.2-owwvobc6rgp5jk6weaf5xri2yogwhswl/bin/cmake
+# cmake executable path: /usr/workspace/wsa/axom/thirdparty_libs/builds/2018_06_06_17_07_58/spack/opt/spack/blueos_3_ppc64le_ib/xl-coral/cmake-3.9.6-tgyt2paysrstkcpr2vioirnqrodq66nz/bin/cmake
 
 #######
 # using xl@coral compiler spec
 #######
 
 # c compiler used by spack
-set(CMAKE_C_COMPILER "/usr/tce/packages/xl/xl-beta-2017.10.13/bin/xlc" CACHE PATH "")
+set(CMAKE_C_COMPILER "/usr/tce/packages/xl/xl-2018.05.18/bin/xlc" CACHE PATH "")
 
 # cpp compiler used by spack
-set(CMAKE_CXX_COMPILER "/usr/tce/packages/xl/xl-beta-2017.10.13/bin/xlC" CACHE PATH "")
+set(CMAKE_CXX_COMPILER "/usr/tce/packages/xl/xl-2018.05.18/bin/xlC" CACHE PATH "")
 
 # fortran compiler used by spack
 set(ENABLE_FORTRAN ON CACHE BOOL "")
 
-set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-beta-2017.10.13/bin/xlf2003" CACHE PATH "")
+set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-2018.05.18/bin/xlf2003" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2018_05_01_15_58_27/spack/opt/spack/blueos_3_ppc64le_ib/xl-coral" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2018_06_06_17_07_58/spack/opt/spack/blueos_3_ppc64le_ib/xl-coral" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-m2nzqvxxqop7g6m72zus2iz5dyyljgds" CACHE PATH "")
@@ -33,7 +33,7 @@ set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-m2nzqvxxqop7g6m72zus2iz5dyyljgds" CACHE PA
 # scr not built by uberenv
 
 # conduit from uberenv
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.3.1-pjpcm54rfefr7aa4tnpup3jwb4ktcsml" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.3.1-aoehnwvmujmlvwbv7smdvp33ymsaepqo" CACHE PATH "")
 
 # mfem from uberenv
 set(MFEM_DIR "${TPL_ROOT}/mfem-3.3.2-jts226skzh4yeew5yls3irfcrmo7sfhl" CACHE PATH "")
@@ -45,7 +45,7 @@ set(PYTHON_EXECUTABLE "${TPL_ROOT}/python-2.7.11-czmmsiz43za3cndaqutjilrozhjwkum
 set(LUA_DIR "${TPL_ROOT}/lua-5.1.5-2wyknlv4hq6nez5j54bg4tue23i2xydb" CACHE PATH "")
 
 # doxygen from uberenv
-set(DOXYGEN_EXECUTABLE "${TPL_ROOT}/doxygen-1.8.11-ncrqtyvfd7nbqmojgchtf4xovxfqzuf2/bin/doxygen" CACHE PATH "")
+set(DOXYGEN_EXECUTABLE "${TPL_ROOT}/doxygen-1.8.11-wl2hwvov4xx6exbzvljnftuhnw6tuf3s/bin/doxygen" CACHE PATH "")
 
 # sphinx 1.4.5 from uberenv
 set(SPHINX_EXECUTABLE "${TPL_ROOT}/python-2.7.11-czmmsiz43za3cndaqutjilrozhjwkuma/bin/sphinx-build" CACHE PATH "")
@@ -66,7 +66,7 @@ set(GENHTML_PATH "${TPL_ROOT}/lcov-1.11-x3r6z227aw5uuwtyapupfxwhefls24dc/usr/bin
 ##################################
 
 ##
-## Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+## Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 ##
 ## Produced at the Lawrence Livermore National Laboratory.
 ##
@@ -86,10 +86,14 @@ set(GENHTML_PATH "${TPL_ROOT}/lcov-1.11-x3r6z227aw5uuwtyapupfxwhefls24dc/usr/bin
 # lc blueos xl@coral host configs
 ##############################################################################
 
+set(CMAKE_C_COMPILER_ID       "XL" CACHE STRING "")
+set(CMAKE_CXX_COMPILER_ID     "XL" CACHE STRING "")
+set(CMAKE_Fortran_COMPILER_ID "XL" CACHE STRING "")
+
 set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 
 # Convert C-style comments to Fortran and link fortran exes to C++ libraries
-set(BLT_FORTRAN_FLAGS "-WF,-C! -Wl,-lstdc++ -Wl,/usr/tce/packages/xl/xl-beta-2017.10.13/xlC/13.1.6/lib/libibmc++.so" CACHE STRING "")
+set(BLT_FORTRAN_FLAGS "-WF,-C! -qxlf2003=polymorphic" CACHE STRING "")
 
 ##############################################################################
 # MPI - manually added for now
@@ -97,8 +101,9 @@ set(BLT_FORTRAN_FLAGS "-WF,-C! -Wl,-lstdc++ -Wl,/usr/tce/packages/xl/xl-beta-201
 
 set(ENABLE_MPI ON CACHE BOOL "")
 
-set(MPI_HOME                 "/usr/tce/packages/spectrum-mpi/ibm/spectrum-mpi-2017.11.10/" CACHE PATH "")
+set(MPI_HOME                 "/usr/tce/packages/spectrum-mpi/spectrum-mpi-2018.04.27-xl-2018.05.18/" CACHE PATH "")
 set(MPI_C_COMPILER           "${MPI_HOME}/bin/mpixlc"   CACHE PATH "")
+set(MPI_CXX_COMPILER         "${MPI_HOME}/bin/mpixlC"   CACHE PATH "")
 set(MPI_Fortran_COMPILER     "${MPI_HOME}/bin/mpixlf"   CACHE PATH "")
 
 set(MPIEXEC                  "${MPI_HOME}/bin/mpirun" CACHE PATH "")

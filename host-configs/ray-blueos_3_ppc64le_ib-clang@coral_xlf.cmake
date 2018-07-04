@@ -7,25 +7,25 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsa/axom/thirdparty_libs/builds/2018_05_01_15_58_27/spack/opt/spack/blueos_3_ppc64le_ib/clang-coral_xlf/cmake-3.8.2-f4bp77lrsuauuncgtivaoox2vfombs32/bin/cmake
+# cmake executable path: /usr/workspace/wsa/axom/thirdparty_libs/builds/2018_06_06_17_07_58/spack/opt/spack/blueos_3_ppc64le_ib/clang-coral_xlf/cmake-3.9.6-4zsel7yltmvrczzumge467lmmi5ffw3d/bin/cmake
 
 #######
 # using clang@coral_xlf compiler spec
 #######
 
 # c compiler used by spack
-set(CMAKE_C_COMPILER "/usr/tce/packages/clang/clang-coral-2017.10.13/bin/clang" CACHE PATH "")
+set(CMAKE_C_COMPILER "/usr/tce/packages/clang/clang-coral-2018.05.23/bin/clang" CACHE PATH "")
 
 # cpp compiler used by spack
-set(CMAKE_CXX_COMPILER "/usr/tce/packages/clang/clang-coral-2017.10.13/bin/clang++" CACHE PATH "")
+set(CMAKE_CXX_COMPILER "/usr/tce/packages/clang/clang-coral-2018.05.23/bin/clang++" CACHE PATH "")
 
 # fortran compiler used by spack
 set(ENABLE_FORTRAN ON CACHE BOOL "")
 
-set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-beta-2017.10.13/bin/xlf2003" CACHE PATH "")
+set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-2018.05.18/bin/xlf2003" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2018_05_01_15_58_27/spack/opt/spack/blueos_3_ppc64le_ib/clang-coral_xlf" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2018_06_06_17_07_58/spack/opt/spack/blueos_3_ppc64le_ib/clang-coral_xlf" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-73nxx5224rq5zpn4kjrkq2hfmuzu4hmt" CACHE PATH "")
@@ -33,7 +33,7 @@ set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-73nxx5224rq5zpn4kjrkq2hfmuzu4hmt" CACHE PA
 # scr not built by uberenv
 
 # conduit from uberenv
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.3.1-sl2vrhuyfhhq5r75yoikb2a255skzxcz" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.3.1-gcia3tt5skiwo7ghvzxtcrmpqxbcuffx" CACHE PATH "")
 
 # mfem from uberenv
 set(MFEM_DIR "${TPL_ROOT}/mfem-3.3.2-lmjbjzcrjmwvgpgavjki62z4fa42c4bu" CACHE PATH "")
@@ -45,7 +45,7 @@ set(PYTHON_EXECUTABLE "${TPL_ROOT}/python-2.7.11-2j4lnnqrepn6p2jci2pqv3qtietk5nh
 set(LUA_DIR "${TPL_ROOT}/lua-5.1.5-ff6lol2zlfsqiebnrseluf2kgsbr36fo" CACHE PATH "")
 
 # doxygen from uberenv
-set(DOXYGEN_EXECUTABLE "${TPL_ROOT}/doxygen-1.8.11-4ohg4xoyg4gwlmbdjaorce7rrhkzdkds/bin/doxygen" CACHE PATH "")
+set(DOXYGEN_EXECUTABLE "${TPL_ROOT}/doxygen-1.8.11-f6ubl5oefysyqvgu5n462d6ealqoxqwj/bin/doxygen" CACHE PATH "")
 
 # sphinx 1.4.5 from uberenv
 set(SPHINX_EXECUTABLE "${TPL_ROOT}/python-2.7.11-2j4lnnqrepn6p2jci2pqv3qtietk5nh4/bin/sphinx-build" CACHE PATH "")
@@ -92,7 +92,7 @@ set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 set(BLT_FORTRAN_FLAGS "-WF,-C!" CACHE STRING "")
 
 # Adds a missing rpath for libraries associated with the fortran compiler
-set(BLT_EXE_LINKER_FLAGS "-Wl,-rpath,/usr/tce/packages/xl/xl-beta-2017.10.13/lib" CACHE STRING "")
+set(BLT_EXE_LINKER_FLAGS "-Wl,-rpath,/usr/tce/packages/xl/xl-2018.05.18/lib/" CACHE STRING "")
 
 ##############################################################################
 # MPI - manually added for now
@@ -100,12 +100,12 @@ set(BLT_EXE_LINKER_FLAGS "-Wl,-rpath,/usr/tce/packages/xl/xl-beta-2017.10.13/lib
 
 set(ENABLE_MPI ON CACHE BOOL "")
 
-set(MPI_HOME                 "/usr/tce/packages/spectrum-mpi/spectrum-mpi-2017.08.24-clang-coral-2017.10.13/" CACHE PATH "")
+set(MPI_HOME                 "/usr/tce/packages/spectrum-mpi/spectrum-mpi-2018.04.27-clang-coral-2018.05.23/" CACHE PATH "")
 set(MPI_C_COMPILER           "${MPI_HOME}/bin/mpicc"   CACHE PATH "")
 set(MPI_CXX_COMPILER         "${MPI_HOME}/bin/mpicxx"  CACHE PATH "")
 set(MPI_Fortran_COMPILER     "${MPI_HOME}/bin/mpifort" CACHE PATH "")
 
-set(MPIEXEC              "mpirun" CACHE PATH "")
+set(MPIEXEC              "${MPI_HOME}/bin/mpirun" CACHE PATH "")
 set(MPIEXEC_NUMPROC_FLAG "-np" CACHE PATH "")
 
 
