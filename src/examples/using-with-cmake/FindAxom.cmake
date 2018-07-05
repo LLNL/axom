@@ -42,14 +42,14 @@ if(NOT EXISTS ${AXOM_DIR}/lib/cmake/axom_utils-targets.cmake)
 endif()
 
 ###############################################################################
-# Import Conduit's CMake targets
+# Import Axom's CMake targets
 ###############################################################################
 include(${AXOM_DIR}/lib/cmake/axom_utils-targets.cmake)
 
 ###############################################################################
 # Set remaning CMake variables 
 ###############################################################################
-# we found Conduit
+# we found Axom
 set(AXOM_FOUND TRUE)
 # provide location of the headers in AXOM_INCLUDE_DIRS
 set(AXOM_INCLUDE_DIRS ${AXOM_DIR}/include/)
