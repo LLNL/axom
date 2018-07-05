@@ -13,7 +13,11 @@ using namespace std;
 using namespace axom::multimat;
 
 
-MultiMat::MultiMat() {
+MultiMat::MultiMat():
+  m_cellMatRel(nullptr),
+  m_cellMatNZSet(nullptr),
+  m_cellMatProdSet(nullptr)
+{
   m_ncells = m_nmats = 0;
   m_dataLayout = DataLayout::CELL_CENTRIC;
   m_sparcityLayout = SparcityLayout::SPARSE;
@@ -29,6 +33,9 @@ MultiMat::~MultiMat()
   for (auto mapPtr : m_mapVec) {
     delete mapPtr;
   }
+  delete m_cellMatProdSet;
+  delete m_cellMatNZSet;
+  delete m_cellMatRel;
 }
 
 template<typename T>
@@ -64,17 +71,21 @@ MultiMat::MultiMat(const MultiMat& other) :
   m_cellSet(0,other.m_ncells),
   m_cellMatRel_beginsVec(other.m_cellMatRel_beginsVec),
   m_cellMatRel_indicesVec(other.m_cellMatRel_indicesVec),
+  m_cellMatRel(nullptr),
+  m_cellMatNZSet(nullptr),
+  m_cellMatProdSet(nullptr),
   m_arrNameVec(other.m_arrNameVec),
   m_fieldMappingVec(other.m_fieldMappingVec),
   m_dataTypeVec(other.m_dataTypeVec)
 {
   RangeSetType& set1 = (m_dataLayout == DataLayout::CELL_CENTRIC ? m_cellSet : m_matSet);
   RangeSetType& set2 = (m_dataLayout == DataLayout::CELL_CENTRIC ? m_matSet : m_cellSet);
-  m_cellMatRel = StaticVariableRelationType(&set1, &set2);
-  m_cellMatRel.bindBeginOffsets(set1.size(), &m_cellMatRel_beginsVec);
-  m_cellMatRel.bindIndices(m_cellMatRel_indicesVec.size(), &m_cellMatRel_indicesVec);
-  m_cellMatNZSet = RelationSetType(&m_cellMatRel);
-  m_cellMatProdSet = ProductSetType(&set1, &set2);
+  m_cellMatRel = new StaticVariableRelationType(&set1, &set2);
+  m_cellMatRel->bindBeginOffsets(set1.size(), &m_cellMatRel_beginsVec);
+  m_cellMatRel->bindIndices(m_cellMatRel_indicesVec.size(), &m_cellMatRel_indicesVec);
+  m_cellMatNZSet = new RelationSetType(m_cellMatRel);
+  m_cellMatProdSet = new ProductSetType(&set1, &set2);
+
 
   for (unsigned int map_i = 0; map_i < other.m_mapVec.size(); ++map_i)
   {
@@ -132,7 +143,8 @@ void MultiMat::setCellMatRel(vector<bool>& vecarr)
   //Setup the SLAM cell to mat relation
   //This step is necessary if the volfrac field is sparse
 
-  assert(vecarr.size() == m_ncells * m_nmats); //This should be a dense matrix
+  SLIC_ASSERT(vecarr.size() == m_ncells * m_nmats); //This should be a dense matrix
+  SLIC_ASSERT(m_cellMatRel == nullptr); //cellmatRel has not been set before
 
   RangeSetType& set1 = (m_dataLayout == DataLayout::CELL_CENTRIC ? m_cellSet : m_matSet);
   RangeSetType& set2 = (m_dataLayout == DataLayout::CELL_CENTRIC ? m_matSet : m_cellSet);
@@ -160,38 +172,27 @@ void MultiMat::setCellMatRel(vector<bool>& vecarr)
   }
   m_cellMatRel_beginsVec[set1.size()] = curIdx;
 
-  m_cellMatRel = StaticVariableRelationType(&set1, &set2);
-  m_cellMatRel.bindBeginOffsets(set1.size(), &m_cellMatRel_beginsVec);
-  m_cellMatRel.bindIndices(m_cellMatRel_indicesVec.size(), &m_cellMatRel_indicesVec);
+  m_cellMatRel = new StaticVariableRelationType(&set1, &set2);
+  m_cellMatRel->bindBeginOffsets(set1.size(), &m_cellMatRel_beginsVec);
+  m_cellMatRel->bindIndices(m_cellMatRel_indicesVec.size(), &m_cellMatRel_indicesVec);
 
-  assert(m_cellMatRel.isValid());
+  assert(m_cellMatRel->isValid());
   
   cout << "indice total size: " << m_cellMatRel_indicesVec.size() << endl;
-  cout << "cellmatrel total size: " << m_cellMatRel.totalSize() << endl;
+  cout << "cellmatrel total size: " << m_cellMatRel->totalSize() << endl;
   cout << "fromset size: " << set1.size() << endl;
 
   //Set-up both dense and sparse sets, since they don't take any extra memory...
 
   //a set of mapped relation
-  m_cellMatNZSet = RelationSetType(&m_cellMatRel);
+  m_cellMatNZSet = new RelationSetType(m_cellMatRel);
   
   // a cartesian set of cell x mat
-  m_cellMatProdSet = ProductSetType(&set1, &set2);
+  m_cellMatProdSet = new ProductSetType(&set1, &set2);
   
-
+  
   //Create a field for VolFrac as the 0th field
-  //BivariateSetType* s = nullptr;
-  //if (m_sparcityLayout == SparcityLayout::SPARSE) {
-  //  s = &m_cellMatNZSet;
-  //}
-  //else if (m_sparcityLayout == SparcityLayout::DENSE) {
-  //  s = &m_cellMatProdSet;
-  //}
-  //else assert(false);
-  //auto new_map_ptr = new Field2D<double>(s);
-  //m_mapVec.push_back(new_map_ptr);
   m_mapVec.push_back(nullptr);
-
   m_arrNameVec.push_back("Volfrac");
   m_fieldMappingVec.push_back(FieldMapping::PER_CELL_MAT);
   m_dataTypeVec.push_back(DataTypeSupported::TypeDouble);
@@ -274,13 +275,14 @@ int MultiMat::getFieldIdx(std::string field_name)
 
 MultiMat::IdSet MultiMat::getMatInCell(int c)
 {
-  assert(m_dataLayout == DataLayout::CELL_CENTRIC);
+  SLIC_ASSERT(m_dataLayout == DataLayout::CELL_CENTRIC);
+  SLIC_ASSERT(m_cellMatRel != nullptr);
 
   if (m_sparcityLayout == SparcityLayout::SPARSE) {
-    return m_cellMatRel[c]; //returns a RelationSet / OrderedSet with STLindirection
+    return (*m_cellMatRel)[c]; //returns a RelationSet / OrderedSet with STLindirection
   }
   else if (m_sparcityLayout == SparcityLayout::DENSE)
-    return m_cellMatRel[c]; //since the relation is currently only stored sparse, return the same thing.
+    return (*m_cellMatRel)[c]; //since the relation is currently only stored sparse, return the same thing.
   else assert(false);
 }
 
@@ -297,7 +299,7 @@ MultiMat::IndexSet MultiMat::getIndexingSetOfCell(int c)
   }
   else if (m_sparcityLayout == SparcityLayout::DENSE) {
     //return m_cellMatProdSet.getRow(c);
-    int size2 = m_cellMatProdSet.secondSetSize();
+    int size2 = m_cellMatProdSet->secondSetSize();
     return RangeSetType::SetBuilder().range(c*size2, (c + 1)*size2 - 1);
   }
   else assert(false);
@@ -317,6 +319,9 @@ void MultiMat::convertLayoutToMaterialDominant()
 
 void MultiMat::transposeData()
 {
+  //create the new relation to pass into helper...
+  //TODO
+  
   for (unsigned int map_i = 0; map_i < m_fieldMappingVec.size(); map_i++)
   {
     //no conversion needed unless the field is PER_CELL_MAT
@@ -347,7 +352,7 @@ void MultiMat::transposeData()
 void MultiMat::convertLayoutToSparse() 
 { 
   if (m_sparcityLayout == SparcityLayout::SPARSE) return;
-
+  
   for (unsigned int map_i = 0; map_i < m_fieldMappingVec.size(); map_i++)
   {
     //no conversion needed unless the field is PER_CELL_MAT
@@ -521,9 +526,9 @@ MultiMat::BivariateSetType* MultiMat::get_mapped_biSet()
 {
   BivariateSetType* set_ptr = nullptr;
   if (m_sparcityLayout == SparcityLayout::SPARSE)
-    set_ptr = &m_cellMatNZSet;
+    set_ptr = m_cellMatNZSet;
   else if (m_sparcityLayout == SparcityLayout::DENSE)
-    set_ptr = &m_cellMatProdSet;
+    set_ptr = m_cellMatProdSet;
   
   SLIC_ASSERT(set_ptr != nullptr);
   return set_ptr;
