@@ -120,6 +120,10 @@ public:
   std::string getDataLayoutAsString() const ;
   SparcityLayout getSparcityLayout() const { return m_sparcityLayout; }
   std::string getSparcityLayoutAsString() const;
+  bool isSparse() const { return getSparcityLayout() == SparcityLayout::SPARSE; }
+  bool isDense() const { return getSparcityLayout() == SparcityLayout::DENSE; }
+  bool isCellDom() const { return getDataLayout() == DataLayout::CELL_CENTRIC; }
+  bool isMatDom() const { return getDataLayout() == DataLayout::MAT_CENTRIC; }
   FieldMapping getFieldMapping(int field_i) const { return m_fieldMappingVec[field_i]; }
 
   void print() const;
@@ -148,11 +152,11 @@ private:
   RangeSetType m_cellSet;
   RangeSetType m_matSet;
 
-  StaticVariableRelationType m_cellMatRel;
+  StaticVariableRelationType* m_cellMatRel;
   std::vector<SetPosType> m_cellMatRel_beginsVec; //to store the cell2mat relation
   std::vector<SetPosType> m_cellMatRel_indicesVec; //to store the cell2mat relation
-  RelationSetType m_cellMatNZSet; // set of non-zero entries in the cellXmat matrix
-  ProductSetType m_cellMatProdSet;
+  RelationSetType* m_cellMatNZSet; // set of non-zero entries in the cellXmat matrix
+  ProductSetType* m_cellMatProdSet;
   
   std::vector<std::string> m_arrNameVec;
   std::vector<FieldMapping> m_fieldMappingVec;
@@ -173,14 +177,8 @@ int MultiMat::addFieldArray_impl(std::string arr_name, FieldMapping arr_mapping,
 
   if (arr_mapping == FieldMapping::PER_CELL_MAT)
   {
-    BivariateSetType* s = nullptr;
-    if (m_sparcityLayout == SparcityLayout::SPARSE) {
-      s = &m_cellMatNZSet;
-    }
-    else if (m_sparcityLayout == SparcityLayout::DENSE) {
-      s = &m_cellMatProdSet;
-    }
-    else assert(false);
+    BivariateSetType* s = get_mapped_biSet();
+    assert(s != nullptr);
 
     Field2D<T>* new_map_ptr = new Field2D<T>(s, T(), stride);
     new_map_ptr->copy(data_arr);
@@ -298,10 +296,10 @@ void MultiMat::convertToSparse_helper(int map_i)
 
   Field2D<DataType>& old_map = *dynamic_cast<Field2D<DataType>*>(mapPtr);
   int stride = old_map.stride();
-  std::vector<DataType> arr_data(m_cellMatRel.totalSize()*stride);
+  std::vector<DataType> arr_data(m_cellMatRel->totalSize()*stride);
   int idx = 0;
-  for (int i = 0; i < m_cellMatRel.fromSetSize(); ++i) {
-    auto relset = m_cellMatRel[i];
+  for (int i = 0; i < m_cellMatRel->fromSetSize(); ++i) {
+    auto relset = (*m_cellMatRel)[i];
     auto submap = old_map(i);
     for (int j = 0; j < relset.size(); ++j) {
       for (int s = 0; s < stride; ++s) {
@@ -309,8 +307,8 @@ void MultiMat::convertToSparse_helper(int map_i)
       }
     }
   }
-  assert(idx == m_cellMatRel.totalSize()*stride);
-  Field2D<DataType>* new_field = new Field2D<DataType>(&m_cellMatNZSet, DataType(), stride);
+  assert(idx == m_cellMatRel->totalSize()*stride);
+  Field2D<DataType>* new_field = new Field2D<DataType>(m_cellMatNZSet, DataType(), stride);
   new_field->copy(&arr_data[0]);
 
   delete m_mapVec[map_i];
@@ -328,7 +326,7 @@ void MultiMat::convertToDense_helper(int map_i)
 
   Field2D<DataType>& old_map = *dynamic_cast<Field2D<DataType>*>(mapPtr);
   int stride = old_map.stride();
-  std::vector<DataType> arr_data(m_cellMatProdSet.size()*stride);
+  std::vector<DataType> arr_data(m_cellMatProdSet->size()*stride);
   for (int i = 0; i < old_map.firstSetSize(); ++i)
   {
     for (auto iter = old_map.begin(i); iter != old_map.end(i); ++iter)
@@ -341,7 +339,7 @@ void MultiMat::convertToDense_helper(int map_i)
     }
   }
 
-  Field2D<DataType>* new_field = new Field2D<DataType>(&m_cellMatProdSet, DataType(), stride);
+  Field2D<DataType>* new_field = new Field2D<DataType>(m_cellMatProdSet, DataType(), stride);
   new_field->copy(&arr_data[0]);
 
   delete m_mapVec[map_i];
@@ -367,8 +365,8 @@ void MultiMat::transposeData_helper(int map_i)
     set1 = &m_matSet;
     set2 = &m_cellSet;
   }
-  int set1Size = m_cellMatProdSet.firstSetSize();
-  int set2Size = m_cellMatProdSet.secondSetSize();
+  int set1Size = m_cellMatProdSet->firstSetSize();
+  int set2Size = m_cellMatProdSet->secondSetSize();
 
   if (m_sparcityLayout == SparcityLayout::SPARSE) {
     assert(false);
@@ -389,7 +387,7 @@ void MultiMat::transposeData_helper(int map_i)
     }
 
     //TODO
-    //m_cellMatProdSet = ProductSetType(set2, set1);
+    //m_cellMatProdSet = new ProductSetType(set2, set1);
 
   }
 }
