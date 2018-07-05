@@ -836,7 +836,7 @@ void test_code() {
         {
           int mat_id = setOfMaterialsInThisCell.at(j);
           for (int s = 0; s < map.numComp(); ++s) {
-            double val = map[indexSet.at(j)*map.numComp() + s];   //<-----
+            double val = map[indexSet[j]*map.numComp() + s];   //<-----
             //assert(val == map(indexSet.at(j), s)); //if 1dMap is used, this is also valid
             sum += val;
           }
