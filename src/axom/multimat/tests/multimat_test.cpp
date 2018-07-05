@@ -195,6 +195,50 @@ void check_values(MultiMat& mm, std::string arr_name, MM_test_data<DataType>& da
   }
 }
 
+template<typename T>
+MultiMat* newMM(MM_test_data<T>& data, DataLayout layout_used, SparcityLayout sparcity_used, std::string& array_name)
+{
+  MultiMat* mm_ptr = new MultiMat(layout_used, sparcity_used);
+  MultiMat& mm = *mm_ptr;
+  mm.setNumberOfCell(data.num_cells);
+  mm.setNumberOfMat(data.num_mats);
+
+  if (layout_used == DataLayout::CELL_CENTRIC)
+    mm.setCellMatRel(data.fillBool_cellcen);
+  else
+    mm.setCellMatRel(data.fillBool_matcen);
+
+  EXPECT_TRUE(mm.isValid());
+
+  if (layout_used == DataLayout::CELL_CENTRIC) {
+    if (sparcity_used == SparcityLayout::DENSE)
+      mm.setVolfracField(data.volfrac_cellcen_dense.data());
+    else
+      mm.setVolfracField(data.volfrac_cellcen_sparse.data());
+  }
+  else {
+    if (sparcity_used == SparcityLayout::DENSE)
+      mm.setVolfracField(data.volfrac_matcen_dense.data());
+    else
+      mm.setVolfracField(data.volfrac_matcen_sparse.data());
+  }
+
+  if (layout_used == DataLayout::CELL_CENTRIC) {
+    if (sparcity_used == SparcityLayout::DENSE)
+      mm.addField(array_name, FieldMapping::PER_CELL_MAT, data.cellmat_dense_arr.data(), data.stride);
+    else
+      mm.addField(array_name, FieldMapping::PER_CELL_MAT, data.cellmat_sparse_arr.data(), data.stride);
+  }
+  else {
+    if (sparcity_used == SparcityLayout::DENSE)
+      mm.addField(array_name, FieldMapping::PER_CELL_MAT, data.matcell_dense_arr.data(), data.stride);
+    else
+      mm.addField(array_name, FieldMapping::PER_CELL_MAT, data.matcell_sparse_arr.data(), data.stride);
+  }
+
+  return mm_ptr;
+}
+
 
 TEST(multimat, construct_multimat_1_array)
 {
@@ -206,46 +250,13 @@ TEST(multimat, construct_multimat_1_array)
   std::vector<DataLayout> data_layouts = { DataLayout::CELL_CENTRIC, DataLayout::MAT_CENTRIC };
   std::vector<SparcityLayout> sparcity_layouts = { SparcityLayout::DENSE, SparcityLayout::SPARSE };
 
+  std::string array_name = "Array 1";
+
   for (auto layout_used : data_layouts) {
     for (auto sparcity_used : sparcity_layouts) {
-      SLIC_INFO("Constructing MultiMat object...");
-      MultiMat mm(layout_used, sparcity_used);
-      mm.setNumberOfCell(data.num_cells);
-      mm.setNumberOfMat(data.num_mats);
-      if (layout_used == DataLayout::CELL_CENTRIC) 
-        mm.setCellMatRel(data.fillBool_cellcen);
-      else
-        mm.setCellMatRel(data.fillBool_matcen);
-
-      EXPECT_TRUE(mm.isValid());
-
-      if (layout_used == DataLayout::CELL_CENTRIC) {
-        if (sparcity_used == SparcityLayout::DENSE)
-          mm.setVolfracField(data.volfrac_cellcen_dense.data());
-        else
-          mm.setVolfracField(data.volfrac_cellcen_sparse.data());
-      }
-      else {
-        if (sparcity_used == SparcityLayout::DENSE)
-          mm.setVolfracField(data.volfrac_matcen_dense.data());
-        else
-          mm.setVolfracField(data.volfrac_matcen_sparse.data());
-      }
-
-      std::string array_name = "Array 1";
-
-      if (layout_used == DataLayout::CELL_CENTRIC) {
-        if(sparcity_used == SparcityLayout::DENSE)
-          mm.addField(array_name, FieldMapping::PER_CELL_MAT, data.cellmat_dense_arr.data(), stride_val);
-        else
-          mm.addField(array_name, FieldMapping::PER_CELL_MAT, data.cellmat_sparse_arr.data(), stride_val);
-      }
-      else {
-        if (sparcity_used == SparcityLayout::DENSE)
-          mm.addField(array_name, FieldMapping::PER_CELL_MAT, data.matcell_dense_arr.data(), stride_val);
-        else
-          mm.addField(array_name, FieldMapping::PER_CELL_MAT, data.matcell_sparse_arr.data(), stride_val);
-      }
+      SLIC_INFO("--------------------\nConstructing MultiMat object...");
+      MultiMat* mm_ptr = newMM(data, layout_used, sparcity_used, array_name);
+      MultiMat& mm = *mm_ptr;
 
       EXPECT_TRUE(mm.isValid(true));
       EXPECT_EQ(mm.getDataLayout(), layout_used);
@@ -260,6 +271,7 @@ TEST(multimat, construct_multimat_1_array)
       {
         for (auto sparcity_to_convert : sparcity_layouts)
         {
+          SLIC_INFO("Making a copy...");
           //Make Copies to test conversion
           MultiMat mm_c(mm);
           EXPECT_TRUE(mm_c.isValid(true));
@@ -270,7 +282,12 @@ TEST(multimat, construct_multimat_1_array)
 
           check_values<double>(mm_c, array_name, data);
 
+          SLIC_INFO("Converting layout...");
           mm_c.convertLayout(layout_to_convert, sparcity_to_convert);
+          SLIC_INFO("Layout converted from " << mm.getDataLayoutAsString()
+            << " and " << mm.getSparcityLayoutAsString() << 
+            "\n                          to " << mm_c.getDataLayoutAsString() 
+            << " and " << mm_c.getSparcityLayoutAsString() <<"...");
 
           EXPECT_TRUE(mm_c.isValid(true));
           EXPECT_EQ(mm_c.getDataLayout(), layout_to_convert);
@@ -281,6 +298,8 @@ TEST(multimat, construct_multimat_1_array)
 
         }
       }
+
+      delete mm_ptr;
     }
   }
 

@@ -32,18 +32,24 @@ MultiMat::~MultiMat()
 }
 
 template<typename T>
-MultiMat::MapBaseType* helperfun_copyField(MultiMat::MapBaseType* ptr, FieldMapping mapping)
+MultiMat::MapBaseType* MultiMat::helperfun_copyField(const MultiMat& mm, int map_i)
 {
-  if (mapping == FieldMapping::PER_CELL_MAT)
+  MapBaseType* other_map_ptr = mm.m_mapVec[map_i];
+  if (mm.getFieldMapping(map_i) == FieldMapping::PER_CELL_MAT)
   {
-    MultiMat::Field2D<T>* typed_ptr = dynamic_cast<MultiMat::Field2D<T>*>(ptr);
-    MultiMat::Field2D<T>* new_ptr = new MultiMat::Field2D<T>(*typed_ptr);
+    BivariateSetType* biSetPtr = dynamic_cast<BivariateSetType*>(get_mapped_set(getFieldMapping(map_i)));
+
+    MultiMat::Field2D<T>* typed_ptr = dynamic_cast<MultiMat::Field2D<T>*>(other_map_ptr);
+    MultiMat::Field2D<T>* new_ptr = new MultiMat::Field2D<T>(biSetPtr, T(), typed_ptr->stride());
+    new_ptr->copy(typed_ptr->getMap()->data().data());
     return new_ptr;
   }
   else
   {
-    MultiMat::Field1D<T>* typed_ptr = dynamic_cast<MultiMat::Field1D<T>*>(ptr);
-    MultiMat::Field1D<T>* new_ptr = new MultiMat::Field1D<T>(*typed_ptr);
+    SetType* setPtr = get_mapped_set(getFieldMapping(map_i));
+    MultiMat::Field1D<T>* typed_ptr = dynamic_cast<MultiMat::Field1D<T>*>(other_map_ptr);
+    MultiMat::Field1D<T>* new_ptr = new MultiMat::Field1D<T>(setPtr, T(), typed_ptr->stride());
+    new_ptr->copy(*typed_ptr);
     return new_ptr;
   }
 }
@@ -75,16 +81,16 @@ MultiMat::MultiMat(const MultiMat& other) :
     MapBaseType* new_map_ptr = nullptr;
     FieldMapping fm = m_fieldMappingVec[map_i];
     if (m_dataTypeVec[map_i] == DataTypeSupported::TypeDouble) {
-      new_map_ptr = helperfun_copyField<double>(other.m_mapVec[map_i], fm);
+      new_map_ptr = helperfun_copyField<double>(other, map_i);
     }
     else if (m_dataTypeVec[map_i] == DataTypeSupported::TypeFloat) {
-      new_map_ptr = helperfun_copyField<float>(other.m_mapVec[map_i], fm);
+      new_map_ptr = helperfun_copyField<float>(other, map_i);
     }
     else if (m_dataTypeVec[map_i] == DataTypeSupported::TypeInt) {
-      new_map_ptr = helperfun_copyField<int>(other.m_mapVec[map_i], fm);
+      new_map_ptr = helperfun_copyField<int>(other, map_i);
     }
     else if (m_dataTypeVec[map_i] == DataTypeSupported::TypeUnsignChar) {
-      new_map_ptr = helperfun_copyField<unsigned char>(other.m_mapVec[map_i], fm);
+      new_map_ptr = helperfun_copyField<unsigned char>(other, map_i);
     }
     else assert(false); //TODO
     
@@ -131,8 +137,14 @@ void MultiMat::setCellMatRel(vector<bool>& vecarr)
   RangeSetType& set1 = (m_dataLayout == DataLayout::CELL_CENTRIC ? m_cellSet : m_matSet);
   RangeSetType& set2 = (m_dataLayout == DataLayout::CELL_CENTRIC ? m_matSet : m_cellSet);
 
+  //count the non-zeros
+  int nz_count = 0;
+  for (bool b : vecarr)
+    nz_count += b;
+
   //Set-up the cell/mat relation
   m_cellMatRel_beginsVec.resize(set1.size() + 1, -1);
+  m_cellMatRel_indicesVec.resize(nz_count);
 
   SetPosType curIdx = SetPosType();
   for (SetPosType i = 0; i < set1.size(); ++i)
@@ -141,7 +153,7 @@ void MultiMat::setCellMatRel(vector<bool>& vecarr)
     for (SetPosType j = 0; j < set2.size(); ++j)
     {
       if (vecarr[i*set2.size() + j]) {
-        m_cellMatRel_indicesVec.push_back(j);
+        m_cellMatRel_indicesVec[curIdx] = j;
         ++curIdx;
       }
     }
@@ -153,7 +165,7 @@ void MultiMat::setCellMatRel(vector<bool>& vecarr)
   m_cellMatRel.bindIndices(m_cellMatRel_indicesVec.size(), &m_cellMatRel_indicesVec);
 
   assert(m_cellMatRel.isValid());
-
+  
   cout << "indice total size: " << m_cellMatRel_indicesVec.size() << endl;
   cout << "cellmatrel total size: " << m_cellMatRel.totalSize() << endl;
   cout << "fromset size: " << set1.size() << endl;
@@ -162,10 +174,10 @@ void MultiMat::setCellMatRel(vector<bool>& vecarr)
 
   //a set of mapped relation
   m_cellMatNZSet = RelationSetType(&m_cellMatRel);
-
+  
   // a cartesian set of cell x mat
   m_cellMatProdSet = ProductSetType(&set1, &set2);
-
+  
 
   //Create a field for VolFrac as the 0th field
   //BivariateSetType* s = nullptr;
@@ -415,13 +427,7 @@ void MultiMat::convertLayout(DataLayout new_layout, SparcityLayout new_sparcity)
 }
 
 
-DataLayout MultiMat::getDataLayout()
-{
-  return m_dataLayout;
-}
-
-
-std::string axom::multimat::MultiMat::getDataLayoutAsString()
+std::string MultiMat::getDataLayoutAsString() const
 {
   switch (m_dataLayout) {
   case DataLayout::CELL_CENTRIC:
@@ -433,10 +439,16 @@ std::string axom::multimat::MultiMat::getDataLayoutAsString()
   }
 }
 
-
-SparcityLayout MultiMat::getSparcityLayout()
+std::string MultiMat::getSparcityLayoutAsString() const
 {
-  return m_sparcityLayout;
+  switch (m_sparcityLayout) {
+  case SparcityLayout::DENSE:
+    return "Dense";
+  case SparcityLayout::SPARSE:
+    return "Sparse";
+  default:
+    assert(false);
+  }
 }
 
 
@@ -486,27 +498,34 @@ bool MultiMat::isValid(bool verboseOutput) const
 
 MultiMat::SetType* MultiMat::get_mapped_set(FieldMapping fm)
 {
-  SetType* map_set = nullptr;
+  SetType* set_ptr = nullptr;
   switch (fm)
   {
   case FieldMapping::PER_CELL:
-    map_set = &m_cellSet;
+    set_ptr = &m_cellSet;
     break;
   case FieldMapping::PER_MAT:
-    map_set = &m_matSet;
+    set_ptr = &m_matSet;
     break;
   case FieldMapping::PER_CELL_MAT:
-    if (m_sparcityLayout == SparcityLayout::SPARSE)
-      map_set = &m_cellMatNZSet;
-    else if (m_sparcityLayout == SparcityLayout::DENSE)
-      map_set = &m_cellMatProdSet;
-    else assert(false);
+    set_ptr = dynamic_cast<SetType*>(get_mapped_biSet());
     break;
   default:
     assert(false);
     return nullptr;
   }
-  return map_set;
+  return set_ptr;
 }
 
+MultiMat::BivariateSetType* MultiMat::get_mapped_biSet()
+{
+  BivariateSetType* set_ptr = nullptr;
+  if (m_sparcityLayout == SparcityLayout::SPARSE)
+    set_ptr = &m_cellMatNZSet;
+  else if (m_sparcityLayout == SparcityLayout::DENSE)
+    set_ptr = &m_cellMatProdSet;
+  
+  SLIC_ASSERT(set_ptr != nullptr);
+  return set_ptr;
+}
 
