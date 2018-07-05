@@ -31,6 +31,78 @@ MultiMat::~MultiMat()
   }
 }
 
+template<typename T>
+MultiMat::MapBaseType* helperfun_copyField(MultiMat::MapBaseType* ptr, FieldMapping mapping)
+{
+  if (mapping == FieldMapping::PER_CELL_MAT)
+  {
+    MultiMat::Field2D<T>* typed_ptr = dynamic_cast<MultiMat::Field2D<T>*>(ptr);
+    MultiMat::Field2D<T>* new_ptr = new MultiMat::Field2D<T>(*typed_ptr);
+    return new_ptr;
+  }
+  else
+  {
+    MultiMat::Field1D<T>* typed_ptr = dynamic_cast<MultiMat::Field1D<T>*>(ptr);
+    MultiMat::Field1D<T>* new_ptr = new MultiMat::Field1D<T>(*typed_ptr);
+    return new_ptr;
+  }
+}
+
+
+MultiMat::MultiMat(const MultiMat& other) :
+  m_ncells(other.m_ncells),
+  m_nmats(other.m_nmats),
+  m_dataLayout( other.m_dataLayout),
+  m_sparcityLayout( other.m_sparcityLayout),
+  m_matSet(0, other.m_nmats),
+  m_cellSet(0,other.m_ncells),
+  m_cellMatRel_beginsVec(other.m_cellMatRel_beginsVec),
+  m_cellMatRel_indicesVec(other.m_cellMatRel_indicesVec),
+  m_arrNameVec(other.m_arrNameVec),
+  m_fieldMappingVec(other.m_fieldMappingVec),
+  m_dataTypeVec(other.m_dataTypeVec)
+{
+  RangeSetType& set1 = (m_dataLayout == DataLayout::CELL_CENTRIC ? m_cellSet : m_matSet);
+  RangeSetType& set2 = (m_dataLayout == DataLayout::CELL_CENTRIC ? m_matSet : m_cellSet);
+  m_cellMatRel = StaticVariableRelationType(&set1, &set2);
+  m_cellMatRel.bindBeginOffsets(set1.size(), &m_cellMatRel_beginsVec);
+  m_cellMatRel.bindIndices(m_cellMatRel_indicesVec.size(), &m_cellMatRel_indicesVec);
+  m_cellMatNZSet = RelationSetType(&m_cellMatRel);
+  m_cellMatProdSet = ProductSetType(&set1, &set2);
+
+  for (unsigned int map_i = 0; map_i < other.m_mapVec.size(); ++map_i)
+  {
+    MapBaseType* new_map_ptr = nullptr;
+    FieldMapping fm = m_fieldMappingVec[map_i];
+    if (m_dataTypeVec[map_i] == DataTypeSupported::TypeDouble) {
+      new_map_ptr = helperfun_copyField<double>(other.m_mapVec[map_i], fm);
+    }
+    else if (m_dataTypeVec[map_i] == DataTypeSupported::TypeFloat) {
+      new_map_ptr = helperfun_copyField<float>(other.m_mapVec[map_i], fm);
+    }
+    else if (m_dataTypeVec[map_i] == DataTypeSupported::TypeInt) {
+      new_map_ptr = helperfun_copyField<int>(other.m_mapVec[map_i], fm);
+    }
+    else if (m_dataTypeVec[map_i] == DataTypeSupported::TypeUnsignChar) {
+      new_map_ptr = helperfun_copyField<unsigned char>(other.m_mapVec[map_i], fm);
+    }
+    else assert(false); //TODO
+    
+    SLIC_ASSERT(new_map_ptr != nullptr);
+    m_mapVec.push_back(new_map_ptr);
+  }
+}
+
+MultiMat& MultiMat::operator=(const MultiMat& other)
+{
+  if (this == &other) return *this;
+
+  SLIC_ASSERT(false);
+
+  return *this;
+}
+
+
 void MultiMat::setNumberOfMat(int n)
 {
   assert(n > 0);
@@ -219,44 +291,126 @@ MultiMat::IndexSet MultiMat::getIndexingSetOfCell(int c)
   else assert(false);
 }
 
+void MultiMat::convertLayoutToCellDominant()
+{
+  if (m_dataLayout == DataLayout::CELL_CENTRIC) return;
+  transposeData();
+}
+
+void MultiMat::convertLayoutToMaterialDominant() 
+{ 
+  if (m_dataLayout == DataLayout::MAT_CENTRIC) return;
+  transposeData();
+}
+
+void MultiMat::transposeData()
+{
+  for (unsigned int map_i = 0; map_i < m_fieldMappingVec.size(); map_i++)
+  {
+    //no conversion needed unless the field is PER_CELL_MAT
+    if (m_fieldMappingVec[map_i] != FieldMapping::PER_CELL_MAT)
+      continue;
+
+    if (m_dataTypeVec[map_i] == DataTypeSupported::TypeDouble) {
+      transposeData_helper<double>(map_i);
+    }
+    else if (m_dataTypeVec[map_i] == DataTypeSupported::TypeFloat) {
+      transposeData_helper<float>(map_i);
+    }
+    else if (m_dataTypeVec[map_i] == DataTypeSupported::TypeInt) {
+      transposeData_helper<int>(map_i);
+    }
+    else if (m_dataTypeVec[map_i] == DataTypeSupported::TypeUnsignChar) {
+      transposeData_helper<unsigned char>(map_i);
+    }
+    else assert(false); //TODO
+  }
+
+  if(m_dataLayout == DataLayout::MAT_CENTRIC)
+    m_dataLayout = DataLayout::CELL_CENTRIC;
+  else
+    m_dataLayout = DataLayout::MAT_CENTRIC;
+}
+
+void MultiMat::convertLayoutToSparse() 
+{ 
+  if (m_sparcityLayout == SparcityLayout::SPARSE) return;
+
+  for (unsigned int map_i = 0; map_i < m_fieldMappingVec.size(); map_i++)
+  {
+    //no conversion needed unless the field is PER_CELL_MAT
+    if (m_fieldMappingVec[map_i] != FieldMapping::PER_CELL_MAT)
+      continue;
+
+    if (m_dataTypeVec[map_i] == DataTypeSupported::TypeDouble) {
+      convertToSparse_helper<double>(map_i);
+    }
+    else if (m_dataTypeVec[map_i] == DataTypeSupported::TypeFloat) {
+      convertToSparse_helper<float>(map_i);
+    }
+    else if (m_dataTypeVec[map_i] == DataTypeSupported::TypeInt) {
+      convertToSparse_helper<int>(map_i);
+    }
+    else if (m_dataTypeVec[map_i] == DataTypeSupported::TypeUnsignChar) {
+      convertToSparse_helper<unsigned char>(map_i);
+    }
+    else assert(false); //TODO
+  }
+  m_sparcityLayout = SparcityLayout::SPARSE;
+}
+
+
+void MultiMat::convertLayoutToDense() 
+{ 
+  if(m_sparcityLayout == SparcityLayout::DENSE) return;
+
+  for (unsigned int map_i = 0; map_i < m_fieldMappingVec.size(); map_i++)
+  {
+    //no conversion needed unless the field is PER_CELL_MAT
+    if (m_fieldMappingVec[map_i] != FieldMapping::PER_CELL_MAT)
+      continue;
+
+    if (m_dataTypeVec[map_i] == DataTypeSupported::TypeDouble) {
+      convertToDense_helper<double>(map_i);
+    }
+    else if (m_dataTypeVec[map_i] == DataTypeSupported::TypeFloat) {
+      convertToDense_helper<float>(map_i);
+    }
+    else if (m_dataTypeVec[map_i] == DataTypeSupported::TypeInt) {
+      convertToDense_helper<int>(map_i);
+    }
+    else if (m_dataTypeVec[map_i] == DataTypeSupported::TypeUnsignChar) {
+      convertToDense_helper<unsigned char>(map_i);
+    }
+    else assert(false); //TODO
+  }
+  m_sparcityLayout = SparcityLayout::DENSE;
+}
+
 
 void MultiMat::convertLayout(DataLayout new_layout, SparcityLayout new_sparcity)
 {
   if (new_layout == m_dataLayout && new_sparcity == m_sparcityLayout)
     return;
 
-  //assumes cell dom stays cell dom
-  assert(new_layout == DataLayout::CELL_CENTRIC);
-
+  //sparse/dense conversion
   if (m_sparcityLayout == SparcityLayout::DENSE && new_sparcity == SparcityLayout::SPARSE)
-  { //convert from dense to sparse
-
-    //go through each field, for every matXcell field, create a new map of sparse mat
-    for (unsigned int map_i = 0; map_i < m_fieldMappingVec.size(); map_i++)
-    {
-      if (m_fieldMappingVec[map_i] != FieldMapping::PER_CELL_MAT)
-        continue;
-
-      if (m_dataTypeVec[map_i] == DataTypeSupported::TypeDouble) {
-        convertToSparse_helper<double>(map_i);
-      }
-      else if (m_dataTypeVec[map_i] == DataTypeSupported::TypeFloat) {
-        convertToSparse_helper<float>(map_i);
-      }
-      else if (m_dataTypeVec[map_i] == DataTypeSupported::TypeInt) {
-        convertToSparse_helper<int>(map_i);
-      }
-      else if (m_dataTypeVec[map_i] == DataTypeSupported::TypeUnsignChar) {
-        convertToSparse_helper<unsigned char>(map_i);
-      }
-      else assert(false); //TODO
-
-      m_sparcityLayout = SparcityLayout::SPARSE;
-    } 
+  {
+    convertLayoutToSparse();
   }
-  else {
-    assert(false);
-    //TODO
+  else if(m_sparcityLayout == SparcityLayout::SPARSE && new_sparcity == SparcityLayout::DENSE)
+  {
+    convertLayoutToDense();
+  }
+
+  //cell/mat centric conversion
+  if (m_dataLayout == DataLayout::CELL_CENTRIC && new_layout == DataLayout::MAT_CENTRIC)
+  {
+    convertLayoutToMaterialDominant();
+  }
+  else if(m_dataLayout == DataLayout::MAT_CENTRIC && new_layout == DataLayout::CELL_CENTRIC)
+  {
+    convertLayoutToCellDominant();
   }
 }
 
@@ -267,13 +421,13 @@ DataLayout MultiMat::getDataLayout()
 }
 
 
-std::string axom::multimat::MultiMat::getLayoutAsString()
+std::string axom::multimat::MultiMat::getDataLayoutAsString()
 {
   switch (m_dataLayout) {
   case DataLayout::CELL_CENTRIC:
-    return "CELL_CENTRIC";
+    return "Cell-Centric";
   case DataLayout::MAT_CENTRIC:
-    return "MAT_CENTRIC";
+    return "Material-Centric";
   default:
     assert(false);
   }

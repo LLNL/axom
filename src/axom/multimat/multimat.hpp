@@ -76,9 +76,12 @@ public:
   using IdSet = OrderedSetType;
   
 /** Public functions **/
+  //Constructors 
   MultiMat();
   MultiMat(DataLayout, SparcityLayout);
   ~MultiMat();
+  MultiMat(const MultiMat&);
+  MultiMat& operator=(const MultiMat&);
 
   //Set-up functions
   void setNumberOfMat(int); 
@@ -107,13 +110,14 @@ public:
   //...
 
   //Layout modification functions
-  void convertLayoutToCellDominant() { convertLayout(DataLayout::CELL_CENTRIC, m_sparcityLayout); }
-  void convertLayoutToMaterialDominant() { convertLayout(DataLayout::MAT_CENTRIC, m_sparcityLayout); }
-  void convertLayoutToSparse() { convertLayout(m_dataLayout, SparcityLayout::SPARSE); }
-  void convertLayoutToDense() { convertLayout(m_dataLayout, SparcityLayout::DENSE); }
+  void convertLayoutToCellDominant();
+  void convertLayoutToMaterialDominant();
+  void transposeData();
+  void convertLayoutToSparse();
+  void convertLayoutToDense();
   void convertLayout(DataLayout, SparcityLayout);
   DataLayout getDataLayout();
-  std::string getLayoutAsString();
+  std::string getDataLayoutAsString();
   SparcityLayout getSparcityLayout();
 
   void print() const;
@@ -123,6 +127,10 @@ private: //private functions
   SetType* get_mapped_set(FieldMapping fm);
   template<typename DataType>
   void convertToSparse_helper(int map_i);
+  template<typename DataType>
+  void convertToDense_helper(int map_i);
+  template<typename DataType>
+  void transposeData_helper(int map_i);
   template<typename T>
   int addFieldArray_impl(std::string, FieldMapping, T*, int);
 
@@ -259,6 +267,7 @@ MultiMat::Field1D<T>& MultiMat::get1dField(std::string field_name)
     assert(false); //No array with such name found
 }
 
+
 template<typename T>
 MultiMat::Field2D<T>& MultiMat::get2dField(std::string field_name)
 {
@@ -272,19 +281,22 @@ MultiMat::Field2D<T>& MultiMat::get2dField(std::string field_name)
   }
 }
 
+
 template<typename DataType>
 void MultiMat::convertToSparse_helper(int map_i)
 {
+  SLIC_ASSERT(m_sparcityLayout != SparcityLayout::SPARSE);
+
   MapBaseType* mapPtr = m_mapVec[map_i];
   if (map_i == 0 && mapPtr == nullptr) { return; }
 
-  Field2D<DataType>& old_ptr = *dynamic_cast<Field2D<DataType>*>(mapPtr);
-  int stride = old_ptr.stride();
+  Field2D<DataType>& old_map = *dynamic_cast<Field2D<DataType>*>(mapPtr);
+  int stride = old_map.stride();
   std::vector<DataType> arr_data(m_cellMatNZSet.totalSize()*stride);
   int idx = 0;
   for (int i = 0; i < m_cellMatRel.fromSetSize(); ++i) {
     auto relset = m_cellMatRel[i];
-    auto submap = old_ptr(i);
+    auto submap = old_map(i);
     for (int j = 0; j < relset.size(); ++j) {
       for (int s = 0; s < stride; ++s) {
         arr_data[idx++] = submap[relset[j]*stride + s];
@@ -299,6 +311,46 @@ void MultiMat::convertToSparse_helper(int map_i)
   delete m_mapVec[map_i];
   m_mapVec[map_i] = new_field;
 }
+
+
+template<typename DataType>
+void MultiMat::convertToDense_helper(int map_i)
+{
+  SLIC_ASSERT(m_sparcityLayout != SparcityLayout::DENSE);
+
+  MapBaseType* mapPtr = m_mapVec[map_i];
+  if (map_i == 0 && mapPtr == nullptr) { return; }
+
+  Field2D<DataType>& old_map = *dynamic_cast<Field2D<DataType>*>(mapPtr);
+  int stride = old_map.stride();
+  std::vector<DataType> arr_data(m_cellMatProdSet.size()*stride);
+  for (int i = 0; i < old_map.firstSetSize(); ++i)
+  {
+    for (auto iter = old_map.begin(i); iter != old_map.end(i); ++iter)
+    {
+      int elem_idx = i * old_map.secondSetSize() + iter.index();
+      for (int c = 0; c < stride; ++c)
+      {
+        arr_data[elem_idx*stride + c] = iter.value(c);
+      }
+    }
+  }
+
+  Field2D<DataType>* new_field = new Field2D<DataType>(&m_cellMatProdSet, DataType(), stride);
+  new_field->copy(&arr_data[0]);
+
+  delete m_mapVec[map_i];
+  m_mapVec[map_i] = new_field;
+}
+
+template<typename DataType>
+void MultiMat::transposeData_helper(int map_i)
+{
+  assert(false);
+  //TODO
+}
+
+
 
 } //end namespace multimat
 } //end namespace axom
