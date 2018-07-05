@@ -266,8 +266,7 @@ TEST(multimat, construct_multimat_1_array)
 
       check_values<double>(mm, array_name, data);
 
-      auto layout_to_convert = layout_used;
-      //for (auto layout_to_convert : data_layouts)
+      for (auto layout_to_convert : data_layouts)
       {
         for (auto sparcity_to_convert : sparcity_layouts)
         {

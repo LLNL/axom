@@ -93,7 +93,7 @@ public:
   int addField(std::string arr_name, FieldMapping, T* arr, int stride = 1);
   int setVolfracField(double* arr); //TODO field
 
-  int getFieldIdx(std::string arr_name);
+  int getFieldIdx(std::string& arr_name) const;
   template<typename T>
   Field1D<T>& get1dField(std::string field_name);
   template<typename T>
@@ -103,8 +103,8 @@ public:
   IdSet getMatInCell(int c); //Should change the func name so there's no assumption of the layout
   IndexSet getIndexingSetOfCell(int c);
 
-  int getNumberOfMaterials() { return m_nmats; };
-  int getNumberOfCells() { return m_ncells; }
+  inline int getNumberOfMaterials() const { return m_nmats; };
+  inline int getNumberOfCells() const { return m_ncells; }
 
   //Data modification functions
   //...
@@ -116,15 +116,15 @@ public:
   void convertLayoutToSparse();
   void convertLayoutToDense();
   void convertLayout(DataLayout, SparcityLayout);
-  DataLayout getDataLayout() const { return m_dataLayout; }
+  inline DataLayout getDataLayout() const { return m_dataLayout; }
+  inline SparcityLayout getSparcityLayout() const { return m_sparcityLayout; }
   std::string getDataLayoutAsString() const ;
-  SparcityLayout getSparcityLayout() const { return m_sparcityLayout; }
   std::string getSparcityLayoutAsString() const;
-  bool isSparse() const { return getSparcityLayout() == SparcityLayout::SPARSE; }
-  bool isDense() const { return getSparcityLayout() == SparcityLayout::DENSE; }
-  bool isCellDom() const { return getDataLayout() == DataLayout::CELL_CENTRIC; }
-  bool isMatDom() const { return getDataLayout() == DataLayout::MAT_CENTRIC; }
-  FieldMapping getFieldMapping(int field_i) const { return m_fieldMappingVec[field_i]; }
+  inline bool isSparse() const { return getSparcityLayout() == SparcityLayout::SPARSE; }
+  inline bool isDense() const { return getSparcityLayout() == SparcityLayout::DENSE; }
+  inline bool isCellDom() const { return getDataLayout() == DataLayout::CELL_CENTRIC; }
+  inline bool isMatDom() const { return getDataLayout() == DataLayout::MAT_CENTRIC; }
+  inline FieldMapping getFieldMapping(int field_i) const { return m_fieldMappingVec[field_i]; }
 
   void print() const;
   bool isValid(bool verboseOutput = false) const;
@@ -137,7 +137,8 @@ private: //private functions
   template<typename DataType>
   void convertToDense_helper(int map_i);
   template<typename DataType>
-  void transposeData_helper(int map_i);
+  void transposeData_helper(int map_i, RelationSetType*, ProductSetType*, 
+    std::vector<SetPosType>&);
   template<typename T>
   int addFieldArray_impl(std::string, FieldMapping, T*, int);
   template<typename T>
@@ -154,7 +155,7 @@ private:
 
   StaticVariableRelationType* m_cellMatRel;
   std::vector<SetPosType> m_cellMatRel_beginsVec; //to store the cell2mat relation
-  std::vector<SetPosType> m_cellMatRel_indicesVec; //to store the cell2mat relation
+  std::vector<SetPosType> m_cellMatRel_indicesVec;
   RelationSetType* m_cellMatNZSet; // set of non-zero entries in the cellXmat matrix
   ProductSetType* m_cellMatProdSet;
   
@@ -347,7 +348,8 @@ void MultiMat::convertToDense_helper(int map_i)
 }
 
 template<typename DataType>
-void MultiMat::transposeData_helper(int map_i)
+void MultiMat::transposeData_helper(int map_i, RelationSetType* new_cellMatNZSet,
+ProductSetType* new_cellMatProdSet, std::vector<SetPosType>& move_indices)
 {
   MapBaseType* mapPtr = m_mapVec[map_i];
   if (map_i == 0 && mapPtr == nullptr) { return; }
@@ -355,21 +357,23 @@ void MultiMat::transposeData_helper(int map_i)
   int stride = old_map.stride();
   std::vector<DataType> arr_data;
 
-  SetType* set1, *set2;
-  if (m_dataLayout == DataLayout::CELL_CENTRIC) {
-    set1 = &m_cellSet;
-    set2 = &m_matSet;
-  }
-  else
-  {
-    set1 = &m_matSet;
-    set2 = &m_cellSet;
-  }
-  int set1Size = m_cellMatProdSet->firstSetSize();
-  int set2Size = m_cellMatProdSet->secondSetSize();
+  RangeSetType& set1 = *(m_cellMatRel->fromSet());
+  RangeSetType& set2 = *(m_cellMatRel->toSet());
 
+  int set1Size = set1.size();
+  int set2Size = set2.size();
+
+  Field2D<DataType>* new_map = nullptr;
   if (m_sparcityLayout == SparcityLayout::SPARSE) {
-    assert(false);
+    arr_data.resize(m_cellMatRel->totalSize()*stride);
+    for (int i = 0; i < move_indices.size(); ++i)
+    {
+      for (int c = 0; c < stride; ++c)
+      {
+        arr_data[move_indices[i] * stride + c] = (*old_map.getMap())(i, c);
+      }
+    }
+    new_map = new Field2D<DataType>(new_cellMatNZSet, DataType(), stride);
   }
   else //dense
   {
@@ -386,10 +390,12 @@ void MultiMat::transposeData_helper(int map_i)
       }
     }
 
-    //TODO
-    //m_cellMatProdSet = new ProductSetType(set2, set1);
-
-  }
+    new_map = new Field2D<DataType>(new_cellMatProdSet, DataType(), stride);
+  } 
+  
+  new_map->copy(arr_data.data());
+  m_mapVec[map_i] = new_map;
+  delete mapPtr;
 }
 
 
