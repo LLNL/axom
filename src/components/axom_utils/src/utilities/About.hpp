@@ -15,8 +15,8 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#ifndef COMMON_ABOUT_H_
-#define COMMON_ABOUT_H_
+#ifndef AXOM_UTILS_ABOUT_H_
+#define AXOM_UTILS_ABOUT_H_
 
 #include <ostream>
 
@@ -36,4 +36,4 @@ void about(std::ostream &oss);
 
 } // end namespace axom
 
-#endif //  COMMON_ABOUT_H_
+#endif //  AXOM_UTILS_ABOUT_H_

@@ -17,7 +17,7 @@
 #
 ###############################################################################
 #
-# Expects AXOM_DIR to point to a Conduit installations.
+# Expects AXOM_DIR to point to an Axom installation.
 #
 # This file defines the following CMake variables:
 #  AXOM_FOUND - If Axom was found
