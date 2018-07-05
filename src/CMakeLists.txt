@@ -84,6 +84,13 @@ add_subdirectory(components)
 add_subdirectory(tools)
 
 ################################
+# Adds directory for building
+# examples
+################################
+add_subdirectory(examples)
+
+
+################################
 # Add docs
 ################################
 if (ENABLE_DOCS)

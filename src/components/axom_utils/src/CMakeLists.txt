@@ -20,6 +20,7 @@ set(axom_utils_headers
     utilities/StringUtilities.hpp
     utilities/Timer.hpp
     utilities/Utilities.hpp
+    utilities/About.hpp
 
     detail/ChronoTimer.hpp
     detail/TimeofdayTimer.hpp
@@ -41,6 +42,7 @@ set(axom_utils_sources
     utilities/FileUtilities.cpp
     utilities/StringUtilities.cpp
     utilities/Utilities.cpp
+    utilities/About.cpp
 
     numerics/polynomial_solvers.cpp
     )
