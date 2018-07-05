@@ -671,7 +671,7 @@ void test_code() {
   //Set-up
   bool use_sparse = false;
 
-  MultiMat mm(DataLayout::CELL_CENTRIC, use_sparse ? SparcityLayout::SPARSE : SparcityLayout::DENSE);
+  MultiMat mm(DataLayout::CELL_DOMINANT, use_sparse ? SparcityLayout::SPARSE : SparcityLayout::DENSE);
   
   int nmats = 50;
   int ncells = 2000;

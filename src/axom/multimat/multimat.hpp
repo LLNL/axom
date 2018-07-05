@@ -21,7 +21,7 @@ namespace policies = slam::policies;
 
 
 enum class FieldMapping { PER_CELL, PER_MAT, PER_CELL_MAT };
-enum class DataLayout { CELL_CENTRIC, MAT_CENTRIC };
+enum class DataLayout { CELL_DOMINANT, MAT_DOMINANT };
 enum class SparcityLayout { SPARSE, DENSE };
 enum class DataTypeSupported { TypeUnknown, TypeInt, TypeDouble, TypeFloat, TypeUnsignChar };
 
@@ -90,14 +90,14 @@ public:
 
   //functions related to the field arrays
   template<class T>
-  int addField(std::string arr_name, FieldMapping, T* arr, int stride = 1);
+  int addField(const std::string& arr_name, FieldMapping, T* arr, int stride = 1);
   int setVolfracField(double* arr); //TODO field
 
-  int getFieldIdx(std::string& arr_name) const;
+  int getFieldIdx(const std::string& arr_name) const;
   template<typename T>
-  Field1D<T>& get1dField(std::string field_name);
+  Field1D<T>& get1dField(const std::string& field_name);
   template<typename T>
-  Field2D<T>& get2dField(std::string field_name);
+  Field2D<T>& get2dField(const std::string& field_name);
   Field2D<double>& getVolfracField();
 
   IdSet getMatInCell(int c); //Should change the func name so there's no assumption of the layout
@@ -122,8 +122,8 @@ public:
   std::string getSparcityLayoutAsString() const;
   inline bool isSparse() const { return getSparcityLayout() == SparcityLayout::SPARSE; }
   inline bool isDense() const { return getSparcityLayout() == SparcityLayout::DENSE; }
-  inline bool isCellDom() const { return getDataLayout() == DataLayout::CELL_CENTRIC; }
-  inline bool isMatDom() const { return getDataLayout() == DataLayout::MAT_CENTRIC; }
+  inline bool isCellDom() const { return getDataLayout() == DataLayout::CELL_DOMINANT; }
+  inline bool isMatDom() const { return getDataLayout() == DataLayout::MAT_DOMINANT; }
   inline FieldMapping getFieldMapping(int field_i) const { return m_fieldMappingVec[field_i]; }
 
   void print() const;
@@ -140,12 +140,12 @@ private: //private functions
   void transposeData_helper(int map_i, RelationSetType*, ProductSetType*, 
     std::vector<SetPosType>&);
   template<typename T>
-  int addFieldArray_impl(std::string, FieldMapping, T*, int);
+  int addFieldArray_impl(const std::string&, FieldMapping, T*, int);
   template<typename T>
   MapBaseType* helperfun_copyField(const MultiMat&, int map_i);
 
 private:
-  unsigned int m_nmats, m_ncells;
+  unsigned int m_ncells, m_nmats;
   DataLayout m_dataLayout;
   SparcityLayout m_sparcityLayout;
 
@@ -153,9 +153,9 @@ private:
   RangeSetType m_cellSet;
   RangeSetType m_matSet;
 
-  StaticVariableRelationType* m_cellMatRel;
   std::vector<SetPosType> m_cellMatRel_beginsVec; //to store the cell2mat relation
   std::vector<SetPosType> m_cellMatRel_indicesVec;
+  StaticVariableRelationType* m_cellMatRel;
   RelationSetType* m_cellMatNZSet; // set of non-zero entries in the cellXmat matrix
   ProductSetType* m_cellMatProdSet;
   
@@ -171,7 +171,7 @@ private:
 //--------------- MultiMat template function definitions -----------------//
 
 template<class T>
-int MultiMat::addFieldArray_impl(std::string arr_name, FieldMapping arr_mapping,
+int MultiMat::addFieldArray_impl(const std::string& arr_name, FieldMapping arr_mapping,
   T* data_arr, int stride)
 {
   int new_arr_idx = m_mapVec.size();
@@ -221,7 +221,7 @@ int MultiMat::addFieldArray_impl(std::string arr_name, FieldMapping arr_mapping,
 }
 
 template<class T>
-int MultiMat::addField(std::string arr_name, FieldMapping arr_mapping,
+int MultiMat::addField(const std::string& arr_name, FieldMapping arr_mapping,
                             T* data_arr, int stride)
 {
   assert(stride > 0);
@@ -250,7 +250,7 @@ int MultiMat::addField(std::string arr_name, FieldMapping arr_mapping,
 }
 
 template<typename T>
-MultiMat::Field1D<T>& MultiMat::get1dField(std::string field_name)
+MultiMat::Field1D<T>& MultiMat::get1dField(const std::string& field_name)
 {
   int fieldIdx = getFieldIdx(field_name);
   if (fieldIdx >= 0)
@@ -274,7 +274,7 @@ MultiMat::Field1D<T>& MultiMat::get1dField(std::string field_name)
 
 
 template<typename T>
-MultiMat::Field2D<T>& MultiMat::get2dField(std::string field_name)
+MultiMat::Field2D<T>& MultiMat::get2dField(const std::string& field_name)
 {
   for (unsigned int i = 0; i < m_arrNameVec.size(); i++)
   {
@@ -366,7 +366,7 @@ ProductSetType* new_cellMatProdSet, std::vector<SetPosType>& move_indices)
   Field2D<DataType>* new_map = nullptr;
   if (m_sparcityLayout == SparcityLayout::SPARSE) {
     arr_data.resize(m_cellMatRel->totalSize()*stride);
-    for (int i = 0; i < move_indices.size(); ++i)
+    for (unsigned int i = 0; i < move_indices.size(); ++i)
     {
       for (int c = 0; c < stride; ++c)
       {
