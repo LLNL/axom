@@ -114,7 +114,7 @@ MultiMat& MultiMat::operator=(const MultiMat& other)
 {
   if (this == &other) return *this;
 
-  SLIC_ASSERT(false);
+  SLIC_ASSERT(false); //TODO
 
   return *this;
 }
@@ -261,7 +261,7 @@ MultiMat::Field2D<double>& MultiMat::getVolfracField()
 }
 
 
-int MultiMat::getFieldIdx(std::string field_name)
+int MultiMat::getFieldIdx(std::string& field_name) const
 {
   for (unsigned int i = 0; i < m_arrNameVec.size(); i++)
   {
@@ -290,9 +290,9 @@ MultiMat::IdSet MultiMat::getMatInCell(int c)
 MultiMat::IndexSet MultiMat::getIndexingSetOfCell(int c)
 {
   assert(m_dataLayout == DataLayout::CELL_CENTRIC);
+  assert(0 <= c && c < m_ncells);
 
   if (m_sparcityLayout == SparcityLayout::SPARSE) {
-    assert(0 <= c && c < m_ncells);
     int start_idx = m_cellMatRel_beginsVec[c];
     int end_idx = m_cellMatRel_beginsVec[c + 1];
     return RangeSetType::SetBuilder().range(start_idx, end_idx);
@@ -320,7 +320,61 @@ void MultiMat::convertLayoutToMaterialDominant()
 void MultiMat::transposeData()
 {
   //create the new relation to pass into helper...
-  //TODO
+  RangeSetType& set1 = *(m_cellMatRel->fromSet());
+  RangeSetType& set2 = *(m_cellMatRel->toSet());
+  
+  if(isCellDom()) SLIC_ASSERT(&set1 == &m_cellSet);
+  else SLIC_ASSERT(&set1 == &m_matSet);
+
+  auto nz_count = m_cellMatRel_indicesVec.size();
+  StaticVariableRelationType* new_cellMatRel = nullptr;
+  std::vector<SetPosType> new_cellMatRel_beginsVec(set2.size() + 1, 0); 
+                //initialized to 0 becuase it will be used for counting
+  std::vector<SetPosType> new_cellMatRel_indicesVec(nz_count, -1);
+  RelationSetType* new_cellMatNZSet = nullptr;
+  ProductSetType* new_cellMatProdSet = nullptr;
+  std::vector<SetPosType> move_indices(nz_count, -1); //map from old to new loc
+
+  //construct the new transposed relation
+  //count the non-zero in each rows
+  for (auto idx1 = 0; idx1 < m_cellMatRel->fromSetSize(); ++idx1)
+  {
+    IdSet relSubset = (*m_cellMatRel)[idx1];
+    for (auto j = 0; j < relSubset.size(); ++j)
+    {
+      auto idx2 = relSubset[j];
+      new_cellMatRel_beginsVec[idx2] += 1;
+    }
+  }
+  //add them to make this the end index
+  {
+    int i;
+    for( i = 1; i < new_cellMatRel_beginsVec.size() - 1; i++)
+    {
+      new_cellMatRel_beginsVec[i] += new_cellMatRel_beginsVec[i - 1];
+    }
+    new_cellMatRel_beginsVec[i] = new_cellMatRel_beginsVec[i - 1];
+  }
+  //fill in the indicesVec and the move_indices backward
+  for (auto idx1 = m_cellMatRel->fromSetSize() - 1; idx1 >= 0; --idx1)
+  {
+    IdSet relSubset = (*m_cellMatRel)[idx1];
+    for (auto j = relSubset.size()-1; j >= 0; --j)
+    {
+      auto idx2 = relSubset[j];
+      auto compress_idx = --new_cellMatRel_beginsVec[idx2];
+      new_cellMatRel_indicesVec[compress_idx] = idx1;
+      move_indices[ m_cellMatRel_beginsVec[idx1] + j ] = compress_idx;
+    }
+  }
+
+  new_cellMatRel = new StaticVariableRelationType(&set2, &set1);
+  new_cellMatRel->bindBeginOffsets(set2.size(), &new_cellMatRel_beginsVec);
+  new_cellMatRel->bindIndices(new_cellMatRel_indicesVec.size(), &new_cellMatRel_indicesVec);
+
+
+  new_cellMatNZSet = new RelationSetType(new_cellMatRel);
+  new_cellMatProdSet = new ProductSetType(&set2, &set1);
   
   for (unsigned int map_i = 0; map_i < m_fieldMappingVec.size(); map_i++)
   {
@@ -329,16 +383,16 @@ void MultiMat::transposeData()
       continue;
 
     if (m_dataTypeVec[map_i] == DataTypeSupported::TypeDouble) {
-      transposeData_helper<double>(map_i);
+      transposeData_helper<double>(map_i, new_cellMatNZSet, new_cellMatProdSet, move_indices);
     }
     else if (m_dataTypeVec[map_i] == DataTypeSupported::TypeFloat) {
-      transposeData_helper<float>(map_i);
+      transposeData_helper<float>(map_i, new_cellMatNZSet, new_cellMatProdSet, move_indices);
     }
     else if (m_dataTypeVec[map_i] == DataTypeSupported::TypeInt) {
-      transposeData_helper<int>(map_i);
+      transposeData_helper<int>(map_i, new_cellMatNZSet, new_cellMatProdSet, move_indices);
     }
     else if (m_dataTypeVec[map_i] == DataTypeSupported::TypeUnsignChar) {
-      transposeData_helper<unsigned char>(map_i);
+      transposeData_helper<unsigned char>(map_i, new_cellMatNZSet, new_cellMatProdSet, move_indices);
     }
     else assert(false); //TODO
   }
@@ -347,6 +401,20 @@ void MultiMat::transposeData()
     m_dataLayout = DataLayout::CELL_CENTRIC;
   else
     m_dataLayout = DataLayout::MAT_CENTRIC;
+
+  //switch vectors and rebind relation begin offset
+  new_cellMatRel_beginsVec.swap(m_cellMatRel_beginsVec);
+  new_cellMatRel_indicesVec.swap(m_cellMatRel_indicesVec);
+  new_cellMatRel->bindBeginOffsets(set2.size(), &m_cellMatRel_beginsVec);
+  new_cellMatRel->bindIndices(m_cellMatRel_indicesVec.size(), &m_cellMatRel_indicesVec);
+
+  //delete old relation and biSets
+  delete m_cellMatNZSet;
+  delete m_cellMatRel;
+  delete m_cellMatProdSet;
+  m_cellMatRel = new_cellMatRel;
+  m_cellMatNZSet = new_cellMatNZSet;
+  m_cellMatProdSet = new_cellMatProdSet;
 }
 
 void MultiMat::convertLayoutToSparse() 
