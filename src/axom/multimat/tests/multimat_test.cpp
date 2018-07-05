@@ -109,7 +109,7 @@ struct MM_test_data {
       }
     }
 
-	//fill in the data
+    //fill in the data
     cellmat_dense_arr.resize(num_mats * num_cells * stride);
     cellmat_sparse_arr.resize(nfilled * stride);
     matcell_dense_arr.resize(num_mats * num_cells * stride);
@@ -123,7 +123,7 @@ struct MM_test_data {
         if (fillBool_cellcen[dense_cellcen_idx]) {
           for (int s = 0; s < stride; ++s) {
             DataType val = static_cast<DataType>(c * 1000.0 + m * 1.0 + s * 0.01);
-            cellmat_sparse_arr[sparse_idx*stride+s] = val;
+            cellmat_sparse_arr[sparse_idx*stride + s] = val;
             cellmat_dense_arr[dense_cellcen_idx*stride + s] = val;
           }
           ++sparse_idx;
@@ -254,6 +254,33 @@ TEST(multimat, construct_multimat_1_array)
       EXPECT_EQ(mm.getNumberOfMaterials(), data.num_mats);
 
       check_values<double>(mm, array_name, data);
+
+      auto layout_to_convert = layout_used;
+      //for (auto layout_to_convert : data_layouts)
+      {
+        for (auto sparcity_to_convert : sparcity_layouts)
+        {
+          //Make Copies to test conversion
+          MultiMat mm_c(mm);
+          EXPECT_TRUE(mm_c.isValid(true));
+          EXPECT_EQ(mm_c.getDataLayout(), layout_used);
+          EXPECT_EQ(mm_c.getSparcityLayout(), sparcity_used);
+          EXPECT_EQ(mm_c.getNumberOfCells(), data.num_cells);
+          EXPECT_EQ(mm_c.getNumberOfMaterials(), data.num_mats);
+
+          check_values<double>(mm_c, array_name, data);
+
+          mm_c.convertLayout(layout_to_convert, sparcity_to_convert);
+
+          EXPECT_TRUE(mm_c.isValid(true));
+          EXPECT_EQ(mm_c.getDataLayout(), layout_to_convert);
+          EXPECT_EQ(mm_c.getSparcityLayout(), sparcity_to_convert);
+          EXPECT_EQ(mm_c.getNumberOfCells(), data.num_cells);
+          EXPECT_EQ(mm_c.getNumberOfMaterials(), data.num_mats);
+          check_values<double>(mm_c, array_name, data);
+
+        }
+      }
     }
   }
 
