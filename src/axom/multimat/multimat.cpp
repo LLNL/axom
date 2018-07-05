@@ -19,7 +19,7 @@ MultiMat::MultiMat():
   m_cellMatProdSet(nullptr)
 {
   m_ncells = m_nmats = 0;
-  m_dataLayout = DataLayout::CELL_CENTRIC;
+  m_dataLayout = DataLayout::CELL_DOMINANT;
   m_sparcityLayout = SparcityLayout::SPARSE;
 }
 
@@ -67,8 +67,8 @@ MultiMat::MultiMat(const MultiMat& other) :
   m_nmats(other.m_nmats),
   m_dataLayout( other.m_dataLayout),
   m_sparcityLayout( other.m_sparcityLayout),
-  m_matSet(0, other.m_nmats),
   m_cellSet(0,other.m_ncells),
+  m_matSet(0, other.m_nmats),
   m_cellMatRel_beginsVec(other.m_cellMatRel_beginsVec),
   m_cellMatRel_indicesVec(other.m_cellMatRel_indicesVec),
   m_cellMatRel(nullptr),
@@ -78,8 +78,8 @@ MultiMat::MultiMat(const MultiMat& other) :
   m_fieldMappingVec(other.m_fieldMappingVec),
   m_dataTypeVec(other.m_dataTypeVec)
 {
-  RangeSetType& set1 = (m_dataLayout == DataLayout::CELL_CENTRIC ? m_cellSet : m_matSet);
-  RangeSetType& set2 = (m_dataLayout == DataLayout::CELL_CENTRIC ? m_matSet : m_cellSet);
+  RangeSetType& set1 = (m_dataLayout == DataLayout::CELL_DOMINANT ? m_cellSet : m_matSet);
+  RangeSetType& set2 = (m_dataLayout == DataLayout::CELL_DOMINANT ? m_matSet : m_cellSet);
   m_cellMatRel = new StaticVariableRelationType(&set1, &set2);
   m_cellMatRel->bindBeginOffsets(set1.size(), &m_cellMatRel_beginsVec);
   m_cellMatRel->bindIndices(m_cellMatRel_indicesVec.size(), &m_cellMatRel_indicesVec);
@@ -90,7 +90,6 @@ MultiMat::MultiMat(const MultiMat& other) :
   for (unsigned int map_i = 0; map_i < other.m_mapVec.size(); ++map_i)
   {
     MapBaseType* new_map_ptr = nullptr;
-    FieldMapping fm = m_fieldMappingVec[map_i];
     if (m_dataTypeVec[map_i] == DataTypeSupported::TypeDouble) {
       new_map_ptr = helperfun_copyField<double>(other, map_i);
     }
@@ -146,8 +145,8 @@ void MultiMat::setCellMatRel(vector<bool>& vecarr)
   SLIC_ASSERT(vecarr.size() == m_ncells * m_nmats); //This should be a dense matrix
   SLIC_ASSERT(m_cellMatRel == nullptr); //cellmatRel has not been set before
 
-  RangeSetType& set1 = (m_dataLayout == DataLayout::CELL_CENTRIC ? m_cellSet : m_matSet);
-  RangeSetType& set2 = (m_dataLayout == DataLayout::CELL_CENTRIC ? m_matSet : m_cellSet);
+  RangeSetType& set1 = (m_dataLayout == DataLayout::CELL_DOMINANT ? m_cellSet : m_matSet);
+  RangeSetType& set2 = (m_dataLayout == DataLayout::CELL_DOMINANT ? m_matSet : m_cellSet);
 
   //count the non-zeros
   int nz_count = 0;
@@ -178,18 +177,9 @@ void MultiMat::setCellMatRel(vector<bool>& vecarr)
 
   assert(m_cellMatRel->isValid());
   
-  cout << "indice total size: " << m_cellMatRel_indicesVec.size() << endl;
-  cout << "cellmatrel total size: " << m_cellMatRel->totalSize() << endl;
-  cout << "fromset size: " << set1.size() << endl;
-
-  //Set-up both dense and sparse sets, since they don't take any extra memory...
-
-  //a set of mapped relation
+  //Set-up both dense and sparse bivariate sets.
   m_cellMatNZSet = new RelationSetType(m_cellMatRel);
-  
-  // a cartesian set of cell x mat
   m_cellMatProdSet = new ProductSetType(&set1, &set2);
-  
   
   //Create a field for VolFrac as the 0th field
   m_mapVec.push_back(nullptr);
@@ -212,7 +202,7 @@ int MultiMat::setVolfracField(double* arr)
   //checks volfrac values sums to 1
   auto& map = *dynamic_cast<Field2D<double>*>(m_mapVec[arr_i]);
   double tol = 10e-9;
-  if (m_dataLayout == DataLayout::CELL_CENTRIC) 
+  if (m_dataLayout == DataLayout::CELL_DOMINANT) 
   {
     for (int i = 0; i < map.firstSetSize(); ++i)
     {
@@ -236,7 +226,7 @@ int MultiMat::setVolfracField(double* arr)
       }
     }
 
-    for(int i=0; i<sum_vec.size(); ++i)
+    for(unsigned int i=0; i<sum_vec.size(); ++i)
       SLIC_ASSERT(abs(sum_vec[i] - 1.0) < tol);
   }
 
@@ -261,7 +251,7 @@ MultiMat::Field2D<double>& MultiMat::getVolfracField()
 }
 
 
-int MultiMat::getFieldIdx(std::string& field_name) const
+int MultiMat::getFieldIdx(const std::string& field_name) const
 {
   for (unsigned int i = 0; i < m_arrNameVec.size(); i++)
   {
@@ -275,7 +265,7 @@ int MultiMat::getFieldIdx(std::string& field_name) const
 
 MultiMat::IdSet MultiMat::getMatInCell(int c)
 {
-  SLIC_ASSERT(m_dataLayout == DataLayout::CELL_CENTRIC);
+  SLIC_ASSERT(m_dataLayout == DataLayout::CELL_DOMINANT);
   SLIC_ASSERT(m_cellMatRel != nullptr);
 
   if (m_sparcityLayout == SparcityLayout::SPARSE) {
@@ -289,8 +279,8 @@ MultiMat::IdSet MultiMat::getMatInCell(int c)
 
 MultiMat::IndexSet MultiMat::getIndexingSetOfCell(int c)
 {
-  assert(m_dataLayout == DataLayout::CELL_CENTRIC);
-  assert(0 <= c && c < m_ncells);
+  assert(m_dataLayout == DataLayout::CELL_DOMINANT);
+  assert(0 <= c && c < (int)m_ncells);
 
   if (m_sparcityLayout == SparcityLayout::SPARSE) {
     int start_idx = m_cellMatRel_beginsVec[c];
@@ -307,13 +297,13 @@ MultiMat::IndexSet MultiMat::getIndexingSetOfCell(int c)
 
 void MultiMat::convertLayoutToCellDominant()
 {
-  if (m_dataLayout == DataLayout::CELL_CENTRIC) return;
+  if (m_dataLayout == DataLayout::CELL_DOMINANT) return;
   transposeData();
 }
 
 void MultiMat::convertLayoutToMaterialDominant() 
 { 
-  if (m_dataLayout == DataLayout::MAT_CENTRIC) return;
+  if (m_dataLayout == DataLayout::MAT_DOMINANT) return;
   transposeData();
 }
 
@@ -348,7 +338,7 @@ void MultiMat::transposeData()
   }
   //add them to make this the end index
   {
-    int i;
+    unsigned int i;
     for( i = 1; i < new_cellMatRel_beginsVec.size() - 1; i++)
     {
       new_cellMatRel_beginsVec[i] += new_cellMatRel_beginsVec[i - 1];
@@ -397,10 +387,10 @@ void MultiMat::transposeData()
     else assert(false); //TODO
   }
 
-  if(m_dataLayout == DataLayout::MAT_CENTRIC)
-    m_dataLayout = DataLayout::CELL_CENTRIC;
+  if(m_dataLayout == DataLayout::MAT_DOMINANT)
+    m_dataLayout = DataLayout::CELL_DOMINANT;
   else
-    m_dataLayout = DataLayout::MAT_CENTRIC;
+    m_dataLayout = DataLayout::MAT_DOMINANT;
 
   //switch vectors and rebind relation begin offset
   new_cellMatRel_beginsVec.swap(m_cellMatRel_beginsVec);
@@ -489,11 +479,11 @@ void MultiMat::convertLayout(DataLayout new_layout, SparcityLayout new_sparcity)
   }
 
   //cell/mat centric conversion
-  if (m_dataLayout == DataLayout::CELL_CENTRIC && new_layout == DataLayout::MAT_CENTRIC)
+  if (m_dataLayout == DataLayout::CELL_DOMINANT && new_layout == DataLayout::MAT_DOMINANT)
   {
     convertLayoutToMaterialDominant();
   }
-  else if(m_dataLayout == DataLayout::MAT_CENTRIC && new_layout == DataLayout::CELL_CENTRIC)
+  else if(m_dataLayout == DataLayout::MAT_DOMINANT && new_layout == DataLayout::CELL_DOMINANT)
   {
     convertLayoutToCellDominant();
   }
@@ -503,9 +493,9 @@ void MultiMat::convertLayout(DataLayout new_layout, SparcityLayout new_sparcity)
 std::string MultiMat::getDataLayoutAsString() const
 {
   switch (m_dataLayout) {
-  case DataLayout::CELL_CENTRIC:
+  case DataLayout::CELL_DOMINANT:
     return "Cell-Centric";
-  case DataLayout::MAT_CENTRIC:
+  case DataLayout::MAT_DOMINANT:
     return "Material-Centric";
   default:
     assert(false);
@@ -531,7 +521,7 @@ void MultiMat::print() const
   printf("Number of materials: %d\n", m_nmats);
   printf("Number of cells:     %d\n", m_ncells);
   printf("Data layout: ");
-  if (m_dataLayout == DataLayout::CELL_CENTRIC)
+  if (m_dataLayout == DataLayout::CELL_DOMINANT)
     printf("Cell-centric\n");
   else
     printf("Material-centric\n");
@@ -542,7 +532,7 @@ void MultiMat::print() const
   else
     printf("Sparse\n");
 
-  printf("\n%d Fields:\n", m_mapVec.size());
+  printf("\n%d Fields:\n", (int)m_mapVec.size());
   for (unsigned int i = 0; i < m_mapVec.size(); i++)
   {
     printf("Field %d - %s\n", i, m_arrNameVec[i].c_str());
