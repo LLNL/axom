@@ -174,7 +174,7 @@ namespace slamLulesh {
 
     typedef axom::slam::policies::ConstantCardinality<Set::PositionType, ZNStride>            ZNCard;
     typedef axom::slam::StaticRelation<ZNCard, STLIndirection, ElemSet, NodeSet>              ElemToNodeRelation;
-    typedef const ElemToNodeRelation::RelationSet                                             ElemNodeSet;
+    typedef const ElemToNodeRelation::RelationSubset                                             ElemNodeSet;
 
     typedef axom::slam::policies::ConstantCardinality<Set::PositionType, ZFStride>            ZFCard;
     typedef axom::slam::StaticRelation<ZFCard, STLIndirection, ElemSet, ExtendedElemSet>      ElemFaceAdjacencyRelation;
@@ -187,7 +187,7 @@ namespace slamLulesh {
           STLIndirection,
           RegionSet,
           ElemSet>                                                                            RegionToElemRelation;
-    typedef const RegionToElemRelation::RelationSet RegionElemSet;
+    typedef const RegionToElemRelation::RelationSubset RegionElemSet;
 
 
     typedef axom::slam::StaticRelation<
@@ -195,7 +195,7 @@ namespace slamLulesh {
           STLIndirection,
           NodeSet,
           CornerSet>                                                                          NodeToCornerRelation;
-    typedef const NodeToCornerRelation::RelationSet NodeCornerSet;
+    typedef const NodeToCornerRelation::RelationSubset NodeCornerSet;
 
     typedef axom::slam::Map<Index_t>                ElemIndexMap;
     typedef axom::slam::Map<Int_t>                  ElemIntMap;

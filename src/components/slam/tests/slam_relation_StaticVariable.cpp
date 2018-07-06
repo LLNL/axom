@@ -168,7 +168,7 @@ void traverseRelation_delayedSubscript(RelationType& rel)
     const PositionType fromSize = rel.size(fromPos);
     EXPECT_EQ( elementCardinality(fromPos), fromSize );
 
-    typename RelationType::RelationSet set = rel[fromPos];
+    typename RelationType::RelationSubset set = rel[fromPos];
     for(int toPos = 0 ; toPos < set.size() ; ++toPos)
     {
       PositionType actualVal = rel[fromPos][toPos];

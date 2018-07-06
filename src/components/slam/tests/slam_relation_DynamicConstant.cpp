@@ -134,9 +134,9 @@ TEST(slam_relation_dynamic_constant, assignment)
       }
     }
 
-    // Test RelationSet
+    // Test RelationSubset
     {
-      RelationType::RelationSet set = rel[i];
+      RelationType::RelationSubset set = rel[i];
       const int relSize = set.size();
       for(int j=0 ; j < relSize ; ++j)
       {

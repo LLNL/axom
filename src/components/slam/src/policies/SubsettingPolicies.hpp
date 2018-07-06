@@ -37,6 +37,8 @@
 
 #include "axom/Macros.hpp"
 
+#include "slam/NullSet.hpp"
+
 #include <set>
 
 namespace axom

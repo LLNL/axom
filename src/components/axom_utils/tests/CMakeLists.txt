@@ -22,6 +22,7 @@ set(gtest_utils_tests
    utils_fileUtilities.cpp
    utils_types.cpp
    utils_utilities.cpp
+   utils_about.cpp
 
    numerics_determinants.cpp
    numerics_eigen_solve.cpp
