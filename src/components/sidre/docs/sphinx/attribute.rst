@@ -18,15 +18,29 @@
 Attribute
 ==========
 
-Attributes provide storage for View metadata.  When each
-Attribute is constructed in the DataStore, it gets a name and a default value.
-Each View inherits all of its DataStore's Attributes at their default values.
-A program may explicitly set any of these Attributes for each
-View.  The program may also query the value of a View's Attribute, query whether
-the Attribute was explicitly set, or clear the Attribute back to its default
-value.
+Sidre Attributes enable attaching metadata (strings and values) to Sidre 
+Views to support queries (e.g., search for Views with a given attribute name),
+outputting data for a subset of Views to files, and other ways an application
+may need to selectively process Views in a Sidre DataStore hierarchy.
 
-Attribute values are available for a program to use in its own logic.  If a
-program provides an Attribute pointer to :code:`Group::save()` (discussed in the next
-section), only Views with that Attribute explicitly set will be saved.  Further
-extensions to Sidre that use Attributes and their values are planned.
+A Buffer is created with a string name and a default scalar or string value.
+The default values can be changed later as needed.
+
+.. note:: * Attribute objects can only be created using DataStore methods. The
+            Attribute constructor is private. (see :ref:`datastore-label`).
+          * Each Attribute has a unique name and integer identifier. Either can
+            be used to retrieve it from the DataStore.
+
+Each Sidre View inherits all Attributes contained in the DataStore at their 
+default strings or values. Then, an application may explicitly set any
+Attribute on a View. The application may also query the value of a View 
+Attribute, query whether the Attribute was explicitly set, or set the 
+Attribute back to its default value. See :ref:`view-label`
+for more information about Views.
+
+The Attribute interface includes the following operations:
+
+ * Retrieve the name and unique id of the Attribute object.
+ * Set the scalar or string value of an Attribute.
+ * Get the type of an Attribute's scalar value.
+

@@ -44,7 +44,7 @@ for more information about Views.
 
 The Buffer interface includes the following operations:
 
- * Retrieve the unique id of the Buffer object
+ * Retrieve the unique id of the Buffer object.
  * Query whether a Buffer is *described* or *allocated*.
  * Describe Buffer data (type and number of elements).
  * Allocate, reallocate, deallocate Buffer data.

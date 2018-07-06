@@ -47,8 +47,5 @@ DataStore methods for Attributes support the following operations:
  * Retrieve Attribute with given name or id
  * Iterate over set of Attributes in DataStore
 
-.. note:: Each Attribute has a unique name and integer identifier. Either can
-          be used to retrieve it from the DataStore.
-
 Please see :ref:`attribute-label` for more information about using Attribute
 objects.
