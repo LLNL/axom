@@ -26,8 +26,9 @@ thing a Sidre user does is create a DataStore; this operation also creates
 the root group. Apart from providing access to the root group, a DataStore 
 object provides methods to interact with Buffer and Attribute objects. 
 
-.. note:: Buffer and Attribute objects can only be created using DataStore
-          methods noted below. Their constructors are private.
+.. note:: Buffer and Attribute objects can only be created and destroyed 
+          using DataStore methods noted below. Their constructors and
+          destructors are private.
 
 DataStore methods for Buffers support the following operations:
 
@@ -35,7 +36,7 @@ DataStore methods for Buffers support the following operations:
  * Query the number of Buffers that exist
  * Query whether a Buffer exists with given id
  * Retrieve Buffer with given id
- * Iterate over set of Buffers in DataStore
+ * Iterate over the set of Buffers in a DataStore
 
 Please see :ref:`buffer-label` for more information about using Buffer objects.
 
@@ -45,7 +46,7 @@ DataStore methods for Attributes support the following operations:
  * Query the number of Attributes that exist
  * Query whether an Attribute exists with given name or id
  * Retrieve Attribute with given name or id
- * Iterate over set of Attributes in DataStore
+ * Iterate over the set of Attributes in a DataStore
 
 Please see :ref:`attribute-label` for more information about using Attribute
 objects.

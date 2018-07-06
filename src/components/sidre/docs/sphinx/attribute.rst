@@ -26,8 +26,9 @@ may need to selectively process Views in a Sidre DataStore hierarchy.
 A Buffer is created with a string name and a default scalar or string value.
 The default values can be changed later as needed.
 
-.. note:: * Attribute objects can only be created using DataStore methods. The
-            Attribute constructor is private. (see :ref:`datastore-label`).
+.. note:: * Attribute objects can only be created and destroyed using DataStore
+            methods. The Attribute constructor and destructor are private 
+            (see :ref:`datastore-label`).
           * Each Attribute has a unique name and integer identifier. Either can
             be used to retrieve it from the DataStore.
 

@@ -28,8 +28,9 @@ In either case, data description and allocation are distinct operations. This
 allows an application to create buffers it needs, then assess the types and
 amount of data they will hold before deciding how and when to allocate data.
 
-.. note:: * Buffer objects can only be created using DataStore methods. The 
-            Buffer constructor is private. (see :ref:`datastore-label`).
+.. note:: * Buffer objects can only be created and destroyed using DataStore 
+            methods. The Buffer constructor and destructor are private 
+            (see :ref:`datastore-label`).
           * Each Buffer object has a unique integer identifier generated when it
             is created. If you want to interact with a Buffer object directly,
             you must keep a pointer to it or note its id so that you can 
