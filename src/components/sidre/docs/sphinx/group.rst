@@ -40,10 +40,10 @@ their parent/owning Group. Thus, one may *walk* up or down a Group hierarchy
 to access different Groups and Views in it.
 
 .. note:: * The name (string) of a Group or View **must be unique** within its 
-            parent Group.
+            parent/owning Group.
           * A Group or View has a unique integer identifier within its
             parent/owning group, which is generated when it is created.
-          * Views and child Groups with a Group can be accessed by name or
+          * Views and child Groups in a Group can be accessed by name or
             integer id.
 
 A Group object can be moved or copied to another Group. When a Group is moved

@@ -18,13 +18,56 @@
 View
 ==========
 
-The View class provides applications with access to data pointers.  A View is
-owned by one Group and has a name and a pointer to data.  A View interprets the
-data with a data type, length (number of elements), offset, and stride; this
-information is available to programs that use Sidre.  The View's pointer can
-refer to data stored in a Buffer or to a memory location outside the Datastore.
-For an external pointer, the View can store data type, length, offset, and
-stride supplied by the code.  A View may also refer to an opaque data pointer,
-recording no information beyond the bare pointer.
+A Sidre view describes data and provides access to it. 
 
-A View may also hold scalar data in the form of a string or number.
+.. note:: View objects can only be created and destroyed using Group methods 
+          provided for this. The View constructor and destructor are private.
+
+Each View has a name and is owned by one Group in a Sidre Group hierarchy;
+its *owning* Group. A View maintains a pointer to the Group that owns it.
+
+.. note:: * The name (string) of a View **must be unique** within its
+            owning Group.
+          * A View has a unique integer identifier within its owning group, 
+            which is generated when the View is created.
+          * Views in a Group can be accessed by name or integer id.
+
+A View object can describe and provide access to data associated with a 
+pointer in one of four ways described below. In that case, a View data 
+description includes: a data type, a length (number of elements), an offset 
+and a stride (based on the pointer address and data type). 
+
+  * A View can describe (a subset of) data owned by an existing Buffer. 
+    In this case, the Buffer is manually *attached* to the View and the
+    View's data description is applied to the Buffer data. Data can be 
+    (re)allocated or deallocated by the View if and only if it is the only 
+    View attached to the buffer. **In general, a Buffer can be attached
+    to more than one View.**
+  * A View description is used to allocate data for the View using semantics 
+    similar to Buffer data description and allocation (see :ref:`buffer-label`).
+    In this case, the View is exclusively associated with a Buffer and no 
+    other View is allowed to (re)allocate or deallocate the data held by the 
+    Buffer.
+  * A View can **describe** data associated with a pointer to an *external* 
+    data allocation. In this case, the View cannot (re)allocate or deallocate 
+    the data. However, all other View operations can be applied to the data
+    in essentially the same ways as the previous two cases.
+  * A View can hold a pointer to an undescribed (*opaque*) data pointer. In 
+    this case, the View knows nothing about the type or structure of the data; 
+    it can only provide access to it. A user is entirely responsible for 
+    casting the pointer to a proper type, knowing the length of the data, etc.
+
+A View may also refer to a scalar quantity or a string.
+
+Before we summarize the Sidre View interface, we present some View concepts
+that describe various *states* a View can be in at any given time. Hopefully,
+this will help provide some useful context for the method descriptions that 
+follow.
+
+.. figure:: figs/sidre-states.png
+
+   This table provides a summary of the Sidre View state matrix. Each row 
+   corresponds to *data association* and each column refers to a *data state*.
+   The True/False entries in the cells refer to return values of the
+   View method at the top of each column. The circumstances under which those
+   values are returned are noted as well.
