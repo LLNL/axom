@@ -29,6 +29,9 @@ structure to organize data in a hierarchy:
 The following sections summarize the main interface features and functionality
 of these Sidre classes.
 
+.. note:: Interfaces for each of these classes are provided natively in C++, 
+          C, and Fortran. 
+
 .. toctree::
    :maxdepth: 2
 

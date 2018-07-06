@@ -37,11 +37,6 @@ DataStore methods for Buffers support the following operations:
  * Retrieve Buffer with given id
  * Iterate over set of Buffers in DataStore
 
-.. note:: Each Buffer object has a unique integer identifier generated when it
-          is created. If you want to interact with a Buffer object directly,
-          you must keep a pointer to it or note its id so that you can retrieve
-          it from the DataStore. 
-
 Please see :ref:`buffer-label` for more information about using Buffer objects.
 
 DataStore methods for Attributes support the following operations:
