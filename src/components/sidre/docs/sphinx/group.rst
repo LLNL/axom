@@ -30,9 +30,9 @@ root Group, children of those Groups, and so on. All Groups in a subtree
 rooted at a particular Group are considered descendants of that Group. View
 objects can be created in Groups to hold or provide access to data.
 
-.. note:: * Group and View objects can only be created and destroyed using
-            Group methods provided for this. The Group and View constructors 
-            and destructors are private. 
+.. note:: Group and View objects can only be created and destroyed using
+          Group methods provided for this. The Group and View constructors 
+          and destructors are private. 
 
 A Group or View object is owned by the Group that created it; i.e., its parent 
 Group or *owning* Group, respectively. Groups and Views maintain pointers to 
@@ -81,30 +81,8 @@ filesystem; however, the path string **may not** contain the parent entry
 Methods to operate on Groups
 ----------------------------
 
-The Group methods that support operations related to Group objects include:
-
- * Retrieve the name or id of the Group object.
- * Rename a Group.
- * Retrieve the Group path name to the Group object from the root of the tree.
- * Get a pointer to the parent Group.
- * Get a pointer to the DataStore that owns the hierarchy in which the Group 
-   resides.
-
- * Create a child Group (immediate child or other descendant).
- * Destroy a descendant Group with given id (child), or name/path (immediate
-   child or descendant), or all child groups in a Group.
-
-.. note:: When a Group is destroyed, all Groups, Views **and their data** in 
-          the subtree rooted at the destroyed Group are also destroyed.
-
- * Query the number of child Groups of a Group.
- * Query whether a Group has a descendant Group with a given name or path.
- * Query whether a Group has a child Group with a given integer id.
- * Query the name of a child Group with a given id, or the id of a child Group
-   with a given name.
- * Retrieve an immediate child Group with a given name or id, or a descendant
-   Group with a given path.
- * Iterate over the set of child Groups in a Group.
+The following lists summarize Group methods that support operations related to 
+Group objects.
 
 .. note:: * Methods that access Groups by index work with the direct 
             children of the current Group only because an id has no meaning 
@@ -114,6 +92,45 @@ The Group methods that support operations related to Group objects include:
             ids of other Views and Groups in associated Group objects may
             become invalid. This is analogous to iterator invalidation for
             containers when the container contents change.
+
+Create and Destroy Groups
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+ * Create a child Group of a Group given a name (child) or path
+   (other descendant). If a path is given, intermediate Groups in path are
+   created, if needed. 
+ * Rename a Group.
+ * Destroy a descendant Group with given id (child), or name/path (child or 
+   other descendant)
+ * Destroy all child groups in a Group.
+
+.. note:: When a Group is destroyed, all Groups and Views in the subtree 
+          rooted at the destroyed Group are also destroyed. However, the 
+          data associated with those Views will remain intact.
+
+Group Properties  
+^^^^^^^^^^^^^^^^^^^^^^^
+
+ * Retrieve the name or id of the Group object.
+ * Retrieve the Group path name to the Group object from the root of the tree.
+ * Get a pointer to the parent Group of a Group.
+ * Query the number of child Groups of a Group.
+ * Query whether a Group has a descendant Group with a given name or path.
+ * Query whether a Group has a child Group with a given integer id.
+ * Query the name of a child Group with a given id, or the id of a child Group
+   with a given name.
+ * Get a pointer to the DataStore that owns the hierarchy in which the Group 
+   resides.
+
+Group Access
+^^^^^^^^^^^^
+
+ * Retrieve an immediate child Group with a given name or id, or a descendant
+   Group with a given path.
+ * Iterate over the set of child Groups in a Group.
+
+Move and Copy Groups
+^^^^^^^^^^^^^^^^^^^^^^
 
  * Move a Group, and its associated subtree, from its parent Group and make it
    a child of another Group.
@@ -131,6 +148,14 @@ The Group methods that support operations related to View objects are
 summarized below. For more details on View concepts and operations, please
 see :ref:`view-label`.
 
+.. note:: Methods that access Views by index work only with the
+          Views owned by the current Group because an id has no meaning 
+          outside of the indexing of the current group. None of these methods 
+          is marked with 'Child' in its name.
+
+Create Views
+^^^^^^^^^^^^^
+
  * Create a View in the Group with a name only.
  * Create a View in the Group with a name and data description.
  * Create a View in the Group with a name and with a Buffer attached. The
@@ -140,26 +165,35 @@ see :ref:`view-label`.
  * Create a View in the Group with a name and data description, and allocate
    the data. Implicitly the data is held in a Buffer that is attached to the
    View.
- * Create a View in the Group with a name and holding a scalar or string.
+ * Create a View in the Group with a name holding a given scalar or string.
+
+Destroy Views
+^^^^^^^^^^^^^^
+
  * Destroy View with given id (child), or name/path (View in the Group or some 
    descendant Group), and leave View data intact.
  * Destroy all Views in the Group, and leave their data intact.
- * Destroy View with given id, or name/path, and their data.
- * Destroy all Views in the Group and their data.
+ * Destroy View with given id, or name/path, and destroy their data.
+ * Destroy all Views in the Group and destroy their data.
+
+View Queries
+^^^^^^^^^^^^^^^^
 
  * Query the number of Views in a Group.
  * Query whether a Group subtree has a View with a given name or path.
  * Query whether a Group has a View with a given integer id.
  * Query the name of a View with a given id, or the id of a View with a given 
    name.
+
+View Access
+^^^^^^^^^^^^^
+
  * Retrieve a View with a given name or id, or a descendant View (somewhere
    in the subtree) with a given path.
  * Iterate over the set of Views in a Group.
 
-.. note:: * Methods that access Views by index work only with the
-            Views owned by the current Group because an id has no meaning 
-            outside of the indexing of the current group. None of these methods 
-            is marked with 'Child' in its name.
+Move and Copy Views
+^^^^^^^^^^^^^^^^^^^^
 
  * Move a View from its owning Group to another Group (removed from original 
    owning Group).
