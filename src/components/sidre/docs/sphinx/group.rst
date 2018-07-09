@@ -78,7 +78,7 @@ filesystem; however, the path string **may not** contain the parent entry
 (such as "..").
 
 ----------------------------
-Methods to operate on Groups
+Methods to Operate on Groups
 ----------------------------
 
 The following lists summarize Group methods that support operations related to 
@@ -141,7 +141,7 @@ Move and Copy Groups
    equivalent.
 
 ----------------------------
-Methods to operate on Views
+Methods to Operate on Views
 ----------------------------
 
 The Group methods that support operations related to View objects are 
