@@ -1,11 +1,13 @@
 #include "multimat/multimat.hpp" 
 
 #include <iostream>
+#include <sstream>
 #include <iterator>
 #include <algorithm>
 
 #include "slic/slic.hpp"
 #include <cassert>
+
 #include "multimat.hpp"
 
 
@@ -19,7 +21,7 @@ MultiMat::MultiMat():
   m_cellMatProdSet(nullptr)
 {
   m_ncells = m_nmats = 0;
-  m_dataLayout = DataLayout::CELL_DOMINANT;
+  m_dataLayout = DataLayout::CELL_CENTRIC;
   m_sparcityLayout = SparcityLayout::SPARSE;
 }
 
@@ -78,14 +80,13 @@ MultiMat::MultiMat(const MultiMat& other) :
   m_fieldMappingVec(other.m_fieldMappingVec),
   m_dataTypeVec(other.m_dataTypeVec)
 {
-  RangeSetType& set1 = (m_dataLayout == DataLayout::CELL_DOMINANT ? m_cellSet : m_matSet);
-  RangeSetType& set2 = (m_dataLayout == DataLayout::CELL_DOMINANT ? m_matSet : m_cellSet);
+  RangeSetType& set1 = (m_dataLayout == DataLayout::CELL_CENTRIC ? m_cellSet : m_matSet);
+  RangeSetType& set2 = (m_dataLayout == DataLayout::CELL_CENTRIC ? m_matSet : m_cellSet);
   m_cellMatRel = new StaticVariableRelationType(&set1, &set2);
   m_cellMatRel->bindBeginOffsets(set1.size(), &m_cellMatRel_beginsVec);
   m_cellMatRel->bindIndices(m_cellMatRel_indicesVec.size(), &m_cellMatRel_indicesVec);
   m_cellMatNZSet = new RelationSetType(m_cellMatRel);
   m_cellMatProdSet = new ProductSetType(&set1, &set2);
-
 
   for (unsigned int map_i = 0; map_i < other.m_mapVec.size(); ++map_i)
   {
@@ -145,8 +146,8 @@ void MultiMat::setCellMatRel(vector<bool>& vecarr)
   SLIC_ASSERT(vecarr.size() == m_ncells * m_nmats); //This should be a dense matrix
   SLIC_ASSERT(m_cellMatRel == nullptr); //cellmatRel has not been set before
 
-  RangeSetType& set1 = (m_dataLayout == DataLayout::CELL_DOMINANT ? m_cellSet : m_matSet);
-  RangeSetType& set2 = (m_dataLayout == DataLayout::CELL_DOMINANT ? m_matSet : m_cellSet);
+  RangeSetType& set1 = (m_dataLayout == DataLayout::CELL_CENTRIC ? m_cellSet : m_matSet);
+  RangeSetType& set2 = (m_dataLayout == DataLayout::CELL_CENTRIC ? m_matSet : m_cellSet);
 
   //count the non-zeros
   int nz_count = 0;
@@ -202,7 +203,7 @@ int MultiMat::setVolfracField(double* arr)
   //checks volfrac values sums to 1
   auto& map = *dynamic_cast<Field2D<double>*>(m_mapVec[arr_i]);
   double tol = 10e-9;
-  if (m_dataLayout == DataLayout::CELL_DOMINANT) 
+  if (m_dataLayout == DataLayout::CELL_CENTRIC) 
   {
     for (int i = 0; i < map.firstSetSize(); ++i)
     {
@@ -265,7 +266,7 @@ int MultiMat::getFieldIdx(const std::string& field_name) const
 
 MultiMat::IdSet MultiMat::getMatInCell(int c)
 {
-  SLIC_ASSERT(m_dataLayout == DataLayout::CELL_DOMINANT);
+  SLIC_ASSERT(m_dataLayout == DataLayout::CELL_CENTRIC);
   SLIC_ASSERT(m_cellMatRel != nullptr);
 
   if (m_sparcityLayout == SparcityLayout::SPARSE) {
@@ -279,7 +280,7 @@ MultiMat::IdSet MultiMat::getMatInCell(int c)
 
 MultiMat::IndexSet MultiMat::getIndexingSetOfCell(int c)
 {
-  assert(m_dataLayout == DataLayout::CELL_DOMINANT);
+  assert(m_dataLayout == DataLayout::CELL_CENTRIC);
   assert(0 <= c && c < (int)m_ncells);
 
   if (m_sparcityLayout == SparcityLayout::SPARSE) {
@@ -297,13 +298,13 @@ MultiMat::IndexSet MultiMat::getIndexingSetOfCell(int c)
 
 void MultiMat::convertLayoutToCellDominant()
 {
-  if (m_dataLayout == DataLayout::CELL_DOMINANT) return;
+  if (m_dataLayout == DataLayout::CELL_CENTRIC) return;
   transposeData();
 }
 
 void MultiMat::convertLayoutToMaterialDominant() 
 { 
-  if (m_dataLayout == DataLayout::MAT_DOMINANT) return;
+  if (m_dataLayout == DataLayout::MAT_CENTRIC) return;
   transposeData();
 }
 
@@ -387,10 +388,10 @@ void MultiMat::transposeData()
     else assert(false); //TODO
   }
 
-  if(m_dataLayout == DataLayout::MAT_DOMINANT)
-    m_dataLayout = DataLayout::CELL_DOMINANT;
+  if(m_dataLayout == DataLayout::MAT_CENTRIC)
+    m_dataLayout = DataLayout::CELL_CENTRIC;
   else
-    m_dataLayout = DataLayout::MAT_DOMINANT;
+    m_dataLayout = DataLayout::MAT_CENTRIC;
 
   //switch vectors and rebind relation begin offset
   new_cellMatRel_beginsVec.swap(m_cellMatRel_beginsVec);
@@ -479,11 +480,11 @@ void MultiMat::convertLayout(DataLayout new_layout, SparcityLayout new_sparcity)
   }
 
   //cell/mat centric conversion
-  if (m_dataLayout == DataLayout::CELL_DOMINANT && new_layout == DataLayout::MAT_DOMINANT)
+  if (m_dataLayout == DataLayout::CELL_CENTRIC && new_layout == DataLayout::MAT_CENTRIC)
   {
     convertLayoutToMaterialDominant();
   }
-  else if(m_dataLayout == DataLayout::MAT_DOMINANT && new_layout == DataLayout::CELL_DOMINANT)
+  else if(m_dataLayout == DataLayout::MAT_CENTRIC && new_layout == DataLayout::CELL_CENTRIC)
   {
     convertLayoutToCellDominant();
   }
@@ -492,71 +493,139 @@ void MultiMat::convertLayout(DataLayout new_layout, SparcityLayout new_sparcity)
 
 std::string MultiMat::getDataLayoutAsString() const
 {
-  switch (m_dataLayout) {
-  case DataLayout::CELL_DOMINANT:
+  if(isCellDom())
     return "Cell-Centric";
-  case DataLayout::MAT_DOMINANT:
+  else if(isMatDom())
     return "Material-Centric";
-  default:
-    assert(false);
-  }
+  else 
+    SLIC_ASSERT(false);
+  return "";
 }
 
 std::string MultiMat::getSparcityLayoutAsString() const
 {
-  switch (m_sparcityLayout) {
-  case SparcityLayout::DENSE:
-    return "Dense";
-  case SparcityLayout::SPARSE:
+  if(isSparse())
     return "Sparse";
-  default:
-    assert(false);
-  }
+  else if(isDense())
+    return "Dense";
+  else
+    SLIC_ASSERT(false);
+  return "";
 }
 
 
 void MultiMat::print() const
 {
-  printf("Multimat Object\n");
-  printf("Number of materials: %d\n", m_nmats);
-  printf("Number of cells:     %d\n", m_ncells);
-  printf("Data layout: ");
-  if (m_dataLayout == DataLayout::CELL_DOMINANT)
-    printf("Cell-centric\n");
-  else
-    printf("Material-centric\n");
+  std::stringstream sstr;
 
-  printf("Sparcity layout: ");
-  if (m_sparcityLayout == SparcityLayout::DENSE)
-    printf("Dense\n");
-  else
-    printf("Sparse\n");
-
-  printf("\n%d Fields:\n", (int)m_mapVec.size());
+  sstr << "  Multimat Object Details:";
+  sstr << "\nNumber of materials: " << m_nmats;
+  sstr << "\nNumber of cells:     "<< m_ncells;
+  sstr << "\nData layout:     " << getDataLayoutAsString();
+  sstr << "\nSparcity layout: " << getSparcityLayoutAsString();
+  
+  sstr << "\n\n Number of fields: " << m_mapVec.size() << "\n";
   for (unsigned int i = 0; i < m_mapVec.size(); i++)
   {
-    printf("Field %d - %s\n", i, m_arrNameVec[i].c_str());
-    printf("  Mapping per ");
+    sstr << "Field " << i << ": " << m_arrNameVec[i].c_str();
+    sstr << "  Mapping per ";
     switch (m_fieldMappingVec[i]) {
-    case FieldMapping::PER_CELL: printf("cell"); break;
-    case FieldMapping::PER_MAT: printf("material"); break;
-    case FieldMapping::PER_CELL_MAT: printf("cellXmaterial"); break;
+    case FieldMapping::PER_CELL: sstr << "cell"; break;
+    case FieldMapping::PER_MAT: sstr << "material"; break;
+    case FieldMapping::PER_CELL_MAT: sstr << "cellXmaterial"; break;
     }
   }
-  printf("\n\n");
-  
+  sstr << "\n\n";
+
+  cout << sstr.str() << endl;
 }
 
 
 bool MultiMat::isValid(bool verboseOutput) const
 {
-  if (verboseOutput) print();
+  bool bValid = true;
+  std::stringstream errStr;
 
-  //make sure there is a volfrac field filled out 
-  //that matches the CellMatRelation
-  //TODO
+  if (m_cellSet.size() > 0 && m_matSet.size() > 0)
+  {
+    //It's a non-empty MultiMat object. 
+    //Check Volfrac exists
+    if (m_mapVec[0] == nullptr)
+    {
+      errStr << "\n\t*No Volfrac field added.";
+      bValid = false;
+    }
+    else
+    {
+      //Check Volfrac values match the relation value (if dense) 
+      const Field2D<double>& volfrac_map = *static_cast<Field2D<double>*>(m_mapVec[0]);
+      std::vector<double> volfrac_sum(m_cellSet.size(), 0.0);
+      if (isDense())
+      {
+        for (int i = 0; i < volfrac_map.firstSetSize(); ++i)
+        {
+          auto rel_iter = m_cellMatRel->begin(i);
+          for (int j = 0; j < volfrac_map.secondSetSize(); ++j)
+          {
+            bool zero_volfrac = volfrac_map[i* volfrac_map.secondSetSize() + j] == 0.0; //exact comp?
+            if (*rel_iter == j)
+            { //cellmat rel is present
+              if (zero_volfrac)
+              {
+                errStr << "\n\t*Volume fraction is zero for a cellmat with relation"; //TODO reword
+                bValid = false;
+              }
+              ++rel_iter;
+            }
+            else
+            {
+              if (!zero_volfrac)
+              {
+                errStr << "\n\t*Volume fraction is non-zero for an empty cellmat relation";
+                bValid = false;
+              }
+            }
+          }
+        }
+      }
 
-  return true;
+      //Check Volfrac sums to up 1.0
+      for (int i = 0; i < volfrac_map.firstSetSize(); ++i)
+      {
+        auto& submap = volfrac_map(i);
+        for (int j = 0; j < submap.size(); ++j)
+        {
+          if (isCellDom())
+            volfrac_sum[i] += submap.value(j);
+          else
+            volfrac_sum[submap.index(j)] += submap.value(j);
+        }
+      }
+      for (unsigned int i = 0; i < volfrac_sum.size(); ++i)
+      {
+        if (abs(volfrac_sum[i] - 1.0) > 10e-9)
+        {
+          errStr << "\n\t*Volfrac does not sum to 1.0 in cell " << i;
+          bValid = false;
+        }
+      }
+
+    }
+
+  }
+
+  if (verboseOutput)
+  {
+    if (bValid)
+    {
+      errStr << "MultiMat data was valid";
+    }
+
+    std::cout << errStr.str() << std::endl;
+  }
+
+
+  return bValid;
 }
 
 MultiMat::SetType* MultiMat::get_mapped_set(FieldMapping fm)

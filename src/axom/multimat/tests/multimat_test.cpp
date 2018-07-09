@@ -170,7 +170,7 @@ void check_values(MultiMat& mm, std::string arr_name, MM_test_data<DataType>& da
       for (int s = 0; s < data.stride; ++s)
       {
         double *d;
-        if (mm.getDataLayout() == DataLayout::CELL_DOMINANT)
+        if (mm.getDataLayout() == DataLayout::CELL_CENTRIC)
           d = map.findValue(ci, mi, s);
         else
           d = map.findValue(mi, ci, s);
@@ -203,14 +203,12 @@ MultiMat* newMM(MM_test_data<T>& data, DataLayout layout_used, SparcityLayout sp
   mm.setNumberOfCell(data.num_cells);
   mm.setNumberOfMat(data.num_mats);
 
-  if (layout_used == DataLayout::CELL_DOMINANT)
+  if (layout_used == DataLayout::CELL_CENTRIC)
     mm.setCellMatRel(data.fillBool_cellcen);
   else
     mm.setCellMatRel(data.fillBool_matcen);
 
-  EXPECT_TRUE(mm.isValid());
-
-  if (layout_used == DataLayout::CELL_DOMINANT) {
+  if (layout_used == DataLayout::CELL_CENTRIC) {
     if (sparcity_used == SparcityLayout::DENSE)
       mm.setVolfracField(data.volfrac_cellcen_dense.data());
     else
@@ -223,7 +221,9 @@ MultiMat* newMM(MM_test_data<T>& data, DataLayout layout_used, SparcityLayout sp
       mm.setVolfracField(data.volfrac_matcen_sparse.data());
   }
 
-  if (layout_used == DataLayout::CELL_DOMINANT) {
+  EXPECT_TRUE(mm.isValid());
+
+  if (layout_used == DataLayout::CELL_CENTRIC) {
     if (sparcity_used == SparcityLayout::DENSE)
       mm.addField(array_name, FieldMapping::PER_CELL_MAT, data.cellmat_dense_arr.data(), data.stride);
     else
@@ -247,7 +247,7 @@ TEST(multimat, construct_multimat_1_array)
   const int stride_val = 4;
   MM_test_data<double> data(num_cells, num_mats, stride_val);
 
-  std::vector<DataLayout> data_layouts = { DataLayout::CELL_DOMINANT, DataLayout::MAT_DOMINANT };
+  std::vector<DataLayout> data_layouts = { DataLayout::CELL_CENTRIC, DataLayout::MAT_CENTRIC };
   std::vector<SparcityLayout> sparcity_layouts = { SparcityLayout::DENSE, SparcityLayout::SPARSE };
 
   std::string array_name = "Array 1";
