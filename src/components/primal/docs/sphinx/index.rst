@@ -17,6 +17,7 @@ Primitives
 ----------
 
 Primal includes the following primitives:
+
 - Point
 - Segment, Ray, Vector
 - Plane, Triangle, Polygon
@@ -38,8 +39,9 @@ Operations
 ----------
 
 Primal implements geometric operations with functions, listed below:
-- ``closest_point`` takes a primitive P and a query point Q, and returns the point
-   on P that is closest to Q.
+
+- ``closest_point`` takes a primitive P and a query point Q and returns the point
+  on P closest to Q.
 - ``squared_distance`` computes the squared distance from a point to another point,
   bounding box, line segment, or triangle.
 - ``orientation`` finds the side of a line segment or triangle where a query point lies.
@@ -70,8 +72,11 @@ entirely contain their child buckets, and child buckets may overlap.
 This spatial index is often used in ray casting or collision detection, where a
 probe object such as a particle or ray can potentially hit anything in the
 region of interest.  The main idea is that testing for probe intersection
-with a bucket (bounding box) is cheap, and will eliminate the need to check against 
-anything in that bounding box.
+with a bucket (bounding box) is cheap.  If a bucket intersection test fails (misses),
+the contents of the bucket are cheaply pruned out of the search.  If the probe
+does intersect a bucket, the next level of buckets is tested for probe intersection.
+This process continues until the lowest level of BVH tree buckets, where individual
+objects are tested for probe intersection.
 
 The `Verlet list <https://en.wikipedia.org/wiki/Cell_lists>`_ or cell list is
 implemented by UniformGrid.  As with BVHTree, a code adds objects with bounding
