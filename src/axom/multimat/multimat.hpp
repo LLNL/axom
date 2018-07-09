@@ -11,6 +11,7 @@
 #include "slam/BivariateMap.hpp"
 #include <vector>
 #include <cassert>
+#include <stdexcept>
 
 namespace axom
 {
@@ -21,7 +22,7 @@ namespace policies = slam::policies;
 
 
 enum class FieldMapping { PER_CELL, PER_MAT, PER_CELL_MAT };
-enum class DataLayout { CELL_DOMINANT, MAT_DOMINANT };
+enum class DataLayout { CELL_CENTRIC, MAT_CENTRIC };
 enum class SparcityLayout { SPARSE, DENSE };
 enum class DataTypeSupported { TypeUnknown, TypeInt, TypeDouble, TypeFloat, TypeUnsignChar };
 
@@ -103,8 +104,8 @@ public:
   IdSet getMatInCell(int c); //Should change the func name so there's no assumption of the layout
   IndexSet getIndexingSetOfCell(int c);
 
-  inline int getNumberOfMaterials() const { return m_nmats; };
-  inline int getNumberOfCells() const { return m_ncells; }
+  int getNumberOfMaterials() const { return m_nmats; };
+  int getNumberOfCells() const { return m_ncells; }
 
   //Data modification functions
   //...
@@ -116,15 +117,15 @@ public:
   void convertLayoutToSparse();
   void convertLayoutToDense();
   void convertLayout(DataLayout, SparcityLayout);
-  inline DataLayout getDataLayout() const { return m_dataLayout; }
-  inline SparcityLayout getSparcityLayout() const { return m_sparcityLayout; }
+  DataLayout getDataLayout() const { return m_dataLayout; }
+  SparcityLayout getSparcityLayout() const { return m_sparcityLayout; }
   std::string getDataLayoutAsString() const ;
   std::string getSparcityLayoutAsString() const;
-  inline bool isSparse() const { return getSparcityLayout() == SparcityLayout::SPARSE; }
-  inline bool isDense() const { return getSparcityLayout() == SparcityLayout::DENSE; }
-  inline bool isCellDom() const { return getDataLayout() == DataLayout::CELL_DOMINANT; }
-  inline bool isMatDom() const { return getDataLayout() == DataLayout::MAT_DOMINANT; }
-  inline FieldMapping getFieldMapping(int field_i) const { return m_fieldMappingVec[field_i]; }
+  bool isSparse() const { return getSparcityLayout() == SparcityLayout::SPARSE; }
+  bool isDense() const { return getSparcityLayout() == SparcityLayout::DENSE; }
+  bool isCellDom() const { return getDataLayout() == DataLayout::CELL_CENTRIC; }
+  bool isMatDom() const { return getDataLayout() == DataLayout::MAT_CENTRIC; }
+  FieldMapping getFieldMapping(int field_i) const { return m_fieldMappingVec[field_i]; }
 
   void print() const;
   bool isValid(bool verboseOutput = false) const;
@@ -284,6 +285,8 @@ MultiMat::Field2D<T>& MultiMat::get2dField(const std::string& field_name)
       return *dynamic_cast<Field2D<T>*>(m_mapVec[i]);
     }
   }
+
+  throw std::invalid_argument("Field with name not found");
 }
 
 
