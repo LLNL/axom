@@ -23,8 +23,8 @@ Views to support queries (e.g., search for Views with a given attribute name),
 outputting data for a subset of Views to files, and other ways an application
 may need to selectively process Views in a Sidre DataStore hierarchy.
 
-A Buffer is created with a string name and a default scalar or string value.
-The default values can be changed later as needed.
+An Attribute is created with a string name and a default scalar or string value.
+A default value can be changed later as needed.
 
 .. note:: * Attribute objects can only be created and destroyed using DataStore
             methods. The Attribute constructor and destructor are private 

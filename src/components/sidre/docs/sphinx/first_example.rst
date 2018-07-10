@@ -105,7 +105,7 @@ x values, y values, and z values each offset from each other by a stride of
 three in the array. 
 
 The next snippet creates two views ("temp" and "rho") and allocates each of
-their data as an array of type double with length 'eltcount'. Then, it set 
+their data as an array of type double with length 'eltcount'. Then, it sets 
 an Attribute ("vis") on each of those Views with a value of 1. Lastly, it 
 creates a Group ("ext") that has a View that holds an external pointer 
 ("region"). The 'apply()' method describes the View data as an array of
