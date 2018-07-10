@@ -22,18 +22,19 @@ of data: across physics packages in integrated applications, and between
 applications and tools that provide capabilities such as file I/O, *in situ* 
 visualization, and analysis.
 
-Sidre design grew out of experience with current LLNL applications and 
-requirements identified for new codes to run on future architectures. All of 
-these codes must carefully manage data allocation and placement carefully to 
-run efficiently. Capabilities in existing codes were typically developed 
-specifically for each code with little regard to sharing. In contrast, Sidre 
-is designed from inception to be shared by different applications.
+The design of Sidre is based on substantial experience with current LLNL 
+applications and requirements identified for new codes to run on future 
+architectures. All of these codes must carefully manage data allocation and 
+placement to run efficiently. Related capabilities in existing codes were 
+typically developed independently for each code with little regard to sharing. 
+In contrast, Sidre is designed from inception to be shared by different 
+applications.
 
 Introduction
 -------------
 
 Sidre provides simple application-level semantics to describe, 
-allocate/deal locate, and provide access to data. Currently supported
+allocate/deallocate, and provide access to data. Currently supported
 capabilities include:
 
 .. Do we want to make keywords bold for each bullet point?

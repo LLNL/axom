@@ -38,7 +38,7 @@ example where we construct the Sidre Datastore shown in the following figure:
    |    :width: 72px                    |             |
    +------------------------------------+-------------+
 
-The diagram represents a Datastore, which contains  all Sidre objects and
+The diagram represents a Datastore, which contains all Sidre objects and
 provides the main interface to access those objects.
 Rounded rectangles represent Sidre Group objects. Each Group has a name and
 one parent Group, except for the root Group (i.e. "/") which has no parent.
@@ -56,10 +56,10 @@ and owned by Sidre Buffer objects). Each array View has a data pointer and
 describes data in terms of data type, number of elements, offset, and stride. 
 Data pointers held by array Views are shown as dashed arrows.
 
-A Datastore contain a collection of Buffer objects, shown as segmented
+A Datastore contains a collection of Buffer objects, shown as segmented
 rectangles.
 
-A Datastore also contains a list of Attributes.  Each Attribute is outlined
+A Datastore contains a list of Attributes. Each Attribute is outlined
 with a hexagon and defines a metadata label and a default value associated 
 with that label. In this example, the Datastore has Attributes "vis" (with 
 default value 0) and "restart" (with default value 1). Default Attributes 
@@ -104,7 +104,7 @@ the x, y, z values for each position are stored contiguously with the
 x values, y values, and z values each offset from each other by a stride of
 three in the array. 
 
-The next snippet creates two views ("temp", and "rho") and allocates each of
+The next snippet creates two views ("temp" and "rho") and allocates each of
 their data as an array of type double with length 'eltcount'. Then, it set 
 an Attribute ("vis") on each of those Views with a value of 1. Lastly, it 
 creates a Group ("ext") that has a View that holds an external pointer 
@@ -133,13 +133,14 @@ The pointer returned by ``View::getPointer()`` always points to the first
 data element described by the View (the View takes care of the offset),
 but use of a stride other than 1 must be done by the code itself.
 
-Unix-like path syntax using the slash ("/") delimiter is supported for
-traversing Sidre Group and View hierarchies and accessing their contents. 
-This usage is shown in the last call to 'getView()' in the code example above.
-The method call retrieves the View named "region" in the Group "ext" that is 
-a child of the "fields" Group. Character sequences before the first slash and 
-between two consecutive slashes are assumed to be Group names (describing 
-parent-child relationships). For this method, and others dealing with Views, 
-the sequence following the last slash is assumed to be the name of a View. 
-Similar path syntax can be used to retrieve Groups, create Groups and Views, 
-and so forth.
+Unix-style path syntax using the slash ("/") delimiter is supported for
+traversing Sidre Group and View hierarchies and accessing their contents.
+However, '..' and '.' syntax (up-directory and current directory) is not
+supported. This usage is shown in the last call to ``getView()`` in the code 
+example above. The method call retrieves the View named "region" in the Group 
+"ext" that is a child of the "fields" Group. Character sequences before the 
+first slash and between two consecutive slashes are assumed to be Group names 
+(describing parent-child relationships). For this method, and others dealing 
+with Views, the sequence following the last slash is assumed to be the name of 
+a View. Similar path syntax can be used to retrieve Groups, create Groups and 
+Views, and so forth.
