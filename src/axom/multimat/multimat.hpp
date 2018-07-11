@@ -304,7 +304,7 @@ void MultiMat::convertToSparse_helper(int map_i)
   int idx = 0;
   for (int i = 0; i < m_cellMatRel->fromSetSize(); ++i) {
     auto relset = (*m_cellMatRel)[i];
-    auto submap = old_map(i);
+    auto& submap = old_map(i);
     for (int j = 0; j < relset.size(); ++j) {
       for (int s = 0; s < stride; ++s) {
         arr_data[idx++] = submap[relset[j]*stride + s];
