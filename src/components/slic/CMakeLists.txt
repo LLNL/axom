@@ -13,7 +13,13 @@
 #------------------------------------------------------------------------------
 
 ################################
-# Add the logapi sources
+# Check necessary dependencies
+################################
+axom_ensure_dependencies(NAME       SLIC
+                         COMPONENTS Axom_utils)
+
+################################
+# Add the SLIC sources
 ################################
 add_subdirectory(src)
 

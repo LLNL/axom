@@ -21,7 +21,7 @@ endif()
 message(STATUS "Using cmake version ${CMAKE_VERSION}")
 
 ################################
-# axom project
+# Axom project
 ################################
 project(axom LANGUAGES C CXX)
 

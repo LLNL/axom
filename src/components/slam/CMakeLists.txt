@@ -16,6 +16,12 @@
 # SLAM component -- Set-theoretic Lightweight API for Meshes (low level mesh API) 
 ##################################################################################
 
+################################
+# Check necessary dependencies
+################################
+axom_ensure_dependencies(NAME       SLAM
+                         COMPONENTS Axom_utils SLIC)
+
 ### Some additional flags that might be useful
 # To avoid warnings: -Wno-missing-braces  
 # Other: -fno-strict-aliasing -Wextra

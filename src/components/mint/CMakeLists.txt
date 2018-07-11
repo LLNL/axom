@@ -13,6 +13,12 @@
 #------------------------------------------------------------------------------
 
 ################################
+# Check necessary dependencies
+################################
+axom_ensure_dependencies(NAME       Mint
+                         COMPONENTS Axom_utils SLIC)
+
+################################
 # Add mint options
 ################################
 option( MINT_USE_64BIT_INDEXTYPE "Use 64-bit indices for Mint" OFF )

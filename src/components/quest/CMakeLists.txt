@@ -13,6 +13,12 @@
 #------------------------------------------------------------------------------
 
 ################################
+# Check necessary dependencies
+################################
+axom_ensure_dependencies(NAME       QUEST
+                         COMPONENTS Axom_utils MINT PRIMAL SLAM SLIC)
+
+################################
 # Add the quest sources
 ################################
 add_subdirectory(src)

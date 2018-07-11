@@ -186,3 +186,41 @@ macro(axom_check_code_compiles)
     unset(_res)
 
 endmacro(axom_check_code_compiles)
+
+
+##------------------------------------------------------------------------------
+## axom_ensure_dependencies
+## 
+## This macro checks for the required dependencies of the given component
+##
+## NAME - The name of the component that we are checking the dependencies of
+##
+## COMPONENTS - Internal required components
+##
+## TPLS - Third party required libraries
+##------------------------------------------------------------------------------
+macro(axom_ensure_dependencies)
+
+    set(options)
+    set(singleValueArgs NAME)
+    set(multiValueArgs COMPONENTS TPLS)
+
+    # Parse the arguments to the macro
+    cmake_parse_arguments(arg
+         "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    foreach(_dep ${arg_COMPONENTS})
+        string(TOUPPER ${_dep} _ucdep)
+        if(NOT ENABLE_${_ucdep})
+            message(FATAL_ERROR "${arg_NAME} requires ${_dep}. Set ENABLE_${_ucdep} to ON.")
+        endif()
+    endforeach()
+
+    foreach(_dep ${arg_TPLS})
+        string(TOUPPER ${_dep} _ucdep)
+        if(NOT ${_ucdep}_FOUND)
+            message(FATAL_ERROR "${arg_NAME} requires ${_dep}. Set ${_ucdep}_DIR to location of a ${_dep} install.")
+        endif()
+    endforeach()
+
+endmacro(axom_ensure_dependencies)
