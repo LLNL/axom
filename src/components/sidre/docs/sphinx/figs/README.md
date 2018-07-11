@@ -10,7 +10,10 @@ Generating figures
      to import the PDF and perform manual editing to produce the vector
      graphics version sidre_datastore_example.svg and raster version
      sidre_datastore_example.png.
-2. Sidre interaction with Conduit:
+2. Sidre View state table:
+   - MS Powerpoint was used to generate the table (file: sidre-view-states.pptx)
+   - Table was saved as a *.png file.
+3. Sidre interaction with Conduit:
    - The example cartoon tiny_mesh.png was drawn by hand and scanned.
    - VUE was used to draw the initial diagram sidreconduit.vue, which was
      saved as a PDF.

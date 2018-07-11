@@ -80,7 +80,7 @@ The key View concepts that users should be aware of are:
 The table below summarizes View data associations (rows) and View states with 
 respect to that data (columns).
 
-.. figure:: figs/sidre-states.png
+.. figure:: figs/sidre-view-states.png
 
    This table summarizes Sidre View *data associations* and *data states*. 
    Each row is a data association and each column refers to a data state.
