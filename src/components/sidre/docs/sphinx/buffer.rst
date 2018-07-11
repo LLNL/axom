@@ -36,7 +36,7 @@ amount of data they will hold before deciding how and when to allocate data.
             you must keep a pointer to it or note its id so that you can 
             retrieve it from the DataStore when needed.
 
-Buffer objects are also used to hold data for Sidre View objects in many cases.
+Buffer objects are used to hold data for Sidre View objects in most cases.
 Each Buffer object maintains references to the Views that refer to its data. 
 These references are created when a Buffer object is attached to a View, or
 data is allocated through a View. Data stored in a Buffer may be accessed 

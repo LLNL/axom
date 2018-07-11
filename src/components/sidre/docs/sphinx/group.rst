@@ -20,7 +20,7 @@ Group
 
 Sidre Group objects are used to define a tree-like hierarchical organization
 for application data, such as meshes and fields used in a simulation. Each 
-Group has a name and one parent Group (except for the root Group), and contains
+Group has a name and one parent Group (except for the root Group) and contains
 zero or more child Groups and zero or more Views. A Sidre DataStore has 
 exactly one root Group (named "/"), which is created when the DataStore object
 is created. See :ref:`datastore-label` for more information.
@@ -52,9 +52,9 @@ which it is moved becomes its parent. This implies that the entire subtree
 of Groups and Views within the moved Group is moved as well and can no longer 
 be accessed via the original parent Group. When a Group is copied to another 
 Group, a copy of the entire Group subtree rooted at the copied Group is added
-to the Group to which it is copied. Each Views in the subtree is **shallow** 
-copied; i.e., a new View object is created in the destination, but the data
-is shared by the original and new View.
+to the Group to which it is copied. A **shallow** copy is performed for the
+data in each View; i.e., a new View object is created in the destination, but 
+the data is shared by the original and new View.
 
 .. note:: View copy operations perform **shallow** copies of the View data.
 
@@ -74,8 +74,8 @@ is equivalent to::
 
 In particular, intermediate Groups "foo" and "bar" will be created in this 
 case if they don't already exist. The path syntax is similar to a Unix 
-filesystem; however, the path string **may not** contain the parent entry
-(such as "..").
+filesystem, but the path string **may not** contain the parent entry
+(such as "../foo").
 
 ----------------------------
 Methods to Operate on Groups
@@ -84,21 +84,20 @@ Methods to Operate on Groups
 The following lists summarize Group methods that support operations related to 
 Group objects.
 
-.. note:: * Methods that access Groups by index work with the direct 
-            children of the current Group only because an id has no meaning 
+.. note:: * Methods that access Groups by index only work with the direct 
+            children of the current Group because an id has no meaning 
             outside of the indexing of the current group. None of these methods 
             is marked with 'Child' in its name.
           * When Groups are created, destroyed, copied, or moved,
-            ids of other Views and Groups in associated Group objects may
+            ids of other Views and Groups in parent Group objects may
             become invalid. This is analogous to iterator invalidation for
             containers when the container contents change.
 
 Create and Destroy Groups
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
- * Create a child Group of a Group given a name (child) or path
-   (other descendant). If a path is given, intermediate Groups in path are
-   created, if needed. 
+ * Create a child Group given a name (child) or path (other descendant). 
+   If a path is given, intermediate Groups in path are created, if needed. 
  * Rename a Group.
  * Destroy a descendant Group with given id (child), or name/path (child or 
    other descendant)
@@ -111,15 +110,15 @@ Create and Destroy Groups
 Group Properties  
 ^^^^^^^^^^^^^^^^^^^^^^^
 
- * Retrieve the name or id of the Group object.
- * Retrieve the Group path name to the Group object from the root of the tree.
+ * Retrieve the name or id of a Group object.
+ * Retrieve the full path name from the root of the tree to a Group object.
  * Get a pointer to the parent Group of a Group.
  * Query the number of child Groups of a Group.
  * Query whether a Group has a descendant Group with a given name or path.
  * Query whether a Group has a child Group with a given integer id.
  * Query the name of a child Group with a given id, or the id of a child Group
    with a given name.
- * Get a pointer to the DataStore that owns the hierarchy in which the Group 
+ * Get a pointer to the DataStore that owns the hierarchy in which a Group 
    resides.
 
 Group Access
@@ -137,8 +136,8 @@ Move and Copy Groups
  * Create a copy of Group subtree rooted at some Group and make it a child of 
    another Group.
  * Query whether Group subtree is equivalent to another; i.e., identical 
-   structures with same names for all Groups and Views, and Views are also
-   equivalent.
+   subtree structures with same names for all Groups and Views, and Views are 
+   also equivalent (see :ref:`view-interface-label`).
 
 ----------------------------
 Methods to Operate on Views
@@ -199,13 +198,13 @@ Move and Copy Views
    owning Group).
  * Copy a View to another Group. Note that this is **shallow** copy of the
    View data; i.e., it is shared by the original and new View.
- * Query whether Group subtree is equivalent to another; i.e., identical 
-   structures with same names for all Groups and Views, and Views are also
-   equivalent.
 
 ----------------------------
-I/O Operations
+Group I/O Operations
 ----------------------------
+
+The Group interface provides methods to perform data I/O operations on Views
+in the Group subtree rooted at any Group.
 
  * Copy a description of a Group subtree to a conduit::Node.
  * Create native and external data layouts in conduit::Node hierarchies 

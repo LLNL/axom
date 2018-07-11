@@ -49,11 +49,11 @@ and a stride (based on the pointer address and data type).
     (re)allocated or deallocated by the View if and only if it is the only 
     View attached to the Buffer. **In general, a Buffer can be attached
     to more than one View.**
-  * A View description is used to allocate data for the View using semantics 
-    similar to Buffer data description and allocation (see :ref:`buffer-label`).
-    In this case, the View is usually exclusively associated with a Buffer and 
-    no other View is allowed to (re)allocate or deallocate the data held by the 
-    Buffer.
+  * A View description can be used to allocate data for View using a View
+    ``allocate()`` method similar to Buffer data description and allocation 
+    (see :ref:`buffer-label`). In this case, the View is usually exclusively 
+    associated with a Buffer and no other View is allowed to (re)allocate or 
+    deallocate the data held by the Buffer.
   * A View can **describe** data associated with a pointer to an *external* 
     data allocation. In this case, the View cannot (re)allocate or deallocate 
     the data. However, all other View operations can be applied to the data
@@ -70,10 +70,15 @@ Before we describe the Sidre View interface, we present some View concepts
 that describe various *states* a View can be in at any given time. Hopefully,
 this will provide some useful context for the method descriptions that follow.
 
-The key View concepts that users should be aware of are: a View data 
-description, how a View is associated to data, and the application of the 
-description to the data. The table below summarizes View data associations
-and View states with respect to that data.
+The key View concepts that users should be aware of are: 
+
+  * View data description (data type, number of elements, stride, offset, etc.)
+  * View data association (data lives in an attached Sidre Buffer object,
+    accessed via external pointer, or is a scalar or string owned by the View)
+  * Whether the View data description is applied to the data
+
+The table below summarizes View data associations (rows) and View states with 
+respect to that data (columns).
 
 .. figure:: figs/sidre-states.png
 
@@ -124,6 +129,8 @@ The following lists summarize the parts of the View interface:
              View* view = ...;
              view->describe(...)->allocate(...)->apply(); 
 
+.. _view-interface-label:
+
 View Property Operations
 -----------------------------
 
@@ -162,7 +169,7 @@ Data Description Queries
  * Get data offet.
  * Get data stride.
  * Get number of dimensions and shape of multi-dimensional data.
- * Get conduit::Schema object that describes data.
+ * Get a conduit::Schema object that contains the View data description.
 
 Data Management Operations
 ---------------------------
@@ -181,7 +188,7 @@ Data Access Methods
  * Get a pointer to View data, actual type or void*.
  * Get scalar value for a scalar View.
  * Retrieve pointer to Buffer attached to View.
- * Get conduit::Node that holds data.
+ * Get a conduit::Node object that holds the View data.
 
 Attribute Methods
 -------------------
@@ -189,7 +196,7 @@ Attribute Methods
  * Query whether View has an Attribute with given id or name.
  * Get Attribute associated with a View by id or name.
  * Query whether Attribute has been set explicitly for View.
- * Set Attribute with given id or name to its default value.
+ * Reset Attribute with given id or name to its default value.
  * Set Attribute with given id or name to a given scalar value or string.
  * Retrieve scalar value or string of an Attribute.
  * Iterate over Attributes of a View.

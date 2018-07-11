@@ -15,10 +15,10 @@
 .. _datastore-label:
 
 ==========
-Datastore
+DataStore
 ==========
 
-A Sidre Datastore object provides the main access point for Sidre contents,
+A Sidre DataStore object provides the main access point for Sidre contents,
 including the data managed by Sidre. In particular, a DataStore maintains the 
 group at the root of the Sidre group hierarchy (named "/"), a collection of 
 Buffer objects, and a collection of Attribute objects. Generally, the first 
