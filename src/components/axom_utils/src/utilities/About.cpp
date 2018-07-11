@@ -23,6 +23,7 @@
 #include <sstream>    // for stringstream
 #include <string>     // for C++ string
 #include <vector>     // for STL vector
+#include <iterator>   // for ostream_iterator
 
 
 namespace axom
