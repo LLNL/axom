@@ -20,33 +20,39 @@
 # Conduit
 ################################
 if (CONDUIT_DIR)
-  include(cmake/thirdparty/FindConduit.cmake)
-  blt_register_library( NAME conduit
-                        INCLUDES ${CONDUIT_INCLUDE_DIRS} 
-                        LIBRARIES  conduit)
-  blt_register_library( NAME conduit_relay
-                        INCLUDES ${CONDUIT_INCLUDE_DIRS}
-                        LIBRARIES  conduit_relay)
+    include(cmake/thirdparty/FindConduit.cmake)
+    blt_register_library( NAME conduit
+                          INCLUDES ${CONDUIT_INCLUDE_DIRS} 
+                          LIBRARIES  conduit)
+    blt_register_library( NAME conduit_relay
+                          INCLUDES ${CONDUIT_INCLUDE_DIRS}
+                          LIBRARIES  conduit_relay)
+else()
+    message(STATUS "Conduit support is OFF")
 endif()
 
 ################################
 # HDF5
 ################################
 if (HDF5_DIR)
-  include(cmake/thirdparty/SetupHDF5.cmake)
-  blt_register_library(NAME hdf5
-                       INCLUDES ${HDF5_INCLUDE_DIRS}
-                       LIBRARIES ${HDF5_LIBRARIES} )
+    include(cmake/thirdparty/SetupHDF5.cmake)
+    blt_register_library(NAME hdf5
+                         INCLUDES ${HDF5_INCLUDE_DIRS}
+                         LIBRARIES ${HDF5_LIBRARIES} )
+else()
+    message(STATUS "HDF5 support is OFF")
 endif()
 
 ################################
 # MFEM
 ################################
 if (MFEM_DIR)
-  include(cmake/thirdparty/FindMFEM.cmake)
-  blt_register_library( NAME mfem
-                        INCLUDES  ${MFEM_INCLUDE_DIRS}
-                        LIBRARIES ${MFEM_LIBRARY} )
+    include(cmake/thirdparty/FindMFEM.cmake)
+    blt_register_library( NAME mfem
+                          INCLUDES  ${MFEM_INCLUDE_DIRS}
+                          LIBRARIES ${MFEM_LIBRARY} )
+else()
+    message(STATUS "MFEM support is OFF")
 endif()
 
 
@@ -63,6 +69,8 @@ if(EXISTS ${SHROUD_EXECUTABLE})
        message(FATAL_ERROR "Error from Shroud: ${SHROUD_cmake_error}")
     endif()
     include(${CMAKE_CURRENT_BINARY_DIR}/SetupShroud.cmake)
+else()
+    message(STATUS "Shroud support is OFF")
 endif()
 
 ################################
@@ -105,6 +113,8 @@ if(ENABLE_PYTHON AND PYTHON_EXECUTABLE)
         INCLUDES ${PYTHON_INCLUDE_DIRS}
         LIBRARIES ${PYTHON_LIBRARIES}
     )
+else()
+    message(STATUS "Python support is OFF")
 endif(ENABLE_PYTHON AND PYTHON_EXECUTABLE)
 
 ################################
@@ -126,16 +136,20 @@ if (LUA_DIR)
         INCLUDES ${LUA_INCLUDE_DIR}
         LIBRARIES ${LUA_LIBRARIES}
     )
+else()
+    message(STATUS "LUA support is OFF")
 endif()
 
 ################################
 # SCR
 ################################
 if (SCR_DIR)
-  include(cmake/thirdparty/FindSCR.cmake)
-  blt_register_library(NAME scr
-                       INCLUDES ${SCR_INCLUDE_DIRS}
-                       LIBRARIES ${SCR_LIBRARY} )
+    include(cmake/thirdparty/FindSCR.cmake)
+    blt_register_library(NAME scr
+                         INCLUDES ${SCR_INCLUDE_DIRS}
+                         LIBRARIES ${SCR_LIBRARY} )
+else()
+    message(STATUS "SCR support is OFF")
 endif()
 
 
