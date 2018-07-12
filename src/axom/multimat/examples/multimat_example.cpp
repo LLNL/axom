@@ -4,12 +4,8 @@
 #include "helper.hpp"
 #include <ctime>
 
-
-
 using namespace std;
 using namespace axom::multimat;
-
-//using MM_doubleArrType = MultiMatTypedArray<double>;
 
 #define ITERMAX 10  //define how many iterations to run test code
 
@@ -71,8 +67,8 @@ struct Robey_data
     filled_fraction = filled_percentage / 100.0f;
 
     // Some variables on neighbors
-    float L_f = read_from_file_bool ? 0.5 : 1.0;  // ave frac of nbrs containing material
-    int nnbrs_ave = 8;  // nearly so; 4000 boundary cells in 1 million cells
+    //float L_f = read_from_file_bool ? 0.5 : 1.0;  // ave frac of nbrs containing material
+    //int nnbrs_ave = 8;  // nearly so; 4000 boundary cells in 1 million cells
                         //                  // in 3D, nnbrs_ave would be 26
     nnbrs_max = 8;
     // Build up list of neighbors for each cell
@@ -118,99 +114,101 @@ struct Robey_data
   }
 };
 
-//
-//
-//
-//
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////    Average density with fractional densities
-////    Copied from Robey's code for Cell-Dominant Full Matrix Data Structure line 257
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//void average_density_cell_dom(Robey_data data){
-//  int ncells = data.ncells;
-//  int nmats = data.nmats;
-//  std::vector<double>& Volfrac = data.Volfrac;
-//  std::vector<double>& Densityfrac = data.Densityfrac;
-//  std::vector<double>& Vol = data.Vol;
-//
-//  cout << "-- Averaging Density cell-dominant array-access --" << endl;
-//  vector<double> Density_average(ncells);
-//
-//  double time_sum = 0;
-//  for (int iter = 0; iter < ITERMAX; iter++) {
-//    std::clock_t start;
-//    double duration;
-//    start = std::clock();
-//
-//    for (int ic = 0; ic < ncells; ic++) {
-//      double density_ave = 0.0;
-//      for (int m = 0; m < nmats; m++) {
-//        density_ave += Densityfrac[ic*nmats + m] * Volfrac[ic*nmats + m];
-//      }
-//      Density_average[ic] = density_ave / Vol[ic];
-//    }
-//
-//    duration = (std::clock() - start) / (double)CLOCKS_PER_SEC;
-//    time_sum += duration;
-//
-//    //Do a check for calculation correctness
-//    double sum = 0;
-//    for (auto da : Density_average)
-//      sum += da;
-//    cout << "iter" << iter << "   sum of values: " << sum << endl;
-//  }
-//
-//  double act_perf = time_sum / (double)ITERMAX;
-//  printf("Average Density of mixed material cells    compute time is %lf secs\n", act_perf);
-//
-//}
-//
-//
-//
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////    Average density with fractional densities
-////    Same as the function above, but modified to use MultiMat class
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//void average_density_cell_dom_mm(MultiMat& mm) {
-//  cout << "-- Averaging Density cell-dominant mm-version --" << endl;
-//  int ncells = mm.getNumberOfCells();
-//  int nmats = mm.getNumberOfMaterials();
-//  MM_doubleArrType* Densityfrac = MM_CAST_TO(double, mm.getFieldArray("Densityfrac"));
-//  MM_doubleArrType* Volfrac = MM_CAST_TO(double, mm.getFieldArray("Volfrac"));
-//  MM_doubleArrType* Vol = MM_CAST_TO(double, mm.getFieldArray("Vol"));
-//
-//  vector<double> Density_average(ncells);
-//
-//  double time_sum = 0;
-//
-//  for (int iter = 0; iter < ITERMAX; iter++) {
-//    std::clock_t start;
-//    double duration;
-//    start = std::clock();
-//
-//    for (int ic = 0; ic < ncells; ic++) {
-//      double density_ave = 0.0;
-//      for (int m = 0; m < nmats; m++) {
-//        density_ave += Densityfrac->getValue(ic, m) *  Volfrac->getValue(ic, m);
-//      }
-//      Density_average[ic] = density_ave / Vol->getValue(ic);
-//    }
-//
-//    duration = (std::clock() - start) / (double)CLOCKS_PER_SEC;
-//    time_sum += duration;
-//
-//    //Do a check for calculation correctness
-//    double sum = 0;
-//    for (auto da : Density_average)
-//      sum += da;
-//    cout << "iter" << iter << "   sum of values: " << sum << endl;
-//  }
-//  double act_perf = time_sum / (double)ITERMAX;
-//  printf("Average Density of mixed material cells    compute time is %lf secs\n", act_perf);
-//}
-//
-//
-//
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//    Average density with fractional densities
+//    Copied from Robey's code for Cell-Dominant Full Matrix Data Structure line 257
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void average_density_cell_dom(Robey_data data){
+  int ncells = data.ncells;
+  int nmats = data.nmats;
+  std::vector<double>& Volfrac = data.Volfrac;
+  std::vector<double>& Densityfrac = data.Densityfrac;
+  std::vector<double>& Vol = data.Vol;
+
+  cout << "-- Averaging Density cell-dominant array-access --" << endl;
+  vector<double> Density_average(ncells);
+
+  double time_sum = 0;
+  for (int iter = 0; iter < ITERMAX; iter++) {
+    std::clock_t start;
+    double duration;
+    start = std::clock();
+
+    for (int ic = 0; ic < ncells; ic++) {
+      double density_ave = 0.0;
+      for (int m = 0; m < nmats; m++) {
+        density_ave += Densityfrac[ic*nmats + m] * Volfrac[ic*nmats + m];
+      }
+      Density_average[ic] = density_ave / Vol[ic];
+    }
+
+    duration = (std::clock() - start) / (double)CLOCKS_PER_SEC;
+    time_sum += duration;
+
+    //Do a check for calculation correctness
+    double sum = 0;
+    for (auto da : Density_average)
+      sum += da;
+    cout << "iter" << iter << "   sum of values: " << sum << endl;
+  }
+
+  double act_perf = time_sum / (double)ITERMAX;
+  printf("Average Density of mixed material cells    compute time is %lf secs\n", act_perf);
+
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//    Average density with fractional densities
+//    Same as the function above, but modified to use MultiMat class
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void average_density_cell_dom_mm(MultiMat& mm) {
+  cout << "-- Averaging Density cell-dominant mm-version --" << endl;
+  int ncells = mm.getNumberOfCells();
+  int nmats = mm.getNumberOfMaterials();
+  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double>& Volfrac = mm.get2dField<double>("Volfrac");
+  MultiMat::Field1D<double>& Vol = mm.get1dField<double>("Vol");
+
+  vector<double> Density_average(ncells);
+
+  double time_sum = 0;
+
+  for (int iter = 0; iter < ITERMAX; iter++) {
+    std::clock_t start;
+    double duration;
+    start = std::clock();
+
+    for (int ic = 0; ic < ncells; ic++) {
+      double density_ave = 0.0;
+      MultiMat::SubField<double>& Densityfrac_row = Densityfrac(ic);
+      MultiMat::SubField<double>& Volfrac_row = Volfrac(ic);
+      for (int j = 0; j < Densityfrac_row.size(); ++j) {
+        density_ave += Densityfrac_row(j) * Volfrac_row(j);
+      }
+      Density_average[ic] = density_ave / Vol(ic);
+    }
+
+    duration = (std::clock() - start) / (double)CLOCKS_PER_SEC;
+    time_sum += duration;
+
+    //Do a check for calculation correctness
+    double sum = 0;
+    for (auto da : Density_average)
+      sum += da;
+    cout << "iter" << iter << "   sum of values: " << sum << endl;
+  }
+  double act_perf = time_sum / (double)ITERMAX;
+  printf("Average Density of mixed material cells    compute time is %lf secs\n", act_perf);
+}
+
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////    Average density with fractional densities
 ////        Material-first loop
@@ -910,6 +908,29 @@ void test_code() {
   }
   cout << end_timer() << "\t";
   assert(x_sum == sum);
+
+
+
+  // ---------- range-based for-loop, only works if there is 1 component ------------
+  if( ncomp == 1 )
+  {
+    printf("\nWith range-based for-loop of Map \n-\t");
+    sum = 0;
+    start_timer();
+    
+    MultiMat::Field2D<double>& map2d = mm.get2dField<double>("CellMat Array");
+    for (int i = 0; i < mm.getNumberOfCells(); i++)
+    {
+      MultiMat::SubField<double>& submap = map2d(i);
+      for (double val : submap)
+      {
+        sum += val;          //<----
+      }
+    }
+    
+    cout << end_timer() << "\t";
+    assert(x_sum == sum);
+  }
 
   
   cout << endl;
