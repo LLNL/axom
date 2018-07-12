@@ -156,6 +156,11 @@ blt_append_custom_compiler_flag(FLAGS_VAR AXOM_ALLOW_TRUNCATING_CONSTANTS
                   )
 list(APPEND custom_compiler_flags_list AXOM_ALLOW_TRUNCATING_CONSTANTS)
 
+blt_append_custom_compiler_flag(FLAGS_VAR CMAKE_CXX_FLAGS_DEBUG
+                  DEFAULT     " "
+                  CLANG       "-fstandalone-debug"
+                  )
+
 
 # message(STATUS "Custom compiler flags:")
 # foreach(flag ${custom_compiler_flags_list})
