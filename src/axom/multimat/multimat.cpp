@@ -46,7 +46,7 @@ MultiMat::MapBaseType* MultiMat::helperfun_copyField(const MultiMat& mm, int map
   MapBaseType* other_map_ptr = mm.m_mapVec[map_i];
   if (mm.getFieldMapping(map_i) == FieldMapping::PER_CELL_MAT)
   {
-    BivariateSetType* biSetPtr = dynamic_cast<BivariateSetType*>(get_mapped_set(getFieldMapping(map_i)));
+    BivariateSetType* biSetPtr = dynamic_cast<BivariateSetType*>(get_mapped_biSet());
 
     MultiMat::Field2D<T>* typed_ptr = dynamic_cast<MultiMat::Field2D<T>*>(other_map_ptr);
     MultiMat::Field2D<T>* new_ptr = new MultiMat::Field2D<T>(biSetPtr, T(), typed_ptr->stride());
