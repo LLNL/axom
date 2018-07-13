@@ -337,7 +337,11 @@ CMake options
 | ENABLE_SHARED_LIBS        | Build shared libraries.        | OFF     |
 |                           | Default is Static libraries    |         |
 +---------------------------+--------------------------------+---------+
-| ENABLE_TESTS              | Builds unit tests              | ON      |
+| AXOM_ENABLE_TESTS         | Builds unit tests              | ON      |
++---------------------------+--------------------------------+---------+
+| AXOM_ENABLE_DOCS          | Builds documentation           | ON      |
++---------------------------+--------------------------------+---------+
+| AXOM_ENABLE_EXAMPLES      | Builds examples                | ON      |
 +---------------------------+--------------------------------+---------+
 | ENABLE_WARNINGS_AS_ERRORS | Compiler warnings treated as   | OFF     |
 |                           | errors.                        |         |

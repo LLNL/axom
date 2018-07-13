@@ -26,21 +26,21 @@ add_subdirectory(src)
 ################################
 # add examples
 ################################
-# if (ENABLE_EXAMPLES)
+# if (AXOM_ENABLE_EXAMPLES)
 #   add_subdirectory(examples)
 # endif()
 
 ################################
 # add tests
 ################################
-if (ENABLE_TESTS)
+if (AXOM_ENABLE_TESTS)
   add_subdirectory(tests)
 endif()
 
 ################################
 # add docs
 ################################
-if (ENABLE_DOCS)
+if (AXOM_ENABLE_DOCS)
   add_subdirectory(docs)
 endif()
 

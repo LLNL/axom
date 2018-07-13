@@ -168,7 +168,7 @@ The top-level component directory contains a `CMakeLists.txt`, e.g.,
 
      and::
 
-       if (ENABLE_TESTS)
+       if (AXOM_ENABLE_TESTS)
          add_subdirectory(tests)
        endif() 
 

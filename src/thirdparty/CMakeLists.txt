@@ -163,6 +163,6 @@ endif()
 ################################
 # Add tests
 ################################
-if (ENABLE_TESTS)
+if (AXOM_ENABLE_TESTS)
     add_subdirectory(tests)
 endif()

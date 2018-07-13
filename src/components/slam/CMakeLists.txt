@@ -39,14 +39,14 @@ add_subdirectory(src)
 ################################
 # Add examples
 ################################
-if (ENABLE_EXAMPLES)
+if (AXOM_ENABLE_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
 ################################
 # Add tests and benchmarks
 ################################
-if (ENABLE_TESTS)
+if (AXOM_ENABLE_TESTS)
   add_subdirectory(tests)
   if (ENABLE_BENCHMARKS)
     add_subdirectory(benchmarks)
@@ -56,7 +56,7 @@ endif()
 ################################
 # Add docs
 ################################
-if (ENABLE_DOCS)
+if (AXOM_ENABLE_DOCS)
   add_subdirectory(docs)
 endif()
 
