@@ -15,9 +15,9 @@
 ################################
 # Check necessary dependencies
 ################################
-axom_ensure_dependencies(NAME       Sidre
-                         COMPONENTS Axom_utils SLIC
-                         TPLS       Conduit)
+axom_component_requires(NAME       Sidre
+                        COMPONENTS Axom_utils SLIC
+                        TPLS       Conduit)
 
 # Note: Sidre's unordered_map is either sparsehash OR C++11's unordered_map
 #       Default to std::map and warn if neither is available

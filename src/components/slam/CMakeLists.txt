@@ -19,8 +19,8 @@
 ################################
 # Check necessary dependencies
 ################################
-axom_ensure_dependencies(NAME       SLAM
-                         COMPONENTS Axom_utils SLIC)
+axom_component_requires(NAME       SLAM
+                        COMPONENTS Axom_utils SLIC)
 
 ### Some additional flags that might be useful
 # To avoid warnings: -Wno-missing-braces  

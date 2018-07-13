@@ -189,7 +189,7 @@ endmacro(axom_check_code_compiles)
 
 
 ##------------------------------------------------------------------------------
-## axom_ensure_dependencies
+## axom_component_requires
 ## 
 ## This macro checks for the required dependencies of the given component
 ##
@@ -199,7 +199,7 @@ endmacro(axom_check_code_compiles)
 ##
 ## TPLS - Third party required libraries
 ##------------------------------------------------------------------------------
-macro(axom_ensure_dependencies)
+macro(axom_component_requires)
 
     set(options)
     set(singleValueArgs NAME)
@@ -223,4 +223,4 @@ macro(axom_ensure_dependencies)
         endif()
     endforeach()
 
-endmacro(axom_ensure_dependencies)
+endmacro(axom_component_requires)

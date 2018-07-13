@@ -15,8 +15,8 @@
 ################################
 # Check necessary dependencies
 ################################
-axom_ensure_dependencies(NAME       Lumberjack
-                         COMPONENTS Axom_utils)
+axom_component_requires(NAME       Lumberjack
+                        COMPONENTS Axom_utils)
 
 ################################
 # Add the datastore sources
