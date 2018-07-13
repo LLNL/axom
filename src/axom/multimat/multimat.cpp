@@ -197,7 +197,11 @@ void MultiMat::setCellMatRel(vector<bool>& vecarr)
 
 int MultiMat::setVolfracField(double* arr)
 {
-  //Assumes this is to CellxMat mapping, named "Volfrac", and is stride 1.
+  //m_mapVec[0] should already be a volfrac map. This functions add a new map,
+  //with the input arr, then swap the new map with the 0th map,
+  //and delete the new map.
+
+  //Volfrac map is a CellxMat mapping, named "Volfrac", and is stride 1.
   int arr_i = addFieldArray_impl<double>("Volfrac", FieldMapping::PER_CELL_MAT, arr, 1);
 
   //checks volfrac values sums to 1
@@ -289,7 +293,7 @@ MultiMat::IndexSet MultiMat::getIndexingSetOfCell(int c)
     return RangeSetType::SetBuilder().range(start_idx, end_idx);
   }
   else if (m_sparcityLayout == SparcityLayout::DENSE) {
-    //return m_cellMatProdSet.getRow(c);
+    //return m_cellMatProdSet.getElements(c);
     int size2 = m_cellMatProdSet->secondSetSize();
     return RangeSetType::SetBuilder().range(c*size2, (c + 1)*size2 - 1);
   }

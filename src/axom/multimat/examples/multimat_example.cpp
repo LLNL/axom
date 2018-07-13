@@ -932,6 +932,31 @@ void test_code() {
     assert(x_sum == sum);
   }
 
+
+  // ---------- flat iterator ------------
+  printf("\nWith BivariateMap flat iterators \n-\t");
+  sum = 0;
+  start_timer();
+  {
+    MultiMat::Field2D<double>& map2d = mm.get2dField<double>("CellMat Array");
+    for (auto iter = map2d.begin(); iter != map2d.end(); ++iter)
+    {
+      int cell_id = iter.firstIndex();
+      int mat_id = iter.secondIndex();
+      for (int s = 0; s < map2d.numComp(); ++s)
+      {
+        double val = iter(s);          //<----
+        assert(val == iter.value(s));  //another way to get the value
+        sum += val;
+      }
+      assert(iter(0) == *iter); //2 ways to get the first component value
+      assert(iter(0) == iter.value());
+      
+    }
+  }
+  cout << end_timer() << "\t";
+  assert(x_sum == sum);
+
   
   cout << endl;
 }
