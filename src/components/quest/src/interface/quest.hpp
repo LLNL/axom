@@ -66,28 +66,6 @@ void initialize( mint::Mesh*& input_mesh,
 #endif
 
 /*!
- * \brief Computes the signed distance of the given point to the surface.
- * \param [in] x the x-coordinate of the point in query.
- * \param [in] y the y-coordinate of the point in query.
- * \param [in] z the z-coordinate of the point in query.
- * \note This function is only valid when initialized with requiresDistance=true
- * \return dist the signed distance function.
- */
-double distance(double x, double y, double z=0.0);
-
-/*!
- * \brief Computes the signed distance for a set of points to the surface.
- * \param [in]  xyz user-supplied array of coordinates.
- * \param [out] dist user-supplied array where to store the signed distance.
- * \param [in]  npoints total number of points.
- * \note This function is only valid when initialized with requiresDistance=true
- * \pre xyz  != AXOM_NULLPTR
- * \pre dist != AXOM_NULLPTR
- * \pre npoints >= 0
- */
-void distance( const double* xyz, double* dist, int npoints);
-
-/*!
  * \brief Checks if the given point is inside or outside.
  * \param [in] x the x-coordinate of the point in query.
  * \param [in] y the y-coordinate of the point in query.
