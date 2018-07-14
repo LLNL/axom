@@ -12,15 +12,16 @@
 # For details about use and distribution, please read axom/LICENSE.
 #------------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 3.1)
-if("${CMAKE_VERSION}" VERSION_GREATER 3.3)
-    cmake_policy(SET CMP0057 NEW)
+if (ENABLE_CUDA)
+    cmake_minimum_required(VERSION 3.9)
+else()
+    cmake_minimum_required(VERSION 3.8.2)
 endif()
 
 message(STATUS "Using cmake version ${CMAKE_VERSION}")
 
 ################################
-# axom project
+# Axom project
 ################################
 project(axom LANGUAGES C CXX)
 

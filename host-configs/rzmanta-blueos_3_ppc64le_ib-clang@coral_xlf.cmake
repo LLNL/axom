@@ -105,9 +105,9 @@ set(MPI_C_COMPILER           "${MPI_HOME}/bin/mpicc"   CACHE PATH "")
 set(MPI_CXX_COMPILER         "${MPI_HOME}/bin/mpicxx"  CACHE PATH "")
 set(MPI_Fortran_COMPILER     "${MPI_HOME}/bin/mpifort" CACHE PATH "")
 
-set(MPIEXEC              "${MPI_HOME}/bin/mpirun" CACHE PATH "")
-set(MPIEXEC_NUMPROC_FLAG "-np" CACHE PATH "")
-
+set(MPIEXEC                "${MPI_HOME}/bin/mpirun" CACHE PATH "")
+set(MPIEXEC_NUMPROC_FLAG   "-np" CACHE PATH "")
+set(BLT_MPI_COMMAND_APPEND "mpibind" CACHE PATH "")
 
 ##############################################################################
 # !---------------------------------------------------------------------------
