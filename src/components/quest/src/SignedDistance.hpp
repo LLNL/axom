@@ -278,7 +278,7 @@ private:
 //------------------------------------------------------------------------------
 template < int NDIMS >
 SignedDistance< NDIMS >::SignedDistance(
-   const mint::Mesh* surfaceMesh, int maxObjects, int maxLevels )
+  const mint::Mesh* surfaceMesh, int maxObjects, int maxLevels )
 {
   // Sanity checks
   SLIC_ASSERT( surfaceMesh != AXOM_NULLPTR );

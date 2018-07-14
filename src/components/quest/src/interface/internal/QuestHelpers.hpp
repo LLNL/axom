@@ -30,7 +30,7 @@
 #include "slic/GenericOutputStream.hpp"
 #if defined(AXOM_USE_MPI) && defined(AXOM_USE_LUMBERJACK)
   #include "slic/LumberjackStream.hpp"
-#elif defined(AXOM_USE_MPI) && ! defined(AXOM_USE_LUMBERJACK)
+#elif defined(AXOM_USE_MPI) && !defined(AXOM_USE_LUMBERJACK)
   #include "slic/SynchronizedStream.hpp"
 #endif
 
@@ -164,7 +164,7 @@ void compute_mesh_bounds( const mint::Mesh* mesh, double* lo, double* hi )
   const int ndims = mesh->getDimension();
 
   // STEP 0: initialize lo,hi
-  for ( int i=0; i < ndims; ++i )
+  for ( int i=0 ; i < ndims ; ++i )
   {
     lo[ i ] = std::numeric_limits< double >::max();
     hi[ i ] = std::numeric_limits< double >::lowest();
@@ -173,10 +173,10 @@ void compute_mesh_bounds( const mint::Mesh* mesh, double* lo, double* hi )
   // STEP 1: compute lo,hi
   double pt[ 3 ];
   const mint::IndexType numNodes = mesh->getNumberOfNodes();
-  for ( mint::IndexType inode=0; inode < numNodes; ++inode )
+  for ( mint::IndexType inode=0 ; inode < numNodes ; ++inode )
   {
     mesh->getNode( inode, pt );
-    for ( int i=0; i < ndims; ++i )
+    for ( int i=0 ; i < ndims ; ++i )
     {
       lo[ i ] = ( pt[ i ] < lo[ i ] ) ? pt[ i ] : lo[ i ];
       hi[ i ] = ( pt[ i ] > hi[ i ] ) ? pt[ i ] : hi[ i ];
@@ -212,7 +212,7 @@ void compute_mesh_bounds( const mint::Mesh* mesh, double* lo, double* hi )
  */
 void logger_init( bool& isInitialized,
                   bool& mustFinalize,
-                  bool  verbose,
+                  bool verbose,
                   MPI_Comm comm )
 {
   if ( isInitialized )
@@ -242,7 +242,7 @@ void logger_init( bool& isInitialized,
   msgfmt.insert(0,"[<RANK>]", 8 );
   constexpr int RLIMIT = 8;
   ls = new slic::LumberjackStream( &std::cout, comm, RLIMIT, msgfmt );
-#elif defined(AXOM_USE_MPI) && ! defined(AXOM_USE_LUMBERJACK)
+#elif defined(AXOM_USE_MPI) && !defined(AXOM_USE_LUMBERJACK)
   msgfmt.insert( 0, "[<RANK>]", 8 );
   ls = new slic::SynchronizedStream( &std::cout, comm, msgfmt );
 #else
@@ -251,7 +251,7 @@ void logger_init( bool& isInitialized,
 
   slic::addStreamToAllMsgLevels( ls );
   slic::setLoggingMsgLevel(
-      ( verbose ) ? slic::message::Info : slic::message::Error );
+    ( verbose ) ? slic::message::Info : slic::message::Error );
 }
 
 /*!

@@ -120,20 +120,21 @@ TEST( quest_signed_distance, sphere_test )
   SLIC_INFO( "Constructing sphere mesh..." );
   UMesh* surface_mesh = new UMesh( 3, mint::TRIANGLE );
   quest::utilities::getSphereSurfaceMesh( surface_mesh,
-      SPHERE_CENTER, SPHERE_RADIUS, SPHERE_THETA_RES, SPHERE_PHI_RES );
+                                          SPHERE_CENTER, SPHERE_RADIUS,
+                                          SPHERE_THETA_RES, SPHERE_PHI_RES );
 
   SLIC_INFO( "Generating uniform mesh..." );
   mint::UniformMesh* umesh = AXOM_NULLPTR;
   detail::getUniformMesh( surface_mesh, umesh );
 
   double* phi_computed =
-      umesh->createField< double >( "phi_computed", mint::NODE_CENTERED );
+    umesh->createField< double >( "phi_computed", mint::NODE_CENTERED );
   double* phi_expected =
-      umesh->createField< double >( "phi_expected", mint::NODE_CENTERED );
+    umesh->createField< double >( "phi_expected", mint::NODE_CENTERED );
   double* phi_diff =
-      umesh->createField< double >( "phi_diff", mint::NODE_CENTERED );
+    umesh->createField< double >( "phi_diff", mint::NODE_CENTERED );
   double* phi_err =
-      umesh->createField< double >( "phi_err", mint::NODE_CENTERED );
+    umesh->createField< double >( "phi_err", mint::NODE_CENTERED );
 
   const int nnodes = umesh->getNumberOfNodes();
 

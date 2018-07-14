@@ -161,12 +161,12 @@ TEST( quest_signed_distance_interface_DeathTest, get_mesh_bounds_invalid_calls)
   quest::signed_distance_init( surface_mesh );
 
   EXPECT_DEATH_IF_SUPPORTED(
-      quest::signed_distance_get_mesh_bounds(AXOM_NULLPTR, hi),
-      IGNORE_OUTPUT );
+    quest::signed_distance_get_mesh_bounds(AXOM_NULLPTR, hi),
+    IGNORE_OUTPUT );
 
   EXPECT_DEATH_IF_SUPPORTED(
-      quest::signed_distance_get_mesh_bounds(lo,AXOM_NULLPTR),
-      IGNORE_OUTPUT );
+    quest::signed_distance_get_mesh_bounds(lo,AXOM_NULLPTR),
+    IGNORE_OUTPUT );
 
   quest::signed_distance_finalize( );
   delete surface_mesh;
@@ -213,8 +213,8 @@ TEST( quest_signed_distance_interface_DeathTest, set_params_after_init )
   EXPECT_DEATH_IF_SUPPORTED( quest::signed_distance_set_dimension( 3 ),
                              IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED(
-      quest::signed_distance_set_geometry( quest::WATERTIGHT ),
-      IGNORE_OUTPUT );
+    quest::signed_distance_set_geometry( quest::WATERTIGHT ),
+    IGNORE_OUTPUT );
 
   EXPECT_DEATH_IF_SUPPORTED( quest::signed_distance_set_max_levels( 5 ),
                              IGNORE_OUTPUT );
@@ -289,7 +289,7 @@ TEST( quest_signed_distance_interface, get_mesh_bounds )
 
   quest::signed_distance_get_mesh_bounds( lo, hi );
 
-  for ( int i=0; i < NDIMS; ++i )
+  for ( int i=0 ; i < NDIMS ; ++i )
   {
     EXPECT_DOUBLE_EQ( lo[ i ], EXPECTED_LO );
     EXPECT_DOUBLE_EQ( hi[ i ], EXPECTED_HI );
@@ -337,13 +337,13 @@ TEST( quest_signed_distance_interface, analytic_sphere )
   // STEP 2: create node-centered fields on the uniform mesh to store
   //         the signed distance etc.
   double* phi_computed =
-      umesh->createField< double >( "phi_computed", mint::NODE_CENTERED );
+    umesh->createField< double >( "phi_computed", mint::NODE_CENTERED );
   double* phi_expected =
-      umesh->createField< double >( "phi_expected", mint::NODE_CENTERED );
+    umesh->createField< double >( "phi_expected", mint::NODE_CENTERED );
   double* phi_diff =
-      umesh->createField< double >( "phi_diff", mint::NODE_CENTERED );
+    umesh->createField< double >( "phi_diff", mint::NODE_CENTERED );
   double* phi_err =
-      umesh->createField< double >( "phi_err", mint::NODE_CENTERED );
+    umesh->createField< double >( "phi_err", mint::NODE_CENTERED );
 
   // STEP 3: initialize the signed distance query
   quest::signed_distance_set_max_levels( MAX_LEVELS );
@@ -356,7 +356,7 @@ TEST( quest_signed_distance_interface, analytic_sphere )
   double l2norm = 0.0;
   double linf   = std::numeric_limits< double >:: min( );
   mint::IndexType nnodes = umesh->getNumberOfNodes();
-  for ( mint::IndexType inode=0; inode < nnodes; ++inode )
+  for ( mint::IndexType inode=0 ; inode < nnodes ; ++inode )
   {
     double pt[ NDIMS ];
     umesh->getNode( inode, pt );

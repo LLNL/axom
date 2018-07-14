@@ -600,7 +600,7 @@ void runDistanceQueries(CommandLineArguments& clargs)
 
   axom::utilities::Timer distanceTimer(true);
   axom::quest::signed_distance_evaluate(
-      xcoords, ycoords, zcoords, nnodes, distance );
+    xcoords, ycoords, zcoords, nnodes, distance );
   distanceTimer.stop();
 
   for ( int inode=0 ; inode < nnodes ; ++inode )

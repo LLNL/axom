@@ -33,7 +33,7 @@
   #include <mpi.h>                         // for MPI
   #include "slic/SynchronizedStream.hpp"   // for SynchronizedStream
 #else
-  using MPI_Comm = int;
+using MPI_Comm = int;
 #endif
 
 // C/C++ includes
@@ -138,12 +138,12 @@ void parse_args( int argc, char** argv )
   Arguments.maxLevels     = 15;
   Arguments.maxOccupancy  = 5;
   Arguments.box_dims[ 0 ] =
-  Arguments.box_dims[ 1 ] =
-  Arguments.box_dims[ 2 ] = 32;
+    Arguments.box_dims[ 1 ] =
+      Arguments.box_dims[ 2 ] = 32;
   Arguments.specified_box_max = false;
   Arguments.specified_box_min = false;
 
-  for ( int i=1; i < argc; ++i )
+  for ( int i=1 ; i < argc ; ++i )
   {
     if ( strcmp( argv[i], "--file" )==0 || strcmp( argv[i], "-f"  )==0 )
     {
@@ -163,7 +163,7 @@ void parse_args( int argc, char** argv )
     }
     else if ( strcmp( argv[i], "--box_dims" )==0 )
     {
-      for ( int j=0; j < Arguments.ndims; ++j )
+      for ( int j=0 ; j < Arguments.ndims ; ++j )
       {
         Arguments.box_dims[ j ] = std::atoi( argv[++i] );
       } // END for all j
@@ -171,15 +171,15 @@ void parse_args( int argc, char** argv )
     else if ( strcmp(argv[i], "--box-min")==0 )
     {
       Arguments.specified_box_min = true;
-      for ( int j=0; j < Arguments.ndims; ++j )
+      for ( int j=0 ; j < Arguments.ndims ; ++j )
       {
-         Arguments.box_min[ j ] = std::atof( argv[++i] );
+        Arguments.box_min[ j ] = std::atof( argv[++i] );
       } // END for all j
     }
     else if ( strcmp( argv[i], "--box-max")==0 )
     {
       Arguments.specified_box_max = true;
-      for ( int j=0; j < Arguments.ndims; ++j )
+      for ( int j=0 ; j < Arguments.ndims ; ++j )
       {
         Arguments.box_max[ j ] = std::atof( argv[++i] );
       } // END for all j
@@ -197,11 +197,11 @@ void parse_args( int argc, char** argv )
   } // END for all i
 
   SLIC_ERROR_IF( (Arguments.ndims != 3),
-      "The Signed Distance query is currently only supported in 3-D" );
+                 "The Signed Distance query is currently only supported in 3-D" );
   SLIC_ERROR_IF( Arguments.fileName.empty(),
-      "Must provide an STL input file. Provide one with --file" );
+                 "Must provide an STL input file. Provide one with --file" );
   SLIC_ERROR_IF( Arguments.specified_box_max == !Arguments.specified_box_min,
-  "To explicitly define the box domain you must specify both min/max bounds.");
+                 "To explicitly define the box domain you must specify both min/max bounds.");
 }
 
 //------------------------------------------------------------------------------

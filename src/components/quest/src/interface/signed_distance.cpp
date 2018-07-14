@@ -120,13 +120,16 @@ int signed_distance_init( const mint::Mesh* m, MPI_Comm comm )
   SLIC_ERROR_IF( signed_distance_initialized(),
                  "signed distance query has already been initialized!" );
   SLIC_ERROR_IF( m->getDimension() != 3,
-                "signed distance query currently only support 3-D meshes" );
-  SLIC_ERROR_IF( m->getMeshType() != mint::UNSTRUCTURED_MESH,
-         "signed distance query currently only supports unstructured meshes" );
-  SLIC_ERROR_IF( m->hasMixedCellTypes()==true,
+                 "signed distance query currently only support 3-D meshes" );
+  SLIC_ERROR_IF(
+    m->getMeshType() != mint::UNSTRUCTURED_MESH,
+    "signed distance query currently only supports unstructured meshes" );
+  SLIC_ERROR_IF(
+    m->hasMixedCellTypes()==true,
     "signed distance query does not support meshes with mixed shape topology" );
-  SLIC_ERROR_IF( m->getCellType() != mint::TRIANGLE,
-        "signed distance currently only support 3D triangular surface meshes" );
+  SLIC_ERROR_IF(
+    m->getCellType() != mint::TRIANGLE,
+    "signed distance currently only support 3D triangular surface meshes" );
 
   if ( s_surface_mesh != m )
   {
@@ -152,8 +155,8 @@ bool signed_distance_initialized( )
 void signed_distance_get_mesh_bounds( double* lo, double* hi )
 {
   SLIC_ERROR_IF( !signed_distance_initialized(),
-     "signed distance query must be initialized prior to" <<
-     "calling get_mesh_bounds()" );
+                 "signed distance query must be initialized prior to" <<
+                 "calling get_mesh_bounds()" );
   SLIC_ERROR_IF( lo==AXOM_NULLPTR, "supplied buffer is null" );
   SLIC_ERROR_IF( hi==AXOM_NULLPTR, "supplied buffer is null" );
 
@@ -164,8 +167,9 @@ void signed_distance_get_mesh_bounds( double* lo, double* hi )
 void signed_distance_set_dimension( int dim )
 {
   SLIC_ERROR_IF( dim != 3, "The signed distance query only support 3D" );
-  SLIC_ERROR_IF( signed_distance_initialized(),
-   "signed distance query already initialized; setting option has no effect!");
+  SLIC_ERROR_IF(
+    signed_distance_initialized(),
+    "signed distance query already initialized; setting option has no effect!");
 
   Parameters.dimension = dim;
 }
@@ -174,8 +178,9 @@ void signed_distance_set_dimension( int dim )
 void signed_distance_set_geometry( int type )
 {
   SLIC_ERROR_IF( type != WATERTIGHT, "invalid geometry type" );
-  SLIC_ERROR_IF( signed_distance_initialized(),
-   "signed distance query already initialized; setting option has no effect!");
+  SLIC_ERROR_IF(
+    signed_distance_initialized(),
+    "signed distance query already initialized; setting option has no effect!");
 
   Parameters.geometry_type = type;
 }
@@ -183,8 +188,9 @@ void signed_distance_set_geometry( int type )
 //------------------------------------------------------------------------------
 void signed_distance_set_max_levels( int maxLevels )
 {
-  SLIC_ERROR_IF( signed_distance_initialized(),
-   "signed distance query already initialized; setting option has no effect!");
+  SLIC_ERROR_IF(
+    signed_distance_initialized(),
+    "signed distance query already initialized; setting option has no effect!");
 
   Parameters.max_levels = maxLevels;
 }
@@ -192,8 +198,9 @@ void signed_distance_set_max_levels( int maxLevels )
 //------------------------------------------------------------------------------
 void signed_distance_set_max_occupancy( int threshold )
 {
-  SLIC_ERROR_IF( signed_distance_initialized(),
-   "signed distance query already initialized; setting option has no effect!");
+  SLIC_ERROR_IF(
+    signed_distance_initialized(),
+    "signed distance query already initialized; setting option has no effect!");
 
   Parameters.max_occupancy = threshold;
 }
@@ -201,8 +208,9 @@ void signed_distance_set_max_occupancy( int threshold )
 //------------------------------------------------------------------------------
 void signed_distance_set_verbose( bool status )
 {
-  SLIC_ERROR_IF( signed_distance_initialized(),
-   "signed distance query already initialized; setting option has no effect!");
+  SLIC_ERROR_IF(
+    signed_distance_initialized(),
+    "signed distance query already initialized; setting option has no effect!");
 
   Parameters.verbose = status;
 }
@@ -210,7 +218,8 @@ void signed_distance_set_verbose( bool status )
 //------------------------------------------------------------------------------
 double signed_distance_evaluate( double x, double y, double z )
 {
-  SLIC_ERROR_IF( !signed_distance_initialized(),
+  SLIC_ERROR_IF(
+    !signed_distance_initialized(),
     "signed distance query must be initialized prior to calling evaluate()!" );
 
   double phi = s_query->computeDistance( x, y, z );
@@ -224,7 +233,8 @@ void signed_distance_evaluate( const double* x,
                                int npoints,
                                double* phi )
 {
-  SLIC_ERROR_IF( !signed_distance_initialized(),
+  SLIC_ERROR_IF(
+    !signed_distance_initialized(),
     "signed distance query must be initialized prior to calling evaluate()!" );
   SLIC_ERROR_IF( x == AXOM_NULLPTR, "x-coords array is null" );
   SLIC_ERROR_IF( y == AXOM_NULLPTR, "y-coords array is null" );
@@ -234,7 +244,7 @@ void signed_distance_evaluate( const double* x,
 #ifdef AXOM_USE_OPENMP
 #pragma omp parallel for schedule(static)
 #endif
-  for ( int i=0; i < npoints; ++i )
+  for ( int i=0 ; i < npoints ; ++i )
   {
     phi[ i ] = s_query->computeDistance( x[i], y[i], z[i] );
   }
@@ -262,5 +272,3 @@ void signed_distance_finalize( )
 
 } // end namespace quest
 } // end namespace axom
-
-
