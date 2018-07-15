@@ -30,6 +30,7 @@ set(axom_utils_headers
     numerics/LU.hpp
     numerics/Matrix.hpp
     numerics/eigen_solve.hpp
+    numerics/eigen_sort.hpp
     numerics/linear_solve.hpp
     numerics/matvecops.hpp
     numerics/polynomial_solvers.hpp
