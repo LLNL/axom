@@ -18,27 +18,49 @@
 #ifndef AXOM_EIGEN_SORT_HPP_
 #define AXOM_EIGEN_SORT_HPP_
 
-#include "axom/Types.hpp"  // for AXOM_NULLPTR
+// Axom includes
+#include "axom/Types.hpp"           // for AXOM_NULLPTR
+#include "axom_utils/Utilities.hpp" // for utilities::swap()
 
 namespace axom
 {
 namespace numerics
 {
 
-/*! Sorts eigenvalues in ascending order.
+/*!
+ * \brief Sorts the supplied eigenvalues and eigenvectors in ascending order.
+ *
+ * \param [in,out] lambdas pointer to buffer consisting of the eigenvalues
+ * \param [in,out] eigen_vectors matrix of the corresponding eigenvectors
+ *
+ * \note The eigen_vectors matrix is an orthogonal matrix consisting of the
+ *  eigenvectors. Each column in the matrix stores an eigenvector that
+ *  is associated with the an eigenvalue in the corresponding entry in the
+ *  supplied lambdas array.
+ *
+ * \note lambdas should point to a buffer that holds eigen_vectors.getNumCols()
+ *
+ * \pre lambdas != AXOM_NULLPTR
+ * \pre eigen_vectors.getNumRows() >= 1
+ * \pre eigen_vectors.getNumCols() >= 1
  */
 template < typename T >
-void eigen_sort( T* lamdas, Matrix< T >& eigen_vectors );
+bool eigen_sort( T* lamdas, Matrix< T >& eigen_vectors );
 
 //------------------------------------------------------------------------------
 // IMPLEMENTATION
 //------------------------------------------------------------------------------
 template < typename T >
-void eigen_sort( T* lambdas, Matrix< T >& eigen_vectors )
+bool eigen_sort( T* lambdas, Matrix< T >& eigen_vectors )
 {
-  assert( "pre: lambdas vector is null" && (lambdas != AXOM_NULLPTR) );
+  if ( lambdas==AXOM_NULLPTR ||
+       eigen_vectors.getNumRows() < 1 ||
+       eigen_vectors.getNumColumns() < 1 )
+  {
+    return false;
+  }
 
-  int n = eigen_vectors.getNumRows();
+  const int n = eigen_vectors.getNumRows();
 
   for (int i = 0; i < n-1; ++i)
   {
@@ -46,23 +68,21 @@ void eigen_sort( T* lambdas, Matrix< T >& eigen_vectors )
 
     for (int j = i+1; j < n; ++j)
     {
-      if (lambdas[j] < lambdas[m])
+      if ( lambdas[ j ] < lambdas[ m ] )
       {
         m = j;
       }
-    }
+    } // END for j
 
     if (m != i)
     {
-      double t   = lambdas[m];
-      lambdas[m] = lambdas[i];
-      lambdas[i] = t;
+      utilities::swap( lambdas[ m ], lambdas[ i ] );
+      eigen_vectors.swapColumns( m,i );
+    } // END if swap
 
-      eigen_vectors.swapColumns(m, i);
-    }
+  } // END for i
 
-  }
-
+  return true;
 }
 
 } /* end namespace numerics */
