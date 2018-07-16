@@ -60,7 +60,7 @@ bool eigen_sort( T* lambdas, Matrix< T >& eigen_vectors )
     return false;
   }
 
-  const int n = eigen_vectors.getNumRows();
+  const int n = eigen_vectors.getNumColumns();
 
   for (int i = 0 ; i < n-1 ; ++i)
   {
