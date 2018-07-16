@@ -250,6 +250,36 @@ TEST( numerics_matvecops, matrix_transpose )
 }
 
 //------------------------------------------------------------------------------
+TEST( numerics_matvecops, matrix_norm )
+{
+  constexpr int    N                        = 3;
+  constexpr bool   ZERO_COPY                = true;
+  constexpr double EXPECTED_P1_NORM         = 19;
+  constexpr double EXPECTED_INFTY_NORM      = 15;
+  constexpr double EXPECTED_FROBENIOUS_NORM = 14.387494569938159;
+
+  // STEP 0: construct test matrix
+  double data[ 9 /* 3 x 3 */ ] = {
+      -3, 2, 0,  // column 1
+       5, 6, 2,  // column 2
+       7, 4, 8   // column 3
+  };
+  numerics::Matrix< double > A( N, N, data, ZERO_COPY );
+
+  // STEP 1: test p1-norm
+  double p1norm = numerics::matrix_norm( A, numerics::P1_NORM );
+  EXPECT_DOUBLE_EQ( p1norm, EXPECTED_P1_NORM );
+
+  // STEP 2: test infinity-norm
+  double inftynorm = numerics::matrix_norm( A, numerics::INF_NORM );
+  EXPECT_DOUBLE_EQ( inftynorm, EXPECTED_INFTY_NORM );
+
+  // STEP 3: test frobenius norm
+  double frobnorm = numerics::matrix_norm( A, numerics::FROBENIUS_NORM );
+  EXPECT_DOUBLE_EQ( frobnorm, EXPECTED_FROBENIOUS_NORM );
+}
+
+//------------------------------------------------------------------------------
 // UNIT TESTS FOR VECTOR OPS
 //------------------------------------------------------------------------------
 TEST( numerics_matvecops, linspace )

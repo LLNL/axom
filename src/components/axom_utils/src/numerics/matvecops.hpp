@@ -31,6 +31,7 @@
 #include "axom_utils/Determinants.hpp"     // for numerics::determinant()
 #include "axom_utils/Matrix.hpp"           // for numerics::Matrix
 #include "axom_utils/Utilities.hpp"        // for isNearlyEqual()
+#include "axom_utils/matrix_norms.hpp"     // for matrix norm functions
 
 // C/C++ includes
 #include <cassert> // for assert()
@@ -47,7 +48,7 @@ namespace numerics
 /*!
  * \brief Enumerates the supported matrix norms
  */
-enum class MatrixNorm
+enum MatrixNorm
 {
   P1_NORM,      //!< P1_NORM
   INF_NORM,     //!< INF_NORM
@@ -297,13 +298,47 @@ inline void matrix_vector_multiply( const Matrix< T >& A,
 template < typename T >
 inline bool matrix_transpose( const Matrix< T >& A, Matrix< T >& M );
 
-/*! Computes the norm of the matrix A for either the matrix 1-norm, Inf-norm, or
- *  Frobenius norm.
+/*!
+ * \brief Computes the specified norm of a given \f$ M \times N \f$ matrix
  *
- * \param [in] A the matrix to compute the norm of
- * \param [in] normFlag indicates which norm to compute: 0=1-norm, 1=Inf-norm, and
- *             2=Frobenius norm.
- * \param [out] the norm value
+ * \param [in] A the matrix whose norm is computed
+ * \param [in] normType the type of norm to compute
+ * \return norm the computed norm or -1.0 on error.
+ *
+ * \note The computed norm is a non-negative scalar value. This method will
+ *  return a negative return value to indicate an error, e.g., the supplied
+ *  matrix has incorrect dimensions.
+ *
+ * \note The second argument specifies the type of norm to compute. Three
+ *  matrix norm types are supported:
+ *
+ *  * <b> \f$ P_1\f$ Norm </b> <br />
+ *
+ *    The \f$ P_1\f$ norm is computed by taking the maximum absolute column
+ *    sum, given by:
+ *    \f[
+ *     ||A||_1 = \max\limits_{1 \le j \le N}( \sum_{i=1}^M | a_{ij} | )
+ *    \f]
+ *
+ *  * <b> \f$\infty\f$ Norm </b> <br />
+ *
+ *    The \f$\infty\f$ norm is computed by taking the maximum absolute row sum,
+ *    given by:
+ *    \f[
+ *      ||A||_\infty = \max\limits_{1 \le j \le M}( \sum_{i=1}^N | a_{ij} | )
+ *   \f]
+ *
+ *  * <b> Frobenius Norm </b> <br />
+ *
+ *    The frobenius norm of an \f$ M \times N \f$ matrix, is given by:
+ *    \f[
+ *      ||A||_F = \sqrt{ \sum_{i=1}^M \sum_{j=1}^N ({a_{ij}})^2  }
+ *    \f]
+ *
+ * \pre A.getNumRows() >= 2
+ * \pre A.getNumCols() >= 2
+ *
+ * \see MatrixNorm
  */
 template < typename T >
 inline T matrix_norm( const Matrix< T >& A, MatrixNorm normType);
@@ -506,60 +541,25 @@ inline bool matrix_transpose( const Matrix< T >& A, Matrix< T >& M )
 template < typename T >
 inline T matrix_norm( const Matrix< T >& A, MatrixNorm normType)
 {
-  int n = A.getNumRows();
-  int m = A.getNumColumns();
+  assert( "pre: numRows >= 2" && A.getNumRows() >= 2 );
+  assert( "pre: numCols >= 2" && A.getNumColumns() >= 2 );
 
-  T *row_sum = new T[n];
-  T *col_sum = new T[m];
-
-  T norm;
-
-  typedef typename Matrix< T >::IndexType IndexType;
-
-  if (normType == MatrixNorm::P1_NORM ) // Matrix 1-norm
+  T norm = static_cast< T >( -1.0 );
+  switch( normType )
   {
-    for (IndexType j=0; j < m; ++j)
-    {
-      col_sum[j] = 0.0;
-      for (IndexType i=0; i < n; ++i)
-      {
-        col_sum[j] += fabs(A(i,j));
-      }
-
-      norm = ( col_sum[ j ] > norm ) ? col_sum[ j ] : norm;
-    }
-  }
-  else if (normType == MatrixNorm::INF_NORM) // Matrix Inf-norm
-  {
-    for (IndexType i=0; i < n; ++i)
-    {
-      row_sum[i] = 0.0;
-      for (IndexType j=0; j < m; ++j)
-      {
-        row_sum[i] += fabs(A(i,j));
-      }
-
-      norm = ( row_sum[ i ] > norm ) ? row_sum[ i ] : norm;
-    }
-  }
-  else if (normType == MatrixNorm::FROBENIUS_NORM) // Matrix Frobenius norm
-  {
-    norm = 0.0;
-
-    for (IndexType i=0; i < n; ++i)
-    {
-      for (IndexType j=0; j < m; ++j)
-      {
-        norm += fabs(A(i,j)) * fabs(A(i,j));
-      }
-    }
-
-    norm = sqrt(norm);
-  }
-  else
-  {
-    std::cout << "Invalid matrix norm selected." << std::endl;
-  }
+  case MatrixNorm::P1_NORM:
+    norm = internal::matrix_p1_norm( A );
+    break;
+  case MatrixNorm::INF_NORM:
+    norm = internal::matrix_infty_norm( A );
+    break;
+  case MatrixNorm::FROBENIUS_NORM:
+    norm = internal::matrix_frobenious_norm( A );
+    break;
+  default:
+    assert( "pre: unsupported norm type!" && false );
+    norm = -1.0; // set norm to a negative number to indicate an error
+  } // END switch
 
   return norm;
 }

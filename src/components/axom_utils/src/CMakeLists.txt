@@ -26,6 +26,8 @@ set(axom_utils_headers
     detail/TimeofdayTimer.hpp
     detail/TickCountTimer.hpp
 
+    numerics/internal/matrix_norms.hpp
+
     numerics/Determinants.hpp
     numerics/LU.hpp
     numerics/Matrix.hpp
