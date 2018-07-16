@@ -41,6 +41,21 @@ namespace axom
 namespace numerics
 {
 
+/// \name Enumerators & Types
+/// @{
+
+/*!
+ * \brief Enumerates the supported matrix norms
+ */
+enum class MatrixNorm
+{
+  P1_NORM,      //!< P1_NORM
+  INF_NORM,     //!< INF_NORM
+  FROBENIUS_NORM//!< FROBENIUS_NORM
+};
+
+/// @}
+
 /// \name Vector Operators
 /// @{
 
@@ -282,6 +297,17 @@ inline void matrix_vector_multiply( const Matrix< T >& A,
 template < typename T >
 inline bool matrix_transpose( const Matrix< T >& A, Matrix< T >& M );
 
+/*! Computes the norm of the matrix A for either the matrix 1-norm, Inf-norm, or
+ *  Frobenius norm.
+ *
+ * \param [in] A the matrix to compute the norm of
+ * \param [in] normFlag indicates which norm to compute: 0=1-norm, 1=Inf-norm, and
+ *             2=Frobenius norm.
+ * \param [out] the norm value
+ */
+template < typename T >
+inline T matrix_norm( const Matrix< T >& A, MatrixNorm normType);
+
 /// @}
 
 } /* end namespace numerics */
@@ -476,6 +502,67 @@ inline bool matrix_transpose( const Matrix< T >& A, Matrix< T >& M )
   return true;
 }
 
+//-----------------------------------------------------------------------------
+template < typename T >
+inline T matrix_norm( const Matrix< T >& A, MatrixNorm normType)
+{
+  int n = A.getNumRows();
+  int m = A.getNumColumns();
+
+  T *row_sum = new T[n];
+  T *col_sum = new T[m];
+
+  T norm;
+
+  typedef typename Matrix< T >::IndexType IndexType;
+
+  if (normType == MatrixNorm::P1_NORM ) // Matrix 1-norm
+  {
+    for (IndexType j=0; j < m; ++j)
+    {
+      col_sum[j] = 0.0;
+      for (IndexType i=0; i < n; ++i)
+      {
+        col_sum[j] += fabs(A(i,j));
+      }
+
+      norm = ( col_sum[ j ] > norm ) ? col_sum[ j ] : norm;
+    }
+  }
+  else if (normType == MatrixNorm::INF_NORM) // Matrix Inf-norm
+  {
+    for (IndexType i=0; i < n; ++i)
+    {
+      row_sum[i] = 0.0;
+      for (IndexType j=0; j < m; ++j)
+      {
+        row_sum[i] += fabs(A(i,j));
+      }
+
+      norm = ( row_sum[ i ] > norm ) ? row_sum[ i ] : norm;
+    }
+  }
+  else if (normType == MatrixNorm::FROBENIUS_NORM) // Matrix Frobenius norm
+  {
+    norm = 0.0;
+
+    for (IndexType i=0; i < n; ++i)
+    {
+      for (IndexType j=0; j < m; ++j)
+      {
+        norm += fabs(A(i,j)) * fabs(A(i,j));
+      }
+    }
+
+    norm = sqrt(norm);
+  }
+  else
+  {
+    std::cout << "Invalid matrix norm selected." << std::endl;
+  }
+
+  return norm;
+}
 
 //------------------------------------------------------------------------------
 // IMPLEMENTATION OF VECTOR OPERATIONS
