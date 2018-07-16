@@ -29,6 +29,7 @@ set(axom_utils_headers
     numerics/internal/matrix_norms.hpp
 
     numerics/Determinants.hpp
+    numerics/jacobi_eigensolve.hpp
     numerics/LU.hpp
     numerics/Matrix.hpp
     numerics/eigen_solve.hpp
