@@ -102,34 +102,34 @@ int jacobi_eigensolve( Matrix < T > A,
   }
 
 
-  T *bw = new T[n]; // temp array
-  T *zw = new T[n]; // temp array
+  T* bw = new T[n]; // temp array
+  T* zw = new T[n]; // temp array
 
   // initialize
-  for (int i = 0; i < n; ++i)
+  for (int i = 0 ; i < n ; ++i)
   {
     lambdas[ i ] = A(i,i);
     bw[ i ]      = lambdas[i];
     zw[ i ]      = 0.0;
 
-    for (int j = 0; j < n; ++j)
+    for (int j = 0 ; j < n ; ++j)
     {
-      V( i,j ) = ( i==j )? 1.0 : 0.0;
+      V( i,j ) = ( i==j ) ? 1.0 : 0.0;
     }
 
   }
 
   // Jacobi solve
-  for (int iter = 0; iter < maxIterations; ++iter)
+  for (int iter = 0 ; iter < maxIterations ; ++iter)
   {
     // compute the sum of all elements in the upper triangular portion of A.
     // The convergence criterion (thresh) is based on the absolute value of
     // this sum.
     T sum = 0.0;
 
-    for (int i = 0; i < n; ++i)
+    for (int i = 0 ; i < n ; ++i)
     {
-      for (int j = i+1; j < n; ++j)
+      for (int j = i+1 ; j < n ; ++j)
       {
         sum += A(i,j) * A(i,j);
       }
@@ -143,9 +143,9 @@ int jacobi_eigensolve( Matrix < T > A,
     }
 
     // if not converged, then perform next iteration.
-    for (int p = 0; p < n; ++p)
+    for (int p = 0 ; p < n ; ++p)
     {
-      for (int q = p+1; q < n; ++q)
+      for (int q = p+1 ; q < n ; ++q)
       {
 
         T gapq  = 10.0 * utilities::abs(A(p,q));
@@ -198,7 +198,7 @@ int jacobi_eigensolve( Matrix < T > A,
           A(p,q) = 0.0;
 
           // perform the rotation using information from upper triangle of A
-          for (int j = 0; j < p; ++j)
+          for (int j = 0 ; j < p ; ++j)
           {
             T g1   = A(j,p);
             T g2   = A(j,q);
@@ -206,14 +206,15 @@ int jacobi_eigensolve( Matrix < T > A,
             A(j,q) = g2 + s * (g1 - g2 * tau);
           }
 
-          for (int j = p+1; j < q; ++j) {
+          for (int j = p+1 ; j < q ; ++j)
+          {
             T g1   = A(p,j);
             T g2   = A(j,q);
             A(p,j) = g1 - s * (g2 + g1 * tau);
             A(j,q) = g2 + s * (g1 - g2 * tau);
           }
 
-          for (int j = q+1; j < n; ++j)
+          for (int j = q+1 ; j < n ; ++j)
           {
             T g1   = A(p,j);
             T g2   = A(q,j);
@@ -222,7 +223,7 @@ int jacobi_eigensolve( Matrix < T > A,
           }
 
           // accumulate results into eigenvector matrix
-          for (int j = 0; j < n; ++j)
+          for (int j = 0 ; j < n ; ++j)
           {
             T g1   = V(j,p);
             T g2   = V(j,q);
@@ -234,7 +235,7 @@ int jacobi_eigensolve( Matrix < T > A,
       } // END for all q
     } // END for all p
 
-    for (int i = 0; i < n; ++i)
+    for (int i = 0 ; i < n ; ++i)
     {
       bw[i] += zw[i];
       lambdas[i] = bw[i];

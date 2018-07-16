@@ -57,11 +57,11 @@ inline T matrix_p1_norm( const Matrix< T >& A )
   }
 
   T norm = -1.0;
-  for ( IndexType j=0; j < numCols; ++j )
+  for ( IndexType j=0 ; j < numCols ; ++j )
   {
     const T* col = A.getColumn( j );
     T col_sum    = 0.0;
-    for ( IndexType i=0; i < numRows; ++i )
+    for ( IndexType i=0 ; i < numRows ; ++i )
     {
       col_sum += utilities::abs( col[ i ] );
     } // END for all rows
@@ -101,14 +101,14 @@ inline T matrix_infty_norm( const Matrix< T >& A )
   }
 
   T norm = -1.0;
-  for (IndexType i=0; i < numRows; ++i)
+  for (IndexType i=0 ; i < numRows ; ++i)
   {
     IndexType p = 0;
     IndexType N = 0;
     const T* row = A.getRow( i, p, N );
 
     T row_sum = 0.0;
-    for (IndexType j=0; j < N; j+=p )
+    for (IndexType j=0 ; j < N ; j+=p )
     {
       row_sum += utilities::abs( row[ j ] );
     } // END for all columns
@@ -138,7 +138,7 @@ template < typename T >
 inline T matrix_frobenious_norm( const Matrix< T >& A )
 {
   AXOM_STATIC_ASSERT_MSG( std::is_floating_point< T >::value,
-   "T is required to be a floating type for computing the frobenious norm" );
+                          "T is required to be a floating type for computing the frobenious norm" );
 
   using IndexType   = typename Matrix< T >::IndexType;
   const int numRows = A.getNumRows( );
@@ -151,9 +151,9 @@ inline T matrix_frobenious_norm( const Matrix< T >& A )
   }
 
   T norm = 0.0;
-  for (IndexType i=0; i < numRows; ++i)
+  for (IndexType i=0 ; i < numRows ; ++i)
   {
-    for (IndexType j=0; j < numCols; ++j)
+    for (IndexType j=0 ; j < numCols ; ++j)
     {
       const T abs_a_ij = utilities::abs( A( i,j ) );
       norm += abs_a_ij * abs_a_ij;

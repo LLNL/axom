@@ -35,13 +35,13 @@ TEST( numerics_eigen_sort, null_eigenvalues_vector )
 
   // STEP 1: construct a fake matrix to for this test
   int matrix_data[ 9 /* 3 x 3 */] = {
-      1, 2, 3, // column 1
-      4, 5, 6, // column 2
-      7, 8, 9  // column 3
+    1, 2, 3,   // column 1
+    4, 5, 6,   // column 2
+    7, 8, 9    // column 3
   };
   numerics::Matrix< int > M( 3, 3, matrix_data, ZERO_COPY );
 
-  int * l = AXOM_NULLPTR;
+  int* l = AXOM_NULLPTR;
   EXPECT_FALSE( numerics::eigen_sort( l, M ) );
 }
 
@@ -56,17 +56,17 @@ TEST( numerics_eigen_sort, sort_eigenvalues_and_eigenvectors )
 
   // STEP 1: construct a fake matrix to for this test
   int matrix_data[ 9 /* 3 x 3 */] = {
-      1, 2, 3, // column 1
-      4, 5, 6, // column 2
-      7, 8, 9  // column 3
+    1, 2, 3,   // column 1
+    4, 5, 6,   // column 2
+    7, 8, 9    // column 3
   };
   numerics::Matrix< int > M( N, N, matrix_data, ZERO_COPY );
 
   // STEP 2: constructed sorted matrix of eigen vectors
   int sorted_matrix_data[ 9 /* 3 x 3 */ ] = {
-      7, 8, 9,  // column 1
-      4, 5, 6,  // column 2
-      1, 2, 3   // column 3
+    7, 8, 9,    // column 1
+    4, 5, 6,    // column 2
+    1, 2, 3     // column 3
   };
   numerics::Matrix< int > sortedM( N, N, sorted_matrix_data, ZERO_COPY );
 
@@ -74,7 +74,7 @@ TEST( numerics_eigen_sort, sort_eigenvalues_and_eigenvectors )
   EXPECT_TRUE( numerics::eigen_sort( l, M ) );
 
   // STEP 4: check eigen values & eigen vectors
-  for ( int i=0; i < N; ++i )
+  for ( int i=0 ; i < N ; ++i )
   {
     // test eigen values
     EXPECT_EQ( l[ i ], i+1 );
@@ -82,7 +82,7 @@ TEST( numerics_eigen_sort, sort_eigenvalues_and_eigenvectors )
     // test eigen vectors
     const int* eigen_vector          = M.getColumn( i );
     const int* expected_eigen_vector = sortedM.getColumn( i );
-    for ( int j=0; j < N; ++j )
+    for ( int j=0 ; j < N ; ++j )
     {
       EXPECT_EQ( eigen_vector[ j ], expected_eigen_vector[ j ] );
     }
@@ -93,7 +93,7 @@ TEST( numerics_eigen_sort, sort_eigenvalues_and_eigenvectors )
   EXPECT_TRUE( numerics::eigen_sort( l, M ) );
 
   // STEP 6: check eigen values and eigen vectors again
-  for ( int i=0; i < N; ++i )
+  for ( int i=0 ; i < N ; ++i )
   {
     // test eigen values
     EXPECT_EQ( l[ i ], i+1 );
@@ -101,7 +101,7 @@ TEST( numerics_eigen_sort, sort_eigenvalues_and_eigenvectors )
     // test eigen vectors
     const int* eigen_vector          = M.getColumn( i );
     const int* expected_eigen_vector = sortedM.getColumn( i );
-    for ( int j=0; j < N; ++j )
+    for ( int j=0 ; j < N ; ++j )
     {
       EXPECT_EQ( eigen_vector[ j ], expected_eigen_vector[ j ] );
     }

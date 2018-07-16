@@ -40,7 +40,7 @@ TEST( numerics_jacobi_eigensolve, random_symmetric_matrix )
   constexpr int MAX_SIZE = 41;
 
   // 40x40 test. Generate random symmetric matrix A
-  for ( int k=2; k < MAX_SIZE; ++k  )
+  for ( int k=2 ; k < MAX_SIZE ; ++k  )
   {
     const int N = k;
 
@@ -49,16 +49,16 @@ TEST( numerics_jacobi_eigensolve, random_symmetric_matrix )
     SCOPED_TRACE( oss.str() );
 
     numerics::Matrix<double> A_test(N,N);
-    for (IndexType i=0; i < N; ++i)
+    for (IndexType i=0 ; i < N ; ++i)
     {
-      for (IndexType j=0; j <= i; ++j)
+      for (IndexType j=0 ; j <= i ; ++j)
       {
         A_test(i,j) = utilities::random_real<double> (0.0, 1.0);
         A_test(j,i) = A_test(i,j);
       }
     }
 
-    double *lambdas = new double[N];
+    double* lambdas = new double[N];
     numerics::Matrix<double> V(N,N);
 
     int numIterations = 0;
@@ -75,9 +75,9 @@ TEST( numerics_jacobi_eigensolve, random_symmetric_matrix )
     numerics::Matrix<double> test(N,N);
     numerics::matrix_multiply(A_test, V, tmp);
 
-    for (IndexType i=0; i < N; ++i)
+    for (IndexType i=0 ; i < N ; ++i)
     {
-      for (IndexType j=0; j < N; ++j)
+      for (IndexType j=0 ; j < N ; ++j)
       {
         test(i,j) = tmp(i,j) - V(i,j)*lambdas[j];
         EXPECT_TRUE( utilities::isNearlyEqual( test(i,j), 0.0, TOL ) );

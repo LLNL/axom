@@ -252,17 +252,17 @@ TEST( numerics_matvecops, matrix_transpose )
 //------------------------------------------------------------------------------
 TEST( numerics_matvecops, matrix_norm )
 {
-  constexpr int    N                        = 3;
-  constexpr bool   ZERO_COPY                = true;
+  constexpr int N                        = 3;
+  constexpr bool ZERO_COPY                = true;
   constexpr double EXPECTED_P1_NORM         = 19;
   constexpr double EXPECTED_INFTY_NORM      = 15;
   constexpr double EXPECTED_FROBENIOUS_NORM = 14.387494569938159;
 
   // STEP 0: construct test matrix
   double data[ 9 /* 3 x 3 */ ] = {
-      -3, 2, 0,  // column 1
-       5, 6, 2,  // column 2
-       7, 4, 8   // column 3
+    -3, 2, 0,    // column 1
+    5, 6, 2,     // column 2
+    7, 4, 8      // column 3
   };
   numerics::Matrix< double > A( N, N, data, ZERO_COPY );
 
