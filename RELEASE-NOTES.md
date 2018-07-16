@@ -11,7 +11,13 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
-- Improved integration of Mint and Sidre. Mint can now operate on meshes 
+- Added jacobi_eigensolve() method for computing the eigenvalues and eigenvectors
+  of real, symmetric matrices.
+- Added matrix_norm() operator for computing matrix norms. The implementations
+  supports the p1-norm, infinity-norm and frobenious matrix norm.
+- Added eigen_sort() routine for sorting the supplied eigenvalues and corresponding
+  eigenvectors in ascending order.
+- Initial integration of Mint and Sidre. Mint can now operate on meshes 
   stored in Sidre and conform to the [computational mesh blueprint conventions](http://llnl-conduit.readthedocs.io/en/latest/blueprint.html).
 - Added a sphere-sphere intersection test to Primal.
 - Added a utility function to Quest to *weld* vertices in a triangle mesh that 
