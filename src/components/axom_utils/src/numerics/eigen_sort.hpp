@@ -40,6 +40,9 @@ namespace numerics
  *
  * \note lambdas should point to a buffer that holds eigen_vectors.getNumCols()
  *
+ * \note The sorting algorithm in the current implementation is O(\f$ N^2 \f$)
+ *  rather than O( \f$ NlogN \f$ )
+ *
  * \pre lambdas != AXOM_NULLPTR
  * \pre eigen_vectors.getNumRows() >= 1
  * \pre eigen_vectors.getNumCols() >= 1

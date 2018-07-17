@@ -44,7 +44,7 @@ constexpr int JACOBI_EIGENSOLVE_FAILURE     = -1;
  * \param [out] V matrix to store the eigenvectors of the input matrix
  * \param [out] lambdas buffer where the computed eigenvalues will be stored.
  * \param [in] maxIterations the maximum number of iterations (optional)
- * \param [in] numIterations the number of actual iterations (optional)
+ * \param [out] numIterations the number of actual iterations (optional)
  * \param [in] TOL convergence tolerance. Default is set to 1.e-18 (optional)
  *
  * \return status returns JACOBI_EIGENSOLVE_SUCCESS on success, otherwise,
@@ -62,6 +62,10 @@ constexpr int JACOBI_EIGENSOLVE_FAILURE     = -1;
  * \note The Jacobi iteration will generally converge within 6-15 iterations.
  *  The default max number of iterations is set to 20, but, the caller may
  *  specify a different value if necessary.
+ *
+ * \note The implementation of this method is based on the algorithm described
+ *  in Numerical Recipes, Chapter 11.1, "Jacobi Transformations of a Symmetric
+ *  Matrix", p. 570.
  *
  * \pre A.isSquare() == true
  * \pre V.isSquare() == true
