@@ -50,6 +50,10 @@ constexpr int JACOBI_EIGENSOLVE_FAILURE     = -1;
  * \return status returns JACOBI_EIGENSOLVE_SUCCESS on success, otherwise,
  *  JACOBI_EIGENSOLVE_FAILURE is returned.
  *
+ * \note A return status of JACOBI_EIGENSOLVE_FAILURE, can indicate:
+ *  ( a ) a problem with the supplied input, e.g., nullptr etc.
+ *  ( b ) the method did not converge in the specified number of max iterations.
+ *
  * \note The supplied matrix is expected to be a real symmetric matrix.
  *
  * \note The Jacobi method is absolutely foolproof for all real symmetric
@@ -90,7 +94,8 @@ int jacobi_eigensolve( Matrix < T > A,
                        int* numIterations,
                        T TOL )
 {
-  int n = A.getNumRows();
+  bool converged = false;
+  const int n    = A.getNumRows();
 
   AXOM_STATIC_ASSERT_MSG(std::is_floating_point< T >::value,
                          "pre: T is a floating point type");
@@ -143,6 +148,7 @@ int jacobi_eigensolve( Matrix < T > A,
 
     if (utilities::isNearlyEqual( thresh, 0.0, TOL ))
     {
+      converged = true;
       break;
     }
 
@@ -260,7 +266,7 @@ int jacobi_eigensolve( Matrix < T > A,
   delete[] bw;
   delete[] zw;
 
-  return JACOBI_EIGENSOLVE_SUCCESS;
+  return( (converged) ? JACOBI_EIGENSOLVE_SUCCESS : JACOBI_EIGENSOLVE_FAILURE );
 }
 
 } /* end namespace numerics */
