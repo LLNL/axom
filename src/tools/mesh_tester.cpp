@@ -184,7 +184,8 @@ Input::Input(int argc, char** argv) :
     // Extract the stem of the input file, so can output files in the CWD
     std::string inFileDir;
     axom::utilities::filesystem::getDirName(inFileDir, stlInput);
-    std::string inFileStem = stlInput.substr(inFileDir.size() +1 );
+    int separatorSkip = (int)(inFileDir.size() > 0);
+    std::string inFileStem = stlInput.substr(inFileDir.size() + separatorSkip);
     std::string outFileBase = axom::utilities::filesystem::joinPath(
       axom::utilities::filesystem::getCWD(),inFileStem);
 

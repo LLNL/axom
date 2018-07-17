@@ -87,7 +87,8 @@ int makeDirsForPath(const std::string& path);
  * path.
  *
  * For example, if the path string is "abc/def/ghi/file.txt", the output dir
- * string will be "abc/def/ghi".
+ * string will be "abc/def/ghi".  If the path string is "file.txt", the
+ * output dir string will be "" (the empty string).
  */
 void getDirName( std::string& dir, const std::string& path);
 
