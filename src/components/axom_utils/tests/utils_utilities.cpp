@@ -121,14 +121,14 @@ TEST( axom_utils_Utilities,random_real_with_seed )
   constexpr double b =  5.0;
 
   const double expected_reals[ 5 ] = {
-      -1.5112829544380526,
-      -2.3311429024686219,
-      -3.6335370551231403,
-      -4.714431326610093,
-       3.6893326916732878
+    -1.5112829544380526,
+    -2.3311429024686219,
+    -3.6335370551231403,
+    -4.714431326610093,
+    3.6893326916732878
   };
 
-  for ( int i=0; i < 5; ++i )
+  for ( int i=0 ; i < 5 ; ++i )
   {
     const double real = axom::utilities::random_real( a, b, seed );
     EXPECT_DOUBLE_EQ( real, expected_reals[ i ] );
