@@ -198,9 +198,12 @@ inline T clampLower(T val, T lower)
  *
  * \param [in] a the interval's lower bound
  * \param [in] b the interval's upper bound
- * \return r the random real number
+ * \return r the random real number within the specified interval.
  *
  * \tparam T a built-in floating point type, e.g., double, float, long double.
+ *
+ * \note Consecutive calls to this method will generate a non-deterministic
+ *  sequence of numbers.
  *
  * \pre a < b
  * \post a <= r < b
@@ -213,6 +216,37 @@ inline T random_real( const T& a, const T& b )
 
   static std::random_device rd;
   static std::mt19937_64 mt( rd() );
+  static std::uniform_real_distribution< T > dist(0.0, 1.0);
+
+  double temp = dist(mt);
+  return temp * ( b - a ) + a;
+}
+
+/*!
+ * \brief Returns a random real number within the specified interval given
+ *  the bounds of the interval and a seed value for the underlying random
+ *  number generator.
+ *
+ * \param [in] a the interval's lower bound
+ * \param [in] b the interval's upper bound
+ * \param [in] seed user-supplied seed for the random number generator
+ * \return r the random real number within the specified interval.
+ *
+ * \tparam T a built-in floating type, e.g., double, float, long double.
+ *
+ * \note Consecutive calls to this method will generate a deterministic
+ *  sequence of numbers.
+ *
+ * \pre a < b
+ * \post a <= r < b
+ */
+template < typename T >
+inline T random_real( const T& a, const T& b, unsigned int seed )
+{
+  AXOM_STATIC_ASSERT( std::is_floating_point< T >::value );
+  assert( (a < b) && "invalid bounds, a < b" );
+
+  static std::mt19937_64 mt( seed );
   static std::uniform_real_distribution< T > dist(0.0, 1.0);
 
   double temp = dist(mt);

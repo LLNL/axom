@@ -31,6 +31,7 @@
 #include "axom_utils/Determinants.hpp"     // for numerics::determinant()
 #include "axom_utils/Matrix.hpp"           // for numerics::Matrix
 #include "axom_utils/Utilities.hpp"        // for isNearlyEqual()
+#include "axom_utils/matrix_norms.hpp"     // for matrix norm functions
 
 // C/C++ includes
 #include <cassert> // for assert()
@@ -40,6 +41,21 @@ namespace axom
 {
 namespace numerics
 {
+
+/// \name Enumerators & Types
+/// @{
+
+/*!
+ * \brief Enumerates the supported matrix norms
+ */
+enum MatrixNorm
+{
+  P1_NORM,      //!< P1_NORM
+  INF_NORM,     //!< INF_NORM
+  FROBENIUS_NORM//!< FROBENIUS_NORM
+};
+
+/// @}
 
 /// \name Vector Operators
 /// @{
@@ -282,6 +298,51 @@ inline void matrix_vector_multiply( const Matrix< T >& A,
 template < typename T >
 inline bool matrix_transpose( const Matrix< T >& A, Matrix< T >& M );
 
+/*!
+ * \brief Computes the specified norm of a given \f$ M \times N \f$ matrix
+ *
+ * \param [in] A the matrix whose norm is computed
+ * \param [in] normType the type of norm to compute
+ * \return norm the computed norm or -1.0 on error.
+ *
+ * \note The computed norm is a non-negative scalar value. This method will
+ *  return a negative return value to indicate an error, e.g., the supplied
+ *  matrix has incorrect dimensions.
+ *
+ * \note The second argument specifies the type of norm to compute. Three
+ *  matrix norm types are supported:
+ *
+ *  * <b> \f$ P_1\f$ Norm </b> <br />
+ *
+ *    The \f$ P_1\f$ norm is computed by taking the maximum absolute column
+ *    sum, given by:
+ *    \f[
+ *     ||A||_1 = \max\limits_{1 \le j \le N}( \sum_{i=1}^M | a_{ij} | )
+ *    \f]
+ *
+ *  * <b> \f$\infty\f$ Norm </b> <br />
+ *
+ *    The \f$\infty\f$ norm is computed by taking the maximum absolute row sum,
+ *    given by:
+ *    \f[
+ *      ||A||_\infty = \max\limits_{1 \le j \le M}( \sum_{i=1}^N | a_{ij} | )
+ *   \f]
+ *
+ *  * <b> Frobenius Norm </b> <br />
+ *
+ *    The frobenius norm of an \f$ M \times N \f$ matrix, is given by:
+ *    \f[
+ *      ||A||_F = \sqrt{ \sum_{i=1}^M \sum_{j=1}^N ({a_{ij}})^2  }
+ *    \f]
+ *
+ * \pre A.getNumRows() >= 2
+ * \pre A.getNumCols() >= 2
+ *
+ * \see MatrixNorm
+ */
+template < typename T >
+inline T matrix_norm( const Matrix< T >& A, MatrixNorm normType);
+
 /// @}
 
 } /* end namespace numerics */
@@ -476,6 +537,32 @@ inline bool matrix_transpose( const Matrix< T >& A, Matrix< T >& M )
   return true;
 }
 
+//-----------------------------------------------------------------------------
+template < typename T >
+inline T matrix_norm( const Matrix< T >& A, MatrixNorm normType)
+{
+  assert( "pre: numRows >= 2" && A.getNumRows() >= 2 );
+  assert( "pre: numCols >= 2" && A.getNumColumns() >= 2 );
+
+  T norm = static_cast< T >( -1.0 );
+  switch( normType )
+  {
+  case MatrixNorm::P1_NORM:
+    norm = internal::matrix_p1_norm( A );
+    break;
+  case MatrixNorm::INF_NORM:
+    norm = internal::matrix_infty_norm( A );
+    break;
+  case MatrixNorm::FROBENIUS_NORM:
+    norm = internal::matrix_frobenious_norm( A );
+    break;
+  default:
+    assert( "pre: unsupported norm type!" && false );
+    norm = -1.0; // set norm to a negative number to indicate an error
+  } // END switch
+
+  return norm;
+}
 
 //------------------------------------------------------------------------------
 // IMPLEMENTATION OF VECTOR OPERATIONS
