@@ -17,8 +17,9 @@ if(ENABLE_PYTHON_API)
 endif(ENABLE_PYTHON_API)
 
 ## add components
-## Note: Default state of components is controlled by the ENABLE_ALL_COMPONENTS
-## option. However, the 'common' component is always enabled.
+## Note: Default state of components is controlled by the
+## AXOM_ENABLE_ALL_COMPONENTS option. However, the 'common' component is always
+## enabled.
 
 axom_add_component(COMPONENT_NAME axom_utils DEFAULT_STATE ON)
 
@@ -27,15 +28,15 @@ axom_add_component(COMPONENT_NAME axom_utils DEFAULT_STATE ON)
 # serial (non-mpi) executables.
 if(ENABLE_MPI)
     axom_add_component( COMPONENT_NAME lumberjack
-                        DEFAULT_STATE  ${ENABLE_ALL_COMPONENTS})
+                        DEFAULT_STATE  ${AXOM_ENABLE_ALL_COMPONENTS})
 endif()
 
-axom_add_component(COMPONENT_NAME slic DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
-axom_add_component(COMPONENT_NAME primal DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
-axom_add_component(COMPONENT_NAME slam DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
-axom_add_component(COMPONENT_NAME sidre DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
-axom_add_component(COMPONENT_NAME mint DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
-axom_add_component(COMPONENT_NAME quest DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
+axom_add_component(COMPONENT_NAME slic DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
+axom_add_component(COMPONENT_NAME primal DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
+axom_add_component(COMPONENT_NAME slam DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
+axom_add_component(COMPONENT_NAME sidre DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
+axom_add_component(COMPONENT_NAME mint DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
+axom_add_component(COMPONENT_NAME quest DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 
 
 ## Add dependency for each enabled component on the copy_axom_includes target

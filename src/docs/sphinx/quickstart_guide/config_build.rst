@@ -269,7 +269,7 @@ i.e.,::
 You can also pass extra CMake configuration variables through the script; e.g.,::
 
    $ ./config-build.py -hc {host-config file name} \
-                       -DENABLE_PYTHON=ON -DENABLE_FORTRAN=OFF
+                       -DAXOM_ENABLE_PYTHON=ON -DENABLE_FORTRAN=OFF
 
 This will enable python and disable fortran for the generated configuration.
 
@@ -314,40 +314,40 @@ CMake options
            Check what's there now for correctness. Move options for developers
            into separate table here (for convenience) or to Dev Guide?
 
-+---------------------------+--------------------------------+---------+
-| OPTION                    | Description                    | Default |
-+===========================+================================+=========+
-| ENABLE_ALL_COMPONENTS     | Enable all components          | ON      |
-|                           | by default                     |         |
-+---------------------------+--------------------------------+---------+
-| ENABLE_ALL_WARNINGS       | Enable extra compiler warnings | ON      |
-|                           | in all build targets           |         |
-+---------------------------+--------------------------------+---------+
-| ENABLE_BENCHMARKS         | Enable google benchmark        | OFF     |
-+---------------------------+--------------------------------+---------+
-| ENABLE_CODECOV            | Enable code coverage via gcov  | ON      |
-+---------------------------+--------------------------------+---------+
-| ENABLE_FORTRAN            | Enable Fortran compiler        | ON      |
-|                           | support                        |         |
-+---------------------------+--------------------------------+---------+
-| ENABLE_MPI                | Enable MPI                     | OFF     |
-+---------------------------+--------------------------------+---------+
-| ENABLE_OPENMP             | Enable OpenMP                  | OFF     |
-+---------------------------+--------------------------------+---------+
-| ENABLE_SHARED_LIBS        | Build shared libraries.        | OFF     |
-|                           | Default is Static libraries    |         |
-+---------------------------+--------------------------------+---------+
-| AXOM_ENABLE_TESTS         | Builds unit tests              | ON      |
-+---------------------------+--------------------------------+---------+
-| AXOM_ENABLE_DOCS          | Builds documentation           | ON      |
-+---------------------------+--------------------------------+---------+
-| AXOM_ENABLE_EXAMPLES      | Builds examples                | ON      |
-+---------------------------+--------------------------------+---------+
-| ENABLE_WARNINGS_AS_ERRORS | Compiler warnings treated as   | OFF     |
-|                           | errors.                        |         |
-+---------------------------+--------------------------------+---------+
++------------------------------+--------------------------------+---------+
+| OPTION                       | Description                    | Default |
++==============================+================================+=========+
+| AXOM_ENABLE_ALL_COMPONENTS   | Enable all components          | ON      |
+|                              | by default                     |         |
++------------------------------+--------------------------------+---------+
+| ENABLE_ALL_WARNINGS          | Enable extra compiler warnings | ON      |
+|                              | in all build targets           |         |
++------------------------------+--------------------------------+---------+
+| ENABLE_BENCHMARKS            | Enable google benchmark        | OFF     |
++------------------------------+--------------------------------+---------+
+| ENABLE_CODECOV               | Enable code coverage via gcov  | ON      |
++------------------------------+--------------------------------+---------+
+| ENABLE_FORTRAN               | Enable Fortran compiler        | ON      |
+|                              | support                        |         |
++------------------------------+--------------------------------+---------+
+| ENABLE_MPI                   | Enable MPI                     | OFF     |
++------------------------------+--------------------------------+---------+
+| ENABLE_OPENMP                | Enable OpenMP                  | OFF     |
++------------------------------+--------------------------------+---------+
+| ENABLE_SHARED_LIBS           | Build shared libraries.        | OFF     |
+|                              | Default is Static libraries    |         |
++------------------------------+--------------------------------+---------+
+| AXOM_ENABLE_TESTS            | Builds unit tests              | ON      |
++------------------------------+--------------------------------+---------+
+| AXOM_ENABLE_DOCS             | Builds documentation           | ON      |
++------------------------------+--------------------------------+---------+
+| AXOM_ENABLE_EXAMPLES         | Builds examples                | ON      |
++------------------------------+--------------------------------+---------+
+| ENABLE_WARNINGS_AS_ERRORS    | Compiler warnings treated as   | OFF     |
+|                              | errors.                        |         |
++------------------------------+--------------------------------+---------+
 
-If 'ENABLE_ALL_COMPONENTS' is OFF, you must explicitly enable the desired
+If 'AXOM_ENABLE_ALL_COMPONENTS' is OFF, you must explicitly enable the desired
 components (other than 'common', which is always enabled).
 
 .. note :: To configure the version of the C++ standard, you can supply one of the
