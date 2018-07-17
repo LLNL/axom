@@ -32,7 +32,6 @@
 #include <cassert>         // for assert()
 #include <cmath>           // for log2()
 #include <cstdlib>         // for std::malloc, std::realloc, std::free
-#include <ctime>           // for seeding the rng
 
 #include <random>        // for random  number generator
 #include <type_traits>   // for std::is_floating_point()

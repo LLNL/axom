@@ -36,8 +36,9 @@ namespace utilities = axom::utilities;
 TEST( numerics_jacobi_eigensolve, random_symmetric_matrix )
 {
   using IndexType = typename numerics::Matrix< double >::IndexType;
-  constexpr double TOL   = 1.e-12;
-  constexpr int MAX_SIZE = 41;
+  constexpr unsigned int seed = 123456789;
+  constexpr double TOL        = 1.e-12;
+  constexpr int MAX_SIZE      = 41;
 
   // 40x40 test. Generate random symmetric matrix A
   for ( int k=2 ; k < MAX_SIZE ; ++k  )
@@ -53,7 +54,7 @@ TEST( numerics_jacobi_eigensolve, random_symmetric_matrix )
     {
       for (IndexType j=0 ; j <= i ; ++j)
       {
-        A_test(i,j) = utilities::random_real<double> (0.0, 1.0);
+        A_test(i,j) = utilities::random_real<double> (0.0, 1.0, seed);
         A_test(j,i) = A_test(i,j);
       }
     }
