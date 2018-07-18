@@ -286,10 +286,12 @@ UniformGrid< T, NDIMS >::UniformGrid(const double* lower_bound,
   SLIC_ASSERT(res != AXOM_NULLPTR);
   SLIC_ASSERT((NDIMS == 3) || (NDIMS == 2));
 
+  // set up the bounding box for point conversions
+  m_boundingBox = BoxType(PointType(lower_bound), PointType(upper_bound));
+
   initialize(res);
 
-  // set up the bounding box and lattice for point conversions
-  m_boundingBox = BoxType(PointType(lower_bound), PointType(upper_bound));
+  // set up the lattice for point conversions
   m_lattice = rectangular_lattice_from_bounding_box(
     m_boundingBox, NumericArray< T,NDIMS >(m_resolution));
 }
