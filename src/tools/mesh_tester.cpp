@@ -70,6 +70,7 @@ struct Input
 
   int resolution;
   double weldThreshold;
+  bool skipWeld;
   InputStatus errorCode;
 
   Input() :
@@ -77,6 +78,7 @@ struct Input
     vtkOutput(""),
     resolution(0),
     weldThreshold(1e-6),
+    skipWeld(false),
     errorCode(SUCCESS)
   { };
 
@@ -100,6 +102,8 @@ struct Input
        "\n                   welded mesh will end with '.welded.vtk'."
        "\n  --weldThresh eps Distance threshold for welding vertices. "
        "\n                   Default: eps = 1e-6"
+       "\n  --skipWeld       Don't weld vertices (useful for testing,"
+       "\n                   not helpful otherwise)."
       << std::endl << std::endl;
   };
 
@@ -131,6 +135,7 @@ Input::Input(int argc, char** argv) :
   vtkOutput(""),
   resolution(0),
   weldThreshold(1e-6),
+  skipWeld(false),
   errorCode(SUCCESS)
 {
   if (argc < 2)
@@ -158,6 +163,10 @@ Input::Input(int argc, char** argv) :
       else if (arg == "--weldThresh")
       {
         weldThreshold = atof(argv[++i]);
+      }
+      else if (arg == "--skipWeld")
+      {
+        skipWeld = true;
       }
       else // help or unknown parameter
       {
@@ -213,6 +222,7 @@ Input::Input(int argc, char** argv) :
     <<"\n  resolution = " << resolution
     << (resolution < 1 ? " (use cube root of triangle count)" : "")
     <<"\n  weld threshold = " <<  weldThreshold
+    <<"\n  " << (skipWeld? "": "not ") << "skipping weld"
     <<"\n  infile = " << stlInput
     <<"\n  collisions outfile = " << collisionsMeshName()
     <<"\n  weld outfile = " << weldMeshName()  );
@@ -450,6 +460,7 @@ int main( int argc, char** argv )
                 <<  surface_mesh->getNumberOfCells() << " triangles.");
 
   // Vertex welding
+  if (!params.skipWeld)
   {
     axom::utilities::Timer timer(true);
 
