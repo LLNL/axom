@@ -106,7 +106,7 @@ TEST( primal_uniform_grid, indexing)
   EXPECT_EQ(expectedBin, valid.getBinIndex(pt5));
 
   // A point on the max-x plane
-  QPoint pt6 = QPoint::make_point(100., 55., 62.);
+  QPoint pt6 = QPoint::make_point(100., 55.5, 62.2);
   expectedBin = 62*100*100 + 55*100 + 99;
   EXPECT_EQ(expectedBin, valid.getBinIndex(pt6));
   // A point on the max-y plane
@@ -118,7 +118,7 @@ TEST( primal_uniform_grid, indexing)
   expectedBin = 99*100*100 + 1*100 + 45;
   EXPECT_EQ(expectedBin, valid.getBinIndex(pt8));
   // A point on the max-xy edge
-  QPoint pt9 = QPoint::make_point(100., 100., 62.);
+  QPoint pt9 = QPoint::make_point(100., 100., 62.2);
   expectedBin = 62*100*100 + 99*100 + 99;
   EXPECT_EQ(expectedBin, valid.getBinIndex(pt9));
   // A point on the max-yz edge

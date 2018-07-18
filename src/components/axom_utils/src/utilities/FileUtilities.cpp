@@ -126,7 +126,7 @@ void getDirName(std::string& dir, const std::string& path)
   }
   else
   {
-    dir = ".";
+    dir = "";
   }
 }
 
