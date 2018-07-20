@@ -94,7 +94,7 @@ add_subdirectory(examples)
 ################################
 # Add docs
 ################################
-if (ENABLE_DOCS)
+if (AXOM_ENABLE_DOCS)
   add_subdirectory(docs)
 endif()
 

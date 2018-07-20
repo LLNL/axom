@@ -79,7 +79,7 @@ mark_as_advanced(FMT_FOUND)
 # Register the built-in sparse hash library
 ############################################################
 
-if (ENABLE_SPARSEHASH)
+if (AXOM_ENABLE_SPARSEHASH)
 
   include(CheckIncludeFileCXX)
 
@@ -163,6 +163,6 @@ endif()
 ################################
 # Add tests
 ################################
-if (ENABLE_TESTS)
+if (AXOM_ENABLE_TESTS)
     add_subdirectory(tests)
 endif()

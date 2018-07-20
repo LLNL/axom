@@ -77,7 +77,7 @@ endif()
 # Python
 ################################
 
-if(ENABLE_PYTHON AND PYTHON_EXECUTABLE)
+if(AXOM_ENABLE_PYTHON AND PYTHON_EXECUTABLE)
     ################################
     # Setup includes for Python
     ################################
@@ -85,7 +85,7 @@ if(ENABLE_PYTHON AND PYTHON_EXECUTABLE)
     message(STATUS "Using Python Include: ${PYTHON_INCLUDE_DIRS}")
     # if we don't find python, throw a fatal error
     if(NOT PYTHON_FOUND)
-        message(FATAL_ERROR "ENABLE_PYTHON is set, but Python wasn't found.")
+        message(FATAL_ERROR "AXOM_ENABLE_PYTHON is set, but Python wasn't found.")
     endif()
 
     ## Set the Python module directory
@@ -115,7 +115,7 @@ if(ENABLE_PYTHON AND PYTHON_EXECUTABLE)
     )
 else()
     message(STATUS "Python support is OFF")
-endif(ENABLE_PYTHON AND PYTHON_EXECUTABLE)
+endif(AXOM_ENABLE_PYTHON AND PYTHON_EXECUTABLE)
 
 ################################
 # Lua
