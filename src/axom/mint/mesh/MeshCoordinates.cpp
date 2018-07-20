@@ -158,9 +158,7 @@ MeshCoordinates::MeshCoordinates( sidre::Group* group, int dimension,
   m_group( group ),
   m_ndims( dimension )
 {
-  SLIC_ERROR_IF( m_group==nullptr, "null sidre::Group" );
-  SLIC_ERROR_IF( m_group->getNumGroups() != 0, "sidre::Group is not empty!" );
-  SLIC_ERROR_IF( m_group->getNumViews() !=0, "sidre::Group is not empty!" );
+  SLIC_ERROR_IF( m_group==AXOM_NULLPTR, "null sidre::Group" );
   SLIC_ERROR_IF( (capacity != USE_DEFAULT) && (numNodes > capacity),
                  "numNodes < capacity pre-condition violated!" );
 

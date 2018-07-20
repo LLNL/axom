@@ -108,7 +108,7 @@ public:
    * \post hasSidreGroup() == false
    * \post isExternal() == false
    */
-  RectilinearMesh( int dimension, const int64* ext );
+  RectilinearMesh( int dimension, const IndexType* ext );
 
   /*!
    * \brief Constructs a rectilinear mesh of specified dimensions.
@@ -126,9 +126,7 @@ public:
    * \post hasSidreGroup() == false
    * \post isExternal() == false
    */
-  RectilinearMesh( IndexType Ni,
-                   IndexType Nj=-1,
-                   IndexType Nk=-1  );
+  RectilinearMesh( IndexType Ni, IndexType Nj=-1, IndexType Nk=-1  );
 
 /// @}
 
@@ -161,10 +159,8 @@ public:
    * \post hasSidreGroup() == false.
    * \post isExternal() == true
    */
-  RectilinearMesh( const int64* ext,
-                   double* x,
-                   double* y=nullptr,
-                   double* z=nullptr );
+  RectilinearMesh( const IndexType* ext, double* x, double* y=AXOM_NULLPTR,
+                   double* z=AXOM_NULLPTR );
 /// @}
 
 #ifdef MINT_USE_SIDRE
@@ -197,8 +193,7 @@ public:
    * \post hasSidreGroup() == true
    * \post isExternal() == false
    */
-  explicit RectilinearMesh( sidre::Group* group,
-                            const std::string& topo="" );
+  explicit RectilinearMesh( sidre::Group* group, const std::string& topo="" );
 
   /*!
    * \brief Creates a RectilinearMesh, on a empty Sidre group, given
@@ -229,11 +224,8 @@ public:
    * \post hasSidreGroup() == true
    * \post isExternal() == false
    */
-  RectilinearMesh( int dimension,
-                   const int64* ext,
-                   sidre::Group* group,
-                   const std::string& topo="",
-                   const std::string& coordset="" );
+  RectilinearMesh( int dimension, const IndexType* ext, sidre::Group* group,
+                   const std::string& topo="", const std::string& coordset="" );
 
   /*!
    * \brief Creates a RectilinearMesh, on an empty Sidre group, given the
@@ -266,17 +258,14 @@ public:
    */
   /// @{
 
-  RectilinearMesh( sidre::Group* group,
-                   const std::string& topo,
-                   const std::string& coordset,
-                   IndexType Ni,
-                   IndexType Nj=-1,
-                   IndexType Nk=-1  );
+  RectilinearMesh( sidre::Group* group, const std::string& topo, 
+                   const std::string& coordset, IndexType Ni, IndexType Nj=-1,
+                   IndexType Nk=-1 );
 
-  RectilinearMesh( sidre::Group* group,
-                   IndexType Ni,
-                   IndexType Nj=-1,
-                   IndexType Nk=-1  );
+  RectilinearMesh( sidre::Group* group, IndexType Ni, IndexType Nj=-1,
+                   IndexType Nk=-1 ) :
+    RectilinearMesh( group, "", "", Ni, Nj, Nk )
+  {}
 
   /// @}
 
@@ -321,7 +310,7 @@ public:
    *
    * \param[in] dim the specified dimension
    *
-   * \note the returned buffer is of length getNumberOfNodesAlongDim( dim ).
+   * \note the returned buffer is of length getNodeExtent( dim ).
    *
    * \pre dim >= 0 && dim < dimension()
    * \pre dim == X_COORDINATE || dim == Y_COORDINATE || dim == Z_COORDINATE
@@ -359,7 +348,8 @@ private:
 
 #endif
 
-  Array< double >* m_coordinates[3] = {nullptr,nullptr,nullptr};
+  Array< double >* m_coordinates[3] = { AXOM_NULLPTR, AXOM_NULLPTR, 
+                                        AXOM_NULLPTR };
 
   DISABLE_COPY_AND_ASSIGNMENT( RectilinearMesh );
   DISABLE_MOVE_AND_ASSIGNMENT( RectilinearMesh );

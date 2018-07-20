@@ -1286,13 +1286,14 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
 
   // Setup linear mint mesh to approximate our mesh
   const int res = 25;
-  axom::mint::int64 ext[4] = { 0,res,0,res};
+  axom::mint::IndexType ext[2] = {res + 1, res + 1};
   axom::mint::CurvilinearMesh cmesh(2, ext);
 
   {
-    axom::primal::Point<axom::mint::IndexType,3> ext_size;
-    cmesh.getExtentSize( ext_size.data() );
-    SLIC_INFO( "Extents of curvilinear mesh: " << ext_size    );
+    axom::mint::IndexType Ni = cmesh.getNodeExtent(0);
+    axom::mint::IndexType Nj = cmesh.getNodeExtent(1);
+    axom::mint::IndexType Nk = cmesh.getNodeExtent(2);
+    SLIC_INFO( "Extents of curvilinear mesh: " << Ni << " " << Nj << " " << Nk );
   }
 
   // Set the positions of the nodes of the diagnostic mesh
@@ -1306,7 +1307,7 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
       SpacePt isoparPt = SpacePt::make_point(i/denom,j/denom);
       SpacePt spacePt;
       spatialIndex1.reconstructPoint(0, isoparPt.data(), spacePt.data() );
-      axom::mint::IndexType idx = cmesh.getLinearIndex( i, j );
+      axom::mint::IndexType idx = cmesh.getNodeLinearIndex( i, j );
       x_coords[ idx ] = spacePt[0];
       y_coords[ idx ] = spacePt[1];
     }
@@ -1363,13 +1364,13 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
   }
 
   // Dump the mint mesh
-  {
-    std::stringstream filenameStr;
-    filenameStr << "quest_point_in_cell_c_shaped_quad_001_mint_" << res <<
-      ".vtk";
-    SLIC_INFO("About to write file " << filenameStr.str());
-    axom::mint::write_vtk(&cmesh, filenameStr.str() );
-  }
+  // {
+  //   std::stringstream filenameStr;
+  //   filenameStr << "quest_point_in_cell_c_shaped_quad_001_mint_" << res <<
+  //     ".vtk";
+  //   SLIC_INFO("About to write file " << filenameStr.str());
+  //   axom::mint::write_vtk(&cmesh, filenameStr.str() );
+  // }
 
   if(false)
   {

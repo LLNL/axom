@@ -176,9 +176,7 @@ void testContainmentOnRegularGrid(
     h[i] /= gridRes;
   }
 
-  mint::int64 ext[6];
-  ext[0] = ext[2] = ext[4] = 0;
-  ext[1] = ext[3] = ext[5] = gridRes;
+  mint::IndexType ext[3] = {gridRes, gridRes, gridRes};
 
   mint::UniformMesh* umesh =
     new mint::UniformMesh(3,queryBounds.getMin().data(),h.data(),ext);
@@ -223,7 +221,7 @@ TriVertIndices getTriangleVertIndices(mint::Mesh* mesh,
   SLIC_ASSERT(cellIndex >= 0 && cellIndex < mesh->getNumberOfCells());
 
   TriVertIndices tvInd;
-  mesh->getCell( cellIndex, tvInd.data() );
+  mesh->getCellNodes( cellIndex, tvInd.data() );
   return tvInd;
 }
 
@@ -360,7 +358,7 @@ void print_surface_stats( mint::Mesh* mesh)
     {
       fmt::format_to(badTriStr,"\n\tTriangle {}",*it);
       TriVertIndices vertIndices;
-      mesh->getCell( *it, vertIndices.data() );
+      mesh->getCellNodes( *it, vertIndices.data() );
 
       SpacePt vertPos;
       for(int j=0 ; j<3 ; ++j)

@@ -80,7 +80,7 @@ void check_coordinates( const UniformMesh* m,
   {
   case 1:
   {
-    const IndexType Ni = m->getNumberOfNodesAlongDim( I_DIRECTION );
+    const IndexType Ni = m->getNodeExtent( I_DIRECTION );
     EXPECT_EQ( Ni, m->getNumberOfNodes() );
     EXPECT_EQ( Ni, m->getNumberOfNodes() );
     for ( IndexType i=0 ; i < Ni ; ++i )
@@ -93,14 +93,14 @@ void check_coordinates( const UniformMesh* m,
   {
     EXPECT_TRUE( y != nullptr );
 
-    const IndexType Ni = m->getNumberOfNodesAlongDim( I_DIRECTION );
-    const IndexType Nj = m->getNumberOfNodesAlongDim( J_DIRECTION );
+    const IndexType Ni = m->getNodeExtent( I_DIRECTION );
+    const IndexType Nj = m->getNodeExtent( J_DIRECTION );
     for ( IndexType j=0 ; j < Nj ; ++j )
     {
       for ( IndexType i=0 ; i < Ni ; ++i )
       {
 
-        const IndexType nodeIdx = m->getLinearIndex( i,j );
+        const IndexType nodeIdx = m->getNodeLinearIndex( i,j );
         const double xx = m->evaluateCoordinate( i, I_DIRECTION );
         const double yy = m->evaluateCoordinate( j, J_DIRECTION );
         EXPECT_DOUBLE_EQ( x[ nodeIdx ], xx );
@@ -117,9 +117,9 @@ void check_coordinates( const UniformMesh* m,
     EXPECT_TRUE( y != nullptr );
     EXPECT_TRUE( z != nullptr );
 
-    const IndexType Ni = m->getNumberOfNodesAlongDim( I_DIRECTION );
-    const IndexType Nj = m->getNumberOfNodesAlongDim( J_DIRECTION );
-    const IndexType Nk = m->getNumberOfNodesAlongDim( K_DIRECTION );
+    const IndexType Ni = m->getNodeExtent( I_DIRECTION );
+    const IndexType Nj = m->getNodeExtent( J_DIRECTION );
+    const IndexType Nk = m->getNodeExtent( K_DIRECTION );
 
     for ( IndexType k=0 ; k < Nk ; ++k )
     {
@@ -127,7 +127,7 @@ void check_coordinates( const UniformMesh* m,
       {
         for ( IndexType i=0 ; i < Ni ; ++i )
         {
-          const IndexType nodeIdx = m->getLinearIndex( i, j, k );
+          const IndexType nodeIdx = m->getNodeLinearIndex( i, j, k );
           const double xx = m->evaluateCoordinate( i, I_DIRECTION );
           const double yy = m->evaluateCoordinate( j, J_DIRECTION );
           const double zz = m->evaluateCoordinate( k, K_DIRECTION );
@@ -158,7 +158,7 @@ void get_coordinates( const UniformMesh* m,
   {
   case 1:
   {
-    const IndexType Ni = m->getNumberOfNodesAlongDim( I_DIRECTION );
+    const IndexType Ni = m->getNodeExtent( I_DIRECTION );
     EXPECT_EQ( Ni, m->getNumberOfNodes() );
     for ( IndexType i=0 ; i < Ni ; ++i )
     {
@@ -169,14 +169,14 @@ void get_coordinates( const UniformMesh* m,
   break;
   case 2:
   {
-    EXPECT_TRUE( y != nullptr );
-    const IndexType Ni = m->getNumberOfNodesAlongDim( I_DIRECTION );
-    const IndexType Nj = m->getNumberOfNodesAlongDim( J_DIRECTION );
+    EXPECT_TRUE( y != AXOM_NULLPTR );
+    const IndexType Ni = m->getNodeExtent( I_DIRECTION );
+    const IndexType Nj = m->getNodeExtent( J_DIRECTION );
     for ( IndexType j=0 ; j < Nj ; ++j )
     {
       for ( IndexType i=0 ; i < Ni ; ++i )
       {
-        const IndexType nodeIdx = m->getLinearIndex( i,j );
+        const IndexType nodeIdx = m->getNodeLinearIndex( i,j );
         x[ nodeIdx ] = m->evaluateCoordinate( i, I_DIRECTION );
         y[ nodeIdx ] = m->evaluateCoordinate( j, J_DIRECTION );
       }   // END for all i
@@ -186,11 +186,11 @@ void get_coordinates( const UniformMesh* m,
   break;
   default:
   {
-    EXPECT_TRUE( y != nullptr );
-    EXPECT_TRUE( z != nullptr );
-    const IndexType Ni = m->getNumberOfNodesAlongDim( I_DIRECTION );
-    const IndexType Nj = m->getNumberOfNodesAlongDim( J_DIRECTION );
-    const IndexType Nk = m->getNumberOfNodesAlongDim( K_DIRECTION );
+    EXPECT_TRUE( y != AXOM_NULLPTR );
+    EXPECT_TRUE( z != AXOM_NULLPTR );
+    const IndexType Ni = m->getNodeExtent( I_DIRECTION );
+    const IndexType Nj = m->getNodeExtent( J_DIRECTION );
+    const IndexType Nk = m->getNodeExtent( K_DIRECTION );
 
     for ( IndexType k=0 ; k < Nk ; ++k )
     {
@@ -198,7 +198,7 @@ void get_coordinates( const UniformMesh* m,
       {
         for ( IndexType i=0 ; i < Ni ; ++i )
         {
-          const IndexType nodeIdx = m->getLinearIndex( i, j, k );
+          const IndexType nodeIdx = m->getNodeLinearIndex( i, j, k );
           x[ nodeIdx ] = m->evaluateCoordinate( i, I_DIRECTION );
           y[ nodeIdx ] = m->evaluateCoordinate( j, J_DIRECTION );
           z[ nodeIdx ] = m->evaluateCoordinate( k, K_DIRECTION );
@@ -218,24 +218,51 @@ void check_create_field( CurvilinearMesh* m,
                          const std::string& name,
                          int numComponents=1 )
 {
-  EXPECT_TRUE( m != nullptr );
-  EXPECT_TRUE( (association==NODE_CENTERED) ||
-               (association==CELL_CENTERED) );
-
+  EXPECT_TRUE( m != AXOM_NULLPTR );
   EXPECT_FALSE( m->hasField( name, association ) );
 
   double* f = m->createField< double >( name, association, numComponents );
-  EXPECT_TRUE( f != nullptr );
   EXPECT_TRUE( m->hasField( name, association ) );
 
-  IndexType expected_num_tuples = ( association==NODE_CENTERED ) ?
-                                  m->getNumberOfNodes() : m->getNumberOfCells();
+  IndexType expected_num_tuples;
+  if ( association == NODE_CENTERED )
+  {
+    expected_num_tuples = m->getNumberOfNodes();
+  }
+  else if ( association == CELL_CENTERED )
+  {
+    expected_num_tuples = m->getNumberOfCells();
+  }
+  else if ( association == FACE_CENTERED )
+  {
+    expected_num_tuples = m->getNumberOfFaces();
+  }
+  else
+  {
+    expected_num_tuples = m->getNumberOfEdges();
+  }
 
   const Field* field = m->getFieldData( association )->getField( name );
   EXPECT_TRUE( field != nullptr );
   EXPECT_EQ( f, Field::getDataPtr< double >( field ) );
   EXPECT_EQ( numComponents, field->getNumComponents() );
   EXPECT_EQ( expected_num_tuples, field->getNumTuples() );
+
+  for ( IndexType i = 0; i < expected_num_tuples * numComponents; ++i )
+  {
+    f[ i ] = 3.14 * i;
+  }
+}
+
+//------------------------------------------------------------------------------
+void check_field_values( const Field* field )
+{
+  const IndexType num_values = field->getNumTuples() * field->getNumComponents();
+  const double* values = Field::getDataPtr< double >( field );
+  for ( IndexType i = 0; i < num_values; ++i )
+  {
+    EXPECT_EQ( values[ i ], 3.14 * i );
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -299,8 +326,7 @@ void check_fill_coords( CurvilinearMesh* m, double MAGIC_VAL=42.0 )
 //------------------------------------------------------------------------------
 void check_constructor( const CurvilinearMesh* m,
                         int expected_dimension,
-                        const IndexType* expected_node_dimensions,
-                        const int64* expected_extent
+                        const IndexType* expected_node_dimensions
                         )
 {
   EXPECT_TRUE( m != nullptr );
@@ -318,22 +344,11 @@ void check_constructor( const CurvilinearMesh* m,
     ( mesh_dimension==3 ) ? HEX : ( ( mesh_dimension==2 ) ? QUAD : SEGMENT );
   EXPECT_EQ( m->getCellType(), expected_cell_type );
 
-  const Extent* ext = m->getExtent();
-  EXPECT_TRUE( ext != nullptr );
-
   for ( int i=0 ; i < mesh_dimension ; ++i )
   {
-    const int offset = i*2;
-    EXPECT_EQ( ext->min( i ), expected_extent[ offset ] );
-    EXPECT_EQ( ext->max( i ), expected_extent[ offset+1 ] );
-    EXPECT_EQ( m->getNumberOfNodesAlongDim( i ),expected_node_dimensions[ i ] );
-
-    EXPECT_TRUE( m->getCoordinateArray( i ) != nullptr );
+    EXPECT_EQ( m->getNodeExtent( i ),expected_node_dimensions[ i ] );
+    EXPECT_TRUE( m->getCoordinateArray( i ) != AXOM_NULLPTR );
   }
-
-  EXPECT_EQ( m->getNumberOfNodes(), ext->getNumNodes() );
-  EXPECT_EQ( m->getNumberOfCells(), ext->getNumCells() );
-
 }
 
 } // END namespace
@@ -343,20 +358,19 @@ void check_constructor( const CurvilinearMesh* m,
 //------------------------------------------------------------------------------
 TEST( mint_mesh_curvilinear_mesh_DeathTest, invalid_construction )
 {
-  const int64 ext[]    = { 0,4, 0,4, 0,4 };
   const IndexType N[]  = {   5,   5,   5 };
   double x[]           = { 0, 1, 2, 3, 4, 5 };
 
   // check 1st native constructor
-  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh(42,ext), IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh(3,nullptr), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh(42,N), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh(3,AXOM_NULLPTR), IGNORE_OUTPUT );
 
   // check 2nd native constructor
   EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh( -1,N[1], N[2]), IGNORE_OUTPUT );
 
   // check external constructor
-  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh(nullptr, x), IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh(ext,nullptr), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh(AXOM_NULLPTR, x), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh(N,AXOM_NULLPTR), IGNORE_OUTPUT );
 
 #ifdef MINT_USE_SIDRE
 
@@ -372,7 +386,7 @@ TEST( mint_mesh_curvilinear_mesh_DeathTest, invalid_construction )
   EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh(particle_mesh,""), IGNORE_OUTPUT );
 
   // check 1st push constructor
-  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh( 42, ext, valid_group ),
+  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh( 42, N, valid_group ),
                              IGNORE_OUTPUT );
   EXPECT_EQ( valid_group->getNumGroups(), 0 );
   EXPECT_EQ( valid_group->getNumViews(), 0 );
@@ -382,7 +396,7 @@ TEST( mint_mesh_curvilinear_mesh_DeathTest, invalid_construction )
   EXPECT_EQ( valid_group->getNumGroups(), 0 );
   EXPECT_EQ( valid_group->getNumViews(), 0 );
 
-  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh( 3, ext, nullptr ),
+  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh( 3, N, AXOM_NULLPTR ),
                              IGNORE_OUTPUT );
   EXPECT_EQ( valid_group->getNumGroups(), 0 );
   EXPECT_EQ( valid_group->getNumViews(), 0 );
@@ -403,20 +417,21 @@ TEST( mint_mesh_curvilinear_mesh, native_constructor )
 {
   constexpr int NDIMS  = 3;
   constexpr double MAGIC_NUM = 42.0;
-  const int64 ext[]    = { 0,4, 0,4, 0,4 };
-  const IndexType N[]  = {   5,   5,   5 };
+  const IndexType N[]  = { 5, 5, 5 };
 
   for ( int idim=1 ; idim <= NDIMS ; ++idim )
   {
 
-    CurvilinearMesh m1( idim, ext );
-    check_constructor( &m1, idim, N, ext );
+    CurvilinearMesh m1( idim, N );
+    check_constructor( &m1, idim, N );
     EXPECT_FALSE( m1.isExternal() );
     EXPECT_FALSE( m1.hasSidreGroup() );
 
     check_fill_coords( &m1, MAGIC_NUM );
     check_create_field( &m1, NODE_CENTERED, "n1" );
-    check_create_field( &m1, CELL_CENTERED, "c1", 3 );
+    check_create_field( &m1, CELL_CENTERED, "c1", 2 );
+    check_create_field( &m1, FACE_CENTERED, "f1", 3 );
+    check_create_field( &m1, EDGE_CENTERED, "e1", 4 );
 
     CurvilinearMesh* m2 = nullptr;
     switch( idim )
@@ -432,13 +447,15 @@ TEST( mint_mesh_curvilinear_mesh, native_constructor )
       m2 = new CurvilinearMesh( N[ 0 ], N[ 1 ], N[ 2 ] );
     } // END switch
 
-    check_constructor( m2, idim, N, ext );
+    check_constructor( m2, idim, N );
     EXPECT_FALSE( m2->isExternal( ) );
     EXPECT_FALSE( m2->hasSidreGroup() );
 
     check_fill_coords( m2, MAGIC_NUM );
     check_create_field( m2, NODE_CENTERED, "n1" );
     check_create_field( m2, CELL_CENTERED, "c1", 3 );
+    check_create_field( m2, FACE_CENTERED, "f1", 3 );
+    check_create_field( m2, EDGE_CENTERED, "e1", 4 );
 
     delete m2;
     m2 = nullptr;
@@ -450,14 +467,13 @@ TEST( mint_mesh_curvilinear_mesh, native_constructor )
 TEST( mint_mesh_curvilinear_mesh, external_constructor )
 {
   constexpr int NDIMS = 3;
-  const int64 ext[]  = { 0,10, 0,10, 0,10  };
   const IndexType N[] = {   11,   11,   11  };
   const double lo[]   = { 0.0, 0.0, 0.0 };
   const double hi[]   = { 5.0, 5.0, 5.0 };
 
   for ( int idim=1 ; idim <= NDIMS ; ++idim )
   {
-    UniformMesh um( idim, ext, lo, hi );
+    UniformMesh um( idim, N, lo, hi );
     const IndexType numNodes = um.getNumberOfNodes();
 
     double* x = nullptr;
@@ -473,7 +489,7 @@ TEST( mint_mesh_curvilinear_mesh, external_constructor )
       x = new double[ numNodes ];
       get_coordinates( &um, x );
 
-      m = new CurvilinearMesh( ext, x );
+      m = new CurvilinearMesh( N, x );
       EXPECT_EQ( x, m->getCoordinateArray( X_COORDINATE ) );
       check_coordinates( &um, m->getCoordinateArray( X_COORDINATE ) );
     }   // END 1D
@@ -484,7 +500,7 @@ TEST( mint_mesh_curvilinear_mesh, external_constructor )
       y = new double[ numNodes ];
       get_coordinates( &um, x, y );
 
-      m = new CurvilinearMesh( ext, x, y );
+      m = new CurvilinearMesh( N, x, y );
       EXPECT_EQ( x, m->getCoordinateArray( X_COORDINATE ) );
       EXPECT_EQ( y, m->getCoordinateArray( Y_COORDINATE ) );
       check_coordinates( &um,
@@ -499,7 +515,7 @@ TEST( mint_mesh_curvilinear_mesh, external_constructor )
       z = new double[ numNodes ];
       get_coordinates( &um, x, y, z );
 
-      m = new CurvilinearMesh( ext, x, y, z );
+      m = new CurvilinearMesh( N, x, y, z );
       EXPECT_EQ( x, m->getCoordinateArray( X_COORDINATE ) );
       EXPECT_EQ( y, m->getCoordinateArray( Y_COORDINATE ) );
       EXPECT_EQ( z, m->getCoordinateArray( Z_COORDINATE ) );
@@ -512,8 +528,8 @@ TEST( mint_mesh_curvilinear_mesh, external_constructor )
 
     } // END switch
 
-    EXPECT_TRUE( m != nullptr );
-    check_constructor( m, idim, N, ext );
+    EXPECT_TRUE( m != AXOM_NULLPTR );
+    check_constructor( m, idim, N );
 
     EXPECT_FALSE( m->hasSidreGroup() );
     EXPECT_TRUE( m->isExternal() );
@@ -540,7 +556,6 @@ TEST( mint_mesh_curvilinear_mesh, sidre_constructor )
 {
   constexpr int NDIMS  = 3;
   constexpr double MAGIC_NUM = 42.0;
-  const int64 ext[]    = { 0,4, 0,4, 0,4 };
   const IndexType N[]  = {   5,   5,   5 };
 
   for ( int idim=1 ; idim <= NDIMS ; ++idim )
@@ -551,16 +566,18 @@ TEST( mint_mesh_curvilinear_mesh, sidre_constructor )
     sidre::Group* m1grp = root->createGroup( "m1" );
     sidre::Group* m2grp = root->createGroup( "m2" );
 
-    // STEP 1: populate meshes in the 2 Sidre groups using the 2 construstors.
+    // STEP 1: populate meshes in the 2 Sidre groups using the 2 constructors.
     // BEGIN SCOPE
     {
-      CurvilinearMesh* m1 = new CurvilinearMesh( idim, ext, m1grp );
+      CurvilinearMesh* m1 = new CurvilinearMesh( idim, N, m1grp );
       EXPECT_TRUE( m1->hasSidreGroup() );
       EXPECT_FALSE( m1->isExternal() );
-      check_constructor( m1, idim, N, ext );
+      check_constructor( m1, idim, N );
       check_fill_coords( m1, MAGIC_NUM );
-      check_create_field( m1, NODE_CENTERED, "n1" );
-      check_create_field( m1, CELL_CENTERED, "c1", 3 );
+      check_create_field( m1, NODE_CENTERED, "n1", 1 );
+      check_create_field( m1, CELL_CENTERED, "c1", 2 );
+      check_create_field( m1, FACE_CENTERED, "f1", 3 );
+      check_create_field( m1, EDGE_CENTERED, "e1", 4 );
 
       EXPECT_FALSE( m1->isExternal() );
       EXPECT_TRUE( m1->hasSidreGroup() );
@@ -585,10 +602,12 @@ TEST( mint_mesh_curvilinear_mesh, sidre_constructor )
 
       EXPECT_TRUE( m2->hasSidreGroup() );
       EXPECT_FALSE( m2->isExternal() );
-      check_constructor( m2, idim, N, ext );
+      check_constructor( m2, idim, N );
       check_fill_coords( m2, MAGIC_NUM );
-      check_create_field( m2, NODE_CENTERED, "n1", 3 );
-      check_create_field( m2, CELL_CENTERED, "c1" );
+      check_create_field( m2, NODE_CENTERED, "n1", 1 );
+      check_create_field( m2, CELL_CENTERED, "c1", 2 );
+      check_create_field( m2, FACE_CENTERED, "f1", 3 );
+      check_create_field( m2, EDGE_CENTERED, "e1", 4 );
 
       delete m1;
       m1 = nullptr;
@@ -608,7 +627,7 @@ TEST( mint_mesh_curvilinear_mesh, sidre_constructor )
       CurvilinearMesh* m1 = new CurvilinearMesh( m1grp );
       EXPECT_TRUE( m1->hasSidreGroup() );
       EXPECT_FALSE( m1->isExternal() );
-      check_constructor( m1, idim, N, ext );
+      check_constructor( m1, idim, N );
       EXPECT_TRUE( m1->hasField( "n1", NODE_CENTERED ) );
       EXPECT_TRUE( m1->hasField( "c1", CELL_CENTERED ) );
 
@@ -619,20 +638,40 @@ TEST( mint_mesh_curvilinear_mesh, sidre_constructor )
       EXPECT_EQ( field->getNumComponents(), 1 );
       EXPECT_TRUE( field->isInSidre() );
       EXPECT_FALSE( field->isExternal() );
+      check_field_values( field );
 
       // check cell-centered field on m1
       fd    = m1->getFieldData( CELL_CENTERED );
       field = fd->getField( "c1" );
       EXPECT_EQ( field->getNumTuples(), m1->getNumberOfCells() );
+      EXPECT_EQ( field->getNumComponents(), 2 );
+      EXPECT_TRUE( field->isInSidre() );
+      EXPECT_FALSE( field->isExternal() );
+      check_field_values( field );
+
+      // check face-centered field on m1
+      fd    = m1->getFieldData( FACE_CENTERED );
+      field = fd->getField( "f1" );
+      EXPECT_EQ( field->getNumTuples(), m1->getNumberOfFaces() );
       EXPECT_EQ( field->getNumComponents(), 3 );
       EXPECT_TRUE( field->isInSidre() );
       EXPECT_FALSE( field->isExternal() );
+      check_field_values( field );
+
+      // check edge-centered field on m1
+      fd    = m1->getFieldData( EDGE_CENTERED );
+      field = fd->getField( "e1" );
+      EXPECT_EQ( field->getNumTuples(), m1->getNumberOfEdges() );
+      EXPECT_EQ( field->getNumComponents(), 4 );
+      EXPECT_TRUE( field->isInSidre() );
+      EXPECT_FALSE( field->isExternal() );
+      check_field_values( field );
 
       // check m2
       CurvilinearMesh* m2 = new CurvilinearMesh( m2grp );
       EXPECT_TRUE( m2->hasSidreGroup() );
       EXPECT_FALSE( m2->isExternal() );
-      check_constructor( m2, idim, N, ext );
+      check_constructor( m2, idim, N );
       EXPECT_TRUE( m2->hasField( "n1", NODE_CENTERED ) );
       EXPECT_TRUE( m2->hasField( "c1", CELL_CENTERED ) );
 
@@ -640,17 +679,37 @@ TEST( mint_mesh_curvilinear_mesh, sidre_constructor )
       fd    = m2->getFieldData( NODE_CENTERED );
       field = fd->getField( "n1" );
       EXPECT_EQ( field->getNumTuples(), m2->getNumberOfNodes() );
-      EXPECT_EQ( field->getNumComponents(), 3 );
+      EXPECT_EQ( field->getNumComponents(), 1 );
       EXPECT_TRUE( field->isInSidre() );
       EXPECT_FALSE( field->isExternal() );
+      check_field_values( field );
 
       // check cell-centered field on m2
       fd    = m2->getFieldData( CELL_CENTERED );
       field = fd->getField( "c1" );
       EXPECT_EQ( field->getNumTuples(), m2->getNumberOfCells() );
-      EXPECT_EQ( field->getNumComponents(), 1 );
+      EXPECT_EQ( field->getNumComponents(), 2 );
       EXPECT_TRUE( field->isInSidre() );
       EXPECT_FALSE( field->isExternal() );
+      check_field_values( field );
+
+      // check face-centered field on m2
+      fd    = m2->getFieldData( FACE_CENTERED );
+      field = fd->getField( "f1" );
+      EXPECT_EQ( field->getNumTuples(), m2->getNumberOfFaces() );
+      EXPECT_EQ( field->getNumComponents(), 3 );
+      EXPECT_TRUE( field->isInSidre() );
+      EXPECT_FALSE( field->isExternal() );
+      check_field_values( field );
+
+      // check edge-centered field on m2
+      fd    = m2->getFieldData( EDGE_CENTERED );
+      field = fd->getField( "e1" );
+      EXPECT_EQ( field->getNumTuples(), m2->getNumberOfEdges() );
+      EXPECT_EQ( field->getNumComponents(), 4 );
+      EXPECT_TRUE( field->isInSidre() );
+      EXPECT_FALSE( field->isExternal() );
+      check_field_values( field );
 
       // check nodes
       EXPECT_EQ( m1->getNumberOfNodes(), m2->getNumberOfNodes() );

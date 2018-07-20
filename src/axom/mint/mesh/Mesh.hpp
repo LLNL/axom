@@ -253,16 +253,6 @@ public:
   { return getNumberOfCells(); }
 
   /*!
-   * \brief Return the number of nodes associated with the given cell.
-   *
-   * \param [in] cellID the ID of the cell in question, this parameter is
-   *  ignored unless hasMixedCellTypes() == true.
-   *
-   * \pre 0 <= cellID < getNumberOfCells()
-   */
-  virtual IndexType getNumberOfCellNodes( IndexType cellID=0 ) const = 0;
-
-  /*!
    * \brief Return the type of the given cell.
    *
    * \param [in] cellID the ID of the cell in question, this parameter is
@@ -273,19 +263,45 @@ public:
   virtual CellType getCellType( IndexType cellID=0 ) const = 0;
 
   /*!
+   * \brief Return the number of nodes associated with the given cell.
+   *
+   * \param [in] cellID the ID of the cell in question, this parameter is
+   *  ignored unless hasMixedCellTypes() == true.
+   *
+   * \pre 0 <= cellID < getNumberOfCells()
+   */
+  virtual IndexType getNumberOfCellNodes( IndexType cellID=0 ) const = 0;
+
+  /*!
    * \brief Copy the connectivity of the given cell into the provided buffer.
    *  The buffer must be of length at least getNumberOfCellNodes( cellID ).
    *
    * \param [in] cellID the ID of the cell in question.
-   * \param [out] cell the buffer into which the connectivity is copied, must
+   * \param [out] nodes the buffer into which the connectivity is copied, must
    *  be of length at least getNumberOfCellNodes( cellID ).
    *
    * \return The number of nodes for the given cell.
    *
-   * \pre cell != nullptr
+   * \pre nodes != AXOM_NULLPTR
    * \pre 0 <= cellID < getNumberOfCells()
    */
-  virtual IndexType getCell( IndexType cellID, IndexType* cell ) const = 0;
+  virtual IndexType getCellNodes( IndexType AXOM_NOT_USED(cellID), IndexType* AXOM_NOT_USED(nodes) ) const
+  {
+    SLIC_ERROR( "Not implemented!" );
+    return -1;
+  }
+
+  virtual IndexType getNumberOfCellFaces( IndexType AXOM_NOT_USED(cellID) ) const
+  {
+    SLIC_ERROR( "Not implemented!" );
+    return -1;
+  }
+
+  virtual IndexType getCellFaces( IndexType AXOM_NOT_USED(cellID), IndexType* AXOM_NOT_USED(faces) ) const
+  {
+    SLIC_ERROR( "Not implemented!" );
+    return -1;
+  }
 
 /// @}
 
@@ -329,7 +345,7 @@ public:
    *  buffer is getNumberOfNodes(). Otherwise the UniformMesh returns
    *  nullptr and the RectilinearMesh returns a pointer to the associated
    *  dimension scale which is of length
-   *  static_cast< RectilinearMesh* >( this )->getNumberOfNodesAlongDim().
+   *  static_cast< RectilinearMesh* >( this )->getNodeExtent().
    *
    * \pre dim >= 0 && dim < dimension()
    * \pre dim == X_COORDINATE || dim == Y_COORDINATE || dim == Z_COORDINATE
@@ -360,6 +376,29 @@ public:
    */
   virtual IndexType getFaceCapacity() const
   { return getNumberOfFaces(); }
+
+  virtual CellType getFaceType( IndexType AXOM_NOT_USED(cellID) ) const
+  {
+    SLIC_ERROR( "Not implemented!" );
+    return UNDEFINED_CELL;
+  }
+
+  virtual IndexType getNumberOfFaceNodes( IndexType AXOM_NOT_USED(faceID) ) const
+  {
+    SLIC_ERROR( "Not implemented!" );
+    return -1;
+  }
+
+  virtual IndexType getFaceNodes( IndexType AXOM_NOT_USED(faceID), IndexType* AXOM_NOT_USED(nodes) ) const
+  {
+    SLIC_ERROR( "Not implemented!" );
+    return -1;
+  }
+
+  virtual void getFaceCells( IndexType AXOM_NOT_USED(faceID), IndexType& AXOM_NOT_USED(cellIDOne), IndexType& AXOM_NOT_USED(cellIDTwo) ) const
+  {
+    SLIC_ERROR( "Not implemented!" );
+  }
 
 /// @}
 

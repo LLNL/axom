@@ -148,7 +148,7 @@ void write_cells( const Mesh* mesh, std::ofstream& file )
   for ( IndexType cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
   {
     const int num_cell_nodes = mesh->getNumberOfCellNodes( cellIdx );
-    mesh->getCell( cellIdx, cell_nodes );
+    mesh->getCellNodes( cellIdx, cell_nodes );
 
     file << num_cell_nodes;
     for ( int i = 0 ; i < num_cell_nodes ; ++i )
@@ -180,10 +180,10 @@ void write_dimensions( const StructuredMesh* mesh, std::ofstream& file )
 {
   SLIC_ASSERT( mesh != nullptr );
 
-  IndexType ext[ 3 ] = { 1, 1, 1};
-  mesh->getExtentSize( ext );
   file << "DIMENSIONS ";
-  file << ext[ 0 ] << " " << ext[ 1 ] << " " << ext[ 2 ] << std::endl;
+  file << mesh->getNodeExtent( 0 ) << " "
+       << mesh->getNodeExtent( 1 ) << " "
+       << mesh->getNodeExtent( 2 ) << std::endl;
 }
 
 /*!
@@ -199,17 +199,15 @@ void write_rectilinear_mesh( const RectilinearMesh* mesh, std::ofstream& file )
 
   write_dimensions( mesh, file );
 
-  IndexType ext[ 3 ];
-  mesh->getExtentSize( ext );
   std::string coord_names[3] = { "X_COORDINATES ", "Y_COORDINATES ",
                                  "Z_COORDINATES " };
 
   for ( int dim = 0 ; dim < mesh->getDimension() ; ++dim )
   {
-    file << coord_names[ dim ] << ext[ dim ] << " double\n";
+    file << coord_names[ dim ] << mesh->getNodeExtent( dim ) << " double\n";
     const double* coords = mesh->getCoordinateArray( dim );
     file << coords[0];
-    for (int64 i = 1 ; i < ext[ dim ] ; ++i )
+    for (int64 i = 1 ; i < mesh->getNodeExtent( dim ) ; ++i )
     {
       file << " " << coords[i];
     }
@@ -217,7 +215,7 @@ void write_rectilinear_mesh( const RectilinearMesh* mesh, std::ofstream& file )
   }
   for ( int dim = mesh->getDimension() ; dim < 3 ; ++dim )
   {
-    file << coord_names[ dim ] << ext[ dim ] << " double\n";
+    file << coord_names[ dim ] << mesh->getNodeExtent( dim ) << " double\n";
     file << 0.0 << std::endl;
   }
 }

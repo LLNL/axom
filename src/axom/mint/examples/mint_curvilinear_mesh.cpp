@@ -45,7 +45,7 @@ int main ( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
   mint::CurvilinearMesh mesh( N, N );
   double* x          = mesh.getCoordinateArray( mint::X_COORDINATE );
   double* y          = mesh.getCoordinateArray( mint::Y_COORDINATE );
-  const IndexType jp = mesh.jp();
+  const IndexType jp = mesh.nodeJp();
 
   // STEP 1: add fiducial fields
   double* dx = mesh.createField< double >( "dx", mint::NODE_CENTERED );

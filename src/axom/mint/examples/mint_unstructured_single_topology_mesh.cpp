@@ -109,7 +109,7 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
   for ( cell_ID = 0 ; cell_ID < n_cells ; ++cell_ID )
   {
     const double cell_pressure = p[ cell_ID ];
-    const mint::IndexType* connec = mesh.getCell( cell_ID );
+    const mint::IndexType* connec = mesh.getCellNodes( cell_ID );
     for ( int i = 0 ; i < NODES_PER_CELL ; ++i )
     {
       node_ID = connec[ i ];

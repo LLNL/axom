@@ -252,7 +252,6 @@ void getMeshTypeAndDimension( int& mesh_type, int& dimension,
   // detect mesh type based on the topology type
   if ( strcmp( topo_type, "uniform" )==0 )
   {
-
     SLIC_ERROR_IF( !coords->hasChildGroup("origin"),
                    "missing [origin] group from [" << coords->getPathName() <<
                    "], required for a uniform mesh" );
@@ -350,194 +349,123 @@ bool hasMixedCellTypes( const sidre::Group* group, const std::string& topo )
 }
 
 //------------------------------------------------------------------------------
-void getUniformMesh( int dimension,
-                     const sidre::Group* coordset,
-                     const sidre::Group* topology,
-                     double* origin,
-                     double* spacing,
-                     int64* extent )
+void getStructuredMesh( int dimension, IndexType node_extent[3],
+                        int64 global_node_extent[6],
+                        const sidre::Group* coordset )
 {
-  SLIC_ERROR_IF( (dimension < 1) && ( dimension > 3), "invalid dimension!" );
+  SLIC_ERROR_IF( dimension < 1 || dimension > 3, "invalid dimension!" );
+  SLIC_ERROR_IF( node_extent == AXOM_NULLPTR, "supplied extent is null!" );
+  SLIC_ERROR_IF( global_node_extent == AXOM_NULLPTR, 
+                 "supplied global extent is null!" );
   SLIC_ERROR_IF( !blueprint::isValidCoordsetGroup( coordset ),
                  "invalid coordset group!" );
-  SLIC_ERROR_IF( !blueprint::isValidTopologyGroup( topology ),
-                 "invalid topology group!" );
-  SLIC_ERROR_IF( origin==nullptr, "supplied null pointer for origin!");
-  SLIC_ERROR_IF( spacing==nullptr, "supplied null pointer for spacing!" );
-  SLIC_ERROR_IF( extent==nullptr, "supplied null pointer for extent!" );
 
   sidre::Group* c = const_cast< sidre::Group* >( coordset );
-  sidre::Group* t = const_cast< sidre::Group* >( topology );
 
   const char* dim_names[]     = { "dims/i", "dims/j", "dims/k" };
-  const char* origin_names[]  = { "origin/x", "origin/y", "origin/z" };
-  const char* spacing_names[] = { "spacing/dx", "spacing/dy", "spacing/dz" };
-  const char* topo_names[]    = { "elements/origin/i0",
-                                  "elements/origin/j0",
-                                  "elements/origin/k0"   };
+  const char* global_names[]    = { "global_ext/i_min", "global_ext/i_max",
+                                    "global_ext/j_min", "global_ext/j_max", 
+                                    "global_ext/k_min", "global_ext/k_max" };
 
-  for ( int i=0 ; i < dimension ; ++i )
+  for ( int dim = 0; dim < dimension; ++dim )
   {
-    origin [ i ] = c->getView( origin_names[ i ] )->getScalar();
-    spacing[ i ] = c->getView( spacing_names[ i ] )->getScalar();
+    node_extent[ dim ] = c->getView( dim_names[ dim ] )->getScalar();
+  } // END for
 
-    const int idx      = i*2;
-    const IndexType N  = c->getView( dim_names[ i ] )->getScalar();
-    const int64 offset = t->getView( topo_names[ i ] )->getScalar();
-    extent[ idx ]      = offset;
-    extent[ idx+1 ]    = offset + N - 1;
+  for ( int i = 0; i < 6; ++i )
+  {
+    global_node_extent[ i ] = c->getView( global_names[ i ] )->getScalar();
   }
-
 }
 
 //------------------------------------------------------------------------------
-void setUniformMesh( int dim,
-                     const double* origin,
-                     const double* spacing,
-                     const mint::Extent* extent,
-                     sidre::Group* coordset,
-                     sidre::Group* topology )
+void setStructuredMesh( int dimension, const IndexType node_extent[3], 
+                        const int64 global_node_extent[6], 
+                        sidre::Group* coordset )
 {
-  SLIC_ERROR_IF( (dim < 1) && (dim > 3), "invalid dimension!" );
-  SLIC_ERROR_IF( origin==nullptr, "supplied null pointer for origin!" );
-  SLIC_ERROR_IF( spacing==nullptr, "supplied null pointer for spacing!" );
-  SLIC_ERROR_IF( extent==nullptr, "supplied extent is null!" );
-  SLIC_ERROR_IF( coordset==nullptr, "supplied coordset group is null!" );
-  SLIC_ERROR_IF( topology==nullptr, "supplied topology group is null!" );
-  SLIC_ERROR_IF( dim != extent->getDimension(),
-                 "supplied extent does not match specified dimension!" );
+  SLIC_ERROR_IF( dimension < 1 || dimension > 3, "invalid dimension!" );
+  SLIC_ERROR_IF( node_extent == AXOM_NULLPTR, "supplied extent is null!" );
+  SLIC_ERROR_IF( global_node_extent == AXOM_NULLPTR, 
+                 "supplied global extent is null!" );
+  SLIC_ERROR_IF( coordset == AXOM_NULLPTR, "invalid coordset group!" );
 
   const char* dim_names[]     = { "dims/i", "dims/j", "dims/k" };
+  const char* global_names[]    = { "global_ext/i_min", "global_ext/i_max",
+                                    "global_ext/j_min", "global_ext/j_max", 
+                                    "global_ext/k_min", "global_ext/k_max" };
+
+  sidre::Group* c = const_cast< sidre::Group* >( coordset );
+
+  for ( int dim = 0; dim < dimension; ++dim )
+  {
+    coordset->createView( dim_names[ dim ] )->setScalar( node_extent[ dim ] );
+  } // END for
+
+  for ( int i = 0; i < 6; ++i )
+  {
+    c->createView( global_names[ i ] )->setScalar( global_node_extent[ i ] );
+  }
+}
+
+void setGlobalNodeExtent( sidre::Group* coordset, 
+                          const int64 global_node_extent[6] )
+{
+  SLIC_ERROR_IF( global_node_extent == AXOM_NULLPTR, 
+                 "supplied global extent is null!" );
+  SLIC_ERROR_IF( coordset == AXOM_NULLPTR, "invalid coordset group!" );
+  SLIC_ERROR_IF( !isValidCoordsetGroup( coordset ), "invalid coordset group!" );
+
+  const char* global_names[]    = { "global_ext/i_min", "global_ext/i_max",
+                                    "global_ext/j_min", "global_ext/j_max", 
+                                    "global_ext/k_min", "global_ext/k_max" };
+
+  for ( int i = 0; i < 6; ++i )
+  {
+    coordset->getView( global_names[ i ] )->setScalar( global_node_extent[ i ] );
+  }
+}
+
+//------------------------------------------------------------------------------
+void getUniformMesh( int dimension, double* origin, double* spacing, 
+                     const sidre::Group* coordset )
+{
+  SLIC_ERROR_IF( dimension < 1 || dimension > 3, "invalid dimension!" );
+  SLIC_ERROR_IF( origin == AXOM_NULLPTR, "supplied null pointer for origin!");
+  SLIC_ERROR_IF( spacing == AXOM_NULLPTR, "supplied null pointer for spacing!" );
+  SLIC_ERROR_IF( !blueprint::isValidCoordsetGroup( coordset ),
+                 "invalid coordset group!" );
+
+  sidre::Group* c = const_cast< sidre::Group* >( coordset );
+
   const char* origin_names[]  = { "origin/x", "origin/y", "origin/z" };
   const char* spacing_names[] = { "spacing/dx", "spacing/dy", "spacing/dz" };
-  const char* topo_names[]    = { "elements/origin/i0",
-                                  "elements/origin/j0",
-                                  "elements/origin/k0"   };
 
-  coordset->createView( "type" )->setString( "uniform" );
-  for ( int i=0 ; i < dim ; ++i )
+  SLIC_ERROR_IF( c->getView( "type" )->getString() != std::string("uniform"),
+                 "Mesh is not a UniformMesh." );
+  for ( int dim = 0; dim < dimension; ++dim )
   {
-    coordset->createView( dim_names[ i ] )->setScalar( extent->size( i ) );
-    coordset->createView( origin_names[ i ] )->setScalar( origin[ i ] );
-    coordset->createView( spacing_names[ i ] )->setScalar( spacing[ i ] );
-    topology->createView( topo_names[ i ] )->setScalar( extent->min( i ) );
+    origin [ dim ] = c->getView( origin_names[ dim ] )->getScalar();
+    spacing[ dim ] = c->getView( spacing_names[ dim ] )->getScalar();
   } // END for
 }
 
 //------------------------------------------------------------------------------
-void getCurvilinearMeshExtent( int dim,
-                               const sidre::Group* topology,
-                               int64* extent )
+void setUniformMesh( int dimension, const double* origin, const double* spacing, 
+                     sidre::Group* coordset )
 {
-  SLIC_ERROR_IF( (dim < 1) && (dim > 3), "invalid dimension!" );
-  SLIC_ERROR_IF( extent==nullptr, "supplied extent is null" );
-  SLIC_ERROR_IF( !blueprint::isValidTopologyGroup( topology ),
-                 "invalid topology group!" );
+  SLIC_ERROR_IF( dimension < 1 || dimension > 3, "invalid dimension!" );
+  SLIC_ERROR_IF( origin == AXOM_NULLPTR, "supplied null pointer for origin!");
+  SLIC_ERROR_IF( spacing == AXOM_NULLPTR, "supplied null pointer for spacing!" );
 
-  sidre::Group* t = const_cast< sidre::Group* >( topology );
-  SLIC_ASSERT( t != nullptr );
+  const char* origin_names[]  = { "origin/x", "origin/y", "origin/z" };
+  const char* spacing_names[] = { "spacing/dx", "spacing/dy", "spacing/dz" };
 
-  const char* dim_names[] = { "elements/dims/i",
-                              "elements/dims/j",
-                              "elements/dims/k"   };
-
-  const char* origin_names[] = { "elements/origin/i0",
-                                 "elements/origin/j0",
-                                 "elements/origin/k0"   };
-
-  for ( int i=0 ; i < dim ; ++i )
+  coordset->createView( "type" )->setString( "uniform" );
+  for ( int dim = 0; dim < dimension; ++dim )
   {
-    const IndexType Ni = t->getView( dim_names[ i ] )->getScalar();
-    const int64 i0     = t->getView( origin_names[ i ] )->getScalar();
-    const int offset   = i*2;
-    extent[ offset ]   = i0;
-    extent[ offset+1 ] = i0 + Ni;
-  } // END for all dimensions
-
-}
-
-//------------------------------------------------------------------------------
-void setCurvilinearMeshExtent( int dim,
-                               const mint::Extent* extent,
-                               sidre::Group* topology )
-{
-  SLIC_ERROR_IF( (dim < 1) && (dim > 3), "invalid dimension!" );
-  SLIC_ERROR_IF( extent==nullptr, "supplied extent is null" );
-  SLIC_ERROR_IF( extent->getDimension() != dim,
-                 "extent dimension does not match specified dimension!" );
-
-  const char* dim_names[] = { "elements/dims/i",
-                              "elements/dims/j",
-                              "elements/dims/k"   };
-
-  const char* origin_names[] = { "elements/origin/i0",
-                                 "elements/origin/j0",
-                                 "elements/origin/k0"   };
-
-  for ( int i=0 ; i < dim ; ++i )
-  {
-    topology->createView( dim_names[ i ] )->setScalar( extent->size( i ) - 1 );
-    topology->createView( origin_names[ i ] )->setScalar( extent->min( i ) );
-  }
-
-}
-
-//------------------------------------------------------------------------------
-void getRectilinearMeshExtent( int dim,
-                               const sidre::Group* coordset,
-                               const sidre::Group* topology,
-                               int64* extent )
-{
-  SLIC_ERROR_IF( (dim < 1) && ( dim > 3), "invalid dimension!" );
-  SLIC_ERROR_IF( !blueprint::isValidCoordsetGroup( coordset ),
-                 "invalid coordset group!" );
-  SLIC_ERROR_IF( !blueprint::isValidTopologyGroup( topology ),
-                 "invalid topology group!" );
-  SLIC_ERROR_IF( extent==nullptr, "supplied null pointer for extent!" );
-
-  sidre::Group* c = const_cast< sidre::Group* >( coordset );
-  sidre::Group* t = const_cast< sidre::Group* >( topology );
-
-  const char* coords[] = { "values/x",
-                           "values/y",
-                           "values/z"  };
-
-  const char* origin_names[] = { "elements/origin/i0",
-                                 "elements/origin/j0",
-                                 "elements/origin/k0"   };
-
-  for ( int i=0 ; i < dim ; ++i )
-  {
-    mint::Array< double > coord( c->getView( coords[ i ] ) );
-    const IndexType Ni = coord.size();
-    const int64 i0     = t->getView( origin_names[ i ] )->getScalar( );
-
-    const int offset   = i*2;
-    extent[ offset ]   = i0;
-    extent[ offset+1 ] = i0 + ( Ni-1 );
-  }
-}
-
-//------------------------------------------------------------------------------
-void setRectilinearMeshExtent( int dim,
-                               const mint::Extent* extent,
-                               sidre::Group* topology )
-{
-  SLIC_ERROR_IF( (dim < 1) && (dim > 3), "invalid dimension!" );
-  SLIC_ERROR_IF( extent==nullptr, "supplied extent is null" );
-  SLIC_ERROR_IF( extent->getDimension() != dim,
-                 "extent dimension does not match specified dimension!" );
-
-  // NOTE: For rectilinear meshes, we only store the lower corner extent
-  // indices. The upper corner is specified implicitly by thhe
-  const char* origin_names[] = { "elements/origin/i0",
-                                 "elements/origin/j0",
-                                 "elements/origin/k0"   };
-
-  for ( int i=0 ; i < dim ; ++i )
-  {
-    topology->createView( origin_names[ i ] )->setScalar( extent->min( i ) );
-  }
+    coordset->createView( origin_names[ dim ] )->setScalar( origin[ dim ] );
+    coordset->createView( spacing_names[ dim ] )->setScalar( spacing[ dim ] );
+  } // END for
 }
 
 #endif

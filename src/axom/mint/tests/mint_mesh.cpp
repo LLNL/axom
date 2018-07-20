@@ -140,7 +140,7 @@ void check_append_cells_single( const Mesh* mesh, IndexType x_extent,
   {
     for ( IndexType i = 0 ; i < x_extent - 1 ; ++i )
     {
-      mesh->getCell( cell_ID++, cell );
+      mesh->getCellNodes( cell_ID++, cell );
 
       const IndexType bottom_left = j * x_extent + i;
       const IndexType bottom_right = bottom_left + 1;
@@ -222,7 +222,7 @@ void check_append_cells_mixed( const Mesh* mesh, IndexType x_extent,
     for ( IndexType i = 0 ; i < x_extent - 1 ; ++i )
     {
       CellType type = mesh->getCellType( cell_ID );
-      IndexType n_nodes = mesh->getCell( cell_ID++, cell );
+      IndexType n_nodes = mesh->getCellNodes( cell_ID++, cell );
 
       const IndexType bottom_left = j * x_extent + i;
       const IndexType bottom_right = bottom_left + 1;
@@ -247,7 +247,7 @@ void check_append_cells_mixed( const Mesh* mesh, IndexType x_extent,
         EXPECT_EQ( cell[2], top_right );
 
         type = mesh->getCellType( cell_ID );
-        n_nodes = mesh->getCell( cell_ID++, cell );
+        n_nodes = mesh->getCellNodes( cell_ID++, cell );
 
         EXPECT_EQ( n_nodes, 3 );
         EXPECT_EQ( type, TRIANGLE );
@@ -345,7 +345,7 @@ TEST( mint_mesh_DeathTest, get_mesh_null_group )
 //------------------------------------------------------------------------------
 TEST( mint_mesh, get_curvilinear_mesh_from_sidre )
 {
-  const int64 ext[]      = { -10,10, -10,10, -10,10  };
+  const IndexType ext[]   = { 20, 20, 20 };
   constexpr int DIMENSION = 3;
   constexpr int BLOCKID   = 9;
   constexpr int PARTID    = 10;
@@ -394,7 +394,7 @@ TEST( mint_mesh, get_curvilinear_mesh_from_sidre )
 //------------------------------------------------------------------------------
 TEST( mint_mesh, get_rectilinear_mesh_from_sidre )
 {
-  const int64 ext[]      = { -10,10, -10,10, -10,10  };
+  const IndexType ext[]      = { 20, 20, 20  };
   constexpr int DIMENSION = 3;
   constexpr int BLOCKID   = 9;
   constexpr int PARTID    = 10;
@@ -443,7 +443,7 @@ TEST( mint_mesh, get_rectilinear_mesh_from_sidre )
 //------------------------------------------------------------------------------
 TEST( mint_mesh, get_uniform_mesh_from_sidre )
 {
-  const int64 ext[]      = { -10,10, -10,10, -10,10  };
+  const IndexType ext[]   = { 20, 20, 20 };
   const double LO[]       = { -2.0, -2.0, -2.0 };
   const double HI[]       = {  2.0,  2.0,  2.0 };
   constexpr int DIMENSION = 3;

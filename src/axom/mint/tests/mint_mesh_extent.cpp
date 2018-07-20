@@ -72,8 +72,8 @@ void check_constructor( int ndims, const int64* ext )
 
   EXPECT_EQ( extent.getNumNodes(), expected_num_nodes );
   EXPECT_EQ( extent.getNumCells(), expected_num_cells );
-  EXPECT_EQ( extent.jp(), expected_jp );
-  EXPECT_EQ( extent.kp(), expected_kp );
+  EXPECT_EQ( extent.nodeJp(), expected_jp );
+  EXPECT_EQ( extent.nodeKp(), expected_kp );
 }
 
 } /* end anonymous namespace */
@@ -228,12 +228,12 @@ TEST( mint_mesh_extent, nodal_linear_to_ijk_bijective_map )
       {
         for ( IndexType i=0 ; i < Ni ; ++i )
         {
-          const IndexType idx = ext.getLinearIndex( i, j );
+          const IndexType idx = ext.getNodeLinearIndex( i, j );
           EXPECT_TRUE( (idx >= 0) && (idx < ext.getNumNodes()) );
 
           IndexType ii = -1;
           IndexType jj = -1;
-          ext.getGridIndex( idx, ii, jj );
+          ext.getNodeGridIndex( idx, ii, jj );
           EXPECT_EQ( ii, i );
           EXPECT_EQ( jj, j );
 
@@ -256,13 +256,13 @@ TEST( mint_mesh_extent, nodal_linear_to_ijk_bijective_map )
           {
             for ( IndexType i=0 ; i < Ni ; ++i )
             {
-              const IndexType idx = ext.getLinearIndex( i, j, k );
+              const IndexType idx = ext.getNodeLinearIndex( i, j, k );
               EXPECT_TRUE( (idx >=0) && (idx < ext.getNumNodes() ) );
 
               IndexType ii = -1;
               IndexType jj = -1;
               IndexType kk = -1;
-              ext.getGridIndex( idx, ii, jj, kk );
+              ext.getNodeGridIndex( idx, ii, jj, kk );
               EXPECT_EQ( ii, i );
               EXPECT_EQ( jj, j );
               EXPECT_EQ( kk, k );
@@ -349,15 +349,87 @@ TEST( mint_mesh_extent, cell_linear_to_ijk_bijective_map )
 
 }
 
+TEST( mint_mesh_extent, num_objects )
+{
+  {
+    int64 extent[] = { 0, 1, 0, 1, 0, 1 };
+
+    mint::Extent ext1D( 1, extent );
+    EXPECT_EQ( ext1D.getNumNodes(), 2 );
+    EXPECT_EQ( ext1D.getNumCells(), 1 );
+    EXPECT_EQ( ext1D.getNumFaces(), 0 );
+    EXPECT_EQ( ext1D.getNumEdges(), 0 );
+
+    mint::Extent ext2D( 2, extent );
+    EXPECT_EQ( ext2D.getNumNodes(), 4 );
+    EXPECT_EQ( ext2D.getNumCells(), 1 );
+    EXPECT_EQ( ext2D.getNumFaces(), 4 );
+    EXPECT_EQ( ext2D.getNumEdges(), 0 );
+
+    mint::Extent ext3D( 3, extent );
+    EXPECT_EQ( ext3D.getNumNodes(), 8 );
+    EXPECT_EQ( ext3D.getNumCells(), 1 );
+    EXPECT_EQ( ext3D.getNumFaces(), 6 );
+    EXPECT_EQ( ext3D.getNumEdges(), 12 );
+  }
+
+  {
+    int64 extent[] = { 0, 2, 0, 1, 0, 1 };
+
+    mint::Extent ext1D( 1, extent );
+    EXPECT_EQ( ext1D.getNumNodes(), 3 );
+    EXPECT_EQ( ext1D.getNumCells(), 2 );
+    EXPECT_EQ( ext1D.getNumFaces(), 0 );
+    EXPECT_EQ( ext1D.getNumEdges(), 0 );
+
+    mint::Extent ext2D( 2, extent );
+    EXPECT_EQ( ext2D.getNumNodes(), 6 );
+    EXPECT_EQ( ext2D.getNumCells(), 2 );
+    EXPECT_EQ( ext2D.getNumFaces(), 7 );
+    EXPECT_EQ( ext2D.getNumEdges(), 0 );
+
+    mint::Extent ext3D( 3, extent );
+    EXPECT_EQ( ext3D.getNumNodes(), 12 );
+    EXPECT_EQ( ext3D.getNumCells(), 2 );
+    EXPECT_EQ( ext3D.getNumFaces(), 11 );
+    EXPECT_EQ( ext3D.getNumEdges(), 20 );
+  }
+
+  {
+    int64 extent[] = { -10, -8, 10, 12, 100, 102 };
+
+    mint::Extent ext1D( 1, extent );
+    EXPECT_EQ( ext1D.getNumNodes(), 3 );
+    EXPECT_EQ( ext1D.getNumCells(), 2 );
+    EXPECT_EQ( ext1D.getNumFaces(), 0 );
+    EXPECT_EQ( ext1D.getNumEdges(), 0 );
+
+    mint::Extent ext2D( 2, extent );
+    EXPECT_EQ( ext2D.getNumNodes(), 9 );
+    EXPECT_EQ( ext2D.getNumCells(), 4 );
+    EXPECT_EQ( ext2D.getNumFaces(), 12 );
+    EXPECT_EQ( ext2D.getNumEdges(), 0 );
+
+    mint::Extent ext3D( 3, extent );
+    EXPECT_EQ( ext3D.getNumNodes(), 27 );
+    EXPECT_EQ( ext3D.getNumCells(), 8 );
+    EXPECT_EQ( ext3D.getNumFaces(), 36 );
+    EXPECT_EQ( ext3D.getNumEdges(), 54 );
+  }
+}
+
 //------------------------------------------------------------------------------
 TEST( mint_mesh_DeathTest, invalid_construction )
 {
   const char* IGNORE_OUTPUT = ".*";
-  int64 extent[]      = {  0,4,  0,4,  0,4 };
+  int64 extent[] = { 0, 4, 0, 4, 0, 4 };
 
-  EXPECT_DEATH_IF_SUPPORTED( mint::Extent(0,extent), IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( mint::Extent(9,extent), IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( mint::Extent(3,nullptr), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( mint::Extent(0, extent), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( mint::Extent(9, extent), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( mint::Extent(3, AXOM_NULLPTR), IGNORE_OUTPUT );
+
+  int64 extent2[] = { 0, 4, 0, 4, 5, 5 };
+  EXPECT_DEATH_IF_SUPPORTED( mint::Extent(3, extent2), IGNORE_OUTPUT );
 }
 
 //------------------------------------------------------------------------------

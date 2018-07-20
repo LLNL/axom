@@ -111,7 +111,7 @@ inline Triangle3 getMeshTriangle(mint::IndexType i, UMesh* surface_mesh)
 
   Triangle3 tri;
 
-  const mint::IndexType* triCell = surface_mesh->getCell( i );
+  const mint::IndexType* triCell = surface_mesh->getCellNodes( i );
 
   const double* x = surface_mesh->getCoordinateArray( mint::X_COORDINATE );
   const double* y = surface_mesh->getCoordinateArray( mint::Y_COORDINATE );
@@ -329,7 +329,7 @@ void weldTriMeshVertices(UMesh** surface_mesh,double eps)
     const mint::IndexType numTris = oldMesh->getNumberOfCells();
     for( mint::IndexType i =0 ; i < numTris ; ++i)
     {
-      memcpy( triInds, oldMesh->getCell( i ),
+      memcpy( triInds, oldMesh->getCellNodes( i ),
               NUM_TRI_VERTS*sizeof( mint::IndexType ) );
 
       for(int d =0 ; d < NUM_TRI_VERTS ; ++d)

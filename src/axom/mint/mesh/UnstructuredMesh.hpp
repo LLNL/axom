@@ -576,20 +576,20 @@ public:
    *  The buffer must be of length at least getNumberOfCellNodes( cellID ).
    *
    * \param [in] cellID the ID of the cell in question.
-   * \param [out] cell the buffer into which the connectivity is copied.
+   * \param [out] nodes the buffer into which the connectivity is copied.
    *
    * \return The number of nodes for the given cell.
    *
-   * \pre cell != nullptr
+   * \pre nodes != AXOM_NULLPTR
    * \pre 0 <= cellID < getNumberOfCells()
    */
   virtual
-  IndexType getCell( IndexType cellID, IndexType* cell ) const final override
+  IndexType getCellNodes( IndexType cellID, IndexType* nodes ) const final override
   {
-    SLIC_ASSERT( cell != nullptr );
-    const IndexType n_cells = getNumberOfCellNodes( cellID );
-    std::memcpy( cell, getCell( cellID ), n_cells * sizeof( IndexType ) );
-    return n_cells;
+    SLIC_ASSERT( nodes != AXOM_NULLPTR );
+    const IndexType n_nodes = getNumberOfCellNodes( cellID );
+    std::memcpy( nodes, getCellNodes( cellID ), n_nodes * sizeof( IndexType ) );
+    return n_nodes;
   }
 
 /// @}
@@ -977,10 +977,10 @@ public:
    */
   /// @{
 
-  IndexType* getCell( IndexType cellID )
+  IndexType* getCellNodes( IndexType cellID )
   { return (*m_cell_connectivity)[ cellID ]; }
 
-  const IndexType* getCell( IndexType cellID ) const
+  const IndexType* getCellNodes( IndexType cellID ) const
   { return (*m_cell_connectivity)[ cellID ]; }
 
   /// @}

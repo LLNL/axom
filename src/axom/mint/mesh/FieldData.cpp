@@ -151,13 +151,31 @@ FieldData::FieldData( int association, sidre::Group* fields_group,
 
     // NOTE: currently the blue-print supports
     const char* assoc    = gp->getView( "association" )->getString( );
-    const bool isVertex  = (strcmp( assoc, "vertex" ) == 0);
-    const bool isElement = (strcmp( assoc, "element" ) == 0);
-    SLIC_ERROR_IF( (!isVertex && !isElement),
+    const bool isVertex  = ( strcmp( assoc, "vertex" ) == 0 );
+    const bool isElement = ( strcmp( assoc, "element" ) == 0 );
+    const bool isFace    = ( strcmp( assoc, "face" ) == 0 );
+    const bool isEdge    = ( strcmp( assoc, "edge" ) == 0 );
+    SLIC_ERROR_IF( !isVertex && !isElement && !isFace && !isEdge,
                    "field [" << gp->getName() << "] has invalid association!" <<
                    " => association= " << assoc );
 
-    int centering = ( isVertex ) ? NODE_CENTERED : CELL_CENTERED;
+    int centering;
+    if ( isVertex )
+    {
+      centering = NODE_CENTERED;
+    }
+    else if ( isElement )
+    {
+      centering = CELL_CENTERED;
+    }
+    else if ( isFace )
+    {
+      centering = FACE_CENTERED;
+    }
+    else
+    {
+      centering = EDGE_CENTERED;
+    }
 
     IndexType num_tuples = -1;
     if ( centering == m_association )

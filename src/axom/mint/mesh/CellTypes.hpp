@@ -74,16 +74,17 @@ constexpr int NUM_CELL_TYPES = static_cast< int >( CellType::NUM_CELL_TYPES );
  * \param VTK_TYPE the corresponding VTK type.
  * \param N the number of nodes that the cell has.
  */
-#define REGISTER_CELL_INFO( MINT_CELL_TYPE, MINT_NAME, BP_NAME, VTK_TYPE, N ) \
-  namespace internal                                                          \
-  {                                                                           \
-  static constexpr CellInfo MINT_CELL_TYPE ## _INFO =                         \
+#define REGISTER_CELL_INFO( MINT_CELL_TYPE, MINT_NAME, BP_NAME, VTK_TYPE, N_NODES, N_FACES ) \
+  namespace internal                                                        \
+  {                                                                         \
+  static constexpr CellInfo MINT_CELL_TYPE ## _INFO =                       \
   {                                                                         \
     MINT_CELL_TYPE,                                                         \
     MINT_NAME,                                                              \
     BP_NAME,                                                                \
     VTK_TYPE,                                                               \
-    N                                                                       \
+    N_NODES,                                                                \
+    N_FACES                                                                 \
   };                                                                        \
   }
 
@@ -109,21 +110,22 @@ typedef struct
   const char* blueprint_name;   /*!< corresponding mesh blueprint name */
   int vtk_type;                 /*!< corresponding vtk_type */
   int num_nodes;                /*!< number of nodes for the given cell */
+  int num_faces;
 } CellInfo;
 
 // Cell Info registration
-REGISTER_CELL_INFO( VERTEX, "VERTEX", "point", 1, 1 );
-REGISTER_CELL_INFO( SEGMENT, "SEGMENT", "line", 3, 2 );
+REGISTER_CELL_INFO( VERTEX, "VERTEX", "point", 1, 1, 0 );
+REGISTER_CELL_INFO( SEGMENT, "SEGMENT", "line", 3, 2, 0 );
 
-REGISTER_CELL_INFO( TRIANGLE, "TRIANGLE", "tri", 5, 3 );
-REGISTER_CELL_INFO( QUAD, "QUAD", "quad", 9, 4 );
-REGISTER_CELL_INFO( TET, "TET", "tet", 10, 4 );
-REGISTER_CELL_INFO( HEX, "HEX", "hex", 12, 8 );
-REGISTER_CELL_INFO( PRISM, "PRISM", "prism-no-bp", 13, 6 );
-REGISTER_CELL_INFO( PYRAMID, "PYRAMID", "pyramid-no-bp", 14, 5 );
+REGISTER_CELL_INFO( TRIANGLE, "TRIANGLE", "tri", 5, 3, 3 );
+REGISTER_CELL_INFO( QUAD, "QUAD", "quad", 9, 4, 4 );
+REGISTER_CELL_INFO( TET, "TET", "tet", 10, 4, 4 );
+REGISTER_CELL_INFO( HEX, "HEX", "hex", 12, 8, 6 );
+REGISTER_CELL_INFO( PRISM, "PRISM", "prism-no-bp", 13, 6, 5 );
+REGISTER_CELL_INFO( PYRAMID, "PYRAMID", "pyramid-no-bp", 14, 5, 5 );
 
-REGISTER_CELL_INFO( QUAD9, "QUAD9", "quad9-no-bp", 28, 9 );
-REGISTER_CELL_INFO( HEX27, "HEX27", "hex27-no-bp", 29, 27 );
+REGISTER_CELL_INFO( QUAD9, "QUAD9", "quad9-no-bp", 28, 9, 4 );
+REGISTER_CELL_INFO( HEX27, "HEX27", "hex27-no-bp", 29, 27, 6 );
 
 /*!
  * \brief Array of CellInfo corresponding to each cell type

@@ -111,31 +111,46 @@ public:
    * \return jp stride to the second dimension.
    * \post jp >= 0.
    */
-  inline IndexType jp() const
-  { return m_jp; };
+  inline IndexType nodeJp() const
+  { return m_node_jp; }
 
   /*!
    * \brief Returns stride to the third dimension.
    * \return kp stride to the third dimension.
    * \post kp >= 0.
    */
-  inline IndexType kp() const
-  { return m_kp; };
+  inline IndexType nodeKp() const
+  { return m_node_kp; }
+
+  inline IndexType cellJp() const
+  { return m_cell_jp; }
+
+  inline IndexType cellKp() const
+  { return m_cell_kp; }
+  
   /*!
    * \brief Returns the number of nodes covered by this extent instance.
-   * \return N the total number of nodes in the extent.
-   * \pre getDimension() >= 1.
    */
   inline IndexType getNumNodes() const
   { return m_numnodes; }
 
   /*!
    * \brief Returns the number cells covered by this extent instance.
-   * \return N the total number of cells in the extent.
-   * \pre getDimension() >= 1.
    */
   inline IndexType getNumCells() const
   { return m_numcells; }
+
+  /*!
+   * \brief Returns the number of faces covered by this extent instance.
+   */
+  inline IndexType getNumFaces() const
+  { return m_numfaces; }
+
+  /*!
+   * \brief Returns the number edges covered by this extent instance.
+   */
+  inline IndexType getNumEdges() const
+  { return m_numedges; }
 
   /*!
    * \brief Returns the cell offset lookup table
@@ -202,12 +217,12 @@ public:
    * \post linearIdx >= 0 && linearIdx < getNumNodes()
    */
   /// @{
-  inline IndexType getLinearIndex( const IndexType& i,
-                                   const IndexType& j ) const;
+  inline IndexType getNodeLinearIndex( const IndexType& i,
+                                       const IndexType& j ) const;
 
-  inline IndexType getLinearIndex( const IndexType& i,
-                                   const IndexType& j,
-                                   const IndexType& k ) const;
+  inline IndexType getNodeLinearIndex( const IndexType& i,
+                                       const IndexType& j,
+                                       const IndexType& k ) const;
   /// @}
 
   /*!
@@ -260,11 +275,11 @@ public:
    */
   /// @{
 
-  inline void getGridIndex( const IndexType& linearIdx,
+  inline void getNodeGridIndex( const IndexType& linearIdx,
                             IndexType& i,
                             IndexType& j ) const;
 
-  inline void getGridIndex( const IndexType& linearIdx,
+  inline void getNodeGridIndex( const IndexType& linearIdx,
                             IndexType& i,
                             IndexType& j,
                             IndexType& k ) const;
@@ -305,39 +320,53 @@ public:
 private:
 
   /*!
+   * \brief Calculate the number of nodes in the mesh given the size of each
+   *  dimension.
+   */
+  void calculateNumberOfNodes();
+
+  /*!
+   * \brief Calculate the number of cells in the mesh given the size of each
+   *  dimension.
+   */
+  void calculateNumberOfCells();
+
+  /*!
+   * \brief Calculate the number of faces in the mesh given the size of each
+   *  dimension.
+   */
+  void calculateNumberOfFaces();
+
+  /*!
+   * \brief Calculate the number of edges in the mesh given the size of each
+   *  dimension.
+   */
+  void calculateNumberOfEdges();
+
+  /*!
    * \brief Builds the cell offsets lookup table.
    * \note Called from the constructor.
    */
-  inline void buildCellOffsets();
+  void buildCellOffsets();
 
-  int m_ndims;                         /*!< dimension of this extent         */
-  IndexType m_numnodes;                /*!< the number of nodes              */
-  IndexType m_numcells;                /*!< the number of cells              */
-  IndexType m_jp;                      /*!< stride to the 2nd dimension      */
-  IndexType m_kp;                      /*!< stride to the 3rd dimension      */
-  IndexType m_sizes[3] = {1, 1, 1};    /*!< size along each dimension        */
-  int64 m_extent[6] = {0,0, 0,0, 0,0}; /*!< extent of this instance          */
-  IndexType m_cell_offsets[ 8 ];       /*!< cell offsets                     */
+  int m_ndims;                                // dimension of this extent   
+  IndexType m_numnodes;                       // the number of nodes        
+  IndexType m_numcells;                       // the number of cells        
+  IndexType m_numfaces;                       // the number of faces        
+  IndexType m_numedges;                       // the number of edges        
+  IndexType m_node_jp;                        // stride to the 2nd dimension
+  IndexType m_node_kp;                        // stride to the 3rd dimension
+  IndexType m_cell_jp;                        //
+  IndexType m_cell_kp;                        //
+  IndexType m_sizes[3] = { 1, 1, 1 };         // size along each dimension  
+  int64 m_extent[6] = { 0, 0, 0, 0, 0, 0 };   // extent of this instance    
+  IndexType m_cell_offsets[ 8 ];              // cell offsets               
 };
 
 
 //------------------------------------------------------------------------------
 //  In-lined Extent Implementation
 //------------------------------------------------------------------------------
-
-//------------------------------------------------------------------------------
-inline void Extent::buildCellOffsets()
-{
-  m_cell_offsets[ 0 ] = 0;
-  m_cell_offsets[ 1 ] = 1;
-  m_cell_offsets[ 2 ] = 1 + m_jp;
-  m_cell_offsets[ 3 ] = m_jp;
-
-  m_cell_offsets[ 4 ] = m_kp;
-  m_cell_offsets[ 5 ] = 1 + m_kp;
-  m_cell_offsets[ 6 ] = 1 + m_jp + m_kp;
-  m_cell_offsets[ 7 ] = m_jp + m_kp;
-}
 
 //------------------------------------------------------------------------------
 inline void Extent::shiftToLocal( const int64* gijk, IndexType* lijk ) const
@@ -367,20 +396,20 @@ inline void Extent::shiftToGlobal( const IndexType* lijk, int64* gijk ) const
 }
 
 //------------------------------------------------------------------------------
-inline IndexType Extent::getLinearIndex( const IndexType& i,
-                                         const IndexType& j,
-                                         const IndexType& k ) const
+inline IndexType Extent::getNodeLinearIndex( const IndexType& i,
+                                             const IndexType& j,
+                                             const IndexType& k ) const
 {
   SLIC_ASSERT( m_ndims==3 );
-  return i + j*m_jp + k*m_kp;
+  return i + j*m_node_jp + k*m_node_kp;
 }
 
 //------------------------------------------------------------------------------
-inline IndexType Extent::getLinearIndex( const IndexType& i,
-                                         const IndexType& j ) const
+inline IndexType Extent::getNodeLinearIndex( const IndexType& i,
+                                             const IndexType& j ) const
 {
   SLIC_ASSERT( m_ndims==2 );
-  return i + j*m_jp;
+  return i + j*m_node_jp;
 }
 
 //------------------------------------------------------------------------------
@@ -389,11 +418,7 @@ inline IndexType Extent::getCellLinearIndex( const IndexType& i,
                                              const IndexType& k ) const
 {
   SLIC_ASSERT( m_ndims==3 );
-
-  const IndexType jp_minus_1 = jp() - 1;
-  const IndexType cell_jp = jp_minus_1;
-  const IndexType cell_kp = cell_jp * ( size( 2 )-1 );
-  return i + j * cell_jp  + k * cell_kp;
+  return i + j * m_cell_jp  + k * m_cell_kp;
 }
 
 //------------------------------------------------------------------------------
@@ -401,34 +426,29 @@ inline IndexType Extent::getCellLinearIndex( const IndexType& i,
                                              const IndexType& j ) const
 {
   SLIC_ASSERT( m_ndims==2 );
-
-  IndexType cell_jp = (size(0)-1);
-  IndexType index = i + j * cell_jp;
-  return index;
+  return i + j * m_cell_jp;
 }
 
 //------------------------------------------------------------------------------
-inline void Extent::getGridIndex( const IndexType& linearIdx,
-                                  IndexType& i,
-                                  IndexType& j) const
+inline void Extent::getNodeGridIndex( const IndexType& linearIdx,
+                                      IndexType& i,
+                                      IndexType& j) const
 {
   SLIC_ASSERT( m_ndims==2 );
-
-  j = linearIdx / m_jp;
-  i = linearIdx - j*m_jp;
+  j = linearIdx / m_node_jp;
+  i = linearIdx - j*m_node_jp;
 }
 
 //------------------------------------------------------------------------------
-inline void Extent::getGridIndex( const IndexType& linearIdx,
-                                  IndexType& i,
-                                  IndexType& j,
-                                  IndexType& k) const
+inline void Extent::getNodeGridIndex( const IndexType& linearIdx,
+                                      IndexType& i,
+                                      IndexType& j,
+                                      IndexType& k) const
 {
   SLIC_ASSERT( m_ndims==3 );
-
-  k = linearIdx / kp();
-  j = (linearIdx - k*kp()) / jp();
-  i = linearIdx - k*kp() - j*jp();
+  k = linearIdx / m_node_kp;
+  j = (linearIdx - k*m_node_kp) / m_node_jp;
+  i = linearIdx - k*m_node_kp - j*m_node_jp;
 }
 
 //------------------------------------------------------------------------------
@@ -437,10 +457,8 @@ inline void Extent::getCellGridIndex( const IndexType& linearIdx,
                                       IndexType& j ) const
 {
   SLIC_ASSERT( m_ndims==2 );
-
-  const IndexType jp_minus_1 = jp() - 1;
-  i = linearIdx % jp_minus_1;
-  j = linearIdx / jp_minus_1;
+  i = linearIdx % m_cell_jp;
+  j = linearIdx / m_cell_jp;
 }
 
 //------------------------------------------------------------------------------
@@ -450,14 +468,9 @@ inline void Extent::getCellGridIndex( const IndexType& linearIdx,
                                       IndexType& k ) const
 {
   SLIC_ASSERT( m_ndims==3 );
-
-  const IndexType N1  = size( I_DIRECTION )-1;
-  const IndexType N2  = size( J_DIRECTION )-1;
-  const IndexType N12 = N1*N2;
-
-  k = linearIdx / N12;
-  j = (linearIdx-k*N12) / N1;
-  i = linearIdx - k*N12 - j*N1;
+  k = linearIdx / m_cell_kp;
+  j = (linearIdx - k*m_cell_kp) / m_cell_jp;
+  i = linearIdx - k*m_cell_kp - j*m_cell_jp;
 }
 
 

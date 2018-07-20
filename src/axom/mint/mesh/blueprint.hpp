@@ -45,10 +45,6 @@ class Group;
 
 namespace mint
 {
-
-// Mint Forward Declarations;
-class Extent;
-
 namespace blueprint
 {
 
@@ -210,145 +206,67 @@ void getMeshTypeAndDimension( int& mesh_type, int& dimension,
  */
 bool hasMixedCellTypes( const sidre::Group* group, const std::string& topo="" );
 
+
+void getStructuredMesh( int dimension, IndexType node_extent[3], 
+                        int64 global_node_extent[6], 
+                        const sidre::Group* coordset );
+
+
+void setStructuredMesh( int dimension, const IndexType node_extent[3], 
+                        const int64 global_node_extent[6], 
+                        sidre::Group* coordset );
+
+
+void setGlobalNodeExtent( sidre::Group* coordset,  
+                          const int64 global_node_extent[6] );
+
 /*!
  * \brief Returns the origin, spacing and extent of a uniform mesh from the
  *  corresponding coordset and topology groups associated with the mesh.
  *
- * \param [in] dim the expected dimension of the mesh
- * \param [in] coordset pointer to the associated coordset group
- * \param [in] topology pointer to the associated topology group
- * \param [out] origin  buffer to store the origin of the uniform mesh
- * \param [out] spacing buffer to store the spacing of the uniform mesh
- * \param [out] extent buffer to store the extent of the uniform mesh
+ * \param [in] dim the expected dimension of the mesh.
+ * \param [out] origin  buffer to store the origin of the uniform mesh.
+ * \param [out] spacing buffer to store the spacing of the uniform mesh.
+ * \param [in] coordset pointer to the associated coordset group.
  *
  * \note The `origin` and `spacing` pointers must point to buffers that have
  *  at least `dim` entries.
  *
- * \note `extent` must point to a buffer that has at least  \f$ 2 \times dim \f$
- *  entries, such that `extent[ i*2 ]`, `extent[ i*2+1 ]` hold the min and max
- *  values of the extent along the ith dimension respectively.
- *
  * \pre 1 <= dim <= 3
- * \pre isValidCoordsetGroup( coordset )
- * \pre isValidTopologyGroup( topology )
- * \pre origin != nullptr
- * \pre spacing != nullptr
- * \pre extent != nullptr
+ * \pre origin != AXOM_NULLPTR
+ * \pre spacing != AXOM_NULLPTR
+ * \pre coordset != AXOM_NULLPTR
+ *
+ * \post isValidCoordsetGroup( coordset )
  *
  * \see setUniformMesh()
  */
-void getUniformMesh( int dim,
-                     const sidre::Group* coordset,
-                     const sidre::Group* topology,
-                     double* origin,
-                     double* spacing,
-                     int64* extent );
+void getUniformMesh( int dim, double* origin, double* spacing, 
+                     const sidre::Group* coordset );
 
 /*!
  * \brief Populates the specified Coordset & Topology groups with the metadata
  *  for a uniform mesh
  *
- * \param [in] dim the mesh dimesion
- * \param [in] origin pointer to array with the origin's coordinates
- * \param [in] spacing pointer to array with the spacing along each dimension
- * \param [in] extent pointer to the associated Extent object
- * \param [in] coordset pointer to the coordset group
- * \param [in] topology pointer to the topology group
+ * \param [in] dim the mesh dimesion.
+ * \param [in] origin pointer to array with the origin's coordinates.
+ * \param [in] spacing pointer to array with the spacing along each dimension.
+ * \param [out] coordset pointer to the coordset group.
  *
  * \note The `origin` and `spacing` pointers must point to buffers that have
  *  at least `dim` entries.
  *
  * \pre 1 <= dim <= 3
- * \pre origin != nullptr
- * \pre spacing != nullptr
- * \pre extent != nullptr
- * \pre coordset != nullptr
- * \pre topology != nullptr
- * \pre extent->getDimesion() == dim
+ * \pre origin != AXOM_NULLPTR
+ * \pre spacing != AXOM_NULLPTR
+ * \pre coordset != AXOM_NULLPTR
  *
  * \post isValidCoordsetGroup( coordset )
- * \post isValidTopologyGroup( topology
  *
  * \see getUniformMesh()
  */
-void setUniformMesh( int dim,
-                     const double* origin,
-                     const double* spacing,
-                     const mint::Extent* extent,
-                     sidre::Group* coordset,
-                     sidre::Group* topology );
-
-/*!
- * \brief Gets the extent of a curvilinear structured mesh.
- *
- * \param [in] dim the dimension of the mesh.
- * \param [in] topology pointer to the topology group of the mesh.
- * \param [out] extent buffer where the mesh extent will be stored.
- *
- * \note `extent` must point to a buffer that has at least  \f$ 2 \times dim \f$
- *  entries, such that `extent[ i*2 ]`, `extent[ i*2+1 ]` hold the min and max
- *  values of the extent along the ith dimension respectively.
- *
- * \pre 1 <= dim <= 3
- * \pre blueprint::isValidTopologyGroup( topology )
- * \pre extent != nullptr
- */
-void getCurvilinearMeshExtent( int dim,
-                               const sidre::Group* topology,
-                               int64* extent );
-
-/*!
- * \brief Sets the extent of a curvilinear structured mesh
- *
- * \param [in] dim the dimension of the mesh.
- * \param [in] extent pointer to an extent object.
- * \param [in] topology pointer to the topology group of the mesh.
- *
- * \pre 1 <= dim <= 3
- * \pre extent != nullptr
- * \pre topology != nullptr
- * \pre extent->getDimension()==dim
- */
-void setCurvilinearMeshExtent( int dim,
-                               const mint::Extent* extent,
-                               sidre::Group* topology );
-
-/*!
- * \brief Gets the extent of a rectilinear mesh
- *
- * \param [in] dim the dimension of the mesh.
- * \param [in] coordset pointer to the coordset group associated with the mesh
- * \param [in] topology pointer to the topology group associated with the mesh
- * \param [out] extent pointer to buffer where to store the mesh extent.
- *
- * \note `extent` must point to a buffer that has at least  \f$ 2 \times dim \f$
- *  entries, such that `extent[ i*2 ]`, `extent[ i*2+1 ]` hold the min and max
- *  values of the extent along the ith dimension respectively.
- *
- *  \pre 1 <= dim <= 3
- *  \pre blueprint::isValidCoordsetGroup( coordset )
- *  \pre blueprint::isValidTopologyGroup( topology )
- *  \pre extent != nullptr
- */
-void getRectilinearMeshExtent( int dim,
-                               const sidre::Group* coordset,
-                               const sidre::Group* topology,
-                               int64* extent );
-
-/*!
- * \brief Sets the extent of a rectilinear mesh.
- *
- * \param [in] dim the mesh dimension.
- * \param [in] extent pointer to the extent object associated with the mesh.
- * \param [in] topology pointer to the topology group associated with the mesh.
- *
- * \pre extent != nullptr
- * \pre topology != nullptr
- * \pre extent->getDimension()==dim
- */
-void setRectilinearMeshExtent( int dim,
-                               const mint::Extent* extent,
-                               sidre::Group* topology );
+void setUniformMesh( int dim, const double* origin, const double* spacing,
+                     sidre::Group* coordset );
 
 #endif /* MINT_USE_SIDRE */
 

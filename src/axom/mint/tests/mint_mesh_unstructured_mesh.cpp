@@ -1201,7 +1201,7 @@ void check_append_cells( const UnstructuredMesh< SINGLE_SHAPE >* mesh,
   IndexType cell[ mint::MAX_NUM_NODES ];
   for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
-    mesh->getCell( i, cell );
+    mesh->getCellNodes( i, cell );
     for ( IndexType j = 0 ; j < nodes_per_cell ; ++j )
     {
       EXPECT_EQ( cell[ j ], connecValue( i, j ) );
@@ -1211,7 +1211,7 @@ void check_append_cells( const UnstructuredMesh< SINGLE_SHAPE >* mesh,
   /* Check using the other getCell */
   for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
-    const IndexType* cellPtr = mesh->getCell( i );
+    const IndexType* cellPtr = mesh->getCellNodes( i );
     for ( IndexType j = 0 ; j < nodes_per_cell ; ++j )
     {
       EXPECT_EQ( cellPtr[ j ], connecValue( i, j ) );
@@ -1255,7 +1255,7 @@ void check_append_cells( const UnstructuredMesh< MIXED_SHAPE >* mesh,
   IndexType cell[ MAX_NUM_NODES ];
   for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
-    mesh->getCell( i, cell );
+    mesh->getCellNodes( i, cell );
     IndexType num_nodes = mesh->getNumberOfCellNodes( i );
     for ( IndexType j = 0 ; j < num_nodes ; ++j )
     {
@@ -1266,7 +1266,7 @@ void check_append_cells( const UnstructuredMesh< MIXED_SHAPE >* mesh,
   /* Check using the other getCell */
   for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
-    const IndexType* cell = mesh->getCell( i );
+    const IndexType* cell = mesh->getCellNodes( i );
     IndexType num_nodes = mesh->getNumberOfCellNodes( i );
     for ( IndexType j = 0 ; j < num_nodes ; ++j )
     {
@@ -1521,7 +1521,7 @@ void set_cells( UnstructuredMesh< TOPO >* mesh )
 
   for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
-    IndexType* cur_cell = mesh->getCell( i );
+    IndexType* cur_cell = mesh->getCellNodes( i );
     const IndexType n_nodes = mesh->getNumberOfCellNodes( i );
     for ( IndexType j = 0 ; j < n_nodes ; ++j )
     {
@@ -1980,7 +1980,7 @@ void insert_nodes_update( UnstructuredMesh< TOPO >* mesh, IndexType n_nodes )
   /* Check that the connectivity of each cell is incremented by one. */
   for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
-    const IndexType* cell = mesh->getCell( i );
+    const IndexType* cell = mesh->getCellNodes( i );
     const IndexType num_nodes = mesh->getNumberOfCellNodes( i );
     for ( IndexType j = 0 ; j < num_nodes ; ++j )
     {
@@ -1995,7 +1995,7 @@ void insert_nodes_update( UnstructuredMesh< TOPO >* mesh, IndexType n_nodes )
   /* check that the connectivity of each cell is changed appropriately. */
   for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
-    const IndexType* cell = mesh->getCell( i );
+    const IndexType* cell = mesh->getCellNodes( i );
     const IndexType num_nodes = mesh->getNumberOfCellNodes( i );
     for ( IndexType j = 0 ; j < num_nodes ; ++j )
     {

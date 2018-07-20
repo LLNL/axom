@@ -105,8 +105,7 @@ public:
    * \post hasSidreGroup() == false
    * \post isExternal() == false
    */
-  CurvilinearMesh( int dimension,
-                   const int64* ext );
+  CurvilinearMesh( int dimension, const IndexType* ext );
 
   /*!
    * \brief Constructs a CurvilinearMesh with the given dimensions.
@@ -158,10 +157,8 @@ public:
    * \post hasSidreGroup() == false.
    * \post isExternal() == true
    */
-  CurvilinearMesh( const int64* ext,
-                   double* x,
-                   double* y=nullptr,
-                   double* z=nullptr  );
+  CurvilinearMesh( const IndexType* ext, double* x, double* y=AXOM_NULLPTR,
+                   double* z=AXOM_NULLPTR  );
 /// @}
 
 #ifdef MINT_USE_SIDRE
@@ -195,8 +192,7 @@ public:
    * \post isExternal() == false
    */
   /// @{
-  explicit CurvilinearMesh( sidre::Group* group,
-                            const std::string& topo="" );
+  explicit CurvilinearMesh( sidre::Group* group, const std::string& topo="" );
   /// @}
 
   /*!
@@ -223,11 +219,8 @@ public:
    * \post hasSidreGroup() == true
    * \post isExternal() == false
    */
-  CurvilinearMesh( int dimension,
-                   const int64* ext,
-                   sidre::Group* group,
-                   const std::string& topo="",
-                   const std::string& coordset="" );
+  CurvilinearMesh( int dimension, const IndexType* ext, sidre::Group* group,
+                   const std::string& topo="", const std::string& coordset="" );
 
   /*!
    * \brief Create a curvilinear mesh instance, on an empty sidre::Group, with
@@ -259,17 +252,15 @@ public:
    */
   /// @{
 
-  CurvilinearMesh( sidre::Group* group,
-                   const std::string& topo,
-                   const std::string& coordset,
-                   IndexType Ni,
-                   IndexType Nj=-1,
+  CurvilinearMesh( sidre::Group* group, const std::string& topo, 
+                   const std::string& coordset, IndexType Ni, IndexType Nj=-1, 
                    IndexType Nk=-1  );
 
-  CurvilinearMesh( sidre::Group* group,
-                   IndexType Ni,
-                   IndexType Nj=-1,
-                   IndexType Nk=-1  );
+  CurvilinearMesh( sidre::Group* group, IndexType Ni, IndexType Nj=-1, 
+                   IndexType Nk=-1 ) :
+    CurvilinearMesh( group, "", "", Ni, Nj, Nk )
+  {}
+
   /// @}
 
 /// @}

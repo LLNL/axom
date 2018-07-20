@@ -417,10 +417,7 @@ axom::mint::UniformMesh* createQueryMesh(const SpaceBoundingBox& bb,
   h[1] /= res[1];
   h[2] /= res[2];
 
-  axom::mint::int64 ext[6];
-  ext[0] = 0; ext[1] = res[0];
-  ext[2] = 0; ext[3] = res[1];
-  ext[4] = 0; ext[5] = res[2];
+  axom::mint::IndexType ext[3] = {res[0] + 1, res[1] + 1, res[2] + 1};
 
   return new axom::mint::UniformMesh(DIM, bb.getMin().data(), h.data(), ext);
 }
