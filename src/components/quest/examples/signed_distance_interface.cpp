@@ -17,10 +17,12 @@
 
 // Axom utils includes
 #include "axom_utils/Utilities.hpp"       // for processAbort()
+#include "axom_utils/Timer.hpp"
 
 // Mint includes
 #include "mint/config.hpp"                // for compile-time mint
 #include "mint/UniformMesh.hpp"           // for mint::UniformMesh
+#include "mint/vtk_utils.hpp"             // for mint::write_vtk()
 
 // Quest includes
 #include "quest/signed_distance.hpp"      // for Quest's signed distance query
@@ -56,6 +58,7 @@ namespace utilities = axom::utilities;
 void initialize_logger( );
 void finalize_logger( );
 void parse_args( int argc, char** argv );
+void generate_uniform_box_mesh( mint::UniformMesh*& mesh );
 void show_help( );
 
 
@@ -79,6 +82,7 @@ static struct
   double box_max[3];
   bool specified_box_min;
   bool specified_box_max;
+  bool dump_vtk;
 } Arguments;
 
 //------------------------------------------------------------------------------
@@ -92,6 +96,8 @@ int main ( int argc, char** argv )
   global_comm = MPI_COMM_WORLD;
 #endif
 
+  utilities::Timer timer;
+
   // STEP 1: initialize the logger
   initialize_logger( );
 
@@ -99,20 +105,55 @@ int main ( int argc, char** argv )
   parse_args( argc, argv );
 
   // STEP 3: initialize the signed distance interface
+  SLIC_INFO( "initializing signed distance function..." );
+  SLIC_INFO( "input file: " << Arguments.fileName );
+  SLIC_INFO( "max_levels=" << Arguments.maxLevels );
+  SLIC_INFO( "max_occupancy=" << Arguments.maxOccupancy );
+  slic::flushStreams();
+
+  timer.start();
   quest::signed_distance_set_max_levels( Arguments.maxLevels );
   quest::signed_distance_set_max_occupancy( Arguments.maxOccupancy );
   int rc = quest::signed_distance_init( Arguments.fileName, global_comm );
+  timer.stop();
+
   SLIC_ERROR_IF( (rc != 0), "Signed Distance query initialization failed!" );
+  SLIC_INFO( "time to initialize: " << timer.elapsed() << "s"  );
+  slic::flushStreams();
 
   // STEP 5: Generate computational mesh
   mint::UniformMesh* mesh = AXOM_NULLPTR;
-
-  // TODO: implement this2
+  generate_uniform_box_mesh( mesh );
+  SLIC_ERROR_IF( mesh==AXOM_NULLPTR, "box mesh is null!" );
+  double* phi = mesh->createField< double >( "phi", mint::NODE_CENTERED );
 
   // STEP 6: evaluate the signed distance field on the given mesh
-  // TODO: implement this
+  SLIC_INFO( "evaluating signed distance field on specified box mesh..." );
+  slic::flushStreams();
 
-  // STEP 7: finalize
+  const mint::IndexType nnodes = mesh->getNumberOfNodes( );
+
+  timer.reset();
+  timer.start();
+  for ( mint::IndexType inode=0; inode < nnodes; ++inode )
+  {
+    double pt[ 3 ];
+    mesh->getNode( inode, pt );
+    phi[ inode ] = quest::signed_distance_evaluate( pt[0], pt[1], pt[2] );
+  } // END for all nodes
+  timer.stop();
+  SLIC_INFO( "time to evaluate: " << timer.elapsed() << "s" );
+  slic::flushStreams();
+
+  // STEP 7: vtk output
+  if ( Arguments.dump_vtk )
+  {
+    SLIC_INFO( "writing vtk output" );
+    slic::flushStreams();
+    mint::write_vtk( mesh, "uniform_mesh.vtk" );
+  }
+
+  // STEP 8: finalize
   delete mesh;
   mesh = AXOM_NULLPTR;
 
@@ -130,6 +171,48 @@ int main ( int argc, char** argv )
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
+void generate_uniform_box_mesh( mint::UniformMesh*& mesh )
+{
+  SLIC_ASSERT( mesh == AXOM_NULLPTR );
+  SLIC_ASSERT( quest::signed_distance_initialized() );
+
+  double mesh_box_min[ 3 ];
+  double mesh_box_max[ 3 ];
+
+  double* lo = AXOM_NULLPTR;
+  double* hi = AXOM_NULLPTR;
+
+  if ( Arguments.specified_box_max && Arguments.specified_box_min )
+  {
+    SLIC_INFO( "using specified box bounds" );
+    lo = Arguments.box_min;
+    hi = Arguments.box_max;
+  }
+  else
+  {
+    SLIC_INFO( "computing mesh bounds..." );
+    quest::signed_distance_get_mesh_bounds( mesh_box_min, mesh_box_max );
+    lo = mesh_box_min;
+    hi = mesh_box_max;
+  }
+
+
+  SLIC_INFO( "box min: [" << lo[0] << " " << lo[1] << " " << lo[2] << "]" );
+  SLIC_INFO( "box max: [" << hi[0] << " " << hi[1] << " " << hi[2] << "]" );
+  SLIC_INFO( "constructing Uniform Mesh: [" << Arguments.box_dims[0] <<
+             " " << Arguments.box_dims[ 1 ] <<
+             " " << Arguments.box_dims[ 2 ] << "]" );
+
+  mint::IndexType Ni = static_cast< mint::IndexType >( Arguments.box_dims[0] );
+  mint::IndexType Nj = static_cast< mint::IndexType >( Arguments.box_dims[1] );
+  mint::IndexType Nk = static_cast< mint::IndexType >( Arguments.box_dims[2] );
+  mesh = new mint::UniformMesh( lo, hi, Ni, Nj, Nk );
+
+  SLIC_ASSERT( mesh != AXOM_NULLPTR );
+  slic::flushStreams();
+}
+
+//------------------------------------------------------------------------------
 void parse_args( int argc, char** argv )
 {
   // Set defaults
@@ -138,10 +221,11 @@ void parse_args( int argc, char** argv )
   Arguments.maxLevels     = 15;
   Arguments.maxOccupancy  = 5;
   Arguments.box_dims[ 0 ] =
-    Arguments.box_dims[ 1 ] =
-      Arguments.box_dims[ 2 ] = 32;
+  Arguments.box_dims[ 1 ] =
+  Arguments.box_dims[ 2 ] = 32;
   Arguments.specified_box_max = false;
   Arguments.specified_box_min = false;
+  Arguments.dump_vtk          = true;
 
   for ( int i=1 ; i < argc ; ++i )
   {
@@ -184,6 +268,10 @@ void parse_args( int argc, char** argv )
         Arguments.box_max[ j ] = std::atof( argv[++i] );
       } // END for all j
     }
+    else if ( strcmp( argv[i], "--no-vtk")==0 )
+    {
+      Arguments.dump_vtk = false;
+    }
     else if ( strcmp( argv[i], "--help" )==0 )
     {
       show_help();
@@ -197,11 +285,11 @@ void parse_args( int argc, char** argv )
   } // END for all i
 
   SLIC_ERROR_IF( (Arguments.ndims != 3),
-                 "The Signed Distance query is currently only supported in 3-D" );
+                 "The signed distance is currently only supported in 3-D" );
   SLIC_ERROR_IF( Arguments.fileName.empty(),
                  "Must provide an STL input file. Provide one with --file" );
   SLIC_ERROR_IF( Arguments.specified_box_max == !Arguments.specified_box_min,
-                 "To explicitly define the box domain you must specify both min/max bounds.");
+                 "Both min/max bounds must be specified.");
 }
 
 //------------------------------------------------------------------------------
@@ -212,10 +300,12 @@ void show_help( )
   SLIC_INFO( "--dimension <DIM> the problem dimension" );
   SLIC_INFO( "--maxLevels <N> max levels of Subdivision for the BVH" );
   SLIC_INFO( "--maxOccupancy <N> max number of item per BVH bin." );
-  SLIC_INFO( "--box_dims <N0> <N1> <N2> the dimensions of the box mesh");
-  SLIC_INFO( "--box_min <X0> <Y0> <Z0> the lower corner of the box mesh" );
-  SLIC_INFO( "--box_max <XN> <YN> <ZN> the upper cordner of the box mesh" );
+  SLIC_INFO( "--box-dims <N0> <N1> <N2> the dimensions of the box mesh");
+  SLIC_INFO( "--box-min <X0> <Y0> <Z0> the lower corner of the box mesh" );
+  SLIC_INFO( "--box-max <XN> <YN> <ZN> the upper cordner of the box mesh" );
+  SLIC_INFO( "--no-vtk disables VTK output." );
   SLIC_INFO( "--help prints this help information" );
+  slic::flushStreams();
 }
 
 //------------------------------------------------------------------------------
@@ -231,7 +321,7 @@ void initialize_logger( )
 
 #ifdef AXOM_USE_MPI
   fmt = "[<RANK>][<LEVEL>]: <MESSAGE>\n";
-  logStream   = new slic::SynchronizedStream( &std::cout, global_comm, fmt );
+  logStream = new slic::SynchronizedStream( &std::cout, global_comm, fmt );
 #else
   fmt = "[<LEVEL>]: <MESSAGE>\n";
   logStream   = new slic::GenericOutputStream( &std::cout, fmt );
@@ -244,5 +334,6 @@ void initialize_logger( )
 //------------------------------------------------------------------------------
 void finalize_logger( )
 {
+  slic::flushStreams();
   slic::finalize( );
 }
