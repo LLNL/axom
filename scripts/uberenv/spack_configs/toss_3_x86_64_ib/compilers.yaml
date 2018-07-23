@@ -14,7 +14,8 @@ compilers:
     target: x86_64
 - compiler:
     environment: {}
-    extra_rpaths: []
+    extra_rpaths: 
+      - /usr/tce/packages/intel/intel-17.0.0/lib/intel64_lin
     flags: {}
     modules: []
     operating_system: rhel7
