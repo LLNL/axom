@@ -242,6 +242,16 @@ public:
   ToSetType* toSet()       { return m_toSet; }
   const ToSetType* toSet() const { return m_toSet; }
 
+  SetPosition    fromSetSize()
+  {
+	  return m_fromSet->size();
+  }
+
+  SetPosition    toSetSize()
+  {
+	  return m_toSet->size();
+  }
+
 
   void                bindIndices(SetPosition size,
                                   IndirectionBufferType* data)

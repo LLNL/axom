@@ -308,6 +308,18 @@ TEST(slam_map, iterate)
     }
   }
 
+  //iter1 - iter2
+  {
+    IterType beginIter = m.begin();
+    IterType endIter = m.end();
+    for (int idx = 0; idx<m.size(); idx++)
+    {
+      IterType iter = beginIter + idx;
+      EXPECT_EQ( idx, iter - beginIter );
+      EXPECT_EQ( idx - m.size(), iter - endIter);
+    }
+  }
+
   EXPECT_TRUE(m.isValid(true));
 }
 

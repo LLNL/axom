@@ -25,18 +25,173 @@
 #ifndef SLAM_PRODUCT_SET_H_
 #define SLAM_PRODUCT_SET_H_
 
+#include "slam/BivariateSet.hpp"
+#include "slam/RangeSet.hpp"
+
+#include <cassert>
 
 namespace axom
 {
 namespace slam
 {
 
+/**
+ * \class ProductSet
+ *
+ * \brief Models a set whose element is the cartesian product of 2 sets. The
+ *        number of elements in this set would be the product of the sizes
+ *        of the 2 input sets.
+ *
+ */
+class ProductSet : public BivariateSet, RangeSet
+{
+  using SetType = Set;
+public:
+  using RangeSetType = RangeSet;
+  using PositionType = BivariateSet::PositionType;
+  using ElementType = BivariateSet::ElementType;
+  using OrderedSetType = BivariateSet::OrderedSetType;
 
-class ProductSet
-{};
+  /** \brief Default constructor */
+  ProductSet() {}
+
+  /**
+   * \brief Constructor taking in pointers of 2 Sets.
+   *
+   * \param set1  Pointer to the first Set.
+   * \param set2  Pointer to the second Set.
+   */
+
+  ProductSet(Set* set1, Set* set2):
+    BivariateSet(set1,set2), RangeSet(set1->size()*set2->size())
+  {
+    //fill in the row data now for getRow(i) function, 
+    //since every row is the same, a call to getRow() returns the same set.
+    PositionType size2 = secondSetSize();
+    m_rowSet_data.resize(size2);
+    for (int s2 = 0; s2 < size2; s2++) {
+      m_rowSet_data[s2] = s2;
+    }
+    m_rowSet = OrderedSetType::SetBuilder()
+              .size(size2)
+              .offset(0)
+              .data(&m_rowSet_data);
+  }
+
+  /**
+   * \brief Return the element SparseIndex. Since a ProductSet is a form of dense
+   *        matrix, the index returned is the same as the pos2 parameter.
+   *
+   * \param pos1  The first set position.
+   * \param pos2  The second set position.
+   *
+   * \return  The element's SparseIndex, which is the same as pos2
+   */
+  PositionType findElementIndex(PositionType pos1, PositionType pos2) const override
+  {
+    isValidIndex(pos1, pos2);
+    return pos2;
+  }
+
+  /**
+   * \brief Returns an element's FlatIndex given its DenseIndex. Since ProductSet
+   *        is a form of dense matrix, an element's FlatIndex is equal to
+   *        `pos1*secondSetSize()+pos2`.
+   *
+   * \param pos1  The first set position.
+   * \param pos2  The second set position.
+   *
+   * \return  The element's FlatIndex.
+   */
+  PositionType findElementFlatIndex(PositionType pos1, PositionType pos2) const override
+  {
+    isValidIndex(pos1, pos2);
+    PositionType size2 = secondSetSize();
+    PositionType pos = size2 * pos1 + pos2;
+
+    return pos;
+  }
+
+  /**
+  * \brief Returns the FlatIndex of the first element in the specified row.
+  *        This is equal to `pos1*secondSetSize()`.
+  *
+  * \param pos1  The first set position that specifies the row.
+  */
+  PositionType findElementFlatIndex(PositionType pos1) const override
+  {
+    return findElementFlatIndex(pos1, 0);
+  }
+
+  /**
+   * \brief Return a set of row elements
+   *
+   * \param pos1   The first set position that specifies the row.
+   *
+   * \return  An OrderedSet of the elements in the row.
+   */
+  const OrderedSetType getRow(PositionType pos1) const override
+  {
+    SLIC_ASSERT(pos1 >= 0 && pos1 < firstSetSize());
+    
+    return m_rowSet;
+  }
+
+  ElementType at(PositionType pos) const override {
+    return pos % firstSetSize();
+  }
+
+  PositionType size() const override
+  {
+    return firstSetSize()*secondSetSize();
+  }
+  
+  PositionType size(PositionType) const override
+  {
+    return secondSetSize();
+  }
+
+  bool isValidIndex(PositionType s1, PositionType s2) const
+  {
+    PositionType size1 = firstSetSize();
+    PositionType size2 = secondSetSize();
+    return s1 >= 0 && s1 < size1 && s2 >= 0 && s2 < size2;
+  }
+
+  bool isValid(bool verboseOutput = false) const override
+  {
+    return BivariateSet::isValid(verboseOutput) &&
+           RangeSet::isValid(verboseOutput);
+  }
+
+private:
+  void verifyPosition(PositionType s_pos) const override
+  { //from RangeSet, overloading to avoid warning in compiler
+    SLIC_ASSERT_MSG(
+      s_pos >= 0 && s_pos < size(),
+      "SLAM::ProductSet -- requested out-of-range element at position "
+      << s_pos << ", but set only has " << size() << " elements.");
+  }
+
+  void verifyPosition(PositionType s1, PositionType s2) const override
+  {
+    SLIC_ASSERT_MSG(
+      isValidIndex(s1,s2),
+      "SLAM::ProductSet -- requested out-of-range element at position ("
+      << s1 << "," << s2 << "), but set only has " 
+      << firstSetSize() << "x" << secondSetSize() << " elements.");
+  }
+
+private:  
+
+  std::vector<PositionType> m_rowSet_data;
+  OrderedSetType m_rowSet;
+
+};
+
 
 
 } // end namespace slam
 } // end namespace axom
 
-#endif //  SLAM_ORDERED_SET_H_
+#endif //  SLAM_PRODUCT_SET_H
