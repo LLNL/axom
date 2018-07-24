@@ -62,13 +62,13 @@ public:
   bool operator!=(const IterType& other) const { return !operator==(other); }
   bool operator<(const IterType& other) const { return m_pos < other.m_pos; }
 
-  IterType& operator++() { advance(1); return getRetIter(); }
-  IterType operator++(int) { IterType ret = getRetIter(); advance(1); return ret; }
-  IterType& operator--() { advance(-1); return getRetIter(); }
-  IterType operator--(int) { IterType ret = getRetIter(); advance(-1); return ret; }
+  IterType& operator++() { getRetIter().advance(1); return getRetIter(); }
+  IterType operator++(int) { IterType ret = getRetIter(); getRetIter().advance(1); return ret; }
+  IterType& operator--() { getRetIter().advance(-1); return getRetIter(); }
+  IterType operator--(int) { IterType ret = getRetIter(); getRetIter().advance(-1); return ret; }
 
-  IterType& operator+=(PositionType n) { advance(n); return getRetIter(); }
-  IterType& operator-=(PositionType n) { advance(-n); return getRetIter(); }
+  IterType& operator+=(PositionType n) { getRetIter().advance(n); return getRetIter(); }
+  IterType& operator-=(PositionType n) { getRetIter().advance(-n); return getRetIter(); }
 
   IterType operator+(PositionType n) const
   {
@@ -91,6 +91,7 @@ private:
   const IterType& getRetIter() const { return *((IterType*)this); }
   
 protected:
+  /** function can be overriden in Derived iterator class for specialized impl. */
   virtual void advance(PositionType n) { m_pos += n; }
 
 protected:
