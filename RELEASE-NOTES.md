@@ -8,9 +8,12 @@ The format of this file is based on [Keep a Changelog](http://keepachangelog.com
 The Axom project release numbers follow [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 
-## [Unreleased] - Release date yyyy-mm-dd
+## [Version 0.3.0] - Release date 2018-07-25
 
 ### Added
+- Added AXOM_ENABLE_TESTS which is a CMake dependent option of ENABLE_TESTS
+- Added AXOM_ENABLE_DOCS which is a CMake dependent option of ENABLE_DOCS
+- Added AXOM_ENABLE_EXAMPLES which is a CMake dependent option of ENABLE_EXAMPLES
 - Added jacobi_eigensolve() method for computing the eigenvalues and eigenvectors
   of real, symmetric matrices.
 - Added matrix_norm() operator for computing matrix norms. The implementations
@@ -36,11 +39,23 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ### Removed
 - Axom no longer depends on the Boost library.
+- Removed ENABLE_PYTHON CMake option. Python was only used by Shroud so restricted Python
+  checks to when Shroud generation is enabled
+- Removed Lua as a dependency of Axom.
 
 ### Deprecated
 - 
 
 ### Changed
+- The root CMake file for Axom is now located in ``<axom>/src``'s root directory,
+  rather than in ``<axom>``
+- Prefixed all Axom CMake options with AXOM_ to avoid conflicts
+- ENABLE_SPARSEHASE -> AXOM_ENABLE_SPARSEHASH
+- ENABLE_ALL_COMPONENTS -> AXOM_ENABLE_COMPONENTS
+- ENABLE_<component name> -> AXOM_ENABLE_<component name>
+- MINT_USE_64BIT_INDEXTYPE -> AXOM_MINT_USE_64BIT_INDEXTYPE
+- MINT_USE_SIDRE -> AXOM_MINT_USE_SIDRE
+- CMake minimum is now 3.8 for non-CUDA builds and 3.9 for CUDA builds
 - Axom now requires a C++11 compiler.
 - Refactored Axom's Matrix/Vector operators and consolidated them in one file.
 - Removed overloaded arithmetic operators from the Matrix class to avoid 
@@ -108,6 +123,6 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 
 [Unreleased]: https://lc.llnl.gov/bitbucket/projects/ATK/repos/axom/compare/commits?targetBranch=refs%2Ftags%2Fv0.2.9&sourceBranch=refs%2Fheads%2Fdevelop&targetRepoId=1066
-[0.2.9]: https://lc.llnl.gov/bitbucket/projects/ATK/repos/axom/compare/commits?targetBranch=refs%2Ftags%2Fv0.2.8&sourceBranch=refs%2Ftags%2Fv0.2.9&targetRepoId=1066
+[Version 0.2.9]: https://lc.llnl.gov/bitbucket/projects/ATK/repos/axom/compare/commits?targetBranch=refs%2Ftags%2Fv0.2.8&sourceBranch=refs%2Ftags%2Fv0.2.9&targetRepoId=1066
 
 [Scalable Checkpoint Restart (SCR)]: https://computation.llnl.gov/projects/scalable-checkpoint-restart-for-mpi

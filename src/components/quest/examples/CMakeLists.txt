@@ -50,16 +50,11 @@ blt_add_executable(
 
 ## Quest interface examples
 
-set(quest_interface_extra_depends)
-if (AXOM_EENABLE_LUMBERJACK)
-    list(APPEND quest_interface_extra_depends lumberjack)
-endif()
-
 blt_add_executable(
     NAME        quest_interface_ex
     SOURCES     quest_interface.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-    DEPENDS_ON  ${quest_example_depends} ${quest_interface_extra_depends}
+    DEPENDS_ON  ${quest_example_depends}
     FOLDER      axom/quest/examples
     )
 
@@ -84,7 +79,7 @@ if (ENABLE_FORTRAN)
         NAME        quest_interface_F_ex
         SOURCES     quest_interface_fortran.F
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON  ${quest_example_depends} ${quest_interface_extra_depends}
+        DEPENDS_ON  ${quest_example_depends}
         FOLDER      axom/quest/examples
         )
 

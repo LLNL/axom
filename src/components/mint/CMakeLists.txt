@@ -21,8 +21,8 @@ axom_component_requires(NAME       Mint
 ################################
 # Add mint options
 ################################
-option( MINT_USE_64BIT_INDEXTYPE "Use 64-bit indices for Mint" OFF )
-cmake_dependent_option( MINT_USE_SIDRE "Enables Sidre support in Mint" ON
+option( AXOM_MINT_USE_64BIT_INDEXTYPE "Use 64-bit indices for Mint" OFF )
+cmake_dependent_option( AXOM_MINT_USE_SIDRE "Enables Sidre support in Mint" ON
                        "AXOM_ENABLE_SIDRE" OFF)
 
 ################################
