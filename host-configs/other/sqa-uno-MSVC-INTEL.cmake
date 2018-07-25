@@ -43,7 +43,7 @@ set(ENABLE_SIDRE OFF CACHE BOOL "")
 
 # Disable Fortran since Visual Studio is not generating modules for our component Fortan interfaces
 set(ENABLE_FORTRAN OFF CACHE BOOL "")
-
+set(ENABLE_DOCS    OFF CACHE BOOL "")
 
 ### Setup some devtool/TPL paths
 
@@ -51,7 +51,7 @@ set(ENABLE_FORTRAN OFF CACHE BOOL "")
 string(REPLACE "\\" "/" HOME "$ENV{USERPROFILE}")
 
 # Note: Doxygen assumes graphviz 'dot' is in PATH
-set(DOXYGEN_EXECUTABLE "${HOME}/Chocolatey/bin/doxygen.exe" CACHE PATH "") 
+#set(DOXYGEN_EXECUTABLE "${HOME}/Chocolatey/bin/doxygen.exe" CACHE PATH "") 
 
 # Note: uncrustify disabled since this version is different than uberenv version and changes whitespace
 # set(UNCRUSTIFY_EXECUTABLE "${HOME}/Code/UniversalIndentGUI/indenters/uncrustify.exe" CACHE PATH "")

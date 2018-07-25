@@ -41,7 +41,7 @@ set(slic_sources
 if (ENABLE_MPI)
     list(APPEND slic_headers streams/SynchronizedStream.hpp)
     list(APPEND slic_sources streams/SynchronizedStream.cpp)
-    if (ENABLE_LUMBERJACK)
+    if (AXOM_ENABLE_LUMBERJACK)
         list(APPEND slic_headers streams/LumberjackStream.hpp)
         list(APPEND slic_sources streams/LumberjackStream.cpp)
     endif()
@@ -67,7 +67,7 @@ endif()
 set(slic_depends_on
     axom_utils
 )
-if (ENABLE_LUMBERJACK)
+if (AXOM_ENABLE_LUMBERJACK)
     list(APPEND slic_depends_on lumberjack mpi)
 endif()
 

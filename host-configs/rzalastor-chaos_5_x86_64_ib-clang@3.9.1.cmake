@@ -41,9 +41,6 @@ set(MFEM_DIR "${TPL_ROOT}/mfem-3.3.2-pj7ivtzwtks2uatb72itorxbmz36c5x4" CACHE PAT
 # python from uberenv
 set(PYTHON_EXECUTABLE "${TPL_ROOT}/python-2.7.11-qz7aafsxmvgo7ulepktmc2tzwf5zcc4w/bin/python" CACHE PATH "")
 
-# lua from uberenv
-set(LUA_DIR "${TPL_ROOT}/lua-5.1.5-kme6h6rnqdaucey42qkrdohoxh5arxff" CACHE PATH "")
-
 # doxygen from uberenv
 set(DOXYGEN_EXECUTABLE "${TPL_ROOT}/doxygen-1.8.11-775ya2wa5t2zlapiq4y23n22mapxbzy3/bin/doxygen" CACHE PATH "")
 

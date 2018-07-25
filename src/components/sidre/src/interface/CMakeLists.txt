@@ -22,10 +22,9 @@ add_shroud(
     YAML_INPUT_FILE      ${YAML_INPUT_FILE}
     YAML_OUTPUT_DIR      yaml
     C_FORTRAN_OUTPUT_DIR c_fortran
-    PYTHON_OUTPUT_DIR    python
     DEPENDS_SOURCE
-        c_fortran/csidresplicer.c c_fortran/fsidresplicer.f
-        python/pysidresplicer.c
+        c_fortran/csidresplicer.c
+        c_fortran/fsidresplicer.f
     DEPENDS_BINARY genfsidresplicer.f
 )
 
