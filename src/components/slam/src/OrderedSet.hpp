@@ -213,20 +213,21 @@ private:
    * Uses the set's policies for efficient iteration
    */
   template<typename OrderedSet>
-  class OrderedSetIterator : public IteratorBase<OrderedSetIterator<OrderedSet>, 
-                                                 typename OrderedSet::ElementType>
+  class OrderedSetIterator : public IteratorBase<
+      OrderedSetIterator<OrderedSet>,
+      typename OrderedSet::ElementType >
   {
 public:
-  using IterBase = IteratorBase<OrderedSetIterator<OrderedSet>,
-                                typename OrderedSet::ElementType>;
-  using IterBase::m_pos;
+    using IterBase = IteratorBase<OrderedSetIterator<OrderedSet>,
+                                  typename OrderedSet::ElementType>;
+    using IterBase::m_pos;
 
-  typedef OrderedSetIterator<OrderedSet>              iter;
-  typedef typename OrderedSet::ElementType ElementType;
-  typedef typename OrderedSet::PositionType PositionType;
+    typedef OrderedSetIterator<OrderedSet>              iter;
+    typedef typename OrderedSet::ElementType ElementType;
+    typedef typename OrderedSet::PositionType PositionType;
 
-  typedef typename OrderedSet::IndirectionPolicyType IndirectionType;
-  typedef typename OrderedSet::StridePolicyType StrideType;
+    typedef typename OrderedSet::IndirectionPolicyType IndirectionType;
+    typedef typename OrderedSet::StridePolicyType StrideType;
 public:
 
     //OrderedSetIterator(PositionType pos) : IterBase(pos) {}

@@ -397,7 +397,7 @@ public:     // Functions related to iteration
 
 public:
   /**
-   * \brief Returns a reference to the underlying map data 
+   * \brief Returns a reference to the underlying map data
    */
   OrderedMap &        data()       { return m_data; }
   const OrderedMap &  data() const { return m_data; }

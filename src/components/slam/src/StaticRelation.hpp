@@ -244,12 +244,12 @@ public:
 
   SetPosition    fromSetSize()
   {
-	  return m_fromSet->size();
+    return m_fromSet->size();
   }
 
   SetPosition    toSetSize()
   {
-	  return m_toSet->size();
+    return m_toSet->size();
   }
 
 

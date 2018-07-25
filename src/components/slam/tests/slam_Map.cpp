@@ -312,7 +312,7 @@ TEST(slam_map, iterate)
   {
     IterType beginIter = m.begin();
     IterType endIter = m.end();
-    for (int idx = 0; idx<m.size(); idx++)
+    for (int idx = 0 ; idx<m.size() ; idx++)
     {
       IterType iter = beginIter + idx;
       EXPECT_EQ( idx, iter - beginIter );

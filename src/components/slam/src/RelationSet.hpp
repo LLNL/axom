@@ -28,8 +28,8 @@ namespace slam
  * \class RelationSet
  *
  * \brief Models a Set whose elements are derived from a relation, one element
- *        per from-set and to-set pair in the relation. 
- *        
+ *        per from-set and to-set pair in the relation.
+ *
  *  RelationSet can be considered a model for a sparse matrix, hence the second
  *  index (the to-set index) may not be contiguous, and user should use the
  *  indexing conversion as layed out in BivariateSet documentation.
@@ -39,7 +39,7 @@ namespace slam
 
 template<
   typename Relation
->
+  >
 class RelationSet : public OrderedSet<>, public BivariateSet
 {
 private:
@@ -58,31 +58,32 @@ public:
 
   RelationSet(RelationType* r)
     : BivariateSet(r->fromSet(), r->toSet())
-    , m_relation(r) 
+    , m_relation(r)
   {}
 
   /**
    * \brief Searches for the SparseIndex of the element given its DenseIndex.
-   * \detail If the element (i,j) is the k<sup>th</sup> non-zero in the row, then
-   *         `findElementIndex(i,j)` returns `k`. If `element(i,j)` does not
-   *         exist (such as the case of a zero in a sparse matrix), then
+   * \detail If the element (i,j) is the k<sup>th</sup> non-zero in the row,
+   *         then `findElementIndex(i,j)` returns `k`. If `element(i,j)` does
+   *         not exist (such as the case of a zero in a sparse matrix), then
    *         `INVALID_POS` is returned.
-   *         
-   * \warning This function can be slow, since a linear search is performed on the
-   *          row each time.
-   *          
+   *
+   * \warning This function can be slow, since a linear search is performed on
+   *          the row each time.
+   *
    * \param pos1  The first set position.
    * \param pos2  The second set position.
    *
-   * \return  The DenseIndex of the given element, or INVALID_POS if such element
-   *          is missing from the set.
+   * \return  The DenseIndex of the given element, or INVALID_POS if such
+   *          element is missing from the set.
    * \pre   0 <= pos1 <= set1.size() && 0 <= pos2 <= size2.size()
    */
 
-  PositionType findElementIndex(PositionType pos1, PositionType pos2) const override
+  PositionType findElementIndex(PositionType pos1,
+                                PositionType pos2) const override
   {
     RelationSubset ls = (*m_relation)[pos1];
-    for (PositionType i = 0; i < ls.size(); i++)
+    for (PositionType i = 0 ; i < ls.size() ; i++)
     {
       if (ls[i] == pos2)
         return i;
@@ -91,20 +92,22 @@ public:
   }
 
   /**
-  * \brief Search for the FlatIndex of the element given its DenseIndex.
-  * \warning This function can be slow, since a linear search is performed on the
-  *          row each time.
-  *
-  * \param pos1  The first set position.
-  * \param pos2  The second set position.
-  *
-  * \return  The element's FlatIndex
-  * \pre   0 <= pos1 <= set1.size() && 0 <= pos2 <= size2.size()
-  */
-  PositionType findElementFlatIndex(PositionType s1, PositionType s2) const override
+   * \brief Search for the FlatIndex of the element given its DenseIndex.
+   * \warning This function can be slow, since a linear search is performed on
+   * the
+   *          row each time.
+   *
+   * \param pos1  The first set position.
+   * \param pos2  The second set position.
+   *
+   * \return  The element's FlatIndex
+   * \pre   0 <= pos1 <= set1.size() && 0 <= pos2 <= size2.size()
+   */
+  PositionType findElementFlatIndex(PositionType s1,
+                                    PositionType s2) const override
   {
     RelationSubset ls = (*m_relation)[s1];
-    for (PositionType i = 0; i < ls.size(); i++)
+    for (PositionType i = 0 ; i < ls.size() ; i++)
     {
       if (ls[i] == s2)
         return ls.offset() + i;
@@ -114,32 +117,33 @@ public:
 
 
   /**
-  * \brief Given the from-set index pos1, return the FlatIndex of the first
-  *        existing to-set element in the relation pair, or `INVALID_POS` if this
-  *        row contains no elements.
-  *
-  * \param pos1  Index into the from-set.
-  * \param pos2  Index into the to-set.
-  *
-  * \return  The FlatIndex of the first existing to-set element.
-  */
+   * \brief Given the from-set index pos1, return the FlatIndex of the first
+   *        existing to-set element in the relation pair, or `INVALID_POS` if
+   * this
+   *        row contains no elements.
+   *
+   * \param pos1  Index into the from-set.
+   * \param pos2  Index into the to-set.
+   *
+   * \return  The FlatIndex of the first existing to-set element.
+   */
   PositionType findElementFlatIndex(PositionType pos1) const override
   {
     RelationSubset ls = (*m_relation)[pos1];
-    
-    if (ls.size() > 0) 
+
+    if (ls.size() > 0)
       return ls.offset();
 
     return INVALID_POS;
   }
 
   /**
-  * \brief A set of elements with the given first set index.
-  *
-  * \param s1  The first set index.
-  * \return  An OrderedSet containing the elements in the row.
-  * \pre  0 <= pos1 <= set1.size()
-  */
+   * \brief A set of elements with the given first set index.
+   *
+   * \param s1  The first set index.
+   * \return  An OrderedSet containing the elements in the row.
+   * \pre  0 <= pos1 <= set1.size()
+   */
   const OrderedSetType getRow(PositionType s1) const override
   {
     return (*m_relation)[s1];
@@ -158,7 +162,7 @@ public:
   }
 
   /** \brief Return the size of the relation   */
-  PositionType    totalSize() const 
+  PositionType    totalSize() const
   {
     return PositionType( m_relation->relationData()->size() );
   }
@@ -181,8 +185,8 @@ public:
       if (verboseOutput)
       {
         std::cout << "\n*** RelationSet is not valid:\n"
-          << "\t* Relation pointer should not be null.\n"
-          << std::endl;
+                  << "\t* Relation pointer should not be null.\n"
+                  << std::endl;
       }
       return false;
     }
@@ -191,7 +195,7 @@ public:
 
 private:
   //hiding size() from the Set base class, replaced with totalSize().
-  //but still implemented due to the function being virtual 
+  //but still implemented due to the function being virtual
   //(and can be called from base ptr)
   PositionType    size() const override
   {
@@ -202,8 +206,8 @@ private:
   //range check only
   bool isValidIndex(PositionType s1, PositionType s2) const
   {
-    return s1 >= 0 && s1 < m_relation->fromSet()->size() && 
-      s2 >= 0 && s2 < m_relation->size(s1);
+    return s1 >= 0 && s1 < m_relation->fromSet()->size() &&
+           s2 >= 0 && s2 < m_relation->size(s1);
   }
 
   void verifyPosition(PositionType s_pos) const override
