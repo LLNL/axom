@@ -18,7 +18,7 @@ else()
     cmake_minimum_required(VERSION 3.8.2)
 endif()
 
-message(STATUS "Using cmake version ${CMAKE_VERSION}")
+message(STATUS "Using CMake version ${CMAKE_VERSION}")
 
 ################################
 # Axom project
