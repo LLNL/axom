@@ -12,19 +12,15 @@
 # For details about use and distribution, please read axom/LICENSE.
 #------------------------------------------------------------------------------
 
-if(ENABLE_PYTHON_API)
-    set(ENABLE_SHARED_LIBS TRUE)
-endif(ENABLE_PYTHON_API)
-
 ## add components
 ## Note: Default state of components is controlled by the
-## AXOM_ENABLE_ALL_COMPONENTS option. However, the 'common' component is always
+## AXOM_ENABLE_ALL_COMPONENTS option. However, the 'axom_utils' component is always
 ## enabled.
 
 axom_add_component(COMPONENT_NAME axom_utils DEFAULT_STATE ON)
 
 # Lumberjack is an extension to SLIC that supports message filtering and
-# reduction capabilities for parallel (MPI) executables.It is not meant for
+# reduction capabilities for parallel (MPI) executables. It is not meant for
 # serial (non-mpi) executables.
 if(ENABLE_MPI)
     axom_add_component( COMPONENT_NAME lumberjack

@@ -13,7 +13,6 @@
 #------------------------------------------------------------------------------
 
 option(AXOM_ENABLE_SPARSEHASH "Enables Sparsehash." ON)
-option(AXOM_ENABLE_PYTHON "Enables python use." OFF)
 option(AXOM_ENABLE_ALL_COMPONENTS "Enables all components by default" ON)
 cmake_dependent_option(AXOM_ENABLE_TESTS "Enables Axom Tests" ON "ENABLE_TESTS" OFF)
 cmake_dependent_option(AXOM_ENABLE_DOCS "Enables Axom Docs" ON "ENABLE_DOCS" OFF)

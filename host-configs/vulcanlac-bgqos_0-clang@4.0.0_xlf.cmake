@@ -40,8 +40,6 @@ set(MFEM_DIR "${TPL_ROOT}/mfem-3.3.2-ln22e3ngntx35dyjs3k2ndzyve5bmv5y" CACHE PAT
 
 # python not built by uberenv
 
-# lua not built by uberenv
-
 # doxygen not built by uberenv
 
 # sphinx not built by uberenv
