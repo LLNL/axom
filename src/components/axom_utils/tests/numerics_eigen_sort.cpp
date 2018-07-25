@@ -17,8 +17,8 @@
 
 // Axom includes
 #include "axom/Types.hpp"            // for AXOM_NULLPTR
-#include "axom_utils/Matrix.hpp"     // for numerics::Matrix
-#include "axom_utils/eigen_sort.hpp" // for eigen_sort()
+#include "axom_utils/numerics/Matrix.hpp"     // for numerics::Matrix
+#include "axom_utils/numerics/eigen_sort.hpp" // for eigen_sort()
 
 // gtest includes
 #include "gtest/gtest.h"

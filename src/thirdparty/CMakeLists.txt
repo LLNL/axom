@@ -45,8 +45,7 @@ blt_add_library(NAME fmt
                 HEADERS_OUTPUT_SUBDIR fmt)
 
 target_include_directories(fmt INTERFACE
-            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty/fmt>)
-
+            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
 
 # Setup some variables for fmt in Axom's config.hpp
 set(FMT_EXCEPTIONS FALSE PARENT_SCOPE)
@@ -59,14 +58,6 @@ install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/fmt
         DESTINATION include
         )
 install(EXPORT fmt-targets DESTINATION lib/cmake)
-
-# Manually copy the souce files for the headers to the build directory
-blt_copy_headers_target(
-        NAME        fmt-headers-sources
-        HEADERS     ${fmt_headers_sources}
-        DESTINATION $<BUILD_INTERFACE:${HEADER_INCLUDES_DIRECTORY}>/fmt)
-add_dependencies(blt_copy_headers_fmt blt_copy_headers_fmt-headers-sources)
-
 
 set(FMT_FOUND TRUE CACHE INTERNAL "")
 mark_as_advanced(FMT_FOUND)
@@ -136,6 +127,9 @@ if (AXOM_ENABLE_SPARSEHASH)
             HEADERS ${sparsehash_headers}
             HEADERS_OUTPUT_SUBDIR sparsehash)
      
+    target_include_directories(sparsehash INTERFACE
+                $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
+
     install(TARGETS              sparsehash
             EXPORT               sparsehash-targets
             INCLUDES DESTINATION include)
@@ -145,12 +139,6 @@ if (AXOM_ENABLE_SPARSEHASH)
 
     install(EXPORT sparsehash-targets DESTINATION lib/cmake)
 
-    # Manually copy the souce files for the internal headers to the build directory
-    blt_copy_headers_target(
-            NAME        sparsehash-internal-headers-sources
-            HEADERS     ${sparsehash_headers_internal}
-            DESTINATION $<BUILD_INTERFACE:${HEADER_INCLUDES_DIRECTORY}>/sparsehash/internal)
-    add_dependencies(blt_copy_headers_sparsehash blt_copy_headers_sparsehash-internal-headers-sources)
   else()
     message(STATUS "Could not configure sparsehash")
   endif()

@@ -18,10 +18,10 @@
 // Axom includes
 #include "axom/Types.hpp"                    // for AXOM_NULLPTR
 
-#include "axom_utils/Matrix.hpp"             // for numerics::Matrix
-#include "axom_utils/Utilities.hpp"          // for random_real()/isNearlyEqual
-#include "axom_utils/jacobi_eigensolve.hpp"  // for jacobi_eigensolve()
-#include "axom_utils/matvecops.hpp"          // for matrix operators
+#include "axom_utils/numerics/Matrix.hpp"             // for numerics::Matrix
+#include "axom_utils/utilities/Utilities.hpp"          // for random_real()/isNearlyEqual
+#include "axom_utils/numerics/jacobi_eigensolve.hpp"  // for jacobi_eigensolve()
+#include "axom_utils/numerics/matvecops.hpp"          // for matrix operators
 
 // gtest includes
 #include "gtest/gtest.h"

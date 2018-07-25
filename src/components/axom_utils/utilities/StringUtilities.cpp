@@ -15,7 +15,7 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include "axom_utils/StringUtilities.hpp"
+#include "axom_utils/utilities/StringUtilities.hpp"
 
 #include "axom/config.hpp"
 

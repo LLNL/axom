@@ -16,9 +16,9 @@
  */
 
 #include "axom/Types.hpp" // for AXOM_NULLPTR
-#include "axom_utils/Utilities.hpp" // for isNearlyEqual()
+#include "axom_utils/utilities/Utilities.hpp" // for isNearlyEqual()
 
-#include "axom_utils/polynomial_solvers.hpp"
+#include "axom_utils/numerics/polynomial_solvers.hpp"
 
 // C/C++ includes
 #include <cassert> // for assert()

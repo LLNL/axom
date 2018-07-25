@@ -17,7 +17,7 @@
 
 #include "gtest/gtest.h"
 
-#include "axom_utils/Timer.hpp"
+#include "axom_utils/utilities/Timer.hpp"
 
 #ifdef WIN32
 #include "windows.h"

@@ -18,8 +18,8 @@
 #ifndef AXOM_MATRIX_NORMS_HPP_
 #define AXOM_MATRIX_NORMS_HPP_
 
-#include "axom_utils/Matrix.hpp"     // for numerics::Matrix
-#include "axom_utils/Utilities.hpp"  // for utilities::abs()
+#include "axom_utils/numerics/Matrix.hpp"     // for numerics::Matrix
+#include "axom_utils/utilities/Utilities.hpp"  // for utilities::abs()
 
 namespace axom
 {

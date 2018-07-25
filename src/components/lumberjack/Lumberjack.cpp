@@ -28,7 +28,7 @@
 #include "lumberjack/Lumberjack.hpp"
 
 #include "axom/Types.hpp"
-#include "axom_utils/StringUtilities.hpp"
+#include "axom_utils/utilities/StringUtilities.hpp"
 
 #include <cstring>
 

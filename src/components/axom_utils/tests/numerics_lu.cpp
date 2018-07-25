@@ -17,9 +17,9 @@
 
 #include "gtest/gtest.h"
 
-#include "axom_utils/LU.hpp"
-#include "axom_utils/Matrix.hpp"
-#include "axom_utils/matvecops.hpp"
+#include "axom_utils/numerics/LU.hpp"
+#include "axom_utils/numerics/Matrix.hpp"
+#include "axom_utils/numerics/matvecops.hpp"
 
 namespace numerics = axom::numerics;
 

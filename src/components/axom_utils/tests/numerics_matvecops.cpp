@@ -17,8 +17,8 @@
 
 #include "gtest/gtest.h"
 
-#include "axom_utils/matvecops.hpp"
-#include "axom_utils/Utilities.hpp"
+#include "axom_utils/numerics/matvecops.hpp"
+#include "axom_utils/utilities/Utilities.hpp"
 
 namespace numerics  = axom::numerics;
 namespace utilities = axom::utilities;

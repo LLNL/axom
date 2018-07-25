@@ -15,7 +15,7 @@
 # using the Intel 18 toolchain for Visual Studio 15
 #
 # Run the following from a build dir for a 64-bit configuration:
-#   cmake -G "Visual Studio 15 2017 Win64"                   \
+#   C:\"Program Files"\CMake\bin\cmake.exe -G "Visual Studio 15 2017 Win64"   \
 #         -T "Intel C++ Compiler 18.0"                       \
 #         -C ..\host-configs\other\sqa-uno-MSVC-intel.cmake  \
 #         <path-to-axom>

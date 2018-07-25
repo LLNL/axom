@@ -15,7 +15,7 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include "axom_utils/About.hpp"
+#include "axom_utils/utilities/About.hpp"
 #include "axom/config.hpp"
 
 #include <algorithm>  // copy

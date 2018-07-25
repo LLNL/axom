@@ -17,8 +17,8 @@
 
 #include "gtest/gtest.h"
 
-#include "axom_utils/Matrix.hpp"
-#include "axom_utils/Determinants.hpp"
+#include "axom_utils/numerics/Matrix.hpp"
+#include "axom_utils/numerics/Determinants.hpp"
 
 namespace numerics = axom::numerics;
 

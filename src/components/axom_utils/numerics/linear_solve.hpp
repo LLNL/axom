@@ -20,9 +20,9 @@
 
 #include "axom/Types.hpp" // for AXOM_NULLPTR
 
-#include "axom_utils/Determinants.hpp" // for Determinants
-#include "axom_utils/LU.hpp"           // for lu_decompose()/lu_solve()
-#include "axom_utils/Matrix.hpp"       // for Matrix
+#include "axom_utils/numerics/Determinants.hpp" // for Determinants
+#include "axom_utils/numerics/LU.hpp"           // for lu_decompose()/lu_solve()
+#include "axom_utils/numerics/Matrix.hpp"       // for Matrix
 
 // C/C++ includes
 #include <cassert> // for assert()

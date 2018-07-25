@@ -28,10 +28,10 @@
 
 #include "axom/Types.hpp"                  // for AXOM_NULLPTR
 
-#include "axom_utils/Determinants.hpp"     // for numerics::determinant()
-#include "axom_utils/Matrix.hpp"           // for numerics::Matrix
-#include "axom_utils/Utilities.hpp"        // for isNearlyEqual()
-#include "axom_utils/matrix_norms.hpp"     // for matrix norm functions
+#include "axom_utils/numerics/Determinants.hpp"     // for numerics::determinant()
+#include "axom_utils/numerics/Matrix.hpp"           // for numerics::Matrix
+#include "axom_utils/utilities/Utilities.hpp"        // for isNearlyEqual()
+#include "axom_utils/numerics/internal/matrix_norms.hpp"     // for matrix norm functions
 
 // C/C++ includes
 #include <cassert> // for assert()

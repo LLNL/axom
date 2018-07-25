@@ -20,8 +20,8 @@
 
 #include "axom/Types.hpp" // for AXOM_NULLPTR
 
-#include "axom_utils/Utilities.hpp" // for NearlyEqual(), swap() and abs()
-#include "axom_utils/Matrix.hpp"    // for Matrix
+#include "axom_utils/utilities/Utilities.hpp" // for NearlyEqual(), swap() and abs()
+#include "axom_utils/numerics/Matrix.hpp"    // for Matrix
 
 // C/C++ includes
 #include <cstring> // for memcpy()

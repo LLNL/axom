@@ -27,7 +27,7 @@
 
 #include "lumberjack/Message.hpp"
 
-#include "axom_utils/StringUtilities.hpp"
+#include "axom_utils/utilities/StringUtilities.hpp"
 
 #include <algorithm>
 #include <iostream>

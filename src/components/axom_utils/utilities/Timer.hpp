@@ -31,12 +31,12 @@
 
 #include "axom/config.hpp"
 #ifdef AXOM_USE_CXX11
-  #include "axom_utils/ChronoTimer.hpp"
+  #include "axom_utils/detail/ChronoTimer.hpp"
 #else
   #ifdef WIN32
-    #include "axom_utils/TickCountTimer.hpp"
+    #include "axom_utils/detail/TickCountTimer.hpp"
   #else
-    #include "axom_utils/TimeofdayTimer.hpp"
+    #include "axom_utils/detail/TimeofdayTimer.hpp"
   #endif
 #endif
 

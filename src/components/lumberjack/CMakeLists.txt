@@ -13,9 +13,52 @@
 #------------------------------------------------------------------------------
 
 ################################
-# Add the datastore sources
+# Specify all headers/sources
 ################################
-add_subdirectory(src)
+set(lumberjack_headers
+    BinaryTreeCommunicator.hpp
+    Combiner.hpp
+    Communicator.hpp
+    Lumberjack.hpp
+    Message.hpp
+    MPIUtility.hpp
+    RootCommunicator.hpp
+    TextEqualityCombiner.hpp
+    )
+
+set(lumberjack_sources
+    BinaryTreeCommunicator.cpp
+    Lumberjack.cpp
+    Message.cpp
+    MPIUtility.cpp
+    RootCommunicator.cpp
+    )
+
+
+################################
+# Make/Install the library
+################################
+blt_add_library( NAME
+                     lumberjack
+                 SOURCES
+                     ${lumberjack_sources}
+                 HEADERS
+                     ${lumberjack_headers}
+                 DEPENDS_ON
+                     axom_utils mpi
+                 FOLDER
+                     axom/lumberjack
+                 )
+
+install(TARGETS              lumberjack
+        EXPORT               lumberjack-targets
+        DESTINATION          lib
+        INCLUDES DESTINATION include/lumberjack
+        )
+install(FILES       ${lumberjack_headers}
+        DESTINATION include/lumberjack
+        )
+
 
 ################################
 # Add examples

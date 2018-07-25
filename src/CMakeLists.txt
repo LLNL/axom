@@ -51,7 +51,6 @@ else()
     endif()
 endif()
 
-set(ENABLE_COPY_HEADERS ON CACHE BOOL "")
 include(${BLT_SOURCE_DIR}/SetupBLT.cmake)
 
 ################################
@@ -65,15 +64,15 @@ include(CMakeDependentOption)
 include(cmake/CMakeBasics.cmake)
 
 ################################
-# Add Thirdparty Builtin Libs
-################################
-add_subdirectory(thirdparty)
-
-################################
 # Global includes for the Axom projects (restrict these as much as possible)
 ################################
 include_directories(${CMAKE_BINARY_DIR}/include)
 include_directories(${PROJECT_SOURCE_DIR}/components)
+
+################################
+# Add Thirdparty Builtin Libs
+################################
+add_subdirectory(thirdparty)
 
 ################################
 # Add components

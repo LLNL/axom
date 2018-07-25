@@ -18,8 +18,8 @@
 #ifndef AXOM_NUMERICS_DETERMINANTS_HPP_
 #define AXOM_NUMERICS_DETERMINANTS_HPP_
 
-#include "axom_utils/LU.hpp"     // for lu_decompose()
-#include "axom_utils/Matrix.hpp" // for Matrix
+#include "axom_utils/numerics/LU.hpp"     // for lu_decompose()
+#include "axom_utils/numerics/Matrix.hpp" // for Matrix
 
 
 namespace axom

@@ -17,7 +17,7 @@
 
 #include "axom/Types.hpp" // for AXOM_NULLPTR
 
-#include "axom_utils/Utilities.hpp" // for utilities::swap()
+#include "axom_utils/utilities/Utilities.hpp" // for utilities::swap()
 
 // C/C++ includes
 #include <cassert>  // for assert()

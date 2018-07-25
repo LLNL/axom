@@ -28,7 +28,7 @@
 #include "lumberjack/BinaryTreeCommunicator.hpp"
 
 #include "axom/Types.hpp"
-#include "axom_utils/Utilities.hpp"
+#include "axom_utils/utilities/Utilities.hpp"
 
 #include <cstdlib>
 #include <cmath>

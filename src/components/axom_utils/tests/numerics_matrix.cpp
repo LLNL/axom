@@ -17,7 +17,7 @@
 
 #include "gtest/gtest.h"
 
-#include "axom_utils/Matrix.hpp"
+#include "axom_utils/numerics/Matrix.hpp"
 
 // C/C++ includes
 #include <sstream> // for std::ostringstream

@@ -24,7 +24,7 @@
  */
 
 #include "axom/config.hpp"
-#include "axom_utils/Utilities.hpp"
+#include "axom_utils/utilities/Utilities.hpp"
 
 #include <cstdlib> // for exit, EXIT_SUCCESS, EXIT_FAILURE
 

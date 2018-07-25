@@ -21,9 +21,9 @@
 #include "axom/Types.hpp"              // for AXOM_NULLPTR
 #include "axom/Macros.hpp"             // for AXOM_STATIC_ASSERT
 
-#include "axom_utils/Matrix.hpp"       // for numerics::Matrix
-#include "axom_utils/eigen_sort.hpp"   // for numerics::eigen_sort()
-#include "axom_utils/Utilities.hpp"    // for abs(), isNearlyEqual()
+#include "axom_utils/numerics/Matrix.hpp"       // for numerics::Matrix
+#include "axom_utils/numerics/eigen_sort.hpp"   // for numerics::eigen_sort()
+#include "axom_utils/utilities/Utilities.hpp"    // for abs(), isNearlyEqual()
 
 namespace axom
 {

@@ -18,7 +18,7 @@
 #include "gtest/gtest.h"
 
 #include "axom/config.hpp"
-#include "axom_utils/Utilities.hpp"
+#include "axom_utils/utilities/Utilities.hpp"
 
 #include <limits>
 #include <iostream>

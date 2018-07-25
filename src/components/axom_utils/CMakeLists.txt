@@ -13,9 +13,68 @@
 #------------------------------------------------------------------------------
 
 ################################
-# Add the axom_utils sources
+# Specify all headers/sources
 ################################
-add_subdirectory(src)
+set(axom_utils_headers
+    utilities/FileUtilities.hpp
+    utilities/StringUtilities.hpp
+    utilities/Timer.hpp
+    utilities/Utilities.hpp
+    utilities/About.hpp
+
+    detail/ChronoTimer.hpp
+    detail/TimeofdayTimer.hpp
+    detail/TickCountTimer.hpp
+
+    numerics/internal/matrix_norms.hpp
+
+    numerics/Determinants.hpp
+    numerics/jacobi_eigensolve.hpp
+    numerics/LU.hpp
+    numerics/Matrix.hpp
+    numerics/eigen_solve.hpp
+    numerics/eigen_sort.hpp
+    numerics/linear_solve.hpp
+    numerics/matvecops.hpp
+    numerics/polynomial_solvers.hpp
+    )
+
+set(axom_utils_sources
+    utilities/FileUtilities.cpp
+    utilities/StringUtilities.cpp
+    utilities/Utilities.cpp
+    utilities/About.cpp
+
+    numerics/polynomial_solvers.cpp
+    )
+
+################################
+# Make/Install the library
+################################
+if (ENABLE_MPI)
+    blt_add_library( NAME                  axom_utils
+                     SOURCES              "${axom_utils_sources}"
+                     HEADERS              "${axom_utils_headers}"
+                     DEPENDS_ON            mpi
+                     FOLDER                axom/axom_utils
+                     )
+else()
+    blt_add_library( NAME                  axom_utils
+                     SOURCES              "${axom_utils_sources}"
+                     HEADERS              "${axom_utils_headers}"
+                     FOLDER                axom/axom_utils
+                     )
+
+endif()
+
+install(TARGETS              axom_utils
+        EXPORT               axom_utils-targets
+        DESTINATION          lib
+        INCLUDES DESTINATION include/axom_utils
+        )
+install(FILES       ${axom_utils_headers}
+        DESTINATION include/axom_utils
+        )
 
 ################################
 # Add tests

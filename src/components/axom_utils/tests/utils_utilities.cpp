@@ -17,7 +17,7 @@
 
 #include "gtest/gtest.h"
 
-#include "axom_utils/Utilities.hpp"
+#include "axom_utils/utilities/Utilities.hpp"
 
 TEST(axom_utils_Utilities, allocation)
 {

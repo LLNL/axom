@@ -18,7 +18,7 @@
 #include "gtest/gtest.h"
 #include <fstream>
 
-#include "axom_utils/FileUtilities.hpp"
+#include "axom_utils/utilities/FileUtilities.hpp"
 
 TEST(axom_utils_fileUtilities,getCWD_smoke)
 {

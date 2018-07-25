@@ -17,7 +17,7 @@
 
 #include "gtest/gtest.h"
 
-#include "axom_utils/About.hpp"
+#include "axom_utils/utilities/About.hpp"
 
 TEST(axom_utils_about,print_about)
 {

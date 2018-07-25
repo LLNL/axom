@@ -17,9 +17,9 @@
 
 #include "gtest/gtest.h"
 
-#include "axom_utils/Matrix.hpp"
-#include "axom_utils/Utilities.hpp"
-#include "axom_utils/eigen_solve.hpp"
+#include "axom_utils/numerics/Matrix.hpp"
+#include "axom_utils/utilities/Utilities.hpp"
+#include "axom_utils/numerics/eigen_solve.hpp"
 
 namespace numerics = axom::numerics;
 namespace utilities = axom::utilities;
