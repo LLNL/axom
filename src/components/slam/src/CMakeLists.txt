@@ -70,11 +70,6 @@ set(slam_sources
     )
 
 
-#get_source_file_property(_origflags StaticVariableRelation.hpp COMPILE_FLAGS)
-#set_source_files_properties(${slam_headers} "${_origflags} -fwhole-program -funroll-loops ")
-#set_source_files_properties(${slam_sources} "${_origflags} -fwhole-program -funroll-loops ")
-
-
 ####################################
 # make the library
 ####################################

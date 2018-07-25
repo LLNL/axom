@@ -19,12 +19,13 @@
 
 axom_add_component(COMPONENT_NAME axom_utils DEFAULT_STATE ON)
 
-# Lumberjack is an extension to SLIC that supports message filtering and
-# reduction capabilities for parallel (MPI) executables. It is not meant for
-# serial (non-mpi) executables.
+# Lumberjack is a parallel message filtering and reduction library. It can be used
+# by itself or as a SLIC Log Stream. It is not meant for serial (non-mpi) executables.
 if(ENABLE_MPI)
     axom_add_component( COMPONENT_NAME lumberjack
                         DEFAULT_STATE  ${AXOM_ENABLE_ALL_COMPONENTS})
+else()
+    set(AXOM_ENABLE_LUMBERJACK OFF CACHE BOOL "")
 endif()
 
 axom_add_component(COMPONENT_NAME slic DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
@@ -42,7 +43,7 @@ axom_add_component(COMPONENT_NAME quest DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONEN
 set(axom_components axom_utils lumberjack slic primal slam sidre mint quest)
 foreach(comp ${axom_components})
     string(TOUPPER ${comp} COMP)
-    if(ENABLE_${COMP})
+    if(AXOM_ENABLE_${COMP})
         add_dependencies(${comp} copy_axom_includes)
     endif()
 endforeach()

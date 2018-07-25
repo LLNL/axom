@@ -78,7 +78,7 @@ if (ENABLE_MPI)
     list(APPEND quest_headers stl/PSTLReader.hpp)
     list(APPEND quest_sources stl/PSTLReader.cpp)
 
-    if(ENABLE_LUMBERJACK)
+    if(AXOM_ENABLE_LUMBERJACK)
         list(APPEND quest_depends_on lumberjack mpi)
     endif()
 endif()

@@ -51,7 +51,7 @@ blt_add_executable(
 ## Quest interface examples
 
 set(quest_interface_extra_depends)
-if (ENABLE_LUMBERJACK)
+if (AXOM_EENABLE_LUMBERJACK)
     list(APPEND quest_interface_extra_depends lumberjack)
 endif()
 
