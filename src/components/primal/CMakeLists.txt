@@ -16,7 +16,7 @@
 # Check necessary dependencies
 ################################
 axom_component_requires(NAME       PRIMAL
-                        COMPONENTS Axom_utils SLIC)
+                        COMPONENTS SLIC)
 
 ################################
 # add sources

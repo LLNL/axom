@@ -69,10 +69,11 @@ include(cmake/CMakeBasics.cmake)
 ################################
 add_subdirectory(thirdparty)
 
-#################################
-# Add top-level includes
-#################################
-add_subdirectory(include)
+################################
+# Global includes for the Axom projects (restrict these as much as possible)
+################################
+include_directories(${CMAKE_BINARY_DIR}/include)
+include_directories(${PROJECT_SOURCE_DIR}/components)
 
 ################################
 # Add components
@@ -91,7 +92,6 @@ add_subdirectory(tools)
 ################################
 add_subdirectory(examples)
 
-
 ################################
 # Add docs
 ################################
@@ -103,4 +103,3 @@ endif()
 # Create header of configuration options
 ################################s
 include(cmake/AxomConfig.cmake)
-

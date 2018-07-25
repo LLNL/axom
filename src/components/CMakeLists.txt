@@ -12,12 +12,13 @@
 # For details about use and distribution, please read axom/LICENSE.
 #------------------------------------------------------------------------------
 
-## add components
+## Add components
 ## Note: Default state of components is controlled by the
-## AXOM_ENABLE_ALL_COMPONENTS option. However, the 'axom_utils' component is always
-## enabled.
+## AXOM_ENABLE_ALL_COMPONENTS option.
 
-axom_add_component(COMPONENT_NAME axom_utils DEFAULT_STATE ON)
+# Default components of Axom that are essential parts and cannot be turned off
+add_subdirectory(axom)
+add_subdirectory(axom_utils)
 
 # Lumberjack is a parallel message filtering and reduction library. It can be used
 # by itself or as a SLIC Log Stream. It is not meant for serial (non-mpi) executables.
@@ -36,14 +37,9 @@ axom_add_component(COMPONENT_NAME mint   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONE
 axom_add_component(COMPONENT_NAME quest  DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 
 foreach(comp ${AXOM_COMPONENTS_FULL})
-    string(TOUPPER ${comp} COMP)
-    if(AXOM_ENABLE_${COMP})
+    string(TOUPPER ${comp} COMPONENT_NAME_UPPERCASE)
+    if(AXOM_ENABLE_${COMPONENT_NAME_UPPERCASE})
         message(STATUS "Axom component ${comp} is ON")
-        ## Add dependency for each enabled component on the copy_axom_includes target
-        ## to ensure that the include files are copied over
-        ## Note: This assumes components have a cmake target with the same name 
-        ## (e.g. that slic has a target named 'slic')
-        add_dependencies(${comp} copy_axom_includes)
     else()
         message(STATUS "Axom component ${comp} is OFF")
     endif()

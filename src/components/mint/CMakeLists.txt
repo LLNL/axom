@@ -16,7 +16,7 @@
 # Check necessary dependencies
 ################################
 axom_component_requires(NAME       Mint
-                        COMPONENTS Axom_utils SLIC)
+                        COMPONENTS SLIC)
 
 ################################
 # Add mint options

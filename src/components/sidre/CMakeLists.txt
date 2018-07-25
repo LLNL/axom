@@ -16,7 +16,7 @@
 # Check necessary dependencies
 ################################
 axom_component_requires(NAME       Sidre
-                        COMPONENTS Axom_utils SLIC
+                        COMPONENTS SLIC
                         TPLS       Conduit)
 
 # Note: Sidre's unordered_map is either sparsehash OR C++11's unordered_map
