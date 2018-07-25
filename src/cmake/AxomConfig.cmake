@@ -58,8 +58,7 @@ endif()
 
 
 ## Add a configuration define for each enabled axom component
-set(COMPS AXOM_UTILS LUMBERJACK SLIC SLAM SIDRE MINT PRIMAL QUEST)
-foreach(comp in ${COMPS})
+foreach(comp in ${AXOM_COMPONENTS_FULL})
     if( AXOM_ENABLE_${comp} )
         set(AXOM_USE_${comp} TRUE)
     endif()

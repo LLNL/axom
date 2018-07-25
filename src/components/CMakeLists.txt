@@ -28,22 +28,23 @@ else()
     set(AXOM_ENABLE_LUMBERJACK OFF CACHE BOOL "")
 endif()
 
-axom_add_component(COMPONENT_NAME slic DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
+axom_add_component(COMPONENT_NAME slic   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 axom_add_component(COMPONENT_NAME primal DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
-axom_add_component(COMPONENT_NAME slam DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
-axom_add_component(COMPONENT_NAME sidre DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
-axom_add_component(COMPONENT_NAME mint DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
-axom_add_component(COMPONENT_NAME quest DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
+axom_add_component(COMPONENT_NAME slam   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
+axom_add_component(COMPONENT_NAME sidre  DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
+axom_add_component(COMPONENT_NAME mint   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
+axom_add_component(COMPONENT_NAME quest  DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 
-
-## Add dependency for each enabled component on the copy_axom_includes target
-## to ensure that the include files are copied over
-## Note: This assumes components have a cmake target with the same name 
-## (e.g. that slic has a target named 'slic')
-set(axom_components axom_utils lumberjack slic primal slam sidre mint quest)
-foreach(comp ${axom_components})
+foreach(comp ${AXOM_COMPONENTS_FULL})
     string(TOUPPER ${comp} COMP)
     if(AXOM_ENABLE_${COMP})
+        message(STATUS "Axom component ${comp} is ON")
+        ## Add dependency for each enabled component on the copy_axom_includes target
+        ## to ensure that the include files are copied over
+        ## Note: This assumes components have a cmake target with the same name 
+        ## (e.g. that slic has a target named 'slic')
         add_dependencies(${comp} copy_axom_includes)
+    else()
+        message(STATUS "Axom component ${comp} is OFF")
     endif()
 endforeach()
