@@ -31,7 +31,7 @@ endif()
 ##       that are configured with MPI and OPENMP, respectively.
 
 set(TPL_DEPS CONDUIT HDF5 SPARSEHASH FMT MPI MFEM SCR)  # vars of the form DEP_FOUND
-foreach(dep in ${TPL_DEPS})
+foreach(dep ${TPL_DEPS})
     if( ${dep}_FOUND OR ENABLE_${dep} )
         set(AXOM_USE_${dep} TRUE  )
     endif()
@@ -58,10 +58,9 @@ endif()
 
 
 ## Add a configuration define for each enabled axom component
-foreach(comp in ${AXOM_COMPONENTS_FULL})
-    if( AXOM_ENABLE_${comp} )
-        set(AXOM_USE_${comp} TRUE)
-    endif()
+foreach(comp ${AXOM_COMPONENTS_ENABLED})
+    string(TOUPPER ${comp} comp_uc)
+    set(AXOM_USE_${comp_uc} TRUE)
 endforeach()
 
 convert_to_native_escaped_file_path(${CMAKE_SOURCE_DIR} AXOM_SRC_DIR)
