@@ -89,7 +89,7 @@ declarations:
                    double* hi+dimension+intent(OUT) )
 
       - decl: void signed_distance_set_dimension( int dim )
-      - decl: void signed_distance_set_geometry( int type )
+      - decl: void signed_distance_set_closed_surface( bool status )
       - decl: void signed_distance_set_max_levels( int maxLevels )
       - decl: void signed_distance_set_max_occupancy( int maxOccupancy )
       - decl: void signed_distance_set_verbose( bool status )
