@@ -20,10 +20,10 @@
 #include "axom/config.hpp"// for compile-time definitions
 #include "axom/Types.hpp" // for fixed-width types
 
-#cmakedefine MINT_USE_SIDRE
+#cmakedefine AXOM_MINT_USE_SIDRE
 
 #ifndef AXOM_NO_INT64_T
-#cmakedefine MINT_USE_64BIT_INDEXTYPE
+#cmakedefine AXOM_MINT_USE_64BIT_INDEXTYPE
 #endif
 
 namespace axom
@@ -31,7 +31,7 @@ namespace axom
 namespace mint
 {
 
-#ifdef MINT_USE_64BIT_INDEXTYPE
+#ifdef AXOM_MINT_USE_64BIT_INDEXTYPE
 using IndexType = common::int64;
 #else
 using IndexType = common::int32;
