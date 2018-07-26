@@ -53,7 +53,7 @@
 
 #include "slam/Utilities.hpp"
 
-#include "fmt/format.h"
+#include "fmt/fmt.hpp"
 
 
 // C/C++ includes

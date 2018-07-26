@@ -69,7 +69,7 @@
 #include "axom_utils/Timer.hpp"
 #include "axom_utils/Utilities.hpp"
 
-#include "fmt/format.h"
+#include "fmt/fmt.hpp"
 
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"

@@ -18,10 +18,11 @@
 #
 
 ############################################################
-# Register the fmt header-only library for string formatting
+# Register the built-in fmt library for string formatting
 ############################################################
 
 set(fmt_headers
+    fmt/fmt.hpp
     fmt/format.h
     fmt/ostream.h
     fmt/printf.h
