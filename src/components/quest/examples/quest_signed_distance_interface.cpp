@@ -82,6 +82,7 @@ static struct
   double box_max[3];
   bool specified_box_min;
   bool specified_box_max;
+  bool is_water_tight;
   bool dump_vtk;
 } Arguments;
 
@@ -112,6 +113,7 @@ int main ( int argc, char** argv )
   slic::flushStreams();
 
   timer.start();
+  quest::signed_distance_set_closed_surface( Arguments.is_water_tight );
   quest::signed_distance_set_max_levels( Arguments.maxLevels );
   quest::signed_distance_set_max_occupancy( Arguments.maxOccupancy );
   int rc = quest::signed_distance_init( Arguments.fileName, global_comm );
@@ -226,6 +228,7 @@ void parse_args( int argc, char** argv )
   Arguments.specified_box_max = false;
   Arguments.specified_box_min = false;
   Arguments.dump_vtk          = true;
+  Arguments.is_water_tight    = true;
 
   for ( int i=1 ; i < argc ; ++i )
   {
@@ -272,6 +275,10 @@ void parse_args( int argc, char** argv )
     {
       Arguments.dump_vtk = false;
     }
+    else if ( strcmp( argv[i], "--not-watertight" )==0 )
+    {
+      Arguments.is_water_tight = false;
+    }
     else if ( strcmp( argv[i], "--help" )==0 )
     {
       show_help();
@@ -305,6 +312,7 @@ void show_help( )
   SLIC_INFO( "--box-min <X0> <Y0> <Z0> the lower corner of the box mesh" );
   SLIC_INFO( "--box-max <XN> <YN> <ZN> the upper cordner of the box mesh" );
   SLIC_INFO( "--no-vtk disables VTK output." );
+  SLIC_INFO( "--not-watertight" );
   SLIC_INFO( "--help prints this help information" );
   slic::flushStreams();
 }
