@@ -394,7 +394,7 @@ TEST( quest_signed_distance_interface, analytic_plane )
   EXPECT_TRUE( quest::signed_distance_initialized() );
 
   mint::IndexType nnodes = mesh.getNumberOfNodes();
-  for ( mint::IndexType inode=0; inode < nnodes; ++inode )
+  for ( mint::IndexType inode=0 ; inode < nnodes ; ++inode )
   {
     double pt[ NDIMS ];
     mesh.getNode( inode, pt );

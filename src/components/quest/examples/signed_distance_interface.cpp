@@ -135,7 +135,7 @@ int main ( int argc, char** argv )
 
   timer.reset();
   timer.start();
-  for ( mint::IndexType inode=0; inode < nnodes; ++inode )
+  for ( mint::IndexType inode=0 ; inode < nnodes ; ++inode )
   {
     double pt[ 3 ];
     mesh->getNode( inode, pt );
@@ -221,8 +221,8 @@ void parse_args( int argc, char** argv )
   Arguments.maxLevels     = 15;
   Arguments.maxOccupancy  = 5;
   Arguments.box_dims[ 0 ] =
-  Arguments.box_dims[ 1 ] =
-  Arguments.box_dims[ 2 ] = 32;
+    Arguments.box_dims[ 1 ] =
+      Arguments.box_dims[ 2 ] = 32;
   Arguments.specified_box_max = false;
   Arguments.specified_box_min = false;
   Arguments.dump_vtk          = true;
