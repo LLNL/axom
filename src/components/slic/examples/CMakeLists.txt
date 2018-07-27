@@ -23,7 +23,7 @@ set(mpi_example_sources
     basic/separate_file_per_rank.cpp
     )
 
-if (ENABLE_LUMBERJACK)
+if (AXOM_ENABLE_LUMBERJACK)
     list(APPEND mpi_example_sources basic/lumberjack_logging.cpp )
 endif()
 
