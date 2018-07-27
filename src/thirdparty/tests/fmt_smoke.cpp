@@ -19,8 +19,8 @@
 //
 // file: fmt_smoke.cpp
 // A simple test to see if the thirdparty fmt libary is working properly.
-// Note: To ensure that fmt is configured properly, included the `fmt/fmt.hpp' helper file
-// rather than directly including fmt's header files.
+// Note: To ensure that fmt is configured properly, include the `fmt/fmt.hpp'
+// helper file rather than directly including fmt's header files.
 //
 //-----------------------------------------------------------------------------
 

@@ -146,30 +146,37 @@ struct CommandLineArguments
 
   void usage()
   {
-    fmt::MemoryWriter out;
-    out << "Usage ./quest_regression <options>";
-    out.write("\n\t{:<30}{}", "--help", "Output this message and quit");
-    out.write("\n\t{:<30}{}", "--mesh <file>",
-              "(required) Surface mesh file "
-              "(STL files are currently supported)");
-    out.write("\n\t{:<30}{}", "--baseline <file>",
-              "root file of baseline, a sidre rootfile. "
-              "Note: Only supported when Axom configured with hdf5");
+    fmt::memory_buffer out;
+    fmt::format_to(out,"Usage ./quest_regression <options>");
+    fmt::format_to(out,"\n\t{:<30}{}",
+                   "--help",
+                   "Output this message and quit");
+    fmt::format_to(out,"\n\t{:<30}{}",
+                   "--mesh <file>",
+                   "(required) Surface mesh file (STL files are currently supported)");
+    fmt::format_to(out,"\n\t{:<30}{}",
+                   "--baseline <file>",
+                   "root file of baseline, a sidre rootfile. "
+                   "Note: Only supported when Axom configured with hdf5");
 
-    out << "\n  At least one of the following must be enabled:";
-    out.write("\n\t{:<30}{}", "--[no-]distance",
-              "Indicates whether to test the signed distance (default: on)");
-    out.write("\n\t{:<30}{}", "--[no-]containment",
-              "Indicates whether to test the point containment (default: on)");
+    fmt::format_to(out,"\n  At least one of the following must be enabled:");
+    fmt::format_to(out,"\n\t{:<30}{}",
+                   "--[no-]distance",
+                   "Indicates whether to test the signed distance (default: on)");
+    fmt::format_to(out,"\n\t{:<30}{}",
+                   "--[no-]containment",
+                   "Indicates whether to test the point containment (default: on)");
 
-    out << "\n  The following options are only used when "
-        << "--baseline is not supplied (or is disabled)";
-    out.write("\n\t{:<30}{}", "--resolution nx ny nz",
-              "The resolution of the sample grid");
-    out.write("\n\t{:<30}{}", "--bounding-box x y z x y z",
-              "The bounding box to test (min then max)");
+    fmt::format_to(out,"\n  The following options are only used "
+                       "when --baseline is not supplied (or is disabled)");
+    fmt::format_to(out,"\n\t{:<30}{}",
+                   "--resolution nx ny nz",
+                   "The resolution of the sample grid");
+    fmt::format_to(out,"\n\t{:<30}{}",
+                   "--bounding-box x y z x y z",
+                   "The bounding box to test (min then max)");
 
-    SLIC_INFO( out.str() );
+    SLIC_INFO( out.data() );
   }
 
 };
@@ -636,7 +643,7 @@ bool compareDistanceAndContainment(CommandLineArguments& clargs)
   {
     // compare containment results of the two approaches
     int diffCount = 0;
-    fmt::MemoryWriter out;
+    fmt::memory_buffer out;
 
     int* bvh_containment = umesh->getFieldPtr< int >( "bvh_containment",
                                                       axom::mint::NODE_CENTERED );
@@ -655,10 +662,10 @@ bool compareDistanceAndContainment(CommandLineArguments& clargs)
           axom::primal::Point< double,3 > pt;
           umesh->getNode( inode, pt.data() );
 
-          out.write(
+          fmt::format_to(
+            out,
             "\n  Disagreement on sample {} @ {}.  Signed distance: {} -- InOutOctree: {} ",
-            inode, pt,
-            bvh_c ? "inside" : "outside",
+            inode, pt, bvh_c ? "inside" : "outside",
             oct_c ? "inside" : "outside" );
         }
         ++diffCount;
@@ -672,8 +679,8 @@ bool compareDistanceAndContainment(CommandLineArguments& clargs)
         "** Disagreement between SignedDistance "
         << " and InOutOctree containment queries.  "
         <<"\n There were " << diffCount << " differences."
-        <<"\n Showing first "
-        << std::min(diffCount,MAX_RESULTS) << out.str() );
+        <<"\n Showing first " << std::min(diffCount,MAX_RESULTS)
+        <<" results:" << out.data() );
     }
 
   }
@@ -701,7 +708,7 @@ bool compareToBaselineResults(axom::sidre::Group* grp,
   if(clargs.testContainment)
   {
     int diffCount = 0;
-    fmt::MemoryWriter out;
+    fmt::memory_buffer out;
 
     int* exp_containment = umesh->getFieldPtr< int >( "octree_containment",
                                                       axom::mint::NODE_CENTERED );
@@ -718,8 +725,10 @@ bool compareToBaselineResults(axom::sidre::Group* grp,
           axom::primal::Point< double,3 > pt;
           umesh->getNode( inode, pt.data() );
 
-          out.write("\n  Disagreement on sample {} @ {}.  Expected {}, got {}",
-                    inode, pt, expected, actual);
+          fmt::format_to(
+            out,
+            "\n  Disagreement on sample {} @ {}.  Expected {}, got {}",
+            inode, pt, expected, actual);
         }
         ++diffCount;
       }
@@ -731,7 +740,7 @@ bool compareToBaselineResults(axom::sidre::Group* grp,
       SLIC_INFO(
         "** Containment test failed.  There were "
         << diffCount << " differences. Showing first "
-        << std::min(diffCount, MAX_RESULTS) << out.str() );
+        << std::min(diffCount, MAX_RESULTS) << out.data() );
     }
 
   }
@@ -739,7 +748,7 @@ bool compareToBaselineResults(axom::sidre::Group* grp,
   if(clargs.testDistance)
   {
     int diffCount = 0;
-    fmt::MemoryWriter out;
+    fmt::memory_buffer out;
 
     int* base_containment = grp->getView("bvh_containment")->getArray();
     int* exp_containment  = umesh->getFieldPtr< int >(
@@ -763,11 +772,11 @@ bool compareToBaselineResults(axom::sidre::Group* grp,
           axom::primal::Point< double,3 > pt;
           umesh->getNode( inode, pt.data() );
 
-          out.write("\n  Disagreement on sample {} @ {}.  "
-                    "Expected {} ({}), got {} ({})",
-                    inode, pt,
-                    expected_d, expected_c ? "inside" : "outside",
-                    actual_d, actual_c ? "inside" : "outside" );
+          fmt::format_to(
+            out,
+            "\n  Disagreement on sample {} @ {}. Expected {} ({}), got {} ({})",
+            inode, pt,expected_d, expected_c ? "inside" : "outside",
+            actual_d, actual_c ? "inside" : "outside" );
         }
         ++diffCount;
       }
@@ -779,7 +788,7 @@ bool compareToBaselineResults(axom::sidre::Group* grp,
       SLIC_INFO(
         "** Distance test failed.  There were "
         << diffCount << " differences. Showing first "
-        << std::min(diffCount, MAX_RESULTS) << out.str() );
+        << std::min(diffCount, MAX_RESULTS) << out.data() );
     }
 
   }

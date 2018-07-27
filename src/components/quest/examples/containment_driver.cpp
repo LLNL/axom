@@ -351,37 +351,38 @@ void print_surface_stats( mint::Mesh* mesh)
   SLIC_INFO("Edge length range: " << meshEdgeLenRange);
   SLIC_INFO("Triangle area range is: " << meshTriAreaRange);
 
-  fmt::MemoryWriter edgeHistStr;
-  edgeHistStr<<"Edge length histogram (lg-arithmic): ";
+  fmt::memory_buffer edgeHistStr;
+  fmt::format_to(edgeHistStr,"Edge length histogram (lg-arithmic): ");
   for(LogHistogram::const_iterator it = edgeLenHist.begin()
       ; it != edgeLenHist.end()
       ; ++it)
   {
-    edgeHistStr.write("\n\texp: {}\tcount: {}\tRange: {}",
-                      it->first, it->second / 2, edgeLenRangeMap[it->first]);
+    fmt::format_to(edgeHistStr,"\n\texp: {}\tcount: {}\tRange: {}",
+                   it->first, it->second / 2, edgeLenRangeMap[it->first]);
   }
-  SLIC_DEBUG(edgeHistStr.str());
+  SLIC_DEBUG(edgeHistStr.data());
 
-  fmt::MemoryWriter triHistStr;
-  triHistStr<<"Triangle areas histogram (lg-arithmic): ";
+  fmt::memory_buffer triHistStr;
+  fmt::format_to(triHistStr,"Triangle areas histogram (lg-arithmic): ");
   for(LogHistogram::const_iterator it =areaHist.begin()
       ; it != areaHist.end()
       ; ++it)
   {
-    triHistStr.write("\n\texp: {}\tcount: {}\tRange: {}",
-                     it->first, it->second, areaRangeMap[it->first]);
+    fmt::format_to(triHistStr,"\n\texp: {}\tcount: {}\tRange: {}",
+                   it->first, it->second, areaRangeMap[it->first]);
   }
-  SLIC_DEBUG(triHistStr.str());
+  SLIC_DEBUG(triHistStr.data());
 
   if(!badTriangles.empty() )
   {
-    fmt::MemoryWriter badTriStr;
-    badTriStr<<"The following triangle(s) have zero area/edge lengths:";
+    fmt::memory_buffer badTriStr;
+    fmt::format_to(badTriStr,
+                   "The following triangle(s) have zero area/edge lengths:");
     for(TriIdxSet::const_iterator it = badTriangles.begin()
         ; it != badTriangles.end()
         ; ++it)
     {
-      badTriStr<< "\n\tTriangle " << *it;
+      fmt::format_to(badTriStr,"\n\tTriangle {}",*it);
       TriVertIndices vertIndices;
       mesh->getCell( *it, vertIndices.data() );
 
@@ -389,11 +390,11 @@ void print_surface_stats( mint::Mesh* mesh)
       for(int j=0 ; j<3 ; ++j)
       {
         mesh->getNode( vertIndices[j], vertPos.data() );
-        badTriStr.write("\n\t\t vId: {} @ position: {}",
-                        vertIndices[j], vertPos);
+        fmt::format_to(badTriStr,"\n\t\t vId: {} @ position: {}",
+                       vertIndices[j], vertPos);
       }
     }
-    SLIC_DEBUG(badTriStr.str());
+    SLIC_DEBUG(badTriStr.data());
   }
 }
 
