@@ -185,6 +185,11 @@ void signed_distance_set_dimension( int dim );
  *
  * \note By default the input type is assumed to be a water-tight surface mesh.
  * \note Options must be set before initializing the Signed Distance Query.
+ *
+ * \note When the input is not a closed surface mesh, the assumption is that
+ *  the surface mesh divides the computational mesh domain into two regions.
+ *  Hence, the surface mesh has to span the entire domain of interest along
+ *  some plane.
  */
 void signed_distance_set_closed_surface( bool status );
 
