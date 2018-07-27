@@ -10,15 +10,21 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
+- Added support for non-closed surface mesh input to the signed distance query.
+- Added new interface for the signed distance query along with corresponding tests 
+  and examples.
 - Updated to [fmt version 5.1.0](https://github.com/fmtlib/fmt/releases/tag/5.1.0)
 
 ### Removed
+- Removed signed distance query functions from the quest.hpp interface. The
+  signed distance query is supported in its own exclusive interface.
 
 ### Deprecated
 
 ### Changed
 
 ### Fixed
+- Fixed minor memory leak in quest fortran example
 - Bugfix for "multiply-defined" linker error in slam::Bitset and quest::PointInCellTraits
 
 ### Known Bugs
