@@ -67,7 +67,7 @@ include(cmake/CMakeBasics.cmake)
 # Global includes for the Axom projects (restrict these as much as possible)
 ################################
 include_directories(${CMAKE_BINARY_DIR}/include)
-include_directories(${PROJECT_SOURCE_DIR}/components)
+include_directories(${PROJECT_SOURCE_DIR})
 
 ################################
 # Add Thirdparty Builtin Libs
@@ -75,9 +75,9 @@ include_directories(${PROJECT_SOURCE_DIR}/components)
 add_subdirectory(thirdparty)
 
 ################################
-# Add components
+# Add Axom source
 ################################
-add_subdirectory(components)
+add_subdirectory(axom)
 
 ################################
 # Adds directory for tools code
