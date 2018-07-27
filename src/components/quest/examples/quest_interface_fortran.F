@@ -201,6 +201,7 @@ program quest_fortran
   !...exercise the containment functions in quest module
   call run_containment_queries()
 
+  deallocate(FileName)
   call finalize_mpi()
 
 end program
