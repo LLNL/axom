@@ -246,6 +246,7 @@ void logger_init( bool& isInitialized,
   msgfmt.insert( 0, "[<RANK>]", 8 );
   ls = new slic::SynchronizedStream( &std::cout, comm, msgfmt );
 #else
+  static_cast< void >( comm );        // to silence compiler warnings
   ls = new slic::GenericOutputStream( &std::cout, msgfmt );
 #endif
 
