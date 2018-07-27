@@ -36,7 +36,7 @@ blt_add_executable(
 
 blt_add_executable(
     NAME       quest_signed_distance_interface_ex
-    SOURCES    signed_distance_interface.cpp
+    SOURCES    quest_signed_distance_interface.cpp
     OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON ${quest_example_depends}
     FOLDER      axom/quest/examples
@@ -70,7 +70,7 @@ if (ENABLE_FORTRAN)
 
     blt_add_executable(
         NAME       quest_signed_distance_interface_F_ex
-        SOURCES    signed_distance_interface.F
+        SOURCES    quest_signed_distance_interface.F
         OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
         DEPENDS_ON ${quest_example_depends}
         FOLDER     axom/quest/examples
