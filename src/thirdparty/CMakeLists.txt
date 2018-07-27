@@ -23,9 +23,12 @@
 
 set(fmt_headers
     fmt/fmt.hpp
+    fmt/core.h
     fmt/format.h
+    fmt/format-inl.h
     fmt/ostream.h
     fmt/printf.h
+    fmt/ranges.h
     )
 
 # Do not include the following source files in the headers list even
@@ -35,7 +38,6 @@ set(fmt_headers
 
 set(fmt_headers_sources
     fmt/format.cc
-    fmt/ostream.cc
     )
 
 blt_add_library(NAME fmt
@@ -49,13 +51,6 @@ target_include_directories(fmt INTERFACE
 # Setup some variables for fmt in Axom's config.hpp
 set(FMT_EXCEPTIONS FALSE PARENT_SCOPE)
 set(FMT_HEADER_ONLY TRUE PARENT_SCOPE)
-
-if( COMPILER_FAMILY_IS_CLANG )
-    set(FMT_USE_EXTERN_TEMPLATES FALSE PARENT_SCOPE)
-else()
-    set(FMT_USE_EXTERN_TEMPLATES TRUE PARENT_SCOPE)
-endif()
-
 
 install(TARGETS              fmt
         EXPORT               fmt-targets
