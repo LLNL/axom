@@ -201,12 +201,12 @@ module axom_quest
             integer(C_INT), value, intent(IN) :: dim
         end subroutine quest_signed_distance_set_dimension
 
-        subroutine quest_signed_distance_set_geometry(type) &
-                bind(C, name="QUEST_signed_distance_set_geometry")
-            use iso_c_binding, only : C_INT
+        subroutine c_signed_distance_set_closed_surface(status) &
+                bind(C, name="QUEST_signed_distance_set_closed_surface")
+            use iso_c_binding, only : C_BOOL
             implicit none
-            integer(C_INT), value, intent(IN) :: type
-        end subroutine quest_signed_distance_set_geometry
+            logical(C_BOOL), value, intent(IN) :: status
+        end subroutine c_signed_distance_set_closed_surface
 
         subroutine quest_signed_distance_set_max_levels(maxLevels) &
                 bind(C, name="QUEST_signed_distance_set_max_levels")
@@ -367,6 +367,16 @@ contains
         SHT_rv = c_signed_distance_initialized()
         ! splicer end function.signed_distance_initialized
     end function quest_signed_distance_initialized
+
+    subroutine quest_signed_distance_set_closed_surface(status)
+        use iso_c_binding, only : C_BOOL
+        logical, value, intent(IN) :: status
+        logical(C_BOOL) SH_status
+        SH_status = status  ! coerce to C_BOOL
+        ! splicer begin function.signed_distance_set_closed_surface
+        call c_signed_distance_set_closed_surface(SH_status)
+        ! splicer end function.signed_distance_set_closed_surface
+    end subroutine quest_signed_distance_set_closed_surface
 
     subroutine quest_signed_distance_set_verbose(status)
         use iso_c_binding, only : C_BOOL
