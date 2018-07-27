@@ -25,7 +25,7 @@
 #include "sidre/Group.hpp"
 #include "sidre/DataStore.hpp"
 #include "sidre/SidreTypes.hpp"
-#include "fmt/format.h"
+#include "fmt/fmt.hpp"
 
 // Conduit headers
 #include "conduit_relay.hpp"

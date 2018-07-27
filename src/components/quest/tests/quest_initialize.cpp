@@ -7,7 +7,7 @@
 #include "quest_test_utilities.hpp"
 #include "quest/quest.hpp"
 
-#include "fmt/format.h"
+#include "fmt/fmt.hpp"
 
 #ifdef AXOM_USE_MPI
   #include <mpi.h>

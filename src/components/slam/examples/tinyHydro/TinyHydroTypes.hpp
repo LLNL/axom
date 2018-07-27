@@ -24,7 +24,7 @@
 #include "VectorXY.hpp"
 
 #include "axom/config.hpp"
-#include "fmt/format.h"
+#include "fmt/fmt.hpp"
 
 #include "slam/OrderedSet.hpp"
 #include "slam/RangeSet.hpp"

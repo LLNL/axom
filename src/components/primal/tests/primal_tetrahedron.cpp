@@ -22,7 +22,7 @@
 #include "primal/Point.hpp"
 #include "primal/Tetrahedron.hpp"
 
-#include "fmt/format.h"
+#include "fmt/fmt.hpp"
 #include "slic/slic.hpp"
 
 #include <cmath>

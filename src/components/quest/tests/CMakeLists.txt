@@ -103,7 +103,7 @@ else()
 endif()
 
 # Regression tests for quest signed distance and InOutOctree point containment queries
-if (ENABLE_MPI AND ENABLE_SIDRE)
+if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
 
     set(quest_regression_depends
         ${quest_tests_depends}

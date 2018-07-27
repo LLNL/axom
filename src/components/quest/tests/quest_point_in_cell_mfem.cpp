@@ -48,7 +48,7 @@
 #include "slic/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
-#include "fmt/format.h"
+#include "fmt/fmt.hpp"
 
 #include <fstream>
 #include <vector>

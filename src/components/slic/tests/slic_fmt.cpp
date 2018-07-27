@@ -22,7 +22,7 @@
  */
 
 #include "axom/config.hpp"
-#include "fmt/format.h"
+#include "fmt/fmt.hpp"
 
 #include "slic/slic.hpp"
 #include "slic/UnitTestLogger.hpp"

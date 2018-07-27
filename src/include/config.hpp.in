@@ -104,7 +104,6 @@
  */
 #cmakedefine01 FMT_EXCEPTIONS
 #cmakedefine01 FMT_HEADER_ONLY
-#cmakedefine01 FMT_USE_EXTERN_TEMPLATES
 
 /*
  * Compiler defines to configure the built-in sparsehash library
