@@ -21,8 +21,8 @@
 #include <sstream> // for ostringstream
 
 // Logging includes
-#include "slic/slic.hpp"
-#include "slic/GenericOutputStream.hpp"
+#include "axom/slic/interface/slic.hpp"
+#include "axom/slic/streams/GenericOutputStream.hpp"
 
 // MPI
 #include <mpi.h>

@@ -23,9 +23,9 @@
 #include <vector>
 
 // axom includes
-#include "axom/Types.hpp"
-#include "slic/slic.hpp"
-#include "slic/LumberjackStream.hpp"
+#include "axom/core/Types.hpp"
+#include "axom/slic/interface/slic.hpp"
+#include "axom/slic/streams/LumberjackStream.hpp"
 
 // MPI
 #include <mpi.h>

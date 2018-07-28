@@ -20,7 +20,7 @@
  *
  */
 
-#include "LogStream.hpp"
+#include "axom/slic/core/LogStream.hpp"
 
 // C/C++ includes
 #include <ctime>

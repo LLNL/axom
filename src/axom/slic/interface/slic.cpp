@@ -15,7 +15,7 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include "slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 
 #include <cstdlib>    // for free
 #include <sstream>    // for std::ostringstream
@@ -49,7 +49,7 @@ void initialize()
 //------------------------------------------------------------------------------
 bool isInitialized()
 {
-  return ( Logger::getActiveLogger() != AXOM_NULLPTR );
+  return ( Logger::getActiveLogger() != nullptr );
 }
 
 //------------------------------------------------------------------------------

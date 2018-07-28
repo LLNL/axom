@@ -22,14 +22,14 @@
 #ifndef LOGGER_HPP_
 #define LOGGER_HPP_
 
-#include "slic/MessageLevel.h"
+#include "axom/slic/core/MessageLevel.h"
 
 // C/C++ includes
 #include <string> // for STL string
 #include <vector> // for STL vector
 #include <map>    // for STL map
 
-#include "axom/Macros.hpp"
+#include "axom/core/Macros.hpp"
 
 namespace axom
 {

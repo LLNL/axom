@@ -26,11 +26,11 @@
 #define UNITTESTLOGGER_HPP_
 
 // Other axom headers
-#include "axom/Macros.hpp"    // defines DISABLE_{COPY,MOVE}_AND_ASSIGNMENT
+#include "axom/core/Macros.hpp"    // defines DISABLE_{COPY,MOVE}_AND_ASSIGNMENT
 
 // slic component headers
-#include "slic.hpp"
-#include "GenericOutputStream.hpp"
+#include "axom/slic/interface/slic.hpp"
+#include "axom/slic/streams/GenericOutputStream.hpp"
 
 namespace axom
 {

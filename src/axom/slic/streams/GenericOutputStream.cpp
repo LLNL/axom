@@ -15,9 +15,9 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include "GenericOutputStream.hpp"
+#include "axom/slic/streams/GenericOutputStream.hpp"
 
-#include "axom/Macros.hpp"
+#include "axom/core/Macros.hpp"
 
 namespace axom
 {
@@ -48,7 +48,7 @@ void GenericOutputStream::append( message::Level msgLevel,
                                   int line,
                                   bool AXOM_NOT_USED(filtered_duplicates) )
 {
-  if ( m_stream == AXOM_NULLPTR )
+  if ( m_stream == nullptr )
   {
     std::cerr << "ERROR: NULL stream!\n";
     return;

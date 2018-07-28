@@ -23,8 +23,8 @@
 #ifndef LOGSTREAM_HPP_
 #define LOGSTREAM_HPP_
 
-#include "slic/MessageLevel.h"
-#include "axom/Macros.hpp"
+#include "axom/slic/core/MessageLevel.h"
+#include "axom/core/Macros.hpp"
 
 /// \name Wildcards
 /// @{

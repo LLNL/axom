@@ -17,7 +17,7 @@
 
 #include "gtest/gtest.h"
 
-#include "slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 
 
 TEST(slic_interface,initialize_finalize)

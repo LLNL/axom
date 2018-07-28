@@ -268,11 +268,10 @@ macro(axom_install_component)
         install( FILES ${_file} DESTINATION ${_header_base_dir}/${_dir} )
     endforeach()
 
-    if (ENABLE_FORTRAN)
+    if(ENABLE_FORTRAN)
         set(_mod ${CMAKE_Fortran_MODULE_DIRECTORY}/axom_${arg_NAME}.mod)
-        if(EXISTS ${_mod} )
-            install(FILES ${_mod} DESTINATION lib/fortran)
-        endif()
+        # TODO: Remove optional once all components have fortran wrappers
+        install(FILES ${_mod} DESTINATION lib/fortran OPTIONAL)
     endif()
 
     install(EXPORT ${arg_NAME}-targets DESTINATION lib/cmake)

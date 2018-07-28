@@ -22,11 +22,9 @@
 #ifndef SLIC_HPP_
 #define SLIC_HPP_
 
-#include "slic/Logger.hpp"
-#include "slic/LogStream.hpp"
-#include "slic/MessageLevel.h"
-
-#include "axom/Types.hpp" // for AXOM_NULLPTR
+#include "axom/slic/core/Logger.hpp"
+#include "axom/slic/core/LogStream.hpp"
+#include "axom/slic/core/MessageLevel.h"
 
 // C/C++ includes
 #include <iostream> // for std::endl, std::ends
@@ -466,14 +464,14 @@ bool isAbortOnWarningsEnabled();
  * \brief Adds the given stream to the the given level.
  * \param [in] ls pointer to the log stream.
  * \param [in] level the level to log.
- * \pre ls != AXOM_NULLPTR
+ * \pre ls != nullptr
  */
 void addStreamToMsgLevel( LogStream* ls, message::Level level);
 
 /*!
  * \brief Adds the given stream to all levels.
  * \param [in] ls pointer to the log stream.
- * \pre ls != AXOM_NULLPTR.
+ * \pre ls != nullptr.
  */
 void addStreamToAllMsgLevels( LogStream* ls );
 

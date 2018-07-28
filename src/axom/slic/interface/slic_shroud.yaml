@@ -17,7 +17,7 @@ copyright:
   -
 
 library: SLIC
-cxx_header: slic/slic.hpp
+cxx_header: axom/slic/interface/slic.hpp
 namespace: axom slic
 
 options:

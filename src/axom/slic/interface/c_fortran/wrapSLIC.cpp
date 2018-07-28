@@ -16,7 +16,7 @@
 #include "wrapSLIC.h"
 #include <cstring>
 #include <string>
-#include "slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 
 // Copy s into a, blank fill to la characters
 // Truncate if a is too short.

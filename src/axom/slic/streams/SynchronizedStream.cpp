@@ -15,12 +15,12 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include "SynchronizedStream.hpp"
+#include "axom/slic/streams/SynchronizedStream.hpp"
 
 #include <vector>
 
-#include "axom/Macros.hpp"
-#include "axom_utils/StringUtilities.hpp"
+#include "axom/core/Macros.hpp"
+#include "axom/core/utilities/StringUtilities.hpp"
 
 namespace axom
 {
@@ -34,7 +34,7 @@ struct SynchronizedStream::MessageCache
 
   void printMessages( std::ostream* stream )
   {
-    if ( stream == AXOM_NULLPTR )
+    if ( stream == nullptr )
     {
       std::cerr << "ERROR: cannot write to NULL stream!\n";
       return;
@@ -80,7 +80,7 @@ SynchronizedStream::SynchronizedStream( std::ostream* stream,
 SynchronizedStream::~SynchronizedStream()
 {
   delete m_cache;
-  m_cache = static_cast< MessageCache* >( AXOM_NULLPTR );
+  m_cache = static_cast< MessageCache* >( nullptr );
 }
 
 //------------------------------------------------------------------------------
@@ -92,7 +92,7 @@ void SynchronizedStream::append( message::Level msgLevel,
                                  bool AXOM_NOT_USED(filter_duplicates) )
 {
 
-  if ( m_cache == AXOM_NULLPTR )
+  if ( m_cache == nullptr )
   {
     std::cerr << "ERROR: NULL cache!\n";
     return;
@@ -112,7 +112,7 @@ void SynchronizedStream::append( message::Level msgLevel,
 //------------------------------------------------------------------------------
 void SynchronizedStream::flush()
 {
-  if ( m_cache == AXOM_NULLPTR )
+  if ( m_cache == nullptr )
   {
     std::cerr << "ERROR: NULL cache!\n";
     return;
@@ -135,7 +135,7 @@ void SynchronizedStream::flush()
   if ( rank > 0 )
   {
     // wait for signal from previous rank
-    MPI_Recv(AXOM_NULLPTR,0,MPI_INT,prevrank,MPI_ANY_TAG,m_comm,
+    MPI_Recv(nullptr,0,MPI_INT,prevrank,MPI_ANY_TAG,m_comm,
              MPI_STATUSES_IGNORE);
   }
 
@@ -146,7 +146,7 @@ void SynchronizedStream::flush()
   if( nranks > 1 && nextrank < nranks )
   {
     MPI_Request null_request = MPI_REQUEST_NULL;
-    MPI_Isend(AXOM_NULLPTR,0,MPI_INT,nextrank,0,m_comm,&null_request);
+    MPI_Isend(nullptr,0,MPI_INT,nextrank,0,m_comm,&null_request);
     MPI_Request_free(&null_request);
   }
 }

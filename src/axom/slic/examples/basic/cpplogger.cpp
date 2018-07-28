@@ -20,8 +20,8 @@
 #include <cstdlib>  // for rand()
 
 // Logging includes
-#include "slic/slic.hpp"
-#include "slic/GenericOutputStream.hpp"
+#include "axom/slic/interface/slic.hpp"
+#include "axom/slic/streams/GenericOutputStream.hpp"
 
 using namespace axom;
 #define N 10

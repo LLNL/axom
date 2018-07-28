@@ -20,8 +20,8 @@
 #include <sstream> // for ostringstream
 
 // Logging includes
-#include "slic/slic.hpp"
-#include "slic/SynchronizedStream.hpp"
+#include "axom/slic/interface/slic.hpp"
+#include "axom/slic/streams/SynchronizedStream.hpp"
 
 // MPI
 #include <mpi.h>

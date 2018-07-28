@@ -15,12 +15,11 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include "Logger.hpp"
+#include "axom/slic/core/Logger.hpp"
 
-#include "LogStream.hpp"
+#include "axom/slic/core/LogStream.hpp"
 
-#include "axom/Types.hpp"
-#include "axom_utils/Utilities.hpp"   // for utilities::processAbort()
+#include "axom/core/utilities/Utilities.hpp"   // for utilities::processAbort()
 
 // C/C++ includes
 #include <iostream> // for std::cout, std::cerr
@@ -30,7 +29,7 @@ namespace axom
 namespace slic
 {
 
-Logger* Logger::s_Logger = AXOM_NULLPTR;
+Logger* Logger::s_Logger = nullptr;
 std::map< std::string, Logger* > Logger::s_loggers;
 
 //------------------------------------------------------------------------------
@@ -95,7 +94,7 @@ void Logger::setLoggingMsgLevel( message::Level level )
 void Logger::addStreamToMsgLevel( LogStream* ls, message::Level level,
                                   bool pass_ownership )
 {
-  if ( ls == AXOM_NULLPTR )
+  if ( ls == nullptr )
   {
 
     std::cerr << "WARNING: supplied log stream is NULL!\n";
@@ -117,7 +116,7 @@ void Logger::addStreamToMsgLevel( LogStream* ls, message::Level level,
 //------------------------------------------------------------------------------
 void Logger::addStreamToAllMsgLevels( LogStream* ls )
 {
-  if ( ls == AXOM_NULLPTR )
+  if ( ls == nullptr )
   {
 
     std::cerr << "WARNING: supplied log stream is NULL!\n";
@@ -146,7 +145,7 @@ LogStream* Logger::getStream( message::Level level, int i )
   if ( i < 0 || i >= static_cast< int >(m_logStreams[ level ].size()) )
   {
     std::cerr << "ERROR: stream index is out-of-bounds!\n";
-    return AXOM_NULLPTR;
+    return nullptr;
   }
 
   return m_logStreams[ level ][ i ];
@@ -284,7 +283,7 @@ bool Logger::createLogger( const std::string& name, char imask )
   } // END if inherit nothing
 
   Logger* rootLogger = Logger::getRootLogger();
-  if ( rootLogger == AXOM_NULLPTR )
+  if ( rootLogger == nullptr )
   {
     std::cerr << "ERROR: no root logger found!\n";
     return false;
@@ -348,7 +347,7 @@ void Logger::finalize()
   }
 
   s_loggers.clear();
-  s_Logger = AXOM_NULLPTR;
+  s_Logger = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -369,7 +368,7 @@ Logger* Logger::getRootLogger()
   if ( s_loggers.find( "root" ) == s_loggers.end() )
   {
     // no root logger
-    return AXOM_NULLPTR;
+    return nullptr;
   }
 
   return ( s_loggers[ "root" ] );

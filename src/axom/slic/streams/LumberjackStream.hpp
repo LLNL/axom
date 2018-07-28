@@ -16,17 +16,16 @@
  */
 
 /*!
- * \file SynchronizedStream.hpp
+ * \file LumberjackStream.hpp
  *
  */
 
-#ifndef SYNCHRONIZEDSTREAM_HPP_
-#define SYNCHRONIZEDSTREAM_HPP_
+#ifndef LUMBERJACKSTREAM_HPP_
+#define LUMBERJACKSTREAM_HPP_
 
-#include "slic/LogStream.hpp"
+#include "axom/slic/core/LogStream.hpp"
 
-#include "axom/Macros.hpp"
-#include "axom/Types.hpp"
+#include "axom/core/Macros.hpp"
 
 // C/C++ includes
 #include <iostream> // for std::ostream
@@ -34,13 +33,25 @@
 // MPI
 #include <mpi.h> // For MPI
 
+// Forward declarations
+namespace axom
+{
+namespace lumberjack
+{
+
+class Lumberjack;
+class Communicator;
+
+}
+}
+
 namespace axom
 {
 namespace slic
 {
 
 /*!
- * \class SynchronizedStream
+ * \class LumberjackStream
  *
  * \brief A concrete instance of LogStream that dumps messages to a C++
  *  std::ostream object.
@@ -54,14 +65,19 @@ namespace slic
  *  std::cerr, etc. It is suggested that applications do not use this class
  *  with an std::ofstream object.
  */
-class SynchronizedStream : public LogStream
+class LumberjackStream : public LogStream
 {
 public:
-  SynchronizedStream( std::ostream* stream, MPI_Comm comm );
-  SynchronizedStream( std::ostream* stream, MPI_Comm comm,
-                      const std::string& format);
+  LumberjackStream( std::ostream* stream, MPI_Comm comm, int ranksLimit );
+  LumberjackStream( std::ostream* stream, MPI_Comm comm, int ranksLimit,
+                    const std::string& format );
+  LumberjackStream( std::ostream* stream,
+                    axom::lumberjack::Lumberjack* lj );
+  LumberjackStream( std::ostream* stream,
+                    axom::lumberjack::Lumberjack* lj,
+                    const std::string& format );
 
-  virtual ~SynchronizedStream();
+  virtual ~LumberjackStream();
 
   /*!
    * \brief Appends the given message to the stream.
@@ -86,38 +102,56 @@ public:
                        bool filter_duplicates );
 
   /*!
-   * \brief Dumps the messages to the console in rank-order.
+   * \brief Pushes all messages to the output node according to Lumberjack's
+   *  Communication scheme. Then writes it to the given stream.
    */
   virtual void flush();
 
-private:
+  /*!
+   * \brief Pushes all messages once to their parent node according to
+   *  Lumberjack's Communication scheme.
 
-  /// Forward declarations
-  struct MessageCache;
+   * \note This does not guarantee all messages have reached the output node.
+   * \note This does not write out to the given stream.
+   */
+  virtual void push();
+
+  /*!
+   * \brief Writes the messages that are at the output node to the given stream.
+   *  It does not flush any messages and not all messages are guaranteed to be
+   *  at the output node.
+   */
+  virtual void write();
+
+private:
+  void initializeLumberjack( MPI_Comm comm, int ranksLimit );
+  void finalizeLumberjack();
 
   /// \name Private Members
   /// @{
 
-  MPI_Comm m_comm;
-  MessageCache* m_cache;
+  axom::lumberjack::Lumberjack* m_lj;
+  axom::lumberjack::Communicator* m_ljComm;
+  bool m_isLJOwnedBySLIC;
   std::ostream* m_stream;
   /// @}
 
   /*!
    * \brief Default constructor. Made private to prevent applications from
-   *  using it. Instead the constructor that passes the underlying MPI comm
+   *  using it. Instead the constructor that passes the underlying Lumberjack
+   * instance
    *  should be used.
    */
-  SynchronizedStream() : m_comm(MPI_COMM_NULL),
-    m_cache( static_cast< MessageCache* >(AXOM_NULLPTR) ),
-    m_stream( static_cast< std::ostream* >(AXOM_NULLPTR) )
+  LumberjackStream() : m_lj( static_cast< axom::lumberjack::Lumberjack* >(
+                               nullptr) ),
+    m_stream( static_cast< std::ostream* >(nullptr) )
   { };
 
-  DISABLE_COPY_AND_ASSIGNMENT(SynchronizedStream);
-  DISABLE_MOVE_AND_ASSIGNMENT(SynchronizedStream);
+  DISABLE_COPY_AND_ASSIGNMENT(LumberjackStream);
+  DISABLE_MOVE_AND_ASSIGNMENT(LumberjackStream);
 };
 
 } /* namespace slic */
 } /* namespace axom */
 
-#endif /* SYNCHRONIZEDSTREAM_HPP_ */
+#endif /* LUMBERJACKSTREAM_HPP_ */

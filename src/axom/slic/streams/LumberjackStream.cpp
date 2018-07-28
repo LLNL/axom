@@ -15,15 +15,15 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include "LumberjackStream.hpp"
+#include "axom/slic/streams/LumberjackStream.hpp"
 
 #include <vector>
 
-#include "axom/Macros.hpp"
-#include "axom_utils/StringUtilities.hpp"
+#include "axom/core/Macros.hpp"
+#include "axom/core/utilities/StringUtilities.hpp"
 
-#include "lumberjack/BinaryTreeCommunicator.hpp"
-#include "lumberjack/Lumberjack.hpp"
+#include "axom/lumberjack/BinaryTreeCommunicator.hpp"
+#include "axom/lumberjack/Lumberjack.hpp"
 
 namespace axom
 {
@@ -86,7 +86,7 @@ void LumberjackStream::append( message::Level msgLevel,
                                int line,
                                bool AXOM_NOT_USED(filter_duplicates) )
 {
-  if ( m_lj == AXOM_NULLPTR )
+  if ( m_lj == nullptr )
   {
     std::cerr <<
       "ERROR: NULL Lumberjack instance in LumberjackStream::append!\n";
@@ -99,7 +99,7 @@ void LumberjackStream::append( message::Level msgLevel,
 //------------------------------------------------------------------------------
 void LumberjackStream::flush()
 {
-  if ( m_lj == AXOM_NULLPTR )
+  if ( m_lj == nullptr )
   {
     std::cerr <<
       "ERROR: NULL Lumberjack instance in LumberjackStream::flush!\n";
@@ -113,7 +113,7 @@ void LumberjackStream::flush()
 //------------------------------------------------------------------------------
 void LumberjackStream::push()
 {
-  if ( m_lj == AXOM_NULLPTR )
+  if ( m_lj == nullptr )
   {
     std::cerr << "ERROR: NULL Lumberjack instance in LumberjackStream::push!\n";
     return;
@@ -125,7 +125,7 @@ void LumberjackStream::push()
 //------------------------------------------------------------------------------
 void LumberjackStream::write()
 {
-  if ( m_lj == AXOM_NULLPTR )
+  if ( m_lj == nullptr )
   {
     std::cerr <<
       "ERROR: NULL Lumberjack instance in LumberjackStream::write!\n";

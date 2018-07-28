@@ -23,10 +23,9 @@
 #ifndef GENERICOUTPUTSTREAM_HPP_
 #define GENERICOUTPUTSTREAM_HPP_
 
-#include "slic/LogStream.hpp"
+#include "axom/slic/core/LogStream.hpp"
 
-#include "axom/Macros.hpp"
-#include "axom/Types.hpp" // for AXOM_NULLPTR
+#include "axom/core/Macros.hpp"
 
 // C/C++ includes
 #include <iostream> // for ostream
@@ -86,7 +85,7 @@ private:
    * \note Made private to prevent applications from using it.
    */
   GenericOutputStream() : m_stream(
-      static_cast< std::ostream* >( AXOM_NULLPTR ) )
+      static_cast< std::ostream* >( nullptr ) )
   {};
 
   DISABLE_COPY_AND_ASSIGNMENT(GenericOutputStream);
