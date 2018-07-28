@@ -22,6 +22,7 @@ set(core_headers
     utilities/Utilities.hpp
     utilities/About.hpp
 
+    detail/cstdint_wrapper.hpp
     detail/ChronoTimer.hpp
     detail/TimeofdayTimer.hpp
     detail/TickCountTimer.hpp
@@ -53,28 +54,24 @@ set(core_sources
 ################################
 if (ENABLE_MPI)
     blt_add_library( NAME                  core
-                     SOURCES              "${core_sources}"
-                     HEADERS              "${core_headers}"
+                     SOURCES               ${core_sources}
+                     HEADERS               ${core_headers}
                      DEPENDS_ON            mpi
                      FOLDER                axom/core
                      )
 else()
     blt_add_library( NAME                  core
-                     SOURCES              "${core_sources}"
-                     HEADERS              "${core_headers}"
+                     SOURCES               ${core_sources}
+                     HEADERS               ${core_headers}
                      FOLDER                axom/core
                      )
 
 endif()
 
-install(TARGETS              core
-        EXPORT               core-targets
-        DESTINATION          lib
-        INCLUDES DESTINATION include/core
-        )
-install(FILES       ${core_headers}
-        DESTINATION include/core
-        )
+axom_install_component(NAME      core
+                       HEADERS   ${core_headers}
+                       )
+
 
 ################################
 # Add tests
@@ -94,10 +91,3 @@ endif()
 # Add code checks
 ################################
 axom_add_code_checks(PREFIX core)
-
-################################
-# Create CMake importable
-# exports for all of our targets
-################################
-install(EXPORT core-targets DESTINATION lib/cmake)
-

@@ -45,14 +45,9 @@ blt_add_library( NAME        lumberjack
                  FOLDER      axom/lumberjack
                  )
 
-install(TARGETS              lumberjack
-        EXPORT               lumberjack-targets
-        DESTINATION          lib
-        INCLUDES DESTINATION include/lumberjack
-        )
-install(FILES       ${lumberjack_headers}
-        DESTINATION include/lumberjack
-        )
+axom_install_component(NAME      lumberjack
+                       HEADERS   ${lumberjack_headers}
+                       )
 
 
 ################################
@@ -80,9 +75,3 @@ endif()
 # Add code checks
 ################################
 axom_add_code_checks(PREFIX lumberjack)
-
-################################
-# Create CMake importable
-# exports for all of our targets
-################################
-install(EXPORT lumberjack-targets DESTINATION lib/cmake)

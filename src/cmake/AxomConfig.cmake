@@ -98,3 +98,5 @@ configure_file(
     ${PROJECT_SOURCE_DIR}/axom/config.hpp.in
     ${CMAKE_BINARY_DIR}/include/axom/config.hpp
 )
+
+install(FILES ${CMAKE_BINARY_DIR}/include/axom/config.hpp DESTINATION include/axom)
