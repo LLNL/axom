@@ -32,11 +32,13 @@ namespace slam
 /**
  * \class IteratorBase
  *
- * \brief An iterator base class that keeps track of the position value.
+ * \brief Base class for a random access iterator over positions in a set
  *
  * This class is for keeping track of the position value in an iterator class.
  * It uses the Curiously recurring template pattern: The first template
  * parameter should be the actual iterator class. \n
+ * The derived iterator class must implement `void advance(PositionType)`
+ * to update the \a m_pos variable.
  * e.g.
  * \code{.cpp}
  * class IteratorDerived : public IteratorBase < IteratorDerived, DataType >
@@ -44,6 +46,10 @@ namespace slam
  *   using IteratorBase<IteratorDerived, DataType>::m_pos;
 
  *   //...implementation of the accessing functions using m_pos...
+ *   
+ *   //derive iterator class must implement this function, ideally protected.
+ * protected:
+ *   void advance( PositionType n) {...}
  * };
  * \endcode
  *
@@ -56,10 +62,28 @@ class IteratorBase : public std::iterator<std::random_access_iterator_tag,
                                           DataType>
 {
 public:
+  //using PositionType = typename IterType::PositionType; //can't get this to compile :(
   using PositionType = MeshIndexType;
 
 protected:
   IteratorBase(int pos) : m_pos(pos) { }
+
+private:
+  /** This class exists to access IterType advance(), a protected function. */
+  struct accessor : IterType
+  {
+    static void adv(IterType& derived, PositionType n)
+    {
+      void (IterType::*fn)(PositionType) = &accessor::advance;
+      (derived.*fn)(n);
+    }
+  };
+
+private:
+  //call the derived iterator's advance() function
+  void adv(IterType& derived, PositionType n) const {
+    accessor::adv(derived, n);
+  }
 
 public:
   bool operator==(const IterType& other) const {
@@ -68,34 +92,32 @@ public:
   bool operator!=(const IterType& other) const { return !operator==(other); }
   bool operator<(const IterType& other) const { return m_pos < other.m_pos; }
 
-  IterType& operator++() { getRetIter().advance(1); return getRetIter(); }
+  IterType& operator++() { adv(getIter(),1); return getIter(); }
   IterType operator++(int) {
-    IterType ret = getRetIter();
-    getRetIter().advance(1); return ret;
+    IterType ret = getIter();
+    adv(getIter(), 1);
+    return ret;
   }
-  IterType& operator--() { getRetIter().advance(-1); return getRetIter(); }
+  IterType& operator--() { adv(getIter(),-1); return getIter(); }
   IterType operator--(int) {
-    IterType ret = getRetIter(); getRetIter().advance(
-      -1); return ret;
+    IterType ret = getIter(); 
+    adv(getIter(),-1); 
+    return ret;
   }
 
-  IterType& operator+=(PositionType n) {
-    getRetIter().advance(n);
-    return getRetIter();
-  }
-  IterType& operator-=(PositionType n) {
-    getRetIter().advance(-n);
-    return getRetIter();
-  }
+  IterType& operator+=(PositionType n) { adv(getIter(), n); return getIter(); }
+  IterType& operator-=(PositionType n) { adv(getIter(), -n); return getIter(); }
 
   IterType operator+(PositionType n) const
   {
-    IterType ret = getRetIter(); ret.advance(n);
+    IterType ret = getIter(); 
+    adv(ret,n);
     return ret;
   }
   IterType operator-(PositionType n) const
   {
-    IterType ret = getRetIter(); ret.advance(-n);
+    IterType ret = getIter(); 
+    adv(ret,-n);
     return ret;
   }
 
@@ -105,14 +127,12 @@ public:
   }
 
 private:
-  IterType& getRetIter() { return *((IterType*)this); }
-  const IterType& getRetIter() const { return *((IterType*)this); }
-
-protected:
-  /** Derived iterator class can override this function for specialized
-   * implementation. (But the function has to be declared public to compile)
-   */
-  virtual void advance(PositionType n) { m_pos += n; }
+  IterType& getIter() { 
+    return *static_cast<IterType*>(this); 
+  }
+  const IterType& getIter() const { 
+    return *static_cast<const IterType*>(this); 
+  }
 
 protected:
   int m_pos;

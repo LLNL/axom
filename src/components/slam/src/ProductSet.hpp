@@ -38,9 +38,9 @@ namespace slam
 /**
  * \class ProductSet
  *
- * \brief Models a set whose element is the cartesian product of 2 sets. The
- *        number of elements in this set would be the product of the sizes
- *        of the 2 input sets.
+ * \brief Models a set whose element is the Cartesian product of two sets. The
+ *        number of elements in this set would be the product of the sizes of
+ *        the two input sets.
  *
  */
 class ProductSet : public BivariateSet, RangeSet
@@ -56,7 +56,7 @@ public:
   ProductSet() {}
 
   /**
-   * \brief Constructor taking in pointers of 2 Sets.
+   * \brief Constructor taking in pointers of two Sets.
    *
    * \param set1  Pointer to the first Set.
    * \param set2  Pointer to the second Set.
@@ -80,8 +80,9 @@ public:
   }
 
   /**
-   * \brief Return the element SparseIndex. Since a ProductSet is a form of
-   *        dense matrix, the index returned is the same as the pos2 parameter.
+   * \brief Return the element SparseIndex. Since ProductSet is the full
+   *        Cartesian product of the two sets, the SparseIndex is the same as
+   *        its DenseIndex, which is the same as the \a pos2 parameter.
    *
    * \param pos1  The first set position.
    * \param pos2  The second set position.
@@ -97,8 +98,8 @@ public:
 
   /**
    * \brief Returns an element's FlatIndex given its DenseIndex. Since
-   *        ProductSet is a form of dense matrix, an element's FlatIndex is
-   *        equal to `pos1*secondSetSize()+pos2`.
+   *        ProductSet is the full Cartesian product of the two sets, an
+   *        element's FlatIndex is equal to `pos1*secondSetSize()+pos2`.
    *
    * \param pos1  The first set position.
    * \param pos2  The second set position.
@@ -127,13 +128,14 @@ public:
   }
 
   /**
-   * \brief Return a set of row elements
+   * \brief Return all elements from the second set associated with position
+   *        \a pos1 in the first set.
    *
    * \param pos1   The first set position that specifies the row.
    *
    * \return  An OrderedSet of the elements in the row.
    */
-  const OrderedSetType getRow(PositionType pos1) const override
+  const OrderedSetType getElements(PositionType pos1) const override
   {
     SLIC_ASSERT(pos1 >= 0 && pos1 < firstSetSize());
 
@@ -168,7 +170,8 @@ public:
   }
 
 private:
-  void verifyPosition(PositionType s_pos) const override
+  /** \brief verify the FlatIndex \a pos is within the valid range. */
+  void verifyPosition(PositionType pos) const override
   { //from RangeSet, overloading to avoid warning in compiler
     SLIC_ASSERT_MSG(
       s_pos >= 0 && s_pos < size(),
@@ -176,12 +179,14 @@ private:
       << s_pos << ", but set only has " << size() << " elements.");
   }
 
-  void verifyPosition(PositionType s1, PositionType s2) const override
+  /** \brief verify the SparseIndex (which is the same as its DenseIndex) is
+   *         within the valid range. */
+  void verifyPosition(PositionType pos1, PositionType pos2) const override
   {
     SLIC_ASSERT_MSG(
-      isValidIndex(s1,s2),
+      isValidIndex(pos1,pos2),
       "SLAM::ProductSet -- requested out-of-range element at position ("
-      << s1 << "," << s2 << "), but set only has "
+      << pos1 << "," << pos2 << "), but set only has "
       << firstSetSize() << "x" << secondSetSize() << " elements.");
   }
 

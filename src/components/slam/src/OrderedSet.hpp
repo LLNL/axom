@@ -215,19 +215,21 @@ private:
   template<typename OrderedSet>
   class OrderedSetIterator : public IteratorBase<
       OrderedSetIterator<OrderedSet>,
-      typename OrderedSet::ElementType >
+      typename OrderedSet::ElementType>
   {
 public:
-    using IterBase = IteratorBase<OrderedSetIterator<OrderedSet>,
-                                  typename OrderedSet::ElementType>;
-    using IterBase::m_pos;
-
+    
     typedef OrderedSetIterator<OrderedSet>              iter;
     typedef typename OrderedSet::ElementType ElementType;
     typedef typename OrderedSet::PositionType PositionType;
 
     typedef typename OrderedSet::IndirectionPolicyType IndirectionType;
     typedef typename OrderedSet::StridePolicyType StrideType;
+
+    using IterBase = IteratorBase<OrderedSetIterator<OrderedSet>,
+      typename OrderedSet::ElementType>;
+    using IterBase::m_pos;
+
 public:
 
     //OrderedSetIterator(PositionType pos) : IterBase(pos) {}
@@ -252,8 +254,8 @@ public:
       return *(this->operator+(n));
     }
 
-public: //Does this have to be public for IterBase to call it?
-    void advance(PositionType n) override { m_pos += n * stride(); }
+protected:
+    void advance(PositionType n) { m_pos += n * stride(); }
 
 private:
     inline const PositionType stride() const

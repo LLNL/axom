@@ -380,6 +380,11 @@ public:
     /** \brief Returns the number of component  per element in the map's set. */
     PositionType numComp() const { return m_mapPtr->stride(); }
 
+  protected:
+    void advance(PositionType n) {
+      m_pos += n;
+    }
+
 protected:
     Map* const m_mapPtr;
   };

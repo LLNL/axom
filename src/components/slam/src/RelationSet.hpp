@@ -30,11 +30,11 @@ namespace slam
  * \brief Models a Set whose elements are derived from a relation, one element
  *        per from-set and to-set pair in the relation.
  *
- *  RelationSet can be considered a model for a sparse matrix, hence the second
- *  index (the to-set index) may not be contiguous, and user should use the
- *  indexing conversion as layed out in BivariateSet documentation.
+ *  RelationSet models a subset of the Cartesian product of two sets. Users
+ *  should refer to the BivariateSet documentation for descriptions of the
+ *  different indexing names (SparseIndex, DenseIndex, FlatIndex).
  *
- * \tparam  Relation  The Relation type that this set use.
+ * \tparam  Relation  The Relation type that this set uses.
  */
 
 template<
@@ -144,7 +144,7 @@ public:
    * \return  An OrderedSet containing the elements in the row.
    * \pre  0 <= pos1 <= set1.size()
    */
-  const OrderedSetType getRow(PositionType s1) const override
+  const OrderedSetType getElements(PositionType s1) const override
   {
     return (*m_relation)[s1];
   }

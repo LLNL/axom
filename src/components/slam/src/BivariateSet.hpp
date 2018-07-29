@@ -18,7 +18,7 @@
 /**
  * \file BivariateSet.hpp
  *
- * \brief Contians the class BivariateSet and NullBivariateSet
+ * \brief Contains the class BivariateSet and NullBivariateSet
  *
  */
 
@@ -38,31 +38,38 @@ namespace slam
 /**
  * \class BivariateSet
  *
- * \brief Abstract class that models a set whose elements are indexed by 2
- *        indices (e.g. a matrix).
+ * \brief Abstract class that models a set whose elements are indexed by two
+ *        indices. Each element in a BivariateSet is equivalent to an ordered
+ *        pair containing a row and column index, similar to indexing in a
+ *        matrix.
  *
- * \detail A BivariateSet is like a Set, but uses 2 indices instead of 1. Its
- *         constructor takes 2 Set pointers, and the size of the 2 Sets defines
- *         the range of the 2 indices of the BivariateSet.
- *
- *  The class assumes that, for a sparse matrix representation, the second
- *  index is sparcified in the internal representation. The sparcified
- *  second index is referred to as "SparseIndex" in the documentation, and the
- *  original dense index as "DenseIndex". To treat the elements as a contiguous
- *  array and access via what's called the "FlatIndex".\n
+ * \detail BivariateSet models a subset of the Cartesian product of its two sets.
+ *         Elements of a BivariateSet can be represented as an ordered pair of
+ *         indices into the two sets.
+ * 
+ *  For BivariateSets that do not model the entire Cartesian product, indices
+ *  can be relative to the element positions in the original sets (in which
+ *  case, we refer to them as a "DenseIndex"), or relative to the number of
+ *  encoded indices, in which case we refer to them as a "SparseIndex".
+ *  If we consider all the elements of a BivariateSet, we refer to this index
+ *  space as the "FlatIndex". \n
  *
  *  For example, a 2 x 4 sparse matrix below:
  *     \code
  *        0  1  2  3
- *     0  a  b
+ *     0  a     b
  *     1     c     d
  *     \endcode
  *
  *   Access the elements using DenseIndex `(i,j)` would be...\n
+ *   `(i = 0, j = 0) = a`\n
+ *   `(i = 0, j = 2) = b`\n
  *   `(i = 1, j = 1) = c`\n
  *   `(i = 1, j = 3) = d`\n
  *
  *   Using SparseIndex `(i,k)`...\n
+ *   `(i = 0, k = 0) = a`\n
+ *   `(i = 0, k = 1) = b`\n
  *   `(i = 1, k = 0) = c`\n
  *   `(i = 1, k = 1) = d`\n
  *
@@ -94,7 +101,7 @@ public:
 public:
 
   /**
-   * \brief Constructor taking pointers to the 2 sets that defines the range of
+   * \brief Constructor taking pointers to the two sets that defines the range of
    *        the indices of the BivariateSet.
    *
    * \param set1  Pointer to the first Set.
@@ -150,7 +157,7 @@ public:
   virtual PositionType size() const = 0;
 
   /**
-   * \brief Size of a row given the first set position.
+   * \brief Number of elements of the BivariateSet whose first index is \a pos
    *
    * \pre  0 <= pos1 <= set1.size()
    */
@@ -166,7 +173,7 @@ public:
   /** \brief Returns pointer to the second set.   */
   virtual const Set* getSecondSet() const { return m_set2; }
 
-  /** \brief Value of the Set element given the FlatIndex of the element. */
+  /** \brief Returns the element at the given FlatIndex \a pos */
   virtual ElementType at(PositionType pos) const = 0;
 
   /**
@@ -176,7 +183,7 @@ public:
    * \return  An OrderedSet containing the elements in the row.
    * \pre  0 <= pos1 <= set1.size()
    */
-  virtual const OrderedSetType getRow(PositionType s1) const = 0;
+  virtual const OrderedSetType getElements(PositionType s1) const = 0;
 
   virtual bool isValid(bool verboseOutput = false) const
   {
@@ -248,7 +255,7 @@ public:
     return PositionType();
   }
 
-  const OrderedSetType getRow(PositionType) const override
+  const OrderedSetType getElements(PositionType) const override
   {
     return OrderedSetType::SetBuilder();
   }
