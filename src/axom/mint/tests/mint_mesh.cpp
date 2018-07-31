@@ -14,15 +14,15 @@
  *
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-#include "mint/config.hpp"           // for compile-time type definitions
+#include "axom/mint/config.hpp"           // for compile-time type definitions
 
 // Mint includes
-#include "mint/CurvilinearMesh.hpp"   // for CurvilinearMesh
-#include "mint/Mesh.hpp"              // for Mesh base class
-#include "mint/ParticleMesh.hpp"      // for ParticleMesh definition
-#include "mint/RectilinearMesh.hpp"   // for RectilinearMesh
-#include "mint/UniformMesh.hpp"       // for UniformMesh
-#include "mint/UnstructuredMesh.hpp"  // for UnstructuredMesh
+#include "axom/mint/mesh/CurvilinearMesh.hpp"   // for CurvilinearMesh
+#include "axom/mint/mesh/Mesh.hpp"              // for Mesh base class
+#include "axom/mint/mesh/ParticleMesh.hpp"      // for ParticleMesh definition
+#include "axom/mint/mesh/RectilinearMesh.hpp"   // for RectilinearMesh
+#include "axom/mint/mesh/UniformMesh.hpp"       // for UniformMesh
+#include "axom/mint/mesh/UnstructuredMesh.hpp"  // for UnstructuredMesh
 
 // Sidre includes
 #ifdef MINT_USE_SIDRE
@@ -339,7 +339,7 @@ TEST( mint_mesh_DeathTest, enforce_unique_field_names )
 
 TEST( mint_mesh_DeathTest, get_mesh_null_group )
 {
-  EXPECT_DEATH_IF_SUPPORTED( mint::getMesh( AXOM_NULLPTR ), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( mint::getMesh( nullptr ), IGNORE_OUTPUT );
 }
 
 //------------------------------------------------------------------------------
@@ -386,7 +386,7 @@ TEST( mint_mesh, get_curvilinear_mesh_from_sidre )
   EXPECT_EQ( foo, foo_test );
 
   const CurvilinearMesh* M = dynamic_cast< const CurvilinearMesh* >( m );
-  EXPECT_TRUE( M != AXOM_NULLPTR );
+  EXPECT_TRUE( M != nullptr );
 
   delete m;
 }
@@ -435,7 +435,7 @@ TEST( mint_mesh, get_rectilinear_mesh_from_sidre )
   EXPECT_EQ( foo, foo_test );
 
   const RectilinearMesh* M = dynamic_cast< const RectilinearMesh* >( m );
-  EXPECT_TRUE( M != AXOM_NULLPTR );
+  EXPECT_TRUE( M != nullptr );
 
   delete m;
 }
@@ -485,7 +485,7 @@ TEST( mint_mesh, get_uniform_mesh_from_sidre )
 
   /* STEP 4: down-cast and test the UniformMesh object. */
   const UniformMesh* M = dynamic_cast< const UniformMesh* >( m );
-  EXPECT_TRUE( M != AXOM_NULLPTR );
+  EXPECT_TRUE( M != nullptr );
 
   const double* h  = M->getSpacing();
   const double* lo = M->getOrigin();
@@ -600,7 +600,7 @@ TEST( mint_mesh, get_single_topology_unstructured_from_sidre )
   const IndexType* connec = mesh->getCellConnectivityArray();
 
   delete mesh;
-  mesh = AXOM_NULLPTR;
+  mesh = nullptr;
 
   /* STEP 5: get a mesh object from the group. */
   const Mesh* m = mint::getMesh( root );
@@ -689,7 +689,7 @@ TEST( mint_mesh, get_mixed_topology_unstructured_from_sidre )
   const CellType* types = mesh->getCellTypesArray();
 
   delete mesh;
-  mesh = AXOM_NULLPTR;
+  mesh = nullptr;
 
   /* STEP 5: get a mesh object from the group. */
   const Mesh* m = mint::getMesh( root );
@@ -743,7 +743,7 @@ TEST( mint_mesh, get_mixed_topology_unstructured_from_sidre )
 } /* namespace axom */
 
 //------------------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

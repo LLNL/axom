@@ -14,16 +14,16 @@
  *
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-#include "mint/config.hpp"          // for compile-time definitions
+#include "axom/mint/config.hpp"          // for compile-time definitions
 
 // Mint includes
-#include "mint/blueprint.hpp"       // for blueprint functions
-#include "mint/CellTypes.hpp"       // for CellType enum
-#include "mint/RectilinearMesh.hpp" // for RectilinearMesh
-#include "mint/ParticleMesh.hpp"    // for ParticleMesh
+#include "axom/mint/mesh/blueprint.hpp"       // for blueprint functions
+#include "axom/mint/mesh/CellTypes.hpp"       // for CellType enum
+#include "axom/mint/mesh/RectilinearMesh.hpp" // for RectilinearMesh
+#include "axom/mint/mesh/ParticleMesh.hpp"    // for ParticleMesh
 
 // Slic includes
-#include "slic/slic.hpp"            // for slic macros
+#include "axom/slic/interface/slic.hpp"            // for slic macros
 
 // Sidre includes
 #ifdef MINT_USE_SIDRE
@@ -48,7 +48,7 @@ namespace
 
 void exponential_distribution( double origin, IndexType N, double* x )
 {
-  EXPECT_TRUE( x != AXOM_NULLPTR );
+  EXPECT_TRUE( x != nullptr );
 
   constexpr double beta = 0.05;
   const double expbeta  = exp( beta );
@@ -67,8 +67,8 @@ void exponential_distribution( double origin, IndexType N, double* x )
 //------------------------------------------------------------------------------
 void check_coordinate( const double* x, const double* expected, IndexType N )
 {
-  EXPECT_TRUE( x != AXOM_NULLPTR );
-  EXPECT_TRUE( expected != AXOM_NULLPTR );
+  EXPECT_TRUE( x != nullptr );
+  EXPECT_TRUE( expected != nullptr );
   EXPECT_TRUE( N >= 0 );
 
   for ( IndexType i=0 ; i < N ; ++i )
@@ -83,21 +83,21 @@ void check_create_field( RectilinearMesh* m,
                          const std::string& name,
                          int numComponents=1 )
 {
-  EXPECT_TRUE( m != AXOM_NULLPTR );
+  EXPECT_TRUE( m != nullptr );
   EXPECT_TRUE( (association==NODE_CENTERED) ||
                (association==CELL_CENTERED) );
 
   EXPECT_FALSE( m->hasField( name, association ) );
 
   double* f = m->createField< double >( name, association, numComponents );
-  EXPECT_TRUE( f != AXOM_NULLPTR );
+  EXPECT_TRUE( f != nullptr );
   EXPECT_TRUE( m->hasField( name, association ) );
 
   IndexType expected_num_tuples = ( association==NODE_CENTERED ) ?
                                   m->getNumberOfNodes() : m->getNumberOfCells();
 
   const Field* field = m->getFieldData( association )->getField( name );
-  EXPECT_TRUE( field != AXOM_NULLPTR );
+  EXPECT_TRUE( field != nullptr );
   EXPECT_EQ( f, Field::getDataPtr< double >( field ) );
   EXPECT_EQ( numComponents, field->getNumComponents() );
   EXPECT_EQ( expected_num_tuples, field->getNumTuples() );
@@ -106,7 +106,7 @@ void check_create_field( RectilinearMesh* m,
 //------------------------------------------------------------------------------
 void check_fill_coords( RectilinearMesh* m )
 {
-  EXPECT_TRUE( m != AXOM_NULLPTR );
+  EXPECT_TRUE( m != nullptr );
 
   const int ndims = m->getDimension();
   for ( int idim=0 ; idim < ndims ; ++idim )
@@ -124,7 +124,7 @@ void check_constructor( const RectilinearMesh* m,
                         const IndexType* expected_node_dimensions,
                         const int64* expected_extent )
 {
-  EXPECT_TRUE( m != AXOM_NULLPTR );
+  EXPECT_TRUE( m != nullptr );
   EXPECT_TRUE( (expected_dimension >= 1) && (expected_dimension <= 3) );
 
   const int mesh_dimension = m->getDimension();
@@ -140,7 +140,7 @@ void check_constructor( const RectilinearMesh* m,
   EXPECT_EQ( m->getCellType(), expected_cell_type );
 
   const Extent* ext = m->getExtent();
-  EXPECT_TRUE( ext != AXOM_NULLPTR );
+  EXPECT_TRUE( ext != nullptr );
 
   for ( int i=0 ; i < mesh_dimension ; ++i )
   {
@@ -149,7 +149,7 @@ void check_constructor( const RectilinearMesh* m,
     EXPECT_EQ( ext->max( i ), expected_extent[ offset+1 ] );
     EXPECT_EQ( m->getNumberOfNodesAlongDim( i ),expected_node_dimensions[ i ] );
 
-    EXPECT_TRUE( m->getCoordinateArray( i ) != AXOM_NULLPTR );
+    EXPECT_TRUE( m->getCoordinateArray( i ) != nullptr );
   }
 
   EXPECT_EQ( m->getNumberOfNodes(), ext->getNumNodes() );
@@ -171,14 +171,14 @@ TEST( mint_mesh_rectilinear_mesh_DeathTest, invalid_construction )
 
   // check 1st native constructor
   EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh( 42, ext ), IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh(2,AXOM_NULLPTR), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh(2,nullptr), IGNORE_OUTPUT );
 
   // check 2nd native constructor
   EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh( -1,N[1],N[2] ), IGNORE_OUTPUT );
 
   // check external constructor
-  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh(AXOM_NULLPTR,x), IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh(ext,AXOM_NULLPTR), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh(nullptr,x), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh(ext,nullptr), IGNORE_OUTPUT );
 
 #ifdef MINT_USE_SIDRE
 
@@ -189,7 +189,7 @@ TEST( mint_mesh_rectilinear_mesh_DeathTest, invalid_construction )
   ParticleMesh( 3, 10, particle_mesh );
 
   // check pull constructor
-  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh(AXOM_NULLPTR,""), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh(nullptr,""), IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh(root,""), IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh(particle_mesh,""), IGNORE_OUTPUT );
 
@@ -199,18 +199,18 @@ TEST( mint_mesh_rectilinear_mesh_DeathTest, invalid_construction )
   EXPECT_EQ( valid_group->getNumGroups(), 0 );
   EXPECT_EQ( valid_group->getNumViews(), 0 );
 
-  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh(3,AXOM_NULLPTR,valid_group),
+  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh(3,nullptr,valid_group),
                              IGNORE_OUTPUT );
   EXPECT_EQ( valid_group->getNumGroups(), 0 );
   EXPECT_EQ( valid_group->getNumViews(), 0 );
 
-  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh(3,ext,AXOM_NULLPTR),
+  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh(3,ext,nullptr),
                              IGNORE_OUTPUT );
   EXPECT_EQ( valid_group->getNumGroups(), 0 );
   EXPECT_EQ( valid_group->getNumViews(), 0 );
 
   // check 2nd push constructor
-  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh( AXOM_NULLPTR, N[0] ),
+  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh( nullptr, N[0] ),
                              IGNORE_OUTPUT );
 
   EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh( valid_group, -1 ),
@@ -237,7 +237,7 @@ TEST( mint_mesh_rectilinear_mesh, native_constructor )
     EXPECT_FALSE( m1.isExternal( ) );
     EXPECT_FALSE( m1.hasSidreGroup( ) );
 
-    RectilinearMesh* m2 = AXOM_NULLPTR;
+    RectilinearMesh* m2 = nullptr;
     switch ( idim )
     {
     case 1:
@@ -257,7 +257,7 @@ TEST( mint_mesh_rectilinear_mesh, native_constructor )
     check_create_field( m2, CELL_CENTERED, "c1", 3 );
 
     delete m2;
-    m2 = AXOM_NULLPTR;
+    m2 = nullptr;
   } // END for all dimensions
 
 }
@@ -286,7 +286,7 @@ TEST( mint_mesh_rectilinear_mesh, external_costructor )
 
   for ( int idim=1 ; idim <= NDIMS ; ++idim )
   {
-    RectilinearMesh* m = AXOM_NULLPTR;
+    RectilinearMesh* m = nullptr;
 
     switch ( idim )
     {
@@ -313,19 +313,19 @@ TEST( mint_mesh_rectilinear_mesh, external_costructor )
 
     } // END switch
 
-    EXPECT_TRUE( m != AXOM_NULLPTR );
+    EXPECT_TRUE( m != nullptr );
     check_constructor( m, idim, N, ext );
     EXPECT_FALSE( m->hasSidreGroup() );
     EXPECT_TRUE( m->isExternal() );
 
     // deallocate
     delete m;
-    m = AXOM_NULLPTR;
+    m = nullptr;
 
     // ensure coordinates are not changed after mesh gets deleted
-    EXPECT_TRUE( x != AXOM_NULLPTR );
-    EXPECT_TRUE( y != AXOM_NULLPTR );
-    EXPECT_TRUE( z != AXOM_NULLPTR );
+    EXPECT_TRUE( x != nullptr );
+    EXPECT_TRUE( y != nullptr );
+    EXPECT_TRUE( z != nullptr );
     check_coordinate( x, X, N[ 0 ] );
     check_coordinate( y, Y, N[ 1 ] );
     check_coordinate( z, Z, N[ 2 ] );
@@ -373,9 +373,9 @@ TEST( mint_mesh_rectilinear_mesh, sidre_constructor )
       EXPECT_FALSE( m1->isExternal() );
 
       delete m1;
-      m1 = AXOM_NULLPTR;
+      m1 = nullptr;
 
-      RectilinearMesh* m2 = AXOM_NULLPTR;
+      RectilinearMesh* m2 = nullptr;
       switch ( idim )
       {
       case 1:
@@ -399,15 +399,15 @@ TEST( mint_mesh_rectilinear_mesh, sidre_constructor )
       EXPECT_FALSE( m2->isExternal() );
 
       delete m2;
-      m2 = AXOM_NULLPTR;
+      m2 = nullptr;
     }
     // END SCOPE
 
     // STEP 2: pull the 2 meshes from sidre and check correctness
     // BEGIN SCOPE
     {
-      const FieldData* fd = AXOM_NULLPTR;
-      const Field* field  = AXOM_NULLPTR;
+      const FieldData* fd = nullptr;
+      const Field* field  = nullptr;
 
       // check m1
       RectilinearMesh* m1 = new RectilinearMesh( m1grp );
@@ -438,7 +438,7 @@ TEST( mint_mesh_rectilinear_mesh, sidre_constructor )
       EXPECT_FALSE( field->isExternal() );
 
       delete m1;
-      m1 = AXOM_NULLPTR;
+      m1 = nullptr;
 
       // check m2
       RectilinearMesh* m2 = new RectilinearMesh( m2grp );
@@ -469,7 +469,7 @@ TEST( mint_mesh_rectilinear_mesh, sidre_constructor )
       EXPECT_FALSE( field->isExternal() );
 
       delete m2;
-      m2 = AXOM_NULLPTR;
+      m2 = nullptr;
     }
     // ENDE SCOPE
 
@@ -480,7 +480,7 @@ TEST( mint_mesh_rectilinear_mesh, sidre_constructor )
   } // END for all dimensions
 
   delete [] expected_coords;
-  expected_coords = AXOM_NULLPTR;
+  expected_coords = nullptr;
 }
 
 #endif /* ENDIF MINT_USE_SIDRE */
@@ -534,7 +534,7 @@ TEST( mint_mesh_rectilinear_mesh, get_node )
 }
 
 //------------------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main ( int argc, char* argv[] )

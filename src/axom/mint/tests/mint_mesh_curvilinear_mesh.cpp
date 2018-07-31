@@ -14,17 +14,17 @@
  *
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-#include "mint/config.hpp"          // for compile-time type definitions
+#include "axom/mint/config.hpp"          // for compile-time type definitions
 
 // Mint includes
-#include "mint/blueprint.hpp"       // for blueprint functions
-#include "mint/CellTypes.hpp"       // for CellTypes enum definition
-#include "mint/CurvilinearMesh.hpp" // for mint::CurivilinearMesh
-#include "mint/ParticleMesh.hpp"    // for ParticleMesh
-#include "mint/UniformMesh.hpp"     // for UniformMesh
+#include "axom/mint/mesh/blueprint.hpp"       // for blueprint functions
+#include "axom/mint/mesh/CellTypes.hpp"       // for CellTypes enum definition
+#include "axom/mint/mesh/CurvilinearMesh.hpp" // for mint::CurivilinearMesh
+#include "axom/mint/mesh/ParticleMesh.hpp"    // for ParticleMesh
+#include "axom/mint/mesh/UniformMesh.hpp"     // for UniformMesh
 
 // Slic includes
-#include "slic/slic.hpp"            // for slic macros
+#include "axom/slic/interface/slic.hpp"            // for slic macros
 
 // Sidre includes
 #ifdef MINT_USE_SIDRE
@@ -50,28 +50,28 @@ inline int dim( const double* AXOM_NOT_USED(x),
                 const double* y,
                 const double* z )
 {
-  return ( ( z != AXOM_NULLPTR ) ? 3 : ( (y != AXOM_NULLPTR ) ? 2 : 1 ) );
+  return ( ( z != nullptr ) ? 3 : ( (y != nullptr ) ? 2 : 1 ) );
 }
 
 //------------------------------------------------------------------------------
 template < typename T >
 void delete_array( T* ptr )
 {
-  if ( ptr != AXOM_NULLPTR )
+  if ( ptr != nullptr )
   {
     delete []  ptr;
-    ptr = AXOM_NULLPTR;
+    ptr = nullptr;
   }
 }
 
 //------------------------------------------------------------------------------
 void check_coordinates( const UniformMesh* m,
                         double* x,
-                        double* y=AXOM_NULLPTR,
-                        double* z=AXOM_NULLPTR  )
+                        double* y=nullptr,
+                        double* z=nullptr  )
 {
-  EXPECT_TRUE( m != AXOM_NULLPTR );
-  EXPECT_TRUE( x != AXOM_NULLPTR );
+  EXPECT_TRUE( m != nullptr );
+  EXPECT_TRUE( x != nullptr );
 
   const int mesh_dimension = m->getDimension();
   EXPECT_EQ( mesh_dimension, dim(x,y,z) );
@@ -91,7 +91,7 @@ void check_coordinates( const UniformMesh* m,
   break;
   case 2:
   {
-    EXPECT_TRUE( y != AXOM_NULLPTR );
+    EXPECT_TRUE( y != nullptr );
 
     const IndexType Ni = m->getNumberOfNodesAlongDim( I_DIRECTION );
     const IndexType Nj = m->getNumberOfNodesAlongDim( J_DIRECTION );
@@ -114,8 +114,8 @@ void check_coordinates( const UniformMesh* m,
   default:
   {
     EXPECT_TRUE( mesh_dimension==3 );
-    EXPECT_TRUE( y != AXOM_NULLPTR );
-    EXPECT_TRUE( z != AXOM_NULLPTR );
+    EXPECT_TRUE( y != nullptr );
+    EXPECT_TRUE( z != nullptr );
 
     const IndexType Ni = m->getNumberOfNodesAlongDim( I_DIRECTION );
     const IndexType Nj = m->getNumberOfNodesAlongDim( J_DIRECTION );
@@ -146,11 +146,11 @@ void check_coordinates( const UniformMesh* m,
 //------------------------------------------------------------------------------
 void get_coordinates( const UniformMesh* m,
                       double* x,
-                      double* y=AXOM_NULLPTR,
-                      double* z=AXOM_NULLPTR    )
+                      double* y=nullptr,
+                      double* z=nullptr    )
 {
-  EXPECT_TRUE( m != AXOM_NULLPTR );
-  EXPECT_TRUE( x != AXOM_NULLPTR );
+  EXPECT_TRUE( m != nullptr );
+  EXPECT_TRUE( x != nullptr );
 
   const int mesh_dimension = m->getDimension();
 
@@ -169,7 +169,7 @@ void get_coordinates( const UniformMesh* m,
   break;
   case 2:
   {
-    EXPECT_TRUE( y != AXOM_NULLPTR );
+    EXPECT_TRUE( y != nullptr );
     const IndexType Ni = m->getNumberOfNodesAlongDim( I_DIRECTION );
     const IndexType Nj = m->getNumberOfNodesAlongDim( J_DIRECTION );
     for ( IndexType j=0 ; j < Nj ; ++j )
@@ -186,8 +186,8 @@ void get_coordinates( const UniformMesh* m,
   break;
   default:
   {
-    EXPECT_TRUE( y != AXOM_NULLPTR );
-    EXPECT_TRUE( z != AXOM_NULLPTR );
+    EXPECT_TRUE( y != nullptr );
+    EXPECT_TRUE( z != nullptr );
     const IndexType Ni = m->getNumberOfNodesAlongDim( I_DIRECTION );
     const IndexType Nj = m->getNumberOfNodesAlongDim( J_DIRECTION );
     const IndexType Nk = m->getNumberOfNodesAlongDim( K_DIRECTION );
@@ -218,21 +218,21 @@ void check_create_field( CurvilinearMesh* m,
                          const std::string& name,
                          int numComponents=1 )
 {
-  EXPECT_TRUE( m != AXOM_NULLPTR );
+  EXPECT_TRUE( m != nullptr );
   EXPECT_TRUE( (association==NODE_CENTERED) ||
                (association==CELL_CENTERED) );
 
   EXPECT_FALSE( m->hasField( name, association ) );
 
   double* f = m->createField< double >( name, association, numComponents );
-  EXPECT_TRUE( f != AXOM_NULLPTR );
+  EXPECT_TRUE( f != nullptr );
   EXPECT_TRUE( m->hasField( name, association ) );
 
   IndexType expected_num_tuples = ( association==NODE_CENTERED ) ?
                                   m->getNumberOfNodes() : m->getNumberOfCells();
 
   const Field* field = m->getFieldData( association )->getField( name );
-  EXPECT_TRUE( field != AXOM_NULLPTR );
+  EXPECT_TRUE( field != nullptr );
   EXPECT_EQ( f, Field::getDataPtr< double >( field ) );
   EXPECT_EQ( numComponents, field->getNumComponents() );
   EXPECT_EQ( expected_num_tuples, field->getNumTuples() );
@@ -241,7 +241,7 @@ void check_create_field( CurvilinearMesh* m,
 //------------------------------------------------------------------------------
 void check_fill_coords( CurvilinearMesh* m, double MAGIC_VAL=42.0 )
 {
-  EXPECT_TRUE( m != AXOM_NULLPTR );
+  EXPECT_TRUE( m != nullptr );
 
   const IndexType numNodes = m->getNumberOfNodes();
 
@@ -251,7 +251,7 @@ void check_fill_coords( CurvilinearMesh* m, double MAGIC_VAL=42.0 )
   case 1:
   {
     double* x = m->getCoordinateArray( X_COORDINATE );
-    EXPECT_TRUE( x != AXOM_NULLPTR );
+    EXPECT_TRUE( x != nullptr );
 
     for ( IndexType i=0 ; i < numNodes ; ++i )
     {
@@ -264,8 +264,8 @@ void check_fill_coords( CurvilinearMesh* m, double MAGIC_VAL=42.0 )
   {
     double* x = m->getCoordinateArray( X_COORDINATE );
     double* y = m->getCoordinateArray( Y_COORDINATE );
-    EXPECT_TRUE( x != AXOM_NULLPTR );
-    EXPECT_TRUE( y != AXOM_NULLPTR );
+    EXPECT_TRUE( x != nullptr );
+    EXPECT_TRUE( y != nullptr );
 
     for ( IndexType i=0 ; i < numNodes ; ++i )
     {
@@ -281,9 +281,9 @@ void check_fill_coords( CurvilinearMesh* m, double MAGIC_VAL=42.0 )
     double* x = m->getCoordinateArray( X_COORDINATE );
     double* y = m->getCoordinateArray( Y_COORDINATE );
     double* z = m->getCoordinateArray( Z_COORDINATE );
-    EXPECT_TRUE( x != AXOM_NULLPTR );
-    EXPECT_TRUE( y != AXOM_NULLPTR );
-    EXPECT_TRUE( z != AXOM_NULLPTR );
+    EXPECT_TRUE( x != nullptr );
+    EXPECT_TRUE( y != nullptr );
+    EXPECT_TRUE( z != nullptr );
 
     for ( IndexType i=0 ; i < numNodes ; ++i )
     {
@@ -303,7 +303,7 @@ void check_constructor( const CurvilinearMesh* m,
                         const int64* expected_extent
                         )
 {
-  EXPECT_TRUE( m != AXOM_NULLPTR );
+  EXPECT_TRUE( m != nullptr );
   EXPECT_TRUE( (expected_dimension >= 1) && (expected_dimension <= 3) );
 
   const int mesh_dimension = m->getDimension();
@@ -319,7 +319,7 @@ void check_constructor( const CurvilinearMesh* m,
   EXPECT_EQ( m->getCellType(), expected_cell_type );
 
   const Extent* ext = m->getExtent();
-  EXPECT_TRUE( ext != AXOM_NULLPTR );
+  EXPECT_TRUE( ext != nullptr );
 
   for ( int i=0 ; i < mesh_dimension ; ++i )
   {
@@ -328,7 +328,7 @@ void check_constructor( const CurvilinearMesh* m,
     EXPECT_EQ( ext->max( i ), expected_extent[ offset+1 ] );
     EXPECT_EQ( m->getNumberOfNodesAlongDim( i ),expected_node_dimensions[ i ] );
 
-    EXPECT_TRUE( m->getCoordinateArray( i ) != AXOM_NULLPTR );
+    EXPECT_TRUE( m->getCoordinateArray( i ) != nullptr );
   }
 
   EXPECT_EQ( m->getNumberOfNodes(), ext->getNumNodes() );
@@ -349,14 +349,14 @@ TEST( mint_mesh_curvilinear_mesh_DeathTest, invalid_construction )
 
   // check 1st native constructor
   EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh(42,ext), IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh(3,AXOM_NULLPTR), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh(3,nullptr), IGNORE_OUTPUT );
 
   // check 2nd native constructor
   EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh( -1,N[1], N[2]), IGNORE_OUTPUT );
 
   // check external constructor
-  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh(AXOM_NULLPTR, x), IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh(ext,AXOM_NULLPTR), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh(nullptr, x), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh(ext,nullptr), IGNORE_OUTPUT );
 
 #ifdef MINT_USE_SIDRE
 
@@ -367,7 +367,7 @@ TEST( mint_mesh_curvilinear_mesh_DeathTest, invalid_construction )
   ParticleMesh( 3, 10, particle_mesh );
 
   // check pull constructor
-  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh(AXOM_NULLPTR,""), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh(nullptr,""), IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh(root,""), IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh(particle_mesh,""), IGNORE_OUTPUT );
 
@@ -377,18 +377,18 @@ TEST( mint_mesh_curvilinear_mesh_DeathTest, invalid_construction )
   EXPECT_EQ( valid_group->getNumGroups(), 0 );
   EXPECT_EQ( valid_group->getNumViews(), 0 );
 
-  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh( 3, AXOM_NULLPTR, valid_group ),
+  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh( 3, nullptr, valid_group ),
                              IGNORE_OUTPUT );
   EXPECT_EQ( valid_group->getNumGroups(), 0 );
   EXPECT_EQ( valid_group->getNumViews(), 0 );
 
-  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh( 3, ext, AXOM_NULLPTR ),
+  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh( 3, ext, nullptr ),
                              IGNORE_OUTPUT );
   EXPECT_EQ( valid_group->getNumGroups(), 0 );
   EXPECT_EQ( valid_group->getNumViews(), 0 );
 
   // check 2nd push constructor
-  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh( AXOM_NULLPTR, N[0] ),
+  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh( nullptr, N[0] ),
                              IGNORE_OUTPUT );
 
   EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh( valid_group, -1 ),
@@ -418,7 +418,7 @@ TEST( mint_mesh_curvilinear_mesh, native_constructor )
     check_create_field( &m1, NODE_CENTERED, "n1" );
     check_create_field( &m1, CELL_CENTERED, "c1", 3 );
 
-    CurvilinearMesh* m2 = AXOM_NULLPTR;
+    CurvilinearMesh* m2 = nullptr;
     switch( idim )
     {
     case 1:
@@ -441,7 +441,7 @@ TEST( mint_mesh_curvilinear_mesh, native_constructor )
     check_create_field( m2, CELL_CENTERED, "c1", 3 );
 
     delete m2;
-    m2 = AXOM_NULLPTR;
+    m2 = nullptr;
   } // END for all dimensions
 
 }
@@ -460,11 +460,11 @@ TEST( mint_mesh_curvilinear_mesh, external_constructor )
     UniformMesh um( idim, ext, lo, hi );
     const IndexType numNodes = um.getNumberOfNodes();
 
-    double* x = AXOM_NULLPTR;
-    double* y = AXOM_NULLPTR;
-    double* z = AXOM_NULLPTR;
+    double* x = nullptr;
+    double* y = nullptr;
+    double* z = nullptr;
 
-    CurvilinearMesh* m = AXOM_NULLPTR;
+    CurvilinearMesh* m = nullptr;
 
     switch( idim )
     {
@@ -512,7 +512,7 @@ TEST( mint_mesh_curvilinear_mesh, external_constructor )
 
     } // END switch
 
-    EXPECT_TRUE( m != AXOM_NULLPTR );
+    EXPECT_TRUE( m != nullptr );
     check_constructor( m, idim, N, ext );
 
     EXPECT_FALSE( m->hasSidreGroup() );
@@ -521,7 +521,7 @@ TEST( mint_mesh_curvilinear_mesh, external_constructor )
     EXPECT_EQ( m->getNumberOfCells(), um.getNumberOfCells() );
 
     delete m;
-    m = AXOM_NULLPTR;
+    m = nullptr;
 
     // ensure array buffers are persistent
     check_coordinates( &um, x, y, z );
@@ -565,7 +565,7 @@ TEST( mint_mesh_curvilinear_mesh, sidre_constructor )
       EXPECT_FALSE( m1->isExternal() );
       EXPECT_TRUE( m1->hasSidreGroup() );
 
-      CurvilinearMesh* m2 = AXOM_NULLPTR;
+      CurvilinearMesh* m2 = nullptr;
       switch ( idim )
       {
       case 1:
@@ -591,18 +591,18 @@ TEST( mint_mesh_curvilinear_mesh, sidre_constructor )
       check_create_field( m2, CELL_CENTERED, "c1" );
 
       delete m1;
-      m1 = AXOM_NULLPTR;
+      m1 = nullptr;
 
       delete m2;
-      m2 = AXOM_NULLPTR;
+      m2 = nullptr;
     }
     // END SCOPE
 
     // STEP 2: pull the meshes from sidre in to new instances.
     // BEGIN SCOPE
     {
-      const FieldData* fd = AXOM_NULLPTR;
-      const Field* field  = AXOM_NULLPTR;
+      const FieldData* fd = nullptr;
+      const Field* field  = nullptr;
 
       // check m1
       CurvilinearMesh* m1 = new CurvilinearMesh( m1grp );
@@ -663,10 +663,10 @@ TEST( mint_mesh_curvilinear_mesh, sidre_constructor )
       for ( int i=0 ; i < ndims ; ++i )
       {
         const double* x1 = m1->getCoordinateArray( i );
-        EXPECT_TRUE( x1 != AXOM_NULLPTR );
+        EXPECT_TRUE( x1 != nullptr );
 
         const double* x2 = m2->getCoordinateArray( i );
-        EXPECT_TRUE( x2 != AXOM_NULLPTR );
+        EXPECT_TRUE( x2 != nullptr );
 
         for ( IndexType inode=0 ; inode < numNodes ; ++inode )
         {
@@ -678,10 +678,10 @@ TEST( mint_mesh_curvilinear_mesh, sidre_constructor )
 
       // clean up
       delete m1;
-      m1 = AXOM_NULLPTR;
+      m1 = nullptr;
 
       delete m2;
-      m2 = AXOM_NULLPTR;
+      m2 = nullptr;
     }
     // END SCOPE
 
@@ -695,7 +695,7 @@ TEST( mint_mesh_curvilinear_mesh, sidre_constructor )
 #endif /* MINT_USE_SIDRE */
 
 //------------------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

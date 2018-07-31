@@ -14,13 +14,13 @@
  *
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-#include "mint/config.hpp"              /* for mint defintions */
-#include "mint/UnstructuredMesh.hpp"               /* for mint::Array */
+#include "axom/mint/config.hpp"              /* for mint defintions */
+#include "axom/mint/mesh/UnstructuredMesh.hpp"               /* for mint::Array */
 
-#include "axom_utils/Utilities.hpp"     /* for utilities::max */
+#include "axom/core/utilities/Utilities.hpp"     /* for utilities::max */
 
-#include "slic/UnitTestLogger.hpp"      /* for UnitTestLogger */
-#include "slic/slic.hpp"                /* for slic macros */
+#include "axom/slic/core/UnitTestLogger.hpp"      /* for UnitTestLogger */
+#include "axom/slic/interface/slic.hpp"                /* for slic macros */
 
 #include "gtest/gtest.h"                /* for TEST and EXPECT_* macros */
 
@@ -42,7 +42,7 @@ constexpr double E =  2.71828182845904523536;
 const char IGNORE_OUTPUT[] = ".*";
 
 #ifdef MINT_USE_SIDRE
-sidre::DataStore* ds = AXOM_NULLPTR;
+sidre::DataStore* ds = nullptr;
 #endif
 
 enum class CheckOption
@@ -61,7 +61,7 @@ namespace internal
  * \param [in] mesh the mesh in question.
  * \param [in] association the association.
  *
- * \pre mesh != AXOM_NULLPTR
+ * \pre mesh != nullptr
  * \pre association == NODE_CENTERED or association == CELL_CENTERED
  */
 std::string getFieldName( const Mesh* mesh, int association )
@@ -88,7 +88,7 @@ std::string getFieldName( const Mesh* mesh, int association )
  * \param [in/out] mesh the mesh in question.
  * \param [in] association the association.
  *
- * \pre mesh != AXOM_NULLPTR
+ * \pre mesh != nullptr
  * \pre association == NODE_CENTERED or association == CELL_CENTERED
  */
 void createField( Mesh* mesh, int association )
@@ -110,7 +110,7 @@ void createField( Mesh* mesh, int association )
  * \param [in] association the association.
  * \param [in] capacity the capacity of the field.
  *
- * \pre mesh != AXOM_NULLPTR
+ * \pre mesh != nullptr
  * \pre association == NODE_CENTERED or association == CELL_CENTERED
  */
 void createExternalField( Mesh* mesh, int association, IndexType capacity )
@@ -132,7 +132,7 @@ void createExternalField( Mesh* mesh, int association, IndexType capacity )
  * \param [in] mesh the mesh in question.
  * \param [in] association the association.
  *
- * \pre mesh != AXOM_NULLPTR
+ * \pre mesh != nullptr
  * \pre association == NODE_CENTERED or association == CELL_CENTERED
  */
 FieldVariable< double >* getFieldVar( Mesh* mesh, int association )
@@ -268,8 +268,8 @@ createExternalSingle( int ndims, CellType cell_type, IndexType cell_capacity,
                       IndexType node_capacity )
 {
   double* x = new double[ node_capacity ];
-  double* y = AXOM_NULLPTR;
-  double* z = AXOM_NULLPTR;
+  double* y = nullptr;
+  double* z = nullptr;
   if ( ndims > 1 )
   {
     y = new double[ node_capacity ];
@@ -302,8 +302,8 @@ createExternalMixed( int ndims, IndexType cell_capacity,
                      IndexType connec_capacity )
 {
   double* x = new double[ node_capacity ];
-  double* y = AXOM_NULLPTR;
-  double* z = AXOM_NULLPTR;
+  double* y = nullptr;
+  double* z = nullptr;
   if ( ndims > 1 )
   {
     y = new double[ node_capacity ];
@@ -350,8 +350,8 @@ void deleteExternalMesh( UnstructuredMesh< TOPO >*& mesh )
   const IndexType* offsets = mesh->getCellOffsetsArray();
   const CellType* types = mesh->getCellTypesArray();
 
-  double* f1 = AXOM_NULLPTR;
-  double* f2 = AXOM_NULLPTR;
+  double* f1 = nullptr;
+  double* f2 = nullptr;
   const std::string node_field_name = getFieldName( mesh, NODE_CENTERED );
   const std::string cell_field_name = getFieldName( mesh, CELL_CENTERED );
   if ( mesh->hasField( node_field_name, NODE_CENTERED ) )
@@ -364,7 +364,7 @@ void deleteExternalMesh( UnstructuredMesh< TOPO >*& mesh )
   }
 
   delete mesh;
-  mesh = AXOM_NULLPTR;
+  mesh = nullptr;
   delete[] x;
 
   if ( ndims > 1 )
@@ -380,11 +380,11 @@ void deleteExternalMesh( UnstructuredMesh< TOPO >*& mesh )
   delete[] offsets;
   delete[] types;
 
-  if ( f1 != AXOM_NULLPTR )
+  if ( f1 != nullptr )
   {
     delete[] f1;
   }
-  if ( f2 != AXOM_NULLPTR )
+  if ( f2 != nullptr )
   {
     delete[] f2;
   }
@@ -410,8 +410,8 @@ void deleteAndDuplicateExternalMesh( UnstructuredMesh< SINGLE_SHAPE >*& mesh )
   const IndexType n_nodes = mesh->getNumberOfNodes();
   const IndexType node_capacity = mesh->getNodeCapacity();
   double* x = mesh->getCoordinateArray( X_COORDINATE );
-  double* y = AXOM_NULLPTR;
-  double* z = AXOM_NULLPTR;
+  double* y = nullptr;
+  double* z = nullptr;
   if ( ndims > 1 )
   {
     y = mesh->getCoordinateArray( Y_COORDINATE );
@@ -421,8 +421,8 @@ void deleteAndDuplicateExternalMesh( UnstructuredMesh< SINGLE_SHAPE >*& mesh )
     z = mesh->getCoordinateArray( Z_COORDINATE );
   }
 
-  double* f1 = AXOM_NULLPTR;
-  double* f2 = AXOM_NULLPTR;
+  double* f1 = nullptr;
+  double* f2 = nullptr;
   const std::string node_field_name = getFieldName( mesh, NODE_CENTERED );
   const std::string cell_field_name = getFieldName( mesh, CELL_CENTERED );
   if ( mesh->hasField( node_field_name, NODE_CENTERED ) )
@@ -440,12 +440,12 @@ void deleteAndDuplicateExternalMesh( UnstructuredMesh< SINGLE_SHAPE >*& mesh )
                                                n_nodes, node_capacity,
                                                x, y, z );
 
-  if ( f1 != AXOM_NULLPTR )
+  if ( f1 != nullptr )
   {
     mesh->createField< double >( node_field_name, NODE_CENTERED, f1, 2,
                                  node_capacity );
   }
-  if ( f2 != AXOM_NULLPTR )
+  if ( f2 != nullptr )
   {
     mesh->createField< double >( cell_field_name, CELL_CENTERED, f2, 2,
                                  cell_capacity );
@@ -484,8 +484,8 @@ void deleteAndDuplicateExternalMesh( UnstructuredMesh< MIXED_SHAPE >*& mesh )
   const IndexType n_nodes = mesh->getNumberOfNodes();
   const IndexType node_capacity = mesh->getNodeCapacity();
   double* x = mesh->getCoordinateArray( X_COORDINATE );
-  double* y = AXOM_NULLPTR;
-  double* z = AXOM_NULLPTR;
+  double* y = nullptr;
+  double* z = nullptr;
   if ( ndims > 1 )
   {
     y = mesh->getCoordinateArray( Y_COORDINATE );
@@ -495,8 +495,8 @@ void deleteAndDuplicateExternalMesh( UnstructuredMesh< MIXED_SHAPE >*& mesh )
     z = mesh->getCoordinateArray( Z_COORDINATE );
   }
 
-  double* f1 = AXOM_NULLPTR;
-  double* f2 = AXOM_NULLPTR;
+  double* f1 = nullptr;
+  double* f2 = nullptr;
   const std::string node_field_name = getFieldName( mesh, NODE_CENTERED );
   const std::string cell_field_name = getFieldName( mesh, CELL_CENTERED );
   if ( mesh->hasField( node_field_name, NODE_CENTERED ) )
@@ -514,12 +514,12 @@ void deleteAndDuplicateExternalMesh( UnstructuredMesh< MIXED_SHAPE >*& mesh )
                                               offsets, types, n_nodes,
                                               node_capacity, x, y, z );
 
-  if ( f1 != AXOM_NULLPTR )
+  if ( f1 != nullptr )
   {
     mesh->createField< double >( node_field_name, NODE_CENTERED, f1, 2,
                                  node_capacity );
   }
-  if ( f2 != AXOM_NULLPTR )
+  if ( f2 != nullptr )
   {
     mesh->createField< double >( cell_field_name, CELL_CENTERED, f2, 2,
                                  cell_capacity );
@@ -600,7 +600,7 @@ void createMeshes( UnstructuredMesh< SINGLE_SHAPE >** meshes,
                    bool cell_field )
 {
 #ifdef MINT_USE_SIDRE
-  SLIC_ERROR_IF( ds != AXOM_NULLPTR, "Did not free DataStore." );
+  SLIC_ERROR_IF( ds != nullptr, "Did not free DataStore." );
   ds = new sidre::DataStore();
   sidre::Group* root = ds->getRoot();
 #endif
@@ -657,7 +657,7 @@ void createMeshes( UnstructuredMesh< MIXED_SHAPE >** meshes,
                    bool node_field, bool cell_field )
 {
 #ifdef MINT_USE_SIDRE
-  SLIC_ERROR_IF( ds != AXOM_NULLPTR, "Did not free DataStore." );
+  SLIC_ERROR_IF( ds != nullptr, "Did not free DataStore." );
   ds = new sidre::DataStore();
   sidre::Group* root = ds->getRoot();
 #endif
@@ -731,7 +731,7 @@ void createMeshesForResize( UnstructuredMesh< SINGLE_SHAPE >** meshes,
                             bool node_field, bool cell_field )
 {
 #ifdef MINT_USE_SIDRE
-  SLIC_ERROR_IF( ds != AXOM_NULLPTR, "Did not free DataStore." );
+  SLIC_ERROR_IF( ds != nullptr, "Did not free DataStore." );
   ds = new sidre::DataStore();
   sidre::Group* root = ds->getRoot();
 #endif
@@ -778,7 +778,7 @@ void createMeshesForResize( UnstructuredMesh< MIXED_SHAPE >** meshes,
                             bool node_field, bool cell_field )
 {
 #ifdef MINT_USE_SIDRE
-  SLIC_ERROR_IF( ds != AXOM_NULLPTR, "Did not free DataStore." );
+  SLIC_ERROR_IF( ds != nullptr, "Did not free DataStore." );
   ds = new sidre::DataStore();
   sidre::Group* root = ds->getRoot();
 #endif
@@ -839,13 +839,13 @@ void deleteMeshes( UnstructuredMesh< TOPO >** meshes, int n_meshes )
     else
     {
       delete meshes[ i ];
-      meshes[ i ] = AXOM_NULLPTR;
+      meshes[ i ] = nullptr;
     }
   }
 
 #ifdef MINT_USE_SIDRE
   delete ds;
-  ds = AXOM_NULLPTR;
+  ds = nullptr;
 #endif
 }
 
@@ -2031,8 +2031,8 @@ void resize_nodes( UnstructuredMesh< TOPO >* mesh )
   IndexType node_capacity = mesh->getNodeCapacity();
   double resize_ratio = mesh->getNodeResizeRatio();
   const double* x_coords = mesh->getCoordinateArray( X_COORDINATE );
-  const double* y_coords = AXOM_NULLPTR;
-  const double* z_coords = AXOM_NULLPTR;
+  const double* y_coords = nullptr;
+  const double* z_coords = nullptr;
   if ( ndims > 1 )
   {
     y_coords = mesh->getCoordinateArray( Y_COORDINATE );
@@ -2962,7 +2962,7 @@ TEST( mint_mesh_unstructured_mesh_DeathTest, invalidExternalOpsMixed )
 } /* end namespace axom */
 
 //------------------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

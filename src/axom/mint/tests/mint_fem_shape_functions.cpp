@@ -17,13 +17,13 @@
 
 #include "gtest/gtest.h"
 
-#include "mint/Lagrange.hpp"
-#include "mint/ShapeFunction.hpp"
-#include "mint/FEBasis.hpp"
-#include "mint/FEBasisTypes.hpp"
-#include "mint/CellTypes.hpp"
+#include "axom/mint/fem/shape_functions/Lagrange.hpp"
+#include "axom/mint/fem/shape_functions/ShapeFunction.hpp"
+#include "axom/mint/fem/FEBasis.hpp"
+#include "axom/mint/fem/FEBasisTypes.hpp"
+#include "axom/mint/mesh/CellTypes.hpp"
 
-#include "slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 
 // C/C++ includes
 #include <limits>
@@ -256,7 +256,7 @@ TEST( mint_fem_shape_functions, check_partition_of_unity )
 }
 
 //------------------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

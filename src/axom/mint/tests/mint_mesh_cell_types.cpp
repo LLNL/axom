@@ -16,8 +16,8 @@
  */
 
 // Axom includes
-#include "slic/slic.hpp"      // for slic macros
-#include "mint/CellTypes.hpp" // for CellTypes
+#include "axom/slic/interface/slic.hpp"      // for slic macros
+#include "axom/mint/mesh/CellTypes.hpp" // for CellTypes
 
 // gtest includes
 #include "gtest/gtest.h"      // for gtest macros
@@ -67,7 +67,7 @@ TEST( mint_mesh_cell_types, check_cell_types )
 }
 
 //------------------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

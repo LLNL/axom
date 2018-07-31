@@ -38,6 +38,9 @@ set(core_headers
     numerics/linear_solve.hpp
     numerics/matvecops.hpp
     numerics/polynomial_solvers.hpp
+
+    Macros.hpp
+    Types.hpp
     )
 
 set(core_sources

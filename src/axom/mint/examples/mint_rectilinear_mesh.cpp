@@ -22,13 +22,13 @@
  */
 
 // Axom includes
-#include "axom/Macros.hpp"           // for AXOM_NOT_USED
-#include "axom_utils/Utilities.hpp"  // for random_real()
+#include "axom/core/Macros.hpp"           // for AXOM_NOT_USED
+#include "axom/core/utilities/Utilities.hpp"  // for random_real()
 
 // Mint includes
-#include "mint/config.hpp"
-#include "mint/RectilinearMesh.hpp"
-#include "mint/vtk_utils.hpp"
+#include "axom/mint/config.hpp"
+#include "axom/mint/mesh/RectilinearMesh.hpp"
+#include "axom/mint/utils/vtk_utils.hpp"
 
 // C/C++ includes
 #include <cmath>
@@ -40,7 +40,7 @@ using IndexType     = mint::IndexType;
 
 void exponential_distribution( double origin, IndexType N, double* x )
 {
-  SLIC_ASSERT( x != AXOM_NULLPTR );
+  SLIC_ASSERT( x != nullptr );
 
   constexpr double beta = 0.02;
   const double expbeta  = exp( beta );

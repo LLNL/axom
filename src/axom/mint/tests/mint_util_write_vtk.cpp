@@ -16,26 +16,26 @@
  */
 
 // Axom utils
-#include "axom_utils/Utilities.hpp"     /* for utilities::max */
+#include "axom/core/utilities/Utilities.hpp"     /* for utilities::max */
 
 // Mint includes
-#include "mint/config.hpp"              /* for IndexType, int64 */
-#include "mint/CellTypes.hpp"           /* for cell::vtk_types */
-#include "mint/CurvilinearMesh.hpp"     /* for CurvilinearMesh */
-#include "mint/Field.hpp"               /* for Field */
-#include "mint/FieldData.hpp"           /* for FieldData */
-#include "mint/FieldTypes.hpp"          /* for *_FIELD_TYPE */
-#include "mint/FieldVariable.hpp"       /* for FieldVariable */
-#include "mint/Mesh.hpp"                /* for Mesh */
-#include "mint/ParticleMesh.hpp"        /* for ParticleMesh */
-#include "mint/RectilinearMesh.hpp"     /* for RectilinearMesh */
-#include "mint/UniformMesh.hpp"         /* for UniformMesh */
-#include "mint/UnstructuredMesh.hpp"    /* for UnstructuredMesh */
-#include "mint/vtk_utils.hpp"           /* for write_vtk */
+#include "axom/mint/config.hpp"              /* for IndexType, int64 */
+#include "axom/mint/mesh/CellTypes.hpp"           /* for cell::vtk_types */
+#include "axom/mint/mesh/CurvilinearMesh.hpp"     /* for CurvilinearMesh */
+#include "axom/mint/mesh/Field.hpp"               /* for Field */
+#include "axom/mint/mesh/FieldData.hpp"           /* for FieldData */
+#include "axom/mint/mesh/FieldTypes.hpp"          /* for *_FIELD_TYPE */
+#include "axom/mint/mesh/FieldVariable.hpp"       /* for FieldVariable */
+#include "axom/mint/mesh/Mesh.hpp"                /* for Mesh */
+#include "axom/mint/mesh/ParticleMesh.hpp"        /* for ParticleMesh */
+#include "axom/mint/mesh/RectilinearMesh.hpp"     /* for RectilinearMesh */
+#include "axom/mint/mesh/UniformMesh.hpp"         /* for UniformMesh */
+#include "axom/mint/mesh/UnstructuredMesh.hpp"    /* for UnstructuredMesh */
+#include "axom/mint/utils/vtk_utils.hpp"           /* for write_vtk */
 
 // Slic includes
-#include "slic/slic.hpp"                /* for slic macros */
-#include "slic/UnitTestLogger.hpp"      /* for UnitTestLogger */
+#include "axom/slic/interface/slic.hpp"                /* for slic macros */
+#include "axom/slic/core/UnitTestLogger.hpp"      /* for UnitTestLogger */
 
 // C/C++ includes
 #include <cmath>                        /* for std::exp */
@@ -67,15 +67,15 @@ namespace internal
 /*!
  * \brief Creates artificial 1 dimensional mesh data.
  * \param [in] mesh the mesh to populate.
- * \pre mesh != AXOM_NULLPTR
+ * \pre mesh != nullptr
  */
 void create_scalar_data( Mesh* mesh )
 {
   const IndexType mesh_num_nodes = mesh->getNumberOfNodes();
   const IndexType mesh_num_cells = mesh->getNumberOfCells();
 
-  double* double_ptr = AXOM_NULLPTR;
-  int* int_ptr    = AXOM_NULLPTR;
+  double* double_ptr = nullptr;
+  int* int_ptr    = nullptr;
 
   double_ptr = mesh->createField< double >( "node_scalars_double",
                                             mint::NODE_CENTERED );
@@ -121,17 +121,17 @@ void create_scalar_data( Mesh* mesh )
 /*!
  * \brief Creates artificial 3 dimensional mesh data.
  * \param [in] mesh the mesh to populate.
- * \pre mesh != AXOM_NULLPTR
+ * \pre mesh != nullptr
  */
 void create_vector_data( Mesh* mesh )
 {
   const IndexType num_nodes = mesh->getNumberOfNodes();
   const IndexType num_cells = mesh->getNumberOfCells();
 
-  double* double_ptr3 = AXOM_NULLPTR;
-  double* double_ptr2 = AXOM_NULLPTR;
-  int* int_ptr3    = AXOM_NULLPTR;
-  int* int_ptr2    = AXOM_NULLPTR;
+  double* double_ptr3 = nullptr;
+  double* double_ptr2 = nullptr;
+  int* int_ptr3    = nullptr;
+  int* int_ptr2    = nullptr;
 
   double_ptr3 = mesh->createField< double >( "node_vectors_3double",
                                              mint::NODE_CENTERED, 3 );
@@ -209,15 +209,15 @@ void create_vector_data( Mesh* mesh )
 /*!
  * \brief Creates artificial 4 dimensional mesh data.
  * \param [in] mesh the mesh to populate.
- * \pre mesh != AXOM_NULLPTR
+ * \pre mesh != nullptr
  */
 void create_multidim_data( Mesh* mesh )
 {
   const IndexType num_nodes = mesh->getNumberOfNodes();
   const IndexType num_cells = mesh->getNumberOfCells();
 
-  double* double_ptr = AXOM_NULLPTR;
-  int* int_ptr    = AXOM_NULLPTR;
+  double* double_ptr = nullptr;
+  int* int_ptr    = nullptr;
 
   double_ptr = mesh->createField< double >( "node_multidim_double",
                                             mint::NODE_CENTERED, 4 );
@@ -281,7 +281,7 @@ void create_multidim_data( Mesh* mesh )
  * \brief Creates artificial mesh data and then writes the mesh out to disk.
  * \param [in] mesh the mesh to write out.
  * \param [in] path the path of the file to be written.
- * \pre mesh != AXOM_NULLPTR
+ * \pre mesh != nullptr
  */
 void populate_and_write( Mesh* mesh, const std::string& path )
 {
@@ -311,7 +311,7 @@ void check_header( std::ifstream& file )
  * \param [in] field the field to check against.
  * \param [in] file the file to parse.
  * \param [in] offset the offset into the field to start at.
- * \pre field != AXOM_NULLPTR
+ * \pre field != nullptr
  */
 void check_scalar( const Field* field, std::ifstream& file,
                    unsigned int offset = 0 )
@@ -351,7 +351,7 @@ void check_scalar( const Field* field, std::ifstream& file,
  * \brief Checks that a vector field was written correctly.
  * \param [in] field the vector field to check against.
  * \param [in] file the file to parse.
- * \pre mesh != AXOM_NULLPTR
+ * \pre mesh != nullptr
  * \pre field->getNumComponents() == 2 || field->getNumComponents() == 3
  */
 void check_vector_data( const Field* field, std::ifstream& file )
@@ -403,7 +403,7 @@ void check_vector_data( const Field* field, std::ifstream& file )
  * \brief Checks that a multidimensional field was written correctly.
  * \param [in] field the multidimensional field to check against.
  * \param [in] file the file to parse.
- * \pre mesh != AXOM_NULLPTR
+ * \pre mesh != nullptr
  * \pre field->getNumComponents() > 3
  */
 void check_multidim_data( const Field* field, std::ifstream& file )
@@ -444,7 +444,7 @@ void check_multidim_data( const Field* field, std::ifstream& file )
  * \brief Checks that field data was written correctly.
  * \param [in] field_data the field data to check against.
  * \param [in] file the file to parse.
- * \pre field_data != AXOM_NULLPTR
+ * \pre field_data != nullptr
  */
 void check_fieldData( const FieldData* field_data, std::ifstream& file )
 {
@@ -534,7 +534,7 @@ void check_fieldData( const FieldData* field_data, std::ifstream& file )
  * \brief Checks that the mesh cell and node data were written correctly.
  * \param [in] mesh the mesh to check against.
  * \param [in] file the file to parse.
- * \pre mesh != AXOM_NULLPTR
+ * \pre mesh != nullptr
  */
 void check_data( const Mesh* mesh, std::ifstream& file )
 {
@@ -562,7 +562,7 @@ void check_data( const Mesh* mesh, std::ifstream& file )
  * \brief Checks that the uniform mesh header was written correctly.
  * \param [in] mesh the mesh to check against.
  * \param [in] file the file to parse.
- * \pre mesh != AXOM_NULLPTR
+ * \pre mesh != nullptr
  */
 void check_uniform_mesh( const UniformMesh* u_mesh, std::ifstream& file )
 {
@@ -608,7 +608,7 @@ void check_uniform_mesh( const UniformMesh* u_mesh, std::ifstream& file )
  * \brief Checks that the rectilinear mesh header was written correctly.
  * \param [in] mesh the mesh to check against.
  * \param [in] file the file to parse.
- * \pre mesh != AXOM_NULLPTR
+ * \pre mesh != nullptr
  */
 void check_rectilinear_mesh( const RectilinearMesh* r_mesh,
                              std::ifstream& file )
@@ -665,7 +665,7 @@ void check_rectilinear_mesh( const RectilinearMesh* r_mesh,
  * \brief Checks that the mesh node coordinates were written correctly.
  * \param [in] mesh the mesh to check against.
  * \param [in] file the file to parse.
- * \pre mesh != AXOM_NULLPTR
+ * \pre mesh != nullptr
  */
 void check_points( const Mesh* mesh, std::ifstream& file )
 {
@@ -704,7 +704,7 @@ void check_points( const Mesh* mesh, std::ifstream& file )
  * \brief Checks that the mesh cells were written correctly.
  * \param [in] mesh the mesh to check against.
  * \param [in] file the file to parse.
- * \pre mesh != AXOM_NULLPTR
+ * \pre mesh != nullptr
  */
 void check_cells( const Mesh* mesh, std::ifstream& file )
 {
@@ -763,14 +763,14 @@ void check_cells( const Mesh* mesh, std::ifstream& file )
   }
 
   delete [] cell_nodes;
-  cell_nodes = AXOM_NULLPTR;
+  cell_nodes = nullptr;
 }
 
 /*!
  * \brief Checks that the curvilinear mesh header was written correctly.
  * \param [in] mesh the mesh to check against.
  * \param [in] file the file to parse.
- * \pre mesh != AXOM_NULLPTR
+ * \pre mesh != nullptr
  */
 void check_curvilinear_mesh( const CurvilinearMesh* c_mesh,
                              std::ifstream& file )
@@ -799,7 +799,7 @@ void check_curvilinear_mesh( const CurvilinearMesh* c_mesh,
  * \brief Checks that the unstructured mesh header was written correctly.
  * \param [in] mesh the mesh to check against.
  * \param [in] file the file to parse.
- * \pre mesh != AXOM_NULLPTR
+ * \pre mesh != nullptr
  */
 void check_unstructured_mesh( const Mesh* mesh, std::ifstream& file )
 {

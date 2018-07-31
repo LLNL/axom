@@ -14,15 +14,15 @@
  *
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-#include "axom_utils/FileUtilities.hpp"   /* for getDirName, makeDirsForPath */
-#include "axom_utils/Utilities.hpp"       /* for abs, processAbort */
-#include "mint/FieldData.hpp"             /* for FieldData */
-#include "mint/FieldVariable.hpp"         /* for FieldVariable */
-#include "mint/UniformMesh.hpp"           /* for UniformMesh */
-#include "mint/vtk_utils.hpp"             /* for write_vtk */
-#include "mint/config.hpp"             /* for IndexType, int64 */
-#include "slic/GenericOutputStream.hpp"   /* for GenericOutputStream */
-#include "slic/slic.hpp"                  /* for slic macros */
+#include "axom/core/utilities/FileUtilities.hpp"   /* for getDirName, makeDirsForPath */
+#include "axom/core/utilities/Utilities.hpp"       /* for abs, processAbort */
+#include "axom/mint/mesh/FieldData.hpp"             /* for FieldData */
+#include "axom/mint/mesh/FieldVariable.hpp"         /* for FieldVariable */
+#include "axom/mint/mesh/UniformMesh.hpp"           /* for UniformMesh */
+#include "axom/mint/utils/vtk_utils.hpp"             /* for write_vtk */
+#include "axom/mint/config.hpp"             /* for IndexType, int64 */
+#include "axom/slic/streams/GenericOutputStream.hpp"   /* for GenericOutputStream */
+#include "axom/slic/interface/slic.hpp"                  /* for slic macros */
 
 #include <cmath>                          /* for std::exp, std::ciel */
 #include <sstream>                        /* for std::stringstream */

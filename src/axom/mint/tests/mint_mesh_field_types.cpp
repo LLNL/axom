@@ -15,9 +15,9 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include "mint/FieldTypes.hpp"
+#include "axom/mint/mesh/FieldTypes.hpp"
 
-#include "axom/Types.hpp"
+#include "axom/core/Types.hpp"
 #include "gtest/gtest.h" // for gtest macros
 
 // namespace aliases
@@ -40,7 +40,7 @@ TEST( mint_mesh_fieldtypes, field_traits )
 }
 
 //------------------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

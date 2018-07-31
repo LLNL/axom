@@ -31,7 +31,7 @@ foreach( example ${mint_examples} )
         NAME       ${example_name}_ex
         SOURCES    ${example}
         OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON axom_utils mint slic
+        DEPENDS_ON core mint slic
         FOLDER     axom/mint/examples
         )
 

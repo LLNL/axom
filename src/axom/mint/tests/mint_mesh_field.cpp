@@ -16,13 +16,13 @@
  */
 
 // Axom includes
-#include "axom/Types.hpp"          // for axom Types
-#include "mint/Field.hpp"          // for mint::Field
-#include "mint/FieldTypes.hpp"     // for mint::field_traits
-#include "mint/FieldVariable.hpp"  // for mint::FieldVariable
-#include "mint/FEBasis.hpp"        // for FEBasisTypes
+#include "axom/core/Types.hpp"          // for axom Types
+#include "axom/mint/mesh/Field.hpp"          // for mint::Field
+#include "axom/mint/mesh/FieldTypes.hpp"     // for mint::field_traits
+#include "axom/mint/mesh/FieldVariable.hpp"  // for mint::FieldVariable
+#include "axom/mint/fem/FEBasis.hpp"        // for FEBasisTypes
 
-#include "slic/slic.hpp"           // for SLIC macros
+#include "axom/slic/interface/slic.hpp"           // for SLIC macros
 
 // gtest includes
 #include "gtest/gtest.h"
@@ -44,7 +44,7 @@ void check_field_instantiation( )
   mint::Field* f =
     new mint::FieldVariable< T >( "f", NUM_TUPLES, NUM_COMPONENTS );
 
-  EXPECT_TRUE( f != AXOM_NULLPTR );
+  EXPECT_TRUE( f != nullptr );
   EXPECT_EQ( f->getName(), "f" );
   EXPECT_EQ( f->getNumTuples(), NUM_TUPLES );
   EXPECT_EQ( f->getNumComponents(), NUM_COMPONENTS );
@@ -52,10 +52,10 @@ void check_field_instantiation( )
   EXPECT_EQ( f->getType(), mint::field_traits< T >::type() );
 
   T* data = mint::Field::getDataPtr< T >( f );
-  EXPECT_TRUE( data != AXOM_NULLPTR );
+  EXPECT_TRUE( data != nullptr );
 
   delete f;
-  f = AXOM_NULLPTR;
+  f = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -92,14 +92,14 @@ TEST( mint_mesh_field, set_basis )
 
   mint::Field* f =
     new mint::FieldVariable< double >( "f", NUM_TUPLES, NUM_COMPONENTS );
-  EXPECT_TRUE( f != AXOM_NULLPTR );
+  EXPECT_TRUE( f != nullptr );
   EXPECT_EQ( f->getBasis(), MINT_UNDEFINED_BASIS );
 
   f->setBasis( MINT_LAGRANGE_BASIS );
   EXPECT_EQ( f->getBasis(), MINT_LAGRANGE_BASIS );
 
   delete f;
-  f = AXOM_NULLPTR;
+  f = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -113,7 +113,7 @@ TEST( mint_mesh_field, get_dataptr )
     new mint::FieldVariable< double >( "f", f, NUM_TUPLES, NUM_COMPONENTS );
 
   const double* data = mint::Field::getDataPtr< double >( field );
-  EXPECT_TRUE( data != AXOM_NULLPTR );
+  EXPECT_TRUE( data != nullptr );
   EXPECT_EQ( data, f );
 
   for ( int i=0 ; i < NUM_TUPLES ; ++i )
@@ -122,9 +122,9 @@ TEST( mint_mesh_field, get_dataptr )
   }
 
   delete field;
-  field = AXOM_NULLPTR;
+  field = nullptr;
 
-  EXPECT_TRUE( f != AXOM_NULLPTR );
+  EXPECT_TRUE( f != nullptr );
   for ( int i=0 ; i < NUM_TUPLES ; ++i )
   {
     EXPECT_DOUBLE_EQ( f[ i ], static_cast< double >( i+1 ) );
@@ -133,7 +133,7 @@ TEST( mint_mesh_field, get_dataptr )
 }
 
 //------------------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

@@ -16,9 +16,9 @@
  */
 
 // Axom includes
-#include "slic/slic.hpp"              // for slic macros
-#include "mint/FieldData.hpp"         // for mint::FieldData
-#include "mint/FieldAssociation.hpp"  // for FieldAssociation enum
+#include "axom/slic/interface/slic.hpp"              // for slic macros
+#include "axom/mint/mesh/FieldData.hpp"         // for mint::FieldData
+#include "axom/mint/mesh/FieldAssociation.hpp"  // for FieldAssociation enum
 
 // gtest includes
 #include "gtest/gtest.h"              // for gtest macros
@@ -57,7 +57,7 @@ void check_resize( mint::FieldData& field_data, int NEW_NUM_TUPLES )
   for ( int i=0 ; i < numFields ; ++i )
   {
     mint::Field* f = field_data.getField( i );
-    EXPECT_TRUE( f != AXOM_NULLPTR );
+    EXPECT_TRUE( f != nullptr );
     EXPECT_TRUE( f->getNumTuples() < NEW_NUM_TUPLES );
   }
 
@@ -68,7 +68,7 @@ void check_resize( mint::FieldData& field_data, int NEW_NUM_TUPLES )
   for ( int i=0 ; i < numFields ; ++i )
   {
     mint::Field* f = field_data.getField( i );
-    EXPECT_TRUE( f != AXOM_NULLPTR );
+    EXPECT_TRUE( f != nullptr );
     EXPECT_EQ( f->getNumTuples(), NEW_NUM_TUPLES );
   }
 
@@ -85,7 +85,7 @@ void check_reserve( mint::FieldData& field_data, int NEW_CAPACITY )
   for ( int i=0 ; i < numFields ; ++i )
   {
     mint::Field* f = field_data.getField( i );
-    EXPECT_TRUE( f != AXOM_NULLPTR );
+    EXPECT_TRUE( f != nullptr );
     EXPECT_TRUE( f->getCapacity() < NEW_CAPACITY );
   }
 
@@ -96,7 +96,7 @@ void check_reserve( mint::FieldData& field_data, int NEW_CAPACITY )
   for ( int i=0 ; i < numFields ; ++i )
   {
     mint::Field* f = field_data.getField( i );
-    EXPECT_TRUE( f != AXOM_NULLPTR );
+    EXPECT_TRUE( f != nullptr );
     EXPECT_EQ( f->getCapacity(), NEW_CAPACITY );
   }
 
@@ -115,7 +115,7 @@ void check_shrink( mint::FieldData& field_data )
   for ( int i=0 ; i < numFields ; ++i )
   {
     mint::Field* f = field_data.getField( i );
-    EXPECT_TRUE( f != AXOM_NULLPTR );
+    EXPECT_TRUE( f != nullptr );
     EXPECT_TRUE( f->getNumTuples() < f->getCapacity() );
     EXPECT_EQ( f->getCapacity(), num_tuples*10 );
   }
@@ -127,7 +127,7 @@ void check_shrink( mint::FieldData& field_data )
   for ( int i=0 ; i < numFields ; ++i )
   {
     mint::Field* f = field_data.getField( i );
-    EXPECT_TRUE( f != AXOM_NULLPTR );
+    EXPECT_TRUE( f != nullptr );
     EXPECT_EQ( f->getCapacity(), f->getNumTuples() );
   }
 
@@ -155,14 +155,14 @@ void check_create_and_access_data( mint::FieldData& field_data,
   mint::IndexType N = 0;
   mint::IndexType M = 0;
   int* f1ptr = field_data.getFieldPtr< int >( "f1", N, M );
-  EXPECT_TRUE( f1ptr != AXOM_NULLPTR );
+  EXPECT_TRUE( f1ptr != nullptr );
   EXPECT_EQ( N, NUM_TUPLES );
   EXPECT_EQ( M, 1 );
   EXPECT_EQ( f1ptr, f1 );
 
   // check f1 field object access by name
   mint::Field* field_by_name = field_data.getField( "f1" );
-  EXPECT_TRUE( field_by_name != AXOM_NULLPTR );
+  EXPECT_TRUE( field_by_name != nullptr );
   EXPECT_EQ( field_by_name->getName(), "f1" );
   EXPECT_EQ( field_by_name->getType(), mint::INT32_FIELD_TYPE );
   EXPECT_EQ( mint::Field::getDataPtr< int >( field_by_name ), f1 );
@@ -171,20 +171,20 @@ void check_create_and_access_data( mint::FieldData& field_data,
 
   // check f1 field object access by index
   mint::Field* field_by_index = field_data.getField( 0 );
-  EXPECT_TRUE( field_by_index != AXOM_NULLPTR );
+  EXPECT_TRUE( field_by_index != nullptr );
   EXPECT_EQ( field_by_index, field_by_name );
   EXPECT_EQ( field_by_index->getName(), "f1" );
 
   // check f2 pointer access and parameters
   double* f2ptr = field_data.getFieldPtr< double >( "f2", N, M );
-  EXPECT_TRUE( f2ptr != AXOM_NULLPTR );
+  EXPECT_TRUE( f2ptr != nullptr );
   EXPECT_EQ( N, NUM_TUPLES );
   EXPECT_EQ( M, NUM_COMPONENTS );
   EXPECT_EQ( f2ptr, f2 );
 
   // check f2 field object access by name
   mint::Field* field2_by_name = field_data.getField( "f2" );
-  EXPECT_TRUE( field2_by_name != AXOM_NULLPTR );
+  EXPECT_TRUE( field2_by_name != nullptr );
   EXPECT_EQ( field2_by_name->getName(), "f2" );
   EXPECT_EQ( field2_by_name->getType(), mint::DOUBLE_FIELD_TYPE );
   EXPECT_EQ( mint::Field::getDataPtr< double >( field2_by_name ), f2 );
@@ -193,7 +193,7 @@ void check_create_and_access_data( mint::FieldData& field_data,
 
   // check f2 field object access by index
   mint::Field* field2_by_index = field_data.getField( 1 );
-  EXPECT_TRUE( field2_by_index != AXOM_NULLPTR );
+  EXPECT_TRUE( field2_by_index != nullptr );
   EXPECT_EQ( field2_by_index, field2_by_name );
   EXPECT_EQ( field2_by_index->getName(), "f2" );
 
@@ -234,7 +234,7 @@ void add_field_to_group( sidre::Group* gp,
   fg->createView( "topology" )->setString( "topo" );
 
   sidre::View* fv = fg->createView( "values" );
-  SLIC_ASSERT( fv != AXOM_NULLPTR );
+  SLIC_ASSERT( fv != nullptr );
 
   mint::Array< T > data( fv, numTuples, numComponents );
   data.fill( fill_value );
@@ -276,7 +276,7 @@ TEST( mint_mesh_field_data_DeathTest, invalid_construction )
   sidre::Group* gp = ds.getRoot( );
 
   EXPECT_DEATH_IF_SUPPORTED( mint::FieldData( 42, gp, "topo" ), IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( mint::FieldData( mint::NODE_CENTERED, AXOM_NULLPTR,
+  EXPECT_DEATH_IF_SUPPORTED( mint::FieldData( mint::NODE_CENTERED, nullptr,
                                               "topo" ),
                              IGNORE_OUTPUT );
 
@@ -329,7 +329,7 @@ TEST( mint_mesh_field_data_DeathTest, invalid_operations )
   EXPECT_DEATH_IF_SUPPORTED( field_data.resize( 10 ), IGNORE_OUTPUT );
 
   // creating an external field with a null pointer should fail
-  EXPECT_DEATH_IF_SUPPORTED( field_data.createField<int>( "foo", AXOM_NULLPTR,
+  EXPECT_DEATH_IF_SUPPORTED( field_data.createField<int>( "foo", nullptr,
                                                           4 ),
                              IGNORE_OUTPUT );
 
@@ -410,7 +410,7 @@ TEST( mint_mesh_field_data, sidre_constructor )
     EXPECT_FALSE( cell_data.hasField( name ) );
 
     mint::Field* f = node_data.getField( i );
-    EXPECT_TRUE( f != AXOM_NULLPTR );
+    EXPECT_TRUE( f != nullptr );
     EXPECT_EQ( f->getName(), name );
     EXPECT_EQ( f->getNumTuples(), NUM_TUPLES );
     EXPECT_EQ( f->getNumComponents(), NUM_COMPONENTS );
@@ -420,7 +420,7 @@ TEST( mint_mesh_field_data, sidre_constructor )
       EXPECT_EQ( f->getType(), mint::INT32_FIELD_TYPE );
 
       const int* field_data = mint::Field::getDataPtr< int > ( f );
-      EXPECT_TRUE( field_data != AXOM_NULLPTR );
+      EXPECT_TRUE( field_data != nullptr );
 
       for ( int i=0 ; i < NTOTAL ; ++i )
       {
@@ -433,7 +433,7 @@ TEST( mint_mesh_field_data, sidre_constructor )
       EXPECT_EQ( f->getType(), mint::DOUBLE_FIELD_TYPE );
 
       const double* field_data = mint::Field::getDataPtr< double >( f );
-      EXPECT_TRUE( field_data != AXOM_NULLPTR );
+      EXPECT_TRUE( field_data != nullptr );
 
       for ( int i=0 ; i < NTOTAL ; ++i )
       {
@@ -509,7 +509,7 @@ TEST( mint_mesh_field_data, create_and_access_fields )
 
   // ensure Sidre hierarchy conforms to the blueprint
   sidre::Group* f1 = fields_group->getGroup( "f1" );
-  EXPECT_TRUE( f1 != AXOM_NULLPTR );
+  EXPECT_TRUE( f1 != nullptr );
   check_blueprint( f1 );
   EXPECT_EQ( f1->getView("values")->getTypeID(), sidre::INT32_ID );
 
@@ -518,7 +518,7 @@ TEST( mint_mesh_field_data, create_and_access_fields )
   EXPECT_EQ( f1_array.numComponents(), 1 );
 
   sidre::Group* f2 = fields_group->getGroup( "f2" );
-  EXPECT_TRUE( f2 != AXOM_NULLPTR );
+  EXPECT_TRUE( f2 != nullptr );
   check_blueprint( f2 );
   EXPECT_EQ( f2->getView("values")->getTypeID(), sidre::FLOAT64_ID );
 
@@ -706,7 +706,7 @@ TEST( mint_mesh_field_data, shrink )
 }
 
 //------------------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

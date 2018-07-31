@@ -18,27 +18,27 @@
 #include "gtest/gtest.h"
 
 // Axom includes
-#include "axom/Types.hpp" // for AXOM_NULLPTR
+#include "axom/core/Types.hpp" // for nullptr
 
-#include "axom_utils/Matrix.hpp"       // for Matrix class definition
-#include "axom_utils/Determinants.hpp" // for numerics::determinant()
+#include "axom/core/numerics/Matrix.hpp"       // for Matrix class definition
+#include "axom/core/numerics/Determinants.hpp" // for numerics::determinant()
 
 // Mint includes
-#include "mint/CellTypes.hpp"
-#include "mint/config.hpp"
-#include "mint/FEBasis.hpp"
-#include "mint/Field.hpp"
-#include "mint/FieldData.hpp"
-#include "mint/FieldVariable.hpp"
-#include "mint/FiniteElement.hpp"
-#include "mint/Lagrange.hpp"
-#include "mint/Mesh.hpp"
-#include "mint/ShapeFunction.hpp"
-#include "mint/UnstructuredMesh.hpp"
-#include "mint/vtk_utils.hpp"
+#include "axom/mint/mesh/CellTypes.hpp"
+#include "axom/mint/config.hpp"
+#include "axom/mint/fem/FEBasis.hpp"
+#include "axom/mint/mesh/Field.hpp"
+#include "axom/mint/mesh/FieldData.hpp"
+#include "axom/mint/mesh/FieldVariable.hpp"
+#include "axom/mint/fem/FiniteElement.hpp"
+#include "axom/mint/fem/shape_functions/Lagrange.hpp"
+#include "axom/mint/mesh/Mesh.hpp"
+#include "axom/mint/fem/shape_functions/ShapeFunction.hpp"
+#include "axom/mint/mesh/UnstructuredMesh.hpp"
+#include "axom/mint/utils/vtk_utils.hpp"
 
 // Slic includes
-#include "slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 
 // C/C++ includes
 #include <cmath>   // for sin(), cos(), sqrt(), etc.
@@ -60,8 +60,8 @@ namespace
  */
 void compute_centroid( mint::FiniteElement* fe, double* centroid )
 {
-  EXPECT_TRUE(  fe != AXOM_NULLPTR );
-  EXPECT_TRUE(  centroid != AXOM_NULLPTR );
+  EXPECT_TRUE(  fe != nullptr );
+  EXPECT_TRUE(  centroid != nullptr );
 
   const int ndims  = fe->getPhysicalDimension();
   const int nnodes = fe->getNumNodes();
@@ -122,7 +122,7 @@ void compute_centroid( mint::FiniteElement* fe, double* centroid )
 template < int BasisType, mint::CellType CELLTYPE >
 void get_single_fe( mint::FiniteElement*& fe )
 {
-  EXPECT_TRUE( fe==AXOM_NULLPTR );
+  EXPECT_TRUE( fe==nullptr );
 
   typedef typename mint::FEBasis< BasisType,CELLTYPE > FEMType;
   typedef typename FEMType::ShapeFunctionType ShapeFunctionType;
@@ -204,12 +204,12 @@ void get_single_fe( mint::FiniteElement*& fe )
  *
  * \param [in] fe pointer to the finite element instance to test
  *
- * \pre fe != AXOM_NULLPTR
+ * \pre fe != nullptr
  */
 template < typename ShapeFunctionType >
 void check_reference_element( mint::FiniteElement* fe )
 {
-  EXPECT_TRUE( fe != AXOM_NULLPTR);
+  EXPECT_TRUE( fe != nullptr);
   EXPECT_FALSE( fe->getBasisType()==MINT_UNDEFINED_BASIS );
 
   // STEP 0: check reference element attributes, eg, dofs, dimension, etc.
@@ -272,13 +272,13 @@ void check_reference_element( mint::FiniteElement* fe )
  *
  * \param [in] fe pointer to the finite element instance to test
  *
- * \pre fe != AXOM_NULLPTR
+ * \pre fe != nullptr
  *
  * \see check_forward_map
  */
 void test_forward_map( mint::FiniteElement* fe, double TOL=1.e-9 )
 {
-  EXPECT_TRUE( fe != AXOM_NULLPTR );
+  EXPECT_TRUE( fe != nullptr );
   EXPECT_FALSE( fe->getBasisType()==MINT_UNDEFINED_BASIS );
   EXPECT_TRUE(  fe->getReferenceDimension()==fe->getPhysicalDimension() );
   EXPECT_TRUE(  fe->getNumNodes()==fe->getNumDofs() );
@@ -346,13 +346,13 @@ void test_forward_map( mint::FiniteElement* fe, double TOL=1.e-9 )
  *
  * \param [in] fe pointer to the finite element instance to test
  *
- * \pre fe != AXOM_NULLPTR
+ * \pre fe != nullptr
  *
  * \see check_inverse_map
  */
 void test_inverse_map( mint::FiniteElement* fe, double TOL=1.e-9 )
 {
-  EXPECT_TRUE( fe != AXOM_NULLPTR );
+  EXPECT_TRUE( fe != nullptr );
   EXPECT_FALSE( fe->getBasisType()==MINT_UNDEFINED_BASIS );
   EXPECT_TRUE(  fe->getReferenceDimension()==fe->getPhysicalDimension() );
   EXPECT_TRUE(  fe->getNumNodes()==fe->getNumDofs() );
@@ -436,10 +436,10 @@ void check_shape( )
   typedef typename FEMType::ShapeFunctionType ShapeFunctionType;
 
   // STEP 0: construct finite element mesh
-  mint::FiniteElement* fe = AXOM_NULLPTR;
+  mint::FiniteElement* fe = nullptr;
   get_single_fe< BasisType, CELLTYPE >( fe );
 
-  EXPECT_TRUE( fe != AXOM_NULLPTR );
+  EXPECT_TRUE( fe != nullptr );
   EXPECT_EQ( mint::getCellInfo( CELLTYPE ).num_nodes,  fe->getNumNodes() );
 
   // STEP 1: test FE instance
@@ -473,10 +473,10 @@ void check_jacobian( double TOL=1.e-9 )
   double det = 0.0;
 
   // STEP 0: construct a single element
-  mint::FiniteElement* fe = AXOM_NULLPTR;
+  mint::FiniteElement* fe = nullptr;
   get_single_fe< BasisType, CELLTYPE >( fe );
 
-  EXPECT_TRUE(  fe != AXOM_NULLPTR );
+  EXPECT_TRUE(  fe != nullptr );
   EXPECT_EQ(  mint::getCellInfo( CELLTYPE ).num_nodes, fe->getNumNodes() );
 
   // STEP 1: construct a Matrix object to store the jacobian
@@ -545,10 +545,10 @@ void check_forward_map( double TOL=1.e-9 )
                          << mint::getCellInfo( CELLTYPE ).name );
 
   // STEP 0: construct a mesh with a single element
-  mint::FiniteElement* fe = AXOM_NULLPTR;
+  mint::FiniteElement* fe = nullptr;
 
   get_single_fe< BasisType, CELLTYPE >( fe );
-  EXPECT_TRUE(  fe != AXOM_NULLPTR );
+  EXPECT_TRUE(  fe != nullptr );
   EXPECT_EQ(  mint::getCellInfo( CELLTYPE ).num_nodes,  fe->getNumNodes() );
 
   // STEP 1: check forward mapping
@@ -579,10 +579,10 @@ void check_inverse_map( double TOL=1.e-9 )
                          << mint::getCellInfo( CELLTYPE ).name );
 
   // STEP 0: construct a mesh with a single element
-  mint::FiniteElement* fe = AXOM_NULLPTR;
+  mint::FiniteElement* fe = nullptr;
 
   get_single_fe< BasisType, CELLTYPE >( fe );
-  EXPECT_TRUE(  fe != AXOM_NULLPTR );
+  EXPECT_TRUE(  fe != nullptr );
   EXPECT_EQ(  mint::getCellInfo( CELLTYPE ).num_nodes,  fe->getNumNodes() );
 
   // STEP 1: check inverse map
@@ -611,10 +611,10 @@ void point_in_cell( double TOL=1.e-9 )
                          << mint::getCellInfo( CELLTYPE ).name );
 
   // STEP 0: construct a mesh with a single element
-  mint::FiniteElement* fe = AXOM_NULLPTR;
+  mint::FiniteElement* fe = nullptr;
 
   get_single_fe< BasisType, CELLTYPE >( fe );
-  EXPECT_TRUE(  fe != AXOM_NULLPTR );
+  EXPECT_TRUE(  fe != nullptr );
   EXPECT_EQ(  mint::getCellInfo( CELLTYPE ).num_nodes,  fe->getNumNodes() );
 
   // STEP 0: test variables
@@ -736,8 +736,8 @@ double analytic_function( const double* x, int N )
  * \param [in] wgts user-supplied buffer of corresponding interpolation weigths
  * \param [in] N the number of nodes, i.e., the length of f and wgts
  *
- * \pre f != AXOM_NULLPTR
- * \pre wgts != AXOM_NULLPTR
+ * \pre f != nullptr
+ * \pre wgts != nullptr
  *
  * \return finterp the interpolated field value
  *
@@ -745,8 +745,8 @@ double analytic_function( const double* x, int N )
  */
 double interp( const double* f, const double* wgts, int N )
 {
-  EXPECT_TRUE(  f != AXOM_NULLPTR );
-  EXPECT_TRUE(  wgts != AXOM_NULLPTR );
+  EXPECT_TRUE(  f != nullptr );
+  EXPECT_TRUE(  wgts != nullptr );
 
   double finterp = 0.0;
   for ( int i=0 ; i < N ; ++i )
@@ -776,10 +776,10 @@ void check_interp( double TOL=1.e-9 )
                          << mint::getCellInfo( CELLTYPE ).name );
 
   // STEP 0: construct a mesh with a single element
-  mint::FiniteElement* fe = AXOM_NULLPTR;
+  mint::FiniteElement* fe = nullptr;
 
   get_single_fe< BasisType, CELLTYPE >( fe );
-  EXPECT_TRUE( fe != AXOM_NULLPTR );
+  EXPECT_TRUE( fe != nullptr );
   EXPECT_EQ( mint::getCellInfo( CELLTYPE ).num_nodes, fe->getNumNodes() );
 
   const int ndims  = fe->getPhysicalDimension();
@@ -836,7 +836,7 @@ TEST( mint_single_fe, check_override_max_newton )
   const int MAX_NEWTON = 42; // test value to override max newton
 
   // STEP 0: construct a mesh with a single element
-  mint::FiniteElement* fe = AXOM_NULLPTR;
+  mint::FiniteElement* fe = nullptr;
   get_single_fe< MINT_LAGRANGE_BASIS, mint::QUAD >( fe );
 
   EXPECT_FALSE( MAX_NEWTON==fe->getMaxSolverIterations() );
@@ -931,8 +931,8 @@ TEST( mint_fem_single_fe, matrix_constructor_shallowcopy)
 
   // STEP 7: delete the FE object, ensure Matrix buffer is not corrupted
   delete fe;
-  fe = AXOM_NULLPTR;
-  EXPECT_FALSE( M.data()==AXOM_NULLPTR );
+  fe = nullptr;
+  EXPECT_FALSE( M.data()==nullptr );
 }
 
 //------------------------------------------------------------------------------
@@ -1020,7 +1020,7 @@ TEST( mint_fem_single_fe, check_fe_interp )
 }
 
 //------------------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

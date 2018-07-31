@@ -15,12 +15,12 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include "slic/slic.hpp"            // for slic macros
+#include "axom/slic/interface/slic.hpp"            // for slic macros
 
-#include "axom_utils/Utilities.hpp" // for utilities::max()
+#include "axom/core/utilities/Utilities.hpp" // for utilities::max()
 
-#include "mint/config.hpp"          // for IndexType
-#include "mint/MeshCoordinates.hpp" // for MeshCoordinates
+#include "axom/mint/config.hpp"          // for IndexType
+#include "axom/mint/mesh/MeshCoordinates.hpp" // for MeshCoordinates
 
 #ifdef MINT_USE_SIDRE
 #include "sidre/sidre.hpp"          // for sidre::Group, sidre::View
@@ -35,7 +35,7 @@ namespace mint
 {
 
 #ifdef MINT_USE_SIDRE
-sidre::DataStore* ds = AXOM_NULLPTR;
+sidre::DataStore* ds = nullptr;
 #endif
 
 // constants used in tests
@@ -60,8 +60,8 @@ namespace internal
  * \param [in] expected pointer to the buffer consisting the expected values
  * \param [in] N the length of the buffer.
  *
- * \pre actual != AXOM_NULLPTR
- * \pre expected != AXOM_NULLPTR
+ * \pre actual != nullptr
+ * \pre expected != nullptr
  * \pre N > 0
  *
  */
@@ -69,8 +69,8 @@ void check_array_values( const double* actual,
                          const double* expected,
                          IndexType N )
 {
-  SLIC_ASSERT( actual != AXOM_NULLPTR );
-  SLIC_ASSERT( expected != AXOM_NULLPTR );
+  SLIC_ASSERT( actual != nullptr );
+  SLIC_ASSERT( expected != nullptr );
   SLIC_ASSERT( N > 0 );
 
   for ( IndexType i=0 ; i < N ; ++i )
@@ -99,7 +99,7 @@ void create_sidre_data( sidre::DataStore& ds, int dimension )
   double* ptrs[ 3 ]           = { x, y, z };
 
   sidre::Group* gp = ds.getRoot();
-  SLIC_ASSERT( gp != AXOM_NULLPTR );
+  SLIC_ASSERT( gp != nullptr );
 
   gp->createView( "type" )->setString( "explicit" );
   sidre::Group* values = gp->createGroup( "values" );
@@ -122,18 +122,18 @@ void create_sidre_data( sidre::DataStore& ds, int dimension )
 #endif
 
 /*!
- * \brief Tests that the coordinate arrays are not AXOM_NULLPTR
+ * \brief Tests that the coordinate arrays are not nullptr
  * \param [in] coords const pointer to the MeshCoordinates object.
  */
 void check_coordinate_arrays( const MeshCoordinates* coords )
 {
-  SLIC_ASSERT( coords != AXOM_NULLPTR );
+  SLIC_ASSERT( coords != nullptr );
 
   const int ndims = coords->dimension();
   for ( int i=0 ; i < ndims ; ++i )
   {
     const double* coordsptr = coords->getCoordinateArray( i );
-    EXPECT_TRUE( coordsptr != AXOM_NULLPTR );
+    EXPECT_TRUE( coordsptr != nullptr );
   }
 }
 
@@ -174,7 +174,7 @@ void check_constructor( int dimension,
   EXPECT_TRUE( dimension >= 1 && dimension <= 3 );
 
   // STEP 0: construct the MeshCoordinates object
-  MeshCoordinates* coords = AXOM_NULLPTR;
+  MeshCoordinates* coords = nullptr;
   if ( capacity == IGNORE_CAPACITY )
   {
     coords = new MeshCoordinates( dimension, numNodes );
@@ -183,7 +183,7 @@ void check_constructor( int dimension,
   {
     coords = new MeshCoordinates( dimension, numNodes, capacity );
   }
-  EXPECT_TRUE( coords != AXOM_NULLPTR );
+  EXPECT_TRUE( coords != nullptr );
 
   // STEP 1: check post-conditions
   EXPECT_EQ( dimension, coords->dimension() );
@@ -217,7 +217,7 @@ void check_constructor( int dimension,
 
   // STEP 4: delete MeshCoordinates object
   delete coords;
-  coords = AXOM_NULLPTR;
+  coords = nullptr;
 }
 
 /*!
@@ -628,11 +628,11 @@ void insert_nodes( MeshCoordinates* mesh_coords, IndexType n_nodes )
 /*!
  * \brief Test set/get a node from the given MeshCoordinates object.
  * \param [in] mc the mesh coordinates object to test
- * \pre mc != AXOM_NULLPTR
+ * \pre mc != nullptr
  */
 void check_set_and_get( MeshCoordinates* mc )
 {
-  EXPECT_TRUE( mc != AXOM_NULLPTR );
+  EXPECT_TRUE( mc != nullptr );
 
   constexpr double TEST_VALUE         = 7;
   constexpr IndexType targetIdx = 3;
@@ -671,8 +671,8 @@ void check_set_and_get( MeshCoordinates* mc )
 MeshCoordinates* createExternal( int dim, IndexType n_nodes )
 {
   double* x = new double[ n_nodes ];
-  double* y = AXOM_NULLPTR;
-  double* z = AXOM_NULLPTR;
+  double* y = nullptr;
+  double* z = nullptr;
 
   if ( dim > 1 )
   {
@@ -697,7 +697,7 @@ MeshCoordinates* createExternal( int dim, IndexType n_nodes )
 void createCoords( MeshCoordinates** mesh_coords, IndexType n_nodes )
 {
 #ifdef MINT_USE_SIDRE
-  SLIC_ERROR_IF( ds != AXOM_NULLPTR, "Did not free DataStore." );
+  SLIC_ERROR_IF( ds != nullptr, "Did not free DataStore." );
   ds = new sidre::DataStore();
   sidre::Group* root = ds->getRoot();
 #endif
@@ -726,8 +726,8 @@ void deleteExternal( MeshCoordinates*& mesh_coords )
 {
   const int ndims = mesh_coords->dimension();
   const double* x = mesh_coords->getCoordinateArray( X_COORDINATE );
-  const double* y = AXOM_NULLPTR;
-  const double* z = AXOM_NULLPTR;
+  const double* y = nullptr;
+  const double* z = nullptr;
 
   if ( ndims > 1 )
   {
@@ -739,7 +739,7 @@ void deleteExternal( MeshCoordinates*& mesh_coords )
   }
 
   delete mesh_coords;
-  mesh_coords = AXOM_NULLPTR;
+  mesh_coords = nullptr;
 
   delete[] x;
   delete[] y;
@@ -763,13 +763,13 @@ void deleteCoords( MeshCoordinates** mesh_coords, int n_coords )
     else
     {
       delete mesh_coords[ i ];
-      mesh_coords[ i ] = AXOM_NULLPTR;
+      mesh_coords[ i ] = nullptr;
     }
   }
 
 #ifdef MINT_USE_SIDRE
   delete ds;
-  ds = AXOM_NULLPTR;
+  ds = nullptr;
 #endif
 }
 
@@ -787,8 +787,8 @@ void deleteAndDuplicateExternal( MeshCoordinates*& mesh_coords )
   const int n_nodes = mesh_coords->numNodes();
   const int capacity = mesh_coords->capacity();
   double* x = mesh_coords->getCoordinateArray( X_COORDINATE );
-  double* y = AXOM_NULLPTR;
-  double* z = AXOM_NULLPTR;
+  double* y = nullptr;
+  double* z = nullptr;
 
   if ( ndims > 1 )
   {
@@ -1000,7 +1000,7 @@ TEST( mint_mesh_coordinates, reserve )
     sidre::DataStore ds;
     internal::create_sidre_data( ds, dim );
     sidre::Group* coords_group = ds.getRoot();
-    EXPECT_TRUE( coords_group != AXOM_NULLPTR );
+    EXPECT_TRUE( coords_group != nullptr );
 
     MeshCoordinates mc2( coords_group );
     IndexType numNodes2 = mc2.numNodes();
@@ -1031,7 +1031,7 @@ TEST( mint_mesh_coorindates, resize )
     sidre::DataStore ds;
     internal::create_sidre_data( ds, dim );
     sidre::Group* coords_group = ds.getRoot();
-    EXPECT_TRUE( coords_group != AXOM_NULLPTR );
+    EXPECT_TRUE( coords_group != nullptr );
 
     MeshCoordinates mc2( coords_group );
     mc2.resize( LARGE_NUM_NODES );
@@ -1063,7 +1063,7 @@ TEST( mint_mesh_coordinates, shrink )
     sidre::DataStore ds;
     internal::create_sidre_data( ds, dim );
     sidre::Group* coords_group = ds.getRoot();
-    EXPECT_TRUE( coords_group != AXOM_NULLPTR );
+    EXPECT_TRUE( coords_group != nullptr );
 
     MeshCoordinates mc2( coords_group );
 
@@ -1189,7 +1189,7 @@ TEST( mint_mesh_coordinates, sidre_pull_constructor )
     sidre::DataStore ds;
     internal::create_sidre_data( ds, dim );
     sidre::Group* coords_group = ds.getRoot();
-    EXPECT_TRUE( coords_group != AXOM_NULLPTR );
+    EXPECT_TRUE( coords_group != nullptr );
 
     // STEP 1: create a MeshCoordinates instance within a scope from
     // the sidre group.
@@ -1217,11 +1217,11 @@ TEST( mint_mesh_coordinates, sidre_pull_constructor )
 
     // STEP 2: ensure data is persistent in the data-store after the
     // MeshCoordinates object goes out-of-scope
-    EXPECT_TRUE( coords_group != AXOM_NULLPTR );
+    EXPECT_TRUE( coords_group != nullptr );
 
     // Ensure that the data remains persistent in the data-store
     sidre::Group* values_group = coords_group->getGroup( "values" );
-    EXPECT_TRUE( values_group != AXOM_NULLPTR );
+    EXPECT_TRUE( values_group != nullptr );
     for ( int j=0 ; j < dim ; ++j )
     {
       sidre::View* coords_view =
@@ -1252,7 +1252,7 @@ TEST( mint_mesh_coordinates, sidre_push_constructor )
   {
     sidre::DataStore ds;
     sidre::Group* coords_group = ds.getRoot();
-    SLIC_ASSERT( coords_group != AXOM_NULLPTR );
+    SLIC_ASSERT( coords_group != nullptr );
 
     EXPECT_TRUE( coords_group->getNumGroups()==0 );
     EXPECT_TRUE( coords_group->getNumViews()==0 );
@@ -1269,7 +1269,7 @@ TEST( mint_mesh_coordinates, sidre_push_constructor )
       EXPECT_TRUE( coords_group->hasChildGroup( "values" ) );
 
       sidre::Group* values_group = coords_group->getGroup( "values" );
-      EXPECT_TRUE( values_group != AXOM_NULLPTR );
+      EXPECT_TRUE( values_group != nullptr );
       EXPECT_TRUE( values_group->getNumViews()==static_cast< size_t> (dim ) );
 
       for ( int j=0 ; j < dim ; ++j )
@@ -1277,7 +1277,7 @@ TEST( mint_mesh_coordinates, sidre_push_constructor )
         EXPECT_TRUE( values_group->hasChildView( coord_names[ j ] ) );
 
         sidre::View* coord_view = values_group->getView( coord_names[j] );
-        EXPECT_TRUE( coord_view != AXOM_NULLPTR );
+        EXPECT_TRUE( coord_view != nullptr );
 
         EXPECT_EQ( mesh_coords.getCoordinateArray( j ),
                    coord_view->getVoidPtr() );
@@ -1327,7 +1327,7 @@ TEST( mint_mesh_coordinates, sidre_push_constructor )
     EXPECT_TRUE( coords_group->hasChildGroup( "values" ) );
 
     sidre::Group* values_group = coords_group->getGroup( "values" );
-    EXPECT_TRUE( values_group != AXOM_NULLPTR );
+    EXPECT_TRUE( values_group != nullptr );
     EXPECT_TRUE( values_group->getNumViews()==static_cast< size_t >(dim) );
 
     for ( int j=0 ; j < dim ; ++j )
@@ -1335,7 +1335,7 @@ TEST( mint_mesh_coordinates, sidre_push_constructor )
       EXPECT_TRUE( values_group->hasChildView( coord_names[ j ] ) );
 
       sidre::View* coord_view = values_group->getView( coord_names[j] );
-      EXPECT_TRUE( coord_view != AXOM_NULLPTR );
+      EXPECT_TRUE( coord_view != nullptr );
 
       double* actual_data = static_cast< double* >( coord_view->getVoidPtr() );
       internal::check_array_values( actual_data, data[ j ], SMALL_NUM_NODES );
@@ -1385,7 +1385,7 @@ TEST( mint_mesh_coordinates_DeathTest, invalid_construction )
 
   // STEP 2: test invalid construction with null external buffers
   EXPECT_DEATH_IF_SUPPORTED(
-    MeshCoordinates( 10, 10, AXOM_NULLPTR ), IGNORE_OUTPUT );
+    MeshCoordinates( 10, 10, nullptr ), IGNORE_OUTPUT );
 
   // STEP 3: test invalid construction from external buffers with 0 nodes
   double x[ SMALL_NUM_NODES ] = { 1.0, 2.0, 3.0, 4.0 };
@@ -1397,9 +1397,9 @@ TEST( mint_mesh_coordinates_DeathTest, invalid_construction )
 
   // STEP 4: test construction with a null Sidre group
   EXPECT_DEATH_IF_SUPPORTED(
-    MeshCoordinates( AXOM_NULLPTR ), IGNORE_OUTPUT);
+    MeshCoordinates( nullptr ), IGNORE_OUTPUT);
   EXPECT_DEATH_IF_SUPPORTED(
-    MeshCoordinates( AXOM_NULLPTR, 2, 10, 10 ),
+    MeshCoordinates( nullptr, 2, 10, 10 ),
     IGNORE_OUTPUT );
 
   // STEP 5: test sidre pull-constructor that does not conform to blueprint
@@ -1421,7 +1421,7 @@ TEST( mint_mesh_coordinates_DeathTest, invalid_construction )
 
 
 //------------------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

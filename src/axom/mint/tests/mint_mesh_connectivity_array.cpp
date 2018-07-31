@@ -10,11 +10,11 @@
 
 #include "gtest/gtest.h"
 
-#include "mint/ConnectivityArray.hpp"
-#include "mint/CellTypes.hpp"
-#include "mint/config.hpp"
-#include "slic/slic.hpp"
-#include "slic/UnitTestLogger.hpp"      /* for UnitTestLogger */
+#include "axom/mint/mesh/ConnectivityArray.hpp"
+#include "axom/mint/mesh/CellTypes.hpp"
+#include "axom/mint/config.hpp"
+#include "axom/slic/interface/slic.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"      /* for UnitTestLogger */
 
 #ifdef MINT_USE_SIDRE
 #include "sidre/sidre.hpp"
@@ -143,7 +143,7 @@ IndexType calc_value_capacity( const ConnectivityArray< TYPE >& connec,
  */
 CellType get_type( IndexType ID, CellType cell_type, const CellType* types )
 {
-  if ( types == AXOM_NULLPTR )
+  if ( types == nullptr )
   {
     return cell_type;
   }
@@ -161,9 +161,9 @@ CellType get_type( IndexType ID, CellType cell_type, const CellType* types )
  */
 const CellType* get_type_ptr( IndexType ID, const CellType* types )
 {
-  if ( types == AXOM_NULLPTR )
+  if ( types == nullptr )
   {
-    return AXOM_NULLPTR;
+    return nullptr;
   }
   else
   {
@@ -181,7 +181,7 @@ const CellType* get_type_ptr( IndexType ID, const CellType* types )
 IndexType get_n_values( IndexType ID, IndexType stride,
                         const IndexType* offsets )
 {
-  if ( offsets == AXOM_NULLPTR )
+  if ( offsets == nullptr )
   {
     return stride;
   }
@@ -202,7 +202,7 @@ IndexType get_n_values( IndexType ID, IndexType stride,
 IndexType get_n_values( IndexType startID, IndexType endID, IndexType stride,
                         const IndexType* offsets )
 {
-  if ( offsets == AXOM_NULLPTR )
+  if ( offsets == nullptr )
   {
     return stride * (endID - startID);
   }
@@ -224,7 +224,7 @@ const IndexType* get_value_ptr( IndexType ID, IndexType stride,
                                 const IndexType* values,
                                 const IndexType* offsets  )
 {
-  if ( offsets == AXOM_NULLPTR )
+  if ( offsets == nullptr )
   {
     return values + ID * stride;
   }
@@ -242,9 +242,9 @@ const IndexType* get_value_ptr( IndexType ID, IndexType stride,
  */
 const IndexType* get_offset_ptr( IndexType ID, const IndexType* offsets  )
 {
-  if ( offsets == AXOM_NULLPTR )
+  if ( offsets == nullptr )
   {
-    return AXOM_NULLPTR;
+    return nullptr;
   }
   else
   {
@@ -263,7 +263,7 @@ const IndexType* get_offset_ptr( IndexType ID, const IndexType* offsets  )
 template < typename T >
 void check_pointers( const T* p1, const T* p2, IndexType n )
 {
-  if ( p1 == AXOM_NULLPTR && p2 == AXOM_NULLPTR )
+  if ( p1 == nullptr && p2 == nullptr )
   {
     return;
   }
@@ -315,8 +315,8 @@ void check_equality( const ConnectivityArray< TYPE >& lhs,
 template< ConnectivityType TYPE >
 void checkAppend( const ConnectivityArray< TYPE >& connec, IndexType n_IDs,
                   IndexType initial_n_IDs, const IndexType* values,
-                  const IndexType* offsets=AXOM_NULLPTR,
-                  const CellType* types=AXOM_NULLPTR )
+                  const IndexType* offsets=nullptr,
+                  const CellType* types=nullptr )
 {
   const CellType cell_type = connec.getIDType();
   const IndexType stride = (cell_type == UNDEFINED_CELL) ? -1 :
@@ -346,8 +346,8 @@ void checkAppend( const ConnectivityArray< TYPE >& connec, IndexType n_IDs,
  */
 template< ConnectivityType TYPE >
 void append( ConnectivityArray< TYPE >& connec, IndexType n_IDs,
-             const IndexType* values, const IndexType* offsets=AXOM_NULLPTR,
-             const CellType* types=AXOM_NULLPTR )
+             const IndexType* values, const IndexType* offsets=nullptr,
+             const CellType* types=nullptr )
 {
   const CellType cell_type = connec.getIDType();
   const IndexType stride = (cell_type == UNDEFINED_CELL) ? -1 :
@@ -392,8 +392,8 @@ void append( ConnectivityArray< TYPE >& connec, IndexType n_IDs,
  */
 template< ConnectivityType TYPE >
 void testAppend( ConnectivityArray< TYPE >& connec, IndexType max_IDs,
-                 const IndexType* values, const IndexType* offsets=AXOM_NULLPTR,
-                 const CellType* types=AXOM_NULLPTR )
+                 const IndexType* values, const IndexType* offsets=nullptr,
+                 const CellType* types=nullptr )
 {
   /* Append the values */
   for ( IndexType n_IDs = 1 ; n_IDs <= max_IDs ; ++n_IDs )
@@ -424,8 +424,8 @@ void testAppend( ConnectivityArray< TYPE >& connec, IndexType max_IDs,
 template< ConnectivityType TYPE >
 void set( ConnectivityArray< TYPE >& connec, IndexType n_IDs,
           const IndexType* initial_values, const IndexType* values,
-          const IndexType* offsets=AXOM_NULLPTR,
-          const CellType* types=AXOM_NULLPTR )
+          const IndexType* offsets=nullptr,
+          const CellType* types=nullptr )
 {
   const CellType cell_type = connec.getIDType();
   const IndexType stride = (cell_type == UNDEFINED_CELL) ? -1 :
@@ -472,8 +472,8 @@ void set( ConnectivityArray< TYPE >& connec, IndexType n_IDs,
 template< ConnectivityType TYPE >
 void testSet( ConnectivityArray< TYPE >& connec, IndexType max_IDs,
               const IndexType* initial_values, const IndexType* values,
-              const IndexType* offsets=AXOM_NULLPTR,
-              const CellType* types=AXOM_NULLPTR )
+              const IndexType* offsets=nullptr,
+              const CellType* types=nullptr )
 {
   for ( IndexType n_IDs = 1 ; n_IDs <= max_IDs ; ++n_IDs )
   {
@@ -508,8 +508,8 @@ void testSet( ConnectivityArray< TYPE >& connec, IndexType max_IDs,
  */
 template< ConnectivityType TYPE >
 void testInsert( ConnectivityArray< TYPE >& connec, IndexType n_IDs,
-                 const IndexType* values, const IndexType* offsets=AXOM_NULLPTR,
-                 const CellType* types=AXOM_NULLPTR )
+                 const IndexType* values, const IndexType* offsets=nullptr,
+                 const CellType* types=nullptr )
 {
   SLIC_ERROR_IF( !connec.empty(),
                  "Insertion test requires an empty ConnectivityArray." );
@@ -614,8 +614,8 @@ void testInsert( ConnectivityArray< TYPE >& connec, IndexType n_IDs,
 template< ConnectivityType TYPE >
 void testCapacity( ConnectivityArray< TYPE >& connec,
                    IndexType n_IDs, const IndexType* values,
-                   const IndexType* offsets=AXOM_NULLPTR,
-                   const CellType* types=AXOM_NULLPTR )
+                   const IndexType* offsets=nullptr,
+                   const CellType* types=nullptr )
 {
   SLIC_ERROR_IF( !connec.empty(),
                  "Insertion test requires an empty ConnectivityArray." );
@@ -639,7 +639,7 @@ void testCapacity( ConnectivityArray< TYPE >& connec,
   IndexType cur_ID_capacity = connec.getIDCapacity();
   IndexType cur_value_capacity = connec.getValueCapacity();
 
-  EXPECT_NE( cur_values_ptr, AXOM_NULLPTR );
+  EXPECT_NE( cur_values_ptr, nullptr );
   EXPECT_EQ( cur_ID_capacity, half_n_IDs );
   EXPECT_EQ( cur_value_capacity, first_half_n_values );
 
@@ -809,9 +809,9 @@ void calcTotalIDsAndValues( IndexType max_IDs, IndexType& total_IDs,
 template < ConnectivityType TYPE >
 void checkConnectivity( const ConnectivityArray< TYPE >& connec, bool external,
                         IndexType n_IDs, IndexType n_values,
-                        const IndexType* values=AXOM_NULLPTR,
-                        const IndexType* offsets=AXOM_NULLPTR,
-                        const CellType* types=AXOM_NULLPTR )
+                        const IndexType* values=nullptr,
+                        const IndexType* offsets=nullptr,
+                        const CellType* types=nullptr )
 {
   EXPECT_EQ( connec.isExternal(), external );
   EXPECT_EQ( connec.isInSidre(), false );
@@ -820,23 +820,23 @@ void checkConnectivity( const ConnectivityArray< TYPE >& connec, bool external,
   bool empty = n_IDs == 0 && n_values == 0;
   EXPECT_EQ( connec.empty(), empty );
 
-  if ( values != AXOM_NULLPTR )
+  if ( values != nullptr )
   {
     EXPECT_EQ( connec.getValuePtr(), values );
   }
 
-  if ( offsets != AXOM_NULLPTR )
+  if ( offsets != nullptr )
   {
     EXPECT_EQ( connec.getOffsetPtr(), offsets );
   }
 
-  if ( types != AXOM_NULLPTR )
+  if ( types != nullptr )
   {
     EXPECT_EQ( connec.getTypePtr(), types );
   }
 
 #ifdef MINT_USE_SIDRE
-  EXPECT_EQ( connec.getGroup(), AXOM_NULLPTR );
+  EXPECT_EQ( connec.getGroup(), nullptr );
 #endif
 }
 
@@ -852,7 +852,7 @@ void checkConnectivity( const ConnectivityArray< TYPE >& connec, bool external,
 template < ConnectivityType TYPE >
 void checkConnectivity( const ConnectivityArray< TYPE >& connec,
                         IndexType n_IDs, IndexType n_values,
-                        const sidre::Group* group=AXOM_NULLPTR )
+                        const sidre::Group* group=nullptr )
 {
   EXPECT_EQ( connec.isExternal(), false );
   EXPECT_EQ( connec.isInSidre(), true );

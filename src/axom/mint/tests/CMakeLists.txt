@@ -44,7 +44,7 @@ set( mint_tests
 
 ## lists all axom depencies used for testing
 set( mint_test_dependencies
-     axom_utils
+     core
      slic
      mint
      )

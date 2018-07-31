@@ -14,14 +14,14 @@
  *
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-#include "mint/config.hpp"          // for compile-time type definitions
+#include "axom/mint/config.hpp"          // for compile-time type definitions
 
-#include "mint/blueprint.hpp"       // for blueprint functions
-#include "mint/CellTypes.hpp"       // for CellTypes enum definition
-#include "mint/ParticleMesh.hpp"    // for ParticleMesh
-#include "mint/UniformMesh.hpp"     // for UniformMesh
+#include "axom/mint/mesh/blueprint.hpp"       // for blueprint functions
+#include "axom/mint/mesh/CellTypes.hpp"       // for CellTypes enum definition
+#include "axom/mint/mesh/ParticleMesh.hpp"    // for ParticleMesh
+#include "axom/mint/mesh/UniformMesh.hpp"     // for UniformMesh
 
-#include "slic/slic.hpp"            // for slic macros
+#include "axom/slic/interface/slic.hpp"            // for slic macros
 
 // Sidre includes
 #ifdef MINT_USE_SIDRE
@@ -96,14 +96,14 @@ void check_create_field( UniformMesh* m,
                          const std::string& name,
                          int numComponents )
 {
-  EXPECT_TRUE( m != AXOM_NULLPTR );
+  EXPECT_TRUE( m != nullptr );
   EXPECT_TRUE( (association==NODE_CENTERED) ||
                (association==CELL_CENTERED)    );
 
-  const Field* field = AXOM_NULLPTR;
+  const Field* field = nullptr;
 
   double* f = m->createField< double >( name, association, numComponents );
-  EXPECT_TRUE( f != AXOM_NULLPTR );
+  EXPECT_TRUE( f != nullptr );
   EXPECT_TRUE( m->hasField( name, association ) );
 
   field = m->getFieldData( association )->getField( name );
@@ -124,7 +124,7 @@ void check_constructor( UniformMesh* m,
                         const int64* expected_extent,
                         const IndexType* expected_dimensions )
 {
-  EXPECT_TRUE( m != AXOM_NULLPTR );
+  EXPECT_TRUE( m != nullptr );
   EXPECT_TRUE( expected_dimension >= 1 && expected_dimension <= 3 );
 
   // check Mesh methods
@@ -140,15 +140,15 @@ void check_constructor( UniformMesh* m,
   EXPECT_EQ( m->getCellType(), expected_cell_type );
 
   const Extent* extent = m->getExtent();
-  EXPECT_TRUE( extent != AXOM_NULLPTR );
+  EXPECT_TRUE( extent != nullptr );
   EXPECT_EQ( extent->getNumNodes(), m->getNumberOfNodes() );
   EXPECT_EQ( extent->getNumCells(), m->getNumberOfCells() );
 
   const double* origin = m->getOrigin();
-  EXPECT_TRUE( origin != AXOM_NULLPTR );
+  EXPECT_TRUE( origin != nullptr );
 
   const double* spacing = m->getSpacing();
-  EXPECT_TRUE( spacing != AXOM_NULLPTR );
+  EXPECT_TRUE( spacing != nullptr );
 
   for ( int i=0 ; i < mesh_dimension ; ++i )
   {
@@ -183,11 +183,11 @@ TEST( mint_mesh_uniform_mesh_DeathTest, invalid_construction )
                              IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( UniformMesh(0,origin, h, ext),
                              IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,AXOM_NULLPTR, h, ext),
+  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,nullptr, h, ext),
                              IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,origin,AXOM_NULLPTR,ext),
+  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,origin,nullptr,ext),
                              IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,origin,h,AXOM_NULLPTR),
+  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,origin,h,nullptr),
                              IGNORE_OUTPUT );
 
   // check 2nd native constructor
@@ -195,19 +195,19 @@ TEST( mint_mesh_uniform_mesh_DeathTest, invalid_construction )
                              IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( UniformMesh(0,ext,lo,hi),
                              IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,AXOM_NULLPTR,lo,hi),
+  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,nullptr,lo,hi),
                              IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,ext,AXOM_NULLPTR,hi),
+  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,ext,nullptr,hi),
                              IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,ext,lo,AXOM_NULLPTR),
+  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,ext,lo,nullptr),
                              IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,ext,hi,lo),
                              IGNORE_OUTPUT );
 
   // check 3rd native constructor
-  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(AXOM_NULLPTR,hi,Ni,Nj,Nk),
+  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(nullptr,hi,Ni,Nj,Nk),
                              IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(lo,AXOM_NULLPTR,Ni,Nj,Nk),
+  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(lo,nullptr,Ni,Nj,Nk),
                              IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( UniformMesh(lo, hi,-1),
                              IGNORE_OUTPUT );
@@ -229,20 +229,20 @@ TEST( mint_mesh_uniform_mesh_DeathTest, invalid_construction )
   // check 1st sidre constructor
   EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,lo,hi,ext,particle_mesh),
                              IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,lo,hi,ext,AXOM_NULLPTR),
+  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,lo,hi,ext,nullptr),
                              IGNORE_OUTPUT );
 
-  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,lo,hi,AXOM_NULLPTR,valid_group),
-                             IGNORE_OUTPUT );
-  EXPECT_EQ( valid_group->getNumGroups(), 0 );
-  EXPECT_EQ( valid_group->getNumViews(), 0 );
-
-  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,lo,AXOM_NULLPTR,ext,valid_group),
+  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,lo,hi,nullptr,valid_group),
                              IGNORE_OUTPUT );
   EXPECT_EQ( valid_group->getNumGroups(), 0 );
   EXPECT_EQ( valid_group->getNumViews(), 0 );
 
-  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,AXOM_NULLPTR,hi,ext,valid_group),
+  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,lo,nullptr,ext,valid_group),
+                             IGNORE_OUTPUT );
+  EXPECT_EQ( valid_group->getNumGroups(), 0 );
+  EXPECT_EQ( valid_group->getNumViews(), 0 );
+
+  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,nullptr,hi,ext,valid_group),
                              IGNORE_OUTPUT );
   EXPECT_EQ( valid_group->getNumGroups(), 0 );
   EXPECT_EQ( valid_group->getNumViews(), 0 );
@@ -256,19 +256,19 @@ TEST( mint_mesh_uniform_mesh_DeathTest, invalid_construction )
   EXPECT_DEATH_IF_SUPPORTED( UniformMesh(lo,hi,particle_mesh, Ni, Nj, Nk),
                              IGNORE_OUTPUT );
 
-  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(lo,hi,AXOM_NULLPTR, Ni, Nj, Nk),
+  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(lo,hi,nullptr, Ni, Nj, Nk),
                              IGNORE_OUTPUT );
   EXPECT_EQ( valid_group->getNumGroups(), 0 );
   EXPECT_EQ( valid_group->getNumViews(), 0 );
 
   EXPECT_DEATH_IF_SUPPORTED(
-    UniformMesh(lo,AXOM_NULLPTR,valid_group,Ni,Nj,Nk),
+    UniformMesh(lo,nullptr,valid_group,Ni,Nj,Nk),
     IGNORE_OUTPUT );
   EXPECT_EQ( valid_group->getNumGroups(), 0 );
   EXPECT_EQ( valid_group->getNumViews(), 0 );
 
   EXPECT_DEATH_IF_SUPPORTED(
-    UniformMesh(AXOM_NULLPTR,hi,valid_group,Ni,Nj,Nk),
+    UniformMesh(nullptr,hi,valid_group,Ni,Nj,Nk),
     IGNORE_OUTPUT );
   EXPECT_EQ( valid_group->getNumGroups(), 0 );
   EXPECT_EQ( valid_group->getNumViews(), 0 );
@@ -322,7 +322,7 @@ TEST( mint_mesh_uniform_mesh, native_constructor )
     check_create_field( m2, NODE_CENTERED, "n1", 3 );
     check_create_field( m2, CELL_CENTERED, "c1", 2 );
 
-    UniformMesh* m3 = AXOM_NULLPTR;
+    UniformMesh* m3 = nullptr;
     switch ( idim )
     {
     case 1:
@@ -344,7 +344,7 @@ TEST( mint_mesh_uniform_mesh, native_constructor )
     delete m1;
     delete m2;
     delete m3;
-    m1 = m2 = m3 = AXOM_NULLPTR;
+    m1 = m2 = m3 = nullptr;
   } // END for all dimensions
 
 }
@@ -380,7 +380,7 @@ TEST( mint_mesh_uniform_mesh, sidre_constructor )
       check_create_field( &m1, CELL_CENTERED, "c1", 1 );
       EXPECT_TRUE( m1.hasSidreGroup( ) );
 
-      UniformMesh* m2 = AXOM_NULLPTR;
+      UniformMesh* m2 = nullptr;
       switch ( idim )
       {
       case 1:
@@ -400,7 +400,7 @@ TEST( mint_mesh_uniform_mesh, sidre_constructor )
       check_create_field( m2, CELL_CENTERED, "c1", 1 );
 
       delete m2;
-      m2 = AXOM_NULLPTR;
+      m2 = nullptr;
     }
     // END SCOPE
 
@@ -413,9 +413,9 @@ TEST( mint_mesh_uniform_mesh, sidre_constructor )
       EXPECT_TRUE( m1->hasField( "c1", CELL_CENTERED) );
 
       const FieldData* node_data1 = m1->getFieldData( NODE_CENTERED );
-      EXPECT_TRUE( node_data1 != AXOM_NULLPTR );
+      EXPECT_TRUE( node_data1 != nullptr );
       const FieldData* cell_data1 = m1->getFieldData( CELL_CENTERED );
-      EXPECT_TRUE( cell_data1 != AXOM_NULLPTR );
+      EXPECT_TRUE( cell_data1 != nullptr );
 
       EXPECT_EQ( 3, node_data1->getField("n1")->getNumComponents() );
       EXPECT_EQ( 1, cell_data1->getField("c1")->getNumComponents() );
@@ -427,16 +427,16 @@ TEST( mint_mesh_uniform_mesh, sidre_constructor )
       EXPECT_TRUE( m2->hasField( "c1", CELL_CENTERED ) );
 
       const FieldData* node_data2 = m2->getFieldData( NODE_CENTERED );
-      EXPECT_TRUE( node_data2 != AXOM_NULLPTR );
+      EXPECT_TRUE( node_data2 != nullptr );
       const FieldData* cell_data2 = m2->getFieldData( CELL_CENTERED );
-      EXPECT_TRUE( cell_data2 != AXOM_NULLPTR );
+      EXPECT_TRUE( cell_data2 != nullptr );
 
       EXPECT_EQ( 3, node_data1->getField("n1")->getNumComponents() );
       EXPECT_EQ( 1, cell_data1->getField("c1")->getNumComponents() );
 
       delete m1;
       delete m2;
-      m1 = m2 = AXOM_NULLPTR;
+      m1 = m2 = nullptr;
     }
 
     // STEP 3: ensure the data is persistent in sidre
@@ -550,7 +550,7 @@ TEST( mint_mesh_uniform_mesh, check_evaluate_coordinate )
 }
 
 //------------------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

@@ -14,13 +14,13 @@
  *
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-#include "mint/config.hpp"              /* for mint defintions */
-#include "mint/Array.hpp"               /* for mint::Array */
+#include "axom/mint/config.hpp"              /* for mint defintions */
+#include "axom/mint/core/Array.hpp"               /* for mint::Array */
 
-#include "axom_utils/Utilities.hpp"     /* for utilities::max */
+#include "axom/core/utilities/Utilities.hpp"     /* for utilities::max */
 
-#include "slic/UnitTestLogger.hpp"      /* for UnitTestLogger */
-#include "slic/slic.hpp"                /* for slic macros */
+#include "axom/slic/core/UnitTestLogger.hpp"      /* for UnitTestLogger */
+#include "axom/slic/interface/slic.hpp"                /* for slic macros */
 
 #include "gtest/gtest.h"                /* for TEST and EXPECT_* macros */
 
@@ -112,7 +112,7 @@ void check_storage( Array< T >& v )
       v.append( tuple, 1 );
     }
     delete [] tuple;
-    tuple = AXOM_NULLPTR;
+    tuple = nullptr;
   }
 
   /* Check the array metadata. */
@@ -141,7 +141,7 @@ void check_storage( Array< T >& v )
       v.append( tuple, 1 );
     }
     delete [] tuple;
-    tuple = AXOM_NULLPTR;
+    tuple = nullptr;
   }
 
   /* Check the array metadata. */
@@ -516,10 +516,10 @@ void check_resize( Array< T >& v )
   }
 
   delete [] tuple;
-  tuple = AXOM_NULLPTR;
+  tuple = nullptr;
 
   delete [] values;
-  values = AXOM_NULLPTR;
+  values = nullptr;
 }
 
 /*!
@@ -631,10 +631,10 @@ void check_insert( Array< T >& v )
   }
 
   delete [] tuple;
-  tuple = AXOM_NULLPTR;
+  tuple = nullptr;
 
   delete [] values;
-  values = AXOM_NULLPTR;
+  values = nullptr;
 }
 
 /*!
@@ -909,7 +909,7 @@ void check_external( Array< T >& v )
   EXPECT_DEATH_IF_SUPPORTED( v.reserve( size + 1 ), IGNORE_OUTPUT );
 
   delete [] tuple;
-  tuple = AXOM_NULLPTR;
+  tuple = nullptr;
 }
 
 }   /* end namespace internal */
@@ -1304,7 +1304,7 @@ TEST( mint_core_array_DeathTest, checkExternal )
 } /* end namespace axom */
 
 //------------------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

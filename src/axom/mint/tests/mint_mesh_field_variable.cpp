@@ -16,10 +16,10 @@
  */
 
 // Axom includes
-#include "mint/FieldVariable.hpp" // for mint::FieldVariable
-#include "mint/FieldTypes.hpp"    // for FieldTypes enum and field_traits
-#include "axom_utils/Matrix.hpp"  // for numerics::Matrix
-#include "slic/slic.hpp"          // for slic macros
+#include "axom/mint/mesh/FieldVariable.hpp" // for mint::FieldVariable
+#include "axom/mint/mesh/FieldTypes.hpp"    // for FieldTypes enum and field_traits
+#include "axom/core/numerics/Matrix.hpp"  // for numerics::Matrix
+#include "axom/slic/interface/slic.hpp"          // for slic macros
 
 // Sidre includes
 #ifdef MINT_USE_SIDRE
@@ -106,7 +106,7 @@ void check_field_variable( mint::FieldVariable< T >& fv )
   const mint::IndexType numComponents = fv.getNumComponents();
 
   const T* data = fv.getFieldVariablePtr();
-  EXPECT_TRUE( data != AXOM_NULLPTR );
+  EXPECT_TRUE( data != nullptr );
 
   for ( int i=0 ; i < numTuples ; ++i )
   {
@@ -126,7 +126,7 @@ void check_field_variable( mint::FieldVariable< T >& fv )
 void create_sidre_data( sidre::DataStore& ds, int numTuples, int numComponents )
 {
   sidre::Group* gp = ds.getRoot();
-  EXPECT_TRUE( gp != AXOM_NULLPTR );
+  EXPECT_TRUE( gp != nullptr );
 
   // create view to hold field values
   sidre::View* values_view = gp->createView( "values" );
@@ -186,7 +186,7 @@ TEST( mint_mesh_field_variable, native_constructor )
   EXPECT_EQ( field.getName(), "rho" );
   EXPECT_EQ( field.getNumTuples(), NUM_TUPLES );
   EXPECT_EQ( field.getNumComponents(), NUM_COMPONENTS );
-  EXPECT_TRUE( field.getFieldVariablePtr() != AXOM_NULLPTR );
+  EXPECT_TRUE( field.getFieldVariablePtr() != nullptr );
 }
 
 //------------------------------------------------------------------------------
@@ -200,11 +200,11 @@ TEST( mint_mesh_field_variable, external_constructor )
 
   mint::FieldVariable< double >* field =
     new mint::FieldVariable< double >( "f", f, NUM_TUPLES, NUM_COMPONENTS );
-  EXPECT_TRUE( field != AXOM_NULLPTR );
+  EXPECT_TRUE( field != nullptr );
   EXPECT_EQ( field->getName(), "f" );
   EXPECT_EQ( field->getNumTuples(), NUM_TUPLES );
   EXPECT_EQ( field->getNumComponents(), NUM_COMPONENTS );
-  EXPECT_TRUE( field->getFieldVariablePtr() != AXOM_NULLPTR );
+  EXPECT_TRUE( field->getFieldVariablePtr() != nullptr );
   EXPECT_EQ( field->getFieldVariablePtr(), f );
 
   // set everything to MAGIC_NUM
@@ -215,10 +215,10 @@ TEST( mint_mesh_field_variable, external_constructor )
   }
 
   delete field;
-  field = AXOM_NULLPTR;
+  field = nullptr;
 
   // ensure the external buffer remains persistent
-  EXPECT_TRUE ( f != AXOM_NULLPTR );
+  EXPECT_TRUE ( f != nullptr );
   for ( int i=0 ; i < NUM_TUPLES ; ++i )
   {
     EXPECT_DOUBLE_EQ( f[ i ], MAGIC_NUM );
@@ -291,7 +291,7 @@ TEST( mint_mesh_field_variable, sidre_pull_constructor )
       create_sidre_data( ds, NUM_TUPLES, NUM_COMPONENTS );
 
       sidre::View* values_view = ds.getRoot()->getView("values");
-      EXPECT_TRUE( values_view != AXOM_NULLPTR );
+      EXPECT_TRUE( values_view != nullptr );
 
       // BEGIN SCOPE
       {
@@ -301,7 +301,7 @@ TEST( mint_mesh_field_variable, sidre_pull_constructor )
         EXPECT_EQ( fv.getNumComponents(), NUM_COMPONENTS );
 
         double* data = fv.getFieldVariablePtr( );
-        EXPECT_TRUE( data != AXOM_NULLPTR );
+        EXPECT_TRUE( data != nullptr );
 
         // check data
         check_field_variable( fv );
@@ -344,7 +344,7 @@ TEST( mint_mesh_field_variable, field_array_access )
   EXPECT_EQ( field.getName(), "f" );
   EXPECT_EQ( field.getNumTuples(), NUM_TUPLES );
   EXPECT_EQ( field.getNumComponents(), NUM_COMPONENTS );
-  EXPECT_TRUE( data != AXOM_NULLPTR );
+  EXPECT_TRUE( data != nullptr );
 
   // set the field data
   numerics::Matrix< double > A( NUM_COMPONENTS, NUM_TUPLES, data, true );
@@ -432,7 +432,7 @@ TEST( mint_mesh_field_variable, shrink )
 }
 
 //------------------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

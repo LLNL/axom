@@ -17,8 +17,8 @@
 
 #include "gtest/gtest.h"
 
-#include "mint/config.hpp"
-#include "mint/Extent.hpp"
+#include "axom/mint/config.hpp"
+#include "axom/mint/mesh/Extent.hpp"
 
 // aliases
 namespace mint    = axom::mint;
@@ -35,7 +35,7 @@ namespace
 void check_constructor( int ndims, const int64* ext )
 {
   EXPECT_TRUE( (ndims >= 1) && (ndims <= 3) );
-  EXPECT_TRUE( (ext != AXOM_NULLPTR) );
+  EXPECT_TRUE( (ext != nullptr) );
 
   mint::Extent extent( ndims, ext );
   EXPECT_EQ( extent.getDimension(), ndims );
@@ -357,11 +357,11 @@ TEST( mint_mesh_DeathTest, invalid_construction )
 
   EXPECT_DEATH_IF_SUPPORTED( mint::Extent(0,extent), IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( mint::Extent(9,extent), IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( mint::Extent(3,AXOM_NULLPTR), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( mint::Extent(3,nullptr), IGNORE_OUTPUT );
 }
 
 //------------------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

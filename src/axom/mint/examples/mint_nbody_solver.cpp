@@ -25,15 +25,15 @@
  */
 
 // axom_utiles
-#include "axom_utils/Utilities.hpp"  // for random_real()
+#include "axom/core/utilities/Utilities.hpp"  // for random_real()
 
 // Mint includes
-#include "mint/ParticleMesh.hpp"     // for mint::ParticleMesh
-#include "mint/vtk_utils.hpp"        // for mint::write_vtk()
+#include "axom/mint/mesh/ParticleMesh.hpp"     // for mint::ParticleMesh
+#include "axom/mint/utils/vtk_utils.hpp"        // for mint::write_vtk()
 
 // Slic includes
-#include "slic/slic.hpp"            // for SLIC macros
-#include "slic/UnitTestLogger.hpp"  // for slic logger
+#include "axom/slic/interface/slic.hpp"            // for SLIC macros
+#include "axom/slic/core/UnitTestLogger.hpp"  // for slic logger
 
 // Axom namespace aliases
 namespace mint      = axom::mint;

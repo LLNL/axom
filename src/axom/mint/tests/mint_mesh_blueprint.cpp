@@ -14,13 +14,13 @@
  *
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-#include "mint/blueprint.hpp"
+#include "axom/mint/mesh/blueprint.hpp"
 
 // Mint includes
-#include "mint/Array.hpp"           // for mint::Array
-#include "mint/config.hpp"          // for compile-time definitions
-#include "mint/MeshTypes.hpp"       // for MeshTypes enum
-#include "mint/Extent.hpp"          // for mint::Extent
+#include "axom/mint/core/Array.hpp"           // for mint::Array
+#include "axom/mint/config.hpp"          // for compile-time definitions
+#include "axom/mint/mesh/MeshTypes.hpp"       // for MeshTypes enum
+#include "axom/mint/mesh/Extent.hpp"          // for mint::Extent
 
 // gtest includes
 #include "gtest/gtest.h"
@@ -58,7 +58,7 @@ void createExplicitCoords( sidre::Group* c1, int dimension,
 //------------------------------------------------------------------------------
 void createParticleMeshOnSidre( sidre::Group* root, int dimension )
 {
-  EXPECT_TRUE( root != AXOM_NULLPTR );
+  EXPECT_TRUE( root != nullptr );
   EXPECT_TRUE( root->getNumGroups()==0 );
   EXPECT_TRUE( root->getNumViews()==0 );
   EXPECT_TRUE( dimension >= 1 );
@@ -83,7 +83,7 @@ void createParticleMeshOnSidre( sidre::Group* root, int dimension )
 //------------------------------------------------------------------------------
 void createUniformMeshOnSidre( sidre::Group* root, int dimension )
 {
-  EXPECT_TRUE( root != AXOM_NULLPTR );
+  EXPECT_TRUE( root != nullptr );
   EXPECT_TRUE( root->getNumGroups()==0 );
   EXPECT_TRUE( root->getNumViews()==0 );
   EXPECT_TRUE( dimension >= 1 );
@@ -124,7 +124,7 @@ void createUniformMeshOnSidre( sidre::Group* root, int dimension )
 //------------------------------------------------------------------------------
 void createRectilinearMeshOnSidre( sidre::Group* root, int dimension )
 {
-  EXPECT_TRUE( root != AXOM_NULLPTR );
+  EXPECT_TRUE( root != nullptr );
   EXPECT_TRUE( root->getNumGroups()==0 );
   EXPECT_TRUE( root->getNumViews()==0 );
   EXPECT_TRUE( dimension >= 1 );
@@ -148,7 +148,7 @@ void createRectilinearMeshOnSidre( sidre::Group* root, int dimension )
 //------------------------------------------------------------------------------
 void createStructuredMeshOnSidre( sidre::Group* root, int dimension )
 {
-  EXPECT_TRUE( root != AXOM_NULLPTR );
+  EXPECT_TRUE( root != nullptr );
   EXPECT_TRUE( root->getNumGroups()==0 );
   EXPECT_TRUE( root->getNumViews()==0 );
   EXPECT_TRUE( dimension >= 1 );
@@ -172,7 +172,7 @@ void createStructuredMeshOnSidre( sidre::Group* root, int dimension )
 //------------------------------------------------------------------------------
 void createUnstructuredMeshOnSidre( sidre::Group* root, int dimension )
 {
-  EXPECT_TRUE( root != AXOM_NULLPTR );
+  EXPECT_TRUE( root != nullptr );
   EXPECT_TRUE( root->getNumGroups()==0 );
   EXPECT_TRUE( root->getNumViews()==0 );
   EXPECT_TRUE( dimension >= 1 );
@@ -420,7 +420,7 @@ TEST( mint_mesh_blueprint, get_set_curvilinear_mesh_extent )
 #endif /* MINT_USE_SIDRE */
 
 //------------------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

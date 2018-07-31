@@ -24,10 +24,10 @@
  */
 
 // Mint includes
-#include "mint/config.hpp"
-#include "mint/UnstructuredMesh.hpp"
-#include "mint/vtk_utils.hpp"
-#include "slic/UnitTestLogger.hpp"      /* for UnitTestLogger */
+#include "axom/mint/config.hpp"
+#include "axom/mint/mesh/UnstructuredMesh.hpp"
+#include "axom/mint/utils/vtk_utils.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"      /* for UnitTestLogger */
 
 // C/C++ includes
 #include <random>                       /* for random number generator */

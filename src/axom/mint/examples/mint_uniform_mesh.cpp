@@ -22,9 +22,9 @@
  */
 
 // Mint includes
-#include "mint/config.hpp"
-#include "mint/UniformMesh.hpp"
-#include "mint/vtk_utils.hpp"
+#include "axom/mint/config.hpp"
+#include "axom/mint/mesh/UniformMesh.hpp"
+#include "axom/mint/utils/vtk_utils.hpp"
 
 // C/C++ includes
 #include <cmath>
