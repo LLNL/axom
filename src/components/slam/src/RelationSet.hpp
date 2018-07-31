@@ -35,6 +35,8 @@ namespace slam
  *  different indexing names (SparseIndex, DenseIndex, FlatIndex).
  *
  * \tparam  Relation  The Relation type that this set uses.
+ *
+ * \see   BivariateSet
  */
 
 template<

@@ -24,6 +24,8 @@
 #ifndef SLAM_ITERBASE_H_
 #define SLAM_ITERBASE_H_
 
+#include "slam/Set.hpp"
+
 namespace axom
 {
 namespace slam
@@ -62,14 +64,15 @@ class IteratorBase : public std::iterator<std::random_access_iterator_tag,
                                           DataType>
 {
 public:
-  //using PositionType = typename IterType::PositionType; //can't get this to compile :(
-  using PositionType = MeshIndexType;
+  using PositionType = Set::PositionType;
 
 protected:
   IteratorBase(int pos) : m_pos(pos) { }
 
 private:
-  /** This class exists to access IterType advance(), a protected function. */
+  /** This class exists to access IterType advance(), a protected function. 
+   *  Implementation taken from https://accu.org/index.php/journals/296 
+   */
   struct accessor : IterType
   {
     static void adv(IterType& derived, PositionType n)
