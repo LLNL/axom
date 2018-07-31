@@ -96,8 +96,7 @@ public:
   /**
    * \brief Search for the FlatIndex of the element given its DenseIndex.
    * \warning This function can be slow, since a linear search is performed on
-   * the
-   *          row each time.
+   *          the row each time.
    *
    * \param pos1  The first set position.
    * \param pos2  The second set position.
@@ -121,8 +120,7 @@ public:
   /**
    * \brief Given the from-set index pos1, return the FlatIndex of the first
    *        existing to-set element in the relation pair, or `INVALID_POS` if
-   * this
-   *        row contains no elements.
+   *        this row contains no elements.
    *
    * \param pos1  Index into the from-set.
    * \param pos2  Index into the to-set.

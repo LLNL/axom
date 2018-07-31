@@ -69,8 +69,8 @@ public:
   ProductSet(Set* set1, Set* set2) :
     BivariateSet(set1,set2), RangeSet(set1->size()*set2->size())
   {
-    //fill in the row data now for getRow(i) function,
-    //since every row is the same, a call to getRow() returns the same set.
+    //fill in the row data now for getElements(i) function,
+    //since every row is the same, a call to getElements() returns the same set.
     PositionType size2 = secondSetSize();
     m_rowSet_data.resize(size2);
     for (int s2 = 0 ; s2 < size2 ; s2++)
@@ -178,9 +178,9 @@ private:
   void verifyPosition(PositionType pos) const override
   { //from RangeSet, overloading to avoid warning in compiler
     SLIC_ASSERT_MSG(
-      s_pos >= 0 && s_pos < size(),
+      pos >= 0 && pos < size(),
       "SLAM::ProductSet -- requested out-of-range element at position "
-      << s_pos << ", but set only has " << size() << " elements.");
+      << pos << ", but set only has " << size() << " elements.");
   }
 
   /** \brief verify the SparseIndex (which is the same as its DenseIndex) is
