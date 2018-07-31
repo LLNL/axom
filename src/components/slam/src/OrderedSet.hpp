@@ -42,6 +42,8 @@
 #include "slam/SubsettingPolicies.hpp"
 #include "slam/ModularInt.hpp"
 
+#include "slam/IteratorBase.hpp"
+
 #ifdef AXOM_USE_CXX11
     #include <type_traits>
 #endif
@@ -211,24 +213,28 @@ private:
    * Uses the set's policies for efficient iteration
    */
   template<typename OrderedSet>
-  class OrderedSetIterator : public std::iterator <
-      std::random_access_iterator_tag,
-      typename OrderedSet::ElementType,
-      typename OrderedSet::PositionType
-      >
+  class OrderedSetIterator : public IteratorBase<
+      OrderedSetIterator<OrderedSet>,
+      typename OrderedSet::ElementType>
   {
 public:
+    
     typedef OrderedSetIterator<OrderedSet>              iter;
     typedef typename OrderedSet::ElementType ElementType;
     typedef typename OrderedSet::PositionType PositionType;
 
     typedef typename OrderedSet::IndirectionPolicyType IndirectionType;
     typedef typename OrderedSet::StridePolicyType StrideType;
+
+    using IterBase = IteratorBase<OrderedSetIterator<OrderedSet>,
+      typename OrderedSet::ElementType>;
+    using IterBase::m_pos;
+
 public:
 
-    OrderedSetIterator(PositionType pos) : m_pos(pos) {}
+    //OrderedSetIterator(PositionType pos) : IterBase(pos) {}
     OrderedSetIterator(PositionType pos, const OrderedSet& oSet)
-      : m_pos(pos), m_orderedSet(oSet) {}
+      : IterBase(pos), m_orderedSet(oSet) {}
 
 
     const ElementType & operator*()    const {
@@ -243,54 +249,15 @@ public:
                                      NoIndirectionType>::value >(), 0);
     }
 
-    bool operator==(const iter& other) const
-    {
-      return (m_pos == other.m_pos);
-    }
-
-    bool operator!=(const iter& other) const
-    {
-      return !operator==(other);
-    }
-
-    bool operator<(const iter& other) const
-    {
-      return m_pos < other.m_pos;
-    }
-
-    iter& operator++()    { advance(1); return *this; }
-    iter operator++(int) { iter ret = *this; advance(1); return ret; }
-    iter& operator--()    { advance(-1); return *this; }
-    iter operator--(int) { iter ret = *this; advance(-1); return ret; }
-
-    iter& operator+=(PositionType n)    { advance(n); return *this; }
-    iter& operator-=(PositionType n)    { advance(-n); return *this; }
-
-    iter operator+(PositionType n) const
-    {
-      iter ret = *this; ret.advance(n);
-      return ret;
-    }
-
-    iter operator-(PositionType n) const
-    {
-      iter ret = *this; ret.advance(-n);
-      return ret;
-    }
-
     ElementType operator[](PositionType n) const
     {
       return *(this->operator+(n));
     }
 
-    friend PositionType operator-(const iter& a, const iter& b)
-    {
-      return (a.m_pos - b.m_pos)/ a.stride();
-    }
-
-private:
+protected:
     void advance(PositionType n) { m_pos += n * stride(); }
 
+private:
     inline const PositionType stride() const
     {
       return m_orderedSet.StrideType::stride();
@@ -311,8 +278,6 @@ private:
     }
 
 private:
-
-    PositionType m_pos;
     OrderedSet m_orderedSet;
   };
 
@@ -326,7 +291,7 @@ public:     // Functions related to iteration
   const_iterator      end()   const
   {
     return const_iterator( SizePolicyType::size() * StridePolicyType::stride()
-                           + OffsetPolicyType::offset());
+                           + OffsetPolicyType::offset(), *this);
   }
   const_iterator_pair range() const { return std::make_pair(begin(), end()); }
 #endif // AXOM_USE_CXX11

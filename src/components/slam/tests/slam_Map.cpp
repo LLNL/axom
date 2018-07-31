@@ -308,6 +308,18 @@ TEST(slam_map, iterate)
     }
   }
 
+  //iter1 - iter2
+  {
+    IterType beginIter = m.begin();
+    IterType endIter = m.end();
+    for (int idx = 0 ; idx<m.size() ; idx++)
+    {
+      IterType iter = beginIter + idx;
+      EXPECT_EQ( idx, iter - beginIter );
+      EXPECT_EQ( idx - m.size(), iter - endIter);
+    }
+  }
+
   EXPECT_TRUE(m.isValid(true));
 }
 
@@ -336,14 +348,16 @@ void constructAndTestMapIteratorWithStride(int stride)
   SLIC_INFO("\nSetting the elements using iterator.");
   double multFac = 100.0001;
   double multFac2 = 1.010;
-  int idx = 0;
-  for (MapIterator iter = m.begin() ; iter != m.end() ; ++iter)
   {
-    for (PositionType idx2 = 0 ; idx2 < iter.numComp() ; ++idx2)
+    int idx = 0;
+    for (MapIterator iter = m.begin(); iter != m.end(); ++iter)
     {
-      iter(idx2) = static_cast<double>(idx * multFac + idx2 * multFac2);
+      for (PositionType idx2 = 0; idx2 < iter.numComp(); ++idx2)
+      {
+        iter(idx2) = static_cast<double>(idx * multFac + idx2 * multFac2);
+      }
+      ++idx;
     }
-    ++idx;
   }
 
   EXPECT_TRUE(m.isValid());

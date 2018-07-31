@@ -36,6 +36,7 @@
 #include "slam/MapBase.hpp"
 #include "slam/Set.hpp"
 #include "slam/NullSet.hpp"
+#include "slam/IteratorBase.hpp"
 
 #include "slam/StridePolicies.hpp"
 
@@ -332,17 +333,18 @@ private:
    *          the currently pointed to element (where 0 <= j < numComp()).\n
    *          For example: `iter[off]` is the same as `(iter+off)(0)`
    */
-  class MapIterator : public std::iterator<std::random_access_iterator_tag,
-                                           DataType>
+  class MapIterator : public IteratorBase<MapIterator, DataType>
   {
 public:
+    using IterBase = IteratorBase<MapIterator, DataType>;
     using iter = MapIterator;
     using PositionType = SetPosition;
+    using IterBase::m_pos;
 
 public:
 
     MapIterator(PositionType pos, Map* oMap)
-      : m_pos(pos), m_mapPtr(oMap) {}
+      : IterBase(pos), m_mapPtr(oMap) {}
 
     /**
      * \brief Returns the current iterator value. If the map has multiple
@@ -364,34 +366,6 @@ public:
       return (*m_mapPtr)(m_pos, comp_idx);
     }
 
-    bool operator==(const iter& other) const
-    {
-      return (m_mapPtr == other.m_mapPtr) && (m_pos == other.m_pos);
-    }
-
-    bool operator!=(const iter& other) const { return !operator==(other); }
-    bool operator<(const iter& other) const { return m_pos < other.m_pos; }
-
-    iter& operator++() { advance(1); return *this; }
-    iter operator++(int) { iter ret = *this; advance(1); return ret; }
-    iter& operator--() { advance(-1); return *this; }
-    iter operator--(int) { iter ret = *this; advance(-1); return ret; }
-
-    iter& operator+=(PositionType n) { advance(n); return *this; }
-    iter& operator-=(PositionType n) { advance(-n); return *this; }
-
-    iter operator+(PositionType n) const
-    {
-      iter ret = *this; ret.advance(n);
-      return ret;
-    }
-
-    iter operator-(PositionType n) const
-    {
-      iter ret = *this; ret.advance(-n);
-      return ret;
-    }
-
     /** \brief Returns the first component value after n increments.  */
     const DataType & operator[](PositionType n) const
     {
@@ -403,19 +377,15 @@ public:
       return *(this->operator+(n));
     }
 
-    friend PositionType operator-(const iter& a, const iter& b)
-    {
-      return (a.m_pos - b.m_pos);
-    }
-
     /** \brief Returns the number of component  per element in the map's set. */
     PositionType numComp() const { return m_mapPtr->stride(); }
 
-private:
-    void advance(PositionType n) { m_pos += n; }
+  protected:
+    void advance(PositionType n) {
+      m_pos += n;
+    }
 
 protected:
-    PositionType m_pos;
     Map* const m_mapPtr;
   };
 
@@ -432,7 +402,7 @@ public:     // Functions related to iteration
 
 public:
   /**
-   * \brief Returns a reference to the underlying map data 
+   * \brief Returns a reference to the underlying map data
    */
   OrderedMap &        data()       { return m_data; }
   const OrderedMap &  data() const { return m_data; }
@@ -524,6 +494,7 @@ bool Map<DataType, StridePolicy>::isValid(bool verboseOutput) const
   {
     std::stringstream sstr;
 
+    sstr << "\n*** Detailed results of isValid on the map.\n";
     if(bValid)
     {
       sstr << "Map was valid." << std::endl;
@@ -574,6 +545,8 @@ void Map<DataType, StridePolicy>::print() const
 
   std::cout << sstr.str() << std::endl;
 }
+
+
 
 
 } // end namespace slam
