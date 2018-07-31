@@ -20,9 +20,9 @@ add_subdirectory(src)
 ################################
 # add examples
 ################################
-# if (ENABLE_EXAMPLES)
-#   add_subdirectory(examples)
-# endif()
+if (ENABLE_EXAMPLES)
+  add_subdirectory(examples)
+endif()
 
 ################################
 # add tests
