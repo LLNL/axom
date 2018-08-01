@@ -77,7 +77,7 @@ public:
   typedef int IndexType;
 
   /*!  Special value to indicate an unsuccessful query */
-  static constexpr IndexType NO_CELL = -1;
+  enum Values : IndexType { NO_CELL = -1 };
 };
 
 namespace detail
