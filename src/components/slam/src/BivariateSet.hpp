@@ -43,10 +43,10 @@ namespace slam
  *        pair containing a row and column index, similar to indexing in a
  *        matrix.
  *
- * \detail BivariateSet models a subset of the Cartesian product of its two sets.
- *         Elements of a BivariateSet can be represented as an ordered pair of
- *         indices into the two sets.
- * 
+ * \detail BivariateSet models a subset of the Cartesian product of its two
+ *         sets. Elements of a BivariateSet can be represented as an ordered
+ *         pair of indices into the two sets.
+ *
  *  For BivariateSets that do not model the entire Cartesian product, indices
  *  can be relative to the element positions in the original sets (in which
  *  case, we refer to them as a "DenseIndex"), or relative to the number of
@@ -101,8 +101,8 @@ public:
 public:
 
   /**
-   * \brief Constructor taking pointers to the two sets that defines the range of
-   *        the indices of the BivariateSet.
+   * \brief Constructor taking pointers to the two sets that defines the range
+   *        of the indices of the BivariateSet.
    *
    * \param set1  Pointer to the first Set.
    * \param set2  Pointer to the second Set.

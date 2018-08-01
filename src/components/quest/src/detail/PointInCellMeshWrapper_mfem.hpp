@@ -77,14 +77,8 @@ public:
   typedef int IndexType;
 
   /*!  Special value to indicate an unsuccessful query */
-  static const IndexType NO_CELL;
+  static constexpr IndexType NO_CELL = -1;
 };
-
-// Initialize PointInCellTraits's NO_CELL static variable
-const PointInCellTraits<quest_point_in_cell_mfem_tag>::IndexType
-PointInCellTraits<quest_point_in_cell_mfem_tag>::NO_CELL = -1;
-
-
 
 namespace detail
 {

@@ -41,7 +41,7 @@ namespace slam
  * \brief Models a set whose element is the Cartesian product of two sets. The
  *        number of elements in this set is the product of the sizes of the two
  *        input sets.
- *        
+ *
  *        Users should refer to the BivariateSet documentation for descriptions
  *        of the different indexing names (SparseIndex, DenseIndex, FlatIndex).
  *

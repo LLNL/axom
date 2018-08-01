@@ -19,6 +19,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Changed
 
 ### Fixed
+- Bugfix for "multiply-defined" linker error in slam::Bitset and quest::PointInCellTraits
 
 ### Known Bugs
 
