@@ -70,8 +70,9 @@ protected:
   IteratorBase(int pos) : m_pos(pos) { }
 
 private:
-  /** This class exists to access IterType advance(), a protected function. 
-   *  Implementation taken from https://accu.org/index.php/journals/296 
+  /**
+   *  Utility class to access protected function IterType::advance().
+   *  Idea borrowed from: https://accu.org/index.php/journals/296
    */
   struct accessor : IterType
   {
