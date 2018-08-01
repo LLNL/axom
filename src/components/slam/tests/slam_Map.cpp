@@ -350,9 +350,9 @@ void constructAndTestMapIteratorWithStride(int stride)
   double multFac2 = 1.010;
   {
     int idx = 0;
-    for (MapIterator iter = m.begin(); iter != m.end(); ++iter)
+    for (MapIterator iter = m.begin() ; iter != m.end() ; ++iter)
     {
-      for (PositionType idx2 = 0; idx2 < iter.numComp(); ++idx2)
+      for (PositionType idx2 = 0 ; idx2 < iter.numComp() ; ++idx2)
       {
         iter(idx2) = static_cast<double>(idx * multFac + idx2 * multFac2);
       }

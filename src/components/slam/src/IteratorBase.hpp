@@ -48,7 +48,7 @@ namespace slam
  *   using IteratorBase<IteratorDerived, DataType>::m_pos;
 
  *   //...implementation of the accessing functions using m_pos...
- *   
+ *
  *   //derive iterator class must implement this function, ideally protected.
  * protected:
  *   void advance( PositionType n) {...}
@@ -78,7 +78,7 @@ private:
   {
     static void adv(IterType& derived, PositionType n)
     {
-      void (IterType::*fn)(PositionType) = &accessor::advance;
+      void (IterType::* fn)(PositionType) = &accessor::advance;
       (derived.*fn)(n);
     }
   };
@@ -104,8 +104,8 @@ public:
   }
   IterType& operator--() { adv(getIter(),-1); return getIter(); }
   IterType operator--(int) {
-    IterType ret = getIter(); 
-    adv(getIter(),-1); 
+    IterType ret = getIter();
+    adv(getIter(),-1);
     return ret;
   }
 
@@ -114,13 +114,13 @@ public:
 
   IterType operator+(PositionType n) const
   {
-    IterType ret = getIter(); 
+    IterType ret = getIter();
     adv(ret,n);
     return ret;
   }
   IterType operator-(PositionType n) const
   {
-    IterType ret = getIter(); 
+    IterType ret = getIter();
     adv(ret,-n);
     return ret;
   }
@@ -131,11 +131,11 @@ public:
   }
 
 private:
-  IterType& getIter() { 
-    return *static_cast<IterType*>(this); 
+  IterType& getIter() {
+    return *static_cast<IterType*>(this);
   }
-  const IterType& getIter() const { 
-    return *static_cast<const IterType*>(this); 
+  const IterType& getIter() const {
+    return *static_cast<const IterType*>(this);
   }
 
 protected:

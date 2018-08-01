@@ -218,7 +218,7 @@ private:
       typename OrderedSet::ElementType>
   {
 public:
-    
+
     typedef OrderedSetIterator<OrderedSet>              iter;
     typedef typename OrderedSet::ElementType ElementType;
     typedef typename OrderedSet::PositionType PositionType;
@@ -227,7 +227,7 @@ public:
     typedef typename OrderedSet::StridePolicyType StrideType;
 
     using IterBase = IteratorBase<OrderedSetIterator<OrderedSet>,
-      typename OrderedSet::ElementType>;
+                                  typename OrderedSet::ElementType>;
     using IterBase::m_pos;
 
 public:
