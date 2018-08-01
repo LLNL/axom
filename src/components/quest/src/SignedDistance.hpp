@@ -103,6 +103,18 @@ public:
    * \param [in] y y-coordinate of the query point
    * \param [in] z z-coordinate of the query point
    *
+   * \note When the input is not a closed surface mesh, the assumption is that
+   *  the surface mesh divides the computational mesh domain into two regions.
+   *  Hence, the surface mesh has to span the entire domain of interest, e.g.,
+   *  the computational mesh at which the signed distance field is evaluated,
+   *  along some plane.
+   *
+   * \warning The sign of the distance from a given query point is determined by
+   *  a pseudo-normal which is computed at the closest point on the surface
+   *  mesh. For a non-watertight mesh, the sign of the distance is not defined
+   *  everywhere. Specifically, the sign is ambiguous for all points for which
+   *  a normal projection onto the surface does not exist.
+   *
    * \return minDist minimum signed distance of the query point to the surface.
    */
   double computeDistance( double x, double y, double z=0.0 )
@@ -114,6 +126,19 @@ public:
   /*!
    * \brief Computes the distance of the given point to the surface mesh.
    * \param [in] queryPnt user-supplied point.
+   *
+   * \note When the input is not a closed surface mesh, the assumption is that
+   *  the surface mesh divides the computational mesh domain into two regions.
+   *  Hence, the surface mesh has to span the entire domain of interest, e.g.,
+   *  the computational mesh at which the signed distance field is evaluated,
+   *  along some plane.
+   *
+   * \warning The sign of the distance from a given query point is determined by
+   *  a pseudo-normal which is computed at the closest point on the surface
+   *  mesh. For a non-watertight mesh, the sign of the distance is not defined
+   *  everywhere. Specifically, the sign is ambiguous for all points for which
+   *  a normal projection onto the surface does not exist.
+   *
    * \return minDist the signed minimum distance to the surface mesh.
    */
   double computeDistance( const PointType& queryPnt ) const;
@@ -129,6 +154,18 @@ public:
    * \param [out] my_triangles the triangle used to compute the pseudo-normal.
    *
    * \note The variables 'triangles'/'my_triangles' are relevant in debug mode.
+   *
+   * \note When the input is not a closed surface mesh, the assumption is that
+   *  the surface mesh divides the computational mesh domain into two regions.
+   *  Hence, the surface mesh has to span the entire domain of interest, e.g.,
+   *  the computational mesh at which the signed distance field is evaluated,
+   *  along some plane.
+   *
+   * \warning The sign of the distance from a given query point is determined by
+   *  a pseudo-normal which is computed at the closest point on the surface
+   *  mesh. For a non-watertight mesh, the sign of the distance is not defined
+   *  everywhere. Specifically, the sign is ambiguous for all points for which
+   *  a normal projection onto the surface does not exist.
    *
    * \return minDist the minimum signed distance to the surface mesh.
    */

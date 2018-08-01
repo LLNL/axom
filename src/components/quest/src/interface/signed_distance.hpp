@@ -188,8 +188,16 @@ void signed_distance_set_dimension( int dim );
  *
  * \note When the input is not a closed surface mesh, the assumption is that
  *  the surface mesh divides the computational mesh domain into two regions.
- *  Hence, the surface mesh has to span the entire domain of interest along
- *  some plane.
+ *  Hence, the surface mesh has to span the entire domain of interest, e.g.,
+ *  the computational mesh at which the signed distance field is evaluated,
+ *  along some plane.
+ *
+ * \warning The sign of the distance from a given query point is determined by
+ *  a pseudo-normal which is computed at the closest point on the surface mesh.
+ *  For a non-watertight mesh, the sign of the distance is not defined
+ *  everywhere. Specifically, the sign is ambiguous for all points for which
+ *  a normal projection onto the surface does not exist.
+ *
  */
 void signed_distance_set_closed_surface( bool status );
 
