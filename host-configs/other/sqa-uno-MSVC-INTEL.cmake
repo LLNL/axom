@@ -26,7 +26,7 @@
 # Test the code as follows (j for parallel testing):
 #   ctest -j8 -C {Release,Debug,RelWithDebInfo}
 # 
-# Install the come from the command line as follows:
+# Install the code from the command line as follows:
 #   cmake --build . --config Release --target install
 #
 # Note: MPI in this configuration requires an initial login.
