@@ -23,35 +23,35 @@
 
 // axom includes
 #include "axom/config.hpp"
-#include "axom/Macros.hpp"
-#include "axom/Types.hpp"
-#include "axom_utils/FileUtilities.hpp"
-#include "axom_utils/Timer.hpp"
+#include "axom/core/Macros.hpp"
+#include "axom/core/Types.hpp"
+#include "axom/core/utilities/FileUtilities.hpp"
+#include "axom/core/utilities/Timer.hpp"
 
-#include "primal/BoundingBox.hpp"
-#include "primal/Point.hpp"
-#include "primal/Triangle.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Triangle.hpp"
 
-#include "primal/orientation.hpp"
-#include "primal/squared_distance.hpp"
+#include "axom/primal/operators/orientation.hpp"
+#include "axom/primal/operators/squared_distance.hpp"
 
-#include "quest/STLReader.hpp"
-#include "quest/SpatialOctree.hpp"
-#include "quest/InOutOctree.hpp"
+#include "axom/quest/stl/STLReader.hpp"
+#include "axom/quest/geom/SpatialOctree.hpp"
+#include "axom/quest/geom/InOutOctree.hpp"
 
-#include "mint/config.hpp"
-#include "mint/Field.hpp"
-#include "mint/FieldData.hpp"
-#include "mint/FieldVariable.hpp"
-#include "mint/Mesh.hpp"
-#include "mint/UniformMesh.hpp"
-#include "mint/UnstructuredMesh.hpp"
-#include "mint/vtk_utils.hpp"
+#include "axom/mint/config.hpp"
+#include "axom/mint/mesh/Field.hpp"
+#include "axom/mint/mesh/FieldData.hpp"
+#include "axom/mint/mesh/FieldVariable.hpp"
+#include "axom/mint/mesh/Mesh.hpp"
+#include "axom/mint/mesh/UniformMesh.hpp"
+#include "axom/mint/mesh/UnstructuredMesh.hpp"
+#include "axom/mint/utils/vtk_utils.hpp"
 
-#include "slic/slic.hpp"
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/interface/slic.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 
-#include "slam/Utilities.hpp"
+#include "axom/slam/Utilities.hpp"
 
 #include "fmt/fmt.hpp"
 
@@ -92,7 +92,7 @@ const int MAX_CONTAINMENT_QUERY_LEVEL = 9;
  */
 GeometricBoundingBox compute_bounds( mint::Mesh* mesh)
 {
-  SLIC_ASSERT( mesh != AXOM_NULLPTR );
+  SLIC_ASSERT( mesh != nullptr );
 
   GeometricBoundingBox meshBB;
   SpacePt pt;
@@ -211,7 +211,7 @@ void testContainmentOnRegularGrid(
   int* containment    = umesh->createField< int >( "containment",
                                                    mint::NODE_CENTERED );
 
-  SLIC_ASSERT( containment != AXOM_NULLPTR );
+  SLIC_ASSERT( containment != nullptr );
 
   utilities::Timer timer(true);
   for ( int inode=0 ; inode < nnodes ; ++inode )
@@ -243,7 +243,7 @@ void testContainmentOnRegularGrid(
 TriVertIndices getTriangleVertIndices(mint::Mesh* mesh,
                                       mint::IndexType cellIndex)
 {
-  SLIC_ASSERT(mesh != AXOM_NULLPTR);
+  SLIC_ASSERT(mesh != nullptr);
   SLIC_ASSERT(cellIndex >= 0 && cellIndex < mesh->getNumberOfCells());
 
   TriVertIndices tvInd;
@@ -258,7 +258,7 @@ TriVertIndices getTriangleVertIndices(mint::Mesh* mesh,
 SpaceTriangle getMeshTriangle(mint::Mesh* mesh,
                               const TriVertIndices& vertIndices )
 {
-  SLIC_ASSERT(mesh != AXOM_NULLPTR);
+  SLIC_ASSERT(mesh != nullptr);
 
   SpaceTriangle tri;
   for(int i=0 ; i< 3 ; ++i)
@@ -276,7 +276,7 @@ SpaceTriangle getMeshTriangle(mint::Mesh* mesh,
  */
 void print_surface_stats( mint::Mesh* mesh)
 {
-  SLIC_ASSERT( mesh != AXOM_NULLPTR );
+  SLIC_ASSERT( mesh != nullptr );
 
   SpacePt pt;
 
@@ -467,7 +467,7 @@ int main( int argc, char** argv )
 
   // STEP 4: Delete the reader
   delete reader;
-  reader = AXOM_NULLPTR;
+  reader = nullptr;
 
 
   // STEP 5: Compute the bounding box and log some stats about the surface
@@ -537,10 +537,10 @@ int main( int argc, char** argv )
 //      refineAndPrint(octree, queryPt);
 
   // STEP 8: Reclaim memory
-  if(surface_mesh != AXOM_NULLPTR)
+  if(surface_mesh != nullptr)
   {
     delete surface_mesh;
-    surface_mesh = AXOM_NULLPTR;
+    surface_mesh = nullptr;
   }
 
   return 0;

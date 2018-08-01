@@ -17,18 +17,18 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/Types.hpp"
-#include "axom_utils/Timer.hpp"
+#include "axom/core/Types.hpp"
+#include "axom/core/utilities/Timer.hpp"
 
-#include "primal/orientation.hpp"
-#include "primal/Triangle.hpp"
+#include "axom/primal/operators/orientation.hpp"
+#include "axom/primal/geometry/Triangle.hpp"
 
-#include "quest/InOutOctree.hpp"
+#include "axom/quest/geom/InOutOctree.hpp"
 
-#include "mint/Mesh.hpp"
-// #include "mint/vtk_utils.hpp"
+#include "axom/mint/mesh/Mesh.hpp"
+// #include "axom/mint/utils/vtk_utils.hpp"
 
-#include "slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 
 #include "quest_test_utilities.hpp"
 
@@ -173,13 +173,13 @@ TEST( quest_inout_octree, octahedron_mesh)
 
 
   delete mesh;
-  mesh = AXOM_NULLPTR;
+  mesh = nullptr;
 }
 
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

@@ -25,8 +25,8 @@
 
 // Axom includes
 #include "axom/config.hpp"
-#include "mint/UnstructuredMesh.hpp"
-#include "slic/slic.hpp"
+#include "axom/mint/mesh/UnstructuredMesh.hpp"
+#include "axom/slic/interface/slic.hpp"
 
 // C/C++ includes
 #include <utility>

@@ -63,7 +63,7 @@ if(MFEM_FOUND)
         NAME ${test_name}
         SOURCES ${test_name}.cpp
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-        DEPENDS_ON ${quest_tests_depends} mfem axom_utils
+        DEPENDS_ON ${quest_tests_depends} mfem core
         )
 
     set_property(

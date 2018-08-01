@@ -30,8 +30,8 @@
 #include "axom/primal/geometry/Triangle.hpp"
 #include "axom/primal/spatial_acceleration/UniformGrid.hpp"
 
-#include "quest/MeshTester.hpp"
-#include "quest/STLReader.hpp"
+#include "axom/quest/MeshTester.hpp"
+#include "axom/quest/stl/STLReader.hpp"
 
 #include "axom/slic/streams/GenericOutputStream.hpp"
 #include "axom/slic/interface/slic.hpp"

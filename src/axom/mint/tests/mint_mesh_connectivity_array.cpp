@@ -17,7 +17,7 @@
 #include "axom/slic/core/UnitTestLogger.hpp"      /* for UnitTestLogger */
 
 #ifdef MINT_USE_SIDRE
-#include "sidre/sidre.hpp"
+#include "axom/sidre/core/sidre.hpp"
 #endif
 
 #include <algorithm>

@@ -20,13 +20,13 @@
 
 
 #include "axom/config.hpp"    // defines AXOM_USE_CXX11
-#include "axom/Types.hpp"
-#include "axom/Macros.hpp"    // defines AXOM_STATIC_ASSERT
+#include "axom/core/Types.hpp"
+#include "axom/core/Macros.hpp"    // defines AXOM_STATIC_ASSERT
 
-#include "primal/MortonIndex.hpp"
+#include "axom/primal/geometry/MortonIndex.hpp"
 
-#include "quest/Brood.hpp"
-#include "quest/OctreeLevel.hpp"
+#include "axom/quest/geom/Brood.hpp"
+#include "axom/quest/geom/OctreeLevel.hpp"
 
 #ifdef AXOM_USE_CXX11
   #include <type_traits>
@@ -256,7 +256,7 @@ public:
     {
       const self* pother = dynamic_cast<const self*>(other);
 
-      return (pother != AXOM_NULLPTR)
+      return (pother != nullptr)
              && (m_currentIter == pother->m_currentIter)           // iterators
                                                                    // are the
                                                                    // same

@@ -24,7 +24,7 @@
 #include "axom/slic/interface/slic.hpp"
 
 #ifdef MINT_USE_SIDRE
-#include "sidre/sidre.hpp"
+#include "axom/sidre/core/sidre.hpp"
 #endif
 
 #include <cmath>                 /* for std::ceil */

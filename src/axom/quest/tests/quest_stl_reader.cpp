@@ -15,8 +15,8 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include "quest/STLReader.hpp"
-#include "mint/UnstructuredMesh.hpp"
+#include "axom/quest/stl/STLReader.hpp"
+#include "axom/mint/mesh/UnstructuredMesh.hpp"
 
 // gtest includes
 #include "gtest/gtest.h"
@@ -135,9 +135,9 @@ TEST( quest_stl_reader, read_stl )
   const double* x = mesh.getCoordinateArray( mint::X_COORDINATE );
   const double* y = mesh.getCoordinateArray( mint::Y_COORDINATE );
   const double* z = mesh.getCoordinateArray( mint::Z_COORDINATE );
-  EXPECT_TRUE( x != AXOM_NULLPTR );
-  EXPECT_TRUE( y != AXOM_NULLPTR );
-  EXPECT_TRUE( z != AXOM_NULLPTR );
+  EXPECT_TRUE( x != nullptr );
+  EXPECT_TRUE( y != nullptr );
+  EXPECT_TRUE( z != nullptr );
 
   mint::IndexType numNodes = mesh.getNumberOfNodes();
   for ( mint::IndexType inode=0 ; inode < numNodes ; ++inode )
@@ -152,7 +152,7 @@ TEST( quest_stl_reader, read_stl )
 }
 
 //------------------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

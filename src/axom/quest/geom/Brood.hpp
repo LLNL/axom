@@ -21,9 +21,9 @@
 
 #include "axom/config.hpp"
 
-#include "primal/NumericArray.hpp"
-#include "primal/Point.hpp"
-#include "primal/MortonIndex.hpp"
+#include "axom/primal/geometry/NumericArray.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/MortonIndex.hpp"
 
 
 namespace axom

@@ -28,7 +28,7 @@
 
 // Sidre includes
 #ifdef MINT_USE_SIDRE
-#include "sidre/sidre.hpp"
+#include "axom/sidre/core/sidre.hpp"
 namespace sidre = axom::sidre;
 #endif
 

@@ -19,10 +19,10 @@
 #define QUEST_STLREADER_HPP_
 
 // Axom includes
-#include "axom/Macros.hpp"  // for axom macros
+#include "axom/core/Macros.hpp"  // for axom macros
 
 // Mint includes
-#include "mint/UnstructuredMesh.hpp"
+#include "axom/mint/mesh/UnstructuredMesh.hpp"
 
 // C/C++ includes
 #include <string>  // for std::string
@@ -77,7 +77,7 @@ public:
   /*!
    * \brief Stores the STL data in the supplied unstructured mesh object.
    * \param [in,out] mesh pointer to the unstructured mesh.
-   * \pre mesh != AXOM_NULLPTR.
+   * \pre mesh != nullptr.
    */
   void getMesh( mint::UnstructuredMesh< mint::SINGLE_SHAPE >* mesh );
 

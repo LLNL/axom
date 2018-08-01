@@ -20,10 +20,10 @@
 
 
 #include "axom/config.hpp"
-#include "axom/Types.hpp"
+#include "axom/core/Types.hpp"
 
-#include "quest/Brood.hpp"
-#include "quest/OctreeLevel.hpp"
+#include "axom/quest/geom/Brood.hpp"
+#include "axom/quest/geom/OctreeLevel.hpp"
 
 
 namespace axom
@@ -133,7 +133,7 @@ public:
     {
       const self* pother = dynamic_cast<const self*>(other);
 
-      return (pother != AXOM_NULLPTR)
+      return (pother != nullptr)
              && (m_currentIdx == pother->m_currentIdx)           // iterators
                                                                  // are the same
              && (m_offset == pother->m_offset);                  // brood
@@ -155,7 +155,7 @@ public:
     if(level < 0)
     {
       m_broodCapacity = 0;
-      m_data = AXOM_NULLPTR;
+      m_data = nullptr;
     }
     else
     {
@@ -178,10 +178,10 @@ public:
 
   ~DenseOctreeLevel()
   {
-    if(m_data != AXOM_NULLPTR)
+    if(m_data != nullptr)
     {
       delete [] m_data;
-      m_data = AXOM_NULLPTR;
+      m_data = nullptr;
     }
 
     m_broodCapacity = 0;

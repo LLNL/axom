@@ -29,7 +29,7 @@
 #include "axom/mint/mesh/UnstructuredMesh.hpp"
 
 #ifdef MINT_USE_SIDRE
-#include "sidre/sidre.hpp"
+#include "axom/sidre/core/sidre.hpp"
 #endif
 
 #include "axom/mint/mesh/blueprint.hpp" // for blueprint functions

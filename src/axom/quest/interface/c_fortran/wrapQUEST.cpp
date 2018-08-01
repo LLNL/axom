@@ -15,8 +15,8 @@
 //
 #include "wrapQUEST.h"
 #include <string>
-#include "quest/quest.hpp"
-#include "quest/signed_distance.hpp"
+#include "axom/quest/interface/quest.hpp"
+#include "axom/quest/interface/signed_distance.hpp"
 
 // splicer begin CXX_definitions
 // splicer end CXX_definitions

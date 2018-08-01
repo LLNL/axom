@@ -17,11 +17,11 @@
 
 #include "gtest/gtest.h"
 
-#include "slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 
-#include "primal/Point.hpp"
-#include "mint/UnstructuredMesh.hpp"
-#include "quest/MeshTester.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/mint/mesh/UnstructuredMesh.hpp"
+#include "axom/quest/MeshTester.hpp"
 #include "quest_test_utilities.hpp"
 
 namespace
@@ -64,7 +64,7 @@ TEST( quest_vertex_weld, emptyMesh)
   EXPECT_EQ(0, mesh->getNumberOfCells());
 
   delete mesh;
-  mesh = AXOM_NULLPTR;
+  mesh = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -88,7 +88,7 @@ TEST( quest_vertex_weld, onlyVertices)
   EXPECT_EQ(0, mesh->getNumberOfCells());
 
   delete mesh;
-  mesh = AXOM_NULLPTR;
+  mesh = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -112,7 +112,7 @@ TEST( quest_vertex_weld, oneTriangle)
   EXPECT_EQ(1, mesh->getNumberOfCells());
 
   delete mesh;
-  mesh = AXOM_NULLPTR;
+  mesh = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -142,7 +142,7 @@ TEST( quest_vertex_weld, degenerateTriangle)
   EXPECT_EQ(1, mesh->getNumberOfCells());
 
   delete mesh;
-  mesh = AXOM_NULLPTR;
+  mesh = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -174,7 +174,7 @@ TEST( quest_vertex_weld, vertexAdjacentTrianglePair)
   EXPECT_EQ(2, mesh->getNumberOfCells());
 
   delete mesh;
-  mesh = AXOM_NULLPTR;
+  mesh = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -206,7 +206,7 @@ TEST( quest_vertex_weld, edgeAdjacentTrianglePair)
   EXPECT_EQ(2, mesh->getNumberOfCells());
 
   delete mesh;
-  mesh = AXOM_NULLPTR;
+  mesh = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -238,7 +238,7 @@ TEST( quest_vertex_weld, fuzzWeld)
   EXPECT_EQ(2, mesh->getNumberOfCells());
 
   delete mesh;
-  mesh = AXOM_NULLPTR;
+  mesh = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -269,7 +269,7 @@ TEST( quest_vertex_weld, disconnectedTrianglePair)
   EXPECT_EQ(2, mesh->getNumberOfCells());
 
   delete mesh;
-  mesh = AXOM_NULLPTR;
+  mesh = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -294,7 +294,7 @@ TEST( quest_vertex_weld, indexedTetrahedron)
   EXPECT_EQ(NT, mesh->getNumberOfCells());
 
   delete mesh;
-  mesh = AXOM_NULLPTR;
+  mesh = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -319,13 +319,13 @@ TEST( quest_vertex_weld, indexedOctahedron)
   EXPECT_EQ(NT, mesh->getNumberOfCells());
 
   delete mesh;
-  mesh = AXOM_NULLPTR;
+  mesh = nullptr;
 }
 
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

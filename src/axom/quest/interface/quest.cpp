@@ -15,32 +15,32 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include "quest/quest.hpp"
+#include "axom/quest/interface/quest.hpp"
 
 // Quest includes
-#include "axom/Types.hpp"
-#include "axom/Macros.hpp"
+#include "axom/core/Types.hpp"
+#include "axom/core/Macros.hpp"
 
-#include "slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 
 #ifdef AXOM_USE_MPI
   #ifdef AXOM_USE_LUMBERJACK
-    #include "slic/LumberjackStream.hpp"
+    #include "axom/slic/streams/LumberjackStream.hpp"
   #else
-    #include "slic/SynchronizedStream.hpp"
+    #include "axom/slic/streams/SynchronizedStream.hpp"
   #endif
 #else
-  #include "slic/GenericOutputStream.hpp"
+  #include "axom/slic/streams/GenericOutputStream.hpp"
 #endif
 
-#include "primal/BoundingBox.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
 
-#include "quest/InOutOctree.hpp"
-#include "quest/SignedDistance.hpp"
+#include "axom/quest/geom/InOutOctree.hpp"
+#include "axom/quest/SignedDistance.hpp"
 
-#include "quest/STLReader.hpp"
+#include "axom/quest/stl/STLReader.hpp"
 #ifdef AXOM_USE_MPI
-  #include "quest/PSTLReader.hpp"
+  #include "axom/quest/stl/PSTLReader.hpp"
 #endif
 
 namespace axom
@@ -74,9 +74,9 @@ struct QuestAccelerator
 
   /** \brief Default constructor */
   QuestAccelerator()
-    : m_surface_mesh(AXOM_NULLPTR),
-    m_region(AXOM_NULLPTR),
-    m_containmentTree(AXOM_NULLPTR),
+    : m_surface_mesh(nullptr),
+    m_region(nullptr),
+    m_containmentTree(nullptr),
     m_queryMode(QUERY_MODE_NONE),
     m_originalLoggerName(""),
     m_shouldFinalizeSlic(false),
@@ -89,7 +89,7 @@ struct QuestAccelerator
    */
   void setMesh( axom::mint::Mesh*& surface_mesh, bool deleteMesh )
   {
-    SLIC_ASSERT( surface_mesh != AXOM_NULLPTR);
+    SLIC_ASSERT( surface_mesh != nullptr);
 
     m_surface_mesh = surface_mesh;
     m_shouldDeleteMesh = deleteMesh;
@@ -135,24 +135,24 @@ struct QuestAccelerator
    */
   void finalize()
   {
-    if ( m_region != AXOM_NULLPTR )
+    if ( m_region != nullptr )
     {
       delete m_region;
-      m_region = AXOM_NULLPTR;
+      m_region = nullptr;
     }
 
-    if( m_containmentTree != AXOM_NULLPTR )
+    if( m_containmentTree != nullptr )
     {
       delete m_containmentTree;
-      m_containmentTree = AXOM_NULLPTR;
+      m_containmentTree = nullptr;
     }
     m_queryMode = QUERY_MODE_NONE;
 
-    if ( m_shouldDeleteMesh && m_surface_mesh != AXOM_NULLPTR )
+    if ( m_shouldDeleteMesh && m_surface_mesh != nullptr )
     {
 
       delete m_surface_mesh;
-      m_surface_mesh = AXOM_NULLPTR;
+      m_surface_mesh = nullptr;
     }
 
     m_meshBoundingBox.clear();
@@ -205,7 +205,7 @@ struct QuestAccelerator
     {
       const quest::SignedDistance<3>::BVHTreeType* tree =
         m_region->getBVHTree();
-      SLIC_ASSERT( tree != AXOM_NULLPTR );
+      SLIC_ASSERT( tree != nullptr );
 
       if ( !tree->contains( pt ) )
       {
@@ -255,7 +255,7 @@ struct QuestAccelerator
       isValid = false;
       break;
     case QUERY_MODE_SIGNED_DISTANCE:
-      if( m_region == AXOM_NULLPTR)
+      if( m_region == nullptr)
         isValid = false;
       break;
     case QUERY_MODE_NONE:
@@ -277,11 +277,11 @@ struct QuestAccelerator
     switch(m_queryMode)
     {
     case QUERY_MODE_CONTAINMENT:
-      if( m_containmentTree == AXOM_NULLPTR)
+      if( m_containmentTree == nullptr)
         isValid = false;
       break;
     case QUERY_MODE_SIGNED_DISTANCE:
-      if( m_region == AXOM_NULLPTR)
+      if( m_region == nullptr)
         isValid = false;
       break;
     case QUERY_MODE_NONE:
@@ -417,7 +417,7 @@ void initialize( MPI_Comm comm, const std::string& fileName,
   reader->read();
 
   axom::mint::Mesh* surface_mesh = new UMesh( 3, mint::TRIANGLE );
-  SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
+  SLIC_ASSERT( surface_mesh != nullptr );
 
   reader->getMesh( static_cast< UMesh* >( surface_mesh ) );
   delete reader;
@@ -452,7 +452,7 @@ void initialize( MPI_Comm comm, mint::Mesh*& input_mesh,
 
   accelerator3D.setupQuestLogger(comm);
 
-  SLIC_ASSERT( input_mesh != AXOM_NULLPTR );
+  SLIC_ASSERT( input_mesh != nullptr );
 
   // Initialize the appropriate acceleration structure
   accelerator3D.initializeContainmentTree(input_mesh, deleteMesh);
@@ -472,7 +472,7 @@ void initialize( const std::string& fileName,
   reader->read();
 
   axom::mint::Mesh* surface_mesh = new UMesh( 3, mint::TRIANGLE );
-  SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
+  SLIC_ASSERT( surface_mesh != nullptr );
 
   reader->getMesh( static_cast< UMesh* >( surface_mesh ) );
   delete reader;
@@ -506,7 +506,7 @@ void initialize( mint::Mesh*& input_mesh,
 
   accelerator3D.setupQuestLogger();
 
-  SLIC_ASSERT( input_mesh != AXOM_NULLPTR );
+  SLIC_ASSERT( input_mesh != nullptr );
 
   // Initialize the appropriate acceleration structure
   accelerator3D.initializeContainmentTree(input_mesh, deleteMesh);
@@ -525,7 +525,7 @@ int inside( double x, double y, double z )
 void mesh_min_bounds(double* coords)
 {
   typedef QuestAccelerator<3>::SpacePt SpacePt;
-  SLIC_ASSERT(coords != AXOM_NULLPTR);
+  SLIC_ASSERT(coords != nullptr);
 
   const SpacePt& bbMin = accelerator3D.meshBoundingBox().getMin();
   bbMin.array().to_array(coords);
@@ -535,7 +535,7 @@ void mesh_min_bounds(double* coords)
 void mesh_max_bounds(double* coords)
 {
   typedef QuestAccelerator<3>::SpacePt SpacePt;
-  SLIC_ASSERT(coords != AXOM_NULLPTR);
+  SLIC_ASSERT(coords != nullptr);
 
   const SpacePt& bbMax = accelerator3D.meshBoundingBox().getMax();
   bbMax.array().to_array(coords);
@@ -545,7 +545,7 @@ void mesh_max_bounds(double* coords)
 void mesh_center_of_mass(double* coords)
 {
   typedef QuestAccelerator<3>::SpacePt SpacePt;
-  SLIC_ASSERT(coords != AXOM_NULLPTR);
+  SLIC_ASSERT(coords != nullptr);
 
   const SpacePt& cMass = accelerator3D.meshCenterOfMass();
   cMass.array().to_array(coords);
@@ -554,8 +554,8 @@ void mesh_center_of_mass(double* coords)
 //------------------------------------------------------------------------------
 void inside( const double* xyz, int* in, int npoints )
 {
-  SLIC_ASSERT( xyz != AXOM_NULLPTR );
-  SLIC_ASSERT( in != AXOM_NULLPTR );
+  SLIC_ASSERT( xyz != nullptr );
+  SLIC_ASSERT( in != nullptr );
 
 #ifdef AXOM_USE_OPENMP
 #pragma omp parallel for schedule(static)

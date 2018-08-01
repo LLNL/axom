@@ -15,22 +15,22 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include "slic/slic.hpp"
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/interface/slic.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
-#include "mint/CellTypes.hpp"
-#include "mint/config.hpp"
-#include "mint/MeshTypes.hpp"
-#include "mint/UniformMesh.hpp"
-#include "mint/UnstructuredMesh.hpp"
-#include "mint/vtk_utils.hpp"
+#include "axom/mint/mesh/CellTypes.hpp"
+#include "axom/mint/config.hpp"
+#include "axom/mint/mesh/MeshTypes.hpp"
+#include "axom/mint/mesh/UniformMesh.hpp"
+#include "axom/mint/mesh/UnstructuredMesh.hpp"
+#include "axom/mint/utils/vtk_utils.hpp"
 
-#include "primal/BoundingBox.hpp"
-#include "primal/Sphere.hpp"
-#include "primal/Point.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/geometry/Sphere.hpp"
+#include "axom/primal/geometry/Point.hpp"
 
-#include "quest/SignedDistance.hpp"  // quest::SignedDistance
+#include "axom/quest/SignedDistance.hpp"  // quest::SignedDistance
 #include "quest_test_utilities.hpp"  // for test-utility functions
 
 // Google Test includes
@@ -62,7 +62,7 @@ namespace detail
  */
 primal::BoundingBox< double,3 > getBounds( const axom::mint::Mesh* mesh )
 {
-  SLIC_ASSERT( mesh != AXOM_NULLPTR );
+  SLIC_ASSERT( mesh != nullptr );
 
   primal::BoundingBox< double,3 > bb;
   primal::Point< double,3 > pt;
@@ -84,8 +84,8 @@ primal::BoundingBox< double,3 > getBounds( const axom::mint::Mesh* mesh )
  */
 void getUniformMesh( const UMesh* mesh, mint::UniformMesh*& umesh )
 {
-  SLIC_ASSERT( mesh != AXOM_NULLPTR );
-  SLIC_ASSERT( umesh == AXOM_NULLPTR );
+  SLIC_ASSERT( mesh != nullptr );
+  SLIC_ASSERT( umesh == nullptr );
 
   constexpr int N = 16; // number of points along each dimension
 
@@ -124,7 +124,7 @@ TEST( quest_signed_distance, sphere_test )
                                           SPHERE_THETA_RES, SPHERE_PHI_RES );
 
   SLIC_INFO( "Generating uniform mesh..." );
-  mint::UniformMesh* umesh = AXOM_NULLPTR;
+  mint::UniformMesh* umesh = nullptr;
   detail::getUniformMesh( surface_mesh, umesh );
 
   double* phi_computed =

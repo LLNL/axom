@@ -1,11 +1,11 @@
 
 
 // Axom includes
-#include "mint/UnstructuredMesh.hpp"
-#include "slic/slic.hpp"
-#include "slic/UnitTestLogger.hpp"
+#include "axom/mint/mesh/UnstructuredMesh.hpp"
+#include "axom/slic/interface/slic.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 #include "quest_test_utilities.hpp"
-#include "quest/quest.hpp"
+#include "axom/quest/interface/quest.hpp"
 
 #include "fmt/fmt.hpp"
 

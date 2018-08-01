@@ -22,7 +22,7 @@
 #include <string>
 
 #include "axom/config.hpp"
-#include "mint/Mesh.hpp"
+#include "axom/mint/mesh/Mesh.hpp"
 
 #ifdef AXOM_USE_MPI
 #include "mpi.h"
@@ -79,8 +79,8 @@ int inside(double x, double y, double z=0.0);
  * \param [in]  xyz user-supplied array of coordinates stored
  * \param [out] in user-supplied array where to store result for each point.
  * \param [in]  npoints total number of points.
- * \pre xyz != AXOM_NULLPTR
- * \pre  in != AXOM_NULLPTR
+ * \pre xyz != nullptr
+ * \pre  in != nullptr
  */
 void inside( const double* xyz, int* in, int npoints);
 

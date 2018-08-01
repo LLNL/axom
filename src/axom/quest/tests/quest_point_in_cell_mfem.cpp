@@ -25,27 +25,27 @@
 
 #include "gtest/gtest.h"
 
-#include "axom_utils/Timer.hpp"
+#include "axom/core/utilities/Timer.hpp"
 
-#include "mint/CurvilinearMesh.hpp"
-#include "mint/FieldVariable.hpp"
-#include "mint/vtk_utils.hpp"
+#include "axom/mint/mesh/CurvilinearMesh.hpp"
+#include "axom/mint/mesh/FieldVariable.hpp"
+#include "axom/mint/utils/vtk_utils.hpp"
 
-#include "primal/Point.hpp"
-#include "primal/BoundingBox.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
 
-#include "quest/ImplicitGrid.hpp"
-#include "quest/PointInCell.hpp"
+#include "axom/quest/geom/ImplicitGrid.hpp"
+#include "axom/quest/PointInCell.hpp"
 
 #ifdef AXOM_USE_MFEM
-# include "quest/PointInCellMeshWrapper_mfem.hpp"
+# include "axom/quest/detail/PointInCellMeshWrapper_mfem.hpp"
 #else
 # error "Quest's PointInCell tests on mfem meshes requires mfem library."
 #endif
 
 #include "quest_test_utilities.hpp"
 
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 #include "fmt/fmt.hpp"
@@ -103,14 +103,14 @@ public:
   typedef axom::quest::PointInCell<mesh_tag> PointInCellType;
 
 public:
-  PointInCellTest() : m_mesh(AXOM_NULLPTR) {}
+  PointInCellTest() : m_mesh(nullptr) {}
 
   virtual ~PointInCellTest()
   {
-    if(m_mesh != AXOM_NULLPTR)
+    if(m_mesh != nullptr)
     {
       delete m_mesh;
-      m_mesh = AXOM_NULLPTR;
+      m_mesh = nullptr;
     }
   }
 
@@ -155,7 +155,7 @@ public:
   void jitterNodalValues(mfem::Mesh* mesh, double dx)
   {
     mfem::GridFunction* nodes = mesh->GetNodes();
-    if(nodes == AXOM_NULLPTR)
+    if(nodes == nullptr)
     {
       return;
     }
@@ -621,7 +621,7 @@ public:
 
     // Create the MFEM mesh
     m_mesh = new mfem::Mesh(sstr);
-    EXPECT_TRUE(m_mesh !=  AXOM_NULLPTR);
+    EXPECT_TRUE(m_mesh !=  nullptr);
 
     // Refine (and possibly jitter) the mesh several times
     for(int i=0 ; i< numRefine ; ++i)
@@ -641,11 +641,11 @@ public:
     // Sanity checks on whether mesh is low or high order
     if(meshType == FLAT_MESH)
     {
-      EXPECT_TRUE(m_mesh->GetNodes() == AXOM_NULLPTR);
+      EXPECT_TRUE(m_mesh->GetNodes() == nullptr);
     }
     else
     {
-      EXPECT_TRUE(m_mesh->GetNodes() != AXOM_NULLPTR);
+      EXPECT_TRUE(m_mesh->GetNodes() != nullptr);
       EXPECT_EQ(feCollName, m_mesh->GetNodalFESpace()->FEColl()->Name());
     }
 
@@ -823,7 +823,7 @@ public:
 
     // Create the MFEM mesh instance
     m_mesh = new mfem::Mesh(sstr);
-    EXPECT_TRUE(m_mesh != AXOM_NULLPTR);
+    EXPECT_TRUE(m_mesh != nullptr);
 
     // Refine (and possibly jitter) the mesh several times
     for(int i=0 ; i< numRefine ; ++i)
@@ -843,11 +843,11 @@ public:
     // Sanity checks on whether mesh is low or high order
     if(meshType == FLAT_MESH)
     {
-      EXPECT_TRUE(m_mesh->GetNodes() == AXOM_NULLPTR);
+      EXPECT_TRUE(m_mesh->GetNodes() == nullptr);
     }
     else
     {
-      EXPECT_TRUE(m_mesh->GetNodes() != AXOM_NULLPTR);
+      EXPECT_TRUE(m_mesh->GetNodes() != nullptr);
       EXPECT_EQ(feCollName, m_mesh->GetNodalFESpace()->FEColl()->Name());
     }
 

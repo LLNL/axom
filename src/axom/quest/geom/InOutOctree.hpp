@@ -25,40 +25,40 @@
 #define INOUT_OCTREE__HXX_
 
 #include "axom/config.hpp"       // defines AXOM_USE_CXX11
-#include "axom/Macros.hpp"
-#include "axom_utils/Timer.hpp"
-#include "axom_utils/Utilities.hpp"
+#include "axom/core/Macros.hpp"
+#include "axom/core/utilities/Timer.hpp"
+#include "axom/core/utilities/Utilities.hpp"
 
-#include "primal/BoundingBox.hpp"
-#include "primal/Point.hpp"
-#include "primal/Triangle.hpp"
-#include "primal/Vector.hpp"
-#include "primal/Ray.hpp"
-#include "primal/Polygon.hpp"
-#include "primal/MortonIndex.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Triangle.hpp"
+#include "axom/primal/geometry/Vector.hpp"
+#include "axom/primal/geometry/Ray.hpp"
+#include "axom/primal/geometry/Polygon.hpp"
+#include "axom/primal/geometry/MortonIndex.hpp"
 
-#include "primal/intersect.hpp"
-#include "primal/orientation.hpp"
-#include "primal/squared_distance.hpp"
-#include "primal/clip.hpp"
+#include "axom/primal/operators/intersect.hpp"
+#include "axom/primal/operators/orientation.hpp"
+#include "axom/primal/operators/squared_distance.hpp"
+#include "axom/primal/operators/clip.hpp"
 
 
-#include "slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 
-#include "slam/Map.hpp"
-#include "slam/RangeSet.hpp"
-#include "slam/StaticRelation.hpp"
-#include "slam/FieldRegistry.hpp"
+#include "axom/slam/Map.hpp"
+#include "axom/slam/RangeSet.hpp"
+#include "axom/slam/StaticRelation.hpp"
+#include "axom/slam/FieldRegistry.hpp"
 
-#include "quest/SpatialOctree.hpp"
+#include "axom/quest/geom/SpatialOctree.hpp"
 
-#include "mint/config.hpp"
-#include "mint/Mesh.hpp"
-#include "mint/UnstructuredMesh.hpp"
-#include "mint/FieldData.hpp"
-#include "mint/FieldVariable.hpp"
-#include "mint/Field.hpp"
-#include "mint/vtk_utils.hpp"
+#include "axom/mint/config.hpp"
+#include "axom/mint/mesh/Mesh.hpp"
+#include "axom/mint/mesh/UnstructuredMesh.hpp"
+#include "axom/mint/mesh/FieldData.hpp"
+#include "axom/mint/mesh/FieldVariable.hpp"
+#include "axom/mint/mesh/Field.hpp"
+#include "axom/mint/utils/vtk_utils.hpp"
 
 
 #include <vector>   // For InOutLeafData triangle lists -- TODO replace with
@@ -892,7 +892,7 @@ public:
 
       // Delete old mesh, and NULL its pointer
       delete m_surfaceMesh;
-      m_surfaceMesh = AXOM_NULLPTR;
+      m_surfaceMesh = nullptr;
 
       m_meshWasReindexed = true;
     }
@@ -901,10 +901,10 @@ public:
      *   relations to the surface mesh */
     void regenerateSurfaceMesh()
     {
-      if(m_surfaceMesh != AXOM_NULLPTR)
+      if(m_surfaceMesh != nullptr)
       {
         delete m_surfaceMesh;
-        m_surfaceMesh = AXOM_NULLPTR;
+        m_surfaceMesh = nullptr;
       }
 
       typedef mint::UnstructuredMesh< mint::SINGLE_SHAPE > UMesh;
@@ -2708,7 +2708,7 @@ private:
     mint::write_vtk(debugMesh, fNameStr.str());
 
     delete debugMesh;
-    debugMesh = AXOM_NULLPTR;
+    debugMesh = nullptr;
 
   }
 
@@ -2759,7 +2759,7 @@ private:
     mint::write_vtk(debugMesh, fNameStr.str());
 
     delete debugMesh;
-    debugMesh = AXOM_NULLPTR;
+    debugMesh = nullptr;
   }
 
 private:
@@ -2767,14 +2767,14 @@ private:
   int* addIntField(DebugMesh* mesh, const std::string& name ) const
   {
     int* fld = mesh->createField< int >( name, mint::NODE_CENTERED );
-    SLIC_ASSERT( fld != AXOM_NULLPTR );
+    SLIC_ASSERT( fld != nullptr );
     return fld;
   }
 
   double* addRealField(DebugMesh* mesh, const std::string& name ) const
   {
     double* fld = mesh->createField< double >( name, mint::NODE_CENTERED );
-    SLIC_ASSERT( fld != AXOM_NULLPTR );
+    SLIC_ASSERT( fld != nullptr );
     return fld;
   }
 

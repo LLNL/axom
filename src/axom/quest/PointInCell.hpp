@@ -20,11 +20,11 @@
 
 
 #include "axom/config.hpp"
-#include "axom/Macros.hpp"
+#include "axom/core/Macros.hpp"
 
-#include "primal/Point.hpp"
+#include "axom/primal/geometry/Point.hpp"
 
-#include "quest/PointFinder.hpp"
+#include "axom/quest/detail/PointFinder.hpp"
 
 
 namespace axom
@@ -140,13 +140,13 @@ public:
    * meshDimension() entries.
    */
   PointInCell(MeshType* mesh,
-              int* resolution = AXOM_NULLPTR,
+              int* resolution = nullptr,
               double bboxTolerance = 1e-8)
     : m_meshWrapper(mesh),
-    m_pointFinder2D(AXOM_NULLPTR),
-    m_pointFinder3D(AXOM_NULLPTR)
+    m_pointFinder2D(nullptr),
+    m_pointFinder3D(nullptr)
   {
-    SLIC_ASSERT(mesh != AXOM_NULLPTR);
+    SLIC_ASSERT(mesh != nullptr);
 
     const double bboxScaleFactor = 1. + bboxTolerance;
 
@@ -171,16 +171,16 @@ public:
   /*! Destructor */
   ~PointInCell()
   {
-    if( m_pointFinder2D != AXOM_NULLPTR)
+    if( m_pointFinder2D != nullptr)
     {
       delete m_pointFinder2D;
-      m_pointFinder2D = AXOM_NULLPTR;
+      m_pointFinder2D = nullptr;
     }
 
-    if( m_pointFinder3D != AXOM_NULLPTR)
+    if( m_pointFinder3D != nullptr)
     {
       delete m_pointFinder3D;
-      m_pointFinder3D = AXOM_NULLPTR;
+      m_pointFinder3D = nullptr;
     }
   }
 
@@ -203,9 +203,9 @@ public:
    * \pre When not NULL, \a isopar has space for \a meshDimension() coords
    */
   IndexType locatePoint(const double* pos,
-                        double* isopar = AXOM_NULLPTR) const
+                        double* isopar = nullptr) const
   {
-    SLIC_ASSERT(pos != AXOM_NULLPTR);
+    SLIC_ASSERT(pos != nullptr);
 
     IndexType cellIndex = MeshTraits::NO_CELL;
 

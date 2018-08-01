@@ -19,20 +19,20 @@
 #define QUEST_IMPLICIT_GRID__HPP_
 
 #include "axom/config.hpp"
-#include "axom/Types.hpp"            // AXOM_NULLPTR
-#include "axom_utils/Utilities.hpp"  // for clamp functions
+#include "axom/core/Types.hpp"            // AXOM_NULLPTR
+#include "axom/core/utilities/Utilities.hpp"  // for clamp functions
 
-#include "slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 
-#include "primal/BoundingBox.hpp"
-#include "primal/Point.hpp"
-#include "primal/Vector.hpp"
-#include "primal/RectangularLattice.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Vector.hpp"
+#include "axom/primal/geometry/RectangularLattice.hpp"
 
-#include "slam/SizePolicies.hpp"
-#include "slam/OrderedSet.hpp"
-#include "slam/Map.hpp"
-#include "slam/BitSet.hpp"
+#include "axom/slam/policies/SizePolicies.hpp"
+#include "axom/slam/OrderedSet.hpp"
+#include "axom/slam/Map.hpp"
+#include "axom/slam/BitSet.hpp"
 
 #include <vector>
 
@@ -137,13 +137,13 @@ public:
                int numElts)
     : m_initialized(false)
   {
-    SLIC_ASSERT( bbMin != AXOM_NULLPTR);
-    SLIC_ASSERT( bbMax != AXOM_NULLPTR);
+    SLIC_ASSERT( bbMin != nullptr);
+    SLIC_ASSERT( bbMax != nullptr);
 
     // Set up the grid resolution from the gridRes array
     //   if NULL, GridCell parameter to initialize should also be NULL
     const GridCell* pRes =
-      (gridRes != AXOM_NULLPTR) ? &m_gridRes : AXOM_NULLPTR;
+      (gridRes != nullptr) ? &m_gridRes : nullptr;
 
     initialize(
       SpatialBoundingBox( SpacePoint(bbMin), SpacePoint(bbMax) ),
@@ -176,7 +176,7 @@ public:
     SLIC_ASSERT( !m_initialized);
 
     // Setup Grid Resolution, dealing with possible null pointer
-    if(gridRes == AXOM_NULLPTR)
+    if(gridRes == nullptr)
     {
       // Heuristic: use the n^th root of the number of elements
       // add 0.5 to round to nearest integer

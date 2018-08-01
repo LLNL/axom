@@ -65,29 +65,29 @@
 
 // toolkit includes
 #include "axom/config.hpp"
-#include "axom/Types.hpp"
-#include "axom_utils/Timer.hpp"
-#include "axom_utils/Utilities.hpp"
+#include "axom/core/Types.hpp"
+#include "axom/core/utilities/Timer.hpp"
+#include "axom/core/utilities/Utilities.hpp"
 
 #include "fmt/fmt.hpp"
 
-#include "slic/slic.hpp"
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/interface/slic.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 
-#include "primal/Point.hpp"
-#include "primal/Vector.hpp"
-#include "primal/BoundingBox.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Vector.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
 
-#include "quest/quest.hpp"
-#include "quest/signed_distance.hpp"
+#include "axom/quest/interface/quest.hpp"
+#include "axom/quest/interface/signed_distance.hpp"
 
-#include "sidre/sidre.hpp"
-#include "sidre/IOManager.hpp"
+#include "axom/sidre/core/sidre.hpp"
+#include "axom/sidre/spio/IOManager.hpp"
 
-#include "mint/config.hpp"
-#include "mint/UniformMesh.hpp"
-#include "mint/FieldData.hpp"
-#include "mint/FieldVariable.hpp"
+#include "axom/mint/config.hpp"
+#include "axom/mint/mesh/UniformMesh.hpp"
+#include "axom/mint/mesh/FieldData.hpp"
+#include "axom/mint/mesh/FieldVariable.hpp"
 
 
 // MPI includes
@@ -118,17 +118,17 @@ struct CommandLineArguments
     baselineRoot(""),
     meshBoundingBox(),
     queryResolution(DEFAULT_RESOLUTION),
-    queryMesh(AXOM_NULLPTR),
+    queryMesh(nullptr),
     testDistance(true),
     testContainment(true)
   {}
 
   ~CommandLineArguments()
   {
-    if(queryMesh != AXOM_NULLPTR)
+    if(queryMesh != nullptr)
     {
       delete queryMesh;
-      queryMesh = AXOM_NULLPTR;
+      queryMesh = nullptr;
     }
   }
 
@@ -146,7 +146,7 @@ struct CommandLineArguments
   bool hasBaseline() const { return !baselineRoot.empty(); }
   bool hasMeshName() const { return !meshName.empty(); }
   bool hasBoundingBox() const { return meshBoundingBox != SpaceBoundingBox(); }
-  bool hasQueryMesh() const { return queryMesh != AXOM_NULLPTR; }
+  bool hasQueryMesh() const { return queryMesh != nullptr; }
 
   void usage()
   {
@@ -479,13 +479,13 @@ void runContainmentQueries(CommandLineArguments& clargs)
   #endif
 
   // Add a scalar field for the containment queries
-  SLIC_ASSERT(clargs.queryMesh != AXOM_NULLPTR);
+  SLIC_ASSERT(clargs.queryMesh != nullptr);
   axom::mint::UniformMesh* umesh = clargs.queryMesh;
   const axom::mint::IndexType nnodes = umesh->getNumberOfNodes();
 
   int* containment = umesh->createField< int >( "octree_containment",
                                                 axom::mint::NODE_CENTERED );
-  SLIC_ASSERT( containment != AXOM_NULLPTR );
+  SLIC_ASSERT( containment != nullptr );
 
   double* coords = new double[3*nnodes];
   axom::utilities::Timer fillTimer(true);
@@ -570,7 +570,7 @@ void runDistanceQueries(CommandLineArguments& clargs)
   #endif
 
   // Add a scalar field for the containment queries
-  SLIC_ASSERT(clargs.queryMesh != AXOM_NULLPTR);
+  SLIC_ASSERT(clargs.queryMesh != nullptr);
   axom::mint::UniformMesh* umesh = clargs.queryMesh;
   const int nnodes = umesh->getNumberOfNodes();
 
@@ -578,8 +578,8 @@ void runDistanceQueries(CommandLineArguments& clargs)
                                                 axom::mint::NODE_CENTERED );
   double* distance = umesh->createField< double >( "bvh_distance",
                                                    axom::mint::NODE_CENTERED );
-  SLIC_ASSERT( containment != AXOM_NULLPTR );
-  SLIC_ASSERT( distance != AXOM_NULLPTR );
+  SLIC_ASSERT( containment != nullptr );
+  SLIC_ASSERT( distance != nullptr );
 
   double* xcoords = new double[ nnodes ];
   double* ycoords = new double[ nnodes ];
@@ -711,7 +711,7 @@ bool compareDistanceAndContainment(CommandLineArguments& clargs)
 bool compareToBaselineResults(axom::sidre::Group* grp,
                               CommandLineArguments& clargs)
 {
-  SLIC_ASSERT( grp != AXOM_NULLPTR);
+  SLIC_ASSERT( grp != nullptr);
   SLIC_ASSERT( clargs.hasQueryMesh());
 
   bool passed = true;
@@ -819,7 +819,7 @@ bool compareToBaselineResults(axom::sidre::Group* grp,
  */
 void saveBaseline(axom::sidre::Group* grp, CommandLineArguments& clargs)
 {
-  SLIC_ASSERT( grp != AXOM_NULLPTR);
+  SLIC_ASSERT( grp != nullptr);
   SLIC_ASSERT( clargs.hasQueryMesh());
 
   std::string fullMeshName = clargs.meshName;
@@ -831,7 +831,7 @@ void saveBaseline(axom::sidre::Group* grp, CommandLineArguments& clargs)
 
   grp->createViewString("mesh_name", meshName);
 
-  axom::sidre::View* view = AXOM_NULLPTR;
+  axom::sidre::View* view = nullptr;
 
   view =
     grp->createView("mesh_bounding_box", axom::sidre::DOUBLE_ID, 6)->allocate();

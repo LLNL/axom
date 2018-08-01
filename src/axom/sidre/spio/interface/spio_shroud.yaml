@@ -34,17 +34,17 @@ format:
 declarations:
 - decl: class Group
   fields:
-    cxx_header: sidre/Group.hpp
+    cxx_header: axom/sidre/core/Group.hpp
 #    cxx_type: Group
     f_derived_type: SidreGroup
     f_module:
       axom_sidre: [ SidreGroup ]
     c_type: SIDRE_group
-    c_header: sidre/wrapGroup.h
+    c_header: axom/sidre/interface/c_fortran/wrapGroup.h
     f_to_c: '{f_var}%get_instance()'
 
 - decl: class IOManager
-  cxx_header: sidre/IOManager.hpp
+  cxx_header: axom/sidre/spio/IOManager.hpp
   declarations:
   - decl: IOManager(MPI_Comm com, bool use_scr = false) +name(new)
   - decl: ~IOManager() +name(delete)

@@ -18,15 +18,15 @@
 #ifndef SPATIAL_OCTREE__HXX_
 #define SPATIAL_OCTREE__HXX_
 
-#include "primal/BoundingBox.hpp"
-#include "primal/Point.hpp"
-#include "primal/Vector.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Vector.hpp"
 
-#include "slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 
-#include "slam/Map.hpp"
+#include "axom/slam/Map.hpp"
 
-#include "quest/OctreeBase.hpp"
+#include "axom/quest/geom/OctreeBase.hpp"
 
 using axom::primal::BoundingBox;
 using axom::primal::Point;

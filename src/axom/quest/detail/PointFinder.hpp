@@ -18,8 +18,8 @@
 #ifndef QUEST_POINT_IN_CELL_POINT_FINDER_HPP_
 #define QUEST_POINT_IN_CELL_POINT_FINDER_HPP_
 
-#include "quest/ImplicitGrid.hpp"
-#include "primal/BoundingBox.hpp"
+#include "axom/quest/geom/ImplicitGrid.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
 
 
 namespace axom
@@ -84,7 +84,7 @@ public:
               double bboxScaleFactor)
     : m_meshWrapper(meshWrapper)
   {
-    SLIC_ASSERT( m_meshWrapper != AXOM_NULLPTR);
+    SLIC_ASSERT( m_meshWrapper != nullptr);
     SLIC_ASSERT( bboxScaleFactor >= 1.);
 
     const int numCells = m_meshWrapper->numElements();
@@ -97,7 +97,7 @@ public:
                                                         m_cellBBoxes, meshBBox);
 
     // initialize implicit grid, handle case where resolution is a NULL pointer
-    if(res != AXOM_NULLPTR)
+    if(res != nullptr)
     {
       typedef axom::primal::Point<int, NDIMS> GridResolution;
       GridResolution gridRes(res);
@@ -105,7 +105,7 @@ public:
     }
     else
     {
-      m_grid.initialize(meshBBox, AXOM_NULLPTR, numCells);
+      m_grid.initialize(meshBBox, nullptr, numCells);
     }
 
     // add mesh elements to grid
@@ -126,7 +126,7 @@ public:
 
     IndexType containingCell = PointInCellTraits<mesh_tag>::NO_CELL;
 
-    SLIC_ASSERT( pos != AXOM_NULLPTR);
+    SLIC_ASSERT( pos != nullptr);
     SpacePoint pt(pos);
     SpacePoint isopar;
 
@@ -153,7 +153,7 @@ public:
     }
 
     // Copy data back to input parameter isoparametric, if necessary
-    if(isoparametric != AXOM_NULLPTR)
+    if(isoparametric != nullptr)
     {
       isopar.array().to_array(isoparametric);
     }

@@ -19,7 +19,7 @@
 #define PRIMAL_SPHERE_HPP_
 
 #include "axom/core/Macros.hpp"                 // for AXOM macros
-#include "axom/core/Types.hpp"                  // for AXOM_NULLPTR
+#include "axom/core/Types.hpp"                  // for nullptr
 
 #include "axom/core/utilities/Utilities.hpp"        // for utilities::isNearlyEqual()
 #include "axom/core/numerics/matvecops.hpp"        // for dot_product()

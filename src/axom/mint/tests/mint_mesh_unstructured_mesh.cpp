@@ -25,7 +25,7 @@
 #include "gtest/gtest.h"                /* for TEST and EXPECT_* macros */
 
 #ifdef MINT_USE_SIDRE
-#include "sidre/sidre.hpp"
+#include "axom/sidre/core/sidre.hpp"
 #endif
 
 // C/C++ includes

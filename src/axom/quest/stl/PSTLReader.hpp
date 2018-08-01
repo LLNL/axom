@@ -18,8 +18,8 @@
 #ifndef QUEST_PSTLREADER_HPP_
 #define QUEST_PSTLREADER_HPP_
 
-#include "axom/Macros.hpp"
-#include "quest/STLReader.hpp" // base class
+#include "axom/core/Macros.hpp"
+#include "axom/quest/stl/STLReader.hpp" // base class
 
 #include "mpi.h"
 

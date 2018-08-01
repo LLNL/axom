@@ -17,12 +17,12 @@
 
 // Axom includes
 #include "axom/config.hpp"
-#include "axom_utils/FileUtilities.hpp"
-#include "mint/config.hpp"
-#include "mint/Mesh.hpp"
-#include "quest/STLReader.hpp"
-#include "quest/MeshTester.hpp"
-#include "slic/slic.hpp"
+#include "axom/core/utilities/FileUtilities.hpp"
+#include "axom/mint/config.hpp"
+#include "axom/mint/mesh/Mesh.hpp"
+#include "axom/quest/stl/STLReader.hpp"
+#include "axom/quest/MeshTester.hpp"
+#include "axom/slic/interface/slic.hpp"
 
 // Google test include
 #include "gtest/gtest.h"
@@ -190,7 +190,7 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_intrinsic )
 {
   std::vector< std::pair<int, int> > intersections;
   std::vector< int > degenerate;
-  UMesh* surface_mesh = AXOM_NULLPTR;
+  UMesh* surface_mesh = nullptr;
   std::string testname;
   std::string testdescription;
 
@@ -369,7 +369,7 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_ondisk )
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

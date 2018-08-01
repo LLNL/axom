@@ -17,10 +17,10 @@
 
 #include "gtest/gtest.h"
 
-#include "primal/Point.hpp"
-#include "quest/OctreeBase.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/quest/geom/OctreeBase.hpp"
 
-#include "slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 
 
 //------------------------------------------------------------------------------
@@ -374,7 +374,7 @@ TEST( quest_octree, count_octree_blocks)
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

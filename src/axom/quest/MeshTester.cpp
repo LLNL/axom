@@ -16,17 +16,17 @@
  */
 
 // Axom includes
-#include "quest/MeshTester.hpp"
+#include "axom/quest/MeshTester.hpp"
 
-#include "axom/Types.hpp"
+#include "axom/core/Types.hpp"
 
-#include "primal/BoundingBox.hpp"
-#include "primal/intersect.hpp"
-#include "primal/Point.hpp"
-#include "primal/Triangle.hpp"
-#include "primal/UniformGrid.hpp"
-#include "primal/RectangularLattice.hpp"
-#include "primal/MortonIndex.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/operators/intersect.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Triangle.hpp"
+#include "axom/primal/spatial_acceleration/UniformGrid.hpp"
+#include "axom/primal/geometry/RectangularLattice.hpp"
+#include "axom/primal/geometry/MortonIndex.hpp"
 
 // C++ includes
 #include <cmath>
@@ -66,7 +66,7 @@ typedef std::pair<MortonMap::iterator, bool> MortonMapResult;
 
 inline SpatialBoundingBox compute_bounds( UMesh* mesh)
 {
-  SLIC_ASSERT( mesh != AXOM_NULLPTR );
+  SLIC_ASSERT( mesh != nullptr );
 
   SpatialBoundingBox meshBB;
   Point3 pt;
@@ -130,7 +130,7 @@ inline Triangle3 getMeshTriangle(mint::IndexType i, UMesh* surface_mesh)
 
 inline bool areTriangleIndicesDistinct( mint::IndexType* indices)
 {
-  SLIC_ASSERT(indices != AXOM_NULLPTR);
+  SLIC_ASSERT(indices != nullptr);
 
   return indices[0] != indices[1]
          && indices[1] != indices[2]
@@ -264,8 +264,8 @@ void weldTriMeshVertices(UMesh** surface_mesh,double eps)
     eps > 0.,
     "Epsilon must be greater than 0. Passed in value was " << eps);
   SLIC_ASSERT_MSG(
-    surface_mesh != AXOM_NULLPTR
-    && *surface_mesh != AXOM_NULLPTR,
+    surface_mesh != nullptr
+    && *surface_mesh != nullptr,
     "surface_mesh must be a valid pointer to a pointer to a triangle mesh");
 
   int const DIM = 3;

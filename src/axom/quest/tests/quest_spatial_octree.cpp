@@ -17,9 +17,9 @@
 
 #include "gtest/gtest.h"
 
-#include "quest/SpatialOctree.hpp"
+#include "axom/quest/geom/SpatialOctree.hpp"
 
-#include "slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 
 
 TEST( quest_spatial_octree, spatial_octree_point_location)
@@ -86,7 +86,7 @@ TEST( quest_spatial_octree, spatial_octree_point_location)
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

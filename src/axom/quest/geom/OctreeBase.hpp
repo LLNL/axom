@@ -25,19 +25,19 @@
 
 #include "axom/config.hpp"
 
-#include "slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 
-#include "primal/BoundingBox.hpp"
-#include "primal/Point.hpp"
-#include "primal/Vector.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Vector.hpp"
 
-#include "quest/OctreeLevel.hpp"
-#include "quest/DenseOctreeLevel.hpp"
-#include "quest/SparseOctreeLevel.hpp"
+#include "axom/quest/geom/OctreeLevel.hpp"
+#include "axom/quest/geom/DenseOctreeLevel.hpp"
+#include "axom/quest/geom/SparseOctreeLevel.hpp"
 
-#include "slam/SizePolicies.hpp"
-#include "slam/OrderedSet.hpp"
-#include "slam/Map.hpp"
+#include "axom/slam/policies/SizePolicies.hpp"
+#include "axom/slam/OrderedSet.hpp"
+#include "axom/slam/Map.hpp"
 
 #include <ostream>   // for ostream in print
 
@@ -515,7 +515,7 @@ private:
   template<typename DerivedPtrType, typename BasePtrType>
   bool checkCast(BasePtrType base) const
   {
-    return dynamic_cast<DerivedPtrType>(base) != AXOM_NULLPTR;
+    return dynamic_cast<DerivedPtrType>(base) != nullptr;
   }
 
 
@@ -560,7 +560,7 @@ public:
     for(int i=0 ; i< maxLeafLevel() ; ++i)
     {
       delete m_leavesLevelMap[i];
-      m_leavesLevelMap[i] = AXOM_NULLPTR;
+      m_leavesLevelMap[i] = nullptr;
     }
   }
 

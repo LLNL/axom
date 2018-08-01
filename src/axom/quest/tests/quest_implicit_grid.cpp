@@ -25,12 +25,12 @@
 
 #include "gtest/gtest.h"
 
-#include "primal/Point.hpp"
-#include "primal/BoundingBox.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
 
-#include "quest/ImplicitGrid.hpp"
+#include "axom/quest/geom/ImplicitGrid.hpp"
 
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 #include <vector>
@@ -125,7 +125,7 @@ TYPED_TEST( ImplicitGridTest, implicit_grid_resolution)
 
   // Tests implicitly set grid resolution
   {
-    GridT grid( bbox, AXOM_NULLPTR, numElts);
+    GridT grid( bbox, nullptr, numElts);
     GridCell expRes(dimRes);
     EXPECT_EQ( expRes, grid.gridResolution() );
     EXPECT_EQ( numElts, grid.numIndexElements() );
@@ -135,7 +135,7 @@ TYPED_TEST( ImplicitGridTest, implicit_grid_resolution)
   {
     // Using NULL pointer for resolution
     int zeroMeshElts = 0;
-    GridT grid( bbox, AXOM_NULLPTR, zeroMeshElts );
+    GridT grid( bbox, nullptr, zeroMeshElts );
     GridCell expRes = GridCell::ones();
     EXPECT_EQ( expRes, grid.gridResolution() );
     EXPECT_EQ( 0, grid.numIndexElements() );

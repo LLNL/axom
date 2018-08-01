@@ -24,7 +24,7 @@
 #include "axom/slic/interface/slic.hpp"             // for slic macros
 
 #ifdef MINT_USE_SIDRE
-#include "sidre/sidre.hpp"          // for sidre::Group, sidre::View
+#include "axom/sidre/core/sidre.hpp"          // for sidre::Group, sidre::View
 #endif
 
 // C/C++ includes

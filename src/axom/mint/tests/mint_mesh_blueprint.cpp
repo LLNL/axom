@@ -26,7 +26,7 @@
 #include "gtest/gtest.h"
 
 #ifdef MINT_USE_SIDRE
-#include "sidre/sidre.hpp"
+#include "axom/sidre/core/sidre.hpp"
 
 namespace mint  = axom::mint;
 namespace sidre = axom::sidre;

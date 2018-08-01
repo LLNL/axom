@@ -37,12 +37,12 @@
 
 
 #include "axom/config.hpp"
-#include "axom/Macros.hpp"
+#include "axom/core/Macros.hpp"
 
-#include "slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 
-#include "primal/Point.hpp"
-#include "primal/BoundingBox.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
 
 #ifdef AXOM_USE_MFEM
 #  include "mfem.hpp"
@@ -107,10 +107,10 @@ public:
   PointInCellMeshWrapper(mfem::Mesh* mesh) : m_mesh(mesh)
   {
     // Some sanity checks
-    SLIC_ASSERT( m_mesh != AXOM_NULLPTR);
+    SLIC_ASSERT( m_mesh != nullptr);
 
     m_isHighOrder =
-      (m_mesh->GetNodalFESpace() != AXOM_NULLPTR) && (m_mesh->GetNE() > 0);
+      (m_mesh->GetNodalFESpace() != nullptr) && (m_mesh->GetNE() > 0);
   }
 
   /*! Predicate to check if the given basis is positive (i.e. Bernstein) */
@@ -118,7 +118,7 @@ public:
   {
     // HACK: Check against several common expected FE types
 
-    if(fec == AXOM_NULLPTR)
+    if(fec == nullptr)
     {
       return false;
     }
@@ -188,7 +188,7 @@ public:
     }
 
     // Give up -- return NULL
-    return AXOM_NULLPTR;
+    return nullptr;
   }
 
 
@@ -319,7 +319,7 @@ private:
     /// Generate (or access existing) positive (Bernstein) nodal grid function
     const mfem::FiniteElementSpace* nodalFESpace = m_mesh->GetNodalFESpace();
 
-    mfem::GridFunction* positiveNodes = AXOM_NULLPTR;
+    mfem::GridFunction* positiveNodes = nullptr;
     bool mustDeleteNodes = false;
 
     const mfem::FiniteElementCollection* nodalFEColl = nodalFESpace->FEColl();
@@ -336,7 +336,7 @@ private:
       int dim = meshDimension();
       int GeomType = m_mesh->GetElementBaseGeometry(0);
       int mapType =
-        (nodalFEColl != AXOM_NULLPTR)
+        (nodalFEColl != nullptr)
         ? nodalFEColl->FiniteElementForGeometry(GeomType)->GetMapType()
         : static_cast<int>(mfem::FiniteElement::VALUE);
 
@@ -345,12 +345,12 @@ private:
                                                  mapType);
 
       SLIC_ASSERT_MSG(
-        posFEColl != AXOM_NULLPTR,
+        posFEColl != nullptr,
         "Problem generating a positive finite element collection "
         << "corresponding to the mesh's '"<< nodalFEColl->Name()
         << "' finite element collection.");
 
-      if(posFEColl != AXOM_NULLPTR)
+      if(posFEColl != nullptr)
       {
         // Create a positive (Bernstein) grid function for the nodes
         mfem::FiniteElementSpace* posFESpace =
@@ -409,7 +409,7 @@ private:
     if(mustDeleteNodes)
     {
       delete positiveNodes;
-      positiveNodes = AXOM_NULLPTR;
+      positiveNodes = nullptr;
     }
   }
 

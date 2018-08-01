@@ -33,14 +33,14 @@
 
 
 #include "axom/config.hpp"
-#include "axom/Types.hpp"
+#include "axom/core/Types.hpp"
 
-#include "slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 
-#include "primal/NumericArray.hpp"
-#include "primal/Point.hpp"
+#include "axom/primal/geometry/NumericArray.hpp"
+#include "axom/primal/geometry/Point.hpp"
 
-#include "quest/Brood.hpp"
+#include "axom/quest/geom/Brood.hpp"
 
 #include <iterator>
 
@@ -231,17 +231,17 @@ public:
     BlockIterator(OctreeLevel* octLevel, bool begin = false)
       : m_octLevel(octLevel)
     {
-      SLIC_ASSERT(octLevel != AXOM_NULLPTR);
+      SLIC_ASSERT(octLevel != nullptr);
       m_iterHelper = octLevel->getIteratorHelper(begin);       // factory
                                                                // function
     }
 
     ~BlockIterator()
     {
-      if(m_iterHelper != AXOM_NULLPTR)
+      if(m_iterHelper != nullptr)
       {
         delete m_iterHelper;
-        m_iterHelper = AXOM_NULLPTR;
+        m_iterHelper = nullptr;
       }
     }
 

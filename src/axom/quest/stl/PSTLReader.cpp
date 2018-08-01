@@ -15,7 +15,7 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include "quest/PSTLReader.hpp"
+#include "axom/quest/stl/PSTLReader.hpp"
 
 namespace axom
 {

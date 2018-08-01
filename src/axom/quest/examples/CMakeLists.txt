@@ -13,7 +13,7 @@
 #------------------------------------------------------------------------------
 
 set(quest_example_depends
-        axom_utils
+        core
         slic
         mint
         slam

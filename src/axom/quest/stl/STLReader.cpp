@@ -15,19 +15,19 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include "quest/STLReader.hpp"
+#include "axom/quest/stl/STLReader.hpp"
 
 // axom includes
-#include "axom/Types.hpp"            // for AXOM_NULLPTR
+#include "axom/core/Types.hpp"            // for AXOM_NULLPTR
 
-#include "axom_utils/Utilities.hpp"  // For isLittleEndian() and swapEndian()
+#include "axom/core/utilities/Utilities.hpp"  // For isLittleEndian() and swapEndian()
 
 // Mint includes
-#include "mint/config.hpp"          // for mint::IndexType
-#include "mint/CellTypes.hpp"       // for mint::Triangle
+#include "axom/mint/config.hpp"          // for mint::IndexType
+#include "axom/mint/mesh/CellTypes.hpp"       // for mint::Triangle
 
 // Slic includes
-#include "slic/slic.hpp"            // for SLIC macros
+#include "axom/slic/interface/slic.hpp"            // for SLIC macros
 
 // C/C++ includes
 #include <fstream>   // for ifstream
@@ -238,7 +238,7 @@ void STLReader::getMesh(
   axom::mint::UnstructuredMesh< mint::SINGLE_SHAPE >* mesh )
 {
   /* Sanity checks */
-  SLIC_ERROR_IF( mesh == AXOM_NULLPTR,
+  SLIC_ERROR_IF( mesh == nullptr,
                  "supplied mesh is null!" );
   SLIC_ERROR_IF(
     static_cast< mint::IndexType >(m_nodes.size()) != 3*m_num_nodes,

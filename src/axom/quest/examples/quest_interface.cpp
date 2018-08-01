@@ -22,25 +22,25 @@
  *        containment and signed distance queries.
  */
 
-#include "axom_utils/Utilities.hpp"
+#include "axom/core/utilities/Utilities.hpp"
 
 // Quest includes
-#include "quest/quest.hpp"
-#include "quest/signed_distance.hpp"
+#include "axom/quest/interface/quest.hpp"
+#include "axom/quest/interface/signed_distance.hpp"
 
 // SLIC includes
-#include "slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 
 #ifdef AXOM_USE_MPI
   #include <mpi.h>
 
   #ifdef AXOM_USE_LUMBERJACK
-    #include "slic/LumberjackStream.hpp"
+    #include "axom/slic/streams/LumberjackStream.hpp"
   #else
-    #include "slic/SynchronizedStream.hpp"
+    #include "axom/slic/streams/SynchronizedStream.hpp"
   #endif
 #else
-  #include "slic/GenericOutputStream.hpp"
+  #include "axom/slic/streams/GenericOutputStream.hpp"
 #endif  // AXOM_USE_MPI
 
 
