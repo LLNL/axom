@@ -19,9 +19,9 @@
 
 #include "gtest/gtest.h"
 
-#include "primal/Point.hpp"
-#include "primal/BoundingBox.hpp"
-#include "primal/UniformGrid.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/spatial_acceleration/UniformGrid.hpp"
 
 //-----------------------------------------------------------------------------
 TEST( primal_uniform_grid, array_constructor)

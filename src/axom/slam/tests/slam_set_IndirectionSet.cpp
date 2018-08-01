@@ -28,13 +28,13 @@
 #include "gtest/gtest.h"
 
 #include "axom/config.hpp"          // for AXOM_USE_CXX11
-#include "axom/Types.hpp"           // for AXOM_NULLPTR
+#include "axom/core/Types.hpp"           // for nullptr
 
-#include "slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 
-#include "slam/Utilities.hpp"
-#include "slam/IndirectionSet.hpp"
-#include "slam/RangeSet.hpp"        // for PositionSet
+#include "axom/slam/Utilities.hpp"
+#include "axom/slam/IndirectionSet.hpp"
+#include "axom/slam/RangeSet.hpp"        // for PositionSet
 
 
 namespace
@@ -473,7 +473,7 @@ TEST(slam_set_indirectionset,negative_stride)
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

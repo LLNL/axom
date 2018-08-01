@@ -26,12 +26,12 @@
 #include "scr.h"
 #endif
 
-#include "slic/slic.hpp"
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/interface/slic.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 
-#include "sidre/Group.hpp"
-#include "sidre/DataStore.hpp"
-#include "sidre/IOManager.hpp"
+#include "axom/sidre/core/Group.hpp"
+#include "axom/sidre/core/DataStore.hpp"
+#include "axom/sidre/spio/IOManager.hpp"
 
 using axom::sidre::Group;
 using axom::sidre::DataStore;

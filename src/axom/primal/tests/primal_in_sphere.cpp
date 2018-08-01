@@ -19,10 +19,10 @@
 
 #include "axom/config.hpp"
 
-#include "slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 
-#include "primal/Point.hpp"
-#include "primal/in_sphere.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/operators/in_sphere.hpp"
 
 using namespace axom;
 
@@ -109,7 +109,7 @@ TEST(primal_in_sphere, test_in_sphere_3d)
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

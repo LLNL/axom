@@ -22,7 +22,7 @@
  */
 
 #include "axom/config.hpp"
-#include "slam/BitSet.hpp"
+#include "axom/slam/BitSet.hpp"
 
 #include "gtest/gtest.h"
 
@@ -474,7 +474,7 @@ TEST(slam_set_bitset, moreIterators)
 
 //----------------------------------------------------------------------
 
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

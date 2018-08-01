@@ -44,29 +44,29 @@
 #include "mpi.h"
 
 #include "axom/config.hpp"
-#include "axom/Types.hpp"
-#include "fmt/fmt.hpp"
-#include "slic/slic.hpp"
-#include "slic/LogStream.hpp"
+#include "axom/core/Types.hpp"
+#include "fmt/fmt.h"
+#include "axom/slic/interface/slic.hpp"
+#include "axom/slic/core/LogStream.hpp"
 
 #ifdef AXOM_USE_LUMBERJACK
-  #include "slic/LumberjackStream.hpp"
+  #include "axom/slic/streams/LumberjackStream.hpp"
 #else
-  #include "slic/GenericOutputStream.hpp"
+  #include "axom/slic/streams/GenericOutputStream.hpp"
 #endif
 
-#include "sidre/SidreTypes.hpp"
-#include "sidre/DataStore.hpp"
-#include "sidre/Group.hpp"
-#include "sidre/Buffer.hpp"
-#include "sidre/View.hpp"
+#include "axom/sidre/core/SidreTypes.hpp"
+#include "axom/sidre/core/DataStore.hpp"
+#include "axom/sidre/core/Group.hpp"
+#include "axom/sidre/core/Buffer.hpp"
+#include "axom/sidre/core/View.hpp"
 
-#include "sidre/IOManager.hpp"
+#include "axom/sidre/spio/IOManager.hpp"
 
-#include "slam/SizePolicies.hpp"
-#include "slam/OffsetPolicies.hpp"
-#include "slam/StridePolicies.hpp"
-#include "slam/OrderedSet.hpp"
+#include "axom/slam/policies/SizePolicies.hpp"
+#include "axom/slam/policies/OffsetPolicies.hpp"
+#include "axom/slam/policies/StridePolicies.hpp"
+#include "axom/slam/OrderedSet.hpp"
 
 #include <limits>       // for numeric_limits<int>
 #include <cstdlib>      // for atoi
@@ -574,7 +574,7 @@ int main(int argc, char* argv[])
       ++it)
   {
     delete [] static_cast<char*>(*it);
-    *it = AXOM_NULLPTR;
+    *it = nullptr;
   }
 
   teardownLogging();

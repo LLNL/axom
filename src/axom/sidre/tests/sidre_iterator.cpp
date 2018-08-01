@@ -17,7 +17,7 @@
 
 #include "gtest/gtest.h"
 
-#include "sidre/sidre.hpp"
+#include "axom/sidre/core/sidre.hpp"
 
 using axom::sidre::DataStore;
 using axom::sidre::Attribute;
@@ -56,9 +56,9 @@ DataStore* sample_datastore(void)
   Attribute* attr_color = ds->createAttributeString(name_color, color_none);
   Attribute* attr_animal = ds->createAttributeString(name_animal, animal_none);
 
-  EXPECT_TRUE( attr_dump   != AXOM_NULLPTR );
-  EXPECT_TRUE( attr_color  != AXOM_NULLPTR );
-  EXPECT_TRUE( attr_animal != AXOM_NULLPTR );
+  EXPECT_TRUE( attr_dump   != nullptr );
+  EXPECT_TRUE( attr_color  != nullptr );
+  EXPECT_TRUE( attr_animal != nullptr );
 
   Group* root = ds->getRoot();
 
@@ -76,9 +76,9 @@ DataStore* sample_datastore(void)
   Group* grpD5 = grpD4->createGroup("grpD5");
 
   // checks to silence compiler about unused variables
-  EXPECT_TRUE( grpD2 != AXOM_NULLPTR );
-  EXPECT_TRUE( grpD3 != AXOM_NULLPTR );
-  EXPECT_TRUE( grpD5 != AXOM_NULLPTR );
+  EXPECT_TRUE( grpD2 != nullptr );
+  EXPECT_TRUE( grpD3 != nullptr );
+  EXPECT_TRUE( grpD5 != nullptr );
 
   grpA->createViewScalar("grpA_view1", 1);
   grpA->createViewScalar("grpA_view2", 2);
@@ -155,10 +155,10 @@ TEST(sidre_iterator,depth_first)
       EXPECT_EQ(order[iorder].name, grp_const->getName());
 
       View* view_out = qitr.asView();
-      EXPECT_EQ(view_out, static_cast<void*>(AXOM_NULLPTR));
+      EXPECT_EQ(view_out, static_cast<void*>(nullptr));
 
       View const* view_const = qitr.asView();
-      EXPECT_EQ(view_const, static_cast<void*>(AXOM_NULLPTR));
+      EXPECT_EQ(view_const, static_cast<void*>(nullptr));
     }
     else
     {
@@ -166,10 +166,10 @@ TEST(sidre_iterator,depth_first)
       EXPECT_TRUE(qitr.isView());
 
       Group* grp_out = qitr.asGroup();
-      EXPECT_EQ(grp_out, static_cast<void*>(AXOM_NULLPTR));
+      EXPECT_EQ(grp_out, static_cast<void*>(nullptr));
 
       Group const* grp_const = qitr.asGroup();
-      EXPECT_EQ(grp_const, static_cast<void*>(AXOM_NULLPTR));
+      EXPECT_EQ(grp_const, static_cast<void*>(nullptr));
 
       View* view_out = qitr.asView();
       EXPECT_EQ(order[iorder].name, view_out->getName());

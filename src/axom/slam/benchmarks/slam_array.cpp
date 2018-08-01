@@ -21,8 +21,8 @@
 #include <iostream>
 
 #include "benchmark/benchmark_api.h"
-#include "slic/slic.hpp"
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/interface/slic.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 
 //------------------------------------------------------------------------------
 namespace
@@ -105,24 +105,24 @@ public:
     off = off_vol;                          // number is not a compile time
                                             // constant
 
-    ind = AXOM_NULLPTR;
-    data = AXOM_NULLPTR;
+    ind = nullptr;
+    data = nullptr;
   }
 
   void TearDown() {
-    if(ind != AXOM_NULLPTR)
+    if(ind != nullptr)
     {
       delete[] ind;
-      ind = AXOM_NULLPTR;
+      ind = nullptr;
     }
-    if(data != AXOM_NULLPTR)
+    if(data != nullptr)
     {
       delete[] data;
-      data = AXOM_NULLPTR;
+      data = nullptr;
     }
 
-    SLIC_ASSERT(  ind == AXOM_NULLPTR);
-    SLIC_ASSERT(  data == AXOM_NULLPTR);
+    SLIC_ASSERT(  ind == nullptr);
+    SLIC_ASSERT(  data == nullptr);
 
   }
 

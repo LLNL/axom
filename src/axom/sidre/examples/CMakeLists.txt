@@ -35,7 +35,7 @@ endif()
 
 
 set(sidre_example_depends
-    axom_utils
+    core
     sidre 
     conduit 
     conduit_blueprint 

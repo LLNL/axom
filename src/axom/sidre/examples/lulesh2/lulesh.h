@@ -39,7 +39,7 @@
 #include <math.h>
 #include <vector>
 
-#include "sidre/sidre.hpp"
+#include "axom/sidre/core/sidre.hpp"
 
 //**************************************************
 // Allow flexibility for arithmetic representations

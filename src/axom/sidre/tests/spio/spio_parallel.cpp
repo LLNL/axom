@@ -39,8 +39,8 @@
 #include "conduit_relay_hdf5.hpp"
 #endif
 
-#include "sidre/sidre.hpp"
-#include "sidre/IOManager.hpp"
+#include "axom/sidre/core/sidre.hpp"
+#include "axom/sidre/spio/IOManager.hpp"
 
 #include "mpi.h"
 // _parallel_io_headers_end
@@ -688,7 +688,7 @@ TEST(spio_parallel, preserve_writeread)
   delete dsextra;
 }
 
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 //----------------------------------------------------------------------

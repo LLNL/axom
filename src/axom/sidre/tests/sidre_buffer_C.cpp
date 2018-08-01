@@ -19,7 +19,7 @@
 
 #include "gtest/gtest.h"
 
-#include "sidre/sidre.h"
+#include "axom/sidre/interface/sidre.h"
 
 //------------------------------------------------------------------------------
 

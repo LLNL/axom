@@ -17,8 +17,8 @@
 
 #include "gtest/gtest.h"
 
-#include "sidre/sidre.h"
-#include "slic/wrapSLIC.h"
+#include "axom/sidre/interface/sidre.h"
+#include "axom/slic/interface/c_fortran/wrapSLIC.h"
 
 // API coverage tests
 // Each test should be documented with the interface functions being tested

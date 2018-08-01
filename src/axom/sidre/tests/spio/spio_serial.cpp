@@ -18,9 +18,9 @@
 #include "gtest/gtest.h"
 
 #include "axom/config.hpp"   // for AXOM_USE_HDF5
-#include "axom/Types.hpp"    // for common::int64
-#include "sidre/sidre.hpp"
-#include "sidre/IOManager.hpp"
+#include "axom/core/Types.hpp"    // for common::int64
+#include "axom/sidre/core/sidre.hpp"
+#include "axom/sidre/spio/IOManager.hpp"
 #include <list>
 
 #include "mpi.h"
@@ -202,7 +202,7 @@ TEST(spio_serial, write_read_write)
 
 
 //----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

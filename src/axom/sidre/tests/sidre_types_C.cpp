@@ -19,11 +19,11 @@
 
 #include <limits>
 
-#include "axom/Types.hpp"
+#include "axom/core/Types.hpp"
 
-#include "sidre/sidre.hpp"
-#include "sidre/SidreTypes.h"
-#include "sidre/SidreTypes.hpp"
+#include "axom/sidre/core/sidre.hpp"
+#include "axom/sidre/interface/SidreTypes.h"
+#include "axom/sidre/core/SidreTypes.hpp"
 
 using axom::sidre::DataType;
 using axom::sidre::TypeID;

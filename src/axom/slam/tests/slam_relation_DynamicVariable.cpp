@@ -29,11 +29,11 @@
 
 #include "axom/config.hpp"        // for AXOM_USE_CXX11
 
-#include "slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 
-#include "slam/RangeSet.hpp"
-#include "slam/Relation.hpp"
-#include "slam/DynamicVariableRelation.hpp"
+#include "axom/slam/RangeSet.hpp"
+#include "axom/slam/Relation.hpp"
+#include "axom/slam/DynamicVariableRelation.hpp"
 
 
 namespace
@@ -232,7 +232,7 @@ TEST(slam_relation_dynamic_variable,iterate_relation)
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

@@ -19,7 +19,7 @@
 
 #include <vector>
 
-#include "sidre/sidre.hpp"
+#include "axom/sidre/core/sidre.hpp"
 
 using axom::sidre::Buffer;
 using axom::sidre::Group;

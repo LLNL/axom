@@ -21,8 +21,8 @@
 
 #include "gtest/gtest.h"
 
-#include "slic/slic.hpp"
-#include "slam/DynamicSet.hpp"
+#include "axom/slic/interface/slic.hpp"
+#include "axom/slam/DynamicSet.hpp"
 
 
 typedef axom::slam::DynamicSet<> SetType;
@@ -300,7 +300,7 @@ TEST(slam_set_dynamicset,find_index)
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

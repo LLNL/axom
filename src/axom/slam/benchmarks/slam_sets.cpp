@@ -21,11 +21,11 @@
 #include <iostream>
 
 #include "benchmark/benchmark_api.h"
-#include "slic/slic.hpp"
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/interface/slic.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 
-#include "slam/SizePolicies.hpp"
-#include "slam/OrderedSet.hpp"
+#include "axom/slam/policies/SizePolicies.hpp"
+#include "axom/slam/OrderedSet.hpp"
 
 
 //------------------------------------------------------------------------------
@@ -96,21 +96,21 @@ typedef DataType* DataArray;
             off = off_vol;                  // number is not a compile time
                constant
 
-            ind = AXOM_NULLPTR;
-            data = AXOM_NULLPTR;
+            ind = nullptr;
+            data = nullptr;
 
         }
 
         void TearDown() {
-            if(ind != AXOM_NULLPTR)
+            if(ind != nullptr)
                 delete[] ind;
-            if(data != AXOM_NULLPTR)
+            if(data != nullptr)
                 delete[] data;
         }
 
         ~SetFixture() {
-            SLIC_ASSERT( ind == AXOM_NULLPTR);
-            SLIC_ASSERT( data == AXOM_NULLPTR);
+            SLIC_ASSERT( ind == nullptr);
+            SLIC_ASSERT( data == nullptr);
         }
 
 

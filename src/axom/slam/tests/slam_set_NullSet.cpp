@@ -23,10 +23,10 @@
 
 #include "gtest/gtest.h"
 
-#include "slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 
-#include "slam/Set.hpp"
-#include "slam/NullSet.hpp"
+#include "axom/slam/Set.hpp"
+#include "axom/slam/NullSet.hpp"
 
 TEST(slam_set_nullset,construct)
 {
@@ -73,7 +73,7 @@ TEST(slam_set_nullset,subscript_fails)
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

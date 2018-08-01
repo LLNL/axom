@@ -25,12 +25,12 @@
 #include <iterator>
 #include "gtest/gtest.h"
 
-#include "slam/Utilities.hpp"
-#include "slam/RangeSet.hpp"
-#include "slam/Map.hpp"
+#include "axom/slam/Utilities.hpp"
+#include "axom/slam/RangeSet.hpp"
+#include "axom/slam/Map.hpp"
 
-#include "slic/slic.hpp"
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/interface/slic.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 

@@ -25,8 +25,8 @@
 #include "scr.h"
 #endif
 
-#include "sidre/IOManager.hpp"
-#include "sidre/sidre.hpp"
+#include "axom/sidre/spio/IOManager.hpp"
+#include "axom/sidre/core/sidre.hpp"
 #include "conduit_relay.hpp"
 
 using axom::sidre::IOManager;
@@ -139,7 +139,7 @@ TEST(spio_scr, spio_scr_writeread)
 }
 #endif
 
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 //------------------------------------------------------------------------------

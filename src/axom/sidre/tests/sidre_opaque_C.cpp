@@ -17,7 +17,7 @@
 
 #include "gtest/gtest.h"
 
-#include "sidre/sidre.h"
+#include "axom/sidre/interface/sidre.h"
 
 //------------------------------------------------------------------------------
 // Some simple types and functions used in tests

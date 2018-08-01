@@ -50,7 +50,7 @@
  */
 
 // Axom headers
-#include "sidre/sidre.hpp"
+#include "axom/sidre/core/sidre.hpp"
 
 // Conduit headers
 #include "conduit.hpp"
@@ -147,7 +147,7 @@ void access_datastore(DataStore* ds)
   // Accessing a Group that is not there gives a null pointer
   // Requesting a nonexistent View also gives a null pointer
   Group* goofy = root->getGroup("goofy");
-  if (goofy == AXOM_NULLPTR)
+  if (goofy == nullptr)
   {
     std::cout << "no such group: goofy" << std::endl;
   }

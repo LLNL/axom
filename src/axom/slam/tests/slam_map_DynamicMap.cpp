@@ -24,12 +24,12 @@
 #include <iterator>
 #include "gtest/gtest.h"
 
-#include "slam/Utilities.hpp"
-#include "slam/DynamicSet.hpp"
-#include "slam/DynamicMap.hpp"
+#include "axom/slam/Utilities.hpp"
+#include "axom/slam/DynamicSet.hpp"
+#include "axom/slam/DynamicMap.hpp"
 
-#include "slic/slic.hpp"
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/interface/slic.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 
@@ -47,7 +47,7 @@ TEST(slam_map,construct_empty_map)
   IntMap m;
 
   EXPECT_TRUE(m.isValid(true));
-  EXPECT_EQ(AXOM_NULLPTR, m.set());
+  EXPECT_EQ(nullptr, m.set());
 }
 
 TEST(slam_map,construct_from_set_int)

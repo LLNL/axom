@@ -15,7 +15,7 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include "primal/Sphere.hpp"
+#include "axom/primal/geometry/Sphere.hpp"
 
 #include "gtest/gtest.h"
 
@@ -73,7 +73,7 @@ void check_signed_distance_and_orientation( )
   primal::Sphere< double, NDIMS > sphere;
   const double radius  = sphere.getRadius();
   const double* center = sphere.getCenter();
-  EXPECT_TRUE( center != AXOM_NULLPTR );
+  EXPECT_TRUE( center != nullptr );
 
   // test sphere center
   signed_distance = sphere.computeSignedDistance( center);
@@ -242,7 +242,7 @@ TEST( primal_sphere, sphere_sphere_intersection )
 }
 
 //------------------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

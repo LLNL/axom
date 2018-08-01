@@ -17,8 +17,8 @@
 
 #include "gtest/gtest.h"
 
-#include "sidre/IOManager.hpp"
-#include "sidre/IOBaton.hpp"
+#include "axom/sidre/spio/IOManager.hpp"
+#include "axom/sidre/spio/IOBaton.hpp"
 
 #include "mpi.h"
 
@@ -146,7 +146,7 @@ TEST(spio_basic, baton)
 
 
 //----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

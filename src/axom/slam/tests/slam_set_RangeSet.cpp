@@ -32,10 +32,10 @@
 
 #include "axom/config.hpp"  // for AXOM_USE_CXX11
 
-#include "slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 
-#include "slam/Set.hpp"
-#include "slam/RangeSet.hpp"
+#include "axom/slam/Set.hpp"
+#include "axom/slam/RangeSet.hpp"
 
 namespace
 {
@@ -440,7 +440,7 @@ TEST(slam_generic_range_set,concrete_parent_set)
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

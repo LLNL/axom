@@ -19,8 +19,8 @@
 #include <vector>
 #include <cmath>
 
-#include "axom_utils/Timer.hpp"
-#include "slic/slic.hpp"
+#include "axom/core/utilities/Timer.hpp"
+#include "axom/slic/interface/slic.hpp"
 
 #include "../PolygonMeshXY.hpp"
 #include "../HydroC.hpp"
@@ -133,7 +133,7 @@ void tinyHydroSedov_2part()
 }
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main()

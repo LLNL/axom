@@ -22,8 +22,8 @@
 
 #include "gtest/gtest.h"
 
-#include "slam/Set.hpp"
-#include "slam/RangeSet.hpp"
+#include "axom/slam/Set.hpp"
+#include "axom/slam/RangeSet.hpp"
 
 static int const NUM_ELEMS = 5;
 

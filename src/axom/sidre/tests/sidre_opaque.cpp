@@ -17,7 +17,7 @@
 
 #include "gtest/gtest.h"
 
-#include "sidre/sidre.hpp"
+#include "axom/sidre/core/sidre.hpp"
 
 using axom::sidre::Group;
 using axom::sidre::DataStore;

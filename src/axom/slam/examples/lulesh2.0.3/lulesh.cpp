@@ -181,9 +181,9 @@
 #endif
 
 #ifdef AXOM_USE_MPI
-  #include "slic/SynchronizedStream.hpp"
+  #include "axom/slic/streams/SynchronizedStream.hpp"
 #else
-  #include "slic/GenericOutputStream.hpp"
+  #include "axom/slic/streams/GenericOutputStream.hpp"
 #endif
 
 namespace slamLulesh {
@@ -2569,7 +2569,7 @@ namespace slamLulesh {
         else
           rep = 10 * (1 + domain.cost());
 
-        const Index_t* regElemPtr = regElemSet.empty() ? AXOM_NULLPTR : &regElemSet[0];
+        const Index_t* regElemPtr = regElemSet.empty() ? nullptr : &regElemSet[0];
         EvalEOSForElems(domain, vnew, regElemSet.size(), regElemPtr, rep);
       }
 
@@ -2788,7 +2788,7 @@ namespace slamLulesh {
     for (Index_t r = 0; r < domain.numReg(); ++r)
     {
       Domain::RegionElemSet regElemSet = domain.regElemlist(r);
-      const Index_t* regElemPtr = regElemSet.empty() ? AXOM_NULLPTR : &regElemSet[0];
+      const Index_t* regElemPtr = regElemSet.empty() ? nullptr : &regElemSet[0];
 
       /* evaluate time constraint */
       CalcCourantConstraintForElems(domain, regElemSet.size(),

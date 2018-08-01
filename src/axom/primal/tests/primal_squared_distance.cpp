@@ -17,10 +17,10 @@
 
 #include "gtest/gtest.h"
 
-#include "primal/Point.hpp"
-#include "primal/squared_distance.hpp"
-#include "primal/Triangle.hpp"
-#include "primal/Segment.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/operators/squared_distance.hpp"
+#include "axom/primal/geometry/Triangle.hpp"
+#include "axom/primal/geometry/Segment.hpp"
 
 using namespace axom;
 

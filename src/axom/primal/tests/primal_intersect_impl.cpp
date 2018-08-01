@@ -17,9 +17,9 @@
 
 #include "gtest/gtest.h"
 
-#include "slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 
-#include "primal/intersect_impl.hpp"
+#include "axom/primal/operators/detail/intersect_impl.hpp"
 
 using namespace axom;
 
@@ -158,7 +158,7 @@ TEST( primal_intersection_impl, zero_count )
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

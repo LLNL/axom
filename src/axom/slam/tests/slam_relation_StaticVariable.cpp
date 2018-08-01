@@ -32,14 +32,14 @@
 
 #include "axom/config.hpp"  // for AXOM_USE_CXX11
 
-#include "slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 
-#include "slam/ModularInt.hpp"
-#include "slam/RangeSet.hpp"
-#include "slam/Relation.hpp"
+#include "axom/slam/ModularInt.hpp"
+#include "axom/slam/RangeSet.hpp"
+#include "axom/slam/Relation.hpp"
 
-#include "slam/IndirectionPolicies.hpp"
-#include "slam/StaticRelation.hpp"
+#include "axom/slam/policies/IndirectionPolicies.hpp"
+#include "axom/slam/StaticRelation.hpp"
 
 namespace
 {
@@ -392,7 +392,7 @@ TEST(slam_static_variable_relation,initialized_rel_out_of_bounds)
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

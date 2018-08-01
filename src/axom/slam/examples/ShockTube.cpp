@@ -60,13 +60,13 @@
 #include <iomanip>
 #include <sstream>
 
-#include "slic/slic.hpp"
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/interface/slic.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 
-#include "slam/FieldRegistry.hpp"
-#include "slam/RangeSet.hpp"
-#include "slam/StaticRelation.hpp"
-#include "slam/Map.hpp"
+#include "axom/slam/FieldRegistry.hpp"
+#include "axom/slam/RangeSet.hpp"
+#include "axom/slam/StaticRelation.hpp"
+#include "axom/slam/Map.hpp"
 
 namespace slamShocktube
 {

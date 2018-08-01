@@ -63,7 +63,7 @@ set(mesh_tester_sources
     mesh_tester.cpp
 )
 set(mesh_tester_depends 
-    axom_utils slic mint slam quest primal
+    core slic mint slam quest primal
     )
 if(AXOM_ENABLE_LUMBERJACK)
     list(APPEND mesh_tester_depends lumberjack mpi)

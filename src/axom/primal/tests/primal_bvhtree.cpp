@@ -17,9 +17,9 @@
 
 #include "gtest/gtest.h"
 
-#include "primal/BoundingBox.hpp"
-#include "primal/BVHTree.hpp"
-#include "primal/Point.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/spatial_acceleration/BVHTree.hpp"
+#include "axom/primal/geometry/Point.hpp"
 
 using namespace axom;
 
@@ -58,7 +58,7 @@ TEST( primal_bucket_tree, insert_object )
   EXPECT_EQ( 5, N );
 
   const int* objs = bucketTree.getBucketObjectArray( 0 );
-  ASSERT_TRUE( objs != AXOM_NULLPTR );
+  ASSERT_TRUE( objs != nullptr );
 
   const BoxType& bucketBox = bucketTree.getBucketBox( 0 );
   BoxType expected_bb( PointType::zero(), PointType::ones() );
@@ -77,7 +77,7 @@ TEST( primal_bucket_tree, insert_object )
 }
 
 //------------------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

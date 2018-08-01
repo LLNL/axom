@@ -17,11 +17,11 @@
 
 #include "gtest/gtest.h"
 
-#include "primal/Point.hpp"
-#include "primal/Segment.hpp"
-#include "primal/Triangle.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Segment.hpp"
+#include "axom/primal/geometry/Triangle.hpp"
 
-#include "primal/orientation.hpp"
+#include "axom/primal/operators/orientation.hpp"
 
 using namespace axom;
 
@@ -83,7 +83,7 @@ TEST( primal_orientation, orient2D )
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

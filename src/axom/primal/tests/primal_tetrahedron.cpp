@@ -19,11 +19,11 @@
 
 #include "axom/config.hpp"
 
-#include "primal/Point.hpp"
-#include "primal/Tetrahedron.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Tetrahedron.hpp"
 
 #include "fmt/fmt.hpp"
-#include "slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 
 #include <cmath>
 
@@ -213,7 +213,7 @@ TEST_F( TetrahedronTest, barycentric)
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

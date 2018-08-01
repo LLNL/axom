@@ -17,12 +17,12 @@
 
 #include "gtest/gtest.h"
 
-#include "primal/Point.hpp"
-#include "primal/BoundingBox.hpp"
-#include "primal/RectangularLattice.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/geometry/RectangularLattice.hpp"
 
-#include "slic/slic.hpp"
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/interface/slic.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 
 // Define some helpful typedefs for 1D rectangular lattices
 namespace lattice_1D
@@ -127,15 +127,15 @@ TEST( primal_rectangle_lattice, lattice_array_ctor)
     SpacePt origin(1.1);
     SpaceVector spacing( SpacePt(.1) );
 
-    LatticeT emptyLattice(AXOM_NULLPTR, AXOM_NULLPTR);
+    LatticeT emptyLattice(nullptr, nullptr);
     EXPECT_EQ(SpacePt::zero(), emptyLattice.origin());
     EXPECT_EQ(SpaceVector(1.), emptyLattice.spacing());
 
-    LatticeT latticeFromOrigin(origin.data(), AXOM_NULLPTR);
+    LatticeT latticeFromOrigin(origin.data(), nullptr);
     EXPECT_EQ(origin, latticeFromOrigin.origin());
     EXPECT_EQ(SpaceVector(1.), latticeFromOrigin.spacing());
 
-    LatticeT latticeFromSpacing(AXOM_NULLPTR, spacing.data());
+    LatticeT latticeFromSpacing(nullptr, spacing.data());
     EXPECT_EQ(SpacePt::zero(), latticeFromSpacing.origin());
     EXPECT_EQ(spacing, latticeFromSpacing.spacing());
 
@@ -150,15 +150,15 @@ TEST( primal_rectangle_lattice, lattice_array_ctor)
     SpacePt origin(1.1);
     SpaceVector spacing( SpacePt(.1) );
 
-    LatticeT emptyLattice(AXOM_NULLPTR, AXOM_NULLPTR);
+    LatticeT emptyLattice(nullptr, nullptr);
     EXPECT_EQ(SpacePt::zero(), emptyLattice.origin());
     EXPECT_EQ(SpaceVector(1.), emptyLattice.spacing());
 
-    LatticeT latticeFromOrigin(origin.data(), AXOM_NULLPTR);
+    LatticeT latticeFromOrigin(origin.data(), nullptr);
     EXPECT_EQ(origin, latticeFromOrigin.origin());
     EXPECT_EQ(SpaceVector(1.), latticeFromOrigin.spacing());
 
-    LatticeT latticeFromSpacing(AXOM_NULLPTR, spacing.data());
+    LatticeT latticeFromSpacing(nullptr, spacing.data());
     EXPECT_EQ(SpacePt::zero(), latticeFromSpacing.origin());
     EXPECT_EQ(spacing, latticeFromSpacing.spacing());
 
@@ -173,15 +173,15 @@ TEST( primal_rectangle_lattice, lattice_array_ctor)
     SpacePt origin(1.1);
     SpaceVector spacing( SpacePt(.1) );
 
-    LatticeT emptyLattice(AXOM_NULLPTR, AXOM_NULLPTR);
+    LatticeT emptyLattice(nullptr, nullptr);
     EXPECT_EQ(SpacePt::zero(), emptyLattice.origin());
     EXPECT_EQ(SpaceVector(1.), emptyLattice.spacing());
 
-    LatticeT latticeFromOrigin(origin.data(), AXOM_NULLPTR);
+    LatticeT latticeFromOrigin(origin.data(), nullptr);
     EXPECT_EQ(origin, latticeFromOrigin.origin());
     EXPECT_EQ(SpaceVector(1.), latticeFromOrigin.spacing());
 
-    LatticeT latticeFromSpacing(AXOM_NULLPTR, spacing.data());
+    LatticeT latticeFromSpacing(nullptr, spacing.data());
     EXPECT_EQ(SpacePt::zero(), latticeFromSpacing.origin());
     EXPECT_EQ(spacing, latticeFromSpacing.spacing());
 

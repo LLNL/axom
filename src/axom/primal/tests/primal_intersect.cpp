@@ -17,17 +17,17 @@
 
 #include "gtest/gtest.h"
 
-#include "slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 
-#include "primal/OrientedBoundingBox.hpp"
-#include "primal/BoundingBox.hpp"
-#include "primal/Point.hpp"
-#include "primal/Ray.hpp"
-#include "primal/Segment.hpp"
-#include "primal/Triangle.hpp"
-#include "primal/Vector.hpp"
+#include "axom/primal/geometry/OrientedBoundingBox.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Ray.hpp"
+#include "axom/primal/geometry/Segment.hpp"
+#include "axom/primal/geometry/Triangle.hpp"
+#include "axom/primal/geometry/Vector.hpp"
 
-#include "primal/intersect.hpp"
+#include "axom/primal/operators/intersect.hpp"
 
 #include <cmath>     // for sqrt
 
@@ -1602,7 +1602,7 @@ TEST(primal_intersect, obb_obb_test_intersection3D)
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

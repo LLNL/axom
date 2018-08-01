@@ -20,7 +20,7 @@
 // that hold the data, plus a few functions to do mesh sums and
 // averages of quantities.
 
-#include "slam/Map.hpp"
+#include "axom/slam/Map.hpp"
 
 #include "VectorXY.hpp"
 #include "TinyHydroTypes.hpp"

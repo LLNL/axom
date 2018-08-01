@@ -34,7 +34,7 @@ set(tinyHydro_lib_sources
     )
 
 
-set(slam_tiny_hydro_lib_depends_on axom_utils slam slic fmt)
+set(slam_tiny_hydro_lib_depends_on core slam slic fmt)
 
 #
 # Build the tinyHydro library

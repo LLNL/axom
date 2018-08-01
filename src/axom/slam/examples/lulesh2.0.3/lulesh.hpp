@@ -35,16 +35,16 @@
 #include <math.h>
 #include <vector>
 
-#include "slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 
-#include "slam/NullSet.hpp"
-#include "slam/RangeSet.hpp"
-#include "slam/IndirectionSet.hpp"
-#include "slam/CardinalityPolicies.hpp"
-#include "slam/StaticRelation.hpp"
-#include "slam/DynamicVariableRelation.hpp"
-#include "slam/Map.hpp"
-#include "slam/FieldRegistry.hpp"
+#include "axom/slam/NullSet.hpp"
+#include "axom/slam/RangeSet.hpp"
+#include "axom/slam/IndirectionSet.hpp"
+#include "axom/slam/policies/CardinalityPolicies.hpp"
+#include "axom/slam/StaticRelation.hpp"
+#include "axom/slam/DynamicVariableRelation.hpp"
+#include "axom/slam/Map.hpp"
+#include "axom/slam/FieldRegistry.hpp"
 
 namespace slamLulesh {
 

@@ -16,7 +16,7 @@
  */
 
 #include "axom/config.hpp"  // for AXOM_USE_HDF5
-#include "sidre/sidre.hpp"
+#include "axom/sidre/core/sidre.hpp"
 
 #include "gtest/gtest.h"
 
@@ -91,7 +91,7 @@ TEST(sidre_group,get_name)
   EXPECT_TRUE(group->getName() == std::string("test") );
 
   Group* group2 = root->getGroup("foo");
-  EXPECT_TRUE(group2 == AXOM_NULLPTR);
+  EXPECT_TRUE(group2 == nullptr);
 }
 
 //------------------------------------------------------------------------------
@@ -139,7 +139,7 @@ TEST(sidre_group,group_with_path)
     root->createGroup("test1")->createGroup("test2")->createGroup("test3");
   Group* group2 = root->getGroup("test1/test2/test3");
 
-  EXPECT_TRUE(AXOM_NULLPTR != group2);
+  EXPECT_TRUE(nullptr != group2);
   EXPECT_EQ(group, group2);
 
   // Test incremental access when building full path
@@ -147,7 +147,7 @@ TEST(sidre_group,group_with_path)
   Group* groupP2 =
     root->getGroup("testA")->getGroup("testB")->getGroup("testC");
 
-  EXPECT_TRUE(AXOM_NULLPTR != groupP2);
+  EXPECT_TRUE(nullptr != groupP2);
   EXPECT_EQ(groupP, groupP2);
   // test non-const getGroup() with path
   Group* groupPParent = root->getGroup("testA/testB");
@@ -162,9 +162,9 @@ TEST(sidre_group,group_with_path)
   Group* group_badb = root->getGroup("testa/BAD/testc");
   Group* group_badc = root->getGroup("testa/testb/BAD");
 
-  EXPECT_EQ(group_bada, static_cast<void*>(AXOM_NULLPTR) );
-  EXPECT_EQ(group_badb, static_cast<void*>(AXOM_NULLPTR) );
-  EXPECT_EQ(group_badc, static_cast<void*>(AXOM_NULLPTR) );
+  EXPECT_EQ(group_bada, static_cast<void*>(nullptr) );
+  EXPECT_EQ(group_badb, static_cast<void*>(nullptr) );
+  EXPECT_EQ(group_badc, static_cast<void*>(nullptr) );
 
   // Test hasGroup with paths.
 
@@ -191,7 +191,7 @@ TEST(sidre_group,group_with_path)
   unsigned int testbnumgroups = group_testa->getGroup("testb")->getNumGroups();
   Group* group_cdup = group_testa->createGroup("testb/testc");
 
-  EXPECT_EQ(group_cdup, static_cast<void*>(AXOM_NULLPTR));
+  EXPECT_EQ(group_cdup, static_cast<void*>(nullptr));
   EXPECT_EQ(group_testa->getGroup("testb")->getNumGroups(), testbnumgroups);
 
   delete ds;
@@ -282,7 +282,7 @@ TEST(sidre_group,get_group)
   EXPECT_TRUE( parent->getGroup(0) == child );
 
   // check error condition
-  EXPECT_TRUE( parent->getGroup("non-existant group") == AXOM_NULLPTR );
+  EXPECT_TRUE( parent->getGroup("non-existant group") == nullptr );
 
   delete ds;
 }
@@ -302,7 +302,7 @@ TEST(sidre_group,get_view)
   EXPECT_TRUE( parent->getView(0) == view );
 
   // check error condition
-  EXPECT_TRUE( parent->getView("non-existant view") == AXOM_NULLPTR );
+  EXPECT_TRUE( parent->getView("non-existant view") == nullptr );
 
   delete ds;
 }
@@ -320,7 +320,7 @@ TEST(sidre_group,view_with_path)
     root->createGroup("group1")->createGroup("group2")->createView("view1");
   View* view2 = root->getView("group1/group2/view1");
 
-  EXPECT_TRUE(AXOM_NULLPTR != view2);
+  EXPECT_TRUE(nullptr != view2);
   EXPECT_EQ( view, view2 );
 
 
@@ -329,7 +329,7 @@ TEST(sidre_group,view_with_path)
   View* viewP2 =
     root->getGroup("groupA")->getGroup("groupB")->getView("viewA");
 
-  EXPECT_TRUE(AXOM_NULLPTR != viewP2);
+  EXPECT_TRUE(nullptr != viewP2);
   EXPECT_EQ( viewP, viewP2 );
 
   // Now verify that bad paths just return null, and don't create missing groups
@@ -337,9 +337,9 @@ TEST(sidre_group,view_with_path)
   View* v_bad2 = root->getView("groupA/BAD/viewA");
   View* v_bad3 = root->getView("groupA/groupB/BAD");
 
-  EXPECT_EQ(v_bad1, static_cast<void*>(AXOM_NULLPTR));
-  EXPECT_EQ(v_bad2, static_cast<void*>(AXOM_NULLPTR));
-  EXPECT_EQ(v_bad3, static_cast<void*>(AXOM_NULLPTR));
+  EXPECT_EQ(v_bad1, static_cast<void*>(nullptr));
+  EXPECT_EQ(v_bad2, static_cast<void*>(nullptr));
+  EXPECT_EQ(v_bad3, static_cast<void*>(nullptr));
 
   const std::size_t exp_no_groups = 0;
   const std::size_t exp_one_group = 1;
@@ -368,10 +368,10 @@ TEST(sidre_group,view_with_path)
   EXPECT_EQ(exp_no_groups, root->getGroup("group1/group2")->getNumViews());
   EXPECT_FALSE(root->getGroup("group1/group2")->hasView("view1"));
   EXPECT_EQ(root->getGroup("group1/group2")->getView("view1"),
-            static_cast<void*>(AXOM_NULLPTR));
+            static_cast<void*>(nullptr));
   EXPECT_FALSE(root->hasView("group1/group2/view1"));
   EXPECT_EQ(root->getView("group1/group2/view1"),
-            static_cast<void*>(AXOM_NULLPTR));
+            static_cast<void*>(nullptr));
 
   Group* groupA = root->getGroup("groupA");
   EXPECT_TRUE(groupA->hasView("groupB/viewA"));
@@ -384,11 +384,11 @@ TEST(sidre_group,view_with_path)
   EXPECT_EQ(exp_no_groups, groupA->getGroup("groupB")->getNumViews());
   EXPECT_FALSE(groupA->getGroup("groupB")->hasView("viewA"));
   EXPECT_EQ(groupA->getGroup("groupB")->getView("viewA"),
-            static_cast<void*>(AXOM_NULLPTR));
+            static_cast<void*>(nullptr));
   EXPECT_FALSE(groupA->hasView("groupB/viewA"));
-  EXPECT_EQ(groupA->getView("groupB/viewA"), static_cast<void*>(AXOM_NULLPTR));
+  EXPECT_EQ(groupA->getView("groupB/viewA"), static_cast<void*>(nullptr));
   EXPECT_EQ(root->getView("groupA/groupB/viewA"),
-            static_cast<void*>(AXOM_NULLPTR));
+            static_cast<void*>(nullptr));
 
   delete ds;
 }
@@ -638,7 +638,7 @@ TEST(sidre_group,create_destroy_has_view)
   EXPECT_EQ(0, iview);
 
   // try creating view again, should be a no-op.
-  EXPECT_TRUE( group->createView("view") == AXOM_NULLPTR );
+  EXPECT_TRUE( group->createView("view") == nullptr );
 
   // Create another view to make sure destroyView only destroys one view
   group->createView("viewfiller");
@@ -663,18 +663,18 @@ TEST(sidre_group,create_destroy_has_view)
 
   // error condition check - try again with duplicate name, should be a no-op
   EXPECT_TRUE( group->createViewAndAllocate( "viewWithLength1", FLOAT64_ID,
-                                             50 ) == AXOM_NULLPTR );
+                                             50 ) == nullptr );
   group->destroyViewAndData("viewWithLength1");
   EXPECT_FALSE( group->hasView("viewWithLength1") );
 
   EXPECT_TRUE( group->createViewAndAllocate( "viewWithLengthBadLen", FLOAT64_ID,
-                                             -1 ) == AXOM_NULLPTR );
+                                             -1 ) == nullptr );
 
   // try api call that specifies data type in another way
   group->createViewAndAllocate( "viewWithLength2", DataType::float64(50) );
   EXPECT_TRUE( group->createViewAndAllocate( "viewWithLength2",
                                              DataType::float64(
-                                               50) ) == AXOM_NULLPTR );
+                                               50) ) == nullptr );
   // destroy view and its buffer using index
   IndexType indx = group->getFirstValidViewIndex();
   IndexType bindx = group->getView( indx )->getBuffer()->getIndex();
@@ -728,16 +728,16 @@ TEST(sidre_group,group_name_collisions)
   EXPECT_TRUE(flds->hasChildView("a"));
 
   // attempt to create duplicate group name
-  EXPECT_TRUE( ds->getRoot()->createGroup("fields") == AXOM_NULLPTR );
+  EXPECT_TRUE( ds->getRoot()->createGroup("fields") == nullptr );
 
   // attempt to create duplicate view name.
-  EXPECT_TRUE(flds->createView("a") == AXOM_NULLPTR);
+  EXPECT_TRUE(flds->createView("a") == nullptr);
 
   // attempt to create a group named the same as an existing view
-  EXPECT_TRUE(flds->createGroup("a") == AXOM_NULLPTR);
+  EXPECT_TRUE(flds->createGroup("a") == nullptr);
 
   // attempt to create a view named the same as an existing group
-  EXPECT_TRUE(ds->getRoot()->createView("fields") == AXOM_NULLPTR);
+  EXPECT_TRUE(ds->getRoot()->createView("fields") == nullptr);
 
   ds->getRoot()->createGroup("here//is/path");
   ds->getRoot()->createGroup("éch≈o/Ωd");
@@ -956,7 +956,7 @@ TEST(sidre_group,groups_move_copy)
   otherB->createView("f1")->setScalar(42.0);
   otherB->createGroup("Q");
   Group* triedCopy = gsub->copyGroup(otherB);
-  EXPECT_EQ(triedCopy, static_cast<void*>(AXOM_NULLPTR));
+  EXPECT_EQ(triedCopy, static_cast<void*>(nullptr));
   EXPECT_EQ(gsub->getNumGroups(), 1);
   EXPECT_TRUE(gsub->hasChildGroup("b"));
   EXPECT_EQ(buffercount, ds->getNumBuffers());
@@ -999,7 +999,7 @@ TEST(sidre_group,create_destroy_view_and_buffer2)
   EXPECT_EQ(ds->getNumBuffers(), 1u);
 
   Buffer const* const buffer1 = ds->getBuffer(bufferId1);
-  EXPECT_TRUE( buffer1 == AXOM_NULLPTR );
+  EXPECT_TRUE( buffer1 == nullptr );
 
   View const* const view3 = grp->createView("viewBuffer3");
   grp->destroyViewsAndData();
@@ -1456,20 +1456,20 @@ TEST(sidre_group,save_restore_external_data)
     EXPECT_TRUE(view1->isDescribed());
     EXPECT_EQ(view1->getTypeID(), INT_ID);
     EXPECT_EQ(view1->getNumElements(), nfoo);
-    EXPECT_TRUE(view1->getVoidPtr() == AXOM_NULLPTR);
+    EXPECT_TRUE(view1->getVoidPtr() == nullptr);
     view1->setExternalDataPtr(foo2);
 
     View* view2 = root2->getView("empty_array");
     EXPECT_TRUE(view2->isEmpty());
     EXPECT_TRUE(view2->isDescribed());
     EXPECT_EQ(view2->getTypeID(), INT_ID);
-    EXPECT_TRUE(view2->getVoidPtr() == AXOM_NULLPTR);
+    EXPECT_TRUE(view2->getVoidPtr() == nullptr);
     view2->setExternalDataPtr(foo3);
 
     View* view3 = root2->getView("external_undescribed");
     EXPECT_TRUE(view3->isEmpty());
     EXPECT_FALSE(view3->isDescribed());
-    EXPECT_TRUE(view3->getVoidPtr() == AXOM_NULLPTR);
+    EXPECT_TRUE(view3->getVoidPtr() == nullptr);
     // Set "external_array" and "external_undescribed" to the same external
     // array
     // since it was created that way.  However, "external_undescribed" was not
@@ -1479,7 +1479,7 @@ TEST(sidre_group,save_restore_external_data)
     View* view4 = root2->getView("int2d");
     EXPECT_FALSE(view4->isEmpty());
     EXPECT_TRUE(view4->isDescribed());
-    EXPECT_TRUE(view4->getVoidPtr() == AXOM_NULLPTR);
+    EXPECT_TRUE(view4->getVoidPtr() == nullptr);
     EXPECT_EQ(view4->getTypeID(), INT_ID);
     EXPECT_EQ(view4->getNumElements(), nfoo*2);
     EXPECT_EQ(view4->getNumDimensions(), 2);
@@ -1493,7 +1493,7 @@ TEST(sidre_group,save_restore_external_data)
 
     // Make sure addresses have not changed
     EXPECT_TRUE(view1->getVoidPtr() == static_cast<void*>(foo2));
-    EXPECT_TRUE(view2->getVoidPtr() == static_cast<void*>(foo3));     // AXOM_NULLPTR
+    EXPECT_TRUE(view2->getVoidPtr() == static_cast<void*>(foo3));     // nullptr
     EXPECT_TRUE(view3->getVoidPtr() == static_cast<void*>(foo2));
     EXPECT_TRUE(view4->getVoidPtr() == static_cast<void*>(int2d2));
 

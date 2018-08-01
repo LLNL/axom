@@ -37,7 +37,7 @@ if ( NOT ENABLE_OPENMP )
         PROPERTIES COMPILE_FLAGS "${AXOM_DISABLE_OMP_PRAGMA_WARNINGS}" )
 endif()
 
-set(slam_tests_depends_on axom_utils slic slam)
+set(slam_tests_depends_on core slic slam)
 
 if (ENABLE_OPENMP)
     list(APPEND slam_tests_depends_on openmp)

@@ -43,7 +43,7 @@
 #include "axom/config.hpp"    // For math defines
 
 // Sidre component headers
-#include "sidre/sidre.hpp"
+#include "axom/sidre/core/sidre.hpp"
 
 // Standard library headers
 #include <cstdio>

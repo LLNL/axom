@@ -17,7 +17,7 @@
 
 #include "gtest/gtest.h"
 
-#include "sidre/sidre.hpp"
+#include "axom/sidre/core/sidre.hpp"
 
 
 using axom::sidre::DataStore;
@@ -108,7 +108,7 @@ TEST(sidre_datastore,default_ctor)
 
   Group* dg = ds->getRoot();
 
-  EXPECT_FALSE( AXOM_NULLPTR == dg );
+  EXPECT_FALSE( nullptr == dg );
   EXPECT_EQ(dg, dg->getParent() );
   EXPECT_EQ(ds, dg->getDataStore() );
 
@@ -138,15 +138,15 @@ TEST(sidre_datastore,create_destroy_buffers_basic)
   // Do we get the buffer we expect?
   EXPECT_EQ(dbuff, ds->getBuffer(bufferIndex));
   IndexType badBufferIndex = 9999;
-  EXPECT_EQ(static_cast<void*>(AXOM_NULLPTR), ds->getBuffer(badBufferIndex));
+  EXPECT_EQ(static_cast<void*>(nullptr), ds->getBuffer(badBufferIndex));
 
   ds->destroyBuffer(bufferIndex);
   // should be no buffers
   EXPECT_EQ( 0, static_cast<int>(ds->getNumBuffers() ) );
   EXPECT_EQ( InvalidIndex, ds->getFirstValidBufferIndex() );
   EXPECT_FALSE(ds->hasBuffer(bufferIndex));
-  EXPECT_EQ(static_cast<void*>(AXOM_NULLPTR), ds->getBuffer(bufferIndex));
-  EXPECT_EQ(static_cast<void*>(AXOM_NULLPTR), ds->getBuffer(badBufferIndex));
+  EXPECT_EQ(static_cast<void*>(nullptr), ds->getBuffer(bufferIndex));
+  EXPECT_EQ(static_cast<void*>(nullptr), ds->getBuffer(badBufferIndex));
 
   delete ds;
 }

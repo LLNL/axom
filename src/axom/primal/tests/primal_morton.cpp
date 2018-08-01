@@ -17,10 +17,10 @@
 
 #include "gtest/gtest.h"
 
-#include "primal/Point.hpp"
-#include "primal/MortonIndex.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/MortonIndex.hpp"
 
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 #include <cstdlib>

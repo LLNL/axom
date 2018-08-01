@@ -17,7 +17,7 @@
 
 #include "gtest/gtest.h"
 
-#include "primal/Point.hpp"
+#include "axom/primal/geometry/Point.hpp"
 
 using namespace axom;
 
@@ -335,7 +335,7 @@ TEST( primal_point, point_linear_interpolation)
 }
 
 //------------------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

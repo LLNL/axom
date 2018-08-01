@@ -17,7 +17,7 @@
 
 #include "gtest/gtest.h"
 
-#include "sidre/sidre.hpp"
+#include "axom/sidre/core/sidre.hpp"
 
 #include <vector>
 #include <string>
@@ -73,10 +73,10 @@ void checkPointersAndData(const std::string& path
   T* nD = static_cast<T*>(node.element_ptr(0));
 
   axom::sidre::View* view = rootGroup->getView(path);
-  EXPECT_TRUE(AXOM_NULLPTR != view);
+  EXPECT_TRUE(nullptr != view);
 
   T* vD = view->getData<T*>();
-  EXPECT_TRUE(AXOM_NULLPTR != vD);
+  EXPECT_TRUE(nullptr != vD);
 
   EXPECT_EQ(nD, vD)
     << "Error when comparing pointer address between "
@@ -107,7 +107,7 @@ void checkPointersAndData<std::string>(const std::string& path
   std::string nD = node.as_string();
 
   axom::sidre::View* view = rootGroup->getView(path);
-  EXPECT_TRUE(AXOM_NULLPTR != view);
+  EXPECT_TRUE(nullptr != view);
   EXPECT_TRUE(view->isString());
 
   std::string vD(view->getString());
@@ -141,10 +141,10 @@ TEST(sidre_native_layout,empty_layout)
   SLIC_INFO("****** done ******");
 
 
-  if(ds != AXOM_NULLPTR)
+  if(ds != nullptr)
   {
     delete ds;
-    ds = AXOM_NULLPTR;
+    ds = nullptr;
   }
 }
 
@@ -210,21 +210,21 @@ TEST(sidre_native_layout,generate_native_layout)
 
 
   /// Clean up memory
-  if(extRealPtr != AXOM_NULLPTR)
+  if(extRealPtr != nullptr)
   {
     delete[] extRealPtr;
-    extRealPtr = AXOM_NULLPTR;
+    extRealPtr = nullptr;
   }
-  if(extIntPtr != AXOM_NULLPTR)
+  if(extIntPtr != nullptr)
   {
     delete[] extIntPtr;
-    extIntPtr = AXOM_NULLPTR;
+    extIntPtr = nullptr;
   }
 
-  if(ds != AXOM_NULLPTR)
+  if(ds != nullptr)
   {
     delete ds;
-    ds = AXOM_NULLPTR;
+    ds = nullptr;
   }
 }
 
@@ -268,10 +268,10 @@ TEST(sidre_native_layout,native_layout_with_scalars)
   checkPointersAndData<double>("Gscalar/Vdbl", node, root);
   checkPointersAndData<std::string>("Gscalar/Vstr", node, root);
 
-  if(ds != AXOM_NULLPTR)
+  if(ds != nullptr)
   {
     delete ds;
-    ds = AXOM_NULLPTR;
+    ds = nullptr;
   }
 }
 
@@ -279,7 +279,7 @@ TEST(sidre_native_layout,native_layout_with_scalars)
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

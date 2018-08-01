@@ -32,9 +32,78 @@ blt_append_custom_compiler_flag(
             )
 
 ################################
-# Add the slam (meshapi) sources
+# Specify all headers/sources
 ################################
-add_subdirectory(src)
+set(slam_headers
+    # Utility files
+    Utilities.hpp
+    FieldRegistry.hpp
+    ModularInt.hpp
+
+    #SRM policies
+    policies/CardinalityPolicies.hpp
+    policies/SizePolicies.hpp
+    policies/OffsetPolicies.hpp
+    policies/StridePolicies.hpp
+    policies/IndirectionPolicies.hpp
+    policies/SubsettingPolicies.hpp
+    policies/PolicyTraits.hpp
+
+    # SRM Set headers
+    IndirectionSet.hpp
+    NullSet.hpp
+    OrderedSet.hpp
+    RangeSet.hpp
+    #ProductSet.hpp
+    DynamicSet.hpp
+    Set.hpp
+    BitSet.hpp
+    internal/BitTwiddle.hpp
+
+    # SRM Relation headers
+    Relation.hpp
+    StaticRelation.hpp
+    DynamicVariableRelation.hpp
+    DynamicConstantRelation.hpp
+
+    # SRM Map headers
+    Map.hpp
+    MapBase.hpp
+    DynamicMap.hpp
+    )
+
+set(slam_sources
+    # SRM Set sources
+    # RangeSet.cpp
+    # IndirectionSet.cpp
+    OrderedSet.cpp
+
+    # SRM Relation sources
+    Relation.cpp
+    DynamicVariableRelation.cpp
+
+    # SRM Map sources
+
+    # Other sources
+    Utilities.cpp
+    )
+
+################################
+# Make/Install the library
+################################
+set(slam_depends_on core slic)
+
+blt_add_library(
+    NAME        slam
+    SOURCES     ${slam_sources}
+    HEADERS     ${slam_headers}
+    DEPENDS_ON  ${slam_depends_on}
+    FOLDER      axom/slam
+    )
+
+axom_install_component(NAME    slam
+                       HEADERS ${slam_headers}
+                       )
 
 ################################
 # Add examples
@@ -68,9 +137,3 @@ axom_add_code_checks(
         EXCLUDES 
             slam/examples/lulesh2.0.3
             slam/examples/tinyHydro )
-
-################################
-# Create CMake importable
-# exports for all of our targets
-################################
-install(EXPORT slam-targets DESTINATION lib/cmake)

@@ -17,9 +17,9 @@
 
 #include "gtest/gtest.h"
 
-#include "sidre/sidre.hpp"
+#include "axom/sidre/core/sidre.hpp"
 
-#include "axom/Types.hpp"
+#include "axom/core/Types.hpp"
 
 using axom::sidre::Buffer;
 using axom::sidre::Group;
@@ -253,7 +253,7 @@ TEST(sidre_view,create_view_from_path)
 
   // Verify create works when groups already exist.
   baz = root->createView("foo/bar/baz");
-  EXPECT_TRUE( baz != AXOM_NULLPTR );
+  EXPECT_TRUE( baz != nullptr );
 
   EXPECT_TRUE( root->hasGroup("foo") );
 
@@ -1674,7 +1674,7 @@ TEST(sidre_view,value_from_uninited_view)
 
 
 //----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

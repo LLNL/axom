@@ -17,8 +17,8 @@
 
 #include "PolygonMeshXY.hpp"
 
-#include "axom_utils/Timer.hpp"
-#include "slic/slic.hpp"
+#include "axom/core/utilities/Timer.hpp"
+#include "axom/slic/interface/slic.hpp"
 
 #include <sstream>
 

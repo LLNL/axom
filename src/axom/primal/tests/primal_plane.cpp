@@ -15,8 +15,8 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include "primal/Plane.hpp"
-#include "axom_utils/matvecops.hpp"
+#include "axom/primal/geometry/Plane.hpp"
+#include "axom/core/numerics/matvecops.hpp"
 
 #include "gtest/gtest.h"
 
@@ -103,7 +103,7 @@ TEST( primal_plane_DeathTest, invalid_construction )
   typedef primal::Plane< double,2 > Plane2D;
   typedef primal::Plane< double,3 > Plane3D;
 
-  EXPECT_DEATH_IF_SUPPORTED( Plane2D( x, x, AXOM_NULLPTR ), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( Plane2D( x, x, nullptr ), IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( Plane3D( x, x, x), IGNORE_OUTPUT );
 }
 
@@ -167,7 +167,7 @@ TEST( primal_plane, construct_from_points )
   // test 2D
   double a[ 2 ] = { 2.0, -1.0 };
   double b[ 2 ] = { 2.0,  2.0 };
-  primal::Plane< double, 2 > P2( a, b, AXOM_NULLPTR );
+  primal::Plane< double, 2 > P2( a, b, nullptr );
   ensure_unit_norm( P2.getNormal(), 2 );
   EXPECT_DOUBLE_EQ( P2.getOffset(), -2.0 );
 }
@@ -219,7 +219,7 @@ TEST( primal_plane, signed_distance_and_orientation )
   // STEP 1: test 2D
   double a[ 2 ] = { 2.0, -1.0 };
   double b[ 2 ] = { 2.0,  2.0 };
-  primal::Plane< double, 2 > P2( a, b, AXOM_NULLPTR );
+  primal::Plane< double, 2 > P2( a, b, nullptr );
 
   // (a) test point above plane
   signed_distance = P2.computeSignedDistance( q );
@@ -280,7 +280,7 @@ TEST( primal_plane, project_point)
   // STEP 1: test 2D
   double a[ 2 ] = { 2.0, -1.0 };
   double b[ 2 ] = { 2.0,  2.0 };
-  primal::Plane< double, 2 > P2( a, b, AXOM_NULLPTR );
+  primal::Plane< double, 2 > P2( a, b, nullptr );
 
   // (a) test project point below plane
   q[ 0 ] = 4.0;
@@ -325,14 +325,14 @@ TEST( primal_plane, flip )
   // STEP 1: test 2D
   double a[ 2 ] = { 2.0, -1.0 };
   double b[ 2 ] = { 2.0,  2.0 };
-  primal::Plane< double, 2 > P2( a, b, AXOM_NULLPTR );
+  primal::Plane< double, 2 > P2( a, b, nullptr );
   EXPECT_EQ( P2.getOrientation( q ), primal::ON_POSITIVE_SIDE );
   P2.flip( );
   EXPECT_EQ( P2.getOrientation( q ), primal::ON_NEGATIVE_SIDE );
 }
 
 //------------------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

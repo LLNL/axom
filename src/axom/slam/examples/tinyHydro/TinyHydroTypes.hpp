@@ -26,15 +26,15 @@
 #include "axom/config.hpp"
 #include "fmt/fmt.hpp"
 
-#include "slam/OrderedSet.hpp"
-#include "slam/RangeSet.hpp"
-#include "slam/IndirectionSet.hpp"
+#include "axom/slam/OrderedSet.hpp"
+#include "axom/slam/RangeSet.hpp"
+#include "axom/slam/IndirectionSet.hpp"
 
-#include "slam/StaticRelation.hpp"
+#include "axom/slam/StaticRelation.hpp"
 
-#include "slam/Map.hpp"
+#include "axom/slam/Map.hpp"
 
-#include "slam/FieldRegistry.hpp"
+#include "axom/slam/FieldRegistry.hpp"
 
 
 namespace tinyHydro {

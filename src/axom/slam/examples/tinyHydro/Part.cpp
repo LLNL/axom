@@ -22,7 +22,7 @@
 #include <cstring>
 #include <algorithm>  // for std::copy
 
-#include "slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 
 namespace tinyHydro {
 

@@ -20,11 +20,11 @@
 
 #include "gtest/gtest.h"
 
-#include "primal/NumericArray.hpp"
-#include "primal/Point.hpp"
-#include "primal/Vector.hpp"
-#include "primal/OrientedBoundingBox.hpp"
-#include "primal/closest_point.hpp"
+#include "axom/primal/geometry/NumericArray.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Vector.hpp"
+#include "axom/primal/geometry/OrientedBoundingBox.hpp"
+#include "axom/primal/operators/closest_point.hpp"
 
 using namespace axom;
 

@@ -33,7 +33,7 @@ blt_add_executable(
     NAME sidre_lulesh2_ex
     SOURCES ${lulesh_sources} ${lulesh_headers}
     OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-    DEPENDS_ON axom_utils sidre conduit conduit_relay hdf5 slic
+    DEPENDS_ON core sidre conduit conduit_relay hdf5 slic
     FOLDER axom/sidre/examples
     )
 

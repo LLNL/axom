@@ -30,9 +30,9 @@
 #include "gtest/gtest.h"
 
 
-#include "axom_utils/FileUtilities.hpp"
-#include "slam/Utilities.hpp"
-#include "slic/slic.hpp"
+#include "axom/core/utilities/FileUtilities.hpp"
+#include "axom/slam/Utilities.hpp"
+#include "axom/slic/interface/slic.hpp"
 
 #ifdef WIN32
     #include <direct.h>
@@ -52,7 +52,7 @@ namespace
 //       we move the data files into their own repository
 
 const std::string presentFile = "ball_1.vtk";
-const std::string presentDir = "src/components/slam/data";
+const std::string presentDir = "src/axom/slam/data";
 const std::string presentDirWithSlash = presentDir + "/";
 
 const std::string missingFile = "m_i_s_s_i_n_g__f_i_l_e";
@@ -114,7 +114,7 @@ TEST(slam_utilities,findingAncestorPaths)
 }
 
 //----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

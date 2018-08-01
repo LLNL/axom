@@ -24,10 +24,10 @@
 
 #include "gtest/gtest.h"
 
-#include "slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 
-#include "slam/SizePolicies.hpp"
-#include "slam/ModularInt.hpp"
+#include "axom/slam/policies/SizePolicies.hpp"
+#include "axom/slam/ModularInt.hpp"
 
 TEST(slam_modInt,runtime_modular_int_unitialized_and_full)
 {
@@ -223,7 +223,7 @@ TEST(slam_modInt,compiletime_modular_int)
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

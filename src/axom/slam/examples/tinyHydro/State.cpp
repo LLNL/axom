@@ -23,7 +23,7 @@
 #include "PolygonMeshXY.hpp"
 #include "Part.hpp"
 
-#include "slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 
 namespace tinyHydro {
 

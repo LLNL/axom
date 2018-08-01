@@ -17,9 +17,9 @@
 
 #include "gtest/gtest.h"
 
-#include "primal/NumericArray.hpp"
+#include "axom/primal/geometry/NumericArray.hpp"
 
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 using namespace axom;

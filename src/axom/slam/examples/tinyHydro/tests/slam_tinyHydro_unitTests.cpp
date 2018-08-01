@@ -20,8 +20,8 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/Macros.hpp"
-#include "slic/slic.hpp"
+#include "axom/core/Macros.hpp"
+#include "axom/slic/interface/slic.hpp"
 
 #include "../PolygonMeshXY.hpp"
 #include "../HydroC.hpp"
@@ -595,7 +595,7 @@ TEST(slam_tinyHydro,test_06_PdV_work)
 }
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char * argv[])

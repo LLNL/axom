@@ -19,11 +19,11 @@
 
 #include "axom/config.hpp"
 
-#include "primal/Point.hpp"
-#include "primal/Triangle.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Triangle.hpp"
 
 #include "fmt/fmt.hpp"
-#include "slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 
 #include <cmath>
 
@@ -347,7 +347,7 @@ TEST( primal_triangle, triangle_3D_point_containment)
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

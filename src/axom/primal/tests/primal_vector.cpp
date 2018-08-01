@@ -17,7 +17,7 @@
 
 #include "gtest/gtest.h"
 
-#include "primal/Vector.hpp"
+#include "axom/primal/geometry/Vector.hpp"
 
 using namespace axom;
 
@@ -242,7 +242,7 @@ TEST( primal_vector, vector_outer_product)
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

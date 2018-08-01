@@ -17,11 +17,11 @@
 
 #include "gtest/gtest.h"
 
-#include "primal/Point.hpp"
-#include "primal/BoundingBox.hpp"
-#include "primal/Triangle.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/geometry/Triangle.hpp"
 
-#include "primal/clip.hpp"
+#include "axom/primal/operators/clip.hpp"
 
 #include <limits>
 
@@ -272,7 +272,7 @@ TEST( primal_clip, experimentalData)
 }
 
 //------------------------------------------------------------------------------
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])
