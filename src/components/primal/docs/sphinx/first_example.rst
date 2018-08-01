@@ -168,13 +168,48 @@ BoundingBox.
    :end-before: _intersect_end
    :language: C++
 
+If a ray intersects a bounding box at more than one point, as in the example above,
+the first point along the ray is reported as the intersection.  Thus, the ray's
+entry point is shown in the diagram, rather than some point in the box's interior
+or where it exits the box.
 
 Orientation
 ^^^^^^^^^^^
 
+Axom contains two overloads of ``orientation()``.  The 3D case tests a point against
+a triangle and reports which side it lies on; the 2D case tests a point against a
+line segment.  Here is an example use of the 3D point-triangle orientation test.
+
+.. figure:: figs/showOrientation.png
+   :figwidth: 300px
+   :alt: Diagram showing 3D point-triangle orientation test.
+
+.. literalinclude:: ../../examples/primal_introduction.cpp
+   :start-after: _orient_header_start
+   :end-before: _orient_header_end
+   :language: C++
+
+.. literalinclude:: ../../examples/primal_introduction.cpp
+   :start-after: _orient_start
+   :end-before: _orient_end
+   :language: C++
+
+The triangle is shown with its normal vector pointing out of its centroid.  The
+test point on the :math:`z` axis is on the negative side of the triangle.  The
+centroid lies in the triangle---"on the boundary."  The remaining test point is
+on the side of the triangle pointed into by the normal vector, the positive
+side.
+
 Distance
 ^^^^^^^^
 
+The various overloads of ``squared_distance()`` calculate the squared 
+distance between a query point and several different primitives:
+
+- another point,
+- a BoundingBox,
+- a Segment,
+- a Triangle.
 
 
 

@@ -130,9 +130,15 @@ PolygonType showClip()
   if (!asy.good()) {
     std::cout << "Could not write to " << fname << std::endl;
   } else {
+    asy << "// To turn this Asymptote source file into an image for inclusion in\n"
+           "// Axom's documentation,\n"
+           "// 1. run Asymptote:\n"
+           "//    asy -f png " << fname << std::endl <<
+           "// 2. Optionally, use ImageMagick to convert the white background to transparent:\n"
+           "//    convert " << fname << " -transparent white " << fname <<
+      std::endl << std::endl;
     asy << "// preamble" << std::endl;
-    asy << "settings.prc = false;" << std::endl;
-    asy << "settings.render = 0;" << std::endl;
+    asy << "settings.render = 6;" << std::endl;
     asy << "import three;" << std::endl;
     asy << "size(6cm, 0);" << std::endl << std::endl;
 
@@ -208,9 +214,15 @@ void showClosestPoint()
   if (!asy.good()) {
     std::cout << "Could not write to " << fname << std::endl;
   } else {
+    asy << "// To turn this Asymptote source file into an image for inclusion in\n"
+           "// Axom's documentation,\n"
+           "// 1. run Asymptote:\n"
+           "//    asy -f png " << fname << std::endl <<
+           "// 2. Optionally, use ImageMagick to convert the white background to transparent:\n"
+           "//    convert " << fname << " -transparent white " << fname <<
+      std::endl << std::endl;
     asy << "// preamble" << std::endl;
-    asy << "settings.prc = false;" << std::endl;
-    asy << "settings.render = 0;" << std::endl;
+    asy << "settings.render = 6;" << std::endl;
     asy << "import three;" << std::endl;
     asy << "size(6cm, 0);" << std::endl << std::endl;
 
@@ -279,9 +291,15 @@ void showBoundingBoxes()
   if (!asy.good()) {
     std::cout << "Could not write to " << fname << std::endl;
   } else {
-    asy << "// preamble" << std::endl;
-    asy << "settings.prc = false;" << std::endl;
-    asy << "settings.render = 0;" << std::endl;
+     asy << "// To turn this Asymptote source file into an image for inclusion in\n"
+           "// Axom's documentation,\n"
+           "// 1. run Asymptote:\n"
+           "//    asy -f png " << fname << std::endl <<
+           "// 2. Optionally, use ImageMagick to convert the white background to transparent:\n"
+           "//    convert " << fname << " -transparent white " << fname <<
+      std::endl << std::endl;
+   asy << "// preamble" << std::endl;
+    asy << "settings.render = 6;" << std::endl;
     asy << "import three;" << std::endl;
     asy << "size(6cm, 0);" << std::endl << std::endl;
 
@@ -348,13 +366,14 @@ void showBoundingBoxes()
 void showIntersect()
 {
   // _intersect_start
+  // Two triangles
   TriangleType tri1(PointType::make_point(1.2,   0,   0),
                     PointType::make_point(  0, 1.8,   0),
                     PointType::make_point(  0,   0, 1.4));
 
   TriangleType tri2(PointType::make_point(  0,   0, 0.5),
                     PointType::make_point(0.8, 0.1, 1.2),
-                    PointType::make_point(0.8,   1, 1.2));
+                    PointType::make_point(0.8, 1.4, 1.2));
 
   // tri1 and tri2 should intersect
   if (intersect(tri1, tri2)) {
@@ -367,30 +386,27 @@ void showIntersect()
   RayType ray(SegmentType(PointType::make_point(0.4, 0.4, 0),
                           PointType::make_point(0.4, 0.4, 1)));
 
-  // t will hold the intersection point as parameterized along ray
+  // t will hold the intersection point between ray and tri1,
+  // as parameterized along ray.
   double rt1t = 0;
   // rt1b will hold the intersection point barycentric coordinates,
-  // and rt1p will hold the physical coordinates
+  // and rt1p will hold the physical coordinates.
   PointType rt1b, rt1p;
-  if (intersect(tri1, ray, rt1t, rt1b)) {
+
+  // The ray should intersect tri1 and tri2.
+  if (intersect(tri1, ray, rt1t, rt1b) && intersect(tri2, ray)) {
     rt1p = tri1.baryToPhysical(rt1b);
     std::cout << "Ray intersects tri1 as expected.  Parameter t: " <<
       rt1t << std::endl << "  Intersect barycentric coordinates: " << rt1b <<
-      std::endl << "  Intersect physical coordinates: " << rt1p << std::endl;
+      std::endl << "  Intersect physical coordinates: " << rt1p << std::endl <<
+      "Ray also intersects tri2 as expected." << std::endl;
   } else {
     std::cout << "There's an error somewhere..." << std::endl;
   }
   
-  // The ray should also intersect tri2.
-  if (intersect(tri2, ray)) {
-    std::cout << "Ray intersects tri2 as expected." << std::endl;
-  } else {
-    std::cout << "There's an error somewhere..." << std::endl;
-  }
-
   // A bounding box
-  BoundingBoxType bbox(PointType::make_point(0.1, -0.1, 0.1),
-                       PointType::make_point(0.8,  0.65, 0.4));
+  BoundingBoxType bbox(PointType::make_point(0.1, -0.23, 0.1),
+                       PointType::make_point(0.8,  0.5,  0.4));
 
   // The bounding box should intersect tri1 and ray but not tr2.
   PointType bbtr1;
@@ -405,7 +421,8 @@ void showIntersect()
 
   // helper variables
   PolygonType poly = clip(tri1, bbox);
-  // these are parametric coordinates ray-tri2-t, tri1-tri2 leg A-t, tri1-tri2 leg C-t
+  // These are parametric coordinates ray-tri2-t, tri1-tri2 leg A-t, tri1-tri2 leg C-t
+  // and corresponding physical points.
   double rt2t, t1t2at, t1t2ct;
   (void)intersect(tri2, ray, rt2t);
   PointType rt2p = ray.at(rt2t);
@@ -415,7 +432,12 @@ void showIntersect()
   SegmentType t2legc(tri2[2], tri2[0]);
   (void)intersect(tri1, t2legc, t1t2ct);
   PointType t1t2cp = t2legc.at(t1t2ct);
-
+  // Project point C of tri2 onto the XY plane
+  double normal[3] = {0, 0, 1};
+  PlaneType XYPlane(normal, 0.);
+  PointType tr2c = tri2[2];
+  double pp[3];
+  XYPlane.projectPoint(tr2c.array().data(), pp);
 
   // Now write out an Asymptote file showing what we did.
   std::string fname = "showIntersect.asy";
@@ -423,19 +445,25 @@ void showIntersect()
   if (!asy.good()) {
     std::cout << "Could not write to " << fname << std::endl;
   } else {
+    asy << "// To turn this Asymptote source file into an image for inclusion in\n"
+           "// Axom's documentation,\n"
+           "// 1. run Asymptote:\n"
+           "//    asy -f png " << fname << std::endl <<
+           "// 2. Optionally, use ImageMagick to convert the white background to transparent:\n"
+           "//    convert " << fname << " -transparent white " << fname <<
+      std::endl << std::endl;
     asy << "// preamble" << std::endl;
-    asy << "settings.prc = false;" << std::endl;
-    asy << "settings.render = 0;" << std::endl;
+    asy << "settings.render = 6;" << std::endl;
     asy << "import three;" << std::endl;
     asy << "size(6cm, 0);" << std::endl << std::endl;
 
     asy << "// axes" << std::endl;
     asy << "draw(O -- 1.7X, arrow=Arrow3(DefaultHead2), " <<
-      "L=Label(\"$x$\", position=EndPoint, align=W));" << std::endl;
+      "L=Label(\"$x$\", position=EndPoint));" << std::endl;
     asy << "draw(O -- 2.4Y, arrow=Arrow3(), " <<
       "L=Label(\"$y$\", position=EndPoint));" << std::endl;
     asy << "draw(O -- 2Z, arrow=Arrow3(), " <<
-      "L=Label(\"$z$\", position=EndPoint));" << std::endl << std::endl;
+      "L=Label(\"$z$\", position=EndPoint, align=W));" << std::endl << std::endl;
 
     asy << "// triangle 1" << std::endl;
     asy << "path3 tri1 = " << tri1[0] << "--" << tri1[1] << "--" <<
@@ -465,6 +493,82 @@ void showIntersect()
       ", red);" << std::endl << "dot(" << rt2p << ", red);" << std::endl;
     asy << "draw(tri1);" << std::endl << "draw(tri2, blue);" << std::endl;
     asy << "draw(" << t1t2ap << "--" << t1t2cp << ", deepblue);" << std::endl;
+    asy << "draw(" << tr2c << "--(" << pp[0] << "," << pp[1] << "," << 
+      pp[2] <<"), dotted);" << std::endl;
+  }
+}
+
+void showOrientation()
+{
+  // _orient_start
+  // A triangle
+  TriangleType tri(PointType::make_point(1.2,   0,   0),
+                   PointType::make_point(  0, 1.8,   0),
+                   PointType::make_point(  0,   0, 1.4));
+
+  // Three points:
+  //    one on the triangle's positive side,
+  PointType pos = PointType::make_point(0.45, 1.5, 1);
+  //    one coplanar to the triangle, the centroid,
+  PointType cpl = PointType::lerp(PointType::lerp(tri[0], tri[1], 0.5),
+                                   tri[2], 1./3.);
+  //    and one on the negative side
+  PointType neg = PointType::make_point(0, 0, 0.7);
+
+  // Test orientation
+  if (orientation(pos, tri)  == ON_POSITIVE_SIDE &&
+      orientation(cpl, tri) == ON_BOUNDARY &&
+      orientation(neg, tri)  == ON_NEGATIVE_SIDE) {
+    std::cout << "As expected, point pos is on the positive side," <<
+      std::endl << "    point cpl is on the boundary (on the triangle)," <<
+      std::endl << "    and point neg is on the negative side." << std::endl;
+  } else {
+    std::cout << "Someone wrote this wrong." << std::endl;
+  }
+  // _orient_end
+
+  // Helper variables
+  // Project onto the XY plane
+  PointType ppos = PointType::make_point(pos[0], pos[1], 0.);
+  PointType pcpl = PointType::make_point(cpl[0], cpl[1], 0.);
+
+  // Now write out an Asymptote file showing what we did.
+  std::string fname = "showOrientation.asy";
+  std::ofstream asy(fname);
+  if (!asy.good()) {
+    std::cout << "Could not write to " << fname << std::endl;
+  } else {
+    asy << "// To turn this Asymptote source file into an image for inclusion in\n"
+           "// Axom's documentation,\n"
+           "// 1. run Asymptote:\n"
+           "//    asy -f png " << fname << std::endl <<
+           "// 2. Optionally, use ImageMagick to convert the white background to transparent:\n"
+           "//    convert " << fname << " -transparent white " << fname <<
+      std::endl << std::endl;
+    asy << "// preamble" << std::endl;
+    asy << "settings.render = 6;" << std::endl;
+    asy << "import three;" << std::endl;
+    asy << "size(6cm, 0);" << std::endl << std::endl;
+
+    asy << "// axes" << std::endl;
+    asy << "draw(O -- 1.7X, arrow=Arrow3(DefaultHead2), " <<
+      "L=Label(\"$x$\", position=EndPoint));" << std::endl;
+    asy << "draw(O -- 2.4Y, arrow=Arrow3(), " <<
+      "L=Label(\"$y$\", position=EndPoint));" << std::endl;
+    asy << "draw(O -- 2Z, arrow=Arrow3(), " <<
+      "L=Label(\"$z$\", position=EndPoint, align=W));" << std::endl << std::endl;
+
+    asy << "// triangle" << std::endl;
+    asy << "path3 tri = " << tri[0] << "--" << tri[1] << "--" <<
+      tri[2] << "--cycle;" << std::endl << std::endl;
+    asy << "triple centroid = " << cpl << ";" << std::endl;
+
+    asy << "draw(tri);" << std::endl;
+    asy << "dot(" << neg << ", blue);" << std::endl;
+    asy << "dot(" << cpl << ", blue);" << std::endl;
+    asy << "draw(centroid--1.6centroid, arrow=Arrow3(DefaultHead2));" << std::endl;
+    asy << "dot(" << pos << ", blue);" << std::endl;
+    asy << "draw(" << pos << "--" << ppos << ", dotted);" << std::endl;
   }
 }
 
@@ -481,6 +585,7 @@ int main(int argc, char** argv)
   showClosestPoint();
   showBoundingBoxes();
   showIntersect();
+  showOrientation();
 
   return 0;
 }

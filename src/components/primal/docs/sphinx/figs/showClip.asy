@@ -1,6 +1,12 @@
+// To turn this Asymptote source file into an image for inclusion in
+// Axom's documentation,
+// 1. run Asymptote:
+//    asy -f png showClip.asy
+// 2. Optionally, use ImageMagick to convert the white background to transparent:
+//    convert showClip.asy -transparent white showClip.asy
+
 // preamble
-settings.prc = false;
-settings.render = 0;
+settings.render = 6;
 import three;
 size(6cm, 0);
 
