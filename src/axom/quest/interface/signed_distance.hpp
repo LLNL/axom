@@ -22,7 +22,7 @@
 #include "axom/config.hpp"  // for compile-time definitions
 
 // Quest includes
-#include "axom/quest/interface/internal/mpicomm_wrapper.hpp" // for MPI_Comm / MPI_COMM_SELF
+#include "axom/quest/interface/internal/mpicomm_wrapper.hpp" // MPI_COMM_SELF
 
 // C/C++ includes
 #include <string>   // for std::string

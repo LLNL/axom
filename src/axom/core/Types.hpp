@@ -27,7 +27,7 @@
 
 
 #include "axom/config.hpp"           // defines AXOM_USE_CXX11
-#include "axom/core/detail/cstdint_wrapper.hpp"  // for fixed bitwidth integer types
+#include "axom/core/detail/cstdint_wrapper.hpp"  // fixed bitwidth integer types
 
 #ifndef AXOM_USE_CXX11
   #include <cstddef>            // brings in NULL

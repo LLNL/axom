@@ -17,10 +17,7 @@
 
 #include "axom/quest/stl/STLReader.hpp"
 
-// axom includes
-#include "axom/core/Types.hpp"            // for nullptr
-
-#include "axom/core/utilities/Utilities.hpp"  // For isLittleEndian() and swapEndian()
+#include "axom/core/utilities/Utilities.hpp"  // isLittleEndian()/swapEndian()
 
 // Mint includes
 #include "axom/mint/config.hpp"          // for mint::IndexType

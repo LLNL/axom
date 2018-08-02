@@ -18,7 +18,7 @@
 #ifndef AXOM_NUMERICS_LU_HPP_
 #define AXOM_NUMERICS_LU_HPP_
 
-#include "axom/core/utilities/Utilities.hpp" // for NearlyEqual(), swap() and abs()
+#include "axom/core/utilities/Utilities.hpp" // NearlyEqual(), swap() and abs()
 #include "axom/core/numerics/Matrix.hpp"    // for Matrix
 
 // C/C++ includes

@@ -22,7 +22,7 @@
 #include "axom/mint/mesh/MeshCoordinates.hpp" // for mint::MeshCoordinates class
 #include "axom/mint/mesh/blueprint.hpp"       // for mint::blueprint() functions
 
-#include "axom/mint/mesh/internal/MeshHelpers.hpp"     // for internal helper methods
+#include "axom/mint/mesh/internal/MeshHelpers.hpp"     // for internal helpers
 
 namespace axom
 {

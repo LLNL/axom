@@ -20,12 +20,12 @@
 
 #include "axom/core/Macros.hpp"             // for Axom macros
 
-#include "axom/mint/mesh/CellTypes.hpp"          // for CellType enum definitions
-#include "axom/mint/config.hpp"             // for mint compile-time type definitions
+#include "axom/mint/mesh/CellTypes.hpp"          // for CellType enum
+#include "axom/mint/config.hpp"             // for mint compile-time type
 #include "axom/mint/mesh/FieldAssociation.hpp"   // for FieldAssociation enum
 #include "axom/mint/mesh/FieldData.hpp"          // for mint::FieldData
 #include "axom/mint/mesh/MeshCoordinates.hpp"    // for mint::MeshCoordinates
-#include "axom/mint/mesh/MeshTypes.hpp"          // for MeshType enum and property traits
+#include "axom/mint/mesh/MeshTypes.hpp"          // for MeshType enum
 
 #include "axom/slic/interface/slic.hpp"               // for SLIC macros
 

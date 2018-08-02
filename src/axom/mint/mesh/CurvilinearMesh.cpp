@@ -18,10 +18,10 @@
 
 // mint includes
 #include "axom/mint/mesh/blueprint.hpp"        // for blueprint functions
-#include "axom/mint/mesh/MeshTypes.hpp"        // for STRUCTURED_CURVILINEAR_MESH
-#include "axom/mint/mesh/MeshCoordinates.hpp"  // for MeshCoordinates class definition
+#include "axom/mint/mesh/MeshTypes.hpp"        // STRUCTURED_CURVILINEAR_MESH
+#include "axom/mint/mesh/MeshCoordinates.hpp"  // for MeshCoordinates class
 
-#include "axom/mint/mesh/internal/MeshHelpers.hpp"      // for internal helper methods
+#include "axom/mint/mesh/internal/MeshHelpers.hpp"      // for internal helpers
 
 // slic includes
 #include "axom/slic/interface/slic.hpp"             // for SLIC macros

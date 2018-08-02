@@ -51,7 +51,7 @@ declarations:
   fields:
     # enum for types
     c_header : axom/sidre/interface/SidreTypes.h
-    cxx_header : axom/sidre/interface/SidreTypes.hpp
+    cxx_header : axom/sidre/core/SidreTypes.hpp
     c_to_cxx : axom::sidre::getTypeID({c_var})
     cxx_to_c : static_cast<int>({cxx_var})
 

@@ -21,7 +21,7 @@
 
 // Mint includes
 #include "axom/mint/core/Array.hpp"      // for mint::Array
-#include "axom/mint/config.hpp"     // for MINT_USE_SIDRE compile-time definition
+#include "axom/mint/config.hpp"          // for MINT_USE_SIDRE
 #include "axom/mint/mesh/Extent.hpp"     // for mint::Extent
 #include "axom/mint/mesh/MeshTypes.hpp"  // for mesh types
 

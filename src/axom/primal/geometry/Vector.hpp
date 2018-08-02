@@ -20,7 +20,7 @@
 
 // axom_utils includes
 #include "axom/core/numerics/Determinants.hpp"  // for numerics::determinant()
-#include "axom/core/numerics/matvecops.hpp"     // for dot_product()/cross_product()
+#include "axom/core/numerics/matvecops.hpp"     // dot_product()/cross_product()
 
 // Primal includes
 #include "axom/primal/geometry/NumericArray.hpp"

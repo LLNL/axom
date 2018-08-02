@@ -222,7 +222,7 @@ Input::Input(int argc, char** argv) :
     <<"\n  resolution = " << resolution
     << (resolution < 1 ? " (use cube root of triangle count)" : "")
     <<"\n  weld threshold = " <<  weldThreshold
-    <<"\n  " << (skipWeld? "": "not ") << "skipping weld"
+    <<"\n  " << (skipWeld ? "" : "not ") << "skipping weld"
     <<"\n  infile = " << stlInput
     <<"\n  collisions outfile = " << collisionsMeshName()
     <<"\n  weld outfile = " << weldMeshName()  );

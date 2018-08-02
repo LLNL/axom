@@ -21,7 +21,7 @@
 #include "axom/mint/config.hpp"          // for compile-time definitions
 #include "axom/mint/mesh/MeshTypes.hpp"       // for STRUCTURED_UNIFORM_MESH
 
-#include "axom/mint/mesh/internal/MeshHelpers.hpp"     // for internal helper methods
+#include "axom/mint/mesh/internal/MeshHelpers.hpp"     // for internal helper
 
 // core includes
 #include "axom/core/utilities/Utilities.hpp" // for utilities::isNearlyEqual

@@ -17,9 +17,9 @@
 
 // Axom includes
 #include "axom/mint/mesh/FieldVariable.hpp" // for mint::FieldVariable
-#include "axom/mint/mesh/FieldTypes.hpp"    // for FieldTypes enum and field_traits
-#include "axom/core/numerics/Matrix.hpp"  // for numerics::Matrix
-#include "axom/slic/interface/slic.hpp"          // for slic macros
+#include "axom/mint/mesh/FieldTypes.hpp"    // for FieldTypes enum
+#include "axom/core/numerics/Matrix.hpp"    // for numerics::Matrix
+#include "axom/slic/interface/slic.hpp"     // for slic macros
 
 // Sidre includes
 #ifdef MINT_USE_SIDRE

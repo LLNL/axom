@@ -19,9 +19,8 @@
 #define PRIMAL_PLANE_HPP_
 
 #include "axom/core/Macros.hpp"                 // for Axom macros
-#include "axom/core/Types.hpp"                  // for nullptr
 #include "axom/core/numerics/matvecops.hpp"        // for vector operators
-#include "axom/primal/geometry/OrientationResult.hpp"    // for OrientedSide enum
+#include "axom/primal/geometry/OrientationResult.hpp"  // for OrientedSide
 
 #include "axom/slic/interface/slic.hpp"                   // for SLIC macros
 

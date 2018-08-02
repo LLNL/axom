@@ -22,7 +22,7 @@
 #include "axom/core/Macros.hpp"      // for axom macros
 
 #include "axom/mint/config.hpp"      // for compile-time definitions
-#include "axom/mint/mesh/CellTypes.hpp"   // for the CellTypes enum and definitions
+#include "axom/mint/mesh/CellTypes.hpp"   // for the CellTypes enum
 #include "axom/mint/mesh/Extent.hpp"      // for mint::Extent
 #include "axom/mint/mesh/Mesh.hpp"        // for mint::Mesh base class
 

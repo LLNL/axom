@@ -28,9 +28,9 @@
 
 // Mint includes
 #include "axom/mint/mesh/CellTypes.hpp"          // for cell type definitions
-#include "axom/mint/fem/shape_functions/Lagrange.hpp"           // For Lagrange ShapeFunctions
+#include "axom/mint/fem/shape_functions/Lagrange.hpp" //Lagrange ShapeFunctions
 #include "axom/mint/mesh/Mesh.hpp"               // for mesh data structure
-#include "axom/mint/fem/shape_functions/ShapeFunction.hpp"      // For ShapeFunction definition
+#include "axom/mint/fem/shape_functions/ShapeFunction.hpp"
 
 // Slic includes
 #include "axom/slic/interface/slic.hpp"

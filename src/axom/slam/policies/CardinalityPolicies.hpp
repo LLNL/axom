@@ -62,7 +62,7 @@
 #include "axom/slam/policies/PolicyTraits.hpp"
 
 #include "axom/slam/OrderedSet.hpp"  // Note: Not a circular dependency since
-                                // CardinalityPolicies are for relations
+// CardinalityPolicies are for relations
 
 namespace axom
 {

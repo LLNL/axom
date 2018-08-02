@@ -25,15 +25,15 @@
 #include "axom/mint/utils/vtk_utils.hpp"             // for mint::write_vtk()
 
 // Quest includes
-#include "axom/quest/interface/signed_distance.hpp"      // for Quest's signed distance query
+#include "axom/quest/interface/signed_distance.hpp"  // for signed distance
 
 // Slic includes
 #include "axom/slic/interface/slic.hpp"                  // for SLIC macros
-#include "axom/slic/streams/GenericOutputStream.hpp"   // for GenericOutputStream
+#include "axom/slic/streams/GenericOutputStream.hpp"   // GenericOutputStream
 
 #ifdef AXOM_USE_MPI
   #include <mpi.h>                         // for MPI
-  #include "axom/slic/streams/SynchronizedStream.hpp"   // for SynchronizedStream
+  #include "axom/slic/streams/SynchronizedStream.hpp"   // SynchronizedStream
 #else
 using MPI_Comm = int;
 #endif

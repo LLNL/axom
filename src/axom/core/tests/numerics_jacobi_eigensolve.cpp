@@ -17,7 +17,7 @@
 
 // Axom includes
 #include "axom/core/numerics/Matrix.hpp"             // for numerics::Matrix
-#include "axom/core/utilities/Utilities.hpp"          // for random_real()/isNearlyEqual
+#include "axom/core/utilities/Utilities.hpp"         // random_real()/isNearlyEqual
 #include "axom/core/numerics/jacobi_eigensolve.hpp"  // for jacobi_eigensolve()
 #include "axom/core/numerics/matvecops.hpp"          // for matrix operators
 
@@ -57,9 +57,9 @@ void random_symmetric_matrix_init( numerics::Matrix< T >& A, T lo, T hi )
   constexpr unsigned int seed = 123456789;
   const int N = A.getNumRows();
 
-  for ( IndexType i=0; i < N; ++i )
+  for ( IndexType i=0 ; i < N ; ++i )
   {
-    for ( IndexType j=0; j <= i; ++j )
+    for ( IndexType j=0 ; j <= i ; ++j )
     {
       A( i,j ) = utilities::random_real( lo, hi, seed );
       A( j,i ) = A( i,j );
@@ -193,9 +193,9 @@ TEST( numerics_jacobi_eigensolve, random_symmetric_matrix )
 
     int numIterations = 0;
     int rc = numerics::jacobi_eigensolve( A_test, V, lambdas,
-                                 numerics::JACOBI_DEFAULT_MAX_ITERATIONS,
-                                 &numIterations,
-                                 numerics::JACOBI_DEFAULT_TOLERANCE );
+                                          numerics::JACOBI_DEFAULT_MAX_ITERATIONS,
+                                          &numIterations,
+                                          numerics::JACOBI_DEFAULT_TOLERANCE );
 
     EXPECT_EQ( rc, numerics::JACOBI_EIGENSOLVE_SUCCESS );
     EXPECT_TRUE( numIterations > 0 );

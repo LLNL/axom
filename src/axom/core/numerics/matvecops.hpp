@@ -26,10 +26,11 @@
 #ifndef AXOM_NUMERICS_MATVECOPS_HPP_
 #define AXOM_NUMERICS_MATVECOPS_HPP_
 
-#include "axom/core/numerics/Determinants.hpp"     // for numerics::determinant()
+#include "axom/core/numerics/Determinants.hpp"     // numerics::determinant()
 #include "axom/core/numerics/Matrix.hpp"           // for numerics::Matrix
 #include "axom/core/utilities/Utilities.hpp"        // for isNearlyEqual()
-#include "axom/core/numerics/internal/matrix_norms.hpp"     // for matrix norm functions
+#include "axom/core/numerics/internal/matrix_norms.hpp"  // matrix norm
+                                                         // functions
 
 // C/C++ includes
 #include <cassert> // for assert()

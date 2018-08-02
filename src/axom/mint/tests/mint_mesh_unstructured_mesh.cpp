@@ -14,8 +14,8 @@
  *
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-#include "axom/mint/config.hpp"              /* for mint defintions */
-#include "axom/mint/mesh/UnstructuredMesh.hpp"               /* for mint::Array */
+#include "axom/mint/config.hpp"                /* for mint defintions */
+#include "axom/mint/mesh/UnstructuredMesh.hpp" /* for mint::Array */
 
 #include "axom/core/utilities/Utilities.hpp"     /* for utilities::max */
 

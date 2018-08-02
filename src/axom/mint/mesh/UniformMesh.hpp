@@ -19,9 +19,9 @@
 #define MINT_UNIFORMMESH_HPP_
 
 #include "axom/mint/config.hpp"                // for IndexType, int64
-#include "axom/mint/mesh/StructuredMesh.hpp"        // for StructuredMesh base class
+#include "axom/mint/mesh/StructuredMesh.hpp"   // for StructuredMesh
 
-#include "axom/slic/interface/slic.hpp"                  // for SLIC macros
+#include "axom/slic/interface/slic.hpp"        // for SLIC macros
 
 namespace axom
 {

@@ -28,12 +28,12 @@
 #include "axom/mint/utils/vtk_utils.hpp"         // for mint::write_vtk()
 
 // Primal includes
-#include "axom/primal/geometry/BoundingBox.hpp"     // defines primal::BoundingBox
+#include "axom/primal/geometry/BoundingBox.hpp"     // primal::BoundingBox
 #include "axom/primal/geometry/Plane.hpp"           // defines primal::Plane
 #include "axom/primal/geometry/Sphere.hpp"          // defines primal::Sphere
 
 // Quest includes
-#include "axom/quest/interface/signed_distance.hpp" // for the signed distance interface
+#include "axom/quest/interface/signed_distance.hpp" // for signed distance
 #include "quest_test_utilities.hpp"  // for test-utility functions
 
 // Slic includes
