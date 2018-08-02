@@ -42,7 +42,7 @@
 #include "axom/slam/policies/SubsettingPolicies.hpp"
 #include "axom/slam/ModularInt.hpp"
 
-#include "slam/IteratorBase.hpp"
+#include "axom/slam/IteratorBase.hpp"
 
 #ifdef AXOM_USE_CXX11
     #include <type_traits>

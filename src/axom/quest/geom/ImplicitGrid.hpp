@@ -19,7 +19,7 @@
 #define QUEST_IMPLICIT_GRID__HPP_
 
 #include "axom/config.hpp"
-#include "axom/core/Types.hpp"            // AXOM_NULLPTR
+#include "axom/core/Types.hpp"            // nullptr
 #include "axom/core/utilities/Utilities.hpp"  // for clamp functions
 
 #include "axom/slic/interface/slic.hpp"

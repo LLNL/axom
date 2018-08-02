@@ -16,24 +16,24 @@
  */
 
 // Axom utils includes
-#include "axom_utils/Utilities.hpp"       // for processAbort()
-#include "axom_utils/Timer.hpp"
+#include "axom/core/utilities/Utilities.hpp"       // for processAbort()
+#include "axom/core/utilities/Timer.hpp"
 
 // Mint includes
-#include "mint/config.hpp"                // for compile-time mint
-#include "mint/UniformMesh.hpp"           // for mint::UniformMesh
-#include "mint/vtk_utils.hpp"             // for mint::write_vtk()
+#include "axom/mint/config.hpp"                // for compile-time mint
+#include "axom/mint/mesh/UniformMesh.hpp"           // for mint::UniformMesh
+#include "axom/mint/utils/vtk_utils.hpp"             // for mint::write_vtk()
 
 // Quest includes
-#include "quest/signed_distance.hpp"      // for Quest's signed distance query
+#include "axom/quest/interface/signed_distance.hpp"      // for Quest's signed distance query
 
 // Slic includes
-#include "slic/slic.hpp"                  // for SLIC macros
-#include "slic/GenericOutputStream.hpp"   // for GenericOutputStream
+#include "axom/slic/interface/slic.hpp"                  // for SLIC macros
+#include "axom/slic/streams/GenericOutputStream.hpp"   // for GenericOutputStream
 
 #ifdef AXOM_USE_MPI
   #include <mpi.h>                         // for MPI
-  #include "slic/SynchronizedStream.hpp"   // for SynchronizedStream
+  #include "axom/slic/streams/SynchronizedStream.hpp"   // for SynchronizedStream
 #else
 using MPI_Comm = int;
 #endif
@@ -124,9 +124,9 @@ int main ( int argc, char** argv )
   slic::flushStreams();
 
   // STEP 5: Generate computational mesh
-  mint::UniformMesh* mesh = AXOM_NULLPTR;
+  mint::UniformMesh* mesh = nullptr;
   generate_uniform_box_mesh( mesh );
-  SLIC_ERROR_IF( mesh==AXOM_NULLPTR, "box mesh is null!" );
+  SLIC_ERROR_IF( mesh==nullptr, "box mesh is null!" );
   double* phi = mesh->createField< double >( "phi", mint::NODE_CENTERED );
 
   // STEP 6: evaluate the signed distance field on the given mesh
@@ -157,7 +157,7 @@ int main ( int argc, char** argv )
 
   // STEP 8: finalize
   delete mesh;
-  mesh = AXOM_NULLPTR;
+  mesh = nullptr;
 
   quest::signed_distance_finalize( );
   finalize_logger( );
@@ -175,14 +175,14 @@ int main ( int argc, char** argv )
 //------------------------------------------------------------------------------
 void generate_uniform_box_mesh( mint::UniformMesh*& mesh )
 {
-  SLIC_ASSERT( mesh == AXOM_NULLPTR );
+  SLIC_ASSERT( mesh == nullptr );
   SLIC_ASSERT( quest::signed_distance_initialized() );
 
   double mesh_box_min[ 3 ];
   double mesh_box_max[ 3 ];
 
-  double* lo = AXOM_NULLPTR;
-  double* hi = AXOM_NULLPTR;
+  double* lo = nullptr;
+  double* hi = nullptr;
 
   if ( Arguments.specified_box_max && Arguments.specified_box_min )
   {
@@ -210,7 +210,7 @@ void generate_uniform_box_mesh( mint::UniformMesh*& mesh )
   mint::IndexType Nk = static_cast< mint::IndexType >( Arguments.box_dims[2] );
   mesh = new mint::UniformMesh( lo, hi, Ni, Nj, Nk );
 
-  SLIC_ASSERT( mesh != AXOM_NULLPTR );
+  SLIC_ASSERT( mesh != nullptr );
   slic::flushStreams();
 }
 
@@ -326,7 +326,7 @@ void initialize_logger( )
 
   // setup the logstreams
   std::string fmt              = "";
-  slic::LogStream* logStream   = AXOM_NULLPTR;
+  slic::LogStream* logStream   = nullptr;
 
 #ifdef AXOM_USE_MPI
   fmt = "[<RANK>][<LEVEL>]: <MESSAGE>\n";

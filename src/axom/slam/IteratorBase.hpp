@@ -24,7 +24,7 @@
 #ifndef SLAM_ITERBASE_H_
 #define SLAM_ITERBASE_H_
 
-#include "slam/Set.hpp"
+#include "axom/slam/Set.hpp"
 
 namespace axom
 {

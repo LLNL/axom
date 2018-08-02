@@ -18,7 +18,7 @@
 #ifndef SLAM_MAPPED_RELATION_SET_H_
 #define SLAM_MAPPED_RELATION_SET_H_
 
-#include "slam/BivariateSet.hpp"
+#include "axom/slam/BivariateSet.hpp"
 
 namespace axom
 {

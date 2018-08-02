@@ -25,8 +25,8 @@
 #ifndef SLAM_PRODUCT_SET_H_
 #define SLAM_PRODUCT_SET_H_
 
-#include "slam/BivariateSet.hpp"
-#include "slam/RangeSet.hpp"
+#include "axom/slam/BivariateSet.hpp"
+#include "axom/slam/RangeSet.hpp"
 
 #include <cassert>
 

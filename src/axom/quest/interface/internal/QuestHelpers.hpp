@@ -22,23 +22,23 @@
 #include "axom/config.hpp"           // for compile-time definitions
 
 // Mint includes
-#include "mint/Mesh.hpp"             // for mint::Mesh
-#include "mint/UnstructuredMesh.hpp" // for mint::UnstructuredMesh
+#include "axom/mint/mesh/Mesh.hpp"             // for mint::Mesh
+#include "axom/mint/mesh/UnstructuredMesh.hpp" // for mint::UnstructuredMesh
 
 // Slic includes
-#include "slic/slic.hpp"  // for SLIC macros
-#include "slic/GenericOutputStream.hpp"
+#include "axom/slic/interface/slic.hpp"  // for SLIC macros
+#include "axom/slic/streams/GenericOutputStream.hpp"
 #if defined(AXOM_USE_MPI) && defined(AXOM_USE_LUMBERJACK)
-  #include "slic/LumberjackStream.hpp"
+  #include "axom/slic/streams/LumberjackStream.hpp"
 #elif defined(AXOM_USE_MPI) && !defined(AXOM_USE_LUMBERJACK)
-  #include "slic/SynchronizedStream.hpp"
+  #include "axom/slic/streams/SynchronizedStream.hpp"
 #endif
 
 // Quest includes
-#include "quest/mpicomm_wrapper.hpp"
-#include "quest/STLReader.hpp"
+#include "axom/quest/interface/internal/mpicomm_wrapper.hpp"
+#include "axom/quest/stl/STLReader.hpp"
 #ifdef AXOM_USE_MPI
-#include "quest/PSTLReader.hpp"
+#include "axom/quest/stl/PSTLReader.hpp"
 #endif
 
 // C/C++ includes
@@ -77,10 +77,10 @@ constexpr int READ_SUCCESS = 0;
  *
  * \return status set to zero on success, or to a non-zero value otherwise.
  *
- * \pre m == AXOM_NULLPTR
+ * \pre m == nullptr
  * \pre !file.empty()
  *
- * \post m != AXOM_NULLPTR
+ * \post m != nullptr
  * \post m->getMeshType() == mint::UNSTRUCTURED_MESH
  * \post m->hasMixedCellTypes() == false
  * \post m->getCellType() == mint::TRIANGLE
@@ -97,7 +97,7 @@ int read_mesh( const std::string& file,
   using TriangleMesh      = mint::UnstructuredMesh< mint::SINGLE_SHAPE >;
 
   // STEP 0: check input mesh pointer
-  if ( m != AXOM_NULLPTR )
+  if ( m != nullptr )
   {
     SLIC_WARNING( "supplied mesh pointer is not null!" );
     return READ_FAILED;
@@ -107,7 +107,7 @@ int read_mesh( const std::string& file,
   m = new TriangleMesh( DIMENSION, mint::TRIANGLE );
 
   // STEP 2: allocate reader
-  quest::STLReader* reader = AXOM_NULLPTR;
+  quest::STLReader* reader = nullptr;
 #ifdef AXOM_USE_MPI
   reader = new quest::PSTLReader( comm );
 #else
@@ -126,12 +126,12 @@ int read_mesh( const std::string& file,
   {
     SLIC_WARNING( "reading STL file failed, setting mesh to NULL" );
     delete m;
-    m = AXOM_NULLPTR;
+    m = nullptr;
   }
 
   // STEP 4: delete the reader
   delete reader;
-  reader = AXOM_NULLPTR;
+  reader = nullptr;
 
   return rc;
 }
@@ -148,18 +148,18 @@ int read_mesh( const std::string& file,
  * \param [out] lo buffer to store the lower bound mesh coordinates
  * \param [out] hi buffer to store the upper bound mesh coordinates
  *
- * \pre mesh != AXOM_NULLPTR
- * \pre lo != AXOM_NULLPTR
- * \pre hi != AXOM_NULLPTR
+ * \pre mesh != nullptr
+ * \pre lo != nullptr
+ * \pre hi != nullptr
  * \pre hi & lo must point to buffers that are at least N long, where N
  *  corresponds to the mesh dimension.
  */
 void compute_mesh_bounds( const mint::Mesh* mesh, double* lo, double* hi )
 {
 
-  SLIC_ASSERT( mesh != AXOM_NULLPTR );
-  SLIC_ASSERT( lo != AXOM_NULLPTR );
-  SLIC_ASSERT( hi != AXOM_NULLPTR );
+  SLIC_ASSERT( mesh != nullptr );
+  SLIC_ASSERT( lo != nullptr );
+  SLIC_ASSERT( hi != nullptr );
 
   const int ndims = mesh->getDimension();
 
@@ -235,7 +235,7 @@ void logger_init( bool& isInitialized,
   mustFinalize  = true;
   slic::initialize();
 
-  slic::LogStream* ls = AXOM_NULLPTR;
+  slic::LogStream* ls = nullptr;
   std::string msgfmt  = "[<LEVEL>]: <MESSAGE>\n";
 
 #if defined(AXOM_USE_MPI) && defined(AXOM_USE_LUMBERJACK)

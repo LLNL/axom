@@ -22,7 +22,7 @@
 #include "axom/config.hpp"  // for compile-time definitions
 
 // Quest includes
-#include "quest/mpicomm_wrapper.hpp" // for MPI_Comm / MPI_COMM_SELF
+#include "axom/quest/interface/internal/mpicomm_wrapper.hpp" // for MPI_Comm / MPI_COMM_SELF
 
 // C/C++ includes
 #include <string>   // for std::string
@@ -134,7 +134,7 @@ int signed_distance_init( const std::string& file,
  * \note The Signed Distance Query currently only supports 3-D triangular
  *  surface meshes.
  *
- * \pre m != AXOM_NULLPTR
+ * \pre m != nullptr
  * \pre comm != MPI_COMM_NULL (when MPI is available)
  * \pre signed_distance_initialized() == false
  * \post signed_distance_initialized() == true
@@ -158,8 +158,8 @@ bool signed_distance_initialized( );
  * \param [out] lo buffer to store the lower bound mesh coordinates.
  * \param [out] hi buffer to store the upper bound mesh coordinates.
  *
- * \pre lo != AXOM_NULLPTR
- * \pre hi != AXOM_NULLPTR
+ * \pre lo != nullptr
+ * \pre hi != nullptr
  * \pre hi & lo must point to a buffer that is at least ndims long.
  * \pre signed_distance_initialized() == true
  */
@@ -257,10 +257,10 @@ double signed_distance_evaluate( double x, double y, double z=0.0 );
  * \param [in] npoints the number of query point
  * \param [out] phi output array storing the signed distance of each point
  *
- * \pre x != AXOM_NULLPTR
- * \pre y != AXOM_NULLPTR
- * \pre z != AXOM_NULLPTR
- * \pre phi != AXOM_NULLPTR
+ * \pre x != nullptr
+ * \pre y != nullptr
+ * \pre z != nullptr
+ * \pre phi != nullptr
  */
 void signed_distance_evaluate( const double* x,
                                const double* y,

@@ -15,14 +15,14 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include "quest/signed_distance.hpp"
+#include "axom/quest/interface/signed_distance.hpp"
 
-#include "quest/QuestHelpers.hpp"
-#include "quest/SignedDistance.hpp"
+#include "axom/quest/interface/internal/QuestHelpers.hpp"
+#include "axom/quest/SignedDistance.hpp"
 
-#include "mint/Mesh.hpp"
+#include "axom/mint/mesh/Mesh.hpp"
 
-#include "slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 
 namespace axom
 {
@@ -67,8 +67,8 @@ static struct parameters_t
 } Parameters;
 
 // TODO: note the SignedDistance query is currently only supported in 3-D
-static SignedDistance3D* s_query    = AXOM_NULLPTR;
-static mint::Mesh* s_surface_mesh   = AXOM_NULLPTR;
+static SignedDistance3D* s_query    = nullptr;
+static mint::Mesh* s_surface_mesh   = nullptr;
 static bool s_must_delete_mesh      = false;
 static bool s_must_finalize_logger  = false;
 static bool s_logger_is_initialized = false;
@@ -88,7 +88,7 @@ int signed_distance_init( const std::string& file, MPI_Comm comm )
                          Parameters.verbose,
                          comm );
 
-  SLIC_ASSERT( s_query == AXOM_NULLPTR );
+  SLIC_ASSERT( s_query == nullptr );
 
   if ( Parameters.dimension != 3 )
   {
@@ -134,7 +134,7 @@ int signed_distance_init( const mint::Mesh* m, MPI_Comm comm )
 
   if ( s_surface_mesh != m )
   {
-    SLIC_ASSERT( s_surface_mesh == AXOM_NULLPTR );
+    SLIC_ASSERT( s_surface_mesh == nullptr );
     s_surface_mesh     = const_cast< mint::Mesh* >( m );
     s_must_delete_mesh = false;
   }
@@ -150,7 +150,7 @@ int signed_distance_init( const mint::Mesh* m, MPI_Comm comm )
 //------------------------------------------------------------------------------
 bool signed_distance_initialized( )
 {
-  return ( s_query != AXOM_NULLPTR );
+  return ( s_query != nullptr );
 }
 
 //------------------------------------------------------------------------------
@@ -159,8 +159,8 @@ void signed_distance_get_mesh_bounds( double* lo, double* hi )
   SLIC_ERROR_IF( !signed_distance_initialized(),
                  "signed distance query must be initialized prior to" <<
                  "calling get_mesh_bounds()" );
-  SLIC_ERROR_IF( lo==AXOM_NULLPTR, "supplied buffer is null" );
-  SLIC_ERROR_IF( hi==AXOM_NULLPTR, "supplied buffer is null" );
+  SLIC_ERROR_IF( lo==nullptr, "supplied buffer is null" );
+  SLIC_ERROR_IF( hi==nullptr, "supplied buffer is null" );
 
   internal::compute_mesh_bounds( s_surface_mesh, lo, hi );
 }
@@ -237,10 +237,10 @@ void signed_distance_evaluate( const double* x,
   SLIC_ERROR_IF(
     !signed_distance_initialized(),
     "signed distance query must be initialized prior to calling evaluate()!" );
-  SLIC_ERROR_IF( x == AXOM_NULLPTR, "x-coords array is null" );
-  SLIC_ERROR_IF( y == AXOM_NULLPTR, "y-coords array is null" );
-  SLIC_ERROR_IF( z == AXOM_NULLPTR, "z-coords array is null" );
-  SLIC_ERROR_IF ( phi == AXOM_NULLPTR, "output phi array is null" );
+  SLIC_ERROR_IF( x == nullptr, "x-coords array is null" );
+  SLIC_ERROR_IF( y == nullptr, "y-coords array is null" );
+  SLIC_ERROR_IF( z == nullptr, "z-coords array is null" );
+  SLIC_ERROR_IF ( phi == nullptr, "output phi array is null" );
 
 #ifdef AXOM_USE_OPENMP
 #pragma omp parallel for schedule(static)
@@ -254,18 +254,18 @@ void signed_distance_evaluate( const double* x,
 //------------------------------------------------------------------------------
 void signed_distance_finalize( )
 {
-  if ( s_query != AXOM_NULLPTR )
+  if ( s_query != nullptr )
   {
     delete s_query;
-    s_query = AXOM_NULLPTR;
+    s_query = nullptr;
   }
 
-  if ( s_surface_mesh != AXOM_NULLPTR  && s_must_delete_mesh )
+  if ( s_surface_mesh != nullptr  && s_must_delete_mesh )
   {
     delete s_surface_mesh;
   }
 
-  s_surface_mesh = AXOM_NULLPTR;
+  s_surface_mesh = nullptr;
 
   SLIC_ASSERT( !signed_distance_initialized() );
   internal::logger_finalize( s_must_finalize_logger);

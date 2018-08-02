@@ -18,7 +18,7 @@
 #include "axom/quest/stl/STLReader.hpp"
 
 // axom includes
-#include "axom/core/Types.hpp"            // for AXOM_NULLPTR
+#include "axom/core/Types.hpp"            // for nullptr
 
 #include "axom/core/utilities/Utilities.hpp"  // For isLittleEndian() and swapEndian()
 

@@ -63,7 +63,7 @@ constexpr double DEG_TO_RAD = 0.01745329251;
  * \param [in] THETA_RES the theta resolution for generating the sphere
  * \param [in] PHI_RES the phi resolution for generating the sphere
  *
- * \pre mesh != AXOM_NULLPTR
+ * \pre mesh != nullptr
  * \pre mesh->getDimension() == 3
  * \pre mesh->getMeshType() == mint::UNSTRUCTURED_MESH
  * \pre mesh->hasMixedCellTypes() == false
@@ -75,7 +75,7 @@ void getSphereSurfaceMesh( mint::UnstructuredMesh< mint::SINGLE_SHAPE >* mesh,
                            int THETA_RES,
                            int PHI_RES )
 {
-  SLIC_ASSERT( mesh != AXOM_NULLPTR );
+  SLIC_ASSERT( mesh != nullptr );
   SLIC_ASSERT( mesh->getDimension()==3 );
   SLIC_ASSERT( mesh->getMeshType()==mint::UNSTRUCTURED_MESH );
   SLIC_ASSERT( mesh->hasMixedCellTypes()==false );

@@ -16,29 +16,29 @@
  */
 
 // Axom utils
-#include "axom_utils/Utilities.hpp"
+#include "axom/core/utilities/Utilities.hpp"
 
 // Mint includes
-#include "mint/config.hpp"            // for mint compile-time definitions
-#include "mint/CellTypes.hpp"         // for cell types enum
-#include "mint/Mesh.hpp"              // defines mint::Mesh
-#include "mint/MeshTypes.hpp"         // for mesh types enum
-#include "mint/UniformMesh.hpp"       // for mint::UniformMesh
-#include "mint/UnstructuredMesh.hpp"  // for mint::UnstructuredMesh
-#include "mint/vtk_utils.hpp"         // for mint::write_vtk()
+#include "axom/mint/config.hpp"            // for mint compile-time definitions
+#include "axom/mint/mesh/CellTypes.hpp"         // for cell types enum
+#include "axom/mint/mesh/Mesh.hpp"              // defines mint::Mesh
+#include "axom/mint/mesh/MeshTypes.hpp"         // for mesh types enum
+#include "axom/mint/mesh/UniformMesh.hpp"       // for mint::UniformMesh
+#include "axom/mint/mesh/UnstructuredMesh.hpp"  // for mint::UnstructuredMesh
+#include "axom/mint/utils/vtk_utils.hpp"         // for mint::write_vtk()
 
 // Primal includes
-#include "primal/BoundingBox.hpp"     // defines primal::BoundingBox
-#include "primal/Plane.hpp"           // defines primal::Plane
-#include "primal/Sphere.hpp"          // defines primal::Sphere
+#include "axom/primal/geometry/BoundingBox.hpp"     // defines primal::BoundingBox
+#include "axom/primal/geometry/Plane.hpp"           // defines primal::Plane
+#include "axom/primal/geometry/Sphere.hpp"          // defines primal::Sphere
 
 // Quest includes
-#include "quest/signed_distance.hpp" // for the signed distance interface
+#include "axom/quest/interface/signed_distance.hpp" // for the signed distance interface
 #include "quest_test_utilities.hpp"  // for test-utility functions
 
 // Slic includes
-#include "slic/slic.hpp"             // for SLIC macros
-#include "slic/UnitTestLogger.hpp"   // for the unit test logger
+#include "axom/slic/interface/slic.hpp"             // for SLIC macros
+#include "axom/slic/core/UnitTestLogger.hpp"   // for the unit test logger
 using axom::slic::UnitTestLogger;
 
 // gtest
@@ -158,7 +158,7 @@ void generate_stl_file( const std::string& file )
  */
 primal::BoundingBox< double,3 > getBounds( const axom::mint::Mesh* mesh )
 {
-  SLIC_ASSERT( mesh != AXOM_NULLPTR );
+  SLIC_ASSERT( mesh != nullptr );
 
   primal::BoundingBox< double,3 > bb;
   primal::Point< double,3 > pt;
@@ -181,8 +181,8 @@ primal::BoundingBox< double,3 > getBounds( const axom::mint::Mesh* mesh )
 void getUniformMesh( const UnstructuredMesh* mesh,
                      mint::UniformMesh*& umesh )
 {
-  SLIC_ASSERT( mesh != AXOM_NULLPTR );
-  SLIC_ASSERT( umesh == AXOM_NULLPTR );
+  SLIC_ASSERT( mesh != nullptr );
+  SLIC_ASSERT( umesh == nullptr );
 
   constexpr int N = 16; // number of points along each dimension
 
@@ -226,16 +226,16 @@ TEST( quest_signed_distance_interface_DeathTest, get_mesh_bounds_invalid_calls)
   quest::signed_distance_init( surface_mesh );
 
   EXPECT_DEATH_IF_SUPPORTED(
-    quest::signed_distance_get_mesh_bounds(AXOM_NULLPTR, hi),
+    quest::signed_distance_get_mesh_bounds(nullptr, hi),
     IGNORE_OUTPUT );
 
   EXPECT_DEATH_IF_SUPPORTED(
-    quest::signed_distance_get_mesh_bounds(lo,AXOM_NULLPTR),
+    quest::signed_distance_get_mesh_bounds(lo,nullptr),
     IGNORE_OUTPUT );
 
   quest::signed_distance_finalize( );
   delete surface_mesh;
-  surface_mesh = AXOM_NULLPTR;
+  surface_mesh = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -292,7 +292,7 @@ TEST( quest_signed_distance_interface_DeathTest, set_params_after_init )
   // STEP 2: finalize
   quest::signed_distance_finalize();
   delete surface_mesh;
-  surface_mesh = AXOM_NULLPTR;
+  surface_mesh = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -364,7 +364,7 @@ TEST( quest_signed_distance_interface, get_mesh_bounds )
   quest::signed_distance_finalize( );
 
   delete surface_mesh;
-  surface_mesh = AXOM_NULLPTR;
+  surface_mesh = nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -447,7 +447,7 @@ TEST( quest_signed_distance_interface, analytic_sphere )
 
   // STEP 1: generate the uniform mesh where the signed distance will be
   //         computed
-  mint::UniformMesh* umesh = AXOM_NULLPTR;
+  mint::UniformMesh* umesh = nullptr;
   getUniformMesh( surface_mesh, umesh );
 
   // STEP 2: create node-centered fields on the uniform mesh to store
@@ -512,8 +512,8 @@ TEST( quest_signed_distance_interface, analytic_sphere )
   delete umesh;
   delete surface_mesh;
 
-  umesh        = AXOM_NULLPTR;
-  surface_mesh = AXOM_NULLPTR;
+  umesh        = nullptr;
+  surface_mesh = nullptr;
 }
 
 //------------------------------------------------------------------------------

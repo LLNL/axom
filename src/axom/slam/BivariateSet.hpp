@@ -25,8 +25,8 @@
 #ifndef SLAM_BIVARIATE_SET_H_
 #define SLAM_BIVARIATE_SET_H_
 
-#include "slam/OrderedSet.hpp"
-#include "slam/NullSet.hpp"
+#include "axom/slam/OrderedSet.hpp"
+#include "axom/slam/NullSet.hpp"
 
 #include <cassert>
 
