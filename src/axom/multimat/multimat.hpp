@@ -65,8 +65,8 @@ private:
   template <typename T>
   using BivariateMapType = slam::BivariateMap<T, StrideType>;
 
-  template<typename T>
-  using SubMap = slam::SubMap<T, StrideType>;
+  template<typename T, typename M>
+  using SubMap = slam::SubMap<T, M, StrideType>;
 
 /** Public type def **/
 public:
@@ -75,7 +75,7 @@ public:
   template <typename T>
   using Field2D = BivariateMapType<T>;
   template <typename T>
-  using SubField = SubMap<T>;
+  using SubField = SubMap<T, Field2D<T>>;
   using IndexSet = RangeSetType;
   using IdSet = OrderedSetType;
   
@@ -319,7 +319,7 @@ void MultiMat::convertToSparse_helper(int map_i)
   int idx = 0;
   for (int i = 0; i < m_cellMatRel->fromSetSize(); ++i) {
     auto relset = (*m_cellMatRel)[i];
-    auto& submap = old_map(i);
+    auto submap = old_map(i);
     for (int j = 0; j < relset.size(); ++j) {
       for (int s = 0; s < stride; ++s) {
         arr_data[idx++] = submap[relset[j]*stride + s];
