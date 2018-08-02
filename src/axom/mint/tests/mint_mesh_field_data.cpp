@@ -337,7 +337,7 @@ TEST( mint_mesh_field_data_DeathTest, invalid_operations )
   EXPECT_DEATH_IF_SUPPORTED( field_data.createField<int>("", data,
                                                          4 ), IGNORE_OUTPUT );
 
-  // remove filed that does not exist should fail
+  // remove field that does not exist should fail
   EXPECT_DEATH_IF_SUPPORTED( field_data.removeField( "foo" ), IGNORE_OUTPUT );
 }
 
