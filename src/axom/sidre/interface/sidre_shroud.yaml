@@ -625,5 +625,3 @@ splicer:
   f:
   -  c_fortran/fsidresplicer.f
   -  genfsidresplicer.f
-  py:
-  -  python/pysidresplicer.c
