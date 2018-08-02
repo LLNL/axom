@@ -124,7 +124,6 @@ TEST( mint_mesh_field, get_dataptr )
   delete field;
   field = nullptr;
 
-  EXPECT_TRUE( f != nullptr );
   for ( int i=0 ; i < NUM_TUPLES ; ++i )
   {
     EXPECT_DOUBLE_EQ( f[ i ], static_cast< double >( i+1 ) );

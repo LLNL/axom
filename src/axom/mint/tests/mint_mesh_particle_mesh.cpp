@@ -348,11 +348,6 @@ TEST( mint_mesh_particle_mesh, external_constructor )
   }
   // END SCOPE
 
-  // ensure data is persistent after the ParticleMesh goes out-of-scope
-  EXPECT_TRUE( x != nullptr );
-  EXPECT_TRUE( y != nullptr );
-  EXPECT_TRUE( z != nullptr );
-
   for ( int i=0 ; i < numParticles ; ++i )
   {
     const double expected_val =
