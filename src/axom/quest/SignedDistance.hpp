@@ -462,7 +462,7 @@ double SignedDistance< NDIMS >::computeSign(
       double dist = axom::primal::squared_distance( cpt->closest_point,
                                                     cpt->closest_pts[i]  );
 
-      if ( utilities::isNearlyEqual( dist, 0.0 ) )
+      if ( axom::utilities::isNearlyEqual( dist, 0.0 ) )
       {
         N += cpt->surface_elements[ i ].normal();
 #ifdef AXOM_DEBUG
@@ -483,7 +483,7 @@ double SignedDistance< NDIMS >::computeSign(
       double dist = axom::primal::squared_distance( cpt->closest_point,
                                                     cpt->closest_pts[i] );
 
-      if ( utilities::isNearlyEqual( dist, 0.0 ) )
+      if ( axom::utilities::isNearlyEqual( dist, 0.0 ) )
       {
         double alpha = cpt->surface_elements[ i ].angle( cpt->cpt_locs[ i ] );
         N += ( cpt->surface_elements[ i ].normal().unitVector()*alpha );
