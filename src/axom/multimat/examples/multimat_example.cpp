@@ -186,8 +186,8 @@ void average_density_cell_dom_mm(MultiMat& mm) {
 
     for (int ic = 0; ic < ncells; ic++) {
       double density_ave = 0.0;
-      MultiMat::SubField<double>& Densityfrac_row = Densityfrac(ic);
-      MultiMat::SubField<double>& Volfrac_row = Volfrac(ic);
+      MultiMat::SubField<double> Densityfrac_row = Densityfrac(ic);
+      MultiMat::SubField<double> Volfrac_row = Volfrac(ic);
       for (int j = 0; j < Densityfrac_row.size(); ++j) {
         density_ave += Densityfrac_row(j) * Volfrac_row(j);
       }
@@ -770,7 +770,7 @@ void test_code() {
     for (int i = 0; i < map2d.firstSetSize(); i++)
     {
       MultiMat::IdSet rel_set = map2d.indexSet(i);
-      MultiMat::SubField<double>& submap = map2d(i);
+      MultiMat::SubField<double> submap = map2d(i);
       assert(rel_set.size() == submap.size());
       for (int k = 0; k < submap.size(); k++)
       {
@@ -868,7 +868,7 @@ void test_code() {
     MultiMat::Field2D<double>& map2d = mm.get2dField<double>("CellMat Array");
     for (int i = 0; i < map2d.firstSetSize(); i++) 
     {
-      MultiMat::SubField<double>& submap = map2d(i);
+      MultiMat::SubField<double> submap = map2d(i);
       for (auto iter = submap.begin(); iter != submap.end(); iter++) 
       {
         for (int s = 0; s < map2d.stride(); ++s)
@@ -893,7 +893,7 @@ void test_code() {
     MultiMat::Field2D<double>& map2d = mm.get2dField<double>("CellMat Array");
     for (int i = 0; i < mm.getNumberOfCells();/* map2d.firstSetSize(); */i++)
     {
-      for (MultiMat::SubField<double>::SubmapIterator iter = map2d.begin(i); iter != map2d.end(i); iter++)
+      for (MultiMat::SubField<double>::SubMapIterator iter = map2d.begin(i); iter != map2d.end(i); iter++)
       {
         for (int s = 0; s < map2d.numComp(); ++s)
         {
@@ -921,7 +921,7 @@ void test_code() {
     MultiMat::Field2D<double>& map2d = mm.get2dField<double>("CellMat Array");
     for (int i = 0; i < mm.getNumberOfCells(); i++)
     {
-      MultiMat::SubField<double>& submap = map2d(i);
+      MultiMat::SubField<double> submap = map2d(i);
       for (double val : submap)
       {
         sum += val;          //<----
