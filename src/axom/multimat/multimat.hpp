@@ -5,6 +5,7 @@
 #include "slam/RangeSet.hpp"
 #include "slam/OrderedSet.hpp"
 #include "slam/StaticRelation.hpp"
+#include "slam/DynamicVariableRelation.hpp"
 #include "slam/Map.hpp"
 #include "slam/RelationSet.hpp"
 #include "slam/ProductSet.hpp"
@@ -39,9 +40,10 @@ private:
   using SetElemType = SetType::ElementType;
   // SLAM Relation typedef (static variable-cardinality relation)
   using STLIndirection             = policies::STLVectorIndirection<SetPosType, SetPosType>;
-  using VariableCardinality = policies::VariableCardinality<SetPosType, STLIndirection>;
+  using VariableCardinality        = policies::VariableCardinality<SetPosType, STLIndirection>;
   using StaticVariableRelationType = slam::StaticRelation<VariableCardinality, STLIndirection,
     RangeSetType, RangeSetType>;
+  using DynamicVariableRelationType = slam::DynamicVariableRelation;
   using OrderedSetType = slam::OrderedSet<
                 policies::RuntimeSize<SetType::PositionType>,
                 policies::RuntimeOffset<SetType::PositionType>,
@@ -51,7 +53,8 @@ private:
   using ProductSetType = slam::ProductSet;
   // SLAM MappedRelationSet for the set of non-zero cell to mat variables
   using RelationSetType = slam::RelationSet<StaticVariableRelationType>;
-  
+  using RelationSetDynType = slam::RelationSet<DynamicVariableRelationType>;
+
   //stride-related
   using StrideType = slam::policies::RuntimeStride<SetPosType>;
 
@@ -108,8 +111,11 @@ public:
   int getNumberOfCells() const { return m_ncells; }
 
   //Data modification functions
-  //...
-
+  void convertToDynamic();
+  void convertToStatic();
+  bool addEntry(int firstIdx, int secondIdx);
+  bool removeEntry(int firstIdx, int secondIdx);
+  
   //Layout modification functions
   void convertLayoutToCellDominant();
   void convertLayoutToMaterialDominant();
@@ -157,6 +163,7 @@ private:
   std::vector<SetPosType> m_cellMatRel_beginsVec; //to store the cell2mat relation
   std::vector<SetPosType> m_cellMatRel_indicesVec;
   StaticVariableRelationType* m_cellMatRel;
+  DynamicVariableRelationType* m_cellMatRelDyn;
   RelationSetType* m_cellMatNZSet; // set of non-zero entries in the cellXmat matrix
   ProductSetType* m_cellMatProdSet;
   
@@ -165,6 +172,14 @@ private:
   std::vector<MapBaseType*> m_mapVec; 
   std::vector<DataTypeSupported> m_dataTypeVec;
 
+  struct Layout
+  {
+    DataLayout data_layout;
+    SparcityLayout sparcity_layout;
+  };
+
+  Layout m_static_layout;
+  bool m_dynamic_mode;
 }; //end MultiMat class
 
 
@@ -313,7 +328,7 @@ void MultiMat::convertToSparse_helper(int map_i)
   }
   assert(idx == m_cellMatRel->totalSize()*stride);
   Field2D<DataType>* new_field = new Field2D<DataType>(m_cellMatNZSet, DataType(), stride);
-  new_field->copy(&arr_data[0]);
+  new_field->copy(arr_data.data());
 
   delete m_mapVec[map_i];
   m_mapVec[map_i] = new_field;
