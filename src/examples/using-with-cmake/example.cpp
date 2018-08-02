@@ -24,7 +24,7 @@
 
 #include <iostream>
 
-#include "axom_utils/About.hpp"
+#include "axom/core/utilities/About.hpp"
 
 int main(int argc, char **argv)
 {

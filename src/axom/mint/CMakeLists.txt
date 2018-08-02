@@ -1,0 +1,162 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+#
+# Produced at the Lawrence Livermore National Laboratory
+#
+# LLNL-CODE-741217
+#
+# All rights reserved.
+#
+# This file is part of Axom.
+#
+# For details about use and distribution, please read axom/LICENSE.
+#------------------------------------------------------------------------------
+
+################################
+# Check necessary dependencies
+################################
+axom_component_requires(NAME       Mint
+                        COMPONENTS SLIC)
+
+################################
+# Add mint options
+################################
+option( AXOM_MINT_USE_64BIT_INDEXTYPE "Use 64-bit indices for Mint" OFF )
+cmake_dependent_option( AXOM_MINT_USE_SIDRE "Enables Sidre support in Mint" ON
+                       "AXOM_ENABLE_SIDRE" OFF)
+
+
+################################
+# Specify all headers/sources
+################################
+## generate mint config
+configure_file ( core/config.hpp.in
+                 ${CMAKE_BINARY_DIR}/include/axom/mint/config.hpp )
+
+set( mint_headers
+
+    ## core
+    core/Array.hpp
+
+    ## FEM classes
+    fem/FEBasis.hpp
+    fem/FEBasisTypes.hpp
+    fem/FiniteElement.hpp
+    fem/shape_functions/Lagrange.hpp
+    fem/shape_functions/ShapeFunction.hpp
+
+    ## Lagrange Basis
+    fem/shape_functions/Lagrange.hpp
+    fem/shape_functions/lagrange/lagrange_hexa_27.hpp
+    fem/shape_functions/lagrange/lagrange_hexa_8.hpp
+    fem/shape_functions/lagrange/lagrange_prism_6.hpp
+    fem/shape_functions/lagrange/lagrange_pyra_5.hpp
+    fem/shape_functions/lagrange/lagrange_quad_4.hpp
+    fem/shape_functions/lagrange/lagrange_quad_9.hpp
+    fem/shape_functions/lagrange/lagrange_tetra_4.hpp
+    fem/shape_functions/lagrange/lagrange_tri_3.hpp
+
+    ## Mesh data-model
+    ## Internal implementation
+    mesh/internal/ConnectivityArray_indirection.hpp
+    mesh/internal/ConnectivityArray_typed_indirection.hpp
+    mesh/internal/ConnectivityArrayHelpers.hpp
+    mesh/internal/MeshHelpers.hpp
+
+    mesh/blueprint.hpp
+    mesh/CellTypes.hpp
+    mesh/ConnectivityArray.hpp
+    mesh/CurvilinearMesh.hpp
+    mesh/Extent.hpp
+    mesh/Field.hpp
+    mesh/FieldAssociation.hpp
+    mesh/FieldData.hpp
+    mesh/FieldTypes.hpp
+    mesh/FieldVariable.hpp
+    mesh/Mesh.hpp
+    mesh/MeshCoordinates.hpp
+    mesh/MeshTypes.hpp
+    mesh/ParticleMesh.hpp
+    mesh/RectilinearMesh.hpp
+    mesh/StructuredMesh.hpp
+    mesh/UniformMesh.hpp
+    mesh/UnstructuredMesh.hpp
+
+    ## utils
+    utils/vtk_utils.hpp
+   )
+
+set( mint_sources
+
+    ## FEM classes
+    fem/FiniteElement.cpp
+
+    ## Mesh data-model
+    mesh/blueprint.cpp
+    mesh/CurvilinearMesh.cpp
+    mesh/Extent.cpp
+    mesh/FieldData.cpp
+    mesh/Mesh.cpp
+    mesh/MeshCoordinates.cpp
+    mesh/ParticleMesh.cpp
+    mesh/RectilinearMesh.cpp
+    mesh/StructuredMesh.cpp
+    mesh/UniformMesh.cpp
+
+    ## utils
+    utils/vtk_utils.cpp
+   )
+
+################################
+# Make/Install the library
+################################
+set( mint_dependencies
+     core
+     slic
+     )
+
+if ( ${MINT_USE_SIDRE} )
+    list(APPEND mint_dependencies sidre conduit)
+endif()
+
+blt_add_library(
+    NAME       mint
+    SOURCES    ${mint_sources}
+    HEADERS    ${mint_headers}
+    DEPENDS_ON ${mint_dependencies}
+    FOLDER     axom/mint
+   )
+
+axom_install_component(NAME    mint
+                       HEADERS ${mint_headers}
+                       )
+install(FILES       ${CMAKE_BINARY_DIR}/include/axom/mint/config.hpp
+        DESTINATION include/axom/mint
+        )
+
+
+################################
+# Add examples
+################################
+if (AXOM_ENABLE_EXAMPLES)
+  add_subdirectory(examples)
+endif()
+
+################################
+# Add tests
+################################
+if (AXOM_ENABLE_TESTS)
+  add_subdirectory(tests)
+endif()
+
+################################
+# Add docs
+################################
+if (AXOM_ENABLE_DOCS)
+  add_subdirectory(docs)
+endif()
+
+################################
+# Add code checks
+################################
+axom_add_code_checks(PREFIX mint)

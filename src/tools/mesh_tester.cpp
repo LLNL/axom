@@ -16,25 +16,25 @@
  */
 
 // Axom includes
-#include "axom_utils/FileUtilities.hpp"
-#include "axom_utils/Timer.hpp"
+#include "axom/core/utilities/FileUtilities.hpp"
+#include "axom/core/utilities/Timer.hpp"
 
-#include "mint/FieldVariable.hpp"
-#include "mint/Mesh.hpp"
-#include "mint/UniformMesh.hpp"
-#include "mint/vtk_utils.hpp" // for write_vtk
+#include "axom/mint/mesh/FieldVariable.hpp"
+#include "axom/mint/mesh/Mesh.hpp"
+#include "axom/mint/mesh/UniformMesh.hpp"
+#include "axom/mint/utils/vtk_utils.hpp" // for write_vtk
 
-#include "primal/BoundingBox.hpp"
-#include "primal/intersect.hpp"
-#include "primal/Point.hpp"
-#include "primal/Triangle.hpp"
-#include "primal/UniformGrid.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/operators/intersect.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Triangle.hpp"
+#include "axom/primal/spatial_acceleration/UniformGrid.hpp"
 
-#include "quest/MeshTester.hpp"
-#include "quest/STLReader.hpp"
+#include "axom/quest/MeshTester.hpp"
+#include "axom/quest/stl/STLReader.hpp"
 
-#include "slic/GenericOutputStream.hpp"
-#include "slic/slic.hpp"
+#include "axom/slic/streams/GenericOutputStream.hpp"
+#include "axom/slic/interface/slic.hpp"
 
 
 // C/C++ includes
@@ -222,7 +222,7 @@ Input::Input(int argc, char** argv) :
     <<"\n  resolution = " << resolution
     << (resolution < 1 ? " (use cube root of triangle count)" : "")
     <<"\n  weld threshold = " <<  weldThreshold
-    <<"\n  " << (skipWeld? "": "not ") << "skipping weld"
+    <<"\n  " << (skipWeld ? "" : "not ") << "skipping weld"
     <<"\n  infile = " << stlInput
     <<"\n  collisions outfile = " << collisionsMeshName()
     <<"\n  weld outfile = " << weldMeshName()  );
@@ -453,7 +453,7 @@ int main( int argc, char** argv )
 
   // Delete the reader
   delete reader;
-  reader = AXOM_NULLPTR;
+  reader = nullptr;
 
   SLIC_INFO(
     "Mesh has " << surface_mesh->getNumberOfNodes() << " vertices and "
@@ -517,7 +517,7 @@ int main( int argc, char** argv )
 
   // Delete the mesh
   delete surface_mesh;
-  surface_mesh = AXOM_NULLPTR;
+  surface_mesh = nullptr;
 
   return retval;
 }

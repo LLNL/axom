@@ -230,3 +230,50 @@ macro(axom_component_requires)
     endforeach()
 
 endmacro(axom_component_requires)
+
+##------------------------------------------------------------------------------
+## axom_install_component
+## 
+## This macro installs libraries, fortran modules, headers, and exports the CMake
+## target while preserving the directory stucture.  This macro assumes the following:
+##
+##    * CMake Target to install is the same as NAME
+##    * If there is a Fortran module built, it is named axom_<NAME>.mod
+##
+## NAME - The name of the component that we are installing.
+##
+## HEADERS - Headers to be installed
+##
+##------------------------------------------------------------------------------
+macro(axom_install_component)
+
+    set(options )
+    set(singleValueArgs NAME)
+    set(multiValueArgs HEADERS)
+
+    # Parse the arguments to the macro
+    cmake_parse_arguments(arg
+         "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    set(_header_base_dir include/axom/${arg_NAME})
+
+    install(TARGETS              ${arg_NAME}
+            EXPORT               ${arg_NAME}-targets
+            DESTINATION          lib
+            INCLUDES DESTINATION ${_header_base_dir}
+            )
+    
+    foreach( _file ${arg_HEADERS} )
+        get_filename_component( _dir ${_file} DIRECTORY )
+        install( FILES ${_file} DESTINATION ${_header_base_dir}/${_dir} )
+    endforeach()
+
+    if(ENABLE_FORTRAN)
+        set(_mod ${CMAKE_Fortran_MODULE_DIRECTORY}/axom_${arg_NAME}.mod)
+        # TODO: Remove optional once all components have fortran wrappers
+        install(FILES ${_mod} DESTINATION lib/fortran OPTIONAL)
+    endif()
+
+    install(EXPORT ${arg_NAME}-targets DESTINATION lib/cmake)
+
+endmacro(axom_install_component)

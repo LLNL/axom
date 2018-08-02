@@ -95,6 +95,8 @@ if(ENABLE_FORTRAN)
 endif(ENABLE_FORTRAN)
 
 configure_file(
-    include/config.hpp.in
-    ${HEADER_INCLUDES_DIRECTORY}/axom/config.hpp
+    ${PROJECT_SOURCE_DIR}/axom/config.hpp.in
+    ${CMAKE_BINARY_DIR}/include/axom/config.hpp
 )
+
+install(FILES ${CMAKE_BINARY_DIR}/include/axom/config.hpp DESTINATION include/axom)
