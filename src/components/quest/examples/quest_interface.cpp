@@ -26,6 +26,7 @@
 
 // Quest includes
 #include "quest/quest.hpp"
+#include "quest/signed_distance.hpp"
 
 // SLIC includes
 #include "slic/slic.hpp"
@@ -44,6 +45,7 @@
 
 
 // C/C++ includes
+#include <cmath>     // for signbit()
 #include <cstdlib>   // for std::rand(), RAND_MAX
 #include <ctime>     // for time
 #include <iostream>  // for std::cout
@@ -90,31 +92,35 @@ void outputMeshStats()
 
 void runQuestDistance(const std::string& fileName, const CoordsVec& points)
 {
-  const bool useDistance = true;
+  constexpr int DIMENSION     = 3;
+  constexpr int MAX_LEVELS    = 20;
+  constexpr int MAX_OCCUPANCY = 25;
 
-  #ifdef AXOM_USE_MPI
-  quest::initialize( MPI_COMM_WORLD, fileName, useDistance, 3, 25, 20 );
-  #else
-  quest::initialize( fileName, useDistance, 3, 25, 20 );
-  #endif
+  // set signed distance parameters
+  quest::signed_distance_set_dimension( DIMENSION );
+  quest::signed_distance_set_max_levels( MAX_LEVELS );
+  quest::signed_distance_set_max_occupancy( MAX_OCCUPANCY );
 
-  outputMeshStats();
+  // initialize the signed distance query
+#ifdef AXOM_USE_MPI
+  quest::signed_distance_init( fileName, MPI_COMM_WORLD );
+#else
+  quest::signed_distance_init( fileName );
+#endif
 
   CoordsVec coords[3];
   {
     int nOrigPts = points.size()/3;
 
-    double bbMin[3], bbMax[3], cMass[3];
-    quest::mesh_min_bounds(bbMin);
-    quest::mesh_max_bounds(bbMax);
-    quest::mesh_center_of_mass(cMass);
+    double bbMin[3], bbMax[3];
+    quest::signed_distance_get_mesh_bounds( bbMin, bbMax );
 
-    // Reserve space and add the mesh BB center and center of mass
+    // Reserve space and add the mesh BB center
     for(int i=0 ; i< 3 ; ++i)
     {
       coords[i].reserve(nOrigPts+2);
       coords[i].push_back( scaleAndOffset(bbMin[i], bbMax[i], 0.5));
-      coords[i].push_back( scaleAndOffset(cMass[i], cMass[i], 0.5));
+      coords[i].push_back( scaleAndOffset(bbMin[i], bbMax[i], 0.5));
     }
 
     // Scale and add the random points from input parameter
@@ -137,8 +143,8 @@ void runQuestDistance(const std::string& fileName, const CoordsVec& points)
     const double y = coords[1][i];
     const double z = coords[2][i];
 
-    const double phi = quest::distance(x,y,z);
-    const int ins = quest::inside( x,y,z );
+    const double phi = quest::signed_distance_evaluate( x,y,z );
+    const int ins    = ( std::signbit( phi ) != 0) ? -1 : 1;
 
     SLIC_INFO(
       "Point (" << x << ", " << y << ", " << z << ") "
@@ -146,7 +152,7 @@ void runQuestDistance(const std::string& fileName, const CoordsVec& points)
                 <<" Distance is " << phi << ".");
   }
 
-  quest::finalize();
+  quest::signed_distance_finalize();
 }
 
 void runQuestContainment(const std::string& fileName, const CoordsVec& points)

@@ -24,12 +24,14 @@ using axom::slic::UnitTestLogger;
 #include "mint/MeshTypes.hpp"
 #include "mint/UniformMesh.hpp"
 #include "mint/UnstructuredMesh.hpp"
+#include "mint/vtk_utils.hpp"
 
 #include "primal/BoundingBox.hpp"
 #include "primal/Sphere.hpp"
 #include "primal/Point.hpp"
 
-#include "quest/SignedDistance.hpp"
+#include "quest/SignedDistance.hpp"  // quest::SignedDistance
+#include "quest_test_utilities.hpp"  // for test-utility functions
 
 // Google Test includes
 #include "gtest/gtest.h"
@@ -37,15 +39,15 @@ using axom::slic::UnitTestLogger;
 // C/C++ includes
 #include <cmath>
 
-typedef axom::mint::UnstructuredMesh< axom::mint::SINGLE_SHAPE > UMesh;
-typedef axom::mint::UniformMesh UniformMesh;
+// Aliases
+namespace mint   = axom::mint;
+namespace quest  = axom::quest;
+namespace primal = axom::primal;
+using UMesh      = axom::mint::UnstructuredMesh< mint::SINGLE_SHAPE >;
 
-using axom::primal::BoundingBox;
-using axom::primal::Sphere;
-using axom::primal::Point;
-
-// pi / 180
-#define DEG_TO_RAD 0.01745329251
+// Note: the following macro is intended for debugging purposes. Uncomment the
+// following line to enable VTK dumps from this test.
+// #define QUEST_SIGNED_DISTANCE_TEST_DUMP_VTK
 
 //------------------------------------------------------------------------------
 //  HELPER METHODS
@@ -54,121 +56,16 @@ namespace detail
 {
 
 /*!
- * \brief Gets a surface mesh instance for the sphere.
- * \param [in] mesh pointer to the mesh instance.
- * \pre mesh != AXOM_NULLPTR
- */
-void getMesh( UMesh* mesh )
-{
-  SLIC_ASSERT( mesh != AXOM_NULLPTR );
-
-  const int THETA_RES             = 25;
-  const int PHI_RES               = 25;
-  const double RADIUS             = 0.5;
-  const double SPHERE_CENTER[ 3 ] = { 0.0, 0.0, 0.0 };
-  const double theta_start        = 0;
-  const double theta_end          = 360 * DEG_TO_RAD;
-  const double phi_start          = 0;
-  const double phi_end            = 180 * DEG_TO_RAD;
-
-  double x[3];
-  double n[3];
-  axom::mint::IndexType c[3];
-
-  // North pole point
-  x[0] = SPHERE_CENTER[0];
-  x[1] = SPHERE_CENTER[1];
-  x[2] = SPHERE_CENTER[2] + RADIUS;
-  mesh->appendNode( x[0], x[1], x[2] );
-
-  // South pole point
-  x[2] = SPHERE_CENTER[2] - RADIUS;
-  mesh->appendNode( x[0], x[1], x[2] );
-
-  // Calculate spacing
-  const double dphi   = ( phi_end-phi_start ) /
-                        ( static_cast< double>(PHI_RES-1) );
-  const double dtheta = ( theta_end-theta_start ) /
-                        ( static_cast<double>(THETA_RES-1) );
-
-  // Generate points
-  for ( int i=0 ; i < THETA_RES ; ++i )
-  {
-
-    const double theta = theta_start + i*dtheta;
-
-    for ( int j=0 ; j < PHI_RES-2 ; ++j )
-    {
-
-      const double phi = phi_start + j*dphi;
-      const double radius = RADIUS * sin( phi );
-
-      n[0] = radius * cos( theta );
-      n[1] = radius * sin( theta );
-      n[2] = RADIUS * cos( phi );
-      x[0] = n[0] + SPHERE_CENTER[0];
-      x[1] = n[1] + SPHERE_CENTER[1];
-      x[2] = n[2] + SPHERE_CENTER[2];
-
-      mesh->appendNode( x[0], x[1], x[2] );
-
-    }  // END for all j
-
-  } // END for all i
-
-  const int phiResolution = PHI_RES-2; // taking in to account two pole points.
-  int stride = phiResolution * THETA_RES;
-
-  // Generate mesh connectivity around north pole
-  for ( int i=0 ; i < THETA_RES ; ++i )
-  {
-    c[2] = phiResolution*i + /* number of poles */ 2;
-    c[1] = ( phiResolution*(i+1) % stride ) + /* number of poles */ 2;
-    c[0] = 0;
-    mesh->appendCell( c );
-  } // END for
-
-  // Generate mesh connectivity around south pole
-  int offset = PHI_RES - 1;
-  for ( int i=0 ; i < THETA_RES ; ++i )
-  {
-    c[2] = phiResolution*i + offset;
-    c[1] = ( phiResolution*(i+1) % stride ) + offset;
-    c[0] = 1;
-    mesh->appendCell( c );
-  }
-
-  // Generate mesh connectivity in between poles
-  for ( int i=0 ; i < THETA_RES ; ++i )
-  {
-
-    for ( int j=0 ; j < PHI_RES-3 ; ++j )
-    {
-
-      c[ 0 ] = phiResolution*i + j + 2;
-      c[ 1 ] = c[0] + 1;
-      c[ 2 ] = ( ( phiResolution*(i+1)+j) % stride ) + 3;
-
-      mesh->appendCell( c );
-
-      c[ 1 ] = c[ 2 ];
-      c[ 2 ] = c[ 1 ] - 1;
-      mesh->appendCell( c );
-    }  // END for all j
-  } // END for all i
-}
-
-/*!
  * \brief Returns the bounding box of the mesh.
  * \param [in] mesh pointer to the mesh instance.
  * \return bb bounding box of the mesh
  */
-BoundingBox< double,3 > getBounds( const axom::mint::Mesh* mesh )
+primal::BoundingBox< double,3 > getBounds( const axom::mint::Mesh* mesh )
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
-  BoundingBox< double,3 > bb;
-  Point< double,3 > pt;
+  primal::BoundingBox< double,3 > bb;
+  primal::Point< double,3 > pt;
 
   const int nnodes = mesh->getNumberOfNodes();
   for ( int inode=0 ; inode < nnodes ; ++inode )
@@ -185,26 +82,21 @@ BoundingBox< double,3 > getBounds( const axom::mint::Mesh* mesh )
  * \param [in] mesh pointer to the input mesh.
  * \param [in] umesh pointer to the uniform mesh;
  */
-void getUniformMesh( const UMesh* mesh, UniformMesh*& umesh )
+void getUniformMesh( const UMesh* mesh, mint::UniformMesh*& umesh )
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
   SLIC_ASSERT( umesh == AXOM_NULLPTR );
 
-  const int N = 16; // number of points along each dimension
+  constexpr int N = 16; // number of points along each dimension
 
-  BoundingBox< double,3 > bb = getBounds( mesh );
+  primal::BoundingBox< double,3 > bb = getBounds( mesh );
   bb.expand( 2.0 );
 
-  double h[3];
-  h[0] = (bb.getMax()[0]-bb.getMin()[0]) / N;
-  h[1] = (bb.getMax()[1]-bb.getMin()[1]) / N;
-  h[2] = (bb.getMax()[2]-bb.getMin()[2]) / N;
+  const double* lo = bb.getMin().data();
+  const double* hi = bb.getMax().data();
 
-  axom::mint::int64 ext[6];
-  ext[0] = ext[2] = ext[4] = 0;
-  ext[1] = ext[3] = ext[5] = N-1;
-
-  umesh = new UniformMesh(3,bb.getMin().data(),h,ext);
+  // construct an N x N x N grid
+  umesh = new mint::UniformMesh( lo, hi, N, N, N );
 }
 
 
@@ -213,27 +105,44 @@ void getUniformMesh( const UMesh* mesh, UniformMesh*& umesh )
 //------------------------------------------------------------------------------
 TEST( quest_signed_distance, sphere_test )
 {
-  const double sphere_radius   = 0.5;
-  const double l1norm_expected = 6.08188;
-  const double l2norm_expected = 0.123521;
-  const double linf_expected   = 0.00532092;
-  const double TOL             = 1.e-3;
+  constexpr double l1norm_expected = 6.7051997372579715;
+  constexpr double l2norm_expected = 2.5894400431865519;
+  constexpr double linf_expected   = 0.00532092;
+  constexpr double TOL             = 1.e-3;
+
+  constexpr double SPHERE_RADIUS  = 0.5;
+  constexpr int SPHERE_THETA_RES  = 25;
+  constexpr int SPHERE_PHI_RES    = 25;
+  const double SPHERE_CENTER[ 3 ] = { 0.0, 0.0, 0.0 };
+
+  primal::Sphere< double,3 > analytic_sphere( SPHERE_RADIUS );
 
   SLIC_INFO( "Constructing sphere mesh..." );
-  UMesh* surface_mesh = new UMesh( 3, axom::mint::TRIANGLE );
-  detail::getMesh( surface_mesh );
+  UMesh* surface_mesh = new UMesh( 3, mint::TRIANGLE );
+  quest::utilities::getSphereSurfaceMesh( surface_mesh,
+                                          SPHERE_CENTER, SPHERE_RADIUS,
+                                          SPHERE_THETA_RES, SPHERE_PHI_RES );
 
   SLIC_INFO( "Generating uniform mesh..." );
-  UniformMesh* umesh = AXOM_NULLPTR;
+  mint::UniformMesh* umesh = AXOM_NULLPTR;
   detail::getUniformMesh( surface_mesh, umesh );
+
+  double* phi_computed =
+    umesh->createField< double >( "phi_computed", mint::NODE_CENTERED );
+  double* phi_expected =
+    umesh->createField< double >( "phi_expected", mint::NODE_CENTERED );
+  double* phi_diff =
+    umesh->createField< double >( "phi_diff", mint::NODE_CENTERED );
+  double* phi_err =
+    umesh->createField< double >( "phi_err", mint::NODE_CENTERED );
 
   const int nnodes = umesh->getNumberOfNodes();
 
   SLIC_INFO( "Generate BVHTree..." );
-  axom::quest::SignedDistance< 3 > signed_distance( surface_mesh, 25, 10 );
+  axom::quest::SignedDistance< 3 > signed_distance( surface_mesh,true, 25, 10 );
 
   SLIC_INFO( "Compute signed distance..." );
-  Sphere< double,3 > analytic_sphere( sphere_radius );
+
   double l1norm = 0.0;
   double l2norm = 0.0;
   double linf   = std::numeric_limits< double >::min( );
@@ -241,25 +150,21 @@ TEST( quest_signed_distance, sphere_test )
   for ( int inode=0 ; inode < nnodes ; ++inode )
   {
 
-    Point< double,3 > pt;
+    primal::Point< double,3 > pt;
     umesh->getNode( inode, pt.data() );
 
-    double computed = signed_distance.computeDistance( pt );
-    double exact    = analytic_sphere.computeSignedDistance( pt.data() );
+    phi_computed[ inode ] = signed_distance.computeDistance( pt );
+    phi_expected[ inode ] = analytic_sphere.computeSignedDistance( pt.data() );
+    EXPECT_NEAR( phi_computed[ inode ], phi_expected[ inode ], 1.e-2 );
 
     // compute error
-    double dx    = computed - exact;
+    phi_diff[ inode ] = phi_computed[ inode ] - phi_expected[ inode ];
+    phi_err[ inode ] = std::fabs( phi_diff[ inode ] );
 
-    double absdx = std::fabs( dx );
-    EXPECT_NEAR( exact, computed, 1.e-2 );
-
-    l1norm += absdx;
-    l2norm += dx*dx;
-
-    if ( absdx > linf )
-    {
-      linf = absdx;
-    }
+    // update norms
+    l1norm += phi_err[ inode ];
+    l2norm += phi_diff[ inode ];
+    linf = ( phi_err[ inode ] > linf ) ? phi_err[ inode ] : linf;
 
   } // END for all nodes
 
@@ -268,6 +173,11 @@ TEST( quest_signed_distance, sphere_test )
   SLIC_INFO( "l1 =" << l1norm );
   SLIC_INFO( "l2 =" << l2norm );
   SLIC_INFO( "linf = " << linf );
+
+#ifdef QUEST_SIGNED_DISTANCE_TEST_DUMP_VTK
+  mint::write_vtk( umesh, "uniform_mesh.vtk" );
+  mint::write_vtk( surface_mesh, "sphere_mesh.vtk" );
+#endif
 
   EXPECT_NEAR( l1norm_expected, l1norm, TOL );
   EXPECT_NEAR( l2norm_expected, l2norm, TOL );

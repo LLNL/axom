@@ -17,7 +17,7 @@ copyright:
   -
 
 library: QUEST
-cxx_header: quest/quest.hpp
+cxx_header: quest/quest.hpp quest/signed_distance.hpp
 #namespace: axom quest
 
 options:
@@ -48,6 +48,7 @@ declarations:
         F_name_generic_template: "{library_lower}_{underscore_name}"
 
       declarations:
+      ## Heaviside Function methods
       - decl: void initialize( MPI_Comm comm, const std::string& fileName,
                                bool requiresDistance, int ndims, int maxElements,
                                int maxLevels )
@@ -61,9 +62,6 @@ declarations:
           function_suffix: _serial
         cpp_if: ifndef AXOM_USE_MPI
 
-      - decl: double distance(double x, double y, double z=0.0)
-##    - decl: void distance( const double* xyz, double* dist, int npoints )
-
       - decl: int inside(double x, double y, double z=0.0)
 ##    - decl: void inside( const double* xyz, int* in, int npoints )
 
@@ -72,6 +70,33 @@ declarations:
       - decl: void mesh_center_of_mass(double* coords+dimension+intent(OUT))
 
       - decl: void finalize()
+
+## Signed Distance Function API
+      - decl: void signed_distance_init( const std::string& file, MPI_Comm comm )
+        format:
+          function_suffix: _mpi
+        cpp_if: ifdef AXOM_USE_MPI
+
+      - decl: void signed_distance_init( const std::string& file )
+        format:
+          function_suffix: _serial
+        cpp_if: ifndef AXOM_USE_MPI
+
+      - decl: bool signed_distance_initialized()
+
+      - decl: void signed_distance_get_mesh_bounds(
+                   double* lo+dimension+intent(OUT),
+                   double* hi+dimension+intent(OUT) )
+
+      - decl: void signed_distance_set_dimension( int dim )
+      - decl: void signed_distance_set_closed_surface( bool status )
+      - decl: void signed_distance_set_max_levels( int maxLevels )
+      - decl: void signed_distance_set_max_occupancy( int maxOccupancy )
+      - decl: void signed_distance_set_verbose( bool status )
+
+      - decl: double signed_distance_evaluate( double x, double y, double z )
+
+      - decl: void signed_distance_finalize()
 
 
 splicer_code:

@@ -1,14 +1,14 @@
 !
 ! Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
-! 
+!
 ! Produced at the Lawrence Livermore National Laboratory
-! 
+!
 ! LLNL-CODE-741217
-! 
+!
 ! All rights reserved.
 !
 ! This file is part of Axom.
-! 
+!
 ! For details about use and distribution, please read axom/LICENSE.
 !
 
@@ -82,9 +82,9 @@ contains
 
     integer :: i, ins
     real(C_DOUBLE)  :: x, y, z, phi
-    integer :: bucket_size = 25
-    integer :: depth = 10
-    real(C_DOUBLE) :: mesh_bb_min(3), mesh_bb_max(3), mesh_center_of_mass(3)
+    integer :: max_occupancy = 25
+    integer :: max_levels = 10
+    real(C_DOUBLE) :: lo(3), hi(3)
     character(LEN=40) :: Format = "(I2, F6.2, F6.2, F6.2, F6.2, I3)"
 
     if (rank == 0) then
@@ -94,35 +94,32 @@ contains
 
 
     !...initialize quest
+    call quest_signed_distance_set_max_levels( max_levels )
+    call quest_signed_distance_set_max_occupancy( max_occupancy )
 #ifdef AXOM_USE_MPI
-    call quest_initialize( MPI_COMM_WORLD, FileName, .true., dim, bucket_size, depth )
+    call quest_signed_distance_init( FileName, MPI_COMM_WORLD )
 #else
-    call quest_initialize( FileName, .true., dim, bucket_size, depth )
+    call quest_signed_distance_init( FileName )
 #endif
-    call quest_mesh_min_bounds(mesh_bb_min)
-    call quest_mesh_max_bounds(mesh_bb_max)
-    call quest_mesh_center_of_mass(mesh_center_of_mass)
+
+
+    call quest_signed_distance_get_mesh_bounds( lo, hi)
 
     !... Create random pts and query surface distance and containment
     do i=1,num_pts + 1
-      if (i == 1) then
-        x = mesh_center_of_mass(1)
-        y = mesh_center_of_mass(2)
-        z = mesh_center_of_mass(3)
-      else
-        x = random_double( mesh_bb_min(1), mesh_bb_max(1) )
-        y = random_double( mesh_bb_min(2), mesh_bb_max(2) )
-        z = random_double( mesh_bb_min(3), mesh_bb_max(3) )
-      end if
 
-      phi = quest_distance( x, y, z )
-      ins = quest_inside(x,y,z)
+      x = random_double( lo(1), hi(1) )
+      y = random_double( lo(2), hi(2) )
+      z = random_double( lo(3), hi(3) )
+
+      phi = quest_signed_distance_evaluate( x, y, z )
+      ins = phi / abs(phi)
 
       write(*,Format) rank, x, y, z, phi, ins
     end do
 
     !...finalize quest
-    call quest_finalize()
+    call quest_signed_distance_finalize()
 
   end subroutine run_distance_queries
 
@@ -204,6 +201,7 @@ program quest_fortran
   !...exercise the containment functions in quest module
   call run_containment_queries()
 
+  deallocate(FileName)
   call finalize_mpi()
 
 end program

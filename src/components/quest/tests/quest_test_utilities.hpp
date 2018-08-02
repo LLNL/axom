@@ -35,11 +35,13 @@
 using axom::primal::Point;
 using axom::primal::Triangle;
 
-/**
+/*!
  * \file
  *
- * This file contains several utility functions for testing the quest component,
- * e.g. generating random Points, creating a simple mesh of an octahedron...
+ * This file contains several utility functions to facilitate in the development
+ * of unit tests in quest, e.g., generating a random points and simple
+ * unstructured mesh types, such as, the surface mesh of a sphere with a
+ * given center and radius and an octahedron.
  */
 
 namespace axom
@@ -49,7 +51,133 @@ namespace quest
 namespace utilities
 {
 
-/**
+// pi / 180
+constexpr double DEG_TO_RAD = 0.01745329251;
+
+/*!
+ * \brief Gets a surface mesh instance for the sphere.
+ *
+ * \param [in,out] mesh pointer to the mesh instance, where to store the mesh
+ * \param [in] SPHERE_CENTER the center of the sphere
+ * \param [in] RADIUS the radius of the sphere
+ * \param [in] THETA_RES the theta resolution for generating the sphere
+ * \param [in] PHI_RES the phi resolution for generating the sphere
+ *
+ * \pre mesh != AXOM_NULLPTR
+ * \pre mesh->getDimension() == 3
+ * \pre mesh->getMeshType() == mint::UNSTRUCTURED_MESH
+ * \pre mesh->hasMixedCellTypes() == false
+ * \pre mesh->getCellType() == mint::TRIANGLE
+ */
+void getSphereSurfaceMesh( mint::UnstructuredMesh< mint::SINGLE_SHAPE >* mesh,
+                           const double* SPHERE_CENTER,
+                           double RADIUS,
+                           int THETA_RES,
+                           int PHI_RES )
+{
+  SLIC_ASSERT( mesh != AXOM_NULLPTR );
+  SLIC_ASSERT( mesh->getDimension()==3 );
+  SLIC_ASSERT( mesh->getMeshType()==mint::UNSTRUCTURED_MESH );
+  SLIC_ASSERT( mesh->hasMixedCellTypes()==false );
+  SLIC_ASSERT( mesh->getCellType()==mint::TRIANGLE );
+
+  const double totalNodes = THETA_RES * PHI_RES;
+  const double totalCells = (2 * THETA_RES) + (THETA_RES * PHI_RES);
+  mesh->reserve( totalNodes, totalCells );
+
+  const double theta_start = 0;
+  const double theta_end   = 360 * DEG_TO_RAD;
+  const double phi_start   = 0;
+  const double phi_end     = 180 * DEG_TO_RAD;
+
+  double x[3];
+  double n[3];
+  mint::IndexType c[3];
+
+  // North pole point
+  x[0] = SPHERE_CENTER[0];
+  x[1] = SPHERE_CENTER[1];
+  x[2] = SPHERE_CENTER[2] + RADIUS;
+  mesh->appendNode( x[0], x[1], x[2] );
+
+  // South pole point
+  x[2] = SPHERE_CENTER[2] - RADIUS;
+  mesh->appendNode( x[0], x[1], x[2] );
+
+  // Calculate spacing
+  const double dphi   = ( phi_end-phi_start ) /
+                        ( static_cast< double>(PHI_RES-1) );
+  const double dtheta = ( theta_end-theta_start ) /
+                        ( static_cast<double>(THETA_RES-1) );
+
+  // Generate points
+  for ( int i=0 ; i < THETA_RES ; ++i )
+  {
+
+    const double theta = theta_start + i*dtheta;
+
+    for ( int j=0 ; j < PHI_RES-2 ; ++j )
+    {
+
+      const double phi = phi_start + j*dphi;
+      const double radius = RADIUS * sin( phi );
+
+      n[0] = radius * cos( theta );
+      n[1] = radius * sin( theta );
+      n[2] = RADIUS * cos( phi );
+      x[0] = n[0] + SPHERE_CENTER[0];
+      x[1] = n[1] + SPHERE_CENTER[1];
+      x[2] = n[2] + SPHERE_CENTER[2];
+
+      mesh->appendNode( x[0], x[1], x[2] );
+
+    }  // END for all j
+
+  } // END for all i
+
+  const int phiResolution = PHI_RES-2; // taking in to account two pole points.
+  int stride = phiResolution * THETA_RES;
+
+  // Generate mesh connectivity around north pole
+  for ( int i=0 ; i < THETA_RES ; ++i )
+  {
+    c[2] = phiResolution*i + /* number of poles */ 2;
+    c[1] = ( phiResolution*(i+1) % stride ) + /* number of poles */ 2;
+    c[0] = 0;
+    mesh->appendCell( c );
+  } // END for
+
+  // Generate mesh connectivity around south pole
+  int offset = PHI_RES - 1;
+  for ( int i=0 ; i < THETA_RES ; ++i )
+  {
+    c[2] = phiResolution*i + offset;
+    c[1] = ( phiResolution*(i+1) % stride ) + offset;
+    c[0] = 1;
+    mesh->appendCell( c );
+  }
+
+  // Generate mesh connectivity in between poles
+  for ( int i=0 ; i < THETA_RES ; ++i )
+  {
+
+    for ( int j=0 ; j < PHI_RES-3 ; ++j )
+    {
+
+      c[ 0 ] = phiResolution*i + j + 2;
+      c[ 1 ] = c[0] + 1;
+      c[ 2 ] = ( ( phiResolution*(i+1)+j) % stride ) + 3;
+
+      mesh->appendCell( c );
+
+      c[ 1 ] = c[ 2 ];
+      c[ 2 ] = c[ 1 ] - 1;
+      mesh->appendCell( c );
+    }  // END for all j
+  } // END for all i
+}
+
+/*!
  * \brief Simple utility to generate a Point whose entries
  * are random values in the range [beg, end]
  */
@@ -64,7 +192,7 @@ Point<double,DIM> randomSpacePt(double beg, double end)
 }
 
 
-/**
+/*!
  * \brief Simple utility to find the centroid of two points
  */
 template<int DIM>
@@ -74,7 +202,7 @@ Point<double,DIM> getCentroid( const Point<double,DIM>& pt0,
   return (pt0.array() + pt1.array()) /2.;
 }
 
-/**
+/*!
  * \brief Simple utility to find the centroid of three points
  */
 template<int DIM>
@@ -85,7 +213,7 @@ Point<double,DIM> getCentroid( const Point<double,DIM>& pt0,
   return (pt0.array() + pt1.array() + pt2.array()) /3.;
 }
 
-/**
+/*!
  * \brief Utility function to generate a triangle mesh of an octahedron
  * Vertices of the octahedron are at +-i, +-j and +-k.
  * \note The caller must delete the mesh
@@ -176,7 +304,7 @@ axom::mint::Mesh* make_octahedron_mesh()
   return triMesh;
 }
 
-/**
+/*!
  * \brief Utility function to generate the triangle mesh of a tetrahedron
  * Vertices are close to, but not exactly: (0, 0, 20),
  * (-18.21, 4.88, -6.66), (4.88, -18.21, -6.66), (13.33, 13.33, -6.66)

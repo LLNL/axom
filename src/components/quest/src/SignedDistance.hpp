@@ -15,20 +15,22 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#ifndef SIGNEDDISTANCE_HPP_
-#define SIGNEDDISTANCE_HPP_
+#ifndef QUEST_SIGNED_DISTANCE_HPP_
+#define QUEST_SIGNED_DISTANCE_HPP_
 
 // axom includes
 #include "axom/Macros.hpp"
 #include "axom/Types.hpp"
 #include "axom_utils/Utilities.hpp"
 
+// primal includes
 #include "primal/BVHTree.hpp"
 #include "primal/BoundingBox.hpp"
 #include "primal/Point.hpp"
 #include "primal/Triangle.hpp"
 #include "primal/Vector.hpp"
 
+// mint includes
 #include "mint/config.hpp"
 #include "mint/Field.hpp"
 #include "mint/FieldData.hpp"
@@ -78,13 +80,16 @@ public:
   /*!
    * \brief Creates a SignedDistance instance for queries on the given mesh.
    * \param [in] surfaceMesh user-supplied surface mesh.
+   * \param [in] isWatertight indicates if the surface mesh is closed.
    * \param [in] maxObjects max number of objects for spatial decomposition.
    * \param [in] maxLevels max levels for spatial decomposition (optional).
    * \note Default maxLevels is 5 if not specified.
    * \pre surfaceMesh != AXOM_NULLPTR
    */
-  SignedDistance( axom::mint::Mesh* surfaceMesh, int maxObjects,
-                  int maxLevels=5 );
+  SignedDistance( const mint::Mesh* surfaceMesh,
+                  bool isWatertight,
+                  int maxObjects,
+                  int maxLevels   );
 
   /*!
    * \brief Destructor.
@@ -92,8 +97,48 @@ public:
   ~SignedDistance();
 
   /*!
+   * \brief Computes the distance of the given point to the input surface mesh.
+   *
+   * \param [in] x x-coordinate of the query point
+   * \param [in] y y-coordinate of the query point
+   * \param [in] z z-coordinate of the query point
+   *
+   * \note When the input is not a closed surface mesh, the assumption is that
+   *  the surface mesh divides the computational mesh domain into two regions.
+   *  Hence, the surface mesh has to span the entire domain of interest, e.g.,
+   *  the computational mesh at which the signed distance field is evaluated,
+   *  along some plane.
+   *
+   * \warning The sign of the distance from a given query point is determined by
+   *  a pseudo-normal which is computed at the closest point on the surface
+   *  mesh. For a non-watertight mesh, the sign of the distance is not defined
+   *  everywhere. Specifically, the sign is ambiguous for all points for which
+   *  a normal projection onto the surface does not exist.
+   *
+   * \return minDist minimum signed distance of the query point to the surface.
+   */
+  double computeDistance( double x, double y, double z=0.0 )
+  {
+    PointType pt = PointType::make_point( x, y, z );
+    return ( computeDistance( pt ) );
+  }
+
+  /*!
    * \brief Computes the distance of the given point to the surface mesh.
    * \param [in] queryPnt user-supplied point.
+   *
+   * \note When the input is not a closed surface mesh, the assumption is that
+   *  the surface mesh divides the computational mesh domain into two regions.
+   *  Hence, the surface mesh has to span the entire domain of interest, e.g.,
+   *  the computational mesh at which the signed distance field is evaluated,
+   *  along some plane.
+   *
+   * \warning The sign of the distance from a given query point is determined by
+   *  a pseudo-normal which is computed at the closest point on the surface
+   *  mesh. For a non-watertight mesh, the sign of the distance is not defined
+   *  everywhere. Specifically, the sign is ambiguous for all points for which
+   *  a normal projection onto the surface does not exist.
+   *
    * \return minDist the signed minimum distance to the surface mesh.
    */
   double computeDistance( const PointType& queryPnt ) const;
@@ -109,6 +154,18 @@ public:
    * \param [out] my_triangles the triangle used to compute the pseudo-normal.
    *
    * \note The variables 'triangles'/'my_triangles' are relevant in debug mode.
+   *
+   * \note When the input is not a closed surface mesh, the assumption is that
+   *  the surface mesh divides the computational mesh domain into two regions.
+   *  Hence, the surface mesh has to span the entire domain of interest, e.g.,
+   *  the computational mesh at which the signed distance field is evaluated,
+   *  along some plane.
+   *
+   * \warning The sign of the distance from a given query point is determined by
+   *  a pseudo-normal which is computed at the closest point on the surface
+   *  mesh. For a non-watertight mesh, the sign of the distance is not defined
+   *  everywhere. Specifically, the sign is ambiguous for all points for which
+   *  a normal projection onto the surface does not exist.
    *
    * \return minDist the minimum signed distance to the surface mesh.
    */
@@ -224,9 +281,10 @@ private:
   SignedDistance() : m_surfaceMesh(AXOM_NULLPTR), m_bvhTree(AXOM_NULLPTR) { };
 
 private:
-  axom::mint::Mesh* m_surfaceMesh;      /*!< User-supplied surface mesh. */
-  BoxType m_boxDomain;           /*!< bounding box containing surface mesh */
-  BVHTreeType* m_bvhTree;         /*!< Spatial acceleration data-structure. */
+  bool m_isInputWatertight;         /*!< indicates if input is watertight     */
+  const mint::Mesh* m_surfaceMesh;  /*!< User-supplied surface mesh.          */
+  BoxType m_boxDomain;              /*!< bounding box containing surface mesh */
+  BVHTreeType* m_bvhTree;           /*!< Spatial acceleration data-structure. */
 
   DISABLE_COPY_AND_ASSIGNMENT( SignedDistance );
 
@@ -260,7 +318,9 @@ private:
 //------------------------------------------------------------------------------
 template < int NDIMS >
 SignedDistance< NDIMS >::SignedDistance(
-  axom::mint::Mesh* surfaceMesh, int maxObjects, int maxLevels )
+  const mint::Mesh* surfaceMesh, bool isWatertight,
+  int maxObjects, int maxLevels ) :
+  m_isInputWatertight( isWatertight )
 {
   // Sanity checks
   SLIC_ASSERT( surfaceMesh != AXOM_NULLPTR );
@@ -366,7 +426,7 @@ double SignedDistance< NDIMS >::computeSign(
 
   // STEP 0: if point is outside the bounding box of the surface mesh, then
   // it is outside, just return 1.0
-  if ( !m_boxDomain.contains( pt ) )
+  if ( m_isInputWatertight && !m_boxDomain.contains( pt ) )
   {
     /* short-circuit, pt outside bounding box of the surface mesh */
     return 1.0;

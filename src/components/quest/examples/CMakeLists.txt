@@ -25,22 +25,6 @@ if (ENABLE_OPENMP)
 endif()
 
 blt_add_executable(
-    NAME        quest_distance_driver_ex
-    SOURCES     distance_driver.cpp
-    OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-    DEPENDS_ON  ${quest_example_depends}
-    FOLDER      axom/quest/examples
-    )
-
-blt_add_executable(
-    NAME        quest_sphere_distance_ex
-    SOURCES     sphere_distance.cpp
-    OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-    DEPENDS_ON  ${quest_example_depends}
-    FOLDER      axom/quest/examples
-    )
-
-blt_add_executable(
     NAME        quest_containment_driver_ex
     SOURCES     containment_driver.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
@@ -49,6 +33,14 @@ blt_add_executable(
     )
 
 ## Quest interface examples
+
+blt_add_executable(
+    NAME       quest_signed_distance_interface_ex
+    SOURCES    quest_signed_distance_interface.cpp
+    OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
+    DEPENDS_ON ${quest_example_depends}
+    FOLDER      axom/quest/examples
+    )
 
 blt_add_executable(
     NAME        quest_interface_ex
@@ -75,6 +67,18 @@ endif()
 
 
 if (ENABLE_FORTRAN)
+
+    blt_add_executable(
+        NAME       quest_signed_distance_interface_F_ex
+        SOURCES    quest_signed_distance_interface.F
+        OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
+        DEPENDS_ON ${quest_example_depends}
+        FOLDER     axom/quest/examples
+        )
+
+    set_target_properties( quest_signed_distance_interface_F_ex
+                           PROPERTIES LINKER_LANGUAGE Fortran)
+
     blt_add_executable(
         NAME        quest_interface_F_ex
         SOURCES     quest_interface_fortran.F

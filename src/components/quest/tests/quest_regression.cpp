@@ -79,6 +79,7 @@
 #include "primal/BoundingBox.hpp"
 
 #include "quest/quest.hpp"
+#include "quest/signed_distance.hpp"
 
 #include "sidre/sidre.hpp"
 #include "sidre/IOManager.hpp"
@@ -95,6 +96,9 @@
 #ifdef AXOM_USE_OPENMP
 #include "omp.h"
 #endif
+
+// C/C++ includes
+#include <cmath>  // for std::signbit()
 
 const int DIM = 3;
 const int MAX_RESULTS = 10;         // Max number of disagreeing entries to show
@@ -516,17 +520,20 @@ void runContainmentQueries(CommandLineArguments& clargs)
  */
 void runDistanceQueries(CommandLineArguments& clargs)
 {
-  int maxDepth = 10;
-  int maxEltsPerBucket = 25;
-  const bool USE_DISTANCE = true;
+  constexpr int maxDepth = 10;
+  constexpr int maxEltsPerBucket = 25;
+
 
   SLIC_INFO(
     fmt::format("Initializing BVH tree (maxDepth: {}, "
                 "maxEltsPerBucket: {}) over mesh '{}'...",
                 maxDepth, maxEltsPerBucket, clargs.meshName));
   axom::utilities::Timer buildTimer(true);
-  axom::quest::initialize(MPI_COMM_WORLD, clargs.meshName,USE_DISTANCE,DIM,
-                          maxEltsPerBucket, maxDepth);
+
+  axom::quest::signed_distance_set_max_levels( maxDepth );
+  axom::quest::signed_distance_set_max_occupancy( maxEltsPerBucket );
+  axom::quest::signed_distance_init( clargs.meshName, MPI_COMM_WORLD );
+
   buildTimer.stop();
 
   SLIC_INFO(fmt::format("Initialization took {} seconds.",
@@ -534,8 +541,7 @@ void runDistanceQueries(CommandLineArguments& clargs)
 
   SpacePt bbMin;
   SpacePt bbMax;
-  axom::quest::mesh_min_bounds(bbMin.data());
-  axom::quest::mesh_max_bounds(bbMax.data());
+  axom::quest::signed_distance_get_mesh_bounds( bbMin.data(), bbMax.data() );
 
   if(!clargs.hasBoundingBox())
   {
@@ -575,23 +581,34 @@ void runDistanceQueries(CommandLineArguments& clargs)
   SLIC_ASSERT( containment != AXOM_NULLPTR );
   SLIC_ASSERT( distance != AXOM_NULLPTR );
 
-  double* coords = new double[3*nnodes];
+  double* xcoords = new double[ nnodes ];
+  double* ycoords = new double[ nnodes ];
+  double* zcoords = new double[ nnodes ];
   axom::utilities::Timer fillTimer(true);
 
   #pragma omp parallel for schedule(static)
   for ( int inode=0 ; inode < nnodes ; ++inode )
   {
-    umesh->getNode( inode, coords+3*inode );
+    axom::mint::IndexType i, j, k;
+    umesh->getExtent()->getGridIndex( inode, i, j, k );
+
+    xcoords[inode] = umesh->evaluateCoordinate( i,axom::mint::X_COORDINATE);
+    ycoords[inode] = umesh->evaluateCoordinate( j,axom::mint::Y_COORDINATE);
+    zcoords[inode] = umesh->evaluateCoordinate( k,axom::mint::Z_COORDINATE);
   }
   fillTimer.stop();
 
   axom::utilities::Timer distanceTimer(true);
-  axom::quest::distance( coords, distance, nnodes);
+  axom::quest::signed_distance_evaluate(
+    xcoords, ycoords, zcoords, nnodes, distance );
   distanceTimer.stop();
 
-  axom::utilities::Timer containmentTimer(true);
-  axom::quest::inside( coords, containment, nnodes);
-  containmentTimer.stop();
+  for ( int inode=0 ; inode < nnodes ; ++inode )
+  {
+    containment[ inode ] = ( std::signbit( distance[ inode ] ) != 0) ? 1 : 0;
+  }
+
+
 
   SLIC_INFO(fmt::format("Filling coordinates array took {} seconds",
                         fillTimer.elapsed()));
@@ -600,15 +617,12 @@ void runDistanceQueries(CommandLineArguments& clargs)
                 "took {} seconds (@ {} queries per second)",
                 clargs.queryResolution, distanceTimer.elapsed(),
                 nnodes / distanceTimer.elapsed()));
-  SLIC_INFO(
-    fmt::format("Querying {}^3 containment field (BVH) "
-                "took {} seconds (@ {} queries per second)",
-                clargs.queryResolution, containmentTimer.elapsed(),
-                nnodes / containmentTimer.elapsed()));
 
-  delete [] coords;
+  delete [] xcoords;
+  delete [] ycoords;
+  delete [] zcoords;
 
-  axom::quest::finalize();
+  axom::quest::signed_distance_finalize();
 }
 
 

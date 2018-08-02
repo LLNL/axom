@@ -131,25 +131,6 @@ struct QuestAccelerator
   }
 
   /*!
-   * \brief Initializes the signed distance mode
-   * \param surface_mesh The surface mesh
-   * \pre Assumes that we are not yet initialized
-   */
-  void initializeSignedDistance( axom::mint::Mesh*& surface_mesh,
-                                 int maxElements,
-                                 int maxLevels,
-                                 bool deleteMesh )
-  {
-    SLIC_ASSERT( m_queryMode == QUERY_MODE_NONE);
-
-    setMesh(surface_mesh, deleteMesh);
-    m_region =
-      new SignedDistance<DIM>( m_surface_mesh, maxElements, maxLevels );
-    surface_mesh = m_surface_mesh;
-    m_queryMode = QUERY_MODE_SIGNED_DISTANCE;
-  }
-
-  /*!
    * \brief Deallocates all memory and sets the state to uninitialized
    */
   void finalize()
@@ -446,8 +427,11 @@ void initialize( MPI_Comm comm, const std::string& fileName,
 }
 
 void initialize( MPI_Comm comm, mint::Mesh*& input_mesh,
-                 bool requiresDistance, int ndims, int maxElements,
-                 int maxLevels, bool deleteMesh )
+                 bool AXOM_NOT_USED(requiresDistance),
+                 int ndims,
+                 int AXOM_NOT_USED(maxElements),
+                 int AXOM_NOT_USED(maxLevels),
+                 bool deleteMesh )
 {
   SLIC_ASSERT( !accelerator3D.isInitialized() );
   SLIC_ASSERT( comm != MPI_COMM_NULL );
@@ -471,22 +455,15 @@ void initialize( MPI_Comm comm, mint::Mesh*& input_mesh,
   SLIC_ASSERT( input_mesh != AXOM_NULLPTR );
 
   // Initialize the appropriate acceleration structure
-  if(requiresDistance)
-  {
-    accelerator3D.initializeSignedDistance(input_mesh, maxElements,
-                                           maxLevels, deleteMesh);
-  }
-  else
-  {
-    accelerator3D.initializeContainmentTree(input_mesh, deleteMesh);
-  }
-
+  accelerator3D.initializeContainmentTree(input_mesh, deleteMesh);
   accelerator3D.teardownQuestLogger();
 }
 #else
 //------------------------------------------------------------------------------
 void initialize( const std::string& fileName,
-                 bool requiresDistance, int ndims, int maxElements,
+                 bool requiresDistance,
+                 int ndims,
+                 int maxElements,
                  int maxLevels )
 {
   // Read in the mesh
@@ -505,8 +482,11 @@ void initialize( const std::string& fileName,
 }
 
 void initialize( mint::Mesh*& input_mesh,
-                 bool requiresDistance, int ndims, int maxElements,
-                 int maxLevels, bool deleteMesh )
+                 bool AXOM_NOT_USED(requiresDistance),
+                 int ndims,
+                 int AXOM_NOT_USED(maxElements),
+                 int AXOM_NOT_USED(maxLevels),
+                 bool deleteMesh )
 {
   SLIC_ASSERT( !accelerator3D.isInitialized() );
 
@@ -529,43 +509,10 @@ void initialize( mint::Mesh*& input_mesh,
   SLIC_ASSERT( input_mesh != AXOM_NULLPTR );
 
   // Initialize the appropriate acceleration structure
-  if(requiresDistance)
-  {
-    accelerator3D.initializeSignedDistance(input_mesh, maxElements,
-                                           maxLevels, deleteMesh );
-  }
-  else
-  {
-    accelerator3D.initializeContainmentTree(input_mesh, deleteMesh);
-  }
-
+  accelerator3D.initializeContainmentTree(input_mesh, deleteMesh);
   accelerator3D.teardownQuestLogger();
 }
 #endif
-
-//------------------------------------------------------------------------------
-double distance( double x, double y, double z )
-{
-  // TODO: assume 3-D for now
-  return accelerator3D.distance(x,y,z);
-}
-
-//------------------------------------------------------------------------------
-void distance( const double* xyz, double* dist, int npoints )
-{
-  SLIC_ASSERT( xyz != AXOM_NULLPTR );
-  SLIC_ASSERT( dist != AXOM_NULLPTR );
-
-#ifdef AXOM_USE_OPENMP
-#pragma omp parallel for schedule(static)
-#endif
-  for ( int i=0 ; i < npoints ; ++i )
-  {
-    // TODO: assume 3-D for now
-    dist[ i ] = accelerator3D.distance(xyz[i*3], xyz[i*3+1], xyz[i*3+2]);
-  }
-
-}
 
 //------------------------------------------------------------------------------
 int inside( double x, double y, double z )
@@ -573,9 +520,6 @@ int inside( double x, double y, double z )
   // TODO: assume 3-D for now
   return accelerator3D.inside(x,y,z);
 }
-
-
-
 
 //------------------------------------------------------------------------------
 void mesh_min_bounds(double* coords)
@@ -596,8 +540,6 @@ void mesh_max_bounds(double* coords)
   const SpacePt& bbMax = accelerator3D.meshBoundingBox().getMax();
   bbMax.array().to_array(coords);
 }
-
-
 
 //------------------------------------------------------------------------------
 void mesh_center_of_mass(double* coords)
