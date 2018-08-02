@@ -566,7 +566,7 @@ private:
    * \return status true if the dimension is invalid, otherwise, false.
    */
   bool invalidDimension( ) const
-  { return (m_ndims < 0 || m_ndims > 3); }
+  { return (m_ndims < 1 || m_ndims > 3); }
 
   /*!
    * \brief Checks if the given node index is within the valid range.
