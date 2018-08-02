@@ -51,7 +51,11 @@ set( quest_headers
     stl/STLReader.hpp
 
     ## quest interface headers
+    interface/internal/mpicomm_wrapper.hpp
+    interface/internal/QuestHelpers.hpp
+
     interface/quest.hpp
+    interface/signed_distance.hpp
 
    )
 
@@ -68,6 +72,7 @@ set( quest_sources
 
     ## quest interface sources
     interface/quest.cpp
+    interface/signed_distance.cpp
 
    )
 

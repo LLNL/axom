@@ -76,7 +76,9 @@ set(slam_sources
     # SRM Set sources
     # RangeSet.cpp
     # IndirectionSet.cpp
+    BitSet.cpp
     OrderedSet.cpp
+    BivariateSet.cpp
 
     # SRM Relation sources
     Relation.cpp

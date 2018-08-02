@@ -25,7 +25,7 @@
 #include "axom/sidre/core/Group.hpp"
 #include "axom/sidre/core/DataStore.hpp"
 #include "axom/sidre/core/SidreTypes.hpp"
-#include "fmt/fmt.h"
+#include "fmt/fmt.hpp"
 
 // Conduit headers
 #include "conduit_relay.hpp"

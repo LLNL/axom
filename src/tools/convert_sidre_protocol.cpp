@@ -45,7 +45,7 @@
 
 #include "axom/config.hpp"
 #include "axom/core/Types.hpp"
-#include "fmt/fmt.h"
+#include "fmt/fmt.hpp"
 #include "axom/slic/interface/slic.hpp"
 #include "axom/slic/core/LogStream.hpp"
 
