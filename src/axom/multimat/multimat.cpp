@@ -328,7 +328,7 @@ void MultiMat::convertToDynamic()
   m_cellMatRelDyn = new DynamicVariableRelationType(set1, set2);
   for (int i = 0; i < m_cellMatRel->fromSetSize(); i++)
   {
-    auto& rel_vec = (*m_cellMatRel)[i];
+    auto&& rel_vec = (*m_cellMatRel)[i];
     for (int j = 0; j < rel_vec.size(); j++)
     {
       m_cellMatRelDyn->insert(i, rel_vec[j]);
@@ -357,7 +357,7 @@ void MultiMat::convertToStatic()
   RangeSetType* set2 = isCellDom() ? &m_matSet : &m_cellSet;
 
   SLIC_ASSERT(m_cellMatRel == nullptr);
-  SLIC_ASSERT(m_cellMatRel_beginsVec.size() == set1->size() + 1);
+  SLIC_ASSERT(SetPosType( m_cellMatRel_beginsVec.size()) == set1->size() + 1);
   int rel_data_size = 0;
   for (int i = 0; i < m_cellMatRelDyn->fromSetSize(); i++)
   {
@@ -371,7 +371,7 @@ void MultiMat::convertToStatic()
   for (int i = 0; i < m_cellMatRelDyn->fromSetSize(); i++)
   {
     auto& rel_vec = (*m_cellMatRelDyn)[i];
-    for (int j = 0; j < rel_vec.size(); j++)
+    for (unsigned int j = 0; j < rel_vec.size(); j++)
     {
       m_cellMatRel_indicesVec[idx++] = rel_vec[j];
     }
@@ -405,7 +405,7 @@ bool MultiMat::addEntry(int idx1, int idx2)
   
   //if (!m_cellMatRelDyn->exists(idx1, idx2)) 
   DynamicVariableRelationType::RelationVec& rel_vec = m_cellMatRelDyn->data(idx1);
-  auto& found_iter = std::find(rel_vec.begin(), rel_vec.end(), idx2);
+  auto&& found_iter = std::find(rel_vec.begin(), rel_vec.end(), idx2);
   if (found_iter != rel_vec.end())
   {
     SLIC_ASSERT_MSG(false, "MultiMat::addEntry() -- entry already exists.");
@@ -422,7 +422,7 @@ bool MultiMat::removeEntry(int idx1, int idx2)
   SLIC_ASSERT(m_dynamic_mode);
 
   DynamicVariableRelationType::RelationVec& rel_vec = m_cellMatRelDyn->data(idx1);
-  auto& found_iter = std::find(rel_vec.begin(), rel_vec.end(), idx2);
+  auto&& found_iter = std::find(rel_vec.begin(), rel_vec.end(), idx2);
   if (found_iter == rel_vec.end())
   {
     SLIC_ASSERT_MSG(false, "MultiMat::removeEntry() -- entry not found");
