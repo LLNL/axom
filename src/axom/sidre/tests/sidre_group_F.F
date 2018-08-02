@@ -593,7 +593,7 @@ contains
 
 !XX    buffer1 = ds%get_buffer(bufferId1)
 !XX   buffvalid = .true.
-!--    if( buffer1 == AXOM_NULLPTR ) buffValid = .false.
+!--    if( buffer1 == nullptr ) buffValid = .false.
 !XX    call assert_false(buffValid)
 
     call ds%delete()

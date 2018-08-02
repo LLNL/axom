@@ -905,17 +905,6 @@ in the class destructor.
 8.60 Pointers **should** be set to null explicitly when memory is deallocated.
 This makes it easy to check pointers for "null-ness" when needed.
 
-      For uniformity across Axom and to facilitate C++11 and
-      non-C++11 usage, this should be done using the common macro
-      "AXOM\_NULLPTR"; For example::
-
-         // #include "axom/Types.hpp"
-         
-         double* data = new double[10];
-         // ...
-         delete [ ] data;
-         data = AXOM_NULLPTR;
-
 
 Use new/delete consistently
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

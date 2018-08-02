@@ -612,7 +612,7 @@ patterns:
 #        return NULL;
     # Convert NULL to None
     PY_null_to_none: |
-        if ({cxx_var} == AXOM_NULLPTR) {{
+        if ({cxx_var} == nullptr) {{
             Py_RETURN_NONE;
         }}
 
