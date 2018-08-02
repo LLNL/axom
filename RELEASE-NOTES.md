@@ -10,22 +10,14 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
-- Added support for non-closed surface mesh input to the signed distance query.
-- Added new interface for the signed distance query along with corresponding tests 
-  and examples.
-- Updated to [fmt version 5.1.0](https://github.com/fmtlib/fmt/releases/tag/5.1.0)
 
 ### Removed
-- Removed signed distance query functions from the quest.hpp interface. The
-  signed distance query is supported in its own exclusive interface.
 
 ### Deprecated
 
 ### Changed
 
 ### Fixed
-- Fixed minor memory leak in quest fortran example
-- Bugfix for "multiply-defined" linker error in slam::Bitset and quest::PointInCellTraits
 
 ### Known Bugs
 
@@ -33,6 +25,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Version 0.3.0] - Release date 2018-07-25
 
 ### Added
+- Added support for non-closed surface mesh input to the signed distance query.
+- Added new interface for the signed distance query along with corresponding tests 
+  and examples.
+- Updated to [fmt version 5.1.0](https://github.com/fmtlib/fmt/releases/tag/5.1.0)
 - Added AXOM_ENABLE_TESTS which is a CMake dependent option of ENABLE_TESTS
 - Added AXOM_ENABLE_DOCS which is a CMake dependent option of ENABLE_DOCS
 - Added AXOM_ENABLE_EXAMPLES which is a CMake dependent option of ENABLE_EXAMPLES
@@ -64,11 +60,16 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Removed ENABLE_PYTHON CMake option. Python was only used by Shroud so restricted Python
   checks to when Shroud generation is enabled
 - Removed Lua as a dependency of Axom.
+- Removed signed distance query functions from the quest.hpp interface. The
+  signed distance query is supported in its own exclusive interface.
+- Removed AXOM_NULLPTR. Use nullptr instead.
 
 ### Deprecated
 - 
 
 ### Changed
+- Restructured source directory.  #includes will now mirror file structure.  For
+  example, '#include "sidre/Group.hpp"' is now '#include "axom/sidre/core/Group.hpp"'.
 - The root CMake file for Axom is now located in ``<axom>/src``'s root directory,
   rather than in ``<axom>``
 - Prefixed all Axom CMake options with AXOM_ to avoid conflicts
@@ -91,7 +92,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Refactored Mint and removed all STL usage in preparation for GPUs.
 
 ### Fixed
--
+- Fixed minor memory leak in quest fortran example
+- Bugfix for "multiply-defined" linker error in slam::Bitset and quest::PointInCellTraits
 
 ### Known Bugs
 -
