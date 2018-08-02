@@ -39,6 +39,7 @@ set(slam_headers
     Utilities.hpp
     FieldRegistry.hpp
     ModularInt.hpp
+    IteratorBase.hpp
 
     #SRM policies
     policies/CardinalityPolicies.hpp
@@ -54,11 +55,13 @@ set(slam_headers
     NullSet.hpp
     OrderedSet.hpp
     RangeSet.hpp
-    #ProductSet.hpp
+    ProductSet.hpp
     DynamicSet.hpp
     Set.hpp
+    BivariateSet.hpp
     BitSet.hpp
     internal/BitTwiddle.hpp
+    RelationSet.hpp
 
     # SRM Relation headers
     Relation.hpp
