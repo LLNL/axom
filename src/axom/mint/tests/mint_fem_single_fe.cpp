@@ -1008,7 +1008,7 @@ TEST( mint_fem_single_fe, check_fe_point_in_cell )
 //------------------------------------------------------------------------------
 TEST( mint_fem_single_fe, check_fe_interp )
 {
-  check_interp< MINT_LAGRANGE_BASIS, mint::QUAD >(     1.e-24 );
+  check_interp< MINT_LAGRANGE_BASIS, mint::QUAD >(     1.e-12 );
   check_interp< MINT_LAGRANGE_BASIS, mint::TRIANGLE >( 1.e-12 );
   check_interp< MINT_LAGRANGE_BASIS, mint::TET >(      1.e-12 );
   check_interp< MINT_LAGRANGE_BASIS, mint::HEX >(      1.e-24 );
