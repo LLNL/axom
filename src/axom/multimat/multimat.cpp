@@ -15,10 +15,12 @@ using namespace std;
 using namespace axom::multimat;
 
 
-MultiMat::MultiMat():
+MultiMat::MultiMat() :
   m_cellMatRel(nullptr),
+  m_cellMatRelDyn(nullptr),
   m_cellMatNZSet(nullptr),
-  m_cellMatProdSet(nullptr)
+  m_cellMatProdSet(nullptr),
+  m_dynamic_mode(false)
 {
   m_ncells = m_nmats = 0;
   m_dataLayout = DataLayout::CELL_CENTRIC;
@@ -38,6 +40,7 @@ MultiMat::~MultiMat()
   delete m_cellMatProdSet;
   delete m_cellMatNZSet;
   delete m_cellMatRel;
+  delete m_cellMatRelDyn;
 }
 
 template<typename T>
@@ -74,11 +77,13 @@ MultiMat::MultiMat(const MultiMat& other) :
   m_cellMatRel_beginsVec(other.m_cellMatRel_beginsVec),
   m_cellMatRel_indicesVec(other.m_cellMatRel_indicesVec),
   m_cellMatRel(nullptr),
+  m_cellMatRelDyn(nullptr),
   m_cellMatNZSet(nullptr),
   m_cellMatProdSet(nullptr),
   m_arrNameVec(other.m_arrNameVec),
   m_fieldMappingVec(other.m_fieldMappingVec),
-  m_dataTypeVec(other.m_dataTypeVec)
+  m_dataTypeVec(other.m_dataTypeVec),
+  m_dynamic_mode(false)
 {
   RangeSetType& set1 = (m_dataLayout == DataLayout::CELL_CENTRIC ? m_cellSet : m_matSet);
   RangeSetType& set2 = (m_dataLayout == DataLayout::CELL_CENTRIC ? m_matSet : m_cellSet);
@@ -145,6 +150,7 @@ void MultiMat::setCellMatRel(vector<bool>& vecarr)
 
   SLIC_ASSERT(vecarr.size() == m_ncells * m_nmats); //This should be a dense matrix
   SLIC_ASSERT(m_cellMatRel == nullptr); //cellmatRel has not been set before
+  SLIC_ASSERT(m_cellMatRelDyn == nullptr);
 
   RangeSetType& set1 = (m_dataLayout == DataLayout::CELL_CENTRIC ? m_cellSet : m_matSet);
   RangeSetType& set2 = (m_dataLayout == DataLayout::CELL_CENTRIC ? m_matSet : m_cellSet);
@@ -191,7 +197,6 @@ void MultiMat::setCellMatRel(vector<bool>& vecarr)
   assert(m_arrNameVec.size() == 1);
   assert(m_fieldMappingVec.size() == 1);
   assert(m_dataTypeVec.size() == 1);
-
 }
 
 
@@ -231,8 +236,11 @@ int MultiMat::setVolfracField(double* arr)
       }
     }
 
-    for(unsigned int i=0; i<sum_vec.size(); ++i)
-      SLIC_ASSERT(abs(sum_vec[i] - 1.0) < tol);
+    for (unsigned int i = 0; i < sum_vec.size(); ++i) 
+    {
+      if (abs(sum_vec[i] - 1.0))
+        SLIC_ASSERT(abs(sum_vec[i] - 1.0) < tol);
+    }
   }
 
   //move the data to the first one (index 0) in the list
@@ -299,6 +307,135 @@ MultiMat::IndexSet MultiMat::getIndexingSetOfCell(int c)
   }
   else assert(false);
 }
+
+void MultiMat::convertToDynamic()
+{
+  if (m_dynamic_mode) return;
+  SLIC_ASSERT(m_cellMatRelDyn == nullptr);
+
+  // Save what the current layout is for later
+  m_static_layout = Layout{ m_dataLayout, m_sparcityLayout };
+
+  // For now, handle dynamic by changing maps to dense, and relation to DynamicRelation
+  if (isSparse())
+  {
+    convertLayoutToDense();
+  }
+
+  //create the dynamic relation
+  SetType *set1 = m_cellMatRel->fromSet(), *set2 = m_cellMatRel->toSet();
+  
+  m_cellMatRelDyn = new DynamicVariableRelationType(set1, set2);
+  for (int i = 0; i < m_cellMatRel->fromSetSize(); i++)
+  {
+    auto& rel_vec = (*m_cellMatRel)[i];
+    for (int j = 0; j < rel_vec.size(); j++)
+    {
+      m_cellMatRelDyn->insert(i, rel_vec[j]);
+    }
+  }
+
+  SLIC_ASSERT(m_cellMatRelDyn->totalSize() == m_cellMatRel->totalSize());
+
+  delete m_cellMatRel;
+  m_cellMatRel = nullptr;
+  delete m_cellMatNZSet;
+  m_cellMatNZSet = nullptr;
+
+  m_dynamic_mode = true;
+}
+
+
+void MultiMat::convertToStatic()
+{
+  if (!m_dynamic_mode) return;
+  
+  // Change dynamicRelation back to staticRelation
+  // change the layout to previous
+  
+  RangeSetType* set1 = isCellDom() ? &m_cellSet : &m_matSet;
+  RangeSetType* set2 = isCellDom() ? &m_matSet : &m_cellSet;
+
+  SLIC_ASSERT(m_cellMatRel == nullptr);
+  SLIC_ASSERT(m_cellMatRel_beginsVec.size() == set1->size() + 1);
+  int rel_data_size = 0;
+  for (int i = 0; i < m_cellMatRelDyn->fromSetSize(); i++)
+  {
+    auto& rel_vec = (*m_cellMatRelDyn)[i];
+    m_cellMatRel_beginsVec[i] = rel_data_size;
+    rel_data_size += rel_vec.size();
+  }
+  m_cellMatRel_beginsVec.back() = rel_data_size;
+  m_cellMatRel_indicesVec.resize(rel_data_size);
+  int idx = 0;
+  for (int i = 0; i < m_cellMatRelDyn->fromSetSize(); i++)
+  {
+    auto& rel_vec = (*m_cellMatRelDyn)[i];
+    for (int j = 0; j < rel_vec.size(); j++)
+    {
+      m_cellMatRel_indicesVec[idx++] = rel_vec[j];
+    }
+  }
+  SLIC_ASSERT(idx == m_cellMatRelDyn->totalSize());
+  
+  m_cellMatRel = new StaticVariableRelationType(set1, set2);
+  m_cellMatRel->bindBeginOffsets(set1->size(), &m_cellMatRel_beginsVec);
+  m_cellMatRel->bindIndices(m_cellMatRel_indicesVec.size(), &m_cellMatRel_indicesVec);
+
+  assert(m_cellMatRel->isValid());
+
+  assert(m_cellMatNZSet == nullptr);
+  m_cellMatNZSet = new RelationSetType(m_cellMatRel);
+
+  m_dynamic_mode = false;
+  
+  if (m_static_layout.sparcity_layout == SparcityLayout::SPARSE)
+    convertLayoutToSparse();
+
+  delete m_cellMatRelDyn; 
+  m_cellMatRelDyn = nullptr;
+}
+
+bool MultiMat::addEntry(int idx1, int idx2)
+{
+  SLIC_ASSERT(m_dynamic_mode);
+
+  //right now this is implemented by converting the data layout to dense so that
+  // adding an entry only involve changing the relation data.
+  
+  //if (!m_cellMatRelDyn->exists(idx1, idx2)) 
+  DynamicVariableRelationType::RelationVec& rel_vec = m_cellMatRelDyn->data(idx1);
+  auto& found_iter = std::find(rel_vec.begin(), rel_vec.end(), idx2);
+  if (found_iter != rel_vec.end())
+  {
+    SLIC_ASSERT_MSG(false, "MultiMat::addEntry() -- entry already exists.");
+    return false;
+  }
+    
+  m_cellMatRelDyn->insert(idx1, idx2);
+
+  return true;
+}
+
+bool MultiMat::removeEntry(int idx1, int idx2)
+{
+  SLIC_ASSERT(m_dynamic_mode);
+
+  DynamicVariableRelationType::RelationVec& rel_vec = m_cellMatRelDyn->data(idx1);
+  auto& found_iter = std::find(rel_vec.begin(), rel_vec.end(), idx2);
+  if (found_iter == rel_vec.end())
+  {
+    SLIC_ASSERT_MSG(false, "MultiMat::removeEntry() -- entry not found");
+    return false;
+  }
+
+  rel_vec.erase(found_iter);
+
+  //TODO make all map value zero?
+
+  return true;
+}
+
 
 void MultiMat::convertLayoutToCellDominant()
 {
@@ -561,10 +698,10 @@ bool MultiMat::isValid(bool verboseOutput) const
     }
     else
     {
-      //Check Volfrac values match the relation value (if dense) 
       const Field2D<double>& volfrac_map = *static_cast<Field2D<double>*>(m_mapVec[0]);
-      std::vector<double> volfrac_sum(m_cellSet.size(), 0.0);
-      if (isDense())
+      
+      //Check Volfrac values match the relation value (if dense) 
+      if (isDense() && !m_dynamic_mode)
       {
         for (int i = 0; i < volfrac_map.firstSetSize(); ++i)
         {
@@ -572,11 +709,11 @@ bool MultiMat::isValid(bool verboseOutput) const
           for (int j = 0; j < volfrac_map.secondSetSize(); ++j)
           {
             bool zero_volfrac = volfrac_map[i* volfrac_map.secondSetSize() + j] == 0.0; //exact comp?
-            if (*rel_iter == j)
+            if (rel_iter != m_cellMatRel->end(i) && *rel_iter == j)
             { //cellmat rel is present
               if (zero_volfrac)
               {
-                errStr << "\n\t*Volume fraction is zero for a cellmat with relation"; //TODO reword
+                errStr << "\n\t*Volume fraction is zero for a material that exists in a cell"; //TODO reword
                 bValid = false;
               }
               ++rel_iter;
@@ -585,7 +722,7 @@ bool MultiMat::isValid(bool verboseOutput) const
             {
               if (!zero_volfrac)
               {
-                errStr << "\n\t*Volume fraction is non-zero for an empty cellmat relation";
+                errStr << "\n\t*Volume fraction is non-zero for a material not presented in a cell.";
                 bValid = false;
               }
             }
@@ -594,6 +731,7 @@ bool MultiMat::isValid(bool verboseOutput) const
       }
 
       //Check Volfrac sums to up 1.0
+      std::vector<double> volfrac_sum(m_cellSet.size(), 0.0);
       for (int i = 0; i < volfrac_map.firstSetSize(); ++i)
       {
         auto& submap = volfrac_map(i);
@@ -615,19 +753,17 @@ bool MultiMat::isValid(bool verboseOutput) const
       }
 
     }
-
   }
 
   if (verboseOutput)
   {
     if (bValid)
     {
-      errStr << "MultiMat data was valid";
+      errStr << "\n\t*MultiMat data was valid";
     }
 
     std::cout << errStr.str() << std::endl;
   }
-
 
   return bValid;
 }
