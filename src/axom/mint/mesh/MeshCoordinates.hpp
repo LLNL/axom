@@ -527,14 +527,20 @@ public:
 
   double* getCoordinateArray( int dim )
   {
-    SLIC_ASSERT( indexInRange( dim, 0, m_ndims-1) );
+    SLIC_ERROR_IF( !indexInRange( dim, 0, m_ndims-1),
+     "invalid request for coordinate array along dimension [" << dim << "]" <<
+     "ndims=" << m_ndims  );
+
     SLIC_ASSERT( m_coordinates[ dim ] != nullptr );
     return m_coordinates[ dim ]->getData();
   }
 
   const double* getCoordinateArray( int dim ) const
   {
-    SLIC_ASSERT( indexInRange( dim, 0, m_ndims-1)  );
+    SLIC_ERROR_IF( !indexInRange( dim, 0, m_ndims-1),
+     "invalid request for coordinate array along dimension [" << dim << "]" <<
+     "ndims=" << m_ndims  );
+
     SLIC_ASSERT( m_coordinates[ dim ] != nullptr );
     return m_coordinates[ dim ]->getData();
   }
@@ -566,7 +572,7 @@ private:
    * \return status true if the dimension is invalid, otherwise, false.
    */
   bool invalidDimension( ) const
-  { return (m_ndims < 0 || m_ndims > 3); }
+  { return (m_ndims < 1 || m_ndims > 3); }
 
   /*!
    * \brief Checks if the given node index is within the valid range.
@@ -596,8 +602,7 @@ private:
   sidre::Group* m_group;
 #endif
   int m_ndims;
-  Array< double >* m_coordinates[3] =
-  {nullptr, nullptr, nullptr};
+  Array< double >* m_coordinates[3] = {nullptr, nullptr, nullptr};
 
   DISABLE_COPY_AND_ASSIGNMENT( MeshCoordinates );
   DISABLE_MOVE_AND_ASSIGNMENT( MeshCoordinates );

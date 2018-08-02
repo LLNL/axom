@@ -285,7 +285,8 @@ bool FieldData::checkConsistency( IndexType num_tuples,
 void FieldData::removeField( const std::string& name )
 {
   mint::Field* f = getField( name );
-  SLIC_ASSERT( f != nullptr );
+  SLIC_ERROR_IF( f==nullptr, "field [" << name << "] does not exist!" );
+
   m_fields.erase( name );
   delete f;
 
