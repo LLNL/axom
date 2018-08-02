@@ -22,7 +22,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Known Bugs
 
 
-## [Version 0.3.0] - Release date 2018-07-25
+## [Version 0.3.0] - Release date 2018-08-02
 
 ### Added
 - Added support for non-closed surface mesh input to the signed distance query.
