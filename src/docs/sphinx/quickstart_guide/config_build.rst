@@ -62,10 +62,9 @@ Unless otherwise marked, the dependencies are optional.
   * doxygen 1.8.11
   * hdf5 1.8.16
   * lcov 1.11
-  * lua 5.1.5
   * mfem 3.3.2
-  * python 2.7.11
-  * py-shroud 0.9.0
+  * python 2.7.15
+  * py-shroud 0.10.0
   * py-sphinx 1.3.6
   * scr 1.2.1
   * uncrustify 0.61
