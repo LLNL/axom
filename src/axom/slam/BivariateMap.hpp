@@ -1,0 +1,485 @@
+/*
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
+ *
+ * All rights reserved.
+ *
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ */
+
+/**
+ * \file BivariateMap.hpp
+ *
+ * \brief Contains the BivariateMap class, a map for a BivariateSet
+ *
+ */
+
+#ifndef SLAM_BIVARIATE_MAP_HPP_
+#define SLAM_BIVARIATE_MAP_HPP_
+
+#include "axom/slam/Map.hpp"
+#include "axom/slam/Relation.hpp"
+#include "axom/slam/BivariateSet.hpp"
+#include "axom/slam/SubMap.hpp"
+
+#include <cassert>
+
+namespace axom
+{
+namespace slam
+{
+
+
+/**
+ * \class BivariateMap
+ * \brief A Map for BivariateSet. It associates a constant number of values to
+ *        every element in a BivariateSet. 
+ * 
+ * \detail Like BivariateSet, every value in BivariateMap is indexed by two
+ *         indices. BivariateMap's `operator(i)` returns a SubMap of all entries
+ *         whose first index is `i` in the BivariateSet.
+ * 
+ * \tparam DataType the data type of each value
+ * \tparam StridePolicy A policy class that determines how many values to
+ *          associate with each element. There is a fixed \a stride between
+ *          the data associated with each element of the set.
+ * \see BivariateSet, SubMap
+ */
+
+template<
+  typename DataType,
+  typename StridePolicy = policies::StrideOne<Set::IndexType>
+>
+  class BivariateMap : public MapBase, public StridePolicy
+{
+  static const NullBivariateSet s_nullBiSet;
+
+public:
+  using PositionType = Set::PositionType;
+  using MapType = Map<DataType, StridePolicy>;
+  using OrderedSetType = BivariateSet::OrderedSetType;
+
+  using BivariateMapType = BivariateMap<DataType, StridePolicy>;
+  using SubMapType = SubMap<DataType, BivariateMapType, StridePolicy>;
+  using SubMapIterator = typename SubMapType::SubMapIterator;
+
+public:
+
+  /**
+   * \brief Constructor for a BivariateMap
+   *
+   * \param bSet          (Optional) The bivariateSet.
+   * \param defaultValue  (Optional) The default value used to initialize the entries of the map.
+   * \param stride        (Optional) The stride, or number of component, of the map.
+   *
+   * \note  When using a compile time StridePolicy, \a stride must be equal to
+   *        \a stride(), when provided.
+   */
+
+  BivariateMap(const BivariateSet* bSet = &s_nullBiSet, 
+               DataType defaultValue = DataType(),
+               Set::IndexType stride = StridePolicy::DEFAULT_VALUE) :
+    StridePolicy(stride), 
+    m_set(bSet), 
+    m_rangeSet(0, bSet->size()), 
+    m_map(&m_rangeSet, defaultValue, stride), 
+    m_submap_idx(-1)
+  {}
+
+
+  /// \name BivariateMap value access functions
+  /// @{
+  ///
+
+  /**
+   * \brief  Access the value in the map using a flat index in the range of 0 to
+   *         `size()*numComp()`
+   *
+   * \return The value for the j<sup>th</sup> component of the i<sup>th</sup>
+   *         element, where `setIndex = i * numComp() + j`.
+   * \pre    0 <= setIndex < size() * numComp()
+   */
+  const DataType& operator[](SetPosition setIndex) const
+  {
+    return m_map[setIndex];
+  }
+  DataType& operator[](SetPosition setIndex)
+  {
+    return m_map[setIndex];
+  }
+
+private:
+  //template for const / non-const submap creator
+  template <class constOrNonConstMap>
+  void makeSubMap(SetPosition setIndex, constOrNonConstMap* map_ptr) const
+  {
+    SetIndex start_idx = m_set->findElementFlatIndex(setIndex);
+    SetIndex size = m_set->size(setIndex);
+    RangeSet rng_set(start_idx, start_idx + size);
+    m_submap = SubMapType(map_ptr, rng_set);
+    m_submap_idx = setIndex;
+  }
+
+public:
+  /**
+   * \brief Returns a SubMap containing the subset of the BivariateMap whose
+   *        first set index is \a setIndex
+   * \pre 0 <= setIndex < size(setIndex)
+   */
+  const SubMapType& operator() (SetPosition setIndex) const
+  {
+    if (m_submap_idx != setIndex) {
+      makeSubMap<const BivariateMapType>(setIndex, this);
+    }
+    return m_submap;
+  }
+
+  SubMapType& operator() (SetPosition setIndex) 
+  {
+    if (m_submap_idx != setIndex) {
+      makeSubMap<BivariateMapType>(setIndex, this);
+    }
+    return m_submap;
+  }
+
+  /**
+   * \brief Access the value associated with the given SparseIndex into the
+   *        BivariateSet and the component index.
+   * 
+   * \pre `0 <= s1 < firstSetSize()`
+   * \pre `0 <= s2 < size(s1)`
+   * \pre `0 <= comp < numComp()`
+   */
+  const DataType& operator() (SetPosition s1, SetPosition s2, 
+                               SetPosition comp = 0) const
+  {
+    return m_map(m_set->findElementFlatIndex(s1, s2), comp);
+  }
+
+  DataType & operator() (SetPosition s1, SetPosition s2, SetPosition comp = 0)
+  {
+    const BivariateMap& constMe = *this;
+    return const_cast<DataType&>(constMe(s1,s2,comp));
+  }
+
+  /**
+   * \brief Access the value associated with the given DenseIndex into the
+   *        BivariateSet and the component index.
+   * 
+   * \pre `0 <= s1 < firstSetSize()`
+   * \pre `0 <= s2 < secondSetSize()`
+   * \pre `0 <= comp < numComp()`
+   * 
+   * \return a DataType pointer to the value associated with the given index,
+   *         or BivariateSet::INVALID_POS if there is no value for this index.
+   * \warning For sparse BivariateSet type, this function may have to do a 
+   *          linear search, and can be slow.
+   */
+  const DataType* findValue(SetPosition s1, SetPosition s2, 
+                            SetPosition comp = 0) const
+  {
+    SetPosition i = m_set->findElementFlatIndex(s1, s2);
+    if (i == BivariateSet::INVALID_POS) 
+      //the bivariate set does not contain this index pair
+      return nullptr;
+
+    return &(m_map(i, comp));
+  }
+
+  DataType* findValue(SetPosition s1, SetPosition s2, SetPosition comp = 0)
+  {
+    const BivariateMap& constMe = *this;
+    return const_cast<DataType*>(constMe.findValue(s1, s2, comp));
+  }
+
+  /// @}
+
+
+  /// \name BivariateMap index access functions
+  /// @{
+  ///
+
+  /**
+   * \brief Returns the element in the BivariateSet given the DenseIndex
+   * 
+   * \return The BivariateSet element or BivariateSet::INVALID_POS if the set
+   *         doesn't contain the given DenseIndex
+   */
+  SetPosition index(PositionType s1, PositionType s2) const 
+  {
+    return m_set->findElementIndex(s1, s2);
+  }
+  
+  /**
+   * \brief Return a set of elements associated to the given first set index 
+   * 
+   * \param s1 the first set index
+   * \return OrderedSet containing the elements
+   */
+  OrderedSetType indexSet(SetIndex s1) const
+  {
+    return m_set->getElements(s1);
+  }
+
+  /**
+   * \brief Search for the FlatIndex of an element given its DenseIndex in the
+   *        BivariateSet.
+   */
+  SetPosition flatIndex(PositionType s1, PositionType s2) const
+  {
+    return m_set->findElementFlatIndex(s1, s2);
+  }
+
+  /// @}
+
+
+#ifdef AXOM_USE_CXX11
+  /**
+   * \class BivariateMapIterator
+   * \brief An iterator type for a BivariateMap, iterating via its 
+   *        ElementFlatIndex.
+   * 
+   * This iterator class traverses the BivariateMap using its ElementFlatIndex.
+   * It keeps track of the iterator's first index (firstIdx), second dense index
+   * (secondIdx), and the second sparse index (secondSparseIdx). The advance()
+   * function is implemented to update those three additional indices.
+   */
+  class BivariateMapIterator : 
+        public IteratorBase<BivariateMapIterator, DataType>
+  {
+  private:
+    using IterBase = IteratorBase<BivariateMapIterator, DataType>;
+    using IterBase::m_pos;
+    using iter = BivariateMapIterator;
+    using PositionType = SetPosition;
+
+  public:
+    /**
+     * \brief Construct a new BivariateMap Iterator given an ElementFlatIndex
+     */
+    BivariateMapIterator(BivariateMap* sMap, PositionType pos)
+      : IterBase(pos), m_map(sMap), 
+        firstIdx(-1), secondIdx(-1), secondSparseIdx(-1)
+    {
+      //check the pos is valid
+      if (pos < 0 || pos >= m_map->totalSize()) return;
+
+      //This search makes assumption of the BivariateSet indexing system.
+      //This should probably be changed to a BivariateSet function
+      //findFirstIdxGivenFlatIdx( pos ) so there's no assumption
+      firstIdx = 0;
+      PositionType beginIdx = 0;
+      while(beginIdx + sMap->set()->size(firstIdx) < m_pos){
+        beginIdx += sMap->set()->size(firstIdx);
+        firstIdx++;
+      }
+      
+      SLIC_ASSERT(firstIdx < sMap->firstSetSize());
+      secondIdx = m_map->set()->at(m_pos);
+      secondSparseIdx = m_pos - beginIdx;
+    }
+
+    bool operator==(const iter& other) const
+    {
+      return (m_map == other.m_map) && (m_pos == other.m_pos);
+    }
+    bool operator!=(const iter& other) const { return !operator==(other); }
+    
+    /**
+     * \brief Returns the current iterator value. If the BivariateMap has 
+     *        multiple components, this will return the first component. 
+     *        To access the other components, use iter(comp)
+     */
+    DataType & operator*()
+    {
+      return (*m_map)(firstIdx, secondIdx, 0);
+    }
+
+    /**
+     * \brief Returns the iterator's value at the specified component.
+     *        Returns the first component if comp_idx is not specified.
+     * \param comp_idx  (Optional) Zero-based index of the component.
+     */
+    DataType & operator()(PositionType comp_idx = 0)
+    {
+      return (*m_map)(firstIdx, secondIdx, comp_idx);
+    }
+
+    /** \brief Returns the first component value after n increments.  */
+    const DataType & operator[](PositionType n) const
+    {
+      return *(this->operator+(n));
+    }
+    DataType & operator[](PositionType n)
+    {
+      return *(this->operator+(n));
+    }
+
+   /** \brief Same as operator() */
+    DataType& value(PositionType comp = 0)
+    {
+      return (*m_map)(firstIdx, secondIdx, comp);
+    }
+
+    /**
+     * \brief return the current iterator's first index into the BivariateSet
+     */
+    PositionType firstIndex()
+    {
+      return firstIdx;
+    }
+
+    /**
+     * \brief return the current iterator's second index (DenseIndex) 
+     *        into the BivariateSet
+     */
+    PositionType secondIndex()
+    {
+      return m_map->set()->at(m_pos);
+    }
+
+    /** \brief Returns the number of component per element in the map. */
+    PositionType numComp() const { return m_map->numComp(); }
+  
+  private:
+    /* recursive helper function for advance. It can recurse as many times as 
+     * the BivariateSet's firstSetSize.  */
+    void advance_helper(PositionType n, PositionType idx1, PositionType idx2)
+    {
+      const BivariateSet* set = m_map->set();
+      if (idx2 + n < 0)
+        advance_helper(n + idx2, idx1 - 1, set->size(idx1 - 1) - 1);
+      else if (idx2 + n >= set->size(idx1))
+        advance_helper(n - (set->size(idx1) - idx2), idx1 + 1, 0);
+      else
+      {
+        firstIdx = idx1;
+        secondSparseIdx = idx2 + n;
+        secondIdx = m_map->set()->at(m_pos);
+      }
+    }
+
+  protected:
+    /* Implementation of advance() as required by IteratorBase. 
+     * It updates the three other indices as well. */
+    void advance(PositionType n) 
+    {
+      m_pos += n;
+      if (m_pos == m_map->totalSize()) 
+      {
+        firstIdx = -2;
+        secondIdx = -2;
+        secondSparseIdx = -2;
+      }
+      else
+      {
+        advance_helper(n, firstIdx, secondSparseIdx);
+      }
+    }
+
+  private:
+    BivariateMap * m_map;
+    PositionType firstIdx;
+    PositionType secondIdx;
+    PositionType secondSparseIdx;
+  };
+
+  /** BivariateMap iterator functions */
+  BivariateMapIterator begin() { return BivariateMapIterator(this, 0); }
+  BivariateMapIterator end() { return BivariateMapIterator(this, totalSize()); }
+
+
+  /** Iterator via Submap */
+  SubMapIterator begin(int i) { return (*this)(i).begin(); }
+  SubMapIterator end(int i) { return (*this)(i).end(); }
+#endif //AXOM_USE_CXX11
+
+  const BivariateSet* set()    const { return m_set; }
+  const MapType*      getMap() const { return &m_map; }
+        MapType*      getMap()       { return &m_map; }
+
+
+  virtual bool        isValid(bool verboseOutput = false) const override
+  {
+    return m_set->isValid(verboseOutput) && m_map.isValid(verboseOutput);
+  }
+
+  
+
+  /// \name BivariateMap cardinality functions
+  /// @{
+  ///
+
+  /** \brief Returns the BivariateSet size. */
+  SetPosition size() const override { return m_set->size(); }
+  /** \brief Returns the BivariateSet size. */
+  SetPosition totalSize() const { return m_set->size(); }
+
+  SetPosition firstSetSize() const { return m_set->firstSetSize(); }
+  SetPosition secondSetSize() const { return m_set->secondSetSize(); }
+  /** \brief Returns the number of the BivariateSet ordered pairs with
+   *         the given first set index. */
+  SetPosition size(SetPosition s) const { return m_set->size(s); }
+
+  SetPosition numComp() const { return StridePolicy::stride(); }
+
+  /// @}
+
+
+
+  /**
+   * \brief Given a DataType array of size `totalSize()*numComp()`, copy
+   *        the data into the BivariateMap storage.
+   * 
+   * \param data_arr The array of DataType that contains the data to be copied.
+   */
+  void copy(DataType* data_arr)
+  {
+    for (int i = 0; i < m_map.size() * StridePolicy::stride(); i++)
+      m_map[i] = data_arr[i];
+  }
+
+private:
+  /** \brief Check the indices (DenseIndex) are valid   */
+  void        verifyPosition(SetPosition s1, SetPosition s2) const
+  {
+    m_set->verifyPosition(s1, s2);
+  }
+
+  /** \brief Check the given ElementFlatIndex is valid.  */
+  void        verifyPosition(SetPosition pos) const override
+  {
+    SLIC_ASSERT_MSG(
+      pos >= 0 && pos < SetPosition(m_map.size()),
+      "Attempted to access element "
+      << pos << " but BivairateMap's data has size " << m_map.size());
+  }
+
+private:
+  const BivariateSet* m_set;
+  RangeSet m_rangeSet; //for the map... since BivariateSet isn't a slam::Set
+  MapType m_map;
+
+  //for returning submap
+  mutable SubMapType m_submap;
+  mutable int m_submap_idx;
+
+}; //end BivariateMap
+
+template<typename  DataType, typename StridePolicy>
+NullBivariateSet const BivariateMap<DataType, StridePolicy>::s_nullBiSet;
+
+} // end namespace slam
+} // end namespace axom
+
+
+
+#endif // SLAM_BIVARIATE_MAP_HPP_
