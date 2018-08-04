@@ -79,7 +79,6 @@ namespace slam
  *   `[idx = 2] = c`\n
  *   `[idx = 3] = d`\n
  *
- *
  */
 
 class BivariateSet
@@ -180,7 +179,7 @@ public:
    * \brief A set of elements with the given first set index.
    *
    * \param s1  The first set index.
-   * \return  An OrderedSet containing the elements in the row.
+   * \return  An OrderedSet containing the elements
    * \pre  0 <= pos1 <= set1.size()
    */
   virtual const OrderedSetType getElements(PositionType s1) const = 0;
@@ -214,7 +213,7 @@ protected:
 /**
  * \class NullBivariateSet
  *
- * \brief A Null Bivariate class. Same as tehe NullSet for Set class.
+ * \brief A Null BivariateSet class. Same as the NullSet for Set class.
  */
 class NullBivariateSet : public BivariateSet
 {

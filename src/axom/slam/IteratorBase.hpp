@@ -145,4 +145,4 @@ protected:
 } // end namespace slam
 } // end namespace axom
 
-#endif //  SLAM_BITSET_H_
+#endif //  SLAM_ITERATOR_BASE_H_

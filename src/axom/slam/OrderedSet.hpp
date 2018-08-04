@@ -255,6 +255,7 @@ public:
     }
 
 protected:
+    /* Implementation of advance() as required by IteratorBase */
     void advance(PositionType n) { m_pos += n * stride(); }
 
 private:

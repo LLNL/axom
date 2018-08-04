@@ -45,8 +45,9 @@ template<
 class RelationSet : public OrderedSet<>, public BivariateSet
 {
 private:
-  typedef RangeSet RangeSetType;
-  typedef Relation RelationType;
+  using RangeSetType = RangeSet;
+  using RelationType = Relation;
+
 public:
   using PositionType = RangeSetType::PositionType;
   using IndexType = RangeSetType::IndexType;
@@ -54,13 +55,15 @@ public:
 
   using RelationSubset = typename RelationType::RelationSubset;
 
-
 public:
   RelationSet() {}
 
-  RelationSet(RelationType* r)
-    : BivariateSet(r->fromSet(), r->toSet())
-    , m_relation(r)
+  /**
+   * \brief Constructor taking in the relation this BivariateSet is based on.
+   */
+  RelationSet(RelationType* relation_ptr)
+    : BivariateSet(relation_ptr->fromSet(), relation_ptr->toSet())
+    , m_relation(relation_ptr) 
   {}
 
   /**
