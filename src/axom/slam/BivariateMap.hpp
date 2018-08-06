@@ -50,7 +50,7 @@ namespace slam
  * The different indexing system (DenseIndex, SparseIndex, FlatIndex) is
  * explained in BivariateSet. Because BivariateMap can have more than one
  * component, FlatIndex is further divided into ComponentFlatIndex, where each
- * component in each elements are indexed separately, and ElementFlatIndex,
+ * component in each element are indexed separately, and ElementFlatIndex,
  * which is index that disregards the individual components (hence to access
  * each component, one would need to provide a component index as well)
  *

@@ -179,25 +179,25 @@ public:
   /**
    * \brief Access the value in the SubMap given the ComponentFlatIndex
    *
-   * \param setIndex the ComponentFlatIndex into the subset
+   * \param idx the ComponentFlatIndex into the subset
    * \return The value for the j<sup>th</sup> component of the i<sup>th</sup>
    *         element, where `setIndex = i * numComp() + j`.
    * \pre    0 <= setIndex < size() * numComp()
    */
-  const DataType & operator[](IndexType setIndex) const
+  const DataType & operator[](IndexType idx) const
   {
-    IndexType flat_idx = getMapCompFlatIndex(setIndex);
+    IndexType flat_idx = getMapCompFlatIndex(idx);
     return (*m_superMap_constptr)[flat_idx];
   }
 
   //non-const version
-  DataType & operator[](IndexType setIndex)
+  DataType & operator[](IndexType idx)
   {
     SLIC_ASSERT_MSG(m_superMap_ptr != nullptr,
                     "Submap was constructed with const Map pointer, "
                     << "non-const functions should not be called");
 
-    IndexType flat_idx = getMapCompFlatIndex(setIndex);
+    IndexType flat_idx = getMapCompFlatIndex(idx);
     return (*m_superMap_ptr)[flat_idx];
   }
 
@@ -440,7 +440,7 @@ protected:
   const SuperMapType* m_superMap_constptr;
   SuperMapType* m_superMap_ptr;
 
-  //Stores the ElementFlatIndex into the supermap
+  //Stores the ElementFlatIndex into the SuperMap
   std::vector<IndexType> m_subsetIdx_data;
   OrderedSetType m_subsetIdx;
 
