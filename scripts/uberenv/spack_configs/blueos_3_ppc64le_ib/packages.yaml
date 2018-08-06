@@ -47,9 +47,23 @@ packages:
 # so even though this is spectrum mpi, we call it mvapich2
   mvapich2:
     paths:
-      mvapich2@2.2%gcc@4.9.3: /usr/tcetmp/packages/spectrum-mpi/spectrum-mpi-2017.04.03-gcc-4.9.3
-      mvapich2@2.2%clang@coral: /usr/tcetmp/packages/spectrum-mpi/spectrum-mpi-2017.04.03-clang-4.0.0
-      mvapich2@2.2%xl@13.1 : /usr/tcetmp/packages/spectrum-mpi/spectrum-mpi-2017.11.10-xl-beta-2017.10.13
+      mvapich2@2.2%gcc@4.9.3: /usr/tce/packages/spectrum-mpi/spectrum-mpi-2018.04.27-gcc-4.9.3
+      mvapich2@2.2%clang@coral_xlf: /usr/tce/packages/spectrum-mpi/spectrum-mpi-2018.04.27-clang-coral-2018.05.23
+      mvapich2@2.2%xl@13.1 : /usr/tce/packages/spectrum-mpi/spectrum-mpi-2018.04.27-xl-2018.05.18
     buildable: False
-
+# don't build m4
+  m4:
+    paths:
+      m4: /usr/bin/
+    buildable: False 
+# don't build autotools
+  autotools:
+    paths:
+      autotools: /usr/bin/
+    buildable: False 
+# don't build pkg-config
+  pkg-config:
+    paths:
+      pkg-config: /usr/bin/
+    buildable: False 
 

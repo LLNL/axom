@@ -19,11 +19,11 @@ compilers:
     modules: []
     operating_system: rhel7
     paths:
-      cc:  /usr/tcetmp/packages/clang/clang-4.0.0/bin/clang
-      cxx: /usr/tcetmp/packages/clang/clang-4.0.0/bin/clang++
-      f77: None 
-      fc: None 
-    spec: clang@4.0.0
+      cc:  /usr/tce/packages/clang/clang-coral-2018.05.23/bin/clang
+      cxx: /usr/tce/packages/clang/clang-coral-2018.05.23/bin/clang++
+      f77: /usr/tce/packages/xl/xl-2018.05.18/bin/xlf2003
+      fc:  /usr/tce/packages/xl/xl-2018.05.18/bin/xlf2003 
+    spec: clang@coral_xlf
     target: ppc64le
 - compiler:
     environment: {}
@@ -32,11 +32,11 @@ compilers:
     modules: []
     operating_system: rhel7
     paths:
-      cc: /usr/tce/packages/xl/xl-beta-2017.10.13/bin/xlc-gpu
-      cxx: /usr/tce/packages/xl/xl-beta-2017.10.13/bin/xlC-gpu
-      f77: /usr/tce/packages/xl/xl-beta-2017.10.13/bin/xlf-gpu
-      fc: //usr/tce/packages/xl/xl-beta-2017.10.13/xlf2003-gpu
-    spec: xl@13.1
+      cc:  /usr/tce/packages/xl/xl-2018.05.18/bin/xlc
+      cxx: /usr/tce/packages/xl/xl-2018.05.18/bin/xlC
+      f77: /usr/tce/packages/xl/xl-2018.05.18/bin/xlf2003
+      fc:  /usr/tce/packages/xl/xl-2018.05.18/bin/xlf2003
+    spec: xl@coral
     target: ppc64le
 
 
