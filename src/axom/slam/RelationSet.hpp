@@ -63,7 +63,7 @@ public:
    */
   RelationSet(RelationType* relation_ptr)
     : BivariateSet(relation_ptr->fromSet(), relation_ptr->toSet())
-    , m_relation(relation_ptr) 
+    , m_relation(relation_ptr)
   {}
 
   /**

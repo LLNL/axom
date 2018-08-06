@@ -19,7 +19,7 @@
  * \file SubMap.hpp
  *
  * \brief Contains SubMap, which is a subset of a Map
- * 
+ *
  */
 
 #ifndef SLAM_SUBMAP_HPP_
@@ -39,43 +39,43 @@ namespace slam
  * \class SubMap
  * \brief A class that acts as a subset of Map via data indirection. SubMap
  *        provides a set of API to easily traverse a subset of Map.
- * 
- * A SubMap is defined by a subset indices (ElementFlatIndex) into a Map 
+ *
+ * A SubMap is defined by a subset indices (ElementFlatIndex) into a Map
  * (called SuperMap). Its constructor takes a Map pointer and a Set of indices
  * into the Map.\n
- * 
+ *
  * SubMap is used in BivariateMap to return a set of values associated with
  * a given first set index.
- * 
+ *
  * To see an explanation of the different indexing systems, see BivariateMap.
- * 
+ *
  * \tparam DataType the data type of the SuperMap
  * \tparam SuperMapType the type of SuperMap
  * \tparam StridePolicy the stride of SuperMap
- * 
+ *
  * \note SubMap constructor can take a const Map pointer or a non-const Map
  *        pointer. A non-const value access function in SubMap will fail if the
  *        Submap is constructed using a non-const Map pointer.
- * 
+ *
  * \see Map, BivariateMap
  */
 
 template<
-  typename DataType, 
+  typename DataType,
   typename SuperMapType,
   typename StridePolicy = policies::StrideOne<Set::IndexType>
->
+  >
 class SubMap : public MapBase, public StridePolicy
 {
 private:
   using SetType = Set;
   using RangeSetType = RangeSet;
   using OrderedSetType = OrderedSet<
-    policies::RuntimeSize<Set::PositionType>,
-    policies::ZeroOffset<Set::PositionType>,
-    policies::StrideOne<Set::PositionType>,
-    policies::STLVectorIndirection<Set::PositionType, Set::ElementType>
-  >;
+          policies::RuntimeSize<Set::PositionType>,
+          policies::ZeroOffset<Set::PositionType>,
+          policies::StrideOne<Set::PositionType>,
+          policies::STLVectorIndirection<Set::PositionType, Set::ElementType>
+          >;
   using MapType = Map<DataType, StridePolicy>;
 
 public:
@@ -90,14 +90,14 @@ public:
   using iterator = const_iterator;
   using iterator_pair = const_iterator_pair;
 #endif
-  
+
 public:
- /** Default Constructor */
+  /** Default Constructor */
   SubMap() : m_superMap_constptr(nullptr), m_superMap_ptr(nullptr) {}
 
   /**
    * \brief Constructor for SubMap given the ElementFlatIndex into the SuperMap
-   * 
+   *
    * \param supermap The map that this SubMap is a subset of.
    * \param subset_idx a Set of ElementFlatIndex into the SuperMap
    */
@@ -105,11 +105,12 @@ public:
     StridePolicy(supermap->stride()),
     m_superMap_constptr(supermap), m_superMap_ptr(nullptr),
     m_subsetIdx_data(subset_idx.size()),
-    m_subsetIdx( SubsetType::SetBuilder().size(subset_idx.size()) 
-                                         .data(&m_subsetIdx_data) )
-    {
+    m_subsetIdx( SubsetType::SetBuilder()
+                 .size(subset_idx.size())
+                 .data(&m_subsetIdx_data) )
+  {
     //copy the elements in the SuperMap's Set
-    for (int i = 0; i < subset_idx.size(); i++)
+    for (int i = 0 ; i < subset_idx.size() ; i++)
     {
       m_subsetIdx_data[i] = subset_idx.at(i);
     }
@@ -128,8 +129,9 @@ public:
     m_superMap_constptr(otherMap.m_superMap_constptr),
     m_superMap_ptr(otherMap.m_superMap_ptr),
     m_subsetIdx_data(otherMap.m_subsetIdx_data),
-    m_subsetIdx( SubsetType::SetBuilder().size(m_subsetIdx_data.size())
-                                         .data(&m_subsetIdx_data) )
+    m_subsetIdx( SubsetType::SetBuilder()
+                 .size(m_subsetIdx_data.size())
+                 .data(&m_subsetIdx_data) )
   { }
 
   /** Assignment Operator */
@@ -139,8 +141,9 @@ public:
     m_superMap_constptr = otherMap.m_superMap_constptr;
     m_superMap_ptr = m_superMap_ptr,
     m_subsetIdx_data = otherMap.m_subsetIdx_data;
-    m_subsetIdx = SubsetType::SetBuilder().size(m_subsetIdx_data.size())
-                                          .data(&m_subsetIdx_data);
+    m_subsetIdx = SubsetType::SetBuilder()
+                  .size(m_subsetIdx_data.size())
+                  .data(&m_subsetIdx_data);
     return *this;
   }
 
@@ -150,8 +153,9 @@ public:
     m_superMap_constptr(otherMap.m_superMap_constptr),
     m_superMap_ptr(otherMap.m_superMap_ptr),
     m_subsetIdx_data(std::move(otherMap.m_subsetIdx_data)),
-    m_subsetIdx( SubsetType::SetBuilder().size(m_subsetIdx_data.size())
-                                         .data(&m_subsetIdx_data) )
+    m_subsetIdx( SubsetType::SetBuilder()
+                 .size(m_subsetIdx_data.size())
+                 .data(&m_subsetIdx_data) )
   { }
 
   /** Move Assignment Operator */
@@ -161,11 +165,12 @@ public:
     m_superMap_constptr = otherMap.m_superMap_constptr;
     m_superMap_ptr = otherMap.m_superMap_ptr,
     m_subsetIdx_data = std::move(otherMap.m_subsetIdx_data);
-    m_subsetIdx = SubsetType::SetBuilder().size(m_subsetIdx_data.size())
-                                          .data(&m_subsetIdx_data);
+    m_subsetIdx = SubsetType::SetBuilder()
+                  .size(m_subsetIdx_data.size())
+                  .data(&m_subsetIdx_data);
     return *this;
   }
-  
+
 
   /// \name SubMap individual access functions
   /// @{
@@ -173,7 +178,7 @@ public:
 
   /**
    * \brief Access the value in the SubMap given the ComponentFlatIndex
-   * 
+   *
    * \param setIndex the ComponentFlatIndex into the subset
    * \return The value for the j<sup>th</sup> component of the i<sup>th</sup>
    *         element, where `setIndex = i * numComp() + j`.
@@ -189,15 +194,15 @@ public:
   DataType & operator[](IndexType setIndex)
   {
     SLIC_ASSERT_MSG(m_superMap_ptr != nullptr,
-      "Submap was constructed with const Map pointer, "
-      << "non-const functions should not be called");
-    
+                    "Submap was constructed with const Map pointer, "
+                    << "non-const functions should not be called");
+
     IndexType flat_idx = getMapCompFlatIndex(setIndex);
     return (*m_superMap_ptr)[flat_idx];
   }
-  
+
   /**
-   * \brief Access the value associated with the given position in the subset 
+   * \brief Access the value associated with the given position in the subset
    *        and the component index.
    *
    * \pre `0 <= idx < size()`
@@ -211,9 +216,9 @@ public:
   //non-const version
   DataType & operator()(IndexType idx, IndexType comp = 0)
   {
-    SLIC_ASSERT_MSG(m_superMap_ptr != nullptr, 
-      "Submap was constructed with const Map pointer, "
-      << "non-const functions should not be called");
+    SLIC_ASSERT_MSG(m_superMap_ptr != nullptr,
+                    "Submap was constructed with const Map pointer, "
+                    << "non-const functions should not be called");
 
     return (*m_superMap_ptr)[getMapElemFlatIndex(idx)*numComp() + comp];
   }
@@ -221,7 +226,7 @@ public:
   /**
    * \brief Access the value associated with the given position in the subset
    *        and the component index.
-   * 
+   *
    * \pre `0 <= idx < size()`
    * \pre `0 <= comp < numComp()`
    */
@@ -236,10 +241,10 @@ public:
   }
 
   /**
-  * \brief Return the set element in the SuperMap at the given subset index
-  */
+   * \brief Return the set element in the SuperMap at the given subset index
+   */
   IndexType index(IndexType idx) const
-  { 
+  {
     return m_superMap_constptr->set()->at( m_subsetIdx[idx] );
   }
 
@@ -262,12 +267,12 @@ public:
   /// @}
 
 
-  bool isValid(bool VerboseOutput = false) const override 
-  { 
+  bool isValid(bool VerboseOutput = false) const override
+  {
     bool isValid = true;
     std::stringstream errStr;
 
-    if (m_superMap_constptr == nullptr) 
+    if (m_superMap_constptr == nullptr)
     {
       if (m_subsetIdx.size() > 0)
       {
@@ -275,21 +280,21 @@ public:
         errStr << "\n\t*SuperMap pointer is null, "
                << "but the subset index is non-empty";
       }
-        
+
     }
     else
     {
       int map_size = ((const MapBase*)m_superMap_constptr)->size();
       //Check all indices is inside the SuperMap range
-      for (int i = 0; i < m_subsetIdx.size(); i++)
+      for (int i = 0 ; i < m_subsetIdx.size() ; i++)
       {
         SetPosition pos = m_subsetIdx[i];
         if (pos < 0 || pos >= map_size)
         {
           isValid = false;
           errStr << "\n\t* The given subset index " << pos
-            << "is outside of the SuperMap range of 0 to "
-            << map_size;
+                 << "is outside of the SuperMap range of 0 to "
+                 << map_size;
         }
       }
     }
@@ -307,15 +312,15 @@ public:
   }
 
 private: //function inherit from StridePolicy that should not be accessible
-  void setStride(IndexType) 
+  void setStride(IndexType)
   {
-    SLIC_ASSERT_MSG(false, 
-      "Stride should not be changed after construction of SubMap.");
+    SLIC_ASSERT_MSG(false,
+                    "Stride should not be changed after construction of SubMap.");
   }
 
 private: //helper functions
 
-  /** 
+  /**
    * \brief Get the ElementFlatIndex into the SuperMap given the subset's index.
    */
   IndexType getMapElemFlatIndex(IndexType idx) const
@@ -324,7 +329,7 @@ private: //helper functions
   }
 
   /*
-   * \brief Get the ComponentFlatIndex into the SuperMap given the subset's 
+   * \brief Get the ComponentFlatIndex into the SuperMap given the subset's
    * ComponentFlatIndex. This is used only with bracket [] access
    */
   IndexType getMapCompFlatIndex(IndexType idx) const
@@ -336,11 +341,11 @@ private: //helper functions
 
   /* overloaded from MapBase. Checks the ComponentFlatIndex is valid */
   void        verifyPosition(SetPosition pos) const override
-  { 
+  {
     SLIC_ASSERT_MSG( pos >= 0 && pos < m_subsetIdx.size()*numComp(),
-            "Attempted to access element "
-            << pos << " but Submap's data has size "  
-            << m_subsetIdx.size() * numComp() );
+                     "Attempted to access element "
+                     << pos << " but Submap's data has size "
+                     << m_subsetIdx.size() * numComp() );
   }
 
 #ifdef AXOM_USE_CXX11
@@ -349,12 +354,12 @@ public:
   /**
    * \class SubMapIterator
    * \brief An iterator for SubMap, base on MapIterator
-   * 
+   *
    * \see MapIterator
    */
   class SubMapIterator : public IteratorBase<SubMapIterator, DataType>
   {
-  public:
+public:
     using IterBase = IteratorBase<SubMapIterator, DataType>;
     using IterBase::m_pos;
     using iter = SubMapIterator;
@@ -369,7 +374,7 @@ public:
       return (m_submap == other.m_submap) && IterBase::operator==(other);
     }
     bool operator!=(const iter& other) const { return !operator==(other); }
-    
+
     /**
      * \brief Returns the current iterator value. If the SubMap has multiple
      *        components, this will return the first component. To access
@@ -397,28 +402,28 @@ public:
     }
 
     /** \brief Same as operator() */
-    DataType& value(IndexType comp = 0) 
-    { 
-      return (*m_submap)(m_pos, comp); 
+    DataType& value(IndexType comp = 0)
+    {
+      return (*m_submap)(m_pos, comp);
     }
-    
+
     /** \brief Returns the Set element at the iterator's position */
-    IndexType index() 
-    { 
+    IndexType index()
+    {
       return m_submap->index(m_pos);
     }
 
     /** \brief Returns the number of component per element in the SubMap. */
     PositionType numComp() const { return m_submap->stride(); }
 
-  protected:
+protected:
     /* Implementation of advance() as required by IteratorBase */
     void advance(PositionType pos)
     {
       m_pos += pos;
     }
 
-  private:
+private:
     SubMap* m_submap;
 
   };

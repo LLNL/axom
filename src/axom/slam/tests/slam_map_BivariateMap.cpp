@@ -91,43 +91,44 @@ void constructAndTestCartesianMap(int stride)
 
   EXPECT_EQ(s.size(), MAX_SET_SIZE1*MAX_SET_SIZE2);
   EXPECT_TRUE(s.isValid());
- 
+
   SLIC_INFO("\nCreating " << axom::slam::util::TypeToString<T>::to_string()
-            << " map on the set ");
+                          << " map on the set ");
 
   MapType m(&s, (T)0, stride);
-  
+
   EXPECT_TRUE(m.isValid());
   EXPECT_EQ(s.size(), m.totalSize());
   EXPECT_EQ(m.stride(), stride);
-  
+
   SLIC_INFO( "\nSetting the elements in the map.");
 
   for(PositionType idx1 = 0 ; idx1 < m.firstSetSize() ; ++idx1)
-    for (PositionType idx2 = 0; idx2 < m.secondSetSize(); ++idx2)
-      for(PositionType i = 0; i < stride; i++)
+    for (PositionType idx2 = 0 ; idx2 < m.secondSetSize() ; ++idx2)
+      for(PositionType i = 0 ; i < stride ; i++)
       {
-        T* valPtr = m.findValue(idx1, idx2, i); 
+        T* valPtr = m.findValue(idx1, idx2, i);
         EXPECT_NE(valPtr, nullptr);
         *valPtr = getVal<T>(idx1, idx2, i);
       }
 
   SLIC_INFO("\nChecking the elements with findValue().");
-  for (PositionType idx1 = 0; idx1 < m.firstSetSize(); ++idx1)
-    for (PositionType idx2 = 0; idx2 < m.secondSetSize(); ++idx2)
-      for (PositionType i = 0; i < stride; i++)
+  for (PositionType idx1 = 0 ; idx1 < m.firstSetSize() ; ++idx1)
+    for (PositionType idx2 = 0 ; idx2 < m.secondSetSize() ; ++idx2)
+      for (PositionType i = 0 ; i < stride ; i++)
       {
-        
+
         T* ptr = m.findValue(idx1, idx2, i);
         EXPECT_NE(ptr, nullptr);
         EXPECT_EQ(*ptr, getVal<T>(idx1, idx2, i));
       }
 
   SLIC_INFO("\nChecking the elements with SubMap.");
-  for (PositionType idx1 = 0; idx1 < m.firstSetSize(); ++idx1) {
+  for (PositionType idx1 = 0 ; idx1 < m.firstSetSize() ; ++idx1)
+  {
     SubMapType sm = m(idx1);
-    for (PositionType idx2 = 0; idx2 < sm.size(); ++idx2)
-      for (PositionType i = 0; i < stride; i++)
+    for (PositionType idx2 = 0 ; idx2 < sm.size() ; ++idx2)
+      for (PositionType i = 0 ; i < stride ; i++)
       {
         T v = sm.value(idx2, i);
         EXPECT_EQ(v, getVal<T>(idx1, idx2, i));
@@ -148,20 +149,20 @@ TEST(slam_bivariate_map,construct_int_map)
 
   constructAndTestCartesianMap<int, StrideOneType>(1);
 
-  constructAndTestCartesianMap<int, CompileTimeStrideType<1>>(1);
-  constructAndTestCartesianMap<int, CompileTimeStrideType<2>>(2);
-  constructAndTestCartesianMap<int, CompileTimeStrideType<3>>(3);
+  constructAndTestCartesianMap<int, CompileTimeStrideType<1> >(1);
+  constructAndTestCartesianMap<int, CompileTimeStrideType<2> >(2);
+  constructAndTestCartesianMap<int, CompileTimeStrideType<3> >(3);
 
-  
+
 }
 
 TEST(slam_bivariate_map,construct_double_map)
 {
   constructAndTestCartesianMap<double, StrideOneType>(1);
 
-  constructAndTestCartesianMap<double, CompileTimeStrideType<1>>(1);
-  constructAndTestCartesianMap<double, CompileTimeStrideType<2>>(2);
-  constructAndTestCartesianMap<double, CompileTimeStrideType<3>>(3);
+  constructAndTestCartesianMap<double, CompileTimeStrideType<1> >(1);
+  constructAndTestCartesianMap<double, CompileTimeStrideType<2> >(2);
+  constructAndTestCartesianMap<double, CompileTimeStrideType<3> >(3);
 
   constructAndTestCartesianMap<double, RuntimeStrideType>(1);
   constructAndTestCartesianMap<double, RuntimeStrideType>(2);
@@ -207,8 +208,9 @@ void constructAndTestBivariateMapIterator(int stride)
   EXPECT_EQ(s.size(), MAX_SET_SIZE1*MAX_SET_SIZE2);
   EXPECT_TRUE(s.isValid());
 
-  SLIC_INFO("\nCreating " << axom::slam::util::TypeToString<DataType>::to_string()
-    << " map on the set ");
+  SLIC_INFO(
+    "\nCreating " << axom::slam::util::TypeToString<DataType>::to_string()
+                  << " map on the set ");
   MapType m(&s, 0.0, stride);
   EXPECT_TRUE(m.isValid());
   EXPECT_EQ(s.size(), m.totalSize());
@@ -216,9 +218,9 @@ void constructAndTestBivariateMapIterator(int stride)
 
   SLIC_INFO("\nSetting the elements in the map.");
   //currently can't set value using iterator
-  for (PositionType idx1 = 0; idx1 < m.firstSetSize(); ++idx1)
-    for (PositionType idx2 = 0; idx2 < m.secondSetSize(); ++idx2)
-      for (PositionType i = 0; i < stride; i++)
+  for (PositionType idx1 = 0 ; idx1 < m.firstSetSize() ; ++idx1)
+    for (PositionType idx2 = 0 ; idx2 < m.secondSetSize() ; ++idx2)
+      for (PositionType i = 0 ; i < stride ; i++)
       {
         DataType* valPtr = m.findValue(idx1, idx2, i);
         EXPECT_NE(valPtr, nullptr);
@@ -226,13 +228,13 @@ void constructAndTestBivariateMapIterator(int stride)
       }
 
   SLIC_INFO("\nChecking the elements with SubMap iterator.");
-  for (PositionType idx1 = 0; idx1 < m.firstSetSize(); ++idx1) 
+  for (PositionType idx1 = 0 ; idx1 < m.firstSetSize() ; ++idx1)
   {
     int idx2 = 0;
-    for (auto iter = m.begin(idx1); iter != m.end(idx1); ++iter, ++idx2) 
+    for (auto iter = m.begin(idx1) ; iter != m.end(idx1) ; ++iter, ++idx2)
     {
       EXPECT_EQ(*iter, getVal<DataType>(idx1, idx2));
-      for (PositionType i = 0; i < iter.numComp(); i++)
+      for (PositionType i = 0 ; i < iter.numComp() ; i++)
       {
         EXPECT_EQ(iter(i), getVal<DataType>(idx1, idx2, i));
       }
@@ -249,9 +251,9 @@ TEST(slam_bivariate_map, iterate)
   constructAndTestBivariateMapIterator<RuntimeStrideType>(2);
   constructAndTestBivariateMapIterator<RuntimeStrideType>(3);
 
-  constructAndTestBivariateMapIterator<CompileTimeStrideType<1>>(1);
-  constructAndTestBivariateMapIterator<CompileTimeStrideType<2>>(2);
-  constructAndTestBivariateMapIterator<CompileTimeStrideType<3>>(3);
+  constructAndTestBivariateMapIterator<CompileTimeStrideType<1> >(1);
+  constructAndTestBivariateMapIterator<CompileTimeStrideType<2> >(2);
+  constructAndTestBivariateMapIterator<CompileTimeStrideType<3> >(3);
 
   constructAndTestBivariateMapIterator<StrideOneType>(1);
 }

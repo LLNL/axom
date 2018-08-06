@@ -41,27 +41,27 @@ namespace slam
 /**
  * \class BivariateMap
  * \brief A Map for BivariateSet. It associates a constant number of values to
- *        every element in a BivariateSet. 
- * 
+ *        every element in a BivariateSet.
+ *
  * \detail Like BivariateSet, every value in BivariateMap is indexed by two
  *         indices. BivariateMap's `operator(i)` returns a SubMap of all entries
  *         whose first index is `i` in the BivariateSet.
- * 
+ *
  * The different indexing system (DenseIndex, SparseIndex, FlatIndex) is
  * explained in BivariateSet. Because BivariateMap can have more than one
  * component, FlatIndex is further divided into ComponentFlatIndex, where each
- * component in each elements are indexed separately, and ElementFlatIndex, 
+ * component in each elements are indexed separately, and ElementFlatIndex,
  * which is index that disregards the individual components (hence to access
  * each component, one would need to provide a component index as well)
- * 
+ *
  * Example:
  * For a 2 x 2 sparse matrix with 3 components below:
  *     \code
- *         0    1  
+ *         0    1
  *     0  abc
  *     1       def
  *     \endcode
- * 
+ *
  *   Access the elements using ElementFlatIndex `(e)` would be...\n
  *   `(e = 0) = abc`\n
  *   `(e = 1) = def`\n
@@ -80,7 +80,7 @@ namespace slam
  *   `(idx = 3) = d`\n
  *   `(idx = 4) = e`\n
  *   `(idx = 5) = f`\n
- * 
+ *
  * \tparam DataType the data type of each value
  * \tparam StridePolicy A policy class that determines how many values to
  *          associate with each element. There is a fixed \a stride between
@@ -91,8 +91,8 @@ namespace slam
 template<
   typename DataType,
   typename StridePolicy = policies::StrideOne<Set::IndexType>
->
-  class BivariateMap : public MapBase, public StridePolicy
+  >
+class BivariateMap : public MapBase, public StridePolicy
 {
   static const NullBivariateSet s_nullBiSet;
 
@@ -123,10 +123,10 @@ public:
   BivariateMap(const BivariateSet* bSet = &s_nullBiSet,
                DataType defaultValue = DataType(),
                Set::IndexType stride = StridePolicy::DEFAULT_VALUE) :
-    StridePolicy(stride), 
-    m_set(bSet), 
-    m_rangeSet(0, bSet->size()), 
-    m_map(&m_rangeSet, defaultValue, stride), 
+    StridePolicy(stride),
+    m_set(bSet),
+    m_rangeSet(0, bSet->size()),
+    m_map(&m_rangeSet, defaultValue, stride),
     m_submap_idx(-1)
   {}
 
@@ -173,15 +173,17 @@ public:
    */
   const SubMapType& operator() (SetPosition firstIdx) const
   {
-    if (m_submap_idx != firstIdx) {
+    if (m_submap_idx != firstIdx)
+    {
       makeSubMap<const BivariateMapType>(firstIdx, this);
     }
     return m_submap;
   }
 
-  SubMapType& operator() (SetPosition firstIdx) 
+  SubMapType& operator() (SetPosition firstIdx)
   {
-    if (m_submap_idx != firstIdx) {
+    if (m_submap_idx != firstIdx)
+    {
       makeSubMap<BivariateMapType>(firstIdx, this);
     }
     return m_submap;
@@ -190,13 +192,13 @@ public:
   /**
    * \brief Access the value associated with the given SparseIndex into the
    *        BivariateSet and the component index.
-   * 
+   *
    * \pre `0 <= s1 < firstSetSize()`
    * \pre `0 <= s2 < size(s1)`
    * \pre `0 <= comp < numComp()`
    */
-  const DataType& operator() (SetPosition s1, SetPosition s2, 
-                               SetPosition comp = 0) const
+  const DataType& operator() (SetPosition s1, SetPosition s2,
+                              SetPosition comp = 0) const
   {
     return m_map(m_set->findElementFlatIndex(s1, s2), comp);
   }
@@ -210,21 +212,22 @@ public:
   /**
    * \brief Access the value associated with the given DenseIndex into the
    *        BivariateSet and the component index.
-   * 
+   *
    * \pre `0 <= s1 < firstSetSize()`
    * \pre `0 <= s2 < secondSetSize()`
    * \pre `0 <= comp < numComp()`
-   * 
+   *
    * \return a DataType pointer to the value associated with the given index,
    *         or nullptr if there is no value for the given index.
-   * \warning For sparse BivariateSet type, this function may have to do a 
+   * \warning For sparse BivariateSet type, this function may have to do a
    *          linear search and can be slow.
    */
-  const DataType* findValue(SetPosition s1, SetPosition s2, 
+  const DataType* findValue(SetPosition s1, SetPosition s2,
                             SetPosition comp = 0) const
   {
     SetPosition i = m_set->findElementFlatIndex(s1, s2);
-    if (i == BivariateSet::INVALID_POS) {
+    if (i == BivariateSet::INVALID_POS)
+    {
       //the BivariateSet does not contain this index pair
       return nullptr;
     }
@@ -246,18 +249,18 @@ public:
 
   /**
    * \brief Returns the SparseIndex of the element given the DenseIndex
-   * 
-   * \return The SparseIndex of the element, or BivariateSet::INVALID_POS if 
+   *
+   * \return The SparseIndex of the element, or BivariateSet::INVALID_POS if
    *         the set doesn't contain the given DenseIndex
    */
-  SetPosition index(PositionType s1, PositionType s2) const 
+  SetPosition index(PositionType s1, PositionType s2) const
   {
     return m_set->findElementIndex(s1, s2);
   }
-  
+
   /**
-   * \brief Return a set of DenseIndex associated to the given first set index 
-   * 
+   * \brief Return a set of DenseIndex associated to the given first set index
+   *
    * \param s1 the first set index
    * \return OrderedSet containing the elements
    */
@@ -281,17 +284,17 @@ public:
 #ifdef AXOM_USE_CXX11
   /**
    * \class BivariateMapIterator
-   * \brief An iterator type for a BivariateMap, iterating via its 
+   * \brief An iterator type for a BivariateMap, iterating via its
    *        ElementFlatIndex.
-   * 
+   *
    * This iterator class traverses the BivariateMap using its ElementFlatIndex.
    * In addition to m_pos from IteratorBase, this class also keeps track of the
    * iterator's first index (firstIdx), second dense index (secondIdx), and the
-   * second sparse index (secondSparseIdx). The advance() function is 
+   * second sparse index (secondSparseIdx). The advance() function is
    * implemented to update those three additional indices.
    */
-  class BivariateMapIterator : 
-        public IteratorBase<BivariateMapIterator, DataType>
+  class BivariateMapIterator :
+    public IteratorBase<BivariateMapIterator, DataType>
   {
 private:
     using IterBase = IteratorBase<BivariateMapIterator, DataType>;
@@ -304,8 +307,8 @@ public:
      * \brief Construct a new BivariateMap Iterator given an ElementFlatIndex
      */
     BivariateMapIterator(BivariateMap* sMap, PositionType pos)
-      : IterBase(pos), m_map(sMap), 
-        firstIdx(-1), secondIdx(-1), secondSparseIdx(-1)
+      : IterBase(pos), m_map(sMap),
+      firstIdx(-1), secondIdx(-1), secondSparseIdx(-1)
     {
       //check the pos is valid
       if (pos < 0 || pos >= m_map->totalSize()) return;
@@ -320,7 +323,7 @@ public:
         beginIdx += sMap->set()->size(firstIdx);
         firstIdx++;
       }
-      
+
       SLIC_ASSERT(firstIdx < sMap->firstSetSize());
       secondIdx = m_map->set()->at(m_pos);
       secondSparseIdx = m_pos - beginIdx;
@@ -331,10 +334,10 @@ public:
       return (m_map == other.m_map) && (m_pos == other.m_pos);
     }
     bool operator!=(const iter& other) const { return !operator==(other); }
-    
+
     /**
-     * \brief Returns the current iterator value. If the BivariateMap has 
-     *        multiple components, this will return the first component. 
+     * \brief Returns the current iterator value. If the BivariateMap has
+     *        multiple components, this will return the first component.
      *        To access the other components, use iter(comp)
      */
     DataType & operator*()
@@ -358,8 +361,8 @@ public:
       return *(this->operator+(n));
     }
 
-    /** 
-     * \brief Return the value at the iterator's position. Same as operator() 
+    /**
+     * \brief Return the value at the iterator's position. Same as operator()
      */
     DataType& value(PositionType comp = 0)
     {
@@ -375,7 +378,7 @@ public:
     }
 
     /**
-     * \brief return the current iterator's second index (DenseIndex) 
+     * \brief return the current iterator's second index (DenseIndex)
      *        into the BivariateSet
      */
     PositionType secondIndex()
@@ -385,9 +388,9 @@ public:
 
     /** \brief Returns the number of components per element in the map. */
     PositionType numComp() const { return m_map->numComp(); }
-  
+
 private:
-    /* recursive helper function for advance. It will recurse as many times as 
+    /* recursive helper function for advance. It will recurse as many times as
      * the change in firstIdx. */
     void advance_helper(PositionType n, PositionType idx1, PositionType idx2)
     {
@@ -405,12 +408,12 @@ private:
     }
 
 protected:
-    /* Implementation of advance() as required by IteratorBase. 
+    /* Implementation of advance() as required by IteratorBase.
      * It updates the three other indices as well. */
-    void advance(PositionType n) 
+    void advance(PositionType n)
     {
       m_pos += n;
-      if (m_pos == m_map->totalSize()) 
+      if (m_pos == m_map->totalSize())
       {
         firstIdx = -2;
         secondIdx = -2;
@@ -423,7 +426,7 @@ protected:
     }
 
 private:
-    BivariateMap * m_map;
+    BivariateMap* m_map;
     PositionType firstIdx;
     PositionType secondIdx;
     PositionType secondSparseIdx;
@@ -442,9 +445,9 @@ public:
 #endif //AXOM_USE_CXX11
 
 public:
-  const BivariateSet* set()    const { return m_set; }
-  const MapType*      getMap() const { return &m_map; }
-        MapType*      getMap()       { return &m_map; }
+  const BivariateSet* set() const { return m_set; }
+  const MapType* getMap() const { return &m_map; }
+  MapType* getMap() { return &m_map; }
 
 
   virtual bool        isValid(bool verboseOutput = false) const override
@@ -478,12 +481,12 @@ public:
   /**
    * \brief Given a DataType array of size `totalSize()*numComp()`, copy
    *        the data into the BivariateMap storage.
-   * 
+   *
    * \param data_arr The array of DataType that contains the data to be copied.
    */
   void copy(DataType* data_arr)
   {
-    for (int i = 0; i < m_map.size() * StridePolicy::stride(); i++)
+    for (int i = 0 ; i < m_map.size() * StridePolicy::stride() ; i++)
       m_map[i] = data_arr[i];
   }
 
