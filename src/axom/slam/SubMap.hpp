@@ -38,14 +38,16 @@ namespace slam
 /**
  * \class SubMap
  * \brief A class that acts as a subset of Map via data indirection. SubMap
- * provides a set of API to easily traverse a subset of Map.
+ *        provides a set of API to easily traverse a subset of Map.
  * 
- * A SubMap is defined by a Map (called SuperMap) and a Set of ElementFlatIndex.
- * The subset of the SuperMap selected by the given set of ElementFlatIndex
- * forms this SubMap.\n
+ * A SubMap is defined by a subset indices (ElementFlatIndex) into a Map 
+ * (called SuperMap). Its constructor takes a Map pointer and a Set of indices
+ * into the Map.\n
  * 
- * SubMap is used in BivariateMap to return a set of values assiciated with
+ * SubMap is used in BivariateMap to return a set of values associated with
  * a given first set index.
+ * 
+ * To see an explanation of the different indexing systems, see BivariateMap.
  * 
  * \tparam DataType the data type of the SuperMap
  * \tparam SuperMapType the type of SuperMap
@@ -73,11 +75,10 @@ private:
     policies::ZeroOffset<Set::PositionType>,
     policies::StrideOne<Set::PositionType>,
     policies::STLVectorIndirection<Set::PositionType, Set::ElementType>
-  >; //this is used to store the subset of the elements of the original set
+  >;
   using MapType = Map<DataType, StridePolicy>;
 
 public:
-
   using IndexType = SetType::IndexType;
   using SubsetType = OrderedSetType;
 
@@ -218,9 +219,12 @@ public:
   }
 
   /**
-  * \brief Access the value associated with the given position in the subset
-  *        and the component index.
-  */
+   * \brief Access the value associated with the given position in the subset
+   *        and the component index.
+   * 
+   * \pre `0 <= idx < size()`
+   * \pre `0 <= comp < numComp()`
+   */
   const DataType & value(IndexType idx, IndexType comp = 0) const
   {
     return operator()(idx, comp);
@@ -235,8 +239,7 @@ public:
   * \brief Return the set element in the SuperMap at the given subset index
   */
   IndexType index(IndexType idx) const
-  {
-    //return m_setElements[idx]; 
+  { 
     return m_superMap_constptr->set()->at( m_subsetIdx[idx] );
   }
 
@@ -257,6 +260,7 @@ public:
   IndexType numComp() const { return StridePolicy::stride(); }
 
   /// @}
+
 
   bool isValid(bool VerboseOutput = false) const override 
   { 
@@ -387,10 +391,6 @@ public:
     }
 
     /** \brief Returns the first component value after n increments.  */
-    const DataType & operator[](PositionType n) const
-    {
-      return *(this->operator+(n));
-    }
     DataType & operator[](PositionType n)
     {
       return *(this->operator+(n));
@@ -435,7 +435,7 @@ protected:
   const SuperMapType* m_superMap_constptr;
   SuperMapType* m_superMap_ptr;
 
-  //Stores the FlatIndex into the supermap
+  //Stores the ElementFlatIndex into the supermap
   std::vector<IndexType> m_subsetIdx_data;
   OrderedSetType m_subsetIdx;
 
