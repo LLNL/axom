@@ -136,13 +136,11 @@ void constructAndTestCartesianMap(int stride)
       }
   }
 
-
   EXPECT_TRUE(m.isValid());
 }
 
 TEST(slam_bivariate_map,construct_int_map)
 {
-
   constructAndTestCartesianMap<int, RuntimeStrideType>(1);
   constructAndTestCartesianMap<int, RuntimeStrideType>(2);
   constructAndTestCartesianMap<int, RuntimeStrideType>(3);
@@ -152,7 +150,6 @@ TEST(slam_bivariate_map,construct_int_map)
   constructAndTestCartesianMap<int, CompileTimeStrideType<1> >(1);
   constructAndTestCartesianMap<int, CompileTimeStrideType<2> >(2);
   constructAndTestCartesianMap<int, CompileTimeStrideType<3> >(3);
-
 
 }
 
@@ -169,30 +166,6 @@ TEST(slam_bivariate_map,construct_double_map)
   constructAndTestCartesianMap<double, RuntimeStrideType>(3);
 }
 
-//TEST(slam_bivariate_map,out_of_bounds)
-//{
-//  int defaultElt = 2;
-//
-//  SetType s(MAX_SET_SIZE);
-//  IntMap m(&s, defaultElt);
-//
-//  SLIC_INFO("Testing Map element access -- in bounds");
-//  for(PositionType idx = 0 ; idx < m.size() ; ++idx)
-//    EXPECT_EQ(defaultElt, m[idx]);
-//
-//  // Test out of bounds
-//  SLIC_INFO("Testing Map element access "
-//            << "-- out of bounds access; Expecting the test to fail");
-//  #ifdef AXOM_DEBUG
-//  EXPECT_DEATH_IF_SUPPORTED(  m[-1],      "")
-//    << " Accessed element -1 of Map -- out of bounds";
-//  EXPECT_DEATH_IF_SUPPORTED(  m[m.size()],"")
-//    << " Accessed element " << m.size() << " of Map -- out of bounds";
-//
-//  #else
-//  SLIC_INFO("Skipped assertion failure check in release mode.");
-//  #endif
-//}
 
 template<typename StridePolicy>
 void constructAndTestBivariateMapIterator(int stride)
@@ -231,12 +204,41 @@ void constructAndTestBivariateMapIterator(int stride)
   for (PositionType idx1 = 0 ; idx1 < m.firstSetSize() ; ++idx1)
   {
     int idx2 = 0;
-    for (auto iter = m.begin(idx1) ; iter != m.end(idx1) ; ++iter, ++idx2)
+    auto iter = m.begin(idx1);
+    for (; iter != m.end(idx1) ; ++iter, ++idx2)
     {
       EXPECT_EQ(*iter, getVal<DataType>(idx1, idx2));
       for (PositionType i = 0 ; i < iter.numComp() ; i++)
       {
         EXPECT_EQ(iter(i), getVal<DataType>(idx1, idx2, i));
+      }
+    }
+  }
+
+  SLIC_INFO("\nChecking the elements with BivariateMap iterator.");
+  {
+    auto iter = m.begin();
+    auto begin_iter = m.begin();
+    auto end_iter = m.end();
+    auto inval_iter = end_iter + 1;
+    PositionType flat_idx = 0;
+    for (PositionType idx1 = 0; idx1 < m.firstSetSize(); ++idx1)
+    {
+      for (PositionType idx2 = 0; idx2 < m.secondSetSize(); ++idx2)
+      {
+        EXPECT_EQ(*iter, getVal<DataType>(idx1, idx2, 0));
+        EXPECT_EQ(iter.firstIndex(), idx1);
+        EXPECT_EQ(iter.secondIndex(), idx2);
+        for (PositionType i = 0; i < stride; i++)
+        {
+          DataType val = getVal<DataType>(idx1, idx2, i);
+          EXPECT_EQ(iter.value(i), val);
+          EXPECT_EQ(iter(i), val);
+          EXPECT_EQ((begin_iter + flat_idx).value(i), val);
+          EXPECT_EQ((end_iter - (m.totalSize() - flat_idx)).value(i), val);
+          EXPECT_EQ((inval_iter - (m.totalSize() - flat_idx + 1)).value(i), val);
+        }
+        iter++; flat_idx++;
       }
     }
   }

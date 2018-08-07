@@ -37,23 +37,21 @@ namespace slam
 
 /**
  * \class SubMap
- * \brief A class that acts as a subset of Map via data indirection. SubMap
- *        provides a set of API to easily traverse a subset of Map.
+ * \brief The SubMap class provides an API to easily traverse a subset of a Map.
  *
- * A SubMap is defined by a subset indices (ElementFlatIndex) into a Map
- * (called SuperMap). Its constructor takes a Map pointer and a Set of indices
- * into the Map.\n
+ * A SubMap is defined by a subset of the indices into a Map, which we refer to
+ * as its SuperMap (of type SuperMapType). The indices are expressed as 
+ * ElementFlatIndex.\n
+ * Please see BivariateMap for an explanation of the various indexing schemes.
  *
- * SubMap is used in BivariateMap to return a set of values associated with
- * a given first set index.
- *
- * To see an explanation of the different indexing systems, see BivariateMap.
+ * SubMap is used by BivariateMap to return a set of values mapped to each item
+ * in its first set.
  *
  * \tparam DataType the data type of the SuperMap
  * \tparam SuperMapType the type of SuperMap
  * \tparam StridePolicy the stride of SuperMap
  *
- * \note SubMap constructor can take a const Map pointer or a non-const Map
+ * \warning SubMap constructor can take a const Map pointer or a non-const Map
  *        pointer. A non-const value access function in SubMap will fail if the
  *        Submap is constructed using a non-const Map pointer.
  *
@@ -83,13 +81,11 @@ public:
   using SubsetType = OrderedSetType;
 
 //iterator typedef
-#ifdef AXOM_USE_CXX11
-  class SubMapIterator;
-  using const_iterator = SubMapIterator;
-  using const_iterator_pair = std::pair<const_iterator, const_iterator>;
-  using iterator = const_iterator;
-  using iterator_pair = const_iterator_pair;
-#endif
+class SubMapIterator;
+using const_iterator = SubMapIterator;
+using const_iterator_pair = std::pair<const_iterator, const_iterator>;
+using iterator = const_iterator;
+using iterator_pair = const_iterator_pair;
 
 public:
   /** Default Constructor */
@@ -182,10 +178,11 @@ public:
    * \param idx the ComponentFlatIndex into the subset
    * \return The value for the j<sup>th</sup> component of the i<sup>th</sup>
    *         element, where `setIndex = i * numComp() + j`.
-   * \pre    0 <= setIndex < size() * numComp()
+   * \pre    0 <= idx < size() * numComp()
    */
   const DataType & operator[](IndexType idx) const
   {
+    verifyPosition(idx);
     IndexType flat_idx = getMapCompFlatIndex(idx);
     return (*m_superMap_constptr)[flat_idx];
   }
@@ -193,6 +190,7 @@ public:
   //non-const version
   DataType & operator[](IndexType idx)
   {
+    verifyPosition(idx);
     SLIC_ASSERT_MSG(m_superMap_ptr != nullptr,
                     "Submap was constructed with const Map pointer, "
                     << "non-const functions should not be called");
@@ -210,12 +208,14 @@ public:
    */
   const DataType & operator()(IndexType idx, IndexType comp = 0) const
   {
+    verifyPosition(idx, comp);
     return (*m_superMap_constptr)[getMapElemFlatIndex(idx)*numComp() + comp];
   }
 
   //non-const version
   DataType & operator()(IndexType idx, IndexType comp = 0)
   {
+    verifyPosition(idx, comp);
     SLIC_ASSERT_MSG(m_superMap_ptr != nullptr,
                     "Submap was constructed with const Map pointer, "
                     << "non-const functions should not be called");
@@ -339,16 +339,24 @@ private: //helper functions
     return getMapElemFlatIndex(idx / comp) * comp + s;
   }
 
-  /* overloaded from MapBase. Checks the ComponentFlatIndex is valid */
-  void        verifyPosition(SetPosition pos) const override
+  /** Checks the ComponentFlatIndex is valid */
+  void     verifyPosition(SetPosition idx) const override
   {
-    SLIC_ASSERT_MSG( pos >= 0 && pos < m_subsetIdx.size()*numComp(),
+    SLIC_ASSERT_MSG(idx >= 0 && idx < m_subsetIdx.size()*numComp(),
                      "Attempted to access element "
-                     << pos << " but Submap's data has size "
+                     << idx << " but Submap's data has size "
                      << m_subsetIdx.size() * numComp() );
   }
 
-#ifdef AXOM_USE_CXX11
+  /** Checks the ElementFlatIndex and the component index is valid */
+  void     verifyPosition(SetPosition idx, SetPosition comp) const
+  {
+    SLIC_ASSERT_MSG(idx >= 0 && idx < m_subsetIdx.size() &&
+      comp >= 0 && comp < numComp(),
+      "Attempted to access element "
+      << idx << " component " << comp << ", but Submap's data has size "
+      << m_subsetIdx.size() << " with " << numComp() << " component");
+  }
 public:
 
   /**
@@ -366,12 +374,12 @@ public:
     using PositionType = SetPosition;
 
     SubMapIterator(PositionType pos, SubMap* sMap)
-      : IterBase(pos), m_submap(sMap)
+      : IterBase(pos), m_submap(*sMap)
     {}
 
     bool operator==(const iter& other) const
     {
-      return (m_submap == other.m_submap) && IterBase::operator==(other);
+      return /*(m_submap == other.m_submap) &&*/ IterBase::operator==(other);
     }
     bool operator!=(const iter& other) const { return !operator==(other); }
 
@@ -382,7 +390,7 @@ public:
      */
     DataType & operator*()
     {
-      return (*m_submap)(m_pos, 0);
+      return m_submap(m_pos, 0);
     }
 
     /**
@@ -392,29 +400,29 @@ public:
      */
     DataType & operator()(IndexType comp= 0)
     {
-      return (*m_submap)(m_pos, comp);
+      return m_submap(m_pos, comp);
     }
 
     /** \brief Returns the first component value after n increments.  */
     DataType & operator[](PositionType n)
     {
-      return *(this->operator+(n));
+      return *(this.operator+(n));
     }
 
     /** \brief Same as operator() */
     DataType& value(IndexType comp = 0)
     {
-      return (*m_submap)(m_pos, comp);
+      return m_submap(m_pos, comp);
     }
 
     /** \brief Returns the Set element at the iterator's position */
     IndexType index()
     {
-      return m_submap->index(m_pos);
+      return m_submap.index(m_pos);
     }
 
     /** \brief Returns the number of component per element in the SubMap. */
-    PositionType numComp() const { return m_submap->stride(); }
+    PositionType numComp() const { return m_submap.numComp(); }
 
 protected:
     /* Implementation of advance() as required by IteratorBase */
@@ -424,7 +432,7 @@ protected:
     }
 
 private:
-    SubMap* m_submap;
+    SubMap m_submap;
 
   };
 
@@ -432,11 +440,8 @@ public:     // Functions related to iteration
   SubMapIterator begin() { return SubMapIterator(0, this); }
   SubMapIterator end() { return SubMapIterator(m_subsetIdx.size(), this); }
 
-#endif //AXOM_USE_CXX11
 
-
-
-protected:
+protected:     //Member variables
   const SuperMapType* m_superMap_constptr;
   SuperMapType* m_superMap_ptr;
 

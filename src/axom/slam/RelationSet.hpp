@@ -60,11 +60,16 @@ public:
 
   /**
    * \brief Constructor taking in the relation this BivariateSet is based on.
+   * \pre relation pointer must not be a null pointer
    */
-  RelationSet(RelationType* relation_ptr)
-    : BivariateSet(relation_ptr->fromSet(), relation_ptr->toSet())
-    , m_relation(relation_ptr)
-  {}
+  RelationSet(RelationType* relation)
+    : BivariateSet(
+      relation == nullptr ? &BivariateSet::s_nullSet : relation->fromSet(), 
+      relation == nullptr ? &BivariateSet::s_nullSet : relation->toSet() )
+    , m_relation(relation)
+  {
+    SLIC_ASSERT(relation != nullptr);
+  }
 
   /**
    * \brief Searches for the SparseIndex of the element given its DenseIndex.

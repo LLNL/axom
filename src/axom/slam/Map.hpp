@@ -377,11 +377,11 @@ public:
       return *(this->operator+(n));
     }
 
-    /** \brief Returns the number of component per element in the Map. */
+    /** \brief Returns the number of components per element in the Map. */
     PositionType numComp() const { return m_mapPtr->stride(); }
 
 protected:
-    /* Implementation of advance() as required by IteratorBase */
+    /** Implementation of advance() as required by IteratorBase */
     void advance(PositionType n) {
       m_pos += n;
     }
