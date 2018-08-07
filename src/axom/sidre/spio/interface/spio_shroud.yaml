@@ -31,9 +31,10 @@ format:
   # for the result.
   F_string_result_as_arg: name
 
-declarations:
-- decl: class Group
+typemap:
+- type: axom::sidre::Group
   fields:
+    base: shadow
     cxx_header: axom/sidre/core/Group.hpp
 #    cxx_type: Group
     f_derived_type: SidreGroup
@@ -41,8 +42,9 @@ declarations:
       axom_sidre: [ SidreGroup ]
     c_type: SIDRE_group
     c_header: axom/sidre/interface/c_fortran/wrapGroup.h
-    f_to_c: '{f_var}%get_instance()'
+    f_to_c: '{f_var}%cxxmem'
 
+declarations:
 - decl: class IOManager
   cxx_header: axom/sidre/spio/IOManager.hpp
   declarations:

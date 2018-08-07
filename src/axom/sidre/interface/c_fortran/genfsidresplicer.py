@@ -47,10 +47,11 @@ subroutine group_get_scalar_{typename}(grp, name, value)
     character(*), intent(IN) :: name
     {f_type}, intent(OUT) :: value
     integer(C_INT) :: lname
-    type(C_PTR) view
+    type(SHROUD_capsule_data) view
+    type(C_PTR) viewptr
 
     lname = len_trim(name)
-    view = c_group_get_view_from_name_bufferify(grp%voidptr, name, lname)
+    viewptr = c_group_get_view_from_name_bufferify(grp%cxxmem, name, lname, view)
     value = c_view_get_data_{typename}(view)
 end subroutine group_get_scalar_{typename}""".format(**d)
 
@@ -65,10 +66,11 @@ subroutine group_set_scalar_{typename}(grp, name, value)
     character(*), intent(IN) :: name
     {f_type}, intent(IN) :: value
     integer(C_INT) :: lname
-    type(C_PTR) view
+    type(SHROUD_capsule_data) view
+    type(C_PTR) viewptr
 
     lname = len_trim(name)
-    view = c_group_get_view_from_name_bufferify(grp%voidptr, name, lname)
+    viewptr = c_group_get_view_from_name_bufferify(grp%cxxmem, name, lname, view)
     call c_view_set_scalar_{typename}(view, value)
 end subroutine group_set_scalar_{typename}""".format(**d)
 
@@ -97,7 +99,7 @@ function group_create_array_view_{typename}{nd}(grp, name, value) result(rv)
     type(SidreView) :: rv
     integer(SIDRE_LENGTH) :: {extents_decl}
     integer(C_INT), parameter :: type = {sidre_type}
-    type(C_PTR) addr
+    type(C_PTR) addr, viewptr
 
     lname = len_trim(name)
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
@@ -106,9 +108,9 @@ function group_create_array_view_{typename}{nd}(grp, name, value) result(rv)
     call SIDRE_C_LOC(value{lower_bound}, addr)
 #endif
     {extents_asgn}
-    rv%voidptr = c_group_create_view_external_bufferify( &
-        grp%voidptr, name, lname, addr)
-    call c_view_apply_type_shape(rv%voidptr, type, {rank}, extents)
+    viewptr = c_group_create_view_external_bufferify( &
+        grp%cxxmem, name, lname, addr, rv%cxxmem)
+    call c_view_apply_type_shape(rv%cxxmem, type, {rank}, extents)
 end function group_create_array_view_{typename}{nd}""".format(
         extents_decl=extents_decl,
         extents_asgn=extents_asgn, **d)
@@ -141,22 +143,22 @@ subroutine group_set_array_data_ptr_{typename}{nd}(grp, name, value)
     character(len=*), intent(IN) :: name
     {f_type}, target, intent(IN) :: value{shape}
     integer(C_INT) :: lname
-    type(C_ptr) view
+    type(SHROUD_capsule_data) view
 !    integer(SIDRE_LENGTH) :: {extents_decl}
 !    integer(C_INT), parameter :: type = {sidre_type}
-    type(C_PTR) addr
+    type(C_PTR) addr, viewptr
 
     lname = len_trim(name)
 !    {extents_asgn}
-    view = c_group_get_view_from_name_bufferify(grp%voidptr, name, lname)
-    if (c_associated(view)) then
+    viewptr = c_group_get_view_from_name_bufferify(grp%cxxmem, name, lname, view)
+    if (c_associated(view%addr)) then
 #ifdef USE_C_LOC_WITH_ASSUMED_SHAPE
         addr = c_loc(value)
 #else
         call SIDRE_C_LOC(value{lower_bound}, addr)
 #endif
         call c_view_set_external_data_ptr_only(view, addr)
-!        call c_view_apply_type_shape(rv%voidptr, type, {rank}, extents)
+!        call c_view_apply_type_shape(rv%cxxmem, type, {rank}, extents)
     endif
 end subroutine group_set_array_data_ptr_{typename}{nd}""".format(
         extents_decl=extents_decl,
@@ -198,8 +200,8 @@ subroutine view_set_array_data_ptr_{typename}{nd}(view, value)
 #else
     call SIDRE_C_LOC(value{lower_bound}, addr)
 #endif
-    call c_view_set_external_data_ptr_only(view%voidptr, addr)
-!    call c_view_apply_type_shape(rv%voidptr, type, {rank}, extents)
+    call c_view_set_external_data_ptr_only(view%cxxmem, addr)
+!    call c_view_apply_type_shape(rv%cxxmem, type, {rank}, extents)
 end subroutine view_set_array_data_ptr_{typename}{nd}""".format(
         extents_decl=extents_decl,
         extents_asgn=extents_asgn, **d)
@@ -376,10 +378,11 @@ subroutine group_get_string(grp, name, value)
     character(*), intent(IN) :: name
     character(*), intent(OUT) :: value
     integer(C_INT) :: lname
-    type(C_PTR) view
+    type(SHROUD_capsule_data) view
+    type(C_PTR) viewptr
 
     lname = len_trim(name)
-    view = c_group_get_view_from_name_bufferify(grp%voidptr, name, lname)
+    viewptr = c_group_get_view_from_name_bufferify(grp%cxxmem, name, lname, view)
     call c_view_get_string_bufferify(view, value, len(value, kind=C_INT))
 end subroutine group_get_string
 
@@ -389,10 +392,11 @@ subroutine group_set_string(grp, name, value)
     character(*), intent(IN) :: name
     character(*), intent(IN) :: value
     integer(C_INT) :: lname
-    type(C_PTR) view
+    type(SHROUD_capsule_data) view
+    type(C_PTR) viewptr
 
     lname = len_trim(name)
-    view = c_group_get_view_from_name_bufferify(grp%voidptr, name, lname)
+    viewptr = c_group_get_view_from_name_bufferify(grp%cxxmem, name, lname, view)
     call c_view_set_string_bufferify(view, value, len_trim(value, kind=C_INT))
 end subroutine group_set_string
 """
