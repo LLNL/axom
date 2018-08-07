@@ -279,7 +279,7 @@ contains
             ndims, maxElements, maxLevels)
         use iso_c_binding, only : C_BOOL, C_INT
         integer, value, intent(IN) :: comm
-        character(*), intent(IN) :: fileName
+        character(len=*), intent(IN) :: fileName
         logical, value, intent(IN) :: requiresDistance
         logical(C_BOOL) SH_requiresDistance
         integer(C_INT), value, intent(IN) :: ndims
@@ -298,7 +298,7 @@ contains
     subroutine quest_initialize_serial(fileName, requiresDistance, &
             ndims, maxElements, maxLevels)
         use iso_c_binding, only : C_BOOL, C_INT
-        character(*), intent(IN) :: fileName
+        character(len=*), intent(IN) :: fileName
         logical, value, intent(IN) :: requiresDistance
         logical(C_BOOL) SH_requiresDistance
         integer(C_INT), value, intent(IN) :: ndims
@@ -339,7 +339,7 @@ contains
 #ifdef AXOM_USE_MPI
     subroutine quest_signed_distance_init_mpi(file, comm)
         use iso_c_binding, only : C_INT
-        character(*), intent(IN) :: file
+        character(len=*), intent(IN) :: file
         integer, value, intent(IN) :: comm
         ! splicer begin function.signed_distance_init_mpi
         call c_signed_distance_init_mpi_bufferify(file, &
@@ -351,7 +351,7 @@ contains
 #ifndef AXOM_USE_MPI
     subroutine quest_signed_distance_init_serial(file)
         use iso_c_binding, only : C_INT
-        character(*), intent(IN) :: file
+        character(len=*), intent(IN) :: file
         ! splicer begin function.signed_distance_init_serial
         call c_signed_distance_init_serial_bufferify(file, &
             len_trim(file, kind=C_INT))

@@ -22,10 +22,11 @@ declarations:
       - type: IOManager
         fields:
           base: shadow
+          cxx_header: axom/sidre/spio/IOManager.hpp
           cxx_type: axom::sidre::IOManager
           c_type: SPIO_iomanager
           f_derived_type: iomanager
-          f_to_c: "{f_var}%get_instance()"
+          f_to_c: "{f_var}%cxxmem"
           f_module:
             axom_spio:
             - iomanager

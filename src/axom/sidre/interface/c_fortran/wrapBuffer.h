@@ -24,6 +24,7 @@
 
 #include <stddef.h>
 #include "axom/sidre/interface/SidreTypes.h"
+#include "typesSidre.h"
 
 // splicer begin class.Buffer.CXX_declarations
 // splicer end class.Buffer.CXX_declarations
@@ -31,10 +32,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-// declaration of shadow types
-struct s_SIDRE_buffer;
-typedef struct s_SIDRE_buffer SIDRE_buffer;
 
 // splicer begin class.Buffer.C_declarations
 // splicer end class.Buffer.C_declarations

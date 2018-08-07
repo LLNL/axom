@@ -1,4 +1,4 @@
-// wrapSidre.h
+// typesQUEST.h
 // This is generated code, do not edit
 //
 // Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
@@ -13,31 +13,27 @@
 //
 // For details about use and distribution, please read axom/LICENSE.
 //
-/**
- * \file wrapSidre.h
- * \brief Shroud generated wrapper for Sidre library
- */
 // For C users and C++ implementation
 
-#ifndef WRAPSIDRE_H
-#define WRAPSIDRE_H
+#ifndef TYPESQUEST_H
+#define TYPESQUEST_H
 
-#include "typesSidre.h"
-
-// splicer begin CXX_declarations
-// splicer end CXX_declarations
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// splicer begin C_declarations
-// splicer end C_declarations
+struct s_QUE_SHROUD_capsule_data
+{
+  void* addr;       /* address of C++ memory */
+  int idtor;        /* index of destructor */
+};
+typedef struct s_QUE_SHROUD_capsule_data QUE_SHROUD_capsule_data;
 
-bool SIDRE_name_is_valid(const char* name);
+void QUEST_SHROUD_memory_destructor(QUE_SHROUD_capsule_data* cap);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif  // WRAPSIDRE_H
+#endif  // TYPESQUEST_H

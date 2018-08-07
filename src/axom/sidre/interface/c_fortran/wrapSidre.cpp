@@ -14,7 +14,10 @@
 // For details about use and distribution, please read axom/LICENSE.
 //
 #include "wrapSidre.h"
+#include <stdlib.h>
 #include <string>
+#include "axom/sidre/core/DataStore.hpp"
+#include "typesSidre.h"
 
 // splicer begin CXX_definitions
 // splicer end CXX_definitions
@@ -51,6 +54,34 @@ bool SIDRE_name_is_valid(const char* name)
 // splicer begin function.name_is_valid
   return name != NULL;
 // splicer end function.name_is_valid
+}
+
+// Release C++ allocated memory.
+void SIDRE_SHROUD_memory_destructor(SID_SHROUD_capsule_data* cap)
+{
+  void* ptr = cap->addr;
+  switch (cap->idtor)
+  {
+  case 0:     // --none--
+  {
+    // Nothing to delete
+    break;
+  }
+  case 1:     // axom::sidre::DataStore
+  {
+    axom::sidre::DataStore* cxx_ptr =
+      reinterpret_cast<axom::sidre::DataStore*>(ptr);
+    delete cxx_ptr;
+    break;
+  }
+  default:
+  {
+    // Unexpected case in destructor
+    break;
+  }
+  }
+  cap->addr = NULL;
+  cap->idtor = 0;    // avoid deleting again
 }
 
 }  // extern "C"

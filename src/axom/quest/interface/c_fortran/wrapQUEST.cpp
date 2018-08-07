@@ -14,9 +14,11 @@
 // For details about use and distribution, please read axom/LICENSE.
 //
 #include "wrapQUEST.h"
+#include <stdlib.h>
 #include <string>
 #include "axom/quest/interface/quest.hpp"
 #include "axom/quest/interface/signed_distance.hpp"
+#include "typesQUEST.h"
 
 // splicer begin CXX_definitions
 // splicer end CXX_definitions
@@ -248,6 +250,13 @@ void QUEST_signed_distance_finalize()
   axom::quest::signed_distance_finalize();
   return;
 // splicer end function.signed_distance_finalize
+}
+
+// Release C++ allocated memory.
+void QUEST_SHROUD_memory_destructor(QUE_SHROUD_capsule_data* cap)
+{
+  cap->addr = NULL;
+  cap->idtor = 0;    // avoid deleting again
 }
 
 }  // extern "C"

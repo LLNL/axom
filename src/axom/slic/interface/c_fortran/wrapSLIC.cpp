@@ -15,26 +15,28 @@
 //
 #include "wrapSLIC.h"
 #include <cstring>
+#include <stdlib.h>
 #include <string>
 #include "axom/slic/interface/slic.hpp"
-
-// Copy s into a, blank fill to la characters
-// Truncate if a is too short.
-static void ShroudStrCopy(char* a, int la, const char* s)
-{
-  int ls,nm;
-  ls = std::strlen(s);
-  nm = ls < la ? ls : la;
-  std::memcpy(a,s,nm);
-  if(la > nm)
-    std::memset(a+nm,' ',la-nm);
-}
+#include "typesSLIC.h"
 
 // splicer begin CXX_definitions
 // splicer end CXX_definitions
 
 extern "C" {
 
+
+// helper function
+// Copy src into dest, blank fill to ndest characters
+// Truncate if dest is too short.
+// dest will not be NULL terminated.
+static void ShroudStrCopy(char* dest, int ndest, const char* src, int nsrc)
+{
+  int nm = nsrc < ndest ? nsrc : ndest;
+  std::memcpy(dest,src,nm);
+  if(ndest > nm)
+    std::memset(dest+nm,' ',ndest-nm);
+}
 // splicer begin C_definitions
 // splicer end C_definitions
 
@@ -100,7 +102,7 @@ void SLIC_get_active_logger_name_bufferify(char* name, int Nname)
   }
   else
   {
-    ShroudStrCopy(name, Nname, SHCXX_rv.c_str());
+    ShroudStrCopy(name, Nname, SHCXX_rv.data(), SHCXX_rv.size());
   }
   return;
 // splicer end function.get_active_logger_name_bufferify
@@ -213,6 +215,13 @@ void SLIC_finalize()
   axom::slic::finalize();
   return;
 // splicer end function.finalize
+}
+
+// Release C++ allocated memory.
+void SLIC_SHROUD_memory_destructor(SLI_SHROUD_capsule_data* cap)
+{
+  cap->addr = NULL;
+  cap->idtor = 0;    // avoid deleting again
 }
 
 }  // extern "C"

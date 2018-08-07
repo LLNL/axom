@@ -25,6 +25,7 @@
 #ifdef AXOM_USE_MPI
 #include "mpi.h"
 #endif
+#include "typesQUEST.h"
 
 // splicer begin CXX_declarations
 // splicer end CXX_declarations

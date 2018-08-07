@@ -22,40 +22,44 @@ declarations:
       - type: Buffer
         fields:
           base: shadow
+          cxx_header: axom/sidre/core/Buffer.hpp
           cxx_type: axom::sidre::Buffer
           c_type: SIDRE_buffer
           f_derived_type: SidreBuffer
-          f_to_c: "{f_var}%get_instance()"
+          f_to_c: "{f_var}%cxxmem"
           f_module:
             axom_sidre:
             - SidreBuffer
       - type: DataStore
         fields:
           base: shadow
+          cxx_header: axom/sidre/core/DataStore.hpp
           cxx_type: axom::sidre::DataStore
           c_type: SIDRE_datastore
           f_derived_type: SidreDataStore
-          f_to_c: "{f_var}%get_instance()"
+          f_to_c: "{f_var}%cxxmem"
           f_module:
             axom_sidre:
             - SidreDataStore
       - type: Group
         fields:
           base: shadow
+          cxx_header: axom/sidre/core/Group.hpp
           cxx_type: axom::sidre::Group
           c_type: SIDRE_group
           f_derived_type: SidreGroup
-          f_to_c: "{f_var}%get_instance()"
+          f_to_c: "{f_var}%cxxmem"
           f_module:
             axom_sidre:
             - SidreGroup
       - type: View
         fields:
           base: shadow
+          cxx_header: axom/sidre/core/View.hpp
           cxx_type: axom::sidre::View
           c_type: SIDRE_view
           f_derived_type: SidreView
-          f_to_c: "{f_var}%get_instance()"
+          f_to_c: "{f_var}%cxxmem"
           f_module:
             axom_sidre:
             - SidreView

@@ -198,7 +198,7 @@ contains
 
     subroutine slic_create_logger(name, imask)
         use iso_c_binding, only : C_INT
-        character(*), intent(IN) :: name
+        character(len=*), intent(IN) :: name
         character, value, intent(IN) :: imask
         ! splicer begin function.create_logger
         call c_create_logger_bufferify(name, len_trim(name, kind=C_INT), &
@@ -209,7 +209,7 @@ contains
     function slic_activate_logger(name) &
             result(SHT_rv)
         use iso_c_binding, only : C_BOOL, C_INT
-        character(*), intent(IN) :: name
+        character(len=*), intent(IN) :: name
         logical :: SHT_rv
         ! splicer begin function.activate_logger
         SHT_rv = c_activate_logger_bufferify(name, &
@@ -219,7 +219,7 @@ contains
 
     subroutine slic_get_active_logger_name(name)
         use iso_c_binding, only : C_INT
-        character(*), intent(OUT) :: name
+        character(len=*), intent(OUT) :: name
         ! splicer begin function.get_active_logger_name
         call c_get_active_logger_name_bufferify(name, &
             len(name, kind=C_INT))
@@ -267,8 +267,8 @@ contains
     subroutine slic_log_message(level, message, fileName, line, filter)
         use iso_c_binding, only : C_BOOL, C_INT
         integer(C_INT), value, intent(IN) :: level
-        character(*), intent(IN) :: message
-        character(*), intent(IN) :: fileName
+        character(len=*), intent(IN) :: message
+        character(len=*), intent(IN) :: fileName
         integer(C_INT), value, intent(IN) :: line
         logical, value, intent(IN) :: filter
         logical(C_BOOL) SH_filter
