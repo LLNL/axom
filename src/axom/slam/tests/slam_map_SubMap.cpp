@@ -219,7 +219,7 @@ TEST(slam_map, construct_with_double_submap)
   EXPECT_TRUE(constructBySubMap<double>());
 }
 
-//Some SubMap iterator tests in BivariateMap. 
+//Some SubMap iterator tests in BivariateMap.
 //TODO add more iterator tests here
 
 //----------------------------------------------------------------------

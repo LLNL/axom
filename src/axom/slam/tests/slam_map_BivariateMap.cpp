@@ -204,8 +204,7 @@ void constructAndTestBivariateMapIterator(int stride)
   for (PositionType idx1 = 0 ; idx1 < m.firstSetSize() ; ++idx1)
   {
     int idx2 = 0;
-    auto iter = m.begin(idx1);
-    for (; iter != m.end(idx1) ; ++iter, ++idx2)
+    for ( auto iter = m.begin(idx1) ; iter != m.end(idx1) ; ++iter, ++idx2)
     {
       EXPECT_EQ(*iter, getVal<DataType>(idx1, idx2));
       for (PositionType i = 0 ; i < iter.numComp() ; i++)
@@ -222,21 +221,21 @@ void constructAndTestBivariateMapIterator(int stride)
     auto end_iter = m.end();
     auto inval_iter = end_iter + 1;
     PositionType flat_idx = 0;
-    for (PositionType idx1 = 0; idx1 < m.firstSetSize(); ++idx1)
+    for (PositionType idx1 = 0 ; idx1 < m.firstSetSize() ; ++idx1)
     {
-      for (PositionType idx2 = 0; idx2 < m.secondSetSize(); ++idx2)
+      for (PositionType idx2 = 0 ; idx2 < m.secondSetSize() ; ++idx2)
       {
         EXPECT_EQ(*iter, getVal<DataType>(idx1, idx2, 0));
         EXPECT_EQ(iter.firstIndex(), idx1);
         EXPECT_EQ(iter.secondIndex(), idx2);
-        for (PositionType i = 0; i < stride; i++)
+        for (PositionType i = 0 ; i < stride ; i++)
         {
           DataType val = getVal<DataType>(idx1, idx2, i);
           EXPECT_EQ(iter.value(i), val);
           EXPECT_EQ(iter(i), val);
           EXPECT_EQ((begin_iter + flat_idx).value(i), val);
           EXPECT_EQ((end_iter - (m.totalSize() - flat_idx)).value(i), val);
-          EXPECT_EQ((inval_iter - (m.totalSize() - flat_idx + 1)).value(i), val);
+          EXPECT_EQ((inval_iter - (m.totalSize()-flat_idx+1)).value(i), val);
         }
         iter++; flat_idx++;
       }

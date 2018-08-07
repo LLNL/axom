@@ -64,7 +64,7 @@ public:
    */
   RelationSet(RelationType* relation)
     : BivariateSet(
-      relation == nullptr ? &BivariateSet::s_nullSet : relation->fromSet(), 
+      relation == nullptr ? &BivariateSet::s_nullSet : relation->fromSet(),
       relation == nullptr ? &BivariateSet::s_nullSet : relation->toSet() )
     , m_relation(relation)
   {

@@ -40,7 +40,7 @@ namespace slam
  * \brief The SubMap class provides an API to easily traverse a subset of a Map.
  *
  * A SubMap is defined by a subset of the indices into a Map, which we refer to
- * as its SuperMap (of type SuperMapType). The indices are expressed as 
+ * as its SuperMap (of type SuperMapType). The indices are expressed as
  * ElementFlatIndex.\n
  * Please see BivariateMap for an explanation of the various indexing schemes.
  *
@@ -81,11 +81,11 @@ public:
   using SubsetType = OrderedSetType;
 
 //iterator typedef
-class SubMapIterator;
-using const_iterator = SubMapIterator;
-using const_iterator_pair = std::pair<const_iterator, const_iterator>;
-using iterator = const_iterator;
-using iterator_pair = const_iterator_pair;
+  class SubMapIterator;
+  using const_iterator = SubMapIterator;
+  using const_iterator_pair = std::pair<const_iterator, const_iterator>;
+  using iterator = const_iterator;
+  using iterator_pair = const_iterator_pair;
 
 public:
   /** Default Constructor */
@@ -343,19 +343,20 @@ private: //helper functions
   void     verifyPosition(SetPosition idx) const override
   {
     SLIC_ASSERT_MSG(idx >= 0 && idx < m_subsetIdx.size()*numComp(),
-                     "Attempted to access element "
-                     << idx << " but Submap's data has size "
-                     << m_subsetIdx.size() * numComp() );
+                    "Attempted to access element "
+                    << idx << " but Submap's data has size "
+                    << m_subsetIdx.size() * numComp() );
   }
 
   /** Checks the ElementFlatIndex and the component index is valid */
   void     verifyPosition(SetPosition idx, SetPosition comp) const
   {
     SLIC_ASSERT_MSG(idx >= 0 && idx < m_subsetIdx.size() &&
-      comp >= 0 && comp < numComp(),
-      "Attempted to access element "
-      << idx << " component " << comp << ", but Submap's data has size "
-      << m_subsetIdx.size() << " with " << numComp() << " component");
+                    comp >= 0 && comp < numComp(),
+                    "Attempted to access element "
+                    << idx << " component " << comp
+                    << ", but Submap's data has size " << m_subsetIdx.size()
+                    << " with " << numComp() << " component");
   }
 public:
 

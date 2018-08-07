@@ -159,8 +159,9 @@ private:
   {
     SLIC_ASSERT_MSG(
       firstIdx >= 0 && firstIdx < firstSetSize(),
-      "Attempted to access elements with first set index " << firstIdx 
-      << ", but BivairateMap's first set has size " << firstSetSize());
+      "Attempted to access elements with first set index "
+      << firstIdx << ", but BivairateMap's first set has size "
+      << firstSetSize());
 
     SetIndex start_idx = m_set->findElementFlatIndex(firstIdx);
     SetIndex size = m_set->size(firstIdx);
@@ -177,8 +178,8 @@ public:
   const SubMapType operator() (SetPosition firstIdx) const
   {
     return makeSubMap<const BivariateMapType>(firstIdx, this);
-    
-    
+
+
   }
 
   SubMapType operator() (SetPosition firstIdx)
@@ -301,12 +302,12 @@ public:
     using PositionType = SetPosition;
     const PositionType INVALID_POS = -2;
 
-  public:
+public:
     /**
      * \brief Construct a new BivariateMap Iterator given an ElementFlatIndex
      */
     BivariateMapIterator(BivariateMap* sMap, PositionType pos)
-      : IterBase(pos), m_map(sMap), firstIdx(INVALID_POS), 
+      : IterBase(pos), m_map(sMap), firstIdx(INVALID_POS),
       secondIdx(INVALID_POS), secondSparseIdx(INVALID_POS)
     {
       find_indices(pos);
@@ -406,7 +407,7 @@ private:
     }
 
     /* recursive helper function for advance(n) to update the three indices.
-     * This is an updating function, which assumes the pre-advance state is 
+     * This is an updating function, which assumes the pre-advance state is
      * valid, i.e. the three indices were correct prior to advance(n).
      * It will recurse as many times as the change in firstIdx. */
     void advance_helper(PositionType n, PositionType idx1, PositionType idx2)
