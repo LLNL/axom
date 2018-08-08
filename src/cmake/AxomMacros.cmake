@@ -76,6 +76,8 @@ endmacro(axom_add_code_checks)
 ## (ON/OFF). This macro also adds an "option" so that the user can control,
 ## which components to build.
 ##------------------------------------------------------------------------------
+set(AXOM_COMPONENTS_FULL    CACHE LIST "List of all components in Axom" FORCE)
+set(AXOM_COMPONENTS_ENABLED CACHE LIST "List of all enabled components in Axom" FORCE)
 macro(axom_add_component)
 
     set(options)
@@ -88,15 +90,20 @@ macro(axom_add_component)
 
     # Adds an option so that the user can control whether to build this
     # component.
-    # convert the component name to capitals for the ENABLE option.
+    # convert the component name to capitals for the AXOM_ENABLE options.
     string(TOUPPER ${arg_COMPONENT_NAME} COMPONENT_NAME_CAPITALIZED)
     string(TOLOWER ${arg_COMPONENT_NAME} COMPONENT_NAME_LOWERED)
 
-    option( ENABLE_${COMPONENT_NAME_CAPITALIZED}
-            "Enables ${arg_component_name}"
+    option( AXOM_ENABLE_${COMPONENT_NAME_CAPITALIZED}
+            "Enables ${arg_COMPONENT_NAME}"
             ${arg_DEFAULT_STATE})
 
-    if ( ENABLE_${COMPONENT_NAME_CAPITALIZED} )
+    set(AXOM_COMPONENTS_FULL ${AXOM_COMPONENTS_FULL} ${COMPONENT_NAME_LOWERED}
+        CACHE LIST "List of all components in Axom" FORCE)
+
+    if ( AXOM_ENABLE_${COMPONENT_NAME_CAPITALIZED} )
+        set(AXOM_COMPONENTS_ENABLED ${AXOM_COMPONENTS_ENABLED} ${COMPONENT_NAME_LOWERED}
+            CACHE LIST "List of all enabled components in Axom" FORCE)
         add_subdirectory( ${arg_COMPONENT_NAME} )
     endif()
 
@@ -116,7 +123,6 @@ macro(convert_to_native_escaped_file_path path output)
     file(TO_NATIVE_PATH ${path} ${output})
     string(REPLACE "\\" "\\\\"  ${output} "${${output}}")
 endmacro()
-
 
 
 ##------------------------------------------------------------------------------
@@ -211,8 +217,8 @@ macro(axom_component_requires)
 
     foreach(_dep ${arg_COMPONENTS})
         string(TOUPPER ${_dep} _ucdep)
-        if(NOT ENABLE_${_ucdep})
-            message(FATAL_ERROR "${arg_NAME} requires ${_dep}. Set ENABLE_${_ucdep} to ON.")
+        if(NOT AXOM_ENABLE_${_ucdep})
+            message(FATAL_ERROR "${arg_NAME} requires ${_dep}. Set AXOM_ENABLE_${_ucdep} to ON.")
         endif()
     endforeach()
 
@@ -224,3 +230,50 @@ macro(axom_component_requires)
     endforeach()
 
 endmacro(axom_component_requires)
+
+##------------------------------------------------------------------------------
+## axom_install_component
+## 
+## This macro installs libraries, fortran modules, headers, and exports the CMake
+## target while preserving the directory stucture.  This macro assumes the following:
+##
+##    * CMake Target to install is the same as NAME
+##    * If there is a Fortran module built, it is named axom_<NAME>.mod
+##
+## NAME - The name of the component that we are installing.
+##
+## HEADERS - Headers to be installed
+##
+##------------------------------------------------------------------------------
+macro(axom_install_component)
+
+    set(options )
+    set(singleValueArgs NAME)
+    set(multiValueArgs HEADERS)
+
+    # Parse the arguments to the macro
+    cmake_parse_arguments(arg
+         "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    set(_header_base_dir include/axom/${arg_NAME})
+
+    install(TARGETS              ${arg_NAME}
+            EXPORT               ${arg_NAME}-targets
+            DESTINATION          lib
+            INCLUDES DESTINATION ${_header_base_dir}
+            )
+    
+    foreach( _file ${arg_HEADERS} )
+        get_filename_component( _dir ${_file} DIRECTORY )
+        install( FILES ${_file} DESTINATION ${_header_base_dir}/${_dir} )
+    endforeach()
+
+    if(ENABLE_FORTRAN)
+        set(_mod ${CMAKE_Fortran_MODULE_DIRECTORY}/axom_${arg_NAME}.mod)
+        # TODO: Remove optional once all components have fortran wrappers
+        install(FILES ${_mod} DESTINATION lib/fortran OPTIONAL)
+    endif()
+
+    install(EXPORT ${arg_NAME}-targets DESTINATION lib/cmake)
+
+endmacro(axom_install_component)

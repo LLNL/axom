@@ -44,32 +44,33 @@
 #include "mpi.h"
 
 #include "axom/config.hpp"
-#include "axom/Types.hpp"
-#include "fmt/format.h"
-#include "slic/slic.hpp"
-#include "slic/LogStream.hpp"
+#include "axom/core/Types.hpp"
+#include "fmt/fmt.hpp"
+#include "axom/slic/interface/slic.hpp"
+#include "axom/slic/core/LogStream.hpp"
 
 #ifdef AXOM_USE_LUMBERJACK
-  #include "slic/LumberjackStream.hpp"
+  #include "axom/slic/streams/LumberjackStream.hpp"
 #else
-  #include "slic/GenericOutputStream.hpp"
+  #include "axom/slic/streams/GenericOutputStream.hpp"
 #endif
 
-#include "sidre/SidreTypes.hpp"
-#include "sidre/DataStore.hpp"
-#include "sidre/Group.hpp"
-#include "sidre/Buffer.hpp"
-#include "sidre/View.hpp"
+#include "axom/sidre/core/SidreTypes.hpp"
+#include "axom/sidre/core/DataStore.hpp"
+#include "axom/sidre/core/Group.hpp"
+#include "axom/sidre/core/Buffer.hpp"
+#include "axom/sidre/core/View.hpp"
 
-#include "sidre/IOManager.hpp"
+#include "axom/sidre/spio/IOManager.hpp"
 
-#include "slam/SizePolicies.hpp"
-#include "slam/OffsetPolicies.hpp"
-#include "slam/StridePolicies.hpp"
-#include "slam/OrderedSet.hpp"
+#include "axom/slam/policies/SizePolicies.hpp"
+#include "axom/slam/policies/OffsetPolicies.hpp"
+#include "axom/slam/policies/StridePolicies.hpp"
+#include "axom/slam/OrderedSet.hpp"
 
 #include <limits>       // for numeric_limits<int>
 #include <cstdlib>      // for atoi
+#include <sstream>      // for stringstream
 
 
 using axom::sidre::DataStore;
@@ -129,25 +130,32 @@ struct CommandLineArguments
   /** Logs usage information for the utility */
   static void usage()
   {
-    fmt::MemoryWriter out;
-    out << "Usage ./convert_sidre_protocol <options>";
-    out.write("\n\t{:<30}{}", "--help", "Output this message and quit");
-    out.write("\n\t{:<30}{}", "--input <file>",
-              "(required) Filename of input datastore");
-    out.write("\n\t{:<30}{}", "--output <file>",
-              "(required) Filename of output datastore");
-    out.write("\n\t{:<30}{}", "--strip <N>", "Indicates if data in output file should be "
-                                             "stripped (to first N entries) (default: off)");
-    out.write("\n\t{:<30}{}", "--protocol <str>",
-              "Desired protocol for output datastore (default: json)");
+    fmt::memory_buffer out;
+    fmt::format_to(out,"Usage ./convert_sidre_protocol <options>");
+    fmt::format_to(out,"\n\t{:<30}{}",
+                   "--help",
+                   "Output this message and quit");
+    fmt::format_to(out,"\n\t{:<30}{}",
+                   "--input <file>",
+                   "(required) Filename of input datastore");
+    fmt::format_to(out,"\n\t{:<30}{}",
+                   "--output <file>",
+                   "(required) Filename of output datastore");
+    fmt::format_to(out,"\n\t{:<30}{}",
+                   "--strip <N>",
+                   "Indicates if data in output file should be "
+                   "stripped (to first N entries) (default: off)");
+    fmt::format_to(out,"\n\t{:<30}{}",
+                   "--protocol <str>",
+                   "Desired protocol for output datastore (default: json)");
 
-    out.write("\n\n\t{: <40}","Available protocols:");
+    fmt::format_to(out,"\n\n\t{: <40}","Available protocols:");
     for(int i=0 ; i< NUM_SIDRE_PROTOCOLS ; ++i)
     {
-      out.write("\n\t  {: <50}", s_validProtocols[i]);
+      fmt::format_to(out,"\n\t  {: <50}", s_validProtocols[i]);
     }
 
-    SLIC_INFO( out.str() );
+    SLIC_INFO( out.data() );
   }
 
 };
@@ -322,13 +330,13 @@ void modifyFinalValuesImpl(View* view, int origSize)
                    .stride(view->getStride());
 
   #ifdef AXOM_DEBUG
-  fmt::MemoryWriter out_fwd;
+  fmt::memory_buffer out_fwd;
   for(int i=0 ; i < idxSet.size() ; ++i)
   {
-    out_fwd.write("\n\ti: {}; set[i]: {}; arr [ set[i] ] = {}",
-                  i, idxSet[i], arr[ idxSet[i] ] );
+    fmt::format_to(out_fwd,"\n\ti: {}; set[i]: {}; arr [ set[i] ] = {}",
+                   i, idxSet[i], arr[ idxSet[i] ] );
   }
-  SLIC_DEBUG( out_fwd.str() );
+  SLIC_DEBUG( out_fwd.data() );
   #endif
 
   // Shift the data over by two
@@ -343,13 +351,13 @@ void modifyFinalValuesImpl(View* view, int origSize)
   arr[ idxSet[1] ] = std::numeric_limits<sidre_type>::quiet_NaN();
 
   #ifdef AXOM_DEBUG
-  fmt::MemoryWriter out_rev;
+  fmt::memory_buffer out_rev;
   for(int i=0 ; i < idxSet.size() ; ++i)
   {
-    out_rev.write("\n\ti: {}; set[i]: {}; arr [ set[i] ] = {}",
-                  i, idxSet[i], arr[ idxSet[i] ] );
+    fmt::format_to(out_rev,"\n\ti: {}; set[i]: {}; arr [ set[i] ] = {}",
+                   i, idxSet[i], arr[ idxSet[i] ] );
   }
-  SLIC_DEBUG( out_rev.str() );
+  SLIC_DEBUG( out_rev.data() );
   #endif
 
 }
@@ -467,7 +475,7 @@ void setupLogging()
 #endif
 
   // Formatting for warning, errors and fatal message
-  fmt::MemoryWriter wefFmt;
+  std::stringstream wefFmt;
   wefFmt << "\n***********************************\n"
          << rankStr << "[<LEVEL> in line <LINE> of file <FILE>]\n"
          <<"MESSAGE=<MESSAGE>\n"
@@ -541,8 +549,8 @@ int main(int argc, char* argv[])
     truncateBulkData(ds.getRoot(), numElts);
 
     // Add a string view to the datastore to indicate that we modified the data
-    fmt::MemoryWriter fout;
-    fout << "This datastore was created by the convert_sidre_protocol "
+    std::stringstream sstr;
+    sstr << "This datastore was created by the convert_sidre_protocol "
          << "utility with option '--strip " << numElts
          << "'. To simplify debugging, the bulk data in this datastore "
          << "has been truncated to have at most " << numElts
@@ -550,7 +558,7 @@ int main(int argc, char* argv[])
          << " array followed by a zero/Nan. These are followed by (at most) "
          << "the first " << numElts << " values of the array.";
 
-    ds.getRoot()->createViewString("Note", fout.str());
+    ds.getRoot()->createViewString("Note", sstr.str());
   }
 
   // Write out datastore to the output file in the specified protocol
@@ -566,7 +574,7 @@ int main(int argc, char* argv[])
       ++it)
   {
     delete [] static_cast<char*>(*it);
-    *it = AXOM_NULLPTR;
+    *it = nullptr;
   }
 
   teardownLogging();

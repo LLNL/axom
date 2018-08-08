@@ -16,8 +16,8 @@
 ## NOTE: if we are building from a Git repo these values will be autodetected,
 ##       otherwise, the hard-coded values will go in to the config.
 set(AXOM_VERSION_MAJOR 0)
-set(AXOM_VERSION_MINOR 2)
-set(AXOM_VERSION_PATCH 9)
+set(AXOM_VERSION_MINOR 3)
+set(AXOM_VERSION_PATCH 0)
 string(CONCAT AXOM_VERSION_FULL 
     "v${AXOM_VERSION_MAJOR}"
     ".${AXOM_VERSION_MINOR}"

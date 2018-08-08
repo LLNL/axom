@@ -31,7 +31,7 @@ endif()
 ##       that are configured with MPI and OPENMP, respectively.
 
 set(TPL_DEPS CONDUIT HDF5 SPARSEHASH FMT MPI MFEM SCR)  # vars of the form DEP_FOUND
-foreach(dep in ${TPL_DEPS})
+foreach(dep ${TPL_DEPS})
     if( ${dep}_FOUND OR ENABLE_${dep} )
         set(AXOM_USE_${dep} TRUE  )
     endif()
@@ -58,11 +58,9 @@ endif()
 
 
 ## Add a configuration define for each enabled axom component
-set(COMPS AXOM_UTILS LUMBERJACK SLIC SLAM SIDRE MINT PRIMAL QUEST)
-foreach(comp in ${COMPS})
-    if( ENABLE_${comp} )
-        set(AXOM_USE_${comp} TRUE)
-    endif()
+foreach(comp ${AXOM_COMPONENTS_ENABLED})
+    string(TOUPPER ${comp} comp_uc)
+    set(AXOM_USE_${comp_uc} TRUE)
 endforeach()
 
 convert_to_native_escaped_file_path(${CMAKE_SOURCE_DIR} AXOM_SRC_DIR)
@@ -97,6 +95,8 @@ if(ENABLE_FORTRAN)
 endif(ENABLE_FORTRAN)
 
 configure_file(
-    include/config.hpp.in
-    ${HEADER_INCLUDES_DIRECTORY}/axom/config.hpp
+    ${PROJECT_SOURCE_DIR}/axom/config.hpp.in
+    ${CMAKE_BINARY_DIR}/include/axom/config.hpp
 )
+
+install(FILES ${CMAKE_BINARY_DIR}/include/axom/config.hpp DESTINATION include/axom)

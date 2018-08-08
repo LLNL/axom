@@ -18,7 +18,7 @@ else()
     cmake_minimum_required(VERSION 3.8.2)
 endif()
 
-message(STATUS "Using cmake version ${CMAKE_VERSION}")
+message(STATUS "Using CMake version ${CMAKE_VERSION}")
 
 ################################
 # Axom project
@@ -43,14 +43,14 @@ else()
     set(BLT_SOURCE_DIR "${PROJECT_SOURCE_DIR}/cmake/blt" CACHE PATH "")
     if (NOT EXISTS ${BLT_SOURCE_DIR}/SetupBLT.cmake)
         message(FATAL_ERROR
-            "The BLT submodule is not present. "
-            "Run the following two commands in your git repository: \n"
+            "The BLT is not present. "
+            "Either run the following two commands in your git repository: \n"
             "    git submodule init\n"
-            "    git submodule update" )
+            "    git submodule update\n"
+            "Or add -DBLT_SOURCE_DIR=/path/to/blt to your CMake command." )
     endif()
 endif()
 
-set(ENABLE_COPY_HEADERS ON CACHE BOOL "")
 include(${BLT_SOURCE_DIR}/SetupBLT.cmake)
 
 ################################
@@ -64,19 +64,20 @@ include(CMakeDependentOption)
 include(cmake/CMakeBasics.cmake)
 
 ################################
+# Global includes for the Axom projects (restrict these as much as possible)
+################################
+include_directories(${CMAKE_BINARY_DIR}/include)
+include_directories(${PROJECT_SOURCE_DIR})
+
+################################
 # Add Thirdparty Builtin Libs
 ################################
 add_subdirectory(thirdparty)
 
-#################################
-# Add top-level includes
-#################################
-add_subdirectory(include)
-
 ################################
-# Add components
+# Add Axom source
 ################################
-add_subdirectory(components)
+add_subdirectory(axom)
 
 ################################
 # Adds directory for tools code
@@ -90,11 +91,10 @@ add_subdirectory(tools)
 ################################
 add_subdirectory(examples)
 
-
 ################################
 # Add docs
 ################################
-if (ENABLE_DOCS)
+if (AXOM_ENABLE_DOCS)
   add_subdirectory(docs)
 endif()
 
@@ -102,4 +102,3 @@ endif()
 # Create header of configuration options
 ################################s
 include(cmake/AxomConfig.cmake)
-

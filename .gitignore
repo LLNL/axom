@@ -12,3 +12,4 @@ _axom_build_and_test_*
 *.*~
 *.DS_Store
 tpl_dirs_summary.json
+*.swp

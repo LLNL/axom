@@ -47,7 +47,6 @@ class UberenvAxom(Package):
     variant('devtools',default=True, description="Build development tools (such as sphinx, uncrustify, etc)")
 
     variant("python",  default=True, description="Build python")
-    variant("lua",     default=True, description="Build lua")
 
     variant("mfem",   default=True, description="Build mfem")
 
@@ -77,7 +76,6 @@ class UberenvAxom(Package):
     depends_on("uncrustify",when="+devtools")
 
     depends_on("python",   when="+python")
-    depends_on("lua@5.1.5",when="+lua")
 
     depends_on("py-sphinx", when="+devtools")
     depends_on("py-breathe",when="+devtools")
@@ -200,13 +198,6 @@ class UberenvAxom(Package):
             cfg.write(cmake_cache_entry("PYTHON_EXECUTABLE",pjoin(python_bin_dir, "python")))
         else:
             cfg.write("# python not built by uberenv\n\n")
-
-        if "lua" in spec:
-            lua_dir = get_spec_path(spec, "lua", path_replacements)
-            cfg.write("# lua from uberenv\n")
-            cfg.write(cmake_cache_entry("LUA_DIR",lua_dir))
-        else:
-            cfg.write("# lua not built by uberenv\n\n")
 
         # optional tpls (dev tools)
 

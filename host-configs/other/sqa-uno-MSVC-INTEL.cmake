@@ -15,7 +15,7 @@
 # using the Intel 18 toolchain for Visual Studio 15
 #
 # Run the following from a build dir for a 64-bit configuration:
-#   cmake -G "Visual Studio 15 2017 Win64"                   \
+#   C:\"Program Files"\CMake\bin\cmake.exe -G "Visual Studio 15 2017 Win64"   \
 #         -T "Intel C++ Compiler 18.0"                       \
 #         -C ..\host-configs\other\sqa-uno-MSVC-intel.cmake  \
 #         <path-to-axom>
@@ -26,7 +26,7 @@
 # Test the code as follows (j for parallel testing):
 #   ctest -j8 -C {Release,Debug,RelWithDebInfo}
 # 
-# Install the come from the command line as follows:
+# Install the code from the command line as follows:
 #   cmake --build . --config Release --target install
 #
 # Note: MPI in this configuration requires an initial login.
@@ -43,7 +43,7 @@ set(ENABLE_SIDRE OFF CACHE BOOL "")
 
 # Disable Fortran since Visual Studio is not generating modules for our component Fortan interfaces
 set(ENABLE_FORTRAN OFF CACHE BOOL "")
-
+set(ENABLE_DOCS    OFF CACHE BOOL "")
 
 ### Setup some devtool/TPL paths
 
@@ -51,7 +51,7 @@ set(ENABLE_FORTRAN OFF CACHE BOOL "")
 string(REPLACE "\\" "/" HOME "$ENV{USERPROFILE}")
 
 # Note: Doxygen assumes graphviz 'dot' is in PATH
-set(DOXYGEN_EXECUTABLE "${HOME}/Chocolatey/bin/doxygen.exe" CACHE PATH "") 
+#set(DOXYGEN_EXECUTABLE "${HOME}/Chocolatey/bin/doxygen.exe" CACHE PATH "") 
 
 # Note: uncrustify disabled since this version is different than uberenv version and changes whitespace
 # set(UNCRUSTIFY_EXECUTABLE "${HOME}/Code/UniversalIndentGUI/indenters/uncrustify.exe" CACHE PATH "")

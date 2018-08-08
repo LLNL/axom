@@ -38,11 +38,11 @@ project(using_with_cmake)
 
 include("FindAxom.cmake")
 
-# setup the axom include path
-include_directories(${AXOM_INCLUDE_DIRS})
-
 # create our example 
 add_executable(example example.cpp)
+
+# setup the axom include path
+target_include_directories(example PRIVATE ${AXOM_INCLUDE_DIRS})
 
 # link to axom targets
 target_link_libraries(example axom_utils)

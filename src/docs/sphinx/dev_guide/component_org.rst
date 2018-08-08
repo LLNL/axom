@@ -136,7 +136,7 @@ system. Specifically:
 
     #. Add option to enable component. For example,::
 
-         axom_add_component(COMPONENT_NAME sidre DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
+         axom_add_component(COMPONENT_NAME sidre DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 
     #. Add component dependency target by adding component name to the `axom_components` variable.
     
@@ -168,7 +168,7 @@ The top-level component directory contains a `CMakeLists.txt`, e.g.,
 
      and::
 
-       if (ENABLE_TESTS)
+       if (AXOM_ENABLE_TESTS)
          add_subdirectory(tests)
        endif() 
 

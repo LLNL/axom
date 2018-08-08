@@ -24,7 +24,7 @@
 # to any of the other supported protocols.
 # It requires slam, sidre, mpi and hdf5.
 ##################################################
-if( ENABLE_SLAM AND ENABLE_SIDRE AND ENABLE_MPI AND HDF5_FOUND )
+if( AXOM_ENABLE_SLAM AND AXOM_ENABLE_SIDRE AND ENABLE_MPI AND HDF5_FOUND )
     set(datastore_converter_sources
         convert_sidre_protocol.cpp
     )
@@ -35,7 +35,7 @@ if( ENABLE_SLAM AND ENABLE_SIDRE AND ENABLE_MPI AND HDF5_FOUND )
         mpi
         )
 
-    if(ENABLE_LUMBERJACK)
+    if(AXOM_ENABLE_LUMBERJACK)
         list(APPEND datastore_converter_depends lumberjack)
     endif()
 
@@ -63,14 +63,14 @@ set(mesh_tester_sources
     mesh_tester.cpp
 )
 set(mesh_tester_depends 
-    axom_utils slic mint slam quest primal
+    core slic mint slam quest primal
     )
-if(ENABLE_LUMBERJACK)
+if(AXOM_ENABLE_LUMBERJACK)
     list(APPEND mesh_tester_depends lumberjack mpi)
 endif()
 
 
-if(ENABLE_QUEST)
+if(AXOM_ENABLE_QUEST)
     blt_add_executable(
         NAME        mesh_tester
         SOURCES     ${mesh_tester_sources}
