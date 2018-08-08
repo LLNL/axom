@@ -55,16 +55,16 @@ module axom_sidre
     integer, parameter :: invalid_index = -1
     ! splicer end module_top
 
-    type, bind(C) :: SHROUD_capsule_data
-        type(C_PTR) :: addr = C_NULL_PTR  ! address of C++ memory
-        integer(C_INT) :: idtor = 0       ! index of destructor
-    end type SHROUD_capsule_data
-
     ! splicer begin class.Buffer.module_top
     ! splicer end class.Buffer.module_top
 
+    type, bind(C) :: SHROUD_buffer_capsule
+        type(C_PTR) :: addr = C_NULL_PTR  ! address of C++ memory
+        integer(C_INT) :: idtor = 0       ! index of destructor
+    end type SHROUD_buffer_capsule
+
     type SidreBuffer
-        type(SHROUD_capsule_data) :: cxxmem
+        type(SHROUD_buffer_capsule) :: cxxmem
         ! splicer begin class.Buffer.component_part
         ! splicer end class.Buffer.component_part
     contains
@@ -97,8 +97,13 @@ module axom_sidre
     ! splicer begin class.Group.module_top
     ! splicer end class.Group.module_top
 
+    type, bind(C) :: SHROUD_group_capsule
+        type(C_PTR) :: addr = C_NULL_PTR  ! address of C++ memory
+        integer(C_INT) :: idtor = 0       ! index of destructor
+    end type SHROUD_group_capsule
+
     type SidreGroup
-        type(SHROUD_capsule_data) :: cxxmem
+        type(SHROUD_group_capsule) :: cxxmem
         ! splicer begin class.Group.component_part
         ! splicer end class.Group.component_part
     contains
@@ -298,8 +303,13 @@ module axom_sidre
     ! splicer begin class.View.module_top
     ! splicer end class.View.module_top
 
+    type, bind(C) :: SHROUD_view_capsule
+        type(C_PTR) :: addr = C_NULL_PTR  ! address of C++ memory
+        integer(C_INT) :: idtor = 0       ! index of destructor
+    end type SHROUD_view_capsule
+
     type SidreView
-        type(SHROUD_capsule_data) :: cxxmem
+        type(SHROUD_view_capsule) :: cxxmem
         ! splicer begin class.View.component_part
         ! splicer end class.View.component_part
     contains
@@ -467,8 +477,13 @@ module axom_sidre
     ! splicer begin class.DataStore.module_top
     ! splicer end class.DataStore.module_top
 
+    type, bind(C) :: SHROUD_datastore_capsule
+        type(C_PTR) :: addr = C_NULL_PTR  ! address of C++ memory
+        integer(C_INT) :: idtor = 0       ! index of destructor
+    end type SHROUD_datastore_capsule
+
     type SidreDataStore
-        type(SHROUD_capsule_data) :: cxxmem
+        type(SHROUD_datastore_capsule) :: cxxmem
         ! splicer begin class.DataStore.component_part
         ! splicer end class.DataStore.component_part
     contains
@@ -510,9 +525,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_buffer_get_index")
             use iso_c_binding, only : C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_buffer_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_buffer_capsule), intent(IN) :: self
             integer(C_INT) :: SHT_rv
         end function c_buffer_get_index
 
@@ -520,9 +535,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_buffer_get_num_views")
             use iso_c_binding, only : C_SIZE_T
-            import :: SHROUD_capsule_data
+            import :: SHROUD_buffer_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_buffer_capsule), intent(IN) :: self
             integer(C_SIZE_T) :: SHT_rv
         end function c_buffer_get_num_views
 
@@ -530,9 +545,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_buffer_get_void_ptr")
             use iso_c_binding, only : C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_buffer_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_buffer_capsule), intent(IN) :: self
             type(C_PTR) :: SHT_rv
         end function c_buffer_get_void_ptr
 
@@ -540,9 +555,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_buffer_get_type_id")
             use iso_c_binding, only : C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_buffer_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_buffer_capsule), intent(IN) :: self
             integer(C_INT) :: SHT_rv
         end function c_buffer_get_type_id
 
@@ -550,9 +565,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_buffer_get_num_elements")
             use iso_c_binding, only : C_SIZE_T
-            import :: SHROUD_capsule_data
+            import :: SHROUD_buffer_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_buffer_capsule), intent(IN) :: self
             integer(C_SIZE_T) :: SHT_rv
         end function c_buffer_get_num_elements
 
@@ -560,9 +575,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_buffer_get_total_bytes")
             use iso_c_binding, only : C_SIZE_T
-            import :: SHROUD_capsule_data
+            import :: SHROUD_buffer_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_buffer_capsule), intent(IN) :: self
             integer(C_SIZE_T) :: SHT_rv
         end function c_buffer_get_total_bytes
 
@@ -570,35 +585,35 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_buffer_get_bytes_per_element")
             use iso_c_binding, only : C_SIZE_T
-            import :: SHROUD_capsule_data
+            import :: SHROUD_buffer_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_buffer_capsule), intent(IN) :: self
             integer(C_SIZE_T) :: SHT_rv
         end function c_buffer_get_bytes_per_element
 
         subroutine c_buffer_describe(self, type, num_elems) &
                 bind(C, name="SIDRE_buffer_describe")
             use iso_c_binding, only : C_INT, C_LONG
-            import :: SHROUD_capsule_data
+            import :: SHROUD_buffer_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_buffer_capsule), intent(IN) :: self
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
         end subroutine c_buffer_describe
 
         subroutine c_buffer_allocate_existing(self) &
                 bind(C, name="SIDRE_buffer_allocate_existing")
-            import :: SHROUD_capsule_data
+            import :: SHROUD_buffer_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_buffer_capsule), intent(IN) :: self
         end subroutine c_buffer_allocate_existing
 
         subroutine c_buffer_allocate_from_type(self, type, num_elems) &
                 bind(C, name="SIDRE_buffer_allocate_from_type")
             use iso_c_binding, only : C_INT, C_LONG
-            import :: SHROUD_capsule_data
+            import :: SHROUD_buffer_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_buffer_capsule), intent(IN) :: self
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
         end subroutine c_buffer_allocate_from_type
@@ -606,17 +621,17 @@ module axom_sidre
         subroutine c_buffer_reallocate(self, num_elems) &
                 bind(C, name="SIDRE_buffer_reallocate")
             use iso_c_binding, only : C_LONG
-            import :: SHROUD_capsule_data
+            import :: SHROUD_buffer_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_buffer_capsule), intent(IN) :: self
             integer(C_LONG), value, intent(IN) :: num_elems
         end subroutine c_buffer_reallocate
 
         subroutine c_buffer_print(self) &
                 bind(C, name="SIDRE_buffer_print")
-            import :: SHROUD_capsule_data
+            import :: SHROUD_buffer_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_buffer_capsule), intent(IN) :: self
         end subroutine c_buffer_print
 
         ! splicer begin class.Buffer.additional_interfaces
@@ -626,9 +641,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_index")
             use iso_c_binding, only : C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             integer(C_INT) :: SHT_rv
         end function c_group_get_index
 
@@ -636,18 +651,18 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_name")
             use iso_c_binding, only : C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             type(C_PTR) SHT_rv
         end function c_group_get_name
 
         subroutine c_group_get_name_bufferify(self, SHF_rv, NSHF_rv) &
                 bind(C, name="SIDRE_group_get_name_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(OUT) :: SHF_rv(*)
             integer(C_INT), value, intent(IN) :: NSHF_rv
         end subroutine c_group_get_name_bufferify
@@ -655,9 +670,9 @@ module axom_sidre
         subroutine c_group_get_path_bufferify(self, SHF_rv, NSHF_rv) &
                 bind(C, name="SIDRE_group_get_path_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(OUT) :: SHF_rv(*)
             integer(C_INT), value, intent(IN) :: NSHF_rv
         end subroutine c_group_get_path_bufferify
@@ -666,9 +681,9 @@ module axom_sidre
                 NSHF_rv) &
                 bind(C, name="SIDRE_group_get_path_name_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(OUT) :: SHF_rv(*)
             integer(C_INT), value, intent(IN) :: NSHF_rv
         end subroutine c_group_get_path_name_bufferify
@@ -677,10 +692,10 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_parent")
             use iso_c_binding, only : C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_group_capsule), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_get_parent
 
@@ -688,9 +703,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_num_groups")
             use iso_c_binding, only : C_SIZE_T
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             integer(C_SIZE_T) :: SHT_rv
         end function c_group_get_num_groups
 
@@ -698,9 +713,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_num_views")
             use iso_c_binding, only : C_SIZE_T
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             integer(C_SIZE_T) :: SHT_rv
         end function c_group_get_num_views
 
@@ -708,10 +723,10 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_data_store")
             use iso_c_binding, only : C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_datastore_capsule, SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_group_capsule), intent(IN) :: self
+            type(SHROUD_datastore_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_get_data_store
 
@@ -719,9 +734,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_has_view")
             use iso_c_binding, only : C_BOOL, C_CHAR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             logical(C_BOOL) :: SHT_rv
         end function c_group_has_view
@@ -730,9 +745,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_has_view_bufferify")
             use iso_c_binding, only : C_BOOL, C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
             logical(C_BOOL) :: SHT_rv
@@ -742,9 +757,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_has_child_view")
             use iso_c_binding, only : C_BOOL, C_CHAR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             logical(C_BOOL) :: SHT_rv
         end function c_group_has_child_view
@@ -754,9 +769,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_has_child_view_bufferify")
             use iso_c_binding, only : C_BOOL, C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
             logical(C_BOOL) :: SHT_rv
@@ -766,9 +781,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_view_index")
             use iso_c_binding, only : C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT) :: SHT_rv
         end function c_group_get_view_index
@@ -778,9 +793,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_view_index_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
             integer(C_INT) :: SHT_rv
@@ -790,9 +805,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_view_name")
             use iso_c_binding, only : C_INT, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             integer(C_INT), value, intent(IN) :: idx
             type(C_PTR) SHT_rv
         end function c_group_get_view_name
@@ -801,9 +816,9 @@ module axom_sidre
                 NSHF_rv) &
                 bind(C, name="SIDRE_group_get_view_name_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             integer(C_INT), value, intent(IN) :: idx
             character(kind=C_CHAR), intent(OUT) :: SHF_rv(*)
             integer(C_INT), value, intent(IN) :: NSHF_rv
@@ -813,11 +828,11 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_view_from_name")
             use iso_c_binding, only : C_CHAR, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_get_view_from_name
 
@@ -826,12 +841,12 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_view_from_name_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_get_view_from_name_bufferify
 
@@ -839,11 +854,11 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_view_from_index")
             use iso_c_binding, only : C_INT, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             integer(C_INT), value, intent(IN) :: idx
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_get_view_from_index
 
@@ -851,9 +866,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_first_valid_view_index")
             use iso_c_binding, only : C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             integer(C_INT) :: SHT_rv
         end function c_group_get_first_valid_view_index
 
@@ -861,9 +876,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_next_valid_view_index")
             use iso_c_binding, only : C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             integer(C_INT), value, intent(IN) :: idx
             integer(C_INT) :: SHT_rv
         end function c_group_get_next_valid_view_index
@@ -872,11 +887,11 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_empty")
             use iso_c_binding, only : C_CHAR, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_view_empty
 
@@ -885,12 +900,12 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_empty_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_view_empty_bufferify
 
@@ -899,13 +914,13 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_from_type")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_view_from_type
 
@@ -914,14 +929,14 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_from_type_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_view_from_type_bufferify
 
@@ -930,14 +945,14 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_from_shape")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: type
             integer(C_INT), value, intent(IN) :: ndims
             integer(C_LONG), intent(IN) :: shape(*)
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_view_from_shape
 
@@ -946,15 +961,15 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_from_shape_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
             integer(C_INT), value, intent(IN) :: type
             integer(C_INT), value, intent(IN) :: ndims
             integer(C_LONG), intent(IN) :: shape(*)
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_view_from_shape_bufferify
 
@@ -963,12 +978,12 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_into_buffer")
             use iso_c_binding, only : C_CHAR, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_buffer_capsule, SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
-            type(SHROUD_capsule_data), intent(IN) :: buff
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_buffer_capsule), intent(IN) :: buff
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_view_into_buffer
 
@@ -977,13 +992,13 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_into_buffer_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_buffer_capsule, SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
-            type(SHROUD_capsule_data), intent(IN) :: buff
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_buffer_capsule), intent(IN) :: buff
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_view_into_buffer_bufferify
 
@@ -992,14 +1007,14 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_from_type_and_buffer")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_buffer_capsule, SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
-            type(SHROUD_capsule_data), intent(IN) :: buff
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_buffer_capsule), intent(IN) :: buff
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_view_from_type_and_buffer
 
@@ -1008,15 +1023,15 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_from_type_and_buffer_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_buffer_capsule, SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
-            type(SHROUD_capsule_data), intent(IN) :: buff
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_buffer_capsule), intent(IN) :: buff
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_view_from_type_and_buffer_bufferify
 
@@ -1025,15 +1040,15 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_from_shape_and_buffer")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_buffer_capsule, SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: type
             integer(C_INT), value, intent(IN) :: ndims
             integer(C_LONG), intent(IN) :: shape(*)
-            type(SHROUD_capsule_data), intent(IN) :: buff
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_buffer_capsule), intent(IN) :: buff
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_view_from_shape_and_buffer
 
@@ -1042,16 +1057,16 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_from_shape_and_buffer_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_buffer_capsule, SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
             integer(C_INT), value, intent(IN) :: type
             integer(C_INT), value, intent(IN) :: ndims
             integer(C_LONG), intent(IN) :: shape(*)
-            type(SHROUD_capsule_data), intent(IN) :: buff
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_buffer_capsule), intent(IN) :: buff
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_view_from_shape_and_buffer_bufferify
 
@@ -1060,12 +1075,12 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_external")
             use iso_c_binding, only : C_CHAR, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             type(C_PTR), value, intent(IN) :: external_ptr
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_view_external
 
@@ -1074,13 +1089,13 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_external_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
             type(C_PTR), value, intent(IN) :: external_ptr
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_view_external_bufferify
 
@@ -1089,14 +1104,14 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_from_type_external")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
             type(C_PTR), value, intent(IN) :: external_ptr
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_view_from_type_external
 
@@ -1105,15 +1120,15 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_from_type_external_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
             type(C_PTR), value, intent(IN) :: external_ptr
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_view_from_type_external_bufferify
 
@@ -1122,15 +1137,15 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_from_shape_external")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: type
             integer(C_INT), value, intent(IN) :: ndims
             integer(C_LONG), intent(IN) :: shape(*)
             type(C_PTR), value, intent(IN) :: external_ptr
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_view_from_shape_external
 
@@ -1139,16 +1154,16 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_from_shape_external_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
             integer(C_INT), value, intent(IN) :: type
             integer(C_INT), value, intent(IN) :: ndims
             integer(C_LONG), intent(IN) :: shape(*)
             type(C_PTR), value, intent(IN) :: external_ptr
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_view_from_shape_external_bufferify
 
@@ -1157,13 +1172,13 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_and_allocate_nelems")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_view_and_allocate_nelems
 
@@ -1172,14 +1187,14 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_and_allocate_nelems_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_view_and_allocate_nelems_bufferify
 
@@ -1188,14 +1203,14 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_and_allocate_shape")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: type
             integer(C_INT), value, intent(IN) :: ndims
             integer(C_LONG), intent(IN) :: shape(*)
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_view_and_allocate_shape
 
@@ -1204,15 +1219,15 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_and_allocate_shape_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
             integer(C_INT), value, intent(IN) :: type
             integer(C_INT), value, intent(IN) :: ndims
             integer(C_LONG), intent(IN) :: shape(*)
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_view_and_allocate_shape_bufferify
 
@@ -1221,12 +1236,12 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_scalar_int")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: value
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_view_scalar_int
 
@@ -1235,13 +1250,13 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_scalar_int_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
             integer(C_INT), value, intent(IN) :: value
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_view_scalar_int_bufferify
 
@@ -1250,12 +1265,12 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_scalar_long")
             use iso_c_binding, only : C_CHAR, C_LONG, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_LONG), value, intent(IN) :: value
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_view_scalar_long
 
@@ -1264,13 +1279,13 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_scalar_long_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_LONG, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
             integer(C_LONG), value, intent(IN) :: value
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_view_scalar_long_bufferify
 
@@ -1279,12 +1294,12 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_scalar_float")
             use iso_c_binding, only : C_CHAR, C_FLOAT, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             real(C_FLOAT), value, intent(IN) :: value
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_view_scalar_float
 
@@ -1293,13 +1308,13 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_scalar_float_bufferify")
             use iso_c_binding, only : C_CHAR, C_FLOAT, C_INT, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
             real(C_FLOAT), value, intent(IN) :: value
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_view_scalar_float_bufferify
 
@@ -1308,12 +1323,12 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_scalar_double")
             use iso_c_binding, only : C_CHAR, C_DOUBLE, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             real(C_DOUBLE), value, intent(IN) :: value
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_view_scalar_double
 
@@ -1322,13 +1337,13 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_scalar_double_bufferify")
             use iso_c_binding, only : C_CHAR, C_DOUBLE, C_INT, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
             real(C_DOUBLE), value, intent(IN) :: value
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_view_scalar_double_bufferify
 
@@ -1336,12 +1351,12 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_string")
             use iso_c_binding, only : C_CHAR, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             character(kind=C_CHAR), intent(IN) :: value(*)
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_view_string
 
@@ -1350,32 +1365,32 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_view_string_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
             character(kind=C_CHAR), intent(IN) :: value(*)
             integer(C_INT), value, intent(IN) :: Lvalue
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_view_string_bufferify
 
         subroutine c_group_destroy_view(self, path) &
                 bind(C, name="SIDRE_group_destroy_view")
             use iso_c_binding, only : C_CHAR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
         end subroutine c_group_destroy_view
 
         subroutine c_group_destroy_view_bufferify(self, path, Lpath) &
                 bind(C, name="SIDRE_group_destroy_view_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
         end subroutine c_group_destroy_view_bufferify
@@ -1383,9 +1398,9 @@ module axom_sidre
         subroutine c_group_destroy_view_and_data_name(self, path) &
                 bind(C, name="SIDRE_group_destroy_view_and_data_name")
             use iso_c_binding, only : C_CHAR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
         end subroutine c_group_destroy_view_and_data_name
 
@@ -1393,9 +1408,9 @@ module axom_sidre
                 path, Lpath) &
                 bind(C, name="SIDRE_group_destroy_view_and_data_name_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
         end subroutine c_group_destroy_view_and_data_name_bufferify
@@ -1403,9 +1418,9 @@ module axom_sidre
         subroutine c_group_destroy_view_and_data_index(self, idx) &
                 bind(C, name="SIDRE_group_destroy_view_and_data_index")
             use iso_c_binding, only : C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             integer(C_INT), value, intent(IN) :: idx
         end subroutine c_group_destroy_view_and_data_index
 
@@ -1413,11 +1428,11 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_move_view")
             use iso_c_binding, only : C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
-            type(SHROUD_capsule_data), intent(IN) :: view
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_group_capsule), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: view
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_move_view
 
@@ -1425,11 +1440,11 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_copy_view")
             use iso_c_binding, only : C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
-            type(SHROUD_capsule_data), intent(IN) :: view
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_group_capsule), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: view
+            type(SHROUD_view_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_copy_view
 
@@ -1437,9 +1452,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_has_group")
             use iso_c_binding, only : C_BOOL, C_CHAR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             logical(C_BOOL) :: SHT_rv
         end function c_group_has_group
@@ -1448,9 +1463,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_has_group_bufferify")
             use iso_c_binding, only : C_BOOL, C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
             logical(C_BOOL) :: SHT_rv
@@ -1460,9 +1475,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_has_child_group")
             use iso_c_binding, only : C_BOOL, C_CHAR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             logical(C_BOOL) :: SHT_rv
         end function c_group_has_child_group
@@ -1471,9 +1486,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_has_child_group_bufferify")
             use iso_c_binding, only : C_BOOL, C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
             logical(C_BOOL) :: SHT_rv
@@ -1483,9 +1498,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_group_index")
             use iso_c_binding, only : C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT) :: SHT_rv
         end function c_group_get_group_index
@@ -1495,9 +1510,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_group_index_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: name(*)
             integer(C_INT), value, intent(IN) :: Lname
             integer(C_INT) :: SHT_rv
@@ -1507,9 +1522,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_group_name")
             use iso_c_binding, only : C_INT, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             integer(C_INT), value, intent(IN) :: idx
             type(C_PTR) SHT_rv
         end function c_group_get_group_name
@@ -1518,9 +1533,9 @@ module axom_sidre
                 NSHF_rv) &
                 bind(C, name="SIDRE_group_get_group_name_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             integer(C_INT), value, intent(IN) :: idx
             character(kind=C_CHAR), intent(OUT) :: SHF_rv(*)
             integer(C_INT), value, intent(IN) :: NSHF_rv
@@ -1530,11 +1545,11 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_group_from_name")
             use iso_c_binding, only : C_CHAR, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_group_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_get_group_from_name
 
@@ -1543,12 +1558,12 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_group_from_name_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_group_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_get_group_from_name_bufferify
 
@@ -1556,11 +1571,11 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_group_from_index")
             use iso_c_binding, only : C_INT, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             integer(C_INT), value, intent(IN) :: idx
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_group_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_get_group_from_index
 
@@ -1568,9 +1583,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_first_valid_group_index")
             use iso_c_binding, only : C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             integer(C_INT) :: SHT_rv
         end function c_group_get_first_valid_group_index
 
@@ -1578,9 +1593,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_get_next_valid_group_index")
             use iso_c_binding, only : C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             integer(C_INT), value, intent(IN) :: idx
             integer(C_INT) :: SHT_rv
         end function c_group_get_next_valid_group_index
@@ -1589,11 +1604,11 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_group")
             use iso_c_binding, only : C_CHAR, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_group_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_group
 
@@ -1602,21 +1617,21 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_create_group_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_group_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_create_group_bufferify
 
         subroutine c_group_destroy_group_name(self, path) &
                 bind(C, name="SIDRE_group_destroy_group_name")
             use iso_c_binding, only : C_CHAR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
         end subroutine c_group_destroy_group_name
 
@@ -1624,9 +1639,9 @@ module axom_sidre
                 Lpath) &
                 bind(C, name="SIDRE_group_destroy_group_name_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: path(*)
             integer(C_INT), value, intent(IN) :: Lpath
         end subroutine c_group_destroy_group_name_bufferify
@@ -1634,9 +1649,9 @@ module axom_sidre
         subroutine c_group_destroy_group_index(self, idx) &
                 bind(C, name="SIDRE_group_destroy_group_index")
             use iso_c_binding, only : C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             integer(C_INT), value, intent(IN) :: idx
         end subroutine c_group_destroy_group_index
 
@@ -1644,38 +1659,38 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_move_group")
             use iso_c_binding, only : C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
-            type(SHROUD_capsule_data), intent(IN) :: grp
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_group_capsule), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: grp
+            type(SHROUD_group_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_group_move_group
 
         subroutine c_group_print(self) &
                 bind(C, name="SIDRE_group_print")
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
         end subroutine c_group_print
 
         pure function c_group_is_equivalent_to(self, other) &
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_is_equivalent_to")
             use iso_c_binding, only : C_BOOL
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
-            type(SHROUD_capsule_data), intent(IN) :: other
+            type(SHROUD_group_capsule), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: other
             logical(C_BOOL) :: SHT_rv
         end function c_group_is_equivalent_to
 
         subroutine c_group_save(self, file_path, protocol) &
                 bind(C, name="SIDRE_group_save")
             use iso_c_binding, only : C_CHAR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: file_path(*)
             character(kind=C_CHAR), intent(IN) :: protocol(*)
         end subroutine c_group_save
@@ -1684,9 +1699,9 @@ module axom_sidre
                 protocol, Lprotocol) &
                 bind(C, name="SIDRE_group_save_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: file_path(*)
             integer(C_INT), value, intent(IN) :: Lfile_path
             character(kind=C_CHAR), intent(IN) :: protocol(*)
@@ -1696,9 +1711,9 @@ module axom_sidre
         subroutine c_group_load_0(self, file_path, protocol) &
                 bind(C, name="SIDRE_group_load_0")
             use iso_c_binding, only : C_CHAR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: file_path(*)
             character(kind=C_CHAR), intent(IN) :: protocol(*)
         end subroutine c_group_load_0
@@ -1707,9 +1722,9 @@ module axom_sidre
                 protocol, Lprotocol) &
                 bind(C, name="SIDRE_group_load_0_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: file_path(*)
             integer(C_INT), value, intent(IN) :: Lfile_path
             character(kind=C_CHAR), intent(IN) :: protocol(*)
@@ -1720,9 +1735,9 @@ module axom_sidre
                 preserve_contents) &
                 bind(C, name="SIDRE_group_load_1")
             use iso_c_binding, only : C_BOOL, C_CHAR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: file_path(*)
             character(kind=C_CHAR), intent(IN) :: protocol(*)
             logical(C_BOOL), value, intent(IN) :: preserve_contents
@@ -1732,9 +1747,9 @@ module axom_sidre
                 protocol, Lprotocol, preserve_contents) &
                 bind(C, name="SIDRE_group_load_1_bufferify")
             use iso_c_binding, only : C_BOOL, C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: file_path(*)
             integer(C_INT), value, intent(IN) :: Lfile_path
             character(kind=C_CHAR), intent(IN) :: protocol(*)
@@ -1745,9 +1760,9 @@ module axom_sidre
         subroutine c_group_load_external_data(self, file_path) &
                 bind(C, name="SIDRE_group_load_external_data")
             use iso_c_binding, only : C_CHAR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: file_path(*)
         end subroutine c_group_load_external_data
 
@@ -1755,9 +1770,9 @@ module axom_sidre
                 Lfile_path) &
                 bind(C, name="SIDRE_group_load_external_data_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: file_path(*)
             integer(C_INT), value, intent(IN) :: Lfile_path
         end subroutine c_group_load_external_data_bufferify
@@ -1766,9 +1781,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_rename")
             use iso_c_binding, only : C_BOOL, C_CHAR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: new_name(*)
             logical(C_BOOL) :: SHT_rv
         end function c_group_rename
@@ -1777,9 +1792,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_group_rename_bufferify")
             use iso_c_binding, only : C_BOOL, C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: new_name(*)
             integer(C_INT), value, intent(IN) :: Lnew_name
             logical(C_BOOL) :: SHT_rv
@@ -1792,9 +1807,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_index")
             use iso_c_binding, only : C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             integer(C_INT) :: SHT_rv
         end function c_view_get_index
 
@@ -1802,18 +1817,18 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_name")
             use iso_c_binding, only : C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             type(C_PTR) SHT_rv
         end function c_view_get_name
 
         subroutine c_view_get_name_bufferify(self, SHF_rv, NSHF_rv) &
                 bind(C, name="SIDRE_view_get_name_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(OUT) :: SHF_rv(*)
             integer(C_INT), value, intent(IN) :: NSHF_rv
         end subroutine c_view_get_name_bufferify
@@ -1821,9 +1836,9 @@ module axom_sidre
         subroutine c_view_get_path_bufferify(self, SHF_rv, NSHF_rv) &
                 bind(C, name="SIDRE_view_get_path_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(OUT) :: SHF_rv(*)
             integer(C_INT), value, intent(IN) :: NSHF_rv
         end subroutine c_view_get_path_bufferify
@@ -1831,9 +1846,9 @@ module axom_sidre
         subroutine c_view_get_path_name_bufferify(self, SHF_rv, NSHF_rv) &
                 bind(C, name="SIDRE_view_get_path_name_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(OUT) :: SHF_rv(*)
             integer(C_INT), value, intent(IN) :: NSHF_rv
         end subroutine c_view_get_path_name_bufferify
@@ -1842,10 +1857,10 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_owning_group")
             use iso_c_binding, only : C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_group_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_view_capsule), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_view_get_owning_group
 
@@ -1853,9 +1868,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_view_has_buffer")
             use iso_c_binding, only : C_BOOL
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             logical(C_BOOL) :: SHT_rv
         end function c_view_has_buffer
 
@@ -1863,10 +1878,10 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_buffer")
             use iso_c_binding, only : C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_buffer_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_view_capsule), intent(IN) :: self
+            type(SHROUD_buffer_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_view_get_buffer
 
@@ -1874,9 +1889,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_view_is_external")
             use iso_c_binding, only : C_BOOL
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             logical(C_BOOL) :: SHT_rv
         end function c_view_is_external
 
@@ -1884,9 +1899,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_view_is_allocated")
             use iso_c_binding, only : C_BOOL
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             logical(C_BOOL) :: SHT_rv
         end function c_view_is_allocated
 
@@ -1894,9 +1909,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_view_is_applied")
             use iso_c_binding, only : C_BOOL
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             logical(C_BOOL) :: SHT_rv
         end function c_view_is_applied
 
@@ -1904,9 +1919,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_view_is_described")
             use iso_c_binding, only : C_BOOL
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             logical(C_BOOL) :: SHT_rv
         end function c_view_is_described
 
@@ -1914,9 +1929,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_view_is_empty")
             use iso_c_binding, only : C_BOOL
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             logical(C_BOOL) :: SHT_rv
         end function c_view_is_empty
 
@@ -1924,9 +1939,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_view_is_opaque")
             use iso_c_binding, only : C_BOOL
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             logical(C_BOOL) :: SHT_rv
         end function c_view_is_opaque
 
@@ -1934,9 +1949,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_view_is_scalar")
             use iso_c_binding, only : C_BOOL
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             logical(C_BOOL) :: SHT_rv
         end function c_view_is_scalar
 
@@ -1944,9 +1959,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_view_is_string")
             use iso_c_binding, only : C_BOOL
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             logical(C_BOOL) :: SHT_rv
         end function c_view_is_string
 
@@ -1954,9 +1969,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_type_id")
             use iso_c_binding, only : C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             integer(C_INT) :: SHT_rv
         end function c_view_get_type_id
 
@@ -1964,9 +1979,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_total_bytes")
             use iso_c_binding, only : C_SIZE_T
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             integer(C_SIZE_T) :: SHT_rv
         end function c_view_get_total_bytes
 
@@ -1974,9 +1989,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_num_elements")
             use iso_c_binding, only : C_SIZE_T
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             integer(C_SIZE_T) :: SHT_rv
         end function c_view_get_num_elements
 
@@ -1984,9 +1999,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_bytes_per_element")
             use iso_c_binding, only : C_SIZE_T
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             integer(C_SIZE_T) :: SHT_rv
         end function c_view_get_bytes_per_element
 
@@ -1994,9 +2009,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_offset")
             use iso_c_binding, only : C_SIZE_T
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             integer(C_SIZE_T) :: SHT_rv
         end function c_view_get_offset
 
@@ -2004,9 +2019,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_stride")
             use iso_c_binding, only : C_SIZE_T
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             integer(C_SIZE_T) :: SHT_rv
         end function c_view_get_stride
 
@@ -2014,9 +2029,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_num_dimensions")
             use iso_c_binding, only : C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             integer(C_INT) :: SHT_rv
         end function c_view_get_num_dimensions
 
@@ -2024,9 +2039,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_shape")
             use iso_c_binding, only : C_INT, C_LONG
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             integer(C_INT), value, intent(IN) :: ndims
             integer(C_LONG), intent(OUT) :: shape(*)
             integer(C_INT) :: SHT_rv
@@ -2034,17 +2049,17 @@ module axom_sidre
 
         subroutine c_view_allocate_simple(self) &
                 bind(C, name="SIDRE_view_allocate_simple")
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
         end subroutine c_view_allocate_simple
 
         subroutine c_view_allocate_from_type(self, type, num_elems) &
                 bind(C, name="SIDRE_view_allocate_from_type")
             use iso_c_binding, only : C_INT, C_LONG
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
         end subroutine c_view_allocate_from_type
@@ -2052,67 +2067,67 @@ module axom_sidre
         subroutine c_view_reallocate(self, num_elems) &
                 bind(C, name="SIDRE_view_reallocate")
             use iso_c_binding, only : C_LONG
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             integer(C_LONG), value, intent(IN) :: num_elems
         end subroutine c_view_reallocate
 
         subroutine c_view_attach_buffer_only(self, buff) &
                 bind(C, name="SIDRE_view_attach_buffer_only")
-            import :: SHROUD_capsule_data
+            import :: SHROUD_buffer_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
-            type(SHROUD_capsule_data), intent(IN) :: buff
+            type(SHROUD_view_capsule), intent(IN) :: self
+            type(SHROUD_buffer_capsule), intent(IN) :: buff
         end subroutine c_view_attach_buffer_only
 
         subroutine c_view_attach_buffer_type(self, type, num_elems, &
                 buff) &
                 bind(C, name="SIDRE_view_attach_buffer_type")
             use iso_c_binding, only : C_INT, C_LONG
-            import :: SHROUD_capsule_data
+            import :: SHROUD_buffer_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
-            type(SHROUD_capsule_data), intent(IN) :: buff
+            type(SHROUD_buffer_capsule), intent(IN) :: buff
         end subroutine c_view_attach_buffer_type
 
         subroutine c_view_attach_buffer_shape(self, type, ndims, shape, &
                 buff) &
                 bind(C, name="SIDRE_view_attach_buffer_shape")
             use iso_c_binding, only : C_INT, C_LONG
-            import :: SHROUD_capsule_data
+            import :: SHROUD_buffer_capsule, SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             integer(C_INT), value, intent(IN) :: type
             integer(C_INT), value, intent(IN) :: ndims
             integer(C_LONG), intent(IN) :: shape(*)
-            type(SHROUD_capsule_data), intent(IN) :: buff
+            type(SHROUD_buffer_capsule), intent(IN) :: buff
         end subroutine c_view_attach_buffer_shape
 
         subroutine c_view_apply_0(self) &
                 bind(C, name="SIDRE_view_apply_0")
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
         end subroutine c_view_apply_0
 
         subroutine c_view_apply_nelems(self, num_elems) &
                 bind(C, name="SIDRE_view_apply_nelems")
             use iso_c_binding, only : C_LONG
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             integer(C_LONG), value, intent(IN) :: num_elems
         end subroutine c_view_apply_nelems
 
         subroutine c_view_apply_nelems_offset(self, num_elems, offset) &
                 bind(C, name="SIDRE_view_apply_nelems_offset")
             use iso_c_binding, only : C_LONG
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             integer(C_LONG), value, intent(IN) :: num_elems
             integer(C_LONG), value, intent(IN) :: offset
         end subroutine c_view_apply_nelems_offset
@@ -2121,9 +2136,9 @@ module axom_sidre
                 offset, stride) &
                 bind(C, name="SIDRE_view_apply_nelems_offset_stride")
             use iso_c_binding, only : C_LONG
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             integer(C_LONG), value, intent(IN) :: num_elems
             integer(C_LONG), value, intent(IN) :: offset
             integer(C_LONG), value, intent(IN) :: stride
@@ -2132,9 +2147,9 @@ module axom_sidre
         subroutine c_view_apply_type_nelems(self, type, num_elems) &
                 bind(C, name="SIDRE_view_apply_type_nelems")
             use iso_c_binding, only : C_INT, C_LONG
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
         end subroutine c_view_apply_type_nelems
@@ -2143,9 +2158,9 @@ module axom_sidre
                 num_elems, offset) &
                 bind(C, name="SIDRE_view_apply_type_nelems_offset")
             use iso_c_binding, only : C_INT, C_LONG
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
             integer(C_LONG), value, intent(IN) :: offset
@@ -2155,9 +2170,9 @@ module axom_sidre
                 num_elems, offset, stride) &
                 bind(C, name="SIDRE_view_apply_type_nelems_offset_stride")
             use iso_c_binding, only : C_INT, C_LONG
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
             integer(C_LONG), value, intent(IN) :: offset
@@ -2167,9 +2182,9 @@ module axom_sidre
         subroutine c_view_apply_type_shape(self, type, ndims, shape) &
                 bind(C, name="SIDRE_view_apply_type_shape")
             use iso_c_binding, only : C_INT, C_LONG
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             integer(C_INT), value, intent(IN) :: type
             integer(C_INT), value, intent(IN) :: ndims
             integer(C_LONG), intent(IN) :: shape(*)
@@ -2178,54 +2193,54 @@ module axom_sidre
         subroutine c_view_set_scalar_int(self, value) &
                 bind(C, name="SIDRE_view_set_scalar_int")
             use iso_c_binding, only : C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             integer(C_INT), value, intent(IN) :: value
         end subroutine c_view_set_scalar_int
 
         subroutine c_view_set_scalar_long(self, value) &
                 bind(C, name="SIDRE_view_set_scalar_long")
             use iso_c_binding, only : C_LONG
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             integer(C_LONG), value, intent(IN) :: value
         end subroutine c_view_set_scalar_long
 
         subroutine c_view_set_scalar_float(self, value) &
                 bind(C, name="SIDRE_view_set_scalar_float")
             use iso_c_binding, only : C_FLOAT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             real(C_FLOAT), value, intent(IN) :: value
         end subroutine c_view_set_scalar_float
 
         subroutine c_view_set_scalar_double(self, value) &
                 bind(C, name="SIDRE_view_set_scalar_double")
             use iso_c_binding, only : C_DOUBLE
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             real(C_DOUBLE), value, intent(IN) :: value
         end subroutine c_view_set_scalar_double
 
         subroutine c_view_set_string(self, value) &
                 bind(C, name="SIDRE_view_set_string")
             use iso_c_binding, only : C_CHAR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: value(*)
         end subroutine c_view_set_string
 
         subroutine c_view_set_string_bufferify(self, value, Lvalue) &
                 bind(C, name="SIDRE_view_set_string_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: value(*)
             integer(C_INT), value, intent(IN) :: Lvalue
         end subroutine c_view_set_string_bufferify
@@ -2233,9 +2248,9 @@ module axom_sidre
         subroutine c_view_set_external_data_ptr_only(self, external_ptr) &
                 bind(C, name="SIDRE_view_set_external_data_ptr_only")
             use iso_c_binding, only : C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             type(C_PTR), value, intent(IN) :: external_ptr
         end subroutine c_view_set_external_data_ptr_only
 
@@ -2243,9 +2258,9 @@ module axom_sidre
                 num_elems, external_ptr) &
                 bind(C, name="SIDRE_view_set_external_data_ptr_type")
             use iso_c_binding, only : C_INT, C_LONG, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
             type(C_PTR), value, intent(IN) :: external_ptr
@@ -2255,9 +2270,9 @@ module axom_sidre
                 shape, external_ptr) &
                 bind(C, name="SIDRE_view_set_external_data_ptr_shape")
             use iso_c_binding, only : C_INT, C_LONG, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             integer(C_INT), value, intent(IN) :: type
             integer(C_INT), value, intent(IN) :: ndims
             integer(C_LONG), intent(IN) :: shape(*)
@@ -2268,18 +2283,18 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_string")
             use iso_c_binding, only : C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             type(C_PTR) SHT_rv
         end function c_view_get_string
 
         subroutine c_view_get_string_bufferify(self, name, Nname) &
                 bind(C, name="SIDRE_view_get_string_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(OUT) :: name(*)
             integer(C_INT), value, intent(IN) :: Nname
         end subroutine c_view_get_string_bufferify
@@ -2288,9 +2303,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_data_int")
             use iso_c_binding, only : C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             integer(C_INT) :: SHT_rv
         end function c_view_get_data_int
 
@@ -2298,9 +2313,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_data_long")
             use iso_c_binding, only : C_LONG
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             integer(C_LONG) :: SHT_rv
         end function c_view_get_data_long
 
@@ -2308,9 +2323,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_data_float")
             use iso_c_binding, only : C_FLOAT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             real(C_FLOAT) :: SHT_rv
         end function c_view_get_data_float
 
@@ -2318,9 +2333,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_data_double")
             use iso_c_binding, only : C_DOUBLE
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             real(C_DOUBLE) :: SHT_rv
         end function c_view_get_data_double
 
@@ -2328,26 +2343,26 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_view_get_void_ptr")
             use iso_c_binding, only : C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             type(C_PTR) :: SHT_rv
         end function c_view_get_void_ptr
 
         subroutine c_view_print(self) &
                 bind(C, name="SIDRE_view_print")
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
         end subroutine c_view_print
 
         function c_view_rename(self, new_name) &
                 result(SHT_rv) &
                 bind(C, name="SIDRE_view_rename")
             use iso_c_binding, only : C_BOOL, C_CHAR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: new_name(*)
             logical(C_BOOL) :: SHT_rv
         end function c_view_rename
@@ -2356,9 +2371,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_view_rename_bufferify")
             use iso_c_binding, only : C_BOOL, C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_view_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_view_capsule), intent(IN) :: self
             character(kind=C_CHAR), intent(IN) :: new_name(*)
             integer(C_INT), value, intent(IN) :: Lnew_name
             logical(C_BOOL) :: SHT_rv
@@ -2371,27 +2386,27 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_datastore_new")
             use iso_c_binding, only : C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_datastore_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_datastore_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_datastore_new
 
         subroutine c_datastore_delete(self) &
                 bind(C, name="SIDRE_datastore_delete")
-            import :: SHROUD_capsule_data
+            import :: SHROUD_datastore_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_datastore_capsule), intent(IN) :: self
         end subroutine c_datastore_delete
 
         function c_datastore_get_root(self, SHT_crv) &
                 result(SHT_rv) &
                 bind(C, name="SIDRE_datastore_get_root")
             use iso_c_binding, only : C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_datastore_capsule, SHROUD_group_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_datastore_capsule), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_datastore_get_root
 
@@ -2399,9 +2414,9 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_datastore_get_num_buffers")
             use iso_c_binding, only : C_SIZE_T
-            import :: SHROUD_capsule_data
+            import :: SHROUD_datastore_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_datastore_capsule), intent(IN) :: self
             integer(C_SIZE_T) :: SHT_rv
         end function c_datastore_get_num_buffers
 
@@ -2409,11 +2424,11 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_datastore_get_buffer")
             use iso_c_binding, only : C_INT, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_buffer_capsule, SHROUD_datastore_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_datastore_capsule), intent(IN) :: self
             integer(C_INT), value, intent(IN) :: idx
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_buffer_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_datastore_get_buffer
 
@@ -2421,10 +2436,10 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_datastore_create_buffer_empty")
             use iso_c_binding, only : C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_buffer_capsule, SHROUD_datastore_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_datastore_capsule), intent(IN) :: self
+            type(SHROUD_buffer_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_datastore_create_buffer_empty
 
@@ -2433,29 +2448,29 @@ module axom_sidre
                 result(SHT_rv) &
                 bind(C, name="SIDRE_datastore_create_buffer_from_type")
             use iso_c_binding, only : C_INT, C_LONG, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_buffer_capsule, SHROUD_datastore_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_datastore_capsule), intent(IN) :: self
             integer(C_INT), value, intent(IN) :: type
             integer(C_LONG), value, intent(IN) :: num_elems
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_buffer_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_datastore_create_buffer_from_type
 
         subroutine c_datastore_destroy_buffer(self, id) &
                 bind(C, name="SIDRE_datastore_destroy_buffer")
             use iso_c_binding, only : C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_datastore_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_datastore_capsule), intent(IN) :: self
             integer(C_INT), value, intent(IN) :: id
         end subroutine c_datastore_destroy_buffer
 
         subroutine c_datastore_print(self) &
                 bind(C, name="SIDRE_datastore_print")
-            import :: SHROUD_capsule_data
+            import :: SHROUD_datastore_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_datastore_capsule), intent(IN) :: self
         end subroutine c_datastore_print
 
         ! splicer begin class.DataStore.additional_interfaces
@@ -3471,7 +3486,7 @@ contains
         character(*), intent(IN) :: name
         integer(C_INT), intent(OUT) :: value
         integer(C_INT) :: lname
-        type(SHROUD_capsule_data) view
+        type(SHROUD_view_capsule) view
         type(C_PTR) viewptr
 
         lname = len_trim(name)
@@ -3486,7 +3501,7 @@ contains
         character(*), intent(IN) :: name
         integer(C_LONG), intent(OUT) :: value
         integer(C_INT) :: lname
-        type(SHROUD_capsule_data) view
+        type(SHROUD_view_capsule) view
         type(C_PTR) viewptr
 
         lname = len_trim(name)
@@ -3501,7 +3516,7 @@ contains
         character(*), intent(IN) :: name
         real(C_FLOAT), intent(OUT) :: value
         integer(C_INT) :: lname
-        type(SHROUD_capsule_data) view
+        type(SHROUD_view_capsule) view
         type(C_PTR) viewptr
 
         lname = len_trim(name)
@@ -3516,7 +3531,7 @@ contains
         character(*), intent(IN) :: name
         real(C_DOUBLE), intent(OUT) :: value
         integer(C_INT) :: lname
-        type(SHROUD_capsule_data) view
+        type(SHROUD_view_capsule) view
         type(C_PTR) viewptr
 
         lname = len_trim(name)
@@ -3531,7 +3546,7 @@ contains
         character(*), intent(IN) :: name
         integer(C_INT), intent(IN) :: value
         integer(C_INT) :: lname
-        type(SHROUD_capsule_data) view
+        type(SHROUD_view_capsule) view
         type(C_PTR) viewptr
 
         lname = len_trim(name)
@@ -3546,7 +3561,7 @@ contains
         character(*), intent(IN) :: name
         integer(C_LONG), intent(IN) :: value
         integer(C_INT) :: lname
-        type(SHROUD_capsule_data) view
+        type(SHROUD_view_capsule) view
         type(C_PTR) viewptr
 
         lname = len_trim(name)
@@ -3561,7 +3576,7 @@ contains
         character(*), intent(IN) :: name
         real(C_FLOAT), intent(IN) :: value
         integer(C_INT) :: lname
-        type(SHROUD_capsule_data) view
+        type(SHROUD_view_capsule) view
         type(C_PTR) viewptr
 
         lname = len_trim(name)
@@ -3576,7 +3591,7 @@ contains
         character(*), intent(IN) :: name
         real(C_DOUBLE), intent(IN) :: value
         integer(C_INT) :: lname
-        type(SHROUD_capsule_data) view
+        type(SHROUD_view_capsule) view
         type(C_PTR) viewptr
 
         lname = len_trim(name)
@@ -4114,7 +4129,7 @@ contains
         character(len=*), intent(IN) :: name
         integer(C_INT), target, intent(IN) :: value
         integer(C_INT) :: lname
-        type(SHROUD_capsule_data) view
+        type(SHROUD_view_capsule) view
     !    integer(SIDRE_LENGTH) :: extents(1)
     !    integer(C_INT), parameter :: type = SIDRE_INT_ID
         type(C_PTR) addr, viewptr
@@ -4143,7 +4158,7 @@ contains
         character(len=*), intent(IN) :: name
         integer(C_INT), target, intent(IN) :: value(:)
         integer(C_INT) :: lname
-        type(SHROUD_capsule_data) view
+        type(SHROUD_view_capsule) view
     !    integer(SIDRE_LENGTH) :: extents(1)
     !    integer(C_INT), parameter :: type = SIDRE_INT_ID
         type(C_PTR) addr, viewptr
@@ -4172,7 +4187,7 @@ contains
         character(len=*), intent(IN) :: name
         integer(C_INT), target, intent(IN) :: value(:,:)
         integer(C_INT) :: lname
-        type(SHROUD_capsule_data) view
+        type(SHROUD_view_capsule) view
     !    integer(SIDRE_LENGTH) :: extents(2)
     !    integer(C_INT), parameter :: type = SIDRE_INT_ID
         type(C_PTR) addr, viewptr
@@ -4201,7 +4216,7 @@ contains
         character(len=*), intent(IN) :: name
         integer(C_INT), target, intent(IN) :: value(:,:,:)
         integer(C_INT) :: lname
-        type(SHROUD_capsule_data) view
+        type(SHROUD_view_capsule) view
     !    integer(SIDRE_LENGTH) :: extents(3)
     !    integer(C_INT), parameter :: type = SIDRE_INT_ID
         type(C_PTR) addr, viewptr
@@ -4230,7 +4245,7 @@ contains
         character(len=*), intent(IN) :: name
         integer(C_INT), target, intent(IN) :: value(:,:,:,:)
         integer(C_INT) :: lname
-        type(SHROUD_capsule_data) view
+        type(SHROUD_view_capsule) view
     !    integer(SIDRE_LENGTH) :: extents(4)
     !    integer(C_INT), parameter :: type = SIDRE_INT_ID
         type(C_PTR) addr, viewptr
@@ -4259,7 +4274,7 @@ contains
         character(len=*), intent(IN) :: name
         integer(C_LONG), target, intent(IN) :: value
         integer(C_INT) :: lname
-        type(SHROUD_capsule_data) view
+        type(SHROUD_view_capsule) view
     !    integer(SIDRE_LENGTH) :: extents(1)
     !    integer(C_INT), parameter :: type = SIDRE_LONG_ID
         type(C_PTR) addr, viewptr
@@ -4288,7 +4303,7 @@ contains
         character(len=*), intent(IN) :: name
         integer(C_LONG), target, intent(IN) :: value(:)
         integer(C_INT) :: lname
-        type(SHROUD_capsule_data) view
+        type(SHROUD_view_capsule) view
     !    integer(SIDRE_LENGTH) :: extents(1)
     !    integer(C_INT), parameter :: type = SIDRE_LONG_ID
         type(C_PTR) addr, viewptr
@@ -4317,7 +4332,7 @@ contains
         character(len=*), intent(IN) :: name
         integer(C_LONG), target, intent(IN) :: value(:,:)
         integer(C_INT) :: lname
-        type(SHROUD_capsule_data) view
+        type(SHROUD_view_capsule) view
     !    integer(SIDRE_LENGTH) :: extents(2)
     !    integer(C_INT), parameter :: type = SIDRE_LONG_ID
         type(C_PTR) addr, viewptr
@@ -4346,7 +4361,7 @@ contains
         character(len=*), intent(IN) :: name
         integer(C_LONG), target, intent(IN) :: value(:,:,:)
         integer(C_INT) :: lname
-        type(SHROUD_capsule_data) view
+        type(SHROUD_view_capsule) view
     !    integer(SIDRE_LENGTH) :: extents(3)
     !    integer(C_INT), parameter :: type = SIDRE_LONG_ID
         type(C_PTR) addr, viewptr
@@ -4375,7 +4390,7 @@ contains
         character(len=*), intent(IN) :: name
         integer(C_LONG), target, intent(IN) :: value(:,:,:,:)
         integer(C_INT) :: lname
-        type(SHROUD_capsule_data) view
+        type(SHROUD_view_capsule) view
     !    integer(SIDRE_LENGTH) :: extents(4)
     !    integer(C_INT), parameter :: type = SIDRE_LONG_ID
         type(C_PTR) addr, viewptr
@@ -4404,7 +4419,7 @@ contains
         character(len=*), intent(IN) :: name
         real(C_FLOAT), target, intent(IN) :: value
         integer(C_INT) :: lname
-        type(SHROUD_capsule_data) view
+        type(SHROUD_view_capsule) view
     !    integer(SIDRE_LENGTH) :: extents(1)
     !    integer(C_INT), parameter :: type = SIDRE_FLOAT_ID
         type(C_PTR) addr, viewptr
@@ -4433,7 +4448,7 @@ contains
         character(len=*), intent(IN) :: name
         real(C_FLOAT), target, intent(IN) :: value(:)
         integer(C_INT) :: lname
-        type(SHROUD_capsule_data) view
+        type(SHROUD_view_capsule) view
     !    integer(SIDRE_LENGTH) :: extents(1)
     !    integer(C_INT), parameter :: type = SIDRE_FLOAT_ID
         type(C_PTR) addr, viewptr
@@ -4462,7 +4477,7 @@ contains
         character(len=*), intent(IN) :: name
         real(C_FLOAT), target, intent(IN) :: value(:,:)
         integer(C_INT) :: lname
-        type(SHROUD_capsule_data) view
+        type(SHROUD_view_capsule) view
     !    integer(SIDRE_LENGTH) :: extents(2)
     !    integer(C_INT), parameter :: type = SIDRE_FLOAT_ID
         type(C_PTR) addr, viewptr
@@ -4491,7 +4506,7 @@ contains
         character(len=*), intent(IN) :: name
         real(C_FLOAT), target, intent(IN) :: value(:,:,:)
         integer(C_INT) :: lname
-        type(SHROUD_capsule_data) view
+        type(SHROUD_view_capsule) view
     !    integer(SIDRE_LENGTH) :: extents(3)
     !    integer(C_INT), parameter :: type = SIDRE_FLOAT_ID
         type(C_PTR) addr, viewptr
@@ -4520,7 +4535,7 @@ contains
         character(len=*), intent(IN) :: name
         real(C_FLOAT), target, intent(IN) :: value(:,:,:,:)
         integer(C_INT) :: lname
-        type(SHROUD_capsule_data) view
+        type(SHROUD_view_capsule) view
     !    integer(SIDRE_LENGTH) :: extents(4)
     !    integer(C_INT), parameter :: type = SIDRE_FLOAT_ID
         type(C_PTR) addr, viewptr
@@ -4549,7 +4564,7 @@ contains
         character(len=*), intent(IN) :: name
         real(C_DOUBLE), target, intent(IN) :: value
         integer(C_INT) :: lname
-        type(SHROUD_capsule_data) view
+        type(SHROUD_view_capsule) view
     !    integer(SIDRE_LENGTH) :: extents(1)
     !    integer(C_INT), parameter :: type = SIDRE_DOUBLE_ID
         type(C_PTR) addr, viewptr
@@ -4578,7 +4593,7 @@ contains
         character(len=*), intent(IN) :: name
         real(C_DOUBLE), target, intent(IN) :: value(:)
         integer(C_INT) :: lname
-        type(SHROUD_capsule_data) view
+        type(SHROUD_view_capsule) view
     !    integer(SIDRE_LENGTH) :: extents(1)
     !    integer(C_INT), parameter :: type = SIDRE_DOUBLE_ID
         type(C_PTR) addr, viewptr
@@ -4607,7 +4622,7 @@ contains
         character(len=*), intent(IN) :: name
         real(C_DOUBLE), target, intent(IN) :: value(:,:)
         integer(C_INT) :: lname
-        type(SHROUD_capsule_data) view
+        type(SHROUD_view_capsule) view
     !    integer(SIDRE_LENGTH) :: extents(2)
     !    integer(C_INT), parameter :: type = SIDRE_DOUBLE_ID
         type(C_PTR) addr, viewptr
@@ -4636,7 +4651,7 @@ contains
         character(len=*), intent(IN) :: name
         real(C_DOUBLE), target, intent(IN) :: value(:,:,:)
         integer(C_INT) :: lname
-        type(SHROUD_capsule_data) view
+        type(SHROUD_view_capsule) view
     !    integer(SIDRE_LENGTH) :: extents(3)
     !    integer(C_INT), parameter :: type = SIDRE_DOUBLE_ID
         type(C_PTR) addr, viewptr
@@ -4665,7 +4680,7 @@ contains
         character(len=*), intent(IN) :: name
         real(C_DOUBLE), target, intent(IN) :: value(:,:,:,:)
         integer(C_INT) :: lname
-        type(SHROUD_capsule_data) view
+        type(SHROUD_view_capsule) view
     !    integer(SIDRE_LENGTH) :: extents(4)
     !    integer(C_INT), parameter :: type = SIDRE_DOUBLE_ID
         type(C_PTR) addr, viewptr
@@ -4690,7 +4705,7 @@ contains
         character(*), intent(IN) :: name
         character(*), intent(OUT) :: value
         integer(C_INT) :: lname
-        type(SHROUD_capsule_data) view
+        type(SHROUD_view_capsule) view
         type(C_PTR) viewptr
 
         lname = len_trim(name)
@@ -4704,7 +4719,7 @@ contains
         character(*), intent(IN) :: name
         character(*), intent(IN) :: value
         integer(C_INT) :: lname
-        type(SHROUD_capsule_data) view
+        type(SHROUD_view_capsule) view
         type(C_PTR) viewptr
 
         lname = len_trim(name)

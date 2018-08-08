@@ -28,16 +28,16 @@ module axom_spio
     ! splicer begin module_top
     ! splicer end module_top
 
-    type, bind(C) :: SHROUD_capsule_data
-        type(C_PTR) :: addr = C_NULL_PTR  ! address of C++ memory
-        integer(C_INT) :: idtor = 0       ! index of destructor
-    end type SHROUD_capsule_data
-
     ! splicer begin class.IOManager.module_top
     ! splicer end class.IOManager.module_top
 
+    type, bind(C) :: SHROUD_iomanager_capsule
+        type(C_PTR) :: addr = C_NULL_PTR  ! address of C++ memory
+        integer(C_INT) :: idtor = 0       ! index of destructor
+    end type SHROUD_iomanager_capsule
+
     type iomanager
-        type(SHROUD_capsule_data) :: cxxmem
+        type(SHROUD_iomanager_capsule) :: cxxmem
         ! splicer begin class.IOManager.component_part
         ! splicer end class.IOManager.component_part
     contains
@@ -72,10 +72,10 @@ module axom_spio
                 result(SHT_rv) &
                 bind(C, name="SPIO_iomanager_new_0")
             use iso_c_binding, only : C_INT, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_iomanager_capsule
             implicit none
             integer(C_INT), value, intent(IN) :: com
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_iomanager_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_iomanager_new_0
 
@@ -83,29 +83,30 @@ module axom_spio
                 result(SHT_rv) &
                 bind(C, name="SPIO_iomanager_new_1")
             use iso_c_binding, only : C_BOOL, C_INT, C_PTR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_iomanager_capsule
             implicit none
             integer(C_INT), value, intent(IN) :: com
             logical(C_BOOL), value, intent(IN) :: use_scr
-            type(SHROUD_capsule_data), intent(OUT) :: SHT_crv
+            type(SHROUD_iomanager_capsule), intent(OUT) :: SHT_crv
             type(C_PTR) SHT_rv
         end function c_iomanager_new_1
 
         subroutine c_iomanager_delete(self) &
                 bind(C, name="SPIO_iomanager_delete")
-            import :: SHROUD_capsule_data
+            import :: SHROUD_iomanager_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
+            type(SHROUD_iomanager_capsule), intent(IN) :: self
         end subroutine c_iomanager_delete
 
         subroutine c_iomanager_write(self, group, num_files, &
                 file_string, protocol) &
                 bind(C, name="SPIO_iomanager_write")
+            use axom_sidre, only : SHROUD_group_capsule
             use iso_c_binding, only : C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_iomanager_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
-            type(SHROUD_capsule_data), intent(IN) :: group
+            type(SHROUD_iomanager_capsule), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: group
             integer(C_INT), value, intent(IN) :: num_files
             character(kind=C_CHAR), intent(IN) :: file_string(*)
             character(kind=C_CHAR), intent(IN) :: protocol(*)
@@ -114,11 +115,12 @@ module axom_spio
         subroutine c_iomanager_write_bufferify(self, group, num_files, &
                 file_string, Lfile_string, protocol, Lprotocol) &
                 bind(C, name="SPIO_iomanager_write_bufferify")
+            use axom_sidre, only : SHROUD_group_capsule
             use iso_c_binding, only : C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_iomanager_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
-            type(SHROUD_capsule_data), intent(IN) :: group
+            type(SHROUD_iomanager_capsule), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: group
             integer(C_INT), value, intent(IN) :: num_files
             character(kind=C_CHAR), intent(IN) :: file_string(*)
             integer(C_INT), value, intent(IN) :: Lfile_string
@@ -129,22 +131,24 @@ module axom_spio
         subroutine c_iomanager_write_group_to_root_file(self, group, &
                 file_name) &
                 bind(C, name="SPIO_iomanager_write_group_to_root_file")
+            use axom_sidre, only : SHROUD_group_capsule
             use iso_c_binding, only : C_CHAR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_iomanager_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
-            type(SHROUD_capsule_data), intent(IN) :: group
+            type(SHROUD_iomanager_capsule), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: group
             character(kind=C_CHAR), intent(IN) :: file_name(*)
         end subroutine c_iomanager_write_group_to_root_file
 
         subroutine c_iomanager_write_group_to_root_file_bufferify(self, &
                 group, file_name, Lfile_name) &
                 bind(C, name="SPIO_iomanager_write_group_to_root_file_bufferify")
+            use axom_sidre, only : SHROUD_group_capsule
             use iso_c_binding, only : C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_iomanager_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
-            type(SHROUD_capsule_data), intent(IN) :: group
+            type(SHROUD_iomanager_capsule), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: group
             character(kind=C_CHAR), intent(IN) :: file_name(*)
             integer(C_INT), value, intent(IN) :: Lfile_name
         end subroutine c_iomanager_write_group_to_root_file_bufferify
@@ -152,11 +156,12 @@ module axom_spio
         subroutine c_iomanager_read_0(self, group, file_string, &
                 protocol) &
                 bind(C, name="SPIO_iomanager_read_0")
+            use axom_sidre, only : SHROUD_group_capsule
             use iso_c_binding, only : C_CHAR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_iomanager_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
-            type(SHROUD_capsule_data), intent(IN) :: group
+            type(SHROUD_iomanager_capsule), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: group
             character(kind=C_CHAR), intent(IN) :: file_string(*)
             character(kind=C_CHAR), intent(IN) :: protocol(*)
         end subroutine c_iomanager_read_0
@@ -164,11 +169,12 @@ module axom_spio
         subroutine c_iomanager_read_0_bufferify(self, group, &
                 file_string, Lfile_string, protocol, Lprotocol) &
                 bind(C, name="SPIO_iomanager_read_0_bufferify")
+            use axom_sidre, only : SHROUD_group_capsule
             use iso_c_binding, only : C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_iomanager_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
-            type(SHROUD_capsule_data), intent(IN) :: group
+            type(SHROUD_iomanager_capsule), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: group
             character(kind=C_CHAR), intent(IN) :: file_string(*)
             integer(C_INT), value, intent(IN) :: Lfile_string
             character(kind=C_CHAR), intent(IN) :: protocol(*)
@@ -178,11 +184,12 @@ module axom_spio
         subroutine c_iomanager_read_1(self, group, file_string, &
                 protocol, preserve_contents) &
                 bind(C, name="SPIO_iomanager_read_1")
+            use axom_sidre, only : SHROUD_group_capsule
             use iso_c_binding, only : C_BOOL, C_CHAR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_iomanager_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
-            type(SHROUD_capsule_data), intent(IN) :: group
+            type(SHROUD_iomanager_capsule), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: group
             character(kind=C_CHAR), intent(IN) :: file_string(*)
             character(kind=C_CHAR), intent(IN) :: protocol(*)
             logical(C_BOOL), value, intent(IN) :: preserve_contents
@@ -192,11 +199,12 @@ module axom_spio
                 file_string, Lfile_string, protocol, Lprotocol, &
                 preserve_contents) &
                 bind(C, name="SPIO_iomanager_read_1_bufferify")
+            use axom_sidre, only : SHROUD_group_capsule
             use iso_c_binding, only : C_BOOL, C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_iomanager_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
-            type(SHROUD_capsule_data), intent(IN) :: group
+            type(SHROUD_iomanager_capsule), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: group
             character(kind=C_CHAR), intent(IN) :: file_string(*)
             integer(C_INT), value, intent(IN) :: Lfile_string
             character(kind=C_CHAR), intent(IN) :: protocol(*)
@@ -206,22 +214,24 @@ module axom_spio
 
         subroutine c_iomanager_read_2(self, group, root_file) &
                 bind(C, name="SPIO_iomanager_read_2")
+            use axom_sidre, only : SHROUD_group_capsule
             use iso_c_binding, only : C_CHAR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_iomanager_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
-            type(SHROUD_capsule_data), intent(IN) :: group
+            type(SHROUD_iomanager_capsule), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: group
             character(kind=C_CHAR), intent(IN) :: root_file(*)
         end subroutine c_iomanager_read_2
 
         subroutine c_iomanager_read_2_bufferify(self, group, root_file, &
                 Lroot_file) &
                 bind(C, name="SPIO_iomanager_read_2_bufferify")
+            use axom_sidre, only : SHROUD_group_capsule
             use iso_c_binding, only : C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_iomanager_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
-            type(SHROUD_capsule_data), intent(IN) :: group
+            type(SHROUD_iomanager_capsule), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: group
             character(kind=C_CHAR), intent(IN) :: root_file(*)
             integer(C_INT), value, intent(IN) :: Lroot_file
         end subroutine c_iomanager_read_2_bufferify
@@ -229,11 +239,12 @@ module axom_spio
         subroutine c_iomanager_read_3(self, group, root_file, &
                 preserve_contents) &
                 bind(C, name="SPIO_iomanager_read_3")
+            use axom_sidre, only : SHROUD_group_capsule
             use iso_c_binding, only : C_BOOL, C_CHAR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_iomanager_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
-            type(SHROUD_capsule_data), intent(IN) :: group
+            type(SHROUD_iomanager_capsule), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: group
             character(kind=C_CHAR), intent(IN) :: root_file(*)
             logical(C_BOOL), value, intent(IN) :: preserve_contents
         end subroutine c_iomanager_read_3
@@ -241,11 +252,12 @@ module axom_spio
         subroutine c_iomanager_read_3_bufferify(self, group, root_file, &
                 Lroot_file, preserve_contents) &
                 bind(C, name="SPIO_iomanager_read_3_bufferify")
+            use axom_sidre, only : SHROUD_group_capsule
             use iso_c_binding, only : C_BOOL, C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_iomanager_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
-            type(SHROUD_capsule_data), intent(IN) :: group
+            type(SHROUD_iomanager_capsule), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: group
             character(kind=C_CHAR), intent(IN) :: root_file(*)
             integer(C_INT), value, intent(IN) :: Lroot_file
             logical(C_BOOL), value, intent(IN) :: preserve_contents
@@ -254,11 +266,12 @@ module axom_spio
         subroutine c_iomanager_read_4(self, group, root_file, &
                 preserve_contents, use_scr) &
                 bind(C, name="SPIO_iomanager_read_4")
+            use axom_sidre, only : SHROUD_group_capsule
             use iso_c_binding, only : C_BOOL, C_CHAR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_iomanager_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
-            type(SHROUD_capsule_data), intent(IN) :: group
+            type(SHROUD_iomanager_capsule), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: group
             character(kind=C_CHAR), intent(IN) :: root_file(*)
             logical(C_BOOL), value, intent(IN) :: preserve_contents
             logical(C_BOOL), value, intent(IN) :: use_scr
@@ -267,11 +280,12 @@ module axom_spio
         subroutine c_iomanager_read_4_bufferify(self, group, root_file, &
                 Lroot_file, preserve_contents, use_scr) &
                 bind(C, name="SPIO_iomanager_read_4_bufferify")
+            use axom_sidre, only : SHROUD_group_capsule
             use iso_c_binding, only : C_BOOL, C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_iomanager_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
-            type(SHROUD_capsule_data), intent(IN) :: group
+            type(SHROUD_iomanager_capsule), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: group
             character(kind=C_CHAR), intent(IN) :: root_file(*)
             integer(C_INT), value, intent(IN) :: Lroot_file
             logical(C_BOOL), value, intent(IN) :: preserve_contents
@@ -281,22 +295,24 @@ module axom_spio
         subroutine c_iomanager_load_external_data(self, group, &
                 root_file) &
                 bind(C, name="SPIO_iomanager_load_external_data")
+            use axom_sidre, only : SHROUD_group_capsule
             use iso_c_binding, only : C_CHAR
-            import :: SHROUD_capsule_data
+            import :: SHROUD_iomanager_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
-            type(SHROUD_capsule_data), intent(IN) :: group
+            type(SHROUD_iomanager_capsule), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: group
             character(kind=C_CHAR), intent(IN) :: root_file(*)
         end subroutine c_iomanager_load_external_data
 
         subroutine c_iomanager_load_external_data_bufferify(self, group, &
                 root_file, Lroot_file) &
                 bind(C, name="SPIO_iomanager_load_external_data_bufferify")
+            use axom_sidre, only : SHROUD_group_capsule
             use iso_c_binding, only : C_CHAR, C_INT
-            import :: SHROUD_capsule_data
+            import :: SHROUD_iomanager_capsule
             implicit none
-            type(SHROUD_capsule_data), intent(IN) :: self
-            type(SHROUD_capsule_data), intent(IN) :: group
+            type(SHROUD_iomanager_capsule), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: group
             character(kind=C_CHAR), intent(IN) :: root_file(*)
             integer(C_INT), value, intent(IN) :: Lroot_file
         end subroutine c_iomanager_load_external_data_bufferify

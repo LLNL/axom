@@ -47,7 +47,7 @@ subroutine group_get_scalar_{typename}(grp, name, value)
     character(*), intent(IN) :: name
     {f_type}, intent(OUT) :: value
     integer(C_INT) :: lname
-    type(SHROUD_capsule_data) view
+    type(SHROUD_view_capsule) view
     type(C_PTR) viewptr
 
     lname = len_trim(name)
@@ -66,7 +66,7 @@ subroutine group_set_scalar_{typename}(grp, name, value)
     character(*), intent(IN) :: name
     {f_type}, intent(IN) :: value
     integer(C_INT) :: lname
-    type(SHROUD_capsule_data) view
+    type(SHROUD_view_capsule) view
     type(C_PTR) viewptr
 
     lname = len_trim(name)
@@ -143,7 +143,7 @@ subroutine group_set_array_data_ptr_{typename}{nd}(grp, name, value)
     character(len=*), intent(IN) :: name
     {f_type}, target, intent(IN) :: value{shape}
     integer(C_INT) :: lname
-    type(SHROUD_capsule_data) view
+    type(SHROUD_view_capsule) view
 !    integer(SIDRE_LENGTH) :: {extents_decl}
 !    integer(C_INT), parameter :: type = {sidre_type}
     type(C_PTR) addr, viewptr
@@ -378,7 +378,7 @@ subroutine group_get_string(grp, name, value)
     character(*), intent(IN) :: name
     character(*), intent(OUT) :: value
     integer(C_INT) :: lname
-    type(SHROUD_capsule_data) view
+    type(SHROUD_view_capsule) view
     type(C_PTR) viewptr
 
     lname = len_trim(name)
@@ -392,7 +392,7 @@ subroutine group_set_string(grp, name, value)
     character(*), intent(IN) :: name
     character(*), intent(IN) :: value
     integer(C_INT) :: lname
-    type(SHROUD_capsule_data) view
+    type(SHROUD_view_capsule) view
     type(C_PTR) viewptr
 
     lname = len_trim(name)

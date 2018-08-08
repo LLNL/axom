@@ -25,8 +25,7 @@ declarations:
           cxx_header: axom/sidre/spio/IOManager.hpp
           cxx_type: axom::sidre::IOManager
           c_type: SPIO_iomanager
+          f_module_name: axom_spio
           f_derived_type: iomanager
+          f_capsule_data_type: SHROUD_iomanager_capsule
           f_to_c: "{f_var}%cxxmem"
-          f_module:
-            axom_spio:
-            - iomanager
