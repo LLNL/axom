@@ -22,7 +22,6 @@ triple centroid = (0.4,0.6,0.466667);
 draw(tri);
 dot((0,0,0.7), blue);
 dot((0.4,0.6,0.466667), blue);
-
 draw(centroid--1.6centroid, arrow=Arrow3(DefaultHead2));
 dot((0.45,1.5,1), blue);
 draw((0.45,1.5,1)--(0.45,1.5,0), dotted);

@@ -572,6 +572,95 @@ void showOrientation()
   }
 }
 
+void showDistance()
+{
+  // _sqdist_start
+  // The point from which we'll query
+  PointType q = PointType::make_point(0.75, 1.2, 0.4);
+
+  // Find distance to:
+  PointType p = PointType::make_point(0.2, 1.4, 1.1);
+  SegmentType seg(PointType::make_point(1.1, 0.0, 0.2),
+                  PointType::make_point(1.1, 0.5, 0.2));
+  TriangleType tri(PointType::make_point(0.2,  -0.3, 0.4),
+                   PointType::make_point(0.25, -0.1, 0.3),
+                   PointType::make_point(0.3,  -0.3, 0.35));
+  BoundingBoxType bbox(PointType::make_point(-0.3, -0.2, 0.7),
+                       PointType::make_point( 0.4,  0.3, 0.9));
+
+  double dp = squared_distance(q, p);
+  double dseg = squared_distance(q, seg);
+  double dtri = squared_distance(q, tri);
+  double dbox = squared_distance(q, bbox);
+  // _sqdist_end
+
+  // Helper variables
+  // Project q and p onto onto XY plane
+  PointType pq = PointType::make_point(q[0], q[1], 0.);
+  PointType pp = PointType::make_point(p[0], p[1], 0.);
+  PointType boxpt = bbox.getMax();
+  boxpt[2] = bbox.getMin()[2];
+  PointType pboxpt = boxpt;
+  pboxpt[2] = 0;
+  PointType pseg = seg.target();
+  pseg[2] = 0;
+  PointType ptri = tri[1];
+  ptri[2] = 0;
+
+  // Now write out an Asymptote file showing what we did.
+  std::string fname = "showDistance.asy";
+  std::ofstream asy(fname);
+  if (!asy.good()) {
+    std::cout << "Could not write to " << fname << std::endl;
+  } else {
+    asy << "// To turn this Asymptote source file into an image for inclusion in\n"
+           "// Axom's documentation,\n"
+           "// 1. run Asymptote:\n"
+           "//    asy -f png " << fname << std::endl <<
+           "// 2. Optionally, use ImageMagick to convert the white background to transparent:\n"
+           "//    convert " << fname << " -transparent white " << fname <<
+      std::endl << std::endl;
+    asy << "// preamble" << std::endl;
+    asy << "settings.render = 6;" << std::endl;
+    asy << "import three;" << std::endl;
+    asy << "size(6cm, 0);" << std::endl << std::endl;
+
+    asy << "// axes" << std::endl;
+    asy << "draw(O -- 1.3X, arrow=Arrow3(DefaultHead2), " <<
+      "L=Label(\"$x$\", position=EndPoint, align=W));" << std::endl;
+    asy << "draw(O -- 1.8Y, arrow=Arrow3(), " <<
+      "L=Label(\"$y$\", position=EndPoint));" << std::endl;
+    asy << "draw(O -- 1.2Z, arrow=Arrow3(), " <<
+      "L=Label(\"$z$\", position=EndPoint, align=W));" << std::endl << std::endl;
+
+    asy << "// query point" << std::endl;
+    asy << "triple q = " << q << ";" << std::endl;
+    asy << "// other primitives" << std::endl;
+    asy << "triple boxpt = " << boxpt << ";" << std::endl;
+    asy << "triple p = " << p << ";" << std::endl;
+    asy << "dot(q);" << std::endl << "dot(p, blue);" << std::endl;
+    asy << "draw(" << seg.source() << "--" << seg.target() << ", blue);" << std::endl;
+    asy << "draw(" << tri[0] << "--" << tri[1] << "--" << tri[2] <<
+      "--cycle, blue);" << std::endl;
+    asy << "draw(box(" << bbox.getMin() << ", " << bbox.getMax() << "), blue);" <<
+      std::endl << std::endl;
+
+    asy << "// distances and drop-points" << std::endl;
+    asy << "draw(q--p, L=Label(\"" << dp << "\"));" << std::endl;
+    asy << "draw(q--" << seg.target() << ", L=Label(\"" << dseg << "\"));" <<
+      std::endl;
+    asy << "draw(q--" << tri[1] << ", L=Label(\"" << dtri << "\"));" <<
+      std::endl;
+    asy << "draw(q--boxpt, L=Label(\"" << dbox << "\"));" <<
+      std::endl;
+    asy << "draw(q--" << pq << ", dotted);" << std::endl;
+    asy << "draw(p--" << pp << ", dotted);" << std::endl;
+    asy << "draw(" << seg.target() << "--" << pseg << ", dotted);" << std::endl;
+    asy << "draw(" << tri[1] << "--" << ptri << ", dotted);" << std::endl;
+    asy << "draw(boxpt--" << pboxpt << ", dotted);" << std::endl;
+  }
+}
+
 int main(int argc, char** argv)
 {
 
@@ -586,6 +675,7 @@ int main(int argc, char** argv)
   showBoundingBoxes();
   showIntersect();
   showOrientation();
+  showDistance();
 
   return 0;
 }

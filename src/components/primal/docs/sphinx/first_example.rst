@@ -32,10 +32,6 @@ The clip operation clips a triangle against a bounding box, returning the
 resulting polygon.  The figure shows the triangle in blue and the polygon
 resulting from ``clip()`` in yellow.
 
-.. instantiate a point, a ray, several triangles, a bounding box, a plane
-   get triangles' area and normal; test for degeneracy
-   make a visualization (Geomview?)
-
 .. figure:: figs/showClip.png
    :figwidth: 300px
    :alt: A polygon is produced by clipping a triangle.
@@ -211,29 +207,57 @@ distance between a query point and several different primitives:
 - a Segment,
 - a Triangle.
 
+.. figure:: figs/showDistance.png
+   :figwidth: 300px
+   :alt: Diagram showing 3D point-triangle orientation test.
 
+.. literalinclude:: ../../examples/primal_introduction.cpp
+   :start-after: _sqdist_header_start
+   :end-before: _sqdist_header_end
+   :language: C++
 
-With these primitives, we can perform some geometric operations.
+.. literalinclude:: ../../examples/primal_introduction.cpp
+   :start-after: _sqdist_start
+   :end-before: _sqdist_end
+   :language: C++
 
-- clip triangle against bbox to get polygon
-- find which side of the plane a triangle point lies on
-- find intersection point btw ray and triangle
-- find the closest point from another triangle corner to another tri, and
-  the squared distance btw points
+The example shows the squared distance between the query point, shown in black
+in the figure, and four geometric primitives.  For clarity, the diagram also shows
+the projection of the query point and its closest points to the XY plane.
 
-A spatial index can be used when a code compares each primitive in a collection
-to every other primitive, such as when checking if a triangle mesh intersects
+Spatial Index
+-------------
+
+A spatial index is a data structure used to speed up retrieval of geometric
+objects.  Axom provides two spatial indices, the cell (or Verlet) list
+implemented in the ``UniformGrid`` class and the binary space partition tree
+implemented in the ``BSPTree`` class.  Both classes divide a bounding box
+denoting a region of interest into bins that group objects together, avoiding
+the need to process objects that do not fall into a bin of interest.  The
+``UniformGrid`` tiles the region of interest into non-intersecting bins of
+uniform size, adding an object to each bin that it intersects.  The ``BSPTree``
+recursively subdivides the region of interest into a "tree" of bins, stopping
+when a bin contains less than some number of objects or when the tree reaches a
+specified height.
+
+UniformGrid
+^^^^^^^^^^^
+
+The ``UniformGrid`` can be used when a code compares each primitive in a collection
+to every other "close" primitive, such as when checking if a triangle mesh intersects
 itself.  The following naive implementation is straightforward but runs
 in :math:`O(n^2)` time, where :math:`n` is the number of triangles.
 
 - naive implementation: compare each triangle to every other tri
 
-A code should be able to skip the call to ``intersect()`` for widely-separated
-primitives.  The UniformGrid is designed for this optimization.
+If a code could avoid calling ``intersect()`` for widely-separated triangles, it would
+surely save time.  The ``UniformGrid`` allows a code to compare each triangle to the
+other triangles in its bin(s), disregarding far-away triangles that cannot intersect.
 
 - UniformGrid example.  For each triangle,
   - find its bounding box
   - get the bins intersecting the bounding box
   - iterate over the contents of each bin, testing for intersection
 
-Find examples for the MortonIndex and the BVH tree.
+The ``UniformGrid`` has its best effect when objects are roughly the same size and not
+all clumped together.
