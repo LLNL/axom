@@ -13,6 +13,12 @@
 #------------------------------------------------------------------------------
 
 ################################
+# Check necessary dependencies
+################################
+axom_component_requires(NAME       PRIMAL
+                        COMPONENTS Axom_utils SLIC)
+
+################################
 # add sources
 ################################
 add_subdirectory(src)

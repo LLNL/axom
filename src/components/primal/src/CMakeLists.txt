@@ -59,7 +59,7 @@ blt_add_library(
     HEADERS               ${primal_headers}
     HEADERS_OUTPUT_SUBDIR primal
     FOLDER                axom/primal
-    DEPENDS_ON            slic
+    DEPENDS_ON            axom_utils slic
     )
 
 install(TARGETS              primal

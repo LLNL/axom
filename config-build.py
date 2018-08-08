@@ -165,6 +165,8 @@ def setup_install_dir(args, platform_info):
 # Check if executable exists 
 ############################
 def executable_exists(path):
+    if path == "cmake":
+        return True
     return os.path.isfile(path) and os.access(path, os.X_OK)
 
 ############################

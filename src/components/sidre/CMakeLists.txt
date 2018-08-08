@@ -15,9 +15,9 @@
 ################################
 # Check necessary dependencies
 ################################
-if(NOT CONDUIT_FOUND)
-  message(FATAL_ERROR "Sidre requires Conduit. Set CONDUIT_DIR to location of a Conduit install.")
-endif()
+axom_component_requires(NAME       Sidre
+                        COMPONENTS Axom_utils SLIC
+                        TPLS       Conduit)
 
 # Note: Sidre's unordered_map is either sparsehash OR C++11's unordered_map
 #       Default to std::map and warn if neither is available

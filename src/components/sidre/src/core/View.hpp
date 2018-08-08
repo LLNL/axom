@@ -54,8 +54,8 @@ class Attribute;
 /*!
  * \class View
  *
- * \brief A View object describes a data array, which may be
- *        owned by the view object (via an attached Buffer) or
+ * \brief A View object describes data, which may be
+ *        owned by the view object (e.g., via an attached Buffer) or
  *        owned externally.
  *
  * The View class has the following properties:
