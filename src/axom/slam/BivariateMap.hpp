@@ -47,7 +47,7 @@ namespace slam
  *         indices. BivariateMap's `operator(i)` returns a SubMap of all entries
  *         whose first index is `i` in the BivariateSet.
  *
- * The different indexing system (DenseIndex, SparseIndex, FlatIndex) are
+ * The different indexing systems (DenseIndex, SparseIndex, FlatIndex) are
  * explained in BivariateSet. Because BivariateMap can have more than one
  * component, FlatIndex is further divided into ComponentFlatIndex, where each
  * component in each element is indexed separately, and ElementFlatIndex,

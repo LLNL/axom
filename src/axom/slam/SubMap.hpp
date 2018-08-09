@@ -53,7 +53,7 @@ namespace slam
  *
  * \warning SubMap constructor can take a const Map pointer or a non-const Map
  *        pointer. A non-const value access function in SubMap will fail if the
- *        Submap is constructed using a non-const Map pointer.
+ *        Submap is constructed using a const Map pointer.
  *
  * \see Map, BivariateMap
  */
@@ -362,7 +362,7 @@ public:
 
   /**
    * \class SubMapIterator
-   * \brief An iterator for SubMap, base on MapIterator
+   * \brief An iterator for SubMap, based on MapIterator
    *
    * \see MapIterator
    */
