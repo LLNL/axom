@@ -64,8 +64,8 @@ public:
    */
   RelationSet(RelationType* relation)
     : BivariateSet(
-      relation == nullptr ? &BivariateSet::s_nullSet : relation->fromSet(),
-      relation == nullptr ? &BivariateSet::s_nullSet : relation->toSet() )
+      relation ? relation->fromSet() : (Set*)&BivariateSet::s_nullSet,
+      relation ? relation->toSet()   : (Set*)&BivariateSet::s_nullSet )
     , m_relation(relation)
   {
     SLIC_ASSERT(relation != nullptr);

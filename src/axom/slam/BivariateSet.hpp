@@ -83,10 +83,9 @@ namespace slam
 
 class BivariateSet
 {
-private:
+public:
   static const NullSet s_nullSet;
 
-public:
   using PositionType = slam::Set::PositionType;
   using ElementType = slam::Set::ElementType;
   using OrderedSetType = OrderedSet<
