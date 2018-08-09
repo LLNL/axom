@@ -45,8 +45,9 @@ template<
 class RelationSet : public OrderedSet<>, public BivariateSet
 {
 private:
-  typedef RangeSet RangeSetType;
-  typedef Relation RelationType;
+  using RangeSetType = RangeSet;
+  using RelationType = Relation;
+
 public:
   using PositionType = RangeSetType::PositionType;
   using IndexType = RangeSetType::IndexType;
@@ -54,14 +55,21 @@ public:
 
   using RelationSubset = typename RelationType::RelationSubset;
 
-
 public:
   RelationSet() {}
 
-  RelationSet(RelationType* r)
-    : BivariateSet(r->fromSet(), r->toSet())
-    , m_relation(r)
-  {}
+  /**
+   * \brief Constructor taking in the relation this BivariateSet is based on.
+   * \pre relation pointer must not be a null pointer
+   */
+  RelationSet(RelationType* relation)
+    : BivariateSet(
+      relation ? relation->fromSet() : (Set*)&BivariateSet::s_nullSet,
+      relation ? relation->toSet()   : (Set*)&BivariateSet::s_nullSet )
+    , m_relation(relation)
+  {
+    SLIC_ASSERT(relation != nullptr);
+  }
 
   /**
    * \brief Searches for the SparseIndex of the element given its DenseIndex.

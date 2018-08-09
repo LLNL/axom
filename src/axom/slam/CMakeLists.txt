@@ -72,6 +72,8 @@ set(slam_headers
     # SRM Map headers
     Map.hpp
     MapBase.hpp
+	BivariateMap.hpp
+	SubMap.hpp
     DynamicMap.hpp
     )
 
