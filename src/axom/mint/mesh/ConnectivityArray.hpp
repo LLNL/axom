@@ -342,6 +342,17 @@ public:
   { m_values->reserve( ID_capacity ); }
 
   /*!
+   * \brief Resize space to hold the specified number of IDs.
+   *
+   * \param [in] ID_size the number of IDs to resize the space for.
+   * \param [in] value_size not used, does not need to be specified.
+   *
+   * \post getNumberOfIDs() == newIDSize
+   */
+  void resize( IndexType ID_size, IndexType AXOM_NOT_USED(value_size)=0 )
+  { m_values->resize( ID_size ); }
+
+  /*!
    * \brief Shrink the array so that there is no extra capacity.
    *
    * \post getIDCapacity() == getNumberOfIDs()

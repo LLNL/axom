@@ -671,6 +671,22 @@ public:
   { return m_cell_connectivity->getValueCapacity(); }
 
   /*!
+   * \brief Resizes the cell connectivity array and cell-centered fields of this
+   *  mesh instance to hold the specified number of cells.
+   *
+   * \param [in] cell_size the number of cells to resize to.
+   *
+   * \post getNumberOfCells() == cell_size
+   */
+  void resizeCells( IndexType cell_size )
+  {
+    IndexType connectivity_size =
+     ( hasMixedCellTypes() ) ? USE_DEFAULT : getNumberOfCellNodes()*cell_size;
+    m_cell_connectivity->resize( cell_size, connectivity_size );
+    m_mesh_fields[ CELL_CENTERED ]->resize( cell_size );
+  }
+
+  /*!
    * \brief Reserve space for the given number of cells.
    *
    * \param [in] cell_capacity the number of cells to reserve space for.
@@ -720,6 +736,20 @@ public:
   {
     m_coordinates->setResizeRatio( ratio );
     m_mesh_fields[ NODE_CENTERED ]->setResizeRatio( ratio );
+  }
+
+  /*!
+   * \brief Resizes the nodal coordinates and fields of this mesh instance to
+   *  the specified number of nodes.
+   *
+   * \param [in] nodes_size the number of nodes to resize to.
+   *
+   * \post getNumberOfNodes() == nodes_size
+   */
+  void resizeNodes( IndexType nodes_size )
+  {
+    m_coordinates->resize( nodes_size );
+    m_mesh_fields[ NODE_CENTERED ]->resize( nodes_size );
   }
 
   /*!
@@ -775,6 +805,27 @@ public:
   }
 
 /// @}
+
+  /*!
+   * \brief Resizes this mesh instance to the specified number of nodes & cells.
+   *
+   * \param [in] node_size the desired number of nodes
+   * \param [in] cell_size the desired number of cells
+   *
+   * \note This method will also resize the node-centered and cell-centered
+   *  fields accordingly.
+   *
+   * \post getNumberOfNodes() == nodes_size
+   * \post getNumberOfCells() == cell_size
+   *
+   * \see resizeNodes()
+   * \see resizeCells()
+   */
+  void resize( IndexType node_size, IndexType cell_size )
+  {
+    resizeNodes( node_size );
+    resizeCells( cell_size );
+  }
 
   /*!
    * \brief Reserve space for the given number of nodes and cells.
@@ -878,16 +929,30 @@ public:
    *  getNumberOfCells() + 1. Returns nullptr if
    *  TOPO == SINGLE_SHAPE.
    */
+  /// @{
+
+  IndexType* getCellOffsetsArray()
+  { return m_cell_connectivity->getOffsetPtr(); }
+
   const IndexType* getCellOffsetsArray() const
   { return m_cell_connectivity->getOffsetPtr(); }
+
+  /// @}
 
   /*!
    * \brief Return a constant pointer to the cell types array, of length
    *  getNumberOfCells(). Returns nullptr if
    *  TOPO == SINGLE_SHAPE.
    */
+  /// @{
+
+  CellType* getCellTypesArray()
+  { return m_cell_connectivity->getTypePtr(); }
+
   const CellType* getCellTypesArray() const
   { return m_cell_connectivity->getTypePtr(); }
+
+  /// @}
 
   /*!
    * \brief Append a cell to the mesh.
@@ -1165,9 +1230,9 @@ public:
    * \note The first method is only valid for 2D meshes while the second
    *  is only for 3D.
    * \pre 0 <= nodeID <= getNumberOfNodes
-   * x != nullptr
-   * y != nullptr
-   * z != nullptr
+   * \pre x != nullptr
+   * \pre y != nullptr if 2-D or 3-D
+   * \pre z != nullptr if 3-D
    * \pre n >= 0
    */
   /// @{
