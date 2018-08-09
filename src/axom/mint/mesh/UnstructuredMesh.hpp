@@ -23,13 +23,14 @@
 #include "axom/core/Types.hpp"
 
 // Mint includes
+#include "axom/mint/config.hpp"
 #include "axom/mint/core/Array.hpp"
 #include "axom/mint/mesh/CellTypes.hpp"
 #include "axom/mint/mesh/ConnectivityArray.hpp"
 #include "axom/mint/mesh/Mesh.hpp"
 #include "axom/mint/mesh/MeshCoordinates.hpp"
 #include "axom/mint/mesh/MeshTypes.hpp"
-#include "axom/mint/config.hpp"
+#include "axom/mint/mesh/internal/MeshHelpers.hpp"
 
 // Slic includes
 #include "axom/slic/interface/slic.hpp"
@@ -212,23 +213,22 @@ public:
    * \brief Constructs an Unstructured single topology mesh using the provided
    *  external buffers.
    *
-   * \param [in] ndims the number of dimensions.
    * \param [in] cell_type the cell type of the mesh.
    * \param [in] n_cells the number of cells in the mesh.
-   * \param [in] cell_capacity the number of cells able to be stored in the
-   *  provided connectivity array.
-   * \param [in] connectivity the connectivity array. Must be of length at least
-   *  cell_capacity * getCellInfo( cell_type ).num_nodes.
+   * \param [in] cell_capacity max number of cells the mesh is able to hold.
+   * \param [in] connectivity the cell connectivity array.
    * \param [in] n_nodes the number of nodes in the mesh.
-   * \param [in] node_capacity the number of nodes able to be stored in the
-   *  provided coordinate arrays.
+   * \param [in] node_capacity max number of nodes the mesh is able to hold
    * \param [in] x pointer to the x-coordinates
    * \param [in] y pointer to the y-coordinates (required only for 2D and 3D)
-   * \param [in] z pointer to the z-coordinates (required only 3D)
+   * \param [in] z pointer to the z-coordinates (required only for 3D)
    *
-   * \note the provided coordinate arrays are to be of length at least
+   * \note The length of the connectivity array must be at least
+   *  cell_capacity * getCellInfo( cell_type ).num_nodes.
+   * \note The provided coordinate arrays have to be of length at least
    *  node_capacity.
-   * \note This constructor is only active when TOPO == SINGLE_SHAPE.
+   *
+   * \note This constructor is only supported when TOPO == SINGLE_SHAPE.
    *
    * \post getCellType() == cell_type
    * \post getNumberOfCells() == n_cells
@@ -237,18 +237,20 @@ public:
    * \post getNodeCapacity() == node_capacity
    * \post isExternal() == true
    */
-  UnstructuredMesh( int ndims, CellType cell_type,
+  UnstructuredMesh( CellType cell_type,
                     IndexType n_cells, IndexType cell_capacity,
-                    IndexType* connectivity, IndexType n_nodes,
-                    IndexType node_capacity, double* x, double* y=nullptr,
+                    IndexType* connectivity,
+                    IndexType n_nodes, IndexType node_capacity,
+                    double* x,
+                    double* y=nullptr,
                     double* z=nullptr ) :
-    Mesh( ndims, UNSTRUCTURED_MESH ),
+    Mesh( internal::dim( x,y,z ), UNSTRUCTURED_MESH ),
     m_coordinates( new MeshCoordinates( n_nodes, node_capacity, x, y, z ) ),
     m_cell_connectivity( new CellConnectivity( cell_type, n_cells, connectivity,
                                                cell_capacity ) )
   {
     AXOM_STATIC_ASSERT_MSG( TOPO == SINGLE_SHAPE,
-                            "This constructor is only active for single topology meshes." );
+              "This constructor is only active for single topology meshes." );
 
     SLIC_ASSERT( x != nullptr );
     SLIC_ASSERT( m_ndims < 2 || y != nullptr );
@@ -258,31 +260,60 @@ public:
   }
 
   /*!
+   * \brief Constructs an Unstructured single topology mesh using the provided
+   *  external buffers.
+   *
+   * \param [in] cell_type the cell type of the mesh
+   * \param [in] n_cells the number of cells in the mesh
+   * \param [in] connectivity the cell connectivity array.
+   * \param [in] n_nodes the number of nodes in the mesh
+   * \param [in] x pointer to the x-coordinates
+   * \param [in] y pointer to the y-coordinates (required only for 2D or 3D)
+   * \param [in] z pointer to the z-coordinates (required only for 3D)
+   *
+   * \note This constructor is only supported when TOPO == SINGLE_SHAPE.
+   *
+   * \post getCellType() == cell_type
+   * \post getNumberOfCells() == n_cells
+   * \post getCellCapacity == n_cells
+   * \post getNumberOfNodes() == n_nodes
+   * \post getNodeCapacity() == n_nodes
+   * \post isExternal() == true
+   */
+  UnstructuredMesh( CellType cell_type,
+                    IndexType n_cells,
+                    IndexType* connectivity,
+                    IndexType n_nodes,
+                    double* x,
+                    double* y=nullptr,
+                    double* z=nullptr ) :
+    UnstructuredMesh( cell_type,
+                      n_cells,n_cells,connectivity,
+                      n_nodes, n_nodes, x, y, z )
+  { }
+
+  /*!
    * \brief Constructs an Unstructured mixed topology mesh using the provided
    *  external buffers.
    *
-   * \param [in] ndims the number of dimensions.
    * \param [in] n_cells the number of cells in the mesh.
-   * \param [in] cell_capacity the number of cells able to be stored in the
-   *  provided connectivity array.
-   * \param [in] connectivity_capacity the number of vertices able to be stored
-   *  in the provided connectivity array.
-   * \param [in] connectivity the connectivity array. Must be Of length at least
-   *  connectivity_capacity.
-   * \param [in] offsets the offsets of each ID, of length at lesat
-   *  cell_capacity + 1.
-   * \param [in] types the array of cell types. Must be of length at least
-   *  cell_capacity.
+   * \param [in] cell_capacity max number of cells the mesh is able to hold
+   * \param [in] connectivity_capacity max capacity of the connectivity array
+   * \param [in] connectivity the connectivity array.
+   * \param [in] offsets array of cell offsets (of length cell_capacity + 1)
+   * \param [in] types array of cell types (of length cell_capacity)
    * \param [in] n_nodes the number of nodes in the mesh.
-   * \param [in] node_capacity the number of nodes able to be stored in the
-   *  provided coordinate arrays.
+   * \param [in] node_capacity max number of nodes the mesh can hold
    * \param [in] x pointer to the x-coordinates
    * \param [in] y pointer to the y-coordinates (required only for 2D and 3D)
    * \param [in] z pointer to the z-coordinates (required only 3D)
    *
+   * \note The supplied connectivity array must have a length that is at least
+   *  equal to the specified connectivity_capacity.
    * \note the provided coordinate arrays are to be of length at least
    *  node_capacity.
-   * \note This constructor is only active when TOPO == MIXED_SHAPE.
+   *
+   * \note This constructor is only supported when TOPO == MIXED_SHAPE.
    *
    * \post getCellType() == UNDEFINED_CELL
    * \post getNumberOfCells() == n_cells
@@ -291,12 +322,16 @@ public:
    * \post getNodeCapacity() == node_capacity
    * \post isExternal() == true
    */
-  UnstructuredMesh( int ndims, IndexType n_cells, IndexType cell_capacity,
-                    IndexType connectivity_capacity, IndexType* connectivity,
-                    IndexType* offsets, CellType* types, IndexType n_nodes,
-                    IndexType node_capacity, double* x, double* y=nullptr,
+  UnstructuredMesh( IndexType n_cells,
+                    IndexType cell_capacity, IndexType connectivity_capacity,
+                    IndexType* connectivity,
+                    IndexType* offsets,
+                    CellType* types,
+                    IndexType n_nodes, IndexType node_capacity,
+                    double* x,
+                    double* y=nullptr,
                     double* z=nullptr ) :
-    Mesh( ndims, UNSTRUCTURED_MESH ),
+    Mesh( internal::dim( x,y,z ), UNSTRUCTURED_MESH ),
     m_coordinates( new MeshCoordinates( n_nodes, node_capacity, x, y, z ) ),
     m_cell_connectivity( new CellConnectivity( n_cells, connectivity, offsets,
                                                types, cell_capacity,
@@ -312,6 +347,46 @@ public:
     m_has_mixed_topology = true;
     initialize();
   }
+
+  /*!
+   * \brief Constructs an Unstructured mixed topology mesh using the provided
+   *  external mesh buffers.
+   *
+   * \param [in] n_cells the number of cells in the mesh.
+   * \param [in] connectivity_size the size of the connectivity array
+   * \param [in] connectivity the connectivity array
+   * \param [in] offsets array of cell offsets (of length n_cells+1)
+   * \param [in] types array of cell types (of length n_cells)
+   * \param [in] n_nodes the number of nodes in the mesh
+   * \param [in] x pointer to the x-coordinates
+   * \param [in] y pointer to the y-coordinates (required only for 2D and 3D)
+   * \param [in] z pointer to the z-coordinates (required only for 3D)
+   *
+   * \note The supplied connectivity array must have a length that is at least
+   *  equal to the specified connectivity_capacity.
+   * \note the provided coordinate arrays are to be of length at least
+   *  node_capacity.
+   *
+   * \post getCellType() == UNDEFINED_CELL
+   * \post getNumberOfCells() == n_cells
+   * \post getCellCapacity == n_cells
+   * \post getNumberOfNodes() == n_nodes
+   * \post getNodeCapacity() == n_cells
+   * \post isExternal() == true
+   */
+  UnstructuredMesh( IndexType n_cells,
+                    IndexType connectivity_size,
+                    IndexType* connectivity,
+                    IndexType* offsets,
+                    CellType* types,
+                    IndexType n_nodes,
+                    double* x,
+                    double* y=nullptr,
+                    double* z=nullptr ) :
+        UnstructuredMesh( n_cells, n_cells, connectivity_size, connectivity,
+                          offsets, types,
+                          n_nodes, n_nodes, x, y, z )
+  { }
 
 /// @}
 

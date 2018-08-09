@@ -283,7 +283,7 @@ createExternalSingle( int ndims, CellType cell_type, IndexType cell_capacity,
                               cell_capacity;
   IndexType* connectivity = new IndexType[ connec_capacity ];
 
-  return new UnstructuredMesh< SINGLE_SHAPE >( ndims, cell_type, 0,
+  return new UnstructuredMesh< SINGLE_SHAPE >( cell_type, 0,
                                                cell_capacity, connectivity,
                                                0, node_capacity, x, y, z );
 }
@@ -317,7 +317,7 @@ createExternalMixed( int ndims, IndexType cell_capacity,
   IndexType* offsets = new IndexType[ cell_capacity + 1 ];
   CellType* types = new CellType[ cell_capacity ];
 
-  return new UnstructuredMesh< MIXED_SHAPE >( ndims, 0, cell_capacity,
+  return new UnstructuredMesh< MIXED_SHAPE >( 0, cell_capacity,
                                               connec_capacity, connectivity,
                                               offsets, types, 0,
                                               node_capacity, x, y, z );
@@ -435,7 +435,7 @@ void deleteAndDuplicateExternalMesh( UnstructuredMesh< SINGLE_SHAPE >*& mesh )
   }
 
   delete mesh;
-  mesh = new UnstructuredMesh< SINGLE_SHAPE >( ndims, cell_type, n_cells,
+  mesh = new UnstructuredMesh< SINGLE_SHAPE >( cell_type, n_cells,
                                                cell_capacity, connectivity,
                                                n_nodes, node_capacity,
                                                x, y, z );
@@ -509,7 +509,7 @@ void deleteAndDuplicateExternalMesh( UnstructuredMesh< MIXED_SHAPE >*& mesh )
   }
 
   delete mesh;
-  mesh = new UnstructuredMesh< MIXED_SHAPE >( ndims, n_cells, cell_capacity,
+  mesh = new UnstructuredMesh< MIXED_SHAPE >( n_cells, cell_capacity,
                                               connec_capacity, connectivity,
                                               offsets, types, n_nodes,
                                               node_capacity, x, y, z );
