@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsa/axom/thirdparty_libs/builds/2018_08_06_15_32_42/spack/opt/spack/blueos_3_ppc64le_ib/xl-coral/cmake-3.9.6-tgyt2paysrstkcpr2vioirnqrodq66nz/bin/cmake
+# cmake executable path: /usr/workspace/wsa/axom/thirdparty_libs/builds/2018_08_08_11_27_15/spack/opt/spack/blueos_3_ppc64le_ib/xl-coral/cmake-3.9.6-tgyt2paysrstkcpr2vioirnqrodq66nz/bin/cmake
 
 #######
 # using xl@coral compiler spec
@@ -25,7 +25,7 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-2018.05.18/bin/xlf2003" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2018_08_06_15_32_42/spack/opt/spack/blueos_3_ppc64le_ib/xl-coral" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2018_08_08_11_27_15/spack/opt/spack/blueos_3_ppc64le_ib/xl-coral" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-m2nzqvxxqop7g6m72zus2iz5dyyljgds" CACHE PATH "")
@@ -47,7 +47,7 @@ set(DOXYGEN_EXECUTABLE "${TPL_ROOT}/doxygen-1.8.11-wl2hwvov4xx6exbzvljnftuhnw6tu
 # sphinx 1.4.5 from uberenv
 set(SPHINX_EXECUTABLE "${TPL_ROOT}/python-2.7.15-xupdsoarxpjkqkekkooltgc42lkio6s5/bin/sphinx-build" CACHE PATH "")
 
-# shroud 0.10.0 from uberenv
+# shroud 0.10.1 from uberenv
 set(SHROUD_EXECUTABLE "${TPL_ROOT}/python-2.7.15-xupdsoarxpjkqkekkooltgc42lkio6s5/bin/shroud" CACHE PATH "")
 
 # uncrustify from uberenv

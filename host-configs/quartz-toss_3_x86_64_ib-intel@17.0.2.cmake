@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsa/axom/thirdparty_libs/builds/2018_08_06_17_55_18/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.2/cmake-3.9.6-ajm3es6bgqjnl34pxwxzssi7jlt2z5ob/bin/cmake
+# cmake executable path: /usr/workspace/wsa/axom/thirdparty_libs/builds/2018_08_09_16_30_09/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.2/cmake-3.9.6-ajm3es6bgqjnl34pxwxzssi7jlt2z5ob/bin/cmake
 
 #######
 # using intel@17.0.2 compiler spec
@@ -25,7 +25,7 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 set(CMAKE_Fortran_COMPILER "/usr/tce/packages/intel/intel-17.0.2/bin/ifort" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2018_08_06_17_55_18/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.2" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2018_08_09_16_30_09/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.2" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-43ycfmqnngbkrxz7ql4rursyreuxjwz5" CACHE PATH "")
@@ -47,7 +47,7 @@ set(DOXYGEN_EXECUTABLE "${TPL_ROOT}/doxygen-1.8.11-giy2sqrkhyxcbbqi4tuvyivkftjiw
 # sphinx 1.4.5 from uberenv
 set(SPHINX_EXECUTABLE "${TPL_ROOT}/python-2.7.15-vdhr5x2jxeihxnwswvjghheeb3tqd6xj/bin/sphinx-build" CACHE PATH "")
 
-# shroud 0.10.0 from uberenv
+# shroud 0.10.1 from uberenv
 set(SHROUD_EXECUTABLE "${TPL_ROOT}/python-2.7.15-vdhr5x2jxeihxnwswvjghheeb3tqd6xj/bin/shroud" CACHE PATH "")
 
 # uncrustify from uberenv

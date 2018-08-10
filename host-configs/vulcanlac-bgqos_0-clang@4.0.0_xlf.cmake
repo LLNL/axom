@@ -25,7 +25,7 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 set(CMAKE_Fortran_COMPILER "/opt/ibmcmp/xlf/bg/14.1/bin/bgxlf2003" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2018_08_04_20_01_46/spack/opt/spack/bgqos_0/clang-4.0.0_xlf" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsa/axom/thirdparty_libs/builds/2018_08_08_11_36_47/spack/opt/spack/bgqos_0/clang-4.0.0_xlf" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-4e4odzhtauwbuqgh2rkwp3wnljdqrhri" CACHE PATH "")
