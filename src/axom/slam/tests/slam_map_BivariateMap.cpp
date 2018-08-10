@@ -357,8 +357,10 @@ void constructAndTestBivariateMapIterator(int stride)
   for (PositionType idx1 = 0 ; idx1 < m.firstSetSize() ; ++idx1)
   {
     int idx2 = 0;
+    auto begin_iter = m.begin(idx1);
     for ( auto iter = m.begin(idx1) ; iter != m.end(idx1) ; ++iter, ++idx2)
     {
+      EXPECT_EQ(begin_iter[idx2], getVal<DataType>(idx1, idx2));
       EXPECT_EQ(*iter, getVal<DataType>(idx1, idx2));
       for (PositionType i = 0 ; i < iter.numComp() ; i++)
       {

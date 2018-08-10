@@ -407,7 +407,7 @@ public:
     /** \brief Returns the first component value after n increments.  */
     DataType & operator[](PositionType n)
     {
-      return *(this+(n));
+      return *(this->operator+(n));
     }
 
     /** \brief Same as operator() */
