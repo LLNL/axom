@@ -1,4 +1,4 @@
-Axom utilities {#axomutiltop}
+Core {#coretop}
 =============================
 
 Shared utility functions and classes supporting all Axom components.
