@@ -121,7 +121,7 @@ int signed_distance_init( const std::string& file, MPI_Comm comm )
                                      s_surface_mesh,
                                      s_intra_node_comm,
                                      s_window
-                                    );
+                                     );
   }
   else
   {
@@ -131,7 +131,7 @@ int signed_distance_init( const std::string& file, MPI_Comm comm )
 #else
 
   SLIC_WARNING_IF( Parameters.use_shared_memory,
-  "Shared memory requires MPI3 and building Axom with AXOM_USE_MPI3 set to ON");
+                   "Shared memory requires MPI3 and building Axom with AXOM_USE_MPI3 set to ON");
 
   rc = internal::read_mesh( file, s_surface_mesh, comm );
 #endif
@@ -258,14 +258,14 @@ void signed_distance_set_verbose( bool status )
 void signed_distance_use_shared_memory( bool status )
 {
   SLIC_ERROR_IF(
-   signed_distance_initialized(),
-   "signed distance query already initialized; setting option has no effect!" );
+    signed_distance_initialized(),
+    "signed distance query already initialized; setting option has no effect!" );
 
   Parameters.use_shared_memory = status;
 
 #ifndef AXOM_USE_MPI3
   SLIC_WARNING_IF( Parameters.use_shared_memory,
-      "Enabling shared memory requires MPI-3. Option is ignored!" );
+                   "Enabling shared memory requires MPI-3. Option is ignored!" );
 #endif
 }
 

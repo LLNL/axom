@@ -248,13 +248,15 @@ void STLReader::getMesh(
   // pre-allocate space to store the mesh
   if ( !mesh->isExternal() )
   {
-     mesh->resize( m_num_nodes, m_num_faces );
+    mesh->resize( m_num_nodes, m_num_faces );
   }
 
-  SLIC_ERROR_IF( mesh->getNumberOfNodes() != m_num_nodes,
-   "mesh number of nodes does not match the number of nodes in the STL file!" );
-  SLIC_ERROR_IF( mesh->getNumberOfCells() != m_num_faces,
-   "mesh number of cells does not match number of triangles in the STL file!" );
+  SLIC_ERROR_IF(
+    mesh->getNumberOfNodes() != m_num_nodes,
+    "mesh number of nodes does not match the number of nodes in the STL file!" );
+  SLIC_ERROR_IF(
+    mesh->getNumberOfCells() != m_num_faces,
+    "mesh number of cells does not match number of triangles in the STL file!" );
 
 
   double* x = mesh->getCoordinateArray( mint::X_COORDINATE );
