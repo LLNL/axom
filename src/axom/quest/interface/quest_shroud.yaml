@@ -87,6 +87,7 @@ declarations:
       - decl: void signed_distance_set_max_levels( int maxLevels )
       - decl: void signed_distance_set_max_occupancy( int maxOccupancy )
       - decl: void signed_distance_set_verbose( bool status )
+      - decl: void signed_distance_use_shared_memory( bool status )
 
       - decl: double signed_distance_evaluate( double x, double y, double z )
 
