@@ -18,6 +18,7 @@
 // Standard C++ headers
 #include <fstream>
 
+#include "conduit_blueprint.hpp" // for setting conduit's message logging handlers
 #include "conduit_utils.hpp" // for setting conduit's message logging handlers
 
 // Associated header file
@@ -573,6 +574,43 @@ void DataStore::loadAttributeLayout(Node& node)
     }
   }
 }
+
+void DataStore::generateBlueprintIndex(std::string& domain_path,
+                                       std::string& domain_name,
+                                       std::string& mesh_name,
+                                       std::string& index_path,
+                                       int num_domains)
+{
+  Group* domain;
+  if (domain_path == "/")
+  {
+    domain = getRoot();
+  }
+  else
+  {
+    domain = getRoot()->getGroup(domain_path);
+  } 
+
+  conduit::Node mesh_node;
+  domain->createNativeLayout(mesh_node);
+
+  Group* bpindex = getRoot()->createGroup(index_path);
+
+  conduit::Node info;
+  if (conduit::blueprint::verify("mesh", mesh_node, info))
+  {
+
+    conduit::Node index;
+    conduit::blueprint::mesh::generate_index(mesh_node[domain_name],
+                                             mesh_name,
+                                             num_domains,
+                                             //index["blueprint_index"]);
+                                             index);
+
+    bpindex->importConduitTree(index);
+  }
+}
+
 
 /*
  *************************************************************************

@@ -382,6 +382,13 @@ public:
   IndexType getNextValidAttributeIndex(IndexType idx) const;
 
 //@}
+
+  void generateBlueprintIndex(std::string& domain_path,
+                              std::string& domain_name,
+                              std::string& mesh_name,
+                              std::string& index_path,
+                              int num_domains);
+
 //----------------
 
 
