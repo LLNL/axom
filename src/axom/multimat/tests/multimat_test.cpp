@@ -39,6 +39,7 @@ TEST(multimat,construct_empty_multimat_obj)
   EXPECT_TRUE(mm.isValid(true));
 }
 
+/* A structure to create test data for the MultiMat class. */
 template<typename DataType>
 struct MM_test_data {
   std::vector<bool> fillBool_cellcen;
@@ -165,7 +166,8 @@ struct MM_test_data {
 
   } //end constructor
 
-  //if val == 0, remove the entry. otherwise set entry using this volfrac and the get_val function
+  //if val == 0, remove the entry. otherwise set entry using this volfrac 
+  //and the get_val function
   void setVal(int ci, int mi, double volfrac_val)
   {
     int cellcen_idx = ci * num_mats + mi;
@@ -192,8 +194,16 @@ struct MM_test_data {
     }
 
     for (int si = 0; si < stride; si++) {
-      cellmat_dense_arr[cellcen_idx*stride + si] = to_be_filled ? get_val(ci, mi, si) : 0;
-      matcell_dense_arr[matcen_idx*stride + si] = to_be_filled ? get_val(ci, mi, si) : 0;
+      if(to_be_filled)
+      {
+        cellmat_dense_arr[cellcen_idx*stride + si] = get_val(ci, mi, si);
+        matcell_dense_arr[matcen_idx*stride + si] = get_val(ci, mi, si);
+      }
+      else
+      {
+        cellmat_dense_arr[cellcen_idx*stride + si] = 0;
+        matcell_dense_arr[matcen_idx*stride + si] = 0;
+      }
     }
 
     int sparseidx = 0;
@@ -204,26 +214,32 @@ struct MM_test_data {
     { //just update
       volfrac_cellcen_sparse[cellmat_beginvecs[ci] + sparseidx] = volfrac_val;
       for (int si = 0; si < stride; si++) 
-        cellmat_sparse_arr[(cellmat_beginvecs[ci] + sparseidx)*stride + si] = get_val(ci, mi, si);
+      {
+        int idx = (cellmat_beginvecs[ci] + sparseidx)*stride + si;
+        cellmat_sparse_arr[idx] = get_val(ci, mi, si);
+      }
     }
     else if (already_filled && !to_be_filled)
     { //remove the entry
       volfrac_cellcen_sparse.erase(
         volfrac_cellcen_sparse.begin() + cellmat_beginvecs[ci] + sparseidx );
       for (int si = 0; si < stride; si++)
-        cellmat_sparse_arr.erase(
-          cellmat_sparse_arr.begin() + (cellmat_beginvecs[ci] + sparseidx)*stride);
+      {
+        cellmat_sparse_arr.erase(cellmat_sparse_arr.begin() + 
+                                 (cellmat_beginvecs[ci] + sparseidx)*stride);
+      }
       for (int i = ci + 1; i < num_cells; i++)
         cellmat_beginvecs[i] -= 1;
     }
     else if (!already_filled && to_be_filled)
     { //adding an entry
-      volfrac_cellcen_sparse.insert(
-        volfrac_cellcen_sparse.begin() + cellmat_beginvecs[ci] + sparseidx, volfrac_val);
+      volfrac_cellcen_sparse.insert( volfrac_cellcen_sparse.begin() + 
+      (cellmat_beginvecs[ci] + sparseidx), volfrac_val);
       for (int si = 0; si < stride; si++)
-        cellmat_sparse_arr.insert(
-          cellmat_sparse_arr.begin() + (cellmat_beginvecs[ci] + sparseidx)*stride + si, 
-          get_val(ci, mi, si));
+      {
+        cellmat_sparse_arr.insert( cellmat_sparse_arr.begin() + 
+          (cellmat_beginvecs[ci] + sparseidx)*stride + si, get_val(ci, mi, si));
+      }
       for (int i = ci + 1; i < num_cells; i++)
         cellmat_beginvecs[i] += 1;
     }
@@ -235,26 +251,32 @@ struct MM_test_data {
     { //just update
       volfrac_matcen_sparse[matcell_beginvecs[mi] + sparseidx] = volfrac_val;
       for (int si = 0; si < stride; si++)
-        matcell_sparse_arr[(matcell_beginvecs[mi] + sparseidx)*stride + si] = get_val(ci, mi, si);
+      {
+        matcell_sparse_arr[(matcell_beginvecs[mi] + sparseidx)*stride + si] = 
+           get_val(ci, mi, si);
+      }
     }
     else if (already_filled && !to_be_filled)
     { //remove the entry
       volfrac_matcen_sparse.erase(
         volfrac_matcen_sparse.begin() + matcell_beginvecs[mi] + sparseidx);
       for (int si = 0; si < stride; si++)
-        matcell_sparse_arr.erase(
-          matcell_sparse_arr.begin() + (matcell_beginvecs[mi] + sparseidx)*stride);
+      {
+        matcell_sparse_arr.erase( matcell_sparse_arr.begin() + 
+                                 (matcell_beginvecs[mi] + sparseidx)*stride);
+      }
       for (int i = mi + 1; i < num_mats; i++)
         matcell_beginvecs[i] -= 1;
     }
     else if (!already_filled && to_be_filled)
     { //adding an entry
-      volfrac_matcen_sparse.insert(
-        volfrac_matcen_sparse.begin() + matcell_beginvecs[mi] + sparseidx, volfrac_val);
+      volfrac_matcen_sparse.insert(volfrac_matcen_sparse.begin() + 
+         matcell_beginvecs[mi] + sparseidx, volfrac_val);
       for (int si = 0; si < stride; si++)
-        matcell_sparse_arr.insert(
-          matcell_sparse_arr.begin() + (matcell_beginvecs[mi] + sparseidx)*stride + si, 
-          get_val(ci, mi, si));
+      {
+        matcell_sparse_arr.insert( matcell_sparse_arr.begin() + 
+        (matcell_beginvecs[mi] + sparseidx)*stride + si, get_val(ci, mi, si));
+      }
       for (int i = mi + 1; i < num_mats; i++)
         matcell_beginvecs[i] += 1;
     }
@@ -266,9 +288,10 @@ struct MM_test_data {
   }
 };
 
-
+/* Check the value using MultiMat findValud function */
 template<typename DataType>
-void check_values(MultiMat& mm, std::string arr_name, MM_test_data<DataType>& data)
+void check_values(MultiMat& mm, std::string arr_name, 
+                  MM_test_data<DataType>& data)
 {
   MultiMat::Field2D<DataType>& map = mm.get2dField<DataType>(arr_name);
   EXPECT_TRUE(map.isValid());
@@ -290,11 +313,14 @@ void check_values(MultiMat& mm, std::string arr_name, MM_test_data<DataType>& da
         int dense_idx = ci * data.num_mats + mi;
 
         if (mm.getSparcityLayout() == SparcityLayout::DENSE) {
-          if(*d != data.cellmat_dense_arr[dense_idx*data.stride + s])
-          EXPECT_EQ(*d, data.cellmat_dense_arr[dense_idx*data.stride + s]);
+          if (*d != data.cellmat_dense_arr[dense_idx*data.stride + s])
+          {
+            EXPECT_EQ(*d, data.cellmat_dense_arr[dense_idx*data.stride + s]);
+          }
         }
         else {
-          if (data.fillBool_cellcen[dense_idx]) {
+          if (data.fillBool_cellcen[dense_idx]) 
+          {
             EXPECT_NE(d, nullptr);
             EXPECT_EQ(*d, data.cellmat_dense_arr[dense_idx*data.stride + s]);
             if(s == data.stride-1)
@@ -310,8 +336,10 @@ void check_values(MultiMat& mm, std::string arr_name, MM_test_data<DataType>& da
 }
 
 
+/* Create a new multimat object of type T for testing. */
 template<typename T>
-MultiMat* newMM(MM_test_data<T>& data, DataLayout layout_used, SparcityLayout sparcity_used, std::string& array_name)
+MultiMat* newMM(MM_test_data<T>& data, DataLayout layout_used, 
+  SparcityLayout sparcity_used, std::string& array_name)
 {
   MultiMat* mm_ptr = new MultiMat(layout_used, sparcity_used);
   MultiMat& mm = *mm_ptr;
@@ -340,20 +368,26 @@ MultiMat* newMM(MM_test_data<T>& data, DataLayout layout_used, SparcityLayout sp
 
   if (layout_used == DataLayout::CELL_CENTRIC) {
     if (sparcity_used == SparcityLayout::DENSE)
-      mm.addField(array_name, FieldMapping::PER_CELL_MAT, data.cellmat_dense_arr.data(), data.stride);
+      mm.addField(array_name, FieldMapping::PER_CELL_MAT,
+        data.cellmat_dense_arr.data(), data.stride);
     else
-      mm.addField(array_name, FieldMapping::PER_CELL_MAT, data.cellmat_sparse_arr.data(), data.stride);
+      mm.addField(array_name, FieldMapping::PER_CELL_MAT, 
+        data.cellmat_sparse_arr.data(), data.stride);
   }
   else {
     if (sparcity_used == SparcityLayout::DENSE)
-      mm.addField(array_name, FieldMapping::PER_CELL_MAT, data.matcell_dense_arr.data(), data.stride);
+      mm.addField(array_name, FieldMapping::PER_CELL_MAT, 
+        data.matcell_dense_arr.data(), data.stride);
     else
-      mm.addField(array_name, FieldMapping::PER_CELL_MAT, data.matcell_sparse_arr.data(), data.stride);
+      mm.addField(array_name, FieldMapping::PER_CELL_MAT, 
+        data.matcell_sparse_arr.data(), data.stride);
   }
 
   return mm_ptr;
 }
 
+//This doesn't test the MultiMat class, it tests the MM_test_data class
+//to make sure the setValue function works correctly, so it can be used
 TEST(multimat, test_data_setval)
 {
   const int num_cells = 20;
@@ -362,39 +396,43 @@ TEST(multimat, test_data_setval)
   MM_test_data<double> data(num_cells, num_mats, stride_val);
 
   { //remove everything, add everything back, and check
-    auto data_copy = data;
+    auto data_cpy = data;
 
-    for (int ci = 0; ci < data_copy.num_cells; ci++)
-      for (int mi = 0; mi < data_copy.num_mats; mi++) {
-        int si = 0;
-        int dense_idx = ci * num_mats + mi;
-        data_copy.setVal(ci, mi, 0);
+    for (int ci = 0; ci < data_cpy.num_cells; ci++)
+    {
+      for (int mi = 0; mi < data_cpy.num_mats; mi++) 
+      {
+        data_cpy.setVal(ci, mi, 0);
       }
+    }
 
     for (int ci = 0; ci < data.num_cells; ci++)
-      for (int mi = 0; mi < data.num_mats; mi++) {
-        int si = 0;
+    {
+      for (int mi = 0; mi < data.num_mats; mi++) 
+      {
         int dense_idx = ci * num_mats + mi;
-        data_copy.setVal(ci, mi, data.volfrac_cellcen_dense[dense_idx]);
+        data_cpy.setVal(ci, mi, data.volfrac_cellcen_dense[dense_idx]);
       }
+    }
 
-    SLIC_ASSERT(data_copy.fillBool_cellcen == data.fillBool_cellcen);
-    SLIC_ASSERT(data_copy.fillBool_matcen == data.fillBool_matcen);
-    SLIC_ASSERT(data_copy.matcount == data.matcount);
-    SLIC_ASSERT(data_copy.volfrac_cellcen_dense == data.volfrac_cellcen_dense);
-    SLIC_ASSERT(data_copy.volfrac_matcen_dense == data.volfrac_matcen_dense);
-    SLIC_ASSERT(data_copy.volfrac_cellcen_sparse == data.volfrac_cellcen_sparse);
-    SLIC_ASSERT(data_copy.volfrac_matcen_sparse == data.volfrac_matcen_sparse);
-    SLIC_ASSERT(data_copy.cellmat_dense_arr == data.cellmat_dense_arr);
-    SLIC_ASSERT(data_copy.cellmat_sparse_arr == data.cellmat_sparse_arr);
-    SLIC_ASSERT(data_copy.matcell_dense_arr == data.matcell_dense_arr);
-    SLIC_ASSERT(data_copy.matcell_sparse_arr == data.matcell_sparse_arr);
-    SLIC_ASSERT(data_copy.cellmat_beginvecs == data.cellmat_beginvecs);
-    SLIC_ASSERT(data_copy.matcell_beginvecs == data.matcell_beginvecs);
+    SLIC_ASSERT(data_cpy.fillBool_cellcen == data.fillBool_cellcen);
+    SLIC_ASSERT(data_cpy.fillBool_matcen == data.fillBool_matcen);
+    SLIC_ASSERT(data_cpy.matcount == data.matcount);
+    SLIC_ASSERT(data_cpy.volfrac_cellcen_dense == data.volfrac_cellcen_dense);
+    SLIC_ASSERT(data_cpy.volfrac_matcen_dense == data.volfrac_matcen_dense);
+    SLIC_ASSERT(data_cpy.volfrac_cellcen_sparse == data.volfrac_cellcen_sparse);
+    SLIC_ASSERT(data_cpy.volfrac_matcen_sparse == data.volfrac_matcen_sparse);
+    SLIC_ASSERT(data_cpy.cellmat_dense_arr == data.cellmat_dense_arr);
+    SLIC_ASSERT(data_cpy.cellmat_sparse_arr == data.cellmat_sparse_arr);
+    SLIC_ASSERT(data_cpy.matcell_dense_arr == data.matcell_dense_arr);
+    SLIC_ASSERT(data_cpy.matcell_sparse_arr == data.matcell_sparse_arr);
+    SLIC_ASSERT(data_cpy.cellmat_beginvecs == data.cellmat_beginvecs);
+    SLIC_ASSERT(data_cpy.matcell_beginvecs == data.matcell_beginvecs);
 
   }
 }
 
+/* Test constructing MultiMat object and converting it to another layout. */
 TEST(multimat, construct_multimat_1_array)
 {
   const int num_cells = 20;
@@ -402,8 +440,10 @@ TEST(multimat, construct_multimat_1_array)
   const int stride_val = 4;
   MM_test_data<double> data(num_cells, num_mats, stride_val);
 
-  std::vector<DataLayout> data_layouts = { DataLayout::CELL_CENTRIC, DataLayout::MAT_CENTRIC };
-  std::vector<SparcityLayout> sparcity_layouts = { SparcityLayout::DENSE, SparcityLayout::SPARSE };
+  std::vector<DataLayout> data_layouts = { DataLayout::CELL_CENTRIC, 
+                                           DataLayout::MAT_CENTRIC };
+  std::vector<SparcityLayout> sparcity_layouts = { SparcityLayout::DENSE,
+                                                   SparcityLayout::SPARSE };
 
   std::string array_name = "Array 1";
 
@@ -459,15 +499,17 @@ TEST(multimat, construct_multimat_1_array)
 }
 
 
-
+/* Test dynamic mode */
 TEST(multimat, test_dynamic_multimat_1_array)
 {
   const int num_cells = 20;
   const int num_mats = 10;
   const int stride_val = 4;
   
-  std::vector<DataLayout> data_layouts = { DataLayout::CELL_CENTRIC, DataLayout::MAT_CENTRIC };
-  std::vector<SparcityLayout> sparcity_layouts = { SparcityLayout::DENSE, SparcityLayout::SPARSE };
+  std::vector<DataLayout> data_layouts = { DataLayout::CELL_CENTRIC,
+                                           DataLayout::MAT_CENTRIC };
+  std::vector<SparcityLayout> sparcity_layouts = { SparcityLayout::DENSE, 
+                                                   SparcityLayout::SPARSE };
 
   std::string array_name = "Array 1";
 
@@ -513,7 +555,7 @@ TEST(multimat, test_dynamic_multimat_1_array)
             EXPECT_TRUE(mm.removeEntry(idx1, idx2));
             volfrac_field(idx1, idx2) = 0.0;
             for (int s = 0; s < stride_val; s++)
-              arr(idx1, idx2, s) = 0.0;  //data.cellmat_dense_arr[cell_centric_dense_idx*stride_val + s];
+              arr(idx1, idx2, s) = 0.0;
             
           }
         }
@@ -531,12 +573,14 @@ TEST(multimat, test_dynamic_multimat_1_array)
         mm.addEntry(idx1, idx2);
         volfrac_field(idx1, idx2) = 1.0;
         for (int s = 0; s < stride_val; s++)
-          arr(idx1, idx2, s) = data.cellmat_dense_arr[ci * data.num_mats*stride_val + s];
+          arr(idx1, idx2, s) = 
+             data.cellmat_dense_arr[ci*data.num_mats*stride_val + s];
       }
 
       EXPECT_TRUE(mm.isValid(true));
       EXPECT_EQ(mm.getDataLayout(), layout_used);
-      EXPECT_EQ(mm.getSparcityLayout(), SparcityLayout::DENSE); //during dynamic mode, layout is in dense
+      EXPECT_EQ(mm.getSparcityLayout(), SparcityLayout::DENSE); 
+      //For now, during dynamic mode, layout is in dense
       EXPECT_EQ(mm.getNumberOfCells(), data.num_cells);
       EXPECT_EQ(mm.getNumberOfMaterials(), data.num_mats);
 
