@@ -1,11 +1,36 @@
-#include "multimat/multimat.hpp" 
+/*
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
+ *
+ * All rights reserved.
+ *
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ */
+
+
+
+/**
+ * \file multimat.cpp
+ *
+ * \brief Implementation of the MultiMat class
+ */
+
+#include "axom/multimat/multimat.hpp" 
 
 #include <iostream>
 #include <sstream>
 #include <iterator>
 #include <algorithm>
 
-#include "slic/slic.hpp"
+#include "axom/slic/interface/slic.hpp"
 #include <cassert>
 
 #include "multimat.hpp"
@@ -20,11 +45,11 @@ MultiMat::MultiMat(DataLayout d, SparcityLayout s):
   m_cellMatRelDyn(nullptr),
   m_cellMatNZSet(nullptr),
   m_cellMatProdSet(nullptr),
-  m_dynamic_mode(false),
   m_ncells(0),
   m_nmats(0),
   m_dataLayout(d),
-  m_sparcityLayout(s)
+  m_sparcityLayout(s),
+  m_dynamic_mode(false)
 {}
 
 MultiMat::~MultiMat()
@@ -176,7 +201,8 @@ void MultiMat::setCellMatRel(vector<bool>& vecarr)
 
   m_cellMatRel = new StaticVariableRelationType(&set1, &set2);
   m_cellMatRel->bindBeginOffsets(set1.size(), &m_cellMatRel_beginsVec);
-  m_cellMatRel->bindIndices(m_cellMatRel_indicesVec.size(), &m_cellMatRel_indicesVec);
+  m_cellMatRel->bindIndices(m_cellMatRel_indicesVec.size(), 
+                            &m_cellMatRel_indicesVec);
 
   SLIC_ASSERT(m_cellMatRel->isValid());
   
@@ -203,7 +229,8 @@ int MultiMat::setVolfracField(double* arr)
   //and delete the new map.
 
   //Volfrac map is a CellxMat mapping, named "Volfrac", and is stride 1.
-  int arr_i = addFieldArray_impl<double>("Volfrac", FieldMapping::PER_CELL_MAT, arr, 1);
+  int arr_i = addFieldArray_impl<double>("Volfrac", 
+          FieldMapping::PER_CELL_MAT, arr, 1);
 
   //move the data to the first one (index 0) in the list
   std::iter_swap(m_mapVec.begin(), m_mapVec.begin() + arr_i);
@@ -257,11 +284,11 @@ MultiMat::IndexSet MultiMat::getIndexingSetOfCell(int c)
     int end_idx = m_cellMatRel_beginsVec[c + 1];
     return RangeSetType::SetBuilder().range(start_idx, end_idx);
   }
-  else if (m_sparcityLayout == SparcityLayout::DENSE) {
+  else{
+    SLIC_ASSERT(m_sparcityLayout == SparcityLayout::DENSE);
     int size2 = m_cellMatProdSet->secondSetSize();
     return RangeSetType::SetBuilder().range(c*size2, (c + 1)*size2 - 1);
   }
-  else SLIC_ASSERT(false);
 }
 
 void MultiMat::convertToDynamic()
