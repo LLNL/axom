@@ -692,9 +692,9 @@ void test_code() {
   std::vector<double> cell_arr1(ncells*ncomp);
   double c_sum = 0;
   for (int i = 0; i < ncells; ++i) {
-    for (int s = 0; s < ncomp; ++s) {
-      cell_arr1[i*ncomp + s] = (double)i * 2.0 + s * 0.01;
-      c_sum += cell_arr1[i*ncomp + s];
+    for (int comp = 0; comp < ncomp; ++comp) {
+      cell_arr1[i*ncomp + comp] = (double)i * 2.0 + comp * 0.01;
+      c_sum += cell_arr1[i*ncomp + comp];
     }
   }
     
@@ -703,9 +703,9 @@ void test_code() {
   double x_sum = 0;
   for (unsigned int i = 0; i < cellmat_arr.size()/ncomp; i++) {
     if (use_sparse || cellMatRel[i]) {
-      for (int s = 0; s < ncomp; ++s) {
-        cellmat_arr[i*ncomp + s] = (double)i * 1.1 + s * 0.001;
-        x_sum += cellmat_arr[i*ncomp + s];
+      for (int comp = 0; comp < ncomp; ++comp) {
+        cellmat_arr[i*ncomp + comp] = (double)i * 1.1 + comp * 0.001;
+        x_sum += cellmat_arr[i*ncomp + comp];
       }
     }
   }
@@ -750,10 +750,10 @@ void test_code() {
     assert(ncomp == map.stride());
     assert(ncomp == map.numComp());
     for (int i = 0; i < mm.getNumberOfCells(); i++) {
-      for (int s = 0; s < map.stride(); s++)
+      for (int comp = 0; comp < map.numComp(); comp++)
       {
-        double val = map(i, s);                               //<----
-        assert(val == map[ i*map.numComp() + s] );    //1d bracket access
+        double val = map(i, comp);                               //<----
+        assert(val == map[ i*map.numComp() + comp] );    //1d bracket access
         sum += val;
       }
     }
@@ -781,7 +781,7 @@ void test_code() {
         for (int c = 0; c < submap.numComp(); ++c) {
           double val = submap.value(k, c);                 //<----------
           assert( val == submap(k,c) );                    //operator () access
-          assert( val == submap[ k*submap.stride()+c ] );  //1d bracket access
+          assert( val == submap[ k*submap.numComp()+c ] );  //1d bracket access
           sum += val;         
         }
       }
@@ -833,9 +833,9 @@ void test_code() {
         for (int j = 0; j < indexSet.size(); j++)
         {
           int mat_id = setOfMaterialsInThisCell.at(j);
-          for (int s = 0; s < map.numComp(); ++s) {
-            double val = map[indexSet[j]*map.numComp() + s];   //<-----
-            //assert(val == map(indexSet[j], s)); //if 1dMap is used, this is also valid
+          for (int comp = 0; comp < map.numComp(); ++comp) {
+            double val = map[indexSet[j]*map.numComp() + comp];   //<-----
+            //assert(val == map(indexSet[j], comp)); //if 1dMap is used, this is also valid
             sum += val;
           }
         }
@@ -854,8 +854,8 @@ void test_code() {
     MultiMat::Field1D<double>& map = mm.get1dField<double>("Cell Array");
     for (MultiMat::Field1D<double>::iterator iter = map.begin(); iter != map.end(); iter++)
     {
-      for(int s=0; s<iter.numComp(); ++s)
-        sum += iter(s);              //<----
+      for(int comp=0; comp<iter.numComp(); ++comp)
+        sum += iter(comp);              //<----
     }
   }
   cout << end_timer() << "\t";
@@ -871,10 +871,10 @@ void test_code() {
       MultiMat::SubField<double> submap = map2d(i);
       for (auto iter = submap.begin(); iter != submap.end(); iter++) 
       {
-        for (int s = 0; s < map2d.stride(); ++s)
+        for (int comp = 0; comp < map2d.numComp(); ++comp)
         {
-          sum += iter(s);                  //<----
-          assert(iter(s) == iter.value(s));  //another way to get the value
+          sum += iter(comp);                  //<----
+          assert(iter(comp) == iter.value(comp));  //another way to get the value
           int idx = iter.index();
         }
         //assert(*iter, iter.value());   //2 ways to get the first component value
@@ -895,10 +895,10 @@ void test_code() {
     {
       for (MultiMat::SubField<double>::SubMapIterator iter = map2d.begin(i); iter != map2d.end(i); iter++)
       {
-        for (int s = 0; s < map2d.numComp(); ++s)
+        for (int comp = 0; comp < map2d.numComp(); ++comp)
         {
-          sum += iter(s);          //<----
-          assert(iter(s) == iter.value(s));  //another way to get the value
+          sum += iter(comp);          //<----
+          assert(iter(comp) == iter.value(comp));  //another way to get the value
           int idx = iter.index();
         }
         assert(iter(0) == *iter); //2 ways to get the first component value
@@ -943,10 +943,10 @@ void test_code() {
     {
       int cell_id = iter.firstIndex();
       int mat_id = iter.secondIndex();
-      for (int s = 0; s < map2d.numComp(); ++s)
+      for (int comp = 0; comp < map2d.numComp(); ++comp)
       {
-        double val = iter(s);          //<----
-        assert(val == iter.value(s));  //another way to get the value
+        double val = iter(comp);          //<----
+        assert(val == iter.value(comp));  //another way to get the value
         sum += val;
       }
       assert(iter(0) == *iter); //2 ways to get the first component value
@@ -957,6 +957,5 @@ void test_code() {
   cout << end_timer() << "\t";
   assert(x_sum == sum);
 
-  
   cout << endl;
 }
