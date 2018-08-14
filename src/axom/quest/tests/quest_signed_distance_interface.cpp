@@ -528,6 +528,9 @@ int main(int argc, char* argv[])
 
   ::testing::InitGoogleTest(&argc, argv);
 
+  // add this line to avoid a warning in the output about thread safety
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+
   UnitTestLogger logger;  // create & initialize test logger,
 
   // finalized when exiting main scope
