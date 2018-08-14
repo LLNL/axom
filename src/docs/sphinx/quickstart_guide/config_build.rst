@@ -64,7 +64,7 @@ Unless otherwise marked, the dependencies are optional.
   * lcov 1.11
   * mfem 3.3.2
   * python 2.7.15
-  * py-shroud 0.10.0
+  * py-shroud 0.10.1
   * py-sphinx 1.3.6
   * scr 1.2.1
   * uncrustify 0.61
