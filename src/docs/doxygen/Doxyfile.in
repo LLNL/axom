@@ -801,6 +801,8 @@ INPUT                  = @PROJECT_SOURCE_DIR@/axom/mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/slam \
                          @PROJECT_SOURCE_DIR@/axom/slam/README.md \
                          @PROJECT_SOURCE_DIR@/axom/slam/policies \
+                         @PROJECT_SOURCE_DIR@/axom/multimat \
+                         @PROJECT_SOURCE_DIR@/axom/multimat/README.md \
                          @PROJECT_SOURCE_DIR@/axom/slic/README.md \
                          @PROJECT_SOURCE_DIR@/axom/slic/core \
                          @PROJECT_SOURCE_DIR@/axom/slic/streams \
