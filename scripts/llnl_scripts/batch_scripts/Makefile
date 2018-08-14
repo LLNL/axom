@@ -20,7 +20,7 @@ here := $(CURDIR)
 
 help :
 	$(info Start batch jobs on a machines of each SYS_TYPE from a single machine)
-	$(info Must be run once from a RZ machine and one from a CZ machine)
+	$(info Must be run once from a RZ machine and once from a CZ machine)
 	$(info since CURDIR will not be the same.)
 	$(info )
 	$(info Build src on CZ or RZ)
