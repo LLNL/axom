@@ -48,19 +48,21 @@ namespace policies = slam::policies;
 enum class FieldMapping { PER_CELL, PER_MAT, PER_CELL_MAT };
 enum class DataLayout { CELL_CENTRIC, MAT_CENTRIC };
 enum class SparcityLayout { SPARSE, DENSE };
-enum class DataTypeSupported { 
-  TypeUnknown, TypeInt, TypeDouble, TypeFloat, TypeUnsignChar };
+enum class DataTypeSupported
+{
+  TypeUnknown, TypeInt, TypeDouble, TypeFloat, TypeUnsignChar
+};
 
 /**
  * \class MultiMat
- * 
+ *
  * \brief A multimaterial data management class that provides storage in various
  * layouts (dense/sparse, and material-dominant/cell-dominant).
- * 
+ *
  */
 class MultiMat
 {
-private: 
+private:
   // SLAM Set type definitions
   using SetType = slam::Set;
   using RangeSetType   = slam::RangeSet;
@@ -69,17 +71,17 @@ private:
   using SetElemType = SetType::ElementType;
   // SLAM Relation typedef
   using STLIndirection = policies::STLVectorIndirection<SetPosType, SetPosType>;
-  using VariableCardinality = 
-        policies::VariableCardinality<SetPosType, STLIndirection>;
+  using VariableCardinality =
+          policies::VariableCardinality<SetPosType, STLIndirection>;
   using StaticVariableRelationType = slam::StaticRelation<
-        VariableCardinality, STLIndirection, RangeSetType, RangeSetType>;
+          VariableCardinality, STLIndirection, RangeSetType, RangeSetType>;
   using DynamicVariableRelationType = slam::DynamicVariableRelation;
   using OrderedSetType = slam::OrderedSet<
-            policies::RuntimeSize<SetType::PositionType>,
-            policies::RuntimeOffset<SetType::PositionType>,
-            policies::StrideOne<SetType::PositionType>,
-            STLIndirection,
-            policies::NoSubset>;
+          policies::RuntimeSize<SetType::PositionType>,
+          policies::RuntimeOffset<SetType::PositionType>,
+          policies::StrideOne<SetType::PositionType>,
+          STLIndirection,
+          policies::NoSubset>;
   using ProductSetType = slam::ProductSet;
   // SLAM RelationSet for the set of non-zero cell to mat variables
   using RelationSetType = slam::RelationSet<StaticVariableRelationType>;
@@ -102,15 +104,15 @@ public:
   template <typename T>
   using Field2D = BivariateMapType<T>;
   template <typename T>
-  using SubField = SubMap<T, Field2D<T>>;
+  using SubField = SubMap<T, Field2D<T> >;
   using IndexSet = RangeSetType; //For returning set of SparseIndex
   using IdSet = OrderedSetType;  //For returning set of DenseIndex
-  
-  //Constructors 
+
+  //Constructors
 
   /**
    * \brief Constructor to create a new MultiMat object
-   * 
+   *
    * \param data_layout  Select material-dominant or cell-dominant layout to
    *                     store the data in. Default is cell-dominant.
    * \param sparcity_layout Select dense or sparse layout to store the data in.
@@ -130,7 +132,7 @@ public:
    * \brief Set the number of materials
    * \pre num_cells > 0
    */
-  void setNumberOfMat(int num_cells); 
+  void setNumberOfMat(int num_cells);
   /**
    * \brief Set the number of cells
    * \pre num_mats > 0
@@ -139,21 +141,21 @@ public:
 
   /**
    * \brief Set the cell-material relation.
-   * 
+   *
    * \detail This function takes the input of boolean vectors and set-up
    * internal data structure. The relation_info vector is indexed by the cell
    * and material index: \n
    *   `idx = mat * num_cell + cell`  \n
    * or `idx = cell * num_mats + mat` \n
    * for material-centric and cell-centric layout, respectively.\n
-   * Entry at `idx` should containing 'true' where materials are presented in 
+   * Entry at `idx` should containing 'true' where materials are presented in
    * the cell.\n
    * The number of materials and cell must be set prior to calling this function
    * with setNumberOfMat(int) and setNumberOfCell(int)
-   * 
+   *
    * \param A boolean vector of size num_mats * num_cells containing information
    * on if a materials is present in a cell.
-   * 
+   *
    */
   void setCellMatRel(std::vector<bool>& relation_info);
 
@@ -163,7 +165,7 @@ public:
 
   /**
    * \brief Add a field to the MultiMat object
-   * 
+   *
    * \tparam T The data type (double, float...) of the field
    * \param field_name The name of the field, used to retrieve the field later
    * \param field_mapping
@@ -175,14 +177,14 @@ public:
    * \return int the index of the field, can be used to retrieve the field later
    */
   template<class T>
-  int addField(const std::string& field_name, FieldMapping field_mapping, 
-              T* data_array, int ncomp = 1);
+  int addField(const std::string& field_name, FieldMapping field_mapping,
+               T* data_array, int ncomp = 1);
 
   /**
    * \brief Set the volume fraction field
    * \detail volume fraction field is assumed to be a double. Its field index is
    * always 0, and the name of the field is "Volfrac"
-   * 
+   *
    * \param data_array the array containing the volumn fraction information
    * \return int the volume fraction field index, which is always zero.
    */
@@ -190,7 +192,7 @@ public:
 
   /**
    * \brief Search for and return the field index of the field given its name.
-   * 
+   *
    * \param field_name the name of the field
    * \return int the index of the field
    */
@@ -198,9 +200,9 @@ public:
 
   /**
    * \brief Search for and return the field given the field name.
-   * \detail the field is of type Field1D, containing an entry for each cell 
+   * \detail the field is of type Field1D, containing an entry for each cell
    * or material. To retrieve a field of type Field2D, use get2dField()
-   * 
+   *
    * \tparam T The data type of the field
    * \param field_name the name of the field
    * \return Field1D<T>& the field reference
@@ -212,7 +214,7 @@ public:
    * \brief Search for and return the field given the field name.
    * \detail the field is of type Field2D, containing an entry for each cell and
    * each material. To retrieve a field of type Field1D, use get1dField()
-   * 
+   *
    * \tparam T The data type of the field
    * \param field_name the name of the field
    * \return Field1D<T>& the field reference
@@ -226,18 +228,18 @@ public:
   Field2D<double>& getVolfracField();
 
   /**
-   * \brief Get a set of index for a Subfield. 
+   * \brief Get a set of index for a Subfield.
    * \detail for a cell-dominant layout, this is equivalent to getting the set
-   * of material presented in a cell. Vise versa, for a material-dominant 
+   * of material presented in a cell. Vise versa, for a material-dominant
    * layout, this returns a set of cell that contains a material.\n
    * getMatInCell() and getCellContainingMat() are layout specific
    * calls for this function.
-   * 
+   *
    * \param idx the index of the subfield
    * \return IdSet A set of index in the subfield
    */
   IdSet getSubfieldIndex(int idx);
-  
+
   /** Cell-dominant version of getSubfieldIndex() **/
   IdSet getMatInCell(int cell_id);
   /** Material-dominant version of getSubfieldIndex() **/
@@ -247,16 +249,16 @@ public:
    * \brief Get a set to index a Subfield in a Field2D.
    * \detail This returns a set of indices that can be used to directly access
    * a subfield in a Field2D without having to retrieve a Subfield first.\n
-   * Accessing the Field2D using this indexing set should be done with the 
-   * bracket operator. 
-   * 
+   * Accessing the Field2D using this indexing set should be done with the
+   * bracket operator.
+   *
    * e.g.
    * \code
    *   IndexSet indexing_set = getSubfieldIndexingSet( idx );
    *   for( int i : indexing_set );
    *       value = field2d[ i ];
    * \endcode
-   * 
+   *
    * Or to account for multiple components:
    * \code
    *   IndexSet indexing_set = getSubfieldIndexingSet( idx );
@@ -264,10 +266,10 @@ public:
    *       for( int c = 0; c < numComp; c++)
    *           value = field2d[ i * numComp + c ];
    * \endcode
-   * 
+   *
    * getIndexingSetOfCell() and getIndexingSetOfMat() are layout specific
    * calls for this function.
-   * 
+   *
    * \param idx The index of the subfield
    * \return IndexSet A Set of index for the subfield
    */
@@ -285,9 +287,9 @@ public:
 
 
 
-  
+
   //Layout modification functions
-  
+
   /** Convert the data to be stored in cell-dominant layout. **/
   void convertLayoutToCellDominant();
   /** Convert the data to be stored in material-dominant layout. **/
@@ -308,7 +310,7 @@ public:
   /** Return the sparcity layout used currently **/
   SparcityLayout getSparcityLayout() const { return m_sparcityLayout; }
   /** Return the data layout used currently as string **/
-  std::string getDataLayoutAsString() const ;
+  std::string getDataLayoutAsString() const;
   /** Return the sparcity layout used currently as string **/
   std::string getSparcityLayoutAsString() const;
   /** Return true if the current layout is sparse/compact, false otherwise. **/
@@ -320,15 +322,15 @@ public:
   /** Return true if the current layout is material-dominant, false otherwise.*/
   bool isMatDom() const { return m_dataLayout == DataLayout::MAT_CENTRIC; }
   /**
-   * \brief Get the FieldMapping for a field. 
-   * 
+   * \brief Get the FieldMapping for a field.
+   *
    * A FieldMapping of a field describes if there is an entry for each cell, for
    * each material, or for each cell x material.
-   * 
+   *
    * \param field_idx the index of the field
    */
-  FieldMapping getFieldMapping(int field_idx) const { 
-    return m_fieldMappingVec[field_idx]; 
+  FieldMapping getFieldMapping(int field_idx) const {
+    return m_fieldMappingVec[field_idx];
   }
 
 
@@ -344,20 +346,20 @@ public:
   void convertToStatic();
 
   /**
-   * \brief Add a material in a cell. 
-   * 
+   * \brief Add a material in a cell.
+   *
    * In a cell-dominant layout, firstIdx is the cell index, secondIdx is the
    * material index. And it's reverse for material-dominant layout.
-   * 
+   *
    * \return true if the material is added in the. False if it already exists.
    */
   bool addEntry(int firstIdx, int secondIdx);
   /**
    * \brief Remove a material from a cell
-   * 
+   *
    * In a cell-dominant layout, firstIdx is the cell index, secondIdx is the
    * material index. And it's reverse for material-dominant layout.
-   * 
+   *
    * \return true if a material is removed. False if it was not in the cell.
    */
   bool removeEntry(int firstIdx, int secondIdx);
@@ -367,7 +369,7 @@ public:
   void print() const;
   /**
    * \brief  Return true if the object is valid, false otherwise.
-   * 
+   *
    * \param verboseOutput (Optional) if true, this function will print out its
    * valid/invalid detail.
    */
@@ -386,8 +388,8 @@ private: //private functions
   template<typename DataType>
   void convertToDense_helper(int map_i);
   template<typename DataType>
-  void transposeData_helper(int map_i, RelationSetType*, ProductSetType*, 
-    std::vector<SetPosType>&);
+  void transposeData_helper(int map_i, RelationSetType*, ProductSetType*,
+                            std::vector<SetPosType>&);
   template<typename T>
   int addFieldArray_impl(const std::string&, FieldMapping, T*, int);
   template<typename T>
@@ -409,11 +411,11 @@ private:
   //slam bivariateSet variables
   RelationSetType* m_cellMatNZSet;
   ProductSetType* m_cellMatProdSet;
-  
+
   //vector of information for each fields
   std::vector<std::string> m_arrNameVec;
   std::vector<FieldMapping> m_fieldMappingVec;
-  std::vector<MapBaseType*> m_mapVec; 
+  std::vector<MapBaseType*> m_mapVec;
   std::vector<DataTypeSupported> m_dataTypeVec;
 
   //To store the static layout information when converting to dynamic.
@@ -436,8 +438,9 @@ private:
 /* Helper function to create a new slam::Map or slam::BivariateMap and add
  * it into the list of maps */
 template<class T>
-int MultiMat::addFieldArray_impl(const std::string& arr_name, 
-  FieldMapping arr_mapping, T* data_arr, int stride)
+int MultiMat::addFieldArray_impl(const std::string& arr_name,
+                                 FieldMapping arr_mapping, T* data_arr,
+                                 int stride)
 {
   int new_arr_idx = m_mapVec.size();
 
@@ -459,16 +462,16 @@ int MultiMat::addFieldArray_impl(const std::string& arr_name,
 
     //copy data
     int i = 0;
-    for (auto iter = new_map_ptr->begin(); iter != new_map_ptr->end(); iter++) 
-      for (auto s = 0; s < stride; ++s) 
+    for (auto iter = new_map_ptr->begin() ; iter != new_map_ptr->end() ; iter++)
+      for (auto s = 0 ; s < stride ; ++s)
         iter(s) = data_arr[i++];
-    
+
     m_mapVec.push_back(new_map_ptr);
   }
-  
+
   m_arrNameVec.push_back(arr_name);
   m_fieldMappingVec.push_back(arr_mapping);
-  
+
   if (std::is_same<T, int>::value)
     m_dataTypeVec.push_back(DataTypeSupported::TypeInt);
   else if (std::is_same<T, double>::value)
@@ -496,7 +499,7 @@ int MultiMat::addField(const std::string& arr_name, FieldMapping arr_mapping,
 
   //make sure the name does not conflict
   int fieldIdx = getFieldIdx(arr_name);
-  if (fieldIdx == 0 && m_mapVec[0] != nullptr) 
+  if (fieldIdx == 0 && m_mapVec[0] != nullptr)
   { //this is the vol frac array. call setVolfrac instead
     SLIC_ASSERT(arr_mapping == FieldMapping::PER_CELL_MAT);
     SLIC_ASSERT(stride == 1);
@@ -504,7 +507,7 @@ int MultiMat::addField(const std::string& arr_name, FieldMapping arr_mapping,
     setVolfracField(data_arr);
     return 0;
   }
-  else if(fieldIdx > 0) 
+  else if(fieldIdx > 0)
   {
     // There is already an array with the current name. And it's not Volfrac.
     // Don't add the new field.
@@ -512,7 +515,7 @@ int MultiMat::addField(const std::string& arr_name, FieldMapping arr_mapping,
 
     return fieldIdx;
   }
-  else 
+  else
   {
     //No field with this name. Proceed with adding the field
     return addFieldArray_impl<>(arr_name, arr_mapping, data_arr, stride);
@@ -523,19 +526,20 @@ template<typename T>
 MultiMat::Field1D<T>& MultiMat::get1dField(const std::string& field_name)
 {
   int fieldIdx = getFieldIdx(field_name);
-  
+
   if(fieldIdx < 0)
     throw std::invalid_argument("No field with this name is found");
 
-  if (m_fieldMappingVec[fieldIdx] == FieldMapping::PER_CELL || 
+  if (m_fieldMappingVec[fieldIdx] == FieldMapping::PER_CELL ||
       m_fieldMappingVec[fieldIdx] == FieldMapping::PER_MAT)
   {
     return *dynamic_cast<Field1D<T>*>(m_mapVec[fieldIdx]);
   }
-  else{
+  else
+  {
     SLIC_ASSERT(m_fieldMappingVec[fieldIdx] == FieldMapping::PER_CELL_MAT);
-    
-    //Right now we're allowing Field2D (BivariateMap) to be returned as 
+
+    //Right now we're allowing Field2D (BivariateMap) to be returned as
     // a Field1D (Map) so it can be accessed like a 1d array, but the
     // indexing information would be lost.
     Field2D<T>* map_2d = dynamic_cast<Field2D<T>*>(m_mapVec[fieldIdx]);
@@ -561,28 +565,32 @@ template<typename DataType>
 void MultiMat::convertToSparse_helper(int map_i)
 {
   SLIC_ASSERT(m_sparcityLayout != SparcityLayout::SPARSE);
-  
+
   MapBaseType* mapPtr = m_mapVec[map_i];
 
   //Skip if no volume fraction array is set-up
-  if (map_i == 0 && mapPtr == nullptr) { return; }
+  if (map_i == 0 && mapPtr == nullptr)
+    return;
 
   Field2D<DataType>& old_map = *dynamic_cast<Field2D<DataType>*>(mapPtr);
   int stride = old_map.stride();
   std::vector<DataType> arr_data(m_cellMatRel->totalSize()*stride);
   int idx = 0;
-  for (int i = 0; i < m_cellMatRel->fromSetSize(); ++i) {
+  for (int i = 0 ; i < m_cellMatRel->fromSetSize() ; ++i)
+  {
     auto relset = (*m_cellMatRel)[i];
     auto submap = old_map(i);
-    for (int j = 0; j < relset.size(); ++j) {
-      for (int s = 0; s < stride; ++s) {
+    for (int j = 0 ; j < relset.size() ; ++j)
+    {
+      for (int s = 0 ; s < stride ; ++s)
+      {
         arr_data[idx++] = submap[relset[j]*stride + s];
       }
     }
   }
   SLIC_ASSERT(idx == m_cellMatRel->totalSize()*stride);
-  Field2D<DataType>* new_field = 
-                     new Field2D<DataType>(m_cellMatNZSet, DataType(), stride);
+  Field2D<DataType>* new_field =
+    new Field2D<DataType>(m_cellMatNZSet, DataType(), stride);
   new_field->copy(arr_data.data());
 
   delete m_mapVec[map_i];
@@ -598,25 +606,28 @@ void MultiMat::convertToDense_helper(int map_i)
   MapBaseType* mapPtr = m_mapVec[map_i];
 
   //Skip if no volume fraction array is set-up
-  if (map_i == 0 && mapPtr == nullptr) { return; }
+  if (map_i == 0 && mapPtr == nullptr)
+  {
+    return;
+  }
 
   Field2D<DataType>& old_map = *dynamic_cast<Field2D<DataType>*>(mapPtr);
   int stride = old_map.stride();
   std::vector<DataType> arr_data(m_cellMatProdSet->size()*stride);
-  for (int i = 0; i < old_map.firstSetSize(); ++i)
+  for (int i = 0 ; i < old_map.firstSetSize() ; ++i)
   {
-    for (auto iter = old_map.begin(i); iter != old_map.end(i); ++iter)
+    for (auto iter = old_map.begin(i) ; iter != old_map.end(i) ; ++iter)
     {
       int elem_idx = i * old_map.secondSetSize() + iter.index();
-      for (int c = 0; c < stride; ++c)
+      for (int c = 0 ; c < stride ; ++c)
       {
         arr_data[elem_idx*stride + c] = iter.value(c);
       }
     }
   }
 
-  Field2D<DataType>* new_field = 
-              new Field2D<DataType>(m_cellMatProdSet, DataType(), stride);
+  Field2D<DataType>* new_field =
+    new Field2D<DataType>(m_cellMatProdSet, DataType(), stride);
   new_field->copy(&arr_data[0]);
 
   delete m_mapVec[map_i];
