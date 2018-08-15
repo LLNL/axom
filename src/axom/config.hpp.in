@@ -41,7 +41,7 @@
 #define AXOM_BIN_DIR "@AXOM_BIN_DIR@"
 
 /*
- * Platform specific defintions
+ * Platform specific definitions
  */
 #cmakedefine AXOM_NO_INT64_T
 #cmakedefine AXOM_USE_MPI3
