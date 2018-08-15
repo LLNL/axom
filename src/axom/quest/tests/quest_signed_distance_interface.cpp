@@ -19,33 +19,34 @@
 #include "axom/core/utilities/Utilities.hpp"
 
 // Mint includes
-#include "axom/mint/config.hpp"            // for mint compile-time definitions
+#include "axom/mint/config.hpp"                 // mint compile-time definitions
 #include "axom/mint/mesh/CellTypes.hpp"         // for cell types enum
 #include "axom/mint/mesh/Mesh.hpp"              // defines mint::Mesh
 #include "axom/mint/mesh/MeshTypes.hpp"         // for mesh types enum
 #include "axom/mint/mesh/UniformMesh.hpp"       // for mint::UniformMesh
 #include "axom/mint/mesh/UnstructuredMesh.hpp"  // for mint::UnstructuredMesh
-#include "axom/mint/utils/vtk_utils.hpp"         // for mint::write_vtk()
+#include "axom/mint/utils/vtk_utils.hpp"        // for mint::write_vtk()
 
 // Primal includes
-#include "axom/primal/geometry/BoundingBox.hpp"     // primal::BoundingBox
-#include "axom/primal/geometry/Plane.hpp"           // defines primal::Plane
-#include "axom/primal/geometry/Sphere.hpp"          // defines primal::Sphere
+#include "axom/primal/geometry/BoundingBox.hpp" // primal::BoundingBox
+#include "axom/primal/geometry/Plane.hpp"       // defines primal::Plane
+#include "axom/primal/geometry/Sphere.hpp"      // defines primal::Sphere
 
 // Quest includes
 #include "axom/quest/interface/signed_distance.hpp" // for signed distance
-#include "quest_test_utilities.hpp"  // for test-utility functions
+#include "quest_test_utilities.hpp"                 // test-utility functions
 
 // Slic includes
 #include "axom/slic/interface/slic.hpp"             // for SLIC macros
-#include "axom/slic/core/UnitTestLogger.hpp"   // for the unit test logger
+#include "axom/slic/core/UnitTestLogger.hpp"        // for the unit test logger
 using axom::slic::UnitTestLogger;
 
 // gtest
-#include "gtest/gtest.h"             // for gtest macros
+#include "gtest/gtest.h"  // for gtest macros
 
 // C/C++ includes
-#include <fstream>                   // for std::ofstream
+#include <fstream>  // for std::ofstream
+#include <sstream>  // for std::ostringstream
 
 // Aliases
 namespace quest     = axom::quest;
@@ -239,7 +240,10 @@ void check_analytic_plane( bool use_shared=false )
   }
 
 #ifdef WRITE_VTK_OUTPUT
-  mint::write_vtk( &mesh, "analytic_plane_mesh_test.vtk" );
+  std::ostringstream oss;
+  oss << "analytic_plane_mesh_";
+  oss << ( ( use_shared ) ? "shared_test.vtk" : "test.vtk" );
+  mint::write_vtk( &mesh, oss.str() );
 #endif
 
   quest::signed_distance_finalize( );
