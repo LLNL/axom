@@ -283,7 +283,7 @@ createExternalSingle( int ndims, CellType cell_type, IndexType cell_capacity,
                               cell_capacity;
   IndexType* connectivity = new IndexType[ connec_capacity ];
 
-  return new UnstructuredMesh< SINGLE_SHAPE >( ndims, cell_type, 0,
+  return new UnstructuredMesh< SINGLE_SHAPE >( cell_type, 0,
                                                cell_capacity, connectivity,
                                                0, node_capacity, x, y, z );
 }
@@ -317,7 +317,7 @@ createExternalMixed( int ndims, IndexType cell_capacity,
   IndexType* offsets = new IndexType[ cell_capacity + 1 ];
   CellType* types = new CellType[ cell_capacity ];
 
-  return new UnstructuredMesh< MIXED_SHAPE >( ndims, 0, cell_capacity,
+  return new UnstructuredMesh< MIXED_SHAPE >( 0, cell_capacity,
                                               connec_capacity, connectivity,
                                               offsets, types, 0,
                                               node_capacity, x, y, z );
@@ -435,7 +435,7 @@ void deleteAndDuplicateExternalMesh( UnstructuredMesh< SINGLE_SHAPE >*& mesh )
   }
 
   delete mesh;
-  mesh = new UnstructuredMesh< SINGLE_SHAPE >( ndims, cell_type, n_cells,
+  mesh = new UnstructuredMesh< SINGLE_SHAPE >( cell_type, n_cells,
                                                cell_capacity, connectivity,
                                                n_nodes, node_capacity,
                                                x, y, z );
@@ -509,7 +509,7 @@ void deleteAndDuplicateExternalMesh( UnstructuredMesh< MIXED_SHAPE >*& mesh )
   }
 
   delete mesh;
-  mesh = new UnstructuredMesh< MIXED_SHAPE >( ndims, n_cells, cell_capacity,
+  mesh = new UnstructuredMesh< MIXED_SHAPE >( n_cells, cell_capacity,
                                               connec_capacity, connectivity,
                                               offsets, types, n_nodes,
                                               node_capacity, x, y, z );
@@ -2864,6 +2864,120 @@ TEST( mint_mesh_unstructured_mesh, resizeCellsMixed )
                                CheckOption::APPEND );
 
   internal::deleteMeshes( meshes, N_MESHES );
+}
+
+//------------------------------------------------------------------------------
+TEST( mint_mesh_unstructured_mesh, resize_mesh_single_topology )
+{
+  constexpr int NDIMS           = 2;
+  constexpr IndexType N_NODES   = 6;
+  constexpr IndexType N_CELLS   = 2;
+  constexpr double MAGIC_DOUBLE = 42.0;
+  constexpr IndexType MAGIC_INT = 42;
+
+  using UnstructuredMeshType = mint::UnstructuredMesh< SINGLE_SHAPE >;
+
+  UnstructuredMeshType mesh( NDIMS, mint::QUAD );
+  EXPECT_EQ( mesh.getNumberOfNodes(), 0 );
+  EXPECT_EQ( mesh.getNumberOfCells(), 0 );
+  EXPECT_FALSE( mesh.hasMixedCellTypes() );
+  EXPECT_TRUE( mesh.getCellOffsetsArray() == nullptr );
+  EXPECT_TRUE( mesh.getCellTypesArray() == nullptr );
+
+  mesh.resize( N_NODES, N_CELLS );
+  EXPECT_EQ( mesh.getNumberOfNodes(), N_NODES );
+  EXPECT_EQ( mesh.getNumberOfCells(), N_CELLS );
+
+  double* x = mesh.getCoordinateArray( mint::X_COORDINATE );
+  double* y = mesh.getCoordinateArray( mint::Y_COORDINATE );
+  EXPECT_TRUE( x != nullptr );
+  EXPECT_TRUE( y != nullptr );
+
+  // touch memory associated with nodes to ensure it is allocated properly
+  for ( IndexType inode=0; inode < N_NODES; ++inode )
+  {
+    x[ inode ] = MAGIC_DOUBLE;
+    y[ inode ] = MAGIC_DOUBLE;
+  }
+
+  // touch memory associated with the cell connectivity
+  IndexType stride = mesh.getNumberOfCellNodes();
+  EXPECT_EQ( stride, 4 );
+  IndexType* conn  = mesh.getCellConnectivityArray();
+  for ( IndexType icell=0; icell < N_CELLS; ++icell )
+  {
+    conn[ icell*4   ] = MAGIC_INT;
+    conn[ icell*4+1 ] = MAGIC_INT;
+    conn[ icell*4+2 ] = MAGIC_INT;
+    conn[ icell*4+3 ] = MAGIC_INT;
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST( mint_mesh_unstructured_mesh, resize_mesh_mixed_topology )
+{
+  constexpr int NDIMS           = 2;
+  constexpr IndexType N_NODES   = 6;
+  constexpr IndexType N_CELLS   = 3;
+  constexpr double MAGIC_DOUBLE = 42.0;
+
+  using UnstructuredMeshType = mint::UnstructuredMesh< MIXED_SHAPE >;
+
+  UnstructuredMeshType mesh( NDIMS );
+  EXPECT_EQ( mesh.getNumberOfNodes(), 0 );
+  EXPECT_EQ( mesh.getNumberOfCells(), 0 );
+  EXPECT_TRUE( mesh.hasMixedCellTypes() );
+
+  mesh.resize( N_NODES, N_CELLS );
+  EXPECT_EQ( mesh.getNumberOfNodes(), N_NODES );
+  EXPECT_EQ( mesh.getNumberOfCells(), N_CELLS );
+  EXPECT_TRUE( mesh.getCellOffsetsArray() != nullptr );
+  EXPECT_TRUE( mesh.getCellTypesArray() != nullptr );
+
+  double* x = mesh.getCoordinateArray( mint::X_COORDINATE );
+  double* y = mesh.getCoordinateArray( mint::Y_COORDINATE );
+  EXPECT_TRUE( x != nullptr );
+  EXPECT_TRUE( y != nullptr );
+
+  // touch memory associated with nodes to ensure it is allocated properly
+  for ( IndexType inode=0; inode < N_NODES; ++inode )
+  {
+    x[ inode ] = MAGIC_DOUBLE;
+    y[ inode ] = MAGIC_DOUBLE;
+  }
+
+  // touch memory associated with the cell connectivity
+  IndexType* conn    = mesh.getCellConnectivityArray();
+  IndexType* offsets = mesh.getCellOffsetsArray();
+  CellType*  types   = mesh.getCellTypesArray();
+
+  for ( IndexType icell=0; icell < N_CELLS; ++icell )
+  {
+    if ( icell < 2 )
+    {
+      types[ icell ]     = mint::TRIANGLE;
+      offsets[ icell ]   = ( icell==0 ) ? 0 : offsets[ icell ];
+      offsets[ icell+1 ] = offsets[ icell ] + 3;
+
+      IndexType* triangle = &conn[ offsets[ icell ] ];
+      triangle[ 0 ] = icell;
+      triangle[ 1 ] = icell+1;
+      triangle[ 2 ] = icell+2;
+    }
+    else
+    {
+      types[ icell ] = mint::QUAD;
+      offsets[ icell+1 ] = offsets[ icell ] + 4;
+
+      IndexType* quad = &conn[ offsets[ icell ] ];
+      quad[ 0 ] = icell;
+      quad[ 1 ] = icell+1;
+      quad[ 2 ] = icell+2;
+      quad[ 3 ] = icell+3;
+    }
+
+  }
+
 }
 
 /*******************************************************************************

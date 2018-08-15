@@ -229,6 +229,13 @@ module axom_quest
             logical(C_BOOL), value, intent(IN) :: status
         end subroutine c_signed_distance_set_verbose
 
+        subroutine c_signed_distance_use_shared_memory(status) &
+                bind(C, name="QUEST_signed_distance_use_shared_memory")
+            use iso_c_binding, only : C_BOOL
+            implicit none
+            logical(C_BOOL), value, intent(IN) :: status
+        end subroutine c_signed_distance_use_shared_memory
+
         function quest_signed_distance_evaluate(x, y, z) &
                 result(SHT_rv) &
                 bind(C, name="QUEST_signed_distance_evaluate")
@@ -387,6 +394,16 @@ contains
         call c_signed_distance_set_verbose(SH_status)
         ! splicer end function.signed_distance_set_verbose
     end subroutine quest_signed_distance_set_verbose
+
+    subroutine quest_signed_distance_use_shared_memory(status)
+        use iso_c_binding, only : C_BOOL
+        logical, value, intent(IN) :: status
+        logical(C_BOOL) SH_status
+        SH_status = status  ! coerce to C_BOOL
+        ! splicer begin function.signed_distance_use_shared_memory
+        call c_signed_distance_use_shared_memory(SH_status)
+        ! splicer end function.signed_distance_use_shared_memory
+    end subroutine quest_signed_distance_use_shared_memory
 
     ! splicer begin additional_functions
     ! splicer end additional_functions

@@ -103,6 +103,8 @@ void QUEST_signed_distance_set_max_occupancy(int maxOccupancy);
 
 void QUEST_signed_distance_set_verbose(bool status);
 
+void QUEST_signed_distance_use_shared_memory(bool status);
+
 double QUEST_signed_distance_evaluate(double x, double y, double z);
 
 void QUEST_signed_distance_finalize();

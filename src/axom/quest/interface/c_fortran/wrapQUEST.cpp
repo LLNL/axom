@@ -236,6 +236,14 @@ void QUEST_signed_distance_set_verbose(bool status)
 // splicer end function.signed_distance_set_verbose
 }
 
+void QUEST_signed_distance_use_shared_memory(bool status)
+{
+// splicer begin function.signed_distance_use_shared_memory
+  axom::quest::signed_distance_use_shared_memory(status);
+  return;
+// splicer end function.signed_distance_use_shared_memory
+}
+
 double QUEST_signed_distance_evaluate(double x, double y, double z)
 {
 // splicer begin function.signed_distance_evaluate

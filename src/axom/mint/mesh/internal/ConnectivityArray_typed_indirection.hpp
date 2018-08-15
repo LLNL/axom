@@ -282,6 +282,27 @@ public:
   { return m_values->capacity(); }
 
   /*!
+   * \brief Resize the space to hold the specified number of IDs.
+   *
+   * \param [in] ID_size the number of IDs to resize the space for.
+   * \param [in] value_size the number of values per ID to resize the space for.
+   *
+   * \note if value_size is not specified then if this ConnectivityArray is
+   * empty, space is allocated for MAX_NUM_NODES values for each ID. Otherwise,
+   * space is allocated for the average number of values per ID.
+   */
+  void resize( IndexType ID_size, IndexType value_size=USE_DEFAULT )
+  {
+    m_offsets->resize( ID_size+1 );
+    m_types->resize( ID_size );
+    IndexType newValueSize =
+        internal::calcValueCapacity( getNumberOfIDs(), getIDCapacity(),
+                                     getNumberOfValues(), value_size );
+
+    m_values->resize( newValueSize );
+  }
+
+  /*!
    * \brief Reserve space for IDs and values.
    *
    * \param [in] ID_capacity the number of IDs to reserve space for.

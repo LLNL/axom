@@ -246,22 +246,40 @@ void STLReader::getMesh(
                  "STL reader expects a triangle mesh!" );
 
   // pre-allocate space to store the mesh
-  mesh->reserve( m_num_nodes, m_num_faces );
+  if ( !mesh->isExternal() )
+  {
+    mesh->resize( m_num_nodes, m_num_faces );
+  }
+
+  SLIC_ERROR_IF(
+    mesh->getNumberOfNodes() != m_num_nodes,
+    "mesh number of nodes does not match the number of nodes in the STL file!" );
+  SLIC_ERROR_IF(
+    mesh->getNumberOfCells() != m_num_faces,
+    "mesh number of cells does not match number of triangles in the STL file!" );
+
+
+  double* x = mesh->getCoordinateArray( mint::X_COORDINATE );
+  double* y = mesh->getCoordinateArray( mint::Y_COORDINATE );
+  double* z = mesh->getCoordinateArray( mint::Z_COORDINATE );
 
   // Load the vertices into the mesh
   for ( mint::IndexType i=0 ; i < m_num_nodes ; ++i )
   {
     const mint::IndexType offset = i*3;
-    mesh->appendNode( m_nodes[ offset   ],
-                      m_nodes[ offset+1 ],
-                      m_nodes[ offset+2 ]   );
+    x[ i ] = m_nodes[ offset     ];
+    y[ i ] = m_nodes[ offset + 1 ];
+    z[ i ] = m_nodes[ offset + 2 ];
   }
 
   // Load the triangles.  Note that the indices are implicitly defined.
+  mint::IndexType* conn = mesh->getCellConnectivityArray();
   for ( mint::IndexType i=0 ; i < m_num_faces ; ++i )
   {
-    mint::IndexType tv[3] = {3*i, 3*i+1, 3*i+2};
-    mesh->appendCell( tv );
+    const mint::IndexType offset = i*3;
+    conn[ offset   ] = offset;
+    conn[ offset+1 ] = offset+1;
+    conn[ offset+2 ] = offset+2;
   }
 
 }

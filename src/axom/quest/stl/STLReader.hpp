@@ -63,6 +63,18 @@ public:
   void setFileName( const std::string& fileName ) { m_fileName = fileName; };
 
   /*!
+   * \brief Returns the number of nodes of the surface mesh.
+   * \return numNodes the number of nodes.
+   */
+  int getNumNodes() const { return m_num_nodes; };
+
+  /*!
+   * \brief Returns the number of faces of the surface mesh.
+   * \return numFaces the number of faces.
+   */
+  int getNumFaces() const { return m_num_faces; };
+
+  /*!
    * \brief Clears all internal data-structures
    */
   void clear();
