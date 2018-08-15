@@ -1,10 +1,8 @@
 /**
-* Mostly contains code from Robey's paper for setting up the multi material mesh
-*/
+ * Contains code from Robey's paper for setting up the multimaterial mesh
+ */
 
 #include <vector>
-
-
 
 void make_other_field_data(int ncells, int nmats, std::vector<double> &i_Volfrac
 	, std::vector<double>& o_Vol, std::vector<double>& o_Densityfrac
@@ -31,17 +29,19 @@ void make_other_field_data(int ncells, int nmats, std::vector<double> &i_Volfrac
 }
 
 
-void read_vol_frac_matrix_file(int& ncells, int& nmats, std::vector<double> &Volfrac, float& filled_percentage) {
+void read_vol_frac_matrix_file(std::string filename, int& ncells, int& nmats, 
+  std::vector<double> &Volfrac, float& filled_percentage) 
+{
 	using namespace std;
 	
 	ncells = 1000000;
 
 	int status;
 	FILE *fp;
-	fp = fopen("C:/UserPrograms/Data/VolFrac/volfrac.dat", "r");
+	fp = fopen(filename.c_str(), "r");
 	if (!fp) {
 		fprintf(stderr, "unable to read volume fractions from file \"%s\"\n",
-			"volfrac.dat");
+      filename);
 		exit(-1);
 	}
 
@@ -52,12 +52,6 @@ void read_vol_frac_matrix_file(int& ncells, int& nmats, std::vector<double> &Vol
 	}
 
 	Volfrac.resize(ncells * nmats, 0.0);
-
-	/*
-	for (int ic = 0; ic < ncells; ic++)
-		for (int m = 0; m < nmats; m++)
-			Volfrac[ic*nmats + m] = 0.0;
-	*/
 
 	char matname[256];
 	for (int m = 0; m < nmats; m++) {
@@ -262,16 +256,16 @@ void get_vol_frac_matrix_rand(int& ncells, int& nmats, std::vector<double> &Volf
 	printf("Mixed material Sparsity %lf percent/Mixed material Filled %lf percent\n\n",
 		mixed_material_sparsity_percentage, mixed_material_filled_percentage);
 
-	//printf("Vol Total %lf\n",VolTotal);
-	//printf("%f percent of the cells are filled\n",(float)filled_count*100.0/(float)(ncells*nmats));
-	//printf("%f percent of the cells are mixed\n",(float)mixed_cell_count*100.0/(float)ncells);
-	//printf("%f percent of the total are mixed\n",(float)mixed_frac_count*100.0/(float)(ncells*nmats));
-	//printf("%f percent of the frac are mixed\n",(float)mixed_frac_count*100.0/(float)(mixed_cell_count*nmats));
-	//printf("%f percent sparsity\n",(float)(ncells*nmats-mixed_frac_count)*100.0/(float)(ncells*nmats));
-	//printf("%f percent of the frac are pure\n",(float)pure_frac_count*100.0/(float)ncells);
+	printf("Vol Total %lf\n",VolTotal);
+	printf("%f percent of the cells are filled\n",(float)filled_count*100.0/(float)(ncells*nmats));
+	printf("%f percent of the cells are mixed\n",(float)mixed_cell_count*100.0/(float)ncells);
+	printf("%f percent of the total are mixed\n",(float)mixed_frac_count*100.0/(float)(ncells*nmats));
+	printf("%f percent of the frac are mixed\n",(float)mixed_frac_count*100.0/(float)(mixed_cell_count*nmats));
+	printf("%f percent sparsity\n",(float)(ncells*nmats-mixed_frac_count)*100.0/(float)(ncells*nmats));
+	printf("%f percent of the frac are pure\n",(float)pure_frac_count*100.0/(float)ncells);
 	printf("1 matcell %d 2 matcell %d 3 matcell %d 4 matcell %d 5 matcell %d\n\n",
 		onematcell, twomatcell, threematcell, fourmatcell, fiveplusmatcell);
-	//printf("Total cells %d\n\n", onematcell+2*twomatcell+3*threematcell+4*fourmatcell+5*fiveplusmatcell);
+	printf("Total cells %d\n\n", onematcell+2*twomatcell+3*threematcell+4*fourmatcell+5*fiveplusmatcell);
 
 }
 
