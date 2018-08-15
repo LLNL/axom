@@ -22,6 +22,8 @@
 #ifndef WRAPSLIC_H
 #define WRAPSLIC_H
 
+#include "typesSLIC.h"
+
 // splicer begin CXX_declarations
 // splicer end CXX_declarations
 

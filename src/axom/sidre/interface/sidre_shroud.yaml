@@ -60,8 +60,19 @@ declarations:
 #  InvalidID: IDTYPE -1
 
 - decl: class Buffer
+  cxx_header: axom/sidre/core/Buffer.hpp
+  format:
+    F_derived_name:  SidreBuffer
+
 - decl: class Group
+  cxx_header: axom/sidre/core/Group.hpp
+  format:
+    F_derived_name:  SidreGroup
+
 - decl: class View
+  cxx_header: axom/sidre/core/View.hpp
+  format:
+    F_derived_name:  SidreView
 
   ####################################################################
 - decl: class DataStore
@@ -78,6 +89,8 @@ declarations:
   - decl: size_t getNumBuffers() const
 #  - decl: bool hasBuffer( IndexType idx ) const
   - decl:  Buffer * getBuffer( IndexType idx )
+    C_error_pattern: C_null_to_error_capsule
+    PY_error_pattern: PY_null_to_none
   - decl: Buffer * createBuffer()
     format:
       function_suffix: _empty
@@ -88,6 +101,7 @@ declarations:
       num_elems:
       -  int
       -  long
+    C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
   - decl: void destroyBuffer( IndexType id )
 
@@ -103,10 +117,6 @@ declarations:
 
 ####################################################################
 - decl: class Group
-  cxx_header: axom/sidre/core/Group.hpp
-  format:
-    F_derived_name:  SidreGroup
-
   declarations:
   # Basic query and accessor methods.
   - decl: IndexType getIndex()
@@ -133,11 +143,13 @@ declarations:
   - decl: View *getView( const std::string& path )
     format:
       function_suffix: _from_name
+    C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
 #  - decl: View const * getView( const std::string& path ) const
   - decl: View *getView( const IndexType idx )
     format:
       function_suffix: _from_index
+    C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
 #  - decl: View const *getView( const IndexType idx ) const
   - decl: IndexType getFirstValidViewIndex() const
@@ -147,6 +159,7 @@ declarations:
   - decl: View *createView( const string& path )
     format:
       function_suffix: _empty
+    C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
 
   - decl: View *createView( const std::string& path,
@@ -158,6 +171,7 @@ declarations:
       num_elems:
       -  int
       -  long
+    C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
 
   - decl: View *createView( const std::string& path,
@@ -166,6 +180,7 @@ declarations:
                             SidreLength * shape+dimension)
     format:
       function_suffix: _from_shape
+    C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
 
 #  - decl: View *createView( const std::string& path, const DataType& dtype)
@@ -175,6 +190,7 @@ declarations:
                             Buffer *buff)
     format:
       function_suffix: _into_buffer
+    C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
 
   - decl: View *createView( const std::string& path,
@@ -187,6 +203,7 @@ declarations:
       num_elems:
       -  int
       -  long
+    C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
 
   - decl: View *createView( const std::string& path,
@@ -196,6 +213,7 @@ declarations:
                             Buffer * buff)
     format:
       function_suffix: _from_shape_and_buffer
+    C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
 
   # Methods to create a View with externally-owned data attached.
@@ -203,6 +221,7 @@ declarations:
                              void * external_ptr)
     format:
       function_suffix: _external
+    C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
 
   - decl: View *createView( const std::string& path,
@@ -215,6 +234,7 @@ declarations:
       num_elems:
       -  int
       -  long
+    C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
 
   - decl: View *createView( const std::string& path,
@@ -224,6 +244,7 @@ declarations:
                             void * external_ptr)
     format:
       function_suffix: _from_shape_external
+    C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
 
   # Methods to create a View and allocate data for it.
@@ -236,6 +257,7 @@ declarations:
       num_elems:
       -  int
       -  long
+    C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
 
   - decl: View *createViewAndAllocate( const std::string& path,
@@ -244,21 +266,25 @@ declarations:
                                        SidreLength *shape+dimension)
     format:
       function_suffix: _shape
+    C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
 
 #  - decl: View *createViewAndAllocate( const std::string& path, const DataType& dtype)
 
-  - decl: View *createViewScalar( const std::string& path, ScalarType value)
+  - decl: |
+      template<typename ScalarType>
+      View *createViewScalar( const std::string& path, ScalarType value)
     cxx_template:
-      ScalarType:
-      - int
-      - long
-      - float
-      - double
+    - instantiation: <int>
+    - instantiation: <long>
+    - instantiation: <float>
+    - instantiation: <double>
+    C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
 
   - decl: View *createViewString( const std::string& path,
                                   const std::string& value)
+    C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
 
   # View destruction methods.
@@ -290,11 +316,13 @@ declarations:
   - decl: Group * getGroup( const std::string& path )
     format:
       function_suffix: _from_name
+    C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
 #  - decl: Group const * getGroup( const std::string& path ) const
   - decl: Group * getGroup( IndexType idx)
     format:
       function_suffix: _from_index
+    C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
 #  - decl: Group const * getGroup(IndexType idx) const
   - decl: IndexType getFirstValidGroupIndex() const
@@ -302,6 +330,8 @@ declarations:
 
   # Child Group creation and destruction methods.
   - decl: Group *createGroup( const string& path )
+    C_error_pattern: C_null_to_error_capsule
+    PY_error_pattern: PY_null_to_none
   - decl: void destroyGroup(const std::string &path)
     format:
       function_suffix: _name
@@ -342,10 +372,6 @@ declarations:
 
 ####################################################################
 - decl: class Buffer
-  cxx_header: axom/sidre/core/Buffer.hpp
-  format:
-    F_derived_name:  SidreBuffer
-
   declarations:
     # Basic query and accessor methods
     - decl: IndexType getIndex() const
@@ -396,10 +422,6 @@ declarations:
 
 ####################################################################
 - decl: class View
-  cxx_header: axom/sidre/core/View.hpp
-  format:
-    F_derived_name:  SidreView
-
   declarations:
 
   # View query and accessor methods
@@ -514,14 +536,14 @@ declarations:
 #  - decl: View* apply(const DataType& dtype)
 
    # Methods to set data in a view (scalar, string, or external data).
-#   template<typename ScalarType>
-  - decl: void setScalar(ScalarType value)
+  - decl: |
+      template<typename ScalarType>
+      void setScalar(ScalarType value)
     cxx_template:
-      ScalarType:
-      - int
-      - long
-      - float
-      - double
+    - instantiation: <int>
+    - instantiation: <long>
+    - instantiation: <float>
+    - instantiation: <double>
 
   - decl: View * setString(const std::string& value)
     return_this: True
@@ -555,14 +577,14 @@ declarations:
     format:
       F_string_result_as_arg: name
 
-#   template<typename DataType>
-  - decl: DataType getData()
+  - decl: |
+      template<typename DataType>
+      DataType getData()
     cxx_template:
-      DataType:
-      - int
-      - long
-      - float
-      - double
+    - instantiation: <int>
+    - instantiation: <long>
+    - instantiation: <float>
+    - instantiation: <double>
 
   - decl: void * getVoidPtr() const
 
@@ -597,6 +619,13 @@ patterns:
         if (! axom::sidre::nameIsValid({cxx_var})) {{
             std::memset({c_var}, ' ', {c_var_len});
             return;
+        }}
+    # Fill in capsule then return NULL instead of pointer to capsule.
+    C_null_to_error_capsule: |
+        if ({cxx_var} == nullptr) {{
+            {c_var}->addr = NULL;
+            {c_var}->idtor = 0; 
+            return NULL;
         }}
     PY_invalid_name: |
         if (! axom::sidre::nameIsValid({cxx_var})) {{

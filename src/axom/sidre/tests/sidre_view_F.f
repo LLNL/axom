@@ -940,7 +940,6 @@ contains
     integer(C_INT), target :: src_data
     integer(C_INT), pointer :: out_data
     type(C_PTR) src_ptr, opq_ptr
-    logical rv
 
     call set_case_name("simple_opaque")
 
@@ -964,10 +963,9 @@ contains
     call assert_true(opq_view%is_opaque(), "opq_view%is_opaque()")
 
     opq_ptr = opq_view%get_void_ptr()
-    rv = c_associated(opq_ptr, src_ptr)
-    call assert_true(rv, "c_associated(opq_ptr,src_ptr)")
-
     call c_f_pointer(opq_ptr, out_data)
+
+    call assert_true(c_associated(opq_ptr, src_ptr), "c_associated(opq_ptr,src_ptr)")
     call assert_equals(out_data, 42, "out_data, 42")
 
     call ds%print()

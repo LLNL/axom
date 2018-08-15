@@ -88,6 +88,7 @@ if (ENABLE_FORTRAN)
         interface/c_fortran/wrapGroup.h
         interface/c_fortran/wrapBuffer.h
         interface/c_fortran/wrapView.h
+        interface/c_fortran/typesSidre.h
     )
     list(APPEND sidre_sources
         # generated source
@@ -102,6 +103,7 @@ if (ENABLE_FORTRAN)
     if(ENABLE_MPI)
         list(APPEND sidre_headers
              spio/interface/c_fortran/wrapIOManager.h
+             spio/interface/c_fortran/typesSPIO.h
         )
         list(APPEND sidre_sources
              spio/interface/c_fortran/wrapfspio.f

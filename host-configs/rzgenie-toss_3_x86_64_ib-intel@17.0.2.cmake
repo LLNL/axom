@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_05_01_15_51_01/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.2/cmake-3.8.2-tsageixdjcy22a45kl2u7ko5vy22r2cf/bin/cmake
+# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_08_07_19_23_25/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.2/cmake-3.9.6-ajm3es6bgqjnl34pxwxzssi7jlt2z5ob/bin/cmake
 
 #######
 # using intel@17.0.2 compiler spec
@@ -25,7 +25,7 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 set(CMAKE_Fortran_COMPILER "/usr/tce/packages/intel/intel-17.0.2/bin/ifort" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_05_01_15_51_01/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.2" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_08_07_19_23_25/spack/opt/spack/toss_3_x86_64_ib/intel-17.0.2" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-43ycfmqnngbkrxz7ql4rursyreuxjwz5" CACHE PATH "")
@@ -33,22 +33,22 @@ set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-43ycfmqnngbkrxz7ql4rursyreuxjwz5" CACHE PA
 # scr not built by uberenv
 
 # conduit from uberenv
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.3.1-u47mqumeeyzmacsmc5edasheex5ubzu3" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.3.1-4piltsh4lxrkqufj5ix2nwcwq4bluicu" CACHE PATH "")
 
 # mfem from uberenv
 set(MFEM_DIR "${TPL_ROOT}/mfem-3.3.2-23ayf66iq7mjgtexk74clpny5cnxgsc4" CACHE PATH "")
 
 # python from uberenv
-set(PYTHON_EXECUTABLE "${TPL_ROOT}/python-2.7.11-ulj7lpb5463atr2ggy2q7np2xejkxenx/bin/python" CACHE PATH "")
+set(PYTHON_EXECUTABLE "${TPL_ROOT}/python-2.7.15-vdhr5x2jxeihxnwswvjghheeb3tqd6xj/bin/python" CACHE PATH "")
 
 # doxygen from uberenv
-set(DOXYGEN_EXECUTABLE "${TPL_ROOT}/doxygen-1.8.11-ojaptl5nsb3xzgjcznupyu43lcilzwit/bin/doxygen" CACHE PATH "")
+set(DOXYGEN_EXECUTABLE "${TPL_ROOT}/doxygen-1.8.11-giy2sqrkhyxcbbqi4tuvyivkftjiw42g/bin/doxygen" CACHE PATH "")
 
 # sphinx 1.4.5 from uberenv
-set(SPHINX_EXECUTABLE "${TPL_ROOT}/python-2.7.11-ulj7lpb5463atr2ggy2q7np2xejkxenx/bin/sphinx-build" CACHE PATH "")
+set(SPHINX_EXECUTABLE "${TPL_ROOT}/python-2.7.15-vdhr5x2jxeihxnwswvjghheeb3tqd6xj/bin/sphinx-build" CACHE PATH "")
 
-# shroud 0.9.0 from uberenv
-set(SHROUD_EXECUTABLE "${TPL_ROOT}/python-2.7.11-ulj7lpb5463atr2ggy2q7np2xejkxenx/bin/shroud" CACHE PATH "")
+# shroud 0.10.1 from uberenv
+set(SHROUD_EXECUTABLE "${TPL_ROOT}/python-2.7.15-vdhr5x2jxeihxnwswvjghheeb3tqd6xj/bin/shroud" CACHE PATH "")
 
 # uncrustify from uberenv
 set(UNCRUSTIFY_EXECUTABLE "${TPL_ROOT}/uncrustify-0.61-guetv7fqengmn4ps5tufq6cw7a3uoxap/bin/uncrustify" CACHE PATH "")

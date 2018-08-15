@@ -22,6 +22,8 @@
 #ifndef WRAPSIDRE_H
 #define WRAPSIDRE_H
 
+#include "typesSidre.h"
+
 // splicer begin CXX_declarations
 // splicer end CXX_declarations
 

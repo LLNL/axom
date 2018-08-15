@@ -51,6 +51,7 @@ endif()
 if (ENABLE_FORTRAN)
     list(APPEND slic_headers
         interface/c_fortran/wrapSLIC.h
+        interface/c_fortran/typesSLIC.h
     )
     list(APPEND slic_sources
         interface/c_fortran/wrapSLIC.cpp
