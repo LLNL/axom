@@ -499,7 +499,7 @@ int MultiMat::addField(const std::string& arr_name, FieldMapping arr_mapping,
 
   //make sure the name does not conflict
   int fieldIdx = getFieldIdx(arr_name);
-  if (fieldIdx == 0 && m_mapVec[0] != nullptr)
+  if (fieldIdx == 0 && m_mapVec[0] == nullptr)
   { //this is the vol frac array. call setVolfrac instead
     SLIC_ASSERT(arr_mapping == FieldMapping::PER_CELL_MAT);
     SLIC_ASSERT(stride == 1);
