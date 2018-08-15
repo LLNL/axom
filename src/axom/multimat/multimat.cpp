@@ -41,14 +41,14 @@ using namespace axom::multimat;
 
 
 MultiMat::MultiMat(DataLayout d, SparcityLayout s) :
-  m_cellMatRel(nullptr),
-  m_cellMatRelDyn(nullptr),
-  m_cellMatNZSet(nullptr),
-  m_cellMatProdSet(nullptr),
   m_ncells(0),
   m_nmats(0),
   m_dataLayout(d),
   m_sparcityLayout(s),
+  m_cellMatRel(nullptr),
+  m_cellMatRelDyn(nullptr),
+  m_cellMatNZSet(nullptr),
+  m_cellMatProdSet(nullptr),
   m_dynamic_mode(false)
 {}
 
