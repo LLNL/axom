@@ -47,7 +47,7 @@ namespace policies = slam::policies;
 
 enum class FieldMapping { PER_CELL, PER_MAT, PER_CELL_MAT };
 enum class DataLayout { CELL_CENTRIC, MAT_CENTRIC };
-enum class SparcityLayout { SPARSE, DENSE };
+enum class SparsityLayout { SPARSE, DENSE };
 enum class DataTypeSupported
 {
   TypeUnknown, TypeInt, TypeDouble, TypeFloat, TypeUnsignChar
@@ -115,11 +115,11 @@ public:
    *
    * \param data_layout  Select material-dominant or cell-dominant layout to
    *                     store the data in. Default is cell-dominant.
-   * \param sparcity_layout Select dense or sparse layout to store the data in.
+   * \param sparsity_layout Select dense or sparse layout to store the data in.
    *                        Default is sparse.
    */
   MultiMat(DataLayout data_layout = DataLayout::CELL_CENTRIC,
-           SparcityLayout sparcity_layout = SparcityLayout::SPARSE);
+           SparsityLayout sparsity_layout = SparsityLayout::SPARSE);
   /** Destructor **/
   ~MultiMat();
   /** Copy constructor (Deep copy). **/
@@ -130,14 +130,14 @@ public:
   //Set-up functions
   /**
    * \brief Set the number of materials
-   * \pre num_cells > 0
-   */
-  void setNumberOfMat(int num_cells);
-  /**
-   * \brief Set the number of cells
    * \pre num_mats > 0
    */
-  void setNumberOfCell(int num_mats);
+  void setNumberOfMaterials(int num_mats);
+  /**
+   * \brief Set the number of cells
+   * \pre num_cells > 0
+   */
+  void setNumberOfCells(int num_cells);
 
   /**
    * \brief Set the cell-material relation.
@@ -151,7 +151,7 @@ public:
    * Entry at `idx` should containing 'true' where materials are presented in
    * the cell.\n
    * The number of materials and cell must be set prior to calling this function
-   * with setNumberOfMat(int) and setNumberOfCell(int)
+   * with setNumberOfMaterials(int) and setNumberOfCells(int)
    *
    * \param A boolean vector of size num_mats * num_cells containing information
    * on if a materials is present in a cell.
@@ -304,19 +304,19 @@ public:
   void convertLayoutToDense();
 
   /** Convert the data to be stored in the specified layout. **/
-  void convertLayout(DataLayout, SparcityLayout);
+  void convertLayout(DataLayout, SparsityLayout);
   /** Return the data layout used currently **/
   DataLayout getDataLayout() const { return m_dataLayout; }
-  /** Return the sparcity layout used currently **/
-  SparcityLayout getSparcityLayout() const { return m_sparcityLayout; }
+  /** Return the sparsity layout used currently **/
+  SparsityLayout getSparsityLayout() const { return m_sparsityLayout; }
   /** Return the data layout used currently as string **/
   std::string getDataLayoutAsString() const;
-  /** Return the sparcity layout used currently as string **/
-  std::string getSparcityLayoutAsString() const;
+  /** Return the sparsity layout used currently as string **/
+  std::string getSparsityLayoutAsString() const;
   /** Return true if the current layout is sparse/compact, false otherwise. **/
-  bool isSparse() const { return m_sparcityLayout == SparcityLayout::SPARSE; }
+  bool isSparse() const { return m_sparsityLayout == SparsityLayout::SPARSE; }
   /** Return true if the current layout is dense, false otherwise. **/
-  bool isDense() const { return m_sparcityLayout == SparcityLayout::DENSE; }
+  bool isDense() const { return m_sparsityLayout == SparsityLayout::DENSE; }
   /** Return true if the current layout is cell-dominant, false otherwise. **/
   bool isCellDom() const { return m_dataLayout == DataLayout::CELL_CENTRIC; }
   /** Return true if the current layout is material-dominant, false otherwise.*/
@@ -398,7 +398,7 @@ private: //private functions
 private:
   unsigned int m_ncells, m_nmats;
   DataLayout m_dataLayout;
-  SparcityLayout m_sparcityLayout;
+  SparsityLayout m_sparsityLayout;
 
   //slam set variables
   RangeSetType m_cellSet;
@@ -422,7 +422,7 @@ private:
   struct Layout
   {
     DataLayout data_layout;
-    SparcityLayout sparcity_layout;
+    SparsityLayout sparsity_layout;
   };
 
   Layout m_static_layout; //Layout used during the static mode
@@ -564,7 +564,7 @@ MultiMat::Field2D<T>& MultiMat::get2dField(const std::string& field_name)
 template<typename DataType>
 void MultiMat::convertToSparse_helper(int map_i)
 {
-  SLIC_ASSERT(m_sparcityLayout != SparcityLayout::SPARSE);
+  SLIC_ASSERT(m_sparsityLayout != SparsityLayout::SPARSE);
 
   MapBaseType* mapPtr = m_mapVec[map_i];
 
@@ -601,7 +601,7 @@ void MultiMat::convertToSparse_helper(int map_i)
 template<typename DataType>
 void MultiMat::convertToDense_helper(int map_i)
 {
-  SLIC_ASSERT(m_sparcityLayout != SparcityLayout::DENSE);
+  SLIC_ASSERT(m_sparsityLayout != SparsityLayout::DENSE);
 
   MapBaseType* mapPtr = m_mapVec[map_i];
 

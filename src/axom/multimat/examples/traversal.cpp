@@ -44,17 +44,17 @@ double getRandomDouble(double low, double high)
 
 /**
  * \brief Show different ways to traverse the values inside MultiMat.
- * 
+ *
  * The two fields used are "Cell Array" for 1d array
  * where there is an entry for each cell, and "CellMat Array" where
- * there is an entry for each cell and each material. 
- * 
+ * there is an entry for each cell and each material.
+ *
  * Each traversal loops access the value and, for the sparse layouts, the index
  * of the material (assuming a cell-dominant layout).
- * 
+ *
  * Note that some index access are commented out to avoid compiler warnings,
  * but are valid index accessing code.
- * 
+ *
  */
 void various_traversal_methods(int nmats, int ncells, int ncomp,
                                bool use_sparse, double fill_percentage) {
@@ -62,7 +62,7 @@ void various_traversal_methods(int nmats, int ncells, int ncomp,
   axom::utilities::Timer timer;
 
   MultiMat mm(DataLayout::CELL_CENTRIC,
-              (use_sparse ? SparcityLayout::SPARSE : SparcityLayout::DENSE));
+              (use_sparse ? SparsityLayout::SPARSE : SparsityLayout::DENSE));
 
   int nfilled = 0;
   std::vector<bool> cellMatRel(nmats * ncells, false);
@@ -75,8 +75,8 @@ void various_traversal_methods(int nmats, int ncells, int ncomp,
     }
   }
 
-  mm.setNumberOfMat(nmats);
-  mm.setNumberOfCell(ncells);
+  mm.setNumberOfMaterials(nmats);
+  mm.setNumberOfCells(ncells);
   mm.setCellMatRel(cellMatRel);
 
   //create the std::vector data for the field arrays
@@ -222,7 +222,7 @@ void various_traversal_methods(int nmats, int ncells, int ncomp,
   SLIC_ASSERT(x_sum == sum);
 
 
-  if (mm.getSparcityLayout() == SparcityLayout::SPARSE)
+  if (mm.getSparsityLayout() == SparsityLayout::SPARSE)
   {
     // ------------ return index set --------------
     SLIC_INFO("\n -- Access by Map with indexing set-- ");
@@ -395,8 +395,8 @@ void various_traversal_methods(int nmats, int ncells, int ncomp,
 void usage()
 {
   SLIC_WARNING("Usage: ./multimat_traversal_ex "
-    << "<num_cells> <num_mats> <num_comp> "
-    << "<bool use_sparse> <fill percentage>");
+               << "<num_cells> <num_mats> <num_comp> "
+               << "<bool use_sparse> <fill percentage>");
   SLIC_WARNING("  example: ./multimat_traversal_ex 10000 50 3 1 0.2");
 }
 
