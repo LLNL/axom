@@ -194,7 +194,7 @@ void average_density_cell_dom_mm(MultiMat& mm) {
 
   mm.convertLayoutToCellDominant();
   SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-                                << mm.getSparcityLayoutAsString());
+                                << mm.getSparsityLayoutAsString());
   SLIC_ASSERT(mm.isCellDom());
 
   int ncells = mm.getNumberOfCells();
@@ -241,7 +241,7 @@ void average_density_mat_dom_mm(MultiMat& mm) {
   mm.convertLayoutToMaterialDominant();
 
   SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-                                << mm.getSparcityLayoutAsString());
+                                << mm.getSparsityLayoutAsString());
   SLIC_ASSERT(mm.isMatDom());
 
   int ncells = mm.getNumberOfCells();
@@ -394,7 +394,7 @@ void calculate_pressure_mm(MultiMat& mm)
   SLIC_INFO("-- Calculating pressure, using MultiMat --");
   mm.convertLayoutToCellDominant();
   SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-                                << mm.getSparcityLayoutAsString());
+                                << mm.getSparsityLayoutAsString());
   SLIC_ASSERT(mm.isCellDom());
 
   int ncells = mm.getNumberOfCells();
@@ -529,7 +529,7 @@ void average_material_density_over_cell_nbr_mm(MultiMat& mm, Robey_data& data)
             << " Multimat version --");
   mm.convertLayoutToCellDominant();
   SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-                                << mm.getSparcityLayoutAsString());
+                                << mm.getSparsityLayoutAsString());
   SLIC_ASSERT(mm.isCellDom());
 
   const std::vector<double>& cen = data.cen;
@@ -629,8 +629,8 @@ int main(int argc, char** argv)
 
   //Set-up the multimat class
   MultiMat mm;
-  mm.setNumberOfMat(data.nmats);
-  mm.setNumberOfCell(data.ncells);
+  mm.setNumberOfMaterials(data.nmats);
+  mm.setNumberOfCells(data.ncells);
   mm.setCellMatRel(data.Volfrac_bool);
 
   //Setting field data in terms of slam
