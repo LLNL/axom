@@ -40,9 +40,7 @@ void about()
 //-----------------------------------------------------------------------------
 void about(std::ostream &oss)
 {
-  oss << "HERE'S SOME INTERESTING STUFF:" << std::endl << std::endl;
-
-  oss << "Axom (" << AXOM_VERSION_FULL << ")"  << std::endl << std::endl;
+  oss << "Axom information:"  << std::endl << std::endl;
 
   oss << "AXOM_VERSION_FULL: "  << AXOM_VERSION_FULL  << std::endl;
   oss << "AXOM_VERSION_MAJOR: " << AXOM_VERSION_MAJOR << std::endl;
