@@ -17,6 +17,18 @@
 ####################################
 
 ################################
+# RAJA
+################################
+if (RAJA_DIR)
+  include(cmake/thirdparty/FindRAJA.cmake)
+  blt_register_library( NAME raja
+                        INCLUDES ${RAJA_INCLUDE_DIR}
+                        LIBRARIES ${RAJA_LIB_DIR}/libRAJA.a )
+else()
+  message(STATUS "RAJA support is OFF" )
+endif()
+
+################################
 # Conduit
 ################################
 if (CONDUIT_DIR)
