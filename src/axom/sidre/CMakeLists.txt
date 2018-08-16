@@ -144,6 +144,9 @@ blt_add_library( NAME       sidre
                  FOLDER     axom/sidre
                 )
 
+axom_write_unified_header(NAME    sidre
+                          HEADERS ${sidre_headers})
+
 axom_install_component(NAME    sidre
                        HEADERS ${sidre_headers}
                        )

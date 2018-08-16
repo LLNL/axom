@@ -14,16 +14,9 @@
  *
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-#include "axom/core/utilities/FileUtilities.hpp"   // getDirName,
-                                                   // makeDirsForPath
-#include "axom/core/utilities/Utilities.hpp"       /* for abs, processAbort */
-#include "axom/mint/mesh/FieldData.hpp"             /* for FieldData */
-#include "axom/mint/mesh/FieldVariable.hpp"         /* for FieldVariable */
-#include "axom/mint/mesh/UniformMesh.hpp"           /* for UniformMesh */
-#include "axom/mint/utils/vtk_utils.hpp"             /* for write_vtk */
-#include "axom/mint/config.hpp"             /* for IndexType, int64 */
-#include "axom/slic/streams/GenericOutputStream.hpp" // GenericOutputStream
-#include "axom/slic/interface/slic.hpp"                  /* for slic macros */
+#include "axom/core.hpp"
+#include "axom/mint.hpp"
+#include "axom/slic.hpp"
 
 #include <cmath>                          /* for std::exp, std::ciel */
 #include <sstream>                        /* for std::stringstream */

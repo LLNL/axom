@@ -16,10 +16,7 @@
  */
 
 // Axom includes
-#include "axom/core/Macros.hpp"               // for AXOM_NOT_USED
-#include "axom/core/utilities/Utilities.hpp"  // for random_real
-
-// Mint includes
+#include "axom/core.hpp"
 #include "axom/mint.hpp"
 
 // C/C++ includes

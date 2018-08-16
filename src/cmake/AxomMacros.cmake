@@ -263,9 +263,6 @@ macro(axom_install_component)
             INCLUDES DESTINATION ${_header_base_dir}
             )
 
-    axom_write_helper_header(NAME    ${arg_NAME}
-                             HEADERS ${arg_HEADERS})
-
     foreach( _file ${arg_HEADERS} )
         get_filename_component( _dir ${_file} DIRECTORY )
         install(FILES ${_file} DESTINATION ${_header_base_dir}/${_dir} )
@@ -283,17 +280,17 @@ endmacro(axom_install_component)
 
 
 ##------------------------------------------------------------------------------
-## axom_write_helper_header
+## axom_write_unified_header
 ## 
-## This macro writes the unified helper header (axom/<NAME>.hpp) to the build directory for the
+## This macro writes the unified header (axom/<NAME>.hpp) to the build directory for the
 ## given component NAME with the given HEADERS included inside of it.
 ##
-## NAME - The name of the component for the unified helper header.
+## NAME - The name of the component for the unified header.
 ##
 ## HEADERS - Headers to be included in the header.
 ##
 ##------------------------------------------------------------------------------
-macro(axom_write_helper_header)
+macro(axom_write_unified_header)
 
     set(options )
     set(singleValueArgs NAME)
@@ -323,6 +320,8 @@ macro(axom_write_helper_header)
  *\/\n\n
 ")
 
+    file(APPEND ${_header} "#include \"axom\/config.hpp\"\n")
+
     foreach(_file ${arg_HEADERS})
         file(APPEND ${_header} "#include \"axom\/${arg_NAME}\/${_file}\"\n")
     endforeach()
@@ -330,4 +329,4 @@ macro(axom_write_helper_header)
     install(FILES       ${_header}
             DESTINATION include/axom)
 
-endmacro(axom_write_helper_header)
+endmacro(axom_write_unified_header)
