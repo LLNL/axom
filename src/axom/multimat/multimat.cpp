@@ -40,11 +40,11 @@ using namespace std;
 using namespace axom::multimat;
 
 
-MultiMat::MultiMat(DataLayout d, SparcityLayout s) :
+MultiMat::MultiMat(DataLayout d, SparsityLayout s) :
   m_ncells(0),
   m_nmats(0),
   m_dataLayout(d),
-  m_sparcityLayout(s),
+  m_sparsityLayout(s),
   m_cellMatRel(nullptr),
   m_cellMatRelDyn(nullptr),
   m_cellMatNZSet(nullptr),
@@ -91,7 +91,7 @@ MultiMat::MultiMat(const MultiMat& other) :
   m_ncells(other.m_ncells),
   m_nmats(other.m_nmats),
   m_dataLayout( other.m_dataLayout),
-  m_sparcityLayout( other.m_sparcityLayout),
+  m_sparsityLayout( other.m_sparsityLayout),
   m_cellSet(0,other.m_ncells),
   m_matSet(0, other.m_nmats),
   m_cellMatRel_beginsVec(other.m_cellMatRel_beginsVec),
@@ -153,7 +153,7 @@ MultiMat& MultiMat::operator=(const MultiMat& other)
 }
 
 
-void MultiMat::setNumberOfMat(int n)
+void MultiMat::setNumberOfMaterials(int n)
 {
   SLIC_ASSERT(n > 0);
   m_nmats = n;
@@ -162,7 +162,7 @@ void MultiMat::setNumberOfMat(int n)
   SLIC_ASSERT(m_matSet.isValid());
 }
 
-void MultiMat::setNumberOfCell(int c)
+void MultiMat::setNumberOfCells(int c)
 {
   SLIC_ASSERT(c > 0);
   m_ncells = c;
@@ -287,7 +287,7 @@ MultiMat::IndexSet MultiMat::getIndexingSetOfCell(int c)
   SLIC_ASSERT(m_dataLayout == DataLayout::CELL_CENTRIC);
   SLIC_ASSERT(0 <= c && c < (int)m_ncells);
 
-  if (m_sparcityLayout == SparcityLayout::SPARSE)
+  if (m_sparsityLayout == SparsityLayout::SPARSE)
   {
     int start_idx = m_cellMatRel_beginsVec[c];
     int end_idx = m_cellMatRel_beginsVec[c + 1];
@@ -295,7 +295,7 @@ MultiMat::IndexSet MultiMat::getIndexingSetOfCell(int c)
   }
   else
   {
-    SLIC_ASSERT(m_sparcityLayout == SparcityLayout::DENSE);
+    SLIC_ASSERT(m_sparsityLayout == SparsityLayout::DENSE);
     int size2 = m_cellMatProdSet->secondSetSize();
     return RangeSetType::SetBuilder().range(c*size2, (c + 1)*size2 - 1);
   }
@@ -308,7 +308,7 @@ void MultiMat::convertToDynamic()
   SLIC_ASSERT(m_cellMatRelDyn == nullptr);
 
   // Save what the current layout is for later
-  m_static_layout = Layout { m_dataLayout, m_sparcityLayout };
+  m_static_layout = Layout { m_dataLayout, m_sparsityLayout };
 
   // For now, handle dynamic by changing maps to dense,
   // and relation to DynamicRelation
@@ -385,7 +385,7 @@ void MultiMat::convertToStatic()
 
   m_dynamic_mode = false;
 
-  if (m_static_layout.sparcity_layout == SparcityLayout::SPARSE)
+  if (m_static_layout.sparsity_layout == SparsityLayout::SPARSE)
     convertLayoutToSparse();
 
   delete m_cellMatRelDyn;
@@ -584,7 +584,7 @@ void MultiMat::transposeData_helper(int map_i,
   int set2Size = set2.size();
 
   Field2D<DataType>* new_map = nullptr;
-  if (m_sparcityLayout == SparcityLayout::SPARSE)
+  if (m_sparsityLayout == SparsityLayout::SPARSE)
   {
     arr_data.resize(m_cellMatRel->totalSize()*stride);
     for (unsigned int i = 0 ; i < move_indices.size() ; ++i)
@@ -621,7 +621,7 @@ void MultiMat::transposeData_helper(int map_i,
 
 void MultiMat::convertLayoutToSparse()
 {
-  if (m_sparcityLayout == SparcityLayout::SPARSE)
+  if (m_sparsityLayout == SparsityLayout::SPARSE)
     return;
 
   for (unsigned int map_i = 0 ; map_i < m_fieldMappingVec.size() ; map_i++)
@@ -649,13 +649,13 @@ void MultiMat::convertLayoutToSparse()
     else
       SLIC_ASSERT(false);    //TODO
   }
-  m_sparcityLayout = SparcityLayout::SPARSE;
+  m_sparsityLayout = SparsityLayout::SPARSE;
 }
 
 
 void MultiMat::convertLayoutToDense()
 {
-  if(m_sparcityLayout == SparcityLayout::DENSE)
+  if(m_sparsityLayout == SparsityLayout::DENSE)
     return;
 
   for (unsigned int map_i = 0 ; map_i < m_fieldMappingVec.size() ; map_i++)
@@ -683,23 +683,23 @@ void MultiMat::convertLayoutToDense()
     else
       SLIC_ASSERT(false);    //TODO
   }
-  m_sparcityLayout = SparcityLayout::DENSE;
+  m_sparsityLayout = SparsityLayout::DENSE;
 }
 
 
-void MultiMat::convertLayout(DataLayout new_layout, SparcityLayout new_sparcity)
+void MultiMat::convertLayout(DataLayout new_layout, SparsityLayout new_sparsity)
 {
-  if (new_layout == m_dataLayout && new_sparcity == m_sparcityLayout)
+  if (new_layout == m_dataLayout && new_sparsity == m_sparsityLayout)
     return;
 
   //sparse/dense conversion
-  if (m_sparcityLayout == SparcityLayout::DENSE
-      && new_sparcity == SparcityLayout::SPARSE)
+  if (m_sparsityLayout == SparsityLayout::DENSE
+      && new_sparsity == SparsityLayout::SPARSE)
   {
     convertLayoutToSparse();
   }
-  else if(m_sparcityLayout == SparcityLayout::SPARSE
-          && new_sparcity == SparcityLayout::DENSE)
+  else if(m_sparsityLayout == SparsityLayout::SPARSE
+          && new_sparsity == SparsityLayout::DENSE)
   {
     convertLayoutToDense();
   }
@@ -729,7 +729,7 @@ std::string MultiMat::getDataLayoutAsString() const
   return "";
 }
 
-std::string MultiMat::getSparcityLayoutAsString() const
+std::string MultiMat::getSparsityLayoutAsString() const
 {
   if(isSparse())
     return "Sparse";
@@ -749,7 +749,7 @@ void MultiMat::print() const
   sstr << "\nNumber of materials: " << m_nmats;
   sstr << "\nNumber of cells:     "<< m_ncells;
   sstr << "\nData layout:     " << getDataLayoutAsString();
-  sstr << "\nSparcity layout: " << getSparcityLayoutAsString();
+  sstr << "\nSparsity layout: " << getSparsityLayoutAsString();
 
   sstr << "\n\n Number of fields: " << m_mapVec.size() << "\n";
   for (unsigned int i = 0 ; i < m_mapVec.size() ; i++)
@@ -883,9 +883,9 @@ MultiMat::SetType* MultiMat::get_mapped_set(FieldMapping fm)
 MultiMat::BivariateSetType* MultiMat::get_mapped_biSet()
 {
   BivariateSetType* set_ptr = nullptr;
-  if (m_sparcityLayout == SparcityLayout::SPARSE)
+  if (m_sparsityLayout == SparsityLayout::SPARSE)
     set_ptr = m_cellMatNZSet;
-  else if (m_sparcityLayout == SparcityLayout::DENSE)
+  else if (m_sparsityLayout == SparsityLayout::DENSE)
     set_ptr = m_cellMatProdSet;
 
   SLIC_ASSERT(set_ptr != nullptr);
