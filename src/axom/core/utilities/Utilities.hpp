@@ -78,12 +78,16 @@ inline T* realloc( T* pointer, std::size_t n )
 
 /*!
  * \brief Frees the chunk of memory pointed to by pointer.
+ *
  * \param [in] pointer pointer to memory previously allocated with
  *  alloc or realloc or a null pointer.
+ *
+ *  \post pointer == nullptr
  */
 inline void free( void* pointer )
 {
   std::free( pointer );
+  pointer = nullptr;
 }
 
 /*!
