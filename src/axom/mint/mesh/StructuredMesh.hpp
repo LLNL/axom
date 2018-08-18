@@ -102,8 +102,6 @@ public:
    *
    * \param [in] cellID the ID of the cell in question, this parameter is
    *  ignored.
-   *
-   * \pre 0 <= cellID < getNumberOfCells()
    */
   virtual IndexType
   getNumberOfCellNodes( IndexType AXOM_NOT_USED(cellID)=0 ) const final override
@@ -113,11 +111,11 @@ public:
   }
 
   /*!
-   * \brief Copy the connectivity of the given cell into the provided buffer.
-   *  The buffer must be of length at least getNumberOfCellNodes( cellID ).
+   * \brief Copy the node IDs of the given cell into the provided buffer.
+   *  The buffer must be of length at least getNumberOfCellNodes().
    *
    * \param [in] cellID the ID of the cell in question.
-   * \param [out] nodes the buffer into which the connectivity is copied, must
+   * \param [out] nodes the buffer into which the node IDs are copied, must
    *  be of length at least getNumberOfCellNodes().
    *
    * \return The number of nodes for the given cell.
@@ -128,6 +126,12 @@ public:
   virtual IndexType
   getCellNodes( IndexType cellID, IndexType* nodes ) const final override;
 
+  /*!
+   * \brief Return the number of faces associated with the given cell.
+   *
+   * \param [in] cellID the ID of the cell in question, this parameter is
+   *  ignored.
+   */
   virtual IndexType
   getNumberOfCellFaces( IndexType AXOM_NOT_USED(cellID)=0 ) const final override
   {
@@ -135,6 +139,19 @@ public:
     return getCellInfo( cell_type ).num_faces;
   }
 
+  /*!
+   * \brief Copy the face IDs of the given cell into the provided buffer.
+   *  The buffer must be of length at least getNumberOfCellFaces().
+   *
+   * \param [in] cellID the ID of the cell in question.
+   * \param [out] faces the buffer into which the face IDs are copied, must
+   *  be of length at least getNumberOfCellFaces().
+   *
+   * \return The number of faces for the given cell.
+   *
+   * \pre faces != AXOM_NULLPTR
+   * \pre 0 <= cellID < getNumberOfCells()
+   */
   virtual IndexType
   getCellFaces( IndexType cellID, IndexType* faces ) const final override;
 
@@ -151,7 +168,7 @@ public:
     IndexType n_nodes = 1;
     for ( int dim = 0; dim < m_ndims; ++dim )
     {
-      n_nodes *= getNodeExtent( dim );
+      n_nodes *= getNodeDim( dim );
     }
 
     return n_nodes;
@@ -179,7 +196,7 @@ public:
    *  buffer is getNumberOfNodes(). Otherwise the UniformMesh returns
    *  nullptr and the RectilinearMesh returns a pointer to the associated
    *  dimension scale which is of length
-   *  static_cast< RectilinearMesh* >( this )->getNodeExtent( dim ).
+   *  static_cast< RectilinearMesh* >( this )->getNodeDim( dim ).
    *
    * \pre dim >= 0 && dim < dimension()
    * \pre dim == X_COORDINATE || dim == Y_COORDINATE || dim == Z_COORDINATE
@@ -202,13 +219,26 @@ public:
   virtual IndexType getNumberOfFaces() const final override
   { return getTotalNumFaces( 0 ) + getTotalNumFaces( 1 ) + getTotalNumFaces( 2 ); }
 
+  /*!
+   * \brief Return the type of face this mesh holds. SEGMENT or QUAD depending
+   * on the dimension.
+   *
+   * \param [in] faceID the ID of the face in question, this parameter is
+   *  ignored.
+   */
   virtual CellType
-  getFaceType( IndexType AXOM_NOT_USED(cellID)=0 ) const final override
+  getFaceType( IndexType AXOM_NOT_USED(faceID)=0 ) const final override
   {
     return ( m_ndims == 2 ) ? SEGMENT :
            ( m_ndims == 3 ) ? QUAD : UNDEFINED_CELL;
   }
 
+  /*!
+   * \brief Return the number of nodes associated with the given face.
+   *
+   * \param [in] faceID the ID of the face in question, this parameter is
+   *  ignored.
+   */
   virtual IndexType 
   getNumberOfFaceNodes( IndexType AXOM_NOT_USED(faceID)=0 ) const final override
   {
@@ -216,9 +246,34 @@ public:
            ( m_ndims == 3 ) ? 4 : 0;
   }
 
+  /*!
+   * \brief Copy the node IDs of the given face into the provided buffer.
+   *  The buffer must be of length at least getNumberOfFaceNodes().
+   *
+   * \param [in] faceID the ID of the cell in question.
+   * \param [out] nodes the buffer into which the node IDs are copied, must
+   *  be of length at least getNumberOfFaceNodes().
+   *
+   * \return The number of nodes for the given face.
+   *
+   * \pre nodes != AXOM_NULLPTR
+   * \pre 0 <= faceID < getNumberOfCells()
+   */
   virtual IndexType
   getFaceNodes( IndexType faceID, IndexType* nodes ) const final override;
 
+  /*!
+   * \brief Copy the cell IDs of the given face into the provided indices.
+   *
+   * \param [in] faceID the ID of the cell in question.
+   * \param [out] cellIDOne the ID of the first cell.
+   * \param [out] cellIDTwo the ID of the second cell.
+   *
+   * \note If no cell exists, (the face is external) then the ID will be set to
+   * -1.
+   *
+   * \pre 0 <= faceID < getNumberOfCells()
+   */
   virtual void 
   getFaceCells( IndexType faceID, IndexType& cellIDOne, 
                 IndexType& cellIDTwo ) const final override;
@@ -289,21 +344,48 @@ public:
 /// \name Faces
 /// @{
 
+  /*!
+   * \brief Copy the node IDs of the given face into the provided buffer.
+   *  The buffer must be of length at least getNumberOfFaceNodes().
+   *
+   * \param [in] faceID the ID of the cell in question.
+   * \param [out] nodes the buffer into which the node IDs are copied, must
+   *  be of length at least getNumberOfFaceNodes().
+   *
+   * \return The number of nodes for the given face.
+   *
+   * \note Each method is specialized for faces in the I, J, or K direction.
+   *
+   * \pre nodes != AXOM_NULLPTR
+   * \pre 0 <= faceID < getNumberOfCells()
+   */
+  /// @{
   inline IndexType getIFaceNodes( IndexType faceID, IndexType* nodes ) const;
-
   inline IndexType getJFaceNodes( IndexType faceID, IndexType* nodes ) const;
-
   inline IndexType getKFaceNodes( IndexType faceID, IndexType* nodes ) const;
+  /// @}
 
-  inline void
-  getIFaceCells( IndexType faceID, IndexType& cellIDOne, 
-                 IndexType& cellIDTwo ) const;
-  inline void
-  getJFaceCells( IndexType faceID, IndexType& cellIDOne, 
-                 IndexType& cellIDTwo ) const;
-  inline void
-  getKFaceCells( IndexType faceID, IndexType& cellIDOne, 
-                 IndexType& cellIDTwo ) const;
+  /*!
+   * \brief Copy the cell IDs of the given face into the provided indices.
+   *
+   * \param [in] faceID the ID of the cell in question.
+   * \param [out] cellIDOne the ID of the first cell.
+   * \param [out] cellIDTwo the ID of the second cell.
+   *
+   * \note If no cell exists, (the face is external) then the ID will be set to
+   * -1.
+   * \note Each method is specialized for faces in the I, J, or K direction.
+   *
+   * \pre 0 <= faceID < getNumberOfCells()
+   */
+  /// @{
+  inline void getIFaceCells( IndexType faceID, IndexType& cellIDOne, 
+                             IndexType& cellIDTwo ) const;
+  inline void getJFaceCells( IndexType faceID, IndexType& cellIDOne, 
+                              IndexType& cellIDTwo ) const;
+  inline void getKFaceCells( IndexType faceID, IndexType& cellIDOne, 
+                             IndexType& cellIDTwo ) const;
+  /// @}
 
 /// @}
 
@@ -315,29 +397,49 @@ public:
 
   /*!
    * \brief Returns the number of nodes along the given dimension.
-   * \param [in] dim the dimension to querry.
+   *
+   * \param [in] dim the dimension to query.
+   *
    * \pre 0 <= dim < 3
    */
-  inline IndexType getNodeExtent( IndexType dim ) const
+  inline IndexType getNodeDim( IndexType dim ) const
   {
     SLIC_ASSERT( 0 <= dim && dim < 3 );
-    return m_node_extent[ dim ];
+    return m_node_dims[ dim ];
   }
 
-  inline 
+  /*!
+   * \brief Get the global node extent of the mesh.
+   *
+   * \param [in] dim the dimension to query.
+   * \param [out] low the low end the the global extent of the given dimension.
+   * \param [out] high the high end the the global extent of the given dimension.
+   *
+   * \pre 0 <= dim < 3
+   */
+  inline
   void getGlobalNodeExtent( IndexType dim, int64& low, int64& high ) const
   {
     SLIC_ASSERT( 0 <= dim && dim < 3 );
-    low = m_global_node_extent[ 2 * dim ];
-    high = m_global_node_extent[ 2 * dim + 1 ];
+    low = m_node_extent[ 2 * dim ];
+    high = m_node_extent[ 2 * dim + 1 ];
   }
 
-  
+  /*!
+   * \brief Set the global node extent of the mesh.
+   *
+   * \param [in] ndims the number of dimensions to set.
+   * \param [in] extent the values to set, of length at least 2 * ndims.
+   *
+   * \pre 0 <= dim < 3
+   */
   void setGlobalNodeExtent( int ndims, const int64* extent );
   
   /*!
-   * \brief Returns the number of nodes along the given dimension.
-   * \param [in] dim the dimension to querry.
+   * \brief Returns the number of cells along the given dimension.
+   *
+   * \param [in] dim the dimension to query.
+   *
    * \pre 0 <= dim < 3
    */
   inline IndexType getCellExtent( IndexType dim ) const
@@ -346,6 +448,9 @@ public:
     return m_cell_extent[ dim ];
   }
 
+  /*!
+   * \brief Get the total number of I, J, or K faces.
+   */
   inline IndexType getTotalNumFaces( int direction ) const
   {
     SLIC_ASSERT( I_DIRECTION <= direction );
@@ -363,14 +468,18 @@ public:
 
   /*!
    * \brief Returns stride to the second dimension of nodes.
-   * \post jp >= 0.
+   *
+   * \note If the mesh is 1D the returned value is the largest number
+   *  representable as an IndexType.
    */
   inline IndexType nodeJp() const
-  { return getNodeExtent( I_DIRECTION ); }
+  { return m_node_jp; }
 
   /*!
-   * \return kp stride to the third dimension of nodes.
-   * \post kp >= 0.
+   * \brief kp stride to the third dimension of nodes.
+   *
+   * \note If the mesh is 1D or 2D the returned value is the largest number
+   *  representable as an IndexType.
    */
   inline IndexType nodeKp() const
   { return m_node_kp; }
@@ -378,24 +487,29 @@ public:
   /*!
    * \brief Returns the linear index corresponding to the given logical node
    *  indices.
+   *
    * \param [in] i logical node index of the first dimension.
    * \param [in] j logical node index of the second dimension.
    * \param [in] k logical node index of the third dimension (optional)
    *
-   * \note Each method is valid only for the appropriate dimension of the mesh.
+   * \note The first method is not valid for 3D meshes.
+   *
+   * \pre linearIdx >= 0 && linearIdx < getNumNodes()
+   * \post 0 <= i < getNodeDim( I_DIRECTION )
+   * \post 0 <= j < getNodeDim( J_DIRECTION )
+   * \post 0 <= k < getNodeDim( K_DIRECTION )
    */
   /// @{
   inline IndexType getNodeLinearIndex( IndexType i, IndexType j ) const
   {
-    SLIC_ASSERT( m_ndims == 2 );
+    SLIC_ASSERT( m_ndims <= 2 );
     return i + j * nodeJp();
   }
 
   inline IndexType 
   getNodeLinearIndex( IndexType i, IndexType j, IndexType k  ) const
   { 
-    SLIC_ASSERT( m_ndims == 3 );
-    return i + j * nodeJp() + k * m_node_kp;
+    return i + j * nodeJp() + k * nodeKp();
   }
   /// @}
 
@@ -406,22 +520,20 @@ public:
    * \param [in] linearIdx the local flat index.
    * \param [out] i the corresponding grid index along the I_DIRECTION.
    * \param [out] j the corresponding grid index along the J_DIRECTION.
-   * \param [out] k the corresponding grid index along the K_DIRECTION.
+   * \param [out] k the corresponding grid index along the K_DIRECTION (optional).
    *
-   * \note The computed i-j-k grid indices are expected to be the shifted
-   *  topological coordinates within the local frame of reference for the
-   *  extent.
+   * \note The first method is not valid for 3D meshes.
    *
    * \pre linearIdx >= 0 && linearIdx < getNumNodes()
-   * \post i >= 0 && i < size( I_DIRECTION )
-   * \post j >= 0 && j < size( J_DIRECTION )
-   * \post k >= 0 && k < size( K_DIRECTION )
+   * \post 0 <= i < getNodeDim( I_DIRECTION )
+   * \post 0 <= j < getNodeDim( J_DIRECTION )
+   * \post 0 <= k < getNodeDim( K_DIRECTION )
    */
   /// @{
   inline void 
   getNodeGridIndex( IndexType linearIdx, IndexType& i, IndexType& j ) const
   {
-    SLIC_ASSERT( m_ndims == 2 );
+    SLIC_ASSERT( m_ndims <= 2 );
     j = linearIdx / nodeJp();
     i = linearIdx - j * nodeJp();
   }
@@ -430,7 +542,6 @@ public:
   getNodeGridIndex( IndexType linearIdx, IndexType& i, IndexType& j, 
                     IndexType& k ) const
   {
-    SLIC_ASSERT( m_ndims == 3 );
     k = linearIdx / m_node_kp;
     const IndexType temp = linearIdx - k * m_node_kp;
     j = temp / nodeJp();
@@ -445,13 +556,17 @@ public:
 
   /*!
    * \brief Returns stride to the second dimension of cells.
+   * \note If the mesh is 1D the returned value is the largest number
+   *  representable as an IndexType.
    * \post jp >= 0.
    */
   inline IndexType cellJp() const
-  { return getCellExtent( I_DIRECTION ); }
+  { return m_cell_jp; }
 
   /*!
    * \brief Returns stride to the third dimension of cells.
+   * \note If the mesh is 1D or 2D the returned value is the largest number
+   *  representable as an IndexType.
    * \post kp >= 0.
    */
   inline IndexType cellKp() const
@@ -464,22 +579,15 @@ public:
    * \param [in] j logical cell index of the second dimension.
    * \param [in] k logical cell index of the third dimension (optional)
    *
-   * \note Each method is valid only for the appropriate dimension of the mesh.
+   * \pre 0 <= i < getCellExtent( I_DIRECTION )
+   * \pre 0 <= j < getCellExtent( J_DIRECTION )
+   * \pre 0 <= k < getCellExtent( K_DIRECTION )
    */
-  /// @{
-  inline IndexType getCellLinearIndex( IndexType i, IndexType j ) const
-  {
-    SLIC_ASSERT( m_ndims == 2 );
-    return i + j * cellJp();
-  }
-
   inline IndexType
-  getCellLinearIndex( IndexType i, IndexType j, IndexType k ) const
+  getCellLinearIndex( IndexType i, IndexType j, IndexType k=0 ) const
   {
-    SLIC_ASSERT( m_ndims == 3 );
-    return i + j * cellJp()  + k * m_cell_kp;
+    return i + j * cellJp() + k * cellKp();
   }
-  /// @}
 
   /*!
    * \brief Given the 1D linear index of a cell, this method computes
@@ -490,20 +598,18 @@ public:
    * \param [out] j the corresponding grid index along the J_DIRECTION.
    * \param [out] k the corresponding grid index along the K_DIRECTION.
    *
-   * \note The computed i-j-k grid indices are expected to be the shifted
-   *  topological coordinates within the local frame of reference for the
-   *  extent.
+   * \note The first method is not valid for 3D meshes.
    *
    * \pre linearIdx >= 0 && linearIdx < getNumNodes()
-   * \post i >= 0 && i < size( I_DIRECTION )-1
-   * \post j >= 0 && j < size( J_DIRECTION )-1
-   * \post k >= 0 && k < size( K_DIRECTION )-1
+   * \post 0 <= i < getCellExtent( I_DIRECTION )
+   * \post 0 <= j < getCellExtent( J_DIRECTION )
+   * \post 0 <= k < getCellExtent( K_DIRECTION )
    */
   /// @{
   inline void 
   getCellGridIndex( IndexType linearIdx, IndexType& i, IndexType& j ) const
   {
-    SLIC_ASSERT( m_ndims == 2 );
+    SLIC_ASSERT( m_ndims <= 2 );
     i = linearIdx % cellJp();
     j = linearIdx / cellJp();
   }
@@ -512,12 +618,191 @@ public:
   getCellGridIndex( IndexType linearIdx, IndexType& i, IndexType& j,
                     IndexType& k ) const
   {
-    SLIC_ASSERT( m_ndims == 3 );
-    k = linearIdx / m_cell_kp;
-    const IndexType temp = linearIdx - k * m_cell_kp;
-    j = temp / cellJp();
-    i = temp - j * cellJp();
+    k = linearIdx / cellKp();
+    const IndexType rest = linearIdx - k * cellKp();
+    j = rest / cellJp();
+    i = rest - j * cellJp();
   }
+  /// @}
+
+/// @}
+
+/// \name Faces
+/// @{
+
+  /*!
+   * \brief Returns the linear index corresponding to the given logical grid
+   * face indices.
+   *
+   * \param [in] dir the direction of the face in question.
+   * \param [in] i logical face index of the first dimension.
+   * \param [in] j logical face index of the second dimension.
+   * \param [in] k logical face index of the third dimension (optional)
+   *
+   * \note The first method is only valid for 2D meshes.
+   */
+  /// @{
+  inline IndexType getFaceLinearIndex( int dir, IndexType i, IndexType j ) const
+  {
+    SLIC_ASSERT( m_ndims == 2 );
+
+    if ( dir == I_DIRECTION )
+    {
+      return getIFaceLinearIndex( i, j );
+    }
+    else
+    {
+      SLIC_ASSERT( dir == J_DIRECTION );
+      return getJFaceLinearIndex( i, j );
+    }
+  }
+
+  inline IndexType getFaceLinearIndex( int dir, IndexType i, IndexType j,
+                                       IndexType k ) const
+  {
+    if ( dir == I_DIRECTION )
+    {
+      return getIFaceLinearIndex( i, j, k );
+    }
+    else if ( dir == J_DIRECTION )
+    {
+      return getJFaceLinearIndex( i, j, k );
+    }
+    else
+    {
+      SLIC_ASSERT( dir == K_DIRECTION );
+      SLIC_ASSERT( m_ndims == 3 );
+      return getKFaceLinearIndex( i, j, k );
+    }
+  }
+  /// @}
+
+
+  /*!
+   * \brief Returns the linear index corresponding to the given logical face
+   *  indices.
+   *
+   * \param [in] i logical face index of the first dimension.
+   * \param [in] j logical face index of the second dimension.
+   * \param [in] k logical face index of the third dimension (optional)
+   *
+   * \note Each method is valid only for the appropriate dimension of the mesh.
+   * \note Each method is specialized for a particular direction.
+   */
+  /// @{
+  inline IndexType getIFaceLinearIndex( IndexType i, IndexType j ) const
+  {
+    SLIC_ASSERT( m_ndims == 2 );
+    return i + j * getNodeDim( 0 );
+  }
+
+  inline IndexType getIFaceLinearIndex( IndexType i, IndexType j, IndexType k ) const
+  {
+    SLIC_ASSERT( m_ndims >= 2 );
+    return i + j * getNodeDim( 0 ) 
+            + k * getNodeDim( 0 ) * getCellExtent( 1 );
+  }
+
+  inline IndexType getJFaceLinearIndex( IndexType i, IndexType j ) const
+  {
+    SLIC_ASSERT( m_ndims == 2 );
+    return getTotalNumFaces( 0 ) + i + j * getCellExtent( 0 );
+  }
+
+  inline IndexType getJFaceLinearIndex( IndexType i, IndexType j, IndexType k ) const
+  {
+    SLIC_ASSERT( m_ndims >= 2 );
+    return getTotalNumFaces( 0 ) + i + j * getCellExtent( 0 )
+            + k * getCellExtent( 0 ) * getNodeDim( 1 );
+  }
+
+  inline IndexType getKFaceLinearIndex( IndexType i, IndexType j, IndexType k ) const
+  {
+    SLIC_ASSERT( m_ndims == 3 );
+    return getTotalNumFaces( 0 ) + getTotalNumFaces( 1 ) + i 
+            + j * getCellExtent( 0 ) + k * getCellExtent( 0 ) * getCellExtent( 1 );
+  }
+  /// @}
+
+  /*!
+   * \brief Returns the grid indices corresponding to the given linear face
+   *  index.
+   *
+   * \param [in] faceID the ID of the face in question.
+   * \param [out] i logical face index of the first dimension.
+   * \param [out] j logical face index of the second dimension.
+   * \param [out] k logical face index of the third dimension (optional)
+   *
+   * \note Each method is valid only for the appropriate dimension of the mesh.
+   * \note Each method is specialized for a particular direction.
+   * \note The methods for J and K directions take shifted face IDs, which can
+   *  be obtained with the shift(J/K)FaceID methods.
+   */
+  /// @{
+  inline void getIFaceGridIndex( IndexType faceID, IndexType& i, IndexType& j ) const
+  {
+    SLIC_ASSERT( m_ndims == 2 );
+    SLIC_ASSERT( 0 <= faceID < getTotalNumFaces( 0 ) );
+
+    j = faceID / getNodeDim( 0 );
+    i = faceID - getNodeDim( 0 ) * j;
+  }
+
+  inline void getIFaceGridIndex( IndexType faceID, IndexType& i, IndexType& j, 
+                                 IndexType& k ) const
+  {
+    SLIC_ASSERT( m_ndims == 2 || m_ndims == 3 );
+    SLIC_ASSERT( 0 <= faceID < getTotalNumFaces( 0 ) );
+
+    k = getIFaceKIndex( faceID );
+    const IndexType rest = getNodeDim( 0 ) * getCellExtent( 1 ) * k;
+    j = (faceID - rest) / getNodeDim( 0 );
+    i = faceID - getNodeDim( 0 ) * j - rest;
+  }
+
+  inline void getJFaceGridIndex( IndexType shiftedID, IndexType& i, IndexType& j ) const
+  {
+    SLIC_ASSERT( m_ndims == 2 );
+    SLIC_ASSERT( 0 <= shiftedID && shiftedID < getTotalNumFaces( 1 ) );
+
+    j = shiftedID / getCellExtent( 0 );
+    i = shiftedID - getCellExtent( 0 ) * j;
+  }
+
+  inline void getJFaceGridIndex( IndexType shiftedID, IndexType& i, IndexType& j, 
+                                 IndexType& k ) const 
+  {
+    SLIC_ASSERT( m_ndims == 2 || m_ndims == 3 );
+    SLIC_ASSERT( 0 <= shiftedID && shiftedID < getTotalNumFaces( 1 ) );
+
+    k = getJFaceKIndex( shiftedID );
+    j = getJFaceJIndex( shiftedID, k );
+    i = shiftedID - getCellExtent( 0 ) * j - getCellExtent( 0 ) * getNodeDim ( 1 ) * k;
+  }
+
+  inline void getKFaceGridIndex( IndexType shiftedID, IndexType& i, IndexType& j, 
+                                 IndexType& k ) const 
+  {
+    SLIC_ASSERT( m_ndims == 3 );
+    SLIC_ASSERT( 0 <= shiftedID && shiftedID < getTotalNumFaces( 2 ) );
+
+    k = getKFaceKIndex( shiftedID );
+    j = getKFaceJIndex( shiftedID, k );
+    i = shiftedID - cellJp() * j - cellKp() * k;
+  }
+  /// @}
+
+  /*!
+   * \brief Returns the shifted linear index of the given face ID.
+   *
+   * \param [in] faceID the ID of the face in question.
+   */
+  /// @{
+  inline IndexType shiftJFaceID( IndexType faceID ) const
+  { return faceID - getTotalNumFaces( 0 ); }
+
+  inline IndexType shiftKFaceID( IndexType faceID ) const
+  { return faceID - getTotalNumFaces( 0 ) - getTotalNumFaces( 1 ); }
   /// @}
 
 /// @}
@@ -528,12 +813,23 @@ protected:
 
   /*!
    * \brief Constructs a structured mesh instance from the given extent.
+   *
    * \param [in] meshType the mesh type
    * \param [in] dimension the mesh dimension
-   * \param [in] cell_ext the structured mesh node extent.
+   * \param [in] node_ext the structured mesh node extent.
    */
   StructuredMesh( int meshType, int dimension, const IndexType* node_ext );
 
+  /*!
+   * \brief Constructs a structured mesh instance from the given extent.
+   *
+   * \param [in] meshType the mesh type
+   * \param [in] Ni the number of nodes along the I direction.
+   * \param [in] Nj the number of nodes along the J direction.
+   * \param [in] Nk the number of nodes along the K direction.
+   *
+   * \note Nj and or Nk may be -1 to signify a 1D or 2D mesh.
+   */
   StructuredMesh( int meshType, IndexType Ni, IndexType Nj, IndexType Nk );
 
 #ifdef MINT_USE_SIDRE
@@ -554,14 +850,14 @@ protected:
    *
    * \see Mesh( sidre::Group* group, const std::string& topo )
    */
-
   StructuredMesh( sidre::Group* group, const std::string& topo );
 
   /*!
    * \brief Constructs a structured mesh instance on the specified group.
    *
-   * \param [in] meshType the mesh type
-   * \param [in] dimension the dimension of the mesh
+   * \param [in] meshType the mesh type.
+   * \param [in] dimension the dimension of the mesh.
+   * \param [in] node_ext the structured mesh node extent.
    * \param [in] group pointer to the group in the Sidre hierarchy.
    * \param [in] topo the topology name to use, may be an empty string.
    * \param [in] coordset the coordset name to use, may be an empty string.
@@ -577,8 +873,6 @@ protected:
    *
    * \post blueprint::isValidRootGroup( group )
    *
-   * \note This constructor forwards this call to the parent Mesh class.
-   *
    * \see Mesh( int ndims, int type, sidre::Group*,
    *            const std::string& topo, const std::string& coordset );
    */
@@ -587,98 +881,116 @@ protected:
                   const std::string& topo,
                   const std::string& coordset );
 
+  /*!
+   * \brief Constructs a structured mesh instance on the specified group.
+   *
+   * \param [in] meshType the mesh type.
+   * \param [in] Ni the number of nodes along the I direction.
+   * \param [in] Nj the number of nodes along the J direction.
+   * \param [in] Nk the number of nodes along the K direction.
+   * \param [in] group pointer to the group in the Sidre hierarchy.
+   * \param [in] topo the topology name to use, may be an empty string.
+   * \param [in] coordset the coordset name to use, may be an empty string.
+   *
+   * \note If an empty string is supplied for the topology and coordset name
+   *  respectively, an internal default name will be provided by the
+   *  implementation.
+   *
+   * \note Nj and or Nk may be -1 to signify a 1D or 2D mesh.
+   *
+   * \pre 1 <= dimension <= 3
+   * \pre group != AXOM_NULLPTR
+   * \pre group->getNumGroups() == 0
+   * \pre group->getNumViews() == 0
+   *
+   * \post blueprint::isValidRootGroup( group )
+   *
+   * \see Mesh( int ndims, int type, sidre::Group*,
+   *            const std::string& topo, const std::string& coordset );
+   */
   StructuredMesh( int meshType, IndexType Ni, IndexType Nj, IndexType Nk, 
                   sidre::Group* group, const std::string& topo,
                   const std::string& coordset );
 
 #endif
 
+  /*!
+   * \brief Copy the face IDs of the given cell into the provided buffer.
+   *  The buffer must be of length at least getNumberOfCellFaces().
+   *
+   * \param [in] cellID the ID of the cell in question.
+   * \param [in] j the grid j index of the cell in question.
+   * \param [in] k the grid k index of the cell in question (optional).
+   * \param [out] faces the buffer into which the face IDs are copied, must
+   *  be of length at least getNumberOfCellFaces().
+   *
+   * \return The number of faces for the given cell.
+   *
+   * \pre faces != AXOM_NULLPTR
+   * \pre 0 <= cellID < getNumberOfCells()
+   */
+  /// @{
   inline IndexType
   getCellFacesInternal( IndexType cellID, IndexType j, IndexType* faces ) const;
 
   inline IndexType
   getCellFacesInternal( IndexType cellID, IndexType j, IndexType k,
                         IndexType* faces ) const;
+  /// @}
 
+
+  /*!
+   * \brief Return the K grid index of the given I direction face.
+   * 
+   * \param [in] faceID the face ID of the I face in question.
+   */
   inline IndexType getIFaceKIndex( IndexType faceID ) const
-  { return faceID / (getNodeExtent( 0 ) * getCellExtent( 1 )); }
+  { return faceID / (getNodeDim( 0 ) * getCellExtent( 1 )); }
 
-  inline void getIFaceGridIndex( IndexType faceID, IndexType& i, IndexType& j ) const
-  {
-    SLIC_ASSERT( m_ndims == 2 );
-    SLIC_ASSERT( 0 <= faceID < getTotalNumFaces( 0 ) );
-
-    j = faceID / getNodeExtent( 0 );
-    i = faceID - getNodeExtent( 0 ) * j;
-  }
-
-  inline void getIFaceGridIndex( IndexType faceID, IndexType& i, IndexType& j, 
-                                 IndexType& k ) const
-  {
-    SLIC_ASSERT( m_ndims == 3 );
-    SLIC_ASSERT( 0 <= faceID < getTotalNumFaces( 0 ) );
-
-    k = getIFaceKIndex( faceID );
-    const IndexType temp = (getNodeExtent( 0 ) * getCellExtent( 1 )) * k;
-    j = (faceID - temp) / getNodeExtent( 0 );
-    i = faceID - getNodeExtent( 0 ) * j - temp;
-  }
-
-  inline IndexType shiftJFaceID( IndexType faceID ) const
-  { return faceID - getTotalNumFaces( 0 ); }
-
+  /*!
+   * \brief Return the K grid index of the given J direction face.
+   * 
+   * \param [in] shiftedID the shifted face ID of the J face in question.
+   */
   inline IndexType getJFaceKIndex( IndexType shiftedID ) const
-  { return shiftedID / (getCellExtent( 0 ) * getNodeExtent( 1 )); }
+  { return shiftedID / (getCellExtent( 0 ) * getNodeDim( 1 )); }
 
+  /*!
+   * \brief Return the J grid index of the given J direction face.
+   * 
+   * \param [in] shiftedID the shifted face ID of the J face in question.
+   * \param [in] k the K grid index of the face.
+   */
   inline IndexType getJFaceJIndex( IndexType shiftedID, IndexType k ) const
   {
-    const IndexType k_stride = getCellExtent( 0 ) * getNodeExtent( 1 );
+    const IndexType k_stride = getCellExtent( 0 ) * getNodeDim( 1 );
     return (shiftedID - k_stride * k) / getCellExtent( 0 );
   }
 
-  inline void getJFaceGridIndex( IndexType shiftedID, IndexType& i, IndexType& j ) const
-  {
-    SLIC_ASSERT( m_ndims == 2 );
-    SLIC_ASSERT( 0 <= shiftedID && shiftedID < getTotalNumFaces( 1 ) );
-
-    j = shiftedID / getCellExtent( 0 );
-    i = shiftedID - getCellExtent( 0 ) * j;
-  }
-
-  inline void getJFaceGridIndex( IndexType shiftedID, IndexType& i, IndexType& j, 
-                                 IndexType& k ) const 
-  {
-    SLIC_ASSERT( m_ndims == 3 );
-    SLIC_ASSERT( 0 <= shiftedID && shiftedID < getTotalNumFaces( 1 ) );
-
-    k = getKFaceKIndex( shiftedID );
-    j = getKFaceJIndex( shiftedID, k );
-    i = shiftedID - getCellExtent( 0 ) * j - (getCellExtent( 0 ) * getNodeExtent ( 1 )) * k;
-  }
-  inline IndexType shiftKFaceID( IndexType faceID ) const
-  { return faceID - getTotalNumFaces( 0 ) - getTotalNumFaces( 1 ); }
-
+  /*!
+   * \brief Return the K grid index of the given K direction face.
+   * 
+   * \param [in] shiftedID the shifted face ID of the K face in question.
+   */
   inline IndexType getKFaceKIndex( IndexType shiftedID ) const
   { return shiftedID / cellKp(); }
 
+  /*!
+   * \brief Return the J grid index of the given K direction face.
+   * 
+   * \param [in] shiftedID the shifted face ID of the K face in question.
+   * \param [in] k the K grid index of the face.
+   */
   inline IndexType getKFaceJIndex( IndexType shiftedID, IndexType k ) const
   { return (shiftedID - cellKp() * k) / cellJp(); }
 
-  inline void getKFaceGridIndex( IndexType shiftedID, IndexType& i, IndexType& j, 
-                                 IndexType& k ) const 
-  {
-    SLIC_ASSERT( m_ndims == 3 );
-    SLIC_ASSERT( 0 <= shiftedID && shiftedID < getTotalNumFaces( 2 ) );
-
-    k = getKFaceKIndex( shiftedID );
-    j = getKFaceJIndex( shiftedID, k );
-    i = shiftedID - cellJp() * j - cellKp() * k;
-  }
-
+  /*!
+   * \brief Initialize all the StructuredMesh members.
+   */
   void structuredInit();
 
-  IndexType m_node_extent[ 3 ] = { 0, 0, 0 };
-  int64 m_global_node_extent[ 6 ] = { 0, 0, 0, 0, 0, 0 };
+  IndexType m_node_dims[ 3 ] = { 0, 0, 0 };
+  int64 m_node_extent[ 6 ] = { 0, 0, 0, 0, 0, 0 };
 
   IndexType m_node_jp = 0;
   IndexType m_node_kp = 0;
@@ -695,6 +1007,7 @@ protected:
 private:
   DISABLE_COPY_AND_ASSIGNMENT( StructuredMesh );
   DISABLE_MOVE_AND_ASSIGNMENT( StructuredMesh );
+
 };
 
 
@@ -738,9 +1051,9 @@ StructuredMesh::getCellFaces( IndexType cellID, IndexType* faces ) const
   }
   else if ( m_ndims == 3 )
   {
-    IndexType k = cellID / m_cell_kp;
-    IndexType j = (cellID - k * m_cell_kp) / cellJp();
-    return getCellFacesInternal( cellID, k, j, faces );
+    IndexType k = cellID / cellKp();
+    IndexType j = (cellID - k * cellKp()) / cellJp();
+    return getCellFacesInternal( cellID, j, k, faces );
   }
   else
   {
@@ -760,7 +1073,7 @@ StructuredMesh::getFaceNodes( IndexType faceID, IndexType* nodes ) const
     /* It's a I_DIRECTION face */
     return getIFaceNodes( faceID, nodes );
   }
-  else if ( faceID < getTotalNumFaces( 0 ) + getTotalNumFaces( 2 ) )
+  else if ( faceID < getTotalNumFaces( 0 ) + getTotalNumFaces( 1 ) )
   {
     /* It's a J_DIRECTION face */
     return getJFaceNodes( faceID, nodes );
@@ -783,7 +1096,7 @@ StructuredMesh::getFaceCells( IndexType faceID, IndexType& cellIDOne,
     /* It's a I_DIRECTION face */
     return getIFaceCells( faceID, cellIDOne, cellIDTwo );
   }
-  else if ( faceID < getTotalNumFaces( 0 ) + getTotalNumFaces( 2 ) )
+  else if ( faceID < getTotalNumFaces( 0 ) + getTotalNumFaces( 1 ) )
   {
     /* It's a J_DIRECTION face */
     return getJFaceCells( faceID, cellIDOne, cellIDTwo );
@@ -845,10 +1158,10 @@ StructuredMesh::getIFaceNodes( IndexType faceID, IndexType* nodes ) const
   {
     SLIC_ASSERT( m_ndims == 3 );
     const IndexType k = getIFaceKIndex( faceID );
-    nodes[ 0 ] = faceID + getCellExtent( 0 ) * k;
-    nodes[ 1 ] = nodes[ 0 ] + m_cell_node_offsets[ 3 ];
+    nodes[ 0 ] = faceID + getNodeDim( 0 ) * k;
+    nodes[ 1 ] = nodes[ 0 ] + m_cell_node_offsets[ 4 ];
     nodes[ 2 ] = nodes[ 0 ] + m_cell_node_offsets[ 7 ];
-    nodes[ 3 ] = nodes[ 0 ] + m_cell_node_offsets[ 4 ];
+    nodes[ 3 ] = nodes[ 0 ] + m_cell_node_offsets[ 3 ];
     return 4;
   }
   else
@@ -861,10 +1174,9 @@ StructuredMesh::getIFaceNodes( IndexType faceID, IndexType* nodes ) const
 inline IndexType 
 StructuredMesh::getJFaceNodes( IndexType faceID, IndexType* nodes ) const
 {
-  SLIC_ASSERT( getTotalNumFaces( 0 ) <= faceID && 
-               faceID < getTotalNumFaces( 0 ) + getTotalNumFaces( 1 ) );
-
   const IndexType shiftedID = shiftJFaceID( faceID );
+  SLIC_ASSERT( 0 <= faceID &&  getTotalNumFaces( 1 ) );
+
   if ( m_ndims == 2 )
   {
     const IndexType j = getJFaceJIndex( shiftedID, 0 );
@@ -877,7 +1189,7 @@ StructuredMesh::getJFaceNodes( IndexType faceID, IndexType* nodes ) const
     SLIC_ASSERT( m_ndims == 3 );
     const IndexType k = getJFaceKIndex( shiftedID );
     const IndexType j = getJFaceJIndex( shiftedID, k );
-    nodes[ 0 ] = shiftedID + j + getNodeExtent( 1 ) * k;
+    nodes[ 0 ] = shiftedID + j + getNodeDim( 1 ) * k;
     nodes[ 1 ] = nodes[ 0 ] + 1;
     nodes[ 2 ] = nodes[ 0 ] + m_cell_node_offsets[ 5 ];
     nodes[ 3 ] = nodes[ 0 ] + m_cell_node_offsets[ 4 ];
@@ -889,18 +1201,16 @@ StructuredMesh::getJFaceNodes( IndexType faceID, IndexType* nodes ) const
 inline IndexType 
 StructuredMesh::getKFaceNodes( IndexType faceID, IndexType* nodes ) const
 {
-  SLIC_ASSERT( getTotalNumFaces( 0 ) + getTotalNumFaces( 1 ) <= faceID && 
-               faceID < getNumberOfFaces() );
   SLIC_ASSERT( m_ndims == 3 );
-
   const IndexType shiftedID = shiftKFaceID( faceID );
+  SLIC_ASSERT( shiftedID >= 0 && shiftedID < getTotalNumFaces( 2 ) );
+
   const IndexType k = getKFaceKIndex( shiftedID );
   const IndexType j = getKFaceJIndex( shiftedID, k );
   nodes[ 0 ] = shiftedID + j + (getCellExtent( 0 ) + getCellExtent( 1 ) + 1) * k;
   nodes[ 1 ] = nodes[ 0 ] + 1;
-  nodes[ 2 ] = nodes[ 0 ] + m_cell_node_offsets[ 5 ];
-  nodes[ 3 ] = nodes[ 0 ] + m_cell_node_offsets[ 4 ];
-
+  nodes[ 2 ] = nodes[ 0 ] + m_cell_node_offsets[ 2 ];
+  nodes[ 3 ] = nodes[ 0 ] + m_cell_node_offsets[ 3 ];
   return 4;
 }
 
@@ -911,57 +1221,30 @@ StructuredMesh::getIFaceCells( IndexType faceID, IndexType& cellIDOne,
 {
   SLIC_ASSERT( m_ndims == 2 || m_ndims == 3 );
 
-  IndexType i, j;
-  if ( m_ndims == 2 )
+  IndexType i, j, k;
+  getIFaceGridIndex( faceID, i, j, k );
+  
+  if ( i == 0 )
   {
-    getIFaceGridIndex( faceID, i, j );
-    
-    if ( i == 0 )
-    {
-      /* The first cell doesn't exist */
-      cellIDOne = -1;
-      cellIDTwo = getCellLinearIndex( i, j );
-    }
-    else if ( i == getNodeExtent( 0 ) )
-    {
-      /* The second cell doesn't exist */
-      cellIDOne = getCellLinearIndex( i - 1, j );
-      cellIDTwo = -1;
-    }
-    else
-    {
-      /* Both cells exist */
-      cellIDOne = getCellLinearIndex( i - 1, j );
-      cellIDTwo = cellIDOne + 1;
-    }
+    /* The first cell doesn't exist */
+    cellIDOne = -1;
+    cellIDTwo = getCellLinearIndex( i, j, k );
+  }
+  else if ( i == getCellExtent( 0 ) )
+  {
+    /* The second cell doesn't exist */
+    cellIDOne = getCellLinearIndex( i - 1, j, k );
+    cellIDTwo = -1;
   }
   else
   {
-    IndexType k;
-    getIFaceGridIndex( faceID, i, j, k );
-    
-    if ( i == 0 )
-    {
-      /* The first cell doesn't exist */
-      cellIDOne = -1;
-      cellIDTwo = getCellLinearIndex( i, j, k );
-    }
-    else if ( i == getNodeExtent( 0 ) )
-    {
-      /* The second cell doesn't exist */
-      cellIDOne = getCellLinearIndex( i - 1, j, k );
-      cellIDTwo = -1;
-    }
-    else
-    {
-      /* Both cells exist */
-      cellIDOne = getCellLinearIndex( i - 1, j, k );
-      cellIDTwo = cellIDOne + 1;
-    }
+    /* Both cells exist */
+    cellIDOne = getCellLinearIndex( i - 1, j, k );
+    cellIDTwo = cellIDOne + 1;
   }
 }
 
-//------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 inline void
 StructuredMesh::getJFaceCells( IndexType faceID, IndexType& cellIDOne, 
                                IndexType& cellIDTwo ) const
@@ -969,53 +1252,26 @@ StructuredMesh::getJFaceCells( IndexType faceID, IndexType& cellIDOne,
   SLIC_ASSERT( m_ndims == 2 || m_ndims == 3 );
 
   const IndexType shiftedID = shiftJFaceID( faceID );
-  IndexType i , j;
-  if ( m_ndims == 2 )
+  IndexType i, j, k;
+  getJFaceGridIndex( shiftedID, i, j , k );
+  
+  if ( j == 0 )
   {
-    getJFaceGridIndex( shiftedID, i, j );
-    
-    if ( j == 0 )
-    {
-      /* The first cell doesn't exist */
-      cellIDOne = -1;
-      cellIDTwo = getCellLinearIndex( i, j );
-    }
-    else if ( j == getNodeExtent( 1 ) )
-    {
-      /* The second cell doesn't exist */
-      cellIDOne = getCellLinearIndex( i , j - 1 );
-      cellIDTwo = -1;
-    }
-    else
-    {
-      /* Both cells exist */
-      cellIDOne = getCellLinearIndex( i , j - 1 );
-      cellIDTwo = cellIDOne + cellJp();
-    }
+    /* The first cell doesn't exist */
+    cellIDOne = -1;
+    cellIDTwo = getCellLinearIndex( i, j, k );
+  }
+  else if ( j == getCellExtent( 1 ) )
+  {
+    /* The second cell doesn't exist */
+    cellIDOne = getCellLinearIndex( i, j - 1, k );
+    cellIDTwo = -1;
   }
   else
   {
-    IndexType k;
-    getJFaceGridIndex( shiftedID, i, j , k );
-    
-    if ( j == 0 )
-    {
-      /* The first cell doesn't exist */
-      cellIDOne = -1;
-      cellIDTwo = getCellLinearIndex( i, j, k );
-    }
-    else if ( j == getNodeExtent( 1 ) )
-    {
-      /* The second cell doesn't exist */
-      cellIDOne = getCellLinearIndex( i, j - 1, k );
-      cellIDTwo = -1;
-    }
-    else
-    {
-      /* Both cells exist */
-      cellIDOne = getCellLinearIndex( i, j - 1, k );
-      cellIDTwo = cellIDOne + cellJp();
-    }
+    /* Both cells exist */
+    cellIDOne = getCellLinearIndex( i, j - 1, k );
+    cellIDTwo = cellIDOne + cellJp();
   }
 }
 
@@ -1028,7 +1284,7 @@ StructuredMesh::getKFaceCells( IndexType faceID, IndexType& cellIDOne,
 
   const IndexType shiftedID = shiftKFaceID( faceID );
   IndexType i , j, k;
-  getJFaceGridIndex( shiftedID, i, j , k );
+  getKFaceGridIndex( shiftedID, i, j , k );
   
   if ( k == 0 )
   {
@@ -1036,7 +1292,7 @@ StructuredMesh::getKFaceCells( IndexType faceID, IndexType& cellIDOne,
     cellIDOne = -1;
     cellIDTwo = getCellLinearIndex( i, j, k );
   }
-  else if ( k == getNodeExtent( 2 ) )
+  else if ( k == getCellExtent( 2 ) )
   {
     /* The second cell doesn't exist */
     cellIDOne = getCellLinearIndex( i, j, k - 1 );

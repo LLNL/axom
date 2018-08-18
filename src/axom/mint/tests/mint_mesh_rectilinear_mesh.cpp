@@ -14,16 +14,17 @@
  *
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-#include "axom/mint/config.hpp"          // for compile-time definitions
+#include "axom/mint/config.hpp"               // for compile-time definitions
 
 // Mint includes
 #include "axom/mint/mesh/blueprint.hpp"       // for blueprint functions
 #include "axom/mint/mesh/CellTypes.hpp"       // for CellType enum
 #include "axom/mint/mesh/RectilinearMesh.hpp" // for RectilinearMesh
 #include "axom/mint/mesh/ParticleMesh.hpp"    // for ParticleMesh
+#include "StructuredMesh_helpers.hpp"         // for StructuredMesh test helpers
 
 // Slic includes
-#include "axom/slic/interface/slic.hpp"            // for slic macros
+#include "axom/slic/interface/slic.hpp"       // for slic macros
 
 // Sidre includes
 #ifdef MINT_USE_SIDRE
@@ -31,10 +32,10 @@
 namespace sidre = axom::sidre;
 #endif
 
-#include "gtest/gtest.h"            // for gtest macros
+#include "gtest/gtest.h"                      // for gtest macros
 
 // C/C++ includes
-#include <cmath>  // for exp
+#include <cmath>                              // for exp
 using namespace axom::mint;
 
 // globals
@@ -78,59 +79,6 @@ void check_coordinate( const double* x, const double* expected, IndexType N )
 }
 
 //------------------------------------------------------------------------------
-void check_create_field( RectilinearMesh* m,
-                         int association,
-                         const std::string& name,
-                         int numComponents=1 )
-{
-  EXPECT_TRUE( m != AXOM_NULLPTR );
-  EXPECT_FALSE( m->hasField( name, association ) );
-
-  double* f = m->createField< double >( name, association, numComponents );
-  EXPECT_TRUE( m->hasField( name, association ) );
-
-  IndexType expected_num_tuples;
-  if ( association == NODE_CENTERED )
-  {
-    expected_num_tuples = m->getNumberOfNodes();
-  }
-  else if ( association == CELL_CENTERED )
-  {
-    expected_num_tuples = m->getNumberOfCells();
-  }
-  else if ( association == FACE_CENTERED )
-  {
-    expected_num_tuples = m->getNumberOfFaces();
-  }
-  else
-  {
-    expected_num_tuples = m->getNumberOfEdges();
-  }
-
-  const Field* field = m->getFieldData( association )->getField( name );
-  EXPECT_TRUE( field != nullptr );
-  EXPECT_EQ( f, Field::getDataPtr< double >( field ) );
-  EXPECT_EQ( numComponents, field->getNumComponents() );
-  EXPECT_EQ( expected_num_tuples, field->getNumTuples() );
-
-  for ( IndexType i = 0; i < expected_num_tuples * numComponents; ++i )
-  {
-    f[ i ] = 3.14 * i;
-  }
-}
-
-//------------------------------------------------------------------------------
-void check_field_values( const Field* field )
-{
-  const IndexType num_values = field->getNumTuples() * field->getNumComponents();
-  const double* values = Field::getDataPtr< double >( field );
-  for ( IndexType i = 0; i < num_values; ++i )
-  {
-    EXPECT_EQ( values[ i ], 3.14 * i );
-  }
-}
-
-//------------------------------------------------------------------------------
 void check_fill_coords( RectilinearMesh* m )
 {
   EXPECT_TRUE( m != nullptr );
@@ -141,34 +89,6 @@ void check_fill_coords( RectilinearMesh* m )
     const IndexType N = m->getNodeExtent( idim );
     double* x = m->getCoordinateArray( idim );
     exponential_distribution( 42.0, N, x );
-  }
-
-}
-
-//------------------------------------------------------------------------------
-void check_constructor( const RectilinearMesh* m,
-                        int expected_dimension,
-                        const IndexType* expected_node_dimensions )
-{
-  EXPECT_TRUE( m != nullptr );
-  EXPECT_TRUE( (expected_dimension >= 1) && (expected_dimension <= 3) );
-
-  const int mesh_dimension = m->getDimension();
-
-  EXPECT_EQ( mesh_dimension, expected_dimension );
-  EXPECT_EQ( m->getMeshType(), STRUCTURED_RECTILINEAR_MESH );
-  EXPECT_FALSE( m->hasExplicitConnectivity( ) );
-  EXPECT_FALSE( m->hasMixedCellTypes( ) );
-  EXPECT_TRUE( m->hasExplicitCoordinates( ) );
-
-  CellType expected_cell_type =
-    ( mesh_dimension==3 ) ? HEX : ( ( mesh_dimension==2 ) ? QUAD : SEGMENT );
-  EXPECT_EQ( m->getCellType(), expected_cell_type );
-
-  for ( int i=0 ; i < mesh_dimension ; ++i )
-  {
-    EXPECT_EQ( m->getNodeExtent( i ),expected_node_dimensions[ i ] );
-    EXPECT_TRUE( m->getCoordinateArray( i ) != AXOM_NULLPTR );
   }
 }
 
@@ -243,40 +163,32 @@ TEST( mint_mesh_rectilinear_mesh, native_constructor )
 
   for ( int idim=1 ; idim <= NDIMS ; ++idim )
   {
-    RectilinearMesh m1( idim, N );
-    check_constructor( &m1, idim, N );
-    check_fill_coords( &m1 );
-    check_create_field( &m1, NODE_CENTERED, "n1" );
-    check_create_field( &m1, CELL_CENTERED, "c1", 2 );
-    check_create_field( &m1, FACE_CENTERED, "f1", 3 );
-    check_create_field( &m1, EDGE_CENTERED, "e1", 4 );
+    RectilinearMesh* m = new RectilinearMesh( idim, N );
+    internal::check_constructor( m, STRUCTURED_RECTILINEAR_MESH, idim, N );
+    EXPECT_FALSE( m->isExternal() );
+    EXPECT_FALSE( m->hasSidreGroup() );
+    check_fill_coords( m );
+    internal::check_create_fields( m );
+    delete m;
 
-    EXPECT_FALSE( m1.isExternal( ) );
-    EXPECT_FALSE( m1.hasSidreGroup( ) );
-
-    RectilinearMesh* m2 = nullptr;
     switch ( idim )
     {
     case 1:
-      m2 = new RectilinearMesh( N[ 0 ] );
+      m = new RectilinearMesh( N[ 0 ] );
       break;
     case 2:
-      m2 = new RectilinearMesh( N[ 0 ], N[ 1 ] );
+      m = new RectilinearMesh( N[ 0 ], N[ 1 ] );
       break;
     default:
       EXPECT_EQ( idim, 3 );
-      m2 = new RectilinearMesh( N[ 0 ], N[ 1 ], N[ 2 ] );
+      m = new RectilinearMesh( N[ 0 ], N[ 1 ], N[ 2 ] );
     }
 
-    check_constructor( m2, idim, N );
-    check_fill_coords( m2 );
-    check_create_field( m2, NODE_CENTERED, "n1" );
-    check_create_field( m2, CELL_CENTERED, "c1", 3 );
-    check_create_field( m2, FACE_CENTERED, "f1", 3 );
-    check_create_field( m2, EDGE_CENTERED, "e1", 4 );
+    internal::check_constructor( m, STRUCTURED_RECTILINEAR_MESH, idim, N );
+    check_fill_coords( m );
+    internal::check_create_fields( m );
 
-    delete m2;
-    m2 = nullptr;
+    delete m;
   } // END for all dimensions
 
 }
@@ -332,7 +244,7 @@ TEST( mint_mesh_rectilinear_mesh, external_costructor )
     } // END switch
 
     EXPECT_TRUE( m != AXOM_NULLPTR );
-    check_constructor( m, idim, N );
+    internal::check_constructor( m, STRUCTURED_RECTILINEAR_MESH, idim, N );
     EXPECT_FALSE( m->hasSidreGroup() );
     EXPECT_TRUE( m->isExternal() );
 
@@ -382,15 +294,11 @@ TEST( mint_mesh_rectilinear_mesh, sidre_constructor )
     // BEGIN SCOPE
     {
       RectilinearMesh* m1 = new RectilinearMesh( idim, N, m1grp );
-      check_constructor( m1, idim, N );
-      check_fill_coords( m1 );
-      check_create_field( m1, NODE_CENTERED, "n1" );
-      check_create_field( m1, CELL_CENTERED, "c1", 2 );
-      check_create_field( m1, FACE_CENTERED, "f1", 3 );
-      check_create_field( m1, EDGE_CENTERED, "e1", 4 );
-
       EXPECT_TRUE( m1->hasSidreGroup() );
       EXPECT_FALSE( m1->isExternal() );
+      internal::check_constructor( m1, STRUCTURED_RECTILINEAR_MESH, idim, N );
+      check_fill_coords( m1 );
+      internal::check_create_fields( m1 );
 
       delete m1;
       m1 = nullptr;
@@ -411,15 +319,10 @@ TEST( mint_mesh_rectilinear_mesh, sidre_constructor )
                                   N[ K_DIRECTION ]  );
       } // END switch
 
-      check_constructor( m2, idim, N );
-      check_fill_coords( m2 );
-      check_create_field( m2, NODE_CENTERED, "n1" );
-      check_create_field( m2, CELL_CENTERED, "c1", 2 );
-      check_create_field( m2, FACE_CENTERED, "f1", 3 );
-      check_create_field( m2, EDGE_CENTERED, "e1", 4 );
-
+      internal::check_constructor( m2, STRUCTURED_RECTILINEAR_MESH, idim, N );
       EXPECT_TRUE( m2->hasSidreGroup() );
-      EXPECT_FALSE( m2->isExternal() );
+      EXPECT_FALSE( m2->isExternal() );check_fill_coords( m2 );
+      internal::check_create_fields( m2 );
 
       delete m2;
       m2 = nullptr;
@@ -429,110 +332,35 @@ TEST( mint_mesh_rectilinear_mesh, sidre_constructor )
     // STEP 2: pull the 2 meshes from sidre and check correctness
     // BEGIN SCOPE
     {
-      const FieldData* fd = nullptr;
-      const Field* field  = nullptr;
-
       // check m1
-      RectilinearMesh* m1 = new RectilinearMesh( m1grp );
-      check_constructor( m1, idim, N );
-      EXPECT_TRUE( m1->hasSidreGroup() );
-      EXPECT_FALSE( m1->isExternal() );
+      RectilinearMesh* m = new RectilinearMesh( m1grp );
+      internal::check_constructor( m, STRUCTURED_RECTILINEAR_MESH, idim, N );
+      EXPECT_TRUE( m->hasSidreGroup() );
+      EXPECT_FALSE( m->isExternal() );
 
       for ( int ii=0 ; ii < idim ; ++ii )
       {
-        check_coordinate( m1->getCoordinateArray( ii ), expected_coords,
-                          m1->getNodeExtent( ii ) );
+        check_coordinate( m->getCoordinateArray( ii ), expected_coords,
+                          m->getNodeExtent( ii ) );
       }
 
-      // check node-centered field on m1
-      fd    = m1->getFieldData( NODE_CENTERED );
-      field = fd->getField( "n1" );
-      EXPECT_EQ( field->getNumTuples(), m1->getNumberOfNodes() );
-      EXPECT_EQ( field->getNumComponents(), 1 );
-      EXPECT_TRUE( field->isInSidre() );
-      EXPECT_FALSE( field->isExternal() );
-      check_field_values( field );
-
-      // check cell-centered field on m1
-      fd    = m1->getFieldData( CELL_CENTERED );
-      field = fd->getField( "c1" );
-      EXPECT_EQ( field->getNumTuples(), m1->getNumberOfCells() );
-      EXPECT_EQ( field->getNumComponents(), 2 );
-      EXPECT_TRUE( field->isInSidre() );
-      EXPECT_FALSE( field->isExternal() );
-      check_field_values( field );
-
-      // check face-centered field on m1
-      fd    = m1->getFieldData( FACE_CENTERED );
-      field = fd->getField( "f1" );
-      EXPECT_EQ( field->getNumTuples(), m1->getNumberOfFaces() );
-      EXPECT_EQ( field->getNumComponents(), 3 );
-      EXPECT_TRUE( field->isInSidre() );
-      EXPECT_FALSE( field->isExternal() );
-      check_field_values( field );
-
-      // check edge-centered field on m1
-      fd    = m1->getFieldData( EDGE_CENTERED );
-      field = fd->getField( "e1" );
-      EXPECT_EQ( field->getNumTuples(), m1->getNumberOfEdges() );
-      EXPECT_EQ( field->getNumComponents(), 4 );
-      EXPECT_TRUE( field->isInSidre() );
-      EXPECT_FALSE( field->isExternal() );
-      check_field_values( field );
-
-      delete m1;
-      m1 = nullptr;
+      internal::check_fields( m, true );
+      delete m;
 
       // check m2
-      RectilinearMesh* m2 = new RectilinearMesh( m2grp );
-      check_constructor( m2, idim, N );
-      EXPECT_TRUE( m2->hasSidreGroup() );
-      EXPECT_FALSE( m2->isExternal() );
+      m = new RectilinearMesh( m2grp );
+      internal::check_constructor( m, STRUCTURED_RECTILINEAR_MESH, idim, N );
+      EXPECT_TRUE( m->hasSidreGroup() );
+      EXPECT_FALSE( m->isExternal() );
 
       for ( int ii=0 ; ii < idim ; ++ii )
       {
-        check_coordinate( m2->getCoordinateArray( ii ), expected_coords,
-                          m2->getNodeExtent( ii ) );
+        check_coordinate( m->getCoordinateArray( ii ), expected_coords,
+                          m->getNodeExtent( ii ) );
       }
 
-      // check node-centered field on m2
-      fd    = m2->getFieldData( NODE_CENTERED );
-      field = fd->getField( "n1" );
-      EXPECT_EQ( field->getNumTuples(), m2->getNumberOfNodes() );
-      EXPECT_EQ( field->getNumComponents(), 1 );
-      EXPECT_TRUE( field->isInSidre() );
-      EXPECT_FALSE( field->isExternal() );
-      check_field_values( field );
-
-      // check cell-centered field on m2
-      fd    = m2->getFieldData( CELL_CENTERED );
-      field = fd->getField( "c1" );
-      EXPECT_EQ( field->getNumTuples(), m2->getNumberOfCells() );
-      EXPECT_EQ( field->getNumComponents(), 2 );
-      EXPECT_TRUE( field->isInSidre() );
-      EXPECT_FALSE( field->isExternal() );
-      check_field_values( field );
-
-      // check face-centered field on m2
-      fd    = m2->getFieldData( FACE_CENTERED );
-      field = fd->getField( "f1" );
-      EXPECT_EQ( field->getNumTuples(), m2->getNumberOfFaces() );
-      EXPECT_EQ( field->getNumComponents(), 3 );
-      EXPECT_TRUE( field->isInSidre() );
-      EXPECT_FALSE( field->isExternal() );
-      check_field_values( field );
-
-      // check edge-centered field on m2
-      fd    = m2->getFieldData( EDGE_CENTERED );
-      field = fd->getField( "e1" );
-      EXPECT_EQ( field->getNumTuples(), m2->getNumberOfEdges() );
-      EXPECT_EQ( field->getNumComponents(), 4 );
-      EXPECT_TRUE( field->isInSidre() );
-      EXPECT_FALSE( field->isExternal() );
-      check_field_values( field );
-
-      delete m2;
-      m2 = nullptr;
+      internal::check_fields( m, true );
+      delete m;
     }
     // ENDE SCOPE
 
@@ -552,16 +380,16 @@ TEST( mint_mesh_rectilinear_mesh, sidre_constructor )
 TEST( mint_mesh_rectilinear_mesh, get_node )
 {
   // initialize coordinates
-  const IndexType N[] = {    5,    5,    5 };
+  const IndexType N[] = { 5,    5,    5 };
   double x[ 5 ];
   double y[ 5 ];
   double z[ 5 ];
   exponential_distribution( 42.0, 5, x );
-  exponential_distribution( 0.0,  5, y );
-  exponential_distribution( 0.0,  5, z );
+  exponential_distribution( 0.0, 5, y );
+  exponential_distribution( 0.0, 5, z );
 
   RectilinearMesh m( N, x, y, z );
-  check_constructor( &m, 3, N );
+  internal::check_constructor( &m, STRUCTURED_RECTILINEAR_MESH, 3, N );
 
   const IndexType kp = m.nodeKp( );
   const IndexType jp = m.nodeJp( );

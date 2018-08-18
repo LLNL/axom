@@ -110,7 +110,7 @@ typedef struct
   const char* blueprint_name;   /*!< corresponding mesh blueprint name */
   int vtk_type;                 /*!< corresponding vtk_type */
   int num_nodes;                /*!< number of nodes for the given cell */
-  int num_faces;
+  int num_faces;                /*!< number of faces for the given cell */
 } CellInfo;
 
 // Cell Info registration

@@ -19,6 +19,7 @@
 #include "axom/mint/mesh/blueprint.hpp"
 
 #include <cstring>             /* for memcpy() */
+#include <limits>
 
 namespace axom
 {
@@ -227,9 +228,11 @@ void StructuredMesh::structuredInit()
     SLIC_ERROR_IF( m_node_extent[ dim ] < 2, "invalid extent" );
   }
 
-  /* Initialize the node meta data */
-  m_node_jp = ( m_ndims > 1 ) ? getNodeExtent( 0 ) : 0;
-  m_node_kp = m_node_jp * getNodeExtent( 1 );
+  /* Initialize the node meta data. */
+  m_node_jp = ( m_ndims > 1 ) ? getNodeExtent( 0 ) : 
+                                          std::numeric_limits<IndexType>::max();
+  m_node_kp = ( m_ndims > 2 ) ? m_node_jp * getNodeExtent( 1 ) : 
+                                          std::numeric_limits<IndexType>::max();
 
   /* Initialize the cell meta data */
   for ( int dim = 0; dim < m_ndims; ++dim )
@@ -237,8 +240,10 @@ void StructuredMesh::structuredInit()
     m_cell_extent[ dim ] = getNodeExtent( dim ) - 1;
   }
 
-  m_cell_jp = ( m_ndims > 1 ) ? getCellExtent( 0 ) : 0;
-  m_cell_kp = m_cell_jp * getCellExtent( 1 );
+  m_cell_jp = ( m_ndims > 1 ) ? getCellExtent( 0 ) : 
+                                          std::numeric_limits<IndexType>::max();
+  m_cell_kp = ( m_ndims > 2 ) ? m_cell_jp * getCellExtent( 1 ) :
+                                          std::numeric_limits<IndexType>::max();
 
   /* Build the cell to node offsets. */
   m_cell_node_offsets[ 0 ] = 0;
