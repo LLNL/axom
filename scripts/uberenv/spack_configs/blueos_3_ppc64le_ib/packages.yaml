@@ -66,4 +66,9 @@ packages:
     paths:
       pkg-config: /usr/bin/
     buildable: False 
+# don't build bzip2
+  bzip2:
+    paths:
+      bzip2: /usr/bin/
+    buildable: False
 
