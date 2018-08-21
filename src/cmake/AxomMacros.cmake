@@ -282,7 +282,7 @@ endmacro(axom_install_component)
 ##------------------------------------------------------------------------------
 ## axom_write_unified_header
 ## 
-## This macro writes the unified header (axom/<NAME>.hpp) to the build directory for the
+## This macro writes the unified header (axom/<lowered NAME>.hpp) to the build directory for the
 ## given component NAME with the given HEADERS included inside of it.
 ##
 ## NAME - The name of the component for the unified header.
@@ -300,7 +300,9 @@ macro(axom_write_unified_header)
     cmake_parse_arguments(arg
          "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
 
-    set(_header ${CMAKE_BINARY_DIR}/include/axom/${arg_NAME}.hpp)
+    string(TOUPPER ${arg_NAME} _ucname)
+    string(TOLOWER ${arg_NAME} _lcname)
+    set(_header ${CMAKE_BINARY_DIR}/include/axom/${_lcname}.hpp)
 
     file(WRITE ${_header} "\/*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -320,14 +322,13 @@ macro(axom_write_unified_header)
  *\/\n
 ")
 
-    string(TOUPPER ${arg_NAME} _ucname)
-    file(APPEND ${_header} "#ifndef AXOM_${_ucname}_HPP\n")
-    file(APPEND ${_header} "#define AXOM_${_ucname}_HPP\n\n")
+    file(APPEND ${_header} "#ifndef AXOM_UNIFIED_${_ucname}_HPP\n")
+    file(APPEND ${_header} "#define AXOM_UNIFIED_${_ucname}_HPP\n\n")
 
     file(APPEND ${_header} "#include \"axom\/config.hpp\"\n\n")
 
     foreach(_file ${arg_HEADERS})
-        set(_headerPath "axom\/${arg_NAME}\/${_file}")
+        set(_headerPath "axom\/${_lcname}\/${_file}")
         
         if(${_file} IN_LIST arg_EXCLUDE)
             continue()
@@ -338,7 +339,7 @@ macro(axom_write_unified_header)
         endif()
     endforeach()
 
-    file(APPEND ${_header} "\n#endif // AXOM_${_ucname}_HPP\n")
+    file(APPEND ${_header} "\n#endif // AXOM_UNIFIED_${_ucname}_HPP\n")
 
     install(FILES       ${_header}
             DESTINATION include/axom)

@@ -34,7 +34,13 @@ if(NOT AXOM_DIR)
 endif()
 
 set(AXOM_INCLUDE_DIRS ${AXOM_DIR}/include)
-set(AXOM_LIBRARIES sparsehash fmt core lumberjack slic primal mint slam quest sidre)
+
+# NOTE: This turns on all components of Axom which may not be true for your code
+set(AXOM_LIBRARIES sparsehash fmt core )
+if (ENABLE_MPI)
+    list(APPEND AXOM_LIBRARIES lumberjack)
+endif()
+list(APPEND AXOM_LIBRARIES slic primal mint slam quest sidre)
 
 foreach(_component ${AXOM_LIBRARIES})
     
