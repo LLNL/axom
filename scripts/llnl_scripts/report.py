@@ -44,7 +44,7 @@ from llnl_lc_build_tools import *
 __cellBlackOnGreen = "<td bgcolor=\"#00C000\"><font  color=\"#000000\">%s</font></td>"
 __cellWhiteOnRed = "<td bgcolor=\"#E10000\"><font color=\"#FFFFFF\">%s</font></td>"
 __contentHeader = "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body>"
-__contentFooter = "</body></html>"
+__contentFooter = "</body>\n</html>\n"
 __detailLinkIndex = 0
 
 
@@ -274,15 +274,15 @@ def generateEmailContent(basicJobInfos, srcJobInfos, tplJobInfos):
     # Add Basic jobs to the email
     if len(basicJobInfos.keys()) > 0:
         # Header for all basic jobs
-        html += "<center><font size=\"5\"> </font></center><br>"
-        html += "<center><b><font size=\"5\">Basic Jobs</font></b></center>"
-        html += "<table border=\"1\">"
+        html += "<center><font size=\"5\"> </font></center><br>\n"
+        html += "<center><b><font size=\"5\">Basic Jobs</font></b></center>\n"
+        html += "<table border=\"1\">\n"
 
         # Start table for basic jobs
-        html += "<tr>"
-        html += "<th bgcolor=\"#C0C0C0\">Name</th>"
-        html += "<th bgcolor=\"#C0C0C0\">Date</th>"
-        html += "<th bgcolor=\"#C0C0C0\">Success</th>"
+        html += "<tr>\n"
+        html += "    <th bgcolor=\"#C0C0C0\">Name</th>\n"
+        html += "    <th bgcolor=\"#C0C0C0\">Date</th>\n"
+        html += "    <th bgcolor=\"#C0C0C0\">Success</th>\n"
         html += "</tr>\n"
 
         names = basicJobInfos.keys()
@@ -290,11 +290,11 @@ def generateEmailContent(basicJobInfos, srcJobInfos, tplJobInfos):
         for name in names:
             currJobInfo = basicJobInfos[name][0]
             # Row for each job
-            html += "<tr>"
-            html += "<td>" + currJobInfo.name + "</td>"
-            html += "<td>" + convertDatetimeToReadable(currJobInfo.datetime) + "</td>"
+            html += "<tr>\n"
+            html += "    <td>" + currJobInfo.name + "</td>\n"
+            html += "    <td>" + convertDatetimeToReadable(currJobInfo.datetime) + "</td>\n"
             html += getSuccessFormat(currJobInfo.success, __cellBlackOnGreen, __cellWhiteOnRed) % str(currJobInfo.success)
-            html += "</tr>"
+            html += "</tr>\n"
 
         # Close table for basic jobs
         html += "</table>\n"
@@ -313,11 +313,11 @@ def getHTMLforJobInfos(jobInfosDict, isTPLJob):
     html = ""
     if len(jobInfosDict.keys()) > 0:
         # Header for all src jobs
-        html += "<center><font size=\"5\"> </font></center><br>"
+        html += "<center><font size=\"5\"> </font></center><br>\n"
         if (isTPLJob):
-            html += "<center><b><font size=\"5\">TPL Jobs</font></b></center>"
+            html += "<center><b><font size=\"5\">TPL Jobs</font></b></center>\n"
         else:    
-            html += "<center><b><font size=\"5\">Source Jobs</font></b></center>"
+            html += "<center><b><font size=\"5\">Source Jobs</font></b></center>\n"
 
         sys_types = jobInfosDict.keys()
         sys_types.sort()
@@ -326,23 +326,23 @@ def getHTMLforJobInfos(jobInfosDict, isTPLJob):
             specNames = getSpecNames(jobInfos)
 
             # Header for this sys_type
-            html += "<center><font size=\"5\"> </font></center><br>"
-            html += "<b><font size=\"4\">" + sys_type + "</font></b>"
+            html += "<center><font size=\"5\"> </font></center><br>\n"
+            html += "<b><font size=\"4\">" + sys_type + "</font></b>\n"
 
             # Start table for this spec jobs
-            html += "<table border=\"1\">"
-            html += "<tr>"
-            html += "<th bgcolor=\"#C0C0C0\">Date</th>"
-            html += "<th bgcolor=\"#C0C0C0\">Success</th>"
+            html += "<table border=\"1\">\n"
+            html += "<tr>\n"
+            html += "<th bgcolor=\"#C0C0C0\">Date</th>\n"
+            html += "<th bgcolor=\"#C0C0C0\">Success</th>\n"
             for specName in specNames:
-                html += "<th bgcolor=\"#C0C0C0\">" + specName + "</th>"
-            html += "</tr>\n"
+                html += "<th bgcolor=\"#C0C0C0\">" + specName + "</th>\n"
+            html += "</tr>\n\n"
 
             for currJobInfo in jobInfos:
                 # Row for each job
                 failedTestsString = ""
                 html += "<tr>"
-                html += "<td>" + convertDatetimeToReadable(currJobInfo.datetime) + "</td>"
+                html += "<td>" + convertDatetimeToReadable(currJobInfo.datetime) + "</td>\n"
                 html += getSuccessFormat(currJobInfo.success, __cellBlackOnGreen, __cellWhiteOnRed) % str(currJobInfo.success)
                 for specName in specNames:
                     if currJobInfo.specInfos.has_key(specName):
@@ -362,8 +362,8 @@ def getHTMLforJobInfos(jobInfosDict, isTPLJob):
                                 failedTestsString += " " + name
                     else:
                         # Have a blank cell if spec wasn't here for this job (it was added or removed)
-                        html += "<td></td>"
-                html += "</tr>"
+                        html += "<td></td>\n"
+                html += "</tr>\n"
                 tableWidth = 2 + len(specNames)
                 if failedTestsString != "":
                     html += "<tr><td colspan=\"{0}\">{1}</td></tr>".format(str(tableWidth), failedTestsString)
