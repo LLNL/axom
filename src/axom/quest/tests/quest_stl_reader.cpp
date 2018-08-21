@@ -25,6 +25,7 @@
 #include <cstdio>   // for std::remove()
 #include <string>   // for std::string
 #include <fstream>  // for std::ofstream
+#include <limits>   // for std::numeric_limits
 
 // namespace aliases
 namespace mint  = axom::mint;
@@ -142,9 +143,9 @@ TEST( quest_stl_reader, read_stl )
   mint::IndexType numNodes = mesh.getNumberOfNodes();
   for ( mint::IndexType inode=0 ; inode < numNodes ; ++inode )
   {
-    EXPECT_DOUBLE_EQ( x[ inode ], x_expected[ inode ] );
-    EXPECT_DOUBLE_EQ( y[ inode ], y_expected[ inode ] );
-    EXPECT_DOUBLE_EQ( z[ inode ], z_expected[ inode ] );
+    EXPECT_NEAR( x[ inode ], x_expected[ inode ], std::numeric_limits< double >::epsilon() );
+    EXPECT_NEAR( y[ inode ], y_expected[ inode ], std::numeric_limits< double >::epsilon() );
+    EXPECT_NEAR( z[ inode ], z_expected[ inode ], std::numeric_limits< double >::epsilon() );
   } // END for all nodes
 
   // STEP 4: remove temporary STL file
@@ -196,9 +197,9 @@ TEST( quest_stl_reader, read_stl_external )
   mint::IndexType numNodes = mesh.getNumberOfNodes();
   for ( mint::IndexType inode=0 ; inode < numNodes ; ++inode )
   {
-    EXPECT_DOUBLE_EQ( x[ inode ], x_expected[ inode ] );
-    EXPECT_DOUBLE_EQ( y[ inode ], y_expected[ inode ] );
-    EXPECT_DOUBLE_EQ( z[ inode ], z_expected[ inode ] );
+    EXPECT_NEAR( x[ inode ], x_expected[ inode ], std::numeric_limits< double >::epsilon() );
+    EXPECT_NEAR( y[ inode ], y_expected[ inode ], std::numeric_limits< double >::epsilon() );
+    EXPECT_NEAR( z[ inode ], z_expected[ inode ], std::numeric_limits< double >::epsilon() );
   } // END for all nodes
 
   // STEP 4: remove temporary STL file
