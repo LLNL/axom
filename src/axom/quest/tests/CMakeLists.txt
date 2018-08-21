@@ -94,16 +94,22 @@ foreach(test ${quest_mpi_tests})
     get_filename_component( test_name ${test} NAME_WE )
     blt_add_executable(
         NAME ${test_name}_test
-        SOURCES ${test}
+        SOURCES ${test_name}.cpp
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
         DEPENDS_ON ${quest_mpi_depends}
         FOLDER axom/quest/tests
     )
+
+    set(_numMPITasks 4)
+    if (${test_name} STREQUAL "quest_signed_distance_interface")
+        set(_numMPITasks 1)
+    endif()
+
     if (ENABLE_MPI)
         blt_add_test(
             NAME ${test_name}
             COMMAND ${test_name}_test
-            NUM_MPI_TASKS 4
+            NUM_MPI_TASKS ${_numMPITasks}
         )
     else()
         blt_add_test(
