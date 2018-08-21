@@ -15,27 +15,16 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-// Axom utils includes
-#include "axom/core/utilities/Utilities.hpp"       // for processAbort()
-#include "axom/core/utilities/Timer.hpp"
-
-// Mint includes
-#include "axom/mint/config.hpp"                // for compile-time mint
-#include "axom/mint/mesh/UniformMesh.hpp"           // for mint::UniformMesh
-#include "axom/mint/utils/vtk_utils.hpp"             // for mint::write_vtk()
-
-// Quest includes
-#include "axom/quest/interface/signed_distance.hpp"  // for signed distance
-
-// Slic includes
-#include "axom/slic/interface/slic.hpp"                  // for SLIC macros
-#include "axom/slic/streams/GenericOutputStream.hpp"   // GenericOutputStream
+// Axom includes
+#include "axom/core.hpp"
+#include "axom/mint.hpp"
+#include "axom/quest.hpp"
+#include "axom/slic.hpp"
 
 #ifdef AXOM_USE_MPI
-  #include <mpi.h>                         // for MPI
-  #include "axom/slic/streams/SynchronizedStream.hpp"   // SynchronizedStream
+  #include <mpi.h>
 #else
-using MPI_Comm = int;
+  using MPI_Comm = int;
 #endif
 
 // C/C++ includes

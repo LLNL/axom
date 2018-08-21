@@ -24,16 +24,10 @@
  *  pairwise interaction involving that particle.
  */
 
-// axom_utiles
-#include "axom/core/utilities/Utilities.hpp"  // for random_real()
-
-// Mint includes
-#include "axom/mint/mesh/ParticleMesh.hpp"     // for mint::ParticleMesh
-#include "axom/mint/utils/vtk_utils.hpp"        // for mint::write_vtk()
-
-// Slic includes
-#include "axom/slic/interface/slic.hpp"            // for SLIC macros
-#include "axom/slic/core/UnitTestLogger.hpp"  // for slic logger
+// Axom Includes
+#include "axom/core.hpp"
+#include "axom/mint.hpp"
+#include "axom/slic.hpp"
 
 // Axom namespace aliases
 namespace mint      = axom::mint;

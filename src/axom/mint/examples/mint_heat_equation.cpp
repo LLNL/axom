@@ -14,10 +14,13 @@
  *
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
+
+// Axom Includes
 #include "axom/core.hpp"
 #include "axom/mint.hpp"
 #include "axom/slic.hpp"
 
+// C/C++ includes
 #include <cmath>                          /* for std::exp, std::ciel */
 #include <sstream>                        /* for std::stringstream */
 #include <string>                         /* for std::string */

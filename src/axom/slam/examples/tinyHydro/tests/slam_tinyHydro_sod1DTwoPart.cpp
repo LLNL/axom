@@ -19,8 +19,8 @@
 #include <vector>
 #include <cmath>
 
-#include "axom/core/utilities/Timer.hpp"
-#include "axom/slic/interface/slic.hpp"
+#include "axom/core.hpp"
+#include "axom/slic.hpp"
 
 #include "../PolygonMeshXY.hpp"
 #include "../HydroC.hpp"

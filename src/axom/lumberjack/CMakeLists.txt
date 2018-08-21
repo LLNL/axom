@@ -45,6 +45,9 @@ blt_add_library( NAME        lumberjack
                  FOLDER      axom/lumberjack
                  )
 
+axom_write_unified_header(NAME    lumberjack
+                          HEADERS ${lumberjack_headers})
+
 axom_install_component(NAME      lumberjack
                        HEADERS   ${lumberjack_headers}
                        )

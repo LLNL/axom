@@ -20,7 +20,7 @@
 // used supports it (i.e. the _OPENMP symbol is defined)
 #define USE_OMP 1
 
-#include "axom/config.hpp"
+#include "axom/sidre.hpp"
 
 #ifdef AXOM_USE_MPI
 #include <mpi.h>
@@ -38,8 +38,6 @@
 
 #include <math.h>
 #include <vector>
-
-#include "axom/sidre/core/sidre.hpp"
 
 //**************************************************
 // Allow flexibility for arithmetic representations

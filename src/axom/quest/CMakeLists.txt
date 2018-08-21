@@ -127,7 +127,8 @@ blt_add_library(
     )
 
 axom_write_unified_header(NAME    quest
-                          HEADERS ${quest_headers})
+                          HEADERS ${quest_headers}
+                          )
 
 axom_install_component(NAME    quest
                        HEADERS ${quest_headers}

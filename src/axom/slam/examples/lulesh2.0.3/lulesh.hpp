@@ -15,8 +15,9 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-
-#include "axom/config.hpp"  // defines AXOM_USE_MPI
+#include "axom/core.hpp"
+#include "axom/slic.hpp"
+#include "axom/slam.hpp"
 
 #ifdef AXOM_USE_MPI
 #include <mpi.h>
@@ -34,17 +35,6 @@
 
 #include <math.h>
 #include <vector>
-
-#include "axom/slic/interface/slic.hpp"
-
-#include "axom/slam/NullSet.hpp"
-#include "axom/slam/RangeSet.hpp"
-#include "axom/slam/IndirectionSet.hpp"
-#include "axom/slam/policies/CardinalityPolicies.hpp"
-#include "axom/slam/StaticRelation.hpp"
-#include "axom/slam/DynamicVariableRelation.hpp"
-#include "axom/slam/Map.hpp"
-#include "axom/slam/FieldRegistry.hpp"
 
 namespace slamLulesh {
 

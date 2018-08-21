@@ -294,7 +294,7 @@ macro(axom_write_unified_header)
 
     set(options )
     set(singleValueArgs NAME)
-    set(multiValueArgs HEADERS)
+    set(multiValueArgs HEADERS EXCLUDE)
 
     # Parse the arguments to the macro
     cmake_parse_arguments(arg
@@ -317,14 +317,28 @@ macro(axom_write_unified_header)
  * For details about use and distribution, please read axom/LICENSE.
  *
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *\/\n\n
+ *\/\n
 ")
 
-    file(APPEND ${_header} "#include \"axom\/config.hpp\"\n")
+    string(TOUPPER ${arg_NAME} _ucname)
+    file(APPEND ${_header} "#ifndef AXOM_${_ucname}_HPP\n")
+    file(APPEND ${_header} "#define AXOM_${_ucname}_HPP\n\n")
+
+    file(APPEND ${_header} "#include \"axom\/config.hpp\"\n\n")
 
     foreach(_file ${arg_HEADERS})
-        file(APPEND ${_header} "#include \"axom\/${arg_NAME}\/${_file}\"\n")
+        set(_headerPath "axom\/${arg_NAME}\/${_file}")
+        
+        if(${_file} IN_LIST arg_EXCLUDE)
+            continue()
+        elseif(${_headerPath} MATCHES "(\/detail\/)|(\/internal\/)")
+            continue()
+        else()
+            file(APPEND ${_header} "#include \"${_headerPath}\"\n")
+        endif()
     endforeach()
+
+    file(APPEND ${_header} "\n#endif // AXOM_${_ucname}_HPP\n")
 
     install(FILES       ${_header}
             DESTINATION include/axom)

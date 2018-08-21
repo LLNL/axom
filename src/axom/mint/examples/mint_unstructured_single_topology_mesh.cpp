@@ -22,14 +22,10 @@
  *  UnstructuredMesh by creating a 2D structured grid.
  */
 
-#include "axom/core/utilities/Utilities.hpp"   /* for random_real */
-
-// Mint includes
-#include "axom/mint/config.hpp"
-#include "axom/mint/mesh/UnstructuredMesh.hpp"
-#include "axom/mint/utils/vtk_utils.hpp"
-
-#include "axom/slic/core/UnitTestLogger.hpp"      /* for UnitTestLogger */
+// Axom includes
+#include "axom/core.hpp"
+#include "axom/mint.hpp"
+#include "axom/slic.hpp"
 
 using namespace axom;
 using axom::slic::UnitTestLogger;

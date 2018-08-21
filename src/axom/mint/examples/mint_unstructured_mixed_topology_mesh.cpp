@@ -23,11 +23,9 @@
  *  and triangles.
  */
 
-// Mint includes
-#include "axom/mint/config.hpp"
-#include "axom/mint/mesh/UnstructuredMesh.hpp"
-#include "axom/mint/utils/vtk_utils.hpp"
-#include "axom/slic/core/UnitTestLogger.hpp"      /* for UnitTestLogger */
+// Axom includes
+#include "axom/mint.hpp"
+#include "axom/slic.hpp"
 
 // C/C++ includes
 #include <random>                       /* for random number generator */

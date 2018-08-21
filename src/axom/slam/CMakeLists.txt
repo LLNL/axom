@@ -109,7 +109,8 @@ blt_add_library(
     )
 
 axom_write_unified_header(NAME    slam
-                          HEADERS ${slam_headers})
+                          HEADERS ${slam_headers}
+                          )
 
 axom_install_component(NAME    slam
                        HEADERS ${slam_headers}
