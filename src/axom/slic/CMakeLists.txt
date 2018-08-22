@@ -79,6 +79,9 @@ blt_add_library(NAME        slic
                 FOLDER      axom/slic
                 )
 
+axom_write_unified_header(NAME    slic
+                          HEADERS ${slic_headers})
+
 axom_install_component(NAME    slic
                        HEADERS ${slic_headers}
                        )

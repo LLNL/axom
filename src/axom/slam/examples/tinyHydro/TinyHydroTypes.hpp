@@ -23,18 +23,9 @@
 
 #include "VectorXY.hpp"
 
-#include "axom/config.hpp"
 #include "fmt/fmt.hpp"
 
-#include "axom/slam/OrderedSet.hpp"
-#include "axom/slam/RangeSet.hpp"
-#include "axom/slam/IndirectionSet.hpp"
-
-#include "axom/slam/StaticRelation.hpp"
-
-#include "axom/slam/Map.hpp"
-
-#include "axom/slam/FieldRegistry.hpp"
+#include "axom/slam.hpp"
 
 
 namespace tinyHydro {

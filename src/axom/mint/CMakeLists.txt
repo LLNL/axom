@@ -127,6 +127,9 @@ blt_add_library(
     FOLDER     axom/mint
    )
 
+axom_write_unified_header(NAME    mint
+                          HEADERS config.hpp ${mint_headers})
+
 axom_install_component(NAME    mint
                        HEADERS ${mint_headers}
                        )

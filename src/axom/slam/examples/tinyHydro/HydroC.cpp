@@ -23,7 +23,7 @@
 #include "Part.hpp"
 // #include "/usr/include/gperftools/profiler.h"
 
-#include "axom/slic/interface/slic.hpp"
+#include "axom/slic.hpp"
 
 namespace tinyHydro {
 

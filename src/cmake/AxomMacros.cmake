@@ -262,10 +262,10 @@ macro(axom_install_component)
             DESTINATION          lib
             INCLUDES DESTINATION ${_header_base_dir}
             )
-    
+
     foreach( _file ${arg_HEADERS} )
         get_filename_component( _dir ${_file} DIRECTORY )
-        install( FILES ${_file} DESTINATION ${_header_base_dir}/${_dir} )
+        install(FILES ${_file} DESTINATION ${_header_base_dir}/${_dir} )
     endforeach()
 
     if(ENABLE_FORTRAN)
@@ -277,3 +277,71 @@ macro(axom_install_component)
     install(EXPORT ${arg_NAME}-targets DESTINATION lib/cmake)
 
 endmacro(axom_install_component)
+
+
+##------------------------------------------------------------------------------
+## axom_write_unified_header
+## 
+## This macro writes the unified header (axom/<lowered NAME>.hpp) to the build directory for the
+## given component NAME with the given HEADERS included inside of it.
+##
+## NAME - The name of the component for the unified header.
+##
+## HEADERS - Headers to be included in the header.
+##
+##------------------------------------------------------------------------------
+macro(axom_write_unified_header)
+
+    set(options )
+    set(singleValueArgs NAME)
+    set(multiValueArgs HEADERS EXCLUDE)
+
+    # Parse the arguments to the macro
+    cmake_parse_arguments(arg
+         "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    string(TOUPPER ${arg_NAME} _ucname)
+    string(TOLOWER ${arg_NAME} _lcname)
+    set(_header ${CMAKE_BINARY_DIR}/include/axom/${_lcname}.hpp)
+
+    file(WRITE ${_header} "\/*
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
+ *
+ * All rights reserved.
+ *
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ *\/\n
+")
+
+    file(APPEND ${_header} "#ifndef AXOM_UNIFIED_${_ucname}_HPP\n")
+    file(APPEND ${_header} "#define AXOM_UNIFIED_${_ucname}_HPP\n\n")
+
+    file(APPEND ${_header} "#include \"axom\/config.hpp\"\n\n")
+
+    foreach(_file ${arg_HEADERS})
+        set(_headerPath "axom\/${_lcname}\/${_file}")
+        
+        if(${_file} IN_LIST arg_EXCLUDE)
+            continue()
+        elseif(${_headerPath} MATCHES "(\/detail\/)|(\/internal\/)")
+            continue()
+        else()
+            file(APPEND ${_header} "#include \"${_headerPath}\"\n")
+        endif()
+    endforeach()
+
+    file(APPEND ${_header} "\n#endif // AXOM_UNIFIED_${_ucname}_HPP\n")
+
+    install(FILES       ${_header}
+            DESTINATION include/axom)
+
+endmacro(axom_write_unified_header)

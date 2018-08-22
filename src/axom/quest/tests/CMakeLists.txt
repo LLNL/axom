@@ -19,7 +19,6 @@ set(quest_tests
     quest_meshtester.cpp
     quest_octree.cpp
     quest_signed_distance.cpp
-    quest_signed_distance_interface.cpp
     quest_spatial_octree.cpp
     quest_stl_reader.cpp
     quest_vertex_weld.cpp
@@ -77,33 +76,54 @@ if(MFEM_FOUND)
         )
 endif()
 
-# Test quest::initialize() passing a Mesh * instead of a file name
-set(test_name quest_initialize)
-set(quest_initialize_depends ${quest_tests_depends})
-if (ENABLE_MPI)
-    list(APPEND quest_initialize_depends mpi)
-endif()
-blt_add_executable(
-    NAME ${test_name}_test
-    SOURCES ${test_name}.cpp
-    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-    DEPENDS_ON ${quest_initialize_depends}
-    FOLDER axom/quest/tests
-)
-if (ENABLE_MPI)
-    blt_add_test(
-        NAME ${test_name}
-        COMMAND ${test_name}_test
-        NUM_MPI_TASKS 4
+
+##############################################################
+# Tests that use MPI when available
+##############################################################
+set(quest_mpi_tests
+    quest_initialize.cpp
+    quest_signed_distance_interface.cpp
     )
-else()
-    blt_add_test(
-        NAME ${test_name}
-        COMMAND ${test_name}_test
-    )
+
+set(quest_mpi_depends ${quest_tests_depends})
+if (ENABLE_MPI)
+    list(APPEND quest_mpi_depends mpi)
 endif()
 
-# Regression tests for quest signed distance and InOutOctree point containment queries
+foreach(test ${quest_mpi_tests})
+    get_filename_component( test_name ${test} NAME_WE )
+    blt_add_executable(
+        NAME ${test_name}_test
+        SOURCES ${test_name}.cpp
+        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+        DEPENDS_ON ${quest_mpi_depends}
+        FOLDER axom/quest/tests
+    )
+
+    set(_numMPITasks 4)
+    if (${test_name} STREQUAL "quest_signed_distance_interface")
+        set(_numMPITasks 1)
+    endif()
+
+    if (ENABLE_MPI)
+        blt_add_test(
+            NAME ${test_name}
+            COMMAND ${test_name}_test
+            NUM_MPI_TASKS ${_numMPITasks}
+        )
+    else()
+        blt_add_test(
+            NAME ${test_name}
+            COMMAND ${test_name}_test
+        )
+    endif()
+endforeach()
+
+
+##############################################################
+# Regression tests for quest signed distance and InOutOctree
+# point containment queries
+##############################################################
 if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
 
     set(quest_regression_depends

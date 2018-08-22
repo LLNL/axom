@@ -108,6 +108,10 @@ blt_add_library(
     FOLDER      axom/slam
     )
 
+axom_write_unified_header(NAME    slam
+                          HEADERS ${slam_headers}
+                          )
+
 axom_install_component(NAME    slam
                        HEADERS ${slam_headers}
                        )

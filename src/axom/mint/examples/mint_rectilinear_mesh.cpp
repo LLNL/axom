@@ -22,13 +22,8 @@
  */
 
 // Axom includes
-#include "axom/core/Macros.hpp"           // for AXOM_NOT_USED
-#include "axom/core/utilities/Utilities.hpp"  // for random_real()
-
-// Mint includes
-#include "axom/mint/config.hpp"
-#include "axom/mint/mesh/RectilinearMesh.hpp"
-#include "axom/mint/utils/vtk_utils.hpp"
+#include "axom/core.hpp"
+#include "axom/mint.hpp"
 
 // C/C++ includes
 #include <cmath>

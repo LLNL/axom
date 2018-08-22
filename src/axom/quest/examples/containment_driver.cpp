@@ -21,37 +21,13 @@
  * \brief Basic demo of point containment acceleration structure over surfaces.
  */
 
-// axom includes
-#include "axom/config.hpp"
-#include "axom/core/Macros.hpp"
-#include "axom/core/Types.hpp"
-#include "axom/core/utilities/FileUtilities.hpp"
-#include "axom/core/utilities/Timer.hpp"
-
-#include "axom/primal/geometry/BoundingBox.hpp"
-#include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/Triangle.hpp"
-
-#include "axom/primal/operators/orientation.hpp"
-#include "axom/primal/operators/squared_distance.hpp"
-
-#include "axom/quest/stl/STLReader.hpp"
-#include "axom/quest/geom/SpatialOctree.hpp"
-#include "axom/quest/geom/InOutOctree.hpp"
-
-#include "axom/mint/config.hpp"
-#include "axom/mint/mesh/Field.hpp"
-#include "axom/mint/mesh/FieldData.hpp"
-#include "axom/mint/mesh/FieldVariable.hpp"
-#include "axom/mint/mesh/Mesh.hpp"
-#include "axom/mint/mesh/UniformMesh.hpp"
-#include "axom/mint/mesh/UnstructuredMesh.hpp"
-#include "axom/mint/utils/vtk_utils.hpp"
-
-#include "axom/slic/interface/slic.hpp"
-#include "axom/slic/core/UnitTestLogger.hpp"
-
-#include "axom/slam/Utilities.hpp"
+// Axom includes
+#include "axom/core.hpp"
+#include "axom/primal.hpp"
+#include "axom/quest.hpp"
+#include "axom/mint.hpp"
+#include "axom/slic.hpp"
+#include "axom/slam.hpp"
 
 #include "fmt/fmt.hpp"
 
