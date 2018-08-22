@@ -82,7 +82,9 @@
 // _sqdist_header_end
 
 // Axom spatial index
+// _ugrid_triintersect_header_start
 #include "primal/UniformGrid.hpp"
+// _ugrid_triintersect_header_end
 
 // C++ headers
 #include <cmath> // do we need this?
@@ -106,6 +108,8 @@ typedef Polygon<double, NDIMS> PolygonType;
 typedef Ray<double, NDIMS> RayType;
 typedef Segment<double, NDIMS> SegmentType;
 typedef Vector<double, NDIMS> VectorType;
+// the UniformGrid will store ints ("thing" indexes) in 3D
+typedef UniformGrid<int, NDIMS> UniformGridType;
 // _using_end
 typedef Plane<double, NDIMS> PlaneType;
 
@@ -660,6 +664,97 @@ void showDistance()
     asy << "draw(boxpt--" << pboxpt << ", dotted);" << std::endl;
   }
 }
+
+// _naive_triintersect_start
+void findTriIntersectionsNaively(
+  std::vector<TriangleType> & tris,
+  std::vector< std::pair<int, int> > & clashes
+  )
+{
+  int tcount = tris.size();
+
+  for (int i = 0; i < tcount; ++i) {
+    TriangleType & t1 = tris[i];
+    for (int j = i + 1; j < tcount; ++j) {
+      TriangleType & t2 = tris[j];
+      if (intersect(t1, t2)) {
+        clashes.push_back(std::make_pair(i, j));
+      }
+    }
+  }
+}
+// _naive_triintersect_end
+
+// _ugrid_triintersect_start
+BoundingBoxType findBbox(std::vector<TriangleType> & tris);
+BoundingBoxType findBbox(TriangleType & tri);
+
+void findTriIntersectionsAccel(
+  std::vector<TriangleType> & tris,
+  std::vector< std::pair<int, int> > & clashes
+  )
+{
+  // Prepare to construct the UniformGrid.
+  BoundingBoxType allbbox = findBbox(tris);
+  const Point3 & minBBPt = allbbox.getMin();
+  const Point3 & maxBBPt = allbbox.getMax();
+
+  int tcount = tris.size();
+
+  // The number of buckets along one side of the UniformGrid.
+  // This is a heuristic.
+  int res = (int)(1 + std::pow(ncells, 1/3.));
+  int ress[3] = {res, res, res};
+
+  // Construct the UniformGrid with minimum point, maximum point,
+  // and number of buckets along each side.  Then insert the triangles.
+  UniformGridType ugrid(minBBPt.data(), maxBBPt.data(), ress);
+  for (int i = 0; i < tcount; ++i) {
+    TriangleType & t1 = tris[i];
+    BoundingBoxType bbox = findBbox(t1);
+    ugrid.insert(bbox, i);
+  }
+
+  // Now check for intersections.
+  // For each triangle t1,
+  for (int i = 0; i < tcount; ++i) {
+    TriangleType & t1 = tris[i];
+    BoundingBoxType bbox = findBbox(t1);
+
+    // Get all the buckets t1 occupies
+    std::vector<int> neighborTriangles;
+    const std::vector<int> bToCheck = ugrid.getBinsForBbox(triBB2);
+    size_t checkcount = bToCheck.size();
+
+    // Load all the triangles in these buckets whose indices are
+    // greater than i into a vector.
+    for (size_t curb = 0 ; curb < checkcount ; ++curb) {
+      std::vector<int> ntlist = ugrid.getBinContents(bToCheck[curb]);
+      for (int j = 0; j < ntlist.size(); ++j) {
+        if (ntlist[j] > i) {
+          neighborTriangles.push_back(ntlist[j]);
+        }
+      }
+    }
+
+    // Sort the neighboring triangles, and throw out duplicates.
+    // This is not strictly necessary but saves some calls to intersect().
+    std::sort(neighborTriangles.begin(), neighborTriangles.end());
+    std::vector<int>::iterator jend =
+      std::unique(neighborTriangles.begin(), neighborTriangles.end());
+    std::vector<int>::iterator j = neighborTriangles.begin();
+
+    // Test for intersection between t1 and each of its neighbors.
+    while (j != jend) {
+      TriangleType & t2 = tris[*j];
+      if (primal::intersect(t1, t2)) {
+        intersections.push_back(std::make_pair(i, *j));
+      }
+      ++j;
+    }
+  }
+}
+// _ugrid_triintersect_end
 
 int main(int argc, char** argv)
 {

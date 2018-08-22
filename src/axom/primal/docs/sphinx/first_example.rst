@@ -4,10 +4,11 @@ Introductory examples
 
 Here is a collection of introductory examples showing Primal primitives and
 operations.  We will instantiate several geometric primitives as needed, perform
-geometric operations, and build the UniformGrid and BSPTree spatial index
+geometric operations, and build the UniformGrid and BVHTree spatial index
 objects around them.  These examples show representative overloads of each of
-the Primal operations (see the `API documentation <../../foo.html>`_ for more
-details).
+the Primal operations (see the 
+`API documentation <../../../doxygen/axom_doxygen/html/primaltop.html>`_ 
+for more details).
 
 Include header files for primitives (header files for operations will be shown
 next to code examples).
@@ -117,12 +118,13 @@ Intersection
 The intersection test is provided by ``intersect()``.  It takes two primitives
 and returns a boolean if the primitives intersect.  Some overloads return the
 point of intersection in an output argument.  The overloads for
-``intersection()`` are summarized in the table below.
+``intersect()`` are summarized in the table below.
 
 +-------------------+-------------------+--------------------------------------+
 |Arg 1              |Arg 2              |Additional arguments and notes        |
 +===================+===================+======================================+
-|Triangle           |Triangle           |include boundaries (default false)    |
+|Triangle           |Triangle           |include boundaries [#f1]_             |
+|                   |                   |(default false)                       |
 +-------------------+-------------------+--------------------------------------+
 |Ray                |Segment            |return intersection point. 2D only.   |
 +-------------------+-------------------+--------------------------------------+
@@ -146,6 +148,12 @@ point of intersection in an output argument.  The overloads for
 +-------------------+-------------------+--------------------------------------+
 |OrientedBoundingBox|OrientedBoundingBox|specify tolerance                     |
 +-------------------+-------------------+--------------------------------------+
+
+.. [#f1] By default, the triangle intersection algorithm considers only the
+         triangles' interiors, so that non-coplanar triangles that share two
+         vertices are not reported as intersecting.  The caller to
+         ``intersect()`` can specify an optional argument to include triangle
+         boundaries in the intersection test.
 
 The example below intersection tests between two triangles, a ray, and a
 BoundingBox.
@@ -229,35 +237,88 @@ Spatial Index
 -------------
 
 A spatial index is a data structure used to speed up retrieval of geometric
-objects.  Axom provides two spatial indices, the cell (or Verlet) list
-implemented in the ``UniformGrid`` class and the binary space partition tree
-implemented in the ``BSPTree`` class.  Both classes divide a bounding box
+objects.  Primal provides two spatial indices, the cell (or Verlet) list
+implemented in the ``UniformGrid`` class and the bounding volume hierarchy tree
+implemented in the ``BVHTree`` class.  Both classes divide a bounding box
 denoting a region of interest into bins that group objects together, avoiding
-the need to process objects that do not fall into a bin of interest.  The
-``UniformGrid`` tiles the region of interest into non-intersecting bins of
-uniform size, adding an object to each bin that it intersects.  The ``BSPTree``
-recursively subdivides the region of interest into a "tree" of bins, stopping
-when a bin contains less than some number of objects or when the tree reaches a
-specified height.
+the need to process objects that do not fall into a bin of interest.
 
 UniformGrid
 ^^^^^^^^^^^
 
-The ``UniformGrid`` can be used when a code compares each primitive in a collection
-to every other "close" primitive, such as when checking if a triangle mesh intersects
-itself.  The following naive implementation is straightforward but runs
-in :math:`O(n^2)` time, where :math:`n` is the number of triangles.
+The ``UniformGrid`` tiles the region of interest into non-intersecting
+subregions (or "buckets") of uniform size.  Each object in the region of interest
+is added an object to every bucket the object
+intersects.  ``UniformGrid`` can be used when a code compares each primitive
+in a collection to every other "close" primitive, such as when checking if a
+triangle mesh intersects itself.  The following naive implementation is
+straightforward but runs in :math:`O(n^2)` time, where :math:`n` is the number
+of triangles.
 
-- naive implementation: compare each triangle to every other tri
+.. literalinclude:: ../../examples/primal_introduction.cpp
+   :start-after: _naive_triintersect_start
+   :end-before: _naive_triintersect_end
+   :language: C++
 
-If a code could avoid calling ``intersect()`` for widely-separated triangles, it would
-surely save time.  The ``UniformGrid`` allows a code to compare each triangle to the
-other triangles in its bin(s), disregarding far-away triangles that cannot intersect.
+We want to call ``intersect()`` only for triangles that can intersect, ignoring
+widely-separated triangles.  The ``UniformGrid`` enables this optimization.  In
+the following figure, the ``UniformGrid`` divides the region of interest into
+three by three buckets outlined in grey.  A triangle :math:`t` (shown in orange)
+will be compared with neighbor triangles (shown in black) that fall into the
+buckets occupied by :math:`t`.  Other triangles (shown in blue) are too far away
+to intersect and are not compared with :math:`t`.
 
-- UniformGrid example.  For each triangle,
-  - find its bounding box
-  - get the bins intersecting the bounding box
-  - iterate over the contents of each bin, testing for intersection
+.. Unlike the figures for geometric operations, this figure is "hand-drawn," not
+   generated by running the example below.
 
-The ``UniformGrid`` has its best effect when objects are roughly the same size and not
-all clumped together.
+.. figure:: figs/showUniformGrid.png
+   :figwidth: 300px
+   :alt: Diagram showing triangles indexed with a UniformGrid
+
+.. literalinclude:: ../../examples/primal_introduction.cpp
+   :start-after: _ugrid_triintersect_header_start
+   :end-before: _ugrid_triintersect_header_end
+   :language: C++
+
+.. literalinclude:: ../../examples/primal_introduction.cpp
+   :start-after: _ugrid_triintersect_start
+   :end-before: _ugrid_triintersect_end
+   :language: C++
+
+The ``UniformGrid`` has its best effect when objects are roughly the same size and 
+evenly distributed over the region of interest, and when buckets are close to the 
+characteristic size of objects in the region of interest.  
+
+BVHTree
+^^^^^^^
+
+The ``BVHTree`` recursively subdivides the region of interest into a "tree" of
+subregions, stopping when a subregion contains less than some number of objects
+or when the tree reaches a specified height.  Similar to ``UniformGrid``,
+subregions are also called "buckets".
+
+The ``BVHTree`` is well-suited for particle-mesh or ray-mesh intersection tests.
+It is also well-suited to data sets where the contents are unevenly distributed,
+since the buckets are subdivided based on their contents.  The figure below
+shows a 2D BVH tree built up over a set of triangles.
+
+.. figure:: figs/showUniformGrid.png
+   :figwidth: 300px
+   :alt: Diagram showing triangles indexed with a UniformGrid
+
+The following code example shows how a ``BVHTree`` can be used to accelerate 
+a ray-mesh intersection algorithm.  Without the spatial index, each ray must
+be tested against each triangle.  The ``BVHTree`` prunes out all buckets that 
+do not intersect the probe, recursing into the tree of buckets until it gets
+to the leaf buckets.  Then all objects in the leaf buckets are compared to the
+probe.
+
+.. literalinclude:: ../../examples/primal_introduction.cpp
+   :start-after: _ugrid_triintersect_header_start
+   :end-before: _ugrid_triintersect_header_end
+   :language: C++
+
+.. literalinclude:: ../../examples/primal_introduction.cpp
+   :start-after: _ugrid_triintersect_start
+   :end-before: _ugrid_triintersect_end
+   :language: C++
