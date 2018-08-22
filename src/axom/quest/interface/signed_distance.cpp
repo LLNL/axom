@@ -14,15 +14,20 @@
  *
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-
 #include "axom/quest/interface/signed_distance.hpp"
 
+// Axom includes
 #include "axom/quest/interface/internal/QuestHelpers.hpp"
 #include "axom/quest/SignedDistance.hpp"
 
+// Mint includes
 #include "axom/mint/mesh/Mesh.hpp"
 
 #include "axom/slic/interface/slic.hpp"
+
+#ifdef AXOM_USE_MPI
+#include <mpi.h>
+#endif
 
 namespace axom
 {
@@ -51,7 +56,8 @@ static struct parameters_t
   int max_levels;         /*!< max levels of subdivision for the BVH */
   int max_occupancy;      /*!< max occupancy per BVH bin */
   bool verbose;           /*!< logger verbosity */
-  bool is_closed_surface; /*!< in*/
+  bool is_closed_surface; /*!< indicates if the input is a closed surface */
+  bool use_shared_memory; /*!< use MPI-3 shared memory for the surface mesh */
 
   /*!
    * \brief Default Constructor. Sets default values for the parameters.
@@ -61,7 +67,8 @@ static struct parameters_t
     max_levels( 12 ),
     max_occupancy( 5 ),
     verbose( false ),
-    is_closed_surface( true )
+    is_closed_surface( true ),
+    use_shared_memory( false )
   { }
 
 } Parameters;
@@ -72,6 +79,12 @@ static mint::Mesh* s_surface_mesh   = nullptr;
 static bool s_must_delete_mesh      = false;
 static bool s_must_finalize_logger  = false;
 static bool s_logger_is_initialized = false;
+
+#if defined(AXOM_USE_MPI) && defined(AXOM_USE_MPI3)
+static unsigned char* s_shared_mesh_buffer = nullptr;
+MPI_Comm s_intra_node_comm                 = MPI_COMM_NULL;
+MPI_Win s_window                           = MPI_WIN_NULL;
+#endif
 
 } // end anonymous namespace
 
@@ -97,7 +110,32 @@ int signed_distance_init( const std::string& file, MPI_Comm comm )
   }
 
   // STEP 0: read the STL mesh
-  int rc = internal::read_mesh( file, s_surface_mesh, comm );
+  int rc = INIT_FAILED;
+
+#if defined(AXOM_USE_MPI) && defined(AXOM_USE_MPI3)
+
+  if ( Parameters.use_shared_memory )
+  {
+    rc = internal::read_mesh_shared( file, comm,
+                                     s_shared_mesh_buffer,
+                                     s_surface_mesh,
+                                     s_intra_node_comm,
+                                     s_window
+                                     );
+  }
+  else
+  {
+    rc = internal::read_mesh( file, s_surface_mesh, comm );
+  }
+
+#else
+
+  SLIC_WARNING_IF( Parameters.use_shared_memory,
+                   "Shared memory requires MPI3 and building Axom with AXOM_USE_MPI3 set to ON");
+
+  rc = internal::read_mesh( file, s_surface_mesh, comm );
+#endif
+
   if ( rc != 0 )
   {
     SLIC_WARNING( "reading mesh from [" << file << "] failed!" );
@@ -217,6 +255,21 @@ void signed_distance_set_verbose( bool status )
 }
 
 //------------------------------------------------------------------------------
+void signed_distance_use_shared_memory( bool status )
+{
+  SLIC_ERROR_IF(
+    signed_distance_initialized(),
+    "signed distance query already initialized; setting option has no effect!" );
+
+  Parameters.use_shared_memory = status;
+
+#ifndef AXOM_USE_MPI3
+  SLIC_WARNING_IF( Parameters.use_shared_memory,
+                   "Enabling shared memory requires MPI-3. Option is ignored!" );
+#endif
+}
+
+//------------------------------------------------------------------------------
 double signed_distance_evaluate( double x, double y, double z )
 {
   SLIC_ERROR_IF(
@@ -269,6 +322,12 @@ void signed_distance_finalize( )
 
   SLIC_ASSERT( !signed_distance_initialized() );
   internal::logger_finalize( s_must_finalize_logger);
+
+#if defined(AXOM_USE_MPI) && defined(AXOM_USE_MPI3)
+  internal::mpi_comm_free( &s_intra_node_comm );
+  internal::mpi_win_free( &s_window );
+#endif
+
 }
 
 } // end namespace quest

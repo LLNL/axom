@@ -25,15 +25,18 @@
 
 TEST(C_sidre_buffer,create_buffers)
 {
-  SIDRE_datastore* ds = SIDRE_datastore_new();
-  SIDRE_buffer* dbuff_0 = SIDRE_datastore_create_buffer_empty(ds);
-  SIDRE_buffer* dbuff_1 = SIDRE_datastore_create_buffer_empty(ds);
+  SIDRE_datastore ds_buf;
+  SIDRE_buffer dbuff_0_buf, dbuff_1_buf, dbuff_3_buf;
+
+  SIDRE_datastore* ds = SIDRE_datastore_new(&ds_buf);
+  SIDRE_buffer* dbuff_0 = SIDRE_datastore_create_buffer_empty(ds, &dbuff_0_buf);
+  SIDRE_buffer* dbuff_1 = SIDRE_datastore_create_buffer_empty(ds, &dbuff_1_buf);
 
   EXPECT_EQ(SIDRE_buffer_get_index(dbuff_0), 0);
   EXPECT_EQ(SIDRE_buffer_get_index(dbuff_1), 1);
   SIDRE_datastore_destroy_buffer(ds, 0);
 
-  SIDRE_buffer* dbuff_3 = SIDRE_datastore_create_buffer_empty(ds);
+  SIDRE_buffer* dbuff_3 = SIDRE_datastore_create_buffer_empty(ds, &dbuff_3_buf);
   EXPECT_EQ(SIDRE_buffer_get_index(dbuff_3), 0);
 
   SIDRE_datastore_print(ds);
@@ -43,10 +46,13 @@ TEST(C_sidre_buffer,create_buffers)
 //------------------------------------------------------------------------------
 TEST(C_sidre_buffer,alloc_buffer_for_int_array)
 {
-  SIDRE_datastore* ds = SIDRE_datastore_new();
+  SIDRE_datastore ds_buf;
+  SIDRE_buffer dbuff_buf;
+
+  SIDRE_datastore* ds = SIDRE_datastore_new(&ds_buf);
   SIDRE_buffer* dbuff = SIDRE_datastore_create_buffer_from_type(ds,
                                                                 SIDRE_INT_ID,
-                                                                10);
+                                                                10, &dbuff_buf);
 
 //  SIDRE_buffer_declare(dbuff, SIDRE_INT_ID, 10);
   SIDRE_buffer_allocate_existing(dbuff);
@@ -73,8 +79,11 @@ TEST(C_sidre_buffer,alloc_buffer_for_int_array)
 
 TEST(C_sidre_buffer,init_buffer_for_int_array)
 {
-  SIDRE_datastore* ds = SIDRE_datastore_new();
-  SIDRE_buffer* dbuff = SIDRE_datastore_create_buffer_empty(ds);
+  SIDRE_datastore ds_buf;
+  SIDRE_buffer dbuff_buf;
+
+  SIDRE_datastore* ds = SIDRE_datastore_new(&ds_buf);
+  SIDRE_buffer* dbuff = SIDRE_datastore_create_buffer_empty(ds, &dbuff_buf);
 
   SIDRE_buffer_allocate_from_type(dbuff, SIDRE_INT_ID, 10);
 
@@ -99,10 +108,13 @@ TEST(C_sidre_buffer,init_buffer_for_int_array)
 //------------------------------------------------------------------------------
 TEST(C_sidre_buffer,realloc_buffer)
 {
-  SIDRE_datastore* ds = SIDRE_datastore_new();
+  SIDRE_datastore ds_buf;
+  SIDRE_buffer dbuff_buf;
+
+  SIDRE_datastore* ds = SIDRE_datastore_new(&ds_buf);
   SIDRE_buffer* dbuff = SIDRE_datastore_create_buffer_from_type(ds,
                                                                 SIDRE_LONG_ID,
-                                                                5);
+                                                                5, &dbuff_buf);
 
   SIDRE_buffer_allocate_existing(dbuff);
 

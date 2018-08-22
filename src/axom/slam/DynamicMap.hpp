@@ -152,7 +152,7 @@ public:
            : false;
   }
 
-  /** \brief Predicate to check if this DynamicMap instance if valid */
+  /** \brief Predicate to check if this DynamicMap instance is valid */
   bool isValid(bool verboseOutput = false) const;
 
   /// @}

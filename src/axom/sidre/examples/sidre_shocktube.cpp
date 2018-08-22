@@ -40,10 +40,8 @@
 //#include "Vista.h"
 //#include "View.h"
 
-#include "axom/config.hpp"    // For math defines
-
 // Sidre component headers
-#include "axom/sidre/core/sidre.hpp"
+#include "axom/sidre.hpp"
 
 // Standard library headers
 #include <cstdio>

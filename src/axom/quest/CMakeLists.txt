@@ -110,6 +110,7 @@ endif()
 if (ENABLE_FORTRAN)
     ## append shroud generated headers/sources to corresponding lists
     list(APPEND quest_headers interface/c_fortran/wrapQUEST.h)
+    list(APPEND quest_headers interface/c_fortran/typesQUEST.h)
     list(APPEND quest_sources interface/c_fortran/wrapQUEST.cpp)
     list(APPEND quest_sources interface/c_fortran/wrapfquest.F)
 endif()
@@ -124,6 +125,10 @@ blt_add_library(
     DEPENDS_ON  ${quest_depends_on}
     FOLDER      axom/quest
     )
+
+axom_write_unified_header(NAME    quest
+                          HEADERS ${quest_headers}
+                          )
 
 axom_install_component(NAME    quest
                        HEADERS ${quest_headers}

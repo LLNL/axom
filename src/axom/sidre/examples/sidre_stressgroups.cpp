@@ -18,10 +18,8 @@
 /**************************************************************************
  *************************************************************************/
 
-#include "axom/core/utilities/Timer.hpp"
-
-#include "axom/sidre/core/Group.hpp"
-#include "axom/sidre/core/DataStore.hpp"
+#include "axom/core.hpp"
+#include "axom/sidre.hpp"
 
 #include <algorithm>
 #include <set>

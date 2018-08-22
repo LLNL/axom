@@ -24,6 +24,7 @@
 
 #include <stddef.h>
 #include "axom/sidre/interface/SidreTypes.h"
+#include "typesSidre.h"
 
 // splicer begin class.View.CXX_declarations
 // splicer end class.View.CXX_declarations
@@ -31,14 +32,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-// declaration of shadow types
-struct s_SIDRE_buffer;
-typedef struct s_SIDRE_buffer SIDRE_buffer;
-struct s_SIDRE_group;
-typedef struct s_SIDRE_group SIDRE_group;
-struct s_SIDRE_view;
-typedef struct s_SIDRE_view SIDRE_view;
 
 // splicer begin class.View.C_declarations
 // splicer end class.View.C_declarations
@@ -56,11 +49,11 @@ void SIDRE_view_get_path_bufferify(const SIDRE_view* self, char* SHF_rv,
 void SIDRE_view_get_path_name_bufferify(const SIDRE_view* self, char* SHF_rv,
                                         int NSHF_rv);
 
-SIDRE_group* SIDRE_view_get_owning_group(SIDRE_view* self);
+SIDRE_group* SIDRE_view_get_owning_group(SIDRE_view* self, SIDRE_group* SHC_rv);
 
 bool SIDRE_view_has_buffer(const SIDRE_view* self);
 
-SIDRE_buffer* SIDRE_view_get_buffer(SIDRE_view* self);
+SIDRE_buffer* SIDRE_view_get_buffer(SIDRE_view* self, SIDRE_buffer* SHC_rv);
 
 bool SIDRE_view_is_external(const SIDRE_view* self);
 

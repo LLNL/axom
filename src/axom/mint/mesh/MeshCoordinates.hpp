@@ -527,9 +527,10 @@ public:
 
   double* getCoordinateArray( int dim )
   {
-    SLIC_ERROR_IF( !indexInRange( dim, 0, m_ndims-1),
-     "invalid request for coordinate array along dimension [" << dim << "]" <<
-     "ndims=" << m_ndims  );
+    SLIC_ERROR_IF( !indexInRange( dim, 0,
+                                  m_ndims-1),
+                   "invalid request for coordinate array along dimension [" << dim << "]" <<
+                   "ndims=" << m_ndims  );
 
     SLIC_ASSERT( m_coordinates[ dim ] != nullptr );
     return m_coordinates[ dim ]->getData();
@@ -537,9 +538,10 @@ public:
 
   const double* getCoordinateArray( int dim ) const
   {
-    SLIC_ERROR_IF( !indexInRange( dim, 0, m_ndims-1),
-     "invalid request for coordinate array along dimension [" << dim << "]" <<
-     "ndims=" << m_ndims  );
+    SLIC_ERROR_IF( !indexInRange( dim, 0,
+                                  m_ndims-1),
+                   "invalid request for coordinate array along dimension [" << dim << "]" <<
+                   "ndims=" << m_ndims  );
 
     SLIC_ASSERT( m_coordinates[ dim ] != nullptr );
     return m_coordinates[ dim ]->getData();

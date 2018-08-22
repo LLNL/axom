@@ -72,6 +72,8 @@ set(slam_headers
     # SRM Map headers
     Map.hpp
     MapBase.hpp
+	BivariateMap.hpp
+	SubMap.hpp
     DynamicMap.hpp
     )
 
@@ -105,6 +107,10 @@ blt_add_library(
     DEPENDS_ON  ${slam_depends_on}
     FOLDER      axom/slam
     )
+
+axom_write_unified_header(NAME    slam
+                          HEADERS ${slam_headers}
+                          )
 
 axom_install_component(NAME    slam
                        HEADERS ${slam_headers}

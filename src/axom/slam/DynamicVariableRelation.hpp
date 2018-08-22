@@ -103,6 +103,19 @@ public:
     return fromSetRelationsVec(fromSetIndex).size();
   }
 
+  SetPosition totalSize()  const
+  {
+    SetPosition sz = 0;
+    for (auto& vec : m_relationsVec)
+      sz += vec.size();
+    return sz;
+  }
+
+  SetPosition fromSetSize() const
+  {
+    return m_relationsVec.size();
+  }
+
   bool isValid(bool verboseOutput = false) const;
 
 
@@ -112,7 +125,6 @@ public:     // Modifying functions
   {
     verifyPosition(fromSetIndex);
     m_relationsVec[fromSetIndex].push_back(toSetIndex);
-
   }
 
   RelationVec& operator[](SetPosition fromSetIndex)

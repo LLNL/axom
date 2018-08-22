@@ -22,9 +22,19 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Known Bugs
 
 
-## [Version 0.3.0] - Release date 2018-07-25
+## [Version 0.3.0] - Release date 2018-08-02
 
 ### Added
+- Added support for using MPI-3 on-node shared memory data-structures to store
+  the input surface mesh in quest. Instead of each rank duplicating the mesh
+  data (e.g. node coordinates and cell connectivity), ranks within the same
+  compute node can now share and utilize the same mesh data buffer. This reduces
+  the memory overhead associated with duplicating the mesh at each rank which can
+  be a limiting factor when reading large meshes. This feature is currently only
+  exposed in Quest's signed distance query and requires Axom to be compiled with
+  MPI-3 support (i.e., setting `AXOM_USE_MPI3=ON`)
+- Added the ability to call resize() on a Mint UnstructuredMesh. This functionality
+  was not previously exposed in the UnstructuredMesh API.
 - Added support for non-closed surface mesh input to the signed distance query.
 - Added new interface for the signed distance query along with corresponding tests 
   and examples.
@@ -68,6 +78,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - 
 
 ### Changed
+- Simplified the external constructors for the Mint UnstructuredMesh. Specifically, 
+  the caller is no longer required to: (a) specify the dimension, which can be computed
+  internaly based on other input arguments, and (b) specify explicitly the capacity for 
+  the node coordinate and connectivity arrays. In the more common case, the capacity is
+  equivalent to the associated size when constructing a mesh by supplied external buffers.
 - Restructured source directory.  #includes will now mirror file structure.  For
   example, '#include "sidre/Group.hpp"' is now '#include "axom/sidre/core/Group.hpp"'.
 - The root CMake file for Axom is now located in ``<axom>/src``'s root directory,

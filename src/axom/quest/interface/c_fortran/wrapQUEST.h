@@ -25,6 +25,7 @@
 #ifdef AXOM_USE_MPI
 #include "mpi.h"
 #endif
+#include "typesQUEST.h"
 
 // splicer begin CXX_declarations
 // splicer end CXX_declarations
@@ -101,6 +102,8 @@ void QUEST_signed_distance_set_max_levels(int maxLevels);
 void QUEST_signed_distance_set_max_occupancy(int maxOccupancy);
 
 void QUEST_signed_distance_set_verbose(bool status);
+
+void QUEST_signed_distance_use_shared_memory(bool status);
 
 double QUEST_signed_distance_evaluate(double x, double y, double z);
 

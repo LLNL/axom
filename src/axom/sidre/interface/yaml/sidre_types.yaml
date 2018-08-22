@@ -22,40 +22,40 @@ declarations:
       - type: Buffer
         fields:
           base: shadow
+          cxx_header: axom/sidre/core/Buffer.hpp
           cxx_type: axom::sidre::Buffer
           c_type: SIDRE_buffer
+          f_module_name: axom_sidre
           f_derived_type: SidreBuffer
-          f_to_c: "{f_var}%get_instance()"
-          f_module:
-            axom_sidre:
-            - SidreBuffer
+          f_capsule_data_type: SHROUD_buffer_capsule
+          f_to_c: "{f_var}%cxxmem"
       - type: DataStore
         fields:
           base: shadow
+          cxx_header: axom/sidre/core/DataStore.hpp
           cxx_type: axom::sidre::DataStore
           c_type: SIDRE_datastore
+          f_module_name: axom_sidre
           f_derived_type: SidreDataStore
-          f_to_c: "{f_var}%get_instance()"
-          f_module:
-            axom_sidre:
-            - SidreDataStore
+          f_capsule_data_type: SHROUD_datastore_capsule
+          f_to_c: "{f_var}%cxxmem"
       - type: Group
         fields:
           base: shadow
+          cxx_header: axom/sidre/core/Group.hpp
           cxx_type: axom::sidre::Group
           c_type: SIDRE_group
+          f_module_name: axom_sidre
           f_derived_type: SidreGroup
-          f_to_c: "{f_var}%get_instance()"
-          f_module:
-            axom_sidre:
-            - SidreGroup
+          f_capsule_data_type: SHROUD_group_capsule
+          f_to_c: "{f_var}%cxxmem"
       - type: View
         fields:
           base: shadow
+          cxx_header: axom/sidre/core/View.hpp
           cxx_type: axom::sidre::View
           c_type: SIDRE_view
+          f_module_name: axom_sidre
           f_derived_type: SidreView
-          f_to_c: "{f_var}%get_instance()"
-          f_module:
-            axom_sidre:
-            - SidreView
+          f_capsule_data_type: SHROUD_view_capsule
+          f_to_c: "{f_var}%cxxmem"

@@ -50,7 +50,7 @@
  */
 
 // Axom headers
-#include "axom/sidre/core/sidre.hpp"
+#include "axom/sidre.hpp"
 
 // Conduit headers
 #include "conduit.hpp"

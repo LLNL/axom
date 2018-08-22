@@ -48,10 +48,7 @@ void processAbort()
   {
     MPI_Abort( MPI_COMM_WORLD, EXIT_FAILURE );
   }
-  else
-  {
-    abort();
-  }
+  abort();
 #endif
 }
 

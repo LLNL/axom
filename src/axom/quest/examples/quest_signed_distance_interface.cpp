@@ -15,27 +15,16 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-// Axom utils includes
-#include "axom/core/utilities/Utilities.hpp"       // for processAbort()
-#include "axom/core/utilities/Timer.hpp"
-
-// Mint includes
-#include "axom/mint/config.hpp"                // for compile-time mint
-#include "axom/mint/mesh/UniformMesh.hpp"           // for mint::UniformMesh
-#include "axom/mint/utils/vtk_utils.hpp"             // for mint::write_vtk()
-
-// Quest includes
-#include "axom/quest/interface/signed_distance.hpp"  // for signed distance
-
-// Slic includes
-#include "axom/slic/interface/slic.hpp"                  // for SLIC macros
-#include "axom/slic/streams/GenericOutputStream.hpp"   // GenericOutputStream
+// Axom includes
+#include "axom/core.hpp"
+#include "axom/mint.hpp"
+#include "axom/quest.hpp"
+#include "axom/slic.hpp"
 
 #ifdef AXOM_USE_MPI
-  #include <mpi.h>                         // for MPI
-  #include "axom/slic/streams/SynchronizedStream.hpp"   // SynchronizedStream
+  #include <mpi.h>
 #else
-using MPI_Comm = int;
+  using MPI_Comm = int;
 #endif
 
 // C/C++ includes
@@ -67,6 +56,8 @@ void show_help( );
 // GLOBALS
 //------------------------------------------------------------------------------
 MPI_Comm global_comm;
+int rank;
+int numranks;
 
 /*!
  * \brief Holds command-line arguments
@@ -84,6 +75,7 @@ static struct
   bool specified_box_max;
   bool is_water_tight;
   bool dump_vtk;
+  bool use_shared;
 } Arguments;
 
 //------------------------------------------------------------------------------
@@ -95,6 +87,12 @@ int main ( int argc, char** argv )
 #ifdef AXOM_USE_MPI
   MPI_Init( &argc, &argv );
   global_comm = MPI_COMM_WORLD;
+
+  MPI_Comm_rank( global_comm, &rank );
+  MPI_Comm_size( global_comm, &numranks );
+#else
+  rank     = 0;
+  numranks = 1;
 #endif
 
   utilities::Timer timer;
@@ -113,6 +111,7 @@ int main ( int argc, char** argv )
   slic::flushStreams();
 
   timer.start();
+  quest::signed_distance_use_shared_memory( Arguments.use_shared );
   quest::signed_distance_set_closed_surface( Arguments.is_water_tight );
   quest::signed_distance_set_max_levels( Arguments.maxLevels );
   quest::signed_distance_set_max_occupancy( Arguments.maxOccupancy );
@@ -152,7 +151,10 @@ int main ( int argc, char** argv )
   {
     SLIC_INFO( "writing vtk output" );
     slic::flushStreams();
-    mint::write_vtk( mesh, "uniform_mesh.vtk" );
+
+    std::ostringstream oss;
+    oss << "uniform_mesh_" << rank << ".vtk";
+    mint::write_vtk( mesh, oss.str() );
   }
 
   // STEP 8: finalize
@@ -229,6 +231,7 @@ void parse_args( int argc, char** argv )
   Arguments.specified_box_min = false;
   Arguments.dump_vtk          = true;
   Arguments.is_water_tight    = true;
+  Arguments.use_shared        = false;
 
   for ( int i=1 ; i < argc ; ++i )
   {
@@ -279,6 +282,10 @@ void parse_args( int argc, char** argv )
     {
       Arguments.is_water_tight = false;
     }
+    else if ( strcmp( argv[i], "--use-shared" )==0 )
+    {
+      Arguments.use_shared = true;
+    }
     else if ( strcmp( argv[i], "--help" )==0 )
     {
       show_help();
@@ -312,7 +319,8 @@ void show_help( )
   SLIC_INFO( "--box-min <X0> <Y0> <Z0> the lower corner of the box mesh" );
   SLIC_INFO( "--box-max <XN> <YN> <ZN> the upper cordner of the box mesh" );
   SLIC_INFO( "--no-vtk disables VTK output." );
-  SLIC_INFO( "--not-watertight" );
+  SLIC_INFO( "--not-watertight indicates that input is not water-tight" );
+  SLIC_INFO( "--use-shared stores the surface using MPI-3 shared memory" );
   SLIC_INFO( "--help prints this help information" );
   slic::flushStreams();
 }

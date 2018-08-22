@@ -16,15 +16,10 @@
  */
 
 // Axom includes
-#include "axom/core/Macros.hpp"           // for AXOM_NOT_USED
-#include "axom/core/utilities/Utilities.hpp"  // for random_real
+#include "axom/core.hpp"
+#include "axom/mint.hpp"
 
-// Mint includes
-#include "axom/mint/config.hpp"
-#include "axom/mint/mesh/CurvilinearMesh.hpp"
-#include "axom/mint/utils/vtk_utils.hpp"
-
-// C/C++includes
+// C/C++ includes
 #include <cmath>
 
 // aliases

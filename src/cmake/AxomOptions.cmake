@@ -17,3 +17,6 @@ option(AXOM_ENABLE_ALL_COMPONENTS "Enables all components by default" ON)
 cmake_dependent_option(AXOM_ENABLE_TESTS "Enables Axom Tests" ON "ENABLE_TESTS" OFF)
 cmake_dependent_option(AXOM_ENABLE_DOCS "Enables Axom Docs" ON "ENABLE_DOCS" OFF)
 cmake_dependent_option(AXOM_ENABLE_EXAMPLES "Enables Axom Examples" ON "ENABLE_EXAMPLES" OFF)
+
+cmake_dependent_option(AXOM_USE_MPI3 "Enables use of MPI-3 features" OFF "ENABLE_MPI" OFF)
+mark_as_advanced(AXOM_USE_MPI3)

@@ -33,24 +33,9 @@
 #include <cmath>
 #include <cstdlib>
 
-#include "axom/config.hpp"
-#include "axom/core/Macros.hpp"
-#include "axom/core/utilities/FileUtilities.hpp"
-
-#include "axom/slic/interface/slic.hpp"
-#include "axom/slic/core/UnitTestLogger.hpp"
-
-#include "axom/slam/policies/IndirectionPolicies.hpp"
-#include "axom/slam/policies/CardinalityPolicies.hpp"
-#include "axom/slam/Set.hpp"
-#include "axom/slam/RangeSet.hpp"
-#include "axom/slam/StaticRelation.hpp"
-
-#include "axom/slam/DynamicVariableRelation.hpp"
-
-#include "axom/slam/Map.hpp"
-#include "axom/slam/Utilities.hpp"
-#include "axom/slam/FieldRegistry.hpp"
+#include "axom/core.hpp"
+#include "axom/slic.hpp"
+#include "axom/slam.hpp"
 
 #include "fmt/fmt.hpp"
 

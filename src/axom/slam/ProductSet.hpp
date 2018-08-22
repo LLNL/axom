@@ -147,7 +147,7 @@ public:
   }
 
   ElementType at(PositionType pos) const override {
-    return pos % firstSetSize();
+    return pos % secondSetSize();
   }
 
   PositionType size() const override
