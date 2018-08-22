@@ -578,7 +578,7 @@ void check_uniform_mesh( const UniformMesh* u_mesh, std::ifstream& file )
   {
     IndexType temp;
     file >> temp;
-    EXPECT_EQ( temp, u_mesh->getNodeExtent( i ) );
+    EXPECT_EQ( temp, u_mesh->getNodeDimension( i ) );
   }
 
   const double* origin = u_mesh->getOrigin( );
@@ -623,7 +623,7 @@ void check_rectilinear_mesh( const RectilinearMesh* r_mesh,
   {
     IndexType temp;
     file >> temp;
-    EXPECT_EQ( temp, r_mesh->getNodeExtent( i ) );
+    EXPECT_EQ( temp, r_mesh->getNodeDimension( i ) );
   }
 
   std::string coord_names[3] = { "X_COORDINATES", "Y_COORDINATES",
@@ -635,11 +635,11 @@ void check_rectilinear_mesh( const RectilinearMesh* r_mesh,
   {
     file >> extracted_name >> extracted_size >> extracted_type;
     EXPECT_EQ( extracted_name, coord_names[ dim ] );
-    EXPECT_EQ( extracted_size, r_mesh->getNodeExtent( dim ) );
+    EXPECT_EQ( extracted_size, r_mesh->getNodeDimension( dim ) );
     EXPECT_EQ( extracted_type, "double" );
 
     const double* coord_array = r_mesh->getCoordinateArray( dim );
-    for (IndexType i = 0 ; i < r_mesh->getNodeExtent( dim ) ; ++i )
+    for (IndexType i = 0 ; i < r_mesh->getNodeDimension( dim ) ; ++i )
     {
       file >> extracted_coord;
       EXPECT_EQ( extracted_coord, coord_array[ i ] );
@@ -651,7 +651,7 @@ void check_rectilinear_mesh( const RectilinearMesh* r_mesh,
     file >> extracted_coord;
 
     EXPECT_EQ( extracted_name,   coord_names[ dim ] );
-    EXPECT_EQ( extracted_size,   r_mesh->getNodeExtent( dim ) );
+    EXPECT_EQ( extracted_size,   r_mesh->getNodeDimension( dim ) );
     EXPECT_EQ( extracted_type,   "double" );
     EXPECT_EQ( extracted_coord,  0.0 );
   }
@@ -783,7 +783,7 @@ void check_curvilinear_mesh( const CurvilinearMesh* c_mesh,
   {
     IndexType temp;
     file >> temp;
-    EXPECT_EQ( temp, c_mesh->getNodeExtent( i ) );
+    EXPECT_EQ( temp, c_mesh->getNodeDimension( i ) );
   }
 
   check_points( c_mesh, file );
@@ -903,7 +903,7 @@ TEST( mint_util_write_vtk, RectilinearMesh3D )
 
   for ( int dim = 0 ; dim < 3 ; ++dim )
   {
-    IndexType Nd = r_mesh->getNodeExtent( dim );
+    IndexType Nd = r_mesh->getNodeDimension( dim );
     double* x = r_mesh->getCoordinateArray( dim );
     for ( IndexType i = 0 ; i < Nd ; ++i )
     {
@@ -937,7 +937,7 @@ TEST( mint_util_write_vtk, RectilinearMesh2D )
 
   for ( int dim = 0 ; dim < 2 ; ++dim )
   {
-    IndexType Nd = r_mesh->getNodeExtent( dim );
+    IndexType Nd = r_mesh->getNodeDimension( dim );
     double* x = r_mesh->getCoordinateArray( dim );
     for ( IndexType i = 0; i < Nd; ++i )
     {
@@ -971,7 +971,7 @@ TEST( mint_util_write_vtk, RectilinearMesh1D )
 
   for ( int dim = 0 ; dim < 1 ; ++dim )
   {
-    IndexType Nd = r_mesh->getNodeExtent( dim );
+    IndexType Nd = r_mesh->getNodeDimension( dim );
     double* x = r_mesh->getCoordinateArray( dim );
     for ( IndexType i = 0 ; i < Nd; ++i )
     {
@@ -1003,9 +1003,9 @@ TEST( mint_util_write_vtk, CurvilinearMesh3D )
   IndexType ext[3] = { 10, 11, 12 };
   CurvilinearMesh* c_mesh = new CurvilinearMesh( 3, ext );
 
-  IndexType Ni = c_mesh->getNodeExtent( 0 );
-  IndexType Nj = c_mesh->getNodeExtent( 1 );
-  IndexType Nk = c_mesh->getNodeExtent( 2 );
+  IndexType Ni = c_mesh->getNodeDimension( 0 );
+  IndexType Nj = c_mesh->getNodeDimension( 1 );
+  IndexType Nk = c_mesh->getNodeDimension( 2 );
   double* x_coords = c_mesh->getCoordinateArray( X_COORDINATE );
   double* y_coords = c_mesh->getCoordinateArray( Y_COORDINATE );
   double* z_coords = c_mesh->getCoordinateArray( Z_COORDINATE );
@@ -1050,8 +1050,8 @@ TEST( mint_util_write_vtk, CurvilinearMesh2D )
   IndexType ext[2] = { 10, 11 };
   CurvilinearMesh* c_mesh = new CurvilinearMesh( 2, ext );
 
-  IndexType Ni = c_mesh->getNodeExtent( 0 );
-  IndexType Nj = c_mesh->getNodeExtent( 1 );
+  IndexType Ni = c_mesh->getNodeDimension( 0 );
+  IndexType Nj = c_mesh->getNodeDimension( 1 );
   double* x_coords = c_mesh->getCoordinateArray( X_COORDINATE );
   double* y_coords = c_mesh->getCoordinateArray( Y_COORDINATE );
   for ( IndexType j = 0; j < Nj; ++j )
@@ -1091,7 +1091,7 @@ TEST( mint_util_write_vtk, CurvilinearMesh1D )
   IndexType ext[1] = { 10 };
   CurvilinearMesh* c_mesh = new CurvilinearMesh( 1, ext );
 
-  IndexType Ni = c_mesh->getNodeExtent( 0 );
+  IndexType Ni = c_mesh->getNodeDimension( 0 );
   double* x_coords = c_mesh->getCoordinateArray( X_COORDINATE );
   for ( IndexType i = 0; i < Ni; ++i )
   {

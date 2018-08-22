@@ -25,7 +25,7 @@
 #include "axom/mint/mesh/UnstructuredMesh.hpp"  // for UnstructuredMesh
 
 // Sidre includes
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 #include "axom/sidre/core/sidre.hpp"
 namespace sidre = axom::sidre;
 #endif
@@ -335,7 +335,7 @@ TEST( mint_mesh_DeathTest, enforce_unique_field_names )
 }
 
 //------------------------------------------------------------------------------
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
 TEST( mint_mesh_DeathTest, get_mesh_null_group )
 {
@@ -737,7 +737,7 @@ TEST( mint_mesh, get_mixed_topology_unstructured_from_sidre )
   delete m;
 }
 
-#endif /* MINT_USE_SIDRE */
+#endif /* AXOM_MINT_USE_SIDRE */
 
 } /* namespace mint */
 } /* namespace axom */

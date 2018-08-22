@@ -157,11 +157,11 @@ public:
    * \post hasSidreGroup() == false.
    * \post isExternal() == true
    */
-  CurvilinearMesh( const IndexType* ext, double* x, double* y=AXOM_NULLPTR,
-                   double* z=AXOM_NULLPTR  );
+  CurvilinearMesh( const IndexType* ext, double* x, double* y=nullptr,
+                   double* z=nullptr  );
 /// @}
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
 /// \name Sidre Constructors
 /// @{

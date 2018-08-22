@@ -34,8 +34,8 @@ namespace mint
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-RectilinearMesh::RectilinearMesh( int dimension, const IndexType* ext ) :
-  StructuredMesh( STRUCTURED_RECTILINEAR_MESH, dimension, ext )
+RectilinearMesh::RectilinearMesh( int dimension, const IndexType* node_dims ) :
+  StructuredMesh( STRUCTURED_RECTILINEAR_MESH, dimension, node_dims )
 {
   initialize();
   allocateCoords();
@@ -50,11 +50,11 @@ RectilinearMesh::RectilinearMesh( IndexType Ni, IndexType Nj, IndexType Nk ) :
 }
 
 //------------------------------------------------------------------------------
-RectilinearMesh::RectilinearMesh( const IndexType* ext,
+RectilinearMesh::RectilinearMesh( const IndexType* node_dims,
                                   double* x,
                                   double* y,
                                   double* z ) :
-  StructuredMesh( STRUCTURED_RECTILINEAR_MESH, internal::dim(x, y, z), ext )
+  StructuredMesh( STRUCTURED_RECTILINEAR_MESH, internal::dim(x, y, z), node_dims )
 {
   initialize( );
 
@@ -65,14 +65,14 @@ RectilinearMesh::RectilinearMesh( const IndexType* ext,
 
   for ( int dim = 0; dim < m_ndims; ++dim )
   {
-    SLIC_ERROR_IF( ptrs[ dim ] == AXOM_NULLPTR,
+    SLIC_ERROR_IF( ptrs[ dim ] == nullptr,
                    "encountered null coordinate array for dim=" << dim );
-    const IndexType N = getNodeExtent( dim );
+    const IndexType N = getNodeDimension( dim );
     m_coordinates[ dim ] = new Array< double >( ptrs[ dim ], N, 1, N );
   }
 }
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
 //------------------------------------------------------------------------------
 RectilinearMesh::RectilinearMesh( sidre::Group* group, 
@@ -93,17 +93,17 @@ RectilinearMesh::RectilinearMesh( sidre::Group* group,
   for ( int dim = 0; dim < m_ndims; ++dim )
   {
     m_coordinates[ dim ] = new Array< double >( c->getView( coords[ dim ] ) );
-    SLIC_ERROR_IF( getNodeExtent( dim ) != m_coordinates[ dim ]->size(),
+    SLIC_ERROR_IF( getNodeDimension( dim ) != m_coordinates[ dim ]->size(),
                    "coordinates size does not match rectilinear mesh extent" );
   }
 
 }
 
 //------------------------------------------------------------------------------
-RectilinearMesh::RectilinearMesh( int dimension, const IndexType* ext, 
+RectilinearMesh::RectilinearMesh( int dimension, const IndexType* node_dims, 
                                   sidre::Group* group, const std::string& topo,
                                   const std::string& coordset ) :
-  StructuredMesh( STRUCTURED_RECTILINEAR_MESH, dimension, ext, group, topo, 
+  StructuredMesh( STRUCTURED_RECTILINEAR_MESH, dimension, node_dims, group, topo, 
                   coordset )
 {
   initialize();
@@ -124,17 +124,8 @@ RectilinearMesh::RectilinearMesh( sidre::Group* group, const std::string& topo,
 //------------------------------------------------------------------------------
 void RectilinearMesh::allocateCoordsOnSidre()
 {
-<<<<<<< 34872490e5ae665038fbc51bba86b61e5fd77246:src/axom/mint/mesh/RectilinearMesh.cpp
-  SLIC_ASSERT( m_extent != nullptr );
-
   sidre::Group* coordsgrp = getCoordsetGroup();
-  SLIC_ERROR_IF( coordsgrp==nullptr, "coordset group is null!" );
-  SLIC_ERROR_IF( coordsgrp->getNumViews() != 0,  "coordset group is not empty");
-  SLIC_ERROR_IF( coordsgrp->getNumGroups() != 0, "coordset group is not empty");
-=======
-  sidre::Group* coordsgrp = getCoordsetGroup();
-  SLIC_ERROR_IF( coordsgrp == AXOM_NULLPTR, "coordset group is null!" );
->>>>>>> ENH: Removed Extent class.:src/components/mint/src/mesh/RectilinearMesh.cpp
+  SLIC_ERROR_IF( coordsgrp == nullptr, "coordset group is null!" );
 
   coordsgrp->createView( "type" )->setString( "rectilinear" );
 
@@ -142,7 +133,7 @@ void RectilinearMesh::allocateCoordsOnSidre()
 
   for ( int dim=0 ; dim < m_ndims ; ++dim )
   {
-    IndexType N          = getNodeExtent( dim );
+    IndexType N          = getNodeDimension( dim );
     sidre::View* view    = coordsgrp->createView( coords[ dim ] );
     m_coordinates[ dim ] = new Array< double >( view, N, 1, N );
     m_coordinates[ dim ]->setResizeRatio( 0.0 );
@@ -152,7 +143,7 @@ void RectilinearMesh::allocateCoordsOnSidre()
                  "invalid coordset group!" );
 }
 
-#endif /* MINT_USE_SIDRE */
+#endif /* AXOM_MINT_USE_SIDRE */
 
 //------------------------------------------------------------------------------
 RectilinearMesh::~RectilinearMesh()
@@ -170,11 +161,6 @@ RectilinearMesh::~RectilinearMesh()
 //------------------------------------------------------------------------------
 void RectilinearMesh::initialize()
 {
-<<<<<<< 34872490e5ae665038fbc51bba86b61e5fd77246:src/axom/mint/mesh/RectilinearMesh.cpp
-  SLIC_ASSERT( m_extent != nullptr );
-
-=======
->>>>>>> ENH: Removed Extent class.:src/components/mint/src/mesh/RectilinearMesh.cpp
   m_explicit_coords       = true;
   m_explicit_connectivity = false;
   m_has_mixed_topology    = false;
@@ -183,15 +169,11 @@ void RectilinearMesh::initialize()
 //------------------------------------------------------------------------------
 void RectilinearMesh::allocateCoords()
 {
-<<<<<<< 34872490e5ae665038fbc51bba86b61e5fd77246:src/axom/mint/mesh/RectilinearMesh.cpp
-  SLIC_ASSERT( m_extent != nullptr );
-=======
->>>>>>> ENH: Removed Extent class.:src/components/mint/src/mesh/RectilinearMesh.cpp
   SLIC_ASSERT( (m_ndims >= 1) && (m_ndims <= 3) );
 
   for ( int dim = 0; dim < m_ndims; ++dim )
   {
-    const IndexType N     = getNodeExtent( dim );
+    const IndexType N     = getNodeDimension( dim );
     m_coordinates[ dim ] = new Array< double >( N, 1, N );
     m_coordinates[ dim ]->setResizeRatio( 0.0 );
   } // END for all dimensions

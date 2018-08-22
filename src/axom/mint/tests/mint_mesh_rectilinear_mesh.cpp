@@ -27,7 +27,7 @@
 #include "axom/slic/interface/slic.hpp"       // for slic macros
 
 // Sidre includes
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 #include "axom/sidre/core/sidre.hpp"
 namespace sidre = axom::sidre;
 #endif
@@ -86,7 +86,7 @@ void check_fill_coords( RectilinearMesh* m )
   const int ndims = m->getDimension();
   for ( int idim=0 ; idim < ndims ; ++idim )
   {
-    const IndexType N = m->getNodeExtent( idim );
+    const IndexType N = m->getNodeDimension( idim );
     double* x = m->getCoordinateArray( idim );
     exponential_distribution( 42.0, N, x );
   }
@@ -106,16 +106,16 @@ TEST( mint_mesh_rectilinear_mesh_DeathTest, invalid_construction )
 
   // check 1st native constructor
   EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh( 42, N ), IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh(2,AXOM_NULLPTR), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh(2,nullptr), IGNORE_OUTPUT );
 
   // check 2nd native constructor
   EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh( -1,N[1],N[2] ), IGNORE_OUTPUT );
 
   // check external constructor
-  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh(AXOM_NULLPTR,x), IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh(N,AXOM_NULLPTR), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh(nullptr,x), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh(N,nullptr), IGNORE_OUTPUT );
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
   sidre::DataStore ds;
   sidre::Group* root          = ds.getRoot();
@@ -139,7 +139,7 @@ TEST( mint_mesh_rectilinear_mesh_DeathTest, invalid_construction )
   EXPECT_EQ( valid_group->getNumGroups(), 0 );
   EXPECT_EQ( valid_group->getNumViews(), 0 );
 
-  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh(3,N,AXOM_NULLPTR),
+  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh(3,N,nullptr),
                              IGNORE_OUTPUT );
   EXPECT_EQ( valid_group->getNumGroups(), 0 );
   EXPECT_EQ( valid_group->getNumViews(), 0 );
@@ -159,14 +159,17 @@ TEST( mint_mesh_rectilinear_mesh_DeathTest, invalid_construction )
 TEST( mint_mesh_rectilinear_mesh, native_constructor )
 {
   constexpr int NDIMS    = 3;
-  const IndexType N[]    = {   5,   5,   5 };
+  const IndexType N[]    = { 5, 6, 7 };
+  const int64 extent[] = { 0, 4, 10, 15, 7, 13 };
 
-  for ( int idim=1 ; idim <= NDIMS ; ++idim )
+  for ( int idim = 1; idim <= NDIMS; ++idim )
   {
     RectilinearMesh* m = new RectilinearMesh( idim, N );
     internal::check_constructor( m, STRUCTURED_RECTILINEAR_MESH, idim, N );
     EXPECT_FALSE( m->isExternal() );
     EXPECT_FALSE( m->hasSidreGroup() );
+    m->setNodeExtent( idim, extent );
+    internal::check_node_extent( m, extent );
     check_fill_coords( m );
     internal::check_create_fields( m );
     delete m;
@@ -185,6 +188,10 @@ TEST( mint_mesh_rectilinear_mesh, native_constructor )
     }
 
     internal::check_constructor( m, STRUCTURED_RECTILINEAR_MESH, idim, N );
+    EXPECT_FALSE( m->isExternal() );
+    EXPECT_FALSE( m->hasSidreGroup() );
+    m->setNodeExtent( idim, extent );
+    internal::check_node_extent( m, extent );
     check_fill_coords( m );
     internal::check_create_fields( m );
 
@@ -197,7 +204,8 @@ TEST( mint_mesh_rectilinear_mesh, native_constructor )
 TEST( mint_mesh_rectilinear_mesh, external_costructor )
 {
   constexpr int NDIMS        = 3;
-  const IndexType N[]        = {   5,   5,   5 };
+  const IndexType N[]        = { 5, 6, 7 };
+  const int64 extent[] = { 0, 4, 10, 15, 7, 13 };  
   constexpr double MAGIC_VAL = 42.0;
 
   double* X = new double[ N[ 0 ] ];
@@ -243,10 +251,13 @@ TEST( mint_mesh_rectilinear_mesh, external_costructor )
 
     } // END switch
 
-    EXPECT_TRUE( m != AXOM_NULLPTR );
+    EXPECT_TRUE( m != nullptr );
     internal::check_constructor( m, STRUCTURED_RECTILINEAR_MESH, idim, N );
     EXPECT_FALSE( m->hasSidreGroup() );
     EXPECT_TRUE( m->isExternal() );
+    m->setNodeExtent( idim, extent );
+    internal::check_node_extent( m, extent );
+
 
     // deallocate
     delete m;
@@ -271,18 +282,20 @@ TEST( mint_mesh_rectilinear_mesh, external_costructor )
 }
 
 //------------------------------------------------------------------------------
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
 TEST( mint_mesh_rectilinear_mesh, sidre_constructor )
 {
-  constexpr int NDIMS        = 3;
-  const IndexType N[]        = {   5,   5,   5 };
+  constexpr int NDIMS  = 3;
+  const IndexType N[]  = { 5, 6, 7 };
+  const IndexType maxDim = 7;
+  const int64 extent[] = { 0, 4, 10, 15, 7, 13 };
   constexpr double MAGIC_VAL = 42.0;
 
-  double* expected_coords = new double[ N[ 0 ] ];
-  exponential_distribution( MAGIC_VAL, N[0], expected_coords );
+  double* expected_coords = new double[ maxDim ];
+  exponential_distribution( MAGIC_VAL, maxDim, expected_coords );
 
-  for ( int idim=1 ; idim <= NDIMS ; ++idim )
+  for ( int idim = 1; idim <= NDIMS; ++idim )
   {
     // STEP 0: create a data-store with two groups
     sidre::DataStore ds;
@@ -293,39 +306,42 @@ TEST( mint_mesh_rectilinear_mesh, sidre_constructor )
     // STEP 1: populate meshes in Sidre using the 2 sidre constructors
     // BEGIN SCOPE
     {
-      RectilinearMesh* m1 = new RectilinearMesh( idim, N, m1grp );
-      EXPECT_TRUE( m1->hasSidreGroup() );
-      EXPECT_FALSE( m1->isExternal() );
-      internal::check_constructor( m1, STRUCTURED_RECTILINEAR_MESH, idim, N );
-      check_fill_coords( m1 );
-      internal::check_create_fields( m1 );
+      RectilinearMesh* m = new RectilinearMesh( idim, N, m1grp );
+      EXPECT_TRUE( m->hasSidreGroup() );
+      EXPECT_FALSE( m->isExternal() );
+      internal::check_constructor( m, STRUCTURED_RECTILINEAR_MESH, idim, N );
+      m->setNodeExtent( idim, extent );
+      internal::check_node_extent( m, extent );
+      check_fill_coords( m );
+      internal::check_create_fields( m );
 
-      delete m1;
-      m1 = nullptr;
+      delete m;
 
-      RectilinearMesh* m2 = nullptr;
       switch ( idim )
       {
       case 1:
-        m2 = new RectilinearMesh( m2grp, N[ I_DIRECTION ] );
+        m = new RectilinearMesh( m2grp, N[ I_DIRECTION ] );
         break;
       case 2:
-        m2 = new RectilinearMesh( m2grp, N[ I_DIRECTION ], N[ J_DIRECTION ] );
+        m = new RectilinearMesh( m2grp, N[ I_DIRECTION ], N[ J_DIRECTION ] );
         break;
       default:
         EXPECT_EQ( idim, 3 );
-        m2 = new RectilinearMesh( m2grp, N[ I_DIRECTION ],
+        m = new RectilinearMesh( m2grp, N[ I_DIRECTION ],
                                   N[ J_DIRECTION ],
                                   N[ K_DIRECTION ]  );
       } // END switch
 
-      internal::check_constructor( m2, STRUCTURED_RECTILINEAR_MESH, idim, N );
-      EXPECT_TRUE( m2->hasSidreGroup() );
-      EXPECT_FALSE( m2->isExternal() );check_fill_coords( m2 );
-      internal::check_create_fields( m2 );
+      internal::check_constructor( m, STRUCTURED_RECTILINEAR_MESH, idim, N );
+      EXPECT_TRUE( m->hasSidreGroup() );
+      EXPECT_FALSE( m->isExternal() );
+      internal::check_constructor( m, STRUCTURED_RECTILINEAR_MESH, idim, N );
+      m->setNodeExtent( idim, extent );
+      internal::check_node_extent( m, extent );
+      check_fill_coords( m );
+      internal::check_create_fields( m );
 
-      delete m2;
-      m2 = nullptr;
+      delete m;
     }
     // END SCOPE
 
@@ -341,7 +357,7 @@ TEST( mint_mesh_rectilinear_mesh, sidre_constructor )
       for ( int ii=0 ; ii < idim ; ++ii )
       {
         check_coordinate( m->getCoordinateArray( ii ), expected_coords,
-                          m->getNodeExtent( ii ) );
+                          m->getNodeDimension( ii ) );
       }
 
       internal::check_fields( m, true );
@@ -356,7 +372,7 @@ TEST( mint_mesh_rectilinear_mesh, sidre_constructor )
       for ( int ii=0 ; ii < idim ; ++ii )
       {
         check_coordinate( m->getCoordinateArray( ii ), expected_coords,
-                          m->getNodeExtent( ii ) );
+                          m->getNodeDimension( ii ) );
       }
 
       internal::check_fields( m, true );
@@ -371,10 +387,9 @@ TEST( mint_mesh_rectilinear_mesh, sidre_constructor )
   } // END for all dimensions
 
   delete [] expected_coords;
-  expected_coords = nullptr;
 }
 
-#endif /* ENDIF MINT_USE_SIDRE */
+#endif /* ENDIF AXOM_MINT_USE_SIDRE */
 
 //------------------------------------------------------------------------------
 TEST( mint_mesh_rectilinear_mesh, get_node )

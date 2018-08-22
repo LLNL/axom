@@ -18,14 +18,13 @@
 
 // Mint includes
 #include "axom/mint/core/Array.hpp"           // for mint::Array
-#include "axom/mint/config.hpp"          // for compile-time definitions
+#include "axom/mint/config.hpp"               // for compile-time definitions
 #include "axom/mint/mesh/MeshTypes.hpp"       // for MeshTypes enum
-#include "axom/mint/mesh/Extent.hpp"          // for mint::Extent
 
 // gtest includes
 #include "gtest/gtest.h"
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 #include "axom/sidre/core/sidre.hpp"
 
 namespace mint  = axom::mint;
@@ -377,7 +376,7 @@ TEST( mint_mesh_blueprint, get_set_uniform_mesh )
   }
 }
 
-#endif /* MINT_USE_SIDRE */
+#endif /* AXOM_MINT_USE_SIDRE */
 
 //------------------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"

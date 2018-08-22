@@ -23,7 +23,7 @@
 #include "axom/mint/core/Array.hpp"            // for mint::Array
 #include "axom/slic/interface/slic.hpp"             // for slic macros
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 #include "axom/sidre/core/sidre.hpp"          // for sidre::Group, sidre::View
 #endif
 
@@ -41,7 +41,7 @@ constexpr IndexType DEFAULT_CAPACITY = 100;
 MeshCoordinates::MeshCoordinates( int dimension,
                                   IndexType numNodes,
                                   IndexType capacity ) :
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   m_group( nullptr ),
 #endif
   m_ndims( dimension )
@@ -68,7 +68,7 @@ MeshCoordinates::MeshCoordinates( int dimension,
 MeshCoordinates::MeshCoordinates( IndexType numNodes,
                                   IndexType capacity,
                                   double* x, double* y, double* z ) :
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   m_group( nullptr ),
 #endif
   m_ndims( 0 )
@@ -100,7 +100,7 @@ MeshCoordinates::MeshCoordinates( IndexType numNodes,
   MeshCoordinates( numNodes, numNodes, x, y, z )
 { }
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 //------------------------------------------------------------------------------
 MeshCoordinates::MeshCoordinates( sidre::Group* group ) :
   m_group( group ),
@@ -158,7 +158,7 @@ MeshCoordinates::MeshCoordinates( sidre::Group* group, int dimension,
   m_group( group ),
   m_ndims( dimension )
 {
-  SLIC_ERROR_IF( m_group==AXOM_NULLPTR, "null sidre::Group" );
+  SLIC_ERROR_IF( m_group==nullptr, "null sidre::Group" );
   SLIC_ERROR_IF( (capacity != USE_DEFAULT) && (numNodes > capacity),
                  "numNodes < capacity pre-condition violated!" );
 

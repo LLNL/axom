@@ -393,7 +393,7 @@ public:
 /// \name Sidre Storage Constructors
 /// @{
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
   /*!
    * \brief Creates an UnstructuredMesh instance from a given Sidre group that
@@ -508,7 +508,7 @@ public:
 
   /// @}
 
-#endif /* MINT_USE_SIDRE */
+#endif /* AXOM_MINT_USE_SIDRE */
 
 /// @}
 
@@ -580,13 +580,13 @@ public:
    *
    * \return The number of nodes for the given cell.
    *
-   * \pre nodes != AXOM_NULLPTR
+   * \pre nodes != nullptr
    * \pre 0 <= cellID < getNumberOfCells()
    */
   virtual
   IndexType getCellNodes( IndexType cellID, IndexType* nodes ) const final override
   {
-    SLIC_ASSERT( nodes != AXOM_NULLPTR );
+    SLIC_ASSERT( nodes != nullptr );
     const IndexType n_nodes = getNumberOfCellNodes( cellID );
     std::memcpy( nodes, getCellNodes( cellID ), n_nodes * sizeof( IndexType ) );
     return n_nodes;

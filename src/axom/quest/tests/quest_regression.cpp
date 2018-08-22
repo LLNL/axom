@@ -587,7 +587,7 @@ void runDistanceQueries(CommandLineArguments& clargs)
   for ( int inode=0 ; inode < nnodes ; ++inode )
   {
     axom::mint::IndexType i, j, k;
-    umesh->getExtent()->getGridIndex( inode, i, j, k );
+    umesh->getNodeGridIndex( inode, i, j, k );
 
     xcoords[inode] = umesh->evaluateCoordinate( i,axom::mint::X_COORDINATE);
     ycoords[inode] = umesh->evaluateCoordinate( j,axom::mint::Y_COORDINATE);

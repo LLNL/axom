@@ -37,8 +37,10 @@
 // Quest includes
 #include "axom/quest/interface/internal/mpicomm_wrapper.hpp"
 #include "axom/quest/stl/STLReader.hpp"
+
 #ifdef AXOM_USE_MPI
 #include "axom/quest/stl/PSTLReader.hpp"
+#include <mpi.h>
 #endif
 
 // C/C++ includes

@@ -48,7 +48,7 @@ ParticleMesh::ParticleMesh( IndexType numParticles,
 }
 
 //------------------------------------------------------------------------------
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
 ParticleMesh::ParticleMesh( sidre::Group* group,
                             const std::string& topo ) :

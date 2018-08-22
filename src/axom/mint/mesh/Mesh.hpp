@@ -34,7 +34,7 @@ namespace axom
 {
 
 /* Forward declarations */
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 namespace sidre
 {
 class Group;
@@ -51,7 +51,7 @@ class Mesh;
 /// \name Free Methods
 /// @{
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
 /*!
  * \brief Creates a mesh instance from the given Sidre group.
@@ -282,7 +282,7 @@ public:
    *
    * \return The number of nodes for the given cell.
    *
-   * \pre nodes != AXOM_NULLPTR
+   * \pre nodes != nullptr
    * \pre 0 <= cellID < getNumberOfCells()
    */
   virtual IndexType getCellNodes( IndexType AXOM_NOT_USED(cellID), IndexType* AXOM_NOT_USED(nodes) ) const
@@ -345,7 +345,7 @@ public:
    *  buffer is getNumberOfNodes(). Otherwise the UniformMesh returns
    *  nullptr and the RectilinearMesh returns a pointer to the associated
    *  dimension scale which is of length
-   *  static_cast< RectilinearMesh* >( this )->getNodeExtent().
+   *  static_cast< RectilinearMesh* >( this )->getNodeDimension().
    *
    * \pre dim >= 0 && dim < dimension()
    * \pre dim == X_COORDINATE || dim == Y_COORDINATE || dim == Z_COORDINATE
@@ -510,7 +510,7 @@ public:
    */
   inline bool hasSidreGroup() const;
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   /*!
    * \brief Return a pointer to the sidre::Group associated with this Mesh
    *  instance or nullptr if none exists.
@@ -707,7 +707,7 @@ protected:
 
   FieldData* m_mesh_fields[ NUM_FIELD_ASSOCIATIONS ];
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   sidre::Group* m_group;
   std::string m_topology;
   std::string m_coordset;
@@ -728,7 +728,7 @@ protected:
    */
   Mesh( int ndims, int type );
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
   /*!
    * \brief Constructor for use with a group that already has data.
@@ -843,7 +843,7 @@ private:
 //------------------------------------------------------------------------------
 inline bool Mesh::hasSidreGroup( ) const
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   return ( m_group != nullptr );
 #else
   return false;

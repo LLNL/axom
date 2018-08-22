@@ -24,7 +24,7 @@
 
 #include "gtest/gtest.h"                /* for TEST and EXPECT_* macros */
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 #include "axom/sidre/core/sidre.hpp"
 #endif
 
@@ -41,7 +41,7 @@ constexpr double PI = 3.14159265358979323846;
 constexpr double E =  2.71828182845904523536;
 const char IGNORE_OUTPUT[] = ".*";
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 sidre::DataStore* ds = nullptr;
 #endif
 
@@ -74,7 +74,7 @@ std::string getFieldName( const Mesh* mesh, int association )
 
   if ( mesh->hasSidreGroup() )
   {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
     field_name = mesh->getTopologyName() + "_" + field_name;
 #endif
   }
@@ -546,7 +546,7 @@ void deleteAndDuplicateExternalMesh( UnstructuredMesh< MIXED_SHAPE >*& mesh )
 }
 /// @}
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
 /*!
  * \brief Delete the given sidre mesh and create a copy from it's group.
@@ -599,7 +599,7 @@ void createMeshes( UnstructuredMesh< SINGLE_SHAPE >** meshes,
                    IndexType n_nodes, IndexType n_cells, bool node_field,
                    bool cell_field )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   SLIC_ERROR_IF( ds != nullptr, "Did not free DataStore." );
   ds = new sidre::DataStore();
   sidre::Group* root = ds->getRoot();
@@ -633,7 +633,7 @@ void createMeshes( UnstructuredMesh< SINGLE_SHAPE >** meshes,
     }
     cur_mesh++;
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
     const std::string topo = "t" + std::to_string( dim );
     const std::string coordset = "c" + std::to_string( dim );
     meshes[ cur_mesh ] = new UnstructuredMesh< SINGLE_SHAPE >( dim, QUAD,
@@ -656,7 +656,7 @@ void createMeshes( UnstructuredMesh< MIXED_SHAPE >** meshes,
                    IndexType n_nodes, IndexType n_cells, IndexType connec_size,
                    bool node_field, bool cell_field )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   SLIC_ERROR_IF( ds != nullptr, "Did not free DataStore." );
   ds = new sidre::DataStore();
   sidre::Group* root = ds->getRoot();
@@ -690,7 +690,7 @@ void createMeshes( UnstructuredMesh< MIXED_SHAPE >** meshes,
     }
     cur_mesh++;
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
     const std::string topo = "t" + std::to_string( dim );
     const std::string coordset = "c" + std::to_string( dim );
     meshes[ cur_mesh ] = new UnstructuredMesh< MIXED_SHAPE >( dim, root,
@@ -730,7 +730,7 @@ void createMeshesForResize( UnstructuredMesh< SINGLE_SHAPE >** meshes,
                             IndexType n_nodes, IndexType n_cells,
                             bool node_field, bool cell_field )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   SLIC_ERROR_IF( ds != nullptr, "Did not free DataStore." );
   ds = new sidre::DataStore();
   sidre::Group* root = ds->getRoot();
@@ -752,7 +752,7 @@ void createMeshesForResize( UnstructuredMesh< SINGLE_SHAPE >** meshes,
     }
     cur_mesh++;
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
     const std::string topo = "t" + std::to_string( dim );
     const std::string coordset = "c" + std::to_string( dim );
     meshes[ cur_mesh ] = new UnstructuredMesh< SINGLE_SHAPE >( dim, QUAD,
@@ -777,7 +777,7 @@ void createMeshesForResize( UnstructuredMesh< MIXED_SHAPE >** meshes,
                             IndexType n_nodes, IndexType n_cells,
                             bool node_field, bool cell_field )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   SLIC_ERROR_IF( ds != nullptr, "Did not free DataStore." );
   ds = new sidre::DataStore();
   sidre::Group* root = ds->getRoot();
@@ -798,7 +798,7 @@ void createMeshesForResize( UnstructuredMesh< MIXED_SHAPE >** meshes,
     }
     cur_mesh++;
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
     const std::string topo = "t" + std::to_string( dim );
     const std::string coordset = "c" + std::to_string( dim );
     meshes[ cur_mesh ] = new UnstructuredMesh< MIXED_SHAPE >( dim, root,
@@ -843,7 +843,7 @@ void deleteMeshes( UnstructuredMesh< TOPO >** meshes, int n_meshes )
     }
   }
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   delete ds;
   ds = nullptr;
 #endif
@@ -2230,7 +2230,7 @@ void check_restoration( UnstructuredMesh< TOPO >** meshes, int n_meshes,
     {
       deleteAndDuplicateExternalMesh( meshes[ i ] );
     }
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
     else if ( meshes[ i ]->isInSidre() )
     {
       deleteAndDuplicateSidreMesh( meshes[ i ] );
@@ -2274,7 +2274,7 @@ void check_restoration( UnstructuredMesh< TOPO >** meshes, int n_meshes,
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, appendNodesSingle )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -2302,7 +2302,7 @@ TEST( mint_mesh_unstructured_mesh, appendNodesSingle )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, appendNodesMixed )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -2331,7 +2331,7 @@ TEST( mint_mesh_unstructured_mesh, appendNodesMixed )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, appendCellsSingle )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -2360,7 +2360,7 @@ TEST( mint_mesh_unstructured_mesh, appendCellsSingle )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, appendCellsMixed )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -2394,7 +2394,7 @@ TEST( mint_mesh_unstructured_mesh, appendCellsMixed )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, setNodesSingle )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -2423,7 +2423,7 @@ TEST( mint_mesh_unstructured_mesh, setNodesSingle )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, setNodesMixed )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -2453,7 +2453,7 @@ TEST( mint_mesh_unstructured_mesh, setNodesMixed )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, setCellsSingle )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -2483,7 +2483,7 @@ TEST( mint_mesh_unstructured_mesh, setCellsSingle )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, setCellsMixed )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -2518,7 +2518,7 @@ TEST( mint_mesh_unstructured_mesh, setCellsMixed )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, insertNodesSingle )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -2547,7 +2547,7 @@ TEST( mint_mesh_unstructured_mesh, insertNodesSingle )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, insertNodesMixed )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -2576,7 +2576,7 @@ TEST( mint_mesh_unstructured_mesh, insertNodesMixed )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, insertCellsSingle )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -2605,7 +2605,7 @@ TEST( mint_mesh_unstructured_mesh, insertCellsSingle )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, insertCellsMixed )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -2639,7 +2639,7 @@ TEST( mint_mesh_unstructured_mesh, insertCellsMixed )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, insertNodesNoUpdateSingle )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -2667,7 +2667,7 @@ TEST( mint_mesh_unstructured_mesh, insertNodesNoUpdateSingle )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, insertNodesNoUpdateMixed )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -2696,7 +2696,7 @@ TEST( mint_mesh_unstructured_mesh, insertNodesNoUpdateMixed )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, insertNodesUpdateSingle )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -2724,7 +2724,7 @@ TEST( mint_mesh_unstructured_mesh, insertNodesUpdateSingle )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, insertNodesUpdateMixed )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -2757,7 +2757,7 @@ TEST( mint_mesh_unstructured_mesh, insertNodesUpdateMixed )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, resizeNodesSingle )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 2;
 #else
   constexpr int STRIDE = 1;
@@ -2785,7 +2785,7 @@ TEST( mint_mesh_unstructured_mesh, resizeNodesSingle )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, resizeNodesMixed )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 2;
 #else
   constexpr int STRIDE = 1;
@@ -2813,7 +2813,7 @@ TEST( mint_mesh_unstructured_mesh, resizeNodesMixed )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, resizeCellsSingle )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 2;
 #else
   constexpr int STRIDE = 1;
@@ -2841,7 +2841,7 @@ TEST( mint_mesh_unstructured_mesh, resizeCellsSingle )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, resizeCellsMixed )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 2;
 #else
   constexpr int STRIDE = 1;

@@ -48,7 +48,7 @@ namespace mint
 namespace blueprint
 {
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
 /*!
  * \brief Checks if the given root group conforms to the mesh blueprint.
@@ -217,7 +217,7 @@ void setStructuredMesh( int dimension, const IndexType node_extent[3],
                         sidre::Group* coordset );
 
 
-void setGlobalNodeExtent( sidre::Group* coordset,  
+void setNodeExtent( sidre::Group* coordset,  
                           const int64 global_node_extent[6] );
 
 /*!
@@ -233,9 +233,9 @@ void setGlobalNodeExtent( sidre::Group* coordset,
  *  at least `dim` entries.
  *
  * \pre 1 <= dim <= 3
- * \pre origin != AXOM_NULLPTR
- * \pre spacing != AXOM_NULLPTR
- * \pre coordset != AXOM_NULLPTR
+ * \pre origin != nullptr
+ * \pre spacing != nullptr
+ * \pre coordset != nullptr
  *
  * \post isValidCoordsetGroup( coordset )
  *
@@ -257,9 +257,9 @@ void getUniformMesh( int dim, double* origin, double* spacing,
  *  at least `dim` entries.
  *
  * \pre 1 <= dim <= 3
- * \pre origin != AXOM_NULLPTR
- * \pre spacing != AXOM_NULLPTR
- * \pre coordset != AXOM_NULLPTR
+ * \pre origin != nullptr
+ * \pre spacing != nullptr
+ * \pre coordset != nullptr
  *
  * \post isValidCoordsetGroup( coordset )
  *
@@ -268,7 +268,7 @@ void getUniformMesh( int dim, double* origin, double* spacing,
 void setUniformMesh( int dim, const double* origin, const double* spacing,
                      sidre::Group* coordset );
 
-#endif /* MINT_USE_SIDRE */
+#endif /* AXOM_MINT_USE_SIDRE */
 
 } /* namespace blueprint */
 

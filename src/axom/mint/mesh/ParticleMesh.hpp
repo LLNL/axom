@@ -150,7 +150,7 @@ public:
 
 /// @}
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 /// \name Sidre Storage Constructors
 /// @{
 
@@ -221,7 +221,7 @@ public:
 
 /// @}
 
-#endif  /* MINT_USE_SIDRE */
+#endif  /* AXOM_MINT_USE_SIDRE */
 
 /// \name Virtual methods
 /// @{

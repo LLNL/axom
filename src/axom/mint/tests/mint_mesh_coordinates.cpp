@@ -22,7 +22,7 @@
 #include "axom/mint/config.hpp"          // for IndexType
 #include "axom/mint/mesh/MeshCoordinates.hpp" // for MeshCoordinates
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 #include "axom/sidre/core/sidre.hpp"          // for sidre::Group, sidre::View
 #endif
 
@@ -34,7 +34,7 @@ namespace axom
 namespace mint
 {
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 sidre::DataStore* ds = nullptr;
 #endif
 
@@ -79,7 +79,7 @@ void check_array_values( const double* actual,
   }
 }
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 /*!
  * \brief Create a valid sidre datastore to use in tests
  *
@@ -696,7 +696,7 @@ MeshCoordinates* createExternal( int dim, IndexType n_nodes )
  */
 void createCoords( MeshCoordinates** mesh_coords, IndexType n_nodes )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   SLIC_ERROR_IF( ds != nullptr, "Did not free DataStore." );
   ds = new sidre::DataStore();
   sidre::Group* root = ds->getRoot();
@@ -709,7 +709,7 @@ void createCoords( MeshCoordinates** mesh_coords, IndexType n_nodes )
 
     mesh_coords[ cur_coords++ ] = createExternal( dim, n_nodes );
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
     const std::string coordset_name = "c" + std::to_string( dim );
     sidre::Group* group = root->createGroup( coordset_name );
     mesh_coords[ cur_coords++ ] = new MeshCoordinates( group, dim );
@@ -767,7 +767,7 @@ void deleteCoords( MeshCoordinates** mesh_coords, int n_coords )
     }
   }
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   delete ds;
   ds = nullptr;
 #endif
@@ -816,7 +816,7 @@ void deleteAndDuplicateExternal( MeshCoordinates*& mesh_coords )
   }
 }
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
 /*!
  * \brief Delete the given sidre MeshCoordinates and create a copy from
@@ -860,7 +860,7 @@ void check_restoration( MeshCoordinates** mesh_coords, int n_coords )
     {
       deleteAndDuplicateExternal( mesh_coords[ i ] );
     }
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
     else if ( mesh_coords[ i ]->isInSidre() )
     {
       deleteAndDuplicateSidre( mesh_coords[ i ] );
@@ -884,7 +884,7 @@ void check_restoration( MeshCoordinates** mesh_coords, int n_coords )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_coordinates, append )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -910,7 +910,7 @@ TEST( mint_mesh_coordinates, append )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_coordinates, insert )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -949,7 +949,7 @@ TEST( mint_mesh_coordinates, set_and_get )
     MeshCoordinates mc1( dim, SMALL_NUM_NODES );
     internal::check_set_and_get( &mc1 );
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
     // MeshCoordinates object from sidre store
     sidre::DataStore ds;
     MeshCoordinates mc2(
@@ -995,7 +995,7 @@ TEST( mint_mesh_coordinates, reserve )
     EXPECT_EQ( mc1.numNodes(), numNodes1);
     EXPECT_EQ( mc1.capacity(), LARGE_NODE_CAPACITY );
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
     // Construct a MeshCoordinates object from sidre
     sidre::DataStore ds;
     internal::create_sidre_data( ds, dim );
@@ -1026,7 +1026,7 @@ TEST( mint_mesh_coorindates, resize )
     EXPECT_EQ( mc1.numNodes(), LARGE_NUM_NODES );
     EXPECT_TRUE( mc1.numNodes() <= mc1.capacity() );
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
     // Construct a MeshCoordinates object from sidre
     sidre::DataStore ds;
     internal::create_sidre_data( ds, dim );
@@ -1058,7 +1058,7 @@ TEST( mint_mesh_coordinates, shrink )
 
     EXPECT_EQ( mc1.numNodes(), mc1.capacity() );
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
     // test shrink() when constructed using sidre
     sidre::DataStore ds;
     internal::create_sidre_data( ds, dim );
@@ -1173,7 +1173,7 @@ TEST( mint_mesh_coordinates, external_constructor )
 }
 
 //------------------------------------------------------------------------------
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
 TEST( mint_mesh_coordinates, sidre_pull_constructor )
 {
@@ -1345,7 +1345,7 @@ TEST( mint_mesh_coordinates, sidre_push_constructor )
 
 }
 
-#endif /* MINT_USE_SIDRE */
+#endif /* AXOM_MINT_USE_SIDRE */
 
 //------------------------------------------------------------------------------
 TEST( mint_mesh_coordinates_DeathTest, invalid_operations )
@@ -1393,7 +1393,7 @@ TEST( mint_mesh_coordinates_DeathTest, invalid_construction )
     MeshCoordinates(ZERO_NUM_NODES, ZERO_NUM_NODES, x), IGNORE_OUTPUT );
 
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
   // STEP 4: test construction with a null Sidre group
   EXPECT_DEATH_IF_SUPPORTED(
@@ -1412,7 +1412,7 @@ TEST( mint_mesh_coordinates_DeathTest, invalid_construction )
   EXPECT_DEATH_IF_SUPPORTED( MeshCoordinates( ds.getRoot(),2,5,5),
                              IGNORE_OUTPUT );
 
-#endif /* MINT_USE_SIDRE */
+#endif /* AXOM_MINT_USE_SIDRE */
 
 }
 

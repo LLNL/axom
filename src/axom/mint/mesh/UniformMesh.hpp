@@ -169,7 +169,7 @@ public:
                IndexType Ni, IndexType Nj=-1, IndexType Nk=-1 );
 /// @}
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
 /// \name Sidre Constructors
 /// @{
@@ -385,7 +385,7 @@ public:
   inline double evaluateCoordinate( IndexType i, int direction ) const
   {
     SLIC_ASSERT( direction >=0 && direction < getDimension() );
-    SLIC_ASSERT( i >= 0 && i < getNodeExtent( direction ) );
+    SLIC_ASSERT( i >= 0 && i < getNodeDimension( direction ) );
 
     const double* x0 = getOrigin( );
     const double* h  = getSpacing( );

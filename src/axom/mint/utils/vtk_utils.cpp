@@ -181,9 +181,9 @@ void write_dimensions( const StructuredMesh* mesh, std::ofstream& file )
   SLIC_ASSERT( mesh != nullptr );
 
   file << "DIMENSIONS ";
-  file << mesh->getNodeExtent( 0 ) << " "
-       << mesh->getNodeExtent( 1 ) << " "
-       << mesh->getNodeExtent( 2 ) << std::endl;
+  file << mesh->getNodeDimension( 0 ) << " "
+       << mesh->getNodeDimension( 1 ) << " "
+       << mesh->getNodeDimension( 2 ) << std::endl;
 }
 
 /*!
@@ -204,10 +204,10 @@ void write_rectilinear_mesh( const RectilinearMesh* mesh, std::ofstream& file )
 
   for ( int dim = 0 ; dim < mesh->getDimension() ; ++dim )
   {
-    file << coord_names[ dim ] << mesh->getNodeExtent( dim ) << " double\n";
+    file << coord_names[ dim ] << mesh->getNodeDimension( dim ) << " double\n";
     const double* coords = mesh->getCoordinateArray( dim );
     file << coords[0];
-    for (int64 i = 1 ; i < mesh->getNodeExtent( dim ) ; ++i )
+    for (int64 i = 1 ; i < mesh->getNodeDimension( dim ) ; ++i )
     {
       file << " " << coords[i];
     }
@@ -215,7 +215,7 @@ void write_rectilinear_mesh( const RectilinearMesh* mesh, std::ofstream& file )
   }
   for ( int dim = mesh->getDimension() ; dim < 3 ; ++dim )
   {
-    file << coord_names[ dim ] << mesh->getNodeExtent( dim ) << " double\n";
+    file << coord_names[ dim ] << mesh->getNodeDimension( dim ) << " double\n";
     file << 0.0 << std::endl;
   }
 }

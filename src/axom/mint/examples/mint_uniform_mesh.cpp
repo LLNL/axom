@@ -55,8 +55,8 @@ int main ( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
   double* phi = mesh.createField< double >( "phi", mint::NODE_CENTERED );
 
   // STEP 2: loop over the nodes
-  const IndexType Ni = mesh.getNodeExtent( mint::I_DIRECTION );
-  const IndexType Nj = mesh.getNodeExtent( mint::J_DIRECTION );
+  const IndexType Ni = mesh.getNodeDimension( mint::I_DIRECTION );
+  const IndexType Nj = mesh.getNodeDimension( mint::J_DIRECTION );
   const IndexType jp = mesh.nodeJp();
 
   for ( IndexType j=0 ; j < Nj ; ++j )

@@ -21,14 +21,13 @@
 
 // Mint includes
 #include "axom/mint/core/Array.hpp"      // for mint::Array
-#include "axom/mint/config.hpp"          // for MINT_USE_SIDRE
-#include "axom/mint/mesh/Extent.hpp"     // for mint::Extent
+#include "axom/mint/config.hpp"          // for AXOM_MINT_USE_SIDRE
 #include "axom/mint/mesh/MeshTypes.hpp"  // for mesh types
 
 // Slic includes
 #include "axom/slic/interface/slic.hpp"    // for SLIC macros
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 #include "axom/sidre/core/Group.hpp"  // for sidre::Group
 #include "axom/sidre/core/View.hpp"   // for sidre::View
 #endif
@@ -40,7 +39,7 @@ namespace mint
 namespace blueprint
 {
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
 //------------------------------------------------------------------------------
 bool isValidRootGroup( const sidre::Group* group )
@@ -354,8 +353,8 @@ void getStructuredMesh( int dimension, IndexType node_extent[3],
                         const sidre::Group* coordset )
 {
   SLIC_ERROR_IF( dimension < 1 || dimension > 3, "invalid dimension!" );
-  SLIC_ERROR_IF( node_extent == AXOM_NULLPTR, "supplied extent is null!" );
-  SLIC_ERROR_IF( global_node_extent == AXOM_NULLPTR, 
+  SLIC_ERROR_IF( node_extent == nullptr, "supplied extent is null!" );
+  SLIC_ERROR_IF( global_node_extent == nullptr, 
                  "supplied global extent is null!" );
   SLIC_ERROR_IF( !blueprint::isValidCoordsetGroup( coordset ),
                  "invalid coordset group!" );
@@ -384,10 +383,10 @@ void setStructuredMesh( int dimension, const IndexType node_extent[3],
                         sidre::Group* coordset )
 {
   SLIC_ERROR_IF( dimension < 1 || dimension > 3, "invalid dimension!" );
-  SLIC_ERROR_IF( node_extent == AXOM_NULLPTR, "supplied extent is null!" );
-  SLIC_ERROR_IF( global_node_extent == AXOM_NULLPTR, 
+  SLIC_ERROR_IF( node_extent == nullptr, "supplied extent is null!" );
+  SLIC_ERROR_IF( global_node_extent == nullptr, 
                  "supplied global extent is null!" );
-  SLIC_ERROR_IF( coordset == AXOM_NULLPTR, "invalid coordset group!" );
+  SLIC_ERROR_IF( coordset == nullptr, "invalid coordset group!" );
 
   const char* dim_names[]     = { "dims/i", "dims/j", "dims/k" };
   const char* global_names[]    = { "global_ext/i_min", "global_ext/i_max",
@@ -407,13 +406,11 @@ void setStructuredMesh( int dimension, const IndexType node_extent[3],
   }
 }
 
-void setGlobalNodeExtent( sidre::Group* coordset, 
-                          const int64 global_node_extent[6] )
+void setNodeExtent( sidre::Group* coordset, const int64 global_node_extent[6] )
 {
-  SLIC_ERROR_IF( global_node_extent == AXOM_NULLPTR, 
+  SLIC_ERROR_IF( global_node_extent == nullptr, 
                  "supplied global extent is null!" );
-  SLIC_ERROR_IF( coordset == AXOM_NULLPTR, "invalid coordset group!" );
-  SLIC_ERROR_IF( !isValidCoordsetGroup( coordset ), "invalid coordset group!" );
+  SLIC_ERROR_IF( coordset == nullptr, "invalid coordset group!" );
 
   const char* global_names[]    = { "global_ext/i_min", "global_ext/i_max",
                                     "global_ext/j_min", "global_ext/j_max", 
@@ -430,8 +427,8 @@ void getUniformMesh( int dimension, double* origin, double* spacing,
                      const sidre::Group* coordset )
 {
   SLIC_ERROR_IF( dimension < 1 || dimension > 3, "invalid dimension!" );
-  SLIC_ERROR_IF( origin == AXOM_NULLPTR, "supplied null pointer for origin!");
-  SLIC_ERROR_IF( spacing == AXOM_NULLPTR, "supplied null pointer for spacing!" );
+  SLIC_ERROR_IF( origin == nullptr, "supplied null pointer for origin!");
+  SLIC_ERROR_IF( spacing == nullptr, "supplied null pointer for spacing!" );
   SLIC_ERROR_IF( !blueprint::isValidCoordsetGroup( coordset ),
                  "invalid coordset group!" );
 
@@ -454,8 +451,8 @@ void setUniformMesh( int dimension, const double* origin, const double* spacing,
                      sidre::Group* coordset )
 {
   SLIC_ERROR_IF( dimension < 1 || dimension > 3, "invalid dimension!" );
-  SLIC_ERROR_IF( origin == AXOM_NULLPTR, "supplied null pointer for origin!");
-  SLIC_ERROR_IF( spacing == AXOM_NULLPTR, "supplied null pointer for spacing!" );
+  SLIC_ERROR_IF( origin == nullptr, "supplied null pointer for origin!");
+  SLIC_ERROR_IF( spacing == nullptr, "supplied null pointer for spacing!" );
 
   const char* origin_names[]  = { "origin/x", "origin/y", "origin/z" };
   const char* spacing_names[] = { "spacing/dx", "spacing/dy", "spacing/dz" };

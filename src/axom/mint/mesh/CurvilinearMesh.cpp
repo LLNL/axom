@@ -43,7 +43,7 @@ CurvilinearMesh::CurvilinearMesh( int ndims, const IndexType* ext ) :
   initialize();
 
   // sanity checks
-  SLIC_ASSERT( m_coordinates != AXOM_NULLPTR );
+  SLIC_ASSERT( m_coordinates != nullptr );
   SLIC_ASSERT( getNumberOfNodes() == m_coordinates->numNodes() );
   SLIC_ASSERT( m_coordinates->dimension() == m_ndims );
 }
@@ -56,7 +56,7 @@ CurvilinearMesh::CurvilinearMesh( IndexType Ni, IndexType Nj, IndexType Nk ) :
   initialize();
 
   // sanity checks
-  SLIC_ASSERT( m_coordinates != AXOM_NULLPTR );
+  SLIC_ASSERT( m_coordinates != nullptr );
   SLIC_ASSERT( getNumberOfNodes() == m_coordinates->numNodes() );
   SLIC_ASSERT( m_coordinates->dimension() == m_ndims );
 }
@@ -70,12 +70,12 @@ CurvilinearMesh::CurvilinearMesh( const IndexType* ext, double* x, double* y,
   initialize();
 
   // sanity checks
-  SLIC_ASSERT( m_coordinates != AXOM_NULLPTR );
+  SLIC_ASSERT( m_coordinates != nullptr );
   SLIC_ASSERT( getNumberOfNodes() == m_coordinates->numNodes() );
   SLIC_ASSERT( m_coordinates->dimension() == m_ndims );
 }
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
 //------------------------------------------------------------------------------
 CurvilinearMesh::CurvilinearMesh( sidre::Group* group, const std::string& topo ) :
@@ -88,7 +88,7 @@ CurvilinearMesh::CurvilinearMesh( sidre::Group* group, const std::string& topo )
   initialize();
 
   // sanity checks
-  SLIC_ASSERT( m_coordinates != AXOM_NULLPTR );
+  SLIC_ASSERT( m_coordinates != nullptr );
   SLIC_ASSERT( getNumberOfNodes() == m_coordinates->numNodes() );
   SLIC_ASSERT( m_coordinates->dimension() == m_ndims );
 }
@@ -107,7 +107,7 @@ CurvilinearMesh::CurvilinearMesh( int dimension, const IndexType* ext,
   initialize();
 
   // sanity checks
-  SLIC_ASSERT( m_coordinates != AXOM_NULLPTR );
+  SLIC_ASSERT( m_coordinates != nullptr );
   SLIC_ASSERT( getNumberOfNodes() == m_coordinates->numNodes() );
   SLIC_ASSERT( m_coordinates->dimension() == m_ndims );
 }
@@ -127,7 +127,7 @@ CurvilinearMesh::CurvilinearMesh( sidre::Group* group, const std::string& topo,
   initialize();
 
   // sanity checks
-  SLIC_ASSERT( m_coordinates != AXOM_NULLPTR );
+  SLIC_ASSERT( m_coordinates != nullptr );
   SLIC_ASSERT( getNumberOfNodes() == m_coordinates->numNodes() );
   SLIC_ASSERT( m_coordinates->dimension() == m_ndims );
 }

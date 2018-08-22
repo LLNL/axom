@@ -26,7 +26,7 @@
 #include "axom/slic/interface/slic.hpp"       // for slic macros
 
 // Sidre includes
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 #include "axom/sidre/core/sidre.hpp"          // for sidre classes
 namespace sidre = axom::sidre;
 #endif
@@ -45,7 +45,7 @@ namespace
 {
 
 //------------------------------------------------------------------------------
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
 void check_sidre_group( sidre::Group* root_group,
                         int expected_dimension,
@@ -106,9 +106,9 @@ TEST( mint_mesh_uniform_mesh_DeathTest, invalid_construction )
                              IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( UniformMesh(0,origin, h, N),
                              IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,AXOM_NULLPTR, h, N),
+  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,nullptr, h, N),
                              IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,origin,AXOM_NULLPTR,N),
+  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,origin,nullptr,N),
                              IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,origin,h,nullptr),
                              IGNORE_OUTPUT );
@@ -120,9 +120,9 @@ TEST( mint_mesh_uniform_mesh_DeathTest, invalid_construction )
                              IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,nullptr,lo,hi),
                              IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,N,AXOM_NULLPTR,hi),
+  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,N,nullptr,hi),
                              IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,N,lo,AXOM_NULLPTR),
+  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,N,lo,nullptr),
                              IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,N,hi,lo),
                              IGNORE_OUTPUT );
@@ -136,7 +136,7 @@ TEST( mint_mesh_uniform_mesh_DeathTest, invalid_construction )
                              IGNORE_OUTPUT );
 
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
   sidre::DataStore ds;
   sidre::Group* root          = ds.getRoot();
@@ -152,7 +152,7 @@ TEST( mint_mesh_uniform_mesh_DeathTest, invalid_construction )
   // check 1st sidre constructor
   EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,lo,hi,N,particle_mesh),
                              IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,lo,hi,N,AXOM_NULLPTR),
+  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,lo,hi,N,nullptr),
                              IGNORE_OUTPUT );
 
   EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,lo,hi,nullptr,valid_group),
@@ -160,12 +160,12 @@ TEST( mint_mesh_uniform_mesh_DeathTest, invalid_construction )
   EXPECT_EQ( valid_group->getNumGroups(), 0 );
   EXPECT_EQ( valid_group->getNumViews(), 0 );
 
-  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,lo,AXOM_NULLPTR,N,valid_group),
+  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,lo,nullptr,N,valid_group),
                              IGNORE_OUTPUT );
   EXPECT_EQ( valid_group->getNumGroups(), 0 );
   EXPECT_EQ( valid_group->getNumViews(), 0 );
 
-  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,AXOM_NULLPTR,hi,N,valid_group),
+  EXPECT_DEATH_IF_SUPPORTED( UniformMesh(3,nullptr,hi,N,valid_group),
                              IGNORE_OUTPUT );
   EXPECT_EQ( valid_group->getNumGroups(), 0 );
   EXPECT_EQ( valid_group->getNumViews(), 0 );
@@ -206,7 +206,7 @@ TEST( mint_mesh_uniform_mesh_DeathTest, invalid_construction )
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_mesh_uniform_mesh, invalid_operations )
+TEST( mint_mesh_uniform_mesh_DeathTest, invalid_operations )
 {
   const double origin[]  = {0.0, 0.0, 0.0};
   const double h[]       = { 0.5, 0.5, 0.5 };
@@ -227,7 +227,7 @@ TEST( mint_mesh_uniform_mesh, native_constructor )
   const double hi[]     = { 2.0, 2.0, 2.0 };
   const double h[]      = { 0.5, 0.5, 0.5 };
   const IndexType N[]   = {   5,   5,   5 };
-  const int64 global_ext[] = { -55, -50, 10, 15, 0, 5 };
+  const int64 node_ext[] = { -55, -51, 10, 14, 0, 4 };
 
   for ( int idim=1 ; idim <= NDIMS ; ++idim )
   {
@@ -237,8 +237,8 @@ TEST( mint_mesh_uniform_mesh, native_constructor )
 
     internal::check_create_fields( m );
     internal::check_fields( m, false );
-    m->setGlobalNodeExtent( idim, global_ext );
-    internal::check_global_extent( m, global_ext );
+    m->setNodeExtent( idim, node_ext );
+    internal::check_node_extent( m, node_ext );
     delete m;
 
     m = new UniformMesh( idim, N, lo, hi );
@@ -247,8 +247,8 @@ TEST( mint_mesh_uniform_mesh, native_constructor )
 
     internal::check_create_fields( m );
     internal::check_fields( m, false );
-    m->setGlobalNodeExtent( idim, global_ext );
-    internal::check_global_extent( m, global_ext );
+    m->setNodeExtent( idim, node_ext );
+    internal::check_node_extent( m, node_ext );
     delete m;
 
     switch ( idim )
@@ -269,14 +269,14 @@ TEST( mint_mesh_uniform_mesh, native_constructor )
 
     internal::check_create_fields( m );
     internal::check_fields( m, false );
-    m->setGlobalNodeExtent( idim, global_ext );
-    internal::check_global_extent( m, global_ext );
+    m->setNodeExtent( idim, node_ext );
+    internal::check_node_extent( m, node_ext );
     delete m;
   } // END for all dimensions
 
 }
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
 //------------------------------------------------------------------------------
 TEST( mint_mesh_uniform_mesh, sidre_constructor )
@@ -286,7 +286,7 @@ TEST( mint_mesh_uniform_mesh, sidre_constructor )
   const double hi[]     = { 2.0, 2.0, 2.0 };
   const double h[]      = { 0.5, 0.5, 0.5 };
   const IndexType N[]   = {   5,   5,   5 };
-  const int64 global_ext[] = { -55, -50, 10, 15, 0, 5 };
+  const int64 node_ext[] = { -55, -51, 10, 14, 0, 4 };
 
   for ( int idim=1 ; idim <= NDIMS ; ++idim )
   {
@@ -305,11 +305,11 @@ TEST( mint_mesh_uniform_mesh, sidre_constructor )
       EXPECT_TRUE( m->hasSidreGroup() );
       internal::check_constructor( m, idim, lo, h, N );
       internal::check_create_fields( m );
-      m->setGlobalNodeExtent( idim, global_ext );
-      internal::check_global_extent( m, global_ext );
+      m->setNodeExtent( idim, node_ext );
+      internal::check_node_extent( m, node_ext );
 
       delete m;
-      m = AXOM_NULLPTR;
+      m = nullptr;
 
       switch ( idim )
       {
@@ -327,8 +327,8 @@ TEST( mint_mesh_uniform_mesh, sidre_constructor )
       EXPECT_TRUE( m->hasSidreGroup() );
       internal::check_constructor( m, idim, lo, h, N );
       internal::check_create_fields( m );
-      m->setGlobalNodeExtent( idim, global_ext );
-      internal::check_global_extent( m, global_ext );
+      m->setNodeExtent( idim, node_ext );
+      internal::check_node_extent( m, node_ext );
 
       delete m;
     }
@@ -340,13 +340,13 @@ TEST( mint_mesh_uniform_mesh, sidre_constructor )
       internal::check_constructor( m, idim, lo, h, N );
       EXPECT_TRUE( m->hasSidreGroup() );
       internal::check_fields( m, true );
-      internal::check_global_extent( m, global_ext );
+      internal::check_node_extent( m, node_ext );
       delete m;
 
       m = new UniformMesh( mesh2grp );
       internal::check_constructor( m, idim, lo, h, N );
       internal::check_fields( m, true );
-      internal::check_global_extent( m, global_ext );
+      internal::check_node_extent( m, node_ext );
       delete m;
     }
 
@@ -377,7 +377,7 @@ TEST( mint_mesh_uniform_mesh, check_evaluate_coordinate )
     {
     case 1:
     {
-      const IndexType Ni = m.getNodeExtent( I_DIRECTION );
+      const IndexType Ni = m.getNodeDimension( I_DIRECTION );
       EXPECT_EQ( Ni, N[ I_DIRECTION ] );
 
       for ( IndexType i=0 ; i < Ni ; ++i )
@@ -392,8 +392,8 @@ TEST( mint_mesh_uniform_mesh, check_evaluate_coordinate )
     case 2:
     {
 
-      const IndexType Ni = m.getNodeExtent( I_DIRECTION );
-      const IndexType Nj = m.getNodeExtent( J_DIRECTION );
+      const IndexType Ni = m.getNodeDimension( I_DIRECTION );
+      const IndexType Nj = m.getNodeDimension( J_DIRECTION );
       EXPECT_EQ( Ni, N[ I_DIRECTION ] );
       EXPECT_EQ( Nj, N[ J_DIRECTION ] );
 
@@ -418,9 +418,9 @@ TEST( mint_mesh_uniform_mesh, check_evaluate_coordinate )
       EXPECT_EQ( idim, 3 );
       {
 
-        const IndexType Ni = m.getNodeExtent( I_DIRECTION );
-        const IndexType Nj = m.getNodeExtent( J_DIRECTION );
-        const IndexType Nk = m.getNodeExtent( K_DIRECTION );
+        const IndexType Ni = m.getNodeDimension( I_DIRECTION );
+        const IndexType Nj = m.getNodeDimension( J_DIRECTION );
+        const IndexType Nk = m.getNodeDimension( K_DIRECTION );
         EXPECT_EQ( Ni, N[ I_DIRECTION ] );
         EXPECT_EQ( Nj, N[ J_DIRECTION ] );
         EXPECT_EQ( Nk, N[ K_DIRECTION ] );

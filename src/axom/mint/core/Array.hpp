@@ -24,8 +24,9 @@
 
 #include "axom/slic/interface/slic.hpp"            // for slic logging macros
 
-#ifdef MINT_USE_SIDRE
-#include "axom/sidre/interface/sidre.hpp"          // for sidre::View definition
+#ifdef AXOM_MINT_USE_SIDRE
+#include "axom/sidre/core/sidre.hpp"          // for sidre::View definition
+// #include "axom/sidre/interface/sidre.hpp"          // for sidre::View definition
 #endif
 
 // C/C++ includes
@@ -184,7 +185,7 @@ public:
 /// \name Sidre Array constructors
 /// @{
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
   /*!
    * \brief Creates an Array instance from a sidre::View that already has data.
@@ -495,14 +496,14 @@ public:
    */
   bool isInSidre() const
   {
-    #ifdef MINT_USE_SIDRE
+    #ifdef AXOM_MINT_USE_SIDRE
     return m_view != nullptr;
     #else
     return false;
     #endif
   }
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   /*!
    * \brief Return a pointer to the sidre::View that this Array wraps.
    */
@@ -549,7 +550,7 @@ private:
 
 
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
   /*!
    * \brief Return the sidre::TypeID corresponding to T. This function
@@ -619,7 +620,7 @@ private:
 template< typename T >
 Array< T >::Array( IndexType num_tuples, IndexType num_components,
                    IndexType capacity ) :
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   m_view( nullptr ),
 #endif
   m_data( nullptr ),
@@ -662,7 +663,7 @@ Array< T >::Array( IndexType num_tuples, IndexType num_components,
 template< typename T >
 Array< T >::Array( T* data, IndexType num_tuples, IndexType num_components,
                    IndexType capacity ) :
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   m_view( nullptr ),
 #endif
   m_data( data ),
@@ -694,7 +695,7 @@ Array< T >::Array( T* data, IndexType num_tuples, IndexType num_components,
   SLIC_ERROR_IF( m_data == nullptr, "specified array must not be NULL." );
 }
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
 //------------------------------------------------------------------------------
 template< typename T >
@@ -793,7 +794,7 @@ Array< T >::Array( sidre::View* view, IndexType num_tuples,
 template< typename T >
 Array< T >::~Array()
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   if ( m_view == nullptr && m_data != nullptr && !m_is_external )
   {
     utilities::free( m_data );
@@ -932,7 +933,7 @@ inline void Array< T >::updateNumTuples( IndexType new_num_tuples )
   SLIC_ASSERT( new_num_tuples <= m_capacity );
   m_num_tuples = new_num_tuples;
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   if ( m_view != nullptr )
   {
     describeView();
@@ -959,7 +960,7 @@ inline void Array< T >::setCapacity( IndexType new_capacity )
     updateNumTuples( m_capacity );
   }
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   if ( m_view != nullptr )
   {
     return reallocViewData();
@@ -980,7 +981,7 @@ inline void Array< T >::dynamicRealloc( IndexType new_num_tuples )
                  " doesn't support dynamic resizing");
   m_capacity = new_num_tuples * m_resize_ratio + 0.5;
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   if ( m_view != nullptr )
   {
     return reallocViewData();
@@ -992,7 +993,7 @@ inline void Array< T >::dynamicRealloc( IndexType new_num_tuples )
                  "Array reallocation failed." );
 }
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
 //------------------------------------------------------------------------------
 template< typename T >
@@ -1043,7 +1044,7 @@ inline void Array< T >::reallocViewData()
                  "Array reallocation failed." );
 }
 
-#endif  /* MINT_USE_SIDRE */
+#endif  /* AXOM_MINT_USE_SIDRE */
 
 } /* namespace mint */
 } /* namespace axom */

@@ -1290,9 +1290,9 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
   axom::mint::CurvilinearMesh cmesh(2, ext);
 
   {
-    axom::mint::IndexType Ni = cmesh.getNodeExtent(0);
-    axom::mint::IndexType Nj = cmesh.getNodeExtent(1);
-    axom::mint::IndexType Nk = cmesh.getNodeExtent(2);
+    axom::mint::IndexType Ni = cmesh.getNodeDimension(0);
+    axom::mint::IndexType Nj = cmesh.getNodeDimension(1);
+    axom::mint::IndexType Nk = cmesh.getNodeDimension(2);
     SLIC_INFO( "Extents of curvilinear mesh: " << Ni << " " << Nj << " " << Nk );
   }
 

@@ -71,14 +71,14 @@ UniformMesh::UniformMesh( const double* lower_bound,
                           IndexType Nk ) :
   StructuredMesh( STRUCTURED_UNIFORM_MESH, Ni, Nj, Nk )
 {
-  SLIC_ERROR_IF( lower_bound==AXOM_NULLPTR, "supplied null for lower_bound" );
-  SLIC_ERROR_IF( upper_bound==AXOM_NULLPTR, "supplied null for upper_bound" );
+  SLIC_ERROR_IF( lower_bound==nullptr, "supplied null for lower_bound" );
+  SLIC_ERROR_IF( upper_bound==nullptr, "supplied null for upper_bound" );
 
   set_spacing_and_origin( lower_bound, upper_bound );
 }
 
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
 //------------------------------------------------------------------------------
 UniformMesh::UniformMesh( sidre::Group* group, const std::string& topo ) :
@@ -97,9 +97,9 @@ UniformMesh::UniformMesh( int dimension, const double* lower_bound,
                           const std::string& coordset ) :
   StructuredMesh( STRUCTURED_UNIFORM_MESH, dimension, extent, group, topo, coordset )
 {
-  SLIC_ERROR_IF( extent == AXOM_NULLPTR, "supplied extent buffer is null" );
-  SLIC_ERROR_IF( lower_bound == AXOM_NULLPTR, "supplied null for lower_bound" );
-  SLIC_ERROR_IF( upper_bound == AXOM_NULLPTR, "supplied null for upper_bound" );
+  SLIC_ERROR_IF( extent == nullptr, "supplied extent buffer is null" );
+  SLIC_ERROR_IF( lower_bound == nullptr, "supplied null for lower_bound" );
+  SLIC_ERROR_IF( upper_bound == nullptr, "supplied null for upper_bound" );
 
   // STEP 0: initialize mesh
   set_spacing_and_origin( lower_bound, upper_bound );
@@ -115,8 +115,8 @@ UniformMesh::UniformMesh( const double* lower_bound, const double* upper_bound,
                           IndexType Nj, IndexType Nk ) :
   StructuredMesh( STRUCTURED_UNIFORM_MESH, Ni, Nj, Nk, group, topo, coordset )
 {
-  SLIC_ERROR_IF( lower_bound == AXOM_NULLPTR, "supplied null for lower_bound" );
-  SLIC_ERROR_IF( upper_bound == AXOM_NULLPTR, "supplied null for upper_bound" );
+  SLIC_ERROR_IF( lower_bound == nullptr, "supplied null for lower_bound" );
+  SLIC_ERROR_IF( upper_bound == nullptr, "supplied null for upper_bound" );
 
   // STEP 0: initialize mesh
   set_spacing_and_origin( lower_bound, upper_bound );
@@ -131,7 +131,7 @@ UniformMesh::UniformMesh( const double* lower_bound, const double* upper_bound,
 void UniformMesh::getNode( IndexType nodeID, double* node ) const
 {
   SLIC_ASSERT( 0 <= nodeID && nodeID < getNumberOfNodes() );
-  SLIC_ASSERT( node != AXOM_NULLPTR );
+  SLIC_ASSERT( node != nullptr );
 
   IndexType i = -1;
   IndexType j = -1;
@@ -158,8 +158,8 @@ void UniformMesh::getNode( IndexType nodeID, double* node ) const
 
 void UniformMesh::set_spacing_and_origin( const double* lo, const double* hi )
 {
-  SLIC_ASSERT( lo != AXOM_NULLPTR );
-  SLIC_ASSERT( hi != AXOM_NULLPTR );
+  SLIC_ASSERT( lo != nullptr );
+  SLIC_ASSERT( hi != nullptr );
 
   for ( int dim = 0; dim < m_ndims; ++dim )
   {
@@ -167,7 +167,7 @@ void UniformMesh::set_spacing_and_origin( const double* lo, const double* hi )
     double dx   = hi[ dim ] - lo[ dim ];
     SLIC_ERROR_IF( utilities::isNearlyEqual( dx, 0.0 ) || dx < 0.0,
                    "supplied invalid bounds!" );
-    m_h[ dim ] = dx / getCellExtent( dim );
+    m_h[ dim ] = dx / getCellDimension( dim );
   }
 }
 
