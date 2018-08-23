@@ -47,17 +47,17 @@ namespace
 {
 
 //------------------------------------------------------------------------------
-void set_coordinates( IndexType N, double* x, double* y=nullptr, 
+void set_coordinates( IndexType N, double* x, double* y=nullptr,
                       double* z=nullptr )
 {
   const IndexType ndims = internal::dim( x, y, z );
   double* const coords[ 3 ] = { x, y, z };
 
   double factor = internal::PI;
-  for ( int dim = 0; dim < ndims; ++dim )
+  for ( int dim = 0 ; dim < ndims ; ++dim )
   {
     SLIC_ASSERT( coords[ dim ] != nullptr );
-    for ( IndexType i = 0; i < N; ++i )
+    for ( IndexType i = 0 ; i < N ; ++i )
     {
       coords[ dim ][ i ] = factor * i;
     }
@@ -98,10 +98,10 @@ void check_coordinates( IndexType N, int ndims, const double* x,
   const double* const coords[ 3 ] = { x, y, z };
 
   double factor = internal::PI;
-  for ( int dim = 0; dim < ndims; ++dim )
+  for ( int dim = 0 ; dim < ndims ; ++dim )
   {
     ASSERT_NE( coords[ dim ], nullptr );
-    for ( IndexType i = 0; i < N; ++i )
+    for ( IndexType i = 0 ; i < N ; ++i )
     {
       EXPECT_DOUBLE_EQ( coords[ dim ][ i ], factor * i );
     }
@@ -201,7 +201,7 @@ TEST( mint_mesh_curvilinear_mesh, native_constructor )
 {
   constexpr int NDIMS  = 3;
   const IndexType N[]  = { 5, 6, 7 };
-  const int64 extent[] = { 0, 4, 10, 15, 7, 13 };  
+  const int64 extent[] = { 0, 4, 10, 15, 7, 13 };
 
   for ( int idim=1 ; idim <= NDIMS ; ++idim )
   {
@@ -217,15 +217,15 @@ TEST( mint_mesh_curvilinear_mesh, native_constructor )
 
     switch( idim )
     {
-      case 1:
-        m = new CurvilinearMesh( N[ 0 ] );
-        break;
-      case 2:
-        m= new CurvilinearMesh( N[ 0 ], N[ 1 ] );
-        break;
-      default:
-        EXPECT_EQ( idim, 3 );
-        m = new CurvilinearMesh( N[ 0 ], N[ 1 ], N[ 2 ] );
+    case 1:
+      m = new CurvilinearMesh( N[ 0 ] );
+      break;
+    case 2:
+      m= new CurvilinearMesh( N[ 0 ], N[ 1 ] );
+      break;
+    default:
+      EXPECT_EQ( idim, 3 );
+      m = new CurvilinearMesh( N[ 0 ], N[ 1 ], N[ 2 ] );
     } // END switch
 
     internal::check_constructor( m, STRUCTURED_CURVILINEAR_MESH, idim, N );
@@ -245,7 +245,7 @@ TEST( mint_mesh_curvilinear_mesh, external_constructor )
 {
   constexpr int NDIMS = 3;
   const IndexType N[] = { 5, 6, 7 };
-  const int64 extent[] = { 0, 4, 10, 15, 7, 13 };  
+  const int64 extent[] = { 0, 4, 10, 15, 7, 13 };
   const IndexType maxNumNodes = N[ 0 ] * N[ 1 ] * N[ 2 ];
 
   double* x = new double[ maxNumNodes ];
@@ -263,35 +263,35 @@ TEST( mint_mesh_curvilinear_mesh, external_constructor )
 
     switch( idim )
     {
-      case 1:
-      {
-        m = new CurvilinearMesh( N, x );
-        EXPECT_EQ( x, m->getCoordinateArray( X_COORDINATE ) );
-        check_coordinates( curNumNodes, idim,
-                           m->getCoordinateArray( X_COORDINATE ) );
-      }   // END 1D
-      break;
-      case 2:
-      {
-        m = new CurvilinearMesh( N, x, y );
-        EXPECT_EQ( x, m->getCoordinateArray( X_COORDINATE ) );
-        EXPECT_EQ( y, m->getCoordinateArray( Y_COORDINATE ) );
-        check_coordinates( curNumNodes, idim,
-                           m->getCoordinateArray( X_COORDINATE ),
-                           m->getCoordinateArray( Y_COORDINATE )   );
-      }   // END 2D
-      break;
-      default:
-      {
-        m = new CurvilinearMesh( N, x, y, z );
-        EXPECT_EQ( x, m->getCoordinateArray( X_COORDINATE ) );
-        EXPECT_EQ( y, m->getCoordinateArray( Y_COORDINATE ) );
-        EXPECT_EQ( z, m->getCoordinateArray( Z_COORDINATE ) );
-        check_coordinates( curNumNodes, idim,
-                           m->getCoordinateArray( X_COORDINATE ),
-                           m->getCoordinateArray( Y_COORDINATE ),
-                           m->getCoordinateArray( Z_COORDINATE ) );
-      }   // END 3D
+    case 1:
+    {
+      m = new CurvilinearMesh( N, x );
+      EXPECT_EQ( x, m->getCoordinateArray( X_COORDINATE ) );
+      check_coordinates( curNumNodes, idim,
+                         m->getCoordinateArray( X_COORDINATE ) );
+    }     // END 1D
+    break;
+    case 2:
+    {
+      m = new CurvilinearMesh( N, x, y );
+      EXPECT_EQ( x, m->getCoordinateArray( X_COORDINATE ) );
+      EXPECT_EQ( y, m->getCoordinateArray( Y_COORDINATE ) );
+      check_coordinates( curNumNodes, idim,
+                         m->getCoordinateArray( X_COORDINATE ),
+                         m->getCoordinateArray( Y_COORDINATE )   );
+    }     // END 2D
+    break;
+    default:
+    {
+      m = new CurvilinearMesh( N, x, y, z );
+      EXPECT_EQ( x, m->getCoordinateArray( X_COORDINATE ) );
+      EXPECT_EQ( y, m->getCoordinateArray( Y_COORDINATE ) );
+      EXPECT_EQ( z, m->getCoordinateArray( Z_COORDINATE ) );
+      check_coordinates( curNumNodes, idim,
+                         m->getCoordinateArray( X_COORDINATE ),
+                         m->getCoordinateArray( Y_COORDINATE ),
+                         m->getCoordinateArray( Z_COORDINATE ) );
+    }     // END 3D
     } // END switch
 
     EXPECT_TRUE( m != nullptr );
@@ -323,7 +323,7 @@ TEST( mint_mesh_curvilinear_mesh, sidre_constructor )
 {
   constexpr int NDIMS  = 3;
   const IndexType N[]  = { 5, 6, 7 };
-  const int64 extent[] = { 0, 4, 10, 15, 7, 13 };  
+  const int64 extent[] = { 0, 4, 10, 15, 7, 13 };
 
   IndexType numNodes = 1;
   for ( int idim=1 ; idim <= NDIMS ; ++idim )
@@ -351,18 +351,18 @@ TEST( mint_mesh_curvilinear_mesh, sidre_constructor )
 
       switch ( idim )
       {
-        case 1:
-          m = new CurvilinearMesh( m2grp, N[ I_DIRECTION ] );
-          break;
-        case 2:
-          m = new CurvilinearMesh( m2grp, N[ I_DIRECTION ],
-                                    N[ J_DIRECTION ] );
-          break;
-        default:
-          EXPECT_EQ( idim, 3 );
-          m = new CurvilinearMesh( m2grp, N[ I_DIRECTION ],
-                                    N[ J_DIRECTION ],
-                                    N[ K_DIRECTION ] );
+      case 1:
+        m = new CurvilinearMesh( m2grp, N[ I_DIRECTION ] );
+        break;
+      case 2:
+        m = new CurvilinearMesh( m2grp, N[ I_DIRECTION ],
+                                 N[ J_DIRECTION ] );
+        break;
+      default:
+        EXPECT_EQ( idim, 3 );
+        m = new CurvilinearMesh( m2grp, N[ I_DIRECTION ],
+                                 N[ J_DIRECTION ],
+                                 N[ K_DIRECTION ] );
       } // END switch
 
       EXPECT_TRUE( m->hasSidreGroup() );

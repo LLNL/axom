@@ -355,7 +355,7 @@ TEST( mint_mesh_blueprint, get_set_uniform_mesh )
     sidre::Group* root = ds.getRoot();
     sidre::Group* coordset = root->createGroup( "coordsets/c1" );
     root->createGroup( "topologies/t1" );
-    
+
     mint::blueprint::initializeTopologyGroup( root, "t1", "c1", "uniform" );
     mint::blueprint::setStructuredMesh( NDIMS, ext, global_ext, coordset );
     mint::blueprint::setUniformMesh( idim, X0, H, coordset );
@@ -365,7 +365,7 @@ TEST( mint_mesh_blueprint, get_set_uniform_mesh )
 
     mint::blueprint::getUniformMesh( idim, origin, h, coordset );
 
-    for ( int i = 0; i < idim; ++i )
+    for ( int i = 0 ; i < idim ; ++i )
     {
       EXPECT_DOUBLE_EQ( origin[ i ], X0[ i ] );
       EXPECT_DOUBLE_EQ( h[ i ], H[ i ] );

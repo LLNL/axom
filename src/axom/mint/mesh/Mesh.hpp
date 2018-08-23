@@ -285,19 +285,24 @@ public:
    * \pre nodes != nullptr
    * \pre 0 <= cellID < getNumberOfCells()
    */
-  virtual IndexType getCellNodes( IndexType AXOM_NOT_USED(cellID), IndexType* AXOM_NOT_USED(nodes) ) const
+  virtual IndexType getCellNodes( IndexType AXOM_NOT_USED(
+                                    cellID),
+                                  IndexType* AXOM_NOT_USED(nodes) ) const
   {
     SLIC_ERROR( "Not implemented!" );
     return -1;
   }
 
-  virtual IndexType getNumberOfCellFaces( IndexType AXOM_NOT_USED(cellID) ) const
+  virtual IndexType getNumberOfCellFaces( IndexType AXOM_NOT_USED(cellID) )
+  const
   {
     SLIC_ERROR( "Not implemented!" );
     return -1;
   }
 
-  virtual IndexType getCellFaces( IndexType AXOM_NOT_USED(cellID), IndexType* AXOM_NOT_USED(faces) ) const
+  virtual IndexType getCellFaces( IndexType AXOM_NOT_USED(
+                                    cellID),
+                                  IndexType* AXOM_NOT_USED(faces) ) const
   {
     SLIC_ERROR( "Not implemented!" );
     return -1;
@@ -383,19 +388,25 @@ public:
     return UNDEFINED_CELL;
   }
 
-  virtual IndexType getNumberOfFaceNodes( IndexType AXOM_NOT_USED(faceID) ) const
+  virtual IndexType getNumberOfFaceNodes( IndexType AXOM_NOT_USED(faceID) )
+  const
   {
     SLIC_ERROR( "Not implemented!" );
     return -1;
   }
 
-  virtual IndexType getFaceNodes( IndexType AXOM_NOT_USED(faceID), IndexType* AXOM_NOT_USED(nodes) ) const
+  virtual IndexType getFaceNodes( IndexType AXOM_NOT_USED(
+                                    faceID),
+                                  IndexType* AXOM_NOT_USED(nodes) ) const
   {
     SLIC_ERROR( "Not implemented!" );
     return -1;
   }
 
-  virtual void getFaceCells( IndexType AXOM_NOT_USED(faceID), IndexType& AXOM_NOT_USED(cellIDOne), IndexType& AXOM_NOT_USED(cellIDTwo) ) const
+  virtual void getFaceCells( IndexType AXOM_NOT_USED(
+                               faceID), IndexType& AXOM_NOT_USED(
+                               cellIDOne), IndexType& AXOM_NOT_USED(
+                               cellIDTwo) ) const
   {
     SLIC_ERROR( "Not implemented!" );
   }

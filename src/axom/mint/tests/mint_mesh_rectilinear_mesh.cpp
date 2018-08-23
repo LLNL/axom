@@ -162,7 +162,7 @@ TEST( mint_mesh_rectilinear_mesh, native_constructor )
   const IndexType N[]    = { 5, 6, 7 };
   const int64 extent[] = { 0, 4, 10, 15, 7, 13 };
 
-  for ( int idim = 1; idim <= NDIMS; ++idim )
+  for ( int idim = 1 ; idim <= NDIMS ; ++idim )
   {
     RectilinearMesh* m = new RectilinearMesh( idim, N );
     internal::check_constructor( m, STRUCTURED_RECTILINEAR_MESH, idim, N );
@@ -205,7 +205,7 @@ TEST( mint_mesh_rectilinear_mesh, external_costructor )
 {
   constexpr int NDIMS        = 3;
   const IndexType N[]        = { 5, 6, 7 };
-  const int64 extent[] = { 0, 4, 10, 15, 7, 13 };  
+  const int64 extent[] = { 0, 4, 10, 15, 7, 13 };
   constexpr double MAGIC_VAL = 42.0;
 
   double* X = new double[ N[ 0 ] ];
@@ -295,7 +295,7 @@ TEST( mint_mesh_rectilinear_mesh, sidre_constructor )
   double* expected_coords = new double[ maxDim ];
   exponential_distribution( MAGIC_VAL, maxDim, expected_coords );
 
-  for ( int idim = 1; idim <= NDIMS; ++idim )
+  for ( int idim = 1 ; idim <= NDIMS ; ++idim )
   {
     // STEP 0: create a data-store with two groups
     sidre::DataStore ds;
@@ -328,8 +328,8 @@ TEST( mint_mesh_rectilinear_mesh, sidre_constructor )
       default:
         EXPECT_EQ( idim, 3 );
         m = new RectilinearMesh( m2grp, N[ I_DIRECTION ],
-                                  N[ J_DIRECTION ],
-                                  N[ K_DIRECTION ]  );
+                                 N[ J_DIRECTION ],
+                                 N[ K_DIRECTION ]  );
       } // END switch
 
       internal::check_constructor( m, STRUCTURED_RECTILINEAR_MESH, idim, N );

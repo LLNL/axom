@@ -63,7 +63,7 @@ void StructuredMesh::setNodeExtent( int ndims, const int64* extent )
   std::memset( m_node_extent, 0, sizeof( m_node_extent ) );
 
   int64 numNodes = 1;
-  for ( int dim = 0; dim < ndims; ++dim )
+  for ( int dim = 0 ; dim < ndims ; ++dim )
   {
     const int64 min = extent[ 2 * dim ];
     const int64 max = extent[ 2 * dim + 1 ];
@@ -97,7 +97,7 @@ StructuredMesh::StructuredMesh( int meshType, int dimension,
 }
 
 //------------------------------------------------------------------------------
-StructuredMesh::StructuredMesh( int meshType, IndexType Ni, IndexType Nj, 
+StructuredMesh::StructuredMesh( int meshType, IndexType Ni, IndexType Nj,
                                 IndexType Nk ) :
   Mesh( dim( Ni, Nj, Nk ), meshType )
 {
@@ -135,7 +135,7 @@ StructuredMesh::StructuredMesh( sidre::Group* group, const std::string& topo ) :
 }
 
 //------------------------------------------------------------------------------
-StructuredMesh::StructuredMesh( int meshType, int dimension, 
+StructuredMesh::StructuredMesh( int meshType, int dimension,
                                 const IndexType* node_dims, sidre::Group* group,
                                 const std::string& topo,
                                 const std::string& coordset ) :
@@ -207,7 +207,7 @@ StructuredMesh::StructuredMesh( int meshType, IndexType Ni, IndexType Nj,
   {
     topo_type = "structured";
   }
-  
+
   blueprint::initializeTopologyGroup( m_group, m_topology, m_coordset,
                                       topo_type );
   SLIC_ERROR_IF( !blueprint::isValidTopologyGroup( getTopologyGroup() ),
@@ -223,27 +223,27 @@ StructuredMesh::StructuredMesh( int meshType, IndexType Ni, IndexType Nj,
 //------------------------------------------------------------------------------
 void StructuredMesh::structuredInit()
 {
-  for ( int dim = 0; dim < m_ndims; ++dim )
+  for ( int dim = 0 ; dim < m_ndims ; ++dim )
   {
     SLIC_ERROR_IF( getNodeDimension( dim ) < 2, "invalid extent" );
   }
 
   /* Initialize the node meta data. */
-  m_node_jp = ( m_ndims > 1 ) ? getNodeDimension( 0 ) : 
-                                          std::numeric_limits<IndexType>::max();
-  m_node_kp = ( m_ndims > 2 ) ? m_node_jp * getNodeDimension( 1 ) : 
-                                          std::numeric_limits<IndexType>::max();
+  m_node_jp = ( m_ndims > 1 ) ? getNodeDimension( 0 ) :
+              std::numeric_limits<IndexType>::max();
+  m_node_kp = ( m_ndims > 2 ) ? m_node_jp* getNodeDimension( 1 ) :
+              std::numeric_limits<IndexType>::max();
 
   /* Initialize the cell meta data */
-  for ( int dim = 0; dim < m_ndims; ++dim )
+  for ( int dim = 0 ; dim < m_ndims ; ++dim )
   {
     m_cell_extent[ dim ] = getNodeDimension( dim ) - 1;
   }
 
-  m_cell_jp = ( m_ndims > 1 ) ? getCellDimension( 0 ) : 
-                                          std::numeric_limits<IndexType>::max();
-  m_cell_kp = ( m_ndims > 2 ) ? m_cell_jp * getCellDimension( 1 ) :
-                                          std::numeric_limits<IndexType>::max();
+  m_cell_jp = ( m_ndims > 1 ) ? getCellDimension( 0 ) :
+              std::numeric_limits<IndexType>::max();
+  m_cell_kp = ( m_ndims > 2 ) ? m_cell_jp* getCellDimension( 1 ) :
+              std::numeric_limits<IndexType>::max();
 
   /* Build the cell to node offsets. */
   m_cell_node_offsets[ 0 ] = 0;
@@ -265,11 +265,11 @@ void StructuredMesh::structuredInit()
   else if ( m_ndims == 3 )
   {
     m_total_faces[ 0 ] = getNodeDimension( 0 ) * getCellDimension( 1 )
-                       * getCellDimension( 2 );
+                         * getCellDimension( 2 );
     m_total_faces[ 1 ] = getCellDimension( 0 ) * getNodeDimension( 1 )
-                       * getCellDimension( 2 );
+                         * getCellDimension( 2 );
     m_total_faces[ 2 ] = getCellDimension( 0 ) * getCellDimension( 1 )
-                       * getNodeDimension( 2 );
+                         * getNodeDimension( 2 );
   }
 
   m_total_IJ_faces = m_total_faces[ 0 ] + m_total_faces[ 1 ];
@@ -280,11 +280,11 @@ void StructuredMesh::structuredInit()
   if ( m_ndims == 3 )
   {
     m_num_edges = getCellDimension( 0 ) * getNodeDimension( 1 )
-                                        * getNodeDimension( 2 )
-                + getCellDimension( 0 ) * getNodeDimension( 2 )
-                                        * getNodeDimension( 1 )
-                + getCellDimension( 1 ) * getNodeDimension( 2 )
-                                        * getNodeDimension( 0 );
+                  * getNodeDimension( 2 )
+                  + getCellDimension( 0 ) * getNodeDimension( 2 )
+                  * getNodeDimension( 1 )
+                  + getCellDimension( 1 ) * getNodeDimension( 2 )
+                  * getNodeDimension( 0 );
   }
 
   /* Initialize the fields */

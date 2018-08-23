@@ -222,7 +222,8 @@ public:
    * \post hasSidreGroup() == true
    * \post isExternal() == false
    */
-  RectilinearMesh( int dimension, const IndexType* node_dims, sidre::Group* group,
+  RectilinearMesh( int dimension, const IndexType* node_dims,
+                   sidre::Group* group,
                    const std::string& topo="", const std::string& coordset="" );
 
   /*!
@@ -256,7 +257,7 @@ public:
    */
   /// @{
 
-  RectilinearMesh( sidre::Group* group, const std::string& topo, 
+  RectilinearMesh( sidre::Group* group, const std::string& topo,
                    const std::string& coordset, IndexType Ni, IndexType Nj=-1,
                    IndexType Nk=-1 );
 
@@ -346,7 +347,7 @@ private:
 
 #endif
 
-  Array< double >* m_coordinates[3] = { nullptr, nullptr, 
+  Array< double >* m_coordinates[3] = { nullptr, nullptr,
                                         nullptr };
 
   DISABLE_COPY_AND_ASSIGNMENT( RectilinearMesh );

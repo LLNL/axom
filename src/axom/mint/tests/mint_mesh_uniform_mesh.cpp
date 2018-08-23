@@ -14,7 +14,8 @@
  *
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-#include "axom/mint/config.hpp"               // for compile-time type definitions
+#include "axom/mint/config.hpp"               // for compile-time type
+                                              // definitions
 
 #include "axom/mint/mesh/blueprint.hpp"       // for blueprint functions
 #include "axom/mint/mesh/CellTypes.hpp"       // for CellTypes enum definition

@@ -256,7 +256,8 @@ public:
   { return VERTEX; }
 
   virtual
-  IndexType getCellNodes( IndexType cellID, IndexType* cell ) const final override;
+  IndexType getCellNodes( IndexType cellID,
+                          IndexType* cell ) const final override;
 
 /// @}
 

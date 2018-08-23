@@ -74,7 +74,8 @@ constexpr int NUM_CELL_TYPES = static_cast< int >( CellType::NUM_CELL_TYPES );
  * \param VTK_TYPE the corresponding VTK type.
  * \param N the number of nodes that the cell has.
  */
-#define REGISTER_CELL_INFO( MINT_CELL_TYPE, MINT_NAME, BP_NAME, VTK_TYPE, N_NODES, N_FACES ) \
+#define REGISTER_CELL_INFO( MINT_CELL_TYPE, MINT_NAME, BP_NAME, VTK_TYPE, \
+                            N_NODES, N_FACES ) \
   namespace internal                                                        \
   {                                                                         \
   static constexpr CellInfo MINT_CELL_TYPE ## _INFO =                       \

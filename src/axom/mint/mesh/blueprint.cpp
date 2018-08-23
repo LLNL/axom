@@ -354,7 +354,7 @@ void getStructuredMesh( int dimension, IndexType node_extent[3],
 {
   SLIC_ERROR_IF( dimension < 1 || dimension > 3, "invalid dimension!" );
   SLIC_ERROR_IF( node_extent == nullptr, "supplied extent is null!" );
-  SLIC_ERROR_IF( global_node_extent == nullptr, 
+  SLIC_ERROR_IF( global_node_extent == nullptr,
                  "supplied global extent is null!" );
   SLIC_ERROR_IF( !blueprint::isValidCoordsetGroup( coordset ),
                  "invalid coordset group!" );
@@ -363,44 +363,44 @@ void getStructuredMesh( int dimension, IndexType node_extent[3],
 
   const char* dim_names[]     = { "dims/i", "dims/j", "dims/k" };
   const char* global_names[]    = { "global_ext/i_min", "global_ext/i_max",
-                                    "global_ext/j_min", "global_ext/j_max", 
+                                    "global_ext/j_min", "global_ext/j_max",
                                     "global_ext/k_min", "global_ext/k_max" };
 
-  for ( int dim = 0; dim < dimension; ++dim )
+  for ( int dim = 0 ; dim < dimension ; ++dim )
   {
     node_extent[ dim ] = c->getView( dim_names[ dim ] )->getScalar();
   } // END for
 
-  for ( int i = 0; i < 6; ++i )
+  for ( int i = 0 ; i < 6 ; ++i )
   {
     global_node_extent[ i ] = c->getView( global_names[ i ] )->getScalar();
   }
 }
 
 //------------------------------------------------------------------------------
-void setStructuredMesh( int dimension, const IndexType node_extent[3], 
-                        const int64 global_node_extent[6], 
+void setStructuredMesh( int dimension, const IndexType node_extent[3],
+                        const int64 global_node_extent[6],
                         sidre::Group* coordset )
 {
   SLIC_ERROR_IF( dimension < 1 || dimension > 3, "invalid dimension!" );
   SLIC_ERROR_IF( node_extent == nullptr, "supplied extent is null!" );
-  SLIC_ERROR_IF( global_node_extent == nullptr, 
+  SLIC_ERROR_IF( global_node_extent == nullptr,
                  "supplied global extent is null!" );
   SLIC_ERROR_IF( coordset == nullptr, "invalid coordset group!" );
 
   const char* dim_names[]     = { "dims/i", "dims/j", "dims/k" };
   const char* global_names[]    = { "global_ext/i_min", "global_ext/i_max",
-                                    "global_ext/j_min", "global_ext/j_max", 
+                                    "global_ext/j_min", "global_ext/j_max",
                                     "global_ext/k_min", "global_ext/k_max" };
 
   sidre::Group* c = const_cast< sidre::Group* >( coordset );
 
-  for ( int dim = 0; dim < dimension; ++dim )
+  for ( int dim = 0 ; dim < dimension ; ++dim )
   {
     coordset->createView( dim_names[ dim ] )->setScalar( node_extent[ dim ] );
   } // END for
 
-  for ( int i = 0; i < 6; ++i )
+  for ( int i = 0 ; i < 6 ; ++i )
   {
     c->createView( global_names[ i ] )->setScalar( global_node_extent[ i ] );
   }
@@ -408,22 +408,22 @@ void setStructuredMesh( int dimension, const IndexType node_extent[3],
 
 void setNodeExtent( sidre::Group* coordset, const int64 global_node_extent[6] )
 {
-  SLIC_ERROR_IF( global_node_extent == nullptr, 
+  SLIC_ERROR_IF( global_node_extent == nullptr,
                  "supplied global extent is null!" );
   SLIC_ERROR_IF( coordset == nullptr, "invalid coordset group!" );
 
   const char* global_names[]    = { "global_ext/i_min", "global_ext/i_max",
-                                    "global_ext/j_min", "global_ext/j_max", 
+                                    "global_ext/j_min", "global_ext/j_max",
                                     "global_ext/k_min", "global_ext/k_max" };
 
-  for ( int i = 0; i < 6; ++i )
+  for ( int i = 0 ; i < 6 ; ++i )
   {
     coordset->getView( global_names[ i ] )->setScalar( global_node_extent[ i ] );
   }
 }
 
 //------------------------------------------------------------------------------
-void getUniformMesh( int dimension, double* origin, double* spacing, 
+void getUniformMesh( int dimension, double* origin, double* spacing,
                      const sidre::Group* coordset )
 {
   SLIC_ERROR_IF( dimension < 1 || dimension > 3, "invalid dimension!" );
@@ -439,7 +439,7 @@ void getUniformMesh( int dimension, double* origin, double* spacing,
 
   SLIC_ERROR_IF( c->getView( "type" )->getString() != std::string("uniform"),
                  "Mesh is not a UniformMesh." );
-  for ( int dim = 0; dim < dimension; ++dim )
+  for ( int dim = 0 ; dim < dimension ; ++dim )
   {
     origin [ dim ] = c->getView( origin_names[ dim ] )->getScalar();
     spacing[ dim ] = c->getView( spacing_names[ dim ] )->getScalar();
@@ -447,7 +447,7 @@ void getUniformMesh( int dimension, double* origin, double* spacing,
 }
 
 //------------------------------------------------------------------------------
-void setUniformMesh( int dimension, const double* origin, const double* spacing, 
+void setUniformMesh( int dimension, const double* origin, const double* spacing,
                      sidre::Group* coordset )
 {
   SLIC_ERROR_IF( dimension < 1 || dimension > 3, "invalid dimension!" );
@@ -458,7 +458,7 @@ void setUniformMesh( int dimension, const double* origin, const double* spacing,
   const char* spacing_names[] = { "spacing/dx", "spacing/dy", "spacing/dz" };
 
   coordset->createView( "type" )->setString( "uniform" );
-  for ( int dim = 0; dim < dimension; ++dim )
+  for ( int dim = 0 ; dim < dimension ; ++dim )
   {
     coordset->createView( origin_names[ dim ] )->setScalar( origin[ dim ] );
     coordset->createView( spacing_names[ dim ] )->setScalar( spacing[ dim ] );

@@ -252,11 +252,11 @@ public:
    */
   /// @{
 
-  CurvilinearMesh( sidre::Group* group, const std::string& topo, 
-                   const std::string& coordset, IndexType Ni, IndexType Nj=-1, 
+  CurvilinearMesh( sidre::Group* group, const std::string& topo,
+                   const std::string& coordset, IndexType Ni, IndexType Nj=-1,
                    IndexType Nk=-1  );
 
-  CurvilinearMesh( sidre::Group* group, IndexType Ni, IndexType Nj=-1, 
+  CurvilinearMesh( sidre::Group* group, IndexType Ni, IndexType Nj=-1,
                    IndexType Nk=-1 ) :
     CurvilinearMesh( group, "", "", Ni, Nj, Nk )
   {}

@@ -95,7 +95,8 @@ UniformMesh::UniformMesh( int dimension, const double* lower_bound,
                           const double* upper_bound, const IndexType* extent,
                           sidre::Group* group, const std::string& topo,
                           const std::string& coordset ) :
-  StructuredMesh( STRUCTURED_UNIFORM_MESH, dimension, extent, group, topo, coordset )
+  StructuredMesh( STRUCTURED_UNIFORM_MESH, dimension, extent, group, topo,
+                  coordset )
 {
   SLIC_ERROR_IF( extent == nullptr, "supplied extent buffer is null" );
   SLIC_ERROR_IF( lower_bound == nullptr, "supplied null for lower_bound" );
@@ -161,7 +162,7 @@ void UniformMesh::set_spacing_and_origin( const double* lo, const double* hi )
   SLIC_ASSERT( lo != nullptr );
   SLIC_ASSERT( hi != nullptr );
 
-  for ( int dim = 0; dim < m_ndims; ++dim )
+  for ( int dim = 0 ; dim < m_ndims ; ++dim )
   {
     m_origin[ dim ] = lo[ dim ];
     double dx   = hi[ dim ] - lo[ dim ];

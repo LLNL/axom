@@ -1293,7 +1293,8 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
     axom::mint::IndexType Ni = cmesh.getNodeDimension(0);
     axom::mint::IndexType Nj = cmesh.getNodeDimension(1);
     axom::mint::IndexType Nk = cmesh.getNodeDimension(2);
-    SLIC_INFO( "Extents of curvilinear mesh: " << Ni << " " << Nj << " " << Nk );
+    SLIC_INFO( "Extents of curvilinear mesh: " << Ni << " " << Nj << " " <<
+               Nk );
   }
 
   // Set the positions of the nodes of the diagnostic mesh

@@ -584,7 +584,8 @@ public:
    * \pre 0 <= cellID < getNumberOfCells()
    */
   virtual
-  IndexType getCellNodes( IndexType cellID, IndexType* nodes ) const final override
+  IndexType getCellNodes( IndexType cellID,
+                          IndexType* nodes ) const final override
   {
     SLIC_ASSERT( nodes != nullptr );
     const IndexType n_nodes = getNumberOfCellNodes( cellID );

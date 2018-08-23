@@ -78,7 +78,8 @@ CurvilinearMesh::CurvilinearMesh( const IndexType* ext, double* x, double* y,
 #ifdef AXOM_MINT_USE_SIDRE
 
 //------------------------------------------------------------------------------
-CurvilinearMesh::CurvilinearMesh( sidre::Group* group, const std::string& topo ) :
+CurvilinearMesh::CurvilinearMesh( sidre::Group* group,
+                                  const std::string& topo ) :
   StructuredMesh( group, topo ),
   m_coordinates( new MeshCoordinates( getCoordsetGroup() ) )
 {
@@ -94,10 +95,10 @@ CurvilinearMesh::CurvilinearMesh( sidre::Group* group, const std::string& topo )
 }
 
 //------------------------------------------------------------------------------
-CurvilinearMesh::CurvilinearMesh( int dimension, const IndexType* ext, 
+CurvilinearMesh::CurvilinearMesh( int dimension, const IndexType* ext,
                                   sidre::Group* group, const std::string& topo,
                                   const std::string& coordset ) :
-  StructuredMesh( STRUCTURED_CURVILINEAR_MESH, dimension, ext, group, topo, 
+  StructuredMesh( STRUCTURED_CURVILINEAR_MESH, dimension, ext, group, topo,
                   coordset )
 {
   m_coordinates = new mint::MeshCoordinates( getCoordsetGroup(),

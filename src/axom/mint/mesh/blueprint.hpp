@@ -207,18 +207,18 @@ void getMeshTypeAndDimension( int& mesh_type, int& dimension,
 bool hasMixedCellTypes( const sidre::Group* group, const std::string& topo="" );
 
 
-void getStructuredMesh( int dimension, IndexType node_extent[3], 
-                        int64 global_node_extent[6], 
+void getStructuredMesh( int dimension, IndexType node_extent[3],
+                        int64 global_node_extent[6],
                         const sidre::Group* coordset );
 
 
-void setStructuredMesh( int dimension, const IndexType node_extent[3], 
-                        const int64 global_node_extent[6], 
+void setStructuredMesh( int dimension, const IndexType node_extent[3],
+                        const int64 global_node_extent[6],
                         sidre::Group* coordset );
 
 
-void setNodeExtent( sidre::Group* coordset,  
-                          const int64 global_node_extent[6] );
+void setNodeExtent( sidre::Group* coordset,
+                    const int64 global_node_extent[6] );
 
 /*!
  * \brief Returns the origin, spacing and extent of a uniform mesh from the
@@ -241,7 +241,7 @@ void setNodeExtent( sidre::Group* coordset,
  *
  * \see setUniformMesh()
  */
-void getUniformMesh( int dim, double* origin, double* spacing, 
+void getUniformMesh( int dim, double* origin, double* spacing,
                      const sidre::Group* coordset );
 
 /*!

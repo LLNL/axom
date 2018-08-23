@@ -241,7 +241,7 @@ public:
    * \post getOrigin()[ i ] == lower_bound[ i ] \f$ \forall i \f$
    * \post hasSidreGroup() == true
    */
-  UniformMesh( int dimension, const double* lower_bound, 
+  UniformMesh( int dimension, const double* lower_bound,
                const double* upper_bound, const IndexType* extent,
                sidre::Group* group, const std::string& topo="",
                const std::string& coordset="" );

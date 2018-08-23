@@ -939,7 +939,7 @@ TEST( mint_util_write_vtk, RectilinearMesh2D )
   {
     IndexType Nd = r_mesh->getNodeDimension( dim );
     double* x = r_mesh->getCoordinateArray( dim );
-    for ( IndexType i = 0; i < Nd; ++i )
+    for ( IndexType i = 0 ; i < Nd ; ++i )
     {
       x[ i ] = i * i / 10.0;
     }
@@ -973,7 +973,7 @@ TEST( mint_util_write_vtk, RectilinearMesh1D )
   {
     IndexType Nd = r_mesh->getNodeDimension( dim );
     double* x = r_mesh->getCoordinateArray( dim );
-    for ( IndexType i = 0 ; i < Nd; ++i )
+    for ( IndexType i = 0 ; i < Nd ; ++i )
     {
       x[ i ] = i * i / 10.0;
     }
@@ -1009,11 +1009,11 @@ TEST( mint_util_write_vtk, CurvilinearMesh3D )
   double* x_coords = c_mesh->getCoordinateArray( X_COORDINATE );
   double* y_coords = c_mesh->getCoordinateArray( Y_COORDINATE );
   double* z_coords = c_mesh->getCoordinateArray( Z_COORDINATE );
-  for ( IndexType k = 0; k < Nk; ++k )
+  for ( IndexType k = 0 ; k < Nk ; ++k )
   {
-    for ( IndexType j = 0; j < Nj; ++j )
+    for ( IndexType j = 0 ; j < Nj ; ++j )
     {
-      for ( IndexType i = 0; i < Ni; ++i )
+      for ( IndexType i = 0 ; i < Ni ; ++i )
       {
         IndexType idx = c_mesh->getNodeLinearIndex( i, j, k );
         double x = i + utilities::random_real( -0.45, 0.45 );
@@ -1054,9 +1054,9 @@ TEST( mint_util_write_vtk, CurvilinearMesh2D )
   IndexType Nj = c_mesh->getNodeDimension( 1 );
   double* x_coords = c_mesh->getCoordinateArray( X_COORDINATE );
   double* y_coords = c_mesh->getCoordinateArray( Y_COORDINATE );
-  for ( IndexType j = 0; j < Nj; ++j )
+  for ( IndexType j = 0 ; j < Nj ; ++j )
   {
-    for ( IndexType i = 0; i < Ni; ++i )
+    for ( IndexType i = 0 ; i < Ni ; ++i )
     {
       IndexType idx = c_mesh->getNodeLinearIndex( i, j );
       double x = i + utilities::random_real( -0.45, 0.45 );
@@ -1093,7 +1093,7 @@ TEST( mint_util_write_vtk, CurvilinearMesh1D )
 
   IndexType Ni = c_mesh->getNodeDimension( 0 );
   double* x_coords = c_mesh->getCoordinateArray( X_COORDINATE );
-  for ( IndexType i = 0; i < Ni; ++i )
+  for ( IndexType i = 0 ; i < Ni ; ++i )
   {
     double x = i + utilities::random_real( -0.45, 0.45 );
     x_coords[ i ] = x;
