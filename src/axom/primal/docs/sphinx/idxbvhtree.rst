@@ -11,11 +11,25 @@ subregions are also called "bins".
 The ``BVHTree`` is well-suited for particle-mesh or ray-mesh intersection tests.
 It is also well-suited to data sets where the contents are unevenly distributed,
 since the bins are subdivided based on their contents.  The figure below shows a
-2D BVH tree built up over a set of triangles.
+2D BVH tree with triangles inserted.
 
-.. figure:: figs/showBVHTree.png
+.. figure:: figs/showBVHTree0.png
    :figwidth: 300px
-   :alt: Diagram showing triangles indexed with a BVHTree
+   :alt: Diagram showing triangles in a bounding box
+
+The ``BVHTree::build()`` method recursively divides the bounding box.
+
+.. figure:: figs/showBVHTree1.png
+   :figwidth: 300px
+   :alt: Diagram showing first division of a BVHTree
+
+.. figure:: figs/showBVHTree2.png
+   :figwidth: 300px
+   :alt: Diagram showing second division of a BVHTree
+
+.. figure:: figs/showBVHTree3.png
+   :figwidth: 300px
+   :alt: Diagram showing third division of a BVHTree
 
 The following code example shows how a ``BVHTree`` can be used to accelerate a
 point-mesh intersection algorithm.  The key idea in ``BVHTree::find()`` is that

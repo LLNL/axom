@@ -16,13 +16,17 @@
  */
 
 /*! \file primal_introduction.cpp
- *  \brief This example code is a basic demonstration of how to use
- *  Primal to represent geometric primitives, perform geometric operations,
- *  and use a spatial index.
+ *  \brief This example code is a demonstration of Axom's primal component.
+ *
+ *  This file shows how to use Primal to represent geometric primitives, perform
+ *  geometric operations, and use a spatial index.  Running the executable from
+ *  this file will produce a collection of Asymptote source files.  When
+ *  compiled, the Asymptote files produce the figures that accompany primal's
+ *  Sphinx documentation.
  */
 
 /* This example code contains snippets used in the Primal Sphinx documentation.
- * They begin and end with comments
+ * They begin and end with comments such as
  *
  * prims_header_start
  * prims_header_end
@@ -30,20 +34,6 @@
  * clip_header_end
  * closest_point_header_start
  * closest_point_header_end
- * bbox_header_start
- * bbox_header_end
- * using_start
- * using_end
- * clip_start
- * clip_end
- * closest_point_start
- * closest_point_end
- * bbox_start
- * bbox_end
- * naive_intersection_start
- * naive_intersection_end
- * ugrid_intersection_start
- * ugrid_intersection_end
  *
  * each prepended with an underscore.
  */
