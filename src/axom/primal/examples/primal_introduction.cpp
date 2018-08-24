@@ -85,6 +85,9 @@
 // _ugrid_triintersect_header_start
 #include "primal/UniformGrid.hpp"
 // _ugrid_triintersect_header_end
+// _bvhtree_header_start
+#include "primal/BVHTree.hpp"
+// _bvhtree_header_end
 
 // C++ headers
 #include <cmath> // do we need this?
@@ -96,22 +99,31 @@
 using namespace axom;
 using namespace primal;
 
-// all our examples are in 3D
-const int NDIMS = 3;
+// almost all our examples are in 3D
+const int in3D = 3;
+const int in2D = 2;
 
 // all our primitives are represented by doubles, in 3D
-typedef Point<double, NDIMS> PointType;
-typedef Triangle<double, NDIMS> TriangleType;
-typedef BoundingBox<double, NDIMS> BoundingBoxType;
-typedef OrientedBoundingBox<double, NDIMS> OrientedBoundingBoxType;
-typedef Polygon<double, NDIMS> PolygonType;
-typedef Ray<double, NDIMS> RayType;
-typedef Segment<double, NDIMS> SegmentType;
-typedef Vector<double, NDIMS> VectorType;
+typedef Point<double, in3D> PointType;
+typedef Triangle<double, in3D> TriangleType;
+typedef BoundingBox<double, in3D> BoundingBoxType;
+typedef OrientedBoundingBox<double, in3D> OrientedBoundingBoxType;
+typedef Polygon<double, in3D> PolygonType;
+typedef Ray<double, in3D> RayType;
+typedef Segment<double, in3D> SegmentType;
+typedef Vector<double, in3D> VectorType;
 // the UniformGrid will store ints ("thing" indexes) in 3D
-typedef UniformGrid<int, NDIMS> UniformGridType;
+typedef UniformGrid<int, in3D> UniformGridType;
+
+// the BVHTree is in 2D, storing indexes to 2D triangles
+typedef BVHTree<int, in2D> BVHTree2DType;
+typedef BoundingBox<double, in2D> BoundingBox2DType;
+typedef Point<double, in2D> Point2DType;
+typedef Triangle<double, in2D> Triangle2DType;
 // _using_end
-typedef Plane<double, NDIMS> PlaneType;
+
+// a few more types, used in supporting code
+typedef Plane<double, in3D> PlaneType;
 
 PolygonType showClip()
 {
@@ -685,6 +697,41 @@ void findTriIntersectionsNaively(
 }
 // _naive_triintersect_end
 
+BoundingBoxType findBbox(std::vector<TriangleType> & tris)
+{
+  BoundingBoxType bbox;
+
+  for (int i = 0; i < tris.size(); ++i) {
+    bbox.addPoint(tris[i][0]);
+    bbox.addPoint(tris[i][1]);
+    bbox.addPoint(tris[i][2]);
+  }
+
+  return bbox;
+}
+
+BoundingBoxType findBbox(TriangleType & tri)
+{
+  BoundingBoxType bbox;
+
+  bbox.addPoint(tri[0]);
+  bbox.addPoint(tri[1]);
+  bbox.addPoint(tri[2]);
+
+  return bbox;
+}
+
+BoundingBox2DType findBbox(Triangle2DType & tri)
+{
+  BoundingBox2DType bbox;
+
+  bbox.addPoint(tri[0]);
+  bbox.addPoint(tri[1]);
+  bbox.addPoint(tri[2]);
+
+  return bbox;
+}
+
 // _ugrid_triintersect_start
 BoundingBoxType findBbox(std::vector<TriangleType> & tris);
 BoundingBoxType findBbox(TriangleType & tri);
@@ -696,14 +743,14 @@ void findTriIntersectionsAccel(
 {
   // Prepare to construct the UniformGrid.
   BoundingBoxType allbbox = findBbox(tris);
-  const Point3 & minBBPt = allbbox.getMin();
-  const Point3 & maxBBPt = allbbox.getMax();
+  const PointType & minBBPt = allbbox.getMin();
+  const PointType & maxBBPt = allbbox.getMax();
 
   int tcount = tris.size();
 
   // The number of buckets along one side of the UniformGrid.
   // This is a heuristic.
-  int res = (int)(1 + std::pow(ncells, 1/3.));
+  int res = (int)(1 + std::pow(tcount, 1/3.));
   int ress[3] = {res, res, res};
 
   // Construct the UniformGrid with minimum point, maximum point,
@@ -723,7 +770,7 @@ void findTriIntersectionsAccel(
 
     // Get all the buckets t1 occupies
     std::vector<int> neighborTriangles;
-    const std::vector<int> bToCheck = ugrid.getBinsForBbox(triBB2);
+    const std::vector<int> bToCheck = ugrid.getBinsForBbox(bbox);
     size_t checkcount = bToCheck.size();
 
     // Load all the triangles in these buckets whose indices are
@@ -748,13 +795,183 @@ void findTriIntersectionsAccel(
     while (j != jend) {
       TriangleType & t2 = tris[*j];
       if (primal::intersect(t1, t2)) {
-        intersections.push_back(std::make_pair(i, *j));
+        clashes.push_back(std::make_pair(i, *j));
       }
       ++j;
     }
   }
 }
 // _ugrid_triintersect_end
+
+void makeUniformGridTriangles(std::vector<TriangleType> & tris)
+{
+  PointType p[8];
+  p[0] = PointType::make_point(0.3,  0.93, 0.03);
+  p[1] = PointType::make_point(0.1,  0.85, 0.01);
+  p[2] = PointType::make_point(0.3,  0.78, 0.03);
+  p[3] = PointType::make_point(0.18, 0.36, 0.018);
+  p[4] = PointType::make_point(0.8,  0.58, 0.08);
+  p[5] = PointType::make_point(0.6,  0.5, 0.06);
+  p[6] = PointType::make_point(0.55, 0.42, 0.055);
+  p[7] = PointType::make_point(0.61, 0.1, 0.061);
+
+  TriangleType t0(p[0], p[1], p[2]);    tris.push_back(t0);
+  TriangleType t1(p[2], p[1], p[3]);    tris.push_back(t1);
+  TriangleType t2(p[2], p[3], p[6]);    tris.push_back(t2);
+  TriangleType t3(p[6], p[3], p[7]);    tris.push_back(t3);
+  TriangleType t4(p[4], p[2], p[6]);    tris.push_back(t4);
+  TriangleType t5(p[4], p[5], p[7]);    tris.push_back(t5);
+}
+
+void printPairs(std::string title,
+                std::vector< std::pair<int, int> > & clashes)
+{
+  int ccount = clashes.size();
+  std::cout << ccount << title << std::endl;
+  for (int i = 0; i < ccount; ++i) {
+    std::cout << clashes[i].first << "   " << clashes[i].second << std::endl;
+  }
+}
+
+void driveUniformGrid()
+{
+  std::vector<TriangleType> tris;
+  makeUniformGridTriangles(tris);
+
+  std::vector< std::pair<int, int> > naiveclashes;
+  findTriIntersectionsNaively(tris, naiveclashes);
+
+  std::vector< std::pair<int, int> > accelclashes;
+  findTriIntersectionsAccel(tris, accelclashes);
+
+  printPairs(" clashes found by naive algorithm:", naiveclashes);
+  printPairs(" clashes found by accelerated algorithm:", accelclashes);
+}
+
+// _bvhtree_start
+BoundingBox2DType findBbox(Triangle2DType & tri);
+
+BVHTree2DType * buildBVHTree(std::vector<Triangle2DType> & tris,
+                             Point2DType ppoint,
+                             std::vector<int> & intersections)
+{
+  // Initialize BVHTree with the triangles
+  const int MaxBucketFill = 1;
+  const int MaxLevels = 4;
+  int tricount = tris.size();
+  BVHTree2DType * tree  = new BVHTree2DType( tricount, MaxLevels );
+
+  for ( int i=0 ; i < tricount ; ++i ) {
+    tree->insert( findBbox( tris[i] ), i );
+  }
+
+  // Build bounding volume hierarchy
+  tree->build( MaxBucketFill );
+
+  // Which triangles does the probe point intersect?
+  // Get the candidate buckets
+  std::vector<int> buckets;
+  tree->find(ppoint, buckets);
+  int nbuckets = buckets.size();
+  std::vector< int > candidates;
+
+  // for each candidate bucket, 
+  for (size_t curb = 0 ; curb < nbuckets ; ++curb) {
+    // get its size and object array
+    int bcount = tree->getBucketNumObjects(buckets[curb]);
+    const int * ary = tree->getBucketObjectArray(buckets[curb]);
+
+    // For each object in the current bucket,
+    for (int j = 0; j < bcount; ++j) {
+      // find the tree's internal object ID
+      int treeObjID = ary[j];
+      // and use it to retrieve the triangle's ID.
+      int triID = tree->getObjectData(ary[j]);
+
+      // Then store the ID in the candidates list.
+      candidates.push_back(triID);
+    }
+  }
+
+  // Sort the candidate triangles, and throw out duplicates.
+  // This is not strictly necessary but saves some calls to checkInTriangle().
+  std::sort(candidates.begin(), candidates.end());
+  std::vector<int>::iterator jend =
+    std::unique(candidates.begin(), candidates.end());
+  std::vector<int>::iterator j = candidates.begin();
+
+  // Test if ppoint lands in any of its neighbor triangles.
+  while (j != jend) {
+    Triangle2DType & t = tris[*j];
+    if (t.checkInTriangle(ppoint)) {
+      intersections.push_back(*j);
+    }
+    ++j;
+  }
+
+  return tree;
+}
+// _bvhtree_end
+
+void makeBVHTreeTriangles(std::vector<Triangle2DType> & tris)
+{
+  Point2DType p[19];
+  p[0] = Point2DType::make_point(.13, .88);
+  p[1] = Point2DType::make_point(.26, .87);
+  p[2] = Point2DType::make_point(.11, .77);
+  p[3] = Point2DType::make_point(.18, .78);
+  p[4] = Point2DType::make_point(.13, .74);
+  p[5] = Point2DType::make_point(.37, .75);
+  p[6] = Point2DType::make_point(.12, .61);
+  p[7] = Point2DType::make_point(.25, .51);
+  p[8] = Point2DType::make_point(.11, .44);
+  p[9] = Point2DType::make_point(.26, .40);
+  p[10] = Point2DType::make_point(.12, .25);
+  p[11] = Point2DType::make_point(.85, .38);
+  p[12] = Point2DType::make_point(.94, .37);
+  p[13] = Point2DType::make_point(.84, .26);
+  p[14] = Point2DType::make_point(.92, .27);
+  p[15] = Point2DType::make_point(.96, .28);
+  p[16] = Point2DType::make_point(.84, .16);
+  p[17] = Point2DType::make_point(.92, .16);
+  p[18] = Point2DType::make_point(.93, .09);
+
+  Triangle2DType t0(p[1], p[0], p[3]);      tris.push_back(t0);
+  Triangle2DType t1(p[0], p[2], p[3]);      tris.push_back(t1);
+  Triangle2DType t2(p[1], p[3], p[5]);      tris.push_back(t2);
+  Triangle2DType t3(p[3], p[2], p[4]);      tris.push_back(t3);
+  Triangle2DType t4(p[3], p[4], p[5]);      tris.push_back(t4);
+  Triangle2DType t5(p[2], p[6], p[4]);      tris.push_back(t5);
+  Triangle2DType t6(p[5], p[4], p[6]);      tris.push_back(t6);
+  Triangle2DType t7(p[5], p[6], p[7]);      tris.push_back(t7);
+  Triangle2DType t8(p[7], p[6], p[8]);      tris.push_back(t8);
+  Triangle2DType t9(p[7], p[8], p[9]);      tris.push_back(t9);
+  Triangle2DType t10(p[9], p[8], p[10]);    tris.push_back(t10);
+  Triangle2DType t11(p[11], p[13], p[14]);  tris.push_back(t11);
+  Triangle2DType t12(p[12], p[11], p[14]);  tris.push_back(t12);
+  Triangle2DType t13(p[12], p[14], p[15]);  tris.push_back(t13);
+  Triangle2DType t14(p[14], p[13], p[16]);  tris.push_back(t14);
+  Triangle2DType t15(p[14], p[16], p[17]);  tris.push_back(t15);
+  Triangle2DType t16(p[16], p[18], p[17]);  tris.push_back(t16);
+}
+
+void driveBVHTree()
+{
+  std::vector<Triangle2DType> tris;
+  makeBVHTreeTriangles(tris);
+  Point2DType ppoint = Point2DType::make_point(0.45, 0.25);
+  std::vector<int> intersections;
+
+  BVHTree2DType *tree = buildBVHTree(tris, ppoint, intersections);
+  tree->writeVtkFile("BVHTree.out.vtk");
+
+  std::cout << "Point " << ppoint << " hit the following triangles:" << std::endl;
+  for (int i = 0; i < intersections.size(); ++i) {
+    std::cout << intersections[i] << std::endl;
+  }
+
+  delete tree;
+}
 
 int main(int argc, char** argv)
 {
@@ -771,6 +988,8 @@ int main(int argc, char** argv)
   showIntersect();
   showOrientation();
   showDistance();
+  driveUniformGrid();
+  driveBVHTree();
 
   return 0;
 }

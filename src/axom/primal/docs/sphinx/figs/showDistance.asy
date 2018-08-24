@@ -8,7 +8,7 @@
 // preamble
 settings.render = 6;
 import three;
-size(10cm, 0);
+size(6cm, 0);
 
 // axes
 draw(O -- 1.3X, arrow=Arrow3(DefaultHead2), L=Label("$x$", position=EndPoint, align=W));
