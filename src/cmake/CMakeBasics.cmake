@@ -161,6 +161,12 @@ blt_append_custom_compiler_flag(FLAGS_VAR CMAKE_CXX_FLAGS_DEBUG
                   CLANG       "-fstandalone-debug"
                   )
 
+blt_append_custom_compiler_flag(FLAGS_VAR CMAKE_CXX_FLAGS
+                  DEFAULT     " "
+                  GNU         "-fdiagnostics-color=always"
+                  CLANG       "-fcolor-diagnostics"
+                  )
+
 
 # message(STATUS "Custom compiler flags:")
 # foreach(flag ${custom_compiler_flags_list})
