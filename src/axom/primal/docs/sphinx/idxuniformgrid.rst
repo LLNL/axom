@@ -1,11 +1,13 @@
 UniformGrid
 ^^^^^^^^^^^
 
-The ``UniformGrid`` tiles the region of interest into non-intersecting
-subregions (or "buckets") of uniform size.  Each object in the region of interest
-is added an object to every bucket the object
+The ``UniformGrid`` implements the 
+`Cell list <https://en.wikipedia.org/wiki/Cell_lists>`_.
+This data structure tiles the region of interest into non-intersecting
+subregions (or "bins") of uniform size.  Each object in the region of interest
+is added to every bin the object
 intersects.  ``UniformGrid`` can be used when a code compares each primitive
-in a collection to every other "close" primitive, such as when checking if a
+in a collection to every other spatially-close primitive, such as when checking if a
 triangle mesh intersects itself.  The following naive implementation is
 straightforward but runs in :math:`O(n^2)` time, where :math:`n` is the number
 of triangles.
@@ -18,9 +20,9 @@ of triangles.
 We want to call ``intersect()`` only for triangles that can intersect, ignoring
 widely-separated triangles.  The ``UniformGrid`` enables this optimization.  In
 the following figure, the ``UniformGrid`` divides the region of interest into
-three by three buckets outlined in grey.  A triangle :math:`t` (shown in orange)
+three by three bins outlined in grey.  A triangle :math:`t` (shown in orange)
 will be compared with neighbor triangles (shown in black) that fall into the
-buckets occupied by :math:`t`.  Other triangles (shown in blue) are too far away
+bins occupied by :math:`t`.  Other triangles (shown in blue) are too far away
 to intersect and are not compared with :math:`t`.
 
 .. Unlike the figures for geometric operations, this figure is "hand-drawn," not
@@ -41,6 +43,6 @@ to intersect and are not compared with :math:`t`.
    :language: C++
 
 The ``UniformGrid`` has its best effect when objects are roughly the same size and 
-evenly distributed over the region of interest, and when buckets are close to the 
+evenly distributed over the region of interest, and when bins are close to the 
 characteristic size of objects in the region of interest.  
 
