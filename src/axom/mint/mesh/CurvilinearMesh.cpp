@@ -78,7 +78,7 @@ CurvilinearMesh::CurvilinearMesh( const IndexType* ext, double* x, double* y,
 #ifdef AXOM_MINT_USE_SIDRE
 
 //------------------------------------------------------------------------------
-CurvilinearMesh::CurvilinearMesh( sidre::Group* group,
+CurvilinearMesh::CurvilinearMesh( sidre::Group* group, 
                                   const std::string& topo ) :
   StructuredMesh( group, topo ),
   m_coordinates( new MeshCoordinates( getCoordsetGroup() ) )
@@ -95,8 +95,10 @@ CurvilinearMesh::CurvilinearMesh( sidre::Group* group,
 }
 
 //------------------------------------------------------------------------------
-CurvilinearMesh::CurvilinearMesh( int dimension, const IndexType* ext,
-                                  sidre::Group* group, const std::string& topo,
+CurvilinearMesh::CurvilinearMesh( int dimension,
+                                  const IndexType* ext,
+                                  sidre::Group* group,
+                                  const std::string& topo,
                                   const std::string& coordset ) :
   StructuredMesh( STRUCTURED_CURVILINEAR_MESH, dimension, ext, group, topo,
                   coordset )
@@ -114,9 +116,12 @@ CurvilinearMesh::CurvilinearMesh( int dimension, const IndexType* ext,
 }
 
 //------------------------------------------------------------------------------
-CurvilinearMesh::CurvilinearMesh( sidre::Group* group, const std::string& topo,
-                                  const std::string& coordset, IndexType Ni,
-                                  IndexType Nj, IndexType Nk  ) :
+CurvilinearMesh::CurvilinearMesh( sidre::Group* group,
+                                  const std::string& topo,
+                                  const std::string& coordset,
+                                  IndexType Ni,
+                                  IndexType Nj,
+                                  IndexType Nk  ) :
   StructuredMesh( STRUCTURED_CURVILINEAR_MESH, Ni, Nj, Nk, group, topo,
                   coordset)
 {

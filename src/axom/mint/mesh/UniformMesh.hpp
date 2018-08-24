@@ -241,9 +241,12 @@ public:
    * \post getOrigin()[ i ] == lower_bound[ i ] \f$ \forall i \f$
    * \post hasSidreGroup() == true
    */
-  UniformMesh( int dimension, const double* lower_bound,
-               const double* upper_bound, const IndexType* extent,
-               sidre::Group* group, const std::string& topo="",
+  UniformMesh( int dimension,
+               const double* lower_bound,
+               const double* upper_bound,
+               const IndexType* extent,
+               sidre::Group* group,
+               const std::string& topo="",
                const std::string& coordset="" );
 
   /*!
@@ -285,14 +288,21 @@ public:
    * \post hasSidreGroup() == true
    */
   /// @{
-  UniformMesh( const double* lower_bound, const double* upper_bound,
-               sidre::Group* group, const std::string& topo,
-               const std::string& coordset, IndexType Ni,
-               IndexType Nj=-1, IndexType Nk=-1 );
+  UniformMesh( const double* lower_bound,
+               const double* upper_bound,
+               sidre::Group* group,
+               const std::string& topo,
+               const std::string& coordset,
+               IndexType Ni,
+               IndexType Nj=-1,
+               IndexType Nk=-1 );
 
-  UniformMesh( const double* lower_bound, const double* upper_bound,
-               sidre::Group* group, IndexType Ni,
-               IndexType Nj=-1, IndexType Nk=-1 ) :
+  UniformMesh( const double* lower_bound,
+               const double* upper_bound,
+               sidre::Group* group,
+               IndexType Ni,
+               IndexType Nj=-1,
+               IndexType Nk=-1 ) :
     UniformMesh( lower_bound, upper_bound, group, "", "", Ni, Nj, Nk )
   {}
   /// @}
@@ -394,7 +404,7 @@ public:
 
 private:
 
-  void set_spacing_and_origin( const double* lo, const double* hi );
+  void setSpacingAndOrigin( const double* lo, const double* hi );
 
   double m_origin[ 3 ] = { 0.0, 0.0, 0.0 };
   double m_h[ 3 ]      = { 1.0, 1.0, 1.0 };

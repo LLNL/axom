@@ -206,19 +206,57 @@ void getMeshTypeAndDimension( int& mesh_type, int& dimension,
  */
 bool hasMixedCellTypes( const sidre::Group* group, const std::string& topo="" );
 
+/*!
+ * \brief Get the nodal dimensions and the global node extent of a
+ *  StructuredMesh from sidre.
+ *
+ * \param [in] dim the expected dimension of the mesh.
+ * \param [out] node_dims buffer to store the nodal dimensions.
+ * \param [out] node_ext buffer to store the nodal extent.
+ * \param [in] coordset pointer to the associated coordset group.
+ *
+ * \pre 1 <= dim <= 3
+ * \pre node_dims != nullptr
+ * \pre node_ext != nullptr
+ * \pre coordset != nullptr
+ * \pre isValidCoordsetGroup( coordset )
+ *
+ * \see setStructuredMesh()
+ */
+void getStructuredMesh( int dimension, IndexType node_dims[3],
+                        int64 node_ext[6], const sidre::Group* coordset );
 
-void getStructuredMesh( int dimension, IndexType node_extent[3],
-                        int64 global_node_extent[6],
-                        const sidre::Group* coordset );
+/*!
+ * \brief Put the nodal dimensions and the global node extent of a
+ *  StructuredMesh into sidre.
+ *
+ * \param [in] dim the dimension of the mesh.
+ * \param [in] node_dims buffer holding the nodal dimensions.
+ * \param [in] node_ext buffer holding the nodal extent.
+ * \param [out] coordset pointer to the associated coordset group.
+ *
+ * \pre 1 <= dim <= 3
+ * \pre node_dims != nullptr
+ * \pre node_ext != nullptr
+ * \pre coordset != nullptr
+ *
+ * \see getStructuredMesh()
+ */
+void setStructuredMesh( int dimension, const IndexType node_dims[3],
+                        const int64 node_ext[6], sidre::Group* coordset );
 
-
-void setStructuredMesh( int dimension, const IndexType node_extent[3],
-                        const int64 global_node_extent[6],
-                        sidre::Group* coordset );
-
-
-void setNodeExtent( sidre::Group* coordset,
-                    const int64 global_node_extent[6] );
+/*!
+ * \brief Put the global node extent of a StructuredMesh into sidre.
+ *
+ * \param [out] coordset pointer to the associated coordset group.
+ * \param [in] node_ext buffer holding the nodal extent.
+ *
+ * \pre coordset != nullptr
+ * \pre node_ext != nullptr
+ *
+ * \see setStructuredMesh()
+ */
+void setExtent( sidre::Group* coordset, const int64 node_ext[6] );
 
 /*!
  * \brief Returns the origin, spacing and extent of a uniform mesh from the
@@ -236,8 +274,7 @@ void setNodeExtent( sidre::Group* coordset,
  * \pre origin != nullptr
  * \pre spacing != nullptr
  * \pre coordset != nullptr
- *
- * \post isValidCoordsetGroup( coordset )
+ * \pre isValidCoordsetGroup( coordset )
  *
  * \see setUniformMesh()
  */

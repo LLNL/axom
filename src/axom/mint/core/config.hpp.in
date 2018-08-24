@@ -39,10 +39,6 @@ using IndexType = common::int32;
 
 constexpr IndexType USE_DEFAULT = -1;
 
-constexpr int I_DIRECTION = 0;
-constexpr int J_DIRECTION = 1;
-constexpr int K_DIRECTION = 2;
-
 using int64 = common::int64;
 
 } /* end namespace mint */

@@ -1269,8 +1269,8 @@ TEST( mint_mesh_coordinates, sidre_push_constructor )
       EXPECT_TRUE( coords_group->hasChildGroup( "values" ) );
 
       sidre::Group* values_group = coords_group->getGroup( "values" );
-      EXPECT_TRUE( values_group != nullptr );
-      EXPECT_TRUE( values_group->getNumViews()==static_cast< size_t> (dim ) );
+      EXPECT_NE( values_group, nullptr );
+      EXPECT_EQ( values_group->getNumViews(), dim );
 
       for ( int j=0 ; j < dim ; ++j )
       {
@@ -1327,8 +1327,8 @@ TEST( mint_mesh_coordinates, sidre_push_constructor )
     EXPECT_TRUE( coords_group->hasChildGroup( "values" ) );
 
     sidre::Group* values_group = coords_group->getGroup( "values" );
-    EXPECT_TRUE( values_group != nullptr );
-    EXPECT_TRUE( values_group->getNumViews()==static_cast< size_t >(dim) );
+    EXPECT_NE( values_group, nullptr );
+    EXPECT_EQ( values_group->getNumViews(), dim );
 
     for ( int j=0 ; j < dim ; ++j )
     {

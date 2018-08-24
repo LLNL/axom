@@ -27,12 +27,16 @@
 
 #include "axom/slic/interface/slic.hpp"   // for SLIC macros
 
-#include <cstring>                        // for std::memset
+#include <cstring>                        // for std::memcpy
 
 namespace axom
 {
 namespace mint
 {
+
+constexpr int I_DIRECTION = 0;
+constexpr int J_DIRECTION = 1;
+constexpr int K_DIRECTION = 2;
 
 /*!
  * \class StructuredMesh
@@ -148,6 +152,9 @@ public:
    *  be of length at least getNumberOfCellFaces().
    *
    * \return The number of faces for the given cell.
+   * 
+   * \note The faces are returned in the order of LOWER_I_FACE, UPPER_I_FACE,
+   *  LOWER_J_FACE, UPPER_J_FACE and then LOWER_K_FACE, UPPER_K_FACE if 3D. 
    *
    * \pre faces != nullptr
    * \pre 0 <= cellID < getNumberOfCells()
@@ -269,7 +276,7 @@ public:
    * \param [out] cellIDOne the ID of the first cell.
    * \param [out] cellIDTwo the ID of the second cell.
    *
-   * \note If no cell exists, (the face is external) then the ID will be set to
+   * \note If no cell exists (the face is external) then the ID will be set to
    * -1.
    *
    * \pre 0 <= faceID < getNumberOfCells()
@@ -334,9 +341,11 @@ public:
    * \param [in] i logical index of the cell along the first dimension.
    * \param [in] j logical index of the cell along the second dimension.
    * \param [in] k logical index of the cell along the third dimension
-   *(optional).
+   *  (optional).
+   * \param [out] faces pointer to buffer to populate with the face IDs.
    *
-   * \param [out] faces pointer to buffer to populate with the face IDs
+   * \note The faces are returned in the order of LOWER_I_FACE, UPPER_I_FACE,
+   *  LOWER_J_FACE, UPPER_J_FACE and then LOWER_K_FACE, UPPER_K_FACE if 3D. 
    */
   /// @{
   inline void getCellFaces( IndexType i, IndexType j, IndexType* faces ) const
@@ -386,7 +395,7 @@ public:
    * \param [out] cellIDOne the ID of the first cell.
    * \param [out] cellIDTwo the ID of the second cell.
    *
-   * \note If no cell exists, (the face is external) then the ID will be set to
+   * \note If no cell exists (the face is external) then the ID will be set to
    * -1.
    * \note Each method is specialized for faces in the I, J, or K direction.
    *
@@ -425,30 +434,25 @@ public:
   /*!
    * \brief Get the global node extent of the mesh.
    *
-   * \param [in] dim the dimension to query.
-   * \param [out] low the low end the the global extent of the given dimension.
-   * \param [out] high the high end the the global extent of the given
-   * dimension.
-   *
-   * \pre 0 <= dim < 3
+   * \param [out] extent the buffer to copy the global node extent into, must be
+   *  of length at least 6.
    */
   inline
-  void getNodeExtent( IndexType dim, int64& low, int64& high ) const
+  void getExtent( int64 extent[ 6 ] ) const
   {
-    SLIC_ASSERT( 0 <= dim && dim < 3 );
-    low = m_node_extent[ 2 * dim ];
-    high = m_node_extent[ 2 * dim + 1 ];
+    SLIC_ASSERT( extent != nullptr );
+    std::memcpy( extent, m_node_extent, sizeof( m_node_extent ) );
   }
 
   /*!
-   * \brief Set the node extent of the mesh.
+   * \brief Set the global node extent of the mesh.
    *
    * \param [in] ndims the number of dimensions to set.
    * \param [in] extent the values to set, of length at least 2 * ndims.
    *
    * \pre 0 <= dim < 3
    */
-  void setNodeExtent( int ndims, const int64* extent );
+  void setExtent( int ndims, const int64* extent );
 
   /*!
    * \brief Returns the number of cells along the given dimension.
@@ -460,7 +464,7 @@ public:
   inline IndexType getCellDimension( IndexType dim ) const
   {
     SLIC_ASSERT( 0 <= dim && dim < 3 );
-    return m_cell_extent[ dim ];
+    return m_cell_dims[ dim ];
   }
 
   /*!
@@ -696,7 +700,7 @@ public:
                                  IndexType& j ) const
   {
     SLIC_ASSERT( m_ndims == 2 );
-    SLIC_ASSERT( 0 <= faceID < getTotalNumFaces( 0 ) );
+    SLIC_ASSERT( 0 <= faceID && faceID < getTotalNumFaces( 0 ) );
 
     j = faceID / getNodeDimension( 0 );
     i = faceID - getNodeDimension( 0 ) * j;
@@ -706,7 +710,7 @@ public:
                                  IndexType& k ) const
   {
     SLIC_ASSERT( m_ndims >= 2 );
-    SLIC_ASSERT( 0 <= faceID < getTotalNumFaces( 0 ) );
+    SLIC_ASSERT( 0 <= faceID && faceID < getTotalNumFaces( 0 ) );
 
     k = getIFaceKIndex( faceID );
     const IndexType rest = m_num_I_faces_in_k_slice * k;
@@ -821,8 +825,10 @@ protected:
    * \see Mesh( int ndims, int type, sidre::Group*,
    *            const std::string& topo, const std::string& coordset );
    */
-  StructuredMesh( int meshType, int dimension, const IndexType* node_dims,
-                  sidre::Group* group,
+  StructuredMesh( int meshType,
+                  int dimension,
+                  const IndexType* node_dims,
+                  sidre::Group* group, 
                   const std::string& topo,
                   const std::string& coordset );
 
@@ -853,8 +859,12 @@ protected:
    * \see Mesh( int ndims, int type, sidre::Group*,
    *            const std::string& topo, const std::string& coordset );
    */
-  StructuredMesh( int meshType, IndexType Ni, IndexType Nj, IndexType Nk,
-                  sidre::Group* group, const std::string& topo,
+  StructuredMesh( int meshType,
+                  IndexType Ni,
+                  IndexType Nj,
+                  IndexType Nk,
+                  sidre::Group* group,
+                  const std::string& topo,
                   const std::string& coordset );
 
 #endif
@@ -870,7 +880,7 @@ protected:
   IndexType m_node_jp = 0;
   IndexType m_node_kp = 0;
 
-  IndexType m_cell_extent[ 3 ] = { 0, 0, 0 };
+  IndexType m_cell_dims[ 3 ] = { 0, 0, 0 };
   IndexType m_cell_jp = 0;
   IndexType m_cell_kp = 0;
   IndexType m_cell_node_offsets[ 8 ] = { 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -897,6 +907,9 @@ private:
    *  be of length at least getNumberOfCellFaces().
    *
    * \return The number of faces for the given cell.
+   *
+   * \note The faces are returned in the order of LOWER_I_FACE, UPPER_I_FACE,
+   *  LOWER_J_FACE, UPPER_J_FACE and then LOWER_K_FACE, UPPER_K_FACE if 3D. 
    *
    * \pre faces != nullptr
    * \pre 0 <= cellID < getNumberOfCells()
@@ -1064,8 +1077,8 @@ inline IndexType StructuredMesh::getCellNodes( IndexType i, IndexType j,
 {
   SLIC_ASSERT( nodes != nullptr );
   SLIC_ASSERT( 0 <= i && i < getNodeDimension( 0 ) );
-  SLIC_ASSERT( m_ndims < 2 || 0 <= j && j < getNodeDimension( 1 ) );
-  SLIC_ASSERT( m_ndims < 3 || 0 <= k && k < getNodeDimension( 2 ) );
+  SLIC_ASSERT( m_ndims < 2 || ( 0 <= j && j < getNodeDimension( 1 ) ) );
+  SLIC_ASSERT( m_ndims < 3 || ( 0 <= k && k < getNodeDimension( 2 ) ) );
 
   /* Get the node index of the first node in the cell. */
   const IndexType n0 = getNodeLinearIndex( i, j, k );

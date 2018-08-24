@@ -50,10 +50,8 @@ RectilinearMesh::RectilinearMesh( IndexType Ni, IndexType Nj, IndexType Nk ) :
 }
 
 //------------------------------------------------------------------------------
-RectilinearMesh::RectilinearMesh( const IndexType* node_dims,
-                                  double* x,
-                                  double* y,
-                                  double* z ) :
+RectilinearMesh::RectilinearMesh( const IndexType* node_dims, double* x,
+                                  double* y, double* z ) :
   StructuredMesh( STRUCTURED_RECTILINEAR_MESH, internal::dim(x, y, z),
                   node_dims )
 {
@@ -101,8 +99,10 @@ RectilinearMesh::RectilinearMesh( sidre::Group* group,
 }
 
 //------------------------------------------------------------------------------
-RectilinearMesh::RectilinearMesh( int dimension, const IndexType* node_dims,
-                                  sidre::Group* group, const std::string& topo,
+RectilinearMesh::RectilinearMesh( int dimension,
+                                  const IndexType* node_dims,
+                                  sidre::Group* group,
+                                  const std::string& topo,
                                   const std::string& coordset ) :
   StructuredMesh( STRUCTURED_RECTILINEAR_MESH, dimension, node_dims, group,
                   topo,
@@ -113,9 +113,12 @@ RectilinearMesh::RectilinearMesh( int dimension, const IndexType* node_dims,
 }
 
 //------------------------------------------------------------------------------
-RectilinearMesh::RectilinearMesh( sidre::Group* group, const std::string& topo,
-                                  const std::string& coordset, IndexType Ni,
-                                  IndexType Nj, IndexType Nk ) :
+RectilinearMesh::RectilinearMesh( sidre::Group* group,
+                                  const std::string& topo,
+                                  const std::string& coordset,
+                                  IndexType Ni,
+                                  IndexType Nj,
+                                  IndexType Nk ) :
   StructuredMesh( STRUCTURED_RECTILINEAR_MESH, Ni, Nj, Nk, group, topo,
                   coordset )
 {

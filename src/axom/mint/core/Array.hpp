@@ -26,8 +26,6 @@
 
 #ifdef AXOM_MINT_USE_SIDRE
 #include "axom/sidre/core/sidre.hpp"          // for sidre::View definition
-// #include "axom/sidre/interface/sidre.hpp"          // for sidre::View
-// definition
 #endif
 
 // C/C++ includes

@@ -168,7 +168,7 @@ TEST( mint_mesh_rectilinear_mesh, native_constructor )
     internal::check_constructor( m, STRUCTURED_RECTILINEAR_MESH, idim, N );
     EXPECT_FALSE( m->isExternal() );
     EXPECT_FALSE( m->hasSidreGroup() );
-    m->setNodeExtent( idim, extent );
+    m->setExtent( idim, extent );
     internal::check_node_extent( m, extent );
     check_fill_coords( m );
     internal::check_create_fields( m );
@@ -190,7 +190,7 @@ TEST( mint_mesh_rectilinear_mesh, native_constructor )
     internal::check_constructor( m, STRUCTURED_RECTILINEAR_MESH, idim, N );
     EXPECT_FALSE( m->isExternal() );
     EXPECT_FALSE( m->hasSidreGroup() );
-    m->setNodeExtent( idim, extent );
+    m->setExtent( idim, extent );
     internal::check_node_extent( m, extent );
     check_fill_coords( m );
     internal::check_create_fields( m );
@@ -255,7 +255,7 @@ TEST( mint_mesh_rectilinear_mesh, external_costructor )
     internal::check_constructor( m, STRUCTURED_RECTILINEAR_MESH, idim, N );
     EXPECT_FALSE( m->hasSidreGroup() );
     EXPECT_TRUE( m->isExternal() );
-    m->setNodeExtent( idim, extent );
+    m->setExtent( idim, extent );
     internal::check_node_extent( m, extent );
 
 
@@ -310,7 +310,7 @@ TEST( mint_mesh_rectilinear_mesh, sidre_constructor )
       EXPECT_TRUE( m->hasSidreGroup() );
       EXPECT_FALSE( m->isExternal() );
       internal::check_constructor( m, STRUCTURED_RECTILINEAR_MESH, idim, N );
-      m->setNodeExtent( idim, extent );
+      m->setExtent( idim, extent );
       internal::check_node_extent( m, extent );
       check_fill_coords( m );
       internal::check_create_fields( m );
@@ -336,7 +336,7 @@ TEST( mint_mesh_rectilinear_mesh, sidre_constructor )
       EXPECT_TRUE( m->hasSidreGroup() );
       EXPECT_FALSE( m->isExternal() );
       internal::check_constructor( m, STRUCTURED_RECTILINEAR_MESH, idim, N );
-      m->setNodeExtent( idim, extent );
+      m->setExtent( idim, extent );
       internal::check_node_extent( m, extent );
       check_fill_coords( m );
       internal::check_create_fields( m );

@@ -34,9 +34,7 @@ namespace mint
 //------------------------------------------------------------------------------
 // UNIFORM MESH IMPLEMENTATION
 //------------------------------------------------------------------------------
-UniformMesh::UniformMesh( int dimension,
-                          const double* origin,
-                          const double* h,
+UniformMesh::UniformMesh( int dimension, const double* origin, const double* h,
                           const IndexType* ext ) :
   StructuredMesh( STRUCTURED_UNIFORM_MESH, dimension, ext )
 {
@@ -51,8 +49,8 @@ UniformMesh::UniformMesh( int dimension,
 
 //------------------------------------------------------------------------------
 UniformMesh::UniformMesh( int dimension,
-                          const IndexType* ext,
-                          const double* lower_bound,
+                          const IndexType* ext, 
+                          const double* lower_bound, 
                           const double* upper_bound ) :
   StructuredMesh( STRUCTURED_UNIFORM_MESH, dimension, ext )
 {
@@ -60,21 +58,18 @@ UniformMesh::UniformMesh( int dimension,
   SLIC_ERROR_IF( lower_bound==nullptr, "supplied null for lower_bound" );
   SLIC_ERROR_IF( upper_bound==nullptr, "supplied null for upper_bound" );
 
-  set_spacing_and_origin( lower_bound, upper_bound );
+  setSpacingAndOrigin( lower_bound, upper_bound );
 }
 
 //------------------------------------------------------------------------------
-UniformMesh::UniformMesh( const double* lower_bound,
-                          const double* upper_bound,
-                          IndexType Ni,
-                          IndexType Nj,
-                          IndexType Nk ) :
+UniformMesh::UniformMesh( const double* lower_bound, const double* upper_bound,
+                          IndexType Ni, IndexType Nj, IndexType Nk ) :
   StructuredMesh( STRUCTURED_UNIFORM_MESH, Ni, Nj, Nk )
 {
   SLIC_ERROR_IF( lower_bound==nullptr, "supplied null for lower_bound" );
   SLIC_ERROR_IF( upper_bound==nullptr, "supplied null for upper_bound" );
 
-  set_spacing_and_origin( lower_bound, upper_bound );
+  setSpacingAndOrigin( lower_bound, upper_bound );
 }
 
 
@@ -91,9 +86,12 @@ UniformMesh::UniformMesh( sidre::Group* group, const std::string& topo ) :
 }
 
 //------------------------------------------------------------------------------
-UniformMesh::UniformMesh( int dimension, const double* lower_bound,
-                          const double* upper_bound, const IndexType* extent,
-                          sidre::Group* group, const std::string& topo,
+UniformMesh::UniformMesh( int dimension,
+                          const double* lower_bound,
+                          const double* upper_bound,
+                          const IndexType* extent,
+                          sidre::Group* group,
+                          const std::string& topo,
                           const std::string& coordset ) :
   StructuredMesh( STRUCTURED_UNIFORM_MESH, dimension, extent, group, topo,
                   coordset )
@@ -103,24 +101,28 @@ UniformMesh::UniformMesh( int dimension, const double* lower_bound,
   SLIC_ERROR_IF( upper_bound == nullptr, "supplied null for upper_bound" );
 
   // STEP 0: initialize mesh
-  set_spacing_and_origin( lower_bound, upper_bound );
+  setSpacingAndOrigin( lower_bound, upper_bound );
 
   // STEP 1: populate sidre
   blueprint::setUniformMesh( m_ndims, m_origin, m_h, getCoordsetGroup() );
 }
 
 //------------------------------------------------------------------------------
-UniformMesh::UniformMesh( const double* lower_bound, const double* upper_bound,
-                          sidre::Group* group, const std::string& topo,
-                          const std::string& coordset, IndexType Ni,
-                          IndexType Nj, IndexType Nk ) :
+UniformMesh::UniformMesh( const double* lower_bound,
+                          const double* upper_bound,
+                          sidre::Group* group,
+                          const std::string& topo,
+                          const std::string& coordset,
+                          IndexType Ni,
+                          IndexType Nj,
+                          IndexType Nk ) :
   StructuredMesh( STRUCTURED_UNIFORM_MESH, Ni, Nj, Nk, group, topo, coordset )
 {
   SLIC_ERROR_IF( lower_bound == nullptr, "supplied null for lower_bound" );
   SLIC_ERROR_IF( upper_bound == nullptr, "supplied null for upper_bound" );
 
   // STEP 0: initialize mesh
-  set_spacing_and_origin( lower_bound, upper_bound );
+  setSpacingAndOrigin( lower_bound, upper_bound );
 
   // STEP 1: populate sidre
   blueprint::setUniformMesh( m_ndims, m_origin, m_h, getCoordsetGroup() );
@@ -157,7 +159,7 @@ void UniformMesh::getNode( IndexType nodeID, double* node ) const
 
 }
 
-void UniformMesh::set_spacing_and_origin( const double* lo, const double* hi )
+void UniformMesh::setSpacingAndOrigin( const double* lo, const double* hi )
 {
   SLIC_ASSERT( lo != nullptr );
   SLIC_ASSERT( hi != nullptr );

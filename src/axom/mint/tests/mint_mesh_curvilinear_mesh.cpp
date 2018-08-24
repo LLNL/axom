@@ -209,7 +209,7 @@ TEST( mint_mesh_curvilinear_mesh, native_constructor )
     internal::check_constructor( m, STRUCTURED_CURVILINEAR_MESH, idim, N );
     EXPECT_FALSE( m->isExternal() );
     EXPECT_FALSE( m->hasSidreGroup() );
-    m->setNodeExtent( idim, extent );
+    m->setExtent( idim, extent );
     internal::check_node_extent( m, extent );
     set_coordinates( m );
     internal::check_create_fields( m );
@@ -231,7 +231,7 @@ TEST( mint_mesh_curvilinear_mesh, native_constructor )
     internal::check_constructor( m, STRUCTURED_CURVILINEAR_MESH, idim, N );
     EXPECT_FALSE( m->isExternal( ) );
     EXPECT_FALSE( m->hasSidreGroup() );
-    m->setNodeExtent( idim, extent );
+    m->setExtent( idim, extent );
     internal::check_node_extent( m, extent );
     set_coordinates( m );
     internal::check_create_fields( m );
@@ -296,7 +296,7 @@ TEST( mint_mesh_curvilinear_mesh, external_constructor )
 
     EXPECT_TRUE( m != nullptr );
     internal::check_constructor( m, STRUCTURED_CURVILINEAR_MESH, idim, N );
-    m->setNodeExtent( idim, extent );
+    m->setExtent( idim, extent );
     internal::check_node_extent( m, extent );
 
     EXPECT_FALSE( m->hasSidreGroup() );
@@ -343,7 +343,7 @@ TEST( mint_mesh_curvilinear_mesh, sidre_constructor )
       EXPECT_TRUE( m->hasSidreGroup() );
       EXPECT_FALSE( m->isExternal() );
       internal::check_constructor( m, STRUCTURED_CURVILINEAR_MESH, idim, N );
-      m->setNodeExtent( idim, extent );
+      m->setExtent( idim, extent );
       internal::check_node_extent( m, extent );
       set_coordinates( m );
       internal::check_create_fields( m );
@@ -368,7 +368,7 @@ TEST( mint_mesh_curvilinear_mesh, sidre_constructor )
       EXPECT_TRUE( m->hasSidreGroup() );
       EXPECT_FALSE( m->isExternal() );
       internal::check_constructor( m, STRUCTURED_CURVILINEAR_MESH, idim, N );
-      m->setNodeExtent( idim, extent );
+      m->setExtent( idim, extent );
       internal::check_node_extent( m, extent );
       set_coordinates( m );
       internal::check_create_fields( m );

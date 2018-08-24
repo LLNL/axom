@@ -19,14 +19,12 @@
 #include "axom/mint/mesh/blueprint.hpp"
 
 #include <cstring>             /* for memcpy() */
-#include <limits>
+#include <limits>              /* for std::numeric_limits< IndexType >::max */
 
 namespace axom
 {
 namespace mint
 {
-
-
 
 //------------------------------------------------------------------------------
 // HELPER METHODS
@@ -55,7 +53,7 @@ inline int dim ( const IndexType& AXOM_NOT_USED( Ni ),
 // IMPLEMENTATION
 //------------------------------------------------------------------------------
 
-void StructuredMesh::setNodeExtent( int ndims, const int64* extent )
+void StructuredMesh::setExtent( int ndims, const int64* extent )
 {
   SLIC_ASSERT( 0 < ndims && ndims <= 3 );
   SLIC_ASSERT( extent != nullptr );
@@ -78,12 +76,12 @@ void StructuredMesh::setNodeExtent( int ndims, const int64* extent )
 #ifdef AXOM_MINT_USE_SIDRE
   if ( hasSidreGroup() )
   {
-    blueprint::setNodeExtent( getCoordsetGroup(), m_node_extent );
+    blueprint::setExtent( getCoordsetGroup(), m_node_extent );
   }
 #endif
 }
 
-StructuredMesh::StructuredMesh( int meshType, int dimension,
+StructuredMesh::StructuredMesh( int meshType, int dimension, 
                                 const IndexType* node_dims) :
   Mesh( dimension, meshType )
 {
@@ -135,8 +133,10 @@ StructuredMesh::StructuredMesh( sidre::Group* group, const std::string& topo ) :
 }
 
 //------------------------------------------------------------------------------
-StructuredMesh::StructuredMesh( int meshType, int dimension,
-                                const IndexType* node_dims, sidre::Group* group,
+StructuredMesh::StructuredMesh( int meshType,
+                                int dimension,
+                                const IndexType* node_dims,
+                                sidre::Group* group,
                                 const std::string& topo,
                                 const std::string& coordset ) :
   Mesh( dimension, meshType, group, topo, coordset )
@@ -172,8 +172,11 @@ StructuredMesh::StructuredMesh( int meshType, int dimension,
 }
 
 //------------------------------------------------------------------------------
-StructuredMesh::StructuredMesh( int meshType, IndexType Ni, IndexType Nj,
-                                IndexType Nk, sidre::Group* group,
+StructuredMesh::StructuredMesh( int meshType,
+                                IndexType Ni,
+                                IndexType Nj,
+                                IndexType Nk,
+                                sidre::Group* group,
                                 const std::string& topo,
                                 const std::string& coordset ) :
   Mesh( dim( Ni, Nj, Nk ), meshType, group, topo, coordset )
@@ -237,7 +240,7 @@ void StructuredMesh::structuredInit()
   /* Initialize the cell meta data */
   for ( int dim = 0 ; dim < m_ndims ; ++dim )
   {
-    m_cell_extent[ dim ] = getNodeDimension( dim ) - 1;
+    m_cell_dims[ dim ] = getNodeDimension( dim ) - 1;
   }
 
   m_cell_jp = ( m_ndims > 1 ) ? getCellDimension( 0 ) :

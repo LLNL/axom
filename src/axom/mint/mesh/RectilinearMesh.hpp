@@ -222,9 +222,11 @@ public:
    * \post hasSidreGroup() == true
    * \post isExternal() == false
    */
-  RectilinearMesh( int dimension, const IndexType* node_dims,
+  RectilinearMesh( int dimension,
+                   const IndexType* node_dims, 
                    sidre::Group* group,
-                   const std::string& topo="", const std::string& coordset="" );
+                   const std::string& topo="",
+                   const std::string& coordset="" );
 
   /*!
    * \brief Creates a RectilinearMesh, on an empty Sidre group, given the
@@ -257,8 +259,11 @@ public:
    */
   /// @{
 
-  RectilinearMesh( sidre::Group* group, const std::string& topo,
-                   const std::string& coordset, IndexType Ni, IndexType Nj=-1,
+  RectilinearMesh( sidre::Group* group,
+                   const std::string& topo,
+                   const std::string& coordset,
+                   IndexType Ni,
+                   IndexType Nj=-1,
                    IndexType Nk=-1 );
 
   RectilinearMesh( sidre::Group* group, IndexType Ni, IndexType Nj=-1,

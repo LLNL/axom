@@ -348,13 +348,13 @@ bool hasMixedCellTypes( const sidre::Group* group, const std::string& topo )
 }
 
 //------------------------------------------------------------------------------
-void getStructuredMesh( int dimension, IndexType node_extent[3],
-                        int64 global_node_extent[6],
+void getStructuredMesh( int dimension, IndexType node_dims[3],
+                        int64 node_ext[6],
                         const sidre::Group* coordset )
 {
   SLIC_ERROR_IF( dimension < 1 || dimension > 3, "invalid dimension!" );
-  SLIC_ERROR_IF( node_extent == nullptr, "supplied extent is null!" );
-  SLIC_ERROR_IF( global_node_extent == nullptr,
+  SLIC_ERROR_IF( node_dims == nullptr, "supplied extent is null!" );
+  SLIC_ERROR_IF( node_ext == nullptr,
                  "supplied global extent is null!" );
   SLIC_ERROR_IF( !blueprint::isValidCoordsetGroup( coordset ),
                  "invalid coordset group!" );
@@ -368,23 +368,23 @@ void getStructuredMesh( int dimension, IndexType node_extent[3],
 
   for ( int dim = 0 ; dim < dimension ; ++dim )
   {
-    node_extent[ dim ] = c->getView( dim_names[ dim ] )->getScalar();
+    node_dims[ dim ] = c->getView( dim_names[ dim ] )->getScalar();
   } // END for
 
   for ( int i = 0 ; i < 6 ; ++i )
   {
-    global_node_extent[ i ] = c->getView( global_names[ i ] )->getScalar();
+    node_ext[ i ] = c->getView( global_names[ i ] )->getScalar();
   }
 }
 
 //------------------------------------------------------------------------------
-void setStructuredMesh( int dimension, const IndexType node_extent[3],
-                        const int64 global_node_extent[6],
+void setStructuredMesh( int dimension, const IndexType node_dims[3],
+                        const int64 node_ext[6],
                         sidre::Group* coordset )
 {
   SLIC_ERROR_IF( dimension < 1 || dimension > 3, "invalid dimension!" );
-  SLIC_ERROR_IF( node_extent == nullptr, "supplied extent is null!" );
-  SLIC_ERROR_IF( global_node_extent == nullptr,
+  SLIC_ERROR_IF( node_dims == nullptr, "supplied extent is null!" );
+  SLIC_ERROR_IF( node_ext == nullptr,
                  "supplied global extent is null!" );
   SLIC_ERROR_IF( coordset == nullptr, "invalid coordset group!" );
 
@@ -397,18 +397,18 @@ void setStructuredMesh( int dimension, const IndexType node_extent[3],
 
   for ( int dim = 0 ; dim < dimension ; ++dim )
   {
-    coordset->createView( dim_names[ dim ] )->setScalar( node_extent[ dim ] );
+    coordset->createView( dim_names[ dim ] )->setScalar( node_dims[ dim ] );
   } // END for
 
   for ( int i = 0 ; i < 6 ; ++i )
   {
-    c->createView( global_names[ i ] )->setScalar( global_node_extent[ i ] );
+    c->createView( global_names[ i ] )->setScalar( node_ext[ i ] );
   }
 }
 
-void setNodeExtent( sidre::Group* coordset, const int64 global_node_extent[6] )
+void setExtent( sidre::Group* coordset, const int64 node_ext[6] )
 {
-  SLIC_ERROR_IF( global_node_extent == nullptr,
+  SLIC_ERROR_IF( node_ext == nullptr,
                  "supplied global extent is null!" );
   SLIC_ERROR_IF( coordset == nullptr, "invalid coordset group!" );
 
@@ -418,7 +418,7 @@ void setNodeExtent( sidre::Group* coordset, const int64 global_node_extent[6] )
 
   for ( int i = 0 ; i < 6 ; ++i )
   {
-    coordset->getView( global_names[ i ] )->setScalar( global_node_extent[ i ] );
+    coordset->getView( global_names[ i ] )->setScalar( node_ext[ i ] );
   }
 }
 

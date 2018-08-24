@@ -972,18 +972,18 @@ inline void check_node_extent( const StructuredMesh* m, const int64* extent )
   SLIC_ASSERT( m != nullptr );
   SLIC_ASSERT( extent != nullptr );
 
-  int64 low, high;
+  int64 m_extent[ 6 ];
+  m->getExtent( m_extent );
+
   for ( int dim = 0 ; dim < m->getDimension() ; ++dim )
   {
-    m->getNodeExtent( dim, low, high );
-    EXPECT_EQ( low, extent[ 2 * dim ] );
-    EXPECT_EQ( high, extent[ 2 * dim + 1 ] );
+    EXPECT_EQ( m_extent[ 2 * dim ], extent[ 2 * dim ] );
+    EXPECT_EQ( m_extent[ 2 * dim + 1 ], extent[ 2 * dim + 1 ] );
   }
 
   for ( int dim = m->getDimension() ; dim < 3 ; ++dim )
   {
-    m->getNodeExtent( dim, low, high );
-    EXPECT_EQ( low, high );
+    EXPECT_EQ( m_extent[ 2 * dim ], m_extent[ 2 * dim + 1 ] );
   }
 }
 

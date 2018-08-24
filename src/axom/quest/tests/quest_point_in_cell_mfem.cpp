@@ -1365,13 +1365,13 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
   }
 
   // Dump the mint mesh
-  // {
-  //   std::stringstream filenameStr;
-  //   filenameStr << "quest_point_in_cell_c_shaped_quad_001_mint_" << res <<
-  //     ".vtk";
-  //   SLIC_INFO("About to write file " << filenameStr.str());
-  //   axom::mint::write_vtk(&cmesh, filenameStr.str() );
-  // }
+  {
+    std::stringstream filenameStr;
+    filenameStr << "quest_point_in_cell_c_shaped_quad_001_mint_" << res <<
+      ".vtk";
+    SLIC_INFO("About to write file " << filenameStr.str());
+    axom::mint::write_vtk(&cmesh, filenameStr.str() );
+  }
 
   if(false)
   {

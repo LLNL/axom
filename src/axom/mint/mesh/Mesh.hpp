@@ -285,14 +285,14 @@ public:
    * \pre nodes != nullptr
    * \pre 0 <= cellID < getNumberOfCells()
    */
-  virtual IndexType getCellNodes( IndexType AXOM_NOT_USED(
-                                    cellID),
-                                  IndexType* AXOM_NOT_USED(nodes) ) const
-  {
-    SLIC_ERROR( "Not implemented!" );
-    return -1;
-  }
+  virtual IndexType getCellNodes( IndexType AXOM_NOT_USED(cellID),
+                                  IndexType* AXOM_NOT_USED(nodes) ) const = 0;
 
+  /*!
+   * \brief Return the number of faces associated with the given cell.
+   *
+   * \param [in] cellID the ID of the cell in question.
+   */
   virtual IndexType getNumberOfCellFaces( IndexType AXOM_NOT_USED(cellID) )
   const
   {
@@ -300,8 +300,20 @@ public:
     return -1;
   }
 
-  virtual IndexType getCellFaces( IndexType AXOM_NOT_USED(
-                                    cellID),
+  /*!
+   * \brief Copy the face IDs of the given cell into the provided buffer.
+   *  The buffer must be of length at least getNumberOfCellFaces( cellID ).
+   *
+   * \param [in] cellID the ID of the cell in question.
+   * \param [out] faces the buffer into which the face IDs are copied, must
+   *  be of length at least getNumberOfCellFaces( cellID ).
+   *
+   * \return The number of faces for the given cell.
+   *
+   * \pre faces != nullptr
+   * \pre 0 <= cellID < getNumberOfCells()
+   */
+  virtual IndexType getCellFaces( IndexType AXOM_NOT_USED(cellID),
                                   IndexType* AXOM_NOT_USED(faces) ) const
   {
     SLIC_ERROR( "Not implemented!" );
@@ -356,10 +368,8 @@ public:
    * \pre dim == X_COORDINATE || dim == Y_COORDINATE || dim == Z_COORDINATE
    */
   /// @{
-
   virtual double* getCoordinateArray( int dim ) = 0;
   virtual const double* getCoordinateArray( int dim ) const = 0;
-
   /// @}
 
 /// @}
@@ -382,31 +392,64 @@ public:
   virtual IndexType getFaceCapacity() const
   { return getNumberOfFaces(); }
 
+  /*!
+   * \brief Return the type of the given face.
+   *
+   * \param [in] faceID the ID of the face in question.
+   */
   virtual CellType getFaceType( IndexType AXOM_NOT_USED(cellID) ) const
   {
     SLIC_ERROR( "Not implemented!" );
     return UNDEFINED_CELL;
   }
 
-  virtual IndexType getNumberOfFaceNodes( IndexType AXOM_NOT_USED(faceID) )
-  const
+  /*!
+   * \brief Return the number of nodes associated with the given face.
+   *
+   * \param [in] faceID the ID of the face in question.
+   */
+  virtual IndexType
+  getNumberOfFaceNodes( IndexType AXOM_NOT_USED(faceID) ) const
   {
     SLIC_ERROR( "Not implemented!" );
     return -1;
   }
 
-  virtual IndexType getFaceNodes( IndexType AXOM_NOT_USED(
-                                    faceID),
+  /*!
+   * \brief Copy the node IDs of the given face into the provided buffer.
+   *  The buffer must be of length at least getNumberOfFaceNodes( faceID ).
+   *
+   * \param [in] faceID the ID of the cell in question.
+   * \param [out] nodes the buffer into which the node IDs are copied, must
+   *  be of length at least getNumberOfFaceNodes( faceID ).
+   *
+   * \return The number of nodes for the given face.
+   *
+   * \pre nodes != nullptr
+   * \pre 0 <= faceID < getNumberOfCells()
+   */
+  virtual IndexType getFaceNodes( IndexType AXOM_NOT_USED(faceID),
                                   IndexType* AXOM_NOT_USED(nodes) ) const
   {
     SLIC_ERROR( "Not implemented!" );
     return -1;
   }
 
-  virtual void getFaceCells( IndexType AXOM_NOT_USED(
-                               faceID), IndexType& AXOM_NOT_USED(
-                               cellIDOne), IndexType& AXOM_NOT_USED(
-                               cellIDTwo) ) const
+  /*!
+   * \brief Copy the cell IDs of the given face into the provided indices.
+   *
+   * \param [in] faceID the ID of the cell in question.
+   * \param [out] cellIDOne the ID of the first cell.
+   * \param [out] cellIDTwo the ID of the second cell.
+   *
+   * \note If no cell exists (the face is external) then the ID will be set to
+   * -1.
+   *
+   * \pre 0 <= faceID < getNumberOfCells()
+   */
+  virtual void getFaceCells( IndexType AXOM_NOT_USED(faceID), 
+                             IndexType& AXOM_NOT_USED(cellIDOne),
+                             IndexType& AXOM_NOT_USED(cellIDTwo) ) const
   {
     SLIC_ERROR( "Not implemented!" );
   }
@@ -679,7 +722,6 @@ public:
    * \see FieldAssociation
    */
   /// @{
-
   template < typename T >
   inline T* getFieldPtr( const std::string& name,
                          int association,
@@ -697,7 +739,6 @@ public:
   template < typename T >
   inline const T* getFieldPtr( const std::string& name,
                                int association ) const;
-
   /// @}
 
 /// @}

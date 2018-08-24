@@ -238,7 +238,7 @@ TEST( mint_mesh_uniform_mesh, native_constructor )
 
     internal::check_create_fields( m );
     internal::check_fields( m, false );
-    m->setNodeExtent( idim, node_ext );
+    m->setExtent( idim, node_ext );
     internal::check_node_extent( m, node_ext );
     delete m;
 
@@ -248,7 +248,7 @@ TEST( mint_mesh_uniform_mesh, native_constructor )
 
     internal::check_create_fields( m );
     internal::check_fields( m, false );
-    m->setNodeExtent( idim, node_ext );
+    m->setExtent( idim, node_ext );
     internal::check_node_extent( m, node_ext );
     delete m;
 
@@ -270,7 +270,7 @@ TEST( mint_mesh_uniform_mesh, native_constructor )
 
     internal::check_create_fields( m );
     internal::check_fields( m, false );
-    m->setNodeExtent( idim, node_ext );
+    m->setExtent( idim, node_ext );
     internal::check_node_extent( m, node_ext );
     delete m;
   } // END for all dimensions
@@ -306,7 +306,7 @@ TEST( mint_mesh_uniform_mesh, sidre_constructor )
       EXPECT_TRUE( m->hasSidreGroup() );
       internal::check_constructor( m, idim, lo, h, N );
       internal::check_create_fields( m );
-      m->setNodeExtent( idim, node_ext );
+      m->setExtent( idim, node_ext );
       internal::check_node_extent( m, node_ext );
 
       delete m;
@@ -328,7 +328,7 @@ TEST( mint_mesh_uniform_mesh, sidre_constructor )
       EXPECT_TRUE( m->hasSidreGroup() );
       internal::check_constructor( m, idim, lo, h, N );
       internal::check_create_fields( m );
-      m->setNodeExtent( idim, node_ext );
+      m->setExtent( idim, node_ext );
       internal::check_node_extent( m, node_ext );
 
       delete m;
