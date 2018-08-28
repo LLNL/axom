@@ -33,5 +33,5 @@ black, and the OrientedBoundingBox in orange.
 
 Primal also provides a ``merge_boxes()`` function to produce a bounding box that
 contains two input bounding boxes.  This is available for client codes to use and
-also supports the operation of the BVHTree spatial index.
+also supports the operation of the BVHTree class.
 

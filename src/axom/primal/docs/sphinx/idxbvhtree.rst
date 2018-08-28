@@ -40,8 +40,8 @@ point-mesh intersection algorithm.  The key idea in ``BVHTree::find()`` is that
 testing for probe intersection with a bin (bounding box) is cheap.  If a bin
 intersection test fails (misses), the contents of the bin are cheaply pruned out
 of the search.  If the probe does intersect a bin, the next level of bins is
-tested for probe intersection.  Without the spatial index, each probe point
-must be tested against each triangle.
+tested for probe intersection.  Without the acceleration data structure, each
+probe point must be tested against each triangle.
 
 .. literalinclude:: ../../examples/primal_introduction.cpp
    :start-after: _bvhtree_header_start
