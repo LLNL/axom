@@ -143,9 +143,12 @@ TEST( quest_stl_reader, read_stl )
   mint::IndexType numNodes = mesh.getNumberOfNodes();
   for ( mint::IndexType inode=0 ; inode < numNodes ; ++inode )
   {
-    EXPECT_NEAR( x[ inode ], x_expected[ inode ], std::numeric_limits< double >::epsilon() );
-    EXPECT_NEAR( y[ inode ], y_expected[ inode ], std::numeric_limits< double >::epsilon() );
-    EXPECT_NEAR( z[ inode ], z_expected[ inode ], std::numeric_limits< double >::epsilon() );
+    EXPECT_NEAR( x[ inode ], x_expected[ inode ],
+                 std::numeric_limits< double >::epsilon() );
+    EXPECT_NEAR( y[ inode ], y_expected[ inode ],
+                 std::numeric_limits< double >::epsilon() );
+    EXPECT_NEAR( z[ inode ], z_expected[ inode ],
+                 std::numeric_limits< double >::epsilon() );
   } // END for all nodes
 
   // STEP 4: remove temporary STL file
@@ -197,9 +200,12 @@ TEST( quest_stl_reader, read_stl_external )
   mint::IndexType numNodes = mesh.getNumberOfNodes();
   for ( mint::IndexType inode=0 ; inode < numNodes ; ++inode )
   {
-    EXPECT_NEAR( x[ inode ], x_expected[ inode ], std::numeric_limits< double >::epsilon() );
-    EXPECT_NEAR( y[ inode ], y_expected[ inode ], std::numeric_limits< double >::epsilon() );
-    EXPECT_NEAR( z[ inode ], z_expected[ inode ], std::numeric_limits< double >::epsilon() );
+    EXPECT_NEAR( x[ inode ], x_expected[ inode ],
+                 std::numeric_limits< double >::epsilon() );
+    EXPECT_NEAR( y[ inode ], y_expected[ inode ],
+                 std::numeric_limits< double >::epsilon() );
+    EXPECT_NEAR( z[ inode ], z_expected[ inode ],
+                 std::numeric_limits< double >::epsilon() );
   } // END for all nodes
 
   // STEP 4: remove temporary STL file

@@ -32,12 +32,13 @@ extern "C" {
 #endif
 
 //  Level
-enum SLIC_Level {
-    Error,
-    Warning,
-    Info,
-    Debug,
-    Num_Levels
+enum SLIC_Level
+{
+  Error,
+  Warning,
+  Info,
+  Debug,
+  Num_Levels
 };
 
 // splicer begin C_declarations
@@ -47,15 +48,15 @@ void SLIC_initialize();
 
 bool SLIC_is_initialized();
 
-void SLIC_create_logger(const char * name, char imask);
+void SLIC_create_logger(const char* name, char imask);
 
-void SLIC_create_logger_bufferify(const char * name, int Lname, char imask);
+void SLIC_create_logger_bufferify(const char* name, int Lname, char imask);
 
-bool SLIC_activate_logger(const char * name);
+bool SLIC_activate_logger(const char* name);
 
-bool SLIC_activate_logger_bufferify(const char * name, int Lname);
+bool SLIC_activate_logger_bufferify(const char* name, int Lname);
 
-void SLIC_get_active_logger_name_bufferify(char * name, int Nname);
+void SLIC_get_active_logger_name_bufferify(char* name, int Nname);
 
 void SLIC_set_logging_msg_level(int level);
 
@@ -75,9 +76,12 @@ void SLIC_disable_abort_on_warning();
 
 bool SLIC_is_abort_on_warnings_enabled();
 
-void SLIC_log_message(int level, const char * message, const char * fileName, int line, bool filter);
+void SLIC_log_message(int level, const char* message, const char* fileName,
+                      int line, bool filter);
 
-void SLIC_log_message_bufferify(int level, const char * message, int Lmessage, const char * fileName, int LfileName, int line, bool filter);
+void SLIC_log_message_bufferify(int level, const char* message, int Lmessage,
+                                const char* fileName, int LfileName, int line,
+                                bool filter);
 
 void SLIC_finalize();
 

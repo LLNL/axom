@@ -34,7 +34,7 @@ extern "C" {
 // splicer begin C_declarations
 // splicer end C_declarations
 
-bool SIDRE_name_is_valid(const char * name);
+bool SIDRE_name_is_valid(const char* name);
 
 #ifdef __cplusplus
 }

@@ -2894,7 +2894,7 @@ TEST( mint_mesh_unstructured_mesh, resize_mesh_single_topology )
   EXPECT_TRUE( y != nullptr );
 
   // touch memory associated with nodes to ensure it is allocated properly
-  for ( IndexType inode=0; inode < N_NODES; ++inode )
+  for ( IndexType inode=0 ; inode < N_NODES ; ++inode )
   {
     x[ inode ] = MAGIC_DOUBLE;
     y[ inode ] = MAGIC_DOUBLE;
@@ -2904,7 +2904,7 @@ TEST( mint_mesh_unstructured_mesh, resize_mesh_single_topology )
   IndexType stride = mesh.getNumberOfCellNodes();
   EXPECT_EQ( stride, 4 );
   IndexType* conn  = mesh.getCellConnectivityArray();
-  for ( IndexType icell=0; icell < N_CELLS; ++icell )
+  for ( IndexType icell=0 ; icell < N_CELLS ; ++icell )
   {
     conn[ icell*4   ] = MAGIC_INT;
     conn[ icell*4+1 ] = MAGIC_INT;
@@ -2940,7 +2940,7 @@ TEST( mint_mesh_unstructured_mesh, resize_mesh_mixed_topology )
   EXPECT_TRUE( y != nullptr );
 
   // touch memory associated with nodes to ensure it is allocated properly
-  for ( IndexType inode=0; inode < N_NODES; ++inode )
+  for ( IndexType inode=0 ; inode < N_NODES ; ++inode )
   {
     x[ inode ] = MAGIC_DOUBLE;
     y[ inode ] = MAGIC_DOUBLE;
@@ -2949,9 +2949,9 @@ TEST( mint_mesh_unstructured_mesh, resize_mesh_mixed_topology )
   // touch memory associated with the cell connectivity
   IndexType* conn    = mesh.getCellConnectivityArray();
   IndexType* offsets = mesh.getCellOffsetsArray();
-  CellType*  types   = mesh.getCellTypesArray();
+  CellType* types   = mesh.getCellTypesArray();
 
-  for ( IndexType icell=0; icell < N_CELLS; ++icell )
+  for ( IndexType icell=0 ; icell < N_CELLS ; ++icell )
   {
     if ( icell < 2 )
     {

@@ -296,8 +296,8 @@ public:
     m_offsets->resize( ID_size+1 );
     m_types->resize( ID_size );
     IndexType newValueSize =
-        internal::calcValueCapacity( getNumberOfIDs(), getIDCapacity(),
-                                     getNumberOfValues(), value_size );
+      internal::calcValueCapacity( getNumberOfIDs(), getIDCapacity(),
+                                   getNumberOfValues(), value_size );
 
     m_values->resize( newValueSize );
   }

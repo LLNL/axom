@@ -250,7 +250,7 @@ public:
                                                cell_capacity ) )
   {
     AXOM_STATIC_ASSERT_MSG( TOPO == SINGLE_SHAPE,
-              "This constructor is only active for single topology meshes." );
+                            "This constructor is only active for single topology meshes." );
 
     SLIC_ASSERT( x != nullptr );
     SLIC_ASSERT( m_ndims < 2 || y != nullptr );
@@ -383,9 +383,9 @@ public:
                     double* x,
                     double* y=nullptr,
                     double* z=nullptr ) :
-        UnstructuredMesh( n_cells, n_cells, connectivity_size, connectivity,
-                          offsets, types,
-                          n_nodes, n_nodes, x, y, z )
+    UnstructuredMesh( n_cells, n_cells, connectivity_size, connectivity,
+                      offsets, types,
+                      n_nodes, n_nodes, x, y, z )
   { }
 
 /// @}
@@ -756,7 +756,7 @@ public:
   void resizeCells( IndexType cell_size )
   {
     IndexType connectivity_size =
-     ( hasMixedCellTypes() ) ? USE_DEFAULT : getNumberOfCellNodes()*cell_size;
+      ( hasMixedCellTypes() ) ? USE_DEFAULT : getNumberOfCellNodes()*cell_size;
     m_cell_connectivity->resize( cell_size, connectivity_size );
     m_mesh_fields[ CELL_CENTERED ]->resize( cell_size );
   }

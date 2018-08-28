@@ -102,7 +102,8 @@ public:
    */
   IndexType getNumBuffers() const
   {
-    return static_cast<IndexType>(m_data_buffers.size() - m_free_buffer_ids.size());
+    return static_cast<IndexType>(m_data_buffers.size() -
+                                  m_free_buffer_ids.size());
   }
 
   /*!

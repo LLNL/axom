@@ -48,7 +48,7 @@ using axom::slic::UnitTestLogger;
 #undef GTEST_HAS_DEATH_TEST
 #endif /* GTEST_HAS_DEATH_TEST */
 
-#define GTEST_HAS_DEATH_TEST 0 
+#define GTEST_HAS_DEATH_TEST 0
 #endif /* AXOM_USE_MPI */
 #include "gtest/gtest.h"             // for gtest macros
 

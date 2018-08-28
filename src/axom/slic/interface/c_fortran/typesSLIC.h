@@ -23,13 +23,14 @@
 extern "C" {
 #endif
 
-struct s_SLI_SHROUD_capsule_data {
-    void *addr;     /* address of C++ memory */
-    int idtor;      /* index of destructor */
+struct s_SLI_SHROUD_capsule_data
+{
+  void* addr;       /* address of C++ memory */
+  int idtor;        /* index of destructor */
 };
 typedef struct s_SLI_SHROUD_capsule_data SLI_SHROUD_capsule_data;
 
-void SLIC_SHROUD_memory_destructor(SLI_SHROUD_capsule_data *cap);
+void SLIC_SHROUD_memory_destructor(SLI_SHROUD_capsule_data* cap);
 
 #ifdef __cplusplus
 }
