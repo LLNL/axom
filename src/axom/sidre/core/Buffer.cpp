@@ -40,7 +40,7 @@ namespace sidre
  *
  *************************************************************************
  */
-Buffer* Buffer::describe(TypeID type, SidreLength num_elems)
+Buffer* Buffer::describe(TypeID type, IndexType num_elems)
 {
   if ( isAllocated() || num_elems < 0 )
   {
@@ -93,7 +93,7 @@ Buffer* Buffer::allocate()
  *
  *************************************************************************
  */
-Buffer* Buffer::allocate(TypeID type, SidreLength num_elems)
+Buffer* Buffer::allocate(TypeID type, IndexType num_elems)
 {
   if (isAllocated())
   {
@@ -115,7 +115,7 @@ Buffer* Buffer::allocate(TypeID type, SidreLength num_elems)
  *
  *************************************************************************
  */
-Buffer* Buffer::reallocate( SidreLength num_elems)
+Buffer* Buffer::reallocate( IndexType num_elems)
 {
   if (!isAllocated())
   {
@@ -139,12 +139,12 @@ Buffer* Buffer::reallocate( SidreLength num_elems)
     return this;
   }
 
-  SidreLength old_size = getTotalBytes();
+  IndexType old_size = getTotalBytes();
   void* old_data_ptr = getVoidPtr();
 
   DataType dtype( m_node.dtype() );
   dtype.set_number_of_elements( num_elems );
-  SidreLength new_size = dtype.strided_bytes();
+  IndexType new_size = dtype.strided_bytes();
   void* new_data_ptr = allocateBytes(new_size);
 
   if ( new_data_ptr != nullptr )
@@ -198,7 +198,7 @@ Buffer* Buffer::deallocate()
  *************************************************************************
  */
 Buffer* Buffer::copyBytesIntoBuffer(const void* src,
-                                    SidreLength nbytes)
+                                    IndexType nbytes)
 {
   if ( src == nullptr || nbytes < 0 || nbytes > getTotalBytes() )
   {
@@ -303,7 +303,7 @@ void Buffer::importFrom( conduit::Node& buffer_holder)
   {
     Schema schema( buffer_holder["schema"].as_string() );
     TypeID type = static_cast<TypeID>( schema.dtype().id() );
-    SidreLength num_elems = schema.dtype().number_of_elements();
+    IndexType num_elems = schema.dtype().number_of_elements();
     describe(type, num_elems);
   }
 
@@ -422,7 +422,7 @@ void Buffer::detachFromAllViews()
  *
  *************************************************************************
  */
-void* Buffer::allocateBytes(std::size_t num_bytes)
+void* Buffer::allocateBytes(IndexType num_bytes)
 {
   return new(std::nothrow) common::int8[num_bytes];
 }
@@ -434,7 +434,7 @@ void* Buffer::allocateBytes(std::size_t num_bytes)
  *
  *************************************************************************
  */
-void Buffer::copyBytes( const void* src, void* dst, size_t num_bytes )
+void Buffer::copyBytes( const void* src, void* dst, IndexType num_bytes )
 {
   std::memcpy( dst, src, num_bytes );
 }

@@ -219,7 +219,7 @@ View* Group::createView( const std::string& path )
  */
 View* Group::createView( const std::string& path,
                          TypeID type,
-                         SidreLength num_elems )
+                         IndexType num_elems )
 {
   if ( type == NO_TYPE_ID || num_elems < 0 )
   {
@@ -251,7 +251,7 @@ View* Group::createView( const std::string& path,
 View* Group::createView( const std::string& path,
                          TypeID type,
                          int ndims,
-                         SidreLength* shape )
+                         IndexType* shape )
 {
   if ( type == NO_TYPE_ID || ndims < 0 || shape == nullptr )
   {
@@ -330,7 +330,7 @@ View* Group::createView( const std::string& path,
  */
 View* Group::createView( const std::string& path,
                          TypeID type,
-                         SidreLength num_elems,
+                         IndexType num_elems,
                          Buffer* buff )
 {
   View* view = createView(path, type, num_elems);
@@ -352,7 +352,7 @@ View* Group::createView( const std::string& path,
 View* Group::createView( const std::string& path,
                          TypeID type,
                          int ndims,
-                         SidreLength* shape,
+                         IndexType* shape,
                          Buffer* buff )
 {
   View* view = createView(path, type, ndims, shape);
@@ -420,7 +420,7 @@ View* Group::createView( const std::string& path,
  */
 View* Group::createView( const std::string& path,
                          TypeID type,
-                         SidreLength num_elems,
+                         IndexType num_elems,
                          void* external_ptr )
 {
   View* view = createView(path, type, num_elems);
@@ -442,7 +442,7 @@ View* Group::createView( const std::string& path,
 View* Group::createView( const std::string& path,
                          TypeID type,
                          int ndims,
-                         SidreLength* shape,
+                         IndexType* shape,
                          void* external_ptr )
 {
   View* view = createView(path, type, ndims, shape);
@@ -490,7 +490,7 @@ View* Group::createView( const std::string& path,
  */
 View* Group::createViewAndAllocate( const std::string& path,
                                     TypeID type,
-                                    SidreLength num_elems )
+                                    IndexType num_elems )
 {
   View* view = createView(path, type, num_elems);
   if ( view != nullptr )
@@ -511,7 +511,7 @@ View* Group::createViewAndAllocate( const std::string& path,
 View* Group::createViewAndAllocate( const std::string& path,
                                     TypeID type,
                                     int ndims,
-                                    SidreLength* shape )
+                                    IndexType* shape )
 {
   View* view = createView(path, type, ndims, shape);
   if ( view != nullptr )
@@ -1964,7 +1964,7 @@ void Group::importFrom(conduit::Node & node, bool preserve_contents)
     while (buffs_itr.has_next())
     {
       Node& n_buffer = buffs_itr.next();
-      IndexType old_buffer_id = n_buffer["id"].as_int32();
+      IndexType old_buffer_id = n_buffer["id"].as_int64();
 
       Buffer* buffer = getDataStore()->createBuffer();
 
@@ -2228,7 +2228,7 @@ const Group* Group::walkPath( std::string& path ) const
  *
  *************************************************************************
  */
-size_t Group::getNumGroups() const
+IndexType Group::getNumGroups() const
 {
   return m_group_coll->getNumItems();
 }
@@ -2240,7 +2240,7 @@ size_t Group::getNumGroups() const
  *
  *************************************************************************
  */
-size_t Group::getNumViews() const
+IndexType Group::getNumViews() const
 {
   return m_view_coll->getNumItems();
 }

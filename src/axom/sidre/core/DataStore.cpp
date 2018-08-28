@@ -201,7 +201,7 @@ Buffer* DataStore::createBuffer()
  *
  *************************************************************************
  */
-Buffer* DataStore::createBuffer( TypeID type, SidreLength num_elems )
+Buffer* DataStore::createBuffer( TypeID type, IndexType num_elems )
 {
   Buffer* buffer = createBuffer();
 
@@ -302,7 +302,7 @@ IndexType DataStore::getNextValidBufferIndex(IndexType idx) const
  *
  *************************************************************************
  */
-SidreLength DataStore::getNumAttributes() const
+IndexType DataStore::getNumAttributes() const
 {
   return m_attribute_coll->getNumItems();
 }

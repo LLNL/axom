@@ -142,7 +142,7 @@ MeshCoordinates::MeshCoordinates( sidre::Group* group ) :
     SLIC_ERROR_IF( coord_view->getNumDimensions() != 2,
                    "view has invalid dimensions" );
 
-    sidre::SidreLength dims[ 2 ];
+    sidre::IndexType dims[ 2 ];
     coord_view->getShape( 2, dims );
     SLIC_ERROR_IF( dims[1] != 1, "number of components is expected to be 1" );
 

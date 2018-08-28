@@ -25,7 +25,7 @@
 using axom::sidre::Group;
 using axom::sidre::DataStore;
 using axom::sidre::View;
-using axom::sidre::SidreLength;
+using axom::sidre::IndexType;
 using axom::sidre::DOUBLE_ID;
 using axom::sidre::INT_ID;
 
@@ -37,9 +37,9 @@ TEST(sidre_external, create_external_view)
   DataStore* ds   = new DataStore();
   Group* root = ds->getRoot();
 
-  const SidreLength len = 11;
+  const IndexType len = 11;
   const int ndims = 1;
-  SidreLength shape[] = { len };
+  IndexType shape[] = { len };
 
   int* idata = new int[len];
 
@@ -172,7 +172,7 @@ TEST(sidre_external, transition_external_view_to_empty)
 {
   DataStore* ds   = new DataStore();
   Group* root = ds->getRoot();
-  const SidreLength len = 11;
+  const IndexType len = 11;
   int idata[len];
 
   for (int ii = 0 ; ii < len ; ++ii)
@@ -310,7 +310,7 @@ TEST(sidre_external, save_load_external_view)
   DataStore* ds   = new DataStore();
   Group* root = ds->getRoot();
 
-  const SidreLength len = 11;
+  const IndexType len = 11;
 
   int* idata = new int[len];
   double* ddata = new double[len];

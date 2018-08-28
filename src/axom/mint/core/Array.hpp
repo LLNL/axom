@@ -1001,7 +1001,7 @@ inline void Array< T >::describeView()
   SLIC_ASSERT( m_view != nullptr );
 
   static constexpr sidre::TypeID T_type = sidreTypeId();
-  sidre::SidreLength dims[2];
+  sidre::IndexType dims[2];
   dims[0] = m_num_tuples;
   dims[1] = m_num_components;
 
@@ -1017,7 +1017,7 @@ inline IndexType Array< T >::getViewShape( int dim ) const
   SLIC_ERROR_IF( m_view->getNumDimensions() != 2,
                  "view must have dimension 2.");
 
-  sidre::SidreLength dims[ 2 ];
+  sidre::IndexType dims[ 2 ];
   m_view->getShape( 2, dims );
   return dims[ dim ];
 }

@@ -23,21 +23,19 @@
 extern "C" {
 #endif
 
-struct s_SPIO_iomanager
-{
-  void* addr;       /* address of C++ memory */
-  int idtor;        /* index of destructor */
+struct s_SPIO_iomanager {
+    void *addr;     /* address of C++ memory */
+    int idtor;      /* index of destructor */
 };
 typedef struct s_SPIO_iomanager SPIO_iomanager;
 
-struct s_SPI_SHROUD_capsule_data
-{
-  void* addr;       /* address of C++ memory */
-  int idtor;        /* index of destructor */
+struct s_SPI_SHROUD_capsule_data {
+    void *addr;     /* address of C++ memory */
+    int idtor;      /* index of destructor */
 };
 typedef struct s_SPI_SHROUD_capsule_data SPI_SHROUD_capsule_data;
 
-void SPIO_SHROUD_memory_destructor(SPI_SHROUD_capsule_data* cap);
+void SPIO_SHROUD_memory_destructor(SPI_SHROUD_capsule_data *cap);
 
 #ifdef __cplusplus
 }

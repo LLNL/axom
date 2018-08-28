@@ -463,7 +463,7 @@ TEST(sidre_attribute,as_node)
   EXPECT_EQ(g_color_red, node1.as_string());
 
   const Node & node2 = view1a->getAttributeNodeRef(attr_dump);
-  EXPECT_EQ(g_dump_no, node2.as_int32());
+  EXPECT_EQ(g_dump_no, node2.as_int());
 
   const Node & node3 = view1a->getAttributeNodeRef(g_attr_null);
   EXPECT_TRUE(node3.schema().dtype().is_empty());

@@ -36,31 +36,29 @@ extern "C" {
 // splicer begin class.Buffer.C_declarations
 // splicer end class.Buffer.C_declarations
 
-SIDRE_IndexType SIDRE_buffer_get_index(const SIDRE_buffer* self);
+SIDRE_IndexType SIDRE_buffer_get_index(const SIDRE_buffer * self);
 
-size_t SIDRE_buffer_get_num_views(const SIDRE_buffer* self);
+size_t SIDRE_buffer_get_num_views(const SIDRE_buffer * self);
 
-void* SIDRE_buffer_get_void_ptr(SIDRE_buffer* self);
+void * SIDRE_buffer_get_void_ptr(SIDRE_buffer * self);
 
-int SIDRE_buffer_get_type_id(const SIDRE_buffer* self);
+int SIDRE_buffer_get_type_id(const SIDRE_buffer * self);
 
-size_t SIDRE_buffer_get_num_elements(const SIDRE_buffer* self);
+size_t SIDRE_buffer_get_num_elements(const SIDRE_buffer * self);
 
-size_t SIDRE_buffer_get_total_bytes(const SIDRE_buffer* self);
+size_t SIDRE_buffer_get_total_bytes(const SIDRE_buffer * self);
 
-size_t SIDRE_buffer_get_bytes_per_element(const SIDRE_buffer* self);
+size_t SIDRE_buffer_get_bytes_per_element(const SIDRE_buffer * self);
 
-void SIDRE_buffer_describe(SIDRE_buffer* self, int type,
-                           SIDRE_SidreLength num_elems);
+void SIDRE_buffer_describe(SIDRE_buffer * self, int type, SIDRE_IndexType num_elems);
 
-void SIDRE_buffer_allocate_existing(SIDRE_buffer* self);
+void SIDRE_buffer_allocate_existing(SIDRE_buffer * self);
 
-void SIDRE_buffer_allocate_from_type(SIDRE_buffer* self, int type,
-                                     SIDRE_SidreLength num_elems);
+void SIDRE_buffer_allocate_from_type(SIDRE_buffer * self, int type, SIDRE_IndexType num_elems);
 
-void SIDRE_buffer_reallocate(SIDRE_buffer* self, SIDRE_SidreLength num_elems);
+void SIDRE_buffer_reallocate(SIDRE_buffer * self, SIDRE_IndexType num_elems);
 
-void SIDRE_buffer_print(const SIDRE_buffer* self);
+void SIDRE_buffer_print(const SIDRE_buffer * self);
 
 #ifdef __cplusplus
 }

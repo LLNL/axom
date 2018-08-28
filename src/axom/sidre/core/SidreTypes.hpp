@@ -56,9 +56,7 @@ typedef conduit::Schema Schema;
  * \brief IndexType is used for any labeling of a sidre object by an
  *        integer identifier.
  */
-typedef int IndexType;
-
-typedef long int SidreLength;
+typedef common::int64 IndexType;
 
 /*!
  * \brief Common invalid index identifier used in sidre.

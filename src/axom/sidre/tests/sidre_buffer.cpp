@@ -26,8 +26,9 @@ using axom::sidre::DataType;
 using axom::sidre::Group;
 using axom::sidre::View;
 using axom::sidre::IndexType;
-using axom::sidre::SidreLength;
 using axom::sidre::INT_ID;
+
+constexpr IndexType ZERO = 0;
 
 //------------------------------------------------------------------------------
 
@@ -52,7 +53,7 @@ TEST(sidre_buffer,create_buffers)
 
   //----------
   // destroy by index
-  ds->destroyBuffer(0);
+  ds->destroyBuffer(ZERO);
   EXPECT_EQ(1u, ds->getNumBuffers());
 
   Buffer* dbuff_0b = ds->createBuffer();
@@ -81,7 +82,7 @@ TEST(sidre_buffer,create_buffer_with_description)
 
   EXPECT_EQ(dbuff->getTypeID(), INT_ID);
   EXPECT_EQ(dbuff->getNumElements(), 10u);
-  EXPECT_EQ(dbuff->getTotalBytes(), static_cast<SidreLength>(sizeof(int) * 10));
+  EXPECT_EQ(dbuff->getTotalBytes(), static_cast<IndexType>(sizeof(int) * 10));
 
   int* data_ptr = dbuff->getData();
 
@@ -111,7 +112,7 @@ TEST(sidre_buffer,alloc_buffer_for_int_array)
 
   EXPECT_EQ(dbuff->getTypeID(), INT_ID);
   EXPECT_EQ(dbuff->getNumElements(), 10u);
-  EXPECT_EQ(dbuff->getTotalBytes(), static_cast<SidreLength>(sizeof(int) * 10));
+  EXPECT_EQ(dbuff->getTotalBytes(), static_cast<IndexType>(sizeof(int) * 10));
 
   //  int * data_ptr = static_cast<int *>(dbuff->getData());
   int* data_ptr = dbuff->getData();
@@ -141,7 +142,7 @@ TEST(sidre_buffer,init_buffer_for_int_array)
 
   EXPECT_EQ(dbuff->getTypeID(), INT_ID);
   EXPECT_EQ(dbuff->getNumElements(), 10u);
-  EXPECT_EQ(dbuff->getTotalBytes(), static_cast<SidreLength>(sizeof(int) * 10));
+  EXPECT_EQ(dbuff->getTotalBytes(), static_cast<IndexType>(sizeof(int) * 10));
 
   int* data_ptr = static_cast<int*>(dbuff->getData());
 
@@ -168,7 +169,7 @@ TEST(sidre_buffer,realloc_buffer)
 
   EXPECT_EQ(dbuff->getTypeID(), INT_ID);
   EXPECT_EQ(dbuff->getNumElements(), 5u);
-  EXPECT_EQ(dbuff->getTotalBytes(), static_cast<SidreLength>(sizeof(int) * 5));
+  EXPECT_EQ(dbuff->getTotalBytes(), static_cast<IndexType>(sizeof(int) * 5));
 
   int* data_ptr = static_cast<int*>(dbuff->getVoidPtr());
 
@@ -189,7 +190,7 @@ TEST(sidre_buffer,realloc_buffer)
   std::cerr << dbuff->getTypeID() << std::endl;
   EXPECT_EQ(dbuff->getTypeID(), INT_ID);
   EXPECT_EQ(dbuff->getNumElements(), 10u);
-  EXPECT_EQ(dbuff->getTotalBytes(), static_cast<SidreLength>(sizeof(int) * 10));
+  EXPECT_EQ(dbuff->getTotalBytes(), static_cast<IndexType>(sizeof(int) * 10));
 
   // data buffer changes
   data_ptr = static_cast<int*>(dbuff->getVoidPtr());
@@ -222,9 +223,9 @@ TEST(sidre_buffer, create_buffer_view)
   DataStore* ds   = new DataStore();
   Group* root = ds->getRoot();
 
-  const SidreLength len = 11;
+  const IndexType len = 11;
   const int ndims = 1;
-  SidreLength shape[] = { len };
+  IndexType shape[] = { len };
 
   Buffer* buff = ds->createBuffer(INT_ID, len)->allocate();
 
