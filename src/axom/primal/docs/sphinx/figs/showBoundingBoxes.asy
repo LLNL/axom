@@ -3,7 +3,7 @@
 // 1. run Asymptote:
 //    asy -f png showBoundingBoxes.asy
 // 2. Optionally, use ImageMagick to convert the white background to transparent:
-//    convert showBoundingBoxes.asy -transparent white showBoundingBoxes.asy
+//    convert showBoundingBoxes.png -transparent white showBoundingBoxes.png
 
 // preamble
 settings.render = 6;
@@ -56,6 +56,7 @@ draw(box(bboxmin, bboxmax));
 // draw oriented bounding box
 path3[] obboxpath = obpts[0]--obpts[1]--obpts[3]--obpts[2]--cycle
      ^^ obpts[4]--obpts[5]--obpts[7]--obpts[6]--cycle
-     ^^ obpts[0]--obpts[4] ^^ obpts[1]--obpts[5] ^^ obpts[2]--obpts[6] ^^ obpts[3]--obpts[7];
+     ^^ obpts[0]--obpts[4] ^^ obpts[1]--obpts[5]
+     ^^ obpts[2]--obpts[6] ^^ obpts[3]--obpts[7];
 draw(obboxpath, orange);
 

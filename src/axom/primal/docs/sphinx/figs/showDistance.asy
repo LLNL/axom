@@ -3,7 +3,7 @@
 // 1. run Asymptote:
 //    asy -f png showDistance.asy
 // 2. Optionally, use ImageMagick to convert the white background to transparent:
-//    convert showDistance.asy -transparent white showDistance.asy
+//    convert showDistance.png -transparent white showDistance.png
 
 // preamble
 settings.render = 6;
@@ -20,8 +20,7 @@ triple q = (0.75,1.2,0.4);
 // other primitives
 triple boxpt = (0.4,0.3,0.7);
 triple p = (0.2,1.4,1.1);
-dot(q);
-dot(p, blue);
+dot(q);    dot(p, blue);
 draw((1.1,0,0.2)--(1.1,0.5,0.2), blue);
 draw((0.2,-0.3,0.4)--(0.25,-0.1,0.3)--(0.3,-0.3,0.35)--cycle, blue);
 draw(box((-0.3,-0.2,0.7), (0.4,0.3,0.9)), blue);

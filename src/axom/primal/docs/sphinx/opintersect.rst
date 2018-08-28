@@ -2,8 +2,8 @@ Intersection
 ^^^^^^^^^^^^
 
 The intersection test is provided by ``intersect()``.  It takes two primitives
-and returns a boolean if the primitives intersect.  Some overloads return the
-point of intersection in an output argument.  The overloads for
+and returns a boolean indicating if the primitives intersect.  Some overloads
+return the point of intersection in an output argument.  The overloads for
 ``intersect()`` are summarized in the table below.
 
 +-------------------+-------------------+--------------------------------------+
@@ -41,7 +41,7 @@ point of intersection in an output argument.  The overloads for
          ``intersect()`` can specify an optional argument to include triangle
          boundaries in the intersection test.
 
-The example below intersection tests between two triangles, a ray, and a
+The example below tests for intersection between two triangles, a ray, and a
 BoundingBox.
 
 .. figure:: figs/showIntersect.png
@@ -59,7 +59,8 @@ BoundingBox.
    :language: C++
 
 If a ray intersects a bounding box at more than one point, as in the example above,
-the first point along the ray is reported as the intersection.  Thus, the ray's
-entry point is shown in the diagram, rather than some point in the box's interior
-or where it exits the box.
-
+the first intersection point along the ray (the intersection closest to the ray's
+origin) is reported as the intersection.  Thus, the ray's entry point is shown in
+the diagram, rather than some point in the box's interior or where it exits the box.
+If a ray originates inside a bounding box, the origin will be reported as the point
+of intersection.

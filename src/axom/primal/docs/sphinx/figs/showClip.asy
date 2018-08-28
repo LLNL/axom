@@ -3,7 +3,7 @@
 // 1. run Asymptote:
 //    asy -f png showClip.asy
 // 2. Optionally, use ImageMagick to convert the white background to transparent:
-//    convert showClip.asy -transparent white showClip.asy
+//    convert showClip.png -transparent white showClip.png
 
 // preamble
 settings.render = 6;

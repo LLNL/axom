@@ -3,7 +3,7 @@
 // 1. run Asymptote:
 //    asy -f png showIntersect.asy
 // 2. Optionally, use ImageMagick to convert the white background to transparent:
-//    convert showIntersect.asy -transparent white showIntersect.asy
+//    convert showIntersect.png -transparent white showIntersect.png
 
 // preamble
 settings.render = 6;
@@ -32,10 +32,10 @@ draw(box((0.1,-0.23,0.1), (0.8,0.5,0.4)), blue);
 draw(pgon, deepblue);
 
 draw(ray, arrow=Arrow3(DefaultHead2), red);
-dot((0.4,0.4,0.1), red);
-dot((0.4,0.4,0.622222), red);
-dot((0.4,0.4,0.85), red);
-draw(tri1);
-draw(tri2, blue);
+  dot((0.4,0.4,0.1), red);
+  dot((0.4,0.4,0.622222), red);
+  dot((0.4,0.4,0.85), red);
+  draw(tri1);
+  draw(tri2, blue);
 draw((0.420779,0.0525974,0.868182)--(0.26449,0.462857,0.731429), deepblue);
 draw((0.8,1.4,1.2)--(0.8,1.4,0), dotted);

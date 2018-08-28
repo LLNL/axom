@@ -1,9 +1,9 @@
 Clip triangle against bounding box
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The clip operation clips a triangle against a bounding box, returning the
+The clip operator clips a triangle against a bounding box, returning the
 resulting polygon.  The figure shows the triangle in blue and the polygon
-resulting from ``clip()`` in yellow.
+resulting from ``clip()`` in grey.
 
 .. figure:: figs/showClip.png
    :figwidth: 300px

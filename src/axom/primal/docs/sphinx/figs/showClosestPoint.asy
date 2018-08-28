@@ -3,7 +3,7 @@
 // 1. run Asymptote:
 //    asy -f png showClosestPoint.asy
 // 2. Optionally, use ImageMagick to convert the white background to transparent:
-//    convert showClosestPoint.asy -transparent white showClosestPoint.asy
+//    convert showClosestPoint.png -transparent white showClosestPoint.png
 
 // preamble
 settings.render = 6;

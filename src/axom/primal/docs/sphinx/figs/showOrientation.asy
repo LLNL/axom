@@ -3,7 +3,7 @@
 // 1. run Asymptote:
 //    asy -f png showOrientation.asy
 // 2. Optionally, use ImageMagick to convert the white background to transparent:
-//    convert showOrientation.asy -transparent white showOrientation.asy
+//    convert showOrientation.png -transparent white showOrientation.png
 
 // preamble
 settings.render = 6;
@@ -21,7 +21,9 @@ path3 tri = (1.2,0,0)--(0,1.8,0)--(0,0,1.4)--cycle;
 triple centroid = (0.4,0.6,0.466667);
 draw(tri);
 dot((0,0,0.7), blue);
+label("$N$", (0,0,0.7), align=W);
 dot((0.4,0.6,0.466667), blue);
 draw(centroid--1.6centroid, arrow=Arrow3(DefaultHead2));
 dot((0.45,1.5,1), blue);
+label("$P$", (0.45,1.5,1), align=E);
 draw((0.45,1.5,1)--(0.45,1.5,0), dotted);

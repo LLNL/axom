@@ -1,14 +1,15 @@
 Operators
 ---------
 
-Primal implements geometric operators with unbound functions.  Currently, these include:
+Primal implements geometric operators with unbound functions.  Currently, these include
+the following: 
 
+- ``clip`` finds the polygon resulting from a bounding box clipping a triangle.
 - ``closest_point`` takes a primitive P and a query point Q and returns the point
   on P closest to Q.
+- ``compute_bounding_box`` finds the bounding box for a given primitive.
 - ``squared_distance`` computes the squared distance from a point to another primitive.
 - ``orientation`` finds the side of a line segment or triangle where a query point lies.
-- ``clip`` finds the polygon resulting from a bounding box clipping a triangle.
-- ``compute_bounding_box`` finds the bounding box for a given primitive.
 - ``intersect`` predicate tests if two primitives intersect.  Some of the combinations
   also indicate the point of intersection of a 1D primitive with another primitive.
 
