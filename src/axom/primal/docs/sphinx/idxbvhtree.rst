@@ -3,7 +3,8 @@ BVHTree
 
 The ``BVHTree`` implements a 
 `bounding volume hierarchy tree <https://en.wikipedia.org/wiki/Bounding_volume_hierarchy>`_.
-This data structure recursively subdivides the region of interest into a "tree" of
+This data structure recursively subdivides a rectilinear region of interest 
+into a "tree" of
 subregions, stopping when a subregion contains less than some number of objects
 or when the tree reaches a specified height.  Similar to ``UniformGrid``,
 subregions are also called bins.

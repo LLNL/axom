@@ -3,7 +3,7 @@ UniformGrid
 
 The ``UniformGrid`` implements the 
 `Cell list <https://en.wikipedia.org/wiki/Cell_lists>`_.
-This data structure tiles the region of interest into non-intersecting
+This data structure tiles a rectilinear region of interest into non-intersecting
 subregions (or "bins") of uniform size.  Each object in the region of interest
 is added to every bin the object
 intersects.  ``UniformGrid`` can be used when a code compares each primitive

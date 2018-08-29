@@ -4,7 +4,8 @@ Spatial Query Acceleration Data Structures
 Primal provides two data structures for accelerating spatial queries, sometimes
 called "spatial indexes."  The cell list is
 implemented in the UniformGrid class and the bounding volume hierarchy tree
-implemented in the BVHTree class.  Both classes divide a bounding box denoting a
+implemented in the BVHTree class.  Both classes divide an axis-aligned 
+bounding box denoting a
 region of interest into bins that group objects together, avoiding the need to
 process objects that do not fall into a bin of interest.  The UniformGrid and
 BVHTree classes are supported by the RectangularLattice class and construction
