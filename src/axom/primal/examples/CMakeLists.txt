@@ -15,6 +15,7 @@
 set(primal_example_depends
         core
         primal
+        fmt
         )
 
 blt_add_executable(
