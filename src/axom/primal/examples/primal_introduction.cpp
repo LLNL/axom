@@ -40,36 +40,36 @@
 
 // _prims_header_start
 // Axom primitives
-#include "primal/BoundingBox.hpp"
-#include "primal/OrientedBoundingBox.hpp"
-#include "primal/Point.hpp"
-#include "primal/Polygon.hpp"
-#include "primal/Ray.hpp"
-#include "primal/Segment.hpp"
-#include "primal/Triangle.hpp"
-#include "primal/Vector.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/geometry/OrientedBoundingBox.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Polygon.hpp"
+#include "axom/primal/geometry/Ray.hpp"
+#include "axom/primal/geometry/Segment.hpp"
+#include "axom/primal/geometry/Triangle.hpp"
+#include "axom/primal/geometry/Vector.hpp"
 // _prims_header_end
 
 // Axom operations
 // Each header is used in its own example, so each one is bracketed for separate
 // inclusion.
 // _clip_header_start
-#include "primal/clip.hpp"
+#include "axom/primal/operators/clip.hpp"
 // _clip_header_end
 // _closest_point_header_start
-#include "primal/closest_point.hpp"
+#include "axom/primal/operators/closest_point.hpp"
 // _closest_point_header_end
 // _bbox_header_start
-#include "primal/compute_bounding_box.hpp"
+#include "axom/primal/operators/compute_bounding_box.hpp"
 // _bbox_header_end
 // _intersect_header_start
-#include "primal/intersect.hpp"
+#include "axom/primal/operators/intersect.hpp"
 // _intersect_header_end
 // _orient_header_start
-#include "primal/orientation.hpp"
+#include "axom/primal/operators/orientation.hpp"
 // _orient_header_end
 // _sqdist_header_start
-#include "primal/squared_distance.hpp"
+#include "axom/primal/operators/squared_distance.hpp"
 // _sqdist_header_end
 
 // C++ headers
@@ -101,12 +101,12 @@ typedef Vector<double, in3D> VectorType;
 
 // Axom spatial index
 // _ugrid_triintersect_header_start
-#include "primal/UniformGrid.hpp"
+#include "axom/primal/spatial_acceleration/UniformGrid.hpp"
 // the UniformGrid will store ints ("thing" indexes) in 3D
 typedef UniformGrid<int, in3D> UniformGridType;
 // _ugrid_triintersect_header_end
 // _bvhtree_header_start
-#include "primal/BVHTree.hpp"
+#include "axom/primal/spatial_acceleration/BVHTree.hpp"
 // the BVHTree is in 2D, storing an index to 2D triangles
 typedef BVHTree<int, in2D> BVHTree2DType;
 // supporting classes
