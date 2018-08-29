@@ -10,18 +10,20 @@ Primal includes the following primitives:
 - Tetrahedron
 - BoundingBox, OrientedBoundingBox
 
-Primal also provides the NumericAray class, which implements arithmetic
+Primal also provides the NumericArray class, which implements arithmetic
 operations on numerical tuples and supports Primal's Point and Vector classes.
 Classes in Primal are templated on coordinate type (double, float, etc.) and
 dimension.  The primitives do not inherit from a common base class.  This was a
 design choice in favor of simplicity and performance.  Geometric primitives can
 be tested for equality and can be printed to strings.
 
-Primal also includes functions to merge two BoundingBox or two OrientedBoundingBox
-objects and to create new OrientedBoundingBox objects from a list of points.
+Primal also includes functions to merge a pair of BoundingBox or a pair of 
+OrientedBoundingBox objects and to create new OrientedBoundingBox objects 
+from a list of points.
 
-Include header files for primitives (header files for operations will be shown
-next to code examples) and ``using`` directives to simplify code:
+The following includes header files for primal's primitives
+as well as some ``using`` directives and ``typedef``s that will be used in
+the examples. Header files for operations will be shown next to code examples:
 
 .. literalinclude:: ../../examples/primal_introduction.cpp
    :start-after: _prims_header_start
