@@ -1964,7 +1964,7 @@ void Group::importFrom(conduit::Node & node, bool preserve_contents)
     while (buffs_itr.has_next())
     {
       Node& n_buffer = buffs_itr.next();
-      IndexType old_buffer_id = n_buffer["id"].as_int64();
+      IndexType old_buffer_id = n_buffer["id"].to_int64();
 
       Buffer* buffer = getDataStore()->createBuffer();
 

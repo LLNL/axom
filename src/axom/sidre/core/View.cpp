@@ -1183,7 +1183,7 @@ void View::importFrom(conduit::Node& data_holder,
     // Start from scratch
     m_state = EMPTY;
 
-    IndexType old_buffer_id = data_holder["buffer_id"].as_int64();
+    IndexType old_buffer_id = data_holder["buffer_id"].to_int64();
     bool is_applied = data_holder["is_applied"].as_unsigned_char();
 
     SLIC_ASSERT_MSG( buffer_id_map.find(old_buffer_id) !=
@@ -1252,7 +1252,7 @@ void View::importDescription(conduit::Node& data_holder)
     if (data_holder.has_path("shape"))
     {
       Node & n = data_holder["shape"];
-      IndexType* shape = n.as_int64_ptr();
+      IndexType* shape = n.value();
       int ndims = n.dtype().number_of_elements();
       describeShape(ndims, shape);
     }
