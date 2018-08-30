@@ -46,12 +46,15 @@ namespace primal
  *  supplied oriented triangle.
  * \param [in] p the query point.
  * \param [in] tri oriented triangle.
- * \return the
- * \note The return value can be one of the following:
+ * \return The orientation of the point with respect to the given triangle.
+ * \note The triangle lies in a plane that divides space into the positive
+ * half-space and the negative half-space.  The triangle's normal vector
+ * points into the positive half-space.
+ * The return value of this routine can be one of the following:
  * <ul>
- *  <li> ON_BOUNDARY      </li>
- *  <li> ON_POSITIVE_SIDE </li>
- *  <li> ON_NEGATIVE_SIDE </li>
+ *  <li> ON_BOUNDARY, when the point is coplanar with the triangle </li>
+ *  <li> ON_POSITIVE_SIDE, when the point lies in the positive half-space </li>
+ *  <li> ON_NEGATIVE_SIDE, when the point lies in the negative half-space </li>
  * </ul>
  */
 template < typename T >
@@ -89,7 +92,7 @@ int orientation( const Point< T,3 >& p, const Triangle< T,3 >& tri )
  *  supplied oriented segment.
  * \param [in] p the query point.
  * \param [in] seg the user-supplied segment.
- * \return the orientation of the point with respect to the given segment.
+ * \return The orientation of the point with respect to the given segment.
  * \note The return value can be one of the following:
  * <ul>
  *  <li> ON_BOUNDARY, when the point is collinear with the points that define
