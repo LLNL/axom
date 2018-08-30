@@ -56,12 +56,12 @@ typedef conduit::Schema Schema;
  * \brief IndexType is used for any labeling of a sidre object by an
  *        integer identifier.
  */
-typedef common::int64 IndexType;
+typedef SIDRE_IndexType IndexType;
 
 /*!
  * \brief Common invalid index identifier used in sidre.
  */
-const IndexType InvalidIndex = -1;
+const IndexType InvalidIndex = SIDRE_InvalidIndex;
 
 /*!
  * \brief Returns true if idx is valid, else false.
