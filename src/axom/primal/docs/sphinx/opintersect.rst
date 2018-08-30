@@ -58,9 +58,10 @@ BoundingBox.
    :end-before: _intersect_end
    :language: C++
 
-If a ray intersects a bounding box at more than one point, as in the example above,
+In the diagram, the point where the ray enters the bounding box is shown as the
+intersection point (not the exit point or some point inside the box).  This is because
+if a ray intersects a bounding box at more than one point,
 the first intersection point along the ray (the intersection closest to the ray's
-origin) is reported as the intersection.  Thus, the ray's entry point is shown in
-the diagram, rather than some point in the box's interior or where it exits the box.
-If a ray originates inside a bounding box, the origin will be reported as the point
+origin) is reported as the intersection.
+If a ray originates inside a bounding box, the ray's origin will be reported as the point
 of intersection.

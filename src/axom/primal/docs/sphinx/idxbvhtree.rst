@@ -37,12 +37,8 @@ Unlike the ``UniformGrid``, ``BVHTree`` bins can overlap.
    :alt: Diagram showing third division of a BVHTree
 
 The following code example shows how a ``BVHTree`` can be used to accelerate a
-point-mesh intersection algorithm.  The key idea in ``BVHTree::find()`` is that
-testing for probe intersection with a bin (bounding box) is cheap.  If a bin
-intersection test fails (misses), the contents of the bin are cheaply pruned out
-of the search.  If the probe does intersect a bin, the next level of bins is
-tested for probe intersection.  Without the acceleration data structure, each
-probe point must be tested against each triangle.
+point-mesh intersection algorithm.  First, we insert all triangles into the
+index and call ``BVHTree::build()``.
 
 .. literalinclude:: ../../examples/primal_introduction.cpp
    :start-after: _bvhtree_header_start
@@ -50,6 +46,27 @@ probe point must be tested against each triangle.
    :language: C++
 
 .. literalinclude:: ../../examples/primal_introduction.cpp
-   :start-after: _bvhtree_start
-   :end-before: _bvhtree_end
+   :start-after: _bvhtree_build_start
+   :end-before: _bvhtree_build_end
+   :language: C++
+
+After the structure is built, make a list of triangles that are candidate
+neighbors to the query point.  Call ``BVHTree::find()`` to get the list of
+bins that the query point intersects.  The key idea of ``find()`` is that
+testing for probe intersection with a bin (bounding box) is cheap.  If a bin
+intersection test fails (misses), the contents of the bin are cheaply pruned out
+of the search.  If the probe does intersect a bin, the next level of bins is
+tested for probe intersection.  Without the acceleration data structure, each
+probe point must be tested against each triangle.
+
+.. literalinclude:: ../../examples/primal_introduction.cpp
+   :start-after: _bvhtree_candidate_start
+   :end-before: _bvhtree_candidate_end
+   :language: C++
+
+Finally, test the point against all candidate neighbor triangles.
+
+.. literalinclude:: ../../examples/primal_introduction.cpp
+   :start-after: _bvhtree_cand_int_start
+   :end-before: _bvhtree_cand_int_end
    :language: C++

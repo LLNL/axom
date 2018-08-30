@@ -22,8 +22,10 @@ OrientedBoundingBox objects and to create new OrientedBoundingBox objects
 from a list of points.
 
 The following includes header files for primal's primitives
-as well as some ``using`` directives and ``typedef``s that will be used in
-the examples. Header files for operations will be shown next to code examples:
+as well as some ``using`` directives and ``typedef`` statements that will be used in
+the examples. Header files for operations will be shown next to code examples.
+Although the examples ``#include`` separate class header files, it is easier and
+less error-prone to write ``#include axom/primal.hpp``.
 
 .. literalinclude:: ../../examples/primal_introduction.cpp
    :start-after: _prims_header_start

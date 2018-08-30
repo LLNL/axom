@@ -19,6 +19,14 @@ the following:
    common case, but some operators such as triangle intersection do not support
    other dimensionality than 2 or 3.
 
+.. note::
+   Many of the operations includes a tolerance parameter ``eps`` for improved
+   geometric robustness. For example, ``orientation()`` considers a
+   point to be on the boundary (``OrientationResult::ON_BOUNDARY``) when the
+   point is within ``eps`` of the plane. This parameter is explicitly exposed
+   in the primal API for some operations (e.g. some versions of ``intersect()``),
+   but not others (e.g. ``orientation()``).
+
 .. toctree::
    :maxdepth: 2
 

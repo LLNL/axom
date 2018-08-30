@@ -3,14 +3,14 @@ UniformGrid
 
 The ``UniformGrid`` implements the 
 `Cell list <https://en.wikipedia.org/wiki/Cell_lists>`_.
-This data structure tiles a rectilinear region of interest into non-intersecting
-subregions (or "bins") of uniform size.  Each object in the region of interest
-is added to every bin the object
-intersects.  ``UniformGrid`` can be used when a code compares each primitive
-in a collection to every other spatially-close primitive, such as when checking if a
-triangle mesh intersects itself.  The following naive implementation is
-straightforward but runs in :math:`O(n^2)` time, where :math:`n` is the number
-of triangles.
+This data structure tiles a rectilinear region of interest into
+non-intersecting subregions (or "bins") of uniform size.  Each bin gets a
+reference to every object in the region of interest that intersects that bin.
+``UniformGrid`` can be used when a code compares each primitive
+in a collection to every other spatially-close primitive, such as when
+checking if a triangle mesh intersects itself.  The following naive
+implementation is straightforward but runs in :math:`O(n^2)` time, where
+:math:`n` is the number of triangles.
 
 .. literalinclude:: ../../examples/primal_introduction.cpp
    :start-after: _naive_triintersect_start
@@ -32,10 +32,26 @@ to intersect and are not compared with :math:`t`.
    :figwidth: 300px
    :alt: Diagram showing triangles indexed with a UniformGrid
 
+First, construct the ``UniformGrid`` and load it with triangles.
+
 .. literalinclude:: ../../examples/primal_introduction.cpp
    :start-after: _ugrid_triintersect_header_start
    :end-before: _ugrid_triintersect_header_end
    :language: C++
+
+.. literalinclude:: ../../examples/primal_introduction.cpp
+   :start-after: _ugrid_build_start
+   :end-before: _ugrid_build_end
+   :language: C++
+
+Then, for every triangle, look up its possible neighbors
+
+.. literalinclude:: ../../examples/primal_introduction.cpp
+   :start-after: _ugrid_candidate_start
+   :end-before: _ugrid_candidate_end
+   :language: C++
+
+and test the triangle against those neighbors.
 
 .. literalinclude:: ../../examples/primal_introduction.cpp
    :start-after: _ugrid_triintersect_start
