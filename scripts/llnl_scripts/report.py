@@ -252,18 +252,18 @@ def sortAndFilterJobInfos(basicJobInfos, srcJobInfos, tplJobInfos):
         del basicJobInfos[jobName][1:]
 
     for sys_type in srcJobInfos.keys():
-        # we just want the newest 5
+        # we just want the 2 newest
         jobInfoList = srcJobInfos[sys_type] # This gets all jobs with the specific sys_type
         jobInfoList.sort(key=operator.attrgetter("datetime"))
         jobInfoList.reverse()
-        del jobInfoList[5:]
+        del jobInfoList[2:]
 
     for sys_type in tplJobInfos.keys():
-        # we just want the newest 5
+        # we just want the 2 newest
         jobInfoList = tplJobInfos[sys_type] # This gets all jobs with the specific sys_type
         jobInfoList.sort(key=operator.attrgetter("datetime"))
         jobInfoList.reverse()
-        del jobInfoList[5:]
+        del jobInfoList[2:]
 
     return basicJobInfos, srcJobInfos, tplJobInfos
 
