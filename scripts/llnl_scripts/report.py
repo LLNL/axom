@@ -69,6 +69,12 @@ def parse_args():
     "Parses args from command line"
     parser = OptionParser()
     
+    parser.add_option("-c", "--cutoff",
+                      type="int",
+                      dest="cutoff",
+                      default="2",
+                      help="Cutoff of lines per section in report (Defaults to 2)")
+
     parser.add_option("-e", "--email",
                       type="string",
                       dest="email",
@@ -110,7 +116,7 @@ def main():
     basicJobInfos, srcJobInfos, tplJobInfos = generateJobInfos(archive_dir)
 
     print "Sorting and filtering out old jobs..."
-    basicJobInfos, srcJobInfos, tplJobInfos = sortAndFilterJobInfos(basicJobInfos, srcJobInfos, tplJobInfos)
+    basicJobInfos, srcJobInfos, tplJobInfos = sortAndFilterJobInfos(opts['cutoff'], basicJobInfos, srcJobInfos, tplJobInfos)
 
     print "Generating email content..."
     emailContent = generateEmailContent(basicJobInfos, srcJobInfos, tplJobInfos)
@@ -242,7 +248,7 @@ def populateTests(specInfo, path):
             print "Error: {0}: Unknown test status ({1})".format(test_xml_path, test_elem.attrib["Status"])
 
 
-def sortAndFilterJobInfos(basicJobInfos, srcJobInfos, tplJobInfos):
+def sortAndFilterJobInfos(cutoff, basicJobInfos, srcJobInfos, tplJobInfos):
     # Sort all jobs with the same name with newest job first based on date time
     # and cut off at the number we want to report
     for jobName in basicJobInfos.keys():
@@ -252,18 +258,18 @@ def sortAndFilterJobInfos(basicJobInfos, srcJobInfos, tplJobInfos):
         del basicJobInfos[jobName][1:]
 
     for sys_type in srcJobInfos.keys():
-        # we just want the 2 newest
+        # Sort and cutoff proper amount of lines for the email
         jobInfoList = srcJobInfos[sys_type] # This gets all jobs with the specific sys_type
         jobInfoList.sort(key=operator.attrgetter("datetime"))
         jobInfoList.reverse()
-        del jobInfoList[2:]
+        del jobInfoList[cutoff:]
 
     for sys_type in tplJobInfos.keys():
-        # we just want the 2 newest
+        # Sort and cutoff proper amount of lines for the email
         jobInfoList = tplJobInfos[sys_type] # This gets all jobs with the specific sys_type
         jobInfoList.sort(key=operator.attrgetter("datetime"))
         jobInfoList.reverse()
-        del jobInfoList[2:]
+        del jobInfoList[cutoff:]
 
     return basicJobInfos, srcJobInfos, tplJobInfos
 
