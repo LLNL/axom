@@ -83,6 +83,10 @@ declarations:
   - decl: size_t getNumBuffers() const
 #  - decl: bool hasBuffer( IndexType idx ) const
   - decl:  Buffer * getBuffer( IndexType idx )
+    fortran_generic:
+      idx:
+      -  int32_t
+      -  int64_t
     C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
   - decl: Buffer * createBuffer()
@@ -93,15 +97,23 @@ declarations:
       function_suffix: _from_type
     fortran_generic:
       num_elems:
-      -  int
-      -  long
+      -  int32_t
+      -  int64_t
     C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
   - decl: void destroyBuffer( IndexType id )
+    fortran_generic:
+      id:
+      -  int32_t
+      -  int64_t
 
   # Methods for iterating over Buffers in DataStore
 #  - decl: IndexType getFirstValidBufferIndex() const
 #  - decl: IndexType getNextValidBufferIndex(IndexType idx) const;
+#    fortran_generic:
+#      idx:
+#      -  int32_t
+#      -  int64_t
 
   - decl: void print() const
 #  - decl: void print(std::ostream& os) const
@@ -128,8 +140,16 @@ declarations:
   - decl: bool hasView( const string& path ) const
   - decl: bool hasChildView( const string& name ) const
 #  - decl: bool hasView( IndexType idx ) const
+#    fortran_generic:
+#      idx:
+#      -  int32_t
+#      -  int64_t
   - decl: IndexType getViewIndex(const std::string &name) const
   - decl: const std::string& getViewName(IndexType idx) const +len(MAXNAMESIZE)
+    fortran_generic:
+      idx:
+      -  int32_t
+      -  int64_t
     C_error_pattern: C_invalid_name
     PY_error_pattern: PY_invalid_name_idx
 
@@ -143,11 +163,23 @@ declarations:
   - decl: View *getView( const IndexType idx )
     format:
       function_suffix: _from_index
+    fortran_generic:
+      idx:
+      -  int32_t
+      -  int64_t
     C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
 #  - decl: View const *getView( const IndexType idx ) const
+#    fortran_generic:
+#      idx:
+#      -  int32_t
+#      -  int64_t
   - decl: IndexType getFirstValidViewIndex() const
   - decl: IndexType getNextValidViewIndex(IndexType idx) const
+    fortran_generic:
+      idx:
+      -  int32_t
+      -  int64_t
 
   # Methods to create a View that has no associated data.
   - decl: View *createView( const string& path )
@@ -163,8 +195,8 @@ declarations:
       function_suffix: _from_type
     fortran_generic:
       num_elems:
-      -  int
-      -  long
+      -  int32_t
+      -  int64_t
     C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
 
@@ -195,8 +227,8 @@ declarations:
       function_suffix: _from_type_and_buffer
     fortran_generic:
       num_elems:
-      -  int
-      -  long
+      -  int32_t
+      -  int64_t
     C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
 
@@ -226,8 +258,8 @@ declarations:
       function_suffix: _from_type_external
     fortran_generic:
       num_elems:
-      -  int
-      -  long
+      -  int32_t
+      -  int64_t
     C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
 
@@ -249,8 +281,8 @@ declarations:
       function_suffix: _nelems
     fortran_generic:
       num_elems:
-      -  int
-      -  long
+      -  int32_t
+      -  int64_t
     C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
 
@@ -284,6 +316,10 @@ declarations:
   # View destruction methods.
   - decl: void destroyView( const std::string &path )
 #  - decl: void destroyView( IndexType idx )
+#    fortran_generic:
+#      idx:
+#      -  int32_t
+#      -  int64_t
 #  - decl: void destroyViews()
   - decl: void destroyViewAndData(const std::string &path)
     format:
@@ -291,6 +327,10 @@ declarations:
   - decl: void destroyViewAndData(IndexType idx)
     format:
       function_suffix: _index
+    fortran_generic:
+      idx:
+      -  int32_t
+      -  int64_t
 #  - decl: void destroyViewsAndData()
 
   # View move and copy methods.
@@ -301,8 +341,16 @@ declarations:
   - decl: bool hasGroup( const string& path )
   - decl: bool hasChildGroup( const string& name )
 #  - decl: bool hasGroup( IndexType idx )
+#    fortran_generic:
+#      idx:
+#      -  int32_t
+#      -  int64_t
   - decl: IndexType getGroupIndex(const std::string &name) const
   - decl: const std::string& getGroupName(IndexType idx) const +len(MAXNAMESIZE)
+    fortran_generic:
+      idx:
+      -  int32_t
+      -  int64_t
     C_error_pattern: C_invalid_name
     PY_error_pattern: PY_invalid_name_idx
 
@@ -316,11 +364,23 @@ declarations:
   - decl: Group * getGroup( IndexType idx)
     format:
       function_suffix: _from_index
+    fortran_generic:
+      idx:
+      -  int32_t
+      -  int64_t
     C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
 #  - decl: Group const * getGroup(IndexType idx) const
+#    fortran_generic:
+#      idx:
+#      -  int32_t
+#      -  int64_t
   - decl: IndexType getFirstValidGroupIndex() const
   - decl: IndexType getNextValidGroupIndex(IndexType idx) const
+    fortran_generic:
+      idx:
+      -  int32_t
+      -  int64_t
 
   # Child Group creation and destruction methods.
   - decl: Group *createGroup( const string& path )
@@ -332,6 +392,10 @@ declarations:
   - decl: void destroyGroup(IndexType idx)
     format:
       function_suffix: _index
+    fortran_generic:
+      idx:
+      -  int32_t
+      -  int64_t
 #  - decl: void destroyGroups()
 
   # Group move and copy methods
@@ -383,8 +447,8 @@ declarations:
       return_this: True
       fortran_generic:
         num_elems:
-        -  int
-        -  long
+        -  int32_t
+        -  int64_t
 
 #    - decl: Buffer* describe(const DataType& dtype)
 
@@ -399,15 +463,15 @@ declarations:
       return_this: True
       fortran_generic:
         num_elems:
-        -  int
-        -  long
+        -  int32_t
+        -  int64_t
 
     - decl: Buffer* reallocate(IndexType num_elems)
       return_this: True
       fortran_generic:
         num_elems:
-        -  int
-        -  long
+        -  int32_t
+        -  int64_t
 
     - decl: void print() const
 
@@ -460,8 +524,8 @@ declarations:
     return_this: True
     fortran_generic:
       num_elems:
-      -  int
-      -  long
+      -  int32_t
+      -  int64_t
 
 #  - decl: View* allocate(const DataType& dtype)
 
@@ -469,8 +533,8 @@ declarations:
     return_this: True
     fortran_generic:
       num_elems:
-      -  int
-      -  long
+      -  int32_t
+      -  int64_t
 
 #  - decl: View* reallocate(const DataType& dtype)
 
@@ -488,8 +552,8 @@ declarations:
       function_suffix: _type
     fortran_generic:
       num_elems:
-      -  int
-      -  long
+      -  int32_t
+      -  int64_t
 
   - decl: View* attachBuffer(TypeID type,
                              int ndims,
@@ -555,8 +619,8 @@ declarations:
       function_suffix: _type
     fortran_generic:
       num_elems:
-      -  int
-      -  long
+      -  int32_t
+      -  int64_t
 
   - decl: View * setExternalDataPtr(TypeID type,
                                     int ndims,

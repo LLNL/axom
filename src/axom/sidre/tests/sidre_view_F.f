@@ -67,8 +67,8 @@ contains
     db_0 = dv_0%get_buffer()
     db_1 = dv_1%get_buffer()
 
-    call assert_equals(INT(db_0%get_index()), 0, "db_0%get_index(), 0")
-    call assert_equals(INT(db_1%get_index()), 1, "db_1%get_index(), 1")
+    call assert_true(db_0%get_index() == 0, "db_0%get_index(), 0")
+    call assert_true(db_1%get_index() == 1, "db_1%get_index(), 1")
     call ds%delete()
   end subroutine create_views
 

@@ -32,12 +32,12 @@ contains
     dbuff_0 = ds%create_buffer()
     dbuff_1 = ds%create_buffer()
 
-    call assert_equals(INT(dbuff_0%get_index()), 0, "dbuff_0%get_index()")
-    call assert_equals(INT(dbuff_1%get_index()), 1, "dbuff_1%get_index()")
-    call ds%destroy_buffer(INT(0, SIDRE_IndexType))
+    call assert_true(dbuff_0%get_index() == 0, "dbuff_0%get_index()")
+    call assert_true(dbuff_1%get_index() == 1, "dbuff_1%get_index()")
+    call ds%destroy_buffer(0)
 
     dbuff_3 = ds%create_buffer()
-    call assert_equals(INT(dbuff_3%get_index()), 0, "dbuff_3%get_index()")
+    call assert_true(dbuff_3%get_index() == 0, "dbuff_3%get_index()")
 
     call ds%print()
     call ds%delete()

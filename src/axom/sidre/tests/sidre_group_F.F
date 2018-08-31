@@ -149,7 +149,7 @@ contains
     child1 = parent%get_group("child")
     call assert_true( child == child1 )
 
-    child2 = parent%get_group(int(0, SIDRE_IndexType))
+    child2 = parent%get_group(0)
     call assert_true( child == child2 )
 
     ! check error condition
@@ -178,7 +178,7 @@ contains
     view2 = parent%get_view("view")
     call assert_true( view1 == view2 )
 
-    view3 = parent%get_view(int(0, SIDRE_IndexType))
+    view3 = parent%get_view(0)
     call assert_true( view1 == view3 )
 
     ! check error condition
@@ -222,7 +222,7 @@ contains
     call assert_equals(view2%get_name(), name2)
 
     idx3 = parent%get_view_index("view3")
-    call assert_equals(INT(idx3), INT(invalid_index))
+    call assert_true(idx3 == invalid_index)
 
     name3 = parent%get_view_name(idx3)
     call assert_true(name3 == " ")
@@ -253,9 +253,9 @@ contains
     idx1 = parent%get_first_valid_group_index()
     idx2 = parent%get_next_valid_group_index(idx1)
     idx3 = parent%get_next_valid_group_index(idx2)
-    call assert_equals(0, INT(idx1))
-    call assert_equals(1, INT(idx2))
-    call assert_equals(INT(invalid_index), INT(idx3))
+    call assert_true(0 == idx1)
+    call assert_true(1 == idx2)
+    call assert_true(invalid_index == idx3)
 
     group1out = parent%get_group(idx1)
     group2out = parent%get_group(idx2)
@@ -267,8 +267,8 @@ contains
     badidx1 = emptygrp%get_first_valid_group_index()
     badidx2 = emptygrp%get_next_valid_group_index(badidx1)
 
-    call assert_equals(INT(badidx1), INT(invalid_index))
-    call assert_equals(INT(badidx2), INT(invalid_index))
+    call assert_true(badidx1 == invalid_index)
+    call assert_true(badidx2 == invalid_index)
 
     call ds%delete()
   end subroutine get_first_and_next_group_index
@@ -295,9 +295,9 @@ contains
     idx1 = parent%get_first_valid_view_index()
     idx2 = parent%get_next_valid_view_index(idx1)
     idx3 = parent%get_next_valid_view_index(idx2)
-    call assert_equals(0, INT(idx1))
-    call assert_equals(1, INT(idx2))
-    call assert_equals(INT(invalid_index), INT(idx3))
+    call assert_true(0 == idx1)
+    call assert_true(1 == idx2)
+    call assert_true(invalid_index == idx3)
 
     view1out = parent%get_view(idx1)
     view2out = parent%get_view(idx2)
@@ -309,8 +309,8 @@ contains
     badidx1 = emptygrp%get_first_valid_view_index()
     badidx2 = emptygrp%get_next_valid_view_index(badidx1)
 
-    call assert_equals(INT(badidx1), INT(invalid_index))
-    call assert_equals(INT(badidx2), INT(invalid_index))
+    call assert_true(badidx1 == invalid_index)
+    call assert_true(badidx2 == invalid_index)
 
     call ds%delete()
   end subroutine get_first_and_next_view_index
@@ -349,7 +349,7 @@ contains
     call assert_equals(grp2%get_name(), name2)
 
     idx3 = parent%get_group_index("grp3")
-    call assert_equals(INT(idx3), INT(invalid_index))
+    call assert_true(idx3 == invalid_index)
 
     name3 = parent%get_group_name(idx3)
     call assert_true(name3 == " ")

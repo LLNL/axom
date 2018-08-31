@@ -50,7 +50,7 @@ integer, parameter :: MAXNAMESIZE = 128
 
 integer, parameter :: SIDRE_IndexType = C_INT64_T
 
-integer, parameter :: invalid_index = int(-1, SIDRE_IndexType)
+integer, parameter :: invalid_index = -1_SIDRE_IndexType
 ! splicer end module_top
 
 
