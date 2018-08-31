@@ -26,14 +26,7 @@
 #define SIDRETYPES_H
 
 #include "axom/sidre/core/SidreDataTypeIds.h"
-#include <stdint.h>
-
-typedef int64_t SIDRE_IndexType;
-
-#define SIDRE_InvalidIndex ((SIDRE_IndexType) -1)
 
 #define SIDRE_InvalidName   NULL
-
-
 
 #endif  // SIDRETYPES_H
