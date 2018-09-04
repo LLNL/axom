@@ -535,7 +535,7 @@ double SignedDistance< NDIMS >::getMinSqDistance( const PointType& pt,
     cpt->element_ids[ i ] = cellIdx;
 
     mint::IndexType cellIds[3];
-    m_surfaceMesh->getCellNodes( cellIdx, cellIds );
+    m_surfaceMesh->getCellNodeIDs( cellIdx, cellIds );
 
     TriangleType surface_element;
     m_surfaceMesh->getNode( cellIds[0], surface_element[0].data() );
@@ -679,7 +679,7 @@ SignedDistance< NDIMS >::getCellBoundingBox( axom::mint::IndexType icell )
 
   // Get the cell node IDs that make up the cell
   axom::mint::IndexType* cellIds = new axom::mint::IndexType[ nnodes ];
-  m_surfaceMesh->getCellNodes( icell, cellIds );
+  m_surfaceMesh->getCellNodeIDs( icell, cellIds );
 
   // compute the cell's bounding box
   BoxType bb;

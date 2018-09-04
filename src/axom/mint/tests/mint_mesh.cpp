@@ -140,7 +140,7 @@ void check_append_cells_single( const Mesh* mesh, IndexType x_extent,
   {
     for ( IndexType i = 0 ; i < x_extent - 1 ; ++i )
     {
-      mesh->getCellNodes( cell_ID++, cell );
+      mesh->getCellNodeIDs( cell_ID++, cell );
 
       const IndexType bottom_left = j * x_extent + i;
       const IndexType bottom_right = bottom_left + 1;
@@ -222,7 +222,7 @@ void check_append_cells_mixed( const Mesh* mesh, IndexType x_extent,
     for ( IndexType i = 0 ; i < x_extent - 1 ; ++i )
     {
       CellType type = mesh->getCellType( cell_ID );
-      IndexType n_nodes = mesh->getCellNodes( cell_ID++, cell );
+      IndexType n_nodes = mesh->getCellNodeIDs( cell_ID++, cell );
 
       const IndexType bottom_left = j * x_extent + i;
       const IndexType bottom_right = bottom_left + 1;
@@ -247,7 +247,7 @@ void check_append_cells_mixed( const Mesh* mesh, IndexType x_extent,
         EXPECT_EQ( cell[2], top_right );
 
         type = mesh->getCellType( cell_ID );
-        n_nodes = mesh->getCellNodes( cell_ID++, cell );
+        n_nodes = mesh->getCellNodeIDs( cell_ID++, cell );
 
         EXPECT_EQ( n_nodes, 3 );
         EXPECT_EQ( type, TRIANGLE );

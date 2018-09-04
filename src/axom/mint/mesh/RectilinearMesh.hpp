@@ -131,7 +131,7 @@ public:
    * \pre y != nullptr iff dimension >= 2
    * \pre z != nullptr iff dimension == 3
    *
-   * \post 1 <= getDimesion() <= 3
+   * \post 1 <= getDimension() <= 3
    * \post getCoordinateArray( i ) != nullptr \f$ \forall i \f$
    * \post hasSidreGroup() == false.
    * \post isExternal() == true
@@ -190,8 +190,8 @@ public:
    *  mesh object goes out-of-scope, the data will remain persistent in Sidre.
    *
    * \pre Ni >= 1
-   * \pre Nj >= 1 iff dimesion >=2
-   * \pre Nk >= 1 iff dimesion == 3
+   * \pre Nj >= 1 iff dimension >=2
+   * \pre Nk >= 1 iff dimension == 3
    *
    * \pre group != nullptr
    * \pre group->getNumViews()==0
@@ -258,7 +258,7 @@ public:
    *
    * \param[in] dim the specified dimension
    *
-   * \note the returned buffer is of length getNodeDimension( dim ).
+   * \note the returned buffer is of length getNodeResolution( dim ).
    *
    * \pre dim >= 0 && dim < dimension()
    * \pre dim == X_COORDINATE || dim == Y_COORDINATE || dim == Z_COORDINATE

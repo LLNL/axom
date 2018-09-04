@@ -114,8 +114,8 @@ StructuredMesh::StructuredMesh( sidre::Group* group, const std::string& topo ) :
   SLIC_ERROR_IF( !validStructuredMeshType( m_type ),
                  "invalid structured mesh type!" );
 
-  blueprint::getStructuredMesh( m_ndims, m_node_dims, m_node_extent,
-                                getCoordsetGroup() );
+  blueprint::getStructuredMeshProperties( m_ndims, m_node_dims, m_node_extent,
+                                          getCoordsetGroup() );
   structuredInit();
 }
 
@@ -164,7 +164,7 @@ StructuredMesh::StructuredMesh( int meshType,
   SLIC_ERROR_IF( !blueprint::isValidTopologyGroup( getTopologyGroup() ),
                  "invalid topology group!" );
 
-  blueprint::setStructuredMesh( m_ndims, m_node_dims, m_node_extent,
+  blueprint::setStructuredMeshProperties( m_ndims, m_node_dims, m_node_extent,
                                 getCoordsetGroup() );
   structuredInit();
 }
@@ -176,24 +176,24 @@ void StructuredMesh::structuredInit()
 {
   for ( int dim = 0 ; dim < m_ndims ; ++dim )
   {
-    SLIC_ERROR_IF( getNodeDimension( dim ) < 2, "invalid extent" );
+    SLIC_ERROR_IF( getNodeResolution( dim ) < 2, "invalid extent" );
   }
 
   /* Initialize the node meta data. */
-  m_node_jp = ( m_ndims > 1 ) ? getNodeDimension( 0 ) :
+  m_node_jp = ( m_ndims > 1 ) ? getNodeResolution( 0 ) :
               std::numeric_limits<IndexType>::max();
-  m_node_kp = ( m_ndims > 2 ) ? m_node_jp* getNodeDimension( 1 ) :
+  m_node_kp = ( m_ndims > 2 ) ? m_node_jp* getNodeResolution( 1 ) :
               std::numeric_limits<IndexType>::max();
 
   /* Initialize the cell meta data */
   for ( int dim = 0 ; dim < m_ndims ; ++dim )
   {
-    m_cell_dims[ dim ] = getNodeDimension( dim ) - 1;
+    m_cell_dims[ dim ] = getNodeResolution( dim ) - 1;
   }
 
-  m_cell_jp = ( m_ndims > 1 ) ? getCellDimension( 0 ) :
+  m_cell_jp = ( m_ndims > 1 ) ? getCellResolution( 0 ) :
               std::numeric_limits<IndexType>::max();
-  m_cell_kp = ( m_ndims > 2 ) ? m_cell_jp* getCellDimension( 1 ) :
+  m_cell_kp = ( m_ndims > 2 ) ? m_cell_jp* getCellResolution( 1 ) :
               std::numeric_limits<IndexType>::max();
 
   /* Build the cell to node offsets. */
@@ -210,32 +210,32 @@ void StructuredMesh::structuredInit()
   /* Initialize the face meta data */
   if ( m_ndims == 2 )
   {
-    m_total_faces[ 0 ] = getNodeDimension( 0 ) * getCellDimension( 1 );
-    m_total_faces[ 1 ] = getCellDimension( 0 ) * getNodeDimension( 1 );
+    m_total_faces[ 0 ] = getNodeResolution( 0 ) * getCellResolution( 1 );
+    m_total_faces[ 1 ] = getCellResolution( 0 ) * getNodeResolution( 1 );
   }
   else if ( m_ndims == 3 )
   {
-    m_total_faces[ 0 ] = getNodeDimension( 0 ) * getCellDimension( 1 )
-                         * getCellDimension( 2 );
-    m_total_faces[ 1 ] = getCellDimension( 0 ) * getNodeDimension( 1 )
-                         * getCellDimension( 2 );
-    m_total_faces[ 2 ] = getCellDimension( 0 ) * getCellDimension( 1 )
-                         * getNodeDimension( 2 );
+    m_total_faces[ 0 ] = getNodeResolution( 0 ) * getCellResolution( 1 )
+                         * getCellResolution( 2 );
+    m_total_faces[ 1 ] = getCellResolution( 0 ) * getNodeResolution( 1 )
+                         * getCellResolution( 2 );
+    m_total_faces[ 2 ] = getCellResolution( 0 ) * getCellResolution( 1 )
+                         * getNodeResolution( 2 );
   }
 
   m_total_IJ_faces = m_total_faces[ 0 ] + m_total_faces[ 1 ];
-  m_num_I_faces_in_k_slice = getNodeDimension( 0 ) * getCellDimension( 1 );
-  m_num_J_faces_in_k_slice = getCellDimension( 0 ) * getNodeDimension( 1 );
+  m_num_I_faces_in_k_slice = getNodeResolution( 0 ) * getCellResolution( 1 );
+  m_num_J_faces_in_k_slice = getCellResolution( 0 ) * getNodeResolution( 1 );
 
   /* Initialize the edge meta data */
   if ( m_ndims == 3 )
   {
-    m_num_edges = getCellDimension( 0 ) * getNodeDimension( 1 )
-                  * getNodeDimension( 2 )
-                  + getCellDimension( 0 ) * getNodeDimension( 2 )
-                  * getNodeDimension( 1 )
-                  + getCellDimension( 1 ) * getNodeDimension( 2 )
-                  * getNodeDimension( 0 );
+    m_num_edges = getCellResolution( 0 ) * getNodeResolution( 1 )
+                  * getNodeResolution( 2 )
+                  + getCellResolution( 0 ) * getNodeResolution( 2 )
+                  * getNodeResolution( 1 )
+                  + getCellResolution( 1 ) * getNodeResolution( 2 )
+                  * getNodeResolution( 0 );
   }
 
   /* Initialize the fields */

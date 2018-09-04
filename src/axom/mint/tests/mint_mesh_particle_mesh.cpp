@@ -62,7 +62,7 @@ void check_constructor( mint::ParticleMesh* particles,
   {
     EXPECT_EQ( particles->getCellType( icell ), mint::VERTEX );
 
-    particles->getCellNodes( icell, cell );
+    particles->getCellNodeIDs( icell, cell );
     EXPECT_EQ( cell[0], icell );
   }
 

@@ -148,7 +148,7 @@ void write_cells( const Mesh* mesh, std::ofstream& file )
   for ( IndexType cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
   {
     const int num_cell_nodes = mesh->getNumberOfCellNodes( cellIdx );
-    mesh->getCellNodes( cellIdx, cell_nodes );
+    mesh->getCellNodeIDs( cellIdx, cell_nodes );
 
     file << num_cell_nodes;
     for ( int i = 0 ; i < num_cell_nodes ; ++i )
@@ -181,9 +181,9 @@ void write_dimensions( const StructuredMesh* mesh, std::ofstream& file )
   SLIC_ASSERT( mesh != nullptr );
 
   file << "DIMENSIONS ";
-  file << mesh->getNodeDimension( 0 ) << " "
-       << mesh->getNodeDimension( 1 ) << " "
-       << mesh->getNodeDimension( 2 ) << std::endl;
+  file << mesh->getNodeResolution( 0 ) << " "
+       << mesh->getNodeResolution( 1 ) << " "
+       << mesh->getNodeResolution( 2 ) << std::endl;
 }
 
 /*!
@@ -204,10 +204,10 @@ void write_rectilinear_mesh( const RectilinearMesh* mesh, std::ofstream& file )
 
   for ( int dim = 0 ; dim < mesh->getDimension() ; ++dim )
   {
-    file << coord_names[ dim ] << mesh->getNodeDimension( dim ) << " double\n";
+    file << coord_names[ dim ] << mesh->getNodeResolution( dim ) << " double\n";
     const double* coords = mesh->getCoordinateArray( dim );
     file << coords[0];
-    for (int64 i = 1 ; i < mesh->getNodeDimension( dim ) ; ++i )
+    for (int64 i = 1 ; i < mesh->getNodeResolution( dim ) ; ++i )
     {
       file << " " << coords[i];
     }
@@ -215,7 +215,7 @@ void write_rectilinear_mesh( const RectilinearMesh* mesh, std::ofstream& file )
   }
   for ( int dim = mesh->getDimension() ; dim < 3 ; ++dim )
   {
-    file << coord_names[ dim ] << mesh->getNodeDimension( dim ) << " double\n";
+    file << coord_names[ dim ] << mesh->getNodeResolution( dim ) << " double\n";
     file << 0.0 << std::endl;
   }
 }

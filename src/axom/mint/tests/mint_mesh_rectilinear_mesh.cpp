@@ -86,7 +86,7 @@ void check_fill_coords( RectilinearMesh* m )
   const int ndims = m->getDimension();
   for ( int idim=0 ; idim < ndims ; ++idim )
   {
-    const IndexType N = m->getNodeDimension( idim );
+    const IndexType N = m->getNodeResolution( idim );
     double* x = m->getCoordinateArray( idim );
     exponential_distribution( 42.0, N, x );
   }
@@ -314,7 +314,7 @@ TEST( mint_mesh_rectilinear_mesh, sidre_constructor )
     for ( int ii=0 ; ii < idim ; ++ii )
     {
       check_coordinate( m->getCoordinateArray( ii ), expected_coords,
-                        m->getNodeDimension( ii ) );
+                        m->getNodeResolution( ii ) );
     }
 
     internal::check_fields( m, true );

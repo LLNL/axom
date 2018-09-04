@@ -866,7 +866,7 @@ public:
         // Grab relation from mesh
         using UMesh = mint::UnstructuredMesh< mint::SINGLE_SHAPE >;
         mint::IndexType* vertIds =
-          static_cast< UMesh* >(m_surfaceMesh)->getCellNodes( i );
+          static_cast< UMesh* >(m_surfaceMesh)->getCellNodeIDs( i );
 
         // Remap the vertex IDs
         for(int j=0 ; j< NUM_TRI_VERTS ; ++j)

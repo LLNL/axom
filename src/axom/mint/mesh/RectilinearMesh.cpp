@@ -57,7 +57,7 @@ RectilinearMesh::RectilinearMesh( IndexType Ni, double* x, IndexType Nj,
   {
     SLIC_ERROR_IF( ptrs[ dim ] == nullptr,
                    "encountered null coordinate array for dim=" << dim );
-    const IndexType N = getNodeDimension( dim );
+    const IndexType N = getNodeResolution( dim );
     m_coordinates[ dim ] = new Array< double >( ptrs[ dim ], N );
   }
 }
@@ -83,7 +83,7 @@ RectilinearMesh::RectilinearMesh( sidre::Group* group,
   for ( int dim = 0 ; dim < m_ndims ; ++dim )
   {
     m_coordinates[ dim ] = new Array< double >( c->getView( coords[ dim ] ) );
-    SLIC_ERROR_IF( getNodeDimension( dim ) != m_coordinates[ dim ]->size(),
+    SLIC_ERROR_IF( getNodeResolution( dim ) != m_coordinates[ dim ]->size(),
                    "coordinates size does not match rectilinear mesh extent" );
   }
 }
@@ -114,7 +114,7 @@ void RectilinearMesh::allocateCoordsOnSidre()
 
   for ( int dim=0 ; dim < m_ndims ; ++dim )
   {
-    IndexType N          = getNodeDimension( dim );
+    IndexType N          = getNodeResolution( dim );
     sidre::View* view    = coordsgrp->createView( coords[ dim ] );
     m_coordinates[ dim ] = new Array< double >( view, N, 1, N );
     m_coordinates[ dim ]->setResizeRatio( 0.0 );
@@ -154,7 +154,7 @@ void RectilinearMesh::allocateCoords()
 
   for ( int dim = 0 ; dim < m_ndims ; ++dim )
   {
-    const IndexType N     = getNodeDimension( dim );
+    const IndexType N     = getNodeResolution( dim );
     m_coordinates[ dim ] = new Array< double >( N, 1, N );
     m_coordinates[ dim ]->setResizeRatio( 0.0 );
   } // END for all dimensions

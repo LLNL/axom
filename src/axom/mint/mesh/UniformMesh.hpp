@@ -284,7 +284,7 @@ public:
   inline double evaluateCoordinate( IndexType i, int direction ) const
   {
     SLIC_ASSERT( direction >=0 && direction < getDimension() );
-    SLIC_ASSERT( i >= 0 && i < getNodeDimension( direction ) );
+    SLIC_ASSERT( i >= 0 && i < getNodeResolution( direction ) );
 
     const double* x0 = getOrigin( );
     const double* h  = getSpacing( );

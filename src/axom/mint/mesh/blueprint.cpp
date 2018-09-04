@@ -348,7 +348,7 @@ bool hasMixedCellTypes( const sidre::Group* group, const std::string& topo )
 }
 
 //------------------------------------------------------------------------------
-void getStructuredMesh( int dimension, IndexType node_dims[3],
+void getStructuredMeshProperties( int dimension, IndexType node_dims[3],
                         int64 node_ext[6],
                         const sidre::Group* coordset )
 {
@@ -378,7 +378,7 @@ void getStructuredMesh( int dimension, IndexType node_dims[3],
 }
 
 //------------------------------------------------------------------------------
-void setStructuredMesh( int dimension, const IndexType node_dims[3],
+void setStructuredMeshProperties( int dimension, const IndexType node_dims[3],
                         const int64 node_ext[6],
                         sidre::Group* coordset )
 {
@@ -423,7 +423,7 @@ void setExtent( sidre::Group* coordset, const int64 node_ext[6] )
 }
 
 //------------------------------------------------------------------------------
-void getUniformMesh( int dimension, double* origin, double* spacing,
+void getUniformMeshProperties( int dimension, double* origin, double* spacing,
                      const sidre::Group* coordset )
 {
   SLIC_ERROR_IF( dimension < 1 || dimension > 3, "invalid dimension!" );
@@ -447,7 +447,7 @@ void getUniformMesh( int dimension, double* origin, double* spacing,
 }
 
 //------------------------------------------------------------------------------
-void setUniformMesh( int dimension, const double* origin, const double* spacing,
+void setUniformMeshProperties( int dimension, const double* origin, const double* spacing,
                      sidre::Group* coordset )
 {
   SLIC_ERROR_IF( dimension < 1 || dimension > 3, "invalid dimension!" );

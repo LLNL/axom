@@ -28,6 +28,13 @@
 
 #include "gtest/gtest.h"                      // for gtest macros
 
+/*!
+ * \file StructuredMesh_helpers.hpp
+ * The functions declared in this header file test the methods of the 
+ * StructuredMesh class and are used in mint_mesh_uniform_mesh.cpp,
+ * mint_mesh_rectilinear_mesh.cpp, and mint_mesh_curvilinear_mesh.cpp.
+ */
+
 namespace axom
 {
 namespace mint
@@ -69,9 +76,9 @@ inline void check_indexing2D( const StructuredMesh* m )
 
   /* Check getNode Linear/Grid Index */
   IndexType idx = 0;
-  for ( IndexType j = 0 ; j < m->getNodeDimension( 1 ) ; ++j )
+  for ( IndexType j = 0 ; j < m->getNodeResolution( 1 ) ; ++j )
   {
-    for ( IndexType i = 0 ; i < m->getNodeDimension( 0 ) ; ++i )
+    for ( IndexType i = 0 ; i < m->getNodeResolution( 0 ) ; ++i )
     {
       const IndexType nodeID = m->getNodeLinearIndex( i, j );
       EXPECT_EQ( nodeID, idx++ );
@@ -90,9 +97,9 @@ inline void check_indexing2D( const StructuredMesh* m )
 
   /* Check getCell Linear/Grid Index */
   idx = 0;
-  for ( IndexType j = 0 ; j < m->getCellDimension( 1 ) ; ++j )
+  for ( IndexType j = 0 ; j < m->getCellResolution( 1 ) ; ++j )
   {
-    for ( IndexType i = 0 ; i < m->getCellDimension( 0 ) ; ++i )
+    for ( IndexType i = 0 ; i < m->getCellResolution( 0 ) ; ++i )
     {
       const IndexType cellID = m->getCellLinearIndex( i, j );
       EXPECT_EQ( cellID, idx++ );
@@ -111,9 +118,9 @@ inline void check_indexing2D( const StructuredMesh* m )
 
   /* Check the getIFace Linear/Grid Index. */
   idx = 0;
-  for ( IndexType j = 0 ; j < m->getCellDimension( 1 ) ; ++j )
+  for ( IndexType j = 0 ; j < m->getCellResolution( 1 ) ; ++j )
   {
-    for ( IndexType i = 0 ; i < m->getNodeDimension( 0 ) ; ++i )
+    for ( IndexType i = 0 ; i < m->getNodeResolution( 0 ) ; ++i )
     {
       const IndexType faceID = m->getIFaceLinearIndex( i, j );
       const IndexType faceID2 = m->getFaceLinearIndex( I_DIRECTION, i, j );
@@ -133,9 +140,9 @@ inline void check_indexing2D( const StructuredMesh* m )
   }
 
   /* Check the getJFace Linear/Grid Index. */
-  for ( IndexType j = 0 ; j < m->getNodeDimension( 1 ) ; ++j )
+  for ( IndexType j = 0 ; j < m->getNodeResolution( 1 ) ; ++j )
   {
-    for ( IndexType i = 0 ; i < m->getCellDimension( 0 ) ; ++i )
+    for ( IndexType i = 0 ; i < m->getCellResolution( 0 ) ; ++i )
     {
       const IndexType faceID = m->getJFaceLinearIndex( i, j );
       const IndexType faceID2 = m->getFaceLinearIndex( J_DIRECTION, i, j );
@@ -167,11 +174,11 @@ inline void check_indexing3D( const StructuredMesh* m )
 
   /* Check getNode Linear/Grid Index */
   IndexType idx = 0;
-  for ( IndexType k = 0 ; k < m->getNodeDimension( 2 ) ; ++k )
+  for ( IndexType k = 0 ; k < m->getNodeResolution( 2 ) ; ++k )
   {
-    for ( IndexType j = 0 ; j < m->getNodeDimension( 1 ) ; ++j )
+    for ( IndexType j = 0 ; j < m->getNodeResolution( 1 ) ; ++j )
     {
-      for ( IndexType i = 0 ; i < m->getNodeDimension( 0 ) ; ++i )
+      for ( IndexType i = 0 ; i < m->getNodeResolution( 0 ) ; ++i )
       {
         const IndexType nodeID = m->getNodeLinearIndex( i, j, k );
         EXPECT_EQ( nodeID, idx++ );
@@ -187,11 +194,11 @@ inline void check_indexing3D( const StructuredMesh* m )
 
   /* Check getCell Linear/Grid Index */
   idx = 0;
-  for ( IndexType k = 0 ; k < m->getCellDimension( 2 ) ; ++k )
+  for ( IndexType k = 0 ; k < m->getCellResolution( 2 ) ; ++k )
   {
-    for ( IndexType j = 0 ; j < m->getCellDimension( 1 ) ; ++j )
+    for ( IndexType j = 0 ; j < m->getCellResolution( 1 ) ; ++j )
     {
-      for ( IndexType i = 0 ; i < m->getCellDimension( 0 ) ; ++i )
+      for ( IndexType i = 0 ; i < m->getCellResolution( 0 ) ; ++i )
       {
         const IndexType cellID = m->getCellLinearIndex( i, j, k );
         EXPECT_EQ( cellID, idx++ );
@@ -207,11 +214,11 @@ inline void check_indexing3D( const StructuredMesh* m )
 
   /* Check the getIFace Linear/Grid Index. */
   idx = 0;
-  for ( IndexType k = 0 ; k < m->getCellDimension( 2 ) ; ++k )
+  for ( IndexType k = 0 ; k < m->getCellResolution( 2 ) ; ++k )
   {
-    for ( IndexType j = 0 ; j < m->getCellDimension( 1 ) ; ++j )
+    for ( IndexType j = 0 ; j < m->getCellResolution( 1 ) ; ++j )
     {
-      for ( IndexType i = 0 ; i < m->getNodeDimension( 0 ) ; ++i )
+      for ( IndexType i = 0 ; i < m->getNodeResolution( 0 ) ; ++i )
       {
         const IndexType faceID = m->getIFaceLinearIndex( i, j, k );
         const IndexType faceID2 = m->getFaceLinearIndex( I_DIRECTION, i, j, k );
@@ -228,11 +235,11 @@ inline void check_indexing3D( const StructuredMesh* m )
   }
 
   /* Check the getJFace Linear/Grid Index. */
-  for ( IndexType k = 0 ; k < m->getCellDimension( 2 ) ; ++k )
+  for ( IndexType k = 0 ; k < m->getCellResolution( 2 ) ; ++k )
   {
-    for ( IndexType j = 0 ; j < m->getNodeDimension( 1 ) ; ++j )
+    for ( IndexType j = 0 ; j < m->getNodeResolution( 1 ) ; ++j )
     {
-      for ( IndexType i = 0 ; i < m->getCellDimension( 0 ) ; ++i )
+      for ( IndexType i = 0 ; i < m->getCellResolution( 0 ) ; ++i )
       {
         const IndexType faceID = m->getJFaceLinearIndex( i, j, k );
         const IndexType faceID2 = m->getFaceLinearIndex( J_DIRECTION, i, j, k );
@@ -249,11 +256,11 @@ inline void check_indexing3D( const StructuredMesh* m )
   }
 
   /* Check the getKFace Linear/Grid Index. */
-  for ( IndexType k = 0 ; k < m->getNodeDimension( 2 ) ; ++k )
+  for ( IndexType k = 0 ; k < m->getNodeResolution( 2 ) ; ++k )
   {
-    for ( IndexType j = 0 ; j < m->getCellDimension( 1 ) ; ++j )
+    for ( IndexType j = 0 ; j < m->getCellResolution( 1 ) ; ++j )
     {
-      for ( IndexType i = 0 ; i < m->getCellDimension( 0 ) ; ++i )
+      for ( IndexType i = 0 ; i < m->getCellResolution( 0 ) ; ++i )
       {
         const IndexType faceID = m->getKFaceLinearIndex( i, j, k );
         const IndexType faceID2 = m->getFaceLinearIndex( K_DIRECTION, i, j, k );
@@ -276,7 +283,7 @@ inline void check_indexing3D( const StructuredMesh* m )
  * \param [in] m the mesh to check.
  *
  * \note Since 1D meshes don't have any faces the only method tested here
- *  is getCellNodes.
+ *  is getCellNodeIDs.
  */
 inline void check_topology1D( const StructuredMesh* m )
 {
@@ -293,7 +300,7 @@ inline void check_topology1D( const StructuredMesh* m )
   const IndexType nCells = m->getNumberOfCells();
   for ( IndexType cellID = 0 ; cellID < nCells ; ++cellID )
   {
-    m->getCellNodes( cellID, cellNodes );
+    m->getCellNodeIDs( cellID, cellNodes );
     EXPECT_EQ( cellNodes[ 0 ], cellID );
     EXPECT_EQ( cellNodes[ 1 ], cellID + 1 );
   }
@@ -314,13 +321,13 @@ inline void check_topology2D( const StructuredMesh* m )
   /* Check the cell to node map. */
   IndexType cellNodes[ 4 ], cellNodesIJ[ 4 ];
   const IndexType nodeJp = m->nodeJp();
-  for ( IndexType j = 0 ; j < m->getCellDimension( 1 ) ; ++j )
+  for ( IndexType j = 0 ; j < m->getCellResolution( 1 ) ; ++j )
   {
-    for ( IndexType i = 0 ; i < m->getCellDimension( 0 ) ; ++i )
+    for ( IndexType i = 0 ; i < m->getCellResolution( 0 ) ; ++i )
     {
       const IndexType cellID = m->getCellLinearIndex( i, j );
-      m->getCellNodes( cellID, cellNodes );
-      m->getCellNodes( i, j, cellNodesIJ );
+      m->getCellNodeIDs( cellID, cellNodes );
+      m->getCellNodeIDs( i, j, cellNodesIJ );
       compare_pointers( cellNodes, cellNodesIJ, 4 );
 
       const IndexType nodeID = m->getNodeLinearIndex( i, j );
@@ -334,8 +341,8 @@ inline void check_topology2D( const StructuredMesh* m )
   EXPECT_EQ( m->getNumberOfCellFaces(), 4 );
   EXPECT_EQ( m->getNumberOfFaceNodes(), 2 );
 
-  const IndexType nIFaces = m->getNodeDimension( 0 ) * m->getCellDimension( 1 );
-  const IndexType nJFaces = m->getCellDimension( 0 ) * m->getNodeDimension( 1 );
+  const IndexType nIFaces = m->getNodeResolution( 0 ) * m->getCellResolution( 1 );
+  const IndexType nJFaces = m->getCellResolution( 0 ) * m->getNodeResolution( 1 );
   EXPECT_EQ( nIFaces, m->getTotalNumFaces( 0 ) );
   EXPECT_EQ( nJFaces, m->getTotalNumFaces( 1 ) );
 
@@ -345,13 +352,13 @@ inline void check_topology2D( const StructuredMesh* m )
   /* Check the cell to face map */
   const IndexType cellJp = m->cellJp();
   IndexType cellFaces[ 4 ], cellFacesIJ[ 4 ];
-  for ( IndexType j = 0 ; j < m->getCellDimension( 1 ) ; ++j )
+  for ( IndexType j = 0 ; j < m->getCellResolution( 1 ) ; ++j )
   {
-    for ( IndexType i = 0 ; i < m->getCellDimension( 0 ) ; ++i )
+    for ( IndexType i = 0 ; i < m->getCellResolution( 0 ) ; ++i )
     {
       const IndexType cellID = m->getCellLinearIndex( i, j );
-      m->getCellFaces( cellID, cellFaces );
-      m->getCellFaces( i, j, cellFacesIJ );
+      m->getCellFaceIDs( cellID, cellFaces );
+      m->getCellFaceIDs( i, j, cellFacesIJ );
       compare_pointers( cellFaces, cellFacesIJ, 4 );
 
       EXPECT_EQ( cellFaces[ 0 ], cellID + j );
@@ -366,13 +373,13 @@ inline void check_topology2D( const StructuredMesh* m )
   IndexType faceNodesDir[ 2 ];
 
   /* I-faces */
-  for ( IndexType j = 0 ; j < m->getCellDimension( 1 ) ; ++j )
+  for ( IndexType j = 0 ; j < m->getCellResolution( 1 ) ; ++j )
   {
-    for ( IndexType i = 0 ; i < m->getNodeDimension( 0 ) ; ++i )
+    for ( IndexType i = 0 ; i < m->getNodeResolution( 0 ) ; ++i )
     {
       const IndexType faceID = m->getIFaceLinearIndex( i, j );
-      m->getFaceNodes( faceID, faceNodes );
-      m->getIFaceNodes( faceID, faceNodesDir );
+      m->getFaceNodeIDs( faceID, faceNodes );
+      m->getIFaceNodeIDs( faceID, faceNodesDir );
       compare_pointers( faceNodes, faceNodesDir, 2 );
 
       EXPECT_EQ( faceNodes[ 0 ], m->getNodeLinearIndex( i, j ) );
@@ -381,13 +388,13 @@ inline void check_topology2D( const StructuredMesh* m )
   }
 
   /* J-faces */
-  for ( IndexType j = 0 ; j < m->getNodeDimension( 1 ) ; ++j )
+  for ( IndexType j = 0 ; j < m->getNodeResolution( 1 ) ; ++j )
   {
-    for ( IndexType i = 0 ; i < m->getCellDimension( 0 ) ; ++i )
+    for ( IndexType i = 0 ; i < m->getCellResolution( 0 ) ; ++i )
     {
       const IndexType faceID = m->getJFaceLinearIndex( i, j );
-      m->getFaceNodes( faceID, faceNodes );
-      m->getJFaceNodes( faceID, faceNodesDir );
+      m->getFaceNodeIDs( faceID, faceNodes );
+      m->getJFaceNodeIDs( faceID, faceNodesDir );
       compare_pointers( faceNodes, faceNodesDir, 2 );
 
       EXPECT_EQ( faceNodes[ 0 ], m->getNodeLinearIndex( i, j ) );
@@ -399,13 +406,13 @@ inline void check_topology2D( const StructuredMesh* m )
   IndexType cell0, cell1, cell2, cell3;
 
   /* I-faces */
-  for ( IndexType j = 0 ; j < m->getCellDimension( 1 ) ; ++j )
+  for ( IndexType j = 0 ; j < m->getCellResolution( 1 ) ; ++j )
   {
-    for ( IndexType i = 0 ; i < m->getNodeDimension( 0 ) ; ++i )
+    for ( IndexType i = 0 ; i < m->getNodeResolution( 0 ) ; ++i )
     {
       const IndexType faceID = m->getIFaceLinearIndex( i, j );
-      m->getFaceCells( faceID, cell0, cell1 );
-      m->getIFaceCells( faceID, cell2, cell3 );
+      m->getFaceCellIDs( faceID, cell0, cell1 );
+      m->getIFaceCellIDs( faceID, cell2, cell3 );
       EXPECT_EQ( cell0, cell2 );
       EXPECT_EQ( cell1, cell3 );
 
@@ -419,7 +426,7 @@ inline void check_topology2D( const StructuredMesh* m )
         EXPECT_EQ( cell0, m->getCellLinearIndex( i - 1, j ) );
       }
 
-      if ( i == m->getNodeDimension( 0 ) - 1 )
+      if ( i == m->getNodeResolution( 0 ) - 1 )
       {
         EXPECT_EQ( cell1, -1 );
       }
@@ -431,13 +438,13 @@ inline void check_topology2D( const StructuredMesh* m )
   }
 
   /* J-faces */
-  for ( IndexType j = 0 ; j < m->getNodeDimension( 1 ) ; ++j )
+  for ( IndexType j = 0 ; j < m->getNodeResolution( 1 ) ; ++j )
   {
-    for ( IndexType i = 0 ; i < m->getCellDimension( 0 ) ; ++i )
+    for ( IndexType i = 0 ; i < m->getCellResolution( 0 ) ; ++i )
     {
       const IndexType faceID = m->getJFaceLinearIndex( i, j );
-      m->getFaceCells( faceID, cell0, cell1 );
-      m->getJFaceCells( faceID, cell2, cell3 );
+      m->getFaceCellIDs( faceID, cell0, cell1 );
+      m->getJFaceCellIDs( faceID, cell2, cell3 );
       EXPECT_EQ( cell0, cell2 );
       EXPECT_EQ( cell1, cell3 );
 
@@ -451,7 +458,7 @@ inline void check_topology2D( const StructuredMesh* m )
         EXPECT_EQ( cell0, m->getCellLinearIndex( i, j - 1 ) );
       }
 
-      if ( j == m->getNodeDimension( 1 ) - 1 )
+      if ( j == m->getNodeResolution( 1 ) - 1 )
       {
         EXPECT_EQ( cell1, -1 );
       }
@@ -479,15 +486,15 @@ inline void check_topology3D( const StructuredMesh* m )
   IndexType cellNodes[ 8 ], cellNodesIJK[ 8 ];
   const IndexType nodeJp = m->nodeJp();
   const IndexType nodeKp = m->nodeKp();
-  for ( IndexType k = 0 ; k < m->getCellDimension( 2 ) ; ++k )
+  for ( IndexType k = 0 ; k < m->getCellResolution( 2 ) ; ++k )
   {
-    for ( IndexType j = 0 ; j < m->getCellDimension( 1 ) ; ++j )
+    for ( IndexType j = 0 ; j < m->getCellResolution( 1 ) ; ++j )
     {
-      for ( IndexType i = 0 ; i < m->getCellDimension( 0 ) ; ++i )
+      for ( IndexType i = 0 ; i < m->getCellResolution( 0 ) ; ++i )
       {
         const IndexType cellID = m->getCellLinearIndex( i, j, k );
-        m->getCellNodes( cellID, cellNodes );
-        m->getCellNodes( i, j, k, cellNodesIJK );
+        m->getCellNodeIDs( cellID, cellNodes );
+        m->getCellNodeIDs( i, j, k, cellNodesIJK );
         compare_pointers( cellNodes, cellNodesIJK, 8 );
 
         const IndexType nodeID = m->getNodeLinearIndex( i, j, k );
@@ -506,12 +513,12 @@ inline void check_topology3D( const StructuredMesh* m )
   EXPECT_EQ( m->getNumberOfCellFaces(), 6 );
   EXPECT_EQ( m->getNumberOfFaceNodes(), 4 );
 
-  const IndexType nIFaces = m->getNodeDimension( 0 ) * m->getCellDimension( 1 )
-                            * m->getCellDimension( 2 );
-  const IndexType nJFaces = m->getCellDimension( 0 ) * m->getNodeDimension( 1 )
-                            * m->getCellDimension( 2 );
-  const IndexType nKFaces = m->getCellDimension( 0 ) * m->getCellDimension( 1 )
-                            * m->getNodeDimension( 2 );
+  const IndexType nIFaces = m->getNodeResolution( 0 ) * m->getCellResolution( 1 )
+                            * m->getCellResolution( 2 );
+  const IndexType nJFaces = m->getCellResolution( 0 ) * m->getNodeResolution( 1 )
+                            * m->getCellResolution( 2 );
+  const IndexType nKFaces = m->getCellResolution( 0 ) * m->getCellResolution( 1 )
+                            * m->getNodeResolution( 2 );
   EXPECT_EQ( nIFaces, m->getTotalNumFaces( 0 ) );
   EXPECT_EQ( nJFaces, m->getTotalNumFaces( 1 ) );
   EXPECT_EQ( nKFaces, m->getTotalNumFaces( 2 ) );
@@ -521,15 +528,15 @@ inline void check_topology3D( const StructuredMesh* m )
 
   /* Check the cell to face map */
   IndexType cellFaces[ 6 ], cellFacesIJK[ 6 ];
-  for ( IndexType k = 0 ; k < m->getCellDimension( 2 ) ; ++k )
+  for ( IndexType k = 0 ; k < m->getCellResolution( 2 ) ; ++k )
   {
-    for ( IndexType j = 0 ; j < m->getCellDimension( 1 ) ; ++j )
+    for ( IndexType j = 0 ; j < m->getCellResolution( 1 ) ; ++j )
     {
-      for ( IndexType i = 0 ; i < m->getCellDimension( 0 ) ; ++i )
+      for ( IndexType i = 0 ; i < m->getCellResolution( 0 ) ; ++i )
       {
         const IndexType cellID = m->getCellLinearIndex( i, j, k );
-        m->getCellFaces( cellID, cellFaces );
-        m->getCellFaces( i, j, k, cellFacesIJK );
+        m->getCellFaceIDs( cellID, cellFaces );
+        m->getCellFaceIDs( i, j, k, cellFacesIJK );
         compare_pointers( cellFaces, cellFacesIJK, 6 );
 
         EXPECT_EQ( cellFaces[ 0 ], m->getIFaceLinearIndex( i, j, k ) );
@@ -547,15 +554,15 @@ inline void check_topology3D( const StructuredMesh* m )
   IndexType faceNodesDir[ 4 ];
 
   /* I-faces */
-  for ( IndexType k = 0 ; k < m->getCellDimension( 2 ) ; ++k )
+  for ( IndexType k = 0 ; k < m->getCellResolution( 2 ) ; ++k )
   {
-    for ( IndexType j = 0 ; j < m->getCellDimension( 1 ) ; ++j )
+    for ( IndexType j = 0 ; j < m->getCellResolution( 1 ) ; ++j )
     {
-      for ( IndexType i = 0 ; i < m->getNodeDimension( 0 ) ; ++i )
+      for ( IndexType i = 0 ; i < m->getNodeResolution( 0 ) ; ++i )
       {
         const IndexType faceID = m->getIFaceLinearIndex( i, j, k );
-        m->getFaceNodes( faceID, faceNodes );
-        m->getIFaceNodes( faceID, faceNodesDir );
+        m->getFaceNodeIDs( faceID, faceNodes );
+        m->getIFaceNodeIDs( faceID, faceNodesDir );
         compare_pointers( faceNodes, faceNodesDir, 4 );
 
         EXPECT_EQ( faceNodes[ 0 ], m->getNodeLinearIndex( i, j, k ) );
@@ -567,15 +574,15 @@ inline void check_topology3D( const StructuredMesh* m )
   }
 
   /* J-faces */
-  for ( IndexType k = 0 ; k < m->getCellDimension( 2 ) ; ++k )
+  for ( IndexType k = 0 ; k < m->getCellResolution( 2 ) ; ++k )
   {
-    for ( IndexType j = 0 ; j < m->getNodeDimension( 1 ) ; ++j )
+    for ( IndexType j = 0 ; j < m->getNodeResolution( 1 ) ; ++j )
     {
-      for ( IndexType i = 0 ; i < m->getCellDimension( 0 ) ; ++i )
+      for ( IndexType i = 0 ; i < m->getCellResolution( 0 ) ; ++i )
       {
         const IndexType faceID = m->getJFaceLinearIndex( i, j, k );
-        m->getFaceNodes( faceID, faceNodes );
-        m->getJFaceNodes( faceID, faceNodesDir );
+        m->getFaceNodeIDs( faceID, faceNodes );
+        m->getJFaceNodeIDs( faceID, faceNodesDir );
         compare_pointers( faceNodes, faceNodesDir, 4 );
 
         EXPECT_EQ( faceNodes[ 0 ], m->getNodeLinearIndex( i, j, k ) );
@@ -587,15 +594,15 @@ inline void check_topology3D( const StructuredMesh* m )
   }
 
   /* K-faces */
-  for ( IndexType k = 0 ; k < m->getNodeDimension( 2 ) ; ++k )
+  for ( IndexType k = 0 ; k < m->getNodeResolution( 2 ) ; ++k )
   {
-    for ( IndexType j = 0 ; j < m->getCellDimension( 1 ) ; ++j )
+    for ( IndexType j = 0 ; j < m->getCellResolution( 1 ) ; ++j )
     {
-      for ( IndexType i = 0 ; i < m->getCellDimension( 0 ) ; ++i )
+      for ( IndexType i = 0 ; i < m->getCellResolution( 0 ) ; ++i )
       {
         const IndexType faceID = m->getKFaceLinearIndex( i, j, k );
-        m->getFaceNodes( faceID, faceNodes );
-        m->getKFaceNodes( faceID, faceNodesDir );
+        m->getFaceNodeIDs( faceID, faceNodes );
+        m->getKFaceNodeIDs( faceID, faceNodesDir );
         compare_pointers( faceNodes, faceNodesDir, 4 );
 
         EXPECT_EQ( faceNodes[ 0 ], m->getNodeLinearIndex( i, j, k ) );
@@ -610,15 +617,15 @@ inline void check_topology3D( const StructuredMesh* m )
   IndexType cell0, cell1, cell2, cell3;
 
   /* I-faces */
-  for ( IndexType k = 0 ; k < m->getCellDimension( 2 ) ; ++k )
+  for ( IndexType k = 0 ; k < m->getCellResolution( 2 ) ; ++k )
   {
-    for ( IndexType j = 0 ; j < m->getCellDimension( 1 ) ; ++j )
+    for ( IndexType j = 0 ; j < m->getCellResolution( 1 ) ; ++j )
     {
-      for ( IndexType i = 0 ; i < m->getNodeDimension( 0 ) ; ++i )
+      for ( IndexType i = 0 ; i < m->getNodeResolution( 0 ) ; ++i )
       {
         const IndexType faceID = m->getIFaceLinearIndex( i, j, k );
-        m->getFaceCells( faceID, cell0, cell1 );
-        m->getIFaceCells( faceID, cell2, cell3 );
+        m->getFaceCellIDs( faceID, cell0, cell1 );
+        m->getIFaceCellIDs( faceID, cell2, cell3 );
         EXPECT_EQ( cell0, cell2 );
         EXPECT_EQ( cell1, cell3 );
 
@@ -632,7 +639,7 @@ inline void check_topology3D( const StructuredMesh* m )
           EXPECT_EQ( cell0, m->getCellLinearIndex( i - 1, j, k ) );
         }
 
-        if ( i == m->getNodeDimension( 0 ) - 1 )
+        if ( i == m->getNodeResolution( 0 ) - 1 )
         {
           EXPECT_EQ( cell1, -1 );
         }
@@ -645,15 +652,15 @@ inline void check_topology3D( const StructuredMesh* m )
   }
 
   /* J-faces */
-  for ( IndexType k = 0 ; k < m->getCellDimension( 2 ) ; ++k )
+  for ( IndexType k = 0 ; k < m->getCellResolution( 2 ) ; ++k )
   {
-    for ( IndexType j = 0 ; j < m->getNodeDimension( 1 ) ; ++j )
+    for ( IndexType j = 0 ; j < m->getNodeResolution( 1 ) ; ++j )
     {
-      for ( IndexType i = 0 ; i < m->getCellDimension( 0 ) ; ++i )
+      for ( IndexType i = 0 ; i < m->getCellResolution( 0 ) ; ++i )
       {
         const IndexType faceID = m->getJFaceLinearIndex( i, j, k );
-        m->getFaceCells( faceID, cell0, cell1 );
-        m->getJFaceCells( faceID, cell2, cell3 );
+        m->getFaceCellIDs( faceID, cell0, cell1 );
+        m->getJFaceCellIDs( faceID, cell2, cell3 );
         EXPECT_EQ( cell0, cell2 );
         EXPECT_EQ( cell1, cell3 );
 
@@ -667,7 +674,7 @@ inline void check_topology3D( const StructuredMesh* m )
           EXPECT_EQ( cell0, m->getCellLinearIndex( i, j - 1, k ) );
         }
 
-        if ( j == m->getNodeDimension( 1 ) - 1 )
+        if ( j == m->getNodeResolution( 1 ) - 1 )
         {
           EXPECT_EQ( cell1, -1 );
         }
@@ -680,15 +687,15 @@ inline void check_topology3D( const StructuredMesh* m )
   }
 
   /* K-faces */
-  for ( IndexType k = 0 ; k < m->getNodeDimension( 2 ) ; ++k )
+  for ( IndexType k = 0 ; k < m->getNodeResolution( 2 ) ; ++k )
   {
-    for ( IndexType j = 0 ; j < m->getCellDimension( 1 ) ; ++j )
+    for ( IndexType j = 0 ; j < m->getCellResolution( 1 ) ; ++j )
     {
-      for ( IndexType i = 0 ; i < m->getCellDimension( 0 ) ; ++i )
+      for ( IndexType i = 0 ; i < m->getCellResolution( 0 ) ; ++i )
       {
         const IndexType faceID = m->getKFaceLinearIndex( i, j, k );
-        m->getFaceCells( faceID, cell0, cell1 );
-        m->getKFaceCells( faceID, cell2, cell3 );
+        m->getFaceCellIDs( faceID, cell0, cell1 );
+        m->getKFaceCellIDs( faceID, cell2, cell3 );
         EXPECT_EQ( cell0, cell2 );
         EXPECT_EQ( cell1, cell3 );
 
@@ -702,7 +709,7 @@ inline void check_topology3D( const StructuredMesh* m )
           EXPECT_EQ( cell0, m->getCellLinearIndex( i, j, k - 1 ) );
         }
 
-        if ( k == m->getNodeDimension( 2 ) - 1 )
+        if ( k == m->getNodeResolution( 2 ) - 1 )
         {
           EXPECT_EQ( cell1, -1 );
         }
@@ -729,9 +736,9 @@ inline void check_topology( const StructuredMesh* m )
   IndexType nNodes = 1;
   for ( int dim = 0 ; dim < ndims ; ++dim )
   {
-    EXPECT_EQ( m->getNodeDimension( dim ), m->getCellDimension( dim ) + 1 );
-    nNodes *= m->getNodeDimension( dim );
-    nCells *= m->getCellDimension( dim );
+    EXPECT_EQ( m->getNodeResolution( dim ), m->getCellResolution( dim ) + 1 );
+    nNodes *= m->getNodeResolution( dim );
+    nCells *= m->getCellResolution( dim );
   }
 
   EXPECT_EQ( nNodes, m->getNumberOfNodes() );
@@ -925,7 +932,7 @@ inline void check_constructor( const StructuredMesh* m, int mesh_type,
 
   for ( int i=0 ; i < mesh_dimension ; ++i )
   {
-    EXPECT_EQ( m->getNodeDimension( i ), node_dims[ i ] );
+    EXPECT_EQ( m->getNodeResolution( i ), node_dims[ i ] );
 
     if ( mesh_type != STRUCTURED_UNIFORM_MESH )
     {

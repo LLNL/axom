@@ -215,7 +215,7 @@ TriVertIndices getTriangleVertIndices(mint::Mesh* mesh,
   SLIC_ASSERT(cellIndex >= 0 && cellIndex < mesh->getNumberOfCells());
 
   TriVertIndices tvInd;
-  mesh->getCellNodes( cellIndex, tvInd.data() );
+  mesh->getCellNodeIDs( cellIndex, tvInd.data() );
   return tvInd;
 }
 
@@ -352,7 +352,7 @@ void print_surface_stats( mint::Mesh* mesh)
     {
       fmt::format_to(badTriStr,"\n\tTriangle {}",*it);
       TriVertIndices vertIndices;
-      mesh->getCellNodes( *it, vertIndices.data() );
+      mesh->getCellNodeIDs( *it, vertIndices.data() );
 
       SpacePt vertPos;
       for(int j=0 ; j<3 ; ++j)

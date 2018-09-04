@@ -285,7 +285,7 @@ public:
    * \pre nodes != nullptr
    * \pre 0 <= cellID < getNumberOfCells()
    */
-  virtual IndexType getCellNodes( IndexType AXOM_NOT_USED(cellID),
+  virtual IndexType getCellNodeIDs( IndexType AXOM_NOT_USED(cellID),
                                   IndexType* AXOM_NOT_USED(nodes) ) const = 0;
 
   /*!
@@ -301,20 +301,23 @@ public:
   }
 
   /*!
-   * \brief Copy the face IDs of the given cell into the provided buffer.
-   *  The buffer must be of length at least getNumberOfCellFaces( cellID ).
+   * \brief Returns the IDs of the faces of the cell at (i,j) or (i, j, k).
    *
-   * \param [in] cellID the ID of the cell in question.
-   * \param [out] faces the buffer into which the face IDs are copied, must
-   *  be of length at least getNumberOfCellFaces( cellID ).
+   * \param [in] i logical index of the cell along the first dimension.
+   * \param [in] j logical index of the cell along the second dimension.
+   * \param [in] k logical index of the cell along the third dimension
+   *  (optional).
+   * \param [out] faces buffer to populate with the face IDs. Must be of length
+   *  at least getNumberOfCellFaces( cellID ).
    *
-   * \return The number of faces for the given cell.
+   * \note The faces are returned in the order of LOWER_I_FACE, UPPER_I_FACE,
+   *  LOWER_J_FACE, UPPER_J_FACE and then LOWER_K_FACE, UPPER_K_FACE if 3D.
    *
    * \pre faces != nullptr
    * \pre 0 <= cellID < getNumberOfCells()
    */
-  virtual IndexType getCellFaces( IndexType AXOM_NOT_USED(cellID),
-                                  IndexType* AXOM_NOT_USED(faces) ) const
+  virtual IndexType getCellFaceIDs( IndexType AXOM_NOT_USED(cellID),
+                                    IndexType* AXOM_NOT_USED(faces) ) const
   {
     SLIC_ERROR( "Not implemented!" );
     return -1;
@@ -362,7 +365,7 @@ public:
    *  buffer is getNumberOfNodes(). Otherwise the UniformMesh returns
    *  nullptr and the RectilinearMesh returns a pointer to the associated
    *  dimension scale which is of length
-   *  static_cast< RectilinearMesh* >( this )->getNodeDimension().
+   *  static_cast< RectilinearMesh* >( this )->getNodeResolution().
    *
    * \pre dim >= 0 && dim < dimension()
    * \pre dim == X_COORDINATE || dim == Y_COORDINATE || dim == Z_COORDINATE
@@ -416,19 +419,19 @@ public:
   }
 
   /*!
-   * \brief Copy the node IDs of the given face into the provided buffer.
-   *  The buffer must be of length at least getNumberOfFaceNodes( faceID ).
+   * \brief Copy the IDs of the nodes that compose the given face into the 
+   *  provided buffer.
    *
-   * \param [in] faceID the ID of the cell in question.
+   * \param [in] faceID the ID of the face in question.
    * \param [out] nodes the buffer into which the node IDs are copied, must
-   *  be of length at least getNumberOfFaceNodes( faceID ).
+   *  be of length at least getNumberOfFaceNodes().
    *
    * \return The number of nodes for the given face.
    *
    * \pre nodes != nullptr
    * \pre 0 <= faceID < getNumberOfCells()
    */
-  virtual IndexType getFaceNodes( IndexType AXOM_NOT_USED(faceID),
+  virtual IndexType getFaceNodeIDs( IndexType AXOM_NOT_USED(faceID),
                                   IndexType* AXOM_NOT_USED(nodes) ) const
   {
     SLIC_ERROR( "Not implemented!" );
@@ -436,9 +439,10 @@ public:
   }
 
   /*!
-   * \brief Copy the cell IDs of the given face into the provided indices.
+   * \brief Copy the IDs of the cells adjacent to the given face into the 
+   *  provided indices.
    *
-   * \param [in] faceID the ID of the cell in question.
+   * \param [in] faceID the ID of the face in question.
    * \param [out] cellIDOne the ID of the first cell.
    * \param [out] cellIDTwo the ID of the second cell.
    *
@@ -447,7 +451,7 @@ public:
    *
    * \pre 0 <= faceID < getNumberOfCells()
    */
-  virtual void getFaceCells( IndexType AXOM_NOT_USED(faceID), 
+  virtual void getFaceCellIDs( IndexType AXOM_NOT_USED(faceID), 
                              IndexType& AXOM_NOT_USED(cellIDOne),
                              IndexType& AXOM_NOT_USED(cellIDTwo) ) const
   {

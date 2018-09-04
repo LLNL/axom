@@ -252,7 +252,7 @@ inline Triangle3 getMeshTriangle(int i, mint::Mesh* surface_mesh)
   SLIC_ASSERT(surface_mesh->getCellType( i ) == mint::TRIANGLE );
   primal::Point<mint::IndexType, 3> triCell;
   Triangle3 tri;
-  surface_mesh->getCellNodes(i, triCell.data());
+  surface_mesh->getCellNodeIDs(i, triCell.data());
 
   surface_mesh->getNode(triCell[0], tri[0].data());
   surface_mesh->getNode(triCell[1], tri[1].data());

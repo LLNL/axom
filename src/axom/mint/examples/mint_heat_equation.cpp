@@ -163,8 +163,8 @@ public:
   void initialize( const Gaussian2D& pulse )
   {
     const double* origin = m_mesh->getOrigin( );
-    IndexType Ni = m_mesh->getNodeDimension( mint::I_DIRECTION );
-    IndexType Nj = m_mesh->getNodeDimension( mint::J_DIRECTION );
+    IndexType Ni = m_mesh->getNodeResolution( mint::I_DIRECTION );
+    IndexType Nj = m_mesh->getNodeResolution( mint::J_DIRECTION );
     double* t = m_mesh->getFieldPtr< double >( "temperature",
                                                mint::NODE_CENTERED );
 
@@ -246,8 +246,8 @@ private:
    */
   void copy_boundary( const double* prev_temp, double* new_temp )
   {
-    IndexType Ni = m_mesh->getNodeDimension( mint::I_DIRECTION );
-    IndexType Nj = m_mesh->getNodeDimension( mint::J_DIRECTION );
+    IndexType Ni = m_mesh->getNodeResolution( mint::I_DIRECTION );
+    IndexType Nj = m_mesh->getNodeResolution( mint::J_DIRECTION );
 
     /* Copy the -y side, which is contiguous. */
     const IndexType memcpy_size = Ni * sizeof(double);
@@ -286,8 +286,8 @@ private:
     /* Since the boundary conditions are fixed we only need to iterate over
        the interior nodes. */
     const IndexType jp = m_mesh->nodeJp();
-    const IndexType Ni = m_mesh->getNodeDimension( I_DIRECTION );
-    const IndexType Nj = m_mesh->getNodeDimension( J_DIRECTION );
+    const IndexType Ni = m_mesh->getNodeResolution( I_DIRECTION );
+    const IndexType Nj = m_mesh->getNodeResolution( J_DIRECTION );
     for ( IndexType j = 1 ; j < Nj ; ++j )
     {
       for ( IndexType i = 1 ; i < Ni ; ++i )

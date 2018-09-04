@@ -74,7 +74,7 @@ void check_sidre_group( sidre::Group* root_group,
 
   double mesh_origin[ 3 ];
   double mesh_spacing[ 3 ];
-  blueprint::getUniformMesh( dimension, mesh_origin, mesh_spacing, coordset );
+  blueprint::getUniformMeshProperties( dimension, mesh_origin, mesh_spacing, coordset );
 
   for ( int i=0 ; i < dimension ; ++i )
   {
@@ -268,7 +268,7 @@ TEST( mint_mesh_uniform_mesh, check_evaluate_coordinate )
       internal::check_constructor( &m, idim, lo, h, N );
       EXPECT_FALSE( m.hasSidreGroup() );
 
-      const IndexType Ni = m.getNodeDimension( I_DIRECTION );
+      const IndexType Ni = m.getNodeResolution( I_DIRECTION );
       EXPECT_EQ( Ni, N[ I_DIRECTION ] );
 
       for ( IndexType i=0 ; i < Ni ; ++i )
@@ -286,8 +286,8 @@ TEST( mint_mesh_uniform_mesh, check_evaluate_coordinate )
       internal::check_constructor( &m, idim, lo, h, N );
       EXPECT_FALSE( m.hasSidreGroup() );
 
-      const IndexType Ni = m.getNodeDimension( I_DIRECTION );
-      const IndexType Nj = m.getNodeDimension( J_DIRECTION );
+      const IndexType Ni = m.getNodeResolution( I_DIRECTION );
+      const IndexType Nj = m.getNodeResolution( J_DIRECTION );
       EXPECT_EQ( Ni, N[ I_DIRECTION ] );
       EXPECT_EQ( Nj, N[ J_DIRECTION ] );
 
@@ -315,9 +315,9 @@ TEST( mint_mesh_uniform_mesh, check_evaluate_coordinate )
         internal::check_constructor( &m, idim, lo, h, N );
         EXPECT_FALSE( m.hasSidreGroup() );
 
-        const IndexType Ni = m.getNodeDimension( I_DIRECTION );
-        const IndexType Nj = m.getNodeDimension( J_DIRECTION );
-        const IndexType Nk = m.getNodeDimension( K_DIRECTION );
+        const IndexType Ni = m.getNodeResolution( I_DIRECTION );
+        const IndexType Nj = m.getNodeResolution( J_DIRECTION );
+        const IndexType Nk = m.getNodeResolution( K_DIRECTION );
         EXPECT_EQ( Ni, N[ I_DIRECTION ] );
         EXPECT_EQ( Nj, N[ J_DIRECTION ] );
         EXPECT_EQ( Nk, N[ K_DIRECTION ] );

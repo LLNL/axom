@@ -221,9 +221,9 @@ bool hasMixedCellTypes( const sidre::Group* group, const std::string& topo="" );
  * \pre coordset != nullptr
  * \pre isValidCoordsetGroup( coordset )
  *
- * \see setStructuredMesh()
+ * \see setStructuredMeshProperties()
  */
-void getStructuredMesh( int dimension, IndexType node_dims[3],
+void getStructuredMeshProperties( int dimension, IndexType node_dims[3],
                         int64 node_ext[6], const sidre::Group* coordset );
 
 /*!
@@ -240,9 +240,9 @@ void getStructuredMesh( int dimension, IndexType node_dims[3],
  * \pre node_ext != nullptr
  * \pre coordset != nullptr
  *
- * \see getStructuredMesh()
+ * \see getStructuredMeshProperties()
  */
-void setStructuredMesh( int dimension, const IndexType node_dims[3],
+void setStructuredMeshProperties( int dimension, const IndexType node_dims[3],
                         const int64 node_ext[6], sidre::Group* coordset );
 
 /*!
@@ -254,7 +254,7 @@ void setStructuredMesh( int dimension, const IndexType node_dims[3],
  * \pre coordset != nullptr
  * \pre node_ext != nullptr
  *
- * \see setStructuredMesh()
+ * \see setStructuredMeshProperties()
  */
 void setExtent( sidre::Group* coordset, const int64 node_ext[6] );
 
@@ -276,16 +276,16 @@ void setExtent( sidre::Group* coordset, const int64 node_ext[6] );
  * \pre coordset != nullptr
  * \pre isValidCoordsetGroup( coordset )
  *
- * \see setUniformMesh()
+ * \see setUniformMeshProperties()
  */
-void getUniformMesh( int dim, double* origin, double* spacing,
+void getUniformMeshProperties( int dim, double* origin, double* spacing,
                      const sidre::Group* coordset );
 
 /*!
  * \brief Populates the specified Coordset & Topology groups with the metadata
  *  for a uniform mesh
  *
- * \param [in] dim the mesh dimesion.
+ * \param [in] dim the mesh dimension.
  * \param [in] origin pointer to array with the origin's coordinates.
  * \param [in] spacing pointer to array with the spacing along each dimension.
  * \param [out] coordset pointer to the coordset group.
@@ -300,9 +300,9 @@ void getUniformMesh( int dim, double* origin, double* spacing,
  *
  * \post isValidCoordsetGroup( coordset )
  *
- * \see getUniformMesh()
+ * \see getUniformMeshProperties()
  */
-void setUniformMesh( int dim, const double* origin, const double* spacing,
+void setUniformMeshProperties( int dim, const double* origin, const double* spacing,
                      sidre::Group* coordset );
 
 #endif /* AXOM_MINT_USE_SIDRE */
