@@ -23,7 +23,7 @@
 #include <cstring>
 #include <vector>
 
-using axom::sidre::SidreLength;
+using axom::sidre::IndexType;
 using axom::sidre::TypeID;
 using axom::sidre::Buffer;
 using axom::sidre::Group;
@@ -1038,7 +1038,7 @@ TEST(sidre_group,create_destroy_alloc_view_and_buffer)
 
   EXPECT_EQ(view1->getNumElements(), 10u);
   EXPECT_EQ(view1->getTotalBytes(),
-            static_cast<axom::sidre::SidreLength>(10 * sizeof(int)));
+            static_cast<axom::sidre::IndexType>(10 * sizeof(int)));
 
   grp->destroyViewAndData(viewName1);
 
@@ -1398,7 +1398,7 @@ TEST(sidre_group,save_restore_external_data)
   const int nfoo = 10;
   int foo1[nfoo], foo2[nfoo], * foo3, foo4[nfoo];
   int int2d1[nfoo*2], int2d2[nfoo*2];
-  SidreLength shape[] = { nfoo, 2 };
+  IndexType shape[] = { nfoo, 2 };
 
   for (int i = 0 ; i < nfoo ; ++i)
   {
@@ -1441,7 +1441,7 @@ TEST(sidre_group,save_restore_external_data)
     }
 
     const std::string file_path = file_path_base + protocols[i];
-    SidreLength extents[7];
+    IndexType extents[7];
     int rank;
 
     DataStore* ds2 = new DataStore();
@@ -1519,16 +1519,12 @@ TEST(sidre_group,save_restore_external_data)
 static void save_restore_buffer_association(const std::string & msg,
                                             DataStore* ds)
 {
-  const SidreLength len = 10;
+  const IndexType len = 10;
 
   SCOPED_TRACE(msg);
 
   // Make sure all buffers were created
-  if (ds->getNumBuffers() != 4u)
-  {
-    EXPECT_EQ(ds->getNumBuffers(), 4u);
-    return;
-  }
+  ASSERT_EQ(ds->getNumBuffers(), 4);
 
   Group* root = ds->getRoot();
 
@@ -1608,7 +1604,7 @@ static void save_restore_buffer_association(const std::string & msg,
 TEST(sidre_group,save_restore_buffer)
 {
   const std::string file_path_base("sidre_save_buffer_");
-  const SidreLength len = 10;
+  const IndexType len = 10;
 
   DataStore* ds1 = new DataStore();
   Group* root1 = ds1->getRoot();
@@ -1617,7 +1613,7 @@ TEST(sidre_group,save_restore_buffer)
   Buffer* buff3 = ds1->createBuffer(INT_ID, len)->allocate();
 
   int* idata = buff3->getData();
-  for (int ii = 0 ; ii < len ; ++ii)
+  for (IndexType ii = 0 ; ii < len ; ++ii)
   {
     idata[ii] = ii + 100;
   }
@@ -1684,7 +1680,7 @@ TEST(sidre_group,save_restore_other)
 {
   const std::string file_path_base("sidre_save_other_");
   const int ndata = 10;
-  SidreLength shape1[] = {ndata, 2};
+  IndexType shape1[] = {ndata, 2};
   DataStore* ds1 = new DataStore();
   Group* root1 = ds1->getRoot();
 
@@ -1712,7 +1708,7 @@ TEST(sidre_group,save_restore_other)
     }
 
     const std::string file_path = file_path_base + protocols[i];
-    SidreLength shape2[7];
+    IndexType shape2[7];
     int rank;
 
     DataStore* ds2 = new DataStore();

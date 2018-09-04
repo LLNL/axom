@@ -302,7 +302,7 @@ int SIDRE_view_get_num_dimensions(const SIDRE_view* self)
 }
 
 int SIDRE_view_get_shape(const SIDRE_view* self, int ndims,
-                         SIDRE_SidreLength* shape)
+                         SIDRE_IndexType* shape)
 {
 // splicer begin class.View.method.get_shape
   const axom::sidre::View* SH_this =
@@ -322,7 +322,7 @@ void SIDRE_view_allocate_simple(SIDRE_view* self)
 }
 
 void SIDRE_view_allocate_from_type(SIDRE_view* self, int type,
-                                   SIDRE_SidreLength num_elems)
+                                   SIDRE_IndexType num_elems)
 {
 // splicer begin class.View.method.allocate_from_type
   axom::sidre::View* SH_this = static_cast<axom::sidre::View*>(self->addr);
@@ -332,7 +332,7 @@ void SIDRE_view_allocate_from_type(SIDRE_view* self, int type,
 // splicer end class.View.method.allocate_from_type
 }
 
-void SIDRE_view_reallocate(SIDRE_view* self, SIDRE_SidreLength num_elems)
+void SIDRE_view_reallocate(SIDRE_view* self, SIDRE_IndexType num_elems)
 {
 // splicer begin class.View.method.reallocate
   axom::sidre::View* SH_this = static_cast<axom::sidre::View*>(self->addr);
@@ -353,7 +353,7 @@ void SIDRE_view_attach_buffer_only(SIDRE_view* self, SIDRE_buffer* buff)
 }
 
 void SIDRE_view_attach_buffer_type(SIDRE_view* self, int type,
-                                   SIDRE_SidreLength num_elems,
+                                   SIDRE_IndexType num_elems,
                                    SIDRE_buffer* buff)
 {
 // splicer begin class.View.method.attach_buffer_type
@@ -367,8 +367,7 @@ void SIDRE_view_attach_buffer_type(SIDRE_view* self, int type,
 }
 
 void SIDRE_view_attach_buffer_shape(SIDRE_view* self, int type, int ndims,
-                                    SIDRE_SidreLength* shape,
-                                    SIDRE_buffer* buff)
+                                    SIDRE_IndexType* shape, SIDRE_buffer* buff)
 {
 // splicer begin class.View.method.attach_buffer_shape
   axom::sidre::View* SH_this = static_cast<axom::sidre::View*>(self->addr);
@@ -389,7 +388,7 @@ void SIDRE_view_apply_0(SIDRE_view* self)
 // splicer end class.View.method.apply_0
 }
 
-void SIDRE_view_apply_nelems(SIDRE_view* self, SIDRE_SidreLength num_elems)
+void SIDRE_view_apply_nelems(SIDRE_view* self, SIDRE_IndexType num_elems)
 {
 // splicer begin class.View.method.apply_nelems
   axom::sidre::View* SH_this = static_cast<axom::sidre::View*>(self->addr);
@@ -398,9 +397,8 @@ void SIDRE_view_apply_nelems(SIDRE_view* self, SIDRE_SidreLength num_elems)
 // splicer end class.View.method.apply_nelems
 }
 
-void SIDRE_view_apply_nelems_offset(SIDRE_view* self,
-                                    SIDRE_SidreLength num_elems,
-                                    SIDRE_SidreLength offset)
+void SIDRE_view_apply_nelems_offset(SIDRE_view* self, SIDRE_IndexType num_elems,
+                                    SIDRE_IndexType offset)
 {
 // splicer begin class.View.method.apply_nelems_offset
   axom::sidre::View* SH_this = static_cast<axom::sidre::View*>(self->addr);
@@ -410,9 +408,9 @@ void SIDRE_view_apply_nelems_offset(SIDRE_view* self,
 }
 
 void SIDRE_view_apply_nelems_offset_stride(SIDRE_view* self,
-                                           SIDRE_SidreLength num_elems,
-                                           SIDRE_SidreLength offset,
-                                           SIDRE_SidreLength stride)
+                                           SIDRE_IndexType num_elems,
+                                           SIDRE_IndexType offset,
+                                           SIDRE_IndexType stride)
 {
 // splicer begin class.View.method.apply_nelems_offset_stride
   axom::sidre::View* SH_this = static_cast<axom::sidre::View*>(self->addr);
@@ -422,7 +420,7 @@ void SIDRE_view_apply_nelems_offset_stride(SIDRE_view* self,
 }
 
 void SIDRE_view_apply_type_nelems(SIDRE_view* self, int type,
-                                  SIDRE_SidreLength num_elems)
+                                  SIDRE_IndexType num_elems)
 {
 // splicer begin class.View.method.apply_type_nelems
   axom::sidre::View* SH_this = static_cast<axom::sidre::View*>(self->addr);
@@ -433,8 +431,8 @@ void SIDRE_view_apply_type_nelems(SIDRE_view* self, int type,
 }
 
 void SIDRE_view_apply_type_nelems_offset(SIDRE_view* self, int type,
-                                         SIDRE_SidreLength num_elems,
-                                         SIDRE_SidreLength offset)
+                                         SIDRE_IndexType num_elems,
+                                         SIDRE_IndexType offset)
 {
 // splicer begin class.View.method.apply_type_nelems_offset
   axom::sidre::View* SH_this = static_cast<axom::sidre::View*>(self->addr);
@@ -445,9 +443,9 @@ void SIDRE_view_apply_type_nelems_offset(SIDRE_view* self, int type,
 }
 
 void SIDRE_view_apply_type_nelems_offset_stride(SIDRE_view* self, int type,
-                                                SIDRE_SidreLength num_elems,
-                                                SIDRE_SidreLength offset,
-                                                SIDRE_SidreLength stride)
+                                                SIDRE_IndexType num_elems,
+                                                SIDRE_IndexType offset,
+                                                SIDRE_IndexType stride)
 {
 // splicer begin class.View.method.apply_type_nelems_offset_stride
   axom::sidre::View* SH_this = static_cast<axom::sidre::View*>(self->addr);
@@ -458,7 +456,7 @@ void SIDRE_view_apply_type_nelems_offset_stride(SIDRE_view* self, int type,
 }
 
 void SIDRE_view_apply_type_shape(SIDRE_view* self, int type, int ndims,
-                                 SIDRE_SidreLength* shape)
+                                 SIDRE_IndexType* shape)
 {
 // splicer begin class.View.method.apply_type_shape
   axom::sidre::View* SH_this = static_cast<axom::sidre::View*>(self->addr);
@@ -535,7 +533,7 @@ void SIDRE_view_set_external_data_ptr_only(SIDRE_view* self, void* external_ptr)
 }
 
 void SIDRE_view_set_external_data_ptr_type(SIDRE_view* self, int type,
-                                           SIDRE_SidreLength num_elems,
+                                           SIDRE_IndexType num_elems,
                                            void* external_ptr)
 {
 // splicer begin class.View.method.set_external_data_ptr_type
@@ -547,7 +545,7 @@ void SIDRE_view_set_external_data_ptr_type(SIDRE_view* self, int type,
 }
 
 void SIDRE_view_set_external_data_ptr_shape(SIDRE_view* self, int type,
-                                            int ndims, SIDRE_SidreLength* shape,
+                                            int ndims, SIDRE_IndexType* shape,
                                             void* external_ptr)
 {
 // splicer begin class.View.method.set_external_data_ptr_shape

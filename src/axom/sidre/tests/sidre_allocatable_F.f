@@ -40,7 +40,7 @@ contains
     integer num_elements
     integer i
     integer rank
-    integer(SIDRE_LENGTH) extents(7)
+    integer(SIDRE_IndexType) extents(7)
 
     call set_case_name("external_allocatable_int")
 
@@ -93,7 +93,7 @@ contains
     integer num_elements
     integer i, j, k
     integer rank
-    integer(SIDRE_LENGTH) extents(7)
+    integer(SIDRE_IndexType) extents(7)
 
     call set_case_name("external_allocatable_int_3d")
 
@@ -236,7 +236,7 @@ contains
     integer num_elements
     integer i, j, k
     integer rank
-    integer(SIDRE_LENGTH) extents_in(3), extents(7)
+    integer(SIDRE_IndexType) extents_in(3), extents(7)
 
     call set_case_name("datastore_int_3d")
 

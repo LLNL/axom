@@ -54,7 +54,7 @@ SIDRE_buffer* SIDRE_datastore_create_buffer_empty(SIDRE_datastore* self,
 
 SIDRE_buffer* SIDRE_datastore_create_buffer_from_type(SIDRE_datastore* self,
                                                       int type,
-                                                      SIDRE_SidreLength num_elems,
+                                                      SIDRE_IndexType num_elems,
                                                       SIDRE_buffer* SHC_rv);
 
 void SIDRE_datastore_destroy_buffer(SIDRE_datastore* self, SIDRE_IndexType id);

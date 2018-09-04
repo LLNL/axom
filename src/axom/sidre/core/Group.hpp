@@ -226,12 +226,12 @@ public:
   /*!
    * \brief Return number of child Groups in a Group object.
    */
-  size_t getNumGroups() const;
+  IndexType getNumGroups() const;
 
   /*!
    * \brief Return number of Views owned by a Group object.
    */
-  size_t getNumViews() const;
+  IndexType getNumViews() const;
 
   /*!
    * \brief Return pointer to non-const DataStore object that owns this
@@ -414,7 +414,7 @@ public:
    */
   View* createView( const std::string& path,
                     TypeID type,
-                    SidreLength num_elems );
+                    IndexType num_elems );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -428,7 +428,7 @@ public:
   View* createView( const std::string& path,
                     TypeID type,
                     int ndims,
-                    SidreLength* shape );
+                    IndexType* shape );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -494,7 +494,7 @@ public:
    */
   View* createView( const std::string& path,
                     TypeID type,
-                    SidreLength num_elems,
+                    IndexType num_elems,
                     Buffer* buff );
 
   /*!
@@ -516,7 +516,7 @@ public:
   View* createView( const std::string& path,
                     TypeID type,
                     int ndims,
-                    SidreLength* shape,
+                    IndexType* shape,
                     Buffer* buff );
 
   /*!
@@ -588,7 +588,7 @@ public:
    */
   View* createView( const std::string& path,
                     TypeID type,
-                    SidreLength num_elems,
+                    IndexType num_elems,
                     void* external_ptr );
 
 
@@ -613,7 +613,7 @@ public:
   View* createView( const std::string& path,
                     TypeID type,
                     int ndims,
-                    SidreLength* shape,
+                    IndexType* shape,
                     void* external_ptr );
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -661,7 +661,7 @@ public:
    */
   View* createViewAndAllocate( const std::string& path,
                                TypeID type,
-                               SidreLength num_elems );
+                               IndexType num_elems );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -681,7 +681,7 @@ public:
   View* createViewAndAllocate( const std::string& path,
                                TypeID type,
                                int ndims,
-                               SidreLength* shape );
+                               IndexType* shape );
 
   /*!
    * \brief Create View object with given name or path in this Group that

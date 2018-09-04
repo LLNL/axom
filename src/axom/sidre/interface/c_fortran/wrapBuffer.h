@@ -51,14 +51,14 @@ size_t SIDRE_buffer_get_total_bytes(const SIDRE_buffer* self);
 size_t SIDRE_buffer_get_bytes_per_element(const SIDRE_buffer* self);
 
 void SIDRE_buffer_describe(SIDRE_buffer* self, int type,
-                           SIDRE_SidreLength num_elems);
+                           SIDRE_IndexType num_elems);
 
 void SIDRE_buffer_allocate_existing(SIDRE_buffer* self);
 
 void SIDRE_buffer_allocate_from_type(SIDRE_buffer* self, int type,
-                                     SIDRE_SidreLength num_elems);
+                                     SIDRE_IndexType num_elems);
 
-void SIDRE_buffer_reallocate(SIDRE_buffer* self, SIDRE_SidreLength num_elems);
+void SIDRE_buffer_reallocate(SIDRE_buffer* self, SIDRE_IndexType num_elems);
 
 void SIDRE_buffer_print(const SIDRE_buffer* self);
 

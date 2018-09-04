@@ -195,7 +195,7 @@ contains
     type(SidreDataStore) ds
     type(SidreGroup) root, parent
     type(SidreView) view1, view2
-    integer idx1, idx2, idx3    ! IndexType
+    integer(SIDRE_IndexType) idx1, idx2, idx3    ! IndexType
     character(len=MAXNAMESIZE) name1, name2, name3
 
     call set_case_name("get_view_name_index")
@@ -222,7 +222,7 @@ contains
     call assert_equals(view2%get_name(), name2)
 
     idx3 = parent%get_view_index("view3")
-    call assert_equals(idx3, invalid_index)
+    call assert_true(idx3 == invalid_index)
 
     name3 = parent%get_view_name(idx3)
     call assert_true(name3 == " ")
@@ -238,7 +238,7 @@ contains
     type(SidreDataStore) ds
     type(SidreGroup) root, parent, emptygrp
     type(SidreGroup) group1, group2, group1out, group2out
-    integer idx1, idx2, idx3, badidx1, badidx2    ! IndexType
+    integer(SIDRE_IndexType) idx1, idx2, idx3, badidx1, badidx2    ! IndexType
 
     call set_case_name("get_first_and_next_group_index")
 
@@ -253,22 +253,22 @@ contains
     idx1 = parent%get_first_valid_group_index()
     idx2 = parent%get_next_valid_group_index(idx1)
     idx3 = parent%get_next_valid_group_index(idx2)
-    call assert_equals(0, idx1);
-    call assert_equals(1, idx2);
-    call assert_equals(invalid_index, idx3);
+    call assert_true(0 == idx1)
+    call assert_true(1 == idx2)
+    call assert_true(invalid_index == idx3)
 
     group1out = parent%get_group(idx1)
     group2out = parent%get_group(idx2)
-    call assert_true(group1 == group1out);
-    call assert_true(group2 == group2out);
+    call assert_true(group1 == group1out)
+    call assert_true(group2 == group2out)
 
     ! check error conditions
     emptygrp = root%create_group("emptyGroup")
     badidx1 = emptygrp%get_first_valid_group_index()
     badidx2 = emptygrp%get_next_valid_group_index(badidx1)
 
-    call assert_equals(badidx1, invalid_index)
-    call assert_equals(badidx2, invalid_index)
+    call assert_true(badidx1 == invalid_index)
+    call assert_true(badidx2 == invalid_index)
 
     call ds%delete()
   end subroutine get_first_and_next_group_index
@@ -280,7 +280,7 @@ contains
     type(SidreDataStore) ds
     type(SidreGroup) root, parent, emptygrp
     type(SidreView) view1, view2, view1out, view2out
-    integer idx1, idx2, idx3, badidx1, badidx2    ! IndexType
+    integer(SIDRE_IndexType) idx1, idx2, idx3, badidx1, badidx2    ! IndexType
 
     call set_case_name("get_first_and_next_view_index")
 
@@ -295,22 +295,22 @@ contains
     idx1 = parent%get_first_valid_view_index()
     idx2 = parent%get_next_valid_view_index(idx1)
     idx3 = parent%get_next_valid_view_index(idx2)
-    call assert_equals(0, idx1);
-    call assert_equals(1, idx2);
-    call assert_equals(invalid_index, idx3);
+    call assert_true(0 == idx1)
+    call assert_true(1 == idx2)
+    call assert_true(invalid_index == idx3)
 
     view1out = parent%get_view(idx1)
     view2out = parent%get_view(idx2)
-    call assert_true(view1 == view1out);
-    call assert_true(view2 == view2out);
+    call assert_true(view1 == view1out)
+    call assert_true(view2 == view2out)
 
     ! check error conditions
     emptygrp = root%create_group("emptyGroup")
     badidx1 = emptygrp%get_first_valid_view_index()
     badidx2 = emptygrp%get_next_valid_view_index(badidx1)
 
-    call assert_equals(badidx1, invalid_index)
-    call assert_equals(badidx2, invalid_index)
+    call assert_true(badidx1 == invalid_index)
+    call assert_true(badidx2 == invalid_index)
 
     call ds%delete()
   end subroutine get_first_and_next_view_index
@@ -321,7 +321,7 @@ contains
   subroutine get_group_name_index
     type(SidreDataStore) ds
     type(SidreGroup) root, parent, grp1, grp2
-    integer idx1, idx2, idx3     ! IndexType
+    integer(SIDRE_IndexType) idx1, idx2, idx3     ! IndexType
     character(len=MAXNAMESIZE) name1, name2, name3
 
     call set_case_name("get_group_name_index")
@@ -349,7 +349,7 @@ contains
     call assert_equals(grp2%get_name(), name2)
 
     idx3 = parent%get_group_index("grp3")
-    call assert_equals(idx3, invalid_index)
+    call assert_true(idx3 == invalid_index)
 
     name3 = parent%get_group_name(idx3)
     call assert_true(name3 == " ")
@@ -479,9 +479,9 @@ contains
     root = ds%get_root()
     flds = root%create_group("fields")
 
-    i0_view = flds%create_view_scalar_int("i0", 1);
-    f0_view = flds%create_view_scalar_float("f0", 100.0);
-    d0_view = flds%create_view_scalar_double("d0", 3000.0d0);
+    i0_view = flds%create_view_scalar_int("i0", 1)
+    f0_view = flds%create_view_scalar_float("f0", 100.0)
+    d0_view = flds%create_view_scalar_double("d0", 3000.0d0)
 
     call assert_true(flds%has_view("i0"))
     call assert_true(flds%has_view("f0"))
@@ -529,9 +529,9 @@ contains
     gb = flds%create_group("b")
     gc = flds%create_group("c")
 
-    i0_view = ga%create_view_scalar_int("i0", 1);
-    f0_view = gb%create_view_scalar_float("f0", 100.0);
-    d0_view = gc%create_view_scalar_double("d0", 3000.0d0);
+    i0_view = ga%create_view_scalar_int("i0", 1)
+    f0_view = gb%create_view_scalar_float("f0", 100.0)
+    d0_view = gc%create_view_scalar_double("d0", 3000.0d0)
 
     ! check that all sub groups exist
     call assert_true(flds%has_group("a"))
@@ -560,7 +560,7 @@ contains
     type(SidreView) view1, view2
     type(SidreBuffer) tmpbuf
 !XX    type(SidreBuffer) buffer1, tmpbuf
-    integer bufferid1      ! IndexType
+    integer(SIDRE_IndexType) bufferid1      ! IndexType
     character(len=30) view_name1, view_name2
 !XX    logical buffvalid
 
@@ -799,7 +799,7 @@ contains
     integer int2d1(nfoo,2), int2d2(nfoo,2)
     integer, pointer :: int2d3(:,:)
     integer rank
-    integer(SIDRE_LENGTH) extents(7)
+    integer(SIDRE_IndexType) extents(7)
     type(SidreDataStore) ds1, ds2
     type(SidreGroup) root1, root2
     type(SidreView) view1, view2, view3, view4
@@ -856,7 +856,7 @@ contains
        call assert_true(view1%get_num_elements() == nfoo, "external_array get_num_elements")
        call view1%set_array_data_ptr(foo2)
 
-       view2 = root2%get_view("empty_array");
+       view2 = root2%get_view("empty_array")
        call assert_true(view2%is_empty(), "empty_array is_empty")
        call assert_true(view2%is_described(), "empty_array is_described")
        call assert_equals(view2%get_type_id(), SIDRE_INT_ID, "empty_array get_type_id")
@@ -864,7 +864,7 @@ contains
 !       call view2%set_array_data_ptr(foo3)
 !       call root2%set_array_data_ptr("empty_array", foo3)
 
-       view3 = root2%get_view("external_undescribed");
+       view3 = root2%get_view("external_undescribed")
        call assert_true(view3%is_empty(), "external_undescribed is_empty")
        call assert_false(view3%is_described(), "external_undescribed is_described")
 
@@ -902,7 +902,7 @@ contains
     character(80) file_path
     integer i
     integer, parameter :: ndata = 10
-    integer(SIDRE_LENGTH) :: shape1(2), shape2(7)
+    integer(SIDRE_IndexType) :: shape1(2), shape2(7)
     integer rank
     type(SidreDataStore) ds1, ds2
     type(SidreGroup) root1, root2
@@ -1015,7 +1015,7 @@ contains
 
     ga = flds%create_group("a")
 
-    i0_view = ga%create_view_scalar_int("i0", 1);
+    i0_view = ga%create_view_scalar_int("i0", 1)
 
     call assert_true(root%has_group("fields"))
     call assert_true(flds%has_group("a"))
@@ -1063,9 +1063,9 @@ contains
     gb = flds%create_group("b")
     gc = flds%create_group("c")
 
-    i0_view = ga%create_view_scalar_int("i0", 1);
-    f0_view = gb%create_view_scalar_float("f0", 100.0);
-    d0_view = gc%create_view_scalar_double("d0", 3000.0d0);
+    i0_view = ga%create_view_scalar_int("i0", 1)
+    f0_view = gb%create_view_scalar_float("f0", 100.0)
+    d0_view = gc%create_view_scalar_double("d0", 3000.0d0)
 
     ! check that all sub groups exist
     call assert_true(flds%has_group("a"))
@@ -1131,8 +1131,8 @@ contains
     gb = tree0%create_group("b")
     gc = tree0%create_group("c")
 
-    i0_view = ga%create_view_scalar_int("i0", 100);
-    f0_view = ga%create_view_scalar_float("f0", 3000.0);
+    i0_view = ga%create_view_scalar_int("i0", 100)
+    f0_view = ga%create_view_scalar_float("f0", 3000.0)
     s0_view = gb%create_view_string("s0", "foo")
     i10_view = gc%create_view_and_allocate("int10", SIDRE_INT_ID, 10)
 
@@ -1160,8 +1160,8 @@ contains
           v2_vals(i) = 2*i
        enddo
 
-       i1_view = gy%create_view_scalar_int("i1", 400);
-       f1_view = gz%create_view_scalar_float("f1", 17.0);
+       i1_view = gy%create_view_scalar_int("i1", 400)
+       f1_view = gz%create_view_scalar_float("f1", 17.0)
 
        file_path1 =  file_path_base1 // protocols(j) 
        call tree1%save(file_path1, protocols(j) )

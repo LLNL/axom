@@ -24,7 +24,7 @@
 #ifdef AXOM_USE_MPI
   #include <mpi.h>
 #else
-  using MPI_Comm = int;
+using MPI_Comm = int;
 #endif
 
 // C/C++ includes

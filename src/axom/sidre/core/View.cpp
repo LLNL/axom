@@ -89,7 +89,7 @@ View* View::allocate()
     }
 
     TypeID type = static_cast<TypeID>(m_schema.dtype().id());
-    SidreLength num_elems = m_schema.dtype().number_of_elements();
+    IndexType num_elems = m_schema.dtype().number_of_elements();
     m_data_buffer->allocate(type, num_elems);
     apply();
   }
@@ -104,7 +104,7 @@ View* View::allocate()
  *
  *************************************************************************
  */
-View* View::allocate( TypeID type, SidreLength num_elems)
+View* View::allocate( TypeID type, IndexType num_elems)
 {
   if ( type == NO_TYPE_ID || num_elems < 0 )
   {
@@ -152,7 +152,7 @@ View* View::allocate(const DataType& dtype)
  *
  *************************************************************************
  */
-View* View::reallocate(SidreLength num_elems)
+View* View::reallocate(IndexType num_elems)
 {
   TypeID vtype = static_cast<TypeID>(m_schema.dtype().id());
 
@@ -242,7 +242,7 @@ View* View::reallocate(const DataType& dtype)
   }
 
   describe(dtype);
-  SidreLength num_elems = dtype.number_of_elements();
+  IndexType num_elems = dtype.number_of_elements();
   m_data_buffer->reallocate(num_elems);
   apply();
 
@@ -348,9 +348,9 @@ View* View::apply()
  *
  *************************************************************************
  */
-View* View::apply(SidreLength num_elems,
-                  SidreLength offset,
-                  SidreLength stride)
+View* View::apply(IndexType num_elems,
+                  IndexType offset,
+                  IndexType stride)
 {
   if ( num_elems < 0 )
   {
@@ -384,9 +384,9 @@ View* View::apply(SidreLength num_elems,
  *
  *************************************************************************
  */
-View* View::apply(TypeID type, SidreLength num_elems,
-                  SidreLength offset,
-                  SidreLength stride)
+View* View::apply(TypeID type, IndexType num_elems,
+                  IndexType offset,
+                  IndexType stride)
 {
   if ( type == NO_TYPE_ID || num_elems < 0 )
   {
@@ -417,7 +417,7 @@ View* View::apply(TypeID type, SidreLength num_elems,
  *
  *************************************************************************
  */
-View* View::apply(TypeID type, int ndims, SidreLength* shape)
+View* View::apply(TypeID type, int ndims, IndexType* shape)
 {
   if ( type == NO_TYPE_ID || ndims < 1 || shape == nullptr )
   {
@@ -590,7 +590,7 @@ bool View::isAllocated()
  *
  *************************************************************************
  */
-int View::getShape(int ndims, SidreLength* shape) const
+int View::getShape(int ndims, IndexType* shape) const
 {
   if (static_cast<unsigned>(ndims) < m_shape.size())
   {
@@ -623,7 +623,7 @@ int View::getShape(int ndims, SidreLength* shape) const
  *
  *************************************************************************
  */
-SidreLength View::getOffset() const
+IndexType View::getOffset() const
 {
   int offset = 0;
 
@@ -648,7 +648,7 @@ SidreLength View::getOffset() const
     }
   }
 
-  return static_cast<SidreLength>(offset);
+  return static_cast<IndexType>(offset);
 }
 
 /*
@@ -659,7 +659,7 @@ SidreLength View::getOffset() const
  *
  *************************************************************************
  */
-SidreLength View::getStride() const
+IndexType View::getStride() const
 {
   int stride = 1;
 
@@ -684,7 +684,7 @@ SidreLength View::getStride() const
     }
   }
 
-  return static_cast<SidreLength>(stride);
+  return static_cast<IndexType>(stride);
 }
 
 /*
@@ -811,7 +811,7 @@ View::~View()
  *
  *************************************************************************
  */
-void View::describe(TypeID type, SidreLength num_elems)
+void View::describe(TypeID type, IndexType num_elems)
 {
   DataType dtype = conduit::DataType::default_dtype(type);
   dtype.set_number_of_elements(num_elems);
@@ -829,9 +829,9 @@ void View::describe(TypeID type, SidreLength num_elems)
  *
  *************************************************************************
  */
-void View::describe(TypeID type, int ndims, SidreLength* shape)
+void View::describe(TypeID type, int ndims, IndexType* shape)
 {
-  SidreLength num_elems = 0;
+  IndexType num_elems = 0;
   if (ndims > 0)
   {
     num_elems = shape[0];
@@ -881,7 +881,7 @@ void View::describeShape()
  *
  *************************************************************************
  */
-void View::describeShape(int ndims, SidreLength* shape)
+void View::describeShape(int ndims, IndexType* shape)
 {
   m_shape.clear();
   for (int i=0 ; i < ndims ; i++)
@@ -1183,7 +1183,7 @@ void View::importFrom(conduit::Node& data_holder,
     // Start from scratch
     m_state = EMPTY;
 
-    IndexType old_buffer_id = data_holder["buffer_id"].as_int();
+    IndexType old_buffer_id = data_holder["buffer_id"].to_int64();
     bool is_applied = data_holder["is_applied"].as_unsigned_char();
 
     SLIC_ASSERT_MSG( buffer_id_map.find(old_buffer_id) !=
@@ -1252,7 +1252,7 @@ void View::importDescription(conduit::Node& data_holder)
     if (data_holder.has_path("shape"))
     {
       Node & n = data_holder["shape"];
-      SidreLength* shape = n.as_long_ptr();
+      IndexType* shape = n.value();
       int ndims = n.dtype().number_of_elements();
       describeShape(ndims, shape);
     }

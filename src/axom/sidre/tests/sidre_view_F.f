@@ -67,8 +67,8 @@ contains
     db_0 = dv_0%get_buffer()
     db_1 = dv_1%get_buffer()
 
-    call assert_equals(db_0%get_index(), 0, "db_0%get_index(), 0")
-    call assert_equals(db_1%get_index(), 1, "db_1%get_index(), 1")
+    call assert_true(db_0%get_index() == 0, "db_0%get_index(), 0")
+    call assert_true(db_1%get_index() == 1, "db_1%get_index(), 1")
     call ds%delete()
   end subroutine create_views
 
@@ -197,7 +197,7 @@ contains
         integer, intent(IN) :: length
         character(30) name
 
-        integer(SIDRE_LENGTH) dims(2)
+        integer(SIDRE_IndexType) dims(2)
 
         name = view%get_name()
 
@@ -542,11 +542,11 @@ contains
     ! attach field views to buffer and apply offsets into buffer
     offset0 = 0 * field_nelems
     call field0%attach_buffer(dbuff)
-    call field0%apply_nelems_offset(field_nelems, offset0);
+    call field0%apply_nelems_offset(field_nelems, offset0)
 
     offset1 = 1 * field_nelems
     call field1%attach_buffer(dbuff)
-    call field1%apply_nelems_offset(field_nelems, offset1);
+    call field1%apply_nelems_offset(field_nelems, offset1)
 
     call assert_true( dbuff%get_num_views() == 2, "dbuff%get_num_views() == 2" )
 

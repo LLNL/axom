@@ -1240,7 +1240,7 @@ TEST( mint_core_array, checkSidrePermanence)
         EXPECT_EQ( view_data_ptr, array_data_ptr );
         EXPECT_EQ( view->getNumDimensions(), 2 );
 
-        sidre::SidreLength dims[2];
+        sidre::IndexType dims[2];
         view->getShape( 2, dims );
         EXPECT_EQ( dims[0], capacity );
         EXPECT_EQ( dims[1], n_components );

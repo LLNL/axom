@@ -100,9 +100,10 @@ public:
   /*!
    * \brief Return number of Buffers in the DataStore.
    */
-  size_t getNumBuffers() const
+  IndexType getNumBuffers() const
   {
-    return m_data_buffers.size() - m_free_buffer_ids.size();
+    return static_cast<IndexType>(m_data_buffers.size() -
+                                  m_free_buffer_ids.size());
   }
 
   /*!
@@ -140,7 +141,7 @@ public:
    *        The Buffer object is assigned a unique index when created and the
    *        Buffer object is owned by the DataStore object.
    */
-  Buffer* createBuffer( TypeID type, SidreLength num_elems );
+  Buffer* createBuffer( TypeID type, IndexType num_elems );
 
   /*!
    * \brief Remove Buffer from the DataStore and destroy it and
@@ -213,7 +214,7 @@ public:
   /*!
    * \brief Return number of Attributes in the DataStore.
    */
-  SidreLength getNumAttributes() const;
+  IndexType getNumAttributes() const;
 
   /*!
    * \brief Create a Attribute object with a default scalar value.

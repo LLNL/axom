@@ -26,6 +26,7 @@
 
 using axom::sidre::Group;
 using axom::sidre::DataStore;
+using axom::sidre::IndexType;
 
 /**************************************************************************
  * Subroutine:  main
@@ -37,10 +38,10 @@ int main(int argc, char* argv[])
   DataStore* ds = new DataStore();
   Group* root = ds->getRoot();
 
-  size_t num_groups = 0;
+  IndexType num_groups = 0;
   if (argc > 1)
   {
-    num_groups = static_cast<size_t>(atoi(argv[1]));
+    num_groups = static_cast<IndexType>(atoi(argv[1]));
   }
   else
   {
@@ -57,7 +58,7 @@ int main(int argc, char* argv[])
 
   std::set<std::string> name_set;
 
-  while (name_set.size() < num_groups)
+  while (static_cast<IndexType>(name_set.size()) < num_groups)
   {
     std::string new_string;
     for (int c = 0 ; c < 8 ; ++c)

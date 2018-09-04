@@ -53,6 +53,7 @@ using axom::sidre::Group;
 using axom::sidre::DataStore;
 using axom::sidre::View;
 using axom::sidre::TypeID;
+using axom::sidre::IndexType;
 
 using namespace conduit;
 
@@ -537,7 +538,7 @@ void DumpUltra( Group* const prob)
   fprintf(fp, "# Problem: %s\n", "problem" );
 
 
-  for(size_t i=0 ; i<prob->getNumViews() ; i++)
+  for(IndexType i=0 ; i<prob->getNumViews() ; i++)
   {
     View* const view = prob->getView(i);
     const int length = view->getNumElements();
@@ -562,7 +563,7 @@ void DumpUltra( Group* const prob)
 
   Group* const elem = prob->getGroup("elem");
 
-  for(size_t i=0 ; i<elem->getNumViews() ; i++)
+  for(IndexType i=0 ; i<elem->getNumViews() ; i++)
   {
     View* const view = elem->getView(i);
     const int length = view->getNumElements();

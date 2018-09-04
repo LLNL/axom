@@ -12,10 +12,13 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Added
 
 ### Removed
+- Replaced sidre::SidreLength with sidre::IndexType.
+- Replaced usage of std::size_t in sidre with sidre::IndexType.
 
 ### Deprecated
 
 ### Changed
+- Changed sidre::IndexType to be a 64bit signed integer.
 
 ### Fixed
 

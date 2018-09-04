@@ -144,7 +144,7 @@ public:
    * \brief Return total number of data elements (of its type) owned by
    *        this Buffer object.
    */
-  SidreLength getNumElements() const
+  IndexType getNumElements() const
   {
     return m_node.dtype().number_of_elements();
   }
@@ -152,7 +152,7 @@ public:
   /*!
    * \brief Return total number of bytes of data owned by this Buffer object.
    */
-  SidreLength getTotalBytes() const
+  IndexType getTotalBytes() const
   {
     return m_node.dtype().strided_bytes();
   }
@@ -160,7 +160,7 @@ public:
   /*!
    * \brief Return the number of bytes per element owned by this Buffer object.
    */
-  SidreLength getBytesPerElement() const
+  IndexType getBytesPerElement() const
   {
     return m_node.dtype().element_bytes();
   }
@@ -200,7 +200,7 @@ public:
    *
    * \return pointer to this Buffer object.
    */
-  Buffer* describe(TypeID type, SidreLength num_elems);
+  Buffer* describe(TypeID type, IndexType num_elems);
 
   /*!
    * \brief Allocate data for a Buffer.
@@ -220,7 +220,7 @@ public:
    *
    * \return pointer to this Buffer object.
    */
-  Buffer* allocate(TypeID type, SidreLength num_elems);
+  Buffer* allocate(TypeID type, IndexType num_elems);
 
   /*!
    * \brief Reallocate data to given number of elements.
@@ -233,7 +233,7 @@ public:
    *
    * \return pointer to this Buffer object.
    */
-  Buffer* reallocate(SidreLength num_elems);
+  Buffer* reallocate(IndexType num_elems);
 
   /*!
    * \brief Deallocate data in a Buffer.
@@ -263,7 +263,7 @@ public:
    *
    * \return pointer to this Buffer object.
    */
-  Buffer* copyBytesIntoBuffer(const void* src, SidreLength nbytes);
+  Buffer* copyBytesIntoBuffer(const void* src, IndexType nbytes);
 
   /*!
    * \brief Copy Buffer description to a Conduit node.
@@ -335,12 +335,12 @@ private:
    * \brief Private method to allocate num_bytes bytes of data and
    * return void-pointer to allocation.
    */
-  void* allocateBytes(std::size_t num_bytes);
+  void* allocateBytes(IndexType num_bytes);
 
   /*!
    * \brief Private method to copy num_bytes of data from src to dst.
    */
-  void copyBytes( const void* src, void* dst, size_t num_bytes );
+  void copyBytes( const void* src, void* dst, IndexType num_bytes );
 
   /*!
    * \brief Private method to delete data referenced by pointer.

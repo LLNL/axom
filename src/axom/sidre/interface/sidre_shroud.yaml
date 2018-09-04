@@ -35,17 +35,11 @@ format:
   F_filename_suffix: F
 
 declarations:
-- decl: typedef int IndexType
+- decl: typedef int64_t IndexType
   fields:
     # defined in SidreTypes.hpp
     c_header : axom/sidre/interface/SidreTypes.h
     c_type   : SIDRE_IndexType
-
-- decl: typedef long SidreLength
-  fields:
-    # defined in SidreTypes.hpp
-    c_header : axom/sidre/interface/SidreTypes.h
-    c_type   : SIDRE_SidreLength
 
 - decl: typedef int TypeID
   fields:
@@ -89,25 +83,37 @@ declarations:
   - decl: size_t getNumBuffers() const
 #  - decl: bool hasBuffer( IndexType idx ) const
   - decl:  Buffer * getBuffer( IndexType idx )
+    fortran_generic:
+      idx:
+      -  int32_t
+      -  int64_t
     C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
   - decl: Buffer * createBuffer()
     format:
       function_suffix: _empty
-  - decl: Buffer * createBuffer( TypeID type, SidreLength num_elems )
+  - decl: Buffer * createBuffer( TypeID type, IndexType num_elems )
     format:
       function_suffix: _from_type
     fortran_generic:
       num_elems:
-      -  int
-      -  long
+      -  int32_t
+      -  int64_t
     C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
   - decl: void destroyBuffer( IndexType id )
+    fortran_generic:
+      id:
+      -  int32_t
+      -  int64_t
 
   # Methods for iterating over Buffers in DataStore
 #  - decl: IndexType getFirstValidBufferIndex() const
 #  - decl: IndexType getNextValidBufferIndex(IndexType idx) const;
+#    fortran_generic:
+#      idx:
+#      -  int32_t
+#      -  int64_t
 
   - decl: void print() const
 #  - decl: void print(std::ostream& os) const
@@ -134,8 +140,16 @@ declarations:
   - decl: bool hasView( const string& path ) const
   - decl: bool hasChildView( const string& name ) const
 #  - decl: bool hasView( IndexType idx ) const
+#    fortran_generic:
+#      idx:
+#      -  int32_t
+#      -  int64_t
   - decl: IndexType getViewIndex(const std::string &name) const
   - decl: const std::string& getViewName(IndexType idx) const +len(MAXNAMESIZE)
+    fortran_generic:
+      idx:
+      -  int32_t
+      -  int64_t
     C_error_pattern: C_invalid_name
     PY_error_pattern: PY_invalid_name_idx
 
@@ -149,11 +163,23 @@ declarations:
   - decl: View *getView( const IndexType idx )
     format:
       function_suffix: _from_index
+    fortran_generic:
+      idx:
+      -  int32_t
+      -  int64_t
     C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
 #  - decl: View const *getView( const IndexType idx ) const
+#    fortran_generic:
+#      idx:
+#      -  int32_t
+#      -  int64_t
   - decl: IndexType getFirstValidViewIndex() const
   - decl: IndexType getNextValidViewIndex(IndexType idx) const
+    fortran_generic:
+      idx:
+      -  int32_t
+      -  int64_t
 
   # Methods to create a View that has no associated data.
   - decl: View *createView( const string& path )
@@ -164,20 +190,20 @@ declarations:
 
   - decl: View *createView( const std::string& path,
                             TypeID type,
-                            SidreLength num_elems )
+                            IndexType num_elems )
     format:
       function_suffix: _from_type
     fortran_generic:
       num_elems:
-      -  int
-      -  long
+      -  int32_t
+      -  int64_t
     C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
 
   - decl: View *createView( const std::string& path,
                             TypeID type,
                             int ndims,
-                            SidreLength * shape+dimension)
+                            IndexType * shape+dimension)
     format:
       function_suffix: _from_shape
     C_error_pattern: C_null_to_error_capsule
@@ -195,21 +221,21 @@ declarations:
 
   - decl: View *createView( const std::string& path,
                             TypeID type,
-                            SidreLength num_elems,
+                            IndexType num_elems,
                             Buffer *buff)
     format:
       function_suffix: _from_type_and_buffer
     fortran_generic:
       num_elems:
-      -  int
-      -  long
+      -  int32_t
+      -  int64_t
     C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
 
   - decl: View *createView( const std::string& path,
                             TypeID type,
                             int ndims,
-                            SidreLength * shape+dimension,
+                            IndexType * shape+dimension,
                             Buffer * buff)
     format:
       function_suffix: _from_shape_and_buffer
@@ -226,21 +252,21 @@ declarations:
 
   - decl: View *createView( const std::string& path,
                             TypeID type,
-                            SidreLength num_elems,
+                            IndexType num_elems,
                             void * external_ptr)
     format:
       function_suffix: _from_type_external
     fortran_generic:
       num_elems:
-      -  int
-      -  long
+      -  int32_t
+      -  int64_t
     C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
 
   - decl: View *createView( const std::string& path,
                             TypeID type,
                             int ndims,
-                            SidreLength * shape+dimension,
+                            IndexType * shape+dimension,
                             void * external_ptr)
     format:
       function_suffix: _from_shape_external
@@ -250,20 +276,20 @@ declarations:
   # Methods to create a View and allocate data for it.
   - decl: View *createViewAndAllocate( const std::string& path,
                                        TypeID type,
-                                       SidreLength num_elems)
+                                       IndexType num_elems)
     format:
       function_suffix: _nelems
     fortran_generic:
       num_elems:
-      -  int
-      -  long
+      -  int32_t
+      -  int64_t
     C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
 
   - decl: View *createViewAndAllocate( const std::string& path,
                                        TypeID type,
                                        int ndims,
-                                       SidreLength *shape+dimension)
+                                       IndexType *shape+dimension)
     format:
       function_suffix: _shape
     C_error_pattern: C_null_to_error_capsule
@@ -290,6 +316,10 @@ declarations:
   # View destruction methods.
   - decl: void destroyView( const std::string &path )
 #  - decl: void destroyView( IndexType idx )
+#    fortran_generic:
+#      idx:
+#      -  int32_t
+#      -  int64_t
 #  - decl: void destroyViews()
   - decl: void destroyViewAndData(const std::string &path)
     format:
@@ -297,6 +327,10 @@ declarations:
   - decl: void destroyViewAndData(IndexType idx)
     format:
       function_suffix: _index
+    fortran_generic:
+      idx:
+      -  int32_t
+      -  int64_t
 #  - decl: void destroyViewsAndData()
 
   # View move and copy methods.
@@ -307,8 +341,16 @@ declarations:
   - decl: bool hasGroup( const string& path )
   - decl: bool hasChildGroup( const string& name )
 #  - decl: bool hasGroup( IndexType idx )
+#    fortran_generic:
+#      idx:
+#      -  int32_t
+#      -  int64_t
   - decl: IndexType getGroupIndex(const std::string &name) const
   - decl: const std::string& getGroupName(IndexType idx) const +len(MAXNAMESIZE)
+    fortran_generic:
+      idx:
+      -  int32_t
+      -  int64_t
     C_error_pattern: C_invalid_name
     PY_error_pattern: PY_invalid_name_idx
 
@@ -322,11 +364,23 @@ declarations:
   - decl: Group * getGroup( IndexType idx)
     format:
       function_suffix: _from_index
+    fortran_generic:
+      idx:
+      -  int32_t
+      -  int64_t
     C_error_pattern: C_null_to_error_capsule
     PY_error_pattern: PY_null_to_none
 #  - decl: Group const * getGroup(IndexType idx) const
+#    fortran_generic:
+#      idx:
+#      -  int32_t
+#      -  int64_t
   - decl: IndexType getFirstValidGroupIndex() const
   - decl: IndexType getNextValidGroupIndex(IndexType idx) const
+    fortran_generic:
+      idx:
+      -  int32_t
+      -  int64_t
 
   # Child Group creation and destruction methods.
   - decl: Group *createGroup( const string& path )
@@ -338,6 +392,10 @@ declarations:
   - decl: void destroyGroup(IndexType idx)
     format:
       function_suffix: _index
+    fortran_generic:
+      idx:
+      -  int32_t
+      -  int64_t
 #  - decl: void destroyGroups()
 
   # Group move and copy methods
@@ -385,12 +443,12 @@ declarations:
     - decl: size_t getBytesPerElement() const
 
     # Data description and allocation methods
-    - decl: Buffer* describe(TypeID type, SidreLength num_elems)
+    - decl: Buffer* describe(TypeID type, IndexType num_elems)
       return_this: True
       fortran_generic:
         num_elems:
-        -  int
-        -  long
+        -  int32_t
+        -  int64_t
 
 #    - decl: Buffer* describe(const DataType& dtype)
 
@@ -399,21 +457,21 @@ declarations:
         function_suffix: _existing
       return_this: True
 
-    - decl: Buffer* allocate(TypeID type, SidreLength num_elems)
+    - decl: Buffer* allocate(TypeID type, IndexType num_elems)
       format:
         function_suffix: _from_type
       return_this: True
       fortran_generic:
         num_elems:
-        -  int
-        -  long
+        -  int32_t
+        -  int64_t
 
-    - decl: Buffer* reallocate(SidreLength num_elems)
+    - decl: Buffer* reallocate(IndexType num_elems)
       return_this: True
       fortran_generic:
         num_elems:
-        -  int
-        -  long
+        -  int32_t
+        -  int64_t
 
     - decl: void print() const
 
@@ -449,7 +507,7 @@ declarations:
   - decl: size_t getOffset() const
   - decl: size_t getStride() const
   - decl: int getNumDimensions() const
-  - decl: int getShape(int ndims, SidreLength * shape+dimension+intent(OUT) ) const
+  - decl: int getShape(int ndims, IndexType * shape+dimension+intent(OUT) ) const
 #  - decl: const Schema& getSchema() const
 #  - decl: Node& getNode()
 #  - decl: const Node& getNode() const
@@ -460,23 +518,23 @@ declarations:
       function_suffix: _simple
     return_this: True
 
-  - decl: View* allocate(TypeID type, SidreLength num_elems)
+  - decl: View* allocate(TypeID type, IndexType num_elems)
     format:
       function_suffix: _from_type
     return_this: True
     fortran_generic:
       num_elems:
-      -  int
-      -  long
+      -  int32_t
+      -  int64_t
 
 #  - decl: View* allocate(const DataType& dtype)
 
-  - decl: View * reallocate(SidreLength num_elems)
+  - decl: View * reallocate(IndexType num_elems)
     return_this: True
     fortran_generic:
       num_elems:
-      -  int
-      -  long
+      -  int32_t
+      -  int64_t
 
 #  - decl: View* reallocate(const DataType& dtype)
 
@@ -487,19 +545,19 @@ declarations:
       function_suffix: _only
 
   - decl: View* attachBuffer(TypeID type,
-                             SidreLength num_elems,
+                             IndexType num_elems,
                              Buffer * buff)
     return_this: True
     format:
       function_suffix: _type
     fortran_generic:
       num_elems:
-      -  int
-      -  long
+      -  int32_t
+      -  int64_t
 
   - decl: View* attachBuffer(TypeID type,
                              int ndims,
-                             SidreLength * shape+dimension,
+                             IndexType * shape+dimension,
                              Buffer * buff)
     return_this: True
     format:
@@ -510,9 +568,9 @@ declarations:
   - decl: View* apply()
     return_this: True
 
-  - decl: View* apply(SidreLength num_elems,
-                      SidreLength offset = 0,
-                      SidreLength stride = 1)
+  - decl: View* apply(IndexType num_elems,
+                      IndexType offset = 0,
+                      IndexType stride = 1)
     default_arg_suffix:
       -  _nelems
       -  _nelems_offset
@@ -520,16 +578,16 @@ declarations:
     return_this: True
 
   - decl: View* apply(TypeID type,
-                      SidreLength num_elems,
-                      SidreLength offset = 0,
-                      SidreLength stride = 1)
+                      IndexType num_elems,
+                      IndexType offset = 0,
+                      IndexType stride = 1)
     default_arg_suffix:
       -  _type_nelems
       -  _type_nelems_offset
       -  _type_nelems_offset_stride
     return_this: True
 
-  - decl: View * apply( TypeID type, int ndims, SidreLength * shape+dimension )
+  - decl: View * apply( TypeID type, int ndims, IndexType * shape+dimension )
     format:
       function_suffix: _type_shape
     return_this: True
@@ -554,19 +612,19 @@ declarations:
       function_suffix: _only
 
   - decl: View * setExternalDataPtr(TypeID type,
-                                    SidreLength num_elems,
+                                    IndexType num_elems,
                                     void * external_ptr)
     return_this: True
     format:
       function_suffix: _type
     fortran_generic:
       num_elems:
-      -  int
-      -  long
+      -  int32_t
+      -  int64_t
 
   - decl: View * setExternalDataPtr(TypeID type,
                                     int ndims,
-                                    SidreLength * shape+dimension,
+                                    IndexType * shape+dimension,
                                     void * external_ptr)
     return_this: True
     format:
