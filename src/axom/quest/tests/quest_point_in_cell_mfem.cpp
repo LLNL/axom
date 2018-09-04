@@ -1286,8 +1286,7 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
 
   // Setup linear mint mesh to approximate our mesh
   const int res = 25;
-  axom::mint::IndexType ext[2] = {res + 1, res + 1};
-  axom::mint::CurvilinearMesh cmesh(2, ext);
+  axom::mint::CurvilinearMesh cmesh(res + 1, res + 1);
 
   {
     axom::mint::IndexType Ni = cmesh.getNodeDimension(0);

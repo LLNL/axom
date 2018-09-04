@@ -170,20 +170,14 @@ void testContainmentOnRegularGrid(
   const GeometricBoundingBox& queryBounds,
   int gridRes)
 {
-  SpaceVector h( queryBounds.getMin(), queryBounds.getMax());
-  for(int i=0 ; i<3 ; ++i)
-  {
-    h[i] /= gridRes;
-  }
+  const double* low = queryBounds.getMin().data();
+  const double* high = queryBounds.getMax().data();
+  mint::UniformMesh* umesh = 
+                    new mint::UniformMesh(low, high, gridRes, gridRes, gridRes);
 
-  mint::IndexType ext[3] = {gridRes, gridRes, gridRes};
-
-  mint::UniformMesh* umesh =
-    new mint::UniformMesh(3,queryBounds.getMin().data(),h.data(),ext);
-
-  const int nnodes    = umesh->getNumberOfNodes();
-  int* containment    = umesh->createField< int >( "containment",
-                                                   mint::NODE_CENTERED );
+  const int nnodes = umesh->getNumberOfNodes();
+  int* containment = umesh->createField< int >( "containment", 
+                                                mint::NODE_CENTERED );
 
   SLIC_ASSERT( containment != nullptr );
 

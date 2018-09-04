@@ -820,10 +820,9 @@ void check_unstructured_mesh( const Mesh* mesh, std::ifstream& file )
 TEST( mint_util_write_vtk, UniformMesh3D )
 {
   const std::string path = "uniformMesh3D.vtk";
-  const IndexType ext[3] = { 10, 10, 10 };
-  const double origin[3] = { -5.0, -10.0, -15.0 };
-  const double corner[3] = { 5.0, 10.0, 15.0 };
-  UniformMesh* u_mesh = new UniformMesh( 3, ext, origin, corner );
+  const double low[3] = { -5.0, -10.0, -15.0 };
+  const double high[3] = { 5.0, 10.0, 15.0 };
+  UniformMesh* u_mesh = new UniformMesh( low, high, 10, 11, 12 );
 
   internal::populate_and_write( u_mesh, path );
   std::ifstream file( path.c_str() );
@@ -846,10 +845,9 @@ TEST( mint_util_write_vtk, UniformMesh3D )
 TEST( mint_util_write_vtk, UniformMesh2D )
 {
   const std::string path = "uniformMesh2D.vtk";
-  const IndexType ext[2] = { 10, 10 };
-  const double origin[2] = { -5.0, -10.0 };
-  const double corner[2] = { 5.0, 10.0 };
-  UniformMesh* u_mesh = new UniformMesh( 2, ext, origin, corner );
+  const double low[2] = { -5.0, -10.0 };
+  const double high[2] = { 5.0, 10.0 };
+  UniformMesh* u_mesh = new UniformMesh( low, high, 10, 11 );
 
   internal::populate_and_write( u_mesh, path );
   std::ifstream file( path.c_str() );
@@ -872,10 +870,9 @@ TEST( mint_util_write_vtk, UniformMesh2D )
 TEST( mint_util_write_vtk, UniformMesh1D )
 {
   const std::string path = "uniformMesh1D.vtk";
-  const IndexType ext[1] = { 10 };
-  const double origin[1] = { -5.0 };
-  const double corner[1] = { 5.0 };
-  UniformMesh* u_mesh = new UniformMesh( 1, ext, origin, corner );
+  const double low[1] = { -5.0 };
+  const double high[1] = { 5.0 };
+  UniformMesh* u_mesh = new UniformMesh( low, high, 10 );
 
   internal::populate_and_write( u_mesh, path );
   std::ifstream file( path.c_str() );
@@ -898,16 +895,15 @@ TEST( mint_util_write_vtk, UniformMesh1D )
 TEST( mint_util_write_vtk, RectilinearMesh3D )
 {
   const std::string path = "rectilinearMesh3D.vtk";
-  IndexType ext[3] = { 10, 11, 12 };
-  RectilinearMesh* r_mesh = new RectilinearMesh( 3, ext );
+  RectilinearMesh* r_mesh = new RectilinearMesh( 10, 11, 12 );
 
   for ( int dim = 0 ; dim < 3 ; ++dim )
   {
     IndexType Nd = r_mesh->getNodeDimension( dim );
-    double* x = r_mesh->getCoordinateArray( dim );
+    double* coords = r_mesh->getCoordinateArray( dim );
     for ( IndexType i = 0 ; i < Nd ; ++i )
     {
-      x[ i ] = i * i / 10.0;
+      coords[ i ] = i * i / 10.0;
     }
   }
 
@@ -932,16 +928,15 @@ TEST( mint_util_write_vtk, RectilinearMesh3D )
 TEST( mint_util_write_vtk, RectilinearMesh2D )
 {
   const std::string path = "rectilinearMesh2D.vtk";
-  IndexType ext[2] = { 10, 11 };
-  RectilinearMesh* r_mesh = new RectilinearMesh( 2, ext );
+  RectilinearMesh* r_mesh = new RectilinearMesh( 10, 11 );
 
   for ( int dim = 0 ; dim < 2 ; ++dim )
   {
     IndexType Nd = r_mesh->getNodeDimension( dim );
-    double* x = r_mesh->getCoordinateArray( dim );
+    double* coords = r_mesh->getCoordinateArray( dim );
     for ( IndexType i = 0 ; i < Nd ; ++i )
     {
-      x[ i ] = i * i / 10.0;
+      coords[ i ] = i * i / 10.0;
     }
   }
 
@@ -966,17 +961,13 @@ TEST( mint_util_write_vtk, RectilinearMesh2D )
 TEST( mint_util_write_vtk, RectilinearMesh1D )
 {
   const std::string path = "rectilinearMesh1D.vtk";
-  IndexType ext[1] = { 10 };
-  RectilinearMesh* r_mesh = new RectilinearMesh( 1, ext );
+  RectilinearMesh* r_mesh = new RectilinearMesh( 10 );
 
-  for ( int dim = 0 ; dim < 1 ; ++dim )
+  IndexType Nx = r_mesh->getNodeDimension( 0 );
+  double* x = r_mesh->getCoordinateArray( 0 );
+  for ( IndexType i = 0 ; i < Nx ; ++i )
   {
-    IndexType Nd = r_mesh->getNodeDimension( dim );
-    double* x = r_mesh->getCoordinateArray( dim );
-    for ( IndexType i = 0 ; i < Nd ; ++i )
-    {
-      x[ i ] = i * i / 10.0;
-    }
+    x[ i ] = i * i / 10.0;
   }
 
   internal::populate_and_write( r_mesh, path );
@@ -1000,8 +991,7 @@ TEST( mint_util_write_vtk, RectilinearMesh1D )
 TEST( mint_util_write_vtk, CurvilinearMesh3D )
 {
   const std::string path = "curvilinearMesh3D.vtk";
-  IndexType ext[3] = { 10, 11, 12 };
-  CurvilinearMesh* c_mesh = new CurvilinearMesh( 3, ext );
+  CurvilinearMesh* c_mesh = new CurvilinearMesh( 10, 11, 12 );
 
   IndexType Ni = c_mesh->getNodeDimension( 0 );
   IndexType Nj = c_mesh->getNodeDimension( 1 );
@@ -1047,8 +1037,7 @@ TEST( mint_util_write_vtk, CurvilinearMesh3D )
 TEST( mint_util_write_vtk, CurvilinearMesh2D )
 {
   const std::string path = "curvilinearMesh2D.vtk";
-  IndexType ext[2] = { 10, 11 };
-  CurvilinearMesh* c_mesh = new CurvilinearMesh( 2, ext );
+  CurvilinearMesh* c_mesh = new CurvilinearMesh( 10, 11 );
 
   IndexType Ni = c_mesh->getNodeDimension( 0 );
   IndexType Nj = c_mesh->getNodeDimension( 1 );
@@ -1088,8 +1077,7 @@ TEST( mint_util_write_vtk, CurvilinearMesh2D )
 TEST( mint_util_write_vtk, CurvilinearMesh1D )
 {
   const std::string path = "curvilinearMesh1D.vtk";
-  IndexType ext[1] = { 10 };
-  CurvilinearMesh* c_mesh = new CurvilinearMesh( 1, ext );
+  CurvilinearMesh* c_mesh = new CurvilinearMesh( 10 );
 
   IndexType Ni = c_mesh->getNodeDimension( 0 );
   double* x_coords = c_mesh->getCoordinateArray( X_COORDINATE );

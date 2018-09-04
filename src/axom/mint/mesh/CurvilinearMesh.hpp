@@ -87,27 +87,6 @@ public:
 /// @{
 
   /*!
-   * \brief Constructs a CurvilinearMesh instance given the ambient dimension
-   *  of the mesh and associated logical extent.
-   *
-   * \param [in] dimension the dimension of this mesh instance.
-   * \param [in] ext pointer to buffer with the logical extent of the mesh.
-   *
-   * \note The supplied `ext` pointer must point to a buffer that has at least
-   * \f$ 2 \times N \f$ entries, where N is the dimension of the uniform mesh
-   * given in the following order: [imin, imax, jmin, jmax, kmin, kmax]
-   *
-   * \pre 1 <= dimension <= 3
-   * \pre ext != nullptr
-   *
-   * \post getDimension()==dimension
-   * \post getCoordinateArray( i ) != nullptr \f$ \forall i \f$
-   * \post hasSidreGroup() == false
-   * \post isExternal() == false
-   */
-  CurvilinearMesh( int dimension, const IndexType* ext );
-
-  /*!
    * \brief Constructs a CurvilinearMesh with the given dimensions.
    *
    * \param [in] Ni number of nodes in the i-direction.
@@ -133,19 +112,16 @@ public:
    * \brief Constructs a CurvilinearMesh instance given the supplied, external
    *  coordinate buffers.
    *
-   * \param [in] ext pointer to buffer with the logical extent of the mesh.
+   * \param [in] Ni number of nodes in the i-direction.
    * \param [in] x pointer to the x-coordinates
+   * \param [in] Nj number of nodes in the j-direction (for dimension >= 2).
    * \param [in] y pointer to the y-coordinates (required only for 2D and 3D)
+   * \param [in] Nk number of nodes in the k-direction (for dimension==3).
    * \param [in] z pointer to the z-coordinates (required only 3D)
-   *
-   * \note The supplied `ext` pointer must point to a buffer that has at least
-   * \f$ 2 \times N \f$ entries, where N is the dimension of the uniform mesh
-   * given in the following order: [imin, imax, jmin, jmax, kmin, kmax]
    *
    * \note The calling code maintains ownership of the supplied coordinate
    *  buffers and the responsibility of properly deallocating them.
    *
-   * \pre ext != nullptr
    * \pre x != nullptr
    * \pre y != nullptr
    * \pre z != nullptr
@@ -155,8 +131,8 @@ public:
    * \post hasSidreGroup() == false.
    * \post isExternal() == true
    */
-  CurvilinearMesh( const IndexType* ext, double* x, double* y=nullptr,
-                   double* z=nullptr  );
+  CurvilinearMesh( IndexType Ni, double* x, IndexType Nj=-1, double* y=nullptr,
+                   IndexType Nk=-1, double* z=nullptr );
 /// @}
 
 #ifdef AXOM_MINT_USE_SIDRE
@@ -192,33 +168,6 @@ public:
   /// @{
   explicit CurvilinearMesh( sidre::Group* group, const std::string& topo="" );
   /// @}
-
-  /*!
-   * \brief Create a curvilinear mesh instance, on an empty sidre::Group,
-   *  that has the specified dimension and extent.
-   *
-   * \param [in] dimension the dimension of the mesh
-   * \param [in] ext pointer to buffer with the logical extent of the mesh.
-   * \param [in] group pointer to Sidre group where to store the mesh.
-   * \param [in] topo the name of the associated topology (optional)
-   * \param [in] coordset the name of the associated coordset group (optional)
-   *
-   * \note If a topology and coordset name is not provided, internal defaults
-   *  will be used by the implementation.
-   *
-   * \note When using this constructor, all data is owned by Sidre. Once the
-   *  mesh object goes out-of-scope, the data will remain persistent in Sidre.
-   *
-   * \pre ext != nullptr
-   * \pre group != nullptr
-   * \pre group->getNumViews()==0
-   * \pre group->getNumGroups()==0
-   *
-   * \post hasSidreGroup() == true
-   * \post isExternal() == false
-   */
-  CurvilinearMesh( int dimension, const IndexType* ext, sidre::Group* group,
-                   const std::string& topo="", const std::string& coordset="" );
 
   /*!
    * \brief Create a curvilinear mesh instance, on an empty sidre::Group, with

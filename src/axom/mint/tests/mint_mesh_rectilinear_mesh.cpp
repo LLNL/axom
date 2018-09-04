@@ -105,15 +105,14 @@ TEST( mint_mesh_rectilinear_mesh_DeathTest, invalid_construction )
   double x[ 5 ];
 
   // check 1st native constructor
-  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh( 42, N ), IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh(2,nullptr), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh( 2, nullptr ), IGNORE_OUTPUT );
 
   // check 2nd native constructor
-  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh( -1,N[1],N[2] ), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh( -1, N[1], N[2] ), IGNORE_OUTPUT );
 
   // check external constructor
-  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh(nullptr,x), IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh(N,nullptr), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh( 5, nullptr ), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh( -1, x ), IGNORE_OUTPUT );
 
 #ifdef AXOM_MINT_USE_SIDRE
 
@@ -127,22 +126,6 @@ TEST( mint_mesh_rectilinear_mesh_DeathTest, invalid_construction )
   EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh(nullptr,""), IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh(root,""), IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh(particle_mesh,""), IGNORE_OUTPUT );
-
-  // check 1st push constructor
-  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh(42, N, valid_group),
-                             IGNORE_OUTPUT );
-  EXPECT_EQ( valid_group->getNumGroups(), 0 );
-  EXPECT_EQ( valid_group->getNumViews(), 0 );
-
-  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh(3,nullptr,valid_group),
-                             IGNORE_OUTPUT );
-  EXPECT_EQ( valid_group->getNumGroups(), 0 );
-  EXPECT_EQ( valid_group->getNumViews(), 0 );
-
-  EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh(3,N,nullptr),
-                             IGNORE_OUTPUT );
-  EXPECT_EQ( valid_group->getNumGroups(), 0 );
-  EXPECT_EQ( valid_group->getNumViews(), 0 );
 
   // check 2nd push constructor
   EXPECT_DEATH_IF_SUPPORTED( RectilinearMesh( nullptr, N[0] ),
@@ -164,16 +147,7 @@ TEST( mint_mesh_rectilinear_mesh, native_constructor )
 
   for ( int idim = 1 ; idim <= NDIMS ; ++idim )
   {
-    RectilinearMesh* m = new RectilinearMesh( idim, N );
-    internal::check_constructor( m, STRUCTURED_RECTILINEAR_MESH, idim, N );
-    EXPECT_FALSE( m->isExternal() );
-    EXPECT_FALSE( m->hasSidreGroup() );
-    m->setExtent( idim, extent );
-    internal::check_node_extent( m, extent );
-    check_fill_coords( m );
-    internal::check_create_fields( m );
-    delete m;
-
+    RectilinearMesh* m;
     switch ( idim )
     {
     case 1:
@@ -229,19 +203,19 @@ TEST( mint_mesh_rectilinear_mesh, external_costructor )
     switch ( idim )
     {
     case 1:
-      m = new RectilinearMesh( N, x );
+      m = new RectilinearMesh( N[0], x );
       EXPECT_EQ( m->getCoordinateArray(X_COORDINATE), x );
       check_coordinate( m->getCoordinateArray(X_COORDINATE), x, N[0] );
       break;
     case 2:
-      m = new RectilinearMesh( N, x, y );
+      m = new RectilinearMesh( N[0], x, N[1], y );
       EXPECT_EQ( m->getCoordinateArray(X_COORDINATE), x );
       EXPECT_EQ( m->getCoordinateArray(Y_COORDINATE), y );
       check_coordinate( m->getCoordinateArray(X_COORDINATE), x, N[0] );
       check_coordinate( m->getCoordinateArray(Y_COORDINATE), y, N[1] );
       break;
     default:
-      m = new RectilinearMesh( N, x, y, z );
+      m = new RectilinearMesh( N[0], x, N[1], y, N[2], z );
       EXPECT_EQ( m->getCoordinateArray(X_COORDINATE), x );
       EXPECT_EQ( m->getCoordinateArray(Y_COORDINATE), y );
       EXPECT_EQ( m->getCoordinateArray(Z_COORDINATE), z );
@@ -300,89 +274,54 @@ TEST( mint_mesh_rectilinear_mesh, sidre_constructor )
     // STEP 0: create a data-store with two groups
     sidre::DataStore ds;
     sidre::Group* root  = ds.getRoot( );
-    sidre::Group* m1grp = root->createGroup( "m1" );
-    sidre::Group* m2grp = root->createGroup( "m2" );
+    sidre::Group* meshGroup = root->createGroup( "mesh" );
 
     // STEP 1: populate meshes in Sidre using the 2 sidre constructors
-    // BEGIN SCOPE
+    RectilinearMesh* m;
+    switch ( idim )
     {
-      RectilinearMesh* m = new RectilinearMesh( idim, N, m1grp );
-      EXPECT_TRUE( m->hasSidreGroup() );
-      EXPECT_FALSE( m->isExternal() );
-      internal::check_constructor( m, STRUCTURED_RECTILINEAR_MESH, idim, N );
-      m->setExtent( idim, extent );
-      internal::check_node_extent( m, extent );
-      check_fill_coords( m );
-      internal::check_create_fields( m );
+    case 1:
+      m = new RectilinearMesh( meshGroup, N[ I_DIRECTION ] );
+      break;
+    case 2:
+      m = new RectilinearMesh( meshGroup, N[ I_DIRECTION ], N[ J_DIRECTION ] );
+      break;
+    default:
+      EXPECT_EQ( idim, 3 );
+      m = new RectilinearMesh( meshGroup, N[ I_DIRECTION ],
+                               N[ J_DIRECTION ],
+                               N[ K_DIRECTION ]  );
+    } // END switch
 
-      delete m;
+    internal::check_constructor( m, STRUCTURED_RECTILINEAR_MESH, idim, N );
+    EXPECT_TRUE( m->hasSidreGroup() );
+    EXPECT_FALSE( m->isExternal() );
+    internal::check_constructor( m, STRUCTURED_RECTILINEAR_MESH, idim, N );
+    m->setExtent( idim, extent );
+    internal::check_node_extent( m, extent );
+    check_fill_coords( m );
+    internal::check_create_fields( m );
 
-      switch ( idim )
-      {
-      case 1:
-        m = new RectilinearMesh( m2grp, N[ I_DIRECTION ] );
-        break;
-      case 2:
-        m = new RectilinearMesh( m2grp, N[ I_DIRECTION ], N[ J_DIRECTION ] );
-        break;
-      default:
-        EXPECT_EQ( idim, 3 );
-        m = new RectilinearMesh( m2grp, N[ I_DIRECTION ],
-                                 N[ J_DIRECTION ],
-                                 N[ K_DIRECTION ]  );
-      } // END switch
+    delete m;
+    m = nullptr;
 
-      internal::check_constructor( m, STRUCTURED_RECTILINEAR_MESH, idim, N );
-      EXPECT_TRUE( m->hasSidreGroup() );
-      EXPECT_FALSE( m->isExternal() );
-      internal::check_constructor( m, STRUCTURED_RECTILINEAR_MESH, idim, N );
-      m->setExtent( idim, extent );
-      internal::check_node_extent( m, extent );
-      check_fill_coords( m );
-      internal::check_create_fields( m );
+    // STEP 2: pull the mesh from sidre and check correctness
+    m = new RectilinearMesh( meshGroup );
+    internal::check_constructor( m, STRUCTURED_RECTILINEAR_MESH, idim, N );
+    EXPECT_TRUE( m->hasSidreGroup() );
+    EXPECT_FALSE( m->isExternal() );
 
-      delete m;
-    }
-    // END SCOPE
-
-    // STEP 2: pull the 2 meshes from sidre and check correctness
-    // BEGIN SCOPE
+    for ( int ii=0 ; ii < idim ; ++ii )
     {
-      // check m1
-      RectilinearMesh* m = new RectilinearMesh( m1grp );
-      internal::check_constructor( m, STRUCTURED_RECTILINEAR_MESH, idim, N );
-      EXPECT_TRUE( m->hasSidreGroup() );
-      EXPECT_FALSE( m->isExternal() );
-
-      for ( int ii=0 ; ii < idim ; ++ii )
-      {
-        check_coordinate( m->getCoordinateArray( ii ), expected_coords,
-                          m->getNodeDimension( ii ) );
-      }
-
-      internal::check_fields( m, true );
-      delete m;
-
-      // check m2
-      m = new RectilinearMesh( m2grp );
-      internal::check_constructor( m, STRUCTURED_RECTILINEAR_MESH, idim, N );
-      EXPECT_TRUE( m->hasSidreGroup() );
-      EXPECT_FALSE( m->isExternal() );
-
-      for ( int ii=0 ; ii < idim ; ++ii )
-      {
-        check_coordinate( m->getCoordinateArray( ii ), expected_coords,
-                          m->getNodeDimension( ii ) );
-      }
-
-      internal::check_fields( m, true );
-      delete m;
+      check_coordinate( m->getCoordinateArray( ii ), expected_coords,
+                        m->getNodeDimension( ii ) );
     }
-    // ENDE SCOPE
+
+    internal::check_fields( m, true );
+    delete m;
 
     // STEP 3: ensure data is persistent in Sidre
-    EXPECT_TRUE( blueprint::isValidRootGroup( m1grp ) );
-    EXPECT_TRUE( blueprint::isValidRootGroup( m2grp ) );
+    EXPECT_TRUE( blueprint::isValidRootGroup( meshGroup ) );
 
   } // END for all dimensions
 
@@ -403,7 +342,7 @@ TEST( mint_mesh_rectilinear_mesh, get_node )
   exponential_distribution( 0.0, 5, y );
   exponential_distribution( 0.0, 5, z );
 
-  RectilinearMesh m( N, x, y, z );
+  RectilinearMesh m( N[0], x, N[1], y, N[2], z );
   internal::check_constructor( &m, STRUCTURED_RECTILINEAR_MESH, 3, N );
 
   const IndexType kp = m.nodeKp( );

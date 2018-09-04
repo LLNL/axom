@@ -84,67 +84,6 @@ public:
 /// @{
 
   /*!
-   * \brief Constructs a uniform mesh with the given origin, specified spacing
-   *  and a mesh extent, which specifies the number of nodes and cells along
-   *  each dimension.
-   *
-   * \param [in] dimension the dimension of this mesh instance.
-   * \param [in] origin pointer to buffer with the coordinates of the origin
-   * \param [in] h pointer to buffer with the spacing on each dimension
-   * \param [in] ext the extent of this mesh instance.
-   *
-   * \note The supplied pointers for `origin` and spacing, `h` must have at
-   *  least N entries, where N is the dimension of the uniform mesh.
-   *
-   *  \note The supplied `ext` pointer must point to a buffer that has at least
-   *  \f$ 2 \times N \f$ entries, where N is the dimension of the uniform mesh
-   *  given in the following order: [imin, imax, jmin, jmax, kmin, kmax]
-   *
-   * \pre 1 <= dimension <= 3
-   * \pre origin != nullptr
-   * \pre h != nullptr
-   * \pre ext != nullptr
-   *
-   * \post getDimesion()==dimension
-   * \post getOrigin() != nullptr
-   * \post getSpacing() != nullptr
-   * \post getOrigin()[ i ] == origin[ i ] \f$ \forall i \f$
-   * \post getSpacing()[ i ] == h[ i ] \f$ \forall i \f$
-   */
-  UniformMesh( int dimension, const double* origin, const double* h,
-               const IndexType* ext );
-
-  /*!
-   * \brief Constructs a uniform mesh within a specified rectangular region,
-   *  defined by its lower and upper corner points, and a mesh extent which
-   *  specifies the number of nodes and cells along each dimension.
-   *
-   * \param [in] dimension the dimension of this mesh instance.
-   * \param [in] ext the extent of this mesh instance.
-   * \param [in] lower_bound lower corner coordinates of rectangular region.
-   * \param [in] upper_bound upper corner coordinates of rectangular region.
-   *
-   * \note The supplied `lower_bound` and `upper_bound` must point to buffer
-   *  that have at least N entries, where N is the dimension of the mesh.
-   *
-   * \note The supplied `ext` pointer must point to a buffer that has at least
-   * \f$ 2 \times N \f$ entries, where N is the dimension of the uniform mesh
-   * given in the following order: [imin, imax, jmin, jmax, kmin, kmax]
-   *
-   * \pre 1 <= dimension <= 3
-   * \pre ext != nullptr
-   * \pre lower_bound != nullptr
-   * \pre upper_bound != nullptr
-   *
-   * \post getDimesion()==dimension
-   * \post getOrigin() != nullptr
-   * \post getSpacing() != nullptr
-   * \post getOrigin()[ i ] == lower_bound[ i ] \f$ \forall i \f$
-   */
-  UniformMesh( int dimension, const IndexType* ext, const double* lower_bound,
-               const double* upper_bound  );
-
-  /*!
    * \brief Constructs a uniform mesh within a specified rectangular region,
    *  defined by its lower and upper corner points, and mesh dimensions, Ni,
    *  Nj, Nk.
@@ -201,64 +140,14 @@ public:
 
   /*!
    * \brief Constructs a uniform mesh object, on an empty Sidre group, that
-   *  covers a rectangular region, defined by its lower and upper corner points
-   *  and the desired mesh extent, which specifies the number of nodes and cells
-   *  along each dimension.
-   *
-   * \param [in] dimension the dimension of the mesh
-   * \param [in] lower_bound lower corner coordinates of rectangular region
-   * \param [in] upper_bound upper corner coordinates of rectangular region
-   * \param [in] extent extent of this mesh instance.
-   * \param [in] group pointer to the Sidre group
-   * \param [in] topo the name of the topology (optional)
-   * \param [in] coordset the name of the corresponding coordset (optional)
-   *
-   * \note The supplied `lower_bound` and `upper_bound` must point to buffer
-   *  that have at least N entries, where N is the dimension of the mesh.
-   *
-   * \note The supplied `ext` pointer must point to a buffer that has at least
-   * \f$ 2 \times N \f$ entries, where N is the dimension of the uniform mesh
-   * given in the following order: [imin, imax, jmin, jmax, kmin, kmax]
-   *
-   * \note If a topology and/or coordset name are not provided, internal
-   *  defaults will be used by the implementation.
-   *
-   * \note When using this constructor, all data is owned by Sidre. Once the
-   *  UniformMesh object goes out-of-scope, the data will remain persistent in
-   *  Sidre.
-   *
-   * \pre 1 <= dimension <= 3
-   * \pre ext != nullptr
-   * \pre lower_bound != nullptr
-   * \pre upper_bound != nullptr
-   * \pre group != nullptr
-   * \pre group->getNumViews()==0
-   * \pre group->getNumGroups()==0
-   *
-   * \post getDimesion()==dimension
-   * \post getOrigin() != nullptr
-   * \post getSpacing() != nullptr
-   * \post getOrigin()[ i ] == lower_bound[ i ] \f$ \forall i \f$
-   * \post hasSidreGroup() == true
-   */
-  UniformMesh( int dimension,
-               const double* lower_bound,
-               const double* upper_bound,
-               const IndexType* extent,
-               sidre::Group* group,
-               const std::string& topo="",
-               const std::string& coordset="" );
-
-  /*!
-   * \brief Constructs a uniform mesh object, on an empty Sidre group, that
    *  covers a rectangular region, defined by its lower and upper corner points,
    *  and desired mesh dimensions, \f$ N_i, N_j, N_k f\$
    *
-   * \param [in] lower_bound lower corner coordinates of rectangular region
-   * \param [in] upper_bound upper corner coordinates of rectangular region
    * \param [in] group pointer to the Sidre group
    * \param [in] topo the name of the topology (optional)
    * \param [in] coordset name of the corresponding coordset group (optional)
+   * \param [in] lower_bound lower corner coordinates of rectangular region
+   * \param [in] upper_bound upper corner coordinates of rectangular region
    * \param [in] Ni number of nodes in the i-direction
    * \param [in] Nj number of nodes in the j-direction (if dimension >= 2)
    * \param [in] Nk number of nodes in the k-direction (if dimension == 3)
@@ -288,22 +177,22 @@ public:
    * \post hasSidreGroup() == true
    */
   /// @{
-  UniformMesh( const double* lower_bound,
-               const double* upper_bound,
-               sidre::Group* group,
+  UniformMesh( sidre::Group* group,
                const std::string& topo,
                const std::string& coordset,
+               const double* lower_bound,
+               const double* upper_bound,
                IndexType Ni,
                IndexType Nj=-1,
                IndexType Nk=-1 );
 
-  UniformMesh( const double* lower_bound,
+  UniformMesh( sidre::Group* group,
+               const double* lower_bound,
                const double* upper_bound,
-               sidre::Group* group,
                IndexType Ni,
                IndexType Nj=-1,
                IndexType Nk=-1 ) :
-    UniformMesh( lower_bound, upper_bound, group, "", "", Ni, Nj, Nk )
+    UniformMesh( group, "", "", lower_bound, upper_bound, Ni, Nj, Nk )
   {}
   /// @}
 

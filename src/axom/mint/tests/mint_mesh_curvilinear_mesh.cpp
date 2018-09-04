@@ -142,19 +142,15 @@ void check_coordinates( CurvilinearMesh* m )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_curvilinear_mesh_DeathTest, invalid_construction )
 {
-  const IndexType N[]  = {   5,   5,   5 };
+  const IndexType N[]  = { 5, 5, 5 };
   double x[]           = { 0, 1, 2, 3, 4, 5 };
 
-  // check 1st native constructor
-  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh(42,N), IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh(3,nullptr), IGNORE_OUTPUT );
-
   // check 2nd native constructor
-  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh( -1,N[1], N[2]), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh( -1, N[1], N[2] ), IGNORE_OUTPUT );
 
   // check external constructor
-  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh(nullptr, x), IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh(N,nullptr), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh( 5, nullptr ), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh( -1 , x ), IGNORE_OUTPUT );
 
 #ifdef AXOM_MINT_USE_SIDRE
 
@@ -168,22 +164,6 @@ TEST( mint_mesh_curvilinear_mesh_DeathTest, invalid_construction )
   EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh(nullptr,""), IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh(root,""), IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh(particle_mesh,""), IGNORE_OUTPUT );
-
-  // check 1st push constructor
-  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh( 42, N, valid_group ),
-                             IGNORE_OUTPUT );
-  EXPECT_EQ( valid_group->getNumGroups(), 0 );
-  EXPECT_EQ( valid_group->getNumViews(), 0 );
-
-  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh( 3, nullptr, valid_group ),
-                             IGNORE_OUTPUT );
-  EXPECT_EQ( valid_group->getNumGroups(), 0 );
-  EXPECT_EQ( valid_group->getNumViews(), 0 );
-
-  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh( 3, N, nullptr ),
-                             IGNORE_OUTPUT );
-  EXPECT_EQ( valid_group->getNumGroups(), 0 );
-  EXPECT_EQ( valid_group->getNumViews(), 0 );
 
   // check 2nd push constructor
   EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh( nullptr, N[0] ),
@@ -205,16 +185,7 @@ TEST( mint_mesh_curvilinear_mesh, native_constructor )
 
   for ( int idim=1 ; idim <= NDIMS ; ++idim )
   {
-    CurvilinearMesh* m = new CurvilinearMesh( idim, N );
-    internal::check_constructor( m, STRUCTURED_CURVILINEAR_MESH, idim, N );
-    EXPECT_FALSE( m->isExternal() );
-    EXPECT_FALSE( m->hasSidreGroup() );
-    m->setExtent( idim, extent );
-    internal::check_node_extent( m, extent );
-    set_coordinates( m );
-    internal::check_create_fields( m );
-    delete m;
-
+    CurvilinearMesh* m;
     switch( idim )
     {
     case 1:
@@ -265,7 +236,7 @@ TEST( mint_mesh_curvilinear_mesh, external_constructor )
     {
     case 1:
     {
-      m = new CurvilinearMesh( N, x );
+      m = new CurvilinearMesh( N[0], x );
       EXPECT_EQ( x, m->getCoordinateArray( X_COORDINATE ) );
       check_coordinates( curNumNodes, idim,
                          m->getCoordinateArray( X_COORDINATE ) );
@@ -273,7 +244,7 @@ TEST( mint_mesh_curvilinear_mesh, external_constructor )
     break;
     case 2:
     {
-      m = new CurvilinearMesh( N, x, y );
+      m = new CurvilinearMesh( N[0], x, N[1], y );
       EXPECT_EQ( x, m->getCoordinateArray( X_COORDINATE ) );
       EXPECT_EQ( y, m->getCoordinateArray( Y_COORDINATE ) );
       check_coordinates( curNumNodes, idim,
@@ -283,7 +254,7 @@ TEST( mint_mesh_curvilinear_mesh, external_constructor )
     break;
     default:
     {
-      m = new CurvilinearMesh( N, x, y, z );
+      m = new CurvilinearMesh( N[0], x, N[1], y, N[2], z );
       EXPECT_EQ( x, m->getCoordinateArray( X_COORDINATE ) );
       EXPECT_EQ( y, m->getCoordinateArray( Y_COORDINATE ) );
       EXPECT_EQ( z, m->getCoordinateArray( Z_COORDINATE ) );
@@ -330,81 +301,52 @@ TEST( mint_mesh_curvilinear_mesh, sidre_constructor )
   {
     numNodes *= N[ idim - 1 ];
 
-    // STEP 0: create a data-store with two (empty) groups
+    // STEP 0: create a data-store with an groups
     sidre::DataStore ds;
     sidre::Group* root  = ds.getRoot();
-    sidre::Group* m1grp = root->createGroup( "m1" );
-    sidre::Group* m2grp = root->createGroup( "m2" );
+    sidre::Group* meshGroup = root->createGroup( "mesh" );
 
-    // STEP 1: populate meshes in the 2 Sidre groups using the 2 constructors.
-    // BEGIN SCOPE
+    // STEP 1: populate the mesh in sidre.
+    CurvilinearMesh* m;
+    switch ( idim )
     {
-      CurvilinearMesh* m = new CurvilinearMesh( idim, N, m1grp );
-      EXPECT_TRUE( m->hasSidreGroup() );
-      EXPECT_FALSE( m->isExternal() );
-      internal::check_constructor( m, STRUCTURED_CURVILINEAR_MESH, idim, N );
-      m->setExtent( idim, extent );
-      internal::check_node_extent( m, extent );
-      set_coordinates( m );
-      internal::check_create_fields( m );
-      delete m;
+    case 1:
+      m = new CurvilinearMesh( meshGroup, N[ I_DIRECTION ] );
+      break;
+    case 2:
+      m = new CurvilinearMesh( meshGroup, N[ I_DIRECTION ],
+                               N[ J_DIRECTION ] );
+      break;
+    default:
+      EXPECT_EQ( idim, 3 );
+      m = new CurvilinearMesh( meshGroup, N[ I_DIRECTION ],
+                               N[ J_DIRECTION ],
+                               N[ K_DIRECTION ] );
+    } // END switch
 
-      switch ( idim )
-      {
-      case 1:
-        m = new CurvilinearMesh( m2grp, N[ I_DIRECTION ] );
-        break;
-      case 2:
-        m = new CurvilinearMesh( m2grp, N[ I_DIRECTION ],
-                                 N[ J_DIRECTION ] );
-        break;
-      default:
-        EXPECT_EQ( idim, 3 );
-        m = new CurvilinearMesh( m2grp, N[ I_DIRECTION ],
-                                 N[ J_DIRECTION ],
-                                 N[ K_DIRECTION ] );
-      } // END switch
+    EXPECT_TRUE( m->hasSidreGroup() );
+    EXPECT_FALSE( m->isExternal() );
+    internal::check_constructor( m, STRUCTURED_CURVILINEAR_MESH, idim, N );
+    m->setExtent( idim, extent );
+    internal::check_node_extent( m, extent );
+    set_coordinates( m );
+    internal::check_create_fields( m );
+    
+    delete m;
+    m = nullptr;
 
-      EXPECT_TRUE( m->hasSidreGroup() );
-      EXPECT_FALSE( m->isExternal() );
-      internal::check_constructor( m, STRUCTURED_CURVILINEAR_MESH, idim, N );
-      m->setExtent( idim, extent );
-      internal::check_node_extent( m, extent );
-      set_coordinates( m );
-      internal::check_create_fields( m );
-      delete m;
-    }
-    // END SCOPE
+    // STEP 2: pull the mesh from sidre in to new instances.
+    m = new CurvilinearMesh( meshGroup );
+    EXPECT_TRUE( m->hasSidreGroup() );
+    EXPECT_FALSE( m->isExternal() );
+    internal::check_constructor( m, STRUCTURED_CURVILINEAR_MESH, idim, N );
+    internal::check_fields( m, true );
+    EXPECT_EQ( idim, m->getDimension() );
+    EXPECT_EQ( numNodes, m->getNumberOfNodes() );
+    check_coordinates( m );
+    delete m;
 
-    // STEP 2: pull the meshes from sidre in to new instances.
-    // BEGIN SCOPE
-    {
-      // check m1
-      CurvilinearMesh* m = new CurvilinearMesh( m1grp );
-      EXPECT_TRUE( m->hasSidreGroup() );
-      EXPECT_FALSE( m->isExternal() );
-      internal::check_constructor( m, STRUCTURED_CURVILINEAR_MESH, idim, N );
-      internal::check_fields( m, true );
-      EXPECT_EQ( idim, m->getDimension() );
-      EXPECT_EQ( numNodes, m->getNumberOfNodes() );
-      check_coordinates( m );
-      delete m;
-
-      // check m2
-      m = new CurvilinearMesh( m2grp );
-      EXPECT_TRUE( m->hasSidreGroup() );
-      EXPECT_FALSE( m->isExternal() );
-      internal::check_constructor( m, STRUCTURED_CURVILINEAR_MESH, idim, N );
-      internal::check_fields( m, true );
-      EXPECT_EQ( idim, m->getDimension() );
-      EXPECT_EQ( numNodes, m->getNumberOfNodes() );
-      check_coordinates( m );
-      delete m;
-    }
-    // END SCOPE
-
-    EXPECT_TRUE( blueprint::isValidRootGroup( m1grp ) );
-    EXPECT_TRUE( blueprint::isValidRootGroup( m2grp ) );
+    EXPECT_TRUE( blueprint::isValidRootGroup( meshGroup ) );
 
   } // END for all dimensions
 

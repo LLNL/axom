@@ -81,19 +81,6 @@ void StructuredMesh::setExtent( int ndims, const int64* extent )
 #endif
 }
 
-StructuredMesh::StructuredMesh( int meshType, int dimension, 
-                                const IndexType* node_dims) :
-  Mesh( dimension, meshType )
-{
-  SLIC_ERROR_IF( !validStructuredMeshType( m_type ),
-                 "invalid structured mesh type!" );
-  SLIC_ERROR_IF( node_dims == nullptr, "invalid dimension." );
-
-  memcpy( m_node_dims, node_dims, m_ndims * sizeof( IndexType ) );
-
-  structuredInit();
-}
-
 //------------------------------------------------------------------------------
 StructuredMesh::StructuredMesh( int meshType, IndexType Ni, IndexType Nj,
                                 IndexType Nk ) :
@@ -128,45 +115,6 @@ StructuredMesh::StructuredMesh( sidre::Group* group, const std::string& topo ) :
                  "invalid structured mesh type!" );
 
   blueprint::getStructuredMesh( m_ndims, m_node_dims, m_node_extent,
-                                getCoordsetGroup() );
-  structuredInit();
-}
-
-//------------------------------------------------------------------------------
-StructuredMesh::StructuredMesh( int meshType,
-                                int dimension,
-                                const IndexType* node_dims,
-                                sidre::Group* group,
-                                const std::string& topo,
-                                const std::string& coordset ) :
-  Mesh( dimension, meshType, group, topo, coordset )
-{
-  SLIC_ERROR_IF( !validStructuredMeshType( m_type ),
-                 "invalid structured mesh type!" );
-  SLIC_ERROR_IF( node_dims == nullptr, "invalid node dimension." );
-
-  memcpy( m_node_dims, node_dims, m_ndims * sizeof( IndexType ) );
-
-  std::string topo_type;
-  if ( meshType == STRUCTURED_UNIFORM_MESH )
-  {
-    topo_type = "uniform";
-  }
-  else if ( meshType == STRUCTURED_RECTILINEAR_MESH )
-  {
-    topo_type = "rectilinear";
-  }
-  else
-  {
-    topo_type = "structured";
-  }
-
-  blueprint::initializeTopologyGroup( m_group, m_topology, m_coordset,
-                                      topo_type );
-  SLIC_ERROR_IF( !blueprint::isValidTopologyGroup( getTopologyGroup() ),
-                 "invalid topology group!" );
-
-  blueprint::setStructuredMesh( m_ndims, m_node_dims, m_node_extent,
                                 getCoordsetGroup() );
   structuredInit();
 }

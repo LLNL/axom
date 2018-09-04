@@ -34,32 +34,6 @@ namespace mint
 //------------------------------------------------------------------------------
 // UNIFORM MESH IMPLEMENTATION
 //------------------------------------------------------------------------------
-UniformMesh::UniformMesh( int dimension, const double* origin, const double* h,
-                          const IndexType* ext ) :
-  StructuredMesh( STRUCTURED_UNIFORM_MESH, dimension, ext )
-{
-  SLIC_ERROR_IF( origin==nullptr, "supplied origin buffer is null" );
-  SLIC_ERROR_IF( h==nullptr, "supplied spacing buffer is null" );
-  SLIC_ERROR_IF( ext==nullptr, "supplied extent buffer is null" );
-
-  const size_t bytesize = dimension * sizeof( double );
-  memcpy( m_origin, origin, bytesize );
-  memcpy( m_h,      h,      bytesize );
-}
-
-//------------------------------------------------------------------------------
-UniformMesh::UniformMesh( int dimension,
-                          const IndexType* ext, 
-                          const double* lower_bound, 
-                          const double* upper_bound ) :
-  StructuredMesh( STRUCTURED_UNIFORM_MESH, dimension, ext )
-{
-  SLIC_ERROR_IF( ext==nullptr, "supplied extent buffer is null" );
-  SLIC_ERROR_IF( lower_bound==nullptr, "supplied null for lower_bound" );
-  SLIC_ERROR_IF( upper_bound==nullptr, "supplied null for upper_bound" );
-
-  setSpacingAndOrigin( lower_bound, upper_bound );
-}
 
 //------------------------------------------------------------------------------
 UniformMesh::UniformMesh( const double* lower_bound, const double* upper_bound,
@@ -86,33 +60,11 @@ UniformMesh::UniformMesh( sidre::Group* group, const std::string& topo ) :
 }
 
 //------------------------------------------------------------------------------
-UniformMesh::UniformMesh( int dimension,
-                          const double* lower_bound,
-                          const double* upper_bound,
-                          const IndexType* extent,
-                          sidre::Group* group,
-                          const std::string& topo,
-                          const std::string& coordset ) :
-  StructuredMesh( STRUCTURED_UNIFORM_MESH, dimension, extent, group, topo,
-                  coordset )
-{
-  SLIC_ERROR_IF( extent == nullptr, "supplied extent buffer is null" );
-  SLIC_ERROR_IF( lower_bound == nullptr, "supplied null for lower_bound" );
-  SLIC_ERROR_IF( upper_bound == nullptr, "supplied null for upper_bound" );
-
-  // STEP 0: initialize mesh
-  setSpacingAndOrigin( lower_bound, upper_bound );
-
-  // STEP 1: populate sidre
-  blueprint::setUniformMesh( m_ndims, m_origin, m_h, getCoordsetGroup() );
-}
-
-//------------------------------------------------------------------------------
-UniformMesh::UniformMesh( const double* lower_bound,
-                          const double* upper_bound,
-                          sidre::Group* group,
+UniformMesh::UniformMesh( sidre::Group* group,
                           const std::string& topo,
                           const std::string& coordset,
+                          const double* lower_bound,
+                          const double* upper_bound,
                           IndexType Ni,
                           IndexType Nj,
                           IndexType Nk ) :

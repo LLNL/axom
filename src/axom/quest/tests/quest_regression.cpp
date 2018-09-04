@@ -411,15 +411,11 @@ void loadBaselineData(axom::sidre::Group* grp, CommandLineArguments& args)
 axom::mint::UniformMesh* createQueryMesh(const SpaceBoundingBox& bb,
                                          const GridPt& res)
 {
-  // Set up the query mesh
-  SpaceVec h( bb.getMin(), bb.getMax());
-  h[0] /= res[0];
-  h[1] /= res[1];
-  h[2] /= res[2];
+  const double* low = bb.getMin().data();
+  const double* high = bb.getMax().data();
 
-  axom::mint::IndexType ext[3] = {res[0] + 1, res[1] + 1, res[2] + 1};
-
-  return new axom::mint::UniformMesh(DIM, bb.getMin().data(), h.data(), ext);
+  return new axom::mint::UniformMesh(low, high, res[0] + 1, res[1] + 1,
+                                     res[2] + 1);
 }
 
 /**

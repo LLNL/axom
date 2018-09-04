@@ -335,14 +335,15 @@ private:
   static UniformMesh* create_mesh( const double h, const double lower_bound[2],
                                    const double upper_bound[2] )
   {
-    IndexType ext[2];
-    for ( int i = 0 ; i < 2 ; ++i )
-    {
-      double len = axom::utilities::abs( upper_bound[ i ] - lower_bound[ i ] );
-      ext[ i ] = len / h + 1;
-    }
+    IndexType Ni, Nj;
 
-    UniformMesh* mesh = new UniformMesh( 2, ext, lower_bound, upper_bound );
+    const double lx = axom::utilities::abs( upper_bound[0] - lower_bound[0] );
+    Ni = (lx / h) + 1;
+
+    const double ly = axom::utilities::abs( upper_bound[1] - lower_bound[1] );
+    Nj = (ly / h) + 1;
+
+    UniformMesh* mesh = new UniformMesh( lower_bound, upper_bound, Ni, Nj );
     mesh->createField< double >( "temperature", mint::NODE_CENTERED );
     return mesh;
   }

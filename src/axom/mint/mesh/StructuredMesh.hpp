@@ -764,15 +764,6 @@ protected:
    * \brief Constructs a structured mesh instance from the given extent.
    *
    * \param [in] meshType the mesh type
-   * \param [in] dimension the mesh dimension
-   * \param [in] node_dims the structured mesh node dimensions.
-   */
-  StructuredMesh( int meshType, int dimension, const IndexType* node_dims );
-
-  /*!
-   * \brief Constructs a structured mesh instance from the given extent.
-   *
-   * \param [in] meshType the mesh type
    * \param [in] Ni the number of nodes along the I direction.
    * \param [in] Nj the number of nodes along the J direction.
    * \param [in] Nk the number of nodes along the K direction.
@@ -800,37 +791,6 @@ protected:
    * \see Mesh( sidre::Group* group, const std::string& topo )
    */
   StructuredMesh( sidre::Group* group, const std::string& topo );
-
-  /*!
-   * \brief Constructs a structured mesh instance on the specified group.
-   *
-   * \param [in] meshType the mesh type.
-   * \param [in] dimension the dimension of the mesh.
-   * \param [in] node_dims the structured mesh node dimensions.
-   * \param [in] group pointer to the group in the Sidre hierarchy.
-   * \param [in] topo the topology name to use, may be an empty string.
-   * \param [in] coordset the coordset name to use, may be an empty string.
-   *
-   * \note If an empty string is supplied for the topology and coordset name
-   *  respectively, an internal default name will be provided by the
-   *  implementation.
-   *
-   * \pre 1 <= dimension <= 3
-   * \pre group != nullptr
-   * \pre group->getNumGroups() == 0
-   * \pre group->getNumViews() == 0
-   *
-   * \post blueprint::isValidRootGroup( group )
-   *
-   * \see Mesh( int ndims, int type, sidre::Group*,
-   *            const std::string& topo, const std::string& coordset );
-   */
-  StructuredMesh( int meshType,
-                  int dimension,
-                  const IndexType* node_dims,
-                  sidre::Group* group, 
-                  const std::string& topo,
-                  const std::string& coordset );
 
   /*!
    * \brief Constructs a structured mesh instance on the specified group.

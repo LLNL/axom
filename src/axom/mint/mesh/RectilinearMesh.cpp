@@ -34,14 +34,6 @@ namespace mint
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-RectilinearMesh::RectilinearMesh( int dimension, const IndexType* node_dims ) :
-  StructuredMesh( STRUCTURED_RECTILINEAR_MESH, dimension, node_dims )
-{
-  initialize();
-  allocateCoords();
-}
-
-//------------------------------------------------------------------------------
 RectilinearMesh::RectilinearMesh( IndexType Ni, IndexType Nj, IndexType Nk ) :
   StructuredMesh( STRUCTURED_RECTILINEAR_MESH, Ni, Nj, Nk )
 {
@@ -50,12 +42,11 @@ RectilinearMesh::RectilinearMesh( IndexType Ni, IndexType Nj, IndexType Nk ) :
 }
 
 //------------------------------------------------------------------------------
-RectilinearMesh::RectilinearMesh( const IndexType* node_dims, double* x,
-                                  double* y, double* z ) :
-  StructuredMesh( STRUCTURED_RECTILINEAR_MESH, internal::dim(x, y, z),
-                  node_dims )
+RectilinearMesh::RectilinearMesh( IndexType Ni, double* x, IndexType Nj,
+                                  double* y, IndexType Nk, double* z ) :
+  StructuredMesh( STRUCTURED_RECTILINEAR_MESH, Ni, Nj, Nk )
 {
-  initialize( );
+  initialize();
 
   double* ptrs[3];
   ptrs[ 0 ] = x;
@@ -67,7 +58,7 @@ RectilinearMesh::RectilinearMesh( const IndexType* node_dims, double* x,
     SLIC_ERROR_IF( ptrs[ dim ] == nullptr,
                    "encountered null coordinate array for dim=" << dim );
     const IndexType N = getNodeDimension( dim );
-    m_coordinates[ dim ] = new Array< double >( ptrs[ dim ], N, 1, N );
+    m_coordinates[ dim ] = new Array< double >( ptrs[ dim ], N );
   }
 }
 
@@ -95,21 +86,6 @@ RectilinearMesh::RectilinearMesh( sidre::Group* group,
     SLIC_ERROR_IF( getNodeDimension( dim ) != m_coordinates[ dim ]->size(),
                    "coordinates size does not match rectilinear mesh extent" );
   }
-
-}
-
-//------------------------------------------------------------------------------
-RectilinearMesh::RectilinearMesh( int dimension,
-                                  const IndexType* node_dims,
-                                  sidre::Group* group,
-                                  const std::string& topo,
-                                  const std::string& coordset ) :
-  StructuredMesh( STRUCTURED_RECTILINEAR_MESH, dimension, node_dims, group,
-                  topo,
-                  coordset )
-{
-  initialize();
-  allocateCoordsOnSidre( );
 }
 
 //------------------------------------------------------------------------------

@@ -125,13 +125,12 @@ public:
    * \brief Constructs an Array instance with the given number of tuples.
    *
    * \param [in] num_tuples the number of tuples the Array holds.
-   * \param [in] num_components the number of components per tuple.
+   * \param [in] num_components the number of values per tuple. If not
+   *  specified defaults to 1.
    * \param [in] capacity the number of tuples to allocate space for.
    *
-   * \note The last argument is optional. If not specified, the
-   *  capacity of the array will be initialized to
+   * \note If no capacity is specified then it will default to at least
    *  num_tuples * DEFAULT_RESIZE_RATIO.
-   *
    * \note a capacity is specified for the number of tuples to store in the
    *  array and does not correspond to the actual bytesize.
    *
@@ -143,7 +142,7 @@ public:
    * \post numComponents() == num_components
    * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
-  Array( IndexType num_tuples, IndexType num_components,
+  Array( IndexType num_tuples, IndexType num_components=1,
          IndexType capacity=USE_DEFAULT );
 
 /// @}
@@ -156,8 +155,9 @@ public:
    *  an external data buffer.
    *
    * \param [in] data the external data this Array will wrap.
-   * \param [in] num_tuples the number of tuples in the Array.
-   * \param [in] num_components the number of values per tuple.
+   * \param [in] num_tuples the number of tuples in the Array. 
+   * \param [in] num_components the number of values per tuple. If not
+   *  specified defaults to 1.
    * \param [in] capacity the capacity of the external buffer.
    *
    * \pre data != nullptr
@@ -169,14 +169,13 @@ public:
    *
    * \note a capacity is specified for the number of tuples to store in the
    *  array and does not correspond to the actual bytesize.
-   *
    * \note If no capacity is specified then it will default to the number of
    *  tuples.
    *
    * \note This constructor wraps the supplied buffer and does not own the data.
    *  Consequently, the Array instance cannot be reallocated.
    */
-  Array( T* data, IndexType num_tuples, IndexType num_components,
+  Array( T* data, IndexType num_tuples, IndexType num_components=1,
          IndexType capacity=USE_DEFAULT );
 
 /// @}
@@ -212,7 +211,8 @@ public:
    *
    * \param [in] view the sidre::View that will hold this Array's data.
    * \param [in] num_tuples the number of tuples accounted for in the Array.
-   * \param [in] num_components the number of values per tuple.
+   * \param [in] num_components the number of values per tuple. If not
+   *  specified defaults to 1.
    * \param [in] capacity the number of tuples to allocate space for.
    *
    * \note The last argument is optional. If not specified, the
@@ -237,7 +237,7 @@ public:
    * \post numComponents() == num_components
    * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
-  Array( sidre::View* view, IndexType num_tuples, IndexType num_components,
+  Array( sidre::View* view, IndexType num_tuples, IndexType num_components=1,
          IndexType capacity=USE_DEFAULT );
 
 #endif
