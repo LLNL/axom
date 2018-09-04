@@ -48,12 +48,16 @@
  * \def AXOM_LAMBDA
  *
  * \brief Convenience macro used for lambda capture by value.
- * \note When CUDA is used, the macro always expands to a device lambda.
+ * \note When CUDA is used, the macro always expands to a host/device lambda.
  */
 #ifdef AXOM_USE_CUDA
-#define AXOM_LAMBDA [=] AXOM_DEVICE
+#define AXOM_LAMBDA [=] AXOM_HOST_DEVICE
+#define AXOM_DEVICE_LAMBDA [=] AXOM_DEVICE
+#define AXOM_HOST_LAMBDA [=] AXOM_HOST
 #else
 #define AXOM_LAMBDA [=]
+#define AXOM_DEVICE_LAMBDA [=]
+#define AXOM_HOST_LAMBDA [=]
 #endif
 
 /*!
