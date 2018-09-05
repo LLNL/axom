@@ -80,7 +80,7 @@ set(GENHTML_PATH "${TPL_ROOT}/lcov-1.11-6obmulu5qshqnm3636u7stm45tm75wkc/usr/bin
 # !---------------------------------------------------------------------------
 ##############################################################################
 # Options added manually to 
-# lc toss3 gcc@7.1.0  host configs
+# lc toss3 gcc@7.3.0  host configs
 ##############################################################################
 
 set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
