@@ -27,6 +27,7 @@ import datetime
 import operator
 import os
 import re
+import shutil
 import sys
 
 try:
@@ -69,6 +70,12 @@ def parse_args():
     "Parses args from command line"
     parser = OptionParser()
     
+    parser.add_option("--clean",
+                      dest="clean",
+                      action="store_true",
+                      default=False,
+                      help="!!DESTRUCTIVE!! This option cleans old archived jobs (leaves 20 jobs)")
+
     parser.add_option("-c", "--cutoff",
                       type="int",
                       dest="cutoff",
@@ -111,6 +118,9 @@ def main():
 
     archive_dir = get_archive_base_dir()
 
+    if opts["clean"]:
+        cleanOldArchives(archive_dir)
+
     #Generate build email and send
     print "Reading archived job information..."
     basicJobInfos, srcJobInfos, tplJobInfos = generateJobInfos(archive_dir)
@@ -131,6 +141,29 @@ def main():
 
 def getAllDirectoryNames(path):
     return [n for n in os.listdir(path) if os.path.isdir(pjoin(path, n))]
+
+
+def cleanOldArchives(archive_dir):
+    print "Deleting old archive directories..."    
+
+    # Remove only the individual jobs not any of the directory structure
+    # Directory structure = <archive base>/<sys_type>/<job name>/<datetime>
+    sys_types = getAllDirectoryNames(archive_dir)
+    for sys_type in sys_types:
+        sys_type_dir = pjoin(archive_dir, sys_type)
+        jobNames = getAllDirectoryNames(sys_type_dir)
+        for jobName in jobNames:
+            jobName_dir = pjoin(sys_type_dir, jobName)
+            datetimes = getAllDirectoryNames(jobName_dir)
+
+            datetimes.sort()
+            datetimes.reverse()
+            del datetimes[:20]
+            for datetime in datetimes:
+                datetime_dir = pjoin(jobName_dir, datetime)
+                shutil.rmtree(datetime_dir)
+
+    print "Done deleting."
 
 
 def determineSuccessState(path):
