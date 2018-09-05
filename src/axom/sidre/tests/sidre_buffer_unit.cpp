@@ -291,6 +291,58 @@ TEST(sidre_buffer,buffer_allocate)
   delete ds;
 }
 
+// Specifically test for successful reallocation-to-zero-elements
+TEST(sidre_databuffer,buffer_reallocate_zero_elements)
+{
+  DataStore * ds = new DataStore();
+
+  DataTypeId tid = getTypeID(SIDRE_INT_ID);
+  int eltsize = sizeof(int);
+  int eltcount = 200;
+
+  Buffer * buf = ds->createBuffer();
+  buf->describe(tid, eltcount)->allocate();
+  
+  EXPECT_TRUE(buf->isAllocated());
+  EXPECT_TRUE(buf->isDescribed());
+  EXPECT_EQ(tid, buf->getTypeID());
+  EXPECT_EQ(eltsize * eltcount, buf->getTotalBytes());
+  EXPECT_EQ(eltcount, buf->getNumElements());
+  EXPECT_NE(nullptr, buf->getVoidPtr());
+
+  eltcount = 3;
+  buf->reallocate(eltcount);
+  
+  EXPECT_TRUE(buf->isAllocated());
+  EXPECT_TRUE(buf->isDescribed());
+  EXPECT_EQ(tid, buf->getTypeID());
+  EXPECT_EQ(eltsize * eltcount, buf->getTotalBytes());
+  EXPECT_EQ(eltcount, buf->getNumElements());
+  EXPECT_NE(nullptr, buf->getVoidPtr());
+
+  eltcount = 0;
+  buf->reallocate(eltcount);
+  
+  EXPECT_TRUE(buf->isAllocated());
+  EXPECT_TRUE(buf->isDescribed());
+  EXPECT_EQ(tid, buf->getTypeID());
+  EXPECT_EQ(eltsize * eltcount, buf->getTotalBytes());
+  EXPECT_EQ(eltcount, buf->getNumElements());
+  EXPECT_NE(nullptr, buf->getVoidPtr());
+
+  eltcount = 5;
+  buf->reallocate(eltcount);
+  
+  EXPECT_TRUE(buf->isAllocated());
+  EXPECT_TRUE(buf->isDescribed());
+  EXPECT_EQ(tid, buf->getTypeID());
+  EXPECT_EQ(eltsize * eltcount, buf->getTotalBytes());
+  EXPECT_EQ(eltcount, buf->getNumElements());
+  EXPECT_NE(nullptr, buf->getVoidPtr());
+
+  delete ds;
+}
+
 // Test reallocate methods
 TEST(sidre_buffer,buffer_reallocate)
 {
@@ -359,6 +411,8 @@ TEST(sidre_buffer,buffer_reallocate)
     SCOPED_TRACE("reallocate(3)");
     verifyAllocatedBuffer(buf1, tid, eltsize, eltcount);
   }
+
+  delete ds;
 }
 
 // Test interaction of buffer deletion with views
