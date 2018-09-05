@@ -1286,13 +1286,14 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
 
   // Setup linear mint mesh to approximate our mesh
   const int res = 25;
-  axom::mint::int64 ext[4] = { 0,res,0,res};
-  axom::mint::CurvilinearMesh cmesh(2, ext);
+  axom::mint::CurvilinearMesh cmesh(res + 1, res + 1);
 
   {
-    axom::primal::Point<axom::mint::IndexType,3> ext_size;
-    cmesh.getExtentSize( ext_size.data() );
-    SLIC_INFO( "Extents of curvilinear mesh: " << ext_size    );
+    axom::mint::IndexType Ni = cmesh.getNodeResolution(0);
+    axom::mint::IndexType Nj = cmesh.getNodeResolution(1);
+    axom::mint::IndexType Nk = cmesh.getNodeResolution(2);
+    SLIC_INFO( "Extents of curvilinear mesh: " << Ni << " " << Nj << " " <<
+               Nk );
   }
 
   // Set the positions of the nodes of the diagnostic mesh
@@ -1306,7 +1307,7 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
       SpacePt isoparPt = SpacePt::make_point(i/denom,j/denom);
       SpacePt spacePt;
       spatialIndex1.reconstructPoint(0, isoparPt.data(), spacePt.data() );
-      axom::mint::IndexType idx = cmesh.getLinearIndex( i, j );
+      axom::mint::IndexType idx = cmesh.getNodeLinearIndex( i, j );
       x_coords[ idx ] = spacePt[0];
       y_coords[ idx ] = spacePt[1];
     }

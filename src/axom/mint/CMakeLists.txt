@@ -56,18 +56,17 @@ set( mint_headers
     fem/shape_functions/lagrange/lagrange_tetra_4.hpp
     fem/shape_functions/lagrange/lagrange_tri_3.hpp
 
-    ## Mesh data-model
     ## Internal implementation
     mesh/internal/ConnectivityArray_indirection.hpp
     mesh/internal/ConnectivityArray_typed_indirection.hpp
     mesh/internal/ConnectivityArrayHelpers.hpp
     mesh/internal/MeshHelpers.hpp
 
+    ## Mesh data-model
     mesh/blueprint.hpp
     mesh/CellTypes.hpp
     mesh/ConnectivityArray.hpp
     mesh/CurvilinearMesh.hpp
-    mesh/Extent.hpp
     mesh/Field.hpp
     mesh/FieldAssociation.hpp
     mesh/FieldData.hpp
@@ -94,7 +93,6 @@ set( mint_sources
     ## Mesh data-model
     mesh/blueprint.cpp
     mesh/CurvilinearMesh.cpp
-    mesh/Extent.cpp
     mesh/FieldData.cpp
     mesh/Mesh.cpp
     mesh/MeshCoordinates.cpp
@@ -115,7 +113,7 @@ set( mint_dependencies
      slic
      )
 
-if ( ${MINT_USE_SIDRE} )
+if ( ${AXOM_MINT_USE_SIDRE} )
     list(APPEND mint_dependencies sidre conduit)
 endif()
 

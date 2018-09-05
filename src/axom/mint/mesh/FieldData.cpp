@@ -21,7 +21,7 @@
 #include "axom/mint/config.hpp"     // for mint compile-time type definitions
 #include "axom/mint/mesh/FieldData.hpp"
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 #include "axom/sidre/core/sidre.hpp"  // for sidre::Group, sidre::View
 #endif
 
@@ -36,7 +36,7 @@ namespace mint
 namespace internal
 {
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 mint::Field* getFieldFromView( const std::string& name, sidre::View* view )
 {
   SLIC_ASSERT( view != nullptr );
@@ -92,7 +92,7 @@ FieldData::FieldData( int association ) :
   m_resize_ratio( Array< double >::DEFAULT_RESIZE_RATIO ),
   m_fields()
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   m_fields_group = nullptr;
 #endif
 
@@ -102,7 +102,7 @@ FieldData::FieldData( int association ) :
 }
 
 //------------------------------------------------------------------------------
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 FieldData::FieldData( int association, sidre::Group* fields_group,
                       const std::string& topo ) :
   m_association( association ),
@@ -151,13 +151,31 @@ FieldData::FieldData( int association, sidre::Group* fields_group,
 
     // NOTE: currently the blue-print supports
     const char* assoc    = gp->getView( "association" )->getString( );
-    const bool isVertex  = (strcmp( assoc, "vertex" ) == 0);
-    const bool isElement = (strcmp( assoc, "element" ) == 0);
-    SLIC_ERROR_IF( (!isVertex && !isElement),
+    const bool isVertex  = ( strcmp( assoc, "vertex" ) == 0 );
+    const bool isElement = ( strcmp( assoc, "element" ) == 0 );
+    const bool isFace    = ( strcmp( assoc, "face" ) == 0 );
+    const bool isEdge    = ( strcmp( assoc, "edge" ) == 0 );
+    SLIC_ERROR_IF( !isVertex && !isElement && !isFace && !isEdge,
                    "field [" << gp->getName() << "] has invalid association!" <<
                    " => association= " << assoc );
 
-    int centering = ( isVertex ) ? NODE_CENTERED : CELL_CENTERED;
+    int centering;
+    if ( isVertex )
+    {
+      centering = NODE_CENTERED;
+    }
+    else if ( isElement )
+    {
+      centering = CELL_CENTERED;
+    }
+    else if ( isFace )
+    {
+      centering = FACE_CENTERED;
+    }
+    else
+    {
+      centering = EDGE_CENTERED;
+    }
 
     IndexType num_tuples = -1;
     if ( centering == m_association )
@@ -290,7 +308,7 @@ void FieldData::removeField( const std::string& name )
   m_fields.erase( name );
   delete f;
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   if ( hasSidreGroup() && m_fields_group->hasChildGroup(name) )
   {
     internal::removeFromSidre( m_fields_group, name );

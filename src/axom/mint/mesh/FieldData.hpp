@@ -104,7 +104,7 @@ public:
    */
   explicit FieldData( int association );
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   /*!
    * \brief Constructs a FieldData instance which uses Sidre as the back-end
    *  data-store for storing fields and is bound to the specified group in the
@@ -518,7 +518,7 @@ private:
   double m_resize_ratio;
   std::map< std::string, Field* > m_fields;
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   sidre::Group* m_fields_group;
   const std::string m_topology;
 #endif
@@ -562,7 +562,7 @@ inline std::string FieldData::getAssociationName( )
 //------------------------------------------------------------------------------
 inline bool FieldData::hasSidreGroup( ) const
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   return ( m_fields_group != nullptr );
 #else
   return false;
@@ -651,7 +651,7 @@ inline T* FieldData::createField( const std::string& name, IndexType num_tuples,
   // create the field on sidre
   if ( hasSidreGroup() && storeInSidre )
   {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
     SLIC_ERROR_IF( m_fields_group->hasGroup( name ),
                    "Field [" << name << "] already exists in the Sidre tree!" );

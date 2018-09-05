@@ -24,7 +24,6 @@ set( mint_tests
      mint_mesh_connectivity_array.cpp
      mint_mesh_coordinates.cpp
      mint_mesh_curvilinear_mesh.cpp
-     mint_mesh_extent.cpp
      mint_mesh_field.cpp
      mint_mesh_field_data.cpp
      mint_mesh_field_types.cpp
@@ -49,7 +48,7 @@ set( mint_test_dependencies
      mint
      )
 
-if ( ${MINT_USE_SIDRE} )
+if ( ${AXOM_MINT_USE_SIDRE} )
   list(APPEND mint_test_dependencies sidre conduit)
 endif()
 

@@ -35,13 +35,6 @@ inline int dim( const double* AXOM_NOT_USED(x),
   return ( ( z != nullptr ) ? 3 : ( (y != nullptr ) ? 2 : 1 ) );
 }
 
-//------------------------------------------------------------------------------
-inline int dim ( const IndexType& AXOM_NOT_USED( Ni ),
-                 const IndexType& Nj,
-                 const IndexType& Nk  )
-{
-  return ( (Nk >= 1) ? 3 : ( (Nj >= 1) ? 2 : 1 ) );
-}
 
 } /* namespace internal */
 } /* namespace mint */

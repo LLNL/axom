@@ -23,7 +23,7 @@
 #include "axom/mint/mesh/CellTypes.hpp"
 #include "axom/slic/interface/slic.hpp"
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 #include "axom/sidre/core/sidre.hpp"
 #endif
 
@@ -38,7 +38,7 @@ namespace mint
 namespace internal
 {
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
 /*!
  * \brief Initializes the members of a ConnectivityArray instance from a

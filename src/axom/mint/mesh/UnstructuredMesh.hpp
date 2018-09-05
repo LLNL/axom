@@ -393,7 +393,7 @@ public:
 /// \name Sidre Storage Constructors
 /// @{
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
   /*!
    * \brief Creates an UnstructuredMesh instance from a given Sidre group that
@@ -508,7 +508,7 @@ public:
 
   /// @}
 
-#endif /* MINT_USE_SIDRE */
+#endif /* AXOM_MINT_USE_SIDRE */
 
 /// @}
 
@@ -576,20 +576,21 @@ public:
    *  The buffer must be of length at least getNumberOfCellNodes( cellID ).
    *
    * \param [in] cellID the ID of the cell in question.
-   * \param [out] cell the buffer into which the connectivity is copied.
+   * \param [out] nodes the buffer into which the connectivity is copied.
    *
    * \return The number of nodes for the given cell.
    *
-   * \pre cell != nullptr
+   * \pre nodes != nullptr
    * \pre 0 <= cellID < getNumberOfCells()
    */
   virtual
-  IndexType getCell( IndexType cellID, IndexType* cell ) const final override
+  IndexType getCellNodeIDs( IndexType cellID,
+                          IndexType* nodes ) const final override
   {
-    SLIC_ASSERT( cell != nullptr );
-    const IndexType n_cells = getNumberOfCellNodes( cellID );
-    std::memcpy( cell, getCell( cellID ), n_cells * sizeof( IndexType ) );
-    return n_cells;
+    SLIC_ASSERT( nodes != nullptr );
+    const IndexType n_nodes = getNumberOfCellNodes( cellID );
+    std::memcpy( nodes, getCellNodeIDs( cellID ), n_nodes * sizeof( IndexType ) );
+    return n_nodes;
   }
 
 /// @}
@@ -977,10 +978,10 @@ public:
    */
   /// @{
 
-  IndexType* getCell( IndexType cellID )
+  IndexType* getCellNodeIDs( IndexType cellID )
   { return (*m_cell_connectivity)[ cellID ]; }
 
-  const IndexType* getCell( IndexType cellID ) const
+  const IndexType* getCellNodeIDs( IndexType cellID ) const
   { return (*m_cell_connectivity)[ cellID ]; }
 
   /// @}

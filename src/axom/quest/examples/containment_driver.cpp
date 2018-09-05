@@ -170,22 +170,14 @@ void testContainmentOnRegularGrid(
   const GeometricBoundingBox& queryBounds,
   int gridRes)
 {
-  SpaceVector h( queryBounds.getMin(), queryBounds.getMax());
-  for(int i=0 ; i<3 ; ++i)
-  {
-    h[i] /= gridRes;
-  }
+  const double* low = queryBounds.getMin().data();
+  const double* high = queryBounds.getMax().data();
+  mint::UniformMesh* umesh = 
+                    new mint::UniformMesh(low, high, gridRes, gridRes, gridRes);
 
-  mint::int64 ext[6];
-  ext[0] = ext[2] = ext[4] = 0;
-  ext[1] = ext[3] = ext[5] = gridRes;
-
-  mint::UniformMesh* umesh =
-    new mint::UniformMesh(3,queryBounds.getMin().data(),h.data(),ext);
-
-  const int nnodes    = umesh->getNumberOfNodes();
-  int* containment    = umesh->createField< int >( "containment",
-                                                   mint::NODE_CENTERED );
+  const int nnodes = umesh->getNumberOfNodes();
+  int* containment = umesh->createField< int >( "containment", 
+                                                mint::NODE_CENTERED );
 
   SLIC_ASSERT( containment != nullptr );
 
@@ -223,7 +215,7 @@ TriVertIndices getTriangleVertIndices(mint::Mesh* mesh,
   SLIC_ASSERT(cellIndex >= 0 && cellIndex < mesh->getNumberOfCells());
 
   TriVertIndices tvInd;
-  mesh->getCell( cellIndex, tvInd.data() );
+  mesh->getCellNodeIDs( cellIndex, tvInd.data() );
   return tvInd;
 }
 
@@ -360,7 +352,7 @@ void print_surface_stats( mint::Mesh* mesh)
     {
       fmt::format_to(badTriStr,"\n\tTriangle {}",*it);
       TriVertIndices vertIndices;
-      mesh->getCell( *it, vertIndices.data() );
+      mesh->getCellNodeIDs( *it, vertIndices.data() );
 
       SpacePt vertPos;
       for(int j=0 ; j<3 ; ++j)

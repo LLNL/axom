@@ -572,15 +572,13 @@ void check_uniform_mesh( const UniformMesh* u_mesh, std::ifstream& file )
   file >> buffer;
   EXPECT_EQ( buffer, "STRUCTURED_POINTS" );
 
-  IndexType ext_size[3];
-  u_mesh->getExtentSize( ext_size );
   file >> buffer;
   EXPECT_EQ( buffer, "DIMENSIONS" );
   for ( int i = 0 ; i < 3 ; ++i )
   {
     IndexType temp;
     file >> temp;
-    EXPECT_EQ( temp, ext_size[ i ] );
+    EXPECT_EQ( temp, u_mesh->getNodeResolution( i ) );
   }
 
   const double* origin = u_mesh->getOrigin( );
@@ -619,15 +617,13 @@ void check_rectilinear_mesh( const RectilinearMesh* r_mesh,
   file >> buffer;
   EXPECT_EQ(  buffer, "RECTILINEAR_GRID" );
 
-  IndexType ext_size[3];
-  r_mesh->getExtentSize( ext_size );
   file >> buffer;
   EXPECT_EQ( buffer, "DIMENSIONS" );
   for ( int i = 0 ; i < 3 ; ++i )
   {
     IndexType temp;
     file >> temp;
-    EXPECT_EQ( temp, ext_size[ i ] );
+    EXPECT_EQ( temp, r_mesh->getNodeResolution( i ) );
   }
 
   std::string coord_names[3] = { "X_COORDINATES", "Y_COORDINATES",
@@ -638,12 +634,12 @@ void check_rectilinear_mesh( const RectilinearMesh* r_mesh,
   for ( int dim = 0 ; dim < r_mesh->getDimension() ; ++dim )
   {
     file >> extracted_name >> extracted_size >> extracted_type;
-    EXPECT_EQ(  extracted_name, coord_names[ dim ] );
-    EXPECT_EQ(  extracted_size, ext_size[ dim ] );
-    EXPECT_EQ(  extracted_type, "double" );
+    EXPECT_EQ( extracted_name, coord_names[ dim ] );
+    EXPECT_EQ( extracted_size, r_mesh->getNodeResolution( dim ) );
+    EXPECT_EQ( extracted_type, "double" );
 
     const double* coord_array = r_mesh->getCoordinateArray( dim );
-    for (IndexType i = 0 ; i < ext_size[ dim ] ; ++i )
+    for (IndexType i = 0 ; i < r_mesh->getNodeResolution( dim ) ; ++i )
     {
       file >> extracted_coord;
       EXPECT_EQ( extracted_coord, coord_array[ i ] );
@@ -654,10 +650,10 @@ void check_rectilinear_mesh( const RectilinearMesh* r_mesh,
     file >> extracted_name >> extracted_size >> extracted_type;
     file >> extracted_coord;
 
-    EXPECT_EQ(  extracted_name,   coord_names[ dim ] );
-    EXPECT_EQ(  extracted_size,   ext_size[ dim ] );
-    EXPECT_EQ(  extracted_type,   "double" );
-    EXPECT_EQ(  extracted_coord,  0.0 );
+    EXPECT_EQ( extracted_name,   coord_names[ dim ] );
+    EXPECT_EQ( extracted_size,   r_mesh->getNodeResolution( dim ) );
+    EXPECT_EQ( extracted_type,   "double" );
+    EXPECT_EQ( extracted_coord,  0.0 );
   }
 }
 
@@ -740,7 +736,7 @@ void check_cells( const Mesh* mesh, std::ifstream& file )
   for ( IndexType cellIdx = 0 ; cellIdx < num_cells ; ++cellIdx )
   {
     const int num_cell_nodes = mesh->getNumberOfCellNodes( cellIdx );
-    mesh->getCell( cellIdx, cell_nodes );
+    mesh->getCellNodeIDs( cellIdx, cell_nodes );
 
     file >> temp;
     EXPECT_EQ( temp, num_cell_nodes );
@@ -781,15 +777,13 @@ void check_curvilinear_mesh( const CurvilinearMesh* c_mesh,
   file >> buffer;
   EXPECT_EQ(  buffer, "STRUCTURED_GRID" );
 
-  IndexType ext_size[3];
-  c_mesh->getExtentSize( ext_size );
   file >> buffer;
   EXPECT_EQ( buffer, "DIMENSIONS" );
   for ( int i = 0 ; i < 3 ; ++i )
   {
     IndexType temp;
     file >> temp;
-    EXPECT_EQ( temp, ext_size[ i ] );
+    EXPECT_EQ( temp, c_mesh->getNodeResolution( i ) );
   }
 
   check_points( c_mesh, file );
@@ -826,10 +820,9 @@ void check_unstructured_mesh( const Mesh* mesh, std::ifstream& file )
 TEST( mint_util_write_vtk, UniformMesh3D )
 {
   const std::string path = "uniformMesh3D.vtk";
-  const int64 ext[6] = { 0, 10, 0, 10, 0, 10 };
-  const double origin[3] = { -5.0, -10.0, -15.0 };
-  const double corner[3] = { 5.0, 10.0, 15.0 };
-  UniformMesh* u_mesh = new UniformMesh( 3, ext, origin, corner );
+  const double low[3] = { -5.0, -10.0, -15.0 };
+  const double high[3] = { 5.0, 10.0, 15.0 };
+  UniformMesh* u_mesh = new UniformMesh( low, high, 10, 11, 12 );
 
   internal::populate_and_write( u_mesh, path );
   std::ifstream file( path.c_str() );
@@ -852,10 +845,9 @@ TEST( mint_util_write_vtk, UniformMesh3D )
 TEST( mint_util_write_vtk, UniformMesh2D )
 {
   const std::string path = "uniformMesh2D.vtk";
-  const int64 ext[4] = { 0, 10, 0, 10 };
-  const double origin[2] = { -5.0, -10.0 };
-  const double corner[2] = { 5.0, 10.0 };
-  UniformMesh* u_mesh = new UniformMesh( 2, ext, origin, corner );
+  const double low[2] = { -5.0, -10.0 };
+  const double high[2] = { 5.0, 10.0 };
+  UniformMesh* u_mesh = new UniformMesh( low, high, 10, 11 );
 
   internal::populate_and_write( u_mesh, path );
   std::ifstream file( path.c_str() );
@@ -878,10 +870,9 @@ TEST( mint_util_write_vtk, UniformMesh2D )
 TEST( mint_util_write_vtk, UniformMesh1D )
 {
   const std::string path = "uniformMesh1D.vtk";
-  const int64 ext[2] = { 0, 10 };
-  const double origin[1] = { -5.0 };
-  const double corner[1] = { 5.0 };
-  UniformMesh* u_mesh = new UniformMesh( 1, ext, origin, corner );
+  const double low[1] = { -5.0 };
+  const double high[1] = { 5.0 };
+  UniformMesh* u_mesh = new UniformMesh( low, high, 10 );
 
   internal::populate_and_write( u_mesh, path );
   std::ifstream file( path.c_str() );
@@ -904,17 +895,15 @@ TEST( mint_util_write_vtk, UniformMesh1D )
 TEST( mint_util_write_vtk, RectilinearMesh3D )
 {
   const std::string path = "rectilinearMesh3D.vtk";
-  int64 ext[6] = { 0, 10, 0, 11, 0, 12 };
-  RectilinearMesh* r_mesh = new RectilinearMesh( 3, ext );
+  RectilinearMesh* r_mesh = new RectilinearMesh( 10, 11, 12 );
 
-  IndexType ext_size[3];
-  r_mesh->getExtentSize( ext_size );
   for ( int dim = 0 ; dim < 3 ; ++dim )
   {
-    double* x = r_mesh->getCoordinateArray( dim );
-    for ( IndexType i = 0 ; i < ext_size[ dim ] ; ++i )
+    IndexType Nd = r_mesh->getNodeResolution( dim );
+    double* coords = r_mesh->getCoordinateArray( dim );
+    for ( IndexType i = 0 ; i < Nd ; ++i )
     {
-      x[ i ] = i * i / 10.0;
+      coords[ i ] = i * i / 10.0;
     }
   }
 
@@ -939,17 +928,15 @@ TEST( mint_util_write_vtk, RectilinearMesh3D )
 TEST( mint_util_write_vtk, RectilinearMesh2D )
 {
   const std::string path = "rectilinearMesh2D.vtk";
-  int64 ext[4] = { 0, 10, 0, 11 };
-  RectilinearMesh* r_mesh = new RectilinearMesh( 2, ext );
+  RectilinearMesh* r_mesh = new RectilinearMesh( 10, 11 );
 
-  IndexType ext_size[3];
-  r_mesh->getExtentSize( ext_size );
   for ( int dim = 0 ; dim < 2 ; ++dim )
   {
-    double* x = r_mesh->getCoordinateArray( dim );
-    for ( IndexType i = 0 ; i < ext_size[ dim ] ; ++i )
+    IndexType Nd = r_mesh->getNodeResolution( dim );
+    double* coords = r_mesh->getCoordinateArray( dim );
+    for ( IndexType i = 0 ; i < Nd ; ++i )
     {
-      x[ i ] = i * i / 10.0;
+      coords[ i ] = i * i / 10.0;
     }
   }
 
@@ -974,18 +961,13 @@ TEST( mint_util_write_vtk, RectilinearMesh2D )
 TEST( mint_util_write_vtk, RectilinearMesh1D )
 {
   const std::string path = "rectilinearMesh1D.vtk";
-  int64 ext[2] = { 0, 10 };
-  RectilinearMesh* r_mesh = new RectilinearMesh( 1, ext );
+  RectilinearMesh* r_mesh = new RectilinearMesh( 10 );
 
-  IndexType ext_size[3];
-  r_mesh->getExtentSize( ext_size );
-  for ( int dim = 0 ; dim < 1 ; ++dim )
+  IndexType Nx = r_mesh->getNodeResolution( 0 );
+  double* x = r_mesh->getCoordinateArray( 0 );
+  for ( IndexType i = 0 ; i < Nx ; ++i )
   {
-    double* x = r_mesh->getCoordinateArray( dim );
-    for ( IndexType i = 0 ; i < ext_size[ dim ] ; ++i )
-    {
-      x[ i ] = i * i / 10.0;
-    }
+    x[ i ] = i * i / 10.0;
   }
 
   internal::populate_and_write( r_mesh, path );
@@ -1009,21 +991,21 @@ TEST( mint_util_write_vtk, RectilinearMesh1D )
 TEST( mint_util_write_vtk, CurvilinearMesh3D )
 {
   const std::string path = "curvilinearMesh3D.vtk";
-  int64 ext[6] = { 0, 10, 0, 11, 0, 12 };
-  CurvilinearMesh* c_mesh = new CurvilinearMesh( 3, ext );
+  CurvilinearMesh* c_mesh = new CurvilinearMesh( 10, 11, 12 );
 
-  IndexType ext_size[3];
-  c_mesh->getExtentSize( ext_size );
+  IndexType Ni = c_mesh->getNodeResolution( 0 );
+  IndexType Nj = c_mesh->getNodeResolution( 1 );
+  IndexType Nk = c_mesh->getNodeResolution( 2 );
   double* x_coords = c_mesh->getCoordinateArray( X_COORDINATE );
   double* y_coords = c_mesh->getCoordinateArray( Y_COORDINATE );
   double* z_coords = c_mesh->getCoordinateArray( Z_COORDINATE );
-  for ( IndexType i = 0 ; i < ext_size[0] ; ++i )
+  for ( IndexType k = 0 ; k < Nk ; ++k )
   {
-    for ( IndexType j = 0 ; j < ext_size[1] ; ++j )
+    for ( IndexType j = 0 ; j < Nj ; ++j )
     {
-      for ( IndexType k = 0 ; k < ext_size[2] ; ++k )
+      for ( IndexType i = 0 ; i < Ni ; ++i )
       {
-        IndexType idx = c_mesh->getLinearIndex( i, j, k );
+        IndexType idx = c_mesh->getNodeLinearIndex( i, j, k );
         double x = i + utilities::random_real( -0.45, 0.45 );
         double y = j + utilities::random_real( -0.45, 0.45 );
         double z = k + utilities::random_real( -0.45, 0.45 );
@@ -1055,18 +1037,17 @@ TEST( mint_util_write_vtk, CurvilinearMesh3D )
 TEST( mint_util_write_vtk, CurvilinearMesh2D )
 {
   const std::string path = "curvilinearMesh2D.vtk";
-  int64 ext[6] = { 0, 2, 0, 2 };
-  CurvilinearMesh* c_mesh = new CurvilinearMesh( 2, ext );
+  CurvilinearMesh* c_mesh = new CurvilinearMesh( 10, 11 );
 
-  IndexType ext_size[3];
-  c_mesh->getExtentSize( ext_size );
+  IndexType Ni = c_mesh->getNodeResolution( 0 );
+  IndexType Nj = c_mesh->getNodeResolution( 1 );
   double* x_coords = c_mesh->getCoordinateArray( X_COORDINATE );
   double* y_coords = c_mesh->getCoordinateArray( Y_COORDINATE );
-  for ( IndexType i = 0 ; i < ext_size[0] ; ++i )
+  for ( IndexType j = 0 ; j < Nj ; ++j )
   {
-    for ( IndexType j = 0 ; j < ext_size[1] ; ++j )
+    for ( IndexType i = 0 ; i < Ni ; ++i )
     {
-      IndexType idx = c_mesh->getLinearIndex( i, j );
+      IndexType idx = c_mesh->getNodeLinearIndex( i, j );
       double x = i + utilities::random_real( -0.45, 0.45 );
       double y = j + utilities::random_real( -0.45, 0.45 );
       x_coords[ idx ] = x;
@@ -1096,16 +1077,14 @@ TEST( mint_util_write_vtk, CurvilinearMesh2D )
 TEST( mint_util_write_vtk, CurvilinearMesh1D )
 {
   const std::string path = "curvilinearMesh1D.vtk";
-  int64 ext[6] = { 0, 1 };
-  CurvilinearMesh* c_mesh = new CurvilinearMesh( 1, ext );
+  CurvilinearMesh* c_mesh = new CurvilinearMesh( 10 );
 
-  IndexType ext_size[3];
-  c_mesh->getExtentSize( ext_size );
+  IndexType Ni = c_mesh->getNodeResolution( 0 );
   double* x_coords = c_mesh->getCoordinateArray( X_COORDINATE );
-  for ( IndexType idx = 0 ; idx < ext_size[0] ; ++idx )
+  for ( IndexType i = 0 ; i < Ni ; ++i )
   {
-    double x = idx + utilities::random_real( -0.45, 0.45 );
-    x_coords[ idx ] = x;
+    double x = i + utilities::random_real( -0.45, 0.45 );
+    x_coords[ i ] = x;
   }
 
   internal::populate_and_write( c_mesh, path );

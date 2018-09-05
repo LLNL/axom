@@ -18,14 +18,13 @@
 
 // Mint includes
 #include "axom/mint/core/Array.hpp"           // for mint::Array
-#include "axom/mint/config.hpp"          // for compile-time definitions
+#include "axom/mint/config.hpp"               // for compile-time definitions
 #include "axom/mint/mesh/MeshTypes.hpp"       // for MeshTypes enum
-#include "axom/mint/mesh/Extent.hpp"          // for mint::Extent
 
 // gtest includes
 #include "gtest/gtest.h"
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 #include "axom/sidre/core/sidre.hpp"
 
 namespace mint  = axom::mint;
@@ -342,82 +341,42 @@ TEST( mint_mesh_blueprint, get_mesh_type_and_dimension )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_blueprint, get_set_uniform_mesh )
 {
-  constexpr int NDIMS        = 3;
-  constexpr double MAGIC_VAL = 42.0;
-  constexpr double DX        = 0.5;
-  const double X0[]          = { MAGIC_VAL, MAGIC_VAL, MAGIC_VAL };
-  const double H[]           = { DX, DX, DX };
-  const mint::int64 EXTENT[] = { -2,2, -2,2, -2,2 };
+  constexpr int NDIMS            = 3;
+  constexpr double MAGIC_VAL     = 42.0;
+  constexpr double DX            = 0.5;
+  const double X0[]              = { MAGIC_VAL, MAGIC_VAL, MAGIC_VAL };
+  const double H[]               = { DX, DX, DX };
+  const mint::IndexType ext[]    = { 10, 11, 12 };
+  const mint::int64 global_ext[] = { 0, 10, 0, 11, 0, 12 };
 
   for ( int idim=1 ; idim <= NDIMS ; ++idim )
   {
     sidre::DataStore ds;
     sidre::Group* root = ds.getRoot();
     sidre::Group* coordset = root->createGroup( "coordsets/c1" );
-    sidre::Group* topo     = root->createGroup( "topologies/t1" );
+    root->createGroup( "topologies/t1" );
+
     mint::blueprint::initializeTopologyGroup( root, "t1", "c1", "uniform" );
+    mint::blueprint::setStructuredMeshProperties( NDIMS, ext, global_ext, coordset );
+    mint::blueprint::setUniformMeshProperties( idim, X0, H, coordset );
 
-    mint::Extent mesh_extent( idim, EXTENT );
+    double* origin = new double[ idim ];
+    double* h = new double[ idim ];
 
-    mint::blueprint::setUniformMesh( idim,X0,H,&mesh_extent,coordset,topo );
+    mint::blueprint::getUniformMeshProperties( idim, origin, h, coordset );
 
-    double* origin      = new double[ idim ];
-    double* h           = new double[ idim ];
-    mint::int64* extent = new mint::int64[ idim*2 ];
-
-    mint::blueprint::getUniformMesh( idim, coordset, topo, origin, h, extent);
-
-    for ( int i=0 ; i < idim ; ++i )
+    for ( int i = 0 ; i < idim ; ++i )
     {
       EXPECT_DOUBLE_EQ( origin[ i ], X0[ i ] );
       EXPECT_DOUBLE_EQ( h[ i ], H[ i ] );
-
-      const int offset = i*2;
-      EXPECT_EQ( extent[ offset ], EXTENT[ offset ] );
-      EXPECT_EQ( extent[ offset+1 ], EXTENT[ offset+1 ] );
     }
 
     delete [] origin;
     delete [] h;
-    delete [] extent;
   }
-
 }
 
-//------------------------------------------------------------------------------
-TEST( mint_mesh_blueprint, get_set_curvilinear_mesh_extent )
-{
-  constexpr int NDIMS        = 3;
-  const mint::int64 EXTENT[] = { -2,2, -2,2, -2,2 };
-
-  for ( int idim=1 ; idim <= NDIMS ; ++idim )
-  {
-    sidre::DataStore ds;
-    sidre::Group* root     = ds.getRoot();
-    root->createGroup( "coordsets/c1" );
-
-    sidre::Group* topo     = root->createGroup( "topologies/t1" );
-    mint::blueprint::initializeTopologyGroup( root, "t1", "c1", "structured" );
-
-    mint::Extent mesh_extent( idim, EXTENT );
-    mint::blueprint::setCurvilinearMeshExtent( idim, &mesh_extent, topo );
-
-    mint::int64* extent = new mint::int64[ idim*2 ];
-    mint::blueprint::getCurvilinearMeshExtent( idim, topo, extent );
-
-    for ( int i=0 ; i < idim ; ++i )
-    {
-      const int offset = i*2;
-      EXPECT_EQ( extent[ offset ], EXTENT[ offset ] );
-      EXPECT_EQ( extent[ offset+1 ], EXTENT[ offset+1 ] );
-    }
-
-    delete [] extent;
-  } // END for all dimensions
-
-}
-
-#endif /* MINT_USE_SIDRE */
+#endif /* AXOM_MINT_USE_SIDRE */
 
 //------------------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"

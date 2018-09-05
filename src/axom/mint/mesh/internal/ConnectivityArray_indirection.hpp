@@ -28,7 +28,7 @@
 #include "axom/mint/mesh/internal/ConnectivityArrayHelpers.hpp"
 #include "axom/slic/interface/slic.hpp"
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 #include "axom/sidre/core/sidre.hpp"
 #endif
 
@@ -169,7 +169,7 @@ public:
 /// \name Sidre Storage ConnectivityArray Constructors
 /// @{
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
   /*!
    * \brief Creates a ConnectivityArray instance from a sidre::Group which
@@ -415,7 +415,7 @@ public:
    * \brief Return a const pointer to the sidre::Group that holds the data
    *  or nullptr if the data is not in sidre.
    */
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   const sidre::Group* getGroup() const
   {
     if ( !isInSidre() )

@@ -172,7 +172,7 @@ public:
 /// \name Sidre FieldVariable Constructors
 /// @{
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
   /*!
    * \brief Creates a FieldVariable instance from a sidre::View that has data.
@@ -385,7 +385,7 @@ FieldVariable< T >::FieldVariable( const std::string& name,
   SLIC_ERROR_IF( m_type==UNDEFINED_FIELD_TYPE, "Undefined field type!" );
 }
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
 //------------------------------------------------------------------------------
 template < typename T >

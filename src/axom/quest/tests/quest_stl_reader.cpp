@@ -168,7 +168,7 @@ TEST( quest_stl_reader, read_stl_external )
   double yin[] = { -1.0, -1.0, -1.0 };
   double zin[] = { -1.0, -1.0, -1.0 };
 
-  mint::IndexType conn[] = { -1 };
+  mint::IndexType conn[] = { -1, -1, -1 };
 
   const std::string filename = "triangle.stl";
 
