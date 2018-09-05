@@ -130,6 +130,13 @@ if (AXOM_ENABLE_SPARSEHASH)
     target_include_directories(sparsehash INTERFACE
                 $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
 
+    # Disable warning introduced in gcc@8.1 related to how sparsehash casts memory
+    if(C_COMPILER_FAMILY_IS_GNU)
+        if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "8.1")
+            blt_add_target_compile_flags(TO sparsehash FLAGS "-Wno-class-memaccess")
+        endif()
+    endif()
+
     install(TARGETS              sparsehash
             EXPORT               sparsehash-targets
             INCLUDES DESTINATION include)
