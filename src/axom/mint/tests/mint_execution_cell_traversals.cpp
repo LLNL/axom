@@ -55,8 +55,8 @@ void check_for_all_cells_idx( int dimension )
   constexpr int MAGIC_VAL = 42;
 
   const IndexType Ni = 20;
-  const IndexType Nj = (dimension >= 2) ? 20 : -1;
-  const IndexType Nk = (dimension == 3) ? 20 : -1;
+  const IndexType Nj = (dimension >= 2) ? Ni : -1;
+  const IndexType Nk = (dimension == 3) ? Ni : -1;
 
   const double lo[] = { -10, -10, -10 };
   const double hi[] = {  10,  10,  10 };
@@ -211,8 +211,8 @@ void check_for_all_cell_nodes( int dimension )
    using IndexType = mint::IndexType;
 
    const IndexType Ni = 20;
-   const IndexType Nj = (dimension >= 2) ? 20 : -1;
-   const IndexType Nk = (dimension == 3) ? 20 : -1;
+   const IndexType Nj = (dimension >= 2) ? Ni : -1;
+   const IndexType Nk = (dimension == 3) ? Ni : -1;
 
    const double lo[] = { -10, -10, -10 };
    const double hi[] = {  10,  10,  10 };
@@ -248,7 +248,7 @@ void check_for_all_cell_nodes( int dimension )
      EXPECT_EQ( N, numNodesPerCell );
 
      IndexType cellNodes[ 8 ];
-     uniform_mesh.getCell( icell, cellNodes );
+     uniform_mesh.getCellNodeIDs( icell, cellNodes );
 
      for ( int i=0; i < N; ++i )
      {

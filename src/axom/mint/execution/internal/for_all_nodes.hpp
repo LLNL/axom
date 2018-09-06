@@ -83,9 +83,9 @@ inline void for_all_nodes( xargs::ij,
   const mint::StructuredMesh* sm =
       static_cast< const mint::StructuredMesh* >( m );
 
-  const IndexType jp = sm->jp();
-  const IndexType Ni = sm->getNumberOfNodesAlongDim( I_DIRECTION );
-  const IndexType Nj = sm->getNumberOfNodesAlongDim( J_DIRECTION );
+  const IndexType jp = sm->nodeJp();
+  const IndexType Ni = sm->getNodeResolution( I_DIRECTION );
+  const IndexType Nj = sm->getNodeResolution( J_DIRECTION );
 
 #ifdef AXOM_USE_RAJA
 
@@ -133,11 +133,11 @@ inline void for_all_nodes( xargs::ijk,
   const mint::StructuredMesh* sm =
        static_cast< const mint::StructuredMesh* >( m );
 
-  const IndexType jp = sm->jp();
-  const IndexType kp = sm->kp();
-  const IndexType Ni = sm->getNumberOfNodesAlongDim( I_DIRECTION );
-  const IndexType Nj = sm->getNumberOfNodesAlongDim( J_DIRECTION );
-  const IndexType Nk = sm->getNumberOfNodesAlongDim( K_DIRECTION );
+  const IndexType jp = sm->nodeJp();
+  const IndexType kp = sm->nodeKp();
+  const IndexType Ni = sm->getNodeResolution( I_DIRECTION );
+  const IndexType Nj = sm->getNodeResolution( J_DIRECTION );
+  const IndexType Nk = sm->getNodeResolution( K_DIRECTION );
 
 #ifdef AXOM_USE_RAJA
 

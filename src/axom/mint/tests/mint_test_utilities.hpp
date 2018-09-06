@@ -103,18 +103,17 @@ void create_mesh( const mint::UniformMesh* uniform_mesh,
   SLIC_ASSERT( output_mesh == nullptr );
 
   const int dimension = uniform_mesh->getDimension();
-  mint::int64 ext[ 6 ];
 
+  double lo[3];
+  double hi[3];
+  mint::IndexType N[3] = { -1, -1, -1};
   for ( int i=0; i < dimension; ++i )
   {
-    ext[ i*2   ] = 0;
-    ext[ i*2+1 ] = uniform_mesh->getNumberOfNodesAlongDim( i )-1;
+    N[ i ]  = uniform_mesh->getNodeResolution( i );
+    lo[ i ] = uniform_mesh->evaluateCoordinate(0,i);
+    hi[ i ] = uniform_mesh->evaluateCoordinate( N[i]-1, i );
   }
-
-  output_mesh = new mint::UniformMesh( uniform_mesh->getDimension(),
-                                       uniform_mesh->getOrigin(),
-                                       uniform_mesh->getSpacing(),
-                                       ext );
+  output_mesh = new mint::UniformMesh( lo, hi, N[0], N[1], N[2] );
 }
 
 //------------------------------------------------------------------------------
@@ -130,7 +129,7 @@ void create_mesh< mint::STRUCTURED_CURVILINEAR_MESH >(
 
   for ( int i=0; i < dimension; ++i )
   {
-    node_dims[ i ] = uniform_mesh->getNumberOfNodesAlongDim( i );
+    node_dims[ i ] = uniform_mesh->getNodeResolution( i );
   }
 
   output_mesh = new mint::CurvilinearMesh( node_dims[ mint::I_DIRECTION ],
@@ -168,15 +167,14 @@ void create_mesh< mint::STRUCTURED_RECTILINEAR_MESH >(
   mint::IndexType node_dims[] = { -1, -1, -1 };
   for ( int i=0; i < dimension; ++i )
   {
-    node_dims[ i ] = uniform_mesh->getNumberOfNodesAlongDim( i );
+    node_dims[ i ] = uniform_mesh->getNodeResolution( i );
   }
 
   output_mesh = new mint::RectilinearMesh( node_dims[ mint::I_DIRECTION ],
                                            node_dims[ mint::J_DIRECTION ],
                                            node_dims[ mint::K_DIRECTION ]  );
 
-  mint::IndexType Ni =
-      uniform_mesh->getNumberOfNodesAlongDim( mint::I_DIRECTION );
+  mint::IndexType Ni = uniform_mesh->getNodeResolution( mint::I_DIRECTION );
   double* x = output_mesh->getCoordinateArray( mint::X_COORDINATE );
   SLIC_ASSERT( x != nullptr );
   for ( mint::IndexType i=0; i < Ni; ++i )
@@ -190,8 +188,7 @@ void create_mesh< mint::STRUCTURED_RECTILINEAR_MESH >(
     double* y = output_mesh->getCoordinateArray( mint::Y_COORDINATE );
     SLIC_ASSERT( y != nullptr );
 
-    mint::IndexType Nj =
-        uniform_mesh->getNumberOfNodesAlongDim( mint::J_DIRECTION );
+    mint::IndexType Nj = uniform_mesh->getNodeResolution( mint::J_DIRECTION );
     for ( mint::IndexType j=0; j < Nj; ++j )
     {
       y[ j ] = uniform_mesh->evaluateCoordinate( j, mint::J_DIRECTION );
@@ -206,7 +203,7 @@ void create_mesh< mint::STRUCTURED_RECTILINEAR_MESH >(
     SLIC_ASSERT( z != nullptr );
 
     const mint::IndexType Nk =
-        uniform_mesh->getNumberOfNodesAlongDim( mint::K_DIRECTION );
+        uniform_mesh->getNodeResolution( mint::K_DIRECTION );
     for ( mint::IndexType k=0; k < Nk; ++k )
     {
       z[ k ] = uniform_mesh->evaluateCoordinate( k, mint::K_DIRECTION );
@@ -279,7 +276,7 @@ void create_mesh< mint::UNSTRUCTURED_MESH >(
   for ( mint::IndexType icell=0; icell < numCells; ++icell )
   {
     mint::IndexType cell[ 8 ];
-    uniform_mesh->getCell( icell, cell );
+    uniform_mesh->getCellNodeIDs( icell, cell );
     m->appendCell( cell, cell_type );
   }
 

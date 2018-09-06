@@ -79,9 +79,9 @@ inline void for_all_cells( xargs::ij, const mint::Mesh* m,
   const mint::StructuredMesh* sm =
       static_cast< const mint::StructuredMesh* >( m );
 
-  const IndexType jp = sm->jp()-1;
-  const IndexType Ni = sm->getNumberOfNodesAlongDim( I_DIRECTION )-1;
-  const IndexType Nj = sm->getNumberOfNodesAlongDim( J_DIRECTION )-1;
+  const IndexType jp = sm->cellJp();
+  const IndexType Ni = sm->getCellResolution( I_DIRECTION )-1;
+  const IndexType Nj = sm->getCellResolution( J_DIRECTION )-1;
 
 #ifdef AXOM_USE_RAJA
 
@@ -129,12 +129,12 @@ inline void for_all_cells( xargs::ijk, const mint::Mesh* m,
   const mint::StructuredMesh* sm =
        static_cast< const mint::StructuredMesh* >( m );
 
-  const IndexType Ni = sm->getNumberOfNodesAlongDim( I_DIRECTION )-1;
-  const IndexType Nj = sm->getNumberOfNodesAlongDim( J_DIRECTION )-1;
-  const IndexType Nk = sm->getNumberOfNodesAlongDim( K_DIRECTION )-1;
+  const IndexType Ni = sm->getCellResolution( I_DIRECTION )-1;
+  const IndexType Nj = sm->getCellResolution( J_DIRECTION )-1;
+  const IndexType Nk = sm->getCellResolution( K_DIRECTION )-1;
 
-  const IndexType jp = Ni;
-  const IndexType kp = Ni * Nj;
+  const IndexType jp = sm->cellJp();
+  const IndexType kp = sm->cellKp();
 
 #ifdef AXOM_USE_RAJA
 
@@ -186,7 +186,7 @@ inline void for_all_cellnodes_structured( const mint::Mesh* m,
   const mint::StructuredMesh* sm =
       static_cast< const mint::StructuredMesh* >( m );
 
-  const IndexType* offsets     = sm->getExtent()->getCellOffSets();
+  const IndexType* offsets     = sm->getCellNodeOffsetsArray();
   const IndexType numCellNodes = sm->getNumberOfCellNodes();
 
 #ifdef AXOM_USE_RAJA
