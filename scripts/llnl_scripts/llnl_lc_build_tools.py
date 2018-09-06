@@ -129,9 +129,18 @@ def log_failure(prefix, msg, timestamp=""):
     json.dump(info,open(pjoin(prefix,"failed.json"),"w"),indent=2)
 
 
-def copy_if_exists(src, dst):
+def copy_if_exists(src, dst, verbose=True):
     if os.path.exists(src):
         shutil.copy2(src, dst)
+
+    if verbose:
+        if os.path.exists(src):
+            print "[File copied]"
+        else:
+            print "[File not copied because source did not exist]"
+        print "[  Source: {0}]".format(src)
+        print "[  Destination: {0}]".format(dst)
+
 
 
 def normalize_job_name(job_name):
