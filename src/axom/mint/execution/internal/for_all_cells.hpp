@@ -297,6 +297,8 @@ inline void for_all_cellnodes_structured( const mint::Mesh* m,
     SLIC_ASSERT( dimension == 3 );
     {
 
+      IndexType cell_connectivity[ 8 ];
+
       IndexType icell    = 0;
       const IndexType Ni = sm->getCellResolution( I_DIRECTION );
       const IndexType Nj = sm->getCellResolution( J_DIRECTION );

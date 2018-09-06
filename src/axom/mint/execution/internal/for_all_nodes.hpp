@@ -327,9 +327,9 @@ inline void for_all_nodes_xy_uniform( const mint::Mesh* m, KernelType&& kernel)
   constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
-  const IndexType jp = um->jp();
-  const IndexType Ni = um->getNumberOfNodesAlongDim( I_DIRECTION );
-  const IndexType Nj = um->getNumberOfNodesAlongDim( J_DIRECTION );
+  const IndexType jp = um->nodeJp();
+  const IndexType Ni = um->getNodeResolution( I_DIRECTION );
+  const IndexType Nj = um->getNodeResolution( J_DIRECTION );
 
   for( IndexType j=0; j < Nj; ++j )
   {
@@ -374,9 +374,9 @@ inline void for_all_nodes_xy_rectilinear( const mint::Mesh* m,
   constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
-  const IndexType jp = rm->jp();
-  const IndexType Ni = rm->getNumberOfNodesAlongDim( I_DIRECTION );
-  const IndexType Nj = rm->getNumberOfNodesAlongDim( J_DIRECTION );
+  const IndexType jp = rm->nodeJp();
+  const IndexType Ni = rm->getNodeResolution( I_DIRECTION );
+  const IndexType Nj = rm->getNodeResolution( J_DIRECTION );
 
   for ( IndexType j=0; j < Nj; ++j )
   {
@@ -482,11 +482,11 @@ inline void for_all_nodes_xyz_uniform( const mint::Mesh* m,
   constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
-  const IndexType jp = um->jp();
-  const IndexType kp = um->kp();
-  const IndexType Ni = um->getNumberOfNodesAlongDim( I_DIRECTION );
-  const IndexType Nj = um->getNumberOfNodesAlongDim( J_DIRECTION );
-  const IndexType Nk = um->getNumberOfNodesAlongDim( K_DIRECTION );
+  const IndexType jp = um->nodeJp();
+  const IndexType kp = um->nodeKp();
+  const IndexType Ni = um->getNodeResolution( I_DIRECTION );
+  const IndexType Nj = um->getNodeResolution( J_DIRECTION );
+  const IndexType Nk = um->getNodeResolution( K_DIRECTION );
 
   for ( IndexType k=0; k < Nk; ++k )
   {
@@ -538,11 +538,11 @@ inline void for_all_nodes_xyz_rectilinear( const mint::Mesh* m,
   constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
-  const IndexType jp = rm->jp();
-  const IndexType kp = rm->kp();
-  const IndexType Ni = rm->getNumberOfNodesAlongDim( I_DIRECTION );
-  const IndexType Nj = rm->getNumberOfNodesAlongDim( J_DIRECTION );
-  const IndexType Nk = rm->getNumberOfNodesAlongDim( K_DIRECTION );
+  const IndexType jp = rm->nodeJp();
+  const IndexType kp = rm->nodeKp();
+  const IndexType Ni = rm->getNodeResolution( I_DIRECTION );
+  const IndexType Nj = rm->getNodeResolution( J_DIRECTION );
+  const IndexType Nk = rm->getNodeResolution( K_DIRECTION );
 
   for ( IndexType k=0; k < Nk; ++k )
   {
