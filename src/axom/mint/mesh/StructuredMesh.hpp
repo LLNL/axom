@@ -254,7 +254,7 @@ public:
   }
 
   /*!
-   * \brief Copy the IDs of the nodes that compose the given face into the 
+   * \brief Copy the IDs of the nodes that compose the given face into the
    *  provided buffer.
    *
    * \param [in] faceID the ID of the face in question.
@@ -270,7 +270,7 @@ public:
   getFaceNodeIDs( IndexType faceID, IndexType* nodes ) const final override;
 
   /*!
-   * \brief Copy the IDs of the cells adjacent to the given face into the 
+   * \brief Copy the IDs of the cells adjacent to the given face into the
    *  provided indices.
    *
    * \param [in] faceID the ID of the face in question.
@@ -315,6 +315,16 @@ public:
 /// @{
 
   /*!
+   * \brief Returns the cell node offsets array
+   * \return offsets pointer to the cell-to-node offsets array.
+   *
+   * \post offsets != nullptr
+   */
+  const IndexType* getCellNodeOffsetsArray( ) const
+  { return m_cell_node_offsets; };
+
+
+  /*!
    * \brief Copy the node IDs of the given cell into the provided buffer.
    *
    * \param [in] i logical index of the cell along the first dimension.
@@ -347,7 +357,7 @@ public:
    *  at least getNumberOfCellFaces().
    *
    * \note The faces are returned in the order of LOWER_I_FACE, UPPER_I_FACE,
-   *  LOWER_J_FACE, UPPER_J_FACE and then LOWER_K_FACE, UPPER_K_FACE if 3D. 
+   *  LOWER_J_FACE, UPPER_J_FACE and then LOWER_K_FACE, UPPER_K_FACE if 3D.
    *
    * \pre faces != nullptr
    */
@@ -372,7 +382,7 @@ public:
 /// @{
 
   /*!
-   * \brief Copy the IDs of the nodes that compose the given face into the 
+   * \brief Copy the IDs of the nodes that compose the given face into the
    *  provided buffer.
    *
    * \param [in] faceID the ID of the face in question.
@@ -393,7 +403,7 @@ public:
   /// @}
 
   /*!
-   * \brief Copy the IDs of the cells adjacent to the given face into the 
+   * \brief Copy the IDs of the cells adjacent to the given face into the
    *  provided indices.
    *
    * \param [in] faceID the ID of the face in question.
@@ -874,7 +884,7 @@ private:
    * \return The number of faces for the given cell.
    *
    * \note The faces are returned in the order of LOWER_I_FACE, UPPER_I_FACE,
-   *  LOWER_J_FACE, UPPER_J_FACE and then LOWER_K_FACE, UPPER_K_FACE if 3D. 
+   *  LOWER_J_FACE, UPPER_J_FACE and then LOWER_K_FACE, UPPER_K_FACE if 3D.
    *
    * \pre faces != nullptr
    * \pre 0 <= cellID < getNumberOfCells()
