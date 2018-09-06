@@ -214,12 +214,12 @@ inline void for_all_cellnodes_structured( const mint::Mesh* m,
       const IndexType n0 = i + j * nodeJp;
       IndexType cell_connectivity[ 4 ];
 
-      for ( int inode=0; inode < numCellNodes; ++inode )
-      {
-        cell_connectivity[ inode ] = n0 + offsets[ inode ];
-      }
+      cell_connectivity[ 0 ] = n0;
+      cell_connectivity[ 1 ] = n0 + offsets[ 1 ];
+      cell_connectivity[ 2 ] = n0 + offsets[ 2 ];
+      cell_connectivity[ 3 ] = n0 + offsets[ 3 ];
 
-      kernel( cellIdx, cell_connectivity, numCellNodes );
+      kernel( cellIdx, cell_connectivity, 4 );
 
     } );
 
@@ -233,10 +233,15 @@ inline void for_all_cellnodes_structured( const mint::Mesh* m,
       const IndexType n0 = i + j * nodeJp + k * nodeKp;
       IndexType cell_connectivity[ 8 ];
 
-      for ( int inode=0; inode < numCellNodes; ++inode )
-      {
-        cell_connectivity[ inode ] = n0 + offsets[ inode ];
-      }
+      cell_connectivity[ 0 ] = n0;
+      cell_connectivity[ 1 ] = n0 + offsets[ 1 ];
+      cell_connectivity[ 2 ] = n0 + offsets[ 2 ];
+      cell_connectivity[ 3 ] = n0 + offsets[ 3 ];
+
+      cell_connectivity[ 4 ] = n0 + offsets[ 4 ];
+      cell_connectivity[ 5 ] = n0 + offsets[ 5 ];
+      cell_connectivity[ 6 ] = n0 + offsets[ 6 ];
+      cell_connectivity[ 7 ] = n0 + offsets[ 7 ];
 
       kernel( cellIdx, cell_connectivity, numCellNodes );
 
