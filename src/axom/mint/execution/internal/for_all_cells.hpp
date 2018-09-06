@@ -80,8 +80,8 @@ inline void for_all_cells( xargs::ij, const mint::Mesh* m,
       static_cast< const mint::StructuredMesh* >( m );
 
   const IndexType jp = sm->cellJp();
-  const IndexType Ni = sm->getCellResolution( I_DIRECTION )-1;
-  const IndexType Nj = sm->getCellResolution( J_DIRECTION )-1;
+  const IndexType Ni = sm->getCellResolution( I_DIRECTION );
+  const IndexType Nj = sm->getCellResolution( J_DIRECTION );
 
 #ifdef AXOM_USE_RAJA
 
@@ -129,9 +129,9 @@ inline void for_all_cells( xargs::ijk, const mint::Mesh* m,
   const mint::StructuredMesh* sm =
        static_cast< const mint::StructuredMesh* >( m );
 
-  const IndexType Ni = sm->getCellResolution( I_DIRECTION )-1;
-  const IndexType Nj = sm->getCellResolution( J_DIRECTION )-1;
-  const IndexType Nk = sm->getCellResolution( K_DIRECTION )-1;
+  const IndexType Ni = sm->getCellResolution( I_DIRECTION );
+  const IndexType Nj = sm->getCellResolution( J_DIRECTION );
+  const IndexType Nk = sm->getCellResolution( K_DIRECTION );
 
   const IndexType jp = sm->cellJp();
   const IndexType kp = sm->cellKp();
@@ -181,42 +181,153 @@ inline void for_all_cellnodes_structured( const mint::Mesh* m,
 {
   SLIC_ASSERT( m != nullptr );
 
-  constexpr int MAX_CELL_NODES = 8;
-
   const mint::StructuredMesh* sm =
       static_cast< const mint::StructuredMesh* >( m );
 
+  const IndexType dimension    = sm->getDimension();
+  const IndexType nodeJp       = sm->nodeJp();
+  const IndexType nodeKp       = sm->nodeKp();
   const IndexType* offsets     = sm->getCellNodeOffsetsArray();
   const IndexType numCellNodes = sm->getNumberOfCellNodes();
+  const IndexType numCells     = sm->getNumberOfCells();
 
 #ifdef AXOM_USE_RAJA
 
-  for_all_cells< ExecPolicy >( m, AXOM_LAMBDA(IndexType cellIdx) {
+  switch( dimension )
+  {
+  case 1:
 
-    IndexType cell_connectivity[ MAX_CELL_NODES ];
-    for ( int i=0; i < numCellNodes; ++i )
-    {
-      cell_connectivity[ i ] = cellIdx + offsets[ i ];
-    }
+    using exec_pol = typename policy_traits< ExecPolicy >::raja_exec_policy;
+    RAJA::forall< exec_pol >( RAJA::RangeSegment(0,numCells),
+        AXOM_LAMBDA(IndexType cellIdx) {
 
-    kernel( cellIdx, cell_connectivity, numCellNodes );
-  } );
+      IndexType cell_connectivity[ 2 ] = { cellIdx,  cellIdx+1 };
+      kernel( cellIdx, cell_connectivity, 2 );
+    } );
+
+    break;
+  case 2:
+
+    for_all_cells< ExecPolicy, xargs::ij >(
+        m, AXOM_LAMBDA(IndexType cellIdx, IndexType i, IndexType j ) {
+
+      const IndexType n0 = i + j * nodeJp;
+      IndexType cell_connectivity[ 4 ];
+
+      for ( int inode=0; inode < numCellNodes; ++inode )
+      {
+        cell_connectivity[ inode ] = n0 + offsets[ inode ];
+      }
+
+      kernel( cellIdx, cell_connectivity, numCellNodes );
+
+    } );
+
+    break;
+  default:
+    SLIC_ASSERT( dimension==3 );
+
+    for_all_cells< ExecPolicy, xargs::ijk >(
+     m, AXOM_LAMBDA(IndexType cellIdx, IndexType i, IndexType j, IndexType k) {
+
+      const IndexType n0 = i + j * nodeJp + k * nodeKp;
+      IndexType cell_connectivity[ 8 ];
+
+      for ( int inode=0; inode < numCellNodes; ++inode )
+      {
+        cell_connectivity[ inode ] = n0 + offsets[ inode ];
+      }
+
+      kernel( cellIdx, cell_connectivity, numCellNodes );
+
+    } );
+
+  } // END switch
 
 #else
 
-  const IndexType numCells = sm->getNumberOfCells( );
-  IndexType cell_connectivity[ MAX_CELL_NODES ];
-
-  for ( IndexType icell=0; icell < numCells; ++icell )
+  switch ( dimension )
   {
-
-    for ( int i=0; i < numCellNodes; ++i )
+  case 1:
     {
-      cell_connectivity[ i ] = icell + offsets[ i ];
-    } // END for all cell nodes
+      IndexType cell_connectivity[ 2 ];
+      for ( IndexType icell=0; icell < numCells; ++icell )
+      {
+        cell_connectivity[ 0 ] = icell;
+        cell_connectivity[ 1 ] = icell+1;
+        kernel( icell, cell_connectivity, 2 );
+      } // END for all cells
 
-    kernel( icell, cell_connectivity, numCellNodes );
-  } // END for all cells
+    } // END 3D
+    break;
+  case 2:
+    {
+      IndexType cell_connectivity[ 4 ];
+
+      IndexType icell    = 0;
+      const IndexType Ni = sm->getCellResolution( I_DIRECTION );
+      const IndexType Nj = sm->getCellResolution( J_DIRECTION );
+      for ( IndexType j=0; j < Nj; ++j )
+      {
+        const IndexType j_offset = j * nodeJp;
+        for ( IndexType i=0; i < Ni; ++i )
+        {
+          const IndexType n0 = i + j_offset;
+
+          cell_connectivity[ 0 ] = n0;
+          cell_connectivity[ 1 ] = n0 + offsets[ 1 ];
+          cell_connectivity[ 2 ] = n0 + offsets[ 2 ];
+          cell_connectivity[ 3 ] = n0 + offsets[ 3 ];
+
+          kernel( icell, cell_connectivity, 4 );
+
+          ++icell;
+
+        } // END for all i
+      } // END for all j
+
+    } // END 2D
+    break;
+  default:
+    SLIC_ASSERT( dimension == 3 );
+    {
+
+      IndexType icell    = 0;
+      const IndexType Ni = sm->getCellResolution( I_DIRECTION );
+      const IndexType Nj = sm->getCellResolution( J_DIRECTION );
+      const IndexType Nk = sm->getCellResolution( K_DIRECTION );
+
+      for ( IndexType k=0; k < Nk; ++k )
+      {
+        const IndexType k_offset = k * nodeKp;
+        for ( IndexType j=0; j < Nj; ++j )
+        {
+          const IndexType j_offset = j * nodeJp;
+          for ( IndexType i=0; i < Ni; ++i )
+          {
+            const IndexType n0 = i + j_offset + k_offset;
+
+            cell_connectivity[ 0 ] = n0;
+            cell_connectivity[ 1 ] = n0 + offsets[ 1 ];
+            cell_connectivity[ 2 ] = n0 + offsets[ 2 ];
+            cell_connectivity[ 3 ] = n0 + offsets[ 3 ];
+
+            cell_connectivity[ 4 ] = n0 + offsets[ 4 ];
+            cell_connectivity[ 5 ] = n0 + offsets[ 5 ];
+            cell_connectivity[ 6 ] = n0 + offsets[ 6 ];
+            cell_connectivity[ 7 ] = n0 + offsets[ 7 ];
+
+            kernel( icell, cell_connectivity, 8 );
+
+            ++icell;
+
+          } // END for all i
+        } // END for all j
+      } // END for all k
+
+    } // END default
+
+  } // END switch
 
 #endif
 
