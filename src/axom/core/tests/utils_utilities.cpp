@@ -47,6 +47,7 @@ TEST(core_Utilities, allocation)
     }
 
     axom::utilities::free(buffer);
+    EXPECT_TRUE( buffer == nullptr );
   }
 }
 

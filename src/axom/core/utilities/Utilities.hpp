@@ -84,7 +84,8 @@ inline T* realloc( T* pointer, std::size_t n )
  *
  *  \post pointer == nullptr
  */
-inline void free( void* pointer )
+template < typename T >
+inline void free( T*& pointer )
 {
   std::free( pointer );
   pointer = nullptr;
