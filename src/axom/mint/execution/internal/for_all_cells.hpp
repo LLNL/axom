@@ -188,7 +188,6 @@ inline void for_all_cellnodes_structured( const mint::Mesh* m,
   const IndexType nodeJp       = sm->nodeJp();
   const IndexType nodeKp       = sm->nodeKp();
   const IndexType* offsets     = sm->getCellNodeOffsetsArray();
-  const IndexType numCellNodes = sm->getNumberOfCellNodes();
   const IndexType numCells     = sm->getNumberOfCells();
 
 #ifdef AXOM_USE_RAJA
@@ -243,7 +242,7 @@ inline void for_all_cellnodes_structured( const mint::Mesh* m,
       cell_connectivity[ 6 ] = n0 + offsets[ 6 ];
       cell_connectivity[ 7 ] = n0 + offsets[ 7 ];
 
-      kernel( cellIdx, cell_connectivity, numCellNodes );
+      kernel( cellIdx, cell_connectivity, 8 );
 
     } );
 
