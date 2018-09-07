@@ -349,12 +349,15 @@ inline void for_all_cellnodes_mixed( const mint::Mesh* m, KernelType&& kernel )
   const UnstructuredMeshType* um =
      static_cast< const UnstructuredMeshType* >( m );
 
+  const IndexType  numCells          = um->getNumberOfCells();
   const IndexType* cell_connectivity = um->getCellConnectivityArray( );
   const IndexType* cell_offsets      = um->getCellOffsetsArray( );
 
 #ifdef AXOM_USE_RAJA
 
-  for_all_cells< ExecPolicy >( m, AXOM_LAMBDA( IndexType cellIdx ) {
+  using exec_pol = typename policy_traits< ExecPolicy >::raja_exec_policy;
+  RAJA::forall< exec_pol >( RAJA::RangeSegment(0,numCells),
+                            AXOM_LAMBDA(IndexType cellIdx) {
     const IndexType N = cell_offsets[ cellIdx+1 ] - cell_offsets[ cellIdx ];
     kernel( cellIdx, &cell_connectivity[ cell_offsets[ cellIdx ] ], N );
   } );
@@ -364,7 +367,6 @@ inline void for_all_cellnodes_mixed( const mint::Mesh* m, KernelType&& kernel )
   constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
-  const IndexType  numCells = um->getNumberOfCells();
   for ( IndexType icell=0; icell < numCells; ++icell )
   {
     const IndexType N = cell_offsets[ icell+1 ] - cell_offsets[ icell ];
@@ -386,12 +388,15 @@ inline void for_all_cellnodes_unstructured( const mint::Mesh* m,
   const UnstructuredMeshType* um =
       static_cast< const UnstructuredMeshType* >( m );
 
+  const IndexType numCells           = um->getNumberOfCells();
   const IndexType* cell_connectivity = um->getCellConnectivityArray();
   const IndexType stride             = um->getNumberOfCellNodes();
 
 #ifdef AXOM_USE_RAJA
 
-  for_all_cells< ExecPolicy >( m, AXOM_LAMBDA( IndexType cellIdx ) {
+  using exec_pol = typename policy_traits< ExecPolicy >::raja_exec_policy;
+  RAJA::forall< exec_pol >( RAJA::RangeSegment(0,numCells),
+                             AXOM_LAMBDA(IndexType cellIdx) {
     kernel( cellIdx, &cell_connectivity[ cellIdx*stride ], stride );
   } );
 
@@ -400,7 +405,7 @@ inline void for_all_cellnodes_unstructured( const mint::Mesh* m,
   constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
-  const IndexType numCells = um->getNumberOfCells();
+
   for ( IndexType icell=0; icell < numCells; ++icell )
   {
     kernel( icell, &cell_connectivity[ icell*stride ], stride );
