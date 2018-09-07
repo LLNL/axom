@@ -429,7 +429,7 @@ def sendEmail(content, subject, sender, receiver, emailServer):
         conn = SMTP(emailServer)
         conn.set_debuglevel(False)
         try:
-            conn.sendmail(sender, reciever, msg.as_string())
+            conn.sendmail(sender, receiver, msg.as_string())
         finally:
             conn.close()
     except Exception as e:
