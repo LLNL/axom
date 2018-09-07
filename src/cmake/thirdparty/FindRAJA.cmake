@@ -13,7 +13,7 @@
 #------------------------------------------------------------------------------
 
 if (NOT RAJA_DIR)
-  message(FATAL_ERROR "Could not find RAJA. RAJA_DIR must be explicitely specified when configuring CMake" )
+  message(FATAL_ERROR "Could not find RAJA. RAJA_DIR must be explicitly specified when configuring CMake" )
 endif()
 
 find_package(RAJA REQUIRED)

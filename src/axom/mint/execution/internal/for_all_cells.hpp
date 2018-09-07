@@ -184,11 +184,11 @@ inline void for_all_cellnodes_structured( const mint::Mesh* m,
   const mint::StructuredMesh* sm =
       static_cast< const mint::StructuredMesh* >( m );
 
-  const IndexType dimension    = sm->getDimension();
-  const IndexType nodeJp       = sm->nodeJp();
-  const IndexType nodeKp       = sm->nodeKp();
-  const IndexType* offsets     = sm->getCellNodeOffsetsArray();
-  const IndexType numCells     = sm->getNumberOfCells();
+  const IndexType dimension = sm->getDimension();
+  const IndexType nodeJp    = sm->nodeJp();
+  const IndexType nodeKp    = sm->nodeKp();
+  const IndexType* offsets  = sm->getCellNodeOffsetsArray();
+  const IndexType numCells  = sm->getNumberOfCells();
 
 #ifdef AXOM_USE_RAJA
 

@@ -49,7 +49,7 @@ namespace xargs
    *  IJ lattice grid coordinates in addition to the associated linear index.
    *
    * \note This option can be used for node and/or cell loop traversals on
-   *  Structured meshes.
+   *  2D Structured meshes.
    */
   struct ij{ };
 
@@ -58,7 +58,7 @@ namespace xargs
    *  lattice grid coordinates in addition to the associated linear index.
    *
    * \note This option can be used for node and/or cell loop traversals on
-   *  Structured meshes.
+   *  3D Structured meshes.
    */
   struct ijk{ };
 
