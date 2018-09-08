@@ -257,7 +257,7 @@ public:
 
   virtual
   IndexType getCellNodeIDs( IndexType cellID,
-                          IndexType* cell ) const final override;
+                            IndexType* cell ) const final override;
 
 /// @}
 
@@ -448,7 +448,7 @@ private:
 
 //------------------------------------------------------------------------------
 inline IndexType ParticleMesh::getCellNodeIDs( IndexType cellID,
-                                             IndexType* cell ) const
+                                               IndexType* cell ) const
 {
   SLIC_ASSERT( cell != nullptr );
   SLIC_ASSERT( 0 <= cellID && cellID <= getNumberOfCells() );

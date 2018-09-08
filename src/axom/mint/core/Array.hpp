@@ -155,7 +155,7 @@ public:
    *  an external data buffer.
    *
    * \param [in] data the external data this Array will wrap.
-   * \param [in] num_tuples the number of tuples in the Array. 
+   * \param [in] num_tuples the number of tuples in the Array.
    * \param [in] num_components the number of values per tuple. If not
    *  specified defaults to 1.
    * \param [in] capacity the capacity of the external buffer.

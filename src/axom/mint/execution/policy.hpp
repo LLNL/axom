@@ -49,44 +49,44 @@ namespace policy
 /// \name GPU Execution Policies
 /// @{
 
-  /*!
-   * \brief Parallel execution on the GPU.
-   * \tparam BLOCK_SIZE the number of blocks to use
-   *
-   * \note This feature requires building Axom with RAJA.
-   */
-  template < int BLOCK_SIZE >
-  struct parallel_gpu { };
+/*!
+ * \brief Parallel execution on the GPU.
+ * \tparam BLOCK_SIZE the number of blocks to use
+ *
+ * \note This feature requires building Axom with RAJA.
+ */
+template < int BLOCK_SIZE >
+struct parallel_gpu { };
 
-  /*!
-   * \brief Asynchronous parallel execution on the GPU
-   * \param BLOCK_SIZE the number of blocks to use.
-   *
-   * \note This feature requires building Axom with RAJA.
-   *
-   * \note When executing an asynchronous parallel execution policy with a
-   *  loop traversal, the function returns immediately to the caller once
-   *  the parallel execution is launched. It is up to the caller to handle
-   *  appropriately the necessary synchronization.
-   */
-  template < int BLOCK_SIZE >
-  struct parallel_gpu_async { };
+/*!
+ * \brief Asynchronous parallel execution on the GPU
+ * \param BLOCK_SIZE the number of blocks to use.
+ *
+ * \note This feature requires building Axom with RAJA.
+ *
+ * \note When executing an asynchronous parallel execution policy with a
+ *  loop traversal, the function returns immediately to the caller once
+ *  the parallel execution is launched. It is up to the caller to handle
+ *  appropriately the necessary synchronization.
+ */
+template < int BLOCK_SIZE >
+struct parallel_gpu_async { };
 
 /// @}
 
 /// \name CPU Execution Policies
 /// @{
 
-  /*!
-   * \brief Parallel execution on the CPU.
-   * \note This feature requires building Axom with RAJA.
-   */
-  struct parallel_cpu { };
+/*!
+ * \brief Parallel execution on the CPU.
+ * \note This feature requires building Axom with RAJA.
+ */
+struct parallel_cpu { };
 
-  /*!
-   * \brief Policy used for executing the traversal serially on the CPU.
-   */
-  struct serial { };
+/*!
+ * \brief Policy used for executing the traversal serially on the CPU.
+ */
+struct serial { };
 
 /// @}
 
@@ -121,7 +121,7 @@ template < int BLOCK_SIZE >
 struct policy_traits< policy::parallel_gpu< BLOCK_SIZE > >
 {
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
-    defined(RAJA_ENABLE_CUDA)
+  defined(RAJA_ENABLE_CUDA)
   using raja_exec_policy   = RAJA::cuda_exec< BLOCK_SIZE >;
   using raja_reduce_policy = RAJA::cuda_reduce< BLOCK_SIZE >;
   using raja_sync_policy   = RAJA::cuda_synchronize;
@@ -217,20 +217,20 @@ struct policy_traits< policy::parallel_cpu >
   using raja_sync_policy   = RAJA::omp_synchronize;
 
   using raja_2d_exec =
-      RAJA::KernelPolicy<
-         RAJA::statement::Collapse< RAJA::omp_parallel_collapse_exec,
-                                    RAJA::ArgList< 1,0 >,
-                                    RAJA::statement::Lambda< 0 >
-        > // END collapse
-      >; // END kernel
+          RAJA::KernelPolicy<
+            RAJA::statement::Collapse< RAJA::omp_parallel_collapse_exec,
+                                       RAJA::ArgList< 1,0 >,
+                                       RAJA::statement::Lambda< 0 >
+                                       > // END collapse
+            >; // END kernel
 
   using raja_3d_exec =
-        RAJA::KernelPolicy<
-           RAJA::statement::Collapse< RAJA::omp_parallel_collapse_exec,
-                                      RAJA::ArgList< 2,1,0 >,
-                                      RAJA::statement::Lambda< 0 >
-          > // END collapse
-        >; // END kernel
+          RAJA::KernelPolicy<
+            RAJA::statement::Collapse< RAJA::omp_parallel_collapse_exec,
+                                       RAJA::ArgList< 2,1,0 >,
+                                       RAJA::statement::Lambda< 0 >
+                                       > // END collapse
+            >; // END kernel
 #endif
   static constexpr bool valid() { return true; };
   static constexpr char* name() { return (char*)"parallel_cpu"; };

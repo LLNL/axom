@@ -349,8 +349,8 @@ bool hasMixedCellTypes( const sidre::Group* group, const std::string& topo )
 
 //------------------------------------------------------------------------------
 void getStructuredMeshProperties( int dimension, IndexType node_dims[3],
-                        int64 node_ext[6],
-                        const sidre::Group* coordset )
+                                  int64 node_ext[6],
+                                  const sidre::Group* coordset )
 {
   SLIC_ERROR_IF( dimension < 1 || dimension > 3, "invalid dimension!" );
   SLIC_ERROR_IF( node_dims == nullptr, "supplied extent is null!" );
@@ -379,8 +379,8 @@ void getStructuredMeshProperties( int dimension, IndexType node_dims[3],
 
 //------------------------------------------------------------------------------
 void setStructuredMeshProperties( int dimension, const IndexType node_dims[3],
-                        const int64 node_ext[6],
-                        sidre::Group* coordset )
+                                  const int64 node_ext[6],
+                                  sidre::Group* coordset )
 {
   SLIC_ERROR_IF( dimension < 1 || dimension > 3, "invalid dimension!" );
   SLIC_ERROR_IF( node_dims == nullptr, "supplied extent is null!" );
@@ -424,7 +424,7 @@ void setExtent( sidre::Group* coordset, const int64 node_ext[6] )
 
 //------------------------------------------------------------------------------
 void getUniformMeshProperties( int dimension, double* origin, double* spacing,
-                     const sidre::Group* coordset )
+                               const sidre::Group* coordset )
 {
   SLIC_ERROR_IF( dimension < 1 || dimension > 3, "invalid dimension!" );
   SLIC_ERROR_IF( origin == nullptr, "supplied null pointer for origin!");
@@ -447,8 +447,9 @@ void getUniformMeshProperties( int dimension, double* origin, double* spacing,
 }
 
 //------------------------------------------------------------------------------
-void setUniformMeshProperties( int dimension, const double* origin, const double* spacing,
-                     sidre::Group* coordset )
+void setUniformMeshProperties( int dimension, const double* origin,
+                               const double* spacing,
+                               sidre::Group* coordset )
 {
   SLIC_ERROR_IF( dimension < 1 || dimension > 3, "invalid dimension!" );
   SLIC_ERROR_IF( origin == nullptr, "supplied null pointer for origin!");

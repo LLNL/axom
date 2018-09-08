@@ -65,7 +65,7 @@ CurvilinearMesh::CurvilinearMesh( IndexType Ni, double* x, IndexType Nj,
 #ifdef AXOM_MINT_USE_SIDRE
 
 //------------------------------------------------------------------------------
-CurvilinearMesh::CurvilinearMesh( sidre::Group* group, 
+CurvilinearMesh::CurvilinearMesh( sidre::Group* group,
                                   const std::string& topo ) :
   StructuredMesh( group, topo ),
   m_coordinates( new MeshCoordinates( getCoordsetGroup() ) )

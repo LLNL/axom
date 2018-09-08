@@ -286,7 +286,7 @@ public:
    * \pre 0 <= cellID < getNumberOfCells()
    */
   virtual IndexType getCellNodeIDs( IndexType AXOM_NOT_USED(cellID),
-                                  IndexType* AXOM_NOT_USED(nodes) ) const = 0;
+                                    IndexType* AXOM_NOT_USED(nodes) ) const = 0;
 
   /*!
    * \brief Return the number of faces associated with the given cell.
@@ -419,7 +419,7 @@ public:
   }
 
   /*!
-   * \brief Copy the IDs of the nodes that compose the given face into the 
+   * \brief Copy the IDs of the nodes that compose the given face into the
    *  provided buffer.
    *
    * \param [in] faceID the ID of the face in question.
@@ -432,14 +432,14 @@ public:
    * \pre 0 <= faceID < getNumberOfCells()
    */
   virtual IndexType getFaceNodeIDs( IndexType AXOM_NOT_USED(faceID),
-                                  IndexType* AXOM_NOT_USED(nodes) ) const
+                                    IndexType* AXOM_NOT_USED(nodes) ) const
   {
     SLIC_ERROR( "Not implemented!" );
     return -1;
   }
 
   /*!
-   * \brief Copy the IDs of the cells adjacent to the given face into the 
+   * \brief Copy the IDs of the cells adjacent to the given face into the
    *  provided indices.
    *
    * \param [in] faceID the ID of the face in question.
@@ -451,9 +451,9 @@ public:
    *
    * \pre 0 <= faceID < getNumberOfCells()
    */
-  virtual void getFaceCellIDs( IndexType AXOM_NOT_USED(faceID), 
-                             IndexType& AXOM_NOT_USED(cellIDOne),
-                             IndexType& AXOM_NOT_USED(cellIDTwo) ) const
+  virtual void getFaceCellIDs( IndexType AXOM_NOT_USED(faceID),
+                               IndexType& AXOM_NOT_USED(cellIDOne),
+                               IndexType& AXOM_NOT_USED(cellIDTwo) ) const
   {
     SLIC_ERROR( "Not implemented!" );
   }

@@ -48,7 +48,7 @@ void check_for_all_nodes_idx( int dimension )
 {
   SLIC_INFO( "dimension=" << dimension );
   SLIC_INFO( "checking [for_all_nodes_index] policy=" <<
-              mint::policy_traits< ExecPolicy >::name() << " " <<
+             mint::policy_traits< ExecPolicy >::name() << " " <<
              "mesh_type=" << mesh_type_name< MeshType >::name() );
 
   using IndexType = mint::IndexType;
@@ -73,12 +73,13 @@ void check_for_all_nodes_idx( int dimension )
   int* field = test_mesh->createField< int >( "n1", mint::NODE_CENTERED );
 
   mint::for_all_nodes< ExecPolicy >(
-      test_mesh, AXOM_LAMBDA(IndexType nodeIdx) {
+    test_mesh, AXOM_LAMBDA(IndexType nodeIdx)
+    {
       field[ nodeIdx ] = MAGIC_VAL;
-  } );
+    } );
 
   const IndexType numNodes = test_mesh->getNumberOfNodes();
-  for ( IndexType inode=0; inode < numNodes; ++inode )
+  for ( IndexType inode=0 ; inode < numNodes ; ++inode )
   {
     EXPECT_EQ( field[ inode ], MAGIC_VAL );
   }
@@ -92,7 +93,7 @@ template < typename ExecPolicy, int MeshType >
 void check_for_all_nodes_ij( )
 {
   SLIC_INFO( "checking [for_all_nodes_ij] policy=" <<
-              mint::policy_traits< ExecPolicy >::name() << " " <<
+             mint::policy_traits< ExecPolicy >::name() << " " <<
              "mesh_type=" << mesh_type_name< MeshType >::name() );
   using IndexType = mint::IndexType;
 
@@ -115,15 +116,19 @@ void check_for_all_nodes_ij( )
   IndexType* jcoords = utilities::alloc< mint::IndexType >( numNodes );
 
   mint::for_all_nodes< ExecPolicy, mint::xargs::ij >( test_mesh,
-      AXOM_LAMBDA( IndexType nodeIdx, IndexType i, IndexType j ) {
+                                                      AXOM_LAMBDA( IndexType
+                                                                   nodeIdx,
+                                                                   IndexType i,
+                                                                   IndexType j )
+    {
       icoords[ nodeIdx ] = i;
       jcoords[ nodeIdx ] = j;
-  } );
+    } );
 
   IndexType inode = 0;
-  for ( IndexType j=0; j < N; ++j )
+  for ( IndexType j=0 ; j < N ; ++j )
   {
-    for ( IndexType i=0; i < N; ++i )
+    for ( IndexType i=0 ; i < N ; ++i )
     {
 
       EXPECT_EQ( icoords[ inode ], i );
@@ -145,7 +150,7 @@ template < typename ExecPolicy, int MeshType >
 void check_for_all_nodes_ijk( )
 {
   SLIC_INFO( "checking [for_all_nodes_ijk] policy=" <<
-              mint::policy_traits< ExecPolicy >::name() << " " <<
+             mint::policy_traits< ExecPolicy >::name() << " " <<
              "mesh_type=" << mesh_type_name< MeshType >::name() );
   using IndexType = mint::IndexType;
 
@@ -169,18 +174,23 @@ void check_for_all_nodes_ijk( )
   IndexType* kcoords = utilities::alloc< mint::IndexType >( numNodes );
 
   mint::for_all_nodes< ExecPolicy, mint::xargs::ijk >( test_mesh,
-      AXOM_LAMBDA( IndexType nodeIdx, IndexType i, IndexType j, IndexType k ) {
+                                                       AXOM_LAMBDA( IndexType
+                                                                    nodeIdx,
+                                                                    IndexType i,
+                                                                    IndexType j,
+                                                                    IndexType k )
+    {
       icoords[ nodeIdx ] = i;
       jcoords[ nodeIdx ] = j;
       kcoords[ nodeIdx ] = k;
-  } );
+    } );
 
   IndexType inode = 0;
-  for ( IndexType k=0; k < N; ++k )
+  for ( IndexType k=0 ; k < N ; ++k )
   {
-    for ( IndexType j=0; j < N; ++j )
+    for ( IndexType j=0 ; j < N ; ++j )
     {
-      for ( IndexType i=0; i < N; ++i )
+      for ( IndexType i=0 ; i < N ; ++i )
       {
 
         EXPECT_EQ( icoords[ inode ], i );
@@ -205,7 +215,7 @@ template < typename ExecPolicy, int MeshType >
 void check_for_all_nodes_xyz( )
 {
   SLIC_INFO( "checking [for_all_nodes_xyz] policy=" <<
-              mint::policy_traits< ExecPolicy >::name() << " " <<
+             mint::policy_traits< ExecPolicy >::name() << " " <<
              "mesh_type=" << mesh_type_name< MeshType >::name() );
 
   constexpr mint::IndexType N = 20;
@@ -232,14 +242,19 @@ void check_for_all_nodes_xyz( )
   double* y = axom::utilities::alloc< double >( numNodes );
   double* z = axom::utilities::alloc< double >( numNodes );
   mint::for_all_nodes< ExecPolicy, mint::xargs::xyz >(test_mesh,
-      AXOM_LAMBDA( mint::IndexType idx, double xx, double yy, double zz ) {
+                                                      AXOM_LAMBDA( mint::
+                                                                   IndexType idx,
+                                                                   double xx,
+                                                                   double yy,
+                                                                   double zz )
+    {
       x[ idx ] = xx;
       y[ idx ] = yy;
       z[ idx ] = zz;
-  } );
+    } );
 
   // STEP 2:check coordinate arrays
-  for ( int inode=0; inode < numNodes; ++inode )
+  for ( int inode=0 ; inode < numNodes ; ++inode )
   {
     double node[ 3 ];
     uniform_mesh.getNode( inode, node );
@@ -262,7 +277,7 @@ template < typename ExecPolicy, int MeshType >
 void check_for_all_nodes_xy( )
 {
   SLIC_INFO( "checking [for_all_nodes_xy] policy=" <<
-              mint::policy_traits< ExecPolicy >::name() << " " <<
+             mint::policy_traits< ExecPolicy >::name() << " " <<
              "mesh_type=" << mesh_type_name< MeshType >::name() );
 
   constexpr mint::IndexType N = 20;
@@ -288,13 +303,14 @@ void check_for_all_nodes_xy( )
   double* x = axom::utilities::alloc< double >( numNodes );
   double* y = axom::utilities::alloc< double >( numNodes );
   mint::for_all_nodes< ExecPolicy, mint::xargs::xy >(
-        test_mesh, AXOM_LAMBDA( mint::IndexType idx, double xx, double yy ) {
-        x[ idx ] = xx;
-        y[ idx ] = yy;
-  } );
+    test_mesh, AXOM_LAMBDA( mint::IndexType idx, double xx, double yy )
+    {
+      x[ idx ] = xx;
+      y[ idx ] = yy;
+    } );
 
   // STEP 2:check coordinate arrays
-  for ( int inode=0; inode < numNodes; ++inode )
+  for ( int inode=0 ; inode < numNodes ; ++inode )
   {
     double node[ 2 ];
     uniform_mesh.getNode( inode, node );
@@ -315,7 +331,7 @@ template < typename ExecPolicy, int MeshType >
 void check_for_all_nodes_x( )
 {
   SLIC_INFO( "checking [for_all_nodes_x] policy=" <<
-              mint::policy_traits< ExecPolicy >::name() << " " <<
+             mint::policy_traits< ExecPolicy >::name() << " " <<
              "mesh_type=" << mesh_type_name< MeshType >::name() );
 
   constexpr mint::IndexType Ni = 20;
@@ -340,12 +356,13 @@ void check_for_all_nodes_x( )
   const mint::IndexType numNodes = uniform_mesh.getNumberOfNodes();
   double* x = axom::utilities::alloc< double >( numNodes );
   mint::for_all_nodes< ExecPolicy, mint::xargs::x >(
-        test_mesh, AXOM_LAMBDA( mint::IndexType idx, double xx ) {
-        x[ idx ] = xx;
-  } );
+    test_mesh, AXOM_LAMBDA( mint::IndexType idx, double xx )
+    {
+      x[ idx ] = xx;
+    } );
 
   // STEP 2:check coordinate arrays
-  for ( int inode=0; inode < numNodes; ++inode )
+  for ( int inode=0 ; inode < numNodes ; ++inode )
   {
     double node[ 1 ];
     uniform_mesh.getNode( inode, node );
@@ -374,7 +391,7 @@ TEST( mint_execution_node_traversals, for_all_nodes_xyz )
   check_for_all_nodes_xyz< seq_exec, mint::UNSTRUCTURED_MESH >();
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
-    defined(RAJA_ENABLE_OPENMP)
+  defined(RAJA_ENABLE_OPENMP)
 
   using openmp_exec = policy::parallel_cpu;
   check_for_all_nodes_xyz< openmp_exec, mint::STRUCTURED_UNIFORM_MESH >();
@@ -386,7 +403,7 @@ TEST( mint_execution_node_traversals, for_all_nodes_xyz )
 #endif
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
-    defined(RAJA_ENABLE_CUDA)
+  defined(RAJA_ENABLE_CUDA)
 
   using cuda_exec = policy::parallel_gpu;
   check_for_all_nodes_xyz< cuda_exec, mint::STRUCTURED_UNIFORM_MESH >();
@@ -409,7 +426,7 @@ TEST( mint_execution_node_traversals, for_all_nodes_xy )
   check_for_all_nodes_xy< seq_exec, mint::UNSTRUCTURED_MESH >();
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
-    defined(RAJA_ENABLE_OPENMP)
+  defined(RAJA_ENABLE_OPENMP)
 
   using openmp_exec = policy::parallel_cpu;
   check_for_all_nodes_xy< openmp_exec, mint::STRUCTURED_UNIFORM_MESH >();
@@ -421,7 +438,7 @@ TEST( mint_execution_node_traversals, for_all_nodes_xy )
 #endif
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
-    defined(RAJA_ENABLE_CUDA)
+  defined(RAJA_ENABLE_CUDA)
 
   using cuda_exec = policy::parallel_gpu;
   check_for_all_nodes_xy< cuda_exec, mint::STRUCTURED_UNIFORM_MESH >();
@@ -444,7 +461,7 @@ TEST( mint_execution_node_traversals, for_all_nodes_x )
   check_for_all_nodes_x< seq_exec, mint::UNSTRUCTURED_MESH >();
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
-    defined(RAJA_ENABLE_OPENMP)
+  defined(RAJA_ENABLE_OPENMP)
 
   using openmp_exec = policy::parallel_cpu;
   check_for_all_nodes_x< openmp_exec, mint::STRUCTURED_UNIFORM_MESH >();
@@ -456,7 +473,7 @@ TEST( mint_execution_node_traversals, for_all_nodes_x )
 #endif
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
-    defined(RAJA_ENABLE_CUDA)
+  defined(RAJA_ENABLE_CUDA)
 
   using cuda_exec = policy::parallel_gpu;
   check_for_all_nodes_x< cuda_exec, mint::STRUCTURED_UNIFORM_MESH >();
@@ -478,7 +495,7 @@ TEST( mint_execution_node_traversals, for_all_nodes_ijk )
   check_for_all_nodes_ijk< seq_exec, mint::STRUCTURED_RECTILINEAR_MESH >();
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
-    defined(RAJA_ENABLE_OPENMP)
+  defined(RAJA_ENABLE_OPENMP)
 
   using openmp_exec = policy::parallel_cpu;
   check_for_all_nodes_ijk< openmp_exec, mint::STRUCTURED_UNIFORM_MESH >();
@@ -488,7 +505,7 @@ TEST( mint_execution_node_traversals, for_all_nodes_ijk )
 #endif
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
-    defined(RAJA_ENABLE_CUDA)
+  defined(RAJA_ENABLE_CUDA)
 
   using cuda_exec = policy::parallel_gpu;
   check_for_all_nodes_ijk< cuda_exec, mint::STRUCTURED_UNIFORM_MESH >();
@@ -507,7 +524,7 @@ TEST( mint_execution_node_traversals, for_all_nodes_ij )
   check_for_all_nodes_ij< seq_exec, mint::STRUCTURED_RECTILINEAR_MESH >();
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
-    defined(RAJA_ENABLE_OPENMP)
+  defined(RAJA_ENABLE_OPENMP)
 
   using openmp_exec = policy::parallel_cpu;
   check_for_all_nodes_ij< openmp_exec, mint::STRUCTURED_UNIFORM_MESH >();
@@ -517,7 +534,7 @@ TEST( mint_execution_node_traversals, for_all_nodes_ij )
 #endif
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
-    defined(RAJA_ENABLE_CUDA)
+  defined(RAJA_ENABLE_CUDA)
 
   using cuda_exec = policy::parallel_gpu;
   check_for_all_nodes_ij< cuda_exec, mint::STRUCTURED_UNIFORM_MESH >();
@@ -531,7 +548,7 @@ TEST( mint_execution_node_traversals, for_all_nodes_ij )
 TEST( mint_execution_node_traversals, for_all_nodes_index )
 {
   constexpr int NDIMS = 3;
-  for ( int i=1; i <= NDIMS; ++i )
+  for ( int i=1 ; i <= NDIMS ; ++i )
   {
 
     using seq_exec = policy::serial;

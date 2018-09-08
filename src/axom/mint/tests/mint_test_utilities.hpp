@@ -58,28 +58,32 @@ struct mesh_type_name< mint::STRUCTURED_UNIFORM_MESH >
 template < >
 struct mesh_type_name< mint::STRUCTURED_CURVILINEAR_MESH >
 {
-  static constexpr char* name() { return (char*)"STRUCTURED_CURVILINEAR_MESH";};
+  static constexpr char* name() {
+    return (char*)"STRUCTURED_CURVILINEAR_MESH";
+  };
 };
 
 //------------------------------------------------------------------------------
 template < >
 struct mesh_type_name< mint::STRUCTURED_RECTILINEAR_MESH >
 {
-  static constexpr char* name() { return (char*)"STRUCTURED_RECTILINEAR_MESH";};
+  static constexpr char* name() {
+    return (char*)"STRUCTURED_RECTILINEAR_MESH";
+  };
 };
 
 //------------------------------------------------------------------------------
 template < >
 struct mesh_type_name< mint::UNSTRUCTURED_MESH >
 {
-  static constexpr char* name() { return (char*)"UNSTRUCTURED_MESH";};
+  static constexpr char* name() { return (char*)"UNSTRUCTURED_MESH"; };
 };
 
 //------------------------------------------------------------------------------
 template < >
 struct mesh_type_name< mint::PARTICLE_MESH>
 {
-  static constexpr char* name() { return (char*)"PARTICLE_MESH";};
+  static constexpr char* name() { return (char*)"PARTICLE_MESH"; };
 };
 
 /*!
@@ -97,7 +101,7 @@ struct mesh_type_name< mint::PARTICLE_MESH>
 /// @{
 template < int MeshType=mint::STRUCTURED_UNIFORM_MESH >
 void create_mesh( const mint::UniformMesh* uniform_mesh,
-                   mint::Mesh*& output_mesh )
+                  mint::Mesh*& output_mesh )
 {
   SLIC_ASSERT( uniform_mesh != nullptr );
   SLIC_ASSERT( output_mesh == nullptr );
@@ -107,7 +111,7 @@ void create_mesh( const mint::UniformMesh* uniform_mesh,
   double lo[3];
   double hi[3];
   mint::IndexType N[3] = { -1, -1, -1};
-  for ( int i=0; i < dimension; ++i )
+  for ( int i=0 ; i < dimension ; ++i )
   {
     N[ i ]  = uniform_mesh->getNodeResolution( i );
     lo[ i ] = uniform_mesh->evaluateCoordinate(0,i);
@@ -119,7 +123,7 @@ void create_mesh( const mint::UniformMesh* uniform_mesh,
 //------------------------------------------------------------------------------
 template < >
 void create_mesh< mint::STRUCTURED_CURVILINEAR_MESH >(
-    const mint::UniformMesh* uniform_mesh, mint::Mesh*& output_mesh )
+  const mint::UniformMesh* uniform_mesh, mint::Mesh*& output_mesh )
 {
   SLIC_ASSERT( uniform_mesh != nullptr );
   SLIC_ASSERT( output_mesh == nullptr );
@@ -127,7 +131,7 @@ void create_mesh< mint::STRUCTURED_CURVILINEAR_MESH >(
   const int dimension         = uniform_mesh->getDimension();
   mint::IndexType node_dims[] = { -1, -1, -1 };
 
-  for ( int i=0; i < dimension; ++i )
+  for ( int i=0 ; i < dimension ; ++i )
   {
     node_dims[ i ] = uniform_mesh->getNodeResolution( i );
   }
@@ -137,12 +141,12 @@ void create_mesh< mint::STRUCTURED_CURVILINEAR_MESH >(
                                            node_dims[ mint::K_DIRECTION ] );
 
   const mint::IndexType numNodes = uniform_mesh->getNumberOfNodes();
-  for ( mint::IndexType inode=0; inode < numNodes; ++inode )
+  for ( mint::IndexType inode=0 ; inode < numNodes ; ++inode )
   {
     double pt[ 3 ];
     uniform_mesh->getNode( inode, pt );
 
-    for ( int idim=0; idim < dimension; ++idim )
+    for ( int idim=0 ; idim < dimension ; ++idim )
     {
       double* coord_array = output_mesh->getCoordinateArray( idim );
       SLIC_ASSERT( coord_array != nullptr );
@@ -156,7 +160,7 @@ void create_mesh< mint::STRUCTURED_CURVILINEAR_MESH >(
 //------------------------------------------------------------------------------
 template < >
 void create_mesh< mint::STRUCTURED_RECTILINEAR_MESH >(
-    const mint::UniformMesh* uniform_mesh, mint::Mesh*& output_mesh )
+  const mint::UniformMesh* uniform_mesh, mint::Mesh*& output_mesh )
 {
   SLIC_ASSERT( uniform_mesh != nullptr );
   SLIC_ASSERT( output_mesh == nullptr );
@@ -165,7 +169,7 @@ void create_mesh< mint::STRUCTURED_RECTILINEAR_MESH >(
   SLIC_ASSERT( dimension >= 1 );
 
   mint::IndexType node_dims[] = { -1, -1, -1 };
-  for ( int i=0; i < dimension; ++i )
+  for ( int i=0 ; i < dimension ; ++i )
   {
     node_dims[ i ] = uniform_mesh->getNodeResolution( i );
   }
@@ -177,7 +181,7 @@ void create_mesh< mint::STRUCTURED_RECTILINEAR_MESH >(
   mint::IndexType Ni = uniform_mesh->getNodeResolution( mint::I_DIRECTION );
   double* x = output_mesh->getCoordinateArray( mint::X_COORDINATE );
   SLIC_ASSERT( x != nullptr );
-  for ( mint::IndexType i=0; i < Ni; ++i )
+  for ( mint::IndexType i=0 ; i < Ni ; ++i )
   {
     x[ i ] = uniform_mesh->evaluateCoordinate( i, mint::I_DIRECTION );
   } // END for all i
@@ -189,7 +193,7 @@ void create_mesh< mint::STRUCTURED_RECTILINEAR_MESH >(
     SLIC_ASSERT( y != nullptr );
 
     mint::IndexType Nj = uniform_mesh->getNodeResolution( mint::J_DIRECTION );
-    for ( mint::IndexType j=0; j < Nj; ++j )
+    for ( mint::IndexType j=0 ; j < Nj ; ++j )
     {
       y[ j ] = uniform_mesh->evaluateCoordinate( j, mint::J_DIRECTION );
     } // END for all j
@@ -203,8 +207,8 @@ void create_mesh< mint::STRUCTURED_RECTILINEAR_MESH >(
     SLIC_ASSERT( z != nullptr );
 
     const mint::IndexType Nk =
-        uniform_mesh->getNodeResolution( mint::K_DIRECTION );
-    for ( mint::IndexType k=0; k < Nk; ++k )
+      uniform_mesh->getNodeResolution( mint::K_DIRECTION );
+    for ( mint::IndexType k=0 ; k < Nk ; ++k )
     {
       z[ k ] = uniform_mesh->evaluateCoordinate( k, mint::K_DIRECTION );
     } // END for all k
@@ -216,7 +220,7 @@ void create_mesh< mint::STRUCTURED_RECTILINEAR_MESH >(
 //------------------------------------------------------------------------------
 template < >
 void create_mesh< mint::PARTICLE_MESH >(
-    const mint::UniformMesh* uniform_mesh, mint::Mesh*& output_mesh )
+  const mint::UniformMesh* uniform_mesh, mint::Mesh*& output_mesh )
 {
   SLIC_ASSERT( uniform_mesh != nullptr );
   SLIC_ASSERT( output_mesh == nullptr );
@@ -226,12 +230,12 @@ void create_mesh< mint::PARTICLE_MESH >(
 
   output_mesh = new mint::ParticleMesh( dimension, numNodes );
 
-  for ( mint::IndexType inode=0; inode < numNodes; ++inode )
+  for ( mint::IndexType inode=0 ; inode < numNodes ; ++inode )
   {
     double node[ 3 ];
     uniform_mesh->getNode( inode, node );
 
-    for ( int idim=0; idim < dimension; ++idim )
+    for ( int idim=0 ; idim < dimension ; ++idim )
     {
       double* coord = output_mesh->getCoordinateArray( idim );
       SLIC_ASSERT( coord != nullptr );
@@ -246,7 +250,7 @@ void create_mesh< mint::PARTICLE_MESH >(
 //------------------------------------------------------------------------------
 template < >
 void create_mesh< mint::UNSTRUCTURED_MESH >(
-    const mint::UniformMesh* uniform_mesh, mint::Mesh*& output_mesh )
+  const mint::UniformMesh* uniform_mesh, mint::Mesh*& output_mesh )
 {
   SLIC_ASSERT( uniform_mesh != nullptr );
   SLIC_ASSERT( output_mesh == nullptr );
@@ -256,8 +260,8 @@ void create_mesh< mint::UNSTRUCTURED_MESH >(
   const mint::IndexType numCells = uniform_mesh->getNumberOfCells();
 
   using UnstructuredMeshType = mint::UnstructuredMesh< mint::SINGLE_SHAPE >;
-  mint::CellType cell_type   = ( dimension==3 )? mint::HEX :
-                                 ( (dimension==2)? mint::QUAD : mint::SEGMENT );
+  mint::CellType cell_type   = ( dimension==3 ) ? mint::HEX :
+                               ( (dimension==2) ? mint::QUAD : mint::SEGMENT );
 
   output_mesh = new UnstructuredMeshType( dimension, cell_type,
                                           numNodes, numCells );
@@ -265,7 +269,7 @@ void create_mesh< mint::UNSTRUCTURED_MESH >(
   UnstructuredMeshType* m = static_cast< UnstructuredMeshType* >( output_mesh );
 
   // append nodes
-  for ( mint::IndexType inode=0; inode < numNodes; ++inode )
+  for ( mint::IndexType inode=0 ; inode < numNodes ; ++inode )
   {
     double node[ 3 ];
     uniform_mesh->getNode( inode, node );
@@ -273,7 +277,7 @@ void create_mesh< mint::UNSTRUCTURED_MESH >(
   }
 
   // append cells
-  for ( mint::IndexType icell=0; icell < numCells; ++icell )
+  for ( mint::IndexType icell=0 ; icell < numCells ; ++icell )
   {
     mint::IndexType cell[ 8 ];
     uniform_mesh->getCellNodeIDs( icell, cell );

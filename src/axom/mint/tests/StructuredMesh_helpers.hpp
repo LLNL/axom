@@ -30,7 +30,7 @@
 
 /*!
  * \file StructuredMesh_helpers.hpp
- * The functions declared in this header file test the methods of the 
+ * The functions declared in this header file test the methods of the
  * StructuredMesh class and are used in mint_mesh_uniform_mesh.cpp,
  * mint_mesh_rectilinear_mesh.cpp, and mint_mesh_curvilinear_mesh.cpp.
  */
@@ -341,8 +341,10 @@ inline void check_topology2D( const StructuredMesh* m )
   EXPECT_EQ( m->getNumberOfCellFaces(), 4 );
   EXPECT_EQ( m->getNumberOfFaceNodes(), 2 );
 
-  const IndexType nIFaces = m->getNodeResolution( 0 ) * m->getCellResolution( 1 );
-  const IndexType nJFaces = m->getCellResolution( 0 ) * m->getNodeResolution( 1 );
+  const IndexType nIFaces = m->getNodeResolution( 0 ) *
+                            m->getCellResolution( 1 );
+  const IndexType nJFaces = m->getCellResolution( 0 ) *
+                            m->getNodeResolution( 1 );
   EXPECT_EQ( nIFaces, m->getTotalNumFaces( 0 ) );
   EXPECT_EQ( nJFaces, m->getTotalNumFaces( 1 ) );
 
@@ -513,11 +515,14 @@ inline void check_topology3D( const StructuredMesh* m )
   EXPECT_EQ( m->getNumberOfCellFaces(), 6 );
   EXPECT_EQ( m->getNumberOfFaceNodes(), 4 );
 
-  const IndexType nIFaces = m->getNodeResolution( 0 ) * m->getCellResolution( 1 )
+  const IndexType nIFaces = m->getNodeResolution( 0 ) *
+                            m->getCellResolution( 1 )
                             * m->getCellResolution( 2 );
-  const IndexType nJFaces = m->getCellResolution( 0 ) * m->getNodeResolution( 1 )
+  const IndexType nJFaces = m->getCellResolution( 0 ) *
+                            m->getNodeResolution( 1 )
                             * m->getCellResolution( 2 );
-  const IndexType nKFaces = m->getCellResolution( 0 ) * m->getCellResolution( 1 )
+  const IndexType nKFaces = m->getCellResolution( 0 ) *
+                            m->getCellResolution( 1 )
                             * m->getNodeResolution( 2 );
   EXPECT_EQ( nIFaces, m->getTotalNumFaces( 0 ) );
   EXPECT_EQ( nJFaces, m->getTotalNumFaces( 1 ) );

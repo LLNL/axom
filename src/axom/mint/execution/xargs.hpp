@@ -36,64 +36,64 @@ namespace mint
 
 namespace xargs
 {
-  /*!
-   * \brief Indicates that the the lambda expression takes the loop index.
-   *
-   * \note This is the default argument passed to the lambda expression and
-   *  does not need to be specified explicitly.
-   */
-  struct index{ };
+/*!
+ * \brief Indicates that the the lambda expression takes the loop index.
+ *
+ * \note This is the default argument passed to the lambda expression and
+ *  does not need to be specified explicitly.
+ */
+struct index { };
 
-  /*!
-   * \brief Indicates that the lambda expression takes the corresponding
-   *  IJ lattice grid coordinates in addition to the associated linear index.
-   *
-   * \note This option can be used for node and/or cell loop traversals on
-   *  2D Structured meshes.
-   */
-  struct ij{ };
+/*!
+ * \brief Indicates that the lambda expression takes the corresponding
+ *  IJ lattice grid coordinates in addition to the associated linear index.
+ *
+ * \note This option can be used for node and/or cell loop traversals on
+ *  2D Structured meshes.
+ */
+struct ij { };
 
-  /*!
-   * \brief Indicates that the lambda expression takes the corresponding IJK
-   *  lattice grid coordinates in addition to the associated linear index.
-   *
-   * \note This option can be used for node and/or cell loop traversals on
-   *  3D Structured meshes.
-   */
-  struct ijk{ };
+/*!
+ * \brief Indicates that the lambda expression takes the corresponding IJK
+ *  lattice grid coordinates in addition to the associated linear index.
+ *
+ * \note This option can be used for node and/or cell loop traversals on
+ *  3D Structured meshes.
+ */
+struct ijk { };
 
-  /*!
-   * \brief Indicates that the lambda expression takes the corresponding X
-   *  coordinate of a mesh node in addition to the associated node index.
-   *
-   * \note This option can be be use for node mesh traversals with any 1D mesh.
-   */
-  struct x{};
+/*!
+ * \brief Indicates that the lambda expression takes the corresponding X
+ *  coordinate of a mesh node in addition to the associated node index.
+ *
+ * \note This option can be be use for node mesh traversals with any 1D mesh.
+ */
+struct x {};
 
-  /*!
-   * \brief Indicates that the lambda expression takes the corresponding X,Y,
-   *  coordinates of a mesh node in addition to the associated node index.
-   *
-   * \note This option can be be used for node mesh traversals with any 2D mesh.
-   */
-  struct xy{ };
+/*!
+ * \brief Indicates that the lambda expression takes the corresponding X,Y,
+ *  coordinates of a mesh node in addition to the associated node index.
+ *
+ * \note This option can be be used for node mesh traversals with any 2D mesh.
+ */
+struct xy { };
 
-  /*!
-   * \brief Indicates that the lambda expression takes the corresponding X,Y,Z
-   * coordinates of a mesh node in addition to the associated node index.
-   *
-   * \note This option can be used for node mesh traversals with any 3D mesh.
-   */
-  struct xyz{ };
+/*!
+ * \brief Indicates that the lambda expression takes the corresponding X,Y,Z
+ * coordinates of a mesh node in addition to the associated node index.
+ *
+ * \note This option can be used for node mesh traversals with any 3D mesh.
+ */
+struct xyz { };
 
-  /*!
-   * \brief Indicates that the lambda expression also takes the node
-   *  connectivity information, i.e., the node IDs of the mesh entity being
-   *  traversed, e.g., cells or faces and the number of nodes.
-   *
-   * \note This option can be use for cell/face mesh traversals with any mesh.
-   */
-  struct nodeids{ };
+/*!
+ * \brief Indicates that the lambda expression also takes the node
+ *  connectivity information, i.e., the node IDs of the mesh entity being
+ *  traversed, e.g., cells or faces and the number of nodes.
+ *
+ * \note This option can be use for cell/face mesh traversals with any mesh.
+ */
+struct nodeids { };
 
 } /* namespace xargs */
 

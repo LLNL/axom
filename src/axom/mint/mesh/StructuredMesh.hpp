@@ -284,7 +284,7 @@ public:
    */
   virtual void
   getFaceCellIDs( IndexType faceID, IndexType& cellIDOne,
-                IndexType& cellIDTwo ) const final override;
+                  IndexType& cellIDTwo ) const final override;
 
 /// @}
 
@@ -342,7 +342,8 @@ public:
   { return getCellNodeIDs( i, j, 0, nodes ); }
 
   inline IndexType
-  getCellNodeIDs( IndexType i, IndexType j, IndexType k, IndexType* nodes) const;
+  getCellNodeIDs( IndexType i, IndexType j, IndexType k,
+                  IndexType* nodes) const;
   /// @}
 
 
@@ -369,7 +370,8 @@ public:
   }
 
   inline void
-  getCellFaceIDs( IndexType i, IndexType j, IndexType k, IndexType* faces ) const
+  getCellFaceIDs( IndexType i, IndexType j, IndexType k,
+                  IndexType* faces ) const
   {
     const IndexType cellID = getCellLinearIndex( i, j, k );
     getCellFaceIDsInternal( cellID, j, k, faces );
@@ -418,11 +420,11 @@ public:
    */
   /// @{
   inline void getIFaceCellIDs( IndexType faceID, IndexType& cellIDOne,
-                             IndexType& cellIDTwo ) const;
+                               IndexType& cellIDTwo ) const;
   inline void getJFaceCellIDs( IndexType faceID, IndexType& cellIDOne,
-                             IndexType& cellIDTwo ) const;
+                               IndexType& cellIDTwo ) const;
   inline void getKFaceCellIDs( IndexType faceID, IndexType& cellIDOne,
-                             IndexType& cellIDTwo ) const;
+                               IndexType& cellIDTwo ) const;
   /// @}
 
 /// @}
@@ -891,11 +893,12 @@ private:
    */
   /// @{
   inline IndexType
-  getCellFaceIDsInternal( IndexType cellID, IndexType j, IndexType* faces ) const;
+  getCellFaceIDsInternal( IndexType cellID, IndexType j,
+                          IndexType* faces ) const;
 
   inline IndexType
   getCellFaceIDsInternal( IndexType cellID, IndexType j, IndexType k,
-                        IndexType* faces ) const;
+                          IndexType* faces ) const;
   /// @}
 
   /*!
@@ -934,7 +937,9 @@ private:
    * \param [in] k the K grid index of the face.
    */
   inline IndexType getJFaceJIndex( IndexType shiftedID, IndexType k ) const
-  { return (shiftedID - m_num_J_faces_in_k_slice * k) / getCellResolution( 0 ); }
+  {
+    return (shiftedID - m_num_J_faces_in_k_slice * k) / getCellResolution( 0 );
+  }
 
   /*!
    * \brief Return the K grid index of the given K direction face.
@@ -963,7 +968,7 @@ private:
 //------------------------------------------------------------------------------
 inline
 IndexType StructuredMesh::getCellNodeIDs( IndexType cellID,
-                                        IndexType* nodes ) const
+                                          IndexType* nodes ) const
 {
   SLIC_ASSERT( nodes != nullptr );
   SLIC_ASSERT( 0 <= cellID && cellID < getNumberOfCells() );
@@ -1025,7 +1030,7 @@ StructuredMesh::getFaceNodeIDs( IndexType faceID, IndexType* nodes ) const
 //------------------------------------------------------------------------------
 inline void
 StructuredMesh::getFaceCellIDs( IndexType faceID, IndexType& cellIDOne,
-                              IndexType& cellIDTwo ) const
+                                IndexType& cellIDTwo ) const
 {
   /* Check which kind of face is being asked for */
   if ( faceID < getTotalNumFaces( 0 ) )
@@ -1047,8 +1052,8 @@ StructuredMesh::getFaceCellIDs( IndexType faceID, IndexType& cellIDOne,
 
 //------------------------------------------------------------------------------
 inline IndexType StructuredMesh::getCellNodeIDs( IndexType i, IndexType j,
-                                               IndexType k,
-                                               IndexType* nodes ) const
+                                                 IndexType k,
+                                                 IndexType* nodes ) const
 {
   SLIC_ASSERT( nodes != nullptr );
   SLIC_ASSERT( 0 <= i && i < getNodeResolution( 0 ) );
@@ -1144,7 +1149,7 @@ StructuredMesh::getKFaceNodeIDs( IndexType faceID, IndexType* nodes ) const
 //------------------------------------------------------------------------------
 inline void
 StructuredMesh::getIFaceCellIDs( IndexType faceID, IndexType& cellIDOne,
-                               IndexType& cellIDTwo ) const
+                                 IndexType& cellIDTwo ) const
 {
   SLIC_ASSERT( m_ndims == 2 || m_ndims == 3 );
 
@@ -1174,7 +1179,7 @@ StructuredMesh::getIFaceCellIDs( IndexType faceID, IndexType& cellIDOne,
 //-----------------------------------------------------------------------------
 inline void
 StructuredMesh::getJFaceCellIDs( IndexType faceID, IndexType& cellIDOne,
-                               IndexType& cellIDTwo ) const
+                                 IndexType& cellIDTwo ) const
 {
   SLIC_ASSERT( m_ndims == 2 || m_ndims == 3 );
 
@@ -1204,7 +1209,7 @@ StructuredMesh::getJFaceCellIDs( IndexType faceID, IndexType& cellIDOne,
 //------------------------------------------------------------------------------
 inline void
 StructuredMesh::getKFaceCellIDs( IndexType faceID, IndexType& cellIDOne,
-                               IndexType& cellIDTwo ) const
+                                 IndexType& cellIDTwo ) const
 {
   SLIC_ASSERT( m_ndims == 3 );
 
@@ -1255,8 +1260,9 @@ StructuredMesh::getFaceLinearIndex( int dir, IndexType i, IndexType j,
 
 //------------------------------------------------------------------------------
 inline IndexType StructuredMesh::getCellFaceIDsInternal( IndexType cellID,
-                                                       IndexType j,
-                                                       IndexType* faces ) const
+                                                         IndexType j,
+                                                         IndexType* faces )
+const
 {
   SLIC_ASSERT( m_ndims == 2 );
   SLIC_ASSERT( 0 <= cellID && cellID < getNumberOfCells() );
@@ -1276,9 +1282,10 @@ inline IndexType StructuredMesh::getCellFaceIDsInternal( IndexType cellID,
 
 //------------------------------------------------------------------------------
 inline IndexType StructuredMesh::getCellFaceIDsInternal( IndexType cellID,
-                                                       IndexType j,
-                                                       IndexType k,
-                                                       IndexType* faces ) const
+                                                         IndexType j,
+                                                         IndexType k,
+                                                         IndexType* faces )
+const
 {
   SLIC_ASSERT( m_ndims == 3 );
   SLIC_ASSERT( 0 <= cellID && cellID < getNumberOfCells() );

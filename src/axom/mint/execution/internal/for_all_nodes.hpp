@@ -58,7 +58,7 @@ inline void for_all_nodes( xargs::index,
   constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
-  for ( int nodeIdx=0; nodeIdx < numNodes; ++nodeIdx )
+  for ( int nodeIdx=0 ; nodeIdx < numNodes ; ++nodeIdx )
   {
     kernel( nodeIdx );
   }
@@ -81,7 +81,7 @@ inline void for_all_nodes( xargs::ij,
                  "xargs::ij is only valid for 2-D structured meshes!" );
 
   const mint::StructuredMesh* sm =
-      static_cast< const mint::StructuredMesh* >( m );
+    static_cast< const mint::StructuredMesh* >( m );
 
   const IndexType jp = sm->nodeJp();
   const IndexType Ni = sm->getNodeResolution( I_DIRECTION );
@@ -94,20 +94,21 @@ inline void for_all_nodes( xargs::ij,
   using exec_pol = typename policy_traits< ExecPolicy >::raja_2d_exec;
 
   RAJA::kernel< exec_pol >( RAJA::make_tuple(i_range, j_range),
-                            AXOM_LAMBDA( IndexType i, IndexType j ) {
-    const IndexType nodeIdx = i + j * jp;
-    kernel( nodeIdx, i, j );
-  } );
+                            AXOM_LAMBDA( IndexType i, IndexType j )
+        {
+          const IndexType nodeIdx = i + j * jp;
+          kernel( nodeIdx, i, j );
+        } );
 
 #else
 
   constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
-  for( IndexType j=0; j < Nj; ++j )
+  for( IndexType j=0 ; j < Nj ; ++j )
   {
     const IndexType j_offset = j * jp;
-    for ( IndexType i=0; i < Ni; ++i )
+    for ( IndexType i=0 ; i < Ni ; ++i )
     {
       const IndexType nodeIdx = i + j_offset;
       kernel( nodeIdx, i, j );
@@ -131,7 +132,7 @@ inline void for_all_nodes( xargs::ijk,
                  "xargs::ijk is only valid for 3-D structured meshes!" );
 
   const mint::StructuredMesh* sm =
-       static_cast< const mint::StructuredMesh* >( m );
+    static_cast< const mint::StructuredMesh* >( m );
 
   const IndexType jp = sm->nodeJp();
   const IndexType kp = sm->nodeKp();
@@ -147,23 +148,24 @@ inline void for_all_nodes( xargs::ijk,
   using exec_pol = typename policy_traits< ExecPolicy >::raja_3d_exec;
 
   RAJA::kernel< exec_pol >( RAJA::make_tuple(i_range, j_range, k_range),
-                        AXOM_LAMBDA( IndexType i, IndexType j, IndexType k ) {
-    const IndexType nodeIdx = i + j*jp + k*kp;
-    kernel( nodeIdx, i, j, k );
-  } );
+                            AXOM_LAMBDA( IndexType i, IndexType j, IndexType k )
+        {
+          const IndexType nodeIdx = i + j*jp + k*kp;
+          kernel( nodeIdx, i, j, k );
+        } );
 
 #else
 
   constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
-  for ( IndexType k=0; k < Nk; ++k )
+  for ( IndexType k=0 ; k < Nk ; ++k )
   {
     const IndexType k_offset = k * kp;
-    for ( IndexType j=0; j < Nj; ++j )
+    for ( IndexType j=0 ; j < Nj ; ++j )
     {
       const IndexType j_offset = j * jp;
-      for ( IndexType i=0; i < Ni; ++i )
+      for ( IndexType i=0 ; i < Ni ; ++i )
       {
         const IndexType nodeIdx = i + j_offset + k_offset;
         kernel( nodeIdx, i, j, k );
@@ -190,16 +192,17 @@ inline void for_all_nodes_x( const mint::Mesh* m, KernelType&& kernel )
 
   using exec_pol = typename policy_traits< ExecPolicy >::raja_exec_policy;
   RAJA::forall< exec_pol >( RAJA::RangeSegment(0,numNodes),
-                            AXOM_LAMBDA(IndexType nodeIdx) {
-    kernel( nodeIdx, x[ nodeIdx ] );
-  } );
+                            AXOM_LAMBDA(IndexType nodeIdx)
+        {
+          kernel( nodeIdx, x[ nodeIdx ] );
+        } );
 
 #else
 
   constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
-  for ( int inode=0; inode < numNodes; ++inode )
+  for ( int inode=0 ; inode < numNodes ; ++inode )
   {
     kernel( inode, x[ inode ] );
   } // END for all nodes
@@ -224,17 +227,18 @@ inline void for_all_nodes_x_uniform( const mint::Mesh* m, KernelType&& kernel )
 
   using exec_pol = typename policy_traits< ExecPolicy >::raja_exec_policy;
   RAJA::forall< exec_pol >( RAJA::RangeSegment(0,numNodes),
-                            AXOM_LAMBDA(IndexType nodeIdx) {
-    const double x = x0[ X_COORDINATE ] + nodeIdx*h[ I_DIRECTION ];
-    kernel( nodeIdx, x );
-  } );
+                            AXOM_LAMBDA(IndexType nodeIdx)
+        {
+          const double x = x0[ X_COORDINATE ] + nodeIdx*h[ I_DIRECTION ];
+          kernel( nodeIdx, x );
+        } );
 
 #else
 
   constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
-  for ( int inode=0; inode < numNodes; ++inode )
+  for ( int inode=0 ; inode < numNodes ; ++inode )
   {
     const double x = x0[ X_COORDINATE ] + inode*h[ I_DIRECTION ];
     kernel( inode, x );
@@ -259,7 +263,7 @@ inline void for_all_nodes( xargs::x,
   {
   case STRUCTURED_UNIFORM_MESH:
     for_all_nodes_x_uniform< ExecPolicy >(
-        m, std::forward< KernelType >( kernel ) );
+      m, std::forward< KernelType >( kernel ) );
     break;
   default:
     for_all_nodes_x< ExecPolicy >( m, std::forward< KernelType >( kernel ) );
@@ -284,16 +288,17 @@ inline void for_all_nodes_xy( const mint::Mesh* m, KernelType&& kernel )
 
   using exec_pol = typename policy_traits< ExecPolicy >::raja_exec_policy;
   RAJA::forall< exec_pol >( RAJA::RangeSegment(0,numNodes),
-                            AXOM_LAMBDA(IndexType nodeIdx) {
-      kernel( nodeIdx, x[ nodeIdx ], y[ nodeIdx ] );
-  } );
+                            AXOM_LAMBDA(IndexType nodeIdx)
+        {
+          kernel( nodeIdx, x[ nodeIdx ], y[ nodeIdx ] );
+        } );
 
 #else
 
   constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
-  for ( int nodeIdx=0; nodeIdx < numNodes; ++nodeIdx )
+  for ( int nodeIdx=0 ; nodeIdx < numNodes ; ++nodeIdx )
   {
     kernel( nodeIdx, x[ nodeIdx ], y[ nodeIdx ] );
   }
@@ -316,11 +321,12 @@ inline void for_all_nodes_xy_uniform( const mint::Mesh* m, KernelType&& kernel)
 #ifdef AXOM_USE_RAJA
 
   for_all_nodes< ExecPolicy, xargs::ij >(
-      m, AXOM_LAMBDA(IndexType nodeIdx, IndexType i, IndexType j ) {
-      const double x = x0[ X_COORDINATE ] + i*h[ I_DIRECTION ];
-      const double y = x0[ Y_COORDINATE ] + j*h[ J_DIRECTION ];
-      kernel( nodeIdx, x, y );
-  } );
+    m, AXOM_LAMBDA(IndexType nodeIdx, IndexType i, IndexType j )
+        {
+          const double x = x0[ X_COORDINATE ] + i*h[ I_DIRECTION ];
+          const double y = x0[ Y_COORDINATE ] + j*h[ J_DIRECTION ];
+          kernel( nodeIdx, x, y );
+        } );
 
 #else
 
@@ -331,12 +337,12 @@ inline void for_all_nodes_xy_uniform( const mint::Mesh* m, KernelType&& kernel)
   const IndexType Ni = um->getNodeResolution( I_DIRECTION );
   const IndexType Nj = um->getNodeResolution( J_DIRECTION );
 
-  for( IndexType j=0; j < Nj; ++j )
+  for( IndexType j=0 ; j < Nj ; ++j )
   {
     const IndexType j_offset = j * jp;                // logical offset
     const double j_h         = j * h[ J_DIRECTION ];  // physical offset
 
-    for ( IndexType i=0; i < Ni; ++i )
+    for ( IndexType i=0 ; i < Ni ; ++i )
     {
       const IndexType nodeIdx = i + j_offset;
       const double x = x0[ X_COORDINATE ] + i * h[ I_DIRECTION ];
@@ -358,16 +364,17 @@ inline void for_all_nodes_xy_rectilinear( const mint::Mesh* m,
   SLIC_ASSERT( m->getMeshType()==STRUCTURED_RECTILINEAR_MESH );
 
   const mint::RectilinearMesh* rm =
-      static_cast< const mint::RectilinearMesh* >( m );
+    static_cast< const mint::RectilinearMesh* >( m );
   const double* x = rm->getCoordinateArray( X_COORDINATE );
   const double* y = rm->getCoordinateArray( Y_COORDINATE );
 
 #ifdef AXOM_USE_RAJA
 
   for_all_nodes< ExecPolicy, xargs::ij >(
-      m, AXOM_LAMBDA( IndexType nodeIdx, IndexType i, IndexType j ) {
-      kernel( nodeIdx, x[ i ], y[ j ] );
-  } );
+    m, AXOM_LAMBDA( IndexType nodeIdx, IndexType i, IndexType j )
+        {
+          kernel( nodeIdx, x[ i ], y[ j ] );
+        } );
 
 #else
 
@@ -378,10 +385,10 @@ inline void for_all_nodes_xy_rectilinear( const mint::Mesh* m,
   const IndexType Ni = rm->getNodeResolution( I_DIRECTION );
   const IndexType Nj = rm->getNodeResolution( J_DIRECTION );
 
-  for ( IndexType j=0; j < Nj; ++j )
+  for ( IndexType j=0 ; j < Nj ; ++j )
   {
     const IndexType j_offset = j * jp;
-    for ( IndexType i=0; i < Ni; ++i )
+    for ( IndexType i=0 ; i < Ni ; ++i )
     {
       const IndexType nodeIdx = i + j_offset;
       kernel( nodeIdx, x[ i ], y[ j ] );
@@ -406,11 +413,11 @@ inline void for_all_nodes( xargs::xy, const mint::Mesh* m,
   {
   case STRUCTURED_RECTILINEAR_MESH:
     for_all_nodes_xy_rectilinear< ExecPolicy >(
-        m, std::forward< KernelType >( kernel ) );
+      m, std::forward< KernelType >( kernel ) );
     break;
   case STRUCTURED_UNIFORM_MESH:
     for_all_nodes_xy_uniform< ExecPolicy >(
-        m, std::forward< KernelType >( kernel ) );
+      m, std::forward< KernelType >( kernel ) );
     break;
   default:
     for_all_nodes_xy< ExecPolicy >( m, std::forward< KernelType >( kernel ) );
@@ -437,16 +444,17 @@ inline void for_all_nodes_xyz( const mint::Mesh* m, KernelType&& kernel )
 
   using exec_pol = typename policy_traits< ExecPolicy >::raja_exec_policy;
   RAJA::forall< exec_pol >( RAJA::RangeSegment(0,numNodes),
-                            AXOM_LAMBDA(IndexType nodeIdx) {
-      kernel( nodeIdx, x[ nodeIdx ], y[ nodeIdx ], z[ nodeIdx ] );
-  } );
+                            AXOM_LAMBDA(IndexType nodeIdx)
+        {
+          kernel( nodeIdx, x[ nodeIdx ], y[ nodeIdx ], z[ nodeIdx ] );
+        } );
 
 #else
 
   constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
-  for ( int nodeIdx=0; nodeIdx < numNodes; ++nodeIdx )
+  for ( int nodeIdx=0 ; nodeIdx < numNodes ; ++nodeIdx )
   {
     kernel( nodeIdx, x[ nodeIdx ], y[ nodeIdx ], z[ nodeIdx ] );
   }
@@ -470,12 +478,13 @@ inline void for_all_nodes_xyz_uniform( const mint::Mesh* m,
 #ifdef AXOM_USE_RAJA
 
   for_all_nodes< ExecPolicy, xargs::ijk >(
-     m, AXOM_LAMBDA(IndexType nodeIdx, IndexType i, IndexType j, IndexType k) {
-     const double x = x0[ X_COORDINATE ] + i*h[ I_DIRECTION ];
-     const double y = x0[ Y_COORDINATE ] + j*h[ J_DIRECTION ];
-     const double z = x0[ Z_COORDINATE ] + k*h[ K_DIRECTION ];
-     kernel( nodeIdx, x, y, z );
-  } );
+    m, AXOM_LAMBDA(IndexType nodeIdx, IndexType i, IndexType j, IndexType k)
+        {
+          const double x = x0[ X_COORDINATE ] + i*h[ I_DIRECTION ];
+          const double y = x0[ Y_COORDINATE ] + j*h[ J_DIRECTION ];
+          const double z = x0[ Z_COORDINATE ] + k*h[ K_DIRECTION ];
+          kernel( nodeIdx, x, y, z );
+        } );
 
 #else
 
@@ -488,15 +497,15 @@ inline void for_all_nodes_xyz_uniform( const mint::Mesh* m,
   const IndexType Nj = um->getNodeResolution( J_DIRECTION );
   const IndexType Nk = um->getNodeResolution( K_DIRECTION );
 
-  for ( IndexType k=0; k < Nk; ++k )
+  for ( IndexType k=0 ; k < Nk ; ++k )
   {
     const IndexType k_offset = k * kp;               // logical offset (k)
     const double k_h         = k * h[ K_DIRECTION ]; // physical offset (k)
-    for ( IndexType j=0; j < Nj; ++j )
+    for ( IndexType j=0 ; j < Nj ; ++j )
     {
       const IndexType j_offset = j * jp;               // logical offset (j)
       const double j_h         = j * h[ J_DIRECTION ]; // physical offset (j)
-      for ( IndexType i=0; i < Ni; ++i )
+      for ( IndexType i=0 ; i < Ni ; ++i )
       {
         const IndexType nodeIdx = i + j_offset + k_offset;
         const double x = x0[ X_COORDINATE ] + i * h[ I_DIRECTION ];
@@ -520,7 +529,7 @@ inline void for_all_nodes_xyz_rectilinear( const mint::Mesh* m,
   SLIC_ASSERT( m->getMeshType()==STRUCTURED_RECTILINEAR_MESH );
 
   const mint::RectilinearMesh* rm =
-      static_cast< const mint::RectilinearMesh* >( m );
+    static_cast< const mint::RectilinearMesh* >( m );
 
   const double* x = rm->getCoordinateArray( X_COORDINATE );
   const double* y = rm->getCoordinateArray( Y_COORDINATE );
@@ -529,9 +538,10 @@ inline void for_all_nodes_xyz_rectilinear( const mint::Mesh* m,
 #ifdef AXOM_USE_RAJA
 
   for_all_nodes< ExecPolicy, xargs::ijk >(
-     m, AXOM_LAMBDA(IndexType nodeIdx, IndexType i, IndexType j, IndexType k) {
-     kernel( nodeIdx, x[ i ], y[ j ], z[ k ] );
-  } );
+    m, AXOM_LAMBDA(IndexType nodeIdx, IndexType i, IndexType j, IndexType k)
+        {
+          kernel( nodeIdx, x[ i ], y[ j ], z[ k ] );
+        } );
 
 #else
 
@@ -544,13 +554,13 @@ inline void for_all_nodes_xyz_rectilinear( const mint::Mesh* m,
   const IndexType Nj = rm->getNodeResolution( J_DIRECTION );
   const IndexType Nk = rm->getNodeResolution( K_DIRECTION );
 
-  for ( IndexType k=0; k < Nk; ++k )
+  for ( IndexType k=0 ; k < Nk ; ++k )
   {
     const IndexType k_offset = k * kp;
-    for ( IndexType j=0; j < Nj; ++j )
+    for ( IndexType j=0 ; j < Nj ; ++j )
     {
       const IndexType j_offset = j * jp;
-      for ( IndexType i=0; i < Ni; ++ i )
+      for ( IndexType i=0 ; i < Ni ; ++i )
       {
 
         const IndexType nodeIdx = i + j_offset + k_offset;
@@ -577,11 +587,11 @@ inline void for_all_nodes( xargs::xyz, const mint::Mesh* m,
   {
   case STRUCTURED_RECTILINEAR_MESH:
     for_all_nodes_xyz_rectilinear< ExecPolicy >(
-        m, std::forward< KernelType >( kernel ) );
+      m, std::forward< KernelType >( kernel ) );
     break;
   case STRUCTURED_UNIFORM_MESH:
     for_all_nodes_xyz_uniform< ExecPolicy >(
-        m, std::forward< KernelType >( kernel ) );
+      m, std::forward< KernelType >( kernel ) );
     break;
   default:
     for_all_nodes_xyz< ExecPolicy >( m, std::forward< KernelType >( kernel ) );

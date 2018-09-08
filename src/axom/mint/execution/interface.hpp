@@ -148,7 +148,7 @@ inline void for_all( const mint::IndexType& begin,
 
   constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
   AXOM_STATIC_ASSERT( is_serial );
-  for ( mint::IndexType i=begin; i < end; ++i )
+  for ( mint::IndexType i=begin ; i < end ; ++i )
   {
     kernel( i );
   }
@@ -262,7 +262,7 @@ inline void for_all_nodes( const mint::Mesh* m, KernelType&& kernel )
 
   // dispatch
   internal::for_all_nodes< ExecPolicy >(
-      ArgType(), m, std::forward< KernelType >( kernel ) );
+    ArgType(), m, std::forward< KernelType >( kernel ) );
 }
 
 /// @}
@@ -323,7 +323,7 @@ inline void for_all_cells( const mint::Mesh* m, KernelType&& kernel )
 
   // dispatch
   internal::for_all_cells< ExecPolicy >(
-      ArgType(), m, std::forward< KernelType >( kernel )  );
+    ArgType(), m, std::forward< KernelType >( kernel )  );
 }
 
 /// @}
@@ -350,7 +350,9 @@ inline void synchronize( )
 }
 
 template < >
-inline void synchronize< policy::serial >( ) { return; }
+inline void synchronize< policy::serial >( ) {
+  return;
+}
 /// @}
 
 /// @}

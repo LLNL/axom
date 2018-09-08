@@ -165,7 +165,7 @@ StructuredMesh::StructuredMesh( int meshType,
                  "invalid topology group!" );
 
   blueprint::setStructuredMeshProperties( m_ndims, m_node_dims, m_node_extent,
-                                getCoordsetGroup() );
+                                          getCoordsetGroup() );
   structuredInit();
 }
 

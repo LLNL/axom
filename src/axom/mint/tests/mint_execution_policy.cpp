@@ -15,7 +15,7 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include "axom/mint/execution/policy.hpp" // for execution policy definitions and traits
+#include "axom/mint/execution/policy.hpp" // policy definitions and traits
 #include "axom/slic/interface/slic.hpp"   // for SLIC macros
 
 // gtest includes

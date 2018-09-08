@@ -125,7 +125,7 @@ TEST( mint_mesh_curvilinear_mesh_DeathTest, invalid_construction )
 
   // check external constructor
   EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh( 5, nullptr ), IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh( -1 , x ), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh( -1, x ), IGNORE_OUTPUT );
 
 #ifdef AXOM_MINT_USE_SIDRE
 

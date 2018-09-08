@@ -54,7 +54,8 @@ int main ( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
 
   // STEP 2: fill in the coordinates
   mint::for_all_nodes< policy::serial, xargs::ij >(
-      &mesh, AXOM_LAMBDA(IndexType nodeIdx, IndexType i, IndexType j) {
+    &mesh, AXOM_LAMBDA(IndexType nodeIdx, IndexType i, IndexType j)
+  {
 
     const double xx     = h*i;
     const double yy     = h*j;

@@ -45,7 +45,7 @@ void check_for_all( bool async=false )
 {
   EXPECT_TRUE( mint::policy_traits< ExecPolicy >::valid() );
   SLIC_INFO( "check_for_all with [" <<
-              mint::policy_traits< ExecPolicy >::name() << "]" );
+             mint::policy_traits< ExecPolicy >::name() << "]" );
 
   // STEP 0: set some constants
   constexpr int VALUE_1 = -42;
@@ -56,9 +56,10 @@ void check_for_all( bool async=false )
   int* a = axom::utilities::alloc< int >( N );
 
   // STEP 1: initialize to VALUE_1
-  mint::for_all< ExecPolicy >( N, AXOM_LAMBDA(mint::IndexType idx) {
-    a[ idx ] = VALUE_1;
-  } );
+  mint::for_all< ExecPolicy >( N, AXOM_LAMBDA(mint::IndexType idx)
+    {
+      a[ idx ] = VALUE_1;
+    } );
 
   if ( async )
   {
@@ -66,15 +67,16 @@ void check_for_all( bool async=false )
   }
 
   // STEP 2: check array
-  for ( int i=0; i < N; ++i )
+  for ( int i=0 ; i < N ; ++i )
   {
     EXPECT_EQ( a[ i ], VALUE_1 );
   }
 
   // STEP 3: set all values to VALUE_2 with mint::for_all
-  mint::for_all< ExecPolicy >( 0, N, AXOM_LAMBDA(mint::IndexType idx) {
-    a[ idx ] = VALUE_2;
-  } );
+  mint::for_all< ExecPolicy >( 0, N, AXOM_LAMBDA(mint::IndexType idx)
+    {
+      a[ idx ] = VALUE_2;
+    } );
 
   if ( async )
   {
@@ -82,7 +84,7 @@ void check_for_all( bool async=false )
   }
 
   // STEP 4: check array
-  for ( int i=0; i < N; ++i )
+  for ( int i=0 ; i < N ; ++i )
   {
     EXPECT_EQ( a[ i ], VALUE_2 );
   }
@@ -101,13 +103,13 @@ TEST( mint_execution_forall_traversals, check_generic_loop )
   check_for_all< policy::serial >( );
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
-    defined(RAJA_ENABLE_OPENMP)
+  defined(RAJA_ENABLE_OPENMP)
 
   check_for_all< policy::parallel_cpu >( );
 #endif
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
-    defined(RAJA_ENABLE_CUDA)
+  defined(RAJA_ENABLE_CUDA)
 
   constexpr bool async = true;
   check_for_all< policy::parallel_gpu >( );
