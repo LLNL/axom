@@ -564,7 +564,7 @@ void init()
   axom::slic::GenericOutputStream* compactStream =
     new axom::slic::GenericOutputStream( &std::cout, slicFormatStr );
   axom::slic::addStreamToMsgLevel( defaultStream, axom::slic::message::Error );
-  axom::slic::addStreamToMsgLevel( compactStream, 
+  axom::slic::addStreamToMsgLevel( compactStream,
                                    axom::slic::message::Warning );
   axom::slic::addStreamToMsgLevel( compactStream, axom::slic::message::Info );
   axom::slic::addStreamToMsgLevel( compactStream, axom::slic::message::Debug );

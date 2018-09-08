@@ -357,7 +357,8 @@ TEST( mint_mesh_blueprint, get_set_uniform_mesh )
     root->createGroup( "topologies/t1" );
 
     mint::blueprint::initializeTopologyGroup( root, "t1", "c1", "uniform" );
-    mint::blueprint::setStructuredMeshProperties( NDIMS, ext, global_ext, coordset );
+    mint::blueprint::setStructuredMeshProperties( NDIMS, ext, global_ext,
+                                                  coordset );
     mint::blueprint::setUniformMeshProperties( idim, X0, H, coordset );
 
     double* origin = new double[ idim ];

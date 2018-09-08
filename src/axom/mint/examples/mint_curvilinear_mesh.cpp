@@ -25,6 +25,8 @@
 // aliases
 namespace mint      = axom::mint;
 namespace utilities = axom::utilities;
+namespace policy    = mint::policy;
+namespace xargs     = mint::xargs;
 using IndexType     = mint::IndexType;
 
 constexpr double R  = 2.5;
@@ -45,31 +47,28 @@ int main ( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
   mint::CurvilinearMesh mesh( N, N );
   double* x          = mesh.getCoordinateArray( mint::X_COORDINATE );
   double* y          = mesh.getCoordinateArray( mint::Y_COORDINATE );
-  const IndexType jp = mesh.nodeJp();
 
   // STEP 1: add fiducial fields
   double* dx = mesh.createField< double >( "dx", mint::NODE_CENTERED );
   double* dy = mesh.createField< double >( "dy", mint::NODE_CENTERED );
 
   // STEP 2: fill in the coordinates
-  for ( IndexType j=0 ; j < N ; ++j )
+  mint::for_all_nodes< policy::serial, xargs::ij >(
+    &mesh, AXOM_LAMBDA(IndexType nodeIdx, IndexType i, IndexType j)
   {
-    const IndexType offset = j * jp;
-    for ( IndexType i=0 ; i < N ; ++i )
-    {
-      const IndexType idx = i + offset;
-      const double xx     = h*i;
-      const double yy     = h*j;
-      const double alpha  = yy + R;
-      const double beta   = xx*M;
 
-      x[ idx ] = alpha * cos( beta );
-      y[ idx ] = alpha * sin( beta );
+    const double xx     = h*i;
+    const double yy     = h*j;
+    const double alpha  = yy + R;
+    const double beta   = xx*M;
 
-      dx[ idx ] = utilities::random_real( -10.0, 10.0 );
-      dy[ idx ] = utilities::random_real( -5.0, 5.0 );
-    } // END for all i
-  } // END for all j
+    x[ nodeIdx ] = alpha * cos( beta );
+    y[ nodeIdx ] = alpha * sin( beta );
+
+    dx[ nodeIdx ] = utilities::random_real( -10.0, 10.0 );
+    dy[ nodeIdx ] = utilities::random_real( -5.0, 5.0 );
+
+  } );
 
   // STEP 3: dump file
   mint::write_vtk( &mesh, "curvilinear_mesh.vtk" );

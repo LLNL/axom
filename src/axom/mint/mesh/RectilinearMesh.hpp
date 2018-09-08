@@ -136,7 +136,7 @@ public:
    * \post hasSidreGroup() == false.
    * \post isExternal() == true
    */
-  RectilinearMesh( IndexType Ni, double* x, IndexType Nj=-1, double* y=nullptr, 
+  RectilinearMesh( IndexType Ni, double* x, IndexType Nj=-1, double* y=nullptr,
                    IndexType Nk=-1, double* z=nullptr );
 /// @}
 

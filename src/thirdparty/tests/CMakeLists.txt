@@ -17,6 +17,30 @@
 axom_add_code_checks(PREFIX thirdparty_tests)
 
 ########################################
+# Smoke test for RAJA thirdparty library
+########################################
+if ( RAJA_FOUND )
+
+  set(raja_smoke_dependencies
+            raja
+            gtest )
+
+  if ( ENABLE_OPENMP )
+    list(APPEND raja_smoke_dependencies openmp)
+  endif()
+
+  blt_add_executable( NAME raja_smoke_test
+                      SOURCES raja_smoke.cpp
+                      OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                      DEPENDS_ON ${raja_smoke_dependencies}
+                      FOLDER axom/thirdparty/tests )
+
+  blt_add_test( NAME raja_smoke
+                COMMAND raja_smoke_test )
+
+endif()
+
+########################################
 # Smoke test for hdf5 thirdparty library
 ########################################
 if( HDF5_FOUND)
@@ -25,7 +49,7 @@ if( HDF5_FOUND)
                        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                        DEPENDS_ON hdf5 gtest
                        FOLDER axom/thirdparty/tests )
-    blt_add_test(NAME hdf5_smoke 
+    blt_add_test(NAME hdf5_smoke
                  COMMAND hdf5_smoke_test)
 endif()
 
@@ -64,7 +88,7 @@ if (MFEM_FOUND)
     set_property(
         TARGET mfem_smoke_test
         APPEND_STRING PROPERTY COMPILE_FLAGS "${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS}")
-                       
+
     blt_add_test(NAME mfem_smoke
                  COMMAND mfem_smoke_test)
 
@@ -79,7 +103,7 @@ blt_add_executable(
     OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
     DEPENDS_ON fmt gtest
     FOLDER axom/thirdparty/tests )
-blt_add_test(NAME fmt_smoke 
+blt_add_test(NAME fmt_smoke
              COMMAND fmt_smoke_test)
 
 ##############################################
@@ -94,7 +118,7 @@ if (SPARSEHASH_FOUND)
     DEPENDS_ON sparsehash gtest
     FOLDER axom/thirdparty/tests )
 
-  blt_add_test(NAME sparsehash_smoke 
+  blt_add_test(NAME sparsehash_smoke
              COMMAND sparsehash_smoke_test)
 endif()
 
@@ -102,10 +126,10 @@ endif()
 # Add compiler flag tests.
 #
 # Test whether custom compiler flags actually work as expected on all compilers.
-# E.g. if we intend to disable a warning, the warning is actually disabled. 
+# E.g. if we intend to disable a warning, the warning is actually disabled.
 #
-# These tests enable all warnings, treat warnings as errors and add the desired 
-# flag. They should fail if we have the wrong flag set for the given configuration.  
+# These tests enable all warnings, treat warnings as errors and add the desired
+# flag. They should fail if we have the wrong flag set for the given configuration.
 # Flag variables are defined in blt's SetupCompilerOptions.cmake
 ################################################################################
 
@@ -117,23 +141,23 @@ set( BLT_SMOKE_TESTS
         compiler_flag_strict_aliasing.cpp
         compiler_flag_unused_local_typedef.cpp
         )
-if (ENABLE_FORTRAN)                    
+if (ENABLE_FORTRAN)
     list(APPEND BLT_SMOKE_TESTS compiler_flag_fortran_preprocessor.F)
 endif()
 
 
 foreach(test ${BLT_SMOKE_TESTS})
     get_filename_component( test_name ${test} NAME_WE )
-    blt_add_executable( 
+    blt_add_executable(
         NAME ${test_name}_test
         SOURCES ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
         USE_OPENMP False
         FOLDER axom/thirdparty/tests
         )
-    blt_add_test( 
-        NAME ${test_name} 
-        COMMAND ${test_name}_test 
+    blt_add_test(
+        NAME ${test_name}
+        COMMAND ${test_name}_test
         )
 endforeach()
 
@@ -149,10 +173,10 @@ set_target_properties(compiler_flag_omp_pragma_test
     PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${AXOM_DISABLE_OMP_PRAGMA_WARNINGS}")
 set_target_properties(compiler_flag_unused_local_typedef_test
     PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${AXOM_DISABLE_UNUSED_LOCAL_TYPEDEF}")
-    
+
 # the aliasing test requires optimization, set this up as custom compiler flag
 # in case we need more flexibility for this flag (e.g. for MSVC)
-blt_append_custom_compiler_flag(FLAGS_VAR TMP_OPT_FLAG 
+blt_append_custom_compiler_flag(FLAGS_VAR TMP_OPT_FLAG
     DEFAULT "-O2"
     MSVC    " "
 )
@@ -161,7 +185,7 @@ set_target_properties(compiler_flag_strict_aliasing_test
     PROPERTIES COMPILE_FLAGS "${ADDL_SMOKE_FLAGS} ${TMP_OPT_FLAG} ${AXOM_DISABLE_ALIASING_WARNINGS}")
 
 
-# The following test checks that the C preprocessor is invoked on Fortran files with extension *.F 
+# The following test checks that the C preprocessor is invoked on Fortran files with extension *.F
 if(ENABLE_FORTRAN)
     set_target_properties(compiler_flag_fortran_preprocessor_test
                           PROPERTIES LINKER_LANGUAGE Fortran)

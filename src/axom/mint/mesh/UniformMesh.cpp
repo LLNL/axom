@@ -56,7 +56,8 @@ UniformMesh::UniformMesh( sidre::Group* group, const std::string& topo ) :
   SLIC_ERROR_IF( m_type != STRUCTURED_UNIFORM_MESH,
                  "supplied Sidre group does not correspond to a UniformMesh!" );
 
-  blueprint::getUniformMeshProperties( m_ndims, m_origin, m_h, getCoordsetGroup() );
+  blueprint::getUniformMeshProperties( m_ndims, m_origin, m_h,
+                                       getCoordsetGroup() );
 }
 
 //------------------------------------------------------------------------------
@@ -77,7 +78,8 @@ UniformMesh::UniformMesh( sidre::Group* group,
   setSpacingAndOrigin( lower_bound, upper_bound );
 
   // STEP 1: populate sidre
-  blueprint::setUniformMeshProperties( m_ndims, m_origin, m_h, getCoordsetGroup() );
+  blueprint::setUniformMeshProperties( m_ndims, m_origin, m_h,
+                                       getCoordsetGroup() );
 }
 
 #endif

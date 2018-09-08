@@ -110,31 +110,6 @@ void check_coordinates( IndexType N, int ndims, const double* x,
   }
 }
 
-//------------------------------------------------------------------------------
-void check_coordinates( CurvilinearMesh* m )
-{
-  EXPECT_TRUE( m != nullptr );
-  const int ndims = m->getDimension();
-  const IndexType numNodes = m->getNumberOfNodes();
-  double* x = m->getCoordinateArray( X_COORDINATE );
-
-  if ( ndims == 1 )
-  {
-    check_coordinates( numNodes, ndims, x );
-  }
-  else if ( ndims == 2 )
-  {
-    double* y = m->getCoordinateArray( Y_COORDINATE );
-    check_coordinates( numNodes, ndims, x, y );
-  }
-  else
-  {
-    double* y = m->getCoordinateArray( Y_COORDINATE );
-    double* z = m->getCoordinateArray( Z_COORDINATE );
-    check_coordinates( numNodes, ndims, x, y, z );
-  }
-}
-
 } // END namespace
 
 //------------------------------------------------------------------------------
@@ -150,7 +125,7 @@ TEST( mint_mesh_curvilinear_mesh_DeathTest, invalid_construction )
 
   // check external constructor
   EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh( 5, nullptr ), IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh( -1 , x ), IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED( CurvilinearMesh( -1, x ), IGNORE_OUTPUT );
 
 #ifdef AXOM_MINT_USE_SIDRE
 
@@ -331,7 +306,7 @@ TEST( mint_mesh_curvilinear_mesh, sidre_constructor )
     internal::check_node_extent( m, extent );
     set_coordinates( m );
     internal::check_create_fields( m );
-    
+
     delete m;
     m = nullptr;
 

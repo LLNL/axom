@@ -585,11 +585,12 @@ public:
    */
   virtual
   IndexType getCellNodeIDs( IndexType cellID,
-                          IndexType* nodes ) const final override
+                            IndexType* nodes ) const final override
   {
     SLIC_ASSERT( nodes != nullptr );
     const IndexType n_nodes = getNumberOfCellNodes( cellID );
-    std::memcpy( nodes, getCellNodeIDs( cellID ), n_nodes * sizeof( IndexType ) );
+    std::memcpy( nodes, getCellNodeIDs( cellID ),
+                 n_nodes * sizeof( IndexType ) );
     return n_nodes;
   }
 

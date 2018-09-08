@@ -23,6 +23,20 @@ set( mint_examples
      mint_unstructured_single_topology_mesh.cpp
    )
 
+set( mint_dependencies
+     core
+     mint
+     slic
+   )
+
+if ( ${RAJA_FOUND} )
+    list(APPEND mint_dependencies raja)
+endif()
+
+if ( ${ENABLE_OPENMP} )
+    list(APPEND mint_dependencies openmp)
+endif()
+
 foreach( example ${mint_examples} )
 
    get_filename_component( example_name ${example} NAME_WE )
@@ -31,7 +45,7 @@ foreach( example ${mint_examples} )
         NAME       ${example_name}_ex
         SOURCES    ${example}
         OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON core mint slic
+        DEPENDS_ON ${mint_dependencies}
         FOLDER     axom/mint/examples
         )
 

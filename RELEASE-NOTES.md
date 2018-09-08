@@ -29,6 +29,15 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Version 0.3.0] - Release date 2018-08-02
 
 ### Added
+- Added initial implementation of a RAJA-based mesh-aware execution model in Mint.
+  The execution model provides a functional interface for generic traversals and
+  various mesh traversals, e.g., looping over all the nodes or cells of the mesh.
+- Added AXOM macros for lambda expressions and host/device decorators
+- Added the ability to point Axom to a RAJA build by specifying `RAJA_DIR` at
+  a host config or at the config-build.py. Axom components can now link RAJA
+  by specifying "raja" as a dependency. A simple RAJA smoke test is also added
+  for regression testing.
+- Added `isStructured()` and `isUnstructured()` convenience methods to the mint::Mesh object.
 - Added support for using MPI-3 on-node shared memory data-structures to store
   the input surface mesh in quest. Instead of each rank duplicating the mesh
   data (e.g. node coordinates and cell connectivity), ranks within the same

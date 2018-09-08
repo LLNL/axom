@@ -224,7 +224,8 @@ bool hasMixedCellTypes( const sidre::Group* group, const std::string& topo="" );
  * \see setStructuredMeshProperties()
  */
 void getStructuredMeshProperties( int dimension, IndexType node_dims[3],
-                        int64 node_ext[6], const sidre::Group* coordset );
+                                  int64 node_ext[6],
+                                  const sidre::Group* coordset );
 
 /*!
  * \brief Put the nodal dimensions and the global node extent of a
@@ -243,7 +244,8 @@ void getStructuredMeshProperties( int dimension, IndexType node_dims[3],
  * \see getStructuredMeshProperties()
  */
 void setStructuredMeshProperties( int dimension, const IndexType node_dims[3],
-                        const int64 node_ext[6], sidre::Group* coordset );
+                                  const int64 node_ext[6],
+                                  sidre::Group* coordset );
 
 /*!
  * \brief Put the global node extent of a StructuredMesh into sidre.
@@ -279,7 +281,7 @@ void setExtent( sidre::Group* coordset, const int64 node_ext[6] );
  * \see setUniformMeshProperties()
  */
 void getUniformMeshProperties( int dim, double* origin, double* spacing,
-                     const sidre::Group* coordset );
+                               const sidre::Group* coordset );
 
 /*!
  * \brief Populates the specified Coordset & Topology groups with the metadata
@@ -302,8 +304,9 @@ void getUniformMeshProperties( int dim, double* origin, double* spacing,
  *
  * \see getUniformMeshProperties()
  */
-void setUniformMeshProperties( int dim, const double* origin, const double* spacing,
-                     sidre::Group* coordset );
+void setUniformMeshProperties( int dim, const double* origin,
+                               const double* spacing,
+                               sidre::Group* coordset );
 
 #endif /* AXOM_MINT_USE_SIDRE */
 
