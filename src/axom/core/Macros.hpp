@@ -49,6 +49,12 @@
  *
  * \brief Convenience macro used for lambda capture by value.
  * \note When CUDA is used, the macro always expands to a host/device lambda.
+ *
+ * \warning When compiling with CUDA, host/device lambdas incur a significant
+ *  penalty on the CPU code. The way NVCC implements host/device lambdas
+ *  prevents the compiler from proper in-lining them. When CUDA is enabled use
+ *  the parallel_gpu execution policy or opt to turn off CUDA if the application
+ *  is making more use of the parallel_cpu and serial execution policies.
  */
 #ifdef AXOM_USE_CUDA
 #define AXOM_LAMBDA [=] AXOM_HOST_DEVICE
