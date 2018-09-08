@@ -126,6 +126,7 @@ struct policy_traits< policy::parallel_gpu< BLOCK_SIZE > >
   using raja_reduce_policy = RAJA::cuda_reduce< BLOCK_SIZE >;
   using raja_sync_policy   = RAJA::cuda_synchronize;
 
+  /* *INDENT-OFF* */
   // TODO: use CudaCollapse policy when that is available
   using raja_2d_exec =
        RAJA::KernelPolicy<
@@ -150,6 +151,7 @@ struct policy_traits< policy::parallel_gpu< BLOCK_SIZE > >
           > // END k
         > // END CudaKernel
       >; // END kernel
+  /* *INDENT-ON* */
 
 #endif
   static constexpr bool valid() { return true; };
@@ -164,11 +166,12 @@ template < int BLOCK_SIZE >
 struct policy_traits< policy::parallel_gpu_async< BLOCK_SIZE > >
 {
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
-    defined(RAJA_ENABLE_CUDA)
+  defined(RAJA_ENABLE_CUDA)
   using raja_exec_policy   = RAJA::cuda_exec_async< BLOCK_SIZE >;
   using raja_reduce_policy = RAJA::cuda_reduce_async< BLOCK_SIZE >;
   using raja_sync_policy   = RAJA::cuda_synchronize;
 
+  /* *INDENT-OFF* */
   // TODO: use CudaCollapse policy when that is available
   using raja_2d_exec =
       RAJA::KernelPolicy<
@@ -193,6 +196,7 @@ struct policy_traits< policy::parallel_gpu_async< BLOCK_SIZE > >
           > // END k
          > // END CudaKernel
       >; // END kernel
+  /* *INDENT-ON* */
 
 #endif
   static constexpr bool valid() { return true; };
@@ -207,7 +211,7 @@ template < >
 struct policy_traits< policy::parallel_cpu >
 {
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
-    defined(RAJA_ENABLE_OPENMP)
+  defined(RAJA_ENABLE_OPENMP)
   using raja_exec_policy   = RAJA::omp_parallel_for_exec;
   using raja_reduce_policy = RAJA::omp_reduce;
   using raja_sync_policy   = RAJA::omp_synchronize;
@@ -243,6 +247,7 @@ struct policy_traits< policy::serial >
   using raja_reduce_policy = RAJA::loop_reduce;
   using raja_sync_policy   = void;
 
+  /* *INDENT-OFF* */
   using raja_2d_exec =
       RAJA::KernelPolicy<
          RAJA::statement::For< 1, RAJA::loop_exec,   // j
@@ -262,6 +267,7 @@ struct policy_traits< policy::serial >
              > // END j
           > // END k
        >; // END kernel
+  /* *INDENT-ON* */
 
 #endif
   static constexpr bool valid() { return true; };
