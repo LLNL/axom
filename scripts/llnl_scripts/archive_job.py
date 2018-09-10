@@ -19,8 +19,15 @@
  file: archive_job.py
 
  description: 
-  Archives results from a non-source or TPL job. Passing an exit code to this
-  script will preserve the correct exit status of the automated job
+  Archives results from a non-source or TPL job.
+
+  If an exit code is passed to this script, it will be used as the exit code
+  for this script.  This is so that archiving the results of an automation
+  job does not alter the overall exit status of the job.
+
+  If no "failed.json" or "success.json" does not already exist in the current
+  directory then the given exit code of the script is used. Otherwise it defaults
+  to failure.
 
 """
 
@@ -79,6 +86,8 @@ def main():
         log_failure(cwd, opts["name"], timestamp)
     elif (opts["exitcode"] == 0) and not os.path.exists("success.json"):
         log_success(cwd, opts["name"], timestamp)
+    else:
+        log_failure(cwd, opts["name"] + " - No job status given", timestamp)
 
     # Copy any existing info files
     if not os.path.exists(archive_dir):
