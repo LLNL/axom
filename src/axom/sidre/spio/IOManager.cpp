@@ -987,7 +987,7 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
 
   std::string bp_index("blueprint_index/" + mesh_name); 
   datastore->generateBlueprintIndex(domain_path,
-     mesh_name, bp_index, 1);
+     mesh_name, bp_index, m_comm_size);
 
   Group* ind_group = datastore->getRoot()->getGroup("blueprint_index");
   writeGroupToRootFile(ind_group, file_name);
