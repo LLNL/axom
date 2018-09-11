@@ -559,6 +559,34 @@ void check_data( const Mesh* mesh, std::ifstream& file )
 }
 
 /*!
+ * \brief Checks that the StructuredMesh nodal dimensions were written 
+ *  correctly.
+ * \param [in] s_mesh the mesh to check against.
+ * \param [in] file the file to parse.
+ * \pre mesh != nullptr
+ */
+void check_dimensions( const StructuredMesh* s_mesh, std::ifstream& file )
+{
+  std::string buffer;
+  file >> buffer;
+  EXPECT_EQ( buffer, "DIMENSIONS" );
+  
+  for ( int i = 0 ; i < 3 ; ++i )
+  {
+    IndexType temp;
+    file >> temp;
+    if ( i < s_mesh->getDimension() )
+    {
+      EXPECT_EQ( temp, s_mesh->getNodeResolution( i ) );
+    }
+    else
+    {
+      EXPECT_EQ( temp, 1 );
+    }
+  }
+}
+
+/*!
  * \brief Checks that the uniform mesh header was written correctly.
  * \param [in] mesh the mesh to check against.
  * \param [in] file the file to parse.
@@ -572,14 +600,7 @@ void check_uniform_mesh( const UniformMesh* u_mesh, std::ifstream& file )
   file >> buffer;
   EXPECT_EQ( buffer, "STRUCTURED_POINTS" );
 
-  file >> buffer;
-  EXPECT_EQ( buffer, "DIMENSIONS" );
-  for ( int i = 0 ; i < 3 ; ++i )
-  {
-    IndexType temp;
-    file >> temp;
-    EXPECT_EQ( temp, u_mesh->getNodeResolution( i ) );
-  }
+  check_dimensions( u_mesh, file );
 
   const double* origin = u_mesh->getOrigin( );
   file >> buffer;
@@ -617,14 +638,7 @@ void check_rectilinear_mesh( const RectilinearMesh* r_mesh,
   file >> buffer;
   EXPECT_EQ(  buffer, "RECTILINEAR_GRID" );
 
-  file >> buffer;
-  EXPECT_EQ( buffer, "DIMENSIONS" );
-  for ( int i = 0 ; i < 3 ; ++i )
-  {
-    IndexType temp;
-    file >> temp;
-    EXPECT_EQ( temp, r_mesh->getNodeResolution( i ) );
-  }
+  check_dimensions( r_mesh, file );
 
   std::string coord_names[3] = { "X_COORDINATES", "Y_COORDINATES",
                                  "Z_COORDINATES" };
@@ -651,7 +665,7 @@ void check_rectilinear_mesh( const RectilinearMesh* r_mesh,
     file >> extracted_coord;
 
     EXPECT_EQ( extracted_name,   coord_names[ dim ] );
-    EXPECT_EQ( extracted_size,   r_mesh->getNodeResolution( dim ) );
+    EXPECT_EQ( extracted_size,   1 );
     EXPECT_EQ( extracted_type,   "double" );
     EXPECT_EQ( extracted_coord,  0.0 );
   }
@@ -692,7 +706,6 @@ void check_points( const Mesh* mesh, std::ifstream& file )
 
     file >> extracted_coord;
     EXPECT_EQ( extracted_coord, z );
-
   }
 }
 
@@ -777,14 +790,7 @@ void check_curvilinear_mesh( const CurvilinearMesh* c_mesh,
   file >> buffer;
   EXPECT_EQ(  buffer, "STRUCTURED_GRID" );
 
-  file >> buffer;
-  EXPECT_EQ( buffer, "DIMENSIONS" );
-  for ( int i = 0 ; i < 3 ; ++i )
-  {
-    IndexType temp;
-    file >> temp;
-    EXPECT_EQ( temp, c_mesh->getNodeResolution( i ) );
-  }
+  check_dimensions( c_mesh, file );
 
   check_points( c_mesh, file );
 }

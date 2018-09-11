@@ -110,6 +110,30 @@ void check_coordinates( IndexType N, int ndims, const double* x,
   }
 }
 
+//------------------------------------------------------------------------------
+void check_coordinates( const CurvilinearMesh* m )
+{
+  const int ndims = m->getDimension();
+  const IndexType numNodes = m->getNumberOfNodes();
+  const double* x = m->getCoordinateArray( X_COORDINATE );
+
+  if ( ndims == 1 )
+  {
+    check_coordinates( numNodes, ndims, x );
+  }
+  else if ( ndims == 2 )
+  {
+    const double* y = m->getCoordinateArray( Y_COORDINATE );
+    check_coordinates( numNodes, ndims, x, y );
+  }
+  else
+  {
+    const double* y = m->getCoordinateArray( Y_COORDINATE );
+    const double* z = m->getCoordinateArray( Z_COORDINATE );
+    check_coordinates( numNodes, ndims, x, y, z );
+  }
+}
+
 } // END namespace
 
 //------------------------------------------------------------------------------
@@ -213,8 +237,6 @@ TEST( mint_mesh_curvilinear_mesh, external_constructor )
     {
       m = new CurvilinearMesh( N[0], x );
       EXPECT_EQ( x, m->getCoordinateArray( X_COORDINATE ) );
-      check_coordinates( curNumNodes, idim,
-                         m->getCoordinateArray( X_COORDINATE ) );
     }     // END 1D
     break;
     case 2:
@@ -222,9 +244,6 @@ TEST( mint_mesh_curvilinear_mesh, external_constructor )
       m = new CurvilinearMesh( N[0], x, N[1], y );
       EXPECT_EQ( x, m->getCoordinateArray( X_COORDINATE ) );
       EXPECT_EQ( y, m->getCoordinateArray( Y_COORDINATE ) );
-      check_coordinates( curNumNodes, idim,
-                         m->getCoordinateArray( X_COORDINATE ),
-                         m->getCoordinateArray( Y_COORDINATE )   );
     }     // END 2D
     break;
     default:
@@ -233,14 +252,10 @@ TEST( mint_mesh_curvilinear_mesh, external_constructor )
       EXPECT_EQ( x, m->getCoordinateArray( X_COORDINATE ) );
       EXPECT_EQ( y, m->getCoordinateArray( Y_COORDINATE ) );
       EXPECT_EQ( z, m->getCoordinateArray( Z_COORDINATE ) );
-      check_coordinates( curNumNodes, idim,
-                         m->getCoordinateArray( X_COORDINATE ),
-                         m->getCoordinateArray( Y_COORDINATE ),
-                         m->getCoordinateArray( Z_COORDINATE ) );
     }     // END 3D
     } // END switch
 
-    EXPECT_TRUE( m != nullptr );
+    check_coordinates( m );
     internal::check_constructor( m, STRUCTURED_CURVILINEAR_MESH, idim, N );
     m->setExtent( idim, extent );
     internal::check_node_extent( m, extent );
@@ -319,6 +334,7 @@ TEST( mint_mesh_curvilinear_mesh, sidre_constructor )
     EXPECT_EQ( idim, m->getDimension() );
     EXPECT_EQ( numNodes, m->getNumberOfNodes() );
     check_coordinates( m );
+    
     delete m;
 
     EXPECT_TRUE( blueprint::isValidRootGroup( meshGroup ) );
