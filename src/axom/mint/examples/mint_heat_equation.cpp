@@ -14,17 +14,13 @@
  *
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-#include "axom/core/utilities/FileUtilities.hpp"   // getDirName,
-                                                   // makeDirsForPath
-#include "axom/core/utilities/Utilities.hpp"       /* for abs, processAbort */
-#include "axom/mint/mesh/FieldData.hpp"             /* for FieldData */
-#include "axom/mint/mesh/FieldVariable.hpp"         /* for FieldVariable */
-#include "axom/mint/mesh/UniformMesh.hpp"           /* for UniformMesh */
-#include "axom/mint/utils/vtk_utils.hpp"             /* for write_vtk */
-#include "axom/mint/config.hpp"             /* for IndexType, int64 */
-#include "axom/slic/streams/GenericOutputStream.hpp" // GenericOutputStream
-#include "axom/slic/interface/slic.hpp"                  /* for slic macros */
 
+// Axom Includes
+#include "axom/core.hpp"
+#include "axom/mint.hpp"
+#include "axom/slic.hpp"
+
+// C/C++ includes
 #include <cmath>                          /* for std::exp, std::ciel */
 #include <sstream>                        /* for std::stringstream */
 #include <string>                         /* for std::string */
@@ -167,16 +163,16 @@ public:
   void initialize( const Gaussian2D& pulse )
   {
     const double* origin = m_mesh->getOrigin( );
-    IndexType size[3];
-    m_mesh->getExtentSize( size );
+    IndexType Ni = m_mesh->getNodeResolution( mint::I_DIRECTION );
+    IndexType Nj = m_mesh->getNodeResolution( mint::J_DIRECTION );
     double* t = m_mesh->getFieldPtr< double >( "temperature",
                                                mint::NODE_CENTERED );
 
     IndexType idx = 0;
     double node_pos[2] = { origin[0], origin[1] };
-    for ( IndexType j = 0 ; j < size[1] ; ++j )
+    for ( IndexType j = 0 ; j < Nj ; ++j )
     {
-      for ( IndexType i = 0 ; i < size[0] ; ++i )
+      for ( IndexType i = 0 ; i < Ni ; ++i )
       {
         t[ idx++ ] = pulse.evaluate( node_pos );
         node_pos[0] += m_h;
@@ -250,22 +246,22 @@ private:
    */
   void copy_boundary( const double* prev_temp, double* new_temp )
   {
-    IndexType size[3];
-    m_mesh->getExtentSize( size );
+    IndexType Ni = m_mesh->getNodeResolution( mint::I_DIRECTION );
+    IndexType Nj = m_mesh->getNodeResolution( mint::J_DIRECTION );
 
     /* Copy the -y side, which is contiguous. */
-    const IndexType memcpy_size = size[0] * sizeof(double);
+    const IndexType memcpy_size = Ni * sizeof(double);
     std::memcpy( new_temp, prev_temp, memcpy_size );
 
     /* Copy the +y side, which is contiguous. */
-    const IndexType offset = (size[1] - 1) * size[0];
+    const IndexType offset = (Nj - 1) * Ni;
     std::memcpy( new_temp + offset, prev_temp + offset, memcpy_size );
 
     /* Copy the -x and +x sides which aren't contiguous. */
-    for ( IndexType idx = size[0] ; idx < offset ; idx += size[0] )
+    for ( IndexType idx = Ni ; idx < offset ; idx += Ni )
     {
       new_temp[ idx ] = prev_temp[ idx ];
-      new_temp[ idx + size[0] - 1 ] = prev_temp[ idx + size[0] - 1 ];
+      new_temp[ idx + Ni - 1 ] = prev_temp[ idx + Ni - 1 ];
     }
   }
 
@@ -284,22 +280,19 @@ private:
   void step( double alpha, double dt, const double* prev_temp,
              double* new_temp )
   {
-    IndexType size[3];
-    m_mesh->getExtentSize( size );
     const double neighbors_scale = dt * alpha / ( m_h * m_h );
     const double self_scale = 1.0 - (4.0 * neighbors_scale);
 
     /* Since the boundary conditions are fixed we only need to iterate over
        the interior nodes. */
-    const IndexType jp = size[0];
-    const IndexType Nj = size[1] - 1;
-    const IndexType Ni = size[0] - 1;
+    const IndexType jp = m_mesh->nodeJp();
+    const IndexType Ni = m_mesh->getNodeResolution( I_DIRECTION );
+    const IndexType Nj = m_mesh->getNodeResolution( J_DIRECTION );
     for ( IndexType j = 1 ; j < Nj ; ++j )
     {
-      const IndexType j_offset = j * jp;
       for ( IndexType i = 1 ; i < Ni ; ++i )
       {
-
+        const IndexType j_offset = j * jp;
         const IndexType idx = i + j_offset;
         const IndexType north = idx + jp;
         const IndexType south = idx - jp;
@@ -342,15 +335,15 @@ private:
   static UniformMesh* create_mesh( const double h, const double lower_bound[2],
                                    const double upper_bound[2] )
   {
-    int64 ext[4];
-    for ( int i = 0 ; i < 2 ; ++i )
-    {
-      double len = axom::utilities::abs( upper_bound[ i ] - lower_bound[ i ] );
-      ext[ 2 * i ] = 0;
-      ext[ 2 * i + 1 ] = std::ceil( len / h );
-    }
+    IndexType Ni, Nj;
 
-    UniformMesh* mesh = new UniformMesh( 2, ext, lower_bound, upper_bound );
+    const double lx = axom::utilities::abs( upper_bound[0] - lower_bound[0] );
+    Ni = (lx / h) + 1;
+
+    const double ly = axom::utilities::abs( upper_bound[1] - lower_bound[1] );
+    Nj = (ly / h) + 1;
+
+    UniformMesh* mesh = new UniformMesh( lower_bound, upper_bound, Ni, Nj );
     mesh->createField< double >( "temperature", mint::NODE_CENTERED );
     return mesh;
   }
@@ -570,13 +563,11 @@ void init()
     new axom::slic::GenericOutputStream( &std::cout );
   axom::slic::GenericOutputStream* compactStream =
     new axom::slic::GenericOutputStream( &std::cout, slicFormatStr );
-  axom::slic::addStreamToMsgLevel(  defaultStream,
-                                    axom::slic::message::Error );
-  axom::slic::addStreamToMsgLevel(  compactStream,
-                                    axom::slic::message::Warning );
-  axom::slic::addStreamToMsgLevel(  compactStream, axom::slic::message::Info );
-  axom::slic::addStreamToMsgLevel(  compactStream,
-                                    axom::slic::message::Debug );
+  axom::slic::addStreamToMsgLevel( defaultStream, axom::slic::message::Error );
+  axom::slic::addStreamToMsgLevel( compactStream,
+                                   axom::slic::message::Warning );
+  axom::slic::addStreamToMsgLevel( compactStream, axom::slic::message::Info );
+  axom::slic::addStreamToMsgLevel( compactStream, axom::slic::message::Debug );
 }
 
 /*!

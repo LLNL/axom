@@ -17,6 +17,13 @@ set( mint_tests
      ## core tests
      mint_core_array.cpp
 
+     ## execution model tests
+     mint_execution_cell_traversals.cpp
+     mint_execution_forall_traversals.cpp
+     mint_execution_node_traversals.cpp
+     mint_execution_policy.cpp
+     mint_execution_xargs.cpp
+
      ## mesh tests
      mint_mesh.cpp
      mint_mesh_blueprint.cpp
@@ -24,7 +31,6 @@ set( mint_tests
      mint_mesh_connectivity_array.cpp
      mint_mesh_coordinates.cpp
      mint_mesh_curvilinear_mesh.cpp
-     mint_mesh_extent.cpp
      mint_mesh_field.cpp
      mint_mesh_field_data.cpp
      mint_mesh_field_types.cpp
@@ -49,9 +55,18 @@ set( mint_test_dependencies
      mint
      )
 
-if ( ${MINT_USE_SIDRE} )
+if ( ${AXOM_MINT_USE_SIDRE} )
   list(APPEND mint_test_dependencies sidre conduit)
 endif()
+
+if ( ${RAJA_FOUND} )
+  list(APPEND mint_test_dependencies raja )
+endif()
+
+if ( ${ENABLE_OPENMP} )
+  list(APPEND mint_test_dependencies openmp)
+endif()
+
 
 foreach( test ${mint_tests} )
 

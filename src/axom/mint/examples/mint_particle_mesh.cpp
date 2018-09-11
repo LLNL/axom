@@ -23,12 +23,8 @@
  */
 
 // Axom utilities
-#include "axom/core/utilities/Utilities.hpp" // for random_real()
-
-// Mint includes
-#include "axom/mint/config.hpp"
-#include "axom/mint/mesh/ParticleMesh.hpp"
-#include "axom/mint/utils/vtk_utils.hpp"
+#include "axom/core.hpp"
+#include "axom/mint.hpp"
 
 // namespace aliases
 namespace mint      = axom::mint;

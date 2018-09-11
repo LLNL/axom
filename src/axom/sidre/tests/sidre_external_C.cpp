@@ -26,8 +26,12 @@
 //------------------------------------------------------------------------------
 TEST(C_sidre_external, create_external_view)
 {
-  SIDRE_datastore* ds = SIDRE_datastore_new();
-  SIDRE_group* root = SIDRE_datastore_get_root(ds);
+  SIDRE_datastore ds_buf;
+  SIDRE_group root_buf;
+  SIDRE_view iview_buf, dview_buf;
+
+  SIDRE_datastore* ds = SIDRE_datastore_new(&ds_buf);
+  SIDRE_group* root = SIDRE_datastore_get_root(ds, &root_buf);
 
   const int len = 11;
 
@@ -41,10 +45,10 @@ TEST(C_sidre_external, create_external_view)
   }
 
   SIDRE_view* iview =
-    SIDRE_group_create_view_external(root, "idata", idata);
+    SIDRE_group_create_view_external(root, "idata", idata, &iview_buf);
   SIDRE_view_apply_type_nelems(iview, SIDRE_INT_ID, len);
   SIDRE_view* dview =
-    SIDRE_group_create_view_external(root, "ddata", ddata);
+    SIDRE_group_create_view_external(root, "ddata", ddata, &dview_buf);
   SIDRE_view_apply_type_nelems(dview, SIDRE_DOUBLE_ID, len);
   EXPECT_EQ(SIDRE_group_get_num_views(root), 2u);
 
@@ -74,8 +78,11 @@ TEST(C_sidre_external, create_external_view)
 //------------------------------------------------------------------------------
 TEST(C_sidre_external, save_load_external_view)
 {
-  SIDRE_datastore* ds = SIDRE_datastore_new();
-  SIDRE_group* root = SIDRE_datastore_get_root(ds);
+  SIDRE_datastore ds_buf;
+  SIDRE_group root_buf;
+
+  SIDRE_datastore* ds = SIDRE_datastore_new(&ds_buf);
+  SIDRE_group* root = SIDRE_datastore_get_root(ds, &root_buf);
 
   const int len = 11;
 

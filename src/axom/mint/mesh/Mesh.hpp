@@ -34,7 +34,7 @@ namespace axom
 {
 
 /* Forward declarations */
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 namespace sidre
 {
 class Group;
@@ -51,7 +51,7 @@ class Mesh;
 /// \name Free Methods
 /// @{
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
 /*!
  * \brief Creates a mesh instance from the given Sidre group.
@@ -253,16 +253,6 @@ public:
   { return getNumberOfCells(); }
 
   /*!
-   * \brief Return the number of nodes associated with the given cell.
-   *
-   * \param [in] cellID the ID of the cell in question, this parameter is
-   *  ignored unless hasMixedCellTypes() == true.
-   *
-   * \pre 0 <= cellID < getNumberOfCells()
-   */
-  virtual IndexType getNumberOfCellNodes( IndexType cellID=0 ) const = 0;
-
-  /*!
    * \brief Return the type of the given cell.
    *
    * \param [in] cellID the ID of the cell in question, this parameter is
@@ -273,19 +263,65 @@ public:
   virtual CellType getCellType( IndexType cellID=0 ) const = 0;
 
   /*!
+   * \brief Return the number of nodes associated with the given cell.
+   *
+   * \param [in] cellID the ID of the cell in question, this parameter is
+   *  ignored unless hasMixedCellTypes() == true.
+   *
+   * \pre 0 <= cellID < getNumberOfCells()
+   */
+  virtual IndexType getNumberOfCellNodes( IndexType cellID=0 ) const = 0;
+
+  /*!
    * \brief Copy the connectivity of the given cell into the provided buffer.
    *  The buffer must be of length at least getNumberOfCellNodes( cellID ).
    *
    * \param [in] cellID the ID of the cell in question.
-   * \param [out] cell the buffer into which the connectivity is copied, must
+   * \param [out] nodes the buffer into which the connectivity is copied, must
    *  be of length at least getNumberOfCellNodes( cellID ).
    *
    * \return The number of nodes for the given cell.
    *
-   * \pre cell != nullptr
+   * \pre nodes != nullptr
    * \pre 0 <= cellID < getNumberOfCells()
    */
-  virtual IndexType getCell( IndexType cellID, IndexType* cell ) const = 0;
+  virtual IndexType getCellNodeIDs( IndexType AXOM_NOT_USED(cellID),
+                                    IndexType* AXOM_NOT_USED(nodes) ) const = 0;
+
+  /*!
+   * \brief Return the number of faces associated with the given cell.
+   *
+   * \param [in] cellID the ID of the cell in question.
+   */
+  virtual IndexType getNumberOfCellFaces( IndexType AXOM_NOT_USED(cellID) )
+  const
+  {
+    SLIC_ERROR( "Not implemented!" );
+    return -1;
+  }
+
+  /*!
+   * \brief Returns the IDs of the faces of the cell at (i,j) or (i, j, k).
+   *
+   * \param [in] i logical index of the cell along the first dimension.
+   * \param [in] j logical index of the cell along the second dimension.
+   * \param [in] k logical index of the cell along the third dimension
+   *  (optional).
+   * \param [out] faces buffer to populate with the face IDs. Must be of length
+   *  at least getNumberOfCellFaces( cellID ).
+   *
+   * \note The faces are returned in the order of LOWER_I_FACE, UPPER_I_FACE,
+   *  LOWER_J_FACE, UPPER_J_FACE and then LOWER_K_FACE, UPPER_K_FACE if 3D.
+   *
+   * \pre faces != nullptr
+   * \pre 0 <= cellID < getNumberOfCells()
+   */
+  virtual IndexType getCellFaceIDs( IndexType AXOM_NOT_USED(cellID),
+                                    IndexType* AXOM_NOT_USED(faces) ) const
+  {
+    SLIC_ERROR( "Not implemented!" );
+    return -1;
+  }
 
 /// @}
 
@@ -329,16 +365,14 @@ public:
    *  buffer is getNumberOfNodes(). Otherwise the UniformMesh returns
    *  nullptr and the RectilinearMesh returns a pointer to the associated
    *  dimension scale which is of length
-   *  static_cast< RectilinearMesh* >( this )->getNumberOfNodesAlongDim().
+   *  static_cast< RectilinearMesh* >( this )->getNodeResolution().
    *
    * \pre dim >= 0 && dim < dimension()
    * \pre dim == X_COORDINATE || dim == Y_COORDINATE || dim == Z_COORDINATE
    */
   /// @{
-
   virtual double* getCoordinateArray( int dim ) = 0;
   virtual const double* getCoordinateArray( int dim ) const = 0;
-
   /// @}
 
 /// @}
@@ -360,6 +394,69 @@ public:
    */
   virtual IndexType getFaceCapacity() const
   { return getNumberOfFaces(); }
+
+  /*!
+   * \brief Return the type of the given face.
+   *
+   * \param [in] faceID the ID of the face in question.
+   */
+  virtual CellType getFaceType( IndexType AXOM_NOT_USED(cellID) ) const
+  {
+    SLIC_ERROR( "Not implemented!" );
+    return UNDEFINED_CELL;
+  }
+
+  /*!
+   * \brief Return the number of nodes associated with the given face.
+   *
+   * \param [in] faceID the ID of the face in question.
+   */
+  virtual IndexType
+  getNumberOfFaceNodes( IndexType AXOM_NOT_USED(faceID) ) const
+  {
+    SLIC_ERROR( "Not implemented!" );
+    return -1;
+  }
+
+  /*!
+   * \brief Copy the IDs of the nodes that compose the given face into the
+   *  provided buffer.
+   *
+   * \param [in] faceID the ID of the face in question.
+   * \param [out] nodes the buffer into which the node IDs are copied, must
+   *  be of length at least getNumberOfFaceNodes().
+   *
+   * \return The number of nodes for the given face.
+   *
+   * \pre nodes != nullptr
+   * \pre 0 <= faceID < getNumberOfCells()
+   */
+  virtual IndexType getFaceNodeIDs( IndexType AXOM_NOT_USED(faceID),
+                                    IndexType* AXOM_NOT_USED(nodes) ) const
+  {
+    SLIC_ERROR( "Not implemented!" );
+    return -1;
+  }
+
+  /*!
+   * \brief Copy the IDs of the cells adjacent to the given face into the
+   *  provided indices.
+   *
+   * \param [in] faceID the ID of the face in question.
+   * \param [out] cellIDOne the ID of the first cell.
+   * \param [out] cellIDTwo the ID of the second cell.
+   *
+   * \note If no cell exists (the face is external) then the ID will be set to
+   * -1.
+   *
+   * \pre 0 <= faceID < getNumberOfCells()
+   */
+  virtual void getFaceCellIDs( IndexType AXOM_NOT_USED(faceID),
+                               IndexType& AXOM_NOT_USED(cellIDOne),
+                               IndexType& AXOM_NOT_USED(cellIDTwo) ) const
+  {
+    SLIC_ERROR( "Not implemented!" );
+  }
 
 /// @}
 
@@ -465,13 +562,31 @@ public:
   { return m_has_mixed_topology; }
 
   /*!
+   * \brief Returns true if the mesh type is structured.
+   * \return status true if the mesh type is structured, else, false.
+   */
+  inline bool isStructured() const
+  {
+    return ( (m_type==STRUCTURED_CURVILINEAR_MESH) ||
+             (m_type==STRUCTURED_RECTILINEAR_MESH) ||
+             (m_type==STRUCTURED_UNIFORM_MESH) );
+  }
+
+  /*!
+   * \brief Returns true if the mesh type is unstructured.
+   * \return status true if the mesh type is unstructured, else, false.
+   */
+  inline bool isUnstructured() const
+  { return ( m_type==UNSTRUCTURED_MESH); }
+
+  /*!
    * \brief Checks if this Mesh instance is associated with a Sidre Group.
    * \return status true if the Mesh is associated with a group in a Sidre
    *  hierarchy, else, false.
    */
   inline bool hasSidreGroup() const;
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   /*!
    * \brief Return a pointer to the sidre::Group associated with this Mesh
    *  instance or nullptr if none exists.
@@ -629,7 +744,6 @@ public:
    * \see FieldAssociation
    */
   /// @{
-
   template < typename T >
   inline T* getFieldPtr( const std::string& name,
                          int association,
@@ -647,7 +761,6 @@ public:
   template < typename T >
   inline const T* getFieldPtr( const std::string& name,
                                int association ) const;
-
   /// @}
 
 /// @}
@@ -668,7 +781,7 @@ protected:
 
   FieldData* m_mesh_fields[ NUM_FIELD_ASSOCIATIONS ];
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   sidre::Group* m_group;
   std::string m_topology;
   std::string m_coordset;
@@ -689,7 +802,7 @@ protected:
    */
   Mesh( int ndims, int type );
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
   /*!
    * \brief Constructor for use with a group that already has data.
@@ -804,7 +917,7 @@ private:
 //------------------------------------------------------------------------------
 inline bool Mesh::hasSidreGroup( ) const
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   return ( m_group != nullptr );
 #else
   return false;

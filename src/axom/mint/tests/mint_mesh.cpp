@@ -25,7 +25,7 @@
 #include "axom/mint/mesh/UnstructuredMesh.hpp"  // for UnstructuredMesh
 
 // Sidre includes
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 #include "axom/sidre/core/sidre.hpp"
 namespace sidre = axom::sidre;
 #endif
@@ -140,7 +140,7 @@ void check_append_cells_single( const Mesh* mesh, IndexType x_extent,
   {
     for ( IndexType i = 0 ; i < x_extent - 1 ; ++i )
     {
-      mesh->getCell( cell_ID++, cell );
+      mesh->getCellNodeIDs( cell_ID++, cell );
 
       const IndexType bottom_left = j * x_extent + i;
       const IndexType bottom_right = bottom_left + 1;
@@ -222,7 +222,7 @@ void check_append_cells_mixed( const Mesh* mesh, IndexType x_extent,
     for ( IndexType i = 0 ; i < x_extent - 1 ; ++i )
     {
       CellType type = mesh->getCellType( cell_ID );
-      IndexType n_nodes = mesh->getCell( cell_ID++, cell );
+      IndexType n_nodes = mesh->getCellNodeIDs( cell_ID++, cell );
 
       const IndexType bottom_left = j * x_extent + i;
       const IndexType bottom_right = bottom_left + 1;
@@ -247,7 +247,7 @@ void check_append_cells_mixed( const Mesh* mesh, IndexType x_extent,
         EXPECT_EQ( cell[2], top_right );
 
         type = mesh->getCellType( cell_ID );
-        n_nodes = mesh->getCell( cell_ID++, cell );
+        n_nodes = mesh->getCellNodeIDs( cell_ID++, cell );
 
         EXPECT_EQ( n_nodes, 3 );
         EXPECT_EQ( type, TRIANGLE );
@@ -335,7 +335,7 @@ TEST( mint_mesh_DeathTest, enforce_unique_field_names )
 }
 
 //------------------------------------------------------------------------------
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
 TEST( mint_mesh_DeathTest, get_mesh_null_group )
 {
@@ -345,7 +345,6 @@ TEST( mint_mesh_DeathTest, get_mesh_null_group )
 //------------------------------------------------------------------------------
 TEST( mint_mesh, get_curvilinear_mesh_from_sidre )
 {
-  const int64 ext[]      = { -10,10, -10,10, -10,10  };
   constexpr int DIMENSION = 3;
   constexpr int BLOCKID   = 9;
   constexpr int PARTID    = 10;
@@ -355,7 +354,7 @@ TEST( mint_mesh, get_curvilinear_mesh_from_sidre )
   sidre::Group* root = ds.getRoot();
 
   /* STEP 1: populate group with a CurvilinearMesh */
-  CurvilinearMesh* cm = new CurvilinearMesh( DIMENSION, ext, root );
+  CurvilinearMesh* cm = new CurvilinearMesh( root, 20, 21, 22 );
   cm->setBlockId( BLOCKID );
   cm->setPartitionId( PARTID );
   double* foo              = cm->createField< double >( "foo", NODE_CENTERED );
@@ -394,7 +393,6 @@ TEST( mint_mesh, get_curvilinear_mesh_from_sidre )
 //------------------------------------------------------------------------------
 TEST( mint_mesh, get_rectilinear_mesh_from_sidre )
 {
-  const int64 ext[]      = { -10,10, -10,10, -10,10  };
   constexpr int DIMENSION = 3;
   constexpr int BLOCKID   = 9;
   constexpr int PARTID    = 10;
@@ -404,7 +402,7 @@ TEST( mint_mesh, get_rectilinear_mesh_from_sidre )
   sidre::Group* root = ds.getRoot();
 
   /* STEP 1: populate group with a RectilinearMesh */
-  RectilinearMesh* rm = new RectilinearMesh( DIMENSION, ext, root );
+  RectilinearMesh* rm = new RectilinearMesh( root, 20, 21, 22 );
   rm->setBlockId( BLOCKID );
   rm->setPartitionId( PARTID );
   double* foo              = rm->createField< double >( "foo", NODE_CENTERED );
@@ -443,7 +441,6 @@ TEST( mint_mesh, get_rectilinear_mesh_from_sidre )
 //------------------------------------------------------------------------------
 TEST( mint_mesh, get_uniform_mesh_from_sidre )
 {
-  const int64 ext[]      = { -10,10, -10,10, -10,10  };
   const double LO[]       = { -2.0, -2.0, -2.0 };
   const double HI[]       = {  2.0,  2.0,  2.0 };
   constexpr int DIMENSION = 3;
@@ -455,10 +452,10 @@ TEST( mint_mesh, get_uniform_mesh_from_sidre )
   sidre::Group* root = ds.getRoot();
 
   /* STEP 1: populate group with a UniformMesh */
-  UniformMesh* um = new UniformMesh( DIMENSION, LO, HI, ext, root );
+  UniformMesh* um = new UniformMesh( root, LO, HI, 20, 21, 22 );
   um->setBlockId( BLOCKID );
   um->setPartitionId( PARTID );
-  double* foo              = um->createField< double >( "foo", NODE_CENTERED );
+  double* foo = um->createField< double >( "foo", NODE_CENTERED );
 
   double SPACING[ 3 ];
   memcpy( SPACING, um->getSpacing(), 3*sizeof(double) );
@@ -737,7 +734,7 @@ TEST( mint_mesh, get_mixed_topology_unstructured_from_sidre )
   delete m;
 }
 
-#endif /* MINT_USE_SIDRE */
+#endif /* AXOM_MINT_USE_SIDRE */
 
 } /* namespace mint */
 } /* namespace axom */

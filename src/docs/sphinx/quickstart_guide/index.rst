@@ -25,7 +25,7 @@ It provides instructions for:
   * Compiling and linking an application with Axom
 
 Additional information about Axom can be found on the main
-`Axom Web Page <https://lc.llnl.gov/toolkit/docs/sphinx/web_docs/html/index.html>`_:
+`Axom Web Page <https://lc.llnl.gov/axom/docs/sphinx/web_main_docs/html/index.html>`_:
 
   * Build system
   * User guides and source code documentation for individual Axom components

@@ -229,6 +229,13 @@ module axom_quest
             logical(C_BOOL), value, intent(IN) :: status
         end subroutine c_signed_distance_set_verbose
 
+        subroutine c_signed_distance_use_shared_memory(status) &
+                bind(C, name="QUEST_signed_distance_use_shared_memory")
+            use iso_c_binding, only : C_BOOL
+            implicit none
+            logical(C_BOOL), value, intent(IN) :: status
+        end subroutine c_signed_distance_use_shared_memory
+
         function quest_signed_distance_evaluate(x, y, z) &
                 result(SHT_rv) &
                 bind(C, name="QUEST_signed_distance_evaluate")
@@ -279,7 +286,7 @@ contains
             ndims, maxElements, maxLevels)
         use iso_c_binding, only : C_BOOL, C_INT
         integer, value, intent(IN) :: comm
-        character(*), intent(IN) :: fileName
+        character(len=*), intent(IN) :: fileName
         logical, value, intent(IN) :: requiresDistance
         logical(C_BOOL) SH_requiresDistance
         integer(C_INT), value, intent(IN) :: ndims
@@ -298,7 +305,7 @@ contains
     subroutine quest_initialize_serial(fileName, requiresDistance, &
             ndims, maxElements, maxLevels)
         use iso_c_binding, only : C_BOOL, C_INT
-        character(*), intent(IN) :: fileName
+        character(len=*), intent(IN) :: fileName
         logical, value, intent(IN) :: requiresDistance
         logical(C_BOOL) SH_requiresDistance
         integer(C_INT), value, intent(IN) :: ndims
@@ -339,7 +346,7 @@ contains
 #ifdef AXOM_USE_MPI
     subroutine quest_signed_distance_init_mpi(file, comm)
         use iso_c_binding, only : C_INT
-        character(*), intent(IN) :: file
+        character(len=*), intent(IN) :: file
         integer, value, intent(IN) :: comm
         ! splicer begin function.signed_distance_init_mpi
         call c_signed_distance_init_mpi_bufferify(file, &
@@ -351,7 +358,7 @@ contains
 #ifndef AXOM_USE_MPI
     subroutine quest_signed_distance_init_serial(file)
         use iso_c_binding, only : C_INT
-        character(*), intent(IN) :: file
+        character(len=*), intent(IN) :: file
         ! splicer begin function.signed_distance_init_serial
         call c_signed_distance_init_serial_bufferify(file, &
             len_trim(file, kind=C_INT))
@@ -387,6 +394,16 @@ contains
         call c_signed_distance_set_verbose(SH_status)
         ! splicer end function.signed_distance_set_verbose
     end subroutine quest_signed_distance_set_verbose
+
+    subroutine quest_signed_distance_use_shared_memory(status)
+        use iso_c_binding, only : C_BOOL
+        logical, value, intent(IN) :: status
+        logical(C_BOOL) SH_status
+        SH_status = status  ! coerce to C_BOOL
+        ! splicer begin function.signed_distance_use_shared_memory
+        call c_signed_distance_use_shared_memory(SH_status)
+        ! splicer end function.signed_distance_use_shared_memory
+    end subroutine quest_signed_distance_use_shared_memory
 
     ! splicer begin additional_functions
     ! splicer end additional_functions

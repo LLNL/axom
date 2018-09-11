@@ -22,7 +22,7 @@
 #include "axom/slic/interface/slic.hpp"     // for slic macros
 
 // Sidre includes
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 #include "axom/sidre/core/sidre.hpp"        // for sidre::Group, sidre::View
 namespace sidre = axom::sidre;
 #endif
@@ -122,7 +122,7 @@ void check_field_variable( mint::FieldVariable< T >& fv )
 }
 
 //------------------------------------------------------------------------------
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 void create_sidre_data( sidre::DataStore& ds, int numTuples, int numComponents )
 {
   sidre::Group* gp = ds.getRoot();
@@ -225,7 +225,7 @@ TEST( mint_mesh_field_variable, external_constructor )
 
 }
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
 //------------------------------------------------------------------------------
 TEST( mint_mesh_field_variable, sidre_push_constructor )

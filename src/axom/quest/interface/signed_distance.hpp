@@ -232,6 +232,16 @@ void signed_distance_set_max_occupancy( int threshold );
  */
 void signed_distance_set_verbose( bool status );
 
+/*!
+ * \brief Enable/Disable the use of MPI-3 on-node shared memory for storing
+ *  the surface mesh. By default this option is disabled.
+ *
+ * \param [in] status flag indicating whether to enable/disable shared memory.
+ *
+ * \note This option utilities MPI-3 features
+ */
+void signed_distance_use_shared_memory( bool status );
+
 /// @}
 
 /// \name Signed Distance Query Evaluation Methods

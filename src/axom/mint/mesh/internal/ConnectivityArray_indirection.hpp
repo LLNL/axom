@@ -28,7 +28,7 @@
 #include "axom/mint/mesh/internal/ConnectivityArrayHelpers.hpp"
 #include "axom/slic/interface/slic.hpp"
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 #include "axom/sidre/core/sidre.hpp"
 #endif
 
@@ -169,7 +169,7 @@ public:
 /// \name Sidre Storage ConnectivityArray Constructors
 /// @{
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
   /*!
    * \brief Creates a ConnectivityArray instance from a sidre::Group which
@@ -300,6 +300,25 @@ public:
   { return m_values->capacity(); }
 
   /*!
+   * \brief Resize the space to hold the specified number of IDs.
+   *
+   * \param [in] ID_size the number of IDs to resize the space for.
+   * \param [in] value_size the number of values per ID to resize the space for.
+   *
+   * \note if value_size is not specified, then, if this ConnectivityArray is
+   *  empty, space is allocated for MAX_NUM_NODES values for each ID. Otherwise,
+   *  space is allocated based on the average number of values per ID.
+   */
+  void resize( IndexType ID_size, IndexType value_size=USE_DEFAULT )
+  {
+    m_offsets->resize( ID_size+1 );
+    IndexType newValueSize =
+      internal::calcValueCapacity( getNumberOfIDs(), getIDCapacity(),
+                                   getNumberOfValues(), value_size );
+    m_values->resize( newValueSize );
+  }
+
+  /*!
    * \brief Reserve space for IDs and values.
    *
    * \param [in] ID_capacity the number of IDs to reserve space for.
@@ -396,7 +415,7 @@ public:
    * \brief Return a const pointer to the sidre::Group that holds the data
    *  or nullptr if the data is not in sidre.
    */
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   const sidre::Group* getGroup() const
   {
     if ( !isInSidre() )

@@ -28,7 +28,7 @@
 
 // anemspace aliases
 namespace mint = axom::mint;
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 namespace sidre = axom::sidre;
 #endif
 
@@ -209,7 +209,7 @@ void check_create_and_access_data( mint::FieldData& field_data,
   }  // END for
 }
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
 //------------------------------------------------------------------------------
 template < typename T >
@@ -271,7 +271,7 @@ TEST( mint_mesh_field_data_DeathTest, invalid_construction )
   EXPECT_DEATH_IF_SUPPORTED( mint::FieldData(-1), IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( mint::FieldData(42), IGNORE_OUTPUT );
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   sidre::DataStore ds;
   sidre::Group* gp = ds.getRoot( );
 
@@ -349,7 +349,7 @@ TEST( mint_mesh_field_data, empty_constructor )
   check_empty_field_data< mint::NODE_CENTERED >( fd );
   EXPECT_FALSE( fd.hasSidreGroup() );
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   // check empty constructor from a Sidre group
   sidre::DataStore ds;
   sidre::Group* gp = ds.getRoot( );
@@ -361,7 +361,7 @@ TEST( mint_mesh_field_data, empty_constructor )
 }
 
 //------------------------------------------------------------------------------
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 TEST( mint_mesh_field_data, sidre_constructor )
 {
   constexpr int NUM_TUPLES          = 10;
@@ -472,7 +472,7 @@ TEST( mint_mesh_field_data, create_and_access_fields )
   EXPECT_EQ( native_data.getNumFields(), 2 );
   EXPECT_FALSE( native_data.hasSidreGroup() );
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   sidre::DataStore ds;
   sidre::Group* fields_group = ds.getRoot( );
 
@@ -579,7 +579,7 @@ TEST( mint_mesh_field_data, remove_field )
     EXPECT_EQ( foo[ i ], 7 );
   }
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
   sidre::DataStore ds;
   sidre::Group* fields_group = ds.getRoot( );
@@ -613,7 +613,7 @@ TEST( mint_mesh_field_data, resize )
   EXPECT_EQ( native_data.getNumFields(), 2 );
   check_resize( native_data, NEW_NUM_TUPLES );
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   sidre::DataStore ds;
   sidre::Group* fields_group = ds.getRoot( );
 
@@ -651,7 +651,7 @@ TEST( mint_mesh_field_data, reserve )
   EXPECT_EQ( native_data.getNumFields(), 2 );
   check_reserve( native_data, NEW_CAPACITY );
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   sidre::DataStore ds;
   sidre::Group* fields_group = ds.getRoot( );
 
@@ -685,7 +685,7 @@ TEST( mint_mesh_field_data, shrink )
 
   check_shrink( native_data );
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   sidre::DataStore ds;
   sidre::Group* fields_group = ds.getRoot( );
 

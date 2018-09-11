@@ -621,7 +621,7 @@ subroutine DumpUltra( prob )
   type(SidreGroup) elem
   type(SidreView) view
   integer, parameter :: fp = 8
-  integer i, j
+  integer(SIDRE_IndexType) i, j
   integer ierr
   character(MAXNAMESIZE) name
   integer length

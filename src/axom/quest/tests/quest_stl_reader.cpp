@@ -25,6 +25,7 @@
 #include <cstdio>   // for std::remove()
 #include <string>   // for std::string
 #include <fstream>  // for std::ofstream
+#include <limits>   // for std::numeric_limits
 
 // namespace aliases
 namespace mint  = axom::mint;
@@ -142,9 +143,69 @@ TEST( quest_stl_reader, read_stl )
   mint::IndexType numNodes = mesh.getNumberOfNodes();
   for ( mint::IndexType inode=0 ; inode < numNodes ; ++inode )
   {
-    EXPECT_DOUBLE_EQ( x[ inode ], x_expected[ inode ] );
-    EXPECT_DOUBLE_EQ( y[ inode ], y_expected[ inode ] );
-    EXPECT_DOUBLE_EQ( z[ inode ], z_expected[ inode ] );
+    EXPECT_NEAR( x[ inode ], x_expected[ inode ],
+                 std::numeric_limits< double >::epsilon() );
+    EXPECT_NEAR( y[ inode ], y_expected[ inode ],
+                 std::numeric_limits< double >::epsilon() );
+    EXPECT_NEAR( z[ inode ], z_expected[ inode ],
+                 std::numeric_limits< double >::epsilon() );
+  } // END for all nodes
+
+  // STEP 4: remove temporary STL file
+  std::remove( filename.c_str() );
+}
+
+//------------------------------------------------------------------------------
+TEST( quest_stl_reader, read_stl_external )
+{
+  constexpr mint::IndexType N_NODES = 3;
+  constexpr mint::IndexType N_FACES = 1;
+  const double x_expected[] = { 0.0, 1.0, 0.0 };
+  const double y_expected[] = { 0.0, 0.0, 1.0 };
+  const double z_expected[] = { 0.0, 0.0, 0.0 };
+
+  double xin[] = { -1.0, -1.0, -1.0 };
+  double yin[] = { -1.0, -1.0, -1.0 };
+  double zin[] = { -1.0, -1.0, -1.0 };
+
+  mint::IndexType conn[] = { -1, -1, -1 };
+
+  const std::string filename = "triangle.stl";
+
+  // STEP 0: generate a temporary STL file for testing
+  generate_stl_file( filename );
+
+  // STEP 1: create an STL reader and read-in the mesh data
+  quest::STLReader reader;
+  reader.setFileName( filename );
+  int status = reader.read();
+  EXPECT_EQ( status, 0 );
+
+  // STEP 2: reading the STL mesh data into a mint::Mesh
+  mint::UnstructuredMesh< mint::SINGLE_SHAPE > mesh( mint::TRIANGLE,
+                                                     N_FACES, conn,
+                                                     N_NODES, xin, yin, zin );
+  EXPECT_EQ( mesh.getNumberOfCells(), N_FACES );
+  EXPECT_EQ( mesh.getNumberOfNodes(), N_NODES );
+
+  reader.getMesh( &mesh );
+
+  const double* x = mesh.getCoordinateArray( mint::X_COORDINATE );
+  const double* y = mesh.getCoordinateArray( mint::Y_COORDINATE );
+  const double* z = mesh.getCoordinateArray( mint::Z_COORDINATE );
+  EXPECT_TRUE( x != nullptr );
+  EXPECT_TRUE( y != nullptr );
+  EXPECT_TRUE( z != nullptr );
+
+  mint::IndexType numNodes = mesh.getNumberOfNodes();
+  for ( mint::IndexType inode=0 ; inode < numNodes ; ++inode )
+  {
+    EXPECT_NEAR( x[ inode ], x_expected[ inode ],
+                 std::numeric_limits< double >::epsilon() );
+    EXPECT_NEAR( y[ inode ], y_expected[ inode ],
+                 std::numeric_limits< double >::epsilon() );
+    EXPECT_NEAR( z[ inode ], z_expected[ inode ],
+                 std::numeric_limits< double >::epsilon() );
   } // END for all nodes
 
   // STEP 4: remove temporary STL file

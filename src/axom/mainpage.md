@@ -5,7 +5,7 @@ Axom provides libraries that address common computer science needs.  It grew fro
 
 # Axom components
 
-* @subpage axomutiltop provides shared utility functionality to all components.
+* @subpage coretop provides shared utility functionality to all components.
 * @subpage lumberjacktop provides logging aggregation and filtering capability.
 * @subpage minttop provides a mesh representation with finite element operations.
 * @subpage primaltop provides an API for geometric primitives and computational geometry tests.

@@ -53,20 +53,13 @@
  */
 
 
-#include "axom/config.hpp"
+#include "axom/slic.hpp"
+#include "axom/slam.hpp"
 
 #include <cmath>
 #include <string>
 #include <iomanip>
 #include <sstream>
-
-#include "axom/slic/interface/slic.hpp"
-#include "axom/slic/core/UnitTestLogger.hpp"
-
-#include "axom/slam/FieldRegistry.hpp"
-#include "axom/slam/RangeSet.hpp"
-#include "axom/slam/StaticRelation.hpp"
-#include "axom/slam/Map.hpp"
 
 namespace slamShocktube
 {

@@ -24,6 +24,7 @@
 
 #include <stddef.h>
 #include "axom/sidre/interface/SidreTypes.h"
+#include "typesSidre.h"
 
 // splicer begin class.Buffer.CXX_declarations
 // splicer end class.Buffer.CXX_declarations
@@ -31,10 +32,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-// declaration of shadow types
-struct s_SIDRE_buffer;
-typedef struct s_SIDRE_buffer SIDRE_buffer;
 
 // splicer begin class.Buffer.C_declarations
 // splicer end class.Buffer.C_declarations
@@ -54,14 +51,14 @@ size_t SIDRE_buffer_get_total_bytes(const SIDRE_buffer* self);
 size_t SIDRE_buffer_get_bytes_per_element(const SIDRE_buffer* self);
 
 void SIDRE_buffer_describe(SIDRE_buffer* self, int type,
-                           SIDRE_SidreLength num_elems);
+                           SIDRE_IndexType num_elems);
 
 void SIDRE_buffer_allocate_existing(SIDRE_buffer* self);
 
 void SIDRE_buffer_allocate_from_type(SIDRE_buffer* self, int type,
-                                     SIDRE_SidreLength num_elems);
+                                     SIDRE_IndexType num_elems);
 
-void SIDRE_buffer_reallocate(SIDRE_buffer* self, SIDRE_SidreLength num_elems);
+void SIDRE_buffer_reallocate(SIDRE_buffer* self, SIDRE_IndexType num_elems);
 
 void SIDRE_buffer_print(const SIDRE_buffer* self);
 

@@ -24,7 +24,7 @@
 
 #include "gtest/gtest.h"                /* for TEST and EXPECT_* macros */
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 #include "axom/sidre/core/sidre.hpp"
 #endif
 
@@ -41,7 +41,7 @@ constexpr double PI = 3.14159265358979323846;
 constexpr double E =  2.71828182845904523536;
 const char IGNORE_OUTPUT[] = ".*";
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 sidre::DataStore* ds = nullptr;
 #endif
 
@@ -74,7 +74,7 @@ std::string getFieldName( const Mesh* mesh, int association )
 
   if ( mesh->hasSidreGroup() )
   {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
     field_name = mesh->getTopologyName() + "_" + field_name;
 #endif
   }
@@ -283,7 +283,7 @@ createExternalSingle( int ndims, CellType cell_type, IndexType cell_capacity,
                               cell_capacity;
   IndexType* connectivity = new IndexType[ connec_capacity ];
 
-  return new UnstructuredMesh< SINGLE_SHAPE >( ndims, cell_type, 0,
+  return new UnstructuredMesh< SINGLE_SHAPE >( cell_type, 0,
                                                cell_capacity, connectivity,
                                                0, node_capacity, x, y, z );
 }
@@ -317,7 +317,7 @@ createExternalMixed( int ndims, IndexType cell_capacity,
   IndexType* offsets = new IndexType[ cell_capacity + 1 ];
   CellType* types = new CellType[ cell_capacity ];
 
-  return new UnstructuredMesh< MIXED_SHAPE >( ndims, 0, cell_capacity,
+  return new UnstructuredMesh< MIXED_SHAPE >( 0, cell_capacity,
                                               connec_capacity, connectivity,
                                               offsets, types, 0,
                                               node_capacity, x, y, z );
@@ -435,7 +435,7 @@ void deleteAndDuplicateExternalMesh( UnstructuredMesh< SINGLE_SHAPE >*& mesh )
   }
 
   delete mesh;
-  mesh = new UnstructuredMesh< SINGLE_SHAPE >( ndims, cell_type, n_cells,
+  mesh = new UnstructuredMesh< SINGLE_SHAPE >( cell_type, n_cells,
                                                cell_capacity, connectivity,
                                                n_nodes, node_capacity,
                                                x, y, z );
@@ -509,7 +509,7 @@ void deleteAndDuplicateExternalMesh( UnstructuredMesh< MIXED_SHAPE >*& mesh )
   }
 
   delete mesh;
-  mesh = new UnstructuredMesh< MIXED_SHAPE >( ndims, n_cells, cell_capacity,
+  mesh = new UnstructuredMesh< MIXED_SHAPE >( n_cells, cell_capacity,
                                               connec_capacity, connectivity,
                                               offsets, types, n_nodes,
                                               node_capacity, x, y, z );
@@ -546,7 +546,7 @@ void deleteAndDuplicateExternalMesh( UnstructuredMesh< MIXED_SHAPE >*& mesh )
 }
 /// @}
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
 /*!
  * \brief Delete the given sidre mesh and create a copy from it's group.
@@ -599,7 +599,7 @@ void createMeshes( UnstructuredMesh< SINGLE_SHAPE >** meshes,
                    IndexType n_nodes, IndexType n_cells, bool node_field,
                    bool cell_field )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   SLIC_ERROR_IF( ds != nullptr, "Did not free DataStore." );
   ds = new sidre::DataStore();
   sidre::Group* root = ds->getRoot();
@@ -633,7 +633,7 @@ void createMeshes( UnstructuredMesh< SINGLE_SHAPE >** meshes,
     }
     cur_mesh++;
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
     const std::string topo = "t" + std::to_string( dim );
     const std::string coordset = "c" + std::to_string( dim );
     meshes[ cur_mesh ] = new UnstructuredMesh< SINGLE_SHAPE >( dim, QUAD,
@@ -656,7 +656,7 @@ void createMeshes( UnstructuredMesh< MIXED_SHAPE >** meshes,
                    IndexType n_nodes, IndexType n_cells, IndexType connec_size,
                    bool node_field, bool cell_field )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   SLIC_ERROR_IF( ds != nullptr, "Did not free DataStore." );
   ds = new sidre::DataStore();
   sidre::Group* root = ds->getRoot();
@@ -690,7 +690,7 @@ void createMeshes( UnstructuredMesh< MIXED_SHAPE >** meshes,
     }
     cur_mesh++;
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
     const std::string topo = "t" + std::to_string( dim );
     const std::string coordset = "c" + std::to_string( dim );
     meshes[ cur_mesh ] = new UnstructuredMesh< MIXED_SHAPE >( dim, root,
@@ -730,7 +730,7 @@ void createMeshesForResize( UnstructuredMesh< SINGLE_SHAPE >** meshes,
                             IndexType n_nodes, IndexType n_cells,
                             bool node_field, bool cell_field )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   SLIC_ERROR_IF( ds != nullptr, "Did not free DataStore." );
   ds = new sidre::DataStore();
   sidre::Group* root = ds->getRoot();
@@ -752,7 +752,7 @@ void createMeshesForResize( UnstructuredMesh< SINGLE_SHAPE >** meshes,
     }
     cur_mesh++;
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
     const std::string topo = "t" + std::to_string( dim );
     const std::string coordset = "c" + std::to_string( dim );
     meshes[ cur_mesh ] = new UnstructuredMesh< SINGLE_SHAPE >( dim, QUAD,
@@ -777,7 +777,7 @@ void createMeshesForResize( UnstructuredMesh< MIXED_SHAPE >** meshes,
                             IndexType n_nodes, IndexType n_cells,
                             bool node_field, bool cell_field )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   SLIC_ERROR_IF( ds != nullptr, "Did not free DataStore." );
   ds = new sidre::DataStore();
   sidre::Group* root = ds->getRoot();
@@ -798,7 +798,7 @@ void createMeshesForResize( UnstructuredMesh< MIXED_SHAPE >** meshes,
     }
     cur_mesh++;
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
     const std::string topo = "t" + std::to_string( dim );
     const std::string coordset = "c" + std::to_string( dim );
     meshes[ cur_mesh ] = new UnstructuredMesh< MIXED_SHAPE >( dim, root,
@@ -843,7 +843,7 @@ void deleteMeshes( UnstructuredMesh< TOPO >** meshes, int n_meshes )
     }
   }
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   delete ds;
   ds = nullptr;
 #endif
@@ -1201,7 +1201,7 @@ void check_append_cells( const UnstructuredMesh< SINGLE_SHAPE >* mesh,
   IndexType cell[ mint::MAX_NUM_NODES ];
   for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
-    mesh->getCell( i, cell );
+    mesh->getCellNodeIDs( i, cell );
     for ( IndexType j = 0 ; j < nodes_per_cell ; ++j )
     {
       EXPECT_EQ( cell[ j ], connecValue( i, j ) );
@@ -1211,7 +1211,7 @@ void check_append_cells( const UnstructuredMesh< SINGLE_SHAPE >* mesh,
   /* Check using the other getCell */
   for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
-    const IndexType* cellPtr = mesh->getCell( i );
+    const IndexType* cellPtr = mesh->getCellNodeIDs( i );
     for ( IndexType j = 0 ; j < nodes_per_cell ; ++j )
     {
       EXPECT_EQ( cellPtr[ j ], connecValue( i, j ) );
@@ -1255,7 +1255,7 @@ void check_append_cells( const UnstructuredMesh< MIXED_SHAPE >* mesh,
   IndexType cell[ MAX_NUM_NODES ];
   for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
-    mesh->getCell( i, cell );
+    mesh->getCellNodeIDs( i, cell );
     IndexType num_nodes = mesh->getNumberOfCellNodes( i );
     for ( IndexType j = 0 ; j < num_nodes ; ++j )
     {
@@ -1266,7 +1266,7 @@ void check_append_cells( const UnstructuredMesh< MIXED_SHAPE >* mesh,
   /* Check using the other getCell */
   for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
-    const IndexType* cell = mesh->getCell( i );
+    const IndexType* cell = mesh->getCellNodeIDs( i );
     IndexType num_nodes = mesh->getNumberOfCellNodes( i );
     for ( IndexType j = 0 ; j < num_nodes ; ++j )
     {
@@ -1521,7 +1521,7 @@ void set_cells( UnstructuredMesh< TOPO >* mesh )
 
   for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
-    IndexType* cur_cell = mesh->getCell( i );
+    IndexType* cur_cell = mesh->getCellNodeIDs( i );
     const IndexType n_nodes = mesh->getNumberOfCellNodes( i );
     for ( IndexType j = 0 ; j < n_nodes ; ++j )
     {
@@ -1980,7 +1980,7 @@ void insert_nodes_update( UnstructuredMesh< TOPO >* mesh, IndexType n_nodes )
   /* Check that the connectivity of each cell is incremented by one. */
   for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
-    const IndexType* cell = mesh->getCell( i );
+    const IndexType* cell = mesh->getCellNodeIDs( i );
     const IndexType num_nodes = mesh->getNumberOfCellNodes( i );
     for ( IndexType j = 0 ; j < num_nodes ; ++j )
     {
@@ -1995,7 +1995,7 @@ void insert_nodes_update( UnstructuredMesh< TOPO >* mesh, IndexType n_nodes )
   /* check that the connectivity of each cell is changed appropriately. */
   for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
-    const IndexType* cell = mesh->getCell( i );
+    const IndexType* cell = mesh->getCellNodeIDs( i );
     const IndexType num_nodes = mesh->getNumberOfCellNodes( i );
     for ( IndexType j = 0 ; j < num_nodes ; ++j )
     {
@@ -2230,7 +2230,7 @@ void check_restoration( UnstructuredMesh< TOPO >** meshes, int n_meshes,
     {
       deleteAndDuplicateExternalMesh( meshes[ i ] );
     }
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
     else if ( meshes[ i ]->isInSidre() )
     {
       deleteAndDuplicateSidreMesh( meshes[ i ] );
@@ -2274,7 +2274,7 @@ void check_restoration( UnstructuredMesh< TOPO >** meshes, int n_meshes,
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, appendNodesSingle )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -2302,7 +2302,7 @@ TEST( mint_mesh_unstructured_mesh, appendNodesSingle )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, appendNodesMixed )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -2331,7 +2331,7 @@ TEST( mint_mesh_unstructured_mesh, appendNodesMixed )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, appendCellsSingle )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -2360,7 +2360,7 @@ TEST( mint_mesh_unstructured_mesh, appendCellsSingle )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, appendCellsMixed )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -2394,7 +2394,7 @@ TEST( mint_mesh_unstructured_mesh, appendCellsMixed )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, setNodesSingle )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -2423,7 +2423,7 @@ TEST( mint_mesh_unstructured_mesh, setNodesSingle )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, setNodesMixed )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -2453,7 +2453,7 @@ TEST( mint_mesh_unstructured_mesh, setNodesMixed )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, setCellsSingle )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -2483,7 +2483,7 @@ TEST( mint_mesh_unstructured_mesh, setCellsSingle )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, setCellsMixed )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -2518,7 +2518,7 @@ TEST( mint_mesh_unstructured_mesh, setCellsMixed )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, insertNodesSingle )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -2547,7 +2547,7 @@ TEST( mint_mesh_unstructured_mesh, insertNodesSingle )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, insertNodesMixed )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -2576,7 +2576,7 @@ TEST( mint_mesh_unstructured_mesh, insertNodesMixed )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, insertCellsSingle )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -2605,7 +2605,7 @@ TEST( mint_mesh_unstructured_mesh, insertCellsSingle )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, insertCellsMixed )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -2639,7 +2639,7 @@ TEST( mint_mesh_unstructured_mesh, insertCellsMixed )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, insertNodesNoUpdateSingle )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -2667,7 +2667,7 @@ TEST( mint_mesh_unstructured_mesh, insertNodesNoUpdateSingle )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, insertNodesNoUpdateMixed )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -2696,7 +2696,7 @@ TEST( mint_mesh_unstructured_mesh, insertNodesNoUpdateMixed )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, insertNodesUpdateSingle )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -2724,7 +2724,7 @@ TEST( mint_mesh_unstructured_mesh, insertNodesUpdateSingle )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, insertNodesUpdateMixed )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 3;
 #else
   constexpr int STRIDE = 2;
@@ -2757,7 +2757,7 @@ TEST( mint_mesh_unstructured_mesh, insertNodesUpdateMixed )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, resizeNodesSingle )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 2;
 #else
   constexpr int STRIDE = 1;
@@ -2785,7 +2785,7 @@ TEST( mint_mesh_unstructured_mesh, resizeNodesSingle )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, resizeNodesMixed )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 2;
 #else
   constexpr int STRIDE = 1;
@@ -2813,7 +2813,7 @@ TEST( mint_mesh_unstructured_mesh, resizeNodesMixed )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, resizeCellsSingle )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 2;
 #else
   constexpr int STRIDE = 1;
@@ -2841,7 +2841,7 @@ TEST( mint_mesh_unstructured_mesh, resizeCellsSingle )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_unstructured_mesh, resizeCellsMixed )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr int STRIDE = 2;
 #else
   constexpr int STRIDE = 1;
@@ -2864,6 +2864,120 @@ TEST( mint_mesh_unstructured_mesh, resizeCellsMixed )
                                CheckOption::APPEND );
 
   internal::deleteMeshes( meshes, N_MESHES );
+}
+
+//------------------------------------------------------------------------------
+TEST( mint_mesh_unstructured_mesh, resize_mesh_single_topology )
+{
+  constexpr int NDIMS           = 2;
+  constexpr IndexType N_NODES   = 6;
+  constexpr IndexType N_CELLS   = 2;
+  constexpr double MAGIC_DOUBLE = 42.0;
+  constexpr IndexType MAGIC_INT = 42;
+
+  using UnstructuredMeshType = mint::UnstructuredMesh< SINGLE_SHAPE >;
+
+  UnstructuredMeshType mesh( NDIMS, mint::QUAD );
+  EXPECT_EQ( mesh.getNumberOfNodes(), 0 );
+  EXPECT_EQ( mesh.getNumberOfCells(), 0 );
+  EXPECT_FALSE( mesh.hasMixedCellTypes() );
+  EXPECT_TRUE( mesh.getCellOffsetsArray() == nullptr );
+  EXPECT_TRUE( mesh.getCellTypesArray() == nullptr );
+
+  mesh.resize( N_NODES, N_CELLS );
+  EXPECT_EQ( mesh.getNumberOfNodes(), N_NODES );
+  EXPECT_EQ( mesh.getNumberOfCells(), N_CELLS );
+
+  double* x = mesh.getCoordinateArray( mint::X_COORDINATE );
+  double* y = mesh.getCoordinateArray( mint::Y_COORDINATE );
+  EXPECT_TRUE( x != nullptr );
+  EXPECT_TRUE( y != nullptr );
+
+  // touch memory associated with nodes to ensure it is allocated properly
+  for ( IndexType inode=0 ; inode < N_NODES ; ++inode )
+  {
+    x[ inode ] = MAGIC_DOUBLE;
+    y[ inode ] = MAGIC_DOUBLE;
+  }
+
+  // touch memory associated with the cell connectivity
+  IndexType stride = mesh.getNumberOfCellNodes();
+  EXPECT_EQ( stride, 4 );
+  IndexType* conn  = mesh.getCellConnectivityArray();
+  for ( IndexType icell=0 ; icell < N_CELLS ; ++icell )
+  {
+    conn[ icell*4   ] = MAGIC_INT;
+    conn[ icell*4+1 ] = MAGIC_INT;
+    conn[ icell*4+2 ] = MAGIC_INT;
+    conn[ icell*4+3 ] = MAGIC_INT;
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST( mint_mesh_unstructured_mesh, resize_mesh_mixed_topology )
+{
+  constexpr int NDIMS           = 2;
+  constexpr IndexType N_NODES   = 6;
+  constexpr IndexType N_CELLS   = 3;
+  constexpr double MAGIC_DOUBLE = 42.0;
+
+  using UnstructuredMeshType = mint::UnstructuredMesh< MIXED_SHAPE >;
+
+  UnstructuredMeshType mesh( NDIMS );
+  EXPECT_EQ( mesh.getNumberOfNodes(), 0 );
+  EXPECT_EQ( mesh.getNumberOfCells(), 0 );
+  EXPECT_TRUE( mesh.hasMixedCellTypes() );
+
+  mesh.resize( N_NODES, N_CELLS );
+  EXPECT_EQ( mesh.getNumberOfNodes(), N_NODES );
+  EXPECT_EQ( mesh.getNumberOfCells(), N_CELLS );
+  EXPECT_TRUE( mesh.getCellOffsetsArray() != nullptr );
+  EXPECT_TRUE( mesh.getCellTypesArray() != nullptr );
+
+  double* x = mesh.getCoordinateArray( mint::X_COORDINATE );
+  double* y = mesh.getCoordinateArray( mint::Y_COORDINATE );
+  EXPECT_TRUE( x != nullptr );
+  EXPECT_TRUE( y != nullptr );
+
+  // touch memory associated with nodes to ensure it is allocated properly
+  for ( IndexType inode=0 ; inode < N_NODES ; ++inode )
+  {
+    x[ inode ] = MAGIC_DOUBLE;
+    y[ inode ] = MAGIC_DOUBLE;
+  }
+
+  // touch memory associated with the cell connectivity
+  IndexType* conn    = mesh.getCellConnectivityArray();
+  IndexType* offsets = mesh.getCellOffsetsArray();
+  CellType* types   = mesh.getCellTypesArray();
+
+  for ( IndexType icell=0 ; icell < N_CELLS ; ++icell )
+  {
+    if ( icell < 2 )
+    {
+      types[ icell ]     = mint::TRIANGLE;
+      offsets[ icell ]   = ( icell==0 ) ? 0 : offsets[ icell ];
+      offsets[ icell+1 ] = offsets[ icell ] + 3;
+
+      IndexType* triangle = &conn[ offsets[ icell ] ];
+      triangle[ 0 ] = icell;
+      triangle[ 1 ] = icell+1;
+      triangle[ 2 ] = icell+2;
+    }
+    else
+    {
+      types[ icell ] = mint::QUAD;
+      offsets[ icell+1 ] = offsets[ icell ] + 4;
+
+      IndexType* quad = &conn[ offsets[ icell ] ];
+      quad[ 0 ] = icell;
+      quad[ 1 ] = icell+1;
+      quad[ 2 ] = icell+2;
+      quad[ 3 ] = icell+3;
+    }
+
+  }
+
 }
 
 /*******************************************************************************

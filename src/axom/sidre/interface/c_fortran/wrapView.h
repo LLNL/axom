@@ -24,6 +24,7 @@
 
 #include <stddef.h>
 #include "axom/sidre/interface/SidreTypes.h"
+#include "typesSidre.h"
 
 // splicer begin class.View.CXX_declarations
 // splicer end class.View.CXX_declarations
@@ -31,14 +32,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-// declaration of shadow types
-struct s_SIDRE_buffer;
-typedef struct s_SIDRE_buffer SIDRE_buffer;
-struct s_SIDRE_group;
-typedef struct s_SIDRE_group SIDRE_group;
-struct s_SIDRE_view;
-typedef struct s_SIDRE_view SIDRE_view;
 
 // splicer begin class.View.C_declarations
 // splicer end class.View.C_declarations
@@ -56,11 +49,11 @@ void SIDRE_view_get_path_bufferify(const SIDRE_view* self, char* SHF_rv,
 void SIDRE_view_get_path_name_bufferify(const SIDRE_view* self, char* SHF_rv,
                                         int NSHF_rv);
 
-SIDRE_group* SIDRE_view_get_owning_group(SIDRE_view* self);
+SIDRE_group* SIDRE_view_get_owning_group(SIDRE_view* self, SIDRE_group* SHC_rv);
 
 bool SIDRE_view_has_buffer(const SIDRE_view* self);
 
-SIDRE_buffer* SIDRE_view_get_buffer(SIDRE_view* self);
+SIDRE_buffer* SIDRE_view_get_buffer(SIDRE_view* self, SIDRE_buffer* SHC_rv);
 
 bool SIDRE_view_is_external(const SIDRE_view* self);
 
@@ -93,52 +86,50 @@ size_t SIDRE_view_get_stride(const SIDRE_view* self);
 int SIDRE_view_get_num_dimensions(const SIDRE_view* self);
 
 int SIDRE_view_get_shape(const SIDRE_view* self, int ndims,
-                         SIDRE_SidreLength* shape);
+                         SIDRE_IndexType* shape);
 
 void SIDRE_view_allocate_simple(SIDRE_view* self);
 
 void SIDRE_view_allocate_from_type(SIDRE_view* self, int type,
-                                   SIDRE_SidreLength num_elems);
+                                   SIDRE_IndexType num_elems);
 
-void SIDRE_view_reallocate(SIDRE_view* self, SIDRE_SidreLength num_elems);
+void SIDRE_view_reallocate(SIDRE_view* self, SIDRE_IndexType num_elems);
 
 void SIDRE_view_attach_buffer_only(SIDRE_view* self, SIDRE_buffer* buff);
 
 void SIDRE_view_attach_buffer_type(SIDRE_view* self, int type,
-                                   SIDRE_SidreLength num_elems,
+                                   SIDRE_IndexType num_elems,
                                    SIDRE_buffer* buff);
 
 void SIDRE_view_attach_buffer_shape(SIDRE_view* self, int type, int ndims,
-                                    SIDRE_SidreLength* shape,
-                                    SIDRE_buffer* buff);
+                                    SIDRE_IndexType* shape, SIDRE_buffer* buff);
 
 void SIDRE_view_apply_0(SIDRE_view* self);
 
-void SIDRE_view_apply_nelems(SIDRE_view* self, SIDRE_SidreLength num_elems);
+void SIDRE_view_apply_nelems(SIDRE_view* self, SIDRE_IndexType num_elems);
 
-void SIDRE_view_apply_nelems_offset(SIDRE_view* self,
-                                    SIDRE_SidreLength num_elems,
-                                    SIDRE_SidreLength offset);
+void SIDRE_view_apply_nelems_offset(SIDRE_view* self, SIDRE_IndexType num_elems,
+                                    SIDRE_IndexType offset);
 
 void SIDRE_view_apply_nelems_offset_stride(SIDRE_view* self,
-                                           SIDRE_SidreLength num_elems,
-                                           SIDRE_SidreLength offset,
-                                           SIDRE_SidreLength stride);
+                                           SIDRE_IndexType num_elems,
+                                           SIDRE_IndexType offset,
+                                           SIDRE_IndexType stride);
 
 void SIDRE_view_apply_type_nelems(SIDRE_view* self, int type,
-                                  SIDRE_SidreLength num_elems);
+                                  SIDRE_IndexType num_elems);
 
 void SIDRE_view_apply_type_nelems_offset(SIDRE_view* self, int type,
-                                         SIDRE_SidreLength num_elems,
-                                         SIDRE_SidreLength offset);
+                                         SIDRE_IndexType num_elems,
+                                         SIDRE_IndexType offset);
 
 void SIDRE_view_apply_type_nelems_offset_stride(SIDRE_view* self, int type,
-                                                SIDRE_SidreLength num_elems,
-                                                SIDRE_SidreLength offset,
-                                                SIDRE_SidreLength stride);
+                                                SIDRE_IndexType num_elems,
+                                                SIDRE_IndexType offset,
+                                                SIDRE_IndexType stride);
 
 void SIDRE_view_apply_type_shape(SIDRE_view* self, int type, int ndims,
-                                 SIDRE_SidreLength* shape);
+                                 SIDRE_IndexType* shape);
 
 void SIDRE_view_set_scalar_int(SIDRE_view* self, int value);
 
@@ -157,11 +148,11 @@ void SIDRE_view_set_external_data_ptr_only(SIDRE_view* self,
                                            void* external_ptr);
 
 void SIDRE_view_set_external_data_ptr_type(SIDRE_view* self, int type,
-                                           SIDRE_SidreLength num_elems,
+                                           SIDRE_IndexType num_elems,
                                            void* external_ptr);
 
 void SIDRE_view_set_external_data_ptr_shape(SIDRE_view* self, int type,
-                                            int ndims, SIDRE_SidreLength* shape,
+                                            int ndims, SIDRE_IndexType* shape,
                                             void* external_ptr);
 
 const char* SIDRE_view_get_string(SIDRE_view* self);

@@ -35,7 +35,8 @@
       "clang@4.0.0",
       "gcc@4.9.3",
       "gcc@6.1.0",
-      "gcc@7.1.0",
+      "gcc@7.3.0",
+      "gcc@8.1.0",
       "intel@16.0.4",
       "intel@17.0.2",
       "intel@18.0.2" ],
@@ -46,8 +47,8 @@
       "xl@coral" ],
 
     "bgqos_0":
-    [ "clang@4.0.0_gfortran~cmake~devtools~python~lua",
-      "clang@4.0.0_xlf~cmake~devtools~python~lua" ],
+    [ "clang@4.0.0_gfortran~cmake+hdf5~devtools~python",
+      "clang@4.0.0_xlf~cmake+hdf5~devtools~python" ],
 
     "macosx_10.9_x86_64":
     [ "clang@3.4svn" ],

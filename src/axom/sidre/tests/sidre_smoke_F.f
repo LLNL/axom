@@ -36,7 +36,7 @@ contains
   subroutine valid_invalid
     type(SidreDataStore) ds
     type(SidreGroup) root
-    integer idx
+    integer(SIDRE_IndexType) idx
     character(10) name
 
     call set_case_name("valid_invalid")

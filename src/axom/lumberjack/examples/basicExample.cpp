@@ -15,9 +15,7 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include "axom/lumberjack/Lumberjack.hpp"
-#include "axom/lumberjack/BinaryTreeCommunicator.hpp"
-#include "axom/lumberjack/Message.hpp"
+#include "axom/lumberjack.hpp"
 
 #include <mpi.h>
 #include <iostream>

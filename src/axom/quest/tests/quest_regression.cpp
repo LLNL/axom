@@ -411,18 +411,11 @@ void loadBaselineData(axom::sidre::Group* grp, CommandLineArguments& args)
 axom::mint::UniformMesh* createQueryMesh(const SpaceBoundingBox& bb,
                                          const GridPt& res)
 {
-  // Set up the query mesh
-  SpaceVec h( bb.getMin(), bb.getMax());
-  h[0] /= res[0];
-  h[1] /= res[1];
-  h[2] /= res[2];
+  const double* low = bb.getMin().data();
+  const double* high = bb.getMax().data();
 
-  axom::mint::int64 ext[6];
-  ext[0] = 0; ext[1] = res[0];
-  ext[2] = 0; ext[3] = res[1];
-  ext[4] = 0; ext[5] = res[2];
-
-  return new axom::mint::UniformMesh(DIM, bb.getMin().data(), h.data(), ext);
+  return new axom::mint::UniformMesh(low, high, res[0] + 1, res[1] + 1,
+                                     res[2] + 1);
 }
 
 /**
@@ -590,7 +583,7 @@ void runDistanceQueries(CommandLineArguments& clargs)
   for ( int inode=0 ; inode < nnodes ; ++inode )
   {
     axom::mint::IndexType i, j, k;
-    umesh->getExtent()->getGridIndex( inode, i, j, k );
+    umesh->getNodeGridIndex( inode, i, j, k );
 
     xcoords[inode] = umesh->evaluateCoordinate( i,axom::mint::X_COORDINATE);
     ycoords[inode] = umesh->evaluateCoordinate( j,axom::mint::Y_COORDINATE);

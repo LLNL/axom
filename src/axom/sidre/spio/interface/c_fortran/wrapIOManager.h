@@ -22,8 +22,9 @@
 #ifndef WRAPIOMANAGER_H
 #define WRAPIOMANAGER_H
 
-#include "mpi.h"
 #include "axom/sidre/interface/c_fortran/wrapGroup.h"
+#include "mpi.h"
+#include "typesSPIO.h"
 
 // splicer begin class.IOManager.CXX_declarations
 // splicer end class.IOManager.CXX_declarations
@@ -32,18 +33,13 @@
 extern "C" {
 #endif
 
-// declaration of shadow types
-struct s_SIDRE_group;
-typedef struct s_SIDRE_group SIDRE_group;
-struct s_SPIO_iomanager;
-typedef struct s_SPIO_iomanager SPIO_iomanager;
-
 // splicer begin class.IOManager.C_declarations
 // splicer end class.IOManager.C_declarations
 
-SPIO_iomanager* SPIO_iomanager_new_0(MPI_Fint com);
+SPIO_iomanager* SPIO_iomanager_new_0(MPI_Fint com, SPIO_iomanager* SHC_rv);
 
-SPIO_iomanager* SPIO_iomanager_new_1(MPI_Fint com, bool use_scr);
+SPIO_iomanager* SPIO_iomanager_new_1(MPI_Fint com, bool use_scr,
+                                     SPIO_iomanager* SHC_rv);
 
 void SPIO_iomanager_delete(SPIO_iomanager* self);
 

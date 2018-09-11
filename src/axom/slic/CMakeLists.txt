@@ -51,6 +51,7 @@ endif()
 if (ENABLE_FORTRAN)
     list(APPEND slic_headers
         interface/c_fortran/wrapSLIC.h
+        interface/c_fortran/typesSLIC.h
     )
     list(APPEND slic_sources
         interface/c_fortran/wrapSLIC.cpp
@@ -77,6 +78,9 @@ blt_add_library(NAME        slic
                 DEPENDS_ON  ${slic_depends_on}
                 FOLDER      axom/slic
                 )
+
+axom_write_unified_header(NAME    slic
+                          HEADERS ${slic_headers})
 
 axom_install_component(NAME    slic
                        HEADERS ${slic_headers}

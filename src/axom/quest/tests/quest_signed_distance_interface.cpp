@@ -19,33 +19,42 @@
 #include "axom/core/utilities/Utilities.hpp"
 
 // Mint includes
-#include "axom/mint/config.hpp"            // for mint compile-time definitions
+#include "axom/mint/config.hpp"                 // mint compile-time definitions
 #include "axom/mint/mesh/CellTypes.hpp"         // for cell types enum
 #include "axom/mint/mesh/Mesh.hpp"              // defines mint::Mesh
 #include "axom/mint/mesh/MeshTypes.hpp"         // for mesh types enum
 #include "axom/mint/mesh/UniformMesh.hpp"       // for mint::UniformMesh
 #include "axom/mint/mesh/UnstructuredMesh.hpp"  // for mint::UnstructuredMesh
-#include "axom/mint/utils/vtk_utils.hpp"         // for mint::write_vtk()
+#include "axom/mint/utils/vtk_utils.hpp"        // for mint::write_vtk()
 
 // Primal includes
-#include "axom/primal/geometry/BoundingBox.hpp"     // primal::BoundingBox
-#include "axom/primal/geometry/Plane.hpp"           // defines primal::Plane
-#include "axom/primal/geometry/Sphere.hpp"          // defines primal::Sphere
+#include "axom/primal/geometry/BoundingBox.hpp" // primal::BoundingBox
+#include "axom/primal/geometry/Plane.hpp"       // defines primal::Plane
+#include "axom/primal/geometry/Sphere.hpp"      // defines primal::Sphere
 
 // Quest includes
 #include "axom/quest/interface/signed_distance.hpp" // for signed distance
-#include "quest_test_utilities.hpp"  // for test-utility functions
+#include "quest_test_utilities.hpp"                 // test-utility functions
 
 // Slic includes
 #include "axom/slic/interface/slic.hpp"             // for SLIC macros
-#include "axom/slic/core/UnitTestLogger.hpp"   // for the unit test logger
+#include "axom/slic/core/UnitTestLogger.hpp"        // for the unit test logger
 using axom::slic::UnitTestLogger;
 
 // gtest
+#ifdef AXOM_USE_MPI
+
+#ifdef GTEST_HAS_DEATH_TEST
+#undef GTEST_HAS_DEATH_TEST
+#endif /* GTEST_HAS_DEATH_TEST */
+
+#define GTEST_HAS_DEATH_TEST 0
+#endif /* AXOM_USE_MPI */
 #include "gtest/gtest.h"             // for gtest macros
 
 // C/C++ includes
-#include <fstream>                   // for std::ofstream
+#include <fstream>  // for std::ofstream
+#include <sstream>  // for std::ostringstream
 
 // Aliases
 namespace quest     = axom::quest;
@@ -196,6 +205,62 @@ void getUniformMesh( const UnstructuredMesh* mesh,
   umesh = new mint::UniformMesh( lo, hi, N, N, N );
 }
 
+/*!
+ * \brief Tests the signed against an anlytic surface mesh input.
+ * \param [in] use_shared indicates whether to use shared memory or not.
+ */
+void check_analytic_plane( bool use_shared=false )
+{
+  // STEP 0: construct uniform box mesh
+  constexpr int NDIMS = 3;
+  constexpr int N     = 16;
+  double lo[ 3 ]      = { -4.0, -4.0, -4.0 };
+  double hi[ 3 ]      = {  4.0,  4.0,  4.0 };
+  mint::UniformMesh mesh( lo, hi, N, N, N );
+  double* phi = mesh.createField< double >( "phi", mint::NODE_CENTERED );
+  double* err = mesh.createField< double >( "err", mint::NODE_CENTERED );
+
+  // STEP 1: generate planar STL mesh file
+  const std::string file = "plane.stl";
+  generate_planar_mesh_stl_file( file );
+
+  // STEP 2: define analytic plane corresponding to the planar mesh;
+  const double origin[] = { 0.0, 0.0, 0.0 };
+  const double normal[] = { 0.0, 0.0, 1.0 };
+  primal::Plane< double,3 > analytic_plane( normal, origin );
+
+  // STEP 2: initialize the signed distance
+  quest::signed_distance_use_shared_memory( use_shared );
+  quest::signed_distance_set_closed_surface( false );
+  quest::signed_distance_init( file );
+  EXPECT_TRUE( quest::signed_distance_initialized() );
+
+  mint::IndexType nnodes = mesh.getNumberOfNodes();
+  for ( mint::IndexType inode=0 ; inode < nnodes ; ++inode )
+  {
+    double pt[ NDIMS ];
+    mesh.getNode( inode, pt );
+    phi[ inode ] = quest::signed_distance_evaluate( pt[0], pt[1], pt[2] );
+
+    const double phi_expected = analytic_plane.computeSignedDistance( pt );
+    EXPECT_DOUBLE_EQ( phi[ inode ], phi_expected );
+    err[ inode ] = utilities::abs( phi[ inode ]-phi_expected );
+  }
+
+#ifdef WRITE_VTK_OUTPUT
+  std::ostringstream oss;
+  oss << "analytic_plane_mesh_";
+  oss << ( ( use_shared ) ? "shared_test.vtk" : "test.vtk" );
+  mint::write_vtk( &mesh, oss.str() );
+#endif
+
+  quest::signed_distance_finalize( );
+  EXPECT_FALSE( quest::signed_distance_initialized() );
+
+#ifdef REMOVE_FILES
+  std::remove( file.c_str( ) );
+#endif
+}
 
 } /* end detail namespace */
 
@@ -370,50 +435,10 @@ TEST( quest_signed_distance_interface, get_mesh_bounds )
 //------------------------------------------------------------------------------
 TEST( quest_signed_distance_interface, analytic_plane )
 {
-  // STEP 0: construct uniform box mesh
-  constexpr int NDIMS = 3;
-  constexpr int N     = 16;
-  double lo[ 3 ]      = { -4.0, -4.0, -4.0 };
-  double hi[ 3 ]      = {  4.0,  4.0,  4.0 };
-  mint::UniformMesh mesh( lo, hi, N, N, N );
-  double* phi = mesh.createField< double >( "phi", mint::NODE_CENTERED );
-  double* err = mesh.createField< double >( "err", mint::NODE_CENTERED );
+  check_analytic_plane( );
 
-  // STEP 1: generate planar STL mesh file
-  const std::string file = "plane.stl";
-  generate_planar_mesh_stl_file( file );
-
-  // STEP 2: define analytic plane corresponding to the planar mesh;
-  const double origin[] = { 0.0, 0.0, 0.0 };
-  const double normal[] = { 0.0, 0.0, 1.0 };
-  primal::Plane< double,3 > analytic_plane( normal, origin );
-
-  // STEP 2: initialize the signed distance
-  quest::signed_distance_set_closed_surface( false );
-  quest::signed_distance_init( file );
-  EXPECT_TRUE( quest::signed_distance_initialized() );
-
-  mint::IndexType nnodes = mesh.getNumberOfNodes();
-  for ( mint::IndexType inode=0 ; inode < nnodes ; ++inode )
-  {
-    double pt[ NDIMS ];
-    mesh.getNode( inode, pt );
-    phi[ inode ] = quest::signed_distance_evaluate( pt[0], pt[1], pt[2] );
-
-    const double phi_expected = analytic_plane.computeSignedDistance( pt );
-    EXPECT_DOUBLE_EQ( phi[ inode ], phi_expected );
-    err[ inode ] = utilities::abs( phi[ inode ]-phi_expected );
-  }
-
-#ifdef WRITE_VTK_OUTPUT
-  mint::write_vtk( &mesh, "analytic_plane_mesh_test.vtk" );
-#endif
-
-  quest::signed_distance_finalize( );
-  EXPECT_FALSE( quest::signed_distance_initialized() );
-
-#ifdef REMOVE_FILES
-  std::remove( file.c_str( ) );
+#if defined( AXOM_USE_MPI ) && defined( AXOM_USE_MPI3 )
+  check_analytic_plane( true );
 #endif
 }
 
@@ -527,6 +552,9 @@ int main(int argc, char* argv[])
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
+
+  // add this line to avoid a warning in the output about thread safety
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
 
   UnitTestLogger logger;  // create & initialize test logger,
 

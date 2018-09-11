@@ -29,8 +29,6 @@
 #include <mpi.h>
 #endif
 
-#include "axom/core/utilities/Utilities.hpp"
-
 
 namespace slamLulesh {
 

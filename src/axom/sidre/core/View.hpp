@@ -281,7 +281,7 @@ public:
    * \attention This is the total bytes described by the view; they may not
    *            yet be allocated.
    */
-  SidreLength getTotalBytes() const
+  IndexType getTotalBytes() const
   {
     return m_schema.total_strided_bytes();
   }
@@ -292,7 +292,7 @@ public:
    * \attention This is the number of elements described by the view;
    *            they may not yet be allocated.
    */
-  SidreLength getNumElements() const
+  IndexType getNumElements() const
   {
     return m_schema.dtype().number_of_elements();
   }
@@ -303,7 +303,7 @@ public:
    * \attention This is the number of bytes per element described by the view
    *            which may not yet be allocated.
    */
-  SidreLength getBytesPerElement() const
+  IndexType getBytesPerElement() const
   {
     return m_schema.dtype().element_bytes();
   }
@@ -326,7 +326,7 @@ public:
    * \return The offset, in terms of the number of elements, from the described
    *  array to the first element.
    */
-  SidreLength getOffset() const;
+  IndexType getOffset() const;
 
   /*!
    * \brief Return the stride in number of elements for the data described by
@@ -342,7 +342,7 @@ public:
    * \return The stride, in terms of the number of elements, between elements in
    *  the described array.
    */
-  SidreLength getStride() const;
+  IndexType getStride() const;
 
   /*!
    * \brief Return dimensionality of this View's data.
@@ -364,7 +364,7 @@ public:
    *  Return the number of dimensions of the view.
    *  Return -1 if shape is too short to hold all dimensions.
    */
-  int getShape(int ndims, SidreLength* shape) const;
+  int getShape(int ndims, IndexType* shape) const;
 
   /*!
    * \brief Return const reference to schema describing data.
@@ -424,7 +424,7 @@ public:
    *
    * \return pointer to this View object.
    */
-  View* allocate( TypeID type, SidreLength num_elems);
+  View* allocate( TypeID type, IndexType num_elems);
 
   /*!
    * \brief Allocate data for view described by a Conduit data type object.
@@ -447,7 +447,7 @@ public:
    *
    * \return pointer to this View object.
    */
-  View* reallocate(SidreLength num_elems);
+  View* reallocate(IndexType num_elems);
 
   /*!
    * \brief  Reallocate data for view as specified by Conduit data type object.
@@ -507,7 +507,7 @@ public:
    * \return pointer to this View object.
    */
   View* attachBuffer( TypeID type,
-                      SidreLength num_elems,
+                      IndexType num_elems,
                       Buffer* buff )
   {
     describe(type, num_elems);
@@ -522,7 +522,7 @@ public:
    */
   View* attachBuffer( TypeID type,
                       int ndims,
-                      SidreLength* shape,
+                      IndexType* shape,
                       Buffer* buff )
   {
     describe(type, ndims, shape);
@@ -569,9 +569,9 @@ public:
    *
    * \return pointer to this View object.
    */
-  View* apply( SidreLength num_elems,
-               SidreLength offset = 0,
-               SidreLength stride = 1);
+  View* apply( IndexType num_elems,
+               IndexType offset = 0,
+               IndexType stride = 1);
 
   /*!
    * \brief Apply data description defined by type and number of elements, and
@@ -589,9 +589,9 @@ public:
    *
    * \return pointer to this View object.
    */
-  View* apply( TypeID type, SidreLength num_elems,
-               SidreLength offset = 0,
-               SidreLength stride = 1);
+  View* apply( TypeID type, IndexType num_elems,
+               IndexType offset = 0,
+               IndexType stride = 1);
 
   /*!
    * \brief Apply data description defined by type and shape information
@@ -608,7 +608,7 @@ public:
    *
    * \return pointer to this View object.
    */
-  View* apply( TypeID type, int ndims, SidreLength* shape );
+  View* apply( TypeID type, int ndims, IndexType* shape );
 
   /*!
    * \brief Apply data description of given Conduit data type to data view.
@@ -768,7 +768,7 @@ public:
    * \return pointer to this View object.
    */
   View* setExternalDataPtr(TypeID type,
-                           SidreLength num_elems,
+                           IndexType num_elems,
                            void* external_ptr)
   {
     describe(type, num_elems);
@@ -785,7 +785,7 @@ public:
    */
   View* setExternalDataPtr(TypeID type,
                            int ndims,
-                           SidreLength* shape,
+                           IndexType* shape,
                            void* external_ptr)
   {
     describe(type, ndims, shape);
@@ -1328,7 +1328,7 @@ private:
    * If given type of NO_TYPE_ID, or number of elements < 0, or view is opaque,
    * method does nothing.
    */
-  void describe( TypeID type, SidreLength num_elems);
+  void describe( TypeID type, IndexType num_elems);
 
   /*!
    * \brief Describe a data view with given type, number of dimensions, and
@@ -1342,7 +1342,7 @@ private:
    * If given type of NO_TYPE_ID, or number of dimensions or total
    * number of elements < 0, or view is opaque, method does nothing.
    */
-  void describe(TypeID type, int ndims, SidreLength* shape);
+  void describe(TypeID type, int ndims, IndexType* shape);
 
   /*!
    * \brief Declare a data view with a Conduit data type object.
@@ -1364,7 +1364,7 @@ private:
   /*!
    * \brief Set the shape to be a ndims dimensions with shape.
    */
-  void describeShape(int ndims, SidreLength* shape);
+  void describeShape(int ndims, IndexType* shape);
 
   /*!
    * \brief Copy view contents into an undescribed EMPTY view.
@@ -1502,7 +1502,7 @@ private:
   Node m_node;
 
   /// Shape information
-  std::vector<SidreLength> m_shape;
+  std::vector<IndexType> m_shape;
 
   /// Pointer to external memory
   void* m_external_ptr;

@@ -28,7 +28,7 @@
 #include "axom/mint/mesh/UniformMesh.hpp"
 #include "axom/mint/mesh/UnstructuredMesh.hpp"
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 #include "axom/sidre/core/sidre.hpp"
 #endif
 
@@ -42,7 +42,7 @@ namespace axom
 namespace mint
 {
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
 //------------------------------------------------------------------------------
 // IMPLEMENTATION OF FREE METHODS
@@ -88,7 +88,7 @@ Mesh* getMesh( sidre::Group* group, const std::string& topo )
   return m;
 }
 
-#endif /* MINT_USE_SIDRE */
+#endif /* AXOM_MINT_USE_SIDRE */
 
 //------------------------------------------------------------------------------
 // MESH IMPLEMENTATION
@@ -101,7 +101,7 @@ Mesh::Mesh( int ndims, int type ) :
   m_explicit_coords( false ),
   m_explicit_connectivity( false ),
   m_has_mixed_topology( false )
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   , m_group( nullptr ),
   m_topology(),
   m_coordset()
@@ -112,7 +112,7 @@ Mesh::Mesh( int ndims, int type ) :
   allocateFieldData();
 }
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
 //------------------------------------------------------------------------------
 Mesh::Mesh( sidre::Group* group, const std::string& topo ) :
@@ -241,7 +241,7 @@ Mesh::~Mesh()
 void Mesh::setBlockId( int ID )
 {
   m_block_idx = ID;
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   if ( hasSidreGroup() )
   {
     sidre::Group* state_group =
@@ -258,7 +258,7 @@ void Mesh::setBlockId( int ID )
 void Mesh::setPartitionId( int ID )
 {
   m_part_idx = ID;
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   if ( hasSidreGroup() )
   {
     sidre::Group* state_group =
@@ -274,7 +274,7 @@ void Mesh::setPartitionId( int ID )
 //------------------------------------------------------------------------------
 void Mesh::allocateFieldData( )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   if ( hasSidreGroup() )
   {
     sidre::Group* fields_group = m_group->getGroup( "fields");

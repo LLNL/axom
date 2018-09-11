@@ -22,7 +22,7 @@
 #include "axom/slic/interface/slic.hpp"            // for slic macros
 
 // Sidre includes
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 #include "axom/sidre/core/sidre.hpp"
 namespace sidre = axom::sidre;
 #endif
@@ -62,7 +62,7 @@ void check_constructor( mint::ParticleMesh* particles,
   {
     EXPECT_EQ( particles->getCellType( icell ), mint::VERTEX );
 
-    particles->getCell( icell, cell );
+    particles->getCellNodeIDs( icell, cell );
     EXPECT_EQ( cell[0], icell );
   }
 
@@ -263,7 +263,7 @@ TEST( mint_mesh_particle_mesh_DeathTest, invalid_construction )
   // capacity cannot be smaller than specified num particles
   EXPECT_DEATH_IF_SUPPORTED( mint::ParticleMesh(3,10,5), IGNORE_OUTPUT );
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
 
@@ -361,7 +361,7 @@ TEST( mint_mesh_particle_mesh, external_constructor )
 }
 
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
 //------------------------------------------------------------------------------
 TEST( mint_mesh_particle_mesh, sidre_constructor )
@@ -485,7 +485,7 @@ TEST( mint_mesh_particle_mesh, append )
     p1.createField< int >( "id", mint::NODE_CENTERED );
     check_append( &p1 );
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
     // create a datastore
     sidre::DataStore ds;
@@ -511,7 +511,7 @@ TEST( mint_mesh_particle_mesh, resize )
   p1.createField< int >( "id", mint::NODE_CENTERED );
   check_resize( &p1 );
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
   // create a datastore
   sidre::DataStore ds;
@@ -534,7 +534,7 @@ TEST( mint_mesh_particle_mesh, reserve )
   p1.createField< int >( "id", mint::NODE_CENTERED );
   check_reserve( &p1 );
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
   // create a datastore
   sidre::DataStore ds;
@@ -559,7 +559,7 @@ TEST( mint_mesh_particle_mesh, shrink )
   p1.createField< int >( "id", mint::NODE_CENTERED, 1, true );
   check_shrink( &p1, NUM_PARTICLES, CAPACITY );
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
   // create a datastore
   sidre::DataStore ds;

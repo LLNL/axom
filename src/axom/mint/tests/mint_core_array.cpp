@@ -24,7 +24,7 @@
 
 #include "gtest/gtest.h"                /* for TEST and EXPECT_* macros */
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 #include "axom/sidre/core/sidre.hpp"
 #endif
 
@@ -828,7 +828,7 @@ void check_emplace( Array< T >& v )
  * \brief Make a copy of an Array through sidre and check it for defects.
  * \param [in] v the Array to copy.
  */
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 template< typename T >
 void check_sidre( Array< T >& v )
 {
@@ -921,7 +921,7 @@ void check_external( Array< T >& v )
 //------------------------------------------------------------------------------
 TEST( mint_core_array, checkStorage )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
 #endif
@@ -938,7 +938,7 @@ TEST( mint_core_array, checkStorage )
       Array< double > v_double( ZERO, n_components, capacity );
       internal::check_storage( v_double );
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
       Array< int > v_int_sidre( root->createView( "int" ), ZERO, n_components,
                                 capacity );
       internal::check_storage( v_int_sidre );
@@ -956,7 +956,7 @@ TEST( mint_core_array, checkStorage )
 //------------------------------------------------------------------------------
 TEST( mint_core_array, checkFill )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
 #endif
@@ -972,7 +972,7 @@ TEST( mint_core_array, checkFill )
       Array< double > v_double( size, n_components, capacity );
       internal::check_fill( v_double );
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
       Array< int > v_int_sidre( root->createView( "int" ), size, n_components,
                                 capacity );
       internal::check_fill( v_int_sidre );
@@ -990,7 +990,7 @@ TEST( mint_core_array, checkFill )
 //------------------------------------------------------------------------------
 TEST( mint_core_array, checkSet )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
 #endif
@@ -1006,7 +1006,7 @@ TEST( mint_core_array, checkSet )
       Array< double > v_double( size, n_components, capacity );
       internal::check_set( v_double );
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
       Array< int > v_int_sidre( root->createView( "int" ), size, n_components,
                                 capacity );
       internal::check_set( v_int_sidre );
@@ -1024,7 +1024,7 @@ TEST( mint_core_array, checkSet )
 //------------------------------------------------------------------------------
 TEST( mint_core_array, checkResize )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
 #endif
@@ -1050,7 +1050,7 @@ TEST( mint_core_array, checkResize )
         v_double.setResizeRatio( ratio );
         internal::check_resize( v_double );
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
         Array< int > v_int_sidre( root->createView( "int" ), ZERO, n_components,
                                   capacity );
         v_int_sidre.setResizeRatio( ratio );
@@ -1080,7 +1080,7 @@ TEST( mint_core_array_DeathTest, checkResize )
 //------------------------------------------------------------------------------
 TEST( mint_core_array, checkInsert )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
 #endif
@@ -1101,7 +1101,7 @@ TEST( mint_core_array, checkInsert )
         v_double.setResizeRatio( ratio );
         internal::check_insert( v_double );
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
         Array< int > v_int_sidre( root->createView("int"), ZERO, n_components,
                                   capacity );
         v_int_sidre.setResizeRatio( ratio );
@@ -1122,7 +1122,7 @@ TEST( mint_core_array, checkInsert )
 //------------------------------------------------------------------------------
 TEST( mint_core_array, checkEmplace )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
 #endif
@@ -1143,7 +1143,7 @@ TEST( mint_core_array, checkEmplace )
         v_double.setResizeRatio( ratio );
         internal::check_emplace( v_double );
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
         Array< int > v_int_sidre( root->createView("int"), ZERO, n_components,
                                   capacity );
         v_int_sidre.setResizeRatio( ratio );
@@ -1162,7 +1162,7 @@ TEST( mint_core_array, checkEmplace )
 }
 
 /* Sidre specific tests */
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
 //------------------------------------------------------------------------------
 TEST( mint_core_array, checkSidre )
@@ -1240,7 +1240,7 @@ TEST( mint_core_array, checkSidrePermanence)
         EXPECT_EQ( view_data_ptr, array_data_ptr );
         EXPECT_EQ( view->getNumDimensions(), 2 );
 
-        sidre::SidreLength dims[2];
+        sidre::IndexType dims[2];
         view->getShape( 2, dims );
         EXPECT_EQ( dims[0], capacity );
         EXPECT_EQ( dims[1], n_components );

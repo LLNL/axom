@@ -91,26 +91,6 @@ public:
 /// @{
 
   /*!
-   * \brief Constructs a rectilinear mesh of specified dimension and extent.
-   *
-   * \param [in] dimension the dimension of the mesh.
-   * \param [in] ext the mesh extent
-   *
-   * \note The supplied `ext` pointer must point to a buffer that has at least
-   * \f$ 2 \times N \f$ entries, where N is the dimension of the uniform mesh
-   * given in the following order: [imin, imax, jmin, jmax, kmin, kmax]
-   *
-   * \pre 1 <= dimension <= 3
-   * \pre ext != nullptr
-   *
-   * \post getDimension() == dimension
-   * \post getCoordinateArray( i ) != nullptr \f$ \forall i \f$
-   * \post hasSidreGroup() == false
-   * \post isExternal() == false
-   */
-  RectilinearMesh( int dimension, const int64* ext );
-
-  /*!
    * \brief Constructs a rectilinear mesh of specified dimensions.
    *
    * \param [in] Ni number of nodes in the i-direction
@@ -126,9 +106,7 @@ public:
    * \post hasSidreGroup() == false
    * \post isExternal() == false
    */
-  RectilinearMesh( IndexType Ni,
-                   IndexType Nj=-1,
-                   IndexType Nk=-1  );
+  RectilinearMesh( IndexType Ni, IndexType Nj=-1, IndexType Nk=-1  );
 
 /// @}
 
@@ -139,35 +117,30 @@ public:
    * \brief Constructs a rectilinear mesh with the specified logical extent and
    *  external coordinate buffers.
    *
-   * \param [in] ext the mesh logical extent.
-   * \param [in] x coordinates along the i-direction
-   * \param [in] y coordinates along the j-direction (required for 2D/3D)
+   * \param [in] Ni number of nodes in the i-direction.
+   * \param [in] x coordinates along the i-direction.
+   * \param [in] Nj number of nodes in the j-direction (for dimension >= 2).
+   * \param [in] y coordinates along the j-direction (required for 2D/3D).
+   * \param [in] Nk number of nodes in the k-direction (for dimension == 3)
    * \param [in] z coordinates along the k-direction (required for 3D only)
-   *
-   * \note The supplied `ext` pointer must point to a buffer that has at least
-   * \f$ 2 \times N \f$ entries, where N is the dimension of the uniform mesh
-   * given in the following order: [imin, imax, jmin, jmax, kmin, kmax]
    *
    * \note The calling code maintains ownership of the supplied coordinate
    *  buffers and the responsibility of properly deallocating them.
    *
-   * \pre ext != nullptr
    * \pre x != nullptr
    * \pre y != nullptr iff dimension >= 2
    * \pre z != nullptr iff dimension == 3
    *
-   * \post 1 <= getDimesion() <= 3
+   * \post 1 <= getDimension() <= 3
    * \post getCoordinateArray( i ) != nullptr \f$ \forall i \f$
    * \post hasSidreGroup() == false.
    * \post isExternal() == true
    */
-  RectilinearMesh( const int64* ext,
-                   double* x,
-                   double* y=nullptr,
-                   double* z=nullptr );
+  RectilinearMesh( IndexType Ni, double* x, IndexType Nj=-1, double* y=nullptr,
+                   IndexType Nk=-1, double* z=nullptr );
 /// @}
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
 /// \name Sidre Constructors
 /// @{
@@ -197,43 +170,7 @@ public:
    * \post hasSidreGroup() == true
    * \post isExternal() == false
    */
-  explicit RectilinearMesh( sidre::Group* group,
-                            const std::string& topo="" );
-
-  /*!
-   * \brief Creates a RectilinearMesh, on a empty Sidre group, given
-   *  a supplied mesh extent that specifies the number of nodes and cells
-   *  along each dimension.
-   *
-   * \param [in] dimension the dimension of the mesh
-   * \param [in] ext array that holds the logical extent of the mesh
-   * \param [in] group pointer to the Sidre group where the to store the mesh.
-   * \param [in] topo the name of the associated topology (optional)
-   * \param [in] coordset the name of the associated coordset (optional)
-   *
-   * \note The supplied `ext` pointer must point to a buffer that has at least
-   * \f$ 2 \times N \f$ entries, where N is the dimension of the uniform mesh
-   * given in the following order: [imin, imax, jmin, jmax, kmin, kmax]
-   *
-   * \note If a topology and coordset name is not provided, internal defaults
-   *  will be used by the implementation.
-   *
-   * \note When using this constructor, all data is owned by Sidre. Once the
-   *  mesh object goes out-of-scope, the data will remain persistent in Sidre.
-   *
-   * \pre ext != nullptr
-   * \pre group != nullptr
-   * \pre group->getNumViews()==0
-   * \pre group->getNumGroups()==0
-   *
-   * \post hasSidreGroup() == true
-   * \post isExternal() == false
-   */
-  RectilinearMesh( int dimension,
-                   const int64* ext,
-                   sidre::Group* group,
-                   const std::string& topo="",
-                   const std::string& coordset="" );
+  explicit RectilinearMesh( sidre::Group* group, const std::string& topo="" );
 
   /*!
    * \brief Creates a RectilinearMesh, on an empty Sidre group, given the
@@ -253,8 +190,8 @@ public:
    *  mesh object goes out-of-scope, the data will remain persistent in Sidre.
    *
    * \pre Ni >= 1
-   * \pre Nj >= 1 iff dimesion >=2
-   * \pre Nk >= 1 iff dimesion == 3
+   * \pre Nj >= 1 iff dimension >=2
+   * \pre Nk >= 1 iff dimension == 3
    *
    * \pre group != nullptr
    * \pre group->getNumViews()==0
@@ -271,12 +208,12 @@ public:
                    const std::string& coordset,
                    IndexType Ni,
                    IndexType Nj=-1,
-                   IndexType Nk=-1  );
+                   IndexType Nk=-1 );
 
-  RectilinearMesh( sidre::Group* group,
-                   IndexType Ni,
-                   IndexType Nj=-1,
-                   IndexType Nk=-1  );
+  RectilinearMesh( sidre::Group* group, IndexType Ni, IndexType Nj=-1,
+                   IndexType Nk=-1 ) :
+    RectilinearMesh( group, "", "", Ni, Nj, Nk )
+  {}
 
   /// @}
 
@@ -321,7 +258,7 @@ public:
    *
    * \param[in] dim the specified dimension
    *
-   * \note the returned buffer is of length getNumberOfNodesAlongDim( dim ).
+   * \note the returned buffer is of length getNodeResolution( dim ).
    *
    * \pre dim >= 0 && dim < dimension()
    * \pre dim == X_COORDINATE || dim == Y_COORDINATE || dim == Z_COORDINATE
@@ -349,7 +286,7 @@ private:
    */
   void allocateCoords();
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
   /*!
    * \brief Allocates buffers for the coorindates on Sidre.
@@ -359,7 +296,8 @@ private:
 
 #endif
 
-  Array< double >* m_coordinates[3] = {nullptr,nullptr,nullptr};
+  Array< double >* m_coordinates[3] = { nullptr, nullptr,
+                                        nullptr };
 
   DISABLE_COPY_AND_ASSIGNMENT( RectilinearMesh );
   DISABLE_MOVE_AND_ASSIGNMENT( RectilinearMesh );

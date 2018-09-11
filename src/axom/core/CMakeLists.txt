@@ -71,6 +71,9 @@ else()
 
 endif()
 
+axom_write_unified_header(NAME    core
+                          HEADERS ${core_headers})
+
 axom_install_component(NAME      core
                        HEADERS   ${core_headers}
                        )

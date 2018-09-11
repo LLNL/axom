@@ -27,14 +27,6 @@
 
 #include "axom/sidre/core/SidreDataTypeIds.h"
 
-typedef int SIDRE_IndexType;
-
-typedef long int SIDRE_SidreLength;
-
-#define SIDRE_InvalidIndex  -1
-
 #define SIDRE_InvalidName   NULL
-
-
 
 #endif  // SIDRETYPES_H

@@ -25,7 +25,7 @@ using axom::sidre::Buffer;
 using axom::sidre::Group;
 using axom::sidre::DataStore;
 using axom::sidre::View;
-using axom::sidre::SidreLength;
+using axom::sidre::IndexType;
 using axom::sidre::IndexType;
 using axom::sidre::TypeID;
 using axom::sidre::NO_TYPE_ID;
@@ -93,10 +93,10 @@ static bool checkViewValues(View* view,
                             State state,
                             bool isDescribed, bool isAllocated,
                             bool isApplied,
-                            SidreLength len)
+                            IndexType len)
 {
   bool rv = true;
-  SidreLength dims[2];
+  IndexType dims[2];
 
   if (getState(view) != state)
   {
@@ -143,10 +143,10 @@ static bool checkViewValues(View* view,
       EXPECT_TRUE(view->getShape(1, dims) == 1 && dims[0] == len);
       rv = false;
     }
-    if (view->getTotalBytes() != static_cast<SidreLength>( sizeof(int) * len) )
+    if (view->getTotalBytes() != static_cast<IndexType>( sizeof(int) * len) )
     {
       EXPECT_EQ(view->getTotalBytes(),
-                static_cast<SidreLength>( sizeof(int) * len) );
+                static_cast<IndexType>( sizeof(int) * len) );
       rv = false;
     }
   }
@@ -280,9 +280,9 @@ static void checkScalarValues(View* view,
                               State state,
                               bool isDescribed, bool isAllocated,
                               bool isApplied,
-                              TypeID type, SidreLength len)
+                              TypeID type, IndexType len)
 {
-  SidreLength dims[2];
+  IndexType dims[2];
 
   SCOPED_TRACE(view->getName());
 
@@ -679,7 +679,7 @@ TEST(sidre_view,int_alloc_view)
   DataStore* ds = new DataStore();
   Group* root = ds->getRoot();
   View* dv;
-  long shape[] = { BLEN };
+  IndexType shape[] = { BLEN };
 
   dv = root->createView("u0");
   EXPECT_TRUE(checkViewValues(dv, EMPTY, false, false, false, 0));
@@ -872,12 +872,12 @@ TEST(sidre_view,int_buffer_view)
 
 TEST(sidre_view,int_array_strided_views)
 {
-  const SidreLength num_elts = 10;
-  const SidreLength num_view_elts = 5;
-  const SidreLength elt_offset_e = 0;
-  const SidreLength elt_offset_o = 1;
-  const SidreLength elt_stride = 2;
-  const SidreLength elt_bytes = sizeof(int);
+  const IndexType num_elts = 10;
+  const IndexType num_view_elts = 5;
+  const IndexType elt_offset_e = 0;
+  const IndexType elt_offset_o = 1;
+  const IndexType elt_stride = 2;
+  const IndexType elt_bytes = sizeof(int);
 
   DataStore* ds = new DataStore();
   Group* root = ds->getRoot();
@@ -1023,7 +1023,7 @@ TEST(sidre_view,int_array_depth_view)
   DataStore* ds = new DataStore();
   Group* root = ds->getRoot();
 
-  const SidreLength depth_nelems = 10;
+  const IndexType depth_nelems = 10;
   Buffer* dbuff = ds->createBuffer(INT_ID, 4 * depth_nelems);
 
   // Allocate buffer to hold data for 4 "depth" views
@@ -1061,7 +1061,7 @@ TEST(sidre_view,int_array_depth_view)
   for (int id = 0 ; id < 4 ; ++id)
   {
     void* vptr = views[id]->getVoidPtr();
-    SidreLength off = views[id]->getOffset();
+    IndexType off = views[id]->getOffset();
 
     EXPECT_EQ(dbuff->getVoidPtr(), vptr);
     EXPECT_EQ(views[id]->getData<int*>(), static_cast<int*>(vptr)+off);
@@ -1077,7 +1077,7 @@ TEST(sidre_view,int_array_depth_view)
   for (int id = 0 ; id < 4 ; ++id)
   {
     int* dv_ptr = views[id]->getData();
-    for (SidreLength i = 0 ; i < depth_nelems ; ++i)
+    for (IndexType i = 0 ; i < depth_nelems ; ++i)
     {
       EXPECT_EQ(dv_ptr[i], id);
     }
@@ -1094,7 +1094,7 @@ TEST(sidre_view,view_offset_and_stride)
   DataStore* ds = new DataStore();
   Group* root = ds->getRoot();
 
-  const SidreLength nelems = 15;
+  const IndexType nelems = 15;
   Buffer* dbuff = ds->createBuffer(DOUBLE_ID, nelems)
                   ->allocate();
 
@@ -1275,10 +1275,10 @@ TEST(sidre_view,int_array_view_attach_buffer)
   DataStore* ds = new DataStore();
   Group* root = ds->getRoot();
 
-  const SidreLength field_nelems = 10;
+  const IndexType field_nelems = 10;
 
   // create 2 "field" views with type and # elems
-  SidreLength elem_count = 0;
+  IndexType elem_count = 0;
   View* field0 = root->createView("field0", INT_ID, field_nelems);
   elem_count += field0->getNumElements();
   View* field1 = root->createView("field1",INT_ID, field_nelems);
@@ -1291,7 +1291,7 @@ TEST(sidre_view,int_array_view_attach_buffer)
 
   // Initialize buffer data for testing below.
   int* b_ptr = dbuff->getData();
-  for(SidreLength i = 0 ; i < elem_count ; ++i)
+  for(IndexType i = 0 ; i < elem_count ; ++i)
   {
     b_ptr[i] = i / field_nelems;
   }
@@ -1309,12 +1309,12 @@ TEST(sidre_view,int_array_view_attach_buffer)
 
   // check values in field views...
   int* f0_ptr = field0->getData();
-  for (SidreLength i = 0 ; i < field_nelems ; ++i)
+  for (IndexType i = 0 ; i < field_nelems ; ++i)
   {
     EXPECT_EQ(f0_ptr[i], 0);
   }
   int* f1_ptr = field1->getData();
-  for (SidreLength i = 0 ; i < field_nelems ; ++i)
+  for (IndexType i = 0 ; i < field_nelems ; ++i)
   {
     EXPECT_EQ(f1_ptr[i], 1);
   }
@@ -1515,8 +1515,8 @@ TEST(sidre_view,int_array_realloc)
     a2_ptr[i] = -5;
   }
 
-  EXPECT_EQ(a1->getTotalBytes(), static_cast<SidreLength>(sizeof(float)*5));
-  EXPECT_EQ(a2->getTotalBytes(), static_cast<SidreLength>(sizeof(int)*5));
+  EXPECT_EQ(a1->getTotalBytes(), static_cast<IndexType>(sizeof(float)*5));
+  EXPECT_EQ(a2->getTotalBytes(), static_cast<IndexType>(sizeof(int)*5));
 
 
   a1->reallocate(DataType::c_float(10));
@@ -1542,8 +1542,8 @@ TEST(sidre_view,int_array_realloc)
     a2_ptr[i] = -15;
   }
 
-  EXPECT_EQ(a1->getTotalBytes(), static_cast<SidreLength>(sizeof(float)*10));
-  EXPECT_EQ(a2->getTotalBytes(), static_cast<SidreLength>(sizeof(int)*15));
+  EXPECT_EQ(a1->getTotalBytes(), static_cast<IndexType>(sizeof(float)*10));
+  EXPECT_EQ(a2->getTotalBytes(), static_cast<IndexType>(sizeof(int)*15));
 
   // Try some errors
   // XXX  a1->reallocate(DataType::c_int(20));

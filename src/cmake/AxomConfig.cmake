@@ -26,11 +26,9 @@ endif()
 
 
 ## Add a definition to the generated config file for each library dependency
-## (optional and built-in) that we might need to know about in the code
-## Note: BLT adds USE_MPI and USE_OPENMP as compile define flags for targets
-##       that are configured with MPI and OPENMP, respectively.
-
-set(TPL_DEPS CONDUIT HDF5 SPARSEHASH FMT MPI MFEM SCR)  # vars of the form DEP_FOUND
+## (optional and built-in) that we might need to know about in the code. We
+## check for vars of the form <DEP>_FOUND or ENABLE_<DEP>
+set(TPL_DEPS CONDUIT CUDA FMT HDF5 MFEM MPI RAJA SCR SPARSEHASH )
 foreach(dep ${TPL_DEPS})
     if( ${dep}_FOUND OR ENABLE_${dep} )
         set(AXOM_USE_${dep} TRUE  )

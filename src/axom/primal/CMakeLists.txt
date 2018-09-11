@@ -73,6 +73,9 @@ blt_add_library(
     DEPENDS_ON            core slic
     )
 
+axom_write_unified_header(NAME    primal
+                          HEADERS ${primal_headers})
+
 axom_install_component(NAME    primal
                        HEADERS ${primal_headers}
                        )
@@ -80,9 +83,9 @@ axom_install_component(NAME    primal
 ################################
 # add examples
 ################################
-# if (AXOM_ENABLE_EXAMPLES)
-#   add_subdirectory(examples)
-# endif()
+if (AXOM_ENABLE_EXAMPLES)
+  add_subdirectory(examples)
+endif()
 
 ################################
 # add tests

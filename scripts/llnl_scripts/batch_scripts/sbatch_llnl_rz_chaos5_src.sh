@@ -1,0 +1,33 @@
+#!/bin/bash
+
+##
+## Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+##
+## Produced at the Lawrence Livermore National Laboratory.
+##
+## LLNL-CODE-741217
+##
+## All rights reserved.
+##
+## This file is part of Axom.
+##
+## For details about use and distribution, please read axom/LICENSE.
+##
+
+#SBATCH -N 1
+#SBATCH -J axom_uberenv_rz_chaos5
+#SBATCH -t 4:00:00
+#SBATCH -p pdebug
+#SBATCH -A wbronze
+#SBATCH --exclusive
+#SBATCH -o m.out.sbatch.rz.uberenv.chaos5.src.%j.%N.txt
+#
+# usage: 
+#  cd {to directory with this script}
+#  sbatch sbatch_llnl_rz_chaos5_src.sh
+
+date
+cd ..
+./build_src.py
+date
+

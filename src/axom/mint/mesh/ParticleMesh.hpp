@@ -150,7 +150,7 @@ public:
 
 /// @}
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 /// \name Sidre Storage Constructors
 /// @{
 
@@ -221,7 +221,7 @@ public:
 
 /// @}
 
-#endif  /* MINT_USE_SIDRE */
+#endif  /* AXOM_MINT_USE_SIDRE */
 
 /// \name Virtual methods
 /// @{
@@ -256,7 +256,8 @@ public:
   { return VERTEX; }
 
   virtual
-  IndexType getCell( IndexType cellID, IndexType* cell ) const final override;
+  IndexType getCellNodeIDs( IndexType cellID,
+                            IndexType* cell ) const final override;
 
 /// @}
 
@@ -446,8 +447,8 @@ private:
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-inline IndexType ParticleMesh::getCell( IndexType cellID,
-                                        IndexType* cell ) const
+inline IndexType ParticleMesh::getCellNodeIDs( IndexType cellID,
+                                               IndexType* cell ) const
 {
   SLIC_ASSERT( cell != nullptr );
   SLIC_ASSERT( 0 <= cellID && cellID <= getNumberOfCells() );

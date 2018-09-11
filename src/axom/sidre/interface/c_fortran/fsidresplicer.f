@@ -42,15 +42,15 @@ use conduit, only : &
     SIDRE_ULONG_ID      => CONDUIT_ULONG_ID, &
     SIDRE_FLOAT_ID      => CONDUIT_FLOAT_ID, &
     SIDRE_DOUBLE_ID     => CONDUIT_DOUBLE_ID
-use, intrinsic :: iso_c_binding, only : C_LONG
+use, intrinsic :: iso_c_binding, only : C_INT64_T
 ! splicer end module_use
 
 ! splicer begin module_top
 integer, parameter :: MAXNAMESIZE = 128
 
-integer, parameter :: SIDRE_LENGTH = C_LONG
+integer, parameter :: SIDRE_IndexType = C_INT64_T
 
-integer, parameter :: invalid_index = -1
+integer, parameter :: invalid_index = -1_SIDRE_IndexType
 ! splicer end module_top
 
 
@@ -61,14 +61,14 @@ integer, parameter :: invalid_index = -1
 function SIDRE_create_array_view(group, name, lname, addr, type, rank, extents) &
       result(rv) bind(C,name="SIDRE_create_array_view")
     use iso_c_binding
-    import SIDRE_LENGTH
+    import SIDRE_IndexType
     type(C_PTR), value, intent(IN)     :: group
     character(kind=C_CHAR), intent(IN) :: name(*)
     integer(C_INT), value, intent(IN)  :: lname
     type(C_PTR), value,     intent(IN) :: addr
     integer(C_INT), value, intent(IN)  :: type
     integer(C_INT), value, intent(IN)  :: rank
-    integer(SIDRE_LENGTH), intent(IN)  :: extents(*)
+    integer(SIDRE_IndexType), intent(IN)  :: extents(*)
     type(C_PTR) rv
 end function SIDRE_create_array_view
 ! splicer end additional_interfaces

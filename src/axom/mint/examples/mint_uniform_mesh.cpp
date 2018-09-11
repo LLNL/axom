@@ -22,9 +22,7 @@
  */
 
 // Mint includes
-#include "axom/mint/config.hpp"
-#include "axom/mint/mesh/UniformMesh.hpp"
-#include "axom/mint/utils/vtk_utils.hpp"
+#include "axom/mint.hpp"
 
 // C/C++ includes
 #include <cmath>
@@ -57,9 +55,9 @@ int main ( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
   double* phi = mesh.createField< double >( "phi", mint::NODE_CENTERED );
 
   // STEP 2: loop over the nodes
-  const IndexType Ni = mesh.getNumberOfNodesAlongDim( mint::I_DIRECTION );
-  const IndexType Nj = mesh.getNumberOfNodesAlongDim( mint::J_DIRECTION );
-  const IndexType jp = mesh.jp();
+  const IndexType Ni = mesh.getNodeResolution( mint::I_DIRECTION );
+  const IndexType Nj = mesh.getNodeResolution( mint::J_DIRECTION );
+  const IndexType jp = mesh.nodeJp();
 
   for ( IndexType j=0 ; j < Nj ; ++j )
   {

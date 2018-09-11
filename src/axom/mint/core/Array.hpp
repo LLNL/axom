@@ -24,8 +24,8 @@
 
 #include "axom/slic/interface/slic.hpp"            // for slic logging macros
 
-#ifdef MINT_USE_SIDRE
-#include "axom/sidre/interface/sidre.hpp"          // for sidre::View definition
+#ifdef AXOM_MINT_USE_SIDRE
+#include "axom/sidre/core/sidre.hpp"          // for sidre::View definition
 #endif
 
 // C/C++ includes
@@ -125,13 +125,12 @@ public:
    * \brief Constructs an Array instance with the given number of tuples.
    *
    * \param [in] num_tuples the number of tuples the Array holds.
-   * \param [in] num_components the number of components per tuple.
+   * \param [in] num_components the number of values per tuple. If not
+   *  specified defaults to 1.
    * \param [in] capacity the number of tuples to allocate space for.
    *
-   * \note The last argument is optional. If not specified, the
-   *  capacity of the array will be initialized to
+   * \note If no capacity is specified then it will default to at least
    *  num_tuples * DEFAULT_RESIZE_RATIO.
-   *
    * \note a capacity is specified for the number of tuples to store in the
    *  array and does not correspond to the actual bytesize.
    *
@@ -143,7 +142,7 @@ public:
    * \post numComponents() == num_components
    * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
-  Array( IndexType num_tuples, IndexType num_components,
+  Array( IndexType num_tuples, IndexType num_components=1,
          IndexType capacity=USE_DEFAULT );
 
 /// @}
@@ -157,7 +156,8 @@ public:
    *
    * \param [in] data the external data this Array will wrap.
    * \param [in] num_tuples the number of tuples in the Array.
-   * \param [in] num_components the number of values per tuple.
+   * \param [in] num_components the number of values per tuple. If not
+   *  specified defaults to 1.
    * \param [in] capacity the capacity of the external buffer.
    *
    * \pre data != nullptr
@@ -169,14 +169,13 @@ public:
    *
    * \note a capacity is specified for the number of tuples to store in the
    *  array and does not correspond to the actual bytesize.
-   *
    * \note If no capacity is specified then it will default to the number of
    *  tuples.
    *
    * \note This constructor wraps the supplied buffer and does not own the data.
    *  Consequently, the Array instance cannot be reallocated.
    */
-  Array( T* data, IndexType num_tuples, IndexType num_components,
+  Array( T* data, IndexType num_tuples, IndexType num_components=1,
          IndexType capacity=USE_DEFAULT );
 
 /// @}
@@ -184,7 +183,7 @@ public:
 /// \name Sidre Array constructors
 /// @{
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
   /*!
    * \brief Creates an Array instance from a sidre::View that already has data.
@@ -212,7 +211,8 @@ public:
    *
    * \param [in] view the sidre::View that will hold this Array's data.
    * \param [in] num_tuples the number of tuples accounted for in the Array.
-   * \param [in] num_components the number of values per tuple.
+   * \param [in] num_components the number of values per tuple. If not
+   *  specified defaults to 1.
    * \param [in] capacity the number of tuples to allocate space for.
    *
    * \note The last argument is optional. If not specified, the
@@ -237,7 +237,7 @@ public:
    * \post numComponents() == num_components
    * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
-  Array( sidre::View* view, IndexType num_tuples, IndexType num_components,
+  Array( sidre::View* view, IndexType num_tuples, IndexType num_components=1,
          IndexType capacity=USE_DEFAULT );
 
 #endif
@@ -495,14 +495,14 @@ public:
    */
   bool isInSidre() const
   {
-    #ifdef MINT_USE_SIDRE
+    #ifdef AXOM_MINT_USE_SIDRE
     return m_view != nullptr;
     #else
     return false;
     #endif
   }
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   /*!
    * \brief Return a pointer to the sidre::View that this Array wraps.
    */
@@ -549,7 +549,7 @@ private:
 
 
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
   /*!
    * \brief Return the sidre::TypeID corresponding to T. This function
@@ -619,7 +619,7 @@ private:
 template< typename T >
 Array< T >::Array( IndexType num_tuples, IndexType num_components,
                    IndexType capacity ) :
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   m_view( nullptr ),
 #endif
   m_data( nullptr ),
@@ -662,7 +662,7 @@ Array< T >::Array( IndexType num_tuples, IndexType num_components,
 template< typename T >
 Array< T >::Array( T* data, IndexType num_tuples, IndexType num_components,
                    IndexType capacity ) :
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   m_view( nullptr ),
 #endif
   m_data( data ),
@@ -694,7 +694,7 @@ Array< T >::Array( T* data, IndexType num_tuples, IndexType num_components,
   SLIC_ERROR_IF( m_data == nullptr, "specified array must not be NULL." );
 }
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
 //------------------------------------------------------------------------------
 template< typename T >
@@ -793,7 +793,7 @@ Array< T >::Array( sidre::View* view, IndexType num_tuples,
 template< typename T >
 Array< T >::~Array()
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   if ( m_view == nullptr && m_data != nullptr && !m_is_external )
   {
     utilities::free( m_data );
@@ -932,7 +932,7 @@ inline void Array< T >::updateNumTuples( IndexType new_num_tuples )
   SLIC_ASSERT( new_num_tuples <= m_capacity );
   m_num_tuples = new_num_tuples;
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   if ( m_view != nullptr )
   {
     describeView();
@@ -959,7 +959,7 @@ inline void Array< T >::setCapacity( IndexType new_capacity )
     updateNumTuples( m_capacity );
   }
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   if ( m_view != nullptr )
   {
     return reallocViewData();
@@ -980,7 +980,7 @@ inline void Array< T >::dynamicRealloc( IndexType new_num_tuples )
                  " doesn't support dynamic resizing");
   m_capacity = new_num_tuples * m_resize_ratio + 0.5;
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   if ( m_view != nullptr )
   {
     return reallocViewData();
@@ -992,7 +992,7 @@ inline void Array< T >::dynamicRealloc( IndexType new_num_tuples )
                  "Array reallocation failed." );
 }
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
 //------------------------------------------------------------------------------
 template< typename T >
@@ -1001,7 +1001,7 @@ inline void Array< T >::describeView()
   SLIC_ASSERT( m_view != nullptr );
 
   static constexpr sidre::TypeID T_type = sidreTypeId();
-  sidre::SidreLength dims[2];
+  sidre::IndexType dims[2];
   dims[0] = m_num_tuples;
   dims[1] = m_num_components;
 
@@ -1017,7 +1017,7 @@ inline IndexType Array< T >::getViewShape( int dim ) const
   SLIC_ERROR_IF( m_view->getNumDimensions() != 2,
                  "view must have dimension 2.");
 
-  sidre::SidreLength dims[ 2 ];
+  sidre::IndexType dims[ 2 ];
   m_view->getShape( 2, dims );
   return dims[ dim ];
 }
@@ -1043,7 +1043,7 @@ inline void Array< T >::reallocViewData()
                  "Array reallocation failed." );
 }
 
-#endif  /* MINT_USE_SIDRE */
+#endif  /* AXOM_MINT_USE_SIDRE */
 
 } /* namespace mint */
 } /* namespace axom */

@@ -38,6 +38,13 @@ set( mint_headers
     ## core
     core/Array.hpp
 
+    ## exec
+    execution/xargs.hpp
+    execution/interface.hpp
+    execution/policy.hpp
+    execution/internal/for_all_cells.hpp
+    execution/internal/for_all_nodes.hpp
+
     ## FEM classes
     fem/FEBasis.hpp
     fem/FEBasisTypes.hpp
@@ -56,18 +63,17 @@ set( mint_headers
     fem/shape_functions/lagrange/lagrange_tetra_4.hpp
     fem/shape_functions/lagrange/lagrange_tri_3.hpp
 
-    ## Mesh data-model
     ## Internal implementation
     mesh/internal/ConnectivityArray_indirection.hpp
     mesh/internal/ConnectivityArray_typed_indirection.hpp
     mesh/internal/ConnectivityArrayHelpers.hpp
     mesh/internal/MeshHelpers.hpp
 
+    ## Mesh data-model
     mesh/blueprint.hpp
     mesh/CellTypes.hpp
     mesh/ConnectivityArray.hpp
     mesh/CurvilinearMesh.hpp
-    mesh/Extent.hpp
     mesh/Field.hpp
     mesh/FieldAssociation.hpp
     mesh/FieldData.hpp
@@ -94,7 +100,6 @@ set( mint_sources
     ## Mesh data-model
     mesh/blueprint.cpp
     mesh/CurvilinearMesh.cpp
-    mesh/Extent.cpp
     mesh/FieldData.cpp
     mesh/Mesh.cpp
     mesh/MeshCoordinates.cpp
@@ -115,8 +120,16 @@ set( mint_dependencies
      slic
      )
 
-if ( ${MINT_USE_SIDRE} )
+if ( ${AXOM_MINT_USE_SIDRE} )
     list(APPEND mint_dependencies sidre conduit)
+endif()
+
+if ( ${RAJA_FOUND} )
+    list(APPEND mint_dependencies raja)
+endif()
+
+if ( ${ENABLE_OPENMP} )
+    list(APPEND mint_dependencies openmp)
 endif()
 
 blt_add_library(
@@ -126,6 +139,9 @@ blt_add_library(
     DEPENDS_ON ${mint_dependencies}
     FOLDER     axom/mint
    )
+
+axom_write_unified_header(NAME    mint
+                          HEADERS config.hpp ${mint_headers})
 
 axom_install_component(NAME    mint
                        HEADERS ${mint_headers}

@@ -16,7 +16,7 @@
 #include "axom/slic/interface/slic.hpp"
 #include "axom/slic/core/UnitTestLogger.hpp"      /* for UnitTestLogger */
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 #include "axom/sidre/core/sidre.hpp"
 #endif
 
@@ -835,12 +835,12 @@ void checkConnectivity( const ConnectivityArray< TYPE >& connec, bool external,
     EXPECT_EQ( connec.getTypePtr(), types );
   }
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   EXPECT_EQ( connec.getGroup(), nullptr );
 #endif
 }
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 /*!
  * \brief Check that the provided ConnectivityArray meets certain criteria.
  *
@@ -878,7 +878,7 @@ void checkSidreConstructor( const ConnectivityArray< TYPE >& connec )
   ConnectivityArray< TYPE > cpy( group );
   internal::check_equality( connec, cpy );
 }
-#endif  /* MINT_USE_SIDRE */
+#endif  /* AXOM_MINT_USE_SIDRE */
 
 /*!
  * \brief Check that the ConnectivityArray can be reconstructed from
@@ -1021,7 +1021,7 @@ TEST( mint_connectivity_array_DeathTest, NoIndirectionExternalAppend )
 //------------------------------------------------------------------------------
 TEST( mint_connectivity_array, NoIndirectionSidreAppend )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr IndexType max_IDs = 100;
   constexpr IndexType max_values = hex_stride * max_IDs;
   constexpr IndexType total_IDs = ( max_IDs * ( max_IDs + 1 ) ) / 2;
@@ -1059,7 +1059,7 @@ TEST( mint_connectivity_array, NoIndirectionSidreAppend )
   delete[] values;
 #else
   EXPECT_TRUE( true );
-#endif  /* MINT_USE_SIDRE */
+#endif  /* AXOM_MINT_USE_SIDRE */
 }
 
 //------------------------------------------------------------------------------
@@ -1174,7 +1174,7 @@ TEST( mint_connectivity_array_DeathTest, IndirectionExternalAppend )
 //------------------------------------------------------------------------------
 TEST( mint_connectivity_array, IndirectionSidreAppend )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
 
@@ -1224,7 +1224,7 @@ TEST( mint_connectivity_array, IndirectionSidreAppend )
 
 #else
   EXPECT_TRUE( true );
-#endif  /* MINT_USE_SIDRE */
+#endif  /* AXOM_MINT_USE_SIDRE */
 }
 
 
@@ -1309,7 +1309,7 @@ TEST( mint_connectivity_array, NoIndirectionExternalSet )
 //------------------------------------------------------------------------------
 TEST( mint_connectivity_array, NoIndirectionSidreSet )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   constexpr IndexType max_IDs = 100;
   constexpr IndexType max_values = hex_stride * max_IDs;
   constexpr IndexType total_IDs = ( max_IDs * ( max_IDs + 1 ) ) / 2;
@@ -1350,7 +1350,7 @@ TEST( mint_connectivity_array, NoIndirectionSidreSet )
   delete[] initial_values;
 #else
   EXPECT_TRUE( true );
-#endif  /* MINT_USE_SIDRE */
+#endif  /* AXOM_MINT_USE_SIDRE */
 }
 
 //------------------------------------------------------------------------------
@@ -1465,7 +1465,7 @@ TEST( mint_connectivity_array, IndirectionExternalSet )
 //------------------------------------------------------------------------------
 TEST( mint_connectivity_array, IndirectionSidreSet )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
 
@@ -1518,7 +1518,7 @@ TEST( mint_connectivity_array, IndirectionSidreSet )
 
 #else
   EXPECT_TRUE( true );
-#endif  /* MINT_USE_SIDRE */
+#endif  /* AXOM_MINT_USE_SIDRE */
 }
 
 
@@ -1601,7 +1601,7 @@ TEST( mint_connectivity_array_DeathTest, NoIndirectionExternalInsert )
 //------------------------------------------------------------------------------
 TEST( mint_connectivity_array, NoIndirectionSidreInsert )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
 
@@ -1639,7 +1639,7 @@ TEST( mint_connectivity_array, NoIndirectionSidreInsert )
   delete[] values;
 #else
   EXPECT_TRUE( true );
-#endif  /* MINT_USE_SIDRE */
+#endif  /* AXOM_MINT_USE_SIDRE */
 }
 
 //------------------------------------------------------------------------------
@@ -1743,7 +1743,7 @@ TEST( mint_connectivity_array_DeathTest, IndirectionExternalInsert )
 //------------------------------------------------------------------------------
 TEST( mint_connectivity_array, IndirectionSidreInsert )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
 
@@ -1787,7 +1787,7 @@ TEST( mint_connectivity_array, IndirectionSidreInsert )
   delete[] types;
 #else
   EXPECT_TRUE( true );
-#endif  /* MINT_USE_SIDRE */
+#endif  /* AXOM_MINT_USE_SIDRE */
 }
 
 
@@ -1838,7 +1838,7 @@ TEST( mint_connectivity_array_DeathTest, NoIndirectionNativeCapacity )
 //------------------------------------------------------------------------------
 TEST( mint_connectivity_array_DeathTest, NoIndirectionSidreCapacity )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
 
@@ -1884,7 +1884,7 @@ TEST( mint_connectivity_array_DeathTest, NoIndirectionSidreCapacity )
   delete[] values;
 #else
   EXPECT_TRUE( true );
-#endif  /* MINT_USE_SIDRE */
+#endif  /* AXOM_MINT_USE_SIDRE */
 }
 
 //------------------------------------------------------------------------------
@@ -1937,7 +1937,7 @@ TEST( mint_connectivity_array_DeathTest, IndirectionNativeCapacity )
 //------------------------------------------------------------------------------
 TEST( mint_connectivity_array_DeathTest, IndirectionSidreCapacity )
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
 
@@ -1991,7 +1991,7 @@ TEST( mint_connectivity_array_DeathTest, IndirectionSidreCapacity )
   delete[] types;
 #else
   EXPECT_TRUE( true );
-#endif  /* MINT_USE_SIDRE */
+#endif  /* AXOM_MINT_USE_SIDRE */
 }
 
 }   /* end namespace mint */

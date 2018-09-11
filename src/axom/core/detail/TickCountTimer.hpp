@@ -29,9 +29,7 @@
 #ifndef TICK_COUNT_TIMER_HPP_
 #define TICK_COUNT_TIMER_HPP_
 
-#ifndef WIN32
-  #error TickTimer is a Windows timer
-#endif
+#ifdef WIN32
 
 #define NOMINMAX
 #include <Windows.h>
@@ -115,5 +113,6 @@ private:
 } /* namespace utilities */
 } /* namespace axom */
 
+#endif // WIN32
 
 #endif // TICK_COUNT_TIMER_HPP_

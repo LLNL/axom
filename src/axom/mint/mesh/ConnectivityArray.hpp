@@ -31,7 +31,7 @@
 // Slic includes
 #include "axom/slic/interface/slic.hpp"
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 #include "axom/sidre/core/sidre.hpp"
 #endif
 
@@ -215,7 +215,7 @@ public:
 /// \name Sidre Storage ConnectivityArray Constructors
 /// @{
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
   /*!
    * \brief Creates a ConnectivityArray instance from a sidre::Group which
@@ -342,6 +342,17 @@ public:
   { m_values->reserve( ID_capacity ); }
 
   /*!
+   * \brief Resize space to hold the specified number of IDs.
+   *
+   * \param [in] ID_size the number of IDs to resize the space for.
+   * \param [in] value_size not used, does not need to be specified.
+   *
+   * \post getNumberOfIDs() == newIDSize
+   */
+  void resize( IndexType ID_size, IndexType AXOM_NOT_USED(value_size)=0 )
+  { m_values->resize( ID_size ); }
+
+  /*!
    * \brief Shrink the array so that there is no extra capacity.
    *
    * \post getIDCapacity() == getNumberOfIDs()
@@ -395,7 +406,7 @@ public:
    * \brief Return a const pointer to the sidre::Group that holds the data
    *  or nullptr if the data is not in sidre.
    */
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   const sidre::Group* getGroup() const
   {
     if ( !isInSidre() )

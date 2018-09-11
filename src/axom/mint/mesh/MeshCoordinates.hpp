@@ -26,7 +26,7 @@
 namespace axom
 {
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
 // Sidre forward declarations
 namespace sidre
@@ -190,7 +190,7 @@ public:
 /// \name Sidre Constructors
 /// @{
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
 
   /*!
    * \brief Creates a MeshCoordinates object from the given sidre::Group that
@@ -337,7 +337,7 @@ public:
    */
   bool isInSidre() const;
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   /*!
    * \brief Return the sidre group associated with this instance or nullptr
    *  if none exits.
@@ -527,9 +527,10 @@ public:
 
   double* getCoordinateArray( int dim )
   {
-    SLIC_ERROR_IF( !indexInRange( dim, 0, m_ndims-1),
-     "invalid request for coordinate array along dimension [" << dim << "]" <<
-     "ndims=" << m_ndims  );
+    SLIC_ERROR_IF( !indexInRange( dim, 0,
+                                  m_ndims-1),
+                   "invalid request for coordinate array along dimension [" << dim << "]" <<
+                   "ndims=" << m_ndims  );
 
     SLIC_ASSERT( m_coordinates[ dim ] != nullptr );
     return m_coordinates[ dim ]->getData();
@@ -537,9 +538,10 @@ public:
 
   const double* getCoordinateArray( int dim ) const
   {
-    SLIC_ERROR_IF( !indexInRange( dim, 0, m_ndims-1),
-     "invalid request for coordinate array along dimension [" << dim << "]" <<
-     "ndims=" << m_ndims  );
+    SLIC_ERROR_IF( !indexInRange( dim, 0,
+                                  m_ndims-1),
+                   "invalid request for coordinate array along dimension [" << dim << "]" <<
+                   "ndims=" << m_ndims  );
 
     SLIC_ASSERT( m_coordinates[ dim ] != nullptr );
     return m_coordinates[ dim ]->getData();
@@ -598,7 +600,7 @@ private:
 
 /// @}
 
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   sidre::Group* m_group;
 #endif
   int m_ndims;
@@ -629,7 +631,7 @@ inline bool MeshCoordinates::isExternal() const
 //------------------------------------------------------------------------------
 inline bool MeshCoordinates::isInSidre() const
 {
-#ifdef MINT_USE_SIDRE
+#ifdef AXOM_MINT_USE_SIDRE
   bool is_in_sidre = m_group != nullptr;
   bool consistent = true;
   for ( int i = 0 ; i < m_ndims ; ++i )
