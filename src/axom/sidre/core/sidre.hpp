@@ -36,5 +36,6 @@
 #include "View.hpp"
 #include "Iterator.hpp"
 #include "SidreTypes.hpp"
+#include "axom/sidre/spio/IOManager.hpp"
 
 #endif /* SIDRE_HPP_ */

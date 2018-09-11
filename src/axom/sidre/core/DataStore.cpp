@@ -575,21 +575,13 @@ void DataStore::loadAttributeLayout(Node& node)
   }
 }
 
-void DataStore::generateBlueprintIndex(std::string& domain_path,
-                                       std::string& domain_name,
-                                       std::string& mesh_name,
-                                       std::string& index_path,
+void DataStore::generateBlueprintIndex(const std::string& domain_path,
+                                       const std::string& mesh_name,
+                                       const std::string& index_path,
                                        int num_domains)
 {
-  Group* domain;
-  if (domain_path == "/")
-  {
-    domain = getRoot();
-  }
-  else
-  {
-    domain = getRoot()->getGroup(domain_path);
-  } 
+  Group* domain = (domain_path == "/") ?
+                  getRoot() : getRoot()->getGroup(domain_path);
 
   conduit::Node mesh_node;
   domain->createNativeLayout(mesh_node);
@@ -601,10 +593,9 @@ void DataStore::generateBlueprintIndex(std::string& domain_path,
   {
 
     conduit::Node index;
-    conduit::blueprint::mesh::generate_index(mesh_node[domain_name],
+    conduit::blueprint::mesh::generate_index(mesh_node,
                                              mesh_name,
                                              num_domains,
-                                             //index["blueprint_index"]);
                                              index);
 
     bpindex->importConduitTree(index);

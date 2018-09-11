@@ -383,10 +383,9 @@ public:
 
 //@}
 
-  void generateBlueprintIndex(std::string& domain_path,
-                              std::string& domain_name,
-                              std::string& mesh_name,
-                              std::string& index_path,
+  void generateBlueprintIndex(const std::string& domain_path,
+                              const std::string& mesh_name,
+                              const std::string& index_path,
                               int num_domains);
 
 //----------------

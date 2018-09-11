@@ -373,6 +373,99 @@ void save_as_blueprint(DataStore* ds) {
   // _blueprint_restructure_save_end
 }
 
+void generate_blueprint(DataStore* ds) {
+  // _blueprint_create_toplevel_start
+  // Conduit needs a specific hierarchy.
+  // We'll make a new DataStore with that hierarchy, pointing at the
+  // application's data.
+  DataStore cds;
+  std::string domain_name = "domain";
+  std::string domain_location = "domain_data/" + domain_name;
+  std::string mesh_name = "mesh";
+  std::string domain_mesh = domain_location + "/" + mesh_name;
+
+  Group* mroot = cds.getRoot()->createGroup(domain_location);
+  Group* coords = mroot->createGroup(mesh_name + "/coordsets/coords");
+  Group* topos = mroot->createGroup(mesh_name + "/topologies");
+  // no material sets in this example
+  Group* fields = mroot->createGroup(mesh_name + "/fields");
+  // no adjacency sets in this (single-domain) example
+  // _blueprint_create_toplevel_end
+
+  setup_blueprint_coords(ds, coords);
+
+  setup_blueprint_topos(ds, topos);
+
+  setup_blueprint_fields(ds, fields);
+
+  // _blueprint_generate_save_start
+  conduit::Node info, mesh_node, root_node;
+  cds.getRoot()->createNativeLayout(mesh_node);
+  if (conduit::blueprint::verify("mesh", mesh_node[domain_mesh], info))
+  {
+    std::string bp("rootfile_data/blueprint_index/automesh");
+
+    cds.generateBlueprintIndex(domain_mesh, mesh_name, bp, 1);
+
+    Group* rootfile_grp = cds.getRoot()->getGroup("rootfile_data");
+    rootfile_grp->createViewString("protocol/name", "json");
+    rootfile_grp->createViewString("protocol/version", "0.1");
+    rootfile_grp->createViewScalar("number_of_files", 1);
+    rootfile_grp->createViewScalar("number_of_trees", 1);
+    rootfile_grp->createViewScalar("file_pattern", "bpgen.json");
+    rootfile_grp->createViewScalar("tree_pattern", "/domain");
+    rootfile_grp->save("bpgen.root", "json");
+
+    cds.getRoot()->getGroup("domain_data")->save("bpgen.json", "json");
+  }
+  else
+  {
+    std::cout << "does not conform to Mesh Blueprint: ";
+    info.print();
+    std::cout << std::endl;
+  }
+  // _blueprint_generate_save_end
+}
+
+void generate_spio_blueprint(DataStore* ds) {
+  DataStore cds;
+  std::string domain_name = "domain";
+  std::string domain_location = "domain_data/" + domain_name;
+  std::string mesh_name = "mesh";
+  std::string domain_mesh = domain_location + "/" + mesh_name;
+
+  Group* mroot = cds.getRoot()->createGroup(domain_location);
+  Group* coords = mroot->createGroup(mesh_name + "/coordsets/coords");
+  Group* topos = mroot->createGroup(mesh_name + "/topologies");
+  // no material sets in this example
+  Group* fields = mroot->createGroup(mesh_name + "/fields");
+  // no adjacency sets in this (single-domain) example
+
+  setup_blueprint_coords(ds, coords);
+
+  setup_blueprint_topos(ds, topos);
+
+  setup_blueprint_fields(ds, fields);
+
+  IOManager writer(MPI_COMM_WORLD);
+
+  conduit::Node info, mesh_node, root_node;
+  cds.getRoot()->createNativeLayout(mesh_node);
+  if (conduit::blueprint::verify("mesh", mesh_node[domain_mesh], info))
+  {
+
+    std::string bp("rootfile_data/blueprint_index/automesh");
+    std::string bp_rootfile("bpspio.root");
+
+    writer.write(cds.getRoot()->getGroup(domain_location), 1, "bpspio", "sidre_hdf5");
+
+    writer.writeBlueprintIndexToRootFile(&cds, domain_mesh, bp_rootfile, mesh_name);
+
+  }
+
+}
+
+
 void serial_save_datastore_and_load_copy_lower(DataStore* ds)
 {
   // _serial_io_save_start
@@ -403,6 +496,14 @@ int main(int argc, char** argv)
 
   DataStore* tds = create_tiny_datastore();
   save_as_blueprint(tds);
+
+  DataStore* bds = create_tiny_datastore();
+  generate_blueprint(bds);
+
+  DataStore* sds = create_tiny_datastore();
+  MPI_Init(&argc, &argv);
+  generate_spio_blueprint(sds);
+  MPI_Finalize();
 
   return 0;
 }

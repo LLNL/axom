@@ -174,6 +174,11 @@ public:
                                  const std::string& file_name,
                                  const std::string& group_path);
 
+  void writeBlueprintIndexToRootFile(DataStore* datastore,
+                                     const std::string& domain_path,
+                                     const std::string& file_name,
+                                     const std::string& index_path);
+
   /*!
    * \brief read from input files
    *
