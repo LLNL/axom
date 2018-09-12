@@ -166,7 +166,9 @@ public:
                     IndexType cell_capacity=USE_DEFAULT ) :
     Mesh( ndims, UNSTRUCTURED_MESH ),
     m_coordinates( new MeshCoordinates( ndims, 0, node_capacity ) ),
-    m_cell_connectivity( new CellConnectivity( cell_type, cell_capacity ) )
+    m_cell_connectivity( new CellConnectivity( cell_type, cell_capacity ) ),
+    m_cell_to_face( nullptr ),
+    m_face_to_cell( nullptr )
   {
     AXOM_STATIC_ASSERT_MSG( TOPO == SINGLE_SHAPE,
                             "This constructor is only active for single topology meshes." );
@@ -195,7 +197,9 @@ public:
     Mesh( ndims, UNSTRUCTURED_MESH ),
     m_coordinates( new MeshCoordinates( ndims, 0, node_capacity ) ),
     m_cell_connectivity( new CellConnectivity( cell_capacity,
-                                               connectivity_capacity ) )
+                                               connectivity_capacity ) ),
+    m_cell_to_face( nullptr ),
+    m_face_to_cell( nullptr )
   {
     AXOM_STATIC_ASSERT_MSG( TOPO == MIXED_SHAPE,
                             "This constructor is only active for mixed topology meshes." );
@@ -247,7 +251,9 @@ public:
     Mesh( internal::dim( x,y,z ), UNSTRUCTURED_MESH ),
     m_coordinates( new MeshCoordinates( n_nodes, node_capacity, x, y, z ) ),
     m_cell_connectivity( new CellConnectivity( cell_type, n_cells, connectivity,
-                                               cell_capacity ) )
+                                               cell_capacity ) ),
+    m_cell_to_face( nullptr ),
+    m_face_to_cell( nullptr )
   {
     AXOM_STATIC_ASSERT_MSG( TOPO == SINGLE_SHAPE,
                             "This constructor is only active for single topology meshes." );
@@ -288,7 +294,7 @@ public:
                     double* y=nullptr,
                     double* z=nullptr ) :
     UnstructuredMesh( cell_type,
-                      n_cells,n_cells,connectivity,
+                      n_cells, n_cells, connectivity,
                       n_nodes, n_nodes, x, y, z )
   { }
 
@@ -335,7 +341,9 @@ public:
     m_coordinates( new MeshCoordinates( n_nodes, node_capacity, x, y, z ) ),
     m_cell_connectivity( new CellConnectivity( n_cells, connectivity, offsets,
                                                types, cell_capacity,
-                                               connectivity_capacity ) )
+                                               connectivity_capacity ) ),
+    m_cell_to_face( nullptr ),
+    m_face_to_cell( nullptr )
   {
     AXOM_STATIC_ASSERT_MSG( TOPO == MIXED_SHAPE,
                             "This constructor is only active for mixed topology meshes." );
@@ -415,7 +423,9 @@ public:
   UnstructuredMesh( sidre::Group* group, const std::string& topo="" ) :
     Mesh( group, topo ),
     m_coordinates( new MeshCoordinates( getCoordsetGroup() ) ),
-    m_cell_connectivity( new CellConnectivity( getTopologyGroup() ) )
+    m_cell_connectivity( new CellConnectivity( getTopologyGroup() ) ),
+    m_cell_to_face( nullptr ),
+    m_face_to_cell( nullptr )
   {
     SLIC_ERROR_IF( m_type != UNSTRUCTURED_MESH,
                    "Supplied sidre::Group does not correspond to a UnstructuredMesh." );
@@ -465,7 +475,9 @@ public:
     m_coordinates( new MeshCoordinates( getCoordsetGroup(), ndims, 0,
                                         node_capacity ) ),
     m_cell_connectivity( new CellConnectivity( cell_type, getTopologyGroup(),
-                                               m_coordset, cell_capacity ) )
+                                               m_coordset, cell_capacity ) ),
+    m_cell_to_face( nullptr ),
+    m_face_to_cell( nullptr )
   {
     AXOM_STATIC_ASSERT_MSG( TOPO == SINGLE_SHAPE,
                             "This constructor is only active for single topology meshes." );
@@ -489,7 +501,9 @@ public:
                                         node_capacity ) ),
     m_cell_connectivity( new CellConnectivity( getTopologyGroup(), m_coordset,
                                                cell_capacity,
-                                               connectivity_capacity ) )
+                                               connectivity_capacity ) ),
+    m_cell_to_face( nullptr ),
+    m_face_to_cell( nullptr )
   {
     AXOM_STATIC_ASSERT_MSG( TOPO == MIXED_SHAPE,
                             "This constructor is only active for mixed topology meshes." );
@@ -529,6 +543,16 @@ public:
     {
       delete m_cell_connectivity;
       m_cell_connectivity = nullptr;
+    }
+    if ( m_cell_to_face != nullptr )
+    {
+      delete m_cell_to_face;
+      m_cell_to_face = nullptr;
+    }
+    if ( m_face_to_cell != nullptr )
+    {
+      delete m_face_to_cell;
+      m_face_to_cell = nullptr;
     }
   }
 
@@ -646,6 +670,9 @@ public:
 
 /// \name Faces
 /// @{
+
+  /*! \brief Sets up cell-face and face-cell relations. */
+  void initializeFaceConnectivity();
 
   /*!
    * \brief Return the number of faces in the mesh.
@@ -1388,7 +1415,30 @@ private:
           ConnectivityArray< topology_traits< TOPO >::cell_connec >;
 
   MeshCoordinates* m_coordinates;
+
+  /*! \brief The nodes for each cell */
   CellConnectivity* m_cell_connectivity;
+
+  /*! \brief The type for face-cell and cell-face connectivity.
+   *
+   * Usually, each face will connect two cells.  The exceptions are
+   * - edge faces, which will connect to one cell
+   * - some faces in a malformed mesh, which may join more than two cells
+   *
+   * Usually, each face will be the same type.  The exceptions are
+   * - pyramids, with four triangles and one quad
+   * - prisms, with two triangles and three quads
+   *
+   * ConnectivityArray< TYPED_INDIRECTION > lets us store relations of
+   * varying cardinality (stride) along with varying ID type.
+   */
+  using FaceConnectivity = ConnectivityArray< TYPED_INDIRECTION >;
+
+  /*! \brief The faces for each cell */
+  FaceConnectivity* m_cell_to_face;
+
+  /*! \brief The cells for each face */
+  FaceConnectivity* m_face_to_cell;
 
   DISABLE_COPY_AND_ASSIGNMENT( UnstructuredMesh );
   DISABLE_MOVE_AND_ASSIGNMENT( UnstructuredMesh );
@@ -1396,5 +1446,7 @@ private:
 
 } /* namespace mint */
 } /* namespace axom */
+
+#include "axom/mint/mesh/internal/UnstructuredMesh_impl.hpp"
 
 #endif /* MINT_UNSTRUCTUREDMESH_HPP_ */

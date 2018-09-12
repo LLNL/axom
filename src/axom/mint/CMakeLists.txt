@@ -68,6 +68,7 @@ set( mint_headers
     mesh/internal/ConnectivityArray_typed_indirection.hpp
     mesh/internal/ConnectivityArrayHelpers.hpp
     mesh/internal/MeshHelpers.hpp
+    mesh/internal/UnstructuredMesh_impl.hpp
 
     ## Mesh data-model
     mesh/blueprint.hpp
