@@ -180,7 +180,7 @@ public:
    * Given a domain that adheres to Conduit's Blueprint format, this method
    * generates a Blueprint index and writes it to an existing root file.
    *
-   * The domain must be stored in a Group located at the path in the 
+   * The domain must be stored in a Group located at the path in the
    * DataStore specified by domain_path argument.
    *
    * This currently only works if the root file was created for protocol

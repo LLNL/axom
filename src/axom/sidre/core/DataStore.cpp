@@ -18,7 +18,8 @@
 // Standard C++ headers
 #include <fstream>
 
-#include "conduit_blueprint.hpp" // for setting conduit's message logging handlers
+#include "conduit_blueprint.hpp" // for setting conduit's message logging
+                                 // handlers
 #include "conduit_utils.hpp" // for setting conduit's message logging handlers
 
 // Associated header file

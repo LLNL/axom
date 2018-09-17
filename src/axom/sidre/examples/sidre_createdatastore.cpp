@@ -457,9 +457,11 @@ void generate_spio_blueprint(DataStore* ds) {
     std::string bp("rootfile_data/blueprint_index/automesh");
     std::string bp_rootfile("bpspio.root");
 
-    writer.write(cds.getRoot()->getGroup(domain_location), 1, "bpspio", "sidre_hdf5");
+    writer.write(cds.getRoot()->getGroup(
+                   domain_location), 1, "bpspio", "sidre_hdf5");
 
-    writer.writeBlueprintIndexToRootFile(&cds, domain_mesh, bp_rootfile, mesh_name);
+    writer.writeBlueprintIndexToRootFile(&cds, domain_mesh, bp_rootfile,
+                                         mesh_name);
 
   }
 
