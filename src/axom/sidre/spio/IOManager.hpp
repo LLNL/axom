@@ -174,10 +174,29 @@ public:
                                  const std::string& file_name,
                                  const std::string& group_path);
 
+  /*!
+   * \brief write a Conduit Blueprint index to an existing root file
+   *
+   * Given a domain that adheres to Conduit's Blueprint format, this method
+   * generates a Blueprint index and writes it to an existing root file.
+   *
+   * The domain must be stored in a Group located at the path in the 
+   * DataStore specified by domain_path argument.
+   *
+   * This currently only works if the root file was created for protocol
+   * sidre_hdf5.
+   *
+   * \param datastore     DataStore containing Groups that hold domains
+   *                      that adhere to the Blueprint format
+   * \param domain_path   path to the domain in the DataStore that will be
+   *                      used to generate a Blueprint index
+   * \param file_name     name of existing root file
+   * \param mesh_name     name of the mesh described by the Blueprint index
+   */
   void writeBlueprintIndexToRootFile(DataStore* datastore,
                                      const std::string& domain_path,
                                      const std::string& file_name,
-                                     const std::string& index_path);
+                                     const std::string& mesh_name);
 
   /*!
    * \brief read from input files

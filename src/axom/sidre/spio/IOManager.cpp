@@ -996,7 +996,7 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
   AXOM_DEBUG_VAR(datastore);
   AXOM_DEBUG_VAR(domain_path);
   AXOM_DEBUG_VAR(file_name);
-  AXOM_DEBUG_VAR(index_path);
+  AXOM_DEBUG_VAR(mesh_name);
 #endif /* AXOM_USE_HDF5 */
 }
 
