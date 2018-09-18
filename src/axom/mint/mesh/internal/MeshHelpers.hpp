@@ -54,7 +54,9 @@ namespace m = ::axom::mint;
  * \returns success true if each face has one or two incident cells.
  *
  * \note The three output arrays f2c, c2f, and c2foffsets are allocated
- * in this routine.  It is the caller's responsibility to free this memory.
+ * in this routine if the routine is successful.  It is the caller's
+ * responsibility to free this memory.  If the routine returned false,
+ * the output arrays are set to nullptr and facecount is set to 0.
  *
  * This routine visits each of the cells of the mesh.  For each cell face, it
  * retrieves the face's nodes and joins the sorted node IDs to make a unique

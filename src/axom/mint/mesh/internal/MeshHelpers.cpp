@@ -57,6 +57,11 @@ bool initFaces(m::Mesh * m,
 {
   bool success = true;
 
+  facecount = 0;
+  f2c = nullptr;
+  c2f = nullptr;
+  c2foffsets = nullptr;
+
   typedef std::pair< m::CellType, std::vector<m::IndexType> > FaceTypeAndCells;
   typedef std::map< std::string, FaceTypeAndCells > FaceBuilderType;
   typedef std::map< m::IndexType, std::string > IDtoKeyType;
@@ -136,6 +141,15 @@ bool initFaces(m::Mesh * m,
     faceID += 1;
   }
 
+  // If we have any face with less than one or more than two incident cells,
+  // clean up and return failure.  We won't do any more work here.
+  if (!success)
+  {
+    delete [] f2c;
+    f2c = nullptr;
+    return success;
+  }
+
   // Record how many faces we have in this mesh.
   facecount = faceID;
 
@@ -163,7 +177,7 @@ bool initFaces(m::Mesh * m,
 
   // Step 4b. Put cell-to-face relation into output arrays.
   c2f = new m::IndexType[cellFaceCount];
-  c2foffsets = new m::IndexType[cell_to_face.size() + 1];
+  c2foffsets = new m::IndexType[cellcount + 1];
   cellFaceCount = 0;
 
   for (int cellID = 0; cellID < cellcount; ++cellID)
