@@ -68,7 +68,6 @@ set( mint_headers
     mesh/internal/ConnectivityArray_typed_indirection.hpp
     mesh/internal/ConnectivityArrayHelpers.hpp
     mesh/internal/MeshHelpers.hpp
-    mesh/internal/UnstructuredMesh_impl.hpp
 
     ## Mesh data-model
     mesh/blueprint.hpp
@@ -97,6 +96,9 @@ set( mint_sources
 
     ## FEM classes
     fem/FiniteElement.cpp
+
+    ## Internal implementation
+    mesh/internal/MeshHelpers.cpp
 
     ## Mesh data-model
     mesh/blueprint.cpp

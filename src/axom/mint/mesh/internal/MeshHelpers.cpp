@@ -52,6 +52,16 @@ namespace mint
 //------------------------------------------------------------------------------
 // IMPLEMENTATION
 //------------------------------------------------------------------------------
+
+  /*! \brief Visit each cell, hash each face with unique key, build face-cell
+   * and cell-face relations.
+   *
+   * This routine visits each of the cells of the mesh.  It retrieves the cell
+   * face nodes and joins the sorted node IDs to make a unique hash key.
+   * Using this unique key, the cells of the faces are recorded in a list.
+   * The final face-cell and cell-face relations are constructed from this
+   * data structure.
+   */
   template < Topology TOPO >
   void UnstructuredMesh<TOPO>::initializeFaceConnectivity()
   {
@@ -76,8 +86,11 @@ namespace mint
       IndexType face_nodes[MAX_ONE_FACE_NODES];
       for (int f = 0; f < thisCell.num_faces; ++f)
       {
-        // Step 2. The face nodes will be in "VTK Order," as specified by
+        // Step 2. The cell nodes will be in "VTK Order," as specified by
         // https://www.vtk.org/wp-content/uploads/2015/04/file-formats.pdf.
+        // This routine selects the face nodes as listed in the registered
+        // cell info to make sure that face normals point outward.
+        // 
         // For every face, sort the node IDs and join them together in a
         // string with '.' delimiters.  This is the key for an associative
         // array whose value is a list of cell IDs.

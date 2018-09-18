@@ -672,7 +672,32 @@ public:
 /// @{
 
   /*! \brief Sets up cell-face and face-cell relations. */
-  void initializeFaceConnectivity();
+  bool initializeFaceConnectivity()
+  {
+    int facecount = 0;
+    IndexType * f2cdata = nullptr;
+    IndexType * c2fdata = nullptr;
+    IndexType * c2foffsets = nullptr;
+
+    bool retval = internal::initFaces(this, facecount, f2cdata,
+                                      c2fdata, c2foffsets);
+
+    if (retval)
+    {
+      // Copy in the face relation data.
+      m_face_to_cell = new FaceToCellConnectivity(SEGMENT, facecount);
+      m_face_to_cell->setM(f2cdata, 0, facecount);
+
+      m_cell_to_face = new CellToFaceConnectivity(SEGMENT);
+      m_cell_to_face->appendM(c2fdata, getNumberOfCells(), c2foffsets);
+
+      delete [] f2cdata;
+      delete [] c2fdata;
+      delete [] c2foffsets;
+    }
+
+    return retval;
+  }
 
   /*!
    * \brief Return the number of faces in the mesh.
@@ -1419,26 +1444,32 @@ private:
   /*! \brief The nodes for each cell */
   CellConnectivity* m_cell_connectivity;
 
-  /*! \brief The type for face-cell and cell-face connectivity.
+  /*! \brief The types for face-cell and cell-face connectivity.
    *
    * Usually, each face will connect two cells.  The exceptions are
-   * - edge faces, which will connect to one cell
-   * - some faces in a malformed mesh, which may join more than two cells
+   * - edge faces, which will connect to one cell.  The other will be -1.
+   * - some faces in a malformed mesh, which may join more than two cells.
+   *   The concensus is that storing such a non-manifold mesh is not useful
+   *   so we only store the first two incident cells and return an error.
    *
    * Usually, each face will be the same type.  The exceptions are
    * - pyramids, with four triangles and one quad
    * - prisms, with two triangles and three quads
+   * The concensus is that storing type ID for *faces* is not useful,
+   * so we won't worry about it.
    *
-   * ConnectivityArray< TYPED_INDIRECTION > lets us store relations of
-   * varying cardinality (stride) along with varying ID type.
+   * ConnectivityArray< NO_INDIRECTION > with stride 2 will store the
+   * face-to-cell data.
    */
-  using FaceConnectivity = ConnectivityArray< TYPED_INDIRECTION >;
+  using FaceToCellConnectivity = ConnectivityArray< NO_INDIRECTION >;
+  using CellToFaceConnectivity =
+    ConnectivityArray< topology_traits< TOPO >::cell_connec >;
 
-  /*! \brief The faces for each cell */
-  FaceConnectivity* m_cell_to_face;
+  /*! \brief Each cell's faces */
+  CellToFaceConnectivity* m_cell_to_face;
 
-  /*! \brief The cells for each face */
-  FaceConnectivity* m_face_to_cell;
+  /*! \brief Each face's cells */
+  FaceToCellConnectivity* m_face_to_cell;
 
   DISABLE_COPY_AND_ASSIGNMENT( UnstructuredMesh );
   DISABLE_MOVE_AND_ASSIGNMENT( UnstructuredMesh );
@@ -1446,7 +1477,5 @@ private:
 
 } /* namespace mint */
 } /* namespace axom */
-
-#include "axom/mint/mesh/internal/UnstructuredMesh_impl.hpp"
 
 #endif /* MINT_UNSTRUCTUREDMESH_HPP_ */
