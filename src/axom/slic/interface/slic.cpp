@@ -27,6 +27,7 @@
   #include <DbgHelp.h>
 #else
   #include <execinfo.h> // for backtrace()
+  #include <cxxabi.h>   // for abi::__cxa_demangle
 #endif
 
 
@@ -34,6 +35,8 @@ namespace axom
 {
 namespace slic
 {
+
+constexpr int NUM_FRAMES = 25;
 
 //------------------------------------------------------------------------------
 // Initialize static variables for controlling runtime behavior of asserts and
@@ -297,9 +300,10 @@ void finalize()
 
 //------------------------------------------------------------------------------
 #ifdef WIN32
+
 std::string stacktrace( )
 {
-  void* stack[10];
+  void* stack[NUM_FRAMES];
   std::ostringstream oss;
 
   unsigned short frames;
@@ -310,7 +314,7 @@ std::string stacktrace( )
 
   SymInitialize( process, NULL, TRUE );
 
-  frames               = CaptureStackBackTrace( 0, 10, stack, NULL );
+  frames               = CaptureStackBackTrace( 0, NUM_FRAMES, stack, NULL );
   symbol               = ( SYMBOL_INFO* )calloc(
     sizeof( SYMBOL_INFO ) + 256 * sizeof( char ), 1 );
   symbol->MaxNameLen   = 255;
@@ -334,24 +338,106 @@ std::string stacktrace( )
 }
 
 #else
+
 std::string stacktrace( )
 {
-  void* array[10];
-  const int size = backtrace( array, 10 );
+  void *array[ NUM_FRAMES ];
+  
+  const int size = backtrace( array, NUM_FRAMES );
   char** strings = backtrace_symbols( array, size );
 
+  // skip first stack frame (points here)
   std::ostringstream oss;
-  oss << "\n** StackTrace of " << size << " frames **\n";
-  for ( int i=0 ; i < size ; ++i )
+  oss << "\n** StackTrace of " << size - 1 << " frames **\n";
+  for ( int i = 1 ; i < size && strings != nullptr ; ++i )
   {
-    oss << strings[ i ] << std::endl;
+    char* mangledName = nullptr;
+    char* functionOffset = nullptr; 
+    char* returnOffset = nullptr;
+    char* curString = strings[ i ];
+
+#ifdef __APPLE__
+    constexpr in APPLE_OFFSET = 58;
+    mangledName = curString + APPLE_OFFSET;
+    for ( char* p = curString; *p ; ++p )
+    {
+      if ( *p == '+' )
+      {
+        functionOffset = p;
+      }
+      returnOffset = p;
+    }
+#else
+    // find parentheses and +address offset surrounding mangled name
+    for ( char* p = curString ; *p ; ++p )
+    {
+      if ( *p == '(' )
+      {
+        mangledName = p;
+      }
+      else if ( *p == '+' )
+      {
+        functionOffset = p;
+      }
+      else if ( *p == ')' )
+      {
+        returnOffset = p;
+        break;
+      }
+    }
+#endif
+
+    // if the line could be processed, attempt to demangle the symbol
+    if ( mangledName && functionOffset && returnOffset && 
+         mangledName < functionOffset )
+    {
+      *mangledName = 0;
+      mangledName++;
+#ifdef __APPLE__
+#ifdef __MACH__
+      *(functionOffset - 1) = 0;
+#endif
+#endif
+      *functionOffset = 0;
+      ++functionOffset;
+      *returnOffset = 0;
+      ++returnOffset;
+
+      int status;
+      char* realName = abi::__cxa_demangle( mangledName, nullptr, nullptr, 
+                                            &status );
+
+      // if demangling is successful, output the demangled function name
+      if (status == 0)
+      {
+        oss << curString << "(" << i << "): " << realName << " offset: " << 
+            functionOffset << " return at: " << returnOffset << std::endl;
+
+      }
+      // otherwise, output the mangled function name
+      else
+      {
+        oss << curString << "(" << i << "): " << mangledName << " offset:  " <<
+            functionOffset << " return at: " << returnOffset << std::endl;
+      }
+      
+      free(realName);
+    }
+
+    // otherwise, print the whole line
+    else
+    {
+      oss << curString << std::endl;
+    }
   }
+
   oss << "=====\n\n";
 
-  free( strings );
+  free(strings);
 
   return ( oss.str() );
 }
+
 #endif
 
 } /* namespace slic */
