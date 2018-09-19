@@ -59,3 +59,27 @@ compilers:
       f77: /usr/local/tools/ic-17.0.174/bin/ifort
       fc: /usr/local/tools/ic-17.0.174/bin/ifort
     spec: intel@17.0.174
+- compiler:
+    environment: {}
+    extra_rpaths: []
+    flags: {}
+    modules: []
+    operating_system: rhel6
+    paths:
+      cc: /usr/global/tools/clang/chaos_5_x86_64_ib/clang-3.9.1/bin/clang 
+      cxx: /usr/global/tools/clang/chaos_5_x86_64_ib/clang-3.9.1/bin/clang++
+      f77: /usr/apps/gnu/4.9.3/bin/gfortran
+      fc: /usr/apps/gnu/4.9.3/bin/gfortran
+    spec: clang@3.9.1 
+- compiler:
+    environment: {}
+    extra_rpaths: []
+    flags: {}
+    modules: []
+    operating_system: rhel6
+    paths:
+      cc: /usr/global/tools/clang/chaos_5_x86_64_ib/clang-4.0.1/bin/clang
+      cxx: /usr/global/tools/clang/chaos_5_x86_64_ib/clang-4.0.1/bin/clang++
+      f77: /usr/apps/gnu/4.9.3/bin/gfortran
+      fc: /usr/apps/gnu/4.9.3/bin/gfortran
+    spec: clang@4.0.1

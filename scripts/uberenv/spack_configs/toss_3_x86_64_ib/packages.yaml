@@ -45,8 +45,16 @@ packages:
   mvapich2:
     paths:
       mvapich2@2.2%gcc@4.9.3: /usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3
+      mvapich2@2.2%gcc@6.1.0: /usr/tce/packages/mvapich2/mvapich2-2.2-gcc-6.1.0
+      mvapich2@2.2%gcc@7.3.0: /usr/tce/packages/mvapich2/mvapich2-2.2-gcc-7.3.0
+      mvapich2@2.2%gcc@8.1.0: /usr/tce/packages/mvapich2/mvapich2-2.2-gcc-8.1.0
+      mvapich2@2.2%intel@16.0.4: /usr/tce/packages/mvapich2/mvapich2-2.2-intel-16.0.4
       mvapich2@2.2%intel@17.0.0: /usr/tce/packages/mvapich2/mvapich2-2.2-intel-17.0.0
+      mvapich2@2.2%intel@17.0.2: /usr/tce/packages/mvapich2/mvapich2-2.2-intel-17.0.2
+      mvapich2@2.2%intel@18.0.2: /usr/tce/packages/mvapich2/mvapich2-2.2-intel-18.0.2
       mvapich2@2.2%clang@3.9.0: /usr/tce/packages/mvapich2/mvapich2-2.2-clang-3.9.0
+      mvapich2@2.2%clang@3.9.1: /usr/tce/packages/mvapich2/mvapich2-2.2-clang-3.9.1
+      mvapich2@2.2%clang@4.0.0: /usr/tce/packages/mvapich2/mvapich2-2.2-clang-4.0.0
     buildable: False
 # don't build bzip2
   bzip2:

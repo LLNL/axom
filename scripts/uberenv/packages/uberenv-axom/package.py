@@ -40,28 +40,21 @@ class UberenvAxom(Package):
     homepage = "http://lc.llnl.gov/axom"
 
     # variants that allow us to winnow what TPLS we build
-    # use ~cmake to skip cmake build and use whatever cmake is in the
-    # users path 
-    # (given the pain of building cmake on BGQ, this is really on for BGQ)
-    variant('cmake',   default=True, description="Build cmake.")
-    variant('devtools',default=True, description="Build development tools (such as sphinx, uncrustify, etc)")
+    variant('devtools', default=False, description="Build development tools (such as sphinx, uncrustify, etc)")
 
-    variant("python",  default=True, description="Build python")
-    variant("mpi",default=True,description="Build MPI support")
-    variant("mfem",   default=True, description="Build mfem")
+    variant("python",   default=False, description="Build python")
+    variant("mpi",      default=True, description="Build MPI support")
+    variant("mfem",     default=True, description="Build mfem")
 
-    variant("hdf5",   default=True, description="Build hdf5")
+    variant("hdf5",     default=True, description="Build hdf5")
 
-    variant("scr", default=False, description="Build SCR")
+    variant("scr",      default=False, description="Build SCR")
 
     depends_on("hdf5~cxx~shared~fortran", when="+hdf5")
 
     depends_on("conduit~shared") # needed so we can optionally use ^conduit@master
-
-    depends_on("conduit~shared+cmake+hdf5",when="+cmake+hdf5")
-    depends_on("conduit~shared~cmake+hdf5",when="~cmake+hdf5")
-    depends_on("conduit~shared+cmake~hdf5",when="+cmake~hdf5")
-    depends_on("conduit~shared~cmake~hdf5",when="~cmake~hdf5")
+    depends_on("conduit~shared+hdf5",when="+hdf5")
+    depends_on("conduit~shared~hdf5",when="~hdf5")
     
     depends_on("scr", when="+scr")
 
@@ -69,16 +62,16 @@ class UberenvAxom(Package):
     depends_on("mfem~mpi~gzstream",   when="+mfem")
 
     # optional tpl builds
-    depends_on("cmake@3.9.6",when="+cmake")
+    depends_on("cmake@3.9.6")
 
     depends_on("python",    when="+devtools")
     depends_on("doxygen",   when="+devtools")
     depends_on("uncrustify@0.61",when="+devtools")
+    depends_on("cppcheck",when="+devtools")
 
     depends_on("python",   when="+python")
 
     depends_on("py-sphinx", when="+devtools")
-    #depends_on("py-breathe",when="+devtools")
     depends_on("py-shroud", when="+devtools")
 
     depends_on("mpi",when="+mpi")

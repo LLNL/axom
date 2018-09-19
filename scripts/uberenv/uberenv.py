@@ -1,3 +1,6 @@
+#!/bin/sh
+"exec" "python" "-u" "-B" "$0" "$@"
+
 ###############################################################################
 # Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 #

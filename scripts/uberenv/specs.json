@@ -26,13 +26,12 @@
     [ "clang@3.9.1",
       "clang@4.0.1",
       "gcc@4.9.3",
-      "intel@15.0.223",
       "intel@16.0.258",
       "intel@17.0.174" ],
 
     "toss_3_x86_64_ib":
     [ "clang@3.9.1",
-      "clang@4.0.0",
+      "clang@4.0.0+devtools",
       "gcc@4.9.3",
       "gcc@6.1.0",
       "gcc@7.3.0",
@@ -47,8 +46,8 @@
       "xl@coral" ],
 
     "bgqos_0":
-    [ "clang@4.0.0_gfortran~cmake+hdf5~devtools~python",
-      "clang@4.0.0_xlf~cmake+hdf5~devtools~python" ],
+    [ "clang@4.0.0_gfortran~cmake",
+      "clang@4.0.0_xlf~cmake" ],
 
     "macosx_10.9_x86_64":
     [ "clang@3.4svn" ],
