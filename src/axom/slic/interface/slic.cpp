@@ -15,6 +15,8 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
+#define AXOM_DEMANGLE_STACK_TRACE
+
 #include "axom/slic/interface/slic.hpp"
 
 #include <cstdlib>    // for free
@@ -27,16 +29,122 @@
   #include <DbgHelp.h>
 #else
   #include <execinfo.h> // for backtrace()
+#ifdef AXOM_DEMANGLE_STACK_TRACE
   #include <cxxabi.h>   // for abi::__cxa_demangle
 #endif
+#endif
 
+constexpr int MAX_FRAMES = 25;
 
 namespace axom
 {
 namespace slic
 {
 
-constexpr int NUM_FRAMES = 25;
+namespace internal
+{
+
+#ifndef WIN32
+#ifdef AXOM_DEMANGLE_STACK_TRACE
+
+//------------------------------------------------------------------------------
+std::string demangle( char* backtraceString, int frame )
+{
+  char* mangledName = nullptr;
+  char* functionOffset = nullptr; 
+  char* returnOffset = nullptr;
+
+#ifdef __APPLE__
+  /* On apple machines the mangled function name always starts at the 58th 
+   * character */
+  constexpr in APPLE_OFFSET = 58;
+  mangledName = backtraceString + APPLE_OFFSET;
+  for ( char* p = backtraceString; *p ; ++p )
+  {
+    if ( *p == '+' )
+    {
+      functionOffset = p;
+    }
+    returnOffset = p;
+  }
+#else
+  for ( char* p = backtraceString ; *p ; ++p )
+  {
+    if ( *p == '(' )
+    {
+      mangledName = p;
+    }
+    else if ( *p == '+' )
+    {
+      functionOffset = p;
+    }
+    else if ( *p == ')' )
+    {
+      returnOffset = p;
+      break;
+    }
+  }
+#endif
+
+  std::ostringstream oss;
+
+  // if the line could be processed, attempt to demangle the symbol
+  if ( mangledName && functionOffset && returnOffset && 
+       mangledName < functionOffset )
+  {
+    *mangledName = 0;
+    mangledName++;
+#ifdef __APPLE__
+#ifdef __MACH__
+    *(functionOffset - 1) = 0;
+#endif
+#endif
+    *functionOffset = 0;
+    ++functionOffset;
+    *returnOffset = 0;
+    ++returnOffset;
+
+    int status;
+    char* realName = abi::__cxa_demangle( mangledName, nullptr, nullptr, 
+                                          &status );
+
+    // if demangling is successful, output the demangled function name
+    if (status == 0)
+    {
+      oss << "Frame " << frame << ": " << realName << std::endl;
+    }
+    // otherwise, output the mangled function name
+    else
+    {
+      oss << "Frame " << frame << ": " << mangledName << std::endl;
+    }
+    
+    free(realName);
+  }
+
+  // otherwise, print the whole line
+  else
+  {
+    oss << backtraceString << std::endl;
+  }
+
+  return ( oss.str() );
+}
+
+#else /* #ifdef AXOM_DEMANGLE_STACK_TRACE */
+
+//------------------------------------------------------------------------------
+std::string demangle( char* backtraceString, int frame )
+{
+  std::ostringstream oss;
+  oss << "Frame " << frame << ": " << backtraceString << std::endl; 
+  return ( oss.str() ); 
+}
+
+#endif  /* #ifdef AXOM_DEMANGLE_STACK_TRACE */
+#endif  /* #ifdef WIN32 */
+
+} /* namespace internal */
 
 //------------------------------------------------------------------------------
 // Initialize static variables for controlling runtime behavior of asserts and
@@ -303,7 +411,7 @@ void finalize()
 
 std::string stacktrace( )
 {
-  void* stack[NUM_FRAMES];
+  void* stack[MAX_FRAMES];
   std::ostringstream oss;
 
   unsigned short frames;
@@ -314,7 +422,7 @@ std::string stacktrace( )
 
   SymInitialize( process, NULL, TRUE );
 
-  frames               = CaptureStackBackTrace( 0, NUM_FRAMES, stack, NULL );
+  frames               = CaptureStackBackTrace( 0, MAX_FRAMES, stack, NULL );
   symbol               = ( SYMBOL_INFO* )calloc(
     sizeof( SYMBOL_INFO ) + 256 * sizeof( char ), 1 );
   symbol->MaxNameLen   = 255;
@@ -341,9 +449,9 @@ std::string stacktrace( )
 
 std::string stacktrace( )
 {
-  void *array[ NUM_FRAMES ];
+  void *array[ MAX_FRAMES ];
   
-  const int size = backtrace( array, NUM_FRAMES );
+  const int size = backtrace( array, MAX_FRAMES );
   char** strings = backtrace_symbols( array, size );
 
   // skip first stack frame (points here)
@@ -351,84 +459,7 @@ std::string stacktrace( )
   oss << "\n** StackTrace of " << size - 1 << " frames **\n";
   for ( int i = 1 ; i < size && strings != nullptr ; ++i )
   {
-    char* mangledName = nullptr;
-    char* functionOffset = nullptr; 
-    char* returnOffset = nullptr;
-    char* curString = strings[ i ];
-
-#ifdef __APPLE__
-    constexpr in APPLE_OFFSET = 58;
-    mangledName = curString + APPLE_OFFSET;
-    for ( char* p = curString; *p ; ++p )
-    {
-      if ( *p == '+' )
-      {
-        functionOffset = p;
-      }
-      returnOffset = p;
-    }
-#else
-    // find parentheses and +address offset surrounding mangled name
-    for ( char* p = curString ; *p ; ++p )
-    {
-      if ( *p == '(' )
-      {
-        mangledName = p;
-      }
-      else if ( *p == '+' )
-      {
-        functionOffset = p;
-      }
-      else if ( *p == ')' )
-      {
-        returnOffset = p;
-        break;
-      }
-    }
-#endif
-
-    // if the line could be processed, attempt to demangle the symbol
-    if ( mangledName && functionOffset && returnOffset && 
-         mangledName < functionOffset )
-    {
-      *mangledName = 0;
-      mangledName++;
-#ifdef __APPLE__
-#ifdef __MACH__
-      *(functionOffset - 1) = 0;
-#endif
-#endif
-      *functionOffset = 0;
-      ++functionOffset;
-      *returnOffset = 0;
-      ++returnOffset;
-
-      int status;
-      char* realName = abi::__cxa_demangle( mangledName, nullptr, nullptr, 
-                                            &status );
-
-      // if demangling is successful, output the demangled function name
-      if (status == 0)
-      {
-        oss << curString << "(" << i << "): " << realName << " offset: " << 
-            functionOffset << " return at: " << returnOffset << std::endl;
-
-      }
-      // otherwise, output the mangled function name
-      else
-      {
-        oss << curString << "(" << i << "): " << mangledName << " offset:  " <<
-            functionOffset << " return at: " << returnOffset << std::endl;
-      }
-      
-      free(realName);
-    }
-
-    // otherwise, print the whole line
-    else
-    {
-      oss << curString << std::endl;
-    }
+    oss << internal::demangle( strings[ i ], i );
   }
 
   oss << "=====\n\n";
