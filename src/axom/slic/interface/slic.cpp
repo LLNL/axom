@@ -15,9 +15,8 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#define AXOM_DEMANGLE_STACK_TRACE
-
 #include "axom/slic/interface/slic.hpp"
+#include "axom/slic/config.hpp"
 
 #include <cstdlib>    // for free
 #include <sstream>    // for std::ostringstream
@@ -29,7 +28,7 @@
   #include <DbgHelp.h>
 #else
   #include <execinfo.h> // for backtrace()
-#ifdef AXOM_DEMANGLE_STACK_TRACE
+#ifdef AXOM_SLIC_DEMANGLE_STACK_TRACE
   #include <cxxabi.h>   // for abi::__cxa_demangle
 #endif
 #endif
@@ -45,7 +44,7 @@ namespace internal
 {
 
 #ifndef WIN32
-#ifdef AXOM_DEMANGLE_STACK_TRACE
+#ifdef AXOM_SLIC_DEMANGLE_STACK_TRACE
 
 //------------------------------------------------------------------------------
 std::string demangle( char* backtraceString, int frame )
@@ -125,13 +124,13 @@ std::string demangle( char* backtraceString, int frame )
   // otherwise, print the whole line
   else
   {
-    oss << backtraceString << std::endl;
+    oss << "Frame " << frame << ": " << backtraceString << std::endl;
   }
 
   return ( oss.str() );
 }
 
-#else /* #ifdef AXOM_DEMANGLE_STACK_TRACE */
+#else /* #ifdef AXOM_SLIC_DEMANGLE_STACK_TRACE */
 
 //------------------------------------------------------------------------------
 std::string demangle( char* backtraceString, int frame )
@@ -141,7 +140,7 @@ std::string demangle( char* backtraceString, int frame )
   return ( oss.str() ); 
 }
 
-#endif  /* #ifdef AXOM_DEMANGLE_STACK_TRACE */
+#endif  /* #ifdef AXOM_SLIC_DEMANGLE_STACK_TRACE */
 #endif  /* #ifdef WIN32 */
 
 } /* namespace internal */
@@ -408,7 +407,6 @@ void finalize()
 
 //------------------------------------------------------------------------------
 #ifdef WIN32
-
 std::string stacktrace( )
 {
   void* stack[MAX_FRAMES];
@@ -444,9 +442,7 @@ std::string stacktrace( )
 
   return ( oss.str() );
 }
-
 #else
-
 std::string stacktrace( )
 {
   void *array[ MAX_FRAMES ];
@@ -468,7 +464,6 @@ std::string stacktrace( )
 
   return ( oss.str() );
 }
-
 #endif
 
 } /* namespace slic */

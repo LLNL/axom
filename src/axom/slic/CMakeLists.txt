@@ -13,8 +13,20 @@
 #------------------------------------------------------------------------------
 
 ################################
+# Add slic options
+################################
+if (${CMAKE_BUILD_TYPE} MATCHES "(Debug|RelWithDebInfo)")
+    option( AXOM_SLIC_DEMANGLE_STACK_TRACE "Attempt to demangle stack traces" ON )
+else()
+    option( AXOM_SLIC_DEMANGLE_STACK_TRACE "Attempt to demangle stack traces" OFF )
+endif()
+
+################################
 # Specify all headers/sources
 ################################
+configure_file ( core/config.hpp.in
+                 ${CMAKE_BINARY_DIR}/include/axom/slic/config.hpp )
+
 set(slic_headers
     core/Logger.hpp
     core/LogStream.hpp

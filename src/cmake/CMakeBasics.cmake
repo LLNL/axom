@@ -161,17 +161,19 @@ blt_append_custom_compiler_flag(FLAGS_VAR CMAKE_CXX_FLAGS_DEBUG
                   CLANG       "-fstandalone-debug"
                   )
 
-blt_append_custom_compiler_flag(FLAGS_VAR CMAKE_CXX_FLAGS
-                  DEFAULT     " "
-                  GNU         "-Wl,--export-dynamic"
-                  CLANG       "-Wl,--export-dynamic"
-                  )
-
 blt_append_custom_compiler_flag(FLAGS_VAR AXOM_NINJA_FLAGS
                   DEFAULT     " "
                   GNU         "-fdiagnostics-color=always"
                   CLANG       "-fcolor-diagnostics"
                   )
+
+if(${AXOM_SLIC_DEMANGLE_STACK_TRACE})
+    blt_append_custom_compiler_flag(FLAGS_VAR CMAKE_CXX_FLAGS
+                      DEFAULT     " "
+                      GNU         "-Wl,--export-dynamic"
+                      CLANG       "-Wl,--export-dynamic"
+                      )
+endif()
 
 if( ${CMAKE_MAKE_PROGRAM} STREQUAL "ninja" OR ${CMAKE_MAKE_PROGRAM} MATCHES ".*/ninja$" )
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AXOM_NINJA_FLAGS}")
