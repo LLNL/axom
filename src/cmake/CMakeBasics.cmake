@@ -167,7 +167,7 @@ blt_append_custom_compiler_flag(FLAGS_VAR AXOM_NINJA_FLAGS
                   CLANG       "-fcolor-diagnostics"
                   )
 
-if(${AXOM_SLIC_DEMANGLE_STACK_TRACE})
+if(${AXOM_DEMANGLED_STACKTRACE})
     blt_append_custom_compiler_flag(FLAGS_VAR CMAKE_CXX_FLAGS
                       DEFAULT     " "
                       GNU         "-Wl,--export-dynamic"

@@ -13,15 +13,6 @@
 #------------------------------------------------------------------------------
 
 ################################
-# Add slic options
-################################
-if (${CMAKE_BUILD_TYPE} MATCHES "(Debug|RelWithDebInfo)")
-    option( AXOM_SLIC_DEMANGLE_STACK_TRACE "Attempt to demangle stack traces" ON )
-else()
-    option( AXOM_SLIC_DEMANGLE_STACK_TRACE "Attempt to demangle stack traces" OFF )
-endif()
-
-################################
 # Specify all headers/sources
 ################################
 configure_file ( core/config.hpp.in
@@ -35,6 +26,8 @@ set(slic_headers
 
     interface/slic.hpp
 
+    internal/stacktrace.hpp
+
     streams/GenericOutputStream.hpp
     )
 
@@ -43,6 +36,8 @@ set(slic_sources
     core/LogStream.cpp
 
     interface/slic.cpp
+
+    internal/stacktrace.cpp
 
     streams/GenericOutputStream.cpp
     )
