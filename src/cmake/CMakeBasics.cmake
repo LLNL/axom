@@ -168,11 +168,7 @@ blt_append_custom_compiler_flag(FLAGS_VAR AXOM_NINJA_FLAGS
                   )
 
 if(${AXOM_DEMANGLED_STACKTRACE})
-    blt_append_custom_compiler_flag(FLAGS_VAR CMAKE_CXX_FLAGS
-                      DEFAULT     " "
-                      GNU         "-Wl,--export-dynamic"
-                      CLANG       "-Wl,--export-dynamic"
-                      )
+  set(CMAKE_ENABLE_EXPORTS ON)
 endif()
 
 if( ${CMAKE_MAKE_PROGRAM} STREQUAL "ninja" OR ${CMAKE_MAKE_PROGRAM} MATCHES ".*/ninja$" )
@@ -186,6 +182,6 @@ endif()
 
 # Disable warnings about conditionals over constants
 if(WIN32)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AXOM_ALLOW_CONSTANT_CONDITIONALS}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AXOM_ALLOW_CONSTANT_CONDITIONALS}")
 endif()
 
