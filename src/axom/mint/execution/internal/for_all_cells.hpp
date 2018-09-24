@@ -424,6 +424,71 @@ inline void for_all_cellnodes_unstructured( const mint::Mesh* m,
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
+inline void for_all_cellfaces_structured( const mint::Mesh* m,
+                                          KernelType&& kernel )
+{
+  SLIC_ASSERT( m != nullptr );
+  SLIC_ASSERT( m->isStructured() );
+
+  const mint::StructuredMesh* sm =
+    static_cast< const mint::StructuredMesh* >( m );
+
+  const IndexType dimension = sm->getDimension();
+  const IndexType ICellResolution = sm->getCellResolution( I_DIRECTION );
+  const IndexType numIFaces = sm->getTotalNumFaces( I_DIRECTION );
+
+  if ( dimension == 2 )
+  {
+    for_all_cells< ExecPolicy, xargs::ij >( m, 
+      AXOM_LAMBDA( IndexType cellID, IndexType AXOM_NOT_USED(i), IndexType j )
+      {
+        IndexType faces[ 4 ];
+        
+        /* The I_DIRECTION faces */
+        faces[ 0 ] =  cellID + j;
+        faces[ 1 ] = faces[ 0 ] + 1;
+        
+        /* The J_DIRECTION faces */
+        faces[ 2 ] = cellID + numIFaces;
+        faces[ 3 ] = faces[ 2 ] + ICellResolution;
+
+        kernel( cellID, faces, 4 );
+      } 
+    );
+  }
+  else
+  {
+    SLIC_ASSERT( dimension == 3 );
+
+    const IndexType JCellResolution = sm->getCellResolution( J_DIRECTION );
+    const IndexType totalIJfaces = numIFaces + sm->getTotalNumFaces( J_DIRECTION );
+    const IndexType cellKp = sm->cellKp();
+
+    for_all_cells< ExecPolicy, xargs::ijk >( m, 
+      AXOM_LAMBDA( IndexType cellID, IndexType AXOM_NOT_USED(i), IndexType j, IndexType k )
+      {
+        IndexType faces[ 6 ];
+        
+        /* The I_DIRECTION faces */
+        faces[ 0 ] =  cellID + j + JCellResolution * k;
+        faces[ 1 ] = faces[ 0 ] + 1;
+
+        /* The J_DIRECTION faces */
+        faces[ 2 ] = cellID + numIFaces + ICellResolution * k;
+        faces[ 3 ] = faces[ 2 ] + ICellResolution;
+
+        /* The K_DIRECTION faces */
+        faces[ 4 ] = cellID + totalIJfaces;
+        faces[ 5 ] = faces[ 4 ] + cellKp;
+
+        kernel( cellID, faces, 6 );
+      }
+    );
+  }
+}
+
+//------------------------------------------------------------------------------
+template < typename ExecPolicy, typename KernelType >
 inline void for_all_cells( xargs::nodeids, const mint::Mesh* m,
                            KernelType&& kernel )
 {
@@ -442,7 +507,23 @@ inline void for_all_cells( xargs::nodeids, const mint::Mesh* m,
     for_all_cellnodes_unstructured< ExecPolicy >(
       m, std::forward< KernelType >( kernel ) );
   }
+}
 
+//------------------------------------------------------------------------------
+template < typename ExecPolicy, typename KernelType >
+inline void for_all_cells( xargs::faceids, const mint::Mesh* m,
+                           KernelType&& kernel )
+{
+  SLIC_ERROR_IF( m->getDimension() == 1, "For all cells with face IDs only supported for 2D and 3D meshes" );
+  if ( m->isStructured() )
+  {
+    for_all_cellfaces_structured< ExecPolicy >( 
+      m, std::forward< KernelType >( kernel ) );
+  }
+  else
+  {
+    SLIC_ERROR( "For all cells with face IDs only supported for structured meshes." );
+  }
 }
 
 } /* namespace internal */

@@ -63,12 +63,8 @@ void check_for_all_nodes_idx( int dimension )
   const double hi[] = {  10,  10,  10 };
   mint::UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
 
-  mint::Mesh* test_mesh = nullptr;
-  create_mesh< MeshType >( &uniform_mesh, test_mesh );
+  mint::Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
-  EXPECT_EQ( test_mesh->getMeshType(), MeshType );
-  EXPECT_EQ( test_mesh->getDimension(), uniform_mesh.getDimension() );
-  EXPECT_EQ( test_mesh->getNumberOfNodes(), uniform_mesh.getNumberOfNodes() );
 
   int* field = test_mesh->createField< int >( "n1", mint::NODE_CENTERED );
 
@@ -103,12 +99,8 @@ void check_for_all_nodes_ij( )
   mint::UniformMesh uniform_mesh( lo, hi, N, N );
 
   // STEP 0: create the test mesh
-  mint::Mesh* test_mesh = nullptr;
-  create_mesh< MeshType >( &uniform_mesh, test_mesh );
+  mint::Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
-  EXPECT_EQ( test_mesh->getMeshType(), MeshType );
-  EXPECT_EQ( test_mesh->getDimension(), uniform_mesh.getDimension() );
-  EXPECT_EQ( test_mesh->getNumberOfNodes(), uniform_mesh.getNumberOfNodes() );
 
   const IndexType numNodes = test_mesh->getNumberOfNodes();
 
@@ -160,12 +152,8 @@ void check_for_all_nodes_ijk( )
   mint::UniformMesh uniform_mesh( lo, hi, N, N, N );
 
   // STEP 0: create the test mesh
-  mint::Mesh* test_mesh = nullptr;
-  create_mesh< MeshType >( &uniform_mesh, test_mesh );
+  mint::Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
-  EXPECT_EQ( test_mesh->getMeshType(), MeshType );
-  EXPECT_EQ( test_mesh->getDimension(), uniform_mesh.getDimension() );
-  EXPECT_EQ( test_mesh->getNumberOfNodes(), uniform_mesh.getNumberOfNodes() );
 
   const IndexType numNodes = test_mesh->getNumberOfNodes();
 
@@ -224,12 +212,8 @@ void check_for_all_nodes_xyz( )
   mint::UniformMesh uniform_mesh( lo, hi, N, N, N );
 
   // STEP 0: create the test mesh
-  mint::Mesh* test_mesh = nullptr;
-  create_mesh< MeshType >( &uniform_mesh, test_mesh );
+  mint::Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
-  EXPECT_EQ( test_mesh->getMeshType(), MeshType );
-  EXPECT_EQ( test_mesh->getDimension(), uniform_mesh.getDimension() );
-  EXPECT_EQ( test_mesh->getNumberOfNodes(), uniform_mesh.getNumberOfNodes() );
 
   if ( MeshType != mint::PARTICLE_MESH )
   {
@@ -286,12 +270,8 @@ void check_for_all_nodes_xy( )
   mint::UniformMesh uniform_mesh( lo, hi, N, N );
 
   // STEP 0: create the test mesh
-  mint::Mesh* test_mesh = nullptr;
-  create_mesh< MeshType >( &uniform_mesh, test_mesh );
+  mint::Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
-  EXPECT_EQ( test_mesh->getMeshType(), MeshType );
-  EXPECT_EQ( test_mesh->getDimension(), uniform_mesh.getDimension() );
-  EXPECT_EQ( test_mesh->getNumberOfNodes(), uniform_mesh.getNumberOfNodes() );
 
   if ( MeshType != mint::PARTICLE_MESH )
   {
@@ -340,12 +320,8 @@ void check_for_all_nodes_x( )
   mint::UniformMesh uniform_mesh( lo, hi, Ni );
 
   // STEP 0: create the test mesh
-  mint::Mesh* test_mesh = nullptr;
-  create_mesh< MeshType >( &uniform_mesh, test_mesh );
+  mint::Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
-  EXPECT_EQ( test_mesh->getMeshType(), MeshType );
-  EXPECT_EQ( test_mesh->getDimension(), uniform_mesh.getDimension() );
-  EXPECT_EQ( test_mesh->getNumberOfNodes(), uniform_mesh.getNumberOfNodes() );
 
   if ( MeshType != mint::PARTICLE_MESH )
   {

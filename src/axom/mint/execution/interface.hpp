@@ -24,6 +24,7 @@
 #include "axom/mint/execution/xargs.hpp"                   // for xargs
 #include "axom/mint/execution/internal/for_all_cells.hpp"  // for_all_cells()
 #include "axom/mint/execution/internal/for_all_nodes.hpp"  // for_all_nodes()
+#include "axom/mint/execution/internal/for_all_faces.hpp"  // for_all_faces()
 #include "axom/mint/execution/policy.hpp"                  // for policy_traits
 
 #include "axom/mint/mesh/Mesh.hpp"                         // for  mint::Mesh
@@ -323,7 +324,25 @@ inline void for_all_cells( const mint::Mesh* m, KernelType&& kernel )
 
   // dispatch
   internal::for_all_cells< ExecPolicy >(
-    ArgType(), m, std::forward< KernelType >( kernel )  );
+    ArgType(), m, std::forward< KernelType >( kernel ) );
+}
+
+
+template < typename ExecPolicy = policy::serial,
+           typename ArgType    = xargs::index,
+           typename KernelType >
+inline void for_all_faces( const mint::Mesh* m, KernelType&& kernel )
+{
+  // compile-time sanity checks
+  AXOM_STATIC_ASSERT( policy_traits< ExecPolicy >::valid() );
+  AXOM_STATIC_ASSERT( xargs_traits< ArgType >::valid() );
+
+  // run-time sanity checks
+  SLIC_ASSERT( m != nullptr );
+
+  // dispatch
+  internal::for_all_faces< ExecPolicy >(
+    ArgType(), m, std::forward< KernelType >( kernel ) );
 }
 
 /// @}

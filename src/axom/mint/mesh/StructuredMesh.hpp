@@ -1156,24 +1156,10 @@ StructuredMesh::getIFaceCellIDs( IndexType faceID, IndexType& cellIDOne,
   IndexType i, j, k;
   getIFaceGridIndex( faceID, i, j, k );
 
-  if ( i == 0 )
-  {
-    /* The first cell doesn't exist */
-    cellIDOne = -1;
-    cellIDTwo = getCellLinearIndex( i, j, k );
-  }
-  else if ( i == getCellResolution( 0 ) )
-  {
-    /* The second cell doesn't exist */
-    cellIDOne = getCellLinearIndex( i - 1, j, k );
-    cellIDTwo = -1;
-  }
-  else
-  {
-    /* Both cells exist */
-    cellIDOne = getCellLinearIndex( i - 1, j, k );
-    cellIDTwo = cellIDOne + 1;
-  }
+  cellIDOne = -1;
+  cellIDTwo = -1;
+  if ( i != 0 ) cellIDOne = getCellLinearIndex( i - 1, j, k );
+  if ( i != getCellResolution( 0 ) ) cellIDTwo = getCellLinearIndex( i, j, k );
 }
 
 //-----------------------------------------------------------------------------
@@ -1186,24 +1172,10 @@ StructuredMesh::getJFaceCellIDs( IndexType faceID, IndexType& cellIDOne,
   IndexType i, j, k;
   getJFaceGridIndex( faceID, i, j, k );
 
-  if ( j == 0 )
-  {
-    /* The first cell doesn't exist */
-    cellIDOne = -1;
-    cellIDTwo = getCellLinearIndex( i, j, k );
-  }
-  else if ( j == getCellResolution( 1 ) )
-  {
-    /* The second cell doesn't exist */
-    cellIDOne = getCellLinearIndex( i, j - 1, k );
-    cellIDTwo = -1;
-  }
-  else
-  {
-    /* Both cells exist */
-    cellIDOne = getCellLinearIndex( i, j - 1, k );
-    cellIDTwo = cellIDOne + cellJp();
-  }
+  cellIDOne = -1;
+  cellIDTwo = -1;
+  if ( j != 0 ) cellIDOne = getCellLinearIndex( i, j - 1, k );
+  if ( j != getCellResolution( 1 ) ) cellIDTwo = getCellLinearIndex( i, j, k );
 }
 
 //------------------------------------------------------------------------------

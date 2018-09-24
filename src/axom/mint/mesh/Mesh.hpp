@@ -293,7 +293,7 @@ public:
    *
    * \param [in] cellID the ID of the cell in question.
    */
-  virtual IndexType getNumberOfCellFaces( IndexType AXOM_NOT_USED(cellID) )
+  virtual IndexType getNumberOfCellFaces( IndexType AXOM_NOT_USED(cellID)=0 )
   const
   {
     SLIC_ERROR( "Not implemented!" );

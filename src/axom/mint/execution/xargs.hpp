@@ -95,6 +95,10 @@ struct xyz { };
  */
 struct nodeids { };
 
+struct faceids { };
+
+struct cellids { };
+
 } /* namespace xargs */
 
 /*!
@@ -154,6 +158,20 @@ struct xargs_traits< xargs::nodeids >
 {
   static constexpr bool valid() { return true; };
   static constexpr char* name() { return (char*)("xargs::nodeids"); };
+};
+
+template < >
+struct xargs_traits< xargs::faceids >
+{
+  static constexpr bool valid() { return true; };
+  static constexpr char* name() { return (char*)("xargs::faceids"); };
+};
+
+template < >
+struct xargs_traits< xargs::cellids >
+{
+  static constexpr bool valid() { return true; };
+  static constexpr char* name() { return (char*)("xargs::cellids"); };
 };
 
 
