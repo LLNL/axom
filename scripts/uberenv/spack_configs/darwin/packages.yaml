@@ -40,3 +40,8 @@ packages:
     paths:
       cuda@8.0: /Developer/NVIDIA/CUDA-8.0
     buildable: False
+# don't build bzip2
+  bzip2:
+   paths:
+      bzip2: /usr/bin/
+   buildable: False

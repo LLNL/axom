@@ -62,7 +62,10 @@ class UberenvAxom(Package):
     depends_on("mfem~mpi~gzstream",   when="+mfem")
 
     # optional tpl builds
-    depends_on("cmake@3.9.6")
+    depends_on("cmake@3.9.6",when="+cmake")
+    if "darwin" in platform.system().lower():
+        depends_on("mpich@3.0.4")
+        depends_on("openssl@1.0.2j")
 
     depends_on("python",    when="+devtools")
     depends_on("doxygen",   when="+devtools")
