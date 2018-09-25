@@ -385,12 +385,13 @@ public:
 //@}
 
   /*!
-   * \brief Generate a Conduit Blueprint index based on a domain stored in
+   * \brief Generate a Conduit Blueprint index based on a mesh in stored in
    *        this DataStore.
    *
-   * Given a domain that holds data that adheres to Conduit's Blueprint format,
-   * this method generates a Blueprint index and stores it at a specified
-   * location within this DataStore.
+   * If this DataStore contains data for a mesh that adheres to Conduit's
+   * Blueprint format, this method genearates a Blueprint index and stores
+   * it at a specified locaiton within this DataStore.  It uses as input a
+   * path to a representative domain from that mesh.
    *
    * The domain must be held in a Group stored in this DataStore.  The location
    * of this Group is specified by the domain_path argument.  The generated
@@ -402,8 +403,10 @@ public:
    * \param index_path       path where the Blueprint index will be written
    *                         within this DataStore
    * \param num_domains      number of domains in the mesh
+   *
+   * \return true if the Blueprint index is successfully generated.
    */
-  void generateBlueprintIndex(const std::string& domain_path,
+  bool generateBlueprintIndex(const std::string& domain_path,
                               const std::string& mesh_name,
                               const std::string& index_path,
                               int num_domains);

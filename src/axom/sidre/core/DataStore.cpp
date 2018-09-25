@@ -575,7 +575,7 @@ void DataStore::loadAttributeLayout(Node& node)
   }
 }
 
-void DataStore::generateBlueprintIndex(const std::string& domain_path,
+bool DataStore::generateBlueprintIndex(const std::string& domain_path,
                                        const std::string& mesh_name,
                                        const std::string& index_path,
                                        int num_domains)
@@ -588,6 +588,7 @@ void DataStore::generateBlueprintIndex(const std::string& domain_path,
 
   Group* bpindex = getRoot()->createGroup(index_path);
 
+  bool success = false;
   conduit::Node info;
   if (conduit::blueprint::verify("mesh", mesh_node, info))
   {
@@ -599,7 +600,11 @@ void DataStore::generateBlueprintIndex(const std::string& domain_path,
                                              index);
 
     bpindex->importConduitTree(index);
+
+    success = true;
   }
+
+  return success;
 }
 
 
