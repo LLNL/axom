@@ -374,7 +374,7 @@ void save_as_blueprint(DataStore* ds) {
 }
 
 void generate_blueprint(DataStore* ds) {
-  // _blueprint_create_toplevel_start
+  // _blueprint_generate_toplevel_start
   // Conduit needs a specific hierarchy.
   // We'll make a new DataStore with that hierarchy, pointing at the
   // application's data.
@@ -390,7 +390,7 @@ void generate_blueprint(DataStore* ds) {
   // no material sets in this example
   Group* fields = mroot->createGroup(mesh_name + "/fields");
   // no adjacency sets in this (single-domain) example
-  // _blueprint_create_toplevel_end
+  // _blueprint_generate_toplevel_end
 
   setup_blueprint_coords(ds, coords);
 
@@ -429,6 +429,7 @@ void generate_blueprint(DataStore* ds) {
 
 #ifdef ENABLE_MPI
 void generate_spio_blueprint(DataStore* ds) {
+  // _blueprint_spio_toplevel_start
   DataStore cds;
   std::string domain_name = "domain";
   std::string domain_location = "domain_data/" + domain_name;
@@ -441,6 +442,7 @@ void generate_spio_blueprint(DataStore* ds) {
   // no material sets in this example
   Group* fields = mroot->createGroup(mesh_name + "/fields");
   // no adjacency sets in this (single-domain) example
+  // _blueprint_spio_toplevel_end
 
   setup_blueprint_coords(ds, coords);
 
@@ -448,6 +450,7 @@ void generate_spio_blueprint(DataStore* ds) {
 
   setup_blueprint_fields(ds, fields);
 
+  // _blueprint_generate_spio_start
   IOManager writer(MPI_COMM_WORLD);
 
   conduit::Node info, mesh_node, root_node;
@@ -465,7 +468,7 @@ void generate_spio_blueprint(DataStore* ds) {
                                          mesh_name);
 
   }
-
+  // _blueprint_generate_spio_end
 }
 #endif
 
