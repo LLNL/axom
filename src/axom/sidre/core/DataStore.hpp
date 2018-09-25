@@ -392,7 +392,7 @@ public:
    * this method generates a Blueprint index and stores it at a specified
    * location within this DataStore.
    *
-   * The domin must be held in a Group stored in this DataStore.  The location
+   * The domain must be held in a Group stored in this DataStore.  The location
    * of this Group is specified by the domain_path argument.  The generated
    * Blueprint index will be stored in a newly-created Group that will be
    * located at the path specified by the index_path argument.
@@ -401,6 +401,7 @@ public:
    * \param mesh_name        name for the mesh to be described
    * \param index_path       path where the Blueprint index will be written
    *                         within this DataStore
+   * \param num_domains      number of domains in the mesh
    */
   void generateBlueprintIndex(const std::string& domain_path,
                               const std::string& mesh_name,
