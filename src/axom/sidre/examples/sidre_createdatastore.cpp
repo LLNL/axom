@@ -427,6 +427,7 @@ void generate_blueprint(DataStore* ds) {
   // _blueprint_generate_save_end
 }
 
+#ifdef ENABLE_MPI
 void generate_spio_blueprint(DataStore* ds) {
   DataStore cds;
   std::string domain_name = "domain";
@@ -466,7 +467,7 @@ void generate_spio_blueprint(DataStore* ds) {
   }
 
 }
-
+#endif
 
 void serial_save_datastore_and_load_copy_lower(DataStore* ds)
 {
@@ -502,10 +503,12 @@ int main(int argc, char** argv)
   DataStore* bds = create_tiny_datastore();
   generate_blueprint(bds);
 
+#ifdef ENABLE_MPI
   DataStore* sds = create_tiny_datastore();
   MPI_Init(&argc, &argv);
   generate_spio_blueprint(sds);
   MPI_Finalize();
+#endif
 
   return 0;
 }

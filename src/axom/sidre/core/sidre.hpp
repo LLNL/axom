@@ -36,6 +36,8 @@
 #include "View.hpp"
 #include "Iterator.hpp"
 #include "SidreTypes.hpp"
+#ifdef ENABLE_MPI
 #include "axom/sidre/spio/IOManager.hpp"
+#endif
 
 #endif /* SIDRE_HPP_ */
