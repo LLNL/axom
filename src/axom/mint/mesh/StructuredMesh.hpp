@@ -444,7 +444,6 @@ public:
    */
   inline IndexType getNodeResolution( IndexType dim ) const
   {
-    SLIC_ERROR_IF( dim > -1, "This should error" );
     SLIC_ASSERT( 0 <= dim && dim < 3 );
     return m_node_dims[ dim ];
   }

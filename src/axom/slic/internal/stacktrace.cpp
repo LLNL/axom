@@ -1,3 +1,20 @@
+/*
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+ *
+ * Produced at the Lawrence Livermore National Laboratory
+ *
+ * LLNL-CODE-741217
+ *
+ * All rights reserved.
+ *
+ * This file is part of Axom.
+ *
+ * For details about use and distribution, please read axom/LICENSE.
+ *
+ *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ */
+
 #include <cstdlib>    // for free
 #include <sstream>    // for std::ostringstream
 
@@ -72,7 +89,7 @@ std::string demangle( char* backtraceString, int frame )
 #ifdef __APPLE__
   /* On apple machines the mangled function name always starts at the 58th 
    * character */
-  constexpr in APPLE_OFFSET = 58;
+  constexpr int APPLE_OFFSET = 58;
   mangledName = backtraceString + APPLE_OFFSET;
   for ( char* p = backtraceString; *p ; ++p )
   {
