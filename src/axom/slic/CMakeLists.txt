@@ -15,9 +15,6 @@
 ################################
 # Specify all headers/sources
 ################################
-configure_file ( core/config.hpp.in
-                 ${CMAKE_BINARY_DIR}/include/axom/slic/config.hpp )
-
 set(slic_headers
     core/Logger.hpp
     core/LogStream.hpp
