@@ -15,11 +15,15 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Removed
 - Replaced sidre::SidreLength with sidre::IndexType.
 - Replaced usage of std::size_t in sidre with sidre::IndexType.
+- Added AXOM_ENABLE_EXPORTS which enables CMAKE_ENABLE_EXPORTS to allow demangled
+  axom function names in stack traces. This option is ON by default in debug builds.
 
 ### Deprecated
 
 ### Changed
 - Changed sidre::IndexType to be a 64bit signed integer.
+- Changed slic::stack_trace to slic::internal::stack_trace which now attempts to
+  output a demangled stack trace.
 
 ### Fixed
 
