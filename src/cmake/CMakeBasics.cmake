@@ -167,7 +167,7 @@ blt_append_custom_compiler_flag(FLAGS_VAR AXOM_NINJA_FLAGS
                   CLANG       "-fcolor-diagnostics"
                   )
 
-if(${AXOM_DEMANGLED_STACKTRACE})
+if(${AXOM_ENABLE_EXPORTS})
   set(CMAKE_ENABLE_EXPORTS ON)
 endif()
 
