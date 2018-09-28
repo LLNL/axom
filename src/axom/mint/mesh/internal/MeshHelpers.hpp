@@ -39,7 +39,7 @@ inline int dim( const double* AXOM_NOT_USED(x),
   return ( ( z != nullptr ) ? 3 : ( (y != nullptr ) ? 2 : 1 ) );
 }
 
-namespace m = ::axom::mint;
+// namespace m = ::axom::mint;
 
 /*! \brief Record a Mesh's face-to-cell and cell-to-face relations.
  *
@@ -69,12 +69,12 @@ namespace m = ::axom::mint;
  * This routine is intended to be used in constructing an UnstructuredMesh's
  * face relations, though it will give correct results for any Mesh.
  */
-bool initFaces(m::Mesh * m,
+bool initFaces(Mesh * m,
                IndexType & facecount,
-               m::IndexType *& f2c,
-               m::IndexType *& c2f,
-               m::IndexType *& c2n,
-               m::IndexType *& c2foffsets);
+               IndexType *& f2c,
+               IndexType *& c2f,
+               IndexType *& c2n,
+               IndexType *& c2foffsets);
 
 } /* namespace internal */
 } /* namespace mint */

@@ -286,7 +286,9 @@ std::vector<MeshFaceTest *> generateFaceTestCases()
     // 10. two tris back to back, forming a closed surface  ==================
     UnstructuredMesh< SINGLE_SHAPE > * b2btris =
       new UnstructuredMesh< SINGLE_SHAPE >(THREE_D, TRIANGLE);
-    double    b2btrisnodes[] = { 0, 0, 0, 2, -.3, -.1, 1, 1, 1 };
+    double    b2btrisnodes[] = { 0,   0,   0,
+                                 2, -.3, -.1,
+                                 1,   1,   1 };
     IndexType b2btriscells[] = { 0, 1, 2,
                                  0, 2, 1 };
   
