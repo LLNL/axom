@@ -39,6 +39,7 @@ set( mint_tests
      mint_mesh_rectilinear_mesh.cpp
      mint_mesh_uniform_mesh.cpp
      mint_mesh_unstructured_mesh.cpp
+     mint_mesh_face_relation.cpp
 
      ## fem tests
      mint_fem_shape_functions.cpp

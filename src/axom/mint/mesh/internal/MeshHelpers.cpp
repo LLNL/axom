@@ -49,10 +49,25 @@ std::string join_ints_into_string(int count,
 
 
 //------------------------------------------------------------------------------
+IndexType otherSide(IndexType * f2c, IndexType thisSide)
+{
+  if (f2c[0] != thisSide)
+  {
+    return f2c[0];
+  }
+  else
+  {
+    return f2c[1];
+  }
+}
+
+
+//------------------------------------------------------------------------------
 bool initFaces(m::Mesh * m,
-               int & facecount,
+               IndexType & facecount,
                m::IndexType *& f2c,
                m::IndexType *& c2f,
+               m::IndexType *& c2n,
                m::IndexType *& c2foffsets)
 {
   bool success = true;
@@ -62,9 +77,9 @@ bool initFaces(m::Mesh * m,
   c2f = nullptr;
   c2foffsets = nullptr;
 
+  typedef std::map< m::IndexType, std::string > IDtoKeyType;
   typedef std::pair< m::CellType, std::vector<m::IndexType> > FaceTypeAndCells;
   typedef std::map< std::string, FaceTypeAndCells > FaceBuilderType;
-  typedef std::map< m::IndexType, std::string > IDtoKeyType;
   FaceBuilderType workface;
 
   // Iterate over each cell.
@@ -118,7 +133,7 @@ bool initFaces(m::Mesh * m,
   // Step 3. For each face, record its incident cells.
   // Here we use ConnectivityArray::reserve() and then append() each
   // face.  This means the kth inserted face gets ID k.
-  int faceID = 0;
+  IndexType faceID = 0;
   IDtoKeyType keys;
   f2c = new m::IndexType[2 * workface.size()];
   for (FaceBuilderType::value_type v : workface)
@@ -161,26 +176,26 @@ bool initFaces(m::Mesh * m,
   int cellFaceCount = 0;
   for (int f = 0; f < facecount; ++f)
   {
-    int faceCellCount = workface[keys[f]].second.size();
-    std::vector<m::IndexType> cell_faces;
-    for (int c = 0; c < faceCellCount; ++c)
+    for (m::IndexType c : workface[keys[f]].second)
     {
+      std::vector<m::IndexType> cell_faces;
       if (cell_to_face.count(c) > 0)
       {
         cell_faces = cell_to_face[c];
       }
-      cell_faces.push_back(f);
       cellFaceCount += 1;
+      cell_faces.push_back(f);
       cell_to_face[c] = cell_faces;
     }
   }
 
   // Step 4b. Put cell-to-face relation into output arrays.
   c2f = new m::IndexType[cellFaceCount];
+  c2n = new m::IndexType[cellFaceCount];
   c2foffsets = new m::IndexType[cellcount + 1];
   cellFaceCount = 0;
 
-  for (int cellID = 0; cellID < cellcount; ++cellID)
+  for (IndexType cellID = 0; cellID < cellcount; ++cellID)
   {
     // For the current cell ID, set its type and value offset
     //  cellTypes[cellID] = m_cell_connectivity->getIDType(cellID);
@@ -198,6 +213,7 @@ bool initFaces(m::Mesh * m,
       for (int f = 0; f < thisCellFaceCount; ++f)
       {
         c2f[cellFaceCount + f] = faceIDs[f];
+        c2n[cellFaceCount + f] = otherSide(&f2c[2*faceIDs[f]], cellID);
       }
 
       // Maintain offset

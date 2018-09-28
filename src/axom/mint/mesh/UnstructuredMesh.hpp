@@ -677,10 +677,11 @@ public:
     int facecount = 0;
     IndexType * f2cdata = nullptr;
     IndexType * c2fdata = nullptr;
+    IndexType * c2ndata = nullptr;
     IndexType * c2foffsets = nullptr;
 
     bool retval = internal::initFaces(this, facecount, f2cdata,
-                                      c2fdata, c2foffsets);
+                                      c2fdata, c2ndata, c2foffsets);
 
     if (retval)
     {
@@ -704,8 +705,7 @@ public:
    */
   virtual IndexType getNumberOfFaces() const final override
   {
-    SLIC_ERROR( "NOT IMPLEMENTED!!!" );
-    return 0;
+    return m_cell_to_face->getNumberOfValues();
   }
 
   /*!
@@ -713,8 +713,18 @@ public:
    */
   virtual IndexType getFaceCapacity() const final override
   {
-    SLIC_ERROR( "NOT IMPLEMENTED!!!" );
-    return 0;
+    return m_cell_to_face->getValueCapacity();
+  }
+
+  /*!
+   * \brief Return the number of faces associated with the given cell.
+   *
+   * \param [in] cellID the ID of the cell in question.
+   */
+  virtual
+  IndexType getNumberOfCellFaces( IndexType cellID ) const final override
+  {
+    return m_cell_to_face->getNumberOfValuesForID(cellID);
   }
 
 /// @}

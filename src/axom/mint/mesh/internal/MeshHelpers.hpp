@@ -49,11 +49,13 @@ namespace m = ::axom::mint;
  *              with cellIDs at f2c[2*f] and f2c[2*f+1].
  * \param [out] c2f the relation between cell c and its n faces with faceIDs
  *              stored contiguously starting at c2f[c2foffsets[c]].
- * \param [out] c2foffsets the offset in c2f of the first face of each face.
+ * \param [out] c2n the relation between cell c and its n neighbors with
+ *              cellIDs stored contiguously starting at c2n[c2foffsets[c]].
+ * \param [out] c2foffsets the offset in c2f of the first face of each cell.
  *
  * \returns success true if each face has one or two incident cells.
  *
- * \note The three output arrays f2c, c2f, and c2foffsets are allocated
+ * \note The four output arrays f2c, c2f, c2n, and c2foffsets are allocated
  * in this routine if the routine is successful.  It is the caller's
  * responsibility to free this memory.  If the routine returned false,
  * the output arrays are set to nullptr and facecount is set to 0.
@@ -68,9 +70,10 @@ namespace m = ::axom::mint;
  * face relations, though it will give correct results for any Mesh.
  */
 bool initFaces(m::Mesh * m,
-               int & facecount,
+               IndexType & facecount,
                m::IndexType *& f2c,
                m::IndexType *& c2f,
+               m::IndexType *& c2n,
                m::IndexType *& c2foffsets);
 
 } /* namespace internal */
