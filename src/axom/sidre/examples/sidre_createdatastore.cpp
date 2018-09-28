@@ -427,7 +427,7 @@ void generate_blueprint(DataStore* ds) {
   // _blueprint_generate_save_end
 }
 
-#ifdef ENABLE_MPI
+#ifdef AXOM_USE_MPI
 void generate_spio_blueprint(DataStore* ds) {
   // _blueprint_spio_toplevel_start
   DataStore cds;
@@ -506,7 +506,7 @@ int main(int argc, char** argv)
   DataStore* bds = create_tiny_datastore();
   generate_blueprint(bds);
 
-#ifdef ENABLE_MPI
+#ifdef AXOM_USE_MPI
   DataStore* sds = create_tiny_datastore();
   MPI_Init(&argc, &argv);
   generate_spio_blueprint(sds);
