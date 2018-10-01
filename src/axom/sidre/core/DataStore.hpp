@@ -383,6 +383,34 @@ public:
   IndexType getNextValidAttributeIndex(IndexType idx) const;
 
 //@}
+
+  /*!
+   * \brief Generate a Conduit Blueprint index based on a mesh in stored in
+   *        this DataStore.
+   *
+   * If this DataStore contains data for a mesh that adheres to Conduit's
+   * Blueprint format, this method genearates a Blueprint index and stores
+   * it at a specified locaiton within this DataStore.  It uses as input a
+   * path to a representative domain from that mesh.
+   *
+   * The domain must be held in a Group stored in this DataStore.  The location
+   * of this Group is specified by the domain_path argument.  The generated
+   * Blueprint index will be stored in a newly-created Group that will be
+   * located at the path specified by the index_path argument.
+   *
+   * \param domain_path      path to a domain stored in the Blueprint format
+   * \param mesh_name        name for the mesh to be described
+   * \param index_path       path where the Blueprint index will be written
+   *                         within this DataStore
+   * \param num_domains      number of domains in the mesh
+   *
+   * \return true if the Blueprint index is successfully generated.
+   */
+  bool generateBlueprintIndex(const std::string& domain_path,
+                              const std::string& mesh_name,
+                              const std::string& index_path,
+                              int num_domains);
+
 //----------------
 
 

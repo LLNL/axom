@@ -974,6 +974,47 @@ void IOManager::writeViewToRootFileAtPath(sidre::View* view,
 #endif /* AXOM_USE_HDF5 */
 }
 
+void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
+                                              const std::string& domain_path,
+                                              const std::string& file_name,
+                                              const std::string& mesh_name)
+{
+#ifdef AXOM_USE_HDF5
+  hid_t root_file_id =
+    conduit::relay::io::hdf5_open_file_for_read_write(file_name);
+
+  SLIC_ASSERT(root_file_id >= 0);
+
+  std::string bp_index("blueprint_index/" + mesh_name);
+
+  bool success = datastore->generateBlueprintIndex(domain_path,
+                                                   mesh_name, bp_index,
+                                                   m_comm_size);
+
+  if (success)
+  {
+    Group* ind_group = datastore->getRoot()->getGroup("blueprint_index");
+    writeGroupToRootFile(ind_group, file_name);
+  }
+  else
+  {
+    SLIC_WARNING("DataStore failed to generate Blueprint Index "
+                 <<"based on group at path "
+                 << domain_path);
+  }
+
+#else
+  AXOM_DEBUG_VAR(datastore);
+  AXOM_DEBUG_VAR(domain_path);
+  AXOM_DEBUG_VAR(file_name);
+  AXOM_DEBUG_VAR(mesh_name);
+
+  SLIC_WARNING("Axom configured without hdf5. "
+               <<"writeBlueprintIndexToRootFile() only currently implemented "
+               <<"for 'sidre_hdf5' protocol. ");
+#endif /* AXOM_USE_HDF5 */
+}
+
 
 
 } /* end namespace sidre */

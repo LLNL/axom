@@ -294,15 +294,15 @@ TEST(sidre_buffer,buffer_allocate)
 // Specifically test for successful reallocation-to-zero-elements
 TEST(sidre_databuffer,buffer_reallocate_zero_elements)
 {
-  DataStore * ds = new DataStore();
+  DataStore* ds = new DataStore();
 
   DataTypeId tid = getTypeID(SIDRE_INT_ID);
   int eltsize = sizeof(int);
   int eltcount = 200;
 
-  Buffer * buf = ds->createBuffer();
+  Buffer* buf = ds->createBuffer();
   buf->describe(tid, eltcount)->allocate();
-  
+
   EXPECT_TRUE(buf->isAllocated());
   EXPECT_TRUE(buf->isDescribed());
   EXPECT_EQ(tid, buf->getTypeID());
@@ -312,7 +312,7 @@ TEST(sidre_databuffer,buffer_reallocate_zero_elements)
 
   eltcount = 3;
   buf->reallocate(eltcount);
-  
+
   EXPECT_TRUE(buf->isAllocated());
   EXPECT_TRUE(buf->isDescribed());
   EXPECT_EQ(tid, buf->getTypeID());
@@ -322,7 +322,7 @@ TEST(sidre_databuffer,buffer_reallocate_zero_elements)
 
   eltcount = 0;
   buf->reallocate(eltcount);
-  
+
   EXPECT_TRUE(buf->isAllocated());
   EXPECT_TRUE(buf->isDescribed());
   EXPECT_EQ(tid, buf->getTypeID());
@@ -332,7 +332,7 @@ TEST(sidre_databuffer,buffer_reallocate_zero_elements)
 
   eltcount = 5;
   buf->reallocate(eltcount);
-  
+
   EXPECT_TRUE(buf->isAllocated());
   EXPECT_TRUE(buf->isDescribed());
   EXPECT_EQ(tid, buf->getTypeID());

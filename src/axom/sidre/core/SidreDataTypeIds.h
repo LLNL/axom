@@ -30,7 +30,7 @@
 // Libraries and other axom headers
 #include "conduit.h"
 
-#include <stdint.h>		/* for int64_t */
+#include <stdint.h>   /* for int64_t */
 
 typedef int64_t SIDRE_IndexType;
 
