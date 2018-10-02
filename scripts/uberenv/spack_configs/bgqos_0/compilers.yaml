@@ -4,7 +4,7 @@ compilers:
     extra_rpaths: []
     flags: {}
     modules: []
-    operating_system: rhel7 <----- what's this for bgq?
+    operating_system: cnk
     paths:
       cc:  /collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/llnl/bin/mpiclang
       cxx: /collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/llnl/bin/mpiclang++
@@ -17,7 +17,7 @@ compilers:
     extra_rpaths: []
     flags: {}
     modules: []
-    operating_system: rhel7 <----- what's this for bgq?
+    operating_system: cnk
     paths:
       cc:  /collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/llnl/bin/mpiclang
       cxx: /collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/llnl/bin/mpiclang++
