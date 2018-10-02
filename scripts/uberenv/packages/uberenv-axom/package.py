@@ -52,17 +52,20 @@ class UberenvAxom(Package):
 
     depends_on("hdf5~cxx~shared~fortran", when="+hdf5")
 
-    depends_on("conduit~shared") # needed so we can optionally use ^conduit@master
-    depends_on("conduit~shared+hdf5",when="+hdf5")
-    depends_on("conduit~shared~hdf5",when="~hdf5")
+    depends_on("conduit~shared+python",when="+python")
+    depends_on("conduit~shared~python",when="~python")
+    depends_on("conduit~shared+hdf5+python",when="+hdf5+python")
+    depends_on("conduit~shared~hdf5+python",when="~hdf5+python")
+    depends_on("conduit~shared+hdf5~python",when="+hdf5~python")
+    depends_on("conduit~shared~hdf5~python",when="~hdf5~python")
     
     depends_on("scr", when="+scr")
 
     # builds serial version of mfem that does not depend on Sidre
-    depends_on("mfem~mpi~gzstream",   when="+mfem")
+    depends_on("mfem~hypre~metis~mpi~gzstream",   when="+mfem")
 
     # optional tpl builds
-    depends_on("cmake@3.9.6",when="+cmake")
+    depends_on("cmake@3.9.6")
     if "darwin" in platform.system().lower():
         depends_on("mpich@3.0.4")
         depends_on("openssl@1.0.2j")
