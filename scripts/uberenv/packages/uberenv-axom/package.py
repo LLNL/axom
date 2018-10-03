@@ -42,6 +42,11 @@ class UberenvAxom(Package):
     # variants that allow us to winnow what TPLS we build
     variant('devtools', default=False, description="Build development tools (such as sphinx, uncrustify, etc)")
 
+    # use ~cmake to skip cmake build and use whatever cmake is in the
+    # users path 
+    # (given the pain of building cmake on BGQ, this is really on for BGQ)
+    variant('cmake',   default=True, description="Build cmake.")
+
     variant("python",   default=False, description="Build python")
     variant("mpi",      default=True, description="Build MPI support")
     variant("mfem",     default=True, description="Build mfem")
@@ -65,7 +70,7 @@ class UberenvAxom(Package):
     depends_on("mfem~hypre~metis~mpi~gzstream",   when="+mfem")
 
     # optional tpl builds
-    depends_on("cmake@3.9.6")
+    depends_on("cmake@3.9.6", when="+cmake")
     if "darwin" in platform.system().lower():
         depends_on("mpich@3.0.4")
         depends_on("openssl@1.0.2j")
