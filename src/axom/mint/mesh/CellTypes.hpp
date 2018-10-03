@@ -234,7 +234,6 @@ static constexpr CellInfo cell_info[ NUM_CELL_TYPES ] = {
   CELL_INFO( HEX27 )
 };
 
-
 /*!
  * \brief Return the underlying integer associated with the given CellType.
  *

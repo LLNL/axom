@@ -25,13 +25,15 @@
 
 #include "gtest/gtest.h"                             /* for TEST and EXPECT_* macros */
 
-#include <set>
 #include <sstream>
 #include <vector>
 
 namespace axom
 {
 namespace mint
+{
+
+namespace internal
 {
 
 struct MeshFaceTest
@@ -64,14 +66,18 @@ struct MeshFaceTest
   std::vector< IndexType > cellNeighbors;
 };
 
-std::vector<MeshFaceTest *> generateFaceTestCases()
+} /* end namespace internal */
+
+std::vector<internal::MeshFaceTest *> generateFaceTestCases()
 {
-  std::vector<MeshFaceTest *> tests;
+  std::vector<internal::MeshFaceTest *> tests;
 
   // Each test mesh in "Face relation tests.svg" is instantiated
   // and put into tests.
   constexpr int TWO_D = 2;
   constexpr int THREE_D = 3;
+  constexpr bool EXPECT_INIT_SUCCESS = true;
+  constexpr bool EXPECT_INIT_FAILURE = false;
 
   {
     // 1. tri  ===============================================================
@@ -82,8 +88,11 @@ std::vector<MeshFaceTest *> generateFaceTestCases()
   
     tri->appendNodes(trinodes, 3);
     tri->appendCells(tricells, 1);
-    tests.push_back(new MeshFaceTest("tri", tri, true, 3,
-                                     { 3 },  { -1, -1, -1 }));
+    tests.push_back(new internal::MeshFaceTest
+                    // test name, test pointer, should init faces, face count,
+                    ("tri", tri, EXPECT_INIT_SUCCESS, 3,
+                     // per-cell face count, neighbor cells for each cell.
+                     { 3 },  { -1, -1, -1 }));
   }
 
   {
@@ -96,12 +105,14 @@ std::vector<MeshFaceTest *> generateFaceTestCases()
   
     twotris->appendNodes(twotrisnodes, 4);
     twotris->appendCells(twotriscells, 2);
-    // MeshFaceTest ctor gets test name, test pointer, should init faces,
-    tests.push_back(new MeshFaceTest("two tris", twotris, true,
-                                     // total face count, per-cell face count,
-                                     5, { 3, 3 },
-                                     // neighbor cells for each cell.
-                                     { -1, 1, -1, -1, -1, 0 }));
+    tests.push_back(new internal::MeshFaceTest
+                    // test name, test pointer, should init faces,
+                    ("two tris", twotris, EXPECT_INIT_SUCCESS,
+                     // total face count, per-cell face count,
+                     5, { 3, 3 },
+                     // neighbor cells for each cell.
+                     { -1,  1, -1,
+                       -1, -1,  0 }));
   }
 
   {
@@ -121,15 +132,18 @@ std::vector<MeshFaceTest *> generateFaceTestCases()
 
     thrqtri->appendNodes(thrqtrixs, thrqtriys, 8);
     thrqtri->appendCells(thrqtricells, 4, thrqtrioffs, thrqtritype);
-    // MeshFaceTest ctor gets test name, test pointer, should init faces,
-    tests.push_back(new MeshFaceTest("three quads and a tri", thrqtri, true,
-                                     // total face count, per-cell face count,
-                                     11, { 4, 4, 3, 4 },
-                                     // neighbors at each face of the cells
-                                     { -1,  2,  1, -1,
-                                        0,  3, -1, -1,
-                                       -1,  3,  0,
-                                        2, -1, -1,  1 }));
+    tests.push_back(new internal::MeshFaceTest
+                    // test name, test pointer,
+                    ("three quads and a tri", thrqtri,
+                     // should init faces,
+                     EXPECT_INIT_SUCCESS,
+                     // total face count, per-cell face count,
+                     11, { 4, 4, 3, 4 },
+                     // neighbors at each face of the cells
+                     { -1,  2,  1, -1,
+                        0,  3, -1, -1,
+                       -1,  3,  0,
+                        2, -1, -1,  1 }));
   }
 
   {
@@ -145,17 +159,18 @@ std::vector<MeshFaceTest *> generateFaceTestCases()
   
     fourtris->appendNodes(fourtrisxs, fourtrisys, 6);
     fourtris->appendCells(fourtriscells, 4);
-    // MeshFaceTest ctor gets test name, test pointer,
-    tests.push_back(new MeshFaceTest("four tris, with a hole", fourtris,
-                                     // should init faces, total face count,
-                                     true, 10,
-                                     // per-cell face count,
-                                     { 3, 3, 3, 3 },
-                                     // neighbors at each face of each cell.
-                                     { -1, -1,  1,
-                                        0,  3, -1,
-                                       -1, -1, -1,
-                                       -1, -1,  1 }));
+    tests.push_back(new internal::MeshFaceTest
+                    // test name, test pointer,
+                    ("four tris, with a hole", fourtris,
+                     // should init faces, total face count,
+                     EXPECT_INIT_SUCCESS, 10,
+                     // per-cell face count,
+                     { 3, 3, 3, 3 },
+                     // neighbors at each face of each cell.
+                     { -1, -1,  1,
+                        0,  3, -1,
+                       -1, -1, -1,
+                       -1, -1,  1 }));
   }
 
   {
@@ -167,12 +182,15 @@ std::vector<MeshFaceTest *> generateFaceTestCases()
   
     threeDtri->appendNodes(threeDtrinodes, 3);
     threeDtri->appendCells(threeDtricells, 1);
-    // MeshFaceTest ctor gets test name, test pointer, should init faces,
-    tests.push_back(new MeshFaceTest("one 3D tri", threeDtri, true,
-                                     // total face count, per-cell face count,
-                                     3, { 3 },
-                                     // neighbors at each face of each cell.
-                                     { -1, -1, -1 }));
+    tests.push_back(new internal::MeshFaceTest
+                    // test name, test pointer,
+                    ("one 3D tri", threeDtri,
+                     // should init faces,
+                     EXPECT_INIT_SUCCESS,
+                     // total face count, per-cell face count,
+                     3, { 3 },
+                     // neighbors at each face of each cell.
+                     { -1, -1, -1 }));
   }
 
   {
@@ -191,13 +209,16 @@ std::vector<MeshFaceTest *> generateFaceTestCases()
 
     qandtri->appendNodes(qandtrixs, qandtriys, qandtrizs, 7);
     qandtri->appendCells(qandtricells, 2, qandtrioffs, qandtritype);
-    // MeshFaceTest ctor gets test name, test pointer, should init faces,
-    tests.push_back(new MeshFaceTest("tri separated from quad", qandtri, true,
-                                     // total face count, per-cell face count,
-                                     7, { 3, 4 },
-                                     // neighbors at each face of the cells
-                                     { -1, -1, -1,
-                                       -1, -1, -1, -1 }));
+    tests.push_back(new internal::MeshFaceTest
+                    // test name, test pointer,
+                    ("tri separated from quad", qandtri,
+                     // should init faces,
+                     EXPECT_INIT_SUCCESS,
+                     // total face count, per-cell face count,
+                     7, { 3, 4 },
+                     // neighbors at each face of the cells
+                     { -1, -1, -1,
+                       -1, -1, -1, -1 }));
   }
 
   {
@@ -211,15 +232,18 @@ std::vector<MeshFaceTest *> generateFaceTestCases()
   
     tettris->appendNodes(tettrisxs, tettrisys, tettriszs, 4);
     tettris->appendCells(tettriscells, 4);
-    // MeshFaceTest ctor gets test name, test pointer, should init faces,
-    tests.push_back(new MeshFaceTest("tet from four tris", tettris, true,
-                                     // total face count, per-cell face count,
-                                     6, { 3, 3, 3, 3 },
-                                     // neighbors at each face of each cell.
-                                     { 3, 2, 1,
-                                       0, 2, 3,
-                                       0, 3, 1,
-                                       0, 1, 2 }));
+    tests.push_back(new internal::MeshFaceTest
+                    // test name, test pointer,
+                    ("tet from four tris", tettris,
+                     // should init faces,
+                     EXPECT_INIT_SUCCESS,
+                     // total face count, per-cell face count,
+                     6, { 3, 3, 3, 3 },
+                     // neighbors at each face of each cell.
+                     { 3, 2, 1,
+                       0, 2, 3,
+                       0, 3, 1,
+                       0, 1, 2 }));
   }
 
   {
@@ -238,17 +262,20 @@ std::vector<MeshFaceTest *> generateFaceTestCases()
   
     hexquads->appendNodes(hexquadsxs, hexquadsys, hexquadszs, 8);
     hexquads->appendCells(hexquadscells, 6);
-    // MeshFaceTest ctor gets test name, test pointer, should init faces,
-    tests.push_back(new MeshFaceTest("hex from six quads", hexquads, true,
-                                     // total face count, per-cell face count,
-                                     12, { 4, 4, 4, 4, 4, 4 },
-                                     // neighbors at each face of each cell.
-                                     { 4, 3, 2, 1,
-                                       0, 2, 5, 4,
-                                       0, 3, 5, 1,
-                                       0, 4, 5, 2,
-                                       0, 1, 5, 3,
-                                       1, 2, 3, 4 }));
+    tests.push_back(new internal::MeshFaceTest
+                    // test name, test pointer,
+                    ("hex from six quads", hexquads,
+                     // should init faces,
+                     EXPECT_INIT_SUCCESS,
+                     // total face count, per-cell face count,
+                     12, { 4, 4, 4, 4, 4, 4 },
+                     // neighbors at each face of each cell.
+                     { 4, 3, 2, 1,
+                       0, 2, 5, 4,
+                       0, 3, 5, 1,
+                       0, 4, 5, 2,
+                       0, 1, 5, 3,
+                       1, 2, 3, 4 }));
   }
 
   {
@@ -270,16 +297,17 @@ std::vector<MeshFaceTest *> generateFaceTestCases()
 
     pyr->appendNodes(pyrxs, pyrys, pyrzs, 5);
     pyr->appendCells(pyrcells, 5, pyroffs, pyrtype);
-    // MeshFaceTest ctor gets test name, test pointer, should init faces,
-    tests.push_back(new MeshFaceTest("hollow pyramid", pyr, true,
-                                     // total face count, per-cell face count,
-                                     8, { 4, 3, 3, 3, 3 },
-                                     // neighbors at each face of the cells
-                                     { 1, 2, 3, 4,
-                                       0, 2, 4,
-                                       0, 3, 1,
-                                       0, 4, 2,
-                                       0, 1, 3 }));
+    tests.push_back(new internal::MeshFaceTest
+                    // test name, test pointer, should init faces,
+                    ("hollow pyramid", pyr, EXPECT_INIT_SUCCESS,
+                     // total face count, per-cell face count,
+                     8, { 4, 3, 3, 3, 3 },
+                     // neighbors at each face of the cells
+                     { 1, 2, 3, 4,
+                       0, 2, 4,
+                       0, 3, 1,
+                       0, 4, 2,
+                       0, 1, 3 }));
   }
 
   {
@@ -294,13 +322,16 @@ std::vector<MeshFaceTest *> generateFaceTestCases()
   
     b2btris->appendNodes(b2btrisnodes, 3);
     b2btris->appendCells(b2btriscells, 2);
-    // MeshFaceTest ctor gets test name, test pointer, should init faces,
-    tests.push_back(new MeshFaceTest("back-to-back tris", b2btris, true,
-                                     // total face count, per-cell face count,
-                                     3, { 3, 3 },
-                                     // neighbors at each face of each cell.
-                                     { 1, 1, 1,
-                                       0, 0, 0 }));
+    tests.push_back(new internal::MeshFaceTest
+                    // test name, test pointer,
+                    ("back-to-back tris", b2btris,
+                     // should init faces,
+                     EXPECT_INIT_SUCCESS,
+                     // total face count, per-cell face count,
+                     3, { 3, 3 },
+                     // neighbors at each face of each cell.
+                     { 1, 1, 1,
+                       0, 0, 0 }));
   }
 
   {
@@ -322,14 +353,15 @@ std::vector<MeshFaceTest *> generateFaceTestCases()
 
     threeq->appendNodes(threeqxs, threeqys, threeqzs, 7);
     threeq->appendCells(threeqcells, 3, threeqoffs, threeqtype);
-    // MeshFaceTest ctor gets test name, test pointer, should init faces,
-    tests.push_back(new MeshFaceTest("box corner", threeq, true,
-                                     // total face count, per-cell face count,
-                                     9, { 4, 4, 4 },
-                                     // neighbors at each face of the cells
-                                     { -1,  1,  2, -1,
-                                       -1, -1,  2,  0,
-                                        1, -1, -1,  0 }));
+    tests.push_back(new internal::MeshFaceTest
+                    // test name, test pointer, should init faces,
+                    ("box corner", threeq, EXPECT_INIT_SUCCESS,
+                     // total face count, per-cell face count,
+                     9, { 4, 4, 4 },
+                     // neighbors at each face of the cells
+                     { -1,  1,  2, -1,
+                       -1, -1,  2,  0,
+                        1, -1, -1,  0 }));
   }
 
   {
@@ -350,17 +382,18 @@ std::vector<MeshFaceTest *> generateFaceTestCases()
 
     twoqtwot->appendNodes(twoqtwotxs, twoqtwotys, twoqtwotzs, 7);
     twoqtwot->appendCells(twoqtwotcells, 4, twoqtwotoffs, twoqtwottype);
-    // MeshFaceTest ctor gets test name, test pointer,
-    tests.push_back(new MeshFaceTest("box corner (tris and quads)", twoqtwot,
-                                     // should init faces,
-                                     true,
-                                     // total face count, per-cell face count,
-                                     10, { 3, 4, 4, 3 },
-                                     // neighbors at each face of the cells
-                                     { -1,  1,  3,
-                                       -1, -1,  2, 0,
-                                        1, -1, -1, 3,
-                                       -1,  0,  2 }));
+    tests.push_back(new internal::MeshFaceTest
+                    // test name, test pointer,
+                    ("box corner (tris and quads)", twoqtwot,
+                     // should init faces,
+                     EXPECT_INIT_SUCCESS,
+                     // total face count, per-cell face count,
+                     10, { 3, 4, 4, 3 },
+                     // neighbors at each face of the cells
+                     { -1,  1,  3,
+                       -1, -1,  2, 0,
+                        1, -1, -1, 3,
+                       -1,  0,  2 }));
   }
 
   {
@@ -381,15 +414,18 @@ std::vector<MeshFaceTest *> generateFaceTestCases()
 
     oprism->appendNodes(oprismxs, oprismys, oprismzs, 6);
     oprism->appendCells(oprismcells, 4, oprismoffs, oprismtype);
-    // MeshFaceTest ctor gets test name, test pointer, should init faces,
-    tests.push_back(new MeshFaceTest("open prism (quads, tris)", oprism, true,
-                                     // total face count, per-cell face count,
-                                     10, { 4, 3, 3, 4 },
-                                     // neighbors at each face of the cells
-                                     { -1,  1, -1,  3,
-                                       -1,  2,  0,
-                                        3, -1,  1,
-                                        2, -1,  0, -1}));
+    tests.push_back(new internal::MeshFaceTest
+                    // test name, test pointer,
+                    ("open prism (quads, tris)", oprism,
+                     // should init faces,
+                     EXPECT_INIT_SUCCESS,
+                     // total face count, per-cell face count,
+                     10, { 4, 3, 3, 4 },
+                     // neighbors at each face of the cells
+                     { -1,  1, -1,  3,
+                       -1,  2,  0,
+                        3, -1,  1,
+                        2, -1,  0, -1}));
   }
 
   {
@@ -403,15 +439,18 @@ std::vector<MeshFaceTest *> generateFaceTestCases()
   
     crackedtet->appendNodes(crackedtetxs, crackedtetys, crackedtetzs, 5);
     crackedtet->appendCells(crackedtetcells, 4);
-    // MeshFaceTest ctor gets test name, test pointer, should init faces,
-    tests.push_back(new MeshFaceTest("cracked tet", crackedtet, true,
-                                     // total face count, per-cell face count,
-                                     8, { 3, 3, 3, 3 },
-                                     // neighbors at each face of each cell.
-                                     { 3,  2,  1,
-                                       0, -1, -1,
-                                       0,  3, -1,
-                                       0, -1,  2 }));
+    tests.push_back(new internal::MeshFaceTest
+                    // test name, test pointer,
+                    ("cracked tet", crackedtet,
+                     // should init faces,
+                     EXPECT_INIT_SUCCESS,
+                     // total face count, per-cell face count,
+                     8, { 3, 3, 3, 3 },
+                     // neighbors at each face of each cell.
+                     { 3,  2,  1,
+                       0, -1, -1,
+                       0,  3, -1,
+                       0, -1,  2 }));
   }
 
   {
@@ -434,16 +473,19 @@ std::vector<MeshFaceTest *> generateFaceTestCases()
 
     crackedpyr->appendNodes(crackedpyrxs, crackedpyrys, crackedpyrzs, 6);
     crackedpyr->appendCells(crackedpyrcells, 5, crackedpyroffs, crackedpyrtype);
-    // MeshFaceTest ctor gets test name, test pointer, should init faces,
-    tests.push_back(new MeshFaceTest("cracked pyramid", crackedpyr, true,
-                                     // total face count, per-cell face count,
-                                     10, { 4, 3, 3, 3, 3 },
-                                     // neighbors at each face of the cells
-                                     { 1, 2, 3, 4,
-                                       0, -1,  4,
-                                       0, -1, -1,
-                                       0,  4, -1,
-                                       0,  1,  3 }));
+    tests.push_back(new internal::MeshFaceTest
+                    // test name, test pointer,
+                    ("cracked pyramid", crackedpyr,
+                     // should init faces,
+                     EXPECT_INIT_SUCCESS,
+                     // total face count, per-cell face count,
+                     10, { 4, 3, 3, 3, 3 },
+                     // neighbors at each face of the cells
+                     { 1, 2, 3, 4,
+                       0, -1,  4,
+                       0, -1, -1,
+                       0,  4, -1,
+                       0,  1,  3 }));
   }
 
   {
@@ -459,15 +501,18 @@ std::vector<MeshFaceTest *> generateFaceTestCases()
   
     notmanf->appendNodes(notmanfxs, notmanfys, notmanfzs, 5);
     notmanf->appendCells(notmanfcells, 3);
-    // MeshFaceTest ctor gets test name, test pointer, should NOT init faces,
-    tests.push_back(new MeshFaceTest("not a manifold", notmanf, false,
-                                     // total face count, per-cell face count,
-                                     7, { 3, 3, 3 },
-                                     // neighbors at each face of each cell
-                                     // can't be properly expressed.
-                                     { -1, -1, -1,
-                                       -1, -1, -1,
-                                       -1, -1, -1 }));
+    tests.push_back(new internal::MeshFaceTest
+                    // test name, test pointer,
+                    ("not a manifold", notmanf,
+                     // should NOT init faces,
+                     EXPECT_INIT_FAILURE,
+                     // total face count, per-cell face count,
+                     7, { 3, 3, 3 },
+                     // neighbors at each face of each cell
+                     // can't be properly expressed.
+                     { -1, -1, -1,
+                       -1, -1, -1,
+                       -1, -1, -1 }));
   }
 
   {
@@ -489,19 +534,20 @@ std::vector<MeshFaceTest *> generateFaceTestCases()
 
     egreg->appendNodes(egregxs, egregys, egregzs, 9);
     egreg->appendCells(egregcells, 5, egregoffs, egregtype);
-    // MeshFaceTest ctor gets test name, test pointer,
-    tests.push_back(new MeshFaceTest("egregiously not a manifold", egreg,
-                                     //  should NOT init faces,
-                                     false,
-                                     // total face count, per-cell face count,
-                                     10, { 4, 3, 3, 3, 3 },
-                                     // neighbors at each face of each cell
-                                     // can't be properly expressed.
-                                     { -1, -1, -1, -1,
-                                       -1, -1, -1,
-                                       -1, -1, -1, -1,
-                                       -1, -1, -1,
-                                       -1, -1, -1 }));
+    tests.push_back(new internal::MeshFaceTest
+                    // test name, test pointer,
+                    ("egregiously not a manifold", egreg,
+                     //  should NOT init faces,
+                     EXPECT_INIT_FAILURE,
+                     // total face count, per-cell face count,
+                     10, { 4, 3, 3, 3, 3 },
+                     // neighbors at each face of each cell
+                     // can't be properly expressed.
+                     { -1, -1, -1, -1,
+                       -1, -1, -1,
+                       -1, -1, -1, -1,
+                       -1, -1, -1,
+                       -1, -1, -1 }));
   }
 
   {
@@ -515,12 +561,13 @@ std::vector<MeshFaceTest *> generateFaceTestCases()
   
     tet->appendNodes(tetxs, tetys, tetzs, 4);
     tet->appendCells(tetcells, 1);
-    // MeshFaceTest ctor gets test name, test pointer, should init faces,
-    tests.push_back(new MeshFaceTest("3D tet", tet, true,
-                                     // total face count, per-cell face count,
-                                     4, { 4 },
-                                     // neighbors at each face of each cell.
-                                     { -1, -1, -1, -1 }));
+    tests.push_back(new internal::MeshFaceTest
+                    // test name, test pointer, should init faces,
+                    ("3D tet", tet, EXPECT_INIT_SUCCESS,
+                     // total face count, per-cell face count,
+                     4, { 4 },
+                     // neighbors at each face of each cell.
+                     { -1, -1, -1, -1 }));
   }
 
   {
@@ -535,13 +582,14 @@ std::vector<MeshFaceTest *> generateFaceTestCases()
   
     hexs->appendNodes(hexsxs, hexsys, hexszs, 12);
     hexs->appendCells(hexscells, 2);
-    // MeshFaceTest ctor gets test name, test pointer, should init faces,
-    tests.push_back(new MeshFaceTest("two hexs", hexs, true,
-                                     // total face count, per-cell face count,
-                                     11, { 6, 6 },
-                                     // neighbors at each face of each cell.
-                                     { -1, -1,  1, -1, -1, -1,
-                                       -1, -1, -1, -1,  0, -1 }));
+    tests.push_back(new internal::MeshFaceTest
+                    // test name, test pointer, should init faces,
+                    ("two hexs", hexs, EXPECT_INIT_SUCCESS,
+                     // total face count, per-cell face count,
+                     11, { 6, 6 },
+                     // neighbors at each face of each cell.
+                     { -1, -1,  1, -1, -1, -1,
+                       -1, -1, -1, -1,  0, -1 }));
   }
 
   {
@@ -557,14 +605,15 @@ std::vector<MeshFaceTest *> generateFaceTestCases()
   
     hexs3->appendNodes(hexs3xs, hexs3ys, hexs3zs, 14);
     hexs3->appendCells(hexs3cells, 3);
-    // MeshFaceTest ctor gets test name, test pointer, should init faces,
-    tests.push_back(new MeshFaceTest("three hexs", hexs3, true,
-                                     // total face count, per-cell face count,
-                                     15, { 6, 6, 6 },
-                                     // neighbors at each face of each cell.
-                                     { 2, -1,  1, -1, -1, -1,
-                                       2, -1, -1, -1,  0, -1,
-                                      -1, -1, -1, -1,  0,  1 }));
+    tests.push_back(new internal::MeshFaceTest
+                    // test name, test pointer, should init faces,
+                    ("three hexs", hexs3, EXPECT_INIT_SUCCESS,
+                     // total face count, per-cell face count,
+                     15, { 6, 6, 6 },
+                     // neighbors at each face of each cell.
+                     { 2, -1,  1, -1, -1, -1,
+                       2, -1, -1, -1,  0, -1,
+                      -1, -1, -1, -1,  0,  1 }));
   }
 
   {
@@ -579,13 +628,16 @@ std::vector<MeshFaceTest *> generateFaceTestCases()
   
     mtet->appendNodes(mtetxs, mtetys, mtetzs, 4);
     mtet->appendCells(mtetcells, 2);
-    // MeshFaceTest ctor gets test name, test pointer, should init faces,
-    tests.push_back(new MeshFaceTest("two \"back-to-back\" tets", mtet, true,
-                                     // total face count, per-cell face count,
-                                     4, { 4, 4 },
-                                     // neighbors at each face of each cell.
-                                     { 1, 1, 1, 1,
-                                       0, 0, 0, 0 }));
+    tests.push_back(new internal::MeshFaceTest
+                    // test name, test pointer,
+                    ("two \"back-to-back\" tets", mtet,
+                     // should init faces,
+                     EXPECT_INIT_SUCCESS,
+                     // total face count, per-cell face count,
+                     4, { 4, 4 },
+                     // neighbors at each face of each cell.
+                     { 1, 1, 1, 1,
+                       0, 0, 0, 0 }));
   }
 
   {
@@ -601,17 +653,18 @@ std::vector<MeshFaceTest *> generateFaceTestCases()
   
     badtets->appendNodes(badtetsxs, badtetsys, badtetszs, 6);
     badtets->appendCells(badtetscells, 3);
-    // MeshFaceTest ctor gets test name, test pointer,
-    tests.push_back(new MeshFaceTest("non-manifold tet mesh", badtets,
-                                     // should NOT init faces,
-                                     false,
-                                     // total face count, per-cell face count,
-                                     10, { 4, 4, 4 },
-                                     // neighbors at each face of each cell
-                                     // can't be properly expressed.
-                                     { -1, -1, -1, -1,
-                                       -1, -1, -1, -1,
-                                       -1, -1, -1, -1 }));
+    tests.push_back(new internal::MeshFaceTest
+                    // test name, test pointer,
+                    ("non-manifold tet mesh", badtets,
+                     // should NOT init faces,
+                     EXPECT_INIT_FAILURE,
+                     // total face count, per-cell face count,
+                     10, { 4, 4, 4 },
+                     // neighbors at each face of each cell can't be properly
+                     // expressed.
+                     { -1, -1, -1, -1,
+                       -1, -1, -1, -1,
+                       -1, -1, -1, -1 }));
   }
 
   return tests;
@@ -646,7 +699,7 @@ bool verifyNeighbors(IndexType facecount,
   return true;
 }
 
-void runMeshFaceTest(MeshFaceTest * t)
+void runMeshFaceTest(internal::MeshFaceTest * t)
 {
   int facecount = -1;
   IndexType * f2c = nullptr;
@@ -737,33 +790,36 @@ void runMeshFaceTest(MeshFaceTest * t)
  * In general, the steps are
  * 1. generate a test mesh with some pre-written answers
  *    1. the mesh itself
- *    2. the number of faces for each cell and the mesh's total number of faces
+ *    2. the number of faces for each cell and the mesh's total number of
+ *       faces
  *    3. the mesh's cell-to-cell neighbor relation
  * 2. run axom::mint::internal::initFaces
  * 3. from the face-cell and cell-face relations, generate the cell-cell
  *    neighbor relation
- * 4. make sure the entire mesh and each of its cells has the right number of faces
+ * 4. make sure the entire mesh and each of its cells has the right number
+ *    of faces
  * 5. make sure each cell has the right neighbors
  * 6. clean up.
  *
- * The function std::vector<MeshFaceTest> generateFaceTestCases() will produce
- * mesh face test cases corresponding to the figures in the file
- * "Face relation tests.svg" along with the test answers (step 1 above).
+ * The function std::vector<internal::MeshFaceTest> generateFaceTestCases()
+ * will produce mesh face test cases corresponding to the figures in the file
+ * mint_mesh_face_relation.svg along with the test answers (step 1 above).
  *
- * The function void runMeshFaceTest(MeshFaceTest *) will call initFaces on
- * the test mesh, generate the neighbor relation, and verify the face counts
- * and neighbor relation as scoped tests. (steps 2--5 above).
+ * The function void runMeshFaceTest(internal::MeshFaceTest *) will call
+ * internal::initFaces() on the test mesh, generate the neighbor relation,
+ * and verify the face counts and neighbor relation as scoped tests
+ * (steps 2--6 above).
  *
- * The driver for all the mesh face relation tests, calling generateTestCase,
- * runMeshFaceTest, and cleaning up, is the TEST function below.
+ * The driver for all the mesh face relation tests, calling
+ * generateTestCase() and runMeshFaceTest(), is the TEST function below.
  */
 
 TEST( mint_mesh_face_relation, correct_construction )
 {
-  std::vector<axom::mint::MeshFaceTest *> tests =
+  std::vector<axom::mint::internal::MeshFaceTest *> tests =
     axom::mint::generateFaceTestCases();
 
-  for (axom::mint::MeshFaceTest * t : tests)
+  for (axom::mint::internal::MeshFaceTest * t : tests)
   {
     axom::mint::runMeshFaceTest(t);
     delete t;

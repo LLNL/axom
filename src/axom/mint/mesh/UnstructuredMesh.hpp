@@ -691,11 +691,11 @@ public:
 
       m_cell_to_face = new CellToFaceConnectivity(SEGMENT);
       m_cell_to_face->appendM(c2fdata, getNumberOfCells(), c2foffsets);
-
-      delete [] f2cdata;
-      delete [] c2fdata;
-      delete [] c2foffsets;
     }
+
+    delete [] f2cdata;
+    delete [] c2fdata;
+    delete [] c2foffsets;
 
     return retval;
   }

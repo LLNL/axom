@@ -39,8 +39,6 @@ inline int dim( const double* AXOM_NOT_USED(x),
   return ( ( z != nullptr ) ? 3 : ( (y != nullptr ) ? 2 : 1 ) );
 }
 
-// namespace m = ::axom::mint;
-
 /*! \brief Record a Mesh's face-to-cell and cell-to-face relations.
  *
  * \param [in] m pointer to a Mesh.
