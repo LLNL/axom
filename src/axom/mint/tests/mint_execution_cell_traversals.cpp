@@ -21,7 +21,7 @@
 // Mint includes
 #include "axom/mint/config.hpp"              // mint compile-time definitions
 #include "axom/mint/execution/policy.hpp"    // mint execution policies/traits
-#include "axom/mint/execution/interface.hpp" // mint::for_all()
+#include "axom/mint/execution/interface.hpp" // for_all()
 
 // Slic includes
 #include "axom/slic.hpp" // for SLIC macros
@@ -31,10 +31,10 @@
 // gtest includes
 #include "gtest/gtest.h" // for gtest
 
-// namespace aliases
-namespace mint      = axom::mint;
-namespace policy    = mint::policy;
-namespace utilities = axom::utilities;
+namespace axom
+{
+namespace mint
+{
 
 //------------------------------------------------------------------------------
 // HELPER METHODS
@@ -47,12 +47,10 @@ void check_for_all_cells_idx( int dimension )
 {
   SLIC_INFO( "dimension=" << dimension );
   SLIC_INFO( "checking [for_all_cells_index] policy=" <<
-             mint::policy_traits< ExecPolicy >::name() << " " <<
+             policy_traits< ExecPolicy >::name() << " " <<
              "mesh_type=" << mesh_type_name< MeshType >::name() );
 
-  using IndexType = mint::IndexType;
-
-  constexpr int MAGIC_VAL = 42;
+  using IndexType = IndexType;
 
   const IndexType Ni = 20;
   const IndexType Nj = (dimension >= 2) ? Ni : -1;
@@ -60,23 +58,24 @@ void check_for_all_cells_idx( int dimension )
 
   const double lo[] = { -10, -10, -10 };
   const double hi[] = {  10,  10,  10 };
-  mint::UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
+  UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
 
-  mint::Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
+  Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
-  int* field = test_mesh->createField< int >( "c1", mint::CELL_CENTERED );
+  int* field = test_mesh->createField< int >( "c1", CELL_CENTERED );
 
-  mint::for_all_cells< ExecPolicy >(
-    test_mesh, AXOM_LAMBDA( IndexType cellIdx )
+  for_all_cells< ExecPolicy >( test_mesh, 
+    AXOM_LAMBDA( IndexType cellID )
     {
-      field[ cellIdx ] = MAGIC_VAL;
-    } );
+      field[ cellID ] = cellID;
+    }
+  );
 
   const IndexType numCells = test_mesh->getNumberOfCells();
-  for ( IndexType icell=0 ; icell < numCells ; ++icell )
+  for ( IndexType cellID = 0 ; cellID < numCells ; ++cellID )
   {
-    EXPECT_EQ( field[ icell ], MAGIC_VAL );
+    EXPECT_EQ( field[ cellID ], cellID );
   }
 
   delete test_mesh;
@@ -88,25 +87,25 @@ template < typename ExecPolicy, int MeshType >
 void check_for_all_cells_ij( )
 {
   SLIC_INFO( "checking [for_all_cells_ij] policy=" <<
-             mint::policy_traits< ExecPolicy >::name() << " " <<
+             policy_traits< ExecPolicy >::name() << " " <<
              "mesh_type=" << mesh_type_name< MeshType >::name() );
-  using IndexType = mint::IndexType;
+  using IndexType = IndexType;
 
   constexpr IndexType N = 20;
   const double lo[] = { -10, -10 };
   const double hi[] = {  10,  10 };
-  mint::UniformMesh uniform_mesh( lo, hi, N, N );
+  UniformMesh uniform_mesh( lo, hi, N, N );
 
   // STEP 0: create the test mesh
-  mint::Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
+  Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
   const IndexType numCells = test_mesh->getNumberOfCells();
 
-  IndexType* icoords = utilities::alloc< mint::IndexType >( numCells );
-  IndexType* jcoords = utilities::alloc< mint::IndexType >( numCells );
+  IndexType* icoords = utilities::alloc< IndexType >( numCells );
+  IndexType* jcoords = utilities::alloc< IndexType >( numCells );
 
-  mint::for_all_cells< ExecPolicy, mint::xargs::ij >( test_mesh,
+  for_all_cells< ExecPolicy, xargs::ij >( test_mesh,
                                                       AXOM_LAMBDA( IndexType
                                                                    cellIdx,
                                                                    IndexType i,
@@ -140,26 +139,26 @@ template < typename ExecPolicy, int MeshType >
 void check_for_all_cells_ijk( )
 {
   SLIC_INFO( "checking [for_all_cells_ijk] policy=" <<
-             mint::policy_traits< ExecPolicy >::name() << " " <<
+             policy_traits< ExecPolicy >::name() << " " <<
              "mesh_type=" << mesh_type_name< MeshType >::name() );
-  using IndexType = mint::IndexType;
+  using IndexType = IndexType;
 
   constexpr IndexType N = 20;
   const double lo[] = { -10, -10, -10 };
   const double hi[] = {  10,  10,  10 };
-  mint::UniformMesh uniform_mesh( lo, hi, N, N, N );
+  UniformMesh uniform_mesh( lo, hi, N, N, N );
 
   // STEP 0: create the test mesh
-  mint::Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
+  Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
   const IndexType numCells = test_mesh->getNumberOfCells();
 
-  IndexType* icoords = utilities::alloc< mint::IndexType >( numCells );
-  IndexType* jcoords = utilities::alloc< mint::IndexType >( numCells );
-  IndexType* kcoords = utilities::alloc< mint::IndexType >( numCells );
+  IndexType* icoords = utilities::alloc< IndexType >( numCells );
+  IndexType* jcoords = utilities::alloc< IndexType >( numCells );
+  IndexType* kcoords = utilities::alloc< IndexType >( numCells );
 
-  mint::for_all_cells< ExecPolicy, mint::xargs::ijk >( test_mesh,
+  for_all_cells< ExecPolicy, xargs::ijk >( test_mesh,
                                                        AXOM_LAMBDA( IndexType
                                                                     cellIdx,
                                                                     IndexType i,
@@ -200,10 +199,10 @@ void check_for_all_cell_nodes( int dimension )
 {
   SLIC_INFO( "dimension=" << dimension );
   SLIC_INFO( "checking [for_all_cells_index] policy=" <<
-             mint::policy_traits< ExecPolicy >::name() << " " <<
+             policy_traits< ExecPolicy >::name() << " " <<
              "mesh_type=" << mesh_type_name< MeshType >::name() );
 
-  using IndexType = mint::IndexType;
+  using IndexType = IndexType;
 
   const IndexType Ni = 20;
   const IndexType Nj = (dimension >= 2) ? Ni : -1;
@@ -211,44 +210,35 @@ void check_for_all_cell_nodes( int dimension )
 
   const double lo[] = { -10, -10, -10 };
   const double hi[] = {  10,  10,  10 };
-  mint::UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
+  UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
 
-  mint::Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
+  Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
   IndexType numCells        = test_mesh->getNumberOfCells();
-  IndexType numNodesPerCell = test_mesh->getNumberOfCellNodes();
-  IndexType* conn = utilities::alloc< IndexType >( numNodesPerCell*numCells );
+  IndexType* conn = utilities::alloc< IndexType >( MAX_NUM_NODES * numCells );
 
-  mint::for_all_cells< ExecPolicy, mint::xargs::nodeids >( test_mesh,
-                                                           AXOM_LAMBDA(
-                                                             IndexType cellIdx,
-                                                             const IndexType*
-                                                             ccon, IndexType N)
+  for_all_cells< ExecPolicy, xargs::nodeids >( test_mesh,
+    AXOM_LAMBDA( IndexType cellID, const IndexType* ccon, IndexType N)
     {
-
-      EXPECT_EQ( N, numNodesPerCell );
-
       for ( int i=0 ; i < N ; ++i )
       {
-        conn[ cellIdx * N + i ] = ccon[ i ];
+        conn[ cellID * MAX_NUM_NODES + i ] = ccon[ i ];
       } // END for all cell nodes
+    } 
+  );
 
-    } );
-
-  for ( IndexType icell=0 ; icell < numCells ; ++icell )
+  for ( IndexType cellID = 0 ; cellID < numCells ; ++cellID )
   {
-    const IndexType N = uniform_mesh.getNumberOfCellNodes( );
-    EXPECT_EQ( N, numNodesPerCell );
+    const IndexType N = test_mesh->getNumberOfCellNodes( cellID );
 
-    IndexType cellNodes[ 8 ];
-    uniform_mesh.getCellNodeIDs( icell, cellNodes );
+    IndexType cellNodes[ MAX_NUM_NODES ];
+    test_mesh->getCellNodeIDs( cellID, cellNodes );
 
     for ( int i=0 ; i < N ; ++i )
     {
-      EXPECT_EQ( conn[ icell * N + i ], cellNodes[ i ] );
+      EXPECT_EQ( conn[ cellID * MAX_NUM_NODES + i ], cellNodes[ i ] );
     }
-
   }  // END for all cells
 
   /* clean up */
@@ -264,10 +254,10 @@ void check_for_all_cell_faces( int dimension )
 {
   SLIC_INFO( "dimension=" << dimension );
   SLIC_INFO( "checking [for_all_cells_index] policy=" <<
-             mint::policy_traits< ExecPolicy >::name() << " " <<
+             policy_traits< ExecPolicy >::name() << " " <<
              "mesh_type=" << mesh_type_name< MeshType >::name() );
 
-  using IndexType = mint::IndexType;
+  using IndexType = IndexType;
 
   const IndexType Ni = 20;
   const IndexType Nj = (dimension >= 2) ? Ni : -1;
@@ -275,9 +265,9 @@ void check_for_all_cell_faces( int dimension )
 
   const double lo[] = { -10, -10, -10 };
   const double hi[] = {  10,  10,  10 };
-  mint::UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
+  UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
 
-  mint::Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
+  Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
   const IndexType numCells        = test_mesh->getNumberOfCells();
@@ -285,7 +275,7 @@ void check_for_all_cell_faces( int dimension )
   IndexType* cellFaces = 
                     utilities::alloc< IndexType >( numFacesPerCell * numCells );
 
-  mint::for_all_cells< ExecPolicy, mint::xargs::faceids >( test_mesh,
+  for_all_cells< ExecPolicy, xargs::faceids >( test_mesh,
     AXOM_LAMBDA( IndexType cellID, const IndexType* faces, IndexType N)
     {
       EXPECT_EQ( N, numFacesPerCell );
@@ -331,19 +321,21 @@ TEST( mint_execution_cell_traversals, for_all_cells_nodeids )
   {
 
     using seq_exec = policy::serial;
-    check_for_all_cell_nodes< seq_exec, mint::STRUCTURED_UNIFORM_MESH >(i);
-    check_for_all_cell_nodes< seq_exec, mint::STRUCTURED_CURVILINEAR_MESH >(i);
-    check_for_all_cell_nodes< seq_exec, mint::STRUCTURED_RECTILINEAR_MESH >(i);
-    check_for_all_cell_nodes< seq_exec, mint::UNSTRUCTURED_MESH >(i);
+    check_for_all_cell_nodes< seq_exec, STRUCTURED_UNIFORM_MESH >(i);
+    check_for_all_cell_nodes< seq_exec, STRUCTURED_CURVILINEAR_MESH >(i);
+    check_for_all_cell_nodes< seq_exec, STRUCTURED_RECTILINEAR_MESH >(i);
+    check_for_all_cell_nodes< seq_exec, UNSTRUCTURED_SINGLE_SHAPE_MESH >(i);
+    check_for_all_cell_nodes< seq_exec, UNSTRUCTURED_MIXED_SHAPE_MESH >(i);
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
     defined(RAJA_ENABLE_OPENMP)
 
     using omp_exec = policy::parallel_cpu;
-    check_for_all_cell_nodes< omp_exec, mint::STRUCTURED_UNIFORM_MESH >(i);
-    check_for_all_cell_nodes< omp_exec, mint::STRUCTURED_CURVILINEAR_MESH >(i);
-    check_for_all_cell_nodes< omp_exec, mint::STRUCTURED_RECTILINEAR_MESH >(i);
-    check_for_all_cell_nodes< omp_exec, mint::UNSTRUCTURED_MESH >(i);
+    check_for_all_cell_nodes< omp_exec, STRUCTURED_UNIFORM_MESH >(i);
+    check_for_all_cell_nodes< omp_exec, STRUCTURED_CURVILINEAR_MESH >(i);
+    check_for_all_cell_nodes< omp_exec, STRUCTURED_RECTILINEAR_MESH >(i);
+    check_for_all_cell_nodes< omp_exec, UNSTRUCTURED_SINGLE_SHAPE_MESH >(i);
+    check_for_all_cell_nodes< omp_exec, UNSTRUCTURED_MIXED_SHAPE_MESH >(i);
 
 #endif
 
@@ -351,11 +343,11 @@ TEST( mint_execution_cell_traversals, for_all_cells_nodeids )
     defined(RAJA_ENABLE_CUDA)
 
     using cuda_exec = policy::parallel_gpu;
-    check_for_all_cell_nodes< cuda_exec, mint::STRUCTURED_UNIFORM_MESH >(i);
-    check_for_all_cell_nodes< cuda_exec, mint::STRUCTURED_CURVILINEAR_MESH >(i);
-    check_for_all_cell_nodes< cuda_exec, mint::STRUCTURED_RECTILINEAR_MESH >(i);
-    check_for_all_cell_nodes< cuda_exec, mint::UNSTRUCTURED_MESH >(i);
-
+    check_for_all_cell_nodes< cuda_exec, STRUCTURED_UNIFORM_MESH >(i);
+    check_for_all_cell_nodes< cuda_exec, STRUCTURED_CURVILINEAR_MESH >(i);
+    check_for_all_cell_nodes< cuda_exec, STRUCTURED_RECTILINEAR_MESH >(i);
+    check_for_all_cell_nodes< cuda_exec, UNSTRUCTURED_SINGLE_SHAPE_MESH >(i);
+    check_for_all_cell_nodes< cuda_exec, UNSTRUCTURED_MIXED_SHAPE_MESH >(i);
 #endif
 
   } // END for all dimensions
@@ -368,17 +360,17 @@ TEST( mint_execution_cell_traversals, for_all_cells_faceids )
   {
 
     using seq_exec = policy::serial;
-    check_for_all_cell_faces< seq_exec, mint::STRUCTURED_UNIFORM_MESH >(i);
-    check_for_all_cell_faces< seq_exec, mint::STRUCTURED_CURVILINEAR_MESH >(i);
-    check_for_all_cell_faces< seq_exec, mint::STRUCTURED_RECTILINEAR_MESH >(i);
+    check_for_all_cell_faces< seq_exec, STRUCTURED_UNIFORM_MESH >(i);
+    check_for_all_cell_faces< seq_exec, STRUCTURED_CURVILINEAR_MESH >(i);
+    check_for_all_cell_faces< seq_exec, STRUCTURED_RECTILINEAR_MESH >(i);
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
     defined(RAJA_ENABLE_OPENMP)
 
     using omp_exec = policy::parallel_cpu;
-    check_for_all_cell_faces< omp_exec, mint::STRUCTURED_UNIFORM_MESH >(i);
-    check_for_all_cell_faces< omp_exec, mint::STRUCTURED_CURVILINEAR_MESH >(i);
-    check_for_all_cell_faces< omp_exec, mint::STRUCTURED_RECTILINEAR_MESH >(i);
+    check_for_all_cell_faces< omp_exec, STRUCTURED_UNIFORM_MESH >(i);
+    check_for_all_cell_faces< omp_exec, STRUCTURED_CURVILINEAR_MESH >(i);
+    check_for_all_cell_faces< omp_exec, STRUCTURED_RECTILINEAR_MESH >(i);
 
 #endif
 
@@ -386,9 +378,9 @@ TEST( mint_execution_cell_traversals, for_all_cells_faceids )
     defined(RAJA_ENABLE_CUDA)
 
     using cuda_exec = policy::parallel_gpu;
-    check_for_all_cell_faces< cuda_exec, mint::STRUCTURED_UNIFORM_MESH >(i);
-    check_for_all_cell_faces< cuda_exec, mint::STRUCTURED_CURVILINEAR_MESH >(i);
-    check_for_all_cell_faces< cuda_exec, mint::STRUCTURED_RECTILINEAR_MESH >(i);
+    check_for_all_cell_faces< cuda_exec, STRUCTURED_UNIFORM_MESH >(i);
+    check_for_all_cell_faces< cuda_exec, STRUCTURED_CURVILINEAR_MESH >(i);
+    check_for_all_cell_faces< cuda_exec, STRUCTURED_RECTILINEAR_MESH >(i);
 
 #endif
 
@@ -399,17 +391,17 @@ TEST( mint_execution_cell_traversals, for_all_cells_faceids )
 TEST( mint_execution_cell_traversals, for_all_cells_ij )
 {
   using seq_exec = policy::serial;
-  check_for_all_cells_ij< seq_exec, mint::STRUCTURED_UNIFORM_MESH >();
-  check_for_all_cells_ij< seq_exec, mint::STRUCTURED_CURVILINEAR_MESH >();
-  check_for_all_cells_ij< seq_exec, mint::STRUCTURED_RECTILINEAR_MESH >();
+  check_for_all_cells_ij< seq_exec, STRUCTURED_UNIFORM_MESH >();
+  check_for_all_cells_ij< seq_exec, STRUCTURED_CURVILINEAR_MESH >();
+  check_for_all_cells_ij< seq_exec, STRUCTURED_RECTILINEAR_MESH >();
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
   defined(RAJA_ENABLE_OPENMP)
 
   using omp_exec = policy::parallel_cpu;
-  check_for_all_cells_ij< omp_exec, mint::STRUCTURED_UNIFORM_MESH >();
-  check_for_all_cells_ij< omp_exec, mint::STRUCTURED_CURVILINEAR_MESH >();
-  check_for_all_cells_ij< omp_exec, mint::STRUCTURED_RECTILINEAR_MESH >();
+  check_for_all_cells_ij< omp_exec, STRUCTURED_UNIFORM_MESH >();
+  check_for_all_cells_ij< omp_exec, STRUCTURED_CURVILINEAR_MESH >();
+  check_for_all_cells_ij< omp_exec, STRUCTURED_RECTILINEAR_MESH >();
 
 #endif
 
@@ -417,9 +409,9 @@ TEST( mint_execution_cell_traversals, for_all_cells_ij )
   defined(RAJA_ENABLE_CUDA)
 
   using cuda_exec = policy::parallel_gpu;
-  check_for_all_cells_ij< cuda_exec, mint::STRUCTURED_UNIFORM_MESH >();
-  check_for_all_cells_ij< cuda_exec, mint::STRUCTURED_CURVILINEAR_MESH >();
-  check_for_all_cells_ij< cuda_exec, mint::STRUCTURED_RECTILINEAR_MESH >();
+  check_for_all_cells_ij< cuda_exec, STRUCTURED_UNIFORM_MESH >();
+  check_for_all_cells_ij< cuda_exec, STRUCTURED_CURVILINEAR_MESH >();
+  check_for_all_cells_ij< cuda_exec, STRUCTURED_RECTILINEAR_MESH >();
 
 #endif
 
@@ -429,17 +421,17 @@ TEST( mint_execution_cell_traversals, for_all_cells_ij )
 TEST( mint_execution_cell_traversals, for_all_cells_ijk )
 {
   using seq_exec = policy::serial;
-  check_for_all_cells_ijk< seq_exec, mint::STRUCTURED_UNIFORM_MESH >();
-  check_for_all_cells_ijk< seq_exec, mint::STRUCTURED_CURVILINEAR_MESH >();
-  check_for_all_cells_ijk< seq_exec, mint::STRUCTURED_RECTILINEAR_MESH >();
+  check_for_all_cells_ijk< seq_exec, STRUCTURED_UNIFORM_MESH >();
+  check_for_all_cells_ijk< seq_exec, STRUCTURED_CURVILINEAR_MESH >();
+  check_for_all_cells_ijk< seq_exec, STRUCTURED_RECTILINEAR_MESH >();
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
   defined(RAJA_ENABLE_OPENMP)
 
   using omp_exec = policy::parallel_cpu;
-  check_for_all_cells_ijk< omp_exec, mint::STRUCTURED_UNIFORM_MESH >();
-  check_for_all_cells_ijk< omp_exec, mint::STRUCTURED_CURVILINEAR_MESH >();
-  check_for_all_cells_ijk< omp_exec, mint::STRUCTURED_RECTILINEAR_MESH >();
+  check_for_all_cells_ijk< omp_exec, STRUCTURED_UNIFORM_MESH >();
+  check_for_all_cells_ijk< omp_exec, STRUCTURED_CURVILINEAR_MESH >();
+  check_for_all_cells_ijk< omp_exec, STRUCTURED_RECTILINEAR_MESH >();
 
 #endif
 
@@ -447,9 +439,9 @@ TEST( mint_execution_cell_traversals, for_all_cells_ijk )
   defined(RAJA_ENABLE_CUDA)
 
   using cuda_exec = policy::parallel_gpu;
-  check_for_all_cells_ijk< cuda_exec, mint::STRUCTURED_UNIFORM_MESH >();
-  check_for_all_cells_ijk< cuda_exec, mint::STRUCTURED_CURVILINEAR_MESH >();
-  check_for_all_cells_ijk< cuda_exec, mint::STRUCTURED_RECTILINEAR_MESH >();
+  check_for_all_cells_ijk< cuda_exec, STRUCTURED_UNIFORM_MESH >();
+  check_for_all_cells_ijk< cuda_exec, STRUCTURED_CURVILINEAR_MESH >();
+  check_for_all_cells_ijk< cuda_exec, STRUCTURED_RECTILINEAR_MESH >();
 
 #endif
 
@@ -463,19 +455,21 @@ TEST( mint_execution_cell_traversals, for_all_cells_index )
   {
 
     using seq_exec = policy::serial;
-    check_for_all_cells_idx< seq_exec, mint::STRUCTURED_UNIFORM_MESH >(i);
-    check_for_all_cells_idx< seq_exec, mint::STRUCTURED_CURVILINEAR_MESH >(i);
-    check_for_all_cells_idx< seq_exec, mint::STRUCTURED_RECTILINEAR_MESH >(i);
-    check_for_all_cells_idx< seq_exec, mint::UNSTRUCTURED_MESH >(i);
+    check_for_all_cells_idx< seq_exec, STRUCTURED_UNIFORM_MESH >(i);
+    check_for_all_cells_idx< seq_exec, STRUCTURED_CURVILINEAR_MESH >(i);
+    check_for_all_cells_idx< seq_exec, STRUCTURED_RECTILINEAR_MESH >(i);
+    check_for_all_cells_idx< seq_exec, UNSTRUCTURED_SINGLE_SHAPE_MESH >(i);
+    check_for_all_cells_idx< seq_exec, UNSTRUCTURED_MIXED_SHAPE_MESH >(i);
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
     defined(RAJA_ENABLE_OPENMP)
 
     using omp_exec = policy::parallel_cpu;
-    check_for_all_cells_idx< omp_exec, mint::STRUCTURED_UNIFORM_MESH >(i);
-    check_for_all_cells_idx< omp_exec, mint::STRUCTURED_CURVILINEAR_MESH >(i);
-    check_for_all_cells_idx< omp_exec, mint::STRUCTURED_RECTILINEAR_MESH >(i);
-    check_for_all_cells_idx< omp_exec, mint::UNSTRUCTURED_MESH >(i);
+    check_for_all_cells_idx< omp_exec, STRUCTURED_UNIFORM_MESH >(i);
+    check_for_all_cells_idx< omp_exec, STRUCTURED_CURVILINEAR_MESH >(i);
+    check_for_all_cells_idx< omp_exec, STRUCTURED_RECTILINEAR_MESH >(i);
+    check_for_all_cells_idx< omp_exec, UNSTRUCTURED_SINGLE_SHAPE_MESH >(i);
+    check_for_all_cells_idx< omp_exec, UNSTRUCTURED_MIXED_SHAPE_MESH >(i);
 
 #endif
 
@@ -483,16 +477,19 @@ TEST( mint_execution_cell_traversals, for_all_cells_index )
     defined(RAJA_ENABLE_CUDA)
 
     using cuda_exec = policy::parallel_gpu;
-    check_for_all_cells_idx< cuda_exec, mint::STRUCTURED_UNIFORM_MESH >(i);
-    check_for_all_cells_idx< cuda_exec, mint::STRUCTURED_CURVILINEAR_MESH >(i);
-    check_for_all_cells_idx< cuda_exec, mint::STRUCTURED_RECTILINEAR_MESH >(i);
-    check_for_all_cells_idx< cuda_exec, mint::UNSTRUCTURED_MESH >(i);
+    check_for_all_cells_idx< cuda_exec, STRUCTURED_UNIFORM_MESH >(i);
+    check_for_all_cells_idx< cuda_exec, STRUCTURED_CURVILINEAR_MESH >(i);
+    check_for_all_cells_idx< cuda_exec, STRUCTURED_RECTILINEAR_MESH >(i);
+    check_for_all_cells_idx< cuda_exec, UNSTRUCTURED_SINGLE_SHAPE_MESH >(i);
+    check_for_all_cells_idx< cuda_exec, UNSTRUCTURED_MIXED_SHAPE_MESH >(i);
 
 #endif
 
   } // END for all dimensions
-
 }
+
+} /* namespace mint */
+} /* namespace axom */
 
 //------------------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"

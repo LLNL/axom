@@ -40,8 +40,10 @@
 // gtest includes
 #include "gtest/gtest.h" // for gtest
 
-// namespace aliases
-namespace mint = axom::mint;
+namespace axom
+{
+namespace mint
+{
 
 //------------------------------------------------------------------------------
 template < int MeshType >
@@ -52,14 +54,14 @@ struct mesh_type_name
 
 //------------------------------------------------------------------------------
 template < >
-struct mesh_type_name< mint::STRUCTURED_UNIFORM_MESH >
+struct mesh_type_name< STRUCTURED_UNIFORM_MESH >
 {
   static constexpr char* name() { return (char*)"STRUCTURED_UNIFORM_MESH"; };
 };
 
 //------------------------------------------------------------------------------
 template < >
-struct mesh_type_name< mint::STRUCTURED_CURVILINEAR_MESH >
+struct mesh_type_name< STRUCTURED_CURVILINEAR_MESH >
 {
   static constexpr char* name() {
     return (char*)"STRUCTURED_CURVILINEAR_MESH";
@@ -68,7 +70,7 @@ struct mesh_type_name< mint::STRUCTURED_CURVILINEAR_MESH >
 
 //------------------------------------------------------------------------------
 template < >
-struct mesh_type_name< mint::STRUCTURED_RECTILINEAR_MESH >
+struct mesh_type_name< STRUCTURED_RECTILINEAR_MESH >
 {
   static constexpr char* name() {
     return (char*)"STRUCTURED_RECTILINEAR_MESH";
@@ -77,14 +79,28 @@ struct mesh_type_name< mint::STRUCTURED_RECTILINEAR_MESH >
 
 //------------------------------------------------------------------------------
 template < >
-struct mesh_type_name< mint::UNSTRUCTURED_MESH >
+struct mesh_type_name< UNSTRUCTURED_MESH >
 {
   static constexpr char* name() { return (char*)"UNSTRUCTURED_MESH"; };
 };
 
 //------------------------------------------------------------------------------
 template < >
-struct mesh_type_name< mint::PARTICLE_MESH>
+struct mesh_type_name< UNSTRUCTURED_SINGLE_SHAPE_MESH >
+{
+  static constexpr char* name() { return (char*)"UNSTRUCTURED_SINGLE_SHAPE_MESH"; };
+};
+
+//------------------------------------------------------------------------------
+template < >
+struct mesh_type_name< UNSTRUCTURED_MIXED_SHAPE_MESH >
+{
+  static constexpr char* name() { return (char*)"UNSTRUCTURED_MIXED_SHAPE_MESH"; };
+};
+
+//------------------------------------------------------------------------------
+template < >
+struct mesh_type_name< PARTICLE_MESH>
 {
   static constexpr char* name() { return (char*)"PARTICLE_MESH"; };
 };
@@ -102,24 +118,24 @@ struct mesh_type_name< mint::PARTICLE_MESH>
  * \note The caller must deallocate the returned mesh object.
  */
 /// @{
-template < int MeshType=mint::STRUCTURED_UNIFORM_MESH >
-mint::Mesh* create_mesh( const mint::UniformMesh& uniform_mesh )
+template < int MeshType=STRUCTURED_UNIFORM_MESH >
+Mesh* create_mesh( const UniformMesh& uniform_mesh )
 {
   const int dimension = uniform_mesh.getDimension();
 
   double lo[3];
   double hi[3];
-  mint::IndexType N[3] = { -1, -1, -1};
+  IndexType N[3] = { -1, -1, -1};
   for ( int i=0 ; i < dimension ; ++i )
   {
     N[ i ]  = uniform_mesh.getNodeResolution( i );
     lo[ i ] = uniform_mesh.evaluateCoordinate(0,i);
     hi[ i ] = uniform_mesh.evaluateCoordinate( N[i]-1, i );
   }
-  mint::UniformMesh* output_mesh = new mint::UniformMesh( lo, hi, N[0], N[1], 
+  UniformMesh* output_mesh = new UniformMesh( lo, hi, N[0], N[1], 
                                                           N[2] );
 
-  EXPECT_EQ( output_mesh->getMeshType(), mint::STRUCTURED_UNIFORM_MESH );
+  EXPECT_EQ( output_mesh->getMeshType(), STRUCTURED_UNIFORM_MESH );
   EXPECT_EQ( output_mesh->getDimension(), uniform_mesh.getDimension() );
   EXPECT_EQ( output_mesh->getNumberOfNodes(), uniform_mesh.getNumberOfNodes() );
   EXPECT_EQ( output_mesh->getNumberOfCells(), uniform_mesh.getNumberOfCells() );
@@ -129,24 +145,24 @@ mint::Mesh* create_mesh( const mint::UniformMesh& uniform_mesh )
 
 //------------------------------------------------------------------------------
 template < >
-mint::Mesh* create_mesh< mint::STRUCTURED_CURVILINEAR_MESH >(
-                                        const mint::UniformMesh& uniform_mesh )
+Mesh* create_mesh< STRUCTURED_CURVILINEAR_MESH >(
+                                        const UniformMesh& uniform_mesh )
 {
   const int dimension = uniform_mesh.getDimension();
-  mint::IndexType node_dims[] = { -1, -1, -1 };
+  IndexType node_dims[] = { -1, -1, -1 };
 
   for ( int i=0 ; i < dimension ; ++i )
   {
     node_dims[ i ] = uniform_mesh.getNodeResolution( i );
   }
 
-  mint::CurvilinearMesh* output_mesh = new mint::CurvilinearMesh( 
-                                               node_dims[ mint::I_DIRECTION ],
-                                               node_dims[ mint::J_DIRECTION ],
-                                               node_dims[ mint::K_DIRECTION ] );
+  CurvilinearMesh* output_mesh = new CurvilinearMesh( 
+                                               node_dims[ I_DIRECTION ],
+                                               node_dims[ J_DIRECTION ],
+                                               node_dims[ K_DIRECTION ] );
 
-  const mint::IndexType numNodes = uniform_mesh.getNumberOfNodes();
-  for ( mint::IndexType inode=0 ; inode < numNodes ; ++inode )
+  const IndexType numNodes = uniform_mesh.getNumberOfNodes();
+  for ( IndexType inode=0 ; inode < numNodes ; ++inode )
   {
     double pt[ 3 ];
     uniform_mesh.getNode( inode, pt );
@@ -161,7 +177,7 @@ mint::Mesh* create_mesh< mint::STRUCTURED_CURVILINEAR_MESH >(
 
   } // END for all nodes
 
-  EXPECT_EQ( output_mesh->getMeshType(), mint::STRUCTURED_CURVILINEAR_MESH );
+  EXPECT_EQ( output_mesh->getMeshType(), STRUCTURED_CURVILINEAR_MESH );
   EXPECT_EQ( output_mesh->getDimension(), uniform_mesh.getDimension() );
   EXPECT_EQ( output_mesh->getNumberOfNodes(), uniform_mesh.getNumberOfNodes() );
   EXPECT_EQ( output_mesh->getNumberOfCells(), uniform_mesh.getNumberOfCells() );
@@ -171,41 +187,41 @@ mint::Mesh* create_mesh< mint::STRUCTURED_CURVILINEAR_MESH >(
 
 //------------------------------------------------------------------------------
 template < >
-mint::Mesh* create_mesh< mint::STRUCTURED_RECTILINEAR_MESH >(
-                                         const mint::UniformMesh& uniform_mesh )
+Mesh* create_mesh< STRUCTURED_RECTILINEAR_MESH >(
+                                         const UniformMesh& uniform_mesh )
 {
   const int dimension = uniform_mesh.getDimension();
   SLIC_ASSERT( dimension >= 1 );
 
-  mint::IndexType node_dims[] = { -1, -1, -1 };
+  IndexType node_dims[] = { -1, -1, -1 };
   for ( int i=0 ; i < dimension ; ++i )
   {
     node_dims[ i ] = uniform_mesh.getNodeResolution( i );
   }
 
-  mint::RectilinearMesh* output_mesh = new mint::RectilinearMesh(
-                                               node_dims[ mint::I_DIRECTION ],
-                                               node_dims[ mint::J_DIRECTION ],
-                                               node_dims[ mint::K_DIRECTION ] );
+  RectilinearMesh* output_mesh = new RectilinearMesh(
+                                               node_dims[ I_DIRECTION ],
+                                               node_dims[ J_DIRECTION ],
+                                               node_dims[ K_DIRECTION ] );
 
-  mint::IndexType Ni = uniform_mesh.getNodeResolution( mint::I_DIRECTION );
-  double* x = output_mesh->getCoordinateArray( mint::X_COORDINATE );
+  IndexType Ni = uniform_mesh.getNodeResolution( I_DIRECTION );
+  double* x = output_mesh->getCoordinateArray( X_COORDINATE );
   SLIC_ASSERT( x != nullptr );
-  for ( mint::IndexType i=0 ; i < Ni ; ++i )
+  for ( IndexType i=0 ; i < Ni ; ++i )
   {
-    x[ i ] = uniform_mesh.evaluateCoordinate( i, mint::I_DIRECTION );
+    x[ i ] = uniform_mesh.evaluateCoordinate( i, I_DIRECTION );
   } // END for all i
 
   if ( dimension >= 2 )
   {
     // fill y
-    double* y = output_mesh->getCoordinateArray( mint::Y_COORDINATE );
+    double* y = output_mesh->getCoordinateArray( Y_COORDINATE );
     SLIC_ASSERT( y != nullptr );
 
-    mint::IndexType Nj = uniform_mesh.getNodeResolution( mint::J_DIRECTION );
-    for ( mint::IndexType j=0 ; j < Nj ; ++j )
+    IndexType Nj = uniform_mesh.getNodeResolution( J_DIRECTION );
+    for ( IndexType j=0 ; j < Nj ; ++j )
     {
-      y[ j ] = uniform_mesh.evaluateCoordinate( j, mint::J_DIRECTION );
+      y[ j ] = uniform_mesh.evaluateCoordinate( j, J_DIRECTION );
     } // END for all j
 
   }
@@ -213,19 +229,19 @@ mint::Mesh* create_mesh< mint::STRUCTURED_RECTILINEAR_MESH >(
   if ( dimension == 3 )
   {
     // fill z
-    double* z = output_mesh->getCoordinateArray( mint::Z_COORDINATE );
+    double* z = output_mesh->getCoordinateArray( Z_COORDINATE );
     SLIC_ASSERT( z != nullptr );
 
-    const mint::IndexType Nk =
-      uniform_mesh.getNodeResolution( mint::K_DIRECTION );
-    for ( mint::IndexType k=0 ; k < Nk ; ++k )
+    const IndexType Nk =
+      uniform_mesh.getNodeResolution( K_DIRECTION );
+    for ( IndexType k=0 ; k < Nk ; ++k )
     {
-      z[ k ] = uniform_mesh.evaluateCoordinate( k, mint::K_DIRECTION );
+      z[ k ] = uniform_mesh.evaluateCoordinate( k, K_DIRECTION );
     } // END for all k
 
   } // END if 3-D
 
-  EXPECT_EQ( output_mesh->getMeshType(), mint::STRUCTURED_RECTILINEAR_MESH );
+  EXPECT_EQ( output_mesh->getMeshType(), STRUCTURED_RECTILINEAR_MESH );
   EXPECT_EQ( output_mesh->getDimension(), uniform_mesh.getDimension() );
   EXPECT_EQ( output_mesh->getNumberOfNodes(), uniform_mesh.getNumberOfNodes() );
   EXPECT_EQ( output_mesh->getNumberOfCells(), uniform_mesh.getNumberOfCells() );
@@ -235,16 +251,16 @@ mint::Mesh* create_mesh< mint::STRUCTURED_RECTILINEAR_MESH >(
 
 //------------------------------------------------------------------------------
 template < >
-mint::Mesh* create_mesh< mint::PARTICLE_MESH >( 
-                                        const mint::UniformMesh& uniform_mesh )
+Mesh* create_mesh< PARTICLE_MESH >( 
+                                        const UniformMesh& uniform_mesh )
 {
   const int dimension            = uniform_mesh.getDimension();
-  const mint::IndexType numNodes = uniform_mesh.getNumberOfNodes();
+  const IndexType numNodes = uniform_mesh.getNumberOfNodes();
 
-  mint::ParticleMesh* output_mesh = 
-                                  new mint::ParticleMesh( dimension, numNodes );
+  ParticleMesh* output_mesh = 
+                                  new ParticleMesh( dimension, numNodes );
 
-  for ( mint::IndexType inode=0 ; inode < numNodes ; ++inode )
+  for ( IndexType inode=0 ; inode < numNodes ; ++inode )
   {
     double node[ 3 ];
     uniform_mesh.getNode( inode, node );
@@ -259,7 +275,7 @@ mint::Mesh* create_mesh< mint::PARTICLE_MESH >(
 
   } // END for all nodes
 
-  EXPECT_EQ( output_mesh->getMeshType(), mint::PARTICLE_MESH );
+  EXPECT_EQ( output_mesh->getMeshType(), PARTICLE_MESH );
   EXPECT_EQ( output_mesh->getDimension(), uniform_mesh.getDimension() );
   EXPECT_EQ( output_mesh->getNumberOfNodes(), uniform_mesh.getNumberOfNodes() );
   EXPECT_EQ( output_mesh->getNumberOfCells(), uniform_mesh.getNumberOfNodes() );
@@ -269,22 +285,23 @@ mint::Mesh* create_mesh< mint::PARTICLE_MESH >(
 
 //------------------------------------------------------------------------------
 template < >
-mint::Mesh* 
-create_mesh< mint::UNSTRUCTURED_MESH >( const mint::UniformMesh& uniform_mesh )
+Mesh* 
+create_mesh< UNSTRUCTURED_SINGLE_SHAPE_MESH >( 
+                                        const UniformMesh& uniform_mesh )
 {
   const int dimension            = uniform_mesh.getDimension();
-  const mint::IndexType numNodes = uniform_mesh.getNumberOfNodes();
-  const mint::IndexType numCells = uniform_mesh.getNumberOfCells();
+  const IndexType numNodes = uniform_mesh.getNumberOfNodes();
+  const IndexType numCells = uniform_mesh.getNumberOfCells();
 
-  using UnstructuredMeshType = mint::UnstructuredMesh< mint::SINGLE_SHAPE >;
-  mint::CellType cell_type   = ( dimension==3 ) ? mint::HEX :
-                               ( (dimension==2) ? mint::QUAD : mint::SEGMENT );
+  using UnstructuredMeshType = UnstructuredMesh< SINGLE_SHAPE >;
+  CellType cell_type   = ( dimension==3 ) ? HEX :
+                               ( (dimension==2) ? QUAD : SEGMENT );
 
   UnstructuredMeshType* output_mesh = 
           new UnstructuredMeshType( dimension, cell_type, numNodes, numCells );
 
   // append nodes
-  for ( mint::IndexType inode=0 ; inode < numNodes ; ++inode )
+  for ( IndexType inode=0 ; inode < numNodes ; ++inode )
   {
     double node[ 3 ];
     uniform_mesh.getNode( inode, node );
@@ -292,18 +309,160 @@ create_mesh< mint::UNSTRUCTURED_MESH >( const mint::UniformMesh& uniform_mesh )
   }
 
   // append cells
-  for ( mint::IndexType icell=0 ; icell < numCells ; ++icell )
+  for ( IndexType icell=0 ; icell < numCells ; ++icell )
   {
-    mint::IndexType cell[ 8 ];
+    IndexType cell[ 8 ];
     uniform_mesh.getCellNodeIDs( icell, cell );
     output_mesh->appendCell( cell, cell_type );
   }
 
-  EXPECT_EQ( output_mesh->getMeshType(), mint::UNSTRUCTURED_MESH );
+  EXPECT_EQ( output_mesh->getMeshType(), UNSTRUCTURED_MESH );
   EXPECT_EQ( output_mesh->getDimension(), uniform_mesh.getDimension() );
   EXPECT_EQ( output_mesh->getNumberOfNodes(), uniform_mesh.getNumberOfNodes() );
   EXPECT_EQ( output_mesh->getNumberOfCells(), uniform_mesh.getNumberOfCells() );
 
   return output_mesh;
 }
+
+//------------------------------------------------------------------------------
+template < >
+Mesh* 
+create_mesh< UNSTRUCTURED_MIXED_SHAPE_MESH >( 
+                                        const UniformMesh& uniform_mesh )
+{
+  const int dimension            = uniform_mesh.getDimension();
+  const IndexType numNodes = uniform_mesh.getNumberOfNodes();
+  const IndexType numCells = uniform_mesh.getNumberOfCells();
+  const IndexType k_node_res = uniform_mesh.getNodeResolution( K_DIRECTION );
+  const IndexType j_node_res = uniform_mesh.getNodeResolution( J_DIRECTION );
+  const IndexType i_node_res = uniform_mesh.getNodeResolution( I_DIRECTION );
+
+  using UnstructuredMeshType = UnstructuredMesh< MIXED_SHAPE >;
+
+  UnstructuredMeshType* output_mesh = 
+          new UnstructuredMeshType( dimension, numNodes, numCells * 2 );
+
+  // append nodes
+  for ( IndexType nodeID = 0 ; nodeID < numNodes ; ++nodeID )
+  {
+    double node[ 3 ];
+    uniform_mesh.getNode( nodeID, node );
+    output_mesh->appendNodes( node );
+  }
+
+  // append cells
+  if ( dimension == 1 )
+  {
+    IndexType cell[ 2 ];
+    for ( IndexType cellID=0 ; cellID < numCells ; ++cellID )
+    {
+      uniform_mesh.getCellNodeIDs( cellID, cell );
+      output_mesh->appendCell( cell, SEGMENT );
+    }
+  }
+  else if ( dimension == 2 )
+  {
+    IndexType uniformCell[ 4 ];
+    IndexType triangle[3];
+    for ( IndexType j = 0 ; j < j_node_res - 1 ; ++j )
+    {
+      for ( IndexType i = 0 ; i < i_node_res - 1 ; ++i )
+      {
+        uniform_mesh.getCellNodeIDs( i, j, uniformCell );
+
+        if ( (i + j) % 2 == 0 )
+        {
+          output_mesh->appendCell( uniformCell, QUAD);
+        }
+        else
+        {
+          triangle[0] = uniformCell[0];
+          triangle[1] = uniformCell[1];
+          triangle[2] = uniformCell[2];
+          output_mesh->appendCell( triangle, TRIANGLE );
+
+          triangle[0] = uniformCell[2];
+          triangle[1] = uniformCell[3];
+          triangle[2] = uniformCell[0];
+          output_mesh->appendCell( triangle, TRIANGLE );
+        }
+      }
+    }
+  }
+  else
+  {
+    const double* spacing = uniform_mesh.getSpacing();
+    IndexType uniformCell[ 8 ];
+    IndexType pyramid[5];
+            for ( IndexType k = 0 ; k < k_node_res - 1 ; ++k )
+    {
+      for ( IndexType j = 0 ; j < j_node_res - 1 ; ++j )
+      {
+        for ( IndexType i = 0 ; i < i_node_res - 1 ; ++i )
+        {
+          uniform_mesh.getCellNodeIDs( i, j, k, uniformCell );
+
+          if ( (i + j + k) % 2 == 0 )
+          {
+            output_mesh->appendCell( uniformCell, HEX );
+          }
+          else
+          {
+            const IndexType centerNode = output_mesh->getNumberOfNodes();
+            const double centroid[3] = { (i + 0.5) * spacing[ 0 ],
+                                         (j + 0.5) * spacing[ 1 ],
+                                         (k + 0.5) * spacing[ 2 ] };
+            output_mesh->appendNodes( centroid );
+
+            pyramid[0] = uniformCell[0]; 
+            pyramid[1] = uniformCell[1];
+            pyramid[2] = uniformCell[2];
+            pyramid[3] = uniformCell[3];
+            pyramid[4] = centerNode;
+            output_mesh->appendCell( pyramid, PYRAMID );
+
+            pyramid[0] = uniformCell[4]; 
+            pyramid[1] = uniformCell[7];
+            pyramid[2] = uniformCell[6];
+            pyramid[3] = uniformCell[5];
+            output_mesh->appendCell( pyramid, PYRAMID );
+
+            pyramid[0] = uniformCell[1]; 
+            pyramid[1] = uniformCell[5];
+            pyramid[2] = uniformCell[6];
+            pyramid[3] = uniformCell[2];
+            output_mesh->appendCell( pyramid, PYRAMID );
+
+            pyramid[0] = uniformCell[0]; 
+            pyramid[1] = uniformCell[3];
+            pyramid[2] = uniformCell[7];
+            pyramid[3] = uniformCell[4];
+            output_mesh->appendCell( pyramid, PYRAMID );
+
+            pyramid[0] = uniformCell[0]; 
+            pyramid[1] = uniformCell[4];
+            pyramid[2] = uniformCell[5];
+            pyramid[3] = uniformCell[1];
+            output_mesh->appendCell( pyramid, PYRAMID );
+
+            pyramid[0] = uniformCell[3]; 
+            pyramid[1] = uniformCell[2];
+            pyramid[2] = uniformCell[6];
+            pyramid[3] = uniformCell[7];
+            output_mesh->appendCell( pyramid, PYRAMID );
+          }
+        }
+      }
+    }
+  }
+
+  EXPECT_EQ( output_mesh->getMeshType(), UNSTRUCTURED_MESH );
+  EXPECT_EQ( output_mesh->getDimension(), uniform_mesh.getDimension() );
+
+  return output_mesh;
+}
 /// @}
+
+} /* namespace mint */
+} /* namespace axom */
+
