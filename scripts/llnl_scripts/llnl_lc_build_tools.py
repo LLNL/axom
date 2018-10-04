@@ -342,7 +342,7 @@ def build_and_test_host_config(test_root,host_config):
     bld_output_file =  pjoin(build_dir,"output.log.make.txt")
     print "[starting build]"
     print "[log file: %s]" % bld_output_file
-    res = sexe("cd %s && make -j 8 VERBOSE=1 " % build_dir,
+    res = sexe("cd %s && make -j 16 VERBOSE=1 " % build_dir,
                 output_file = bld_output_file,
                 echo=True)
 
@@ -382,7 +382,7 @@ def build_and_test_host_config(test_root,host_config):
     sexe("ls %s/include" % install_dir, echo=True, error_prefix="WARNING:")
     sexe("ls %s/lib" %     install_dir, echo=True, error_prefix="WARNING:")
     sexe("ls %s/bin" %     install_dir, echo=True, error_prefix="WARNING:")
-    print "[SUCCESS: Build, test, and install for host-config: %s complete]\n\n" % host_config
+    print "[SUCCESS: Build, test, and install for host-config: %s complete]\n" % host_config
 
     set_axom_group_and_perms(build_dir)
     set_axom_group_and_perms(install_dir)
@@ -416,7 +416,7 @@ def build_and_test_host_configs(prefix, job_name, timestamp):
             bad.append(host_config)
             log_failure(build_dir, job_name, timestamp)
         end_time = time.time()
-        print "[build time: {0}]".format(convertSecondsToReadableTime(end_time - start_time))
+        print "[build time: {0}]\n".format(convertSecondsToReadableTime(end_time - start_time))
 
 
     # Log overall job success/failure
@@ -458,7 +458,7 @@ def set_axom_group_and_perms(directory):
     # change perms for all to rX
     print "[changing perms for all users to rX]"
     sexe("chmod -f -R a+rX %s" % (directory),echo=True,error_prefix="WARNING:")
-    print "[done setting perms for: %s]\n" % directory
+    print "[done setting perms for: %s]" % directory
     return 0
 
 
