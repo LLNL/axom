@@ -31,6 +31,7 @@ import glob
 import json
 import getpass
 import shutil
+import time
 
 from os.path import join as pjoin
 
@@ -373,7 +374,7 @@ def build_and_test_host_config(test_root,host_config):
                echo=True)
 
     if res != 0:
-        print "[ERROR: Install for host-config: %s failed]\n" % host_config
+        print "[ERROR: Install for host-config: %s failed]\n\n" % host_config
         return res
 
     # simple sanity check for make install
@@ -381,7 +382,7 @@ def build_and_test_host_config(test_root,host_config):
     sexe("ls %s/include" % install_dir, echo=True, error_prefix="WARNING:")
     sexe("ls %s/lib" %     install_dir, echo=True, error_prefix="WARNING:")
     sexe("ls %s/bin" %     install_dir, echo=True, error_prefix="WARNING:")
-    print "[SUCCESS: Build, test, and install for host-config: %s complete]\n" % host_config
+    print "[SUCCESS: Build, test, and install for host-config: %s complete]\n\n" % host_config
 
     set_axom_group_and_perms(build_dir)
     set_axom_group_and_perms(install_dir)
@@ -407,12 +408,15 @@ def build_and_test_host_configs(prefix, job_name, timestamp):
     for host_config in host_configs:
         build_dir = get_build_dir(test_root, host_config)
 
+        start_time = time.time()
         if build_and_test_host_config(test_root,host_config) == 0:
             ok.append(host_config)
             log_success(build_dir, job_name, timestamp)
         else:
             bad.append(host_config)
             log_failure(build_dir, job_name, timestamp)
+        end_time = time.time()
+        print "[build time: {0}]".format(convertSecondsToReadableTime(end_time - start_time))
 
 
     # Log overall job success/failure
@@ -454,7 +458,7 @@ def set_axom_group_and_perms(directory):
     # change perms for all to rX
     print "[changing perms for all users to rX]"
     sexe("chmod -f -R a+rX %s" % (directory),echo=True,error_prefix="WARNING:")
-    print "[done setting perms for: %s]" % directory
+    print "[done setting perms for: %s]\n" % directory
     return 0
 
 
@@ -479,9 +483,12 @@ def full_build_and_test_of_tpls(builds_dir, job_name, timestamp):
     write_build_info(pjoin(prefix,"info.json"), job_name)
     # use uberenv to install for all specs
     for spec in specs:
+        start_time = time.time()
         res = uberenv_install_tpls(prefix,spec,mirror_dir)
+        end_time = time.time()
+        print "[build time: {0}]".format(convertSecondsToReadableTime(end_time - start_time))
         if res != 0:
-            print "[ERROR: Failed build of tpls for spec %s]" % spec
+            print "[ERROR: Failed build of tpls for spec %s]\n" % spec
             # set perms, then early exit
             # set proper perms for installed tpls
             set_axom_group_and_perms(prefix)
@@ -624,3 +631,10 @@ def get_compiler_from_spec(spec):
         if index != -1: 
             compiler = compiler[:index]
     return compiler
+
+
+def convertSecondsToReadableTime(seconds):
+    m, s = divmod(seconds, 60)
+    h, m = divmod(m, 60)
+    return "%d:%02d:%02d" % (h, m, s)
+

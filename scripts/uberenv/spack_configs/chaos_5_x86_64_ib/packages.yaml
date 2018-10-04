@@ -51,8 +51,32 @@ packages:
       mvapich2@2.0%intel@16.0.258: /usr/local/tools/mvapich2-intel-2.0
       mvapich2@2.0%intel@17.0.174: /usr/local/tools/mvapich2-intel-2.0
     buildable: False
-# don't build bzip2
-  bzip2:
+# System level packages to not build
+  autotools:
     paths:
+      autotools: /usr/bin/
+    buildable: False 
+  bzip2:
+   paths:
       bzip2: /usr/bin/
-    buildable: False
+   buildable: False
+  gettext:
+   paths:
+      gettext: /usr/bin/
+   buildable: False
+  m4:
+   paths:
+      m4: /usr/bin/
+   buildable: False
+  pkg-config:
+    paths:
+      pkg-config: /usr/bin/
+    buildable: False 
+  tar:
+   paths:
+      tar: /usr/bin/
+   buildable: False
+# Globally lock in version of CMake
+  cmake:
+    version: [3.9.6]
+

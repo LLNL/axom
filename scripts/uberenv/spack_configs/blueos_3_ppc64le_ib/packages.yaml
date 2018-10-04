@@ -51,24 +51,23 @@ packages:
       mvapich2@2.2%clang@coral_xlf: /usr/tce/packages/spectrum-mpi/spectrum-mpi-2018.04.27-clang-coral-2018.05.23
       mvapich2@2.2%xl@coral : /usr/tce/packages/spectrum-mpi/spectrum-mpi-2018.04.27-xl-2018.05.18
     buildable: False
-# don't build m4
-  m4:
-    paths:
-      m4: /usr/bin/
-    buildable: False 
-# don't build autotools
-  autotools:
-    paths:
-      autotools: /usr/bin/
-    buildable: False 
-# don't build pkg-config
-  pkg-config:
-    paths:
-      pkg-config: /usr/bin/
-    buildable: False 
-# don't build bzip2
+# System level packages to not build
   bzip2:
-    paths:
+   paths:
       bzip2: /usr/bin/
-    buildable: False
+   buildable: False
+  gettext:
+   paths:
+      gettext: /usr/bin/
+   buildable: False
+  m4:
+   paths:
+      m4: /usr/bin/
+   buildable: False
+  tar:
+   paths:
+      tar: /usr/bin/
+   buildable: False
+  cmake:
+    version: [3.9.6]
 

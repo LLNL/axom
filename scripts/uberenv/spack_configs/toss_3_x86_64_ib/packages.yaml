@@ -56,14 +56,37 @@ packages:
       mvapich2@2.2%clang@3.9.1 arch=linux-rhel7-x86_64: /usr/tce/packages/mvapich2/mvapich2-2.2-clang-3.9.1
       mvapich2@2.2%clang@4.0.0 arch=linux-rhel7-x86_64: /usr/tce/packages/mvapich2/mvapich2-2.2-clang-4.0.0
     buildable: False
-# don't build bzip2
-  bzip2:
-   paths:
-      bzip2: /usr/bin/
-   buildable: False
 # Spack may grab for mpi & we don't want to use them
   charm:
     buildable: False
   mpilander:
     buildable: False  
+# System level packages to not build
+  autotools:
+    paths:
+      autotools: /usr/bin/
+    buildable: False 
+  bzip2:
+   paths:
+      bzip2: /usr/bin/
+   buildable: False
+  gettext:
+   paths:
+      gettext: /usr/bin/
+   buildable: False
+  m4:
+   paths:
+      m4: /usr/bin/
+   buildable: False
+  pkg-config:
+    paths:
+      pkg-config: /usr/bin/
+    buildable: False 
+  tar:
+   paths:
+      tar: /usr/bin/
+   buildable: False
+# Globally lock in version of CMake
+  cmake:
+    version: [3.9.6]
 

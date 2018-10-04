@@ -70,7 +70,13 @@ class UberenvAxom(Package):
     depends_on("mfem~hypre~metis~mpi~gzstream",   when="+mfem")
 
     # optional tpl builds
-    depends_on("cmake@3.9.6", when="+cmake")
+
+    # NOTE: Due to spack defaulting to the newest version given in a package
+    # The version of CMake is controlled in the <sys_type>/packages.yaml file.
+    # This is a problem when multiple packages depend on another package and
+    # the required (or not required) versions don't match
+    depends_on("cmake", when="+cmake")
+
     if "darwin" in platform.system().lower():
         depends_on("mpich@3.0.4")
         depends_on("openssl@1.0.2j")
