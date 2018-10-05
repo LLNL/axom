@@ -291,7 +291,7 @@ inline void check_topology1D( const StructuredMesh* m )
   SLIC_ASSERT( m->getDimension() == 1 );
 
   EXPECT_EQ( m->getNumberOfCellNodes(), 2 );
-  EXPECT_EQ( m->getNumberOfCellFaces(), 0 );
+  EXPECT_EQ( m->getNumberOfCellFaces(), 2 );
   EXPECT_EQ( m->getNumberOfFaces(), 0 );
   EXPECT_EQ( m->getNumberOfFaceNodes(), 0 );
 
