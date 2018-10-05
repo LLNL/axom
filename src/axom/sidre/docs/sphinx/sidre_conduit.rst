@@ -120,6 +120,38 @@ choose to save it as JSON.
 The code listed above produces the files `tinymesh.json` and `tinymesh.root`.
 Any code that uses Mesh Blueprint can open and use this pair of files.
 
+The DataStore also contains a method that can automatically generate the
+Blueprint index within a Sidre Group rather than calling directly into
+Conduit.  Set up a mesh similarly to the above.
+
+.. literalinclude:: ../../examples/sidre_createdatastore.cpp
+   :start-after: _blueprint_generate_toplevel_start
+   :end-before: _blueprint_generate_toplevel_end
+   :language: C++
+
+Then use ``DataStore::generateBlueprintIndex`` to generate the index within
+a Group held by the DataStore.  Then additional data needed in the root file
+can be added and saved using Sidre I/O calls.
+
+.. literalinclude:: ../../examples/sidre_createdatastore.cpp
+   :start-after: _blueprint_generate_save_start
+   :end-before: _blueprint_generate_save_end
+   :language: C++
+
+Additionally, the Sidre Parallel I/O (SPIO) class ``IOManager`` provides a
+method that both generates a Blueprint index and adds it to a root file.
+Using the same mesh data from the last example, first write out all of the
+parallel data using ``IOManager::write``.  This will output to files all of
+the data for all domains, and will also create a basic root file.  Then
+``IOManager::writeBlueprintIndexToRootFile`` can be used to generate the
+Blueprint index and add it to the root file.  This is currently only
+implemented to work with the ``sidre_hdf5`` I/O protocol.
+
+.. literalinclude:: ../../examples/sidre_createdatastore.cpp
+   :start-after: _blueprint_generate_spio_start
+   :end-before: _blueprint_generate_spio_end
+   :language: C++
+
 Data Visualization
 ------------------
 

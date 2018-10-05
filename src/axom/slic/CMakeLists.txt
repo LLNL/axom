@@ -23,6 +23,8 @@ set(slic_headers
 
     interface/slic.hpp
 
+    internal/stacktrace.hpp
+
     streams/GenericOutputStream.hpp
     )
 
@@ -31,6 +33,8 @@ set(slic_sources
     core/LogStream.cpp
 
     interface/slic.cpp
+
+    internal/stacktrace.cpp
 
     streams/GenericOutputStream.cpp
     )

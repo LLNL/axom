@@ -82,10 +82,13 @@
 
 
 /*
- * We need to explicitly add math definitions on Windows
+ * We need to explicitly add some definitions on Windows
+ * for math defines (_USE_MATH_DEFINES), and to disambiguate
+ *  Windows GDI geometry classes (NOGDI).
  */
 #ifdef WIN32
 #define _USE_MATH_DEFINES
+#define NOGDI
 #endif
 
 
