@@ -1174,7 +1174,7 @@ void append_nodes( UnstructuredMesh< TOPO >* mesh, IndexType n_nodes )
  */
 IndexType getCellConnecValue( IndexType cur_cell, IndexType vertex )
 {
-  return cur_cell * MAX_NUM_NODES + vertex;
+  return cur_cell * MAX_CELL_NODES + vertex;
 }
 
 /*!
@@ -1186,7 +1186,7 @@ IndexType getCellConnecValue( IndexType cur_cell, IndexType vertex )
 IndexType getNewCellConnecValue( IndexType cur_n_cells,
                                  IndexType vertex )
 {
-  return (cur_n_cells * MAX_NUM_NODES + vertex) * vertex;
+  return (cur_n_cells * MAX_CELL_NODES + vertex) * vertex;
 }
 
 /*!
@@ -1253,7 +1253,7 @@ void check_append_cells( const UnstructuredMesh< SINGLE_SHAPE >* mesh,
   }
 
   /* Check using getCell */
-  IndexType cell[ mint::MAX_NUM_NODES ];
+  IndexType cell[ mint::MAX_CELL_NODES ];
   for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
     mesh->getCellNodeIDs( i, cell );
@@ -1307,7 +1307,7 @@ void check_append_cells( const UnstructuredMesh< MIXED_SHAPE >* mesh,
   }
 
   /* Check using getCell */
-  IndexType cell[ MAX_NUM_NODES ];
+  IndexType cell[ MAX_CELL_NODES ];
   for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
     mesh->getCellNodeIDs( i, cell );
@@ -1383,7 +1383,7 @@ void append_cell_single( UnstructuredMesh< SINGLE_SHAPE >* mesh,
   const IndexType nodes_per_cell = getCellInfo( mesh->getCellType() ).num_nodes;
   FieldVariable< double >* fv = getFieldVar( mesh, CELL_CENTERED );
 
-  IndexType connec[ mint::MAX_NUM_NODES ];
+  IndexType connec[ mint::MAX_CELL_NODES ];
   for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
     getCellConnec( cur_n_cells, nodes_per_cell, connec );
@@ -1402,7 +1402,7 @@ void append_cell_single( UnstructuredMesh< MIXED_SHAPE >* mesh,
   IndexType cur_connec_size = mesh->getCellConnectivitySize();
   FieldVariable< double >* fv = getFieldVar( mesh, CELL_CENTERED );
 
-  IndexType connec[ mint::MAX_NUM_NODES ];
+  IndexType connec[ mint::MAX_CELL_NODES ];
   CellType type;
   for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
@@ -1814,7 +1814,7 @@ void insert_cell_single( UnstructuredMesh< SINGLE_SHAPE >* mesh,
   const IndexType nodes_per_cell = mesh->getNumberOfCellNodes();
   FieldVariable< double >* fv = getFieldVar( mesh, CELL_CENTERED );
 
-  IndexType connec[ mint::MAX_NUM_NODES ];
+  IndexType connec[ mint::MAX_CELL_NODES ];
   getCellConnec( final_pos, nodes_per_cell, connec );
 
   mesh->insertCell( connec, pos );
@@ -1831,7 +1831,7 @@ void insert_cell_single( UnstructuredMesh< MIXED_SHAPE >* mesh,
   IndexType cur_connec_size = mesh->getCellConnectivitySize();
   FieldVariable< double >* fv = getFieldVar( mesh, CELL_CENTERED );
 
-  IndexType connec[ mint::MAX_NUM_NODES ];
+  IndexType connec[ mint::MAX_CELL_NODES ];
   CellType type = getCellConnec( final_pos, connec );
   cur_connec_size += getCellInfo( type ).num_nodes;
 

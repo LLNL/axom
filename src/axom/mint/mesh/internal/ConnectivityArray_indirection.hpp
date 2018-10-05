@@ -306,7 +306,7 @@ public:
    * \param [in] value_size the number of values per ID to resize the space for.
    *
    * \note if value_size is not specified, then, if this ConnectivityArray is
-   *  empty, space is allocated for MAX_NUM_NODES values for each ID. Otherwise,
+   *  empty, space is allocated for MAX_CELL_NODES values for each ID. Otherwise,
    *  space is allocated based on the average number of values per ID.
    */
   void resize( IndexType ID_size, IndexType value_size=USE_DEFAULT )
@@ -325,7 +325,7 @@ public:
    * \param [in] value_capacity the number of values to reserve space for.
    *
    * \note if value_capacity is not specified then if this ConnectivityArray is
-   *  empty then MAX_NUM_NODES values are reserved for each ID. Otherwise the
+   *  empty then MAX_CELL_NODES values are reserved for each ID. Otherwise the
    *  average number of values per ID are reserved for each ID.
    *
    * \post getKeyCapacity() >= ID_capacity

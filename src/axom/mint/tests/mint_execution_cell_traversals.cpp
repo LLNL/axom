@@ -45,12 +45,9 @@ namespace
 template < typename ExecPolicy, int MeshType >
 void check_for_all_cells_idx( int dimension )
 {
-  SLIC_INFO( "dimension=" << dimension );
-  SLIC_INFO( "checking [for_all_cells_index] policy=" <<
-             policy_traits< ExecPolicy >::name() << " " <<
-             "mesh_type=" << mesh_type_name< MeshType >::name() );
-
-  using IndexType = IndexType;
+  SLIC_INFO( "dimension=" << dimension << ", policy="
+            << policy_traits< ExecPolicy >::name() << ", mesh_type="
+            << mesh_type_name< MeshType >::name() );
 
   const IndexType Ni = 20;
   const IndexType Nj = (dimension >= 2) ? Ni : -1;
@@ -63,7 +60,7 @@ void check_for_all_cells_idx( int dimension )
   Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
-  int* field = test_mesh->createField< int >( "c1", CELL_CENTERED );
+  IndexType* field = test_mesh->createField< IndexType >( "c1", CELL_CENTERED );
 
   for_all_cells< ExecPolicy >( test_mesh, 
     AXOM_LAMBDA( IndexType cellID )
@@ -86,10 +83,8 @@ void check_for_all_cells_idx( int dimension )
 template < typename ExecPolicy, int MeshType >
 void check_for_all_cells_ij( )
 {
-  SLIC_INFO( "checking [for_all_cells_ij] policy=" <<
-             policy_traits< ExecPolicy >::name() << " " <<
-             "mesh_type=" << mesh_type_name< MeshType >::name() );
-  using IndexType = IndexType;
+  SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
+            << mesh_type_name< MeshType >::name() );
 
   constexpr IndexType N = 20;
   const double lo[] = { -10, -10 };
@@ -100,20 +95,16 @@ void check_for_all_cells_ij( )
   Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
-  const IndexType numCells = test_mesh->getNumberOfCells();
-
-  IndexType* icoords = utilities::alloc< IndexType >( numCells );
-  IndexType* jcoords = utilities::alloc< IndexType >( numCells );
+  IndexType* icoords = test_mesh->createField< IndexType >( "i", CELL_CENTERED );
+  IndexType* jcoords = test_mesh->createField< IndexType >( "j", CELL_CENTERED );
 
   for_all_cells< ExecPolicy, xargs::ij >( test_mesh,
-                                                      AXOM_LAMBDA( IndexType
-                                                                   cellIdx,
-                                                                   IndexType i,
-                                                                   IndexType j )
+    AXOM_LAMBDA( IndexType cellIdx, IndexType i, IndexType j )
     {
       icoords[ cellIdx ] = i;
       jcoords[ cellIdx ] = j;
-    } );
+    }
+  );
 
   IndexType icell = 0;
   for ( IndexType j=0 ; j < (N-1) ; ++j )
@@ -123,25 +114,19 @@ void check_for_all_cells_ij( )
       EXPECT_EQ( icoords[ icell ], i );
       EXPECT_EQ( jcoords[ icell ], j );
       ++icell;
-
     } // END for all i
   } // END for all j
 
   delete test_mesh;
   test_mesh = nullptr;
-
-  utilities::free( icoords );
-  utilities::free( jcoords );
 }
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, int MeshType >
 void check_for_all_cells_ijk( )
 {
-  SLIC_INFO( "checking [for_all_cells_ijk] policy=" <<
-             policy_traits< ExecPolicy >::name() << " " <<
-             "mesh_type=" << mesh_type_name< MeshType >::name() );
-  using IndexType = IndexType;
+  SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
+            << mesh_type_name< MeshType >::name() );
 
   constexpr IndexType N = 20;
   const double lo[] = { -10, -10, -10 };
@@ -152,23 +137,18 @@ void check_for_all_cells_ijk( )
   Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
-  const IndexType numCells = test_mesh->getNumberOfCells();
-
-  IndexType* icoords = utilities::alloc< IndexType >( numCells );
-  IndexType* jcoords = utilities::alloc< IndexType >( numCells );
-  IndexType* kcoords = utilities::alloc< IndexType >( numCells );
+  IndexType* icoords = test_mesh->createField< IndexType >( "i", CELL_CENTERED );
+  IndexType* jcoords = test_mesh->createField< IndexType >( "j", CELL_CENTERED );
+  IndexType* kcoords = test_mesh->createField< IndexType >( "k", CELL_CENTERED );
 
   for_all_cells< ExecPolicy, xargs::ijk >( test_mesh,
-                                                       AXOM_LAMBDA( IndexType
-                                                                    cellIdx,
-                                                                    IndexType i,
-                                                                    IndexType j,
-                                                                    IndexType k )
+    AXOM_LAMBDA( IndexType cellIdx, IndexType i, IndexType j, IndexType k )
     {
       icoords[ cellIdx ] = i;
       jcoords[ cellIdx ] = j;
       kcoords[ cellIdx ] = k;
-    } );
+    }
+  );
 
   IndexType icell = 0;
   for ( IndexType k=0 ; k < (N-1) ; ++k )
@@ -181,28 +161,21 @@ void check_for_all_cells_ijk( )
         EXPECT_EQ( jcoords[ icell ], j );
         EXPECT_EQ( kcoords[ icell ], k );
         ++icell;
-
       } // END for all i
     } // END for all j
   } // END for all k
 
   delete test_mesh;
   test_mesh = nullptr;
-
-  utilities::free( icoords );
-  utilities::free( jcoords );
 }
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, int MeshType >
 void check_for_all_cell_nodes( int dimension )
 {
-  SLIC_INFO( "dimension=" << dimension );
-  SLIC_INFO( "checking [for_all_cells_index] policy=" <<
-             policy_traits< ExecPolicy >::name() << " " <<
-             "mesh_type=" << mesh_type_name< MeshType >::name() );
-
-  using IndexType = IndexType;
+  SLIC_INFO( "dimension=" << dimension << ", policy="
+            << policy_traits< ExecPolicy >::name() << ", mesh_type="
+            << mesh_type_name< MeshType >::name() );
 
   const IndexType Ni = 20;
   const IndexType Nj = (dimension >= 2) ? Ni : -1;
@@ -215,49 +188,41 @@ void check_for_all_cell_nodes( int dimension )
   Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
-  IndexType numCells        = test_mesh->getNumberOfCells();
-  IndexType* conn = utilities::alloc< IndexType >( MAX_NUM_NODES * numCells );
+  const IndexType numCells = test_mesh->getNumberOfCells();
+  IndexType* conn = test_mesh->createField< IndexType >( "conn", CELL_CENTERED, MAX_CELL_NODES );
 
   for_all_cells< ExecPolicy, xargs::nodeids >( test_mesh,
-    AXOM_LAMBDA( IndexType cellID, const IndexType* ccon, IndexType N)
+    AXOM_LAMBDA( IndexType cellID, const IndexType* nodes, IndexType N)
     {
-      for ( int i=0 ; i < N ; ++i )
+      for ( int i = 0 ; i < N ; ++i )
       {
-        conn[ cellID * MAX_NUM_NODES + i ] = ccon[ i ];
+        conn[ cellID * MAX_CELL_NODES + i ] = nodes[ i ];
       } // END for all cell nodes
     } 
   );
 
+  IndexType cellNodes[ MAX_CELL_NODES ];
   for ( IndexType cellID = 0 ; cellID < numCells ; ++cellID )
   {
-    const IndexType N = test_mesh->getNumberOfCellNodes( cellID );
-
-    IndexType cellNodes[ MAX_NUM_NODES ];
-    test_mesh->getCellNodeIDs( cellID, cellNodes );
-
-    for ( int i=0 ; i < N ; ++i )
+    const IndexType N = test_mesh->getCellNodeIDs( cellID, cellNodes );
+    for ( int i = 0 ; i < N ; ++i )
     {
-      EXPECT_EQ( conn[ cellID * MAX_NUM_NODES + i ], cellNodes[ i ] );
+      EXPECT_EQ( conn[ cellID * MAX_CELL_NODES + i ], cellNodes[ i ] );
     }
   }  // END for all cells
 
   /* clean up */
   delete test_mesh;
   test_mesh = nullptr;
-
-  utilities::free( conn );
 }
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, int MeshType >
 void check_for_all_cell_faces( int dimension )
 {
-  SLIC_INFO( "dimension=" << dimension );
-  SLIC_INFO( "checking [for_all_cells_index] policy=" <<
-             policy_traits< ExecPolicy >::name() << " " <<
-             "mesh_type=" << mesh_type_name< MeshType >::name() );
-
-  using IndexType = IndexType;
+  SLIC_INFO( "dimension=" << dimension << ", policy="
+            << policy_traits< ExecPolicy >::name() << ", mesh_type="
+            << mesh_type_name< MeshType >::name() );
 
   const IndexType Ni = 20;
   const IndexType Nj = (dimension >= 2) ? Ni : -1;
@@ -272,28 +237,27 @@ void check_for_all_cell_faces( int dimension )
 
   const IndexType numCells        = test_mesh->getNumberOfCells();
   const IndexType numFacesPerCell = test_mesh->getNumberOfCellFaces();
-  IndexType* cellFaces = 
-                    utilities::alloc< IndexType >( numFacesPerCell * numCells );
+  IndexType* cellFaces = test_mesh->createField< IndexType >( "cellFaces", 
+                                                              CELL_CENTERED,
+                                                              numFacesPerCell );
 
   for_all_cells< ExecPolicy, xargs::faceids >( test_mesh,
     AXOM_LAMBDA( IndexType cellID, const IndexType* faces, IndexType N)
     {
       EXPECT_EQ( N, numFacesPerCell );
 
-      for ( int i=0 ; i < N ; ++i )
+      for ( int i = 0 ; i < N ; ++i )
       {
         cellFaces[ cellID * numFacesPerCell + i ] = faces[ i ];
       }
     }
   );
 
-  for ( IndexType cellID=0 ; cellID < numCells ; ++cellID )
+  IndexType faces[ 8 ];
+  for ( IndexType cellID = 0 ; cellID < numCells ; ++cellID )
   {
-    const IndexType N = test_mesh->getNumberOfCellFaces( cellID );
+    const IndexType N = test_mesh->getCellFaceIDs( cellID, faces );
     EXPECT_EQ( N, numFacesPerCell );
-
-    IndexType faces[ 8 ];
-    test_mesh->getCellFaceIDs( cellID, faces );
 
     for ( IndexType i=0 ; i < N ; ++i )
     {
@@ -304,8 +268,6 @@ void check_for_all_cell_faces( int dimension )
   /* clean up */
   delete test_mesh;
   test_mesh = nullptr;
-
-  utilities::free( cellFaces );
 }
 
 } /* end anonymous namespace */

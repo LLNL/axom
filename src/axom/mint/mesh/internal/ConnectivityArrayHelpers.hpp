@@ -351,7 +351,7 @@ inline IndexType calcValueCapacity( IndexType n_IDs, IndexType ID_capacity,
   {
     if ( n_IDs == 0 )
     {
-      value_capacity = ID_capacity * MAX_NUM_NODES;
+      value_capacity = ID_capacity * MAX_CELL_NODES;
     }
     else
     {

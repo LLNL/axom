@@ -46,12 +46,9 @@ namespace
 template < typename ExecPolicy, int MeshType >
 void check_for_all_nodes_idx( int dimension )
 {
-  SLIC_INFO( "dimension=" << dimension );
-  SLIC_INFO( "checking [for_all_nodes_index] policy=" <<
-             policy_traits< ExecPolicy >::name() << " " <<
-             "mesh_type=" << mesh_type_name< MeshType >::name() );
-
-  using IndexType = IndexType;
+  SLIC_INFO( "dimension=" << dimension << ", policy="
+            << policy_traits< ExecPolicy >::name() << ", mesh_type="
+            << mesh_type_name< MeshType >::name() );
 
   constexpr int MAGIC_VAL = 42;
 
@@ -88,11 +85,9 @@ void check_for_all_nodes_idx( int dimension )
 template < typename ExecPolicy, int MeshType >
 void check_for_all_nodes_ij( )
 {
-  SLIC_INFO( "checking [for_all_nodes_ij] policy=" <<
-             policy_traits< ExecPolicy >::name() << " " <<
-             "mesh_type=" << mesh_type_name< MeshType >::name() );
-  using IndexType = IndexType;
-
+  SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
+            << mesh_type_name< MeshType >::name() );
+  
   constexpr IndexType N = 20;
   const double lo[] = { -10, -10 };
   const double hi[] = {  10,  10 };
@@ -141,10 +136,8 @@ void check_for_all_nodes_ij( )
 template < typename ExecPolicy, int MeshType >
 void check_for_all_nodes_ijk( )
 {
-  SLIC_INFO( "checking [for_all_nodes_ijk] policy=" <<
-             policy_traits< ExecPolicy >::name() << " " <<
-             "mesh_type=" << mesh_type_name< MeshType >::name() );
-  using IndexType = IndexType;
+  SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
+            << mesh_type_name< MeshType >::name() );
 
   constexpr IndexType N = 20;
   const double lo[] = { -10, -10, -10 };
@@ -202,9 +195,8 @@ void check_for_all_nodes_ijk( )
 template < typename ExecPolicy, int MeshType >
 void check_for_all_nodes_xyz( )
 {
-  SLIC_INFO( "checking [for_all_nodes_xyz] policy=" <<
-             policy_traits< ExecPolicy >::name() << " " <<
-             "mesh_type=" << mesh_type_name< MeshType >::name() );
+  SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
+            << mesh_type_name< MeshType >::name() );
 
   constexpr IndexType N = 20;
   const double lo[] = { -10, -10, -10 };
@@ -252,9 +244,8 @@ void check_for_all_nodes_xyz( )
 template < typename ExecPolicy, int MeshType >
 void check_for_all_nodes_xy( )
 {
-  SLIC_INFO( "checking [for_all_nodes_xy] policy=" <<
-             policy_traits< ExecPolicy >::name() << " " <<
-             "mesh_type=" << mesh_type_name< MeshType >::name() );
+  SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
+            << mesh_type_name< MeshType >::name() );
 
   constexpr IndexType N = 20;
   const double lo[] = { -10, -10 };
@@ -298,9 +289,8 @@ void check_for_all_nodes_xy( )
 template < typename ExecPolicy, int MeshType >
 void check_for_all_nodes_x( )
 {
-  SLIC_INFO( "checking [for_all_nodes_x] policy=" <<
-             policy_traits< ExecPolicy >::name() << " " <<
-             "mesh_type=" << mesh_type_name< MeshType >::name() );
+  SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
+            << mesh_type_name< MeshType >::name() );
 
   constexpr IndexType Ni = 20;
   const double lo[] = { -10 };

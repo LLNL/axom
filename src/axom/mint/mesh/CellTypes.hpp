@@ -25,7 +25,7 @@ namespace axom
 namespace mint
 {
 
-static constexpr int MAX_NUM_NODES = 27;
+static constexpr int MAX_CELL_NODES = 27;
 static constexpr int MAX_CELL_FACES = 6;
 static constexpr int MAX_FACE_NODES = 9;
 static constexpr int MAX_ALL_FACES_NODES = MAX_CELL_FACES * MAX_FACE_NODES;

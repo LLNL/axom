@@ -216,7 +216,7 @@ void check_append_cells_mixed( const Mesh* mesh, IndexType x_extent,
   ASSERT_TRUE( mesh->hasMixedCellTypes() );
 
   IndexType cell_ID = 0;
-  IndexType cell[ MAX_NUM_NODES ];
+  IndexType cell[ MAX_CELL_NODES ];
   for ( IndexType j = 0 ; j < y_extent - 1 ; ++j )
   {
     for ( IndexType i = 0 ; i < x_extent - 1 ; ++i )
