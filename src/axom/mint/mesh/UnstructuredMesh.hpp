@@ -200,7 +200,8 @@ public:
     m_cell_connectivity( new CellConnectivity( cell_capacity,
                                                connectivity_capacity ) ),
     m_cell_to_face( nullptr ),
-    m_face_to_cell( nullptr )
+    m_face_to_cell( nullptr ),
+    m_face_to_node( nullptr )
   {
     AXOM_STATIC_ASSERT_MSG( TOPO == MIXED_SHAPE,
                             "This constructor is only active for mixed topology meshes." );
@@ -560,6 +561,11 @@ public:
       delete m_face_to_cell;
       m_face_to_cell = nullptr;
     }
+    if ( m_face_to_node != nullptr )
+    {
+      delete m_face_to_node;
+      m_face_to_node = nullptr;
+    }
   }
 
 /// \name Cells
@@ -578,18 +584,6 @@ public:
   { return m_cell_connectivity->getIDCapacity(); }
 
   /*!
-   * \brief Return the number of nodes associated with the given cell.
-   *
-   * \param [in] cellID the ID of the cell in question, this parameter is
-   *  ignored if TOPO == SINGLE_SHAPE.
-   *
-   * \pre 0 <= cellID < getNumberOfCells()
-   */
-  virtual IndexType getNumberOfCellNodes( IndexType cellID=0 )
-  const final override
-  { return m_cell_connectivity->getNumberOfValuesForID( cellID ); }
-
-  /*!
    * \brief Return the type of the given cell.
    *
    * \param [in] cellID the ID of the cell in question, this parameter is
@@ -600,6 +594,18 @@ public:
    */
   virtual CellType getCellType( IndexType cellID=-1 ) const final override
   { return m_cell_connectivity->getIDType( cellID ); }
+
+  /*!
+   * \brief Return the number of nodes associated with the given cell.
+   *
+   * \param [in] cellID the ID of the cell in question, this parameter is
+   *  ignored if TOPO == SINGLE_SHAPE.
+   *
+   * \pre 0 <= cellID < getNumberOfCells()
+   */
+  virtual IndexType getNumberOfCellNodes( IndexType cellID=0 )
+  const final override
+  { return m_cell_connectivity->getNumberOfValuesForID( cellID ); }
 
   /*!
    * \brief Copy the connectivity of the given cell into the provided buffer.
@@ -622,6 +628,41 @@ public:
     std::memcpy( nodes, getCellNodeIDs( cellID ),
                  n_nodes * sizeof( IndexType ) );
     return n_nodes;
+  }
+
+  /*!
+   * \brief Return the number of faces associated with the given cell.
+   *
+   * \param [in] cellID the ID of the cell in question.
+   */
+  virtual
+  IndexType getNumberOfCellFaces( IndexType cellID ) const final override
+  {
+    SLIC_ASSERT( m_cell_to_face != nullptr );
+    return m_cell_to_face->getNumberOfValuesForID(cellID);
+  }
+
+  /*!
+   * \brief Copy the face IDs of the given cell into the provided buffer.
+   * The buffer must be of length at least getNumberOfCellFaces( cellID ).
+   *
+   * \param [in] cellID the ID of the cell in question
+   * \param [out] faces the buffer into which the face IDs are copied.
+   *
+   * \return The number of faces for the given cell.
+   *
+   * \pre faces != nullptr
+   * \pre 0 <= cellID < getNumberOfCells()
+   */
+  virtual
+  IndexType getCellFaceIDs( IndexType cellID,
+                            IndexType* faces ) const final override
+  {
+    SLIC_ASSERT( faces != nullptr );
+    const IndexType n_faces = getNumberOfCellFaces( cellID );
+    std::memcpy( faces, getCellFaceIDs( cellID ),
+                 n_faces * sizeof( IndexType ) );
+    return n_faces;
   }
 
 /// @}
@@ -677,51 +718,12 @@ public:
 /// \name Faces
 /// @{
 
-  /*! \brief Sets up cell-face and face-cell relations. */
-  bool initializeFaceConnectivity()
-  {
-    int facecount = 0;
-    IndexType * f2cdata = nullptr;
-    IndexType * c2fdata = nullptr;
-    IndexType * c2ndata = nullptr;
-    IndexType * c2foffsets = nullptr;
-    IndexType * f2ndata = nullptr;
-    IndexType * f2noffsets = nullptr;
-    CellType * f2ntypes = nullptr;
-
-    bool retval = internal::initFaces(this, facecount, f2cdata,
-                                      c2fdata, c2ndata, c2foffsets,
-                                      f2ndata, f2noffsets, f2ntypes);
-
-    if (retval)
-    {
-      // Copy in the face relation data.
-      m_face_to_cell = new FaceToCellConnectivity(SEGMENT, facecount);
-      m_face_to_cell->setM(f2cdata, 0, facecount);
-
-      m_cell_to_face = new CellToFaceConnectivity(SEGMENT);
-      m_cell_to_face->appendM(c2fdata, getNumberOfCells(), c2foffsets);
-
-      m_face_to_node = new FaceToNodeConnectivity(facecount);
-      m_face_to_node->appendM(f2ndata, facecount, f2noffsets, f2ntypes);
-    }
-
-    delete [] f2cdata;
-    delete [] c2fdata;
-    delete [] c2ndata;
-    delete [] c2foffsets;
-    delete [] f2ndata;
-    delete [] f2noffsets;
-    delete [] f2ntypes;
-
-    return retval;
-  }
-
   /*!
    * \brief Return the number of faces in the mesh.
    */
   virtual IndexType getNumberOfFaces() const final override
   {
+    SLIC_ASSERT( m_cell_to_face != nullptr );
     return m_cell_to_face->getNumberOfValues();
   }
 
@@ -729,7 +731,10 @@ public:
    * \brief Return the capacity for faces.
    */
   virtual IndexType getFaceCapacity() const final override
-  { return m_cell_to_face->getValueCapacity(); }
+  {
+    SLIC_ASSERT( m_cell_to_face != nullptr );
+    return m_cell_to_face->getValueCapacity();
+  }
 
   /*!
    * \brief Return the type of the given face.
@@ -737,7 +742,10 @@ public:
    * \param [in] faceID the ID of the face in question.
    */
   virtual CellType getFaceType( IndexType faceID ) const final override
-  { return m_face_to_node->getIDType( faceID ); }
+  {
+    SLIC_ASSERT( m_face_to_node != nullptr );
+    return m_face_to_node->getIDType( faceID );
+  }
 
   /*!
    * \brief Return the number of nodes associated with the given face.
@@ -746,7 +754,10 @@ public:
    */
   virtual IndexType
   getNumberOfFaceNodes( IndexType faceID ) const final override
-  { return m_face_to_node->getNumberOfValuesForID(faceID); }
+  {
+    SLIC_ASSERT( m_face_to_node != nullptr );
+    return m_face_to_node->getNumberOfValuesForID(faceID);
+  }
 
   /*!
    * \brief Copy the IDs of the nodes that compose the given face into the
@@ -772,38 +783,6 @@ public:
   }
 
   /*!
-   * \brief Return the number of faces associated with the given cell.
-   *
-   * \param [in] cellID the ID of the cell in question.
-   */
-  virtual
-  IndexType getNumberOfCellFaces( IndexType cellID ) const final override
-  { return m_cell_to_face->getNumberOfValuesForID(cellID); }
-
-  /*!
-   * \brief Copy the face IDs of the given cell into the provided buffer.
-   * The buffer must be of length at least getNumberOfCellFaces( cellID ).
-   *
-   * \param [in] cellID the ID of the cell in question
-   * \param [out] faces the buffer into which the face IDs are copied.
-   *
-   * \return The number of faces for the given cell.
-   *
-   * \pre faces != nullptr
-   * \pre 0 <= cellID < getNumberOfCells()
-   */
-  virtual
-  IndexType getCellFaceIDs( IndexType cellID,
-                            IndexType* faces ) const final override
-  {
-    SLIC_ASSERT( faces != nullptr );
-    const IndexType n_faces = getNumberOfCellFaces( cellID );
-    std::memcpy( faces, getCellFaceIDs( cellID ),
-                 n_faces * sizeof( IndexType ) );
-    return n_faces;
-  }
-
-  /*!
    * \brief Copy the IDs of the cells adjacent to the given face into the
    *  provided indices.
    *
@@ -820,6 +799,7 @@ public:
                                IndexType& cellIDOne,
                                IndexType& cellIDTwo ) const final override
   {
+    SLIC_ASSERT( m_face_to_cell != nullptr );
     IndexType * faces = (*m_face_to_cell)[ faceID ];
     cellIDOne = faces[0];
     cellIDTwo = faces[1];
@@ -1505,6 +1485,46 @@ public:
 /// \name Faces
 /// @{
 
+  /*! \brief Sets up cell-face and face-cell relations. */
+  bool initializeFaceConnectivity()
+  {
+    int facecount = 0;
+    IndexType * f2cdata = nullptr;
+    IndexType * c2fdata = nullptr;
+    IndexType * c2ndata = nullptr;
+    IndexType * c2foffsets = nullptr;
+    IndexType * f2ndata = nullptr;
+    IndexType * f2noffsets = nullptr;
+    CellType * f2ntypes = nullptr;
+
+    bool retval = internal::initFaces(this, facecount, f2cdata,
+                                      c2fdata, c2ndata, c2foffsets,
+                                      f2ndata, f2noffsets, f2ntypes);
+
+    if (retval)
+    {
+      // Copy in the face relation data.
+      m_face_to_cell = new FaceToCellConnectivity(SEGMENT, facecount);
+      m_face_to_cell->setM(f2cdata, 0, facecount);
+
+      m_cell_to_face = new CellToFaceConnectivity(SEGMENT);
+      m_cell_to_face->appendM(c2fdata, getNumberOfCells(), c2foffsets);
+
+      m_face_to_node = new FaceToNodeConnectivity(facecount);
+      m_face_to_node->appendM(f2ndata, facecount, f2noffsets, f2ntypes);
+    }
+
+    delete [] f2cdata;
+    delete [] c2fdata;
+    delete [] c2ndata;
+    delete [] c2foffsets;
+    delete [] f2ndata;
+    delete [] f2noffsets;
+    delete [] f2ntypes;
+
+    return retval;
+  }
+
   /*!
    * \brief Return a pointer to the faces of the given cell. The
    *  buffer is guarenteed to be of length at least
@@ -1536,10 +1556,16 @@ public:
   /// @{
 
   IndexType* getFaceNodeIDs( IndexType faceID )
-  { return (*m_face_to_node)[ faceID ]; }
+  {
+    SLIC_ASSERT( m_face_to_node != nullptr );
+    return (*m_face_to_node)[ faceID ];
+  }
 
   const IndexType* getFaceNodeIDs( IndexType faceID ) const
-  { return (*m_face_to_node)[ faceID ]; }
+  {
+    SLIC_ASSERT( m_face_to_node != nullptr );
+    return (*m_face_to_node)[ faceID ];
+  }
 
   /// @}
 
@@ -1605,17 +1631,16 @@ private:
    *
    * Face types are stored in the face-node relation.
    */
-  using FaceToCellConnectivity = ConnectivityArray< NO_INDIRECTION >;
   using CellToFaceConnectivity =
     ConnectivityArray< topology_traits< TOPO >::cell_connec >;
+  using FaceToCellConnectivity = ConnectivityArray< NO_INDIRECTION >;
+  using FaceToNodeConnectivity = ConnectivityArray< TYPED_INDIRECTION >;
 
   /*! \brief Each cell's faces */
   CellToFaceConnectivity* m_cell_to_face;
 
   /*! \brief Each face's cells */
   FaceToCellConnectivity* m_face_to_cell;
-
-  using FaceToNodeConnectivity = ConnectivityArray< TYPED_INDIRECTION >;
 
   /*! \brief Each face's nodes */
   FaceToNodeConnectivity* m_face_to_node;
