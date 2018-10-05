@@ -65,3 +65,7 @@ packages:
    paths:
       tar: /usr/bin/
    buildable: False
+# Globally lock in version of CMake
+  cmake:
+    version: [3.9.6]
+
