@@ -339,8 +339,18 @@ create_mesh< UNSTRUCTURED_MIXED_SHAPE_MESH >(
 
   using UnstructuredMeshType = UnstructuredMesh< MIXED_SHAPE >;
 
-  UnstructuredMeshType* output_mesh = 
-          new UnstructuredMeshType( dimension, numNodes, numCells * 2 );
+  IndexType node_capacity = numNodes;
+  IndexType cell_capacity = numCells * 1.6;
+
+  if ( dimension == 3 )
+  {
+    node_capacity = numNodes + numCells / 1.75;
+    cell_capacity = numCells * 3.75;
+  }
+
+  UnstructuredMeshType* output_mesh = new UnstructuredMeshType( dimension,
+                                                                node_capacity,
+                                                                cell_capacity );
 
   // append nodes
   for ( IndexType nodeID = 0 ; nodeID < numNodes ; ++nodeID )
