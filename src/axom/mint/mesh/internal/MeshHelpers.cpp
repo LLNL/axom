@@ -32,9 +32,7 @@ namespace internal
 //------------------------------------------------------------------------------
 // IMPLEMENTATION OF FREE METHODS
 //------------------------------------------------------------------------------
-std::string join_ints_into_string(int count,
-                                  IndexType * values,
-                                  char sep)
+std::string join_ints_into_string(int count, IndexType * values, char sep)
 {
   std::stringstream joined;
 
@@ -45,6 +43,15 @@ std::string join_ints_into_string(int count,
   }
 
   return joined.str();
+}
+
+
+//------------------------------------------------------------------------------
+std::string make_face_key(int count, IndexType * values, char sep)
+{
+  std::vector<IndexType> locvalues(values, values + count);
+  std::sort(locvalues.begin(), locvalues.end());
+  return join_ints_into_string(count, locvalues.data(), sep);
 }
 
 
@@ -63,23 +70,48 @@ IndexType otherSide(IndexType * f2c, IndexType thisSide)
 
 
 //------------------------------------------------------------------------------
+struct FaceTypeCellsNodes
+{
+  FaceTypeCellsNodes() : facetype(UNDEFINED_CELL)
+  { }
+
+  FaceTypeCellsNodes(CellType ftype, std::string fkey,
+                     std::vector<IndexType> & fcells,
+                     std::vector<IndexType> & fnodes) :
+    facetype(ftype), facekey(fkey), facecells(fcells), facenodes(fnodes)
+  { }
+
+  CellType facetype;
+  std::string facekey;
+  std::vector<IndexType> facecells;
+  std::vector<IndexType> facenodes;
+};
+
+
+//------------------------------------------------------------------------------
 bool initFaces(Mesh * mesh,
                IndexType & facecount,
                IndexType *& f2c,
                IndexType *& c2f,
                IndexType *& c2n,
-               IndexType *& c2foffsets)
+               IndexType *& c2foffsets,
+               IndexType *& f2n,
+               IndexType *& f2noffsets,
+               CellType *& f2ntypes )
 {
   bool success = true;
 
   facecount = 0;
   f2c = nullptr;
   c2f = nullptr;
+  c2n = nullptr;
   c2foffsets = nullptr;
+  f2n = nullptr;
+  f2noffsets = nullptr;
+  f2ntypes = nullptr;
 
   using IDtoKeyType = std::map< IndexType, std::string > ;
-  using FaceTypeAndCells = std::pair< CellType, std::vector<IndexType> > ;
-  using FaceBuilderType = std::map< std::string, FaceTypeAndCells > ;
+  using FaceBuilderType = std::map< std::string, FaceTypeCellsNodes > ;
   FaceBuilderType workface;
 
   // Iterate over each cell.
@@ -93,7 +125,6 @@ bool initFaces(Mesh * mesh,
     const CellInfo thisCell = getCellInfo(celltype);
 
     int base = 0;
-    IndexType face_nodes[MAX_ONE_FACE_NODES];
     for (int f = 0; f < thisCell.num_faces; ++f)
     {
       // Step 2. The cell nodes will be in "VTK Order," as specified by
@@ -105,27 +136,29 @@ bool initFaces(Mesh * mesh,
       // string with '.' delimiters.  This is the key for an associative
       // array whose value is a list of cell IDs.
       int num_face_nodes = thisCell.face_nodecount[f];
+      std::vector<IndexType> inorder_facenodes(num_face_nodes);
       const IndexType * face_node_offsets = thisCell.face_nodes + base;
       for (int fn = 0; fn < num_face_nodes; ++fn)
       {
-        face_nodes[fn] = nodes[face_node_offsets[fn]];
+        inorder_facenodes[fn] = nodes[face_node_offsets[fn]];
       }
       base += num_face_nodes;
 
-      std::sort(face_nodes, face_nodes + num_face_nodes);
-      std::string face_hash = 
-        join_ints_into_string(num_face_nodes, face_nodes, '.');
+      std::string face_hash =
+        make_face_key(num_face_nodes, inorder_facenodes.data(), '.');
 
-      FaceTypeAndCells cells_of_face;
+      FaceTypeCellsNodes cells_of_face;
       if (workface.count(face_hash) > 0)
       {
         cells_of_face = workface[face_hash];
       }
       else
       {
-        cells_of_face.first = thisCell.face_types[f];
+        cells_of_face.facetype = thisCell.face_types[f];
+        cells_of_face.facekey = face_hash;
+        cells_of_face.facenodes = inorder_facenodes;
       }
-      cells_of_face.second.push_back(c);
+      cells_of_face.facecells.push_back(c);
       workface[face_hash] = cells_of_face;
     }
   }
@@ -134,21 +167,24 @@ bool initFaces(Mesh * mesh,
   // Here we use ConnectivityArray::reserve() and then append() each
   // face.  This means the kth inserted face gets ID k.
   IndexType faceID = 0;
+  IndexType faceNodeTotal = 0;
   IDtoKeyType keys;
   f2c = new IndexType[2 * workface.size()];
   for (FaceBuilderType::value_type v : workface)
   {
-    int faceNodeCount = v.second.second.size();
-    IndexType * faceNodes = v.second.second.data();
+    FaceTypeCellsNodes theFace = v.second;
+    faceNodeTotal += theFace.facenodes.size();
+    int faceCellCount = theFace.facecells.size();
+    IndexType * faceCells = theFace.facecells.data();
 
-    if (faceNodeCount < 1 || faceNodeCount > 2)
+    if (faceCellCount < 1 || faceCellCount > 2)
     {
       success = false;
     }
     else
     {
-      f2c[2*faceID] = faceNodes[0];
-      f2c[2*faceID + 1] = (faceNodeCount > 1? faceNodes[1]: -1);
+      f2c[2*faceID] = faceCells[0];
+      f2c[2*faceID + 1] = (faceCellCount > 1? faceCells[1]: -1);
     }
 
     keys[faceID] = v.first;
@@ -168,6 +204,24 @@ bool initFaces(Mesh * mesh,
   // Record how many faces we have in this mesh.
   facecount = faceID;
 
+  // Now that we have a count of all the face-nodes, and we know we have no
+  // faces with more than two nodes, record the face-node relations.
+  f2n = new IndexType[faceNodeTotal];
+  f2noffsets = new IndexType[facecount + 1];
+  f2ntypes = new CellType[facecount];
+  int faceNodeOffset = 0;
+  for (int fidx = 0; fidx < facecount; ++fidx)
+  {
+    std::string facekey = keys[fidx];
+    FaceTypeCellsNodes theFace = workface[keys[fidx]];
+    std::vector<IndexType> & faceNodes = theFace.facenodes;
+    std::copy(faceNodes.begin(), faceNodes.end(), f2n + faceNodeOffset);
+    f2noffsets[fidx] = faceNodeOffset;
+    f2ntypes[fidx] = theFace.facetype;
+    faceNodeOffset += faceNodes.size();
+  }
+  f2noffsets[facecount] = faceNodeOffset;
+
   // Step 4. Now that we have face IDs, record cell-to-face relation.
   typedef std::map< IndexType, std::vector<IndexType> >
     CellFaceBuilderType;
@@ -176,7 +230,7 @@ bool initFaces(Mesh * mesh,
   int cellFaceCount = 0;
   for (int f = 0; f < facecount; ++f)
   {
-    for (IndexType c : workface[keys[f]].second)
+    for (IndexType c : workface[keys[f]].facecells)
     {
       std::vector<IndexType> cell_faces;
       if (cell_to_face.count(c) > 0)

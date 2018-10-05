@@ -168,7 +168,8 @@ public:
     m_coordinates( new MeshCoordinates( ndims, 0, node_capacity ) ),
     m_cell_connectivity( new CellConnectivity( cell_type, cell_capacity ) ),
     m_cell_to_face( nullptr ),
-    m_face_to_cell( nullptr )
+    m_face_to_cell( nullptr ),
+    m_face_to_node( nullptr )
   {
     AXOM_STATIC_ASSERT_MSG( TOPO == SINGLE_SHAPE,
                             "This constructor is only active for single topology meshes." );
@@ -253,7 +254,8 @@ public:
     m_cell_connectivity( new CellConnectivity( cell_type, n_cells, connectivity,
                                                cell_capacity ) ),
     m_cell_to_face( nullptr ),
-    m_face_to_cell( nullptr )
+    m_face_to_cell( nullptr ),
+    m_face_to_node( nullptr )
   {
     AXOM_STATIC_ASSERT_MSG( TOPO == SINGLE_SHAPE,
                             "This constructor is only active for single topology meshes." );
@@ -343,7 +345,8 @@ public:
                                                types, cell_capacity,
                                                connectivity_capacity ) ),
     m_cell_to_face( nullptr ),
-    m_face_to_cell( nullptr )
+    m_face_to_cell( nullptr ),
+    m_face_to_node( nullptr )
   {
     AXOM_STATIC_ASSERT_MSG( TOPO == MIXED_SHAPE,
                             "This constructor is only active for mixed topology meshes." );
@@ -425,7 +428,8 @@ public:
     m_coordinates( new MeshCoordinates( getCoordsetGroup() ) ),
     m_cell_connectivity( new CellConnectivity( getTopologyGroup() ) ),
     m_cell_to_face( nullptr ),
-    m_face_to_cell( nullptr )
+    m_face_to_cell( nullptr ),
+    m_face_to_node( nullptr )
   {
     SLIC_ERROR_IF( m_type != UNSTRUCTURED_MESH,
                    "Supplied sidre::Group does not correspond to a UnstructuredMesh." );
@@ -477,7 +481,8 @@ public:
     m_cell_connectivity( new CellConnectivity( cell_type, getTopologyGroup(),
                                                m_coordset, cell_capacity ) ),
     m_cell_to_face( nullptr ),
-    m_face_to_cell( nullptr )
+    m_face_to_cell( nullptr ),
+    m_face_to_node( nullptr )
   {
     AXOM_STATIC_ASSERT_MSG( TOPO == SINGLE_SHAPE,
                             "This constructor is only active for single topology meshes." );
@@ -503,7 +508,8 @@ public:
                                                cell_capacity,
                                                connectivity_capacity ) ),
     m_cell_to_face( nullptr ),
-    m_face_to_cell( nullptr )
+    m_face_to_cell( nullptr ),
+    m_face_to_node( nullptr )
   {
     AXOM_STATIC_ASSERT_MSG( TOPO == MIXED_SHAPE,
                             "This constructor is only active for mixed topology meshes." );
@@ -679,9 +685,13 @@ public:
     IndexType * c2fdata = nullptr;
     IndexType * c2ndata = nullptr;
     IndexType * c2foffsets = nullptr;
+    IndexType * f2ndata = nullptr;
+    IndexType * f2noffsets = nullptr;
+    CellType * f2ntypes = nullptr;
 
     bool retval = internal::initFaces(this, facecount, f2cdata,
-                                      c2fdata, c2ndata, c2foffsets);
+                                      c2fdata, c2ndata, c2foffsets,
+                                      f2ndata, f2noffsets, f2ntypes);
 
     if (retval)
     {
@@ -691,11 +701,18 @@ public:
 
       m_cell_to_face = new CellToFaceConnectivity(SEGMENT);
       m_cell_to_face->appendM(c2fdata, getNumberOfCells(), c2foffsets);
+
+      m_face_to_node = new FaceToNodeConnectivity(facecount);
+      m_face_to_node->appendM(f2ndata, facecount, f2noffsets, f2ntypes);
     }
 
     delete [] f2cdata;
     delete [] c2fdata;
+    delete [] c2ndata;
     delete [] c2foffsets;
+    delete [] f2ndata;
+    delete [] f2noffsets;
+    delete [] f2ntypes;
 
     return retval;
   }
@@ -712,8 +729,46 @@ public:
    * \brief Return the capacity for faces.
    */
   virtual IndexType getFaceCapacity() const final override
+  { return m_cell_to_face->getValueCapacity(); }
+
+  /*!
+   * \brief Return the type of the given face.
+   *
+   * \param [in] faceID the ID of the face in question.
+   */
+  virtual CellType getFaceType( IndexType faceID ) const final override
+  { return m_face_to_node->getIDType( faceID ); }
+
+  /*!
+   * \brief Return the number of nodes associated with the given face.
+   *
+   * \param [in] faceID the ID of the face in question.
+   */
+  virtual IndexType
+  getNumberOfFaceNodes( IndexType faceID ) const final override
+  { return m_face_to_node->getNumberOfValuesForID(faceID); }
+
+  /*!
+   * \brief Copy the IDs of the nodes that compose the given face into the
+   *  provided buffer.
+   *
+   * \param [in] faceID the ID of the face in question.
+   * \param [out] nodes the buffer into which the node IDs are copied, must
+   *  be of length at least getNumberOfFaceNodes().
+   *
+   * \return The number of nodes for the given face.
+   *
+   * \pre nodes != nullptr
+   * \pre 0 <= faceID < getNumberOfCells()
+   */
+  virtual IndexType getFaceNodeIDs( IndexType faceID,
+                                    IndexType* nodes ) const final override
   {
-    return m_cell_to_face->getValueCapacity();
+    SLIC_ASSERT( nodes != nullptr );
+    const IndexType n_nodes = getNumberOfFaceNodes( faceID );
+    std::memcpy( nodes, getFaceNodeIDs( faceID ),
+                 n_nodes * sizeof( IndexType ) );
+    return n_nodes;
   }
 
   /*!
@@ -723,8 +778,51 @@ public:
    */
   virtual
   IndexType getNumberOfCellFaces( IndexType cellID ) const final override
+  { return m_cell_to_face->getNumberOfValuesForID(cellID); }
+
+  /*!
+   * \brief Copy the face IDs of the given cell into the provided buffer.
+   * The buffer must be of length at least getNumberOfCellFaces( cellID ).
+   *
+   * \param [in] cellID the ID of the cell in question
+   * \param [out] faces the buffer into which the face IDs are copied.
+   *
+   * \return The number of faces for the given cell.
+   *
+   * \pre faces != nullptr
+   * \pre 0 <= cellID < getNumberOfCells()
+   */
+  virtual
+  IndexType getCellFaceIDs( IndexType cellID,
+                            IndexType* faces ) const final override
   {
-    return m_cell_to_face->getNumberOfValuesForID(cellID);
+    SLIC_ASSERT( faces != nullptr );
+    const IndexType n_faces = getNumberOfCellFaces( cellID );
+    std::memcpy( faces, getCellFaceIDs( cellID ),
+                 n_faces * sizeof( IndexType ) );
+    return n_faces;
+  }
+
+  /*!
+   * \brief Copy the IDs of the cells adjacent to the given face into the
+   *  provided indices.
+   *
+   * \param [in] faceID the ID of the face in question.
+   * \param [out] cellIDOne the ID of the first cell.
+   * \param [out] cellIDTwo the ID of the second cell.
+   *
+   * \note If no cell exists (the face is external) then the ID will be set to
+   * -1.
+   *
+   * \pre 0 <= faceID < getNumberOfFaces()
+   */
+  virtual void getFaceCellIDs( IndexType faceID,
+                               IndexType& cellIDOne,
+                               IndexType& cellIDTwo ) const final override
+  {
+    IndexType * faces = (*m_face_to_cell)[ faceID ];
+    cellIDOne = faces[0];
+    cellIDTwo = faces[1];
   }
 
 /// @}
@@ -1404,6 +1502,49 @@ public:
 
 /// @}
 
+/// \name Faces
+/// @{
+
+  /*!
+   * \brief Return a pointer to the faces of the given cell. The
+   *  buffer is guarenteed to be of length at least
+   *  getNumberOfCellFaces( cellID ).
+   *
+   * \param [in] cellID the ID of the cell in question.
+   *
+   * \pre 0 <= cellID < getNumberOfCells()
+   */
+  /// @{
+
+  IndexType* getCellFaceIDs( IndexType cellID )
+  { return (*m_cell_to_face)[ cellID ]; }
+
+  const IndexType* getCellFaceIDs( IndexType cellID ) const
+  { return (*m_cell_to_face)[ cellID ]; }
+
+  /// @}
+
+  /*!
+   * \brief Return a pointer to the nodes of the given face. The
+   *  buffer is guarenteed to be of length at least
+   *  getNumberOfFaceNodes( faceID ).
+   *
+   * \param [in] faceID the ID of the face in question.
+   *
+   * \pre 0 <= faceID < getNumberOfFaces()
+   */
+  /// @{
+
+  IndexType* getFaceNodeIDs( IndexType faceID )
+  { return (*m_face_to_node)[ faceID ]; }
+
+  const IndexType* getFaceNodeIDs( IndexType faceID ) const
+  { return (*m_face_to_node)[ faceID ]; }
+
+  /// @}
+
+/// @}
+
 /// @}
 
 private:
@@ -1462,14 +1603,7 @@ private:
    *   The concensus is that storing such a non-manifold mesh is not useful
    *   so we only store the first two incident cells and return an error.
    *
-   * Usually, each face will be the same type.  The exceptions are
-   * - pyramids, with four triangles and one quad
-   * - prisms, with two triangles and three quads
-   * The concensus is that storing type ID for *faces* is not useful,
-   * so we won't worry about it.
-   *
-   * ConnectivityArray< NO_INDIRECTION > with stride 2 will store the
-   * face-to-cell data.
+   * Face types are stored in the face-node relation.
    */
   using FaceToCellConnectivity = ConnectivityArray< NO_INDIRECTION >;
   using CellToFaceConnectivity =
@@ -1480,6 +1614,11 @@ private:
 
   /*! \brief Each face's cells */
   FaceToCellConnectivity* m_face_to_cell;
+
+  using FaceToNodeConnectivity = ConnectivityArray< TYPED_INDIRECTION >;
+
+  /*! \brief Each face's nodes */
+  FaceToNodeConnectivity* m_face_to_node;
 
   DISABLE_COPY_AND_ASSIGNMENT( UnstructuredMesh );
   DISABLE_MOVE_AND_ASSIGNMENT( UnstructuredMesh );

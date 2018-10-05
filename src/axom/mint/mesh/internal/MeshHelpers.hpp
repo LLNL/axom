@@ -18,9 +18,12 @@
 #define MINT_MESH_HELPERS_HPP_
 
 
-#include "axom/core/Macros.hpp" // for AXOM_NOT_USED
-#include "axom/core/Types.hpp"  // for nullptr
-#include "axom/mint/config.hpp" // for mint compile-time type
+#include "axom/core/Macros.hpp"         // for AXOM_NOT_USED
+#include "axom/core/Types.hpp"          // for nullptr
+#include "axom/mint/config.hpp"         // for mint compile-time type
+#include "axom/mint/mesh/CellTypes.hpp" // for CellType
+
+#include <string>
 
 namespace axom
 {
@@ -39,6 +42,10 @@ inline int dim( const double* AXOM_NOT_USED(x),
   return ( ( z != nullptr ) ? 3 : ( (y != nullptr ) ? 2 : 1 ) );
 }
 
+std::string join_ints_into_string(int vcount, IndexType * values, char sep);
+
+std::string make_face_key(int vcount, IndexType * values, char sep);
+
 /*! \brief Record a Mesh's face-to-cell and cell-to-face relations.
  *
  * \param [in] m pointer to a Mesh.
@@ -50,13 +57,18 @@ inline int dim( const double* AXOM_NOT_USED(x),
  * \param [out] c2n the relation between cell c and its n neighbors with
  *              cellIDs stored contiguously starting at c2n[c2foffsets[c]].
  * \param [out] c2foffsets the offset in c2f of the first face of each cell.
+ * \param [out] f2n the relation between face f and its nodes stored
+ *              contiguously starting at f2n[f2noffsets[f]].
+ * \param [out] f2noffsets the offset in f2n of the first node of each face.
+ * \param [out] f2ntypes the CellType of each face.
  *
  * \returns success true if each face has one or two incident cells.
  *
- * \note The four output arrays f2c, c2f, c2n, and c2foffsets are allocated
- * in this routine if the routine is successful.  It is the caller's
- * responsibility to free this memory.  If the routine returned false,
- * the output arrays are set to nullptr and facecount is set to 0.
+ * \note The seven output arrays f2c, c2f, c2n, c2foffsets, f2n, f2noffsets,
+ * and f2ntypes are allocated in this routine if the routine is successful.
+ * It is the caller's responsibility to free this memory.  If the routine
+ * returns false, the output arrays are set to nullptr and facecount is set
+ * to 0.
  *
  * This routine visits each of the cells of the mesh.  For each cell face, it
  * retrieves the face's nodes and joins the sorted node IDs to make a unique
@@ -72,7 +84,10 @@ bool initFaces(Mesh * m,
                IndexType *& f2c,
                IndexType *& c2f,
                IndexType *& c2n,
-               IndexType *& c2foffsets);
+               IndexType *& c2foffsets,
+               IndexType *& f2n,
+               IndexType *& f2noffsets,
+               CellType *& f2ntypes );
 
 } /* namespace internal */
 } /* namespace mint */
