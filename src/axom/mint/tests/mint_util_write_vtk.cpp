@@ -817,7 +817,7 @@ void check_mesh( const CurvilinearMesh* mesh, std::ifstream& file )
   check_points( mesh, file );
 }
 
-template < int MeshType >
+template < int MeshType, int Topology=SINGLE_SHAPE >
 Mesh* build_mesh( int dimension )
 {
   const IndexType Ni = 7;
@@ -828,7 +828,7 @@ Mesh* build_mesh( int dimension )
   const double hi[] = {  10,  9,  8 };
   UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
 
-  Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
+  Mesh* test_mesh = create_mesh< MeshType, Topology >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
   return test_mesh;
@@ -916,7 +916,7 @@ TEST( mint_util_write_vtk, UnstructuredMesh )
     const std::string path = "unstructuredMesh" + std::to_string(dim) + "D.vtk";
       UnstructuredMesh< SINGLE_SHAPE >* mesh = 
         static_cast< UnstructuredMesh< SINGLE_SHAPE >* >( 
-          internal::build_mesh< UNSTRUCTURED_SINGLE_SHAPE_MESH >( dim ) );
+          internal::build_mesh< UNSTRUCTURED_MESH, SINGLE_SHAPE >( dim ) );
 
     internal::test_mesh( mesh, path );
   }
@@ -936,7 +936,7 @@ TEST( mint_util_write_vtk, UnstructuredMixedMesh )
                            + "D.vtk";
       UnstructuredMesh< MIXED_SHAPE >* mesh = 
         static_cast< UnstructuredMesh< MIXED_SHAPE >* >( 
-          internal::build_mesh< UNSTRUCTURED_MIXED_SHAPE_MESH >( dim ) );
+          internal::build_mesh< UNSTRUCTURED_MESH, MIXED_SHAPE >( dim ) );
 
     internal::test_mesh( mesh, path );
   }

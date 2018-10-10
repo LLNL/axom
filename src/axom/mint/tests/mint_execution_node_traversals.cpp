@@ -43,7 +43,7 @@ namespace mint
 namespace
 {
 
-template < typename ExecPolicy, int MeshType >
+template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_nodes_idx( int dimension )
 {
   SLIC_INFO( "dimension=" << dimension << ", policy="
@@ -60,7 +60,7 @@ void check_for_all_nodes_idx( int dimension )
   const double hi[] = {  10,  10,  10 };
   UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
 
-  Mesh* test_mesh = internal::create_mesh< MeshType >( uniform_mesh );
+  Mesh* test_mesh = internal::create_mesh< MeshType, Topology >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
   int* field = test_mesh->createField< int >( "n1", NODE_CENTERED );
@@ -82,7 +82,7 @@ void check_for_all_nodes_idx( int dimension )
 }
 
 //------------------------------------------------------------------------------
-template < typename ExecPolicy, int MeshType >
+template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_nodes_ij( )
 {
   SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
@@ -94,7 +94,7 @@ void check_for_all_nodes_ij( )
   UniformMesh uniform_mesh( lo, hi, N, N );
 
   // STEP 0: create the test mesh
-  Mesh* test_mesh = internal::create_mesh< MeshType >( uniform_mesh );
+  Mesh* test_mesh = internal::create_mesh< MeshType, Topology >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
   const IndexType numNodes = test_mesh->getNumberOfNodes();
@@ -133,7 +133,7 @@ void check_for_all_nodes_ij( )
 }
 
 //------------------------------------------------------------------------------
-template < typename ExecPolicy, int MeshType >
+template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_nodes_ijk( )
 {
   SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
@@ -145,7 +145,7 @@ void check_for_all_nodes_ijk( )
   UniformMesh uniform_mesh( lo, hi, N, N, N );
 
   // STEP 0: create the test mesh
-  Mesh* test_mesh = internal::create_mesh< MeshType >( uniform_mesh );
+  Mesh* test_mesh = internal::create_mesh< MeshType, Topology >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
   const IndexType numNodes = test_mesh->getNumberOfNodes();
@@ -192,7 +192,7 @@ void check_for_all_nodes_ijk( )
 }
 
 //------------------------------------------------------------------------------
-template < typename ExecPolicy, int MeshType >
+template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_nodes_xyz( )
 {
   SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
@@ -204,7 +204,7 @@ void check_for_all_nodes_xyz( )
   UniformMesh uniform_mesh( lo, hi, N, N, N );
 
   // STEP 0: create the test mesh
-  Mesh* test_mesh = internal::create_mesh< MeshType >( uniform_mesh );
+  Mesh* test_mesh = internal::create_mesh< MeshType, Topology >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
   // STEP 1: generate test coordinate arrays
@@ -241,7 +241,7 @@ void check_for_all_nodes_xyz( )
 }
 
 //------------------------------------------------------------------------------
-template < typename ExecPolicy, int MeshType >
+template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_nodes_xy( )
 {
   SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
@@ -253,7 +253,7 @@ void check_for_all_nodes_xy( )
   UniformMesh uniform_mesh( lo, hi, N, N );
 
   // STEP 0: create the test mesh
-  Mesh* test_mesh = internal::create_mesh< MeshType >( uniform_mesh );
+  Mesh* test_mesh = internal::create_mesh< MeshType, Topology >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
   // STEP 1: generate test coordinate arrays
@@ -286,7 +286,7 @@ void check_for_all_nodes_xy( )
 }
 
 //------------------------------------------------------------------------------
-template < typename ExecPolicy, int MeshType >
+template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_nodes_x( )
 {
   SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
@@ -298,7 +298,7 @@ void check_for_all_nodes_x( )
   UniformMesh uniform_mesh( lo, hi, Ni );
 
   // STEP 0: create the test mesh
-  Mesh* test_mesh = internal::create_mesh< MeshType >( uniform_mesh );
+  Mesh* test_mesh = internal::create_mesh< MeshType, Topology >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
   if ( MeshType != PARTICLE_MESH )
@@ -342,8 +342,8 @@ TEST( mint_execution_node_traversals, for_all_nodes_xyz )
   check_for_all_nodes_xyz< seq_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_xyz< seq_exec, STRUCTURED_RECTILINEAR_MESH >();
   check_for_all_nodes_xyz< seq_exec, PARTICLE_MESH >();
-  check_for_all_nodes_xyz< seq_exec, UNSTRUCTURED_SINGLE_SHAPE_MESH >();
-  check_for_all_nodes_xyz< seq_exec, UNSTRUCTURED_MIXED_SHAPE_MESH >();
+  check_for_all_nodes_xyz< seq_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >();
+  check_for_all_nodes_xyz< seq_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >();
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
   defined(RAJA_ENABLE_OPENMP)
@@ -353,8 +353,8 @@ TEST( mint_execution_node_traversals, for_all_nodes_xyz )
   check_for_all_nodes_xyz< openmp_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_xyz< openmp_exec, STRUCTURED_RECTILINEAR_MESH >();
   check_for_all_nodes_xyz< openmp_exec, PARTICLE_MESH >();
-  check_for_all_nodes_xyz< openmp_exec, UNSTRUCTURED_SINGLE_SHAPE_MESH >();
-  check_for_all_nodes_xyz< openmp_exec, UNSTRUCTURED_MIXED_SHAPE_MESH >();
+  check_for_all_nodes_xyz< openmp_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >();
+  check_for_all_nodes_xyz< openmp_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >();
 
 #endif
 
@@ -366,8 +366,8 @@ TEST( mint_execution_node_traversals, for_all_nodes_xyz )
   check_for_all_nodes_xyz< cuda_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_xyz< cuda_exec, STRUCTURED_RECTILINEAR_MESH >();
   check_for_all_nodes_xyz< cuda_exec, PARTICLE_MESH >();
-  check_for_all_nodes_xyz< cuda_exec, UNSTRUCTURED_SINGLE_SHAPE_MESH >();
-  check_for_all_nodes_xyz< cuda_exec, UNSTRUCTURED_MIXED_SHAPE_MESH >();
+  check_for_all_nodes_xyz< cuda_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >();
+  check_for_all_nodes_xyz< cuda_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >();
 
 #endif
 }
@@ -380,8 +380,8 @@ TEST( mint_execution_node_traversals, for_all_nodes_xy )
   check_for_all_nodes_xy< seq_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_xy< seq_exec, STRUCTURED_RECTILINEAR_MESH >();
   check_for_all_nodes_xy< seq_exec, PARTICLE_MESH >();
-  check_for_all_nodes_xy< seq_exec, UNSTRUCTURED_SINGLE_SHAPE_MESH >();
-  check_for_all_nodes_xy< seq_exec, UNSTRUCTURED_MIXED_SHAPE_MESH >();
+  check_for_all_nodes_xy< seq_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >();
+  check_for_all_nodes_xy< seq_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >();
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
   defined(RAJA_ENABLE_OPENMP)
@@ -391,8 +391,8 @@ TEST( mint_execution_node_traversals, for_all_nodes_xy )
   check_for_all_nodes_xy< openmp_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_xy< openmp_exec, STRUCTURED_RECTILINEAR_MESH >();
   check_for_all_nodes_xy< openmp_exec, PARTICLE_MESH >();
-  check_for_all_nodes_xy< openmp_exec, UNSTRUCTURED_SINGLE_SHAPE_MESH >();
-  check_for_all_nodes_xy< openmp_exec, UNSTRUCTURED_MIXED_SHAPE_MESH >();
+  check_for_all_nodes_xy< openmp_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >();
+  check_for_all_nodes_xy< openmp_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >();
 
 #endif
 
@@ -404,8 +404,8 @@ TEST( mint_execution_node_traversals, for_all_nodes_xy )
   check_for_all_nodes_xy< cuda_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_xy< cuda_exec, STRUCTURED_RECTILINEAR_MESH >();
   check_for_all_nodes_xy< cuda_exec, PARTICLE_MESH >();
-  check_for_all_nodes_xy< cuda_exec, UNSTRUCTURED_SINGLE_SHAPE_MESH >();
-  check_for_all_nodes_xy< cuda_exec, UNSTRUCTURED_MIXED_SHAPE_MESH >();
+  check_for_all_nodes_xy< cuda_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >();
+  check_for_all_nodes_xy< cuda_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >();
 
 #endif
 }
@@ -418,8 +418,8 @@ TEST( mint_execution_node_traversals, for_all_nodes_x )
   check_for_all_nodes_x< seq_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_x< seq_exec, STRUCTURED_RECTILINEAR_MESH >();
   check_for_all_nodes_x< seq_exec, PARTICLE_MESH >();
-  check_for_all_nodes_x< seq_exec, UNSTRUCTURED_SINGLE_SHAPE_MESH >();
-  check_for_all_nodes_x< seq_exec, UNSTRUCTURED_MIXED_SHAPE_MESH >();
+  check_for_all_nodes_x< seq_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >();
+  check_for_all_nodes_x< seq_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >();
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
   defined(RAJA_ENABLE_OPENMP)
@@ -429,8 +429,8 @@ TEST( mint_execution_node_traversals, for_all_nodes_x )
   check_for_all_nodes_x< openmp_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_x< openmp_exec, STRUCTURED_RECTILINEAR_MESH >();
   check_for_all_nodes_x< openmp_exec, PARTICLE_MESH >();
-  check_for_all_nodes_x< openmp_exec, UNSTRUCTURED_SINGLE_SHAPE_MESH >();
-  check_for_all_nodes_x< openmp_exec, UNSTRUCTURED_MIXED_SHAPE_MESH >();
+  check_for_all_nodes_x< openmp_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >();
+  check_for_all_nodes_x< openmp_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >();
 
 #endif
 
@@ -442,8 +442,8 @@ TEST( mint_execution_node_traversals, for_all_nodes_x )
   check_for_all_nodes_x< cuda_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_x< cuda_exec, STRUCTURED_RECTILINEAR_MESH >();
   check_for_all_nodes_x< cuda_exec, PARTICLE_MESH >();
-  check_for_all_nodes_x< cuda_exec, UNSTRUCTURED_SINGLE_SHAPE_MESH >();
-  check_for_all_nodes_x< cuda_exec, UNSTRUCTURED_MIXED_SHAPE_MESH >();
+  check_for_all_nodes_x< cuda_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >();
+  check_for_all_nodes_x< cuda_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >();
 
 #endif
 
@@ -519,8 +519,8 @@ TEST( mint_execution_node_traversals, for_all_nodes_index )
     check_for_all_nodes_idx< seq_exec, STRUCTURED_CURVILINEAR_MESH >(i);
     check_for_all_nodes_idx< seq_exec, STRUCTURED_RECTILINEAR_MESH >(i);
     check_for_all_nodes_idx< seq_exec, PARTICLE_MESH >(i);
-    check_for_all_nodes_idx< seq_exec, UNSTRUCTURED_SINGLE_SHAPE_MESH >(i);
-    check_for_all_nodes_idx< seq_exec, UNSTRUCTURED_MIXED_SHAPE_MESH >(i);
+    check_for_all_nodes_idx< seq_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >(i);
+    check_for_all_nodes_idx< seq_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >(i);
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
     defined(RAJA_ENABLE_OPENMP)
@@ -530,8 +530,8 @@ TEST( mint_execution_node_traversals, for_all_nodes_index )
     check_for_all_nodes_idx< omp_exec, STRUCTURED_CURVILINEAR_MESH >(i);
     check_for_all_nodes_idx< omp_exec, STRUCTURED_RECTILINEAR_MESH >(i);
     check_for_all_nodes_idx< omp_exec, PARTICLE_MESH >(i);
-    check_for_all_nodes_idx< omp_exec, UNSTRUCTURED_SINGLE_SHAPE_MESH >(i);
-    check_for_all_nodes_idx< omp_exec, UNSTRUCTURED_MIXED_SHAPE_MESH >(i);
+    check_for_all_nodes_idx< omp_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >(i);
+    check_for_all_nodes_idx< omp_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >(i);
 
 #endif
 
@@ -543,8 +543,8 @@ TEST( mint_execution_node_traversals, for_all_nodes_index )
     check_for_all_nodes_idx< cuda_exec, STRUCTURED_CURVILINEAR_MESH >(i);
     check_for_all_nodes_idx< cuda_exec, STRUCTURED_RECTILINEAR_MESH >(i);
     check_for_all_nodes_idx< cuda_exec, PARTICLE_MESH >(i);
-    check_for_all_nodes_idx< cuda_exec, UNSTRUCTURED_SINGLE_SHAPE_MESH >(i);
-    check_for_all_nodes_idx< cuda_exec, UNSTRUCTURED_MIXED_SHAPE_MESH >(i);
+    check_for_all_nodes_idx< cuda_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >(i);
+    check_for_all_nodes_idx< cuda_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >(i);
 
 #endif
 

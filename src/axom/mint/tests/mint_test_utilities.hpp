@@ -88,20 +88,6 @@ struct mesh_type_name< UNSTRUCTURED_MESH >
 
 //------------------------------------------------------------------------------
 template < >
-struct mesh_type_name< UNSTRUCTURED_SINGLE_SHAPE_MESH >
-{
-  static constexpr char* name() { return (char*)"UNSTRUCTURED_SINGLE_SHAPE_MESH"; };
-};
-
-//------------------------------------------------------------------------------
-template < >
-struct mesh_type_name< UNSTRUCTURED_MIXED_SHAPE_MESH >
-{
-  static constexpr char* name() { return (char*)"UNSTRUCTURED_MIXED_SHAPE_MESH"; };
-};
-
-//------------------------------------------------------------------------------
-template < >
 struct mesh_type_name< PARTICLE_MESH>
 {
   static constexpr char* name() { return (char*)"PARTICLE_MESH"; };
@@ -119,7 +105,7 @@ struct mesh_type_name< PARTICLE_MESH>
  * \note The caller must deallocate the returned mesh object.
  */
 /// @{
-template < int MeshType=STRUCTURED_UNIFORM_MESH >
+template < int MeshType, int Topology=SINGLE_SHAPE >
 Mesh* create_mesh( const UniformMesh& uniform_mesh )
 {
   const int dimension = uniform_mesh.getDimension();
@@ -146,7 +132,7 @@ Mesh* create_mesh( const UniformMesh& uniform_mesh )
 
 //------------------------------------------------------------------------------
 template < >
-Mesh* create_mesh< STRUCTURED_CURVILINEAR_MESH >(
+Mesh* create_mesh< STRUCTURED_CURVILINEAR_MESH, SINGLE_SHAPE >(
                                         const UniformMesh& uniform_mesh )
 {
   const int dimension = uniform_mesh.getDimension();
@@ -188,7 +174,7 @@ Mesh* create_mesh< STRUCTURED_CURVILINEAR_MESH >(
 
 //------------------------------------------------------------------------------
 template < >
-Mesh* create_mesh< STRUCTURED_RECTILINEAR_MESH >(
+Mesh* create_mesh< STRUCTURED_RECTILINEAR_MESH, SINGLE_SHAPE >(
                                          const UniformMesh& uniform_mesh )
 {
   const int dimension = uniform_mesh.getDimension();
@@ -252,7 +238,7 @@ Mesh* create_mesh< STRUCTURED_RECTILINEAR_MESH >(
 
 //------------------------------------------------------------------------------
 template < >
-Mesh* create_mesh< PARTICLE_MESH >( 
+Mesh* create_mesh< PARTICLE_MESH, SINGLE_SHAPE >( 
                                         const UniformMesh& uniform_mesh )
 {
   const int dimension            = uniform_mesh.getDimension();
@@ -287,7 +273,7 @@ Mesh* create_mesh< PARTICLE_MESH >(
 //------------------------------------------------------------------------------
 template < >
 Mesh* 
-create_mesh< UNSTRUCTURED_SINGLE_SHAPE_MESH >( 
+create_mesh< UNSTRUCTURED_MESH, SINGLE_SHAPE >( 
                                         const UniformMesh& uniform_mesh )
 {
   const int dimension            = uniform_mesh.getDimension();
@@ -328,7 +314,7 @@ create_mesh< UNSTRUCTURED_SINGLE_SHAPE_MESH >(
 //------------------------------------------------------------------------------
 template < >
 Mesh* 
-create_mesh< UNSTRUCTURED_MIXED_SHAPE_MESH >( 
+create_mesh< UNSTRUCTURED_MESH, MIXED_SHAPE >( 
                                         const UniformMesh& uniform_mesh )
 {
   const int dimension            = uniform_mesh.getDimension();

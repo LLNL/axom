@@ -42,7 +42,7 @@ namespace mint
 namespace
 {
 
-template < typename ExecPolicy, int MeshType >
+template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_faces( int dimension )
 {
   SLIC_INFO( "dimension=" << dimension << ", policy="
@@ -57,7 +57,7 @@ void check_for_all_faces( int dimension )
   const double hi[] = {  10,  10,  10 };
   UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
 
-  Mesh* test_mesh = internal::create_mesh< MeshType >( uniform_mesh );
+  Mesh* test_mesh = internal::create_mesh< MeshType, Topology >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
   const IndexType numFaces = test_mesh->getNumberOfFaces();
@@ -81,7 +81,7 @@ void check_for_all_faces( int dimension )
 }
 
 //------------------------------------------------------------------------------
-template < typename ExecPolicy, int MeshType >
+template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_face_nodes( int dimension )
 {
   SLIC_INFO( "dimension=" << dimension << ", policy="
@@ -96,7 +96,7 @@ void check_for_all_face_nodes( int dimension )
   const double hi[] = {  10,  10,  10 };
   UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
 
-  Mesh* test_mesh = internal::create_mesh< MeshType >( uniform_mesh );
+  Mesh* test_mesh = internal::create_mesh< MeshType, Topology >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
   const IndexType numFaces = test_mesh->getNumberOfFaces();
@@ -128,7 +128,7 @@ void check_for_all_face_nodes( int dimension )
 }
 
 //------------------------------------------------------------------------------
-template < typename ExecPolicy, int MeshType >
+template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_face_cells( int dimension )
 {
   SLIC_INFO( "dimension=" << dimension << ", policy="
@@ -143,7 +143,7 @@ void check_for_all_face_cells( int dimension )
   const double hi[] = {  10,  10,  10 };
   UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
 
-  Mesh* test_mesh = internal::create_mesh< MeshType >( uniform_mesh );
+  Mesh* test_mesh = internal::create_mesh< MeshType, Topology >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
   const IndexType numFaces = test_mesh->getNumberOfFaces();
