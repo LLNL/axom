@@ -412,8 +412,8 @@ public:
    * \param [out] cellIDOne the ID of the first cell.
    * \param [out] cellIDTwo the ID of the second cell.
    *
-   * \note If no cell exists (the face is external) then the ID will be set to
-   * -1.
+   * \note If no cell exists (the face is external) then cellIDTwo will be set
+   * to -1.
    * \note Each method is specialized for faces in the I, J, or K direction.
    *
    * \pre 0 <= faceID < getNumberOfCells()
@@ -1156,10 +1156,17 @@ StructuredMesh::getIFaceCellIDs( IndexType faceID, IndexType& cellIDOne,
   IndexType i, j, k;
   getIFaceGridIndex( faceID, i, j, k );
 
-  cellIDOne = -1;
-  cellIDTwo = -1;
-  if ( i != 0 ) cellIDOne = getCellLinearIndex( i - 1, j, k );
-  if ( i != getCellResolution( 0 ) ) cellIDTwo = getCellLinearIndex( i, j, k );
+  cellIDOne = getCellLinearIndex( i - 1, j, k );
+  cellIDTwo = getCellLinearIndex( i, j, k );
+  if ( i == 0 )
+  {
+    cellIDOne = cellIDTwo;
+    cellIDTwo = -1;
+  }
+  else if ( i == getCellResolution( 0 ) )
+  {
+    cellIDTwo = -1;
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -1172,10 +1179,17 @@ StructuredMesh::getJFaceCellIDs( IndexType faceID, IndexType& cellIDOne,
   IndexType i, j, k;
   getJFaceGridIndex( faceID, i, j, k );
 
-  cellIDOne = -1;
-  cellIDTwo = -1;
-  if ( j != 0 ) cellIDOne = getCellLinearIndex( i, j - 1, k );
-  if ( j != getCellResolution( 1 ) ) cellIDTwo = getCellLinearIndex( i, j, k );
+  cellIDOne = getCellLinearIndex( i, j - 1, k );
+  cellIDTwo = getCellLinearIndex( i, j, k );
+  if ( j == 0 )
+  {
+    cellIDOne = cellIDTwo;
+    cellIDTwo = -1;
+  }
+  else if ( j == getCellResolution( 1 ) )
+  {
+    cellIDTwo = -1;
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -1188,23 +1202,16 @@ StructuredMesh::getKFaceCellIDs( IndexType faceID, IndexType& cellIDOne,
   IndexType i, j, k;
   getKFaceGridIndex( faceID, i, j, k );
 
+  cellIDOne = getCellLinearIndex( i, j, k - 1 );
+  cellIDTwo = getCellLinearIndex( i, j, k );
   if ( k == 0 )
   {
-    /* The first cell doesn't exist */
-    cellIDOne = -1;
-    cellIDTwo = getCellLinearIndex( i, j, k );
+    cellIDOne = cellIDTwo;
+    cellIDTwo = -1;
   }
   else if ( k == getCellResolution( 2 ) )
   {
-    /* The second cell doesn't exist */
-    cellIDOne = getCellLinearIndex( i, j, k - 1 );
     cellIDTwo = -1;
-  }
-  else
-  {
-    /* Both cells exist */
-    cellIDOne = getCellLinearIndex( i, j, k - 1 );
-    cellIDTwo = cellIDOne + cellKp();
   }
 }
 

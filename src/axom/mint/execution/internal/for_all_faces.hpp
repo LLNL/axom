@@ -439,12 +439,17 @@ inline void for_all_facescells_structured_2D( const mint::Mesh* m,
   for_all_I_faces_2D< ExecPolicy >( m,
     AXOM_LAMBDA( IndexType faceID, IndexType i, IndexType j )
     {
-      IndexType cellIDOne = -1;
-      IndexType cellIDTwo = -1;
-
-      const IndexType cellID = i + j * cellJp;
-      if ( i != 0 ) cellIDOne = cellID - 1;
-      if ( i != ICellResolution ) cellIDTwo = cellID; 
+      IndexType cellIDTwo = i + j * cellJp;
+      IndexType cellIDOne = cellIDTwo - 1;
+      if ( i == 0 )
+      {
+        cellIDOne = cellIDTwo;
+        cellIDTwo = -1;
+      }
+      else if ( i == ICellResolution )
+      {
+        cellIDTwo = -1;
+      }
       
       kernel( faceID, cellIDOne, cellIDTwo );
     }
@@ -453,12 +458,17 @@ inline void for_all_facescells_structured_2D( const mint::Mesh* m,
   for_all_J_faces_2D< ExecPolicy >( m,
     AXOM_LAMBDA( IndexType faceID, IndexType i, IndexType j )
     {
-      IndexType cellIDOne = -1;
-      IndexType cellIDTwo = -1;
-
-      const IndexType cellID = i + j * cellJp;
-            if ( j != 0 ) cellIDOne = cellID - cellJp;
-      if ( j != JCellResolution ) cellIDTwo = cellID; 
+      IndexType cellIDTwo = i + j * cellJp;
+      IndexType cellIDOne = cellIDTwo - cellJp; 
+      if ( j == 0 )
+      {
+        cellIDOne = cellIDTwo;
+        cellIDTwo = -1;
+      }
+      else if ( j == JCellResolution )
+      {
+        cellIDTwo = -1;
+      }
       
       kernel( faceID, cellIDOne, cellIDTwo );
     }
@@ -487,12 +497,17 @@ inline void for_all_facescells_structured_3D( const mint::Mesh* m,
   for_all_I_faces_3D< ExecPolicy >( m,
     AXOM_LAMBDA( IndexType faceID, IndexType i, IndexType j, IndexType k )
     {
-      IndexType cellIDOne = -1;
-      IndexType cellIDTwo = -1;
-
-      const IndexType cellID = i + j * cellJp + k * cellKp;
-      if ( i != 0 ) cellIDOne = cellID - 1;
-      if ( i != ICellResolution ) cellIDTwo = cellID; 
+      IndexType cellIDTwo = i + j * cellJp + k * cellKp;
+      IndexType cellIDOne = cellIDTwo - 1;
+      if ( i == 0 )
+      {
+        cellIDOne = cellIDTwo;
+        cellIDTwo = -1;
+      }
+      else if ( i == ICellResolution )
+      {
+        cellIDTwo = -1;
+      }
       
       kernel( faceID, cellIDOne, cellIDTwo );
     }
@@ -501,12 +516,17 @@ inline void for_all_facescells_structured_3D( const mint::Mesh* m,
   for_all_J_faces_3D< ExecPolicy >( m,
     AXOM_LAMBDA( IndexType faceID, IndexType i, IndexType j, IndexType k )
     {
-      IndexType cellIDOne = -1;
-      IndexType cellIDTwo = -1;
-
-      const IndexType cellID = i + j * cellJp + k * cellKp;
-      if ( j != 0 ) cellIDOne = cellID - cellJp;
-      if ( j != JCellResolution ) cellIDTwo = cellID; 
+      IndexType cellIDTwo = i + j * cellJp + k * cellKp;
+      IndexType cellIDOne = cellIDTwo - cellJp;
+      if ( j == 0 )
+      {
+        cellIDOne = cellIDTwo;
+        cellIDTwo = -1;
+      }
+      else if ( j == JCellResolution )
+      {
+        cellIDTwo = -1;
+      }
       
       kernel( faceID, cellIDOne, cellIDTwo );
     }
@@ -515,12 +535,17 @@ inline void for_all_facescells_structured_3D( const mint::Mesh* m,
   for_all_K_faces_3D< ExecPolicy >( m,
     AXOM_LAMBDA( IndexType faceID, IndexType i, IndexType j, IndexType k )
     {
-      IndexType cellIDOne = -1;
-      IndexType cellIDTwo = -1;
-
-      const IndexType cellID = i + j * cellJp + k * cellKp;
-      if ( k != 0 ) cellIDOne = cellID - cellKp;
-      if ( k != KCellResolution ) cellIDTwo = cellID; 
+      IndexType cellIDTwo = i + j * cellJp + k * cellKp;
+      IndexType cellIDOne = cellIDTwo - cellKp;
+      if ( k == 0 )
+      {
+        cellIDOne = cellIDTwo;
+        cellIDTwo = -1;
+      }
+      else if ( k == KCellResolution )
+      {
+        cellIDTwo = -1;
+      }
       
       kernel( faceID, cellIDOne, cellIDTwo );
     }
