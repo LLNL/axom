@@ -47,7 +47,7 @@ void check_for_all_cells_idx( int dimension )
 {
   SLIC_INFO( "dimension=" << dimension << ", policy="
             << policy_traits< ExecPolicy >::name() << ", mesh_type="
-            << mesh_type_name< MeshType >::name() );
+            << internal::mesh_type_name< MeshType >::name() );
 
   const IndexType Ni = 20;
   const IndexType Nj = (dimension >= 2) ? Ni : -1;
@@ -57,7 +57,7 @@ void check_for_all_cells_idx( int dimension )
   const double hi[] = {  10,  10,  10 };
   UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
 
-  Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
+  Mesh* test_mesh = internal::create_mesh< MeshType >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
   IndexType* field = test_mesh->createField< IndexType >( "c1", CELL_CENTERED );
@@ -84,7 +84,7 @@ template < typename ExecPolicy, int MeshType >
 void check_for_all_cells_ij( )
 {
   SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
-            << mesh_type_name< MeshType >::name() );
+            << internal::mesh_type_name< MeshType >::name() );
 
   constexpr IndexType N = 20;
   const double lo[] = { -10, -10 };
@@ -92,7 +92,7 @@ void check_for_all_cells_ij( )
   UniformMesh uniform_mesh( lo, hi, N, N );
 
   // STEP 0: create the test mesh
-  Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
+  Mesh* test_mesh = internal::create_mesh< MeshType >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
   IndexType* icoords = test_mesh->createField< IndexType >( "i", CELL_CENTERED );
@@ -126,7 +126,7 @@ template < typename ExecPolicy, int MeshType >
 void check_for_all_cells_ijk( )
 {
   SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
-            << mesh_type_name< MeshType >::name() );
+            << internal::mesh_type_name< MeshType >::name() );
 
   constexpr IndexType N = 20;
   const double lo[] = { -10, -10, -10 };
@@ -134,7 +134,7 @@ void check_for_all_cells_ijk( )
   UniformMesh uniform_mesh( lo, hi, N, N, N );
 
   // STEP 0: create the test mesh
-  Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
+  Mesh* test_mesh = internal::create_mesh< MeshType >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
   IndexType* icoords = test_mesh->createField< IndexType >( "i", CELL_CENTERED );
@@ -175,7 +175,7 @@ void check_for_all_cell_nodes( int dimension )
 {
   SLIC_INFO( "dimension=" << dimension << ", policy="
             << policy_traits< ExecPolicy >::name() << ", mesh_type="
-            << mesh_type_name< MeshType >::name() );
+            << internal::mesh_type_name< MeshType >::name() );
 
   const IndexType Ni = 20;
   const IndexType Nj = (dimension >= 2) ? Ni : -1;
@@ -185,7 +185,7 @@ void check_for_all_cell_nodes( int dimension )
   const double hi[] = {  10,  10,  10 };
   UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
 
-  Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
+  Mesh* test_mesh = internal::create_mesh< MeshType >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
   const IndexType numCells = test_mesh->getNumberOfCells();
@@ -222,7 +222,7 @@ void check_for_all_cell_faces( int dimension )
 {
   SLIC_INFO( "dimension=" << dimension << ", policy="
             << policy_traits< ExecPolicy >::name() << ", mesh_type="
-            << mesh_type_name< MeshType >::name() );
+            << internal::mesh_type_name< MeshType >::name() );
 
   const IndexType Ni = 20;
   const IndexType Nj = (dimension >= 2) ? Ni : -1;
@@ -232,7 +232,7 @@ void check_for_all_cell_faces( int dimension )
   const double hi[] = {  10,  10,  10 };
   UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
 
-  Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
+  Mesh* test_mesh = internal::create_mesh< MeshType >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
   const IndexType numCells        = test_mesh->getNumberOfCells();

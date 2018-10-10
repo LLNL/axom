@@ -47,7 +47,7 @@ void check_for_all_faces( int dimension )
 {
   SLIC_INFO( "dimension=" << dimension << ", policy="
             << policy_traits< ExecPolicy >::name() << ", mesh_type="
-            << mesh_type_name< MeshType >::name() );
+            << internal::mesh_type_name< MeshType >::name() );
 
   const IndexType Ni = 20;
   const IndexType Nj = (dimension >= 2) ? Ni : -1;
@@ -57,7 +57,7 @@ void check_for_all_faces( int dimension )
   const double hi[] = {  10,  10,  10 };
   UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
 
-  Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
+  Mesh* test_mesh = internal::create_mesh< MeshType >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
   const IndexType numFaces = test_mesh->getNumberOfFaces();
@@ -86,7 +86,7 @@ void check_for_all_face_nodes( int dimension )
 {
   SLIC_INFO( "dimension=" << dimension << ", policy="
             << policy_traits< ExecPolicy >::name() << ", mesh_type="
-            << mesh_type_name< MeshType >::name() );
+            << internal::mesh_type_name< MeshType >::name() );
 
   const IndexType Ni = 20;
   const IndexType Nj = (dimension >= 2) ? Ni : -1;
@@ -96,7 +96,7 @@ void check_for_all_face_nodes( int dimension )
   const double hi[] = {  10,  10,  10 };
   UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
 
-  Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
+  Mesh* test_mesh = internal::create_mesh< MeshType >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
   const IndexType numFaces = test_mesh->getNumberOfFaces();
@@ -133,7 +133,7 @@ void check_for_all_face_cells( int dimension )
 {
   SLIC_INFO( "dimension=" << dimension << ", policy="
             << policy_traits< ExecPolicy >::name() << ", mesh_type="
-            << mesh_type_name< MeshType >::name() );
+            << internal::mesh_type_name< MeshType >::name() );
 
   const IndexType Ni = 20;
   const IndexType Nj = (dimension >= 2) ? Ni : -1;
@@ -143,7 +143,7 @@ void check_for_all_face_cells( int dimension )
   const double hi[] = {  10,  10,  10 };
   UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
 
-  Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
+  Mesh* test_mesh = internal::create_mesh< MeshType >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
   const IndexType numFaces = test_mesh->getNumberOfFaces();

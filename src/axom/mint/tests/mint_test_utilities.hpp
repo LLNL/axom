@@ -44,6 +44,8 @@ namespace axom
 {
 namespace mint
 {
+namespace internal
+{
 
 //------------------------------------------------------------------------------
 template < int MeshType >
@@ -106,10 +108,9 @@ struct mesh_type_name< PARTICLE_MESH>
 };
 
 /*!
- * \brief Creates a mesh of type MeshType equivalent to the given uniform mesh.
+ * \brief Returns a mesh of type MeshType equivalent to the given uniform mesh.
  *
  * \param [in]  uniform_mesh the specified uniform mesh.
- * \param [out] output mesh pointer to the output mesh, created by this method.
  *
  * \tparam MeshType the output mesh type
  *
@@ -473,6 +474,7 @@ create_mesh< UNSTRUCTURED_MIXED_SHAPE_MESH >(
 }
 /// @}
 
+} /* namespace internal */
 } /* namespace mint */
 } /* namespace axom */
 

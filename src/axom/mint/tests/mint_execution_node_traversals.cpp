@@ -48,7 +48,7 @@ void check_for_all_nodes_idx( int dimension )
 {
   SLIC_INFO( "dimension=" << dimension << ", policy="
             << policy_traits< ExecPolicy >::name() << ", mesh_type="
-            << mesh_type_name< MeshType >::name() );
+            << internal::mesh_type_name< MeshType >::name() );
 
   constexpr int MAGIC_VAL = 42;
 
@@ -60,7 +60,7 @@ void check_for_all_nodes_idx( int dimension )
   const double hi[] = {  10,  10,  10 };
   UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
 
-  Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
+  Mesh* test_mesh = internal::create_mesh< MeshType >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
   int* field = test_mesh->createField< int >( "n1", NODE_CENTERED );
@@ -86,7 +86,7 @@ template < typename ExecPolicy, int MeshType >
 void check_for_all_nodes_ij( )
 {
   SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
-            << mesh_type_name< MeshType >::name() );
+            << internal::mesh_type_name< MeshType >::name() );
   
   constexpr IndexType N = 20;
   const double lo[] = { -10, -10 };
@@ -94,7 +94,7 @@ void check_for_all_nodes_ij( )
   UniformMesh uniform_mesh( lo, hi, N, N );
 
   // STEP 0: create the test mesh
-  Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
+  Mesh* test_mesh = internal::create_mesh< MeshType >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
   const IndexType numNodes = test_mesh->getNumberOfNodes();
@@ -137,7 +137,7 @@ template < typename ExecPolicy, int MeshType >
 void check_for_all_nodes_ijk( )
 {
   SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
-            << mesh_type_name< MeshType >::name() );
+            << internal::mesh_type_name< MeshType >::name() );
 
   constexpr IndexType N = 20;
   const double lo[] = { -10, -10, -10 };
@@ -145,7 +145,7 @@ void check_for_all_nodes_ijk( )
   UniformMesh uniform_mesh( lo, hi, N, N, N );
 
   // STEP 0: create the test mesh
-  Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
+  Mesh* test_mesh = internal::create_mesh< MeshType >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
   const IndexType numNodes = test_mesh->getNumberOfNodes();
@@ -196,7 +196,7 @@ template < typename ExecPolicy, int MeshType >
 void check_for_all_nodes_xyz( )
 {
   SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
-            << mesh_type_name< MeshType >::name() );
+            << internal::mesh_type_name< MeshType >::name() );
 
   constexpr IndexType N = 20;
   const double lo[] = { -10, -10, -10 };
@@ -204,7 +204,7 @@ void check_for_all_nodes_xyz( )
   UniformMesh uniform_mesh( lo, hi, N, N, N );
 
   // STEP 0: create the test mesh
-  Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
+  Mesh* test_mesh = internal::create_mesh< MeshType >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
   // STEP 1: generate test coordinate arrays
@@ -245,7 +245,7 @@ template < typename ExecPolicy, int MeshType >
 void check_for_all_nodes_xy( )
 {
   SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
-            << mesh_type_name< MeshType >::name() );
+            << internal::mesh_type_name< MeshType >::name() );
 
   constexpr IndexType N = 20;
   const double lo[] = { -10, -10 };
@@ -253,7 +253,7 @@ void check_for_all_nodes_xy( )
   UniformMesh uniform_mesh( lo, hi, N, N );
 
   // STEP 0: create the test mesh
-  Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
+  Mesh* test_mesh = internal::create_mesh< MeshType >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
   // STEP 1: generate test coordinate arrays
@@ -290,7 +290,7 @@ template < typename ExecPolicy, int MeshType >
 void check_for_all_nodes_x( )
 {
   SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
-            << mesh_type_name< MeshType >::name() );
+            << internal::mesh_type_name< MeshType >::name() );
 
   constexpr IndexType Ni = 20;
   const double lo[] = { -10 };
@@ -298,7 +298,7 @@ void check_for_all_nodes_x( )
   UniformMesh uniform_mesh( lo, hi, Ni );
 
   // STEP 0: create the test mesh
-  Mesh* test_mesh = create_mesh< MeshType >( uniform_mesh );
+  Mesh* test_mesh = internal::create_mesh< MeshType >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
   if ( MeshType != PARTICLE_MESH )
