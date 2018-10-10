@@ -305,6 +305,10 @@ inline void for_all_nodes( const mint::Mesh* m, KernelType&& kernel )
  *     AXOM_LAMBDA( IndexType cellIdx, const IndexType* nodeIds, IndexType N )
  *  } );
  *
+ *  for_all_cells< exec, xargs::faceids >( m,
+ *     AXOM_LAMBDA( IndexType cellIdx, const IndexType* faceIds, IndexType N )
+ *  } );
+ *
  * \endcode
  *
  * \see policy.hpp
@@ -327,7 +331,43 @@ inline void for_all_cells( const mint::Mesh* m, KernelType&& kernel )
     ArgType(), m, std::forward< KernelType >( kernel ) );
 }
 
+/// @}
 
+/// \name Mesh Face Traversal Functions
+/// @{
+
+/*!
+ * \brief Loops over all the faces of a given mesh.
+ *
+ * \param [in] m pointer to the mesh object.
+ * \param [in] kernel user-supplied kernel to execute on each face.
+ *
+ * \pre m != nullptr
+ *
+ * \tparam ExecPolicy the execution policy, e.g., serial or parallel
+ * \tparam ArgType object indicating the arguments to the kernel
+ *
+ * Usage Example:
+ * \code
+ *
+ *   for_all_faces< exec >( m, AXOM_LAMDA( IndexType faceID ) {
+ *      foo[ faceID ] = val;
+ *      ...
+ *   } );
+ *
+ *  for_all_faces< exec, xargs::nodeids >( m,
+ *     AXOM_LAMBDA( IndexType faceID, const IndexType* nodeIds, IndexType N )
+ *  } );
+ *
+ *  for_all_faces< exec, xargs::cellids >( m,
+ *     AXOM_LAMBDA( IndexType faceID, IndexType cellIDOne, IndexType cellIDTwo )
+ *  } );
+ *
+ * \endcode
+ *
+ * \see policy.hpp
+ * \see xargs.hpp
+ */
 template < typename ExecPolicy = policy::serial,
            typename ArgType    = xargs::index,
            typename KernelType >

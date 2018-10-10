@@ -91,12 +91,26 @@ struct xyz { };
  *  connectivity information, i.e., the node IDs of the mesh entity being
  *  traversed, e.g., cells or faces and the number of nodes.
  *
- * \note This option can be use for cell/face mesh traversals with any mesh.
+ * \note This option can be used for cell/face mesh traversals with any mesh.
  */
 struct nodeids { };
 
+/*!
+ * \brief Indicates that the lambda expression also takes the face
+ *  connectivity information, i.e., the face IDs of the cell in addition to
+ *  the associated cell index. 
+ *
+ * \note This option can be used for cell mesh traversals with any mesh.
+ */
 struct faceids { };
 
+/*!
+ * \brief Indicates that the lambda expression also takes the cell
+ *  connectivity information, i.e., the two cell IDs of the face in addition to
+ *  the associated face index. 
+ *
+ * \note This option can be used for face mesh traversals with any mesh.
+ */
 struct cellids { };
 
 } /* namespace xargs */
