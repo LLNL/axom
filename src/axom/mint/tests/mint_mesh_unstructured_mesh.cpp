@@ -22,7 +22,10 @@
 #include "axom/slic/core/UnitTestLogger.hpp"      /* for UnitTestLogger */
 #include "axom/slic/interface/slic.hpp"                /* for slic macros */
 
+#include "mint_test_utilities.hpp"      /* for create_mesh() */
+
 #include "gtest/gtest.h"                /* for TEST and EXPECT_* macros */
+#include "fmt/fmt.hpp"                  /* to format strings */
 
 #ifdef AXOM_MINT_USE_SIDRE
 #include "axom/sidre/core/sidre.hpp"
@@ -31,6 +34,7 @@
 // C/C++ includes
 #include <algorithm>                    /* for std::fill_n */
 #include <string>
+#include <unordered_map>
 
 namespace axom
 {
@@ -822,11 +826,87 @@ void createMeshesForResize( UnstructuredMesh< MIXED_SHAPE >** meshes,
 /// @}
 
 /*!
+ * \brief Fill the given array with single topology meshes created to be
+ * used with the face relation tests.
+ *
+ * \param [out] meshes the array to fill with.
+ * \param [in] resolution the resolution in the first dimension.
+ *             Resolution in other dimensions is proportional to this
+ *             parameter.
+ *
+ * This routine puts DIMENSIONS * SIZE_STEPS meshes into the output parameter
+ * meshes.
+ *
+ * This routine uses create_mesh< UNSTRUCTURED_MESH > from
+ * mint_mesh_utilities.hpp to create UnstructuredMesh objects with
+ * correct node and cell connectivity.  Thus, none of the objects
+ * created by this routine use Sidre or external storage.
+ */
+int createMeshesForFace( UnstructuredMesh< SINGLE_SHAPE > **& meshes,
+                         UniformMesh **& sourcemeshes,
+                         IndexType resolution )
+{
+  const double lo[]     = { 0.0, 0.0, 0.0 };
+  const double hi[]     = { 2.0, 2.0, 2.0 };
+
+  constexpr int SIZE_STEPS = 2;
+  constexpr int SIZE_FACTOR[] = { 1, 10, 3 };
+
+  constexpr int DIM_STEPS = 2;
+  constexpr int DIMENSIONS[] = { 2, 3 };
+  constexpr double Y_RES_FACTOR = 0.75;
+  constexpr double Z_RES_FACTOR = 1.4;
+
+  meshes = new UnstructuredMesh< SINGLE_SHAPE > *[SIZE_STEPS * DIM_STEPS];
+  sourcemeshes = new UniformMesh *[SIZE_STEPS * DIM_STEPS];
+
+  int cur_mesh = 0;
+
+  for (int isize = 0; isize < SIZE_STEPS; ++isize)
+  {
+    resolution *= SIZE_FACTOR[isize];
+
+    for (int idim = 0; idim < DIM_STEPS; ++idim)
+    {
+      UniformMesh * m;
+      switch ( DIMENSIONS[idim] )
+      {
+      case 2:
+        m = new UniformMesh( lo, hi,
+                             resolution,
+                             (IndexType)(Y_RES_FACTOR * resolution) );
+        break;
+      default:
+        EXPECT_TRUE( DIMENSIONS[idim] == 3 );
+        m = new UniformMesh( lo, hi,
+                             resolution,
+                             (IndexType)(Y_RES_FACTOR * resolution),
+                             (IndexType)(Z_RES_FACTOR * resolution) );
+      }
+
+      Mesh * test_mesh = nullptr;
+      create_mesh<UNSTRUCTURED_MESH>(m, test_mesh);
+      meshes[cur_mesh] =
+        static_cast<UnstructuredMesh< SINGLE_SHAPE >* >(test_mesh);
+      sourcemeshes[cur_mesh] = m;
+      meshes[cur_mesh]->initializeFaceConnectivity();
+
+      ++cur_mesh;
+      SLIC_INFO(fmt::format("Constructed {}D, base resolution {}",
+                            DIMENSIONS[idim], resolution));
+    }
+  }
+
+  return cur_mesh;
+}
+
+/*!
  * \brief Free the given array of meshes.
  *
  * \param [in/out] meshes the array of meshes.
  * \param [in] n_meshes the nuber of meshes in the array.
  */
+/// @{
 template < Topology TOPO >
 void deleteMeshes( UnstructuredMesh< TOPO >** meshes, int n_meshes )
 {
@@ -848,6 +928,17 @@ void deleteMeshes( UnstructuredMesh< TOPO >** meshes, int n_meshes )
   ds = nullptr;
 #endif
 }
+
+void deleteMeshes( UniformMesh ** meshes, int n_meshes )
+{
+  for ( int i = 0; i < n_meshes; ++i )
+  {
+    delete meshes[i];
+    meshes[i] = nullptr;
+  }
+}
+
+/// @}
 
 /*!
  * \brief Return the value of the nodal coordinate of the given node
@@ -2265,6 +2356,148 @@ void check_restoration( UnstructuredMesh< TOPO >** meshes, int n_meshes,
   }
 }
 
+struct FaceInfo {
+  FaceInfo() :
+    key(), nodeCount(0), faceType(UNDEFINED_CELL), opposingCellID(-1)
+  { }
+  FaceInfo(std::string theKey, IndexType theNodeCount,
+           CellType theFaceType, IndexType oppCellID) :
+    key(theKey), nodeCount(theNodeCount), faceType(theFaceType),
+    opposingCellID(oppCellID)
+  { }
+
+  std::string key;
+  IndexType nodeCount;
+  CellType faceType;
+  IndexType opposingCellID;
+} ;
+
+bool operator==( const FaceInfo & a, const FaceInfo & b )
+{
+  return a.key == b.key &&
+    a.nodeCount == b.nodeCount &&
+    a.faceType == b.faceType &&
+    a.opposingCellID == b.opposingCellID;
+}
+
+bool check_faceNodeType( UniformMesh * s_mesh,
+                         UnstructuredMesh< SINGLE_SHAPE > * d_mesh,
+                         IndexType s_fcount,
+                         IndexType d_fcount,
+                         IndexType c,
+                         std::string & errMesg )
+{
+  using FaceInfoMap = std::unordered_map<std::string, FaceInfo>;
+
+  FaceInfoMap s_info, d_info;
+  IndexType faceIDs[MAX_CELL_FACES];
+  IndexType faceNodeIDs[MAX_FACE_NODES];
+
+  s_mesh->getCellFaceIDs(c, faceIDs);
+  for (IndexType f = 0; f < s_fcount; ++f)
+  {
+    IndexType nodeCount =
+      s_mesh->getFaceNodeIDs(faceIDs[f], faceNodeIDs);
+    CellType faceType = s_mesh->getFaceType(faceIDs[f]);
+    IndexType faceCell1, faceCell2;
+    s_mesh->getFaceCellIDs(faceIDs[f], faceCell1, faceCell2);
+    IndexType oppCell = (c == faceCell2? faceCell1: faceCell2);
+    std::string key = make_face_key(nodeCount, faceNodeIDs, '.');
+    s_info[key] = FaceInfo(key, nodeCount, faceType, oppCell);
+  }
+
+  d_mesh->getCellFaceIDs(c, faceIDs);
+  for (IndexType f = 0; f < d_fcount; ++f)
+  {
+    IndexType nodeCount =
+      d_mesh->getFaceNodeIDs(faceIDs[f], faceNodeIDs);
+    CellType faceType = d_mesh->getFaceType(faceIDs[f]);
+    IndexType faceCell1, faceCell2;
+    d_mesh->getFaceCellIDs(faceIDs[f], faceCell1, faceCell2);
+    IndexType oppCell = (c == faceCell2? faceCell1: faceCell2);
+
+    std::string key = make_face_key(nodeCount, faceNodeIDs, '.');
+    FaceInfo info(key, nodeCount, faceType, oppCell);
+
+    bool faceMatches = (s_info.count(key) > 0 && info == s_info[key]);
+
+    if (faceMatches) { s_info.erase(key); }
+    else { d_info[key] = info; }
+  }
+
+  errMesg = "";
+
+  if (d_info.size() > 0)
+  {
+    errMesg += fmt::format("{} extra UnstructuredMesh faces:\n", d_info.size());
+  }
+  for (auto d_face : d_info)
+  {
+    FaceInfo & fi = d_face.second;
+    errMesg +=
+      fmt::format("  type {} node count {} nodes ({}) opposite cell ID {}\n",
+                  getCellInfo(fi.faceType).name,
+                  fi.nodeCount, fi.key, fi.opposingCellID);
+  }
+
+  if (s_info.size() > 0)
+  {
+    errMesg += fmt::format("{} missing UniformMesh faces:\n", s_info.size());
+  }
+  for (auto s_face : s_info)
+  {
+    FaceInfo & fi = s_face.second;
+    errMesg +=
+      fmt::format("  type {} node count {} nodes ({}) opposite cell ID {}\n",
+                  getCellInfo(fi.faceType).name,
+                  fi.nodeCount, fi.key, fi.opposingCellID);
+  }
+
+  return d_info.size() < 1 && s_info.size() < 1;
+}
+
+/*!
+ * \brief Check for consistency between faces in a set of UnstructuredMesh
+ * objects and the faces in the UniformMesh each one is based on.
+ *
+ * \param [in] meshes the array of UnstructuredMesh objects
+ * \param [in] sourcemeshes the array of UniformMesh objects
+ * \param [in] n_meshes the length of both input arrays
+ */
+void check_faces( UnstructuredMesh< SINGLE_SHAPE >** meshes,
+                  UniformMesh ** sourcemeshes,
+                  int n_meshes )
+{
+  for (int midx = 0; midx < n_meshes; ++midx)
+  {
+    SLIC_INFO(fmt::format("Testing mesh pair {}", midx));
+    UnstructuredMesh< SINGLE_SHAPE > * d_mesh = meshes[midx];
+    UniformMesh * s_mesh = sourcemeshes[midx];
+
+    // check total number of faces
+    EXPECT_EQ(d_mesh->getNumberOfFaces(), s_mesh->getNumberOfFaces());
+
+    IndexType cellcount = d_mesh->getNumberOfCells();
+
+    for (IndexType c = 0; c < cellcount; ++c)
+    {
+      // c is the cell ID in d_mesh.  Assume the same cell ID
+      // in s_mesh due to create_mesh()'s implementation.
+
+      // check face count
+      IndexType d_facecount = d_mesh->getNumberOfCellFaces(c);
+      IndexType s_facecount = s_mesh->getNumberOfCellFaces(c);
+      EXPECT_EQ(d_facecount, s_facecount);
+
+      // check face nodes and type, and neighbor across face
+      std::string errMesg;
+      bool facesMatch = check_faceNodeType(s_mesh, d_mesh, s_facecount,
+                                           d_facecount, c, errMesg);
+      EXPECT_TRUE(facesMatch) << errMesg;
+    }
+  }
+}
+
 }   /* end namespace internal */
 
 /*******************************************************************************
@@ -3071,6 +3304,26 @@ TEST( mint_mesh_unstructured_mesh_DeathTest, invalidExternalOpsMixed )
   internal::deleteMeshes( meshes, N_MESHES );
 }
 
+/*******************************************************************************
+ *                             Face relation tests                             *
+ ******************************************************************************/
+
+//------------------------------------------------------------------------------
+TEST( mint_mesh_unstructured_mesh, construct_face_relations )
+{
+  constexpr IndexType N_NODES = 5;
+
+  UniformMesh ** sourcemeshes = nullptr;
+  UnstructuredMesh< SINGLE_SHAPE > ** meshes = nullptr;
+
+  int n_meshes =
+    internal::createMeshesForFace( meshes, sourcemeshes, N_NODES );
+
+  internal::check_faces( meshes, sourcemeshes, n_meshes );
+
+  internal::deleteMeshes( meshes, n_meshes );
+  internal::deleteMeshes( sourcemeshes, n_meshes );
+}
 
 } /* end namespace mint */
 } /* end namespace axom */

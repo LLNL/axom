@@ -25,7 +25,10 @@ namespace axom
 namespace mint
 {
 
-constexpr int MAX_NUM_NODES = 27;
+static constexpr int MAX_NUM_NODES = 27;
+static constexpr int MAX_CELL_FACES = 6;
+static constexpr int MAX_FACE_NODES = 9;
+static constexpr int MAX_ALL_FACES_NODES = MAX_CELL_FACES * MAX_FACE_NODES;
 
 /*!
  * \brief Enumerates all cell types supported by Mint
@@ -109,10 +112,6 @@ constexpr int NUM_CELL_TYPES = static_cast< int >( CellType::NUM_CELL_TYPES );
  * \param MINT_CELL_TYPE the mint cell type, e.g., mint::QUAD, mint::HEX, etc.
  */
 #define CELL_INFO( MINT_CELL_TYPE ) internal::MINT_CELL_TYPE ## _INFO
-
-static constexpr int MAX_CELL_FACES = 6;
-static constexpr int MAX_ONE_FACE_NODES = 9;
-static constexpr int MAX_ALL_FACES_NODES = 54;
 
 /*!
  * \struct CellInfo

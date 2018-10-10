@@ -19,7 +19,7 @@
 #include "axom/mint/mesh/Mesh.hpp"
 
 #include <algorithm>
-#include <map>
+#include <unordered_map>
 #include <vector>
 
 namespace axom
@@ -110,8 +110,8 @@ bool initFaces(Mesh * mesh,
   f2noffsets = nullptr;
   f2ntypes = nullptr;
 
-  using IDtoKeyType = std::map< IndexType, std::string > ;
-  using FaceBuilderType = std::map< std::string, FaceTypeCellsNodes > ;
+  using IDtoKeyType = std::unordered_map< IndexType, std::string > ;
+  using FaceBuilderType = std::unordered_map< std::string, FaceTypeCellsNodes > ;
   FaceBuilderType workface;
 
   // Iterate over each cell.
@@ -223,7 +223,7 @@ bool initFaces(Mesh * mesh,
   f2noffsets[facecount] = faceNodeOffset;
 
   // Step 4. Now that we have face IDs, record cell-to-face relation.
-  typedef std::map< IndexType, std::vector<IndexType> >
+  typedef std::unordered_map< IndexType, std::vector<IndexType> >
     CellFaceBuilderType;
 
   CellFaceBuilderType cell_to_face;

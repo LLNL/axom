@@ -61,7 +61,7 @@ TEST( mint_mesh_cell_types, check_cell_types )
   };
 
   const int
-    face_nodecount[ mint::NUM_CELL_TYPES ][ mint::MAX_ONE_FACE_NODES ] = {
+    face_nodecount[ mint::NUM_CELL_TYPES ][ mint::MAX_FACE_NODES ] = {
     { 0 },                // VERTEX
     { 1, 1 },             // SEGMENT
     { 2, 2, 2 },          // TRIANGLE
@@ -75,7 +75,7 @@ TEST( mint_mesh_cell_types, check_cell_types )
   };
 
   const mint::CellType
-    face_types[ mint::NUM_CELL_TYPES ][ mint::MAX_ONE_FACE_NODES ] = {
+    face_types[ mint::NUM_CELL_TYPES ][ mint::MAX_FACE_NODES ] = {
     { mint::UNDEFINED_CELL },                                           // VERTEX
     { mint::VERTEX, mint::VERTEX },                                     // SEGMENT
     { mint::SEGMENT, mint::SEGMENT, mint::SEGMENT },                    // TRIANGLE

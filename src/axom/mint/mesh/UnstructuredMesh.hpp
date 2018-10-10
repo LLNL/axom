@@ -56,12 +56,14 @@ template <>
 struct topology_traits< SINGLE_SHAPE >
 {
   constexpr static ConnectivityType cell_connec = NO_INDIRECTION;
+  constexpr static ConnectivityType cell_face_connec = INDIRECTION;
 };
 
 template <>
 struct topology_traits< MIXED_SHAPE >
 {
   constexpr static ConnectivityType cell_connec = TYPED_INDIRECTION;
+  constexpr static ConnectivityType cell_face_connec = TYPED_INDIRECTION;
 };
 
 /*!
@@ -724,7 +726,7 @@ public:
   virtual IndexType getNumberOfFaces() const final override
   {
     SLIC_ASSERT( m_cell_to_face != nullptr );
-    return m_cell_to_face->getNumberOfValues();
+    return m_face_to_cell->getNumberOfIDs();
   }
 
   /*!
@@ -733,7 +735,7 @@ public:
   virtual IndexType getFaceCapacity() const final override
   {
     SLIC_ASSERT( m_cell_to_face != nullptr );
-    return m_cell_to_face->getValueCapacity();
+    return m_cell_to_face->getIDCapacity();
   }
 
   /*!
@@ -1505,10 +1507,9 @@ public:
     {
       // Copy in the face relation data.
       m_face_to_cell = new FaceToCellConnectivity(SEGMENT, facecount);
-      m_face_to_cell->setM(f2cdata, 0, facecount);
+      m_face_to_cell->appendM(f2cdata, facecount);
 
-      m_cell_to_face = new CellToFaceConnectivity(SEGMENT);
-      m_cell_to_face->appendM(c2fdata, getNumberOfCells(), c2foffsets);
+      buildCellFaceRelation(c2fdata, c2foffsets);
 
       m_face_to_node = new FaceToNodeConnectivity(facecount);
       m_face_to_node->appendM(f2ndata, facecount, f2noffsets, f2ntypes);
@@ -1537,10 +1538,16 @@ public:
   /// @{
 
   IndexType* getCellFaceIDs( IndexType cellID )
-  { return (*m_cell_to_face)[ cellID ]; }
+  {
+    SLIC_ASSERT( m_cell_to_face != nullptr );
+    return (*m_cell_to_face)[ cellID ];
+  }
 
   const IndexType* getCellFaceIDs( IndexType cellID ) const
-  { return (*m_cell_to_face)[ cellID ]; }
+  {
+    SLIC_ASSERT( m_cell_to_face != nullptr );
+    return (*m_cell_to_face)[ cellID ];
+  }
 
   /// @}
 
@@ -1574,6 +1581,9 @@ public:
 /// @}
 
 private:
+
+  /*! \brief Construct and fill the cell-to-face relation. */
+  void buildCellFaceRelation(IndexType * c2fdata, IndexType * c2foffsets);
 
   /*!
    * \brief Update the connectivity given an nodal insert at position pos of
@@ -1632,7 +1642,7 @@ private:
    * Face types are stored in the face-node relation.
    */
   using CellToFaceConnectivity =
-    ConnectivityArray< topology_traits< TOPO >::cell_connec >;
+    ConnectivityArray< topology_traits< TOPO >::cell_face_connec >;
   using FaceToCellConnectivity = ConnectivityArray< NO_INDIRECTION >;
   using FaceToNodeConnectivity = ConnectivityArray< TYPED_INDIRECTION >;
 
@@ -1648,6 +1658,30 @@ private:
   DISABLE_COPY_AND_ASSIGNMENT( UnstructuredMesh );
   DISABLE_MOVE_AND_ASSIGNMENT( UnstructuredMesh );
 };
+
+template<> inline void UnstructuredMesh<SINGLE_SHAPE>::
+buildCellFaceRelation(IndexType * c2fdata,
+                      IndexType * c2foffsets)
+{
+  IndexType cellCount = getNumberOfCells();
+  m_cell_to_face =
+    new CellToFaceConnectivity(m_cell_connectivity->getIDType(),
+                               cellCount,
+                               c2foffsets[cellCount]);
+  m_cell_to_face->appendM(c2fdata, cellCount, c2foffsets);
+}
+
+template<> inline void UnstructuredMesh<MIXED_SHAPE>::
+buildCellFaceRelation(IndexType * c2fdata,
+                      IndexType * c2foffsets)
+{
+  IndexType cellCount = getNumberOfCells();
+  m_cell_to_face =
+    new CellToFaceConnectivity(cellCount, c2foffsets[cellCount]);
+  m_cell_to_face->appendM(c2fdata, cellCount, c2foffsets,
+                          m_cell_connectivity->getTypePtr());
+}
+
 
 } /* namespace mint */
 } /* namespace axom */
