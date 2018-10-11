@@ -23,8 +23,7 @@ config:
     - $spack/templates
 
   # install directory layout
-  # Note: Broken in current spack
-  directory_layout: "${COMPILERNAME}-${COMPILERVER}/${PACKAGE}-${VERSION}"
+  install_path_scheme: "${COMPILERNAME}-${COMPILERVER}/${PACKAGE}-${VERSION}"
 
   # Locations where different types of modules should be installed.
   module_roots:
