@@ -46,7 +46,8 @@ std::string join_ints_into_string(int vcount, IndexType * values, char sep);
 
 std::string make_face_key(int vcount, IndexType * values, char sep);
 
-/*! \brief Record a Mesh's face-to-cell and cell-to-face relations.
+/*! \brief Record a Mesh's face-to-cell, cell-to-face, and face-to-node
+ *         relations.
  *
  * \param [in] m pointer to a Mesh.
  * \param [out] facecount the number of unique faces of m's cells.

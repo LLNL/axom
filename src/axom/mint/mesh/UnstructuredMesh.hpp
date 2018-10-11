@@ -636,11 +636,15 @@ public:
    * \brief Return the number of faces associated with the given cell.
    *
    * \param [in] cellID the ID of the cell in question.
+   *
+   * \note Codes must call initializeFaceConnectivity() before calling
+   *       this method.
    */
   virtual
   IndexType getNumberOfCellFaces( IndexType cellID ) const final override
   {
-    SLIC_ASSERT( m_cell_to_face != nullptr );
+    SLIC_ERROR_IF( m_cell_to_face == nullptr,
+                   "Must call initializeFaceConnectivity() before this method." );
     return m_cell_to_face->getNumberOfValuesForID(cellID);
   }
 
@@ -653,6 +657,9 @@ public:
    *
    * \return The number of faces for the given cell.
    *
+   * \note Codes must call initializeFaceConnectivity() before calling
+   *       this method.
+   *
    * \pre faces != nullptr
    * \pre 0 <= cellID < getNumberOfCells()
    */
@@ -661,6 +668,8 @@ public:
                             IndexType* faces ) const final override
   {
     SLIC_ASSERT( faces != nullptr );
+    SLIC_ERROR_IF( m_cell_to_face == nullptr,
+                   "Must call initializeFaceConnectivity() before this method." );
     const IndexType n_faces = getNumberOfCellFaces( cellID );
     std::memcpy( faces, getCellFaceIDs( cellID ),
                  n_faces * sizeof( IndexType ) );
@@ -722,19 +731,27 @@ public:
 
   /*!
    * \brief Return the number of faces in the mesh.
+   *
+   * \note Codes must call initializeFaceConnectivity() before calling
+   *       this method.
    */
   virtual IndexType getNumberOfFaces() const final override
   {
-    SLIC_ASSERT( m_cell_to_face != nullptr );
+    SLIC_ERROR_IF( m_face_to_cell == nullptr,
+                   "Must call initializeFaceConnectivity() before this method." );
     return m_face_to_cell->getNumberOfIDs();
   }
 
   /*!
    * \brief Return the capacity for faces.
+   *
+   * \note Codes must call initializeFaceConnectivity() before calling
+   *       this method.
    */
   virtual IndexType getFaceCapacity() const final override
   {
-    SLIC_ASSERT( m_cell_to_face != nullptr );
+    SLIC_ERROR_IF( m_cell_to_face == nullptr,
+                   "Must call initializeFaceConnectivity() before this method." );
     return m_cell_to_face->getIDCapacity();
   }
 
@@ -742,10 +759,14 @@ public:
    * \brief Return the type of the given face.
    *
    * \param [in] faceID the ID of the face in question.
+   *
+   * \note Codes must call initializeFaceConnectivity() before calling
+   *       this method.
    */
   virtual CellType getFaceType( IndexType faceID ) const final override
   {
-    SLIC_ASSERT( m_face_to_node != nullptr );
+    SLIC_ERROR_IF( m_face_to_node == nullptr,
+                   "Must call initializeFaceConnectivity() before this method." );
     return m_face_to_node->getIDType( faceID );
   }
 
@@ -753,11 +774,15 @@ public:
    * \brief Return the number of nodes associated with the given face.
    *
    * \param [in] faceID the ID of the face in question.
+   *
+   * \note Codes must call initializeFaceConnectivity() before calling
+   *       this method.
    */
   virtual IndexType
   getNumberOfFaceNodes( IndexType faceID ) const final override
   {
-    SLIC_ASSERT( m_face_to_node != nullptr );
+    SLIC_ERROR_IF( m_face_to_node == nullptr,
+                   "Must call initializeFaceConnectivity() before this method." );
     return m_face_to_node->getNumberOfValuesForID(faceID);
   }
 
@@ -770,6 +795,10 @@ public:
    *  be of length at least getNumberOfFaceNodes().
    *
    * \return The number of nodes for the given face.
+   *
+   * A face with ID faceID will have a normal pointing outward from the
+   * first cell it is adjacent to, as returned by
+   * getFaceCellIDs(faceID, cellID1, cellID2).
    *
    * \pre nodes != nullptr
    * \pre 0 <= faceID < getNumberOfCells()
@@ -795,13 +824,17 @@ public:
    * \note If no cell exists (the face is external) then the ID will be set to
    * -1.
    *
+   * \note Codes must call initializeFaceConnectivity() before calling
+   *       this method.
+   *
    * \pre 0 <= faceID < getNumberOfFaces()
    */
   virtual void getFaceCellIDs( IndexType faceID,
                                IndexType& cellIDOne,
                                IndexType& cellIDTwo ) const final override
   {
-    SLIC_ASSERT( m_face_to_cell != nullptr );
+    SLIC_ERROR_IF( m_face_to_cell == nullptr,
+                   "Must call initializeFaceConnectivity() before this method." );
     IndexType * faces = (*m_face_to_cell)[ faceID ];
     cellIDOne = faces[0];
     cellIDTwo = faces[1];
@@ -1487,7 +1520,7 @@ public:
 /// \name Faces
 /// @{
 
-  /*! \brief Sets up cell-face and face-cell relations. */
+  /*! \brief Sets up cell-face, face-cell, and face-node connectivity. */
   bool initializeFaceConnectivity()
   {
     int facecount = 0;
@@ -1505,11 +1538,11 @@ public:
 
     if (retval)
     {
-      // Copy in the face relation data.
+      // Copy in the face connectivity data.
       m_face_to_cell = new FaceToCellConnectivity(SEGMENT, facecount);
       m_face_to_cell->appendM(f2cdata, facecount);
 
-      buildCellFaceRelation(c2fdata, c2foffsets);
+      buildCellFaceConnectivity(c2fdata, c2foffsets);
 
       m_face_to_node = new FaceToNodeConnectivity(facecount);
       m_face_to_node->appendM(f2ndata, facecount, f2noffsets, f2ntypes);
@@ -1533,19 +1566,24 @@ public:
    *
    * \param [in] cellID the ID of the cell in question.
    *
+   * \note Codes must call initializeFaceConnectivity() before calling
+   *       this method.
+   *
    * \pre 0 <= cellID < getNumberOfCells()
    */
   /// @{
 
   IndexType* getCellFaceIDs( IndexType cellID )
   {
-    SLIC_ASSERT( m_cell_to_face != nullptr );
+    SLIC_ERROR_IF( m_cell_to_face == nullptr,
+                   "Must call initializeFaceConnectivity() before this method." );
     return (*m_cell_to_face)[ cellID ];
   }
 
   const IndexType* getCellFaceIDs( IndexType cellID ) const
   {
-    SLIC_ASSERT( m_cell_to_face != nullptr );
+    SLIC_ERROR_IF( m_cell_to_face == nullptr,
+                   "Must call initializeFaceConnectivity() before this method." );
     return (*m_cell_to_face)[ cellID ];
   }
 
@@ -1558,19 +1596,24 @@ public:
    *
    * \param [in] faceID the ID of the face in question.
    *
+   * \note Codes must call initializeFaceConnectivity() before calling
+   *       this method.
+   *
    * \pre 0 <= faceID < getNumberOfFaces()
    */
   /// @{
 
   IndexType* getFaceNodeIDs( IndexType faceID )
   {
-    SLIC_ASSERT( m_face_to_node != nullptr );
+    SLIC_ERROR_IF( m_face_to_node == nullptr,
+                   "Must call initializeFaceConnectivity() before this method." );
     return (*m_face_to_node)[ faceID ];
   }
 
   const IndexType* getFaceNodeIDs( IndexType faceID ) const
   {
-    SLIC_ASSERT( m_face_to_node != nullptr );
+    SLIC_ERROR_IF( m_face_to_node == nullptr,
+                   "Must call initializeFaceConnectivity() before this method." );
     return (*m_face_to_node)[ faceID ];
   }
 
@@ -1582,8 +1625,8 @@ public:
 
 private:
 
-  /*! \brief Construct and fill the cell-to-face relation. */
-  void buildCellFaceRelation(IndexType * c2fdata, IndexType * c2foffsets);
+  /*! \brief Construct and fill the cell-to-face connectivity. */
+  void buildCellFaceConnectivity(IndexType * c2fdata, IndexType * c2foffsets);
 
   /*!
    * \brief Update the connectivity given an nodal insert at position pos of
@@ -1639,7 +1682,7 @@ private:
    *   The concensus is that storing such a non-manifold mesh is not useful
    *   so we only store the first two incident cells and return an error.
    *
-   * Face types are stored in the face-node relation.
+   * Face types are stored in the face-node connectivity.
    */
   using CellToFaceConnectivity =
     ConnectivityArray< topology_traits< TOPO >::cell_face_connec >;
@@ -1660,8 +1703,8 @@ private:
 };
 
 template<> inline void UnstructuredMesh<SINGLE_SHAPE>::
-buildCellFaceRelation(IndexType * c2fdata,
-                      IndexType * c2foffsets)
+buildCellFaceConnectivity(IndexType * c2fdata,
+                          IndexType * c2foffsets)
 {
   IndexType cellCount = getNumberOfCells();
   m_cell_to_face =
@@ -1672,8 +1715,8 @@ buildCellFaceRelation(IndexType * c2fdata,
 }
 
 template<> inline void UnstructuredMesh<MIXED_SHAPE>::
-buildCellFaceRelation(IndexType * c2fdata,
-                      IndexType * c2foffsets)
+buildCellFaceConnectivity(IndexType * c2fdata,
+                          IndexType * c2foffsets)
 {
   IndexType cellCount = getNumberOfCells();
   m_cell_to_face =

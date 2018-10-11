@@ -58,14 +58,7 @@ std::string make_face_key(int count, IndexType * values, char sep)
 //------------------------------------------------------------------------------
 IndexType otherSide(IndexType * f2c, IndexType thisSide)
 {
-  if (f2c[0] != thisSide)
-  {
-    return f2c[0];
-  }
-  else
-  {
-    return f2c[1];
-  }
+  return ( f2c[0] != thisSide ) ? f2c[0] : f2c[1];
 }
 
 
