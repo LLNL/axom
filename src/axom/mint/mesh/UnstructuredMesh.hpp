@@ -553,21 +553,8 @@ public:
       delete m_cell_connectivity;
       m_cell_connectivity = nullptr;
     }
-    if ( m_cell_to_face != nullptr )
-    {
-      delete m_cell_to_face;
-      m_cell_to_face = nullptr;
-    }
-    if ( m_face_to_cell != nullptr )
-    {
-      delete m_face_to_cell;
-      m_face_to_cell = nullptr;
-    }
-    if ( m_face_to_node != nullptr )
-    {
-      delete m_face_to_node;
-      m_face_to_node = nullptr;
-    }
+
+    destroyFaceConnectivity();
   }
 
 /// \name Cells
@@ -1520,9 +1507,24 @@ public:
 /// \name Faces
 /// @{
 
-  /*! \brief Sets up cell-face, face-cell, and face-node connectivity. */
-  bool initializeFaceConnectivity()
+  /*!
+   * \brief Sets up cell-face, face-cell, and face-node connectivity.
+   *
+   * \param [in] force re-initialize face-related connectivity, even if it
+   *             has already been done.
+   */
+  bool initializeFaceConnectivity(bool force = false)
   {
+    if (!force && m_face_to_cell != 0)
+    {
+      return true;
+    }
+
+    if (force)
+    {
+      destroyFaceConnectivity();
+    }
+
     int facecount = 0;
     IndexType * f2cdata = nullptr;
     IndexType * c2fdata = nullptr;
@@ -1664,6 +1666,17 @@ private:
     m_mesh_fields[ NODE_CENTERED ]->reserve( m_coordinates->capacity() );
     m_mesh_fields[ CELL_CENTERED ]->reserve(
       m_cell_connectivity->getIDCapacity() );
+  }
+
+  /*! \brief Destroy cell-face, face-cell, and face-node connectivity. */
+  void destroyFaceConnectivity()
+  {
+    delete m_cell_to_face;
+    m_cell_to_face = nullptr;
+    delete m_face_to_cell;
+    m_face_to_cell = nullptr;
+    delete m_face_to_node;
+    m_face_to_node = nullptr;
   }
 
   using CellConnectivity =

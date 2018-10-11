@@ -33,7 +33,7 @@
 // C/C++ includes
 #include <algorithm>                    /* for std::fill_n */
 #include <string>
-#include <sstream>                      /* because George hates fmt */
+#include <sstream>
 #include <unordered_map>
 
 namespace axom
