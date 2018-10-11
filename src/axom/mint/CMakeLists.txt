@@ -97,6 +97,9 @@ set( mint_sources
     ## FEM classes
     fem/FiniteElement.cpp
 
+    ## Internal implementation
+    mesh/internal/MeshHelpers.cpp
+
     ## Mesh data-model
     mesh/blueprint.cpp
     mesh/CurvilinearMesh.cpp

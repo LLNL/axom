@@ -25,7 +25,10 @@ namespace axom
 namespace mint
 {
 
-constexpr int MAX_NUM_NODES = 27;
+static constexpr int MAX_NUM_NODES = 27;
+static constexpr int MAX_CELL_FACES = 6;
+static constexpr int MAX_FACE_NODES = 9;
+static constexpr int MAX_ALL_FACES_NODES = MAX_CELL_FACES * MAX_FACE_NODES;
 
 /*!
  * \brief Enumerates all cell types supported by Mint
@@ -64,7 +67,9 @@ constexpr CellType HEX27 = CellType::HEX27;
 constexpr int NUM_CELL_TYPES = static_cast< int >( CellType::NUM_CELL_TYPES );
 
 /*!
- * \def REGISTER_CELL_INFO( MINT_CELL_TYPE, MINT_NAME, BP_NAME, VTK_TYPE, N )
+ * \def REGISTER_CELL_INFO( MINT_CELL_TYPE, MINT_NAME, BP_NAME, VTK_TYPE,
+ *                          N_NODES, N_FACES, N_FACE_NODES, FACE_CELL_TYPES,
+ *                          FACE_NODES )
  *
  * \brief Convenience macro used to register information about a cell type.
  *
@@ -72,10 +77,16 @@ constexpr int NUM_CELL_TYPES = static_cast< int >( CellType::NUM_CELL_TYPES );
  * \param MINT_NAME the associated mint name for the cell type.
  * \param BP_NAME the associated name in the mesh blueprint.
  * \param VTK_TYPE the corresponding VTK type.
- * \param N the number of nodes that the cell has.
+ * \param N_NODES the number of nodes that the cell has.
+ * \param N_FACES the number of faces that the cell has.
+ * \param N_FACE_NODES an array; the number of nodes that each face has.
+ * \param FACE_CELL_TYPES an array; the VTK type of each face.
+ * \param FACE_NODES an array; the node offsets specifying each face
+ *        (CCW, so normal points out).
  */
-#define REGISTER_CELL_INFO( MINT_CELL_TYPE, MINT_NAME, BP_NAME, VTK_TYPE, \
-                            N_NODES, N_FACES ) \
+#define REGISTER_CELL_INFO( MINT_CELL_TYPE, MINT_NAME, BP_NAME, VTK_TYPE,   \
+                            N_NODES, N_FACES, N_FACE_NODES, FACE_CELL_TYPES, \
+                            FACE_NODES )                                    \
   namespace internal                                                        \
   {                                                                         \
   static constexpr CellInfo MINT_CELL_TYPE ## _INFO =                       \
@@ -85,7 +96,10 @@ constexpr int NUM_CELL_TYPES = static_cast< int >( CellType::NUM_CELL_TYPES );
     BP_NAME,                                                                \
     VTK_TYPE,                                                               \
     N_NODES,                                                                \
-    N_FACES                                                                 \
+    N_FACES,                                                                \
+    N_FACE_NODES,                                                           \
+    FACE_CELL_TYPES,                                                        \
+    FACE_NODES                                                              \
   };                                                                        \
   }
 
@@ -106,27 +120,100 @@ constexpr int NUM_CELL_TYPES = static_cast< int >( CellType::NUM_CELL_TYPES );
  */
 typedef struct
 {
-  CellType cell_type;           /*!< cell type, .e.g, mint::QUAD, mint::HEX */
+  CellType cell_type;           /*!< cell type, e.g. mint::QUAD, mint::HEX */
   const char* name;             /*!< the name associated with the cell */
   const char* blueprint_name;   /*!< corresponding mesh blueprint name */
   int vtk_type;                 /*!< corresponding vtk_type */
   int num_nodes;                /*!< number of nodes for the given cell */
   int num_faces;                /*!< number of faces for the given cell */
+  int face_nodecount[MAX_CELL_FACES]; /*!< number of nodes for each of cell's faces */
+  CellType face_types[MAX_CELL_FACES]; /*!< face type, e.g. mint::SEGMENT, mint::QUAD */
+  IndexType face_nodes[MAX_ALL_FACES_NODES]; /*!< nodes for each of cell's faces */
 } CellInfo;
 
+// This construct lets us pass literal arrays to function-like macros.
+// AR stands for ARray.
+#define AR(...) __VA_ARGS__
+
 // Cell Info registration
-REGISTER_CELL_INFO( VERTEX, "VERTEX", "point", 1, 1, 0 );
-REGISTER_CELL_INFO( SEGMENT, "SEGMENT", "line", 3, 2, 0 );
+REGISTER_CELL_INFO( VERTEX, "VERTEX", "point", 1, 1, 0,
+                    AR({ 0 }), AR({ UNDEFINED_CELL }), AR({ 0 }) );
+REGISTER_CELL_INFO( SEGMENT, "SEGMENT", "line", 3, 2, 2,
+                    AR({ 1, 1 }),
+                    AR({ VERTEX, VERTEX }),
+                    AR({  0,      // face 0
+                          1       // face 1
+                    }) );
+REGISTER_CELL_INFO( TRIANGLE, "TRIANGLE", "tri", 5, 3, 3,
+                    AR({ 2, 2, 2 }),
+                    AR({ SEGMENT, SEGMENT, SEGMENT }),
+                    AR({  0, 1,   // face 0
+                          1, 2,   // face 1
+                          2, 0    // face 2
+                    }) );
+REGISTER_CELL_INFO( QUAD, "QUAD", "quad", 9, 4, 4,
+                    AR({ 2, 2, 2, 2 }),
+                    AR({ SEGMENT, SEGMENT, SEGMENT, SEGMENT }),
+                    AR({  0, 1,   // face 0
+                          1, 2,   // face 1
+                          2, 3,   // face 2
+                          3, 0    // face 3
+                    }) );
+REGISTER_CELL_INFO( TET, "TET", "tet", 10, 4, 4,
+                    AR({ 3, 3, 3, 3 }),
+                    AR({ TRIANGLE, TRIANGLE, TRIANGLE, TRIANGLE }),
+                    AR({  0, 2, 1,   // face 0
+                          0, 3, 2,   // face 1
+                          0, 1, 3,   // face 2
+                          1, 2, 3    // face 3
+                    }) );
+REGISTER_CELL_INFO( HEX, "HEX", "hex", 12, 8, 6,
+                    AR({ 4, 4, 4, 4, 4, 4 }),
+                    AR({ QUAD, QUAD, QUAD, QUAD, QUAD, QUAD }),
+                    AR({  0, 3, 2, 1,   // face 0
+                          1, 2, 6, 5,   // face 1
+                          1, 5, 4, 0,   // face 2
+                          0, 4, 7, 3,   // face 3
+                          7, 6, 2, 3,   // face 4
+                          4, 5, 6, 7    // face 5
+                    }) );
+REGISTER_CELL_INFO( PRISM, "PRISM", "prism-no-bp", 13, 6, 5,
+                    AR({ 3, 4, 4, 4, 3 }),
+                    AR({ TRIANGLE, QUAD, QUAD, QUAD, TRIANGLE }),
+                    AR({  0, 1, 2,      // face 0
+                          0, 2, 5, 3,   // face 1
+                          0, 3, 4, 1,   // face 2
+                          1, 4, 5, 2,   // face 3
+                          3, 5, 4       // face 4
+                    }) );
+REGISTER_CELL_INFO( PYRAMID, "PYRAMID", "pyramid-no-bp", 14, 5, 5,
+                    AR({ 4, 3, 3, 3, 3 }),
+                    AR({ QUAD, TRIANGLE, TRIANGLE, TRIANGLE, TRIANGLE }),
+                    AR({  0, 3, 2, 1,   // face 0
+                          0, 1, 4,      // face 1
+                          1, 2, 4,      // face 2
+                          2, 3, 4,      // face 3
+                          3, 0, 4       // face 4
+                    }) );
 
-REGISTER_CELL_INFO( TRIANGLE, "TRIANGLE", "tri", 5, 3, 3 );
-REGISTER_CELL_INFO( QUAD, "QUAD", "quad", 9, 4, 4 );
-REGISTER_CELL_INFO( TET, "TET", "tet", 10, 4, 4 );
-REGISTER_CELL_INFO( HEX, "HEX", "hex", 12, 8, 6 );
-REGISTER_CELL_INFO( PRISM, "PRISM", "prism-no-bp", 13, 6, 5 );
-REGISTER_CELL_INFO( PYRAMID, "PYRAMID", "pyramid-no-bp", 14, 5, 5 );
-
-REGISTER_CELL_INFO( QUAD9, "QUAD9", "quad9-no-bp", 28, 9, 4 );
-REGISTER_CELL_INFO( HEX27, "HEX27", "hex27-no-bp", 29, 27, 6 );
+REGISTER_CELL_INFO( QUAD9, "QUAD9", "quad9-no-bp", 28, 9, 4,
+                    AR({ 2, 2, 2, 2 }),
+                    AR({ SEGMENT, SEGMENT, SEGMENT, SEGMENT }),
+                    AR({  0, 1,   // face 0
+                          1, 2,   // face 1
+                          2, 3,   // face 2
+                          3, 0    // face 3
+                    }) );
+REGISTER_CELL_INFO( HEX27, "HEX27", "hex27-no-bp", 29, 27, 6,
+                    AR({ 9, 9, 9, 9, 9, 9 }),
+                    AR({ QUAD9, QUAD9, QUAD9, QUAD9, QUAD9, QUAD9 }),
+                    AR({  0, 3, 2, 1, 11, 10,  9,  8, 24,  // face 0
+                          1, 2, 6, 5,  9, 18, 13, 17, 21,  // face 1
+                          1, 5, 4, 0, 17, 12, 16,  8, 22,  // face 2
+                          0, 4, 7, 3, 16, 15, 19, 11, 20,  // face 3
+                          7, 6, 2, 3, 14, 18, 10, 19, 23,  // face 4
+                          4, 5, 6, 7, 12, 13, 14, 15, 25   // face 5
+                    }) );
 
 /*!
  * \brief Array of CellInfo corresponding to each cell type
