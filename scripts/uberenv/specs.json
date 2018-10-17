@@ -38,8 +38,8 @@
       "xl@coral" ],
 
     "bgqos_0":
-    [ "clang@4.0.0_gfortran~cmake",
-      "clang@4.0.0_xlf~cmake" ],
+    [ "clang@4.0.0_gfortran",
+      "clang@4.0.0_xlf" ],
 
     "darwin-x86_64":
     [ "clang@9.0.0" ]

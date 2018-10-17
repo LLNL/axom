@@ -76,6 +76,8 @@ packages:
    paths:
       tar: /usr/bin/
    buildable: False
-# Globally lock in version of CMake
+# On BGQ specifically just use the system CMake
   cmake:
-    version: [3.8.2]
+    paths:
+      cmake: /collab/usr/global/tools/cmake/bgqos_0/cmake-3.8.2/bin/
+    buildable: False

@@ -218,7 +218,7 @@ def create_spack_mirror(mirror_path,pkg_name,ignore_ssl_errors=False):
     mirror_cmd = "spack/bin/spack "
     if ignore_ssl_errors:
         mirror_cmd += "-k "
-    mirror_cmd += "mirror create -d {} --dependencies {}".format(mirror_path,
+    mirror_cmd += "mirror create -d {0} --dependencies {1}".format(mirror_path,
                                                                  pkg_name)
     return sexe(mirror_cmd, echo=True)
 
@@ -253,12 +253,12 @@ def use_spack_mirror(spack_dir,
         # Note: In this case, spack says it removes the mirror, but we still 
         # get errors when we try to add a new one, sounds like a bug
         #
-        sexe("spack/bin/spack mirror remove --scope=site {} ".format(
+        sexe("spack/bin/spack mirror remove --scope=site {0} ".format(
                 mirror_name), echo=True)
         existing_mirror_path = None
     if not existing_mirror_path:
         # Add if not already there
-        sexe("spack/bin/spack mirror add --scope=site {} {}".format(
+        sexe("spack/bin/spack mirror add --scope=site {0} {1}".format(
                 mirror_name, mirror_path), echo=True)
         print "[using mirror %s]" % mirror_path
 
