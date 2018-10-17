@@ -334,7 +334,7 @@ private:
       // Assume that all elements of the mesh have the same order and geom type
       int order = nodalFESpace->GetOrder(0);
       int dim = meshDimension();
-      int GeomType = m_mesh->GetElementBaseGeometry(0);
+      mfem::Geometry::Type GeomType = m_mesh->GetElementBaseGeometry(0);
       int mapType =
         (nodalFEColl != AXOM_NULLPTR)
         ? nodalFEColl->FiniteElementForGeometry(GeomType)->GetMapType()
