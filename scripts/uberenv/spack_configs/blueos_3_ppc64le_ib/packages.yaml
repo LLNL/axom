@@ -47,9 +47,9 @@ packages:
 # so even though this is spectrum mpi, we call it mvapich2
   mvapich2:
     paths:
-      mvapich2@2.2%gcc@4.9.3: /usr/tce/packages/spectrum-mpi/spectrum-mpi-2018.04.27-gcc-4.9.3
-      mvapich2@2.2%clang@coral_xlf: /usr/tce/packages/spectrum-mpi/spectrum-mpi-2018.04.27-clang-coral-2018.05.23
-      mvapich2@2.2%xl@coral : /usr/tce/packages/spectrum-mpi/spectrum-mpi-2018.04.27-xl-2018.05.18
+      mvapich2@2.2%gcc@4.9.3: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-4.9.3
+      mvapich2@2.2%clang@coral_xlf: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-coral-2018.05.23
+      mvapich2@2.2%xl@coral : /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2018.05.18
     buildable: False
 # System level packages to not build
   bzip2:
