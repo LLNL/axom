@@ -80,7 +80,7 @@ void check_for_all_cells_idx( int dimension )
 }
 
 //------------------------------------------------------------------------------
-template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
+template < typename ExecPolicy, int MeshType >
 void check_for_all_cells_ij( )
 {
   SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
@@ -92,7 +92,7 @@ void check_for_all_cells_ij( )
   UniformMesh uniform_mesh( lo, hi, N, N );
 
   // STEP 0: create the test mesh
-  Mesh* test_mesh = internal::create_mesh< MeshType, Topology >( uniform_mesh );
+  Mesh* test_mesh = internal::create_mesh< MeshType, SINGLE_SHAPE >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
   IndexType* icoords = test_mesh->createField< IndexType >( "i", CELL_CENTERED );
@@ -122,7 +122,7 @@ void check_for_all_cells_ij( )
 }
 
 //------------------------------------------------------------------------------
-template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
+template < typename ExecPolicy, int MeshType >
 void check_for_all_cells_ijk( )
 {
   SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
@@ -134,7 +134,7 @@ void check_for_all_cells_ijk( )
   UniformMesh uniform_mesh( lo, hi, N, N, N );
 
   // STEP 0: create the test mesh
-  Mesh* test_mesh = internal::create_mesh< MeshType, Topology >( uniform_mesh );
+  Mesh* test_mesh = internal::create_mesh< MeshType >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
   IndexType* icoords = test_mesh->createField< IndexType >( "i", CELL_CENTERED );
@@ -236,34 +236,30 @@ void check_for_all_cell_faces( int dimension )
   EXPECT_TRUE( test_mesh != nullptr );
 
   const IndexType numCells        = test_mesh->getNumberOfCells();
-  const IndexType numFacesPerCell = test_mesh->getNumberOfCellFaces();
   IndexType* cellFaces = test_mesh->createField< IndexType >( "cellFaces", 
                                                               CELL_CENTERED,
-                                                              numFacesPerCell );
+                                                              MAX_CELL_FACES );
 
   for_all_cells< ExecPolicy, xargs::faceids >( test_mesh,
     AXOM_LAMBDA( IndexType cellID, const IndexType* faces, IndexType N)
     {
-      EXPECT_EQ( N, numFacesPerCell );
-
       for ( int i = 0 ; i < N ; ++i )
       {
-        cellFaces[ cellID * numFacesPerCell + i ] = faces[ i ];
+        cellFaces[ cellID * MAX_CELL_FACES + i ] = faces[ i ];
       }
     }
   );
 
-  IndexType faces[ 8 ];
+  IndexType faces[ MAX_CELL_FACES ];
   for ( IndexType cellID = 0 ; cellID < numCells ; ++cellID )
   {
     const IndexType N = test_mesh->getCellFaceIDs( cellID, faces );
-    EXPECT_EQ( N, numFacesPerCell );
 
     for ( IndexType i=0 ; i < N ; ++i )
     {
-      EXPECT_EQ( cellFaces[ cellID * numFacesPerCell + i ], faces[ i ] );
+      EXPECT_EQ( cellFaces[ cellID * MAX_CELL_FACES + i ], faces[ i ] );
     }
-  } 
+  }
 
   /* clean up */
   delete test_mesh;
@@ -325,6 +321,8 @@ TEST( mint_execution_cell_traversals, for_all_cells_faceids )
     check_for_all_cell_faces< seq_exec, STRUCTURED_UNIFORM_MESH >(i);
     check_for_all_cell_faces< seq_exec, STRUCTURED_CURVILINEAR_MESH >(i);
     check_for_all_cell_faces< seq_exec, STRUCTURED_RECTILINEAR_MESH >(i);
+    check_for_all_cell_faces< seq_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >(i);
+    check_for_all_cell_faces< seq_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >(i);
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
     defined(RAJA_ENABLE_OPENMP)
@@ -333,6 +331,8 @@ TEST( mint_execution_cell_traversals, for_all_cells_faceids )
     check_for_all_cell_faces< omp_exec, STRUCTURED_UNIFORM_MESH >(i);
     check_for_all_cell_faces< omp_exec, STRUCTURED_CURVILINEAR_MESH >(i);
     check_for_all_cell_faces< omp_exec, STRUCTURED_RECTILINEAR_MESH >(i);
+    check_for_all_cell_faces< seq_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >(i);
+    check_for_all_cell_faces< seq_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >(i);
 
 #endif
 
@@ -343,6 +343,8 @@ TEST( mint_execution_cell_traversals, for_all_cells_faceids )
     check_for_all_cell_faces< cuda_exec, STRUCTURED_UNIFORM_MESH >(i);
     check_for_all_cell_faces< cuda_exec, STRUCTURED_CURVILINEAR_MESH >(i);
     check_for_all_cell_faces< cuda_exec, STRUCTURED_RECTILINEAR_MESH >(i);
+    check_for_all_cell_faces< seq_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >(i);
+    check_for_all_cell_faces< seq_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >(i);
 
 #endif
 

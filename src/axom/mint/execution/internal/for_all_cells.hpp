@@ -22,9 +22,9 @@
 #include "axom/mint/execution/xargs.hpp"        // for xargs
 
 #include "axom/mint/config.hpp"                 // for compile-time definitions
-#include "axom/mint/mesh/Mesh.hpp"              // for mint::Mesh
-#include "axom/mint/mesh/StructuredMesh.hpp"    // for mint::StructuredMesh
-#include "axom/mint/mesh/UnstructuredMesh.hpp"  // for mint::UnstructuredMesh
+#include "axom/mint/mesh/Mesh.hpp"              // for Mesh
+#include "axom/mint/mesh/StructuredMesh.hpp"    // for StructuredMesh
+#include "axom/mint/mesh/UnstructuredMesh.hpp"  // for UnstructuredMesh
 #include "axom/mint/execution/policy.hpp"       // execution policies/traits
 
 #ifdef AXOM_USE_RAJA
@@ -39,7 +39,7 @@ namespace internal
 {
 
 template < typename ExecPolicy, typename KernelType >
-inline void for_all_cells( xargs::index, const mint::Mesh* m,
+inline void for_all_cells( xargs::index, const Mesh* m,
                            KernelType&& kernel )
 {
   SLIC_ASSERT( m != nullptr );
@@ -66,7 +66,7 @@ inline void for_all_cells( xargs::index, const mint::Mesh* m,
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
-inline void for_all_cells( xargs::ij, const mint::Mesh* m,
+inline void for_all_cells( xargs::ij, const Mesh* m,
                            KernelType&& kernel )
 {
   // run-time checks
@@ -76,8 +76,8 @@ inline void for_all_cells( xargs::ij, const mint::Mesh* m,
   SLIC_ERROR_IF( m->getDimension() != 2,
                  "xargs::ij is only valid for 2-D structured meshes!" );
 
-  const mint::StructuredMesh* sm =
-    static_cast< const mint::StructuredMesh* >( m );
+  const StructuredMesh* sm =
+    static_cast< const StructuredMesh* >( m );
 
   const IndexType jp = sm->cellJp();
   const IndexType Ni = sm->getCellResolution( I_DIRECTION );
@@ -117,7 +117,7 @@ inline void for_all_cells( xargs::ij, const mint::Mesh* m,
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
-inline void for_all_cells( xargs::ijk, const mint::Mesh* m,
+inline void for_all_cells( xargs::ijk, const Mesh* m,
                            KernelType&& kernel )
 {
   // run-time checks
@@ -127,8 +127,8 @@ inline void for_all_cells( xargs::ijk, const mint::Mesh* m,
   SLIC_ERROR_IF( m->getDimension() != 3,
                  "xargs::ijk is only valid for 3-D structured meshes!" );
 
-  const mint::StructuredMesh* sm =
-    static_cast< const mint::StructuredMesh* >( m );
+  const StructuredMesh* sm =
+    static_cast< const StructuredMesh* >( m );
 
   const IndexType Ni = sm->getCellResolution( I_DIRECTION );
   const IndexType Nj = sm->getCellResolution( J_DIRECTION );
@@ -178,11 +178,11 @@ inline void for_all_cells( xargs::ijk, const mint::Mesh* m,
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
-inline void for_all_cellnodes_structured( const mint::Mesh* m,
+inline void for_all_cellnodes_structured( const Mesh* m,
                                           KernelType&& kernel )
 {
-  const mint::StructuredMesh* sm =
-    static_cast< const mint::StructuredMesh* >( m );
+  const StructuredMesh* sm =
+    static_cast< const StructuredMesh* >( m );
 
   const IndexType dimension = sm->getDimension();
   const IndexType nodeJp    = sm->nodeJp();
@@ -344,9 +344,9 @@ inline void for_all_cellnodes_structured( const mint::Mesh* m,
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
-inline void for_all_cellnodes_mixed( const mint::Mesh* m, KernelType&& kernel )
+inline void for_all_cellnodes_unstructured_mixed( const Mesh* m, KernelType&& kernel )
 {
-  using UnstructuredMeshType = mint::UnstructuredMesh< mint::MIXED_SHAPE >;
+  using UnstructuredMeshType = UnstructuredMesh< MIXED_SHAPE >;
   const UnstructuredMeshType* um =
     static_cast< const UnstructuredMeshType* >( m );
 
@@ -381,10 +381,10 @@ inline void for_all_cellnodes_mixed( const mint::Mesh* m, KernelType&& kernel )
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
-inline void for_all_cellnodes_unstructured( const mint::Mesh* m,
-                                            KernelType&& kernel )
+inline void for_all_cellnodes_unstructured_single( const Mesh* m,
+                                                   KernelType&& kernel )
 {
-  using UnstructuredMeshType = mint::UnstructuredMesh< mint::SINGLE_SHAPE >;
+  using UnstructuredMeshType = UnstructuredMesh< SINGLE_SHAPE >;
   const UnstructuredMeshType* um =
     static_cast< const UnstructuredMeshType* >( m );
 
@@ -417,13 +417,13 @@ inline void for_all_cellnodes_unstructured( const mint::Mesh* m,
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
-inline void for_all_cellfaces_structured( const mint::Mesh* m,
+inline void for_all_cellfaces_structured( const Mesh* m,
                                           KernelType&& kernel )
 {
   SLIC_ASSERT( m->isStructured() );
 
-  const mint::StructuredMesh* sm =
-    static_cast< const mint::StructuredMesh* >( m );
+  const StructuredMesh* sm =
+    static_cast< const StructuredMesh* >( m );
 
   const IndexType dimension = sm->getDimension();
   const IndexType ICellResolution = sm->getCellResolution( I_DIRECTION );
@@ -481,9 +481,9 @@ inline void for_all_cellfaces_structured( const mint::Mesh* m,
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
-inline void for_all_cellfaces_mixed( const mint::Mesh* m, KernelType&& kernel )
+inline void for_all_cellfaces_mixed( const Mesh* m, KernelType&& kernel )
 {
-  using UnstructuredMeshType = mint::UnstructuredMesh< mint::MIXED_SHAPE >;
+  using UnstructuredMeshType = UnstructuredMesh< MIXED_SHAPE >;
   const UnstructuredMeshType* um =
     static_cast< const UnstructuredMeshType* >( m );
 
@@ -518,44 +518,50 @@ inline void for_all_cellfaces_mixed( const mint::Mesh* m, KernelType&& kernel )
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
-inline void for_all_cellfaces_unstructured( const mint::Mesh* m, 
-                                            KernelType&& kernel )
+inline void for_all_cellfaces_unstructured_single( const Mesh* m, 
+                                                   KernelType&& kernel )
 {
-  using UnstructuredMeshType = mint::UnstructuredMesh< mint::SINGLE_SHAPE >;
-  const UnstructuredMeshType* um =
-    static_cast< const UnstructuredMeshType* >( m );
+  using UnstructuredMeshType = UnstructuredMesh< SINGLE_SHAPE >;
 
-  const IndexType numCells           = um->getNumberOfCells();
-  const IndexType* cell_connectivity = um->getCellNodesArray();
-  const IndexType stride             = um->getNumberOfCellNodes();
+  const UnstructuredMeshType* um = 
+                                static_cast< const UnstructuredMeshType* >( m );
 
-#ifdef AXOM_USE_RAJA
+  const IndexType* cells_to_faces = um->getCellFacesArray();
+  const IndexType num_faces = um->getNumberOfCellFaces();
 
-  using exec_pol = typename policy_traits< ExecPolicy >::raja_exec_policy;
-  RAJA::forall< exec_pol >( RAJA::RangeSegment(0,numCells),
-                            AXOM_LAMBDA(IndexType cellIdx)
-        {
-          kernel( cellIdx, &cell_connectivity[ cellIdx*stride ], stride );
-        } );
-
-#else
-
-  constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
-  AXOM_STATIC_ASSERT( is_serial );
-
-
-  for ( IndexType icell=0 ; icell < numCells ; ++icell )
-  {
-    kernel( icell, &cell_connectivity[ icell*stride ], stride );
-  } // END for all cells
-
-#endif
+  for_all_cells< ExecPolicy, xargs::index >( m, 
+    AXOM_LAMBDA( IndexType cellID )
+    {
+      kernel( cellID, cells_to_faces + cellID * num_faces, num_faces );
+    }
+  );
 }
-
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
-inline void for_all_cells( xargs::nodeids, const mint::Mesh* m,
+inline void for_all_cellfaces_unstructured_mixed( const Mesh* m, 
+                                                  KernelType&& kernel )
+{
+  using UnstructuredMeshType = UnstructuredMesh< MIXED_SHAPE >;
+
+  const UnstructuredMeshType* um = 
+                                static_cast< const UnstructuredMeshType* >( m );
+
+  const IndexType* cells_to_faces = um->getCellFacesArray();
+  const IndexType* offsets        = um->getCellFacesOffsetsArray();
+
+  for_all_cells< ExecPolicy, xargs::index >( m, 
+    AXOM_LAMBDA( IndexType cellID )
+    {
+      const IndexType num_faces = offsets[ cellID + 1 ] - offsets[ cellID ];
+      kernel( cellID, &cells_to_faces[ offsets[ cellID ] ], num_faces );
+    }
+  );
+}
+
+//------------------------------------------------------------------------------
+template < typename ExecPolicy, typename KernelType >
+inline void for_all_cells( xargs::nodeids, const Mesh* m,
                            KernelType&& kernel )
 {
   SLIC_ASSERT( m != nullptr );
@@ -567,19 +573,19 @@ inline void for_all_cells( xargs::nodeids, const mint::Mesh* m,
   }
   else if ( m->hasMixedCellTypes() )
   {
-    for_all_cellnodes_mixed< ExecPolicy >(
+    for_all_cellnodes_unstructured_mixed< ExecPolicy >( 
       m, std::forward< KernelType >( kernel ) );
   }
   else
   {
-    for_all_cellnodes_unstructured< ExecPolicy >(
+    for_all_cellnodes_unstructured_single< ExecPolicy >(
       m, std::forward< KernelType >( kernel ) );
   }
 }
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
-inline void for_all_cells( xargs::faceids, const mint::Mesh* m,
+inline void for_all_cells( xargs::faceids, const Mesh* m,
                            KernelType&& kernel )
 {
   SLIC_ASSERT( m != nullptr );
@@ -592,12 +598,12 @@ inline void for_all_cells( xargs::faceids, const mint::Mesh* m,
   }
   else if ( m->hasMixedCellTypes() )
   {
-    for_all_cellfaces_mixed< ExecPolicy >(
+    for_all_cellfaces_unstructured_mixed< ExecPolicy >(
       m, std::forward< KernelType >( kernel ) );
   }
   else
   {
-    for_all_cellfaces_unstructured< ExecPolicy >(
+    for_all_cellfaces_unstructured_single< ExecPolicy >( 
       m, std::forward< KernelType >( kernel ) );
   }
 }
