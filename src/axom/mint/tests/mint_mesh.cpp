@@ -594,7 +594,7 @@ TEST( mint_mesh, get_single_topology_unstructured_from_sidre )
   const IndexType cell_capacity = mesh->getCellCapacity();
   const double* x = mesh->getCoordinateArray( X_COORDINATE );
   const double* y = mesh->getCoordinateArray( Y_COORDINATE );
-  const IndexType* connec = mesh->getCellConnectivityArray();
+  const IndexType* connec = mesh->getCellNodesArray();
 
   delete mesh;
   mesh = nullptr;
@@ -635,7 +635,7 @@ TEST( mint_mesh, get_single_topology_unstructured_from_sidre )
   /* STEP 7: down-cast and test the UnstructuredMesh object. */
   const UnstructuredMesh< SINGLE_SHAPE >* M =
     dynamic_cast< const UnstructuredMesh< SINGLE_SHAPE >* >( m );
-  EXPECT_EQ( M->getCellConnectivityArray(), connec );
+  EXPECT_EQ( M->getCellNodesArray(), connec );
 
   /* STEP 8: de-allocate. */
   delete m;
@@ -679,10 +679,10 @@ TEST( mint_mesh, get_mixed_topology_unstructured_from_sidre )
   const IndexType cell_capacity = mesh->getCellCapacity();
   const double* x = mesh->getCoordinateArray( X_COORDINATE );
   const double* y = mesh->getCoordinateArray( Y_COORDINATE );
-  const IndexType connec_size = mesh->getCellConnectivitySize();
-  const IndexType connec_capacity = mesh->getCellConnectivityCapacity();
-  const IndexType* connec = mesh->getCellConnectivityArray();
-  const IndexType* offsets = mesh->getCellOffsetsArray();
+  const IndexType connec_size = mesh->getCellNodesSize();
+  const IndexType connec_capacity = mesh->getCellNodesCapacity();
+  const IndexType* connec = mesh->getCellNodesArray();
+  const IndexType* offsets = mesh->getCellNodesOffsetsArray();
   const CellType* types = mesh->getCellTypesArray();
 
   delete mesh;
@@ -724,10 +724,10 @@ TEST( mint_mesh, get_mixed_topology_unstructured_from_sidre )
   /* STEP 7: down-cast and test the UnstructuredMesh object. */
   const UnstructuredMesh< MIXED_SHAPE >* M =
     dynamic_cast< const UnstructuredMesh< MIXED_SHAPE >* >( m );
-  EXPECT_EQ( M->getCellConnectivitySize(), connec_size );
-  EXPECT_EQ( M->getCellConnectivityCapacity(), connec_capacity );
-  EXPECT_EQ( M->getCellConnectivityArray(), connec );
-  EXPECT_EQ( M->getCellOffsetsArray(), offsets );
+  EXPECT_EQ( M->getCellNodesSize(), connec_size );
+  EXPECT_EQ( M->getCellNodesCapacity(), connec_capacity );
+  EXPECT_EQ( M->getCellNodesArray(), connec );
+  EXPECT_EQ( M->getCellNodesOffsetsArray(), offsets );
   EXPECT_EQ( M->getCellTypesArray(), types );
 
   /* STEP 8: de-allocate. */

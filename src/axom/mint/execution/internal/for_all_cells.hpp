@@ -181,8 +181,6 @@ template < typename ExecPolicy, typename KernelType >
 inline void for_all_cellnodes_structured( const mint::Mesh* m,
                                           KernelType&& kernel )
 {
-  SLIC_ASSERT( m != nullptr );
-
   const mint::StructuredMesh* sm =
     static_cast< const mint::StructuredMesh* >( m );
 
@@ -348,15 +346,13 @@ inline void for_all_cellnodes_structured( const mint::Mesh* m,
 template < typename ExecPolicy, typename KernelType >
 inline void for_all_cellnodes_mixed( const mint::Mesh* m, KernelType&& kernel )
 {
-  SLIC_ASSERT( m != nullptr );
-
   using UnstructuredMeshType = mint::UnstructuredMesh< mint::MIXED_SHAPE >;
   const UnstructuredMeshType* um =
     static_cast< const UnstructuredMeshType* >( m );
 
   const IndexType numCells          = um->getNumberOfCells();
-  const IndexType* cell_connectivity = um->getCellConnectivityArray( );
-  const IndexType* cell_offsets      = um->getCellOffsetsArray( );
+  const IndexType* cell_connectivity = um->getCellNodesArray( );
+  const IndexType* cell_offsets      = um->getCellNodesOffsetsArray( );
 
 #ifdef AXOM_USE_RAJA
 
@@ -381,7 +377,6 @@ inline void for_all_cellnodes_mixed( const mint::Mesh* m, KernelType&& kernel )
   } // END for all cells
 
 #endif
-
 }
 
 //------------------------------------------------------------------------------
@@ -389,14 +384,12 @@ template < typename ExecPolicy, typename KernelType >
 inline void for_all_cellnodes_unstructured( const mint::Mesh* m,
                                             KernelType&& kernel )
 {
-  SLIC_ASSERT( m != nullptr );
-
   using UnstructuredMeshType = mint::UnstructuredMesh< mint::SINGLE_SHAPE >;
   const UnstructuredMeshType* um =
     static_cast< const UnstructuredMeshType* >( m );
 
   const IndexType numCells           = um->getNumberOfCells();
-  const IndexType* cell_connectivity = um->getCellConnectivityArray();
+  const IndexType* cell_connectivity = um->getCellNodesArray();
   const IndexType stride             = um->getNumberOfCellNodes();
 
 #ifdef AXOM_USE_RAJA
@@ -427,7 +420,6 @@ template < typename ExecPolicy, typename KernelType >
 inline void for_all_cellfaces_structured( const mint::Mesh* m,
                                           KernelType&& kernel )
 {
-  SLIC_ASSERT( m != nullptr );
   SLIC_ASSERT( m->isStructured() );
 
   const mint::StructuredMesh* sm =
@@ -489,9 +481,85 @@ inline void for_all_cellfaces_structured( const mint::Mesh* m,
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
+inline void for_all_cellfaces_mixed( const mint::Mesh* m, KernelType&& kernel )
+{
+  using UnstructuredMeshType = mint::UnstructuredMesh< mint::MIXED_SHAPE >;
+  const UnstructuredMeshType* um =
+    static_cast< const UnstructuredMeshType* >( m );
+
+  const IndexType numCells           = um->getNumberOfCells();
+  const IndexType* cell_connectivity = um->getCellNodesArray( );
+  const IndexType* cell_offsets      = um->getCellNodesOffsetsArray( );
+
+#ifdef AXOM_USE_RAJA
+
+  using exec_pol = typename policy_traits< ExecPolicy >::raja_exec_policy;
+  RAJA::forall< exec_pol >( RAJA::RangeSegment(0,numCells),
+                            AXOM_LAMBDA(
+                              IndexType cellIdx)
+        {
+          const IndexType N = cell_offsets[ cellIdx+1 ] - cell_offsets[ cellIdx ];
+          kernel( cellIdx, &cell_connectivity[ cell_offsets[ cellIdx ] ], N );
+        } );
+
+#else
+
+  constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
+  AXOM_STATIC_ASSERT( is_serial );
+
+  for ( IndexType icell=0 ; icell < numCells ; ++icell )
+  {
+    const IndexType N = cell_offsets[ icell+1 ] - cell_offsets[ icell ];
+    kernel( icell, &cell_connectivity[ cell_offsets[ icell ] ], N );
+  } // END for all cells
+
+#endif
+}
+
+//------------------------------------------------------------------------------
+template < typename ExecPolicy, typename KernelType >
+inline void for_all_cellfaces_unstructured( const mint::Mesh* m, 
+                                            KernelType&& kernel )
+{
+  using UnstructuredMeshType = mint::UnstructuredMesh< mint::SINGLE_SHAPE >;
+  const UnstructuredMeshType* um =
+    static_cast< const UnstructuredMeshType* >( m );
+
+  const IndexType numCells           = um->getNumberOfCells();
+  const IndexType* cell_connectivity = um->getCellNodesArray();
+  const IndexType stride             = um->getNumberOfCellNodes();
+
+#ifdef AXOM_USE_RAJA
+
+  using exec_pol = typename policy_traits< ExecPolicy >::raja_exec_policy;
+  RAJA::forall< exec_pol >( RAJA::RangeSegment(0,numCells),
+                            AXOM_LAMBDA(IndexType cellIdx)
+        {
+          kernel( cellIdx, &cell_connectivity[ cellIdx*stride ], stride );
+        } );
+
+#else
+
+  constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
+  AXOM_STATIC_ASSERT( is_serial );
+
+
+  for ( IndexType icell=0 ; icell < numCells ; ++icell )
+  {
+    kernel( icell, &cell_connectivity[ icell*stride ], stride );
+  } // END for all cells
+
+#endif
+}
+
+
+//------------------------------------------------------------------------------
+template < typename ExecPolicy, typename KernelType >
 inline void for_all_cells( xargs::nodeids, const mint::Mesh* m,
                            KernelType&& kernel )
 {
+  SLIC_ASSERT( m != nullptr );
+
   if ( m->isStructured() )
   {
     for_all_cellnodes_structured< ExecPolicy >(
@@ -514,15 +582,23 @@ template < typename ExecPolicy, typename KernelType >
 inline void for_all_cells( xargs::faceids, const mint::Mesh* m,
                            KernelType&& kernel )
 {
+  SLIC_ASSERT( m != nullptr );
+
   SLIC_ERROR_IF( m->getDimension() == 1, "For all cells with face IDs only supported for 2D and 3D meshes" );
   if ( m->isStructured() )
   {
     for_all_cellfaces_structured< ExecPolicy >( 
       m, std::forward< KernelType >( kernel ) );
   }
+  else if ( m->hasMixedCellTypes() )
+  {
+    for_all_cellfaces_mixed< ExecPolicy >(
+      m, std::forward< KernelType >( kernel ) );
+  }
   else
   {
-    SLIC_ERROR( "For all cells with face IDs only supported for structured meshes." );
+    for_all_cellfaces_unstructured< ExecPolicy >(
+      m, std::forward< KernelType >( kernel ) );
   }
 }
 

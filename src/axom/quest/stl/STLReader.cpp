@@ -273,7 +273,7 @@ void STLReader::getMesh(
   }
 
   // Load the triangles.  Note that the indices are implicitly defined.
-  mint::IndexType* conn = mesh->getCellConnectivityArray();
+  mint::IndexType* conn = mesh->getCellNodesArray();
   for ( mint::IndexType i=0 ; i < m_num_faces ; ++i )
   {
     const mint::IndexType offset = i*3;
