@@ -1697,7 +1697,7 @@ private:
    *
    * Face types are stored in the face-node connectivity.
    */
-  using CellToFaceConnectivity =
+  using CellToFaceConnectivity = 
     ConnectivityArray< topology_traits< TOPO >::cell_face_connec >;
   using FaceToCellConnectivity = ConnectivityArray< NO_INDIRECTION >;
   using FaceToNodeConnectivity = ConnectivityArray< TYPED_INDIRECTION >;

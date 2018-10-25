@@ -112,7 +112,7 @@ bool initFaces(Mesh * mesh,
   for (int c = 0; c < cellcount; ++c)
   {
     // Step 1. For every cell, get the nodes.
-    IndexType nodes[MAX_NUM_NODES];
+    IndexType nodes[MAX_CELL_NODES];
     mesh->getCellNodeIDs(c, nodes);
     const CellType celltype = mesh->getCellType(c);
     const CellInfo thisCell = getCellInfo(celltype);
