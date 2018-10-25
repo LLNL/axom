@@ -6,8 +6,7 @@
 /**
  * \file
  *
- * \brief Simple example that uses Slam for generating and processing a simple
- *  3D mesh.
+ * \brief Example that uses Slam for generating and processing a simple 3D mesh
  *
  * \details Loads a hex mesh from a VTK file, generates the Node to Zone
  *  relation and does simple mesh processing.

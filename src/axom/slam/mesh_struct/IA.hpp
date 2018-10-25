@@ -1,19 +1,7 @@
-/*
- *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
- *
- * Produced at the Lawrence Livermore National Laboratory
- *
- * LLNL-CODE-741217
- *
- * All rights reserved.
- *
- * This file is part of Axom.
- *
- * For details about use and distribution, please read axom/LICENSE.
- *
- *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- */
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level LICENSE file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
 
 /**
  * \file IA.hpp
@@ -24,115 +12,118 @@
 #ifndef SLAM_IA_H_
 #define SLAM_IA_H_
 
-//#include <cstddef>
+#include "axom/config.hpp"
+#include "axom/core.hpp"
+#include "axom/slic.hpp"
 
-#include "axom/Macros.hpp"
-#include "axom_utils/Utilities.hpp"
+#include "axom/primal.hpp"
 
-#include "slic/slic.hpp"
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slam/policies/IndirectionPolicies.hpp"
+#include "axom/slam/policies/CardinalityPolicies.hpp"
 
-#include "primal/Point.hpp"
-#include "primal/Triangle.hpp"
+#include "axom/slam/Set.hpp"
+#include "axom/slam/RangeSet.hpp"
+#include "axom/slam/DynamicSet.hpp"
+#include "axom/slam/StaticRelation.hpp"
+#include "axom/slam/DynamicConstantRelation.hpp"
 
-#include "slam/IndirectionPolicies.hpp"
-#include "slam/CardinalityPolicies.hpp"
-#include "slam/Set.hpp"
-#include "slam/RangeSet.hpp"
-#include "slam/DynamicSet.hpp"
-#include "slam/StaticRelation.hpp"
-#include "slam/DynamicConstantRelation.hpp"
-
-
-#include "slam/Utilities.hpp"
-#include "slam/Map.hpp"
-#include "slam/DynamicMap.hpp"
-#include "slam/FieldRegistry.hpp"
-
+#include "axom/slam/Utilities.hpp"
+#include "axom/slam/Map.hpp"
+#include "axom/slam/DynamicMap.hpp"
+#include "axom/slam/FieldRegistry.hpp"
 
 namespace axom
 {
 namespace slam
 {
-
 /**
  * \class IA
  *
- * \brief Implements the Indexed Data structure with Adjacencies (IA)
+ * \brief Implements the Indexed mesh data structure with Adjacencies (IA)
  *
- * \detail The IAMesh class is an adjacency-based topological mesh data
- * structure for simplicial complexes.
- * \tparam TOPOLOGICAL_DIMENSION The dimension of the
- * simplices (2=triangle, 3=tetrahedra).
- * \tparam SPATIAL_DIMENSION The dimension of the embedding space.
+ * \tparam TDIM The topological dimension (2=triangle, 3=tetrahedra).
+ * \tparam SDIM The dimension of the embedding space.
+ * \tparam PointType A point type for the mesh position data
+ *
+ * \details The IAMesh class is an adjacency-based topological mesh data
+ * structure for simplicial complexes. It encodes the boundary relation
+ * from elements to their vertices, the partial coboundary relation from
+ * vertices to one incident element and the adjacency relation between
+ * elements along their facets (faces of dimension TDIM-1).
+ *
+ * PointType is required to have the following interface:
+ * TODO: FILL THIS IN
  */
 
-template<
-  unsigned int TOPOLOGICAL_DIMENSION = 2,
-  unsigned int SPATIAL_DIMENSION = 2,
-  typename PointType = axom::slam::util::Point3<double>
-  >
+template <unsigned int TDIM = 2,
+          unsigned int SDIM = 3,
+          typename PointType = axom::slam::util::Point3<double>>
 class IAMesh
 {
 public:
+  enum
+  {
+    COORDS_PER_VERT = SDIM,    //2 or 3 dimensional space
+    VERTS_PER_ELEM = TDIM + 1  //3 = triangle, 4 = tetrahedron
+  };
+
+  using IndexType = axom::IndexType;
+  using DataType = double;
+
+  using IndexListType = std::vector<IndexType>;
+
+  using Point = PointType;
+  using PositionType = IndexType;
+  using ElementType = IndexType;
+
+  /// types for Sets
+  using SetBase = slam::Set<PositionType, ElementType>;
+  using VertexSet = slam::DynamicSet<PositionType, ElementType>;
+  using ElementSet = slam::DynamicSet<PositionType, ElementType>;
 
   enum
   {
-    COORDS_PER_VERT = SPATIAL_DIMENSION,        //2 or 3 dimensional space
-    VERTS_PER_ELEM = TOPOLOGICAL_DIMENSION + 1  //3 = triangle, 4 = tetrahedron
+    INVALID_VERTEX_INDEX = VertexSet::INVALID_ENTRY,
+    INVALID_ELEMENT_INDEX = ElementSet::INVALID_ENTRY
   };
 
-  typedef int IndexType;
-  typedef double DataType;
+  /// types for Relations
+  using STLIndirection =
+    slam::policies::STLVectorIndirection<PositionType, ElementType>;
+  using VariableCardinality =
+    slam::policies::VariableCardinality<PositionType, STLIndirection>;
 
-  typedef std::vector<IndexType>    IndexListType;
+  using EVStride =
+    slam::policies::CompileTimeStride<PositionType, VERTS_PER_ELEM>;
+  using EEStride = slam::policies::CompileTimeStride<PositionType, 1>;
+  using ConstantCardinalityZ =
+    slam::policies::ConstantCardinality<PositionType, EVStride>;
+  using ConstantCardinality1 =
+    slam::policies::ConstantCardinality<PositionType, EEStride>;
 
-  typedef PointType Point;
-  typedef IndexType PositionType;
+  using ElementBoundaryRelation =
+    slam::DynamicConstantRelation<PositionType, ElementType, ConstantCardinalityZ>;
+  using VertexCoboundaryRelation =
+    slam::DynamicConstantRelation<PositionType, ElementType, ConstantCardinality1>;
+  using ElementAdjacencyRelation =
+    slam::DynamicConstantRelation<PositionType, ElementType, ConstantCardinalityZ>;
 
-  /// types for set
-  typedef axom::slam::DynamicSet<>
-    VertexSet;
-  typedef axom::slam::DynamicSet<>
-    ElementSet;
+  /// types for Maps
+  using PositionMap = DynamicMap<VertexSet, Point>;
 
-  /// types for relations
-  typedef axom::slam::policies::
-    STLVectorIndirection<PositionType,PositionType>  STLIndirection;
-  typedef axom::slam::policies::
-    VariableCardinality<PositionType,STLIndirection> VariableCardinality;
+  //using VertexField = slam::Map< SetBase, DataType >;
+  //using ElementField = slam::Map< SetBase, DataType >;
 
-  typedef axom::slam::policies::
-    CompileTimeStride<PositionType,VERTS_PER_ELEM>  EVStride;
-  typedef axom::slam::policies::
-    CompileTimeStride<PositionType,1 >              EEStride;
-  typedef axom::slam::policies::
-    ConstantCardinality<PositionType,EVStride>      ConstantCardinalityZ;
-  typedef axom::slam::policies::
-    ConstantCardinality<PositionType,EEStride>      ConstantCardinality1;
-  typedef axom::slam::
-    DynamicConstantRelation<ConstantCardinalityZ>   ElementToVertexRelation;
-  typedef axom::slam::
-    DynamicConstantRelation<ConstantCardinality1>   VertexToOneElementRelation;
-  typedef axom::slam::
-    DynamicConstantRelation<ConstantCardinalityZ>   ElementToElementRelation;
-
-  /// types for maps
-  typedef axom::slam::DynamicMap< Point >           PositionMap;
-
-  //typedef axom::slam::Map< DataType >             VertexField;
-  //typedef axom::slam::Map< DataType >             ElementField;
-
-  typedef axom::slam::FieldRegistry<int>            IndexBuf;
+  using IndexBuf = slam::FieldRegistry<SetBase, IndexType>;
   IndexBuf index_buffer;
 
-  VertexSet vertex_set;                //Set of vertices
-  ElementSet element_set;              //Set of elements
+  VertexSet vertex_set;    //Set of vertices
+  ElementSet element_set;  //Set of elements
 
-  ElementToVertexRelation ev_rel;      //Element to vertex relation.
-  VertexToOneElementRelation ve_rel;   //Vertex to one of the element relation.
-  ElementToElementRelation ee_rel;     //Element to neighboring element relation
-  PositionMap vcoord_map;              //map of coordinates per vertex.
+  ElementBoundaryRelation ev_rel;   //Element to vertex relation.
+  VertexCoboundaryRelation ve_rel;  //Vertex to one element partial relation.
+  ElementAdjacencyRelation ee_rel;  //Element to neighboring element relation
+  PositionMap vcoord_map;           //map of coordinates per vertex.
 
 public:
   /**
@@ -149,33 +140,34 @@ public:
   /**
    * \brief Copy constructor
    */
-  IAMesh(const IAMesh& );
+  IAMesh(const IAMesh&);
 
-  IAMesh&    operator= (const IAMesh & );
+  IAMesh& operator=(const IAMesh&);
 
   /**
    * \brief check that the mesh data stored is valid.
    *
-   * \note Valid meshes are not necesarily manifold.
+   * \note Valid meshes are not necessarily manifold.
    */
-  bool       isValid(bool verboseOutput = false) const;
+  bool isValid(bool verboseOutput = false) const;
 
   /**
-   * \brief return true if the mesh data is a pure pseudo-manifold simplicial
-   * complexes with boundary.
+   * \brief return true if the encoded mesh is a pure pseudo-manifold
+   * simplicial complexes (with boundary)
    *
-   * A pure pseudo-manifold simplicial complexes with boundary means:
-   * Pseudo-manifold indicates that each facet (of dimension D-1) is
-   * incident in one or two D-dimensional elements,
-   * and that the mesh is D-connected, I.e. that you can traverse
-   * from any element of the mesh to any other element
-   * through the element facets.
-   * Manifold would indicate that the link of every vertex is a (combinatorial)
+   * The D-dimensional mesh is *pure* when all top elements (those not
+   * on the boundary of other elements) are D-dimensional.
+   * A D-dimensional mesh is pseudo-manifold when
+   * (a) each facet (i.e. face of dimension D-1) is incident in one or
+   * two D-dimensional elements, and (b) the mesh is D-connected,
+   * i.e. that you can traverse from any element of the mesh to any other
+   * element through the element facets.
+   * It is manifold when the link of every vertex is a (combinatorial)
    * sphere or a disk.
-   * Pure indicates that the top elements of the mesh (those not on the boundary
-   * of any other element) all have the same dimension.
+   *
+   * \warning This function is only partly implemented
    */
-  bool       isManifold(bool verboseOutput = false) const;
+  bool isManifold(bool verboseOutput = false) const;
 
   /**
    * \brief Given an element index, return a list incident vertices.
@@ -183,49 +175,50 @@ public:
    * \note If the index is invalid or out of bounds,
    * an empty list is returned.
    */
-  IndexListType  getVerticesInElement(IndexType element_idx) const;
+  IndexListType getVerticesInElement(IndexType element_idx) const;
 
   /**
-   * \brief Given a vertex index, return a list of inident elements
+   * \brief Given a vertex index, return a list of incident elements
    *
    * \note If the index is invalid or out of bounds,
    * an empty list is returned. This function may return incorrect/partial
    * results if the mesh is not a manifold mesh.
    */
-  IndexListType  getElementsWithVertex(IndexType vertex_idx) const;
+  IndexListType getElementsWithVertex(IndexType vertex_idx) const;
 
   /**
    * \brief Given an element index, and a face index i,
-   * return a list of the vertices on the ith face of that element
+   * return a list of the vertices on the i^th face of that element
    *
-   * \detail If the element index is invalid or out of bounds,
+   * \details If the element index is invalid or out of bounds,
    * an empty list is returned.
    */
-  IndexListType  getElementFace(IndexType element_idx,
-                                IndexType face_idx) const;
+  IndexListType getElementFace(IndexType element_idx, IndexType face_idx) const;
 
   /**
    * \brief Given an element index, return a list of adjacent elements
    *
-   * \detail If the index is invalid or out of bounds,
+   * \details If the index is invalid or out of bounds,
    * an empty list is returned.
+   *
+   * TODO: Add what happens when neighbor elements are invalid
    */
-  IndexListType  getElementNeighbors(IndexType element_idx) const;
+  IndexListType getElementNeighbors(IndexType element_idx) const;
 
   /**
    * \brief Given a vertex index, return its Point coordinate.
    */
-  const Point &  getVertexPoint(IndexType vertex_idx) const;
+  const Point& getVertexPoint(IndexType vertex_idx) const;
 
   /**
    * \brief Return true if the mesh has no vertex or element
    */
-  bool           isEmpty() const;
+  bool isEmpty() const;
 
   /**
    * \brief Returns the number of elements in the mesh.
    */
-  IndexType  getNumberOfElements() const
+  IndexType getNumberOfElements() const
   {
     return element_set.numberOfValidEntries();
   }
@@ -233,7 +226,7 @@ public:
   /**
    * \brief Returns the number of vertices in the mesh.
    */
-  IndexType  getNumberOfVertices() const
+  IndexType getNumberOfVertices() const
   {
     return vertex_set.numberOfValidEntries();
   }
@@ -243,7 +236,7 @@ public:
    *
    * An element index is valid when the element is not deleted.
    */
-  bool       isValidElementEntry(IndexType element_idx) const
+  bool isValidElementEntry(IndexType element_idx) const
   {
     return element_set.isValidEntry(element_idx);
   }
@@ -253,28 +246,28 @@ public:
    *
    * An vertex index is valid when the vertex is not deleted.
    */
-  bool       isValidVertexEntry(IndexType vertex_idx) const
+  bool isValidVertexEntry(IndexType vertex_idx) const
   {
     return vertex_set.isValidEntry(vertex_idx);
   }
 
   /**
-   * \brief Fix the element neighbor relation,
+   * \brief Fix the element adjacency relation in the neighborhood of a vertex
    *
-   * \detail Given a vertex index and a list of all the elements that connects
-   * to that vertex, fix the element->element relation data.
-   * Sometimes when modifying the mesh, when the mesh becomes non-manifold.
+   * \details Given a vertex index and a list of all the elements incident in
+   * that vertex, fix the element->element relation data.
+   * Sometimes when modifying the mesh, the mesh becomes non-manifold.
    * Adding elements may result in incorrect element->element data.
    */
-  void       fixVertexNeighborhood(IndexType vertex_idx,
-                                   const std::vector<IndexType>& new_elements);
+  void fixVertexNeighborhood(IndexType vertex_idx,
+                             const std::vector<IndexType>& new_elements);
 
   /**
    * \brief Return a valid element index
    */
-  IndexType  getValidElementIndex() const
+  IndexType getValidElementIndex() const
   {
-    for( int i = element_set.size() - 1 ; true ; i--)
+    for(int i = element_set.size() - 1; true; i--)
     {
       if(isValidElementEntry(i))
       {
@@ -286,26 +279,25 @@ public:
   /**
    * \brief Add a vertex to the mesh,
    *
-   * \param p The coordinates of the point for a new vertex
+   * \param p Coordinates for the new vertex
    */
-  IndexType  addVertex(const Point& p);
+  IndexType addVertex(const Point& p);
 
   /**
-   * \brief Add a (triangular) element to the mesh.
-   * @param n0 - first vertex id of the element
-   * @param n1 - second vertex id of the element
-   * @param n2 - third vertex id of the element
+   * \brief Add an element to the mesh.
+   *
+   * This is a convenience function that only uses the first VERTS_PER_ELEM
+   * vertex identifiers.
+   *
+   * \param n0 - first vertex id of the element
+   * \param n1 - second vertex id of the element
+   * \param n2 - third vertex id of the element
+   * \param n3 - fourth vertex id of the element
    */
-  IndexType  addElement(IndexType n0, IndexType n1, IndexType n2);
-
-  /**
-   * \brief Add a (tetrahedral) element to the mesh.
-   * @param n0 - first vertex id of the element
-   * @param n1 - second vertex id of the element
-   * @param n2 - third vertex id of the element
-   * @param n3 - fourth vertex id of the element
-   */
-  IndexType  addElement(IndexType n0, IndexType n1, IndexType n2, IndexType n3);
+  IndexType addElement(IndexType n0,
+                       IndexType n1,
+                       IndexType n2 = INVALID_VERTEX_INDEX,
+                       IndexType n3 = INVALID_VERTEX_INDEX);
 
   /**
    * \brief Add an element to the mesh.
@@ -313,60 +305,65 @@ public:
    * \param nlist - A pointer to the vertex indices of the new element.
    * The array size should be at least VERTS_PER_ELEM
    */
-  IndexType  addElement(const IndexType* nlist);
+  IndexType addElement(const IndexType* nlist);
 
   /**
-   * \brief Removes an element
+   * \brief Removes an element from the mesh
    *
-   * \detail If the index is invalid or out of bounds,
+   * \details If the index is invalid or out of bounds,
    * no changes are made to the mesh.
    *
    * \param element_idx The index of the element to remove.
    * \warning Removing an element could make one of its vertices non-manifold
-   * (its link will have more than one connected components,
-   * IA only retain 1 element reference per vertex).
+   * (its link will have more than one connected components) since the
+   * IA only retains 1 element reference per vertex.
    */
-  void       removeElement(IndexType element_idx);
+  void removeElement(IndexType element_idx);
 
   /**
-   * \brief Removes a vertex
+   * \brief Removes a vertex and all incident elements from the mesh
    *
    * \details If the index is invalid or out of bounds,
    * no changes are made to the mesh.
    * \param vertex_idx The index of the vertex to remove.
    */
-  void       removeVertex(IndexType vertex_idx);
+  void removeVertex(IndexType vertex_idx);
 
   /**
    * \brief Removes all the invalid entries in the mesh and reduce memory used
    * \details This function may invalidates all indices in user code.
    */
-  void       compact();
+  void compact();
 
   /**
    * \brief Prints the IA mesh structure, for debug purpose.
    */
-  void       print_all() const;
+  void print_all() const;
 
 private:
   //helper functions to find element to element relations
   typedef PositionType ElementIndexType;
   typedef PositionType FaceIndexType;
-  typedef std::pair<ElementIndexType,FaceIndexType> ElementAndFaceIdxType;
-  typedef std::map<IndexListType, ElementAndFaceIdxType>       V2EMapType;
+  typedef std::pair<ElementIndexType, FaceIndexType> ElementAndFaceIdxType;
+  typedef std::map<IndexListType, ElementAndFaceIdxType> V2EMapType;
 
   /**
    * \brief Helper function to find adjacent elements when adding a new element
+   *
+   * \param vertpair_to_elem_map A map from facets encoded using a sorted tuple of
+   * vertex IDs to the face encoded as a element index and a face index
+   * \param element_i The index of the element whose neighbor we are seeking
+   * \param side_i The local index of the desired face w.r.t. \a element_i
    */
-  ElementAndFaceIdxType   ElemNbrFinder( V2EMapType &, IndexType element_i,
-                                         IndexType side_i );
+  ElementAndFaceIdxType ElemNbrFinder(V2EMapType& vertpair_to_elem_map,
+                                      IndexType element_i,
+                                      IndexType side_i);
 
+};  //end class IAMesh
 
-}; //end class IAMesh
+}  // end namespace slam
+}  // end namespace axom
 
-} // end namespace slam
-} // end namespace axom
+#include "axom/slam/mesh_struct/IA_impl.hpp"
 
-#include "slam/IA_impl.hpp"
-
-#endif //  SLAM_IA_H_
+#endif  //  SLAM_IA_H_
