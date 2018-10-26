@@ -3314,7 +3314,7 @@ TEST( mint_mesh_unstructured_mesh, check_face_connectivity )
   constexpr IndexType N_NODES = 5;
 
   constexpr int SIZE_STEPS = 2;
-  constexpr IndexType SIZE_FACTOR[] = { 1, 10, 3 };
+  constexpr IndexType SIZE_FACTOR[] = { 1, 3 };
 
   constexpr int DIM_STEPS = 2;
   constexpr int DIMENSIONS[] = { 2, 3 };
