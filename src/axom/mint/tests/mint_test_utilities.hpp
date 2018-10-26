@@ -48,7 +48,7 @@ namespace internal
 {
 
 //------------------------------------------------------------------------------
-template < int MeshType >
+template < int MeshType, int Topology=SINGLE_SHAPE >
 struct mesh_type_name
 {
   static constexpr char* name() { return (char*)"[UNDEFINED]"; };
@@ -56,14 +56,14 @@ struct mesh_type_name
 
 //------------------------------------------------------------------------------
 template < >
-struct mesh_type_name< STRUCTURED_UNIFORM_MESH >
+struct mesh_type_name< STRUCTURED_UNIFORM_MESH, SINGLE_SHAPE >
 {
   static constexpr char* name() { return (char*)"STRUCTURED_UNIFORM_MESH"; };
 };
 
 //------------------------------------------------------------------------------
 template < >
-struct mesh_type_name< STRUCTURED_CURVILINEAR_MESH >
+struct mesh_type_name< STRUCTURED_CURVILINEAR_MESH, SINGLE_SHAPE >
 {
   static constexpr char* name() {
     return (char*)"STRUCTURED_CURVILINEAR_MESH";
@@ -72,23 +72,30 @@ struct mesh_type_name< STRUCTURED_CURVILINEAR_MESH >
 
 //------------------------------------------------------------------------------
 template < >
-struct mesh_type_name< STRUCTURED_RECTILINEAR_MESH >
+struct mesh_type_name< STRUCTURED_RECTILINEAR_MESH, SINGLE_SHAPE >
 {
-  static constexpr char* name() {
+  static constexpr char* name() { 
     return (char*)"STRUCTURED_RECTILINEAR_MESH";
   };
 };
 
 //------------------------------------------------------------------------------
 template < >
-struct mesh_type_name< UNSTRUCTURED_MESH >
+struct mesh_type_name< UNSTRUCTURED_MESH, SINGLE_SHAPE >
 {
-  static constexpr char* name() { return (char*)"UNSTRUCTURED_MESH"; };
+  static constexpr char* name() { return (char*)"UNSTRUCTURED_SINGLE_SHAPE"; };
 };
 
 //------------------------------------------------------------------------------
 template < >
-struct mesh_type_name< PARTICLE_MESH>
+struct mesh_type_name< UNSTRUCTURED_MESH, MIXED_SHAPE >
+{
+  static constexpr char* name() { return (char*)"UNSTRUCTURED_MIXED_SHAPE"; };
+};
+
+//------------------------------------------------------------------------------
+template < >
+struct mesh_type_name< PARTICLE_MESH, SINGLE_SHAPE >
 {
   static constexpr char* name() { return (char*)"PARTICLE_MESH"; };
 };

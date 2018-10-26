@@ -552,6 +552,71 @@ inline void for_all_facescells_structured_3D( const mint::Mesh* m,
   );
 }
 
+//------------------------------------------------------------------------------
+template < typename ExecPolicy, typename KernelType >
+inline void for_all_facenodes_unstructured_single( const Mesh* m, 
+                                                   KernelType&& kernel )
+{
+  using UnstructuredMeshType = UnstructuredMesh< SINGLE_SHAPE >;
+
+  const UnstructuredMeshType* um = 
+                                static_cast< const UnstructuredMeshType* >( m );
+
+  const IndexType* faces_to_nodes = um->getFaceNodesArray();
+  const IndexType num_nodes = um->getNumberOfFaceNodes();
+
+  for_all_faces< ExecPolicy, xargs::index >( m, 
+    AXOM_LAMBDA( IndexType faceID )
+    {
+      kernel( faceID, faces_to_nodes + faceID * num_nodes, num_nodes );
+    }
+  );
+}
+
+//------------------------------------------------------------------------------
+template < typename ExecPolicy, typename KernelType >
+inline void for_all_facenodes_unstructured_mixed( const Mesh* m, 
+                                                  KernelType&& kernel )
+{
+  using UnstructuredMeshType = UnstructuredMesh< MIXED_SHAPE >;
+
+  const UnstructuredMeshType* um = 
+                                static_cast< const UnstructuredMeshType* >( m );
+
+  const IndexType* faces_to_nodes = um->getFaceNodesArray();
+  const IndexType* offsets        = um->getFaceNodesOffsetsArray();
+
+  for_all_faces< ExecPolicy, xargs::index >( m, 
+    AXOM_LAMBDA( IndexType faceID )
+    {
+      const IndexType num_nodes = offsets[ faceID + 1 ] - offsets[ faceID ];
+      kernel( faceID, faces_to_nodes + offsets[ faceID ], num_nodes );
+    }
+  );
+}
+
+//------------------------------------------------------------------------------
+template < typename ExecPolicy, Topology TOPO, typename KernelType >
+inline void for_all_facecells_unstructured( const Mesh* m, 
+                                            KernelType&& kernel )
+{
+  using UnstructuredMeshType = UnstructuredMesh< TOPO >;
+
+  const UnstructuredMeshType* um = 
+                                static_cast< const UnstructuredMeshType* >( m );
+
+  const IndexType* faces_to_cells = um->getFaceCellsArray();
+
+  for_all_faces< ExecPolicy, xargs::index >( m, 
+    AXOM_LAMBDA( IndexType faceID )
+    {
+      const IndexType offset = 2 * faceID;
+      kernel( faceID, faces_to_cells[ offset ], faces_to_cells[ offset + 1 ] );
+    }
+  );
+}
+
+
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
@@ -571,9 +636,15 @@ inline void for_all_faces( xargs::nodeids, const mint::Mesh* m,
         std::forward< KernelType >( kernel ) );
     }
   }
+  else if ( m->hasMixedCellTypes() )
+  {
+    for_all_facenodes_unstructured_mixed< ExecPolicy >(
+      m, std::forward< KernelType >( kernel ) );
+  }
   else
   {
-    SLIC_ERROR("For all faces only supported for structured meshes.");
+    for_all_facenodes_unstructured_single< ExecPolicy >( 
+      m, std::forward< KernelType >( kernel ) );
   }
 }
 
@@ -595,9 +666,15 @@ inline void for_all_faces( xargs::cellids, const mint::Mesh* m,
         std::forward< KernelType >( kernel ) );
     }
   }
+  else if ( m->hasMixedCellTypes() )
+  {
+    for_all_facecells_unstructured< ExecPolicy, MIXED_SHAPE >(
+      m, std::forward< KernelType >( kernel ) );
+  }
   else
   {
-    SLIC_ERROR("For all faces only supported for structured meshes.");
+    for_all_facecells_unstructured< ExecPolicy, SINGLE_SHAPE >( 
+      m, std::forward< KernelType >( kernel ) );
   }
 }
 

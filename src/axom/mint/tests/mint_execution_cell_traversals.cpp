@@ -45,9 +45,10 @@ namespace
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_cells_idx( int dimension )
 {
+  constexpr char* mesh_name = internal::mesh_type_name< MeshType, Topology >::name(); 
   SLIC_INFO( "dimension=" << dimension << ", policy="
             << policy_traits< ExecPolicy >::name() << ", mesh_type="
-            << internal::mesh_type_name< MeshType >::name() );
+            << mesh_name );
 
   const IndexType Ni = 20;
   const IndexType Nj = (dimension >= 2) ? Ni : -1;
@@ -173,9 +174,10 @@ void check_for_all_cells_ijk( )
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_cell_nodes( int dimension )
 {
+  constexpr char* mesh_name = internal::mesh_type_name< MeshType, Topology >::name(); 
   SLIC_INFO( "dimension=" << dimension << ", policy="
             << policy_traits< ExecPolicy >::name() << ", mesh_type="
-            << internal::mesh_type_name< MeshType >::name() );
+            << mesh_name );
 
   const IndexType Ni = 20;
   const IndexType Nj = (dimension >= 2) ? Ni : -1;
@@ -220,9 +222,10 @@ void check_for_all_cell_nodes( int dimension )
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_cell_faces( int dimension )
 {
+  constexpr char* mesh_name = internal::mesh_type_name< MeshType, Topology >::name(); 
   SLIC_INFO( "dimension=" << dimension << ", policy="
             << policy_traits< ExecPolicy >::name() << ", mesh_type="
-            << internal::mesh_type_name< MeshType >::name() );
+            << mesh_name );
 
   const IndexType Ni = 20;
   const IndexType Nj = (dimension >= 2) ? Ni : -1;

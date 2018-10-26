@@ -45,9 +45,10 @@ namespace
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_faces( int dimension )
 {
+  constexpr char* mesh_name = internal::mesh_type_name< MeshType, Topology >::name(); 
   SLIC_INFO( "dimension=" << dimension << ", policy="
             << policy_traits< ExecPolicy >::name() << ", mesh_type="
-            << internal::mesh_type_name< MeshType >::name() );
+            << mesh_name );
 
   const IndexType Ni = 20;
   const IndexType Nj = (dimension >= 2) ? Ni : -1;
@@ -84,9 +85,10 @@ void check_for_all_faces( int dimension )
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_face_nodes( int dimension )
 {
+  constexpr char* mesh_name = internal::mesh_type_name< MeshType, Topology >::name(); 
   SLIC_INFO( "dimension=" << dimension << ", policy="
             << policy_traits< ExecPolicy >::name() << ", mesh_type="
-            << internal::mesh_type_name< MeshType >::name() );
+            << mesh_name );
 
   const IndexType Ni = 20;
   const IndexType Nj = (dimension >= 2) ? Ni : -1;
@@ -131,9 +133,10 @@ void check_for_all_face_nodes( int dimension )
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_face_cells( int dimension )
 {
+  constexpr char* mesh_name = internal::mesh_type_name< MeshType, Topology >::name(); 
   SLIC_INFO( "dimension=" << dimension << ", policy="
             << policy_traits< ExecPolicy >::name() << ", mesh_type="
-            << internal::mesh_type_name< MeshType >::name() );
+            << mesh_name );
 
   const IndexType Ni = 20;
   const IndexType Nj = (dimension >= 2) ? Ni : -1;
@@ -186,6 +189,8 @@ TEST( mint_execution_face_traversals, for_all_face_nodeids )
     check_for_all_face_nodes< seq_exec, STRUCTURED_UNIFORM_MESH >( dim );
     check_for_all_face_nodes< seq_exec, STRUCTURED_CURVILINEAR_MESH >( dim );
     check_for_all_face_nodes< seq_exec, STRUCTURED_RECTILINEAR_MESH >( dim );
+    check_for_all_face_nodes< seq_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >( dim );
+    check_for_all_face_nodes< seq_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >( dim );
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
     defined(RAJA_ENABLE_OPENMP)
@@ -194,6 +199,8 @@ TEST( mint_execution_face_traversals, for_all_face_nodeids )
     check_for_all_face_nodes< omp_exec, STRUCTURED_UNIFORM_MESH >( dim );
     check_for_all_face_nodes< omp_exec, STRUCTURED_CURVILINEAR_MESH >( dim );
     check_for_all_face_nodes< omp_exec, STRUCTURED_RECTILINEAR_MESH >( dim );
+    check_for_all_face_nodes< omp_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >( dim );
+    check_for_all_face_nodes< omp_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >( dim );
 
 #endif
 
@@ -204,6 +211,8 @@ TEST( mint_execution_face_traversals, for_all_face_nodeids )
     check_for_all_face_nodes< cuda_exec, STRUCTURED_UNIFORM_MESH >( dim );
     check_for_all_face_nodes< cuda_exec, STRUCTURED_CURVILINEAR_MESH >( dim );
     check_for_all_face_nodes< cuda_exec, STRUCTURED_RECTILINEAR_MESH >( dim );
+    check_for_all_face_nodes< cuda_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >( dim );
+    check_for_all_face_nodes< cuda_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >( dim );
 #endif
 
   } // END for all dimensions
@@ -218,6 +227,8 @@ TEST( mint_execution_face_traversals, for_all_face_cellids )
     check_for_all_face_cells< seq_exec, STRUCTURED_UNIFORM_MESH >( dim );
     check_for_all_face_cells< seq_exec, STRUCTURED_CURVILINEAR_MESH >( dim );
     check_for_all_face_cells< seq_exec, STRUCTURED_RECTILINEAR_MESH >( dim );
+    check_for_all_face_nodes< seq_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >( dim );
+    check_for_all_face_nodes< seq_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >( dim );
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
     defined(RAJA_ENABLE_OPENMP)
@@ -226,6 +237,8 @@ TEST( mint_execution_face_traversals, for_all_face_cellids )
     check_for_all_face_cells< omp_exec, STRUCTURED_UNIFORM_MESH >( dim );
     check_for_all_face_cells< omp_exec, STRUCTURED_CURVILINEAR_MESH >( dim );
     check_for_all_face_cells< omp_exec, STRUCTURED_RECTILINEAR_MESH >( dim );
+    check_for_all_face_nodes< omp_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >( dim );
+    check_for_all_face_nodes< omp_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >( dim );
 
 #endif
 
@@ -236,6 +249,8 @@ TEST( mint_execution_face_traversals, for_all_face_cellids )
     check_for_all_face_cells< cuda_exec, STRUCTURED_UNIFORM_MESH >( dim );
     check_for_all_face_cells< cuda_exec, STRUCTURED_CURVILINEAR_MESH >( dim );
     check_for_all_face_cells< cuda_exec, STRUCTURED_RECTILINEAR_MESH >( dim );
+    check_for_all_face_nodes< cuda_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >( dim );
+    check_for_all_face_nodes< cuda_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >( dim );
 
 #endif
 
@@ -253,6 +268,8 @@ TEST( mint_execution_face_traversals, for_all_faces_index )
     check_for_all_faces< seq_exec, STRUCTURED_UNIFORM_MESH >( dim );
     check_for_all_faces< seq_exec, STRUCTURED_CURVILINEAR_MESH >( dim );
     check_for_all_faces< seq_exec, STRUCTURED_RECTILINEAR_MESH >( dim );
+    check_for_all_faces< seq_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >( dim );
+    check_for_all_faces< seq_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >( dim );
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
     defined(RAJA_ENABLE_OPENMP)
@@ -261,6 +278,8 @@ TEST( mint_execution_face_traversals, for_all_faces_index )
     check_for_all_faces< omp_exec, STRUCTURED_UNIFORM_MESH >( dim );
     check_for_all_faces< omp_exec, STRUCTURED_CURVILINEAR_MESH >( dim );
     check_for_all_faces< omp_exec, STRUCTURED_RECTILINEAR_MESH >( dim );
+    check_for_all_faces< omp_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >( dim );
+    check_for_all_faces< omp_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >( dim );
 
 #endif
 
@@ -271,6 +290,8 @@ TEST( mint_execution_face_traversals, for_all_faces_index )
     check_for_all_faces< cuda_exec, STRUCTURED_UNIFORM_MESH >( dim );
     check_for_all_faces< cuda_exec, STRUCTURED_CURVILINEAR_MESH >( dim );
     check_for_all_faces< cuda_exec, STRUCTURED_RECTILINEAR_MESH >( dim );
+    check_for_all_faces< cuda_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >( dim );
+    check_for_all_faces< cuda_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >( dim );
 
 #endif
 

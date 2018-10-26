@@ -46,9 +46,10 @@ namespace
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_nodes_idx( int dimension )
 {
+  constexpr char* mesh_name = internal::mesh_type_name< MeshType, Topology >::name(); 
   SLIC_INFO( "dimension=" << dimension << ", policy="
             << policy_traits< ExecPolicy >::name() << ", mesh_type="
-            << internal::mesh_type_name< MeshType >::name() );
+            << mesh_name );
 
   constexpr int MAGIC_VAL = 42;
 
@@ -82,7 +83,7 @@ void check_for_all_nodes_idx( int dimension )
 }
 
 //------------------------------------------------------------------------------
-template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
+template < typename ExecPolicy, int MeshType >
 void check_for_all_nodes_ij( )
 {
   SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
@@ -94,7 +95,7 @@ void check_for_all_nodes_ij( )
   UniformMesh uniform_mesh( lo, hi, N, N );
 
   // STEP 0: create the test mesh
-  Mesh* test_mesh = internal::create_mesh< MeshType, Topology >( uniform_mesh );
+  Mesh* test_mesh = internal::create_mesh< MeshType >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
   const IndexType numNodes = test_mesh->getNumberOfNodes();
@@ -133,7 +134,7 @@ void check_for_all_nodes_ij( )
 }
 
 //------------------------------------------------------------------------------
-template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
+template < typename ExecPolicy, int MeshType >
 void check_for_all_nodes_ijk( )
 {
   SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
@@ -145,7 +146,7 @@ void check_for_all_nodes_ijk( )
   UniformMesh uniform_mesh( lo, hi, N, N, N );
 
   // STEP 0: create the test mesh
-  Mesh* test_mesh = internal::create_mesh< MeshType, Topology >( uniform_mesh );
+  Mesh* test_mesh = internal::create_mesh< MeshType >( uniform_mesh );
   EXPECT_TRUE( test_mesh != nullptr );
 
   const IndexType numNodes = test_mesh->getNumberOfNodes();
@@ -195,8 +196,9 @@ void check_for_all_nodes_ijk( )
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_nodes_xyz( )
 {
+  constexpr char* mesh_name = internal::mesh_type_name< MeshType, Topology >::name(); 
   SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
-            << internal::mesh_type_name< MeshType >::name() );
+            << mesh_name );
 
   constexpr IndexType N = 20;
   const double lo[] = { -10, -10, -10 };
@@ -244,8 +246,9 @@ void check_for_all_nodes_xyz( )
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_nodes_xy( )
 {
+  constexpr char* mesh_name = internal::mesh_type_name< MeshType, Topology >::name(); 
   SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
-            << internal::mesh_type_name< MeshType >::name() );
+            << mesh_name );
 
   constexpr IndexType N = 20;
   const double lo[] = { -10, -10 };
@@ -289,8 +292,9 @@ void check_for_all_nodes_xy( )
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_nodes_x( )
 {
+  constexpr char* mesh_name = internal::mesh_type_name< MeshType, Topology >::name(); 
   SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
-            << internal::mesh_type_name< MeshType >::name() );
+            << mesh_name );
 
   constexpr IndexType Ni = 20;
   const double lo[] = { -10 };

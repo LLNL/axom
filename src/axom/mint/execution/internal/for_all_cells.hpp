@@ -554,7 +554,7 @@ inline void for_all_cellfaces_unstructured_mixed( const Mesh* m,
     AXOM_LAMBDA( IndexType cellID )
     {
       const IndexType num_faces = offsets[ cellID + 1 ] - offsets[ cellID ];
-      kernel( cellID, &cells_to_faces[ offsets[ cellID ] ], num_faces );
+      kernel( cellID, cells_to_faces + offsets[ cellID ], num_faces );
     }
   );
 }
