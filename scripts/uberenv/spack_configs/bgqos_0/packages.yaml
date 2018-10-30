@@ -28,7 +28,7 @@ packages:
       lapack: [openblas]
       mkl: [intel-mkl]
       mpe: [mpe2]
-      mpi: [mvapich2]
+      mpi: [mpich]
       opencl: [pocl]
       openfoam: [openfoam-com, openfoam-org, foam-extend]
       pil: [py-pillow]
@@ -36,20 +36,11 @@ packages:
       szip: [libszip, libaec]
       tbb: [intel-tbb]
       jpeg: [libjpeg-turbo, libjpeg]
-# LLNL blueos CUDA
-  cuda:
+# LLNL mpi
+  mpich:
     paths:
-      cuda@9.0.176: /usr/tce/packages/cuda/cuda-9.0.176
-      cuda@8.0: /usr/tce/packages/cuda/cuda-8.0
-    buildable: False
-# LLNL blueos mpi
-# note, we need to fake this as an existing mpi package
-# so even though this is spectrum mpi, we call it mvapich2
-  mvapich2:
-    paths:
-      mvapich2@2.2%gcc@4.9.3: /usr/tce/packages/spectrum-mpi/spectrum-mpi-2018.04.27-gcc-4.9.3
-      mvapich2@2.2%clang@coral_xlf: /usr/tce/packages/spectrum-mpi/spectrum-mpi-2018.04.27-clang-coral-2018.05.23
-      mvapich2@2.2%xl@coral : /usr/tce/packages/spectrum-mpi/spectrum-mpi-2018.04.27-xl-2018.05.18
+      mpich@3.bgq.fastmpi %clang@4.0.0_gfortran arch=bgq-cnk-ppc64: /bgsys/drivers/ppcfloor/comm/xl.legacy.ndebug
+      mpich@3.bgq.fastmpi %clang@4.0.0_xlf arch=bgq-cnk-ppc64: /bgsys/drivers/ppcfloor/comm/xl.legacy.ndebug
     buildable: False
 # System level packages to not build
   autotools:
@@ -79,5 +70,5 @@ packages:
 # On BGQ specifically just use the system CMake
   cmake:
     paths:
-      cmake: /collab/usr/global/tools/cmake/bgqos_0/cmake-3.8.2/bin/
+      cmake: /collab/usr/global/tools/cmake/bgqos_0/cmake-3.8.2/
     buildable: False
