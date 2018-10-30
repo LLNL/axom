@@ -6,8 +6,8 @@ compilers:
     modules: []
     operating_system: cnk
     paths:
-      cc:  /collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/llnl/bin/mpiclang
-      cxx: /collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/llnl/bin/mpiclang++
+      cc:  /collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/bin/bgclang
+      cxx: /collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/bin/bgclang++
       f77: /usr/local/tools/toolchain-4.8.4/gnu-linux-4.8.4/bin/powerpc64-bgq-linux-gfortran
       fc:  /usr/local/tools/toolchain-4.8.4/gnu-linux-4.8.4/bin/powerpc64-bgq-linux-gfortran
     spec: clang@4.0.0_gfortran
@@ -19,8 +19,8 @@ compilers:
     modules: []
     operating_system: cnk
     paths:
-      cc:  /collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/llnl/bin/mpiclang
-      cxx: /collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/llnl/bin/mpiclang++
+      cc:  /collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/bin/bgclang
+      cxx: /collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/bin/bgclang++
       f77: /opt/ibmcmp/xlf/bg/14.1/bin/bgxlf
       fc:  /opt/ibmcmp/xlf/bg/14.1/bin/bgxlf2003
     spec: clang@4.0.0_xlf
