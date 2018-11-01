@@ -52,6 +52,10 @@ if(HDF5_FOUND)
     list(APPEND sidre_example_depends hdf5)
 endif()
 
+if(MPI_FOUND)
+    list(APPEND sidre_example_depends mpi)
+endif()
+
 #
 # Build the example sources
 #
