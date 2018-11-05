@@ -22,6 +22,7 @@
 #ifndef WRAPIOMANAGER_H
 #define WRAPIOMANAGER_H
 
+#include "axom/sidre/interface/c_fortran/wrapDataStore.h"
 #include "axom/sidre/interface/c_fortran/wrapGroup.h"
 #include "mpi.h"
 #include "typesSPIO.h"
@@ -60,6 +61,15 @@ void SPIO_iomanager_write_group_to_root_file_bufferify(SPIO_iomanager* self,
                                                        SIDRE_group* group,
                                                        const char* file_name,
                                                        int Lfile_name);
+
+void SPIO_iomanager_write_blueprint_index_to_root_file(SPIO_iomanager* self,
+                                                       SIDRE_datastore* datastore, const char* domain_path, const char* file_name,
+                                                       const char* mesh_name);
+
+void SPIO_iomanager_write_blueprint_index_to_root_file_bufferify(
+  SPIO_iomanager* self, SIDRE_datastore* datastore, const char* domain_path,
+  int Ldomain_path, const char* file_name, int Lfile_name,
+  const char* mesh_name, int Lmesh_name);
 
 void SPIO_iomanager_read_0(SPIO_iomanager* self, SIDRE_group* group,
                            const char* file_string, const char* protocol);

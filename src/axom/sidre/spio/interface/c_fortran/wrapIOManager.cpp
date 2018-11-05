@@ -16,6 +16,7 @@
 #include "wrapIOManager.h"
 #include <stdlib.h>
 #include <string>
+#include "axom/sidre/core/DataStore.hpp"
 #include "axom/sidre/core/Group.hpp"
 #include "axom/sidre/spio/IOManager.hpp"
 
@@ -124,6 +125,45 @@ void SPIO_iomanager_write_group_to_root_file_bufferify(SPIO_iomanager* self,
   SH_this->writeGroupToRootFile(SHCXX_group, SH_file_name);
   return;
 // splicer end class.IOManager.method.write_group_to_root_file_bufferify
+}
+
+void SPIO_iomanager_write_blueprint_index_to_root_file(SPIO_iomanager* self,
+                                                       SIDRE_datastore* datastore, const char* domain_path, const char* file_name,
+                                                       const char* mesh_name)
+{
+// splicer begin class.IOManager.method.write_blueprint_index_to_root_file
+  axom::sidre::IOManager* SH_this =
+    static_cast<axom::sidre::IOManager*>(self->addr);
+  axom::sidre::DataStore* SHCXX_datastore =
+    static_cast<axom::sidre::DataStore*>(datastore->addr);
+  const std::string SH_domain_path(domain_path);
+  const std::string SH_file_name(file_name);
+  const std::string SH_mesh_name(mesh_name);
+  SH_this->writeBlueprintIndexToRootFile(SHCXX_datastore, SH_domain_path,
+                                         SH_file_name, SH_mesh_name);
+  return;
+// splicer end class.IOManager.method.write_blueprint_index_to_root_file
+}
+
+void SPIO_iomanager_write_blueprint_index_to_root_file_bufferify(
+  SPIO_iomanager* self, SIDRE_datastore* datastore, const char* domain_path,
+  int Ldomain_path, const char* file_name, int Lfile_name,
+  const char* mesh_name, int Lmesh_name)
+{
+// splicer begin
+// class.IOManager.method.write_blueprint_index_to_root_file_bufferify
+  axom::sidre::IOManager* SH_this =
+    static_cast<axom::sidre::IOManager*>(self->addr);
+  axom::sidre::DataStore* SHCXX_datastore =
+    static_cast<axom::sidre::DataStore*>(datastore->addr);
+  const std::string SH_domain_path(domain_path, Ldomain_path);
+  const std::string SH_file_name(file_name, Lfile_name);
+  const std::string SH_mesh_name(mesh_name, Lmesh_name);
+  SH_this->writeBlueprintIndexToRootFile(SHCXX_datastore, SH_domain_path,
+                                         SH_file_name, SH_mesh_name);
+  return;
+// splicer end
+// class.IOManager.method.write_blueprint_index_to_root_file_bufferify
 }
 
 void SPIO_iomanager_read_0(SPIO_iomanager* self, SIDRE_group* group,

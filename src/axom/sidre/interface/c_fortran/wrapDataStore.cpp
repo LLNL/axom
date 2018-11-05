@@ -15,6 +15,7 @@
 //
 #include "wrapDataStore.h"
 #include <stdlib.h>
+#include <string>
 #include "axom/sidre/core/Buffer.hpp"
 #include "axom/sidre/core/DataStore.hpp"
 #include "axom/sidre/core/Group.hpp"
@@ -139,6 +140,45 @@ void SIDRE_datastore_destroy_buffer(SIDRE_datastore* self, SIDRE_IndexType id)
   SH_this->destroyBuffer(id);
   return;
 // splicer end class.DataStore.method.destroy_buffer
+}
+
+bool SIDRE_datastore_generate_blueprint_index(SIDRE_datastore* self,
+                                              const char* domain_path,
+                                              const char* mesh_name,
+                                              const char* index_path,
+                                              int num_domains)
+{
+// splicer begin class.DataStore.method.generate_blueprint_index
+  axom::sidre::DataStore* SH_this =
+    static_cast<axom::sidre::DataStore*>(self->addr);
+  const std::string SH_domain_path(domain_path);
+  const std::string SH_mesh_name(mesh_name);
+  const std::string SH_index_path(index_path);
+  bool SHC_rv = SH_this->generateBlueprintIndex(SH_domain_path, SH_mesh_name,
+                                                SH_index_path, num_domains);
+  return SHC_rv;
+// splicer end class.DataStore.method.generate_blueprint_index
+}
+
+bool SIDRE_datastore_generate_blueprint_index_bufferify(SIDRE_datastore* self,
+                                                        const char* domain_path,
+                                                        int Ldomain_path,
+                                                        const char* mesh_name,
+                                                        int Lmesh_name,
+                                                        const char* index_path,
+                                                        int Lindex_path,
+                                                        int num_domains)
+{
+// splicer begin class.DataStore.method.generate_blueprint_index_bufferify
+  axom::sidre::DataStore* SH_this =
+    static_cast<axom::sidre::DataStore*>(self->addr);
+  const std::string SH_domain_path(domain_path, Ldomain_path);
+  const std::string SH_mesh_name(mesh_name, Lmesh_name);
+  const std::string SH_index_path(index_path, Lindex_path);
+  bool SHC_rv = SH_this->generateBlueprintIndex(SH_domain_path, SH_mesh_name,
+                                                SH_index_path, num_domains);
+  return SHC_rv;
+// splicer end class.DataStore.method.generate_blueprint_index_bufferify
 }
 
 void SIDRE_datastore_print(const SIDRE_datastore* self)

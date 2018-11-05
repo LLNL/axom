@@ -518,6 +518,7 @@ module axom_sidre
         procedure :: create_buffer_from_type_int64_t => datastore_create_buffer_from_type_int64_t
         procedure :: destroy_buffer_int32_t => datastore_destroy_buffer_int32_t
         procedure :: destroy_buffer_int64_t => datastore_destroy_buffer_int64_t
+        procedure :: generate_blueprint_index => datastore_generate_blueprint_index
         procedure :: print => datastore_print
         procedure :: get_instance => datastore_get_instance
         procedure :: set_instance => datastore_set_instance
@@ -2492,6 +2493,40 @@ module axom_sidre
             type(SHROUD_datastore_capsule), intent(IN) :: self
             integer(C_INT64_T), value, intent(IN) :: id
         end subroutine c_datastore_destroy_buffer
+
+        function c_datastore_generate_blueprint_index(self, domain_path, &
+                mesh_name, index_path, num_domains) &
+                result(SHT_rv) &
+                bind(C, name="SIDRE_datastore_generate_blueprint_index")
+            use iso_c_binding, only : C_BOOL, C_CHAR, C_INT
+            import :: SHROUD_datastore_capsule
+            implicit none
+            type(SHROUD_datastore_capsule), intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: domain_path(*)
+            character(kind=C_CHAR), intent(IN) :: mesh_name(*)
+            character(kind=C_CHAR), intent(IN) :: index_path(*)
+            integer(C_INT), value, intent(IN) :: num_domains
+            logical(C_BOOL) :: SHT_rv
+        end function c_datastore_generate_blueprint_index
+
+        function c_datastore_generate_blueprint_index_bufferify(self, &
+                domain_path, Ldomain_path, mesh_name, Lmesh_name, &
+                index_path, Lindex_path, num_domains) &
+                result(SHT_rv) &
+                bind(C, name="SIDRE_datastore_generate_blueprint_index_bufferify")
+            use iso_c_binding, only : C_BOOL, C_CHAR, C_INT
+            import :: SHROUD_datastore_capsule
+            implicit none
+            type(SHROUD_datastore_capsule), intent(IN) :: self
+            character(kind=C_CHAR), intent(IN) :: domain_path(*)
+            integer(C_INT), value, intent(IN) :: Ldomain_path
+            character(kind=C_CHAR), intent(IN) :: mesh_name(*)
+            integer(C_INT), value, intent(IN) :: Lmesh_name
+            character(kind=C_CHAR), intent(IN) :: index_path(*)
+            integer(C_INT), value, intent(IN) :: Lindex_path
+            integer(C_INT), value, intent(IN) :: num_domains
+            logical(C_BOOL) :: SHT_rv
+        end function c_datastore_generate_blueprint_index_bufferify
 
         subroutine c_datastore_print(self) &
                 bind(C, name="SIDRE_datastore_print")
@@ -6566,6 +6601,24 @@ contains
         call c_datastore_destroy_buffer(obj%cxxmem, int(id, C_INT64_t))
         ! splicer end class.DataStore.method.destroy_buffer_int64_t
     end subroutine datastore_destroy_buffer_int64_t
+
+    function datastore_generate_blueprint_index(obj, domain_path, &
+            mesh_name, index_path, num_domains) &
+            result(SHT_rv)
+        use iso_c_binding, only : C_BOOL, C_INT
+        class(SidreDataStore) :: obj
+        character(len=*), intent(IN) :: domain_path
+        character(len=*), intent(IN) :: mesh_name
+        character(len=*), intent(IN) :: index_path
+        integer(C_INT), value, intent(IN) :: num_domains
+        logical :: SHT_rv
+        ! splicer begin class.DataStore.method.generate_blueprint_index
+        SHT_rv = c_datastore_generate_blueprint_index_bufferify(obj%cxxmem, &
+            domain_path, len_trim(domain_path, kind=C_INT), mesh_name, &
+            len_trim(mesh_name, kind=C_INT), index_path, &
+            len_trim(index_path, kind=C_INT), num_domains)
+        ! splicer end class.DataStore.method.generate_blueprint_index
+    end function datastore_generate_blueprint_index
 
     subroutine datastore_print(obj)
         class(SidreDataStore) :: obj
