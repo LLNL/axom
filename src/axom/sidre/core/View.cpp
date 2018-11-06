@@ -557,7 +557,7 @@ View* View::setExternalDataPtr(void* external_ptr)
  * class in the view header.
  *************************************************************************
  */
-bool View::isAllocated()
+bool View::isAllocated() const
 {
   bool rv = false;
 

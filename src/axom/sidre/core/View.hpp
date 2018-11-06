@@ -203,9 +203,7 @@ public:
    * \brief Return true if view is described and refers to a buffer
    * that has been allocated.
    */
-  // TODO - Would like to make this a const function.  Need to have conduit
-  // element_ptr() be const to do this.
-  bool isAllocated();
+  bool isAllocated() const;
 
   /*!
    * \brief Return true if data description (schema) has been applied to data
@@ -838,7 +836,7 @@ public:
   /*!
    * \brief Returns a copy of the scalar value contained in the view.
    */
-  Node::Value getScalar()
+  Node::ConstValue getScalar() const
   {
     SLIC_CHECK_MSG( (m_state == SCALAR),
                     "View::getScalar() called on non-scalar view.");
@@ -856,6 +854,7 @@ public:
    *   (when present), so, if the View is an array, getData()[0] already points
    *   to thefirst element
    */
+  /// @{
   Node::Value getData()
   {
     if ( !isAllocated() || !isDescribed())
@@ -868,6 +867,20 @@ public:
     // this will return a default value
     return m_node.value();
   }
+
+  Node::ConstValue getData() const
+  {
+    if ( !isAllocated() || !isDescribed())
+    {
+      SLIC_CHECK_MSG( isAllocated(),
+                      "No view data present, memory has not been allocated.");
+      SLIC_CHECK_MSG( isApplied(),
+                      "View data description not present.");
+    }
+    // this will return a default value
+    return m_node.value();
+  }
+  /// @}
 
   /*!
    * \brief Lightweight templated wrapper around getData() that can be used when
