@@ -308,6 +308,9 @@ create_mesh< UNSTRUCTURED_MESH, SINGLE_SHAPE >(
   EXPECT_EQ( output_mesh->getNumberOfNodes(), uniform_mesh.getNumberOfNodes() );
   EXPECT_EQ( output_mesh->getNumberOfCells(), uniform_mesh.getNumberOfCells() );
 
+  output_mesh->initializeFaceConnectivity();
+  EXPECT_EQ( output_mesh->getNumberOfFaces(), uniform_mesh.getNumberOfFaces() );
+
   return output_mesh;
 }
 
@@ -455,6 +458,8 @@ create_mesh< UNSTRUCTURED_MESH, MIXED_SHAPE >(
 
   EXPECT_EQ( output_mesh->getMeshType(), UNSTRUCTURED_MESH );
   EXPECT_EQ( output_mesh->getDimension(), uniform_mesh.getDimension() );
+
+  output_mesh->initializeFaceConnectivity();
 
   return output_mesh;
 }

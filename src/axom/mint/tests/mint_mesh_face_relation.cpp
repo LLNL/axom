@@ -874,15 +874,15 @@ std::vector<internal::MeshFaceTest *> generateFaceTestCases()
 
   {
     // 23. 3D pyramid  =======================================================
-    UnstructuredMesh< SINGLE_SHAPE > * pyramid =
-      new UnstructuredMesh< SINGLE_SHAPE >(THREE_D, PYRAMID);
+    UnstructuredMesh< MIXED_SHAPE > * pyramid =
+      new UnstructuredMesh< MIXED_SHAPE >(THREE_D);
     double    pyramidxs[] = { -1, 0, 0, 1, 0 };
     double    pyramidys[] = { 0, -1, 1, 0, 0 };
     double    pyramidzs[] = { 0,  0, 0, 0, 1 };
     IndexType pyramidcells[] = { 0, 1, 3, 2, 4 };
 
     pyramid->appendNodes(pyramidxs, pyramidys, pyramidzs, 5);
-    pyramid->appendCells(pyramidcells, 1);
+    pyramid->appendCell(pyramidcells, PYRAMID);
     tests.push_back(new internal::MeshFaceTest
                     // test name, test pointer, should init faces,
                     ("3D pyramid", pyramid, EXPECT_INIT_SUCCESS,

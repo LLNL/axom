@@ -202,6 +202,43 @@ inline void initializeGroup( sidre::Group* group, const std::string& coordset,
   }
 }
 
+/*!
+ * \brief Sets the stride associated with a connectivity array.
+ *
+ * \param [out] group the group holding the connectivity array.
+ * \param [in] stride the stride to set.
+ *
+ * \pre group != nullptr
+ */
+inline void setStride( sidre::Group* group, IndexType stride )
+{
+  SLIC_ERROR_IF( group == nullptr,
+                 "sidre::Group pointer must not be null." );
+
+  sidre::Group* elems_group = group->getGroup( "elements" );
+  SLIC_ERROR_IF( elems_group == nullptr, "No group found" );
+  elems_group->createView( "stride" )->setScalar( stride );
+}
+
+/*!
+ * \brief Returns the stride associated with a connectivity array.
+ *
+ * \param [in] group the group holding the connectivity array.
+ *
+ * \pee group != nullptr
+ */
+inline IndexType getStride( const sidre::Group* group )
+{
+  SLIC_ERROR_IF( group == nullptr,
+                 "sidre::Group pointer must not be null." );
+
+  const sidre::Group* elems_group = group->getGroup( "elements" );
+  SLIC_ERROR_IF( elems_group == nullptr, "No group found" );
+  const sidre::View* stride_view = elems_group->getView( "stride" );
+  SLIC_ERROR_IF( stride_view == nullptr, "No view found" );
+  return stride_view->getScalar();
+}
+
 #endif
 
 /*!

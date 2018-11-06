@@ -691,7 +691,8 @@ Array< T >::Array( T* data, IndexType num_tuples, IndexType num_components,
                  "Number of tuples (" << m_num_tuples << ") " <<
                  "cannot be greater than the tuple capacity " <<
                  "(" << m_capacity << ")." );
-  SLIC_ERROR_IF( m_data == nullptr, "specified array must not be NULL." );
+  SLIC_ERROR_IF( m_data == nullptr && m_capacity > 0, 
+                 "specified array must not be NULL." );
 }
 
 #ifdef AXOM_MINT_USE_SIDRE

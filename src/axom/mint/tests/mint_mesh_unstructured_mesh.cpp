@@ -869,7 +869,6 @@ void createMeshesForFace( UnstructuredMesh< SINGLE_SHAPE > *& test_mesh,
 
   Mesh * the_mesh = create_mesh<UNSTRUCTURED_MESH, SINGLE_SHAPE>(*source_mesh);
   test_mesh = static_cast< UnstructuredMesh< SINGLE_SHAPE >* >(the_mesh);
-  test_mesh->initializeFaceConnectivity();
 }
 
 
