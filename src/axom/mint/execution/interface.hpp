@@ -365,6 +365,11 @@ inline void for_all_cells( const mint::Mesh* m, KernelType&& kernel )
  *
  * \endcode
  *
+ * \note A face can be associated with one or two cells, depending on whether
+ *  it is an external boundary face or interior face. By convention, if a face
+ *  is an external boundary face, then only cellIDOne exists and cellIDTwo
+ *  will be set to -1.
+ *
  * \see policy.hpp
  * \see xargs.hpp
  */

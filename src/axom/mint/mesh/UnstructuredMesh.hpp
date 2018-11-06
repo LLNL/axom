@@ -669,9 +669,7 @@ public:
    */
   virtual
   IndexType getNumberOfCellFaces( IndexType cellID=0 ) const final override
-  {
-    return m_cell_to_face->getNumberOfValuesForID(cellID);
-  }
+  { return getCellInfo( getCellType( cellID ) ).num_faces; }
 
   /*!
    * \brief Copy the face IDs of the given cell into the provided buffer.
@@ -759,9 +757,7 @@ public:
    *       this method.
    */
   virtual IndexType getNumberOfFaces() const final override
-  {
-    return m_face_to_cell->getNumberOfIDs();
-  }
+  { return m_face_to_cell->getNumberOfIDs(); }
 
   /*!
    * \brief Return the capacity for faces.
@@ -770,9 +766,7 @@ public:
    *       this method.
    */
   virtual IndexType getFaceCapacity() const final override
-  {
-    return m_face_to_cell->getIDCapacity();
-  }
+  { return m_face_to_cell->getIDCapacity(); }
 
   /*!
    * \brief Return the type of the given face.
@@ -783,9 +777,7 @@ public:
    *       this method.
    */
   virtual CellType getFaceType( IndexType faceID ) const final override
-  {
-    return m_face_to_node->getIDType( faceID );
-  }
+  { return m_face_to_node->getIDType( faceID ); }
 
   /*!
    * \brief Return the number of nodes associated with the given face.
@@ -797,9 +789,7 @@ public:
    */
   virtual IndexType
   getNumberOfFaceNodes( IndexType faceID=0 ) const final override
-  {
-    return m_face_to_node->getNumberOfValuesForID(faceID);
-  }
+  { return m_face_to_node->getNumberOfValuesForID(faceID); }
 
   /*!
    * \brief Copy the IDs of the nodes that compose the given face into the
@@ -836,8 +826,10 @@ public:
    * \param [out] cellIDOne the ID of the first cell.
    * \param [out] cellIDTwo the ID of the second cell.
    *
-   * \note If no cell exists (the face is external) then the ID will be set to
-   * -1.
+   * \note A face can be associated with one or two cells, depending on whether
+   *  it is an external boundary face or interior face. By convention, if a face
+   *  is an external boundary face, then only cellIDOne exists and cellIDTwo
+   *  will be set to -1.
    *
    * \note Codes must call initializeFaceConnectivity() before calling
    *       this method.
@@ -1202,16 +1194,10 @@ public:
   /// @{
 
   IndexType* getCellFaceIDs( IndexType cellID )
-  {
-    return (*m_cell_to_face)[ cellID ];
-  }
+  { return (*m_cell_to_face)[ cellID ]; }
 
   const IndexType* getCellFaceIDs( IndexType cellID ) const
-  {
-    return (*m_cell_to_face)[ cellID ];
-  }
-
-  /// @}
+  { return (*m_cell_to_face)[ cellID ]; }
 
   /// @}
 
@@ -1742,10 +1728,14 @@ private:
 
   /*! \brief Construct and fill the cell-to-face connectivity. */
   void buildCellFaceConnectivity(IndexType * c2fdata, IndexType * c2foffsets);
+  
+  /*! \brief Return a new empty CellToFaceConnectivty instance. */
+  CellToFaceConnectivity*
+  initializeCellToFace( CellType cell_type=UNDEFINED_CELL ) const;
 
-  CellToFaceConnectivity* initializeCellToFace( CellType cell_type=UNDEFINED_CELL ) const;
-
-  FaceToNodeConnectivity* initializeFaceToNode( CellType cell_type=UNDEFINED_CELL ) const;
+  /*! \brief Return a new empty FaceToNodeConnectivity instance. */
+  FaceToNodeConnectivity*
+  initializeFaceToNode( CellType cell_type=UNDEFINED_CELL ) const;
 
   /*!
    * \brief Update the connectivity given an nodal insert at position pos of

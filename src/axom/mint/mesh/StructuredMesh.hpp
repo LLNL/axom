@@ -277,8 +277,10 @@ public:
    * \param [out] cellIDOne the ID of the first cell.
    * \param [out] cellIDTwo the ID of the second cell.
    *
-   * \note If no cell exists (the face is external) then the ID will be set to
-   * -1.
+   * \note A face can be associated with one or two cells, depending on whether
+   *  it is an external boundary face or interior face. By convention, if a face
+   *  is an external boundary face, then only cellIDOne exists and cellIDTwo
+   *  will be set to -1.
    *
    * \pre 0 <= faceID < getNumberOfCells()
    */
@@ -412,8 +414,11 @@ public:
    * \param [out] cellIDOne the ID of the first cell.
    * \param [out] cellIDTwo the ID of the second cell.
    *
-   * \note If no cell exists (the face is external) then cellIDTwo will be set
-   * to -1.
+   * \note A face can be associated with one or two cells, depending on whether
+   *  it is an external boundary face or interior face. By convention, if a face
+   *  is an external boundary face, then only cellIDOne exists and cellIDTwo
+   *  will be set to -1.
+   * 
    * \note Each method is specialized for faces in the I, J, or K direction.
    *
    * \pre 0 <= faceID < getNumberOfCells()
