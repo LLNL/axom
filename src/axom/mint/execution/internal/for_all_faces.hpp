@@ -68,8 +68,8 @@ inline void for_all_I_faces_2D( const mint::Mesh* m,
                                 KernelType&& kernel )
 {
   SLIC_ASSERT( m != nullptr );
-  SLIC_ASSERT( m->isStructured() );
-  SLIC_ASSERT( m->getDimension() == 2 );
+  SLIC_ERROR_IF( !m->isStructured(), "Mesh must be a 2D StructuredMesh." );
+  SLIC_ERROR_IF( m->getDimension() != 2, "Mesh must be a 2D StructuredMesh." );
 
   const mint::StructuredMesh* sm =
     static_cast< const mint::StructuredMesh* >( m );
@@ -113,8 +113,8 @@ inline void for_all_J_faces_2D( const mint::Mesh* m,
                                 KernelType&& kernel )
 {
   SLIC_ASSERT( m != nullptr );
-  SLIC_ASSERT( m->isStructured() );
-  SLIC_ASSERT( m->getDimension() == 2 );
+  SLIC_ERROR_IF( !m->isStructured(), "Mesh must be a 2D StructuredMesh." );
+  SLIC_ERROR_IF( m->getDimension() != 2, "Mesh must be a 2D StructuredMesh." );
 
   const mint::StructuredMesh* sm =
     static_cast< const mint::StructuredMesh* >( m );
@@ -160,8 +160,8 @@ inline void for_all_facenodes_structured_2D( const mint::Mesh* m,
                                               KernelType&& kernel )
 {
   SLIC_ASSERT( m != nullptr );
-  SLIC_ASSERT( m->isStructured() );
-  SLIC_ASSERT( m->getDimension() == 2 );
+  SLIC_ERROR_IF( !m->isStructured(), "Mesh must be a 2D StructuredMesh." );
+  SLIC_ERROR_IF( m->getDimension() != 2, "Mesh must be a 2D StructuredMesh." );
 
   const mint::StructuredMesh* sm =
     static_cast< const mint::StructuredMesh* >( m );
@@ -199,8 +199,8 @@ inline void for_all_I_faces_3D( const mint::Mesh* m,
                                 KernelType&& kernel )
 {
   SLIC_ASSERT( m != nullptr );
-  SLIC_ASSERT( m->isStructured() );
-  SLIC_ASSERT( m->getDimension() == 3 );
+  SLIC_ERROR_IF( !m->isStructured(), "Mesh must be a 3D StructuredMesh." );
+  SLIC_ERROR_IF( m->getDimension() != 3, "Mesh must be a 3D StructuredMesh." );
 
   const mint::StructuredMesh* sm =
     static_cast< const mint::StructuredMesh* >( m );
@@ -251,8 +251,8 @@ inline void for_all_J_faces_3D( const mint::Mesh* m,
                                 KernelType&& kernel )
 {
   SLIC_ASSERT( m != nullptr );
-  SLIC_ASSERT( m->isStructured() );
-  SLIC_ASSERT( m->getDimension() == 3 );
+  SLIC_ERROR_IF( !m->isStructured(), "Mesh must be a 3D StructuredMesh." );
+  SLIC_ERROR_IF( m->getDimension() != 3, "Mesh must be a 3D StructuredMesh." );
 
   const mint::StructuredMesh* sm =
     static_cast< const mint::StructuredMesh* >( m );
@@ -304,8 +304,8 @@ inline void for_all_K_faces_3D( const mint::Mesh* m,
                                 KernelType&& kernel )
 {
   SLIC_ASSERT( m != nullptr );
-  SLIC_ASSERT( m->isStructured() );
-  SLIC_ASSERT( m->getDimension() == 3 );
+  SLIC_ERROR_IF( !m->isStructured(), "Mesh must be a 3D StructuredMesh." );
+  SLIC_ERROR_IF( m->getDimension() != 3, "Mesh must be a 3D StructuredMesh." );
 
   const mint::StructuredMesh* sm =
     static_cast< const mint::StructuredMesh* >( m );
@@ -357,8 +357,8 @@ inline void for_all_facenodes_structured_3D( const mint::Mesh* m,
                                               KernelType&& kernel )
 {
   SLIC_ASSERT( m != nullptr );
-  SLIC_ASSERT( m->isStructured() );
-  SLIC_ASSERT( m->getDimension() == 3 );
+  SLIC_ERROR_IF( !m->isStructured(), "Mesh must be a 3D StructuredMesh." );
+  SLIC_ERROR_IF( m->getDimension() != 3, "Mesh must be a 3D StructuredMesh." );
 
   const mint::StructuredMesh* sm =
     static_cast< const mint::StructuredMesh* >( m );
@@ -425,8 +425,8 @@ inline void for_all_facescells_structured_2D( const mint::Mesh* m,
                                               KernelType&& kernel )
 {
   SLIC_ASSERT( m != nullptr );
-  SLIC_ASSERT( m->isStructured() );
-  SLIC_ASSERT( m->getDimension() == 2 );
+  SLIC_ERROR_IF( !m->isStructured(), "Mesh must be a 2D StructuredMesh." );
+  SLIC_ERROR_IF( m->getDimension() != 2, "Mesh must be a 2D StructuredMesh." );
 
   const mint::StructuredMesh* sm = 
     static_cast< const mint::StructuredMesh* >( m );
@@ -481,8 +481,8 @@ inline void for_all_facescells_structured_3D( const mint::Mesh* m,
                                               KernelType&& kernel )
 {
   SLIC_ASSERT( m != nullptr );
-  SLIC_ASSERT( m->isStructured() );
-  SLIC_ASSERT( m->getDimension() == 3 );
+  SLIC_ERROR_IF( !m->isStructured(), "Mesh must be a 3D StructuredMesh." );
+  SLIC_ERROR_IF( m->getDimension() != 3, "Mesh must be a 3D StructuredMesh." );
 
   const mint::StructuredMesh* sm = 
     static_cast< const mint::StructuredMesh* >( m );
@@ -557,6 +557,15 @@ template < typename ExecPolicy, typename KernelType >
 inline void for_all_facenodes_unstructured_single( const Mesh* m, 
                                                    KernelType&& kernel )
 {
+  SLIC_ASSERT( m != nullptr );
+  SLIC_ERROR_IF( m->getNumberOfFaces() <= 0,
+                 "No faces in the mesh, perhaps you meant to call " <<
+                 "UnstructuredMesh::initializeFaceConnectivity first." );
+  SLIC_ERROR_IF( m->isStructured(),
+                 "Mesh must be an UnstructuredMesh<SINGLE_SHAPE>." );
+  SLIC_ERROR_IF( m->hasMixedCellTypes(),
+                 "Mesh must be an UnstructuredMesh<SINGLE_SHAPE>." );
+
   using UnstructuredMeshType = UnstructuredMesh< SINGLE_SHAPE >;
 
   const UnstructuredMeshType* um = 
@@ -578,6 +587,15 @@ template < typename ExecPolicy, typename KernelType >
 inline void for_all_facenodes_unstructured_mixed( const Mesh* m, 
                                                   KernelType&& kernel )
 {
+  SLIC_ASSERT( m != nullptr );
+  SLIC_ERROR_IF( m->getNumberOfFaces() <= 0,
+                 "No faces in the mesh, perhaps you meant to call " <<
+                 "UnstructuredMesh::initializeFaceConnectivity first." );
+  SLIC_ERROR_IF( m->isStructured(),
+                 "Mesh must be an UnstructuredMesh<SINGLE_SHAPE>." );
+  SLIC_ERROR_IF( !m->hasMixedCellTypes(),
+                 "Mesh must be an UnstructuredMesh<MIXED_SHAPE>." );
+
   using UnstructuredMeshType = UnstructuredMesh< MIXED_SHAPE >;
 
   const UnstructuredMeshType* um = 
@@ -600,6 +618,12 @@ template < typename ExecPolicy, Topology TOPO, typename KernelType >
 inline void for_all_facecells_unstructured( const Mesh* m, 
                                             KernelType&& kernel )
 {
+  SLIC_ASSERT( m != nullptr );
+  SLIC_ERROR_IF( m->getNumberOfFaces() <= 0,
+                 "No faces in the mesh, perhaps you meant to call " <<
+                 "UnstructuredMesh::initializeFaceConnectivity first." );
+  SLIC_ERROR_IF( m->isStructured(), "Mesh must be an UnstructuredMesh." );
+
   using UnstructuredMeshType = UnstructuredMesh< TOPO >;
 
   const UnstructuredMeshType* um = 
