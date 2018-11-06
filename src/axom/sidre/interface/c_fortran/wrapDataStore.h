@@ -59,6 +59,21 @@ SIDRE_buffer* SIDRE_datastore_create_buffer_from_type(SIDRE_datastore* self,
 
 void SIDRE_datastore_destroy_buffer(SIDRE_datastore* self, SIDRE_IndexType id);
 
+bool SIDRE_datastore_generate_blueprint_index(SIDRE_datastore* self,
+                                              const char* domain_path,
+                                              const char* mesh_name,
+                                              const char* index_path,
+                                              int num_domains);
+
+bool SIDRE_datastore_generate_blueprint_index_bufferify(SIDRE_datastore* self,
+                                                        const char* domain_path,
+                                                        int Ldomain_path,
+                                                        const char* mesh_name,
+                                                        int Lmesh_name,
+                                                        const char* index_path,
+                                                        int Lindex_path,
+                                                        int num_domains);
+
 void SIDRE_datastore_print(const SIDRE_datastore* self);
 
 #ifdef __cplusplus

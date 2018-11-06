@@ -107,6 +107,12 @@ declarations:
       -  int32_t
       -  int64_t
 
+  # Method for generateing Blueprint
+  - decl: bool generateBlueprintIndex( const std::string& domain_path,
+                                       const std::string& mesh_name,
+                                       const std::string& index_path,
+                                       int num_domains )
+
   # Methods for iterating over Buffers in DataStore
 #  - decl: IndexType getFirstValidBufferIndex() const
 #  - decl: IndexType getNextValidBufferIndex(IndexType idx) const;
