@@ -18,22 +18,14 @@
 #include "axom/quest/interface/quest.hpp"
 
 // Quest includes
-#include "axom/core/Types.hpp"
-#include "axom/core/Macros.hpp"
+#include "axom/core.hpp"
+#include "axom/slic.hpp"
 
-#include "axom/slic/interface/slic.hpp"
-
-#ifdef AXOM_USE_MPI
-  #ifdef AXOM_USE_LUMBERJACK
-    #include "axom/slic/streams/LumberjackStream.hpp"
-  #else
-    #include "axom/slic/streams/SynchronizedStream.hpp"
-  #endif
-#else
-  #include "axom/slic/streams/GenericOutputStream.hpp"
+#ifdef AXOM_USE_LUMBERJACK
+    #include "axom/lumberjack.hpp"
 #endif
 
-#include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal.hpp"
 
 #include "axom/quest/geom/InOutOctree.hpp"
 #include "axom/quest/SignedDistance.hpp"
@@ -53,9 +45,7 @@ namespace quest
 namespace
 {
 
-namespace slic = axom::slic;
-
-typedef axom::mint::UnstructuredMesh< mint::SINGLE_SHAPE > UMesh;
+typedef mint::UnstructuredMesh< mint::SINGLE_SHAPE > UMesh;
 enum QueryMode { QUERY_MODE_NONE,
                  QUERY_MODE_CONTAINMENT,
                  QUERY_MODE_SIGNED_DISTANCE };
@@ -68,9 +58,9 @@ enum QueryMode { QUERY_MODE_NONE,
 template<int DIM>
 struct QuestAccelerator
 {
-  typedef BoundingBox< double, DIM> GeometricBoundingBox;
-  typedef Point< double, DIM> SpacePt;
-  typedef Vector< double, DIM> SpaceVec;
+  typedef primal::BoundingBox< double, DIM> GeometricBoundingBox;
+  typedef primal::Point< double, DIM> SpacePt;
+  typedef primal::Vector< double, DIM> SpaceVec;
 
   /** \brief Default constructor */
   QuestAccelerator()
