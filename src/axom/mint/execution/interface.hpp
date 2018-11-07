@@ -24,6 +24,7 @@
 #include "axom/mint/execution/xargs.hpp"                   // for xargs
 #include "axom/mint/execution/internal/for_all_cells.hpp"  // for_all_cells()
 #include "axom/mint/execution/internal/for_all_nodes.hpp"  // for_all_nodes()
+#include "axom/mint/execution/internal/for_all_faces.hpp"  // for_all_faces()
 #include "axom/mint/execution/policy.hpp"                  // for policy_traits
 
 #include "axom/mint/mesh/Mesh.hpp"                         // for  mint::Mesh
@@ -304,6 +305,10 @@ inline void for_all_nodes( const mint::Mesh* m, KernelType&& kernel )
  *     AXOM_LAMBDA( IndexType cellIdx, const IndexType* nodeIds, IndexType N )
  *  } );
  *
+ *  for_all_cells< exec, xargs::faceids >( m,
+ *     AXOM_LAMBDA( IndexType cellIdx, const IndexType* faceIds, IndexType N )
+ *  } );
+ *
  * \endcode
  *
  * \see policy.hpp
@@ -323,7 +328,66 @@ inline void for_all_cells( const mint::Mesh* m, KernelType&& kernel )
 
   // dispatch
   internal::for_all_cells< ExecPolicy >(
-    ArgType(), m, std::forward< KernelType >( kernel )  );
+    ArgType(), m, std::forward< KernelType >( kernel ) );
+}
+
+/// @}
+
+/// \name Mesh Face Traversal Functions
+/// @{
+
+/*!
+ * \brief Loops over all the faces of a given mesh.
+ *
+ * \param [in] m pointer to the mesh object.
+ * \param [in] kernel user-supplied kernel to execute on each face.
+ *
+ * \pre m != nullptr
+ *
+ * \tparam ExecPolicy the execution policy, e.g., serial or parallel
+ * \tparam ArgType object indicating the arguments to the kernel
+ *
+ * Usage Example:
+ * \code
+ *
+ *   for_all_faces< exec >( m, AXOM_LAMDA( IndexType faceID ) {
+ *      foo[ faceID ] = val;
+ *      ...
+ *   } );
+ *
+ *  for_all_faces< exec, xargs::nodeids >( m,
+ *     AXOM_LAMBDA( IndexType faceID, const IndexType* nodeIds, IndexType N )
+ *  } );
+ *
+ *  for_all_faces< exec, xargs::cellids >( m,
+ *     AXOM_LAMBDA( IndexType faceID, IndexType cellIDOne, IndexType cellIDTwo )
+ *  } );
+ *
+ * \endcode
+ *
+ * \note A face can be associated with one or two cells, depending on whether
+ *  it is an external boundary face or interior face. By convention, if a face
+ *  is an external boundary face, then only cellIDOne exists and cellIDTwo
+ *  will be set to -1.
+ *
+ * \see policy.hpp
+ * \see xargs.hpp
+ */
+template < typename ExecPolicy = policy::serial,
+           typename ArgType    = xargs::index,
+           typename KernelType >
+inline void for_all_faces( const mint::Mesh* m, KernelType&& kernel )
+{
+  // compile-time sanity checks
+  AXOM_STATIC_ASSERT( policy_traits< ExecPolicy >::valid() );
+  AXOM_STATIC_ASSERT( xargs_traits< ArgType >::valid() );
+
+  // run-time sanity checks
+  SLIC_ASSERT( m != nullptr );
+
+  // dispatch
+  internal::for_all_faces< ExecPolicy >(
+    ArgType(), m, std::forward< KernelType >( kernel ) );
 }
 
 /// @}

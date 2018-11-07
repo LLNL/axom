@@ -16,10 +16,10 @@
  */
 
 // Axom utils
-#include "axom/core/utilities/Utilities.hpp"     /* for utilities::max */
+#include "axom/core/utilities/Utilities.hpp"      /* for utilities::max */
 
 // Mint includes
-#include "axom/mint/config.hpp"              /* for IndexType, int64 */
+#include "axom/mint/config.hpp"                   /* for IndexType, int64 */
 #include "axom/mint/mesh/CellTypes.hpp"           /* for cell::vtk_types */
 #include "axom/mint/mesh/CurvilinearMesh.hpp"     /* for CurvilinearMesh */
 #include "axom/mint/mesh/Field.hpp"               /* for Field */
@@ -31,10 +31,11 @@
 #include "axom/mint/mesh/RectilinearMesh.hpp"     /* for RectilinearMesh */
 #include "axom/mint/mesh/UniformMesh.hpp"         /* for UniformMesh */
 #include "axom/mint/mesh/UnstructuredMesh.hpp"    /* for UnstructuredMesh */
-#include "axom/mint/utils/vtk_utils.hpp"           /* for write_vtk */
+#include "axom/mint/utils/vtk_utils.hpp"          /* for write_vtk */
+#include "mint_test_utilities.hpp"                /* for create_mesh */
 
 // Slic includes
-#include "axom/slic/interface/slic.hpp"                /* for slic macros */
+#include "axom/slic/interface/slic.hpp"           /* for slic macros */
 #include "axom/slic/core/UnitTestLogger.hpp"      /* for UnitTestLogger */
 
 // C/C++ includes
@@ -587,91 +588,6 @@ void check_dimensions( const StructuredMesh* s_mesh, std::ifstream& file )
 }
 
 /*!
- * \brief Checks that the uniform mesh header was written correctly.
- * \param [in] mesh the mesh to check against.
- * \param [in] file the file to parse.
- * \pre mesh != nullptr
- */
-void check_uniform_mesh( const UniformMesh* u_mesh, std::ifstream& file )
-{
-  std::string buffer;
-  file >> buffer;
-  EXPECT_EQ( buffer, "DATASET" );
-  file >> buffer;
-  EXPECT_EQ( buffer, "STRUCTURED_POINTS" );
-
-  check_dimensions( u_mesh, file );
-
-  const double* origin = u_mesh->getOrigin( );
-  file >> buffer;
-  EXPECT_EQ( buffer, "ORIGIN" );
-  for ( int i = 0 ; i < 3 ; ++i )
-  {
-    double temp;
-    file >> temp;
-    EXPECT_DOUBLE_EQ( temp, origin[ i ] );
-  }
-
-  const double* spacing = u_mesh->getSpacing( );
-  file >> buffer;
-  EXPECT_EQ( buffer, "SPACING" );
-  for ( int i = 0 ; i < 3 ; ++i )
-  {
-    double temp;
-    file >> temp;
-    EXPECT_DOUBLE_EQ( temp, spacing[ i ]);
-  }
-}
-
-/*!
- * \brief Checks that the rectilinear mesh header was written correctly.
- * \param [in] mesh the mesh to check against.
- * \param [in] file the file to parse.
- * \pre mesh != nullptr
- */
-void check_rectilinear_mesh( const RectilinearMesh* r_mesh,
-                             std::ifstream& file )
-{
-  std::string buffer;
-  file >> buffer;
-  EXPECT_EQ(  buffer, "DATASET" );
-  file >> buffer;
-  EXPECT_EQ(  buffer, "RECTILINEAR_GRID" );
-
-  check_dimensions( r_mesh, file );
-
-  std::string coord_names[3] = { "X_COORDINATES", "Y_COORDINATES",
-                                 "Z_COORDINATES" };
-  std::string extracted_name, extracted_type;
-  IndexType extracted_size;
-  double extracted_coord;
-  for ( int dim = 0 ; dim < r_mesh->getDimension() ; ++dim )
-  {
-    file >> extracted_name >> extracted_size >> extracted_type;
-    EXPECT_EQ( extracted_name, coord_names[ dim ] );
-    EXPECT_EQ( extracted_size, r_mesh->getNodeResolution( dim ) );
-    EXPECT_EQ( extracted_type, "double" );
-
-    const double* coord_array = r_mesh->getCoordinateArray( dim );
-    for (IndexType i = 0 ; i < r_mesh->getNodeResolution( dim ) ; ++i )
-    {
-      file >> extracted_coord;
-      EXPECT_EQ( extracted_coord, coord_array[ i ] );
-    }
-  }
-  for (int dim = r_mesh->getDimension() ; dim < 3 ; ++dim )
-  {
-    file >> extracted_name >> extracted_size >> extracted_type;
-    file >> extracted_coord;
-
-    EXPECT_EQ( extracted_name,   coord_names[ dim ] );
-    EXPECT_EQ( extracted_size,   1 );
-    EXPECT_EQ( extracted_type,   "double" );
-    EXPECT_EQ( extracted_coord,  0.0 );
-  }
-}
-
-/*!
  * \brief Checks that the mesh node coordinates were written correctly.
  * \param [in] mesh the mesh to check against.
  * \param [in] file the file to parse.
@@ -776,32 +692,14 @@ void check_cells( const Mesh* mesh, std::ifstream& file )
 }
 
 /*!
- * \brief Checks that the curvilinear mesh header was written correctly.
+ * \brief Checks that the unstructured or particle mesh header was written
+ *  correctly.
  * \param [in] mesh the mesh to check against.
  * \param [in] file the file to parse.
  * \pre mesh != nullptr
  */
-void check_curvilinear_mesh( const CurvilinearMesh* c_mesh,
-                             std::ifstream& file )
-{
-  std::string buffer;
-  file >> buffer;
-  EXPECT_EQ(  buffer, "DATASET" );
-  file >> buffer;
-  EXPECT_EQ(  buffer, "STRUCTURED_GRID" );
-
-  check_dimensions( c_mesh, file );
-
-  check_points( c_mesh, file );
-}
-
-/*!
- * \brief Checks that the unstructured mesh header was written correctly.
- * \param [in] mesh the mesh to check against.
- * \param [in] file the file to parse.
- * \pre mesh != nullptr
- */
-void check_unstructured_mesh( const Mesh* mesh, std::ifstream& file )
+template < class MeshType >
+void check_mesh( const MeshType* mesh, std::ifstream& file )
 {
   std::string buffer;
   file >> buffer;
@@ -813,6 +711,146 @@ void check_unstructured_mesh( const Mesh* mesh, std::ifstream& file )
   check_cells( mesh, file );
 }
 
+/*!
+ * \brief Checks that the uniform mesh header was written correctly.
+ * \param [in] mesh the mesh to check against.
+ * \param [in] file the file to parse.
+ * \pre mesh != nullptr
+ */
+template <>
+void check_mesh( const UniformMesh* mesh, std::ifstream& file )
+{
+  std::string buffer;
+  file >> buffer;
+  EXPECT_EQ( buffer, "DATASET" );
+  file >> buffer;
+  EXPECT_EQ( buffer, "STRUCTURED_POINTS" );
+
+  check_dimensions( mesh, file );
+
+  const double* origin = mesh->getOrigin( );
+  file >> buffer;
+  EXPECT_EQ( buffer, "ORIGIN" );
+  for ( int i = 0 ; i < 3 ; ++i )
+  {
+    double temp;
+    file >> temp;
+    EXPECT_DOUBLE_EQ( temp, origin[ i ] );
+  }
+
+  const double* spacing = mesh->getSpacing( );
+  file >> buffer;
+  EXPECT_EQ( buffer, "SPACING" );
+  for ( int i = 0 ; i < 3 ; ++i )
+  {
+    double temp;
+    file >> temp;
+    EXPECT_DOUBLE_EQ( temp, spacing[ i ]);
+  }
+}
+
+/*!
+ * \brief Checks that the rectilinear mesh header was written correctly.
+ * \param [in] mesh the mesh to check against.
+ * \param [in] file the file to parse.
+ * \pre mesh != nullptr
+ */
+template <>
+void check_mesh( const RectilinearMesh* r_mesh, std::ifstream& file )
+{
+  std::string buffer;
+  file >> buffer;
+  EXPECT_EQ(  buffer, "DATASET" );
+  file >> buffer;
+  EXPECT_EQ(  buffer, "RECTILINEAR_GRID" );
+
+  check_dimensions( r_mesh, file );
+
+  std::string coord_names[3] = { "X_COORDINATES", "Y_COORDINATES",
+                                 "Z_COORDINATES" };
+  std::string extracted_name, extracted_type;
+  IndexType extracted_size;
+  double extracted_coord;
+  for ( int dim = 0 ; dim < r_mesh->getDimension() ; ++dim )
+  {
+    file >> extracted_name >> extracted_size >> extracted_type;
+    EXPECT_EQ( extracted_name, coord_names[ dim ] );
+    EXPECT_EQ( extracted_size, r_mesh->getNodeResolution( dim ) );
+    EXPECT_EQ( extracted_type, "double" );
+
+    const double* coord_array = r_mesh->getCoordinateArray( dim );
+    for (IndexType i = 0 ; i < r_mesh->getNodeResolution( dim ) ; ++i )
+    {
+      file >> extracted_coord;
+      EXPECT_EQ( extracted_coord, coord_array[ i ] );
+    }
+  }
+  for (int dim = r_mesh->getDimension() ; dim < 3 ; ++dim )
+  {
+    file >> extracted_name >> extracted_size >> extracted_type;
+    file >> extracted_coord;
+
+    EXPECT_EQ( extracted_name,   coord_names[ dim ] );
+    EXPECT_EQ( extracted_size,   1 );
+    EXPECT_EQ( extracted_type,   "double" );
+    EXPECT_EQ( extracted_coord,  0.0 );
+  }
+}
+
+/*!
+ * \brief Checks that the curvilinear mesh header was written correctly.
+ * \param [in] mesh the mesh to check against.
+ * \param [in] file the file to parse.
+ * \pre mesh != nullptr
+ */
+template <>
+void check_mesh( const CurvilinearMesh* mesh, std::ifstream& file )
+{
+  std::string buffer;
+  file >> buffer;
+  EXPECT_EQ(  buffer, "DATASET" );
+  file >> buffer;
+  EXPECT_EQ(  buffer, "STRUCTURED_GRID" );
+
+  check_dimensions( mesh, file );
+
+  check_points( mesh, file );
+}
+
+template < int MeshType, int Topology=SINGLE_SHAPE >
+Mesh* build_mesh( int dimension )
+{
+  const IndexType Ni = 7;
+  const IndexType Nj = (dimension >= 2) ? Ni + 1 : -1;
+  const IndexType Nk = (dimension == 3) ? Ni + 2 : -1;
+
+  const double lo[] = { -10, -9, -8 };
+  const double hi[] = {  10,  9,  8 };
+  UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
+
+  Mesh* test_mesh = create_mesh< MeshType, Topology >( uniform_mesh );
+  EXPECT_TRUE( test_mesh != nullptr );
+
+  return test_mesh;
+}
+
+template < class MeshType >
+void test_mesh( MeshType* mesh, const std::string& path )
+{
+  populate_and_write( mesh, path );
+  std::ifstream file( path.c_str() );
+  ASSERT_TRUE( file );
+  check_header( file );
+  check_mesh( mesh, file );
+  check_data( mesh, file );
+
+  file.close();
+  delete mesh;
+#if DELETE_VTK_FILES
+  std::remove( path.c_str() );
+#endif
+}
+
 } /* end namespace internal */
 
 //------------------------------------------------------------------------------
@@ -820,743 +858,104 @@ void check_unstructured_mesh( const Mesh* mesh, std::ifstream& file )
 //------------------------------------------------------------------------------
 
 /*!
- * \brief Creates a 3D UniformMesh and writes it out to disk using
+ * \brief Creates a UniformMesh and writes it out to disk using
  *  mint::write_vtk and then reads the file back in to check for correctness.
  */
-TEST( mint_util_write_vtk, UniformMesh3D )
+TEST( mint_util_write_vtk, UniformMesh )
 {
-  const std::string path = "uniformMesh3D.vtk";
-  const double low[3] = { -5.0, -10.0, -15.0 };
-  const double high[3] = { 5.0, 10.0, 15.0 };
-  UniformMesh* u_mesh = new UniformMesh( low, high, 10, 11, 12 );
+  for ( int dim = 1; dim <= 3; ++dim )
+  {
+    const std::string path = "uniformMesh" + std::to_string(dim) + "D.vtk";
+    UniformMesh* mesh = static_cast< UniformMesh* >( 
+                      internal::build_mesh< STRUCTURED_UNIFORM_MESH >( dim ) );
 
-  internal::populate_and_write( u_mesh, path );
-  std::ifstream file( path.c_str() );
-  ASSERT_TRUE( file );
-  internal::check_header( file );
-  internal::check_uniform_mesh( u_mesh, file );
-  internal::check_data( u_mesh, file );
-
-  file.close();
-  delete u_mesh;
-#if DELETE_VTK_FILES
-  std::remove( path.c_str() );
-#endif
+    internal::test_mesh( mesh, path );
+  }
 }
 
 /*!
- * \brief Creates a 2D UniformMesh and writes it out to disk using
+ * \brief Creates a RectilinearMesh and writes it out to disk using
  *  mint::write_vtk and then reads the file back in to check for correctness.
  */
-TEST( mint_util_write_vtk, UniformMesh2D )
+TEST( mint_util_write_vtk, RectilinearMesh )
 {
-  const std::string path = "uniformMesh2D.vtk";
-  const double low[2] = { -5.0, -10.0 };
-  const double high[2] = { 5.0, 10.0 };
-  UniformMesh* u_mesh = new UniformMesh( low, high, 10, 11 );
+  for ( int dim = 1; dim <= 3; ++dim )
+  {
+    const std::string path = "rectilinearMesh" + std::to_string(dim) + "D.vtk";
+    RectilinearMesh* mesh = static_cast< RectilinearMesh* >( 
+                  internal::build_mesh< STRUCTURED_RECTILINEAR_MESH >( dim ) );
 
-  internal::populate_and_write( u_mesh, path );
-  std::ifstream file( path.c_str() );
-  ASSERT_TRUE( file );
-  internal::check_header( file );
-  internal::check_uniform_mesh( u_mesh, file );
-  internal::check_data( u_mesh, file );
-
-  file.close();
-  delete u_mesh;
-#if DELETE_VTK_FILES
-  std::remove( path.c_str() );
-#endif
+    internal::test_mesh( mesh, path );
+  }
 }
 
 /*!
- * \brief Creates a 1D UniformMesh and writes it out to disk using
+ * \brief Creates a CurvilinearMesh and writes it out to disk using
  *  mint::write_vtk and then reads the file back in to check for correctness.
  */
-TEST( mint_util_write_vtk, UniformMesh1D )
+TEST( mint_util_write_vtk, CurvilinearMesh )
 {
-  const std::string path = "uniformMesh1D.vtk";
-  const double low[1] = { -5.0 };
-  const double high[1] = { 5.0 };
-  UniformMesh* u_mesh = new UniformMesh( low, high, 10 );
+  for ( int dim = 1; dim <= 3; ++dim )
+  {
+    const std::string path = "curvilinearMesh" + std::to_string(dim) + "D.vtk";
+    CurvilinearMesh* mesh = static_cast< CurvilinearMesh* >( 
+                  internal::build_mesh< STRUCTURED_CURVILINEAR_MESH >( dim ) );
 
-  internal::populate_and_write( u_mesh, path );
-  std::ifstream file( path.c_str() );
-  ASSERT_TRUE( file );
-  internal::check_header( file );
-  internal::check_uniform_mesh( u_mesh, file );
-  internal::check_data( u_mesh, file );
-
-  file.close();
-  delete u_mesh;
-#if DELETE_VTK_FILES
-  std::remove( path.c_str() );
-#endif
+    internal::test_mesh( mesh, path );
+  }
 }
 
 /*!
- * \brief Creates a 3D RectilinearMesh and writes it out to disk using
+ * \brief Creates a UnstructuredMesh and writes it out to disk using
  *  mint::write_vtk and then reads the file back in to check for correctness.
  */
-TEST( mint_util_write_vtk, RectilinearMesh3D )
+TEST( mint_util_write_vtk, UnstructuredMesh )
 {
-  const std::string path = "rectilinearMesh3D.vtk";
-  RectilinearMesh* r_mesh = new RectilinearMesh( 10, 11, 12 );
-
-  for ( int dim = 0 ; dim < 3 ; ++dim )
+  for ( int dim = 1; dim <= 3; ++dim )
   {
-    IndexType Nd = r_mesh->getNodeResolution( dim );
-    double* coords = r_mesh->getCoordinateArray( dim );
-    for ( IndexType i = 0 ; i < Nd ; ++i )
-    {
-      coords[ i ] = i * i / 10.0;
-    }
+    const std::string path = "unstructuredMesh" + std::to_string(dim) + "D.vtk";
+      UnstructuredMesh< SINGLE_SHAPE >* mesh = 
+        static_cast< UnstructuredMesh< SINGLE_SHAPE >* >( 
+          internal::build_mesh< UNSTRUCTURED_MESH, SINGLE_SHAPE >( dim ) );
+
+    internal::test_mesh( mesh, path );
   }
-
-  internal::populate_and_write( r_mesh, path );
-  std::ifstream file( path.c_str() );
-  ASSERT_TRUE( file );
-  internal::check_header( file );
-  internal::check_rectilinear_mesh( r_mesh, file );
-  internal::check_data( r_mesh, file );
-
-  file.close();
-  delete r_mesh;
-#if DELETE_VTK_FILES
-  std::remove( path.c_str() );
-#endif
 }
 
 /*!
- * \brief Creates a 2D RectilinearMesh and writes it out to disk using
- *  mint::write_vtk and then reads the file back in to check for correctness.
- */
-TEST( mint_util_write_vtk, RectilinearMesh2D )
-{
-  const std::string path = "rectilinearMesh2D.vtk";
-  RectilinearMesh* r_mesh = new RectilinearMesh( 10, 11 );
-
-  for ( int dim = 0 ; dim < 2 ; ++dim )
-  {
-    IndexType Nd = r_mesh->getNodeResolution( dim );
-    double* coords = r_mesh->getCoordinateArray( dim );
-    for ( IndexType i = 0 ; i < Nd ; ++i )
-    {
-      coords[ i ] = i * i / 10.0;
-    }
-  }
-
-  internal::populate_and_write( r_mesh, path );
-  std::ifstream file( path.c_str() );
-  ASSERT_TRUE( file );
-  internal::check_header( file );
-  internal::check_rectilinear_mesh( r_mesh, file );
-  internal::check_data( r_mesh, file );
-
-  file.close();
-  delete r_mesh;
-#if DELETE_VTK_FILES
-  std::remove( path.c_str() );
-#endif
-}
-
-/*!
- * \brief Creates a 1D RectilinearMesh and writes it out to disk using
- *  mint::write_vtk and then reads the file back in to check for correctness.
- */
-TEST( mint_util_write_vtk, RectilinearMesh1D )
-{
-  const std::string path = "rectilinearMesh1D.vtk";
-  RectilinearMesh* r_mesh = new RectilinearMesh( 10 );
-
-  IndexType Nx = r_mesh->getNodeResolution( 0 );
-  double* x = r_mesh->getCoordinateArray( 0 );
-  for ( IndexType i = 0 ; i < Nx ; ++i )
-  {
-    x[ i ] = i * i / 10.0;
-  }
-
-  internal::populate_and_write( r_mesh, path );
-  std::ifstream file( path.c_str() );
-  ASSERT_TRUE( file );
-  internal::check_header( file );
-  internal::check_rectilinear_mesh( r_mesh, file );
-  internal::check_data( r_mesh, file );
-
-  file.close();
-  delete r_mesh;
-#if DELETE_VTK_FILES
-  std::remove( path.c_str() );
-#endif
-}
-
-/*!
- * \brief Creates a 3D CurvilinearMesh and writes it out to disk using
- *  mint::write_vtk and then reads the file back in to check for correctness.
- */
-TEST( mint_util_write_vtk, CurvilinearMesh3D )
-{
-  const std::string path = "curvilinearMesh3D.vtk";
-  CurvilinearMesh* c_mesh = new CurvilinearMesh( 10, 11, 12 );
-
-  IndexType Ni = c_mesh->getNodeResolution( 0 );
-  IndexType Nj = c_mesh->getNodeResolution( 1 );
-  IndexType Nk = c_mesh->getNodeResolution( 2 );
-  double* x_coords = c_mesh->getCoordinateArray( X_COORDINATE );
-  double* y_coords = c_mesh->getCoordinateArray( Y_COORDINATE );
-  double* z_coords = c_mesh->getCoordinateArray( Z_COORDINATE );
-  for ( IndexType k = 0 ; k < Nk ; ++k )
-  {
-    for ( IndexType j = 0 ; j < Nj ; ++j )
-    {
-      for ( IndexType i = 0 ; i < Ni ; ++i )
-      {
-        IndexType idx = c_mesh->getNodeLinearIndex( i, j, k );
-        double x = i + utilities::random_real( -0.45, 0.45 );
-        double y = j + utilities::random_real( -0.45, 0.45 );
-        double z = k + utilities::random_real( -0.45, 0.45 );
-        x_coords[ idx ] = x;
-        y_coords[ idx ] = y;
-        z_coords[ idx ] = z;
-      }
-    }
-  }
-
-  internal::populate_and_write( c_mesh, path );
-  std::ifstream file( path.c_str() );
-  ASSERT_TRUE( file );
-  internal::check_header( file );
-  internal::check_curvilinear_mesh( c_mesh, file );
-  internal::check_data( c_mesh, file );
-
-  file.close();
-  delete c_mesh;
-#if DELETE_VTK_FILES
-  std::remove( path.c_str() );
-#endif
-}
-
-/*!
- * \brief Creates a 2D CurvilinearMesh and writes it out to disk using
- *  mint::write_vtk and then reads the file back in to check for correctness.
- */
-TEST( mint_util_write_vtk, CurvilinearMesh2D )
-{
-  const std::string path = "curvilinearMesh2D.vtk";
-  CurvilinearMesh* c_mesh = new CurvilinearMesh( 10, 11 );
-
-  IndexType Ni = c_mesh->getNodeResolution( 0 );
-  IndexType Nj = c_mesh->getNodeResolution( 1 );
-  double* x_coords = c_mesh->getCoordinateArray( X_COORDINATE );
-  double* y_coords = c_mesh->getCoordinateArray( Y_COORDINATE );
-  for ( IndexType j = 0 ; j < Nj ; ++j )
-  {
-    for ( IndexType i = 0 ; i < Ni ; ++i )
-    {
-      IndexType idx = c_mesh->getNodeLinearIndex( i, j );
-      double x = i + utilities::random_real( -0.45, 0.45 );
-      double y = j + utilities::random_real( -0.45, 0.45 );
-      x_coords[ idx ] = x;
-      y_coords[ idx ] = y;
-    }
-  }
-
-  internal::populate_and_write( c_mesh, path );
-  std::ifstream file( path.c_str() );
-  ASSERT_TRUE( file );
-  internal::check_header( file );
-  internal::check_curvilinear_mesh( c_mesh, file );
-  internal::check_data( c_mesh, file );
-
-  file.close();
-  delete c_mesh;
-#if DELETE_VTK_FILES
-  std::remove( path.c_str() );
-#endif
-}
-
-/*!
- * \brief Creates a 1D CurvilinearMesh and writes it out to disk using
- *  mint::write_vtk and then reads the file back in to check for correctness.
- * \note Mesh, but not mesh data will display in Visit.
- */
-TEST( mint_util_write_vtk, CurvilinearMesh1D )
-{
-  const std::string path = "curvilinearMesh1D.vtk";
-  CurvilinearMesh* c_mesh = new CurvilinearMesh( 10 );
-
-  IndexType Ni = c_mesh->getNodeResolution( 0 );
-  double* x_coords = c_mesh->getCoordinateArray( X_COORDINATE );
-  for ( IndexType i = 0 ; i < Ni ; ++i )
-  {
-    double x = i + utilities::random_real( -0.45, 0.45 );
-    x_coords[ i ] = x;
-  }
-
-  internal::populate_and_write( c_mesh, path );
-  std::ifstream file( path.c_str() );
-  ASSERT_TRUE( file );
-  internal::check_header( file );
-  internal::check_curvilinear_mesh( c_mesh, file );
-  internal::check_data( c_mesh, file );
-
-  file.close();
-  delete c_mesh;
-#if DELETE_VTK_FILES
-  std::remove( path.c_str() );
-#endif
-}
-
-/*!
- * \brief Creates a 3D UnstructuredMesh and writes it out to disk using
- *  mint::write_vtk and then reads the file back in to check for correctness.
- */
-TEST( mint_util_write_vtk, UnstructuredMesh3D )
-{
-  const std::string path = "unstructuredMesh3D.vtk";
-  const IndexType nx = 11;
-  const IndexType ny = 12;
-  const IndexType nz = 13;
-  const IndexType nNodes = nx * ny * nz;
-  const IndexType nCells = (nx-1) * (ny-1) * (nz-1);
-  UnstructuredMesh< SINGLE_SHAPE >* u_mesh =
-    new UnstructuredMesh< SINGLE_SHAPE >( 3, HEX, nNodes, nCells );
-
-  for ( IndexType idx = 0 ; idx < nx ; ++idx )
-  {
-    for ( IndexType idy = 0 ; idy < ny ; ++idy )
-    {
-      for ( IndexType idz = 0 ; idz < nz ; ++idz )
-      {
-        double x = idx + utilities::random_real( -0.45, 0.45 );
-        double y = idy + utilities::random_real( -0.45, 0.45 );
-        double z = idz + utilities::random_real( -0.45, 0.45 );
-        u_mesh->appendNode( x, y, z );
-      }
-    }
-  }
-
-  IndexType cell[8];
-  for ( IndexType idx = 0 ; idx < nx - 1 ; ++idx )
-  {
-    for ( IndexType idy = 0 ; idy < ny - 1 ; ++idy )
-    {
-      for ( IndexType idz = 0 ; idz < nz - 1 ; ++idz )
-      {
-        IndexType index = idx * ny * nz + idy * nz + idz;
-        cell[0] = index;
-        cell[1] = index + ny * nz;
-        cell[2] = index + nz + ny * nz;
-        cell[3] = index + nz;
-        cell[4] = cell[0] + 1;
-        cell[5] = cell[1] + 1;
-        cell[6] = cell[2] + 1;
-        cell[7] = cell[3] + 1;
-
-        u_mesh->appendCell( cell );
-      }
-    }
-  }
-
-  internal::populate_and_write( u_mesh, path );
-  std::ifstream file( path.c_str() );
-  ASSERT_TRUE( file );
-  internal::check_header( file );
-  internal::check_unstructured_mesh( u_mesh, file );
-  internal::check_data( u_mesh, file );
-
-  file.close();
-  delete u_mesh;
-#if DELETE_VTK_FILES
-  std::remove( path.c_str() );
-#endif
-}
-
-/*!
- * \brief Creates a 2D UnstructuredMesh and writes it out to disk using
- *  mint::write_vtk and then reads the file back in to check for correctness.
- */
-TEST( mint_util_write_vtk, UnstructuredMesh2D )
-{
-  const std::string path = "unstructuredMesh2D.vtk";
-  const IndexType nx = 11;
-  const IndexType ny = 12;
-  const IndexType nNodes = nx * ny;
-  const IndexType nCells = (nx-1) * (ny-1);
-  UnstructuredMesh< SINGLE_SHAPE >* u_mesh =
-    new UnstructuredMesh< SINGLE_SHAPE >( 2, QUAD, nNodes, nCells );
-
-  for ( IndexType idx = 0 ; idx < nx ; ++idx )
-  {
-    for ( IndexType idy = 0 ; idy < ny ; ++idy )
-    {
-      double x = idx + utilities::random_real( -0.45, 0.45 );
-      double y = idy + utilities::random_real( -0.45, 0.45 );
-      u_mesh->appendNode( x, y );
-    }
-  }
-
-  IndexType cell[4];
-  for ( IndexType idx = 0 ; idx < nx - 1 ; ++idx )
-  {
-    for ( IndexType idy = 0 ; idy < ny - 1 ; ++idy )
-    {
-      IndexType index = idx * ny + idy;
-      cell[0] = index;
-      cell[1] = index + ny;
-      cell[2] = index + ny + 1;
-      cell[3] = index + 1;
-
-      u_mesh->appendCell( cell );
-    }
-  }
-
-  internal::populate_and_write( u_mesh, path );
-  std::ifstream file( path.c_str() );
-  ASSERT_TRUE( file );
-  internal::check_header( file );
-  internal::check_unstructured_mesh( u_mesh, file );
-  internal::check_data( u_mesh, file );
-
-  file.close();
-  delete u_mesh;
-#if DELETE_VTK_FILES
-  std::remove( path.c_str() );
-#endif
-}
-
-/*!
- * \brief Creates a 1D UnstructuredMesh and writes it out to disk using
- *  mint::write_vtk and then reads the file back in to check for correctness.
- */
-TEST( mint_util_write_vtk, UnstructuredMesh1D )
-{
-  const std::string path = "unstructuredMesh1D.vtk";
-  const IndexType nx = 11;
-  UnstructuredMesh< SINGLE_SHAPE >* u_mesh =
-    new UnstructuredMesh< SINGLE_SHAPE >( 1, SEGMENT, nx, nx - 1 );
-
-  for ( IndexType idx = 0 ; idx < nx ; ++idx )
-  {
-    double x = idx + utilities::random_real( -0.45, 0.45 );
-    u_mesh->appendNode( x );
-  }
-
-  IndexType cell[2];
-  for ( IndexType idx = 0 ; idx < nx - 1 ; ++idx )
-  {
-    cell[0] = idx;
-    cell[1] = idx + 1;
-    u_mesh->appendCell( cell, mint::SEGMENT );
-  }
-
-  internal::populate_and_write( u_mesh, path );
-  std::ifstream file( path.c_str() );
-  ASSERT_TRUE( file );
-  internal::check_header( file );
-  internal::check_unstructured_mesh( u_mesh, file );
-  internal::check_data( u_mesh, file );
-
-  file.close();
-  delete u_mesh;
-#if DELETE_VTK_FILES
-  std::remove( path.c_str() );
-#endif
-}
-
-/*!
- * \brief Creates a 3D UnstructuredMesh with mixed elements and writes it out to
+ * \brief Creates a UnstructuredMesh with mixed elements and writes it out to
  *  disk using mint::write_vtk and then reads the file back in to check for
  *  correctness. The UnstructuredMesh consists of one hexahedron with pyramids
  *  on the faces.
  */
-TEST( mint_util_write_vtk, UnstructuredMixedMesh3D )
+TEST( mint_util_write_vtk, UnstructuredMixedMesh )
 {
-  const std::string path = "unstructuredMixedMesh3D.vtk";
-  const IndexType nx = 2;
-  const IndexType ny = 2;
-  const IndexType nz = 2;
-  const IndexType nNodes = nx * ny * nz;
-  const IndexType nCells = (nx-1) * (ny-1) * (nz-1);
-
-  UnstructuredMesh< MIXED_SHAPE >* u_mesh =
-    new UnstructuredMesh< MIXED_SHAPE >( 3, nNodes, nCells );
-
-  /* Create the nodes for the hexahedron. */
-  for ( IndexType idx = 0 ; idx < nx ; ++idx )
+  for ( int dim = 1; dim <= 3; ++dim )
   {
-    for ( IndexType idy = 0 ; idy < ny ; ++idy )
-    {
-      for ( IndexType idz = 0 ; idz < nz ; ++idz )
-      {
-        double x = idx + utilities::random_real( -0.45, 0.45 );
-        double y = idy + utilities::random_real( -0.45, 0.45 );
-        double z = idz + utilities::random_real( -0.45, 0.45 );
-        u_mesh->appendNode( x, y, z );
-      }
-    }
+    const std::string path = "unstructuredMixedMesh" + std::to_string(dim)
+                           + "D.vtk";
+      UnstructuredMesh< MIXED_SHAPE >* mesh = 
+        static_cast< UnstructuredMesh< MIXED_SHAPE >* >( 
+          internal::build_mesh< UNSTRUCTURED_MESH, MIXED_SHAPE >( dim ) );
+
+    internal::test_mesh( mesh, path );
   }
-
-  /* Create the nodes for the pyramids. */
-  u_mesh->appendNode( -1.0, 0.5, 0.5 );
-  u_mesh->appendNode( 2.0, 0.5, 0.5 );
-  u_mesh->appendNode( 0.5, -1.0, 0.5 );
-  u_mesh->appendNode( 0.5, 2.0, 0.5 );
-  u_mesh->appendNode( 0.5, 0.5, -1.0 );
-  u_mesh->appendNode( 0.5, 0.5, 2.0 );
-
-  /* Create the hexahedron. */
-  IndexType hex[8];
-  hex[0] = 0;
-  hex[1] = 4;
-  hex[2] = 6;
-  hex[3] = 2;
-  hex[4] = 1;
-  hex[5] = 5;
-  hex[6] = 7;
-  hex[7] = 3;
-  u_mesh->appendCell( hex, HEX );
-
-  /* Create the pyramid for the -x face. */
-  IndexType pyramid[5];
-  pyramid[0] = hex[0];
-  pyramid[1] = hex[4];
-  pyramid[2] = hex[7];
-  pyramid[3] = hex[3];
-  pyramid[4] = 8;
-  u_mesh->appendCell( pyramid, PYRAMID );
-
-  /* Create the pyramid for the +x face. */
-  pyramid[0] = hex[1];
-  pyramid[1] = hex[2];
-  pyramid[2] = hex[6];
-  pyramid[3] = hex[5];
-  pyramid[4] = 9;
-  u_mesh->appendCell( pyramid, PYRAMID );
-
-  /* Create the pyramid for the -y face. */
-  pyramid[0] = hex[0];
-  pyramid[1] = hex[1];
-  pyramid[2] = hex[5];
-  pyramid[3] = hex[4];
-  pyramid[4] = 10;
-  u_mesh->appendCell( pyramid, PYRAMID );
-
-  /* Create the pyramid for the +x face. */
-  pyramid[0] = hex[2];
-  pyramid[1] = hex[3];
-  pyramid[2] = hex[7];
-  pyramid[3] = hex[6];
-  pyramid[4] = 11;
-  u_mesh->appendCell( pyramid, PYRAMID );
-
-  /* Create the pyramid for the -z face. */
-  pyramid[0] = hex[3];
-  pyramid[1] = hex[2];
-  pyramid[2] = hex[1];
-  pyramid[3] = hex[0];
-  pyramid[4] = 12;
-  u_mesh->appendCell( pyramid, PYRAMID );
-
-  /* Create the pyramid for the +z face. */
-  pyramid[0] = hex[4];
-  pyramid[1] = hex[5];
-  pyramid[2] = hex[6];
-  pyramid[3] = hex[7];
-  pyramid[4] = 13;
-  u_mesh->appendCell( pyramid, PYRAMID );
-
-  internal::populate_and_write( u_mesh, path );
-  std::ifstream file( path.c_str() );
-  ASSERT_TRUE( file );
-  internal::check_header( file );
-  internal::check_unstructured_mesh( u_mesh, file );
-  internal::check_data( u_mesh, file );
-
-  file.close();
-  delete u_mesh;
-#if DELETE_VTK_FILES
-  std::remove( path.c_str() );
-#endif
 }
 
 /*!
- * \brief Creates a 2D UnstructuredMesh with mixed elements and writes it out to
- *  disk using mint::write_vtk and then reads the file back in to check for
- *  correctness. The UnstructuredMesh consists of one quadrilateral with
- *  triangles on the faces.
- */
-TEST( mint_util_write_vtk, UnstructuredMixedMesh2D )
-{
-  const std::string path = "unstructuredMixedMesh2D.vtk";
-  const IndexType nx = 2;
-  const IndexType ny = 2;
-  const IndexType nNodes = nx * ny;
-  const IndexType nCells = (nx-1) * (ny-1);
-  UnstructuredMesh< MIXED_SHAPE >* u_mesh =
-    new UnstructuredMesh< MIXED_SHAPE >( 2, nNodes, nCells );
-
-  /* Create the nodes for the quad. */
-  for ( IndexType idx = 0 ; idx < nx ; ++idx )
-  {
-    for ( IndexType idy = 0 ; idy < ny ; ++idy )
-    {
-      double x = idx + utilities::random_real( -0.45, 0.45 );
-      double y = idy + utilities::random_real( -0.45, 0.45 );
-      u_mesh->appendNode( x, y );
-    }
-  }
-
-  /* Create the nodes for the triangles. */
-  u_mesh->appendNode( -1.0, 0.5 );
-  u_mesh->appendNode( 2.0, 0.5 );
-  u_mesh->appendNode( 0.5, -1.0 );
-  u_mesh->appendNode( 0.5, 2.0 );
-
-  /* Create the quad. */
-  IndexType quad[4];
-  quad[0] = 0;
-  quad[1] = 2;
-  quad[2] = 3;
-  quad[3] = 1;
-  u_mesh->appendCell( quad, QUAD );
-
-  /* Create the triangle for the -x face. */
-  IndexType triangle[3];
-  triangle[0] = quad[0];
-  triangle[1] = quad[3];
-  triangle[2] = 4;
-  u_mesh->appendCell( triangle, TRIANGLE );
-
-  /* Create the triangle for the +x face. */
-  triangle[0] = quad[2];
-  triangle[1] = quad[1];
-  triangle[2] = 5;
-  u_mesh->appendCell( triangle, TRIANGLE );
-
-  /* Create the triangle for the -y face. */
-  triangle[0] = quad[1];
-  triangle[1] = quad[0];
-  triangle[2] = 6;
-  u_mesh->appendCell( triangle, TRIANGLE );
-
-  /* Create the triangle for the +y face. */
-  triangle[0] = quad[3];
-  triangle[1] = quad[2];
-  triangle[2] = 7;
-  u_mesh->appendCell( triangle, TRIANGLE );
-
-  internal::populate_and_write( u_mesh, path );
-  std::ifstream file( path.c_str() );
-  ASSERT_TRUE( file );
-  internal::check_header( file );
-  internal::check_unstructured_mesh( u_mesh, file );
-  internal::check_data( u_mesh, file );
-
-  file.close();
-  delete u_mesh;
-#if DELETE_VTK_FILES
-  std::remove( path.c_str() );
-#endif
-}
-
-/*!
- * \brief Creates a 3D ParticleMesh and writes it out to disk using
+ * \brief Creates a ParticleMesh and writes it out to disk using
  *  mint::write_vtk and then reads the file back in to check for correctness.
  */
-TEST( mint_util_write_vtk, ParticleMesh3D )
+TEST( mint_util_write_vtk, ParticleMesh )
 {
-  const std::string path = "particleMesh3D.vtk";
-  const IndexType nParticles = 1000;
-  ParticleMesh* p_mesh = new ParticleMesh( 3, nParticles );
-
-  double* x = p_mesh->getCoordinateArray( X_COORDINATE );
-  double* y = p_mesh->getCoordinateArray( Y_COORDINATE );
-  double* z = p_mesh->getCoordinateArray( Z_COORDINATE );
-
-  for ( IndexType i = 0 ; i < nParticles ; ++i )
+  for ( int dim = 1; dim <= 3; ++dim )
   {
-    x[ i ] = 10.0 * utilities::random_real( 0.0, 1.0 );
-    y[ i ] = 10.0 * utilities::random_real( 0.0, 1.0 );
-    z[ i ] = 10.0 * utilities::random_real( 0.0, 1.0 );
+    const std::string path = "particleMesh" + std::to_string(dim) + "D.vtk";
+    ParticleMesh* mesh = static_cast< ParticleMesh* >( 
+                                internal::build_mesh< PARTICLE_MESH >( dim ) );
+
+    internal::test_mesh( mesh, path );
   }
-
-  internal::populate_and_write( p_mesh, path );
-  std::ifstream file( path.c_str() );
-  ASSERT_TRUE( file );
-  internal::check_header( file );
-  internal::check_unstructured_mesh( p_mesh, file );
-  internal::check_data( p_mesh, file );
-
-  file.close();
-  delete p_mesh;
-#if DELETE_VTK_FILES
-  std::remove( path.c_str() );
-#endif
-}
-
-/*!
- * \brief Creates a 2D ParticleMesh and writes it out to disk using
- *  mint::write_vtk and then reads the file back in to check for correctness.
- */
-TEST( mint_util_write_vtk, ParticleMesh2D )
-{
-  const std::string path = "particleMesh2D.vtk";
-  const IndexType nParticles = 1000;
-  ParticleMesh* p_mesh = new ParticleMesh( 2, nParticles );
-
-  double* x = p_mesh->getCoordinateArray( X_COORDINATE );
-  double* y = p_mesh->getCoordinateArray( Y_COORDINATE );
-
-  for ( IndexType i = 0 ; i < nParticles ; ++i )
-  {
-    x[ i ] = 10.0 * utilities::random_real( 0.0, 1.0 );
-    y[ i ] = 10.0 * utilities::random_real( 0.0, 1.0 );
-  }
-
-  internal::populate_and_write( p_mesh, path );
-  std::ifstream file( path.c_str() );
-  ASSERT_TRUE( file );
-  internal::check_header( file );
-  internal::check_unstructured_mesh( p_mesh, file );
-  internal::check_data( p_mesh, file );
-
-  file.close();
-  delete p_mesh;
-#if DELETE_VTK_FILES
-  std::remove( path.c_str() );
-#endif
-}
-
-/*!
- * \brief Creates a 1D ParticleMesh and writes it out to disk using
- *  mint::write_vtk and then reads the file back in to check for correctness.
- */
-TEST( mint_util_write_vtk, ParticleMesh1D )
-{
-  const std::string path = "particleMesh1D.vtk";
-  const IndexType nParticles = 1000;
-  ParticleMesh* p_mesh = new ParticleMesh( 1, nParticles );
-
-  double* x = p_mesh->getCoordinateArray( X_COORDINATE );
-
-  for ( IndexType i = 0 ; i < nParticles ; ++i )
-  {
-    x[ i ] = 10.0 * utilities::random_real( 0.0, 1.0 );
-  }
-
-  internal::populate_and_write( p_mesh, path );
-  std::ifstream file( path.c_str() );
-  ASSERT_TRUE( file );
-  internal::check_header( file );
-  internal::check_unstructured_mesh( p_mesh, file );
-  internal::check_data( p_mesh, file );
-
-  file.close();
-  delete p_mesh;
-#if DELETE_VTK_FILES
-  std::remove( path.c_str() );
-#endif
 }
 
 } /* end namespace mint */

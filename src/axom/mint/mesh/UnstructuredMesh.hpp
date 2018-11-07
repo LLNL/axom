@@ -49,21 +49,23 @@ enum Topology
   MIXED_SHAPE
 };
 
-template < int TOPO >
+template < Topology TOPO >
 struct topology_traits {};
 
 template <>
 struct topology_traits< SINGLE_SHAPE >
 {
-  constexpr static ConnectivityType cell_connec = NO_INDIRECTION;
-  constexpr static ConnectivityType cell_face_connec = INDIRECTION;
+  constexpr static ConnectivityType cell_to_nodes = NO_INDIRECTION;
+  constexpr static ConnectivityType cell_to_faces = NO_INDIRECTION;
+  constexpr static ConnectivityType face_to_nodes = NO_INDIRECTION;
 };
 
 template <>
 struct topology_traits< MIXED_SHAPE >
 {
-  constexpr static ConnectivityType cell_connec = TYPED_INDIRECTION;
-  constexpr static ConnectivityType cell_face_connec = TYPED_INDIRECTION;
+  constexpr static ConnectivityType cell_to_nodes = TYPED_INDIRECTION;
+  constexpr static ConnectivityType cell_to_faces = INDIRECTION;
+  constexpr static ConnectivityType face_to_nodes = TYPED_INDIRECTION;
 };
 
 /*!
@@ -141,6 +143,24 @@ class UnstructuredMesh : public Mesh
 
 public:
 
+  /*! \brief The types for face-cell and cell-face connectivity.
+   *
+   * Usually, each face will connect two cells.  The exceptions are
+   * - edge faces, which will connect to one cell.  The other will be -1.
+   * - some faces in a malformed mesh, which may join more than two cells.
+   *   The concensus is that storing such a non-manifold mesh is not useful
+   *   so we only store the first two incident cells and return an error.
+   *
+   * Face types are stored in the face-node connectivity.
+   */
+  using CellToNodeConnectivity =
+                    ConnectivityArray< topology_traits< TOPO >::cell_to_nodes >;
+  using CellToFaceConnectivity =
+                    ConnectivityArray< topology_traits< TOPO >::cell_to_faces >;
+  using FaceToCellConnectivity = ConnectivityArray< NO_INDIRECTION >;
+  using FaceToNodeConnectivity = 
+                    ConnectivityArray< topology_traits< TOPO >::face_to_nodes >;
+
   /*!
    * \brief Default constructor. Disabled.
    */
@@ -168,13 +188,16 @@ public:
                     IndexType cell_capacity=USE_DEFAULT ) :
     Mesh( ndims, UNSTRUCTURED_MESH ),
     m_coordinates( new MeshCoordinates( ndims, 0, node_capacity ) ),
-    m_cell_connectivity( new CellConnectivity( cell_type, cell_capacity ) ),
-    m_cell_to_face( nullptr ),
-    m_face_to_cell( nullptr ),
-    m_face_to_node( nullptr )
+    m_cell_to_node( new CellToNodeConnectivity( cell_type, cell_capacity ) ),
+    m_cell_to_face( initializeCellToFace( cell_type ) ),
+    m_face_to_cell( new FaceToCellConnectivity( 2, 0 ) ),
+    m_face_to_node( initializeFaceToNode( cell_type ) )
   {
     AXOM_STATIC_ASSERT_MSG( TOPO == SINGLE_SHAPE,
-                            "This constructor is only active for single topology meshes." );
+                "This constructor is only active for single topology meshes." );
+
+    SLIC_ERROR_IF( cell_type == PRISM || cell_type == PYRAMID, 
+         "Single shape unstructured meshes do not support prisms or pyramids" );
 
     initialize();
   }
@@ -199,14 +222,14 @@ public:
                     IndexType connectivity_capacity=USE_DEFAULT ) :
     Mesh( ndims, UNSTRUCTURED_MESH ),
     m_coordinates( new MeshCoordinates( ndims, 0, node_capacity ) ),
-    m_cell_connectivity( new CellConnectivity( cell_capacity,
-                                               connectivity_capacity ) ),
-    m_cell_to_face( nullptr ),
-    m_face_to_cell( nullptr ),
-    m_face_to_node( nullptr )
+    m_cell_to_node( new CellToNodeConnectivity( cell_capacity,
+                                                connectivity_capacity ) ),
+    m_cell_to_face( initializeCellToFace() ),
+    m_face_to_cell( new FaceToCellConnectivity( 2, 0 ) ),
+    m_face_to_node( initializeFaceToNode() )
   {
     AXOM_STATIC_ASSERT_MSG( TOPO == MIXED_SHAPE,
-                            "This constructor is only active for mixed topology meshes." );
+                "This constructor is only active for mixed topology meshes." );
 
     m_has_mixed_topology = true;
     initialize();
@@ -254,14 +277,17 @@ public:
                     double* z=nullptr ) :
     Mesh( internal::dim( x,y,z ), UNSTRUCTURED_MESH ),
     m_coordinates( new MeshCoordinates( n_nodes, node_capacity, x, y, z ) ),
-    m_cell_connectivity( new CellConnectivity( cell_type, n_cells, connectivity,
-                                               cell_capacity ) ),
-    m_cell_to_face( nullptr ),
-    m_face_to_cell( nullptr ),
-    m_face_to_node( nullptr )
+    m_cell_to_node( new CellToNodeConnectivity( cell_type, n_cells, connectivity,
+                                                cell_capacity ) ),
+    m_cell_to_face( initializeCellToFace() ),
+    m_face_to_cell( new FaceToCellConnectivity( 2, 0 ) ),
+    m_face_to_node( initializeFaceToNode() )
   {
     AXOM_STATIC_ASSERT_MSG( TOPO == SINGLE_SHAPE,
-                            "This constructor is only active for single topology meshes." );
+                "This constructor is only active for single topology meshes." );
+
+    SLIC_ERROR_IF( cell_type == PRISM || cell_type == PYRAMID, 
+         "Single shape unstructured meshes do not support prisms or pyramids" );
 
     SLIC_ASSERT( x != nullptr );
     SLIC_ASSERT( m_ndims < 2 || y != nullptr );
@@ -344,15 +370,15 @@ public:
                     double* z=nullptr ) :
     Mesh( internal::dim( x,y,z ), UNSTRUCTURED_MESH ),
     m_coordinates( new MeshCoordinates( n_nodes, node_capacity, x, y, z ) ),
-    m_cell_connectivity( new CellConnectivity( n_cells, connectivity, offsets,
-                                               types, cell_capacity,
-                                               connectivity_capacity ) ),
-    m_cell_to_face( nullptr ),
-    m_face_to_cell( nullptr ),
-    m_face_to_node( nullptr )
+    m_cell_to_node( new CellToNodeConnectivity( n_cells, connectivity, offsets,
+                                                types, cell_capacity,
+                                                connectivity_capacity ) ),
+    m_cell_to_face( initializeCellToFace() ),
+    m_face_to_cell( new FaceToCellConnectivity( 2, 0 ) ),
+    m_face_to_node( initializeFaceToNode() )
   {
     AXOM_STATIC_ASSERT_MSG( TOPO == MIXED_SHAPE,
-                            "This constructor is only active for mixed topology meshes." );
+                 "This constructor is only active for mixed topology meshes." );
 
     SLIC_ASSERT( x != nullptr );
     SLIC_ASSERT( m_ndims < 2 || y != nullptr );
@@ -429,17 +455,22 @@ public:
   UnstructuredMesh( sidre::Group* group, const std::string& topo="" ) :
     Mesh( group, topo ),
     m_coordinates( new MeshCoordinates( getCoordsetGroup() ) ),
-    m_cell_connectivity( new CellConnectivity( getTopologyGroup() ) ),
-    m_cell_to_face( nullptr ),
-    m_face_to_cell( nullptr ),
-    m_face_to_node( nullptr )
+    m_cell_to_node( new CellToNodeConnectivity( getTopologyGroup() ) ),
+    m_cell_to_face( initializeCellToFace() ),
+    m_face_to_cell( new FaceToCellConnectivity( 2, 0 ) ),
+    m_face_to_node( initializeFaceToNode() )
   {
     SLIC_ERROR_IF( m_type != UNSTRUCTURED_MESH,
-                   "Supplied sidre::Group does not correspond to a UnstructuredMesh." );
+           "Supplied sidre::Group does not correspond to a UnstructuredMesh." );
 
     if ( TOPO == MIXED_SHAPE )
     {
       m_has_mixed_topology = true;
+    }
+    else
+    {
+      SLIC_ERROR_IF( getCellType() == PRISM || getCellType() == PYRAMID, 
+         "Single shape unstructured meshes do not support prisms or pyramids" );
     }
 
     initialize();
@@ -481,14 +512,20 @@ public:
     Mesh( ndims, UNSTRUCTURED_MESH, group, topo, coordset ),
     m_coordinates( new MeshCoordinates( getCoordsetGroup(), ndims, 0,
                                         node_capacity ) ),
-    m_cell_connectivity( new CellConnectivity( cell_type, getTopologyGroup(),
-                                               m_coordset, cell_capacity ) ),
-    m_cell_to_face( nullptr ),
-    m_face_to_cell( nullptr ),
-    m_face_to_node( nullptr )
+    m_cell_to_node( new CellToNodeConnectivity( cell_type, 
+                                                getTopologyGroup(),
+                                                getCoordsetName(), 
+                                                cell_capacity ) ),
+    m_cell_to_face( initializeCellToFace( cell_type ) ),
+    m_face_to_cell( new FaceToCellConnectivity( 2, 0 ) ),
+    m_face_to_node( initializeFaceToNode( cell_type ) )
   {
     AXOM_STATIC_ASSERT_MSG( TOPO == SINGLE_SHAPE,
-                            "This constructor is only active for single topology meshes." );
+                "This constructor is only active for single topology meshes." );
+
+    SLIC_ERROR_IF( cell_type == PRISM || cell_type == PYRAMID, 
+         "Single shape unstructured meshes do not support prisms or pyramids" );
+
     initialize();
   }
 
@@ -507,15 +544,16 @@ public:
     Mesh( ndims, UNSTRUCTURED_MESH, group, topo, coordset ),
     m_coordinates( new MeshCoordinates( getCoordsetGroup(), ndims, 0,
                                         node_capacity ) ),
-    m_cell_connectivity( new CellConnectivity( getTopologyGroup(), m_coordset,
-                                               cell_capacity,
-                                               connectivity_capacity ) ),
-    m_cell_to_face( nullptr ),
-    m_face_to_cell( nullptr ),
-    m_face_to_node( nullptr )
+    m_cell_to_node( new CellToNodeConnectivity( getTopologyGroup(), 
+                                                getCoordsetName(),
+                                                cell_capacity,
+                                                connectivity_capacity ) ),
+    m_cell_to_face( initializeCellToFace() ),
+    m_face_to_cell( new FaceToCellConnectivity( 2, 0 ) ),
+    m_face_to_node( initializeFaceToNode() )
   {
     AXOM_STATIC_ASSERT_MSG( TOPO == MIXED_SHAPE,
-                            "This constructor is only active for mixed topology meshes." );
+                "This constructor is only active for mixed topology meshes." );
 
     m_has_mixed_topology = true;
     initialize();
@@ -543,18 +581,20 @@ public:
    */
   virtual ~UnstructuredMesh()
   {
-    if ( m_coordinates != nullptr )
-    {
-      delete m_coordinates;
-      m_coordinates = nullptr;
-    }
-    if ( m_cell_connectivity != nullptr )
-    {
-      delete m_cell_connectivity;
-      m_cell_connectivity = nullptr;
-    }
+    delete m_coordinates;
+    m_coordinates = nullptr;
 
-    destroyFaceConnectivity();
+    delete m_cell_to_node;
+    m_cell_to_node = nullptr;
+
+    delete m_cell_to_face;
+    m_cell_to_face = nullptr;
+
+    delete m_face_to_cell;
+    m_face_to_cell = nullptr;
+
+    delete m_face_to_node;
+    m_face_to_node = nullptr;
   }
 
 /// \name Cells
@@ -564,13 +604,13 @@ public:
    * \brief Return the number of cells in the mesh.
    */
   virtual IndexType getNumberOfCells() const final override
-  { return m_cell_connectivity->getNumberOfIDs(); }
+  { return m_cell_to_node->getNumberOfIDs(); }
 
   /*!
    * \brief Return the capacity for cells.
    */
   virtual IndexType getCellCapacity() const final override
-  { return m_cell_connectivity->getIDCapacity(); }
+  { return m_cell_to_node->getIDCapacity(); }
 
   /*!
    * \brief Return the type of the given cell.
@@ -582,7 +622,7 @@ public:
    * \pre 0 <= cellID < getNumberOfCells()
    */
   virtual CellType getCellType( IndexType cellID=-1 ) const final override
-  { return m_cell_connectivity->getIDType( cellID ); }
+  { return m_cell_to_node->getIDType( cellID ); }
 
   /*!
    * \brief Return the number of nodes associated with the given cell.
@@ -594,7 +634,7 @@ public:
    */
   virtual IndexType getNumberOfCellNodes( IndexType cellID=0 )
   const final override
-  { return m_cell_connectivity->getNumberOfValuesForID( cellID ); }
+  { return m_cell_to_node->getNumberOfValuesForID( cellID ); }
 
   /*!
    * \brief Copy the connectivity of the given cell into the provided buffer.
@@ -628,12 +668,8 @@ public:
    *       this method.
    */
   virtual
-  IndexType getNumberOfCellFaces( IndexType cellID ) const final override
-  {
-    SLIC_ERROR_IF( m_cell_to_face == nullptr,
-                   "Must call initializeFaceConnectivity() before this method." );
-    return m_cell_to_face->getNumberOfValuesForID(cellID);
-  }
+  IndexType getNumberOfCellFaces( IndexType cellID=0 ) const final override
+  { return getCellInfo( getCellType( cellID ) ).num_faces; }
 
   /*!
    * \brief Copy the face IDs of the given cell into the provided buffer.
@@ -655,10 +691,8 @@ public:
                             IndexType* faces ) const final override
   {
     SLIC_ASSERT( faces != nullptr );
-    SLIC_ERROR_IF( m_cell_to_face == nullptr,
-                   "Must call initializeFaceConnectivity() before this method." );
     const IndexType n_faces = getNumberOfCellFaces( cellID );
-    std::memcpy( faces, getCellFaceIDs( cellID ),
+    std::memcpy( faces, getCellFaceIDs( cellID ), 
                  n_faces * sizeof( IndexType ) );
     return n_faces;
   }
@@ -723,11 +757,7 @@ public:
    *       this method.
    */
   virtual IndexType getNumberOfFaces() const final override
-  {
-    SLIC_ERROR_IF( m_face_to_cell == nullptr,
-                   "Must call initializeFaceConnectivity() before this method." );
-    return m_face_to_cell->getNumberOfIDs();
-  }
+  { return m_face_to_cell->getNumberOfIDs(); }
 
   /*!
    * \brief Return the capacity for faces.
@@ -736,11 +766,7 @@ public:
    *       this method.
    */
   virtual IndexType getFaceCapacity() const final override
-  {
-    SLIC_ERROR_IF( m_cell_to_face == nullptr,
-                   "Must call initializeFaceConnectivity() before this method." );
-    return m_cell_to_face->getIDCapacity();
-  }
+  { return m_face_to_cell->getIDCapacity(); }
 
   /*!
    * \brief Return the type of the given face.
@@ -751,11 +777,7 @@ public:
    *       this method.
    */
   virtual CellType getFaceType( IndexType faceID ) const final override
-  {
-    SLIC_ERROR_IF( m_face_to_node == nullptr,
-                   "Must call initializeFaceConnectivity() before this method." );
-    return m_face_to_node->getIDType( faceID );
-  }
+  { return m_face_to_node->getIDType( faceID ); }
 
   /*!
    * \brief Return the number of nodes associated with the given face.
@@ -766,12 +788,8 @@ public:
    *       this method.
    */
   virtual IndexType
-  getNumberOfFaceNodes( IndexType faceID ) const final override
-  {
-    SLIC_ERROR_IF( m_face_to_node == nullptr,
-                   "Must call initializeFaceConnectivity() before this method." );
-    return m_face_to_node->getNumberOfValuesForID(faceID);
-  }
+  getNumberOfFaceNodes( IndexType faceID=0 ) const final override
+  { return m_face_to_node->getNumberOfValuesForID(faceID); }
 
   /*!
    * \brief Copy the IDs of the nodes that compose the given face into the
@@ -808,8 +826,10 @@ public:
    * \param [out] cellIDOne the ID of the first cell.
    * \param [out] cellIDTwo the ID of the second cell.
    *
-   * \note If no cell exists (the face is external) then the ID will be set to
-   * -1.
+   * \note A face can be associated with one or two cells, depending on whether
+   *  it is an external boundary face or interior face. By convention, if a face
+   *  is an external boundary face, then only cellIDOne exists and cellIDTwo
+   *  will be set to -1.
    *
    * \note Codes must call initializeFaceConnectivity() before calling
    *       this method.
@@ -820,8 +840,6 @@ public:
                                IndexType& cellIDOne,
                                IndexType& cellIDTwo ) const final override
   {
-    SLIC_ERROR_IF( m_face_to_cell == nullptr,
-                   "Must call initializeFaceConnectivity() before this method." );
     IndexType * faces = (*m_face_to_cell)[ faceID ];
     cellIDOne = faces[0];
     cellIDTwo = faces[1];
@@ -858,7 +876,7 @@ public:
    */
   virtual bool isExternal() const final override
   {
-    bool connec_external = m_cell_connectivity->isExternal();
+    bool connec_external = m_cell_to_node->isExternal();
     bool coords_external = m_coordinates->isExternal();
 
     if ( connec_external != coords_external )
@@ -882,7 +900,7 @@ public:
    * \brief Return the cell resize ratio.
    */
   double getCellResizeRatio() const
-  { return m_cell_connectivity->getResizeRatio(); }
+  { return m_cell_to_node->getResizeRatio(); }
 
   /*!
    * \brief Set the cell resize ratio.
@@ -893,21 +911,21 @@ public:
    */
   void setCellResizeRatio( double ratio )
   {
-    m_cell_connectivity->setResizeRatio( ratio );
+    m_cell_to_node->setResizeRatio( ratio );
     m_mesh_fields[ CELL_CENTERED ]->setResizeRatio( ratio );
   }
 
   /*!
    * \brief Return the size of the connectivity array.
    */
-  IndexType getCellConnectivitySize() const
-  { return m_cell_connectivity->getNumberOfValues(); }
+  IndexType getCellNodesSize() const
+  { return m_cell_to_node->getNumberOfValues(); }
 
   /*!
    * \brief Return the capacity of the connectivity array.
    */
-  IndexType getCellConnectivityCapacity() const
-  { return m_cell_connectivity->getValueCapacity(); }
+  IndexType getCellNodesCapacity() const
+  { return m_cell_to_node->getValueCapacity(); }
 
   /*!
    * \brief Resizes the cell connectivity array and cell-centered fields of this
@@ -921,7 +939,7 @@ public:
   {
     IndexType connectivity_size =
       ( hasMixedCellTypes() ) ? USE_DEFAULT : getNumberOfCellNodes()*cell_size;
-    m_cell_connectivity->resize( cell_size, connectivity_size );
+    m_cell_to_node->resize( cell_size, connectivity_size );
     m_mesh_fields[ CELL_CENTERED ]->resize( cell_size );
   }
 
@@ -937,7 +955,7 @@ public:
   void reserveCells( IndexType cell_capacity,
                      IndexType connectivity_capacity=USE_DEFAULT )
   {
-    m_cell_connectivity->reserve( cell_capacity, connectivity_capacity );
+    m_cell_to_node->reserve( cell_capacity, connectivity_capacity );
     m_mesh_fields[ CELL_CENTERED ]->reserve( cell_capacity );
   }
 
@@ -945,11 +963,11 @@ public:
    * \brief Shrink the cell capacity to be equal to the number of cells.
    *
    * \post getCellCapacity() == getNumberOfCells()
-   * \post getCellConnectivityCapacity() == getCellConnectivitySize()
+   * \post getCellNodesCapacity() == getCellNodesSize()
    */
   void shrinkCells()
   {
-    m_cell_connectivity->shrink();
+    m_cell_to_node->shrink();
     m_mesh_fields[ CELL_CENTERED ]->shrink();
   }
 
@@ -1025,9 +1043,23 @@ public:
    */
   double getFaceResizeRatio() const
   {
-    SLIC_ERROR( "NOT IMPLEMENTED!!!" );
-    return 0.0;
+    const double ratio = m_face_to_node->getResizeRatio();
+    SLIC_WARNING_IF( m_face_to_cell->getResizeRatio() != ratio, 
+                     "Resize ratios are inconsistent" );
+    return ratio;
   }
+
+  /*!
+   * \brief Return the size of the connectivity array.
+   */
+  IndexType getFaceNodesSize() const
+  { return m_face_to_node->getNumberOfValues(); }
+
+  /*!
+   * \brief Return the capacity of the connectivity array.
+   */
+  IndexType getFaceNodesCapacity() const
+  { return m_face_to_node->getValueCapacity(); }
 
 /// @}
 
@@ -1090,7 +1122,7 @@ public:
    *
    * \post getNodeCapacity() == getNumberOfNodes()
    * \post getCellCapacity() == getNumberOfCells()
-   * \post getCellConnectivityCapacity() == getCellConnectivitySize()
+   * \post getCellNodesCapacity() == getCellNodesSize()
    */
   void shrink()
   {
@@ -1102,7 +1134,7 @@ public:
    * \brief Return true iff the mesh holds no nodes and no cells.
    */
   bool empty() const
-  { return m_coordinates->empty() && m_cell_connectivity->empty(); }
+  { return m_coordinates->empty() && m_cell_to_node->empty(); }
 
   /*!
    * \brief Return true iff both the connectivity and coordinates are stored in
@@ -1110,7 +1142,7 @@ public:
    */
   bool isInSidre() const
   {
-    bool connec_sidre = m_cell_connectivity->isInSidre();
+    bool connec_sidre = m_cell_to_node->isInSidre();
     bool coords_sidre = m_coordinates->isInSidre();
 
     if ( connec_sidre != coords_sidre )
@@ -1142,54 +1174,102 @@ public:
   /// @{
 
   IndexType* getCellNodeIDs( IndexType cellID )
-  { return (*m_cell_connectivity)[ cellID ]; }
+  { return (*m_cell_to_node)[ cellID ]; }
 
   const IndexType* getCellNodeIDs( IndexType cellID ) const
-  { return (*m_cell_connectivity)[ cellID ]; }
-
-  /// @}
+  { return (*m_cell_to_node)[ cellID ]; }
 
   /*!
-   * \brief Return a pointer to the connectivity array, of length
-   *  getCellConnectivitySize().
+   * \brief Return a pointer to the faces of the given cell. The
+   *  buffer is guarenteed to be of length at least
+   *  getNumberOfCellFaces( cellID ).
+   *
+   * \param [in] cellID the ID of the cell in question.
+   *
+   * \note Codes must call initializeFaceConnectivity() before calling
+   *       this method.
+   *
+   * \pre 0 <= cellID < getNumberOfCells()
    */
   /// @{
 
-  IndexType* getCellConnectivityArray()
-  { return m_cell_connectivity->getValuePtr(); }
+  IndexType* getCellFaceIDs( IndexType cellID )
+  { return (*m_cell_to_face)[ cellID ]; }
 
-  const IndexType* getCellConnectivityArray() const
-  { return m_cell_connectivity->getValuePtr(); }
+  const IndexType* getCellFaceIDs( IndexType cellID ) const
+  { return (*m_cell_to_face)[ cellID ]; }
 
   /// @}
 
   /*!
-   * \brief Return a constant pointer to the offset array, of length
+   * \brief Return a pointer to the cell nodes array, of length
+   *  getCellNodesSize().
+   */
+  /// @{
+
+  IndexType* getCellNodesArray()
+  { return m_cell_to_node->getValuePtr(); }
+
+  const IndexType* getCellNodesArray() const
+  { return m_cell_to_node->getValuePtr(); }
+
+  /// @}
+
+  /*!
+   * \brief Return a pointer to the cell nodes offset array, of length
    *  getNumberOfCells() + 1. Returns nullptr if
    *  TOPO == SINGLE_SHAPE.
    */
   /// @{
 
-  IndexType* getCellOffsetsArray()
-  { return m_cell_connectivity->getOffsetPtr(); }
+  IndexType* getCellNodesOffsetsArray()
+  { return m_cell_to_node->getOffsetPtr(); }
 
-  const IndexType* getCellOffsetsArray() const
-  { return m_cell_connectivity->getOffsetPtr(); }
+  const IndexType* getCellNodesOffsetsArray() const
+  { return m_cell_to_node->getOffsetPtr(); }
 
   /// @}
 
   /*!
-   * \brief Return a constant pointer to the cell types array, of length
+   * \brief Return a pointer to the cell types array, of length
    *  getNumberOfCells(). Returns nullptr if
    *  TOPO == SINGLE_SHAPE.
    */
   /// @{
 
   CellType* getCellTypesArray()
-  { return m_cell_connectivity->getTypePtr(); }
+  { return m_cell_to_node->getTypePtr(); }
 
   const CellType* getCellTypesArray() const
-  { return m_cell_connectivity->getTypePtr(); }
+  { return m_cell_to_node->getTypePtr(); }
+
+  /// @}
+
+  /*!
+   * \brief Return a pointer to the cell faces array, of length
+   *  getCellNodesSize().
+   */
+  /// @{
+
+  IndexType* getCellFacesArray()
+  { return m_cell_to_face->getValuePtr(); }
+
+  const IndexType* getCellFacesArray() const
+  { return m_cell_to_face->getValuePtr(); }
+
+  /// @}
+
+  /*!
+   * \brief Return a pointer to the cell faces offset array, of length
+   *  getNumberOfCells() + 1.
+   */
+  /// @{
+
+  IndexType* getCellFacesOffsetsArray()
+  { return m_cell_to_face->getOffsetPtr(); }
+
+  const IndexType* getCellFacesOffsetsArray() const
+  { return m_cell_to_face->getOffsetPtr(); }
 
   /// @}
 
@@ -1206,7 +1286,7 @@ public:
   {
     IndexType n_values = (type == UNDEFINED_CELL) ?
                          0 : getCellInfo( type ).num_nodes;
-    m_cell_connectivity->append( connec, n_values, type );
+    m_cell_to_node->append( connec, n_values, type );
     m_mesh_fields[ CELL_CENTERED ]->resize( getNumberOfCells() );
   }
 
@@ -1227,7 +1307,7 @@ public:
                     const IndexType* offsets=nullptr,
                     const CellType* types=nullptr )
   {
-    m_cell_connectivity->appendM( connec, n_cells, offsets, types );
+    m_cell_to_node->appendM( connec, n_cells, offsets, types );
     m_mesh_fields[ CELL_CENTERED ]->resize( getNumberOfCells() );
   }
 
@@ -1249,7 +1329,7 @@ public:
   {
     IndexType n_values = (type == UNDEFINED_CELL) ?
                          0 : getCellInfo( type ).num_nodes;
-    m_cell_connectivity->insert( connec, ID, n_values, type );
+    m_cell_to_node->insert( connec, ID, n_values, type );
     m_mesh_fields[ CELL_CENTERED ]->emplace( ID, 1 );
   }
 
@@ -1272,7 +1352,7 @@ public:
                     const IndexType* offsets=nullptr,
                     const CellType* types=nullptr )
   {
-    m_cell_connectivity->insertM( connec, start_ID, n_cells, offsets, types );
+    m_cell_to_node->insertM( connec, start_ID, n_cells, offsets, types );
     m_mesh_fields[ CELL_CENTERED ]->emplace( start_ID, n_cells );
   }
 
@@ -1515,14 +1595,21 @@ public:
    */
   bool initializeFaceConnectivity(bool force = false)
   {
-    if (!force && m_face_to_cell != 0)
+    if ( getDimension() == 1 )
+    {
+      return true;
+    }
+
+    if (!force && getNumberOfFaces() > 0 )
     {
       return true;
     }
 
     if (force)
     {
-      destroyFaceConnectivity();
+      m_cell_to_face->resize(0, 0);
+      m_face_to_cell->resize(0, 0);
+      m_face_to_node->resize(0, 0);
     }
 
     int facecount = 0;
@@ -1541,14 +1628,18 @@ public:
     if (retval)
     {
       // Copy in the face connectivity data.
-      m_face_to_cell = new FaceToCellConnectivity(SEGMENT, facecount);
+      const IndexType cellCount = getNumberOfCells();
+      m_cell_to_face->reserve( cellCount, c2foffsets[ cellCount ] );
+      m_cell_to_face->appendM( c2fdata, cellCount, c2foffsets);
+
+      m_face_to_cell->reserve(facecount);
       m_face_to_cell->appendM(f2cdata, facecount);
 
-      buildCellFaceConnectivity(c2fdata, c2foffsets);
-
-      m_face_to_node = new FaceToNodeConnectivity(facecount);
+      m_face_to_node->reserve(facecount, f2noffsets[ facecount ]);
       m_face_to_node->appendM(f2ndata, facecount, f2noffsets, f2ntypes);
     }
+
+    m_mesh_fields[ FACE_CENTERED ]->resize( getNumberOfFaces() );
 
     delete [] f2cdata;
     delete [] c2fdata;
@@ -1562,38 +1653,8 @@ public:
   }
 
   /*!
-   * \brief Return a pointer to the faces of the given cell. The
-   *  buffer is guarenteed to be of length at least
-   *  getNumberOfCellFaces( cellID ).
-   *
-   * \param [in] cellID the ID of the cell in question.
-   *
-   * \note Codes must call initializeFaceConnectivity() before calling
-   *       this method.
-   *
-   * \pre 0 <= cellID < getNumberOfCells()
-   */
-  /// @{
-
-  IndexType* getCellFaceIDs( IndexType cellID )
-  {
-    SLIC_ERROR_IF( m_cell_to_face == nullptr,
-                   "Must call initializeFaceConnectivity() before this method." );
-    return (*m_cell_to_face)[ cellID ];
-  }
-
-  const IndexType* getCellFaceIDs( IndexType cellID ) const
-  {
-    SLIC_ERROR_IF( m_cell_to_face == nullptr,
-                   "Must call initializeFaceConnectivity() before this method." );
-    return (*m_cell_to_face)[ cellID ];
-  }
-
-  /// @}
-
-  /*!
    * \brief Return a pointer to the nodes of the given face. The
-   *  buffer is guarenteed to be of length at least
+   *  buffer is guaranteed to be of length at least
    *  getNumberOfFaceNodes( faceID ).
    *
    * \param [in] faceID the ID of the face in question.
@@ -1607,17 +1668,55 @@ public:
 
   IndexType* getFaceNodeIDs( IndexType faceID )
   {
-    SLIC_ERROR_IF( m_face_to_node == nullptr,
-                   "Must call initializeFaceConnectivity() before this method." );
     return (*m_face_to_node)[ faceID ];
   }
 
   const IndexType* getFaceNodeIDs( IndexType faceID ) const
   {
-    SLIC_ERROR_IF( m_face_to_node == nullptr,
-                   "Must call initializeFaceConnectivity() before this method." );
     return (*m_face_to_node)[ faceID ];
   }
+
+  /// @}
+
+  /*!
+   * \brief Return a pointer to the face nodes array, of length
+   *  getFaceNodesSize().
+   */
+  /// @{
+
+  IndexType* getFaceNodesArray()
+  { return m_face_to_node->getValuePtr(); }
+
+  const IndexType* getFaceNodesArray() const
+  { return m_face_to_node->getValuePtr(); }
+
+  /// @}
+
+  /*!
+   * \brief Return a pointer to the face nodes offset array, of length
+   *  getNumberOfFaces() + 1.
+   */
+  /// @{
+
+  IndexType* getFaceNodesOffsetsArray()
+  { return m_face_to_node->getOffsetPtr(); }
+
+  const IndexType* getFaceNodesOffsetsArray() const
+  { return m_face_to_node->getOffsetPtr(); }
+
+  /// @}
+
+  /*!
+   * \brief Return a pointer to the face cells array, of length
+   *  2 * getNumberOfFaces().
+   */
+  /// @{
+
+  IndexType* getFaceCellsArray()
+  { return m_face_to_cell->getValuePtr(); }
+
+  const IndexType* getFaceCellsArray() const
+  { return m_face_to_cell->getValuePtr(); }
 
   /// @}
 
@@ -1629,6 +1728,14 @@ private:
 
   /*! \brief Construct and fill the cell-to-face connectivity. */
   void buildCellFaceConnectivity(IndexType * c2fdata, IndexType * c2foffsets);
+  
+  /*! \brief Return a new empty CellToFaceConnectivty instance. */
+  CellToFaceConnectivity*
+  initializeCellToFace( CellType cell_type=UNDEFINED_CELL ) const;
+
+  /*! \brief Return a new empty FaceToNodeConnectivity instance. */
+  FaceToNodeConnectivity*
+  initializeFaceToNode( CellType cell_type=UNDEFINED_CELL ) const;
 
   /*!
    * \brief Update the connectivity given an nodal insert at position pos of
@@ -1641,8 +1748,8 @@ private:
   {
     SLIC_ASSERT( 0 <= pos && pos < getNumberOfNodes() );
 
-    const IndexType n_values = getCellConnectivitySize();
-    IndexType* values = getCellConnectivityArray();
+    const IndexType n_values = getCellNodesSize();
+    IndexType* values = getCellNodesArray();
     SLIC_ASSERT( n_values == 0 || values != nullptr );
 
     for ( IndexType i = 0 ; i < n_values ; ++i )
@@ -1663,44 +1770,21 @@ private:
     m_explicit_connectivity = true;
     m_mesh_fields[ NODE_CENTERED ]->setResizeRatio( getNodeResizeRatio() );
     m_mesh_fields[ CELL_CENTERED ]->setResizeRatio( getCellResizeRatio() );
-    m_mesh_fields[ NODE_CENTERED ]->reserve( m_coordinates->capacity() );
-    m_mesh_fields[ CELL_CENTERED ]->reserve(
-      m_cell_connectivity->getIDCapacity() );
-  }
+    m_mesh_fields[ FACE_CENTERED ]->setResizeRatio( getFaceResizeRatio() );
+    
+    m_mesh_fields[ NODE_CENTERED ]->reserve( getNodeCapacity() );
+    m_mesh_fields[ CELL_CENTERED ]->reserve( getCellCapacity() );
+    m_mesh_fields[ FACE_CENTERED ]->reserve( getFaceCapacity() );
 
-  /*! \brief Destroy cell-face, face-cell, and face-node connectivity. */
-  void destroyFaceConnectivity()
-  {
-    delete m_cell_to_face;
-    m_cell_to_face = nullptr;
-    delete m_face_to_cell;
-    m_face_to_cell = nullptr;
-    delete m_face_to_node;
-    m_face_to_node = nullptr;
+    m_mesh_fields[ NODE_CENTERED ]->resize( getNumberOfNodes() );
+    m_mesh_fields[ CELL_CENTERED ]->resize( getNumberOfCells() );
+    m_mesh_fields[ FACE_CENTERED ]->resize( getNumberOfFaces() );
   }
-
-  using CellConnectivity =
-          ConnectivityArray< topology_traits< TOPO >::cell_connec >;
 
   MeshCoordinates* m_coordinates;
 
   /*! \brief The nodes for each cell */
-  CellConnectivity* m_cell_connectivity;
-
-  /*! \brief The types for face-cell and cell-face connectivity.
-   *
-   * Usually, each face will connect two cells.  The exceptions are
-   * - edge faces, which will connect to one cell.  The other will be -1.
-   * - some faces in a malformed mesh, which may join more than two cells.
-   *   The concensus is that storing such a non-manifold mesh is not useful
-   *   so we only store the first two incident cells and return an error.
-   *
-   * Face types are stored in the face-node connectivity.
-   */
-  using CellToFaceConnectivity =
-    ConnectivityArray< topology_traits< TOPO >::cell_face_connec >;
-  using FaceToCellConnectivity = ConnectivityArray< NO_INDIRECTION >;
-  using FaceToNodeConnectivity = ConnectivityArray< TYPED_INDIRECTION >;
+  CellToNodeConnectivity* m_cell_to_node;  
 
   /*! \brief Each cell's faces */
   CellToFaceConnectivity* m_cell_to_face;
@@ -1715,29 +1799,36 @@ private:
   DISABLE_MOVE_AND_ASSIGNMENT( UnstructuredMesh );
 };
 
-template<> inline void UnstructuredMesh<SINGLE_SHAPE>::
-buildCellFaceConnectivity(IndexType * c2fdata,
-                          IndexType * c2foffsets)
+template <>
+inline UnstructuredMesh< SINGLE_SHAPE >::CellToFaceConnectivity*
+UnstructuredMesh< SINGLE_SHAPE >::initializeCellToFace( CellType cell_type ) const
 {
-  IndexType cellCount = getNumberOfCells();
-  m_cell_to_face =
-    new CellToFaceConnectivity(m_cell_connectivity->getIDType(),
-                               cellCount,
-                               c2foffsets[cellCount]);
-  m_cell_to_face->appendM(c2fdata, cellCount, c2foffsets);
+  return new UnstructuredMesh< SINGLE_SHAPE >::
+                CellToFaceConnectivity( getCellInfo( cell_type ).num_faces, 0 );
 }
 
-template<> inline void UnstructuredMesh<MIXED_SHAPE>::
-buildCellFaceConnectivity(IndexType * c2fdata,
-                          IndexType * c2foffsets)
+template <>
+inline UnstructuredMesh< MIXED_SHAPE >::CellToFaceConnectivity*
+UnstructuredMesh< MIXED_SHAPE >::initializeCellToFace( CellType ) const
 {
-  IndexType cellCount = getNumberOfCells();
-  m_cell_to_face =
-    new CellToFaceConnectivity(cellCount, c2foffsets[cellCount]);
-  m_cell_to_face->appendM(c2fdata, cellCount, c2foffsets,
-                          m_cell_connectivity->getTypePtr());
+  return new UnstructuredMesh< MIXED_SHAPE >::
+                                 CellToFaceConnectivity( UNDEFINED_CELL, 0, 0 );
 }
 
+template <>
+inline UnstructuredMesh< SINGLE_SHAPE >::FaceToNodeConnectivity*
+UnstructuredMesh< SINGLE_SHAPE >::initializeFaceToNode( CellType cell_type ) const
+{
+  return new UnstructuredMesh< SINGLE_SHAPE >::
+            FaceToNodeConnectivity( getCellInfo( cell_type ).face_types[0], 0 );
+}
+
+template <>
+inline UnstructuredMesh< MIXED_SHAPE >::FaceToNodeConnectivity*
+UnstructuredMesh< MIXED_SHAPE >::initializeFaceToNode( CellType ) const
+{
+  return new UnstructuredMesh< MIXED_SHAPE >::FaceToNodeConnectivity( 0, 0 );
+}
 
 } /* namespace mint */
 } /* namespace axom */

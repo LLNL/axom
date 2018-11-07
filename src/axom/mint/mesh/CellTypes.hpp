@@ -25,7 +25,7 @@ namespace axom
 namespace mint
 {
 
-static constexpr int MAX_NUM_NODES = 27;
+static constexpr int MAX_CELL_NODES = 27;
 static constexpr int MAX_CELL_FACES = 6;
 static constexpr int MAX_FACE_NODES = 9;
 static constexpr int MAX_ALL_FACES_NODES = MAX_CELL_FACES * MAX_FACE_NODES;
@@ -137,13 +137,18 @@ typedef struct
 
 // Cell Info registration
 REGISTER_CELL_INFO( VERTEX, "VERTEX", "point", 1, 1, 0,
-                    AR({ 0 }), AR({ UNDEFINED_CELL }), AR({ 0 }) );
+                    AR({ 0 }),
+                    AR({ UNDEFINED_CELL }),
+                    AR({ 0 }) 
+                  );
+
 REGISTER_CELL_INFO( SEGMENT, "SEGMENT", "line", 3, 2, 2,
                     AR({ 1, 1 }),
                     AR({ VERTEX, VERTEX }),
                     AR({  0,      // face 0
                           1       // face 1
                     }) );
+
 REGISTER_CELL_INFO( TRIANGLE, "TRIANGLE", "tri", 5, 3, 3,
                     AR({ 2, 2, 2 }),
                     AR({ SEGMENT, SEGMENT, SEGMENT }),
@@ -151,6 +156,7 @@ REGISTER_CELL_INFO( TRIANGLE, "TRIANGLE", "tri", 5, 3, 3,
                           1, 2,   // face 1
                           2, 0    // face 2
                     }) );
+
 REGISTER_CELL_INFO( QUAD, "QUAD", "quad", 9, 4, 4,
                     AR({ 2, 2, 2, 2 }),
                     AR({ SEGMENT, SEGMENT, SEGMENT, SEGMENT }),
@@ -159,6 +165,7 @@ REGISTER_CELL_INFO( QUAD, "QUAD", "quad", 9, 4, 4,
                           2, 3,   // face 2
                           3, 0    // face 3
                     }) );
+
 REGISTER_CELL_INFO( TET, "TET", "tet", 10, 4, 4,
                     AR({ 3, 3, 3, 3 }),
                     AR({ TRIANGLE, TRIANGLE, TRIANGLE, TRIANGLE }),
@@ -167,6 +174,7 @@ REGISTER_CELL_INFO( TET, "TET", "tet", 10, 4, 4,
                           0, 1, 3,   // face 2
                           1, 2, 3    // face 3
                     }) );
+
 REGISTER_CELL_INFO( HEX, "HEX", "hex", 12, 8, 6,
                     AR({ 4, 4, 4, 4, 4, 4 }),
                     AR({ QUAD, QUAD, QUAD, QUAD, QUAD, QUAD }),
@@ -177,6 +185,7 @@ REGISTER_CELL_INFO( HEX, "HEX", "hex", 12, 8, 6,
                           7, 6, 2, 3,   // face 4
                           4, 5, 6, 7    // face 5
                     }) );
+
 REGISTER_CELL_INFO( PRISM, "PRISM", "prism-no-bp", 13, 6, 5,
                     AR({ 3, 4, 4, 4, 3 }),
                     AR({ TRIANGLE, QUAD, QUAD, QUAD, TRIANGLE }),
@@ -186,6 +195,7 @@ REGISTER_CELL_INFO( PRISM, "PRISM", "prism-no-bp", 13, 6, 5,
                           1, 4, 5, 2,   // face 3
                           3, 5, 4       // face 4
                     }) );
+
 REGISTER_CELL_INFO( PYRAMID, "PYRAMID", "pyramid-no-bp", 14, 5, 5,
                     AR({ 4, 3, 3, 3, 3 }),
                     AR({ QUAD, TRIANGLE, TRIANGLE, TRIANGLE, TRIANGLE }),
@@ -204,6 +214,7 @@ REGISTER_CELL_INFO( QUAD9, "QUAD9", "quad9-no-bp", 28, 9, 4,
                           2, 3,   // face 2
                           3, 0    // face 3
                     }) );
+
 REGISTER_CELL_INFO( HEX27, "HEX27", "hex27-no-bp", 29, 27, 6,
                     AR({ 9, 9, 9, 9, 9, 9 }),
                     AR({ QUAD9, QUAD9, QUAD9, QUAD9, QUAD9, QUAD9 }),

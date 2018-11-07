@@ -171,6 +171,26 @@ public:
     m_values = new Array< IndexType >( internal::ZERO, m_stride, ID_capacity );
   }
 
+  /*!
+   * \brief Constructs an empty ConnectivityArray instance.
+   *
+   * \param [in] stride the number of values associated with each ID.
+   * \param [in] ID_capacity the number of IDs to allocate space for.
+   *
+   * \post getIDCapacity() >= getNumberOfIDs()
+   * \post getNumberOfIDs() == 0
+   * \post getIDType() == UNDEFINED_CELL
+   */
+  ConnectivityArray( IndexType stride, IndexType ID_capacity=USE_DEFAULT ) :
+    m_cell_type( UNDEFINED_CELL ),
+    m_stride( stride ),
+    m_values( nullptr )
+  {
+    SLIC_ERROR_IF( stride <= 0, "Stride must be greater than zero." );
+
+    m_values = new Array< IndexType >( internal::ZERO, m_stride, ID_capacity );
+  }
+
 /// @}
 
 /// \name External Storage ConnectivityArray Constructors
@@ -210,6 +230,34 @@ public:
     m_values = new Array< IndexType >( values, n_IDs, m_stride, ID_capacity );
   }
 
+  /*!
+   * \brief External constructor which creates a ConnectivityArray instance to
+   *  wrap the given pointer.
+   *
+   * \param [in] stride the number of values associated with each ID.
+   * \param [in] n_IDs the number of IDs.
+   * \param [in] values the array of values of length at least
+   *  ID_capacity * getCellInfo( cell_type ).num_nodes.
+   * \param [in] ID_capacity the capacity of the values array in terms of IDs.
+   *  If not specified the capacity is set to n_IDs.
+   *
+   * \pre cell_type != UNDEFINED_CELL && cell_type < NUM_CELL_TYPES
+   * \pre n_IDs >= 0
+   * \pre values != nullptr
+   *
+   * \post getIDCapacity() >= getNumberOfIDs()
+   * \post getNumberOfIDs() == n_IDs
+   * \post getIDType() == cell_type
+   */
+  ConnectivityArray( IndexType stride, IndexType n_IDs, IndexType* values,
+                     IndexType ID_capacity=USE_DEFAULT ) :
+    m_cell_type( UNDEFINED_CELL ),
+    m_stride( stride ),
+    m_values( nullptr )
+  {
+    m_values = new Array< IndexType >( values, n_IDs, m_stride, ID_capacity );
+  }
+
 /// @}
 
 /// \name Sidre Storage ConnectivityArray Constructors
@@ -235,12 +283,15 @@ public:
     m_values( nullptr )
   {
     m_cell_type = internal::initializeFromGroup( group, &m_values );
+    m_stride = internal::getStride( group );
 
-    SLIC_ERROR_IF( m_cell_type == UNDEFINED_CELL,
-                   "Cannot have an undefined cell type." );
+    if ( m_cell_type != UNDEFINED_CELL )
+    {
+      IndexType cell_stride = getCellInfo( m_cell_type ).num_nodes;
+      SLIC_ERROR_IF( cell_stride != m_stride, "Stride mismatch" );
+    }
 
-
-    m_stride = cell_info[ static_cast< int >( m_cell_type ) ].num_nodes;
+    SLIC_ERROR_IF( m_stride <= 0, "Stride must be greater than zero." );
 
     SLIC_ERROR_IF(
       m_values->numComponents() != m_stride,
@@ -269,14 +320,51 @@ public:
                      const std::string& coordset,
                      IndexType ID_capacity=USE_DEFAULT ) :
     m_cell_type( cell_type ),
-    m_stride( cell_info[ static_cast< int >( m_cell_type ) ].num_nodes ),
+    m_stride( getCellInfo( m_cell_type ).num_nodes ),
     m_values( nullptr )
   {
-    SLIC_ERROR_IF( m_cell_type == UNDEFINED_CELL,
+    SLIC_ERROR_IF( m_cell_type == UNDEFINED_CELL, 
                    "Cannot have an undefined cell type." );
 
+    internal::initializeGroup( group, coordset, m_cell_type );
+    internal::setStride( group, m_stride );
+
+    sidre::Group* elems_group = group->getGroup( "elements" );
+    SLIC_ASSERT( elems_group != nullptr );
+
+    sidre::View* connec_view = elems_group->getView( "connectivity" );
+    m_values = new Array< IndexType >( connec_view, 0, m_stride, ID_capacity );
+    SLIC_ASSERT( m_values != nullptr );
+  }
+
+  /*!
+   * \brief Creates an empty ConnectivityArray instance from an empty
+   *  sidre::Group.
+   *
+   * \param [in] stride the number of values associated with each ID.
+   * \param [in] group the sidre::Group to create the ConnectivityArray from.
+   * \param [in] coordset the name of the Blueprint coordinate set to associate
+   *  this ConnectivityArray with.
+   * \param [in] ID_capacity the number of IDs to allocate space for.
+   *
+   * \pre cell_type != UNDEFINED_CELL && cell_type < NUM_CELL_TYPES
+   * \pre group != nullptr
+   * \pre group->getNumGroups() == group->getNumViews() == 0
+   *
+   * \post getIDCapacity() >= getNumberOfIDs()
+   * \post getIDType() == cell_type
+   */
+  ConnectivityArray( IndexType stride, sidre::Group* group,
+                     const std::string& coordset,
+                     IndexType ID_capacity=USE_DEFAULT ) :
+    m_cell_type( UNDEFINED_CELL ),
+    m_stride( stride ),
+    m_values( nullptr )
+  {
+    SLIC_ERROR_IF( stride <= 0, "Stride must be greater than zero." );
 
     internal::initializeGroup( group, coordset, m_cell_type );
+    internal::setStride( group, m_stride );
 
     sidre::Group* elems_group = group->getGroup( "elements" );
     SLIC_ASSERT( elems_group != nullptr );

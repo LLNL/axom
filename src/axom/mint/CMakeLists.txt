@@ -44,6 +44,7 @@ set( mint_headers
     execution/policy.hpp
     execution/internal/for_all_cells.hpp
     execution/internal/for_all_nodes.hpp
+    execution/internal/for_all_faces.hpp
 
     ## FEM classes
     fem/FEBasis.hpp

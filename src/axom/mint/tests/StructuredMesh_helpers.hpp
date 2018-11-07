@@ -421,19 +421,17 @@ inline void check_topology2D( const StructuredMesh* m )
       /* Check the boundaries. */
       if ( i == 0 )
       {
-        EXPECT_EQ( cell0, -1 );
+        EXPECT_EQ( cell0, m->getCellLinearIndex( i, j ) );
+        EXPECT_EQ( cell1, -1 );
       }
-      else
+      else if ( i == m->getCellResolution( 0 ) )
       {
         EXPECT_EQ( cell0, m->getCellLinearIndex( i - 1, j ) );
-      }
-
-      if ( i == m->getNodeResolution( 0 ) - 1 )
-      {
         EXPECT_EQ( cell1, -1 );
       }
       else
       {
+        EXPECT_EQ( cell0, m->getCellLinearIndex( i - 1, j ) );
         EXPECT_EQ( cell1, m->getCellLinearIndex( i, j ) );
       }
     }
@@ -453,19 +451,17 @@ inline void check_topology2D( const StructuredMesh* m )
       /* Check the boundaries. */
       if ( j == 0 )
       {
-        EXPECT_EQ( cell0, -1 );
+        EXPECT_EQ( cell0, m->getCellLinearIndex( i, j ) );
+        EXPECT_EQ( cell1, -1 );
       }
-      else
+      else if ( j == m->getCellResolution( 1 ) )
       {
         EXPECT_EQ( cell0, m->getCellLinearIndex( i, j - 1 ) );
-      }
-
-      if ( j == m->getNodeResolution( 1 ) - 1 )
-      {
         EXPECT_EQ( cell1, -1 );
       }
       else
       {
+        EXPECT_EQ( cell0, m->getCellLinearIndex( i, j - 1 ) );
         EXPECT_EQ( cell1, m->getCellLinearIndex( i, j ) );
       }
     }
@@ -637,19 +633,17 @@ inline void check_topology3D( const StructuredMesh* m )
         /* Check the boundaries. */
         if ( i == 0 )
         {
-          EXPECT_EQ( cell0, -1 );
+          EXPECT_EQ( cell0, m->getCellLinearIndex( i, j, k ) );
+          EXPECT_EQ( cell1, -1 );
         }
-        else
+        else if ( i == m->getCellResolution( 0 ) )
         {
           EXPECT_EQ( cell0, m->getCellLinearIndex( i - 1, j, k ) );
-        }
-
-        if ( i == m->getNodeResolution( 0 ) - 1 )
-        {
           EXPECT_EQ( cell1, -1 );
         }
         else
         {
+          EXPECT_EQ( cell0, m->getCellLinearIndex( i - 1, j, k ) );
           EXPECT_EQ( cell1, m->getCellLinearIndex( i, j, k ) );
         }
       }
@@ -672,19 +666,17 @@ inline void check_topology3D( const StructuredMesh* m )
         /* Check the boundaries. */
         if ( j == 0 )
         {
-          EXPECT_EQ( cell0, -1 );
+          EXPECT_EQ( cell0, m->getCellLinearIndex( i, j, k ) );
+          EXPECT_EQ( cell1, -1 );
         }
-        else
+        else if ( j == m->getCellResolution( 1 ) )
         {
           EXPECT_EQ( cell0, m->getCellLinearIndex( i, j - 1, k ) );
-        }
-
-        if ( j == m->getNodeResolution( 1 ) - 1 )
-        {
           EXPECT_EQ( cell1, -1 );
         }
         else
         {
+          EXPECT_EQ( cell0, m->getCellLinearIndex( i, j - 1, k ) );
           EXPECT_EQ( cell1, m->getCellLinearIndex( i, j, k ) );
         }
       }
@@ -707,19 +699,17 @@ inline void check_topology3D( const StructuredMesh* m )
         /* Check the boundaries. */
         if ( k == 0 )
         {
-          EXPECT_EQ( cell0, -1 );
+          EXPECT_EQ( cell0, m->getCellLinearIndex( i, j, k ) );
+          EXPECT_EQ( cell1, -1 );
         }
-        else
+        else if ( k == m->getCellResolution( 2 ) )
         {
           EXPECT_EQ( cell0, m->getCellLinearIndex( i, j, k - 1 ) );
-        }
-
-        if ( k == m->getNodeResolution( 2 ) - 1 )
-        {
           EXPECT_EQ( cell1, -1 );
         }
         else
         {
+          EXPECT_EQ( cell0, m->getCellLinearIndex( i, j, k - 1 ) );
           EXPECT_EQ( cell1, m->getCellLinearIndex( i, j, k ) );
         }
       }

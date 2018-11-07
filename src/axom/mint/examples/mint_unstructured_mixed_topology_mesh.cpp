@@ -36,7 +36,7 @@ using axom::slic::UnitTestLogger;
 
 inline bool appendQuad( mint::IndexType i, mint::IndexType j )
 {
-  return (i % 2 == 0 && j % 2 == 0) || ( i % 2 == 1 && j % 2 == 1);
+  return (i + j) % 2 == 0;
 }
 
 

@@ -91,9 +91,6 @@ public:
                                         USE_DEFAULT) ? USE_DEFAULT : ID_capacity
                                        + 1 ) )
   {
-    SLIC_ERROR_IF( m_cell_type == UNDEFINED_CELL,
-                   "Cannot have an undefined cell type." );
-
     IndexType new_value_capacity =
       internal::calcValueCapacity( 0, getIDCapacity(), 0, value_capacity );
     m_values = new Array< IndexType >( internal::ZERO, 1, new_value_capacity );
@@ -142,10 +139,6 @@ public:
     m_values( nullptr ),
     m_offsets( nullptr )
   {
-    SLIC_ERROR_IF( m_cell_type == UNDEFINED_CELL,
-                   "Cannot have an undefined cell type." );
-
-
     SLIC_ERROR_IF( n_IDs < 0, "Number of IDs must be positive, not " << n_IDs
                                                                      << "." );
     m_offsets = new Array< IndexType >( offsets, n_IDs + 1, 1,
@@ -191,8 +184,6 @@ public:
   {
     m_cell_type = internal::initializeFromGroup( group, &m_values, &m_offsets );
 
-    SLIC_ERROR_IF( m_cell_type == UNDEFINED_CELL,
-                   "Cannot have an undefined cell type." );
     SLIC_ERROR_IF( m_values->numComponents() != 1,
                    "values array must have only 1 component not " <<
                    m_values->numComponents() << "." );
@@ -225,9 +216,6 @@ public:
     m_values( nullptr ),
     m_offsets( nullptr )
   {
-    SLIC_ERROR_IF( m_cell_type == UNDEFINED_CELL,
-                   "Cannot have an undefined cell type." );
-
     bool create_offsets = true;
     internal::initializeGroup( group, coordset, cell_type, create_offsets );
 
@@ -247,8 +235,6 @@ public:
     sidre::View* connec_view = elems_group->getView( "connectivity" );
     m_values = new Array< IndexType >( connec_view, 0, 1, new_value_capacity );
     SLIC_ASSERT( m_values != nullptr );
-
-
   }
 
 #endif
@@ -306,7 +292,7 @@ public:
    * \param [in] value_size the number of values per ID to resize the space for.
    *
    * \note if value_size is not specified, then, if this ConnectivityArray is
-   *  empty, space is allocated for MAX_NUM_NODES values for each ID. Otherwise,
+   *  empty, space is allocated for MAX_CELL_NODES values for each ID. Otherwise,
    *  space is allocated based on the average number of values per ID.
    */
   void resize( IndexType ID_size, IndexType value_size=USE_DEFAULT )
@@ -325,7 +311,7 @@ public:
    * \param [in] value_capacity the number of values to reserve space for.
    *
    * \note if value_capacity is not specified then if this ConnectivityArray is
-   *  empty then MAX_NUM_NODES values are reserved for each ID. Otherwise the
+   *  empty then MAX_CELL_NODES values are reserved for each ID. Otherwise the
    *  average number of values per ID are reserved for each ID.
    *
    * \post getKeyCapacity() >= ID_capacity

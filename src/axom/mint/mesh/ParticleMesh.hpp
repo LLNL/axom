@@ -259,6 +259,33 @@ public:
   IndexType getCellNodeIDs( IndexType cellID,
                             IndexType* cell ) const final override;
 
+  /*!
+   * \brief Return the number of faces associated with the given cell. For the
+   *  ParticleMesh this is always zero.
+   *
+   * \param [in] cellID the ID of the cell in question.
+   */
+  virtual IndexType getNumberOfCellFaces( IndexType AXOM_NOT_USED(cellID)=0 )
+  const final override
+  { return 0; }
+
+  /*!
+   * \brief Populates the given buffer with the IDs of the faces of the given
+   *  cell and returns the number of faces. Since the ParticleMesh has no faces
+   *  this method errors out.
+   * 
+   * \param [in] cellID the ID of the cellID in question.
+   * \param [out] faces buffer to populate with the face IDs. Must be of length
+   *  at least getNumberOfCellFaces( cellID ).
+   */
+  virtual IndexType getCellFaceIDs( IndexType AXOM_NOT_USED(cellID),
+                                    IndexType* AXOM_NOT_USED(faces) )
+  const final override
+  { 
+    SLIC_ERROR( "ParticleMesh does not implement this method." );
+    return 0;
+  }
+
 /// @}
 
 /// \name Nodes
@@ -320,10 +347,71 @@ public:
   { return 0; }
 
   /*!
-   * \brief Return the capacity for faces.
+   * \brief Return the type of the given face.
+   *
+   * \param [in] faceID the ID of the face in question.
+   * 
+   * \note The particle mesh does not have any faces so this call errors out.
    */
-  virtual IndexType getFaceCapacity() const final override
-  { return 0; }
+  virtual CellType getFaceType( IndexType AXOM_NOT_USED(faceID) ) 
+  const final override
+  { 
+    SLIC_ERROR( "ParticleMesh does not implement this method." );
+    return UNDEFINED_CELL;
+  }
+
+  /*!
+   * \brief Return the number of nodes associated with the given face.
+   *
+   * \param [in] faceID the ID of the face in question.
+   * 
+   * \note The particle mesh does not have any faces so this call errors out.
+   */
+  virtual IndexType
+  getNumberOfFaceNodes( IndexType AXOM_NOT_USED(faceID) ) const final override
+  { 
+    SLIC_ERROR( "ParticleMesh does not implement this method." );
+    return -1;
+  }
+
+  /*!
+   * \brief Copy the IDs of the nodes that compose the given face into the
+   *  provided buffer.
+   *
+   * \param [in] faceID the ID of the face in question.
+   * \param [out] nodes the buffer into which the node IDs are copied, must
+   *  be of length at least getNumberOfFaceNodes().
+   *
+   * \return The number of nodes for the given face, which is zero for the
+   *  ParticleMesh.
+   * 
+   * \note The particle mesh does not have any faces so this call errors out.
+   */
+  virtual IndexType getFaceNodeIDs( IndexType AXOM_NOT_USED(faceID),
+                                    IndexType* AXOM_NOT_USED(nodes) ) const
+  final override
+  { 
+    SLIC_ERROR( "ParticleMesh does not implement this method." );
+    return -1;
+  }
+
+  /*!
+   * \brief Copy the IDs of the cells adjacent to the given face into the
+   *  provided indices.
+   *
+   * \param [in] faceID the ID of the face in question.
+   * \param [out] cellIDOne the ID of the first cell.
+   * \param [out] cellIDTwo the ID of the second cell.
+   *
+   * \note The particle mesh does not have any faces so this call errors out.
+   */
+  virtual void getFaceCellIDs( IndexType AXOM_NOT_USED(faceID),
+                               IndexType& AXOM_NOT_USED(cellIDOne),
+                               IndexType& AXOM_NOT_USED(cellIDTwo) ) const
+  final override
+  {
+    SLIC_ERROR( "ParticleMesh does not implement this method." );
+  }
 
 /// @}
 

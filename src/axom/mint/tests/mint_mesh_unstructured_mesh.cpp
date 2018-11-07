@@ -350,8 +350,8 @@ void deleteExternalMesh( UnstructuredMesh< TOPO >*& mesh )
     z = mesh->getCoordinateArray( Z_COORDINATE );
   }
 
-  const IndexType* connectivity = mesh->getCellConnectivityArray();
-  const IndexType* offsets = mesh->getCellOffsetsArray();
+  const IndexType* connectivity = mesh->getCellNodesArray();
+  const IndexType* offsets = mesh->getCellNodesOffsetsArray();
   const CellType* types = mesh->getCellTypesArray();
 
   double* f1 = nullptr;
@@ -410,7 +410,7 @@ void deleteAndDuplicateExternalMesh( UnstructuredMesh< SINGLE_SHAPE >*& mesh )
   const CellType cell_type = mesh->getCellType();
   const IndexType n_cells = mesh->getNumberOfCells();
   const IndexType cell_capacity = mesh->getCellCapacity();
-  IndexType* connectivity = mesh->getCellConnectivityArray();
+  IndexType* connectivity = mesh->getCellNodesArray();
   const IndexType n_nodes = mesh->getNumberOfNodes();
   const IndexType node_capacity = mesh->getNodeCapacity();
   double* x = mesh->getCoordinateArray( X_COORDINATE );
@@ -459,7 +459,7 @@ void deleteAndDuplicateExternalMesh( UnstructuredMesh< SINGLE_SHAPE >*& mesh )
   EXPECT_EQ( cell_type, mesh->getCellType() );
   EXPECT_EQ( n_cells, mesh->getNumberOfCells() );
   EXPECT_EQ( cell_capacity, mesh->getCellCapacity() );
-  EXPECT_EQ( connectivity, mesh->getCellConnectivityArray() );
+  EXPECT_EQ( connectivity, mesh->getCellNodesArray() );
   EXPECT_EQ( n_nodes, mesh->getNumberOfNodes() );
   EXPECT_EQ( node_capacity, mesh->getNodeCapacity() );
   EXPECT_EQ( x, mesh->getCoordinateArray( X_COORDINATE ) );
@@ -481,9 +481,9 @@ void deleteAndDuplicateExternalMesh( UnstructuredMesh< MIXED_SHAPE >*& mesh )
   const CellType cell_type = mesh->getCellType();
   const IndexType n_cells = mesh->getNumberOfCells();
   const IndexType cell_capacity = mesh->getCellCapacity();
-  const IndexType connec_capacity = mesh->getCellConnectivityCapacity();
-  IndexType* connectivity = mesh->getCellConnectivityArray();
-  IndexType* offsets = const_cast< IndexType* >( mesh->getCellOffsetsArray() );
+  const IndexType connec_capacity = mesh->getCellNodesCapacity();
+  IndexType* connectivity = mesh->getCellNodesArray();
+  IndexType* offsets = const_cast< IndexType* >( mesh->getCellNodesOffsetsArray() );
   CellType* types = const_cast< CellType* >( mesh->getCellTypesArray() );
   const IndexType n_nodes = mesh->getNumberOfNodes();
   const IndexType node_capacity = mesh->getNodeCapacity();
@@ -533,8 +533,8 @@ void deleteAndDuplicateExternalMesh( UnstructuredMesh< MIXED_SHAPE >*& mesh )
   EXPECT_EQ( cell_type, mesh->getCellType() );
   EXPECT_EQ( n_cells, mesh->getNumberOfCells() );
   EXPECT_EQ( cell_capacity, mesh->getCellCapacity() );
-  EXPECT_EQ( connectivity, mesh->getCellConnectivityArray() );
-  EXPECT_EQ( offsets, mesh->getCellOffsetsArray() );
+  EXPECT_EQ( connectivity, mesh->getCellNodesArray() );
+  EXPECT_EQ( offsets, mesh->getCellNodesOffsetsArray() );
   EXPECT_EQ( types, mesh->getCellTypesArray() );
   EXPECT_EQ( n_nodes, mesh->getNumberOfNodes() );
   EXPECT_EQ( node_capacity, mesh->getNodeCapacity() );
@@ -867,12 +867,8 @@ void createMeshesForFace( UnstructuredMesh< SINGLE_SHAPE > *& test_mesh,
                        (IndexType)(Z_RES_FACTOR * resolution) );
   }
 
-  Mesh * the_mesh = nullptr;
-  create_mesh<UNSTRUCTURED_MESH>(source_mesh, the_mesh);
-  test_mesh =
-    static_cast<UnstructuredMesh< SINGLE_SHAPE >* >(the_mesh);
-
-  test_mesh->initializeFaceConnectivity();
+  Mesh * the_mesh = create_mesh<UNSTRUCTURED_MESH, SINGLE_SHAPE>(*source_mesh);
+  test_mesh = static_cast< UnstructuredMesh< SINGLE_SHAPE >* >(the_mesh);
 }
 
 
@@ -1174,7 +1170,7 @@ void append_nodes( UnstructuredMesh< TOPO >* mesh, IndexType n_nodes )
  */
 IndexType getCellConnecValue( IndexType cur_cell, IndexType vertex )
 {
-  return cur_cell * MAX_NUM_NODES + vertex;
+  return cur_cell * MAX_CELL_NODES + vertex;
 }
 
 /*!
@@ -1186,7 +1182,7 @@ IndexType getCellConnecValue( IndexType cur_cell, IndexType vertex )
 IndexType getNewCellConnecValue( IndexType cur_n_cells,
                                  IndexType vertex )
 {
-  return (cur_n_cells * MAX_NUM_NODES + vertex) * vertex;
+  return (cur_n_cells * MAX_CELL_NODES + vertex) * vertex;
 }
 
 /*!
@@ -1239,7 +1235,7 @@ void check_append_cells( const UnstructuredMesh< SINGLE_SHAPE >* mesh,
   const int nodes_per_cell = getCellInfo( type ).num_nodes;
 
   /* Check using pointers */
-  const IndexType* connectivity = mesh->getCellConnectivityArray();
+  const IndexType* connectivity = mesh->getCellNodesArray();
   for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
     EXPECT_EQ( type, mesh->getCellType( i ) );
@@ -1253,7 +1249,7 @@ void check_append_cells( const UnstructuredMesh< SINGLE_SHAPE >* mesh,
   }
 
   /* Check using getCell */
-  IndexType cell[ mint::MAX_NUM_NODES ];
+  IndexType cell[ mint::MAX_CELL_NODES ];
   for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
     mesh->getCellNodeIDs( i, cell );
@@ -1286,8 +1282,8 @@ void check_append_cells( const UnstructuredMesh< MIXED_SHAPE >* mesh,
   IndexType n_cells = mesh->getNumberOfCells();
 
   /* Check using pointers */
-  const IndexType* connectivity = mesh->getCellConnectivityArray();
-  const IndexType* offsets = mesh->getCellOffsetsArray();
+  const IndexType* connectivity = mesh->getCellNodesArray();
+  const IndexType* offsets = mesh->getCellNodesOffsetsArray();
   const CellType* types = mesh->getCellTypesArray();
   for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
@@ -1307,7 +1303,7 @@ void check_append_cells( const UnstructuredMesh< MIXED_SHAPE >* mesh,
   }
 
   /* Check using getCell */
-  IndexType cell[ MAX_NUM_NODES ];
+  IndexType cell[ MAX_CELL_NODES ];
   for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
     mesh->getCellNodeIDs( i, cell );
@@ -1383,14 +1379,14 @@ void append_cell_single( UnstructuredMesh< SINGLE_SHAPE >* mesh,
   const IndexType nodes_per_cell = getCellInfo( mesh->getCellType() ).num_nodes;
   FieldVariable< double >* fv = getFieldVar( mesh, CELL_CENTERED );
 
-  IndexType connec[ mint::MAX_NUM_NODES ];
+  IndexType connec[ mint::MAX_CELL_NODES ];
   for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
     getCellConnec( cur_n_cells, nodes_per_cell, connec );
     mesh->appendCell( connec );
     EXPECT_EQ( ++cur_n_cells, mesh->getNumberOfCells() );
     EXPECT_EQ( cur_n_cells * nodes_per_cell,
-               mesh->getCellConnectivitySize() );
+               mesh->getCellNodesSize() );
     setFieldTuple( fv, cur_n_cells, cur_n_cells - 1 );
   }
 }
@@ -1399,10 +1395,10 @@ void append_cell_single( UnstructuredMesh< MIXED_SHAPE >* mesh,
                          IndexType n_cells )
 {
   IndexType cur_n_cells = mesh->getNumberOfCells();
-  IndexType cur_connec_size = mesh->getCellConnectivitySize();
+  IndexType cur_connec_size = mesh->getCellNodesSize();
   FieldVariable< double >* fv = getFieldVar( mesh, CELL_CENTERED );
 
-  IndexType connec[ mint::MAX_NUM_NODES ];
+  IndexType connec[ mint::MAX_CELL_NODES ];
   CellType type;
   for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
@@ -1410,7 +1406,7 @@ void append_cell_single( UnstructuredMesh< MIXED_SHAPE >* mesh,
     cur_connec_size += getCellInfo( type ).num_nodes;
     mesh->appendCell( connec, type );
     EXPECT_EQ( ++cur_n_cells, mesh->getNumberOfCells() );
-    EXPECT_EQ( cur_connec_size, mesh->getCellConnectivitySize() );
+    EXPECT_EQ( cur_connec_size, mesh->getCellNodesSize() );
     setFieldTuple( fv, cur_n_cells, cur_n_cells - 1 );
   }
 }
@@ -1429,7 +1425,7 @@ void append_cell_multiple( UnstructuredMesh< SINGLE_SHAPE >* mesh,
                            IndexType n_cells )
 {
   IndexType cur_n_cells = mesh->getNumberOfCells();
-  IndexType cur_connec_size = mesh->getCellConnectivitySize();
+  IndexType cur_connec_size = mesh->getCellNodesSize();
   const IndexType nodes_per_cell = mesh->getNumberOfCellNodes();
   IndexType* connectivity = new IndexType[ nodes_per_cell * n_cells ];
   FieldVariable< double >* fv = getFieldVar( mesh, CELL_CENTERED );
@@ -1444,7 +1440,7 @@ void append_cell_multiple( UnstructuredMesh< SINGLE_SHAPE >* mesh,
   cur_n_cells += n_cells;
   cur_connec_size += n_cells * nodes_per_cell;
   EXPECT_EQ( cur_n_cells, mesh->getNumberOfCells() );
-  EXPECT_EQ( cur_connec_size, mesh->getCellConnectivitySize() );
+  EXPECT_EQ( cur_connec_size, mesh->getCellNodesSize() );
 
   for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
@@ -1459,7 +1455,7 @@ void append_cell_multiple( UnstructuredMesh< MIXED_SHAPE >* mesh,
                            IndexType n_cells )
 {
   IndexType cur_n_cells = mesh->getNumberOfCells();
-  IndexType cur_connec_size = mesh->getCellConnectivitySize();
+  IndexType cur_connec_size = mesh->getCellNodesSize();
   IndexType* connectivity = new IndexType[ getConnectivitySize( n_cells ) ];
   IndexType* offsets = new IndexType[ n_cells + 1 ];
   CellType* types = new CellType[ n_cells ];
@@ -1477,7 +1473,7 @@ void append_cell_multiple( UnstructuredMesh< MIXED_SHAPE >* mesh,
   cur_n_cells += n_cells;
   cur_connec_size += getConnectivitySize( n_cells );
   EXPECT_EQ( cur_n_cells, mesh->getNumberOfCells() );
-  EXPECT_EQ( cur_connec_size, mesh->getCellConnectivitySize() );
+  EXPECT_EQ( cur_connec_size, mesh->getCellNodesSize() );
 
   for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
@@ -1814,13 +1810,13 @@ void insert_cell_single( UnstructuredMesh< SINGLE_SHAPE >* mesh,
   const IndexType nodes_per_cell = mesh->getNumberOfCellNodes();
   FieldVariable< double >* fv = getFieldVar( mesh, CELL_CENTERED );
 
-  IndexType connec[ mint::MAX_NUM_NODES ];
+  IndexType connec[ mint::MAX_CELL_NODES ];
   getCellConnec( final_pos, nodes_per_cell, connec );
 
   mesh->insertCell( connec, pos );
   EXPECT_EQ( ++cur_n_cells, mesh->getNumberOfCells() );
   EXPECT_EQ( cur_n_cells * nodes_per_cell,
-             mesh->getCellConnectivitySize() );
+             mesh->getCellNodesSize() );
   setFieldTuple( fv, cur_n_cells, pos, final_pos );
 }
 
@@ -1828,16 +1824,16 @@ void insert_cell_single( UnstructuredMesh< MIXED_SHAPE >* mesh,
                          IndexType pos, IndexType final_pos )
 {
   IndexType cur_n_cells = mesh->getNumberOfCells();
-  IndexType cur_connec_size = mesh->getCellConnectivitySize();
+  IndexType cur_connec_size = mesh->getCellNodesSize();
   FieldVariable< double >* fv = getFieldVar( mesh, CELL_CENTERED );
 
-  IndexType connec[ mint::MAX_NUM_NODES ];
+  IndexType connec[ mint::MAX_CELL_NODES ];
   CellType type = getCellConnec( final_pos, connec );
   cur_connec_size += getCellInfo( type ).num_nodes;
 
   mesh->insertCell( connec, pos, type );
   EXPECT_EQ( ++cur_n_cells, mesh->getNumberOfCells() );
-  EXPECT_EQ( cur_connec_size, mesh->getCellConnectivitySize() );
+  EXPECT_EQ( cur_connec_size, mesh->getCellNodesSize() );
   setFieldTuple( fv, cur_n_cells, pos, final_pos );
 }
 
@@ -1859,7 +1855,7 @@ void insert_cell_multiple( UnstructuredMesh< SINGLE_SHAPE >* mesh,
                            IndexType final_pos )
 {
   IndexType cur_n_cells = mesh->getNumberOfCells();
-  IndexType cur_connec_size = mesh->getCellConnectivitySize();
+  IndexType cur_connec_size = mesh->getCellNodesSize();
   const IndexType nodes_per_cell = mesh->getNumberOfCellNodes();
   IndexType* connectivity = new IndexType[ nodes_per_cell * n_cells ];
   FieldVariable< double >* fv = getFieldVar( mesh, CELL_CENTERED );
@@ -1874,7 +1870,7 @@ void insert_cell_multiple( UnstructuredMesh< SINGLE_SHAPE >* mesh,
   cur_n_cells += n_cells;
   cur_connec_size += n_cells * nodes_per_cell;
   EXPECT_EQ( cur_n_cells, mesh->getNumberOfCells() );
-  EXPECT_EQ( cur_connec_size, mesh->getCellConnectivitySize() );
+  EXPECT_EQ( cur_connec_size, mesh->getCellNodesSize() );
 
   for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
@@ -1889,7 +1885,7 @@ void insert_cell_multiple( UnstructuredMesh< MIXED_SHAPE >* mesh,
                            IndexType final_pos )
 {
   IndexType cur_n_cells = mesh->getNumberOfCells();
-  IndexType cur_connec_size = mesh->getCellConnectivitySize();
+  IndexType cur_connec_size = mesh->getCellNodesSize();
   IndexType* connectivity = new IndexType[ getConnectivitySize( n_cells ) ];
   IndexType* offsets = new IndexType[ n_cells + 1 ];
   CellType* types = new CellType[ n_cells ];
@@ -1907,7 +1903,7 @@ void insert_cell_multiple( UnstructuredMesh< MIXED_SHAPE >* mesh,
   cur_n_cells += n_cells;
   cur_connec_size += getConnectivitySize( n_cells );
   EXPECT_EQ( cur_n_cells, mesh->getNumberOfCells() );
-  EXPECT_EQ( cur_connec_size, mesh->getCellConnectivitySize() );
+  EXPECT_EQ( cur_connec_size, mesh->getCellNodesSize() );
 
   for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
@@ -2186,10 +2182,10 @@ void resize_cells( UnstructuredMesh< TOPO >* mesh )
 
   IndexType n_cells = mesh->getNumberOfCells();
   IndexType cell_capacity = mesh->getCellCapacity();
-  IndexType connec_capacity = mesh->getCellConnectivityCapacity();
+  IndexType connec_capacity = mesh->getCellNodesCapacity();
   double resize_ratio = mesh->getCellResizeRatio();
-  const IndexType* connectivity = mesh->getCellConnectivityArray();
-  const IndexType* offsets = mesh->getCellOffsetsArray();
+  const IndexType* connectivity = mesh->getCellNodesArray();
+  const IndexType* offsets = mesh->getCellNodesOffsetsArray();
   const CellType* types = mesh->getCellTypesArray();
 
   /* Fill up the array */
@@ -2197,29 +2193,29 @@ void resize_cells( UnstructuredMesh< TOPO >* mesh )
   n_cells = cell_capacity;
   ASSERT_EQ( n_cells, mesh->getNumberOfCells() );
   ASSERT_EQ( cell_capacity, mesh->getCellCapacity() );
-  EXPECT_EQ( offsets, mesh->getCellOffsetsArray() );
+  EXPECT_EQ( offsets, mesh->getCellNodesOffsetsArray() );
   EXPECT_EQ( types, mesh->getCellTypesArray() );
-  if ( connec_capacity == mesh->getCellConnectivityCapacity() )
+  if ( connec_capacity == mesh->getCellNodesCapacity() )
   {
-    EXPECT_EQ( connectivity, mesh->getCellConnectivityArray() );
+    EXPECT_EQ( connectivity, mesh->getCellNodesArray() );
   }
   else
   {
-    connec_capacity = mesh->getCellConnectivityCapacity();
+    connec_capacity = mesh->getCellNodesCapacity();
   }
 
   /* Append one more, should trigger a resize. */
   append_cell_single( mesh, 1 );
   n_cells++;
   cell_capacity = n_cells * resize_ratio + 0.5;
-  connec_capacity = mesh->getCellConnectivityCapacity();
+  connec_capacity = mesh->getCellNodesCapacity();
   ASSERT_EQ( n_cells, mesh->getNumberOfCells() );
   ASSERT_EQ( cell_capacity, mesh->getCellCapacity() );
 
   /* Shrink. */
   mesh->shrinkCells();
   cell_capacity = n_cells;
-  connec_capacity = mesh->getCellConnectivityCapacity();
+  connec_capacity = mesh->getCellNodesCapacity();
   ASSERT_EQ( n_cells, mesh->getNumberOfCells() );
   ASSERT_EQ( cell_capacity, mesh->getCellCapacity() );
 
@@ -2235,23 +2231,23 @@ void resize_cells( UnstructuredMesh< TOPO >* mesh )
   /* Reserve 100 more than the current capacity and fill up the array. */
   cell_capacity += 100;
   mesh->reserveCells( cell_capacity );
-  connec_capacity = mesh->getCellConnectivityCapacity();
-  connectivity = mesh->getCellConnectivityArray();
-  offsets = mesh->getCellOffsetsArray();
+  connec_capacity = mesh->getCellNodesCapacity();
+  connectivity = mesh->getCellNodesArray();
+  offsets = mesh->getCellNodesOffsetsArray();
   types = mesh->getCellTypesArray();
   append_cell_multiple( mesh, cell_capacity - n_cells );
   n_cells = cell_capacity;
   ASSERT_EQ( n_cells, mesh->getNumberOfCells() );
   ASSERT_EQ( cell_capacity, mesh->getCellCapacity() );
-  EXPECT_EQ( offsets, mesh->getCellOffsetsArray() );
+  EXPECT_EQ( offsets, mesh->getCellNodesOffsetsArray() );
   EXPECT_EQ( types, mesh->getCellTypesArray() );
-  if ( connec_capacity == mesh->getCellConnectivityCapacity() )
+  if ( connec_capacity == mesh->getCellNodesCapacity() )
   {
-    EXPECT_EQ( connectivity, mesh->getCellConnectivityArray() );
+    EXPECT_EQ( connectivity, mesh->getCellNodesArray() );
   }
   else
   {
-    connec_capacity = mesh->getCellConnectivityCapacity();
+    connec_capacity = mesh->getCellNodesCapacity();
   }
 
   /* Set the resize ratio to 1 and append ten cells, should trigger a resize. */
@@ -3114,7 +3110,7 @@ TEST( mint_mesh_unstructured_mesh, resize_mesh_single_topology )
   EXPECT_EQ( mesh.getNumberOfNodes(), 0 );
   EXPECT_EQ( mesh.getNumberOfCells(), 0 );
   EXPECT_FALSE( mesh.hasMixedCellTypes() );
-  EXPECT_TRUE( mesh.getCellOffsetsArray() == nullptr );
+  EXPECT_TRUE( mesh.getCellNodesOffsetsArray() == nullptr );
   EXPECT_TRUE( mesh.getCellTypesArray() == nullptr );
 
   mesh.resize( N_NODES, N_CELLS );
@@ -3136,7 +3132,7 @@ TEST( mint_mesh_unstructured_mesh, resize_mesh_single_topology )
   // touch memory associated with the cell connectivity
   IndexType stride = mesh.getNumberOfCellNodes();
   EXPECT_EQ( stride, 4 );
-  IndexType* conn  = mesh.getCellConnectivityArray();
+  IndexType* conn  = mesh.getCellNodesArray();
   for ( IndexType icell=0 ; icell < N_CELLS ; ++icell )
   {
     conn[ icell*4   ] = MAGIC_INT;
@@ -3164,7 +3160,7 @@ TEST( mint_mesh_unstructured_mesh, resize_mesh_mixed_topology )
   mesh.resize( N_NODES, N_CELLS );
   EXPECT_EQ( mesh.getNumberOfNodes(), N_NODES );
   EXPECT_EQ( mesh.getNumberOfCells(), N_CELLS );
-  EXPECT_TRUE( mesh.getCellOffsetsArray() != nullptr );
+  EXPECT_TRUE( mesh.getCellNodesOffsetsArray() != nullptr );
   EXPECT_TRUE( mesh.getCellTypesArray() != nullptr );
 
   double* x = mesh.getCoordinateArray( mint::X_COORDINATE );
@@ -3180,8 +3176,8 @@ TEST( mint_mesh_unstructured_mesh, resize_mesh_mixed_topology )
   }
 
   // touch memory associated with the cell connectivity
-  IndexType* conn    = mesh.getCellConnectivityArray();
-  IndexType* offsets = mesh.getCellOffsetsArray();
+  IndexType* conn    = mesh.getCellNodesArray();
+  IndexType* offsets = mesh.getCellNodesOffsetsArray();
   CellType* types   = mesh.getCellTypesArray();
 
   for ( IndexType icell=0 ; icell < N_CELLS ; ++icell )

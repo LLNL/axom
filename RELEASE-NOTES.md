@@ -10,8 +10,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
-- Added support for face data and face connectivity in the mint StructuredMesh classes.
+- Added for_all_faces to the mint execution model.
 - Added support for face connectivity in the mint UnstructuredMesh class.
+- Added support for face data and face connectivity in the mint StructuredMesh classes.
 
 ### Removed
 - Replaced sidre::SidreLength with sidre::IndexType.
