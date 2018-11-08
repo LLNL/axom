@@ -246,7 +246,7 @@ void check_for_all_cell_coords( int dimension )
                                                      dimension * MAX_CELL_NODES );
 
   for_all_cells< ExecPolicy, xargs::coords >( test_mesh,
-    AXOM_LAMBDA( IndexType cellID, numerics::Matrix<double> const & coordsMatrix,
+    AXOM_LAMBDA( IndexType cellID, const numerics::Matrix<double> & coordsMatrix,
                  const IndexType* nodes )
     {
       const IndexType numNodes = coordsMatrix.getNumColumns();
