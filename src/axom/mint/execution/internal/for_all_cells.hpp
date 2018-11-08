@@ -24,8 +24,13 @@
 #include "axom/mint/config.hpp"                 // for compile-time definitions
 #include "axom/mint/mesh/Mesh.hpp"              // for Mesh
 #include "axom/mint/mesh/StructuredMesh.hpp"    // for StructuredMesh
+#include "axom/mint/mesh/UniformMesh.hpp"       // for UniformMesh
+#include "axom/mint/mesh/RectilinearMesh.hpp"   // for RectilinearMesh
+#include "axom/mint/mesh/CurvilinearMesh.hpp"   // for CurvilinearMesh
 #include "axom/mint/mesh/UnstructuredMesh.hpp"  // for UnstructuredMesh
 #include "axom/mint/execution/policy.hpp"       // execution policies/traits
+
+#include "axom/core/numerics/Matrix.hpp"        // for Matrix
 
 #ifdef AXOM_USE_RAJA
 #include "RAJA/RAJA.hpp"
@@ -561,8 +566,307 @@ inline void for_all_cellfaces_unstructured_mixed( const Mesh* m,
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
-inline void for_all_cells( xargs::nodeids, const Mesh* m,
-                           KernelType&& kernel )
+inline void for_all_cellcoords_uniform( const mint::Mesh* m, KernelType&& kernel )
+{
+  SLIC_ASSERT( m != nullptr );
+  SLIC_ASSERT( m->getMeshType() == STRUCTURED_UNIFORM_MESH );
+
+  const mint::UniformMesh* um = static_cast< const mint::UniformMesh* >( m );
+  const IndexType dimension   = um->getDimension();
+  const double * x0           = um->getOrigin( );
+  const double * h            = um->getSpacing( );
+  const IndexType nodeJp      = um->nodeJp();
+  const IndexType nodeKp      = um->nodeKp();
+
+  if ( dimension == 1 )
+  {
+    for_all_cells< ExecPolicy >( xargs::index(), m,
+      AXOM_LAMBDA( IndexType cellID )
+      {
+        const IndexType nodeIDs[2] = { cellID, cellID + 1 };
+        double coords[2] = { x0[0] + nodeIDs[0] * h[0], 
+                             x0[0] + nodeIDs[1] * h[0] };
+      
+        numerics::Matrix<double> coordsMatrix( 1, 2, coords, true );
+        kernel( cellID, coordsMatrix, nodeIDs );
+      }
+    );
+  }
+  else if ( dimension == 2 )
+  {
+    for_all_cells< ExecPolicy >( xargs::ij(), m,
+      AXOM_LAMBDA( IndexType cellID, IndexType i, IndexType j )
+      {
+        const IndexType n0 = i + j * nodeJp;
+        const IndexType nodeIDs[4] = { n0, 
+                                       n0 + 1,
+                                       n0 + 1 + nodeJp,
+                                       n0 + nodeJp };
+
+        double coords[8] = { x0[0] +  i      * h[0], x0[1] +  j      * h[1],
+                             x0[0] + (i + 1) * h[0], x0[1] +  j      * h[1],
+                             x0[0] + (i + 1) * h[0], x0[1] + (j + 1) * h[1],
+                             x0[0] +  i      * h[0], x0[1] + (j + 1) * h[1] };
+        
+        numerics::Matrix<double> coordsMatrix( 2, 4, coords, true );
+        kernel( cellID, coordsMatrix, nodeIDs );
+      }
+    );
+  }
+  else
+  {
+    SLIC_ASSERT( dimension == 3 );
+    for_all_cells< ExecPolicy >( xargs::ijk(), m,
+      AXOM_LAMBDA( IndexType cellID, IndexType i, IndexType j, IndexType k )
+      {
+        const IndexType n0 = i + j * nodeJp + k * nodeKp;
+        const IndexType nodeIDs[8] = { n0, 
+                                       n0 + 1,
+                                       n0 + 1 + nodeJp,
+                                       n0 + nodeJp,
+                                       n0 + nodeKp,
+                                       n0 + 1 + nodeKp,
+                                       n0 + 1 + nodeJp + nodeKp,
+                                       n0 + nodeJp + nodeKp };
+
+        double coords[24] = { 
+          x0[0] +  i      * h[0], x0[1] +  j      * h[1], x0[0] +  k      * h[2],
+          x0[0] + (i + 1) * h[0], x0[1] +  j      * h[1], x0[0] +  k      * h[2],
+          x0[0] + (i + 1) * h[0], x0[1] + (j + 1) * h[1], x0[0] +  k      * h[2],
+          x0[0] +  i      * h[0], x0[1] + (j + 1) * h[1], x0[0] +  k      * h[2],
+          x0[0] +  i      * h[0], x0[1] +  j      * h[1], x0[0] + (k + 1) * h[2],
+          x0[0] + (i + 1) * h[0], x0[1] +  j      * h[1], x0[0] + (k + 1) * h[2],
+          x0[0] + (i + 1) * h[0], x0[1] + (j + 1) * h[1], x0[0] + (k + 1) * h[2],
+          x0[0] +  i      * h[0], x0[1] + (j + 1) * h[1], x0[0] + (k + 1) * h[2] };
+        
+        numerics::Matrix<double> coordsMatrix( 3, 8, coords, true );
+        kernel( cellID, coordsMatrix, nodeIDs );
+      }
+    );
+  }
+}
+
+//------------------------------------------------------------------------------
+template < typename ExecPolicy, typename KernelType >
+inline void for_all_cellcoords_rectilinear( const mint::Mesh* m, KernelType&& kernel )
+{
+  SLIC_ASSERT( m != nullptr );
+  SLIC_ASSERT( m->getMeshType() == STRUCTURED_RECTILINEAR_MESH );
+
+  const mint::RectilinearMesh* rm = static_cast< const mint::RectilinearMesh* >( m );
+  const IndexType dimension       = rm->getDimension();
+  const IndexType nodeJp          = rm->nodeJp();
+  const IndexType nodeKp          = rm->nodeKp();
+  const double * x = rm->getCoordinateArray( X_COORDINATE );
+
+  if ( dimension == 1 )
+  {
+    for_all_cells< ExecPolicy >( xargs::index(), m,
+      AXOM_LAMBDA( IndexType cellID )
+      {
+        const IndexType nodeIDs[2] = { cellID, cellID + 1 };
+        double coords[2] = { x[ nodeIDs[0] ], x[ nodeIDs[1] ] }; 
+      
+        numerics::Matrix<double> coordsMatrix( 1, 2, coords, true );
+        kernel( cellID, coordsMatrix, nodeIDs );
+      }
+    );
+  }
+  else if ( dimension == 2 )
+  {
+    const double * y = rm->getCoordinateArray( Y_COORDINATE );
+    for_all_cells< ExecPolicy >( xargs::ij(), m,
+      AXOM_LAMBDA( IndexType cellID, IndexType i, IndexType j )
+      {
+        const IndexType n0 = i + j * nodeJp;
+        const IndexType nodeIDs[4] = { n0, 
+                                       n0 + 1,
+                                       n0 + 1 + nodeJp,
+                                       n0 + nodeJp };
+
+        double coords[8] = { x[ i ],     y[ j ],
+                             x[ i + 1 ], y[ j ],
+                             x[ i + 1 ], y[ j + 1 ],
+                             x[ i ],     y[ j + 1 ] };
+        
+        numerics::Matrix<double> coordsMatrix( 2, 4, coords, true );
+        kernel( cellID, coordsMatrix, nodeIDs );
+      }
+    );
+  }
+  else
+  {
+    SLIC_ASSERT( dimension == 3 );
+    const double * y = rm->getCoordinateArray( Y_COORDINATE );
+    const double * z = rm->getCoordinateArray( Z_COORDINATE );
+    for_all_cells< ExecPolicy >( xargs::ijk(), m,
+      AXOM_LAMBDA( IndexType cellID, IndexType i, IndexType j, IndexType k )
+      {
+        const IndexType n0 = i + j * nodeJp + k * nodeKp;
+        const IndexType nodeIDs[8] = { n0, 
+                                       n0 + 1,
+                                       n0 + 1 + nodeJp,
+                                       n0 + nodeJp,
+                                       n0 + nodeKp,
+                                       n0 + 1 + nodeKp,
+                                       n0 + 1 + nodeJp + nodeKp,
+                                       n0 + nodeJp + nodeKp };
+
+        double coords[24] = { 
+          x[ i ],     y[ j ],     z[ k ],
+          x[ i + 1 ], y[ j ],     z[ k ],
+          x[ i + 1 ], y[ j + 1 ], z[ k ],
+          x[ i ],     y[ j + 1 ], z[ k ],
+          x[ i ],     y[ j ],     z[ k + 1 ],
+          x[ i + 1 ], y[ j ],     z[ k + 1 ],
+          x[ i + 1 ], y[ j + 1 ], z[ k + 1 ],
+          x[ i ],     y[ j + 1 ], z[ k + 1 ] };
+        
+        numerics::Matrix<double> coordsMatrix( 3, 8, coords, true );
+        kernel( cellID, coordsMatrix, nodeIDs );
+      }
+    );
+  }
+}
+
+//------------------------------------------------------------------------------
+template < typename ExecPolicy, typename KernelType >
+inline void for_all_cellcoords_curvilinear( const mint::Mesh* m, KernelType&& kernel )
+{
+  SLIC_ASSERT( m != nullptr );
+  SLIC_ASSERT( m->getMeshType() == STRUCTURED_CURVILINEAR_MESH );
+
+  const mint::CurvilinearMesh* cm = static_cast< const mint::CurvilinearMesh* >( m );
+  const IndexType dimension       = cm->getDimension();
+  const double * x = m->getCoordinateArray( X_COORDINATE );
+
+  if ( dimension == 1 )
+  {
+    for_all_cells< ExecPolicy >( xargs::index(), m,
+      AXOM_LAMBDA( IndexType cellID )
+      {
+        const IndexType nodeIDs[2] = { cellID, cellID + 1 };
+        double coords[2] = { x[ nodeIDs[0] ], x[ nodeIDs[1] ] }; 
+      
+        numerics::Matrix<double> coordsMatrix( 1, 2, coords, true );
+        kernel( cellID, coordsMatrix, nodeIDs );
+      }
+    );
+  }
+  else if ( dimension == 2 )
+  {
+    const double * y = cm->getCoordinateArray( Y_COORDINATE );
+    for_all_cells< ExecPolicy >( xargs::nodeids(), m,
+      AXOM_LAMBDA( IndexType cellID, const IndexType * nodeIDs, 
+                   IndexType AXOM_NOT_USED(numNodes) )
+      {
+        double coords[8] = { x[ nodeIDs[0] ], y[ nodeIDs[0] ],
+                             x[ nodeIDs[1] ], y[ nodeIDs[1] ],
+                             x[ nodeIDs[2] ], y[ nodeIDs[2] ],
+                             x[ nodeIDs[3] ], y[ nodeIDs[3] ] };
+        
+        numerics::Matrix<double> coordsMatrix( 2, 4, coords, true );
+        kernel( cellID, coordsMatrix, nodeIDs );
+      }
+    );
+  }
+  else
+  {
+    SLIC_ASSERT( dimension == 3 );
+    const double * y = cm->getCoordinateArray( Y_COORDINATE );
+    const double * z = cm->getCoordinateArray( Z_COORDINATE );
+    for_all_cells< ExecPolicy >( xargs::nodeids(), m,
+      AXOM_LAMBDA( IndexType cellID, const IndexType * nodeIDs, 
+                   IndexType AXOM_NOT_USED(numNodes) )
+      {
+        double coords[24] = {
+          x[ nodeIDs[0] ], y[ nodeIDs[0] ], z[ nodeIDs[0] ],
+          x[ nodeIDs[1] ], y[ nodeIDs[1] ], z[ nodeIDs[1] ],
+          x[ nodeIDs[2] ], y[ nodeIDs[2] ], z[ nodeIDs[2] ],
+          x[ nodeIDs[3] ], y[ nodeIDs[3] ], z[ nodeIDs[3] ],
+          x[ nodeIDs[4] ], y[ nodeIDs[4] ], z[ nodeIDs[4] ],
+          x[ nodeIDs[5] ], y[ nodeIDs[5] ], z[ nodeIDs[5] ],
+          x[ nodeIDs[6] ], y[ nodeIDs[6] ], z[ nodeIDs[6] ],
+          x[ nodeIDs[7] ], y[ nodeIDs[7] ], z[ nodeIDs[7] ] };
+        
+        numerics::Matrix<double> coordsMatrix( 3, 8, coords, true );
+        kernel( cellID, coordsMatrix, nodeIDs );
+      }
+    );
+  }
+}
+
+//------------------------------------------------------------------------------
+template < typename ExecPolicy, typename KernelType >
+inline void for_all_cellcoords_unstructured( const mint::Mesh* m, KernelType&& kernel )
+{
+  SLIC_ASSERT( m != nullptr );
+  SLIC_ASSERT( m->getMeshType() == UNSTRUCTURED_MESH );
+
+  const IndexType dimension = m->getDimension();
+  const double * x = m->getCoordinateArray( X_COORDINATE );
+
+  if ( dimension == 1 )
+  {
+    for_all_cells< ExecPolicy >( xargs::nodeids(), m,
+      AXOM_LAMBDA( IndexType cellID, const IndexType * nodeIDs,
+                   IndexType AXOM_NOT_USED(numNodes) )
+      {
+        double coords[2] = { x[ nodeIDs[0] ], x[ nodeIDs[1] ] }; 
+      
+        numerics::Matrix<double> coordsMatrix( 1, 2, coords, true );
+        kernel( cellID, coordsMatrix, nodeIDs );
+      }
+    );
+  }
+  else if ( dimension == 2 )
+  {
+    const double * y = m->getCoordinateArray( Y_COORDINATE );
+    for_all_cells< ExecPolicy >( xargs::nodeids(), m,
+      AXOM_LAMBDA( IndexType cellID, const IndexType * nodeIDs, 
+                   IndexType numNodes )
+      {
+        double coords[ 2 * MAX_CELL_NODES ];
+        for ( int i = 0; i < numNodes; ++ i )
+        {
+          const IndexType nodeID = nodeIDs[ i ];
+          coords[ 2 * i     ] = x[ nodeID ];
+          coords[ 2 * i + 1 ] = y[ nodeID ];
+        }
+
+        numerics::Matrix<double> coordsMatrix( 2, numNodes, coords, true );
+        kernel( cellID, coordsMatrix, nodeIDs );
+      }
+    );
+  }
+  else
+  {
+    SLIC_ASSERT( dimension == 3 );
+    const double * y = m->getCoordinateArray( Y_COORDINATE );
+    const double * z = m->getCoordinateArray( Z_COORDINATE );
+    for_all_cells< ExecPolicy >( xargs::nodeids(), m,
+      AXOM_LAMBDA( IndexType cellID, const IndexType * nodeIDs, 
+                   IndexType numNodes )
+      {
+        double coords[ 3 * MAX_CELL_NODES ];
+        for ( int i = 0; i < numNodes; ++ i )
+        {
+          const IndexType nodeID = nodeIDs[ i ];
+          coords[ 3 * i     ] = x[ nodeID ];
+          coords[ 3 * i + 1 ] = y[ nodeID ];
+          coords[ 3 * i + 2 ] = z[ nodeID ];
+        }
+
+        numerics::Matrix<double> coordsMatrix( 3, numNodes, coords, true );
+        kernel( cellID, coordsMatrix, nodeIDs );
+      }
+    );
+  }
+}
+
+//------------------------------------------------------------------------------
+template < typename ExecPolicy, typename KernelType >
+inline void for_all_cells( xargs::nodeids, const Mesh* m, KernelType&& kernel )
 {
   SLIC_ASSERT( m != nullptr );
 
@@ -585,8 +889,7 @@ inline void for_all_cells( xargs::nodeids, const Mesh* m,
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
-inline void for_all_cells( xargs::faceids, const Mesh* m,
-                           KernelType&& kernel )
+inline void for_all_cells( xargs::faceids, const Mesh* m, KernelType&& kernel )
 {
   SLIC_ASSERT( m != nullptr );
 
@@ -605,6 +908,38 @@ inline void for_all_cells( xargs::faceids, const Mesh* m,
   {
     for_all_cellfaces_unstructured_single< ExecPolicy >( 
       m, std::forward< KernelType >( kernel ) );
+  }
+}
+
+//------------------------------------------------------------------------------
+template < typename ExecPolicy, typename KernelType >
+inline void for_all_cells( xargs::coords, const Mesh* m, KernelType&& kernel )
+{
+  SLIC_ASSERT( m != nullptr );
+
+  if ( m->getMeshType() == STRUCTURED_UNIFORM_MESH )
+  {
+    for_all_cellcoords_uniform< ExecPolicy >(
+      m, std::forward< KernelType >( kernel ) );
+  }
+  else if ( m->getMeshType() == STRUCTURED_RECTILINEAR_MESH )
+  {
+    for_all_cellcoords_rectilinear< ExecPolicy >( 
+      m, std::forward< KernelType >( kernel ) );
+  }
+  else if ( m->getMeshType() == STRUCTURED_CURVILINEAR_MESH )
+  {
+    for_all_cellcoords_curvilinear< ExecPolicy >( 
+      m, std::forward< KernelType >( kernel ) );
+  }
+  else if ( m->getMeshType() == UNSTRUCTURED_MESH )
+  {
+    for_all_cellcoords_unstructured< ExecPolicy >(
+      m, std::forward< KernelType >( kernel ) );
+  }
+  else
+  {
+    SLIC_ERROR( "Unknown mesh type." );
   }
 }
 
