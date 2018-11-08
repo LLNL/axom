@@ -66,12 +66,12 @@ declarations:
       - decl: void finalize()
 
 ## Signed Distance Function API
-      - decl: void signed_distance_init( const std::string& file, MPI_Comm comm )
+      - decl: int signed_distance_init( const std::string& file, MPI_Comm comm )
         format:
           function_suffix: _mpi
         cpp_if: ifdef AXOM_USE_MPI
 
-      - decl: void signed_distance_init( const std::string& file )
+      - decl: int signed_distance_init( const std::string& file )
         format:
           function_suffix: _serial
         cpp_if: ifndef AXOM_USE_MPI
