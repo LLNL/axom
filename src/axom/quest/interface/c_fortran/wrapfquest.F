@@ -138,44 +138,51 @@ module axom_quest
         end subroutine quest_finalize
 
 #ifdef AXOM_USE_MPI
-        subroutine c_signed_distance_init_mpi(file, comm) &
+        function c_signed_distance_init_mpi(file, comm) &
+                result(SHT_rv) &
                 bind(C, name="QUEST_signed_distance_init_mpi")
             use iso_c_binding, only : C_CHAR, C_INT
             implicit none
             character(kind=C_CHAR), intent(IN) :: file(*)
             integer(C_INT), value, intent(IN) :: comm
-        end subroutine c_signed_distance_init_mpi
+            integer(C_INT) :: SHT_rv
+        end function c_signed_distance_init_mpi
 #endif
 
 #ifdef AXOM_USE_MPI
-        subroutine c_signed_distance_init_mpi_bufferify(file, Lfile, &
-                comm) &
+        function c_signed_distance_init_mpi_bufferify(file, Lfile, comm) &
+                result(SHT_rv) &
                 bind(C, name="QUEST_signed_distance_init_mpi_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT
             implicit none
             character(kind=C_CHAR), intent(IN) :: file(*)
             integer(C_INT), value, intent(IN) :: Lfile
             integer(C_INT), value, intent(IN) :: comm
-        end subroutine c_signed_distance_init_mpi_bufferify
+            integer(C_INT) :: SHT_rv
+        end function c_signed_distance_init_mpi_bufferify
 #endif
 
 #ifndef AXOM_USE_MPI
-        subroutine c_signed_distance_init_serial(file) &
+        function c_signed_distance_init_serial(file) &
+                result(SHT_rv) &
                 bind(C, name="QUEST_signed_distance_init_serial")
-            use iso_c_binding, only : C_CHAR
+            use iso_c_binding, only : C_CHAR, C_INT
             implicit none
             character(kind=C_CHAR), intent(IN) :: file(*)
-        end subroutine c_signed_distance_init_serial
+            integer(C_INT) :: SHT_rv
+        end function c_signed_distance_init_serial
 #endif
 
 #ifndef AXOM_USE_MPI
-        subroutine c_signed_distance_init_serial_bufferify(file, Lfile) &
+        function c_signed_distance_init_serial_bufferify(file, Lfile) &
+                result(SHT_rv) &
                 bind(C, name="QUEST_signed_distance_init_serial_bufferify")
             use iso_c_binding, only : C_CHAR, C_INT
             implicit none
             character(kind=C_CHAR), intent(IN) :: file(*)
             integer(C_INT), value, intent(IN) :: Lfile
-        end subroutine c_signed_distance_init_serial_bufferify
+            integer(C_INT) :: SHT_rv
+        end function c_signed_distance_init_serial_bufferify
 #endif
 
         function c_signed_distance_initialized() &
@@ -344,26 +351,30 @@ contains
     end function quest_inside_1
 
 #ifdef AXOM_USE_MPI
-    subroutine quest_signed_distance_init_mpi(file, comm)
+    function quest_signed_distance_init_mpi(file, comm) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT
         character(len=*), intent(IN) :: file
         integer, value, intent(IN) :: comm
+        integer(C_INT) :: SHT_rv
         ! splicer begin function.signed_distance_init_mpi
-        call c_signed_distance_init_mpi_bufferify(file, &
+        SHT_rv = c_signed_distance_init_mpi_bufferify(file, &
             len_trim(file, kind=C_INT), comm)
         ! splicer end function.signed_distance_init_mpi
-    end subroutine quest_signed_distance_init_mpi
+    end function quest_signed_distance_init_mpi
 #endif
 
 #ifndef AXOM_USE_MPI
-    subroutine quest_signed_distance_init_serial(file)
+    function quest_signed_distance_init_serial(file) &
+            result(SHT_rv)
         use iso_c_binding, only : C_INT
         character(len=*), intent(IN) :: file
+        integer(C_INT) :: SHT_rv
         ! splicer begin function.signed_distance_init_serial
-        call c_signed_distance_init_serial_bufferify(file, &
+        SHT_rv = c_signed_distance_init_serial_bufferify(file, &
             len_trim(file, kind=C_INT))
         ! splicer end function.signed_distance_init_serial
-    end subroutine quest_signed_distance_init_serial
+    end function quest_signed_distance_init_serial
 #endif
 
     function quest_signed_distance_initialized() &

@@ -38,60 +38,52 @@ extern "C" {
 // splicer end C_declarations
 
 #ifdef AXOM_USE_MPI
-void QUEST_initialize_mpi(MPI_Fint comm, const char* fileName,
-                          bool requiresDistance, int ndims, int maxElements,
-                          int maxLevels);
+void QUEST_initialize_mpi(MPI_Fint comm, const char * fileName, bool requiresDistance, int ndims, int maxElements, int maxLevels);
 #endif
 
 #ifdef AXOM_USE_MPI
-void QUEST_initialize_mpi_bufferify(MPI_Fint comm, const char* fileName,
-                                    int LfileName, bool requiresDistance,
-                                    int ndims, int maxElements, int maxLevels);
+void QUEST_initialize_mpi_bufferify(MPI_Fint comm, const char * fileName, int LfileName, bool requiresDistance, int ndims, int maxElements, int maxLevels);
 #endif
 
 #ifndef AXOM_USE_MPI
-void QUEST_initialize_serial(const char* fileName, bool requiresDistance,
-                             int ndims, int maxElements, int maxLevels);
+void QUEST_initialize_serial(const char * fileName, bool requiresDistance, int ndims, int maxElements, int maxLevels);
 #endif
 
 #ifndef AXOM_USE_MPI
-void QUEST_initialize_serial_bufferify(const char* fileName, int LfileName,
-                                       bool requiresDistance, int ndims,
-                                       int maxElements, int maxLevels);
+void QUEST_initialize_serial_bufferify(const char * fileName, int LfileName, bool requiresDistance, int ndims, int maxElements, int maxLevels);
 #endif
 
 int QUEST_inside_0(double x, double y);
 
 int QUEST_inside_1(double x, double y, double z);
 
-void QUEST_mesh_min_bounds(double* coords);
+void QUEST_mesh_min_bounds(double * coords);
 
-void QUEST_mesh_max_bounds(double* coords);
+void QUEST_mesh_max_bounds(double * coords);
 
-void QUEST_mesh_center_of_mass(double* coords);
+void QUEST_mesh_center_of_mass(double * coords);
 
 void QUEST_finalize();
 
 #ifdef AXOM_USE_MPI
-void QUEST_signed_distance_init_mpi(const char* file, MPI_Fint comm);
+int QUEST_signed_distance_init_mpi(const char * file, MPI_Fint comm);
 #endif
 
 #ifdef AXOM_USE_MPI
-void QUEST_signed_distance_init_mpi_bufferify(const char* file, int Lfile,
-                                              MPI_Fint comm);
+int QUEST_signed_distance_init_mpi_bufferify(const char * file, int Lfile, MPI_Fint comm);
 #endif
 
 #ifndef AXOM_USE_MPI
-void QUEST_signed_distance_init_serial(const char* file);
+int QUEST_signed_distance_init_serial(const char * file);
 #endif
 
 #ifndef AXOM_USE_MPI
-void QUEST_signed_distance_init_serial_bufferify(const char* file, int Lfile);
+int QUEST_signed_distance_init_serial_bufferify(const char * file, int Lfile);
 #endif
 
 bool QUEST_signed_distance_initialized();
 
-void QUEST_signed_distance_get_mesh_bounds(double* lo, double* hi);
+void QUEST_signed_distance_get_mesh_bounds(double * lo, double * hi);
 
 void QUEST_signed_distance_set_dimension(int dim);
 
