@@ -186,7 +186,7 @@ public:
     m_stride( stride ),
     m_values( nullptr )
   {
-    SLIC_ERROR_IF( stride <= 0, "Stride must be greater than zero." );
+    SLIC_ERROR_IF( stride <= 0, "Stride must be greater than zero: " << stride );
 
     m_values = new Array< IndexType >( internal::ZERO, m_stride, ID_capacity );
   }

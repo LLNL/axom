@@ -279,9 +279,9 @@ public:
     m_coordinates( new MeshCoordinates( n_nodes, node_capacity, x, y, z ) ),
     m_cell_to_node( new CellToNodeConnectivity( cell_type, n_cells, connectivity,
                                                 cell_capacity ) ),
-    m_cell_to_face( initializeCellToFace() ),
+    m_cell_to_face( initializeCellToFace( cell_type ) ),
     m_face_to_cell( new FaceToCellConnectivity( 2, 0 ) ),
-    m_face_to_node( initializeFaceToNode() )
+    m_face_to_node( initializeFaceToNode( cell_type ) )
   {
     AXOM_STATIC_ASSERT_MSG( TOPO == SINGLE_SHAPE,
                 "This constructor is only active for single topology meshes." );
@@ -456,9 +456,9 @@ public:
     Mesh( group, topo ),
     m_coordinates( new MeshCoordinates( getCoordsetGroup() ) ),
     m_cell_to_node( new CellToNodeConnectivity( getTopologyGroup() ) ),
-    m_cell_to_face( initializeCellToFace() ),
+    m_cell_to_face( nullptr ),
     m_face_to_cell( new FaceToCellConnectivity( 2, 0 ) ),
-    m_face_to_node( initializeFaceToNode() )
+    m_face_to_node( nullptr )
   {
     SLIC_ERROR_IF( m_type != UNSTRUCTURED_MESH,
            "Supplied sidre::Group does not correspond to a UnstructuredMesh." );
@@ -466,11 +466,15 @@ public:
     if ( TOPO == MIXED_SHAPE )
     {
       m_has_mixed_topology = true;
+      m_cell_to_face = initializeCellToFace();
+      m_face_to_node = initializeFaceToNode();
     }
     else
     {
       SLIC_ERROR_IF( getCellType() == PRISM || getCellType() == PYRAMID, 
          "Single shape unstructured meshes do not support prisms or pyramids" );
+      m_cell_to_face = initializeCellToFace( getCellType() );
+      m_face_to_node = initializeFaceToNode( getCellType() );
     }
 
     initialize();
@@ -1799,14 +1803,32 @@ private:
   DISABLE_MOVE_AND_ASSIGNMENT( UnstructuredMesh );
 };
 
+/*!
+ * \brief Return a new CellToFaceConnectivity. This instance is for
+ *  SINGLE_SHAPE meshes. If the mesh has cell type VERTEX or SEGMENT then the
+ *  stride of the returned connectivity is 1 instead of 0 which is the proper
+ *  number of cell faces, this avoids an error with 0 stride.
+ *
+ * \param [in] cell_type the cell_type of the mesh.
+ */
 template <>
 inline UnstructuredMesh< SINGLE_SHAPE >::CellToFaceConnectivity*
 UnstructuredMesh< SINGLE_SHAPE >::initializeCellToFace( CellType cell_type ) const
 {
+  IndexType num_faces = getCellInfo( cell_type ).num_faces;
+  if ( num_faces == 0 )
+  {
+    num_faces = 1; 
+  }
+
   return new UnstructuredMesh< SINGLE_SHAPE >::
-                CellToFaceConnectivity( getCellInfo( cell_type ).num_faces, 0 );
+                                         CellToFaceConnectivity( num_faces, 0 );
 }
 
+/*!
+ * \brief Return a new CellToFaceConnectivity. This instance is for
+ *  MIXED_SHAPE meshes.
+ */
 template <>
 inline UnstructuredMesh< MIXED_SHAPE >::CellToFaceConnectivity*
 UnstructuredMesh< MIXED_SHAPE >::initializeCellToFace( CellType ) const
@@ -1815,14 +1837,31 @@ UnstructuredMesh< MIXED_SHAPE >::initializeCellToFace( CellType ) const
                                  CellToFaceConnectivity( UNDEFINED_CELL, 0, 0 );
 }
 
+/*!
+ * \brief Return a new FaceToNodeConnectivity. This instance is for
+ *  SINGLE_SHAPE meshes. If the mesh has cell type VERTEX or SEGMENT then the
+ *  cell type of the returned ConnectivityArray is UNDEFINED_CELL with stride 1.
+ *
+ * \param [in] cell_type the cell_type of the mesh.
+ */
 template <>
 inline UnstructuredMesh< SINGLE_SHAPE >::FaceToNodeConnectivity*
 UnstructuredMesh< SINGLE_SHAPE >::initializeFaceToNode( CellType cell_type ) const
 {
+  const CellType face_type = getCellInfo( cell_type ).face_types[0];
+  if ( face_type == UNDEFINED_CELL )
+  {
+    return new UnstructuredMesh< SINGLE_SHAPE >::FaceToNodeConnectivity( 1, 0 );
+  }
+
   return new UnstructuredMesh< SINGLE_SHAPE >::
-            FaceToNodeConnectivity( getCellInfo( cell_type ).face_types[0], 0 );
+                                         FaceToNodeConnectivity( face_type, 0 );
 }
 
+/*!
+ * \brief Return a new FaceToNodeConnectivity. This instance is for
+ *  MIXED_SHAPE meshes.
+ */
 template <>
 inline UnstructuredMesh< MIXED_SHAPE >::FaceToNodeConnectivity*
 UnstructuredMesh< MIXED_SHAPE >::initializeFaceToNode( CellType ) const
