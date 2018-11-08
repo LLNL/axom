@@ -55,7 +55,7 @@ program quest_signed_distance_interface
 
 
 !...variables  
-  integer :: ierr, i, file_name_length
+  integer :: ierr, rc, i, file_name_length
   integer :: ndims = 3, N=10
   integer :: max_occupancy = 5
   integer :: max_levels = 15
@@ -83,10 +83,14 @@ program quest_signed_distance_interface
 
 !...initialize the signed distance query
 #ifdef AXOM_USE_MPI
-  call quest_signed_distance_init( file_name, MPI_COMM_WORLD )
+  rc = quest_signed_distance_init( file_name, MPI_COMM_WORLD )
 #else
-  call quest_signed_distance_init( file_name )
+  rc = quest_signed_distance_init( file_name )
 #endif
+
+  if ( rc /= 0 ) then 
+    stop 'signed_distance_init() failed!'
+  endif
 
 !...compute the mesh bounds
   call quest_signed_distance_get_mesh_bounds( mesh_bb_min, mesh_bb_max ) 
