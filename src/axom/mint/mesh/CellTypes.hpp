@@ -142,9 +142,9 @@ REGISTER_CELL_INFO( VERTEX, "VERTEX", "point", 1, 1, 0,
                     AR({ 0 }) 
                   );
 
-REGISTER_CELL_INFO( SEGMENT, "SEGMENT", "line", 3, 2, 2,
-                    AR({ 1, 1 }),
-                    AR({ VERTEX, VERTEX }),
+REGISTER_CELL_INFO( SEGMENT, "SEGMENT", "line", 3, 2, 0,
+                    AR({ 0 }),
+                    AR({ UNDEFINED_CELL }),
                     AR({  0,      // face 0
                           1       // face 1
                     }) );

@@ -49,7 +49,7 @@ TEST( mint_mesh_cell_types, check_cell_types )
 
   const int num_faces[ mint::NUM_CELL_TYPES ] = {
     0,    // VERTEX
-    2,    // SEGMENT
+    0,    // SEGMENT
     3,    // TRIANGLE
     4,    // QUAD
     4,    // TET
@@ -63,7 +63,7 @@ TEST( mint_mesh_cell_types, check_cell_types )
   const int
     face_nodecount[ mint::NUM_CELL_TYPES ][ mint::MAX_FACE_NODES ] = {
     { 0 },                // VERTEX
-    { 1, 1 },             // SEGMENT
+    { 0 },                // SEGMENT
     { 2, 2, 2 },          // TRIANGLE
     { 2, 2, 2, 2 },       // QUAD
     { 3, 3, 3, 3 },       // TET
@@ -76,11 +76,11 @@ TEST( mint_mesh_cell_types, check_cell_types )
 
   const mint::CellType
     face_types[ mint::NUM_CELL_TYPES ][ mint::MAX_FACE_NODES ] = {
-    { mint::UNDEFINED_CELL },                                           // VERTEX
-    { mint::VERTEX, mint::VERTEX },                                     // SEGMENT
-    { mint::SEGMENT, mint::SEGMENT, mint::SEGMENT },                    // TRIANGLE
-    { mint::SEGMENT, mint::SEGMENT, mint::SEGMENT, mint::SEGMENT },     // QUAD
-    { mint::TRIANGLE, mint::TRIANGLE, mint::TRIANGLE, mint::TRIANGLE }, // TET
+    { mint::UNDEFINED_CELL },                                                         // VERTEX
+    { mint::UNDEFINED_CELL },                                                         // SEGMENT
+    { mint::SEGMENT, mint::SEGMENT, mint::SEGMENT },                                  // TRIANGLE
+    { mint::SEGMENT, mint::SEGMENT, mint::SEGMENT, mint::SEGMENT },                   // QUAD
+    { mint::TRIANGLE, mint::TRIANGLE, mint::TRIANGLE, mint::TRIANGLE },               // TET
     { mint::QUAD, mint::QUAD, mint::QUAD, mint::QUAD, mint::QUAD, mint::QUAD },       // HEX
     { mint::TRIANGLE, mint::QUAD, mint::QUAD, mint::QUAD, mint::TRIANGLE },           // PRISM
     { mint::QUAD, mint::TRIANGLE, mint::TRIANGLE, mint::TRIANGLE, mint::TRIANGLE },   // PYRAMID
@@ -92,8 +92,7 @@ TEST( mint_mesh_cell_types, check_cell_types )
     face_nodes[ mint::NUM_CELL_TYPES ][ mint::MAX_ALL_FACES_NODES ] = {
     { 0 },          //            VERTEX
 
-    { 0,            // face 0 for SEGMENT
-      1 },          // face 1
+    { 0 },          //            SEGMENT
 
     { 0, 1,         // face 0 for TRIANGLE
       1, 2,         // face 1
