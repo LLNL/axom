@@ -73,20 +73,20 @@ void QUEST_mesh_center_of_mass(double* coords);
 void QUEST_finalize();
 
 #ifdef AXOM_USE_MPI
-void QUEST_signed_distance_init_mpi(const char* file, MPI_Fint comm);
+int QUEST_signed_distance_init_mpi(const char* file, MPI_Fint comm);
 #endif
 
 #ifdef AXOM_USE_MPI
-void QUEST_signed_distance_init_mpi_bufferify(const char* file, int Lfile,
-                                              MPI_Fint comm);
+int QUEST_signed_distance_init_mpi_bufferify(const char* file, int Lfile,
+                                             MPI_Fint comm);
 #endif
 
 #ifndef AXOM_USE_MPI
-void QUEST_signed_distance_init_serial(const char* file);
+int QUEST_signed_distance_init_serial(const char* file);
 #endif
 
 #ifndef AXOM_USE_MPI
-void QUEST_signed_distance_init_serial_bufferify(const char* file, int Lfile);
+int QUEST_signed_distance_init_serial_bufferify(const char* file, int Lfile);
 #endif
 
 bool QUEST_signed_distance_initialized();

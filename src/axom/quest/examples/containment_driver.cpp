@@ -172,11 +172,11 @@ void testContainmentOnRegularGrid(
 {
   const double* low = queryBounds.getMin().data();
   const double* high = queryBounds.getMax().data();
-  mint::UniformMesh* umesh = 
-                    new mint::UniformMesh(low, high, gridRes, gridRes, gridRes);
+  mint::UniformMesh* umesh =
+    new mint::UniformMesh(low, high, gridRes, gridRes, gridRes);
 
   const int nnodes = umesh->getNumberOfNodes();
-  int* containment = umesh->createField< int >( "containment", 
+  int* containment = umesh->createField< int >( "containment",
                                                 mint::NODE_CENTERED );
 
   SLIC_ASSERT( containment != nullptr );

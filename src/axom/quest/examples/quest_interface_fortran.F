@@ -80,7 +80,7 @@ contains
   subroutine run_distance_queries()
     implicit none
 
-    integer :: i, ins
+    integer :: i, ins, rc
     real(C_DOUBLE)  :: x, y, z, phi
     integer :: max_occupancy = 25
     integer :: max_levels = 10
@@ -97,11 +97,14 @@ contains
     call quest_signed_distance_set_max_levels( max_levels )
     call quest_signed_distance_set_max_occupancy( max_occupancy )
 #ifdef AXOM_USE_MPI
-    call quest_signed_distance_init( FileName, MPI_COMM_WORLD )
+    rc = quest_signed_distance_init( FileName, MPI_COMM_WORLD )
 #else
-    call quest_signed_distance_init( FileName )
+    rc = quest_signed_distance_init( FileName )
 #endif
 
+    if ( rc /= 0 ) then
+      stop 'signed_distance_init() failed!'
+    endif
 
     call quest_signed_distance_get_mesh_bounds( lo, hi)
 

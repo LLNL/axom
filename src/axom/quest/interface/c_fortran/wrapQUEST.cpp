@@ -134,48 +134,48 @@ void QUEST_finalize()
 }
 
 #ifdef AXOM_USE_MPI
-void QUEST_signed_distance_init_mpi(const char* file, MPI_Fint comm)
+int QUEST_signed_distance_init_mpi(const char* file, MPI_Fint comm)
 {
 // splicer begin function.signed_distance_init_mpi
   const std::string SH_file(file);
   MPI_Comm SHCXX_comm = MPI_Comm_f2c(comm);
-  axom::quest::signed_distance_init(SH_file, SHCXX_comm);
-  return;
+  int SHC_rv = axom::quest::signed_distance_init(SH_file, SHCXX_comm);
+  return SHC_rv;
 // splicer end function.signed_distance_init_mpi
 }
 #endif  // ifdef AXOM_USE_MPI
 
 #ifdef AXOM_USE_MPI
-void QUEST_signed_distance_init_mpi_bufferify(const char* file, int Lfile,
-                                              MPI_Fint comm)
+int QUEST_signed_distance_init_mpi_bufferify(const char* file, int Lfile,
+                                             MPI_Fint comm)
 {
 // splicer begin function.signed_distance_init_mpi_bufferify
   const std::string SH_file(file, Lfile);
   MPI_Comm SHCXX_comm = MPI_Comm_f2c(comm);
-  axom::quest::signed_distance_init(SH_file, SHCXX_comm);
-  return;
+  int SHC_rv = axom::quest::signed_distance_init(SH_file, SHCXX_comm);
+  return SHC_rv;
 // splicer end function.signed_distance_init_mpi_bufferify
 }
 #endif  // ifdef AXOM_USE_MPI
 
 #ifndef AXOM_USE_MPI
-void QUEST_signed_distance_init_serial(const char* file)
+int QUEST_signed_distance_init_serial(const char* file)
 {
 // splicer begin function.signed_distance_init_serial
   const std::string SH_file(file);
-  axom::quest::signed_distance_init(SH_file);
-  return;
+  int SHC_rv = axom::quest::signed_distance_init(SH_file);
+  return SHC_rv;
 // splicer end function.signed_distance_init_serial
 }
 #endif  // ifndef AXOM_USE_MPI
 
 #ifndef AXOM_USE_MPI
-void QUEST_signed_distance_init_serial_bufferify(const char* file, int Lfile)
+int QUEST_signed_distance_init_serial_bufferify(const char* file, int Lfile)
 {
 // splicer begin function.signed_distance_init_serial_bufferify
   const std::string SH_file(file, Lfile);
-  axom::quest::signed_distance_init(SH_file);
-  return;
+  int SHC_rv = axom::quest::signed_distance_init(SH_file);
+  return SHC_rv;
 // splicer end function.signed_distance_init_serial_bufferify
 }
 #endif  // ifndef AXOM_USE_MPI
