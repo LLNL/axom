@@ -290,7 +290,7 @@ class UberenvAxom(Package):
                 mpiexec = join_path(spec['mpi'].prefix.bin, 'mpirun')
             else:
                 mpiexec = join_path(spec['mpi'].prefix.bin, 'mpiexec')
-                if not os.path.isfile(mpiexe_bin):
+                if not os.path.isfile(mpiexec):
                     mpiexec = "/usr/bin/srun"
             # starting with cmake 3.10, FindMPI expects MPIEXEC_EXECUTABLE
             # vs the older versions which expect MPIEXEC
