@@ -18,19 +18,12 @@
 #ifndef SPATIAL_OCTREE__HXX_
 #define SPATIAL_OCTREE__HXX_
 
-#include "axom/primal/geometry/BoundingBox.hpp"
-#include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/Vector.hpp"
-
-#include "axom/slic/interface/slic.hpp"
-
-#include "axom/slam/Map.hpp"
+#include "axom/core.hpp"
+#include "axom/slic.hpp"
+#include "axom/slam.hpp"
+#include "axom/primal.hpp"
 
 #include "axom/quest/geom/OctreeBase.hpp"
-
-using axom::primal::BoundingBox;
-using axom::primal::Point;
-using axom::primal::Vector;
 
 namespace axom
 {
@@ -48,9 +41,9 @@ class SpatialOctree : public OctreeBase<DIM, BlockDataType>
 {
 public:
 
-  typedef BoundingBox<double,DIM> GeometricBoundingBox;
-  typedef Point<double,DIM> SpacePt;
-  typedef Vector<double,DIM> SpaceVector;
+  typedef primal::BoundingBox<double,DIM> GeometricBoundingBox;
+  typedef primal::Point<double,DIM> SpacePt;
+  typedef primal::Vector<double,DIM> SpaceVector;
 
   typedef OctreeBase<DIM, BlockDataType> BaseOctree;
 
@@ -59,7 +52,7 @@ public:
 
   typedef typename BaseOctree::BlockIndex BlockIndex;
 
-  typedef axom::slam::Map<SpaceVector> SpaceVectorLevelMap;
+  typedef slam::Map<SpaceVector> SpaceVectorLevelMap;
 
 public:
   /**

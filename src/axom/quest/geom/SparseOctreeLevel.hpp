@@ -20,13 +20,13 @@
 
 
 #include "axom/config.hpp"    // defines AXOM_USE_CXX11
-#include "axom/core/Types.hpp"
-#include "axom/core/Macros.hpp"    // defines AXOM_STATIC_ASSERT
 
-#include "axom/primal/geometry/MortonIndex.hpp"
+#include "axom/core.hpp"
+#include "axom/primal.hpp"
 
 #include "axom/quest/geom/Brood.hpp"
 #include "axom/quest/geom/OctreeLevel.hpp"
+
 
 #ifdef AXOM_USE_CXX11
   #include <type_traits>
@@ -58,7 +58,7 @@ template<typename CoordType, int DIM, typename BroodDataType,
          typename RepresentationType>
 struct BroodRepresentationTraits
 {
-  typedef Point<CoordType,DIM> GridPt;
+  typedef primal::Point<CoordType,DIM> GridPt;
   typedef RepresentationType PointRepresenationType;
 
   AXOM_STATIC_ASSERT_MSG( std::is_integral<CoordType>::value,
@@ -109,9 +109,9 @@ struct BroodRepresentationTraits
  */
 template<typename CoordType, int DIM, typename BroodDataType>
 struct BroodRepresentationTraits<CoordType, DIM, BroodDataType,
-                                 Point<CoordType,DIM> >
+                                 primal::Point<CoordType,DIM> >
 {
-  typedef Point<CoordType,DIM> GridPt;
+  typedef primal::Point<CoordType,DIM> GridPt;
   typedef GridPt PointRepresenationType;
   typedef primal::PointHash<CoordType> PointHashType;
 

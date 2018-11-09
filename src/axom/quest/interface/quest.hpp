@@ -22,7 +22,7 @@
 #include <string>
 
 #include "axom/config.hpp"
-#include "axom/mint/mesh/Mesh.hpp"
+#include "axom/mint.hpp"
 
 #ifdef AXOM_USE_MPI
 #include "mpi.h"

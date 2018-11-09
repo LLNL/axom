@@ -33,19 +33,13 @@
 
 
 #include "axom/config.hpp"
-#include "axom/core/Types.hpp"
-
-#include "axom/slic/interface/slic.hpp"
-
-#include "axom/primal/geometry/NumericArray.hpp"
-#include "axom/primal/geometry/Point.hpp"
+#include "axom/core.hpp"
+#include "axom/slic.hpp"
+#include "axom/primal.hpp"
 
 #include "axom/quest/geom/Brood.hpp"
 
 #include <iterator>
-
-using axom::primal::Point;
-using axom::primal::NumericArray;
 
 namespace axom
 {
@@ -58,9 +52,9 @@ namespace quest
  */
 enum TreeBlockStatus
 {
-  BlockNotInTree           /** Status of blocks that are not in the tree */
-  , LeafBlock              /** Status of blocks that are leaves in the tree */
-  , InternalBlock          /** Status of blocks that are internal to the tree */
+  BlockNotInTree,          /** Status of blocks that are not in the tree */
+  LeafBlock,               /** Status of blocks that are leaves in the tree */
+  InternalBlock            /** Status of blocks that are internal to the tree */
 };
 
 /**
@@ -88,13 +82,13 @@ public:
    * \brief A type for the grid points of the octree.
    * \note CoordType must be an integral type
    */
-  typedef Point<CoordType,DIM> GridPt;
+  typedef primal::Point<CoordType,DIM> GridPt;
 
   enum { BROOD_SIZE = 1 << DIM };
 
   /** A brood is a collection of sibling blocks that are generated
      simultaneously */
-  typedef NumericArray< BlockDataType, BROOD_SIZE> BroodData;
+  typedef primal::NumericArray< BlockDataType, BROOD_SIZE> BroodData;
 
   /** Predeclare the BlockIterator type */
   template<typename OctreeLevel, typename IterHelper, typename DataType>
