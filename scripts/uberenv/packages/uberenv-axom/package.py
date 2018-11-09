@@ -149,10 +149,18 @@ class UberenvAxom(Package):
         cfg.write("#######\n\n")
 
         cfg.write("# c compiler used by spack\n")
-        cfg.write(cmake_cache_entry("CMAKE_C_COMPILER",c_compiler))
+        if 'bgq' in os.getenv('SYS_TYPE', ""):
+            cfg.write("#{0}\n".format(c_compiler))
+            cfg.write(cmake_cache_entry("CMAKE_C_COMPILER", spec['mpi'].prefix.bin.mpiclang))
+        else:
+            cfg.write(cmake_cache_entry("CMAKE_C_COMPILER",c_compiler))
 
         cfg.write("# cpp compiler used by spack\n")
-        cfg.write(cmake_cache_entry("CMAKE_CXX_COMPILER",cpp_compiler))
+        if 'bgq' in os.getenv('SYS_TYPE', ""):
+            cfg.write("#{0}\n".format(cpp_compiler))
+            cfg.write(cmake_cache_entry("CMAKE_CXX_COMPILER", spec['mpi'].prefix.bin.mpiclang++))
+        else:
+            cfg.write(cmake_cache_entry("CMAKE_CXX_COMPILER",cpp_compiler))
         
         cfg.write("# fortran compiler used by spack\n")
         if not f_compiler is None:
@@ -245,11 +253,15 @@ class UberenvAxom(Package):
 
         if "+mpi" in spec:
             cfg.write(cmake_cache_entry("ENABLE_MPI", "ON"))
-            cfg.write(cmake_cache_entry("MPI_C_COMPILER", spec['mpi'].mpicc))
-            cfg.write(cmake_cache_entry("MPI_CXX_COMPILER",
-                                        spec['mpi'].mpicxx))
-            cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER",
-                                        spec['mpi'].mpifc))
+            if 'bgq' in os.getenv('SYS_TYPE', ""):
+                cfg.write("# Use MPI Wrappers directly and turn off FindMPI on BGQ\n\n")
+            else:
+                cfg.write(cmake_cache_entry("MPI_C_COMPILER", spec['mpi'].mpicc))
+                cfg.write(cmake_cache_entry("MPI_CXX_COMPILER",
+                                            spec['mpi'].mpicxx))
+                cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER",
+                                            spec['mpi'].mpifc))
+
             mpiexe_bin = join_path(spec['mpi'].prefix.bin, 'mpiexec')
             if os.path.isfile(mpiexe_bin):
                 # starting with cmake 3.10, FindMPI expects MPIEXEC_EXECUTABLE
@@ -263,6 +275,8 @@ class UberenvAxom(Package):
         else:
             cfg.write(cmake_cache_entry("ENABLE_MPI", "OFF"))
 
+        if 'bgq' in os.getenv('SYS_TYPE', ""):
+            cfg.write("set(ENABLE_WRAP_ALL_TESTS_WITH_MPIEXEC TRUE CACHE BOOL \"Ensures that tests will be wrapped with srun to run on the backend nodes\")")
 
         cfg.write("##################################\n")
         cfg.write("# end uberenv host-config\n")

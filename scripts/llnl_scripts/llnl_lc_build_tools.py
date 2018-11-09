@@ -264,7 +264,7 @@ def uberenv_install_tpls(prefix,spec,mirror = None):
     """
     Calls uberenv to install tpls for a given spec to given prefix.
     """
-    cmd = "python scripts/uberenv/uberenv.py --prefix %s --spec %s " % (prefix,spec)
+    cmd = "python scripts/uberenv/uberenv.py --prefix %s --spec=\"%s\" " % (prefix,spec)
     if not mirror is None:
         cmd += "--mirror %s" % mirror
         

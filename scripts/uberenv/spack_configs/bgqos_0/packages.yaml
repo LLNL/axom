@@ -39,8 +39,8 @@ packages:
 # LLNL mpi
   mpich:
     paths:
-      mpich@3.bgq.fastmpi %clang@4.0.0_gfortran arch=bgq-cnk-ppc64: /bgsys/drivers/ppcfloor/comm/xl.legacy.ndebug
-      mpich@3.bgq.fastmpi %clang@4.0.0_xlf arch=bgq-cnk-ppc64: /bgsys/drivers/ppcfloor/comm/xl.legacy.ndebug
+      mpich@3.bgq.fastmpi %clang@4.0.0_gfortran arch=bgq-cnk-ppc64: /collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/llnl
+      mpich@3.bgq.fastmpi %clang@4.0.0_xlf arch=bgq-cnk-ppc64: /collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/llnl
     buildable: False
 # System level packages to not build
   autotools:
