@@ -882,6 +882,18 @@ inline void for_all_facecoords_rectilinear( const Mesh* m, KernelType&& kernel )
 }
 
 //------------------------------------------------------------------------------
+struct for_all_face_nodes_functor
+{
+  template < typename ExecPolicy, typename KernelType >
+  inline void operator()( ExecPolicy AXOM_NOT_USED(policy), const Mesh* m,
+                          KernelType&& kernel ) const
+  {
+    for_all_faces< ExecPolicy >( xargs::nodeids(), m,
+                                 std::forward< KernelType >( kernel ) );
+  }
+};
+
+//------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
 inline void for_all_facecoords_curvilinear( const Mesh* m, KernelType&& kernel )
 {
@@ -890,45 +902,22 @@ inline void for_all_facecoords_curvilinear( const Mesh* m, KernelType&& kernel )
   SLIC_ASSERT( m->getDimension() > 1 && m->getDimension() <= 3 );
 
   const int dimension = m->getDimension();
-  const double * x = m->getCoordinateArray( X_COORDINATE );
-  const double * y = m->getCoordinateArray( Y_COORDINATE );
-
   if ( dimension == 2 )
   {
-    for_all_facenodes_structured_2D< ExecPolicy >( m, 
-      AXOM_LAMBDA( IndexType faceID, const IndexType * nodeIDs, 
-                   IndexType AXOM_NOT_USED(numNodes) )
-      {
-        double coords[4] = { x[ nodeIDs[0] ], y[ nodeIDs[0] ],
-                             x[ nodeIDs[1] ], y[ nodeIDs[1] ] };
-        
-        numerics::Matrix<double> coordsMatrix( 2, 2, coords, true );
-        kernel( faceID, coordsMatrix, nodeIDs );
-      }
-    );
+    for_all_coords< ExecPolicy, 2, 2 >( for_all_face_nodes_functor(), m,
+                                        std::forward< KernelType >( kernel ) );
   }
   else
   {
-    const double * z = m->getCoordinateArray( Z_COORDINATE );
-    for_all_facenodes_structured_3D< ExecPolicy >( m, 
-      AXOM_LAMBDA( IndexType faceID, const IndexType * nodeIDs, 
-                   IndexType AXOM_NOT_USED(numNodes) )
-      {
-        double coords[12] = { x[ nodeIDs[0] ], y[ nodeIDs[0] ], z[ nodeIDs[0] ],
-                              x[ nodeIDs[1] ], y[ nodeIDs[1] ], z[ nodeIDs[1] ],
-                              x[ nodeIDs[2] ], y[ nodeIDs[2] ], z[ nodeIDs[2] ],
-                              x[ nodeIDs[3] ], y[ nodeIDs[3] ], z[ nodeIDs[3] ] };
-        
-        numerics::Matrix<double> coordsMatrix( 3, 4, coords, true );
-        kernel( faceID, coordsMatrix, nodeIDs );
-      }
-    );
+    for_all_coords< ExecPolicy, 3, 4 >( for_all_face_nodes_functor(), m,
+                                        std::forward< KernelType >( kernel ) );
   }
 }
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
-inline void for_all_facecoords_unstructured( const Mesh* m, KernelType&& kernel )
+inline void for_all_facecoords_unstructured( const Mesh* m,
+                                             KernelType&& kernel )
 {
   SLIC_ASSERT( m != nullptr );
   SLIC_ASSERT( m->getMeshType() == UNSTRUCTURED_MESH );
@@ -979,7 +968,6 @@ inline void for_all_facecoords_unstructured( const Mesh* m, KernelType&& kernel 
     );
   }
 }
-
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >

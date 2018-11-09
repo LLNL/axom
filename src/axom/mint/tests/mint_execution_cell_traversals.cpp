@@ -382,7 +382,7 @@ TEST( mint_execution_cell_traversals, for_all_cells_nodeids )
 
 TEST( mint_execution_cell_traversals, for_all_cells_coords )
 {
-  constexpr int NDIMS = 3;
+  constexpr int NDIMS = 1;
   for ( int i=1 ; i <= NDIMS ; ++i )
   {
 
