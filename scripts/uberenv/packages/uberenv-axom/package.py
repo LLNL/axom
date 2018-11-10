@@ -119,8 +119,9 @@ class UberenvAxom(Package):
             sys_type = env["SYS_TYPE"]
 
         # are we on a specific machine 
-        on_bgq = 'bgq' in os.getenv('SYS_TYPE', "")
-        on_blueos = 'blueos' in os.getenv('SYS_TYPE', "")
+        on_bgq = 'bgq' in sys_type
+        on_blueos = 'blueos' in sys_type
+        on_toss =  'toss_3' in sys_type
 
         # cmake
         if "+cmake" in spec:
@@ -137,7 +138,23 @@ class UberenvAxom(Package):
         cfg = open(host_cfg_fname,"w")
         cfg.write("##################################\n")
         cfg.write("# !!!! This is a generated file, edit at own risk !!!!\n")
+        cfg.write("##################################\n\n")
         cfg.write("##################################\n")
+        cfg.write("#\n")
+        cfg.write("# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.\n")
+        cfg.write("#\n")
+        cfg.write("# Produced at the Lawrence Livermore National Laboratory.\n")
+        cfg.write("#\n")
+        cfg.write("# LLNL-CODE-741217\n")
+        cfg.write("#\n")
+        cfg.write("# All rights reserved.\n")
+        cfg.write("#\n")
+        cfg.write("# This file is part of Axom.\n")
+        cfg.write("#\n")
+        cfg.write("# For details about use and distribution, please read axom/LICENSE.\n")
+        cfg.write("#\n")
+        cfg.write("##################################\n\n")
+        cfg.write("##################################\n\n")
         cfg.write("# SYS_TYPE: %s\n" % (sys_type))
         cfg.write("# Compiler Spec: %s\n" % (spec.compiler))
         cfg.write("##################################\n\n")
@@ -353,6 +370,12 @@ class UberenvAxom(Package):
             elif "xl@coral" == str(spec.compiler):
                 cfg.write(cmake_cache_entry("BLT_FORTRAN_FLAGS", "-WF,-C! -qxlf2003=polymorphic",
                     "Convert C-style comments to Fortran and link fortran exes to C++ libraries"))
+
+        # TOSS3
+        elif on_toss:
+            if "gcc@4.9.3" == str(spec.compiler):
+                cfg.write(cmake_cache_entry("SCR_DIR",
+                    "/usr/gapps/axom/thirdparty_libs/scr-1.2.1/toss_3_x86_64_ib/gcc-4.9.3"))
 
         cfg.write("\n")
         cfg.close()
