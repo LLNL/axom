@@ -69,6 +69,7 @@ packages:
    buildable: False
 # On BGQ specifically just use the system CMake
   cmake:
+    version: [3.8.2]
     paths:
       cmake: /collab/usr/global/tools/cmake/bgqos_0/cmake-3.8.2/
     buildable: False

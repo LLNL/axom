@@ -136,15 +136,12 @@ class UberenvAxom(Package):
         host_cfg_fname = pjoin(dest_dir,host_cfg_fname)
         cfg = open(host_cfg_fname,"w")
         cfg.write("##################################\n")
-        cfg.write("# uberenv host-config\n")
-        cfg.write("#\n")
-        cfg.write("# This is a generated file, edit at own risk.\n")
+        cfg.write("# !!!! This is a generated file, edit at own risk !!!!\n")
         cfg.write("##################################\n")
         cfg.write("# SYS_TYPE: %s\n" % (sys_type))
         cfg.write("# Compiler Spec: %s\n" % (spec.compiler))
         cfg.write("##################################\n\n")
         # show path to cmake for reference and to be used by config-build.py
-        cfg.write("# CMake from uberenv\n")
         cfg.write("# CMake executable path: %s\n\n" % cmake_exe)
 
         # compiler settings
@@ -156,7 +153,7 @@ class UberenvAxom(Package):
             cfg.write("# Note: we build TPLs with the serial compiler then use MPI wrappers on bgq\n")
             cfg.write("# Serial compilers used by spack:\n")
             cfg.write("# C compiler: {0}\n".format(c_compiler))
-            cfg.write("# C++ compiler: {0}\n".format(cpp_compiler))
+            cfg.write("# C++ compiler: {0}\n\n".format(cpp_compiler))
             cfg.write(cmake_cache_entry("CMAKE_C_COMPILER", spec['mpi'].prefix.bin.mpiclang))
             cfg.write(cmake_cache_entry("CMAKE_CXX_COMPILER", spec['mpi'].prefix.bin.mpiclang + "++"))
         else:
@@ -302,7 +299,7 @@ class UberenvAxom(Package):
             # Determine MPIEXEC_NUMPROC_FLAG
             if on_blueos:
                 cfg.write(cmake_cache_entry("MPIEXEC_NUMPROC_FLAG", "-np"))
-                cfg.write(cmake_cache_option("mpibind", True))
+                cfg.write(cmake_cache_entry("BLT_MPI_COMMAND_APPEND", "mpibind"))
             else:
                 # TODO: see if spack has this
                 cfg.write(cmake_cache_entry("MPIEXEC_NUMPROC_FLAG", "-n"))
@@ -310,15 +307,22 @@ class UberenvAxom(Package):
             cfg.write(cmake_cache_option("ENABLE_MPI", False))
 
         ##################################
-        # Other machine specific options
+        # Other machine specifics
         ##################################
 
         cfg.write("##############\n")
-        cfg.write("# Other machine specific options\n")
+        cfg.write("# Other machine specifics\n")
         cfg.write("##############\n\n")
 
+        # Enable death tests everwhere but BGQ
         if on_bgq:
-            if "xlf" in spec.compiler:
+            cfg.write(cmake_cache_option("ENABLE_GTEST_DEATH_TESTS", False))
+        else:
+            cfg.write(cmake_cache_option("ENABLE_GTEST_DEATH_TESTS", True))
+
+        # BGQ
+        if on_bgq:
+            if "xlf" in str(spec.compiler):
                 cfg.write(cmake_cache_entry("BLT_FORTRAN_FLAGS", "-WF,-C!",
                     "Converts C-style comments to Fortran style in preprocessed files"))
 
@@ -328,9 +332,28 @@ class UberenvAxom(Package):
 
             cfg.write(cmake_cache_option("CMAKE_SKIP_RPATH", True))
 
-        cfg.write("##################################\n")
-        cfg.write("# end uberenv host-config\n")
-        cfg.write("##################################\n")
+        # BlueOS
+        elif on_blueos:
+            if "xlf" in f_compiler:
+                cfg.write(cmake_cache_entry("CMAKE_Fortran_COMPILER_ID", "XL",
+                    "All of BlueOS compilers report clang due to nvcc, override to proper compiler family"))
+            if "xlc" in c_compiler:
+                cfg.write(cmake_cache_entry("CMAKE_C_COMPILER_ID", "XL",
+                    "All of BlueOS compilers report clang due to nvcc, override to proper compiler family"))
+            if "xlC" in cpp_compiler:
+                cfg.write(cmake_cache_entry("CMAKE_CXX_COMPILER_ID", "XL",
+                    "All of BlueOS compilers report clang due to nvcc, override to proper compiler family"))
+
+            if "clang@coral_xlf" == str(spec.compiler):
+                cfg.write(cmake_cache_entry("BLT_FORTRAN_FLAGS", "-WF,-C!",
+                    "Converts C-style comments to Fortran style in preprocessed files"))
+                cfg.write(cmake_cache_entry("BLT_EXE_LINKER_FLAGS",
+                    "-Wl,-rpath,/usr/tce/packages/xl/xl-2018.05.18/lib/", 
+                    "Adds a missing rpath for libraries associated with the fortran compiler"))
+            elif "xl@coral" == str(spec.compiler):
+                cfg.write(cmake_cache_entry("BLT_FORTRAN_FLAGS", "-WF,-C! -qxlf2003=polymorphic",
+                    "Convert C-style comments to Fortran and link fortran exes to C++ libraries"))
+
         cfg.write("\n")
         cfg.close()
         mkdirp(prefix)
