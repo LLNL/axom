@@ -137,11 +137,8 @@ inline bool areTriangleIndicesDistinct( mint::IndexType* indices)
          && indices[2] != indices[0];
 }
 
-/*!
- * \brief Implementation for quest::findTriMeshIntersections
- *
- * \see findTriMeshIntersections
- */
+/* Find and report self-intersections and degenerate triangles
+ * in a triangle surface mesh. */
 void findTriMeshIntersections(
   UMesh* surface_mesh,
   std::vector<std::pair<int, int> > & intersections,
@@ -239,6 +236,49 @@ void findTriMeshIntersections(
       ++nit;
     }
   }
+}
+
+
+/* Check a surface mesh for holes using its face relation. */
+bool detectTriMeshHoles(UMesh* surface_mesh, bool & watertight)
+{
+  // Make sure the mesh is reasonable
+  SLIC_ASSERT_MSG(surface_mesh != nullptr,
+                  "surface_mesh must be a valid pointer to a triangle mesh");
+
+  // Calculate the face relations---this can take awhile
+  bool success = surface_mesh->initializeFaceConnectivity();
+
+  if (!success)
+  {
+    watertight = false;
+    return success;
+  }
+
+  watertight = true;
+  IndexType faceCount = surface_mesh->getNumberOfFaces();
+
+  // This way, we respect the object and use the Mesh API for face cells
+  IndexType c1, c2;
+  for (IndexType faceIdx = 0; faceIdx < faceCount && watertight; ++faceIdx)
+  {
+    surface_mesh->getFaceCellIDs(faceIdx, c1, c2);
+    if (c1 == -1 || c2 == -1) { watertight = false; }
+  }
+
+  // Or this way, we rely on internal knowledge of face-cell data
+  // representation, grab the underlying array, and quickly run through it.
+
+  // IndexType * faceCells = surface_mesh->getFaceCellsArray();
+  // for (IndexType faceIdx = 0; idx < faceCount && watertight; ++idx)
+  // {
+  //   if (faceCells[2*faceIdx + 0] == -1 || faceCells[2*faceIdx + 1] == -1)
+  //   {
+  //     watertight = false;
+  //   }
+  // }
+
+  return success;
 }
 
 

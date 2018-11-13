@@ -66,6 +66,23 @@ void findTriMeshIntersections(
 
 
 /*!
+ * \brief Check a surface mesh for holes using its face relation.
+ *
+ * \param [in] surface_mesh A triangle mesh in three dimensions
+ * \param [out] watertight Whether this mesh is watertight
+ * \returns status True if this function ran with no errors
+ *
+ * This function computes the mesh's cell-face and face-vertex relations.
+ * For large meshes, this can take a long time.  The relations are used to
+ * check for holes, and remain cached with the mesh after this function
+ * finishes.
+ */
+bool detectTriMeshHoles(
+  mint::UnstructuredMesh< mint::SINGLE_SHAPE >* surface_mesh,
+  bool & watertight);
+
+
+/*!
  * \brief Mesh repair function to weld vertices that are closer than \a eps
  *
  * \param [in,out] surface_mesh A pointer to a pointer to a triangle mesh
