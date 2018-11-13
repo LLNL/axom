@@ -28,6 +28,8 @@
 #include "axom/primal/geometry/RectangularLattice.hpp"
 #include "axom/primal/geometry/MortonIndex.hpp"
 
+#include "axom/mint/config.hpp"
+
 // C++ includes
 #include <cmath>
 #include <algorithm>
@@ -53,7 +55,7 @@ typedef primal::UniformGrid<int, 3> UniformGrid3;
 typedef primal::Vector<double, 3> Vector3;
 typedef primal::Segment<double, 3> Segment3;
 
-typedef axom::common::uint64 IndexType;
+typedef axom::mint::IndexType IndexType;
 typedef primal::RectangularLattice<3, double, IndexType> Lattice3;
 typedef primal::Mortonizer<IndexType, IndexType, 3> Morton3;
 
