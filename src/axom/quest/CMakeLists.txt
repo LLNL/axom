@@ -61,6 +61,9 @@ set( quest_headers
 
 set( quest_sources
 
+    ## All-nearest-neighbors query
+    AllNearestNeighbors.cpp
+
     ## Geometry Sources
     # <nothing yet>
 

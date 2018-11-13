@@ -25,25 +25,16 @@
 
 #include "axom/config.hpp"
 
-#include "axom/slic/interface/slic.hpp"
-
-#include "axom/primal/geometry/BoundingBox.hpp"
-#include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/Vector.hpp"
+#include "axom/slic.hpp"
+#include "axom/slam.hpp"
+#include "axom/primal.hpp"
 
 #include "axom/quest/geom/OctreeLevel.hpp"
 #include "axom/quest/geom/DenseOctreeLevel.hpp"
 #include "axom/quest/geom/SparseOctreeLevel.hpp"
 
-#include "axom/slam/policies/SizePolicies.hpp"
-#include "axom/slam/OrderedSet.hpp"
-#include "axom/slam/Map.hpp"
 
 #include <ostream>   // for ostream in print
-
-using axom::primal::NumericArray;
-using axom::primal::Point;
-using axom::primal::Vector;
 
 namespace axom
 {
@@ -161,20 +152,20 @@ class OctreeBase
 {
 public:
   typedef int CoordType;
-  typedef Point<CoordType,DIM> GridPt;
-  typedef Vector<CoordType,DIM> GridVec;
+  typedef primal::Point<CoordType,DIM> GridPt;
+  typedef primal::Vector<CoordType,DIM> GridVec;
 
-  typedef axom::slam::policies::
+  typedef slam::policies::
     CompileTimeSize<CoordType,std::numeric_limits<CoordType>::digits>
     MAX_LEVEL_SIZE;
-  typedef axom::slam::OrderedSet<MAX_LEVEL_SIZE> OctreeLevels;
+  typedef slam::OrderedSet<MAX_LEVEL_SIZE> OctreeLevels;
 
   typedef OctreeLevel<DIM, BlockDataType>           OctreeLevelType;
   typedef typename OctreeLevelType::BlockIter LevelMapIterator;
   typedef typename OctreeLevelType::ConstBlockIter LevelMapCIterator;
 
 
-  typedef axom::slam::Map<OctreeLevelType*> LeafIndicesLevelMap;
+  typedef slam::Map<OctreeLevelType*> LeafIndicesLevelMap;
 
   /**
    * \brief Inner class encapsulating the index of an octree <em>block</em>.
@@ -204,15 +195,15 @@ public:
       NUM_FACE_NEIGHBORS = 2 * DIM
     };
 private:
-    typedef axom::slam::policies::
+    typedef slam::policies::
       CompileTimeSize<int, NUM_CHILDREN> OCTREE_CHILDREN_SIZE;
-    typedef axom::slam::policies::
+    typedef slam::policies::
       CompileTimeSize<int, NUM_FACE_NEIGHBORS> OCTREE_FACE_NEIGHBORS_SIZE;
 
 public:
-    typedef axom::slam::OrderedSet<OCTREE_CHILDREN_SIZE>
+    typedef slam::OrderedSet<OCTREE_CHILDREN_SIZE>
       ChildIndexSet;
-    typedef axom::slam::OrderedSet<OCTREE_FACE_NEIGHBORS_SIZE>
+    typedef slam::OrderedSet<OCTREE_FACE_NEIGHBORS_SIZE>
       FaceNeighborIndexSet;
 
 public:
@@ -484,10 +475,10 @@ private:
 
   enum
   {
-    MAX_DENSE_LEV    = 4
-    ,MAX_SPARSE16_LEV = 16 / DIM
-    ,MAX_SPARSE32_LEV = 32 / DIM
-    ,MAX_SPARSE64_LEV = 64 / DIM
+    MAX_DENSE_LEV    =  4,
+    MAX_SPARSE16_LEV = 16 / DIM,
+    MAX_SPARSE32_LEV = 32 / DIM,
+    MAX_SPARSE64_LEV = 64 / DIM
   };
 
   typedef DenseOctreeLevel<DIM, BlockDataType, axom::common::uint16>

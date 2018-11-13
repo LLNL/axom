@@ -18,13 +18,8 @@
 #ifndef QUEST_BROOD__HXX_
 #define QUEST_BROOD__HXX_
 
-
 #include "axom/config.hpp"
-
-#include "axom/primal/geometry/NumericArray.hpp"
-#include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/MortonIndex.hpp"
-
+#include "axom/primal.hpp"
 
 namespace axom
 {

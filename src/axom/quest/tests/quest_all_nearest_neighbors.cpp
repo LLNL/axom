@@ -18,8 +18,10 @@
 #include "gtest/gtest.h"
 
 #include "axom/quest/AllNearestNeighbors.hpp"
+#include "axom/quest/detail/AllNearestNeighbors_detail.hpp"
 
-#include "axom/slic/interface/slic.hpp"
+#include "axom/core.hpp"
+#include "axom/slic.hpp"
 
 #include <fstream>
 #include <sstream>
@@ -348,7 +350,6 @@ TEST(quest_all_nearnbr, file_query)
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

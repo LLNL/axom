@@ -25,41 +25,14 @@
 #define INOUT_OCTREE__HXX_
 
 #include "axom/config.hpp"       // defines AXOM_USE_CXX11
-#include "axom/core/Macros.hpp"
-#include "axom/core/utilities/Timer.hpp"
-#include "axom/core/utilities/Utilities.hpp"
 
-#include "axom/primal/geometry/BoundingBox.hpp"
-#include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/Triangle.hpp"
-#include "axom/primal/geometry/Vector.hpp"
-#include "axom/primal/geometry/Ray.hpp"
-#include "axom/primal/geometry/Polygon.hpp"
-#include "axom/primal/geometry/MortonIndex.hpp"
-
-#include "axom/primal/operators/intersect.hpp"
-#include "axom/primal/operators/orientation.hpp"
-#include "axom/primal/operators/squared_distance.hpp"
-#include "axom/primal/operators/clip.hpp"
-
-
-#include "axom/slic/interface/slic.hpp"
-
-#include "axom/slam/Map.hpp"
-#include "axom/slam/RangeSet.hpp"
-#include "axom/slam/StaticRelation.hpp"
-#include "axom/slam/FieldRegistry.hpp"
+#include "axom/core.hpp"
+#include "axom/slic.hpp"
+#include "axom/slam.hpp"
+#include "axom/primal.hpp"
+#include "axom/mint.hpp"
 
 #include "axom/quest/geom/SpatialOctree.hpp"
-
-#include "axom/mint/config.hpp"
-#include "axom/mint/mesh/Mesh.hpp"
-#include "axom/mint/mesh/UnstructuredMesh.hpp"
-#include "axom/mint/mesh/FieldData.hpp"
-#include "axom/mint/mesh/FieldVariable.hpp"
-#include "axom/mint/mesh/Field.hpp"
-#include "axom/mint/utils/vtk_utils.hpp"
-
 
 #include <vector>   // For InOutLeafData triangle lists -- TODO replace with
                     // SLAM DynamicVariableRelation...
@@ -126,7 +99,7 @@ class InOutBlockData
   // A block is a leaf block when its m_idx is not INTERNAL_BLOCK
   // Leaf blocks can be uncolored or colored (without additional data)
   //      or m_idx be the index of the data associated with a gray block
-  enum { LEAF_BLOCK_UNCOLORED = -1,
+  enum { LEAF_BLOCK_UNCOLORED  = -1,
          LEAF_BLOCK_WHITE      = -2,
          LEAF_BLOCK_BLACK      = -3,
          INTERNAL_BLOCK        = -4,
@@ -585,22 +558,22 @@ public:
     /** \brief A constant for the number of boundary vertices in a triangle */
     static const int NUM_TRI_VERTS = 3;
 
-    typedef axom::primal::Triangle<double, DIM> SpaceTriangle;
+    typedef primal::Triangle<double, DIM> SpaceTriangle;
 
 
-    typedef axom::slam::PositionSet MeshVertexSet;
-    typedef axom::slam::PositionSet MeshElementSet;
+    typedef slam::PositionSet MeshVertexSet;
+    typedef slam::PositionSet MeshElementSet;
 
-    typedef axom::slam::Map<VertexIndex> VertexIndexMap;
-    typedef axom::slam::Map<SpacePt> VertexPositionMap;
+    typedef slam::Map<VertexIndex> VertexIndexMap;
+    typedef slam::Map<SpacePt> VertexPositionMap;
 
-    typedef axom::slam::policies::
+    typedef slam::policies::
       STLVectorIndirection<VertexIndex, VertexIndex> STLIndirection;
-    typedef axom::slam::policies::
+    typedef slam::policies::
       CompileTimeStride<VertexIndex, NUM_TRI_VERTS>  TVStride;
-    typedef axom::slam::policies::
+    typedef slam::policies::
       ConstantCardinality<VertexIndex, TVStride>     ConstantCardinality;
-    typedef axom::slam::StaticRelation<
+    typedef slam::StaticRelation<
         ConstantCardinality,
         STLIndirection,
         MeshElementSet,

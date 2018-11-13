@@ -19,20 +19,10 @@
 #define QUEST_IMPLICIT_GRID__HPP_
 
 #include "axom/config.hpp"
-#include "axom/core/Types.hpp"            // nullptr
-#include "axom/core/utilities/Utilities.hpp"  // for clamp functions
-
-#include "axom/slic/interface/slic.hpp"
-
-#include "axom/primal/geometry/BoundingBox.hpp"
-#include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/Vector.hpp"
-#include "axom/primal/geometry/RectangularLattice.hpp"
-
-#include "axom/slam/policies/SizePolicies.hpp"
-#include "axom/slam/OrderedSet.hpp"
-#include "axom/slam/Map.hpp"
-#include "axom/slam/BitSet.hpp"
+#include "axom/core.hpp"  // for clamp functions
+#include "axom/slic.hpp"
+#include "axom/slam.hpp"
+#include "axom/primal.hpp"
 
 #include <vector>
 
