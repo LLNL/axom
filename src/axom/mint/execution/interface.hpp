@@ -252,22 +252,47 @@ inline void for_all( const mint::IndexType& N, KernelType&& kernel )
  * \see policy.hpp
  * \see xargs.hpp
  */
+/// @{
 template < typename ExecPolicy = policy::serial,
            typename ArgType    = xargs::index,
+           typename MeshType,
            typename KernelType >
-inline void for_all_nodes( const mint::Mesh* m, KernelType&& kernel )
+inline void for_all_nodes( const MeshType* m, KernelType&& kernel )
 {
   // compile-time sanity checks
   AXOM_STATIC_ASSERT( policy_traits< ExecPolicy >::valid() );
-  AXOM_STATIC_ASSERT( xargs_traits< ArgType >::valid ());
+  AXOM_STATIC_ASSERT( xargs_traits< ArgType >::valid() );
+  
+  constexpr bool valid_mesh_type = std::is_base_of<Mesh, MeshType>::value;
+  AXOM_STATIC_ASSERT( valid_mesh_type );
 
   // run-time sanity checks
   SLIC_ASSERT( m != nullptr );
 
   // dispatch
-  internal::for_all_nodes< ExecPolicy >(
-    ArgType(), m, std::forward< KernelType >( kernel ) );
+  internal::for_all_nodes_impl< ExecPolicy >( ArgType(),
+                                              *m,
+                                              std::forward< KernelType >( kernel ) );
 }
+
+template < typename ExecPolicy = policy::serial,
+           typename ArgType    = xargs::index,
+           typename KernelType >
+inline void for_all_nodes( const Mesh* m, KernelType&& kernel )
+{
+  // compile-time sanity checks
+  AXOM_STATIC_ASSERT( policy_traits< ExecPolicy >::valid() );
+  AXOM_STATIC_ASSERT( xargs_traits< ArgType >::valid() );
+
+  // run-time sanity checks
+  SLIC_ASSERT( m != nullptr );
+
+  //dispatch
+  internal::for_all_nodes< ExecPolicy >( ArgType(),
+                                         *m,
+                                         std::forward< KernelType >( kernel ) );
+}
+/// @}
 
 /// @}
 
@@ -324,10 +349,34 @@ inline void for_all_nodes( const mint::Mesh* m, KernelType&& kernel )
  * \see policy.hpp
  * \see xargs.hpp
  */
+/// @{
+
+template < typename ExecPolicy = policy::serial,
+           typename ArgType    = xargs::index,
+           typename MeshType,
+           typename KernelType >
+inline void for_all_cells( const MeshType* m, KernelType&& kernel )
+{
+  // compile-time sanity checks
+  AXOM_STATIC_ASSERT( policy_traits< ExecPolicy >::valid() );
+  AXOM_STATIC_ASSERT( xargs_traits< ArgType >::valid() );
+  
+  constexpr bool valid_mesh_type = std::is_base_of<Mesh, MeshType>::value;
+  AXOM_STATIC_ASSERT( valid_mesh_type );
+
+  // run-time sanity checks
+  SLIC_ASSERT( m != nullptr );
+
+  // dispatch
+  internal::for_all_cells_impl< ExecPolicy >( ArgType(),
+                                              *m,
+                                              std::forward< KernelType >( kernel ) );
+}
+
 template < typename ExecPolicy = policy::serial,
            typename ArgType    = xargs::index,
            typename KernelType >
-inline void for_all_cells( const mint::Mesh* m, KernelType&& kernel )
+inline void for_all_cells( const Mesh* m, KernelType&& kernel )
 {
   // compile-time sanity checks
   AXOM_STATIC_ASSERT( policy_traits< ExecPolicy >::valid() );
@@ -336,10 +385,13 @@ inline void for_all_cells( const mint::Mesh* m, KernelType&& kernel )
   // run-time sanity checks
   SLIC_ASSERT( m != nullptr );
 
-  // dispatch
-  internal::for_all_cells< ExecPolicy >(
-    ArgType(), m, std::forward< KernelType >( kernel ) );
+  //dispatch
+  internal::for_all_cells< ExecPolicy >( ArgType(),
+                                         *m,
+                                         std::forward< KernelType >( kernel ) );
 }
+
+/// @}
 
 /// @}
 
@@ -391,10 +443,34 @@ inline void for_all_cells( const mint::Mesh* m, KernelType&& kernel )
  * \see policy.hpp
  * \see xargs.hpp
  */
+/// @{
+
+template < typename ExecPolicy = policy::serial,
+           typename ArgType    = xargs::index,
+           typename MeshType,
+           typename KernelType >
+inline void for_all_faces( const MeshType* m, KernelType&& kernel )
+{
+  // compile-time sanity checks
+  AXOM_STATIC_ASSERT( policy_traits< ExecPolicy >::valid() );
+  AXOM_STATIC_ASSERT( xargs_traits< ArgType >::valid() );
+
+  constexpr bool valid_mesh_type = std::is_base_of<Mesh, MeshType>::value;
+  AXOM_STATIC_ASSERT( valid_mesh_type );
+
+  // run-time sanity checks
+  SLIC_ASSERT( m != nullptr );
+
+  // dispatch
+  internal::for_all_faces_impl< ExecPolicy >( ArgType(),
+                                              *m,
+                                              std::forward< KernelType >( kernel ) );
+}
+
 template < typename ExecPolicy = policy::serial,
            typename ArgType    = xargs::index,
            typename KernelType >
-inline void for_all_faces( const mint::Mesh* m, KernelType&& kernel )
+inline void for_all_faces( const Mesh* m, KernelType&& kernel )
 {
   // compile-time sanity checks
   AXOM_STATIC_ASSERT( policy_traits< ExecPolicy >::valid() );
@@ -403,10 +479,13 @@ inline void for_all_faces( const mint::Mesh* m, KernelType&& kernel )
   // run-time sanity checks
   SLIC_ASSERT( m != nullptr );
 
-  // dispatch
-  internal::for_all_faces< ExecPolicy >(
-    ArgType(), m, std::forward< KernelType >( kernel ) );
+  //dispatch
+  internal::for_all_faces< ExecPolicy >( ArgType(),
+                                         *m,
+                                         std::forward< KernelType >( kernel ) );
 }
+
+/// @}
 
 /// @}
 
