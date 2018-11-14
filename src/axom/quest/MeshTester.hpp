@@ -87,8 +87,7 @@ enum class WatertightStatus : signed char
  * finishes.
  */
 WatertightStatus isSurfaceMeshWatertight(
-  mint::UnstructuredMesh< mint::SINGLE_SHAPE >* surface_mesh,
-  bool & watertight);
+  mint::UnstructuredMesh< mint::SINGLE_SHAPE >* surface_mesh);
 
 
 /*!
