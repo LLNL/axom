@@ -65,19 +65,28 @@ void findTriMeshIntersections(
   int spatialIndexResolution = 0);
 
 
+/*! Enumeration indicating mesh watertightness */
+enum class WatertightStatus : signed char
+{
+  WATERTIGHT = 0,    ///< Each edge in a surface mesh is incident in two cells
+  NOT_WATERTIGHT,    ///< Each edge is incident in one or two cells
+  CHECK_FAILED       ///< Calculation failed (possibly a non-manifold mesh)
+};
+
+
 /*!
  * \brief Check a surface mesh for holes using its face relation.
  *
- * \param [in] surface_mesh A triangle mesh in three dimensions
- * \param [out] watertight Whether this mesh is watertight
- * \returns status True if this function ran with no errors
+ * \param [in] surface_mesh A surface mesh in three dimensions
+ * \returns status If the mesh is watertight, is not watertight, or
+ *    if an error occurred (possibly due to non-manifold mesh).
  *
  * This function computes the mesh's cell-face and face-vertex relations.
  * For large meshes, this can take a long time.  The relations are used to
  * check for holes, and remain cached with the mesh after this function
  * finishes.
  */
-bool detectTriMeshHoles(
+WatertightStatus isSurfaceMeshWatertight(
   mint::UnstructuredMesh< mint::SINGLE_SHAPE >* surface_mesh,
   bool & watertight);
 

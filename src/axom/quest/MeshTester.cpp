@@ -242,7 +242,7 @@ void findTriMeshIntersections(
 
 
 /* Check a surface mesh for holes using its face relation. */
-bool detectTriMeshHoles(UMesh* surface_mesh, bool & watertight)
+WatertightStatus isSurfaceMeshWatertight(UMesh* surface_mesh)
 {
   // Make sure the mesh is reasonable
   SLIC_ASSERT_MSG(surface_mesh != nullptr,
@@ -253,34 +253,26 @@ bool detectTriMeshHoles(UMesh* surface_mesh, bool & watertight)
 
   if (!success)
   {
-    watertight = false;
-    return success;
+    return WatertightStatus::CHECK_FAILED;
   }
 
-  watertight = true;
+  WatertightStatus retval = WatertightStatus::WATERTIGHT;
   IndexType faceCount = surface_mesh->getNumberOfFaces();
 
-  // This way, we respect the object and use the Mesh API for face cells
   IndexType c1, c2;
-  for (IndexType faceIdx = 0; faceIdx < faceCount && watertight; ++faceIdx)
+  for (IndexType faceIdx = 0;
+       faceIdx < faceCount && retval == WatertightStatus::WATERTIGHT;
+       ++faceIdx)
   {
     surface_mesh->getFaceCellIDs(faceIdx, c1, c2);
-    if (c1 == -1 || c2 == -1) { watertight = false; }
+    if (c1 == (IndexType)mint::UNDEFINED_CELL ||
+        c2 == (IndexType)mint::UNDEFINED_CELL)
+    {
+      retval = WatertightStatus::NOT_WATERTIGHT;
+    }
   }
 
-  // Or this way, we rely on internal knowledge of face-cell data
-  // representation, grab the underlying array, and quickly run through it.
-
-  // IndexType * faceCells = surface_mesh->getFaceCellsArray();
-  // for (IndexType faceIdx = 0; idx < faceCount && watertight; ++idx)
-  // {
-  //   if (faceCells[2*faceIdx + 0] == -1 || faceCells[2*faceIdx + 1] == -1)
-  //   {
-  //     watertight = false;
-  //   }
-  // }
-
-  return success;
+  return retval;
 }
 
 

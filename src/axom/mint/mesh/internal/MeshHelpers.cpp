@@ -17,6 +17,7 @@
 
 #include "axom/mint/mesh/internal/MeshHelpers.hpp"
 #include "axom/mint/mesh/Mesh.hpp"
+#include "axom/core/utilities/Utilities.hpp"
 
 #include <algorithm>
 #include <unordered_map>
@@ -53,33 +54,6 @@ std::string make_face_key(int count, IndexType * values, char sep)
   std::sort(locvalues.begin(), locvalues.end());
   return join_ints_into_string(count, locvalues.data(), sep);
 }
-
-
-//------------------------------------------------------------------------------
-// Compares std::vector<IndexType> in lexicographic order
-class LexiComparator
-{
-public:
-  bool operator()(const std::vector<IndexType> & v1,
-                  const std::vector<IndexType> & v2) const
-  {
-    size_t s1 = v1.size();
-    size_t s2 = v2.size();
-    size_t size = std::min(s1, s2);
-    size_t i = 0;
-
-    while (i < size) {
-      if (v1[i] < v2[i]) { return true; }
-      else if (v1[i] > v2[i]) { return false; }
-      
-      ++i;
-    }
-
-    if (s1 < s2) { return true; }
-
-    return false;
-  }
-};
 
 
 //------------------------------------------------------------------------------
@@ -132,7 +106,7 @@ bool initFaces(Mesh * mesh,
   using IDtoKeyType = std::unordered_map< IndexType, std::vector<IndexType> > ;
   using FaceBuilderType = std::map< std::vector<IndexType>,
                                     FaceTypeCellsNodes,
-                                    LexiComparator > ;
+                                    utilities::LexiComparator<IndexType> > ;
   FaceBuilderType workface;
 
   // Iterate over each cell.
