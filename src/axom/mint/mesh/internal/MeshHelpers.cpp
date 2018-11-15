@@ -17,6 +17,7 @@
 
 #include "axom/mint/mesh/internal/MeshHelpers.hpp"
 #include "axom/mint/mesh/Mesh.hpp"
+#include "axom/core/utilities/Utilities.hpp"
 
 #include <algorithm>
 #include <unordered_map>
@@ -68,14 +69,13 @@ struct FaceTypeCellsNodes
   FaceTypeCellsNodes() : facetype(UNDEFINED_CELL)
   { }
 
-  FaceTypeCellsNodes(CellType ftype, std::string fkey,
+  FaceTypeCellsNodes(CellType ftype,
                      std::vector<IndexType> & fcells,
                      std::vector<IndexType> & fnodes) :
-    facetype(ftype), facekey(fkey), facecells(fcells), facenodes(fnodes)
+    facetype(ftype), facecells(fcells), facenodes(fnodes)
   { }
 
   CellType facetype;
-  std::string facekey;
   std::vector<IndexType> facecells;
   std::vector<IndexType> facenodes;
 };
@@ -103,8 +103,10 @@ bool initFaces(Mesh * mesh,
   f2noffsets = nullptr;
   f2ntypes = nullptr;
 
-  using IDtoKeyType = std::unordered_map< IndexType, std::string > ;
-  using FaceBuilderType = std::unordered_map< std::string, FaceTypeCellsNodes > ;
+  using IDtoKeyType = std::unordered_map< IndexType, std::vector<IndexType> > ;
+  using FaceBuilderType = std::map< std::vector<IndexType>,
+                                    FaceTypeCellsNodes,
+                                    utilities::LexiComparator<IndexType> > ;
   FaceBuilderType workface;
 
   // Iterate over each cell.
@@ -137,22 +139,21 @@ bool initFaces(Mesh * mesh,
       }
       base += num_face_nodes;
 
-      std::string face_hash =
-        make_face_key(num_face_nodes, inorder_facenodes.data(), '.');
+      std::vector<IndexType> sorted_facenodes(inorder_facenodes);
+      std::sort(sorted_facenodes.begin(), sorted_facenodes.end());
 
       FaceTypeCellsNodes cells_of_face;
-      if (workface.count(face_hash) > 0)
+      if (workface.count(sorted_facenodes) > 0)
       {
-        cells_of_face = workface[face_hash];
+        cells_of_face = workface[sorted_facenodes];
       }
       else
       {
         cells_of_face.facetype = thisCell.face_types[f];
-        cells_of_face.facekey = face_hash;
         cells_of_face.facenodes = inorder_facenodes;
       }
       cells_of_face.facecells.push_back(c);
-      workface[face_hash] = cells_of_face;
+      workface[sorted_facenodes] = cells_of_face;
     }
   }
 
@@ -205,7 +206,6 @@ bool initFaces(Mesh * mesh,
   int faceNodeOffset = 0;
   for (int fidx = 0; fidx < facecount; ++fidx)
   {
-    std::string facekey = keys[fidx];
     FaceTypeCellsNodes theFace = workface[keys[fidx]];
     std::vector<IndexType> & faceNodes = theFace.facenodes;
     std::copy(faceNodes.begin(), faceNodes.end(), f2n + faceNodeOffset);

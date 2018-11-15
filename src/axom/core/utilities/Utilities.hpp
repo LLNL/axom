@@ -360,6 +360,39 @@ bool isNearlyEqualRelative(RealType a, RealType b, RealType relThresh = 1.0e-6,
   // return abs(a-b) <= max(absThresh, relThresh * maxFabs );
 }
 
+/*!
+ * \brief Compares std::vector< T > in lexicographic order
+ *
+ * \note T must support > and < operators.
+ */
+template<typename T>
+class LexiComparator
+{
+public:
+  bool operator()(const std::vector<T> & v1,
+                  const std::vector<T> & v2) const
+  {
+    size_t s1 = v1.size();
+    size_t s2 = v2.size();
+    size_t size = std::min(s1, s2);
+    size_t i = 0;
+
+    while (i < size) {
+      if (v1[i] < v2[i]) { return true; }
+      else if (v1[i] > v2[i]) { return false; }
+
+      ++i;
+    }
+
+    if (s1 < s2) { return true; }
+
+    return false;
+  }
+};
+
+
+
+
 }  // namespace utilities
 }  // namespace axom
 

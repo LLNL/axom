@@ -28,6 +28,8 @@
 #include "axom/primal/geometry/RectangularLattice.hpp"
 #include "axom/primal/geometry/MortonIndex.hpp"
 
+#include "axom/mint/config.hpp"
+
 // C++ includes
 #include <cmath>
 #include <algorithm>
@@ -53,7 +55,7 @@ typedef primal::UniformGrid<int, 3> UniformGrid3;
 typedef primal::Vector<double, 3> Vector3;
 typedef primal::Segment<double, 3> Segment3;
 
-typedef axom::common::uint64 IndexType;
+typedef axom::mint::IndexType IndexType;
 typedef primal::RectangularLattice<3, double, IndexType> Lattice3;
 typedef primal::Mortonizer<IndexType, IndexType, 3> Morton3;
 
@@ -137,11 +139,8 @@ inline bool areTriangleIndicesDistinct( mint::IndexType* indices)
          && indices[2] != indices[0];
 }
 
-/*!
- * \brief Implementation for quest::findTriMeshIntersections
- *
- * \see findTriMeshIntersections
- */
+/* Find and report self-intersections and degenerate triangles
+ * in a triangle surface mesh. */
 void findTriMeshIntersections(
   UMesh* surface_mesh,
   std::vector<std::pair<int, int> > & intersections,
@@ -239,6 +238,41 @@ void findTriMeshIntersections(
       ++nit;
     }
   }
+}
+
+
+/* Check a surface mesh for holes using its face relation. */
+WatertightStatus isSurfaceMeshWatertight(UMesh* surface_mesh)
+{
+  // Make sure the mesh is reasonable
+  SLIC_ASSERT_MSG(surface_mesh != nullptr,
+                  "surface_mesh must be a valid pointer to a triangle mesh");
+
+  // Calculate the face relations---this can take awhile
+  bool success = surface_mesh->initializeFaceConnectivity();
+
+  if (!success)
+  {
+    return WatertightStatus::CHECK_FAILED;
+  }
+
+  WatertightStatus retval = WatertightStatus::WATERTIGHT;
+  IndexType faceCount = surface_mesh->getNumberOfFaces();
+
+  IndexType c1, c2;
+  for (IndexType faceIdx = 0;
+       faceIdx < faceCount && retval == WatertightStatus::WATERTIGHT;
+       ++faceIdx)
+  {
+    surface_mesh->getFaceCellIDs(faceIdx, c1, c2);
+    if (c1 == (IndexType)mint::UNDEFINED_CELL ||
+        c2 == (IndexType)mint::UNDEFINED_CELL)
+    {
+      retval = WatertightStatus::NOT_WATERTIGHT;
+    }
+  }
+
+  return retval;
 }
 
 
