@@ -515,6 +515,36 @@ int main( int argc, char** argv )
     }
   }
 
+  // Look for holes---must be welded
+  if (params.skipWeld)
+  {
+    SLIC_INFO("Watertight check depends on vertex welding, which was skipped.");
+  }
+  else
+  {
+    SLIC_INFO("Checking for watertight mesh.");
+    axom::utilities::Timer timer2(true);
+    quest::WatertightStatus wtstat =
+      quest::isSurfaceMeshWatertight(surface_mesh);
+    timer2.stop();
+    switch (wtstat)
+    {
+      case quest::WatertightStatus::WATERTIGHT:
+        std::cout << "The mesh is watertight." << std::endl;
+        break;
+      case quest::WatertightStatus::NOT_WATERTIGHT:
+        std::cout << "The mesh is not watertight: at least one " <<
+          "boundary edge was detected." << std::endl;
+        break;
+      default:
+        std::cout << "An error was encountered while checking." << std::endl <<
+          "This may be due to a non-manifold mesh." << std::endl;
+        break;
+    }
+    SLIC_INFO("Testing for watertightness took "
+              << timer2.elapsedTimeInSec() << " seconds.");
+  }
+
   // Delete the mesh
   delete surface_mesh;
   surface_mesh = nullptr;
