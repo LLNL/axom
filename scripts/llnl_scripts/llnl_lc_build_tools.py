@@ -278,39 +278,6 @@ def uberenv_install_tpls(prefix,spec,mirror = None):
         log_failure(prefix,"[ERROR: uberenv/spack build of spec: %s failed]" % spec)
     return res
 
-def patch_host_configs(prefix):
-    """
-    Sanity check that looks for host config files generated at 
-    the given prefix. 
-    """
-    # load manual edits into a dict with keys that we can compare to 
-    # generated host config names
-    manual_edits_pattern = "host-configs/*manual.edits.txt"
-    manual_edits_files = glob.glob(manual_edits_pattern)
-    manual_edits = {}
-    for f in manual_edits_files:
-        base = os.path.basename(f)[:-(len("manual.edits.txt")+1)]
-        manual_edits[base] = open(f).read()
-    # loop over 
-    fs = glob.glob(pjoin(prefix,"*.cmake"))
-    print "[found %d host config files @ %s]" % (len(fs),prefix)
-    for f in fs:
-        print "[ -> %s  ]" %  f
-        for me_key in manual_edits.keys():
-            # see if the key matches
-            if f.count(me_key) == 1:
-                # make sure the text wasn't already appended
-                patch_txt = manual_edits[me_key]
-                host_cfg_txt = open(f).read()
-                if not patch_txt in host_cfg_txt:
-                    # append the manual edits
-                    print "[patching %s with manual edits for %s]" % (f,me_key)
-                    ofile = open(f,"w")
-                    ofile.write(host_cfg_txt)
-                    ofile.write(patch_txt)
-                    ofile.write("\n")
-    return 0
-
 ############################################################
 # helpers for testing a set of host configs
 ############################################################
@@ -497,8 +464,6 @@ def full_build_and_test_of_tpls(builds_dir, job_name, timestamp):
             return res
         else:
             print "[SUCCESS: Finished build tpls for spec %s]\n" % spec
-    # patch manual edits into host config files
-    patch_host_configs(prefix)
     # build the axom against the new tpls
     res = build_and_test_host_configs(prefix, job_name, timestamp)
     if res != 0:
