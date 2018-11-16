@@ -1,105 +1,96 @@
 ##################################
-# uberenv host-config
+# !!!! This is a generated file, edit at own risk !!!!
+##################################
+
+##################################
 #
-# This is a generated file, edit at own risk.
+# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+#
+# Produced at the Lawrence Livermore National Laboratory.
+#
+# LLNL-CODE-741217
+#
+# All rights reserved.
+#
+# This file is part of Axom.
+#
+# For details about use and distribution, please read axom/LICENSE.
+#
 ##################################
-# toss_3_x86_64_ib-gcc@4.9.3
+
 ##################################
 
-# cmake from uberenv
-# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_08_07_19_23_25/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3/cmake-3.9.6-74unmfwnvdqkw6iovc6w6zojikt2xgyj/bin/cmake
+# SYS_TYPE: toss_3_x86_64_ib
+# Compiler Spec: gcc@4.9.3
+##################################
 
-#######
-# using gcc@4.9.3 compiler spec
-#######
+# CMake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_11_14_15_03_42/gcc-4.9.3/cmake-3.9.6/bin/cmake
 
-# c compiler used by spack
+##############
+# Compilers
+##############
+
+# C compiler used by spack
 set(CMAKE_C_COMPILER "/usr/tce/packages/gcc/gcc-4.9.3/bin/gcc" CACHE PATH "")
 
-# cpp compiler used by spack
+# C++ compiler used by spack
 set(CMAKE_CXX_COMPILER "/usr/tce/packages/gcc/gcc-4.9.3/bin/g++" CACHE PATH "")
 
-# fortran compiler used by spack
+# Fortran compiler used by spack
 set(ENABLE_FORTRAN ON CACHE BOOL "")
 
 set(CMAKE_Fortran_COMPILER "/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran" CACHE PATH "")
 
+##############
+# TPLs
+##############
+
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_08_07_19_23_25/spack/opt/spack/toss_3_x86_64_ib/gcc-4.9.3" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_11_14_15_03_42/gcc-4.9.3" CACHE PATH "")
 
 # hdf5 from uberenv
-set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-v4jrbjlu2s6vl5a67kv3ydg6ssdsi2tj" CACHE PATH "")
+set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.19" CACHE PATH "")
 
 # scr not built by uberenv
 
 # conduit from uberenv
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.3.1-hc5x3kmrunksj4lka2fnjms3wfu4c7oc" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.3.1" CACHE PATH "")
 
 # mfem from uberenv
-set(MFEM_DIR "${TPL_ROOT}/mfem-3.3.2-ub6rg4rafniyzeoecke3lfm6zpzbc5fs" CACHE PATH "")
+set(MFEM_DIR "${TPL_ROOT}/mfem-3.4.0" CACHE PATH "")
 
-# python from uberenv
-set(PYTHON_EXECUTABLE "${TPL_ROOT}/python-2.7.15-n4z2mfo3txeeeo6u6gowisgun7rc3lti/bin/python" CACHE PATH "")
+# python not built by uberenv
 
-# doxygen from uberenv
-set(DOXYGEN_EXECUTABLE "${TPL_ROOT}/doxygen-1.8.11-okr7nqab6jfwg6loh3ri6mbv7korp4ib/bin/doxygen" CACHE PATH "")
+set(ENABLE_DOCS OFF CACHE BOOL "")
 
-# sphinx 1.4.5 from uberenv
-set(SPHINX_EXECUTABLE "${TPL_ROOT}/python-2.7.15-n4z2mfo3txeeeo6u6gowisgun7rc3lti/bin/sphinx-build" CACHE PATH "")
+# shroud not built by uberenv
 
-# shroud 0.10.1 from uberenv
-set(SHROUD_EXECUTABLE "${TPL_ROOT}/python-2.7.15-n4z2mfo3txeeeo6u6gowisgun7rc3lti/bin/shroud" CACHE PATH "")
+# uncrustify not built by uberenv
 
-# uncrustify from uberenv
-set(UNCRUSTIFY_EXECUTABLE "${TPL_ROOT}/uncrustify-0.61-gfugzvve5jxq4p6kpozhysf76qtcwxcc/bin/uncrustify" CACHE PATH "")
+# lcov and genhtml not built by uberenv
 
-# lcov and genhtml from uberenv
-set(LCOV_PATH "${TPL_ROOT}/lcov-1.11-ms3k744sok6xi4ndnzcmwdxnhcqwpm3i/usr/bin/lcov" CACHE PATH "")
+##############
+# MPI
+##############
 
-set(GENHTML_PATH "${TPL_ROOT}/lcov-1.11-ms3k744sok6xi4ndnzcmwdxnhcqwpm3i/usr/bin/genhtml" CACHE PATH "")
+set(ENABLE_MPI ON CACHE BOOL "")
 
-##################################
-# end uberenv host-config
-##################################
+set(MPI_C_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/bin/mpicc" CACHE PATH "")
 
-##
-## Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
-##
-## Produced at the Lawrence Livermore National Laboratory.
-##
-## LLNL-CODE-741217
-##
-## All rights reserved.
-##
-## This file is part of Axom.
-##
-## For details about use and distribution, please read axom/LICENSE.
-##
+set(MPI_CXX_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/bin/mpicxx" CACHE PATH "")
 
-##############################################################################
-# !---------------------------------------------------------------------------
-##############################################################################
-# Options added manually to 
-# lc toss3 gcc@4.9.3  host configs
-##############################################################################
+set(MPI_Fortran_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3/bin/mpif90" CACHE PATH "")
+
+set(MPIEXEC "/usr/bin/srun" CACHE PATH "")
+
+set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
+
+##############
+# Other machine specifics
+##############
 
 set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 
-##############################################################################
-# MPI - manually added for now
-##############################################################################
-set(ENABLE_MPI ON CACHE BOOL "")
-
-set(MPI_HOME             "/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-4.9.3" CACHE PATH "")
-set(MPI_C_COMPILER       "${MPI_HOME}/bin/mpicc"   CACHE PATH "")
-set(MPI_CXX_COMPILER     "${MPI_HOME}/bin/mpicxx"  CACHE PATH "")
-set(MPI_Fortran_COMPILER "${MPI_HOME}/bin/mpifort" CACHE PATH "")
-
-set(MPIEXEC              "/usr/bin/srun" CACHE PATH "")
-set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
 set(SCR_DIR "/usr/gapps/axom/thirdparty_libs/scr-1.2.1/toss_3_x86_64_ib/gcc-4.9.3" CACHE PATH "")
 
-##############################################################################
-# !---------------------------------------------------------------------------
-##############################################################################
 
