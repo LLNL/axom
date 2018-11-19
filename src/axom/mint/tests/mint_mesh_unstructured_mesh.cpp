@@ -837,7 +837,7 @@ void createMeshesForResize( UnstructuredMesh< MIXED_SHAPE >** meshes,
  * \param [in] dimension the dimensionality of the meshes (2 or 3).
  *
  * This routine uses create_mesh< UNSTRUCTURED_MESH >() from
- * mint_mesh_utilities.hpp to create UnstructuredMesh objects with
+ * mint_test_utilities.hpp to create UnstructuredMesh objects with
  * correct node and cell connectivity.  Thus, none of the objects
  * created by this routine use Sidre or external storage.
  */
