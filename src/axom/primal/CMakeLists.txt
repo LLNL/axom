@@ -41,16 +41,35 @@ set( primal_headers
      operators/detail/clip_impl.hpp
      operators/detail/intersect_impl.hpp
 
+     ## spatial acceleration
+     spatial_acceleration/BVH.hpp
    )
 
 set( primal_sources
-
+     
+     ## operators
      operators/detail/intersect_impl.cpp
+     
+     ## spatial acceleration
+     spatial_acceleration/BVH.cpp
    )
 
 ################################
 # Make/Install the library
 ################################
+set( primal_dependencies
+     core
+     slic
+     )
+     
+if ( ${RAJA_FOUND} )
+  list(APPEND primal_dependencies raja)
+endif()
+
+if ( ${ENABLE_OPENMP} )
+  list(APPEND primal_dependencies openmp)
+endif()
+
 blt_add_library(
     NAME                  primal
     SOURCES               ${primal_sources}
