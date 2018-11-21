@@ -17,6 +17,21 @@
 ####################################
 
 ################################
+# UMPIRE
+################################
+if (UMPIRE_DIR)
+  include(cmake/thirdparty/FindUmpire.cmake)
+  blt_register_library( NAME umpire
+                        INCLUDES ${UMPIRE_INCLUDE_DIRS}
+                        TREAT_INCLUDES_AS_SYSTEM ON
+                        LIBRARIES umpire umpire_tpl_simpool umpire_tpl_judy 
+                                  umpire_resource umpire_alloc umpire_op 
+                                  umpire_util umpire_strategy )
+else()
+  message(STATUS "Umpire support is OFF")
+endif()
+
+################################
 # RAJA
 ################################
 if (RAJA_DIR)

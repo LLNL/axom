@@ -67,7 +67,7 @@
 #cmakedefine AXOM_USE_SCR
 #cmakedefine AXOM_USE_SPARSEHASH
 #cmakedefine AXOM_USE_STD_UNORDERED_MAP
-
+#cmakedefine AXOM_USE_UMPIRE
 
 /*
  * OpenMP is a special case since it varies by target and the compiler
