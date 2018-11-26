@@ -1,0 +1,75 @@
+
+# -------------------------------------------------------------------------
+# This file controls default concretization preferences for Spack.
+#
+# Settings here are versioned with Spack and are intended to provide
+# sensible defaults out of the box. Spack maintainers should edit this
+# file to keep it current.
+#
+# Users can override these settings by editing the following files.
+#
+# Per-spack-instance settings (overrides defaults):
+#   $SPACK_ROOT/etc/spack/packages.yaml
+#
+# Per-user settings (overrides default and site settings):
+#   ~/.spack/packages.yaml
+# -------------------------------------------------------------------------
+packages:
+  all:
+    compiler: [gcc, intel, pgi, clang, xl, nag]
+    providers:
+      awk: [gawk]
+      blas: [openblas]
+      daal: [intel-daal]
+      elf: [elfutils]
+      golang: [gcc]
+      ipp: [intel-ipp]
+      java: [jdk]
+      lapack: [openblas]
+      mkl: [intel-mkl]
+      mpe: [mpe2]
+      mpi: [mpich]
+      opencl: [pocl]
+      openfoam: [openfoam-com, openfoam-org, foam-extend]
+      pil: [py-pillow]
+      scalapack: [netlib-scalapack]
+      szip: [libszip, libaec]
+      tbb: [intel-tbb]
+      jpeg: [libjpeg-turbo, libjpeg]
+# LLNL mpi
+  mpich:
+    paths:
+      mpich@3.bgq.fastmpi %clang@4.0.0_gfortran arch=bgq-cnk-ppc64: /collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/llnl
+      mpich@3.bgq.fastmpi %clang@4.0.0_xlf arch=bgq-cnk-ppc64: /collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/llnl
+    buildable: False
+# System level packages to not build
+  autotools:
+    paths:
+      autotools: /usr/bin/
+    buildable: False 
+  bzip2:
+   paths:
+      bzip2: /usr/bin/
+   buildable: False
+  gettext:
+   paths:
+      gettext: /usr/bin/
+   buildable: False
+  m4:
+   paths:
+      m4: /usr/bin/
+   buildable: False
+  pkg-config:
+    paths:
+      pkg-config: /usr/bin/
+    buildable: False 
+  tar:
+   paths:
+      tar: /usr/bin/
+   buildable: False
+# On BGQ specifically just use the system CMake
+  cmake:
+    version: [3.8.2]
+    paths:
+      cmake: /collab/usr/global/tools/cmake/bgqos_0/cmake-3.8.2/
+    buildable: False

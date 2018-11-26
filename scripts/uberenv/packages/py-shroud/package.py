@@ -14,6 +14,10 @@ class PyShroud(Package):
 
     extends('python')
 
+    depends_on("py-alabaster")
+    depends_on("py-pytz")
+    depends_on("py-docutils")
+    depends_on("py-setuptools")
     depends_on("py-pyyaml")
 
     def install(self, spec, prefix):

@@ -1,4 +1,5 @@
 {
-"spack_develop_commit": "4a6ec6377d5101d44a73e99e1a67cfd8f5f8a694",
-"uberenv_package_name" : "uberenv-axom"
+"spack_develop_commit": "729bed3fd3e7bd3ecabda3ab25525019f3f83661",
+"uberenv_package_name" : "uberenv-axom",
+"spack_activate" : ["py-numpy", "py-sphinx","py-shroud", "py-pyyaml"]
 }

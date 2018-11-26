@@ -34,7 +34,7 @@ def extract_cmake_location(file_path):
         file_handle = open(file_path, "r")
         content = file_handle.readlines()
         for line in content:
-            if line.startswith(cmake_line_prefix):
+            if line.lower().startswith(cmake_line_prefix):
                 return line.split(" ")[4].strip()
         print "Could not find a cmake entry in host config file."
     return None

@@ -1,48 +1,70 @@
 ##################################
-# uberenv host-config
+# !!!! This is a generated file, edit at own risk !!!!
+##################################
+
+##################################
 #
-# This is a generated file, edit at own risk.
+# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+#
+# Produced at the Lawrence Livermore National Laboratory.
+#
+# LLNL-CODE-741217
+#
+# All rights reserved.
+#
+# This file is part of Axom.
+#
+# For details about use and distribution, please read axom/LICENSE.
+#
 ##################################
-# bgqos_0-clang@4.0.0_gfortran
+
 ##################################
 
-# cmake from uberenv
-# cmake executable path: /collab/usr/global/tools/cmake/bgqos_0/cmake-3.8.2/bin/cmake
+# SYS_TYPE: bgqos_0
+# Compiler Spec: clang@4.0.0_gfortran
+##################################
 
-#######
-# using clang@4.0.0_gfortran compiler spec
-#######
+# CMake executable path: /collab/usr/global/tools/cmake/bgqos_0/cmake-3.8.2/bin/cmake
 
-# c compiler used by spack
+##############
+# Compilers
+##############
+
+# Note: we build TPLs with the serial compiler then use MPI wrappers on bgq
+# Serial compilers used by spack:
+# C compiler: /collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/bin/bgclang
+# C++ compiler: /collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/bin/bgclang++
+
 set(CMAKE_C_COMPILER "/collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/llnl/bin/mpiclang" CACHE PATH "")
 
-# cpp compiler used by spack
 set(CMAKE_CXX_COMPILER "/collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/llnl/bin/mpiclang++" CACHE PATH "")
 
-# fortran compiler used by spack
+# Fortran compiler used by spack
 set(ENABLE_FORTRAN ON CACHE BOOL "")
 
 set(CMAKE_Fortran_COMPILER "/usr/local/tools/toolchain-4.8.4/gnu-linux-4.8.4/bin/powerpc64-bgq-linux-gfortran" CACHE PATH "")
 
+##############
+# TPLs
+##############
+
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_08_07_19_23_27/spack/opt/spack/bgqos_0/clang-4.0.0_gfortran" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_11_14_15_08_15/clang-4.0.0_gfortran" CACHE PATH "")
 
 # hdf5 from uberenv
-set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-u72ucrahnfkjno3gj3aicmo3iyu7czfg" CACHE PATH "")
+set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.19" CACHE PATH "")
 
 # scr not built by uberenv
 
 # conduit from uberenv
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.3.1-hrqzeb6efxqetvdawg3fokthpk3d4gfg" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.3.1" CACHE PATH "")
 
 # mfem from uberenv
-set(MFEM_DIR "${TPL_ROOT}/mfem-3.3.2-niahyxq4gel6yee3vhsaij3aoefvz3ks" CACHE PATH "")
+set(MFEM_DIR "${TPL_ROOT}/mfem-3.4.0" CACHE PATH "")
 
 # python not built by uberenv
 
-# doxygen not built by uberenv
-
-# sphinx not built by uberenv
+set(ENABLE_DOCS OFF CACHE BOOL "")
 
 # shroud not built by uberenv
 
@@ -50,57 +72,33 @@ set(MFEM_DIR "${TPL_ROOT}/mfem-3.3.2-niahyxq4gel6yee3vhsaij3aoefvz3ks" CACHE PAT
 
 # lcov and genhtml not built by uberenv
 
-##################################
-# end uberenv host-config
-##################################
+##############
+# MPI
+##############
 
-##
-## Copyright (c) 2017, Lawrence Livermore National Security, LLC.
-##
-## Produced at the Lawrence Livermore National Laboratory.
-##
-## LLNL-CODE-741217
-##
-## All rights reserved.
-##
-## This file is part of Axom.
-##
-## For details about use and distribution, please read axom/LICENSE.
-##
+set(ENABLE_MPI ON CACHE BOOL "")
 
-##############################################################################
-# !---------------------------------------------------------------------------
-##############################################################################
-# Options added manually to 
-# lc bgq clang@4.0.0_gfortran host configs
-##############################################################################
+set(ENABLE_FIND_MPI OFF CACHE BOOL "Use wrapper directly to stop FindMPI returning the wrong linker flags.")
 
-set(ENABLE_DOCS    OFF CACHE BOOL "")
+set(ENABLE_WRAP_ALL_TESTS_WITH_MPIEXEC ON CACHE BOOL "Ensures that tests will be wrapped with srun to run on the backend nodes")
 
-set(CMAKE_SKIP_RPATH TRUE CACHE BOOL "")
+set(MPI_Fortran_INCLUDE_PATH "/usr/local/tools/deg/drivers/V1R2M0/ppc64/comm/gcc/include" CACHE PATH "Pass in an explicit path to help find mpif.h")
 
-# Manually set up HDF5 library dependencies for BGQ to bypass errors from CMake's FindHDF5
-set(HDF5_C_LIBRARY_m "-lm" CACHE STRING "")
-set(HDF5_C_LIBRARY_dl "-ldl" CACHE STRING "")
+set(MPIEXEC "/usr/bin/srun" CACHE PATH "")
 
-##############################################################################
-# MPI - manually added for now
-##############################################################################
-set(ENABLE_MPI      ON CACHE BOOL "")
-
-# Note: On BGQ, CMake uses the wrong linker flags when using FindMPI.
-# Disabling FindMPI allows us to use the wrapper directly via the CMake compiler variables.
-set(ENABLE_FIND_MPI OFF CACHE BOOL "")
-
-# Pass in an explicit path to help find mpif.h
-set(MPI_Fortran_INCLUDE_PATH "/usr/local/tools/deg/drivers/V1R2M0/ppc64/comm/gcc/include" CACHE PATH "")
-
-set(MPIEXEC              "/usr/bin/srun" CACHE PATH "")
 set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
 
-set(ENABLE_WRAP_ALL_TESTS_WITH_MPIEXEC TRUE CACHE BOOL "Ensures that tests will be wrapped with srun to run on the backend nodes")
+##############
+# Other machine specifics
+##############
 
-##############################################################################
-# !---------------------------------------------------------------------------
-##############################################################################
+set(ENABLE_GTEST_DEATH_TESTS OFF CACHE BOOL "")
+
+# Manually set up HDF5 library dependencies for BGQ to bypass errors from CMake's FindHDF5
+set(HDF5_C_LIBRARY_m "-lm" CACHE PATH "")
+
+set(HDF5_C_LIBRARY_dl "-ldl" CACHE PATH "")
+
+set(CMAKE_SKIP_RPATH ON CACHE BOOL "")
+
 
