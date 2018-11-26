@@ -44,7 +44,7 @@ class UberenvAxom(Package):
 
     # use ~cmake to skip cmake build and use whatever cmake is in the
     # users path 
-    # (given the pain of building cmake on BGQ, this is really on for BGQ)
+    # (given the pain of building cmake on BGQ, this is really only for BGQ)
     variant('cmake',   default=True, description="Build cmake.")
 
     variant("python",   default=False, description="Build python")
