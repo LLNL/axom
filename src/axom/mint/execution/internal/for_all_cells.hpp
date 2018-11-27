@@ -571,6 +571,8 @@ inline void for_all_cellcoords_uniform( const mint::Mesh* m,
   SLIC_ASSERT( m != nullptr );
   SLIC_ASSERT( m->getMeshType() == STRUCTURED_UNIFORM_MESH );
 
+  constexpr bool NO_COPY = true;
+
   const mint::UniformMesh* um = static_cast< const mint::UniformMesh* >( m );
   const int dimension         = um->getDimension();
   const double * x0           = um->getOrigin( );
@@ -587,7 +589,7 @@ inline void for_all_cellcoords_uniform( const mint::Mesh* m,
         double coords[2] = { x0[0] + nodeIDs[0] * h[0], 
                              x0[0] + nodeIDs[1] * h[0] };
       
-        numerics::Matrix<double> coordsMatrix( 1, 2, coords, true );
+        numerics::Matrix<double> coordsMatrix( dimension, 2, coords, NO_COPY );
         kernel( cellID, coordsMatrix, nodeIDs );
       }
     );
@@ -608,7 +610,7 @@ inline void for_all_cellcoords_uniform( const mint::Mesh* m,
                              x0[0] + (i + 1) * h[0], x0[1] + (j + 1) * h[1],
                              x0[0] +  i      * h[0], x0[1] + (j + 1) * h[1] };
         
-        numerics::Matrix<double> coordsMatrix( 2, 4, coords, true );
+        numerics::Matrix<double> coordsMatrix( dimension, 4, coords, NO_COPY );
         kernel( cellID, coordsMatrix, nodeIDs );
       }
     );
@@ -639,7 +641,7 @@ inline void for_all_cellcoords_uniform( const mint::Mesh* m,
           x0[0] + (i + 1) * h[0], x0[1] + (j + 1) * h[1], x0[2] + (k + 1) * h[2],
           x0[0] +  i      * h[0], x0[1] + (j + 1) * h[1], x0[2] + (k + 1) * h[2] };
         
-        numerics::Matrix<double> coordsMatrix( 3, 8, coords, true );
+        numerics::Matrix<double> coordsMatrix( dimension, 8, coords, NO_COPY );
         kernel( cellID, coordsMatrix, nodeIDs );
       }
     );
@@ -653,6 +655,8 @@ inline void for_all_cellcoords_rectilinear( const mint::Mesh* m,
 {
   SLIC_ASSERT( m != nullptr );
   SLIC_ASSERT( m->getMeshType() == STRUCTURED_RECTILINEAR_MESH );
+
+  constexpr bool NO_COPY = true;
 
   const mint::RectilinearMesh* rm =
                                static_cast< const mint::RectilinearMesh* >( m );
@@ -669,7 +673,7 @@ inline void for_all_cellcoords_rectilinear( const mint::Mesh* m,
         const IndexType nodeIDs[2] = { cellID, cellID + 1 };
         double coords[2] = { x[ nodeIDs[0] ], x[ nodeIDs[1] ] }; 
       
-        numerics::Matrix<double> coordsMatrix( 1, 2, coords, true );
+        numerics::Matrix<double> coordsMatrix( dimension, 2, coords, NO_COPY );
         kernel( cellID, coordsMatrix, nodeIDs );
       }
     );
@@ -691,7 +695,7 @@ inline void for_all_cellcoords_rectilinear( const mint::Mesh* m,
                              x[ i + 1 ], y[ j + 1 ],
                              x[ i ],     y[ j + 1 ] };
         
-        numerics::Matrix<double> coordsMatrix( 2, 4, coords, true );
+        numerics::Matrix<double> coordsMatrix( dimension, 4, coords, NO_COPY );
         kernel( cellID, coordsMatrix, nodeIDs );
       }
     );
@@ -723,7 +727,7 @@ inline void for_all_cellcoords_rectilinear( const mint::Mesh* m,
                               x[ i + 1 ], y[ j + 1 ], z[ k + 1 ],
                               x[ i ],     y[ j + 1 ], z[ k + 1 ] };
         
-        numerics::Matrix<double> coordsMatrix( 3, 8, coords, true );
+        numerics::Matrix<double> coordsMatrix( dimension, 8, coords, NO_COPY );
         kernel( cellID, coordsMatrix, nodeIDs );
       }
     );
@@ -776,6 +780,8 @@ inline void for_all_cellcoords_unstructured( const mint::Mesh* m,
   SLIC_ASSERT( m != nullptr );
   SLIC_ASSERT( m->getMeshType() == UNSTRUCTURED_MESH );
 
+  constexpr bool NO_COPY = true;
+
   const int dimension = m->getDimension();
   const double * x = m->getCoordinateArray( X_COORDINATE );
 
@@ -787,7 +793,7 @@ inline void for_all_cellcoords_unstructured( const mint::Mesh* m,
       {
         double coords[2] = { x[ nodeIDs[0] ], x[ nodeIDs[1] ] }; 
       
-        numerics::Matrix<double> coordsMatrix( 1, 2, coords, true );
+        numerics::Matrix<double> coordsMatrix( dimension, 2, coords, NO_COPY );
         kernel( cellID, coordsMatrix, nodeIDs );
       }
     );
@@ -807,7 +813,7 @@ inline void for_all_cellcoords_unstructured( const mint::Mesh* m,
           coords[ 2 * i + 1 ] = y[ nodeID ];
         }
 
-        numerics::Matrix<double> coordsMatrix( 2, numNodes, coords, true );
+        numerics::Matrix<double> coordsMatrix( dimension, numNodes, coords, NO_COPY );
         kernel( cellID, coordsMatrix, nodeIDs );
       }
     );
@@ -830,7 +836,7 @@ inline void for_all_cellcoords_unstructured( const mint::Mesh* m,
           coords[ 3 * i + 2 ] = z[ nodeID ];
         }
 
-        numerics::Matrix<double> coordsMatrix( 3, numNodes, coords, true );
+        numerics::Matrix<double> coordsMatrix( dimension, numNodes, coords, NO_COPY );
         kernel( cellID, coordsMatrix, nodeIDs );
       }
     );

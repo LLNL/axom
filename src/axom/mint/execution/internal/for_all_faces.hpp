@@ -673,6 +673,8 @@ inline void for_all_facecoords_uniform( const Mesh* m, KernelType&& kernel )
   SLIC_ASSERT( m->getMeshType() == STRUCTURED_UNIFORM_MESH );
   SLIC_ASSERT( m->getDimension() > 1 && m->getDimension() <= 3 );
 
+  constexpr bool NO_COPY = true;
+
   const UniformMesh* um  = static_cast< const UniformMesh* >( m );
   const int dimension    = um->getDimension();
   const double * x0      = um->getOrigin( );
@@ -691,7 +693,7 @@ inline void for_all_facecoords_uniform( const Mesh* m, KernelType&& kernel )
         double coords[4] = { x0[0] + i * h[0], x0[1] +  j      * h[1],
                              x0[0] + i * h[0], x0[1] + (j + 1) * h[1] };
         
-        numerics::Matrix<double> coordsMatrix( 2, 2, coords, true );
+        numerics::Matrix<double> coordsMatrix( dimension, 2, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
       }
     );
@@ -705,7 +707,7 @@ inline void for_all_facecoords_uniform( const Mesh* m, KernelType&& kernel )
         double coords[4] = { x0[0] +  i      * h[0], x0[1] + j * h[1],
                              x0[0] + (i + 1) * h[0], x0[1] + j * h[1] };
         
-        numerics::Matrix<double> coordsMatrix( 2, 2, coords, true );
+        numerics::Matrix<double> coordsMatrix( dimension, 2, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
       }
     );
@@ -727,7 +729,7 @@ inline void for_all_facecoords_uniform( const Mesh* m, KernelType&& kernel )
           x0[0] + i * h[0], x0[1] + (j + 1) * h[1], x0[2] + (k + 1) * h[2],
           x0[0] + i * h[0], x0[1] + (j + 1) * h[1], x0[2] +  k      * h[2] };
         
-        numerics::Matrix<double> coordsMatrix( 3, 4, coords, true );
+        numerics::Matrix<double> coordsMatrix( dimension, 4, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
       }
     );
@@ -747,7 +749,7 @@ inline void for_all_facecoords_uniform( const Mesh* m, KernelType&& kernel )
           x0[0] + (i + 1) * h[0], x0[1] + j * h[1], x0[2] + (k + 1) * h[2],
           x0[0] +  i      * h[0], x0[1] + j * h[1], x0[2] + (k + 1) * h[2] };
         
-        numerics::Matrix<double> coordsMatrix( 3, 4, coords, true );
+        numerics::Matrix<double> coordsMatrix( dimension, 4, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
       }
     );
@@ -767,7 +769,7 @@ inline void for_all_facecoords_uniform( const Mesh* m, KernelType&& kernel )
           x0[0] + (i + 1) * h[0], x0[1] + (j + 1) * h[1], x0[2] + k * h[2],
           x0[0] +  i      * h[0], x0[1] + (j + 1) * h[1], x0[2] + k * h[2] };
         
-        numerics::Matrix<double> coordsMatrix( 3, 4, coords, true );
+        numerics::Matrix<double> coordsMatrix( dimension, 4, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
       }
     );
@@ -781,6 +783,8 @@ inline void for_all_facecoords_rectilinear( const Mesh* m, KernelType&& kernel )
   SLIC_ASSERT( m != nullptr );
   SLIC_ASSERT( m->getMeshType() == STRUCTURED_RECTILINEAR_MESH );
   SLIC_ASSERT( m->getDimension() > 1 && m->getDimension() <= 3 );
+
+  constexpr bool NO_COPY = true;
 
   const RectilinearMesh* rm = static_cast< const RectilinearMesh* >( m );
   const int dimension       = rm->getDimension();
@@ -800,7 +804,7 @@ inline void for_all_facecoords_rectilinear( const Mesh* m, KernelType&& kernel )
         double coords[4] = { x[ i ], y[ j ],
                              x[ i ], y[ j + 1 ] };
         
-        numerics::Matrix<double> coordsMatrix( 2, 2, coords, true );
+        numerics::Matrix<double> coordsMatrix( dimension, 2, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
       }
     );
@@ -814,7 +818,7 @@ inline void for_all_facecoords_rectilinear( const Mesh* m, KernelType&& kernel )
         double coords[4] = { x[ i ]   , y[ j ],
                              x[ i + 1], y[ j ] };
         
-        numerics::Matrix<double> coordsMatrix( 2, 2, coords, true );
+        numerics::Matrix<double> coordsMatrix( dimension, 2, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
       }
     );
@@ -836,7 +840,7 @@ inline void for_all_facecoords_rectilinear( const Mesh* m, KernelType&& kernel )
                               x[ i ], y[ j + 1 ], z[ k + 1 ],
                               x[ i ], y[ j + 1 ], z[ k     ] };
         
-        numerics::Matrix<double> coordsMatrix( 3, 4, coords, true );
+        numerics::Matrix<double> coordsMatrix( dimension, 4, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
       }
     );
@@ -855,7 +859,7 @@ inline void for_all_facecoords_rectilinear( const Mesh* m, KernelType&& kernel )
                               x[ i + 1 ], y[ j ], z[ k + 1 ],
                               x[ i     ], y[ j ], z[ k + 1 ] };
         
-        numerics::Matrix<double> coordsMatrix( 3, 4, coords, true );
+        numerics::Matrix<double> coordsMatrix( dimension, 4, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
       }
     );
@@ -874,7 +878,7 @@ inline void for_all_facecoords_rectilinear( const Mesh* m, KernelType&& kernel )
                               x[ i + 1 ], y[ j + 1 ], z[ k ],
                               x[ i     ], y[ j + 1 ], z[ k ] };
         
-        numerics::Matrix<double> coordsMatrix( 3, 4, coords, true );
+        numerics::Matrix<double> coordsMatrix( dimension, 4, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
       }
     );
@@ -923,6 +927,8 @@ inline void for_all_facecoords_unstructured( const Mesh* m,
   SLIC_ASSERT( m->getMeshType() == UNSTRUCTURED_MESH );
   SLIC_ASSERT( m->getDimension() > 1 && m->getDimension() <= 3 );
 
+  constexpr bool NO_COPY = true;
+
   const int dimension = m->getDimension();
   const double * x = m->getCoordinateArray( X_COORDINATE );
   const double * y = m->getCoordinateArray( Y_COORDINATE );
@@ -941,7 +947,7 @@ inline void for_all_facecoords_unstructured( const Mesh* m,
           coords[ 2 * i + 1 ] = y[ nodeID ];
         }
         
-        numerics::Matrix<double> coordsMatrix( 2, 2, coords, true );
+        numerics::Matrix<double> coordsMatrix( dimension, 2, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
       }
     );
@@ -962,7 +968,7 @@ inline void for_all_facecoords_unstructured( const Mesh* m,
           coords[ 3 * i + 2 ] = z[ nodeID ];
         }
         
-        numerics::Matrix<double> coordsMatrix( 3, 4, coords, true );
+        numerics::Matrix<double> coordsMatrix( dimension, 4, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
       }
     );
