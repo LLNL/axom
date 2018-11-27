@@ -17,7 +17,7 @@
 // Axom includes
 #include "axom/config.hpp"                   // for compile-time definitions
 #include "axom/core/utilities/Utilities.hpp" // for alloc() /free()
-#include "axom/core/numerics/Matrix.hpp"        // for Matrix
+#include "axom/core/numerics/Matrix.hpp"     // for Matrix
 
 // Mint includes
 #include "axom/mint/config.hpp"              // mint compile-time definitions
