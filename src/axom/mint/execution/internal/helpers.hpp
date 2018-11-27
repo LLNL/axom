@@ -24,10 +24,6 @@
 
 #include "axom/core/numerics/Matrix.hpp"        // for Matrix
 
-#ifdef AXOM_USE_RAJA
-#include "RAJA/RAJA.hpp"
-#endif
-
 namespace axom
 {
 namespace mint
@@ -35,7 +31,24 @@ namespace mint
 namespace internal
 {
 
-//------------------------------------------------------------------------------
+/*!
+ * \brief Iterate over the objects (cells or faces) in a mesh and for each
+ *  object construct a NDIM x NNODES matrix of the nodal coordinates of the
+ *  object and call a kernel with the object ID, the coordinate matrix, and the
+ *  node IDs. 
+ *
+ * \tparam ExecPolicy the execution policy
+ * \tparam NDIM the number of coordinate dimensions.
+ * \tparam NNODES the number of nodes per object.
+ * \tparam FOR_ALL the type of the for_all_nodes functor.
+ * \tparam KernelType the type of the supplied lambda expression.
+ *
+ * \param [in] for_all_nodes functor that iterates over the objects in the mesh
+ *  and for each object calls a function with the object ID, the node IDs and
+ *  the number of nodes.
+ * \param [in] m the Mesh to iterate over.
+ * \param [in] kernel the kernel to call on each object.
+ */
 template < typename ExecPolicy, int NDIM, int NNODES, typename FOR_ALL,
            typename KernelType >
 inline void for_all_coords( const FOR_ALL & for_all_nodes, const mint::Mesh* m,
@@ -52,7 +65,7 @@ inline void for_all_coords( const FOR_ALL & for_all_nodes, const mint::Mesh* m,
                   (NDIM > 2) ? m->getCoordinateArray(Z_COORDINATE) : nullptr };
 
   for_all_nodes( ExecPolicy(), m, 
-    AXOM_LAMBDA( IndexType cellID, const IndexType * nodeIDs, 
+    AXOM_LAMBDA( IndexType objectID, const IndexType * nodeIDs, 
                  IndexType numNodes )
     {
       AXOM_DEBUG_VAR(numNodes);
@@ -68,7 +81,7 @@ inline void for_all_coords( const FOR_ALL & for_all_nodes, const mint::Mesh* m,
       }
 
       numerics::Matrix<double> coordsMatrix( NDIM, NNODES, localCoords, true );
-      kernel( cellID, coordsMatrix, nodeIDs );
+      kernel( objectID, coordsMatrix, nodeIDs );
     }
   );
 }
