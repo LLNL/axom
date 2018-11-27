@@ -174,18 +174,21 @@ inline void for_all( const mint::IndexType& begin,
  * Usage Example:
  * \code
  *
- *   constexpr int N = 10;
- *   double a[ N ];
- *   double b[ N ];
- *   double c[ N];
+ *  constexpr int N = 10;
+ *  double a[ N ];
+ *  double b[ N ];
+ *  double c[ N];
  *
- *   // other code
- *   ...
+ *  // other code
+ *  ...
  *
- *   using exec = policy::parallel_cpu;
- *   mint::for_all< exec >( N, AXOM_LAMBDA(mint::IndexType idx) {
- *     c[ idx ] = a[ idx ] + b[ idx ];
- *   } );
+ *  using exec = policy::parallel_cpu;
+ *  mint::for_all< exec >( N,
+ *    AXOM_LAMBDA (mint::IndexType idx )
+ *    {
+ *      c[ idx ] = a[ idx ] + b[ idx ];
+ *    }
+ *  );
  *
  * \endcode
  *
@@ -219,31 +222,31 @@ inline void for_all( const mint::IndexType& N, KernelType&& kernel )
  * Usage Example:
  * \code
  *
- *   for_all_nodes< exec >( m, AXOM_LAMDA( IndexType nodeIdx ) {
- *      foo[ nodeIdx ] = val;
- *      ...
- *   } );
+ *  for_all_nodes< exec >( m,
+ *    AXOM_LAMBDA( IndexType nodeID )
+ *    { ... }
+ *  );
  *
+ *  for_all_nodes< exec, xargs::ij >( m,
+ *    AXOM_LAMBDA( IndexType nodeID, IndexType i, IndexType j )
+ *    { ... }
+ *  );
  *
- *   for_all_nodes< exec, xargs::ij >( m,
- *          AXOM_LAMDA( IndexType nodeIdx, IndexType i, IndexType j) {
- *     ...
- *   } );
+ *  for_all_nodes< exec, xargs::ijk >( m,
+ *    AXOM_LAMDA( IndexType nodeIdx, IndexType i, IndexType j, IndexType k)
+ *    { ... }
+ *  );
  *
- *   for_all_nodes< exec, xargs::ijk >( m,
- *      AXOM_LAMDA( IndexType nodeIdx, IndexType i, IndexType j, IndexType k) {
- *     ...
- *   } );
+ *  for_all_nodes< exec, xargs::xy >( m,
+ *    AXOM_LAMBA( IndexType nodeIdx, double x, double y)
+ *    { ... }
+ *  );
  *
- *   for_all_nodes< exec, xargs::xy >( m,
- *           AXOM_LAMBA( IndexType nodeIdx, double x, double y) {
- *     ...
- *   } );
+ *  for_all_nodes< exec, xargs::xyz >( m,
+ *    AXOM_LAMBA( IndexType nodeIdx, double x, double y, double z)
+ *    { ... }
+ *  );
  *
- *   for_all_nodes< exec, xargs::xyz >( m,
- *           AXOM_LAMBA( IndexType nodeIdx, double x, double y, double z) {
- *     ...
- *   } );
  * \endcode
  *
  * \see policy.hpp
@@ -285,29 +288,36 @@ inline void for_all_nodes( const mint::Mesh* m, KernelType&& kernel )
  * Usage Example:
  * \code
  *
- *   for_all_cells< exec >( m, AXOM_LAMDA( IndexType cellIdx ) {
- *      foo[ cellIdx ] = val;
- *      ...
- *   } );
+ *  for_all_cells< exec >( m,
+ *    AXOM_LAMBDA( IndexType cellID )
+ *    { ... }
+ *  );
  *
+ *  for_all_cells< exec, xargs::ij >( m,
+ *    AXOM_LAMBDA( IndexType cellID, IndexType i, IndexType j )
+ *    { ... }
+ *  );
  *
- *   for_all_cells< exec, xargs::ij >( m,
- *          AXOM_LAMDA( IndexType cellIdx, IndexType i, IndexType j) {
- *     ...
- *   } );
- *
- *   for_all_cells< exec, xargs::ijk >( m,
- *      AXOM_LAMDA( IndexType cellIdx, IndexType i, IndexType j, IndexType k) {
- *     ...
- *   } );
+ *  for_all_cells< exec, xargs::ijk >( m,
+ *    AXOM_LAMBDA( IndexType cellID, IndexType i, IndexType j, IndexType k )
+ *    { ... }
+ *  );
  *
  *  for_all_cells< exec, xargs::nodeids >( m,
- *     AXOM_LAMBDA( IndexType cellIdx, const IndexType* nodeIds, IndexType N )
- *  } );
+ *    AXOM_LAMBDA( IndexType cellID, const IndexType* nodeIDs, IndexType N )
+ *    { ... }
+ *  );
+ *
+ *  for_all_cells< exec, xargs::coords >( m,
+ *    AXOM_LAMBDA( IndexType cellID, numerics::Matrix<double>& coords,
+ *                 const IndexType * nodeIDs )
+ *    { ... } 
+ *  );
  *
  *  for_all_cells< exec, xargs::faceids >( m,
- *     AXOM_LAMBDA( IndexType cellIdx, const IndexType* faceIds, IndexType N )
- *  } );
+ *    AXOM_LAMBDA( IndexType cellID, const IndexType* faceIDs, IndexType N )
+ *    { ... }
+ *  );
  *
  * \endcode
  *
@@ -350,18 +360,26 @@ inline void for_all_cells( const mint::Mesh* m, KernelType&& kernel )
  * Usage Example:
  * \code
  *
- *   for_all_faces< exec >( m, AXOM_LAMDA( IndexType faceID ) {
- *      foo[ faceID ] = val;
- *      ...
- *   } );
+ *   for_all_faces< exec >( m,
+ *    AXOM_LAMBDA( IndexType faceID )
+ *    { ... }
+ *  );
  *
  *  for_all_faces< exec, xargs::nodeids >( m,
- *     AXOM_LAMBDA( IndexType faceID, const IndexType* nodeIds, IndexType N )
- *  } );
+ *    AXOM_LAMBDA( IndexType faceID, const IndexType* nodeIDs, IndexType N )
+ *    { ... }
+ *  );
+ *
+ *  for_all_faces< exec, xargs::coords >( m,
+ *    AXOM_LAMBDA( IndexType faceID, numerics::Matrix<double>& coords,
+ *                 const IndexType * nodeIDs )
+ *    { ... }
+ *  );
  *
  *  for_all_faces< exec, xargs::cellids >( m,
- *     AXOM_LAMBDA( IndexType faceID, IndexType cellIDOne, IndexType cellIDTwo )
- *  } );
+ *    AXOM_LAMBDA( IndexType faceID, IndexType cellIDOne, IndexType cellIDTwo )
+ *    { ... }
+ *  );
  *
  * \endcode
  *
