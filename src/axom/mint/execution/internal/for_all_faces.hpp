@@ -980,8 +980,9 @@ template < typename ExecPolicy, typename KernelType >
 inline void for_all_faces( xargs::nodeids, const Mesh* m,
                            KernelType&& kernel )
 {
-  SLIC_ASSERT( m != nullptr );
-  SLIC_ASSERT( m->getDimension() > 1 && m->getDimension() <= 3 );
+  SLIC_ERROR_IF( m == nullptr, "Invalid mesh." );
+  SLIC_ERROR_IF( m->getDimension() < 1 || m->getDimension() > 3,
+                 "Invalid dimension" );
 
   if ( m->isStructured() )
   {
@@ -1013,8 +1014,9 @@ template < typename ExecPolicy, typename KernelType >
 inline void for_all_faces( xargs::cellids, const Mesh* m,
                            KernelType&& kernel )
 {
-  SLIC_ASSERT( m != nullptr );
-  SLIC_ASSERT( m->getDimension() > 1 && m->getDimension() <= 3 );
+  SLIC_ERROR_IF( m == nullptr, "Invalid mesh." );
+  SLIC_ERROR_IF( m->getDimension() < 1 || m->getDimension() > 3,
+                 "Invalid dimension" );
 
   if ( m->isStructured() )
   {
@@ -1045,8 +1047,9 @@ inline void for_all_faces( xargs::cellids, const Mesh* m,
 template < typename ExecPolicy, typename KernelType >
 inline void for_all_faces( xargs::coords, const Mesh* m, KernelType&& kernel )
 {
-  SLIC_ASSERT( m != nullptr );
-  SLIC_ASSERT( m->getDimension() > 1 && m->getDimension() <= 3 );
+  SLIC_ERROR_IF( m == nullptr, "Invalid mesh." );
+  SLIC_ERROR_IF( m->getDimension() < 1 || m->getDimension() > 3,
+                 "Invalid dimension" );
 
   if ( m->getMeshType() == STRUCTURED_UNIFORM_MESH )
   {
