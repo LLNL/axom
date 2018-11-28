@@ -74,9 +74,10 @@ inline void for_all_coords( const FOR_ALL & for_all_nodes, const mint::Mesh* m,
       double localCoords[ NDIM * NNODES ];
       for ( int i = 0; i < NNODES; ++i )
       {
+        const int i_offset = NDIM * i;
         for ( int dim = 0; dim < NDIM; ++dim )
         {
-          localCoords[ NDIM * i + dim ] = coords[ dim ][ nodeIDs[ i ] ];
+          localCoords[ i_offset + dim ] = coords[ dim ][ nodeIDs[ i ] ];
         }
       }
 
