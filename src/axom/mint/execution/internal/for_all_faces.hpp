@@ -64,7 +64,7 @@ inline void for_all_faces( xargs::index, const mint::Mesh* m,
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
-inline void for_all_I_faces_2D( const mint::Mesh* m, 
+inline void for_all_I_faces_2D( const mint::Mesh* m,
                                 KernelType&& kernel )
 {
   SLIC_ASSERT( m != nullptr );
@@ -75,17 +75,20 @@ inline void for_all_I_faces_2D( const mint::Mesh* m,
     static_cast< const mint::StructuredMesh* >( m );
 
   const IndexType INodeResolution = sm->getNodeResolution( I_DIRECTION );
-  const IndexType i_range = INodeResolution;
-  const IndexType j_range = sm->getCellResolution( J_DIRECTION );
+  const IndexType Ni = INodeResolution;
+  const IndexType Nj = sm->getCellResolution( J_DIRECTION );
 
 #ifdef AXOM_USE_RAJA
-  
+
+  RAJA::RangeSegment i_range(0,Ni);
+  RAJA::RangeSegment j_range(0,Nj);
+
   using exec_pol = typename policy_traits< ExecPolicy >::raja_2d_exec;
   RAJA::kernel< exec_pol >( RAJA::make_tuple( i_range, j_range ),
     AXOM_LAMBDA( IndexType i, IndexType j )
     {
       const IndexType faceID = i + j * INodeResolution;
-      kernel( faceID, i, j ); 
+      kernel( faceID, i, j );
     }
   );
 
@@ -94,10 +97,10 @@ inline void for_all_I_faces_2D( const mint::Mesh* m,
   constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
-  for ( IndexType j = 0; j < j_range; ++j )
+  for ( IndexType j = 0; j < Nj; ++j )
   {
     const IndexType offset = j * INodeResolution;
-    for ( IndexType i = 0; i < i_range; ++i )
+    for ( IndexType i = 0; i < Ni; ++i )
     {
       const IndexType faceID = i + offset;
       kernel( faceID, i, j );
@@ -109,7 +112,7 @@ inline void for_all_I_faces_2D( const mint::Mesh* m,
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
-inline void for_all_J_faces_2D( const mint::Mesh* m, 
+inline void for_all_J_faces_2D( const mint::Mesh* m,
                                 KernelType&& kernel )
 {
   SLIC_ASSERT( m != nullptr );
@@ -120,18 +123,21 @@ inline void for_all_J_faces_2D( const mint::Mesh* m,
     static_cast< const mint::StructuredMesh* >( m );
 
   const IndexType ICellResolution = sm->getCellResolution( I_DIRECTION );
-  const IndexType numIFaces = sm->getTotalNumFaces( I_DIRECTION );
-  const IndexType i_range = ICellResolution;
-  const IndexType j_range = sm->getNodeResolution( J_DIRECTION );
+  const IndexType numIFaces       = sm->getTotalNumFaces( I_DIRECTION );
+  const IndexType Ni              = ICellResolution;
+  const IndexType Nj              = sm->getNodeResolution( J_DIRECTION );
 
 #ifdef AXOM_USE_RAJA
-  
+
+  RAJA::RangeSegment i_range(0,Ni);
+  RAJA::RangeSegment j_range(0,Nj);
+
   using exec_pol = typename policy_traits< ExecPolicy >::raja_2d_exec;
   RAJA::kernel< exec_pol >( RAJA::make_tuple( i_range, j_range ),
     AXOM_LAMBDA( IndexType i, IndexType j )
     {
       const IndexType faceID = numIFaces + i + j * ICellResolution;
-      kernel( faceID, i, j ); 
+      kernel( faceID, i, j );
     }
   );
 
@@ -140,10 +146,10 @@ inline void for_all_J_faces_2D( const mint::Mesh* m,
   constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
-  for ( IndexType j = 0; j < j_range; ++j )
+  for ( IndexType j = 0; j < Nj; ++j )
   {
     const IndexType offset = numIFaces + j * ICellResolution;
-    for ( IndexType i = 0; i < i_range; ++i )
+    for ( IndexType i = 0; i < Ni; ++i )
     {
       const IndexType faceID = i + offset;
       kernel( faceID, i, j );
@@ -195,7 +201,7 @@ inline void for_all_facenodes_structured_2D( const mint::Mesh* m,
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
-inline void for_all_I_faces_3D( const mint::Mesh* m, 
+inline void for_all_I_faces_3D( const mint::Mesh* m,
                                 KernelType&& kernel )
 {
   SLIC_ASSERT( m != nullptr );
@@ -206,20 +212,24 @@ inline void for_all_I_faces_3D( const mint::Mesh* m,
     static_cast< const mint::StructuredMesh* >( m );
 
   const IndexType INodeResolution = sm->getNodeResolution( I_DIRECTION );
-  const IndexType numIFacesInKSlice = 
+  const IndexType numIFacesInKSlice =
                         INodeResolution * sm->getCellResolution( J_DIRECTION );
-  const IndexType i_range = INodeResolution;
-  const IndexType j_range = sm->getCellResolution( J_DIRECTION );
-  const IndexType k_range = sm->getCellResolution( K_DIRECTION );
+  const IndexType Ni = INodeResolution;
+  const IndexType Nj = sm->getCellResolution( J_DIRECTION );
+  const IndexType Nk = sm->getCellResolution( K_DIRECTION );
 
 #ifdef AXOM_USE_RAJA
-  
+
+  RAJA::RangeSegment i_range(0,Ni);
+  RAJA::RangeSegment j_range(0,Nj);
+  RAJA::RangeSegment k_range(0,Nk);
+
   using exec_pol = typename policy_traits< ExecPolicy >::raja_3d_exec;
   RAJA::kernel< exec_pol >( RAJA::make_tuple( i_range, j_range, k_range ),
     AXOM_LAMBDA( IndexType i, IndexType j, IndexType k )
     {
       const IndexType faceID = i + j * INodeResolution + k * numIFacesInKSlice;
-      kernel( faceID, i, j, k ); 
+      kernel( faceID, i, j, k );
     }
   );
 
@@ -228,13 +238,13 @@ inline void for_all_I_faces_3D( const mint::Mesh* m,
   constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
-  for ( IndexType k = 0; k < k_range; ++k )
+  for ( IndexType k = 0; k < Nk; ++k )
   {
     const IndexType k_offset = k * numIFacesInKSlice;
-    for ( IndexType j = 0; j < j_range; ++j )
+    for ( IndexType j = 0; j < Nj; ++j )
     {
       const IndexType offset = j * INodeResolution + k_offset;
-      for ( IndexType i = 0; i < i_range; ++i )
+      for ( IndexType i = 0; i < Ni; ++i )
       {
         const IndexType faceID = i + offset;
         kernel( faceID, i, j, k );
@@ -247,7 +257,7 @@ inline void for_all_I_faces_3D( const mint::Mesh* m,
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
-inline void for_all_J_faces_3D( const mint::Mesh* m, 
+inline void for_all_J_faces_3D( const mint::Mesh* m,
                                 KernelType&& kernel )
 {
   SLIC_ASSERT( m != nullptr );
@@ -259,20 +269,26 @@ inline void for_all_J_faces_3D( const mint::Mesh* m,
 
   const IndexType numIFaces = sm->getTotalNumFaces( I_DIRECTION );
   const IndexType ICellResolution = sm->getCellResolution( I_DIRECTION );
-  const IndexType numJFacesInKSlice = 
+  const IndexType numJFacesInKSlice =
                         ICellResolution * sm->getNodeResolution( J_DIRECTION );
-  const IndexType i_range = ICellResolution;
-  const IndexType j_range = sm->getNodeResolution( J_DIRECTION );
-  const IndexType k_range = sm->getCellResolution( K_DIRECTION );
+  const IndexType Ni = ICellResolution;
+  const IndexType Nj = sm->getNodeResolution( J_DIRECTION );
+  const IndexType Nk = sm->getCellResolution( K_DIRECTION );
 
 #ifdef AXOM_USE_RAJA
-  
+
+  RAJA::RangeSegment i_range(0,Ni);
+  RAJA::RangeSegment j_range(0,Nj);
+  RAJA::RangeSegment k_range(0,Nk);
+
   using exec_pol = typename policy_traits< ExecPolicy >::raja_3d_exec;
   RAJA::kernel< exec_pol >( RAJA::make_tuple( i_range, j_range, k_range ),
     AXOM_LAMBDA( IndexType i, IndexType j, IndexType k )
     {
-      const IndexType faceID = numIFaces + i + j * ICellResolution + k * numJFacesInKSlice;
-      kernel( faceID, i, j, k ); 
+      const IndexType jp     = j * ICellResolution;
+      const IndexType kp     = k * numJFacesInKSlice;
+      const IndexType faceID = numIFaces + i + jp + kp;
+      kernel( faceID, i, j, k );
     }
   );
 
@@ -281,13 +297,13 @@ inline void for_all_J_faces_3D( const mint::Mesh* m,
   constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
-  for ( IndexType k = 0; k < k_range; ++k )
+  for ( IndexType k = 0; k < Nk; ++k )
   {
     const IndexType k_offset = k * numJFacesInKSlice + numIFaces;
-    for ( IndexType j = 0; j < j_range; ++j )
+    for ( IndexType j = 0; j < Nj; ++j )
     {
       const IndexType offset = j * ICellResolution + k_offset;
-      for ( IndexType i = 0; i < i_range; ++i )
+      for ( IndexType i = 0; i < Ni; ++i )
       {
         const IndexType faceID = i + offset;
         kernel( faceID, i, j, k );
@@ -300,7 +316,7 @@ inline void for_all_J_faces_3D( const mint::Mesh* m,
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
-inline void for_all_K_faces_3D( const mint::Mesh* m, 
+inline void for_all_K_faces_3D( const mint::Mesh* m,
                                 KernelType&& kernel )
 {
   SLIC_ASSERT( m != nullptr );
@@ -310,22 +326,28 @@ inline void for_all_K_faces_3D( const mint::Mesh* m,
   const mint::StructuredMesh* sm =
     static_cast< const mint::StructuredMesh* >( m );
 
-  const IndexType numIJFaces = sm->getTotalNumFaces( I_DIRECTION ) + 
+  const IndexType numIJFaces = sm->getTotalNumFaces( I_DIRECTION ) +
                                sm->getTotalNumFaces( J_DIRECTION );
   const IndexType ICellResolution = sm->getCellResolution( I_DIRECTION );
   const IndexType cellKp = sm->cellKp();
-  const IndexType i_range = ICellResolution;
-  const IndexType j_range = sm->getCellResolution( J_DIRECTION );
-  const IndexType k_range = sm->getNodeResolution( K_DIRECTION );
+  const IndexType Ni = ICellResolution;
+  const IndexType Nj = sm->getCellResolution( J_DIRECTION );
+  const IndexType Nk = sm->getNodeResolution( K_DIRECTION );
 
 #ifdef AXOM_USE_RAJA
-  
+
+  RAJA::RangeSegment i_range(0,Ni);
+  RAJA::RangeSegment j_range(0,Nj);
+  RAJA::RangeSegment k_range(0,Nk);
+
   using exec_pol = typename policy_traits< ExecPolicy >::raja_3d_exec;
   RAJA::kernel< exec_pol >( RAJA::make_tuple( i_range, j_range, k_range ),
     AXOM_LAMBDA( IndexType i, IndexType j, IndexType k )
     {
-      const IndexType faceID = numIJFaces + i + j * ICellResolution + k * cellKp;
-      kernel( faceID, i, j, k ); 
+      const IndexType jp = j * ICellResolution;
+      const IndexType kp = k * cellKp;
+      const IndexType faceID = numIJFaces + i + jp + kp;
+      kernel( faceID, i, j, k );
     }
   );
 
@@ -334,13 +356,13 @@ inline void for_all_K_faces_3D( const mint::Mesh* m,
   constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
-  for ( IndexType k = 0; k < k_range; ++k )
+  for ( IndexType k = 0; k < Nk; ++k )
   {
     const IndexType k_offset = k * cellKp + numIJFaces;
-    for ( IndexType j = 0; j < j_range; ++j )
+    for ( IndexType j = 0; j < Nj; ++j )
     {
       const IndexType offset = j * ICellResolution + k_offset;
-      for ( IndexType i = 0; i < i_range; ++i )
+      for ( IndexType i = 0; i < Ni; ++i )
       {
         const IndexType faceID = i + offset;
         kernel( faceID, i, j, k );
@@ -367,7 +389,7 @@ inline void for_all_facenodes_structured_3D( const mint::Mesh* m,
   const IndexType numIJFaces = numIFaces + sm->getTotalNumFaces( J_DIRECTION );
   const IndexType INodeResolution = sm->getNodeResolution( I_DIRECTION );
   const IndexType JNodeResolution = sm->getNodeResolution( J_DIRECTION );
-  const IndexType KFaceNodeStride = sm->getCellResolution( I_DIRECTION ) + 
+  const IndexType KFaceNodeStride = sm->getCellResolution( I_DIRECTION ) +
                                     sm->getCellResolution( J_DIRECTION ) + 1;
 
   const IndexType* offsets  = sm->getCellNodeOffsetsArray();
@@ -428,12 +450,12 @@ inline void for_all_facescells_structured_2D( const mint::Mesh* m,
   SLIC_ERROR_IF( !m->isStructured(), "Mesh must be a 2D StructuredMesh." );
   SLIC_ERROR_IF( m->getDimension() != 2, "Mesh must be a 2D StructuredMesh." );
 
-  const mint::StructuredMesh* sm = 
+  const mint::StructuredMesh* sm =
     static_cast< const mint::StructuredMesh* >( m );
 
   const IndexType ICellResolution = sm->getCellResolution( I_DIRECTION );
   const IndexType JCellResolution = sm->getCellResolution( J_DIRECTION );
-  
+
   const IndexType cellJp = sm->cellJp();
 
   for_all_I_faces_2D< ExecPolicy >( m,
@@ -450,7 +472,7 @@ inline void for_all_facescells_structured_2D( const mint::Mesh* m,
       {
         cellIDTwo = -1;
       }
-      
+
       kernel( faceID, cellIDOne, cellIDTwo );
     }
   );
@@ -459,7 +481,7 @@ inline void for_all_facescells_structured_2D( const mint::Mesh* m,
     AXOM_LAMBDA( IndexType faceID, IndexType i, IndexType j )
     {
       IndexType cellIDTwo = i + j * cellJp;
-      IndexType cellIDOne = cellIDTwo - cellJp; 
+      IndexType cellIDOne = cellIDTwo - cellJp;
       if ( j == 0 )
       {
         cellIDOne = cellIDTwo;
@@ -469,7 +491,7 @@ inline void for_all_facescells_structured_2D( const mint::Mesh* m,
       {
         cellIDTwo = -1;
       }
-      
+
       kernel( faceID, cellIDOne, cellIDTwo );
     }
   );
@@ -484,7 +506,7 @@ inline void for_all_facescells_structured_3D( const mint::Mesh* m,
   SLIC_ERROR_IF( !m->isStructured(), "Mesh must be a 3D StructuredMesh." );
   SLIC_ERROR_IF( m->getDimension() != 3, "Mesh must be a 3D StructuredMesh." );
 
-  const mint::StructuredMesh* sm = 
+  const mint::StructuredMesh* sm =
     static_cast< const mint::StructuredMesh* >( m );
 
   const IndexType ICellResolution = sm->getCellResolution( I_DIRECTION );
@@ -508,7 +530,7 @@ inline void for_all_facescells_structured_3D( const mint::Mesh* m,
       {
         cellIDTwo = -1;
       }
-      
+
       kernel( faceID, cellIDOne, cellIDTwo );
     }
   );
@@ -527,7 +549,7 @@ inline void for_all_facescells_structured_3D( const mint::Mesh* m,
       {
         cellIDTwo = -1;
       }
-      
+
       kernel( faceID, cellIDOne, cellIDTwo );
     }
   );
@@ -546,7 +568,7 @@ inline void for_all_facescells_structured_3D( const mint::Mesh* m,
       {
         cellIDTwo = -1;
       }
-      
+
       kernel( faceID, cellIDOne, cellIDTwo );
     }
   );
@@ -554,7 +576,7 @@ inline void for_all_facescells_structured_3D( const mint::Mesh* m,
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
-inline void for_all_facenodes_unstructured_single( const Mesh* m, 
+inline void for_all_facenodes_unstructured_single( const Mesh* m,
                                                    KernelType&& kernel )
 {
   SLIC_ASSERT( m != nullptr );
@@ -568,13 +590,13 @@ inline void for_all_facenodes_unstructured_single( const Mesh* m,
 
   using UnstructuredMeshType = UnstructuredMesh< SINGLE_SHAPE >;
 
-  const UnstructuredMeshType* um = 
+  const UnstructuredMeshType* um =
                                 static_cast< const UnstructuredMeshType* >( m );
 
   const IndexType* faces_to_nodes = um->getFaceNodesArray();
   const IndexType num_nodes = um->getNumberOfFaceNodes();
 
-  for_all_faces< ExecPolicy, xargs::index >( m, 
+  for_all_faces< ExecPolicy, xargs::index >( m,
     AXOM_LAMBDA( IndexType faceID )
     {
       kernel( faceID, faces_to_nodes + faceID * num_nodes, num_nodes );
@@ -584,7 +606,7 @@ inline void for_all_facenodes_unstructured_single( const Mesh* m,
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
-inline void for_all_facenodes_unstructured_mixed( const Mesh* m, 
+inline void for_all_facenodes_unstructured_mixed( const Mesh* m,
                                                   KernelType&& kernel )
 {
   SLIC_ASSERT( m != nullptr );
@@ -598,13 +620,13 @@ inline void for_all_facenodes_unstructured_mixed( const Mesh* m,
 
   using UnstructuredMeshType = UnstructuredMesh< MIXED_SHAPE >;
 
-  const UnstructuredMeshType* um = 
+  const UnstructuredMeshType* um =
                                 static_cast< const UnstructuredMeshType* >( m );
 
   const IndexType* faces_to_nodes = um->getFaceNodesArray();
   const IndexType* offsets        = um->getFaceNodesOffsetsArray();
 
-  for_all_faces< ExecPolicy, xargs::index >( m, 
+  for_all_faces< ExecPolicy, xargs::index >( m,
     AXOM_LAMBDA( IndexType faceID )
     {
       const IndexType num_nodes = offsets[ faceID + 1 ] - offsets[ faceID ];
@@ -615,7 +637,7 @@ inline void for_all_facenodes_unstructured_mixed( const Mesh* m,
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, Topology TOPO, typename KernelType >
-inline void for_all_facecells_unstructured( const Mesh* m, 
+inline void for_all_facecells_unstructured( const Mesh* m,
                                             KernelType&& kernel )
 {
   SLIC_ASSERT( m != nullptr );
@@ -626,12 +648,12 @@ inline void for_all_facecells_unstructured( const Mesh* m,
 
   using UnstructuredMeshType = UnstructuredMesh< TOPO >;
 
-  const UnstructuredMeshType* um = 
+  const UnstructuredMeshType* um =
                                 static_cast< const UnstructuredMeshType* >( m );
 
   const IndexType* faces_to_cells = um->getFaceCellsArray();
 
-  for_all_faces< ExecPolicy, xargs::index >( m, 
+  for_all_faces< ExecPolicy, xargs::index >( m,
     AXOM_LAMBDA( IndexType faceID )
     {
       const IndexType offset = 2 * faceID;
@@ -651,12 +673,12 @@ inline void for_all_faces( xargs::nodeids, const mint::Mesh* m,
   {
     if ( m->getDimension() == 2 )
     {
-      for_all_facenodes_structured_2D< ExecPolicy >( m, 
+      for_all_facenodes_structured_2D< ExecPolicy >( m,
         std::forward< KernelType >( kernel ) );
     }
     else
     {
-      for_all_facenodes_structured_3D< ExecPolicy >( m, 
+      for_all_facenodes_structured_3D< ExecPolicy >( m,
         std::forward< KernelType >( kernel ) );
     }
   }
@@ -667,7 +689,7 @@ inline void for_all_faces( xargs::nodeids, const mint::Mesh* m,
   }
   else
   {
-    for_all_facenodes_unstructured_single< ExecPolicy >( 
+    for_all_facenodes_unstructured_single< ExecPolicy >(
       m, std::forward< KernelType >( kernel ) );
   }
 }
@@ -681,12 +703,12 @@ inline void for_all_faces( xargs::cellids, const mint::Mesh* m,
   {
     if ( m->getDimension() == 2 )
     {
-      for_all_facescells_structured_2D< ExecPolicy >( m, 
+      for_all_facescells_structured_2D< ExecPolicy >( m,
         std::forward< KernelType >( kernel ) );
     }
     else
     {
-      for_all_facescells_structured_3D< ExecPolicy >( m, 
+      for_all_facescells_structured_3D< ExecPolicy >( m,
         std::forward< KernelType >( kernel ) );
     }
   }
@@ -697,7 +719,7 @@ inline void for_all_faces( xargs::cellids, const mint::Mesh* m,
   }
   else
   {
-    for_all_facecells_unstructured< ExecPolicy, SINGLE_SHAPE >( 
+    for_all_facecells_unstructured< ExecPolicy, SINGLE_SHAPE >(
       m, std::forward< KernelType >( kernel ) );
   }
 }
