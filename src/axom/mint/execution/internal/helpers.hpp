@@ -40,7 +40,7 @@ namespace internal
  * \tparam ExecPolicy the execution policy
  * \tparam NDIM the number of coordinate dimensions.
  * \tparam NNODES the number of nodes per object.
- * \tparam FOR_ALL the type of the for_all_nodes functor.
+ * \tparam FOR_ALL_FUNCTOR the type of the for_all_nodes functor.
  * \tparam KernelType the type of the supplied lambda expression.
  *
  * \param [in] for_all_nodes functor that iterates over the objects in the mesh
@@ -49,15 +49,18 @@ namespace internal
  * \param [in] m the Mesh to iterate over.
  * \param [in] kernel the kernel to call on each object.
  */
-template < typename ExecPolicy, int NDIM, int NNODES, typename FOR_ALL,
+template < typename ExecPolicy, int NDIM, int NNODES, typename FOR_ALL_FUNCTOR,
            typename KernelType >
-inline void for_all_coords( const FOR_ALL & for_all_nodes, const mint::Mesh* m,
-                            KernelType&& kernel )
+inline void for_all_coords( const FOR_ALL_FUNCTOR & for_all_nodes, 
+                            const mint::Mesh* m, KernelType&& kernel )
 {
-  AXOM_STATIC_ASSERT_MSG( NDIM >= 1 && NDIM <= 3, "NDIM must be a valid dimension." );
+  AXOM_STATIC_ASSERT_MSG( NDIM >= 1 && NDIM <= 3,
+                          "NDIM must be a valid dimension." );
   AXOM_STATIC_ASSERT_MSG( NNODES > 0, "NNODES must be greater than zero." );
   SLIC_ASSERT( m != nullptr );
   SLIC_ASSERT( m->getDimension() == NDIM );
+
+  constexpr bool NO_COPY = true;
 
   const double * const coords[3] = { 
                                m->getCoordinateArray(X_COORDINATE),
@@ -81,7 +84,8 @@ inline void for_all_coords( const FOR_ALL & for_all_nodes, const mint::Mesh* m,
         }
       }
 
-      numerics::Matrix<double> coordsMatrix( NDIM, NNODES, localCoords, true );
+      numerics::Matrix<double> coordsMatrix( NDIM, NNODES, localCoords,
+                                             NO_COPY );
       kernel( objectID, coordsMatrix, nodeIDs );
     }
   );
