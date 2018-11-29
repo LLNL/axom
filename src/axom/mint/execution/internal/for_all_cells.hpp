@@ -735,6 +735,29 @@ inline void for_all_cellcoords_rectilinear( const mint::Mesh* m,
 }
 
 //------------------------------------------------------------------------------
+template < typename ExecPolicy, typename KernelType >
+inline void for_all_cells( xargs::nodeids, const Mesh* m, KernelType&& kernel )
+{
+  SLIC_ASSERT( m != nullptr );
+
+  if ( m->isStructured() )
+  {
+    for_all_cellnodes_structured< ExecPolicy >(
+      m, std::forward< KernelType >( kernel ) );
+  }
+  else if ( m->hasMixedCellTypes() )
+  {
+    for_all_cellnodes_unstructured_mixed< ExecPolicy >(
+      m, std::forward< KernelType >( kernel ) );
+  }
+  else
+  {
+    for_all_cellnodes_unstructured_single< ExecPolicy >(
+      m, std::forward< KernelType >( kernel ) );
+  }
+}
+
+//------------------------------------------------------------------------------
 struct for_all_cell_nodes_functor
 {
   template < typename ExecPolicy, typename KernelType >
@@ -840,29 +863,6 @@ inline void for_all_cellcoords_unstructured( const mint::Mesh* m,
         kernel( cellID, coordsMatrix, nodeIDs );
       }
     );
-  }
-}
-
-//------------------------------------------------------------------------------
-template < typename ExecPolicy, typename KernelType >
-inline void for_all_cells( xargs::nodeids, const Mesh* m, KernelType&& kernel )
-{
-  SLIC_ASSERT( m != nullptr );
-
-  if ( m->isStructured() )
-  {
-    for_all_cellnodes_structured< ExecPolicy >(
-      m, std::forward< KernelType >( kernel ) );
-  }
-  else if ( m->hasMixedCellTypes() )
-  {
-    for_all_cellnodes_unstructured_mixed< ExecPolicy >( 
-      m, std::forward< KernelType >( kernel ) );
-  }
-  else
-  {
-    for_all_cellnodes_unstructured_single< ExecPolicy >(
-      m, std::forward< KernelType >( kernel ) );
   }
 }
 
