@@ -103,7 +103,6 @@ void about(std::ostream &oss)
   comps.push_back("slic");
 #endif
 
-
   std::stringstream sstr;
   std::copy( comps.begin(), comps.end(),
              std::ostream_iterator<std::string>(sstr, "; "));
@@ -135,6 +134,14 @@ void about(std::ostream &oss)
 
 #ifdef AXOM_USE_SPARSEHASH
   libs.push_back("sparsehash");
+#endif
+
+#ifdef AXOM_USE_RAJA
+  libs.push_back("raja");
+#endif
+
+#ifdef AXOM_USE_UMPIRE
+  libs.push_back("umpire");
 #endif
 
   // reset sstr

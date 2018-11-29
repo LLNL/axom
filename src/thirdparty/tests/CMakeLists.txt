@@ -17,6 +17,22 @@
 axom_add_code_checks(PREFIX thirdparty_tests)
 
 ########################################
+# Smoke test for Umpire thirdparty library
+########################################
+if ( UMPIRE_FOUND )
+
+  blt_add_executable( NAME umpire_smoke_test
+                      SOURCES umpire_smoke.cpp
+                      OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                      DEPENDS_ON umpire gtest
+                      FOLDER axom/thirdparty/tests )
+
+  blt_add_test( NAME umpire_smoke
+                COMMAND umpire_smoke_test )
+
+endif()
+
+########################################
 # Smoke test for RAJA thirdparty library
 ########################################
 if ( RAJA_FOUND )
