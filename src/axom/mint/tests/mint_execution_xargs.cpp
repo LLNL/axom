@@ -59,6 +59,7 @@ TEST( mint_execution_xargs, check_types )
   check_valid< xargs::xy >( );
   check_valid< xargs::xyz >( );
   check_valid< xargs::nodeids >( );
+  check_valid< xargs::coords >( );
   check_valid< xargs::faceids >( );
   check_valid< xargs::cellids >( );
 

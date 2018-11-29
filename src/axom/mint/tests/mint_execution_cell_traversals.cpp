@@ -17,6 +17,7 @@
 // Axom includes
 #include "axom/config.hpp"                   // for compile-time definitions
 #include "axom/core/utilities/Utilities.hpp" // for alloc() /free()
+#include "axom/core/numerics/Matrix.hpp"     // for Matrix
 
 // Mint includes
 #include "axom/mint/config.hpp"              // mint compile-time definitions
@@ -220,6 +221,71 @@ void check_for_all_cell_nodes( int dimension )
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
+void check_for_all_cell_coords( int dimension )
+{
+  constexpr char* mesh_name = internal::mesh_type_name< MeshType, Topology >::name(); 
+  SLIC_INFO( "dimension=" << dimension << ", policy="
+            << policy_traits< ExecPolicy >::name() << ", mesh_type="
+            << mesh_name );
+
+  const IndexType Ni = 20;
+  const IndexType Nj = (dimension >= 2) ? Ni : -1;
+  const IndexType Nk = (dimension == 3) ? Ni : -1;
+
+  const double lo[] = { -10, -10, -10 };
+  const double hi[] = {  10,  10,  10 };
+  UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
+
+  Mesh* test_mesh = internal::create_mesh< MeshType, Topology >( uniform_mesh );
+  EXPECT_TRUE( test_mesh != nullptr );
+
+  const IndexType numCells = test_mesh->getNumberOfCells();
+  IndexType* conn = test_mesh->createField< IndexType >( "conn", CELL_CENTERED,
+                                                         MAX_CELL_NODES );
+  double* coords = test_mesh->createField< double >( "coords", CELL_CENTERED, 
+                                                     dimension * MAX_CELL_NODES );
+
+  for_all_cells< ExecPolicy, xargs::coords >( test_mesh,
+    AXOM_LAMBDA( IndexType cellID, const numerics::Matrix<double> & coordsMatrix,
+                 const IndexType* nodes )
+    {
+      const IndexType numNodes = coordsMatrix.getNumColumns();
+      for ( int i = 0 ; i < numNodes ; ++i )
+      {
+        conn[ cellID * MAX_CELL_NODES + i ] = nodes[ i ];
+        
+        for ( int dim = 0; dim < dimension; ++dim )
+        {
+          coords[ cellID * dimension * MAX_CELL_NODES + i * dimension + dim ] = coordsMatrix( dim, i );
+        }
+      } // END for all cell nodes
+    }
+  );
+
+  double nodeCoords[3];
+  IndexType cellNodes[ MAX_CELL_NODES ];
+  for ( IndexType cellID = 0 ; cellID < numCells ; ++cellID )
+  {
+    const IndexType numNodes = test_mesh->getCellNodeIDs( cellID, cellNodes );
+    for ( int i = 0 ; i < numNodes ; ++i )
+    {
+      EXPECT_EQ( conn[ cellID * MAX_CELL_NODES + i ], cellNodes[ i ] );
+      
+      for ( int dim = 0; dim < dimension; ++dim )
+      {
+        test_mesh->getNode( cellNodes[ i ], nodeCoords );
+        EXPECT_EQ( coords[ cellID * dimension * MAX_CELL_NODES + i * dimension + dim ], nodeCoords[ dim ] );
+      }
+    }
+  }  // END for all cells
+
+  /* clean up */
+  delete test_mesh;
+  test_mesh = nullptr;
+}
+
+//------------------------------------------------------------------------------
+template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_cell_faces( int dimension )
 {
   constexpr char* mesh_name = internal::mesh_type_name< MeshType, Topology >::name(); 
@@ -309,6 +375,45 @@ TEST( mint_execution_cell_traversals, for_all_cells_nodeids )
     check_for_all_cell_nodes< cuda_exec, STRUCTURED_RECTILINEAR_MESH >(i);
     check_for_all_cell_nodes< cuda_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >(i);
     check_for_all_cell_nodes< cuda_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >(i);
+#endif
+
+  } // END for all dimensions
+}
+
+TEST( mint_execution_cell_traversals, for_all_cells_coords )
+{
+  constexpr int NDIMS = 1;
+  for ( int i=1 ; i <= NDIMS ; ++i )
+  {
+
+    using seq_exec = policy::serial;
+    check_for_all_cell_coords< seq_exec, STRUCTURED_UNIFORM_MESH >(i);
+    check_for_all_cell_coords< seq_exec, STRUCTURED_CURVILINEAR_MESH >(i);
+    check_for_all_cell_coords< seq_exec, STRUCTURED_RECTILINEAR_MESH >(i);
+    check_for_all_cell_coords< seq_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >(i);
+    check_for_all_cell_coords< seq_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >(i);
+
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
+    defined(RAJA_ENABLE_OPENMP)
+
+    using omp_exec = policy::parallel_cpu;
+    check_for_all_cell_coords< omp_exec, STRUCTURED_UNIFORM_MESH >(i);
+    check_for_all_cell_coords< omp_exec, STRUCTURED_CURVILINEAR_MESH >(i);
+    check_for_all_cell_coords< omp_exec, STRUCTURED_RECTILINEAR_MESH >(i);
+    check_for_all_cell_coords< omp_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >(i);
+    check_for_all_cell_coords< omp_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >(i);
+
+#endif
+
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
+    defined(RAJA_ENABLE_CUDA)
+
+    using cuda_exec = policy::parallel_gpu;
+    check_for_all_cell_coords< cuda_exec, STRUCTURED_UNIFORM_MESH >(i);
+    check_for_all_cell_coords< cuda_exec, STRUCTURED_CURVILINEAR_MESH >(i);
+    check_for_all_cell_coords< cuda_exec, STRUCTURED_RECTILINEAR_MESH >(i);
+    check_for_all_cell_coords< cuda_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >(i);
+    check_for_all_cell_coords< cuda_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >(i);
 #endif
 
   } // END for all dimensions

@@ -96,6 +96,15 @@ struct xyz { };
 struct nodeids { };
 
 /*!
+ * \brief Indicates that the lambda expression also takes a matrix of the nodal
+ *  coordinates and the node connectivity information, i.e., the node IDs of the
+ *  mesh entity being traversed, e.g., cells or faces and the number of nodes.
+ *
+ * \note This option can be used for cell/face mesh traversals with any mesh.
+ */
+struct coords { };
+
+/*!
  * \brief Indicates that the lambda expression also takes the face
  *  connectivity information, i.e., the face IDs of the cell in addition to
  *  the associated cell index. 
@@ -172,6 +181,13 @@ struct xargs_traits< xargs::nodeids >
 {
   static constexpr bool valid() { return true; };
   static constexpr char* name() { return (char*)("xargs::nodeids"); };
+};
+
+template < >
+struct xargs_traits< xargs::coords >
+{
+  static constexpr bool valid() { return true; };
+  static constexpr char* name() { return (char*)("xargs::coords"); };
 };
 
 template < >

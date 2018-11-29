@@ -54,8 +54,8 @@ void check_for_all_faces( int dimension )
   const IndexType Nj = (dimension >= 2) ? Ni : -1;
   const IndexType Nk = (dimension == 3) ? Ni : -1;
 
-  const double lo[] = { -10, -10, -10 };
-  const double hi[] = {  10,  10,  10 };
+  const double lo[] = { -10, -9, -8 };
+  const double hi[] = {  10,  9,  8 };
   UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
 
   Mesh* test_mesh = internal::create_mesh< MeshType, Topology >( uniform_mesh );
@@ -94,8 +94,8 @@ void check_for_all_face_nodes( int dimension )
   const IndexType Nj = (dimension >= 2) ? Ni : -1;
   const IndexType Nk = (dimension == 3) ? Ni : -1;
 
-  const double lo[] = { -10, -10, -10 };
-  const double hi[] = {  10,  10,  10 };
+  const double lo[] = { -10, -9, -8 };
+  const double hi[] = {  10,  9,  8 };
   UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
 
   Mesh* test_mesh = internal::create_mesh< MeshType, Topology >( uniform_mesh );
@@ -131,6 +131,69 @@ void check_for_all_face_nodes( int dimension )
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
+void check_for_all_face_coords( int dimension )
+{
+  constexpr char* mesh_name = internal::mesh_type_name< MeshType, Topology >::name(); 
+  SLIC_INFO( "dimension=" << dimension << ", policy="
+            << policy_traits< ExecPolicy >::name() << ", mesh_type="
+            << mesh_name );
+
+  const IndexType Ni = 20;
+  const IndexType Nj = (dimension >= 2) ? Ni : -1;
+  const IndexType Nk = (dimension == 3) ? Ni : -1;
+
+  const double lo[] = { -10, -9, -8 };
+  const double hi[] = {  10,  9,  8 };
+  UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
+
+  Mesh* test_mesh = internal::create_mesh< MeshType, Topology >( uniform_mesh );
+  EXPECT_TRUE( test_mesh != nullptr );
+
+  const IndexType numFaces = test_mesh->getNumberOfFaces();
+  IndexType* conn = test_mesh->createField< IndexType >( "conn", FACE_CENTERED, MAX_FACE_NODES );
+  double* coords = test_mesh->createField< double >( "coords", FACE_CENTERED, dimension * MAX_FACE_NODES );
+
+  for_all_faces< ExecPolicy, xargs::coords >( test_mesh,
+    AXOM_LAMBDA( IndexType faceID, const numerics::Matrix<double> & coordsMatrix,
+                 const IndexType * nodes)
+    {
+      const IndexType numNodes = coordsMatrix.getNumColumns();
+      for ( int i = 0 ; i < numNodes ; ++i )
+      {
+        conn[ faceID * MAX_FACE_NODES + i ] = nodes[ i ];
+
+        for ( int dim = 0; dim < dimension; ++dim )
+        {
+          coords[ faceID * dimension * MAX_FACE_NODES + i * dimension + dim ] = coordsMatrix( dim, i );
+        }
+      } // END for all face nodes
+    }
+  );
+
+  double nodeCoords[3];
+  IndexType faceNodes[ MAX_FACE_NODES ];
+  for ( IndexType faceID = 0 ; faceID < numFaces ; ++faceID )
+  {
+    const IndexType numNodes = test_mesh->getFaceNodeIDs( faceID, faceNodes );
+    for ( int i = 0 ; i < numNodes ; ++i )
+    {
+      EXPECT_EQ( conn[ faceID * MAX_FACE_NODES + i ], faceNodes[ i ] );
+
+      for ( int dim = 0; dim < dimension; ++dim )
+      {
+        test_mesh->getNode( faceNodes[ i ], nodeCoords );
+        EXPECT_EQ( coords[ faceID * dimension * MAX_FACE_NODES + i * dimension + dim ], nodeCoords[ dim ] );
+      }
+    }
+  }  // END for all cells
+
+  /* clean up */
+  delete test_mesh;
+  test_mesh = nullptr;
+}
+
+//------------------------------------------------------------------------------
+template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_face_cells( int dimension )
 {
   constexpr char* mesh_name = internal::mesh_type_name< MeshType, Topology >::name(); 
@@ -142,8 +205,8 @@ void check_for_all_face_cells( int dimension )
   const IndexType Nj = (dimension >= 2) ? Ni : -1;
   const IndexType Nk = (dimension == 3) ? Ni : -1;
 
-  const double lo[] = { -10, -10, -10 };
-  const double hi[] = {  10,  10,  10 };
+  const double lo[] = { -10, -9, -8 };
+  const double hi[] = {  10,  9,  8 };
   UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
 
   Mesh* test_mesh = internal::create_mesh< MeshType, Topology >( uniform_mesh );
@@ -213,6 +276,44 @@ TEST( mint_execution_face_traversals, for_all_face_nodeids )
     check_for_all_face_nodes< cuda_exec, STRUCTURED_RECTILINEAR_MESH >( dim );
     check_for_all_face_nodes< cuda_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >( dim );
     check_for_all_face_nodes< cuda_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >( dim );
+#endif
+
+  } // END for all dimensions
+}
+
+TEST( mint_execution_face_traversals, for_all_face_coords )
+{
+  for ( int dim = 2 ; dim <= 3 ; ++dim )
+  {
+
+    using seq_exec = policy::serial;
+    check_for_all_face_coords< seq_exec, STRUCTURED_UNIFORM_MESH >( dim );
+    check_for_all_face_coords< seq_exec, STRUCTURED_CURVILINEAR_MESH >( dim );
+    check_for_all_face_coords< seq_exec, STRUCTURED_RECTILINEAR_MESH >( dim );
+    check_for_all_face_coords< seq_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >( dim );
+    check_for_all_face_coords< seq_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >( dim );
+
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
+    defined(RAJA_ENABLE_OPENMP)
+
+    using omp_exec = policy::parallel_cpu;
+    check_for_all_face_coords< omp_exec, STRUCTURED_UNIFORM_MESH >( dim );
+    check_for_all_face_coords< omp_exec, STRUCTURED_CURVILINEAR_MESH >( dim );
+    check_for_all_face_coords< omp_exec, STRUCTURED_RECTILINEAR_MESH >( dim );
+    check_for_all_face_coords< omp_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >( dim );
+    check_for_all_face_coords< omp_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >( dim );
+
+#endif
+
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
+    defined(RAJA_ENABLE_CUDA)
+
+    using cuda_exec = policy::parallel_gpu;
+    check_for_all_face_coords< cuda_exec, STRUCTURED_UNIFORM_MESH >( dim );
+    check_for_all_face_coords< cuda_exec, STRUCTURED_CURVILINEAR_MESH >( dim );
+    check_for_all_face_coords< cuda_exec, STRUCTURED_RECTILINEAR_MESH >( dim );
+    check_for_all_face_coords< cuda_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >( dim );
+    check_for_all_face_coords< cuda_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >( dim );
 #endif
 
   } // END for all dimensions
