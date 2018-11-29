@@ -10,6 +10,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
+- Added the ability to point Axom to an UMPIRE build by specifying UMPIRE_DIR either in
+  a host-config or at the command line. Axom components can link to Umpire, by specifying
+  "umpire" as a dependency. A simple umpire smoke test is also added for regression testing.
 - Added for_all_faces to the mint execution model.
 - Added support for face connectivity in the mint UnstructuredMesh class.
 - Added support for face data and face connectivity in the mint StructuredMesh classes.
