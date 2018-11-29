@@ -886,6 +886,40 @@ inline void for_all_facecoords_rectilinear( const Mesh* m, KernelType&& kernel )
 }
 
 //------------------------------------------------------------------------------
+template < typename ExecPolicy, typename KernelType >
+inline void for_all_faces( xargs::nodeids, const Mesh* m,
+                           KernelType&& kernel )
+{
+  SLIC_ERROR_IF( m == nullptr, "Invalid mesh." );
+  SLIC_ERROR_IF( m->getDimension() < 1 || m->getDimension() > 3,
+                 "Invalid dimension" );
+
+  if ( m->isStructured() )
+  {
+    if ( m->getDimension() == 2 )
+    {
+      for_all_facenodes_structured_2D< ExecPolicy >( m,
+        std::forward< KernelType >( kernel ) );
+    }
+    else
+    {
+      for_all_facenodes_structured_3D< ExecPolicy >( m,
+        std::forward< KernelType >( kernel ) );
+    }
+  }
+  else if ( m->hasMixedCellTypes() )
+  {
+    for_all_facenodes_unstructured_mixed< ExecPolicy >(
+      m, std::forward< KernelType >( kernel ) );
+  }
+  else
+  {
+    for_all_facenodes_unstructured_single< ExecPolicy >(
+      m, std::forward< KernelType >( kernel ) );
+  }
+}
+
+//------------------------------------------------------------------------------
 struct for_all_face_nodes_functor
 {
   template < typename ExecPolicy, typename KernelType >
@@ -935,7 +969,7 @@ inline void for_all_facecoords_unstructured( const Mesh* m,
 
   if ( dimension == 2 )
   {
-    for_all_faces< ExecPolicy >( xargs::nodeids(), m, 
+    for_all_faces< ExecPolicy >( xargs::nodeids(), m,
       AXOM_LAMBDA( IndexType faceID, const IndexType * nodeIDs,
                    IndexType numNodes )
       {
@@ -946,7 +980,7 @@ inline void for_all_facecoords_unstructured( const Mesh* m,
           coords[ 2 * i     ] = x[ nodeID ];
           coords[ 2 * i + 1 ] = y[ nodeID ];
         }
-        
+
         numerics::Matrix<double> coordsMatrix( dimension, 2, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
       }
@@ -955,7 +989,7 @@ inline void for_all_facecoords_unstructured( const Mesh* m,
   else
   {
     const double * z = m->getCoordinateArray( Z_COORDINATE );
-    for_all_faces< ExecPolicy >( xargs::nodeids(), m, 
+    for_all_faces< ExecPolicy >( xargs::nodeids(), m,
       AXOM_LAMBDA( IndexType faceID, const IndexType * nodeIDs,
                    IndexType numNodes )
       {
@@ -967,7 +1001,7 @@ inline void for_all_facecoords_unstructured( const Mesh* m,
           coords[ 3 * i + 1 ] = y[ nodeID ];
           coords[ 3 * i + 2 ] = z[ nodeID ];
         }
-        
+
         numerics::Matrix<double> coordsMatrix( dimension, 4, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
       }
@@ -975,39 +1009,6 @@ inline void for_all_facecoords_unstructured( const Mesh* m,
   }
 }
 
-//------------------------------------------------------------------------------
-template < typename ExecPolicy, typename KernelType >
-inline void for_all_faces( xargs::nodeids, const Mesh* m,
-                           KernelType&& kernel )
-{
-  SLIC_ERROR_IF( m == nullptr, "Invalid mesh." );
-  SLIC_ERROR_IF( m->getDimension() < 1 || m->getDimension() > 3,
-                 "Invalid dimension" );
-
-  if ( m->isStructured() )
-  {
-    if ( m->getDimension() == 2 )
-    {
-      for_all_facenodes_structured_2D< ExecPolicy >( m,
-        std::forward< KernelType >( kernel ) );
-    }
-    else
-    {
-      for_all_facenodes_structured_3D< ExecPolicy >( m,
-        std::forward< KernelType >( kernel ) );
-    }
-  }
-  else if ( m->hasMixedCellTypes() )
-  {
-    for_all_facenodes_unstructured_mixed< ExecPolicy >(
-      m, std::forward< KernelType >( kernel ) );
-  }
-  else
-  {
-    for_all_facenodes_unstructured_single< ExecPolicy >(
-      m, std::forward< KernelType >( kernel ) );
-  }
-}
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
