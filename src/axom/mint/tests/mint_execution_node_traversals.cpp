@@ -17,6 +17,7 @@
 
 // Axom includes
 #include "axom/config.hpp"                    // for compile-time definitions
+#include "axom/core/memory_management.hpp"   // for alloc() /free()
 
 // Mint includes
 #include "axom/mint/config.hpp"               // mint compile-time definitions
