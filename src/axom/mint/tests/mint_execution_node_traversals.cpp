@@ -102,8 +102,8 @@ void check_for_all_nodes_ij( )
 
   const IndexType numNodes = test_mesh->getNumberOfNodes();
 
-  IndexType* icoords = utilities::alloc< IndexType >( numNodes );
-  IndexType* jcoords = utilities::alloc< IndexType >( numNodes );
+  IndexType* icoords = axom::alloc< IndexType >( numNodes );
+  IndexType* jcoords = axom::alloc< IndexType >( numNodes );
 
   for_all_nodes< ExecPolicy, xargs::ij >( test_mesh,
     AXOM_LAMBDA( IndexType nodeIdx, IndexType i, IndexType j )
@@ -129,8 +129,8 @@ void check_for_all_nodes_ij( )
   delete test_mesh;
   test_mesh = nullptr;
 
-  utilities::free( icoords );
-  utilities::free( jcoords );
+  axom::free( icoords );
+  axom::free( jcoords );
 }
 
 //------------------------------------------------------------------------------
@@ -152,9 +152,9 @@ void check_for_all_nodes_ijk( )
 
   const IndexType numNodes = test_mesh->getNumberOfNodes();
 
-  IndexType* icoords = utilities::alloc< IndexType >( numNodes );
-  IndexType* jcoords = utilities::alloc< IndexType >( numNodes );
-  IndexType* kcoords = utilities::alloc< IndexType >( numNodes );
+  IndexType* icoords = axom::alloc< IndexType >( numNodes );
+  IndexType* jcoords = axom::alloc< IndexType >( numNodes );
+  IndexType* kcoords = axom::alloc< IndexType >( numNodes );
 
   for_all_nodes< ExecPolicy, xargs::ijk >( test_mesh,
     AXOM_LAMBDA( IndexType nodeIdx, IndexType i, IndexType j, IndexType k )
@@ -185,9 +185,9 @@ void check_for_all_nodes_ijk( )
   delete test_mesh;
   test_mesh = nullptr;
 
-  utilities::free( icoords );
-  utilities::free( jcoords );
-  utilities::free( kcoords );
+  axom::free( icoords );
+  axom::free( jcoords );
+  axom::free( kcoords );
 }
 
 //------------------------------------------------------------------------------
@@ -210,9 +210,9 @@ void check_for_all_nodes_xyz( )
 
   // STEP 1: generate test coordinate arrays
   const IndexType numNodes = test_mesh->getNumberOfNodes();
-  double* x = axom::utilities::alloc< double >( numNodes );
-  double* y = axom::utilities::alloc< double >( numNodes );
-  double* z = axom::utilities::alloc< double >( numNodes );
+  double* x = axom::alloc< double >( numNodes );
+  double* y = axom::alloc< double >( numNodes );
+  double* z = axom::alloc< double >( numNodes );
   for_all_nodes< ExecPolicy, xargs::xyz >( test_mesh,
     AXOM_LAMBDA( IndexType idx, double xx, double yy, double zz )
     {
@@ -236,9 +236,9 @@ void check_for_all_nodes_xyz( )
   delete test_mesh;
   test_mesh = nullptr;
 
-  axom::utilities::free( x );
-  axom::utilities::free( y );
-  axom::utilities::free( z );
+  axom::free( x );
+  axom::free( y );
+  axom::free( z );
 }
 
 //------------------------------------------------------------------------------
@@ -261,8 +261,8 @@ void check_for_all_nodes_xy( )
 
   // STEP 1: generate test coordinate arrays
   const IndexType numNodes = test_mesh->getNumberOfNodes();
-  double* x = axom::utilities::alloc< double >( numNodes );
-  double* y = axom::utilities::alloc< double >( numNodes );
+  double* x = axom::alloc< double >( numNodes );
+  double* y = axom::alloc< double >( numNodes );
   for_all_nodes< ExecPolicy, xargs::xy >( test_mesh,
     AXOM_LAMBDA( IndexType idx, double xx, double yy )
     {
@@ -284,8 +284,8 @@ void check_for_all_nodes_xy( )
   delete test_mesh;
   test_mesh = nullptr;
 
-  axom::utilities::free( x );
-  axom::utilities::free( y );
+  axom::free( x );
+  axom::free( y );
 }
 
 //------------------------------------------------------------------------------
@@ -313,7 +313,7 @@ void check_for_all_nodes_x( )
 
   // STEP 1: generate test coordinate arrays
   const IndexType numNodes = uniform_mesh.getNumberOfNodes();
-  double* x = axom::utilities::alloc< double >( numNodes );
+  double* x = axom::alloc< double >( numNodes );
   for_all_nodes< ExecPolicy, xargs::x >( test_mesh,
     AXOM_LAMBDA( IndexType idx, double xx )
     {
@@ -332,7 +332,7 @@ void check_for_all_nodes_x( )
   // STEP 3: clean up
   delete test_mesh;
   test_mesh = nullptr;
-  axom::utilities::free( x );
+  axom::free( x );
 }
 
 } /* end anonymous namespace */

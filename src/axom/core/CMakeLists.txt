@@ -41,6 +41,7 @@ set(core_headers
 
     Array.hpp
     Macros.hpp
+    memory_management.hpp
     Types.hpp
     )
 

@@ -19,39 +19,6 @@
 
 #include "axom/core/utilities/Utilities.hpp"
 
-TEST(core_Utilities, allocation)
-{
-  std::cout<<"Testing allocation functions."<< std::endl;
-  for ( int initial_size = 2 ; initial_size <= 1048576 ; initial_size *= 2 )
-  {
-    int buffer_size = initial_size;
-    int* buffer = axom::utilities::alloc<int>(buffer_size);
-
-    for (int i = 0 ; i < buffer_size ; i++)
-    {
-      buffer[i] = i;
-    }
-
-    buffer_size *= 2;
-    buffer = axom::utilities::realloc(buffer, buffer_size);
-    for (int i = 0 ; i < buffer_size / 2 ; i++)
-    {
-      EXPECT_EQ(buffer[i],  i);
-    }
-
-    buffer_size /= 4;
-    buffer = axom::utilities::realloc(buffer, buffer_size);
-    for (int i = 0 ; i < buffer_size ; i++)
-    {
-      EXPECT_EQ(buffer[i],  i);
-    }
-
-    axom::utilities::free(buffer);
-    EXPECT_TRUE( buffer == nullptr );
-  }
-}
-
-
 TEST(core_Utilities,log2)
 {
   std::cout<<"Testing log2 functions."<< std::endl;
