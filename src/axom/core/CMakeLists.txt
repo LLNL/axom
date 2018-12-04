@@ -21,6 +21,7 @@ set(core_headers
     utilities/Timer.hpp
     utilities/Utilities.hpp
     utilities/About.hpp
+    utilities/Array.hpp
 
     detail/cstdint_wrapper.hpp
     detail/ChronoTimer.hpp

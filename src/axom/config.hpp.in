@@ -46,6 +46,10 @@
 #cmakedefine AXOM_NO_INT64_T
 #cmakedefine AXOM_USE_MPI3
 
+#ifndef AXOM_NO_INT64_T
+#cmakedefine AXOM_USE_64BIT_INDEXTYPE
+#endif
+
 /*
  * Compiler tests
  */
