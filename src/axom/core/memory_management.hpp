@@ -18,24 +18,138 @@
 #ifndef AXOM_MEMORYMANAGEMENT_HPP_
 #define AXOM_MEMORYMANAGEMENT_HPP_
 
+// Axom includes
 #include "axom/config.hpp" // for AXOM compile-time definitions
 
-#include <cstdlib>     // for std::malloc, std::realloc, std::free
+// Umpire includes
+#ifdef AXOM_USE_UMPIRE
+#include "umpire/config.hpp"
+#include "umpire/Allocator.hpp"
+#include "umpire/ResourceManager.hpp"
+#endif
+
+// C/C++ includes
+#include <cassert>  // for assert()
+#include <cstdlib>  // for std::malloc, std::realloc, std::free
 
 namespace axom
 {
 
 /*!
+ * \brief Enumerates the available memory spaces on a given system.
+ *
+ * \note The number of memory spaces available depends on the target system and
+ *  whether Axom is compiled with CUDA and Umpire. Specifically, HOST memory is
+ *  the default and is always available. If CUDA and UMPIRE support is enabled
+ *  the following memory spaces are also available:
+ *    * HOST_PINNED
+ *    * DEVICE
+ *    * DEVICE_CONSTANT
+ *    * UNIFIED_MEMORY
+ *
+ */
+enum MemorySpace
+{
+  HOST,
+
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+  HOST_PINNED,
+  DEVICE,
+  DEVICE_CONSTANT,
+  UNIFIED_MEMORY,
+#endif
+
+  NUM_MEMORY_SPACES   //!< NUM_MEMORY_SPACES
+};
+
+#ifdef AXOM_USE_UMPIRE
+
+/*!
+ * \brief Maps a MemorySpace enum to the corresponding Umpire resource type.
+ */
+static const int umpire_type[ ] =
+{
+  umpire::resource::Host,
+
+#ifdef AXOM_USE_CUDA
+  umpire::resource::Pinned,
+  umpire::resource::Device,
+  umpire::resource::Constant,
+  umpire::resource::Unified,
+#endif
+
+};
+
+#endif
+
+/// \name Memory Management Routines
+/// @{
+
+/*!
  * \brief Allocates a chunk of memory of type T.
  * \param [in] n the number of elements to allocate.
+ * \param [in] spaceId the space where memory will be allocated (optional)
+ *
+ * \note The default memory space used is HOST.
+ *
  * \tparam T the type of pointer returned.
+ *
  * \return A pointer to the new allocation or a null pointer if allocation
  *  failed.
+ *
+ *  \pre spaceId >= 0 && spaceId < NUM_MEMORY_SPACES
  */
 template < typename T >
-inline T* alloc( std::size_t n )
+inline T* alloc( std::size_t n, MemorySpace spaceId=HOST )
 {
-  return static_cast< T* >( std::malloc( n * sizeof( T ) ) );
+  // sanity checks
+  assert( "pre: invalid memory space request" &&
+          (spaceId >= HOST) && (spaceId < NUM_MEMORY_SPACES) );
+
+  const std::size_t numbytes = n * sizeof( T );
+  T* ptr = nullptr;
+
+#ifdef AXOM_USE_UMPIRE
+
+  auto& rm = umpire::ResourceManager::getInstance();
+  umpire::Allocator allocator = rm.getAllocator( umpire_type[ spaceId ] );
+  ptr = static_cast< T* >( allocator.allocate( numbytes )  );
+
+#else
+
+  ptr = static_cast< T* >( std::malloc( numbytes ) );
+
+#endif
+
+  return ptr;
+}
+
+/*!
+ * \brief Frees the chunk of memory pointed to by pointer.
+ *
+ * \param [in] pointer pointer to memory previously allocated with
+ *  alloc or realloc or a null pointer.
+ *
+ * \post pointer == nullptr
+ */
+template < typename T >
+inline void free( T*& pointer )
+{
+
+#ifdef AXOM_USE_UMPIRE
+
+  auto& rm       = umpire::ResourceManager::getInstance();
+  auto allocator = rm.getAllocator( pointer );
+  allocator.deallocate( pointer );
+
+#else
+
+  std::free( pointer );
+
+#endif
+
+  pointer = nullptr;
+
 }
 
 /*!
@@ -50,29 +164,29 @@ inline T* alloc( std::size_t n )
 template < typename T >
 inline T* realloc( T* pointer, std::size_t n )
 {
-  if ( n == 0 )
+  if ( n==0 )
   {
-    std::free( pointer );
+    axom::free( pointer );
     return nullptr;
   }
 
-  return static_cast< T* >( std::realloc( pointer,  n * sizeof( T ) ) );
+  const std::size_t numbytes = n * sizeof( T );
+
+#ifdef AXOM_USE_UMPIRE
+
+  auto& rm = umpire::ResourceManager::getInstance();
+  pointer = static_cast< T* >( rm.reallocate( pointer, numbytes ) );
+
+#else
+
+  pointer = static_cast< T* >( std::realloc( pointer, numbytes );
+
+#endif
+
+  return pointer;
 }
 
-/*!
- * \brief Frees the chunk of memory pointed to by pointer.
- *
- * \param [in] pointer pointer to memory previously allocated with
- *  alloc or realloc or a null pointer.
- *
- *  \post pointer == nullptr
- */
-template < typename T >
-inline void free( T*& pointer )
-{
-  std::free( pointer );
-  pointer = nullptr;
-}
+/// @}
 
 } // namespace axom
 
