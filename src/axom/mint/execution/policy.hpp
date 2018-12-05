@@ -130,7 +130,7 @@ struct policy_traits< policy::parallel_gpu< BLOCK_SIZE > >
   // TODO: use CudaCollapse policy when that is available
   using raja_2d_exec =
        RAJA::KernelPolicy<
-          RAJA::statement::CudaKernel<
+          RAJA::statement::CudaKernelFixed< 256,
             RAJA::statement::For< 1, RAJA::cuda_threadblock_exec<BLOCK_SIZE>,
               RAJA::statement::For< 0, RAJA::cuda_threadblock_exec<BLOCK_SIZE>,
                 RAJA::statement::Lambda< 0 >
@@ -141,7 +141,7 @@ struct policy_traits< policy::parallel_gpu< BLOCK_SIZE > >
 
   using raja_3d_exec =
       RAJA::KernelPolicy<
-         RAJA::statement::CudaKernel<
+         RAJA::statement::CudaKernelFixed< 256,
            RAJA::statement::For< 2, RAJA::cuda_threadblock_exec<BLOCK_SIZE>,
              RAJA::statement::For< 1, RAJA::cuda_threadblock_exec<BLOCK_SIZE>,
                RAJA::statement::For< 0, RAJA::cuda_threadblock_exec<BLOCK_SIZE>,
@@ -175,7 +175,7 @@ struct policy_traits< policy::parallel_gpu_async< BLOCK_SIZE > >
   // TODO: use CudaCollapse policy when that is available
   using raja_2d_exec =
       RAJA::KernelPolicy<
-         RAJA::statement::CudaKernel<
+         RAJA::statement::CudaKernelFixed< 256,
            RAJA::statement::For< 1, RAJA::cuda_threadblock_exec<BLOCK_SIZE>,
              RAJA::statement::For< 0, RAJA::cuda_threadblock_exec<BLOCK_SIZE>,
                RAJA::statement::Lambda< 0 >
@@ -186,7 +186,7 @@ struct policy_traits< policy::parallel_gpu_async< BLOCK_SIZE > >
 
   using raja_3d_exec =
       RAJA::KernelPolicy<
-         RAJA::statement::CudaKernel<
+         RAJA::statement::CudaKernelFixed< 256,
            RAJA::statement::For< 2, RAJA::cuda_threadblock_exec<BLOCK_SIZE>,
              RAJA::statement::For< 1, RAJA::cuda_threadblock_exec<BLOCK_SIZE>,
                RAJA::statement::For< 0, RAJA::cuda_threadblock_exec<BLOCK_SIZE>,
