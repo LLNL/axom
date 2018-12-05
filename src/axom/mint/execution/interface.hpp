@@ -292,6 +292,7 @@ inline void for_all_nodes( const Mesh* m, KernelType&& kernel )
                                          *m,
                                          std::forward< KernelType >( kernel ) );
 }
+
 /// @}
 
 /// @}

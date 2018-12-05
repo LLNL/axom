@@ -45,7 +45,7 @@ namespace
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_faces( int dimension )
 {
-  constexpr char* mesh_name = internal::mesh_type_name< MeshType, Topology >::name(); 
+  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name(); 
   SLIC_INFO( "dimension=" << dimension << ", policy="
             << policy_traits< ExecPolicy >::name() << ", mesh_type="
             << mesh_name );
@@ -58,12 +58,13 @@ void check_for_all_faces( int dimension )
   const double hi[] = {  10,  9,  8 };
   UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
 
-  Mesh* test_mesh = internal::create_mesh< MeshType, Topology >( uniform_mesh );
+  using MESH = typename internal::mesh_type< MeshType, Topology >::MeshType;
+  MESH* test_mesh = dynamic_cast< MESH* >( internal::create_mesh< MeshType, Topology >( uniform_mesh ) );
   EXPECT_TRUE( test_mesh != nullptr );
 
   const IndexType numFaces = test_mesh->getNumberOfFaces();
 
-  IndexType* field = test_mesh->createField< IndexType >( "f1", FACE_CENTERED );
+  IndexType* field = test_mesh->template createField< IndexType >( "f1", FACE_CENTERED );
 
   for_all_faces< ExecPolicy >( test_mesh, 
     AXOM_LAMBDA( IndexType faceID )
@@ -85,7 +86,7 @@ void check_for_all_faces( int dimension )
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_face_nodes( int dimension )
 {
-  constexpr char* mesh_name = internal::mesh_type_name< MeshType, Topology >::name(); 
+  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name(); 
   SLIC_INFO( "dimension=" << dimension << ", policy="
             << policy_traits< ExecPolicy >::name() << ", mesh_type="
             << mesh_name );
@@ -98,11 +99,12 @@ void check_for_all_face_nodes( int dimension )
   const double hi[] = {  10,  9,  8 };
   UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
 
-  Mesh* test_mesh = internal::create_mesh< MeshType, Topology >( uniform_mesh );
+  using MESH = typename internal::mesh_type< MeshType, Topology >::MeshType;
+  MESH* test_mesh = dynamic_cast< MESH* >( internal::create_mesh< MeshType, Topology >( uniform_mesh ) );
   EXPECT_TRUE( test_mesh != nullptr );
 
   const IndexType numFaces = test_mesh->getNumberOfFaces();
-  IndexType* conn = test_mesh->createField< IndexType >( "f1", FACE_CENTERED, MAX_FACE_NODES );
+  IndexType* conn = test_mesh->template createField< IndexType >( "f1", FACE_CENTERED, MAX_FACE_NODES );
 
   for_all_faces< ExecPolicy, xargs::nodeids >( test_mesh,
     AXOM_LAMBDA( IndexType faceID, const IndexType* nodes, IndexType N)
@@ -133,7 +135,7 @@ void check_for_all_face_nodes( int dimension )
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_face_coords( int dimension )
 {
-  constexpr char* mesh_name = internal::mesh_type_name< MeshType, Topology >::name(); 
+  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name(); 
   SLIC_INFO( "dimension=" << dimension << ", policy="
             << policy_traits< ExecPolicy >::name() << ", mesh_type="
             << mesh_name );
@@ -146,12 +148,13 @@ void check_for_all_face_coords( int dimension )
   const double hi[] = {  10,  9,  8 };
   UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
 
-  Mesh* test_mesh = internal::create_mesh< MeshType, Topology >( uniform_mesh );
+  using MESH = typename internal::mesh_type< MeshType, Topology >::MeshType;
+  MESH* test_mesh = dynamic_cast< MESH* >( internal::create_mesh< MeshType, Topology >( uniform_mesh ) );
   EXPECT_TRUE( test_mesh != nullptr );
 
   const IndexType numFaces = test_mesh->getNumberOfFaces();
-  IndexType* conn = test_mesh->createField< IndexType >( "conn", FACE_CENTERED, MAX_FACE_NODES );
-  double* coords = test_mesh->createField< double >( "coords", FACE_CENTERED, dimension * MAX_FACE_NODES );
+  IndexType* conn = test_mesh->template createField< IndexType >( "conn", FACE_CENTERED, MAX_FACE_NODES );
+  double* coords = test_mesh->template createField< double >( "coords", FACE_CENTERED, dimension * MAX_FACE_NODES );
 
   for_all_faces< ExecPolicy, xargs::coords >( test_mesh,
     AXOM_LAMBDA( IndexType faceID, const numerics::Matrix<double> & coordsMatrix,
@@ -196,7 +199,7 @@ void check_for_all_face_coords( int dimension )
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_face_cells( int dimension )
 {
-  constexpr char* mesh_name = internal::mesh_type_name< MeshType, Topology >::name(); 
+  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name(); 
   SLIC_INFO( "dimension=" << dimension << ", policy="
             << policy_traits< ExecPolicy >::name() << ", mesh_type="
             << mesh_name );
@@ -209,11 +212,12 @@ void check_for_all_face_cells( int dimension )
   const double hi[] = {  10,  9,  8 };
   UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
 
-  Mesh* test_mesh = internal::create_mesh< MeshType, Topology >( uniform_mesh );
+  using MESH = typename internal::mesh_type< MeshType, Topology >::MeshType;
+  MESH* test_mesh = dynamic_cast< MESH* >( internal::create_mesh< MeshType, Topology >( uniform_mesh ) );
   EXPECT_TRUE( test_mesh != nullptr );
 
   const IndexType numFaces = test_mesh->getNumberOfFaces();
-  IndexType* faceCells = test_mesh->createField< IndexType >( "f1", FACE_CENTERED, 2 );
+  IndexType* faceCells = test_mesh->template createField< IndexType >( "f1", FACE_CENTERED, 2 );
 
   for_all_faces< ExecPolicy, xargs::cellids >( test_mesh,
     AXOM_LAMBDA( IndexType faceID, IndexType cellIDOne, IndexType cellIDTwo )

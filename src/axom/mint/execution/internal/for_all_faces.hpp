@@ -28,6 +28,8 @@
 #include "axom/mint/mesh/RectilinearMesh.hpp"   // for RectilinearMesh
 #include "axom/mint/mesh/CurvilinearMesh.hpp"   // for CurvilinearMesh
 #include "axom/mint/execution/policy.hpp"       // execution policies/traits
+#include "axom/mint/execution/internal/helpers.hpp" // for for_all_coords
+
 
 #ifdef AXOM_USE_RAJA
 #include "RAJA/RAJA.hpp"
@@ -886,6 +888,7 @@ inline void for_all_faces_impl( xargs::coords,
     );
   }
 }
+
 
 //------------------------------------------------------------------------------
 struct for_all_face_nodes_functor

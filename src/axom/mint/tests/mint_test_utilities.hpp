@@ -49,22 +49,24 @@ namespace internal
 
 //------------------------------------------------------------------------------
 template < int MeshType, int Topology=SINGLE_SHAPE >
-struct mesh_type_name
+struct mesh_type
 {
   static constexpr char* name() { return (char*)"[UNDEFINED]"; };
 };
 
 //------------------------------------------------------------------------------
 template < >
-struct mesh_type_name< STRUCTURED_UNIFORM_MESH, SINGLE_SHAPE >
+struct mesh_type< STRUCTURED_UNIFORM_MESH, SINGLE_SHAPE >
 {
+  using MeshType = UniformMesh;
   static constexpr char* name() { return (char*)"STRUCTURED_UNIFORM_MESH"; };
 };
 
 //------------------------------------------------------------------------------
 template < >
-struct mesh_type_name< STRUCTURED_CURVILINEAR_MESH, SINGLE_SHAPE >
+struct mesh_type< STRUCTURED_CURVILINEAR_MESH, SINGLE_SHAPE >
 {
+  using MeshType = CurvilinearMesh;
   static constexpr char* name() {
     return (char*)"STRUCTURED_CURVILINEAR_MESH";
   };
@@ -72,8 +74,9 @@ struct mesh_type_name< STRUCTURED_CURVILINEAR_MESH, SINGLE_SHAPE >
 
 //------------------------------------------------------------------------------
 template < >
-struct mesh_type_name< STRUCTURED_RECTILINEAR_MESH, SINGLE_SHAPE >
+struct mesh_type< STRUCTURED_RECTILINEAR_MESH, SINGLE_SHAPE >
 {
+  using MeshType = RectilinearMesh;
   static constexpr char* name() { 
     return (char*)"STRUCTURED_RECTILINEAR_MESH";
   };
@@ -81,22 +84,25 @@ struct mesh_type_name< STRUCTURED_RECTILINEAR_MESH, SINGLE_SHAPE >
 
 //------------------------------------------------------------------------------
 template < >
-struct mesh_type_name< UNSTRUCTURED_MESH, SINGLE_SHAPE >
+struct mesh_type< UNSTRUCTURED_MESH, SINGLE_SHAPE >
 {
+  using MeshType = UnstructuredMesh< SINGLE_SHAPE >;
   static constexpr char* name() { return (char*)"UNSTRUCTURED_SINGLE_SHAPE"; };
 };
 
 //------------------------------------------------------------------------------
 template < >
-struct mesh_type_name< UNSTRUCTURED_MESH, MIXED_SHAPE >
+struct mesh_type< UNSTRUCTURED_MESH, MIXED_SHAPE >
 {
+  using MeshType = UnstructuredMesh< MIXED_SHAPE >;
   static constexpr char* name() { return (char*)"UNSTRUCTURED_MIXED_SHAPE"; };
 };
 
 //------------------------------------------------------------------------------
 template < >
-struct mesh_type_name< PARTICLE_MESH, SINGLE_SHAPE >
+struct mesh_type< PARTICLE_MESH, SINGLE_SHAPE >
 {
+  using MeshType = ParticleMesh;
   static constexpr char* name() { return (char*)"PARTICLE_MESH"; };
 };
 
@@ -336,13 +342,13 @@ create_mesh< UNSTRUCTURED_MESH, MIXED_SHAPE >(
 
   using UnstructuredMeshType = UnstructuredMesh< MIXED_SHAPE >;
 
-  IndexType node_capacity = numNodes;
-  IndexType cell_capacity = numCells * 1.6;
+  IndexType node_capacity = numNodes + numCells / 2;
+  IndexType cell_capacity = numCells * 2.5;
 
   if ( dimension == 3 )
   {
-    node_capacity = numNodes + numCells / 1.75;
-    cell_capacity = numCells * 3.75;
+    node_capacity = numNodes + numCells / 2.0;
+    cell_capacity = numCells * 3.5;
   }
 
   UnstructuredMeshType* output_mesh = new UnstructuredMeshType( dimension,

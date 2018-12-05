@@ -16,13 +16,12 @@
  */
 
 // Axom includes
-#include "axom/config.hpp"                   // for compile-time definitions
-#include "axom/core/utilities/Utilities.hpp" // for alloc() /free()
+#include "axom/config.hpp"                    // for compile-time definitions
 
 // Mint includes
-#include "axom/mint/config.hpp"              // mint compile-time definitions
-#include "axom/mint/execution/policy.hpp"    // mint execution policies/traits
-#include "axom/mint/execution/interface.hpp" // mint::for_all()
+#include "axom/mint/config.hpp"               // mint compile-time definitions
+#include "axom/mint/execution/policy.hpp"     // mint execution policies/traits
+#include "axom/mint/execution/interface.hpp"  // mint::for_all()
 
 // Slic includes
 #include "axom/slic.hpp" // for SLIC macros
@@ -56,10 +55,12 @@ void check_for_all( bool async=false )
   int* a = axom::utilities::alloc< int >( N );
 
   // STEP 1: initialize to VALUE_1
-  mint::for_all< ExecPolicy >( N, AXOM_LAMBDA(mint::IndexType idx)
+  mint::for_all< ExecPolicy >( N,
+    AXOM_LAMBDA(mint::IndexType idx)
     {
       a[ idx ] = VALUE_1;
-    } );
+    }
+  );
 
   if ( async )
   {
@@ -73,10 +74,12 @@ void check_for_all( bool async=false )
   }
 
   // STEP 3: set all values to VALUE_2 with mint::for_all
-  mint::for_all< ExecPolicy >( 0, N, AXOM_LAMBDA(mint::IndexType idx)
+  mint::for_all< ExecPolicy >( 0, N,
+    AXOM_LAMBDA(mint::IndexType idx)
     {
       a[ idx ] = VALUE_2;
-    } );
+    }
+  );
 
   if ( async )
   {
