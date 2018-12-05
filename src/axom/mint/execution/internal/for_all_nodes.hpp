@@ -217,13 +217,13 @@ inline void for_all_nodes_impl( xargs::x, const UniformMesh& m, KernelType&& ker
   SLIC_ERROR_IF( m.getDimension() != 1, 
                  "xargs::x is only valid for 1D meshes" );
 
-  const double* x0         = m.getOrigin( );
-  const double* h          = m.getSpacing( );
+  const double x0 = m.getOrigin()[0];
+  const double dx = m.getSpacing()[0];
 
   for_all_nodes_impl< ExecPolicy >( xargs::index(), m,
     AXOM_LAMBDA( IndexType nodeID )
     {
-      const double x = x0[ X_COORDINATE ] + nodeID * h[ I_DIRECTION ];
+      const double x = x0 + nodeID * dx;
       kernel( nodeID, x );
     }
   );
@@ -284,14 +284,19 @@ inline void for_all_nodes_impl( xargs::xy,
   SLIC_ERROR_IF( m.getDimension() != 2,
                  "xargs::xy is only valid for 2D meshes" );
 
-  const double* x0 = m.getOrigin( );
-  const double* h  = m.getSpacing( );
+  const double* origin = m.getOrigin();
+  const double x0 = origin[0];
+  const double y0 = origin[1];
+
+  const double* spacing = m.getSpacing();
+  const double dx = spacing[0];
+  const double dy = spacing[1];
 
   for_all_nodes_impl< ExecPolicy >( xargs::ij(), m,
     AXOM_LAMBDA( IndexType nodeID, IndexType i, IndexType j )
     {
-      const double x = x0[ X_COORDINATE ] + i * h[ I_DIRECTION ];
-      const double y = x0[ Y_COORDINATE ] + j * h[ J_DIRECTION ];
+      const double x = x0 + i * dx;
+      const double y = y0 + j * dy;
       kernel( nodeID, x, y );
     }
   );
@@ -384,15 +389,22 @@ inline void for_all_nodes_impl( xargs::xyz,
   SLIC_ERROR_IF( m.getDimension() != 3,
                  "xargs::xyz is only valid for 3D meshes" );
 
-  const double* x0 = m.getOrigin( );
-  const double* h  = m.getSpacing( );
+  const double* origin = m.getOrigin();
+  const double x0 = origin[0];
+  const double y0 = origin[1];
+  const double z0 = origin[2];
+
+  const double* spacing = m.getSpacing();
+  const double dx = spacing[0];
+  const double dy = spacing[1];
+  const double dz = spacing[2];
 
   for_all_nodes_impl< ExecPolicy >( xargs::ijk(), m,
     AXOM_LAMBDA(IndexType nodeID, IndexType i, IndexType j, IndexType k)
     {
-      const double x = x0[ X_COORDINATE ] + i * h[ I_DIRECTION ];
-      const double y = x0[ Y_COORDINATE ] + j * h[ J_DIRECTION ];
-      const double z = x0[ Z_COORDINATE ] + k * h[ K_DIRECTION ];
+      const double x = x0 + i * dx;
+      const double y = y0 + j * dy;
+      const double z = z0 + k * dz;
       kernel( nodeID, x, y, z );
     }
   );

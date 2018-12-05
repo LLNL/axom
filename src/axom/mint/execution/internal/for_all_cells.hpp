@@ -236,6 +236,10 @@ inline void for_all_cells_impl( xargs::nodeids,
   }
   else if ( dimension ==  2 )
   {
+    const IndexType offset1 = offsets[1];
+    const IndexType offset2 = offsets[2];
+    const IndexType offset3 = offsets[3];
+
     for_all_cells_impl< ExecPolicy >( xargs::ij(), m,
       AXOM_LAMBDA(IndexType cellID, IndexType i, IndexType j )
       {
@@ -243,9 +247,9 @@ inline void for_all_cells_impl( xargs::nodeids,
         IndexType cell_connectivity[ 4 ];
 
         cell_connectivity[ 0 ] = n0;
-        cell_connectivity[ 1 ] = n0 + offsets[ 1 ];
-        cell_connectivity[ 2 ] = n0 + offsets[ 2 ];
-        cell_connectivity[ 3 ] = n0 + offsets[ 3 ];
+        cell_connectivity[ 1 ] = n0 + offset1;
+        cell_connectivity[ 2 ] = n0 + offset2;
+        cell_connectivity[ 3 ] = n0 + offset3;
 
         kernel( cellID, cell_connectivity, 4 );
       }
@@ -255,6 +259,14 @@ inline void for_all_cells_impl( xargs::nodeids,
   {
     SLIC_ASSERT( dimension == 3 );
 
+    const IndexType offset1 = offsets[1];
+    const IndexType offset2 = offsets[2];
+    const IndexType offset3 = offsets[3];
+    const IndexType offset4 = offsets[4];
+    const IndexType offset5 = offsets[5];
+    const IndexType offset6 = offsets[6];
+    const IndexType offset7 = offsets[7];
+
     for_all_cells_impl< ExecPolicy >( xargs::ijk(), m,
       AXOM_LAMBDA(IndexType cellID, IndexType i, IndexType j, IndexType k)
       {
@@ -262,14 +274,14 @@ inline void for_all_cells_impl( xargs::nodeids,
         IndexType cell_connectivity[ 8 ];
 
         cell_connectivity[ 0 ] = n0;
-        cell_connectivity[ 1 ] = n0 + offsets[ 1 ];
-        cell_connectivity[ 2 ] = n0 + offsets[ 2 ];
-        cell_connectivity[ 3 ] = n0 + offsets[ 3 ];
+        cell_connectivity[ 1 ] = n0 + offset1;
+        cell_connectivity[ 2 ] = n0 + offset2;
+        cell_connectivity[ 3 ] = n0 + offset3;
 
-        cell_connectivity[ 4 ] = n0 + offsets[ 4 ];
-        cell_connectivity[ 5 ] = n0 + offsets[ 5 ];
-        cell_connectivity[ 6 ] = n0 + offsets[ 6 ];
-        cell_connectivity[ 7 ] = n0 + offsets[ 7 ];
+        cell_connectivity[ 4 ] = n0 + offset4;
+        cell_connectivity[ 5 ] = n0 + offset5;
+        cell_connectivity[ 6 ] = n0 + offset6;
+        cell_connectivity[ 7 ] = n0 + offset7;
 
         kernel( cellID, cell_connectivity, 8 );
       }
@@ -478,19 +490,22 @@ inline void for_all_cells_impl( xargs::coords,
   constexpr bool NO_COPY = true;
 
   const int dimension    = m.getDimension();
-  const double * x0      = m.getOrigin( );
-  const double * h       = m.getSpacing( );
+  const double * origin  = m.getOrigin( );
+  const double * spacing = m.getSpacing( );
   const IndexType nodeJp = m.nodeJp();
   const IndexType nodeKp = m.nodeKp();
 
   if ( dimension == 1 )
   {
+    const double x0 = origin[0];
+    const double dx = spacing[0];
+
     for_all_cells_impl< ExecPolicy >( xargs::index(), m,
       AXOM_LAMBDA( IndexType cellID )
       {
         const IndexType nodeIDs[2] = { cellID, cellID + 1 };
-        double coords[2] = { x0[0] + nodeIDs[0] * h[0], 
-                             x0[0] + nodeIDs[1] * h[0] };
+        double coords[2] = { x0 + nodeIDs[0] * dx, 
+                             x0 + nodeIDs[1] * dx };
       
         numerics::Matrix<double> coordsMatrix( dimension, 2, coords, NO_COPY );
         kernel( cellID, coordsMatrix, nodeIDs );
@@ -499,6 +514,12 @@ inline void for_all_cells_impl( xargs::coords,
   }
   else if ( dimension == 2 )
   {
+    const double x0 = origin[0];
+    const double dx = spacing[0];
+
+    const double y0 = origin[1];
+    const double dy = spacing[1];
+
     for_all_cells_impl< ExecPolicy >( xargs::ij(), m,
       AXOM_LAMBDA( IndexType cellID, IndexType i, IndexType j )
       {
@@ -508,10 +529,10 @@ inline void for_all_cells_impl( xargs::coords,
                                        n0 + 1 + nodeJp,
                                        n0 + nodeJp };
 
-        double coords[8] = { x0[0] +  i      * h[0], x0[1] +  j      * h[1],
-                             x0[0] + (i + 1) * h[0], x0[1] +  j      * h[1],
-                             x0[0] + (i + 1) * h[0], x0[1] + (j + 1) * h[1],
-                             x0[0] +  i      * h[0], x0[1] + (j + 1) * h[1] };
+        double coords[8] = { x0 +  i      * dx, y0 +  j      * dy,
+                             x0 + (i + 1) * dx, y0 +  j      * dy,
+                             x0 + (i + 1) * dx, y0 + (j + 1) * dy,
+                             x0 +  i      * dx, y0 + (j + 1) * dy };
         
         numerics::Matrix<double> coordsMatrix( dimension, 4, coords, NO_COPY );
         kernel( cellID, coordsMatrix, nodeIDs );
@@ -520,6 +541,15 @@ inline void for_all_cells_impl( xargs::coords,
   }
   else
   {
+    const double x0 = origin[0];
+    const double dx = spacing[0];
+    
+    const double y0 = origin[1];
+    const double dy = spacing[1];
+
+    const double z0 = origin[2];
+    const double dz = spacing[2];
+
     SLIC_ASSERT( dimension == 3 );
     for_all_cells_impl< ExecPolicy >( xargs::ijk(), m,
       AXOM_LAMBDA( IndexType cellID, IndexType i, IndexType j, IndexType k )
@@ -535,14 +565,14 @@ inline void for_all_cells_impl( xargs::coords,
                                        n0 + nodeJp + nodeKp };
 
         double coords[24] = { 
-          x0[0] +  i      * h[0], x0[1] +  j      * h[1], x0[2] +  k      * h[2],
-          x0[0] + (i + 1) * h[0], x0[1] +  j      * h[1], x0[2] +  k      * h[2],
-          x0[0] + (i + 1) * h[0], x0[1] + (j + 1) * h[1], x0[2] +  k      * h[2],
-          x0[0] +  i      * h[0], x0[1] + (j + 1) * h[1], x0[2] +  k      * h[2],
-          x0[0] +  i      * h[0], x0[1] +  j      * h[1], x0[2] + (k + 1) * h[2],
-          x0[0] + (i + 1) * h[0], x0[1] +  j      * h[1], x0[2] + (k + 1) * h[2],
-          x0[0] + (i + 1) * h[0], x0[1] + (j + 1) * h[1], x0[2] + (k + 1) * h[2],
-          x0[0] +  i      * h[0], x0[1] + (j + 1) * h[1], x0[2] + (k + 1) * h[2] };
+          x0 +  i      * dx, y0 +  j      * dy, z0 +  k      * dz,
+          x0 + (i + 1) * dx, y0 +  j      * dy, z0 +  k      * dz,
+          x0 + (i + 1) * dx, y0 + (j + 1) * dy, z0 +  k      * dz,
+          x0 +  i      * dx, y0 + (j + 1) * dy, z0 +  k      * dz,
+          x0 +  i      * dx, y0 +  j      * dy, z0 + (k + 1) * dz,
+          x0 + (i + 1) * dx, y0 +  j      * dy, z0 + (k + 1) * dz,
+          x0 + (i + 1) * dx, y0 + (j + 1) * dy, z0 + (k + 1) * dz,
+          x0 +  i      * dx, y0 + (j + 1) * dy, z0 + (k + 1) * dz };
         
         numerics::Matrix<double> coordsMatrix( dimension, 8, coords, NO_COPY );
         kernel( cellID, coordsMatrix, nodeIDs );

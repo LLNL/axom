@@ -67,17 +67,20 @@ inline void for_all_coords( const FOR_ALL_FUNCTOR & for_all_nodes,
 
   constexpr bool NO_COPY = true;
 
-  const double * const coords[3] = { 
-                               m.getCoordinateArray(X_COORDINATE),
-                  (NDIM > 1) ? m.getCoordinateArray(Y_COORDINATE) : nullptr,
-                  (NDIM > 2) ? m.getCoordinateArray(Z_COORDINATE) : nullptr };
+  const double * const x = m.getCoordinateArray(X_COORDINATE);
+  const double * const y = (NDIM > 1) ?
+                           m.getCoordinateArray(Y_COORDINATE) : nullptr;
+  const double * const z = (NDIM > 2) ?
+                           m.getCoordinateArray(Z_COORDINATE) : nullptr;
 
   for_all_nodes( ExecPolicy(), m, 
     AXOM_LAMBDA( IndexType objectID, const IndexType * nodeIDs, 
                  IndexType numNodes )
     {
+      const double * const coords[3] = { x, y, z };
+
       AXOM_DEBUG_VAR(numNodes);
-      SLIC_ASSERT( numNodes == NNODES );
+      assert( numNodes == NNODES );
 
       double localCoords[ NDIM * NNODES ];
       for ( int i = 0; i < NNODES; ++i )

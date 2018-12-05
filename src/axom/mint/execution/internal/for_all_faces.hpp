@@ -682,21 +682,27 @@ inline void for_all_faces_impl( xargs::coords,
   constexpr bool NO_COPY = true;
 
   const int dimension    = m.getDimension();
-  const double * x0      = m.getOrigin( );
-  const double * h       = m.getSpacing( );
+  const double * origin  = m.getOrigin( );
+  const double * spacing = m.getSpacing( );
   const IndexType nodeJp = m.nodeJp();
   const IndexType nodeKp = m.nodeKp();
 
   if ( dimension == 2 )
   {
+    const double x0 = origin[0];
+    const double dx = spacing[0];
+    
+    const double y0 = origin[1];
+    const double dy = spacing[1];
+
     helpers::for_all_I_faces< ExecPolicy >( xargs::ij(), m,
       AXOM_LAMBDA( IndexType faceID, IndexType i, IndexType j )
       {
         const IndexType n0 = i + j * nodeJp;
         const IndexType nodeIDs[2] = { n0, n0 + nodeJp };
 
-        double coords[4] = { x0[0] + i * h[0], x0[1] +  j      * h[1],
-                             x0[0] + i * h[0], x0[1] + (j + 1) * h[1] };
+        double coords[4] = { x0 + i * dx, y0 +  j      * dy,
+                             x0 + i * dx, y0 + (j + 1) * dy };
         
         numerics::Matrix<double> coordsMatrix( dimension, 2, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
@@ -709,8 +715,8 @@ inline void for_all_faces_impl( xargs::coords,
         const IndexType n0 = i + j * nodeJp;
         const IndexType nodeIDs[2] = { n0, n0 + 1 };
 
-        double coords[4] = { x0[0] +  i      * h[0], x0[1] + j * h[1],
-                             x0[0] + (i + 1) * h[0], x0[1] + j * h[1] };
+        double coords[4] = { x0 +  i      * dx, y0 + j * dy,
+                             x0 + (i + 1) * dx, y0 + j * dy };
         
         numerics::Matrix<double> coordsMatrix( dimension, 2, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
@@ -719,6 +725,15 @@ inline void for_all_faces_impl( xargs::coords,
   }
   else
   {
+    const double x0 = origin[0];
+    const double dx = spacing[0];
+    
+    const double y0 = origin[1];
+    const double dy = spacing[1];
+
+    const double z0 = origin[2];
+    const double dz = spacing[2];
+
     helpers::for_all_I_faces< ExecPolicy >( xargs::ijk(), m,
       AXOM_LAMBDA( IndexType faceID, IndexType i, IndexType j, IndexType k )
       {
@@ -729,10 +744,10 @@ inline void for_all_faces_impl( xargs::coords,
                                        n0 + nodeJp };
 
         double coords[12] = { 
-          x0[0] + i * h[0], x0[1] +  j      * h[1], x0[2] +  k      * h[2],
-          x0[0] + i * h[0], x0[1] +  j      * h[1], x0[2] + (k + 1) * h[2],
-          x0[0] + i * h[0], x0[1] + (j + 1) * h[1], x0[2] + (k + 1) * h[2],
-          x0[0] + i * h[0], x0[1] + (j + 1) * h[1], x0[2] +  k      * h[2] };
+          x0 + i * dx, y0 +  j      * dy, z0 +  k      * dz,
+          x0 + i * dx, y0 +  j      * dy, z0 + (k + 1) * dz,
+          x0 + i * dx, y0 + (j + 1) * dy, z0 + (k + 1) * dz,
+          x0 + i * dx, y0 + (j + 1) * dy, z0 +  k      * dz };
         
         numerics::Matrix<double> coordsMatrix( dimension, 4, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
@@ -749,10 +764,10 @@ inline void for_all_faces_impl( xargs::coords,
                                        n0 + nodeKp };
 
         double coords[12] = { 
-          x0[0] +  i      * h[0], x0[1] + j * h[1], x0[2] +  k      * h[2],
-          x0[0] + (i + 1) * h[0], x0[1] + j * h[1], x0[2] +  k      * h[2],
-          x0[0] + (i + 1) * h[0], x0[1] + j * h[1], x0[2] + (k + 1) * h[2],
-          x0[0] +  i      * h[0], x0[1] + j * h[1], x0[2] + (k + 1) * h[2] };
+          x0 +  i      * dx, y0 + j * dy, z0 +  k      * dz,
+          x0 + (i + 1) * dx, y0 + j * dy, z0 +  k      * dz,
+          x0 + (i + 1) * dx, y0 + j * dy, z0 + (k + 1) * dz,
+          x0 +  i      * dx, y0 + j * dy, z0 + (k + 1) * dz };
         
         numerics::Matrix<double> coordsMatrix( dimension, 4, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
@@ -769,10 +784,10 @@ inline void for_all_faces_impl( xargs::coords,
                                        n0 + nodeJp };
 
         double coords[12] = { 
-          x0[0] +  i      * h[0], x0[1] +  j      * h[1], x0[2] + k * h[2],
-          x0[0] + (i + 1) * h[0], x0[1] +  j      * h[1], x0[2] + k * h[2],
-          x0[0] + (i + 1) * h[0], x0[1] + (j + 1) * h[1], x0[2] + k * h[2],
-          x0[0] +  i      * h[0], x0[1] + (j + 1) * h[1], x0[2] + k * h[2] };
+          x0 +  i      * dx, y0 +  j      * dy, z0 + k * dz,
+          x0 + (i + 1) * dx, y0 +  j      * dy, z0 + k * dz,
+          x0 + (i + 1) * dx, y0 + (j + 1) * dy, z0 + k * dz,
+          x0 +  i      * dx, y0 + (j + 1) * dy, z0 + k * dz };
         
         numerics::Matrix<double> coordsMatrix( dimension, 4, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
