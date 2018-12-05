@@ -166,7 +166,7 @@ public:
   /*!
    * Destructor. Frees the associated buffer unless the memory is external.
    */
-  ~Array();
+  virtual ~Array();
 
 /// \name Array tuple access operators
 /// @{
@@ -416,11 +416,19 @@ public:
   /*!
    * \brief Return true iff the external buffer constructor was called.
    */
-  bool isExternal() const { return m_is_external; }
+  virtual bool isExternal() const { return m_is_external; }
+
+  /*!
+   * \brief Return true iff a sidre constructor was called.
+   */
+  virtual bool isInSidre() const
+  {
+    return false;
+  }
 
 /// @}
 
-private:
+protected:
 
   /*!
    * \brief Make space for a subsequent insertion into the array.
@@ -439,14 +447,14 @@ private:
    *
    * \param [in] new_num_tuples the new number of tuples.
    */
-  void updateNumTuples( IndexType new_num_tuples );
+  virtual void updateNumTuples( IndexType new_num_tuples );
 
   /*!
    * \brief Set the number of tuples allocated for the data array.
    *
    * \param [in] capacity the new number of tuples to allocate.
    */
-  void setCapacity( IndexType new_capacity );
+  virtual void setCapacity( IndexType new_capacity );
 
   /*!
    * \brief Reallocates the data array when the size exceeds the capacity.
@@ -454,7 +462,7 @@ private:
    * \param [in] new_num_tuples the number of tuples which exceeds the current
    *  capacity.
    */
-  void dynamicRealloc( IndexType new_num_tuples );
+  virtual void dynamicRealloc( IndexType new_num_tuples );
 
 
   T* m_data;
