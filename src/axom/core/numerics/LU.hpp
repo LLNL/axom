@@ -180,7 +180,7 @@ int lu_solve( const Matrix< T >& A, const int* pivots, const T* b, T* x )
   }
 
   const int size = A.getNumRows();
-  T* rhs = new T[ size ];
+  T* rhs = utilities::alloc< T >( size );
   memcpy( rhs, b, size*sizeof( T ) );
 
   typedef typename Matrix< T >::IndexType IndexType;
@@ -214,7 +214,7 @@ int lu_solve( const Matrix< T >& A, const int* pivots, const T* b, T* x )
     }  // END for j
   } // END for i
 
-  delete [] rhs;
+  utilities::free( rhs );
   return LU_SUCCESS;
 }
 
