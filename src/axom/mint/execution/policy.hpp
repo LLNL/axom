@@ -123,7 +123,7 @@ struct policy_traits< policy::parallel_gpu< BLOCK_SIZE > >
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
   defined(RAJA_ENABLE_CUDA)
   using raja_exec_policy   = RAJA::cuda_exec< BLOCK_SIZE >;
-  using raja_reduce_policy = RAJA::cuda_reduce< BLOCK_SIZE >;
+  using raja_reduce_policy = RAJA::cuda_reduce;
   using raja_sync_policy   = RAJA::cuda_synchronize;
 
   /* *INDENT-OFF* */
@@ -168,7 +168,7 @@ struct policy_traits< policy::parallel_gpu_async< BLOCK_SIZE > >
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
   defined(RAJA_ENABLE_CUDA)
   using raja_exec_policy   = RAJA::cuda_exec_async< BLOCK_SIZE >;
-  using raja_reduce_policy = RAJA::cuda_reduce_async< BLOCK_SIZE >;
+  using raja_reduce_policy = RAJA::cuda_reduce;
   using raja_sync_policy   = RAJA::cuda_synchronize;
 
   /* *INDENT-OFF* */
