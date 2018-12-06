@@ -275,7 +275,7 @@ AXOM_CUDA_TEST( mint_execution_face_traversals, for_all_face_nodeids )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
     defined(RAJA_ENABLE_CUDA)
 
-    using cuda_exec = policy::parallel_gpu;
+    using cuda_exec = policy::parallel_gpu< 512 >;
     check_for_all_face_nodes< cuda_exec, STRUCTURED_UNIFORM_MESH >( dim );
     check_for_all_face_nodes< cuda_exec, STRUCTURED_CURVILINEAR_MESH >( dim );
     check_for_all_face_nodes< cuda_exec, STRUCTURED_RECTILINEAR_MESH >( dim );
@@ -313,7 +313,7 @@ AXOM_CUDA_TEST( mint_execution_face_traversals, for_all_face_coords )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
     defined(RAJA_ENABLE_CUDA)
 
-    using cuda_exec = policy::parallel_gpu;
+    using cuda_exec = policy::parallel_gpu< 512 >;
     check_for_all_face_coords< cuda_exec, STRUCTURED_UNIFORM_MESH >( dim );
     check_for_all_face_coords< cuda_exec, STRUCTURED_CURVILINEAR_MESH >( dim );
     check_for_all_face_coords< cuda_exec, STRUCTURED_RECTILINEAR_MESH >( dim );
@@ -351,7 +351,7 @@ AXOM_CUDA_TEST( mint_execution_face_traversals, for_all_face_cellids )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
     defined(RAJA_ENABLE_CUDA)
 
-    using cuda_exec = policy::parallel_gpu;
+    using cuda_exec = policy::parallel_gpu< 512 >;
     check_for_all_face_cells< cuda_exec, STRUCTURED_UNIFORM_MESH >( dim );
     check_for_all_face_cells< cuda_exec, STRUCTURED_CURVILINEAR_MESH >( dim );
     check_for_all_face_cells< cuda_exec, STRUCTURED_RECTILINEAR_MESH >( dim );
@@ -392,7 +392,7 @@ AXOM_CUDA_TEST( mint_execution_face_traversals, for_all_faces_index )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
     defined(RAJA_ENABLE_CUDA)
 
-    using cuda_exec = policy::parallel_gpu;
+    using cuda_exec = policy::parallel_gpu< 512 >;
     check_for_all_faces< cuda_exec, STRUCTURED_UNIFORM_MESH >( dim );
     check_for_all_faces< cuda_exec, STRUCTURED_CURVILINEAR_MESH >( dim );
     check_for_all_faces< cuda_exec, STRUCTURED_RECTILINEAR_MESH >( dim );

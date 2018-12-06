@@ -368,7 +368,7 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_xyz )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
   defined(RAJA_ENABLE_CUDA)
 
-  using cuda_exec = policy::parallel_gpu;
+  using cuda_exec = policy::parallel_gpu< 512 >;
   check_for_all_nodes_xyz< cuda_exec, STRUCTURED_UNIFORM_MESH >();
   check_for_all_nodes_xyz< cuda_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_xyz< cuda_exec, STRUCTURED_RECTILINEAR_MESH >();
@@ -406,7 +406,7 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_xy )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
   defined(RAJA_ENABLE_CUDA)
 
-  using cuda_exec = policy::parallel_gpu;
+  using cuda_exec = policy::parallel_gpu< 512 >;
   check_for_all_nodes_xy< cuda_exec, STRUCTURED_UNIFORM_MESH >();
   check_for_all_nodes_xy< cuda_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_xy< cuda_exec, STRUCTURED_RECTILINEAR_MESH >();
@@ -444,7 +444,7 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_x )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
   defined(RAJA_ENABLE_CUDA)
 
-  using cuda_exec = policy::parallel_gpu;
+  using cuda_exec = policy::parallel_gpu< 512 >;
   check_for_all_nodes_x< cuda_exec, STRUCTURED_UNIFORM_MESH >();
   check_for_all_nodes_x< cuda_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_x< cuda_exec, STRUCTURED_RECTILINEAR_MESH >();
@@ -477,7 +477,7 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_ijk )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
   defined(RAJA_ENABLE_CUDA)
 
-  using cuda_exec = policy::parallel_gpu;
+  using cuda_exec = policy::parallel_gpu< 512 >;
   check_for_all_nodes_ijk< cuda_exec, STRUCTURED_UNIFORM_MESH >();
   check_for_all_nodes_ijk< cuda_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_ijk< cuda_exec, STRUCTURED_RECTILINEAR_MESH >();
@@ -506,7 +506,7 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_ij )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
   defined(RAJA_ENABLE_CUDA)
 
-  using cuda_exec = policy::parallel_gpu;
+  using cuda_exec = policy::parallel_gpu< 512 >;
   check_for_all_nodes_ij< cuda_exec, STRUCTURED_UNIFORM_MESH >();
   check_for_all_nodes_ij< cuda_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_ij< cuda_exec, STRUCTURED_RECTILINEAR_MESH >();
@@ -545,7 +545,7 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_index )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
     defined(RAJA_ENABLE_CUDA)
 
-    using cuda_exec = policy::parallel_gpu;
+    using cuda_exec = policy::parallel_gpu< 512 >;
     check_for_all_nodes_idx< cuda_exec, STRUCTURED_UNIFORM_MESH >(i);
     check_for_all_nodes_idx< cuda_exec, STRUCTURED_CURVILINEAR_MESH >(i);
     check_for_all_nodes_idx< cuda_exec, STRUCTURED_RECTILINEAR_MESH >(i);

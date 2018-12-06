@@ -115,8 +115,8 @@ TEST( mint_execution_forall_traversals, check_generic_loop )
   defined(RAJA_ENABLE_CUDA)
 
   constexpr bool async = true;
-  check_for_all< policy::parallel_gpu >( );
-  check_for_all< policy::parallel_gpu_async >( async );
+  check_for_all< policy::parallel_gpu< 512 > >( );
+  check_for_all< policy::parallel_gpu_async< 512 > >( async );
 #endif
 
 }
