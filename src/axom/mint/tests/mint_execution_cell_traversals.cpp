@@ -349,7 +349,7 @@ void check_for_all_cell_faces( int dimension )
 // UNIT TESTS
 //------------------------------------------------------------------------------
 
-TEST( mint_execution_cell_traversals, for_all_cells_nodeids )
+AXOM_CUDA_TEST( mint_execution_cell_traversals, for_all_cells_nodeids )
 {
   constexpr int NDIMS = 3;
   for ( int i=1 ; i <= NDIMS ; ++i )
@@ -388,7 +388,7 @@ TEST( mint_execution_cell_traversals, for_all_cells_nodeids )
   } // END for all dimensions
 }
 
-TEST( mint_execution_cell_traversals, for_all_cells_coords )
+AXOM_CUDA_TEST( mint_execution_cell_traversals, for_all_cells_coords )
 {
   constexpr int NDIMS = 1;
   for ( int i=1 ; i <= NDIMS ; ++i )
@@ -427,7 +427,7 @@ TEST( mint_execution_cell_traversals, for_all_cells_coords )
   } // END for all dimensions
 }
 
-TEST( mint_execution_cell_traversals, for_all_cells_faceids )
+AXOM_CUDA_TEST( mint_execution_cell_traversals, for_all_cells_faceids )
 {
   constexpr int NDIMS = 3;
   for ( int i=2 ; i <= NDIMS ; ++i )
@@ -468,7 +468,7 @@ TEST( mint_execution_cell_traversals, for_all_cells_faceids )
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_execution_cell_traversals, for_all_cells_ij )
+AXOM_CUDA_TEST( mint_execution_cell_traversals, for_all_cells_ij )
 {
   using seq_exec = policy::serial;
   check_for_all_cells_ij< seq_exec, STRUCTURED_UNIFORM_MESH >();
@@ -498,7 +498,7 @@ TEST( mint_execution_cell_traversals, for_all_cells_ij )
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_execution_cell_traversals, for_all_cells_ijk )
+AXOM_CUDA_TEST( mint_execution_cell_traversals, for_all_cells_ijk )
 {
   using seq_exec = policy::serial;
   check_for_all_cells_ijk< seq_exec, STRUCTURED_UNIFORM_MESH >();
@@ -528,7 +528,7 @@ TEST( mint_execution_cell_traversals, for_all_cells_ijk )
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_execution_cell_traversals, for_all_cells_index )
+AXOM_CUDA_TEST( mint_execution_cell_traversals, for_all_cells_index )
 {
   constexpr int NDIMS = 3;
   for ( int i=1 ; i <= NDIMS ; ++i )

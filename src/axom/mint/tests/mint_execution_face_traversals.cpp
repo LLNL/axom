@@ -248,7 +248,7 @@ void check_for_all_face_cells( int dimension )
 // UNIT TESTS
 //------------------------------------------------------------------------------
 
-TEST( mint_execution_face_traversals, for_all_face_nodeids )
+AXOM_CUDA_TEST( mint_execution_face_traversals, for_all_face_nodeids )
 {
   for ( int dim = 2 ; dim <= 3 ; ++dim )
   {
@@ -286,7 +286,7 @@ TEST( mint_execution_face_traversals, for_all_face_nodeids )
   } // END for all dimensions
 }
 
-TEST( mint_execution_face_traversals, for_all_face_coords )
+AXOM_CUDA_TEST( mint_execution_face_traversals, for_all_face_coords )
 {
   for ( int dim = 2 ; dim <= 3 ; ++dim )
   {
@@ -324,7 +324,7 @@ TEST( mint_execution_face_traversals, for_all_face_coords )
   } // END for all dimensions
 }
 
-TEST( mint_execution_face_traversals, for_all_face_cellids )
+AXOM_CUDA_TEST( mint_execution_face_traversals, for_all_face_cellids )
 {
   for ( int dim = 2 ; dim <= 3 ; ++dim )
   {
@@ -365,7 +365,7 @@ TEST( mint_execution_face_traversals, for_all_face_cellids )
 
 
 //------------------------------------------------------------------------------
-TEST( mint_execution_face_traversals, for_all_faces_index )
+AXOM_CUDA_TEST( mint_execution_face_traversals, for_all_faces_index )
 {
   for ( int dim = 2 ; dim <= 3 ; ++dim )
   {

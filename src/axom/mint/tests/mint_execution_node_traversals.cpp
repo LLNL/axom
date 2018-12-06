@@ -342,7 +342,7 @@ void check_for_all_nodes_x( )
 // UNIT TESTS
 //------------------------------------------------------------------------------
 
-TEST( mint_execution_node_traversals, for_all_nodes_xyz )
+AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_xyz )
 {
   using seq_exec = policy::serial;
   check_for_all_nodes_xyz< seq_exec, STRUCTURED_UNIFORM_MESH >();
@@ -380,7 +380,7 @@ TEST( mint_execution_node_traversals, for_all_nodes_xyz )
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_execution_node_traversals, for_all_nodes_xy )
+AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_xy )
 {
   using seq_exec = policy::serial;
   check_for_all_nodes_xy< seq_exec, STRUCTURED_UNIFORM_MESH >();
@@ -418,7 +418,7 @@ TEST( mint_execution_node_traversals, for_all_nodes_xy )
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_execution_node_traversals, for_all_nodes_x )
+AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_x )
 {
   using seq_exec = policy::serial;
   check_for_all_nodes_x< seq_exec, STRUCTURED_UNIFORM_MESH >();
@@ -457,7 +457,7 @@ TEST( mint_execution_node_traversals, for_all_nodes_x )
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_execution_node_traversals, for_all_nodes_ijk )
+AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_ijk )
 {
   using seq_exec = policy::serial;
   check_for_all_nodes_ijk< seq_exec, STRUCTURED_UNIFORM_MESH >();
@@ -486,7 +486,7 @@ TEST( mint_execution_node_traversals, for_all_nodes_ijk )
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_execution_node_traversals, for_all_nodes_ij )
+AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_ij )
 {
   using seq_exec = policy::serial;
   check_for_all_nodes_ij< seq_exec, STRUCTURED_UNIFORM_MESH >();
@@ -515,7 +515,7 @@ TEST( mint_execution_node_traversals, for_all_nodes_ij )
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_execution_node_traversals, for_all_nodes_index )
+AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_index )
 {
   constexpr int NDIMS = 3;
   for ( int i=1 ; i <= NDIMS ; ++i )
