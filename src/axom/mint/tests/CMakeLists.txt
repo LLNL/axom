@@ -54,18 +54,21 @@ set( mint_test_dependencies
      mint
      )
 
-if ( ${AXOM_MINT_USE_SIDRE} )
+if ( AXOM_MINT_USE_SIDRE )
   list(APPEND mint_test_dependencies sidre conduit)
 endif()
 
-if ( ${RAJA_FOUND} )
+if ( RAJA_FOUND )
   list(APPEND mint_test_dependencies raja )
 endif()
 
-if ( ${ENABLE_OPENMP} )
+if ( ENABLE_OPENMP )
   list(APPEND mint_test_dependencies openmp)
 endif()
 
+if ( ENABLE_CUDA )
+    list(APPEND mint_test_dependencies cuda)
+endif()
 
 foreach( test ${mint_tests} )
 
