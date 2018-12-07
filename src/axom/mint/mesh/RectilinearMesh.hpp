@@ -296,8 +296,8 @@ private:
 
 #endif
 
-  Array< double >* m_coordinates[3] = { nullptr, nullptr,
-                                        nullptr };
+  utilities::Array< double >* m_coordinates[3] = { nullptr, nullptr,
+                                                   nullptr };
 
   DISABLE_COPY_AND_ASSIGNMENT( RectilinearMesh );
   DISABLE_MOVE_AND_ASSIGNMENT( RectilinearMesh );

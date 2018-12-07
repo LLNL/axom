@@ -20,6 +20,11 @@
 
 // Axom includes
 #include "axom/core/Macros.hpp"        // for Axom macros
+#include "axom/core/utilities/Array.hpp"
+
+#ifdef AXOM_MINT_USE_SIDRE
+#include "axom/sidre/core/sidre.hpp"
+#endif
 
 // Mint includes
 #include "axom/mint/config.hpp"           // for mint compile time definitions
@@ -35,12 +40,6 @@
 
 namespace axom
 {
-
-// Axom Forward declarations
-namespace sidre
-{
-class Group;
-}
 
 namespace mint
 {
@@ -519,7 +518,7 @@ private:
   std::map< std::string, Field* > m_fields;
 
 #ifdef AXOM_MINT_USE_SIDRE
-  sidre::Group* m_fields_group;
+  axom::sidre::Group* m_fields_group;
   const std::string m_topology;
 #endif
 

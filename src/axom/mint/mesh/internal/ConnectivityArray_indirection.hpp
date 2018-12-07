@@ -22,8 +22,8 @@
 
 #include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"
+#include "axom/core/utilities/Array.hpp"
 #include "axom/mint/mesh/CellTypes.hpp"
-#include "axom/mint/core/Array.hpp"
 #include "axom/mint/config.hpp"
 #include "axom/mint/mesh/internal/ConnectivityArrayHelpers.hpp"
 #include "axom/slic/interface/slic.hpp"
@@ -33,6 +33,8 @@
 #endif
 
 #include <cstring>
+
+namespace utilities = axom::utilities;
 
 namespace axom
 {
@@ -86,14 +88,15 @@ public:
                      IndexType value_capacity=USE_DEFAULT ) :
     m_cell_type( cell_type ),
     m_values( nullptr ),
-    m_offsets( new Array< IndexType >( internal::ZERO, 1,
-                                       (ID_capacity ==
-                                        USE_DEFAULT) ? USE_DEFAULT : ID_capacity
-                                       + 1 ) )
+    m_offsets( new utilities::Array< IndexType >(
+                 utilities::internal::ZERO, 1,
+                 (ID_capacity == USE_DEFAULT) ?
+                 USE_DEFAULT : ID_capacity + 1 ) )
   {
     IndexType new_value_capacity =
       internal::calcValueCapacity( 0, getIDCapacity(), 0, value_capacity );
-    m_values = new Array< IndexType >( internal::ZERO, 1, new_value_capacity );
+    m_values = new utilities::
+      Array< IndexType >( utilities::internal::ZERO, 1, new_value_capacity );
 
     m_offsets->append(0);
   }
@@ -141,10 +144,10 @@ public:
   {
     SLIC_ERROR_IF( n_IDs < 0, "Number of IDs must be positive, not " << n_IDs
                                                                      << "." );
-    m_offsets = new Array< IndexType >( offsets, n_IDs + 1, 1,
-                                        (ID_capacity ==
-                                         USE_DEFAULT) ? USE_DEFAULT : ID_capacity +
-                                        1 );
+    m_offsets = new utilities::
+      Array< IndexType >( offsets, n_IDs + 1, 1,
+                          (ID_capacity == USE_DEFAULT) ? USE_DEFAULT :
+                          ID_capacity + 1 );
 
     if ( n_IDs == 0 )
     {
@@ -154,7 +157,8 @@ public:
                    "Expected item 0 to be 0 not " << (*m_offsets)[0] << "." );
 
     IndexType n_values = (*m_offsets)[ n_IDs ];
-    m_values = new Array< IndexType >( values, n_values, 1, value_capacity );
+    m_values = new utilities::Array< IndexType >( values, n_values, 1,
+                                                  value_capacity );
   }
 
 /// @}
@@ -223,17 +227,18 @@ public:
     SLIC_ASSERT( elems_group != nullptr );
 
     sidre::View* offsets_view = elems_group->getView( "offsets" );
-    m_offsets = new Array< IndexType >( offsets_view, 0, 1,
-                                        (ID_capacity ==
-                                         USE_DEFAULT) ? USE_DEFAULT : ID_capacity +
-                                        1 );
+    m_offsets =
+      new sidre::Array< IndexType >( offsets_view, 0, 1,
+                                     (ID_capacity == USE_DEFAULT) ?
+                                     USE_DEFAULT : ID_capacity + 1 );
     SLIC_ASSERT( m_offsets != nullptr );
     m_offsets->append(0);
 
     IndexType new_value_capacity =
       internal::calcValueCapacity( 0, getIDCapacity(), 0, value_capacity );
     sidre::View* connec_view = elems_group->getView( "connectivity" );
-    m_values = new Array< IndexType >( connec_view, 0, 1, new_value_capacity );
+    m_values =
+      new sidre::Array< IndexType >( connec_view, 0, 1, new_value_capacity );
     SLIC_ASSERT( m_values != nullptr );
   }
 
@@ -409,7 +414,8 @@ public:
       return nullptr;
     }
 
-    return m_values->getView()->getOwningGroup()->getParent();
+    return static_cast<sidre::Array< IndexType > * const >(m_values)->
+      getView()->getOwningGroup()->getParent();
   }
 #endif
 
@@ -633,8 +639,8 @@ public:
 
 private:
   CellType m_cell_type;
-  Array< IndexType >* m_values;
-  Array< IndexType >* m_offsets;
+  utilities::Array< IndexType >* m_values;
+  utilities::Array< IndexType >* m_offsets;
 
   DISABLE_COPY_AND_ASSIGNMENT( ConnectivityArray );
   DISABLE_MOVE_AND_ASSIGNMENT( ConnectivityArray );

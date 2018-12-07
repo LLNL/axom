@@ -18,9 +18,11 @@
 #ifndef MINT_ConnectivityArrayHelpers_HPP_
 #define MINT_ConnectivityArrayHelpers_HPP_
 
+#include "axom/core/utilities/Array.hpp"
+
 #include "axom/mint/config.hpp"
-#include "axom/mint/core/Array.hpp"
 #include "axom/mint/mesh/CellTypes.hpp"
+
 #include "axom/slic/interface/slic.hpp"
 
 #ifdef AXOM_MINT_USE_SIDRE
@@ -56,10 +58,11 @@ namespace internal
  * \pre group != nullptr
  * \pre m_values != nullptr
  */
-inline CellType initializeFromGroup( sidre::Group* group,
-                                     Array< IndexType >** m_values,
-                                     Array< IndexType >** m_offsets=nullptr,
-                                     Array< CellType >** m_types=nullptr )
+inline CellType 
+initializeFromGroup( sidre::Group* group,
+                     axom::utilities::Array< IndexType >** m_values,
+                     axom::utilities::Array< IndexType >** m_offsets=nullptr,
+                     axom::utilities::Array< CellType >** m_types=nullptr )
 {
   SLIC_ERROR_IF( group == nullptr,
                  "sidre::Group pointer must not be null." );
@@ -116,7 +119,7 @@ inline CellType initializeFromGroup( sidre::Group* group,
                  "does not have a child view 'connectivity'."  );
 
   sidre::View* connec_view = elems_group->getView( "connectivity" );
-  *m_values = new Array< IndexType >( connec_view );
+  *m_values = new sidre::Array< IndexType >( connec_view );
   SLIC_ERROR_IF( *m_values == nullptr, "Error in Array allocation." );
 
   if ( m_offsets != nullptr )
@@ -126,7 +129,7 @@ inline CellType initializeFromGroup( sidre::Group* group,
                    " does not conform to mesh blueprint." );
 
     sidre::View* offsets_view = elems_group->getView( "offsets" );
-    *m_offsets = new Array< IndexType >( offsets_view );
+    *m_offsets = new sidre::Array< IndexType >( offsets_view );
 
     SLIC_ERROR_IF( *m_offsets == nullptr, "Error in Array allocation." );
     SLIC_ERROR_IF( (*m_offsets)->numComponents() != 1,
@@ -148,7 +151,7 @@ inline CellType initializeFromGroup( sidre::Group* group,
                    " does not conform to mesh blueprint." );
 
     sidre::View* type_view = elems_group->getView( "types" );
-    *m_types = new Array< CellType >( type_view );
+    *m_types = new sidre::Array< CellType >( type_view );
 
     SLIC_ERROR_IF( *m_types == nullptr, "Error in Array allocation." );
     SLIC_ERROR_IF( (*m_types)->numComponents() != 1,
@@ -261,8 +264,8 @@ inline IndexType getStride( const sidre::Group* group )
  * \pre m_offsets != nullptr
  */
 inline void append( IndexType n_IDs, const IndexType* values,
-                    const IndexType* offsets, Array< IndexType >* m_values,
-                    Array< IndexType >* m_offsets )
+                    const IndexType* offsets, axom::utilities::Array< IndexType >* m_values,
+                    axom::utilities::Array< IndexType >* m_offsets )
 {
   SLIC_ASSERT( values != nullptr );
   SLIC_ASSERT( offsets != nullptr );
@@ -300,7 +303,8 @@ inline void append( IndexType n_IDs, const IndexType* values,
  * \pre m_values != nullptr
  */
 inline void set( IndexType start_ID, const IndexType* values, IndexType n_IDs,
-                 Array< IndexType >* m_values, Array< IndexType >* m_offsets )
+                 axom::utilities::Array< IndexType >* m_values,
+                 axom::utilities::Array< IndexType >* m_offsets )
 {
   SLIC_ASSERT( start_ID >= 0 );
   SLIC_ASSERT( start_ID + n_IDs <= m_offsets->size() - 1 );
@@ -335,8 +339,8 @@ inline void set( IndexType start_ID, const IndexType* values, IndexType n_IDs,
  */
 inline void insert( IndexType start_ID, IndexType n_IDs,
                     const IndexType* values, const IndexType* offsets,
-                    Array< IndexType >* m_values,
-                    Array< IndexType >* m_offsets )
+                    axom::utilities::Array< IndexType >* m_values,
+                    axom::utilities::Array< IndexType >* m_offsets )
 {
   SLIC_ASSERT( start_ID >= 0 );
   SLIC_ASSERT( start_ID <= m_offsets->size() - 1 );

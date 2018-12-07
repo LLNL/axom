@@ -19,9 +19,10 @@
 #define MINT_MESHCOORDINATES_HPP_
 
 #include "axom/core/Macros.hpp" // for Axom macros and definitions
+#include "axom/core/utilities/Array.hpp"  // for mint::Array
+#include "axom/sidre/core/Array.hpp"  // for mint::Array
 
 #include "axom/mint/config.hpp" // for mint::IndexType
-#include "axom/mint/core/Array.hpp"  // for mint::Array
 
 namespace axom
 {
@@ -604,7 +605,7 @@ private:
   sidre::Group* m_group;
 #endif
   int m_ndims;
-  Array< double >* m_coordinates[3] = {nullptr, nullptr, nullptr};
+  utilities::Array< double >* m_coordinates[3] = {nullptr, nullptr, nullptr};
 
   DISABLE_COPY_AND_ASSIGNMENT( MeshCoordinates );
   DISABLE_MOVE_AND_ASSIGNMENT( MeshCoordinates );
@@ -1029,7 +1030,8 @@ inline void MeshCoordinates::initialize( IndexType numNodes,
 
   for ( int i=0 ; i < m_ndims ; ++i )
   {
-    m_coordinates[ i ] = new Array< double >( numNodes, 1, maxCapacity );
+    m_coordinates[ i ] = new utilities::Array< double >( numNodes, 1,
+                                                         maxCapacity );
   }
 
   SLIC_ASSERT( consistencyCheck() );

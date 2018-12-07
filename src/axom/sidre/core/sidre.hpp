@@ -37,6 +37,7 @@
 #include "View.hpp"
 #include "Iterator.hpp"
 #include "SidreTypes.hpp"
+#include "Array.hpp"
 #ifdef AXOM_USE_MPI
 #include "axom/sidre/spio/IOManager.hpp"
 #endif

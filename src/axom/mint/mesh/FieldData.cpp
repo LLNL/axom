@@ -89,7 +89,7 @@ void removeFromSidre( sidre::Group* grp, const std::string& name )
 //------------------------------------------------------------------------------
 FieldData::FieldData( int association ) :
   m_association( association ),
-  m_resize_ratio( Array< double >::DEFAULT_RESIZE_RATIO ),
+  m_resize_ratio( utilities::Array< double >::DEFAULT_RESIZE_RATIO ),
   m_fields()
 {
 #ifdef AXOM_MINT_USE_SIDRE
@@ -106,7 +106,7 @@ FieldData::FieldData( int association ) :
 FieldData::FieldData( int association, sidre::Group* fields_group,
                       const std::string& topo ) :
   m_association( association ),
-  m_resize_ratio( Array< double >::DEFAULT_RESIZE_RATIO ),
+  m_resize_ratio( utilities::Array< double >::DEFAULT_RESIZE_RATIO ),
   m_fields(),
   m_fields_group( fields_group ),
   m_topology( topo )

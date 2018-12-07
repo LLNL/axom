@@ -20,7 +20,7 @@
 // Axom includes
 #include "axom/core/utilities/Utilities.hpp"  // for utilities::max()
 #include "axom/mint/config.hpp"           // for IndexType
-#include "axom/mint/core/Array.hpp"            // for mint::Array
+#include "axom/core/utilities/Array.hpp"            // for mint::Array
 #include "axom/slic/interface/slic.hpp"             // for slic macros
 
 #ifdef AXOM_MINT_USE_SIDRE
@@ -51,7 +51,7 @@ MeshCoordinates::MeshCoordinates( int dimension,
   IndexType max_capacity = -1;
   if ( capacity==USE_DEFAULT )
   {
-    const double ratio = mint::Array< double >::DEFAULT_RESIZE_RATIO;
+    const double ratio = utilities::Array< double >::DEFAULT_RESIZE_RATIO;
     max_capacity = utilities::max(
       DEFAULT_CAPACITY, static_cast< IndexType >( numNodes*ratio+0.5 ) );
   }
@@ -88,7 +88,8 @@ MeshCoordinates::MeshCoordinates( IndexType numNodes,
     SLIC_ERROR_IF( ptrs[ i ]==nullptr,
                    "encountered null coordinate array for i=" << i );
 
-    m_coordinates[ i ] = new Array< double >( ptrs[i], numNodes, 1, capacity );
+    m_coordinates[ i ] = new utilities::Array< double >( ptrs[i], numNodes,
+                                                         1, capacity );
   }
 
   SLIC_ASSERT( consistencyCheck() );
@@ -146,7 +147,7 @@ MeshCoordinates::MeshCoordinates( sidre::Group* group ) :
     coord_view->getShape( 2, dims );
     SLIC_ERROR_IF( dims[1] != 1, "number of components is expected to be 1" );
 
-    m_coordinates[ i ] = new Array< double >( coord_view );
+    m_coordinates[ i ] = new sidre::Array< double >( coord_view );
 
   } // END for all dimensions
 
@@ -174,7 +175,7 @@ MeshCoordinates::MeshCoordinates( sidre::Group* group, int dimension,
     const char* coord_name = coord_names[ dim ];
     sidre::View* coord_view = values->createView( coord_name );
     m_coordinates[ dim ] =
-      new Array< double > ( coord_view, numNodes, 1, capacity );
+      new sidre::Array< double > ( coord_view, numNodes, 1, capacity );
   }
 
 }
