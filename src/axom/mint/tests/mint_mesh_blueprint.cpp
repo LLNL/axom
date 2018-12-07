@@ -17,7 +17,6 @@
 #include "axom/mint/mesh/blueprint.hpp"
 
 // Mint includes
-#include "axom/mint/core/Array.hpp"           // for mint::Array
 #include "axom/mint/config.hpp"               // for compile-time definitions
 #include "axom/mint/mesh/MeshTypes.hpp"       // for MeshTypes enum
 
@@ -27,8 +26,9 @@
 #ifdef AXOM_MINT_USE_SIDRE
 #include "axom/sidre/core/sidre.hpp"
 
-namespace mint  = axom::mint;
-namespace sidre = axom::sidre;
+namespace mint      = axom::mint;
+namespace sidre     = axom::sidre;
+namespace utilities = axom::utilities;
 
 //------------------------------------------------------------------------------
 // HELPER METHODS
@@ -40,16 +40,16 @@ void createExplicitCoords( sidre::Group* c1, int dimension,
                            const std::string& type_string )
 {
   c1->createView( "type" )->setString( type_string );
-  mint::Array< double > x( c1->createView( "values/x" ), 5, 1 );
+  sidre::Array< double > x( c1->createView( "values/x" ), 5, 1 );
 
   if ( dimension > 1 )
   {
-    mint::Array< double > y( c1->createView( "values/y" ), 5, 1 );
+    sidre::Array< double > y( c1->createView( "values/y" ), 5, 1 );
   }
 
   if ( dimension > 2 )
   {
-    mint::Array< double > z( c1->createView( "values/z" ), 5, 1 );
+    sidre::Array< double > z( c1->createView( "values/z" ), 5, 1 );
   }
 
 }

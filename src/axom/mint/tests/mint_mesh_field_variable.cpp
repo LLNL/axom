@@ -19,6 +19,7 @@
 #include "axom/mint/mesh/FieldVariable.hpp" // for mint::FieldVariable
 #include "axom/mint/mesh/FieldTypes.hpp"    // for FieldTypes enum
 #include "axom/core/numerics/Matrix.hpp"    // for numerics::Matrix
+#include "axom/core/utilities/Array.hpp"    // for utilities::Array
 #include "axom/slic/interface/slic.hpp"     // for slic macros
 
 // Sidre includes
@@ -31,8 +32,9 @@ namespace sidre = axom::sidre;
 #include "gtest/gtest.h"  // for gtest macros
 
 // namespace aliases
-namespace mint     = axom::mint;
-namespace numerics = axom::numerics;
+namespace mint      = axom::mint;
+namespace numerics  = axom::numerics;
+namespace utilities = axom::utilities;
 
 //------------------------------------------------------------------------------
 // HELPER METHODS
@@ -41,7 +43,7 @@ namespace
 {
 
 template < typename T >
-void populate_array( mint::Array< T >& data )
+void populate_array( utilities::Array< T >& data )
 {
   const mint::IndexType numTuples     = data.size( );
   const mint::IndexType numComponents = data.numComponents( );
@@ -59,7 +61,7 @@ void populate_array( mint::Array< T >& data )
 
 //------------------------------------------------------------------------------
 template < typename T >
-void check_array( mint::Array< T >& data )
+void check_array( utilities::Array< T >& data )
 {
   const mint::IndexType numTuples     = data.size( );
   const mint::IndexType numComponents = data.numComponents( );
@@ -130,7 +132,7 @@ void create_sidre_data( sidre::DataStore& ds, int numTuples, int numComponents )
 
   // create view to hold field values
   sidre::View* values_view = gp->createView( "values" );
-  mint::Array< double > data( values_view, numTuples, numComponents );
+  sidre::Array< double > data( values_view, numTuples, numComponents );
 
   // fill in with some data
   populate_array( data );
@@ -152,18 +154,16 @@ TEST( mint_mesh_field_variable_DeathTest, invalid_construction )
   EXPECT_EQ( mint::field_traits< invalid_type >::type(),
              mint::UNDEFINED_FIELD_TYPE );
 
-  EXPECT_DEATH_IF_SUPPORTED( mint::FieldVariable< invalid_type >( "foo",
-                                                                  axom::mint::
-                                                                  internal::ZERO,
-                                                                  axom::mint::
-                                                                  internal::ZERO ),
-                             IGNORE_OUTPUT );
-  EXPECT_DEATH_IF_SUPPORTED( mint::FieldVariable< double >( EMPTY_STRING,
-                                                            axom::mint::internal
-                                                            ::ZERO,
-                                                            axom::mint::internal
-                                                            ::ZERO ),
-                             IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED(
+    mint::FieldVariable< invalid_type >( "foo",
+                                         utilities::internal::ZERO,
+                                         utilities::internal::ZERO ),
+    IGNORE_OUTPUT );
+  EXPECT_DEATH_IF_SUPPORTED(
+    mint::FieldVariable< double >( EMPTY_STRING,
+                                   utilities::internal::ZERO,
+                                   utilities::internal::ZERO ),
+    IGNORE_OUTPUT );
 }
 
 //------------------------------------------------------------------------------
@@ -259,7 +259,7 @@ TEST( mint_mesh_field_variable, sidre_push_constructor )
       // END SCOPE
 
       // ensure data remains persistent in Sidre
-      mint::Array< double > dataArray( values_view );
+      sidre::Array< double > dataArray( values_view );
       EXPECT_EQ( dataArray.size(), NUM_TUPLES );
       EXPECT_EQ( dataArray.numComponents(), NUM_COMPONENTS );
 
@@ -309,7 +309,7 @@ TEST( mint_mesh_field_variable, sidre_pull_constructor )
       // END SCOPE
 
       // ensure data remains persistent in Sidre
-      mint::Array< double > dataArray( values_view );
+      sidre::Array< double > dataArray( values_view );
       EXPECT_EQ( dataArray.size(), NUM_TUPLES );
       EXPECT_EQ( dataArray.numComponents(), NUM_COMPONENTS );
 
@@ -420,9 +420,9 @@ TEST( mint_mesh_field_variable, shrink )
   EXPECT_EQ( field.getName(), "f" );
 
   mint::IndexType capacity = SMALL_NUM_TUPLES * field.getResizeRatio() + 0.5;
-  if ( capacity < mint::Array< mint::IndexType >::MIN_DEFAULT_CAPACITY )
+  if ( capacity < utilities::Array< mint::IndexType >::MIN_DEFAULT_CAPACITY )
   {
-    capacity = mint::Array< mint::IndexType >::MIN_DEFAULT_CAPACITY;
+    capacity = utilities::Array< mint::IndexType >::MIN_DEFAULT_CAPACITY;
   }
   EXPECT_EQ( field.getCapacity(), capacity );
 
