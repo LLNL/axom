@@ -48,23 +48,19 @@ constexpr axom::IndexType ZERO = 0;
  *
  * \brief Provides a generic multi-component array, contained in Sidre.
  *
- *  The Array class provides a generic multi-component array container with
- *  dynamic re-allocation and insertion. Each element in the array is a tuple
- *  consisting of 1 or more components, which are stored contiguously.
+ *  This sidre::Array class extends axom::utilities::Array by storing
+ *  data in a Sidre `DataStore`.  This class provides a generic
+ *  multi-component array container with dynamic re-allocation and insertion.
+ *  Each element in the array is a tuple consisting of 1 or more components,
+ *  which are stored contiguously.
  *
- *  Depending on which constructor is used, the Array object can have three
- *  different underlying storage types:
+ *  Objects of the sidre::Array class may be constructed from a View.
+ *  All array operations can be performed as with the base
+ *  axom::utilities::Array class.  The size of the Array can grow as needed,
+ *  and all memory management is delegated to Sidre.
  *
- *  * <b> Sidre </b> <br />
- *
- *    An Array object may also be constructed from a View. From the
- *    application's perspective, other than the fact that a different
- *    constructor is used, all array operations can be performed transparently.
- *    The size of the Array can grow as needed, but instead all memory
- *    management is delegated to Sidre.
- *
- *    \note When the Array object is deleted, it does not delete the associated
- *     data in Sidre, since, Sidre owns the data.
+ *  \note When the Array object is deleted, it does not delete the associated
+ *   data in Sidre, since, Sidre owns the data.
  *
  * \warning Reallocations tend to be costly operations in terms of performance.
  *  Use `reserve()` when the number of nodes is known a priori, or opt to
@@ -147,8 +143,7 @@ public:
 /// @}
 
   /*!
-   * Destructor. Free's the associated buffer unless the memory is external
-   * or owned by Sidre.
+   * Destructor. Frees the associated buffer unless the memory is owned by Sidre.
    */
   virtual ~Array();
 

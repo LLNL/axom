@@ -47,7 +47,7 @@ constexpr IndexType ZERO = 0;
  *  dynamic re-allocation and insertion. Each element in the array is a tuple
  *  consisting of 1 or more components, which are stored contiguously.
  *
- *  Depending on which constructor is used, the Array object can have three
+ *  Depending on which constructor is used, the Array object can have two
  *  different underlying storage types:
  *
  *  * <b> Native Storage </b> <br />
@@ -55,29 +55,29 @@ constexpr IndexType ZERO = 0;
  *     When using native storage, the Array object manages all memory.
  *     Typically, the Array object will allocate extra space to facilitate
  *     the insertion of new elements and minimize the number of reallocations.
- *     At any given instance, the actual capacity of the array (i.e., total
- *     number of tuples that the Array can hold) can be queried by calling the
- *     capacity() function. When all extra memory is exhausted, inserting a
- *     new element triggers a re-allocation. Each time a re-allocation occurs
- *     extra space is allocated according to the <em> resize_ratio </em>
- *     parameter, which is set to 2.0 by default. To return all extra memory,
- *     an application can call shrink().
+ *     The actual capacity of the array (i.e., total number of tuples that the
+ *     Array can hold) can be queried by calling the capacity() function.
+ *     When allocated memory is used up, inserting a new element triggers a
+ *     re-allocation.  At each re-allocation, extra space is allocated
+ *     according to the <em> resize_ratio </em> parameter, which is set to 2.0
+ *     by default. To return all extra memory, an application can call
+ *     `shrink()`.
  *
- *     \note Once the Array goes out-of-scope, all memory associated with it
- *      is de-allocated and returned to the system.
+ *     \note The Array destructor deallocates and returns all memory associated
+ *      with it to the system.
  *
  *  * <b> External Storage </b> <br />
  *
  *    An Array object may be constructed from an external, user-supplied buffer
  *    consisting of the given number of tuples and specified number of
- *    components per tuple. In this case, the Array object does not own the
- *    memory. Instead, the Array object makes a shallow copy of the pointer.
+ *    components per tuple.  In this case, the Array object does not own the
+ *    memory.  Instead, the Array object makes a shallow copy of the pointer.
  *
  *    \warning An Array object that points to an external buffer has a fixed
  *     size and cannot be dynamically resized.
  *
- *    \note When the Array object is deleted, it does not de-allocate the
- *     user-supplied buffer, since it does not manage any memory.
+ *    \note The Array destructor does not deallocate a user-supplied buffer,
+ *     since it does not manage that memory.
  *
  * \warning Reallocations tend to be costly operations in terms of performance.
  *  Use `reserve()` when the number of nodes is known a priori, or opt to
