@@ -28,7 +28,6 @@
 
 namespace mint      = axom::mint;
 namespace sidre     = axom::sidre;
-namespace utilities = axom::utilities;
 
 //------------------------------------------------------------------------------
 // HELPER METHODS

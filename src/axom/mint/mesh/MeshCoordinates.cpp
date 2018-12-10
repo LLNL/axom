@@ -18,13 +18,13 @@
 #include "axom/mint/mesh/MeshCoordinates.hpp"  // for mint::MeshCoordinates
 
 // Axom includes
-#include "axom/core/utilities/Utilities.hpp"  // for utilities::max()
-#include "axom/mint/config.hpp"           // for IndexType
-#include "axom/core/utilities/Array.hpp"            // for mint::Array
-#include "axom/slic/interface/slic.hpp"             // for slic macros
+#include "axom/core/utilities/Utilities.hpp"   // for utilities::max()
+#include "axom/core/utilities/Array.hpp"       // for mint::Array
+#include "axom/mint/config.hpp"                // for IndexType
+#include "axom/slic/interface/slic.hpp"        // for slic macros
 
 #ifdef AXOM_MINT_USE_SIDRE
-#include "axom/sidre/core/sidre.hpp"          // for sidre::Group, sidre::View
+#include "axom/sidre/core/sidre.hpp"           // for sidre::Group, sidre::View
 #endif
 
 // C/C++ includes

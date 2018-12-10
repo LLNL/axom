@@ -35,9 +35,6 @@ configure_file ( core/config.hpp.in
 
 set( mint_headers
 
-    ## core
-    # core/Array.hpp
-
     ## exec
     execution/xargs.hpp
     execution/interface.hpp

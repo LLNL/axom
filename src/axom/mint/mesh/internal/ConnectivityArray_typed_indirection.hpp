@@ -34,8 +34,6 @@
 
 #include <cstring>
 
-namespace utilities = axom::utilities;
-
 namespace axom
 {
 
