@@ -518,7 +518,7 @@ private:
   std::map< std::string, Field* > m_fields;
 
 #ifdef AXOM_MINT_USE_SIDRE
-  axom::sidre::Group* m_fields_group;
+  sidre::Group* m_fields_group;
   const std::string m_topology;
 #endif
 
