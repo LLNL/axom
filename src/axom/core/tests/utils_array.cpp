@@ -14,26 +14,18 @@
  *
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-#include "axom/mint/config.hpp"              /* for mint defintions */
-#include "axom/mint/core/Array.hpp"               /* for mint::Array */
 
+#include "axom/core/utilities/Array.hpp"         /* for utilities::Array */
 #include "axom/core/utilities/Utilities.hpp"     /* for utilities::max */
 
-#include "axom/slic/core/UnitTestLogger.hpp"      /* for UnitTestLogger */
-#include "axom/slic/interface/slic.hpp"                /* for slic macros */
-
 #include "gtest/gtest.h"                /* for TEST and EXPECT_* macros */
-
-#ifdef AXOM_MINT_USE_SIDRE
-#include "axom/sidre/core/sidre.hpp"
-#endif
 
 // C/C++ includes
 #include <algorithm>                    /* for std::fill_n */
 
 namespace axom
 {
-namespace mint
+namespace utilities
 {
 
 const char IGNORE_OUTPUT[] = ".*";
@@ -42,7 +34,7 @@ namespace internal
 {
 
 /*!
- * \brief Calculate the new capacity for and Array given an increase in the
+ * \brief Calculate the new capacity for an Array given an increase in the
  *  size.
  * \param [in] v, the Array in question.
  * \param [in] increase, the ammount the size will increase by
@@ -346,7 +338,7 @@ void check_resize( Array< T >& v )
   {
     for ( IndexType j = 0 ; j < num_components ; ++j )
     {
-      v( i, j ) = i * j - 5 * i + 7 * j;
+      v( i, j ) = static_cast<T>( i * j - 5 * i + 7 * j );
     }
   }
 
@@ -825,29 +817,6 @@ void check_emplace( Array< T >& v )
 }
 
 /*!
- * \brief Make a copy of an Array through sidre and check it for defects.
- * \param [in] v the Array to copy.
- */
-#ifdef AXOM_MINT_USE_SIDRE
-template< typename T >
-void check_sidre( Array< T >& v )
-{
-  ASSERT_TRUE( v.isInSidre() );
-  /* Create a copy. */
-  Array< T > cpy( const_cast< sidre::View* >( v.getView() ) );
-  cpy.setResizeRatio( v.getResizeRatio() );
-
-  /* Check that the copy holds the same data. */
-  check_copy( v, cpy );
-
-  /* Resize the copy and check that it functions correctly. */
-  cpy.resize(0);
-  check_storage( cpy );
-  check_insert( cpy );
-}
-#endif
-
-/*!
  * \brief Check an external array for defects.
  * \param [in] v the external array to check.
  */
@@ -919,13 +888,8 @@ void check_external( Array< T >& v )
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-TEST( mint_core_array, checkStorage )
+TEST( core_array, checkStorage )
 {
-#ifdef AXOM_MINT_USE_SIDRE
-  sidre::DataStore ds;
-  sidre::Group* root = ds.getRoot();
-#endif
-
   constexpr IndexType ZERO = 0;
 
   for ( IndexType capacity = 2 ; capacity < 512 ; capacity *= 2 )
@@ -937,30 +901,13 @@ TEST( mint_core_array, checkStorage )
 
       Array< double > v_double( ZERO, n_components, capacity );
       internal::check_storage( v_double );
-
-#ifdef AXOM_MINT_USE_SIDRE
-      Array< int > v_int_sidre( root->createView( "int" ), ZERO, n_components,
-                                capacity );
-      internal::check_storage( v_int_sidre );
-
-      Array< double > v_double_sidre( root->createView( "double" ), ZERO,
-                                      n_components, capacity );
-      internal::check_storage( v_double_sidre );
-
-      root->destroyViewsAndData();
-#endif
     }
   }
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_core_array, checkFill )
+TEST( core_array, checkFill )
 {
-#ifdef AXOM_MINT_USE_SIDRE
-  sidre::DataStore ds;
-  sidre::Group* root = ds.getRoot();
-#endif
-
   for ( IndexType capacity = 2 ; capacity < 512 ; capacity *= 2 )
   {
     IndexType size = capacity / 2;
@@ -971,30 +918,13 @@ TEST( mint_core_array, checkFill )
 
       Array< double > v_double( size, n_components, capacity );
       internal::check_fill( v_double );
-
-#ifdef AXOM_MINT_USE_SIDRE
-      Array< int > v_int_sidre( root->createView( "int" ), size, n_components,
-                                capacity );
-      internal::check_fill( v_int_sidre );
-
-      Array< double > v_double_sidre( root->createView( "double" ), size,
-                                      n_components, capacity );
-      internal::check_fill( v_double_sidre );
-
-      root->destroyViewsAndData();
-#endif
     }
   }
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_core_array, checkSet )
+TEST( core_array, checkSet )
 {
-#ifdef AXOM_MINT_USE_SIDRE
-  sidre::DataStore ds;
-  sidre::Group* root = ds.getRoot();
-#endif
-
   for ( IndexType capacity = 2 ; capacity < 512 ; capacity *= 2 )
   {
     IndexType size = capacity / 2;
@@ -1005,30 +935,13 @@ TEST( mint_core_array, checkSet )
 
       Array< double > v_double( size, n_components, capacity );
       internal::check_set( v_double );
-
-#ifdef AXOM_MINT_USE_SIDRE
-      Array< int > v_int_sidre( root->createView( "int" ), size, n_components,
-                                capacity );
-      internal::check_set( v_int_sidre );
-
-      Array< double > v_double_sidre( root->createView( "double" ), size,
-                                      n_components, capacity );
-      internal::check_set( v_double_sidre );
-
-      root->destroyViewsAndData();
-#endif
     }
   }
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_core_array, checkResize )
+TEST( core_array, checkResize )
 {
-#ifdef AXOM_MINT_USE_SIDRE
-  sidre::DataStore ds;
-  sidre::Group* root = ds.getRoot();
-#endif
-
   constexpr IndexType ZERO = 0;
 
   /* Resizing isn't allowed with a ratio less than 1.0. */
@@ -1049,27 +962,13 @@ TEST( mint_core_array, checkResize )
         Array< double > v_double( ZERO, n_components, capacity );
         v_double.setResizeRatio( ratio );
         internal::check_resize( v_double );
-
-#ifdef AXOM_MINT_USE_SIDRE
-        Array< int > v_int_sidre( root->createView( "int" ), ZERO, n_components,
-                                  capacity );
-        v_int_sidre.setResizeRatio( ratio );
-        internal::check_resize( v_int_sidre );
-
-        Array< double > v_double_sidre( root->createView( "double" ), ZERO,
-                                        n_components, capacity );
-        v_double_sidre.setResizeRatio( ratio );
-        internal::check_resize( v_double_sidre );
-
-        root->destroyViewsAndData();
-#endif
       }
     }
   }
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_core_array_DeathTest, checkResize )
+TEST( core_array_DeathTest, checkResize )
 {
   /* Resizing isn't allowed with a ratio less than 1.0. */
   Array< int > v_int( internal::ZERO, 1, 100 );
@@ -1078,13 +977,8 @@ TEST( mint_core_array_DeathTest, checkResize )
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_core_array, checkInsert )
+TEST( core_array, checkInsert )
 {
-#ifdef AXOM_MINT_USE_SIDRE
-  sidre::DataStore ds;
-  sidre::Group* root = ds.getRoot();
-#endif
-
   constexpr IndexType ZERO = 0;
 
   for ( double ratio = 1.0 ; ratio <= 2.0 ; ratio += 0.5 )
@@ -1100,33 +994,14 @@ TEST( mint_core_array, checkInsert )
         Array< double > v_double( ZERO, n_components, capacity );
         v_double.setResizeRatio( ratio );
         internal::check_insert( v_double );
-
-#ifdef AXOM_MINT_USE_SIDRE
-        Array< int > v_int_sidre( root->createView("int"), ZERO, n_components,
-                                  capacity );
-        v_int_sidre.setResizeRatio( ratio );
-        internal::check_insert( v_int_sidre );
-
-        Array< double > v_double_sidre( root->createView("double"), ZERO,
-                                        n_components, capacity );
-        v_double_sidre.setResizeRatio( ratio );
-        internal::check_insert( v_double_sidre );
-
-        root->destroyViewsAndData();
-#endif
       }
     }
   }
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_core_array, checkEmplace )
+TEST( core_array, checkEmplace )
 {
-#ifdef AXOM_MINT_USE_SIDRE
-  sidre::DataStore ds;
-  sidre::Group* root = ds.getRoot();
-#endif
-
   constexpr IndexType ZERO = 0;
 
   for ( double ratio = 1.0 ; ratio <= 2.0 ; ratio += 0.5 )
@@ -1142,124 +1017,13 @@ TEST( mint_core_array, checkEmplace )
         Array< double > v_double( ZERO, n_components, capacity );
         v_double.setResizeRatio( ratio );
         internal::check_emplace( v_double );
-
-#ifdef AXOM_MINT_USE_SIDRE
-        Array< int > v_int_sidre( root->createView("int"), ZERO, n_components,
-                                  capacity );
-        v_int_sidre.setResizeRatio( ratio );
-        internal::check_emplace( v_int_sidre );
-
-        Array< double > v_double_sidre( root->createView("double"), ZERO,
-                                        n_components, capacity );
-        v_double_sidre.setResizeRatio( ratio );
-        internal::check_emplace( v_double_sidre );
-
-        root->destroyViewsAndData();
-#endif
-      }
-    }
-  }
-}
-
-/* Sidre specific tests */
-#ifdef AXOM_MINT_USE_SIDRE
-
-//------------------------------------------------------------------------------
-TEST( mint_core_array, checkSidre )
-{
-  sidre::DataStore ds;
-  sidre::Group* root = ds.getRoot();
-
-  constexpr IndexType ZERO = 0;
-
-  for ( double ratio = 1.0 ; ratio <= 2.0 ; ratio += 0.5 )
-  {
-    for ( IndexType capacity = 2 ; capacity <= 512 ; capacity *= 2 )
-    {
-      for ( IndexType n_components = 1 ; n_components <= 3 ; n_components++ )
-      {
-        Array< int > v_int( root->createView("int"), ZERO, n_components,
-                            capacity );
-        v_int.setResizeRatio( ratio );
-        internal::check_storage( v_int );
-        internal::check_sidre( v_int );
-
-        Array< double > v_double( root->createView(
-                                    "double"), ZERO, n_components,
-                                  capacity );
-        v_double.setResizeRatio( ratio );
-        internal::check_storage( v_double );
-        internal::check_sidre( v_double );
-
-        root->destroyViewsAndData();
       }
     }
   }
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_core_array, checkSidrePermanence)
-{
-  constexpr double MAGIC_NUM = 5683578.8;
-
-  sidre::DataStore ds;
-  sidre::Group* root = ds.getRoot();
-
-  constexpr IndexType ZERO = 0;
-
-  for ( double ratio = 1.0 ; ratio <= 2.0 ; ratio += 0.5 )
-  {
-    for ( IndexType capacity = 2 ; capacity <= 512 ; capacity *= 2 )
-    {
-      for ( IndexType n_components = 1 ; n_components <= 3 ; n_components++ )
-      {
-        const double* array_data_ptr;
-        IndexType num_values;
-        { /* Begin scope */
-          Array< double > v( root->createView("double"), ZERO, n_components,
-                             capacity );
-          array_data_ptr = v.getData();
-          num_values = v.size() * v.numComponents();
-          v.setResizeRatio( ratio );
-          internal::check_storage( v );
-
-          /* Set v's data to MAGIC_NUM */
-          for ( IndexType i = 0 ; i < v.size() ; ++i )
-          {
-            for ( IndexType j = 0 ; j < v.numComponents() ; ++j )
-            {
-              v( i, j ) = MAGIC_NUM;
-            }
-          }
-        } /* End scope, v has been deallocated. */
-
-        /* Check that the data still exists in sidre */
-        sidre::View* view = root->getView( "double" );
-        const double* view_data_ptr = static_cast< const double* >(
-          view->getVoidPtr() );
-        EXPECT_EQ( view_data_ptr, array_data_ptr );
-        EXPECT_EQ( view->getNumDimensions(), 2 );
-
-        sidre::IndexType dims[2];
-        view->getShape( 2, dims );
-        EXPECT_EQ( dims[0], capacity );
-        EXPECT_EQ( dims[1], n_components );
-
-        for ( IndexType i = 0 ; i < num_values ; ++i )
-        {
-          EXPECT_EQ( view_data_ptr[ i ], MAGIC_NUM );
-        }
-
-        root->destroyViewsAndData();
-      }
-    }
-  }
-}
-
-#endif
-
-//------------------------------------------------------------------------------
-TEST( mint_core_array_DeathTest, checkExternal )
+TEST( core_array_DeathTest, checkExternal )
 {
   constexpr double MAGIC_NUM = 5683578.8;
   constexpr IndexType MAX_SIZE = 256;
@@ -1304,16 +1068,11 @@ TEST( mint_core_array_DeathTest, checkExternal )
 } /* end namespace axom */
 
 //------------------------------------------------------------------------------
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
 
   ::testing::InitGoogleTest(&argc, argv);
-
-  UnitTestLogger logger;  // create & initialize test logger,
 
   // finalized when exiting main scope
 
