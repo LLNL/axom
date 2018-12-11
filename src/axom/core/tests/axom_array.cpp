@@ -15,7 +15,7 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include "axom/core/utilities/Array.hpp"         /* for utilities::Array */
+#include "axom/core/Array.hpp"                   /* for axom::Array */
 #include "axom/core/utilities/Utilities.hpp"     /* for utilities::max */
 
 #include "gtest/gtest.h"                /* for TEST and EXPECT_* macros */
@@ -25,8 +25,8 @@
 
 namespace axom
 {
-namespace utilities
-{
+// namespace utilities
+// {
 
 const char IGNORE_OUTPUT[] = ".*";
 
@@ -971,7 +971,7 @@ TEST( core_array, checkResize )
 TEST( core_array_DeathTest, checkResize )
 {
   /* Resizing isn't allowed with a ratio less than 1.0. */
-  Array< int > v_int( internal::ZERO, 1, 100 );
+  Array< int > v_int( axom::internal::ZERO, 1, 100 );
   v_int.setResizeRatio( 0.99 );
   EXPECT_DEATH_IF_SUPPORTED( internal::check_resize( v_int ), IGNORE_OUTPUT );
 }
@@ -1064,7 +1064,7 @@ TEST( core_array_DeathTest, checkExternal )
   }
 }
 
-} /* end namespace mint */
+// } /* end namespace mint */
 } /* end namespace axom */
 
 //------------------------------------------------------------------------------

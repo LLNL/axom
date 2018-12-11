@@ -21,7 +21,6 @@
 // Axom includes
 #include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"
-#include "axom/core/utilities/Array.hpp"
 
 // Mint includes
 #include "axom/mint/config.hpp"

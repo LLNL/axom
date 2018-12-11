@@ -18,7 +18,7 @@
 #ifndef MINT_ConnectivityArrayHelpers_HPP_
 #define MINT_ConnectivityArrayHelpers_HPP_
 
-#include "axom/core/utilities/Array.hpp"
+#include "axom/core/Array.hpp"
 
 #include "axom/mint/config.hpp"
 #include "axom/mint/mesh/CellTypes.hpp"
@@ -60,9 +60,9 @@ namespace internal
  */
 inline CellType 
 initializeFromGroup( sidre::Group* group,
-                     utilities::Array< IndexType >** m_values,
-                     utilities::Array< IndexType >** m_offsets=nullptr,
-                     utilities::Array< CellType >** m_types=nullptr )
+                     Array< IndexType >** m_values,
+                     Array< IndexType >** m_offsets=nullptr,
+                     Array< CellType >** m_types=nullptr )
 {
   SLIC_ERROR_IF( group == nullptr,
                  "sidre::Group pointer must not be null." );
@@ -264,8 +264,8 @@ inline IndexType getStride( const sidre::Group* group )
  * \pre m_offsets != nullptr
  */
 inline void append( IndexType n_IDs, const IndexType* values,
-                    const IndexType* offsets, utilities::Array< IndexType >* m_values,
-                    utilities::Array< IndexType >* m_offsets )
+                    const IndexType* offsets, Array< IndexType >* m_values,
+                    Array< IndexType >* m_offsets )
 {
   SLIC_ASSERT( values != nullptr );
   SLIC_ASSERT( offsets != nullptr );
@@ -303,8 +303,8 @@ inline void append( IndexType n_IDs, const IndexType* values,
  * \pre m_values != nullptr
  */
 inline void set( IndexType start_ID, const IndexType* values, IndexType n_IDs,
-                 utilities::Array< IndexType >* m_values,
-                 utilities::Array< IndexType >* m_offsets )
+                 Array< IndexType >* m_values,
+                 Array< IndexType >* m_offsets )
 {
   SLIC_ASSERT( start_ID >= 0 );
   SLIC_ASSERT( start_ID + n_IDs <= m_offsets->size() - 1 );
@@ -339,8 +339,8 @@ inline void set( IndexType start_ID, const IndexType* values, IndexType n_IDs,
  */
 inline void insert( IndexType start_ID, IndexType n_IDs,
                     const IndexType* values, const IndexType* offsets,
-                    utilities::Array< IndexType >* m_values,
-                    utilities::Array< IndexType >* m_offsets )
+                    Array< IndexType >* m_values,
+                    Array< IndexType >* m_offsets )
 {
   SLIC_ASSERT( start_ID >= 0 );
   SLIC_ASSERT( start_ID <= m_offsets->size() - 1 );

@@ -15,11 +15,11 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include "axom/core/utilities/Array.hpp"         /* for utilities::Array */
+#include "axom/core/Array.hpp"                   /* for axom::Array */
 #include "axom/core/utilities/Utilities.hpp"     /* for utilities::max */
 
-#include "axom/slic/core/UnitTestLogger.hpp"      /* for UnitTestLogger */
-#include "axom/slic/interface/slic.hpp"                /* for slic macros */
+#include "axom/slic/core/UnitTestLogger.hpp"     /* for UnitTestLogger */
+#include "axom/slic/interface/slic.hpp"          /* for slic macros */
 
 #include "gtest/gtest.h"                /* for TEST and EXPECT_* macros */
 
@@ -1000,8 +1000,8 @@ TEST( sidre_core_array, checkResize )
     {
       for ( axom::IndexType n_components = 1 ; n_components <= 4 ; n_components++ )
       {
-        Array< int > v_int_sidre( root->createView( "int" ), ZERO, n_components,
-                                  capacity );
+        Array< int > v_int_sidre( root->createView( "int" ), ZERO,
+                                  n_components, capacity );
         v_int_sidre.setResizeRatio( ratio );
         internal::check_resize( v_int_sidre );
 

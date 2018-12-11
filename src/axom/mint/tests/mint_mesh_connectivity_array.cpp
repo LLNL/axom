@@ -640,8 +640,8 @@ void testCapacity( ConnectivityArray< TYPE >& connec,
   IndexType cur_value_capacity = connec.getValueCapacity();
 
   EXPECT_NE( cur_values_ptr, nullptr );
-  EXPECT_EQ( cur_ID_capacity, half_n_IDs );
-  EXPECT_EQ( cur_value_capacity, first_half_n_values );
+  EXPECT_GE( cur_ID_capacity, half_n_IDs );
+  EXPECT_GE( cur_value_capacity, first_half_n_values );
 
   /* Append the first half of the IDs, no resize should occur. */
   for ( IndexType ID = 0 ; ID < half_n_IDs ; ++ID )

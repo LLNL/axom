@@ -19,7 +19,7 @@
 #include "axom/mint/mesh/FieldVariable.hpp" // for mint::FieldVariable
 #include "axom/mint/mesh/FieldTypes.hpp"    // for FieldTypes enum
 #include "axom/core/numerics/Matrix.hpp"    // for numerics::Matrix
-#include "axom/core/utilities/Array.hpp"    // for utilities::Array
+#include "axom/core/Array.hpp"              // for axom::Array
 #include "axom/slic/interface/slic.hpp"     // for slic macros
 
 // Sidre includes
@@ -43,7 +43,7 @@ namespace
 {
 
 template < typename T >
-void populate_array( utilities::Array< T >& data )
+void populate_array( axom::Array< T >& data )
 {
   const mint::IndexType numTuples     = data.size( );
   const mint::IndexType numComponents = data.numComponents( );
@@ -61,7 +61,7 @@ void populate_array( utilities::Array< T >& data )
 
 //------------------------------------------------------------------------------
 template < typename T >
-void check_array( utilities::Array< T >& data )
+void check_array( axom::Array< T >& data )
 {
   const mint::IndexType numTuples     = data.size( );
   const mint::IndexType numComponents = data.numComponents( );
@@ -156,13 +156,13 @@ TEST( mint_mesh_field_variable_DeathTest, invalid_construction )
 
   EXPECT_DEATH_IF_SUPPORTED(
     mint::FieldVariable< invalid_type >( "foo",
-                                         utilities::internal::ZERO,
-                                         utilities::internal::ZERO ),
+                                         axom::internal::ZERO,
+                                         axom::internal::ZERO ),
     IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED(
     mint::FieldVariable< double >( EMPTY_STRING,
-                                   utilities::internal::ZERO,
-                                   utilities::internal::ZERO ),
+                                   axom::internal::ZERO,
+                                   axom::internal::ZERO ),
     IGNORE_OUTPUT );
 }
 
@@ -420,9 +420,9 @@ TEST( mint_mesh_field_variable, shrink )
   EXPECT_EQ( field.getName(), "f" );
 
   mint::IndexType capacity = SMALL_NUM_TUPLES * field.getResizeRatio() + 0.5;
-  if ( capacity < utilities::Array< mint::IndexType >::MIN_DEFAULT_CAPACITY )
+  if ( capacity < axom::Array< mint::IndexType >::MIN_DEFAULT_CAPACITY )
   {
-    capacity = utilities::Array< mint::IndexType >::MIN_DEFAULT_CAPACITY;
+    capacity = axom::Array< mint::IndexType >::MIN_DEFAULT_CAPACITY;
   }
   EXPECT_EQ( field.getCapacity(), capacity );
 

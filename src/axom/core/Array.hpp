@@ -28,8 +28,6 @@
 
 namespace axom
 {
-namespace utilities
-{
 
 /* Provided so that 0 doesn't convert to nullptr and lead to ambiguous
  * constructor calls. */
@@ -701,7 +699,6 @@ inline void Array< T >::dynamicRealloc( IndexType new_num_tuples )
   m_data = utilities::realloc( m_data, m_capacity * m_num_components );
 }
 
-} /* namespace utilities */
 } /* namespace axom */
 
 #endif /* UTILITIES_ARRAY_HPP_ */

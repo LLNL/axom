@@ -26,10 +26,6 @@ namespace axom
 namespace mint
 {
 
-// Forward Declarations
-template < typename T >
-class Array;
-
 /*!
  * \class RectilinearMesh
  *
@@ -296,8 +292,7 @@ private:
 
 #endif
 
-  utilities::Array< double >* m_coordinates[3] = { nullptr, nullptr,
-                                                   nullptr };
+  Array< double >* m_coordinates[3] = { nullptr, nullptr, nullptr };
 
   DISABLE_COPY_AND_ASSIGNMENT( RectilinearMesh );
   DISABLE_MOVE_AND_ASSIGNMENT( RectilinearMesh );

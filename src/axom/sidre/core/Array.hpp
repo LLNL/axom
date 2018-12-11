@@ -20,7 +20,7 @@
 
 #include "axom/core/Macros.hpp"      // for disable copy/assignment macro
 #include "axom/core/utilities/Utilities.hpp"  // for memory allocation functions
-#include "axom/core/utilities/Array.hpp"  // to inherit
+#include "axom/core/Array.hpp"                // to inherit
 #include "axom/core/Types.hpp"
 
 #include "axom/slic/interface/slic.hpp"            // for slic logging macros
@@ -72,7 +72,7 @@ constexpr axom::IndexType ZERO = 0;
  * \see View
  */
 template< typename T >
-class Array : public axom::utilities::Array<T>
+class Array : public axom::Array<T>
 {
 
 public:
@@ -255,7 +255,7 @@ protected:
 //------------------------------------------------------------------------------
 template< typename T >
 Array< T >::Array( View* view ) :
-  utilities::Array<T>(0, 0, 0),
+  axom::Array<T>(0, 0, 0),
   m_view( view )
 {
   SLIC_ERROR_IF( m_view == nullptr, "Provided View cannot be null." );
@@ -300,7 +300,7 @@ Array< T >::Array( View* view ) :
 template< typename T >
 Array< T >::Array( View* view, axom::IndexType num_tuples,
                    axom::IndexType num_components, axom::IndexType capacity ) :
-  utilities::Array<T>(num_tuples, num_components, capacity),
+  axom::Array<T>(num_tuples, num_components, capacity),
   m_view( view )
 {
   SLIC_ERROR_IF( m_view == nullptr, "Provided View cannot be null." );
@@ -314,9 +314,9 @@ Array< T >::Array( View* view, axom::IndexType num_tuples,
 
   if ( capacity <= 0 )
   {
-    capacity = utilities::Array<T>::DEFAULT_RESIZE_RATIO *
-      ( this->m_num_tuples > utilities::Array<T>::MIN_DEFAULT_CAPACITY ?
-        this->m_num_tuples : utilities::Array<T>::MIN_DEFAULT_CAPACITY );
+    capacity =
+      ( this->m_num_tuples > axom::Array<T>::MIN_DEFAULT_CAPACITY ?
+        this->m_num_tuples : axom::Array<T>::MIN_DEFAULT_CAPACITY );
   }
   SLIC_ERROR_IF( this->m_num_tuples > capacity,
                  "Number of tuples (" << this->m_num_tuples << ") " <<

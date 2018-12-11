@@ -16,9 +16,9 @@
  */
 #include "axom/mint/mesh/RectilinearMesh.hpp"
 
-#include "axom/core/utilities/Array.hpp"          // for mint::Array
+#include "axom/core/Array.hpp"               // for axom::Array
 #include "axom/mint/mesh/blueprint.hpp"      // for blueprint functions
-#include "axom/mint/config.hpp"         // for compile-time definitions
+#include "axom/mint/config.hpp"              // for compile-time definitions
 #include "axom/mint/mesh/MeshTypes.hpp"      // for STRUCTURED_RECTILINEAR_MESH
 
 #include "axom/mint/mesh/internal/MeshHelpers.hpp"    // for internal helper
@@ -58,7 +58,7 @@ RectilinearMesh::RectilinearMesh( IndexType Ni, double* x, IndexType Nj,
     SLIC_ERROR_IF( ptrs[ dim ] == nullptr,
                    "encountered null coordinate array for dim=" << dim );
     const IndexType N = getNodeResolution( dim );
-    m_coordinates[ dim ] = new utilities::Array< double >( ptrs[ dim ], N );
+    m_coordinates[ dim ] = new Array< double >( ptrs[ dim ], N );
   }
 }
 
@@ -156,7 +156,7 @@ void RectilinearMesh::allocateCoords()
   for ( int dim = 0 ; dim < m_ndims ; ++dim )
   {
     const IndexType N     = getNodeResolution( dim );
-    m_coordinates[ dim ] = new utilities::Array< double >( N, 1, N );
+    m_coordinates[ dim ] = new Array< double >( N, 1, N );
     m_coordinates[ dim ]->setResizeRatio( 0.0 );
   } // END for all dimensions
 
