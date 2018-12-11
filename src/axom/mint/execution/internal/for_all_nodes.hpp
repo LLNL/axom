@@ -41,12 +41,11 @@ namespace internal
 {
 
 template < typename ExecPolicy, typename KernelType >
-inline void for_all_nodes( xargs::index,
-                           const mint::Mesh* m,
-                           KernelType&& kernel )
+inline void for_all_nodes_impl( xargs::index,
+                                const Mesh& m,
+                                KernelType&& kernel )
 {
-  SLIC_ASSERT( m != nullptr );
-  const IndexType numNodes = m->getNumberOfNodes();
+  const IndexType numNodes = m.getNumberOfNodes();
 
 #ifdef AXOM_USE_RAJA
 
@@ -69,36 +68,42 @@ inline void for_all_nodes( xargs::index,
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
-inline void for_all_nodes( xargs::ij,
-                           const mint::Mesh* m,
+inline void for_all_nodes( xargs::index,
+                           const Mesh& m,
                            KernelType&& kernel )
 {
-  // run-time checks
-  SLIC_ASSERT( m != nullptr );
-  SLIC_ERROR_IF( !m->isStructured(),
-                 "xargs::ij is only valid on Structured meshes!" );
-  SLIC_ERROR_IF( m->getDimension() != 2,
-                 "xargs::ij is only valid for 2-D structured meshes!" );
+  for_all_nodes_impl< ExecPolicy >( xargs::index(),
+                                    m,
+                                    std::forward< KernelType >( kernel ) );
+}
 
-  const mint::StructuredMesh* sm =
-    static_cast< const mint::StructuredMesh* >( m );
+//------------------------------------------------------------------------------
+template < typename ExecPolicy, typename KernelType >
+inline void for_all_nodes_impl( xargs::ij,
+                                const StructuredMesh& m,
+                                KernelType&& kernel )
+{
+  SLIC_ERROR_IF( m.getDimension() != 2,
+                 "xargs::ij is only valid for 2D structured meshes!" );
 
-  const IndexType jp = sm->nodeJp();
-  const IndexType Ni = sm->getNodeResolution( I_DIRECTION );
-  const IndexType Nj = sm->getNodeResolution( J_DIRECTION );
+
+  const IndexType jp = m.nodeJp();
+  const IndexType Ni = m.getNodeResolution( I_DIRECTION );
+  const IndexType Nj = m.getNodeResolution( J_DIRECTION );
 
 #ifdef AXOM_USE_RAJA
 
-  RAJA::RangeSegment i_range(0,Ni);
-  RAJA::RangeSegment j_range(0,Nj);
+  RAJA::RangeSegment i_range( 0, Ni );
+  RAJA::RangeSegment j_range( 0, Nj );
   using exec_pol = typename policy_traits< ExecPolicy >::raja_2d_exec;
 
-  RAJA::kernel< exec_pol >( RAJA::make_tuple(i_range, j_range),
-                            AXOM_LAMBDA( IndexType i, IndexType j )
-        {
-          const IndexType nodeIdx = i + j * jp;
-          kernel( nodeIdx, i, j );
-        } );
+  RAJA::kernel< exec_pol >( RAJA::make_tuple( i_range, j_range ),
+    AXOM_LAMBDA( IndexType i, IndexType j )
+    {
+      const IndexType nodeIdx = i + j * jp;
+      kernel( nodeIdx, i, j );
+    }
+  );
 
 #else
 
@@ -120,39 +125,50 @@ inline void for_all_nodes( xargs::ij,
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
-inline void for_all_nodes( xargs::ijk,
-                           const mint::Mesh* m,
+inline void for_all_nodes( xargs::ij,
+                           const Mesh& m,
                            KernelType&& kernel )
 {
-  // run-time checks
-  SLIC_ASSERT( m != nullptr );
-  SLIC_ERROR_IF( !m->isStructured(),
-                 "xargs::ijk is only valid on structured meshes!" );
-  SLIC_ERROR_IF( m->getDimension() != 3,
-                 "xargs::ijk is only valid for 3-D structured meshes!" );
+  SLIC_ERROR_IF( !m.isStructured(),
+                 "xargs::ijk is only valid for 2D structured meshes!" );
+  SLIC_ERROR_IF( m.getDimension() != 2,
+                 "xargs::ijk is only valid for 2D structured meshes!" );
 
-  const mint::StructuredMesh* sm =
-    static_cast< const mint::StructuredMesh* >( m );
+  const StructuredMesh& sm = static_cast< const StructuredMesh& >( m );
+  for_all_nodes_impl< ExecPolicy >( xargs::ij(),
+                                    sm,
+                                    std::forward< KernelType >( kernel ) );
+}
 
-  const IndexType jp = sm->nodeJp();
-  const IndexType kp = sm->nodeKp();
-  const IndexType Ni = sm->getNodeResolution( I_DIRECTION );
-  const IndexType Nj = sm->getNodeResolution( J_DIRECTION );
-  const IndexType Nk = sm->getNodeResolution( K_DIRECTION );
+//------------------------------------------------------------------------------
+template < typename ExecPolicy, typename KernelType >
+inline void for_all_nodes_impl( xargs::ijk,
+                                const StructuredMesh& m,
+                                KernelType&& kernel )
+{
+  SLIC_ERROR_IF( m.getDimension() != 3,
+                 "xargs::ijk is only valid for 3D structured meshes!" );
+
+  const IndexType jp = m.nodeJp();
+  const IndexType kp = m.nodeKp();
+  const IndexType Ni = m.getNodeResolution( I_DIRECTION );
+  const IndexType Nj = m.getNodeResolution( J_DIRECTION );
+  const IndexType Nk = m.getNodeResolution( K_DIRECTION );
 
 #ifdef AXOM_USE_RAJA
 
-  RAJA::RangeSegment i_range(0,Ni);
-  RAJA::RangeSegment j_range(0,Nj);
-  RAJA::RangeSegment k_range(0,Nk);
+  RAJA::RangeSegment i_range( 0, Ni );
+  RAJA::RangeSegment j_range( 0, Nj );
+  RAJA::RangeSegment k_range( 0, Nk );
   using exec_pol = typename policy_traits< ExecPolicy >::raja_3d_exec;
 
   RAJA::kernel< exec_pol >( RAJA::make_tuple(i_range, j_range, k_range),
-                            AXOM_LAMBDA( IndexType i, IndexType j, IndexType k )
-        {
-          const IndexType nodeIdx = i + j*jp + k*kp;
-          kernel( nodeIdx, i, j, k );
-        } );
+    AXOM_LAMBDA( IndexType i, IndexType j, IndexType k )
+    {
+      const IndexType nodeIdx = i + j*jp + k*kp;
+      kernel( nodeIdx, i, j, k );
+    }
+  );
 
 #else
 
@@ -179,423 +195,285 @@ inline void for_all_nodes( xargs::ijk,
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
-inline void for_all_nodes_x( const mint::Mesh* m, KernelType&& kernel )
+inline void for_all_nodes( xargs::ijk,
+                           const Mesh& m,
+                           KernelType&& kernel )
 {
-  SLIC_ASSERT( m != nullptr );
+  SLIC_ERROR_IF( !m.isStructured(),
+                 "xargs::ijk is only valid for 3D structured meshes!" );
+  SLIC_ERROR_IF( m.getDimension() != 3,
+                 "xargs::ijk is only valid for 3D structured meshes!" );
 
-  const double* x = m->getCoordinateArray( X_COORDINATE );
-  SLIC_ASSERT( x != nullptr );
-
-  const IndexType numNodes = m->getNumberOfNodes();
-
-#ifdef AXOM_USE_RAJA
-
-  using exec_pol = typename policy_traits< ExecPolicy >::raja_exec_policy;
-  RAJA::forall< exec_pol >( RAJA::RangeSegment(0,numNodes),
-                            AXOM_LAMBDA(IndexType nodeIdx)
-        {
-          kernel( nodeIdx, x[ nodeIdx ] );
-        } );
-
-#else
-
-  constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
-  AXOM_STATIC_ASSERT( is_serial );
-
-  for ( int inode=0 ; inode < numNodes ; ++inode )
-  {
-    kernel( inode, x[ inode ] );
-  } // END for all nodes
-
-#endif
-
+  const StructuredMesh& sm = static_cast< const StructuredMesh& >( m );
+  for_all_nodes_impl< ExecPolicy >( xargs::ijk(),
+                                    sm,
+                                    std::forward< KernelType >( kernel ) );
 }
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
-inline void for_all_nodes_x_uniform( const mint::Mesh* m, KernelType&& kernel )
+inline void for_all_nodes_impl( xargs::x, const UniformMesh& m, KernelType&& kernel )
 {
-  SLIC_ASSERT( m != nullptr );
-  SLIC_ASSERT( m->getMeshType()==STRUCTURED_UNIFORM_MESH );
+  SLIC_ERROR_IF( m.getDimension() != 1, 
+                 "xargs::x is only valid for 1D meshes" );
 
-  const mint::UniformMesh* um = static_cast< const mint::UniformMesh* >( m );
-  const double* x0            = um->getOrigin( );
-  const double* h             = um->getSpacing( );
-  const IndexType numNodes    = um->getNumberOfNodes();
+  const double* x0         = m.getOrigin( );
+  const double* h          = m.getSpacing( );
 
-#ifdef AXOM_USE_RAJA
+  for_all_nodes_impl< ExecPolicy >( xargs::index(), m,
+    AXOM_LAMBDA( IndexType nodeID )
+    {
+      const double x = x0[ X_COORDINATE ] + nodeID * h[ I_DIRECTION ];
+      kernel( nodeID, x );
+    }
+  );
+}
 
-  using exec_pol = typename policy_traits< ExecPolicy >::raja_exec_policy;
-  RAJA::forall< exec_pol >( RAJA::RangeSegment(0,numNodes),
-                            AXOM_LAMBDA(IndexType nodeIdx)
-        {
-          const double x = x0[ X_COORDINATE ] + nodeIdx*h[ I_DIRECTION ];
-          kernel( nodeIdx, x );
-        } );
 
-#else
+//------------------------------------------------------------------------------
+template < typename ExecPolicy, typename KernelType >
+inline void for_all_nodes_impl(xargs::x, const Mesh& m, KernelType&& kernel )
+{
+  SLIC_ERROR_IF( m.getDimension() != 1,
+                 "xargs::x is only valid for 1D meshes" );
+  SLIC_ERROR_IF( m.getMeshType() == STRUCTURED_UNIFORM_MESH,
+                 "Not valid for UniformMesh." );
 
-  constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
-  AXOM_STATIC_ASSERT( is_serial );
+  const double* x = m.getCoordinateArray( X_COORDINATE );
+  SLIC_ASSERT( x != nullptr );
 
-  for ( int inode=0 ; inode < numNodes ; ++inode )
-  {
-    const double x = x0[ X_COORDINATE ] + inode*h[ I_DIRECTION ];
-    kernel( inode, x );
-  } // END for all nodes
-
-#endif
-
+  for_all_nodes_impl< ExecPolicy >( xargs::index(), m,
+    AXOM_LAMBDA( IndexType nodeID )
+    {
+      kernel( nodeID, x[ nodeID ] );
+    }
+  );
 }
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
 inline void for_all_nodes( xargs::x,
-                           const mint::Mesh* m,
+                           const Mesh& m,
                            KernelType&& kernel )
 {
-  SLIC_ASSERT( m != nullptr );
-  SLIC_ERROR_IF( m->getDimension() != 1,
-                 "xargs::xy is only valid for 1-D meshes" );
+  SLIC_ERROR_IF( m.getDimension() != 1,
+                 "xargs::x is only valid for 1D meshes" );
 
-  const int mesh_type = m->getMeshType();
-  switch( mesh_type )
+  const int mesh_type = m.getMeshType();
+  if ( mesh_type == STRUCTURED_UNIFORM_MESH )
   {
-  case STRUCTURED_UNIFORM_MESH:
-    for_all_nodes_x_uniform< ExecPolicy >(
-      m, std::forward< KernelType >( kernel ) );
-    break;
-  default:
-    for_all_nodes_x< ExecPolicy >( m, std::forward< KernelType >( kernel ) );
-  } // END switch
-
+    const UniformMesh& um = static_cast< const UniformMesh& >( m );
+    for_all_nodes_impl< ExecPolicy >( xargs::x(), 
+                                      um,
+                                      std::forward< KernelType >( kernel ) );
+  }
+  else
+  {
+    for_all_nodes_impl< ExecPolicy >( xargs::x(),
+                                      m,
+                                      std::forward< KernelType >( kernel ) );
+  }
 }
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
-inline void for_all_nodes_xy( const mint::Mesh* m, KernelType&& kernel )
+inline void for_all_nodes_impl( xargs::xy,
+                                const UniformMesh& m,
+                                KernelType&& kernel)
 {
-  SLIC_ASSERT( m != nullptr );
+  SLIC_ERROR_IF( m.getDimension() != 2,
+                 "xargs::xy is only valid for 2D meshes" );
 
-  const double* x = m->getCoordinateArray( X_COORDINATE );
-  const double* y = m->getCoordinateArray( Y_COORDINATE );
+  const double* x0 = m.getOrigin( );
+  const double* h  = m.getSpacing( );
+
+  for_all_nodes_impl< ExecPolicy >( xargs::ij(), m,
+    AXOM_LAMBDA( IndexType nodeID, IndexType i, IndexType j )
+    {
+      const double x = x0[ X_COORDINATE ] + i * h[ I_DIRECTION ];
+      const double y = x0[ Y_COORDINATE ] + j * h[ J_DIRECTION ];
+      kernel( nodeID, x, y );
+    }
+  );
+}
+
+//------------------------------------------------------------------------------
+template < typename ExecPolicy, typename KernelType >
+inline void for_all_nodes_impl( xargs::xy,
+                                const RectilinearMesh& m,
+                                KernelType&& kernel )
+{
+  SLIC_ERROR_IF( m.getDimension() != 2,
+                 "xargs::xy is only valid for 2D meshes" );
+
+  const double* x = m.getCoordinateArray( X_COORDINATE );
+  const double* y = m.getCoordinateArray( Y_COORDINATE );
   SLIC_ASSERT( x != nullptr );
   SLIC_ASSERT( y != nullptr );
 
-  const IndexType numNodes = m->getNumberOfNodes();
+  for_all_nodes_impl< ExecPolicy >( xargs::ij(), m,
+    AXOM_LAMBDA( IndexType nodeID, IndexType i, IndexType j )
+    {
+      kernel( nodeID, x[ i ], y[ j ] );
+    }
+  );
+}
 
-#ifdef AXOM_USE_RAJA
+//------------------------------------------------------------------------------
+template < typename ExecPolicy, typename KernelType >
+inline void for_all_nodes_impl( xargs::xy,
+                                const Mesh& m,
+                                KernelType&& kernel )
+{
+  SLIC_ERROR_IF( m.getDimension() != 2,
+                 "xargs::xy is only valid for 2D meshes" );
+  SLIC_ERROR_IF( m.getMeshType() == STRUCTURED_UNIFORM_MESH,
+                 "Not valid for UniformMesh." );
+  SLIC_ERROR_IF( m.getMeshType() == STRUCTURED_RECTILINEAR_MESH,
+                 "Not valid for RectilinearMesh." );
 
-  using exec_pol = typename policy_traits< ExecPolicy >::raja_exec_policy;
-  RAJA::forall< exec_pol >( RAJA::RangeSegment(0,numNodes),
-                            AXOM_LAMBDA(IndexType nodeIdx)
-        {
-          kernel( nodeIdx, x[ nodeIdx ], y[ nodeIdx ] );
-        } );
+  const double* x = m.getCoordinateArray( X_COORDINATE );
+  const double* y = m.getCoordinateArray( Y_COORDINATE );
+  SLIC_ASSERT( x != nullptr );
+  SLIC_ASSERT( y != nullptr );
 
-#else
+  for_all_nodes_impl< ExecPolicy >( xargs::index(), m,
+    AXOM_LAMBDA( IndexType nodeID )
+    {
+      kernel( nodeID, x[ nodeID ], y[ nodeID ] );
+    }
+  );
+}
 
-  constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
-  AXOM_STATIC_ASSERT( is_serial );
+//------------------------------------------------------------------------------
+template < typename ExecPolicy, typename KernelType >
+inline void for_all_nodes( xargs::xy, const Mesh& m, KernelType&& kernel )
+{
+  SLIC_ERROR_IF( m.getDimension() != 2,
+                 "xargs::xy is only valid for 3D meshes" );
 
-  for ( int nodeIdx=0 ; nodeIdx < numNodes ; ++nodeIdx )
+  const int mesh_type = m.getMeshType();
+  if ( mesh_type == STRUCTURED_RECTILINEAR_MESH )
   {
-    kernel( nodeIdx, x[ nodeIdx ], y[ nodeIdx ] );
+    const RectilinearMesh& rm = static_cast< const RectilinearMesh& >( m );
+    for_all_nodes_impl< ExecPolicy >( xargs::xy(),
+                                      rm,
+                                      std::forward< KernelType >( kernel ) );
   }
-
-#endif
-
+  else if ( mesh_type == STRUCTURED_UNIFORM_MESH )
+  {
+    const UniformMesh& um = static_cast< const UniformMesh& >( m );
+    for_all_nodes_impl< ExecPolicy >( xargs::xy(),
+                                      um,
+                                      std::forward< KernelType >( kernel ) );
+  }
+  else
+  {
+    for_all_nodes_impl< ExecPolicy >( xargs::xy(),
+                                      m,
+                                      std::forward< KernelType >( kernel ) );
+  }
 }
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
-inline void for_all_nodes_xy_uniform( const mint::Mesh* m, KernelType&& kernel)
+inline void for_all_nodes_impl( xargs::xyz,
+                                const UniformMesh& m,
+                                KernelType&& kernel )
 {
-  SLIC_ASSERT( m != nullptr );
-  SLIC_ASSERT( m->getMeshType()==STRUCTURED_UNIFORM_MESH );
+  SLIC_ERROR_IF( m.getDimension() != 3,
+                 "xargs::xyz is only valid for 3D meshes" );
 
-  const mint::UniformMesh* um = static_cast< const mint::UniformMesh* >( m );
-  const double* x0 = um->getOrigin( );
-  const double* h  = um->getSpacing( );
+  const double* x0 = m.getOrigin( );
+  const double* h  = m.getSpacing( );
 
-#ifdef AXOM_USE_RAJA
-
-  for_all_nodes< ExecPolicy, xargs::ij >(
-    m, AXOM_LAMBDA(IndexType nodeIdx, IndexType i, IndexType j )
-        {
-          const double x = x0[ X_COORDINATE ] + i*h[ I_DIRECTION ];
-          const double y = x0[ Y_COORDINATE ] + j*h[ J_DIRECTION ];
-          kernel( nodeIdx, x, y );
-        } );
-
-#else
-
-  constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
-  AXOM_STATIC_ASSERT( is_serial );
-
-  const IndexType jp = um->nodeJp();
-  const IndexType Ni = um->getNodeResolution( I_DIRECTION );
-  const IndexType Nj = um->getNodeResolution( J_DIRECTION );
-
-  for( IndexType j=0 ; j < Nj ; ++j )
-  {
-    const IndexType j_offset = j * jp;                // logical offset
-    const double j_h         = j * h[ J_DIRECTION ];  // physical offset
-
-    for ( IndexType i=0 ; i < Ni ; ++i )
+  for_all_nodes_impl< ExecPolicy >( xargs::ijk(), m,
+    AXOM_LAMBDA(IndexType nodeID, IndexType i, IndexType j, IndexType k)
     {
-      const IndexType nodeIdx = i + j_offset;
       const double x = x0[ X_COORDINATE ] + i * h[ I_DIRECTION ];
-      const double y = x0[ Y_COORDINATE ] + j_h;
-
-      kernel( nodeIdx, x, y );
-    } // END for all i
-  } // END for all j
-#endif
-
+      const double y = x0[ Y_COORDINATE ] + j * h[ J_DIRECTION ];
+      const double z = x0[ Z_COORDINATE ] + k * h[ K_DIRECTION ];
+      kernel( nodeID, x, y, z );
+    }
+  );
 }
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
-inline void for_all_nodes_xy_rectilinear( const mint::Mesh* m,
-                                          KernelType&& kernel )
+inline void for_all_nodes_impl( xargs::xyz,
+                                const RectilinearMesh& m,
+                                KernelType&& kernel )
 {
-  SLIC_ASSERT( m != nullptr );
-  SLIC_ASSERT( m->getMeshType()==STRUCTURED_RECTILINEAR_MESH );
+  SLIC_ERROR_IF( m.getDimension() != 3,
+               "xargs::xyz is only valid for 3D meshes" );
+  const double* x = m.getCoordinateArray( X_COORDINATE );
+  const double* y = m.getCoordinateArray( Y_COORDINATE );
+  const double* z = m.getCoordinateArray( Z_COORDINATE );
 
-  const mint::RectilinearMesh* rm =
-    static_cast< const mint::RectilinearMesh* >( m );
-  const double* x = rm->getCoordinateArray( X_COORDINATE );
-  const double* y = rm->getCoordinateArray( Y_COORDINATE );
-
-#ifdef AXOM_USE_RAJA
-
-  for_all_nodes< ExecPolicy, xargs::ij >(
-    m, AXOM_LAMBDA( IndexType nodeIdx, IndexType i, IndexType j )
-        {
-          kernel( nodeIdx, x[ i ], y[ j ] );
-        } );
-
-#else
-
-  constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
-  AXOM_STATIC_ASSERT( is_serial );
-
-  const IndexType jp = rm->nodeJp();
-  const IndexType Ni = rm->getNodeResolution( I_DIRECTION );
-  const IndexType Nj = rm->getNodeResolution( J_DIRECTION );
-
-  for ( IndexType j=0 ; j < Nj ; ++j )
-  {
-    const IndexType j_offset = j * jp;
-    for ( IndexType i=0 ; i < Ni ; ++i )
+  for_all_nodes_impl< ExecPolicy >( xargs::ijk(), m,
+    AXOM_LAMBDA(IndexType nodeID, IndexType i, IndexType j, IndexType k)
     {
-      const IndexType nodeIdx = i + j_offset;
-      kernel( nodeIdx, x[ i ], y[ j ] );
-    } // END for all i
-  } // END for all j
-
-#endif
-
+      kernel( nodeID, x[ i ], y[ j ], z[ k ] );
+    }
+  );
 }
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
-inline void for_all_nodes( xargs::xy, const mint::Mesh* m,
-                           KernelType&& kernel )
+inline void for_all_nodes_impl( xargs::xyz,
+                                const Mesh& m,
+                                KernelType&& kernel )
 {
-  SLIC_ASSERT( m != nullptr );
-  SLIC_ERROR_IF( m->getDimension() != 2,
-                 "xargs::xy is only valid for 2-D meshes" );
+  SLIC_ERROR_IF( m.getDimension() != 3,
+                 "xargs::xyz is only valid for 3D meshes" );
+  SLIC_ERROR_IF( m.getMeshType() == STRUCTURED_UNIFORM_MESH,
+                 "Not valid for UniformMesh." );
+  SLIC_ERROR_IF( m.getMeshType() == STRUCTURED_RECTILINEAR_MESH,
+                 "Not valid for RectilinearMesh." );
 
-  const int mesh_type = m->getMeshType();
-  switch( mesh_type )
-  {
-  case STRUCTURED_RECTILINEAR_MESH:
-    for_all_nodes_xy_rectilinear< ExecPolicy >(
-      m, std::forward< KernelType >( kernel ) );
-    break;
-  case STRUCTURED_UNIFORM_MESH:
-    for_all_nodes_xy_uniform< ExecPolicy >(
-      m, std::forward< KernelType >( kernel ) );
-    break;
-  default:
-    for_all_nodes_xy< ExecPolicy >( m, std::forward< KernelType >( kernel ) );
-  } // END switch
-
-}
-
-//------------------------------------------------------------------------------
-template < typename ExecPolicy, typename KernelType >
-inline void for_all_nodes_xyz( const mint::Mesh* m, KernelType&& kernel )
-{
-  SLIC_ASSERT( m != nullptr );
-
-  const double* x = m->getCoordinateArray( X_COORDINATE );
-  const double* y = m->getCoordinateArray( Y_COORDINATE );
-  const double* z = m->getCoordinateArray( Z_COORDINATE );
+  const double* x = m.getCoordinateArray( X_COORDINATE );
+  const double* y = m.getCoordinateArray( Y_COORDINATE );
+  const double* z = m.getCoordinateArray( Z_COORDINATE );
   SLIC_ASSERT( x != nullptr );
   SLIC_ASSERT( y != nullptr );
   SLIC_ASSERT( z != nullptr );
 
-  const IndexType numNodes = m->getNumberOfNodes();
+  for_all_nodes_impl< ExecPolicy >( xargs::index(), m,
+    AXOM_LAMBDA( IndexType nodeID )
+    {
+      kernel( nodeID, x[ nodeID ], y[ nodeID ], z[ nodeID ] );
+    }
+  );
+}
 
-#ifdef AXOM_USE_RAJA
+//------------------------------------------------------------------------------
+template < typename ExecPolicy, typename KernelType >
+inline void for_all_nodes( xargs::xyz, const mint::Mesh& m, KernelType&& kernel )
+{
+  SLIC_ERROR_IF( m.getDimension() != 3,
+                 "xargs::xyz is only valid for 3D meshes" );
 
-  using exec_pol = typename policy_traits< ExecPolicy >::raja_exec_policy;
-  RAJA::forall< exec_pol >( RAJA::RangeSegment(0,numNodes),
-                            AXOM_LAMBDA(IndexType nodeIdx)
-        {
-          kernel( nodeIdx, x[ nodeIdx ], y[ nodeIdx ], z[ nodeIdx ] );
-        } );
-
-#else
-
-  constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
-  AXOM_STATIC_ASSERT( is_serial );
-
-  for ( int nodeIdx=0 ; nodeIdx < numNodes ; ++nodeIdx )
+  const int mesh_type = m.getMeshType();
+  if ( mesh_type == STRUCTURED_RECTILINEAR_MESH )
   {
-    kernel( nodeIdx, x[ nodeIdx ], y[ nodeIdx ], z[ nodeIdx ] );
+    const RectilinearMesh& rm = static_cast< const RectilinearMesh& >( m );
+    for_all_nodes_impl< ExecPolicy >( xargs::xyz(),
+                                      rm,
+                                      std::forward< KernelType >( kernel ) );
   }
-
-#endif
-
-}
-
-//------------------------------------------------------------------------------
-template < typename ExecPolicy, typename KernelType >
-inline void for_all_nodes_xyz_uniform( const mint::Mesh* m,
-                                       KernelType&& kernel )
-{
-  SLIC_ASSERT( m != nullptr );
-  SLIC_ASSERT( m->getMeshType()==STRUCTURED_UNIFORM_MESH );
-
-  const mint::UniformMesh* um = static_cast< const mint::UniformMesh* >( m );
-  const double* x0 = um->getOrigin( );
-  const double* h  = um->getSpacing( );
-
-#ifdef AXOM_USE_RAJA
-
-  for_all_nodes< ExecPolicy, xargs::ijk >(
-    m, AXOM_LAMBDA(IndexType nodeIdx, IndexType i, IndexType j, IndexType k)
-        {
-          const double x = x0[ X_COORDINATE ] + i*h[ I_DIRECTION ];
-          const double y = x0[ Y_COORDINATE ] + j*h[ J_DIRECTION ];
-          const double z = x0[ Z_COORDINATE ] + k*h[ K_DIRECTION ];
-          kernel( nodeIdx, x, y, z );
-        } );
-
-#else
-
-  constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
-  AXOM_STATIC_ASSERT( is_serial );
-
-  const IndexType jp = um->nodeJp();
-  const IndexType kp = um->nodeKp();
-  const IndexType Ni = um->getNodeResolution( I_DIRECTION );
-  const IndexType Nj = um->getNodeResolution( J_DIRECTION );
-  const IndexType Nk = um->getNodeResolution( K_DIRECTION );
-
-  for ( IndexType k=0 ; k < Nk ; ++k )
+  else if ( mesh_type == STRUCTURED_UNIFORM_MESH )
   {
-    const IndexType k_offset = k * kp;               // logical offset (k)
-    const double k_h         = k * h[ K_DIRECTION ]; // physical offset (k)
-    for ( IndexType j=0 ; j < Nj ; ++j )
-    {
-      const IndexType j_offset = j * jp;               // logical offset (j)
-      const double j_h         = j * h[ J_DIRECTION ]; // physical offset (j)
-      for ( IndexType i=0 ; i < Ni ; ++i )
-      {
-        const IndexType nodeIdx = i + j_offset + k_offset;
-        const double x = x0[ X_COORDINATE ] + i * h[ I_DIRECTION ];
-        const double y = x0[ Y_COORDINATE ] + j_h;
-        const double z = x0[ Z_COORDINATE ] + k_h;
-
-        kernel( nodeIdx, x, y, z );
-      } // END for all i
-    } // END for all j
-  } // END for all k
-#endif
-
-}
-
-//------------------------------------------------------------------------------
-template < typename ExecPolicy, typename KernelType >
-inline void for_all_nodes_xyz_rectilinear( const mint::Mesh* m,
-                                           KernelType&& kernel )
-{
-  SLIC_ASSERT( m != nullptr );
-  SLIC_ASSERT( m->getMeshType()==STRUCTURED_RECTILINEAR_MESH );
-
-  const mint::RectilinearMesh* rm =
-    static_cast< const mint::RectilinearMesh* >( m );
-
-  const double* x = rm->getCoordinateArray( X_COORDINATE );
-  const double* y = rm->getCoordinateArray( Y_COORDINATE );
-  const double* z = rm->getCoordinateArray( Z_COORDINATE );
-
-#ifdef AXOM_USE_RAJA
-
-  for_all_nodes< ExecPolicy, xargs::ijk >(
-    m, AXOM_LAMBDA(IndexType nodeIdx, IndexType i, IndexType j, IndexType k)
-        {
-          kernel( nodeIdx, x[ i ], y[ j ], z[ k ] );
-        } );
-
-#else
-
-  constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
-  AXOM_STATIC_ASSERT( is_serial );
-
-  const IndexType jp = rm->nodeJp();
-  const IndexType kp = rm->nodeKp();
-  const IndexType Ni = rm->getNodeResolution( I_DIRECTION );
-  const IndexType Nj = rm->getNodeResolution( J_DIRECTION );
-  const IndexType Nk = rm->getNodeResolution( K_DIRECTION );
-
-  for ( IndexType k=0 ; k < Nk ; ++k )
+    const UniformMesh& um = static_cast< const UniformMesh& >( m );
+    for_all_nodes_impl< ExecPolicy >( xargs::xyz(),
+                                      um,
+                                      std::forward< KernelType >( kernel ) );
+  }
+  else
   {
-    const IndexType k_offset = k * kp;
-    for ( IndexType j=0 ; j < Nj ; ++j )
-    {
-      const IndexType j_offset = j * jp;
-      for ( IndexType i=0 ; i < Ni ; ++i )
-      {
-
-        const IndexType nodeIdx = i + j_offset + k_offset;
-        kernel( nodeIdx, x[ i ], y[ j ], z[ k ] );
-
-      } // END for all i
-    } // END for all j
-  } // END for all k
-#endif
-
-}
-
-//------------------------------------------------------------------------------
-template < typename ExecPolicy, typename KernelType >
-inline void for_all_nodes( xargs::xyz, const mint::Mesh* m,
-                           KernelType&& kernel )
-{
-  SLIC_ASSERT( m != nullptr );
-  SLIC_ERROR_IF( m->getDimension() != 3,
-                 "xargs::xyz is only valid for 3-D meshes" );
-
-  const int mesh_type = m->getMeshType();
-  switch( mesh_type )
-  {
-  case STRUCTURED_RECTILINEAR_MESH:
-    for_all_nodes_xyz_rectilinear< ExecPolicy >(
-      m, std::forward< KernelType >( kernel ) );
-    break;
-  case STRUCTURED_UNIFORM_MESH:
-    for_all_nodes_xyz_uniform< ExecPolicy >(
-      m, std::forward< KernelType >( kernel ) );
-    break;
-  default:
-    for_all_nodes_xyz< ExecPolicy >( m, std::forward< KernelType >( kernel ) );
-  } // END switch
+    for_all_nodes_impl< ExecPolicy >( xargs::xyz(),
+                                      m,
+                                      std::forward< KernelType >( kernel ) );
+  }
 }
 
 } /* namespace internal */

@@ -18,10 +18,10 @@
 #ifndef MINT_MESH_HPP_
 #define MINT_MESH_HPP_
 
-#include "axom/core/Macros.hpp"             // for Axom macros
+#include "axom/core/Macros.hpp"                  // for Axom macros
 
 #include "axom/mint/mesh/CellTypes.hpp"          // for CellType enum
-#include "axom/mint/config.hpp"             // for mint compile-time type
+#include "axom/mint/config.hpp"                  // for mint compile-time type
 #include "axom/mint/mesh/FieldAssociation.hpp"   // for FieldAssociation enum
 #include "axom/mint/mesh/FieldData.hpp"          // for mint::FieldData
 #include "axom/mint/mesh/MeshCoordinates.hpp"    // for mint::MeshCoordinates

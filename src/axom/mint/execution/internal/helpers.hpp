@@ -49,23 +49,28 @@ namespace internal
  * \param [in] m the Mesh to iterate over.
  * \param [in] kernel the kernel to call on each object.
  */
+
 template < typename ExecPolicy, int NDIM, int NNODES, typename FOR_ALL_FUNCTOR,
-           typename KernelType >
-inline void for_all_coords( const FOR_ALL_FUNCTOR & for_all_nodes, 
-                            const mint::Mesh* m, KernelType&& kernel )
+           typename MeshType, typename KernelType >
+inline void for_all_coords( const FOR_ALL_FUNCTOR & for_all_nodes,
+                            const MeshType& m,
+                            KernelType&& kernel )
 {
   AXOM_STATIC_ASSERT_MSG( NDIM >= 1 && NDIM <= 3,
                           "NDIM must be a valid dimension." );
   AXOM_STATIC_ASSERT_MSG( NNODES > 0, "NNODES must be greater than zero." );
-  SLIC_ASSERT( m != nullptr );
-  SLIC_ASSERT( m->getDimension() == NDIM );
+  
+  constexpr bool valid_mesh_type = std::is_base_of<Mesh, MeshType>::value;
+  AXOM_STATIC_ASSERT( valid_mesh_type );
+
+  SLIC_ERROR_IF( m.getDimension() != NDIM, "Dimension mismatch!" );
 
   constexpr bool NO_COPY = true;
 
   const double * const coords[3] = { 
-                               m->getCoordinateArray(X_COORDINATE),
-                  (NDIM > 1) ? m->getCoordinateArray(Y_COORDINATE) : nullptr,
-                  (NDIM > 2) ? m->getCoordinateArray(Z_COORDINATE) : nullptr };
+                               m.getCoordinateArray(X_COORDINATE),
+                  (NDIM > 1) ? m.getCoordinateArray(Y_COORDINATE) : nullptr,
+                  (NDIM > 2) ? m.getCoordinateArray(Z_COORDINATE) : nullptr };
 
   for_all_nodes( ExecPolicy(), m, 
     AXOM_LAMBDA( IndexType objectID, const IndexType * nodeIDs, 

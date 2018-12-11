@@ -46,7 +46,7 @@ namespace
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_cells_idx( int dimension )
 {
-  constexpr char* mesh_name = internal::mesh_type_name< MeshType, Topology >::name(); 
+  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name(); 
   SLIC_INFO( "dimension=" << dimension << ", policy="
             << policy_traits< ExecPolicy >::name() << ", mesh_type="
             << mesh_name );
@@ -59,10 +59,11 @@ void check_for_all_cells_idx( int dimension )
   const double hi[] = {  10,  10,  10 };
   UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
 
-  Mesh* test_mesh = internal::create_mesh< MeshType, Topology >( uniform_mesh );
+  using MESH = typename internal::mesh_type< MeshType, Topology >::MeshType;
+  MESH* test_mesh = dynamic_cast< MESH* >( internal::create_mesh< MeshType, Topology >( uniform_mesh ) );
   EXPECT_TRUE( test_mesh != nullptr );
 
-  IndexType* field = test_mesh->createField< IndexType >( "c1", CELL_CENTERED );
+  IndexType* field = test_mesh->template createField< IndexType >( "c1", CELL_CENTERED );
 
   for_all_cells< ExecPolicy >( test_mesh, 
     AXOM_LAMBDA( IndexType cellID )
@@ -86,7 +87,7 @@ template < typename ExecPolicy, int MeshType >
 void check_for_all_cells_ij( )
 {
   SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
-            << internal::mesh_type_name< MeshType >::name() );
+            << internal::mesh_type< MeshType >::name() );
 
   constexpr IndexType N = 20;
   const double lo[] = { -10, -10 };
@@ -94,11 +95,12 @@ void check_for_all_cells_ij( )
   UniformMesh uniform_mesh( lo, hi, N, N );
 
   // STEP 0: create the test mesh
-  Mesh* test_mesh = internal::create_mesh< MeshType, SINGLE_SHAPE >( uniform_mesh );
+  using MESH = typename internal::mesh_type< MeshType >::MeshType;
+  MESH* test_mesh = dynamic_cast< MESH* >( internal::create_mesh< MeshType >( uniform_mesh ) );
   EXPECT_TRUE( test_mesh != nullptr );
 
-  IndexType* icoords = test_mesh->createField< IndexType >( "i", CELL_CENTERED );
-  IndexType* jcoords = test_mesh->createField< IndexType >( "j", CELL_CENTERED );
+  IndexType* icoords = test_mesh->template createField< IndexType >( "i", CELL_CENTERED );
+  IndexType* jcoords = test_mesh->template createField< IndexType >( "j", CELL_CENTERED );
 
   for_all_cells< ExecPolicy, xargs::ij >( test_mesh,
     AXOM_LAMBDA( IndexType cellIdx, IndexType i, IndexType j )
@@ -128,7 +130,7 @@ template < typename ExecPolicy, int MeshType >
 void check_for_all_cells_ijk( )
 {
   SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
-            << internal::mesh_type_name< MeshType >::name() );
+            << internal::mesh_type< MeshType >::name() );
 
   constexpr IndexType N = 20;
   const double lo[] = { -10, -10, -10 };
@@ -136,12 +138,13 @@ void check_for_all_cells_ijk( )
   UniformMesh uniform_mesh( lo, hi, N, N, N );
 
   // STEP 0: create the test mesh
-  Mesh* test_mesh = internal::create_mesh< MeshType >( uniform_mesh );
+  using MESH = typename internal::mesh_type< MeshType >::MeshType;
+  MESH* test_mesh = dynamic_cast< MESH* >( internal::create_mesh< MeshType >( uniform_mesh ) );
   EXPECT_TRUE( test_mesh != nullptr );
 
-  IndexType* icoords = test_mesh->createField< IndexType >( "i", CELL_CENTERED );
-  IndexType* jcoords = test_mesh->createField< IndexType >( "j", CELL_CENTERED );
-  IndexType* kcoords = test_mesh->createField< IndexType >( "k", CELL_CENTERED );
+  IndexType* icoords = test_mesh->template createField< IndexType >( "i", CELL_CENTERED );
+  IndexType* jcoords = test_mesh->template createField< IndexType >( "j", CELL_CENTERED );
+  IndexType* kcoords = test_mesh->template createField< IndexType >( "k", CELL_CENTERED );
 
   for_all_cells< ExecPolicy, xargs::ijk >( test_mesh,
     AXOM_LAMBDA( IndexType cellIdx, IndexType i, IndexType j, IndexType k )
@@ -175,7 +178,7 @@ void check_for_all_cells_ijk( )
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_cell_nodes( int dimension )
 {
-  constexpr char* mesh_name = internal::mesh_type_name< MeshType, Topology >::name(); 
+  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name(); 
   SLIC_INFO( "dimension=" << dimension << ", policy="
             << policy_traits< ExecPolicy >::name() << ", mesh_type="
             << mesh_name );
@@ -188,11 +191,12 @@ void check_for_all_cell_nodes( int dimension )
   const double hi[] = {  10,  10,  10 };
   UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
 
-  Mesh* test_mesh = internal::create_mesh< MeshType, Topology >( uniform_mesh );
+  using MESH = typename internal::mesh_type< MeshType, Topology >::MeshType;
+  MESH* test_mesh = dynamic_cast< MESH* >( internal::create_mesh< MeshType, Topology >( uniform_mesh ) );
   EXPECT_TRUE( test_mesh != nullptr );
 
   const IndexType numCells = test_mesh->getNumberOfCells();
-  IndexType* conn = test_mesh->createField< IndexType >( "conn", CELL_CENTERED, MAX_CELL_NODES );
+  IndexType* conn = test_mesh->template createField< IndexType >( "conn", CELL_CENTERED, MAX_CELL_NODES );
 
   for_all_cells< ExecPolicy, xargs::nodeids >( test_mesh,
     AXOM_LAMBDA( IndexType cellID, const IndexType* nodes, IndexType N)
@@ -223,7 +227,7 @@ void check_for_all_cell_nodes( int dimension )
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_cell_coords( int dimension )
 {
-  constexpr char* mesh_name = internal::mesh_type_name< MeshType, Topology >::name(); 
+  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name(); 
   SLIC_INFO( "dimension=" << dimension << ", policy="
             << policy_traits< ExecPolicy >::name() << ", mesh_type="
             << mesh_name );
@@ -236,13 +240,14 @@ void check_for_all_cell_coords( int dimension )
   const double hi[] = {  10,  10,  10 };
   UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
 
-  Mesh* test_mesh = internal::create_mesh< MeshType, Topology >( uniform_mesh );
+  using MESH = typename internal::mesh_type< MeshType, Topology >::MeshType;
+  MESH* test_mesh = dynamic_cast< MESH* >( internal::create_mesh< MeshType, Topology >( uniform_mesh ) );
   EXPECT_TRUE( test_mesh != nullptr );
 
   const IndexType numCells = test_mesh->getNumberOfCells();
-  IndexType* conn = test_mesh->createField< IndexType >( "conn", CELL_CENTERED,
+  IndexType* conn = test_mesh->template createField< IndexType >( "conn", CELL_CENTERED,
                                                          MAX_CELL_NODES );
-  double* coords = test_mesh->createField< double >( "coords", CELL_CENTERED, 
+  double* coords = test_mesh->template createField< double >( "coords", CELL_CENTERED, 
                                                      dimension * MAX_CELL_NODES );
 
   for_all_cells< ExecPolicy, xargs::coords >( test_mesh,
@@ -288,7 +293,7 @@ void check_for_all_cell_coords( int dimension )
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_cell_faces( int dimension )
 {
-  constexpr char* mesh_name = internal::mesh_type_name< MeshType, Topology >::name(); 
+  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name(); 
   SLIC_INFO( "dimension=" << dimension << ", policy="
             << policy_traits< ExecPolicy >::name() << ", mesh_type="
             << mesh_name );
@@ -301,11 +306,12 @@ void check_for_all_cell_faces( int dimension )
   const double hi[] = {  10,  10,  10 };
   UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
 
-  Mesh* test_mesh = internal::create_mesh< MeshType, Topology >( uniform_mesh );
+  using MESH = typename internal::mesh_type< MeshType, Topology >::MeshType;
+  MESH* test_mesh = dynamic_cast< MESH* >( internal::create_mesh< MeshType, Topology >( uniform_mesh ) );
   EXPECT_TRUE( test_mesh != nullptr );
 
   const IndexType numCells        = test_mesh->getNumberOfCells();
-  IndexType* cellFaces = test_mesh->createField< IndexType >( "cellFaces", 
+  IndexType* cellFaces = test_mesh->template createField< IndexType >( "cellFaces", 
                                                               CELL_CENTERED,
                                                               MAX_CELL_FACES );
 

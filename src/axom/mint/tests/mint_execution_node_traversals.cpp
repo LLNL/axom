@@ -16,13 +16,12 @@
  */
 
 // Axom includes
-#include "axom/config.hpp"                   // for compile-time definitions
-#include "axom/core/utilities/Utilities.hpp" // for alloc() /free()
+#include "axom/config.hpp"                    // for compile-time definitions
 
 // Mint includes
-#include "axom/mint/config.hpp"              // mint compile-time definitions
-#include "axom/mint/execution/policy.hpp"    // mint execution policies/traits
-#include "axom/mint/execution/interface.hpp" // for_all()
+#include "axom/mint/config.hpp"               // mint compile-time definitions
+#include "axom/mint/execution/policy.hpp"     // mint execution policies/traits
+#include "axom/mint/execution/interface.hpp"  // for_all()
 
 // Slic includes
 #include "axom/slic.hpp" // for SLIC macros
@@ -46,7 +45,7 @@ namespace
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_nodes_idx( int dimension )
 {
-  constexpr char* mesh_name = internal::mesh_type_name< MeshType, Topology >::name(); 
+  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name(); 
   SLIC_INFO( "dimension=" << dimension << ", policy="
             << policy_traits< ExecPolicy >::name() << ", mesh_type="
             << mesh_name );
@@ -61,16 +60,18 @@ void check_for_all_nodes_idx( int dimension )
   const double hi[] = {  10,  10,  10 };
   UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
 
-  Mesh* test_mesh = internal::create_mesh< MeshType, Topology >( uniform_mesh );
+  using MESH = typename internal::mesh_type< MeshType, Topology >::MeshType;
+  MESH* test_mesh = dynamic_cast< MESH* >( internal::create_mesh< MeshType, Topology >( uniform_mesh ) );
   EXPECT_TRUE( test_mesh != nullptr );
 
-  int* field = test_mesh->createField< int >( "n1", NODE_CENTERED );
+  int* field = test_mesh->template createField< int >( "n1", NODE_CENTERED );
 
-  for_all_nodes< ExecPolicy >(
-    test_mesh, AXOM_LAMBDA(IndexType nodeIdx)
+  for_all_nodes< ExecPolicy >( test_mesh,
+    AXOM_LAMBDA(IndexType nodeIdx)
     {
       field[ nodeIdx ] = MAGIC_VAL;
-    } );
+    }
+  );
 
   const IndexType numNodes = test_mesh->getNumberOfNodes();
   for ( IndexType inode=0 ; inode < numNodes ; ++inode )
@@ -87,7 +88,7 @@ template < typename ExecPolicy, int MeshType >
 void check_for_all_nodes_ij( )
 {
   SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
-            << internal::mesh_type_name< MeshType >::name() );
+            << internal::mesh_type< MeshType >::name() );
   
   constexpr IndexType N = 20;
   const double lo[] = { -10, -10 };
@@ -95,7 +96,8 @@ void check_for_all_nodes_ij( )
   UniformMesh uniform_mesh( lo, hi, N, N );
 
   // STEP 0: create the test mesh
-  Mesh* test_mesh = internal::create_mesh< MeshType >( uniform_mesh );
+  using MESH = typename internal::mesh_type< MeshType >::MeshType;
+  MESH* test_mesh = dynamic_cast< MESH* >( internal::create_mesh< MeshType >( uniform_mesh ) ); 
   EXPECT_TRUE( test_mesh != nullptr );
 
   const IndexType numNodes = test_mesh->getNumberOfNodes();
@@ -104,14 +106,12 @@ void check_for_all_nodes_ij( )
   IndexType* jcoords = utilities::alloc< IndexType >( numNodes );
 
   for_all_nodes< ExecPolicy, xargs::ij >( test_mesh,
-                                                      AXOM_LAMBDA( IndexType
-                                                                   nodeIdx,
-                                                                   IndexType i,
-                                                                   IndexType j )
+    AXOM_LAMBDA( IndexType nodeIdx, IndexType i, IndexType j )
     {
       icoords[ nodeIdx ] = i;
       jcoords[ nodeIdx ] = j;
-    } );
+    }
+  );
 
   IndexType inode = 0;
   for ( IndexType j=0 ; j < N ; ++j )
@@ -138,7 +138,7 @@ template < typename ExecPolicy, int MeshType >
 void check_for_all_nodes_ijk( )
 {
   SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
-            << internal::mesh_type_name< MeshType >::name() );
+            << internal::mesh_type< MeshType >::name() );
 
   constexpr IndexType N = 20;
   const double lo[] = { -10, -10, -10 };
@@ -146,7 +146,8 @@ void check_for_all_nodes_ijk( )
   UniformMesh uniform_mesh( lo, hi, N, N, N );
 
   // STEP 0: create the test mesh
-  Mesh* test_mesh = internal::create_mesh< MeshType >( uniform_mesh );
+  using MESH = typename internal::mesh_type< MeshType >::MeshType;
+  MESH* test_mesh = dynamic_cast< MESH* >( internal::create_mesh< MeshType >( uniform_mesh ) ); 
   EXPECT_TRUE( test_mesh != nullptr );
 
   const IndexType numNodes = test_mesh->getNumberOfNodes();
@@ -156,16 +157,13 @@ void check_for_all_nodes_ijk( )
   IndexType* kcoords = utilities::alloc< IndexType >( numNodes );
 
   for_all_nodes< ExecPolicy, xargs::ijk >( test_mesh,
-                                                       AXOM_LAMBDA( IndexType
-                                                                    nodeIdx,
-                                                                    IndexType i,
-                                                                    IndexType j,
-                                                                    IndexType k )
+    AXOM_LAMBDA( IndexType nodeIdx, IndexType i, IndexType j, IndexType k )
     {
       icoords[ nodeIdx ] = i;
       jcoords[ nodeIdx ] = j;
       kcoords[ nodeIdx ] = k;
-    } );
+    }
+  );
 
   IndexType inode = 0;
   for ( IndexType k=0 ; k < N ; ++k )
@@ -196,7 +194,7 @@ void check_for_all_nodes_ijk( )
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_nodes_xyz( )
 {
-  constexpr char* mesh_name = internal::mesh_type_name< MeshType, Topology >::name(); 
+  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name(); 
   SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
             << mesh_name );
 
@@ -206,7 +204,8 @@ void check_for_all_nodes_xyz( )
   UniformMesh uniform_mesh( lo, hi, N, N, N );
 
   // STEP 0: create the test mesh
-  Mesh* test_mesh = internal::create_mesh< MeshType, Topology >( uniform_mesh );
+  using MESH = typename internal::mesh_type< MeshType, Topology >::MeshType;
+  MESH* test_mesh = dynamic_cast< MESH* >( internal::create_mesh< MeshType, Topology >( uniform_mesh ) ); 
   EXPECT_TRUE( test_mesh != nullptr );
 
   // STEP 1: generate test coordinate arrays
@@ -246,7 +245,7 @@ void check_for_all_nodes_xyz( )
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_nodes_xy( )
 {
-  constexpr char* mesh_name = internal::mesh_type_name< MeshType, Topology >::name(); 
+  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name(); 
   SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
             << mesh_name );
 
@@ -256,7 +255,8 @@ void check_for_all_nodes_xy( )
   UniformMesh uniform_mesh( lo, hi, N, N );
 
   // STEP 0: create the test mesh
-  Mesh* test_mesh = internal::create_mesh< MeshType, Topology >( uniform_mesh );
+  using MESH = typename internal::mesh_type< MeshType, Topology >::MeshType;
+  MESH* test_mesh = dynamic_cast< MESH* >( internal::create_mesh< MeshType, Topology >( uniform_mesh ) ); 
   EXPECT_TRUE( test_mesh != nullptr );
 
   // STEP 1: generate test coordinate arrays
@@ -292,7 +292,7 @@ void check_for_all_nodes_xy( )
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_nodes_x( )
 {
-  constexpr char* mesh_name = internal::mesh_type_name< MeshType, Topology >::name(); 
+  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name(); 
   SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
             << mesh_name );
 
@@ -302,7 +302,8 @@ void check_for_all_nodes_x( )
   UniformMesh uniform_mesh( lo, hi, Ni );
 
   // STEP 0: create the test mesh
-  Mesh* test_mesh = internal::create_mesh< MeshType, Topology >( uniform_mesh );
+  using MESH = typename internal::mesh_type< MeshType, Topology >::MeshType;
+  MESH* test_mesh = dynamic_cast< MESH* >( internal::create_mesh< MeshType, Topology >( uniform_mesh ) ); 
   EXPECT_TRUE( test_mesh != nullptr );
 
   if ( MeshType != PARTICLE_MESH )
@@ -313,11 +314,12 @@ void check_for_all_nodes_x( )
   // STEP 1: generate test coordinate arrays
   const IndexType numNodes = uniform_mesh.getNumberOfNodes();
   double* x = axom::utilities::alloc< double >( numNodes );
-  for_all_nodes< ExecPolicy, xargs::x >(
-    test_mesh, AXOM_LAMBDA( IndexType idx, double xx )
+  for_all_nodes< ExecPolicy, xargs::x >( test_mesh,
+    AXOM_LAMBDA( IndexType idx, double xx )
     {
       x[ idx ] = xx;
-    } );
+    }
+  );
 
   // STEP 2:check coordinate arrays
   for ( int inode=0 ; inode < numNodes ; ++inode )
