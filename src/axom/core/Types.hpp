@@ -66,8 +66,6 @@ using IndexType = common::int64;
 using IndexType = common::int32;
 #endif
 
-constexpr IndexType USE_DEFAULT = -1;
-
 } // end namespace axom
 
 

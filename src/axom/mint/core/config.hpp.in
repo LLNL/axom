@@ -27,6 +27,7 @@ namespace axom
 namespace mint
 {
 
+constexpr IndexType USE_DEFAULT = -1;
 using IndexType = axom::IndexType;
 
 using int64 = common::int64;

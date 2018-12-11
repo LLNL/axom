@@ -37,7 +37,7 @@ namespace internal
  * \brief Calculate the new capacity for an Array given an increase in the
  *  size.
  * \param [in] v, the Array in question.
- * \param [in] increase, the ammount the size will increase by
+ * \param [in] increase, the amount the size will increase by
  * \return the new capacity.
  */
 template < typename T >

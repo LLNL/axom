@@ -115,8 +115,8 @@ public:
    *  specified defaults to 1.
    * \param [in] capacity the number of tuples to allocate space for.
    *
-   * \note The last argument is optional. If not specified, the
-   *  capacity of the array will be initialized to
+   * \note The last argument is optional. If not specified or if less than
+   *  num_tuples, the capacity of the array will be initialized to
    *  num_tuples * DEFAULT_RESIZE_RATIO.
    *
    * \note The view is expected to be empty and will be populated to hold this
@@ -138,7 +138,7 @@ public:
    * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
   Array( View* view, axom::IndexType num_tuples, axom::IndexType num_components=1,
-         axom::IndexType capacity=USE_DEFAULT );
+         axom::IndexType capacity=0 );
 
 /// @}
 
@@ -219,8 +219,9 @@ protected:
   }
 
   /*!
-   * \brief Describes m_view as having dimensions
-   * (m_num_tuples, m_num_components).
+   * \brief Applies this Array's type and dimensions to the sidre View.
+   *
+   * Calls m_view->apply(sidreTypeId(), 2, {m_num_tuples, m_num_components}).
    */
   void describeView();
 
@@ -311,11 +312,11 @@ Array< T >::Array( View* view, axom::IndexType num_tuples,
                  "Components per tuple (" << this->m_num_components << ") " <<
                  "must be greater than 0." );
 
-  if ( capacity == USE_DEFAULT )
+  if ( capacity <= 0 )
   {
-    capacity =
-      ( this->m_num_tuples > utilities::Array<T>::MIN_DEFAULT_CAPACITY ) ?
-      this->m_num_tuples : utilities::Array<T>::MIN_DEFAULT_CAPACITY;
+    capacity = utilities::Array<T>::DEFAULT_RESIZE_RATIO *
+      ( this->m_num_tuples > utilities::Array<T>::MIN_DEFAULT_CAPACITY ?
+        this->m_num_tuples : utilities::Array<T>::MIN_DEFAULT_CAPACITY );
   }
   SLIC_ERROR_IF( this->m_num_tuples > capacity,
                  "Number of tuples (" << this->m_num_tuples << ") " <<

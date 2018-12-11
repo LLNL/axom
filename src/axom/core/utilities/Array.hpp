@@ -18,9 +18,9 @@
 #ifndef UTILITIES_ARRAY_HPP_
 #define UTILITIES_ARRAY_HPP_
 
+#include "axom/config.hpp"           // for compile-time defines
 #include "axom/core/Macros.hpp"      // for disable copy/assignment macro
 #include "axom/core/utilities/Utilities.hpp"  // for memory allocation functions
-#include "axom/config.hpp"           // for compile-time defines
 #include "axom/core/Types.hpp"       // for IndexType definition
 
 // C/C++ includes
@@ -111,8 +111,8 @@ public:
    *  specified defaults to 1.
    * \param [in] capacity the number of tuples to allocate space for.
    *
-   * \note If no capacity is specified then it will default to at least
-   *  num_tuples * DEFAULT_RESIZE_RATIO.
+   * \note If no capacity or capacity less than num_tuples is specified
+   *  then it will default to at least num_tuples * DEFAULT_RESIZE_RATIO.
    * \note a capacity is specified for the number of tuples to store in the
    *  array and does not correspond to the actual bytesize.
    *
@@ -125,7 +125,7 @@ public:
    * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
   Array( IndexType num_tuples, IndexType num_components=1,
-         IndexType capacity=USE_DEFAULT );
+         IndexType capacity=0 );
 
 /// @}
 
@@ -151,14 +151,14 @@ public:
    *
    * \note a capacity is specified for the number of tuples to store in the
    *  array and does not correspond to the actual bytesize.
-   * \note If no capacity is specified then it will default to the number of
-   *  tuples.
+   * \note If no capacity or capacity less than num_tuples is specified then
+   *  it will default to the number of tuples.
    *
    * \note This constructor wraps the supplied buffer and does not own the data.
    *  Consequently, the Array instance cannot be reallocated.
    */
   Array( T* data, IndexType num_tuples, IndexType num_components=1,
-         IndexType capacity=USE_DEFAULT );
+         IndexType capacity=0 );
 
 /// @}
 
@@ -185,22 +185,18 @@ public:
 
   inline T& operator()( IndexType pos, IndexType component=0 )
   {
-    if (pos < 0 || pos >= m_num_tuples ||
-        component < 0 || component >= m_num_components)
-    {
-      return m_data[ 0 ];
-    }
+#ifdef AXOM_DEBUG
+    assert(inBounds(pos, component));
+#endif // AXOM_DEBUG
 
     return m_data[ pos * m_num_components + component ];
   }
 
   inline const T& operator()( IndexType pos, IndexType component=0 ) const
   {
-    if (pos < 0 || pos >= m_num_tuples ||
-        component < 0 || component >= m_num_components)
-    {
-      return m_data[ 0 ];
-    }
+#ifdef AXOM_DEBUG
+    assert(inBounds(pos, component));
+#endif // AXOM_DEBUG
 
     return m_data[ pos * m_num_components + component ];
   }
@@ -221,20 +217,18 @@ public:
 
   T& operator[]( IndexType idx )
   {
-    if (idx < 0 || idx >= m_num_tuples * m_num_components)
-    {
-      return m_data[ 0 ];
-    }
+#ifdef AXOM_DEBUG
+    assert(inBounds(idx));
+#endif // AXOM_DEBUG
 
     return m_data[ idx ];
   }
 
   const T& operator[]( IndexType idx ) const
   {
-    if (idx < 0 || idx >= m_num_tuples * m_num_components)
-    {
-      return m_data[ 0 ];
-    }
+#ifdef AXOM_DEBUG
+    assert(inBounds(idx));
+#endif // AXOM_DEBUG
 
     return m_data[ idx ];
   }
@@ -464,6 +458,22 @@ protected:
    */
   virtual void dynamicRealloc( IndexType new_num_tuples );
 
+/// \name Internal bounds-checking routines
+/// @{
+
+  /*! \brief Test if pos and component are within bounds */
+  inline bool inBounds(IndexType pos, IndexType component)
+  {
+    return (pos >= 0 && pos < m_num_tuples) &&
+      (component >= 0 && component < m_num_components);
+  }
+
+  /*! \brief Test if idx is within bounds */
+  inline bool inBounds(IndexType idx)
+  {
+    return idx >= 0 && idx < m_num_tuples * m_num_components;
+  }
+/// @}
 
   T* m_data;
   IndexType m_num_tuples;
@@ -496,10 +506,10 @@ Array< T >::Array( IndexType num_tuples, IndexType num_components,
   if ( m_num_components <= 0 ) { m_num_components = 1; }
   if ( capacity < 0 || m_num_tuples > capacity )
   {
-    capacity = USE_DEFAULT; 
+    capacity = 0;
   }
 
-  if ( capacity == USE_DEFAULT )
+  if ( capacity == 0 )
   {
     capacity = ( m_num_tuples > MIN_DEFAULT_CAPACITY ) ?
                m_num_tuples : MIN_DEFAULT_CAPACITY;
@@ -518,14 +528,7 @@ Array< T >::Array( T* data, IndexType num_tuples, IndexType num_components,
   m_resize_ratio( 0.0 ),
   m_is_external( true )
 {
-  if ( capacity == USE_DEFAULT )
-  {
-    m_capacity = num_tuples;
-  }
-  else
-  {
-    m_capacity = capacity;
-  }
+  m_capacity = (capacity < num_tuples) ? num_tuples : capacity;
 }
 
 //------------------------------------------------------------------------------
