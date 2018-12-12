@@ -38,3 +38,19 @@ TEST(slic_interface,initialize_finalize)
   axom::slic::finalize();
   EXPECT_FALSE(axom::slic::isInitialized());
 }
+
+TEST(slic_interface,logging_level)
+{
+  axom::slic::initialize();
+
+  // test get and set for each level
+  for(int i=0 ; i < axom::slic::message::Num_Levels ; ++i)
+  {
+    axom::slic::message::Level lev = static_cast<axom::slic::message::Level>(i);
+
+    axom::slic::setLoggingMsgLevel(lev);
+    EXPECT_EQ(lev, axom::slic::getLoggingMsgLevel());
+  }
+
+  axom::slic::finalize();
+}

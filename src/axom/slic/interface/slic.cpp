@@ -79,6 +79,18 @@ std::string getActiveLoggerName()
 }
 
 //------------------------------------------------------------------------------
+message::Level getLoggingMsgLevel()
+{
+  if ( !isInitialized() )
+  {
+    std::cerr << "[ERROR]: slic::initialize() must be called first "
+              << "before making any other calls to SLIC.";
+    return message::Num_Levels;
+  }
+  return Logger::getActiveLogger()->getLoggingMsgLevel( );
+}
+
+//------------------------------------------------------------------------------
 void setLoggingMsgLevel( message::Level level )
 {
   if ( !isInitialized() )

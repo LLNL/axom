@@ -108,6 +108,15 @@ void SLIC_get_active_logger_name_bufferify(char* name, int Nname)
 // splicer end function.get_active_logger_name_bufferify
 }
 
+int SLIC_get_logging_msg_level()
+{
+// splicer begin function.get_logging_msg_level
+  axom::slic::message::Level SHCXX_rv = axom::slic::getLoggingMsgLevel();
+  int SHC_rv = static_cast<int>(SHCXX_rv);
+  return SHC_rv;
+// splicer end function.get_logging_msg_level
+}
+
 void SLIC_set_logging_msg_level(int level)
 {
 // splicer begin function.set_logging_msg_level

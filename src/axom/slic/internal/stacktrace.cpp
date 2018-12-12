@@ -83,15 +83,15 @@ std::string stacktrace( )
 std::string demangle( char* backtraceString, int frame )
 {
   char* mangledName = nullptr;
-  char* functionOffset = nullptr; 
+  char* functionOffset = nullptr;
   char* returnOffset = nullptr;
 
 #ifdef __APPLE__
-  /* On apple machines the mangled function name always starts at the 58th 
+  /* On apple machines the mangled function name always starts at the 58th
    * character */
   constexpr int APPLE_OFFSET = 58;
   mangledName = backtraceString + APPLE_OFFSET;
-  for ( char* p = backtraceString; *p ; ++p )
+  for ( char* p = backtraceString ; *p ; ++p )
   {
     if ( *p == '+' )
     {
@@ -121,7 +121,7 @@ std::string demangle( char* backtraceString, int frame )
   std::ostringstream oss;
 
   // if the line could be processed, attempt to demangle the symbol
-  if ( mangledName && functionOffset && returnOffset && 
+  if ( mangledName && functionOffset && returnOffset &&
        mangledName < functionOffset )
   {
     *mangledName = 0;
@@ -135,7 +135,7 @@ std::string demangle( char* backtraceString, int frame )
     ++returnOffset;
 
     int status;
-    char* realName = abi::__cxa_demangle( mangledName, nullptr, nullptr, 
+    char* realName = abi::__cxa_demangle( mangledName, nullptr, nullptr,
                                           &status );
 
     // if demangling is successful, output the demangled function name
@@ -148,10 +148,9 @@ std::string demangle( char* backtraceString, int frame )
     {
       oss << "Frame " << frame << ": " << mangledName << std::endl;
     }
-    
+
     free(realName);
   }
-
   // otherwise, print the whole line
   else
   {
@@ -163,8 +162,8 @@ std::string demangle( char* backtraceString, int frame )
 
 std::string stacktrace( )
 {
-  void *array[ MAX_FRAMES ];
-  
+  void* array[ MAX_FRAMES ];
+
   const int size = backtrace( array, MAX_FRAMES );
   char** strings = backtrace_symbols( array, size );
 

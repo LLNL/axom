@@ -63,6 +63,13 @@ class Logger
 public:
 
   /*!
+   * \brief Gets the currently set logging level.
+   *
+   * \return The currently set logging level.
+   */
+  message::Level getLoggingMsgLevel( );
+
+  /*!
    * \brief Sets the logging level to the given level. This controls which
    *  messages are logged based on severity. All messages with equal or higher
    *  severity to the given level will be logged.
