@@ -403,6 +403,12 @@ std::string getActiveLoggerName();
 void setLoggingMsgLevel( message::Level level );
 
 /*!
+ * \brief Gets the current logging level.
+ */
+message::Level getLoggingMsgLevel( );
+
+
+/*!
  * \brief Toggles the abort behavior for errors on the current active logger.
  * \param [in] status user-supplied flag.
  */

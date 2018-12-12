@@ -81,6 +81,24 @@ Logger::~Logger()
 }
 
 //------------------------------------------------------------------------------
+message::Level Logger::getLoggingMsgLevel( )
+{
+  int lev =0;
+  const int maxLevels = static_cast<int>(message::Num_Levels);
+
+  // find first disabled level
+  while(lev < maxLevels && m_isEnabled[ lev ])
+  {
+    ++lev;
+  }
+
+  // Subtract one level (with clamp) since we overshot by one
+  lev = axom::utilities::clampVal(lev-1, 0, maxLevels-1);
+
+  return static_cast<message::Level>( lev );
+}
+
+//------------------------------------------------------------------------------
 void Logger::setLoggingMsgLevel( message::Level level )
 {
   for ( int i=0 ; i < message::Num_Levels ; ++i )
