@@ -279,7 +279,9 @@ void check_for_all_cell_coords( int dimension )
       for ( int dim = 0; dim < dimension; ++dim )
       {
         test_mesh->getNode( cellNodes[ i ], nodeCoords );
-        EXPECT_EQ( coords[ cellID * dimension * MAX_CELL_NODES + i * dimension + dim ], nodeCoords[ dim ] );
+        EXPECT_NEAR( coords[ cellID * dimension * MAX_CELL_NODES + i * dimension + dim ], 
+                     nodeCoords[ dim ],
+                     1e-8 );
       }
     }
   }  // END for all cells
