@@ -56,6 +56,7 @@ declarations:
 - decl: void createLogger( const std::string& name, char imask )
 - decl: bool activateLogger( const std::string& name )
 - decl: std::string getActiveLoggerName()
+- decl: message::Level getLoggingMsgLevel()
 - decl: void setLoggingMsgLevel( message::Level level )
 
 - decl: void setAbortOnError( bool status )
