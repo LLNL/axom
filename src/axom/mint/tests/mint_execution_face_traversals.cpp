@@ -185,7 +185,9 @@ void check_for_all_face_coords( int dimension )
       for ( int dim = 0; dim < dimension; ++dim )
       {
         test_mesh->getNode( faceNodes[ i ], nodeCoords );
-        EXPECT_EQ( coords[ faceID * dimension * MAX_FACE_NODES + i * dimension + dim ], nodeCoords[ dim ] );
+        EXPECT_NEAR( coords[ faceID * dimension * MAX_FACE_NODES + i * dimension + dim ], 
+                     nodeCoords[ dim ],
+                     1e-8 );
       }
     }
   }  // END for all cells
