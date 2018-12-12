@@ -15,8 +15,8 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#ifndef UTILITIES_ARRAY_HPP_
-#define UTILITIES_ARRAY_HPP_
+#ifndef AXOM_ARRAY_HPP_
+#define AXOM_ARRAY_HPP_
 
 #include "axom/config.hpp"           // for compile-time defines
 #include "axom/core/Macros.hpp"      // for disable copy/assignment macro
@@ -183,18 +183,14 @@ public:
 
   inline T& operator()( IndexType pos, IndexType component=0 )
   {
-#ifdef AXOM_DEBUG
     assert(inBounds(pos, component));
-#endif // AXOM_DEBUG
 
     return m_data[ pos * m_num_components + component ];
   }
 
   inline const T& operator()( IndexType pos, IndexType component=0 ) const
   {
-#ifdef AXOM_DEBUG
     assert(inBounds(pos, component));
-#endif // AXOM_DEBUG
 
     return m_data[ pos * m_num_components + component ];
   }
@@ -215,18 +211,14 @@ public:
 
   T& operator[]( IndexType idx )
   {
-#ifdef AXOM_DEBUG
     assert(inBounds(idx));
-#endif // AXOM_DEBUG
 
     return m_data[ idx ];
   }
 
   const T& operator[]( IndexType idx ) const
   {
-#ifdef AXOM_DEBUG
     assert(inBounds(idx));
-#endif // AXOM_DEBUG
 
     return m_data[ idx ];
   }
@@ -701,4 +693,4 @@ inline void Array< T >::dynamicRealloc( IndexType new_num_tuples )
 
 } /* namespace axom */
 
-#endif /* UTILITIES_ARRAY_HPP_ */
+#endif /* AXOM_ARRAY_HPP_ */

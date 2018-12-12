@@ -25,8 +25,6 @@
 
 namespace axom
 {
-// namespace utilities
-// {
 
 const char IGNORE_OUTPUT[] = ".*";
 
@@ -1064,7 +1062,6 @@ TEST( core_array_DeathTest, checkExternal )
   }
 }
 
-// } /* end namespace mint */
 } /* end namespace axom */
 
 //------------------------------------------------------------------------------

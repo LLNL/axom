@@ -20,7 +20,7 @@
 
 // Axom includes
 #include "axom/core/Macros.hpp"        // for Axom macros
-#include "axom/core/Array.hpp"
+#include "axom/core/Array.hpp"         // for Array
 
 #ifdef AXOM_MINT_USE_SIDRE
 #include "axom/sidre/core/sidre.hpp"
