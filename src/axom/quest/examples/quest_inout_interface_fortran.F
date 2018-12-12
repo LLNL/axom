@@ -13,7 +13,7 @@
 !
 
 !-------------------------------------------------------------------------------
-! Simple Fortran example of quest usage.
+! Simple Fortran example of the quest_inout interface
 !
 ! NOTE: assumes a "sphere.stl" file exists in the working directory.
 !-------------------------------------------------------------------------------

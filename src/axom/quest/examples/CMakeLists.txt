@@ -43,8 +43,8 @@ blt_add_executable(
     )
 
 blt_add_executable(
-    NAME        quest_interface_ex
-    SOURCES     quest_interface.cpp
+    NAME        quest_inout_interface_ex
+    SOURCES     quest_inout_interface.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON  ${quest_example_depends}
     FOLDER      axom/quest/examples
@@ -54,14 +54,14 @@ blt_add_executable(
 set(quest_data_dir  ${CMAKE_CURRENT_SOURCE_DIR}/../data)
 if (ENABLE_MPI)
     blt_add_test(
-        NAME quest_interface_mpi_test
-        COMMAND quest_interface_ex ${quest_data_dir}/sphere_binary.stl
+        NAME quest_inout_interface_mpi_test
+        COMMAND quest_inout_interface_ex ${quest_data_dir}/sphere_binary.stl
         NUM_MPI_TASKS 2
         )
 else()
     blt_add_test(
-        NAME quest_interface_test
-        COMMAND quest_interface_ex ${quest_data_dir}/sphere_binary.stl
+        NAME quest_inout_interface_test
+        COMMAND quest_inout_interface_ex ${quest_data_dir}/sphere_binary.stl
         )
 endif()
 
@@ -80,26 +80,26 @@ if (ENABLE_FORTRAN)
                            PROPERTIES LINKER_LANGUAGE Fortran)
 
     blt_add_executable(
-        NAME        quest_interface_F_ex
-        SOURCES     quest_interface_fortran.F
+        NAME        quest_inout_interface_F_ex
+        SOURCES     quest_inout_interface_fortran.F
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
         DEPENDS_ON  ${quest_example_depends}
         FOLDER      axom/quest/examples
         )
 
-    set_target_properties(quest_interface_F_ex
+    set_target_properties(quest_inout_interface_F_ex
                           PROPERTIES LINKER_LANGUAGE Fortran)
 
     if (ENABLE_MPI)
         blt_add_test(
-            NAME quest_interface_mpi_F_test
-            COMMAND quest_interface_F_ex ${quest_data_dir}/sphere_binary.stl
+            NAME quest_inout_interface_mpi_F_test
+            COMMAND quest_inout_interface_F_ex ${quest_data_dir}/sphere_binary.stl
             NUM_MPI_TASKS 2
             )
     else()
         blt_add_test(
-            NAME quest_interface_F_test
-            COMMAND quest_interface_F_ex ${quest_data_dir}/sphere_binary.stl
+            NAME quest_inout_interface_F_test
+            COMMAND quest_inout_interface_F_ex ${quest_data_dir}/sphere_binary.stl
             )
     endif()
 endif()

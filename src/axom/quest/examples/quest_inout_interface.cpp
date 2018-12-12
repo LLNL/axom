@@ -16,10 +16,11 @@
  */
 
 /*!
- * \file quest_interface.cpp
+ * \file quest_inout_interface.cpp
  *
- * \brief Simple example that exercises the quest interface for point
- *        containment and signed distance queries.
+ * \brief Simple example that exercises the quest_inout interface which 
+ * determine if a point is contained within an enclosed volume defined 
+ * by a surface mesh.
  */
 
 // Axom includes
