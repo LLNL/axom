@@ -75,6 +75,8 @@ set( quest_sources
     stl/STLReader.cpp
 
     ## quest interface sources
+    interface/internal/QuestHelpers.cpp
+
     interface/quest.cpp
     interface/inout_query.cpp
     interface/signed_distance.cpp
