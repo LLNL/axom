@@ -58,6 +58,8 @@ bool SLIC_activate_logger_bufferify(const char* name, int Lname);
 
 void SLIC_get_active_logger_name_bufferify(char* name, int Nname);
 
+int SLIC_get_logging_msg_level();
+
 void SLIC_set_logging_msg_level(int level);
 
 void SLIC_set_abort_on_error(bool status);

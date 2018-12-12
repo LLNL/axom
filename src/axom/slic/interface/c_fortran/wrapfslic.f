@@ -94,6 +94,14 @@ module axom_slic
             integer(C_INT), value, intent(IN) :: Nname
         end subroutine c_get_active_logger_name_bufferify
 
+        function slic_get_logging_msg_level() &
+                result(SHT_rv) &
+                bind(C, name="SLIC_get_logging_msg_level")
+            use iso_c_binding, only : C_INT
+            implicit none
+            integer(C_INT) :: SHT_rv
+        end function slic_get_logging_msg_level
+
         subroutine slic_set_logging_msg_level(level) &
                 bind(C, name="SLIC_set_logging_msg_level")
             use iso_c_binding, only : C_INT
