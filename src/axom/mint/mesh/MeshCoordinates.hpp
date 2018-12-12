@@ -18,11 +18,16 @@
 #ifndef MINT_MESHCOORDINATES_HPP_
 #define MINT_MESHCOORDINATES_HPP_
 
-#include "axom/core/Macros.hpp"       // for Axom macros and definitions
-#include "axom/core/Array.hpp"        // for axom::Array
-#include "axom/sidre/core/Array.hpp"  // for sidre::Array
+#include "axom/core/Macros.hpp"            // for Axom macros and definitions
+#include "axom/core/Array.hpp"             // for axom::Array
 
-#include "axom/mint/config.hpp"       // for mint::IndexType
+#ifdef AXOM_MINT_USE_SIDRE
+#include "axom/sidre/core/Array.hpp"       // for sidre::Array
+#endif
+
+#include "axom/slic/interface/slic.hpp"    // for slic logging macros
+
+#include "axom/mint/config.hpp"            // for mint::IndexType
 
 namespace axom
 {
