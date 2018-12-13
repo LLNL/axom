@@ -255,7 +255,7 @@ protected:
 //------------------------------------------------------------------------------
 template< typename T >
 Array< T >::Array( View* view ) :
-  axom::Array<T>(0, 0, 0),
+  axom::Array<T>(),
   m_view( view )
 {
   SLIC_ERROR_IF( m_view == nullptr, "Provided View cannot be null." );

@@ -418,7 +418,7 @@ public:
       return nullptr;
     }
 
-    return static_cast<sidre::Array< IndexType > * const >(m_values)->
+    return static_cast<sidre::Array< IndexType >* >(m_values)->
       getView()->getOwningGroup()->getParent();
   }
 #endif

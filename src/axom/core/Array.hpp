@@ -97,11 +97,6 @@ public:
 /// @{
 
   /*!
-   * \brief Default constructor. Disabled.
-   */
-  Array() = delete;
-
-  /*!
    * \brief Constructs an Array instance with the given number of tuples.
    *
    * \param [in] num_tuples the number of tuples the Array holds.
@@ -414,6 +409,9 @@ public:
 
 protected:
 
+  /*! \brief Default constructor supports infrastructure in subclasses. */
+  Array();
+
   /*!
    * \brief Make space for a subsequent insertion into the array.
    *
@@ -483,6 +481,17 @@ protected:
 
 //------------------------------------------------------------------------------
 template< typename T >
+Array< T >::Array( ) :
+  m_data( nullptr ),
+  m_num_tuples( 0 ),
+  m_capacity( 0 ),
+  m_num_components( 1 ),
+  m_resize_ratio( DEFAULT_RESIZE_RATIO ),
+  m_is_external( false )
+{}
+
+//------------------------------------------------------------------------------
+template< typename T >
 Array< T >::Array( IndexType num_tuples, IndexType num_components,
                    IndexType capacity ) :
   m_data( nullptr ),
@@ -492,8 +501,9 @@ Array< T >::Array( IndexType num_tuples, IndexType num_components,
   m_resize_ratio( DEFAULT_RESIZE_RATIO ),
   m_is_external( false )
 {
-  if ( m_num_tuples < 0 ) { m_num_tuples = 0; }
-  if ( m_num_components <= 0 ) { m_num_components = 1; }
+  assert(m_num_tuples >= 0);
+  assert(m_num_components > 0);
+
   if ( capacity < 0 || m_num_tuples > capacity )
   {
     capacity = 0;
@@ -505,6 +515,15 @@ Array< T >::Array( IndexType num_tuples, IndexType num_components,
                m_num_tuples : MIN_DEFAULT_CAPACITY;
   }
   setCapacity( capacity );
+
+  // sanity checks
+  assert( capacity >= 0 );
+  if ( capacity > 0 )
+  {
+    assert( m_data != nullptr );
+  }
+  assert( m_num_tuples >= 0 );
+  assert( m_num_components >= 1 );
 }
 
 //------------------------------------------------------------------------------
@@ -519,6 +538,11 @@ Array< T >::Array( T* data, IndexType num_tuples, IndexType num_components,
   m_is_external( true )
 {
   m_capacity = (capacity < num_tuples) ? num_tuples : capacity;
+
+  assert( m_num_tuples >= 0 );
+  assert( m_num_components >= 1 );
+  assert( m_num_tuples <= m_capacity );
+  assert( m_data != nullptr || m_capacity <= 0 );
 }
 
 //------------------------------------------------------------------------------
@@ -538,7 +562,7 @@ Array< T >::~Array()
 template< typename T >
 inline void Array< T >::append( const T& value )
 {
-  if ( m_num_components != 1 ) { return; }
+  assert( m_num_components == 1 );
 
   IndexType new_size = m_num_tuples + 1;
   if ( new_size > m_capacity )
@@ -569,7 +593,9 @@ inline void Array< T >::append( const T* tuples, IndexType n )
 template< typename T >
 inline void Array< T >::set( const T* tuples, IndexType n, IndexType pos )
 {
-  if (tuples == nullptr || pos < 0 || pos + n > m_num_tuples ) { return; }
+  assert( tuples != nullptr );
+  assert( pos >= 0 );
+  assert( pos + n <= m_num_tuples );
 
   T* set_position = &m_data[ pos * m_num_components ];
   IndexType byte_size = n * m_num_components * sizeof(T);
@@ -580,8 +606,7 @@ inline void Array< T >::set( const T* tuples, IndexType n, IndexType pos )
 template< typename T >
 inline void Array< T >::insert( const T& value, IndexType pos )
 {
-  if (m_num_components != 1) { return; }
-
+  assert( m_num_components == 1 );
   reserveForInsert( 1, pos );
   m_data[ pos ] = value;
 }
@@ -590,8 +615,7 @@ inline void Array< T >::insert( const T& value, IndexType pos )
 template< typename T >
 inline void Array< T >::insert( const T* tuples, IndexType n, IndexType pos )
 {
-  if (tuples == nullptr) { return; }
-
+  assert( tuples != nullptr );
   T* insert_pos = reserveForInsert( n, pos );
   std::memcpy( insert_pos, tuples, n * m_num_components * sizeof(T) );
 }
@@ -609,7 +633,7 @@ inline void Array< T >::emplace( IndexType n, IndexType pos, const T& value )
 template< typename T >
 inline void Array< T >::resize( IndexType new_num_tuples )
 {
-  if (new_num_tuples < 0) { return; }
+  assert( new_num_tuples >= 0 );
 
   if ( new_num_tuples > m_capacity )
   {
@@ -623,7 +647,9 @@ inline void Array< T >::resize( IndexType new_num_tuples )
 template< typename T >
 inline T* Array< T >::reserveForInsert( IndexType n, IndexType pos )
 {
-  if (n < 0 || pos < 0 || pos > m_num_tuples) { return nullptr; }
+  assert( n >= 0 );
+  assert( pos >= 0 );
+  assert( pos <= m_num_tuples );
 
   if ( n == 0 )
   {
@@ -651,8 +677,8 @@ inline T* Array< T >::reserveForInsert( IndexType n, IndexType pos )
 template< typename T >
 inline void Array< T >::updateNumTuples( IndexType new_num_tuples )
 {
-  if (new_num_tuples < 0 || new_num_tuples > m_capacity) { return; }
-
+  assert( new_num_tuples >= 0 );
+  assert( new_num_tuples <= m_capacity );
   m_num_tuples = new_num_tuples;
 }
 
@@ -660,12 +686,14 @@ inline void Array< T >::updateNumTuples( IndexType new_num_tuples )
 template< typename T >
 inline void Array< T >::setCapacity( IndexType new_capacity )
 {
-  if (new_capacity < 0) { return; }
+  assert( new_capacity >= 0 );
 
   if ( m_is_external && new_capacity <= m_capacity )
   {
     return;
   }
+
+  assert(!m_is_external);
 
   m_capacity = new_capacity;
   if ( m_capacity < m_num_tuples )
@@ -674,21 +702,20 @@ inline void Array< T >::setCapacity( IndexType new_capacity )
   }
 
   m_data = utilities::realloc( m_data, m_capacity * m_num_components );
+  assert( m_data != nullptr || m_capacity <= 0 );
 }
 
 //------------------------------------------------------------------------------
 template< typename T >
 inline void Array< T >::dynamicRealloc( IndexType new_num_tuples )
 {
-  if (m_is_external || m_resize_ratio < 1.0)
-  {
-    // this should throw an error instead of just returning
-    return;
-  }
+  assert( !m_is_external );
+  assert( m_resize_ratio >= 1.0 );
 
   m_capacity = new_num_tuples * m_resize_ratio + 0.5;
 
   m_data = utilities::realloc( m_data, m_capacity * m_num_components );
+  assert( m_data != nullptr || m_capacity <= 0 );
 }
 
 } /* namespace axom */
