@@ -1,5 +1,6 @@
 #
 # API for Quest
+# Includes functions for quest's inout and signed_distance queries
 #
 copyright:
   -
@@ -17,7 +18,7 @@ copyright:
   -
 
 library: QUEST
-cxx_header: axom/quest/interface/quest.hpp axom/quest/interface/signed_distance.hpp
+cxx_header: axom/quest/interface/inout_query.hpp axom/quest/interface/signed_distance.hpp
 namespace: axom quest
 
 options:
@@ -42,30 +43,30 @@ typemap:
     cpp_if: ifdef AXOM_USE_MPI
 
 declarations:
-      ## Heaviside Function methods
-      - decl: void initialize( MPI_Comm comm, const std::string& fileName,
-                               bool requiresDistance, int ndims, int maxElements,
-                               int maxLevels )
+      ## InOut query methods
+      - decl: int inout_init( const std::string& fileName, MPI_Comm comm)
         format:
           function_suffix: _mpi
         cpp_if: ifdef AXOM_USE_MPI
-      - decl: void initialize( const std::string& fileName,
-                               bool requiresDistance, int ndims, int maxElements,
-                               int maxLevels )
+      - decl: int inout_init( const std::string& fileName)
         format:
           function_suffix: _serial
         cpp_if: ifndef AXOM_USE_MPI
 
-      - decl: int inside(double x, double y, double z=0.0)
-##    - decl: void inside( const double* xyz, int* in, int npoints )
+      - decl: bool inout_initialized()
 
-      - decl: void mesh_min_bounds(double* coords+dimension+intent(OUT))
-      - decl: void mesh_max_bounds(double* coords+dimension+intent(OUT))
-      - decl: void mesh_center_of_mass(double* coords+dimension+intent(OUT))
+      - decl: int inout_set_verbose( bool verbosity )
+      - decl: int inout_set_dimension( int dim )
 
-      - decl: void finalize()
+      - decl: bool inout_inside(double x, double y, double z=0.0)
 
-## Signed Distance Function API
+      - decl: int inout_mesh_min_bounds(double* coords+dimension+intent(OUT))
+      - decl: int inout_mesh_max_bounds(double* coords+dimension+intent(OUT))
+      - decl: int inout_mesh_center_of_mass(double* coords+dimension+intent(OUT))
+
+      - decl: int inout_finalize()
+
+      ## Signed Distance Function API
       - decl: int signed_distance_init( const std::string& file, MPI_Comm comm )
         format:
           function_suffix: _mpi
