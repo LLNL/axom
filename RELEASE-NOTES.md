@@ -18,6 +18,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added support for face data and face connectivity in the mint StructuredMesh classes.
 
 ### Removed
+- Moved mint::Array to axom::Array with sidre storage in sidre::Array;
+  also moved mint::IndexType to axom::IndexType.
 - Replaced sidre::SidreLength with sidre::IndexType.
 - Replaced usage of std::size_t in sidre with sidre::IndexType.
 - Added AXOM_ENABLE_EXPORTS which enables CMAKE_ENABLE_EXPORTS to allow demangled
