@@ -15,7 +15,7 @@
 !-------------------------------------------------------------------------------
 ! Simple Fortran example of the quest_inout interface
 !
-! NOTE: assumes a "sphere.stl" file exists in the working directory.
+! Usage: Pass in a single command line argument with the path to a surface mesh
 !-------------------------------------------------------------------------------
 
 module quest_interface_ex
@@ -73,61 +73,6 @@ contains
   end subroutine finalize_mpi
 
   !-------------------------------------------------------------------------------
-  ! run_distance_queries( rank )
-  !
-  ! Exercises the distance query functionality of quest on a given mpi rank
-  !-------------------------------------------------------------------------------
-  subroutine run_distance_queries()
-    implicit none
-
-    integer :: i, ins, rc
-    real(C_DOUBLE)  :: x, y, z, phi
-    integer :: max_occupancy = 25
-    integer :: max_levels = 10
-    real(C_DOUBLE) :: lo(3), hi(3)
-    character(LEN=40) :: Format = "(I2, F6.2, F6.2, F6.2, F6.2, I3)"
-
-    if (rank == 0) then
-      write(*,*) "** Running distance queries using quest fortran interface"
-      write(*,*) "[rank, (x,y,z), dist, within]"
-    end if
-
-
-    !...initialize quest
-    call quest_signed_distance_set_max_levels( max_levels )
-    call quest_signed_distance_set_max_occupancy( max_occupancy )
-#ifdef AXOM_USE_MPI
-    rc = quest_signed_distance_init( FileName, MPI_COMM_WORLD )
-#else
-    rc = quest_signed_distance_init( FileName )
-#endif
-
-    if ( rc /= 0 ) then
-      stop 'signed_distance_init() failed!'
-    endif
-
-    call quest_signed_distance_get_mesh_bounds( lo, hi)
-
-    !... Create random pts and query surface distance and containment
-    do i=1,num_pts + 1
-
-      x = random_double( lo(1), hi(1) )
-      y = random_double( lo(2), hi(2) )
-      z = random_double( lo(3), hi(3) )
-
-      phi = quest_signed_distance_evaluate( x, y, z )
-      ins = phi / abs(phi)
-
-      write(*,Format) rank, x, y, z, phi, ins
-    end do
-
-    !...finalize quest
-    call quest_signed_distance_finalize()
-
-  end subroutine run_distance_queries
-
-
-  !-------------------------------------------------------------------------------
   ! run_containment_queries( rank )
   !
   ! Exercises the containment query functionality of quest on a given mpi rank
@@ -135,28 +80,34 @@ contains
   subroutine run_containment_queries()
     implicit none
 
-    integer :: i, ins
+    integer :: i, rc
+    logical :: ins
     real(C_DOUBLE)  :: x, y, z
-    integer :: unused = -1
     real(C_DOUBLE) :: mesh_bb_min(3), mesh_bb_max(3), mesh_center_of_mass(3)
-    character(LEN=40) :: Format = "(I2, F6.2, F6.2, F6.2, I3)"
+    character(LEN=40) :: Format = "(I4, F8.2, F8.2, F8.2, L3)"
+
+
+    rc = quest_inout_set_verbose(.TRUE.)
 
     if (rank == 0) then
-      write(*,*) "** Running containment queries using quest fortran interface"
-      write(*,*) "[rank, (x,y,z), within]"
+      write(*,*) "** Initializing quest inout query"
     end if
-
 
     !...initialize quest
 #ifdef AXOM_USE_MPI
-    call quest_initialize( MPI_COMM_WORLD, FileName, .false., dim, unused, unused )
+    rc = quest_inout_init( FileName, MPI_COMM_WORLD )
 #else
-    call quest_initialize( FileName, .false., dim, unused, unused )
+    rc = quest_inout_init( FileName )
 #endif
 
-    call quest_mesh_min_bounds(mesh_bb_min)
-    call quest_mesh_max_bounds(mesh_bb_max)
-    call quest_mesh_center_of_mass(mesh_center_of_mass)
+    if (rank == 0) then
+      write(*,*) "** Running containment queries using quest fortran interface"
+      write(*,*) "[rank, (  x,  y,  z),   inside?]"
+    end if
+
+    rc = quest_inout_mesh_min_bounds(mesh_bb_min)
+    rc = quest_inout_mesh_max_bounds(mesh_bb_max)
+    rc = quest_inout_mesh_center_of_mass(mesh_center_of_mass)
 
     !... Create random pts and query surface distance and containment
     do i=1,num_pts + 1
@@ -170,13 +121,13 @@ contains
         z = random_double( mesh_bb_min(3), mesh_bb_max(3) )
       end if
 
-      ins = quest_inside(x,y,z)
+      ins = quest_inout_inside(x,y,z)
 
       write(*,Format) rank, x, y, z, ins
     end do
 
     !...finalize quest
-    call quest_finalize()
+    rc = quest_inout_finalize()
   end subroutine run_containment_queries
 
 end module quest_interface_ex
@@ -190,18 +141,22 @@ program quest_fortran
   use quest_interface_ex
 
   implicit none
-  integer len_name
+  integer len_name, arg_count
 
   call init_mpi()
+
+  ! Parse command line arguments
+  arg_count = command_argument_count()
+  if (arg_count /= 1) then 
+    write(*,*) "Usage: [mpiriun -np N] ./quest_inout_interface_F_ex <stl_file>"
+    stop 1
+  end if
 
   call get_command_argument(1, length=len_name)
   allocate(character(len_name):: FileName)
   call get_command_argument(1, FileName)
 
-  !...exercise the distance functions in quest module
-  call run_distance_queries()
-
-  !...exercise the containment functions in quest module
+  !...exercise the inout query functions in quest module
   call run_containment_queries()
 
   deallocate(FileName)
