@@ -109,6 +109,7 @@ struct InOutHelper
     if(slic::isInitialized())
     {
       slic::setLoggingMsgLevel(m_state.m_previousLevel);
+      slic::flushStreams();
     }
   }
 
@@ -314,6 +315,29 @@ int inout_set_verbose(bool verbosity)
 
   return QUEST_INOUT_SUCCESS;
 }
+
+int inout_set_dimension(int dimension)
+{
+  if(inout_initialized())
+  {
+    SLIC_WARNING( "quest inout query must NOT be initialized "
+                  << "prior to calling 'inout_set_verbose'");
+
+    return QUEST_INOUT_FAILED;
+  }
+
+  if(dimension != 3)
+  {
+    SLIC_WARNING("quest_inout_query only currently supported on 3D meshes."
+                 << " Supplied dimension parameter was " << dimension);
+
+    return QUEST_INOUT_FAILED;
+  }
+
+  return QUEST_INOUT_SUCCESS;
+}
+
+
 
 int inout_mesh_min_bounds(double* coords)
 {
