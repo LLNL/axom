@@ -187,6 +187,9 @@ struct InOutHelper
     m_inoutTree = new InOutOctree<DIM>(m_meshBoundingBox, m_surfaceMesh);
     m_inoutTree->generateIndex();
 
+    // Update the mesh parameter since the InOutOctree modifies the mesh
+    mesh = m_surfaceMesh;
+
     this->restoreLoggingLevel();
 
     // set the initialized flag to true

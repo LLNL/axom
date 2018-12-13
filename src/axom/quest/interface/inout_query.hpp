@@ -44,9 +44,37 @@ constexpr int QUEST_INOUT_FAILED = -1;
 /// \name Functions related to initializing and finalizing the InOut query
 /// @{
 
+/*!
+ * \brief Initialize the inout query from a mesh file
+ *
+ * \param [in] file Path to an STL file containing the surface mesh
+ * \param comm The MPI communicator
+ * \return rc Return code indicating success of the operation
+ *
+ * \pre inout_initialized() == false
+ * \post inout_initialized() == true when rc is QUEST_INOUT_SUCCESS
+ */
 int inout_init(const std::string& file, MPI_Comm comm = MPI_COMM_SELF);
+
+/*!
+ * \brief Initialize the inout query using a pre-loaded mesh
+ *
+ * \param [inout] mesh The input mesh. Note: This pointer will be updated
+ * during this invocation
+ * \param comm The MPI communicator
+ * \return rc Return code indicating success of the operation
+ *
+ * \pre inout_initialized() == false
+ * \post inout_initialized() == true when rc is QUEST_INOUT_SUCCESS
+ * \note The underlying data structure modifies the input mesh (e.g.
+ * by welding vertices) and updates the \a mesh pointer. It is the user's
+ * responsibility to update any other pointers to this same mesh.
+ */
 int inout_init(mint::Mesh*& mesh, MPI_Comm comm = MPI_COMM_SELF);
 
+/*!
+ * \brief Finalizes the inout query
+ */
 int inout_finalize();
 
 /// @}
