@@ -14,9 +14,6 @@
 
 set( mint_tests
 
-     ## core tests
-     mint_core_array.cpp
-
      ## execution model tests
      mint_execution_cell_traversals.cpp
      mint_execution_forall_traversals.cpp

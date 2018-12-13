@@ -36,6 +36,7 @@ endif()
 # Add the sidre sources
 ################################
 set(sidre_headers
+    core/Array.hpp
     core/Buffer.hpp
     core/Group.hpp
     core/DataStore.hpp

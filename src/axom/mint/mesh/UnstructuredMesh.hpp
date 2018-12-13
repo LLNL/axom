@@ -24,7 +24,6 @@
 
 // Mint includes
 #include "axom/mint/config.hpp"
-#include "axom/mint/core/Array.hpp"
 #include "axom/mint/mesh/CellTypes.hpp"
 #include "axom/mint/mesh/ConnectivityArray.hpp"
 #include "axom/mint/mesh/Mesh.hpp"

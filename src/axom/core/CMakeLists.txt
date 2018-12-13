@@ -39,6 +39,7 @@ set(core_headers
     numerics/matvecops.hpp
     numerics/polynomial_solvers.hpp
 
+    Array.hpp
     Macros.hpp
     Types.hpp
     )

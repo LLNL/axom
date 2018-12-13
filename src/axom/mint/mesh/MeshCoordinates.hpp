@@ -18,10 +18,16 @@
 #ifndef MINT_MESHCOORDINATES_HPP_
 #define MINT_MESHCOORDINATES_HPP_
 
-#include "axom/core/Macros.hpp" // for Axom macros and definitions
+#include "axom/core/Macros.hpp"            // for Axom macros and definitions
+#include "axom/core/Array.hpp"             // for axom::Array
 
-#include "axom/mint/config.hpp" // for mint::IndexType
-#include "axom/mint/core/Array.hpp"  // for mint::Array
+#ifdef AXOM_MINT_USE_SIDRE
+#include "axom/sidre/core/Array.hpp"       // for sidre::Array
+#endif
+
+#include "axom/slic/interface/slic.hpp"    // for slic logging macros
+
+#include "axom/mint/config.hpp"            // for mint::IndexType
 
 namespace axom
 {
@@ -109,9 +115,10 @@ static constexpr int Z_COORDINATE = 2;
  *  Use `reserve()` when the number of nodes is known a priori, or opt to
  *  use a constructor that takes an actual size and capacity when possible.
  *
- * \see mint::Array
+ * \see axom::Array
  * \see mint::Mesh
  * \see sidre::Group
+ * \see sidre::Array
  */
 class MeshCoordinates
 {
@@ -306,7 +313,7 @@ public:
   /*!
    * \brief Returns the resize ratio by which the capacity will increase.
    * \return N the ratio by which the capacity will increase
-   * \see mint::Array::getResizeRatio()
+   * \see Array::getResizeRatio()
    */
   double getResizeRatio() const
   { return m_coordinates[0]->getResizeRatio(); }
@@ -316,7 +323,7 @@ public:
    *  a dynamically re-allocation is triggered.
    *
    * \param [in] ratio the ratio by which the capacity will increase
-   * \see mint::Array::setResizeRatio()
+   * \see Array::setResizeRatio()
    */
   void setResizeRatio( double ratio );
 

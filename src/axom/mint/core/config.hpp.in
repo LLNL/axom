@@ -22,22 +22,13 @@
 
 #cmakedefine AXOM_MINT_USE_SIDRE
 
-#ifndef AXOM_NO_INT64_T
-#cmakedefine AXOM_MINT_USE_64BIT_INDEXTYPE
-#endif
-
 namespace axom
 {
 namespace mint
 {
 
-#ifdef AXOM_MINT_USE_64BIT_INDEXTYPE
-using IndexType = common::int64;
-#else
-using IndexType = common::int32;
-#endif
-
 constexpr IndexType USE_DEFAULT = -1;
+using IndexType = axom::IndexType;
 
 using int64 = common::int64;
 

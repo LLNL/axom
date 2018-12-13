@@ -18,13 +18,13 @@
 #include "axom/mint/mesh/MeshCoordinates.hpp"  // for mint::MeshCoordinates
 
 // Axom includes
-#include "axom/core/utilities/Utilities.hpp"  // for utilities::max()
-#include "axom/mint/config.hpp"           // for IndexType
-#include "axom/mint/core/Array.hpp"            // for mint::Array
-#include "axom/slic/interface/slic.hpp"             // for slic macros
+#include "axom/core/utilities/Utilities.hpp"   // for utilities::max()
+#include "axom/core/Array.hpp"                 // for axom::Array
+#include "axom/mint/config.hpp"                // for IndexType
+#include "axom/slic/interface/slic.hpp"        // for slic macros
 
 #ifdef AXOM_MINT_USE_SIDRE
-#include "axom/sidre/core/sidre.hpp"          // for sidre::Group, sidre::View
+#include "axom/sidre/core/sidre.hpp"           // for sidre::Group, sidre::View
 #endif
 
 // C/C++ includes
@@ -51,7 +51,7 @@ MeshCoordinates::MeshCoordinates( int dimension,
   IndexType max_capacity = -1;
   if ( capacity==USE_DEFAULT )
   {
-    const double ratio = mint::Array< double >::DEFAULT_RESIZE_RATIO;
+    const double ratio = Array< double >::DEFAULT_RESIZE_RATIO;
     max_capacity = utilities::max(
       DEFAULT_CAPACITY, static_cast< IndexType >( numNodes*ratio+0.5 ) );
   }
@@ -146,7 +146,7 @@ MeshCoordinates::MeshCoordinates( sidre::Group* group ) :
     coord_view->getShape( 2, dims );
     SLIC_ERROR_IF( dims[1] != 1, "number of components is expected to be 1" );
 
-    m_coordinates[ i ] = new Array< double >( coord_view );
+    m_coordinates[ i ] = new sidre::Array< double >( coord_view );
 
   } // END for all dimensions
 
@@ -174,7 +174,7 @@ MeshCoordinates::MeshCoordinates( sidre::Group* group, int dimension,
     const char* coord_name = coord_names[ dim ];
     sidre::View* coord_view = values->createView( coord_name );
     m_coordinates[ dim ] =
-      new Array< double > ( coord_view, numNodes, 1, capacity );
+      new sidre::Array< double > ( coord_view, numNodes, 1, capacity );
   }
 
 }

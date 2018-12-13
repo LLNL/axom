@@ -16,9 +16,9 @@
  */
 #include "axom/mint/mesh/RectilinearMesh.hpp"
 
-#include "axom/mint/core/Array.hpp"          // for mint::Array
+#include "axom/core/Array.hpp"               // for axom::Array
 #include "axom/mint/mesh/blueprint.hpp"      // for blueprint functions
-#include "axom/mint/config.hpp"         // for compile-time definitions
+#include "axom/mint/config.hpp"              // for compile-time definitions
 #include "axom/mint/mesh/MeshTypes.hpp"      // for STRUCTURED_RECTILINEAR_MESH
 
 #include "axom/mint/mesh/internal/MeshHelpers.hpp"    // for internal helper
@@ -82,7 +82,8 @@ RectilinearMesh::RectilinearMesh( sidre::Group* group,
   // initialize coordinates
   for ( int dim = 0 ; dim < m_ndims ; ++dim )
   {
-    m_coordinates[ dim ] = new Array< double >( c->getView( coords[ dim ] ) );
+    m_coordinates[ dim ] =
+      new sidre::Array< double >( c->getView( coords[ dim ] ) );
     SLIC_ERROR_IF( getNodeResolution( dim ) != m_coordinates[ dim ]->size(),
                    "coordinates size does not match rectilinear mesh extent" );
   }
@@ -116,7 +117,7 @@ void RectilinearMesh::allocateCoordsOnSidre()
   {
     IndexType N          = getNodeResolution( dim );
     sidre::View* view    = coordsgrp->createView( coords[ dim ] );
-    m_coordinates[ dim ] = new Array< double >( view, N, 1, N );
+    m_coordinates[ dim ] = new sidre::Array< double >( view, N, 1, N );
     m_coordinates[ dim ]->setResizeRatio( 0.0 );
   }
 

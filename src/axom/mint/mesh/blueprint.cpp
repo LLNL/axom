@@ -20,7 +20,6 @@
 #include "axom/core/Types.hpp"      // for nullptr
 
 // Mint includes
-#include "axom/mint/core/Array.hpp"      // for mint::Array
 #include "axom/mint/config.hpp"          // for AXOM_MINT_USE_SIDRE
 #include "axom/mint/mesh/MeshTypes.hpp"  // for mesh types
 

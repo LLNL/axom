@@ -377,7 +377,8 @@ public:
     size_t size = std::min(s1, s2);
     size_t i = 0;
 
-    while (i < size) {
+    while (i < size)
+    {
       if (v1[i] < v2[i]) { return true; }
       else if (v1[i] > v2[i]) { return false; }
 

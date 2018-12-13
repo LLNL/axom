@@ -30,6 +30,7 @@ set(gtest_sidre_tests
    sidre_native_layout.cpp
    sidre_attribute.cpp
    sidre_iterator.cpp
+   sidre_array.cpp
    )
 
 set(gtest_sidre_C_tests

@@ -22,8 +22,8 @@
 
 #include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"
+#include "axom/core/Array.hpp"
 #include "axom/mint/mesh/CellTypes.hpp"
-#include "axom/mint/core/Array.hpp"
 #include "axom/mint/config.hpp"
 #include "axom/mint/mesh/internal/ConnectivityArrayHelpers.hpp"
 #include "axom/slic/interface/slic.hpp"
@@ -86,14 +86,15 @@ public:
                      IndexType value_capacity=USE_DEFAULT ) :
     m_cell_type( cell_type ),
     m_values( nullptr ),
-    m_offsets( new Array< IndexType >( internal::ZERO, 1,
-                                       (ID_capacity ==
-                                        USE_DEFAULT) ? USE_DEFAULT : ID_capacity
-                                       + 1 ) )
+    m_offsets( new Array< IndexType >(
+                 axom::internal::ZERO, 1,
+                 (ID_capacity == USE_DEFAULT) ?
+                 USE_DEFAULT : ID_capacity + 1 ) )
   {
     IndexType new_value_capacity =
       internal::calcValueCapacity( 0, getIDCapacity(), 0, value_capacity );
-    m_values = new Array< IndexType >( internal::ZERO, 1, new_value_capacity );
+    m_values = new Array< IndexType >( axom::internal::ZERO,
+                                       1, new_value_capacity );
 
     m_offsets->append(0);
   }
@@ -141,10 +142,10 @@ public:
   {
     SLIC_ERROR_IF( n_IDs < 0, "Number of IDs must be positive, not " << n_IDs
                                                                      << "." );
-    m_offsets = new Array< IndexType >( offsets, n_IDs + 1, 1,
-                                        (ID_capacity ==
-                                         USE_DEFAULT) ? USE_DEFAULT : ID_capacity +
-                                        1 );
+    m_offsets =
+      new Array< IndexType >( offsets, n_IDs + 1, 1,
+                              (ID_capacity == USE_DEFAULT) ? USE_DEFAULT :
+                              ID_capacity + 1 );
 
     if ( n_IDs == 0 )
     {
@@ -223,17 +224,18 @@ public:
     SLIC_ASSERT( elems_group != nullptr );
 
     sidre::View* offsets_view = elems_group->getView( "offsets" );
-    m_offsets = new Array< IndexType >( offsets_view, 0, 1,
-                                        (ID_capacity ==
-                                         USE_DEFAULT) ? USE_DEFAULT : ID_capacity +
-                                        1 );
+    m_offsets =
+      new sidre::Array< IndexType >( offsets_view, 0, 1,
+                                     (ID_capacity == USE_DEFAULT) ?
+                                     USE_DEFAULT : ID_capacity + 1 );
     SLIC_ASSERT( m_offsets != nullptr );
     m_offsets->append(0);
 
     IndexType new_value_capacity =
       internal::calcValueCapacity( 0, getIDCapacity(), 0, value_capacity );
     sidre::View* connec_view = elems_group->getView( "connectivity" );
-    m_values = new Array< IndexType >( connec_view, 0, 1, new_value_capacity );
+    m_values =
+      new sidre::Array< IndexType >( connec_view, 0, 1, new_value_capacity );
     SLIC_ASSERT( m_values != nullptr );
   }
 
@@ -314,7 +316,8 @@ public:
    *  empty then MAX_CELL_NODES values are reserved for each ID. Otherwise the
    *  average number of values per ID are reserved for each ID.
    *
-   * \post getKeyCapacity() >= ID_capacity
+   * \post getIDCapacity() >= ID_capacity
+   * \post getValueCapacity() >= value_capacity
    */
   void reserve( IndexType ID_capacity, IndexType value_capacity=USE_DEFAULT )
   {
@@ -409,7 +412,8 @@ public:
       return nullptr;
     }
 
-    return m_values->getView()->getOwningGroup()->getParent();
+    return static_cast<sidre::Array< IndexType >* >(m_values)->
+      getView()->getOwningGroup()->getParent();
   }
 #endif
 

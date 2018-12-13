@@ -59,6 +59,13 @@ typedef double float64;
 
 
 } // end namespace core
+
+#ifdef AXOM_USE_64BIT_INDEXTYPE
+using IndexType = common::int64;
+#else
+using IndexType = common::int32;
+#endif
+
 } // end namespace axom
 
 
