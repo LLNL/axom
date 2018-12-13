@@ -137,13 +137,14 @@ public:
    * \post numComponents() == num_components
    * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
-  Array( View* view, axom::IndexType num_tuples, axom::IndexType num_components=1,
+  Array( View* view, axom::IndexType num_tuples,
+         axom::IndexType num_components=1,
          axom::IndexType capacity=0 );
 
 /// @}
 
   /*!
-   * Destructor. Frees the associated buffer unless the memory is owned by Sidre.
+   * Destructor.  Frees the associated buffer unless owned by Sidre.
    */
   virtual ~Array();
 

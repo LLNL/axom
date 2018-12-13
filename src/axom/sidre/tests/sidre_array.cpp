@@ -923,7 +923,8 @@ TEST( sidre_core_array, checkStorage )
 
   for ( axom::IndexType capacity = 2 ; capacity < 512 ; capacity *= 2 )
   {
-    for ( axom::IndexType n_components = 1 ; n_components <= 4 ; n_components++ )
+    for ( axom::IndexType n_components = 1 ; n_components <= 4 ;
+          n_components++ )
     {
       Array< int > v_int_sidre( root->createView( "int" ), ZERO, n_components,
                                 capacity );
@@ -947,7 +948,8 @@ TEST( sidre_core_array, checkFill )
   for ( axom::IndexType capacity = 2 ; capacity < 512 ; capacity *= 2 )
   {
     axom::IndexType size = capacity / 2;
-    for ( axom::IndexType n_components = 1 ; n_components <= 4 ; n_components++ )
+    for ( axom::IndexType n_components = 1 ; n_components <= 4 ;
+          n_components++ )
     {
       Array< int > v_int_sidre( root->createView( "int" ), size, n_components,
                                 capacity );
@@ -971,7 +973,8 @@ TEST( sidre_core_array, checkSet )
   for ( axom::IndexType capacity = 2 ; capacity < 512 ; capacity *= 2 )
   {
     axom::IndexType size = capacity / 2;
-    for ( axom::IndexType n_components = 1 ; n_components <= 4 ; n_components++ )
+    for ( axom::IndexType n_components = 1 ; n_components <= 4 ;
+          n_components++ )
     {
       Array< int > v_int_sidre( root->createView( "int" ), size, n_components,
                                 capacity );
@@ -998,7 +1001,8 @@ TEST( sidre_core_array, checkResize )
   {
     for ( axom::IndexType capacity = 2 ; capacity <= 512 ; capacity *= 2 )
     {
-      for ( axom::IndexType n_components = 1 ; n_components <= 4 ; n_components++ )
+      for ( axom::IndexType n_components = 1 ; n_components <= 4 ;
+            n_components++ )
       {
         Array< int > v_int_sidre( root->createView( "int" ), ZERO,
                                   n_components, capacity );
@@ -1040,7 +1044,8 @@ TEST( sidre_core_array, checkInsert )
   {
     for ( axom::IndexType capacity = 2 ; capacity <= 512 ; capacity *= 2 )
     {
-      for ( axom::IndexType n_components = 1 ; n_components <= 3 ; n_components++ )
+      for ( axom::IndexType n_components = 1 ; n_components <= 3 ;
+            n_components++ )
       {
         Array< int > v_int_sidre( root->createView("int"), ZERO, n_components,
                                   capacity );
@@ -1070,7 +1075,8 @@ TEST( sidre_core_array, checkEmplace )
   {
     for ( axom::IndexType capacity = 2 ; capacity <= 512 ; capacity *= 2 )
     {
-      for ( axom::IndexType n_components = 1 ; n_components <= 3 ; n_components++ )
+      for ( axom::IndexType n_components = 1 ; n_components <= 3 ;
+            n_components++ )
       {
         Array< int > v_int_sidre( root->createView("int"), ZERO, n_components,
                                   capacity );
@@ -1102,7 +1108,8 @@ TEST( sidre_core_array, checkSidre )
   {
     for ( axom::IndexType capacity = 2 ; capacity <= 512 ; capacity *= 2 )
     {
-      for ( axom::IndexType n_components = 1 ; n_components <= 3 ; n_components++ )
+      for ( axom::IndexType n_components = 1 ; n_components <= 3 ;
+            n_components++ )
       {
         Array< int > v_int( root->createView("int"), ZERO, n_components,
                             capacity );
@@ -1137,7 +1144,8 @@ TEST( sidre_core_array, checkSidrePermanence)
   {
     for ( axom::IndexType capacity = 2 ; capacity <= 512 ; capacity *= 2 )
     {
-      for ( axom::IndexType n_components = 1 ; n_components <= 3 ; n_components++ )
+      for ( axom::IndexType n_components = 1 ; n_components <= 3 ;
+            n_components++ )
       {
         const double* array_data_ptr;
         axom::IndexType num_values;

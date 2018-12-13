@@ -453,7 +453,7 @@ protected:
   inline bool inBounds(IndexType pos, IndexType component)
   {
     return (pos >= 0 && pos < m_num_tuples) &&
-      (component >= 0 && component < m_num_components);
+           (component >= 0 && component < m_num_components);
   }
 
   /*! \brief Test if idx is within bounds */
