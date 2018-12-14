@@ -41,32 +41,34 @@ namespace quest
 constexpr int QUEST_INOUT_SUCCESS = 0;
 constexpr int QUEST_INOUT_FAILED = -1;
 
-/// \name Functions related to initializing and finalizing the InOut query
+/// \name InOut query initialization and finalizing functions
 /// @{
 
 /*!
- * \brief Initialize the inout query from a mesh file
+ * \brief Initializes the quest inout query from a mesh file
  *
  * \param [in] file Path to an STL file containing the surface mesh
- * \param comm The MPI communicator
- * \return rc Return code indicating success of the operation
+ * \param [in] comm The MPI communicator (when running in parallel)
+ * \return Return code is QUEST_INOUT_SUCCESS if successful
+ *  and QUEST_INOUT_FAILED otherwise.
  *
  * \pre inout_initialized() == false
- * \post inout_initialized() == true when rc is QUEST_INOUT_SUCCESS
+ * \post inout_initialized() == true, when rc is QUEST_INOUT_SUCCESS
  */
 int inout_init(const std::string& file, MPI_Comm comm = MPI_COMM_SELF);
 
 /*!
  * \brief Initialize the inout query using a pre-loaded mesh
  *
- * \param [inout] mesh The input mesh. Note: This pointer will be updated
- * during this invocation
- * \param comm The MPI communicator
- * \return rc Return code indicating success of the operation
+ * \param [inout] mesh Pointer to the input mesh. This pointer will
+ * be updated during this invocation
+ * \param [in] comm The MPI communicator (when running in parallel)
+ * \return Return code is QUEST_INOUT_SUCCESS if successful
+ *  and QUEST_INOUT_FAILED otherwise.
  *
  * \pre inout_initialized() == false
- * \post inout_initialized() == true when rc is QUEST_INOUT_SUCCESS
- * \note The underlying data structure modifies the input mesh (e.g.
+ * \post inout_initialized() == true, when rc is QUEST_INOUT_SUCCESS
+ * \warning The underlying data structure modifies the input mesh (e.g.
  * by welding vertices) and updates the \a mesh pointer. It is the user's
  * responsibility to update any other pointers to this same mesh.
  */
@@ -74,11 +76,10 @@ int inout_init(mint::Mesh*& mesh, MPI_Comm comm = MPI_COMM_SELF);
 
 /*!
  * \brief Finalizes the inout query
+ *
+ * \post inout_initialized() == false
  */
 int inout_finalize();
-
-/// @}
-
 
 /*!
  * \brief Predicate to test whether the inout query has been initialized
@@ -87,15 +88,23 @@ int inout_finalize();
  */
 bool inout_initialized();
 
+/// @}
+
+
+
+/// \name InOut query querying functions
+/// \note These must be called after initializing the query
+/// @{
 
 
 /*!
  * \brief Tests if the point (\a x, \a y, \a z) is inside the contained volume
  *
- * \param x The x-coordinate of the query point
- * \param y The y-coordinate of the query point
- * \param z The z-coordinate of the query point
+ * \param [in] x The x-coordinate of the query point
+ * \param [in] y The y-coordinate of the query point
+ * \param [in] z The z-coordinate of the query point
  * \return True if the point is within the contained volume, false otherwise.
+ * \pre inout_initialized() == true
  */
 bool inout_inside(double x, double y, double z=0.);
 
@@ -103,8 +112,8 @@ bool inout_inside(double x, double y, double z=0.);
  * \brief Tests an array of points for containment
  *
  * Upon successful completion, entries in array \a res
- * will be \a true for points that are inside the enclosed volume
- * and \a false otherwise.
+ * will have the value 1 for points that are inside
+ * and value 0 otherwise.
  *
  * \param [in] x Array of x-coordinates for the query points
  * \param [in] y Array of y-coordinates for the query points
@@ -115,28 +124,31 @@ bool inout_inside(double x, double y, double z=0.);
  * \return Return code is QUEST_INOUT_SUCCESS if successful
  *  and QUEST_INOUT_FAILED otherwise.
  *
- *  \pre When \a npoints is greater than zero, arrays \a x, \a y, \a z
- *  and \a res are not nullptr and contain sufficient data/space for
+ * \pre inout_initialized() == true
+ * \pre When \a npoints is greater than zero, arrays \a x, \a y, \a z
+ *  and \a res are not \a nullptr and contain sufficient data/space for
  *  \a npoints points.
  */
 int inout_inside(const double* x,const double* y,const double* z,
                  int npoints, int* res);
 
 /*!
- * \brief Returns the lower coordinates of a bounding box containing the mesh
+ * \brief Returns the lower coordinates of the mesh's bounding box
  *
- * \param coords A buffer for the coordinates
+ * \param [in] coords A buffer for the coordinates
  * \pre \a coords != nullptr and has sufficient storage for the coordinates
+ * \pre inout_initialized() == true
  * \return Return code is QUEST_INOUT_SUCCESS if successful
  *  and QUEST_INOUT_FAILED otherwise.
  */
 int inout_mesh_min_bounds(double* coords);
 
 /*!
- * \brief Returns the upper coordinates of a bounding box containing the mesh
+ * \brief Returns the upper coordinates of the mesh's bounding box
  *
- * \param coords A buffer for the coordinates
+ * \param [in] coords A buffer for the coordinates
  * \pre \a coords != nullptr and has sufficient storage for the coordinates
+ * \pre inout_initialized() == true
  * \return Return code is QUEST_INOUT_SUCCESS if successful
  *  and QUEST_INOUT_FAILED otherwise.
  */
@@ -149,14 +161,18 @@ int inout_mesh_max_bounds(double* coords);
  * mesh coordinates rather than a continuous center of mass defined by the mesh
  * faces.
  *
- * \param coords A buffer for the coordinates
+ * \param [in] coords A buffer for the coordinates
  * \pre \a coords != nullptr and has sufficient storage for the coordinates
+ * \pre inout_initialized() == true
  * \return Return code is QUEST_INOUT_SUCCESS if successful
  *  and QUEST_INOUT_FAILED otherwise.
  */
 int inout_mesh_center_of_mass(double* coords);
 
-/// \name Options for InOut query
+/// @}
+
+
+/// \name InOut query setup options
 /// \note These must be called before initializing the query
 /// @{
 
@@ -166,6 +182,7 @@ int inout_mesh_center_of_mass(double* coords);
  * \param verbosity True for more verbose, false
  * \return Return code is QUEST_INOUT_SUCCESS if successful
  *  and QUEST_INOUT_FAILED otherwise.
+ * \pre inout_initialized() == false
  */
 int inout_set_verbose(bool verbosity);
 
@@ -178,6 +195,7 @@ int inout_set_verbose(bool verbosity);
  * \warning The quest inout_query is only currently defined
  * for 3D meshes. This function is in anticipation of
  * support for 2D meshes.
+ * \pre inout_initialized() == false
  */
 int inout_set_dimension(int dimension);
 

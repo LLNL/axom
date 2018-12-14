@@ -25,8 +25,6 @@
 #include "axom/quest/geom/InOutOctree.hpp"
 
 
-#include <algorithm>  // for std::copy
-
 namespace axom
 {
 namespace quest
@@ -35,8 +33,12 @@ namespace quest
 namespace internal
 {
 /*!
- * \struct
+ * \struct InOutHelper
  * \brief A simple struct to hold the state of an InOut query
+ *
+ * This helper class is called by the quest::inout_query API functions.
+ * \warning This class has minimal error checking since we assume the calling
+ * functions have done the proper checks.
  */
 template<int DIM>
 struct InOutHelper
@@ -45,6 +47,9 @@ struct InOutHelper
   typedef primal::Point< double, DIM> SpacePt;
   typedef primal::Vector< double, DIM> SpaceVec;
 
+  /*!
+   * Parameter variables for the InOutQuery
+   */
   struct Parameters
   {
     bool m_verbose;
@@ -57,6 +62,9 @@ struct InOutHelper
     }
   };
 
+  /*!
+   * State variables for the InOutQuery
+   */
   struct State
   {
     bool m_initialized;
@@ -88,14 +96,23 @@ struct InOutHelper
     finalize();
   }
 
+  /*!
+   * Predicate to check if InOut query has been initialized
+   */
   bool isInitialized() const { return m_state.m_initialized; }
 
+  /*!
+   * Sets the verbosity parameter
+   */
   void setVerbose(bool verbose)
   {
     m_params.m_verbose=verbose;
   }
 
 
+  /*!
+   * Saves the current slic logging level
+   */
   void saveLoggingLevel()
   {
     if(slic::isInitialized())
@@ -104,6 +121,9 @@ struct InOutHelper
     }
   }
 
+  /*!
+   * Restores the saved slic logging level
+   */
   void restoreLoggingLevel()
   {
     if(slic::isInitialized())
@@ -113,6 +133,11 @@ struct InOutHelper
     }
   }
 
+  /*!
+   * Initializes the InOut query from an stl file
+   *
+   * \sa inout_init
+   */
   int initialize(const std::string& file, MPI_Comm comm)
   {
     mint::Mesh* mesh = nullptr;
@@ -132,6 +157,11 @@ struct InOutHelper
     return initialize(mesh, comm);
   }
 
+  /*!
+   * Initializes the InOut query from a preloaded mesh
+   *
+   * \sa inout_init
+   */
   int initialize(mint::Mesh*& mesh, MPI_Comm comm)
   {
     // initialize logger, if necessary
@@ -199,6 +229,11 @@ struct InOutHelper
     return QUEST_INOUT_SUCCESS;
   }
 
+  /*!
+   * Finalizes the InOut query
+   *
+   * \sa inout_finalize
+   */
   int finalize()
   {
     // deal with spatial index
@@ -228,21 +263,37 @@ struct InOutHelper
     return QUEST_INOUT_SUCCESS;
   }
 
+  /*!
+   * Returns the precomputed mesh bounding box
+   */
   const GeometricBoundingBox& getBoundingBox() const
   {
     return m_meshBoundingBox;
   }
 
+  /*!
+   * Returns the precomputed mesh center of mass
+   */
   const SpacePt& getCenterOfMass() const
   {
     return m_meshCenterOfMass;
   }
 
+  /*!
+   * Predicate to determine if a point is inside the surface
+   *
+   * \sa inout_inside
+   */
   bool within(double x, double y, double z) const
   {
     return m_inoutTree->within(SpacePt::make_point(x,y,z));
   }
 
+  /*!
+   * Batched containment query over an array of points
+   *
+   * \sa inout_inside
+   */
   int within(const double* x, const double* y, const double* z,
              int npoints, int* res) const
   {
@@ -262,14 +313,17 @@ private:
   InOutOctree<DIM>* m_inoutTree;
   GeometricBoundingBox m_meshBoundingBox;
   SpacePt m_meshCenterOfMass;
+
   Parameters m_params;
   State m_state;
 
 };
 } // end namespace internal
 
-// Static instance
+/// Static instance of the InOutHelper in 3D.
+/// Used by the quest::inout API functions
 static internal::InOutHelper<3> s_inoutHelper;
+
 
 bool inout_initialized()
 {
@@ -366,7 +420,7 @@ int inout_mesh_min_bounds(double* coords)
   SLIC_ERROR_IF(coords==nullptr, "supplied buffer 'coords' is null");
 
   auto& bbox = s_inoutHelper.getBoundingBox();
-  std::copy_n(bbox.getMin().data(), bbox.dimension(), coords);
+  bbox.getMin().array().to_array(coords);
 
   return QUEST_INOUT_SUCCESS;
 }
@@ -384,7 +438,7 @@ int inout_mesh_max_bounds(double* coords)
   SLIC_ERROR_IF(coords==nullptr, "supplied buffer 'coords' is null");
 
   auto& bbox = s_inoutHelper.getBoundingBox();
-  std::copy_n(bbox.getMax().data(), bbox.dimension(), coords);
+  bbox.getMax().array().to_array(coords);
 
   return QUEST_INOUT_SUCCESS;
 }
@@ -402,7 +456,7 @@ int inout_mesh_center_of_mass(double* coords)
   SLIC_ERROR_IF(coords==nullptr, "supplied buffer 'coords' is null");
 
   auto& cmass = s_inoutHelper.getCenterOfMass();
-  std::copy_n(cmass.data(), cmass.dimension(), coords);
+  cmass.array().to_array(coords);
 
   return QUEST_INOUT_SUCCESS;
 }
