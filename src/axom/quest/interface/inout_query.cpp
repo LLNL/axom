@@ -243,6 +243,20 @@ struct InOutHelper
     return m_inoutTree->within(SpacePt::make_point(x,y,z));
   }
 
+  int within(const double* x, const double* y, const double* z,
+             int npoints, int* res) const
+  {
+    #ifdef AXOM_USE_OPENMP
+    #pragma omp parallel for schedule(static)
+    #endif
+    for ( int i=0 ; i < npoints ; ++i )
+    {
+      bool ins = m_inoutTree->within(SpacePt::make_point(x[i],y[i],z[i]));
+      res[i] = ins ? 1 : 0;
+    }
+    return QUEST_INOUT_SUCCESS;
+  }
+
 private:
   mint::Mesh* m_surfaceMesh;
   InOutOctree<DIM>* m_inoutTree;
@@ -405,6 +419,26 @@ bool inout_inside(double x, double y, double z)
   }
 
   return s_inoutHelper.within(x,y,z);
+}
+
+int inout_inside(const double* x, const double* y, const double* z,
+                 int npoints, int* res)
+{
+  if(!inout_initialized())
+  {
+    SLIC_WARNING( "quest inout query must be initialized "
+                  << "prior to calling 'inout_get_mesh_bounds'");
+
+    return QUEST_INOUT_FAILED;
+  }
+
+  if(x==nullptr || y == nullptr || z == nullptr || res == nullptr)
+  {
+    SLIC_WARNING("supplied buffers must not be null");
+    return QUEST_INOUT_FAILED;
+  }
+
+  return s_inoutHelper.within(x,y,z, npoints, res);
 }
 
 } // end namespace quest

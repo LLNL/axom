@@ -98,12 +98,29 @@ bool inout_initialized();
  * \return True if the point is within the contained volume, false otherwise.
  */
 bool inout_inside(double x, double y, double z=0.);
-//void inout_evaluate(
-//    const double* x,
-//    const double* y,
-//    const double* z,
-//    int npoints,
-//    bool* res);
+
+/*!
+ * \brief Tests an array of points for containment
+ *
+ * Upon successful completion, entries in array \a res
+ * will be \a true for points that are inside the enclosed volume
+ * and \a false otherwise.
+ *
+ * \param [in] x Array of x-coordinates for the query points
+ * \param [in] y Array of y-coordinates for the query points
+ * \param [in] z Array of z-coordinates for the query points
+ * \param [in] npoints The number of points to test
+ * \param [out] res An array of results. Each entry has value \a 1
+ * if the corresponding point is inside and \a 0 otherwise.
+ * \return Return code is QUEST_INOUT_SUCCESS if successful
+ *  and QUEST_INOUT_FAILED otherwise.
+ *
+ *  \pre When \a npoints is greater than zero, arrays \a x, \a y, \a z
+ *  and \a res are not nullptr and contain sufficient data/space for
+ *  \a npoints points.
+ */
+int inout_inside(const double* x,const double* y,const double* z,
+                 int npoints, int* res);
 
 /*!
  * \brief Returns the lower coordinates of a bounding box containing the mesh
