@@ -54,7 +54,7 @@ set( quest_headers
     interface/internal/mpicomm_wrapper.hpp
     interface/internal/QuestHelpers.hpp
 
-    interface/inout_query.hpp
+    interface/inout.hpp
     interface/signed_distance.hpp
     
     )
@@ -76,7 +76,7 @@ set( quest_sources
     ## quest interface sources
     interface/internal/QuestHelpers.cpp
     
-    interface/inout_query.cpp
+    interface/inout.cpp
     interface/signed_distance.cpp
 
    )

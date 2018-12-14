@@ -71,7 +71,7 @@
 #include "axom/sidre.hpp"
 #include "axom/mint.hpp"
 
-#include "axom/quest/interface/inout_query.hpp"
+#include "axom/quest/interface/inout.hpp"
 #include "axom/quest/interface/signed_distance.hpp"
 
 #include "fmt/fmt.hpp"

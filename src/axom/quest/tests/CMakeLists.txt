@@ -82,7 +82,7 @@ endif()
 ##############################################################
 set(quest_mpi_tests
     quest_initialize.cpp
-    quest_inout_query_interface.cpp
+    quest_inout_interface.cpp
     quest_signed_distance_interface.cpp
     )
 
@@ -105,7 +105,7 @@ foreach(test ${quest_mpi_tests})
     if (${test_name} STREQUAL "quest_signed_distance_interface")
         set(_numMPITasks 1)
     endif()
-    if (${test_name} STREQUAL "quest_inout_query_interface")
+    if (${test_name} STREQUAL "quest_inout_interface")
         set(_numMPITasks 1)
     endif()
 

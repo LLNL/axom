@@ -18,7 +18,7 @@ copyright:
   -
 
 library: QUEST
-cxx_header: axom/quest/interface/inout_query.hpp axom/quest/interface/signed_distance.hpp
+cxx_header: axom/quest/interface/inout.hpp axom/quest/interface/signed_distance.hpp
 namespace: axom quest
 
 options:

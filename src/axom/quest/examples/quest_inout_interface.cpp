@@ -28,7 +28,7 @@
 #include "axom/slic.hpp"
 #include "axom/primal.hpp"
 
-#include "axom/quest/interface/inout_query.hpp"
+#include "axom/quest/interface/inout.hpp"
 
 #ifdef AXOM_USE_MPI
   #include <mpi.h>

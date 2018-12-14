@@ -14,7 +14,8 @@
  *
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-#include "axom/quest/interface/inout_query.hpp"
+
+#include "axom/quest/interface/inout.hpp"
 
 // Axom includes
 #include "axom/slic.hpp"
@@ -36,7 +37,7 @@ namespace internal
  * \struct InOutHelper
  * \brief A simple struct to hold the state of an InOut query
  *
- * This helper class is called by the quest::inout_query API functions.
+ * This helper class is called by the quest::inout API functions.
  * \warning This class has minimal error checking since we assume the calling
  * functions have done the proper checks.
  */
@@ -396,7 +397,7 @@ int inout_set_dimension(int dimension)
 
   if(dimension != 3)
   {
-    SLIC_WARNING("quest_inout_query only currently supported on 3D meshes."
+    SLIC_WARNING("quest_inout query only currently supported on 3D meshes."
                  << " Supplied dimension parameter was " << dimension);
 
     return QUEST_INOUT_FAILED;

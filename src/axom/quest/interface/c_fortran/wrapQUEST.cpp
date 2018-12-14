@@ -16,7 +16,7 @@
 #include "wrapQUEST.h"
 #include <stdlib.h>
 #include <string>
-#include "axom/quest/interface/inout_query.hpp"
+#include "axom/quest/interface/inout.hpp"
 #include "axom/quest/interface/signed_distance.hpp"
 #include "typesQUEST.h"
 

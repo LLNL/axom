@@ -192,7 +192,7 @@ int inout_set_verbose(bool verbosity);
  * \param dimension The spatial dimension
  * \return Return code is QUEST_INOUT_SUCCESS if successful
  *  and QUEST_INOUT_FAILED otherwise.
- * \warning The quest inout_query is only currently defined
+ * \warning The quest inout query is only currently defined
  * for 3D meshes. This function is in anticipation of
  * support for 2D meshes.
  * \pre inout_initialized() == false

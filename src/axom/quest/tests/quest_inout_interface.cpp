@@ -20,7 +20,7 @@
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/primal.hpp"
-#include "axom/quest/interface/inout_query.hpp"
+#include "axom/quest/interface/inout.hpp"
 #include "axom/quest/interface/internal/QuestHelpers.hpp" // for test that reads
                                                           // in a mesh without
                                                           // the interface

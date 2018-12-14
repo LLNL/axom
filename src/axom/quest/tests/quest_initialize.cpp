@@ -4,7 +4,7 @@
 #include "axom/mint.hpp"
 #include "quest_test_utilities.hpp"
 
-#include "axom/quest/interface/inout_query.hpp"
+#include "axom/quest/interface/inout.hpp"
 #include "axom/quest/interface/signed_distance.hpp"
 
 #ifdef AXOM_USE_MPI
