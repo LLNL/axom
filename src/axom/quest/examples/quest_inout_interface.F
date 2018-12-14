@@ -18,7 +18,7 @@
 ! Usage: Pass in a single command line argument with the path to a surface mesh
 !-------------------------------------------------------------------------------
 
-module quest_interface_ex
+module quest_inout_interface_ex
 
 #include "axom/config.hpp"
 
@@ -141,15 +141,15 @@ contains
     rc = quest_inout_finalize()
   end subroutine run_inout_queries
 
-end module quest_interface_ex
+end module quest_inout_interface_ex
 
 
 !-------------------------------------------------------------------------------
 ! Main Program
 !-------------------------------------------------------------------------------
-program quest_inout_fortran_ex
+program quest_inout_interface_fortran_ex
 
-  use quest_interface_ex
+  use quest_inout_interface_ex
 
   implicit none
   integer len_name, arg_count
