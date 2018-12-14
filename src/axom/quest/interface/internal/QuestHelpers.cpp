@@ -444,4 +444,3 @@ void logger_finalize( bool mustFinalize )
 } /* end namespace internal */
 } /* end namespace quest    */
 } /* end namespace axom     */
-

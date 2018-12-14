@@ -70,17 +70,17 @@ void raja_basic_usage_test( )
 
   // initialize
   RAJA::forall< execution_policy >( RAJA::RangeSegment(0,N), [=](int i) {
-    a[ i ] = b[ i ] = 1;
-    c[ i ] = 0;
-  } );
+      a[ i ] = b[ i ] = 1;
+      c[ i ] = 0;
+    } );
 
   // add vectors
   RAJA::forall< execution_policy >( RAJA::RangeSegment(0,N), [=](int i) {
-    c[ i ] = a[ i ] + b[ i ];
-  } );
+      c[ i ] = a[ i ] + b[ i ];
+    } );
 
   // check result in serial
-  for ( int i=0; i < N; ++i )
+  for ( int i=0 ; i < N ; ++i )
   {
     EXPECT_EQ( c[ i ], 2 );
   }
