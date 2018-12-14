@@ -81,7 +81,7 @@ if (ENABLE_FORTRAN)
 
     blt_add_executable(
         NAME        quest_inout_interface_F_ex
-        SOURCES     quest_inout_interface_fortran.F
+        SOURCES     quest_inout_interface.F
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
         DEPENDS_ON  ${quest_example_depends}
         FOLDER      axom/quest/examples
