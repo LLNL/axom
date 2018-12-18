@@ -16,16 +16,13 @@
 # Specify list of tests
 #
 
+# Add Serial GTests based tests
 set(gtest_lumberjack_tests
     lumberjack_Lumberjack.cpp
     lumberjack_Message.cpp
     lumberjack_TextEqualityCombiner.cpp
-    lumberjack_RootCommunicator.cpp
     )
 
-#
-# Add gtest based tests
-#
 foreach(test ${gtest_lumberjack_tests})
     get_filename_component( test_name ${test} NAME_WE )
     blt_add_executable( NAME ${test_name}_test
@@ -37,6 +34,25 @@ foreach(test ${gtest_lumberjack_tests})
                   COMMAND ${test_name}_test )
 endforeach()
 
+
+# Add MPI GTest based tests
+set(mpi_gtest_lumberjack_tests
+    lumberjack_RootCommunicator.cpp
+    )
+
+foreach(test ${mpi_gtest_lumberjack_tests})
+    get_filename_component( test_name ${test} NAME_WE )
+    blt_add_executable( NAME ${test_name}_test
+                        SOURCES ${test}
+                        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                        DEPENDS_ON lumberjack gtest 
+                        FOLDER axom/lumberjack/tests )
+    blt_add_test( NAME ${test_name} 
+                  COMMAND ${test_name}_test
+                  NUM_MPI_TASKS 4)
+endforeach()
+
+#Unique Tests
 blt_add_executable(NAME lumberjack_speed_test
                    SOURCES lumberjack_speedTest.cpp
                    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
