@@ -44,7 +44,7 @@ import sys
 
 from os.path import join as pjoin
 
-from llnl_lc_build_tools import sexe, get_timestamp
+from llnl_lc_build_tools import sexe, get_timestamp, get_shared_tpl_builds_dir
 
 
 def unique(lst):
@@ -56,9 +56,10 @@ def unique(lst):
 
 def lc_tpl_root_dirs():
     """
-    Returns list of root dirs axom uses for tpl installs on lc
+    Returns list of root dirs Axom have used for tpl installs on LC
     """
-    return ["/usr/workspace/wsa/axom/thirdparty_libs/builds/", 
+    return [get_shared_tpl_builds_dir(),
+            "/usr/workspace/wsa/axom/thirdparty_libs/builds/", 
             "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/"]    
 
 def clone_axom():
