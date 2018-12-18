@@ -220,6 +220,7 @@ def archive_tpl_logs(prefix, job_name, timestamp):
     copy_if_exists(pjoin(tpl_build_dir, "info.json"), archive_dir)
 
     build_and_test_root = get_build_and_test_root(tpl_build_dir, timestamp)
+    print "[Build/Test Dir: %s]" % build_and_test_root
 
     tpl_logs = glob.glob(pjoin(tpl_build_dir, "output.log.spack.tpl.build.*"))
     for tpl_log in tpl_logs:
@@ -237,6 +238,8 @@ def archive_tpl_logs(prefix, job_name, timestamp):
         config_spec_logs = glob.glob(pjoin(build_and_test_root, "output.log.*-" + spec + ".configure.txt"))
         if len(config_spec_logs) > 0:
             copy_if_exists(config_spec_logs[0], pjoin(archive_spec_dir, "output.log.config-build.txt"))
+        else:
+            print "[Error: No config-build logs found in Spec Dir.]"
 
         # Find build dir for spec
         # Note: only compiler name/version is used in build directory not full spack spec
@@ -248,6 +251,8 @@ def archive_tpl_logs(prefix, job_name, timestamp):
 
             print "[  Build Dir: %s]" % build_dir
             copy_build_dir_files(build_dir, archive_spec_dir)
+        else:
+            print "[Error: No build dirs found in Build/Test root.]"
 
     set_axom_group_and_perms(archive_dir)
 
@@ -580,7 +585,12 @@ def get_spec_from_build_dir(build_dir):
 
 def get_spec_from_tpl_log(tpl_log):
     basename = os.path.basename(tpl_log)
-    return basename[len("output.log.spack.tpl.build.%"):-4]
+    basename = basename[len("output.log.spack.tpl.build.%"):-4]
+    # Remove anything that isn't part of the compiler spec
+    index = basename.find("^")
+    if index > -1:
+        basename = basename[:index-1]
+    return basename
 
 
 def on_rz():
