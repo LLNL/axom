@@ -34,12 +34,12 @@
  * \brief Defines a C-style interface for evaluating the \a inout query.
  *
  * Given a watertight surface mesh and an arbitrary point in space,
- * the \a inout query determines if the point is contained within the enclosed
- * volume defined by the surface mesh.
+ * the \a inout query determines if the point is contained within the volume
+ * enclosed by the surface mesh.
  *
  * The mesh can either be provided via a path to a mesh file, or as a pointer
- * to a mint::Mesh object. The interface currently supports reading triangle
- * meshes in the
+ * to a \a mint::Mesh object. The interface currently supports reading
+ * triangle meshes in the
  * <a href="https://en.wikipedia.org/wiki/STL_(file_format)">STL format</a>.
  *
  * The interface has several parameters that may be set before initializing the
@@ -156,7 +156,7 @@ int inout_evaluate(const double* x,const double* y,const double* z,
 /*!
  * \brief Returns the lower coordinates of the mesh's bounding box
  *
- * \param [in] coords A buffer for the coordinates
+ * \param [in] coords A buffer for the returned coordinates
  * \pre \a coords != nullptr and has sufficient storage for the coordinates
  * \pre inout_initialized() == true
  * \return Return code is QUEST_INOUT_SUCCESS if successful
@@ -167,7 +167,7 @@ int inout_mesh_min_bounds(double* coords);
 /*!
  * \brief Returns the upper coordinates of the mesh's bounding box
  *
- * \param [in] coords A buffer for the coordinates
+ * \param [in] coords A buffer for the returned coordinates
  * \pre \a coords != nullptr and has sufficient storage for the coordinates
  * \pre inout_initialized() == true
  * \return Return code is QUEST_INOUT_SUCCESS if successful
@@ -182,7 +182,7 @@ int inout_mesh_max_bounds(double* coords);
  * mesh coordinates rather than a continuous center of mass defined by the mesh
  * faces.
  *
- * \param [in] coords A buffer for the center of mass coordinates
+ * \param [in] coords A buffer for the returned coordinates
  * \pre \a coords != nullptr and has sufficient storage for the coordinates
  * \pre inout_initialized() == true
  * \return Return code is QUEST_INOUT_SUCCESS if successful
