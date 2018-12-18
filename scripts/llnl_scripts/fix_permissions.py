@@ -29,9 +29,9 @@ from llnl_lc_build_tools import *
 def main():
     for directory in [get_archive_base_dir(), get_shared_tpl_base_dir()]:
         print "Fixing group to axomdev for {0}".format(directory)
-        sexe("chgrp -f -R axomdev {0}".format(directory))
+        sexe("chgrp -R axomdev {0}".format(directory))
         print "Fixing file permissions for {0}".format(directory)
-        sexe("chmod -f -R g+rwX {0}".format(directory))
+        sexe("chmod -R g+rwX {0}".format(directory))
 
     return True
 

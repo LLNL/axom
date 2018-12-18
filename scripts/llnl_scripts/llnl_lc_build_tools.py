@@ -535,7 +535,7 @@ def get_username():
 
 def get_archive_base_dir():
     if on_rz():
-        archive_base_dir = "/usr/workspace/wsrzd/axomdev/archive"
+        archive_base_dir = "/usr/WS2/axomdev/archive"
     else:
         archive_base_dir = "/usr/workspace/wsb/axomdev/archive"
     return archive_base_dir
@@ -543,7 +543,7 @@ def get_archive_base_dir():
 
 def get_shared_tpl_base_dir():
     if on_rz():
-        builds_dir = "/usr/workspace/wsrzc/axom/thirdparty_libs"
+        builds_dir = "/usr/WS1/axom/thirdparty_libs"
     else:
         builds_dir = "/usr/workspace/wsa/axom/thirdparty_libs"
     return builds_dir
