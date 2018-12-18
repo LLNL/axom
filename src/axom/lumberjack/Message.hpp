@@ -319,7 +319,7 @@ private:
  * \return Packed char array of all given messages
  *****************************************************************************
  */
-const char* packMessages(std::vector<Message*>& messages);
+const char* packMessages(const std::vector<Message*>& messages);
 
 
 /*!
@@ -332,7 +332,7 @@ const char* packMessages(std::vector<Message*>& messages);
 * This function only adds to the messages vector and does not alter the
  * packagedMessages parameter.
  *
- * \param [in,out] messages Vector to add created messages to
+ * \param [in,out] messages Vector to append created messages to
  * \param [in]  packedMessages Packed messages to be unpacked
  * \param [in]  ranksLimit Limits how many ranks are tracked per Message.
  *****************************************************************************

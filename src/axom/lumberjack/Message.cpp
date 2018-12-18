@@ -316,7 +316,7 @@ void Message::unpackRanks(const std::string& ranksString, int ranksLimit)
   }
 }
 
-const char* packMessages(std::vector<Message*>& messages)
+const char* packMessages(const std::vector<Message*>& messages)
 {
   if (messages.size() == 0)
   {
