@@ -38,39 +38,39 @@ extern "C" {
 // splicer end C_declarations
 
 #ifdef AXOM_USE_MPI
-void QUEST_initialize_mpi(MPI_Fint comm, const char* fileName,
-                          bool requiresDistance, int ndims, int maxElements,
-                          int maxLevels);
+int QUEST_inout_init_mpi(const char* fileName, MPI_Fint comm);
 #endif
 
 #ifdef AXOM_USE_MPI
-void QUEST_initialize_mpi_bufferify(MPI_Fint comm, const char* fileName,
-                                    int LfileName, bool requiresDistance,
-                                    int ndims, int maxElements, int maxLevels);
+int QUEST_inout_init_mpi_bufferify(const char* fileName, int LfileName,
+                                   MPI_Fint comm);
 #endif
 
 #ifndef AXOM_USE_MPI
-void QUEST_initialize_serial(const char* fileName, bool requiresDistance,
-                             int ndims, int maxElements, int maxLevels);
+int QUEST_inout_init_serial(const char* fileName);
 #endif
 
 #ifndef AXOM_USE_MPI
-void QUEST_initialize_serial_bufferify(const char* fileName, int LfileName,
-                                       bool requiresDistance, int ndims,
-                                       int maxElements, int maxLevels);
+int QUEST_inout_init_serial_bufferify(const char* fileName, int LfileName);
 #endif
 
-int QUEST_inside_0(double x, double y);
+bool QUEST_inout_initialized();
 
-int QUEST_inside_1(double x, double y, double z);
+int QUEST_inout_set_verbose(bool verbosity);
 
-void QUEST_mesh_min_bounds(double* coords);
+bool QUEST_inout_evaluate_0(double x, double y);
 
-void QUEST_mesh_max_bounds(double* coords);
+bool QUEST_inout_evaluate_1(double x, double y, double z);
 
-void QUEST_mesh_center_of_mass(double* coords);
+int QUEST_inout_mesh_min_bounds(double* coords);
 
-void QUEST_finalize();
+int QUEST_inout_mesh_max_bounds(double* coords);
+
+int QUEST_inout_mesh_center_of_mass(double* coords);
+
+int QUEST_inout_get_dimension();
+
+int QUEST_inout_finalize();
 
 #ifdef AXOM_USE_MPI
 int QUEST_signed_distance_init_mpi(const char* file, MPI_Fint comm);

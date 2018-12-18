@@ -1,13 +1,11 @@
 
 
 // Axom includes
-#include "axom/mint/mesh/UnstructuredMesh.hpp"
-#include "axom/slic/interface/slic.hpp"
-#include "axom/slic/core/UnitTestLogger.hpp"
+#include "axom/mint.hpp"
 #include "quest_test_utilities.hpp"
-#include "axom/quest/interface/quest.hpp"
 
-#include "fmt/fmt.hpp"
+#include "axom/quest/interface/inout.hpp"
+#include "axom/quest/interface/signed_distance.hpp"
 
 #ifdef AXOM_USE_MPI
   #include <mpi.h>
@@ -16,31 +14,62 @@
 // Google test include
 #include "gtest/gtest.h"
 
-typedef axom::mint::UnstructuredMesh< axom::mint::SINGLE_SHAPE > UMesh;
+namespace mint = axom::mint;
+namespace quest = axom::quest;
 
-TEST( quest_interface, pointer_initialize )
+// Test initializing quest inout from a preloaded mesh
+TEST( quest_initialize, inout_pointer_initialize )
 {
-  const int IGNORE_PARAM = -1;
+  int rc = quest::QUEST_INOUT_SUCCESS;
 
-  SLIC_INFO(fmt::format("Initializing InOutOctree over triangle mesh ..."));
+  mint::Mesh* input_mesh =
+    axom::quest::utilities::make_tetrahedron_mesh();
 
-  axom::mint::Mesh* input_mesh =
+  // Note: the following call updates the input_mesh pointer
+#ifdef AXOM_USE_MPI
+  rc = quest::inout_init(input_mesh, MPI_COMM_WORLD);
+#else
+  rc = quest::inout_init(input_mesh);
+#endif
+  EXPECT_EQ(quest::QUEST_INOUT_SUCCESS, rc);
+
+  EXPECT_TRUE(quest::inout_initialized());
+
+  EXPECT_TRUE(quest::inout_evaluate(3, 2, 0));
+  EXPECT_TRUE(quest::inout_evaluate(-1, 2, -1));
+  EXPECT_FALSE(quest::inout_evaluate(4, 4, -7));
+
+  rc = quest::inout_finalize();
+  EXPECT_EQ(quest::QUEST_INOUT_SUCCESS, rc);
+
+  delete input_mesh;
+}
+
+
+// Test initializing quest signed_distance from a preloaded mesh
+TEST( quest_initialize, signed_distance_pointer_initialize )
+{
+  int rc = 0;
+
+  mint::Mesh* input_mesh =
     axom::quest::utilities::make_tetrahedron_mesh();
 
 #ifdef AXOM_USE_MPI
-  axom::quest::initialize(MPI_COMM_WORLD, input_mesh, false, 3, IGNORE_PARAM,
-                          IGNORE_PARAM);
+  rc = quest::signed_distance_init(input_mesh, MPI_COMM_WORLD);
 #else
-  axom::quest::initialize(input_mesh, false, 3, IGNORE_PARAM, IGNORE_PARAM);
+  rc = quest::signed_distance_init(input_mesh);
 #endif
+  EXPECT_EQ(0, rc);
 
-  EXPECT_TRUE(axom::quest::inside(3, 2, 0));
-  EXPECT_TRUE(axom::quest::inside(-1, 2, -1));
-  EXPECT_FALSE(axom::quest::inside(4, 4, -7));
+  EXPECT_TRUE(quest::signed_distance_initialized());
 
-  axom::quest::finalize();
+  EXPECT_GT(0., quest::signed_distance_evaluate(3, 2, 0));
+  EXPECT_GT(0., quest::signed_distance_evaluate(-1, 2, -1));
+  EXPECT_LT(0., quest::signed_distance_evaluate(4, 4, -7));
+
+  quest::signed_distance_finalize();
+
   delete input_mesh;
-
 }
 
 int main( int argc, char** argv )
@@ -49,6 +78,7 @@ int main( int argc, char** argv )
   // Initialize MPI
   MPI_Init( &argc, &argv );
 #endif
+
   ::testing::InitGoogleTest(&argc, argv);
 
   int result = RUN_ALL_TESTS();

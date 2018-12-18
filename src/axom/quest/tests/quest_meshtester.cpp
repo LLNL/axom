@@ -221,7 +221,7 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_intrinsic )
     // soup, it should not matter.  We will test the deduplicated triangles.
     // Nice (non-duplicated) vertices
     surface_mesh =
-      static_cast<UMesh *>(axom::quest::utilities::make_tetrahedron_mesh());
+      static_cast<UMesh*>(axom::quest::utilities::make_tetrahedron_mesh());
 
     // No self-intersections or degenerate triangles
     intersections.clear();
@@ -238,7 +238,7 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_intrinsic )
 
     // Construct and fill the mesh.
     surface_mesh =
-      static_cast<UMesh *>(axom::quest::utilities::make_crackedtet_mesh());
+      static_cast<UMesh*>(axom::quest::utilities::make_crackedtet_mesh());
 
     // No self-intersections or degenerate triangles
     intersections.clear();
@@ -255,7 +255,7 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_intrinsic )
 
     // Construct and fill the mesh.
     surface_mesh =
-      static_cast<UMesh *>(axom::quest::utilities::make_cavedtet_mesh());
+      static_cast<UMesh*>(axom::quest::utilities::make_cavedtet_mesh());
 
     intersections.clear();
     intersections.push_back(std::make_pair(0, 1));
@@ -274,7 +274,7 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_intrinsic )
 
     // Construct and fill the mesh.
     surface_mesh =
-      static_cast<UMesh *>(axom::quest::utilities::make_degen_cavedtet_mesh());
+      static_cast<UMesh*>(axom::quest::utilities::make_degen_cavedtet_mesh());
 
     intersections.clear();
     intersections.push_back(std::make_pair(0, 1));
@@ -338,7 +338,7 @@ TEST( quest_mesh_tester, surfacemesh_watertight_intrinsic )
   {
     SCOPED_TRACE("Closed tetrahedron");
     surface_mesh =
-      static_cast<UMesh *>(axom::quest::utilities::make_tetrahedron_mesh());
+      static_cast<UMesh*>(axom::quest::utilities::make_tetrahedron_mesh());
     EXPECT_EQ(axom::quest::WatertightStatus::WATERTIGHT,
               axom::quest::isSurfaceMeshWatertight(surface_mesh));
     delete surface_mesh;
@@ -347,7 +347,7 @@ TEST( quest_mesh_tester, surfacemesh_watertight_intrinsic )
   {
     SCOPED_TRACE("Cracked tetrahedron");
     surface_mesh =
-      static_cast<UMesh *>(axom::quest::utilities::make_crackedtet_mesh());
+      static_cast<UMesh*>(axom::quest::utilities::make_crackedtet_mesh());
     EXPECT_EQ(axom::quest::WatertightStatus::NOT_WATERTIGHT,
               axom::quest::isSurfaceMeshWatertight(surface_mesh));
     delete surface_mesh;
@@ -356,7 +356,7 @@ TEST( quest_mesh_tester, surfacemesh_watertight_intrinsic )
   {
     SCOPED_TRACE("Caved-in tetrahedron");
     surface_mesh =
-      static_cast<UMesh *>(axom::quest::utilities::make_cavedtet_mesh());
+      static_cast<UMesh*>(axom::quest::utilities::make_cavedtet_mesh());
     EXPECT_EQ(axom::quest::WatertightStatus::NOT_WATERTIGHT,
               axom::quest::isSurfaceMeshWatertight(surface_mesh));
     delete surface_mesh;
@@ -365,7 +365,7 @@ TEST( quest_mesh_tester, surfacemesh_watertight_intrinsic )
   {
     SCOPED_TRACE("Caved-in tetrahedron with degenerate triangles");
     surface_mesh =
-      static_cast<UMesh *>(axom::quest::utilities::make_degen_cavedtet_mesh());
+      static_cast<UMesh*>(axom::quest::utilities::make_degen_cavedtet_mesh());
     EXPECT_EQ(axom::quest::WatertightStatus::CHECK_FAILED,
               axom::quest::isSurfaceMeshWatertight(surface_mesh));
     delete surface_mesh;

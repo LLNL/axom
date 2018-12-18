@@ -176,8 +176,8 @@ void testContainmentOnRegularGrid(
     new mint::UniformMesh(low, high, gridRes, gridRes, gridRes);
 
   const int nnodes = umesh->getNumberOfNodes();
-  int* containment = umesh->createField< int >( "containment",
-                                                mint::NODE_CENTERED );
+  int* containment =
+    umesh->createField< int >( "containment", mint::NODE_CENTERED );
 
   SLIC_ASSERT( containment != nullptr );
 
@@ -400,20 +400,25 @@ int main( int argc, char** argv )
 
   // STEP 1: Get file from user or use default
   std::string stlFile;
-  if(hasInputArgs)
-  {
-    stlFile = std::string( argv[1] );
-  }
-  else
-  {
-    const std::string defaultFileName = "plane_simp.stl";
-    const std::string defaultDir = "src/components/quest/data/";
 
-    stlFile = utilities::filesystem::joinPath(defaultDir, defaultFileName);
-  }
+  // load the file
+  {
+    namespace fs = axom::utilities::filesystem;
+    if(hasInputArgs)
+    {
+      stlFile = std::string( argv[1] );
+    }
+    else
+    {
+      const std::string dir = fs::joinPath(AXOM_SRC_DIR, "axom/quest/data");
+      const std::string mesh = "plane_simp.stl";
+      stlFile = fs::joinPath(dir, mesh);
+    }
 
-  stlFile = slam::util::findFileInAncestorDirs(stlFile);
-  SLIC_ASSERT( utilities::filesystem::pathExists( stlFile));
+    // Verify that the mesh file exists
+    SLIC_ERROR_IF( !fs::pathExists( stlFile),
+                   fmt::format("Mesh file '{}' does not exist.", stlFile));
+  }
 
   // STEP 2: read mesh file
   SLIC_INFO(fmt::format("\n\t{:*^80}"," Loading the mesh "));

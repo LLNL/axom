@@ -82,6 +82,7 @@ endif()
 ##############################################################
 set(quest_mpi_tests
     quest_initialize.cpp
+    quest_inout_interface.cpp
     quest_signed_distance_interface.cpp
     )
 
@@ -104,6 +105,9 @@ foreach(test ${quest_mpi_tests})
     if (${test_name} STREQUAL "quest_signed_distance_interface")
         set(_numMPITasks 1)
     endif()
+    if (${test_name} STREQUAL "quest_inout_interface")
+        set(_numMPITasks 1)
+    endif()
 
     if (ENABLE_MPI)
         blt_add_test(
@@ -120,10 +124,20 @@ foreach(test ${quest_mpi_tests})
 endforeach()
 
 
-##############################################################
-# Regression tests for quest signed distance and InOutOctree
-# point containment queries
-##############################################################
+###############################################################################
+# Regression tests for quest signed distance and InOutOctree queries
+#
+# Note: By default we only run a small subset of the quest regression tests.
+#       To run additional regression tests, configure the code
+#       with AXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS set to ON.
+###############################################################################
+
+cmake_dependent_option(
+    AXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS
+    "Enable extra regression tests for quest" OFF
+    "ENABLE_MPI;AXOM_ENABLE_SIDRE" OFF )
+mark_as_advanced(AXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS)
+
 if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
 
     set(quest_regression_depends
@@ -166,13 +180,6 @@ if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
 
     endif()
 
-
-    # Note: By default we only run a small subset of the quest regression tests.
-    #       To run additional regression tests, configure the code
-    #       with ENABLE_QUEST_EXTRA_REGRESSION_TESTS set to True.
-
-    # set(ENABLE_QUEST_EXTRA_REGRESSION_TESTS True)
-
     set(quest_regression_datasets
         sphere
     )
@@ -180,7 +187,7 @@ if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
         16
     )
 
-    if( ${ENABLE_QUEST_EXTRA_REGRESSION_TESTS} )
+    if( ${AXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS} )
        list(APPEND quest_regression_datasets
            naca0012
            plane_simp

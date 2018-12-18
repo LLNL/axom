@@ -260,8 +260,8 @@ WatertightStatus isSurfaceMeshWatertight(UMesh* surface_mesh)
   IndexType faceCount = surface_mesh->getNumberOfFaces();
 
   IndexType c1, c2;
-  for (IndexType faceIdx = 0;
-       faceIdx < faceCount && retval == WatertightStatus::WATERTIGHT;
+  for (IndexType faceIdx = 0 ;
+       faceIdx < faceCount && retval == WatertightStatus::WATERTIGHT ;
        ++faceIdx)
   {
     surface_mesh->getFaceCellIDs(faceIdx, c1, c2);

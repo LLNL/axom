@@ -48,7 +48,7 @@ TEST( umpire_smoke, basic_use )
   EXPECT_TRUE( data != nullptr );
   EXPECT_EQ( BYTESIZE, allocator.getActualSize() );
 
-  for( int i=0; i < N; ++i )
+  for( int i=0 ; i < N ; ++i )
   {
     data[ i ] = MAGIC_VAL;
   }

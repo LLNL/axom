@@ -28,6 +28,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Deprecated
 
 ### Changed
+- Replaced old quest C-style interface with a new quest inout API.
+  Functions related to the inout point containment query are prefixed with "inout_".
+  The new API has an option to set the verbosity of the inout initialization and query.
 - Changed sidre::IndexType to be a 64bit signed integer.
 - Changed slic::stack_trace to slic::internal::stack_trace which now attempts to
   output a demangled stack trace.
