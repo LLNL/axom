@@ -38,12 +38,13 @@
  * volume defined by the surface mesh.
  *
  * The mesh can either be provided via a path to a mesh file, or as a pointer
- * to a mint::Mesh object. The interface currently supports reading triangle meshes
- * in the <a href="https://en.wikipedia.org/wiki/STL_(file_format)">STL format</a>.
+ * to a mint::Mesh object. The interface currently supports reading triangle
+ * meshes in the
+ * <a href="https://en.wikipedia.org/wiki/STL_(file_format)">STL format</a>.
  *
  * The interface has several parameters that may be set before initializing the
- * query (via \a inout_init() ), and several functions that are available once the
- * query has been initialized.
+ * query (via \a inout_init() ), and several functions that are available once
+ * the query has been initialized.
  */
 
 namespace axom
@@ -125,7 +126,7 @@ bool inout_initialized();
  * \return True if the point is within the contained volume, false otherwise.
  * \pre inout_initialized() == true
  */
-bool inout_inside(double x, double y, double z=0.);
+bool inout_evaluate(double x, double y, double z=0.);
 
 /*!
  * \brief Tests an array of points for containment
@@ -140,16 +141,17 @@ bool inout_inside(double x, double y, double z=0.);
  * \param [in] npoints The number of points to test
  * \param [out] res An array of results. Each entry has value \a 1
  * if the corresponding point is inside and \a 0 otherwise.
- * \return Return code is QUEST_INOUT_SUCCESS if successful
- *  and QUEST_INOUT_FAILED otherwise.
+ *
+ * \return Return code is QUEST_INOUT_SUCCESS when all preconditions
+ * are satisfied and QUEST_INOUT_FAILED otherwise.
  *
  * \pre inout_initialized() == true
  * \pre When \a npoints is greater than zero, arrays \a x, \a y, \a z
  *  and \a res are not \a nullptr and contain sufficient data/space for
  *  \a npoints points.
  */
-int inout_inside(const double* x,const double* y,const double* z,
-                 int npoints, int* res);
+int inout_evaluate(const double* x,const double* y,const double* z,
+                   int npoints, int* res);
 
 /*!
  * \brief Returns the lower coordinates of the mesh's bounding box
@@ -194,7 +196,7 @@ int inout_mesh_center_of_mass(double* coords);
  * \return Returns the spatial dimension for query points when the query has
  * been successfully initialized and QUEST_INOUT_FAILED otherwise.
  * \note This determines the number of coordinates for query points in
- * \a inout_inside() and the number of returned coordinates in functions like
+ * \a inout_evaluate() and the number of returned coordinates in functions like
  * \a inout_mesh_min_bounds()
  * \pre inout_initialized() == true
  */
@@ -208,7 +210,9 @@ int inout_get_dimension();
 /// @{
 
 /*!
- * \brief Sets the logging verbosity
+ * \brief Enables/disables verbose logging output
+ *
+ * By default, the logging verbosity is set to \a false.
  *
  * \param verbosity True for more verbose, false for less verbose
  * \return Return code is QUEST_INOUT_SUCCESS if successful

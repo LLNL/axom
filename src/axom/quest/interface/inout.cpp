@@ -283,7 +283,7 @@ struct InOutHelper
   /*!
    * Predicate to determine if a point is inside the surface
    *
-   * \sa inout_inside
+   * \sa inout_evaluate
    */
   bool within(double x, double y, double z) const
   {
@@ -293,7 +293,7 @@ struct InOutHelper
   /*!
    * Batched containment query over an array of points
    *
-   * \sa inout_inside
+   * \sa inout_evaluate
    */
   int within(const double* x, const double* y, const double* z,
              int npoints, int* res) const
@@ -448,7 +448,7 @@ int inout_mesh_center_of_mass(double* coords)
 }
 
 
-bool inout_inside(double x, double y, double z)
+bool inout_evaluate(double x, double y, double z)
 {
   if(!inout_initialized())
   {
@@ -461,8 +461,8 @@ bool inout_inside(double x, double y, double z)
   return s_inoutHelper.within(x,y,z);
 }
 
-int inout_inside(const double* x, const double* y, const double* z,
-                 int npoints, int* res)
+int inout_evaluate(const double* x, const double* y, const double* z,
+                   int npoints, int* res)
 {
   if(!inout_initialized())
   {
@@ -474,7 +474,7 @@ int inout_inside(const double* x, const double* y, const double* z,
 
   if(x==nullptr || y == nullptr || z == nullptr || res == nullptr)
   {
-    SLIC_WARNING("supplied buffers must not be null");
+    SLIC_WARNING("supplied buffers must NOT be null");
     return QUEST_INOUT_FAILED;
   }
 

@@ -35,9 +35,9 @@ TEST( quest_initialize, inout_pointer_initialize )
 
   EXPECT_TRUE(quest::inout_initialized());
 
-  EXPECT_TRUE(quest::inout_inside(3, 2, 0));
-  EXPECT_TRUE(quest::inout_inside(-1, 2, -1));
-  EXPECT_FALSE(quest::inout_inside(4, 4, -7));
+  EXPECT_TRUE(quest::inout_evaluate(3, 2, 0));
+  EXPECT_TRUE(quest::inout_evaluate(-1, 2, -1));
+  EXPECT_FALSE(quest::inout_evaluate(4, 4, -7));
 
   rc = quest::inout_finalize();
   EXPECT_EQ(quest::QUEST_INOUT_SUCCESS, rc);

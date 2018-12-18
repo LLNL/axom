@@ -485,7 +485,7 @@ void runContainmentQueries(CommandLineArguments& clargs)
   fillTimer.stop();
 
   utilities::Timer queryTimer(true);
-  quest::inout_inside( xcoords, ycoords, zcoords, nnodes, containment);
+  quest::inout_evaluate( xcoords, ycoords, zcoords, nnodes, containment);
   queryTimer.stop();
 
   SLIC_INFO(fmt::format("Filling coordinates array took {} seconds",

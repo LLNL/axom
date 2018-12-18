@@ -95,26 +95,26 @@ module axom_quest
             integer(C_INT) :: SHT_rv
         end function c_inout_set_verbose
 
-        function c_inout_inside_0(x, y) &
+        function c_inout_evaluate_0(x, y) &
                 result(SHT_rv) &
-                bind(C, name="QUEST_inout_inside_0")
+                bind(C, name="QUEST_inout_evaluate_0")
             use iso_c_binding, only : C_BOOL, C_DOUBLE
             implicit none
             real(C_DOUBLE), value, intent(IN) :: x
             real(C_DOUBLE), value, intent(IN) :: y
             logical(C_BOOL) :: SHT_rv
-        end function c_inout_inside_0
+        end function c_inout_evaluate_0
 
-        function c_inout_inside_1(x, y, z) &
+        function c_inout_evaluate_1(x, y, z) &
                 result(SHT_rv) &
-                bind(C, name="QUEST_inout_inside_1")
+                bind(C, name="QUEST_inout_evaluate_1")
             use iso_c_binding, only : C_BOOL, C_DOUBLE
             implicit none
             real(C_DOUBLE), value, intent(IN) :: x
             real(C_DOUBLE), value, intent(IN) :: y
             real(C_DOUBLE), value, intent(IN) :: z
             logical(C_BOOL) :: SHT_rv
-        end function c_inout_inside_1
+        end function c_inout_evaluate_1
 
         function quest_inout_mesh_min_bounds(coords) &
                 result(SHT_rv) &
@@ -285,6 +285,11 @@ module axom_quest
         ! splicer end additional_interfaces
     end interface
 
+    interface quest_inout_evaluate
+        module procedure quest_inout_evaluate_0
+        module procedure quest_inout_evaluate_1
+    end interface quest_inout_evaluate
+
     interface quest_inout_init
 #ifdef AXOM_USE_MPI
         module procedure quest_inout_init_mpi
@@ -293,11 +298,6 @@ module axom_quest
         module procedure quest_inout_init_serial
 #endif
     end interface quest_inout_init
-
-    interface quest_inout_inside
-        module procedure quest_inout_inside_0
-        module procedure quest_inout_inside_1
-    end interface quest_inout_inside
 
     interface quest_signed_distance_init
 #ifdef AXOM_USE_MPI
@@ -358,28 +358,28 @@ contains
         ! splicer end function.inout_set_verbose
     end function quest_inout_set_verbose
 
-    function quest_inout_inside_0(x, y) &
+    function quest_inout_evaluate_0(x, y) &
             result(SHT_rv)
         use iso_c_binding, only : C_BOOL, C_DOUBLE
         real(C_DOUBLE), value, intent(IN) :: x
         real(C_DOUBLE), value, intent(IN) :: y
         logical :: SHT_rv
-        ! splicer begin function.inout_inside_0
-        SHT_rv = c_inout_inside_0(x, y)
-        ! splicer end function.inout_inside_0
-    end function quest_inout_inside_0
+        ! splicer begin function.inout_evaluate_0
+        SHT_rv = c_inout_evaluate_0(x, y)
+        ! splicer end function.inout_evaluate_0
+    end function quest_inout_evaluate_0
 
-    function quest_inout_inside_1(x, y, z) &
+    function quest_inout_evaluate_1(x, y, z) &
             result(SHT_rv)
         use iso_c_binding, only : C_BOOL, C_DOUBLE
         real(C_DOUBLE), value, intent(IN) :: x
         real(C_DOUBLE), value, intent(IN) :: y
         real(C_DOUBLE), value, intent(IN) :: z
         logical :: SHT_rv
-        ! splicer begin function.inout_inside_1
-        SHT_rv = c_inout_inside_1(x, y, z)
-        ! splicer end function.inout_inside_1
-    end function quest_inout_inside_1
+        ! splicer begin function.inout_evaluate_1
+        SHT_rv = c_inout_evaluate_1(x, y, z)
+        ! splicer end function.inout_evaluate_1
+    end function quest_inout_evaluate_1
 
 #ifdef AXOM_USE_MPI
     function quest_signed_distance_init_mpi(file, comm) &

@@ -132,7 +132,7 @@ contains
         z = random_double( mesh_bb_min(3), mesh_bb_max(3) )
       end if
 
-      ins = quest_inout_inside(x,y,z)
+      ins = quest_inout_evaluate(x,y,z)
 
       write(*,Format) rank, x, y, z, ins
     end do

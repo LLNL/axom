@@ -91,20 +91,20 @@ int QUEST_inout_set_verbose(bool verbosity)
 // splicer end function.inout_set_verbose
 }
 
-bool QUEST_inout_inside_0(double x, double y)
+bool QUEST_inout_evaluate_0(double x, double y)
 {
-// splicer begin function.inout_inside_0
-  bool SHC_rv = axom::quest::inout_inside(x, y);
+// splicer begin function.inout_evaluate_0
+  bool SHC_rv = axom::quest::inout_evaluate(x, y);
   return SHC_rv;
-// splicer end function.inout_inside_0
+// splicer end function.inout_evaluate_0
 }
 
-bool QUEST_inout_inside_1(double x, double y, double z)
+bool QUEST_inout_evaluate_1(double x, double y, double z)
 {
-// splicer begin function.inout_inside_1
-  bool SHC_rv = axom::quest::inout_inside(x, y, z);
+// splicer begin function.inout_evaluate_1
+  bool SHC_rv = axom::quest::inout_evaluate(x, y, z);
   return SHC_rv;
-// splicer end function.inout_inside_1
+// splicer end function.inout_evaluate_1
 }
 
 int QUEST_inout_mesh_min_bounds(double* coords)

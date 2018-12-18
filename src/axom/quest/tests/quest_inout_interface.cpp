@@ -200,10 +200,10 @@ TEST_F(InOutInterfaceTest, query)
   axom::quest::inout_init(this->meshfile);
 
   // test an inside point
-  EXPECT_TRUE(axom::quest::inout_inside(0,0,0) );
+  EXPECT_TRUE(axom::quest::inout_evaluate(0,0,0) );
 
   // test an outside point
-  EXPECT_FALSE(axom::quest::inout_inside(10, 10, 10 ));
+  EXPECT_FALSE(axom::quest::inout_evaluate(10, 10, 10 ));
 
   axom::quest::inout_finalize();
 }

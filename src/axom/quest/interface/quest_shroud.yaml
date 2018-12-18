@@ -57,7 +57,7 @@ declarations:
 
       - decl: int inout_set_verbose( bool verbosity )
 
-      - decl: bool inout_inside(double x, double y, double z=0.0)
+      - decl: bool inout_evaluate(double x, double y, double z=0.0)
 
       - decl: int inout_mesh_min_bounds(double* coords+dimension+intent(OUT))
       - decl: int inout_mesh_max_bounds(double* coords+dimension+intent(OUT))

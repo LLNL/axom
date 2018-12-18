@@ -232,7 +232,7 @@ int main( int argc, char** argv )
     const double y = pt[1];
     const double z = pt[2];
 
-    const bool ins = quest::inout_inside(x,y,z);
+    const bool ins = quest::inout_evaluate(x,y,z);
     numInside += ins ? 1 : 0;
   }
   timer.stop();

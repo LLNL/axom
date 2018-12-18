@@ -58,9 +58,9 @@ bool QUEST_inout_initialized();
 
 int QUEST_inout_set_verbose(bool verbosity);
 
-bool QUEST_inout_inside_0(double x, double y);
+bool QUEST_inout_evaluate_0(double x, double y);
 
-bool QUEST_inout_inside_1(double x, double y, double z);
+bool QUEST_inout_evaluate_1(double x, double y, double z);
 
 int QUEST_inout_mesh_min_bounds(double* coords);
 
