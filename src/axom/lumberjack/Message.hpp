@@ -273,7 +273,8 @@ public:
    *  string.
    *
    * The Message is packed into a string utilizing the following format:
-   *  \<ranks delimited by ,>*\<rank count>*\<file name>*\<line number>*\<text>
+   *  <ranks delimited by ,>*<rank count>*<file name>*<line number>
+   *  *<message level>*<tag>*<text>
    *
    *****************************************************************************
    */
@@ -285,10 +286,9 @@ public:
    *  string.
    *
    * \param [in] packedMessage Packed Message containing the new information.
-   * \param [in] ranksLimit delimiter used to separate the ranks
+   * \param [in] ranksLimit Limits how many ranks are tracked per Message.
    *
-   * The Message is unpacked from a string utilizing the following format:
-   *  \<ranks delimited by ,>*\<rank count>*\<file name>*\<line number>*\<text>
+   * The Message is unpacked from a string utilizing the format defined by pack()
    *****************************************************************************
    */
   void unpack(const std::string& packedMessage, int ranksLimit);
@@ -303,6 +303,44 @@ private:
   int m_level;
   std::string m_tag;
 };
+
+
+/*!
+ *****************************************************************************
+ * \brief This packs all given Message classes into one const char
+ *  buffer.
+ *
+ * The messages are packed into the following format:
+ *  <message count>[*<packed message size>*<packed message>]...
+ * This function does not alter the messages vector.
+ *
+ * \param [in] messages Message classes to be packed for sending
+ *
+ * \return Packed char array of all given messages
+ *****************************************************************************
+ */
+const char* packMessages(std::vector<Message*>& messages);
+
+
+/*!
+ *****************************************************************************
+ * \brief This unpacks the given const char buffer and adds the created Messages
+ *  classes to the given vector.
+ *
+ * The messages are packed into the following format:
+  *  <message count>[*<packed message size>*<packed message>]...
+* This function only adds to the messages vector and does not alter the
+ * packagedMessages parameter.
+ *
+ * \param [in,out] messages Vector to add created messages to
+ * \param [in]  packedMessages Packed messages to be unpacked
+ * \param [in]  ranksLimit Limits how many ranks are tracked per Message.
+ *****************************************************************************
+ */
+ void unpackMessages(std::vector<Message*>& messages,
+                     const char* packedMessages,
+                     const int ranksLimit);
+
 
 } // end namespace lumberjack
 } // end namespace axom

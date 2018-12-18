@@ -30,6 +30,7 @@
 #include "axom/core/utilities/StringUtilities.hpp"
 
 #include <algorithm>
+#include <cstring>
 #include <iostream>
 
 namespace axom
@@ -314,6 +315,100 @@ void Message::unpackRanks(const std::string& ranksString, int ranksLimit)
     end = ranksString.find(rankDelimiter, start);
   }
 }
+
+const char* packMessages(std::vector<Message*>& messages)
+{
+  if (messages.size() == 0)
+  {
+    char* zeroMessage = new char[2];
+    std::strcpy(zeroMessage, "0");
+    return zeroMessage;
+  }
+
+  int totalSize = 1;   // include size for null terminator
+
+  //Calculate total size of char array after all messages are
+  //  combined.
+  std::vector<std::string> packedMessages;
+  std::vector<std::string> sizeStrings;
+  int currSize = 0;
+  int messageCount = (int)messages.size();
+  for (int i=0 ; i<messageCount ; ++i)
+  {
+    packedMessages.push_back(messages[i]->pack());
+    currSize = packedMessages[i].size();
+    sizeStrings.push_back(axom::utilities::string::intToString(currSize));
+    //           message size + size string size + memberDelimiter size
+    totalSize += currSize + sizeStrings[i].size() + 1;
+  }
+
+  // Create and calculate size of message count
+  std::string messageCountString =
+    axom::utilities::string::intToString(messageCount) + memberDelimiter;
+  totalSize += messageCountString.size();
+
+  const char* packedMessagesString = new char[totalSize];
+  char* packedMessagesIndex = (char*)packedMessagesString;
+
+  // Copy message count to start of packed message
+  std::memcpy(packedMessagesIndex, messageCountString.c_str(),
+              messageCountString.size());
+  packedMessagesIndex += messageCountString.size();
+
+  for (int i=0 ; i<messageCount ; ++i)
+  {
+    // Copy current message size
+    std::memcpy(packedMessagesIndex, sizeStrings[i].c_str(),
+                sizeStrings[i].size());
+    packedMessagesIndex += sizeStrings[i].size();
+    // Copy memberDelimiter
+    // ToDo: better way to copy this I'm sure
+    std::memcpy(packedMessagesIndex, &memberDelimiter, sizeof(char));
+    packedMessagesIndex += 1;
+    // Copy packed message
+    std::memcpy(packedMessagesIndex, packedMessages[i].c_str(),
+                packedMessages[i].size());
+    packedMessagesIndex += packedMessages[i].size();
+  }
+
+  packedMessagesIndex[0] = '\0';
+  return packedMessagesString;
+}
+
+void unpackMessages(std::vector<Message*>& messages,
+                    const char* packedMessages,
+                    const int ranksLimit)
+{
+  std::string packedMessagesString = std::string(packedMessages);
+  std::size_t start, end;
+  std::string tempSubString = "";
+
+  // Get message count
+  end = packedMessagesString.find(memberDelimiter);
+  tempSubString = packedMessagesString.substr(0, end);
+  int messageCount = axom::utilities::string::stringToInt(tempSubString);
+  start = end + 1;
+
+  // Grab each message
+  Message* message;
+  int messageSize;
+  for (int j = 0 ; j < messageCount ; ++j)
+  {
+    //Get current message size
+    end = packedMessagesString.find(memberDelimiter, start);
+    tempSubString = packedMessagesString.substr(start, end-start);
+    messageSize = axom::utilities::string::stringToInt(tempSubString);
+    start = end + 1;
+
+    //Create current message and save
+    message = new Message();
+    tempSubString = packedMessagesString.substr(start, messageSize);
+    message->unpack(tempSubString, ranksLimit);
+    messages.push_back(message);
+    start += messageSize;
+  }
+}
+
 
 } // end namespace lumberjack
 } // end namespace axom
