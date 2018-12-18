@@ -309,6 +309,14 @@ struct InOutHelper
     return QUEST_INOUT_SUCCESS;
   }
 
+  /*!
+   * Returns the spatial dimension of the mesh
+   */
+  int getDimension() const
+  {
+    return m_params.m_dimension;
+  }
+
 private:
   mint::Mesh* m_surfaceMesh;
   InOutOctree<DIM>* m_inoutTree;
@@ -385,29 +393,6 @@ int inout_set_verbose(bool verbosity)
   return QUEST_INOUT_SUCCESS;
 }
 
-int inout_set_dimension(int dimension)
-{
-  if(inout_initialized())
-  {
-    SLIC_WARNING( "quest inout query must NOT be initialized "
-                  << "prior to calling 'inout_set_verbose'");
-
-    return QUEST_INOUT_FAILED;
-  }
-
-  if(dimension != 3)
-  {
-    SLIC_WARNING("quest_inout query only currently supported on 3D meshes."
-                 << " Supplied dimension parameter was " << dimension);
-
-    return QUEST_INOUT_FAILED;
-  }
-
-  return QUEST_INOUT_SUCCESS;
-}
-
-
-
 int inout_mesh_min_bounds(double* coords)
 {
   if(!inout_initialized())
@@ -468,7 +453,7 @@ bool inout_inside(double x, double y, double z)
   if(!inout_initialized())
   {
     SLIC_WARNING( "quest inout query must be initialized "
-                  << "prior to calling 'inout_get_mesh_bounds'");
+                  << "prior to calling quest inout interface functions");
 
     return false;
   }
@@ -482,7 +467,7 @@ int inout_inside(const double* x, const double* y, const double* z,
   if(!inout_initialized())
   {
     SLIC_WARNING( "quest inout query must be initialized "
-                  << "prior to calling 'inout_get_mesh_bounds'");
+                  << "prior to calling quest inout interface functions");
 
     return QUEST_INOUT_FAILED;
   }
@@ -495,6 +480,20 @@ int inout_inside(const double* x, const double* y, const double* z,
 
   return s_inoutHelper.within(x,y,z, npoints, res);
 }
+
+int inout_get_dimension()
+{
+  if(!inout_initialized())
+  {
+    SLIC_WARNING( "quest inout query must be initialized "
+                  << "prior to calling quest inout interface functions");
+
+    return QUEST_INOUT_FAILED;
+  }
+
+  return s_inoutHelper.getDimension();
+}
+
 
 } // end namespace quest
 } // end namespace axom

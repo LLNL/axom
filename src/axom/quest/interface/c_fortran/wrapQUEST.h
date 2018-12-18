@@ -58,8 +58,6 @@ bool QUEST_inout_initialized();
 
 int QUEST_inout_set_verbose(bool verbosity);
 
-int QUEST_inout_set_dimension(int dim);
-
 bool QUEST_inout_inside_0(double x, double y);
 
 bool QUEST_inout_inside_1(double x, double y, double z);
@@ -69,6 +67,8 @@ int QUEST_inout_mesh_min_bounds(double* coords);
 int QUEST_inout_mesh_max_bounds(double* coords);
 
 int QUEST_inout_mesh_center_of_mass(double* coords);
+
+int QUEST_inout_get_dimension();
 
 int QUEST_inout_finalize();
 

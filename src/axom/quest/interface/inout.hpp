@@ -27,6 +27,25 @@
 // C/C++ includes
 #include <string>   // for std::string
 
+
+/*!
+ * \file inout.hpp
+ *
+ * \brief Defines a C-style interface for evaluating the \a inout query.
+ *
+ * Given a watertight surface mesh and an arbitrary point in space,
+ * the \a inout query determines if the point is contained within the enclosed
+ * volume defined by the surface mesh.
+ *
+ * The mesh can either be provided via a path to a mesh file, or as a pointer
+ * to a mint::Mesh object. The interface currently supports reading triangle meshes
+ * in the <a href="https://en.wikipedia.org/wiki/STL_(file_format)">STL format</a>.
+ *
+ * The interface has several parameters that may be set before initializing the
+ * query (via \a inout_init() ), and several functions that are available once the
+ * query has been initialized.
+ */
+
 namespace axom
 {
 
@@ -41,7 +60,7 @@ namespace quest
 constexpr int QUEST_INOUT_SUCCESS = 0;
 constexpr int QUEST_INOUT_FAILED = -1;
 
-/// \name InOut query initialization and finalizing functions
+/// \name InOut query -- initialization and finalization functions
 /// @{
 
 /*!
@@ -92,8 +111,8 @@ bool inout_initialized();
 
 
 
-/// \name InOut query querying functions
-/// \note These must be called after initializing the query
+/// \name InOut query -- properties and querying functions
+/// \note These must be called after \a inout_init()
 /// @{
 
 
@@ -161,7 +180,7 @@ int inout_mesh_max_bounds(double* coords);
  * mesh coordinates rather than a continuous center of mass defined by the mesh
  * faces.
  *
- * \param [in] coords A buffer for the coordinates
+ * \param [in] coords A buffer for the center of mass coordinates
  * \pre \a coords != nullptr and has sufficient storage for the coordinates
  * \pre inout_initialized() == true
  * \return Return code is QUEST_INOUT_SUCCESS if successful
@@ -169,35 +188,34 @@ int inout_mesh_max_bounds(double* coords);
  */
 int inout_mesh_center_of_mass(double* coords);
 
+/*!
+ * \brief Gets the spatial dimension of the query
+ *
+ * \return Returns the spatial dimension for query points when the query has
+ * been successfully initialized and QUEST_INOUT_FAILED otherwise.
+ * \note This determines the number of coordinates for query points in
+ * \a inout_inside() and the number of returned coordinates in functions like
+ * \a inout_mesh_min_bounds()
+ * \pre inout_initialized() == true
+ */
+int inout_get_dimension();
+
 /// @}
 
 
-/// \name InOut query setup options
-/// \note These must be called before initializing the query
+/// \name InOut query -- setup options and parameters
+/// \note These must be called before \a inout_init()
 /// @{
 
 /*!
  * \brief Sets the logging verbosity
  *
- * \param verbosity True for more verbose, false
+ * \param verbosity True for more verbose, false for less verbose
  * \return Return code is QUEST_INOUT_SUCCESS if successful
  *  and QUEST_INOUT_FAILED otherwise.
  * \pre inout_initialized() == false
  */
 int inout_set_verbose(bool verbosity);
-
-/*!
- * \brief Sets the spatial dimension of the mesh
- *
- * \param dimension The spatial dimension
- * \return Return code is QUEST_INOUT_SUCCESS if successful
- *  and QUEST_INOUT_FAILED otherwise.
- * \warning The quest inout query is only currently defined
- * for 3D meshes. This function is in anticipation of
- * support for 2D meshes.
- * \pre inout_initialized() == false
- */
-int inout_set_dimension(int dimension);
 
 /// @}
 

@@ -125,7 +125,7 @@ TEST_F(InOutInterfaceTest, initialize_from_mesh)
 }
 
 
-TEST_F(InOutInterfaceTest, get_mesh_bounds)
+TEST_F(InOutInterfaceTest, query_properties)
 {
   const int failCode = axom::quest::QUEST_INOUT_FAILED;
   const int successCode = axom::quest::QUEST_INOUT_SUCCESS;
@@ -134,7 +134,7 @@ TEST_F(InOutInterfaceTest, get_mesh_bounds)
   typedef InOutInterfaceTest::InOutBBox BBoxType;
   PointType lo, hi, cm;
 
-  // first test without initializing
+  // first, test before initializing
   {
     EXPECT_FALSE(axom::quest::inout_initialized());
 
@@ -144,10 +144,11 @@ TEST_F(InOutInterfaceTest, get_mesh_bounds)
     EXPECT_EQ(failCode, axom::quest::inout_mesh_min_bounds(lo.data()));
     EXPECT_EQ(failCode, axom::quest::inout_mesh_max_bounds(hi.data()));
     EXPECT_EQ(failCode, axom::quest::inout_mesh_center_of_mass(cm.data()));
+    EXPECT_EQ(failCode, axom::quest::inout_get_dimension());
     SLIC_INFO("*** Done.");
   }
 
-  // next, test with initialization
+  // next, test after initialization
   {
     axom::quest::inout_init(this->meshfile);
 
@@ -155,8 +156,13 @@ TEST_F(InOutInterfaceTest, get_mesh_bounds)
     EXPECT_EQ(successCode, axom::quest::inout_mesh_max_bounds(hi.data()));
     EXPECT_EQ(successCode, axom::quest::inout_mesh_center_of_mass(cm.data()));
 
+    const int expSpatialDim = 3;
+    int spatialDim = axom::quest::inout_get_dimension();
+    EXPECT_EQ(expSpatialDim, spatialDim);
+
     SLIC_INFO("Mesh bounding box is " << BBoxType(lo,hi));
     SLIC_INFO("Mesh center of mass is " << cm);
+    SLIC_INFO("Spatial dimension of query is " << spatialDim);
 
     axom::quest::inout_finalize();
   }

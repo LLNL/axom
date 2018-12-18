@@ -91,14 +91,6 @@ int QUEST_inout_set_verbose(bool verbosity)
 // splicer end function.inout_set_verbose
 }
 
-int QUEST_inout_set_dimension(int dim)
-{
-// splicer begin function.inout_set_dimension
-  int SHC_rv = axom::quest::inout_set_dimension(dim);
-  return SHC_rv;
-// splicer end function.inout_set_dimension
-}
-
 bool QUEST_inout_inside_0(double x, double y)
 {
 // splicer begin function.inout_inside_0
@@ -137,6 +129,14 @@ int QUEST_inout_mesh_center_of_mass(double* coords)
   int SHC_rv = axom::quest::inout_mesh_center_of_mass(coords);
   return SHC_rv;
 // splicer end function.inout_mesh_center_of_mass
+}
+
+int QUEST_inout_get_dimension()
+{
+// splicer begin function.inout_get_dimension
+  int SHC_rv = axom::quest::inout_get_dimension();
+  return SHC_rv;
+// splicer end function.inout_get_dimension
 }
 
 int QUEST_inout_finalize()

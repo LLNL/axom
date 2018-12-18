@@ -95,15 +95,6 @@ module axom_quest
             integer(C_INT) :: SHT_rv
         end function c_inout_set_verbose
 
-        function quest_inout_set_dimension(dim) &
-                result(SHT_rv) &
-                bind(C, name="QUEST_inout_set_dimension")
-            use iso_c_binding, only : C_INT
-            implicit none
-            integer(C_INT), value, intent(IN) :: dim
-            integer(C_INT) :: SHT_rv
-        end function quest_inout_set_dimension
-
         function c_inout_inside_0(x, y) &
                 result(SHT_rv) &
                 bind(C, name="QUEST_inout_inside_0")
@@ -151,6 +142,14 @@ module axom_quest
             real(C_DOUBLE), intent(OUT) :: coords(*)
             integer(C_INT) :: SHT_rv
         end function quest_inout_mesh_center_of_mass
+
+        function quest_inout_get_dimension() &
+                result(SHT_rv) &
+                bind(C, name="QUEST_inout_get_dimension")
+            use iso_c_binding, only : C_INT
+            implicit none
+            integer(C_INT) :: SHT_rv
+        end function quest_inout_get_dimension
 
         function quest_inout_finalize() &
                 result(SHT_rv) &

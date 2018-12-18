@@ -56,13 +56,13 @@ declarations:
       - decl: bool inout_initialized()
 
       - decl: int inout_set_verbose( bool verbosity )
-      - decl: int inout_set_dimension( int dim )
 
       - decl: bool inout_inside(double x, double y, double z=0.0)
 
       - decl: int inout_mesh_min_bounds(double* coords+dimension+intent(OUT))
       - decl: int inout_mesh_max_bounds(double* coords+dimension+intent(OUT))
       - decl: int inout_mesh_center_of_mass(double* coords+dimension+intent(OUT))
+      - decl: int inout_get_dimension()
 
       - decl: int inout_finalize()
 
