@@ -53,7 +53,7 @@ src-cz-bgq :
 ##########
 tpl-cz : sleep = sleep 2
 tpl-cz : tpl-cz-toss3 tpl-cz-blueos tpl-cz-bgq
-	$(info Results in /usr/workspace/wsa/axom/thirdparty_libs/builds)
+	$(info Results in /usr/WS1/axom/thirdparty_libs/builds)
 
 tpl-cz-toss3 :
 	ssh quartz    'cd $(here) && msub -d $(here) msub_llnl_cz_toss3_all_compilers.sh'
@@ -85,7 +85,7 @@ src-rz-bgq :
 ##########
 tpl-rz : sleep = sleep 2
 tpl-rz : tpl-rz-chaos5 tpl-rz-toss3 tpl-rz-blueos tpl-rz-bgq
-	$(info Results in /usr/workspace/wsrzc/axom/thirdparty_libs/builds)
+	$(info Results in /usr/WS1/axom/thirdparty_libs/builds)
 
 tpl-rz-chaos5 :
 	ssh rzalastor 'cd $(here) && sbatch sbatch_llnl_rz_chaos5_all_compilers.sh'

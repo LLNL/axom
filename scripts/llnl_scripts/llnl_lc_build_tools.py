@@ -526,27 +526,21 @@ def get_machine_name():
 def get_system_type():
     return os.environ["SYS_TYPE"]
 
+
 def get_platform():
     return get_system_type() if "SYS_TYPE" in os.environ else get_machine_name()
+
 
 def get_username():
     return getpass.getuser()
 
 
 def get_archive_base_dir():
-    if on_rz():
-        archive_base_dir = "/usr/workspace/wsrzd/axomdev/archive"
-    else:
-        archive_base_dir = "/usr/workspace/wsb/axomdev/archive"
-    return archive_base_dir
+    return "/usr/WS2/axomdev/archive"
 
 
 def get_shared_tpl_base_dir():
-    if on_rz():
-        builds_dir = "/usr/workspace/wsrzc/axom/thirdparty_libs"
-    else:
-        builds_dir = "/usr/workspace/wsa/axom/thirdparty_libs"
-    return builds_dir
+    return "/usr/WS1/axom/thirdparty_libs"
 
 
 def get_shared_tpl_mirror_dir():
