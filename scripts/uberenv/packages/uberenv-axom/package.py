@@ -89,6 +89,7 @@ class UberenvAxom(Package):
     depends_on("python",   when="+python")
 
     depends_on("py-sphinx", when="+devtools")
+    depends_on("py-breathe", when="+devtools")
     depends_on("py-shroud", when="+devtools")
 
     depends_on("mpi",when="+mpi")
@@ -277,6 +278,13 @@ class UberenvAxom(Package):
             cfg.write(cmake_cache_entry("GENHTML_PATH",pjoin(lcov_dir,"usr","bin","genhtml")))
         else:
             cfg.write("# lcov and genhtml not built by uberenv\n\n")
+
+        if "cppcheck" in spec:
+            cppcheck_bin_dir = get_spec_path(spec, "cppcheck", path_replacements, use_bin=True)
+            cfg.write("# cppcheck from uberenv\n")
+            cfg.write(cmake_cache_entry("CPPCHECK_EXECUTABLE", pjoin(cppcheck_bin_dir, "cppcheck")))
+        else:
+            cfg.write("# cppcheck not built by uberenv\n\n")
 
         cfg.write("##############\n")
         cfg.write("# MPI\n")
