@@ -24,7 +24,7 @@
 # Compiler Spec: clang@4.0.0
 ##################################
 
-# CMake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_11_14_15_03_42/clang-4.0.0/cmake-3.9.6/bin/cmake
+# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2018_12_18_13_23_11/clang-4.0.0/cmake-3.9.6/bin/cmake
 
 ##############
 # Compilers
@@ -46,7 +46,7 @@ set(CMAKE_Fortran_COMPILER "/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran" CACHE 
 ##############
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_11_14_15_03_42/clang-4.0.0" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2018_12_18_13_23_11/clang-4.0.0" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.19" CACHE PATH "")
@@ -77,6 +77,9 @@ set(SHROUD_EXECUTABLE "${TPL_ROOT}/python-2.7.15/bin/shroud" CACHE PATH "")
 set(UNCRUSTIFY_EXECUTABLE "${TPL_ROOT}/uncrustify-0.61/bin/uncrustify" CACHE PATH "")
 
 # lcov and genhtml not built by uberenv
+
+# cppcheck from uberenv
+set(CPPCHECK_EXECUTABLE "${TPL_ROOT}/cppcheck-1.81/bin/cppcheck" CACHE PATH "")
 
 ##############
 # MPI
