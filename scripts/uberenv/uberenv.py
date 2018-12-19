@@ -393,8 +393,11 @@ def main():
             return res
         if "spack_activate" in project_opts:
             for pkg_name in project_opts["spack_activate"]:
+              # Only attempt to activate packages that were actually built
+              find_cmd = "spack/bin/spack find | grep " + pkg_name
               activate_cmd = "spack/bin/spack activate " + pkg_name
-              sexe(activate_cmd, echo=True)   
+              conditional_activate_cmd = "{} && {}".format(find_cmd, activate_cmd)
+              sexe(conditional_activate_cmd, echo=True)
         return res
 
 if __name__ == "__main__":
