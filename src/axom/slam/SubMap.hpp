@@ -340,7 +340,7 @@ private: //helper functions
   }
 
   /** Checks the ComponentFlatIndex is valid */
-  void     verifyPosition(SetPosition idx) const override
+  void verifyPosition(SetPosition AXOM_DEBUG_PARAM(idx) ) const override
   {
     SLIC_ASSERT_MSG(idx >= 0 && idx < m_subsetIdx.size()*numComp(),
                     "Attempted to access element "
@@ -349,7 +349,8 @@ private: //helper functions
   }
 
   /** Checks the ElementFlatIndex and the component index is valid */
-  void     verifyPosition(SetPosition idx, SetPosition comp) const
+  void verifyPosition(SetPosition AXOM_DEBUG_PARAM(idx),
+                      SetPosition AXOM_DEBUG_PARAM(comp) ) const
   {
     SLIC_ASSERT_MSG(idx >= 0 && idx < m_subsetIdx.size() &&
                     comp >= 0 && comp < numComp(),
