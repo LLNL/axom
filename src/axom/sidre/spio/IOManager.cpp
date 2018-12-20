@@ -610,6 +610,7 @@ std::string IOManager::getProtocol(
   {
     relay_protocol = "hdf5";
     herr_t errv = H5Fclose(file_id);
+    AXOM_DEBUG_VAR(errv);
     SLIC_ASSERT(errv >= 0);
   }
 
@@ -983,6 +984,7 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
   hid_t root_file_id =
     conduit::relay::io::hdf5_open_file_for_read_write(file_name);
 
+  AXOM_DEBUG_VAR(root_file_id);
   SLIC_ASSERT(root_file_id >= 0);
 
   std::string bp_index("blueprint_index/" + mesh_name);
