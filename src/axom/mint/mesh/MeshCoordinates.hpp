@@ -1031,6 +1031,8 @@ inline void MeshCoordinates::shrink( )
 inline void MeshCoordinates::initialize( IndexType numNodes,
                                          IndexType maxCapacity )
 {
+  SLIC_ERROR_IF( (numNodes < 0) , "supplied numNodes must be positive!" );
+
   SLIC_ASSERT( numNodes <= maxCapacity );
   SLIC_ASSERT( !invalidDimension() );
 
