@@ -16,6 +16,6 @@
 # documentation targets
 ################################
 
-if(SPHINX_FOUND)
-  add_subdirectory(sphinx)
-endif()
+# add a target to generate documentation with Sphinx
+
+blt_add_sphinx_target( quest_docs )
