@@ -122,6 +122,19 @@ public:
   ModularInt&       operator-=(int val)   { subtract(val); return *this; }
   ModularInt&       operator*=(int val)   { multiply(val); return *this; }
 
+  template<typename OtherSizePolicy>
+  bool operator==(const ModularInt<OtherSizePolicy>& mi) const
+  {
+    return (this->modulus() == mi.modulus())
+        && (m_val == static_cast<int>(mi));
+  }
+
+  template<typename OtherSizePolicy>
+  bool operator!=(const ModularInt<OtherSizePolicy>& mi) const
+  {
+    return !operator==(mi);
+  }
+
 private:
   void                      add(int val)       { m_val += val; normalize(); }
   void                      subtract(int val)  { m_val -= val; normalize(); }
