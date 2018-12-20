@@ -17,22 +17,31 @@
 
 
 /*
- * \file
+ * \file slam_ModularInt.cpp
  *
  * Unit tests for the modular arithmetic class ModularInt
  */
 
 #include "gtest/gtest.h"
 
-#include "axom/slic/interface/slic.hpp"
+#include "axom/slic.hpp"
 
 #include "axom/slam/policies/SizePolicies.hpp"
 #include "axom/slam/ModularInt.hpp"
 
+namespace slam=axom::slam;
+
+namespace
+{
+template <int N>
+using IntSize = slam::policies::CompileTimeSize<int, N>;
+
+typedef slam::policies::RuntimeSize<int> RTIntSize;
+}
+
 TEST(slam_modInt,runtime_modular_int_unitialized_and_full)
 {
-  typedef axom::slam::ModularInt<axom::slam::policies::RuntimeSize<int> >
-    ModularIntType;
+  typedef slam::ModularInt< RTIntSize > ModularIntType;
 
 #ifdef AXOM_DEBUG
   // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail
@@ -66,10 +75,9 @@ TEST(slam_modInt,runtime_modular_int_unitialized_and_full)
 
 TEST(slam_modInt,compile_modular_int_unitialized_and_full)
 {
-  using namespace axom::slam;
 
 #ifdef AXOM_DEBUG
-  typedef ModularInt<policies::CompileTimeSize<int, 0> > ModularIntZero;
+  typedef slam::ModularInt< IntSize<0> > ModularIntZero;
 
   // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail
   // in debug mode
@@ -92,16 +100,16 @@ TEST(slam_modInt,compile_modular_int_unitialized_and_full)
 
   SLIC_INFO("Checking modular int with value set to modulus"
             <<" equals (i.e. is equivalent to) 0 for (compile time)");
-  ModularInt<policies::CompileTimeSize<int, 1> > m1(1);
+  slam::ModularInt< IntSize<1> > m1(1);
   EXPECT_EQ(  m1, 0);
 
-  ModularInt<policies::CompileTimeSize<int, 2> > m2(2);
+  slam::ModularInt< IntSize<2> > m2(2);
   EXPECT_EQ(  m2, 0);
 
-  ModularInt<policies::CompileTimeSize<int, 3> > m3(3);
+  slam::ModularInt< IntSize<3> > m3(3);
   EXPECT_EQ(  m3, 0);
 
-  ModularInt<policies::CompileTimeSize<int, 4> > m4(4);
+  slam::ModularInt< IntSize<4> > m4(4);
   EXPECT_EQ(  m4, 0);
 
 }
@@ -112,8 +120,7 @@ TEST(slam_modInt,runtime_modular_int)
   SLIC_INFO("Checking modular int addition and subtraction"
             <<" when supplying the max value at runtime");
 
-  typedef axom::slam::ModularInt<axom::slam::policies::RuntimeSize<int> >
-    ModularIntType;
+  typedef axom::slam::ModularInt<RTIntSize> ModularIntType;
 
   volatile int sz = 937;
 
@@ -144,10 +151,134 @@ TEST(slam_modInt,runtime_modular_int)
   }
 }
 
+
+TEST(slam_modInt,equality)
+{
+  SLIC_INFO("Checking modular int equality");
+
+  typedef slam::ModularInt<RTIntSize> RTModularInt;
+
+  // check equality when both have runtime size policies
+  {
+    volatile int sz = 7;
+
+    RTModularInt a(4, sz);
+    RTModularInt b(4, sz);
+    EXPECT_EQ(a,b);
+    EXPECT_TRUE(a==b);
+    EXPECT_FALSE(a!=b);
+
+    // initially different values
+    RTModularInt c(5, sz);
+    EXPECT_NE(a,c);
+
+    // ... but are equal after some manipulation
+    EXPECT_EQ(a,c-1);
+    c--;
+    EXPECT_EQ(a,c);
+
+    // Not equal when modulus is different
+    RTModularInt d(4, 2*sz);
+    EXPECT_NE(a,d);
+  }
+
+  // check equality when both have compile time size policies
+  {
+    const int sz = 7;
+
+    slam::ModularInt< IntSize<sz> > a(4);
+    slam::ModularInt< IntSize<sz> > b(4);
+    EXPECT_EQ(a,b);
+    EXPECT_TRUE(a==b);
+    EXPECT_FALSE(a!=b);
+
+    // initially different values
+    slam::ModularInt< IntSize<sz> > c(5);
+    EXPECT_NE(a,c);
+
+    // ... but are equal after some manipulation
+    EXPECT_EQ(a,c-1);
+    c--;
+    EXPECT_EQ(a,c);
+
+    // Not equal when modulus is different
+    slam::ModularInt< IntSize<2* sz> > d(4);
+    EXPECT_NE(a,d);
+  }
+
+  // check equality when they different size policies
+  {
+    const int sz = 7;
+
+    RTModularInt a(4, sz);
+    slam::ModularInt< IntSize<sz> > b(4);
+    EXPECT_EQ(a,b);
+    EXPECT_TRUE(a==b);
+    EXPECT_FALSE(a!=b);
+
+    // check that we get the same results if we swap the operands
+    EXPECT_TRUE(b==a);
+    EXPECT_FALSE(b!=a);
+
+    // same modulus with initially different values
+    slam::ModularInt< IntSize<sz> >c(5);
+    EXPECT_NE(a,c);
+
+    // ... but are equal after some manipulation
+    EXPECT_EQ(a,c-1);
+    c--;
+    EXPECT_EQ(a,c);
+
+    // Not equal when modulus is different
+    slam::ModularInt< IntSize<2* sz> > d(4);
+    EXPECT_NE(a,d);
+  }
+}
+
+TEST(slam_modInt,copy_and_assign)
+{
+  SLIC_INFO("Checking modular int copy and assignment");
+
+  typedef axom::slam::ModularInt<RTIntSize> ModularIntType;
+
+  volatile int sz = 7;
+
+  // Note: copy assignment only affects its value, but not modulus
+
+  // same modulus
+  {
+    ModularIntType a(5,sz);
+    ModularIntType b(6,sz);
+    EXPECT_NE(a,b);
+
+    // copy constructor
+    ModularIntType c( a );
+    EXPECT_EQ(a,c);
+
+    // copy assignment
+    a = b;
+    EXPECT_EQ(a,b);
+  }
+
+  // different modulus
+  {
+    ModularIntType a(5,sz);
+    ModularIntType b(6,2*sz);
+    EXPECT_NE(a,b);
+
+    // copy constructor
+    ModularIntType c( a );
+    EXPECT_EQ(a,c);
+
+    // copy assignment -- different modulus
+    a = b;
+    EXPECT_NE(a,b);
+  }
+}
+
 TEST(slam_modInt,runtime_modular_int_mult)
 {
-  typedef axom::slam::ModularInt<axom::slam::policies::RuntimeSize<int> >
-    ModularIntType;
+  typedef slam::ModularInt< RTIntSize > ModularIntType;
 
   volatile int sz = 10;
 
@@ -182,9 +313,7 @@ TEST(slam_modInt,compiletime_modular_int)
 
   const int SZ = 937;
 
-  typedef
-    axom::slam::ModularInt<axom::slam::policies::CompileTimeSize<int,SZ> >
-    ModularIntType;
+  typedef slam::ModularInt< IntSize<SZ> > ModularIntType;
 
   int sz = SZ;
 
@@ -220,23 +349,14 @@ TEST(slam_modInt,compiletime_modular_int)
 }
 
 
-
 //----------------------------------------------------------------------
-//----------------------------------------------------------------------
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
-
   ::testing::InitGoogleTest(&argc, argv);
 
-  UnitTestLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::UnitTestLogger logger;  // create & initialize test logger
 
   result = RUN_ALL_TESTS();
-
   return result;
 }
