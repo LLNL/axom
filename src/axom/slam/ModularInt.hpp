@@ -61,17 +61,30 @@ public:
     normalize();
   }
 
-  ModularInt(const ModularInt& zn) : SizePolicy( zn ), m_val( zn.m_val)
+  /**
+   * \brief ModularInt copy constructor
+   *
+   * \param mi other ModularInt
+   */
+  ModularInt(const ModularInt& mi) : SizePolicy( mi ), m_val( mi.m_val)
   {
     SLIC_ASSERT( modulus() != 0);
 
-    // For efficiency, we are assuming that argument zn is consistent
+    // For efficiency, we are assuming that argument mi is consistent
     // (and avoiding normalization). This assumption is tested in debug
     // builds...
     //normalize();
     verifyValue();
   }
 
+  /**
+   * \brief ModularInt copy assignment operator
+   *
+   * \param mi other ModularInt
+   * \return A reference to the constructed object
+   * \note This operator only modifies the value of the local instance.
+   * It does not modify the \a modulus()
+   */
   ModularInt& operator=(const ModularInt& mi)
   {
     if(&mi != this)
@@ -83,21 +96,30 @@ public:
   }
 
   /**
-   * Implicit cast of a ModularInt to an int
+   * \brief Implicit cast of a ModularInt to an int
    */
   operator int() const { return m_val; }
 
-  int                       modulus() const
+  int modulus() const
   {
     return SizePolicy::size();
   }
 
-  ModularInt&       operator++()
+  /// \name ModularInt arithmetic operations
+  ///
+  /// Arithmetic operations on a ModularInt conform to modular arithmetic.
+  /// I.e. after an arithmetic operation, the value of a ModularInt is always
+  /// in the range [0, \a modulus()-1).
+  /// @{
+
+  /** Pre-increment operator */
+  ModularInt& operator++()
   {
     add(1);
     return *this;
   }
 
+  /** Post-increment operator */
   const ModularInt operator ++(int)
   {
     ModularInt tmp(m_val, modulus());
@@ -105,12 +127,14 @@ public:
     return tmp;
   }
 
-  ModularInt&       operator--()
+  /** Pre-decrement operator */
+  ModularInt& operator--()
   {
     subtract(1);
     return *this;
   }
 
+  /** Post-decrement operator */
   const ModularInt operator --(int)
   {
     ModularInt tmp(m_val, modulus());
@@ -118,22 +142,51 @@ public:
     return tmp;
   }
 
-  ModularInt&       operator+=(int val)   { add(val); return *this; }
-  ModularInt&       operator-=(int val)   { subtract(val); return *this; }
-  ModularInt&       operator*=(int val)   { multiply(val); return *this; }
+  /** \brief Addition assignment operator */
+  ModularInt& operator+=(int val)   { add(val); return *this; }
 
+  /** \brief Subtraction assignment operator */
+  ModularInt& operator-=(int val)   { subtract(val); return *this; }
+
+  /** \brief Multiplication assignment operator */
+  ModularInt& operator*=(int val)   { multiply(val); return *this; }
+
+  /// @}
+
+  /// \name ModularInt equality operations
+  ///
+  /// \note Equality operations allow the operands to have
+  /// different \a SizePolicy types
+  /// @{
+
+  /**
+   * \brief Equality comparison operator
+   *
+   * \param mi Other ModularInt
+   * \note This function supports ModularInts with different SizePolicies
+   * \return True when both ModularInts have the same modulus()
+   * and the same value, false otherwise.
+   */
   template<typename OtherSizePolicy>
   bool operator==(const ModularInt<OtherSizePolicy>& mi) const
   {
     return (this->modulus() == mi.modulus())
-        && (m_val == static_cast<int>(mi));
+           && (m_val == static_cast<int>(mi));
   }
 
+  /**
+   * \brief Inequality comparison operator
+   * \return True if the two ModularInts are not equal
+   * (as defined by operator==() )
+   * \sa operator==()
+   */
   template<typename OtherSizePolicy>
   bool operator!=(const ModularInt<OtherSizePolicy>& mi) const
   {
     return !operator==(mi);
   }
+
+  /// @}
 
 private:
   void                      add(int val)       { m_val += val; normalize(); }
