@@ -450,14 +450,14 @@ protected:
 /// @{
 
   /*! \brief Test if pos and component are within bounds */
-  inline bool inBounds(IndexType pos, IndexType component)
+  inline bool inBounds(IndexType pos, IndexType component) const
   {
     return (pos >= 0 && pos < m_num_tuples) &&
            (component >= 0 && component < m_num_components);
   }
 
   /*! \brief Test if idx is within bounds */
-  inline bool inBounds(IndexType idx)
+  inline bool inBounds(IndexType idx) const
   {
     return idx >= 0 && idx < m_num_tuples * m_num_components;
   }

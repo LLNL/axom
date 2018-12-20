@@ -367,7 +367,7 @@ private:
     }
 
     // Output some information
-    SLIC_INFO(
+    SLIC_DEBUG(
       "Mesh nodes fec -- "
       << nodalFEColl->Name()
       << " with ordering " << nodalFESpace->GetOrdering()

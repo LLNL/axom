@@ -330,7 +330,7 @@ public:
 
 private:
   /** \brief Debug check that the index \a pos is not out-of-range */
-  void verifyPosition(PositionType pos) const
+  void verifyPosition(PositionType AXOM_DEBUG_PARAM(pos) ) const
   {
     SLIC_ASSERT_MSG(
       (pos >= 0) && (pos < static_cast<PositionType>(m_data.size() ) ),
