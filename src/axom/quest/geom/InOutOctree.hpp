@@ -2345,7 +2345,7 @@ public:
    *  \note By construction, there should be no such pairs in a valid
    * InOutOctree mesh.
    */
-  void dumpDifferentColoredNeighborsMeshVTK(const std::string name) const
+  void dumpDifferentColoredNeighborsMeshVTK(const std::string& name) const
   {
     if( m_generationState < InOutOctreeType::INOUTOCTREE_LEAVES_COLORED)
     {
