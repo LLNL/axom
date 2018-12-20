@@ -143,27 +143,13 @@ int signed_distance_init( const std::string& file,
  */
 int signed_distance_init( const mint::Mesh* m, MPI_Comm comm=MPI_COMM_SELF );
 
-/// @}
-
 /*!
  * \brief Checks if the Signed Distance Query has been initialized
  * \return status true if initialized, else, false.
  */
 bool signed_distance_initialized( );
 
-/*!
- * \brief Computes the bounds of the specified input mesh supplied to the
- *  Signed Distance Query.
- *
- * \param [out] lo buffer to store the lower bound mesh coordinates.
- * \param [out] hi buffer to store the upper bound mesh coordinates.
- *
- * \pre lo != nullptr
- * \pre hi != nullptr
- * \pre hi & lo must point to a buffer that is at least ndims long.
- * \pre signed_distance_initialized() == true
- */
-void signed_distance_get_mesh_bounds( double* lo, double* hi );
+/// @}
 
 /// \name Signed Distance Query Options
 /// @{
@@ -277,6 +263,20 @@ void signed_distance_evaluate( const double* x,
                                const double* z,
                                int npoints,
                                double* phi );
+
+/*!
+ * \brief Computes the bounds of the specified input mesh supplied to the
+ *  Signed Distance Query.
+ *
+ * \param [out] lo buffer to store the lower bound mesh coordinates.
+ * \param [out] hi buffer to store the upper bound mesh coordinates.
+ *
+ * \pre lo != nullptr
+ * \pre hi != nullptr
+ * \pre hi & lo must point to a buffer that is at least ndims long.
+ * \pre signed_distance_initialized() == true
+ */
+void signed_distance_get_mesh_bounds( double* lo, double* hi );
 
 /// @}
 
