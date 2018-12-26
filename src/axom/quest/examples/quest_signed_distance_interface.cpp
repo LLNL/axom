@@ -46,7 +46,7 @@ void show_help( );
 // GLOBALS
 //------------------------------------------------------------------------------
 MPI_Comm global_comm;
-int rank;
+int mpirank;
 int numranks;
 
 /*!
@@ -78,10 +78,10 @@ int main ( int argc, char** argv )
   MPI_Init( &argc, &argv );
   global_comm = MPI_COMM_WORLD;
 
-  MPI_Comm_rank( global_comm, &rank );
+  MPI_Comm_rank( global_comm, &mpirank );
   MPI_Comm_size( global_comm, &numranks );
 #else
-  rank     = 0;
+  mpirank     = 0;
   numranks = 1;
 #endif
 
@@ -147,7 +147,7 @@ int main ( int argc, char** argv )
     slic::flushStreams();
 
     std::ostringstream oss;
-    oss << "uniform_mesh_" << rank << ".vtk";
+    oss << "uniform_mesh_" << mpirank << ".vtk";
     mint::write_vtk( mesh, oss.str() );
   }
 

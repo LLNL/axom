@@ -43,15 +43,24 @@ set( primal_headers
 
      ## spatial acceleration
      spatial_acceleration/BVH.hpp
+     
+     spatial_acceleration/linear_bvh/aabb.hpp
+     spatial_acceleration/linear_bvh/linear_bvh_builder.hpp
+     spatial_acceleration/linear_bvh/math.hpp
+     spatial_acceleration/linear_bvh/morton_codes.hpp
+     spatial_acceleration/linear_bvh/policies.hpp
+     spatial_acceleration/linear_bvh/range.hpp
+     spatial_acceleration/linear_bvh/vec.hpp
    )
 
 set( primal_sources
-     
+
      ## operators
      operators/detail/intersect_impl.cpp
-     
+
      ## spatial acceleration
      spatial_acceleration/BVH.cpp
+     spatial_acceleration/linear_bvh/linear_bvh_builder.cpp
    )
 
 ################################
@@ -61,9 +70,10 @@ set( primal_dependencies
      core
      slic
      )
-     
+
 if ( ${RAJA_FOUND} )
   list(APPEND primal_dependencies raja)
+  list(APPEND primal_dependencies umpire)
 endif()
 
 if ( ${ENABLE_OPENMP} )

@@ -16,6 +16,9 @@
  */
 
 #include "axom/primal/spatial_acceleration/BVH.hpp"
+#include "axom/primal/spatial_acceleration/linear_bvh/linear_bvh_builder.hpp"
+#include "axom/primal/spatial_acceleration/linear_bvh/aabb.hpp"
+#include "axom/primal/spatial_acceleration/linear_bvh/vec.hpp"
 
 #include "axom/slic/interface/slic.hpp" // for SLIC macros
 
@@ -50,7 +53,10 @@ BVH::~BVH()
 //------------------------------------------------------------------------------
 int BVH::build( )
 {
-  // TODO: build the BVH
+
+  bvh::LinearBVHBuilder builder;
+  bvh::BVH bvh = builder.construct(m_boxes, m_numItems);
+  std::cout<<"BOUNDS "<<bvh.m_bounds<<"\n";
   return BVH_BUILD_OK;
 }
 

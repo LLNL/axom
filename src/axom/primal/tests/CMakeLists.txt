@@ -6,6 +6,7 @@
 set( primal_tests
     primal_boundingbox.cpp
     primal_orientedboundingbox.cpp
+    primal_bvh.cpp
     primal_clip.cpp
     primal_closest_point.cpp
     primal_in_sphere.cpp
@@ -27,11 +28,23 @@ foreach ( test ${primal_tests} )
 
    get_filename_component( test_name ${test} NAME_WE )
 
+   set(primal_test_dependencies fmt primal slic gtest)
+
+   if ( ${RAJA_FOUND} )
+     list(APPEND primal_test_dependencies raja)
+     list(APPEND primal_test_dependencies umpire)
+   endif()
+
+   if ( ${ENABLE_OPENMP} )
+     list(APPEND primal_test_dependencies openmp)
+   endif()
+
+
    blt_add_executable(
         NAME       ${test_name}_test
         SOURCES    ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-        DEPENDS_ON fmt primal slic gtest
+        DEPENDS_ON ${primal_test_dependencies}
         FOLDER     axom/primal/tests
        )
 
