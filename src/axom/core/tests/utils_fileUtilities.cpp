@@ -6,7 +6,10 @@
 #include "gtest/gtest.h"
 #include <fstream>
 
+#include "axom/config.hpp"
 #include "axom/core/utilities/FileUtilities.hpp"
+
+namespace fs = axom::utilities::filesystem;
 
 TEST(core_fileUtilities,getCWD_smoke)
 {
@@ -15,18 +18,16 @@ TEST(core_fileUtilities,getCWD_smoke)
 
   std::cout<<"Checking that we can call getCWD()" << std::endl;
 
-  std::string cwd = axom::utilities::filesystem::getCWD();
+  std::string cwd = fs::getCWD();
 
   std::cout <<" CWD is: " << cwd << std::endl;
 
-  EXPECT_TRUE(true);
+  SUCCEED();
 }
-
-
 
 TEST(core_fileUtilities,joinPath)
 {
-  using namespace axom::utilities::filesystem;
+  std::cout<< "Testing joinPath() function" << std::endl;
 
   std::string fdir = "abc";
   std::string fdirWithSlash = "abc/";
@@ -34,29 +35,74 @@ TEST(core_fileUtilities,joinPath)
 
   std::string fullfile = "abc/def";
 
-  std::cout<< "Testing joinPath file utility" << std::endl;
+  EXPECT_EQ( fullfile, fs::joinPath( fdir,fname) );
 
-  EXPECT_EQ( fullfile, joinPath( fdir,fname) );
-
-  EXPECT_EQ( fullfile, joinPath( fdirWithSlash,fname) );
+  EXPECT_EQ( fullfile, fs::joinPath( fdirWithSlash,fname) );
 
 
   std::string fnameWithSubdir = "def/ghi";
-  EXPECT_EQ( "abc/def/ghi", joinPath( fdir,fnameWithSubdir) );
+  EXPECT_EQ( "abc/def/ghi", fs::joinPath( fdir,fnameWithSubdir) );
 
 }
 
 
 TEST(core_fileUtilities,pathExists)
 {
-  using namespace axom::utilities::filesystem;
+  std::cout<<"Testing pathExists() function" << std::endl;
 
-  std::cout<<"Testing pathExists on file "
-           << "that we know is present (the cwd)."<< std::endl;
+  std::string cwd = fs::getCWD();
 
-  const std::string missingFile = "m_i_s_s_i_n_g__f_i_l_e";
+  // Test file that we know is present (i.e. the working directory)
+  {
+    EXPECT_TRUE( fs::pathExists(cwd) );
+  }
 
-  std::string cwd = axom::utilities::filesystem::getCWD();
-  EXPECT_TRUE( pathExists(cwd) );
-  EXPECT_FALSE( pathExists( joinPath(cwd,missingFile) ) );
+  // Test on file that we know is not present
+  {
+    const std::string missing = "m_i_s_s_i_n_g__f_i_l_e";
+    EXPECT_FALSE( fs::pathExists( fs::joinPath(cwd,missing) ) );
+  }
+
+  // Test on a data file relative to AXOM_SRC_DIR
+  {
+    EXPECT_TRUE( fs::pathExists(AXOM_SRC_DIR));
+
+    std::string dataDir = fs::joinPath(AXOM_SRC_DIR, "axom/slam/data");
+    EXPECT_TRUE( fs::pathExists(dataDir));
+    std::string fileName = fs::joinPath(dataDir, "ball_1.vtk");
+    EXPECT_TRUE( fs::pathExists(fileName));
+  }
+}
+
+TEST(core_fileUtilities,changeCWD_smoke)
+{
+  std::cout<<"Testing 'changeCWD()'" << std::endl;
+
+  // Save copy of cwd at start of test
+  std::string origCWD = fs::getCWD();
+  std::cout<<"[Original cwd]: '" << origCWD <<"'" << std::endl;
+
+  // Update cwd to new directory
+  std::string newCWD = AXOM_SRC_DIR;
+  EXPECT_TRUE( fs::pathExists(newCWD) );
+  std::cout<<"Changing directory to: '" << newCWD <<"'" << std::endl;
+
+  int rc = fs::changeCWD(newCWD);
+  EXPECT_EQ(0, rc);
+  std::cout<<"[Updated cwd]: '" << fs::getCWD() <<"'" << std::endl;
+
+  // Note: newCWD might contain symbolic links, 
+  // so don't directly compare newCWD and getCWD()
+  if(origCWD != newCWD)
+  {
+    EXPECT_NE(origCWD, fs::getCWD() );
+  }
+
+  // Change back to original directory
+  rc = fs::changeCWD(origCWD);
+  EXPECT_EQ(0, rc);
+  
+  EXPECT_EQ(origCWD, fs::getCWD() );
+  std::cout<<"[cwd after change]: '" << fs::getCWD() <<"'" << std::endl;
+ 
 }
