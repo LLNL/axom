@@ -28,8 +28,8 @@ set(gtest_slam_tests
 
     # test maps
     slam_Map.cpp
-	slam_map_SubMap.cpp
-	slam_map_BivariateMap.cpp
+    slam_map_SubMap.cpp
+    slam_map_BivariateMap.cpp
     slam_map_DynamicMap.cpp
 
     # test integration of sets, relations and maps
@@ -55,15 +55,3 @@ foreach(test ${gtest_slam_tests})
     blt_add_test( NAME ${test_name}
                   COMMAND ${test_name}_test )
 endforeach()
-
-# The slam utilities test requires a directory
-blt_add_executable(
-    NAME       slam_utilities_test
-    SOURCES    slam_utilities.cpp
-    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-    DEPENDS_ON ${slam_tests_depends_on}
-    FOLDER     axom/slam/tests )
-
-blt_add_test(
-    NAME    slam_utilities
-    COMMAND slam_utilities_test ${CMAKE_CURRENT_SOURCE_DIR} )

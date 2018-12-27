@@ -80,7 +80,6 @@ set(slam_sources
     # SRM Map sources
 
     # Other sources
-    Utilities.cpp
     )
 
 #------------------------------------------------------------------------------
