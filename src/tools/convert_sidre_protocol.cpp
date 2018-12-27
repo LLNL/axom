@@ -32,8 +32,8 @@
 #include "mpi.h"
 
 #include "axom/config.hpp"
-#include "fmt/fmt.hpp"
 #include "axom/core.hpp"
+#include "fmt/fmt.hpp"
 #include "axom/slic.hpp"
 #include "axom/sidre.hpp"
 #include "axom/slam.hpp"
@@ -47,11 +47,12 @@ namespace sidre = axom::sidre;
 namespace slam = axom::slam;
 namespace slic = axom::slic;
 
+using PosType = slam::Set::PositionType;
 using IndexType = sidre::IndexType;
-using SzPol = slam::policies::RuntimeSize<IndexType>;
-using OffPol = slam::policies::ZeroOffset<IndexType>;
-using StrPol= slam::policies::RuntimeStride<IndexType>;
-using ViewSet = slam::OrderedSet<IndexType, SzPol, OffPol, StrPol>;
+using SzPol = slam::policies::RuntimeSize<PosType>;
+using OffPol = slam::policies::ZeroOffset<PosType>;
+using StrPol= slam::policies::RuntimeStride<PosType>;
+using ViewSet = slam::OrderedSet<PosType, IndexType, SzPol, OffPol, StrPol>;
 
 void setupLogging();
 void teardownLogging();

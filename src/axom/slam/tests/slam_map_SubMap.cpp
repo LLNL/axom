@@ -34,6 +34,7 @@ using SubMap= slam::SubMap<T, M>;
 
 using OrderedSetType = axom::slam::OrderedSet<
         slam::Set::PositionType,
+        slam::Set::ElementType,
         slam::policies::RuntimeSize<slam::Set::PositionType>,
         slam::policies::ZeroOffset<slam::Set::PositionType>,
         slam::policies::StrideOne<slam::Set::PositionType>,
@@ -81,9 +82,8 @@ struct MapForTest
     EXPECT_EQ(s.size(), size);
     EXPECT_TRUE(s.isValid());
 
-    SLIC_INFO(
-      "\nCreating "
-      << slam::util::TypeToString<T>::to_string() << " map on the set ");
+    SLIC_INFO("\nCreating " << slam::util::TypeToString<T>::to_string()
+                            << " map on the set ");
 
     EXPECT_TRUE(m.isValid());
 

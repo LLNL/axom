@@ -60,6 +60,7 @@ class Relation
 {
 public:
   typedef Set::PositionType SetPosition;
+  typedef Set::ElementType SetElement;
 
   typedef std::vector<SetPosition>
     RelationVec;

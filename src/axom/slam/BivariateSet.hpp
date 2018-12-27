@@ -78,6 +78,7 @@ public:
   using ElementType = slam::Set::ElementType;
   using OrderedSetType = OrderedSet<
           PositionType,
+          ElementType,
           policies::RuntimeSize<PositionType>,
           policies::RuntimeOffset<PositionType>,
           policies::StrideOne<PositionType>,

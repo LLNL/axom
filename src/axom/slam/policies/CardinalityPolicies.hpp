@@ -73,6 +73,7 @@ struct ConstantCardinality
   // runtime size (fromSet.size()), striding from template parameter, no offset
   typedef OrderedSet<
       ElementType,
+      ElementType,
       BeginsSizePolicy,
       BeginsOffsetPolicy,
       BeginsStridePolicy >                      BeginsSet;
@@ -146,6 +147,7 @@ struct VariableCardinality
 
   // runtime size (fromSet.size()), striding from template parameter, no offset
   typedef OrderedSet<
+      ElementType,
       ElementType,
       BeginsSizePolicy,
       BeginsOffsetPolicy,

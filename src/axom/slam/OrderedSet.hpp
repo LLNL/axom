@@ -57,12 +57,11 @@ namespace slam
  */
 template<
   typename PosType = Set::PositionType,
-  //typename ElementType,
+  typename ElemType = PosType,
   typename SizePolicy          = policies::RuntimeSize<PosType>,
   typename OffsetPolicy        = policies::ZeroOffset<PosType>,
   typename StridePolicy        = policies::StrideOne<PosType>,
-  typename IndirectionPolicy   =
-    policies::NoIndirection<PosType, Set::ElementType>,
+  typename IndirectionPolicy   = policies::NoIndirection<PosType, ElemType>,
   typename SubsettingPolicy    = policies::NoSubset >
 struct OrderedSet : public Set,
                            SizePolicy,
@@ -75,7 +74,7 @@ public:
 
   typedef Set::IndexType IndexType;
   typedef PosType PositionType;
-  typedef IndexType ElementType;
+  typedef ElemType ElementType;
 
   typedef SizePolicy SizePolicyType;
   typedef OffsetPolicy OffsetPolicyType;
@@ -344,13 +343,14 @@ private:
 
 template<
   typename PosType,
+  typename ElemType,
   typename SizePolicy,
   typename OffsetPolicy,
   typename StridePolicy,
   typename IndirectionPolicy,
   typename SubsettingPolicy >
-bool OrderedSet<PosType, SizePolicy,OffsetPolicy, StridePolicy,
-                IndirectionPolicy,
+bool OrderedSet<PosType, ElemType,
+                SizePolicy,OffsetPolicy, StridePolicy, IndirectionPolicy,
                 SubsettingPolicy>::isValid(bool verboseOutput) const
 {
   bool bValid =  SizePolicyType::isValid(verboseOutput)

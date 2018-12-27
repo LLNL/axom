@@ -15,7 +15,7 @@
 #define SLAM_STATIC_RELATION_HPP_
 
 #include "axom/config.hpp"
-#include "axom/core/Macros.hpp"
+#include "axom/core.hpp"
 
 #include "axom/slam/policies/SizePolicies.hpp"
 #include "axom/slam/policies/StridePolicies.hpp"
@@ -45,6 +45,7 @@ public:
   typedef TheToSet ToSetType;
 
   typedef Relation::SetPosition SetPosition;
+  typedef Relation::SetElement SetElement;
 
   typedef RelationCardinalityPolicy CardinalityPolicy;
   typedef typename CardinalityPolicy::RelationalOperatorSizeType
@@ -54,6 +55,7 @@ public:
 
   typedef OrderedSet<
       SetPosition,
+      SetElement,
       BeginsSizePolicy,
       policies::RuntimeOffset<SetPosition>,
       policies::StrideOne<SetPosition>,
@@ -62,6 +64,7 @@ public:
 
   typedef OrderedSet<
       SetPosition,
+      SetElement,
       policies::RuntimeSize<SetPosition>,
       policies::ZeroOffset<SetPosition>,
       policies::StrideOne<SetPosition>,

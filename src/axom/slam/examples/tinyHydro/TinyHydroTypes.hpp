@@ -22,6 +22,7 @@ namespace tinyHydro {
   typedef slam::Map<int>              IndexField;
   typedef int                         PositionType;
   typedef PositionType                IndexType;
+  typedef PositionType                ElementType;
 
   typedef slam::Map<double>           ScalarField;
   typedef ScalarField                 NodalScalarField;
@@ -71,7 +72,7 @@ namespace tinyHydro {
 
 
   typedef slam::policies::CompileTimeSize<ZoneSet::PositionType, NUM_DOMAIN_BOUNDARIES> NUM_BD_SZ;
-  typedef slam::OrderedSet< PositionType, NUM_BD_SZ>                                    BoundaryEdgeSet;
+  typedef slam::OrderedSet< PositionType, ElementType, NUM_BD_SZ>                       BoundaryEdgeSet;
 
 
   typedef slam::Map<IndexType>                                                          IndexMap;

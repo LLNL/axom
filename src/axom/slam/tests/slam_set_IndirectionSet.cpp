@@ -309,6 +309,7 @@ TEST(slam_set_indirectionset,negative_stride)
   namespace policies = axom::slam::policies;
 
   typedef slam::Set::PositionType SetPosition;
+  typedef slam::Set::ElementType SetElement;
 
   typedef policies::RuntimeSize<SetPosition>                          SizePol;
   typedef policies::RuntimeOffset<SetPosition>                        OffPol;
@@ -316,12 +317,12 @@ TEST(slam_set_indirectionset,negative_stride)
   typedef policies::STLVectorIndirection<SetPosition, SetPosition>    VecIndPol;
   typedef policies::ArrayIndirection<SetPosition, SetPosition>        ArrIndPol;
 
-  typedef slam::OrderedSet<SetPosition, SizePol,OffPol,StridePol,
-                           VecIndPol> VecSet;
+  typedef slam::OrderedSet<SetPosition, SetElement,
+                           SizePol,OffPol,StridePol, VecIndPol> VecSet;
   typedef VecSet::SetBuilder VecSetBuilder;
 
-  typedef slam::OrderedSet<SetPosition, SizePol,OffPol,StridePol,
-                           ArrIndPol> ArrSet;
+  typedef slam::OrderedSet<SetPosition, SetElement,
+                           SizePol,OffPol,StridePol, ArrIndPol> ArrSet;
   typedef ArrSet::SetBuilder ArrSetBuilder;
 
   // Set up data -- an array of incrementing integers

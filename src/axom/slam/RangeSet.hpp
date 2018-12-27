@@ -26,10 +26,11 @@ namespace slam
  * \brief Models a set whose elements belong to a contiguous range
  *  \f$ \in [0,size) \f$
  */
-class PositionSet : public OrderedSet<Set::PositionType>
+class PositionSet : public OrderedSet<Set::PositionType, Set::ElementType>
 {
 
-  typedef OrderedSet<Set::PositionType> OrderedSetType;
+  typedef OrderedSet<Set::PositionType, Set::ElementType> OrderedSetType;
+
   static const PositionType DEFAULT_SIZE =
     OrderedSetType::SizePolicyType::DEFAULT_VALUE;
   static const PositionType DEFAULT_OFFSET =
@@ -69,6 +70,7 @@ template<
   >
 class GenericRangeSet : public OrderedSet<
     Set::PositionType,
+    Set::ElementType,
     policies::RuntimeSize<Set::PositionType>,
     policies::RuntimeOffset<Set::PositionType>,
     StridingPolicy,
@@ -79,6 +81,7 @@ class GenericRangeSet : public OrderedSet<
 private:
   typedef OrderedSet<
       Set::PositionType,
+      Set::ElementType,
       policies::RuntimeSize<Set::PositionType>,
       policies::RuntimeOffset<Set::PositionType>,
       StridingPolicy,
@@ -121,12 +124,13 @@ public:
  */
 class RangeSet : public OrderedSet<
     Set::PositionType,
+    Set::ElementType,
     policies::RuntimeSize<Set::PositionType>,
     policies::RuntimeOffset<Set::PositionType> >
 {
 
 private:
-  typedef OrderedSet< Set::PositionType,
+  typedef OrderedSet< Set::PositionType, Set::ElementType,
                       policies::RuntimeSize<Set::PositionType>,
                       policies::RuntimeOffset<Set::PositionType>  >
     OrderedSetType;

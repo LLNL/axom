@@ -63,6 +63,7 @@ public:
   };
 
   typedef Relation::SetPosition SetPosition;
+  typedef Relation::SetElement SetElement;
   typedef std::vector<SetPosition>                  RelationVec;
 
   typedef DynamicSet<>                              FromSetType;
@@ -75,6 +76,7 @@ public:
     STLVectorIndirection<SetPosition,SetPosition>   STLIndirection;
   typedef OrderedSet<
       SetPosition,
+      SetElement,
       BeginsSizePolicy,
       policies::RuntimeOffset<SetPosition>,
       policies::StrideOne<SetPosition>,

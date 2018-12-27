@@ -139,7 +139,7 @@ public:
 
   using MAX_LEVEL_SIZE = 
     slam::policies::CompileTimeSize<CoordType,std::numeric_limits<int>::digits>;
-  using OctreeLevels = slam::OrderedSet<CoordType, MAX_LEVEL_SIZE>;
+  using OctreeLevels = slam::OrderedSet<CoordType, CoordType, MAX_LEVEL_SIZE>;
 
   using OctreeLevelType = OctreeLevel<DIM, BlockDataType>;
   using LevelMapIterator = typename OctreeLevelType::BlockIter;
@@ -182,8 +182,9 @@ private:
             slam::policies::CompileTimeSize<int, NUM_FACE_NEIGHBORS>;
 
 public:
-    using ChildIndexSet = slam::OrderedSet<int,OCTREE_CHILDREN_SIZE>;
-    using FaceNeighborIndexSet = slam::OrderedSet<int,OCTREE_FACE_NEIGHBORS_SIZE>;
+    using ChildIndexSet = slam::OrderedSet<int, int, OCTREE_CHILDREN_SIZE>;
+    using FaceNeighborIndexSet = 
+            slam::OrderedSet<int, int, OCTREE_FACE_NEIGHBORS_SIZE>;
 
 public:
     /**

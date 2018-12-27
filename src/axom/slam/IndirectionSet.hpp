@@ -31,6 +31,7 @@ namespace slam
  */
 class ArrayIndirectionSet : public OrderedSet<
     Set::PositionType,
+    Set::ElementType,
     policies::RuntimeSize<Set::PositionType>,
     policies::ZeroOffset<Set::PositionType>,
     policies::StrideOne<Set::PositionType>,
@@ -39,6 +40,7 @@ class ArrayIndirectionSet : public OrderedSet<
 private:
   typedef OrderedSet<
       Set::PositionType,
+      Set::ElementType,
       policies::RuntimeSize<Set::PositionType>,
       policies::ZeroOffset<Set::PositionType>,
       policies::StrideOne<Set::PositionType>,
@@ -78,6 +80,7 @@ public:
  */
 class VectorIndirectionSet : public OrderedSet<
     Set::PositionType,
+    Set::ElementType,
     policies::RuntimeSize<Set::PositionType>,
     policies::ZeroOffset<Set::PositionType>,
     policies::StrideOne<Set::PositionType>,
@@ -87,6 +90,7 @@ class VectorIndirectionSet : public OrderedSet<
 private:
   typedef OrderedSet<
       Set::PositionType,
+      Set::ElementType,
       policies::RuntimeSize<Set::PositionType>,
       policies::ZeroOffset<Set::PositionType>,
       policies::StrideOne<Set::PositionType>,
