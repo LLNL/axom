@@ -72,7 +72,6 @@ struct OrderedSet : public Set,
 {
 public:
 
-  typedef Set::IndexType IndexType;
   typedef PosType PositionType;
   typedef ElemType ElementType;
 
