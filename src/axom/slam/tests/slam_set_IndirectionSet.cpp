@@ -15,19 +15,18 @@
 #include <iterator>                 // for std::ostream_iterator
 #include "gtest/gtest.h"
 
-#include "axom/config.hpp"          // for AXOM_USE_CXX11
-#include "axom/core/Types.hpp"           // for nullptr
-
-#include "axom/slic/interface/slic.hpp"
+#include "axom/core.hpp"
+#include "axom/slic.hpp"
 
 #include "axom/slam/Utilities.hpp"
 #include "axom/slam/IndirectionSet.hpp"
 #include "axom/slam/RangeSet.hpp"        // for PositionSet
 
+namespace slam = axom::slam;
 
 namespace
 {
-typedef axom::slam::ArrayIndirectionSet SetType;
+typedef slam::ArrayIndirectionSet SetType;
 typedef SetType::PositionType SetPosition;
 typedef SetType::ElementType SetElement;
 
@@ -215,7 +214,7 @@ TEST(slam_set_indirectionset,equality)
 
 
   // Check against a PositionSet with the same elements
-  axom::slam::PositionSet posSet(MAX_SET_SIZE);
+  slam::PositionSet posSet(MAX_SET_SIZE);
   EXPECT_TRUE(posSet.isValid() );
   EXPECT_EQ(posSet, s1);
 
@@ -254,7 +253,7 @@ TEST(slam_set_indirectionset,vector_indirection)
 {
   SLIC_INFO("Testing basic set operations on a VectorIndirectionSet");
 
-  typedef axom::slam::VectorIndirectionSet VectorIndirectionSet;
+  typedef slam::VectorIndirectionSet VectorIndirectionSet;
   typedef VectorIndirectionSet::SetBuilder Builder;
 
   // Set up data -- an array of incrementing integers
@@ -296,7 +295,7 @@ TEST(slam_set_indirectionset,vector_indirection)
 
   // Test equality with a position set
   {
-    axom::slam::PositionSet posSet(MAX_SET_SIZE);
+    slam::PositionSet posSet(MAX_SET_SIZE);
     EXPECT_TRUE(posSet.isValid() );
     EXPECT_EQ(vecSet, posSet);
     EXPECT_EQ(posSet, vecSet);
@@ -309,7 +308,7 @@ TEST(slam_set_indirectionset,negative_stride)
 
   namespace policies = axom::slam::policies;
 
-  typedef axom::slam::Set::PositionType SetPosition;
+  typedef slam::Set::PositionType SetPosition;
 
   typedef policies::RuntimeSize<SetPosition>                          SizePol;
   typedef policies::RuntimeOffset<SetPosition>                        OffPol;
@@ -317,10 +316,12 @@ TEST(slam_set_indirectionset,negative_stride)
   typedef policies::STLVectorIndirection<SetPosition, SetPosition>    VecIndPol;
   typedef policies::ArrayIndirection<SetPosition, SetPosition>        ArrIndPol;
 
-  typedef axom::slam::OrderedSet<SizePol,OffPol,StridePol, VecIndPol> VecSet;
+  typedef slam::OrderedSet<SetPosition, SizePol,OffPol,StridePol,
+                           VecIndPol> VecSet;
   typedef VecSet::SetBuilder VecSetBuilder;
 
-  typedef axom::slam::OrderedSet<SizePol,OffPol,StridePol, ArrIndPol> ArrSet;
+  typedef slam::OrderedSet<SetPosition, SizePol,OffPol,StridePol,
+                           ArrIndPol> ArrSet;
   typedef ArrSet::SetBuilder ArrSetBuilder;
 
   // Set up data -- an array of incrementing integers
@@ -460,16 +461,13 @@ TEST(slam_set_indirectionset,negative_stride)
 }
 
 //----------------------------------------------------------------------
-//----------------------------------------------------------------------
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
 
   // create & initialize test logger. finalized when exiting main scope
-  UnitTestLogger logger;
+  axom::slic::UnitTestLogger logger;
 
   int result = RUN_ALL_TESTS();
 

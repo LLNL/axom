@@ -56,11 +56,13 @@ namespace slam
  *     static_cast<ElementType>( indirection[ pos * stride + offset ] )
  */
 template<
-  typename SizePolicy          = policies::RuntimeSize<Set::PositionType>,
-  typename OffsetPolicy        = policies::ZeroOffset<Set::PositionType>,
-  typename StridePolicy        = policies::StrideOne<Set::PositionType>,
+  typename PosType = Set::PositionType,
+  //typename ElementType,
+  typename SizePolicy          = policies::RuntimeSize<PosType>,
+  typename OffsetPolicy        = policies::ZeroOffset<PosType>,
+  typename StridePolicy        = policies::StrideOne<PosType>,
   typename IndirectionPolicy   =
-    policies::NoIndirection<Set::PositionType, Set::ElementType>,
+    policies::NoIndirection<PosType, Set::ElementType>,
   typename SubsettingPolicy    = policies::NoSubset >
 struct OrderedSet : public Set,
                            SizePolicy,
@@ -72,7 +74,7 @@ struct OrderedSet : public Set,
 public:
 
   typedef Set::IndexType IndexType;
-  typedef Set::PositionType PositionType;
+  typedef PosType PositionType;
   typedef IndexType ElementType;
 
   typedef SizePolicy SizePolicyType;
@@ -341,12 +343,14 @@ private:
 };
 
 template<
+  typename PosType,
   typename SizePolicy,
   typename OffsetPolicy,
   typename StridePolicy,
   typename IndirectionPolicy,
   typename SubsettingPolicy >
-bool OrderedSet<SizePolicy,OffsetPolicy, StridePolicy, IndirectionPolicy,
+bool OrderedSet<PosType, SizePolicy,OffsetPolicy, StridePolicy,
+                IndirectionPolicy,
                 SubsettingPolicy>::isValid(bool verboseOutput) const
 {
   bool bValid =  SizePolicyType::isValid(verboseOutput)

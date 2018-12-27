@@ -13,29 +13,32 @@
 #include <iterator>
 #include "gtest/gtest.h"
 
-#include "axom/slam/Utilities.hpp"
+#include "axom/slic.hpp"
 
+#include "axom/slam/Utilities.hpp"
 #include "axom/slam/RangeSet.hpp"
 #include "axom/slam/SubMap.hpp"
 
-#include "axom/slic/interface/slic.hpp"
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
 
 
-typedef axom::slam::RangeSet RangeSetType;
+namespace slic = axom::slic;
+namespace slam = axom::slam;
+
+typedef slam::RangeSet RangeSetType;
 
 template<typename T>
-using Map = axom::slam::Map<T>;
+using Map = slam::Map<T>;
+
 template<typename T, typename M>
-using SubMap= axom::slam::SubMap<T, M>;
+using SubMap= slam::SubMap<T, M>;
 
 using OrderedSetType = axom::slam::OrderedSet<
-        axom::slam::policies::RuntimeSize<axom::slam::Set::PositionType>,
-        axom::slam::policies::ZeroOffset<axom::slam::Set::PositionType>,
-        axom::slam::policies::StrideOne<axom::slam::Set::PositionType>,
-        axom::slam::policies::STLVectorIndirection<axom::slam::Set::PositionType,
-                                                   axom::slam::Set::ElementType>
+        slam::Set::PositionType,
+        slam::policies::RuntimeSize<slam::Set::PositionType>,
+        slam::policies::ZeroOffset<slam::Set::PositionType>,
+        slam::policies::StrideOne<slam::Set::PositionType>,
+        slam::policies::STLVectorIndirection<slam::Set::PositionType,
+                                             slam::Set::ElementType>
         >;
 
 typedef RangeSetType::PositionType PositionType;
@@ -80,7 +83,7 @@ struct MapForTest
 
     SLIC_INFO(
       "\nCreating "
-      << axom::slam::util::TypeToString<T>::to_string() << " map on the set ");
+      << slam::util::TypeToString<T>::to_string() << " map on the set ");
 
     EXPECT_TRUE(m.isValid());
 
@@ -220,8 +223,8 @@ int main(int argc, char* argv[])
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
 #endif
 
-  UnitTestLogger logger;  // create & initialize test logger,
-  axom::slic::setLoggingMsgLevel( axom::slic::message::Info );
+  slic::UnitTestLogger logger;  // create & initialize test logger,
+  slic::setLoggingMsgLevel( axom::slic::message::Info );
 
   int result = RUN_ALL_TESTS();
 

@@ -77,9 +77,10 @@ public:
   using PositionType = slam::Set::PositionType;
   using ElementType = slam::Set::ElementType;
   using OrderedSetType = OrderedSet<
-          policies::RuntimeSize<Set::PositionType>,
-          policies::RuntimeOffset<Set::PositionType>,
-          policies::StrideOne<Set::PositionType>,
+          PositionType,
+          policies::RuntimeSize<PositionType>,
+          policies::RuntimeOffset<PositionType>,
+          policies::StrideOne<PositionType>,
           policies::STLVectorIndirection<PositionType, PositionType> >;
 
   static const PositionType INVALID_POS = PositionType(-1);

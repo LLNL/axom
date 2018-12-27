@@ -94,7 +94,7 @@ struct CompileTimeOffset
 template<typename IntType>
 struct ZeroOffset
 {
-  static const IntType DEFAULT_VALUE = IntType();
+  static const IntType DEFAULT_VALUE;
 
   ZeroOffset(IntType val = DEFAULT_VALUE)
   {
@@ -111,6 +111,10 @@ struct ZeroOffset
 
   inline bool             isValid(bool) const { return true; }
 };
+
+template<typename IntType>
+const IntType ZeroOffset<IntType>::DEFAULT_VALUE = IntType {};
+
 
 /// \}
 

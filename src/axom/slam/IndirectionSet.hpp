@@ -30,6 +30,7 @@ namespace slam
  * indirection set
  */
 class ArrayIndirectionSet : public OrderedSet<
+    Set::PositionType,
     policies::RuntimeSize<Set::PositionType>,
     policies::ZeroOffset<Set::PositionType>,
     policies::StrideOne<Set::PositionType>,
@@ -37,6 +38,7 @@ class ArrayIndirectionSet : public OrderedSet<
 {
 private:
   typedef OrderedSet<
+      Set::PositionType,
       policies::RuntimeSize<Set::PositionType>,
       policies::ZeroOffset<Set::PositionType>,
       policies::StrideOne<Set::PositionType>,
@@ -75,6 +77,7 @@ public:
  * for an STL vector-based indirection set
  */
 class VectorIndirectionSet : public OrderedSet<
+    Set::PositionType,
     policies::RuntimeSize<Set::PositionType>,
     policies::ZeroOffset<Set::PositionType>,
     policies::StrideOne<Set::PositionType>,
@@ -83,6 +86,7 @@ class VectorIndirectionSet : public OrderedSet<
 {
 private:
   typedef OrderedSet<
+      Set::PositionType,
       policies::RuntimeSize<Set::PositionType>,
       policies::ZeroOffset<Set::PositionType>,
       policies::StrideOne<Set::PositionType>,

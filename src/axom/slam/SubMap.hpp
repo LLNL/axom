@@ -57,6 +57,7 @@ private:
   using SetType = Set;
   using RangeSetType = RangeSet;
   using OrderedSetType = OrderedSet<
+          Set::PositionType,
           policies::RuntimeSize<Set::PositionType>,
           policies::ZeroOffset<Set::PositionType>,
           policies::StrideOne<Set::PositionType>,

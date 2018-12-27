@@ -15,9 +15,7 @@
 
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
-
-#include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/Vector.hpp"
+#include "axom/primal.hpp"
 
 #include "axom/spin/DenseOctreeLevel.hpp"
 #include "axom/spin/OctreeLevel.hpp"
@@ -139,10 +137,9 @@ public:
   using GridPt = primal::Point<CoordType,DIM>;
   using GridVec = primal::Vector<CoordType,DIM>;
 
-  using MAX_LEVEL_SIZE = slam::policies::
-                         CompileTimeSize<CoordType,
-                                         std::numeric_limits<int>::digits>;
-  using OctreeLevels = slam::OrderedSet<MAX_LEVEL_SIZE>;
+  using MAX_LEVEL_SIZE = 
+    slam::policies::CompileTimeSize<CoordType,std::numeric_limits<int>::digits>;
+  using OctreeLevels = slam::OrderedSet<CoordType, MAX_LEVEL_SIZE>;
 
   using OctreeLevelType = OctreeLevel<DIM, BlockDataType>;
   using LevelMapIterator = typename OctreeLevelType::BlockIter;
@@ -185,8 +182,8 @@ private:
             slam::policies::CompileTimeSize<int, NUM_FACE_NEIGHBORS>;
 
 public:
-    using ChildIndexSet = slam::OrderedSet<OCTREE_CHILDREN_SIZE>;
-    using FaceNeighborIndexSet = slam::OrderedSet<OCTREE_FACE_NEIGHBORS_SIZE>;
+    using ChildIndexSet = slam::OrderedSet<int,OCTREE_CHILDREN_SIZE>;
+    using FaceNeighborIndexSet = slam::OrderedSet<int,OCTREE_FACE_NEIGHBORS_SIZE>;
 
 public:
     /**

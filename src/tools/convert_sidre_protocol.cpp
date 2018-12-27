@@ -32,47 +32,26 @@
 #include "mpi.h"
 
 #include "axom/config.hpp"
-#include "axom/core/Types.hpp"
 #include "fmt/fmt.hpp"
-#include "axom/slic/interface/slic.hpp"
-#include "axom/slic/core/LogStream.hpp"
-
-#ifdef AXOM_USE_LUMBERJACK
-  #include "axom/slic/streams/LumberjackStream.hpp"
-#else
-  #include "axom/slic/streams/GenericOutputStream.hpp"
-#endif
-
-#include "axom/sidre/core/SidreTypes.hpp"
-#include "axom/sidre/core/DataStore.hpp"
-#include "axom/sidre/core/Group.hpp"
-#include "axom/sidre/core/Buffer.hpp"
-#include "axom/sidre/core/View.hpp"
-
-#include "axom/sidre/spio/IOManager.hpp"
-
-#include "axom/slam/policies/SizePolicies.hpp"
-#include "axom/slam/policies/OffsetPolicies.hpp"
-#include "axom/slam/policies/StridePolicies.hpp"
-#include "axom/slam/OrderedSet.hpp"
+#include "axom/core.hpp"
+#include "axom/slic.hpp"
+#include "axom/sidre.hpp"
+#include "axom/slam.hpp"
 
 #include <limits>       // for numeric_limits<int>
 #include <cstdlib>      // for atoi
 #include <sstream>      // for stringstream
 
 
-using axom::sidre::DataStore;
-using axom::sidre::Group;
-using axom::sidre::Buffer;
-using axom::sidre::View;
-using axom::sidre::IOManager;
+namespace sidre = axom::sidre;
+namespace slam = axom::slam;
+namespace slic = axom::slic;
 
-
-typedef axom::sidre::IndexType IndexType;
-typedef axom::slam::policies::RuntimeSize<IndexType>   SzPol;
-typedef axom::slam::policies::ZeroOffset<IndexType> OffPol;
-typedef axom::slam::policies::RuntimeStride<IndexType> StrPol;
-typedef axom::slam::OrderedSet<SzPol, OffPol, StrPol> ViewSet;
+using IndexType = sidre::IndexType;
+using SzPol = slam::policies::RuntimeSize<IndexType>;
+using OffPol = slam::policies::ZeroOffset<IndexType>;
+using StrPol= slam::policies::RuntimeStride<IndexType>;
+using ViewSet = slam::OrderedSet<IndexType, SzPol, OffPol, StrPol>;
 
 void setupLogging();
 void teardownLogging();
@@ -261,16 +240,14 @@ CommandLineArguments parseArguments(int argc, char** argv, int myRank)
  *
  * \note We also set the data in each allocated array to zeros
  */
-void allocateExternalData(Group* grp, std::vector<void*>& extPtrs)
+void allocateExternalData(sidre::Group* grp, std::vector<void*>& extPtrs)
 {
-  using namespace axom;
-
   // for each view
   for(sidre::IndexType idx =  grp->getFirstValidViewIndex() ;
       sidre::indexIsValid(idx) ;
       idx = grp->getNextValidViewIndex(idx) )
   {
-    View* view = grp->getView(idx);
+    sidre::View* view = grp->getView(idx);
     if(view->isExternal())
     {
       SLIC_INFO("External view " << view->getPathName()
@@ -305,7 +282,7 @@ void allocateExternalData(Group* grp, std::vector<void*>& extPtrs)
  * \param origSize The size of the original array
  */
 template<typename sidre_type>
-void modifyFinalValuesImpl(View* view, int origSize)
+void modifyFinalValuesImpl(sidre::View* view, int origSize)
 {
   SLIC_DEBUG("Looking at view " << view->getPathName());
 
@@ -351,11 +328,9 @@ void modifyFinalValuesImpl(View* view, int origSize)
 }
 
 
-void modifyFinalValues(View* view, int origSize)
+void modifyFinalValues(sidre::View* view, int origSize)
 {
   SLIC_DEBUG("Truncating view " << view->getPathName());
-
-  using namespace axom;
 
   switch(view->getTypeID())
   {
@@ -404,16 +379,14 @@ void modifyFinalValues(View* view, int origSize)
  * This will be followed by (at most) the first maxSize elements of the original
  * array
  */
-void truncateBulkData(Group* grp, int maxSize)
+void truncateBulkData(sidre::Group* grp, int maxSize)
 {
-  using namespace axom;
-
   // Add two to maxSize
   for(sidre::IndexType idx =  grp->getFirstValidViewIndex() ;
       sidre::indexIsValid(idx) ;
       idx = grp->getNextValidViewIndex(idx) )
   {
-    View* view = grp->getView(idx);
+    sidre::View* view = grp->getView(idx);
     bool isArray = view->hasBuffer() || view->isExternal();
 
     if(isArray)
@@ -450,10 +423,7 @@ void truncateBulkData(Group* grp, int maxSize)
 /** Sets up the logging using lumberjack */
 void setupLogging()
 {
-  using namespace axom;
-
   slic::initialize();
-
   slic::setLoggingMsgLevel(slic::message::Info);
 
 #ifdef AXOM_USE_LUMBERJACK
@@ -496,7 +466,7 @@ void setupLogging()
 /** Finalizes logging and flushes streams */
 void teardownLogging()
 {
-  axom::slic::finalize();
+  slic::finalize();
 }
 
 
@@ -515,8 +485,8 @@ int main(int argc, char* argv[])
 
   // Load the original datastore
   SLIC_INFO("Loading datastore from " << args.m_inputName);
-  DataStore ds;
-  IOManager manager(MPI_COMM_WORLD);
+  sidre::DataStore ds;
+  sidre::IOManager manager(MPI_COMM_WORLD);
   manager.read(ds.getRoot(), args.m_inputName);
   int num_files = manager.getNumFilesFromRoot(args.m_inputName);
 
@@ -526,7 +496,7 @@ int main(int argc, char* argv[])
   allocateExternalData(ds.getRoot(), externalDataPointers);
   manager.loadExternalData(ds.getRoot(), args.m_inputName);
 
-  axom::slic::flushStreams();
+  slic::flushStreams();
 
   // Internal processing
   if(args.shouldStripData())

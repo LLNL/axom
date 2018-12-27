@@ -15,32 +15,33 @@
 
 #include "axom/slam.hpp"
 
+namespace slam = axom::slam;
 
 namespace tinyHydro {
 
-  typedef axom::slam::Map<int>              IndexField;
-  typedef int                               PositionType;
-  typedef PositionType                      IndexType;
+  typedef slam::Map<int>              IndexField;
+  typedef int                         PositionType;
+  typedef PositionType                IndexType;
 
-  typedef axom::slam::Map<double>           ScalarField;
-  typedef ScalarField                       NodalScalarField;
-  typedef ScalarField                       ZonalScalarField;
+  typedef slam::Map<double>           ScalarField;
+  typedef ScalarField                 NodalScalarField;
+  typedef ScalarField                 ZonalScalarField;
 
-  typedef axom::slam::Map<VectorXY>         VectorField;
-  typedef VectorField                       NodalVectorField;
-  typedef VectorField                       ZonalVectorField;
-  typedef VectorField                       FaceVectorField;
+  typedef slam::Map<VectorXY>         VectorField;
+  typedef VectorField                 NodalVectorField;
+  typedef VectorField                 ZonalVectorField;
+  typedef VectorField                 FaceVectorField;
 
-  typedef VectorField                       BoundaryEdgeVectorField;
+  typedef VectorField                 BoundaryEdgeVectorField;
 
 
-  typedef axom::slam::PositionSet           ZoneSet;
-  typedef axom::slam::PositionSet           NodeSet;
-  typedef axom::slam::PositionSet           FaceSet;
-  typedef axom::slam::PositionSet           CornerSet;
+  typedef slam::PositionSet           ZoneSet;
+  typedef slam::PositionSet           NodeSet;
+  typedef slam::PositionSet           FaceSet;
+  typedef slam::PositionSet           CornerSet;
 
-  typedef axom::slam::VectorIndirectionSet  ZoneSubset;
-  typedef axom::slam::VectorIndirectionSet  NodeSubset;
+  typedef slam::VectorIndirectionSet  ZoneSubset;
+  typedef slam::VectorIndirectionSet  NodeSubset;
 
 
 
@@ -55,28 +56,28 @@ namespace tinyHydro {
     NUM_DOMAIN_BOUNDARIES = 4
   };
 
-  typedef axom::slam::policies::STLVectorIndirection<PositionType, PositionType>              STLIndirection;
+  typedef slam::policies::STLVectorIndirection<PositionType, PositionType>              STLIndirection;
 
-  typedef axom::slam::policies::CompileTimeStride<PositionType, NODES_PER_ZONE>               ZNStride;
-  typedef axom::slam::policies::ConstantCardinality<PositionType, ZNStride>                   ZNCard;
-  typedef axom::slam::StaticRelation<ZNCard, STLIndirection, ZoneSet, NodeSet>                ZoneToNodeRelation;
-  typedef ZoneToNodeRelation::RelationSubset                                                  ZNodeSet;
-
-
-  typedef axom::slam::policies::CompileTimeStride<PositionType, FACES_PER_ZONE>               ZFStride;
-  typedef axom::slam::policies::ConstantCardinality<PositionType, ZFStride>                   ZFCard;
-  typedef axom::slam::StaticRelation<ZFCard, STLIndirection, ZoneSet, FaceSet>                ZoneToFaceRelation;
-  typedef ZoneToFaceRelation::RelationSubset                                                  ZFaceSet;
+  typedef slam::policies::CompileTimeStride<PositionType, NODES_PER_ZONE>               ZNStride;
+  typedef slam::policies::ConstantCardinality<PositionType, ZNStride>                   ZNCard;
+  typedef slam::StaticRelation<ZNCard, STLIndirection, ZoneSet, NodeSet>                ZoneToNodeRelation;
+  typedef ZoneToNodeRelation::RelationSubset                                            ZNodeSet;
 
 
-  typedef axom::slam::policies::CompileTimeSize<ZoneSet::PositionType, NUM_DOMAIN_BOUNDARIES> NUM_BD_SZ;
-  typedef axom::slam::OrderedSet< NUM_BD_SZ>                                                  BoundaryEdgeSet;
+  typedef slam::policies::CompileTimeStride<PositionType, FACES_PER_ZONE>               ZFStride;
+  typedef slam::policies::ConstantCardinality<PositionType, ZFStride>                   ZFCard;
+  typedef slam::StaticRelation<ZFCard, STLIndirection, ZoneSet, FaceSet>                ZoneToFaceRelation;
+  typedef ZoneToFaceRelation::RelationSubset                                            ZFaceSet;
 
 
-  typedef axom::slam::Map<IndexType>                                                          IndexMap;
+  typedef slam::policies::CompileTimeSize<ZoneSet::PositionType, NUM_DOMAIN_BOUNDARIES> NUM_BD_SZ;
+  typedef slam::OrderedSet< PositionType, NUM_BD_SZ>                                    BoundaryEdgeSet;
 
-  typedef axom::slam::FieldRegistry<ZoneSet::IndexType>                                       IndexRegistry;
-  typedef IndexRegistry::BufferType                                                           IndexBuffer;
+
+  typedef slam::Map<IndexType>                                                          IndexMap;
+
+  typedef slam::FieldRegistry<ZoneSet::IndexType>                                       IndexRegistry;
+  typedef IndexRegistry::BufferType                                                     IndexBuffer;
 
   struct DataRegistry
   {

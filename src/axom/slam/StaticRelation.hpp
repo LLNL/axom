@@ -53,6 +53,7 @@ public:
   typedef RelationIndicesIndirectionPolicy IndicesIndirectionPolicy;
 
   typedef OrderedSet<
+      SetPosition,
       BeginsSizePolicy,
       policies::RuntimeOffset<SetPosition>,
       policies::StrideOne<SetPosition>,
@@ -60,6 +61,7 @@ public:
 
 
   typedef OrderedSet<
+      SetPosition,
       policies::RuntimeSize<SetPosition>,
       policies::ZeroOffset<SetPosition>,
       policies::StrideOne<SetPosition>,

@@ -108,8 +108,11 @@ struct VirtualParentSubset
 
     // At this point, parent and child are both non-null
     //  -- ensure that all elts of child are in parent
-    std::set<typename Set::ElementType> pSet;
-    for(typename Set::PositionType pos = 0 ; pos < m_parentSet->size() ; ++pos)
+    typedef typename OrderedSetIt::ElementType ElType;
+    typedef typename OrderedSetIt::PositionType PosType;
+
+    std::set<ElType> pSet;
+    for(PosType pos = 0 ; pos < m_parentSet->size() ; ++pos)
       pSet.insert( m_parentSet->at(pos));
     for( ; beg != end ; ++beg)
     {

@@ -23,8 +23,8 @@
 #ifndef SLAM_POLICIES_SIZE_H_
 #define SLAM_POLICIES_SIZE_H_
 
-#include "axom/core/Macros.hpp"
-#include "axom/slic/interface/slic.hpp"
+#include "axom/core.hpp"
+#include "axom/slic.hpp"
 
 namespace axom
 {
@@ -48,7 +48,7 @@ template<typename IntType>
 struct RuntimeSize
 {
 public:
-  static const IntType DEFAULT_VALUE = IntType();
+  static const IntType DEFAULT_VALUE;
 
   RuntimeSize(IntType sz = DEFAULT_VALUE) : m_sz(sz) {}
 
@@ -69,6 +69,9 @@ protected:
   IntType m_sz;
 };
 
+template<typename IntType>
+const IntType RuntimeSize<IntType>::DEFAULT_VALUE = IntType {};
+
 
 /**
  * \brief A policy class for the size of a set whose size can change at runtime.
@@ -77,9 +80,7 @@ template<typename IntType>
 struct DynamicRuntimeSize : public RuntimeSize<IntType>
 {
 public:
-  static const IntType DEFAULT_VALUE = RuntimeSize<IntType>::DEFAULT_VALUE;
-
-  DynamicRuntimeSize( IntType sz = DEFAULT_VALUE)
+  DynamicRuntimeSize( IntType sz = RuntimeSize<IntType>::DEFAULT_VALUE)
     : RuntimeSize< IntType>(sz) {}
 
   inline void setSize(IntType s)
@@ -98,7 +99,6 @@ public:
   }
 };
 
-
 /**
  * \brief A policy class for a compile-time known set size
  */
@@ -107,7 +107,7 @@ struct CompileTimeSize
 {
   static const IntType DEFAULT_VALUE = INT_VAL;
 
-  CompileTimeSize(IntType val = DEFAULT_VALUE)
+  CompileTimeSize(IntType val = INT_VAL)
   {
     AXOM_DEBUG_VAR(val);
     SLIC_ASSERT_MSG(
@@ -121,11 +121,11 @@ struct CompileTimeSize
 
   inline IntType operator ()() const { return size(); }
 
-  inline bool             empty() const { return INT_VAL == IntType(); }
+  inline bool             empty() const { return INT_VAL == IntType {}; }
   inline bool             isValid(bool) const
   {
     // We do not (currently) allow negatively sized sets
-    return INT_VAL >= IntType();
+    return INT_VAL >= IntType {};
   }
 };
 
@@ -135,7 +135,7 @@ struct CompileTimeSize
 template<typename IntType>
 struct ZeroSize
 {
-  static const IntType DEFAULT_VALUE = IntType();
+  static const IntType DEFAULT_VALUE;
 
   ZeroSize(IntType val = DEFAULT_VALUE)
   {
@@ -151,6 +151,9 @@ struct ZeroSize
   inline bool             empty() const { return true; }
   inline bool             isValid(bool) const { return true; }
 };
+
+template<typename IntType>
+const IntType ZeroSize<IntType>::DEFAULT_VALUE = IntType {};
 
 /// \}
 

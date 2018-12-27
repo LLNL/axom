@@ -74,6 +74,7 @@ public:
   typedef axom::slam::policies::
     STLVectorIndirection<SetPosition,SetPosition>   STLIndirection;
   typedef OrderedSet<
+      SetPosition,
       BeginsSizePolicy,
       policies::RuntimeOffset<SetPosition>,
       policies::StrideOne<SetPosition>,
