@@ -500,7 +500,7 @@ public:
   using SpaceVector = typename SpatialOctreeType::SpaceVector;
   using BlockIndex = typename SpatialOctreeType::BlockIndex;
   using GridPt = typename OctreeBaseType::GridPt;
-  using SpaceRay = typename primal::Ray<double, DIM>;
+  using SpaceRay = primal::Ray<double, DIM>;
 
 private:
   enum GenerationState { INOUTOCTREE_UNINITIALIZED,
@@ -541,8 +541,8 @@ public:
     using SpaceTriangle = primal::Triangle<double, DIM>;
 
 
-    using MeshVertexSet = slam::PositionSet;
-    using MeshElementSet = slam::PositionSet;
+    using MeshVertexSet = slam::PositionSet<>;
+    using MeshElementSet = slam::PositionSet<>;
 
     using VertexIndexMap = slam::Map<VertexIndex>;
     using VertexPositionMap = slam::Map<SpacePt>;
@@ -917,7 +917,7 @@ public:
   using STLIndirection =
           slam::policies::STLVectorIndirection<VertexIndex, VertexIndex>;
 
-  using GrayLeafSet = slam::PositionSet;
+  using GrayLeafSet = slam::PositionSet<>;
   using BVStride =
           slam::policies::CompileTimeStride<VertexIndex, MAX_VERTS_PER_BLOCK>;
   using ConstantCardinality =
@@ -2565,7 +2565,7 @@ private:
       (m_generationState >= InOutOctreeType::INOUTOCTREE_LEAVES_COLORED);
 
     // Allocate Slam Maps for the field data
-    slam::PositionSet leafSet(blocks.size());
+    slam::PositionSet<> leafSet(blocks.size());
 
     LeafVertMap leafVertID(&leafSet);
     LeafVertMap leafVertID_unique(&leafSet);

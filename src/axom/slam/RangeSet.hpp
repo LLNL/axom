@@ -22,36 +22,14 @@ namespace slam
 
 
 /**
- * \class PositionSet
- * \brief Models a set whose elements belong to a contiguous range
- *  \f$ \in [0,size) \f$
+ * \brief Alias template for an OrderedSet whose elements belong
+ * to a contiguous range \f$ \in [0,size) \f$
+ * \tparam P The PositionType
+ * \tparam E The ElementType
+ * \sa OrderedSet
  */
-class PositionSet : public OrderedSet<Set::PositionType, Set::ElementType>
-{
-
-  typedef OrderedSet<Set::PositionType, Set::ElementType> OrderedSetType;
-
-  static const PositionType DEFAULT_SIZE =
-    OrderedSetType::SizePolicyType::DEFAULT_VALUE;
-  static const PositionType DEFAULT_OFFSET =
-    OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
-  static const PositionType DEFAULT_STRIDE =
-    OrderedSetType::StridePolicyType::DEFAULT_VALUE;
-
-public:
-  typedef OrderedSetType::PositionType PositionType;
-  typedef OrderedSetType::IndexType IndexType;
-  typedef OrderedSetType::ElementType ElementType;
-
-
-public:
-  PositionSet(PositionType size = DEFAULT_SIZE)
-    : OrderedSetType(size, DEFAULT_OFFSET, DEFAULT_STRIDE) {}
-
-  PositionSet(const OrderedSetType::SetBuilder & builder)
-    : OrderedSetType(builder) {}
-};
-
+template<typename P = Set::PositionType, typename E = Set::ElementType>
+using PositionSet = OrderedSet<P,E>;
 
 /**
  * \class GenericRangeSet

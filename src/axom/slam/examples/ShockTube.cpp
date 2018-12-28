@@ -69,6 +69,8 @@ const double INIT_D_RATIO = 0.5;
 const bool verboseOutput = false;
 #endif
 
+namespace slam = axom::slam;
+
 /**
  * \brief Simple representation of the mesh for this 1D example
  *
@@ -94,44 +96,42 @@ class ShockTubeMesh
 public:
 
   /// types for Element and Face sets
-  typedef axom::slam::PositionSet ElemSet;
-  typedef axom::slam::PositionSet FaceSet;
+  using ElemSet = slam::PositionSet<>;
+  using FaceSet = slam::PositionSet<>;
 
-  typedef axom::slam::PositionSet::IndexType IndexType;
-  typedef axom::slam::PositionSet::PositionType PositionType;
-  typedef axom::slam::PositionSet::ElementType ElementType;
+  using PositionType = ElemSet::PositionType;
+  using ElementType = ElemSet::ElementType;
+  using IndexType = PositionType;
 
   /// types for Tube and {In,Out}Flow subsets
-  typedef axom::slam::policies::
-    StrideOne<PositionType>                               StrideOnePolicy;
-  typedef axom::slam::policies::
-    NoIndirection<PositionType,ElementType>               NoIndirectionPolicy;
-  typedef axom::slam::policies::
-    ConcreteParentSubset<ElemSet>                         TubeSubsetPolicy;
-  typedef axom::slam::GenericRangeSet<
-      StrideOnePolicy, NoIndirectionPolicy, TubeSubsetPolicy>      ElemSubset;
-  typedef axom::slam::RangeSet RangeSet;
+  using StrideOnePolicy = slam::policies::StrideOne<PositionType>;
+  using NoIndirectionPolicy =
+          slam::policies::NoIndirection<PositionType,ElementType>;
+  using TubeSubsetPolicy = slam::policies::ConcreteParentSubset<ElemSet>;
+  using ElemSubset =
+          slam::GenericRangeSet<StrideOnePolicy, NoIndirectionPolicy,
+                                TubeSubsetPolicy>;
+  using RangeSet = slam::RangeSet;
 
   /// types for relations
   enum { ELEMS_PER_FACE = 2, FACES_PER_ELEM = 2};
-  typedef axom::slam::policies::
-    CompileTimeStride<PositionType, FACES_PER_ELEM>       EFStride;
-  typedef axom::slam::policies::
-    CompileTimeStride<PositionType, ELEMS_PER_FACE>       FEStride;
-  typedef axom::slam::policies::
-    ConstantCardinality<PositionType, EFStride>           EFCard;
-  typedef axom::slam::policies::
-    ConstantCardinality<PositionType, FEStride>           FECard;
-  typedef axom::slam::policies::
-    STLVectorIndirection<PositionType, PositionType>      STLIndirection;
-  typedef STLIndirection::VectorType IndexVec;
 
-  typedef axom::slam::
-    StaticRelation<EFCard, STLIndirection, ElemSubset, FaceSet>
-    TubeElemToFaceRelation;
-  typedef axom::slam::
-    StaticRelation<FECard, STLIndirection, FaceSet, ElemSet>
-    FaceToElemRelation;
+  using EFStride =
+          slam::policies::CompileTimeStride<PositionType, FACES_PER_ELEM>;
+  using FEStride =
+          slam::policies::CompileTimeStride<PositionType, ELEMS_PER_FACE>;
+
+  using EFCard = slam::policies::ConstantCardinality<PositionType, EFStride>;
+  using FECard = slam::policies::ConstantCardinality<PositionType, FEStride>;
+  using STLIndirection =
+          slam::policies::STLVectorIndirection<PositionType, PositionType>;
+  using IndexVec = STLIndirection::VectorType;
+
+  using TubeElemToFaceRelation =
+          slam::StaticRelation<EFCard, STLIndirection, ElemSubset, FaceSet>;
+  using FaceToElemRelation =
+          slam::StaticRelation<FECard, STLIndirection, FaceSet, ElemSet>;
+
 
 public:
   ElemSet elems;                // The entire set of elements
@@ -147,12 +147,11 @@ public:
 };
 
 
-// Define the explicit instances of our local (key/value) datastore for int and
-// double
-typedef axom::slam::FieldRegistry<int>    IntsRegistry;
-typedef axom::slam::FieldRegistry<double> RealsRegistry;
-typedef axom::slam::Map<int>              IntField;
-typedef axom::slam::Map<double>           RealField;
+// Define explicit instances of local (key/value) datastore for int and double
+using IntsRegistry = slam::FieldRegistry<int>;
+using RealsRegistry = slam::FieldRegistry<double>;
+using IntField = slam::Map<int>;
+using RealField = slam::Map<double>;
 
 IntsRegistry intsRegistry;
 RealsRegistry realsRegistry;

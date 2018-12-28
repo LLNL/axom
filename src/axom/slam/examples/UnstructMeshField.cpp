@@ -29,11 +29,13 @@
 #include "fmt/fmt.hpp"
 
 
+namespace slam = axom::slam;
+
 namespace slamUnstructuredHex
 {
 
-typedef axom::slam::MeshIndexType IndexType;
-typedef double DataType;
+using IndexType = slam::MeshIndexType;
+using DataType = double;
 
 
 /** Simple point class for this example */
@@ -120,34 +122,34 @@ public:
   };
 
   /// types for sets
-  typedef axom::slam::PositionSet NodeSet;
-  typedef axom::slam::PositionSet ZoneSet;
-  typedef ZoneSet::PositionType PositionType;
-  typedef ZoneSet::IndexType IndexType;
+  using NodeSet = slam::PositionSet<>;
+  using ZoneSet = slam::PositionSet<>;
+  using PositionType = ZoneSet::PositionTyp;
+  using IndexType = ZoneSet::PositionType;
 
   /// types for relations
-  typedef axom::slam::policies::
-    STLVectorIndirection<PositionType, PositionType>  STLIndirection;
-  typedef axom::slam::policies::
-    VariableCardinality<PositionType, STLIndirection> VariableCardinality;
-  typedef axom::slam::
-    StaticRelation<VariableCardinality,STLIndirection,NodeSet,ZoneSet>
-    NodeToZoneRelation;
-  typedef NodeToZoneRelation::RelationConstIterator NodeZoneIterator;
+  using STLIndirection =
+          slam::policies::STLVectorIndirection<PositionType, PositionType>;
+  using VariableCardinality =
+          slam::policies::VariableCardinality<PositionType, STLIndirection>;
+  using NodeToZoneRelation =
+          slam::StaticRelation<VariableCardinality,STLIndirection,
+                               NodeSet,ZoneSet>;
+  using NodeZoneIterator = NodeToZoneRelation::RelationConstIterator;
 
-  typedef axom::slam::policies::
-    CompileTimeStride<PositionType, NODES_PER_ZONE>   ZNStride;
-  typedef axom::slam::policies::
-    ConstantCardinality<PositionType, ZNStride>       ConstantCardinality;
-  typedef axom::slam::
-    StaticRelation<ConstantCardinality,STLIndirection,ZoneSet,NodeSet>
-    ZoneToNodeRelation;
-  typedef ZoneToNodeRelation::RelationConstIterator ZoneNodeIterator;
+  using ZNStride =
+          slam::policies::CompileTimeStride<PositionType, NODES_PER_ZONE>;
+  using ConstantCardinality =
+          slam::policies::ConstantCardinality<PositionType, ZNStride>;
+  using ZoneToNodeRelation =
+          slam::StaticRelation<ConstantCardinality,STLIndirection,
+                               ZoneSet,NodeSet>;
+  using ZoneNodeIterator = ZoneToNodeRelation::RelationConstIterator;
 
   /// types for maps
-  typedef axom::slam::Map< Point >                      PositionsVec;
-  typedef axom::slam::Map< DataType >                   NodeField;
-  typedef axom::slam::Map< DataType >                   ZoneField;
+  using PositionsVec = slam::Map< Point >;
+  using NodeField = slam::Map< DataType >;
+  using ZoneField = slam::Map< DataType >;
 
 public:
   /** \brief Simple accessor for the number of nodes in the mesh  */
@@ -182,10 +184,10 @@ struct Repository
 {
   // Define the explicit instances of our local (key/value) datastore for int
   // and double
-  typedef axom::slam::FieldRegistry<int>    IntsRegistry;
-  typedef axom::slam::FieldRegistry<double> RealsRegistry;
-  typedef axom::slam::Map<int>              IntField;
-  typedef axom::slam::Map<double>           RealField;
+  using IntsRegistry = slam::FieldRegistry<int>;
+  using RealsRegistry = slam::FieldRegistry<double>;
+  using IntField = slam::Map<int>;
+  using RealField = slam::Map<double>;
 
   static IntsRegistry intsRegistry;
   static RealsRegistry realsRegistry;
@@ -221,8 +223,8 @@ public:
 
   void parseMeshFile()
   {
-    typedef Repository::RealsRegistry::BufferType RealBuf;
-    typedef Repository::IntsRegistry::BufferType IndexBuf;
+    using RealBuf = Repository::RealsRegistry::BufferType;
+    using IndexBuf = Repository::IntsRegistry::BufferType;
 
     // Read some initial header stuff.  Note: this is not a robust vtkreader
     std::string junk;
@@ -289,8 +291,8 @@ void readHexMesh(std::string fileName, HexMesh* mesh)
     SimpleVTKHexMeshReader vtkMeshReader(fileName);
     vtkMeshReader.parseMeshFile();
   }
-  typedef Repository::RealsRegistry::BufferType RealBuf;
-  typedef Repository::IntsRegistry::BufferType IndexBuf;
+  using RealBuf = Repository::RealsRegistry::BufferType;
+  using IndexBuf = Repository::IntsRegistry::BufferType;
 
   /// Check that the mesh has been loaded properly
   if(   !(Repository::intsRegistry.hasScalar("num_nodes")
@@ -336,8 +338,8 @@ void generateNodeZoneRelation(HexMesh* mesh)
   // Create NodeToZone relation by inverting the ZoneToZone relation
   // TODO: This function to invert a relation should be moved into Slam
 
-  typedef Repository::IntsRegistry::BufferType IndexBuf;
-  typedef HexMesh::ZoneToNodeRelation::RelationSubset RelationSubset;
+  using IndexBuf = Repository::IntsRegistry::BufferType;
+  using RelationSubset = HexMesh::ZoneToNodeRelation::RelationSubset;
 
   /// Step 1: Compute the cardinalities of each node by looping through zone to
   // node relation
@@ -404,7 +406,7 @@ void generateNodeZoneRelation(HexMesh* mesh)
 
 void computeZoneBarycenters(HexMesh* mesh)
 {
-  typedef HexMesh::ZoneToNodeRelation::RelationSubset NodeSet;
+  using NodeSet = HexMesh::ZoneToNodeRelation::RelationSubset;
 
   // Compute the zone positions as the the averages
   // of the positions of the nodes around each zone
@@ -441,7 +443,7 @@ void createZoneRadiusField (HexMesh* mesh)
 DataType computeNodalErrors(HexMesh* mesh)
 {
   // Compute the node average version, and the approximation error
-  typedef HexMesh::NodeToZoneRelation::RelationSubset ZoneSet;
+  using ZoneSet = HexMesh::NodeToZoneRelation::RelationSubset;
 
 
   mesh->nodeFieldAvg   = HexMesh::NodeField(&mesh->nodes);

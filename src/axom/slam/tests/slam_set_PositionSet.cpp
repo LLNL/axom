@@ -15,15 +15,14 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/config.hpp"      // for AXOM_USE_CXX11
-
-#include "axom/slic/interface/slic.hpp"        // for SLIC_INFO
+#include "axom/config.hpp"
+#include "axom/slic.hpp"
 
 #include "axom/slam/RangeSet.hpp"    // for PositionSet
 #include "axom/slam/Utilities.hpp"
 
 
-typedef axom::slam::PositionSet SetType;
+typedef axom::slam::PositionSet<> SetType;
 typedef SetType::PositionType SetPosition;
 typedef SetType::ElementType SetElement;
 
@@ -245,10 +244,6 @@ TEST(slam_set_positionset,awkward_resize)
 }
 
 //----------------------------------------------------------------------
-//----------------------------------------------------------------------
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
@@ -256,7 +251,7 @@ int main(int argc, char* argv[])
   ::testing::InitGoogleTest(&argc, argv);
 
   // create & initialize test logger. finalized when exiting main scope
-  UnitTestLogger logger;
+  axom::slic::UnitTestLogger logger;
 
   result = RUN_ALL_TESTS();
 

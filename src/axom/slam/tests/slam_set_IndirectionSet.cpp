@@ -214,7 +214,7 @@ TEST(slam_set_indirectionset,equality)
 
 
   // Check against a PositionSet with the same elements
-  slam::PositionSet posSet(MAX_SET_SIZE);
+  slam::PositionSet<> posSet(MAX_SET_SIZE);
   EXPECT_TRUE(posSet.isValid() );
   EXPECT_EQ(posSet, s1);
 
@@ -295,7 +295,7 @@ TEST(slam_set_indirectionset,vector_indirection)
 
   // Test equality with a position set
   {
-    slam::PositionSet posSet(MAX_SET_SIZE);
+    slam::PositionSet<> posSet(MAX_SET_SIZE);
     EXPECT_TRUE(posSet.isValid() );
     EXPECT_EQ(vecSet, posSet);
     EXPECT_EQ(posSet, vecSet);
