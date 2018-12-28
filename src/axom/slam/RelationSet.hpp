@@ -33,12 +33,11 @@ template<
 class RelationSet : public OrderedSet<>, public BivariateSet
 {
 private:
-  using RangeSetType = RangeSet;
+  using RangeSetType = RangeSet<>;
   using RelationType = Relation;
 
 public:
   using PositionType = RangeSetType::PositionType;
-  using IndexType = RangeSetType::IndexType;
   using ElementType = RangeSetType::ElementType;
 
   using RelationSubset = typename RelationType::RelationSubset;

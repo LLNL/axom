@@ -18,7 +18,7 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/slic/interface/slic.hpp"
+#include "axom/slic.hpp"
 
 #include "axom/slam/ModularInt.hpp"
 #include "axom/slam/RangeSet.hpp"
@@ -39,33 +39,33 @@ namespace
 namespace slam = axom::slam;
 namespace policies = axom::slam::policies;
 
-using slam::RangeSet;
-using slam::Relation;
+using RangeSetType = slam::RangeSet<>;
+using RelationType = slam::Relation;
 
-typedef RangeSet::ElementType ElementType;
-typedef RangeSet::PositionType PositionType;
-typedef PositionType SetPosition;
-typedef std::vector<SetPosition>  IndexVec;
+using ElementType = RangeSetType::ElementType;
+using PositionType = RangeSetType::PositionType;
+using SetPosition = PositionType;
+using IndexVec = std::vector<SetPosition>;
 
 const PositionType FROMSET_SIZE = 10;
 const PositionType TOSET_SIZE = 8;
 
-typedef policies::STLVectorIndirection<PositionType, PositionType>
-  STLIndirection;
-typedef policies::ArrayIndirection<PositionType, PositionType>
-  ArrayIndirection;
+using STLIndirection =
+        policies::STLVectorIndirection<PositionType, PositionType>;
 
-typedef policies::VariableCardinality<PositionType, STLIndirection>
-  VariableCardinality;
+using ArrayIndirection =
+        policies::ArrayIndirection<PositionType, PositionType>;
 
-typedef slam::StaticRelation<VariableCardinality, STLIndirection,
-                             slam::RangeSet,slam::RangeSet>
-  StaticVariableRelationType;
+using VariableCardinality =
+        policies::VariableCardinality<PositionType, STLIndirection>;
 
+using StaticVariableRelationType =
+        slam::StaticRelation<VariableCardinality, STLIndirection,
+                             RangeSetType, RangeSetType>;
 
 // Use a slam::ModularInt type for more interesting test data
-typedef policies::CompileTimeSize<PositionType, TOSET_SIZE >  CTSize;
-typedef slam::ModularInt< CTSize >                            FixedModularInt;
+using CTSize = policies::CompileTimeSize<PositionType, TOSET_SIZE >;
+using FixedModularInt = slam::ModularInt< CTSize >;
 
 
 PositionType elementCardinality(PositionType fromPos)
@@ -113,7 +113,7 @@ void generateIncrementingRelations(VecType* begins, VecType* offsets)
   beginsVec.push_back ( curIdx );
 }
 
-}
+} // end anonymous namesapce
 
 TEST(slam_set_relation_map,access_pattern)
 {
@@ -122,7 +122,7 @@ TEST(slam_set_relation_map,access_pattern)
   IndexVec relOffsets, relIndices;
   generateIncrementingRelations(&relOffsets, &relIndices);
 
-  RangeSet fromSet(FROMSET_SIZE), toSet(TOSET_SIZE);
+  RangeSetType fromSet(FROMSET_SIZE), toSet(TOSET_SIZE);
   StaticVariableRelationType incrementingRel(&fromSet, &toSet);
   incrementingRel.bindBeginOffsets(fromSet.size(), &relOffsets);
   incrementingRel.bindIndices(relIndices.size(), &relIndices);
@@ -171,8 +171,7 @@ int main(int argc, char* argv[])
   ::testing::InitGoogleTest(&argc, argv);
 
   // create & initialize test logger. finalized when exiting main scope
-  UnitTestLogger logger;
-
+  axom::slic::UnitTestLogger logger;
   // axom::slic::setLoggingMsgLevel( axom::slic::message::Debug);
 
   result = RUN_ALL_TESTS();

@@ -78,7 +78,7 @@ namespace slam
 
 template<
   typename DataType,
-  typename StridePolicy = policies::StrideOne<Set::IndexType>
+  typename StridePolicy = policies::StrideOne<Set::PositionType>
   >
 class BivariateMap : public MapBase, public StridePolicy
 {
@@ -110,7 +110,7 @@ public:
 
   BivariateMap(const BivariateSet* bSet = &s_nullBiSet,
                DataType defaultValue = DataType(),
-               Set::IndexType stride = StridePolicy::DEFAULT_VALUE) :
+               Set::PositionType stride = StridePolicy::DEFAULT_VALUE) :
     StridePolicy(stride),
     m_set(bSet),
     m_rangeSet(0, bSet->size()),
@@ -151,9 +151,9 @@ private:
       << firstIdx << ", but BivairateMap's first set has size "
       << firstSetSize());
 
-    SetIndex start_idx = m_set->findElementFlatIndex(firstIdx);
-    SetIndex size = m_set->size(firstIdx);
-    RangeSet rng_set(start_idx, start_idx + size);
+    SetPosition start_idx = m_set->findElementFlatIndex(firstIdx);
+    SetPosition size = m_set->size(firstIdx);
+    RangeSet<> rng_set(start_idx, start_idx + size);
     return SubMapType(map_ptr, rng_set);
   }
 
@@ -250,7 +250,7 @@ public:
    * \param s1 the first set index
    * \return OrderedSet containing the elements
    */
-  OrderedSetType indexSet(SetIndex s1) const
+  OrderedSetType indexSet(SetPosition s1) const
   {
     return m_set->getElements(s1);
   }
@@ -524,7 +524,7 @@ private:
 
 private:
   const BivariateSet* m_set;
-  RangeSet m_rangeSet; //for the map... since BivariateSet isn't a slam::Set
+  RangeSet<> m_rangeSet; //for the map... since BivariateSet isn't a slam::Set
   MapType m_map;
 
 }; //end BivariateMap

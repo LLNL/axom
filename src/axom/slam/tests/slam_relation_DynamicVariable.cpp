@@ -15,9 +15,8 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/config.hpp"        // for AXOM_USE_CXX11
-
-#include "axom/slic/interface/slic.hpp"
+#include "axom/config.hpp"
+#include "axom/slic.hpp"
 
 #include "axom/slam/RangeSet.hpp"
 #include "axom/slam/Relation.hpp"
@@ -26,12 +25,11 @@
 
 namespace
 {
-using axom::slam::RangeSet;
-using axom::slam::DynamicVariableRelation;
+namespace slam = axom::slam;
 
-typedef RangeSet::PositionType PositionType;
-typedef RangeSet::ElementType ElementType;
-// typedef axom::slam::Set::SetPosition PositionType;
+using RangeSetType = slam::RangeSet<>;
+using PositionType = RangeSetType::PositionType;
+using ElementType = RangeSetType::ElementType;
 
 const PositionType FROMSET_SIZE = 5;
 const PositionType TOSET_SIZE = 8;
@@ -45,7 +43,7 @@ void printVector(StrType const& msg, VecType const& vec)
             std::ostream_iterator<PositionType>(std::cout, " "));
 }
 
-void generateIncrementingRelations(DynamicVariableRelation* rel)
+void generateIncrementingRelations(slam::DynamicVariableRelation* rel)
 {
   PositionType curIdx = PositionType();
 
@@ -64,7 +62,7 @@ TEST(slam_relation_dynamic_variable,construct_empty)
 {
   SLIC_INFO("Testing empty relation.  isValid() should be true.");
 
-  DynamicVariableRelation emptyRel;
+  slam::DynamicVariableRelation emptyRel;
 
   EXPECT_TRUE(emptyRel.isValid(true));
 }
@@ -73,10 +71,10 @@ TEST(slam_relation_dynamic_variable,construct_uninitialized)
 {
   SLIC_INFO("Testing uninitialized relation.  isValid() should be false.");
 
-  RangeSet fromSet(FROMSET_SIZE);
-  RangeSet toSet(TOSET_SIZE);
+  RangeSetType fromSet(FROMSET_SIZE);
+  RangeSetType toSet(TOSET_SIZE);
 
-  DynamicVariableRelation emptyRel(&fromSet, &toSet);
+  slam::DynamicVariableRelation emptyRel(&fromSet, &toSet);
 
   EXPECT_TRUE(emptyRel.isValid(true));
 }
@@ -87,10 +85,10 @@ TEST(slam_relation_dynamic_variable,construct_relation)
 {
   SLIC_INFO("Testing simple incrementing relation.  isValid() should be true.");
 
-  RangeSet fromSet(FROMSET_SIZE);
-  RangeSet toSet(TOSET_SIZE);
+  RangeSetType fromSet(FROMSET_SIZE);
+  RangeSetType toSet(TOSET_SIZE);
 
-  DynamicVariableRelation incrementingRel(&fromSet, &toSet);
+  slam::DynamicVariableRelation incrementingRel(&fromSet, &toSet);
   generateIncrementingRelations(&incrementingRel);
 
   const PositionType sz = static_cast<PositionType>(fromSet.size());
@@ -112,10 +110,10 @@ TEST(slam_relation_dynamic_variable,iterate_relation)
   SLIC_INFO("Testing simple incrementing relation.  isValid() should be true.");
 
   // Construct the relation
-  RangeSet fromSet(FROMSET_SIZE);
-  RangeSet toSet(TOSET_SIZE);
+  RangeSetType fromSet(FROMSET_SIZE);
+  RangeSetType toSet(TOSET_SIZE);
 
-  DynamicVariableRelation incrementingRel(&fromSet, &toSet);
+  slam::DynamicVariableRelation incrementingRel(&fromSet, &toSet);
 
   generateIncrementingRelations(&incrementingRel);
   EXPECT_TRUE(incrementingRel.isValid());
@@ -145,7 +143,7 @@ TEST(slam_relation_dynamic_variable,iterate_relation)
 
   SLIC_INFO(".. access via delayed double subscript.");
   {
-    typedef DynamicVariableRelation::RelationVec RelSet;
+    using RelSet = slam::DynamicVariableRelation::RelationVec;
     for(PositionType fromPos = 0 ; fromPos < fromSet.size() ; ++fromPos)
     {
       RelSet rSet = incrementingRel[fromPos];   // first subscript
@@ -166,8 +164,9 @@ TEST(slam_relation_dynamic_variable,iterate_relation)
   SLIC_INFO(".. access via iterators.");
 #ifdef AXOM_USE_CXX11
   {
-    typedef RangeSet::iterator SetIter;
-    typedef DynamicVariableRelation::RelationVecConstIterator RelSetConstIter;
+    using SetIter = RangeSetType::iterator;
+    using RelSetConstIter =
+            slam::DynamicVariableRelation::RelationVecConstIterator;
 
     SLIC_INFO("\t using iterator begin()/end() functions");
     for(SetIter sIt = fromSet.begin(), sItEnd = fromSet.end() ;
@@ -194,8 +193,8 @@ TEST(slam_relation_dynamic_variable,iterate_relation)
     }
 
     SLIC_INFO("\t  using iterator range() function");
-    typedef DynamicVariableRelation::
-      RelationVecConstIteratorPair RelSetConstIterPair;
+    using RelSetConstIterPair =
+            slam::DynamicVariableRelation::RelationVecConstIteratorPair;
     for(SetIter sIt = fromSet.begin(), sItEnd = fromSet.end() ;
         sIt != sItEnd ; ++sIt)
     {
@@ -219,16 +218,13 @@ TEST(slam_relation_dynamic_variable,iterate_relation)
 
 
 //----------------------------------------------------------------------
-//----------------------------------------------------------------------
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
 
   // create & initialize test logger. finalized when exiting main scope
-  UnitTestLogger logger;
+  axom::slic::UnitTestLogger logger;
   axom::slic::setLoggingMsgLevel( axom::slic::message::Info);
 
   int result = RUN_ALL_TESTS();

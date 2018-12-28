@@ -48,18 +48,17 @@ private:
       > OrderedSetType;
 
 public:
-  typedef OrderedSetType::PositionType PositionType;
-  typedef OrderedSetType::IndexType IndexType;
-  typedef OrderedSetType::ElementType ElementType;
+  using PositionType = OrderedSetType::PositionType;
+  using ElementType = OrderedSetType::ElementType;
 
-  typedef OrderedSetType::SetBuilder ArraySetBuilder;
+  using ArraySetBuilder = OrderedSetType::SetBuilder;
 
 private:
-  static const PositionType DEFAULT_SIZE =
+  static constexpr PositionType DEFAULT_SIZE =
     OrderedSetType::SizePolicyType::DEFAULT_VALUE;
-  static const PositionType DEFAULT_OFFSET =
+  static constexpr PositionType DEFAULT_OFFSET =
     OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
-  static const PositionType DEFAULT_STRIDE =
+  static constexpr PositionType DEFAULT_STRIDE =
     OrderedSetType::StridePolicyType::DEFAULT_VALUE;
 
 public:
@@ -88,31 +87,31 @@ class VectorIndirectionSet : public OrderedSet<
   // add parent subset ?
 {
 private:
-  typedef OrderedSet<
-      Set::PositionType,
-      Set::ElementType,
-      policies::RuntimeSize<Set::PositionType>,
-      policies::ZeroOffset<Set::PositionType>,
-      policies::StrideOne<Set::PositionType>,
-      policies::STLVectorIndirection<Set::PositionType, Set::ElementType>
-      > OrderedSetType;
+  using OrderedSetType =
+          OrderedSet<
+            Set::PositionType,
+            Set::ElementType,
+            policies::RuntimeSize<Set::PositionType>,
+            policies::ZeroOffset<Set::PositionType>,
+            policies::StrideOne<Set::PositionType>,
+            policies::STLVectorIndirection<Set::PositionType, Set::ElementType>
+            >;
 
-  typedef OrderedSet::IndirectionPolicyType IndirectionPolicyType;
+  using IndirectionPolicyType = OrderedSet::IndirectionPolicyType;
 
 public:
-  typedef OrderedSetType::PositionType PositionType;
-  typedef OrderedSetType::IndexType IndexType;
-  typedef OrderedSetType::ElementType ElementType;
+  using PositionType = OrderedSetType::PositionType;
+  using ElementType = OrderedSetType::ElementType;
 
-  typedef IndirectionPolicyType::VectorType ArrType;
-  typedef OrderedSetType::SetBuilder VectorSetBuilder;
+  using ArrType = IndirectionPolicyType::VectorType;
+  using VectorSetBuilder = OrderedSetType::SetBuilder;
 
 private:
-  static const PositionType DEFAULT_SIZE =
+  static constexpr PositionType DEFAULT_SIZE =
     OrderedSetType::SizePolicyType::DEFAULT_VALUE;
-  static const PositionType DEFAULT_OFFSET =
+  static constexpr PositionType DEFAULT_OFFSET =
     OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
-  static const PositionType DEFAULT_STRIDE =
+  static constexpr PositionType DEFAULT_STRIDE =
     OrderedSetType::StridePolicyType::DEFAULT_VALUE;
 
 public:

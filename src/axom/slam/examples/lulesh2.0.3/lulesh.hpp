@@ -133,66 +133,65 @@ namespace slamLulesh {
   class Domain {
 
   public:
+    using Set = axom::slam::Set;
+    using NullSet = axom::slam::NullSet;
 
-    typedef axom::slam::Set                                                                   Set;
-    typedef axom::slam::NullSet                                                               NullSet;
+    using ElemSet = axom::slam::RangeSet<>;
+    using NodeSet = axom::slam::RangeSet<>;
+    using CornerSet = axom::slam::RangeSet<>;
+    using ExtendedElemSet = axom::slam::RangeSet<>;
 
-    typedef axom::slam::RangeSet                                                              ElemSet;
-    typedef axom::slam::RangeSet                                                              NodeSet;
-    typedef axom::slam::RangeSet                                                              CornerSet;
-    typedef axom::slam::RangeSet                                                              ExtendedElemSet;
+    using SymmNodeSet = axom::slam::VectorIndirectionSet;
 
-    typedef axom::slam::VectorIndirectionSet                                                  SymmNodeSet;
-
-    typedef axom::slam::policies::STLVectorIndirection<Set::PositionType, Set::PositionType>  STLIndirection;
+    using STLIndirection = axom::slam::policies::STLVectorIndirection<Set::PositionType, Set::PositionType>;
 
     enum { NODES_PER_ZONE = 8, FACES_PER_ZONE = 1};
-    typedef axom::slam::policies::CompileTimeStride<ElemSet::PositionType, NODES_PER_ZONE>    ZNStride;
-    typedef axom::slam::policies::CompileTimeStride<ElemSet::PositionType, FACES_PER_ZONE>    ZFStride;
+    using ZNStride = axom::slam::policies::CompileTimeStride<ElemSet::PositionType, NODES_PER_ZONE>;
+    using ZFStride = axom::slam::policies::CompileTimeStride<ElemSet::PositionType, FACES_PER_ZONE>;
 
-    typedef axom::slam::policies::ConstantCardinality<Set::PositionType, ZNStride>            ZNCard;
-    typedef axom::slam::StaticRelation<ZNCard, STLIndirection, ElemSet, NodeSet>              ElemToNodeRelation;
-    typedef const ElemToNodeRelation::RelationSubset                                             ElemNodeSet;
+    using ZNCard = axom::slam::policies::ConstantCardinality<Set::PositionType, ZNStride>;
+    using ElemToNodeRelation = axom::slam::StaticRelation<ZNCard, STLIndirection, ElemSet, NodeSet>;
+    using ElemNodeSet = const ElemToNodeRelation::RelationSubset;
 
-    typedef axom::slam::policies::ConstantCardinality<Set::PositionType, ZFStride>            ZFCard;
-    typedef axom::slam::StaticRelation<ZFCard, STLIndirection, ElemSet, ExtendedElemSet>      ElemFaceAdjacencyRelation;
-
-
-    typedef axom::slam::RangeSet                                                              RegionSet;
-    typedef axom::slam::policies::VariableCardinality<Set::PositionType, STLIndirection>      VariableCardinality;
-    typedef axom::slam::StaticRelation<
-          VariableCardinality,
-          STLIndirection,
-          RegionSet,
-          ElemSet>                                                                            RegionToElemRelation;
-    typedef const RegionToElemRelation::RelationSubset RegionElemSet;
+    using ZFCard = axom::slam::policies::ConstantCardinality<Set::PositionType, ZFStride>;
+    using ElemFaceAdjacencyRelation = axom::slam::StaticRelation<ZFCard, STLIndirection, ElemSet, ExtendedElemSet>;
 
 
-    typedef axom::slam::StaticRelation<
-          VariableCardinality,
-          STLIndirection,
-          NodeSet,
-          CornerSet>                                                                          NodeToCornerRelation;
-    typedef const NodeToCornerRelation::RelationSubset NodeCornerSet;
+    using RegionSet = axom::slam::RangeSet<>;
+    using VariableCardinality = axom::slam::policies::VariableCardinality<Set::PositionType, STLIndirection>;
+    using RegionToElemRelation = axom::slam::StaticRelation<
+                                    VariableCardinality,
+                                    STLIndirection,
+                                    RegionSet,
+                                    ElemSet>;
+    using RegionElemSet = const RegionToElemRelation::RelationSubset;
 
-    typedef axom::slam::Map<Index_t>                ElemIndexMap;
-    typedef axom::slam::Map<Int_t>                  ElemIntMap;
-    //typedef axom::slam::Map<Real_t>               ElemRealMap;
 
-    typedef axom::slam::Map<Index_t>                NodeIndexMap;
-    //typedef axom::slam::Map<Int_t>                NodeIntMap;
-    //typedef axom::slam::Map<Real_t>               NodeRealMap;
+    using NodeToCornerRelation = axom::slam::StaticRelation<
+                                    VariableCardinality,
+                                    STLIndirection,
+                                    NodeSet,
+                                    CornerSet>;
+    using NodeCornerSet = const NodeToCornerRelation::RelationSubset ;
 
-    //typedef axom::slam::Map<Index_t>          RegionIndexMap;
-    typedef axom::slam::Map<Int_t> RegionIntMap;
-    //typedef axom::slam::Map<Real_t>           RegionRealMap;
+    using ElemIndexMap = axom::slam::Map<Index_t>;
+    using ElemIntMap = axom::slam::Map<Int_t>;
+    //using ElemRealMap = axom::slam::Map<Real_t>;
 
-    //typedef axom::slam::Map<Index_t>          CornerIndexMap;
-    //typedef axom::slam::Map<Int_t>            CornerIntMap;
-    typedef axom::slam::Map<Real_t>             CornerRealMap;
+    using NodeIndexMap = axom::slam::Map<Index_t>;
+    //using NodeIntMap = axom::slam::Map<Int_t>;
+    //using NodeRealMap = axom::slam::Map<Real_t>;
 
-    typedef axom::slam::FieldRegistry<Real_t>   RealsRegistry;
-    typedef axom::slam::FieldRegistry<Index_t>  IntsRegistry;
+    //using RegionIndexMap = axom::slam::Map<Index_t>;
+    using RegionIntMap = axom::slam::Map<Int_t>;
+    //using RegionRealMap = axom::slam::Map<Real_t>;
+
+    //using CornerIndexMap = axom::slam::Map<Index_t>;
+    //using CornerIntMap = axom::slam::Map<Int_t>;
+    using CornerRealMap = axom::slam::Map<Real_t>;
+
+    using RealsRegistry = axom::slam::FieldRegistry<Real_t>;
+    using IntsRegistry = axom::slam::FieldRegistry<Index_t>;
 
   public:
 

@@ -71,7 +71,7 @@ namespace tinyHydro {
 
   using IndexMap = slam::Map<IndexType>;
 
-  using IndexRegistry = slam::FieldRegistry<ZoneSet::IndexType>;
+  using IndexRegistry = slam::FieldRegistry<ZoneSet::PositionType>;
   using IndexBuffer = IndexRegistry::BufferType;
 
   struct DataRegistry

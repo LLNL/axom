@@ -59,13 +59,10 @@ class DynamicSet
 {
 
 public:
-  typedef Set::PositionType PositionType;
-  typedef Set::IndexType IndexType;
-  typedef Set::ElementType ElementType;
-
-  typedef std::vector<ElementType>  SetVectorType;
-
-  typedef SizePolicy SizePolicyType;
+  using PositionType = Set::PositionType;
+  using ElementType = Set::ElementType;
+  using SetVectorType = std::vector<ElementType>;
+  using SizePolicyType = SizePolicy;
 
   enum
   {

@@ -36,7 +36,6 @@ namespace slam
 class MapBase
 {
 public:
-  using SetIndex = Set::IndexType;
   using SetPosition = Set::PositionType;
 
 public:

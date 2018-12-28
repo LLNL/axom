@@ -48,7 +48,7 @@ template<typename IntType>
 struct RuntimeOffset
 {
 public:
-  static const IntType DEFAULT_VALUE = IntType();
+  static const IntType DEFAULT_VALUE;
 
   RuntimeOffset(IntType off = DEFAULT_VALUE) : m_off(off) {}
 
@@ -63,6 +63,8 @@ private:
   IntType m_off;
 };
 
+template<typename IntType>
+const IntType RuntimeOffset<IntType>::DEFAULT_VALUE = IntType {};
 
 /**
  * \brief A policy class for a compile-time known set offset

@@ -34,7 +34,6 @@ namespace slam = axom::slam;
 namespace slamUnstructuredHex
 {
 
-using IndexType = slam::MeshIndexType;
 using DataType = double;
 
 
@@ -124,7 +123,7 @@ public:
   /// types for sets
   using NodeSet = slam::PositionSet<>;
   using ZoneSet = slam::PositionSet<>;
-  using PositionType = ZoneSet::PositionTyp;
+  using PositionType = ZoneSet::PositionType;
   using IndexType = ZoneSet::PositionType;
 
   /// types for relations
@@ -225,11 +224,12 @@ public:
   {
     using RealBuf = Repository::RealsRegistry::BufferType;
     using IndexBuf = Repository::IntsRegistry::BufferType;
+    using PositionType = HexMesh::PositionType;
 
     // Read some initial header stuff.  Note: this is not a robust vtkreader
     std::string junk;
 
-    IndexType numNodes;
+    PositionType numNodes;
 
     /// Read in POINT data, (which we'll call the nodes)
     while( junk != "POINTS" ) { vtkMesh >> junk; }
@@ -238,20 +238,20 @@ public:
     Repository::intsRegistry.addScalar("num_nodes", numNodes);
     SLIC_INFO("-- Number of nodes: " << numNodes);
 
-    const IndexType numCoords = HexMesh::COORDS_PER_NODE * numNodes;
+    const PositionType numCoords = HexMesh::COORDS_PER_NODE * numNodes;
     RealBuf& pointData = Repository::realsRegistry.addBuffer("node_positions",
                                                              numCoords);
-    for(IndexType idx = 0 ; idx < numCoords ; ++idx)
+    for(PositionType idx = 0 ; idx < numCoords ; ++idx)
     {
       vtkMesh >> pointData[idx];
     }
 
     /// Read in the CELL data (which we'll call zones).
     /// We're going to assume hexahedra (VTK type 12)
-    IndexType numZones, listSize, nodeCount;
+    PositionType numZones, listSize, nodeCount;
     vtkMesh >> junk >> numZones >> listSize;
     Repository::intsRegistry.addScalar("num_zones", numZones);
-    const IndexType numNodeZoneIndices = HexMesh::NODES_PER_ZONE  * numZones;
+    const PositionType numNodeZoneIndices = HexMesh::NODES_PER_ZONE  * numZones;
 
     SLIC_INFO("-- Number of zones: " << numZones );
 
@@ -268,13 +268,13 @@ public:
 
     IndexBuf& zn_indices = Repository::intsRegistry
                            .addBuffer("zone_node_indices", numNodeZoneIndices );
-    IndexType idx = 0;
-    for(IndexType zoneIdx = 0 ; zoneIdx < numZones ; ++zoneIdx)
+    PositionType idx = 0;
+    for(PositionType zoneIdx = 0 ; zoneIdx < numZones ; ++zoneIdx)
     {
       vtkMesh >> nodeCount;
       SLIC_ASSERT( nodeCount == HexMesh::NODES_PER_ZONE);
 
-      for( IndexType n = 0 ; n < (HexMesh::NODES_PER_ZONE) ; ++n )
+      for( PositionType n = 0 ; n < (HexMesh::NODES_PER_ZONE) ; ++n )
       {
         vtkMesh >> zn_indices[idx++];
       }
@@ -293,6 +293,7 @@ void readHexMesh(std::string fileName, HexMesh* mesh)
   }
   using RealBuf = Repository::RealsRegistry::BufferType;
   using IndexBuf = Repository::IntsRegistry::BufferType;
+  using PositionType = HexMesh::PositionType;
 
   /// Check that the mesh has been loaded properly
   if(   !(Repository::intsRegistry.hasScalar("num_nodes")
@@ -304,17 +305,17 @@ void readHexMesh(std::string fileName, HexMesh* mesh)
   }
 
   /// Create the sets of nodes and zones in the mesh
-  IndexType numNodes = Repository::intsRegistry.getScalar("num_nodes");
+  PositionType numNodes = Repository::intsRegistry.getScalar("num_nodes");
   mesh->nodes = HexMesh::NodeSet(numNodes);
 
-  IndexType numZones = Repository::intsRegistry.getScalar("num_zones");
+  PositionType numZones = Repository::intsRegistry.getScalar("num_zones");
   mesh->zones = HexMesh::ZoneSet(numZones);
 
   /// Create the nodal position field
   mesh->nodePosition = HexMesh::PositionsVec( &mesh->nodes );
   RealBuf::iterator ptIt
     = Repository::realsRegistry.getBuffer("node_positions").begin();
-  for(IndexType idx = 0 ; idx < mesh->numNodes() ; ++idx)
+  for(PositionType idx = 0 ; idx < mesh->numNodes() ; ++idx)
   {
     mesh->nodePosition[idx] = Point(*ptIt++, *ptIt++, *ptIt++);
   }
@@ -340,15 +341,16 @@ void generateNodeZoneRelation(HexMesh* mesh)
 
   using IndexBuf = Repository::IntsRegistry::BufferType;
   using RelationSubset = HexMesh::ZoneToNodeRelation::RelationSubset;
+  using PositionType = HexMesh::PositionType;
 
   /// Step 1: Compute the cardinalities of each node by looping through zone to
   // node relation
   IndexBuf& nzBegins = Repository::intsRegistry
                        .addBuffer("node_zone_begins", mesh->nodes.size() + 1 );
-  for(IndexType zIdx = 0 ; zIdx < mesh->numZones() ; ++zIdx)
+  for(PositionType zIdx = 0 ; zIdx < mesh->numZones() ; ++zIdx)
   {
     RelationSubset nSet = mesh->zoneToNodeRelation[zIdx];
-    for(IndexType idx = 0 ; idx < nSet.size() ; ++idx)
+    for(PositionType idx = 0 ; idx < nSet.size() ; ++idx)
     {
       ++nzBegins[ nSet[idx] ];
     }
@@ -357,11 +359,11 @@ void generateNodeZoneRelation(HexMesh* mesh)
   /// Step 2: Compute begin offsets for each node based on cardinalities
   // Strategy: perform (inplace) exclusive prefix sum of cardinalities in
   // nzBegins
-  IndexType prevVal = nzBegins[0];
+  PositionType prevVal = nzBegins[0];
   nzBegins[0] = 0;
   for(int i = 1 ; i <= mesh->numNodes() ; ++i)
   {
-    IndexType nextVal = nzBegins[i];
+    PositionType nextVal = nzBegins[i];
     nzBegins[i] = nzBegins[i - 1] + prevVal;
     prevVal = nextVal;
   }
@@ -372,13 +374,13 @@ void generateNodeZoneRelation(HexMesh* mesh)
   IndexBuf& zIndices = Repository::intsRegistry
                        .addBuffer("node_zone_indices",
                                   nzBegins[mesh->numNodes()] );
-  for(IndexType zIdx = 0 ; zIdx < mesh->numZones() ; ++zIdx)
+  for(PositionType zIdx = 0 ; zIdx < mesh->numZones() ; ++zIdx)
   {
     RelationSubset nSet = mesh->zoneToNodeRelation[zIdx];
-    for(IndexType idx = 0 ; idx < nSet.size() ; ++idx)
+    for(PositionType idx = 0 ; idx < nSet.size() ; ++idx)
     {
-      const IndexType nIdx = nSet[idx];
-      const IndexType offset = nzBegins[nIdx]++;
+      const PositionType nIdx = nSet[idx];
+      const PositionType offset = nzBegins[nIdx]++;
       zIndices[offset] = zIdx;
     }
   }
@@ -407,19 +409,20 @@ void generateNodeZoneRelation(HexMesh* mesh)
 void computeZoneBarycenters(HexMesh* mesh)
 {
   using NodeSet = HexMesh::ZoneToNodeRelation::RelationSubset;
+  using PositionType = HexMesh::PositionType;
 
   // Compute the zone positions as the the averages
   // of the positions of the nodes around each zone
   mesh->zonePosition = HexMesh::PositionsVec( &mesh->zones );
 
   // Outer loop over each zone in the mesh
-  for(IndexType zIdx = 0 ; zIdx < mesh->numZones() ; ++zIdx )
+  for(PositionType zIdx = 0 ; zIdx < mesh->numZones() ; ++zIdx )
   {
     Point zonePos;
 
     // Inner loop over each node of the zone
     const NodeSet& nodeSet = mesh->zoneToNodeRelation[zIdx];
-    for(IndexType idx = 0 ; idx < nodeSet.size() ; ++idx)
+    for(PositionType idx = 0 ; idx < nodeSet.size() ; ++idx)
     {
       zonePos += mesh->nodePosition[ nodeSet[idx] ];
     }
@@ -431,10 +434,12 @@ void computeZoneBarycenters(HexMesh* mesh)
 
 void createZoneRadiusField (HexMesh* mesh)
 {
+  using PositionType = HexMesh::PositionType;
+
   // Compute a zone field based on the L2 norm of their position vectors
   mesh->zoneField = HexMesh::ZoneField ( &mesh->zones );
 
-  for (IndexType zIdx = 0 ; zIdx < mesh->numZones() ; ++zIdx )
+  for (PositionType zIdx = 0 ; zIdx < mesh->numZones() ; ++zIdx )
   {
     mesh->zoneField[zIdx] = mesh->zonePosition[zIdx].radius();
   }
@@ -444,14 +449,14 @@ DataType computeNodalErrors(HexMesh* mesh)
 {
   // Compute the node average version, and the approximation error
   using ZoneSet = HexMesh::NodeToZoneRelation::RelationSubset;
-
+  using PositionType = HexMesh::PositionType;
 
   mesh->nodeFieldAvg   = HexMesh::NodeField(&mesh->nodes);
   mesh->nodeFieldExact = HexMesh::NodeField(&mesh->nodes);
   double errSqSum = 0.0;
 
   // Outer loop over each node
-  for (IndexType nIdx = 0 ; nIdx < mesh->numNodes() ; ++nIdx)
+  for (PositionType nIdx = 0 ; nIdx < mesh->numNodes() ; ++nIdx)
   {
     // What's the radius?
     const DataType nodalValExact = mesh->nodePosition[nIdx].radius();
@@ -459,7 +464,7 @@ DataType computeNodalErrors(HexMesh* mesh)
     // Inner loop over each zone of the node to find average value
     const ZoneSet& zoneSet = mesh->nodeToZoneRelation[nIdx];
     DataType nodalAvg = DataType();
-    for(IndexType idx = 0 ; idx < zoneSet.size() ; ++idx)
+    for(PositionType idx = 0 ; idx < zoneSet.size() ; ++idx)
     {
       nodalAvg += mesh->zoneField[ zoneSet[idx] ];
     }

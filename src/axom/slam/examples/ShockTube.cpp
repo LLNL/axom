@@ -109,9 +109,9 @@ public:
           slam::policies::NoIndirection<PositionType,ElementType>;
   using TubeSubsetPolicy = slam::policies::ConcreteParentSubset<ElemSet>;
   using ElemSubset =
-          slam::GenericRangeSet<StrideOnePolicy, NoIndirectionPolicy,
-                                TubeSubsetPolicy>;
-  using RangeSet = slam::RangeSet;
+          slam::GenericRangeSet<PositionType, ElementType, StrideOnePolicy,
+                                NoIndirectionPolicy, TubeSubsetPolicy>;
+  using RangeSet = slam::RangeSet<PositionType, ElementType>;
 
   /// types for relations
   enum { ELEMS_PER_FACE = 2, FACES_PER_ELEM = 2};

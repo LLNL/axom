@@ -61,7 +61,7 @@ namespace slam
 
 template<
   typename DataType,
-  typename StridePolicy = policies::StrideOne<Set::IndexType>
+  typename StridePolicy = policies::StrideOne<Set::PositionType>
   >
 class Map : public MapBase, public StridePolicy
 {
@@ -98,7 +98,7 @@ public:
    */
 
   Map(const Set* theSet = &s_nullSet, DataType defaultValue = DataType(),
-      Set::IndexType stride = StridePolicyType::DEFAULT_VALUE ) :
+      Set::PositionType stride = StridePolicyType::DEFAULT_VALUE ) :
     StridePolicyType(stride), m_set(theSet)
   {
     m_data.resize( m_set->size() * StridePolicy::stride(), defaultValue);
@@ -124,7 +124,8 @@ public:
     //copy the data if exists
     if (builder.m_data_ptr)
     {
-      for (SetIndex idx = SetIndex() ; idx < builder.m_set->size() ; ++idx)
+      for (SetPosition idx = SetPosition() ; idx < builder.m_set->size() ;
+           ++idx)
       {
         m_data[idx] = builder.m_data_ptr[idx];
       }
@@ -228,9 +229,9 @@ public:
   /** Set each entry in the map to the given value  */
   void        fill(DataType val = DataType())
   {
-    const SetIndex sz = m_data.size();
+    const SetPosition sz = m_data.size();
 
-    for(SetIndex idx = SetIndex() ; idx < sz ; ++idx)
+    for(SetPosition idx = SetPosition() ; idx < sz ; ++idx)
     {
       m_data[idx] = val;
     }
@@ -242,8 +243,8 @@ public:
     SLIC_ASSERT( other.size() == size() );
     SLIC_ASSERT( other.stride() == StridePolicyType::stride() );
 
-    const SetIndex sz = size() * StridePolicyType::stride();
-    for(SetIndex idx = SetIndex() ; idx < sz ; ++idx)
+    const SetPosition sz = size() * StridePolicyType::stride();
+    for(SetPosition idx = SetPosition() ; idx < sz ; ++idx)
     {
       m_data[idx] = other[idx];
     }

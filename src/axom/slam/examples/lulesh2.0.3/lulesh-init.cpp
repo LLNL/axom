@@ -391,7 +391,7 @@ namespace slamLulesh {
   void
   Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
   {
-    typedef axom::slam::DynamicVariableRelation RegionToElemDynamicRelation;
+    using RegionToElemDynamicRelation = axom::slam::DynamicVariableRelation;
 
 #ifdef AXOM_USE_MPI
     Index_t myRank;
@@ -440,8 +440,8 @@ namespace slamLulesh {
 
       // Setup an unnormalized CDF to randomly choose the number of elements in each run
       const int sizeChooserProbs[7] = {773, 937, 970, 974, 978, 981, 1000};
-      typedef axom::slam::RangeSet::SetBuilder Builder;
-      axom::slam::RangeSet sizeChooser[7];
+      using Builder = axom::slam::RangeSet<>::SetBuilder;
+      axom::slam::RangeSet<> sizeChooser[7];
       sizeChooser[0] = Builder().range(1,16);
       sizeChooser[1] = Builder().range(16,32);
       sizeChooser[2] = Builder().range(32,64);
@@ -473,7 +473,7 @@ namespace slamLulesh {
         while(binSize >= sizeChooserProbs[binIndex])
           ++binIndex;
 
-        const axom::slam::RangeSet& rset = sizeChooser[ binIndex ];
+        const axom::slam::RangeSet<>& rset = sizeChooser[ binIndex ];
         elements = rset[ rand() % rset.size() ]; // gets a random number from this bin's sizeChooser set
 
         runto = elements + nextIndex;
@@ -516,7 +516,7 @@ namespace slamLulesh {
   void
   Domain::SetupSymmetryPlanes(Int_t edgeNodes)
   {
-    typedef SymmNodeSet::ArrType SymmVec;
+    using SymmVec = SymmNodeSet::ArrType;
     Int_t numSymmNodesX = m_colLoc == 0   ? edgeNodes * edgeNodes : 0;
     Int_t numSymmNodesY = m_rowLoc == 0   ? edgeNodes * edgeNodes : 0;
     Int_t numSymmNodesZ = m_planeLoc == 0 ? edgeNodes * edgeNodes : 0;

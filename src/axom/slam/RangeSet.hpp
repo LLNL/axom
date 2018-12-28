@@ -36,47 +36,47 @@ using PositionSet = OrderedSet<P,E>;
  * \brief Models a set whose elements belong to a contiguous range
  *  \f$ \in [lowerIndex,upperIndex) \f$
  *
- * \details The ElementType here needs to be computable as offsets
- *  (of PositionType) from the lowerIndex. Examples include: signed and unsigned
- *  integral types This version of a range set still allows you to have
- * different policies on striding, indirection and subsetting
+ * \note The \a ElementType here needs to be computable as offsets
+ *  (of \a PositionType) from the lowerIndex.
+ *  Examples include: signed and unsigned integral types.
+ *  This version of a range set still allows you to have
+ *  different policies on striding, indirection and subsetting
+ *  \sa OrderedSet, PositionSet, RangeSet
  */
 template<
-  typename StridingPolicy,
-  typename IndirectionPolicy,
-  typename SubsettingPolicy
-  >
+  typename P = Set::PositionType,
+  typename E = Set::ElementType,
+  typename StridingPolicy = policies::StrideOne<P>,
+  typename IndirectionPolicy = policies::NoIndirection<P, E>,
+  typename SubsettingPolicy = policies::NoSubset >
 class GenericRangeSet : public OrderedSet<
-    Set::PositionType,
-    Set::ElementType,
-    policies::RuntimeSize<Set::PositionType>,
-    policies::RuntimeOffset<Set::PositionType>,
+    P,
+    E,
+    policies::RuntimeSize<P>,
+    policies::RuntimeOffset<P>,
     StridingPolicy,
     IndirectionPolicy,
     SubsettingPolicy >
 {
+public:
+  using PositionType = P;
+  using ElementType = E;
 
 private:
-  typedef OrderedSet<
-      Set::PositionType,
-      Set::ElementType,
-      policies::RuntimeSize<Set::PositionType>,
-      policies::RuntimeOffset<Set::PositionType>,
-      StridingPolicy,
-      IndirectionPolicy,
-      SubsettingPolicy                                     > OrderedSetType;
+  using OrderedSetType =
+          OrderedSet<P,E,
+                     policies::RuntimeSize<P>,
+                     policies::RuntimeOffset<P>,
+                     StridingPolicy,
+                     IndirectionPolicy,
+                     SubsettingPolicy>;
 
-  static const typename OrderedSetType::PositionType DEFAULT_SIZE =
+  static constexpr PositionType DEFAULT_SIZE =
     OrderedSetType::SizePolicyType::DEFAULT_VALUE;
-  static const typename OrderedSetType::PositionType DEFAULT_OFFSET =
+  static constexpr PositionType DEFAULT_OFFSET =
     OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
-  static const typename OrderedSetType::PositionType DEFAULT_STRIDE =
+  static constexpr PositionType DEFAULT_STRIDE =
     OrderedSetType::StridePolicyType::DEFAULT_VALUE;
-
-public:
-  typedef typename OrderedSetType::PositionType PositionType;
-  typedef typename OrderedSetType::IndexType IndexType;
-  typedef typename OrderedSetType::ElementType ElementType;
 
 public:
   GenericRangeSet(PositionType size = DEFAULT_SIZE)
@@ -91,52 +91,19 @@ public:
 
 
 /**
- * \class RangeSet
+ * \brief Alias template for a GenericRangeSet whose elements belong
+ * to a contiguous range \f$ \in [lowerIndex,upperIndex) \f$
  *
- * \brief Models a set whose elements belong to a contiguous range
- *  \f$ \in [lowerIndex,upperIndex) \f$
+ * \tparam P The PositionType
+ * \tparam E The ElementType
+ *  \sa GenericRangeSet, OrderedSet, PositionSet
  *
- * \details The ElementType here needs to be computable as offsets (of
- *  PositionType) from the lowerIndex Examples include: signed and unsigned
- *  integral types
+ * \note The \a ElementType needs to be computable as offsets (of
+ * \a PositionType) from the lowerIndex.
+ * Examples include: signed and unsigned integral types
  */
-class RangeSet : public OrderedSet<
-    Set::PositionType,
-    Set::ElementType,
-    policies::RuntimeSize<Set::PositionType>,
-    policies::RuntimeOffset<Set::PositionType> >
-{
-
-private:
-  typedef OrderedSet< Set::PositionType, Set::ElementType,
-                      policies::RuntimeSize<Set::PositionType>,
-                      policies::RuntimeOffset<Set::PositionType>  >
-    OrderedSetType;
-
-public:
-  typedef OrderedSetType::PositionType PositionType;
-  typedef OrderedSetType::IndexType IndexType;
-  typedef OrderedSetType::ElementType ElementType;
-private:
-  static const PositionType DEFAULT_SIZE =
-    OrderedSetType::SizePolicyType::DEFAULT_VALUE;
-  static const PositionType DEFAULT_OFFSET =
-    OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
-  static const PositionType DEFAULT_STRIDE =
-    OrderedSetType::StridePolicyType::DEFAULT_VALUE;
-
-
-public:
-  RangeSet(PositionType size = DEFAULT_SIZE)
-    : OrderedSetType(size, DEFAULT_OFFSET, DEFAULT_STRIDE) {}
-
-  RangeSet(PositionType lowerIndex, PositionType upperIndex)
-    : OrderedSetType(upperIndex - lowerIndex, lowerIndex,DEFAULT_STRIDE) {}
-
-  RangeSet(const OrderedSetType::SetBuilder & builder) : OrderedSetType(builder)
-  {}
-
-};
+template<typename P = Set::PositionType, typename E = Set::ElementType>
+using RangeSet = GenericRangeSet<P,E>;
 
 
 } // end namespace slam

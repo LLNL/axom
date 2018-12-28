@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 
-/**
+/*
  * \file slam_relation_StaticVariable.cpp
  *
  * \brief Unit tests for Slam's StaticRelation class
@@ -18,9 +18,8 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/config.hpp"  // for AXOM_USE_CXX11
-
-#include "axom/slic/interface/slic.hpp"
+#include "axom/config.hpp"
+#include "axom/slic.hpp"
 
 #include "axom/slam/ModularInt.hpp"
 #include "axom/slam/RangeSet.hpp"
@@ -35,35 +34,34 @@ namespace
 namespace slam = axom::slam;
 namespace policies = axom::slam::policies;
 
-using slam::RangeSet;
-using slam::Relation;
+using RangeSetType = slam::RangeSet<>;
+using RelationType = slam::Relation;
 
-typedef RangeSet::ElementType ElementType;
-typedef RangeSet::PositionType PositionType;
+using ElementType = RangeSetType::ElementType;
+using PositionType = RangeSetType::PositionType;
 
-typedef PositionType SetPosition;
-typedef std::vector<SetPosition>  IndexVec;
+using SetPosition =PositionType;
+using IndexVec = std::vector<SetPosition>;
 
 
 const PositionType FROMSET_SIZE = 7;
 const PositionType TOSET_SIZE = 8;
 
-typedef policies::
-  STLVectorIndirection<PositionType, PositionType>  STLIndirection;
-typedef policies::
-  ArrayIndirection<PositionType, PositionType>      ArrayIndirection;
+using STLIndirection =
+        policies::STLVectorIndirection<PositionType, PositionType>;
+using ArrayIndirection =
+        policies::ArrayIndirection<PositionType, PositionType>;
 
-typedef policies::
-  VariableCardinality<PositionType, STLIndirection> VariableCardinality;
+using VariableCardinality =
+        policies::VariableCardinality<PositionType, STLIndirection>;
 
-typedef slam::StaticRelation<VariableCardinality, STLIndirection,
-                             slam::RangeSet,
-                             slam::RangeSet>
-  StaticVariableRelationType;
+using StaticVariableRelationType =
+        slam::StaticRelation<VariableCardinality, STLIndirection,
+                             RangeSetType,RangeSetType>;
 
 // Use a slam::ModularInt type for more interesting test data
-typedef policies::CompileTimeSize<int, TOSET_SIZE > CTSize;
-typedef slam::ModularInt< CTSize >                  FixedModularInt;
+using CTSize = policies::CompileTimeSize<int, TOSET_SIZE >;
+using FixedModularInt = slam::ModularInt< CTSize >;
 
 
 PositionType elementCardinality(PositionType fromPos)
@@ -176,10 +174,9 @@ template<typename RelationType>
 void iterateRelation_begin_end(RelationType& rel)
 {
 #ifdef AXOM_USE_CXX11
-  typedef typename RelationType::FromSetType FromSet;
-  typedef typename FromSet::iterator FromSetIter;
-
-  typedef typename RelationType::RelationIterator RelIter;
+  using FromSet = typename RelationType::FromSetType;
+  using FromSetIter = typename FromSet::iterator;
+  using RelIter = typename RelationType::RelationIterator;
 
   SLIC_INFO("Traversing relation data using iterator begin()/end() functions");
   for(FromSetIter sIt = rel.fromSet()->begin(),
@@ -256,8 +253,8 @@ TEST(slam_static_variable_relation,construct_uninitialized)
 {
   SLIC_INFO("Testing uninitialized relation.  isValid() should be false.");
 
-  RangeSet fromSet(FROMSET_SIZE);
-  RangeSet toSet(TOSET_SIZE);
+  RangeSetType fromSet(FROMSET_SIZE);
+  RangeSetType toSet(TOSET_SIZE);
 
   StaticVariableRelationType emptyRel(&fromSet, &toSet);
 
@@ -269,8 +266,8 @@ TEST(slam_static_variable_relation,construct_relation)
 {
   SLIC_INFO("Testing simple incrementing relation.  isValid() should be true.");
 
-  RangeSet fromSet(FROMSET_SIZE);
-  RangeSet toSet(TOSET_SIZE);
+  RangeSetType fromSet(FROMSET_SIZE);
+  RangeSetType toSet(TOSET_SIZE);
 
   IndexVec relOffsets;
   IndexVec relIndices;
@@ -304,14 +301,14 @@ TEST(slam_static_variable_relation,construct_builder)
 {
   SLIC_INFO("Testing construction using builder interface.");
 
-  RangeSet fromSet(FROMSET_SIZE);
-  RangeSet toSet(TOSET_SIZE);
+  RangeSetType fromSet(FROMSET_SIZE);
+  RangeSetType toSet(TOSET_SIZE);
 
   IndexVec offsets;
   IndexVec relIndices;
   generateIncrementingRelations(&offsets, &relIndices);
 
-  typedef StaticVariableRelationType::RelationBuilder RelationBuilder;
+  using RelationBuilder = StaticVariableRelationType::RelationBuilder;
   StaticVariableRelationType relation =
     RelationBuilder()
     .fromSet( &fromSet)
@@ -362,7 +359,7 @@ TEST(slam_static_variable_relation,initialized_rel_out_of_bounds)
   IndexVec relOffsets, relIndices;
   generateIncrementingRelations(&relOffsets, &relIndices);
 
-  RangeSet fromSet(FROMSET_SIZE), toSet(TOSET_SIZE);
+  RangeSetType fromSet(FROMSET_SIZE), toSet(TOSET_SIZE);
   StaticVariableRelationType incrementingRel(&fromSet, &toSet);
   incrementingRel.bindBeginOffsets(fromSet.size(), &relOffsets);
   incrementingRel.bindIndices(relIndices.size(), &relIndices);
@@ -379,9 +376,6 @@ TEST(slam_static_variable_relation,initialized_rel_out_of_bounds)
 
 
 //----------------------------------------------------------------------
-//----------------------------------------------------------------------
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])
 {
@@ -390,7 +384,7 @@ int main(int argc, char* argv[])
   ::testing::InitGoogleTest(&argc, argv);
 
   // create & initialize test logger. finalized when exiting main scope
-  UnitTestLogger logger;
+  axom::slic::UnitTestLogger logger;
 
   result = RUN_ALL_TESTS();
 

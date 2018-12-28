@@ -72,7 +72,6 @@ namespace slam
 class Set
 {
 public:
-  typedef MeshIndexType IndexType;                          // Index into a set
   typedef MeshSizeType PositionType;                        // Position in which
                                                             // we are indexing
   typedef MeshIndexType ElementType;

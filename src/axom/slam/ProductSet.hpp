@@ -35,11 +35,13 @@ namespace slam
  *
  * \see   BivariateSet
  */
-class ProductSet : public BivariateSet, RangeSet
+class ProductSet : public BivariateSet, RangeSet<>
 {
+private:
   using SetType = Set;
+
 public:
-  using RangeSetType = RangeSet;
+  using RangeSetType = RangeSet<>;
   using PositionType = BivariateSet::PositionType;
   using ElementType = BivariateSet::ElementType;
   using OrderedSetType = BivariateSet::OrderedSetType;
@@ -55,7 +57,7 @@ public:
    */
 
   ProductSet(Set* set1, Set* set2) :
-    BivariateSet(set1,set2), RangeSet(set1->size()*set2->size())
+    BivariateSet(set1,set2), RangeSetType(set1->size()*set2->size())
   {
     //fill in the row data now for getElements(i) function,
     //since every row is the same, a call to getElements() returns the same set.
@@ -159,7 +161,7 @@ public:
   bool isValid(bool verboseOutput = false) const override
   {
     return BivariateSet::isValid(verboseOutput) &&
-           RangeSet::isValid(verboseOutput);
+           RangeSetType::isValid(verboseOutput);
   }
 
 private:

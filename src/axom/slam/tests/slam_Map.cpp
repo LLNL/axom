@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 
-/**
+/*
  * \file slam_Map.cpp
  *
  * \brief Unit tests for Slam's Map
@@ -13,28 +13,32 @@
 #include <iterator>
 #include "gtest/gtest.h"
 
+#include "axom/slic.hpp"
+
 #include "axom/slam/Utilities.hpp"
 #include "axom/slam/RangeSet.hpp"
 #include "axom/slam/Map.hpp"
 
-#include "axom/slic/interface/slic.hpp"
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
+namespace
+{
+namespace slam = axom::slam;
 
+using SetType = slam::RangeSet<>;
+using IntMap = slam::Map<int>;
+using RealMap = slam::Map<double>;
 
-typedef axom::slam::RangeSet SetType;
-typedef axom::slam::Map<int>    IntMap;
-typedef axom::slam::Map<double> RealMap;
-
-typedef SetType::PositionType PositionType;
-typedef SetType::ElementType ElementType;
+using PositionType = SetType::PositionType;
+using ElementType = SetType::ElementType;
 
 static PositionType const MAX_SET_SIZE = 10;
 
 template<unsigned int S>
 using CompileTimeStrideType = axom::slam::policies::CompileTimeStride<int, S>;
+
 using RunTimeStrideType = axom::slam::policies::RuntimeStride<int>;
 using OneStrideType = axom::slam::policies::StrideOne<int>;
+
+} // end anonymous namespace
 
 TEST(slam_map,construct_empty_map)
 {
@@ -396,7 +400,7 @@ int main(int argc, char* argv[])
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
 #endif
 
-  UnitTestLogger logger;  // create & initialize test logger,
+  axom::slic::UnitTestLogger logger;  // create & initialize test logger,
   axom::slic::setLoggingMsgLevel( axom::slic::message::Info );
 
   int result = RUN_ALL_TESTS();

@@ -33,10 +33,8 @@ class DynamicMap
 {
 
 public:
-  typedef Set::IndexType SetIndex;
-  typedef Set::PositionType SetPosition;
-
-  typedef std::vector<DataType> OrderedMap;
+  using SetPosition = Set::PositionType;
+  using OrderedMap = std::vector<DataType>;
 
 public:
   /** \brief Default constructor   */

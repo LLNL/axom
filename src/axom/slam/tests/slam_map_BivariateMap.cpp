@@ -3,7 +3,7 @@
 // 
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-/**
+/*
  * \file slam_map_BivariateMap.cpp
  *
  * \brief Unit tests for Slam's Bivariate Map
@@ -12,6 +12,8 @@
 #include <iterator>
 #include "gtest/gtest.h"
 
+#include "axom/slic.hpp"
+
 #include "axom/slam/Utilities.hpp"
 #include "axom/slam/Map.hpp"
 #include "axom/slam/BivariateMap.hpp"
@@ -19,27 +21,29 @@
 #include "axom/slam/ProductSet.hpp"
 #include "axom/slam/StaticRelation.hpp"
 
-#include "axom/slic/interface/slic.hpp"
-#include "axom/slic/core/UnitTestLogger.hpp"
+namespace
+{
+namespace slam = axom::slam;
+namespace policies = axom::slam::policies;
 
-using axom::slic::UnitTestLogger;
-
-using SetType = axom::slam::RangeSet;
+using SetType = slam::RangeSet<>;
 using PositionType = SetType::PositionType;
 
-namespace policies = axom::slam::policies;
 using StrideOneType = policies::StrideOne<PositionType>;
+
 template<unsigned int S>
 using CompileTimeStrideType = policies::CompileTimeStride<PositionType, S>;
+
 using RuntimeStrideType = policies::RuntimeStride<PositionType>;
 
-using STLIndirection = policies::
-                       STLVectorIndirection<PositionType, PositionType>;
-using VariableCardinality = policies::
-                            VariableCardinality<PositionType, STLIndirection>;
+using STLIndirection =
+        policies::STLVectorIndirection<PositionType, PositionType>;
+using VariableCardinality =
+        policies::VariableCardinality<PositionType, STLIndirection>;
 
-using RelationType  = axom::slam::StaticRelation<
-        VariableCardinality, STLIndirection, SetType, SetType>;
+using RelationType  =
+        slam::StaticRelation<VariableCardinality, STLIndirection,
+                             SetType, SetType>;
 
 using BivariateSetType = axom::slam::BivariateSet;
 using ProductSetType = axom::slam::ProductSet;
@@ -49,15 +53,13 @@ template<typename T, typename S>
 using BivariateMapType = axom::slam::BivariateMap<T, S>;
 
 
-
-
 static PositionType const MAX_SET_SIZE1 = 10;
 static PositionType const MAX_SET_SIZE2 = 15;
 
 static double const multFac3 = 0000.1;
 static double const multFac1 = 1000.0;
 static double const multFac2 = 0010.0;
-
+} // end anonymous namespace
 
 TEST(slam_bivariate_map,construct_empty_map)
 {
@@ -412,7 +414,7 @@ int main(int argc, char* argv[])
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
 #endif
 
-  UnitTestLogger logger;  // create & initialize test logger,
+  axom::slic::UnitTestLogger logger;  // create & initialize test logger,
   axom::slic::setLoggingMsgLevel( axom::slic::message::Info );
 
   int result = RUN_ALL_TESTS();

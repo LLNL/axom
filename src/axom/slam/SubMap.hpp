@@ -49,13 +49,13 @@ namespace slam
 template<
   typename DataType,
   typename SuperMapType,
-  typename StridePolicy = policies::StrideOne<Set::IndexType>
+  typename StridePolicy = policies::StrideOne<Set::PositionType>
   >
 class SubMap : public MapBase, public StridePolicy
 {
 private:
   using SetType = Set;
-  using RangeSetType = RangeSet;
+  using RangeSetType = RangeSet<>;
   using OrderedSetType = OrderedSet<
           Set::PositionType,
           Set::ElementType,
@@ -67,7 +67,7 @@ private:
   using MapType = Map<DataType, StridePolicy>;
 
 public:
-  using IndexType = SetType::IndexType;
+  using IndexType = SetType::PositionType;
   using SubsetType = OrderedSetType;
 
 //iterator typedef

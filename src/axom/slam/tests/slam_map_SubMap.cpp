@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 
-/**
+/*
  * \file slam_map_SubMap.cpp
  *
  * \brief Unit tests for Slam's SubMap
@@ -24,7 +24,7 @@
 namespace slic = axom::slic;
 namespace slam = axom::slam;
 
-typedef slam::RangeSet RangeSetType;
+using RangeSetType = slam::RangeSet<>;
 
 template<typename T>
 using Map = slam::Map<T>;

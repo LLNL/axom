@@ -34,30 +34,28 @@ namespace
 namespace slam = axom::slam;
 namespace policies = axom::slam::policies;
 
-
-typedef slam::RangeSet::ElementType ElementType;
-typedef slam::RangeSet::PositionType PositionType;
+using RangeSetType = slam::RangeSet<>;
+using ElementType = RangeSetType::ElementType;
+using PositionType = RangeSetType::PositionType;
 
 const PositionType FROMSET_SIZE = 5;
 const PositionType TOSET_SIZE = 6;
 const PositionType ELEM_STRIDE = 6;
 
-typedef policies::CompileTimeStride<PositionType, ELEM_STRIDE>      CTStride;
-typedef policies::RuntimeStride<PositionType>                       RTStride;
+using CTStride = policies::CompileTimeStride<PositionType, ELEM_STRIDE>;
+using RTStride = policies::RuntimeStride<PositionType>;
 
-typedef policies::
-  ConstantCardinality<PositionType,CTStride>       ConstantCardinalityCT;
-typedef policies::
-  ConstantCardinality<PositionType, RTStride>       ConstantCardinalityRT;
+using ConstantCardinalityCT =
+        policies::ConstantCardinality<PositionType,CTStride>;
+using ConstantCardinalityRT =
+        policies::ConstantCardinality<PositionType, RTStride>;
 
-typedef policies::
-  STLVectorIndirection<PositionType, PositionType>  STLIndirection;
-typedef policies::
-  ArrayIndirection<PositionType, PositionType>      ArrayIndirection;
+using STLIndirection =
+        policies::STLVectorIndirection<PositionType, PositionType>;
+using ArrayIndirection = policies::ArrayIndirection<PositionType, PositionType>;
 
-typedef std::vector<PositionType>                                   IndexVec;
-
-typedef slam::DynamicConstantRelation<ConstantCardinalityCT>        RelationType;
+using IndexVec = std::vector<PositionType>;
+using RelationType = slam::DynamicConstantRelation<ConstantCardinalityCT>;
 
 } //end anonymous namespace
 
