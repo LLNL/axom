@@ -21,13 +21,15 @@
 #include "axom/slam/RangeSet.hpp"    // for PositionSet
 #include "axom/slam/Utilities.hpp"
 
-
-typedef axom::slam::PositionSet<> SetType;
-typedef SetType::PositionType SetPosition;
-typedef SetType::ElementType SetElement;
+namespace
+{
+using SetType = axom::slam::PositionSet<>;
+using SetPosition = SetType::PositionType;
+using SetElement = SetType::ElementType;
 
 static const SetPosition MAX_SET_SIZE = 10;
 
+} // end anonymous namespace
 
 TEST(slam_set_positionset,construct_valid)
 {
@@ -163,7 +165,6 @@ TEST(slam_set_positionset,iterate)
     SLIC_INFO("Element of slam set using at():\n" << sstr.str());
   }
 
-#ifdef AXOM_USE_CXX11
   SLIC_INFO("Using iterators begin/end");
   {
     std::stringstream sstr;
@@ -176,7 +177,6 @@ TEST(slam_set_positionset,iterate)
 
     SLIC_INFO("Element of slam set using iterators:\n" << sstr.str());
   }
-#endif
 }
 
 

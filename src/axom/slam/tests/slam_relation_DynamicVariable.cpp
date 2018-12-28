@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-/**
+/*
  * \file slam_relation_DynamicVariable.cpp
  *
  * \brief Unit tests for Slam's DynamicVariableRelation class
@@ -162,7 +162,6 @@ TEST(slam_relation_dynamic_variable,iterate_relation)
   }
 
   SLIC_INFO(".. access via iterators.");
-#ifdef AXOM_USE_CXX11
   {
     using SetIter = RangeSetType::iterator;
     using RelSetConstIter =
@@ -211,9 +210,6 @@ TEST(slam_relation_dynamic_variable,iterate_relation)
       }
     }
   }
-#else
-  SLIC_INFO("Skipping iterator tests when not using C++11");
-#endif
 }
 
 

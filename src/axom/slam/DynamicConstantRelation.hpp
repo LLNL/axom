@@ -18,8 +18,8 @@
 #define SLAM_DYNAMIC_CONSTANT_RELATION_HPP_
 
 #include "axom/config.hpp"
+#include "axom/slic.hpp"
 
-#include "axom/slic/interface/slic.hpp"
 #include "axom/slam/Set.hpp"
 #include "axom/slam/Relation.hpp"
 #include "axom/slam/OrderedSet.hpp"
@@ -62,42 +62,43 @@ public:
     INVALID_INDEX = ~0  ///< value to mark indices of deleted elements
   };
 
-  typedef Relation::SetPosition SetPosition;
-  typedef Relation::SetElement SetElement;
-  typedef std::vector<SetPosition>                  RelationVec;
+  using SetPosition = Relation::SetPosition;
+  using SetElement =Relation::SetElement;
+  using RelationVec = std::vector<SetPosition>;
 
-  typedef DynamicSet<>                              FromSetType;
-  typedef DynamicSet<>                              ToSetType;
+  using FromSetType = DynamicSet<>;
+  using ToSetType = DynamicSet<>;
 
-  typedef typename CardinalityPolicy::
-    RelationalOperatorSizeType BeginsSizePolicy;
+  using BeginsSizePolicy =
+          typename CardinalityPolicy::RelationalOperatorSizeType;
 
-  typedef axom::slam::policies::
-    STLVectorIndirection<SetPosition,SetPosition>   STLIndirection;
-  typedef OrderedSet<
-      SetPosition,
-      SetElement,
-      BeginsSizePolicy,
-      policies::RuntimeOffset<SetPosition>,
-      policies::StrideOne<SetPosition>,
-      STLIndirection >                              RelationSubset;
+  using STLIndirection =
+          policies::STLVectorIndirection<SetPosition,SetPosition>;
+  using RelationSubset =
+          OrderedSet<
+            SetPosition,
+            SetElement,
+            BeginsSizePolicy,
+            policies::RuntimeOffset<SetPosition>,
+            policies::StrideOne<SetPosition>,
+            STLIndirection >;
 
-#ifdef AXOM_USE_CXX11
-  typedef typename RelationSubset::iterator RelationIterator;
-  typedef typename RelationSubset::iterator_pair RelationIteratorPair;
+  // types for iterator
+  using RelationIterator = typename RelationSubset::iterator;
+  using RelationIteratorPair = typename RelationSubset::iterator_pair;
 
-  typedef typename RelationSubset::const_iterator RelationConstIterator;
-  typedef typename RelationSubset::const_iterator_pair RelationConstIteratorPair;
-#endif // AXOM_USE_CXX11
+  using RelationConstIterator = typename RelationSubset::const_iterator;
+  using RelationConstIteratorPair =
+          typename RelationSubset::const_iterator_pair;
 
 public:
 
   /**
    * \brief Default constructor with empty set for toSet and fromSet
    */
-  DynamicConstantRelation () :
-    m_fromSet( EmptySetTraits<FromSetType>::emptySet()  ),
-    m_toSet(  EmptySetTraits<ToSetType>::emptySet() )
+  DynamicConstantRelation ()
+    : m_fromSet( EmptySetTraits<FromSetType>::emptySet()  )
+    , m_toSet(  EmptySetTraits<ToSetType>::emptySet() )
   {
     m_relationCardinality = CardinalityPolicy::size( 0 );
   }
@@ -107,10 +108,11 @@ public:
    * to \a toSet
    */
   DynamicConstantRelation (FromSetType* fromSet, ToSetType* toSet)
-    : CardinalityPolicy(
-      EmptySetTraits<Set>::isEmpty(fromSet) ? 0 : fromSet->size() ),
-    m_fromSet(fromSet ),
-    m_toSet( toSet )
+    : CardinalityPolicy(EmptySetTraits<Set>::isEmpty(fromSet)
+                        ? 0
+                        : fromSet->size() )
+    , m_fromSet(fromSet )
+    , m_toSet( toSet )
   {
     m_relationCardinality = CardinalityPolicy::size( 0 );
     m_relationsVec.resize(m_relationCardinality*fromSet->size(), INVALID_INDEX);
@@ -120,7 +122,7 @@ public:
 
 
 public:
-#ifdef AXOM_USE_CXX11
+
   /// \name DynamicConstantRelation iterator interface
   /// @{
 
@@ -203,8 +205,6 @@ public:
   }
 
   /// @}
-
-#endif // AXOM_USE_CXX11
 
 public:
 

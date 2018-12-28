@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-/**
+/*
  * \file slam_relation_DynamicConstant.cpp
  *
  * \brief Unit tests for Slam's DynamicConstantRelation class
@@ -12,9 +12,8 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/config.hpp"        // for AXOM_USE_CXX11
-
-#include "axom/slic/interface/slic.hpp"
+#include "axom/config.hpp"
+#include "axom/slic.hpp"
 
 #include "axom/slam/RangeSet.hpp"
 #include "axom/slam/Relation.hpp"
@@ -22,7 +21,6 @@
 #include "axom/slam/policies/IndirectionPolicies.hpp"
 #include "axom/slam/policies/CardinalityPolicies.hpp"
 #include "axom/slam/ModularInt.hpp"
-
 
 #include "axom/slam/policies/StridePolicies.hpp"
 #include "axom/slam/DynamicConstantRelation.hpp"
@@ -135,7 +133,6 @@ TEST(slam_relation_dynamic_constant, assignment)
 
 }
 
-#ifdef AXOM_USE_CXX11
 TEST(slam_relation_dynamic_constant, iterators)
 {
   SLIC_INFO("Testing iterator interface");
@@ -200,7 +197,6 @@ TEST(slam_relation_dynamic_constant, const_iterators)
     }
   }
 }
-#endif // AXOM_USE_CXX11
 
 TEST(slam_relation_dynamic_constant, remove)
 {
@@ -240,16 +236,13 @@ TEST(slam_relation_dynamic_constant, remove)
 }
 
 //----------------------------------------------------------------------
-//----------------------------------------------------------------------
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
 
   // create & initialize test logger. finalized when exiting main scope
-  UnitTestLogger logger;
+  axom::slic::UnitTestLogger logger;
   axom::slic::setLoggingMsgLevel( axom::slic::message::Info);
 
   int result = RUN_ALL_TESTS();

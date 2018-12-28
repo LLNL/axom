@@ -33,7 +33,6 @@
 #include "axom/slam/policies/CardinalityPolicies.hpp"
 #include "axom/slam/ModularInt.hpp"
 
-
 #include "axom/slam/policies/StridePolicies.hpp"
 #include "axom/slam/StaticRelation.hpp"
 
@@ -186,7 +185,6 @@ void traverseRelation_delayedSubscript(RelationType& rel)
 template<typename RelationType>
 void iterateRelation_begin_end(RelationType& rel)
 {
-#ifdef AXOM_USE_CXX11
   using FromSet = typename RelationType::FromSetType;
   using FromSetIter = typename FromSet::iterator;
   using RelIter = typename RelationType::RelationIterator;
@@ -208,10 +206,6 @@ void iterateRelation_begin_end(RelationType& rel)
       ASSERT_EQ( relationData(fromSetEltNum, toSetEltNum), *relIt);
     }
   }
-#else
-  AXOM_DEBUG_VAR(rel);
-  SLIC_INFO("Skipping iterator tests when not using C++11");
-#endif
 }
 
 /**
@@ -225,7 +219,6 @@ void iterateRelation_begin_end(RelationType& rel)
 template<typename RelationType>
 void iterateRelation_range(RelationType& rel)
 {
-#ifdef AXOM_USE_CXX11
   using FromSet = typename RelationType::FromSetType;
   using FromSetIter = typename FromSet::iterator;
   using FromSetIterPair = typename FromSet::iterator_pair;
@@ -247,10 +240,6 @@ void iterateRelation_range(RelationType& rel)
       ASSERT_EQ( relationData(fromSetEltNum, toSetEltNum), *relIt);
     }
   }
-#else
-  AXOM_DEBUG_VAR(rel);
-  SLIC_INFO("Skipping iterator tests when not using C++11");
-#endif
 }
 
 } // end anonymous namespace

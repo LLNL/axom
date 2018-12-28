@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 
-/**
+/*
  * \file slam_set_indirectionset.cpp
  */
 
@@ -26,9 +26,9 @@ namespace slam = axom::slam;
 
 namespace
 {
-typedef slam::ArrayIndirectionSet SetType;
-typedef SetType::PositionType SetPosition;
-typedef SetType::ElementType SetElement;
+using SetType = slam::ArrayIndirectionSet;
+using SetPosition = SetType::PositionType;
+using SetElement = SetType::ElementType;
 
 static const SetPosition MAX_SET_SIZE = 10;
 
@@ -51,7 +51,8 @@ void permuteArray(SetPosition* arr, int size)
     std::next_permutation(arr, arr + size);
   }
 }
-}
+
+} // end anonymous namespace
 
 TEST(slam_set_indirectionset,construct)
 {
@@ -143,7 +144,6 @@ TEST(slam_set_indirectionset,iterate)
     SLIC_INFO("Data using operator[]:\t" << sstr.str());
   }
 
-#ifdef AXOM_USE_CXX11
   SLIC_INFO("Using iterator interface");
   {
     std::stringstream sstr;
@@ -167,7 +167,6 @@ TEST(slam_set_indirectionset,iterate)
               std::ostream_iterator<SetPosition>(sstr, "\t") );
     SLIC_INFO("Permutation " << i << ":\t" << sstr.str());
   }
-#endif
 
   delete [] s.data();
 }

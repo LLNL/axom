@@ -59,6 +59,7 @@ static PositionType const MAX_SET_SIZE2 = 15;
 static double const multFac3 = 0000.1;
 static double const multFac1 = 1000.0;
 static double const multFac2 = 0010.0;
+
 } // end anonymous namespace
 
 TEST(slam_bivariate_map,construct_empty_map)
@@ -389,7 +390,6 @@ void constructAndTestBivariateMapIterator(int stride)
   EXPECT_TRUE(m.isValid());
 }
 
-#ifdef AXOM_USE_CXX11
 TEST(slam_bivariate_map, iterate)
 {
   constructAndTestBivariateMapIterator<RuntimeStrideType>(1);
@@ -402,7 +402,6 @@ TEST(slam_bivariate_map, iterate)
 
   constructAndTestBivariateMapIterator<StrideOneType>(1);
 }
-#endif //AXOM_USE_CXX11
 
 //----------------------------------------------------------------------
 

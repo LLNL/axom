@@ -74,13 +74,12 @@ public:
 
   class MapBuilder;
 
-#ifdef AXOM_USE_CXX11
+  // types for iterator
   class MapIterator;
   using const_iterator = MapIterator;
   using const_iterator_pair = std::pair<const_iterator, const_iterator>;
   using iterator = const_iterator;
   using iterator_pair = const_iterator_pair;
-#endif
 
 public:
 
@@ -305,7 +304,6 @@ private:
 
 
 
-#ifdef AXOM_USE_CXX11
   /**
    * \class   MapIterator
    * \brief   An iterator type for a map.
@@ -384,10 +382,6 @@ public:     // Functions related to iteration
   MapIterator         begin()   {    return MapIterator(0, this);  }
   MapIterator         end()     {    return MapIterator(size(), this); }
   const_iterator_pair range() const { return std::make_pair(begin(), end()); }
-
-#endif //AXOM_USE_CXX11
-
-
 
 
 public:
@@ -535,8 +529,6 @@ void Map<DataType, StridePolicy>::print() const
 
   std::cout << sstr.str() << std::endl;
 }
-
-
 
 
 } // end namespace slam

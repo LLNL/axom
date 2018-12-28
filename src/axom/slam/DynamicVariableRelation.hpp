@@ -16,8 +16,8 @@
 #define SLAM_DYNAMIC_VARIABLE_RELATION_HPP_
 
 #include "axom/config.hpp"
+#include "axom/slic.hpp"
 
-#include "axom/slic/interface/slic.hpp"
 #include "axom/slam/Set.hpp"
 #include "axom/slam/Relation.hpp"
 
@@ -32,22 +32,20 @@ namespace slam
 class DynamicVariableRelation : public Relation
 {
 public:
-  typedef Relation::SetPosition SetPosition;
+  using SetPosition = Relation::SetPosition;
 
-  typedef std::vector<SetPosition>
-    RelationVec;
-  typedef RelationVec::iterator RelationVecIterator;
-  typedef std::pair<RelationVecIterator,RelationVecIterator>
-    RelationVecIteratorPair;
+  using RelationVec = std::vector<SetPosition>;
+  using RelationVecIterator =RelationVec::iterator;
+  using RelationVecIteratorPair =
+          std::pair<RelationVecIterator,RelationVecIterator>;
 
-  typedef RelationVec::const_iterator RelationVecConstIterator;
-  typedef std::pair<RelationVecConstIterator,RelationVecConstIterator>
-    RelationVecConstIteratorPair;
+  using RelationVecConstIterator = typename RelationVec::const_iterator;
+  using RelationVecConstIteratorPair =
+          std::pair<RelationVecConstIterator,RelationVecConstIterator>;
 
-  typedef std::vector< RelationVec>
-    RelationsContainer;
-  typedef RelationsContainer::const_iterator RelationsContainerCIt;
-  typedef RelationsContainer::iterator RelationsContainerIt;
+  using RelationsContainer = std::vector< RelationVec>;
+  using RelationsContainerCIt = RelationsContainer::const_iterator;
+  using RelationsContainerIt = RelationsContainer::iterator;
 
 public:
   DynamicVariableRelation (Set* fromSet = &s_nullSet,
@@ -55,7 +53,7 @@ public:
   ~DynamicVariableRelation(){}
 
 public:
-#ifdef AXOM_USE_CXX11
+
   /// \name DynamicVariableRelation iterator interface
   /// @{
   RelationVecConstIterator begin(SetPosition fromSetIndex)       const
@@ -75,8 +73,6 @@ public:
     return std::make_pair(begin(fromSetIndex), end(fromSetIndex));
   }
   /// @}
-
-#endif // AXOM_USE_CXX11
 
 
   RelationVec const& operator[](SetPosition fromSetIndex) const

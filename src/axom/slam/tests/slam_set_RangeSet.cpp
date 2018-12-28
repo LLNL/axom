@@ -36,7 +36,8 @@ static const SetElement lowerIndex =
 static const SetElement upperIndex =
   static_cast<SetElement>( .7 * MAX_SET_SIZE);
 static const SetElement range = upperIndex - lowerIndex;
-}
+
+} // end anonymous namespace
 
 
 TEST(slam_range_set,construct)
@@ -185,7 +186,6 @@ TEST(slam_range_set,iterate)
     SLIC_INFO(sstr.str());
   }
 
-#ifdef AXOM_USE_CXX11
   SLIC_INFO("Testing iterator access");
   {
     std::stringstream sstr;
@@ -303,7 +303,6 @@ TEST(slam_range_set,iterate)
 
     SLIC_INFO(sstr.str());
   }
-#endif //AXOM_USE_CXX11
 }
 
 TEST(slam_range_set,out_of_range)

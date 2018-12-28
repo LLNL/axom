@@ -173,7 +173,6 @@ void traverseRelation_delayedSubscript(RelationType& rel)
 template<typename RelationType>
 void iterateRelation_begin_end(RelationType& rel)
 {
-#ifdef AXOM_USE_CXX11
   using FromSet = typename RelationType::FromSetType;
   using FromSetIter = typename FromSet::iterator;
   using RelIter = typename RelationType::RelationIterator;
@@ -195,10 +194,6 @@ void iterateRelation_begin_end(RelationType& rel)
       ASSERT_EQ( relationData(fromSetEltNum,toSetEltNum), *relIt);
     }
   }
-#else
-  AXOM_DEBUG_VAR(rel);
-  SLIC_INFO("Skipping iterator tests when not using C++11");
-#endif
 }
 
 /**
@@ -211,7 +206,6 @@ void iterateRelation_begin_end(RelationType& rel)
 template<typename RelationType>
 void iterateRelation_range(RelationType& rel)
 {
-#ifdef AXOM_USE_CXX11
   typedef typename RelationType::FromSetType FromSet;
   typedef typename FromSet::iterator FromSetIter;
   typedef typename FromSet::iterator_pair FromSetIterPair;
@@ -233,10 +227,6 @@ void iterateRelation_range(RelationType& rel)
       ASSERT_EQ( relationData(fromSetEltNum, toSetEltNum), *relIt);
     }
   }
-#else
-  AXOM_DEBUG_VAR(rel);
-  SLIC_INFO("Skipping iterator tests when not using C++11");
-#endif
 }
 
 } // end anonymous namespace

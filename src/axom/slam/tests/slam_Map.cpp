@@ -209,7 +209,6 @@ TEST(slam_map, construct_double_map_with_stride)
 }
 
 
-#ifdef AXOM_USE_CXX11
 TEST(slam_map, iterate)
 {
   using IterType = RealMap::iterator;
@@ -388,7 +387,6 @@ TEST(slam_map, iterate_with_stride)
 
   SLIC_INFO("Done");
 }
-#endif //AXOM_USE_CXX11
 
 //----------------------------------------------------------------------
 

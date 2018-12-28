@@ -41,67 +41,69 @@ template<
 class StaticRelation : public /*Relation,*/ RelationCardinalityPolicy
 {
 public:
-  typedef TheFromSet FromSetType;
-  typedef TheToSet ToSetType;
+  using FromSetType = TheFromSet;
+  using ToSetType = TheToSet;
 
-  typedef Relation::SetPosition SetPosition;
-  typedef Relation::SetElement SetElement;
+  using SetPosition = Relation::SetPosition;
+  using SetElement = Relation::SetElement;
 
-  typedef RelationCardinalityPolicy CardinalityPolicy;
-  typedef typename CardinalityPolicy::RelationalOperatorSizeType
-    BeginsSizePolicy;
+  using CardinalityPolicy = RelationCardinalityPolicy;
+  using BeginsSizePolicy =
+          typename CardinalityPolicy::RelationalOperatorSizeType;
 
-  typedef RelationIndicesIndirectionPolicy IndicesIndirectionPolicy;
+  using IndicesIndirectionPolicy = RelationIndicesIndirectionPolicy;
 
-  typedef OrderedSet<
-      SetPosition,
-      SetElement,
-      BeginsSizePolicy,
-      policies::RuntimeOffset<SetPosition>,
-      policies::StrideOne<SetPosition>,
-      IndicesIndirectionPolicy >                  RelationSubset;
+  using RelationSubset =
+          OrderedSet<
+            SetPosition,
+            SetElement,
+            BeginsSizePolicy,
+            policies::RuntimeOffset<SetPosition>,
+            policies::StrideOne<SetPosition>,
+            IndicesIndirectionPolicy >;
 
 
-  typedef OrderedSet<
-      SetPosition,
-      SetElement,
-      policies::RuntimeSize<SetPosition>,
-      policies::ZeroOffset<SetPosition>,
-      policies::StrideOne<SetPosition>,
-      IndicesIndirectionPolicy >                  IndicesSet;
+  using IndicesSet =
+          OrderedSet<
+            SetPosition,
+            SetElement,
+            policies::RuntimeSize<SetPosition>,
+            policies::ZeroOffset<SetPosition>,
+            policies::StrideOne<SetPosition>,
+            IndicesIndirectionPolicy >;
 
-  typedef typename
-    IndicesIndirectionPolicy::IndirectionBufferType IndirectionBufferType;
+  using IndirectionBufferType =
+          typename IndicesIndirectionPolicy::IndirectionBufferType;
 
-#ifdef AXOM_USE_CXX11
-  typedef typename RelationSubset::iterator RelationIterator;
-  typedef typename RelationSubset::iterator_pair RelationIteratorPair;
+  // types for iterator
+  using RelationIterator = typename RelationSubset::iterator;
+  using RelationIteratorPair = typename RelationSubset::iterator_pair;
 
-  typedef typename RelationSubset::const_iterator RelationConstIterator;
-  typedef typename RelationSubset::const_iterator_pair RelationConstIteratorPair;
-#endif // AXOM_USE_CXX11
+  using RelationConstIterator = typename RelationSubset::const_iterator;
+  using RelationConstIteratorPair =
+          typename RelationSubset::const_iterator_pair;
 
 public:
   struct RelationBuilder;
 
   StaticRelation()
-    : m_fromSet( EmptySetTraits<FromSetType>::emptySet() ),
-    m_toSet( EmptySetTraits<ToSetType>::emptySet() )
+    : m_fromSet( EmptySetTraits<FromSetType>::emptySet() )
+    , m_toSet( EmptySetTraits<ToSetType>::emptySet() )
   {}
 
 
   StaticRelation(FromSetType* fromSet, ToSetType* toSet)
     : CardinalityPolicy( EmptySetTraits<FromSetType>::
-                         isEmpty(fromSet) ? 0 : fromSet->size() ),
-    m_fromSet(fromSet),
-    m_toSet(toSet)
+                         isEmpty(fromSet) ? 0 : fromSet->size() )
+    , m_fromSet(fromSet)
+    , m_toSet(toSet)
   {}
 
   StaticRelation(const RelationBuilder& builder)
-    : CardinalityPolicy(builder.m_cardPolicy),
-    m_fromSet(builder.m_fromSet),
-    m_toSet(builder.m_toSet),
-    m_relationIndices(builder.m_indBuilder)
+    : CardinalityPolicy(builder.m_cardPolicy)
+    , m_fromSet(builder.m_fromSet)
+    , m_toSet(builder.m_toSet)
+    , m_relationIndices(builder.m_indBuilder)
   {}
 
   struct RelationBuilder
@@ -186,7 +188,6 @@ public:
   bool              isValid(bool verboseOutput = false) const;
 
 
-#ifdef AXOM_USE_CXX11
   RelationIterator  begin(SetPosition fromSetInd )
   {
     return (*this)[fromSetInd].begin();
@@ -217,7 +218,6 @@ public:
   {
     return (*this)[fromSetInd].range();
   }
-#endif // AXOM_USE_CXX11
 
 
   bool                hasFromSet() const
