@@ -17,8 +17,9 @@ namespace axom
 namespace slam
 {
 
-typedef int MeshIndexType;
-typedef int MeshSizeType;
+using IndexType = int;
+using PositionType = int;
+using ElementType = int;
 
 class NotImplementedException
 {};

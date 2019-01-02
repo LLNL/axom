@@ -52,8 +52,8 @@
 namespace slamShocktube
 {
 
-axom::slam::MeshIndexType const UPWIND   = 0;
-axom::slam::MeshIndexType const DOWNWIND = 1;
+axom::slam::IndexType const UPWIND   = 0;
+axom::slam::IndexType const DOWNWIND = 1;
 
 const double gammaa = M_SQRT2;
 const double gammaaInverse = M_SQRT1_2;

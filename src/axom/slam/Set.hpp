@@ -16,7 +16,7 @@
 #include <cstddef>
 #include <vector>
 
-#include "axom/core/utilities/Utilities.hpp"
+#include "axom/core.hpp"
 #include "axom/slam/Utilities.hpp"
 
 namespace axom
@@ -72,9 +72,8 @@ namespace slam
 class Set
 {
 public:
-  typedef MeshSizeType PositionType;                        // Position in which
-                                                            // we are indexing
-  typedef MeshIndexType ElementType;
+  using PositionType = slam::PositionType; // Position in which we are indexing
+  using ElementType = slam::IndexType;
 
 
 public:
