@@ -37,6 +37,7 @@ endforeach()
 
 # Add MPI GTest based tests
 set(mpi_gtest_lumberjack_tests
+    lumberjack_BinaryCommunicator.cpp
     lumberjack_RootCommunicator.cpp
     )
 
@@ -59,11 +60,12 @@ blt_add_executable(NAME lumberjack_speed_test
                    DEPENDS_ON lumberjack
                    FOLDER axom/lumberjack/tests )
 
+set(lumberjack_sample_input_dir ${PROJECT_SOURCE_DIR}/axom/lumberjack/tests/sampleInput)
 blt_add_test( NAME lumberjack_speedTest_binary
-              COMMAND lumberjack_speed_test b 10 ${lumberjack_SOURCE_DIR}/tests/sampleInput/loremIpsum02
+              COMMAND lumberjack_speed_test b 10 ${lumberjack_sample_input_dir}/loremIpsum02
               NUM_MPI_TASKS 4)
               
 blt_add_test( NAME lumberjack_speedTest_root
-              COMMAND lumberjack_speed_test r 10 ${lumberjack_SOURCE_DIR}/tests/sampleInput/loremIpsum02
+              COMMAND lumberjack_speed_test r 10 ${lumberjack_sample_input_dir}/loremIpsum02
               NUM_MPI_TASKS 4)
               

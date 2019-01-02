@@ -34,6 +34,7 @@ public:
   {
     m_mpiComm = comm;
     m_ranksLimit = ranksLimit;
+    m_isOutputNode = true;
     srand(time(nullptr));
   }
 
@@ -66,13 +67,137 @@ public:
 
   bool isOutputNode()
   {
-    return true;
+    return m_isOutputNode;
+  }
+
+  void outputNode(bool value)
+  {
+    m_isOutputNode = value;
   }
 private:
   MPI_Comm m_mpiComm;
   int m_ranksLimit;
+  bool m_isOutputNode;
 };
 
+
+TEST(lumberjack_Lumberjack, combineMessagesPushOnce01)
+{
+  int ranksLimit = 5;
+  TestCommunicator communicator;
+  communicator.initialize(MPI_COMM_NULL, ranksLimit);
+  axom::lumberjack::Lumberjack lumberjack;
+  lumberjack.initialize(&communicator, ranksLimit);
+
+  lumberjack.queueMessage("Should be combined.");
+  lumberjack.queueMessage("Should be combined.");
+  lumberjack.queueMessage("Should be combined.");
+  lumberjack.queueMessage("Should be combined.");
+  lumberjack.queueMessage("Should be combined.");
+  lumberjack.queueMessage("Should be combined.");
+
+  lumberjack.pushMessagesOnce();
+
+  std::vector<axom::lumberjack::Message*> messages = lumberjack.getMessages();
+
+  EXPECT_EQ((int)messages.size(), 1);
+  EXPECT_EQ(messages[0]->text(), "Should be combined.");
+  EXPECT_EQ(messages[0]->ranksCount(), 6);
+
+  lumberjack.finalize();
+  communicator.finalize();
+}
+
+TEST(lumberjack_Lumberjack, combineMessagesPushOnce02)
+{
+  int ranksLimit = 5;
+  TestCommunicator communicator;
+  communicator.initialize(MPI_COMM_NULL, ranksLimit);
+  axom::lumberjack::Lumberjack lumberjack;
+  lumberjack.initialize(&communicator, ranksLimit);
+
+  lumberjack.queueMessage("");
+  lumberjack.queueMessage("Should be combined.");
+  lumberjack.queueMessage("Should be combined.");
+  lumberjack.queueMessage("Should be combined.");
+  lumberjack.queueMessage("Should be combined.");
+  lumberjack.queueMessage("Should be combined.");
+
+  lumberjack.pushMessagesOnce();
+
+  std::vector<axom::lumberjack::Message*> messages = lumberjack.getMessages();
+
+  EXPECT_EQ((int)messages.size(), 2);
+  EXPECT_EQ(messages[0]->text(), "");
+  EXPECT_EQ(messages[0]->ranksCount(), 1);
+  EXPECT_EQ(messages[1]->text(), "Should be combined.");
+  EXPECT_EQ(messages[1]->ranksCount(), 5);
+
+  lumberjack.finalize();
+  communicator.finalize();
+}
+
+TEST(lumberjack_Lumberjack, combineMessagesPushOnceEmpty)
+{
+  int ranksLimit = 5;
+  TestCommunicator communicator;
+  communicator.initialize(MPI_COMM_NULL, ranksLimit);
+  axom::lumberjack::Lumberjack lumberjack;
+  lumberjack.initialize(&communicator, ranksLimit);
+
+  lumberjack.queueMessage("");
+
+  lumberjack.pushMessagesOnce();
+
+  std::vector<axom::lumberjack::Message*> messages = lumberjack.getMessages();
+
+  EXPECT_EQ((int)messages.size(), 1);
+  EXPECT_EQ(messages[0]->text(), "");
+  EXPECT_EQ(messages[0]->ranksCount(), 1);
+
+  lumberjack.finalize();
+  communicator.finalize();
+}
+
+TEST(lumberjack_Lumberjack, combineMessagesPushOnceEmptyNonOutputNode)
+{
+  int ranksLimit = 5;
+  TestCommunicator communicator;
+  communicator.initialize(MPI_COMM_NULL, ranksLimit);
+  communicator.outputNode(false);
+  axom::lumberjack::Lumberjack lumberjack;
+  lumberjack.initialize(&communicator, ranksLimit);
+
+  lumberjack.queueMessage("");
+
+  lumberjack.pushMessagesOnce();
+
+  std::vector<axom::lumberjack::Message*> messages = lumberjack.getMessages();
+
+  EXPECT_EQ((int)messages.size(), 0);
+
+  lumberjack.finalize();
+  communicator.finalize();
+}
+
+TEST(lumberjack_Lumberjack, combineMessagesPushOnceNothingNonOutputNode)
+{
+  int ranksLimit = 5;
+  TestCommunicator communicator;
+  communicator.initialize(MPI_COMM_NULL, ranksLimit);
+  communicator.outputNode(false);
+  axom::lumberjack::Lumberjack lumberjack;
+  lumberjack.initialize(&communicator, ranksLimit);
+
+  lumberjack.pushMessagesOnce();
+
+  std::vector<axom::lumberjack::Message*> messages = lumberjack.getMessages();
+
+  EXPECT_EQ((int)messages.size(), 0);
+
+  lumberjack.finalize();
+  communicator.finalize();
+}
 
 TEST(lumberjack_Lumberjack, combineMessages01)
 {

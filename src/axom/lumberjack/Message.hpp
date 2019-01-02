@@ -26,6 +26,7 @@
 #ifndef MESSAGE_HPP
 #define MESSAGE_HPP
 
+#include <cstring>
 #include <string>
 #include <vector>
 
@@ -36,10 +37,18 @@ namespace lumberjack
 
 /*!
  *****************************************************************************
+ * \brief Message to indicate no messages need to be sent from child node.
+ *****************************************************************************
+ */
+const char* const zeroMessage = "0";
+
+/*!
+ *****************************************************************************
  * \brief Delimiter used for packing messages and separating their members.
  *****************************************************************************
  */
 const char memberDelimiter = '*';
+
 /*!
  *****************************************************************************
  * \brief Delimiter used for packing messages and separating their individual
@@ -328,8 +337,8 @@ const char* packMessages(const std::vector<Message*>& messages);
  *  classes to the given vector.
  *
  * The messages are packed into the following format:
-  *  <message count>[*<packed message size>*<packed message>]...
-* This function only adds to the messages vector and does not alter the
+ *  <message count>[*<packed message size>*<packed message>]...
+ * This function only adds to the messages vector and does not alter the
  * packagedMessages parameter.
  *
  * \param [in,out] messages Vector to append created messages to
@@ -337,10 +346,26 @@ const char* packMessages(const std::vector<Message*>& messages);
  * \param [in]  ranksLimit Limits how many ranks are tracked per Message.
  *****************************************************************************
  */
- void unpackMessages(std::vector<Message*>& messages,
-                     const char* packedMessages,
-                     const int ranksLimit);
+void unpackMessages(std::vector<Message*>& messages,
+                    const char* packedMessages,
+                    const int ranksLimit);
 
+
+/*!
+ *****************************************************************************
+ * \brief This checks if a given set of packed messages is empty.
+ *
+ * \param [in]  packedMessages Packed messages to be checked for empty.
+ *
+ * \return Whether or not the given packed messages is empty.
+ *****************************************************************************
+ */
+inline bool isPackedMessagesEmpty(const char* packedMessages)
+{
+  return (packedMessages == nullptr) ||
+         (packedMessages[0] == '\0') ||
+         (strcmp(packedMessages, zeroMessage) == 0);
+}
 
 } // end namespace lumberjack
 } // end namespace axom

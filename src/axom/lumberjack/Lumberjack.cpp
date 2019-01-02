@@ -144,7 +144,7 @@ void Lumberjack::pushMessagesOnce()
 
   m_communicator->push(packedMessagesToBeSent, receivedPackedMessages);
 
-  if (!m_communicator->isOutputNode())
+  if (!m_communicator->isOutputNode() && !isPackedMessagesEmpty(packedMessagesToBeSent))
   {
     delete [] packedMessagesToBeSent;
   }
@@ -175,7 +175,7 @@ void Lumberjack::pushMessagesFully()
 
     m_communicator->push(packedMessagesToBeSent, receivedPackedMessages);
 
-    if (!m_communicator->isOutputNode())
+    if (!m_communicator->isOutputNode() && !isPackedMessagesEmpty(packedMessagesToBeSent))
     {
       delete [] packedMessagesToBeSent;
     }

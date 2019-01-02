@@ -30,7 +30,6 @@
 #include "axom/core/utilities/StringUtilities.hpp"
 
 #include <algorithm>
-#include <cstring>
 #include <iostream>
 
 namespace axom
@@ -320,8 +319,6 @@ const char* packMessages(const std::vector<Message*>& messages)
 {
   if (messages.size() == 0)
   {
-    char* zeroMessage = new char[2];
-    std::strcpy(zeroMessage, "0");
     return zeroMessage;
   }
 

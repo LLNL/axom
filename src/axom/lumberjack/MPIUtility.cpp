@@ -45,17 +45,13 @@ const char* mpiBlockingRecieveMessages(MPI_Comm comm)
   MPI_Probe(MPI_ANY_SOURCE, 0, comm, &mpiStatus);
   MPI_Get_count(&mpiStatus, MPI_CHAR, &messageSize);
 
-  // Receive packed Message
+  // Setup where to recieve the char array
   charArray = new char[messageSize+1];
-  MPI_Recv(charArray, messageSize, MPI_CHAR, mpiStatus.MPI_SOURCE, 0, comm,
-           &mpiStatus);
   charArray[messageSize] = '\0';
 
-  if (messageSize == 1)
-  {
-    delete [] charArray;
-    return nullptr;
-  }
+  // Receive packed Message
+  MPI_Recv(charArray, messageSize, MPI_CHAR, mpiStatus.MPI_SOURCE, 0, comm,
+           &mpiStatus);
 
   return charArray;
 }

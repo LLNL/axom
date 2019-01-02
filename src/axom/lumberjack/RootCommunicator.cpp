@@ -78,7 +78,14 @@ void RootCommunicator::push(const char* packedMessagesToBeSent,
     while(ranksDoneCount < (m_mpiCommSize-1))
     {
       currPackedMessages = mpiBlockingRecieveMessages(m_mpiComm);
-      if (currPackedMessages != nullptr)
+      if (isPackedMessagesEmpty(currPackedMessages))
+      {
+        if ((currPackedMessages != nullptr) || (currPackedMessages[0] == '\0'))
+        {
+          delete [] currPackedMessages;
+        }
+      }
+      else
       {
         receivedPackedMessages.push_back(currPackedMessages);
       }
@@ -87,7 +94,14 @@ void RootCommunicator::push(const char* packedMessagesToBeSent,
   }
   else
   {
-    mpiNonBlockingSendMessages(m_mpiComm, 0, packedMessagesToBeSent);
+    if (isPackedMessagesEmpty(packedMessagesToBeSent))
+    {
+      mpiNonBlockingSendMessages(m_mpiComm, 0, zeroMessage);
+    }
+    else
+    {
+      mpiNonBlockingSendMessages(m_mpiComm, 0, packedMessagesToBeSent);
+    }
   }
   MPI_Barrier(m_mpiComm);
 }
