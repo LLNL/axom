@@ -10,6 +10,8 @@
 #ifndef SLAM_UTILITIES_H_
 #define SLAM_UTILITIES_H_
 
+#include "axom/core.hpp"
+
 #include <string>
 
 namespace axom
@@ -17,9 +19,9 @@ namespace axom
 namespace slam
 {
 
-using IndexType = int;
-using PositionType = int;
-using ElementType = int;
+using IndexType = axom::IndexType;
+using PositionType = axom::IndexType;
+using ElementType = axom::IndexType;
 
 class NotImplementedException
 {};
