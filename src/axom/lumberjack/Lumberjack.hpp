@@ -64,7 +64,7 @@ public:
    * This performs any setup work the Lumberjack needs before doing any work.
    * It is required that this is called before using the Lumberjack.
    *
-   * \param [in] communicator The Lumberjack Communicator that will send/recieve
+   * \param [in] communicator The Lumberjack Communicator that will send/receive
    * messages
    * \param [in] ranksLimit Limit on how many ranks are individually tracker per
    * Message.

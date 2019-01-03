@@ -90,7 +90,7 @@ TEST(lumberjack_RootCommunicator, basic)
       }
       if (!found)
       {
-        std::cout << "Error: Message not recieved:" << currMessage << std::endl;
+        std::cout << "Error: Message not received:" << currMessage << std::endl;
       }
       EXPECT_EQ(found, true);
     }

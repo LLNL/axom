@@ -203,7 +203,7 @@ void Message::unpack(const std::string& packedMessage, int ranksLimit)
   end = packedMessage.find(memberDelimiter);
   if (end == std::string::npos)
   {
-    std::cerr << "Error: Lumberjack recieved a truncated message "
+    std::cerr << "Error: Lumberjack received a truncated message "
               << "that ended in the ranks section."
               << std::endl;
     std::cerr << packedMessage << std::endl;
@@ -215,7 +215,7 @@ void Message::unpack(const std::string& packedMessage, int ranksLimit)
   end = packedMessage.find(memberDelimiter, start);
   if (end == std::string::npos)
   {
-    std::cerr << "Error: Lumberjack recieved a truncated message "
+    std::cerr << "Error: Lumberjack received a truncated message "
               << "that ended in the rank count section."
               << std::endl;
     std::cerr << packedMessage << std::endl;
@@ -229,7 +229,7 @@ void Message::unpack(const std::string& packedMessage, int ranksLimit)
   end = packedMessage.find(memberDelimiter, start);
   if (end == std::string::npos)
   {
-    std::cerr << "Error: Lumberjack recieved a truncated message "
+    std::cerr << "Error: Lumberjack received a truncated message "
               << "that ended in the file name section."
               << std::endl;
     std::cerr << packedMessage << std::endl;
@@ -241,7 +241,7 @@ void Message::unpack(const std::string& packedMessage, int ranksLimit)
   end = packedMessage.find(memberDelimiter, start);
   if (end == std::string::npos)
   {
-    std::cerr << "Error: Lumberjack recieved a truncated message "
+    std::cerr << "Error: Lumberjack received a truncated message "
               << "that ended in the line number section."
               << std::endl;
     std::cerr << packedMessage << std::endl;
@@ -258,7 +258,7 @@ void Message::unpack(const std::string& packedMessage, int ranksLimit)
   end = packedMessage.find(memberDelimiter, start);
   if (end == std::string::npos)
   {
-    std::cerr << "Error: Lumberjack recieved a truncated message "
+    std::cerr << "Error: Lumberjack received a truncated message "
               << "that ended in the level section."
               << std::endl;
     std::cerr << packedMessage << std::endl;
@@ -272,7 +272,7 @@ void Message::unpack(const std::string& packedMessage, int ranksLimit)
   end = packedMessage.find(memberDelimiter, start);
   if (end == std::string::npos)
   {
-    std::cerr << "Error: Lumberjack recieved a truncated message "
+    std::cerr << "Error: Lumberjack received a truncated message "
               << "that ended in the tag section."
               << std::endl;
     std::cerr << packedMessage << std::endl;
@@ -289,7 +289,7 @@ void Message::unpackRanks(const std::string& ranksString, int ranksLimit)
   m_ranks.clear();
   if (ranksString.empty())
   {
-    std::cerr << "Error: Lumberjack recieved an empty rank section."
+    std::cerr << "Error: Lumberjack received an empty rank section."
               << std::endl;
     return;
   }

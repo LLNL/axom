@@ -77,7 +77,7 @@ void RootCommunicator::push(const char* packedMessagesToBeSent,
     int ranksDoneCount = 0;
     while(ranksDoneCount < (m_mpiCommSize-1))
     {
-      currPackedMessages = mpiBlockingRecieveMessages(m_mpiComm);
+      currPackedMessages = mpiBlockingReceiveMessages(m_mpiComm);
       if (isPackedMessagesEmpty(currPackedMessages))
       {
         if ((currPackedMessages != nullptr) || (currPackedMessages[0] == '\0'))

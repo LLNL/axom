@@ -66,7 +66,7 @@ then only the Messages generated at the root node will be outputed.
 
 In a single push, nodes send their currently held Messages to the nodes their are connected
 to based on the Communicator's communcation scheme.  For example in the BinaryTreeCommunicator,
-children nodes send their Messages to their parent. While the root node only recieves Messages.
+children nodes send their Messages to their parent. While the root node only receives Messages.
 After a single push, it is not guaranteed that all Messages will be ready to be outputted.
 
 A full push is a number of single pushes until all currently held Messages.  The Communicator

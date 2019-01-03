@@ -87,7 +87,7 @@ TEST(lumberjack_BinaryCommunicator, basic)
   }
   EXPECT_EQ((int)receivedPackedMessages.size(), numChildren);
 
-  // Verify the messages recieved were correct
+  // Verify the messages received were correct
   std::string currMessage = "";
   bool found = false;
 
@@ -103,7 +103,7 @@ TEST(lumberjack_BinaryCommunicator, basic)
       }
     }
     EXPECT_EQ(found, true) << "Error: Rank: " << commRank
-                           << ": Message not recieved: "
+                           << ": Message not received: "
                            << currMessage << std::endl;
   }
 
@@ -119,7 +119,7 @@ TEST(lumberjack_BinaryCommunicator, basic)
       }
     }
     EXPECT_EQ(found, true) << "Error: Rank: " << commRank
-                           << ": Message not recieved: "
+                           << ": Message not received: "
                            << currMessage << std::endl;
   }
 

@@ -115,7 +115,7 @@ void BinaryTreeCommunicator::push(const char* packedMessagesToBeSent,
   const char* currPackedMessages;
   while(childrenDoneCount < m_childCount)
   {
-    currPackedMessages = mpiBlockingRecieveMessages(m_mpiComm);
+    currPackedMessages = mpiBlockingReceiveMessages(m_mpiComm);
     if (isPackedMessagesEmpty(currPackedMessages))
     {
       if ((currPackedMessages != nullptr) || (currPackedMessages[0] == '\0'))

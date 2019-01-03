@@ -125,7 +125,7 @@ public:
    *
    * \param [in] packedMessagesToBeSent All of this rank's Message classes
    *  packed into a single buffer.
-   * \param [in,out] receivedPackedMessages Recieved packed message buffers from
+   * \param [in,out] receivedPackedMessages Received packed message buffers from
    *  this nodes children.
    *
    * This is helpful when you want to spread your Lumberjack work over a set of

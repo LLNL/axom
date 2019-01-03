@@ -35,7 +35,7 @@ namespace axom
 namespace lumberjack
 {
 
-const char* mpiBlockingRecieveMessages(MPI_Comm comm)
+const char* mpiBlockingReceiveMessages(MPI_Comm comm)
 {
   char* charArray = nullptr;
   int messageSize = -1;
@@ -45,7 +45,7 @@ const char* mpiBlockingRecieveMessages(MPI_Comm comm)
   MPI_Probe(MPI_ANY_SOURCE, 0, comm, &mpiStatus);
   MPI_Get_count(&mpiStatus, MPI_CHAR, &messageSize);
 
-  // Setup where to recieve the char array
+  // Setup where to receive the char array
   charArray = new char[messageSize+1];
   charArray[messageSize] = '\0';
 

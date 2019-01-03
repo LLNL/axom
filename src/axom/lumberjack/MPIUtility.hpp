@@ -19,7 +19,7 @@
  *******************************************************************************
  * \file MPIUtility.hpp
  *
- * \brief This file contains the definitions of utility functions.
+ * \brief This file contains the definitions of MPI utility functions.
  *******************************************************************************
  */
 
@@ -28,8 +28,6 @@
 
 #include "mpi.h"
 
-#include "axom/lumberjack/Message.hpp"
-
 namespace axom
 {
 namespace lumberjack
@@ -37,13 +35,13 @@ namespace lumberjack
 
 /*!
  *****************************************************************************
- * \brief Recieves any Message sent to this rank. Returns null if terminating
+ * \brief Receives any Message sent to this rank. Returns null if terminating
  *  message is sent.
  *
  * \param [in] comm The MPI Communicator.
  *****************************************************************************
  */
-const char* mpiBlockingRecieveMessages(MPI_Comm comm);
+const char* mpiBlockingReceiveMessages(MPI_Comm comm);
 
 /*!
  *****************************************************************************
