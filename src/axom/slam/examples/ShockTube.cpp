@@ -52,8 +52,15 @@
 namespace slamShocktube
 {
 
-axom::slam::IndexType const UPWIND   = 0;
-axom::slam::IndexType const DOWNWIND = 1;
+namespace slam = axom::slam;
+
+using PositionType = slam::PositionType;
+using ElementType = slam::ElementType;
+
+using BaseSet = slam::Set<PositionType, ElementType>;
+
+PositionType const UPWIND   = 0;
+PositionType const DOWNWIND = 1;
 
 const double gammaa = M_SQRT2;
 const double gammaaInverse = M_SQRT1_2;
@@ -69,7 +76,6 @@ const double INIT_D_RATIO = 0.5;
 const bool verboseOutput = false;
 #endif
 
-namespace slam = axom::slam;
 
 /**
  * \brief Simple representation of the mesh for this 1D example
@@ -96,11 +102,11 @@ class ShockTubeMesh
 public:
 
   /// types for Element and Face sets
-  using ElemSet = slam::PositionSet<>;
-  using FaceSet = slam::PositionSet<>;
+  using PositionType = slamShocktube::PositionType;
 
-  using PositionType = ElemSet::PositionType;
-  using ElementType = ElemSet::ElementType;
+  using ElemSet = slam::PositionSet<PositionType,ElementType>;
+  using FaceSet = slam::PositionSet<PositionType,ElementType>;
+
   using IndexType = PositionType;
 
   /// types for Tube and {In,Out}Flow subsets
@@ -124,13 +130,15 @@ public:
   using EFCard = slam::policies::ConstantCardinality<PositionType, EFStride>;
   using FECard = slam::policies::ConstantCardinality<PositionType, FEStride>;
   using STLIndirection =
-          slam::policies::STLVectorIndirection<PositionType, PositionType>;
+          slam::policies::STLVectorIndirection<PositionType, ElementType>;
   using IndexVec = STLIndirection::VectorType;
 
   using TubeElemToFaceRelation =
-          slam::StaticRelation<EFCard, STLIndirection, ElemSubset, FaceSet>;
+          slam::StaticRelation<PositionType, ElementType,
+                               EFCard, STLIndirection, ElemSubset, FaceSet>;
   using FaceToElemRelation =
-          slam::StaticRelation<FECard, STLIndirection, FaceSet, ElemSet>;
+          slam::StaticRelation<PositionType, ElementType,
+                               FECard, STLIndirection, FaceSet, ElemSet>;
 
 
 public:
@@ -148,10 +156,10 @@ public:
 
 
 // Define explicit instances of local (key/value) datastore for int and double
-using IntsRegistry = slam::FieldRegistry<int>;
-using RealsRegistry = slam::FieldRegistry<double>;
-using IntField = slam::Map<int>;
-using RealField = slam::Map<double>;
+using IntsRegistry = slam::FieldRegistry<BaseSet, int>;
+using RealsRegistry = slam::FieldRegistry<BaseSet, double>;
+using IntField = IntsRegistry::MapType;
+using RealField = RealsRegistry::MapType;
 
 IntsRegistry intsRegistry;
 RealsRegistry realsRegistry;

@@ -43,8 +43,11 @@ void printVector(StrType const& msg, VecType const& vec)
             std::ostream_iterator<PositionType>(std::cout, " "));
 }
 
-void generateIncrementingRelations(slam::DynamicVariableRelation* rel)
+template<typename DynamicRelationType>
+void generateIncrementingRelations(DynamicRelationType* rel)
 {
+  using PositionType = typename DynamicRelationType::SetPosition;
+
   PositionType curIdx = PositionType();
 
   for(PositionType i = 0 ; i < FROMSET_SIZE ; ++i)
@@ -56,13 +59,15 @@ void generateIncrementingRelations(slam::DynamicVariableRelation* rel)
     }
   }
 }
-}
+
+} // end anonymous namespace
+
 
 TEST(slam_relation_dynamic_variable,construct_empty)
 {
   SLIC_INFO("Testing empty relation.  isValid() should be true.");
 
-  slam::DynamicVariableRelation emptyRel;
+  slam::DynamicVariableRelation<> emptyRel;
 
   EXPECT_TRUE(emptyRel.isValid(true));
 }
@@ -74,7 +79,7 @@ TEST(slam_relation_dynamic_variable,construct_uninitialized)
   RangeSetType fromSet(FROMSET_SIZE);
   RangeSetType toSet(TOSET_SIZE);
 
-  slam::DynamicVariableRelation emptyRel(&fromSet, &toSet);
+  slam::DynamicVariableRelation<> emptyRel(&fromSet, &toSet);
 
   EXPECT_TRUE(emptyRel.isValid(true));
 }
@@ -88,7 +93,7 @@ TEST(slam_relation_dynamic_variable,construct_relation)
   RangeSetType fromSet(FROMSET_SIZE);
   RangeSetType toSet(TOSET_SIZE);
 
-  slam::DynamicVariableRelation incrementingRel(&fromSet, &toSet);
+  slam::DynamicVariableRelation<> incrementingRel(&fromSet, &toSet);
   generateIncrementingRelations(&incrementingRel);
 
   const PositionType sz = static_cast<PositionType>(fromSet.size());
@@ -113,7 +118,7 @@ TEST(slam_relation_dynamic_variable,iterate_relation)
   RangeSetType fromSet(FROMSET_SIZE);
   RangeSetType toSet(TOSET_SIZE);
 
-  slam::DynamicVariableRelation incrementingRel(&fromSet, &toSet);
+  slam::DynamicVariableRelation<> incrementingRel(&fromSet, &toSet);
 
   generateIncrementingRelations(&incrementingRel);
   EXPECT_TRUE(incrementingRel.isValid());
@@ -143,7 +148,8 @@ TEST(slam_relation_dynamic_variable,iterate_relation)
 
   SLIC_INFO(".. access via delayed double subscript.");
   {
-    using RelSet = slam::DynamicVariableRelation::RelationVec;
+    using RelSet = slam::DynamicVariableRelation<>::RelationVec;
+
     for(PositionType fromPos = 0 ; fromPos < fromSet.size() ; ++fromPos)
     {
       RelSet rSet = incrementingRel[fromPos];   // first subscript
@@ -165,7 +171,7 @@ TEST(slam_relation_dynamic_variable,iterate_relation)
   {
     using SetIter = RangeSetType::iterator;
     using RelSetConstIter =
-            slam::DynamicVariableRelation::RelationVecConstIterator;
+            slam::DynamicVariableRelation<>::RelationVecConstIterator;
 
     SLIC_INFO("\t using iterator begin()/end() functions");
     for(SetIter sIt = fromSet.begin(), sItEnd = fromSet.end() ;
@@ -193,7 +199,7 @@ TEST(slam_relation_dynamic_variable,iterate_relation)
 
     SLIC_INFO("\t  using iterator range() function");
     using RelSetConstIterPair =
-            slam::DynamicVariableRelation::RelationVecConstIteratorPair;
+            slam::DynamicVariableRelation<>::RelationVecConstIteratorPair;
     for(SetIter sIt = fromSet.begin(), sItEnd = fromSet.end() ;
         sIt != sItEnd ; ++sIt)
     {

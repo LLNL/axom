@@ -28,7 +28,7 @@ namespace slam
  * \tparam E The ElementType
  * \sa OrderedSet
  */
-template<typename P = Set::PositionType, typename E = Set::ElementType>
+template<typename P = slam::PositionType, typename E = slam::ElementType>
 using PositionSet = OrderedSet<P,E>;
 
 /**
@@ -44,8 +44,8 @@ using PositionSet = OrderedSet<P,E>;
  *  \sa OrderedSet, PositionSet, RangeSet
  */
 template<
-  typename P = Set::PositionType,
-  typename E = Set::ElementType,
+  typename P = slam::PositionType,
+  typename E = slam::ElementType,
   typename StridingPolicy = policies::StrideOne<P>,
   typename IndirectionPolicy = policies::NoIndirection<P, E>,
   typename SubsettingPolicy = policies::NoSubset >
@@ -102,7 +102,7 @@ public:
  * \a PositionType) from the lowerIndex.
  * Examples include: signed and unsigned integral types
  */
-template<typename P = Set::PositionType, typename E = Set::ElementType>
+template<typename P = slam::PositionType, typename E = slam::ElementType>
 using RangeSet = GenericRangeSet<P,E>;
 
 

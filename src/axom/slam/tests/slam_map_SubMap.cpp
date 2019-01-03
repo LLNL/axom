@@ -19,35 +19,38 @@
 #include "axom/slam/RangeSet.hpp"
 #include "axom/slam/SubMap.hpp"
 
+namespace
+{
 
-
-namespace slic = axom::slic;
 namespace slam = axom::slam;
 
-using RangeSetType = slam::RangeSet<>;
+using SetBase = slam::Set<>;
+using PositionType = SetBase::PositionType;
+using ElementType = SetBase::ElementType;
+
+using RangeSetType = slam::RangeSet<PositionType, ElementType>;
 
 template<typename T>
-using Map = slam::Map<T>;
+using Map = slam::Map<SetBase, T>;
 
 template<typename T, typename M>
-using SubMap= slam::SubMap<T, M>;
+using SubMap= slam::SubMap<SetBase, T, M>;
 
 using OrderedSetType = axom::slam::OrderedSet<
-        slam::Set::PositionType,
-        slam::Set::ElementType,
-        slam::policies::RuntimeSize<slam::Set::PositionType>,
-        slam::policies::ZeroOffset<slam::Set::PositionType>,
-        slam::policies::StrideOne<slam::Set::PositionType>,
-        slam::policies::STLVectorIndirection<slam::Set::PositionType,
-                                             slam::Set::ElementType>
+        PositionType,
+        ElementType,
+        slam::policies::RuntimeSize<PositionType>,
+        slam::policies::ZeroOffset<PositionType>,
+        slam::policies::StrideOne<PositionType>,
+        slam::policies::STLVectorIndirection<PositionType,ElementType>
         >;
-
-typedef RangeSetType::PositionType PositionType;
-typedef RangeSetType::ElementType ElementType;
 
 static const double multFac = 1.0001;
 
 static PositionType const MAX_SET_SIZE = 10;
+
+} // end anonymous namepsace
+
 
 TEST(slam_map,construct_empty_subsetmap)
 {
@@ -223,8 +226,8 @@ int main(int argc, char* argv[])
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
 #endif
 
-  slic::UnitTestLogger logger;  // create & initialize test logger,
-  slic::setLoggingMsgLevel( axom::slic::message::Info );
+  axom::slic::UnitTestLogger logger;  // create & initialize test logger,
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Info );
 
   int result = RUN_ALL_TESTS();
 

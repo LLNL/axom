@@ -137,16 +137,18 @@ public:
   using GridPt = primal::Point<CoordType,DIM>;
   using GridVec = primal::Vector<CoordType,DIM>;
 
-  using MAX_LEVEL_SIZE = 
-    slam::policies::CompileTimeSize<CoordType,std::numeric_limits<int>::digits>;
-  using OctreeLevels = slam::OrderedSet<CoordType, CoordType, MAX_LEVEL_SIZE>;
+  using MAX_LEVEL_SIZE =
+          slam::policies::CompileTimeSize<CoordType,
+                                          std::numeric_limits<CoordType>::digits>;
+  using OctreeLevels =
+          slam::OrderedSet<CoordType, CoordType, MAX_LEVEL_SIZE>;
 
   using OctreeLevelType = OctreeLevel<DIM, BlockDataType>;
   using LevelMapIterator = typename OctreeLevelType::BlockIter;
   using LevelMapCIterator = typename OctreeLevelType::ConstBlockIter;
 
-
-  using LeafIndicesLevelMap = slam::Map<OctreeLevelType*>;
+  using LeafIndicesLevelMap = slam::Map<slam::Set<CoordType,CoordType>,
+                                        OctreeLevelType*>;
 
   /**
    * \brief Inner class encapsulating the index of an octree <em>block</em>.
@@ -183,7 +185,7 @@ private:
 
 public:
     using ChildIndexSet = slam::OrderedSet<int, int, OCTREE_CHILDREN_SIZE>;
-    using FaceNeighborIndexSet = 
+    using FaceNeighborIndexSet =
             slam::OrderedSet<int, int, OCTREE_FACE_NEIGHBORS_SIZE>;
 
 public:
@@ -464,13 +466,13 @@ private:
   using DenseOctLevType =
           DenseOctreeLevel<DIM, BlockDataType, axom::uint16>;
   using Sparse16OctLevType =
-          SparseOctreeLevel<DIM, BlockDataType, axom::uint16>;
+          SparseOctreeLevel<DIM, BlockDataType,axom::uint16>;
   using Sparse32OctLevType =
-          SparseOctreeLevel<DIM, BlockDataType, axom::uint32>;
+          SparseOctreeLevel<DIM, BlockDataType,axom::uint32>;
   using Sparse64OctLevType =
-          SparseOctreeLevel<DIM, BlockDataType, axom::uint64>;
+          SparseOctreeLevel<DIM, BlockDataType,axom::uint64>;
   using SparsePtOctLevType =
-          SparseOctreeLevel<DIM, BlockDataType, GridPt>;
+          SparseOctreeLevel<DIM, BlockDataType,GridPt>;
 
   using DenseOctLevPtr = DenseOctLevType*;
   using Sparse16OctLevPtr = Sparse16OctLevType*;
@@ -499,7 +501,6 @@ public:
   {
     for(int i=0 ; i< maxLeafLevel() ; ++i)
     {
-
       // Use DenseOctreeLevel on first few levels to reduce allocations
       // and fragmentation Use Morton-based SparseOctreeLevel
       // (key is smallest possible integer) on next few levels.

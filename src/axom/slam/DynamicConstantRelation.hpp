@@ -53,7 +53,10 @@ namespace slam
  * A future update will allow users to set the value of INVALID_INDEX to a
  * more convenient value, when necessary.
  */
-template<typename CardinalityPolicy>
+template<
+  typename PosType,   //= slam::PositionType,
+  typename ElemType,   // = slam::ElementType,
+  typename CardinalityPolicy>
 class DynamicConstantRelation : public /*Relation,*/ CardinalityPolicy
 {
 public:
@@ -62,18 +65,18 @@ public:
     INVALID_INDEX = ~0  ///< value to mark indices of deleted elements
   };
 
-  using SetPosition = Relation::SetPosition;
-  using SetElement =Relation::SetElement;
+  using SetPosition = PosType;
+  using SetElement = ElemType;
   using RelationVec = std::vector<SetPosition>;
 
-  using FromSetType = DynamicSet<>;
-  using ToSetType = DynamicSet<>;
+  using FromSetType = DynamicSet<PosType,ElemType>;
+  using ToSetType = DynamicSet<PosType,ElemType>;
 
   using BeginsSizePolicy =
           typename CardinalityPolicy::RelationalOperatorSizeType;
 
   using STLIndirection =
-          policies::STLVectorIndirection<SetPosition,SetPosition>;
+          policies::STLVectorIndirection<SetPosition,SetElement>;
   using RelationSubset =
           OrderedSet<
             SetPosition,
@@ -108,7 +111,7 @@ public:
    * to \a toSet
    */
   DynamicConstantRelation (FromSetType* fromSet, ToSetType* toSet)
-    : CardinalityPolicy(EmptySetTraits<Set>::isEmpty(fromSet)
+    : CardinalityPolicy(EmptySetTraits<FromSetType>::isEmpty(fromSet)
                         ? 0
                         : fromSet->size() )
     , m_fromSet(fromSet )
@@ -428,9 +431,9 @@ private:
 
 
 /* Checks whether the relation is valid.  */
-template<typename CardinalityPolicy>
-bool DynamicConstantRelation<CardinalityPolicy>::isValid(bool verboseOutput)
-const
+template<typename PosType, typename ElemType, typename CardinalityPolicy>
+bool DynamicConstantRelation<PosType, ElemType, CardinalityPolicy>
+::isValid(bool verboseOutput) const
 {
   std::stringstream errSstr;
 

@@ -32,9 +32,10 @@ namespace
 namespace slam = axom::slam;
 namespace policies = axom::slam::policies;
 
-using RangeSetType = slam::RangeSet<>;
-using ElementType = RangeSetType::ElementType;
-using PositionType = RangeSetType::PositionType;
+using PositionType = slam::PositionType;
+using ElementType = slam::ElementType;
+
+using RangeSetType = slam::RangeSet<PositionType, ElementType>;
 
 const PositionType FROMSET_SIZE = 5;
 const PositionType TOSET_SIZE = 6;
@@ -49,11 +50,14 @@ using ConstantCardinalityRT =
         policies::ConstantCardinality<PositionType, RTStride>;
 
 using STLIndirection =
-        policies::STLVectorIndirection<PositionType, PositionType>;
-using ArrayIndirection = policies::ArrayIndirection<PositionType, PositionType>;
+        policies::STLVectorIndirection<PositionType, ElementType>;
+using ArrayIndirection =
+        policies::ArrayIndirection<PositionType, ElementType>;
 
 using IndexVec = std::vector<PositionType>;
-using RelationType = slam::DynamicConstantRelation<ConstantCardinalityCT>;
+using RelationType =
+        slam::DynamicConstantRelation<PositionType, ElementType,
+                                      ConstantCardinalityCT>;
 
 } //end anonymous namespace
 
@@ -93,8 +97,8 @@ TEST(slam_relation_dynamic_constant, assignment)
 {
   SLIC_INFO("Testing assignment of values to relation");
 
-  slam::DynamicSet<> fromSet(FROMSET_SIZE);
-  slam::DynamicSet<> toSet(TOSET_SIZE);
+  slam::DynamicSet<PositionType, ElementType> fromSet(FROMSET_SIZE);
+  slam::DynamicSet<PositionType, ElementType> toSet(TOSET_SIZE);
 
   RelationType rel = generateRelation(fromSet,toSet);
 
@@ -138,8 +142,8 @@ TEST(slam_relation_dynamic_constant, iterators)
   SLIC_INFO("Testing iterator interface");
 
   // Add tests for relation iterators
-  slam::DynamicSet<> fromSet(FROMSET_SIZE);
-  slam::DynamicSet<> toSet(TOSET_SIZE);
+  slam::DynamicSet<PositionType, ElementType> fromSet(FROMSET_SIZE);
+  slam::DynamicSet<PositionType, ElementType> toSet(TOSET_SIZE);
 
   {
     RelationType rel = generateRelation(fromSet,toSet);
@@ -170,8 +174,8 @@ TEST(slam_relation_dynamic_constant, const_iterators)
   SLIC_INFO("Testing iterator interface");
 
   // Add tests for relation iterators
-  slam::DynamicSet<> fromSet(FROMSET_SIZE);
-  slam::DynamicSet<> toSet(TOSET_SIZE);
+  slam::DynamicSet<PositionType, ElementType> fromSet(FROMSET_SIZE);
+  slam::DynamicSet<PositionType, ElementType> toSet(TOSET_SIZE);
 
   {
     const RelationType rel = generateRelation(fromSet,toSet);
@@ -202,8 +206,8 @@ TEST(slam_relation_dynamic_constant, remove)
 {
   SLIC_INFO("Testing ability to remove relations");
 
-  slam::DynamicSet<> fromSet(FROMSET_SIZE);
-  slam::DynamicSet<> toSet(TOSET_SIZE);
+  slam::DynamicSet<PositionType, ElementType> fromSet(FROMSET_SIZE);
+  slam::DynamicSet<PositionType, ElementType> toSet(TOSET_SIZE);
 
   RelationType rel = generateRelation(fromSet,toSet);
   EXPECT_EQ(rel.size(), rel.numberOfValidEntries());

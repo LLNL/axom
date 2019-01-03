@@ -569,7 +569,7 @@ namespace slamLulesh {
 #endif
 
     // For threading without explicit barriers, we use fields over the mesh corners
-    const Domain::Set& nodeCornerSet = domain.threadingCornerSet();
+    const Domain::SetBase& nodeCornerSet = domain.threadingCornerSet();
     Domain::CornerRealMap fx_elem(&nodeCornerSet);
     Domain::CornerRealMap fy_elem(&nodeCornerSet);
     Domain::CornerRealMap fz_elem(&nodeCornerSet);
@@ -801,7 +801,7 @@ namespace slamLulesh {
     *************************************************/
 
     // For threading without explicit barriers, we use fields over the mesh corners
-    const Domain::Set& nodeCornerSet = domain.threadingCornerSet();
+    const Domain::SetBase& nodeCornerSet = domain.threadingCornerSet();
     Domain::CornerRealMap fx_elem(&nodeCornerSet);
     Domain::CornerRealMap fy_elem(&nodeCornerSet);
     Domain::CornerRealMap fz_elem(&nodeCornerSet);
@@ -1066,7 +1066,7 @@ namespace slamLulesh {
   {
     Index_t numElem = domain.numElem();
 
-    const Domain::Set& nodeCornerSet = domain.cornerSet();  // create corner fields (regardless of omp threading ability)
+    const Domain::SetBase& nodeCornerSet = domain.cornerSet();  // create corner fields (regardless of omp threading ability)
     Domain::CornerRealMap dvdx(&nodeCornerSet);
     Domain::CornerRealMap dvdy(&nodeCornerSet);
     Domain::CornerRealMap dvdz(&nodeCornerSet);

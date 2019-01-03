@@ -24,40 +24,45 @@ namespace slam
 
 
 /**
- * \class
+ * \class ArrayIndirectionSet
  *
  * \brief Concrete class (all template parameters fixed) for an array-based
  * indirection set
  */
+template<
+  typename PosType = slam::PositionType,
+  typename ElemType = slam::ElementType >
 class ArrayIndirectionSet : public OrderedSet<
-    Set::PositionType,
-    Set::ElementType,
-    policies::RuntimeSize<Set::PositionType>,
-    policies::ZeroOffset<Set::PositionType>,
-    policies::StrideOne<Set::PositionType>,
-    policies::ArrayIndirection<Set::PositionType, Set::ElementType> >
+    PosType,
+    ElemType,
+    policies::RuntimeSize<PosType>,
+    policies::ZeroOffset<PosType>,
+    policies::StrideOne<PosType>,
+    policies::ArrayIndirection<PosType, ElemType> >
 {
 private:
-  typedef OrderedSet<
-      Set::PositionType,
-      Set::ElementType,
-      policies::RuntimeSize<Set::PositionType>,
-      policies::ZeroOffset<Set::PositionType>,
-      policies::StrideOne<Set::PositionType>,
-      policies::ArrayIndirection<Set::PositionType, Set::ElementType>
-      > OrderedSetType;
+  using OrderedSetType =
+          OrderedSet<
+            PosType,
+            ElemType,
+            policies::RuntimeSize<PosType>,
+            policies::ZeroOffset<PosType>,
+            policies::StrideOne<PosType>,
+            policies::ArrayIndirection<PosType, ElemType> >;
 
 public:
-  using PositionType = OrderedSetType::PositionType;
-  using ElementType = OrderedSetType::ElementType;
+  using PositionType = PosType;
+  using ElementType = ElemType;
 
-  using ArraySetBuilder = OrderedSetType::SetBuilder;
+  using ArraySetBuilder = typename OrderedSetType::SetBuilder;
 
 private:
   static constexpr PositionType DEFAULT_SIZE =
     OrderedSetType::SizePolicyType::DEFAULT_VALUE;
+
   static constexpr PositionType DEFAULT_OFFSET =
     OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
+
   static constexpr PositionType DEFAULT_STRIDE =
     OrderedSetType::StridePolicyType::DEFAULT_VALUE;
 
@@ -68,59 +73,65 @@ public:
   ArrayIndirectionSet( const ArraySetBuilder& builder)
     : OrderedSetType(builder){}
 
-  ~ArrayIndirectionSet () {}
+  ~ArrayIndirectionSet () = default;
 };
 
 /**
- * \class
+ * \class VectorIndirectionSet
  *
  * \brief Concrete class (all template parameters fixed)
  * for an STL vector-based indirection set
  */
+template<
+  typename PosType = slam::PositionType,
+  typename ElemType = slam::ElementType >
 class VectorIndirectionSet : public OrderedSet<
-    Set::PositionType,
-    Set::ElementType,
-    policies::RuntimeSize<Set::PositionType>,
-    policies::ZeroOffset<Set::PositionType>,
-    policies::StrideOne<Set::PositionType>,
-    policies::STLVectorIndirection<Set::PositionType, Set::ElementType> >
+    PosType,
+    ElemType,
+    policies::RuntimeSize<PosType>,
+    policies::ZeroOffset<PosType>,
+    policies::StrideOne<PosType>,
+    policies::STLVectorIndirection<PosType, ElemType> >
   // add parent subset ?
 {
 private:
   using OrderedSetType =
           OrderedSet<
-            Set::PositionType,
-            Set::ElementType,
-            policies::RuntimeSize<Set::PositionType>,
-            policies::ZeroOffset<Set::PositionType>,
-            policies::StrideOne<Set::PositionType>,
-            policies::STLVectorIndirection<Set::PositionType, Set::ElementType>
+            PosType,
+            ElemType,
+            policies::RuntimeSize<PosType>,
+            policies::ZeroOffset<PosType>,
+            policies::StrideOne<PosType>,
+            policies::STLVectorIndirection<PosType, ElemType>
             >;
 
-  using IndirectionPolicyType = OrderedSet::IndirectionPolicyType;
+  using IndirectionPolicyType = typename OrderedSetType::IndirectionPolicyType;
 
 public:
-  using PositionType = OrderedSetType::PositionType;
-  using ElementType = OrderedSetType::ElementType;
+  using PositionType = PosType;
+  using ElementType = ElemType;
 
-  using ArrType = IndirectionPolicyType::VectorType;
-  using VectorSetBuilder = OrderedSetType::SetBuilder;
+  using ArrType = typename IndirectionPolicyType::VectorType;
+  using VectorSetBuilder = typename OrderedSetType::SetBuilder;
 
 private:
   static constexpr PositionType DEFAULT_SIZE =
     OrderedSetType::SizePolicyType::DEFAULT_VALUE;
+
   static constexpr PositionType DEFAULT_OFFSET =
     OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
+
   static constexpr PositionType DEFAULT_STRIDE =
     OrderedSetType::StridePolicyType::DEFAULT_VALUE;
 
 public:
   VectorIndirectionSet (PositionType size = DEFAULT_SIZE)
     : OrderedSetType(size, DEFAULT_OFFSET, DEFAULT_STRIDE) {}
+
   VectorIndirectionSet( const VectorSetBuilder& builder)
     : OrderedSetType(builder){}
 
-  ~VectorIndirectionSet () {}
+  ~VectorIndirectionSet () = default;
 };
 
 

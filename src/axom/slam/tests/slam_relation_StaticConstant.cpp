@@ -42,31 +42,33 @@ namespace
 namespace slam = axom::slam;
 namespace policies = axom::slam::policies;
 
-using RangeSetType = slam::RangeSet<>;;
-using ElementType = RangeSetType::ElementType;
-using PositionType = RangeSetType::PositionType;
+using SetPosition = slam::PositionType;
+using SetElement = slam::ElementType;
 
-const PositionType FROMSET_SIZE = 5;
-const PositionType TOSET_SIZE = 6;
-const PositionType ELEM_STRIDE = 5;
+using RangeSetType = slam::RangeSet<SetPosition, SetElement>;
 
-using CTStride = policies::CompileTimeStride<PositionType, ELEM_STRIDE>;
-using RTStride = policies::RuntimeStride<PositionType>;
+const SetPosition FROMSET_SIZE = 5;
+const SetPosition TOSET_SIZE = 6;
+const SetPosition ELEM_STRIDE = 5;
+
+using CTStride = policies::CompileTimeStride<SetPosition, ELEM_STRIDE>;
+using RTStride = policies::RuntimeStride<SetPosition>;
 
 using ConstantCardinalityCT =
-        policies::ConstantCardinality<PositionType, CTStride>;
+        policies::ConstantCardinality<SetPosition, CTStride>;
 using ConstantCardinalityRT =
-        policies::ConstantCardinality<PositionType, RTStride>;
+        policies::ConstantCardinality<SetPosition, RTStride>;
 
 using STLIndirection =
-        policies::STLVectorIndirection<PositionType, PositionType>;
-using ArrayIndirection = policies::ArrayIndirection<PositionType, PositionType>;
+        policies::STLVectorIndirection<SetPosition, SetElement>;
+using ArrayIndirection = policies::ArrayIndirection<SetPosition, SetElement>;
 
-using IndexVec = std::vector<PositionType>;
+using IndexVec = std::vector<SetPosition>;
 
 
 using StaticConstantRelationType =
-        slam::StaticRelation<ConstantCardinalityCT, STLIndirection,
+        slam::StaticRelation<SetPosition, SetElement,
+                             ConstantCardinalityCT, STLIndirection,
                              RangeSetType,RangeSetType>;
 
 
@@ -81,12 +83,12 @@ void printVector(StrType const& msg, VecType const& vec)
 
   sstr << "Array of size " << vec.size() << ": ";
   std::copy(vec.begin(), vec.end(),
-            std::ostream_iterator<ElementType>(sstr, " "));
+            std::ostream_iterator<SetElement>(sstr, " "));
 
   SLIC_INFO(msg << ": " << sstr.str());
 }
 
-PositionType elementCardinality(PositionType AXOM_NOT_USED(fromPos) )
+SetPosition elementCardinality(SetPosition AXOM_NOT_USED(fromPos) )
 {
   return ELEM_STRIDE;
 }
@@ -95,24 +97,24 @@ PositionType elementCardinality(PositionType AXOM_NOT_USED(fromPos) )
  * \brief Sets the value at relation element (i,j) to (i + j) % ELEM_SIZE using
  *  slam::ModularInt
  */
-PositionType relationData(PositionType fromPos, PositionType toPos)
+SetPosition relationData(SetPosition fromPos, SetPosition toPos)
 {
   return FixedModularInt(fromPos + toPos);
 }
 
 
 template<typename VecType>
-void generateIncrementingRelations(PositionType stride, VecType* offsets)
+void generateIncrementingRelations(SetPosition stride, VecType* offsets)
 {
   VecType& offsetsVec = *offsets;
 
-  PositionType curIdx = PositionType();
+  SetPosition curIdx = SetPosition();
 
-  for(PositionType i = 0 ; i < FROMSET_SIZE ; ++i)
+  for(SetPosition i = 0 ; i < FROMSET_SIZE ; ++i)
   {
     EXPECT_EQ(elementCardinality(i), stride);
 
-    for(PositionType j = 0 ; j < elementCardinality(i) ; ++j)
+    for(SetPosition j = 0 ; j < elementCardinality(i) ; ++j)
     {
       offsetsVec.push_back( relationData(i,j) );
       ++curIdx;
@@ -133,14 +135,14 @@ template<typename RelationType>
 void traverseRelation_doubleSubscript(RelationType& rel)
 {
   SLIC_INFO("Traversing relation data using double subscript: " );
-  for(PositionType fromPos = 0 ; fromPos < rel.fromSet()->size() ; ++fromPos)
+  for(SetPosition fromPos = 0 ; fromPos < rel.fromSet()->size() ; ++fromPos)
   {
-    const PositionType fromSize = rel.size(fromPos);
+    const SetPosition fromSize = rel.size(fromPos);
     EXPECT_EQ( elementCardinality(fromPos), fromSize );
 
     for(int toPos = 0 ; toPos < fromSize ; ++toPos)
     {
-      PositionType actualVal = rel[fromPos][toPos];
+      SetPosition actualVal = rel[fromPos][toPos];
       EXPECT_EQ(relationData(fromPos,toPos), actualVal);
     }
   }
@@ -160,15 +162,15 @@ template<typename RelationType>
 void traverseRelation_delayedSubscript(RelationType& rel)
 {
   SLIC_INFO("Traversing relation data using delayed second subscript: " );
-  for(PositionType fromPos = 0 ; fromPos < rel.fromSet()->size() ; ++fromPos)
+  for(SetPosition fromPos = 0 ; fromPos < rel.fromSet()->size() ; ++fromPos)
   {
-    const PositionType fromSize = rel.size(fromPos);
+    const SetPosition fromSize = rel.size(fromPos);
     EXPECT_EQ( elementCardinality(fromPos), fromSize );
 
     typename RelationType::RelationSubset set = rel[fromPos];
     for(int toPos = 0 ; toPos < set.size() ; ++toPos)
     {
-      PositionType actualVal = rel[fromPos][toPos];
+      SetPosition actualVal = rel[fromPos][toPos];
       EXPECT_EQ(relationData(fromPos,toPos), actualVal);
     }
   }
@@ -193,16 +195,16 @@ void iterateRelation_begin_end(RelationType& rel)
   for(FromSetIter sIt = rel.fromSet()->begin(), sItEnd = rel.fromSet()->end() ;
       sIt != sItEnd ; ++sIt)
   {
-    PositionType actualSize = rel.size( *sIt);
+    SetPosition actualSize = rel.size( *sIt);
 
-    PositionType fromSetEltNum = std::distance(rel.fromSet()->begin(), sIt);
+    SetPosition fromSetEltNum = std::distance(rel.fromSet()->begin(), sIt);
     EXPECT_EQ( elementCardinality(fromSetEltNum), actualSize );
 
     RelIter toSetBegin = rel.begin(*sIt);
     RelIter toSetEnd   = rel.end(*sIt);
     for(RelIter relIt = toSetBegin ; relIt != toSetEnd ; ++relIt)
     {
-      PositionType toSetEltNum = std::distance(toSetBegin, relIt);
+      SetPosition toSetEltNum = std::distance(toSetBegin, relIt);
       ASSERT_EQ( relationData(fromSetEltNum, toSetEltNum), *relIt);
     }
   }
@@ -230,13 +232,13 @@ void iterateRelation_range(RelationType& rel)
   FromSetIterPair itPair = rel.fromSet()->range();
   for(FromSetIter sIt = itPair.first ; sIt != itPair.second ; ++sIt)
   {
-    PositionType fromSetEltNum = std::distance(itPair.first, sIt);
+    SetPosition fromSetEltNum = std::distance(itPair.first, sIt);
 
     RelIterPair toSetItPair = rel.range(*sIt);
     for(RelIter relIt = toSetItPair.first ;
         relIt != toSetItPair.second ; ++relIt)
     {
-      PositionType toSetEltNum = std::distance(toSetItPair.first, relIt);
+      SetPosition toSetEltNum = std::distance(toSetItPair.first, relIt);
       ASSERT_EQ( relationData(fromSetEltNum, toSetEltNum), *relIt);
     }
   }
@@ -390,7 +392,8 @@ TEST(slam_relation_static_constant,runtime_stride_STLIndirection)
   SLIC_INFO("Tests for Static Relation with runtime stride and STL Indirection");
 
   using StaticConstantRelation_RT_STL =
-          slam::StaticRelation<ConstantCardinalityRT, STLIndirection,
+          slam::StaticRelation<SetPosition, SetElement,
+                               ConstantCardinalityRT, STLIndirection,
                                RangeSetType, RangeSetType >;
 
   RangeSetType fromSet(FROMSET_SIZE);
@@ -450,7 +453,8 @@ TEST(slam_relation_static_constant,runtime_stride_ArrayIndirection)
             <<" with runtime stride and array Indirection");
 
   using StaticConstantRelation_RT_Array =
-          slam::StaticRelation<ConstantCardinalityRT, ArrayIndirection,
+          slam::StaticRelation<SetPosition, SetElement,
+                               ConstantCardinalityRT, ArrayIndirection,
                                RangeSetType, RangeSetType>;
 
   RangeSetType fromSet(FROMSET_SIZE);
@@ -458,7 +462,7 @@ TEST(slam_relation_static_constant,runtime_stride_ArrayIndirection)
 
   IndexVec relIndices;
   generateIncrementingRelations(ELEM_STRIDE, &relIndices);
-  PositionType* data = &relIndices[0];    // Get a pointer to the data
+  SetPosition* data = &relIndices[0];    // Get a pointer to the data
 
 
   // --  Construct empty and uninitialized relation
@@ -511,7 +515,8 @@ TEST(slam_relation_static_constant,compileTime_stride_ArrayIndirection)
             << " runtime stride and array Indirection");
 
   using StaticConstantRelation_CT_Array=
-          slam::StaticRelation<ConstantCardinalityCT, ArrayIndirection,
+          slam::StaticRelation<SetPosition, SetElement,
+                               ConstantCardinalityCT, ArrayIndirection,
                                RangeSetType, RangeSetType>;
 
   RangeSetType fromSet(FROMSET_SIZE);
@@ -519,7 +524,7 @@ TEST(slam_relation_static_constant,compileTime_stride_ArrayIndirection)
 
   IndexVec relIndices;
   generateIncrementingRelations(ELEM_STRIDE, &relIndices);
-  PositionType* data = &relIndices[0];    // Get a pointer to the data
+  SetPosition* data = &relIndices[0];    // Get a pointer to the data
 
 
   // --  Construct empty and uninitialized relation

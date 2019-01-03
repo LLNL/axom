@@ -48,19 +48,21 @@ namespace slam
  */
 
 template<
-  typename SizePolicy    = policies::DynamicRuntimeSize<Set::PositionType>,
-  typename OffsetPolicy  = policies::ZeroOffset<Set::PositionType>,
-  typename StridePolicy  = policies::StrideOne<Set::PositionType> >
+  typename PosType       = slam::PositionType,
+  typename ElemType      = slam::ElementType,
+  typename SizePolicy    = policies::DynamicRuntimeSize<PosType>,
+  typename OffsetPolicy  = policies::ZeroOffset<PosType>,
+  typename StridePolicy  = policies::StrideOne<PosType> >
 class DynamicSet
-  : public Set,
-           SizePolicy,
-           OffsetPolicy,
-           StridePolicy
+  : public Set<PosType,ElemType>
+  , SizePolicy
+  , OffsetPolicy
+  , StridePolicy
 {
 
 public:
-  using PositionType = Set::PositionType;
-  using ElementType = Set::ElementType;
+  using PositionType = PosType;
+  using ElementType = PosType;
   using SetVectorType = std::vector<ElementType>;
   using SizePolicyType = SizePolicy;
 

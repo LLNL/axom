@@ -7,21 +7,19 @@
 #define SLAM_FIELD_REGISTRY_H_
 
 
-#include <sstream>
-
-#include "axom/core/Macros.hpp"
-#include "axom/slic/interface/slic.hpp"
+#include "axom/core.hpp"
+#include "axom/slic.hpp"
 
 #include "axom/slam/Utilities.hpp"
 #include "axom/slam/Set.hpp"
 #include "axom/slam/Map.hpp"
 
+#include <sstream>
+
 namespace axom
 {
 namespace slam
 {
-
-
 
 /**
  * \brief Very simple container for fields of a given type DataType with minimal
@@ -30,14 +28,15 @@ namespace slam
  * \note We are using concrete instances for int and double in the code below.
  *       This should eventually be replaced with the sidre datastore.
  */
-template<typename TheDataType>
+template<typename SetType, typename TheDataType>
 class FieldRegistry
 {
 public:
-  typedef TheDataType DataType;
-  typedef std::string KeyType;
-  typedef axom::slam::Map<DataType>     MapType;
-  typedef typename MapType::OrderedMap BufferType;
+  using PositionType = typename SetType::PositionType;
+  using DataType = TheDataType;
+  using KeyType = std::string;
+  using MapType = slam::Map<SetType, DataType>;
+  using BufferType = typename MapType::OrderedMap;
 
   typedef std::map<KeyType, MapType>    DataVecMap;
   typedef std::map<KeyType, BufferType> DataBufferMap;
@@ -51,12 +50,12 @@ public:
     return m_maps.find(key) != m_maps.end();
   }
 
-  MapType&  addField(KeyType key, Set const* theSet)
+  MapType&  addField(KeyType key, const SetType* theSet)
   {
     return m_maps[key] = MapType(theSet);
   }
 
-  MapType&  addNamelessField(Set const* theSet)
+  MapType&  addNamelessField(const SetType* theSet)
   {
     static int cnt = 0;
     std::stringstream key;

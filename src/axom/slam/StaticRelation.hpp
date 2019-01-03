@@ -34,18 +34,20 @@ namespace slam
 
 
 template<
+  typename PosType,  // = slam::PositionType,
+  typename ElemType, // = slam::ElementType,
   typename RelationCardinalityPolicy,
   typename RelationIndicesIndirectionPolicy,
-  typename TheFromSet = Set,
-  typename TheToSet = Set >
+  typename TheFromSet = Set<PosType,ElemType>,
+  typename TheToSet = Set<PosType,ElemType> >
 class StaticRelation : public /*Relation,*/ RelationCardinalityPolicy
 {
 public:
+  using SetPosition = PosType;
+  using SetElement = ElemType;
+
   using FromSetType = TheFromSet;
   using ToSetType = TheToSet;
-
-  using SetPosition = Relation::SetPosition;
-  using SetElement = Relation::SetElement;
 
   using CardinalityPolicy = RelationCardinalityPolicy;
   using BeginsSizePolicy =
@@ -287,11 +289,14 @@ private:
  * @return True if the relation is valid, false otherwise
  */
 template<
+  typename PosType,
+  typename ElemType,
   typename RelationCardinalityPolicy,
   typename RelationIndicesIndirectionPolicy,
   typename FromSetType,
   typename ToSetType>
-bool StaticRelation<RelationCardinalityPolicy,RelationIndicesIndirectionPolicy,
+bool StaticRelation<PosType,ElemType,
+                    RelationCardinalityPolicy,RelationIndicesIndirectionPolicy,
                     FromSetType,ToSetType>::isValid(
   bool verboseOutput) const
 {

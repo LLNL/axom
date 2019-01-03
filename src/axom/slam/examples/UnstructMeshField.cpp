@@ -121,10 +121,11 @@ public:
   };
 
   /// types for sets
-  using NodeSet = slam::PositionSet<>;
-  using ZoneSet = slam::PositionSet<>;
-  using PositionType = ZoneSet::PositionType;
-  using IndexType = ZoneSet::PositionType;
+  using PositionType = slam::PositionType;
+  using ElementType = slam::ElementType;
+
+  using NodeSet = slam::PositionSet<PositionType, ElementType>;
+  using ZoneSet = slam::PositionSet<PositionType, ElementType>;
 
   /// types for relations
   using STLIndirection =
@@ -132,7 +133,8 @@ public:
   using VariableCardinality =
           slam::policies::VariableCardinality<PositionType, STLIndirection>;
   using NodeToZoneRelation =
-          slam::StaticRelation<VariableCardinality,STLIndirection,
+          slam::StaticRelation<PositionType,ElementType,
+                               VariableCardinality,STLIndirection,
                                NodeSet,ZoneSet>;
   using NodeZoneIterator = NodeToZoneRelation::RelationConstIterator;
 
@@ -141,14 +143,17 @@ public:
   using ConstantCardinality =
           slam::policies::ConstantCardinality<PositionType, ZNStride>;
   using ZoneToNodeRelation =
-          slam::StaticRelation<ConstantCardinality,STLIndirection,
+          slam::StaticRelation<PositionType,ElementType,
+                               ConstantCardinality,STLIndirection,
                                ZoneSet,NodeSet>;
   using ZoneNodeIterator = ZoneToNodeRelation::RelationConstIterator;
 
   /// types for maps
-  using PositionsVec = slam::Map< Point >;
-  using NodeField = slam::Map< DataType >;
-  using ZoneField = slam::Map< DataType >;
+  using SetBase = axom::slam::Set<PositionType, ElementType>;
+  using NodalPositions = slam::Map< SetBase, Point >;
+  using ZonalPositions = slam::Map< SetBase, Point >;
+  using NodeField = slam::Map< SetBase, DataType >;
+  using ZoneField = slam::Map< SetBase, DataType >;
 
 public:
   /** \brief Simple accessor for the number of nodes in the mesh  */
@@ -171,8 +176,8 @@ public:
 
   /// Maps (fields) defined on the mesh -- nodal and zonal positions and scalar
   // fields
-  PositionsVec nodePosition;
-  PositionsVec zonePosition;
+  NodalPositions nodePosition;
+  ZonalPositions zonePosition;
   ZoneField zoneField;
   NodeField nodeFieldExact;
   NodeField nodeFieldAvg;
@@ -181,12 +186,13 @@ public:
 /// The repository is a proxy for a data allocator/manager
 struct Repository
 {
-  // Define the explicit instances of our local (key/value) datastore for int
-  // and double
-  using IntsRegistry = slam::FieldRegistry<int>;
-  using RealsRegistry = slam::FieldRegistry<double>;
-  using IntField = slam::Map<int>;
-  using RealField = slam::Map<double>;
+  // Define the explicit instances of our local (key/value) datastore
+  // for int and double
+  using SetType = axom::slam::Set<>;
+  using IntsRegistry = slam::FieldRegistry<SetType, int>;
+  using RealsRegistry = slam::FieldRegistry<SetType, double>;
+  using IntField = slam::Map<SetType, int>;
+  using RealField = slam::Map<SetType, double>;
 
   static IntsRegistry intsRegistry;
   static RealsRegistry realsRegistry;
@@ -312,7 +318,7 @@ void readHexMesh(std::string fileName, HexMesh* mesh)
   mesh->zones = HexMesh::ZoneSet(numZones);
 
   /// Create the nodal position field
-  mesh->nodePosition = HexMesh::PositionsVec( &mesh->nodes );
+  mesh->nodePosition = HexMesh::NodalPositions( &mesh->nodes );
   RealBuf::iterator ptIt
     = Repository::realsRegistry.getBuffer("node_positions").begin();
   for(PositionType idx = 0 ; idx < mesh->numNodes() ; ++idx)
@@ -413,7 +419,7 @@ void computeZoneBarycenters(HexMesh* mesh)
 
   // Compute the zone positions as the the averages
   // of the positions of the nodes around each zone
-  mesh->zonePosition = HexMesh::PositionsVec( &mesh->zones );
+  mesh->zonePosition = HexMesh::ZonalPositions( &mesh->zones );
 
   // Outer loop over each zone in the mesh
   for(PositionType zIdx = 0 ; zIdx < mesh->numZones() ; ++zIdx )

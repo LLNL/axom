@@ -26,9 +26,9 @@ namespace slam = axom::slam;
 
 namespace
 {
-using SetType = slam::ArrayIndirectionSet;
-using SetPosition = SetType::PositionType;
-using SetElement = SetType::ElementType;
+using SetPosition = slam::PositionType;
+using SetElement = slam::ElementType;
+using SetType = slam::ArrayIndirectionSet<SetPosition, SetElement>;
 
 static const SetPosition MAX_SET_SIZE = 10;
 
@@ -252,8 +252,8 @@ TEST(slam_set_indirectionset,vector_indirection)
 {
   SLIC_INFO("Testing basic set operations on a VectorIndirectionSet");
 
-  typedef slam::VectorIndirectionSet VectorIndirectionSet;
-  typedef VectorIndirectionSet::SetBuilder Builder;
+  using VectorIndirectionSet = slam::VectorIndirectionSet<>;
+  using Builder = VectorIndirectionSet::SetBuilder;
 
   // Set up data -- an array of incrementing integers
   std::vector<int> intVec;
@@ -307,14 +307,14 @@ TEST(slam_set_indirectionset,negative_stride)
 
   namespace policies = axom::slam::policies;
 
-  typedef slam::Set::PositionType SetPosition;
-  typedef slam::Set::ElementType SetElement;
+  using SetPosition = slam::PositionType;
+  using SetElement = slam::ElementType;
 
   typedef policies::RuntimeSize<SetPosition>                          SizePol;
   typedef policies::RuntimeOffset<SetPosition>                        OffPol;
   typedef policies::RuntimeStride<SetPosition>                        StridePol;
-  typedef policies::STLVectorIndirection<SetPosition, SetPosition>    VecIndPol;
-  typedef policies::ArrayIndirection<SetPosition, SetPosition>        ArrIndPol;
+  typedef policies::STLVectorIndirection<SetPosition, SetElement>    VecIndPol;
+  typedef policies::ArrayIndirection<SetPosition, SetElement>        ArrIndPol;
 
   typedef slam::OrderedSet<SetPosition, SetElement,
                            SizePol,OffPol,StridePol, VecIndPol> VecSet;

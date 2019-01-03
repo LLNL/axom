@@ -63,13 +63,14 @@ TEST(core_fileUtilities,pathExists)
     EXPECT_FALSE( fs::pathExists( fs::joinPath(cwd,missing) ) );
   }
 
-  // Test on a data file relative to AXOM_SRC_DIR
+  // Test a file relative to AXOM_SRC_DIR
   {
     EXPECT_TRUE( fs::pathExists(AXOM_SRC_DIR));
 
-    std::string dataDir = fs::joinPath(AXOM_SRC_DIR, "axom/slam/data");
+    std::string dataDir = fs::joinPath(AXOM_SRC_DIR, "axom");
     EXPECT_TRUE( fs::pathExists(dataDir));
-    std::string fileName = fs::joinPath(dataDir, "ball_1.vtk");
+
+    std::string fileName = fs::joinPath(dataDir, "config.hpp.in");
     EXPECT_TRUE( fs::pathExists(fileName));
   }
 }

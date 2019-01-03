@@ -51,14 +51,14 @@ namespace slam
  *     static_cast<ElementType>( indirection[ pos * stride + offset ] )
  */
 template<
-  typename PosType = Set::PositionType,
-  typename ElemType = PosType,
+  typename PosType             = slam::PositionType,
+  typename ElemType            = PosType,
   typename SizePolicy          = policies::RuntimeSize<PosType>,
   typename OffsetPolicy        = policies::ZeroOffset<PosType>,
   typename StridePolicy        = policies::StrideOne<PosType>,
   typename IndirectionPolicy   = policies::NoIndirection<PosType, ElemType>,
   typename SubsettingPolicy    = policies::NoSubset >
-struct OrderedSet : public Set,
+struct OrderedSet : public Set<PosType,ElemType>,
                            SizePolicy,
                            OffsetPolicy,
                            StridePolicy,
@@ -104,7 +104,7 @@ public:
     //, SubsettingPolicyType(parentSet)
   {}
 
-  OrderedSet(const SetBuilder & builder)
+  OrderedSet(const SetBuilder& builder)
     : SizePolicyType(builder.m_size)
     , OffsetPolicyType(builder.m_offset)
     , StridePolicyType(builder.m_stride)
@@ -197,6 +197,7 @@ private:
   template<typename OrderedSet>
   class OrderedSetIterator : public IteratorBase<
       OrderedSetIterator<OrderedSet>,
+      typename OrderedSet::PositionType,
       typename OrderedSet::ElementType>
   {
 public:
@@ -209,7 +210,8 @@ public:
     using StrideType = typename OrderedSet::StridePolicyType;
 
     using IterBase = IteratorBase<OrderedSetIterator<OrderedSet>,
-                                  typename OrderedSet::ElementType>;
+                                  PositionType,
+                                  ElementType>;
     using IterBase::m_pos;
 
 public:

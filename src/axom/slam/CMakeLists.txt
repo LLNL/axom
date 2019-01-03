@@ -71,11 +71,8 @@ set(slam_sources
     # IndirectionSet.cpp
     BitSet.cpp
     OrderedSet.cpp
-    BivariateSet.cpp
 
     # SRM Relation sources
-    Relation.cpp
-    DynamicVariableRelation.cpp
 
     # SRM Map sources
 

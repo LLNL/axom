@@ -35,6 +35,7 @@ namespace slam
  * SubMap is used by BivariateMap to return a set of values mapped to each item
  * in its first set.
  *
+ * \tparam SetType defines the Position and Element types of the underlying set
  * \tparam DataType the data type of the SuperMap
  * \tparam SuperMapType the type of SuperMap
  * \tparam StridePolicy the stride of SuperMap
@@ -47,28 +48,32 @@ namespace slam
  */
 
 template<
+  typename SetType,
   typename DataType,
   typename SuperMapType,
-  typename StridePolicy = policies::StrideOne<Set::PositionType>
+  typename StridePolicy = policies::StrideOne<typename SetType::PositionType>
   >
 class SubMap : public MapBase, public StridePolicy
 {
 private:
-  using SetType = Set;
-  using RangeSetType = RangeSet<>;
-  using OrderedSetType = OrderedSet<
-          Set::PositionType,
-          Set::ElementType,
-          policies::RuntimeSize<Set::PositionType>,
-          policies::ZeroOffset<Set::PositionType>,
-          policies::StrideOne<Set::PositionType>,
-          policies::STLVectorIndirection<Set::PositionType, Set::ElementType>
-          >;
-  using MapType = Map<DataType, StridePolicy>;
+  using SetPosition = typename SetType::PositionType;
+  using SetElement = typename SetType::ElementType;
+
+  using RangeSetType = RangeSet<SetPosition, SetElement>;
+  using MapType = Map<SetType, DataType, StridePolicy>;
 
 public:
-  using IndexType = SetType::PositionType;
-  using SubsetType = OrderedSetType;
+  using IndexType = SetPosition;
+  using SubsetType = OrderedSet<
+          SetPosition,
+          SetElement,
+          policies::RuntimeSize<SetPosition>,
+          policies::ZeroOffset<SetPosition>,
+          policies::StrideOne<SetPosition>,
+          policies::STLVectorIndirection<SetPosition, SetElement>
+          >;
+
+  using SubsetBuilder = typename SubsetType::SetBuilder;
 
 //iterator typedef
   class SubMapIterator;
@@ -91,7 +96,7 @@ public:
     StridePolicy(supermap->stride()),
     m_superMap_constptr(supermap), m_superMap_ptr(nullptr),
     m_subsetIdx_data(subset_idx.size()),
-    m_subsetIdx( SubsetType::SetBuilder()
+    m_subsetIdx( SubsetBuilder()
                  .size(subset_idx.size())
                  .data(&m_subsetIdx_data) )
   {
@@ -115,7 +120,7 @@ public:
     m_superMap_constptr(otherMap.m_superMap_constptr),
     m_superMap_ptr(otherMap.m_superMap_ptr),
     m_subsetIdx_data(otherMap.m_subsetIdx_data),
-    m_subsetIdx( SubsetType::SetBuilder()
+    m_subsetIdx( SubsetBuilder()
                  .size(m_subsetIdx_data.size())
                  .data(&m_subsetIdx_data) )
   { }
@@ -127,7 +132,7 @@ public:
     m_superMap_constptr = otherMap.m_superMap_constptr;
     m_superMap_ptr = otherMap.m_superMap_ptr;
     m_subsetIdx_data = otherMap.m_subsetIdx_data;
-    m_subsetIdx = SubsetType::SetBuilder()
+    m_subsetIdx = SubsetBuilder()
                   .size(m_subsetIdx_data.size())
                   .data(&m_subsetIdx_data);
     return *this;
@@ -139,7 +144,7 @@ public:
     m_superMap_constptr(otherMap.m_superMap_constptr),
     m_superMap_ptr(otherMap.m_superMap_ptr),
     m_subsetIdx_data(std::move(otherMap.m_subsetIdx_data)),
-    m_subsetIdx( SubsetType::SetBuilder()
+    m_subsetIdx( SubsetBuilder()
                  .size(m_subsetIdx_data.size())
                  .data(&m_subsetIdx_data) )
   { }
@@ -151,7 +156,7 @@ public:
     m_superMap_constptr = otherMap.m_superMap_constptr;
     m_superMap_ptr = otherMap.m_superMap_ptr,
     m_subsetIdx_data = std::move(otherMap.m_subsetIdx_data);
-    m_subsetIdx = SubsetType::SetBuilder()
+    m_subsetIdx = SubsetBuilder()
                   .size(m_subsetIdx_data.size())
                   .data(&m_subsetIdx_data);
     return *this;
@@ -357,10 +362,11 @@ public:
    *
    * \see MapIterator
    */
-  class SubMapIterator : public IteratorBase<SubMapIterator, DataType>
+  class SubMapIterator
+    : public IteratorBase<SubMapIterator, SetPosition,DataType>
   {
 public:
-    using IterBase = IteratorBase<SubMapIterator, DataType>;
+    using IterBase = IteratorBase<SubMapIterator, SetPosition, DataType>;
     using IterBase::m_pos;
     using iter = SubMapIterator;
     using PositionType = SetPosition;
@@ -439,7 +445,7 @@ protected:     //Member variables
 
   //Stores the ElementFlatIndex into the SuperMap
   std::vector<IndexType> m_subsetIdx_data;
-  OrderedSetType m_subsetIdx;
+  SubsetType m_subsetIdx;
 
 }; //end SubMap
 

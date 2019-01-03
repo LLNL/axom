@@ -36,7 +36,7 @@ namespace slam
 class MapBase
 {
 public:
-  using SetPosition = Set::PositionType;
+  using SetPosition = slam::PositionType;
 
 public:
   //MapBase(){};
@@ -52,7 +52,7 @@ public:
    * \brief Checks whether the Map is valid.
    * \return   True if valid, false otherwise.
    */
-  virtual bool        isValid(bool verboseOutput) const = 0;
+  virtual bool isValid(bool verboseOutput) const = 0;
 
 private:
   /**

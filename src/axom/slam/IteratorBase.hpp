@@ -25,7 +25,7 @@ namespace slam
  * \brief Base class for a random access iterator over positions in a set
  *
  * This class is for keeping track of the position value in an iterator class.
- * It uses the Curiously recurring template pattern: The first template
+ * It uses the Curiously Recurring Template Pattern (CRTP): The first template
  * parameter should be the actual iterator class. \n
  * The derived iterator class must implement `void advance(PositionType)`
  * to update the \a m_pos variable.
@@ -44,15 +44,17 @@ namespace slam
  * \endcode
  *
  * \tparam  IterType The iterator class to be the derived class
- * \tparam  DataType The return type of the iterator indirection
+ * \tparam  PosType The type used to index into the iterator
+ * \tparam  ElemType The return type of the iterator indirection
  */
 
-template<class IterType, typename DataType>
+template<class IterType, typename PosType, typename ElemType>
 class IteratorBase : public std::iterator<std::random_access_iterator_tag,
-                                          DataType>
+                                          ElemType>
 {
 public:
-  using PositionType = Set::PositionType;
+  using PositionType = PosType;
+  using ElementType = ElemType;
 
 protected:
   IteratorBase(int pos) : m_pos(pos) { }
@@ -127,7 +129,7 @@ private:
   }
 
 protected:
-  int m_pos;
+  PositionType m_pos;
 };
 
 } // end namespace slam

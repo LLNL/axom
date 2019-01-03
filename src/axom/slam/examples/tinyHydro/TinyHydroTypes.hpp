@@ -19,29 +19,32 @@ namespace slam = axom::slam;
 
 namespace tinyHydro {
 
-  using IndexField = slam::Map<int>;
   using PositionType = int;
   using IndexType = PositionType;
   using ElementType = PositionType;
 
-  using ScalarField = slam::Map<double>;
+  using SetBase = slam::Set<PositionType, ElementType>;
+
+  using IndexField = slam::Map<SetBase, int>;
+
+  using ScalarField = slam::Map<SetBase, double>;
   using NodalScalarField = ScalarField;
   using ZonalScalarField = ScalarField;
 
-  using VectorField = slam::Map<VectorXY>;
+  using VectorField = slam::Map<SetBase, VectorXY>;
   using NodalVectorField = VectorField;
   using ZonalVectorField = VectorField;
   using FaceVectorField = VectorField;
 
   using BoundaryEdgeVectorField = VectorField;
 
-  using ZoneSet = slam::PositionSet<>;
-  using NodeSet = slam::PositionSet<>;
-  using FaceSet = slam::PositionSet<>;
-  using CornerSet = slam::PositionSet<>;
+  using ZoneSet = slam::PositionSet<PositionType, ElementType>;
+  using NodeSet = slam::PositionSet<PositionType, ElementType>;
+  using FaceSet = slam::PositionSet<PositionType, ElementType>;
+  using CornerSet = slam::PositionSet<PositionType, ElementType>;
 
-  using ZoneSubset = slam::VectorIndirectionSet;
-  using NodeSubset = slam::VectorIndirectionSet;
+  using ZoneSubset = slam::VectorIndirectionSet<PositionType, ElementType>;
+  using NodeSubset = slam::VectorIndirectionSet<PositionType, ElementType>;
 
   enum
   {
@@ -58,20 +61,22 @@ namespace tinyHydro {
 
   using ZNStride = slam::policies::CompileTimeStride<PositionType, NODES_PER_ZONE>;
   using ZNCard = slam::policies::ConstantCardinality<PositionType, ZNStride>;
-  using ZoneToNodeRelation = slam::StaticRelation<ZNCard, STLIndirection, ZoneSet, NodeSet>;
+  using ZoneToNodeRelation = slam::StaticRelation<PositionType, ElementType,
+                                                  ZNCard, STLIndirection, ZoneSet, NodeSet>;
   using ZNodeSet = ZoneToNodeRelation::RelationSubset;
 
   using ZFStride = slam::policies::CompileTimeStride<PositionType, FACES_PER_ZONE>;
   using ZFCard = slam::policies::ConstantCardinality<PositionType, ZFStride>;
-  using ZoneToFaceRelation = slam::StaticRelation<ZFCard, STLIndirection, ZoneSet, FaceSet>;
+  using ZoneToFaceRelation = slam::StaticRelation<PositionType, ElementType,
+                                                  ZFCard, STLIndirection, ZoneSet, FaceSet>;
   using ZFaceSet = ZoneToFaceRelation::RelationSubset;
 
   using NUM_BD_SZ = slam::policies::CompileTimeSize<ZoneSet::PositionType, NUM_DOMAIN_BOUNDARIES>;
   using BoundaryEdgeSet = slam::OrderedSet< PositionType, ElementType, NUM_BD_SZ>;
 
-  using IndexMap = slam::Map<IndexType>;
+  using IndexMap = slam::Map<SetBase, IndexType>;
 
-  using IndexRegistry = slam::FieldRegistry<ZoneSet::PositionType>;
+  using IndexRegistry = slam::FieldRegistry<SetBase, ZoneSet::PositionType>;
   using IndexBuffer = IndexRegistry::BufferType;
 
   struct DataRegistry

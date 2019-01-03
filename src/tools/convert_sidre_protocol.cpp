@@ -47,12 +47,13 @@ namespace sidre = axom::sidre;
 namespace slam = axom::slam;
 namespace slic = axom::slic;
 
-using PosType = slam::Set::PositionType;
-using IndexType = sidre::IndexType;
+using PosType = slam::PositionType;
+using ElemType = sidre::IndexType;
+
 using SzPol = slam::policies::RuntimeSize<PosType>;
 using OffPol = slam::policies::ZeroOffset<PosType>;
 using StrPol= slam::policies::RuntimeStride<PosType>;
-using ViewSet = slam::OrderedSet<PosType, IndexType, SzPol, OffPol, StrPol>;
+using ViewSet = slam::OrderedSet<PosType, ElemType, SzPol, OffPol, StrPol>;
 
 void setupLogging();
 void teardownLogging();
@@ -69,10 +70,10 @@ struct CommandLineArguments
   int m_numStripElts;
 
   CommandLineArguments()
-    : m_inputName(""),
-    m_outputName(""),
-    m_protocol(""),
-    m_numStripElts(-1)
+    : m_inputName("")
+    , m_outputName("")
+    , m_protocol("")
+    , m_numStripElts(-1)
   {}
 
   bool hasInputName() const { return !m_inputName.empty(); }
@@ -244,7 +245,7 @@ CommandLineArguments parseArguments(int argc, char** argv, int myRank)
 void allocateExternalData(sidre::Group* grp, std::vector<void*>& extPtrs)
 {
   // for each view
-  for(sidre::IndexType idx =  grp->getFirstValidViewIndex() ;
+  for(auto idx =  grp->getFirstValidViewIndex() ;
       sidre::indexIsValid(idx) ;
       idx = grp->getNextValidViewIndex(idx) )
   {
@@ -265,7 +266,7 @@ void allocateExternalData(sidre::Group* grp, std::vector<void*>& extPtrs)
   }
 
   // for each group
-  for(sidre::IndexType idx =  grp->getFirstValidGroupIndex() ;
+  for(auto idx =  grp->getFirstValidGroupIndex() ;
       sidre::indexIsValid(idx) ;
       idx = grp->getNextValidGroupIndex(idx) )
   {
@@ -383,7 +384,7 @@ void modifyFinalValues(sidre::View* view, int origSize)
 void truncateBulkData(sidre::Group* grp, int maxSize)
 {
   // Add two to maxSize
-  for(sidre::IndexType idx =  grp->getFirstValidViewIndex() ;
+  for(auto idx =  grp->getFirstValidViewIndex() ;
       sidre::indexIsValid(idx) ;
       idx = grp->getNextValidViewIndex(idx) )
   {
@@ -413,7 +414,7 @@ void truncateBulkData(sidre::Group* grp, int maxSize)
   }
 
   // for each group
-  for(sidre::IndexType idx =  grp->getFirstValidGroupIndex() ;
+  for(auto idx =  grp->getFirstValidGroupIndex() ;
       sidre::indexIsValid(idx) ;
       idx = grp->getNextValidGroupIndex(idx) )
   {

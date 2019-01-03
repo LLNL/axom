@@ -97,14 +97,14 @@ template<typename mesh_tag>
 class PointInCell
 {
 public:
-  typedef PointInCellTraits<mesh_tag> MeshTraits;
-  typedef typename MeshTraits::MeshType MeshType;
-  typedef typename MeshTraits::IndexType IndexType;
+  using MeshTraits = PointInCellTraits<mesh_tag>;
+  using MeshType = typename MeshTraits::MeshType;
+  using IndexType = typename MeshTraits::IndexType;
 
-  typedef detail::PointInCellMeshWrapper<mesh_tag> MeshWrapperType;
+  using MeshWrapperType = detail::PointInCellMeshWrapper<mesh_tag>;
 
-  typedef detail::PointFinder<2, mesh_tag> PointFinder2D;
-  typedef detail::PointFinder<3, mesh_tag> PointFinder3D;
+  using PointFinder2D = detail::PointFinder<2, mesh_tag>;
+  using PointFinder3D = detail::PointFinder<3, mesh_tag>;
 
 
   /*!
@@ -130,9 +130,9 @@ public:
   PointInCell(MeshType* mesh,
               int* resolution = nullptr,
               double bboxTolerance = 1e-8)
-    : m_meshWrapper(mesh),
-    m_pointFinder2D(nullptr),
-    m_pointFinder3D(nullptr)
+    : m_meshWrapper(mesh)
+    , m_pointFinder2D(nullptr)
+    , m_pointFinder3D(nullptr)
   {
     SLIC_ASSERT(mesh != nullptr);
 

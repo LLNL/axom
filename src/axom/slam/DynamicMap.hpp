@@ -28,12 +28,14 @@ namespace slam
  * \detail An entry in the map is considered valid if
  * its corresponding set's entry is valid
  */
-template<typename DataType>
+template<typename SetType, typename DataType>
 class DynamicMap
 {
 
 public:
-  using SetPosition = Set::PositionType;
+  using SetPosition = typename SetType::PositionType;
+  using SetElement = typename SetType::ElementType;
+
   using OrderedMap = std::vector<DataType>;
 
 public:
@@ -48,7 +50,7 @@ public:
    * The map will be allocated with theSet->size() entries.
    * There is no guarantee that the values will be initialized
    */
-  DynamicMap(DynamicSet<>* theSet ) : m_set(theSet)
+  DynamicMap(SetType* theSet ) : m_set(theSet)
   {
     if(m_set != nullptr)
     {
@@ -66,7 +68,7 @@ public:
    * The map will be allocated with \a theSet->size() entries.
    * Each entry will have value \a defaultValue
    */
-  DynamicMap(DynamicSet<>* theSet, DataType defaultValue) : m_set(theSet)
+  DynamicMap(SetType* theSet, DataType defaultValue) : m_set(theSet)
   {
     if(m_set != nullptr)
     {
@@ -79,7 +81,7 @@ public:
 public:
 
   /** \brief Returns a pointer to the map's underlying set */
-  const Set* set() const { return m_set; }
+  const SetType* set() const { return m_set; }
 
   /// \name DynamicMap individual access functions
   /// @{
@@ -209,14 +211,14 @@ public:
   /// @}
 
 private:
-  DynamicSet<>* m_set;
+  SetType* m_set;
   OrderedMap m_data;
 
 };
 
 
-template< typename T>
-bool DynamicMap<T>::isValid(bool verboseOutput) const
+template< typename SetType, typename DataType>
+bool DynamicMap<SetType, DataType>::isValid(bool verboseOutput) const
 {
   bool bValid = true;
 

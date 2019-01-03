@@ -17,9 +17,8 @@
 #include <sstream>
 #include <iostream>
 
-#include "axom/core/Macros.hpp"
-#include "axom/core/Types.hpp"
-#include "axom/slic/interface/slic.hpp"
+#include "axom/core.hpp"
+#include "axom/slic.hpp"
 
 #include "axom/slam/MapBase.hpp"
 #include "axom/slam/Set.hpp"
@@ -60,8 +59,9 @@ namespace slam
  */
 
 template<
+  typename SetType,
   typename DataType,
-  typename StridePolicy = policies::StrideOne<Set::PositionType>
+  typename StridePolicy = policies::StrideOne<typename SetType::PositionType>
   >
 class Map : public MapBase, public StridePolicy
 {
@@ -70,7 +70,10 @@ public:
   using OrderedMap = std::vector<DataType>;
   using StridePolicyType = StridePolicy;
 
-  static const NullSet s_nullSet;
+
+  using SetPosition = typename SetType::PositionType;
+  using SetElement = typename SetType::ElementType;
+  static const NullSet<SetPosition, SetElement> s_nullSet;
 
   class MapBuilder;
 
@@ -96,9 +99,10 @@ public:
    *        \a stride(), when provided.
    */
 
-  Map(const Set* theSet = &s_nullSet, DataType defaultValue = DataType(),
-      Set::PositionType stride = StridePolicyType::DEFAULT_VALUE ) :
-    StridePolicyType(stride), m_set(theSet)
+  Map(const SetType* theSet = &s_nullSet,
+      DataType defaultValue = DataType(),
+      SetPosition stride = StridePolicyType::DEFAULT_VALUE )
+    :  StridePolicyType(stride), m_set(theSet)
   {
     m_data.resize( m_set->size() * StridePolicy::stride(), defaultValue);
   }
@@ -106,9 +110,9 @@ public:
   /**
    * Copy constructor from another map
    */
-  Map(const Map& otherMap) :
-    StridePolicyType(otherMap.StridePolicyType::stride()),
-    m_set(otherMap.m_set)
+  Map(const Map& otherMap)
+    : StridePolicyType(otherMap.StridePolicyType::stride())
+    , m_set(otherMap.m_set)
   {
     m_data.resize( otherMap.m_data.size() );
     copy( otherMap );
@@ -150,7 +154,7 @@ public:
   /**
    * \brief Returns a pointer to the map's underlying set
    */
-  const Set* set() const { return m_set; }
+  const SetType* set() const { return m_set; }
 
   /// \name Map individual access functions
   /// @{
@@ -273,7 +277,7 @@ public:
     MapBuilder() : m_set(&s_nullSet) {}
 
     /** \brief Provide the Set to be used by the Map */
-    MapBuilder& set(const Set* set)
+    MapBuilder& set(const SetType* set)
     {
       m_set = set;
       return *this;
@@ -296,7 +300,7 @@ public:
     }
 
 private:
-    const Set* m_set = &s_nullSet;
+    const SetType* m_set = &s_nullSet;
     StridePolicyType m_stride;
     DataType* m_data_ptr = nullptr;
     DataType m_defaultValue = DataType();
@@ -320,10 +324,10 @@ private:
    *          the currently pointed to element (where 0 <= j < numComp()).\n
    *          For example: `iter[off]` is the same as `(iter+off)(0)`
    */
-  class MapIterator : public IteratorBase<MapIterator, DataType>
+  class MapIterator : public IteratorBase<MapIterator, SetPosition, DataType>
   {
 public:
-    using IterBase = IteratorBase<MapIterator, DataType>;
+    using IterBase = IteratorBase<MapIterator, SetPosition, DataType>;
     using iter = MapIterator;
     using PositionType = SetPosition;
     using IterBase::m_pos;
@@ -419,7 +423,7 @@ private:
   }
 
 private:
-  const Set* m_set;
+  const SetType* m_set;
   OrderedMap m_data;
 };
 
@@ -430,12 +434,13 @@ private:
  * \note Should this be a singleton or a global object?  Should the scope be
  * public?
  */
-template<typename DataType, typename StridePolicy>
-NullSet const Map<DataType, StridePolicy>::s_nullSet;
+template<typename SetType, typename DataType, typename StridePolicy>
+NullSet<typename SetType::PositionType, typename SetType::ElementType>
+const Map<SetType, DataType, StridePolicy>::s_nullSet;
 
 
-template<typename DataType, typename StridePolicy>
-bool Map<DataType, StridePolicy>::isValid(bool verboseOutput) const
+template<typename SetType, typename DataType, typename StridePolicy>
+bool Map<SetType, DataType, StridePolicy>::isValid(bool verboseOutput) const
 {
   bool bValid = true;
 
@@ -497,8 +502,8 @@ bool Map<DataType, StridePolicy>::isValid(bool verboseOutput) const
 }
 
 
-template<typename DataType, typename StridePolicy>
-void Map<DataType, StridePolicy>::print() const
+template<typename SetType, typename DataType, typename StridePolicy>
+void Map<SetType, DataType, StridePolicy>::print() const
 {
   bool valid = isValid(true);
   std::stringstream sstr;

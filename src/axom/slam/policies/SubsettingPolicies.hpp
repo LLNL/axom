@@ -45,8 +45,8 @@ namespace policies
 
 struct NoSubset
 {
-  static const NullSet s_nullSet;
-  typedef const Set ParentSetType;
+  static const NullSet<> s_nullSet;
+  using ParentSetType = const Set<>;
 
   NoSubset() {}
 
@@ -56,11 +56,11 @@ struct NoSubset
   /**
    * \brief Checks whether the set containing this policy class is a subset
    */
-  bool                  isSubset() const { return false; }
+  bool isSubset() const { return false; }
   const ParentSetType* parentSet() const { return nullptr; }
 
   template<typename OrderedSetIt>
-  bool                  isValid(OrderedSetIt, OrderedSetIt, bool) const
+  bool isValid(OrderedSetIt, OrderedSetIt, bool) const
   {
     return true;
   }
@@ -68,9 +68,9 @@ struct NoSubset
 
 struct VirtualParentSubset
 {
-  static NullSet s_nullSet;
+  static NullSet<> s_nullSet;
 
-  typedef Set ParentSetType;
+  using ParentSetType = Set<>;
 
   VirtualParentSubset(ParentSetType* parSet = &s_nullSet)
     : m_parentSet(parSet) {}
@@ -79,12 +79,12 @@ struct VirtualParentSubset
    * \brief Checks whether the set containing this policy class is a subset
    */
   bool        isSubset() const { return *m_parentSet != s_nullSet; }
-  const Set* parentSet() const { return m_parentSet; }
-  Set*&       parentSet() { return m_parentSet; }
+  const ParentSetType* parentSet() const { return m_parentSet; }
+  ParentSetType*& parentSet() { return m_parentSet; }
 
   template<typename OrderedSetIt>
-  bool        isValid(OrderedSetIt beg, OrderedSetIt end,
-                      bool verboseOutput = false) const
+  bool isValid(OrderedSetIt beg, OrderedSetIt end,
+               bool verboseOutput = false) const
   {
     // We allow parent sets to be null (i.e. the subset feature is deactivated)
     if( !isSubset() || m_parentSet == nullptr)
@@ -108,11 +108,9 @@ struct VirtualParentSubset
 
     // At this point, parent and child are both non-null
     //  -- ensure that all elts of child are in parent
-    typedef typename OrderedSetIt::ElementType ElType;
-    typedef typename OrderedSetIt::PositionType PosType;
-
+    using ElType = typename OrderedSetIt::ElementType;
     std::set<ElType> pSet;
-    for(PosType pos = 0 ; pos < m_parentSet->size() ; ++pos)
+    for(auto pos = 0 ; pos < m_parentSet->size() ; ++pos)
       pSet.insert( m_parentSet->at(pos));
     for( ; beg != end ; ++beg)
     {
@@ -131,13 +129,13 @@ struct VirtualParentSubset
   }
 
 private:
-  Set* m_parentSet;
+  ParentSetType* m_parentSet;
 };
 
 template<typename TheParentSetType>
 struct ConcreteParentSubset
 {
-  typedef const TheParentSetType ParentSetType;
+  using ParentSetType = const TheParentSetType;
 
   ConcreteParentSubset(ParentSetType* parSet = nullptr)
     : m_parentSet(parSet) {}
@@ -145,7 +143,7 @@ struct ConcreteParentSubset
   /**
    * \brief Checks whether the set containing this policy class is a subset
    */
-  bool                  isSubset()  const
+  bool isSubset()  const
   {
     return m_parentSet != nullptr;
   }
@@ -179,9 +177,8 @@ struct ConcreteParentSubset
     }
 
     // At this point, parent and child are both non-null
-    std::set<typename Set::ElementType> pSet;
-    for(typename ParentSetType::PositionType pos = 0 ;
-        pos < m_parentSet->size() ; ++pos)
+    std::set<typename ParentSetType::ElementType> pSet;
+    for(auto pos = 0 ; pos < m_parentSet->size() ; ++pos)
       pSet.insert( (*m_parentSet)[pos] );
     for( ; beg != end ; ++beg)
     {

@@ -23,20 +23,21 @@ namespace
 {
 namespace slam = axom::slam;
 
-using SetType = slam::RangeSet<>;
-using IntMap = slam::Map<int>;
-using RealMap = slam::Map<double>;
+using SetPosition = slam::PositionType;
+using SetElement = slam::ElementType;
 
-using PositionType = SetType::PositionType;
-using ElementType = SetType::ElementType;
+using SetType = slam::RangeSet<SetPosition, SetElement>;
+using SetBase = slam::Set<SetPosition, SetElement>;
+using IntMap = slam::Map<SetBase, int>;
+using RealMap = slam::Map<SetBase, double>;
 
-static PositionType const MAX_SET_SIZE = 10;
+static SetPosition const MAX_SET_SIZE = 10;
 
-template<unsigned int S>
-using CompileTimeStrideType = axom::slam::policies::CompileTimeStride<int, S>;
+template<int S>
+using CompileTimeStrideType = slam::policies::CompileTimeStride<int, S>;
 
-using RunTimeStrideType = axom::slam::policies::RuntimeStride<int>;
-using OneStrideType = axom::slam::policies::StrideOne<int>;
+using RunTimeStrideType = slam::policies::RuntimeStride<int>;
+using OneStrideType = slam::policies::StrideOne<int>;
 
 } // end anonymous namespace
 
@@ -57,21 +58,21 @@ bool constructAndTestMap()
   EXPECT_EQ(s.size(), MAX_SET_SIZE);
   EXPECT_TRUE(s.isValid());
 
-  SLIC_INFO(
-    "\nCreating "
-    << axom::slam::util::TypeToString<T>::to_string() << " map on the set ");
-  axom::slam::Map<T> m(&s);
+  SLIC_INFO("\nCreating "<< slam::util::TypeToString<T>::to_string()
+                         << " map on the set ");
+
+  slam::Map<SetBase, T> m(&s);
   EXPECT_TRUE(m.isValid());
 
   SLIC_INFO( "\nSetting the elements.");
   double multFac = 1.0001;
-  for(PositionType idx = 0 ; idx < m.size() ; ++idx)
+  for(auto idx = 0 ; idx < m.size() ; ++idx)
   {
     m[idx] = static_cast<T>(idx * multFac);
   }
 
   SLIC_INFO("\nChecking the elements.");
-  for(PositionType idx = 0 ; idx < m.size() ; ++idx)
+  for(auto idx = 0 ; idx < m.size() ; ++idx)
   {
     EXPECT_EQ( m[idx], static_cast<T>(idx * multFac) );
     EXPECT_EQ( m(idx), static_cast<T>(idx * multFac) );
@@ -101,7 +102,7 @@ TEST(slam_map,out_of_bounds)
   IntMap m(&s, defaultElt);
 
   SLIC_INFO("Testing Map element access -- in bounds");
-  for(PositionType idx = 0 ; idx < m.size() ; ++idx)
+  for(auto idx = 0 ; idx < m.size() ; ++idx)
     EXPECT_EQ(defaultElt, m[idx]);
 
   // Test out of bounds
@@ -124,7 +125,7 @@ TEST(slam_map, map_builder)
   SLIC_INFO("Testing construction of Map using MapBuilders");
 
   using DataType = double;
-  using MapType = axom::slam::Map<DataType>;
+  using MapType = slam::Map<slam::Set<>, DataType>;
   using MapBuilder = MapType::MapBuilder;
 
   MapType m( MapBuilder().set(&MapType::s_nullSet) );
@@ -134,7 +135,7 @@ TEST(slam_map, map_builder)
 
   SetType s(MAX_SET_SIZE);
   std::vector<DataType> data_arr(s.size());
-  for (unsigned int i = 0 ; i < data_arr.size() ; ++i)
+  for (auto i = 0u ; i < data_arr.size() ; ++i)
     data_arr[i] = static_cast<DataType>(i*1.01);
 
   MapType m2(MapBuilder()
@@ -144,7 +145,7 @@ TEST(slam_map, map_builder)
   EXPECT_TRUE(m2.isValid());
   EXPECT_EQ(m2.size(), s.size());
   EXPECT_EQ(m2.stride(), 1);
-  for (unsigned int i = 0 ; i < data_arr.size() ; ++i)
+  for (auto i = 0u ; i < data_arr.size() ; ++i)
     EXPECT_EQ(m2[i], data_arr[i]);
 
 }
@@ -159,11 +160,10 @@ void constructAndTestMapWithStride(int stride)
   EXPECT_EQ(s.size(), MAX_SET_SIZE);
   EXPECT_TRUE(s.isValid());
 
-  SLIC_INFO(
-    "\nCreating " << axom::slam::util::TypeToString<T>::to_string() <<
-    " map with stride " << stride << " on the set ");
+  SLIC_INFO("\nCreating " << axom::slam::util::TypeToString<T>::to_string()
+                          << " map with stride " << stride << " on the set ");
 
-  axom::slam::Map<T, StrideType> m(&s, 0, stride);
+  axom::slam::Map<SetBase, T, StrideType> m(&s, 0, stride);
   EXPECT_TRUE(m.isValid());
 
   EXPECT_EQ(m.stride(), stride);
@@ -171,9 +171,9 @@ void constructAndTestMapWithStride(int stride)
   SLIC_INFO("\nSetting the elements.");
   double multFac = 100.0001;
   double multFac2 = 1.010;
-  for (PositionType idx = 0 ; idx < m.size() ; ++idx)
+  for (auto idx = 0 ; idx < m.size() ; ++idx)
   {
-    for (PositionType idx2 = 0 ; idx2 < stride ; ++idx2)
+    for (auto idx2 = 0 ; idx2 < stride ; ++idx2)
     {
       m(idx, idx2) = static_cast<T>(idx * multFac + idx2 * multFac2);
     }
@@ -183,9 +183,9 @@ void constructAndTestMapWithStride(int stride)
   EXPECT_TRUE(m.isValid());
 
   SLIC_INFO("\nChecking the elements.");
-  for (PositionType idx = 0 ; idx < m.size() ; ++idx)
+  for (auto idx = 0 ; idx < m.size() ; ++idx)
   {
-    for (PositionType idx2 = 0 ; idx2 < stride ; ++idx2)
+    for (auto idx2 = 0 ; idx2 < stride ; ++idx2)
     {
       EXPECT_EQ(m(idx, idx2), static_cast<T>(idx * multFac + idx2 * multFac2));
     }
@@ -317,7 +317,7 @@ TEST(slam_map, iterate)
 template<typename StrideType>
 void constructAndTestMapIteratorWithStride(int stride)
 {
-  using RealMap = axom::slam::Map<double, StrideType>;
+  using RealMap = axom::slam::Map<slam::Set<>, double, StrideType>;
   using MapIterator = typename RealMap::MapIterator;
 
   SetType s(MAX_SET_SIZE);
@@ -343,7 +343,7 @@ void constructAndTestMapIteratorWithStride(int stride)
     int idx = 0;
     for (MapIterator iter = m.begin() ; iter != m.end() ; ++iter)
     {
-      for (PositionType idx2 = 0 ; idx2 < iter.numComp() ; ++idx2)
+      for (auto idx2 = 0 ; idx2 < iter.numComp() ; ++idx2)
       {
         iter(idx2) = static_cast<double>(idx * multFac + idx2 * multFac2);
       }
@@ -361,7 +361,7 @@ void constructAndTestMapIteratorWithStride(int stride)
     for (MapIterator iter = m.begin() ; iter != m.end() ; iter++)
     {
       EXPECT_EQ(*iter, static_cast<double>(idx * multFac));
-      for (PositionType idx2 = 0 ; idx2 < iter.numComp() ; ++idx2)
+      for (auto idx2 = 0 ; idx2 < iter.numComp() ; ++idx2)
       {
         EXPECT_EQ(iter(idx2),
                   static_cast<double>(idx * multFac + idx2 * multFac2));

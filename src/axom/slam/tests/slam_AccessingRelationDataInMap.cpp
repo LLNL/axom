@@ -39,41 +39,42 @@ namespace
 namespace slam = axom::slam;
 namespace policies = axom::slam::policies;
 
-using RangeSetType = slam::RangeSet<>;
-using RelationType = slam::Relation;
+using SetPosition = slam::PositionType;
+using SetElement = slam::ElementType;
 
-using ElementType = RangeSetType::ElementType;
-using PositionType = RangeSetType::PositionType;
-using SetPosition = PositionType;
+using RangeSetType = slam::RangeSet<SetPosition, SetElement>;
+using RelationType = slam::Relation<SetPosition, SetElement>;
+
 using IndexVec = std::vector<SetPosition>;
 
-const PositionType FROMSET_SIZE = 10;
-const PositionType TOSET_SIZE = 8;
+const SetPosition FROMSET_SIZE = 10;
+const SetPosition TOSET_SIZE = 8;
 
 using STLIndirection =
-        policies::STLVectorIndirection<PositionType, PositionType>;
+        policies::STLVectorIndirection<SetPosition, SetElement>;
 
 using ArrayIndirection =
-        policies::ArrayIndirection<PositionType, PositionType>;
+        policies::ArrayIndirection<SetPosition, SetElement>;
 
 using VariableCardinality =
-        policies::VariableCardinality<PositionType, STLIndirection>;
+        policies::VariableCardinality<SetPosition, STLIndirection>;
 
 using StaticVariableRelationType =
-        slam::StaticRelation<VariableCardinality, STLIndirection,
+        slam::StaticRelation<SetPosition, SetElement,
+                             VariableCardinality, STLIndirection,
                              RangeSetType, RangeSetType>;
 
 // Use a slam::ModularInt type for more interesting test data
-using CTSize = policies::CompileTimeSize<PositionType, TOSET_SIZE >;
+using CTSize = policies::CompileTimeSize<SetPosition, TOSET_SIZE >;
 using FixedModularInt = slam::ModularInt< CTSize >;
 
 
-PositionType elementCardinality(PositionType fromPos)
+SetPosition elementCardinality(SetPosition fromPos)
 {
   return fromPos;
 }
 
-PositionType relationData(PositionType fromPos, PositionType toPos)
+SetPosition relationData(SetPosition fromPos, SetPosition toPos)
 {
   return FixedModularInt(fromPos + toPos);
 }
@@ -87,7 +88,7 @@ void printVector(StrType const& msg, VecType const& vec)
   sstr << "\n** " << msg << "\n\t";
   sstr << "Array of size " << vec.size() << ": ";
   std::copy(vec.begin(), vec.end(),
-            std::ostream_iterator<PositionType>(sstr, " "));
+            std::ostream_iterator<SetPosition>(sstr, " "));
 
   SLIC_INFO( sstr.str() );
 }
@@ -99,12 +100,12 @@ void generateIncrementingRelations(VecType* begins, VecType* offsets)
   VecType& beginsVec = *begins;
   VecType& offsetsVec = *offsets;
 
-  PositionType curIdx = PositionType();
+  auto curIdx = SetPosition();
 
-  for(PositionType i = 0 ; i < FROMSET_SIZE ; ++i)
+  for(auto i = 0 ; i < FROMSET_SIZE ; ++i)
   {
     beginsVec.push_back( curIdx );
-    for(PositionType j = 0 ; j < elementCardinality(i) ; ++j)
+    for(auto j = 0 ; j < elementCardinality(i) ; ++j)
     {
       offsetsVec.push_back( relationData(i,j) );
       ++curIdx;
@@ -133,7 +134,7 @@ TEST(slam_set_relation_map,access_pattern)
   EXPECT_TRUE(incrementingRel.isValid(true));
 
   SLIC_INFO("-- Looking at relation's stored values...");
-  for(SetPosition fromPos = SetPosition() ; fromPos < fromSet.size() ;
+  for(auto fromPos = SetPosition() ; fromPos < fromSet.size() ;
       ++fromPos)
   {
     SLIC_INFO(
@@ -141,10 +142,10 @@ TEST(slam_set_relation_map,access_pattern)
       << fromSet[fromPos]
       << " in position " << fromPos << " of first set.");
 
-    for(SetPosition idx = 0 ; idx< incrementingRel.size( fromPos ) ; ++idx)
+    for(auto idx = 0 ; idx< incrementingRel.size( fromPos ) ; ++idx)
     {
-      SetPosition posInToSet_actual = incrementingRel[fromPos][idx];
-      SetPosition posInToSet_expected = relationData(fromPos,idx);
+      auto posInToSet_actual = incrementingRel[fromPos][idx];
+      auto posInToSet_expected = relationData(fromPos,idx);
       EXPECT_EQ( posInToSet_expected, posInToSet_actual);
 
       SLIC_INFO(

@@ -68,8 +68,9 @@ public:
   using ElementSet = slam::OrderedSet<IndexType,IndexType,SizePolicy>;
   using BinSet = slam::OrderedSet<IndexType,IndexType, SizePolicy>;
 
-  using BitsetType= slam::BitSet;
-  using BinBitMap = slam::Map<BitsetType>;
+
+  using BitsetType = slam::BitSet;
+  using BinBitMap = slam::Map<slam::Set<>, BitsetType>;
 
   /*!
    * \brief Default constructor for an ImplicitGrid

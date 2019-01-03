@@ -26,35 +26,37 @@ namespace
 namespace slam = axom::slam;
 namespace policies = axom::slam::policies;
 
-using SetType = slam::RangeSet<>;
-using PositionType = SetType::PositionType;
+using SetPosition = slam::PositionType;
+using SetElement = slam::ElementType;
+using SetType = slam::RangeSet<SetPosition, SetElement>;
 
-using StrideOneType = policies::StrideOne<PositionType>;
+using StrideOneType = policies::StrideOne<SetPosition>;
 
 template<unsigned int S>
-using CompileTimeStrideType = policies::CompileTimeStride<PositionType, S>;
+using CompileTimeStrideType = policies::CompileTimeStride<SetPosition, S>;
 
-using RuntimeStrideType = policies::RuntimeStride<PositionType>;
+using RuntimeStrideType = policies::RuntimeStride<SetPosition>;
 
 using STLIndirection =
-        policies::STLVectorIndirection<PositionType, PositionType>;
+        policies::STLVectorIndirection<SetPosition, SetElement>;
 using VariableCardinality =
-        policies::VariableCardinality<PositionType, STLIndirection>;
+        policies::VariableCardinality<SetPosition, STLIndirection>;
 
 using RelationType  =
-        slam::StaticRelation<VariableCardinality, STLIndirection,
+        slam::StaticRelation<SetPosition, SetElement,
+                             VariableCardinality, STLIndirection,
                              SetType, SetType>;
 
-using BivariateSetType = axom::slam::BivariateSet;
-using ProductSetType = axom::slam::ProductSet;
+using BivariateSetType = axom::slam::BivariateSet<SetPosition, SetElement>;
+using ProductSetType = axom::slam::ProductSet<SetPosition, SetElement>;
 using RelationSetType = axom::slam::RelationSet<RelationType>;
 
 template<typename T, typename S>
-using BivariateMapType = axom::slam::BivariateMap<T, S>;
+using BivariateMapType = axom::slam::BivariateMap<SetType, T, S>;
 
 
-static PositionType const MAX_SET_SIZE1 = 10;
-static PositionType const MAX_SET_SIZE2 = 15;
+static const SetPosition MAX_SET_SIZE1 = 10;
+static const SetPosition MAX_SET_SIZE2 = 15;
 
 static double const multFac3 = 0000.1;
 static double const multFac1 = 1000.0;
@@ -73,7 +75,7 @@ TEST(slam_bivariate_map,construct_empty_map)
 }
 
 template<typename T>
-inline T getVal(PositionType idx1, PositionType idx2, PositionType idx3 = 0) {
+inline T getVal(SetPosition idx1, SetPosition idx2, SetPosition idx3 = 0) {
   return static_cast<T>(idx1 * multFac1 + idx2 * multFac2 + idx3 * multFac3);
 }
 
@@ -104,9 +106,9 @@ void constructAndTestCartesianMap(int stride)
 
   SLIC_INFO( "\nSetting the elements in the map.");
 
-  for(PositionType idx1 = 0 ; idx1 < m.firstSetSize() ; ++idx1)
-    for (PositionType idx2 = 0 ; idx2 < m.secondSetSize() ; ++idx2)
-      for(PositionType i = 0 ; i < stride ; i++)
+  for(auto idx1 = 0 ; idx1 < m.firstSetSize() ; ++idx1)
+    for (auto idx2 = 0 ; idx2 < m.secondSetSize() ; ++idx2)
+      for(auto i = 0 ; i < stride ; i++)
       {
         T* valPtr = m.findValue(idx1, idx2, i);
         EXPECT_NE(valPtr, nullptr);
@@ -114,9 +116,9 @@ void constructAndTestCartesianMap(int stride)
       }
 
   SLIC_INFO("\nChecking the elements with findValue().");
-  for (PositionType idx1 = 0 ; idx1 < m.firstSetSize() ; ++idx1)
-    for (PositionType idx2 = 0 ; idx2 < m.secondSetSize() ; ++idx2)
-      for (PositionType i = 0 ; i < stride ; i++)
+  for (auto idx1 = 0 ; idx1 < m.firstSetSize() ; ++idx1)
+    for (auto idx2 = 0 ; idx2 < m.secondSetSize() ; ++idx2)
+      for (auto i = 0 ; i < stride ; i++)
       {
 
         T* ptr = m.findValue(idx1, idx2, i);
@@ -125,11 +127,11 @@ void constructAndTestCartesianMap(int stride)
       }
 
   SLIC_INFO("\nChecking the elements with SubMap.");
-  for (PositionType idx1 = 0 ; idx1 < m.firstSetSize() ; ++idx1)
+  for (auto idx1 = 0 ; idx1 < m.firstSetSize() ; ++idx1)
   {
     SubMapType sm = m(idx1);
-    for (PositionType idx2 = 0 ; idx2 < sm.size() ; ++idx2)
-      for (PositionType i = 0 ; i < stride ; i++)
+    for (auto idx2 = 0 ; idx2 < sm.size() ; ++idx2)
+      for (auto i = 0 ; i < stride ; i++)
       {
         T v = sm.value(idx2, i);
         EXPECT_EQ(v, getVal<T>(idx1, idx2, i));
@@ -183,17 +185,17 @@ void constructAndTestRelationSetMap(int stride)
 
   RelationType rel(&s1, &s2);
 
-  std::vector<PositionType> begin_vec(MAX_SET_SIZE1+1, 0);
-  std::vector<PositionType> indice_vec;
+  std::vector<SetPosition> begin_vec(MAX_SET_SIZE1+1, 0);
+  std::vector<SetPosition> indice_vec;
 
-  PositionType curIdx = PositionType();
+  auto curIdx = SetPosition();
 
-  for (PositionType i = 0 ; i < MAX_SET_SIZE1 ; ++i)
+  for (auto i = 0 ; i < MAX_SET_SIZE1 ; ++i)
   {
     begin_vec[i] = curIdx;
     if (MAX_SET_SIZE1 / 4 <= i && i <= MAX_SET_SIZE1 / 4 * 3)
     {
-      for (PositionType j = MAX_SET_SIZE2/4 ; j < MAX_SET_SIZE2/4*3 ; ++j)
+      for (auto j = MAX_SET_SIZE2/4 ; j < MAX_SET_SIZE2/4*3 ; ++j)
       {
         indice_vec.push_back(j);
         ++curIdx;
@@ -222,13 +224,13 @@ void constructAndTestRelationSetMap(int stride)
 
   SLIC_INFO("\nSetting the elements in the map.");
 
-  for (PositionType idx1 = 0 ; idx1 < rel.fromSetSize() ; idx1++)
+  for (auto idx1 = 0 ; idx1 < rel.fromSetSize() ; idx1++)
   {
     auto relsubset = rel[idx1];
-    for (PositionType si = 0 ; si < relsubset.size() ; ++si)
+    for (auto si = 0 ; si < relsubset.size() ; ++si)
     {
-      PositionType idx2 = relsubset[si];
-      for (PositionType i = 0 ; i < stride ; i++)
+      auto idx2 = relsubset[si];
+      for (auto i = 0 ; i < stride ; i++)
       {
         T* valPtr = m.findValue(idx1, idx2, i);
         EXPECT_NE(valPtr, nullptr);
@@ -238,14 +240,14 @@ void constructAndTestRelationSetMap(int stride)
   }
 
   SLIC_INFO("\nChecking the elements with findValue().");
-  for (PositionType idx1 = 0 ; idx1 < rel.fromSetSize() ; idx1++)
+  for (auto idx1 = 0 ; idx1 < rel.fromSetSize() ; idx1++)
   {
     auto relsubset = rel[idx1];
-    PositionType rel_idx = 0;
-    for (PositionType idx2 = 0 ; idx2 < rel.toSetSize() ; ++idx2)
+    auto rel_idx = 0;
+    for (auto idx2 = 0 ; idx2 < rel.toSetSize() ; ++idx2)
     {
       bool isInRel = relsubset.size() > rel_idx && relsubset[rel_idx] == idx2;
-      for (PositionType i = 0 ; i < stride ; i++)
+      for (auto i = 0 ; i < stride ; i++)
       {
         T* ptr = m.findValue(idx1, idx2, i);
         if (isInRel)
@@ -264,14 +266,14 @@ void constructAndTestRelationSetMap(int stride)
   }
 
   SLIC_INFO("\nChecking the elements with SubMap.");
-  for (PositionType idx1 = 0 ; idx1 < rel.fromSetSize() ; idx1++)
+  for (auto idx1 = 0 ; idx1 < rel.fromSetSize() ; idx1++)
   {
     auto relsubset = rel[idx1];
     SubMapType sm = m(idx1);
-    for (PositionType idx2 = 0 ; idx2 < sm.size() ; ++idx2)
+    for (auto idx2 = 0 ; idx2 < sm.size() ; ++idx2)
     {
       ASSERT_EQ(relsubset[idx2], sm.index(idx2));
-      for (PositionType i = 0 ; i < stride ; i++)
+      for (auto i = 0 ; i < stride ; i++)
       {
         T v = sm.value(idx2, i);
         EXPECT_EQ(v, getVal<T>(idx1, sm.index(idx2), i));
@@ -334,9 +336,9 @@ void constructAndTestBivariateMapIterator(int stride)
 
   SLIC_INFO("\nSetting the elements in the map.");
   //currently can't set value using iterator
-  for (PositionType idx1 = 0 ; idx1 < m.firstSetSize() ; ++idx1)
-    for (PositionType idx2 = 0 ; idx2 < m.secondSetSize() ; ++idx2)
-      for (PositionType i = 0 ; i < stride ; i++)
+  for (auto idx1 = 0 ; idx1 < m.firstSetSize() ; ++idx1)
+    for (auto idx2 = 0 ; idx2 < m.secondSetSize() ; ++idx2)
+      for (auto i = 0 ; i < stride ; i++)
       {
         DataType* valPtr = m.findValue(idx1, idx2, i);
         EXPECT_NE(valPtr, nullptr);
@@ -344,15 +346,15 @@ void constructAndTestBivariateMapIterator(int stride)
       }
 
   SLIC_INFO("\nChecking the elements with SubMap iterator.");
-  for (PositionType idx1 = 0 ; idx1 < m.firstSetSize() ; ++idx1)
+  for (auto idx1 = 0 ; idx1 < m.firstSetSize() ; ++idx1)
   {
     int idx2 = 0;
     auto begin_iter = m.begin(idx1);
-    for ( auto iter = m.begin(idx1) ; iter != m.end(idx1) ; ++iter, ++idx2)
+    for (auto iter = m.begin(idx1) ; iter != m.end(idx1) ; ++iter, ++idx2)
     {
       EXPECT_EQ(begin_iter[idx2], getVal<DataType>(idx1, idx2));
       EXPECT_EQ(*iter, getVal<DataType>(idx1, idx2));
-      for (PositionType i = 0 ; i < iter.numComp() ; i++)
+      for (auto i = 0 ; i < iter.numComp() ; i++)
       {
         EXPECT_EQ(iter(i), getVal<DataType>(idx1, idx2, i));
       }
@@ -365,15 +367,15 @@ void constructAndTestBivariateMapIterator(int stride)
     auto begin_iter = m.begin();
     auto end_iter = m.end();
     auto inval_iter = end_iter + 1;
-    PositionType flat_idx = 0;
-    for (PositionType idx1 = 0 ; idx1 < m.firstSetSize() ; ++idx1)
+    auto flat_idx = 0;
+    for (auto idx1 = 0 ; idx1 < m.firstSetSize() ; ++idx1)
     {
-      for (PositionType idx2 = 0 ; idx2 < m.secondSetSize() ; ++idx2)
+      for (auto idx2 = 0 ; idx2 < m.secondSetSize() ; ++idx2)
       {
         EXPECT_EQ(*iter, getVal<DataType>(idx1, idx2, 0));
         EXPECT_EQ(iter.firstIndex(), idx1);
         EXPECT_EQ(iter.secondIndex(), idx2);
-        for (PositionType i = 0 ; i < stride ; i++)
+        for (auto i = 0 ; i < stride ; i++)
         {
           DataType val = getVal<DataType>(idx1, idx2, i);
           EXPECT_EQ(iter.value(i), val);

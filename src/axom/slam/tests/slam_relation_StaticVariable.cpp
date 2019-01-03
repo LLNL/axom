@@ -34,29 +34,30 @@ namespace
 namespace slam = axom::slam;
 namespace policies = axom::slam::policies;
 
-using RangeSetType = slam::RangeSet<>;
-using RelationType = slam::Relation;
+using SetPosition = slam::PositionType;
+using SetElement = slam::ElementType;
 
-using ElementType = RangeSetType::ElementType;
-using PositionType = RangeSetType::PositionType;
+using RangeSetType = slam::RangeSet<SetPosition, SetElement>;
+using RelationType = slam::Relation<SetPosition, SetElement>;
 
-using SetPosition =PositionType;
+
 using IndexVec = std::vector<SetPosition>;
 
 
-const PositionType FROMSET_SIZE = 7;
-const PositionType TOSET_SIZE = 8;
+const SetPosition FROMSET_SIZE = 7;
+const SetPosition TOSET_SIZE = 8;
 
 using STLIndirection =
-        policies::STLVectorIndirection<PositionType, PositionType>;
+        policies::STLVectorIndirection<SetPosition, SetElement>;
 using ArrayIndirection =
-        policies::ArrayIndirection<PositionType, PositionType>;
+        policies::ArrayIndirection<SetPosition, SetElement>;
 
 using VariableCardinality =
-        policies::VariableCardinality<PositionType, STLIndirection>;
+        policies::VariableCardinality<SetPosition, STLIndirection>;
 
 using StaticVariableRelationType =
-        slam::StaticRelation<VariableCardinality, STLIndirection,
+        slam::StaticRelation<SetPosition, SetElement,
+                             VariableCardinality, STLIndirection,
                              RangeSetType,RangeSetType>;
 
 // Use a slam::ModularInt type for more interesting test data
@@ -64,12 +65,12 @@ using CTSize = policies::CompileTimeSize<int, TOSET_SIZE >;
 using FixedModularInt = slam::ModularInt< CTSize >;
 
 
-PositionType elementCardinality(PositionType fromPos)
+SetPosition elementCardinality(SetPosition fromPos)
 {
   return fromPos;
 }
 
-PositionType relationData(PositionType fromPos, PositionType toPos)
+SetPosition relationData(SetPosition fromPos, SetPosition toPos)
 {
   return FixedModularInt(fromPos + toPos);
 }
@@ -83,7 +84,7 @@ void printVector(StrType const& msg, VecType const& vec)
   sstr << "\n** " << msg << "\n\t";
   sstr << "Array of size " << vec.size() << ": ";
   std::copy(vec.begin(), vec.end(),
-            std::ostream_iterator<PositionType>(sstr, " "));
+            std::ostream_iterator<SetPosition>(sstr, " "));
 
   SLIC_INFO( sstr.str() );
 }
@@ -95,12 +96,12 @@ void generateIncrementingRelations(VecType* begins, VecType* indices)
   VecType& beginsVec = *begins;
   VecType& indicesVec = *indices;
 
-  PositionType curIdx = PositionType();
+  SetPosition curIdx = SetPosition();
 
-  for(PositionType i = 0 ; i < FROMSET_SIZE ; ++i)
+  for(SetPosition i = 0 ; i < FROMSET_SIZE ; ++i)
   {
     beginsVec.push_back( curIdx );
-    for(PositionType j = 0 ; j < elementCardinality(i) ; ++j)
+    for(SetPosition j = 0 ; j < elementCardinality(i) ; ++j)
     {
       indicesVec.push_back( relationData(i,j) );
       ++curIdx;
@@ -122,14 +123,14 @@ template<typename RelationType>
 void traverseRelation_doubleSubscript(RelationType& rel)
 {
   SLIC_INFO("Traversing relation data using double subscript: " );
-  for(PositionType fromPos = 0 ; fromPos < rel.fromSet()->size() ; ++fromPos)
+  for(SetPosition fromPos = 0 ; fromPos < rel.fromSet()->size() ; ++fromPos)
   {
-    const PositionType fromSize = rel.size(fromPos);
+    const SetPosition fromSize = rel.size(fromPos);
     EXPECT_EQ( elementCardinality(fromPos), fromSize );
 
     for(int toPos = 0 ; toPos < fromSize ; ++toPos)
     {
-      PositionType actualVal = rel[fromPos][toPos];
+      SetPosition actualVal = rel[fromPos][toPos];
 
       EXPECT_EQ(relationData(fromPos,toPos), actualVal);
     }
@@ -149,15 +150,15 @@ template<typename RelationType>
 void traverseRelation_delayedSubscript(RelationType& rel)
 {
   SLIC_INFO("Traversing relation data using delayed second subscript: " );
-  for(PositionType fromPos = 0 ; fromPos < rel.fromSet()->size() ; ++fromPos)
+  for(SetPosition fromPos = 0 ; fromPos < rel.fromSet()->size() ; ++fromPos)
   {
-    const PositionType fromSize = rel.size(fromPos);
+    const SetPosition fromSize = rel.size(fromPos);
     EXPECT_EQ( elementCardinality(fromPos), fromSize );
 
     typename RelationType::RelationSubset set = rel[fromPos];
     for(int toPos = 0 ; toPos < set.size() ; ++toPos)
     {
-      PositionType actualVal = rel[fromPos][toPos];
+      SetPosition actualVal = rel[fromPos][toPos];
       EXPECT_EQ(relationData(fromPos,toPos), actualVal);
     }
   }
@@ -181,16 +182,16 @@ void iterateRelation_begin_end(RelationType& rel)
   for(FromSetIter sIt = rel.fromSet()->begin(),
       sItEnd = rel.fromSet()->end() ; sIt != sItEnd ; ++sIt)
   {
-    PositionType actualSize = rel.size( *sIt);
+    SetPosition actualSize = rel.size( *sIt);
 
-    PositionType fromSetEltNum = std::distance(rel.fromSet()->begin(), sIt);
+    SetPosition fromSetEltNum = std::distance(rel.fromSet()->begin(), sIt);
     EXPECT_EQ( elementCardinality(fromSetEltNum), actualSize );
 
     RelIter toSetBegin = rel.begin(*sIt);
     RelIter toSetEnd   = rel.end(*sIt);
     for(RelIter relIt = toSetBegin ; relIt != toSetEnd ; ++relIt)
     {
-      PositionType toSetEltNum = std::distance(toSetBegin, relIt);
+      SetPosition toSetEltNum = std::distance(toSetBegin, relIt);
       ASSERT_EQ( relationData(fromSetEltNum,toSetEltNum), *relIt);
     }
   }
@@ -206,30 +207,32 @@ void iterateRelation_begin_end(RelationType& rel)
 template<typename RelationType>
 void iterateRelation_range(RelationType& rel)
 {
-  typedef typename RelationType::FromSetType FromSet;
-  typedef typename FromSet::iterator FromSetIter;
-  typedef typename FromSet::iterator_pair FromSetIterPair;
+  using FromSet = typename RelationType::FromSetType;
+  using FromSetIter = typename FromSet::iterator;
+  using FromSetIterPair = typename FromSet::iterator_pair;
 
-  typedef typename RelationType::RelationIterator RelIter;
-  typedef typename RelationType::RelationIteratorPair RelIterPair;
+  using RelIter = typename RelationType::RelationIterator;
+  using RelIterPair = typename RelationType::RelationIteratorPair;
 
   SLIC_INFO("Traversing relation data using iterator range() functions");
   FromSetIterPair itPair = rel.fromSet()->range();
   for(FromSetIter sIt = itPair.first ; sIt != itPair.second ; ++sIt)
   {
-    PositionType fromSetEltNum = std::distance(itPair.first, sIt);
+    SetPosition fromSetEltNum = std::distance(itPair.first, sIt);
 
     RelIterPair toSetItPair = rel.range(*sIt);
     for(RelIter relIt = toSetItPair.first ;
         relIt != toSetItPair.second ; ++relIt)
     {
-      PositionType toSetEltNum = std::distance(toSetItPair.first, relIt);
+      SetPosition toSetEltNum = std::distance(toSetItPair.first, relIt);
       ASSERT_EQ( relationData(fromSetEltNum, toSetEltNum), *relIt);
     }
   }
 }
 
 } // end anonymous namespace
+
+
 TEST(slam_static_variable_relation,construct_empty)
 {
   SLIC_INFO("Testing empty relation.  isValid() should be false.");

@@ -13,9 +13,7 @@
 #ifndef SLAM_NULL_SET_H_
 #define SLAM_NULL_SET_H_
 
-#include "axom/core/Macros.hpp"
-
-#include "axom/slic/interface/slic.hpp"
+#include "axom/slic.hpp"
 #include "axom/slam/Set.hpp"
 
 namespace axom
@@ -29,8 +27,16 @@ namespace slam
  *
  * \brief An indexed set (a tuple) of entities in a simulation
  */
-class NullSet : public Set
+template<
+  typename PosType  = slam::PositionType,
+  typename ElemType = slam::ElementType >
+class NullSet : public Set<PosType, ElemType>
 {
+public:
+  using ParentSet    = Set<PosType,ElemType>;
+  using PositionType = typename ParentSet::PositionType;
+  using ElementType  = typename ParentSet::ElementType;
+
 public:
   NullSet() {}
 
@@ -51,7 +57,7 @@ public:
   }
 
   inline bool isSubset() const { return false; }
-  const Set* parentSet() const { return this; }
+  const ParentSet* parentSet() const { return this; }
 
   bool isValid(bool AXOM_NOT_USED(verboseOutput) = false) const
   {
