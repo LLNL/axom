@@ -516,7 +516,6 @@ namespace slamLulesh {
   void
   Domain::SetupSymmetryPlanes(Int_t edgeNodes)
   {
-    using SymmVec = SymmNodeSet::ArrType;
     Int_t numSymmNodesX = m_colLoc == 0   ? edgeNodes * edgeNodes : 0;
     Int_t numSymmNodesY = m_rowLoc == 0   ? edgeNodes * edgeNodes : 0;
     Int_t numSymmNodesZ = m_planeLoc == 0 ? edgeNodes * edgeNodes : 0;
@@ -526,9 +525,9 @@ namespace slamLulesh {
     m_symmY = SymmNodeSet(numSymmNodesY);
     m_symmZ = SymmNodeSet(numSymmNodesZ);
 
-    SymmVec& loc_symmX = m_intsRegistry.addField("symmX", &m_symmX).data();
-    SymmVec& loc_symmY = m_intsRegistry.addField("symmY", &m_symmY).data();
-    SymmVec& loc_symmZ = m_intsRegistry.addField("symmZ", &m_symmZ).data();
+    auto& loc_symmX = m_intsRegistry.addField("symmX", &m_symmX).data();
+    auto& loc_symmY = m_intsRegistry.addField("symmY", &m_symmY).data();
+    auto& loc_symmZ = m_intsRegistry.addField("symmZ", &m_symmZ).data();
 
     // SLAM Note: We should be able to compute these directory from a Cartesian product set defining a regular grid.
     Index_t nidx = 0;
