@@ -57,7 +57,7 @@ public:
   using ElementType = ElemType;
 
 protected:
-  IteratorBase(int pos) : m_pos(pos) { }
+  IteratorBase(PositionType pos) : m_pos(pos) { }
 
 private:
   /**

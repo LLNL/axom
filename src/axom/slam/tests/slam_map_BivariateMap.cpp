@@ -208,7 +208,8 @@ void constructAndTestRelationSetMap(int stride)
   rel.bindIndices(indice_vec.size(), &indice_vec);
   RelationSetType s(&rel);
 
-  EXPECT_EQ(s.totalSize(), indice_vec.size());
+  const SetPosition indice_size = indice_vec.size();
+  EXPECT_EQ(indice_size, s.totalSize());
   EXPECT_TRUE(s.isValid(true));
 
   SLIC_INFO("\nCreating " << axom::slam::util::TypeToString<T>::to_string()
@@ -217,7 +218,7 @@ void constructAndTestRelationSetMap(int stride)
   MapType m(&s, (T)0, stride);
 
   EXPECT_TRUE(m.isValid(true));
-  EXPECT_EQ(indice_vec.size(), m.totalSize());
+  EXPECT_EQ(indice_size, m.totalSize());
   EXPECT_EQ(rel.fromSetSize(), m.firstSetSize());
   EXPECT_EQ(rel.toSetSize(), m.secondSetSize());
   EXPECT_EQ(m.stride(), stride);

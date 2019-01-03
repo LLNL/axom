@@ -158,6 +158,7 @@ template<typename P1, typename E1, typename P2, typename E2>
 inline bool operator==(const Set<P1,E1>& set1, const Set<P2, E2>& set2)
 {
   using PosType = typename std::common_type<P1,P2>::type;
+  using ElemType = typename std::common_type<E1, E2>::type;
 
   PosType const numElts = set1.size();
 
@@ -168,8 +169,12 @@ inline bool operator==(const Set<P1,E1>& set1, const Set<P2, E2>& set2)
   // Otherwise, compare the indices element wise
   for(PosType pos = PositionType() ; pos < numElts ; ++pos)
   {
-    if(set1.at(pos) != set2.at(pos))
+    auto&& e1 = static_cast<ElemType&&>(set1.at(static_cast<P1>(pos)));
+    auto&& e2 = static_cast<ElemType&&>(set2.at(static_cast<P2>(pos)));
+    if (e1 != e2)
+    {
       return false;
+    }
   }
   return true;
 }

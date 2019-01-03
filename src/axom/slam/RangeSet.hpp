@@ -71,22 +71,20 @@ private:
                      IndirectionPolicy,
                      SubsettingPolicy>;
 
-  static constexpr PositionType DEFAULT_SIZE =
-    OrderedSetType::SizePolicyType::DEFAULT_VALUE;
-  static constexpr PositionType DEFAULT_OFFSET =
-    OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
-  static constexpr PositionType DEFAULT_STRIDE =
-    OrderedSetType::StridePolicyType::DEFAULT_VALUE;
-
 public:
-  GenericRangeSet(PositionType size = DEFAULT_SIZE)
-    : OrderedSetType(size, DEFAULT_OFFSET, DEFAULT_STRIDE) {}
+  GenericRangeSet(
+    PositionType size = OrderedSetType::SizePolicyType::DEFAULT_VALUE)
+    : OrderedSetType(size,
+                     OrderedSetType::OffsetPolicyType::DEFAULT_VALUE,
+                     OrderedSetType::StridePolicyType::DEFAULT_VALUE) {}
 
   GenericRangeSet(const typename OrderedSetType::SetBuilder & builder)
     : OrderedSetType(builder) {}
 
   GenericRangeSet(PositionType lowerIndex, PositionType upperIndex)
-    : OrderedSetType(upperIndex - lowerIndex, lowerIndex,DEFAULT_STRIDE) {}
+    : OrderedSetType(upperIndex - lowerIndex,
+                     lowerIndex,
+                     OrderedSetType::StridePolicyType::DEFAULT_VALUE) {}
 };
 
 
