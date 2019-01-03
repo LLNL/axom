@@ -48,9 +48,11 @@ foreach(test ${mpi_gtest_lumberjack_tests})
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                         DEPENDS_ON lumberjack gtest 
                         FOLDER axom/lumberjack/tests )
-    blt_add_test( NAME ${test_name} 
-                  COMMAND ${test_name}_test
-                  NUM_MPI_TASKS 4)
+    foreach(task_count RANGE 1 8)
+        blt_add_test( NAME ${test_name}_${task_count}
+                      COMMAND ${test_name}_test
+                      NUM_MPI_TASKS ${task_count})
+    endforeach()
 endforeach()
 
 #Unique Tests
