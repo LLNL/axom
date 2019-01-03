@@ -15,10 +15,8 @@ The following files need to be included for Lumberjack:
 
 .. code-block:: c
 
-    # Lumberjack specific headers
-    #include "lumberjack/Lumberjack.hpp"
-    #include "lumberjack/BinaryTreeCommunicator.hpp"
-    #include "lumberjack/Message.hpp"
+    # Lumberjack specific header
+    #include "axom/lumberjack.hpp"
 
     # MPI and C++
     #include <mpi.h>
