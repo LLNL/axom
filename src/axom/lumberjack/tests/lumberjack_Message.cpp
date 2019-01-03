@@ -23,7 +23,8 @@
 
 #include "axom/lumberjack/Message.hpp"
 
-struct TestData {
+struct TestData
+{
   std::string text;
   int rank;
   int lineNumber;
@@ -46,13 +47,14 @@ struct TestData {
     tag(tag_),
     fileName(fileName_),
     packed(packed_)
-    {}
+  {}
 };
 
 std::vector<TestData> getTestData()
 {
   std::vector<TestData> testStrings;
-  //<ranks delimited by ,>*<rank count>*<file name>*<line number>*<level>*<tag>*<text>
+  //<ranks delimited by ,>*<rank count>*<file name>*
+  //  <line number>*<level>*<tag>*<text>
   testStrings.emplace_back("test empty filename", 123, 5, 0, "tag", "",
                            "123*1**5*0*tag*test empty filename");
   testStrings.emplace_back("", 123, 5, 1, "tag", "test empty message",
@@ -63,17 +65,23 @@ std::vector<TestData> getTestData()
                            "123*1*foo.cpp*5*1*tag123*test");
   testStrings.emplace_back("abcdef", 1, 164, 1, "123tag", "bar/baz.cpp",
                            "1*1*bar/baz.cpp*164*1*123tag*abcdef");
-  testStrings.emplace_back("this is a test string", 0, 999999, 3, "&^Hg", "/test/path.hpp",
+  testStrings.emplace_back("this is a test string", 0, 999999, 3, "&^Hg",
+                           "/test/path.hpp",
                            "0*1*/test/path.hpp*999999*3*&^Hg*this is a test string");
-  testStrings.emplace_back("123456789", 55555, 6543, 1, "tag1", "really_long_obnoxious_path-with-lots^stuff.f90",
+  testStrings.emplace_back("123456789", 55555, 6543, 1, "tag1",
+                           "really_long_obnoxious_path-with-lots^stuff.f90",
                            "55555*1*really_long_obnoxious_path-with-lots^stuff.f90*6543*1*tag1*123456789");
-  testStrings.emplace_back("                         asdf               ", 654987, 1, 2, "mytag", "notimportantfilename",
+  testStrings.emplace_back("                         asdf               ",
+                           654987, 1, 2, "mytag", "notimportantfilename",
                            "654987*1*notimportantfilename*1*2*mytag*                         asdf               ");
-  testStrings.emplace_back("//comment", 158794, 9090, 4, "tag12", "running out of ideas.cpp",
+  testStrings.emplace_back("//comment", 158794, 9090, 4, "tag12",
+                           "running out of ideas.cpp",
                            "158794*1*running out of ideas.cpp*9090*4*tag12*//comment");
-  testStrings.emplace_back("/* test string */", 12, 876543, 1, "tag", "234234234.file",
+  testStrings.emplace_back("/* test string */", 12, 876543, 1, "tag",
+                           "234234234.file",
                            "12*1*234234234.file*876543*1*tag*/* test string */");
-  testStrings.emplace_back("~!@#$%^&*()_+{}|:\"<>?,./;'[]\\-='", 12, 654987, 1, "tag", "filenameyepp",
+  testStrings.emplace_back("~!@#$%^&*()_+{}|:\"<>?,./;'[]\\-='", 12, 654987, 1,
+                           "tag", "filenameyepp",
                            "12*1*filenameyepp*654987*1*tag*~!@#$%^&*()_+{}|:\"<>?,./;'[]\\-='");
   return testStrings;
 }
@@ -82,8 +90,9 @@ TEST(lumberjack_Message, getSet)
 {
   std::vector<TestData> testData = getTestData();
 
-  for(auto &td : testData) {
-    axom::lumberjack::Message *m = new axom::lumberjack::Message(
+  for(auto &td : testData)
+  {
+    axom::lumberjack::Message* m = new axom::lumberjack::Message(
       td.text, td.rank, td.fileName, td.lineNumber, td.level, td.tag);
 
     EXPECT_EQ(m->text(), td.text);
@@ -102,7 +111,8 @@ TEST(lumberjack_Message, getSet)
 TEST(lumberjack_Message, getSetCaseConstCharToString)
 {
   //Test that const char* will convert fine to string
-  const char* textConstCharPointer = "Testing if const char* will convert fine.";
+  const char* textConstCharPointer =
+    "Testing if const char* will convert fine.";
   std::string textString = "Testing if const char* will convert fine.";
   axom::lumberjack::Message m;
   m.text(textConstCharPointer);
@@ -177,7 +187,8 @@ TEST(lumberjack_Message, getSetTestAddingVectorOfManyRanks)
   const int ranksLimit = 5;
   const int ranksAdded = 10;
   std::vector<int> ranks;
-  for(int i=0; i<(int)ranksAdded; ++i){
+  for(int i=0 ; i<(int)ranksAdded ; ++i)
+  {
     ranks.push_back(i);
   }
 
@@ -186,9 +197,10 @@ TEST(lumberjack_Message, getSetTestAddingVectorOfManyRanks)
   m.addRanks(ranks, ranksAdded, ranksLimit);
 
   EXPECT_EQ(m.text(), "Test adding vector of many ranks over limit.");
-  EXPECT_EQ(m.ranks().size(), (std::vector<int>::size_type) ranksLimit);
+  EXPECT_EQ(m.ranks().size(), (std::vector<int>::size_type)ranksLimit);
   EXPECT_EQ(m.ranksCount(), ranksAdded);
-  for(int i=0; i<(int)ranksLimit; ++i){
+  for(int i=0 ; i<(int)ranksLimit ; ++i)
+  {
     EXPECT_EQ(m.ranks()[i], i);
   }
 }
@@ -454,7 +466,8 @@ TEST(lumberjack_Message, packEmptyMessage)
 TEST(lumberjack_Message, packEmptyTag)
 {
   //Test case: pack empty Tag
-  axom::lumberjack::Message m("asdfMessageadsf", 1, "test/foo.cpp", 987654321, 0, "");
+  axom::lumberjack::Message m("asdfMessageadsf", 1, "test/foo.cpp", 987654321,
+                              0, "");
 
   std::string packedMessage = m.pack();
   EXPECT_EQ(packedMessage, "1*1*test/foo.cpp*987654321*0**asdfMessageadsf");
@@ -539,18 +552,19 @@ TEST(lumberjack_Message, packMessagesIndividually)
 {
   std::vector<axom::lumberjack::Message*> messages;
   std::vector<TestData> testData = getTestData();
-  for(auto &td : testData) {
-    axom::lumberjack::Message *m = new axom::lumberjack::Message(
+  for(auto &td : testData)
+  {
+    axom::lumberjack::Message* m = new axom::lumberjack::Message(
       td.text, td.rank, td.fileName, td.lineNumber, td.level, td.tag);
     messages.push_back(m);
-    
+
     const char* packedMessage = axom::lumberjack::packMessages(messages);
 
     std::string answer = "1*" + std::to_string((int)td.packed.length()) +
                          "*" + td.packed;
 
     EXPECT_EQ(packedMessage, answer);
-    
+
     delete m;
     messages.clear();
   }
@@ -561,11 +575,12 @@ TEST(lumberjack_Message, packMessages)
   std::vector<axom::lumberjack::Message*> messages;
   std::vector<TestData> testData = getTestData();
   std::string answer = "";
-  for(auto &td : testData) {
-    axom::lumberjack::Message *m = new axom::lumberjack::Message(
+  for(auto &td : testData)
+  {
+    axom::lumberjack::Message* m = new axom::lumberjack::Message(
       td.text, td.rank, td.fileName, td.lineNumber, td.level, td.tag);
     messages.push_back(m);
-    
+
     answer += std::to_string((int)td.packed.length()) +
               "*" + td.packed;
   }
@@ -580,19 +595,20 @@ TEST(lumberjack_Message, unpackMessagesIndividually)
 {
   std::vector<axom::lumberjack::Message*> messages;
   std::vector<TestData> testData = getTestData();
-  for(auto &td : testData) {
+  for(auto &td : testData)
+  {
     std::string answer = "1*" + std::to_string((int)td.packed.length()) +
                          "*" + td.packed;
     axom::lumberjack::unpackMessages(messages, answer.c_str(), 100);
 
-    axom::lumberjack::Message *m = messages[0];
+    axom::lumberjack::Message* m = messages[0];
     EXPECT_EQ(m->text(), td.text);
     EXPECT_EQ(m->ranks()[0], td.rank);
     EXPECT_EQ(m->fileName(), td.fileName);
     EXPECT_EQ(m->lineNumber(), td.lineNumber);
     EXPECT_EQ(m->level(), td.level);
     EXPECT_EQ(m->tag(), td.tag);
-    
+
     delete m;
     messages.clear();
   }
@@ -603,15 +619,17 @@ TEST(lumberjack_Message, unpackMessages)
   std::vector<axom::lumberjack::Message*> messages;
   std::vector<TestData> testData = getTestData();
   std::string packedMessages = std::to_string((int)testData.size()) + "*";
-  for(auto &td : testData) {
+  for(auto &td : testData)
+  {
     packedMessages += std::to_string((int)td.packed.length()) +
                       "*" + td.packed;
   }
 
   axom::lumberjack::unpackMessages(messages, packedMessages.c_str(), 100);
 
-  for(int i=0; i<(int)messages.size(); ++i) {
-    axom::lumberjack::Message *m = messages[i];
+  for(int i=0 ; i<(int)messages.size() ; ++i)
+  {
+    axom::lumberjack::Message* m = messages[i];
     TestData td = testData[i];
 
     EXPECT_EQ(m->text(), td.text);
@@ -625,4 +643,3 @@ TEST(lumberjack_Message, unpackMessages)
   }
   messages.clear();
 }
-

@@ -106,7 +106,8 @@ void BinaryTreeCommunicator::push(const char* packedMessagesToBeSent,
     }
     else
     {
-      mpiNonBlockingSendMessages(m_mpiComm, m_parentRank, packedMessagesToBeSent);
+      mpiNonBlockingSendMessages(m_mpiComm, m_parentRank,
+                                 packedMessagesToBeSent);
     }
   }
 

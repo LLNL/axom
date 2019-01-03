@@ -297,7 +297,8 @@ public:
    * \param [in] packedMessage Packed Message containing the new information.
    * \param [in] ranksLimit Limits how many ranks are tracked per Message.
    *
-   * The Message is unpacked from a string utilizing the format defined by pack()
+   * The Message is unpacked from a string utilizing the format defined by
+   * pack()
    *****************************************************************************
    */
   void unpack(const std::string& packedMessage, int ranksLimit);

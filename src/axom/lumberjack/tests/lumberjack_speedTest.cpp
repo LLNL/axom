@@ -67,7 +67,8 @@ int main(int argc, char** argv)
   std::ifstream file(fileName);
   if (!file.good())
   {
-    std::cout << "Error: Given file was unable to open: " << fileName << std::endl;
+    std::cout << "Error: Given file was unable to open: " << fileName
+              << std::endl;
     return 1;
   }
 

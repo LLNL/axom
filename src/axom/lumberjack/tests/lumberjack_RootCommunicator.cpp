@@ -42,9 +42,12 @@ TEST(lumberjack_RootCommunicator, basic)
   EXPECT_EQ(c.rank(), commRank);
 
   // Check if we are an output node
-  if (commRank != 0){
+  if (commRank != 0)
+  {
     EXPECT_EQ(c.isOutputNode(), false);
-  } else {
+  }
+  else
+  {
     EXPECT_EQ(c.isOutputNode(), true);
   }
 
@@ -64,28 +67,35 @@ TEST(lumberjack_RootCommunicator, basic)
   const char* packedMessage = s.c_str();
   std::vector<const char*> receivedPackedMessages;
   c.push(packedMessage, receivedPackedMessages);
-  EXPECT_EQ(strcmp(packedMessage, origS.c_str()), 0); // Message shouldn't be altered
+  EXPECT_EQ(strcmp(packedMessage, origS.c_str()), 0);
 
-  if (commRank != 0) {
+  if (commRank != 0)
+  {
     EXPECT_EQ((int)receivedPackedMessages.size(), 0);
-  } else {
+  }
+  else
+  {
     const int numMessagesToReceive = commSize-1;
     EXPECT_EQ((int)receivedPackedMessages.size(), numMessagesToReceive);
-    for (int i=1; i<=numMessagesToReceive; ++i) {
+    for (int i=1 ; i<=numMessagesToReceive ; ++i)
+    {
       std::string currMessage = std::to_string(i);
       bool found = false;
-      for (auto &rm : receivedPackedMessages) {
-        if (strcmp(rm, currMessage.c_str()) == 0) {
+      for (auto &rm : receivedPackedMessages)
+      {
+        if (strcmp(rm, currMessage.c_str()) == 0)
+        {
           found = true;
         }
       }
-      if (!found) {
+      if (!found)
+      {
         std::cout << "Error: Message not recieved:" << currMessage << std::endl;
       }
       EXPECT_EQ(found, true);
-    }      
+    }
   }
-  
+
   c.finalize();
 
   MPI_Barrier(MPI_COMM_WORLD);
@@ -104,13 +114,13 @@ TEST(lumberjack_RootCommunicator, pushNothing)
   std::vector<const char*> receivedPackedMessages;
 
   // Call push when there is empty message
-   std::string emptyString = "";
+  std::string emptyString = "";
   std::string origEmptyString = "";
   const char* packedMessage = emptyString.c_str();
   c.push(packedMessage, receivedPackedMessages);
-  EXPECT_EQ(strcmp(packedMessage, origEmptyString.c_str()), 0); // Message shouldn't be altered
+  EXPECT_EQ(strcmp(packedMessage, origEmptyString.c_str()), 0);
   EXPECT_EQ((int)receivedPackedMessages.size(), 0);
-  
+
   // Call push with a nullptr
   packedMessage = nullptr;
   c.push(packedMessage, receivedPackedMessages);

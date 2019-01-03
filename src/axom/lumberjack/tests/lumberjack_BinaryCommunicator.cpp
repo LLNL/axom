@@ -17,9 +17,6 @@
 
 #include "gtest/gtest.h"
 
-// REMOVE ME
-#include <iostream>
-
 #include <cstring>
 #include <string>
 #include <vector>
@@ -48,9 +45,12 @@ TEST(lumberjack_BinaryCommunicator, basic)
   EXPECT_EQ(c.rank(), commRank);
 
   // Check if we are an output node
-  if (commRank != 0){
+  if (commRank != 0)
+  {
     EXPECT_EQ(c.isOutputNode(), false);
-  } else {
+  }
+  else
+  {
     EXPECT_EQ(c.isOutputNode(), true);
   }
 
@@ -70,16 +70,19 @@ TEST(lumberjack_BinaryCommunicator, basic)
   const char* packedMessage = s.c_str();
   std::vector<const char*> receivedPackedMessages;
   c.push(packedMessage, receivedPackedMessages);
-  EXPECT_EQ(strcmp(packedMessage, origS.c_str()), 0); // Message shouldn't be altered
+  EXPECT_EQ(strcmp(packedMessage, origS.c_str()), 0); // Message shouldn't be
+                                                      // altered
 
   // Calculate how many children/messages you should have at this rank
   int numChildren = 0;
   int leftChild = (commRank*2)+1;
   int rightChild = (commRank*2)+2;
-  if (leftChild < commSize) {
+  if (leftChild < commSize)
+  {
     numChildren++;
   }
-  if (rightChild < commSize) {
+  if (rightChild < commSize)
+  {
     numChildren++;
   }
   EXPECT_EQ((int)receivedPackedMessages.size(), numChildren);
@@ -88,26 +91,36 @@ TEST(lumberjack_BinaryCommunicator, basic)
   std::string currMessage = "";
   bool found = false;
 
-  if (numChildren == 2) {
+  if (numChildren == 2)
+  {
     currMessage = std::to_string(rightChild);
     found = false;
-    for (auto &rm : receivedPackedMessages) {
-      if (strcmp(rm, currMessage.c_str()) == 0) {
+    for (auto &rm : receivedPackedMessages)
+    {
+      if (strcmp(rm, currMessage.c_str()) == 0)
+      {
         found = true;
       }
     }
-    EXPECT_EQ(found, true) << "Error: Rank: " << commRank << ": Message not recieved: " << currMessage << std::endl;
+    EXPECT_EQ(found, true) << "Error: Rank: " << commRank
+                           << ": Message not recieved: "
+                           << currMessage << std::endl;
   }
-  
-  if (numChildren > 0) {
+
+  if (numChildren > 0)
+  {
     currMessage = std::to_string(leftChild);
     found = false;
-    for (auto &rm : receivedPackedMessages) {
-      if (strcmp(rm, currMessage.c_str()) == 0) {
+    for (auto &rm : receivedPackedMessages)
+    {
+      if (strcmp(rm, currMessage.c_str()) == 0)
+      {
         found = true;
       }
     }
-    EXPECT_EQ(found, true) << "Error: Rank: " << commRank << ": Message not recieved: " << currMessage << std::endl;
+    EXPECT_EQ(found, true) << "Error: Rank: " << commRank
+                           << ": Message not recieved: "
+                           << currMessage << std::endl;
   }
 
   c.finalize();
@@ -128,13 +141,13 @@ TEST(lumberjack_BinaryCommunicator, pushNothing)
   std::vector<const char*> receivedPackedMessages;
 
   // Call push when there is empty message
-   std::string emptyString = "";
+  std::string emptyString = "";
   std::string origEmptyString = "";
   const char* packedMessage = emptyString.c_str();
   c.push(packedMessage, receivedPackedMessages);
-  EXPECT_EQ(strcmp(packedMessage, origEmptyString.c_str()), 0); // Message shouldn't be altered
+  EXPECT_EQ(strcmp(packedMessage, origEmptyString.c_str()), 0);
   EXPECT_EQ((int)receivedPackedMessages.size(), 0);
-  
+
   // Call push with a nullptr
   packedMessage = nullptr;
   c.push(packedMessage, receivedPackedMessages);

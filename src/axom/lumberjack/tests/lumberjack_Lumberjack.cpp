@@ -275,8 +275,10 @@ TEST(lumberjack_Lumberjack, combineMessages03)
   std::vector<axom::lumberjack::Message*> messages = lumberjack.getMessages();
 
   EXPECT_EQ((int)messages.size(), 6);
-  for(int i=0; i<6; ++i){
-    std::string s = "Should not be combined " + axom::utilities::string::intToString(i+1) + ".";
+  for(int i=0 ; i<6 ; ++i)
+  {
+    std::string s = "Should not be combined " +
+                    axom::utilities::string::intToString(i+1) + ".";
     EXPECT_EQ(messages[i]->text(), s);
     EXPECT_EQ(messages[i]->ranksCount(), 1);
   }
@@ -306,8 +308,10 @@ TEST(lumberjack_Lumberjack, combineMixedMessages01)
 
   // Check total messages size
   EXPECT_EQ((int)messages.size(), 4);
-  for(int i=0; i<2; ++i){
-    std::string s = "Should not be combined " + axom::utilities::string::intToString(i+1) + ".";
+  for(int i=0 ; i<2 ; ++i)
+  {
+    std::string s = "Should not be combined " +
+                    axom::utilities::string::intToString(i+1) + ".";
     EXPECT_EQ(messages[i]->text(), s);
     EXPECT_EQ(messages[i]->ranksCount(), 1);
   }
@@ -343,8 +347,10 @@ TEST(lumberjack_Lumberjack, combineMixedMessages02)
 
   // Check total messages size
   EXPECT_EQ((int)messages.size(), 4);
-  for(int i=0; i<2; ++i){
-    std::string s = "Should not be combined " + axom::utilities::string::intToString(i+1) + ".";
+  for(int i=0 ; i<2 ; ++i)
+  {
+    std::string s = "Should not be combined " +
+                    axom::utilities::string::intToString(i+1) + ".";
     EXPECT_EQ(messages[i]->text(), s);
     EXPECT_EQ(messages[i]->ranksCount(), 1);
   }
@@ -384,8 +390,10 @@ TEST(lumberjack_Lumberjack, combineMixedMessages03)
   EXPECT_EQ(messages[0]->text(), "");
   EXPECT_EQ(messages[0]->ranksCount(), 1);
 
-  for(int i=1; i<3; ++i){
-    std::string s = "Should not be combined " + axom::utilities::string::intToString(i+1) + ".";
+  for(int i=1 ; i<3 ; ++i)
+  {
+    std::string s = "Should not be combined " +
+                    axom::utilities::string::intToString(i+1) + ".";
     EXPECT_EQ(messages[i]->text(), s);
     EXPECT_EQ(messages[i]->ranksCount(), 1);
   }
@@ -407,18 +415,22 @@ TEST(lumberjack_Lumberjack, combineMessagesManyMessages)
   axom::lumberjack::Lumberjack lumberjack;
   lumberjack.initialize(&communicator, ranksLimit);
 
-  for(int i=0; i<loopCount; ++i){
-    std::string s = "Should not be combined " + axom::utilities::string::intToString(i) + ".";
+  for(int i=0 ; i<loopCount ; ++i)
+  {
+    std::string s = "Should not be combined " +
+                    axom::utilities::string::intToString(i) + ".";
     lumberjack.queueMessage(s);
   }
-  
+
   lumberjack.pushMessagesFully();
 
   std::vector<axom::lumberjack::Message*> messages = lumberjack.getMessages();
 
   EXPECT_EQ((int)messages.size(), loopCount);
-  for(int i=0; i<loopCount; ++i){
-    std::string s = "Should not be combined " + axom::utilities::string::intToString(i) + ".";
+  for(int i=0 ; i<loopCount ; ++i)
+  {
+    std::string s = "Should not be combined " +
+                    axom::utilities::string::intToString(i) + ".";
     EXPECT_EQ(messages[i]->text(), s);
     EXPECT_EQ(messages[i]->ranksCount(), 1);
   }
@@ -433,7 +445,8 @@ TEST(lumberjack_Lumberjack, combineMessagesLargeMessages)
   const int loopCount = 10;
   const int padSize = 1000;
   std::string padding = "";
-  for(int j=0; j<padSize; ++j){
+  for(int j=0 ; j<padSize ; ++j)
+  {
     padding += "0";
   }
 
@@ -442,17 +455,19 @@ TEST(lumberjack_Lumberjack, combineMessagesLargeMessages)
   axom::lumberjack::Lumberjack lumberjack;
   lumberjack.initialize(&communicator, ranksLimit);
 
-  for(int i=0; i<loopCount; ++i){
+  for(int i=0 ; i<loopCount ; ++i)
+  {
     std::string s = axom::utilities::string::intToString(i) + ":" + padding;
     lumberjack.queueMessage(s);
   }
-  
+
   lumberjack.pushMessagesFully();
 
   std::vector<axom::lumberjack::Message*> messages = lumberjack.getMessages();
 
   EXPECT_EQ((int)messages.size(), loopCount);
-  for(int i=0; i<loopCount; ++i){
+  for(int i=0 ; i<loopCount ; ++i)
+  {
     std::string s = axom::utilities::string::intToString(i) + ":" + padding;
     EXPECT_EQ(messages[i]->text(), s);
     EXPECT_EQ(messages[i]->ranksCount(), 1);
