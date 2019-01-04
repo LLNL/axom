@@ -86,8 +86,8 @@ public:
   using const_iterator = OrderedSetIterator<const OrderedSet>;
   using const_iterator_pair = std::pair<const_iterator,const_iterator>;
 
-  using iterator = const_iterator;
-  using iterator_pair = const_iterator_pair;
+  using iterator = OrderedSetIterator<OrderedSet>;
+  using iterator_pair = std::pair<iterator,iterator>;
 
 public:
 
@@ -226,8 +226,9 @@ public:
       // different functions
       //       for OrderedSets with indirection buffers than with those that
       // have no indirection
-      typedef policies::
-        NoIndirection<PositionType,ElementType> NoIndirectionType;
+      using NoIndirectionType =
+              policies::NoIndirection<PositionType,ElementType>;
+
       return indirection(
         HasIndirection<!std::is_same<IndirectionType,
                                      NoIndirectionType>::value >(), 0);
@@ -268,9 +269,20 @@ private:
 
 public:     // Functions related to iteration
 
+  iterator begin()
+  {
+    return iterator( OffsetPolicyType::offset(), *this);
+  }
+
   const_iterator begin() const
   {
     return const_iterator( OffsetPolicyType::offset(), *this);
+  }
+
+  iterator end()
+  {
+    return iterator( SizePolicyType::size() * StridePolicyType::stride()
+                     + OffsetPolicyType::offset(), *this);
   }
 
   const_iterator end() const
@@ -278,14 +290,18 @@ public:     // Functions related to iteration
     return const_iterator( SizePolicyType::size() * StridePolicyType::stride()
                            + OffsetPolicyType::offset(), *this);
   }
+
+  iterator_pair range() { return std::make_pair(begin(), end()); }
+
   const_iterator_pair range() const { return std::make_pair(begin(), end()); }
+
 
 public:
   /**
    * \brief Given a position in the Set, return a position in the larger index
    *  space
    */
-  inline typename IndirectionPolicy::IndirectionResult
+  inline typename IndirectionPolicy::ConstIndirectionResult
   operator[](PositionType pos) const
   {
     verifyPositionImpl(pos);
@@ -293,6 +309,13 @@ public:
                                            + OffsetPolicyType::offset() );
   }
 
+  inline typename IndirectionPolicy::IndirectionResult
+  operator[](PositionType pos)
+  {
+    verifyPositionImpl(pos);
+    return IndirectionPolicy::indirection( pos * StridePolicyType::stride()
+                                           + OffsetPolicyType::offset() );
+  }
   inline ElementType at(PositionType pos) const
   {
     return operator[](pos);
@@ -312,18 +335,18 @@ public:
    * An index pos is valid when \f$ 0 \le pos < size() \f$
    * \return true if the position is valid, false otherwise
    */
-  bool                isValidIndex(PositionType pos) const
+  bool isValidIndex(PositionType pos) const
   {
     return pos >= 0 && pos < size();
   }
 
 private:
 
-  inline void verifyPosition(PositionType pos)       const
+  inline void verifyPosition(PositionType pos) const
   {
     verifyPositionImpl(pos);
   }
-  inline void verifyPositionImpl(PositionType AXOM_DEBUG_PARAM(pos))       const
+  inline void verifyPositionImpl(PositionType AXOM_DEBUG_PARAM(pos)) const
   {
     SLIC_ASSERT_MSG(
       isValidIndex(pos),

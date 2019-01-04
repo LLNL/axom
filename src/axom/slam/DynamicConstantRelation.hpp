@@ -136,20 +136,20 @@ public:
    * \param fromSetInd The index of the element in the FromSet
    * \return A begin iterator to the set of related elements in ToSet
    */
-  RelationIterator          begin(SetPosition fromSetInd)
+  RelationIterator begin(SetPosition fromSetInd)
   {
     verifyPosition(fromSetInd);
     return (*this)[fromSetInd].begin();
   }
 
   /**
-   * \brief Returns a const begin iterator to the set of entities in the ToSet
+   * \brief Returns a begin const iterator to the set of entities in the ToSet
    * that are related to the element with index \a fromSetInd in the FromSet
    *
    * \param fromSetInd The index of the element in the FromSet
    * \return A const begin iterator to the set of related elements in ToSet
    */
-  RelationConstIterator     begin(SetPosition fromSetInd ) const
+  RelationConstIterator begin(SetPosition fromSetInd ) const
   {
     verifyPosition(fromSetInd);
     return (*this)[fromSetInd].begin();
@@ -162,20 +162,20 @@ public:
    * \param fromSetInd The index of the element in the FromSet
    * \return An end iterator to the set of related elements in ToSet
    */
-  RelationIterator          end(SetPosition fromSetInd)
+  RelationIterator end(SetPosition fromSetInd)
   {
     verifyPosition(fromSetInd);
     return (*this)[fromSetInd].end();
   }
 
   /**
-   * \brief Returns a const end iterator to the set of entities in the ToSet
+   * \brief Returns a end const iterator to the set of entities in the ToSet
    * that are related to the element with index \a fromSetInd in the FromSet
    *
    * \param fromSetInd The index of the element in the FromSet
    * \return A const end iterator to the set of related elements in ToSet
    */
-  RelationConstIterator     end(SetPosition fromSetInd)    const
+  RelationConstIterator end(SetPosition fromSetInd)    const
   {
     verifyPosition(fromSetInd);
     return (*this)[fromSetInd].end();
@@ -189,7 +189,7 @@ public:
    * \return An iterator range (begin/end pair) to the set of related
    * elements in ToSet
    */
-  RelationIteratorPair      range(SetPosition fromSetInd)
+  RelationIteratorPair range(SetPosition fromSetInd)
   {
     return (*this)[fromSetInd].range();
   }
@@ -226,12 +226,35 @@ public:
     return operator[](fromSetIndex);
   }
 
+  RelationSubset at(SetPosition fromSetIndex)
+  {
+    verifyPosition(fromSetIndex);
+    return operator[](fromSetIndex);
+  }
+
   /**
    * \brief Returns the const set of entities in the ToSet related to the
    * element with index \a fromSetIndex in the FromSet
    * \param fromSetIndex The index of an element in the FromSet
    */
   RelationSubset const operator[](SetPosition fromSetIndex) const
+  {
+    // NOTE: Need to const_cast the pointer to the vector
+    // since SetBuilder, and the IndirectionPolicy don't
+    // currently support const buffers
+    // TODO: Fix this!
+
+    verifyPosition(fromSetIndex);
+    typedef typename RelationSubset::SetBuilder SetBuilder;
+    return SetBuilder()
+           //.size( CardinalityPolicy::size(fromSetIndex) )
+           .size( m_relationCardinality )
+           //.offset( CardinalityPolicy::offset( fromSetIndex) )
+           .offset( fromSetIndex * m_relationCardinality )
+           .data( const_cast<RelationVec*>(&m_relationsVec) );
+  }
+
+  RelationSubset operator[](SetPosition fromSetIndex)
   {
     verifyPosition(fromSetIndex);
     typedef typename RelationSubset::SetBuilder SetBuilder;
@@ -240,7 +263,7 @@ public:
            .size( m_relationCardinality )
            //.offset( CardinalityPolicy::offset( fromSetIndex) )
            .offset( fromSetIndex * m_relationCardinality )
-           .data( &m_relationsVec);
+           .data( &m_relationsVec );
   }
 
   /**
