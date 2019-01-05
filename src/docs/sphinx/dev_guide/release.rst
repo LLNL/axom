@@ -156,7 +156,7 @@ codes) for details and additional information.
           along with other documentation in a pull request. This is much 
           easier than attempting to compile release notes before a release 
           by looking at commit logs, etc. **Preparing release notes as part 
-          of the release process should take no more than one hour.
+          of the release process should take no more than one hour.**
 
 Lastly, release notes provide an easy-to-find retrospective record of 
 progress for users and other stakeholders. They are useful for developers

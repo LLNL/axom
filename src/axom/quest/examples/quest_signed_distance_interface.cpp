@@ -18,7 +18,9 @@
 // Axom includes
 #include "axom/core.hpp"
 #include "axom/mint.hpp"
+// _quest_distance_interface_include_start
 #include "axom/quest.hpp"
+// _quest_distance_interface_include_end
 #include "axom/slic.hpp"
 
 #ifdef AXOM_USE_MPI
@@ -115,7 +117,9 @@ int main ( int argc, char** argv )
   quest::signed_distance_set_closed_surface( Arguments.is_water_tight );
   quest::signed_distance_set_max_levels( Arguments.maxLevels );
   quest::signed_distance_set_max_occupancy( Arguments.maxOccupancy );
+  // _quest_distance_interface_init_start
   int rc = quest::signed_distance_init( Arguments.fileName, global_comm );
+  // _quest_distance_interface_init_end
   timer.stop();
 
   SLIC_ERROR_IF( (rc != 0), "Signed Distance query initialization failed!" );
@@ -140,7 +144,9 @@ int main ( int argc, char** argv )
   {
     double pt[ 3 ];
     mesh->getNode( inode, pt );
+    // _quest_distance_interface_test_start
     phi[ inode ] = quest::signed_distance_evaluate( pt[0], pt[1], pt[2] );
+    // _quest_distance_interface_test_end
   } // END for all nodes
   timer.stop();
   SLIC_INFO( "time to evaluate: " << timer.elapsed() << "s" );
@@ -161,7 +167,9 @@ int main ( int argc, char** argv )
   delete mesh;
   mesh = nullptr;
 
+  // _quest_distance_interface_finalize_start
   quest::signed_distance_finalize( );
+  // _quest_distance_interface_finalize_end
   finalize_logger( );
 #ifdef AXOM_USE_MPI
   MPI_Finalize();

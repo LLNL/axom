@@ -23,7 +23,9 @@
 #include "axom/primal/operators/orientation.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
 
+// _quest_inout_cpp_include_start
 #include "axom/quest/geom/InOutOctree.hpp"
+// _quest_inout_cpp_include_end
 
 #include "axom/mint/mesh/Mesh.hpp"
 // #include "axom/mint/utils/vtk_utils.hpp"
@@ -39,10 +41,12 @@ const int NUM_PT_TESTS = 50000;
 const int DIM = 3;
 }
 
+// _quest_inout_cpp_typedef_start
 typedef axom::quest::InOutOctree<DIM> Octree3D;
 
 typedef Octree3D::GeometricBoundingBox GeometricBoundingBox;
 typedef Octree3D::SpacePt SpacePt;
+// _quest_inout_cpp_typedef_end
 typedef Octree3D::SpaceVector SpaceVector;
 typedef Octree3D::GridPt GridPt;
 typedef Octree3D::BlockIndex BlockIndex;
@@ -69,8 +73,10 @@ void queryOctahedronMesh(axom::mint::Mesh*& mesh,
   const double bbMin = bbox.getMin()[0];
   const double bbMax = bbox.getMax()[0];
 
+  // _quest_inout_cpp_init_start
   Octree3D octree(bbox, mesh);
   octree.generateIndex();
+  // _quest_inout_cpp_init_end
 
   // Query the mesh containment
   axom::utilities::Timer timer(true);

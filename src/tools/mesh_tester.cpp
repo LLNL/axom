@@ -43,6 +43,7 @@
 #include <utility>
 #include <vector>
 
+// _read_stl_typedefs_start
 using namespace axom;
 
 typedef mint::UnstructuredMesh< mint::SINGLE_SHAPE > UMesh;
@@ -53,6 +54,7 @@ typedef primal::BoundingBox<double, 3> SpatialBoundingBox;
 typedef primal::UniformGrid<int, 3> UniformGrid3;
 typedef primal::Vector<double, 3> Vector3;
 typedef primal::Segment<double, 3> Segment3;
+// _read_stl_typedefs_end
 
 
 enum InputStatus
@@ -441,6 +443,7 @@ int main( int argc, char** argv )
     }
   }
 
+  // _read_stl_file_start
   // Read file
   SLIC_INFO("Reading file: '" <<  params.stlInput << "'...\n");
   quest::STLReader* reader = new quest::STLReader();
@@ -458,13 +461,16 @@ int main( int argc, char** argv )
   SLIC_INFO(
     "Mesh has " << surface_mesh->getNumberOfNodes() << " vertices and "
                 <<  surface_mesh->getNumberOfCells() << " triangles.");
+  // _read_stl_file_end
 
   // Vertex welding
   if (!params.skipWeld)
   {
     axom::utilities::Timer timer(true);
 
+    // _check_repair_weld_start
     quest::weldTriMeshVertices(&surface_mesh, params.weldThreshold);
+    // _check_repair_weld_end
 
     timer.stop();
     SLIC_INFO("Vertex welding took "
@@ -478,8 +484,10 @@ int main( int argc, char** argv )
 
   // Detect collisions
   {
+    // _check_repair_intersections_containers_start
     std::vector< std::pair<int, int> > collisions;
     std::vector<int> degenerate;
+    // _check_repair_intersections_containers_end
 
     axom::utilities::Timer timer(true);
     if (params.resolution == 1)
@@ -489,11 +497,13 @@ int main( int argc, char** argv )
     }
     else
     {
+      // _check_repair_intersections_start
       // Use a spatial index
       quest::findTriMeshIntersections(surface_mesh,
                                       collisions,
                                       degenerate,
                                       params.resolution);
+      // _check_repair_intersections_end
     }
     timer.stop();
     SLIC_INFO("Detecting intersecting triangles took "

@@ -35,6 +35,7 @@
 #include "axom/primal/geometry/BoundingBox.hpp"
 
 #include "axom/quest/geom/ImplicitGrid.hpp"
+// _quest_pic_include_start
 #include "axom/quest/PointInCell.hpp"
 
 #ifdef AXOM_USE_MFEM
@@ -42,6 +43,7 @@
 #else
 # error "Quest's PointInCell tests on mfem meshes requires mfem library."
 #endif
+// _quest_pic_include_end
 
 #include "quest_test_utilities.hpp"
 
@@ -95,12 +97,14 @@ public:
   typedef axom::primal::BoundingBox<double, DIM> BBox;
   typedef axom::primal::Point<double,DIM> SpacePt;
   typedef axom::primal::Vector<double,DIM> SpaceVec;
+  // _quest_pic_typedef_start
   typedef axom::primal::Point<int,DIM> GridCell;
 
   typedef axom::quest::quest_point_in_cell_mfem_tag mesh_tag;
   typedef axom::quest::PointInCellTraits<mesh_tag> MeshTraits;
 
   typedef axom::quest::PointInCell<mesh_tag> PointInCellType;
+  // _quest_pic_typedef_end
 
 public:
   PointInCellTest() : m_mesh(nullptr) {}
@@ -277,7 +281,9 @@ public:
   {
     // Generate a PointInCell structure over the mesh
     axom::utilities::Timer constructTimer(true);
+    // _quest_pic_init_start
     PointInCellType spatialIndex(m_mesh, GridCell(25).data() );
+    // _quest_pic_init_end
     SLIC_INFO(fmt::format(
                 "Constructing index over {} quad mesh with {} elems took {} s",
                 meshTypeStr,
@@ -299,7 +305,9 @@ public:
       const SpacePt& queryPoint = *it;
 
       // Try to find the point
+      // _quest_pic_locate_start
       int idx = spatialIndex.locatePoint( queryPoint.data(), isoPar.data() );
+      // _quest_pic_locate_end
       bool isInMesh = (idx != MeshTraits::NO_CELL);
 
       // Check if result matches our expectations (our simple model
@@ -317,9 +325,11 @@ public:
       {
         ++numInverseXforms;
 
+        // _quest_pic_reconstruct_start
         SpacePt untransformPt;
         spatialIndex.reconstructPoint(idx, isoPar.data(),
                                       untransformPt.data() );
+        // _quest_pic_reconstruct_end
 
         for(int i=0 ; i< DIM ; ++i)
         {
