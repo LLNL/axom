@@ -53,14 +53,35 @@ enum MemorySpace
   HOST,
 
 #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+
+#ifdef UMPIRE_ENABLE_PINNED
   HOST_PINNED,
+#endif
+
+#ifdef UMPIRE_ENABLE_DEVICE
   DEVICE,
   DEVICE_CONSTANT,
+#endif
+
+#ifdef UMPIRE_ENABLE_UM
   UNIFIED_MEMORY,
 #endif
 
+#endif /* defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE) */
+
   NUM_MEMORY_SPACES   //!< NUM_MEMORY_SPACES
 };
+
+/// \name Internal Data Structures
+/// @{
+
+namespace internal
+{
+
+/*!
+ * \brief Holds the value for the default memory space.
+ */
+static MemorySpace s_mem_space = HOST;
 
 #ifdef AXOM_USE_UMPIRE
 
@@ -72,18 +93,54 @@ static const int umpire_type[ ] =
   umpire::resource::Host,
 
 #ifdef AXOM_USE_CUDA
+
+#ifdef UMPIRE_ENABLE_PINNED
   umpire::resource::Pinned,
+#endif
+
+#ifdef UMPIRE_ENABLE_DEVICE
   umpire::resource::Device,
   umpire::resource::Constant,
+#endif
+
+#ifdef UMPIRE_ENABLE_UM
   umpire::resource::Unified,
 #endif
 
+#endif /* AXOM_USE_CUDA */
+
 };
 
-#endif
+#endif /* AXOM_USE_UMPIRE */
+
+} /* end namspace internal */
+
+/// @}
+
 
 /// \name Memory Management Routines
 /// @{
+
+/*!
+ * \brief Sets the default memory space to use. Default is set to HOST
+ * \param [in] spaceId ID of the memory space to use.
+ */
+inline void setDefaultMemorySpace( MemorySpace spaceId )
+{
+  internal::s_mem_space = spaceId;
+
+#ifdef AXOM_USE_UMPIRE
+
+  auto& rm = umpire::ResourceManager::getInstance();
+
+  umpire::Allocator allocator =
+      rm.getAllocator( ( internal::umpire_type[ spaceId ] ) );
+
+  rm.setDefaultAllocator( allocator );
+
+#endif
+
+}
 
 /*!
  * \brief Allocates a chunk of memory of type T.
@@ -100,7 +157,7 @@ static const int umpire_type[ ] =
  *  \pre spaceId >= 0 && spaceId < NUM_MEMORY_SPACES
  */
 template < typename T >
-inline T* alloc( std::size_t n, MemorySpace spaceId=HOST )
+inline T* alloc( std::size_t n, MemorySpace spaceId=internal::s_mem_space )
 {
   // sanity checks
   assert( "pre: invalid memory space request" &&
@@ -112,7 +169,10 @@ inline T* alloc( std::size_t n, MemorySpace spaceId=HOST )
 #ifdef AXOM_USE_UMPIRE
 
   auto& rm = umpire::ResourceManager::getInstance();
-  umpire::Allocator allocator = rm.getAllocator( umpire_type[ spaceId ] );
+
+  umpire::Allocator allocator =
+      rm.getAllocator( internal::umpire_type[ spaceId ] );
+
   ptr = static_cast< T* >( allocator.allocate( numbytes )  );
 
 #else

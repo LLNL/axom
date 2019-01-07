@@ -38,7 +38,7 @@ void check_alloc_and_free( axom::MemorySpace spaceId )
   int* data = axom::alloc< int >( MAX_SIZE, spaceId );
   auto& rm = umpire::ResourceManager::getInstance();
   umpire::Allocator allocator = rm.getAllocator( data );
-  EXPECT_EQ( allocator.getId(), axom::umpire_type[ spaceId ] );
+  EXPECT_EQ( allocator.getId(), axom::internal::umpire_type[ spaceId ] );
 
   axom::free( data );
   EXPECT_TRUE( data == nullptr );
