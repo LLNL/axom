@@ -342,7 +342,7 @@ Array< T >::~Array()
 {
   if ( m_view == nullptr )
   {
-    utilities::free( this->m_data );
+    axom::free( this->m_data );
   }
   m_view = nullptr;
   this->m_data = nullptr;
@@ -380,9 +380,8 @@ inline void Array< T >::setCapacity( axom::IndexType new_capacity )
     return reallocViewData();
   }
 
-  this->m_data =
-    utilities::realloc( this->m_data,
-                        this->m_capacity * this->m_num_components );
+  this->m_data = axom::realloc( this->m_data,
+                                this->m_capacity * this->m_num_components );
   SLIC_ERROR_IF( this->m_data == nullptr && this->m_capacity > 0,
                  "Array reallocation failed." );
 }
@@ -402,9 +401,8 @@ inline void Array< T >::dynamicRealloc( axom::IndexType new_num_tuples )
     return reallocViewData();
   }
 
-  this->m_data =
-    utilities::realloc( this->m_data,
-                        this->m_capacity * this->m_num_components );
+  this->m_data = axom::realloc( this->m_data,
+                                this->m_capacity * this->m_num_components );
   SLIC_ERROR_IF( this->m_data == nullptr && this->m_capacity > 0,
                  "Array reallocation failed." );
 }

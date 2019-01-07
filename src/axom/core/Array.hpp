@@ -18,10 +18,11 @@
 #ifndef AXOM_ARRAY_HPP_
 #define AXOM_ARRAY_HPP_
 
-#include "axom/config.hpp"                    // for compile-time defines
-#include "axom/core/Macros.hpp"               // for axom macros
-#include "axom/core/utilities/Utilities.hpp"  // for memory allocation functions
-#include "axom/core/Types.hpp"                // for IndexType definition
+#include "axom/config.hpp"                   // for compile-time defines
+#include "axom/core/Macros.hpp"              // for axom macros
+#include "axom/core/memory_management.hpp"   // for memory allocation functions
+#include "axom/core/utilities/Utilities.hpp" // for processAbort()
+#include "axom/core/Types.hpp"               // for IndexType definition
 
 // C/C++ includes
 #include <cstring>                  // for std::memcpy
@@ -552,7 +553,7 @@ Array< T >::~Array()
 {
   if ( m_data != nullptr && !m_is_external )
   {
-    utilities::free( m_data );
+    axom::free( m_data );
   }
 
   m_data = nullptr;
@@ -702,7 +703,7 @@ inline void Array< T >::setCapacity( IndexType new_capacity )
     updateNumTuples( m_capacity );
   }
 
-  m_data = utilities::realloc( m_data, m_capacity * m_num_components );
+  m_data = axom::realloc( m_data, m_capacity * m_num_components );
   assert( m_data != nullptr || m_capacity <= 0 );
 }
 
@@ -724,7 +725,7 @@ inline void Array< T >::dynamicRealloc( IndexType new_num_tuples )
 
   m_capacity = new_num_tuples * m_resize_ratio + 0.5;
 
-  m_data = utilities::realloc( m_data, m_capacity * m_num_components );
+  m_data = axom::realloc( m_data, m_capacity * m_num_components );
   assert( m_data != nullptr || m_capacity <= 0 );
 }
 
