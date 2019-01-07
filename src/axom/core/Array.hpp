@@ -715,7 +715,10 @@ inline void Array< T >::dynamicRealloc( IndexType new_num_tuples )
 
   if ( m_resize_ratio < 1.0 )
   {
-    std::cerr << "ERROR: resize ratio must be greater than 1.0\n";
+    std::cerr << "ERROR: resize ratio must be greater than 1.0.\n";
+    std::cerr << "Set a valid resize ratio via calling setResizeRatio() with "
+              << "an appropriate value.\n";
+
     utilities::processAbort();
   }
 
