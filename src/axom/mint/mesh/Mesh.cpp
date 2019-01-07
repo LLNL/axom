@@ -160,6 +160,7 @@ Mesh::Mesh( sidre::Group* group, const std::string& topo ) :
   allocateFieldData();
 }
 
+//------------------------------------------------------------------------------
 Mesh::Mesh( int ndims, int type, sidre::Group* group, const std::string& topo,
             const std::string& coordset ) :
   m_ndims( ndims ),

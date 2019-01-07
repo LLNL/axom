@@ -18,13 +18,14 @@
 #ifndef AXOM_ARRAY_HPP_
 #define AXOM_ARRAY_HPP_
 
-#include "axom/config.hpp"           // for compile-time defines
-#include "axom/core/Macros.hpp"      // for disable copy/assignment macro
+#include "axom/config.hpp"                    // for compile-time defines
+#include "axom/core/Macros.hpp"               // for axom macros
 #include "axom/core/utilities/Utilities.hpp"  // for memory allocation functions
-#include "axom/core/Types.hpp"       // for IndexType definition
+#include "axom/core/Types.hpp"                // for IndexType definition
 
 // C/C++ includes
 #include <cstring>                  // for std::memcpy
+#include <iostream>                 // for std::cerr
 
 namespace axom
 {
@@ -711,6 +712,15 @@ inline void Array< T >::dynamicRealloc( IndexType new_num_tuples )
 {
   assert( !m_is_external );
   assert( m_resize_ratio >= 1.0 );
+
+  if ( m_resize_ratio < 1.0 )
+  {
+    std::cerr << "ERROR: resize ratio must be greater than 1.0.\n";
+    std::cerr << "Set a valid resize ratio via calling setResizeRatio() with "
+              << "an appropriate value.\n";
+
+    utilities::processAbort();
+  }
 
   m_capacity = new_num_tuples * m_resize_ratio + 0.5;
 

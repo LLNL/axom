@@ -534,10 +534,9 @@ public:
 
   double* getCoordinateArray( int dim )
   {
-    SLIC_ERROR_IF( !indexInRange( dim, 0,
-                                  m_ndims-1),
-                   "invalid request for coordinate array along dimension [" << dim << "]" <<
-                   "ndims=" << m_ndims  );
+    SLIC_ERROR_IF( !indexInRange( dim, 0,  m_ndims-1),
+     "invalid request for coordinate array along dimension [" << dim << "]" <<
+     "ndims=" << m_ndims  );
 
     SLIC_ASSERT( m_coordinates[ dim ] != nullptr );
     return m_coordinates[ dim ]->getData();
@@ -545,10 +544,9 @@ public:
 
   const double* getCoordinateArray( int dim ) const
   {
-    SLIC_ERROR_IF( !indexInRange( dim, 0,
-                                  m_ndims-1),
-                   "invalid request for coordinate array along dimension [" << dim << "]" <<
-                   "ndims=" << m_ndims  );
+    SLIC_ERROR_IF( !indexInRange( dim, 0, m_ndims-1),
+     "invalid request for coordinate array along dimension [" << dim << "]" <<
+     "ndims=" << m_ndims  );
 
     SLIC_ASSERT( m_coordinates[ dim ] != nullptr );
     return m_coordinates[ dim ]->getData();
@@ -977,6 +975,9 @@ inline void MeshCoordinates::getCoordinates( IndexType nodeID,
 inline void MeshCoordinates::reserve( IndexType capacity )
 {
 
+  SLIC_ERROR_IF( isExternal() && capacity > this->capacity(),
+       "cannot exceed initial capacity of external buffer!" );
+
   for ( int dim = 0 ; dim < m_ndims ; ++dim )
   {
     SLIC_ASSERT( m_coordinates[ dim ] != nullptr );
@@ -1031,6 +1032,8 @@ inline void MeshCoordinates::shrink( )
 inline void MeshCoordinates::initialize( IndexType numNodes,
                                          IndexType maxCapacity )
 {
+  SLIC_ERROR_IF( (numNodes < 0) , "supplied numNodes must be positive!" );
+
   SLIC_ASSERT( numNodes <= maxCapacity );
   SLIC_ASSERT( !invalidDimension() );
 

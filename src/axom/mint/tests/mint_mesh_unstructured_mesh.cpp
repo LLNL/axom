@@ -3293,7 +3293,7 @@ TEST( mint_mesh_unstructured_mesh_DeathTest, invalidExternalOpsMixed )
                                IGNORE_OUTPUT );
     EXPECT_DEATH_IF_SUPPORTED( meshes[ i ]->reserveNodes( N_NODES * 2 ),
                                IGNORE_OUTPUT );
-    EXPECT_DEATH_IF_SUPPORTED( meshes[ i ]->reserveCells( N_NODES * 2 ),
+    EXPECT_DEATH_IF_SUPPORTED( meshes[ i ]->reserveCells( N_CELLS * 2 ),
                                IGNORE_OUTPUT );
   }
 

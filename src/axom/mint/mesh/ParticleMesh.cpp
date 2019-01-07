@@ -93,7 +93,7 @@ ParticleMesh::ParticleMesh( int dimension, IndexType numParticles,
 //------------------------------------------------------------------------------
 void ParticleMesh::initialize( )
 {
-  SLIC_ASSERT( m_positions != nullptr );
+  SLIC_ERROR_IF( m_positions == nullptr, "null particle positions!" );
 
   m_mesh_fields[ NODE_CENTERED ]->reserve( getNodeCapacity() );
   m_mesh_fields[ NODE_CENTERED ]->resize( getNumberOfNodes() );
