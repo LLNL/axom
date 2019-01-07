@@ -100,15 +100,30 @@ void BinaryTreeCommunicator::push(const char* packedMessagesToBeSent,
   MPI_Barrier(m_mpiComm);
   if (m_mpiCommRank != 0)
   {
-    mpiNonBlockingSendMessages(m_mpiComm, m_parentRank, packedMessagesToBeSent);
+    if (isPackedMessagesEmpty(packedMessagesToBeSent))
+    {
+      mpiNonBlockingSendMessages(m_mpiComm, m_parentRank, zeroMessage);
+    }
+    else
+    {
+      mpiNonBlockingSendMessages(m_mpiComm, m_parentRank,
+                                 packedMessagesToBeSent);
+    }
   }
 
   int childrenDoneCount = 0;
   const char* currPackedMessages;
   while(childrenDoneCount < m_childCount)
   {
-    currPackedMessages = mpiBlockingRecieveMessages(m_mpiComm);
-    if (currPackedMessages != nullptr)
+    currPackedMessages = mpiBlockingReceiveMessages(m_mpiComm);
+    if (isPackedMessagesEmpty(currPackedMessages))
+    {
+      if ((currPackedMessages != nullptr) || (currPackedMessages[0] == '\0'))
+      {
+        delete [] currPackedMessages;
+      }
+    }
+    else
     {
       receivedPackedMessages.push_back(currPackedMessages);
     }

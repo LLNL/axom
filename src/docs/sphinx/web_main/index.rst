@@ -181,3 +181,4 @@ LLNL-CODE-741217
 .. toctree::
    :maxdepth: 3
 
+   licenses

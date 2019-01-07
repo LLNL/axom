@@ -134,7 +134,7 @@ public:
    *
    * \param [in] packedMessagesToBeSent All of this rank's Message classes
    *  packed into a single buffer.
-   * \param [in,out] receivedPackedMessages Recieved packed message buffers from
+   * \param [in,out] receivedPackedMessages Received packed message buffers from
    *  this nodes children.
    *
    * All of the children push their Message classes to their parent node. This

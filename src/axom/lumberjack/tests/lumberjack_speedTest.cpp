@@ -34,7 +34,6 @@
 int main(int argc, char** argv)
 {
   //Process command line options
-  bool commandLineError = false;
   if (argc != 4)
   {
     std::cout << "Error: Wrong amount of command line arguments given. "
@@ -62,11 +61,14 @@ int main(int argc, char** argv)
     std::cout << "Error: First parameter must be either 'b' or 'r' for " <<
       "BinaryTreeCommunicator or RootCommunicator respectively." <<
       std::endl;
-    commandLineError = true;
+    return 1;
   }
 
-  if (commandLineError)
+  std::ifstream file(fileName);
+  if (!file.good())
   {
+    std::cout << "Error: Given file was unable to open: " << fileName
+              << std::endl;
     return 1;
   }
 
@@ -100,7 +102,7 @@ int main(int argc, char** argv)
   // Read lines from file
   std::string currMessage;
   std::vector<std::string> lines;
-  std::ifstream file(fileName);
+
   while(std::getline(file, currMessage))
   {
     currMessage += '\n';
@@ -146,18 +148,18 @@ int main(int argc, char** argv)
     outFile.close();
   }
 
-  // Finalize lumberjack
-  lj.finalize();
-  // Finalize the lumberjack communicator
-  communicator->finalize();
-  delete communicator;
-
   // Output elapsed time
   if (commRank == 0)
   {
     std::cout << "Elapsed time: "
               << ((double)(end - begin)*1000)/ CLOCKS_PER_SEC << std::endl;
   }
+
+  // Finalize lumberjack
+  lj.finalize();
+  // Finalize the lumberjack communicator
+  communicator->finalize();
+  delete communicator;
 
   // Finalize MPI
   MPI_Finalize();
