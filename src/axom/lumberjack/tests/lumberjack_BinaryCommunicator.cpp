@@ -23,14 +23,17 @@
 
 #include "mpi.h"
 
-#include "axom/lumberjack/RootCommunicator.hpp"
+#include "axom/lumberjack/BinaryTreeCommunicator.hpp"
 
-TEST(lumberjack_RootCommunicator, basic)
+#include "axom/core/utilities/Utilities.hpp"
+
+
+TEST(lumberjack_BinaryCommunicator, basic)
 {
   MPI_Barrier(MPI_COMM_WORLD);
 
   const int ranksLimit = 5;
-  axom::lumberjack::RootCommunicator c;
+  axom::lumberjack::BinaryTreeCommunicator c;
   c.initialize(MPI_COMM_WORLD, ranksLimit);
 
   int commRank = -1;
@@ -58,7 +61,7 @@ TEST(lumberjack_RootCommunicator, basic)
   EXPECT_EQ(c.ranksLimit(), newRanksLimit);
 
   // Check number of pushes
-  EXPECT_EQ(c.numPushesToFlush(), 1);
+  EXPECT_EQ(c.numPushesToFlush(), axom::utilities::log2(commSize));
 
   // Push
   std::string s = std::to_string(commRank);
@@ -67,33 +70,57 @@ TEST(lumberjack_RootCommunicator, basic)
   const char* packedMessage = s.c_str();
   std::vector<const char*> receivedPackedMessages;
   c.push(packedMessage, receivedPackedMessages);
-  EXPECT_EQ(strcmp(packedMessage, origS.c_str()), 0);
+  EXPECT_EQ(strcmp(packedMessage, origS.c_str()), 0); // Message shouldn't be
+                                                      // altered
 
-  if (commRank != 0)
+  // Calculate how many children/messages you should have at this rank
+  int numChildren = 0;
+  int leftChild = (commRank*2)+1;
+  int rightChild = (commRank*2)+2;
+  if (leftChild < commSize)
   {
-    EXPECT_EQ((int)receivedPackedMessages.size(), 0);
+    numChildren++;
   }
-  else
+  if (rightChild < commSize)
   {
-    const int numMessagesToReceive = commSize-1;
-    EXPECT_EQ((int)receivedPackedMessages.size(), numMessagesToReceive);
-    for (int i=1 ; i<=numMessagesToReceive ; ++i)
+    numChildren++;
+  }
+  EXPECT_EQ((int)receivedPackedMessages.size(), numChildren);
+
+  // Verify the messages received were correct
+  std::string currMessage = "";
+  bool found = false;
+
+  if (numChildren == 2)
+  {
+    currMessage = std::to_string(rightChild);
+    found = false;
+    for (auto &rm : receivedPackedMessages)
     {
-      std::string currMessage = std::to_string(i);
-      bool found = false;
-      for (auto &rm : receivedPackedMessages)
+      if (strcmp(rm, currMessage.c_str()) == 0)
       {
-        if (strcmp(rm, currMessage.c_str()) == 0)
-        {
-          found = true;
-        }
+        found = true;
       }
-      if (!found)
-      {
-        std::cout << "Error: Message not received:" << currMessage << std::endl;
-      }
-      EXPECT_EQ(found, true);
     }
+    EXPECT_EQ(found, true) << "Error: Rank: " << commRank
+                           << ": Message not received: "
+                           << currMessage << std::endl;
+  }
+
+  if (numChildren > 0)
+  {
+    currMessage = std::to_string(leftChild);
+    found = false;
+    for (auto &rm : receivedPackedMessages)
+    {
+      if (strcmp(rm, currMessage.c_str()) == 0)
+      {
+        found = true;
+      }
+    }
+    EXPECT_EQ(found, true) << "Error: Rank: " << commRank
+                           << ": Message not received: "
+                           << currMessage << std::endl;
   }
 
   c.finalize();
@@ -101,7 +128,7 @@ TEST(lumberjack_RootCommunicator, basic)
   MPI_Barrier(MPI_COMM_WORLD);
 }
 
-TEST(lumberjack_RootCommunicator, pushNothing)
+TEST(lumberjack_BinaryCommunicator, pushNothing)
 {
   MPI_Barrier(MPI_COMM_WORLD);
 
@@ -109,7 +136,7 @@ TEST(lumberjack_RootCommunicator, pushNothing)
   MPI_Comm_rank(MPI_COMM_WORLD, &commRank);
 
   // Initialize
-  axom::lumberjack::RootCommunicator c;
+  axom::lumberjack::BinaryTreeCommunicator c;
   c.initialize(MPI_COMM_WORLD, 5);
   std::vector<const char*> receivedPackedMessages;
 

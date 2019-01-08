@@ -218,15 +218,16 @@ private:
            s2 >= 0 && s2 < m_relation->size(s1);
   }
 
-  void verifyPosition(PositionType s_pos) const override
+  void verifyPosition(PositionType AXOM_DEBUG_PARAM(sPos) ) const override
   { //override function from RangeSet, overloading to avoid warning in compiler
     SLIC_ASSERT_MSG(
-      s_pos >= 0 && s_pos < size(),
+      sPos >= 0 && sPos < size(),
       "SLAM::RelationSet -- requested out-of-range element at position "
-      << s_pos << ", but set only has " << size() << " elements.");
+      << sPos << ", but set only has " << size() << " elements.");
   }
 
-  void verifyPosition(PositionType s1, PositionType s2) const override
+  void verifyPosition(PositionType AXOM_DEBUG_PARAM(s1),
+                      PositionType AXOM_DEBUG_PARAM(s2) ) const override
   {
     SLIC_ASSERT_MSG(
       isValidIndex(s1, s2),

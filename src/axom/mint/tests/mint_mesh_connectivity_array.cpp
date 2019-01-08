@@ -41,7 +41,7 @@ namespace internal
  *  increase.
  *
  * \param [in] connec the ConnectivityArray in question.
- * \param [in] increase the ammount the number of IDs will increase by
+ * \param [in] increase the amount the number of IDs will increase by
  */
 IndexType calc_ID_capacity( const ConnectivityArray< NO_INDIRECTION >& connec,
                             IndexType increase )
@@ -60,7 +60,7 @@ IndexType calc_ID_capacity( const ConnectivityArray< NO_INDIRECTION >& connec,
  *  increase.
  *
  * \param [in] connec the ConnectivityArray in question.
- * \param [in] increase the ammount the number of IDs will increase by
+ * \param [in] increase the amount the number of IDs will increase by
  *
  * \note The plus/minus one are to account for the fact that the offset array is
  *  what gets resized which has capacity getIDCapacity() + 1.
@@ -82,7 +82,7 @@ IndexType calc_ID_capacity( const ConnectivityArray< INDIRECTION >& connec,
  *  increase.
  *
  * \param [in] connec the ConnectivityArray in question.
- * \param [in] increase the ammount the number of IDs will increase by
+ * \param [in] increase the amount the number of IDs will increase by
  */
 IndexType calc_ID_capacity(
   const ConnectivityArray< TYPED_INDIRECTION >& connec,
@@ -102,7 +102,7 @@ IndexType calc_ID_capacity(
  *  increase.
  *
  * \param [in] connec the ConnectivityArray in question.
- * \param [in] increase the ammount the number of values will increase by
+ * \param [in] increase the amount the number of values will increase by
  */
 IndexType calc_value_capacity(
   const ConnectivityArray< NO_INDIRECTION >& connec,
@@ -118,7 +118,7 @@ IndexType calc_value_capacity(
  *  increase.
  *
  * \param [in] connec the ConnectivityArray in question.
- * \param [in] increase the ammount the number of values will increase by
+ * \param [in] increase the amount the number of values will increase by
  */
 template< ConnectivityType TYPE >
 IndexType calc_value_capacity( const ConnectivityArray< TYPE >& connec,

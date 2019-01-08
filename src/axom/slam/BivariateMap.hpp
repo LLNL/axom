@@ -520,13 +520,13 @@ public:
 
 private:
   /** \brief Check the indices (DenseIndex) are valid   */
-  void        verifyPosition(SetPosition s1, SetPosition s2) const
+  void verifyPosition(SetPosition s1, SetPosition s2) const
   {
     m_set->verifyPosition(s1, s2);
   }
 
   /** \brief Check the given ElementFlatIndex is valid.  */
-  void        verifyPosition(SetPosition pos) const override
+  void verifyPosition(SetPosition AXOM_DEBUG_PARAM(pos) ) const override
   {
     SLIC_ASSERT_MSG(
       pos >= 0 && pos < SetPosition(m_map.size()),

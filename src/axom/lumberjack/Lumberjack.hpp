@@ -64,7 +64,7 @@ public:
    * This performs any setup work the Lumberjack needs before doing any work.
    * It is required that this is called before using the Lumberjack.
    *
-   * \param [in] communicator The Lumberjack Communicator that will send/recieve
+   * \param [in] communicator The Lumberjack Communicator that will send/receive
    * messages
    * \param [in] ranksLimit Limit on how many ranks are individually tracker per
    * Message.
@@ -239,36 +239,6 @@ public:
    */
   bool isOutputNode();
 private:
-  /*!
-   *****************************************************************************
-   * \brief This packages all currently held Message classes into one const char
-   *  buffer.
-   *
-   * The messages are packed into the following format:
-   *  \<message count>*\<largest message size>*\<packed message size>*\<packed
-   *  message>\<packed message size>...
-   * This function does not delete messages.
-   *
-   * \return Packed version of all currently held messages
-   *****************************************************************************
-   */
-  const char* packMessages();
-
-  /*!
-   *****************************************************************************
-   * \brief This unpackages the given const char buffer and creates Messages
-   *  classes out of them.
-   *
-   * The messages are packed into the following format:
-   *  \<message count>*\<largest message size>*\<packed message size>*\<packed
-   * message>\<packed message size>...
-   * After creating the Message classes it adds them into Lumberjack.
-   *
-   * \param [in] packedMessages Packed messages to be unpacked
-   *****************************************************************************
-   */
-  void unpackMessages(const char* packedMessages);
-
   /*!
    *****************************************************************************
    * \brief All Message classes are combined by the currently held Combiner

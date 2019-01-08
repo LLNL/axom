@@ -26,6 +26,7 @@
 #ifndef MESSAGE_HPP
 #define MESSAGE_HPP
 
+#include <cstring>
 #include <string>
 #include <vector>
 
@@ -36,10 +37,18 @@ namespace lumberjack
 
 /*!
  *****************************************************************************
+ * \brief Message to indicate no messages need to be sent from child node.
+ *****************************************************************************
+ */
+const char* const zeroMessage = "0";
+
+/*!
+ *****************************************************************************
  * \brief Delimiter used for packing messages and separating their members.
  *****************************************************************************
  */
 const char memberDelimiter = '*';
+
 /*!
  *****************************************************************************
  * \brief Delimiter used for packing messages and separating their individual
@@ -273,7 +282,8 @@ public:
    *  string.
    *
    * The Message is packed into a string utilizing the following format:
-   *  \<ranks delimited by ,>*\<rank count>*\<file name>*\<line number>*\<text>
+   *  <ranks delimited by ,>*<rank count>*<file name>*<line number>
+   *  *<message level>*<tag>*<text>
    *
    *****************************************************************************
    */
@@ -285,10 +295,10 @@ public:
    *  string.
    *
    * \param [in] packedMessage Packed Message containing the new information.
-   * \param [in] ranksLimit delimiter used to separate the ranks
+   * \param [in] ranksLimit Limits how many ranks are tracked per Message.
    *
-   * The Message is unpacked from a string utilizing the following format:
-   *  \<ranks delimited by ,>*\<rank count>*\<file name>*\<line number>*\<text>
+   * The Message is unpacked from a string utilizing the format defined by
+   * pack()
    *****************************************************************************
    */
   void unpack(const std::string& packedMessage, int ranksLimit);
@@ -303,6 +313,60 @@ private:
   int m_level;
   std::string m_tag;
 };
+
+
+/*!
+ *****************************************************************************
+ * \brief This packs all given Message classes into one const char
+ *  buffer.
+ *
+ * The messages are packed into the following format:
+ *  <message count>[*<packed message size>*<packed message>]...
+ * This function does not alter the messages vector.
+ *
+ * \param [in] messages Message classes to be packed for sending
+ *
+ * \return Packed char array of all given messages
+ *****************************************************************************
+ */
+const char* packMessages(const std::vector<Message*>& messages);
+
+
+/*!
+ *****************************************************************************
+ * \brief This unpacks the given const char buffer and adds the created Messages
+ *  classes to the given vector.
+ *
+ * The messages are packed into the following format:
+ *  <message count>[*<packed message size>*<packed message>]...
+ * This function only adds to the messages vector and does not alter the
+ * packagedMessages parameter.
+ *
+ * \param [in,out] messages Vector to append created messages to
+ * \param [in]  packedMessages Packed messages to be unpacked
+ * \param [in]  ranksLimit Limits how many ranks are tracked per Message.
+ *****************************************************************************
+ */
+void unpackMessages(std::vector<Message*>& messages,
+                    const char* packedMessages,
+                    const int ranksLimit);
+
+
+/*!
+ *****************************************************************************
+ * \brief This checks if a given set of packed messages is empty.
+ *
+ * \param [in]  packedMessages Packed messages to be checked for empty.
+ *
+ * \return Whether or not the given packed messages is empty.
+ *****************************************************************************
+ */
+inline bool isPackedMessagesEmpty(const char* packedMessages)
+{
+  return (packedMessages == nullptr) ||
+         (packedMessages[0] == '\0') ||
+         (strcmp(packedMessages, zeroMessage) == 0);
+}
 
 } // end namespace lumberjack
 } // end namespace axom

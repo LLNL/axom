@@ -321,6 +321,9 @@ public:
    */
   void reserve( IndexType ID_capacity, IndexType value_capacity=USE_DEFAULT )
   {
+    SLIC_ERROR_IF( isExternal() && ID_capacity > m_values->capacity( ),
+           "cannot exceed initial capacity of external buffer!" );
+
     m_offsets->reserve( ID_capacity + 1 );
     IndexType new_value_capacity =
       internal::calcValueCapacity( getNumberOfIDs(), getIDCapacity(),

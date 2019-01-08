@@ -139,7 +139,8 @@ public:
    *
    * \return  An OrderedSet of the elements in the row.
    */
-  const OrderedSetType getElements(PositionType pos1) const override
+  const OrderedSetType getElements(
+    PositionType AXOM_DEBUG_PARAM(pos1) ) const override
   {
     SLIC_ASSERT(pos1 >= 0 && pos1 < firstSetSize());
 
@@ -175,7 +176,7 @@ public:
 
 private:
   /** \brief verify the FlatIndex \a pos is within the valid range. */
-  void verifyPosition(PositionType pos) const override
+  void verifyPosition(PositionType AXOM_DEBUG_PARAM(pos) ) const override
   { //from RangeSet, overloading to avoid warning in compiler
     SLIC_ASSERT_MSG(
       pos >= 0 && pos < size(),
@@ -185,7 +186,8 @@ private:
 
   /** \brief verify the SparseIndex (which is the same as its DenseIndex) is
    *         within the valid range. */
-  void verifyPosition(PositionType pos1, PositionType pos2) const override
+  void verifyPosition(PositionType AXOM_DEBUG_PARAM(pos1),
+                      PositionType AXOM_DEBUG_PARAM(pos2) ) const override
   {
     SLIC_ASSERT_MSG(
       isValidIndex(pos1,pos2),

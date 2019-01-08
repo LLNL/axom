@@ -437,7 +437,12 @@ public:
    */
   void reserve( IndexType ID_capacity,
                 IndexType AXOM_NOT_USED(value_capacity)=0 )
-  { m_values->reserve( ID_capacity ); }
+  {
+    SLIC_ERROR_IF( isExternal() && ID_capacity > m_values->capacity( ),
+       "cannot exceed initial capacity of external buffer!" );
+
+    m_values->reserve( ID_capacity );
+  }
 
   /*!
    * \brief Resize space to hold the specified number of IDs.

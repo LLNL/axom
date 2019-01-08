@@ -19,21 +19,21 @@ scheme to combine duplicate messages and limit output to only the root node.
 Requirements
 ------------
 
-* MPI - MPI is fundamental to Lumberjack and without MPI is not useful.
-* (Optional) C++11 - Can be optionally compiled with C++11 but not required.
+* MPI - MPI is fundamental to Lumberjack and without MPI, Lumberjack is not useful.
+* C++11 - Required for compiling Lumberjack
 
 
 Code Guarding
 -------------
 
-You tell if the ASC Toolkit was built with Lumberjack by the following
+You tell if Axom was built with Lumberjack enabled by using the following
 include and compiler define:
 
 .. code-block:: c
 
     #include "axom/config.hpp"
-    #ifdef ATK_USE_LUMBERJACK
-        // Lumberjack work
+    #ifdef AXOM_USE_LUMBERJACK
+        // Lumberjack code
     #endif
 
 

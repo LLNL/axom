@@ -200,10 +200,10 @@ are contained in the guidelines after the summary.
    #define MYCLASS_HPP
 
    // (4) Header file inclusions (when NEEDED in lieu of forward declarations)
-   #include "..."
+   #include "myHeader.hpp"
 
    // (5) Forward declarations NEEDED in header file (outside of project namespace)
-   class ...;
+   class ForwardDeclaredClass;
 
    // (6a) Axom project namespace declaration
    namespace axom {
@@ -212,7 +212,7 @@ are contained in the guidelines after the summary.
    namespace awesome {
 
    // (8) Forward declarations NEEDED in header file (in project namespace(s))
-   class ...;
+   class AnotherForwardDeclaredClass;
 
    // (9) Type definitions (class, enum, etc.) with Doxygen comments e.g.,
    /*!
@@ -221,7 +221,7 @@ are contained in the guidelines after the summary.
     * ...detailed comment text...
     */
    class MyClass {
-      ...
+      int m_classMember;
    };
 
    // (7b) Internal namespace closing brace (if needed)
