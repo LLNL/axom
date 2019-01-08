@@ -43,6 +43,11 @@ void check_alloc_and_free( axom::MemorySpace spaceId )
   axom::free( data );
   EXPECT_TRUE( data == nullptr );
 
+#else
+
+  /* silence compiler warnings */
+  static_cast< void >( spaceId );
+
 #endif
 }
 

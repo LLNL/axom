@@ -212,6 +212,9 @@ inline T* alloc( std::size_t n, MemorySpace spaceId )
 
 #else
 
+  /* silence compiler warnings */
+  static_cast< void >( spaceId );
+
   ptr = static_cast< T* >( std::malloc( numbytes ) );
 
 #endif
