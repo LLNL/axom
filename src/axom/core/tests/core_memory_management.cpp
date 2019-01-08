@@ -86,6 +86,23 @@ void check_alloc_realloc_free( axom::MemorySpace spaceId )
 //------------------------------------------------------------------------------
 // UNIT TESTS
 //------------------------------------------------------------------------------
+TEST( core_memory_management, set_get_default_memory_space )
+{
+  EXPECT_EQ( axom::HOST, axom::getDefaultMemorySpace() );
+
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
+
+  axom::setDefaultMemorySpace( axom::HOST_PINNED );
+  EXPECT_EQ( axom::HOST_PINNED, axom::getDefaultMemorySpace() );
+
+  axom::setDefaultMemorySpace( axom::DEVICE );
+  EXPECT_EQ( axom::DEVICE, axom::getDefaultMemorySpace() );
+
+#endif
+
+}
+
+//------------------------------------------------------------------------------
 TEST( core_memory_management, alloc_free )
 {
   check_alloc_and_free( axom::HOST );

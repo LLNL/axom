@@ -54,22 +54,13 @@ enum MemorySpace
 
 #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
 
-#ifdef UMPIRE_ENABLE_PINNED
   HOST_PINNED,
-#endif
-
-#ifdef UMPIRE_ENABLE_DEVICE
   DEVICE,
   DEVICE_CONSTANT,
-#endif
-
-#ifdef UMPIRE_ENABLE_UM
-  UNIFIED_MEMORY,
-#endif
+  UNIFIED_MEMORY
 
 #endif /* defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE) */
 
-  NUM_MEMORY_SPACES   //!< NUM_MEMORY_SPACES
 };
 
 /// \name Internal Data Structures
@@ -79,7 +70,10 @@ namespace internal
 {
 
 /*!
- * \brief Holds the value for the default memory space.
+ * \brief Holds the value to the default memory space.
+ *
+ * \note The default memory space is set to HOST, which is always available.
+ *  The default may be changed by calling axom::setDefaultMemorySpace().
  */
 static MemorySpace s_mem_space = HOST;
 
@@ -94,18 +88,10 @@ static const int umpire_type[ ] =
 
 #ifdef AXOM_USE_CUDA
 
-#ifdef UMPIRE_ENABLE_PINNED
   umpire::resource::Pinned,
-#endif
-
-#ifdef UMPIRE_ENABLE_DEVICE
   umpire::resource::Device,
   umpire::resource::Constant,
-#endif
-
-#ifdef UMPIRE_ENABLE_UM
-  umpire::resource::Unified,
-#endif
+  umpire::resource::Unified
 
 #endif /* AXOM_USE_CUDA */
 
@@ -128,44 +114,51 @@ static const int umpire_type[ ] =
 inline void setDefaultMemorySpace( MemorySpace spaceId );
 
 /*!
+ * \brief Returns the current default memory space used.
+ * \return memSpace the current default memory space used.
+ */
+inline MemorySpace getDefaultMemorySpace( ) { return internal::s_mem_space; };
+
+/*!
  * \brief Allocates a chunk of memory of type T.
- * \param [in] n the number of elements to allocate.
- * \param [in] spaceId the space where memory will be allocated (optional)
  *
- * \note The default memory space used is HOST.
+ * \param [in] n the number of elements to allocate.
+ * \param [in] spaceId the memory space where memory will be allocated (optional)
  *
  * \tparam T the type of pointer returned.
  *
- * \return A pointer to the new allocation or a null pointer if allocation
- *  failed.
+ * \note By default alloc() will use the current default memory space. The
+ *  caller may explicitly specify the memory space to use by specifying the
+ *  second, optional argument, or change the default memory space by calling
+ *  axom::setDefaultMemorySpace().
  *
- *  \pre spaceId >= 0 && spaceId < NUM_MEMORY_SPACES
+ * \return p pointer to the new allocation or a nullptr if allocation failed.
+ *
+ * \pre spaceId >= 0 && spaceId < NUM_MEMORY_SPACES
  */
 template < typename T >
 inline T* alloc( std::size_t n, MemorySpace spaceId=internal::s_mem_space );
 
 /*!
- * \brief Frees the chunk of memory pointed to by pointer.
- *
- * \param [in] pointer pointer to memory previously allocated with
- *  alloc or realloc or a null pointer.
- *
- * \post pointer == nullptr
+ * \brief Frees the chunk of memory pointed to by the supplied pointer, p.
+ * \param [in] p a pointer to memory allocated with alloc/realloc or a nullptr.
+ * \post p == nullptr
  */
 template < typename T >
-inline void free( T*& pointer );
+inline void free( T*& p );
 
 /*!
- * \brief Reallocates the chunk of memory pointed to by pointer.
- * \param [in] pointer pointer to memory previously allocated with
- *  alloc or realloc, or a null pointer.
+ * \brief Reallocates the chunk of memory pointed to by the supplied pointer.
+ *
+ * \param [in] p pointer to memory allocated with alloc/realloc, or a nullptr.
  * \param [in] n the number of elements to allocate.
- * \tparam T the type pointer points to.
- * \return A pointer to the new allocation or a null pointer if allocation
- *  failed.
+ *
+ * \tparam T the type pointer p points to.
+ *
+ * \return p pointer to the new allocation or a nullptr if allocation failed.
  */
 template < typename T >
-inline T* realloc( T* pointer, std::size_t n );
+inline T* realloc( T* p, std::size_t n );
 
 /// @}
 
@@ -194,10 +187,6 @@ inline void setDefaultMemorySpace( MemorySpace spaceId )
 template < typename T >
 inline T* alloc( std::size_t n, MemorySpace spaceId )
 {
-  // sanity checks
-  assert( "pre: invalid memory space request" &&
-          (spaceId >= HOST) && (spaceId < NUM_MEMORY_SPACES) );
-
   const std::size_t numbytes = n * sizeof( T );
   T* ptr = nullptr;
 
