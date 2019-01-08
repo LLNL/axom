@@ -125,6 +125,54 @@ static const int umpire_type[ ] =
  * \brief Sets the default memory space to use. Default is set to HOST
  * \param [in] spaceId ID of the memory space to use.
  */
+inline void setDefaultMemorySpace( MemorySpace spaceId );
+
+/*!
+ * \brief Allocates a chunk of memory of type T.
+ * \param [in] n the number of elements to allocate.
+ * \param [in] spaceId the space where memory will be allocated (optional)
+ *
+ * \note The default memory space used is HOST.
+ *
+ * \tparam T the type of pointer returned.
+ *
+ * \return A pointer to the new allocation or a null pointer if allocation
+ *  failed.
+ *
+ *  \pre spaceId >= 0 && spaceId < NUM_MEMORY_SPACES
+ */
+template < typename T >
+inline T* alloc( std::size_t n, MemorySpace spaceId=internal::s_mem_space );
+
+/*!
+ * \brief Frees the chunk of memory pointed to by pointer.
+ *
+ * \param [in] pointer pointer to memory previously allocated with
+ *  alloc or realloc or a null pointer.
+ *
+ * \post pointer == nullptr
+ */
+template < typename T >
+inline void free( T*& pointer );
+
+/*!
+ * \brief Reallocates the chunk of memory pointed to by pointer.
+ * \param [in] pointer pointer to memory previously allocated with
+ *  alloc or realloc, or a null pointer.
+ * \param [in] n the number of elements to allocate.
+ * \tparam T the type pointer points to.
+ * \return A pointer to the new allocation or a null pointer if allocation
+ *  failed.
+ */
+template < typename T >
+inline T* realloc( T* pointer, std::size_t n );
+
+/// @}
+
+//------------------------------------------------------------------------------
+//                        IMPLEMENTATION
+//------------------------------------------------------------------------------
+
 inline void setDefaultMemorySpace( MemorySpace spaceId )
 {
   internal::s_mem_space = spaceId;
@@ -142,22 +190,9 @@ inline void setDefaultMemorySpace( MemorySpace spaceId )
 
 }
 
-/*!
- * \brief Allocates a chunk of memory of type T.
- * \param [in] n the number of elements to allocate.
- * \param [in] spaceId the space where memory will be allocated (optional)
- *
- * \note The default memory space used is HOST.
- *
- * \tparam T the type of pointer returned.
- *
- * \return A pointer to the new allocation or a null pointer if allocation
- *  failed.
- *
- *  \pre spaceId >= 0 && spaceId < NUM_MEMORY_SPACES
- */
+//------------------------------------------------------------------------------
 template < typename T >
-inline T* alloc( std::size_t n, MemorySpace spaceId=internal::s_mem_space )
+inline T* alloc( std::size_t n, MemorySpace spaceId )
 {
   // sanity checks
   assert( "pre: invalid memory space request" &&
@@ -184,14 +219,7 @@ inline T* alloc( std::size_t n, MemorySpace spaceId=internal::s_mem_space )
   return ptr;
 }
 
-/*!
- * \brief Frees the chunk of memory pointed to by pointer.
- *
- * \param [in] pointer pointer to memory previously allocated with
- *  alloc or realloc or a null pointer.
- *
- * \post pointer == nullptr
- */
+//------------------------------------------------------------------------------
 template < typename T >
 inline void free( T*& pointer )
 {
@@ -212,15 +240,7 @@ inline void free( T*& pointer )
 
 }
 
-/*!
- * \brief Reallocates the chunk of memory pointed to by pointer.
- * \param [in] pointer pointer to memory previously allocated with
- *  alloc or realloc, or a null pointer.
- * \param [in] n the number of elements to allocate.
- * \tparam T the type pointer points to.
- * \return A pointer to the new allocation or a null pointer if allocation
- *  failed.
- */
+//------------------------------------------------------------------------------
 template < typename T >
 inline T* realloc( T* pointer, std::size_t n )
 {
@@ -239,14 +259,12 @@ inline T* realloc( T* pointer, std::size_t n )
 
 #else
 
-  pointer = static_cast< T* >( std::realloc( pointer, numbytes );
+  pointer = static_cast< T* >( std::realloc( pointer, numbytes ) );
 
 #endif
 
   return pointer;
 }
-
-/// @}
 
 } // namespace axom
 
