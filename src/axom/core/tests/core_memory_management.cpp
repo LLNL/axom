@@ -31,24 +31,20 @@
 
 void check_alloc_and_free( axom::MemorySpace spaceId )
 {
+  constexpr int MAX_SIZE = 1048576;
+  int* data = axom::alloc< int >( MAX_SIZE, spaceId );
+
 #ifdef AXOM_USE_UMPIRE
 
-  constexpr int MAX_SIZE = 1048576;
-
-  int* data = axom::alloc< int >( MAX_SIZE, spaceId );
   auto& rm = umpire::ResourceManager::getInstance();
   umpire::Allocator allocator = rm.getAllocator( data );
   EXPECT_EQ( allocator.getId(), axom::internal::umpire_type[ spaceId ] );
 
+#endif
+
   axom::free( data );
   EXPECT_TRUE( data == nullptr );
 
-#else
-
-  /* silence compiler warnings */
-  static_cast< void >( spaceId );
-
-#endif
 }
 
 //------------------------------------------------------------------------------
@@ -95,7 +91,7 @@ TEST( core_memory_management, alloc_free )
   check_alloc_and_free( axom::HOST );
 
 #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
-  check_alloc_and_free( axom::HOST );
+  check_alloc_and_free( axom::HOST_PINNED );
   check_alloc_and_free( axom::DEVICE );
   check_alloc_and_free( axom::DEVICE_CONSTANT );
   check_alloc_and_free( axom::UNIFIED_MEMORY );
