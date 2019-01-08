@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -26,14 +26,14 @@
 #define MULTIMAT_H_
 
 
-#include "slam/RangeSet.hpp"
-#include "slam/OrderedSet.hpp"
-#include "slam/StaticRelation.hpp"
-#include "slam/DynamicVariableRelation.hpp"
-#include "slam/Map.hpp"
-#include "slam/RelationSet.hpp"
-#include "slam/ProductSet.hpp"
-#include "slam/BivariateMap.hpp"
+#include "axom/slam/RangeSet.hpp"
+#include "axom/slam/OrderedSet.hpp"
+#include "axom/slam/StaticRelation.hpp"
+#include "axom/slam/DynamicVariableRelation.hpp"
+#include "axom/slam/Map.hpp"
+#include "axom/slam/RelationSet.hpp"
+#include "axom/slam/ProductSet.hpp"
+#include "axom/slam/BivariateMap.hpp"
 #include <vector>
 #include <cassert>
 #include <stdexcept>

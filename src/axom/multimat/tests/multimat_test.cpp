@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -24,10 +24,10 @@
 
 #include "gtest/gtest.h"
 
-#include "multimat/multimat.hpp"
+#include "axom/multimat/multimat.hpp"
 
-#include "slic/slic.hpp"
-#include "slic/UnitTestLogger.hpp"
+#include "axom/slic/interface/slic.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 using namespace axom::multimat;

@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -17,12 +17,11 @@
 #
 
 set(gtest_multimat_tests
-    # test sets
     multimat_test.cpp
     )
 
 
-set(multimat_tests_depends_on axom_utils slic slam multimat gtest)
+set(multimat_tests_depends_on core slic slam multimat gtest)
 
 #
 # Add gtest based tests
