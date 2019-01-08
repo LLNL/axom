@@ -26,7 +26,8 @@ distance from the query point to the mesh.
    :width: 440px
 
    Types of point-vs-surface-mesh queries provided by Quest.  **Left:** In/out query,
-   characterizing points as inside, outside, or on the boundary of the mesh.
+   characterizing points as inside or outside the mesh.  Boundary points are
+   inside the mesh.
    **Right:** Distance field query, calculating the signed distance from each
    query point to its closest point on the mesh.  A negative result indicates an
    interior query point.  

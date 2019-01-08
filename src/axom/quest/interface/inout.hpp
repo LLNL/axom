@@ -123,7 +123,8 @@ bool inout_initialized();
  * \param [in] x The x-coordinate of the query point
  * \param [in] y The y-coordinate of the query point
  * \param [in] z The z-coordinate of the query point
- * \return True if the point is within the contained volume, false otherwise.
+ * \return True if the point is within the contained volume or on the
+ *    surface mesh, false otherwise.
  * \pre inout_initialized() == true
  */
 bool inout_evaluate(double x, double y, double z=0.);
@@ -140,7 +141,7 @@ bool inout_evaluate(double x, double y, double z=0.);
  * \param [in] z Array of z-coordinates for the query points
  * \param [in] npoints The number of points to test
  * \param [out] res An array of results. Each entry has value \a 1
- * if the corresponding point is inside and \a 0 otherwise.
+ * if the corresponding point is inside or on the mesh and \a 0 otherwise.
  *
  * \return Return code is QUEST_INOUT_SUCCESS when all preconditions
  * are satisfied and QUEST_INOUT_FAILED otherwise.
