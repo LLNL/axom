@@ -12,9 +12,9 @@
 .. ## For details about use and distribution, please read axom/LICENSE.
 .. ##
 
-*****************************************
-Point queries against surface mesh: C API
-*****************************************
+*********************************
+Surface mesh point queries: C API
+*********************************
 
 Quest provides the in/out and distance field queries to test a point against
 a surface mesh.  These queries take a mesh composed of 2D
@@ -23,7 +23,7 @@ not contained in the surface mesh.  The distance field query calculates the sign
 distance from the query point to the mesh.  
 
 .. figure:: figs/surface_mesh_queries.png
-   :width: 650px
+   :width: 440px
 
    Types of point-vs-surface-mesh queries provided by Quest.  **Left:** In/out query,
    characterizing points as inside, outside, or on the boundary of the mesh.

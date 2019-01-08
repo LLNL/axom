@@ -22,7 +22,7 @@ reporting both the cell containing the point and the isoparametric coordinates
 of the query point within the cell.
 
 .. figure:: figs/pic.png
-   :width: 320px
+   :width: 280px
 
    Point-in-cell query, identifying the cell that contains a physical point and
    finding the point's isoparametric coordinates within the cell.
@@ -37,7 +37,8 @@ the use of the query, beginning with inclusion of required header files.
    :language: C++
 
 We use typedefs for the sake of brevity.  The class is templated on
-a struct that is used to select MFEM as the backend implementation for
+a struct (provided by Quest, referred to as ``mesh_tag``) that is used to 
+select MFEM as the backend implementation for
 point location.  To implement a new backend, a developer must declare a new
 (empty) struct and provide a specialization of the ``PointInCellTraits``
 and ``PointInCellMeshWrapper`` templated on the new struct that fulfill the

@@ -12,9 +12,9 @@
 .. ## For details about use and distribution, please read axom/LICENSE.
 .. ##
 
-*******************************************
-Point queries against surface mesh: C++ API
-*******************************************
+***********************************
+Surface mesh point queries: C++ API
+***********************************
 
 Codes written in C++ may use the object-oriented C++ APIs to perform in/out and
 signed distance queries.  In addition to language choice, the C++ API lets a code work
