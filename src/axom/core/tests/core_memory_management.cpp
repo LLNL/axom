@@ -88,15 +88,15 @@ void check_alloc_realloc_free( axom::MemorySpace spaceId )
 //------------------------------------------------------------------------------
 TEST( core_memory_management, set_get_default_memory_space )
 {
-  EXPECT_EQ( axom::HOST, axom::getDefaultMemorySpace() );
+  EXPECT_EQ( axom::MemorySpace::HOST, axom::getDefaultMemorySpace() );
 
 #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
 
   axom::setDefaultMemorySpace( axom::HOST_PINNED );
-  EXPECT_EQ( axom::HOST_PINNED, axom::getDefaultMemorySpace() );
+  EXPECT_EQ( axom::MemorySpace::HOST_PINNED, axom::getDefaultMemorySpace() );
 
   axom::setDefaultMemorySpace( axom::DEVICE );
-  EXPECT_EQ( axom::DEVICE, axom::getDefaultMemorySpace() );
+  EXPECT_EQ( axom::MemorySpace::DEVICE, axom::getDefaultMemorySpace() );
 
 #endif
 
@@ -105,13 +105,13 @@ TEST( core_memory_management, set_get_default_memory_space )
 //------------------------------------------------------------------------------
 TEST( core_memory_management, alloc_free )
 {
-  check_alloc_and_free( axom::HOST );
+  check_alloc_and_free( axom::MemorySpace::HOST );
 
 #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
-  check_alloc_and_free( axom::HOST_PINNED );
-  check_alloc_and_free( axom::DEVICE );
-  check_alloc_and_free( axom::DEVICE_CONSTANT );
-  check_alloc_and_free( axom::UNIFIED_MEMORY );
+  check_alloc_and_free( axom::MemorySpace::HOST_PINNED );
+  check_alloc_and_free( axom::MemorySpace::DEVICE );
+  check_alloc_and_free( axom::MemorySpace::DEVICE_CONSTANT );
+  check_alloc_and_free( axom::MemorySpace::UNIFIED_MEMORY );
 #endif
 
 }
@@ -119,10 +119,10 @@ TEST( core_memory_management, alloc_free )
 //------------------------------------------------------------------------------
 TEST( core_memory_management, alloc_realloc_free )
 {
-  check_alloc_realloc_free( axom::HOST );
+  check_alloc_realloc_free( axom::MemorySpace::HOST );
 
 #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
-  check_alloc_realloc_free( axom::UNIFIED_MEMORY );
+  check_alloc_realloc_free( axom::MemorySpace::UNIFIED_MEMORY );
 #endif
 }
 

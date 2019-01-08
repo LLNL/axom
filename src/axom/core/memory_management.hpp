@@ -48,7 +48,7 @@ namespace axom
  *    * UNIFIED_MEMORY
  *
  */
-enum MemorySpace
+enum class MemorySpace
 {
   HOST,
 
@@ -75,7 +75,7 @@ namespace internal
  * \note The default memory space is set to HOST, which is always available.
  *  The default may be changed by calling axom::setDefaultMemorySpace().
  */
-static MemorySpace s_mem_space = HOST;
+static MemorySpace s_mem_space = MemorySpace::HOST;
 
 #ifdef AXOM_USE_UMPIRE
 
