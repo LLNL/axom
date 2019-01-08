@@ -21,10 +21,23 @@ vertices.  Vertex welding is needed for several mesh algorithms that
 require a watertight manifold.  Additionally, mesh files often contain
 errors and require some kind of cleanup.
 
+The following code examples are excerpts from the file
+axom/src/tools/mesh_tester.cpp.
+
 Quest provides a function to weld vertices within a distance of some
 specified epsilon.  This function takes arguments
 ``mint::UnstructuredMesh< mint::SINGLE_SHAPE > **surface_mesh`` and
-``double epsilon``, and modifies ``surface_mesh``.
+``double epsilon``, and modifies ``surface_mesh``.  In addition to
+the mint Mesh and UnstructuredMesh headers (see previous page), we
+include the headers declaring the functions for checking and repairing
+surface meshes.
+
+.. literalinclude:: ../../../../tools/mesh_tester.cpp
+   :start-after: _check_repair_include_start
+   :end-before: _check_repair_include_end
+   :language: C++
+
+The function call itself:
 
 .. literalinclude:: ../../../../tools/mesh_tester.cpp
    :start-after: _check_repair_weld_start
@@ -52,5 +65,6 @@ triangles.
 
 After calling ``findTriMeshIntersections``, ``collisions`` will record
 the indexes of each pair of intersecting triangles and ``degenerate`` will
-contain the index of each degenerate triangle.  The code can then address or
-report any triangles found.
+contain the index of each degenerate triangle.  The user code can then address or
+report any triangles found.  Mesh repair beyond welding close vertices is
+beyond the scope of the Quest component.

@@ -20,7 +20,10 @@
 #include "axom/core/utilities/Timer.hpp"
 
 #include "axom/mint/mesh/FieldVariable.hpp"
+// _read_stl_include2_start
 #include "axom/mint/mesh/Mesh.hpp"
+#include "axom/mint/mesh/UnstructuredMesh.hpp"
+// _read_stl_include2_end
 #include "axom/mint/mesh/UniformMesh.hpp"
 #include "axom/mint/utils/vtk_utils.hpp" // for write_vtk
 
@@ -30,8 +33,12 @@
 #include "axom/primal/geometry/Triangle.hpp"
 #include "axom/primal/spatial_acceleration/UniformGrid.hpp"
 
-#include "axom/quest/MeshTester.hpp"
+// _read_stl_include1_start
 #include "axom/quest/stl/STLReader.hpp"
+// _read_stl_include1_end
+// _check_repair_include_start
+#include "axom/quest/MeshTester.hpp"
+// _check_repair_include_end
 
 #include "axom/slic/streams/GenericOutputStream.hpp"
 #include "axom/slic/interface/slic.hpp"
@@ -47,6 +54,7 @@
 using namespace axom;
 
 typedef mint::UnstructuredMesh< mint::SINGLE_SHAPE > UMesh;
+// _read_stl_typedefs_end
 typedef primal::Triangle<double, 3> Triangle3;
 
 typedef primal::Point<double, 3> Point3;
@@ -54,7 +62,6 @@ typedef primal::BoundingBox<double, 3> SpatialBoundingBox;
 typedef primal::UniformGrid<int, 3> UniformGrid3;
 typedef primal::Vector<double, 3> Vector3;
 typedef primal::Segment<double, 3> Segment3;
-// _read_stl_typedefs_end
 
 
 enum InputStatus

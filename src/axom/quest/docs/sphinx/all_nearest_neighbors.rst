@@ -27,11 +27,13 @@ the nearest neighbor point not in the same region, as shown in the figure.
 .. figure:: figs/AllNearestNeighbors.png
    :width: 280px
 
-   All nearest neighbors query.  In this example, points belong to one of four
-   regions.  For a given maximum search radius, for each point the query finds
-   the closest neighbor point in another region.
+   All nearest neighbors query.  Here, points belong to one of four
+   regions.  Given a maximum search radius, the query finds
+   the closest neighbor to each point in another region.
 
-Here is an example of query usage.  First, include the header.
+Here is an example of query usage, from
+axom/src/axom/quest/tests/quest_all_nearest_neighbors.cpp.
+First, include the header.
 
 .. literalinclude:: ../../tests/quest_all_nearest_neighbors.cpp
    :start-after: _quest_allnear_include_start

@@ -2,7 +2,7 @@
 #
 ###############################################################################
 #
-# Conduit documentation build configuration file, created by
+# Axom Quest documentation build configuration file, created by
 # sphinx-quickstart on Thu Oct 16 11:23:46 2014.
 #
 # This file is execfile()d with the current directory set to its
@@ -40,7 +40,7 @@ extensions = [
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['@CMAKE_CURRENT_SOURCE_DIR@/_templates']
+templates_path = ['../_templates']
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -140,7 +140,12 @@ else:
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-#html_static_path = ['@CMAKE_CURRENT_SOURCE_DIR@/_static']
+conf_directory = os.path.dirname(os.path.realpath(__file__))
+html_static_path = [os.path.join(conf_directory, '_static')]
+
+# Add a patch to RTD theme's CSS style sheets, to allow tables to wrap
+# (Thanks to https://rackerlabs.github.io/docs-rackspace/tools/rtd-tables.html)
+html_context = { 'css_files': [ '_static/theme_overrides.css', ], }
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
@@ -272,6 +277,6 @@ texinfo_documents = [
 
 # add breathe support
 
-breathe_projects = { "sidre": "@CMAKE_CURRENT_BINARY_DIR@/../doxygen/xml/" }
+breathe_projects = { "quest": "../doxygen/xml/" }
 
 breathe_default_project = "quest"

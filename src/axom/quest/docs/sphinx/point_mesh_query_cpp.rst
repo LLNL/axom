@@ -26,7 +26,7 @@ In/out Octree
 -------------
 
 The C++ in/out query is provided by the ``quest::InOutOctree`` class, from the
-following header.
+following header.  See axom/src/axom/quest/tests/quest_inout_octree.cpp.
 
 .. literalinclude:: ../../tests/quest_inout_octree.cpp
    :start-after: _quest_inout_cpp_include_start
@@ -81,7 +81,9 @@ Signed Distance
 ---------------
 
 The C++ signed distance query is provided by the ``quest::SignedDistance`` class,
-which wraps an instance of ``primal::BVHTree``.  Class header:
+which wraps an instance of ``primal::BVHTree``.
+Examples from axom/src/axom/quest/tests/quest_signed_distance.cpp.
+Class header:
 
 .. literalinclude:: ../../tests/quest_signed_distance.cpp
    :start-after: _quest_distance_cpp_include_start

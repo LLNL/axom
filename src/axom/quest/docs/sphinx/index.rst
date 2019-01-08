@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2017-18, Lawrence Livermore National Security, LLC.
+.. ## Copyright (c) 2017-19, Lawrence Livermore National Security, LLC.
 .. ##
 .. ## Produced at the Lawrence Livermore National Laboratory
 .. ##
@@ -15,23 +15,27 @@
 Quest User Documentation
 ========================
 
-The Quest component of Axom provides functions to read a triangle surface mesh
-from a file (2D triangles comprising a manifold embedded in 3D) into a 
-``mint::Mesh`` data structure.  
+The Quest component of Axom provides several spatial queries and operations on
+a ``mint::Mesh``.
 
-In addition to reading in a mesh, Quest provides several spatial queries and
-operations:
+  - Read a surface mesh from an STL file
+  - Check for some common mesh errors; deduplicate vertices
 
-  - vertex welding: merge vertices closer than a specified distance
-    "epsilon"
-  - find self-intersections and degenerate triangles in a surface mesh
-  - watertightness query: is a surface mesh a watertight manifold?
-  - in/out query: is a point inside a surface mesh, on the mesh, or outside?
-  - distance query: find the distance from a query point to a surface mesh
-  - point in cell query: for a query point, find the cell of the mesh
+    - vertex welding: merge vertices closer than a specified distance
+      "epsilon"
+    - find self-intersections and degenerate triangles in a surface mesh
+    - watertightness query: is a surface mesh a watertight manifold?
+
+  - Surface mesh point queries
+
+    - in/out query: is a point inside or outside a surface mesh?
+    - signed distance query: find the minimum distance from a query point
+      to a surface mesh
+
+  - Point in cell query: for a query point, find the cell of the mesh
     that holds the point and the point's isoparametric coordinates within
     that cell
-  - all nearest neighbors: given a list of point locations and regions,
+  - All nearest neighbors: given a list of point locations and regions,
     find all neighbors of each point in a different region
 
 Quest also provides the ``OctreeBase`` class and its specializations

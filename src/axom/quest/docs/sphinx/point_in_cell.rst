@@ -21,6 +21,14 @@ It takes a 2D quad or 3D hex mesh and locates a query point in that mesh,
 reporting both the cell containing the point and the isoparametric coordinates
 of the query point within the cell.
 
+.. Note::
+   If a query point lies on the boundary in more than one cell, the
+   point-in-cell query will return the cell with the lowest index.
+
+   If the point lies outside of any cell, the query returns the special
+   value ``quest::PointInCellTraits<mesh_tag>::NO_CELL`` or using the
+   MeshTraits typedef, ``MeshTraits::NO_CELL``.
+
 .. figure:: figs/pic.png
    :width: 280px
 
@@ -28,7 +36,8 @@ of the query point within the cell.
    finding the point's isoparametric coordinates within the cell.
 
 The point-in-cell query is currently implemented using MFEM, so to use this query
-Axom must be compiled with MFEM as a dependency.  The following example shows
+Axom must be compiled with MFEM as a dependency.  The following example
+(from axom/src/tests/quest_point_in_cell_mfem.cpp) shows
 the use of the query, beginning with inclusion of required header files.
 
 .. literalinclude:: ../../tests/quest_point_in_cell_mfem.cpp

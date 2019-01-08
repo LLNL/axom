@@ -40,7 +40,9 @@ In/out C API
 ------------
 
 The in/out query operates on a 3D surface mesh, that is, 2D triangles forming a
-closed manifold in 3D.  First, include headers.
+closed manifold in 3D.  These examples are excerpted from
+axom/src/axom/quest/examples/quest_inout_interface.cpp.
+First, include headers.
 
 .. literalinclude:: ../../examples/quest_inout_interface.cpp
    :start-after: _quest_inout_interface_include_start
@@ -80,6 +82,7 @@ Finally, clean up.
 Signed Distance query C API
 ---------------------------
 
+Excerpted from axom/src/axom/quest/examples/quest_signed_distance_interface.cpp.
 Quest header:
 
 .. literalinclude:: ../../examples/quest_signed_distance_interface.cpp
