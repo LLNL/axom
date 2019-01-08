@@ -1,5 +1,5 @@
 #------------------------------------------------------------------------------
-# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -36,7 +36,7 @@ set(multimat_sources
 ################################
 # Make/Install the library
 ################################
-set(multimat_depends_on core slam)
+set(multimat_depends_on core slam slic)
 
 blt_add_library(
     NAME        multimat
@@ -44,7 +44,12 @@ blt_add_library(
     HEADERS     ${multimat_headers}
     DEPENDS_ON  ${multimat_depends_on}
     FOLDER      axom/multimat
+    OBJECT      TRUE
     )
+
+axom_write_unified_header(NAME    multimat
+                          HEADERS ${multimat_headers}
+                          )
 
 axom_install_component(NAME    multimat
                        HEADERS ${multimat_headers}
