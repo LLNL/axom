@@ -239,8 +239,8 @@ bool ArrayIndirection<PosType,ElemType>::isValid(PosType size,
     // Note: We do not have sufficient information about the array to know its
     // upper bound
 
-    PositionType firstEltInd = offset;
-    PositionType lastEltInd = (size - 1) * stride + offset;
+    PosType firstEltInd = offset;
+    PosType lastEltInd = (size - 1) * stride + offset;
 
     bool isRangeValid = (firstEltInd >= 0) && (lastEltInd >= 0);
     if(!isRangeValid)
@@ -287,9 +287,9 @@ bool STLVectorIndirection<PosType,ElemType>::isValid(PosType size,
   {
     // Verify underlying vector has sufficient storage for all set elements
     // Note: it is valid for the data buffer to have extra space
-    PositionType firstEltInd = offset;
-    PositionType lastEltInd = (size - 1) * stride + offset;
-    PositionType vecSize = m_vecBuf->size();
+    PosType firstEltInd = offset;
+    PosType lastEltInd = (size - 1) * stride + offset;
+    PosType vecSize = m_vecBuf->size();
 
     bool isRangeValid =
       (0 <= firstEltInd) && (firstEltInd < vecSize)
