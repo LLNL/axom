@@ -30,11 +30,9 @@ using SetType = axom::slam::RangeSet<>;
 using SetPosition = SetType::PositionType;
 using SetElement = SetType::ElementType;
 
-static const SetPosition MAX_SET_SIZE = 20;
-static const SetElement lowerIndex =
-  static_cast<SetElement>( .3 * MAX_SET_SIZE);
-static const SetElement upperIndex =
-  static_cast<SetElement>( .7 * MAX_SET_SIZE);
+static const SetPosition MAX_SIZE = 20;
+static const SetElement lowerIndex = static_cast<SetElement>( .3 * MAX_SIZE);
+static const SetElement upperIndex = static_cast<SetElement>( .7 * MAX_SIZE);
 static const SetElement range = upperIndex - lowerIndex;
 
 } // end anonymous namespace
@@ -184,6 +182,15 @@ TEST(slam_range_set,iterate)
       sstr << s[pos] << "\t";
     }
     SLIC_INFO(sstr.str());
+
+    // same test, using range-for over OrderedSet::positions()
+    for(auto pos : s.positions() )
+    {
+      SetElement expected = pos + lowerIndex;
+      EXPECT_EQ(  expected, s[pos] );
+      EXPECT_EQ(  expected, s.at(pos) );
+      EXPECT_EQ(  s[pos],   s.at(pos) );
+    }
   }
 
   SLIC_INFO("Testing iterator access");
@@ -315,7 +322,7 @@ TEST(slam_range_set,out_of_range)
   // NOTE: AXOM_DEBUG is disabled in release mode,
   // so this test will only fail in debug mode
   EXPECT_DEATH_IF_SUPPORTED(  s.at(upperIndex),   "");
-  EXPECT_DEATH_IF_SUPPORTED(  s.at(MAX_SET_SIZE), "");
+  EXPECT_DEATH_IF_SUPPORTED(  s.at(MAX_SIZE), "");
 #else
   SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif
@@ -335,7 +342,7 @@ TEST(slam_generic_range_set,virtual_parent_set)
   using SetBuilder = GenericRangeSet::SetBuilder;
 
   SLIC_INFO("Generating a parent set, and a subset and checking validity");
-  GenericRangeSet parentSet(SetBuilder().size(MAX_SET_SIZE));
+  GenericRangeSet parentSet(SetBuilder().size(MAX_SIZE));
   GenericRangeSet childSet( SetBuilder()
                             .range(lowerIndex, upperIndex)
                             .parent(&parentSet));
@@ -389,7 +396,7 @@ TEST(slam_generic_range_set,concrete_parent_set)
   using SetBuilder = GenericRangeSet::SetBuilder;
 
   SLIC_INFO("Generating a parent set, and a subset and checking validity");
-  ParentType parentSet(ParentType::SetBuilder().size(MAX_SET_SIZE));
+  ParentType parentSet(ParentType::SetBuilder().size(MAX_SIZE));
   GenericRangeSet childSet( SetBuilder()
                             .range(lowerIndex, upperIndex)
                             .parent(&parentSet));

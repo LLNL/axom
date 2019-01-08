@@ -267,6 +267,15 @@ TYPED_TEST(IndirectionSetTester,iterate)
       sstr << s[pos] << "\t";
     }
     SLIC_INFO("Data using operator[]:\t" << sstr.str());
+
+    // using range for over OrderedSet::positions()
+    for(auto pos : s.positions() )
+    {
+      SetElement exp = static_cast<SetElement>(pos);
+      EXPECT_EQ(exp,s[pos]);
+      EXPECT_EQ(exp,s.at(pos));
+    }
+
   }
 
   SLIC_INFO("Using iterator interface");

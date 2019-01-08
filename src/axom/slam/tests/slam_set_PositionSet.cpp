@@ -150,6 +150,15 @@ TEST(slam_set_positionset,iterate)
       sstr << s[pos] << "\t";
     }
     SLIC_INFO("Element of slam set using operator[]:\n" << sstr.str());
+
+    // same test, using range-for over OrderedSet::positions()
+    for(auto pos : s.positions() )
+    {
+      SetElement elt = static_cast<SetElement>(pos);
+      EXPECT_EQ( elt, s[pos] );
+      EXPECT_EQ( elt, s.at(pos) );
+      EXPECT_EQ( s[pos], s.at(pos) );
+    }
   }
 
   SLIC_INFO("Using checked random access -- at()");

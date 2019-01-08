@@ -78,6 +78,8 @@ public:
 
   using ModularIntType = ModularInt<SizePolicy>;
 
+  using PositionSet = OrderedSet<PositionType>;
+
   struct SetBuilder;
 
   // types for iterator
@@ -339,6 +341,13 @@ public:
   {
     return pos >= 0 && pos < size();
   }
+
+  /**
+   * \brief returns a PositionSet over the set's positions
+   *
+   * This can be used to simplify code to loop through the elements of a set.
+   */
+  PositionSet positions() const { return PositionSet(size()); }
 
 private:
 
