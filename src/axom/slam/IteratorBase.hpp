@@ -57,7 +57,8 @@ public:
   using ElementType = ElemType;
 
 protected:
-  IteratorBase(PositionType pos) : m_pos(pos) { }
+  IteratorBase() : m_pos(PositionType()) { }
+  explicit IteratorBase(PositionType pos) : m_pos(pos) { }
 
 private:
   /**
@@ -85,6 +86,9 @@ public:
   }
   bool operator!=(const IterType& other) const { return !operator==(other); }
   bool operator<(const IterType& other) const { return m_pos < other.m_pos; }
+  bool operator<=(const IterType& other) const { return m_pos <= other.m_pos; }
+  bool operator>(const IterType& other) const { return m_pos > other.m_pos; }
+  bool operator>=(const IterType& other) const { return m_pos >= other.m_pos; }
 
   IterType& operator++() { adv(getIter(),1); return getIter(); }
   IterType operator++(int) {

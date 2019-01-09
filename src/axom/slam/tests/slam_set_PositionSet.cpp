@@ -152,13 +152,16 @@ TEST(slam_set_positionset,iterate)
     SLIC_INFO("Element of slam set using operator[]:\n" << sstr.str());
 
     // same test, using range-for over OrderedSet::positions()
+    int count = 0;
     for(auto pos : s.positions() )
     {
       SetElement elt = static_cast<SetElement>(pos);
       EXPECT_EQ( elt, s[pos] );
       EXPECT_EQ( elt, s.at(pos) );
       EXPECT_EQ( s[pos], s.at(pos) );
+      ++count;
     }
+    EXPECT_EQ( s.size(), count );
   }
 
   SLIC_INFO("Using checked random access -- at()");
@@ -176,13 +179,21 @@ TEST(slam_set_positionset,iterate)
 
   SLIC_INFO("Using iterators begin/end");
   {
+    // also tests default constructor and operator=
     std::stringstream sstr;
-    typedef SetType::iterator SetIterator;
-    for(SetIterator it = s.begin(), itEnd = s.end() ; it != itEnd ; ++it)
+
+    SetType::iterator it, itEnd;
+    EXPECT_EQ(it, itEnd);
+
+    int count = 0;
+    for(it = s.begin(), itEnd = s.end() ; it != itEnd ; ++it)
     {
       EXPECT_EQ( std::distance(s.begin(), it), *it );
+      ++count;
+
       sstr << *it << "\t";
     }
+    EXPECT_EQ( s.size(), count);
 
     SLIC_INFO("Element of slam set using iterators:\n" << sstr.str());
   }

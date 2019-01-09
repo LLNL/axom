@@ -269,25 +269,35 @@ TYPED_TEST(IndirectionSetTester,iterate)
     SLIC_INFO("Data using operator[]:\t" << sstr.str());
 
     // using range for over OrderedSet::positions()
+    int count = 0;
     for(auto pos : s.positions() )
     {
       SetElement exp = static_cast<SetElement>(pos);
       EXPECT_EQ(exp,s[pos]);
       EXPECT_EQ(exp,s.at(pos));
+      ++count;
     }
+    EXPECT_EQ( s.size(), count);
 
   }
 
   SLIC_INFO("Using iterator interface");
   {
+    // also tests default .ctor and operator=()
+
     std::stringstream sstr;
-    using SetIterator = typename SetType::iterator;
-    for(SetIterator it = s.begin(), itEnd = s.end() ; it != itEnd ; ++it)
+    int count = 0;
+    typename SetType::iterator it, itEnd;
+    EXPECT_EQ(it, itEnd);
+
+    for(it = s.begin(), itEnd = s.end() ; it != itEnd ; ++it)
     {
       EXPECT_EQ( std::distance(s.begin(), it), *it );
+      ++count;
 
       sstr << *it << "\t";
     }
+    EXPECT_EQ( s.size(), count);
     SLIC_INFO("Data from iterator:\t" << sstr.str());
   }
 

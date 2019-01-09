@@ -64,7 +64,7 @@ struct NoIndirection
   // This empty .ctor exists to satisfy IndirectionPolicy interface
   NoIndirection(IndirectionBufferType*) {}
 
-  inline IndirectionResult          indirection(PositionType pos) const
+  inline IndirectionResult indirection(PositionType pos) const
   {
     return static_cast<ElementType>(pos);
   }
@@ -91,6 +91,7 @@ struct ArrayIndirection
 {
   using IndirectionResult = ElementType&;
   using ConstIndirectionResult = const ElementType &;
+
   using IndirectionBufferType = ElementType;
 
   ArrayIndirection(IndirectionBufferType* buf = nullptr)
@@ -145,11 +146,11 @@ private:
 template<typename PositionType, typename ElementType>
 struct STLVectorIndirection
 {
-  using VectorType = std::vector<ElementType>;
   using IndirectionResult = ElementType&;
   using ConstIndirectionResult = const ElementType &;
-  using IndirectionBufferType = VectorType;
 
+  using VectorType = std::vector<ElementType>;
+  using IndirectionBufferType = VectorType;
 
   STLVectorIndirection(IndirectionBufferType* buf = nullptr)
     : m_vecBuf(buf) {}
@@ -217,6 +218,8 @@ bool ArrayIndirection<PosType,ElemType>::isValid(PosType size,
                                                  PosType stride,
                                                  bool verboseOutput) const
 {
+  AXOM_DEBUG_VAR(verboseOutput);
+
   // set of zero size is always valid
   if(size == 0)
     return true;
@@ -267,6 +270,8 @@ bool STLVectorIndirection<PosType,ElemType>::isValid(PosType size,
                                                      PosType stride,
                                                      bool verboseOutput) const
 {
+  AXOM_DEBUG_VAR(verboseOutput);
+
   // always valid if set has zero size, even if indirection buffer is null
   if(size == 0)
     return true;

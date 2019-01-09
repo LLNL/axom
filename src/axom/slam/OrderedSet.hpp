@@ -218,10 +218,15 @@ public:
 
 public:
 
-    //OrderedSetIterator(PositionType pos) : IterBase(pos) {}
+    OrderedSetIterator() = default;
+
     OrderedSetIterator(PositionType pos, const OrderedSet& oSet)
       : IterBase(pos), m_orderedSet(oSet) {}
 
+
+    OrderedSetIterator(const OrderedSetIterator& it) = default;
+
+    OrderedSetIterator& operator=(const OrderedSetIterator& it) = default;
 
     const ElementType & operator*()    const {
       // Note: Since we return a reference to the pointed-to value, we need
