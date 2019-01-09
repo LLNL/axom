@@ -363,10 +363,14 @@ public:
    * \see MapIterator
    */
   class SubMapIterator
-    : public IteratorBase<SubMapIterator, SetPosition,DataType>
+    : public IteratorBase<SubMapIterator, SetPosition>
   {
 public:
-    using IterBase = IteratorBase<SubMapIterator, SetPosition, DataType>;
+    using iterator_category = std::random_access_iterator_tag;
+    using value_type = DataType;
+    using difference_type = SetPosition;
+
+    using IterBase = IteratorBase<SubMapIterator, SetPosition>;
     using IterBase::m_pos;
     using iter = SubMapIterator;
     using PositionType = SetPosition;
@@ -374,12 +378,6 @@ public:
     SubMapIterator(PositionType pos, SubMap* sMap)
       : IterBase(pos), m_submap(*sMap)
     {}
-
-    bool operator==(const iter& other) const
-    {
-      return /*(m_submap == other.m_submap) &&*/ IterBase::operator==(other);
-    }
-    bool operator!=(const iter& other) const { return !operator==(other); }
 
     /**
      * \brief Returns the current iterator value. If the SubMap has multiple
@@ -404,7 +402,7 @@ public:
     /** \brief Returns the first component value after n increments.  */
     DataType & operator[](PositionType n)
     {
-      return *(this->operator+(n));
+      return *(*this+n);
     }
 
     /** \brief Same as operator() */

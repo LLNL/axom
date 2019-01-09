@@ -285,10 +285,14 @@ public:
    * implemented to update those three additional indices.
    */
   class BivariateMapIterator :
-    public IteratorBase<BivariateMapIterator, SetPosition, DataType>
+    public IteratorBase<BivariateMapIterator, SetPosition>
   {
 private:
-    using IterBase = IteratorBase<BivariateMapIterator, SetPosition, DataType>;
+    using iterator_category = std::random_access_iterator_tag;
+    using value_type = DataType;
+    using difference_type = SetPosition;
+
+    using IterBase = IteratorBase<BivariateMapIterator, SetPosition>;
     using IterBase::m_pos;
     using iter = BivariateMapIterator;
 

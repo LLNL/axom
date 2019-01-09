@@ -127,8 +127,8 @@ private:
 
 // Tests several types of indirection sets
 using MyTypes = ::testing::Types<
-        slam::ArrayIndirectionSet< slam::PositionType >,
-        slam::VectorIndirectionSet< slam::PositionType >
+        slam::ArrayIndirectionSet< axom::int32, axom::int64>,
+        slam::VectorIndirectionSet< axom::int32, axom::int64 >
         >;
 
 TYPED_TEST_CASE(IndirectionSetTester, MyTypes);

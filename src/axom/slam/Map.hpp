@@ -324,10 +324,14 @@ private:
    *          the currently pointed to element (where 0 <= j < numComp()).\n
    *          For example: `iter[off]` is the same as `(iter+off)(0)`
    */
-  class MapIterator : public IteratorBase<MapIterator, SetPosition, DataType>
+  class MapIterator : public IteratorBase<MapIterator, SetPosition>
   {
 public:
-    using IterBase = IteratorBase<MapIterator, SetPosition, DataType>;
+    using iterator_category = std::random_access_iterator_tag;
+    using value_type = DataType;
+    using difference_type = SetPosition;
+
+    using IterBase = IteratorBase<MapIterator, SetPosition>;
     using iter = MapIterator;
     using PositionType = SetPosition;
     using IterBase::m_pos;
@@ -365,7 +369,7 @@ public:
 
     DataType & operator[](PositionType n)
     {
-      return *(this->operator+(n));
+      return *(*this+n);
     }
 
     /** \brief Returns the number of components per element in the Map. */

@@ -57,6 +57,9 @@ struct Handle
     os << "Handle(" << mID <<")";
   }
 
+  // Simple function to call on a Handle
+  T twiceIndex() const { return 2 * mID; }
+
   T mID;
 };
 
@@ -97,7 +100,11 @@ int main(int, char**)
   SLIC_INFO( "Iterating a set of Handle elements: " );
   for(auto i : hSet.positions() )
   {
-    SLIC_INFO("  " << i << ": " << hSet[i] );
+    auto it = hSet.begin() + i;
+
+    SLIC_INFO(
+      "  " << i << ": " << hSet[i]
+           << " -- double of index is: " << it->twiceIndex() );
   }
 
   return 0;

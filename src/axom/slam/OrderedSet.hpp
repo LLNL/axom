@@ -82,13 +82,13 @@ public:
 
   struct SetBuilder;
 
-  // types for iterator
-  template<typename OrderedSetType> class OrderedSetIterator;
+  // types for OrderedSet iterator
+  template<typename T, bool C> class OrderedSetIterator;
 
-  using const_iterator = OrderedSetIterator<const OrderedSet>;
+  using const_iterator = OrderedSetIterator< ElementType, true>;
   using const_iterator_pair = std::pair<const_iterator,const_iterator>;
 
-  using iterator = OrderedSetIterator<OrderedSet>;
+  using iterator = OrderedSetIterator<ElementType, false>;
   using iterator_pair = std::pair<iterator,iterator>;
 
 public:
@@ -170,8 +170,7 @@ public:
       return *this;
     }
 
-    /** Alternate means of setting the offset and size from a contiguous range
-       of values */
+    /// Alternate means of setting offset and size from contiguous range
     SetBuilder& range(PositionType lower, PositionType upper)
     {
       // Set by range rather than size and offset.
@@ -192,32 +191,49 @@ private:
 
   /**
    * \class OrderedSetIterator
-   * \brief An iterator type for an ordered set
+   * \brief An stl-compliant random iterator type for an ordered set
    *
    * Uses the set's policies for efficient iteration
+   * \tparam T The result type of the iteration
+   * \tparam Const Boolean to indicate if this is a const iterator
+   *
+   * \note Most operators are implemented via the \a IteratorBase class
+   * \note The reference type is determined based on the IndirectionPolicy
+   * and on the \a Const template parameter
+   *
+   * \note Use of a const template parameter with conditional member and pointer
+   * operations based on ideas from https://stackoverflow.com/a/49425072
    */
-  template<typename OrderedSet>
-  class OrderedSetIterator : public IteratorBase<
-      OrderedSetIterator<OrderedSet>,
-      typename OrderedSet::PositionType,
-      typename OrderedSet::ElementType>
+  template<typename T, bool Const>
+  class OrderedSetIterator
+    : public IteratorBase< OrderedSetIterator<T, Const>, PositionType>
   {
 public:
 
-    using iter = OrderedSetIterator<OrderedSet>;
-    using ElementType = typename OrderedSet::ElementType;
-    using PositionType = typename OrderedSet::PositionType;
+    using iterator_category = std::random_access_iterator_tag;
+    using value_type = T;
+    using difference_type = PositionType;
+
+    using reference =
+            typename std::conditional<
+              Const,
+              typename OrderedSet::IndirectionPolicyType::ConstIndirectionResult,
+              typename OrderedSet::IndirectionPolicyType::IndirectionResult>::
+            type;
+
+    using pointer = typename std::conditional<Const, const T*, T*>::type;
+
+    using IterBase = IteratorBase<OrderedSetIterator<T, Const>, PositionType >;
 
     using IndirectionType = typename OrderedSet::IndirectionPolicyType;
     using StrideType = typename OrderedSet::StridePolicyType;
 
-    using IterBase = IteratorBase<OrderedSetIterator<OrderedSet>,
-                                  PositionType,
-                                  ElementType>;
     using IterBase::m_pos;
 
 public:
 
+    /// \name Constructors, copying and assignment
+    /// \{
     OrderedSetIterator() = default;
 
     OrderedSetIterator(PositionType pos, const OrderedSet& oSet)
@@ -226,26 +242,74 @@ public:
 
     OrderedSetIterator(const OrderedSetIterator& it) = default;
 
-    OrderedSetIterator& operator=(const OrderedSetIterator& it) = default;
-
-    const ElementType & operator*()    const {
-      // Note: Since we return a reference to the pointed-to value, we need
-      // different functions
-      //       for OrderedSets with indirection buffers than with those that
-      // have no indirection
-      using NoIndirectionType =
-              policies::NoIndirection<PositionType,ElementType>;
-
-      return indirection(
-        HasIndirection<!std::is_same<IndirectionType,
-                                     NoIndirectionType>::value >(), 0);
-    }
-
-    ElementType operator[](PositionType n) const
+    OrderedSetIterator& operator=(const OrderedSetIterator& it)
     {
-      return *(this->operator+(n));
+      this->m_pos = it.m_pos;
+      this->m_orderedSet = const_cast<OrderedSet&>(it.m_orderedSet);
+      return *this;
+    }
+    /// \}
+
+    /// \name Member and pointer operators
+    /// \note We use the \a enable_if construct to implement both
+    /// const and non-const iterators in the same implementation.
+    /// \{
+
+    /// Indirection operator for non-const iterator
+    template<bool _Const = Const>
+    typename std::enable_if<!_Const, reference>::type operator*()
+    {
+      return m_orderedSet.IndirectionType::indirection(m_pos);
     }
 
+    /// Indirection operator for const iterator
+    template<bool _Const = Const>
+    typename std::enable_if<_Const, reference>::type operator*() const
+    {
+      return m_orderedSet.IndirectionType::indirection(m_pos);
+    }
+
+    /// Structure dereference operator for non-const iterator
+    template<bool _Const = Const>
+    typename std::enable_if<!_Const, pointer>::type operator->()
+    {
+      return &(m_orderedSet.IndirectionType::indirection(m_pos));
+    }
+
+    /// Structure dereference operator for const iterator
+    template<bool _Const = Const>
+    typename std::enable_if<_Const, pointer>::type operator->() const
+    {
+      return &(m_orderedSet.IndirectionType::indirection(m_pos));
+    }
+
+    /// Subscript operator for non-const iterator
+    template<bool _Const = Const>
+    typename std::enable_if<!_Const, reference>::type
+    operator[](PositionType n)
+    {
+      return *(*this+n);
+    }
+
+    /// Subscript operator for const iterator
+    template<bool _Const = Const>
+    typename std::enable_if<_Const, reference>::type
+    operator[](PositionType n) const
+    {
+      return *(*this+n);
+    }
+
+    /// \}
+
+    /// \name Conversion operators
+    /// \{
+
+    /// Convert from iterator type to const_iterator type
+    operator OrderedSetIterator<T, true>() const
+    {
+      return OrderedSetIterator<T, true>(this->m_pos, this->m_orderedSet);
+    }
+    /// \}
 protected:
     /** Implementation of advance() as required by IteratorBase */
     void advance(PositionType n) { m_pos += n * stride(); }
@@ -254,20 +318,6 @@ private:
     inline const PositionType stride() const
     {
       return m_orderedSet.StrideType::stride();
-    }
-
-    template<bool> class HasIndirection {};
-
-    template<typename T>
-    inline const ElementType& indirection(HasIndirection<true>, T) const
-    {
-      return m_orderedSet.IndirectionType::indirection(m_pos);
-    }
-
-    template<typename T>
-    inline const ElementType& indirection(HasIndirection<false>, T) const
-    {
-      return m_pos;
     }
 
 private:
