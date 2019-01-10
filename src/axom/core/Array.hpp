@@ -465,6 +465,7 @@ protected:
   }
 /// @}
 
+
   T* m_data;
   IndexType m_num_tuples;
   IndexType m_capacity;
@@ -697,13 +698,14 @@ inline void Array< T >::setCapacity( IndexType new_capacity )
 
   assert(!m_is_external);
 
-  m_capacity = new_capacity;
-  if ( m_capacity < m_num_tuples )
+  if ( new_capacity < m_num_tuples )
   {
-    updateNumTuples( m_capacity );
+    updateNumTuples( new_capacity );
   }
 
-  m_data = axom::realloc( m_data, m_capacity * m_num_components );
+  m_data = axom::realloc( m_data, new_capacity * m_num_components );
+  m_capacity = new_capacity;
+
   assert( m_data != nullptr || m_capacity <= 0 );
 }
 
@@ -713,6 +715,7 @@ inline void Array< T >::dynamicRealloc( IndexType new_num_tuples )
 {
   assert( !m_is_external );
   assert( m_resize_ratio >= 1.0 );
+  const IndexType new_capacity = new_num_tuples * m_resize_ratio + 0.5;
 
   if ( m_resize_ratio < 1.0 )
   {
@@ -723,9 +726,9 @@ inline void Array< T >::dynamicRealloc( IndexType new_num_tuples )
     utilities::processAbort();
   }
 
-  m_capacity = new_num_tuples * m_resize_ratio + 0.5;
-
-  m_data = axom::realloc( m_data, m_capacity * m_num_components );
+  m_data = axom::realloc( m_data, new_capacity * m_num_components );
+  m_capacity = new_capacity;
+  
   assert( m_data != nullptr || m_capacity <= 0 );
 }
 

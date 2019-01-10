@@ -26,14 +26,15 @@
 #ifndef AXOM_UTILITIES_HPP_
 #define AXOM_UTILITIES_HPP_
 
+#include "axom/config.hpp"          // for compile-time definitions
 #include "axom/core/Types.hpp"
-#include "axom/core/Macros.hpp" // for AXOM_STATIC_ASSERT
+#include "axom/core/Macros.hpp"     // for AXOM_STATIC_ASSERT
 
 #include <cassert>         // for assert()
 #include <cmath>           // for log2()
 
-#include <random>        // for random  number generator
-#include <type_traits>   // for std::is_floating_point()
+#include <random>                   // for random  number generator
+#include <type_traits>              // for std::is_floating_point()
 
 
 namespace axom
