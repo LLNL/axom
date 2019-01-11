@@ -172,10 +172,10 @@ inline void setDefaultMemorySpace( MemorySpace spaceId )
 
 #ifdef AXOM_USE_UMPIRE
 
-  auto& rm = umpire::ResourceManager::getInstance();
+  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
 
-  umpire::Allocator allocator =
-      rm.getAllocator( ( internal::umpire_type[ static_cast< int >( spaceId ) ] ) );
+  umpire::Allocator allocator = rm.getAllocator(
+          ( internal::umpire_type[ static_cast< int >( spaceId ) ] ) );
 
   rm.setDefaultAllocator( allocator );
 
@@ -192,7 +192,7 @@ inline T* alloc( std::size_t n, MemorySpace spaceId )
 
 #ifdef AXOM_USE_UMPIRE
 
-  auto& rm = umpire::ResourceManager::getInstance();
+  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
 
   umpire::Allocator allocator =
       rm.getAllocator( internal::umpire_type[ static_cast< int >( spaceId ) ] );
@@ -218,8 +218,8 @@ inline void free( T*& pointer )
 
 #ifdef AXOM_USE_UMPIRE
 
-  auto& rm       = umpire::ResourceManager::getInstance();
-  auto allocator = rm.getAllocator( pointer );
+  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+  umpire::Allocator allocator = rm.getAllocator( pointer );
   allocator.deallocate( pointer );
 
 #else
@@ -246,7 +246,7 @@ inline T* realloc( T* pointer, std::size_t n )
 
 #ifdef AXOM_USE_UMPIRE
 
-  auto& rm = umpire::ResourceManager::getInstance();
+  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
   pointer = static_cast< T* >( rm.reallocate( pointer, numbytes ) );
 
 #else

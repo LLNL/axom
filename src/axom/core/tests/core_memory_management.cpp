@@ -36,7 +36,7 @@ void check_alloc_and_free( axom::MemorySpace spaceId )
 
 #ifdef AXOM_USE_UMPIRE
 
-  auto& rm = umpire::ResourceManager::getInstance();
+  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
   umpire::Allocator allocator = rm.getAllocator( data );
   EXPECT_EQ( allocator.getId(),
              axom::internal::umpire_type[ static_cast< int >(spaceId) ] );
