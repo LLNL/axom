@@ -17,6 +17,8 @@
 #
 
 set(gtest_utils_tests
+   core_memory_management.cpp
+   
    utils_TaskTimer.cpp
    utils_endianness.cpp
    utils_fileUtilities.cpp
@@ -43,6 +45,7 @@ set(utils_tests_depends
    gtest
    )
 
+blt_list_append( TO utils_tests_depends ELEMENTS umpire IF ${UMPIRE_FOUND} )
 
 #
 # Add gtest based tests
@@ -65,9 +68,7 @@ endforeach()
 #
 set(utils_config_test_depends ${utils_tests_depends})
 
-if(MFEM_FOUND)
-    list(APPEND utils_config_test_depends mfem)
-endif()
+blt_list_append( TO utils_config_test_depends ELEMENTS mfem IF ${MFEM_FOUND} )
 
 blt_add_executable( NAME utils_config_test
                     SOURCES utils_config.cpp

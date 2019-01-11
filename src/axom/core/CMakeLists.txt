@@ -41,6 +41,7 @@ set(core_headers
 
     Array.hpp
     Macros.hpp
+    memory_management.hpp
     Types.hpp
     )
 
@@ -56,28 +57,25 @@ set(core_sources
 ################################
 # Make/Install the library
 ################################
-if (ENABLE_MPI)
-    blt_add_library( NAME                  core
-                     SOURCES               ${core_sources}
-                     HEADERS               ${core_headers}
-                     DEPENDS_ON            mpi
-                     FOLDER                axom/core
-                     )
-else()
-    blt_add_library( NAME                  core
-                     SOURCES               ${core_sources}
-                     HEADERS               ${core_headers}
-                     FOLDER                axom/core
-                     )
 
-endif()
+set( core_depends )
+blt_list_append( TO core_depends ELEMENTS mpi IF ${ENABLE_MPI} )
+blt_list_append( TO core_depends ELEMENTS umpire IF ${UMPIRE_FOUND} )
 
-axom_write_unified_header(NAME    core
-                          HEADERS ${core_headers})
+blt_add_library( NAME                  core
+                 SOURCES               ${core_sources}
+                 HEADERS               ${core_headers}
+                 DEPENDS_ON            ${core_depends}
+                 FOLDER                axom/core
+                 )
 
-axom_install_component(NAME      core
-                       HEADERS   ${core_headers}
-                       )
+axom_write_unified_header( NAME    core
+                           HEADERS ${core_headers}
+                           )
+
+axom_install_component( NAME      core
+                        HEADERS   ${core_headers}
+                        )
 
 
 ################################
