@@ -52,9 +52,9 @@ void check_alloc_and_free( axom::MemorySpace spaceId )
 void check_alloc_realloc_free( axom::MemorySpace spaceId )
 {
   std::cout<<"Testing allocation functions."<< std::endl;
-  constexpr int MAX_SIZE = 1048576 ;
+  constexpr int MAX_SIZE = 1048576;
 
-  for ( int initial_size = 2; initial_size <= MAX_SIZE; initial_size *= 2 )
+  for ( int initial_size = 2 ; initial_size <= MAX_SIZE ; initial_size *= 2 )
   {
     int buffer_size = initial_size;
     int* buffer = axom::alloc< int >( buffer_size, spaceId );

@@ -82,7 +82,7 @@ static MemorySpace s_mem_space = MemorySpace::HOST;
 /*!
  * \brief Maps a MemorySpace enum to the corresponding Umpire resource type.
  */
-static const int umpire_type[ ] =
+static const int umpire_type[]  =
 {
   umpire::resource::Host,
 
@@ -117,13 +117,16 @@ inline void setDefaultMemorySpace( MemorySpace spaceId );
  * \brief Returns the current default memory space used.
  * \return memSpace the current default memory space used.
  */
-inline MemorySpace getDefaultMemorySpace( ) { return internal::s_mem_space; };
+inline MemorySpace getDefaultMemorySpace( ) {
+  return internal::s_mem_space;
+};
 
 /*!
  * \brief Allocates a chunk of memory of type T.
  *
  * \param [in] n the number of elements to allocate.
- * \param [in] spaceId the memory space where memory will be allocated (optional)
+ * \param [in] spaceId the memory space where memory will be allocated
+ *(optional)
  *
  * \tparam T the type of pointer returned.
  *
@@ -175,7 +178,7 @@ inline void setDefaultMemorySpace( MemorySpace spaceId )
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
 
   umpire::Allocator allocator = rm.getAllocator(
-          ( internal::umpire_type[ static_cast< int >( spaceId ) ] ) );
+    ( internal::umpire_type[ static_cast< int >( spaceId ) ] ) );
 
   rm.setDefaultAllocator( allocator );
 
@@ -195,7 +198,7 @@ inline T* alloc( std::size_t n, MemorySpace spaceId )
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
 
   umpire::Allocator allocator =
-      rm.getAllocator( internal::umpire_type[ static_cast< int >( spaceId ) ] );
+    rm.getAllocator( internal::umpire_type[ static_cast< int >( spaceId ) ] );
 
   ptr = static_cast< T* >( allocator.allocate( numbytes )  );
 
