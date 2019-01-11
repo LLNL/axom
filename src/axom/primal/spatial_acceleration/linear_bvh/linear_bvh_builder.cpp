@@ -488,7 +488,10 @@ LinearBVHBuilder::construct(const double *boxes, int size)
   bvh.m_inner_nodes = emit(bvh_data);
   bvh.m_leaf_nodes = bvh_data.m_leafs;
   bvh.m_bounds = bounds;
-
+  for(int i = 0; i < 3; ++i)
+  {
+    std::cout<<bvh.m_inner_nodes[i]<<"\n";
+  }
   umpire_dealloc(mcodes);
   umpire_dealloc(aabbs);
 
