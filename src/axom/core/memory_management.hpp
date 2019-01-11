@@ -48,7 +48,7 @@ namespace axom
  *    * UNIFIED_MEMORY
  *
  */
-enum class MemorySpace
+enum class MemorySpace : int
 {
   HOST,
 
@@ -175,7 +175,7 @@ inline void setDefaultMemorySpace( MemorySpace spaceId )
   auto& rm = umpire::ResourceManager::getInstance();
 
   umpire::Allocator allocator =
-      rm.getAllocator( ( internal::umpire_type[ spaceId ] ) );
+      rm.getAllocator( ( internal::umpire_type[ static_cast< int >( spaceId ) ] ) );
 
   rm.setDefaultAllocator( allocator );
 
@@ -195,7 +195,7 @@ inline T* alloc( std::size_t n, MemorySpace spaceId )
   auto& rm = umpire::ResourceManager::getInstance();
 
   umpire::Allocator allocator =
-      rm.getAllocator( internal::umpire_type[ spaceId ] );
+      rm.getAllocator( internal::umpire_type[ static_cast< int >( spaceId ) ] );
 
   ptr = static_cast< T* >( allocator.allocate( numbytes )  );
 
