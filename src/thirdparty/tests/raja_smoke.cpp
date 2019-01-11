@@ -14,8 +14,8 @@
  *
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-#include "axom/config.hpp"                    // for compile-time definitions
-#include "axom/core/utilities/Utilities.hpp"  // alloc() / free() methods
+#include "axom/config.hpp"                  // for compile-time definitions
+#include "axom/core/memory_management.hpp"  // alloc() / free() methods
 
 // RAJA includes
 #include "RAJA/RAJA.hpp"     // for RAJA
@@ -40,7 +40,7 @@ T* allocate( std::size_t N )
 #if defined(AXOM_USE_CUDA) && defined(RAJA_ENABLE_CUDA)
   ptr = cudaMallocManaged( (void**)&ptr, sizeof(T)*N, cudaMemAttachGlobal );
 #else
-  ptr = axom::utilities::alloc< T >( N );
+  ptr = axom::alloc< T >( N );
 #endif
   return ptr;
 }
@@ -54,7 +54,7 @@ void deallocate( T*& ptr )
 #if defined(AXOM_USE_CUDA) && defined(RAJA_ENABLE_CUDA)
     cudaFree( ptr );
 #else
-    axom::utilities::free( ptr );
+    axom::free( ptr );
 #endif
   }
 }
