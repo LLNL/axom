@@ -829,7 +829,6 @@ INPUT_ENCODING         = UTF-8
 
 FILE_PATTERNS          = *.md \
                          *.markdown \
-                         *.cpp \
                          *.hpp \
                          *.dox
 

@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -20,7 +20,10 @@
 #include "axom/core/utilities/Timer.hpp"
 
 #include "axom/mint/mesh/FieldVariable.hpp"
+// _read_stl_include2_start
 #include "axom/mint/mesh/Mesh.hpp"
+#include "axom/mint/mesh/UnstructuredMesh.hpp"
+// _read_stl_include2_end
 #include "axom/mint/mesh/UniformMesh.hpp"
 #include "axom/mint/utils/vtk_utils.hpp" // for write_vtk
 
@@ -30,8 +33,12 @@
 #include "axom/primal/geometry/Triangle.hpp"
 #include "axom/primal/spatial_acceleration/UniformGrid.hpp"
 
-#include "axom/quest/MeshTester.hpp"
+// _read_stl_include1_start
 #include "axom/quest/stl/STLReader.hpp"
+// _read_stl_include1_end
+// _check_repair_include_start
+#include "axom/quest/MeshTester.hpp"
+// _check_repair_include_end
 
 #include "axom/slic/streams/GenericOutputStream.hpp"
 #include "axom/slic/interface/slic.hpp"
@@ -43,9 +50,11 @@
 #include <utility>
 #include <vector>
 
+// _read_stl_typedefs_start
 using namespace axom;
 
 typedef mint::UnstructuredMesh< mint::SINGLE_SHAPE > UMesh;
+// _read_stl_typedefs_end
 typedef primal::Triangle<double, 3> Triangle3;
 
 typedef primal::Point<double, 3> Point3;
@@ -441,6 +450,7 @@ int main( int argc, char** argv )
     }
   }
 
+  // _read_stl_file_start
   // Read file
   SLIC_INFO("Reading file: '" <<  params.stlInput << "'...\n");
   quest::STLReader* reader = new quest::STLReader();
@@ -458,13 +468,16 @@ int main( int argc, char** argv )
   SLIC_INFO(
     "Mesh has " << surface_mesh->getNumberOfNodes() << " vertices and "
                 <<  surface_mesh->getNumberOfCells() << " triangles.");
+  // _read_stl_file_end
 
   // Vertex welding
   if (!params.skipWeld)
   {
     axom::utilities::Timer timer(true);
 
+    // _check_repair_weld_start
     quest::weldTriMeshVertices(&surface_mesh, params.weldThreshold);
+    // _check_repair_weld_end
 
     timer.stop();
     SLIC_INFO("Vertex welding took "
@@ -478,8 +491,10 @@ int main( int argc, char** argv )
 
   // Detect collisions
   {
+    // _check_repair_intersections_containers_start
     std::vector< std::pair<int, int> > collisions;
     std::vector<int> degenerate;
+    // _check_repair_intersections_containers_end
 
     axom::utilities::Timer timer(true);
     if (params.resolution == 1)
@@ -489,11 +504,13 @@ int main( int argc, char** argv )
     }
     else
     {
+      // _check_repair_intersections_start
       // Use a spatial index
       quest::findTriMeshIntersections(surface_mesh,
                                       collisions,
                                       degenerate,
                                       params.resolution);
+      // _check_repair_intersections_end
     }
     timer.stop();
     SLIC_INFO("Detecting intersecting triangles took "

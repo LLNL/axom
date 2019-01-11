@@ -1,5 +1,5 @@
 .. ##
-.. ## Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+.. ## Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.
 .. ##
 .. ## Produced at the Lawrence Livermore National Laboratory.
 .. ##
@@ -72,7 +72,7 @@ Component User Guides
   *  `Lumberjack (Scalable parallel message logging and filtering) <../../lumberjack_docs/html/index.html>`_
   *  `Sidre (Simulation data repository) <../../sidre_docs/html/index.html>`_
   *  Slam (Set-theoretic lightweight API for meshes)
-  *  Quest (Querying on surface tool)
+  *  `Quest (Querying on surface tool) <../../quest_docs/html/index.html>`_
   *  `Mint (Mesh data model) <../../mint_docs/html/index.html>`_
   *  `Primal (Computational geometry primitives) <../../primal_docs/html/index.html>`_
 

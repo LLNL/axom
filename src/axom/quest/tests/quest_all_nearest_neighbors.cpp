@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -17,7 +17,9 @@
 
 #include "gtest/gtest.h"
 
+// _quest_allnear_include_start
 #include "axom/quest/AllNearestNeighbors.hpp"
+// _quest_allnear_include_end
 #include "axom/quest/detail/AllNearestNeighbors_detail.hpp"
 
 #include "axom/core.hpp"
@@ -110,12 +112,14 @@ TEST(quest_all_nearnbr, simple_2D_query)
 {
   SLIC_INFO("*** Simple 2D all-nearest-neighbors query.");
 
+  // _quest_allnear_input_start
   double x[] = {-1.2, -1.0, -0.8, -1.0, 0.8,  1.0, 1.2, 1.0};
   double y[] = { 0.0, -0.2,  0.0,  0.2, 0.0, -0.2, 0.0, 0.2};
   double z[] = { 0.0,  0.0,  0.0,  0.0, 0.0,  0.0, 0.0, 0.0};
   int region[] = {0, 0, 0, 0, 1, 1, 1, 1};
   int n = 8;
   double limit = 1.9;
+  // _quest_allnear_input_end
   int neighbor[] = {-1, -1, -1, -1, -1, -1, -1, -1};
   int expneighbor[] = {-1, 4, 4, 4, 2, 2, -1, 2};
   double dsq[8];
@@ -130,8 +134,10 @@ TEST(quest_all_nearnbr, simple_2D_query)
   }
   {
     SCOPED_TRACE("indexed limit 1.9");
+    // _quest_allnear_query_start
     axom::quest::all_nearest_neighbors(x, y, z, region, n, limit,
                                        neighbor, dsq);
+    // _quest_allnear_query_end
     verify_array(expneighbor, neighbor, n);
     verify_array(expdsq, dsq, n);
   }

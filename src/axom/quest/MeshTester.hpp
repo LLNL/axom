@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -15,11 +15,6 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-/*!
- * \file MeshTester.hpp
- * \brief Defines functions to test Quest meshes for common defects.
- */
-
 #ifndef MESH_TESTER_HPP_
 #define MESH_TESTER_HPP_
 
@@ -32,10 +27,27 @@
 #include <utility>
 #include <vector>
 
+/*!
+ * \file MeshTester.hpp
+ * \brief Defines functions to test Quest meshes for common defects.
+ */
+
 namespace axom
 {
 namespace quest
 {
+
+/*! Enumeration indicating mesh watertightness */
+enum class WatertightStatus : signed char
+{
+  WATERTIGHT = 0,    ///< Each edge in a surface mesh is incident in two cells
+  NOT_WATERTIGHT,    ///< Each edge is incident in one or two cells
+  CHECK_FAILED       ///< Calculation failed (possibly a non-manifold mesh)
+};
+
+
+/// \name Mesh test and repair
+/// @{
 
 /*!
  * \brief Find self-intersections and degenerate triangles in a surface mesh.
@@ -63,15 +75,6 @@ void findTriMeshIntersections(
   std::vector<std::pair<int, int> > & intersections,
   std::vector<int> & degenerateIndices,
   int spatialIndexResolution = 0);
-
-
-/*! Enumeration indicating mesh watertightness */
-enum class WatertightStatus : signed char
-{
-  WATERTIGHT = 0,    ///< Each edge in a surface mesh is incident in two cells
-  NOT_WATERTIGHT,    ///< Each edge is incident in one or two cells
-  CHECK_FAILED       ///< Calculation failed (possibly a non-manifold mesh)
-};
 
 
 /*!
@@ -125,6 +128,8 @@ WatertightStatus isSurfaceMeshWatertight(
 void weldTriMeshVertices(
   mint::UnstructuredMesh< mint::SINGLE_SHAPE >** surface_mesh,
   double eps);
+
+/// @}
 
 } // end namespace quest
 } // end namespace axom

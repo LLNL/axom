@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -34,6 +34,9 @@ enum SearchStatus
 };
 
 
+/// \name Nearest Neighbor query
+/// @{
+
 /*!
  * \brief Given a list of point locations and regions, for each point, find
  *   the closest point in a different region within a given search radius.
@@ -62,6 +65,8 @@ enum SearchStatus
 void all_nearest_neighbors(const double* x, const double* y, const double* z,
                            const int* region, int n, double limit,
                            int* neighbor, double* sqdistance);
+
+/// @}
 
 } // end namespace quest
 } // end namespace axom

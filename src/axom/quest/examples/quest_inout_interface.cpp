@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -28,11 +28,13 @@
 #include "axom/slic.hpp"
 #include "axom/primal.hpp"
 
+// _quest_inout_interface_include_start
 #include "axom/quest/interface/inout.hpp"
 
 #ifdef AXOM_USE_MPI
   #include <mpi.h>
 #endif
+// _quest_inout_interface_include_end
 
 // C/C++ includes
 #include <vector>
@@ -176,11 +178,13 @@ int main( int argc, char** argv )
   SLIC_INFO("Initializing quest_inout...");
   timer.start();
   {
+    // _quest_inout_interface_init_start
     #ifdef AXOM_USE_MPI
     rc = quest::inout_init( fileName, MPI_COMM_WORLD);
     #else
     rc = quest::inout_init( fileName);
     #endif
+    // _quest_inout_interface_init_end
   }
   timer.stop();
   if(rc != quest::QUEST_INOUT_SUCCESS)
@@ -228,12 +232,14 @@ int main( int argc, char** argv )
   timer.start();
   for(auto& pt : queryPoints)
   {
+    // _quest_inout_interface_test_start
     const double x = pt[0];
     const double y = pt[1];
     const double z = pt[2];
 
     const bool ins = quest::inout_evaluate(x,y,z);
     numInside += ins ? 1 : 0;
+    // _quest_inout_interface_test_end
   }
   timer.stop();
 
@@ -251,7 +257,9 @@ int main( int argc, char** argv )
   }
 
   // -- Finalize quest_inout
+  // _quest_inout_interface_finalize_start
   quest::inout_finalize();
+  // _quest_inout_interface_finalize_end
 
   // -- Finalize logger
   finalizeLogger();

@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -28,9 +28,11 @@ using axom::slic::UnitTestLogger;
 
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Sphere.hpp"
+// _quest_distance_cpp_include_start
 #include "axom/primal/geometry/Point.hpp"
 
 #include "axom/quest/SignedDistance.hpp"  // quest::SignedDistance
+// _quest_distance_cpp_include_end
 #include "quest_test_utilities.hpp"  // for test-utility functions
 
 // Google Test includes
@@ -139,7 +141,9 @@ TEST( quest_signed_distance, sphere_test )
   const int nnodes = umesh->getNumberOfNodes();
 
   SLIC_INFO( "Generate BVHTree..." );
+  // _quest_distance_cpp_init_start
   axom::quest::SignedDistance< 3 > signed_distance( surface_mesh,true, 25, 10 );
+  // _quest_distance_cpp_init_end
 
   SLIC_INFO( "Compute signed distance..." );
 
