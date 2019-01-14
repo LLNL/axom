@@ -31,6 +31,7 @@
 #include "axom/mint/execution/policy.hpp"       // execution policies/traits
 #include "axom/mint/execution/internal/helpers.hpp"
 
+#include "axom/core/StackArray.hpp"             // for axom::StackArray
 #include "axom/core/numerics/Matrix.hpp"        // for Matrix
 
 #ifdef AXOM_USE_RAJA
@@ -222,7 +223,8 @@ inline void for_all_cells_impl( xargs::nodeids,
   const int dimension      = m.getDimension();
   const IndexType nodeJp   = m.nodeJp();
   const IndexType nodeKp   = m.nodeKp();
-  const IndexType* offsets = m.getCellNodeOffsetsArray();
+  const StackArray< IndexType, 8 > offsets =
+    createStackArray< IndexType, 8 >( m.getCellNodeOffsetsArray() );
 
   if ( dimension == 1 )
   {
@@ -236,20 +238,16 @@ inline void for_all_cells_impl( xargs::nodeids,
   }
   else if ( dimension ==  2 )
   {
-    const IndexType offset1 = offsets[1];
-    const IndexType offset2 = offsets[2];
-    const IndexType offset3 = offsets[3];
-
     for_all_cells_impl< ExecPolicy >( xargs::ij(), m,
       AXOM_LAMBDA(IndexType cellID, IndexType i, IndexType j )
       {
         const IndexType n0 = i + j * nodeJp;
         IndexType cell_connectivity[ 4 ];
 
-        cell_connectivity[ 0 ] = n0;
-        cell_connectivity[ 1 ] = n0 + offset1;
-        cell_connectivity[ 2 ] = n0 + offset2;
-        cell_connectivity[ 3 ] = n0 + offset3;
+        for ( int i = 0; i < 4; ++i )
+        {
+          cell_connectivity[ i ] = n0 + offsets[ i ];
+        }
 
         kernel( cellID, cell_connectivity, 4 );
       }
@@ -259,29 +257,16 @@ inline void for_all_cells_impl( xargs::nodeids,
   {
     SLIC_ASSERT( dimension == 3 );
 
-    const IndexType offset1 = offsets[1];
-    const IndexType offset2 = offsets[2];
-    const IndexType offset3 = offsets[3];
-    const IndexType offset4 = offsets[4];
-    const IndexType offset5 = offsets[5];
-    const IndexType offset6 = offsets[6];
-    const IndexType offset7 = offsets[7];
-
     for_all_cells_impl< ExecPolicy >( xargs::ijk(), m,
       AXOM_LAMBDA(IndexType cellID, IndexType i, IndexType j, IndexType k)
       {
         const IndexType n0 = i + j * nodeJp + k * nodeKp;
         IndexType cell_connectivity[ 8 ];
 
-        cell_connectivity[ 0 ] = n0;
-        cell_connectivity[ 1 ] = n0 + offset1;
-        cell_connectivity[ 2 ] = n0 + offset2;
-        cell_connectivity[ 3 ] = n0 + offset3;
-
-        cell_connectivity[ 4 ] = n0 + offset4;
-        cell_connectivity[ 5 ] = n0 + offset5;
-        cell_connectivity[ 6 ] = n0 + offset6;
-        cell_connectivity[ 7 ] = n0 + offset7;
+        for ( int i = 0; i < 8; ++i )
+        {
+          cell_connectivity[ i ] = n0 + offsets[ i ];
+        }
 
         kernel( cellID, cell_connectivity, 8 );
       }
@@ -371,7 +356,7 @@ inline void for_all_cells_impl( xargs::faceids,
         IndexType faces[ 4 ];
         
         /* The I_DIRECTION faces */
-        faces[ 0 ] =  cellID + j;
+        faces[ 0 ] = cellID + j;
         faces[ 1 ] = faces[ 0 ] + 1;
         
         /* The J_DIRECTION faces */
@@ -490,16 +475,22 @@ inline void for_all_cells_impl( xargs::coords,
   constexpr bool NO_COPY = true;
 
   const int dimension    = m.getDimension();
-  const double * origin  = m.getOrigin( );
-  const double * spacing = m.getSpacing( );
+  const double * origin  = m.getOrigin();
+  const double * spacing = m.getSpacing();
   const IndexType nodeJp = m.nodeJp();
   const IndexType nodeKp = m.nodeKp();
 
+  const double x0 = origin[0];
+  const double dx = spacing[0];
+  
+  const double y0 = origin[1];
+  const double dy = spacing[1];
+
+  const double z0 = origin[2];
+  const double dz = spacing[2];
+
   if ( dimension == 1 )
   {
-    const double x0 = origin[0];
-    const double dx = spacing[0];
-
     for_all_cells_impl< ExecPolicy >( xargs::index(), m,
       AXOM_LAMBDA( IndexType cellID )
       {
@@ -514,12 +505,6 @@ inline void for_all_cells_impl( xargs::coords,
   }
   else if ( dimension == 2 )
   {
-    const double x0 = origin[0];
-    const double dx = spacing[0];
-
-    const double y0 = origin[1];
-    const double dy = spacing[1];
-
     for_all_cells_impl< ExecPolicy >( xargs::ij(), m,
       AXOM_LAMBDA( IndexType cellID, IndexType i, IndexType j )
       {
@@ -541,15 +526,6 @@ inline void for_all_cells_impl( xargs::coords,
   }
   else
   {
-    const double x0 = origin[0];
-    const double dx = spacing[0];
-    
-    const double y0 = origin[1];
-    const double dy = spacing[1];
-
-    const double z0 = origin[2];
-    const double dz = spacing[2];
-
     SLIC_ASSERT( dimension == 3 );
     for_all_cells_impl< ExecPolicy >( xargs::ijk(), m,
       AXOM_LAMBDA( IndexType cellID, IndexType i, IndexType j, IndexType k )
@@ -711,7 +687,7 @@ inline void for_all_cells_impl( xargs::coords,
                                 KernelType&& kernel )
 {
   constexpr bool NO_COPY = true;
-
+  
   const int dimension = m.getDimension();
   const double * x = m.getCoordinateArray( X_COORDINATE );
 

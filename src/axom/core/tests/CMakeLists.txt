@@ -27,6 +27,7 @@ set(gtest_utils_tests
    utils_about.cpp
 
    axom_array.cpp
+   stack_array.cpp
 
    numerics_determinants.cpp
    numerics_eigen_solve.cpp

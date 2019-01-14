@@ -20,7 +20,6 @@
 
 // mint includes
 #include "axom/mint/execution/xargs.hpp"        // for xargs
-
 #include "axom/mint/config.hpp"                 // for compile-time definitions
 #include "axom/mint/mesh/Mesh.hpp"              // for Mesh
 #include "axom/mint/mesh/StructuredMesh.hpp"    // for StructuredMesh
@@ -30,6 +29,8 @@
 #include "axom/mint/execution/policy.hpp"       // execution policies/traits
 #include "axom/mint/execution/internal/helpers.hpp" // for for_all_coords
 
+#include "axom/core/StackArray.hpp"             // for axom::StackArray
+#include "axom/core/numerics/Matrix.hpp"        // for Matrix
 
 #ifdef AXOM_USE_RAJA
 #include "RAJA/RAJA.hpp"
@@ -41,6 +42,7 @@ namespace mint
 {
 namespace internal
 {
+
 namespace helpers
 {
 
@@ -677,9 +679,9 @@ inline void for_all_faces_impl( xargs::coords,
                                 const UniformMesh& m,
                                 KernelType&& kernel )
 {
-  SLIC_ASSERT( m.getDimension() > 1 && m.getDimension() <= 3 );
-
   constexpr bool NO_COPY = true;
+
+  SLIC_ASSERT( m.getDimension() > 1 && m.getDimension() <= 3 );
 
   const int dimension    = m.getDimension();
   const double * origin  = m.getOrigin( );
@@ -687,14 +689,17 @@ inline void for_all_faces_impl( xargs::coords,
   const IndexType nodeJp = m.nodeJp();
   const IndexType nodeKp = m.nodeKp();
 
+  const double x0 = origin[0];
+  const double dx = spacing[0];
+  
+  const double y0 = origin[1];
+  const double dy = spacing[1];
+
+  const double z0 = origin[2];
+  const double dz = spacing[2];
+
   if ( dimension == 2 )
   {
-    const double x0 = origin[0];
-    const double dx = spacing[0];
-    
-    const double y0 = origin[1];
-    const double dy = spacing[1];
-
     helpers::for_all_I_faces< ExecPolicy >( xargs::ij(), m,
       AXOM_LAMBDA( IndexType faceID, IndexType i, IndexType j )
       {
@@ -725,15 +730,6 @@ inline void for_all_faces_impl( xargs::coords,
   }
   else
   {
-    const double x0 = origin[0];
-    const double dx = spacing[0];
-    
-    const double y0 = origin[1];
-    const double dy = spacing[1];
-
-    const double z0 = origin[2];
-    const double dz = spacing[2];
-
     helpers::for_all_I_faces< ExecPolicy >( xargs::ijk(), m,
       AXOM_LAMBDA( IndexType faceID, IndexType i, IndexType j, IndexType k )
       {
@@ -802,9 +798,9 @@ inline void for_all_faces_impl( xargs::coords,
                                 const RectilinearMesh& m,
                                 KernelType&& kernel )
 {
-  SLIC_ASSERT( m.getDimension() > 1 && m.getDimension() <= 3 );
-
   constexpr bool NO_COPY = true;
+
+  SLIC_ASSERT( m.getDimension() > 1 && m.getDimension() <= 3 );
 
   const int dimension    = m.getDimension();
   const IndexType nodeJp = m.nodeJp();
@@ -952,9 +948,9 @@ inline void for_all_faces_impl( xargs::coords,
                                 const UnstructuredMesh< TOPO >& m,
                                 KernelType&& kernel )
 {
-  SLIC_ASSERT( m.getDimension() > 1 && m.getDimension() <= 3 );
-
   constexpr bool NO_COPY = true;
+
+  SLIC_ASSERT( m.getDimension() > 1 && m.getDimension() <= 3 );
 
   const int dimension = m.getDimension();
   const double * x = m.getCoordinateArray( X_COORDINATE );

@@ -22,6 +22,7 @@
 #include "axom/mint/config.hpp"                 // for compile-time definitions
 #include "axom/mint/mesh/Mesh.hpp"              // for Mesh
 
+#include "axom/core/StackArray.hpp"             // for axom::StackArray
 #include "axom/core/numerics/Matrix.hpp"        // for Matrix
 
 namespace axom
@@ -67,18 +68,15 @@ inline void for_all_coords( const FOR_ALL_FUNCTOR & for_all_nodes,
 
   constexpr bool NO_COPY = true;
 
-  const double * const x = m.getCoordinateArray(X_COORDINATE);
-  const double * const y = (NDIM > 1) ?
-                           m.getCoordinateArray(Y_COORDINATE) : nullptr;
-  const double * const z = (NDIM > 2) ?
-                           m.getCoordinateArray(Z_COORDINATE) : nullptr;
+  const StackArray< const double*, 3 > coords = {{ 
+                               m.getCoordinateArray(X_COORDINATE),
+                  (NDIM > 1) ? m.getCoordinateArray(Y_COORDINATE) : nullptr,
+                  (NDIM > 2) ? m.getCoordinateArray(Z_COORDINATE) : nullptr }};
 
   for_all_nodes( ExecPolicy(), m, 
     AXOM_LAMBDA( IndexType objectID, const IndexType * nodeIDs, 
                  IndexType numNodes )
     {
-      const double * const coords[3] = { x, y, z };
-
       AXOM_DEBUG_VAR(numNodes);
       assert( numNodes == NNODES );
 
