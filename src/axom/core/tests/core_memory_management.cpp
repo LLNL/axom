@@ -31,7 +31,7 @@
 
 void check_alloc_and_free( axom::MemorySpace spaceId )
 {
-  constexpr int MAX_SIZE = 1048576;
+  constexpr int MAX_SIZE = 16037;
   int* data = axom::alloc< int >( MAX_SIZE, spaceId );
 
 #ifdef AXOM_USE_UMPIRE
@@ -93,10 +93,10 @@ TEST( core_memory_management, set_get_default_memory_space )
 
 #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_UMPIRE)
 
-  axom::setDefaultMemorySpace( axom::HOST_PINNED );
+  axom::setDefaultMemorySpace( axom::MemorySpace::HOST_PINNED );
   EXPECT_EQ( axom::MemorySpace::HOST_PINNED, axom::getDefaultMemorySpace() );
 
-  axom::setDefaultMemorySpace( axom::DEVICE );
+  axom::setDefaultMemorySpace( axom::MemorySpace::DEVICE );
   EXPECT_EQ( axom::MemorySpace::DEVICE, axom::getDefaultMemorySpace() );
 
 #endif
