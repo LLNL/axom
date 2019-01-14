@@ -37,19 +37,13 @@ endif()
 ########################################
 if ( RAJA_FOUND )
 
-  set(raja_smoke_dependencies
-            raja
-            gtest )
+  set( raja_smoke_dependencies raja gtest )
 
-  blt_list_append( TO raja_smoke_dependencies ELEMENTS openmp 
-                   IF ${ENABLE_OPENMP})
+  blt_list_append( TO raja_smoke_dependencies ELEMENTS openmp IF ENABLE_OPENMP )
 
-  blt_list_append( TO raja_smoke_dependencies ELEMENTS umpire 
-                   IF ${UMPIRE_FOUND} )
+  blt_list_append( TO raja_smoke_dependencies ELEMENTS umpire IF UMPIRE_FOUND )
 
-  if ( ENABLE_CUDA )
-    list(APPEND raja_smoke_dependencies cuda)
-  endif()
+  blt_list_append( TO raja_smoke_dependencies ELEMENTS cuda IF ENABLE_CUDA )
 
   blt_add_executable( NAME raja_smoke_test
                       SOURCES raja_smoke.cpp

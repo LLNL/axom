@@ -29,17 +29,10 @@ set( mint_example_dependencies
      slic
    )
 
-if ( RAJA_FOUND )
-    list(APPEND mint_example_dependencies raja)
-endif()
-
-if ( ENABLE_OPENMP )
-    list(APPEND mint_example_dependencies openmp)
-endif()
-
-if ( ENABLE_CUDA )
-    list(APPEND mint_example_dependencies cuda)
-endif()
+blt_list_append( TO mint_example_dependencies ELEMENTS sidre conduit IF AXOM_MINT_USE_SIDRE )
+blt_list_append( TO mint_example_dependencies ELEMENTS raja IF RAJA_FOUND )
+blt_list_append( TO mint_example_dependencies ELEMENTS openmp IF ENABLE_OPENMP )
+blt_list_append( TO mint_example_dependencies ELEMENTS cuda IF ENABLE_CUDA )
 
 foreach( example ${mint_examples} )
 

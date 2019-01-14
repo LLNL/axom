@@ -16,7 +16,7 @@
  */
 
 #include "axom/core/Array.hpp"                /* for axom::Array */
-#include "axom/core/utilities/Utilities.hpp"  /* for utilities::max */
+#include "axom/core/memory_management.hpp"    /* for alloc() and free() */
 
 #include "gtest/gtest.h"                      /* for TEST and EXPECT_* macros */
 
@@ -121,7 +121,7 @@ void check_storage( Array< T >& v )
   }
   else
   {
-    T* tuple = utilities::alloc< T >( num_components );
+    T* tuple = alloc< T >( num_components );
     for ( IndexType i = capacity / 2 ; i < capacity ; ++i )
     {
       for ( IndexType j = 0 ; j < num_components ; ++j )
@@ -130,7 +130,7 @@ void check_storage( Array< T >& v )
       }
       v.append( tuple, 1 );
     }
-    utilities::free( tuple );
+    free( tuple );
     tuple = nullptr;
   }
 
@@ -249,7 +249,7 @@ void check_set( Array< T >& v )
   /* Allocate a buffer half the size of the array. Fill it up with sequential
    * values. */
   const IndexType buffer_size = size / 2;
-  T* buffer = utilities::alloc<T>( buffer_size * num_components );
+  T* buffer = alloc<T>( buffer_size * num_components );
   for ( IndexType i = 0 ; i < buffer_size * num_components ; ++i )
   {
     buffer[ i ] = i;
@@ -314,7 +314,7 @@ void check_set( Array< T >& v )
     }
   }
 
-  utilities::free( buffer );
+  free( buffer );
 }
 
 /*!
@@ -345,7 +345,7 @@ void check_resize( Array< T >& v )
   /* Append a new tuple, should resize. */
   IndexType old_capacity = capacity;
   capacity = calc_new_capacity( v, 1 );
-  T* tuple = utilities::alloc<T>( num_components );
+  T* tuple = alloc<T>( num_components );
   for ( IndexType j = 0 ; j < num_components ; ++j )
   {
     tuple[ j ] = size * j - 5 * size + 7 * j;
@@ -369,7 +369,7 @@ void check_resize( Array< T >& v )
 
   /* Prepare 1000 tuples to be appended. */
   const IndexType n_tuples = 1000;
-  T* values = utilities::alloc< T >( n_tuples * num_components );
+  T* values = alloc< T >( n_tuples * num_components );
   for ( IndexType i = 0 ; i < n_tuples ; ++i )
   {
     for ( IndexType j = 0 ; j < num_components ; ++j )
@@ -507,10 +507,10 @@ void check_resize( Array< T >& v )
     }
   }
 
-  utilities::free( tuple );
+  free( tuple );
   tuple = nullptr;
 
-  utilities::free( values );
+  free( values );
   values = nullptr;
 }
 
@@ -541,7 +541,7 @@ void check_insert( Array< T >& v )
   /* Append a new tuple, should resize. */
   IndexType old_capacity = capacity;
   capacity = calc_new_capacity( v, 1 );
-  T* tuple = utilities::alloc< T >( num_components );
+  T* tuple = alloc< T >( num_components );
   for ( IndexType j = 0 ; j < num_components ; ++j )
   {
     tuple[ j ] = size * j - 5 * size + 7 * j;
@@ -563,7 +563,7 @@ void check_insert( Array< T >& v )
 
   /* Append 1000 tuples */
   const IndexType n_tuples = 1000;
-  T* values = utilities::alloc< T >( n_tuples * num_components );
+  T* values = alloc< T >( n_tuples * num_components );
   for ( IndexType i = 0 ; i < n_tuples ; ++i )
   {
     for ( IndexType j = 0 ; j < num_components ; ++j )
@@ -622,10 +622,10 @@ void check_insert( Array< T >& v )
     }
   }
 
-  utilities::free( tuple );
+  free( tuple );
   tuple = nullptr;
 
-  utilities::free( values );
+  free( values );
   values = nullptr;
 }
 
@@ -872,12 +872,12 @@ void check_external( Array< T >& v )
 
   /* Since the array is full all of the following calls should require a
    * reallocation and cause a fatal error. */
-  T* tuple = utilities::alloc< T >( num_components );
+  T* tuple = alloc< T >( num_components );
   EXPECT_DEATH_IF_SUPPORTED( v.append( tuple, 1 ), IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( v.insert( tuple, 1, 0 ), IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( v.reserve( size + 1 ), IGNORE_OUTPUT );
 
-  utilities::free( tuple );
+  free( tuple );
   tuple = nullptr;
 }
 

@@ -82,10 +82,15 @@ AXOM_CUDA_TEST( raja_smoke, basic_use )
   raja_basic_usage_test< RAJA::omp_parallel_for_exec >( );
 #endif
 
-#if defined(AXOM_USE_CUDA) && defined(RAJA_ENABLE_CUDA)
+#if defined(AXOM_USE_CUDA) && defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
+  const axom::MemorySpace prev_space = axom::getDefaultMemorySpace();
+  setDefaultMemorySpace( axom::MemorySpace::UNIFIED_MEMORY );
+
   std::cout << "Testing RAJA CUDA execution" << std::endl;
   constexpr int BLOCKSIZE = 256;
   raja_basic_usage_test< RAJA::cuda_exec< BLOCKSIZE > >( );
+
+  axom::setDefaultMemorySpace( prev_space );
 #endif
 }
 

@@ -19,7 +19,8 @@
 #define AXOM_NUMERICS_LU_HPP_
 
 #include "axom/core/utilities/Utilities.hpp" // NearlyEqual(), swap() and abs()
-#include "axom/core/numerics/Matrix.hpp"    // for Matrix
+#include "axom/core/memory_management.hpp"   // alloc() and free()
+#include "axom/core/numerics/Matrix.hpp"     // for Matrix
 
 // C/C++ includes
 #include <cstring> // for memcpy()
@@ -180,7 +181,7 @@ int lu_solve( const Matrix< T >& A, const int* pivots, const T* b, T* x )
   }
 
   const int size = A.getNumRows();
-  T* rhs = utilities::alloc< T >( size );
+  T* rhs = alloc< T >( size );
   memcpy( rhs, b, size*sizeof( T ) );
 
   typedef typename Matrix< T >::IndexType IndexType;
@@ -214,7 +215,7 @@ int lu_solve( const Matrix< T >& A, const int* pivots, const T* b, T* x )
     }  // END for j
   } // END for i
 
-  utilities::free( rhs );
+  free( rhs );
   return LU_SUCCESS;
 }
 

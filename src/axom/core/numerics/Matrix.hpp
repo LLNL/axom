@@ -16,6 +16,8 @@
  */
 
 #include "axom/core/utilities/Utilities.hpp" // for utilities::swap()
+#include "axom/core/memory_management.hpp"   // for alloc(), free()
+
 
 // C/C++ includes
 #include <cassert>  // for assert()
@@ -609,7 +611,7 @@ Matrix< T >::Matrix( int rows, int cols, T val ) :
   assert( m_rows > 0 );
   assert( m_cols > 0 );
 
-  m_data = utilities::alloc< T >( m_rows * m_cols );
+  m_data = alloc< T >( m_rows * m_cols );
   this->fill( val );
 }
 
@@ -633,7 +635,7 @@ AXOM_HOST_DEVICE Matrix< T >::Matrix( int rows, int cols, T* data, bool external
     assert(false);
 #else
     const int nitems = m_rows * m_cols;
-    m_data = utilities::alloc< T >( nitems );
+    m_data = alloc< T >( nitems );
     memcpy( m_data, data, nitems * sizeof(T) );
 #endif
   }
@@ -927,7 +929,7 @@ void Matrix< T >::copy( const Matrix< T >& rhs )
 
     m_rows = rhs.m_rows;
     m_cols = rhs.m_cols;
-    m_data = new T[ m_rows*m_cols ];
+    m_data = alloc< T >( m_rows*m_cols );
   }
 
   assert( m_rows==rhs.m_rows );
@@ -948,7 +950,7 @@ AXOM_HOST_DEVICE void Matrix< T >::clear( )
 #else
   if ( !m_usingExternal )
   {
-    utilities::free( m_data );
+    free( m_data );
   }
 #endif
 

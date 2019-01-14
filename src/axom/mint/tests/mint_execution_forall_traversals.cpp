@@ -30,7 +30,7 @@
 #include "gtest/gtest.h" // for gtest
 
 // namespace aliases
-namespace mint   = axom::mint;
+using namespace axom;
 namespace policy = mint::policy;
 
 //------------------------------------------------------------------------------
@@ -112,11 +112,16 @@ TEST( mint_execution_forall_traversals, check_generic_loop )
 #endif
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
-  defined(RAJA_ENABLE_CUDA)
+  defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
+
+  const MemorySpace prev_space = getDefaultMemorySpace();
+  setDefaultMemorySpace( MemorySpace::UNIFIED_MEMORY );
 
   constexpr bool async = true;
   check_for_all< policy::parallel_gpu< 512 > >( );
   check_for_all< policy::parallel_gpu_async< 512 > >( async );
+
+  setDefaultMemorySpace( prev_space );
 #endif
 
 }
