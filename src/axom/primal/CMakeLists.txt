@@ -71,14 +71,9 @@ set( primal_dependencies
      slic
      )
 
-if ( ${RAJA_FOUND} )
-  list(APPEND primal_dependencies raja)
-  list(APPEND primal_dependencies umpire)
-endif()
-
-if ( ${ENABLE_OPENMP} )
-  list(APPEND primal_dependencies openmp)
-endif()
+blt_list_append( TO primal_dependencies ELEMENTS raja IF ${RAJA_FOUND} )
+blt_list_append( TO primal_dependencies ELEMENTS umpire IF ${UMPIRE_FOUND} )
+blt_list_append( TO primal_dependencies ELEMENTS openmp IF ${ENABLE_OPENMP} )
 
 blt_add_library(
     NAME                  primal
