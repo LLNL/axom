@@ -77,6 +77,7 @@ add_subdirectory(thirdparty)
 ################################
 # Add Axom source
 ################################
+include(cmake/AxomVersion.cmake)
 add_subdirectory(axom)
 
 ################################

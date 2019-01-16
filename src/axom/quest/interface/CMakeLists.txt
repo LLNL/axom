@@ -21,4 +21,8 @@ set(YAML_INPUT_FILE quest_shroud.yaml)
 add_shroud(
     YAML_INPUT_FILE      ${YAML_INPUT_FILE}
     C_FORTRAN_OUTPUT_DIR c_fortran
+    PYTHON_OUTPUT_DIR    python
 )
+
+# Install setup.py file used to build quest Python module.
+configure_file(python/setup.py.in ${CMAKE_CURRENT_BINARY_DIR}/python/setup.py)
