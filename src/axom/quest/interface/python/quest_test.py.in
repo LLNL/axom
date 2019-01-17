@@ -1,0 +1,20 @@
+"""
+Test Quest signed distance interface.
+"""
+from __future__ import print_function
+
+import quest
+from mpi4py import MPI
+
+quest.signed_distance_init("@CMAKE_SOURCE_DIR@/axom/quest/data/naca0012.stl",
+                           MPI.Comm)
+
+if not quest.signed_distance_initialized():
+    sys.exit(1)
+
+x,y,z, = 0.,0.,0.  # coords for a point in space
+dist = quest.signed_distance_evaluate(x=x, y=y, z=z)  # either this
+dist = quest.signed_distance_evaluate(x, y, z)        # or this
+print("dist=", dist)
+
+quest.signed_distance_finalize()

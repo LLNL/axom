@@ -19,6 +19,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added for_all_faces to the mint execution model.
 - Added support for face connectivity in the mint UnstructuredMesh class.
 - Added support for face data and face connectivity in the mint StructuredMesh classes.
+- Added Python module for Quest signed distance interface.
+  See the file src/axom/quest/interface/python/README.md for more information.
 
 ### Removed
 - Moved mint::Array to axom::Array with sidre storage in sidre::Array;
