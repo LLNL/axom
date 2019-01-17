@@ -28,6 +28,6 @@ setup(
     version="@AXOM_VERSION_FULL@",
     description='Query points in meshes.',
     author='xxx',
-    author_email='yyy@zz',
+    author_email='axom-dev@llnl.gov',
     ext_modules=[quest],
 )

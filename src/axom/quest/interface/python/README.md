@@ -19,6 +19,9 @@ It will work with Python 2.7 or 3.4+.
 % python3 quest_type.py
 ```
 
+The file `quest_type.py` requires the module `mpi4py`.
+Both `mpi4py` and Axom should be build with the same version of MPI.
+
 `distutils` uses the same compiler and flags that were used to build Python.
 `extra_compile_args` in `setpy.py` must include flags to enable C++11.
 These flags may be different than the ones used to compile Axom.
