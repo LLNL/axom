@@ -27,13 +27,6 @@ namespace axom
 namespace primal
 {
 
-// Type aliases
-#ifndef AXOM_NO_INT64_T
-  using IndexType = axom::common::int64;
-#else
-  using IndexType = axom::common::int32;
-#endif
-
 /*!
  * \brief Enumerates the list of return codes for various BVH operations.
  */
