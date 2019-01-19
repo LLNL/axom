@@ -100,9 +100,11 @@ public:
   /*!
    * \brief Finds the candidate geometric entities that contain a given point.
    *
-   * \param [in]  pt array of coordinates of the query point
    * \param [out] candidates buffer consisting of the candidate IDs
    * \param [out] numCandidates the total number of candidates found
+   * \param [in] x the x-coordinate of the query point
+   * \param [in] y the y-coordinate of the query point
+   * \param [in] z the z-coordinate of the query point (needed for 3D only)
    *
    * \note The candidates array is allocated internally by the method and
    *  ownership of the memory is transferred to the caller. Consequently, the
@@ -111,9 +113,11 @@ public:
    * \pre pt != nullptr
    * \pre candidates == nullptr
    */
-  void find( const double* pt,
-             IndexType*& candidates,
-             IndexType& numCandidates );
+  void find( IndexType*& candidates,
+             IndexType& numCandidates,
+             double x,
+             double y,
+             double z = 0.0f );
 
   /*!
    * \brief Finds the candidate geometric entities that contain each of the
@@ -142,7 +146,7 @@ public:
              IndexType*& candidates,
              IndexType numPts,
              const double* x,
-             const double* y=nullptr,
+             const double* y,
              const double* z=nullptr );
 
 private:

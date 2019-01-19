@@ -61,11 +61,12 @@ int BVH::build( )
 }
 
 //------------------------------------------------------------------------------
-void BVH::find( const double* pt,
-                IndexType*& candidates,
-                IndexType& numCandidates )
+void BVH::find( IndexType*& candidates,
+                IndexType& numCandidates,
+                double x,
+                double y,
+                double z )
 {
-  SLIC_ASSERT( pt != nullptr );
   SLIC_ASSERT( candidates == nullptr );
 
   numCandidates = 0;
