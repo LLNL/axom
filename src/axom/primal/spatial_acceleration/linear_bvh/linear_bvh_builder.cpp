@@ -114,7 +114,7 @@ uint32 *get_mcodes(AABB *aabbs, const int32  size, const AABB &bounds)
     float32 centroid_x = (aabb.m_x.center() - min_coord[0]) * inv_extent[0];
     float32 centroid_y = (aabb.m_y.center() - min_coord[1]) * inv_extent[1];
     float32 centroid_z = (aabb.m_z.center() - min_coord[2]) * inv_extent[2];
-    mcodes[i] = morton_3d(centroid_x, centroid_y, centroid_z);
+    mcodes[i] = morton_encode32(centroid_x, centroid_y, centroid_z);
   });
 
   return mcodes;
