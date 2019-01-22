@@ -18,6 +18,8 @@
 
 set(gtest_utils_tests
    core_memory_management.cpp
+   core_array.cpp
+   core_stack_array.cpp
    
    utils_TaskTimer.cpp
    utils_endianness.cpp
@@ -26,7 +28,6 @@ set(gtest_utils_tests
    utils_utilities.cpp
    utils_about.cpp
 
-   axom_array.cpp
 
    numerics_determinants.cpp
    numerics_eigen_solve.cpp

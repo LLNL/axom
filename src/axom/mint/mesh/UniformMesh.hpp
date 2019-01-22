@@ -18,6 +18,7 @@
 #ifndef MINT_UNIFORMMESH_HPP_
 #define MINT_UNIFORMMESH_HPP_
 
+#include "axom/core/StackArray.hpp"       // for StackArray
 #include "axom/mint/config.hpp"                // for IndexType, int64
 #include "axom/mint/mesh/StructuredMesh.hpp"   // for StructuredMesh
 
@@ -258,14 +259,14 @@ public:
    * \return origin pointer to the buffer storing the coordinates of the origin
    * \post origin != nullptr
    */
-  const double* getOrigin( ) const
+  const StackArray<double, 3> & getOrigin( ) const
   { return m_origin; }
 
   /*!
    * \brief Returns a const pointer to spacing of the Uniform Mesh.
    * \return h user-supplied buffer to store the spacing of the mesh.
    */
-  const double* getSpacing( ) const
+  const StackArray<double, 3> & getSpacing( ) const
   { return m_h; }
 
 /// @}
@@ -295,8 +296,8 @@ private:
 
   void setSpacingAndOrigin( const double* lo, const double* hi );
 
-  double m_origin[ 3 ] = { 0.0, 0.0, 0.0 };
-  double m_h[ 3 ]      = { 1.0, 1.0, 1.0 };
+  StackArray<double, 3> m_origin = {{ 0.0, 0.0, 0.0 }};
+  StackArray<double, 3> m_h      = {{ 1.0, 1.0, 1.0 }};
 
   DISABLE_COPY_AND_ASSIGNMENT(UniformMesh);
   DISABLE_MOVE_AND_ASSIGNMENT(UniformMesh);

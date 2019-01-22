@@ -53,22 +53,21 @@ int main ( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
   double* dy = mesh.createField< double >( "dy", mint::NODE_CENTERED );
 
   // STEP 2: fill in the coordinates
-  mint::for_all_nodes< policy::serial, xargs::ij >(
-    &mesh, AXOM_LAMBDA(IndexType nodeIdx, IndexType i, IndexType j)
-  {
+  mint::for_all_nodes< policy::serial, xargs::ij >( &mesh,
+    AXOM_LAMBDA(IndexType nodeIdx, IndexType i, IndexType j)
+    {
+      const double xx     = h*i;
+      const double yy     = h*j;
+      const double alpha  = yy + R;
+      const double beta   = xx*M;
 
-    const double xx     = h*i;
-    const double yy     = h*j;
-    const double alpha  = yy + R;
-    const double beta   = xx*M;
+      x[ nodeIdx ] = alpha * cos( beta );
+      y[ nodeIdx ] = alpha * sin( beta );
 
-    x[ nodeIdx ] = alpha * cos( beta );
-    y[ nodeIdx ] = alpha * sin( beta );
-
-    dx[ nodeIdx ] = utilities::random_real( -10.0, 10.0 );
-    dy[ nodeIdx ] = utilities::random_real( -5.0, 5.0 );
-
-  } );
+      dx[ nodeIdx ] = x[ nodeIdx ] + y[ nodeIdx ];
+      dy[ nodeIdx ] = x[ nodeIdx ] - y[ nodeIdx ];
+    }
+  );
 
   // STEP 3: dump file
   mint::write_vtk( &mesh, "curvilinear_mesh.vtk" );

@@ -20,7 +20,6 @@
 
 // mint includes
 #include "axom/mint/execution/xargs.hpp"        // for xargs
-
 #include "axom/mint/config.hpp"                 // for compile-time definitions
 #include "axom/mint/mesh/Mesh.hpp"              // for Mesh
 #include "axom/mint/mesh/StructuredMesh.hpp"    // for StructuredMesh
@@ -30,6 +29,7 @@
 #include "axom/mint/execution/policy.hpp"       // execution policies/traits
 #include "axom/mint/execution/internal/helpers.hpp" // for for_all_coords
 
+#include "axom/core/numerics/Matrix.hpp"        // for Matrix
 
 #ifdef AXOM_USE_RAJA
 #include "RAJA/RAJA.hpp"
@@ -41,6 +41,7 @@ namespace mint
 {
 namespace internal
 {
+
 namespace helpers
 {
 
@@ -677,15 +678,24 @@ inline void for_all_faces_impl( xargs::coords,
                                 const UniformMesh& m,
                                 KernelType&& kernel )
 {
-  SLIC_ASSERT( m.getDimension() > 1 && m.getDimension() <= 3 );
-
   constexpr bool NO_COPY = true;
 
+  SLIC_ASSERT( m.getDimension() > 1 && m.getDimension() <= 3 );
+
   const int dimension    = m.getDimension();
-  const double * x0      = m.getOrigin( );
-  const double * h       = m.getSpacing( );
+  const double * origin  = m.getOrigin( );
+  const double * spacing = m.getSpacing( );
   const IndexType nodeJp = m.nodeJp();
   const IndexType nodeKp = m.nodeKp();
+
+  const double x0 = origin[0];
+  const double dx = spacing[0];
+  
+  const double y0 = origin[1];
+  const double dy = spacing[1];
+
+  const double z0 = origin[2];
+  const double dz = spacing[2];
 
   if ( dimension == 2 )
   {
@@ -695,8 +705,8 @@ inline void for_all_faces_impl( xargs::coords,
         const IndexType n0 = i + j * nodeJp;
         const IndexType nodeIDs[2] = { n0, n0 + nodeJp };
 
-        double coords[4] = { x0[0] + i * h[0], x0[1] +  j      * h[1],
-                             x0[0] + i * h[0], x0[1] + (j + 1) * h[1] };
+        double coords[4] = { x0 + i * dx, y0 +  j      * dy,
+                             x0 + i * dx, y0 + (j + 1) * dy };
         
         numerics::Matrix<double> coordsMatrix( dimension, 2, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
@@ -709,8 +719,8 @@ inline void for_all_faces_impl( xargs::coords,
         const IndexType n0 = i + j * nodeJp;
         const IndexType nodeIDs[2] = { n0, n0 + 1 };
 
-        double coords[4] = { x0[0] +  i      * h[0], x0[1] + j * h[1],
-                             x0[0] + (i + 1) * h[0], x0[1] + j * h[1] };
+        double coords[4] = { x0 +  i      * dx, y0 + j * dy,
+                             x0 + (i + 1) * dx, y0 + j * dy };
         
         numerics::Matrix<double> coordsMatrix( dimension, 2, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
@@ -729,10 +739,10 @@ inline void for_all_faces_impl( xargs::coords,
                                        n0 + nodeJp };
 
         double coords[12] = { 
-          x0[0] + i * h[0], x0[1] +  j      * h[1], x0[2] +  k      * h[2],
-          x0[0] + i * h[0], x0[1] +  j      * h[1], x0[2] + (k + 1) * h[2],
-          x0[0] + i * h[0], x0[1] + (j + 1) * h[1], x0[2] + (k + 1) * h[2],
-          x0[0] + i * h[0], x0[1] + (j + 1) * h[1], x0[2] +  k      * h[2] };
+          x0 + i * dx, y0 +  j      * dy, z0 +  k      * dz,
+          x0 + i * dx, y0 +  j      * dy, z0 + (k + 1) * dz,
+          x0 + i * dx, y0 + (j + 1) * dy, z0 + (k + 1) * dz,
+          x0 + i * dx, y0 + (j + 1) * dy, z0 +  k      * dz };
         
         numerics::Matrix<double> coordsMatrix( dimension, 4, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
@@ -749,10 +759,10 @@ inline void for_all_faces_impl( xargs::coords,
                                        n0 + nodeKp };
 
         double coords[12] = { 
-          x0[0] +  i      * h[0], x0[1] + j * h[1], x0[2] +  k      * h[2],
-          x0[0] + (i + 1) * h[0], x0[1] + j * h[1], x0[2] +  k      * h[2],
-          x0[0] + (i + 1) * h[0], x0[1] + j * h[1], x0[2] + (k + 1) * h[2],
-          x0[0] +  i      * h[0], x0[1] + j * h[1], x0[2] + (k + 1) * h[2] };
+          x0 +  i      * dx, y0 + j * dy, z0 +  k      * dz,
+          x0 + (i + 1) * dx, y0 + j * dy, z0 +  k      * dz,
+          x0 + (i + 1) * dx, y0 + j * dy, z0 + (k + 1) * dz,
+          x0 +  i      * dx, y0 + j * dy, z0 + (k + 1) * dz };
         
         numerics::Matrix<double> coordsMatrix( dimension, 4, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
@@ -769,10 +779,10 @@ inline void for_all_faces_impl( xargs::coords,
                                        n0 + nodeJp };
 
         double coords[12] = { 
-          x0[0] +  i      * h[0], x0[1] +  j      * h[1], x0[2] + k * h[2],
-          x0[0] + (i + 1) * h[0], x0[1] +  j      * h[1], x0[2] + k * h[2],
-          x0[0] + (i + 1) * h[0], x0[1] + (j + 1) * h[1], x0[2] + k * h[2],
-          x0[0] +  i      * h[0], x0[1] + (j + 1) * h[1], x0[2] + k * h[2] };
+          x0 +  i      * dx, y0 +  j      * dy, z0 + k * dz,
+          x0 + (i + 1) * dx, y0 +  j      * dy, z0 + k * dz,
+          x0 + (i + 1) * dx, y0 + (j + 1) * dy, z0 + k * dz,
+          x0 +  i      * dx, y0 + (j + 1) * dy, z0 + k * dz };
         
         numerics::Matrix<double> coordsMatrix( dimension, 4, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
@@ -787,9 +797,9 @@ inline void for_all_faces_impl( xargs::coords,
                                 const RectilinearMesh& m,
                                 KernelType&& kernel )
 {
-  SLIC_ASSERT( m.getDimension() > 1 && m.getDimension() <= 3 );
-
   constexpr bool NO_COPY = true;
+
+  SLIC_ASSERT( m.getDimension() > 1 && m.getDimension() <= 3 );
 
   const int dimension    = m.getDimension();
   const IndexType nodeJp = m.nodeJp();
@@ -937,9 +947,9 @@ inline void for_all_faces_impl( xargs::coords,
                                 const UnstructuredMesh< TOPO >& m,
                                 KernelType&& kernel )
 {
-  SLIC_ASSERT( m.getDimension() > 1 && m.getDimension() <= 3 );
-
   constexpr bool NO_COPY = true;
+
+  SLIC_ASSERT( m.getDimension() > 1 && m.getDimension() <= 3 );
 
   const int dimension = m.getDimension();
   const double * x = m.getCoordinateArray( X_COORDINATE );

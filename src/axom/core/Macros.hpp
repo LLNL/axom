@@ -14,7 +14,8 @@
  *
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-#include "axom/config.hpp"           // defines AXOM_USE_CXX11
+#include "axom/config.hpp"                  // defines AXOM_USE_CXX11
+#include <cassert>                          // for assert()
 
 /*!
  *
@@ -36,7 +37,7 @@
  * \note These will expand to the corresponding CUDA decorations when
  *  compiled with -DAXOM_USE_CUDA
  */
-#ifdef AXOM_USE_CUDA
+#if defined(__CUDACC__) 
 #define AXOM_DEVICE __device__
 #define AXOM_HOST_DEVICE __host__ __device__
 #else
@@ -64,6 +65,20 @@
 #define AXOM_LAMBDA [=]
 #define AXOM_DEVICE_LAMBDA [=]
 #define AXOM_HOST_LAMBDA [=]
+#endif
+
+/*!
+ * \def AXOM_CUDA_TEST
+ *
+ * \brief Convenience macro used for a gtest that uses cuda.
+ */
+#if defined(AXOM_USE_CUDA)
+#define AXOM_CUDA_TEST(X, Y)         \
+  static void cuda_test_##X##Y();    \
+  TEST(X, Y) { cuda_test_##X##Y(); } \
+  static void cuda_test_##X##Y()
+#else
+#define AXOM_CUDA_TEST(X, Y) TEST(X, Y)
 #endif
 
 /*!
@@ -164,10 +179,10 @@
  */
 #ifdef AXOM_USE_CXX11
 #define DISABLE_DEFAULT_CTOR(className)                      \
-  className( ) = delete;
+  className( ) = delete
 #else
 #define DISABLE_DEFAULT_CTOR(className)                      \
-  className( );
+  className( )
 #endif
 
 /*!

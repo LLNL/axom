@@ -20,14 +20,14 @@
 
 // mint includes
 #include "axom/mint/execution/xargs.hpp"        // for xargs
-
 #include "axom/mint/config.hpp"                 // for compile-time definitions
 #include "axom/mint/mesh/Mesh.hpp"              // for mint::Mesh
 #include "axom/mint/mesh/RectilinearMesh.hpp"   // for mint::RectilinearMesh
 #include "axom/mint/mesh/StructuredMesh.hpp"    // for mint::StructuredMesh
 #include "axom/mint/mesh/UniformMesh.hpp"       // for mint::UniformMesh
-
 #include "axom/mint/execution/policy.hpp"       // for mint execution policies
+
+#include "axom/core/StackArray.hpp"             // for axom::StackArray
 
 #ifdef AXOM_USE_RAJA
 #include "RAJA/RAJA.hpp"
@@ -217,13 +217,13 @@ inline void for_all_nodes_impl( xargs::x, const UniformMesh& m, KernelType&& ker
   SLIC_ERROR_IF( m.getDimension() != 1, 
                  "xargs::x is only valid for 1D meshes" );
 
-  const double* x0         = m.getOrigin( );
-  const double* h          = m.getSpacing( );
+  const double x0 = m.getOrigin()[0];
+  const double dx = m.getSpacing()[0];
 
   for_all_nodes_impl< ExecPolicy >( xargs::index(), m,
     AXOM_LAMBDA( IndexType nodeID )
     {
-      const double x = x0[ X_COORDINATE ] + nodeID * h[ I_DIRECTION ];
+      const double x = x0 + nodeID * dx;
       kernel( nodeID, x );
     }
   );
@@ -284,14 +284,14 @@ inline void for_all_nodes_impl( xargs::xy,
   SLIC_ERROR_IF( m.getDimension() != 2,
                  "xargs::xy is only valid for 2D meshes" );
 
-  const double* x0 = m.getOrigin( );
-  const double* h  = m.getSpacing( );
+  const StackArray< double, 3 > & origin = m.getOrigin();
+  const StackArray< double, 3 > & spacing = m.getSpacing();
 
   for_all_nodes_impl< ExecPolicy >( xargs::ij(), m,
     AXOM_LAMBDA( IndexType nodeID, IndexType i, IndexType j )
     {
-      const double x = x0[ X_COORDINATE ] + i * h[ I_DIRECTION ];
-      const double y = x0[ Y_COORDINATE ] + j * h[ J_DIRECTION ];
+      const double x = origin[0] + i * spacing[0];
+      const double y = origin[1] + j * spacing[1];
       kernel( nodeID, x, y );
     }
   );
@@ -384,15 +384,15 @@ inline void for_all_nodes_impl( xargs::xyz,
   SLIC_ERROR_IF( m.getDimension() != 3,
                  "xargs::xyz is only valid for 3D meshes" );
 
-  const double* x0 = m.getOrigin( );
-  const double* h  = m.getSpacing( );
+  const StackArray< double, 3 > origin = m.getOrigin();
+  const StackArray< double, 3 > spacing = m.getSpacing();
 
   for_all_nodes_impl< ExecPolicy >( xargs::ijk(), m,
     AXOM_LAMBDA(IndexType nodeID, IndexType i, IndexType j, IndexType k)
     {
-      const double x = x0[ X_COORDINATE ] + i * h[ I_DIRECTION ];
-      const double y = x0[ Y_COORDINATE ] + j * h[ J_DIRECTION ];
-      const double z = x0[ Z_COORDINATE ] + k * h[ K_DIRECTION ];
+      const double x = origin[0] + i * spacing[0];
+      const double y = origin[1] + j * spacing[1];
+      const double z = origin[2] + k * spacing[2];
       kernel( nodeID, x, y, z );
     }
   );

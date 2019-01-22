@@ -112,14 +112,14 @@ TEST( mint_execution_policy, check_raja_mappings )
 
   constexpr int BLOCK_SIZE = 1024;
 
-  check_policies< policies::parallel_gpu< BLOCK_SIZE >,
+  check_policies< policy::parallel_gpu< BLOCK_SIZE >,
                   RAJA::cuda_exec< BLOCK_SIZE >,
-                  RAJA::cuda_reduce< BLOCK_SIZE >,
+                  RAJA::cuda_reduce,
                   RAJA::cuda_synchronize >( );
 
-  check_policies< policies::parallel_gpu_async< BLOCK_SIZE >,
+  check_policies< policy::parallel_gpu_async< BLOCK_SIZE >,
                   RAJA::cuda_exec_async< BLOCK_SIZE >,
-                  RAJA::cuda_reduce_async< BLOCK_SIZE >,
+                  RAJA::cuda_reduce,
                   RAJA::cuda_synchronize >( );
 #endif
 

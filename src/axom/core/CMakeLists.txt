@@ -40,6 +40,7 @@ set(core_headers
     numerics/polynomial_solvers.hpp
 
     Array.hpp
+    StackArray.hpp
     Macros.hpp
     memory_management.hpp
     Types.hpp

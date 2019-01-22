@@ -34,6 +34,8 @@
 #include "axom/quest/stl/PSTLReader.hpp"
 #endif
 
+#include <limits>
+
 namespace axom
 {
 namespace quest

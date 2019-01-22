@@ -15,13 +15,13 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include "axom/core/Array.hpp"                   /* for axom::Array */
-#include "axom/core/utilities/Utilities.hpp"     /* for utilities::max */
+#include "axom/core/Array.hpp"                /* for axom::Array */
+#include "axom/core/memory_management.hpp"    /* for alloc() and free() */
 
-#include "gtest/gtest.h"                /* for TEST and EXPECT_* macros */
+#include "gtest/gtest.h"                      /* for TEST and EXPECT_* macros */
 
 // C/C++ includes
-#include <algorithm>                    /* for std::fill_n */
+#include <algorithm>                          /* for std::fill_n */
 
 namespace axom
 {
@@ -121,7 +121,7 @@ void check_storage( Array< T >& v )
   }
   else
   {
-    T* tuple = new T[ num_components ];
+    T* tuple = alloc< T >( num_components );
     for ( IndexType i = capacity / 2 ; i < capacity ; ++i )
     {
       for ( IndexType j = 0 ; j < num_components ; ++j )
@@ -130,7 +130,7 @@ void check_storage( Array< T >& v )
       }
       v.append( tuple, 1 );
     }
-    delete [] tuple;
+    free( tuple );
     tuple = nullptr;
   }
 
@@ -249,7 +249,7 @@ void check_set( Array< T >& v )
   /* Allocate a buffer half the size of the array. Fill it up with sequential
    * values. */
   const IndexType buffer_size = size / 2;
-  T* buffer = new T[ buffer_size * num_components ];
+  T* buffer = alloc<T>( buffer_size * num_components );
   for ( IndexType i = 0 ; i < buffer_size * num_components ; ++i )
   {
     buffer[ i ] = i;
@@ -313,6 +313,8 @@ void check_set( Array< T >& v )
       EXPECT_EQ( v( i, j ), i * num_components + j );
     }
   }
+
+  free( buffer );
 }
 
 /*!
@@ -343,7 +345,7 @@ void check_resize( Array< T >& v )
   /* Append a new tuple, should resize. */
   IndexType old_capacity = capacity;
   capacity = calc_new_capacity( v, 1 );
-  T* tuple = new T[ num_components ];
+  T* tuple = alloc<T>( num_components );
   for ( IndexType j = 0 ; j < num_components ; ++j )
   {
     tuple[ j ] = size * j - 5 * size + 7 * j;
@@ -367,7 +369,7 @@ void check_resize( Array< T >& v )
 
   /* Prepare 1000 tuples to be appended. */
   const IndexType n_tuples = 1000;
-  T* values = new T[ n_tuples * num_components ];
+  T* values = alloc< T >( n_tuples * num_components );
   for ( IndexType i = 0 ; i < n_tuples ; ++i )
   {
     for ( IndexType j = 0 ; j < num_components ; ++j )
@@ -505,10 +507,10 @@ void check_resize( Array< T >& v )
     }
   }
 
-  delete [] tuple;
+  free( tuple );
   tuple = nullptr;
 
-  delete [] values;
+  free( values );
   values = nullptr;
 }
 
@@ -539,7 +541,7 @@ void check_insert( Array< T >& v )
   /* Append a new tuple, should resize. */
   IndexType old_capacity = capacity;
   capacity = calc_new_capacity( v, 1 );
-  T* tuple = new T[ num_components ];
+  T* tuple = alloc< T >( num_components );
   for ( IndexType j = 0 ; j < num_components ; ++j )
   {
     tuple[ j ] = size * j - 5 * size + 7 * j;
@@ -561,7 +563,7 @@ void check_insert( Array< T >& v )
 
   /* Append 1000 tuples */
   const IndexType n_tuples = 1000;
-  T* values = new T[ n_tuples * num_components ];
+  T* values = alloc< T >( n_tuples * num_components );
   for ( IndexType i = 0 ; i < n_tuples ; ++i )
   {
     for ( IndexType j = 0 ; j < num_components ; ++j )
@@ -620,10 +622,10 @@ void check_insert( Array< T >& v )
     }
   }
 
-  delete [] tuple;
+  free( tuple );
   tuple = nullptr;
 
-  delete [] values;
+  free( values );
   values = nullptr;
 }
 
@@ -870,12 +872,12 @@ void check_external( Array< T >& v )
 
   /* Since the array is full all of the following calls should require a
    * reallocation and cause a fatal error. */
-  T* tuple = new T[ num_components ];
+  T* tuple = alloc< T >( num_components );
   EXPECT_DEATH_IF_SUPPORTED( v.append( tuple, 1 ), IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( v.insert( tuple, 1, 0 ), IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( v.reserve( size + 1 ), IGNORE_OUTPUT );
 
-  delete [] tuple;
+  free( tuple );
   tuple = nullptr;
 }
 
@@ -941,11 +943,6 @@ TEST( core_array, checkSet )
 TEST( core_array, checkResize )
 {
   constexpr IndexType ZERO = 0;
-
-  /* Resizing isn't allowed with a ratio less than 1.0. */
-  Array< int > v_int( ZERO, 1, 100 );
-  v_int.setResizeRatio( 0.99 );
-  EXPECT_DEATH_IF_SUPPORTED( internal::check_resize( v_int ), IGNORE_OUTPUT );
 
   for ( double ratio = 1.0 ; ratio <= 2.0 ; ratio += 0.5 )
   {

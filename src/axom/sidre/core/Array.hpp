@@ -159,10 +159,7 @@ public:
   /*!
    * \brief Return true iff a sidre constructor was called.
    */
-  virtual bool isInSidre() const
-  {
-    return m_view != nullptr;
-  }
+  virtual bool isInSidre() const { return true; }
 
   /*!
    * \brief Return a pointer to the View that this Array wraps.
@@ -239,8 +236,11 @@ protected:
 
   /*!
    * \brief Allocates space within the Array's View.
+   *
+   * \param [in] new_num_tuples the number of tuples which exceeds the current
+   *  capacity.
    */
-  void reallocViewData();
+  void reallocViewData( IndexType new_capacity );
 
   View* m_view;
 
@@ -340,10 +340,6 @@ Array< T >::Array( View* view, axom::IndexType num_tuples,
 template< typename T >
 Array< T >::~Array()
 {
-  if ( m_view == nullptr )
-  {
-    axom::free( this->m_data );
-  }
   m_view = nullptr;
   this->m_data = nullptr;
 }
@@ -356,11 +352,7 @@ inline void Array< T >::updateNumTuples( axom::IndexType new_num_tuples )
   SLIC_ASSERT( new_num_tuples >= 0 );
   SLIC_ASSERT( new_num_tuples <= this->m_capacity );
   this->m_num_tuples = new_num_tuples;
-
-  if ( m_view != nullptr )
-  {
-    describeView();
-  }
+  describeView();
 }
 
 //------------------------------------------------------------------------------
@@ -369,21 +361,12 @@ inline void Array< T >::setCapacity( axom::IndexType new_capacity )
 {
   SLIC_ASSERT( new_capacity >= 0 );
 
-  this->m_capacity = new_capacity;
-  if ( this->m_capacity < this->m_num_tuples )
+  if ( new_capacity < this->m_num_tuples )
   {
-    updateNumTuples( this->m_capacity );
+    updateNumTuples( new_capacity );
   }
 
-  if ( m_view != nullptr )
-  {
-    return reallocViewData();
-  }
-
-  this->m_data = axom::realloc( this->m_data,
-                                this->m_capacity * this->m_num_components );
-  SLIC_ERROR_IF( this->m_data == nullptr && this->m_capacity > 0,
-                 "Array reallocation failed." );
+  return reallocViewData( new_capacity );
 }
 
 //------------------------------------------------------------------------------
@@ -394,17 +377,9 @@ inline void Array< T >::dynamicRealloc( axom::IndexType new_num_tuples )
                  "Cannot change the capacity of external data.");
   SLIC_ERROR_IF( this->m_resize_ratio < 1.0, "Resize ratio of " <<
                  this->m_resize_ratio << " doesn't support dynamic resizing");
-  this->m_capacity = new_num_tuples * this->m_resize_ratio + 0.5;
-
-  if ( m_view != nullptr )
-  {
-    return reallocViewData();
-  }
-
-  this->m_data = axom::realloc( this->m_data,
-                                this->m_capacity * this->m_num_components );
-  SLIC_ERROR_IF( this->m_data == nullptr && this->m_capacity > 0,
-                 "Array reallocation failed." );
+  
+  IndexType new_capacity = new_num_tuples * this->m_resize_ratio + 0.5;
+  return reallocViewData( new_capacity );
 }
 
 //------------------------------------------------------------------------------
@@ -437,18 +412,19 @@ inline axom::IndexType Array< T >::getViewShape( int dim ) const
 
 //------------------------------------------------------------------------------
 template< typename T >
-inline void Array< T >::reallocViewData()
+inline void Array< T >::reallocViewData( IndexType new_capacity )
 {
   if ( m_view->isEmpty() )
   {
     constexpr sidre::TypeID T_type = sidreTypeId();
-    m_view->allocate( T_type, this->m_capacity * this->m_num_components );
+    m_view->allocate( T_type, new_capacity * this->m_num_components );
   }
   else
   {
-    m_view->reallocate( this->m_capacity * this->m_num_components );
+    m_view->reallocate( new_capacity * this->m_num_components );
   }
 
+  this->m_capacity = new_capacity;
   describeView();
   this->m_data = static_cast< T* >( m_view->getVoidPtr() );
 

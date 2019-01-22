@@ -349,7 +349,7 @@ void check_for_all_cell_faces( int dimension )
 // UNIT TESTS
 //------------------------------------------------------------------------------
 
-TEST( mint_execution_cell_traversals, for_all_cells_nodeids )
+AXOM_CUDA_TEST( mint_execution_cell_traversals, for_all_cells_nodeids )
 {
   constexpr int NDIMS = 3;
   for ( int i=1 ; i <= NDIMS ; ++i )
@@ -375,22 +375,27 @@ TEST( mint_execution_cell_traversals, for_all_cells_nodeids )
 #endif
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
-    defined(RAJA_ENABLE_CUDA)
+    defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
-    using cuda_exec = policy::parallel_gpu;
+    const MemorySpace prev_space = getDefaultMemorySpace();
+    setDefaultMemorySpace( MemorySpace::UNIFIED_MEMORY );
+
+    using cuda_exec = policy::parallel_gpu< 512 >;
     check_for_all_cell_nodes< cuda_exec, STRUCTURED_UNIFORM_MESH >(i);
     check_for_all_cell_nodes< cuda_exec, STRUCTURED_CURVILINEAR_MESH >(i);
     check_for_all_cell_nodes< cuda_exec, STRUCTURED_RECTILINEAR_MESH >(i);
     check_for_all_cell_nodes< cuda_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >(i);
     check_for_all_cell_nodes< cuda_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >(i);
+
+    setDefaultMemorySpace( prev_space );
 #endif
 
   } // END for all dimensions
 }
 
-TEST( mint_execution_cell_traversals, for_all_cells_coords )
+AXOM_CUDA_TEST( mint_execution_cell_traversals, for_all_cells_coords )
 {
-  constexpr int NDIMS = 1;
+  constexpr int NDIMS = 3;
   for ( int i=1 ; i <= NDIMS ; ++i )
   {
 
@@ -414,20 +419,25 @@ TEST( mint_execution_cell_traversals, for_all_cells_coords )
 #endif
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
-    defined(RAJA_ENABLE_CUDA)
+    defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
-    using cuda_exec = policy::parallel_gpu;
+    const MemorySpace prev_space = getDefaultMemorySpace();
+    setDefaultMemorySpace( MemorySpace::UNIFIED_MEMORY );
+
+    using cuda_exec = policy::parallel_gpu< 512 >;
     check_for_all_cell_coords< cuda_exec, STRUCTURED_UNIFORM_MESH >(i);
     check_for_all_cell_coords< cuda_exec, STRUCTURED_CURVILINEAR_MESH >(i);
     check_for_all_cell_coords< cuda_exec, STRUCTURED_RECTILINEAR_MESH >(i);
     check_for_all_cell_coords< cuda_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >(i);
     check_for_all_cell_coords< cuda_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >(i);
+
+    setDefaultMemorySpace( prev_space );
 #endif
 
   } // END for all dimensions
 }
 
-TEST( mint_execution_cell_traversals, for_all_cells_faceids )
+AXOM_CUDA_TEST( mint_execution_cell_traversals, for_all_cells_faceids )
 {
   constexpr int NDIMS = 3;
   for ( int i=2 ; i <= NDIMS ; ++i )
@@ -453,22 +463,26 @@ TEST( mint_execution_cell_traversals, for_all_cells_faceids )
 #endif
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
-    defined(RAJA_ENABLE_CUDA)
+    defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
-    using cuda_exec = policy::parallel_gpu;
+    const MemorySpace prev_space = getDefaultMemorySpace();
+    setDefaultMemorySpace( MemorySpace::UNIFIED_MEMORY );
+
+    using cuda_exec = policy::parallel_gpu< 512 >;
     check_for_all_cell_faces< cuda_exec, STRUCTURED_UNIFORM_MESH >(i);
     check_for_all_cell_faces< cuda_exec, STRUCTURED_CURVILINEAR_MESH >(i);
     check_for_all_cell_faces< cuda_exec, STRUCTURED_RECTILINEAR_MESH >(i);
     check_for_all_cell_faces< seq_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >(i);
     check_for_all_cell_faces< seq_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >(i);
 
+    setDefaultMemorySpace( prev_space );
 #endif
 
   } // END for all dimensions
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_execution_cell_traversals, for_all_cells_ij )
+AXOM_CUDA_TEST( mint_execution_cell_traversals, for_all_cells_ij )
 {
   using seq_exec = policy::serial;
   check_for_all_cells_ij< seq_exec, STRUCTURED_UNIFORM_MESH >();
@@ -486,19 +500,23 @@ TEST( mint_execution_cell_traversals, for_all_cells_ij )
 #endif
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
-  defined(RAJA_ENABLE_CUDA)
+  defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
-  using cuda_exec = policy::parallel_gpu;
+  const MemorySpace prev_space = getDefaultMemorySpace();
+  setDefaultMemorySpace( MemorySpace::UNIFIED_MEMORY );
+
+  using cuda_exec = policy::parallel_gpu< 512 >;
   check_for_all_cells_ij< cuda_exec, STRUCTURED_UNIFORM_MESH >();
   check_for_all_cells_ij< cuda_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_cells_ij< cuda_exec, STRUCTURED_RECTILINEAR_MESH >();
 
+  setDefaultMemorySpace( prev_space );
 #endif
 
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_execution_cell_traversals, for_all_cells_ijk )
+AXOM_CUDA_TEST( mint_execution_cell_traversals, for_all_cells_ijk )
 {
   using seq_exec = policy::serial;
   check_for_all_cells_ijk< seq_exec, STRUCTURED_UNIFORM_MESH >();
@@ -516,19 +534,23 @@ TEST( mint_execution_cell_traversals, for_all_cells_ijk )
 #endif
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
-  defined(RAJA_ENABLE_CUDA)
+  defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
-  using cuda_exec = policy::parallel_gpu;
+  const MemorySpace prev_space = getDefaultMemorySpace();
+  setDefaultMemorySpace( MemorySpace::UNIFIED_MEMORY );
+
+  using cuda_exec = policy::parallel_gpu< 512 >;
   check_for_all_cells_ijk< cuda_exec, STRUCTURED_UNIFORM_MESH >();
   check_for_all_cells_ijk< cuda_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_cells_ijk< cuda_exec, STRUCTURED_RECTILINEAR_MESH >();
 
+  setDefaultMemorySpace( prev_space );
 #endif
 
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_execution_cell_traversals, for_all_cells_index )
+AXOM_CUDA_TEST( mint_execution_cell_traversals, for_all_cells_index )
 {
   constexpr int NDIMS = 3;
   for ( int i=1 ; i <= NDIMS ; ++i )
@@ -554,15 +576,19 @@ TEST( mint_execution_cell_traversals, for_all_cells_index )
 #endif
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
-    defined(RAJA_ENABLE_CUDA)
+    defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
-    using cuda_exec = policy::parallel_gpu;
+    const MemorySpace prev_space = getDefaultMemorySpace();
+    setDefaultMemorySpace( MemorySpace::UNIFIED_MEMORY );
+
+    using cuda_exec = policy::parallel_gpu< 512 >;
     check_for_all_cells_idx< cuda_exec, STRUCTURED_UNIFORM_MESH >(i);
     check_for_all_cells_idx< cuda_exec, STRUCTURED_CURVILINEAR_MESH >(i);
     check_for_all_cells_idx< cuda_exec, STRUCTURED_RECTILINEAR_MESH >(i);
     check_for_all_cells_idx< cuda_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >(i);
     check_for_all_cells_idx< cuda_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >(i);
 
+    setDefaultMemorySpace( prev_space );
 #endif
 
   } // END for all dimensions

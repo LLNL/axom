@@ -20,6 +20,7 @@
 
 #include "axom/core/Types.hpp"            // for axom types
 #include "axom/core/Macros.hpp"           // for axom macros
+#include "axom/core/StackArray.hpp"       // for StackArray
 
 #include "axom/mint/config.hpp"           // for compile-time definitions
 #include "axom/mint/mesh/CellTypes.hpp"   // for the CellTypes enum
@@ -322,7 +323,7 @@ public:
    *
    * \post offsets != nullptr
    */
-  const IndexType* getCellNodeOffsetsArray( ) const
+  const StackArray<IndexType, 8>& getCellNodeOffsetsArray( ) const
   { return m_cell_node_offsets; };
 
 
@@ -856,18 +857,18 @@ protected:
    */
   void structuredInit();
 
-  IndexType m_node_dims[ 3 ] = { 0, 0, 0 };
-  int64 m_node_extent[ 6 ] = { 0, 0, 0, 0, 0, 0 };
+  StackArray<IndexType, 3> m_node_dims = {{ 0, 0, 0 }};
+  StackArray<int64, 6> m_node_extent = {{ 0, 0, 0, 0, 0, 0 }};
 
   IndexType m_node_jp = 0;
   IndexType m_node_kp = 0;
 
-  IndexType m_cell_dims[ 3 ] = { 0, 0, 0 };
+  StackArray<IndexType, 3> m_cell_dims = {{ 0, 0, 0 }};
   IndexType m_cell_jp = 0;
   IndexType m_cell_kp = 0;
-  IndexType m_cell_node_offsets[ 8 ] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+  StackArray<IndexType, 8> m_cell_node_offsets = {{ 0, 0, 0, 0, 0, 0, 0, 0 }};
 
-  IndexType m_total_faces[ 3 ] = { 0, 0, 0 };
+  StackArray<IndexType, 3> m_total_faces = {{ 0, 0, 0 }};
   IndexType m_total_IJ_faces = 0;
   IndexType m_num_I_faces_in_k_slice = 0;
   IndexType m_num_J_faces_in_k_slice = 0;

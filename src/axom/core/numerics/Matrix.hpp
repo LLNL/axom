@@ -16,6 +16,8 @@
  */
 
 #include "axom/core/utilities/Utilities.hpp" // for utilities::swap()
+#include "axom/core/memory_management.hpp"   // for alloc(), free()
+
 
 // C/C++ includes
 #include <cassert>  // for assert()
@@ -160,7 +162,7 @@ public:
    * \pre cols >= 1
    * \pre data != nullptr
    */
-  Matrix( int rows, int cols, T* data, bool useExternal=false );
+  AXOM_HOST_DEVICE Matrix( int rows, int cols, T* data, bool useExternal=false );
 
   /*!
    * \brief Copy constructor.
@@ -171,7 +173,7 @@ public:
   /*!
    * \brief Destructor.
    */
-  ~Matrix();
+  AXOM_HOST_DEVICE ~Matrix();
 
   /*!
    * \brief Check to see if the matrix is square.
@@ -201,7 +203,7 @@ public:
    * \brief Returns the number of columns in the matrix.
    * \return numCols the number of columns in the matrix.
    */
-  int getNumColumns() const { return m_cols; };
+  AXOM_HOST_DEVICE int getNumColumns() const { return m_cols; };
 
   /*!
    * \brief Returns the size of the diagonal.
@@ -288,7 +290,7 @@ public:
    * \pre i >= 0 && i < m_rows
    * \pre j >= 0 && j < m_cols
    */
-  const T& operator()(IndexType i, IndexType j) const;
+  AXOM_HOST_DEVICE const T& operator()(IndexType i, IndexType j) const;
 
   /*!
    * \brief Given an \f$ M \times N \f$ matrix, \f$ \mathcal{A} \f$, return a
@@ -301,7 +303,7 @@ public:
    * \pre i >= 0 && i < m_rows
    * \pre j >= 0 && j < m_cols
    */
-  T& operator()(IndexType i, IndexType j);
+  AXOM_HOST_DEVICE T& operator()(IndexType i, IndexType j);
 
   /*!
    * \brief Returns a const pointer to the  \f$ jth \f$ column of an
@@ -572,7 +574,7 @@ private:
   /*!
    * \brief Deallocates all matrix data.
    */
-  void clear();
+  AXOM_HOST_DEVICE void clear();
 
   /// @}
 
@@ -581,7 +583,7 @@ private:
 
   int m_rows;           /*!< the number of rows in the matrix */
   int m_cols;           /*!< the number of columns in the matrix */
-  T* m_data;             /*!< raw storage buffer for the matrix data */
+  T* m_data;            /*!< raw storage buffer for the matrix data */
   bool m_usingExternal; /*!< indicates if an external buffer is used */
 
   /// @}
@@ -609,31 +611,33 @@ Matrix< T >::Matrix( int rows, int cols, T val ) :
   assert( m_rows > 0 );
   assert( m_cols > 0 );
 
-  m_data = new T [ m_rows*m_cols ];
+  m_data = alloc< T >( m_rows * m_cols );
   this->fill( val );
 }
 
 //-----------------------------------------------------------------------------
 template < typename T >
-Matrix< T >::Matrix( int rows, int cols, T* data, bool external ) :
+AXOM_HOST_DEVICE Matrix< T >::Matrix( int rows, int cols, T* data, bool external ) :
   m_rows( rows ),
   m_cols( cols ),
   m_usingExternal( external )
 {
   assert( data != nullptr );
 
-  const int nitems = m_rows*m_cols;
 
   if ( m_usingExternal )
   {
-
     m_data = data;
-
   }
   else
   {
-    m_data = new T[ nitems ];
-    memcpy( m_data, data, nitems*sizeof(T) );
+#if defined(__CUDA_ARCH__)
+    assert(false);
+#else
+    const int nitems = m_rows * m_cols;
+    m_data = alloc< T >( nitems );
+    memcpy( m_data, data, nitems * sizeof(T) );
+#endif
   }
 
 }
@@ -650,7 +654,7 @@ Matrix< T >::Matrix( const Matrix< T >& rhs )
 
 //-----------------------------------------------------------------------------
 template < typename T >
-Matrix< T >::~Matrix( )
+AXOM_HOST_DEVICE Matrix< T >::~Matrix( )
 {
   this->clear();
 }
@@ -770,7 +774,7 @@ void Matrix< T >::swapColumns( IndexType icol, IndexType jcol )
 
 //-----------------------------------------------------------------------------
 template < typename T >
-const T& Matrix< T >::operator()(IndexType i, IndexType j ) const
+AXOM_HOST_DEVICE const T& Matrix< T >::operator()(IndexType i, IndexType j ) const
 {
   assert( (i>=0) && (i < m_rows) );
   assert( (j>=0) && (j < m_cols) );
@@ -779,7 +783,7 @@ const T& Matrix< T >::operator()(IndexType i, IndexType j ) const
 
 //-----------------------------------------------------------------------------
 template < typename T >
-T& Matrix< T >::operator()(IndexType i, IndexType j)
+AXOM_HOST_DEVICE T& Matrix< T >::operator()(IndexType i, IndexType j)
 {
   assert( (i>=0) && (i < m_rows) );
   assert( (j>=0) && (j < m_cols) );
@@ -858,7 +862,6 @@ T* Matrix< T  >::data()
 template < typename T >
 Matrix< T >& Matrix< T >::operator=( const Matrix< T >& rhs )
 {
-
   if ( this != &rhs )
   {
 
@@ -926,7 +929,7 @@ void Matrix< T >::copy( const Matrix< T >& rhs )
 
     m_rows = rhs.m_rows;
     m_cols = rhs.m_cols;
-    m_data = new T[ m_rows*m_cols ];
+    m_data = alloc< T >( m_rows*m_cols );
   }
 
   assert( m_rows==rhs.m_rows );
@@ -940,13 +943,16 @@ void Matrix< T >::copy( const Matrix< T >& rhs )
 
 //-----------------------------------------------------------------------------
 template < typename T >
-void Matrix< T >::clear( )
+AXOM_HOST_DEVICE void Matrix< T >::clear( )
 {
+#if defined(__CUDA_ARCH__)
+  assert(m_usingExternal);
+#else
   if ( !m_usingExternal )
   {
-    delete []  m_data;
-    m_data = nullptr;
+    free( m_data );
   }
+#endif
 
   m_rows = m_cols = 0;
 }

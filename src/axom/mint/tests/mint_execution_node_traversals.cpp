@@ -342,7 +342,7 @@ void check_for_all_nodes_x( )
 // UNIT TESTS
 //------------------------------------------------------------------------------
 
-TEST( mint_execution_node_traversals, for_all_nodes_xyz )
+AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_xyz )
 {
   using seq_exec = policy::serial;
   check_for_all_nodes_xyz< seq_exec, STRUCTURED_UNIFORM_MESH >();
@@ -366,9 +366,12 @@ TEST( mint_execution_node_traversals, for_all_nodes_xyz )
 #endif
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
-  defined(RAJA_ENABLE_CUDA)
+  defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
-  using cuda_exec = policy::parallel_gpu;
+  const MemorySpace prev_space = getDefaultMemorySpace();
+  setDefaultMemorySpace( MemorySpace::UNIFIED_MEMORY );
+
+  using cuda_exec = policy::parallel_gpu< 512 >;
   check_for_all_nodes_xyz< cuda_exec, STRUCTURED_UNIFORM_MESH >();
   check_for_all_nodes_xyz< cuda_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_xyz< cuda_exec, STRUCTURED_RECTILINEAR_MESH >();
@@ -380,7 +383,7 @@ TEST( mint_execution_node_traversals, for_all_nodes_xyz )
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_execution_node_traversals, for_all_nodes_xy )
+AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_xy )
 {
   using seq_exec = policy::serial;
   check_for_all_nodes_xy< seq_exec, STRUCTURED_UNIFORM_MESH >();
@@ -404,9 +407,12 @@ TEST( mint_execution_node_traversals, for_all_nodes_xy )
 #endif
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
-  defined(RAJA_ENABLE_CUDA)
+  defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
-  using cuda_exec = policy::parallel_gpu;
+  const MemorySpace prev_space = getDefaultMemorySpace();
+  setDefaultMemorySpace( MemorySpace::UNIFIED_MEMORY );
+
+  using cuda_exec = policy::parallel_gpu< 512 >;
   check_for_all_nodes_xy< cuda_exec, STRUCTURED_UNIFORM_MESH >();
   check_for_all_nodes_xy< cuda_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_xy< cuda_exec, STRUCTURED_RECTILINEAR_MESH >();
@@ -418,7 +424,7 @@ TEST( mint_execution_node_traversals, for_all_nodes_xy )
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_execution_node_traversals, for_all_nodes_x )
+AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_x )
 {
   using seq_exec = policy::serial;
   check_for_all_nodes_x< seq_exec, STRUCTURED_UNIFORM_MESH >();
@@ -442,9 +448,12 @@ TEST( mint_execution_node_traversals, for_all_nodes_x )
 #endif
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
-  defined(RAJA_ENABLE_CUDA)
+  defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
-  using cuda_exec = policy::parallel_gpu;
+  const MemorySpace prev_space = getDefaultMemorySpace();
+  setDefaultMemorySpace( MemorySpace::UNIFIED_MEMORY );
+
+  using cuda_exec = policy::parallel_gpu< 512 >;
   check_for_all_nodes_x< cuda_exec, STRUCTURED_UNIFORM_MESH >();
   check_for_all_nodes_x< cuda_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_x< cuda_exec, STRUCTURED_RECTILINEAR_MESH >();
@@ -457,7 +466,7 @@ TEST( mint_execution_node_traversals, for_all_nodes_x )
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_execution_node_traversals, for_all_nodes_ijk )
+AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_ijk )
 {
   using seq_exec = policy::serial;
   check_for_all_nodes_ijk< seq_exec, STRUCTURED_UNIFORM_MESH >();
@@ -475,18 +484,22 @@ TEST( mint_execution_node_traversals, for_all_nodes_ijk )
 #endif
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
-  defined(RAJA_ENABLE_CUDA)
+  defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
-  using cuda_exec = policy::parallel_gpu;
+  const MemorySpace prev_space = getDefaultMemorySpace();
+  setDefaultMemorySpace( MemorySpace::UNIFIED_MEMORY );
+
+  using cuda_exec = policy::parallel_gpu< 512 >;
   check_for_all_nodes_ijk< cuda_exec, STRUCTURED_UNIFORM_MESH >();
   check_for_all_nodes_ijk< cuda_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_ijk< cuda_exec, STRUCTURED_RECTILINEAR_MESH >();
 
+  setDefaultMemorySpace( prev_space );
 #endif
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_execution_node_traversals, for_all_nodes_ij )
+AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_ij )
 {
   using seq_exec = policy::serial;
   check_for_all_nodes_ij< seq_exec, STRUCTURED_UNIFORM_MESH >();
@@ -504,18 +517,22 @@ TEST( mint_execution_node_traversals, for_all_nodes_ij )
 #endif
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
-  defined(RAJA_ENABLE_CUDA)
+  defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
-  using cuda_exec = policy::parallel_gpu;
+  const MemorySpace prev_space = getDefaultMemorySpace();
+  setDefaultMemorySpace( MemorySpace::UNIFIED_MEMORY );
+
+  using cuda_exec = policy::parallel_gpu< 512 >;
   check_for_all_nodes_ij< cuda_exec, STRUCTURED_UNIFORM_MESH >();
   check_for_all_nodes_ij< cuda_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_ij< cuda_exec, STRUCTURED_RECTILINEAR_MESH >();
 
+  setDefaultMemorySpace( prev_space );
 #endif
 }
 
 //------------------------------------------------------------------------------
-TEST( mint_execution_node_traversals, for_all_nodes_index )
+AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_index )
 {
   constexpr int NDIMS = 3;
   for ( int i=1 ; i <= NDIMS ; ++i )
@@ -543,9 +560,12 @@ TEST( mint_execution_node_traversals, for_all_nodes_index )
 #endif
 
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
-    defined(RAJA_ENABLE_CUDA)
+    defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
-    using cuda_exec = policy::parallel_gpu;
+    const MemorySpace prev_space = getDefaultMemorySpace();
+    setDefaultMemorySpace( MemorySpace::UNIFIED_MEMORY );
+
+    using cuda_exec = policy::parallel_gpu< 512 >;
     check_for_all_nodes_idx< cuda_exec, STRUCTURED_UNIFORM_MESH >(i);
     check_for_all_nodes_idx< cuda_exec, STRUCTURED_CURVILINEAR_MESH >(i);
     check_for_all_nodes_idx< cuda_exec, STRUCTURED_RECTILINEAR_MESH >(i);
@@ -553,6 +573,7 @@ TEST( mint_execution_node_traversals, for_all_nodes_index )
     check_for_all_nodes_idx< cuda_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >(i);
     check_for_all_nodes_idx< cuda_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >(i);
 
+    setDefaultMemorySpace( prev_space );
 #endif
 
   } // END for all dimensions
