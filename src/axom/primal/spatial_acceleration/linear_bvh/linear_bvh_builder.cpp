@@ -21,6 +21,8 @@
 #include "axom/primal/spatial_acceleration/linear_bvh/morton_codes.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/policies.hpp"
 
+#include "axom/core/utilities/Utilities.hpp" // for isNearlyEqual()
+
 // RAJA includes
 #include "RAJA/RAJA.hpp"
 
@@ -100,9 +102,10 @@ uint32 *get_mcodes(AABB *aabbs, const int32  size, const AABB &bounds)
   min_coord[1] = bounds.m_y.min();
   min_coord[2] = bounds.m_z.min();
 
-  for(int i = 0; i < 3; ++i)
+  for ( int i = 0; i < 3; ++i )
   {
-    inv_extent[i] = (extent[i] == .0f) ? 0.f : 1.f / extent[i];
+    inv_extent[ i ] =
+      utilities::isNearlyEqual( extent[i], .0f ) ? 0.f : 1.f / extent[i];
   }
 
   uint32 *mcodes = axom::alloc<uint32>(size);
