@@ -71,11 +71,11 @@ axom::common::int64 expand_bits64(axom::common::int32 x)
 //Returns 30 bit morton code for coordinates for
 // x, y, and z are expecting to be between [0,1]
 inline AXOM_HOST_DEVICE
-axom::common::int32 morton_encode32( axom::common::float32 &x,
-                                     axom::common::float32 &y,
-                                     axom::common::float32 &z)
+axom::common::int32 morton32_encode( axom::common::float32 x,
+                                     axom::common::float32 y,
+                                     axom::common::float32 z=0.0f )
 {
-  //take the first 10 bits
+  //take the first 10 bits. Note, 2^10 = 1024
   x = fmin(fmax(x * 1024.0f, 0.0f), 1023.0f);
   y = fmin(fmax(y * 1024.0f, 0.0f), 1023.0f);
   z = fmin(fmax(z * 1024.0f, 0.0f), 1023.0f);
@@ -91,11 +91,11 @@ axom::common::int32 morton_encode32( axom::common::float32 &x,
 //Returns 30 bit morton code for coordinates for
 //coordinates in the unit cude
 inline AXOM_HOST_DEVICE
-axom::common::int64 morton_encode64( axom::common::float32& x,
-                                     axom::common::float32& y,
-                                     axom::common::float32& z)
+axom::common::int64 morton64_encode( axom::common::float32 x,
+                                     axom::common::float32 y,
+                                     axom::common::float32 z=0.0f )
 {
-  //take the first 21 bits
+  //take the first 21 bits. Note, 2^21= 2097152.0f
   x = fmin(fmax(x * 2097152.0f, 0.0f), 2097151.0f);
   y = fmin(fmax(y * 2097152.0f, 0.0f), 2097151.0f);
   z = fmin(fmax(z * 2097152.0f, 0.0f), 2097151.0f);
