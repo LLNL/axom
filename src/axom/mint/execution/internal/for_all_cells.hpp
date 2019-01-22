@@ -223,8 +223,7 @@ inline void for_all_cells_impl( xargs::nodeids,
   const int dimension      = m.getDimension();
   const IndexType nodeJp   = m.nodeJp();
   const IndexType nodeKp   = m.nodeKp();
-  const StackArray< IndexType, 8 > offsets =
-    createStackArray< IndexType, 8 >( m.getCellNodeOffsetsArray() );
+  const StackArray< IndexType, 8 > & offsets = m.getCellNodeOffsetsArray(); 
 
   if ( dimension == 1 )
   {

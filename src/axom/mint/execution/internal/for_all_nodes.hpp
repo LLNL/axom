@@ -284,11 +284,8 @@ inline void for_all_nodes_impl( xargs::xy,
   SLIC_ERROR_IF( m.getDimension() != 2,
                  "xargs::xy is only valid for 2D meshes" );
 
-  const StackArray< double, 2 > origin =
-    createStackArray< double, 2 >( m.getOrigin() );
-
-  const StackArray< double, 2 > spacing =
-    createStackArray< double, 2 >( m.getSpacing() );
+  const StackArray< double, 3 > & origin = m.getOrigin();
+  const StackArray< double, 3 > & spacing = m.getSpacing();
 
   for_all_nodes_impl< ExecPolicy >( xargs::ij(), m,
     AXOM_LAMBDA( IndexType nodeID, IndexType i, IndexType j )
@@ -387,11 +384,8 @@ inline void for_all_nodes_impl( xargs::xyz,
   SLIC_ERROR_IF( m.getDimension() != 3,
                  "xargs::xyz is only valid for 3D meshes" );
 
-  const StackArray< double, 3 > origin =
-    createStackArray< double, 3 >( m.getOrigin() );
-
-  const StackArray< double, 3 > spacing =
-    createStackArray< double, 3 >( m.getSpacing() );
+  const StackArray< double, 3 > origin = m.getOrigin();
+  const StackArray< double, 3 > spacing = m.getSpacing();
 
   for_all_nodes_impl< ExecPolicy >( xargs::ijk(), m,
     AXOM_LAMBDA(IndexType nodeID, IndexType i, IndexType j, IndexType k)

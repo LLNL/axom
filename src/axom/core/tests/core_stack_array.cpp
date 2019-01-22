@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -52,28 +52,6 @@ StackArray< T, N > test_storage( LAMBDA && getValue )
   for ( int i = 0; i < N; ++i )
   {
     arr[ i ] = getValue( i );
-  }
-
-  check( arr, std::forward< LAMBDA >( getValue ) );
-  return arr;
-}
-
-
-template< typename T, int N, typename LAMBDA >
-StackArray< T, N > test_construction( LAMBDA && getValue )
-{
-  T values[N];
-  for ( int i = 0; i < N; ++i )
-  {
-    values[ i ] = getValue( i );
-  }
-
-  StackArray< T, N > arr = createStackArray< T, N >( values );
-
-  EXPECT_NE( &arr[0], &values[0] );
-  for ( int i = 0; i < N; ++i )
-  {
-    EXPECT_EQ( arr[ i ], values[ i ] );
   }
 
   check( arr, std::forward< LAMBDA >( getValue ) );
@@ -160,19 +138,6 @@ TEST( StackArray, storage )
     []( int i ) { return Tensor( i ); } );
 
   internal::test_storage< std::string, N >(
-    []( int i ) { return std::to_string( i ); } );
-}
-
-TEST( StackArray, construction )
-{
-  constexpr int N = 100;     /* Number of values to store */
-  internal::test_construction< int, N >(
-    []( int i ) { return i; } );
-
-  internal::test_construction< Tensor, N >(
-    []( int i ) { return Tensor( i ); } );
-
-  internal::test_construction< std::string, N >(
     []( int i ) { return std::to_string( i ); } );
 }
 

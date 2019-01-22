@@ -1,6 +1,6 @@
 /*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -24,6 +24,17 @@
 namespace axom
 {
 
+/*!
+ * \class StackArray
+ *
+ * \brief Provides a wrapper for a compile time sized array, similar to
+ *  std::array. This class is needed because NVCC doesn't caputure standard
+ *  stack arrays in device lambdas. Furthermore we can't use std::array becuase
+ *  it is not host-device decorated.
+ *
+ * \tparam T the type of the values to hold.
+ * \tparam N the number of values in the array.
+ */
 template< typename T, int N >
 struct StackArray
 {
@@ -60,24 +71,6 @@ struct StackArray
 
   T m_data[  N  ];
 };
-
-/*!
- * \brief Creates a StackArray that copies the data pointed to by source.
- *  This is a free method so that StackArray doesn't define a constructor.
- *
- * \param [in] source the data to copy.
- */
-template< typename T, int N >
-StackArray< T, N > createStackArray( const T * source )
-{
-  StackArray< T, N > arr;
-  for ( int i = 0; i < N; ++i )
-  {
-    arr[ i ] = source[ i ];
-  }
-
-  return arr;
-}
 
 } /* namespace axom */
 

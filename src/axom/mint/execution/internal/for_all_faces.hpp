@@ -29,7 +29,6 @@
 #include "axom/mint/execution/policy.hpp"       // execution policies/traits
 #include "axom/mint/execution/internal/helpers.hpp" // for for_all_coords
 
-#include "axom/core/StackArray.hpp"             // for axom::StackArray
 #include "axom/core/numerics/Matrix.hpp"        // for Matrix
 
 #ifdef AXOM_USE_RAJA
