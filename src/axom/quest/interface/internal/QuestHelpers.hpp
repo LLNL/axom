@@ -31,7 +31,6 @@
 
 // C/C++ includes
 #include <string> // for C++ string
-#include <limits>
 
 /*!
  * \file

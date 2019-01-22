@@ -181,7 +181,7 @@ int lu_solve( const Matrix< T >& A, const int* pivots, const T* b, T* x )
   }
 
   const int size = A.getNumRows();
-  T* rhs = alloc< T >( size );
+  T* rhs = axom::alloc< T >( size );
   memcpy( rhs, b, size*sizeof( T ) );
 
   typedef typename Matrix< T >::IndexType IndexType;
@@ -215,7 +215,7 @@ int lu_solve( const Matrix< T >& A, const int* pivots, const T* b, T* x )
     }  // END for j
   } // END for i
 
-  free( rhs );
+  axom::free( rhs );
   return LU_SUCCESS;
 }
 

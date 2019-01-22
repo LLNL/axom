@@ -72,7 +72,7 @@
  *
  * \brief Convenience macro used for a gtest that uses cuda.
  */
-#if defined(AXOM_USE_CUDA) && defined(RAJA_ENABLE_CUDA)
+#if defined(AXOM_USE_CUDA)
 #define AXOM_CUDA_TEST(X, Y)         \
   static void cuda_test_##X##Y();    \
   TEST(X, Y) { cuda_test_##X##Y(); } \

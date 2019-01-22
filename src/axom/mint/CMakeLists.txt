@@ -122,21 +122,13 @@ set( mint_dependencies
      slic
      )
 
-if ( AXOM_MINT_USE_SIDRE )
-    list(APPEND mint_dependencies sidre conduit)
-endif()
+blt_list_append( TO mint_dependencies ELEMENTS sidre conduit IF AXOM_MINT_USE_SIDRE )
 
-if ( RAJA_FOUND )
-    list(APPEND mint_dependencies raja)
-endif()
+blt_list_append( TO mint_dependencies ELEMENTS raja IF RAJA_FOUND )
 
-if ( ENABLE_OPENMP )
-    list(APPEND mint_dependencies openmp)
-endif()
+blt_list_append( TO mint_dependencies ELEMENTS openmp IF ENABLE_OPENMP )
 
-if ( ENABLE_CUDA )
-    list(APPEND mint_dependencies cuda)
-endif()
+blt_list_append( TO mint_dependencies ELEMENTS cuda IF ENABLE_CUDA )
 
 blt_add_library(
     NAME       mint
