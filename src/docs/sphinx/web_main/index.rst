@@ -81,7 +81,7 @@ Source Code Documentation
 --------------------------
 
   *  `Axom <../../../doxygen/axom_doxygen/html/index.html>`_
-  *  `Axom Utils <../../../doxygen/axom_doxygen/html/axomutiltop.html>`_
+  *  `Core <../../../doxygen/axom_doxygen/html/coretop.html>`_
   *  `Lumberjack <../../../doxygen/axom_doxygen/html/lumberjacktop.html>`_
   *  `Mint <../../../doxygen/axom_doxygen/html/minttop.html>`_
   *  `Primal <../../../doxygen/axom_doxygen/html/primaltop.html>`_
@@ -91,6 +91,19 @@ Source Code Documentation
   *  `Slam <../../../doxygen/axom_doxygen/html/slamtop.html>`_
 
 Look for documentation to appear for new components as they are developed.
+
+Dependencies between modules are as follows:
+
+- Core has no dependencies, and the other modules depend on Core
+- Slic optionally depends on Lumberjack
+- Slam, Primal, Mint, Quest, and Sidre depend on Slic
+- Mint optionally depends on Sidre
+- Quest depends on Slam, Primal, and Mint
+
+The figure below summarizes the dependencies between the modules.  Solid links
+indicate hard dependencies; dashed links indicate optional dependencies.
+
+.. graphviz:: dependencies.dot
 
 
 ======================================================

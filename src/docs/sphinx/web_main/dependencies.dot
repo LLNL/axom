@@ -1,0 +1,9 @@
+digraph dependencies {
+  quest -> {slam primal mint};
+  {quest slam primal mint} -> {slic core};
+  mint -> sidre [style="dashed"];
+  sidre -> {slic core};
+  slic -> core;
+  slic -> lumberjack [style="dashed"];
+  lumberjack -> core;
+}
