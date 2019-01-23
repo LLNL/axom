@@ -163,12 +163,14 @@ int STLReader::readBinarySTL()
   union BinarySTLTri
   {
     common::int8 raw[BINARY_TRI_SIZE];
+
     struct
     {
       float normal[3];
       float vert[9];
       common::uint16 attr;
-    };
+    } data ;
+
   } tri;
 
   bool const isLittleEndian = axom::utilities::isLittleEndian();
@@ -202,7 +204,7 @@ int STLReader::readBinarySTL()
     for(int j=0 ; j<9 ; ++j)
     {
       float coord = isLittleEndian ?
-                    tri.vert[j] : utilities::swapEndian(tri.vert[j]);
+             tri.data.vert[ j ] : utilities::swapEndian( tri.data.vert[ j ] );
 
       m_nodes.push_back( static_cast<double>( coord) );
     }
