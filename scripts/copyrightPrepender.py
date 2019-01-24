@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 ###############################################################################
-# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -27,7 +27,7 @@ import argparse
 
 axom_copyright_str = """/*
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+ * Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.
  *
  * Produced at the Lawrence Livermore National Laboratory
  *
@@ -43,7 +43,7 @@ axom_copyright_str = """/*
  */
 \n\n"""
 
-axom_copyright_begin_str = "Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC."
+axom_copyright_begin_str = "Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC."
 
 def checkAndAddCopyrightHeader(filename, testOnly=False):
 
