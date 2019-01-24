@@ -142,7 +142,7 @@ class UberenvAxom(Package):
         cfg.write("##################################\n\n")
         cfg.write("##################################\n")
         cfg.write("#\n")
-        cfg.write("# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.\n")
+        cfg.write("# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.\n")
         cfg.write("#\n")
         cfg.write("# Produced at the Lawrence Livermore National Laboratory.\n")
         cfg.write("#\n")
