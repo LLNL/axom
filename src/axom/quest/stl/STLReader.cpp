@@ -169,7 +169,7 @@ int STLReader::readBinarySTL()
       float normal[3];
       float vert[9];
       common::uint16 attr;
-    } data ;
+    } data;
 
   } tri;
 
@@ -204,7 +204,8 @@ int STLReader::readBinarySTL()
     for(int j=0 ; j<9 ; ++j)
     {
       float coord = isLittleEndian ?
-             tri.data.vert[ j ] : utilities::swapEndian( tri.data.vert[ j ] );
+                    tri.data.vert[ j ] :
+                    utilities::swapEndian( tri.data.vert[ j ] );
 
       m_nodes.push_back( static_cast<double>( coord) );
     }

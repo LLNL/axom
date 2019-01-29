@@ -39,6 +39,179 @@ PyObject* PY_error_obj;
 // splicer end additional_functions
 
 static PyObject*
+PY_inout_init_mpi(
+  PyObject* SHROUD_UNUSED(self),
+  PyObject* args,
+  PyObject* kwds)
+{
+// splicer begin function.inout_init_mpi
+  const char* fileName;
+  MPI_Fint comm;
+  const char* SHT_kwlist[] = {
+    "fileName",
+    "comm",
+    NULL
+  };
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO:inout_init",
+                                   const_cast<char**>(SHT_kwlist), &fileName,
+                                   &comm))
+    return NULL;
+  const std::string SH_fileName(fileName);
+  MPI_Comm SH_comm = MPI_Comm_f2c(comm);
+  int SHC_rv = axom::quest::inout_init(SH_fileName, SH_comm);
+  PyObject* SHTPy_rv = PyInt_FromLong(SHC_rv);
+  return (PyObject*) SHTPy_rv;
+// splicer end function.inout_init_mpi
+}
+
+static PyObject*
+PY_inout_init_serial(
+  PyObject* SHROUD_UNUSED(self),
+  PyObject* args,
+  PyObject* kwds)
+{
+// splicer begin function.inout_init_serial
+  const char* fileName;
+  const char* SHT_kwlist[] = {
+    "fileName",
+    NULL
+  };
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:inout_init",
+                                   const_cast<char**>(SHT_kwlist), &fileName))
+    return NULL;
+  const std::string SH_fileName(fileName);
+  int SHC_rv = axom::quest::inout_init(SH_fileName);
+  PyObject* SHTPy_rv = PyInt_FromLong(SHC_rv);
+  return (PyObject*) SHTPy_rv;
+// splicer end function.inout_init_serial
+}
+
+static char PY_inout_initialized__doc__[] =
+  "documentation"
+;
+
+static PyObject*
+PY_inout_initialized(
+  PyObject* SHROUD_UNUSED(self),
+  PyObject* SHROUD_UNUSED(args),
+  PyObject* SHROUD_UNUSED(kwds))
+{
+// splicer begin function.inout_initialized
+  bool SHC_rv = axom::quest::inout_initialized();
+  PyObject* SHTPy_rv = PyBool_FromLong(SHC_rv);
+  return (PyObject*) SHTPy_rv;
+// splicer end function.inout_initialized
+}
+
+static char PY_inout_set_verbose__doc__[] =
+  "documentation"
+;
+
+static PyObject*
+PY_inout_set_verbose(
+  PyObject* SHROUD_UNUSED(self),
+  PyObject* args,
+  PyObject* kwds)
+{
+// splicer begin function.inout_set_verbose
+  PyObject* SHPy_verbosity;
+  const char* SHT_kwlist[] = {
+    "verbosity",
+    NULL
+  };
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:inout_set_verbose",
+                                   const_cast<char**>(SHT_kwlist), &PyBool_Type,
+                                   &SHPy_verbosity))
+    return NULL;
+  bool verbosity = PyObject_IsTrue(SHPy_verbosity);
+  int SHC_rv = axom::quest::inout_set_verbose(verbosity);
+  PyObject* SHTPy_rv = PyInt_FromLong(SHC_rv);
+  return (PyObject*) SHTPy_rv;
+// splicer end function.inout_set_verbose
+}
+
+static char PY_inout_evaluate_1__doc__[] =
+  "documentation"
+;
+
+static PyObject*
+PY_inout_evaluate_1(
+  PyObject* SHROUD_UNUSED(self),
+  PyObject* args,
+  PyObject* kwds)
+{
+// splicer begin function.inout_evaluate
+  Py_ssize_t SH_nargs = 0;
+  double x;
+  double y;
+  double z;
+  const char* SHT_kwlist[] = {
+    "x",
+    "y",
+    "z",
+    NULL
+  };
+  bool SHC_rv;
+
+  if (args != NULL)
+    SH_nargs += PyTuple_Size(args);
+  if (kwds != NULL)
+    SH_nargs += PyDict_Size(args);
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "dd|d:inout_evaluate",
+                                   const_cast<char**>(SHT_kwlist), &x, &y, &z))
+    return NULL;
+  switch (SH_nargs)
+  {
+  case 2:
+    SHC_rv = axom::quest::inout_evaluate(x, y);
+    break;
+  case 3:
+    SHC_rv = axom::quest::inout_evaluate(x, y, z);
+    break;
+  }
+  PyObject* SHTPy_rv = PyBool_FromLong(SHC_rv);
+  return (PyObject*) SHTPy_rv;
+// splicer end function.inout_evaluate
+}
+
+static char PY_inout_get_dimension__doc__[] =
+  "documentation"
+;
+
+static PyObject*
+PY_inout_get_dimension(
+  PyObject* SHROUD_UNUSED(self),
+  PyObject* SHROUD_UNUSED(args),
+  PyObject* SHROUD_UNUSED(kwds))
+{
+// splicer begin function.inout_get_dimension
+  int SHC_rv = axom::quest::inout_get_dimension();
+  PyObject* SHTPy_rv = PyInt_FromLong(SHC_rv);
+  return (PyObject*) SHTPy_rv;
+// splicer end function.inout_get_dimension
+}
+
+static char PY_inout_finalize__doc__[] =
+  "documentation"
+;
+
+static PyObject*
+PY_inout_finalize(
+  PyObject* SHROUD_UNUSED(self),
+  PyObject* SHROUD_UNUSED(args),
+  PyObject* SHROUD_UNUSED(kwds))
+{
+// splicer begin function.inout_finalize
+  int SHC_rv = axom::quest::inout_finalize();
+  PyObject* SHTPy_rv = PyInt_FromLong(SHC_rv);
+  return (PyObject*) SHTPy_rv;
+// splicer end function.inout_finalize
+}
+
+static PyObject*
 PY_signed_distance_init_mpi(
   PyObject* SHROUD_UNUSED(self),
   PyObject* args,
@@ -314,6 +487,54 @@ PY_signed_distance_finalize(
 // splicer end function.signed_distance_finalize
 }
 
+static char PY_inout_init__doc__[] =
+  "documentation"
+;
+
+static PyObject*
+PY_inout_init(
+  PyObject* self,
+  PyObject* args,
+  PyObject* kwds)
+{
+// splicer begin function.inout_init
+  Py_ssize_t SHT_nargs = 0;
+  if (args != NULL)
+    SHT_nargs += PyTuple_Size(args);
+  if (kwds != NULL)
+    SHT_nargs += PyDict_Size(args);
+  PyObject* rvobj;
+  if (SHT_nargs == 2)
+  {
+    rvobj = PY_inout_init_mpi(self, args, kwds);
+    if (!PyErr_Occurred())
+    {
+      return rvobj;
+    }
+    else if (!PyErr_ExceptionMatches(PyExc_TypeError))
+    {
+      return rvobj;
+    }
+    PyErr_Clear();
+  }
+  if (SHT_nargs == 1)
+  {
+    rvobj = PY_inout_init_serial(self, args, kwds);
+    if (!PyErr_Occurred())
+    {
+      return rvobj;
+    }
+    else if (!PyErr_ExceptionMatches(PyExc_TypeError))
+    {
+      return rvobj;
+    }
+    PyErr_Clear();
+  }
+  PyErr_SetString(PyExc_TypeError, "wrong arguments multi-dispatch");
+  return NULL;
+// splicer end function.inout_init
+}
+
 static char PY_signed_distance_init__doc__[] =
   "documentation"
 ;
@@ -362,6 +583,16 @@ PY_signed_distance_init(
 // splicer end function.signed_distance_init
 }
 static PyMethodDef PY_methods[] = {
+  {"inout_initialized", (PyCFunction)PY_inout_initialized, METH_NOARGS,
+   PY_inout_initialized__doc__},
+  {"inout_set_verbose", (PyCFunction)PY_inout_set_verbose,
+   METH_VARARGS|METH_KEYWORDS, PY_inout_set_verbose__doc__},
+  {"inout_evaluate", (PyCFunction)PY_inout_evaluate_1,
+   METH_VARARGS|METH_KEYWORDS, PY_inout_evaluate_1__doc__},
+  {"inout_get_dimension", (PyCFunction)PY_inout_get_dimension, METH_NOARGS,
+   PY_inout_get_dimension__doc__},
+  {"inout_finalize", (PyCFunction)PY_inout_finalize, METH_NOARGS,
+   PY_inout_finalize__doc__},
   {"signed_distance_initialized", (PyCFunction)PY_signed_distance_initialized,
    METH_NOARGS, PY_signed_distance_initialized__doc__},
   {"signed_distance_set_dimension",
@@ -385,6 +616,8 @@ static PyMethodDef PY_methods[] = {
    METH_VARARGS|METH_KEYWORDS, PY_signed_distance_evaluate__doc__},
   {"signed_distance_finalize", (PyCFunction)PY_signed_distance_finalize,
    METH_NOARGS, PY_signed_distance_finalize__doc__},
+  {"inout_init", (PyCFunction)PY_inout_init, METH_VARARGS|METH_KEYWORDS,
+   PY_inout_init__doc__},
   {"signed_distance_init", (PyCFunction)PY_signed_distance_init,
    METH_VARARGS|METH_KEYWORDS, PY_signed_distance_init__doc__},
   {NULL,   (PyCFunction)NULL, 0, NULL}          /* sentinel */

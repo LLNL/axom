@@ -28,6 +28,7 @@ options:
   # Change the default template for Fortran functions to include the library name.
   F_name_impl_template: "{library_lower}_{class_prefix}{underscore_name}{function_suffix}"
   F_name_generic_template: "{library_lower}_{underscore_name}"
+  wrap_python: True
 
 format:
   C_prefix: QUEST_
@@ -59,9 +60,15 @@ declarations:
 
       - decl: bool inout_evaluate(double x, double y, double z=0.0)
 
-      - decl: int inout_mesh_min_bounds(double* coords+dimension+intent(OUT))
-      - decl: int inout_mesh_max_bounds(double* coords+dimension+intent(OUT))
-      - decl: int inout_mesh_center_of_mass(double* coords+dimension+intent(OUT))
+      - decl: int inout_mesh_min_bounds(double* coords+dimension(3)+intent(OUT))
+        options:
+          wrap_python: False
+      - decl: int inout_mesh_max_bounds(double* coords+dimension(3)+intent(OUT))
+        options:
+          wrap_python: False
+      - decl: int inout_mesh_center_of_mass(double* coords+dimension(3)+intent(OUT))
+        options:
+          wrap_python: False
       - decl: int inout_get_dimension()
 
       - decl: int inout_finalize()
@@ -71,50 +78,30 @@ declarations:
         format:
           function_suffix: _mpi
         cpp_if: ifdef AXOM_USE_MPI
-        options:
-          wrap_python: True
 
       - decl: int signed_distance_init( const std::string& file )
         format:
           function_suffix: _serial
         cpp_if: ifndef AXOM_USE_MPI
-        options:
-          wrap_python: True
 
       - decl: bool signed_distance_initialized()
-        options:
-          wrap_python: True
 
       - decl: void signed_distance_get_mesh_bounds(
-                   double* lo+dimension+intent(OUT),
-                   double* hi+dimension+intent(OUT) )
+                   double* lo+dimension(3)+intent(OUT),
+                   double* hi+dimension(3)+intent(OUT) )
+        options:
+          wrap_python: False
 
       - decl: void signed_distance_set_dimension( int dim )
-        options:
-          wrap_python: True
       - decl: void signed_distance_set_closed_surface( bool status )
-        options:
-          wrap_python: True
       - decl: void signed_distance_set_max_levels( int maxLevels )
-        options:
-          wrap_python: True
       - decl: void signed_distance_set_max_occupancy( int maxOccupancy )
-        options:
-          wrap_python: True
       - decl: void signed_distance_set_verbose( bool status )
-        options:
-          wrap_python: True
       - decl: void signed_distance_use_shared_memory( bool status )
-        options:
-          wrap_python: True
 
       - decl: double signed_distance_evaluate( double x, double y, double z )
-        options:
-          wrap_python: True
 
       - decl: void signed_distance_finalize()
-        options:
-          wrap_python: True
 
 
 splicer_code:
