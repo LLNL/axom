@@ -23,7 +23,7 @@ libdir = os.path.join(binarydir, "lib")
 
 quest = Extension(
     'quest',
-    sources = [ os.path.join("@CMAKE_CURRENT_SOURCE_DIR@", "python", i) for i in
+    sources = [ os.path.join("@CMAKE_CURRENT_SOURCE_DIR@", "interface", "python", i) for i in
                 ['pyQUESTmodule.cpp']],
     # PyQUESThelper.cpp is generated but empty
     include_dirs=[numpy.get_include(),

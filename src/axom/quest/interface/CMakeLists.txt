@@ -23,7 +23,3 @@ add_shroud(
     C_FORTRAN_OUTPUT_DIR c_fortran
     PYTHON_OUTPUT_DIR    python
 )
-
-# Install setup.py file used to build quest Python module.
-configure_file(python/setup.py.in ${CMAKE_CURRENT_BINARY_DIR}/python/setup.py)
-configure_file(python/quest_test.py.in ${CMAKE_CURRENT_BINARY_DIR}/python/quest_test.py)

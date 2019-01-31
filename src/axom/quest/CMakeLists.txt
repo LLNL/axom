@@ -120,6 +120,14 @@ if (ENABLE_FORTRAN)
     list(APPEND quest_sources interface/c_fortran/wrapfquest.F)
 endif()
 
+if (BUILD_SHARED_LIBS)
+    # Install setup.py file used to build quest Python module.
+    configure_file(interface/python/setup.py.in
+                   ${CMAKE_CURRENT_BINARY_DIR}/interface/python/setup.py)
+    configure_file(interface/python/quest_test.py.in
+                   ${CMAKE_CURRENT_BINARY_DIR}/interface/python/quest_test.py)
+endif()
+
 ################################
 # Make/Install the library
 ################################
