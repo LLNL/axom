@@ -51,9 +51,8 @@ set(CMAKE_Fortran_COMPILER "${COMPILER_HOME}/bin/ifort" CACHE PATH "")
 # Make shared lib
 set(BUILD_SHARED_LIBS "ON" CACHE BOOL "")
 
-#set(SHROUD_EXECUTABLE "/usr/workspace/wsrzd/olson45/SAND/pyranda/env_genie/bin/shroud" CACHE PATH "")
-set(SHROUD_EXECUTABLE "/g/g14/taylor/shroud/shroud-quest/build/temp.linux-x86_64-2.7/venv/bin/shroud" CACHE PATH "")
-
+#set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2018_12_18_13_23_11/clang-4.0.0" CACHE PATH "")
+#set(SHROUD_EXECUTABLE "${TPL_ROOT}/python-2.7.15/bin/shroud" CACHE PATH "")
 
 # Sidre requires conduit and hdf5, so disable it in this host-config
 set(AXOM_ENABLE_SIDRE OFF CACHE BOOL "")
