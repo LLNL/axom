@@ -46,10 +46,14 @@ struct BVH
     m_leaf_nodes = nullptr;
   }
 
-  ~BVH()
+  void free()
   {
     axom::free(m_inner_nodes);
     axom::free(m_leaf_nodes);
+  }
+
+  ~BVH()
+  {
   }
 };
 

@@ -19,6 +19,11 @@
 #include "axom/primal/spatial_acceleration/linear_bvh/linear_bvh_builder.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/aabb.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/vec.hpp"
+#include "axom/primal/spatial_acceleration/linear_bvh/policies.hpp"
+
+
+// RAJA includes
+#include "RAJA/RAJA.hpp"
 
 #include "axom/slic/interface/slic.hpp" // for SLIC macros
 
@@ -31,6 +36,212 @@ namespace axom
 {
 namespace primal
 {
+
+namespace
+{
+void find_candidates( IndexType* offsets,
+                       IndexType*& candidates,
+                       IndexType numPts,
+                       const double* x,
+                       const double* y,
+                       const double* z,
+                       bvh::BVH &bvh)
+{
+
+
+  IndexType *candidate_counts = axom::alloc<IndexType>(numPts);
+  const bvh::Vec<float32, 4>  *inner_nodes = bvh.m_inner_nodes;
+  const int32 *leaf_nodes = bvh.m_leaf_nodes;
+  RAJA::forall<bvh::raja_for_policy>(RAJA::RangeSegment(0, numPts), AXOM_LAMBDA (IndexType i)
+  {
+    int32 count = 0;
+
+    bvh::Vec<double, 3> point;
+    point[0] = x[i];
+    point[1] = y[i];
+    point[2] = z[i];
+
+    int32 current_node = 0;
+    int32 todo[64];
+    int32 stackptr = 0;
+
+    constexpr int32 barrier = -2000000000;
+    todo[stackptr] = barrier;
+    while (current_node != barrier)
+    {
+      if (current_node > -1)
+      {
+        // inner node
+        // TODO: implement const get vec4
+        //const bvh::Vec<float32, 4> first4  = const_get_vec4f(&inner_nodes[current_node + 0]);
+        //const bvh::Vec<float32, 4> second4 = const_get_vec4f(&inner_nodes[current_node + 1]);
+        //const bvh::Vec<float32, 4> third4  = const_get_vec4f(&inner_nodes[current_node + 2]);
+        const bvh::Vec<float32, 4> first4  = inner_nodes[current_node + 0];
+        const bvh::Vec<float32, 4> second4 = inner_nodes[current_node + 1];
+        const bvh::Vec<float32, 4> third4  = inner_nodes[current_node + 2];
+
+        bool in_left = true;
+        if(point[0]  < first4[0]) in_left = false;
+        if(point[1]  < first4[1]) in_left = false;
+        if(point[2]  < first4[2]) in_left = false;
+
+        if(point[0]  > first4[3])  in_left = false;
+        if(point[1]  > second4[0]) in_left = false;
+        if(point[2]  > second4[1]) in_left = false;
+
+        bool in_right = true;
+        if(point[0]  < second4[2]) in_right = false;
+        if(point[1]  < second4[3]) in_right = false;
+        if(point[2]  < third4[0])  in_right = false;
+
+        if(point[0]  > third4[1]) in_right = false;
+        if(point[1]  > third4[2]) in_right = false;
+        if(point[2]  > third4[3]) in_right = false;
+
+        if (!in_left && !in_right)
+        {
+          // pop the stack and continue
+          current_node = todo[stackptr];
+          stackptr--;
+        }
+        else
+        {
+          // TODO: implement const get vec4
+          //bvh::Vec<float32, 4> children = const_get_vec4f(&inner_ptr[current_node + 3]);
+          bvh::Vec<float32, 4> children = inner_nodes[current_node + 3];
+          int32 l_child;
+          constexpr int32 isize = sizeof(int32);
+          // memcpy the int bits hidden in the floats
+          memcpy(&l_child, &children[0], isize);
+          int32 r_child;
+          memcpy(&r_child, &children[1], isize);
+
+          current_node = (in_left) ? l_child : r_child;
+
+          if (in_left && in_right)
+          {
+            stackptr++;
+            todo[stackptr] = r_child;
+            // TODO: if we are in both children we could
+            // go down the "closer" first by perhaps the distance
+            // from the point to the center of the aabb
+          }
+        }
+      }
+      else
+      {
+        // leaf node
+        count++;
+        current_node = todo[stackptr];
+        stackptr--;
+      }
+    } // while
+    candidate_counts[i] = count;
+//#endif
+  });
+
+  RAJA::exclusive_scan<bvh::raja_for_policy>(candidate_counts,
+                                             candidate_counts + numPts,
+                                             offsets,
+                                             RAJA::operators::plus<IndexType>{});
+
+  // TODO: this will segault with raw(unmanaged) cuda pointers
+  IndexType total_candidates = offsets[numPts - 1] + candidate_counts[numPts - 1];
+
+  candidates = axom::alloc< IndexType >( total_candidates);
+
+  //candidates =
+  RAJA::forall<bvh::raja_for_policy>(RAJA::RangeSegment(0, numPts), AXOM_LAMBDA (IndexType i)
+  {
+    int32 offset = offsets[i];
+
+    bvh::Vec<double, 3> point;
+    point[0] = x[i];
+    point[1] = y[i];
+    point[2] = z[i];
+
+    int32 current_node = 0;
+    int32 todo[64];
+    int32 stackptr = 0;
+
+    constexpr int32 barrier = -2000000000;
+    todo[stackptr] = barrier;
+    while (current_node != barrier)
+    {
+      if (current_node > -1)
+      {
+        // inner node
+        // TODO: implement const get vec4
+        //const bvh::Vec<float32, 4> first4  = const_get_vec4f(&inner_nodes[current_node + 0]);
+        //const bvh::Vec<float32, 4> second4 = const_get_vec4f(&inner_nodes[current_node + 1]);
+        //const bvh::Vec<float32, 4> third4  = const_get_vec4f(&inner_nodes[current_node + 2]);
+        const bvh::Vec<float32, 4> first4  = inner_nodes[current_node + 0];
+        const bvh::Vec<float32, 4> second4 = inner_nodes[current_node + 1];
+        const bvh::Vec<float32, 4> third4  = inner_nodes[current_node + 2];
+
+        bool in_left = true;
+        if(point[0]  < first4[0]) in_left = false;
+        if(point[1]  < first4[1]) in_left = false;
+        if(point[2]  < first4[2]) in_left = false;
+
+        if(point[0]  > first4[3])  in_left = false;
+        if(point[1]  > second4[0]) in_left = false;
+        if(point[2]  > second4[1]) in_left = false;
+
+        bool in_right = true;
+        if(point[0]  < second4[2]) in_right = false;
+        if(point[1]  < second4[3]) in_right = false;
+        if(point[2]  < third4[0])  in_right = false;
+
+        if(point[0]  > third4[1]) in_right = false;
+        if(point[1]  > third4[2]) in_right = false;
+        if(point[2]  > third4[3]) in_right = false;
+
+        if (!in_left && !in_right)
+        {
+          // pop the stack and continue
+          current_node = todo[stackptr];
+          stackptr--;
+        }
+        else
+        {
+          // TODO: implement const get vec4
+          //bvh::Vec<float32, 4> children = const_get_vec4f(&inner_ptr[current_node + 3]);
+          bvh::Vec<float32, 4> children = inner_nodes[current_node + 3];
+          int32 l_child;
+          constexpr int32 isize = sizeof(int32);
+          // memcpy the int bits hidden in the floats
+          memcpy(&l_child, &children[0], isize);
+          int32 r_child;
+          memcpy(&r_child, &children[1], isize);
+
+          current_node = (in_left) ? l_child : r_child;
+
+          if (in_left && in_right)
+          {
+            stackptr++;
+            todo[stackptr] = r_child;
+            // TODO: if we are in both children we could
+            // go down the "closer" first by perhaps the distance
+            // from the point to the center of the aabb
+          }
+        }
+      }
+      else
+      {
+        current_node = -current_node - 1; //swap the neg address
+        candidates[offset] = leaf_nodes[current_node];
+        offset++;
+        current_node = todo[stackptr];
+        stackptr--;
+      }
+    } // while
+//#endif
+  });
+
+  axom::free(candidate_counts);
+}
+} /* namespace anonymous*/
 
 BVH::BVH( int dimension, const double* boxes, IndexType numItems ) :
     m_dimension( dimension ),
@@ -47,7 +258,7 @@ BVH::BVH( int dimension, const double* boxes, IndexType numItems ) :
 //------------------------------------------------------------------------------
 BVH::~BVH()
 {
-  // TODO: implement this
+  m_bvh.free();
 }
 
 //------------------------------------------------------------------------------
@@ -55,8 +266,8 @@ int BVH::build( )
 {
 
   bvh::LinearBVHBuilder builder;
-  bvh::BVH bvh = builder.construct(m_boxes, m_numItems);
-  std::cout<<"BOUNDS "<<bvh.m_bounds<<"\n";
+  m_bvh = builder.construct(m_boxes, m_numItems);
+  std::cout<<"BOUNDS "<<m_bvh.m_bounds<<"\n";
   return BVH_BUILD_OK;
 }
 
@@ -81,6 +292,7 @@ void BVH::find( IndexType* offsets,
                 const double* y,
                 const double* z )
 {
+  find_candidates(offsets, candidates, numPts, x, y, z, m_bvh);
   // TODO: implement this
 }
 

@@ -242,6 +242,7 @@ TEST( primal_bvh, check_find_3d )
     PointType q            = PointType::make_point( xc[ i ],yc[ i ],zc[ i ] );
     const int donorCellIdx = ug.getBinIndex( q );
     EXPECT_EQ( donorCellIdx, cellIds[ i ] );
+    std::cout<<"Donor "<<donorCellIdx<<" actual "<<cellIds[ i ]<<"\n";
 
     // TODO: check candidates found by BVH
 

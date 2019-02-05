@@ -22,6 +22,8 @@
 #include "axom/core/Macros.hpp"   // for Axom macros
 #include "axom/core/Types.hpp"    // for fixed bitwidth types
 
+#include "axom/primal/spatial_acceleration/linear_bvh/linear_bvh_builder.hpp"
+
 namespace axom
 {
 namespace primal
@@ -157,6 +159,7 @@ private:
   int m_dimension;
   IndexType m_numItems;
   const double* m_boxes;
+  bvh::BVH m_bvh;
 
 /// @}
 
