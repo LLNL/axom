@@ -149,7 +149,7 @@ public:
              IndexType numPts,
              const double* x,
              const double* y,
-             const double* z=nullptr );
+             const double* z = nullptr );
 
 private:
 

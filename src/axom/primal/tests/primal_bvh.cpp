@@ -232,8 +232,8 @@ TEST( primal_bvh, check_find_3d )
   IndexType* offsets    = axom::alloc< IndexType >( ncells );
   IndexType* candidates = nullptr;
   bvh.find( offsets, candidates, ncells, xc, yc, zc );
-// TODO: add check below
-//  EXPECT_TRUE( candidates != nullptr );
+
+  EXPECT_TRUE( candidates != nullptr );
 
   primal::UniformGrid< IndexType, NDIMS > ug( lo, hi, res );
 
@@ -242,9 +242,6 @@ TEST( primal_bvh, check_find_3d )
     PointType q            = PointType::make_point( xc[ i ],yc[ i ],zc[ i ] );
     const int donorCellIdx = ug.getBinIndex( q );
     EXPECT_EQ( donorCellIdx, cellIds[ i ] );
-    std::cout<<"Donor "<<donorCellIdx<<" actual "<<cellIds[ i ]<<"\n";
-
-    // TODO: check candidates found by BVH
 
   } // END for all cell centroids
 

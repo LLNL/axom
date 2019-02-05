@@ -81,11 +81,11 @@ void find_candidates( IndexType* offsets,
         const bvh::Vec<float32, 4> third4  = inner_nodes[current_node + 2];
 
         bool in_left = true;
-        if(point[0]  < first4[0]) in_left = false;
-        if(point[1]  < first4[1]) in_left = false;
-        if(point[2]  < first4[2]) in_left = false;
+        if(point[0]  < first4[0]) in_left = false; // left x min
+        if(point[1]  < first4[1]) in_left = false; // y min
+        if(point[2]  < first4[2]) in_left = false; // z min
 
-        if(point[0]  > first4[3])  in_left = false;
+        if(point[0]  > first4[3])  in_left = false; // x max
         if(point[1]  > second4[0]) in_left = false;
         if(point[2]  > second4[1]) in_left = false;
 
@@ -281,6 +281,7 @@ void BVH::find( IndexType*& candidates,
   SLIC_ASSERT( candidates == nullptr );
 
   numCandidates = 0;
+  //find_candidates(offsets, &candidates, 1, &x, &y, &z, m_bvh);
   // TODO: implement this
 }
 
