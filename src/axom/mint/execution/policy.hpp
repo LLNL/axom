@@ -129,28 +129,28 @@ struct policy_traits< policy::parallel_gpu< BLOCK_SIZE > >
   /* *INDENT-OFF* */
   // TODO: use CudaCollapse policy when that is available
   using raja_2d_exec =
-       RAJA::KernelPolicy<
-          RAJA::statement::CudaKernelFixed< 256,
-            RAJA::statement::For< 1, RAJA::cuda_threadblock_exec<BLOCK_SIZE>,
-              RAJA::statement::For< 0, RAJA::cuda_threadblock_exec<BLOCK_SIZE>,
-                RAJA::statement::Lambda< 0 >
-              > // END i
-            > // END j
-          > // END CudaKernel
-       >; // END kernel
+    RAJA::KernelPolicy<
+      RAJA::statement::CudaKernelFixed< 256,
+        RAJA::statement::For<1, RAJA::cuda_block_x_loop,
+          RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+            RAJA::statement::Lambda<0>
+          >
+        >
+      >
+    >;
 
   using raja_3d_exec =
-      RAJA::KernelPolicy<
-         RAJA::statement::CudaKernelFixed< 256,
-           RAJA::statement::For< 2, RAJA::cuda_threadblock_exec<BLOCK_SIZE>,
-             RAJA::statement::For< 1, RAJA::cuda_threadblock_exec<BLOCK_SIZE>,
-               RAJA::statement::For< 0, RAJA::cuda_threadblock_exec<BLOCK_SIZE>,
-                 RAJA::statement::Lambda< 0 >
-             > // END i
-            > // END j
-          > // END k
-        > // END CudaKernel
-      >; // END kernel
+    RAJA::KernelPolicy<
+      RAJA::statement::CudaKernelFixed< 256,
+        RAJA::statement::For<2, RAJA::cuda_block_x_loop,
+          RAJA::statement::For<1, RAJA::cuda_block_y_loop,
+            RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+              RAJA::statement::Lambda<0>
+            >
+          >
+        >
+      >
+    >;
   /* *INDENT-ON* */
 
 #endif
@@ -174,28 +174,28 @@ struct policy_traits< policy::parallel_gpu_async< BLOCK_SIZE > >
   /* *INDENT-OFF* */
   // TODO: use CudaCollapse policy when that is available
   using raja_2d_exec =
-      RAJA::KernelPolicy<
-         RAJA::statement::CudaKernelFixed< 256,
-           RAJA::statement::For< 1, RAJA::cuda_threadblock_exec<BLOCK_SIZE>,
-             RAJA::statement::For< 0, RAJA::cuda_threadblock_exec<BLOCK_SIZE>,
-               RAJA::statement::Lambda< 0 >
-             > // END i
-           > // END j
-         > // END CudaKernel
-      >; // END kernel
+    RAJA::KernelPolicy<
+      RAJA::statement::CudaKernelFixed< 256,
+        RAJA::statement::For<1, RAJA::cuda_block_x_loop,
+          RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+            RAJA::statement::Lambda<0>
+          >
+        >
+      >
+    >;
 
   using raja_3d_exec =
-      RAJA::KernelPolicy<
-         RAJA::statement::CudaKernelFixed< 256,
-           RAJA::statement::For< 2, RAJA::cuda_threadblock_exec<BLOCK_SIZE>,
-             RAJA::statement::For< 1, RAJA::cuda_threadblock_exec<BLOCK_SIZE>,
-               RAJA::statement::For< 0, RAJA::cuda_threadblock_exec<BLOCK_SIZE>,
-                 RAJA::statement::Lambda< 0 >
-             > // END i
-            > // END j
-          > // END k
-         > // END CudaKernel
-      >; // END kernel
+    RAJA::KernelPolicy<
+      RAJA::statement::CudaKernelFixed< 256,
+        RAJA::statement::For<2, RAJA::cuda_block_x_loop,
+          RAJA::statement::For<1, RAJA::cuda_block_y_loop,
+            RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+              RAJA::statement::Lambda<0>
+            >
+          >
+        >
+      >
+    >;
   /* *INDENT-ON* */
 
 #endif
