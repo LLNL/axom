@@ -68,6 +68,10 @@ packages:
    paths:
       tar: /usr/bin/
    buildable: False
+  graphviz:
+    paths:
+      graphviz: /usr/bin/
+    buildable: False
   cmake:
     version: [3.9.6]
 

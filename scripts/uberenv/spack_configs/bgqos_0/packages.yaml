@@ -67,6 +67,10 @@ packages:
    paths:
       tar: /usr/bin/
    buildable: False
+  graphviz:
+    paths:
+      graphviz: /usr/local/bin/
+    buildable: False
 # On BGQ specifically just use the system CMake
   cmake:
     version: [3.8.2]
