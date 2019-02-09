@@ -29,6 +29,7 @@ import argparse
 import platform
 import shutil
 
+
 def extract_cmake_location(file_path):
     # print "Extracting cmake entry from host config file ", file_path
     if os.path.exists(file_path):
@@ -43,58 +44,76 @@ def extract_cmake_location(file_path):
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description="Configure cmake build.",
-                                     epilog="Note: Additional or unrecognized parameters will be passed directly to cmake."
-                                            " For example, append '-DENABLE_OPENMP=ON' to enable OpenMP."
-                                            " See Axom's QuickStart guide for a list of available CMake options."
-                                            )
+    parser = argparse.ArgumentParser(
+        description="Configure cmake build.",
+        epilog="Note: Additional or unrecognized parameters will be passed directly to cmake."
+        " For example, append '-DENABLE_OPENMP=ON' to enable OpenMP."
+        " See Axom's QuickStart guide for a list of available CMake options.",
+    )
 
-    parser.add_argument("-bp",
-                        "--buildpath",
-                        type=str,
-                        default="",
-                        help="specify path for build directory.  If not specified, will create in current directory.")
+    parser.add_argument(
+        "-bp",
+        "--buildpath",
+        type=str,
+        default="",
+        help="specify path for build directory.  If not specified, will create in current directory.",
+    )
 
-    parser.add_argument("-ip",
-                        "--installpath", 
-                        type=str, default="",
-                        help="specify path for installation directory.  If not specified, will create in current directory.")
+    parser.add_argument(
+        "-ip",
+        "--installpath",
+        type=str,
+        default="",
+        help="specify path for installation directory.  If not specified, will create in current directory.",
+    )
 
-    parser.add_argument("-bt",
-                        "--buildtype",
-                        type=str,
-                        choices=["Release", "Debug", "RelWithDebInfo", "MinSizeRel"],
-                        default="Debug",
-                        help="build type.")
+    parser.add_argument(
+        "-bt",
+        "--buildtype",
+        type=str,
+        choices=["Release", "Debug", "RelWithDebInfo", "MinSizeRel"],
+        default="Debug",
+        help="build type.",
+    )
 
-    parser.add_argument("-e",
-                        "--eclipse",
-                        action='store_true',
-                        help="create an eclipse project file.")
+    parser.add_argument(
+        "-e",
+        "--eclipse",
+        action="store_true",
+        help="create an eclipse project file.",
+    )
 
-    parser.add_argument("-x",
-                        "--xcode",
-                        action='store_true',
-                        help="create an xcode project.")
+    parser.add_argument(
+        "-x", "--xcode", action="store_true", help="create an xcode project."
+    )
 
-    parser.add_argument("-ecc",
-                        "--exportcompilercommands",
-                        action='store_true',
-                        help="generate a compilation database.  Can be used by the clang tools such as clang-modernize.  Will create a 'compile_commands.json' file in build directory.")
+    parser.add_argument(
+        "-ecc",
+        "--exportcompilercommands",
+        action="store_true",
+        help="generate a compilation database.  Can be used by the clang tools such as clang-modernize.  Will create a 'compile_commands.json' file in build directory.",
+    )
 
-    parser.add_argument("-hc",
-                        "--hostconfig",
-                        required=True,
-                        type=str,
-                        help="select a specific host-config file to initalize CMake's cache")
+    parser.add_argument(
+        "-hc",
+        "--hostconfig",
+        required=True,
+        type=str,
+        help="select a specific host-config file to initalize CMake's cache",
+    )
 
-    parser.add_argument("--docs-only",
-                        action='store_true',
-                        help="generate a configuration for working on documentation.  Disables features not required for building the docs.")
+    parser.add_argument(
+        "--docs-only",
+        action="store_true",
+        help="generate a configuration for working on documentation.  Disables features not required for building the docs.",
+    )
 
     args, unknown_args = parser.parse_known_args()
     if unknown_args:
-        print("[config-build]: Passing the following arguments directly to cmake... %s" % unknown_args)
+        print(
+            "[config-build]: Passing the following arguments directly to cmake... %s"
+            % unknown_args
+        )
 
     return args, unknown_args
 
@@ -104,7 +123,9 @@ def parse_arguments():
 ########################
 def find_host_config(args):
     hostconfigpath = os.path.abspath(args.hostconfig)
-    assert os.path.exists( hostconfigpath ), "Could not find CMake host config file '%s'." % hostconfigpath
+    assert os.path.exists(hostconfigpath), (
+        "Could not find CMake host config file '%s'." % hostconfigpath
+    )
     print("Using host config file: '%s'." % hostconfigpath)
     return hostconfigpath
 
@@ -118,7 +139,7 @@ def get_platform_info(hostconfigpath):
     if platform_info.endswith(".cmake"):
         platform_info = platform_info[:-6]
     return platform_info
-        
+
 
 #####################
 # Setup Build Dir
@@ -145,49 +166,63 @@ def setup_build_dir(args, platform_info):
 #####################
 # Setup Install Dir
 #####################
-def setup_install_dir(args, platform_info):    
+def setup_install_dir(args, platform_info):
     # For install directory, we will clean up old ones, but we don't need to create it, cmake will do that.
     if args.installpath != "":
         installpath = os.path.abspath(args.installpath)
     else:
         # use platform info & build type
-        installpath = "-".join(["install", platform_info, args.buildtype.lower()])
+        installpath = "-".join(
+            ["install", platform_info, args.buildtype.lower()]
+        )
 
     installpath = os.path.abspath(installpath)
 
     if os.path.exists(installpath):
-        print("Install directory '%s' already exists, deleting..." % installpath)
+        print(
+            "Install directory '%s' already exists, deleting..." % installpath
+        )
         shutil.rmtree(installpath)
 
     print("Creating install path '%s'..." % installpath)
     os.makedirs(installpath)
     return installpath
 
+
 ############################
-# Check if executable exists 
+# Check if executable exists
 ############################
 def executable_exists(path):
     if path == "cmake":
         return True
     return os.path.isfile(path) and os.access(path, os.X_OK)
 
+
 ############################
 # Build CMake command line
 ############################
-def create_cmake_command_line(args, unknown_args, buildpath, hostconfigpath, installpath):
+def create_cmake_command_line(
+    args, unknown_args, buildpath, hostconfigpath, installpath
+):
 
     import stat
 
     cmakeline = extract_cmake_location(hostconfigpath)
-    assert cmakeline, "Host config file doesn't contain valid cmake location, value was %s" % cmakeline
-    assert executable_exists( cmakeline ), "['%s'] invalid path to cmake executable or file does not have execute permissions" % cmakeline
+    assert cmakeline, (
+        "Host config file doesn't contain valid cmake location, value was %s"
+        % cmakeline
+    )
+    assert executable_exists(cmakeline), (
+        "['%s'] invalid path to cmake executable or file does not have execute permissions"
+        % cmakeline
+    )
 
     # create the ccmake command for convenience
-    cmakedir   = os.path.dirname(cmakeline)
+    cmakedir = os.path.dirname(cmakeline)
     ccmake_cmd = cmakedir + "/ccmake"
-    if executable_exists( ccmake_cmd ):
+    if executable_exists(ccmake_cmd):
         # write the ccmake command to a file to use for convenience
-        with open( "%s/ccmake_cmd" % buildpath, "w" ) as ccmakefile:
+        with open("%s/ccmake_cmd" % buildpath, "w") as ccmakefile:
             ccmakefile.write("#!/usr/bin/env bash\n")
             ccmakefile.write(ccmake_cmd)
             ccmakefile.write(" $@")
@@ -213,22 +248,22 @@ def create_cmake_command_line(args, unknown_args, buildpath, hostconfigpath, ins
         cmakeline += ' -G "Xcode"'
 
     if args.docs_only:
-        cmakeline += ' -DENABLE_ALL_COMPONENTS=OFF'
-        cmakeline += ' -DENABLE_TESTS=OFF'
-        cmakeline += ' -DENABLE_EXAMPLES=OFF'
-        cmakeline += ' -DENABLE_DOCS=ON'
-        cmakeline += ' -DENABLE_PYTHON=ON'
+        cmakeline += " -DENABLE_ALL_COMPONENTS=OFF"
+        cmakeline += " -DENABLE_TESTS=OFF"
+        cmakeline += " -DENABLE_EXAMPLES=OFF"
+        cmakeline += " -DENABLE_DOCS=ON"
+        cmakeline += " -DENABLE_PYTHON=ON"
 
     if unknown_args:
-        cmakeline += " " + " ".join( unknown_args )
+        cmakeline += " " + " ".join(unknown_args)
 
-    rootdir = os.path.dirname( os.path.abspath(sys.argv[0]) )
-    cmakeline += " %s " % os.path.join(rootdir,"src")
+    rootdir = os.path.dirname(os.path.abspath(sys.argv[0]))
+    cmakeline += " %s " % os.path.join(rootdir, "src")
 
     # Dump the cmake command to file for convenience
     with open("%s/cmake_cmd" % buildpath, "w") as cmdfile:
-       cmdfile.write(cmakeline)
-       cmdfile.write("\n")
+        cmdfile.write(cmakeline)
+        cmdfile.write("\n")
 
     st = os.stat("%s/cmake_cmd" % buildpath)
     os.chmod("%s/cmake_cmd" % buildpath, st.st_mode | stat.S_IEXEC)
@@ -245,7 +280,11 @@ def run_cmake(buildpath, cmakeline):
     print("")
     returncode = subprocess.call(cmakeline, shell=True)
     if not returncode == 0:
-        print("Error: CMake command failed with return code: {0}".format(returncode))
+        print(
+            "Error: CMake command failed with return code: {0}".format(
+                returncode
+            )
+        )
         return False
     return True
 
@@ -261,8 +300,11 @@ def main():
     buildpath = setup_build_dir(args, platform_info)
     installpath = setup_install_dir(args, platform_info)
 
-    cmakeline = create_cmake_command_line(args, unknown_args, buildpath, hostconfigpath, installpath)
+    cmakeline = create_cmake_command_line(
+        args, unknown_args, buildpath, hostconfigpath, installpath
+    )
     return run_cmake(buildpath, cmakeline)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     exit(0 if main() else 1)
