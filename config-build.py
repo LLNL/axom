@@ -16,18 +16,21 @@
 
 "exec" "python" "-u" "-B" "$0" "$@"
 
-# Python wrapper script for generating the correct cmake line with the options specified by the user.
+# Python wrapper script for generating the correct cmake line with the
+# options specified by the user.
 #
-# Please keep parser option names as close to possible as the names of the cmake options they are wrapping.
+# Please keep parser option names as close to possible as the names of
+# the cmake options they are wrapping.
 
 from __future__ import print_function
 
-import sys
-import os
-import subprocess
 import argparse
+import os
 import platform
 import shutil
+import stat
+import subprocess
+import sys
 
 
 def extract_cmake_location(file_path):
@@ -46,7 +49,8 @@ def extract_cmake_location(file_path):
 def parse_arguments():
     parser = argparse.ArgumentParser(
         description="Configure cmake build.",
-        epilog="Note: Additional or unrecognized parameters will be passed directly to cmake."
+        epilog="Note: Additional or unrecognized parameters will be passed"
+        " directly to cmake."
         " For example, append '-DENABLE_OPENMP=ON' to enable OpenMP."
         " See Axom's QuickStart guide for a list of available CMake options.",
     )
@@ -56,7 +60,8 @@ def parse_arguments():
         "--buildpath",
         type=str,
         default="",
-        help="specify path for build directory.  If not specified, will create in current directory.",
+        help="Specify path for build directory."
+        " If not specified, will create in current directory.",
     )
 
     parser.add_argument(
@@ -64,7 +69,8 @@ def parse_arguments():
         "--installpath",
         type=str,
         default="",
-        help="specify path for installation directory.  If not specified, will create in current directory.",
+        help="Specify path for installation directory."
+        " If not specified, will create in current directory.",
     )
 
     parser.add_argument(
@@ -73,25 +79,27 @@ def parse_arguments():
         type=str,
         choices=["Release", "Debug", "RelWithDebInfo", "MinSizeRel"],
         default="Debug",
-        help="build type.",
+        help="Build type.",
     )
 
     parser.add_argument(
         "-e",
         "--eclipse",
         action="store_true",
-        help="create an eclipse project file.",
+        help="Create an eclipse project file.",
     )
 
     parser.add_argument(
-        "-x", "--xcode", action="store_true", help="create an xcode project."
+        "-x", "--xcode", action="store_true", help="Create an xcode project."
     )
 
     parser.add_argument(
         "-ecc",
         "--exportcompilercommands",
         action="store_true",
-        help="generate a compilation database.  Can be used by the clang tools such as clang-modernize.  Will create a 'compile_commands.json' file in build directory.",
+        help="Generate a compilation database."
+        " Can be used by the clang tools such as clang-modernize."
+        " Will create a 'compile_commands.json' file in build directory.",
     )
 
     parser.add_argument(
@@ -99,13 +107,14 @@ def parse_arguments():
         "--hostconfig",
         required=True,
         type=str,
-        help="select a specific host-config file to initalize CMake's cache",
+        help="Select a specific host-config file to initalize CMake's cache",
     )
 
     parser.add_argument(
         "--docs-only",
         action="store_true",
-        help="generate a configuration for working on documentation.  Disables features not required for building the docs.",
+        help="Generate a configuration for working on documentation."
+        " Disables features not required for building the docs.",
     )
 
     args, unknown_args = parser.parse_known_args()
@@ -205,8 +214,6 @@ def create_cmake_command_line(
     args, unknown_args, buildpath, hostconfigpath, installpath
 ):
 
-    import stat
-
     cmakeline = extract_cmake_location(hostconfigpath)
     assert cmakeline, (
         "Host config file doesn't contain valid cmake location, value was %s"
@@ -249,10 +256,9 @@ def create_cmake_command_line(
 
     if args.docs_only:
         cmakeline += " -DENABLE_ALL_COMPONENTS=OFF"
-        cmakeline += " -DENABLE_TESTS=OFF"
-        cmakeline += " -DENABLE_EXAMPLES=OFF"
-        cmakeline += " -DENABLE_DOCS=ON"
-        cmakeline += " -DENABLE_PYTHON=ON"
+        cmakeline += " -DAXOM_ENABLE_TESTS=OFF"
+        cmakeline += " -DAXOM_ENABLE_EXAMPLES=OFF"
+        cmakeline += " -DAXOM_ENABLE_DOCS=ON"
 
     if unknown_args:
         cmakeline += " " + " ".join(unknown_args)
