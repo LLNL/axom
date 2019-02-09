@@ -213,7 +213,6 @@ def executable_exists(path):
 def create_cmake_command_line(
     args, unknown_args, buildpath, hostconfigpath, installpath
 ):
-
     cmakeline = extract_cmake_location(hostconfigpath)
     assert cmakeline, (
         "Host config file doesn't contain valid cmake location, value was %s"
