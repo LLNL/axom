@@ -225,17 +225,18 @@ def create_cmake_command_line(
 
     # create the ccmake command for convenience
     cmakedir = os.path.dirname(cmakeline)
-    ccmake_cmd = cmakedir + "/ccmake"
+    ccmake_cmd = os.path.join(cmakedir, "ccmake")
     if executable_exists(ccmake_cmd):
         # write the ccmake command to a file to use for convenience
-        with open("%s/ccmake_cmd" % buildpath, "w") as ccmakefile:
+        ccmake_file = os.path.join(buildpath, "ccmake_cmd")
+        with open(ccmake_file, "w") as ccmakefile:
             ccmakefile.write("#!/usr/bin/env bash\n")
             ccmakefile.write(ccmake_cmd)
             ccmakefile.write(" $@")
             ccmakefile.write("\n")
 
-        st = os.stat("%s/ccmake_cmd" % buildpath)
-        os.chmod("%s/ccmake_cmd" % buildpath, st.st_mode | stat.S_IEXEC)
+        st = os.stat(ccmake_file)
+        os.chmod(ccmake_file, st.st_mode | stat.S_IEXEC)
 
     # Add cache file option
     cmakeline += " -C %s" % hostconfigpath
@@ -266,12 +267,13 @@ def create_cmake_command_line(
     cmakeline += " %s " % os.path.join(rootdir, "src")
 
     # Dump the cmake command to file for convenience
-    with open("%s/cmake_cmd" % buildpath, "w") as cmdfile:
+    cmake_file = os.path.join(buildpath, "cmake_cmd")
+    with open(cmake_file, "w") as cmdfile:
         cmdfile.write(cmakeline)
         cmdfile.write("\n")
 
-    st = os.stat("%s/cmake_cmd" % buildpath)
-    os.chmod("%s/cmake_cmd" % buildpath, st.st_mode | stat.S_IEXEC)
+    st = os.stat(cmake_file)
+    os.chmod(cmake_file, st.st_mode | stat.S_IEXEC)
     return cmakeline
 
 
