@@ -20,6 +20,8 @@
 #
 # Please keep parser option names as close to possible as the names of the cmake options they are wrapping.
 
+from __future__ import print_function
+
 import sys
 import os
 import subprocess
@@ -36,7 +38,7 @@ def extract_cmake_location(file_path):
         for line in content:
             if line.lower().startswith(cmake_line_prefix):
                 return line.split(" ")[4].strip()
-        print "Could not find a cmake entry in host config file."
+        print("Could not find a cmake entry in host config file.")
     return None
 
 
@@ -92,7 +94,7 @@ def parse_arguments():
 
     args, unknown_args = parser.parse_known_args()
     if unknown_args:
-        print "[config-build]: Passing the following arguments directly to cmake... %s" % unknown_args
+        print("[config-build]: Passing the following arguments directly to cmake... %s" % unknown_args)
 
     return args, unknown_args
 
@@ -103,7 +105,7 @@ def parse_arguments():
 def find_host_config(args):
     hostconfigpath = os.path.abspath(args.hostconfig)
     assert os.path.exists( hostconfigpath ), "Could not find CMake host config file '%s'." % hostconfigpath
-    print "Using host config file: '%s'." % hostconfigpath
+    print("Using host config file: '%s'." % hostconfigpath)
     return hostconfigpath
 
 
@@ -132,10 +134,10 @@ def setup_build_dir(args, platform_info):
     buildpath = os.path.abspath(buildpath)
 
     if os.path.exists(buildpath):
-        print "Build directory '%s' already exists.  Deleting..." % buildpath
+        print("Build directory '%s' already exists.  Deleting..." % buildpath)
         shutil.rmtree(buildpath)
 
-    print "Creating build directory '%s'..." % buildpath
+    print("Creating build directory '%s'..." % buildpath)
     os.makedirs(buildpath)
     return buildpath
 
@@ -154,10 +156,10 @@ def setup_install_dir(args, platform_info):
     installpath = os.path.abspath(installpath)
 
     if os.path.exists(installpath):
-        print "Install directory '%s' already exists, deleting..." % installpath
+        print("Install directory '%s' already exists, deleting..." % installpath)
         shutil.rmtree(installpath)
 
-    print "Creating install path '%s'..." % installpath
+    print("Creating install path '%s'..." % installpath)
     os.makedirs(installpath)
     return installpath
 
@@ -237,13 +239,13 @@ def create_cmake_command_line(args, unknown_args, buildpath, hostconfigpath, ins
 # Run CMake
 ############################
 def run_cmake(buildpath, cmakeline):
-    print "Changing to build directory..."
+    print("Changing to build directory...")
     os.chdir(buildpath)
-    print "Executing CMake line: '%s'" % cmakeline
-    print 
+    print("Executing CMake line: '%s'" % cmakeline)
+    print("")
     returncode = subprocess.call(cmakeline, shell=True)
     if not returncode == 0:
-        print "Error: CMake command failed with return code: {0}".format(returncode)
+        print("Error: CMake command failed with return code: {0}".format(returncode))
         return False
     return True
 
