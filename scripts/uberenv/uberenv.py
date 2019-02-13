@@ -125,8 +125,6 @@ def parse_args():
                       default=pjoin(uberenv_script_dir(),"project.json"),
                       help="uberenv project settings json file")
 
-
-
     # flag to use insecure curl + git
     parser.add_option("-k",
                       action="store_true",
@@ -156,7 +154,7 @@ def parse_args():
                       default=False,
                       help="Invoke build tests during spack install")
 
-    # option to force a spack pull
+    # option to init osx sdk env flags
     parser.add_option("--macos-sdk-env-setup",
                       action="store_true",
                       dest="macos_sdk_env_setup",
