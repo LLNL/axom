@@ -85,6 +85,7 @@ class UberenvAxom(Package):
     depends_on("doxygen",   when="+devtools")
     depends_on("uncrustify@0.61",when="+devtools")
     depends_on("cppcheck",when="+devtools")
+    depends_on("graphviz",when="+devtools")
 
     depends_on("python",   when="+python")
 

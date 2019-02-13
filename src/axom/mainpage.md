@@ -14,6 +14,18 @@ Axom provides libraries that address common computer science needs.  It grew fro
 * @subpage slamtop provides an API to construct and process meshes.
 * @subpage slictop provides logging levels and targets.
 
+Dependencies between components are as follows:
+- Core has no dependencies, and the other modules depend on Core
+- Slic optionally depends on Lumberjack
+- Slam, Primal, Mint, Quest, and Sidre depend on Slic
+- Mint optionally depends on Sidre
+- Quest depends on Slam, Primal, and Mint
+
+The figure below summarizes the dependencies between the modules.  Solid links
+indicate hard dependencies; dashed links indicate optional dependencies.
+
+\dotfile dependencies.dot
+
 
 # Further documentation
 
