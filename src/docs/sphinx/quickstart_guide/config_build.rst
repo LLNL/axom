@@ -33,13 +33,11 @@ only once. These installations can be shared across the team.
 Requirements, Dependencies, and Supported Compilers
 ---------------------------------------------------
 
-.. danger:: This needs to be updated and organized better...
-
 Basic requirements:
 
-  * C++ 98/11
-  * CMake 3.1.2
-  * Fortran (optional)
+  * C++ Compiler
+  * CMake 
+  * Fortran Compiler (optional)
 
 Compilers we support (listed with minimum supported version):
 
@@ -50,47 +48,21 @@ Compilers we support (listed with minimum supported version):
   * Microsoft Visual Studio 2015
   * Microsoft Visual Studio 2015 with the Intel toolchain
 
-Please see the ``<axom>/scripts/uberenv/compilers.yaml`` for an up to date
-list of the supported compiler version numbers on each platform. 
+Please see the ``<axom_src>/scripts/uberenv/spack_configs/*/compilers.yaml`` for an up to date
+list of the supported compilers for each platform. 
 
 External Dependencies:
 
 Axom has the following external dependencies. 
 Unless otherwise marked, the dependencies are optional.
   
-  * conduit 0.3.1 [Required for Sidre]
-  * doxygen 1.8.11
-  * hdf5 1.8.16
-  * lcov 1.11
-  * mfem 3.3.2
-  * python 2.7.15
-  * py-shroud 0.10.1
-  * py-sphinx 1.3.6
-  * scr 1.2.1
-  * uncrustify 0.61
-
-Each dependency in the above list has a corresponding variable that can be 
-supplied to the build system. These variables either list a path to the
-installation directory  (in which case the variable has the suffix ``_DIR``)
-or has the path to an executable (with the ``_EXECUTABLE`` suffix).
-For example, ``hdf5`` has a corresponding variable ``HDF5_DIR``
-and ``python`` has a corresponding build system variable ``PYTHON_EXECUTABLE``.
-
-.. note::
-  To get a full list of all dependencies of Axom's dependencies in an ``uberenv``
-  build of our TPLs, please go to the TPL root directory and 
-  run the following spack command ``./spack/bin/spack find``.
-
-.. danger::
-  Here is one possible format, we can also add urls and version info
-
-
 ================== ====================================
   Library            Dependent Components
 ================== ====================================
   HDF5               Sidre
   Conduit            Sidre
   SCR                Sidre (optional)
+  MFEM               Quest ? (optional?)
 ================== ====================================
 
 ================== ====================================
@@ -104,7 +76,17 @@ and ``python`` has a corresponding build system variable ``PYTHON_EXECUTABLE``.
   Lcov               Code Coverage Reports
 ================== ====================================
 
+Each dependency in the above list has a corresponding variable that can be 
+supplied to the build system. These variables either list a path to the
+installation directory  (in which case the variable has the suffix ``_DIR``)
+or has the path to an executable (with the ``_EXECUTABLE`` suffix).
+For example, ``hdf5`` has a corresponding variable ``HDF5_DIR``
+and ``python`` has a corresponding build system variable ``PYTHON_EXECUTABLE``.
 
+.. note::
+  To get a full list of all dependencies of Axom's dependencies in an ``uberenv``
+  build of our TPLs, please go to the TPL root directory and 
+  run the following spack command ``./spack/bin/spack spec uberenv-axom``.
 
 .. _tplbuild-label:
 
@@ -112,7 +94,7 @@ and ``python`` has a corresponding build system variable ``PYTHON_EXECUTABLE``.
 Building and Installing Third-party Libraries
 ---------------------------------------------
 
-We use the `Spack Package Manager <https://github.com/scalability-llnl/spack>`_
+We use the `Spack Package Manager <https://github.com/spack/spack>`_
 to manage and build TPL dependencies for Axom. To make the TPL process
 easier (you don't really need to learn much about Spack) and automatic, we
 drive it with a python script called ``uberenv.py``, which is located in the
@@ -130,70 +112,13 @@ The uberenv script is run from the top-level Toolkit directory like this::
 
     $ python ./scripts/uberenv/uberenv.py --prefix {install path} --spec spec  [ --mirror {mirror path} ]
 
-Here is a break down of the options that control how ``uberenv.py`` builds dependencies:
 
- ================== ==================================== ======================================
-  Option             Description                          Default
- ================== ==================================== ======================================
-  --prefix           Destination directory                ``uberenv_libs``
-  --spec             Spack spec                           linux: **%gcc**
-                                                          osx: **%clang**
-  --compilers-yaml   Spack compilers settings file        ``scripts/uberenv/compilers.yaml``
-  --mirror           Spack source mirror location         **Not used**
-  --create-mirror    Establish a new Spack source mirror  ``False``
-                     with out building TPLs
- ================== ==================================== ======================================
-
-Default invocation on Linux:
-
-.. code:: bash
-
-    python scripts/uberenv/uberenv.py --prefix uberenv_libs \
-                                      --spec %gcc \
-                                      --compilers-yaml scripts/uberenv/compilers.yaml
-
-Default invocation on OSX:
-
-.. code:: bash
-
-    python scripts/uberenv/uberenv.py --prefix uberenv_libs \
-                                      --spec %clang \
-                                      --compilers-yaml scripts/uberenv/compilers.yaml
-
-
-The 'install path' specifies the directory where the TPLs will be installed.
-The 'spec' argument refers to Spack's specification syntax. Typically, a Spack
-spec ("Spack spec" that's fun to say, huh?) indicates a specific version of
-a particular compiler to use for the build. We manage the set of compilers
-we support in the ``scripts/uberenv/compilers.yaml`` file.
-
-You can edit ``scripts/uberenv/compilers.yaml`` or use the **--compilers-yaml**
-option to select another file to set the  compilers and setting you want.
-See the `Spack Compiler Configuration <http://spack.readthedocs.io/en/latest/getting_started.html#manual-compiler-configuration>`_ documentation for details.
-
-For OSX, the defaults in ``compilers.yaml`` are X-Code's clang and gfortran
-from `X-code for OSX <https://gcc.gnu.org/wiki/GFortranBinaries#MacOS>`_.
-
-.. note::
-    uberenv.py forces Spack to ignore ``~/.spack/compilers.yaml`` to avoid
-    conflicts and surprises from a user's specific Spack settings.
-
+For more details about ``uberenv.py`` and the options it supports, see the `uberenv docs <https://uberenv.readthedocs.io/en/latest/>`_
 
 You can also see examples of how Spack spec names are passed to ``uberenv.py``
 in the python scripts we use to build TPLs for the Axom development team on
 LC platforms at LLNL. These scripts are located in the directory
 ``scripts/uberenv/llnl_install_scripts``.
-
-The 'mirror' argument provides a location for Spack to store the downloaded
-source code for TPL dependencies. When building more than one installation
-of the TPLs, using a mirror will allow Spack to skip downloads for source
-code that was already obtained during a prior build.
-
-When the 'create-mirror' argument is used, ``uberenv.py`` establishes a Spack
-mirror and downloads the source for all TPL dependencies into this mirror.
-It does not build any TPLs. This option is used to obtain a copy of source
-code for all necessary TPLs so it can be transferred to another system for
-building there.
 
 
 .. _toolkitbuild-label:

@@ -32,11 +32,11 @@ Additional information about Axom can be found on the main
   * Developer guide, coding guidelines, etc.
   * Communicating with the Axom development team (email lists, chat room, etc.)
 
-
 **Contents:**
 
 .. toctree::
    :maxdepth: 3
 
+   zero_to_axom
    the_code
    config_build

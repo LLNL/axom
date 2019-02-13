@@ -1,0 +1,49 @@
+.. ##
+.. ## Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.
+.. ##
+.. ## Produced at the Lawrence Livermore National Laboratory.
+.. ##
+.. ## LLNL-CODE-741217
+.. ##
+.. ## All rights reserved.
+.. ##
+.. ## This file is part of Axom.
+.. ##
+.. ## For details about use and distribution, please read axom/LICENSE.
+.. ##
+
+
+Zero to Axom: Quick install of Axom and Third Party Dependencies 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The quickest path to install Axom and its dependencies is via `uberenv <https://uberenv.readthedocs.io/en/latest/>`_, a script included in Axom's repo:
+
+
+.. when on github   git clone --recursive https://github.com/llnl/axom.git?
+
+.. code:: bash
+
+    git clone --recursive ssh://git@cz-bitbucket.llnl.gov:7999/atk/axom.git
+    cd axom
+    python scripts/uberenv/uberenv.py --install --prefix="build"
+
+
+After this completes, ``build/axom-install`` will contain an Axom install.
+
+
+Using Axom in Your Project
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The install includes examples that demonstrate how to use Axom in a CMake-based build system  and via a Makefile.
+
+CMake-based build system example (see: ``examples/axom/using-with-cmake``):
+
+.. literalinclude:: ../../../examples/using-with-cmake/CMakeLists.txt 
+   :lines: 35-49
+
+
+Makefile-based build system example (see: ``examples/axom/using-with-make``):
+
+.. literalinclude:: ../../../examples/using-with-make/Makefile 
+   :lines: 29-35
+
