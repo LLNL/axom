@@ -31,6 +31,8 @@ The quickest path to install Axom and its dependencies is via `uberenv <https://
 After this completes, ``build/axom-install`` will contain an Axom install.
 
 
+.. _using_in_your_project:
+
 Using Axom in Your Project
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

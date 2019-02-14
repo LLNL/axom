@@ -59,10 +59,10 @@ Unless otherwise marked, the dependencies are optional.
 ================== ====================================
   Library            Dependent Components
 ================== ====================================
-  HDF5               Sidre
   Conduit            Sidre
+  HDF5               Sidre (optional)
   SCR                Sidre (optional)
-  MFEM               Quest ? (optional?)
+  MFEM               Quest (optional)
 ================== ====================================
 
 ================== ====================================
@@ -81,7 +81,10 @@ supplied to the build system. These variables either list a path to the
 installation directory  (in which case the variable has the suffix ``_DIR``)
 or has the path to an executable (with the ``_EXECUTABLE`` suffix).
 For example, ``hdf5`` has a corresponding variable ``HDF5_DIR``
-and ``python`` has a corresponding build system variable ``PYTHON_EXECUTABLE``.
+and ``sphinx`` has a corresponding build system variable ``SPHINX_EXECUTABLE``.
+
+.. add again when we are using python
+.. and ``python`` has a corresponding build system variable ``PYTHON_EXECUTABLE``.
 
 .. note::
   To get a full list of all dependencies of Axom's dependencies in an ``uberenv``
@@ -95,7 +98,10 @@ Building and Installing Third-party Libraries
 ---------------------------------------------
 
 We use the `Spack Package Manager <https://github.com/spack/spack>`_
-to manage and build TPL dependencies for Axom. To make the TPL process
+to manage and build TPL dependencies for Axom. The Spack process works on Linux and macOS systems.
+Axom does not currently have a tool to automatically build dependencies for Windows systems.
+
+To make the TPL process
 easier (you don't really need to learn much about Spack) and automatic, we
 drive it with a python script called ``uberenv.py``, which is located in the
 ``scripts/uberenv`` directory. Running this script does several things:
@@ -130,8 +136,6 @@ Building and Installing Axom
 We use a CMake-based system, called `BLT <https://github.com/LLNL/blt>`_, to
 configure and build Axom. This section provides essential instructions for
 building the code.
-
-.. note:: Add instructions for "developer" builds vs. "user" builds.
 
 
 .. _hostconfig-label:
@@ -215,7 +219,8 @@ build with the gcc compiler, you could pass a host-config file to CMake::
    $ make install
 
 Alternatively, you could forego the host-config file entirely and pass all the
-arguments you need directly to CMake; for example::
+arguments you need, including paths to third-party libraries,  directly to CMake;
+ for example::
 
    $ mkdir build-gcc-release
    $ cd build-gcc-release
@@ -223,20 +228,14 @@ arguments you need directly to CMake; for example::
      -DCMAKE_CXX_COMPILER={path to g++ compiler} \
      -DCMAKE_BUILD_TYPE=Release \
      -DCMAKE_INSTALL_PREFIX=../install-gcc-release \
+     -DCONDUIT_DIR={path/to/conduit/install} \
      {many other args} \
      ../src/
    $ make
    $ make install
 
-.. note :: The locations of all required third-party libraries must be
-           provided here. These are encoded in our host-config files.
-
 CMake options
 ^^^^^^^^^^^^^
-
-.. note :: Summarize (in table) CMake options that users may want to provide
-           Check what's there now for correctness. Move options for developers
-           into separate table here (for convenience) or to Dev Guide?
 
 +------------------------------+--------------------------------+---------+
 | OPTION                       | Description                    | Default |
@@ -258,7 +257,7 @@ CMake options
 +------------------------------+--------------------------------+---------+
 | ENABLE_OPENMP                | Enable OpenMP                  | OFF     |
 +------------------------------+--------------------------------+---------+
-| ENABLE_SHARED_LIBS           | Build shared libraries.        | OFF     |
+| BUILD_SHARED_LIBS            | Build shared libraries.        | OFF     |
 |                              | Default is Static libraries    |         |
 +------------------------------+--------------------------------+---------+
 | AXOM_ENABLE_TESTS            | Builds unit tests              | ON      |
@@ -290,8 +289,10 @@ CMake Options used to include Third-party Libraries:
 +-------------------+-------------------------------+
 | MFEM_DIR          | Path to MFEM install          |
 +-------------------+-------------------------------+
-| PYTHON_EXECUTABLE | Path to Python executable     |
-+-------------------+-------------------------------+
+
+.. add again when we are using python
+.. | PYTHON_EXECUTABLE | Path to Python executable     |
+.. +-------------------+-------------------------------+
 
 
 CMake Options used to enable Software Development Tools (should these go in BLT docs and link here?):
@@ -305,11 +306,6 @@ CMake Options used to enable Software Development Tools (should these go in BLT 
 +-----------------------+---------------------------------------------------+
 | UNCRUSTIFY_EXECUTABLE | Path to uncrustify executable (support via BLT)   |
 +-----------------------+---------------------------------------------------+
-
-
-.. danger::
-    TODO: LCOV_PATH, GENHTML_PATH, GCOV_PATH  -- aren't named consistently (_EXECUTABLE suffix?)
-
 
 
 ------------
@@ -329,8 +325,6 @@ Axom components are built properly, execute the following command::
 
    $ make test
 
-.. note :: Add a table listing and describing the most common make targets
-           users may want to use (see table above for format).
 
 
 .. _appbuild-label:
@@ -339,26 +333,34 @@ Axom components are built properly, execute the following command::
 Compiling and Linking with an Application
 -----------------------------------------
 
-Incorporating Axom as a Git-Submodule to a CMake-Based Application
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-If you are working on a project based on CMake_
-you may want to incorporate Axom as Git submodule as follows:
+Please see :ref:`using_in_your_project` for examples of how to use Axom in your project.
 
-1. Add Axom as a git submodule to your project, for example: ::
 
-   $ git submodule add ssh://git@cz-bitbucket.llnl.gov:7999/atk/axom.git <path/to/axom>
-
-.. note::
-      If you are not using BLT_ in your project, you'll have to issue the
-      following: ::
-
-         git submodule update --init --recursive
-
-      This will put BLT_ in `axom/src/cmake/blt`.
-
-2. Add the following line in the associated "CMakeLists.txt" for your project: ::
-
-      add_subdirectory( axom )
-
-.. _CMake: https://cmake.org
-.. _BLT: https://github.com/LLNL/blt
+.. CYRUS NOTE:
+.. I commented out b/c I don't think we want to promote this as a 
+.. supported way to include axom, happy to add it back if group feels
+.. otherwise. 
+.. 
+.. Incorporating Axom as a Git-Submodule to a CMake-Based Application
+.. ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. If you are working on a project based on CMake_
+.. you may want to incorporate Axom as Git submodule as follows:
+..
+.. 1. Add Axom as a git submodule to your project, for example: ::
+..
+..    $ git submodule add ssh://git@cz-bitbucket.llnl.gov:7999/atk/axom.git <path/to/axom>
+..
+.. .. note::
+..       If you are not using BLT_ in your project, you'll have to issue the
+..       following: ::
+..
+..          git submodule update --init --recursive
+..
+..       This will put BLT_ in `axom/src/cmake/blt`.
+..
+.. 2. Add the following line in the associated "CMakeLists.txt" for your project: ::
+..
+..       add_subdirectory( axom )
+..
+.. .. _CMake: https://cmake.org
+.. .. _BLT: https://github.com/LLNL/blt
