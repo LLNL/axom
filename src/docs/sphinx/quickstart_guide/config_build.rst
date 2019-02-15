@@ -33,13 +33,11 @@ only once. These installations can be shared across the team.
 Requirements, Dependencies, and Supported Compilers
 ---------------------------------------------------
 
-.. danger:: This needs to be updated and organized better...
-
 Basic requirements:
 
-  * C++ 98/11
-  * CMake 3.1.2
-  * Fortran (optional)
+  * C++ Compiler
+  * CMake 
+  * Fortran Compiler (optional)
 
 Compilers we support (listed with minimum supported version):
 
@@ -50,47 +48,21 @@ Compilers we support (listed with minimum supported version):
   * Microsoft Visual Studio 2015
   * Microsoft Visual Studio 2015 with the Intel toolchain
 
-Please see the ``<axom>/scripts/uberenv/compilers.yaml`` for an up to date
-list of the supported compiler version numbers on each platform. 
+Please see the ``<axom_src>/scripts/uberenv/spack_configs/*/compilers.yaml`` for an up to date
+list of the supported compilers for each platform. 
 
 External Dependencies:
 
 Axom has the following external dependencies. 
 Unless otherwise marked, the dependencies are optional.
   
-  * conduit 0.3.1 [Required for Sidre]
-  * doxygen 1.8.11
-  * hdf5 1.8.16
-  * lcov 1.11
-  * mfem 3.3.2
-  * python 2.7.15
-  * py-shroud 0.10.1
-  * py-sphinx 1.3.6
-  * scr 1.2.1
-  * uncrustify 0.61
-
-Each dependency in the above list has a corresponding variable that can be 
-supplied to the build system. These variables either list a path to the
-installation directory  (in which case the variable has the suffix ``_DIR``)
-or has the path to an executable (with the ``_EXECUTABLE`` suffix).
-For example, ``hdf5`` has a corresponding variable ``HDF5_DIR``
-and ``python`` has a corresponding build system variable ``PYTHON_EXECUTABLE``.
-
-.. note::
-  To get a full list of all dependencies of Axom's dependencies in an ``uberenv``
-  build of our TPLs, please go to the TPL root directory and 
-  run the following spack command ``./spack/bin/spack find``.
-
-.. danger::
-  Here is one possible format, we can also add urls and version info
-
-
 ================== ====================================
   Library            Dependent Components
 ================== ====================================
-  HDF5               Sidre
   Conduit            Sidre
+  HDF5               Sidre (optional)
   SCR                Sidre (optional)
+  MFEM               Quest (optional)
 ================== ====================================
 
 ================== ====================================
@@ -104,7 +76,20 @@ and ``python`` has a corresponding build system variable ``PYTHON_EXECUTABLE``.
   Lcov               Code Coverage Reports
 ================== ====================================
 
+Each dependency in the above list has a corresponding variable that can be 
+supplied to the build system. These variables either list a path to the
+installation directory  (in which case the variable has the suffix ``_DIR``)
+or has the path to an executable (with the ``_EXECUTABLE`` suffix).
+For example, ``hdf5`` has a corresponding variable ``HDF5_DIR``
+and ``sphinx`` has a corresponding build system variable ``SPHINX_EXECUTABLE``.
 
+.. add again when we are using python
+.. and ``python`` has a corresponding build system variable ``PYTHON_EXECUTABLE``.
+
+.. note::
+  To get a full list of all dependencies of Axom's dependencies in an ``uberenv``
+  build of our TPLs, please go to the TPL root directory and 
+  run the following spack command ``./spack/bin/spack spec uberenv-axom``.
 
 .. _tplbuild-label:
 
@@ -112,8 +97,11 @@ and ``python`` has a corresponding build system variable ``PYTHON_EXECUTABLE``.
 Building and Installing Third-party Libraries
 ---------------------------------------------
 
-We use the `Spack Package Manager <https://github.com/scalability-llnl/spack>`_
-to manage and build TPL dependencies for Axom. To make the TPL process
+We use the `Spack Package Manager <https://github.com/spack/spack>`_
+to manage and build TPL dependencies for Axom. The Spack process works on Linux and macOS systems.
+Axom does not currently have a tool to automatically build dependencies for Windows systems.
+
+To make the TPL process
 easier (you don't really need to learn much about Spack) and automatic, we
 drive it with a python script called ``uberenv.py``, which is located in the
 ``scripts/uberenv`` directory. Running this script does several things:
@@ -130,70 +118,13 @@ The uberenv script is run from the top-level Toolkit directory like this::
 
     $ python ./scripts/uberenv/uberenv.py --prefix {install path} --spec spec  [ --mirror {mirror path} ]
 
-Here is a break down of the options that control how ``uberenv.py`` builds dependencies:
 
- ================== ==================================== ======================================
-  Option             Description                          Default
- ================== ==================================== ======================================
-  --prefix           Destination directory                ``uberenv_libs``
-  --spec             Spack spec                           linux: **%gcc**
-                                                          osx: **%clang**
-  --compilers-yaml   Spack compilers settings file        ``scripts/uberenv/compilers.yaml``
-  --mirror           Spack source mirror location         **Not used**
-  --create-mirror    Establish a new Spack source mirror  ``False``
-                     with out building TPLs
- ================== ==================================== ======================================
-
-Default invocation on Linux:
-
-.. code:: bash
-
-    python scripts/uberenv/uberenv.py --prefix uberenv_libs \
-                                      --spec %gcc \
-                                      --compilers-yaml scripts/uberenv/compilers.yaml
-
-Default invocation on OSX:
-
-.. code:: bash
-
-    python scripts/uberenv/uberenv.py --prefix uberenv_libs \
-                                      --spec %clang \
-                                      --compilers-yaml scripts/uberenv/compilers.yaml
-
-
-The 'install path' specifies the directory where the TPLs will be installed.
-The 'spec' argument refers to Spack's specification syntax. Typically, a Spack
-spec ("Spack spec" that's fun to say, huh?) indicates a specific version of
-a particular compiler to use for the build. We manage the set of compilers
-we support in the ``scripts/uberenv/compilers.yaml`` file.
-
-You can edit ``scripts/uberenv/compilers.yaml`` or use the **--compilers-yaml**
-option to select another file to set the  compilers and setting you want.
-See the `Spack Compiler Configuration <http://spack.readthedocs.io/en/latest/getting_started.html#manual-compiler-configuration>`_ documentation for details.
-
-For OSX, the defaults in ``compilers.yaml`` are X-Code's clang and gfortran
-from `X-code for OSX <https://gcc.gnu.org/wiki/GFortranBinaries#MacOS>`_.
-
-.. note::
-    uberenv.py forces Spack to ignore ``~/.spack/compilers.yaml`` to avoid
-    conflicts and surprises from a user's specific Spack settings.
-
+For more details about ``uberenv.py`` and the options it supports, see the `uberenv docs <https://uberenv.readthedocs.io/en/latest/>`_
 
 You can also see examples of how Spack spec names are passed to ``uberenv.py``
 in the python scripts we use to build TPLs for the Axom development team on
 LC platforms at LLNL. These scripts are located in the directory
 ``scripts/uberenv/llnl_install_scripts``.
-
-The 'mirror' argument provides a location for Spack to store the downloaded
-source code for TPL dependencies. When building more than one installation
-of the TPLs, using a mirror will allow Spack to skip downloads for source
-code that was already obtained during a prior build.
-
-When the 'create-mirror' argument is used, ``uberenv.py`` establishes a Spack
-mirror and downloads the source for all TPL dependencies into this mirror.
-It does not build any TPLs. This option is used to obtain a copy of source
-code for all necessary TPLs so it can be transferred to another system for
-building there.
 
 
 .. _toolkitbuild-label:
@@ -205,8 +136,6 @@ Building and Installing Axom
 We use a CMake-based system, called `BLT <https://github.com/LLNL/blt>`_, to
 configure and build Axom. This section provides essential instructions for
 building the code.
-
-.. note:: Add instructions for "developer" builds vs. "user" builds.
 
 
 .. _hostconfig-label:
@@ -290,7 +219,8 @@ build with the gcc compiler, you could pass a host-config file to CMake::
    $ make install
 
 Alternatively, you could forego the host-config file entirely and pass all the
-arguments you need directly to CMake; for example::
+arguments you need, including paths to third-party libraries,  directly to CMake;
+ for example::
 
    $ mkdir build-gcc-release
    $ cd build-gcc-release
@@ -298,20 +228,14 @@ arguments you need directly to CMake; for example::
      -DCMAKE_CXX_COMPILER={path to g++ compiler} \
      -DCMAKE_BUILD_TYPE=Release \
      -DCMAKE_INSTALL_PREFIX=../install-gcc-release \
+     -DCONDUIT_DIR={path/to/conduit/install} \
      {many other args} \
      ../src/
    $ make
    $ make install
 
-.. note :: The locations of all required third-party libraries must be
-           provided here. These are encoded in our host-config files.
-
 CMake options
 ^^^^^^^^^^^^^
-
-.. note :: Summarize (in table) CMake options that users may want to provide
-           Check what's there now for correctness. Move options for developers
-           into separate table here (for convenience) or to Dev Guide?
 
 +------------------------------+--------------------------------+---------+
 | OPTION                       | Description                    | Default |
@@ -333,7 +257,7 @@ CMake options
 +------------------------------+--------------------------------+---------+
 | ENABLE_OPENMP                | Enable OpenMP                  | OFF     |
 +------------------------------+--------------------------------+---------+
-| ENABLE_SHARED_LIBS           | Build shared libraries.        | OFF     |
+| BUILD_SHARED_LIBS            | Build shared libraries.        | OFF     |
 |                              | Default is Static libraries    |         |
 +------------------------------+--------------------------------+---------+
 | AXOM_ENABLE_TESTS            | Builds unit tests              | ON      |
@@ -365,8 +289,10 @@ CMake Options used to include Third-party Libraries:
 +-------------------+-------------------------------+
 | MFEM_DIR          | Path to MFEM install          |
 +-------------------+-------------------------------+
-| PYTHON_EXECUTABLE | Path to Python executable     |
-+-------------------+-------------------------------+
+
+.. add again when we are using python
+.. | PYTHON_EXECUTABLE | Path to Python executable     |
+.. +-------------------+-------------------------------+
 
 
 CMake Options used to enable Software Development Tools (should these go in BLT docs and link here?):
@@ -380,11 +306,6 @@ CMake Options used to enable Software Development Tools (should these go in BLT 
 +-----------------------+---------------------------------------------------+
 | UNCRUSTIFY_EXECUTABLE | Path to uncrustify executable (support via BLT)   |
 +-----------------------+---------------------------------------------------+
-
-
-.. danger::
-    TODO: LCOV_PATH, GENHTML_PATH, GCOV_PATH  -- aren't named consistently (_EXECUTABLE suffix?)
-
 
 
 ------------
@@ -404,8 +325,6 @@ Axom components are built properly, execute the following command::
 
    $ make test
 
-.. note :: Add a table listing and describing the most common make targets
-           users may want to use (see table above for format).
 
 
 .. _appbuild-label:
@@ -414,26 +333,34 @@ Axom components are built properly, execute the following command::
 Compiling and Linking with an Application
 -----------------------------------------
 
-Incorporating Axom as a Git-Submodule to a CMake-Based Application
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-If you are working on a project based on CMake_
-you may want to incorporate Axom as Git submodule as follows:
+Please see :ref:`using_in_your_project` for examples of how to use Axom in your project.
 
-1. Add Axom as a git submodule to your project, for example: ::
 
-   $ git submodule add ssh://git@cz-bitbucket.llnl.gov:7999/atk/axom.git <path/to/axom>
-
-.. note::
-      If you are not using BLT_ in your project, you'll have to issue the
-      following: ::
-
-         git submodule update --init --recursive
-
-      This will put BLT_ in `axom/src/cmake/blt`.
-
-2. Add the following line in the associated "CMakeLists.txt" for your project: ::
-
-      add_subdirectory( axom )
-
-.. _CMake: https://cmake.org
-.. _BLT: https://github.com/LLNL/blt
+.. CYRUS NOTE:
+.. I commented out b/c I don't think we want to promote this as a 
+.. supported way to include axom, happy to add it back if group feels
+.. otherwise. 
+.. 
+.. Incorporating Axom as a Git-Submodule to a CMake-Based Application
+.. ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. If you are working on a project based on CMake_
+.. you may want to incorporate Axom as Git submodule as follows:
+..
+.. 1. Add Axom as a git submodule to your project, for example: ::
+..
+..    $ git submodule add ssh://git@cz-bitbucket.llnl.gov:7999/atk/axom.git <path/to/axom>
+..
+.. .. note::
+..       If you are not using BLT_ in your project, you'll have to issue the
+..       following: ::
+..
+..          git submodule update --init --recursive
+..
+..       This will put BLT_ in `axom/src/cmake/blt`.
+..
+.. 2. Add the following line in the associated "CMakeLists.txt" for your project: ::
+..
+..       add_subdirectory( axom )
+..
+.. .. _CMake: https://cmake.org
+.. .. _BLT: https://github.com/LLNL/blt
