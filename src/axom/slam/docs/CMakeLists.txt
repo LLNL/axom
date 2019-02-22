@@ -7,8 +7,8 @@
 # documentation targets
 ################################
 
-# if(SPHINX_FOUND)
-# #    add_subdirectory(sphinx)
-# endif()
 
+if(SPHINX_FOUND)
+    add_subdirectory(sphinx)
+endif()
 
