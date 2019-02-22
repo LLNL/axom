@@ -4,10 +4,19 @@ Core concepts
 
 Describe Slam concepts, what they mean, how they are used, etc.
 
+.. figure:: figs/set_relation_map.png
+   :figwidth: 400px
+   :alt: Sets, relations and maps in slam
+   :align: center
+
+   A **relation** (blue lines) between two **sets** (ovals with red and green dots, as elements)
+   and a **map** of scalar values (brown) on the second set.
+
 Set
 ---
-* Taxonomy of set types (OrderedSet, IndirectionSet, Subset)
-* Simple API (including semantics of operator[] )
+* Taxonomy of set types (OrderedSet, IndirectionSet, Subset, static vs. dynamic)
+* Simple API (including semantics of operator[] and iterators )
+* Example to show how we iterate through a set
 
 Relation
 --------
