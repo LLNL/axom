@@ -62,7 +62,7 @@ Component User Guides
   *  Slic (Simple Logging Interface Code for integrated applications)
   *  `Lumberjack (Scalable parallel message logging and filtering) <../../lumberjack_docs/html/index.html>`_
   *  `Sidre (Simulation data repository) <../../sidre_docs/html/index.html>`_
-  *  Slam (Set-theoretic lightweight API for meshes)
+  *  `Slam (Set-theoretic lightweight API for meshes) <../../slam_docs/html/index.html>`_
   *  `Quest (Querying on surface tool) <../../quest_docs/html/index.html>`_
   *  `Mint (Mesh data model) <../../mint_docs/html/index.html>`_
   *  `Primal (Computational geometry primitives) <../../primal_docs/html/index.html>`_
