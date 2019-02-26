@@ -25,7 +25,7 @@
 #   cd <axom_root>
 #   mkdir build
 #   cd build
-#   cmake -C ../host-config/no-sidre-toss3-intel@18.0.2.cmake           \
+#   cmake -C ../host-config/other/no-sidre-toss3-intel@18.0.2.cmake           \
 #         -DCMAKE_BUILD_TYPE={Debug,Release}            \
 #         -DENABLE_EXAMPLES={ON,OFF}                    \
 #         -DENABLE_TESTS={ON,OFF}                       \
