@@ -52,7 +52,7 @@ set(CMAKE_CXX_COMPILER "${COMPILER_HOME}/bin/icpc" CACHE PATH "")
 set(CMAKE_Fortran_COMPILER "${COMPILER_HOME}/bin/ifort" CACHE PATH "")
 
 # Make shared lib
-set(BUILD_SHARED_LIBS "ON" CACHE BOOL "")
+set(BUILD_SHARED_LIBS ON CACHE BOOL "")
 
 # Note: This can be uncommented if you wish to enable Shroud generation but is not
 # needed for using the already generated Shround interfaces
