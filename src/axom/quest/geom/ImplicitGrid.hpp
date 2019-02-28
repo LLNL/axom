@@ -64,21 +64,20 @@ template<int NDIMS, typename TheIndexType = int>
 class ImplicitGrid
 {
 public:
-  typedef TheIndexType IndexType;
-  typedef primal::Point<IndexType, NDIMS>       GridCell;
-  typedef primal::Point<double, NDIMS>          SpacePoint;
-  typedef primal::Vector<double, NDIMS>         SpaceVec;
+  using IndexType = TheIndexType;
+  using GridCell = primal::Point<IndexType, NDIMS>;
+  using SpacePoint = primal::Point<double, NDIMS>;
+  using SpaceVec = primal::Vector<double, NDIMS>;
 
-  typedef primal::BoundingBox<double, NDIMS>    SpatialBoundingBox;
-  typedef primal::RectangularLattice<NDIMS, double, IndexType> LatticeType;
+  using SpatialBoundingBox = primal::BoundingBox<double, NDIMS>;
+  using LatticeType = primal::RectangularLattice<NDIMS, double, IndexType>;
 
-  typedef slam::policies::RuntimeSize<IndexType> SizePolicy;
-  typedef slam::OrderedSet< SizePolicy > ElementSet;
-  typedef slam::OrderedSet< SizePolicy > BinSet;
+  using SizePolicy = slam::policies::RuntimeSize<IndexType>;
+  using ElementSet = slam::OrderedSet< SizePolicy >;
+  using BinSet = slam::OrderedSet< SizePolicy >;
 
-
-  typedef slam::BitSet BitsetType;
-  typedef slam::Map<BitsetType>    BinBitMap;
+  using BitsetType= slam::BitSet;
+  using BinBitMap = slam::Map<BitsetType>;
 
   /*!
    * \brief Default constructor for an ImplicitGrid
@@ -252,7 +251,7 @@ public:
   }
 
   /*!
-   * Finds the candidate elements in the vicinity of query point pt
+   * Finds the candidate elements in the vicinity of query point \a pt
    *
    * \param [in] pt The query point
    * \return A bitset \a bSet whose bits correspond to
@@ -283,20 +282,73 @@ public:
   }
 
   /*!
-   * Returns the list of candidates as an explicit list of IndexType
+   * Finds the candidate elements in the vicinity of query box \a box
    *
-   * \param [in] pt The query point
-   * \return An list of indexes from the IndexSet whose corresponding
-   * bounding boxes overlap the grid cell containing \a pt.
+   * \param [in] box The query box
+   * \return A bitset \a bSet whose bits correspond to
+   * the elements of the IndexSet.
+   * The bits of \a bSet are set if their corresponding element bounding boxes
+   * overlap the grid cell containing \a box
+   */
+  BitsetType getCandidates(const SpatialBoundingBox& box) const
+  {
+    if(!m_initialized || !m_bb.intersectsWith(box) )
+      return BitsetType(0);
+
+    BitsetType res;
+
+    const GridCell lowerCell = m_lattice.gridCell(box.getMin());
+    const GridCell upperCell = m_lattice.gridCell(box.getMax());
+
+    for(int i=0 ; i< NDIMS ; ++i)
+    {
+      // Note: Need to clamp the gridCell ranges since the input box boundaries
+      //       are not restricted to the implicit grid's bounding box
+      int lower = axom::utilities::clampVal(lowerCell[i], 0, highestBin(i));
+      int upper = axom::utilities::clampVal(upperCell[i], 0, highestBin(i));
+
+      // Union of bits within each dimension
+      BitsetType bits = m_binData[i][lower];
+      for(int j = lower+1 ; j<= upper ; ++j)
+      {
+        bits |= m_binData[i][j];
+      }
+
+      // Intersection of bits from each dimension
+      if(i==0)
+      {
+        res = bits;
+      }
+      else
+      {
+        res &= bits;
+      }
+    }
+
+    return res;
+  }
+
+  /*!
+   * Returns the list of candidates as an explicit array
+   *
+   * \tparam QueryGeom The type of the query object (e.g. point or box)
+   * \param [in] query The query object
+   * \return A list of indexes from the IndexSet whose corresponding
+   * bounding boxes overlap the grid cell containing \a query
    *
    * \note This function returns the same indices as \a getCandidates()
    * But the results here are converted into an explicit list.
+   * \pre This function is implemented in terms of
+   * ImplicitGrid::getCandidtes(const QueryGeom& ), which must exist
+   *
+   * \sa getCandidates()
    */
-  std::vector<IndexType> getCandidatesAsArray(const SpacePoint& pt) const
+  template<typename QueryGeom>
+  std::vector<IndexType> getCandidatesAsArray(const QueryGeom& query) const
   {
     std::vector<IndexType> candidatesVec;
 
-    BitsetType candidateBits = getCandidates(pt);
+    BitsetType candidateBits = getCandidates(query);
     candidatesVec.reserve( candidateBits.count() );
     for(IndexType eltIdx = candidateBits.find_first() ;
         eltIdx != BitsetType::npos ;
