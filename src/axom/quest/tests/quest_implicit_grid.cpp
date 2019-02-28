@@ -25,13 +25,9 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/BoundingBox.hpp"
-
-#include "axom/quest/geom/ImplicitGrid.hpp"
-
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
+#include "axom/slic.hpp"
+#include "axom/primal.hpp"
+#include "axom/quest.hpp"
 
 #include <vector>
 #include <algorithm>  // for std::find
@@ -46,30 +42,30 @@ template<typename T>
 class ImplicitGridTest : public ::testing::Test
 {
 public:
-  typedef T GridT;
-  typedef typename GridT::GridCell GridCell;
-  typedef typename GridT::SpacePoint SpacePt;
-  typedef typename GridT::SpatialBoundingBox BBox;
+  using GridT = T;
+  using GridCell = typename GridT::GridCell;
+  using SpacePt = typename GridT::SpacePoint;
+  using BBox = typename GridT::SpatialBoundingBox;
 
   static const int DIM = SpacePt::DIMENSION;
 };
 
-/*! Typelist for TypedTests on ImplicitGrid */
-typedef ::testing::Types <
-    axom::quest::ImplicitGrid<1>,
-    axom::quest::ImplicitGrid<2>,
-    axom::quest::ImplicitGrid<3> > MyTypes;
+/*! Type list for TypedTests on ImplicitGrid */
+using MyTypes = ::testing::Types <
+        axom::quest::ImplicitGrid<1>,
+        axom::quest::ImplicitGrid<2>,
+        axom::quest::ImplicitGrid<3> >;
 
 TYPED_TEST_CASE( ImplicitGridTest, MyTypes );
 
 
-TYPED_TEST( ImplicitGridTest, implicit_grid_ctor)
+TYPED_TEST( ImplicitGridTest, initialization)
 {
   const int DIM = TestFixture::DIM;
-  typedef typename TestFixture::GridCell GridCell;
-  typedef typename TestFixture::BBox BBox;
-  typedef typename TestFixture::GridT GridT;
-  typedef typename TestFixture::SpacePt SpacePt;
+  using GridCell = typename TestFixture::GridCell;
+  using BBox = typename TestFixture::BBox;
+  using GridT = typename TestFixture::GridT;
+  using SpacePt = typename TestFixture::SpacePt;
 
   SLIC_INFO("Test ImplicitGrid constructor in " << DIM << "D");
 
@@ -97,13 +93,13 @@ TYPED_TEST( ImplicitGridTest, implicit_grid_ctor)
 }
 
 
-TYPED_TEST( ImplicitGridTest, implicit_grid_resolution)
+TYPED_TEST( ImplicitGridTest, resolution)
 {
   const int DIM = TestFixture::DIM;
-  typedef typename TestFixture::GridCell GridCell;
-  typedef typename TestFixture::BBox BBox;
-  typedef typename TestFixture::GridT GridT;
-  typedef typename TestFixture::SpacePt SpacePt;
+  using GridCell = typename TestFixture::GridCell;
+  using BBox = typename TestFixture::BBox;
+  using GridT = typename TestFixture::GridT;
+  using SpacePt = typename TestFixture::SpacePt;
 
   SLIC_INFO("Test ImplicitGrid resolution in " << DIM << "D");
 
@@ -133,7 +129,7 @@ TYPED_TEST( ImplicitGridTest, implicit_grid_resolution)
 
   // Test that grid resolution is at least one in each dim
   {
-    // Using NULL pointer for resolution
+    // Default case -- using nullptr for resolution
     int zeroMeshElts = 0;
     GridT grid( bbox, nullptr, zeroMeshElts );
     GridCell expRes = GridCell::ones();
@@ -141,7 +137,7 @@ TYPED_TEST( ImplicitGridTest, implicit_grid_resolution)
     EXPECT_EQ( 0, grid.numIndexElements() );
   }
   {
-    // Using a resolution of zero in each dim
+    // Even when explicitly setting resolution to zero
     GridCell zeroRes = GridCell::zero();
     GridT grid( bbox, &zeroRes, numElts );
     GridCell expRes = GridCell::ones();
@@ -151,14 +147,14 @@ TYPED_TEST( ImplicitGridTest, implicit_grid_resolution)
 }
 
 
-TYPED_TEST( ImplicitGridTest, implicit_grid_insert_contains)
+TYPED_TEST( ImplicitGridTest, insert_contains)
 {
   const int DIM = TestFixture::DIM;
-  typedef typename TestFixture::GridCell GridCell;
-  typedef typename TestFixture::BBox BBox;
-  typedef typename TestFixture::GridT GridT;
-  typedef typename TestFixture::SpacePt SpacePt;
-  typedef axom::primal::BoundingBox<int, DIM> RangeBox;
+  using GridCell = typename TestFixture::GridCell;
+  using BBox = typename TestFixture::BBox;
+  using GridT = typename TestFixture::GridT;
+  using SpacePt = typename TestFixture::SpacePt;
+  using RangeBox = axom::primal::BoundingBox<int, DIM>;
 
   SLIC_INFO("Testing ImplicitGrid insert() and contains() in " << DIM << "D");
 
@@ -293,19 +289,19 @@ TYPED_TEST( ImplicitGridTest, implicit_grid_insert_contains)
   }
 }
 
-TYPED_TEST( ImplicitGridTest, implicit_grid_get_candidates)
+TYPED_TEST( ImplicitGridTest, get_candidates_pt)
 {
   const int DIM = TestFixture::DIM;
-  typedef typename TestFixture::GridCell GridCell;
-  typedef typename TestFixture::BBox BBox;
-  typedef typename TestFixture::GridT GridT;
-  typedef typename TestFixture::SpacePt SpacePt;
+  using GridCell = typename TestFixture::GridCell;
+  using BBox = typename TestFixture::BBox;
+  using GridT = typename TestFixture::GridT;
+  using SpacePt = typename TestFixture::SpacePt;
 
   SLIC_INFO("Test ImplicitGrid getCandidates() in " << DIM << "D");
 
-  typedef typename GridT::IndexType IndexType;
-  typedef typename GridT::BitsetType CandidateBitset;
-  typedef std::vector<IndexType> CandidateVector;
+  using IndexType = typename GridT::IndexType;
+  using CandidateBitset = typename GridT::BitsetType;
+  using CandidateVector = std::vector<IndexType>;
 
   // Note: A 10 x 10 x 10 implicit grid in the unit cube.
   //       Grid cells have a spacing of .1 along each dimension
@@ -430,16 +426,16 @@ TYPED_TEST( ImplicitGridTest, implicit_grid_get_candidates)
     CandidateVector candidateVec = grid.getCandidatesAsArray(queryPt);
     EXPECT_EQ( expSize, candidateVec.size() );
 
-    bool has1 = candidateVec.end() !=
-                std::find(candidateVec.begin(),candidateVec.end(),IndexType(1));
+    auto beg = candidateVec.cbegin();
+    auto end = candidateVec.cend();
+
+    bool has1 = end != std::find(beg,end,IndexType(1));
     EXPECT_FALSE( has1 );
 
-    bool has2 = candidateVec.end() !=
-                std::find(candidateVec.begin(),candidateVec.end(),IndexType(2));
+    bool has2 = end != std::find(beg,end,IndexType(2));
     EXPECT_TRUE( has2 );
 
-    bool has3 = candidateVec.end() !=
-                std::find(candidateVec.begin(),candidateVec.end(),IndexType(3));
+    bool has3 = end != std::find(beg,end,IndexType(3));
     EXPECT_TRUE( has3 );
   }
 }
@@ -452,8 +448,10 @@ int main(int argc, char* argv[])
 
   ::testing::InitGoogleTest(&argc, argv);
 
-  UnitTestLogger logger;  // create & initialize test logger,
-  axom::slic::setLoggingMsgLevel( axom::slic::message::Info );
+  // create & initialize test logger,
+  namespace slic = axom::slic;
+  slic::UnitTestLogger logger;
+  slic::setLoggingMsgLevel( slic::message::Info );
 
   result = RUN_ALL_TESTS();
 
