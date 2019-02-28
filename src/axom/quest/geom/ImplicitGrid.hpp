@@ -231,8 +231,8 @@ public:
 
     bbox.expand(m_expansionFactor);
 
-    const GridCell lowerCell = m_lattice.gridCell( bbox.getMin() );
-    const GridCell upperCell = m_lattice.gridCell( bbox.getMax() );
+    const GridCell& lowerCell = m_lattice.gridCell( bbox.getMin() );
+    const GridCell& upperCell = m_lattice.gridCell( bbox.getMax() );
 
     for(int i=0 ; i< NDIMS ; ++i)
     {
@@ -295,8 +295,8 @@ public:
     if(!m_initialized || !m_bb.intersectsWith(box) )
       return BitsetType(0);
 
-    const GridCell lowerCell = m_lattice.gridCell(box.getMin());
-    const GridCell upperCell = m_lattice.gridCell(box.getMax());
+    const GridCell& lowerCell = m_lattice.gridCell(box.getMin());
+    const GridCell& upperCell = m_lattice.gridCell(box.getMax());
 
     BitsetType bits = getBitsInRange(0, lowerCell[0], upperCell[0]);
 
@@ -402,8 +402,8 @@ private:
   {
     // Note: Need to clamp the gridCell ranges since the input box boundaries
     //       are not restricted to the implicit grid's bounding box
-    lower = axom::utilities::clampVal(lower, 0, highestBin(dim));
-    upper = axom::utilities::clampVal(upper, 0, highestBin(dim));
+    lower = axom::utilities::clampLower(lower, IndexType() );
+    upper = axom::utilities::clampUpper(upper, highestBin(dim));
 
     BitsetType bits = m_binData[dim][lower];
     for(int i = lower+1 ; i<= upper ; ++i)
