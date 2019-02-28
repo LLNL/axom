@@ -295,37 +295,17 @@ public:
     if(!m_initialized || !m_bb.intersectsWith(box) )
       return BitsetType(0);
 
-    BitsetType res;
-
     const GridCell lowerCell = m_lattice.gridCell(box.getMin());
     const GridCell upperCell = m_lattice.gridCell(box.getMax());
 
-    for(int i=0 ; i< NDIMS ; ++i)
+    BitsetType bits = getBitsInRange(0, lowerCell[0], upperCell[0]);
+
+    for(int dim=1 ; dim< NDIMS ; ++dim)
     {
-      // Note: Need to clamp the gridCell ranges since the input box boundaries
-      //       are not restricted to the implicit grid's bounding box
-      int lower = axom::utilities::clampVal(lowerCell[i], 0, highestBin(i));
-      int upper = axom::utilities::clampVal(upperCell[i], 0, highestBin(i));
-
-      // Union of bits within each dimension
-      BitsetType bits = m_binData[i][lower];
-      for(int j = lower+1 ; j<= upper ; ++j)
-      {
-        bits |= m_binData[i][j];
-      }
-
-      // Intersection of bits from each dimension
-      if(i==0)
-      {
-        res = bits;
-      }
-      else
-      {
-        res &= bits;
-      }
+      bits &= getBitsInRange(dim, lowerCell[dim], upperCell[dim]);
     }
 
-    return res;
+    return bits;
   }
 
   /*!
@@ -399,6 +379,39 @@ private:
   {
     SLIC_ASSERT(0 <= dim && dim < NDIMS);
     return m_bins[dim].size()-1;
+  }
+
+  /*!
+   * \brief Queries the bits that are set for dimension \a dim
+   * within the range of boxes \a lower to \a upper
+   *
+   * \param dim The dimension to check
+   * \param lower The index of the lower bin in the range (inclusive)
+   * \param upper The index of the upper bin in the range (inclusive)
+   *
+   * \return A bitset whose bits are set if they are set in
+   * any of the boxes between \a lower and \a upper for
+   * dimension \a dim
+   *
+   * \note We perform range checking to ensure that \a lower
+   * is at least 0 and \a upper is at most \a highestBin(dim)
+   *
+   * \sa highestBin()
+   */
+  BitsetType getBitsInRange(int dim, int lower, int upper) const
+  {
+    // Note: Need to clamp the gridCell ranges since the input box boundaries
+    //       are not restricted to the implicit grid's bounding box
+    lower = axom::utilities::clampVal(lower, 0, highestBin(dim));
+    upper = axom::utilities::clampVal(upper, 0, highestBin(dim));
+
+    BitsetType bits = m_binData[dim][lower];
+    for(int i = lower+1 ; i<= upper ; ++i)
+    {
+      bits |= m_binData[dim][i];
+    }
+
+    return bits;
   }
 
 private:
