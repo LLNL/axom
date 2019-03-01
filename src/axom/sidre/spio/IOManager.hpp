@@ -252,6 +252,7 @@ public:
    * \brief gets the number of files in the dataset from the specified root file
    */
   int getNumFilesFromRoot(const std::string& root_file);
+  int getNumTreesFromRoot(const std::string& root_file);
 
 private:
 

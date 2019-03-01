@@ -100,7 +100,7 @@ void checkBaton(int numFiles, int numRanks, int myRank)
 
 
   //// Test the baton interface
-  axom::sidre::IOBaton baton(MPI_COMM_WORLD, numFiles);
+  axom::sidre::IOBaton baton(MPI_COMM_WORLD, numFiles, numRanks);
 
   // Num files and groups
   EXPECT_EQ(numFiles, baton.getNumFiles());

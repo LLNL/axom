@@ -34,7 +34,7 @@ namespace sidre
  *************************************************************************
  */
 IOBaton::IOBaton(MPI_Comm comm,
-                 int num_files)
+                 int num_files, int num_trees)
   : m_mpi_comm(comm),
   m_comm_size(1),
   m_my_rank(0),
@@ -45,8 +45,19 @@ IOBaton::IOBaton(MPI_Comm comm,
   MPI_Comm_size(comm, &m_comm_size);
   MPI_Comm_rank(comm, &m_my_rank);
   m_num_files = num_files;
-  m_num_larger_groups = m_comm_size % num_files;
-  m_group_size = m_comm_size / m_num_files; // ?
+  m_num_trees = num_trees;
+  int active_comm_size = m_comm_size;
+  if (m_comm_size > m_num_trees) {
+     active_comm_size = m_num_trees;
+  }
+  m_num_larger_groups = active_comm_size % num_files;
+  if (m_my_rank < active_comm_size) {
+    m_group_size = active_comm_size / m_num_files; // ?
+  }
+  else
+  {
+    m_group_size = 1;
+  }
   m_first_regular_group_rank = (m_group_size + 1) * m_num_larger_groups;
   if (m_my_rank < m_first_regular_group_rank)
   {
@@ -57,7 +68,7 @@ IOBaton::IOBaton(MPI_Comm comm,
       m_rank_after_me = m_my_rank + 1;
     }
   }
-  else
+  else if (m_my_rank < active_comm_size)
   {
     m_group_id = m_num_larger_groups +
                  (m_my_rank - m_first_regular_group_rank) / m_group_size;
@@ -68,6 +79,11 @@ IOBaton::IOBaton(MPI_Comm comm,
       m_rank_after_me = m_my_rank + 1;
     }
   }
+  else
+  {
+    m_group_id = m_my_rank;
+    m_rank_within_group = 0;
+  } 
   if (m_rank_within_group > 0)
   {
     m_rank_before_me = m_my_rank - 1;

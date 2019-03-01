@@ -60,9 +60,12 @@ public:
    *
    * \param com        MPI communicator
    * \param num_files  Number of files involved in an I/O operation
+   * \param num_trees  Number of data trees stored in the files (usually
+   *                   equivalent to the number of MPI ranks providing data).
    */
   IOBaton(MPI_Comm com,
-          int num_files);
+          int num_files,
+          int num_trees);
 
   /*!
    * \brief Destructor
@@ -128,7 +131,8 @@ private:
 
   int m_comm_size;  // num procs in the MPI communicator
   int m_my_rank;    // rank of this proc
-  int m_num_files; // number of groups (files)
+  int m_num_files; // number of files
+  int m_num_trees; // number of trees (ranks)
   int m_num_larger_groups;  // some group have one extra
   int m_group_size; // regular group size (m_comm_size / m_num_files) w/o
                     // remainder
