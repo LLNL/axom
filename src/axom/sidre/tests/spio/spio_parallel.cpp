@@ -711,12 +711,29 @@ TEST(spio_parallel, parallel_increase_procs)
    * section of code is inside the #ifdef guards.
    */
 
-  // Split the communicator so that IOManager only writes from rank 0;
+  // If there are more than two ranks, this test produces output from only
+  // ranks 0 and 1.  If two ranks or fewer, output comes from only rank 0.
+  int top_output_rank = 1;
+  if (num_ranks <= 2)
+  {
+    top_output_rank = 0;
+  }
+
+  // Split the communicator so that ranks up to and including
+  // top_output_rank have their own communicator for the output step.
   MPI_Comm split_comm;
-  MPI_Comm_split(MPI_COMM_WORLD, my_rank, 0, &split_comm);
+
+  if (my_rank <= top_output_rank)
+  {
+    MPI_Comm_split(MPI_COMM_WORLD, 0, my_rank, &split_comm);
+  }
+  else
+  {
+    MPI_Comm_split(MPI_COMM_WORLD, my_rank, 0, &split_comm);
+  }
 
   DataStore* ds = new DataStore();
-  if (my_rank == 0)
+  if (my_rank <= top_output_rank)
   {
 
     Group* root = ds->getRoot();
@@ -761,7 +778,7 @@ TEST(spio_parallel, parallel_increase_procs)
    * Verify that the contents of ds2 on rank 0 match those written from ds.
    */
 
-  if (my_rank == 0)
+  if (my_rank <= top_output_rank)
   {
     EXPECT_TRUE(my_rank != 0 || ds2->getRoot()->isEquivalentTo(ds->getRoot()));
 

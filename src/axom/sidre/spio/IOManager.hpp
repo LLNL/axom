@@ -255,7 +255,7 @@ public:
 
   /*!
    * \brief gets the number of data trees in the dataset from the specified root
-   *file
+   * file
    *
    * Usually this is the number of MPI ranks that wrote data to this set
    * of files.
