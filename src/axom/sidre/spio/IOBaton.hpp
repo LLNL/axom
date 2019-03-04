@@ -33,6 +33,7 @@
 // Other axom headers
 #include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"
+#include "axom/slic/interface/slic.hpp"
 
 
 namespace axom

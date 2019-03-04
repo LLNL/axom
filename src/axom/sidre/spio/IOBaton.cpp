@@ -43,6 +43,9 @@ IOBaton::IOBaton(MPI_Comm comm,
   m_rank_after_me(s_invalid_rank_id),
   m_mpi_tag(MPI_ANY_TAG)
 {
+  SLIC_ASSERT(num_files > 0);
+  SLIC_ASSERT(num_trees > 0);
+
   MPI_Comm_size(comm, &m_comm_size);
   MPI_Comm_rank(comm, &m_my_rank);
   m_num_files = num_files;
