@@ -703,16 +703,15 @@ TEST(spio_parallel, parallel_increase_procs)
    * This tests the ability to read data when the run that is doing the
    * reading has more processors than the run that created the files
    * being read.  In this test we split the world communicator into
-   * single-rank communicators to simulate a serial run that dumps data
-   * from only rank 0.  Then the read occurs with an IOManager constructed
-   * with MPI_COMM_WORLD.
+   * smaller communicators to simulate a run that dumps data from
+   * only ranks 0 and 1 (only rank 0 if running on <= 2 processors).
+   * Then the read occurs with an IOManager constructed with
+   * MPI_COMM_WORLD.
    *
    * This functionality only works with the sidre_hdf5 protocol, so this
    * section of code is inside the #ifdef guards.
    */
 
-  // If there are more than two ranks, this test produces output from only
-  // ranks 0 and 1.  If two ranks or fewer, output comes from only rank 0.
   int top_output_rank = 1;
   if (num_ranks <= 2)
   {
