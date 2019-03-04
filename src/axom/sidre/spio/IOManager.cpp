@@ -446,11 +446,13 @@ void IOManager::loadExternalData(sidre::Group* datagroup,
 
   int group_id = m_baton->wait();
 
-  if (m_my_rank < num_trees) {
+  if (m_my_rank < num_trees)
+  {
     herr_t errv;
     AXOM_DEBUG_VAR(errv);
 
-    std::string hdf5_name = getFileNameForRank(file_pattern, root_file, group_id);
+    std::string hdf5_name =
+      getFileNameForRank(file_pattern, root_file, group_id);
 
     hid_t h5_file_id = conduit::relay::io::hdf5_open_file_for_read(hdf5_name);
     SLIC_ASSERT(h5_file_id >= 0);
@@ -463,13 +465,13 @@ void IOManager::loadExternalData(sidre::Group* datagroup,
 
     errv = H5Gclose(h5_group_id);
     SLIC_ASSERT(errv >= 0);
-  
+
     errv = H5Fclose(h5_file_id);
     SLIC_ASSERT(errv >= 0);
 #else
-    AXOM_DEBUG_VAR(datagroup);
-    SLIC_WARNING("Loading external data only only available "
-                 << "when Axom is configured with hdf5");
+  AXOM_DEBUG_VAR(datagroup);
+  SLIC_WARNING("Loading external data only only available "
+               << "when Axom is configured with hdf5");
 #endif /* AXOM_USE_HDF5 */
   }
 
@@ -745,7 +747,8 @@ void IOManager::readSidreHDF5(sidre::Group* datagroup,
     herr_t errv;
     AXOM_DEBUG_VAR(errv);
 
-    std::string hdf5_name = getFileNameForRank(file_pattern, root_file, group_id);
+    std::string hdf5_name =
+      getFileNameForRank(file_pattern, root_file, group_id);
 
     hid_t h5_file_id = conduit::relay::io::hdf5_open_file_for_read(hdf5_name);
     SLIC_ASSERT(h5_file_id >= 0);

@@ -794,8 +794,8 @@ TEST(spio_parallel, parallel_increase_procs)
   {
     EXPECT_FALSE(ds2->getRoot()->hasGroup("fields"));
     EXPECT_FALSE(ds2->getRoot()->hasGroup("fields2"));
-    EXPECT_EQ(ds2->getRoot()->getNumGroups(), 0);   
-    EXPECT_EQ(ds2->getRoot()->getNumViews(), 0);   
+    EXPECT_EQ(ds2->getRoot()->getNumGroups(), 0);
+    EXPECT_EQ(ds2->getRoot()->getNumViews(), 0);
   }
 
   delete ds2;
@@ -804,7 +804,7 @@ TEST(spio_parallel, parallel_increase_procs)
 #endif
 
 }
- 
+
 
 
 #include "axom/slic/core/UnitTestLogger.hpp"
