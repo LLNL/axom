@@ -309,17 +309,20 @@ public:
   }
 
   /*!
-   * Returns the list of candidates as an explicit array
+   * Returns an explicit list of candidates in the vicinity of a query object
    *
    * \tparam QueryGeom The type of the query object (e.g. point or box)
    * \param [in] query The query object
    * \return A list of indexes from the IndexSet whose corresponding
    * bounding boxes overlap the grid cell containing \a query
    *
-   * \note This function returns the same indices as \a getCandidates()
-   * But the results here are converted into an explicit list.
    * \pre This function is implemented in terms of
-   * ImplicitGrid::getCandidtes(const QueryGeom& ), which must exist
+   * ImplicitGrid::getCandidates(const QueryGeom& ). An overload for the actual
+   * \a QueryGeom type (e.g. \a SpacePoint or \a SpatialBoundingBox) must exist.
+   *
+   * \note This function returns the same information as \a getCandidates(),
+   * but in a different format. While the latter returns a bitset of the
+   * candidates, this function returns an explicit list of indices.
    *
    * \sa getCandidates()
    */
