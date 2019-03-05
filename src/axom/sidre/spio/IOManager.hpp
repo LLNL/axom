@@ -253,15 +253,6 @@ public:
    */
   int getNumFilesFromRoot(const std::string& root_file);
 
-  /*!
-   * \brief gets the number of groups in the dataset from the specified root
-   * file
-   *
-   * Usually this is the number of MPI ranks that wrote data to this set
-   * of files.
-   */
-  int getNumGroupsFromRoot(const std::string& root_file);
-
 private:
 
   DISABLE_COPY_AND_ASSIGNMENT( IOManager );
@@ -280,6 +271,16 @@ private:
   std::string getFilePatternFromRoot(const std::string& root_name,
                                      const std::string& protocol);
 
+
+  /*!
+   * \brief gets the number of groups in the dataset from the specified root
+   * file
+   *
+   * Usually this is the number of MPI ranks that wrote data to this set
+   * of files.
+   */
+  int getNumGroupsFromRoot(const std::string& root_file);
+
 #ifdef AXOM_USE_HDF5
   std::string getHDF5FilePattern(const std::string& root_name);
 
@@ -296,6 +297,8 @@ private:
                    const std::string& root_file,
                    bool preserve_contents = false);
 #endif
+
+
 
   int m_comm_size;  // num procs in the MPI communicator
   int m_my_rank;    // rank of this proc
