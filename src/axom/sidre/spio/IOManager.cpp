@@ -423,9 +423,9 @@ void IOManager::loadExternalData(sidre::Group* datagroup,
                                  const std::string& root_file)
 {
   int num_files = getNumFilesFromRoot(root_file);
-  int num_trees = getNumTreesFromRoot(root_file);
+  int num_groups = getNumGroupsFromRoot(root_file);
   SLIC_ASSERT(num_files > 0);
-  SLIC_ASSERT(num_trees > 0);
+  SLIC_ASSERT(num_groups > 0);
 
   if (m_baton)
   {
@@ -438,7 +438,7 @@ void IOManager::loadExternalData(sidre::Group* datagroup,
 
   if (!m_baton)
   {
-    m_baton = new IOBaton(m_mpi_comm, num_files, num_trees);
+    m_baton = new IOBaton(m_mpi_comm, num_files, num_groups);
   }
 
 #ifdef AXOM_USE_HDF5
@@ -446,7 +446,7 @@ void IOManager::loadExternalData(sidre::Group* datagroup,
 
   int group_id = m_baton->wait();
 
-  if (m_my_rank < num_trees)
+  if (m_my_rank < num_groups)
   {
     herr_t errv;
     AXOM_DEBUG_VAR(errv);
@@ -721,7 +721,7 @@ void IOManager::readSidreHDF5(sidre::Group* datagroup,
                               bool preserve_contents)
 {
   int num_files = getNumFilesFromRoot(root_file);
-  int num_trees = getNumTreesFromRoot(root_file);
+  int num_groups = getNumGroupsFromRoot(root_file);
   SLIC_ASSERT(num_files > 0);
 
   if (m_baton)
@@ -735,13 +735,13 @@ void IOManager::readSidreHDF5(sidre::Group* datagroup,
 
   if (!m_baton)
   {
-    m_baton = new IOBaton(m_mpi_comm, num_files, num_trees);
+    m_baton = new IOBaton(m_mpi_comm, num_files, num_groups);
   }
 
   std::string file_pattern = getHDF5FilePattern(root_file);
 
   int group_id = m_baton->wait();
-  if (m_my_rank < num_trees)
+  if (m_my_rank < num_groups)
   {
 
     herr_t errv;
@@ -829,10 +829,10 @@ int IOManager::getNumFilesFromRoot(const std::string& root_file)
   return num_files;
 }
 
-int IOManager::getNumTreesFromRoot(const std::string& root_file)
+int IOManager::getNumGroupsFromRoot(const std::string& root_file)
 {
   /*
-   * Read num_trees from rootfile on rank 0.
+   * Read number_of_trees from rootfile on rank 0.
    */
   int read_num_trees = 0;
   if (m_my_rank == 0)
@@ -844,13 +844,13 @@ int IOManager::getNumTreesFromRoot(const std::string& root_file)
   }
 
   /*
-   * Reduction sets num_trees on all ranks.
+   * Reduction sets num_groups on all ranks.
    */
-  int num_trees;
-  MPI_Allreduce(&read_num_trees, &num_trees, 1, MPI_INT, MPI_SUM, m_mpi_comm);
-  SLIC_ASSERT(num_trees > 0);
+  int num_groups;
+  MPI_Allreduce(&read_num_trees, &num_groups, 1, MPI_INT, MPI_SUM, m_mpi_comm);
+  SLIC_ASSERT(num_groups > 0);
 
-  return num_trees;
+  return num_groups;
 }
 
 /*

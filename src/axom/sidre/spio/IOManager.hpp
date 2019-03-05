@@ -254,13 +254,13 @@ public:
   int getNumFilesFromRoot(const std::string& root_file);
 
   /*!
-   * \brief gets the number of data trees in the dataset from the specified root
+   * \brief gets the number of groups in the dataset from the specified root
    * file
    *
    * Usually this is the number of MPI ranks that wrote data to this set
    * of files.
    */
-  int getNumTreesFromRoot(const std::string& root_file);
+  int getNumGroupsFromRoot(const std::string& root_file);
 
 private:
 

@@ -35,7 +35,7 @@ namespace sidre
  */
 IOBaton::IOBaton(MPI_Comm comm,
                  int num_files,
-                 int num_trees)
+                 int num_groups)
   : m_mpi_comm(comm),
   m_comm_size(1),
   m_my_rank(0),
@@ -44,16 +44,16 @@ IOBaton::IOBaton(MPI_Comm comm,
   m_mpi_tag(MPI_ANY_TAG)
 {
   SLIC_ASSERT(num_files > 0);
-  SLIC_ASSERT(num_trees > 0);
+  SLIC_ASSERT(num_groups > 0);
 
   MPI_Comm_size(comm, &m_comm_size);
   MPI_Comm_rank(comm, &m_my_rank);
   m_num_files = num_files;
-  m_num_trees = num_trees;
+  m_num_groups = num_groups;
   int active_comm_size = m_comm_size;
-  if (m_comm_size > m_num_trees)
+  if (m_comm_size > m_num_groups)
   {
-    active_comm_size = m_num_trees;
+    active_comm_size = m_num_groups;
   }
   m_num_larger_groups = active_comm_size % num_files;
   if (m_my_rank < active_comm_size)
