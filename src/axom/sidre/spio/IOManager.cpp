@@ -723,6 +723,8 @@ void IOManager::readSidreHDF5(sidre::Group* datagroup,
   int num_files = getNumFilesFromRoot(root_file);
   int num_groups = getNumGroupsFromRoot(root_file);
   SLIC_ASSERT(num_files > 0);
+  SLIC_ERROR_IF(num_groups > m_comm_size,
+                "IOManager cannot read from files written by more ranks than are being used in the current run.");
 
   if (m_baton)
   {
