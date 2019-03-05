@@ -688,6 +688,141 @@ TEST(spio_parallel, preserve_writeread)
   delete dsextra;
 }
 
+
+TEST(spio_parallel, parallel_increase_procs)
+{
+  int my_rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+  int num_ranks;
+  MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
+
+  EXPECT_TRUE(num_ranks > my_rank);
+
+#ifdef AXOM_USE_HDF5
+  /*
+   * This tests the ability to read data when the run that is doing the
+   * reading has more processors than the run that created the files
+   * being read.  In this test we split the world communicator into
+   * smaller communicators to simulate a run that dumps data from
+   * only ranks 0 and 1 (only rank 0 if running on <= 2 processors).
+   * Then the read occurs with an IOManager constructed with
+   * MPI_COMM_WORLD.
+   *
+   * This functionality only works with the sidre_hdf5 protocol, so this
+   * section of code is inside the #ifdef guards.
+   */
+
+  int top_output_rank = 1;
+  if (num_ranks <= 2)
+  {
+    top_output_rank = 0;
+  }
+
+  // Split the communicator so that ranks up to and including
+  // top_output_rank have their own communicator for the output step.
+  MPI_Comm split_comm;
+
+  if (my_rank <= top_output_rank)
+  {
+    MPI_Comm_split(MPI_COMM_WORLD, 0, my_rank, &split_comm);
+  }
+  else
+  {
+    MPI_Comm_split(MPI_COMM_WORLD, my_rank, 0, &split_comm);
+  }
+
+  DataStore* ds = new DataStore();
+  if (my_rank <= top_output_rank)
+  {
+
+    Group* root = ds->getRoot();
+
+    Group* flds = root->createGroup("fields");
+    Group* flds2 = root->createGroup("fields2");
+
+    Group* ga = flds->createGroup("a");
+    Group* gb = flds2->createGroup("b");
+    ga->createViewScalar<int>("i0", 101*my_rank);
+    gb->createView("i1")->allocate(DataType::c_int(10));
+    int* i1_vals = gb->getView("i1")->getData();
+
+    for(int i=0 ; i<10 ; i++)
+    {
+      i1_vals[i] = (i+10) * (404-my_rank-i);
+    }
+
+    int num_files = 1;
+    axom::sidre::IOManager writer(split_comm);
+
+    const std::string file_name = "out_spio_parallel_increase_procs";
+
+    writer.write(root, num_files, file_name, PROTOCOL);
+
+  }
+
+  /*
+   * The reading section of this test will execute a read on all
+   * ranks of MPI_COMM_WORLD, even though the write was only on a single
+   * rank.  The read will load data on rank 0 and add nothing on higher
+   * ranks.
+   */
+  DataStore* ds2 = new DataStore();
+
+  IOManager reader(MPI_COMM_WORLD);
+
+  const std::string root_name = "out_spio_parallel_increase_procs.root";
+  reader.read(ds2->getRoot(), root_name);
+
+  /*
+   * Verify that the contents of ds2 on rank 0 match those written from ds.
+   */
+
+  if (my_rank <= top_output_rank)
+  {
+    EXPECT_TRUE(my_rank != 0 || ds2->getRoot()->isEquivalentTo(ds->getRoot()));
+
+    int testvalue =
+      ds->getRoot()->getGroup("fields")->getGroup("a")->getView("i0")->getData();
+    int testvalue2 =
+      ds2->getRoot()->getGroup("fields")->getGroup("a")->getView("i0")->getData();
+
+    EXPECT_EQ(testvalue, testvalue2);
+
+    View* view_i1_orig =
+      ds->getRoot()->getGroup("fields2")->getGroup("b")->getView("i1");
+    View* view_i1_restored =
+      ds2->getRoot()->getGroup("fields2")->getGroup("b")->getView("i1");
+
+    int num_elems = view_i1_orig->getNumElements();
+    EXPECT_EQ(view_i1_restored->getNumElements(), num_elems);
+    if (view_i1_restored->getNumElements() == num_elems)
+    {
+      int* i1_orig = view_i1_orig->getData();
+      int* i1_restored = view_i1_restored->getData();
+
+      for (int i = 0 ; i < num_elems ; ++i)
+      {
+        EXPECT_EQ(i1_orig[i], i1_restored[i]);
+      }
+    }
+  }
+  else
+  {
+    EXPECT_FALSE(ds2->getRoot()->hasGroup("fields"));
+    EXPECT_FALSE(ds2->getRoot()->hasGroup("fields2"));
+    EXPECT_EQ(ds2->getRoot()->getNumGroups(), 0);
+    EXPECT_EQ(ds2->getRoot()->getNumViews(), 0);
+  }
+
+  delete ds2;
+  delete ds;
+
+#endif
+
+}
+
+
+
 #include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
