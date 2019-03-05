@@ -61,8 +61,11 @@ processors.  If ``write()`` was executed on N ranks and ``read()`` is called
 while running on M ranks (M > N), then data will be read into ranks 0 to N-1,
 and all ranks higher than N-1 will receive no data.
 
-If ``read()`` is called in an attempt to read data that was created on a
-larger number of processors than the current run, an error will occur.
+.. warning::
+   If ``read()`` is called in an attempt to read data that was created on a
+   larger number of processors than the current run, an error will occur.
+   Support for this type of usage is intended to be added in future
+   releases.
 
 In the following example, an IOManager is created and used to write the contents
 of the Group "root" in parallel.
