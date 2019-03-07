@@ -1,74 +1,110 @@
+.. ##
+.. ## Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.
+.. ##
+.. ## Produced at the Lawrence Livermore National Laboratory
+.. ##
+.. ## LLNL-CODE-741217
+.. ##
+.. ## All rights reserved.
+.. ##
+.. ## This file is part of Axom.
+.. ##
+.. ## For details about use and distribution, please read axom/LICENSE.
+.. ##
 
 Slam User Documentation
-=========================
+=======================
 
-The Slam (Set-theoretic Lightweight API for Meshes) component of Axom provides
-high performance reusable components for building up distributed mesh data structures 
-in HPC simulation codes. 
+Axom's Set-theoretic Lightweight API for Meshes (SLAM) component provides high performance
+building blocks for distributed mesh data structures in HPC simulation codes.
 
-.. Goals and target audience
+Introduction
+------------
 
-Slam targets the low level implementation of the underlying pieces that comprise distributed mesh data structures. 
-It is aimed at developers who implement mesh data structures within HPC applications.
+Simulation codes have a broad range of requirements for their mesh data structures,
+spanning the complexity gamut from structured Cartesian grids to fully unstructured
+polyhedral meshes. Codes also need to support features like dynamic topology changes,
+adaptive mesh refinement (AMR), submesh elements and ghost/boundary layers, in
+addition to other custom features.
 
-Its design is based on the observation that despite the apparent differences in the high level view of mesh 
-data structures, many of the core features are shared at a lower level where we need to iterate over 
-the mesh's index space.
+Slam targets the low level implementation of these distributed mesh data structures and is
+aimed at developers who implement mesh data structures within HPC applications.
 
-Slam provides a simple, intuitive, API centered around a set-theoretic abstraction for meshes and associated data.
-Specifically, it models meshes in terms of three core set-theoretic concepts: 
 
-* **Sets** of entities (e.g. vertices, cells, particles)
+Set-theoretic abstraction
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Slam's design is motivated by the observation that despite vast differences in the high
+level features of such mesh data structures, many of the core concepts are shared at a
+lower level, where we need to define and process mesh entities and their associated data
+and relationships.
+
+Slam provides a simple, intuitive, API centered around a set-theoretic abstraction for
+meshes and associated data. Specifically, it models three core set-theoretic concepts:
+
+* **Sets** of entities (e.g. vertices, cells, domains)
 * **Relations** among a pair of sets (e.g. incidence, adjacency and containment relations)
-* **Maps** defining fields and attributes on the elements of a given set. 
+* **Maps** defining fields and attributes on the elements of a given set.
+
+The goal is for users to program against Slam's interface without having to be aware of
+different design choices, such as the memory layout and underlying data containers. The
+exposed API is intended to feel natural to end users (e.g. application developers and code
+physicists) who operate on the meshes that are built up from Slam's abstractions.
+
+See :ref:`srm-label` for more details.
 
 
-The goal is for users to program against this interface without having to pay attentions to the specific design choices,
-such as the memory layout and data containers for the underlying mesh data. The exposed API is intended to feel natural 
-to end users (e.g. application developers and code physicists) who operate on the meshes that are built up 
-from slam's abstractions.
+Policy-based design
+^^^^^^^^^^^^^^^^^^^
 
+There is considerable variability in how these abstractions can be implemented and user
+codes make many different design choices.  For example, we often need different data
+structures to support dynamic meshes than we do for static meshes. Similarly, codes
+might choose different container types for their arrays (e.g. STL vectors vs. raw C-arrays
+vs. custom array types).
 
-.. Policy-based design
+Performance considerations can also come in to play. For example, in some cases, a code
+has knowledge of some fixed parameters (e.g. the stride between elements in a relation).
+Specifying this information at compile-time allows the compiler to better optimize the
+generated code than specifying it at runtime.
 
-The classes in Slam use a *Policy-based* design that orthogonally decomposes the feature space in an attempt
-to combat the combinatorial explosion of possible design choices without sacrificing performance. 
-This makes it easier to extend support for custom features that utilize or extend the basic interface.
+.. Recognizing that iteration over the mesh entities is often a performance critical
+   operation in mesh processing algorithms, Slam attempts to balance the tension between
+   generality to allow sharing mesh data and performance.
 
-.. For example, some design decisions are known at compile time within a given code. 
-   Providing this information allows the compiler to better optimize the generated code.  
+Slam uses a Policy-based design to orthogonally decompose the feature space without
+sacrificing performance. This makes it easier to extend support for custom features that
+utilize or extend the basic interface.
+
+See :ref:`policy-label` for more details.
+
 
 Current limitations
--------------------
+^^^^^^^^^^^^^^^^^^^
 
 * Slam is under active development with many features planned.
-* Slam's classes are highly configurable.  However, it is currently difficult to set up the templated typedefs 
-  for the underlying policy classes.  This can be simplified by the introduction of Generator classes which will 
-  use enumerated strings to generate the necessary typedefs. 
+* Slam's classes are highly configurable.  However, it is currently not straightforward to
+  set up the templated typedefs for the underlying policy classes. This can be simplified
+  by the introduction of *Generator* classes which use enumerated strings to generate the
+  necessary typedefs.
 * Slam does not yet support GPUs.
 
 
-
-TODO:
------
-
-* High-level goals and sources of requirements and use cases - 
-  spectrum of mesh data structure requirements: 
-  regularity of grid, variety of element types, polynomial order, 
-  different ghosting schemes
-* Brief summary of concepts (Set, Relation, Map) - Abstraction over low-level concepts common to simulation meshes
-* Summary of current limitations and future plans
-
-
-**Contents:**
+Contents
+^^^^^^^^
 
 .. toctree::
    :maxdepth: 2
-   
+
    first_example
    core_concepts
    implementation_details
-   examples
-   more
-   
-`Class documentation <../../doxygen/html/annotated.html>`_
+
+.. examples
+.. more
+
+Additional links
+^^^^^^^^^^^^^^^^
+
+* `API documentation <../../../doxygen/axom_doxygen/html/slamtop.html>`_
+* `Axom main docs <../../web_main_docs/html/index.html>`_
