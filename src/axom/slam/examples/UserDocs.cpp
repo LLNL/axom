@@ -89,41 +89,38 @@ struct Point2
 
 struct SimpleQuadMesh
 {
-  // Sets: Type aliases and class members
+  /// Type aliases for sets
   // _quadmesh_example_set_typedefs_start
   using VertSet = slam::PositionSet;
   using ElemSet = slam::PositionSet;
-
-  VertSet verts; // The set of vertices in the mesh
-  ElemSet elems; // The set of elements in the mesh
   // _quadmesh_example_set_typedefs_end
 
-  // Relations: Type aliases and class members
-  // _quadmesh_example_relation_typedefs_start
-  enum { VertsPerElem = 4};
+
+  // _quadmesh_example_common_typedefs_start
   using PosType = int;
   using ArrayIndir = slam::policies::ArrayIndirection<PosType,PosType>;
+  // _quadmesh_example_common_typedefs_end
 
-  // Define the element-to-vertex boundary relation
+  /// Type aliases for relations
+  // _quadmesh_example_bdry_relation_typedefs_start
+  // Type aliases for element-to-vertex boundary relation
+  enum { VertsPerElem = 4};
   using CTStride = slam::policies::CompileTimeStride<PosType,VertsPerElem>;
   using ConstCard = slam::policies::ConstantCardinality<PosType, CTStride>;
   using ElemToVertRelation =
           slam::StaticRelation<ConstCard, ArrayIndir,ElemSet,VertSet>;
+  // _quadmesh_example_bdry_relation_typedefs_end
 
-  // Define the vertex-to-element coboundary relation
+  // _quadmesh_example_cobdry_relation_typedefs_start
+  // Type aliases for vertex-to-element coboundary relation
   using VarCard = slam::policies::VariableCardinality<PosType, ArrayIndir>;
   using VertToElemRelation =
           slam::StaticRelation<VarCard, ArrayIndir,VertSet, ElemSet>;
+  // _quadmesh_example_cobdry_relation_typedefs_end
 
-  ElemToVertRelation bdry; // Boundary relation from elements to vertices
-  VertToElemRelation cobdry; // Coboundary relation from vertices to elements
-  // _quadmesh_example_relation_typedefs_end
-
-  // Maps: Type aliases and class members
+  /// Type alias for position map
   // _quadmesh_example_maps_typedefs_start
   using VertPositions = slam::Map<Point2>;
-
-  VertPositions position; // vertex position
   // _quadmesh_example_maps_typedefs_end
 
   SimpleQuadMesh()
@@ -136,7 +133,6 @@ struct SimpleQuadMesh
       0,9,8,7,   // elem 3
       0,1,10,9   // elem 4
     };
-
 
     // data for vertex-element coboundary relation
     veInds = {
@@ -178,9 +174,10 @@ struct SimpleQuadMesh
   /// Constructs the mesh boundary and coboundary relations
   void constructMeshRelations()
   {
-    // construct boundary relation from elements to vertices
+
     {
       // _quadmesh_example_construct_bdry_relation_start
+      // construct boundary relation from elements to vertices
       using RelationBuilder = ElemToVertRelation::RelationBuilder;
       bdry = RelationBuilder()
              .fromSet( &elems )
@@ -191,9 +188,9 @@ struct SimpleQuadMesh
       // _quadmesh_example_construct_bdry_relation_end
     }
 
-    // construct coboundary relation from vertices to elements
     {
       // _quadmesh_example_construct_cobdry_relation_start
+      // construct coboundary relation from vertices to elements
       using RelationBuilder = VertToElemRelation::RelationBuilder;
       cobdry = RelationBuilder()
                .fromSet( &verts )
@@ -218,27 +215,28 @@ struct SimpleQuadMesh
   /// Constucts the positions map on the vertices
   void constructMeshMaps()
   {
+    // _quadmesh_example_vert_positions_start
     // construct the position map on the vertices
-    position = VertPositions(&verts);
+    position = VertPositions( &verts );
 
-    // parameters for vertex positions
+    // first vertex is at origin
+    position[0] = Point2( 0.,0. );
+
+    // remaining vertices lie within annulus around unit disk
+    // in cw order, starting at angleOffset
     constexpr double rInner = 0.8;
     constexpr double rOuter = 1.2;
     constexpr double angleOffset = 0.75;
     const double N = verts.size()-1;
 
-    // first vertex is at origin
-    position[0] = Point2(0.,0.);
-
-    // remaining vertices lie within annulus around unit disk
-    // in cw order, starting at angleOffset
     for(int i=1 ; i< verts.size() ; ++i)
     {
       const double angle = -(i-1)/ N * 2 * M_PI + angleOffset;
       const double mag = axom::utilities::random_real(rInner, rOuter);
 
-      position[i] = Point2(mag * cos(angle), mag * sin(angle));
+      position[i] = Point2(mag * std::cos(angle), mag * std::sin(angle));
     }
+    // _quadmesh_example_vert_positions_end
 
     SLIC_ASSERT_MSG( position.isValid(), "Position map is not valid.");
 
@@ -253,16 +251,17 @@ struct SimpleQuadMesh
   void computeDistances()
   {
     // _quadmesh_example_vert_distances_start
-    // Create a Map of scalars over the vet
+    // Create a Map of scalars over the vertices
     using ScalarMap = slam::Map<double>;
-    ScalarMap distances(&verts);
+    ScalarMap distances( &verts );
 
-    for(int i=0 ; i< distances.size() ; ++i)
+    for(int i=0 ; i< distances.size() ; ++i)    // <-- Map::size()
     {
-      auto vID = verts[i];
-      Point2& pt = position[vID];
+      auto vID = verts[i];                      // <-- Set::operator[]
+      const Point2& pt = position[vID];         // <-- Map::operator[]
 
-      distances[i] = std::sqrt(pt[0]*pt[0] + pt[1]*pt[1]);
+      distances[i] = std::sqrt( pt[0]*pt[0]     // <-- Map::operator[]
+                                + pt[1]*pt[1]);
     }
     // _quadmesh_example_vert_distances_end
 
@@ -278,23 +277,25 @@ struct SimpleQuadMesh
   void computeCentroids()
   {
     // _quadmesh_example_elem_centroids_start
+    // Create a Map of Point2 over the mesh elements
     using  ElemCentroidMap = slam::Map<Point2>;
-    ElemCentroidMap centroid = ElemCentroidMap(&elems);
+    ElemCentroidMap centroid = ElemCentroidMap( &elems );
 
-    for(int eID=0 ; eID < elems.size() ; ++eID)
+    // for each element...
+    for(int eID=0 ; eID < elems.size() ; ++eID) // <-- Set::size()
     {
-      Point2 pos;
+      Point2 ctr;
 
-      auto elVerts = bdry[eID];                // returns set of vertices
-                                               // incident in element eID
+      auto elVerts = bdry[eID];                 // <-- Relation::operator[]
 
-      for(int i=0 ; i < elVerts.size() ; ++i)  // set size() function
+      // find average position of incident vertices
+      for(int i=0 ; i < elVerts.size() ; ++i)   // <-- Set::size()
       {
-        auto vID = elVerts[i];                 // set subscript operator
-        pos += position[vID];                  // map subscript operator
+        auto vID = elVerts[i];                  // <-- Set::operator[]
+        ctr += position[vID];                   // <-- Map::operator[]
       }
-      pos /= elVerts.size();
-      centroid[eID] = pos;                      // map subscript operator
+      ctr /= elVerts.size();                    // <-- Set::size())
+      centroid[eID] = ctr;                      // <-- Map::operator[]
     }
     // _quadmesh_example_elem_centroids_end
 
@@ -307,6 +308,7 @@ struct SimpleQuadMesh
 
   void outputVTKMesh()
   {
+    // _quadmesh_example_output_vtk_start
     std::ofstream meshfile;
     meshfile.open("quadMesh.vtk");
     std::ostream_iterator<PosType> out_it (meshfile," ");
@@ -319,17 +321,18 @@ struct SimpleQuadMesh
              << "POINTS " << verts.size() << " double\n";
 
     // write positions
-    for(auto i: verts)
+    for(auto pos: position)         // <-- Uses range-based for on position map
     {
-      meshfile << position[i][0] << " " << position[i][1] << " 0\n";
+      meshfile << pos[0] << " " << pos[1] << " 0\n";
     }
 
     // write elem-to-vert boundary relation
     meshfile << "\nCELLS " << elems.size() << " " << 5 * elems.size();
-    for(auto e: elems)
+    for(auto e: elems)              // <-- uses range-based for on element set
     {
       meshfile<<"\n4 ";
-      std::copy ( bdry.begin(e), bdry.end(e), out_it );
+      std::copy ( bdry.begin(e),    // <-- uses relation's iterators
+                  bdry.end(e), out_it );
     }
 
     // write element types ( 9 == VKT_QUAD )
@@ -345,7 +348,7 @@ struct SimpleQuadMesh
              << "\nLOOKUP_TABLE default \n";
     for(int i=0 ; i< elems.size() ; ++i)
     {
-      meshfile << elems[i] <<" ";
+      meshfile << elems[i] <<" ";   // <-- uses size() and operator[] on set
     }
 
     // write vertex ids
@@ -357,10 +360,24 @@ struct SimpleQuadMesh
       meshfile << verts[i] <<" ";
     }
     meshfile <<"\n";
-
+    // _quadmesh_example_output_vtk_end
   }
 
 private:
+
+  // _quadmesh_example_set_variables_start
+  VertSet verts; // The set of vertices in the mesh
+  ElemSet elems; // The set of elements in the mesh
+  //  _quadmesh_example_set_variables_end
+
+  // _quadmesh_example_relation_variables_start
+  ElemToVertRelation bdry;   // Boundary relation from elements to vertices
+  VertToElemRelation cobdry; // Coboundary relation from vertices to elements
+  // _quadmesh_example_relation_variables_end
+
+  // _quadmesh_example_map_variables_start
+  VertPositions position; // vertex position
+  // _quadmesh_example_map_variables_end
 
   // support data for mesh connectivity
   std::vector<PosType> evInds;
