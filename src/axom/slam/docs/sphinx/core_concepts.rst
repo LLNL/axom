@@ -1,6 +1,22 @@
-******************************************************
+.. ##
+.. ## Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.
+.. ##
+.. ## Produced at the Lawrence Livermore National Laboratory
+.. ##
+.. ## LLNL-CODE-741217
+.. ##
+.. ## All rights reserved.
+.. ##
+.. ## This file is part of Axom.
+.. ##
+.. ## For details about use and distribution, please read axom/LICENSE.
+.. ##
+
+.. _srm-label:
+
+*************
 Core concepts
-******************************************************
+*************
 
 Describe Slam concepts, what they mean, how they are used, etc.
 
@@ -12,11 +28,19 @@ Describe Slam concepts, what they mean, how they are used, etc.
    A **relation** (blue lines) between two **sets** (ovals with red and green dots, as elements)
    and a **map** of scalar values (brown) on the second set.
 
+.. _set-concept-label:
+
 Set
 ---
 * Taxonomy of set types (OrderedSet, IndirectionSet, Subset, static vs. dynamic)
 * Simple API (including semantics of operator[] and iterators )
 * Example to show how we iterate through a set
+
+.. Future
+   Discuss different indexing schemes for ProductSets
+
+
+.. _relation-concept-label:
 
 Relation
 --------
@@ -26,6 +50,13 @@ Relation
     * Mutability: Static vs. Dynamic relation
     * Storage: Implicit vs. Explicit (e.g. product set)
 * Simple API (including semantics of operator[] )
+* Three ways to iterate through a relations
+    * Double subscript
+    * Separate subscripts
+    * Iterators
+
+
+.. _map-concept-label:
 
 Map
 ---

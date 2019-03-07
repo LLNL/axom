@@ -24,7 +24,7 @@ Introduction
 Simulation codes have a broad range of requirements for their mesh data structures,
 spanning the complexity gamut from structured Cartesian grids to fully unstructured
 polyhedral meshes. Codes also need to support features like dynamic topology changes,
-adaptive mesh refinement (AMR), submesh elements and ghost/boundary layers, in
+adaptive mesh refinement (AMR), submesh elements and ghost/halo layers, in
 addition to other custom features.
 
 Slam targets the low level implementation of these distributed mesh data structures and is
@@ -48,8 +48,8 @@ meshes and associated data. Specifically, it models three core set-theoretic con
 
 The goal is for users to program against Slam's interface without having to be aware of
 different design choices, such as the memory layout and underlying data containers. The
-exposed API is intended to feel natural to end users (e.g. application developers and code
-physicists) who operate on the meshes that are built up from Slam's abstractions.
+exposed API is intended to feel natural to end users (e.g. application developers and
+domain scientists) who operate on the meshes that are built up from Slam's abstractions.
 
 See :ref:`srm-label` for more details.
 
@@ -73,8 +73,8 @@ generated code than specifying it at runtime.
    generality to allow sharing mesh data and performance.
 
 Slam uses a Policy-based design to orthogonally decompose the feature space without
-sacrificing performance. This makes it easier to extend support for custom features that
-utilize or extend the basic interface.
+sacrificing performance. This makes it easier to customize the behavior of Slam's sets,
+relations and maps and to extend support for custom features extend the basic interface.
 
 See :ref:`policy-label` for more details.
 
