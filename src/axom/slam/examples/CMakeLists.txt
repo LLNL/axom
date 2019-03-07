@@ -19,6 +19,7 @@
 set(example_sources
     ShockTube.cpp
     PolicyPrototype.cpp
+    UserDocs.cpp
     )
 
 set(slam_tests_depends_on slic slam)
@@ -53,7 +54,7 @@ add_subdirectory(tinyHydro)
 #
 # An example that use the Slam iterators and therefore depends on C++11
 #
-if( NOT BLT_CXX_STD STREQUAL c++98 ) 
+if( NOT BLT_CXX_STD STREQUAL c++98 )
     list(APPEND slam_tests_extra_depends fmt)
 
     # Unstructured hexahedral mesh
