@@ -925,15 +925,14 @@ TEST( core_array, checkFill )
 //------------------------------------------------------------------------------
 TEST( core_array, checkSet )
 {
-  for ( IndexType capacity = 2 ; capacity < 512 ; capacity *= 2 )
+  for ( IndexType size = 2 ; size < 512 ; size *= 2 )
   {
-    IndexType size = capacity / 2;
     for ( IndexType n_components = 1 ; n_components <= 4 ; n_components++ )
     {
-      Array< int > v_int( size, n_components, capacity );
+      Array< int > v_int( size, n_components );
       internal::check_set( v_int );
 
-      Array< double > v_double( size, n_components, capacity );
+      Array< double > v_double( size, n_components );
       internal::check_set( v_double );
     }
   }
