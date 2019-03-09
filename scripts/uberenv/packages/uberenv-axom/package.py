@@ -45,7 +45,7 @@ class UberenvAxom(Package):
     # use ~cmake to skip cmake build and use whatever cmake is in the
     # users path 
     # (given the pain of building cmake on BGQ, this is really only for BGQ)
-    variant('cmake',   default=True, description="Build cmake.")
+    variant('cmake',    default=True, description="Build cmake.")
 
     variant("python",   default=False, description="Build python")
     variant("mpi",      default=True, description="Build MPI support")
@@ -54,6 +54,16 @@ class UberenvAxom(Package):
     variant("hdf5",     default=True, description="Build hdf5")
 
     variant("scr",      default=False, description="Build SCR")
+
+    variant("raja",     default=True, description="Build raja")
+
+    variant("umpire",   default=True, description="Build umpire")
+
+    variant("cuda",     default=False, description="Turn on cuda support.")
+
+    variant('openmp',   default=True, description='Turn on openmp support.')
+
+    depends_on("cuda", when="+cuda")
 
     depends_on("hdf5~cxx~shared~fortran", when="+hdf5")
 
@@ -65,6 +75,14 @@ class UberenvAxom(Package):
     depends_on("conduit~shared~hdf5~python",when="~hdf5~python")
     
     depends_on("scr", when="+scr")
+
+    depends_on("raja~openmp", when="+raja~openmp")
+    depends_on("raja+openmp", when="+raja+openmp")
+    depends_on("raja~openmp+cuda", when="+raja~openmp+cuda")
+    depends_on("raja+openmp+cuda", when="+raja+openmp+cuda")
+
+    depends_on("umpire", when="+umpire")
+    depends_on("umpire+cuda", when="+umpire+cuda")
 
     # builds serial version of mfem that does not depend on Sidre
     depends_on("mfem~hypre~metis~mpi~gzstream",   when="+mfem")
@@ -206,29 +224,46 @@ class UberenvAxom(Package):
             cfg.write("# Root directory for generated TPLs\n")
             cfg.write(cmake_cache_entry("TPL_ROOT",tpl_root))
 
-        if "hdf5" in spec:
+        conduit_dir = get_spec_path(spec, "conduit", path_replacements)
+        cfg.write("# conduit from uberenv\n")
+        cfg.write(cmake_cache_entry("CONDUIT_DIR",conduit_dir))
+
+        # optional tpls
+
+        if "+mfem" in spec:
+            mfem_dir = get_spec_path(spec, "mfem", path_replacements)
+            cfg.write("# mfem from uberenv\n")
+            cfg.write(cmake_cache_entry("MFEM_DIR",mfem_dir))
+        else:
+            cfg.write("# mfem not built by uberenv\n\n")
+
+        if "+hdf5" in spec:
             hdf5_dir = get_spec_path(spec, "hdf5", path_replacements)
             cfg.write("# hdf5 from uberenv\n")
             cfg.write(cmake_cache_entry("HDF5_DIR",hdf5_dir))
         else:
             cfg.write("# hdf5 not built by uberenv\n\n")
 
-        if "scr" in spec:
+        if "+scr" in spec:
             scr_dir = get_spec_path(spec, "scr", path_replacements)
             cfg.write("# scr from uberenv\n")
             cfg.write(cmake_cache_entry("SCR_DIR",scr_dir))
         else:
             cfg.write("# scr not built by uberenv\n\n")
 
-        conduit_dir = get_spec_path(spec, "conduit", path_replacements)
-        cfg.write("# conduit from uberenv\n")
-        cfg.write(cmake_cache_entry("CONDUIT_DIR",conduit_dir))
+        if "+raja" in spec:
+            raja_dir = get_spec_path(spec, "raja", path_replacements)
+            cfg.write("# raja from uberenv\n")
+            cfg.write(cmake_cache_entry("RAJA_DIR", raja_dir + "/share/raja/cmake"))
+        else:
+            cfg.write("# raja not build by uberenv\n\n")
 
-        mfem_dir = get_spec_path(spec, "mfem", path_replacements)
-        cfg.write("# mfem from uberenv\n")
-        cfg.write(cmake_cache_entry("MFEM_DIR",mfem_dir))
-
-        # optional tpls
+        if "+umpire" in spec:
+            umpire_dir = get_spec_path(spec, "umpire", path_replacements)
+            cfg.write("# umpire from uberenv\n")
+            cfg.write(cmake_cache_entry("UMPIRE_DIR", umpire_dir + "/share/umpire/cmake"))
+        else:
+            cfg.write("# umpire not build by uberenv\n\n")
 
         if "python" in spec or "devtools" in spec:
             python_bin_dir = get_spec_path(spec, "python", path_replacements, use_bin=True)
@@ -332,6 +367,7 @@ class UberenvAxom(Package):
         else:
             cfg.write(cmake_cache_option("ENABLE_MPI", False))
 
+
         ##################################
         # Other machine specifics
         ##################################
@@ -341,13 +377,13 @@ class UberenvAxom(Package):
         cfg.write("##############\n\n")
 
         # Enable death tests everwhere but BGQ
-        if on_bgq:
+        if on_bgq or (on_blueos and "+cuda" in spec):
             cfg.write(cmake_cache_option("ENABLE_GTEST_DEATH_TESTS", False))
         else:
             cfg.write(cmake_cache_option("ENABLE_GTEST_DEATH_TESTS", True))
 
         # BGQ
-        if on_bgq:
+        if on_bgq:            
             if "xlf" in str(spec.compiler):
                 cfg.write(cmake_cache_entry("BLT_FORTRAN_FLAGS", "-WF,-C!",
                     "Converts C-style comments to Fortran style in preprocessed files"))
@@ -370,21 +406,44 @@ class UberenvAxom(Package):
                 cfg.write(cmake_cache_entry("CMAKE_CXX_COMPILER_ID", "XL",
                     "All of BlueOS compilers report clang due to nvcc, override to proper compiler family"))
 
-            if "clang@coral_xlf" == str(spec.compiler):
+            if str(spec.compiler) in ("clang@upstream_xlf", "clang@upstream_nvcc_xlf"):
                 cfg.write(cmake_cache_entry("BLT_FORTRAN_FLAGS", "-WF,-C!",
                     "Converts C-style comments to Fortran style in preprocessed files"))
                 cfg.write(cmake_cache_entry("BLT_EXE_LINKER_FLAGS",
                     "-Wl,-rpath,/usr/tce/packages/xl/xl-2018.05.18/lib/", 
-                    "Adds a missing rpath for libraries associated with the fortran compiler"))
+                    "Adds a missing rpath for libraries associated with the fortran compiler"))                
+
             elif "xl@coral" == str(spec.compiler):
                 cfg.write(cmake_cache_entry("BLT_FORTRAN_FLAGS", "-WF,-C! -qxlf2003=polymorphic",
                     "Convert C-style comments to Fortran and link fortran exes to C++ libraries"))
+
+            if "+cuda" in spec:
+                cfg.write("##############\n")
+                cfg.write("# Cuda\n")
+                cfg.write("##############\n\n")
+
+                cfg.write(cmake_cache_option("ENABLE_CUDA", True))
+                cfg.write(cmake_cache_entry("CUDA_TOOLKIT_ROOT_DIR", "/usr/tce/packages/cuda/cuda-9.2.148"))
+                cfg.write(cmake_cache_entry("CMAKE_CUDA_COMPILER", "${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc"))
+                cfg.write(cmake_cache_entry("CUDA_ARCH", "sm_60"))
+                cfg.write(cmake_cache_entry("CMAKE_CUDA_FLAGS" ,"-restrict -arch ${CUDA_ARCH} -std=c++11 --expt-extended-lambda -G"))
+                
+                if "+mpi" in spec:
+                    cfg.write(cmake_cache_entry("CMAKE_CUDA_HOST_COMPILER", "${MPI_CXX_COMPILER}"))
+                else:
+                    cfg.write(cmake_cache_entry("CMAKE_CUDA_HOST_COMPILER", "${CMAKE_CXX_COMPILER}"))
+
+                cfg.write("# nvcc does not like gtest's 'pthreads' flag\n")
+                cfg.write(cmake_cache_option("gtest_disable_pthreads", True))
 
         # TOSS3
         elif on_toss:
             if "gcc@4.9.3" == str(spec.compiler):
                 cfg.write(cmake_cache_entry("SCR_DIR",
                     "/usr/gapps/axom/thirdparty_libs/scr-1.2.1/toss_3_x86_64_ib/gcc-4.9.3"))
+
+        if "+openmp" in spec:
+            cfg.write(cmake_cache_option("ENABLE_OPENMP", True))
 
         cfg.write("\n")
         cfg.close()

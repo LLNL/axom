@@ -39,7 +39,7 @@ packages:
 # LLNL blueos CUDA
   cuda:
     paths:
-      cuda@9.0.176: /usr/tce/packages/cuda/cuda-9.0.176
+      cuda@9.2.148: /usr/tce/packages/cuda/cuda-9.2.148
       cuda@8.0: /usr/tce/packages/cuda/cuda-8.0
     buildable: False
 # LLNL blueos mpi
@@ -48,8 +48,9 @@ packages:
   mvapich2:
     paths:
       mvapich2@2.2%gcc@4.9.3: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-4.9.3
-      mvapich2@2.2%clang@coral_xlf: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-coral-2018.05.23
-      mvapich2@2.2%xl@coral : /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2018.05.18
+      mvapich2@2.2%clang@upstream_xlf: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2018.11.09
+      mvapich2@2.2%clang@upstream_nvcc_xlf: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2018.11.09
+      mvapich2@2.2%xl@coral : /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2018.11.26
     buildable: False
 # System level packages to not build
   bzip2:
