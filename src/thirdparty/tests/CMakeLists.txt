@@ -21,10 +21,14 @@ axom_add_code_checks(PREFIX thirdparty_tests)
 ########################################
 if ( UMPIRE_FOUND )
 
+  set( umpire_smoke_dependencies umpire gtest )
+
+  blt_list_append( TO umpire_smoke_dependencies ELEMENTS mpi IF ENABLE_MPI)
+
   blt_add_executable( NAME umpire_smoke_test
                       SOURCES umpire_smoke.cpp
                       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                      DEPENDS_ON umpire gtest
+                      DEPENDS_ON ${umpire_smoke_dependencies}
                       FOLDER axom/thirdparty/tests )
 
   blt_add_test( NAME umpire_smoke
@@ -44,6 +48,8 @@ if ( RAJA_FOUND )
   blt_list_append( TO raja_smoke_dependencies ELEMENTS umpire IF UMPIRE_FOUND )
 
   blt_list_append( TO raja_smoke_dependencies ELEMENTS cuda IF ENABLE_CUDA )
+
+  blt_list_append( TO raja_smoke_dependencies ELEMENTS mpi IF ENABLE_MPI)
 
   blt_add_executable( NAME raja_smoke_test
                       SOURCES raja_smoke.cpp

@@ -35,6 +35,10 @@ if (ENABLE_OPENMP)
     list(APPEND quest_tests_depends openmp)
 endif()
 
+if (ENABLE_CUDA)
+    list(APPEND quest_tests_depends cuda)
+endif()
+
 set(quest_vertex_weld_extra_depends mint)
 
 
@@ -65,9 +69,16 @@ if(MFEM_FOUND)
         DEPENDS_ON ${quest_tests_depends} mfem core
         )
 
+    set(MFEM_COMPILE_FLAGS "${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS}")
+    string(STRIP "${MFEM_COMPILE_FLAGS}" MFEM_COMPILE_FLAGS)
+
+    if (ENABLE_CUDA)
+        set(MFEM_COMPILE_FLAGS "-Xcompiler=${MFEM_COMPILE_FLAGS}")
+    endif()
+
     set_property(
         TARGET ${test_name}
-        APPEND_STRING PROPERTY COMPILE_FLAGS "${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS}"
+        APPEND_STRING PROPERTY COMPILE_FLAGS "${MFEM_COMPILE_FLAGS}"
         )
 
     blt_add_test(
@@ -167,9 +178,17 @@ if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
     set(quest_data_dir  ${CMAKE_CURRENT_SOURCE_DIR}/../data)
 
     if ( NOT ENABLE_OPENMP )
+        set(extra_compile_flags "${AXOM_DISABLE_OMP_PRAGMA_WARNINGS}")
+
+        if ( ENABLE_CUDA )
+            string(STRIP "${extra_compile_flags}" extra_compile_flags)
+            set(extra_compile_flags "-Xcompiler=${extra_compile_flags}")
+        endif()
+
         set_property(
             TARGET ${test_name}
-            APPEND_STRING PROPERTY COMPILE_FLAGS "${AXOM_DISABLE_OMP_PRAGMA_WARNINGS}" )
+            APPEND_STRING PROPERTY COMPILE_FLAGS "${extra_compile_flags}" )
+
     endif()
 
     if ( "$ENV{SYS_TYPE}" STREQUAL "bgqos_0" )

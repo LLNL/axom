@@ -69,6 +69,9 @@ if(AXOM_ENABLE_LUMBERJACK)
     list(APPEND mesh_tester_depends lumberjack mpi)
 endif()
 
+if(ENABLE_OPENMP)
+    list(APPEND mesh_tester_depends openmp)
+endif()
 
 if(AXOM_ENABLE_QUEST)
     blt_add_executable(

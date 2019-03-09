@@ -24,6 +24,10 @@ if (ENABLE_OPENMP)
     list(APPEND quest_example_depends openmp)
 endif()
 
+if (ENABLE_CUDA)
+    list(APPEND quest_example_depends cuda)
+endif()
+
 blt_add_executable(
     NAME        quest_containment_driver_ex
     SOURCES     containment_driver.cpp
@@ -76,8 +80,7 @@ if (ENABLE_FORTRAN)
         FOLDER     axom/quest/examples
         )
 
-    set_target_properties( quest_signed_distance_interface_F_ex
-                           PROPERTIES LINKER_LANGUAGE Fortran)
+    
 
     blt_add_executable(
         NAME        quest_inout_interface_F_ex
@@ -87,8 +90,20 @@ if (ENABLE_FORTRAN)
         FOLDER      axom/quest/examples
         )
 
-    set_target_properties(quest_inout_interface_F_ex
-                          PROPERTIES LINKER_LANGUAGE Fortran)
+    # When using the Intel compiler we need to link with the Fortran compiler to get openmp to work correctly. 
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+        set_target_properties( quest_signed_distance_interface_F_ex
+                               PROPERTIES LINKER_LANGUAGE Fortran)
+
+        set_target_properties(quest_inout_interface_F_ex
+                              PROPERTIES LINKER_LANGUAGE Fortran)
+    else()
+        set_target_properties( quest_signed_distance_interface_F_ex
+                               PROPERTIES LINKER_LANGUAGE CXX)
+
+        set_target_properties(quest_inout_interface_F_ex
+                              PROPERTIES LINKER_LANGUAGE CXX)
+    endif()
 
     if (ENABLE_MPI)
         blt_add_test(
