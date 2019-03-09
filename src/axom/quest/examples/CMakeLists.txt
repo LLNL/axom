@@ -20,13 +20,9 @@ set(quest_example_depends
         quest
         )
 
-if (ENABLE_OPENMP)
-    list(APPEND quest_example_depends openmp)
-endif()
+blt_list_append(TO quest_example_depends ELEMENTS openmp IF ENABLE_OPENMP)
 
-if (ENABLE_CUDA)
-    list(APPEND quest_example_depends cuda)
-endif()
+blt_list_append(TO quest_example_depends ELEMENTS cuda IF ENABLE_CUDA)
 
 blt_add_executable(
     NAME        quest_containment_driver_ex
