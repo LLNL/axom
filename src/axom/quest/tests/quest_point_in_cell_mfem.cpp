@@ -602,7 +602,6 @@ public:
       break;
     default:
       FAIL() << "Did not provide a valid MeshType.";
-      break;
     }
 
     // compose the mesh descriptor string
@@ -797,13 +796,10 @@ public:
       break;
     case QUADRATIC_POS_MESH:
       FAIL() << "Undefined for now";
-      break;
     case C_SHAPED_MESH:
       FAIL() << "Undefined for now";
-      break;
     default:
       FAIL() << "Did not provide a valid MeshType.";
-      break;
     }
 
     // compose the mesh descriptor string
