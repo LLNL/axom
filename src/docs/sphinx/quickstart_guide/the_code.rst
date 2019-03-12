@@ -40,7 +40,7 @@ If you have not used Bitbucket before, you will need to
 and `add the key to your Bitbucket profile <https://confluence.atlassian.com/bitbucketserver/ssh-user-keys-for-personal-use-776639793.html>`_.
 
 Cloning the repo
-^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^
 
 To clone the repo into your local working space, type the following::
 
@@ -77,12 +77,14 @@ code, please continue on to the next section.
 The top-level Axom directory contains three directories:
 
   host-configs
-    Detailed configuration information for platforms and
-    compilers we support (more about these later)
+    Detailed configuration information for platforms and compilers we support.
+
+    See :ref:`hostconfig-label` for more information.
   scripts
     Scripts that we maintain to simplify development and usage tasks
   src
     The bulk of the repo contents.
+
     Within the **src** directory, you will find the following directories:
 
     axom

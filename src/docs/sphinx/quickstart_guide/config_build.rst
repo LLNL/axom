@@ -71,15 +71,17 @@ Library dependencies
   `Conduit`_         Sidre (required)                    CONDUIT_DIR
   `HDF5`_            Sidre (optional)                    HDF5_DIR
   `MFEM`_            Quest (optional)                    MFEM_DIR
+  `RAJA`_            Mint (optional)                     RAJA_DIR
   `SCR`_             Sidre (optional)                    SCR_DIR
+  `Umpire`_          Core (optional)                     UMPIRE_DIR
 ================== ==================================== ======================
 
 .. _Conduit: https://llnl-conduit.readthedocs.io/en/latest
 .. _MFEM: https://mfem.org/
 .. _HDF5: https://www.hdfgroup.org/solutions/hdf5/
+.. _RAJA: https://raja.readthedocs.io/en/master/
 .. _SCR: https://computation.llnl.gov/projects/scalable-checkpoint-restart-for-mpi
-
-.. TODO: Add RAJA and Umpire when they become TPLs
+.. _Umpire: https://umpire.readthedocs.io/en/latest/
 
 Each library dependency has a corresponding build system variable
 (with the suffix ``_DIR``) to supply the path to the library's installation directory.
@@ -101,7 +103,7 @@ Tool dependencies
   `Uncrustify`_      Code Style Checks                  UNCRUSTIFY_EXECUTABLE
 ================== ==================================== =====================
 
-.. TODO: add ``python`` if we start to use it again
+.. TODO: add ``python`` if we return to using it as a tool
 
 .. _CppCheck: http://cppcheck.sourceforge.net/
 .. _Breathe: https://breathe.readthedocs.io/en/latest/
@@ -291,7 +293,7 @@ Here are the key build system options in Axom.
 |                              |         | by default                     |
 +------------------------------+---------+--------------------------------+
 | AXOM_ENABLE_<FOO>            | ON      | Enables the axom component     |
-|                              |         | named FOO                      |
+|                              |         | named 'foo'                    |
 |                              |         |                                |
 |                              |         | (e.g. AXOM_ENABLE_SIDRE)       |
 |                              |         | for the sidre component        |
