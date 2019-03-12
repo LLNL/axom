@@ -2,10 +2,9 @@
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
-
-################################
-# documentation targets
-################################
+#------------------------------------------------------------------------------
+# Documentation targets for slam
+#------------------------------------------------------------------------------
 
 
 if(SPHINX_FOUND)

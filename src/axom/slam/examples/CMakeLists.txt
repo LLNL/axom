@@ -2,20 +2,18 @@
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
-
-###############
+#------------------------------------------------------------------------------
 # Slam examples
-###############
+#------------------------------------------------------------------------------
+# The following flags might be helpful for analyzing performance:
+#   for TemplateEx:        -S -fverbose-asm
+#   for UnstructMeshField: -fwhole-program -funroll-loops
+#------------------------------------------------------------------------------
 
-#set_source_files_properties(TemplateEx.cpp PROPERTIES COMPILE_FLAGS "-S -fverbose-asm " )
-#get_source_file_property(_origflags UnstructMeshField.cpp COMPILE_FLAGS)
-#set_source_files_properties(UnstructMeshField.cpp "${_origflags} -fwhole-program -funroll-loops ")
 
-
-
-#
+#------------------------------------------------------------------------------
 # Single source standalone examples
-#
+#------------------------------------------------------------------------------
 set(example_sources
     ShockTube.cpp
     PolicyPrototype.cpp
@@ -33,59 +31,53 @@ foreach(example_source ${example_sources})
         SOURCES     ${example_source}
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
         DEPENDS_ON  ${slam_tests_depends_on} ${slam_tests_extra_depends}
-        FOLDER      axom/slam/examples
-        )
+        FOLDER      axom/slam/examples )
 
     if(AXOM_ENABLE_TESTS)
         blt_add_test(
             NAME        slam_${example_name}
-            COMMAND     slam_${example_name}_ex
-            )
+            COMMAND     slam_${example_name}_ex )
     endif()
 endforeach()
 
 
-#
-# Slam (MeshAPI) version of tinyHydro
-#
+#------------------------------------------------------------------------------
+# Slam version of tinyHydro
+#------------------------------------------------------------------------------
 add_subdirectory(tinyHydro)
 
 
-#
-# An example that use the Slam iterators and therefore depends on C++11
-#
-if( NOT BLT_CXX_STD STREQUAL c++98 )
-    list(APPEND slam_tests_extra_depends fmt)
+#------------------------------------------------------------------------------
+# Unstructured hexahedral mesh example
+#------------------------------------------------------------------------------
+list(APPEND slam_tests_extra_depends fmt)
 
-    # Unstructured hexahedral mesh
-    blt_add_executable(
-        NAME        slam_unstructMesh_ex
-        SOURCES     UnstructMeshField.cpp
-        OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON  ${slam_tests_depends_on} ${slam_tests_extra_depends}
-        FOLDER      axom/slam/examples
-        )
+blt_add_executable(
+    NAME        slam_unstructMesh_ex
+    SOURCES     UnstructMeshField.cpp
+    OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+    DEPENDS_ON  ${slam_tests_depends_on} ${slam_tests_extra_depends}
+    FOLDER      axom/slam/examples )
 
-    if(AXOM_ENABLE_TESTS)
-        blt_add_test(
-            NAME        slam_unstructMesh
-            COMMAND     slam_unstructMesh_ex ${CMAKE_CURRENT_SOURCE_DIR}/../data
-            )
-    endif()
+if(AXOM_ENABLE_TESTS)
+    blt_add_test(
+        NAME        slam_unstructMesh
+        COMMAND     slam_unstructMesh_ex ${CMAKE_CURRENT_SOURCE_DIR}/../data )
 endif()
 
 
-#
-# Slam (MeshAPI) version of lulesh 2.0
-# Note: Disabled on windows builds due to usage of unix APIs.
-#
+#------------------------------------------------------------------------------
+# Slam version of lulesh 2.0
+# Note: Disabled on windows builds due to Lulesh's usage of unix APIs.
+#------------------------------------------------------------------------------
 if(NOT WIN32)
-	add_subdirectory(lulesh2.0.3)
+    add_subdirectory(lulesh2.0.3)
 
-	# Original lulesh example
-
-	set(buildOrigLulesh TRUE)        # ---- Controls whether original Lulesh should build
-	if ( ${buildOrigLulesh} )
-	   add_subdirectory(lulesh2.0.3_orig)
-	endif()
+    # Original lulesh example
+    set(_buildOrigLulesh TRUE)          # ---- Should we build original Lulesh?
+    if ( ${_buildOrigLulesh} )
+       add_subdirectory(lulesh2.0.3_orig)
+    endif()
+    unset(_buildOrigLulesh)
 endif()
+
