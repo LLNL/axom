@@ -67,9 +67,12 @@ foreach(example_source ${example_sources})
         OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
         DEPENDS_ON  ${sidre_example_depends} ${EXTRA_LIBS}
         FOLDER axom/sidre/examples )
-    blt_add_test(
-        NAME ${exe_name}
-        COMMAND ${exe_name}_ex )
+
+    if(AXOM_ENABLE_TESTS)
+        blt_add_test(
+            NAME ${exe_name}
+            COMMAND ${exe_name}_ex )
+    endif()
 endforeach()
 
 if(ENABLE_MPI)
@@ -82,10 +85,12 @@ if(ENABLE_MPI)
             DEPENDS_ON  ${sidre_example_depends} ${EXTRA_LIBS}
             FOLDER axom/sidre/examples)
 
-        blt_add_test( NAME ${exe_name} 
-                      COMMAND ${exe_name}_ex
-                      NUM_MPI_TASKS 1
-                      )
+        if(AXOM_ENABLE_TESTS)
+            blt_add_test( NAME ${exe_name} 
+                          COMMAND ${exe_name}_ex
+                          NUM_MPI_TASKS 1
+                          )
+        endif()
     endforeach()
 endif()
 
@@ -98,9 +103,12 @@ if(ENABLE_FORTRAN)
             OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
             DEPENDS_ON ${sidre_example_depends} ${EXTRA_LIBS}
             FOLDER axom/sidre/examples )
-        blt_add_test(
-            NAME ${exe_name}
-            COMMAND ${exe_name}_ex )
+
+        if(AXOM_ENABLE_TESTS)
+            blt_add_test(
+                NAME ${exe_name}
+                COMMAND ${exe_name}_ex )
+        endif()
     endforeach()
     set_target_properties(${exe_name}_ex PROPERTIES LINKER_LANGUAGE Fortran)
 endif()

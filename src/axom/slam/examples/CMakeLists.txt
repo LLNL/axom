@@ -44,10 +44,12 @@ foreach(example_source ${example_sources})
         FOLDER      axom/slam/examples
         )
 
-    blt_add_test(
-        NAME        slam_${example_name}
-        COMMAND     slam_${example_name}_ex
-        )
+    if(AXOM_ENABLE_TESTS)
+        blt_add_test(
+            NAME        slam_${example_name}
+            COMMAND     slam_${example_name}_ex
+            )
+    endif()
 endforeach()
 
 
@@ -72,11 +74,12 @@ if( NOT BLT_CXX_STD STREQUAL c++98 )
         FOLDER      axom/slam/examples
         )
 
-    blt_add_test(
-        NAME        slam_unstructMesh
-        COMMAND     slam_unstructMesh_ex ${CMAKE_CURRENT_SOURCE_DIR}/../data
-        )
-
+    if(AXOM_ENABLE_TESTS)
+        blt_add_test(
+            NAME        slam_unstructMesh
+            COMMAND     slam_unstructMesh_ex ${CMAKE_CURRENT_SOURCE_DIR}/../data
+            )
+    endif()
 endif()
 
 
