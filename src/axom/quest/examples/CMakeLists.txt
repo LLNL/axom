@@ -52,19 +52,20 @@ blt_add_executable(
 
 # Add a test for the quest interface.  Set up for MPI, when available
 set(quest_data_dir  ${CMAKE_CURRENT_SOURCE_DIR}/../data)
-if (ENABLE_MPI)
-    blt_add_test(
-        NAME quest_inout_interface_mpi_test
-        COMMAND quest_inout_interface_ex ${quest_data_dir}/sphere_binary.stl
-        NUM_MPI_TASKS 2
-        )
-else()
-    blt_add_test(
-        NAME quest_inout_interface_test
-        COMMAND quest_inout_interface_ex ${quest_data_dir}/sphere_binary.stl
-        )
+if(AXOM_ENABLE_TESTS)
+    if (ENABLE_MPI)
+        blt_add_test(
+            NAME quest_inout_interface_mpi_test
+            COMMAND quest_inout_interface_ex ${quest_data_dir}/sphere_binary.stl
+            NUM_MPI_TASKS 2
+            )
+    else()
+        blt_add_test(
+            NAME quest_inout_interface_test
+            COMMAND quest_inout_interface_ex ${quest_data_dir}/sphere_binary.stl
+            )
+    endif()
 endif()
-
 
 if (ENABLE_FORTRAN)
 
@@ -101,16 +102,18 @@ if (ENABLE_FORTRAN)
                               PROPERTIES LINKER_LANGUAGE CXX)
     endif()
 
-    if (ENABLE_MPI)
-        blt_add_test(
-            NAME quest_inout_interface_mpi_F_test
-            COMMAND quest_inout_interface_F_ex ${quest_data_dir}/sphere_binary.stl
-            NUM_MPI_TASKS 2
-            )
-    else()
-        blt_add_test(
-            NAME quest_inout_interface_F_test
-            COMMAND quest_inout_interface_F_ex ${quest_data_dir}/sphere_binary.stl
-            )
+    if(AXOM_ENABLE_TESTS)
+        if (ENABLE_MPI)
+            blt_add_test(
+                NAME quest_inout_interface_mpi_F_test
+                COMMAND quest_inout_interface_F_ex ${quest_data_dir}/sphere_binary.stl
+                NUM_MPI_TASKS 2
+                )
+        else()
+            blt_add_test(
+                NAME quest_inout_interface_F_test
+                COMMAND quest_inout_interface_F_ex ${quest_data_dir}/sphere_binary.stl
+                )
+        endif()
     endif()
 endif()

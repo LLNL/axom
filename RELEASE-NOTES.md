@@ -44,6 +44,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   output a demangled stack trace.
 
 ### Fixed
+- Axom can once again be configured with `AXOM_ENABLE_EXAMPLES=ON` and `AXOM_ENABLE_TESTS=OFF`.
 
 ### Known Bugs
 

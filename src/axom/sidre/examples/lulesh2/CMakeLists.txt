@@ -37,13 +37,15 @@ blt_add_executable(
     FOLDER axom/sidre/examples
     )
 
-if(ENABLE_MPI)
-    blt_add_test(NAME sidre_lulesh2
-                 COMMAND sidre_lulesh2_ex -s 5
-                 NUM_MPI_TASKS 8
-                )
-else()
-    blt_add_test(NAME sidre_lulesh2
-                 COMMAND sidre_lulesh2_ex -s 5
-                )
+if(AXOM_ENABLE_TESTS)
+    if(ENABLE_MPI)
+        blt_add_test(NAME sidre_lulesh2
+                     COMMAND sidre_lulesh2_ex -s 5
+                     NUM_MPI_TASKS 8
+                    )
+    else()
+        blt_add_test(NAME sidre_lulesh2
+                     COMMAND sidre_lulesh2_ex -s 5
+                    )
+    endif()
 endif()
