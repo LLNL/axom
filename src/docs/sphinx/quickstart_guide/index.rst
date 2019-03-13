@@ -13,9 +13,9 @@
 .. ##
 
 Axom Quickstart Guide
-=========================================================
+=====================
 
-This guide provides information to help Axom users and developers get 
+This guide provides information to help Axom users and developers get
 up and running quickly.
 
 It provides instructions for:
@@ -25,7 +25,7 @@ It provides instructions for:
   * Compiling and linking an application with Axom
 
 Additional information about Axom can be found on the main
-`Axom Web Page <https://lc.llnl.gov/axom/docs/sphinx/web_main_docs/html/index.html>`_:
+`Axom Web Page <../../web_main_docs/html/index.html>`_:
 
   * Build system
   * User guides and source code documentation for individual Axom components
@@ -35,7 +35,7 @@ Additional information about Axom can be found on the main
 **Contents:**
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
    zero_to_axom
    the_code

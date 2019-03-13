@@ -13,8 +13,8 @@
 .. ##
 
 
-Zero to Axom: Quick install of Axom and Third Party Dependencies 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Zero to Axom: Quick install of Axom and Third Party Dependencies
+================================================================
 
 The quickest path to install Axom and its dependencies is via `uberenv <https://uberenv.readthedocs.io/en/latest/>`_, a script included in Axom's repo:
 
@@ -23,9 +23,9 @@ The quickest path to install Axom and its dependencies is via `uberenv <https://
 
 .. code:: bash
 
-    git clone --recursive ssh://git@cz-bitbucket.llnl.gov:7999/atk/axom.git
-    cd axom
-    python scripts/uberenv/uberenv.py --install --prefix="build"
+    $ git clone --recursive ssh://git@cz-bitbucket.llnl.gov:7999/atk/axom.git
+    $ cd axom
+    $ python scripts/uberenv/uberenv.py --install --prefix="build"
 
 
 After this completes, ``build/axom-install`` will contain an Axom install.
@@ -34,18 +34,25 @@ After this completes, ``build/axom-install`` will contain an Axom install.
 .. _using_in_your_project:
 
 Using Axom in Your Project
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------
 
-The install includes examples that demonstrate how to use Axom in a CMake-based build system  and via a Makefile.
+The install includes examples that demonstrate how to use Axom
+in a CMake-based and Makefile-based build systems.
 
-CMake-based build system example (see: ``examples/axom/using-with-cmake``):
+CMake-based build system example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. literalinclude:: ../../../examples/using-with-cmake/CMakeLists.txt 
+
+.. literalinclude:: ../../../examples/using-with-cmake/CMakeLists.txt
    :lines: 35-49
 
+See:  ``examples/axom/using-with-cmake``
 
-Makefile-based build system example (see: ``examples/axom/using-with-make``):
 
-.. literalinclude:: ../../../examples/using-with-make/Makefile 
+Makefile-based build system example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. literalinclude:: ../../../examples/using-with-make/Makefile
    :lines: 29-35
 
+See: ``examples/axom/using-with-make``
