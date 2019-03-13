@@ -89,10 +89,10 @@ The top-level Axom directory contains three directories:
 
     axom
       Directories for individual Axom components (see below)
-    blt
-      BLT build system submodule is cloned here
     cmake
-      Axom-specific CMake customizations to BLT build system
+      Axom's build system lives here.
+
+      The BLT submodule is cloned into the **blt** subdirectory.
     docs
       General Axom documentation files
     examples
