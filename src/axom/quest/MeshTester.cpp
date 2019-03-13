@@ -18,17 +18,9 @@
 // Axom includes
 #include "axom/quest/MeshTester.hpp"
 
-#include "axom/core/Types.hpp"
-
-#include "axom/primal/geometry/BoundingBox.hpp"
-#include "axom/primal/operators/intersect.hpp"
-#include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/Triangle.hpp"
-#include "axom/primal/spatial_acceleration/UniformGrid.hpp"
-#include "axom/primal/geometry/RectangularLattice.hpp"
-#include "axom/primal/geometry/MortonIndex.hpp"
-
-#include "axom/mint/config.hpp"
+#include "axom/core.hpp"
+#include "axom/primal.hpp"
+#include "axom/mint.hpp"
 
 // C++ includes
 #include <cmath>
@@ -46,25 +38,15 @@ namespace axom
 namespace quest
 {
 
-typedef mint::UnstructuredMesh< mint::SINGLE_SHAPE > UMesh;
-typedef primal::Triangle<double, 3> Triangle3;
+using UMesh = mint::UnstructuredMesh< mint::SINGLE_SHAPE >;
+using Triangle3 = primal::Triangle<double, 3>;
 
-typedef primal::Point<double, 3> Point3;
-typedef primal::BoundingBox<double, 3> SpatialBoundingBox;
-typedef primal::UniformGrid<int, 3> UniformGrid3;
-typedef primal::Vector<double, 3> Vector3;
-typedef primal::Segment<double, 3> Segment3;
+using Point3 = primal::Point<double, 3>;
+using SpatialBoundingBox = primal::BoundingBox<double, 3>;
+using UniformGrid3 = primal::UniformGrid<int, 3>;
+using Vector3 = primal::Vector<double, 3>;
+using Segment3 = primal::Segment<double, 3>;
 
-typedef axom::mint::IndexType IndexType;
-typedef primal::RectangularLattice<3, double, IndexType> Lattice3;
-typedef primal::Mortonizer<IndexType, IndexType, 3> Morton3;
-
-#ifdef AXOM_USE_CXX11
-typedef std::unordered_map<IndexType, IndexType> MortonMap;
-#else
-typedef std::map<IndexType, IndexType> MortonMap;
-#endif
-typedef std::pair<MortonMap::iterator, bool> MortonMapResult;
 
 inline SpatialBoundingBox compute_bounds( UMesh* mesh)
 {
@@ -279,6 +261,12 @@ WatertightStatus isSurfaceMeshWatertight(UMesh* surface_mesh)
 /* Weld vertices of a triangle mesh that are closer than \a eps  */
 void weldTriMeshVertices(UMesh** surface_mesh,double eps)
 {
+   // Note: Use 64-bit index to accomodate small values of epsilon
+   using IdxType = common::int64;
+   using Lattice3 = primal::RectangularLattice<3, double, IdxType>;
+   using Morton3 = primal::Mortonizer<IdxType, IdxType, 3> ;
+   using MortonMap = std::unordered_map<IdxType, IdxType>;
+
   /// Implementation notes:
   ///
   /// This function welds vertices in the triangle mesh by
@@ -344,11 +332,10 @@ void weldTriMeshVertices(UMesh** surface_mesh,double eps)
       vert[ 2 ] = z[ i ];
 
       // find the Morton index of the point w.r.t. the lattice
-      IndexType morton = Morton3::mortonize(lattice.gridCell(vert));
+      auto morton = Morton3::mortonize(lattice.gridCell(vert));
 
       // find the new vertex index; if not present, insert vertex into new mesh
-      MortonMapResult res = vertexIndexMap.insert(
-        std::make_pair(morton, uniqueVertCount) );
+      auto res = vertexIndexMap.insert(std::make_pair(morton, uniqueVertCount) );
       if(res.second == true)
       {
         uniqueVertCount++;
