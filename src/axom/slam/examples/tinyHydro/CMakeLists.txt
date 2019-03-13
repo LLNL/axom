@@ -55,7 +55,7 @@ list(APPEND slam_tiny_hydro_tests_depends_on slam_tinyHydro_ex)
 #
 # Add gtest based tests for tinyHydro
 #
-if(ENABLE_GTEST)
+if(AXOM_ENABLE_TESTS)
     blt_add_executable(
         NAME        slam_tinyHydro_unitTests_ex
         SOURCES     tests/slam_tinyHydro_unitTests.cpp
