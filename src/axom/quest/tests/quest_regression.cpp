@@ -180,16 +180,6 @@ struct CommandLineArguments
 
 };
 
-
-
-
-/** Terminates execution */
-void abort()
-{
-  MPI_Finalize();
-  exit(1);
-}
-
 /**
  * \brief Utility to parse the command line options
  * \return An instance of the CommandLineArguments struct.
@@ -263,13 +253,13 @@ CommandLineArguments parseArguments(int argc, char** argv)
     else if(arg == "--help")
     {
       clargs.usage();
-      abort();
+      axom::utilities::processAbort();
     }
     else
     {
       SLIC_WARNING( fmt::format("Unknown argument: '{}'", arg) );
       clargs.usage();
-      abort();
+      axom::utilities::processAbort();
     }
   }
 
@@ -297,9 +287,8 @@ CommandLineArguments parseArguments(int argc, char** argv)
   if(!isValid)
   {
     clargs.usage();
-    abort();
+    axom::utilities::processAbort();
   }
-
 
   return clargs;
 }

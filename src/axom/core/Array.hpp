@@ -415,6 +415,30 @@ protected:
   Array();
 
   /*!
+   * \brief Initialize an Array instance with the given number of tuples.
+   *
+   * \param [in] num_tuples the number of tuples the Array holds.
+   * \param [in] num_components the number of values per tuple. If not
+   *  specified defaults to 1.
+   * \param [in] capacity the number of tuples to allocate space for.
+   *
+   * \note If no capacity or capacity less than num_tuples is specified
+   *  then it will default to at least num_tuples * DEFAULT_RESIZE_RATIO.
+   * \note a capacity is specified for the number of tuples to store in the
+   *  array and does not correspond to the actual bytesize.
+   *
+   * \pre num_tuples >= 0
+   * \pre num_components >= 1
+   *
+   * \post capacity() >= size()
+   * \post size() == num_tuples
+   * \post numComponents() == num_components
+   * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
+   */
+  void initialize( IndexType num_tuples, IndexType num_components,
+                   IndexType capacity );
+
+  /*!
    * \brief Make space for a subsequent insertion into the array.
    *
    * \param [in] n the number of tuples to insert.
@@ -498,35 +522,13 @@ template< typename T >
 Array< T >::Array( IndexType num_tuples, IndexType num_components,
                    IndexType capacity ) :
   m_data( nullptr ),
-  m_num_tuples( num_tuples ),
+  m_num_tuples( 0 ),
   m_capacity( 0 ),
-  m_num_components( num_components ),
+  m_num_components( 0 ),
   m_resize_ratio( DEFAULT_RESIZE_RATIO ),
   m_is_external( false )
-{
-  assert(m_num_tuples >= 0);
-  assert(m_num_components > 0);
-
-  if ( capacity < 0 || m_num_tuples > capacity )
-  {
-    capacity = 0;
-  }
-
-  if ( capacity == 0 )
-  {
-    capacity = ( m_num_tuples > MIN_DEFAULT_CAPACITY ) ?
-               m_num_tuples : MIN_DEFAULT_CAPACITY;
-  }
-  setCapacity( capacity );
-
-  // sanity checks
-  assert( capacity >= 0 );
-  if ( capacity > 0 )
-  {
-    assert( m_data != nullptr );
-  }
-  assert( m_num_tuples >= 0 );
-  assert( m_num_components >= 1 );
+{ 
+  initialize( num_tuples, num_components, capacity );
 }
 
 //------------------------------------------------------------------------------
@@ -644,6 +646,37 @@ inline void Array< T >::resize( IndexType new_num_tuples )
   }
 
   updateNumTuples( new_num_tuples );
+}
+
+//------------------------------------------------------------------------------
+template< typename T >
+inline void Array< T >::initialize( IndexType num_tuples,
+                                    IndexType num_components,
+                                    IndexType capacity )
+{
+  assert(num_tuples >= 0);
+  assert(num_components > 0);
+
+  m_num_tuples = num_tuples;
+  m_num_components = num_components;
+
+  if ( capacity < 0 || num_tuples > capacity )
+  {
+    capacity = 0;
+  }
+
+  if ( capacity == 0 )
+  {
+    capacity = ( num_tuples > MIN_DEFAULT_CAPACITY ) ?
+                 num_tuples : MIN_DEFAULT_CAPACITY;
+  }
+  setCapacity( capacity );
+
+  // sanity checks
+  assert( m_data != nullptr );
+  assert( m_num_tuples >= 0 );
+  assert( m_capacity >= m_num_tuples );
+  assert( m_num_components >= 1 );
 }
 
 //------------------------------------------------------------------------------

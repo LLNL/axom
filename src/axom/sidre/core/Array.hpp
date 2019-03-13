@@ -301,37 +301,27 @@ Array< T >::Array( View* view ) :
 template< typename T >
 Array< T >::Array( View* view, axom::IndexType num_tuples,
                    axom::IndexType num_components, axom::IndexType capacity ) :
-  axom::Array<T>(num_tuples, num_components, capacity),
+  axom::Array<T>(),
   m_view( view )
 {
   SLIC_ERROR_IF( m_view == nullptr, "Provided View cannot be null." );
   SLIC_ERROR_IF( !m_view->isEmpty(), "View must be empty." );
-  SLIC_ERROR_IF( this->m_num_tuples < 0,
-                 "Number of tuples (" << this->m_num_tuples << ") " <<
+  SLIC_ERROR_IF( num_tuples < 0,
+                 "Number of tuples (" << num_tuples << ") " <<
                  "cannot be negative." );
-  SLIC_ERROR_IF( this->m_num_components <= 0,
-                 "Components per tuple (" << this->m_num_components << ") " <<
+  SLIC_ERROR_IF( num_components <= 0,
+                 "Components per tuple (" << num_components << ") " <<
                  "must be greater than 0." );
 
-  if ( capacity <= 0 )
-  {
-    capacity =
-      ( this->m_num_tuples > axom::Array<T>::MIN_DEFAULT_CAPACITY ?
-        this->m_num_tuples : axom::Array<T>::MIN_DEFAULT_CAPACITY );
-  }
-  SLIC_ERROR_IF( this->m_num_tuples > capacity,
+  this->initialize( num_tuples, num_components, capacity );
+
+  SLIC_ERROR_IF( this->m_num_tuples > this->m_capacity,
                  "Number of tuples (" << this->m_num_tuples << ") " <<
                  "cannot be greater than the tuple capacity " <<
-                 "(" << capacity << ")." );
-
-  setCapacity( capacity );
+                 "(" << this->m_capacity << ")." );
 
   // sanity checks
-  SLIC_ASSERT( capacity >= 0 );
-  if ( capacity > 0 )
-  {
-    SLIC_ASSERT( this->m_data != nullptr );
-  }
+  SLIC_ASSERT( this->m_data != nullptr );
   SLIC_ASSERT( this->m_num_tuples >= 0 );
   SLIC_ASSERT( this->m_num_components >= 1 );
 }

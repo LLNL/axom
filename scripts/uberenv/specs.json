@@ -28,18 +28,19 @@
       "gcc@6.1.0",
       "gcc@7.3.0",
       "gcc@8.1.0",
-      "intel@16.0.4",
+      "intel@16.0.4~umpire",
       "intel@17.0.2",
       "intel@18.0.2" ],
 
     "blueos_3_ppc64le_ib":
-    [ "clang@coral_xlf",
+    [ "clang@upstream_xlf~openmp",
+      "clang@upstream_nvcc_xlf~openmp+cuda",
       "gcc@4.9.3",
-      "xl@coral" ],
+      "xl@coral~openmp" ],
 
     "bgqos_0":
     [ "clang@4.0.0_gfortran ^zlib~shared",
-      "clang@4.0.0_xlf ^zlib~shared" ],
+      "clang@4.0.0_xlf~openmp ^zlib~shared" ],
 
     "darwin-x86_64":
     [ "clang@9.0.0 ^conduit@master" ]

@@ -368,8 +368,8 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_xyz )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
   defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
-  const MemorySpace prev_space = getDefaultMemorySpace();
-  setDefaultMemorySpace( MemorySpace::UNIFIED_MEMORY );
+  const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
+  axom::setDefaultAllocator( axom::getAllocator( umpire::resource::Unified ) );
 
   using cuda_exec = policy::parallel_gpu< 512 >;
   check_for_all_nodes_xyz< cuda_exec, STRUCTURED_UNIFORM_MESH >();
@@ -379,6 +379,7 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_xyz )
   check_for_all_nodes_xyz< cuda_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >();
   check_for_all_nodes_xyz< cuda_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >();
 
+  setDefaultAllocator( prev_allocator );
 #endif
 }
 
@@ -409,8 +410,8 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_xy )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
   defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
-  const MemorySpace prev_space = getDefaultMemorySpace();
-  setDefaultMemorySpace( MemorySpace::UNIFIED_MEMORY );
+  const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
+  axom::setDefaultAllocator( axom::getAllocator( umpire::resource::Unified ) );
 
   using cuda_exec = policy::parallel_gpu< 512 >;
   check_for_all_nodes_xy< cuda_exec, STRUCTURED_UNIFORM_MESH >();
@@ -420,6 +421,7 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_xy )
   check_for_all_nodes_xy< cuda_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >();
   check_for_all_nodes_xy< cuda_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >();
 
+  setDefaultAllocator( prev_allocator );
 #endif
 }
 
@@ -450,8 +452,8 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_x )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
   defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
-  const MemorySpace prev_space = getDefaultMemorySpace();
-  setDefaultMemorySpace( MemorySpace::UNIFIED_MEMORY );
+  const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
+  axom::setDefaultAllocator( axom::getAllocator( umpire::resource::Unified ) );
 
   using cuda_exec = policy::parallel_gpu< 512 >;
   check_for_all_nodes_x< cuda_exec, STRUCTURED_UNIFORM_MESH >();
@@ -461,6 +463,7 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_x )
   check_for_all_nodes_x< cuda_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >();
   check_for_all_nodes_x< cuda_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >();
 
+  setDefaultAllocator( prev_allocator );
 #endif
 
 }
@@ -486,15 +489,15 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_ijk )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
   defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
-  const MemorySpace prev_space = getDefaultMemorySpace();
-  setDefaultMemorySpace( MemorySpace::UNIFIED_MEMORY );
+  const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
+  axom::setDefaultAllocator( axom::getAllocator( umpire::resource::Unified ) );
 
   using cuda_exec = policy::parallel_gpu< 512 >;
   check_for_all_nodes_ijk< cuda_exec, STRUCTURED_UNIFORM_MESH >();
   check_for_all_nodes_ijk< cuda_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_ijk< cuda_exec, STRUCTURED_RECTILINEAR_MESH >();
 
-  setDefaultMemorySpace( prev_space );
+  setDefaultAllocator( prev_allocator );
 #endif
 }
 
@@ -519,15 +522,15 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_ij )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
   defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
-  const MemorySpace prev_space = getDefaultMemorySpace();
-  setDefaultMemorySpace( MemorySpace::UNIFIED_MEMORY );
+  const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
+  axom::setDefaultAllocator( axom::getAllocator( umpire::resource::Unified ) );
 
   using cuda_exec = policy::parallel_gpu< 512 >;
   check_for_all_nodes_ij< cuda_exec, STRUCTURED_UNIFORM_MESH >();
   check_for_all_nodes_ij< cuda_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_ij< cuda_exec, STRUCTURED_RECTILINEAR_MESH >();
 
-  setDefaultMemorySpace( prev_space );
+  setDefaultAllocator( prev_allocator );
 #endif
 }
 
@@ -562,8 +565,8 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_index )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
     defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
-    const MemorySpace prev_space = getDefaultMemorySpace();
-    setDefaultMemorySpace( MemorySpace::UNIFIED_MEMORY );
+    const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
+    axom::setDefaultAllocator( axom::getAllocator( umpire::resource::Unified ) );
 
     using cuda_exec = policy::parallel_gpu< 512 >;
     check_for_all_nodes_idx< cuda_exec, STRUCTURED_UNIFORM_MESH >(i);
@@ -573,7 +576,7 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_index )
     check_for_all_nodes_idx< cuda_exec, UNSTRUCTURED_MESH, SINGLE_SHAPE >(i);
     check_for_all_nodes_idx< cuda_exec, UNSTRUCTURED_MESH, MIXED_SHAPE >(i);
 
-    setDefaultMemorySpace( prev_space );
+    setDefaultAllocator( prev_allocator );
 #endif
 
   } // END for all dimensions

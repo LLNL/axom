@@ -2879,6 +2879,10 @@ int main(int argc, char *argv[])
   myRank = 0;
 #endif
 
+#ifdef AXOM_USE_OPENMP
+  omp_set_num_threads(4);
+#endif
+
   { // initialize logger
     axom::slic::initialize();
 

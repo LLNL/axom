@@ -31,12 +31,11 @@ set(quest_tests_depends
     gtest
    )
 
-if (ENABLE_OPENMP)
-    list(APPEND quest_tests_depends openmp)
-endif()
+blt_list_append( TO quest_tests_depends ELEMENTS openmp IF ENABLE_OPENMP )
+
+blt_list_append( TO quest_tests_depends ELEMENTS cuda IF ENABLE_CUDA )
 
 set(quest_vertex_weld_extra_depends mint)
-
 
 foreach(test ${quest_tests})
     get_filename_component( test_name ${test} NAME_WE )
@@ -65,10 +64,13 @@ if(MFEM_FOUND)
         DEPENDS_ON ${quest_tests_depends} mfem core
         )
 
-    set_property(
-        TARGET ${test_name}
-        APPEND_STRING PROPERTY COMPILE_FLAGS "${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS}"
-        )
+    string(STRIP "${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS}" MFEM_COMPILE_FLAGS)
+
+    if (ENABLE_CUDA)
+        set(MFEM_COMPILE_FLAGS "-Xcompiler=${MFEM_COMPILE_FLAGS}")
+    endif()
+
+    blt_add_target_compile_flags( TO ${test_name} FLAGS "${MFEM_COMPILE_FLAGS}" )
 
     blt_add_test(
         NAME ${test_name}
@@ -167,17 +169,19 @@ if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
     set(quest_data_dir  ${CMAKE_CURRENT_SOURCE_DIR}/../data)
 
     if ( NOT ENABLE_OPENMP )
-        set_property(
-            TARGET ${test_name}
-            APPEND_STRING PROPERTY COMPILE_FLAGS "${AXOM_DISABLE_OMP_PRAGMA_WARNINGS}" )
+        set(extra_compile_flags "${AXOM_DISABLE_OMP_PRAGMA_WARNINGS}")
+
+        if ( ENABLE_CUDA )
+            string(STRIP "${extra_compile_flags}" extra_compile_flags)
+            set(extra_compile_flags "-Xcompiler=${extra_compile_flags}")
+        endif()
+
+        blt_add_target_compile_flags( TO ${test_name} FLAGS "${extra_compile_flags}" )
+
     endif()
 
     if ( "$ENV{SYS_TYPE}" STREQUAL "bgqos_0" )
-       set_property(
-           TARGET ${test_name}
-           APPEND_STRING PROPERTY LINK_FLAGS ${AXOM_ALLOW_MULTIPLE_DEFINITIONS}
-       )
-
+       blt_add_target_link_flags( TO ${test_name} FLAGS "${AXOM_ALLOW_MULTIPLE_DEFINITIONS}" )
     endif()
 
     set(quest_regression_datasets

@@ -89,8 +89,12 @@ set( quest_depends_on
      primal
      )
 
-if (ENABLE_OPENMP)
+if ( ENABLE_OPENMP )
     list(APPEND quest_depends_on openmp)
+endif()
+
+if ( ENABLE_CUDA )
+    list(APPEND quest_depends_on cuda)
 endif()
 
 if (ENABLE_MPI)

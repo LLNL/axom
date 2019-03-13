@@ -135,7 +135,7 @@ public:
   {
     StridePolicy::operator=(otherMap);
     m_superMap_constptr = otherMap.m_superMap_constptr;
-    m_superMap_ptr = m_superMap_ptr,
+    m_superMap_ptr = otherMap.m_superMap_ptr;
     m_subsetIdx_data = otherMap.m_subsetIdx_data;
     m_subsetIdx = SubsetType::SetBuilder()
                   .size(m_subsetIdx_data.size())

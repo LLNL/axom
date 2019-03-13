@@ -114,14 +114,14 @@ TEST( mint_execution_forall_traversals, check_generic_loop )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
   defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
-  const MemorySpace prev_space = getDefaultMemorySpace();
-  setDefaultMemorySpace( MemorySpace::UNIFIED_MEMORY );
+  const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
+  axom::setDefaultAllocator( axom::getAllocator( umpire::resource::Unified ) );
 
   constexpr bool async = true;
   check_for_all< policy::parallel_gpu< 512 > >( );
   check_for_all< policy::parallel_gpu_async< 512 > >( async );
 
-  setDefaultMemorySpace( prev_space );
+  setDefaultAllocator( prev_allocator );
 #endif
 
 }
