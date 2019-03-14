@@ -45,6 +45,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ### Fixed
 - Axom can once again be configured with `AXOM_ENABLE_EXAMPLES=ON` and `AXOM_ENABLE_TESTS=OFF`.
+- Quest's vertex welding now works with small welding threshold values (e.g. 1E-20).
+  Welding was previously broken when this value was smaller than 1E-8.
+  This fix also resolved an issue with small grid spacing values in primal's RectangularLattice.
 
 ### Known Bugs
 
