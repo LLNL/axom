@@ -26,12 +26,8 @@
 #include <cmath>
 #include <algorithm>
 #include <vector>
-
-#ifdef AXOM_USE_CXX11
 #include <unordered_map>
-#else
-#include <map>
-#endif
+#include <functional> // for std::hash
 
 namespace axom
 {
@@ -261,11 +257,26 @@ WatertightStatus isSurfaceMeshWatertight(UMesh* surface_mesh)
 /* Weld vertices of a triangle mesh that are closer than \a eps  */
 void weldTriMeshVertices(UMesh** surface_mesh,double eps)
 {
-   // Note: Use 64-bit index to accomodate small values of epsilon
-   using IdxType = common::int64;
-   using Lattice3 = primal::RectangularLattice<3, double, IdxType>;
-   using Morton3 = primal::Mortonizer<IdxType, IdxType, 3> ;
-   using MortonMap = std::unordered_map<IdxType, IdxType>;
+  // Note: Use 64-bit index to accomodate small values of epsilon
+  using IdxType = common::int64;
+  using Lattice3 = primal::RectangularLattice<3, double, IdxType>;
+  using GridCell = Lattice3::GridCell;
+
+  // Define a lambda for hashing points
+  // implementation of hash combiner is from boost's hash_combine()
+  auto point_hash =
+    [](const GridCell& pt) {
+      auto seed = std::hash<IdxType>{} (pt[0]);
+      for(int i=1 ; i < GridCell::DIMENSION ; ++i)
+      {
+        seed ^= std::hash<IdxType>{} (pt[i])
+        + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+      }
+      return seed;
+    };
+
+  using GridCellToIndexMap =
+          std::unordered_map<GridCell, IdxType, decltype(point_hash)>;
 
   /// Implementation notes:
   ///
@@ -309,12 +320,12 @@ void weldTriMeshVertices(UMesh** surface_mesh,double eps)
     Point3 origin(meshBB.getMin().array() - Point3(*it).array() );
     Lattice3 lattice( origin, Point3(eps));
 
-    // A map from Morton indices to the new vertex indices
-    MortonMap vertexIndexMap;
-
     // First, find unique indices for the welded vertices
     const int numVerts = oldMesh->getNumberOfNodes();
     int uniqueVertCount = 0;
+
+    // A map from GridCells to the new vertex indices
+    GridCellToIndexMap vertexIndexMap(numVerts, point_hash);
 
     std::vector<int> vertex_remap; // stores the new vertex indices
     vertex_remap.resize(numVerts); // for each old vertex
@@ -331,11 +342,9 @@ void weldTriMeshVertices(UMesh** surface_mesh,double eps)
       vert[ 1 ] = y[ i ];
       vert[ 2 ] = z[ i ];
 
-      // find the Morton index of the point w.r.t. the lattice
-      auto morton = Morton3::mortonize(lattice.gridCell(vert));
-
       // find the new vertex index; if not present, insert vertex into new mesh
-      auto res = vertexIndexMap.insert(std::make_pair(morton, uniqueVertCount) );
+      auto res = vertexIndexMap.insert(
+        std::make_pair(lattice.gridCell(vert), uniqueVertCount) );
       if(res.second == true)
       {
         uniqueVertCount++;
