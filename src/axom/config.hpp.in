@@ -99,7 +99,6 @@
 /*
  * Compiler defines for the toolkit components
  */
-#cmakedefine AXOM_USE_AXOM_UTILS
 #cmakedefine AXOM_USE_MINT
 #cmakedefine AXOM_USE_LUMBERJACK
 #cmakedefine AXOM_USE_PRIMAL
