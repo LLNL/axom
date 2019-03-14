@@ -24,7 +24,7 @@
 # Compiler Spec: clang@4.0.0
 ##################################
 
-# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2019_03_08_10_00_53/clang-4.0.0/cmake-3.9.6/bin/cmake
+# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2019_03_14_11_48_30/clang-4.0.0/cmake-3.9.6/bin/cmake
 
 ##############
 # Compilers
@@ -46,7 +46,7 @@ set(CMAKE_Fortran_COMPILER "/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran" CACHE 
 ##############
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_03_08_10_00_53/clang-4.0.0" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_03_14_11_48_30/clang-4.0.0" CACHE PATH "")
 
 # conduit from uberenv
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.3.1" CACHE PATH "")
@@ -55,7 +55,7 @@ set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.3.1" CACHE PATH "")
 set(MFEM_DIR "${TPL_ROOT}/mfem-3.4.0" CACHE PATH "")
 
 # hdf5 from uberenv
-set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.21" CACHE PATH "")
+set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.19" CACHE PATH "")
 
 # scr not built by uberenv
 
@@ -66,18 +66,18 @@ set(RAJA_DIR "${TPL_ROOT}/raja-0.7.0/share/raja/cmake" CACHE PATH "")
 set(UMPIRE_DIR "${TPL_ROOT}/umpire-0.3.2/share/umpire/cmake" CACHE PATH "")
 
 # python from uberenv
-set(PYTHON_EXECUTABLE "${TPL_ROOT}/python-2.7.16/bin/python" CACHE PATH "")
+set(PYTHON_EXECUTABLE "${TPL_ROOT}/python-2.7.15/bin/python" CACHE PATH "")
 
 set(ENABLE_DOCS ON CACHE BOOL "")
 
 # doxygen from uberenv
 set(DOXYGEN_EXECUTABLE "${TPL_ROOT}/doxygen-1.8.14/bin/doxygen" CACHE PATH "")
 
-# sphinx 1.8.4 from uberenv
-set(SPHINX_EXECUTABLE "${TPL_ROOT}/python-2.7.16/bin/sphinx-build" CACHE PATH "")
+# sphinx 1.7.4 from uberenv
+set(SPHINX_EXECUTABLE "${TPL_ROOT}/python-2.7.15/bin/sphinx-build" CACHE PATH "")
 
 # shroud 0.10.1 from uberenv
-set(SHROUD_EXECUTABLE "${TPL_ROOT}/python-2.7.16/bin/shroud" CACHE PATH "")
+set(SHROUD_EXECUTABLE "${TPL_ROOT}/python-2.7.15/bin/shroud" CACHE PATH "")
 
 # uncrustify from uberenv
 set(UNCRUSTIFY_EXECUTABLE "${TPL_ROOT}/uncrustify-0.61/bin/uncrustify" CACHE PATH "")
