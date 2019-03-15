@@ -125,9 +125,7 @@ TEST(core_config,config_components)
 
   std::vector<std::string> comps;
 
-#ifdef AXOM_USE_AXOM_UTILS
   comps.push_back("core");
-#endif
 
 #ifdef AXOM_USE_MINT
   comps.push_back("mint");

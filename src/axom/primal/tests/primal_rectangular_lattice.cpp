@@ -118,9 +118,75 @@ TEST( primal_rectangle_lattice, lattice_ctor)
   }
 }
 
+TEST( primal_rectangle_lattice, lattice_ctor_degenerate_spacing)
+{
+  // The test checks that really small values for the grid spacing snap to zero
+  // Here, really small is defined as EPS = 1E-50
+
+  //2D, with small, but non-degenerate spacing in coordinate 1
+  //This spacing value is retained.
+  {
+    using namespace lattice_2D;
+
+    constexpr double SMALL_EPS = 1E-40;  // small, but above the threshold
+
+    SpacePt origin(1.1);
+    SpaceVector spacing = SpacePt::make_point(.1, SMALL_EPS);
+
+    SpaceVector expSpacing;
+    expSpacing[0] = .1;
+    expSpacing[1] = SMALL_EPS;
+
+    // Test from Point constructor
+    {
+      LatticeT lattice(origin, spacing);
+      EXPECT_EQ(origin, lattice.origin());
+      EXPECT_EQ(expSpacing, lattice.spacing());
+    }
+
+    // Test from pointer constructor
+    {
+      LatticeT lattice(origin.data(), spacing.data() );
+      EXPECT_EQ(origin, lattice.origin());
+      EXPECT_EQ(expSpacing, lattice.spacing());
+    }
+
+  }
+
+  //2D, with degenerate spacing in coordinate 1
+  //This spacing value is snapped to zero
+  {
+    using namespace lattice_2D;
+
+    constexpr double SMALL_EPS = 1E-100;  // small, and below the threshold
+
+    SpacePt origin(1.1);
+    SpaceVector spacing = SpacePt::make_point(.1, SMALL_EPS);
+
+    SpaceVector expSpacing;
+    expSpacing[0] = .1;
+    expSpacing[1] = 0.;
+
+    // Test from Point constructor
+    {
+      LatticeT lattice(origin, spacing);
+      EXPECT_EQ(origin, lattice.origin());
+      EXPECT_EQ(expSpacing, lattice.spacing());
+    }
+
+    // Test from pointer constructor
+    {
+      LatticeT lattice(origin.data(), spacing.data() );
+      EXPECT_EQ(origin, lattice.origin());
+      EXPECT_EQ(expSpacing, lattice.spacing());
+    }
+  }
+}
+
 TEST( primal_rectangle_lattice, lattice_array_ctor)
 {
   SLIC_INFO("Testing lattice constructors from arrays in 1D, 2D and 3D");
+
   //1D
   {
     using namespace lattice_1D;
@@ -366,6 +432,43 @@ TEST( primal_rectangle_lattice, from_bounding_box)
     EXPECT_DOUBLE_EQ( .05,  lattice.spacing()[1]);
     EXPECT_DOUBLE_EQ( .01,  lattice.spacing()[2]);
   }
+
+  //2D, w/ bounding box that is degenerate in coordinate 1
+  {
+    using namespace lattice_2D;
+    using namespace axom::primal;
+
+    constexpr double EPS = 1E-100;
+    BBox bbox( SpacePt::make_point(1.25, 1.25),
+               SpacePt::make_point(2.5, 1.25 + EPS) );
+    IntArray res(5);
+    LatticeT lattice = rectangular_lattice_from_bounding_box(bbox, res);
+
+    EXPECT_DOUBLE_EQ(1.25, lattice.origin()[0]);
+    EXPECT_DOUBLE_EQ(1.25, lattice.origin()[1]);
+
+    EXPECT_DOUBLE_EQ( .25,  lattice.spacing()[0]);
+    EXPECT_DOUBLE_EQ( 0.,  lattice.spacing()[1]);
+  }
+
+  //2D, w/ degenerate spacing in coordinate 1
+  {
+    using namespace lattice_2D;
+    using namespace axom::primal;
+
+    BBox bbox( SpacePt(1.25), SpacePt(2.5));
+    IntArray res;
+    res[0] = 5;
+    res[1] = 0;
+
+    LatticeT lattice = rectangular_lattice_from_bounding_box(bbox, res);
+
+    EXPECT_DOUBLE_EQ(1.25, lattice.origin()[0]);
+    EXPECT_DOUBLE_EQ(1.25, lattice.origin()[1]);
+
+    EXPECT_DOUBLE_EQ( .25,  lattice.spacing()[0]);
+    EXPECT_DOUBLE_EQ( 0.,  lattice.spacing()[1]);
+  }
 }
 
 TEST( primal_rectangle_lattice, convert_point_cell_1D)
@@ -471,7 +574,7 @@ TEST( primal_rectangle_lattice, convert_point_cell_2D)
 
 TEST( primal_rectangle_lattice, negative_spacing_2D)
 {
-  SLIC_INFO("Testing point conversion of 3D lattice");
+  SLIC_INFO("Testing point conversion of 2D lattice");
 
   using namespace lattice_2D;
 
@@ -503,7 +606,7 @@ TEST( primal_rectangle_lattice, negative_spacing_2D)
 
 TEST( primal_rectangle_lattice, zero_spacing_2D)
 {
-  SLIC_INFO("Testing point conversion of 3D lattice");
+  SLIC_INFO("Testing point conversion of 2D lattice");
 
   using namespace lattice_2D;
 

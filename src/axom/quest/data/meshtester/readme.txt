@@ -1,8 +1,8 @@
 
 This directory contains data files for verifying 
 axom::quest::findTriMeshIntersections() and related functions.  Each test is
-specified by a file with the extension ".test".  These text files have
-five lines:
+specified by a file with the extension ".test".  
+These text files have six lines:
 
 1. The test name, a distinctive string.
 2. The STL mesh file, relative to this directory.  Suggested locations are in
@@ -12,9 +12,10 @@ five lines:
    1: the mesh is not watertight (has at least one boundary edge)
    2: the mesh has some other error, possibly an edge incident in more than
       two faces
-4. A list of pairs of integers, specifying the indices of intersecting
+4. An integer corresponding to the genus of the mesh after vertices have been welded
+5. A list of pairs of integers, specifying the indices of intersecting
    triangles.  Each index should be the 0-based index of the triangle in the
    STL file.
-5. A list of integers, specifying the STL file indices of degenerate triangles.
+6. A list of integers, specifying the STL file indices of degenerate triangles.
 
-The integers on lines 4 and 5 should be separated by whitespace.
+The integers on lines 5 and 6 should be separated by whitespace.

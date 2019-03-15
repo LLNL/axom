@@ -18,19 +18,10 @@
 #ifndef QUEST_TEST_UTILITIES_HPP_
 #define QUEST_TEST_UTILITIES_HPP_
 
-#include "axom/core/utilities/Utilities.hpp" // for random_real
-
-#include "axom/slic/interface/slic.hpp"
-
-#include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/Triangle.hpp"
-#include "axom/primal/operators/orientation.hpp"
-
-#include "axom/mint/config.hpp"
-#include "axom/mint/mesh/Mesh.hpp"
-#include "axom/mint/mesh/UnstructuredMesh.hpp"
-#include "axom/mint/mesh/Field.hpp"
-#include "axom/mint/mesh/FieldData.hpp"
+#include "axom/core.hpp" // for random_real
+#include "axom/slic.hpp"
+#include "axom/primal.hpp"
+#include "axom/mint.hpp"
 
 using axom::primal::Point;
 using axom::primal::Triangle;

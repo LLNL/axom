@@ -305,7 +305,7 @@ bool isNearlyEqualRelative(RealType a, RealType b, RealType relThresh = 1.0e-6,
   RealType maxFabs = max(abs(a), abs(b) );
   return abs(a-b) <= ( maxFabs * relThresh + absThresh);
 
-  // Equation from Real-Time Collsion Detection book --
+  // Equation from Real-Time Collision Detection book --
   // http://realtimecollisiondetection.net/pubs/Tolerances/
   // Note: If we use this, we must update the doxygen
   // return abs(a-b) <= max(absThresh, relThresh * maxFabs );

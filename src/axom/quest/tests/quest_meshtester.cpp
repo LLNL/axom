@@ -17,12 +17,10 @@
 
 // Axom includes
 #include "axom/config.hpp"
-#include "axom/core/utilities/FileUtilities.hpp"
-#include "axom/mint/config.hpp"
-#include "axom/mint/mesh/Mesh.hpp"
-#include "axom/quest/stl/STLReader.hpp"
-#include "axom/quest/MeshTester.hpp"
-#include "axom/slic/interface/slic.hpp"
+#include "axom/core.hpp"
+#include "axom/slic.hpp"
+#include "axom/mint.hpp"
+#include "axom/quest.hpp"
 
 #include "quest_test_utilities.hpp"
 
@@ -36,6 +34,7 @@
 #include <iterator>
 #include <fstream>
 #include <sstream>
+#include <string> // for std::stoi
 
 typedef axom::mint::UnstructuredMesh< axom::mint::SINGLE_SHAPE > UMesh;
 
@@ -138,46 +137,77 @@ std::string readIntersectTest(std::string & test,
                               std::string & tfname,
                               std::vector< std::pair<int, int> > & expisect,
                               std::vector< int > & expdegen,
-                              axom::quest::WatertightStatus & expwatertight)
+                              axom::quest::WatertightStatus & expwatertight,
+                              int & expgenus)
 {
   // given a test file path in argument test,
   // return the display name for the test (from the first line of the file).
-  // Output argument tfname supplies the mesh file to read in (second line, path
-  // relative to test)
-  // Output arg expisect (third line) supplies the expected intersecting
+  //
+  // Output arg tfname supplies the mesh file to read in
+  // (second line, path relative to test)
+  //
+  // Output arg expwatertight (third line) indicates if the mesh
+  // is expected to be watertight after welding
+  //
+  // Output arg expgenus (fourth line) indicates the expected genus of the
+  // mesh after welding
+  //
+  // Output arg expisect (fifth line) supplies the expected intersecting
   // triangles
-  // Output arg expdegen (fourth line) supplies the expected degenerate
+  // Output arg expdegen (sixth line) supplies the expected degenerate
   // triangles
 
   std::string testdir;
   axom::utilities::filesystem::getDirName(testdir, test);
 
+  // Read test description and file name
   std::ifstream testfile(test.c_str());
   std::string retval;
   std::getline(testfile, retval);
   std::getline(testfile, tfname);
   tfname = axom::utilities::filesystem::joinPath(testdir, tfname);
-  std::string watertight;
-  std::getline(testfile, watertight);
-  if (watertight == "0")
+
+  // Read watertightness value
   {
-    expwatertight = axom::quest::WatertightStatus::WATERTIGHT;
+    std::string watertight;
+    std::getline(testfile, watertight);
+    if (watertight == "0")
+    {
+      expwatertight = axom::quest::WatertightStatus::WATERTIGHT;
+    }
+    else if (watertight == "1")
+    {
+      expwatertight = axom::quest::WatertightStatus::NOT_WATERTIGHT;
+    }
+    else
+    {
+      expwatertight = axom::quest::WatertightStatus::CHECK_FAILED;
+    }
   }
-  else if (watertight == "1")
+
+  // Read genus value
   {
-    expwatertight = axom::quest::WatertightStatus::NOT_WATERTIGHT;
+    std::string genus;
+    std::getline(testfile, genus);
+
+    expgenus = std::stoi(genus);
   }
-  else
-  {
-    expwatertight = axom::quest::WatertightStatus::CHECK_FAILED;
-  }
+
   std::string splitline;
-  std::getline(testfile, splitline);
-  splitStringToIntPairs(splitline, expisect);
-  std::sort(expisect.begin(), expisect.end());
-  std::getline(testfile, splitline);
-  splitStringToInts(splitline, expdegen);
-  std::sort(expdegen.begin(), expdegen.end());
+
+  // Read list of expected intersecting triangle pairs
+  {
+    std::getline(testfile, splitline);
+    splitStringToIntPairs(splitline, expisect);
+    std::sort(expisect.begin(), expisect.end());
+  }
+
+  // Read list of expected degenerate triangles
+  {
+    std::getline(testfile, splitline);
+    splitStringToInts(splitline, expdegen);
+    std::sort(expdegen.begin(), expdegen.end());
+  }
 
   return retval;
 }
@@ -313,8 +343,10 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_ondisk )
       std::vector< int > expdegen;
       std::string tfname;
       axom::quest::WatertightStatus expwatertight;
+      int expgenus;
+
       std::string tname = readIntersectTest(test, tfname, expisect,
-                                            expdegen, expwatertight);
+                                            expdegen, expwatertight, expgenus);
 
       // read in the test file into a Mesh
       axom::quest::STLReader reader;
@@ -374,9 +406,12 @@ TEST( quest_mesh_tester, surfacemesh_watertight_intrinsic )
 
 TEST( quest_mesh_tester, surfacemesh_watertight_ondisk )
 {
-  constexpr double EPS = 1e-8;
-
+  // Get the list of test cases
   std::vector<std::string> tests = findIntersectTests();
+
+  // Test against several welding threshold value
+  std::vector<double> epsilons = {1e-4, 1e-8, 1e-16};
+
 
   if (tests.size() < 1)
   {
@@ -385,57 +420,90 @@ TEST( quest_mesh_tester, surfacemesh_watertight_ondisk )
     SUCCEED();
   }
 
-  std::vector<std::string>::iterator it = tests.begin();
-  for ( ; it != tests.end() ; ++it)
+  for (auto& test: tests)       // for each intersection test
   {
-    std::string & test = *it;
-    if (!axom::utilities::filesystem::pathExists(test))
+    for(double EPS : epsilons)  // for each value of epsilon
     {
-      SLIC_INFO("Test file does not exist; skipping: " << test);
-    }
-    else
-    {
-      std::vector< std::pair<int, int> > expisect;
-      std::vector< int > expdegen;
-      std::string tfname;
-      axom::quest::WatertightStatus expwatertight;
-      std::string tname = readIntersectTest(test, tfname, expisect,
-                                            expdegen, expwatertight);
-
-      // read in the test file into a Mesh
-      axom::quest::STLReader reader;
-      reader.setFileName( tfname );
-      reader.read();
-
-      // Get surface mesh
-      UMesh* surface_mesh = new UMesh( 3, axom::mint::TRIANGLE );
-      reader.getMesh( surface_mesh );
-
+      if (!axom::utilities::filesystem::pathExists(test))
       {
-        SCOPED_TRACE(tname);
-        // First weld vertices
-        axom::quest::weldTriMeshVertices(&surface_mesh, EPS);
-        // Then check for holes (for STL, only meaningful after welding)
-        EXPECT_EQ(expwatertight,
-                  axom::quest::isSurfaceMeshWatertight(surface_mesh));
+        SLIC_INFO("Test file does not exist; skipping: " << test);
       }
+      else
+      {
+        std::vector< std::pair<int, int> > expisect;
+        std::vector< int > expdegen;
+        std::string tfname;
+        axom::quest::WatertightStatus expwatertight;
+        int expgenus;
 
-      delete surface_mesh;
+        std::string tname =
+          readIntersectTest(test, tfname, expisect,
+                            expdegen, expwatertight, expgenus);
+
+        SLIC_INFO("Running watertightness check on '"<< tname << "'"
+                                                     <<" with EPS = " << EPS);
+
+        // Read in the test file into a Mesh
+        axom::quest::STLReader reader;
+        reader.setFileName( tfname );
+        reader.read();
+
+        // Get surface mesh
+        UMesh* surface_mesh = new UMesh( 3, axom::mint::TRIANGLE );
+        reader.getMesh( surface_mesh );
+
+        {
+          SCOPED_TRACE(tname);
+
+          int numOrigVerts = surface_mesh->getNumberOfNodes();
+          int numOrigTris = surface_mesh->getNumberOfCells();
+          EXPECT_EQ(3 * numOrigTris, numOrigVerts);
+
+          // First weld vertices
+          axom::quest::weldTriMeshVertices(&surface_mesh, EPS);
+
+          // Then check for holes (for STL, only meaningful after welding)
+          EXPECT_EQ(expwatertight,
+                    axom::quest::isSurfaceMeshWatertight(surface_mesh));
+
+          /// Perform some additional checks on the welded mesh
+          int numWeldedVerts = surface_mesh->getNumberOfNodes();
+          int numWeldedEdges = surface_mesh->getNumberOfFaces();
+          int numWeldedTris = surface_mesh->getNumberOfCells();
+
+          // Triangle count should equal original count minus degenerate count
+          EXPECT_EQ(numWeldedTris, numOrigTris - expdegen.size() );
+
+          // Check Euler characteristic for watertight meshes
+          // These meshes have no boundaries
+          if( expwatertight == axom::quest::WatertightStatus::WATERTIGHT)
+          {
+            // Computed from genus, g, as: 2- 2g
+            int expEulerCharacteristic = 2 - 2 * expgenus;
+
+            // Computed from mesh element counts as: |V| - |E| + |F|
+            int actualEulerCharacteristic =
+              numWeldedVerts - numWeldedEdges + numWeldedTris;
+
+            EXPECT_EQ(expEulerCharacteristic, actualEulerCharacteristic);
+          }
+        }
+
+        delete surface_mesh;
+      }
     }
   }
 }
 
 //----------------------------------------------------------------------
-//----------------------------------------------------------------------
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
 
-  UnitTestLogger logger;  // create & initialize test logger,
-  axom::slic::setLoggingMsgLevel(axom::slic::message::Info);
+  namespace slic = axom::slic;
+  slic::UnitTestLogger logger;  // create & initialize test logger,
+  slic::setLoggingMsgLevel(slic::message::Info);
 
   int result = RUN_ALL_TESTS();
   return result;
