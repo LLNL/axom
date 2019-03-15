@@ -311,6 +311,8 @@ def build_and_test_host_config(test_root,host_config):
     ####
     # build, test, and install
     ####
+    
+    # build the code
     bld_output_file =  pjoin(build_dir,"output.log.make.txt")
     print "[starting build]"
     print "[log file: %s]" % bld_output_file
@@ -322,6 +324,7 @@ def build_and_test_host_config(test_root,host_config):
         print "[ERROR: Build for host-config: %s failed]\n" % host_config
         return res
 
+    # test the code
     tst_output_file = pjoin(build_dir,"output.log.make.test.txt")
     print "[starting unit tests]"
     print "[log file: %s]" % tst_output_file
@@ -336,7 +339,20 @@ def build_and_test_host_config(test_root,host_config):
         print "[ERROR: Tests for host-config: %s failed]\n" % host_config
         return res
 
+    # build the docs
+    docs_output_file = pjoin(build_dir,"output.log.make.docs.txt")
+    print "[starting docs generation]"
+    print "[log file: %s]" % docs_output_file
 
+    res = sexe("cd %s && make docs " % build_dir,
+               output_file = docs_output_file,
+               echo=True)
+
+    if res != 0:
+        print "[ERROR: Docs generation for host-config: %s failed]\n\n" % host_config
+        return res
+
+    # install the code
     inst_output_file = pjoin(build_dir,"output.log.make.install.txt")
     print "[starting install]"
     print "[log file: %s]" % inst_output_file
