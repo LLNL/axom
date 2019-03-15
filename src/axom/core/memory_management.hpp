@@ -88,9 +88,9 @@ inline umpire::Allocator getAllocator( int allocatorID )
  */
 template < typename T >
 #ifdef AXOM_USE_UMPIRE
-inline T* alloc( std::size_t n, umpire::Allocator allocator=getDefaultAllocator() );
+inline T* alloc( std::size_t n, umpire::Allocator allocator=getDefaultAllocator() ) noexcept;
 #else
-inline T* alloc( std::size_t n );
+inline T* alloc( std::size_t n ) noexcept;
 #endif
 
 /*!
@@ -99,7 +99,7 @@ inline T* alloc( std::size_t n );
  * \post p == nullptr
  */
 template < typename T >
-inline void free( T*& p );
+inline void free( T*& p ) noexcept;
 
 /*!
  * \brief Reallocates the chunk of memory pointed to by the supplied pointer.
@@ -112,7 +112,7 @@ inline void free( T*& p );
  * \return p pointer to the new allocation or a nullptr if allocation failed.
  */
 template < typename T >
-inline T* realloc( T* p, std::size_t n );
+inline T* realloc( T* p, std::size_t n ) noexcept;
 
 /// @}
 
@@ -124,7 +124,7 @@ inline T* realloc( T* p, std::size_t n );
 #ifdef AXOM_USE_UMPIRE
 
 template < typename T >
-inline T* alloc( std::size_t n, umpire::Allocator allocator )
+inline T* alloc( std::size_t n, umpire::Allocator allocator ) noexcept
 {
   if ( n == 0 ) return nullptr;
 
@@ -135,7 +135,7 @@ inline T* alloc( std::size_t n, umpire::Allocator allocator )
 #else
 
 template < typename T >
-inline T* alloc( std::size_t n )
+inline T* alloc( std::size_t n ) noexcept
 {
   if ( n == 0 ) return nullptr;
 
@@ -147,7 +147,7 @@ inline T* alloc( std::size_t n )
 
 //------------------------------------------------------------------------------
 template < typename T >
-inline void free( T*& pointer )
+inline void free( T*& pointer ) noexcept
 {
   if ( pointer == nullptr ) return;
 
@@ -167,7 +167,7 @@ inline void free( T*& pointer )
 
 //------------------------------------------------------------------------------
 template < typename T >
-inline T* realloc( T* pointer, std::size_t n )
+inline T* realloc( T* pointer, std::size_t n ) noexcept
 {
   if ( n == 0 )
   {

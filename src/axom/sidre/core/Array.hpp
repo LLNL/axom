@@ -363,8 +363,6 @@ inline void Array< T >::setCapacity( axom::IndexType new_capacity )
 template< typename T >
 inline void Array< T >::dynamicRealloc( axom::IndexType new_num_tuples )
 {
-  SLIC_ERROR_IF( this->m_is_external,
-                 "Cannot change the capacity of external data.");
   SLIC_ERROR_IF( this->m_resize_ratio < 1.0, "Resize ratio of " <<
                  this->m_resize_ratio << " doesn't support dynamic resizing");
   

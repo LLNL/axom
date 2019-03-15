@@ -397,7 +397,7 @@ public:
   /*!
    * \brief Return true iff the external buffer constructor was called.
    */
-  virtual bool isExternal() const { return m_is_external; }
+  bool isExternal() const { return m_is_external; }
 
   /*!
    * \brief Return true iff a sidre constructor was called.
@@ -495,7 +495,7 @@ protected:
   IndexType m_capacity;
   IndexType m_num_components;
   double m_resize_ratio;
-  bool m_is_external;
+  bool const m_is_external;
 
   DISABLE_COPY_AND_ASSIGNMENT( Array );
   DISABLE_MOVE_AND_ASSIGNMENT( Array );
@@ -729,7 +729,11 @@ inline void Array< T >::setCapacity( IndexType new_capacity )
     return;
   }
 
-  assert(!m_is_external);
+  if (m_is_external)
+  {
+    std::cerr << "Cannot reallocate an externally provided buffer.";
+    utilities::processAbort();
+  }
 
   if ( new_capacity < m_num_tuples )
   {
@@ -746,7 +750,12 @@ inline void Array< T >::setCapacity( IndexType new_capacity )
 template< typename T >
 inline void Array< T >::dynamicRealloc( IndexType new_num_tuples )
 {
-  assert( !m_is_external );
+  if (m_is_external)
+  {
+    std::cerr << "Cannot reallocate an externally provided buffer.";
+    utilities::processAbort();
+  }
+
   assert( m_resize_ratio >= 1.0 );
   const IndexType new_capacity = new_num_tuples * m_resize_ratio + 0.5;
 
