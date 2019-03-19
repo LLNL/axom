@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ###############################################################################
 # Copyright (c) 2017-19, Lawrence Livermore National Security, LLC.
@@ -15,14 +15,14 @@
 #   
 ###############################################################################
 
-TAR_CMD=gtar
-VERSION=0.2.9
+TAR_CMD=`which tar`
+VERSION=`git describe --tags`
 
 git archive --prefix=Axom-${VERSION}/ -o Axom-${VERSION}.tar HEAD 2> /dev/null
 
 echo "Running git archive submodules..."
 
-p=`pwd` && (echo .; git submodule foreach) | while read entering path; do
+p=`pwd` && (echo .; git submodule foreach --recursive) | while read entering path; do
     temp="${path%\'}";
     temp="${temp#\'}";
     path=$temp;
