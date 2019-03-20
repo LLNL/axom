@@ -524,6 +524,8 @@ private:
                          INOUTOCTREE_ELEMENTS_INSERTED,
                          INOUTOCTREE_LEAVES_COLORED};
 
+  static double DEFAULT_VERTEX_WELD_THRESHOLD;
+
   /**
    * \brief A utility class that wraps the access to the mesh data
    *
@@ -963,16 +965,18 @@ public:
    * problems.  Please make sure to discard all old copies of the meshPtr.
    */
   InOutOctree(const GeometricBoundingBox& bb, SurfaceMesh*& meshPtr)
-    : SpatialOctreeType( GeometricBoundingBox(bb).scale(1.0001) ),
-    m_meshWrapper(meshPtr),
-    m_vertexToBlockMap(&m_meshWrapper.vertexSet()),
+    : SpatialOctreeType( GeometricBoundingBox(bb).scale(1.0001) )
+    , m_meshWrapper(meshPtr)
+    , m_vertexToBlockMap(&m_meshWrapper.vertexSet())
     //
-    m_grayLeafsMap( &this->m_levels),
-    m_grayLeafToVertexRelationLevelMap( &this->m_levels ),
-    m_grayLeafToElementRelationLevelMap( &this->m_levels ),
+    , m_grayLeafsMap( &this->m_levels)
+    , m_grayLeafToVertexRelationLevelMap( &this->m_levels )
+    , m_grayLeafToElementRelationLevelMap( &this->m_levels )
     //
-    m_generationState( INOUTOCTREE_UNINITIALIZED)
-  {}
+    , m_generationState( INOUTOCTREE_UNINITIALIZED)
+  {
+    setVertexWeldThreshold( DEFAULT_VERTEX_WELD_THRESHOLD);
+  }
 
   /**
    * \brief Generate the spatial index over the triangle mesh
@@ -984,13 +988,40 @@ public:
   /**
    * \brief The point containment query.
    *
-   * \param pt The point that we want to check for containment within the
-   * surface
+   * \param pt The point at which we are checking for containment
    * \return True if the point is within (or on) the surface, false otherwise
-   * \note Points outside the octree's bounding box are considered outside the
-   * surface
+   * \note Points outside the octree bounding box are considered outside
    */
   bool within(const SpacePt& pt) const;
+
+  /**
+   * \brief Sets the threshold for welding vertices during octree construction
+   *
+   * \param [in] thresh The cutoff distance at which we consider two vertices
+   * to be identical during the octree construction
+   *
+   * \pre thresh >= 0
+   * \pre This function cannot be called after the octree has been constructed
+   *
+   * \note The InOutOctree requires the input surface to be watertight so this
+   * parameter should be set with with care. A welding threshold that is too
+   * high could unnecessarily merge vertices and create topological defects,
+   * while a value that is too low risks leaving gaps in meshes with tolerances
+   * between vertices. The default value tends to work well in practice.
+   *
+   * \note The code actually uses the square of the threshold for comparisons
+   */
+  void setVertexWeldThreshold(double thresh)
+  {
+    SLIC_WARNING_IF( thresh < 0.,
+                     "Distance threshold for vertices cannot be negative.");
+
+    SLIC_WARNING_IF( m_generationState > INOUTOCTREE_UNINITIALIZED,
+                     "Can only set the vertex welding threshold "
+                     << "before initializing the InOutOctree");
+
+    m_vertexWeldThresholdSquared = thresh * thresh;
+  }
 
 private:
 
@@ -1239,7 +1270,12 @@ protected:
   GenerationState m_generationState;
 
   IndexRegistry m_indexRegistry;
+
+  double m_vertexWeldThresholdSquared;
 };
+
+template<int DIM>
+double InOutOctree<DIM>::DEFAULT_VERTEX_WELD_THRESHOLD = 1E-9;
 
 
 namespace
@@ -1361,9 +1397,6 @@ void InOutOctree<DIM>::generateIndex ()
 template<int DIM>
 void InOutOctree<DIM>::insertVertex (VertexIndex idx, int startingLevel)
 {
-  static const double EPS_SQ = 1e-18;
-
-
   const SpacePt pt = m_meshWrapper.getMeshVertexPosition(idx);
 
   BlockIndex block = this->findLeafBlock(pt, startingLevel);
@@ -1389,9 +1422,8 @@ void InOutOctree<DIM>::insertVertex (VertexIndex idx, int startingLevel)
   {
     // check if we should merge the vertices
     VertexIndex origVertInd = blkData.dataIndex();
-    if( squared_distance( pt,
-                          m_meshWrapper.getMeshVertexPosition(origVertInd) ) >=
-        EPS_SQ )
+    if( squared_distance( pt, m_meshWrapper.getMeshVertexPosition(origVertInd) )
+        >= m_vertexWeldThresholdSquared )
     {
       blkData.clear();
       this->refineLeaf(block);
