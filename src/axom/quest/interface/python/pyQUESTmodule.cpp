@@ -133,6 +133,33 @@ PY_inout_set_verbose(
 // splicer end function.inout_set_verbose
 }
 
+static char PY_inout_set_vertex_weld_threshold__doc__[] =
+  "documentation"
+;
+
+static PyObject*
+PY_inout_set_vertex_weld_threshold(
+  PyObject* SHROUD_UNUSED(self),
+  PyObject* args,
+  PyObject* kwds)
+{
+// splicer begin function.inout_set_vertex_weld_threshold
+  double thresh;
+  const char* SHT_kwlist[] = {
+    "thresh",
+    NULL
+  };
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds,
+                                   "d:inout_set_vertex_weld_threshold",
+                                   const_cast<char**>(SHT_kwlist), &thresh))
+    return NULL;
+  int SHC_rv = axom::quest::inout_set_vertex_weld_threshold(thresh);
+  PyObject* SHTPy_rv = PyInt_FromLong(SHC_rv);
+  return (PyObject*) SHTPy_rv;
+// splicer end function.inout_set_vertex_weld_threshold
+}
+
 static char PY_inout_evaluate_1__doc__[] =
   "documentation"
 ;
@@ -587,6 +614,9 @@ static PyMethodDef PY_methods[] = {
    PY_inout_initialized__doc__},
   {"inout_set_verbose", (PyCFunction)PY_inout_set_verbose,
    METH_VARARGS|METH_KEYWORDS, PY_inout_set_verbose__doc__},
+  {"inout_set_vertex_weld_threshold",
+   (PyCFunction)PY_inout_set_vertex_weld_threshold, METH_VARARGS|METH_KEYWORDS,
+   PY_inout_set_vertex_weld_threshold__doc__},
   {"inout_evaluate", (PyCFunction)PY_inout_evaluate_1,
    METH_VARARGS|METH_KEYWORDS, PY_inout_evaluate_1__doc__},
   {"inout_get_dimension", (PyCFunction)PY_inout_get_dimension, METH_NOARGS,

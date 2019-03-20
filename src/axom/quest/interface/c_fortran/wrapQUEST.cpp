@@ -91,6 +91,14 @@ int QUEST_inout_set_verbose(bool verbosity)
 // splicer end function.inout_set_verbose
 }
 
+int QUEST_inout_set_vertex_weld_threshold(double thresh)
+{
+// splicer begin function.inout_set_vertex_weld_threshold
+  int SHC_rv = axom::quest::inout_set_vertex_weld_threshold(thresh);
+  return SHC_rv;
+// splicer end function.inout_set_vertex_weld_threshold
+}
+
 bool QUEST_inout_evaluate_0(double x, double y)
 {
 // splicer begin function.inout_evaluate_0
