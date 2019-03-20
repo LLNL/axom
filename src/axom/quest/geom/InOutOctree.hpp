@@ -1004,7 +1004,7 @@ public:
    * \pre This function cannot be called after the octree has been constructed
    *
    * \note The InOutOctree requires the input surface to be watertight so this
-   * parameter should be set with with care. A welding threshold that is too
+   * parameter should be set with care. A welding threshold that is too
    * high could unnecessarily merge vertices and create topological defects,
    * while a value that is too low risks leaving gaps in meshes with tolerances
    * between vertices. The default value tends to work well in practice.
