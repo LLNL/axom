@@ -1,0 +1,63 @@
+set(CTEST_PROJECT_NAME "Axom")
+set(CTEST_NIGHTLY_START_TIME "01:00:00 UTC")
+
+# drop site options
+set(CTEST_DROP_METHOD "https")
+set(CTEST_DROP_SITE "*** [TODO] Add url here")
+set(CTEST_DROP_LOCATION "/cdash/submit.php?project=${CTEST_PROJECT_NAME}")
+set(CTEST_DROP_SITE_CDASH TRUE)
+
+# this is our token for cdash
+set(_auth_token "*** [TODO]: Add token here")
+
+set(CTEST_CUSTOM_MAXIMUM_NUMBER_OF_ERRORS           "200" )
+set(CTEST_CUSTOM_MAXIMUM_NUMBER_OF_WARNINGS         "500" )
+set(CTEST_CUSTOM_MAXIMUM_PASSED_TEST_OUTPUT_SIZE    "104857600") # 100 MB
+set(CTEST_CUSTOM_COVERAGE_EXCLUDE                   "")
+
+# replaced with configure_file(... @ONLY) in our CMake
+set(CTEST_SOURCE_DIRECTORY   "@PROJECT_SOURCE_DIR@")
+set(CTEST_BINARY_DIRECTORY   "@PROJECT_BINARY_DIR@")
+
+# define generator (optional), e.g. default to 'Unix Makefiles' on UNIX, Visual Studio on Windows
+# set(CTEST_GENERATOR          "...")
+# submit under Continuous, Nightly (default), Experimental
+set(CTEST_MODEL              "Continuous")
+
+# define how to configure (e.g. cmake -DCMAKE_INSTALL_PREFIX=...)
+set(CTEST_CONFIGURE_COMMAND  "cmake ../src")
+
+# the name of the build
+set(CTEST_BUILD_NAME         "test")
+
+# build options
+set(OPTION_BUILD             "-j4")
+
+# how to build
+set(CTEST_BUILD_COMMAND      "make")
+
+# default max time each tests can run (in seconds)
+set(CTEST_TIMEOUT            "7200")
+
+# locale to English
+set(ENV{LC_MESSAGES}         "en_EN")
+
+
+#ctest_read_custom_files(${CTEST_BINARY_DIRECTORY})
+
+ctest_start             (${CTEST_MODEL} TRACK ${CTEST_MODEL})
+ctest_configure         (BUILD ${CTEST_BINARY_DIRECTORY} RETURN_VALUE ret_con)
+ctest_build             (BUILD ${CTEST_BINARY_DIRECTORY} RETURN_VALUE ret_bld)
+
+ctest_test              (BUILD ${CTEST_BINARY_DIRECTORY} RETURN_VALUE ret_tst)
+# ctest_memcheck          (BUILD ${CTEST_BINARY_DIRECTORY} RETURN_VALUE ret_mem)
+# ctest_coverage          (BUILD ${CTEST_BINARY_DIRECTORY} RETURN_VALUE ret_cov)
+
+# attach build notes if desired, e.g. performance info, output files from tests
+# list(APPEND CTEST_NOTES_FILES "/file/to/attach/as/build-note")
+
+# standard submit
+# if dashboard requires a token that restricts who can submit to dashboard
+ctest_submit(RETURN_VALUE ret_sub HTTPHEADER "Authorization: Bearer ${_auth_token}")
+
+
