@@ -2546,7 +2546,7 @@ private:
     std::stringstream fNameStr;
     fNameStr << name << ".vtk";
 
-    DebugMesh* debugMesh= new DebugMesh(3, 8 * blocks.size());
+    DebugMesh* debugMesh= new DebugMesh(3, 8 * blocks.size(), blocks.size());
     const bool hasTriangles =
       (m_generationState >= InOutOctreeType::INOUTOCTREE_ELEMENTS_INSERTED);
     const bool hasColors =
@@ -2656,7 +2656,7 @@ private:
     std::stringstream fNameStr;
     fNameStr << name << ".vtk";
 
-    DebugMesh* debugMesh= new DebugMesh(3, 3 * tris.size());
+    DebugMesh* debugMesh= new DebugMesh(3, 3 * tris.size(), tris.size());
 
     for(auto it = tris.begin() ; it < tris.end() ; ++it)
     {
@@ -2701,14 +2701,14 @@ private:
 
   int* addIntField(DebugMesh* mesh, const std::string& name ) const
   {
-    int* fld = mesh->createField< int >( name, mint::NODE_CENTERED );
+    int* fld = mesh->createField< int >( name, mint::CELL_CENTERED );
     SLIC_ASSERT( fld != nullptr );
     return fld;
   }
 
   double* addRealField(DebugMesh* mesh, const std::string& name ) const
   {
-    double* fld = mesh->createField< double >( name, mint::NODE_CENTERED );
+    double* fld = mesh->createField< double >( name, mint::CELL_CENTERED );
     SLIC_ASSERT( fld != nullptr );
     return fld;
   }
@@ -2729,7 +2729,7 @@ private:
       data[i] = vStart + i;
     }
 
-    mesh->appendCell(data);
+    mesh->appendCell(data, mint::TRIANGLE);
 
     // Log the triangle info as primal code to simplify adding a test for this
     // case
@@ -2767,7 +2767,7 @@ private:
     for(int i=0 ; i< 8 ; ++i)
       data[i] = vStart + i;
 
-    mesh->appendCell(data);
+    mesh->appendCell(data, mint::HEX);
 
     // Log bounding box info to simplify adding a test for this case
     if(shouldLogBlocks)
