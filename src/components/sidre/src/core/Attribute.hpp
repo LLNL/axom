@@ -47,7 +47,7 @@ namespace sidre
 /*!
  * \class Attribute
  *
- * \brief Attributes for a View
+ * \brief An Attribute holds scalar metadata describing a View.
  *
  */
 class Attribute

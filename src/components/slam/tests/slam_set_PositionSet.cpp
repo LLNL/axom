@@ -27,7 +27,7 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/config.hpp"    // for AXOM_USE_BOOST
+#include "axom/config.hpp"      // for AXOM_USE_CXX11
 
 #include "slic/slic.hpp"        // for SLIC_INFO
 
@@ -53,7 +53,9 @@ TEST(slam_set_positionset,construct_valid)
   EXPECT_EQ(MAX_SET_SIZE, s.size() );
 
   if(MAX_SET_SIZE > SetPosition())
+  {
     EXPECT_FALSE(s.empty());
+  }
 }
 
 
@@ -174,7 +176,7 @@ TEST(slam_set_positionset,iterate)
     SLIC_INFO("Element of slam set using at():\n" << sstr.str());
   }
 
-#ifdef AXOM_USE_BOOST
+#ifdef AXOM_USE_CXX11
   SLIC_INFO("Using iterators begin/end");
   {
     std::stringstream sstr;

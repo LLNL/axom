@@ -1,7 +1,0 @@
-MAILTO=""
-05 * * * *  /usr/bin/ssh rzalastor1 /g/g16/atk/bamboo/asctoolkit-rzalastor1-1/bin/bamboo-agent.sh start
-05 * * * * /usr/bin/ssh rzalastor1 /g/g16/atk/bamboo/asctoolkit-rzalastor1-2/bin/bamboo-agent.sh start
-05 * * * * /usr/bin/ssh rzgenie2-pub /usr/global/tools/bamboo/agents/atk/axom-rzgenie2-1/bin/bamboo-agent.sh start
-05 * * * * /usr/bin/ssh rzgenie5-pub /usr/global/tools/bamboo/agents/atk/axom-rzgenie5-1/bin/bamboo-agent.sh start
-0 3 * * 5 cd /g/g16/atk/bamboo; ./clean_log.sh > ./clean_log.log 2>&1
-

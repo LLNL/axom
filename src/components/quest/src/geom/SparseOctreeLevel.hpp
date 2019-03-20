@@ -21,6 +21,7 @@
 
 #include "axom/config.hpp"    // defines AXOM_USE_CXX11
 #include "axom/Types.hpp"
+#include "axom/Macros.hpp"    // defines AXOM_STATIC_ASSERT
 
 #include "primal/MortonIndex.hpp"
 
@@ -29,13 +30,15 @@
 
 #ifdef AXOM_USE_CXX11
   #include <type_traits>
+#endif
+
+#if defined(AXOM_USE_SPARSEHASH)
+  #include <sparsehash/dense_hash_map>
+#elif defined(AXOM_USE_STD_UNORDERED_MAP)
   #include <unordered_map>
-#elif defined(AXOM_USE_BOOST)
-  #include <boost/static_assert.hpp>
-  #include <boost/type_traits.hpp>
-  #include "boost/unordered_map.hpp"
 #else
-  #error "quest::SparseOctreeLevel requires either C++11 or boost"
+  #error \
+  "quest::SparseOctreeLevel requires either sparsehash or C++11's unordered_map"
 #endif
 
 namespace axom
@@ -58,24 +61,19 @@ struct BroodRepresentationTraits
   typedef Point<CoordType,DIM> GridPt;
   typedef RepresentationType PointRepresenationType;
 
-  // Requires an unsigned int for RepresentationType with 8-,16-,32-, or 64-
-  // bits
-        #if defined(AXOM_USE_CXX11)
-  static_assert( std::is_integral<CoordType>::value,
-                 "CoordType must be integral" );
-  static_assert( std::is_integral<PointRepresenationType>::value,
-                 "RepresentationType must be integral" );
-  static_assert( std::is_unsigned<PointRepresenationType>::value,
-                 "RepresentationType must be unsigned" );
+  AXOM_STATIC_ASSERT_MSG( std::is_integral<CoordType>::value,
+                          "CoordType must be integral" );
+  AXOM_STATIC_ASSERT_MSG( std::is_integral<PointRepresenationType>::value,
+                          "RepresentationType must be integral" );
+  AXOM_STATIC_ASSERT_MSG( std::is_unsigned<PointRepresenationType>::value,
+                          "RepresentationType must be unsigned" );
 
+  // Requires a uint for RepresentationType with 8-,16-,32-, or 64- bits
+#if defined(AXOM_USE_SPARSEHASH)
+  typedef google::dense_hash_map<RepresentationType, BroodDataType> MapType;
+#elif defined(AXOM_USE_CXX11)
   typedef std::unordered_map<RepresentationType, BroodDataType> MapType;
-        #elif defined(AXOM_USE_BOOST)
-  BOOST_STATIC_ASSERT(boost::is_integral<CoordType>::value);
-  BOOST_STATIC_ASSERT(boost::is_integral<PointRepresenationType>::value);
-  BOOST_STATIC_ASSERT(boost::is_unsigned<PointRepresenationType>::value);
-
-  typedef boost::unordered_map<PointRepresenationType, BroodDataType> MapType;
-        #endif
+#endif
 
   typedef Brood<GridPt, PointRepresenationType> BroodType;
 
@@ -83,6 +81,21 @@ struct BroodRepresentationTraits
   static PointRepresenationType convertPoint(const GridPt& pt)
   {
     return BroodType::MortonizerType::mortonize(pt);
+  }
+
+  /**
+   * Utility function to initialize a MapType
+   *
+   * \note sparsehash's maps require setting some default keys
+   */
+  static void initializeMap(MapType& map)
+  {
+#if defined(AXOM_USE_SPARSEHASH)
+    const PointRepresenationType maxVal =
+      std::numeric_limits<PointRepresenationType>::max();
+    map.set_empty_key( maxVal );
+    map.set_deleted_key( maxVal-1 );
+#endif
   }
 };
 
@@ -100,17 +113,16 @@ struct BroodRepresentationTraits<CoordType, DIM, BroodDataType,
 {
   typedef Point<CoordType,DIM> GridPt;
   typedef GridPt PointRepresenationType;
+  typedef primal::PointHash<CoordType> PointHashType;
 
-      #if defined(AXOM_USE_CXX11)
-  static_assert( std::is_integral<CoordType>::value,
-                 "CoordType must be integral" );
-  typedef std::unordered_map<GridPt, BroodDataType,
-                             primal::PointHash<int> > MapType;
-      #elif defined(AXOM_USE_BOOST)
-  BOOST_STATIC_ASSERT(boost::is_integral<CoordType>::value);
-  typedef boost::unordered_map<GridPt, BroodDataType,
-                               primal::PointHash<int> > MapType;
-      #endif
+  AXOM_STATIC_ASSERT_MSG( std::is_integral<CoordType>::value,
+                          "CoordType must be integral" );
+
+#if defined(AXOM_USE_SPARSEHASH)
+  typedef google::dense_hash_map<GridPt, BroodDataType,PointHashType> MapType;
+#elif defined(AXOM_USE_STD_UNORDERED_MAP)
+  typedef std::unordered_map<GridPt, BroodDataType,PointHashType > MapType;
+#endif
 
   typedef Brood<GridPt, GridPt> BroodType;
 
@@ -121,6 +133,23 @@ struct BroodRepresentationTraits<CoordType, DIM, BroodDataType,
   static const PointRepresenationType& convertPoint(const GridPt& pt)
   {
     return pt;          // simple pass through function
+  }
+
+  /**
+   * Utility function to initialize a MapType
+   *
+   * \note sparse hashmaps require setting some default keys
+   */
+  static void initializeMap(MapType& map)
+  {
+#if defined(AXOM_USE_SPARSEHASH)
+    CoordType maxCoord = std::numeric_limits<CoordType>::max();
+    GridPt maxPt(maxCoord);
+    map.set_empty_key( maxPt );
+
+    maxPt[DIM-1]--;
+    map.set_deleted_key( maxPt );
+#endif
   }
 };
 
@@ -245,7 +274,10 @@ private:
 public:
 
   /** \brief Default constructor for an octree level */
-  SparseOctreeLevel(int level = -1) : Base(level){}
+  SparseOctreeLevel(int level = -1) : Base(level)
+  {
+    BroodTraits::initializeMap(m_map);
+  }
 
 
   /**

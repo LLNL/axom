@@ -37,7 +37,8 @@ from os.path import join as pjoin
 def sexe(cmd,
          ret_output=False,
          output_file = None,
-         echo = False):
+         echo = False,
+         error_prefix = "ERROR:"):
     """ Helper for executing shell commands. """
     if echo:
         print "[exe: %s]" % cmd
@@ -59,7 +60,7 @@ def sexe(cmd,
     else:
         rcode = subprocess.call(cmd,shell=True)
         if rcode != 0:
-            print "{ERROR [return code: %d] from command: %s}" % (rcode,cmd)
+            print "[{0} [return code: {1}] from command: {2}]".format(error_prefix, rcode,cmd)
         return rcode
 
 
@@ -78,11 +79,12 @@ def build_info(job_name):
     res["built_from_branch"] = "unknown"
     res["built_from_sha1"]   = "unknown"
     res["job_name"] = job_name
-    rc, out = sexe('git branch -a | grep \"*\"',ret_output=True)
+    res["platform"] = get_platform()
+    rc, out = sexe('git branch -a | grep \"*\"',ret_output=True,error_prefix="WARNING:")
     out = out.strip()
     if rc == 0 and out != "":
         res["built_from_branch"]  = out.split()[1]
-    rc,out = sexe('git rev-parse --verify HEAD',ret_output=True)
+    rc,out = sexe('git rev-parse --verify HEAD',ret_output=True,error_prefix="WARNING:")
     out = out.strip()
     if rc == 0 and out != "":
         res["built_from_sha1"] = out
@@ -102,6 +104,7 @@ def log_success(prefix, msg, timestamp=""):
     """
     info = {}
     info["prefix"] = prefix
+    info["platform"] = get_platform()
     info["status"] = "success"
     info["message"] = msg
     if timestamp == "":
@@ -116,6 +119,7 @@ def log_failure(prefix, msg, timestamp=""):
     """
     info = {}
     info["prefix"] = prefix
+    info["platform"] = get_platform()
     info["status"] = "failed"
     info["message"] = msg
     if timestamp == "":
@@ -204,8 +208,6 @@ def archive_tpl_logs(prefix, job_name, timestamp):
     tpl_build_dir = pjoin(prefix, timestamp)
 
     copy_if_exists(pjoin(tpl_build_dir, "info.json"), archive_dir)
-    copy_if_exists(pjoin(tpl_build_dir, "failed.json"), archive_dir)
-    copy_if_exists(pjoin(tpl_build_dir, "success.json"), archive_dir)
 
     build_and_test_root = get_build_and_test_root(tpl_build_dir, timestamp)
 
@@ -227,7 +229,9 @@ def archive_tpl_logs(prefix, job_name, timestamp):
             copy_if_exists(config_spec_logs[0], pjoin(archive_spec_dir, "output.log.config-build.txt"))
 
         # Find build dir for spec
-        build_dir_glob = pjoin(build_and_test_root, "build-*-%s" % (spec))
+        # Note: only compiler name/version is used in build directory not full spack spec
+        compiler = get_compiler_from_spec(spec)
+        build_dir_glob = pjoin(build_and_test_root, "build-*-%s" % (compiler))
         build_dirs = glob.glob(build_dir_glob)
         if len(build_dirs) > 0:
             build_dir = build_dirs[0]
@@ -243,7 +247,7 @@ def uberenv_create_mirror(prefix,mirror_path):
     Calls uberenv to create a spack mirror.
     """
     cmd = "python scripts/uberenv/uberenv.py --prefix %s --mirror %s --create-mirror " % (prefix,mirror_path)
-    return sexe(cmd,echo=True)
+    return sexe(cmd,echo=True,error_prefix="WARNING:")
 
 
 def uberenv_install_tpls(prefix,spec,mirror = None):
@@ -306,7 +310,7 @@ def build_and_test_host_config(test_root,host_config):
     # setup build and install dirs
     build_dir   = pjoin(test_root,"build-%s"   % host_config_root)
     install_dir = pjoin(test_root,"install-%s" % host_config_root)
-    print "[testing build, test, and install of host config file: %s]" % host_config
+    print "[Testing build, test, and install of host config file: %s]" % host_config
     print "[ build dir: %s]"   % build_dir
     print "[ install dir: %s]" % install_dir
 
@@ -319,7 +323,7 @@ def build_and_test_host_config(test_root,host_config):
                echo=True)
     
     if res != 0:
-        print "[ERROR: Configure for host-config: %s failed]" % host_config
+        print "[ERROR: Configure for host-config: %s failed]\n" % host_config
         return res
         
     ####
@@ -333,7 +337,7 @@ def build_and_test_host_config(test_root,host_config):
                 echo=True)
 
     if res != 0:
-        print "[ERROR: Build for host-config: %s failed]" % host_config
+        print "[ERROR: Build for host-config: %s failed]\n" % host_config
         return res
 
     tst_output_file = pjoin(build_dir,"output.log.make.test.txt")
@@ -347,7 +351,7 @@ def build_and_test_host_config(test_root,host_config):
                echo=True)
 
     if res != 0:
-        print "[ERROR: Tests for host-config: %s failed]" % host_config
+        print "[ERROR: Tests for host-config: %s failed]\n" % host_config
         return res
 
 
@@ -360,15 +364,15 @@ def build_and_test_host_config(test_root,host_config):
                echo=True)
 
     if res != 0:
-        print "[ERROR: Tests for host-config: %s failed]" % host_config
+        print "[ERROR: Install for host-config: %s failed]\n" % host_config
         return res
 
     # simple sanity check for make install
     print "[checking install dir %s]" % install_dir 
-    sexe("ls %s/include" % install_dir, echo=True)
-    sexe("ls %s/lib" %     install_dir, echo=True)
-    sexe("ls %s/bin" %     install_dir, echo=True)
-    print "[SUCCESS: Build, test, and install for host-config: %s complete]" % host_config
+    sexe("ls %s/include" % install_dir, echo=True, error_prefix="WARNING:")
+    sexe("ls %s/lib" %     install_dir, echo=True, error_prefix="WARNING:")
+    sexe("ls %s/bin" %     install_dir, echo=True, error_prefix="WARNING:")
+    print "[SUCCESS: Build, test, and install for host-config: %s complete]\n" % host_config
 
     set_axom_group_and_perms(build_dir)
     set_axom_group_and_perms(install_dir)
@@ -381,6 +385,10 @@ def build_and_test_host_configs(prefix, job_name, timestamp):
     if len(host_configs) == 0:
         log_failure(prefix,"[ERROR: No host configs found at %s]" % prefix)
         return 1
+    print "Found Host-configs:"
+    for host_config in host_configs:
+        print "    " + host_config
+    print "\n"
 
     test_root =  get_build_and_test_root(prefix, timestamp)
     os.mkdir(test_root)
@@ -430,19 +438,23 @@ def set_axom_group_and_perms(directory):
     print "[changing group and access perms of: %s]" % directory
     # change group to axomdev
     print "[changing group to axomdev]"
-    sexe("chgrp -f -R axomdev %s" % (directory),echo=True)
+    sexe("chgrp -f -R axomdev %s" % (directory),echo=True,error_prefix="WARNING:")
     # change group perms to rwX
     print "[changing perms for axomdev members to rwX]"
-    sexe("chmod -f -R g+rwX %s" % (directory),echo=True)
+    sexe("chmod -f -R g+rwX %s" % (directory),echo=True,error_prefix="WARNING:")
     # change perms for all to rX
     print "[changing perms for all users to rX]"
-    sexe("chmod -f -R a+rX %s" % (directory),echo=True)
+    sexe("chmod -f -R a+rX %s" % (directory),echo=True,error_prefix="WARNING:")
     print "[done setting perms for: %s]" % directory
     return 0
 
 
-def full_build_and_test_of_tpls(builds_dir, specs, job_name, timestamp):
-    print "[Building and testing tpls for specs: %s]" % str(specs)
+def full_build_and_test_of_tpls(builds_dir, job_name, timestamp):
+    specs = get_specs_for_current_machine()
+    print "[Building and testing tpls for specs: "
+    for spec in specs:
+        print "{0}".format(spec)
+    print "]\n"
 
     # Use shared network mirror location otherwise create local one
     mirror_dir = get_shared_tpl_mirror_dir()
@@ -468,15 +480,15 @@ def full_build_and_test_of_tpls(builds_dir, specs, job_name, timestamp):
             set_axom_group_and_perms(mirror_dir)
             return res
         else:
-            print "[SUCCESS: Finished build tpls for spec %s]" % spec
+            print "[SUCCESS: Finished build tpls for spec %s]\n" % spec
     # patch manual edits into host config files
     patch_host_configs(prefix)
     # build the axom against the new tpls
     res = build_and_test_host_configs(prefix, job_name, timestamp)
     if res != 0:
-        print "[ERROR: build and test of axom vs tpls test failed.]"
+        print "[ERROR: build and test of axom vs tpls test failed.]\n"
     else:
-        print "[SUCCESS: build and test of axom vs tpls test passed.]"
+        print "[SUCCESS: build and test of axom vs tpls test passed.]\n"
     # set proper perms for installed tpls
     set_axom_group_and_perms(prefix)
     # set proper perms for the mirror files
@@ -528,6 +540,8 @@ def get_machine_name():
 def get_system_type():
     return os.environ["SYS_TYPE"]
 
+def get_platform():
+    return get_system_type() if "SYS_TYPE" in os.environ else get_machine_name()
 
 def get_username():
     return getpass.getuser()
@@ -593,3 +607,11 @@ def on_rz():
     if machine_name.startswith("rz"):
         return True
     return False
+
+def get_compiler_from_spec(spec):
+    compiler = spec
+    for c in ['~', '+']:
+        index = compiler.find(c)
+        if index != -1: 
+            compiler = compiler[:index]
+    return compiler

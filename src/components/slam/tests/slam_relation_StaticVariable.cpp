@@ -30,7 +30,7 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/config.hpp"  // for AXOM_USE_BOOST
+#include "axom/config.hpp"  // for AXOM_USE_CXX11
 
 #include "slic/slic.hpp"
 
@@ -168,7 +168,7 @@ void traverseRelation_delayedSubscript(RelationType& rel)
     const PositionType fromSize = rel.size(fromPos);
     EXPECT_EQ( elementCardinality(fromPos), fromSize );
 
-    typename RelationType::RelationSet set = rel[fromPos];
+    typename RelationType::RelationSubset set = rel[fromPos];
     for(int toPos = 0 ; toPos < set.size() ; ++toPos)
     {
       PositionType actualVal = rel[fromPos][toPos];
@@ -180,14 +180,14 @@ void traverseRelation_delayedSubscript(RelationType& rel)
 /**
  * \brief Traverses relation using the iterator API (begin()/end() )
  *
- * \note The iterator API depends on boost
+ * \note The iterator API depends on C++11
  * \note Assumes that the relation data has been set
  * using the generateIncrementingRelations() function
  */
 template<typename RelationType>
 void iterateRelation_begin_end(RelationType& rel)
 {
-#ifdef AXOM_USE_BOOST
+#ifdef AXOM_USE_CXX11
   typedef typename RelationType::FromSetType FromSet;
   typedef typename FromSet::iterator FromSetIter;
 
@@ -212,21 +212,21 @@ void iterateRelation_begin_end(RelationType& rel)
   }
 #else
   AXOM_DEBUG_VAR(rel);
-  SLIC_INFO("Skipping iterator tests when boost unavailable");
+  SLIC_INFO("Skipping iterator tests when not using C++11");
 #endif
 }
 
 /**
  * \brief Traverses relation using the iterator range API
  *
- * \note The iterator API depends on boost
+ * \note The iterator API depends on C++11
  * \note Assumes that the relation data has been set
  * using the generateIncrementingRelations() function
  */
 template<typename RelationType>
 void iterateRelation_range(RelationType& rel)
 {
-#ifdef AXOM_USE_BOOST
+#ifdef AXOM_USE_CXX11
   typedef typename RelationType::FromSetType FromSet;
   typedef typename FromSet::iterator FromSetIter;
   typedef typename FromSet::iterator_pair FromSetIterPair;
@@ -250,7 +250,7 @@ void iterateRelation_range(RelationType& rel)
   }
 #else
   AXOM_DEBUG_VAR(rel);
-  SLIC_INFO("Skipping iterator tests when boost unavailable");
+  SLIC_INFO("Skipping iterator tests when not using C++11");
 #endif
 }
 

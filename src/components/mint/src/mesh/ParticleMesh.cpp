@@ -14,37 +14,106 @@
  *
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-
 #include "mint/ParticleMesh.hpp"
-#include "axom/Types.hpp"
+
+#include "axom/Macros.hpp"
+
+#include "mint/config.hpp"          // for compile-time type definitions
+#include "mint/MeshCoordinates.hpp" // for mint::MeshCoordinates class
+#include "mint/blueprint.hpp"       // for mint::blueprint() functions
+
+#include "mint/MeshHelpers.hpp"     // for internal helper methods
 
 namespace axom
 {
 namespace mint
 {
 
-ParticleMesh::ParticleMesh( ) :
-  Mesh( -1, MINT_UNDEFINED_MESH, -1, -1 ),
-  m_particle_coordinates( AXOM_NULLPTR )
-{}
+//------------------------------------------------------------------------------
+ParticleMesh::ParticleMesh( int dimension, IndexType numParticles,
+                            IndexType capacity ) :
+  Mesh( dimension, PARTICLE_MESH ),
+  m_positions( new MeshCoordinates(dimension, numParticles, capacity) )
+{
+  initialize( );
+}
 
 //------------------------------------------------------------------------------
-ParticleMesh::ParticleMesh( int dimension ) :
-  Mesh( dimension, MINT_PARTICLE_MESH, 0, 0 ),
-  m_particle_coordinates( new MeshCoordinates(dimension) )
-{}
+ParticleMesh::ParticleMesh( IndexType numParticles,
+                            double* x, double* y, double* z ) :
+  Mesh( internal::dim( x, y, z ), PARTICLE_MESH ),
+  m_positions( new MeshCoordinates( numParticles, numParticles, x, y, z ) )
+{
+  initialize( );
+}
 
 //------------------------------------------------------------------------------
-ParticleMesh::ParticleMesh( int dimension, int blockId, int partId ) :
-  Mesh( dimension, MINT_PARTICLE_MESH, blockId, partId ),
-  m_particle_coordinates( new MeshCoordinates(dimension) )
+#ifdef MINT_USE_SIDRE
+
+ParticleMesh::ParticleMesh( sidre::Group* group,
+                            const std::string& topo ) :
+  Mesh( group, topo ),
+  m_positions( new MeshCoordinates( getCoordsetGroup() ) )
+{
+  SLIC_ERROR_IF( m_type != PARTICLE_MESH,
+                 "supplied Sidre group does not correspond to a ParticleMesh" );
+
+  initialize( );
+}
+
+//------------------------------------------------------------------------------
+ParticleMesh::ParticleMesh( int dimension, IndexType numParticles,
+                            sidre::Group* group,
+                            const std::string& topo,
+                            const std::string& coordset,
+                            IndexType capacity ) :
+  Mesh( dimension, PARTICLE_MESH, group, topo, coordset ),
+  m_positions( AXOM_NULLPTR )
+{
+  blueprint::initializeTopologyGroup( m_group, m_topology, m_coordset,
+                                      "points" );
+
+  SLIC_ERROR_IF( !blueprint::isValidTopologyGroup( getTopologyGroup() ),
+                 "invalid topology group!" );
+
+  m_positions = new MeshCoordinates( getCoordsetGroup(), dimension,
+                                     numParticles, capacity );
+
+  initialize( );
+}
+
+//------------------------------------------------------------------------------
+ParticleMesh::ParticleMesh( int dimension, IndexType numParticles,
+                            sidre::Group* group, IndexType capacity ) :
+  ParticleMesh(dimension, numParticles, group, "", "",capacity )
 {}
+
+#endif
+
+//------------------------------------------------------------------------------
+void ParticleMesh::initialize( )
+{
+  SLIC_ASSERT( m_positions != AXOM_NULLPTR );
+
+  m_mesh_fields[ NODE_CENTERED ]->reserve( getNodeCapacity() );
+  m_mesh_fields[ NODE_CENTERED ]->resize( getNumberOfNodes() );
+  m_explicit_coords       = true;
+  m_explicit_connectivity = false;
+  m_has_mixed_topology    = false;
+}
 
 //------------------------------------------------------------------------------
 ParticleMesh::~ParticleMesh()
 {
-  delete m_particle_coordinates;
-  m_particle_coordinates = AXOM_NULLPTR;
+  delete m_positions;
+  m_positions = AXOM_NULLPTR;
+}
+
+//------------------------------------------------------------------------------
+bool ParticleMesh::checkConsistency()
+{
+  return m_mesh_fields[ NODE_CENTERED ]->checkConsistency( getNumberOfNodes(),
+                                                           getNodeCapacity() );
 }
 
 } /* namespace mint */

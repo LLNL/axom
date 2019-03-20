@@ -1,5 +1,0 @@
-PROJECT_NAME  = Spio
-PROJECT_BRIEF = "Sidre Parallel Input/Output"
-INPUT = @PROJECT_SOURCE_DIR@/src
-GENERATE_XML = YES
-EXTENSION_MAPPING = f=FortranFree

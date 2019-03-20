@@ -68,7 +68,7 @@ public:
       BeginsSizePolicy,
       policies::RuntimeOffset<SetPosition>,
       policies::StrideOne<SetPosition>,
-      IndicesIndirectionPolicy >                  RelationSet;
+      IndicesIndirectionPolicy >                  RelationSubset;
 
 
   typedef OrderedSet<
@@ -80,13 +80,13 @@ public:
   typedef typename
     IndicesIndirectionPolicy::IndirectionBufferType IndirectionBufferType;
 
-#ifdef AXOM_USE_BOOST
-  typedef typename RelationSet::iterator RelationIterator;
-  typedef typename RelationSet::iterator_pair RelationIteratorPair;
+#ifdef AXOM_USE_CXX11
+  typedef typename RelationSubset::iterator RelationIterator;
+  typedef typename RelationSubset::iterator_pair RelationIteratorPair;
 
-  typedef typename RelationSet::const_iterator RelationConstIterator;
-  typedef typename RelationSet::const_iterator_pair RelationConstIteratorPair;
-#endif // AXOM_USE_BOOST
+  typedef typename RelationSubset::const_iterator RelationConstIterator;
+  typedef typename RelationSubset::const_iterator_pair RelationConstIteratorPair;
+#endif // AXOM_USE_CXX11
 
 public:
   struct RelationBuilder;
@@ -166,11 +166,11 @@ private:
 
 public:
 
-  const RelationSet operator[](SetPosition fromSetInd ) const
+  const RelationSubset operator[](SetPosition fromSetInd ) const
   {
     SLIC_ASSERT( m_relationIndices.isValid(true) );
 
-    typedef typename RelationSet::SetBuilder SetBuilder;
+    typedef typename RelationSubset::SetBuilder SetBuilder;
     return SetBuilder()
            .size( CardinalityPolicy::size( fromSetInd ) )
            .offset ( CardinalityPolicy::offset( fromSetInd ))
@@ -178,11 +178,11 @@ public:
     ;
   }
 
-  RelationSet operator[](SetPosition fromSetInd )
+  RelationSubset operator[](SetPosition fromSetInd )
   {
     SLIC_ASSERT( m_relationIndices.isValid(true) );
 
-    typedef typename RelationSet::SetBuilder SetBuilder;
+    typedef typename RelationSubset::SetBuilder SetBuilder;
     return SetBuilder()
            .size( CardinalityPolicy::size( fromSetInd ) )
            .offset ( CardinalityPolicy::offset( fromSetInd ))
@@ -193,7 +193,7 @@ public:
   bool              isValid(bool verboseOutput = false) const;
 
 
-#ifdef AXOM_USE_BOOST
+#ifdef AXOM_USE_CXX11
   RelationIterator  begin(SetPosition fromSetInd )
   {
     return (*this)[fromSetInd].begin();
@@ -224,7 +224,7 @@ public:
   {
     return (*this)[fromSetInd].range();
   }
-#endif // AXOM_USE_BOOST
+#endif // AXOM_USE_CXX11
 
 
   bool                hasFromSet() const

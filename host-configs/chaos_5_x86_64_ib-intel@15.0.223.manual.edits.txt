@@ -21,6 +21,13 @@
 
 set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 
+# Set flags for intel to use a gcc standard library with C++11
+set(GNU_PREFIX           "/usr/apps/gnu/4.9.3")
+set(BLT_C_FLAGS          "-gnu-prefix=${GNU_PREFIX}/bin/" CACHE STRING "")
+set(BLT_CXX_FLAGS        "-gnu-prefix=${GNU_PREFIX}/bin/" CACHE STRING "")
+set(BLT_FORTRAN_FLAGS    "-gnu-prefix=${GNU_PREFIX}/bin/" CACHE STRING "")
+set(BLT_EXE_LINKER_FLAGS "-Wl,-rpath,${GNU_PREFIX}/lib64" CACHE STRING "")
+
 ##############################################################################
 # MPI - manually added for now
 ##############################################################################

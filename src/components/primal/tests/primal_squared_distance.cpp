@@ -25,6 +25,45 @@
 using namespace axom;
 
 //------------------------------------------------------------------------------
+TEST( primal_squared_distance, array_to_array )
+{
+  double A[5];
+  double B[5];
+  int N;
+  double d, expect_d;
+
+  {
+    SCOPED_TRACE("1D");
+    A[0] = 3.25;
+    B[0] = 6.6;
+    N = 1;
+    expect_d = 11.2225;
+    d = primal::squared_distance(A, B, N);
+    EXPECT_DOUBLE_EQ(d, expect_d);
+  }
+
+  {
+    SCOPED_TRACE("2D");
+    A[0] = 0; A[1] = 0;
+    B[0] = 1.5; B[1] = 1.5;
+    N = 2;
+    expect_d = 4.5;
+    d = primal::squared_distance(A, B, N);
+    EXPECT_DOUBLE_EQ(d, expect_d);
+  }
+
+  {
+    SCOPED_TRACE("3D");
+    A[0] = 6; A[1] = 2.3; A[2] = -1;
+    B[0] = 8; B[1] = 1.5; B[2] = 0;
+    N = 3;
+    expect_d = 5.64;
+    d = primal::squared_distance(A, B, N);
+    EXPECT_DOUBLE_EQ(d, expect_d);
+  }
+}
+
+//------------------------------------------------------------------------------
 TEST( primal_squared_distance, point_to_point )
 {
   primal::Point< double,

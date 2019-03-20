@@ -24,6 +24,8 @@ options:
   C_line_length: 1000
   F_module_name_library_template: axom_{library_lower}
 #  F_module_per_class: False
+  # Change the default template for Fortran functions to include the library name.
+  F_name_impl_template: "{library_lower}_{class_prefix}{underscore_name}{function_suffix}"
 
 format:
   C_prefix: SLIC_
@@ -32,32 +34,29 @@ format:
   # for the result.
   F_string_result_as_arg: name
 
-  
 ######################################################################
 
-types:
-  Level:
-    # enum
-    typedef  : int
-    cxx_type : message::Level
-    c_to_cxx : static_cast<message::Level>({c_var})
-    cxx_to_c : static_cast<int>({cxx_var})
+declarations:
+- decl: namespace message
+  # MessageLevel.h
+  declarations:
+  - decl: |
+        enum Level
+        {
+          Error,
+          Warning,
+          Info,
+          Debug,
+          Num_Levels
+        };
 
-
-######################################################################
-
-functions:
-- options:
-    # Change the default template for Fortran functions to include the library name.
-    F_name_impl_template: "{library_lower}_{class_prefix}{underscore_name}{function_suffix}"
 - decl: void initialize()
 - decl: bool isInitialized()
-- decl: void finalize()
 
 - decl: void createLogger( const std::string& name, char imask )
 - decl: bool activateLogger( const std::string& name )
 - decl: std::string getActiveLoggerName()
-- decl: void setLoggingMsgLevel( Level level )
+- decl: void setLoggingMsgLevel( message::Level level )
 
 - decl: void setAbortOnError( bool status )
 - decl: void enableAbortOnError()
@@ -69,5 +68,10 @@ functions:
 - decl: void disableAbortOnWarning()
 - decl: bool isAbortOnWarningsEnabled()
 
-- decl: void logMessage( Level level, const std::string& message, const std::string& fileName, int line, bool filter )
+- decl: void logMessage( message::Level level,
+                         const std::string& message,
+                         const std::string& fileName,
+                         int line,
+                         bool filter )
+- decl: void finalize()
   

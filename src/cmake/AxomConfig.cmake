@@ -30,7 +30,7 @@ endif()
 ## Note: BLT adds USE_MPI and USE_OPENMP as compile define flags for targets
 ##       that are configured with MPI and OPENMP, respectively.
 
-set(TPL_DEPS CONDUIT HDF5 SPARSEHASH FMT BOOST MPI MFEM SCR)  # vars of the form DEP_FOUND
+set(TPL_DEPS CONDUIT HDF5 SPARSEHASH FMT MPI MFEM SCR)  # vars of the form DEP_FOUND
 foreach(dep in ${TPL_DEPS})
     if( ${dep}_FOUND OR ENABLE_${dep} )
         set(AXOM_USE_${dep} TRUE  )
@@ -58,9 +58,8 @@ endif()
 
 
 ## Add a configuration define for each enabled axom component
-set(COMPS AXOM_UTILS LUMBERJACK SLIC SLAM SIDRE MINT PRIMAL QUEST)
-foreach(comp in ${COMPS})
-    if( ENABLE_${comp} )
+foreach(comp in ${AXOM_COMPONENTS_FULL})
+    if( AXOM_ENABLE_${comp} )
         set(AXOM_USE_${comp} TRUE)
     endif()
 endforeach()

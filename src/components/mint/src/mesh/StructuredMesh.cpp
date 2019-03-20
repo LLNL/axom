@@ -14,44 +14,91 @@
  *
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
-
 #include "mint/StructuredMesh.hpp"
-#include "mint/MeshType.hpp"
-#include "slic/slic.hpp"
+
+#include "mint/MeshTypes.hpp"
 
 namespace axom
 {
 namespace mint
 {
 
-StructuredMesh::StructuredMesh() :
-  Mesh(-1,MINT_UNDEFINED_MESH,-1,-1),
-  m_extent( AXOM_NULLPTR )
+//------------------------------------------------------------------------------
+// HELPER METHODS
+//------------------------------------------------------------------------------
+namespace
 {
-// TODO Auto-generated constructor stub
 
+bool validStructuredMeshType( int type )
+{
+  return ( (type==STRUCTURED_CURVILINEAR_MESH) ||
+           (type==STRUCTURED_RECTILINEAR_MESH) ||
+           (type==STRUCTURED_UNIFORM_MESH)
+           );
+}
+
+} /* end anonymous namespace */
+
+//------------------------------------------------------------------------------
+// IMPLEMENTATION
+//------------------------------------------------------------------------------
+StructuredMesh::StructuredMesh( int meshType, int dimension, const int64* ext) :
+  Mesh( dimension, meshType ),
+  m_extent( new Extent(dimension, ext) )
+{
+  SLIC_ERROR_IF( !validStructuredMeshType( m_type ),
+                 "invalid structured mesh type!" );
+  initializeFields();
 }
 
 //------------------------------------------------------------------------------
-StructuredMesh::StructuredMesh( int meshType, int ndims, const int ext[ 6 ]) :
-  Mesh( ndims, meshType, 0, 0 ),
-  m_extent( new Extent< int >( ndims, ext ) )
-{}
+StructuredMesh::StructuredMesh( int meshType, int dimension ) :
+  Mesh( dimension, meshType ),
+  m_extent( AXOM_NULLPTR )
+{
+  SLIC_ERROR_IF( !validStructuredMeshType( m_type ),
+                 "invalid structured mesh type!" );
+}
 
 //------------------------------------------------------------------------------
-StructuredMesh::StructuredMesh( int meshType, int ndims, const int ext[ 6 ],
-                                int blockId, int partId) :
-  Mesh( ndims, meshType, blockId, partId ),
-  m_extent( new Extent< int >( ndims, ext ) )
-
-{}
-
-//------------------------------------------------------------------------------
-StructuredMesh::~StructuredMesh()
+StructuredMesh::~StructuredMesh( )
 {
   delete m_extent;
   m_extent = AXOM_NULLPTR;
 }
 
-} /* namespace mint */
-} /* namespace axom */
+//------------------------------------------------------------------------------
+void StructuredMesh::initializeFields()
+{
+  SLIC_ERROR_IF( m_extent==AXOM_NULLPTR, "null extent for mesh!" );
+
+  m_mesh_fields[ NODE_CENTERED ]->setResizeRatio( 1.0 );
+  m_mesh_fields[ CELL_CENTERED ]->setResizeRatio( 1.0 );
+  m_mesh_fields[ FACE_CENTERED ]->setResizeRatio( 1.0 );
+  m_mesh_fields[ EDGE_CENTERED ]->setResizeRatio( 1.0 );
+
+  m_mesh_fields[ NODE_CENTERED ]->resize( getNumberOfNodes() );
+  m_mesh_fields[ CELL_CENTERED ]->resize( getNumberOfCells() );
+}
+
+#ifdef MINT_USE_SIDRE
+
+//------------------------------------------------------------------------------
+StructuredMesh::StructuredMesh( sidre::Group* group, const std::string& topo ) :
+  Mesh( group, topo ),
+  m_extent( AXOM_NULLPTR )
+{}
+
+//------------------------------------------------------------------------------
+StructuredMesh::StructuredMesh( int meshType, int dimension,
+                                sidre::Group* group,
+                                const std::string& topo,
+                                const std::string& coordset ) :
+  Mesh( dimension, meshType, group, topo, coordset ),
+  m_extent( AXOM_NULLPTR )
+{}
+
+#endif
+
+}   /* end namespace mint */
+}   /* end namespace axom */

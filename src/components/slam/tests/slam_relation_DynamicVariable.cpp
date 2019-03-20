@@ -16,7 +16,7 @@
  */
 
 /**
- * \file testDynamicVariableRelation.cpp
+ * \file slam_relation_DynamicVariable.cpp
  *
  * \brief Unit tests for Slam's DynamicVariableRelation class
  */
@@ -27,7 +27,7 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/config.hpp"        // for AXOM_USE_BOOST
+#include "axom/config.hpp"        // for AXOM_USE_CXX11
 
 #include "slic/slic.hpp"
 
@@ -176,7 +176,7 @@ TEST(slam_relation_dynamic_variable,iterate_relation)
   }
 
   SLIC_INFO(".. access via iterators.");
-#ifdef AXOM_USE_BOOST
+#ifdef AXOM_USE_CXX11
   {
     typedef RangeSet::iterator SetIter;
     typedef DynamicVariableRelation::RelationVecConstIterator RelSetConstIter;
@@ -225,10 +225,9 @@ TEST(slam_relation_dynamic_variable,iterate_relation)
     }
   }
 #else
-  SLIC_WARNING("Must compile with boost enabled to test iterators");
+  SLIC_INFO("Skipping iterator tests when not using C++11");
 #endif
 }
-
 
 
 //----------------------------------------------------------------------
@@ -238,14 +237,13 @@ using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])
 {
-  int result = 0;
-
   ::testing::InitGoogleTest(&argc, argv);
 
   // create & initialize test logger. finalized when exiting main scope
   UnitTestLogger logger;
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Info);
 
-  result = RUN_ALL_TESTS();
+  int result = RUN_ALL_TESTS();
 
   return result;
 }

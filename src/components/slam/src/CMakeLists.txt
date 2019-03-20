@@ -36,15 +36,21 @@ set(slam_headers
     OrderedSet.hpp
     RangeSet.hpp
     #ProductSet.hpp
+    DynamicSet.hpp
     Set.hpp
+    BitSet.hpp
+    internal/BitTwiddle.hpp
 
     # SRM Relation headers
     Relation.hpp
     StaticRelation.hpp
     DynamicVariableRelation.hpp
+    DynamicConstantRelation.hpp
 
     # SRM Map headers
     Map.hpp
+    MapBase.hpp
+    DynamicMap.hpp
     )
 
 set(slam_sources
@@ -64,19 +70,11 @@ set(slam_sources
     )
 
 
-#get_source_file_property(_origflags StaticVariableRelation.hpp COMPILE_FLAGS)
-#set_source_files_properties(${slam_headers} "${_origflags} -fwhole-program -funroll-loops ")
-#set_source_files_properties(${slam_sources} "${_origflags} -fwhole-program -funroll-loops ")
-
-
 ####################################
 # make the library
 ####################################
 
 set(slam_depends_on axom_utils slic)
-if (BOOST_FOUND)
-    list(APPEND slam_depends_on boost)
-endif()
 
 blt_add_library(
     NAME        slam

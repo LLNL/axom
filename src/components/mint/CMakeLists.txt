@@ -13,6 +13,19 @@
 #------------------------------------------------------------------------------
 
 ################################
+# Check necessary dependencies
+################################
+axom_component_requires(NAME       Mint
+                        COMPONENTS Axom_utils SLIC)
+
+################################
+# Add mint options
+################################
+option( AXOM_MINT_USE_64BIT_INDEXTYPE "Use 64-bit indices for Mint" OFF )
+cmake_dependent_option( AXOM_MINT_USE_SIDRE "Enables Sidre support in Mint" ON
+                       "AXOM_ENABLE_SIDRE" OFF)
+
+################################
 # Add mint sources
 ################################
 add_subdirectory(src)
@@ -20,21 +33,21 @@ add_subdirectory(src)
 ################################
 # Add examples
 ################################
-if (ENABLE_EXAMPLES)
+if (AXOM_ENABLE_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
 ################################
 # Add tests
 ################################
-if (ENABLE_TESTS)
+if (AXOM_ENABLE_TESTS)
   add_subdirectory(tests)
 endif()
 
 ################################
 # Add docs
 ################################
-if (ENABLE_DOCS)
+if (AXOM_ENABLE_DOCS)
   add_subdirectory(docs)
 endif()
 

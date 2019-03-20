@@ -27,22 +27,13 @@
 #ifndef SLAM_ORDERED_SET_H_
 #define SLAM_ORDERED_SET_H_
 
-#include <cstddef>
-#include <vector>
+#include "axom/config.hpp"   // for AXOM_USE_CXX11
 
-#include "axom/config.hpp"   // for AXOM_USE_BOOST
-
-#ifdef AXOM_USE_BOOST
-  #include <boost/iterator/iterator_facade.hpp>
-  #include <boost/utility/enable_if.hpp>
-  #include <boost/type_traits.hpp>
-#endif // AXOM_USE_BOOST
 
 #include "axom/Types.hpp" // for AXOM_NULLPTR
 #include "slic/slic.hpp"
 
 #include "slam/Set.hpp"
-#include "slam/NullSet.hpp"
 
 #include "slam/SizePolicies.hpp"
 #include "slam/OffsetPolicies.hpp"
@@ -51,6 +42,13 @@
 #include "slam/SubsettingPolicies.hpp"
 #include "slam/ModularInt.hpp"
 
+#ifdef AXOM_USE_CXX11
+    #include <type_traits>
+#endif
+
+#include <cstddef>
+#include <vector>
+#include <iterator>
 
 namespace axom
 {
@@ -97,7 +95,7 @@ public:
 
   struct SetBuilder;
 
-#ifdef AXOM_USE_BOOST
+#ifdef AXOM_USE_CXX11
   template<typename OrderedSetType> class OrderedSetIterator;
 
   typedef OrderedSetIterator<const OrderedSet>      const_iterator;
@@ -105,7 +103,7 @@ public:
 
   typedef const_iterator iterator;
   typedef const_iterator_pair iterator_pair;
-#endif // AXOM_USE_BOOST
+#endif // AXOM_USE_CXX11
 
 public:
   OrderedSet(PositionType size    = SizePolicyType::DEFAULT_VALUE,
@@ -205,7 +203,7 @@ private:
     SubsettingPolicyType m_parent;
   };
 
-#ifdef AXOM_USE_BOOST
+#ifdef AXOM_USE_CXX11
   /**
    * \class OrderedSetIterator
    * \brief An iterator type for an ordered set
@@ -213,12 +211,11 @@ private:
    * Uses the set's policies for efficient iteration
    */
   template<typename OrderedSet>
-  class OrderedSetIterator : public boost::iterator_facade<
-      OrderedSetIterator<OrderedSet>,
-      typename OrderedSet::ElementType,
+  class OrderedSetIterator : public std::iterator <
       std::random_access_iterator_tag,
       typename OrderedSet::ElementType,
-      typename OrderedSet::PositionType >
+      typename OrderedSet::PositionType
+      >
   {
 public:
     typedef OrderedSetIterator<OrderedSet>              iter;
@@ -234,33 +231,66 @@ public:
       : m_pos(pos), m_orderedSet(oSet) {}
 
 
-    const ElementType & dereference()    const {
+    const ElementType & operator*()    const {
       // Note: Since we return a reference to the pointed-to value, we need
       // different functions
       //       for OrderedSets with indirection buffers than with those that
       // have no indirection
       typedef policies::
         NoIndirection<PositionType,ElementType> NoIndirectionType;
-      return indirection( HasIndirection<
-                            !boost::is_same<IndirectionType,
-                                            NoIndirectionType>::value >(), 0);
+      return indirection(
+        HasIndirection<!std::is_same<IndirectionType,
+                                     NoIndirectionType>::value >(), 0);
     }
 
-
-    bool equal(const iter& other) const
+    bool operator==(const iter& other) const
     {
       return (m_pos == other.m_pos);
     }
 
-    void increment() { advance(1); }
-    void decrement() { advance(-1); }
-    void advance(PositionType n) { m_pos += n * stride(); }
-    const PositionType distance_to(const iter& other) const
+    bool operator!=(const iter& other) const
     {
-      return (other.m_pos - m_pos) / stride();
+      return !operator==(other);
+    }
+
+    bool operator<(const iter& other) const
+    {
+      return m_pos < other.m_pos;
+    }
+
+    iter& operator++()    { advance(1); return *this; }
+    iter operator++(int) { iter ret = *this; advance(1); return ret; }
+    iter& operator--()    { advance(-1); return *this; }
+    iter operator--(int) { iter ret = *this; advance(-1); return ret; }
+
+    iter& operator+=(PositionType n)    { advance(n); return *this; }
+    iter& operator-=(PositionType n)    { advance(-n); return *this; }
+
+    iter operator+(PositionType n) const
+    {
+      iter ret = *this; ret.advance(n);
+      return ret;
+    }
+
+    iter operator-(PositionType n) const
+    {
+      iter ret = *this; ret.advance(-n);
+      return ret;
+    }
+
+    ElementType operator[](PositionType n) const
+    {
+      return *(this->operator+(n));
+    }
+
+    friend PositionType operator-(const iter& a, const iter& b)
+    {
+      return (a.m_pos - b.m_pos)/ a.stride();
     }
 
 private:
+    void advance(PositionType n) { m_pos += n * stride(); }
+
     inline const PositionType stride() const
     {
       return m_orderedSet.StrideType::stride();
@@ -281,7 +311,6 @@ private:
     }
 
 private:
-    friend class boost::iterator_core_access;
 
     PositionType m_pos;
     OrderedSet m_orderedSet;
@@ -300,7 +329,7 @@ public:     // Functions related to iteration
                            + OffsetPolicyType::offset());
   }
   const_iterator_pair range() const { return std::make_pair(begin(), end()); }
-#endif // AXOM_USE_BOOST
+#endif // AXOM_USE_CXX11
 
 public:
   /**
@@ -369,9 +398,11 @@ bool OrderedSet<SizePolicy,OffsetPolicy, StridePolicy, IndirectionPolicy,
   bool bValid =  SizePolicyType::isValid(verboseOutput)
                 && OffsetPolicyType::isValid(verboseOutput)
                 && StridePolicyType::isValid(verboseOutput)
-                && IndirectionPolicyType::isValid(
-    size(), OffsetPolicy::offset(), StridePolicy::stride(), verboseOutput)
-#ifdef AXOM_USE_BOOST
+                && IndirectionPolicyType::isValid(size(),
+                                                  OffsetPolicy::offset(),
+                                                  StridePolicy::stride(),
+                                                  verboseOutput)
+#ifdef AXOM_USE_CXX11
                 && SubsettingPolicyType::isValid(begin(), end(), verboseOutput)
 #endif
   ;

@@ -23,31 +23,28 @@ set(gtest_slam_tests
     slam_set_PositionSet.cpp
     slam_set_RangeSet.cpp
     slam_set_IndirectionSet.cpp
+    slam_set_BitSet.cpp
+    slam_set_DynamicSet.cpp
 
     # test relations
-    slam_relation_DynamicVariable.cpp
     slam_relation_StaticVariable.cpp
     slam_relation_StaticConstant.cpp
+    slam_relation_DynamicVariable.cpp
+    slam_relation_DynamicConstant.cpp
 
     # test maps
     slam_Map.cpp
+    slam_map_DynamicMap.cpp
 
     # test integration of sets, relations and maps
     slam_AccessingRelationDataInMap.cpp
 
     # aux tests
     slam_ModularInt.cpp
-
     )
 
 
-# blt_add_executable depends_on handles our include dir settings
-# these teste are using boost so boost needs to be a dep
 set(slam_tests_depends_on axom_utils slic slam gtest)
-if (BOOST_FOUND)
-    list(APPEND slam_tests_depends_on boost)
-endif()
-
 
 #
 # Add gtest based tests

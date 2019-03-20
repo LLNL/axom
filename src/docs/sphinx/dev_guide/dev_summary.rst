@@ -21,15 +21,16 @@ topics and includes links to more detailed discussion.
 
 
 ======================================================
-Development and Release Cycles
+Software Development Cycles
 ======================================================
 
 The Axom team uses a sprint-based development process. We collect
-and track issues (bugs, feature requests, tasks, etc.) and then target a 
-set of development tasks (i.e., issues) to complete for each quarterly 
-(3 month) release cycle. Within this time frame, developers of 
-individual Axom components may plan and schedule work in any way that works 
-for them. However, work performed in each release cycle is tracked 
+and track issues (bugs, feature requests, tasks, etc.) using ``JIRA``
+and define a set of development tasks (i.e., issues) to complete for each 
+sprint. While the team meets to discuss issues and plan which ones will be 
+worked in each sprint, developers of individual Axom components may plan and 
+schedule work in any way that works for them as long as this is coordinated
+with other team efforts. Work performed in each sprint work period is tracked 
 as a single unified sprint encompassing activities for the entire project.
 
 See :ref:`jira-label` for more information about how we do issue tracking
@@ -37,8 +38,14 @@ and release planning.
 
 
 ======================================================
-Release Version Numbers
+Software Releases and Version Numbers
 ======================================================
+
+Typically, Axom releases are done when it makes sense to make new features
+or other changes available to users. A release may coincide with the completion
+of a sprint cycle or it may not.
+
+See :ref:`release-label` for a description of the Axom release process.
 
 The Axom team follows the **semantic versioning** scheme for assigning
 release numbers. Semantic versioning conveys specific meaning about 
@@ -52,12 +59,13 @@ See :ref:`semver-label` for a description of semantic versioning.
 Branch Development
 ======================================================
 
-The Axom team follows the **Gitflow** branching model for software development 
-and reviews. Gitflow is a common workflow centered around software releases. 
-It makes clear which branches correspond to which phases of development and 
-those phases are represented explicitly in the structure of the source code 
-repository. As in other branching models, developers develop code locally 
-and push their work to a central repository.
+The Axom project has a ``CZ Bitbucket`` project space and the team follows 
+the **Gitflow** branching model for software development and reviews. Gitflow 
+is a common workflow centered around software releases. It makes clear which 
+branches correspond to which phases of development and those phases are 
+represented explicitly in the structure of the source code repository. As 
+in other branching models, developers develop code locally and push their 
+work to a central repository.
 
 See :ref:`gitflow-label` for a detailed description of how we use Gitflow.
 

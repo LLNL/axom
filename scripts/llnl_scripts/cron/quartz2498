@@ -1,0 +1,14 @@
+MAILTO=""
+################################################################################
+# DO NOT EDIT this crontab directly.  
+# Instead update the corresponding file in axom's git repo, it will update automatically by Bamboo
+################################################################################
+
+30 * * * * /usr/bin/ssh cab687-pub /usr/global/tools/bamboo/agents/atk/axom-cab687-atk-1/bin/bamboo-agent.sh start
+30 * * * * /usr/bin/ssh cab690-pub /usr/global/tools/bamboo/agents/atk/axom-cab690-atk-1/bin/bamboo-agent.sh start
+30 * * * * /usr/bin/ssh quartz1538 /usr/global/tools/bamboo/agents/atk/axom-quartz1538-atk-1/bin/bamboo-agent.sh start
+30 * * * * /usr/bin/ssh quartz2498 /usr/global/tools/bamboo/agents/atk/axom-quartz2498-atk-1/bin/bamboo-agent.sh start
+30 * * * * /usr/bin/ssh ray23-pub /usr/global/tools/bamboo/agents/atk/axom-ray23-atk-1/bin/bamboo-agent.sh start
+30 * * * * /usr/bin/ssh ray23-pub /usr/global/tools/bamboo/agents/atk/axom-ray23-atk-2/bin/bamboo-agent.sh start
+30 * * * * /usr/bin/ssh vulcanlac3 /usr/global/tools/bamboo/agents/atk/axom-vulcanlac3-atk-1/bin/bamboo-agent.sh start
+30 * * * * /usr/bin/ssh vulcanlac4 /usr/global/tools/bamboo/agents/atk/axom-vulcanlac4-atk-1/bin/bamboo-agent.sh start

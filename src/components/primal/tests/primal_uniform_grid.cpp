@@ -24,7 +24,7 @@
 #include "primal/UniformGrid.hpp"
 
 //-----------------------------------------------------------------------------
-TEST( primal_uniform_grid, bbox_constructor)
+TEST( primal_uniform_grid, array_constructor)
 {
   const int DIM = 3;
 
@@ -35,6 +35,23 @@ TEST( primal_uniform_grid, bbox_constructor)
 
   axom::primal::UniformGrid< int, DIM > valid(p_min, p_max, res);
   EXPECT_EQ(valid.getNumBins(),  resolution * resolution * resolution);
+  EXPECT_TRUE(valid.isBinEmpty(0));
+
+}
+
+TEST( primal_uniform_grid, bbox_constructor)
+{
+  const int DIM = 3;
+  typedef double CoordType;
+  typedef axom::primal::Point< CoordType, DIM > QPoint;
+
+  QPoint pmax = QPoint::make_point(4, 2, 3);
+  QPoint pmin = QPoint::make_point(6, 8, 6);
+  int res[DIM] = {2, 3, 4};
+
+  axom::primal::BoundingBox< double, DIM > theBbox(pmin, pmax);
+  axom::primal::UniformGrid< int, DIM > valid(theBbox, res);
+  EXPECT_EQ(valid.getNumBins(),  res[0] * res[1] * res[2]);
   EXPECT_TRUE(valid.isBinEmpty(0));
 
 }
@@ -89,7 +106,7 @@ TEST( primal_uniform_grid, indexing)
   EXPECT_EQ(expectedBin, valid.getBinIndex(pt5));
 
   // A point on the max-x plane
-  QPoint pt6 = QPoint::make_point(100., 55., 62.);
+  QPoint pt6 = QPoint::make_point(100., 55.5, 62.2);
   expectedBin = 62*100*100 + 55*100 + 99;
   EXPECT_EQ(expectedBin, valid.getBinIndex(pt6));
   // A point on the max-y plane
@@ -101,7 +118,7 @@ TEST( primal_uniform_grid, indexing)
   expectedBin = 99*100*100 + 1*100 + 45;
   EXPECT_EQ(expectedBin, valid.getBinIndex(pt8));
   // A point on the max-xy edge
-  QPoint pt9 = QPoint::make_point(100., 100., 62.);
+  QPoint pt9 = QPoint::make_point(100., 100., 62.2);
   expectedBin = 62*100*100 + 99*100 + 99;
   EXPECT_EQ(expectedBin, valid.getBinIndex(pt9));
   // A point on the max-yz edge

@@ -12,43 +12,39 @@
 # For details about use and distribution, please read axom/LICENSE.
 #------------------------------------------------------------------------------
 
-if(ENABLE_PYTHON_API)
-    set(ENABLE_SHARED_LIBS TRUE)
-endif(ENABLE_PYTHON_API)
-
 ## add components
-## Note: Default state of components is controlled by the ENABLE_ALL_COMPONENTS
-## option. However, the 'common' component is always enabled.
+## Note: Default state of components is controlled by the
+## AXOM_ENABLE_ALL_COMPONENTS option. However, the 'axom_utils' component is always
+## enabled.
 
 axom_add_component(COMPONENT_NAME axom_utils DEFAULT_STATE ON)
 
-# Lumberjack is an extension to SLIC that supports message filtering and
-# reduction capabilities for parallel (MPI) executables.It is not meant for
-# serial (non-mpi) executables.
+# Lumberjack is a parallel message filtering and reduction library. It can be used
+# by itself or as a SLIC Log Stream. It is not meant for serial (non-mpi) executables.
 if(ENABLE_MPI)
     axom_add_component( COMPONENT_NAME lumberjack
-                        DEFAULT_STATE  ${ENABLE_ALL_COMPONENTS})
+                        DEFAULT_STATE  ${AXOM_ENABLE_ALL_COMPONENTS})
+else()
+    set(AXOM_ENABLE_LUMBERJACK OFF CACHE BOOL "")
 endif()
 
-axom_add_component(COMPONENT_NAME slic DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
-axom_add_component(COMPONENT_NAME primal DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
-axom_add_component(COMPONENT_NAME slam DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
-axom_add_component(COMPONENT_NAME sidre DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
-axom_add_component(COMPONENT_NAME mint DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
+axom_add_component(COMPONENT_NAME slic   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
+axom_add_component(COMPONENT_NAME primal DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
+axom_add_component(COMPONENT_NAME slam   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
+axom_add_component(COMPONENT_NAME sidre  DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
+axom_add_component(COMPONENT_NAME mint   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
+axom_add_component(COMPONENT_NAME quest  DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 
-if ( BOOST_FOUND )
-    axom_add_component(COMPONENT_NAME quest DEFAULT_STATE ${ENABLE_ALL_COMPONENTS})
-endif()
-
-
-## Add dependency for each enabled component on the copy_axom_includes target
-## to ensure that the include files are copied over
-## Note: This assumes components have a cmake target with the same name 
-## (e.g. that slic has a target named 'slic')
-set(axom_components axom_utils lumberjack slic primal slam sidre mint quest)
-foreach(comp ${axom_components})
+foreach(comp ${AXOM_COMPONENTS_FULL})
     string(TOUPPER ${comp} COMP)
-    if(ENABLE_${COMP})
+    if(AXOM_ENABLE_${COMP})
+        message(STATUS "Axom component ${comp} is ON")
+        ## Add dependency for each enabled component on the copy_axom_includes target
+        ## to ensure that the include files are copied over
+        ## Note: This assumes components have a cmake target with the same name 
+        ## (e.g. that slic has a target named 'slic')
         add_dependencies(${comp} copy_axom_includes)
+    else()
+        message(STATUS "Axom component ${comp} is OFF")
     endif()
 endforeach()

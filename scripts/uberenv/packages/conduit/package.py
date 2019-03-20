@@ -46,6 +46,7 @@ from spack import *
 import os
 import sys
 import platform
+import subprocess
 from os.path import join as pjoin
 
 class Conduit(Package):
@@ -56,6 +57,12 @@ class Conduit(Package):
 
     homepage = "http://software.llnl.gov/conduit"
     url = "https://github.com/LLNL/conduit/releases/download/v0.3.0/conduit-v0.3.0-src-with-blt.tar.gz"
+
+    version('master',
+            git='https://github.com/llnl/conduit.git',
+            branch='master')
+            #submodules=True, # newer versions of spack support this ...
+
 
     version('0.3.1', 'b98d1476199a46bde197220cd9cde042')
     version('0.3.0', '6396f1d1ca16594d7c66d4535d4f898e')
@@ -93,6 +100,13 @@ class Conduit(Package):
         return url
 
     def install(self, spec, prefix):
+        #
+        # work around since current ver of spack doesn't support submodules
+        #
+        # the .git subdir should not be in our source 
+        if os.path.isdir(".git"):
+            subprocess.call("git submodule init",shell=True)
+            subprocess.call("git submodule update",shell=True)
         with working_dir('spack-build', create=True):
             cmake_args = ["../src"]
             # if we have a static build, we need to avoid
@@ -116,7 +130,8 @@ class Conduit(Package):
                 
             # turn off docs, so we don't have problems 
             # w/ system sphinx installs
-            cmake_args.append("-DENABLE_DOCS=OFF") 
+            cmake_args.append("-DENABLE_DOCS=OFF")
+            cmake_args.append("-DENABLE_TESTS=OFF")
             
             # see if we should enable fortran support
             f_compiler   = None
@@ -128,7 +143,7 @@ class Conduit(Package):
                     # Fix missing std linker flag in xlc compiler
                     # TODO: Fix to remove hard-coded compiler path
                     if 'blueos_3' in os.getenv('SYS_TYPE', "") and 'xl@coral' in os.getenv('SPACK_COMPILER_SPEC', ""):
-                        cmake_args.append("-DBLT_FORTRAN_FLAGS:STRING=-WF,-C! -Wl,-lstdc++ -Wl,/usr/tce/packages/xl/xl-beta-2017.10.13/xlC/13.1.6/lib/libibmc++.so")
+                        cmake_args.append("-DBLT_FORTRAN_FLAGS:STRING=-WF,-C! -qxlf2003=polymorphic")
 
             if "+shared" in spec:
                 cmake_args.append("-DBUILD_SHARED_LIBS=ON")

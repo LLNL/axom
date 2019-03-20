@@ -40,6 +40,10 @@
 #define AXOM_SRC_DIR "@AXOM_SRC_DIR@"
 #define AXOM_BIN_DIR "@AXOM_BIN_DIR@"
 
+/*
+ * Platform specific defintions
+ */
+#cmakedefine AXOM_NO_INT64_T
 
 /*
  * Compiler tests
@@ -50,7 +54,6 @@
 /*
  * Compiler defines for libraries (built-in and third party)
  */
-#cmakedefine AXOM_USE_BOOST
 #cmakedefine AXOM_USE_CONDUIT
 #cmakedefine AXOM_USE_CXX11
 #cmakedefine AXOM_USE_FMT
@@ -103,6 +106,11 @@
 #cmakedefine01 FMT_HEADER_ONLY
 #cmakedefine01 FMT_USE_EXTERN_TEMPLATES
 
+/*
+ * Compiler defines to configure the built-in sparsehash library
+ */
+#cmakedefine SPARSEHASH_HASHFUN_HEADER @SPARSEHASH_HASHFUN_HEADER@
+#cmakedefine SPARSEHASH_HASHFUN_NAMESPACE @SPARSEHASH_HASHFUN_NAMESPACE@
 
 #endif  /* AXOM_COMMON_CONFIG_CPP */
 

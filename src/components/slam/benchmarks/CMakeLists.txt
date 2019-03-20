@@ -29,7 +29,7 @@ if (ENABLE_BENCHMARKS)
             NAME        ${test_name}
             SOURCES     ${test}
             OUTPUT_DIR  ${TEST_OUTPUT_DIRECTORY}
-            DEPENDS_ON  slic slam gbenchmark boost
+            DEPENDS_ON  slic slam gbenchmark
             FOLDER      axom/slam/benchmarks
             )
 

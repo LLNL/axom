@@ -18,7 +18,6 @@ set( primal_headers
      geometry/BoundingBox.hpp
      geometry/OrientedBoundingBox.hpp
      geometry/OrientationResult.hpp
-     geometry/HyperSphere.hpp
      geometry/MortonIndex.hpp
      geometry/NumericArray.hpp
      geometry/Plane.hpp
@@ -27,6 +26,8 @@ set( primal_headers
      geometry/Ray.hpp
      geometry/RectangularLattice.hpp
      geometry/Segment.hpp
+     geometry/Sphere.hpp
+     geometry/Tetrahedron.hpp
      geometry/Triangle.hpp
      geometry/Vector.hpp
 
@@ -37,6 +38,7 @@ set( primal_headers
      operators/orientation.hpp
      operators/squared_distance.hpp
      operators/compute_bounding_box.hpp
+     operators/in_sphere.hpp
 
      operators/detail/clip_impl.hpp
      operators/detail/intersect_impl.hpp
@@ -57,7 +59,7 @@ blt_add_library(
     HEADERS               ${primal_headers}
     HEADERS_OUTPUT_SUBDIR primal
     FOLDER                axom/primal
-    DEPENDS_ON            slic
+    DEPENDS_ON            axom_utils slic
     )
 
 install(TARGETS              primal

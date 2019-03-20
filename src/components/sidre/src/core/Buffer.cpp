@@ -26,6 +26,8 @@
 #include "Group.hpp"
 #include "View.hpp"
 
+#include "axom/Types.hpp" // for common::int8
+
 namespace axom
 {
 namespace sidre
@@ -256,6 +258,66 @@ void Buffer::print(std::ostream& os) const
 }
 
 
+/*
+ *************************************************************************
+ *
+ * Serializes Buffer state to a conduit node
+ *
+ *************************************************************************
+ */
+void Buffer::exportTo( conduit::Node& data_holder)
+{
+  data_holder["id"] = m_index;
+
+  if ( isDescribed() )
+  {
+    data_holder["schema"] = m_node.schema().to_json();
+  }
+
+  // If Buffer is allocated, export it's node's data
+  if ( isAllocated() )
+  {
+    // Do this instead of using the node copy constructor ( keep it zero-copy ).
+    data_holder["data"].set_external( m_node.schema(), getVoidPtr() );
+
+    // TODO - Ask Cyrus why he had following way previously.  Are we creating a
+    // default dtype
+    // to remove any striding, offset?  Our Buffer does not allow those, only
+    // type and length.
+    // DataType& dtype = conduit::DataType::default_dtype(ds_buff->getTypeID());
+    // dtype.set_number_of_elements(ds_buff->getNumElements());
+  }
+}
+
+
+/*
+ *************************************************************************
+ *
+ * Import Buffer state from a conduit node
+ *
+ *************************************************************************
+ */
+void Buffer::importFrom( conduit::Node& buffer_holder)
+{
+  if (buffer_holder.has_path("schema"))
+  {
+    Schema schema( buffer_holder["schema"].as_string() );
+    TypeID type = static_cast<TypeID>( schema.dtype().id() );
+    SidreLength num_elems = schema.dtype().number_of_elements();
+    describe(type, num_elems);
+  }
+
+  // If Buffer was allocated, the conduit node will have the entry "data".
+  // Allocate and copy in that data.
+  if (buffer_holder.has_path("data"))
+  {
+    allocate();
+    conduit::Node& buffer_data_holder = buffer_holder["data"];
+    copyBytesIntoBuffer(buffer_data_holder.element_ptr(0),
+                        buffer_data_holder.total_strided_bytes() );
+  }
+}
+
 
 /*
  *************************************************************************
@@ -362,7 +424,7 @@ void Buffer::detachFromAllViews()
  */
 void* Buffer::allocateBytes(std::size_t num_bytes)
 {
-  return new(std::nothrow) detail::sidre_int8[num_bytes];
+  return new(std::nothrow) common::int8[num_bytes];
 }
 
 /*
@@ -387,68 +449,7 @@ void Buffer::copyBytes( const void* src, void* dst, size_t num_bytes )
 void Buffer::releaseBytes( void* ptr)
 {
   // Pointer type here should always match new call in allocateBytes.
-  delete[] static_cast<detail::sidre_int8*>(ptr);
-}
-
-/*
- *************************************************************************
- *
- * PRIVATE exportTo
- * Serializes Buffer state to a conduit node
- *
- *************************************************************************
- */
-void Buffer::exportTo( conduit::Node& data_holder)
-{
-  data_holder["id"] = m_index;
-
-  if ( isDescribed() )
-  {
-    data_holder["schema"] = m_node.schema().to_json();
-  }
-
-  // If Buffer is allocated, export it's node's data
-  if ( isAllocated() )
-  {
-    // Do this instead of using the node copy constructor ( keep it zero-copy ).
-    data_holder["data"].set_external( m_node.schema(), getVoidPtr() );
-
-    // TODO - Ask Cyrus why he had following way previously.  Are we creating a
-    // default dtype
-    // to remove any striding, offset?  Our Buffer does not allow those, only
-    // type and length.
-    // DataType& dtype = conduit::DataType::default_dtype(ds_buff->getTypeID());
-    // dtype.set_number_of_elements(ds_buff->getNumElements());
-  }
-}
-
-/*
- *************************************************************************
- *
- * PRIVATE importFrom
- * Import Buffer state from a conduit node
- *
- *************************************************************************
- */
-void Buffer::importFrom( conduit::Node& buffer_holder)
-{
-  if (buffer_holder.has_path("schema"))
-  {
-    Schema schema( buffer_holder["schema"].as_string() );
-    TypeID type = static_cast<TypeID>( schema.dtype().id() );
-    SidreLength num_elems = schema.dtype().number_of_elements();
-    describe(type, num_elems);
-  }
-
-  // If Buffer was allocated, the conduit node will have the entry "data".
-  // Allocate and copy in that data.
-  if (buffer_holder.has_path("data"))
-  {
-    allocate();
-    conduit::Node& buffer_data_holder = buffer_holder["data"];
-    copyBytesIntoBuffer(buffer_data_holder.element_ptr(0),
-                        buffer_data_holder.total_strided_bytes() );
-  }
+  delete[] static_cast<common::int8*>(ptr);
 }
 
 

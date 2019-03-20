@@ -20,18 +20,23 @@ set(axom_utils_headers
     utilities/StringUtilities.hpp
     utilities/Timer.hpp
     utilities/Utilities.hpp
+    utilities/About.hpp
 
     detail/ChronoTimer.hpp
     detail/TimeofdayTimer.hpp
     detail/TickCountTimer.hpp
 
+    numerics/internal/matrix_norms.hpp
+
     numerics/Determinants.hpp
-    numerics/linear_solve.hpp
-    numerics/eigen_solve.hpp
-    numerics/polynomial_solvers.hpp
-    numerics/vector_utilities.hpp
+    numerics/jacobi_eigensolve.hpp
     numerics/LU.hpp
     numerics/Matrix.hpp
+    numerics/eigen_solve.hpp
+    numerics/eigen_sort.hpp
+    numerics/linear_solve.hpp
+    numerics/matvecops.hpp
+    numerics/polynomial_solvers.hpp
     )
 
 #
@@ -41,6 +46,7 @@ set(axom_utils_sources
     utilities/FileUtilities.cpp
     utilities/StringUtilities.cpp
     utilities/Utilities.cpp
+    utilities/About.cpp
 
     numerics/polynomial_solvers.cpp
     )

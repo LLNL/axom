@@ -41,67 +41,49 @@ Basic requirements:
   * CMake 3.1.2
   * Fortran (optional)
 
+Compilers we support (listed with minimum supported version):
 
-Compilers we support:
+  * Clang 3.9.1
+  * GCC 4.9.3
+  * IBM XL 13
+  * Intel 15
+  * Microsoft Visual Studio 2015
+  * Microsoft Visual Studio 2015 with the Intel toolchain
 
-  * Clang - 3.5.0
-  * GCC - 4.7.1, 4.9.3
-  * IBM BGQOS - 12.1.012a
-  * Intel - 15.0.187, 16.0.109
+Please see the ``<axom>/scripts/uberenv/compilers.yaml`` for an up to date
+list of the supported compiler version numbers on each platform. 
 
+External Dependencies:
 
-Package Dependencies:
-
-.. danger::
-  Instead of this exhaustive list (which will go stale fast), the more important things to list are the
-  TPLs we directly use and the cmake arguments (e.g. **ZZZ_DIR**, **ZZZ_EXECUTABLE**)
-  that we use to pull those TPLS in our build system. For example, folks really don't need to know that Bison is used,
-  we have no logic for it in our build system. It actually may only be needed due to some spack dependency chain
-  that could change over time. If people do want to know this info, we could point them
-  a few spack commands that could show whatever the current deps are (I don't know what those commands are off hand)
-
-
-  * Bison 3.0.4
-  * Boost 1.58.0
-  * bzip2 1.0.6
-  * Conduit 2016-05-18
-  * Doxygen 1.8.11
-  * Flex 2.6.0
-  * HDF5 1.8.16
-  * lcov-1.11
-  * libsigsegv 2.10
+Axom has the following external dependencies. 
+Unless otherwise marked, the dependencies are optional.
+  
+  * conduit 0.3.1 [Required for Sidre]
+  * doxygen 1.8.11
+  * hdf5 1.8.16
+  * lcov 1.11
   * lua 5.1.5
-  * m4 1.4.17
-  * ncurses 6.0
-  * openssl 1.0.2h
-  * py-alabaster 0.7.7
-  * py-babel 1.3
-  * py-breathe 4.0.0
-  * py-cogapp 2.4
-  * py-docutils 0.12
-  * py-jinja2 2.8
-  * py-markupsafe 0.23
-  * py-parsley 1.2
-  * py-pygments 2.1
-  * py-pyyaml 3.11
-  * py-setuptools 18.1
-  * py-six 1.9.0
-  * py-snowballstemmer 1.2.1
-  * py-sphinx-rtd-theme 0.1.9
-  * py-sphinx 1.3.6
-  * py-tz 2015.7
+  * mfem 3.3.2
   * python 2.7.11
-  * readline 6.3
-  * sparsehash-headers 2.0.2
-  * sqlite 3.8.5
-  * uberenv-axom 0.1
+  * py-shroud 0.9.0
+  * py-sphinx 1.3.6
+  * scr 1.2.1
   * uncrustify 0.61
-  * zlib 1.2.8
 
+Each dependency in the above list has a corresponding variable that can be 
+supplied to the build system. These variables either list a path to the
+installation directory  (in which case the variable has the suffix ``_DIR``)
+or has the path to an executable (with the ``_EXECUTABLE`` suffix).
+For example, ``hdf5`` has a corresponding variable ``HDF5_DIR``
+and ``python`` has a corresponding build system variable ``PYTHON_EXECUTABLE``.
+
+.. note::
+  To get a full list of all dependencies of Axom's dependencies in an ``uberenv``
+  build of our TPLs, please go to the TPL root directory and 
+  run the following spack command ``./spack/bin/spack find``.
 
 .. danger::
   Here is one possible format, we can also add urls and version info
-
 
 
 ================== ====================================
@@ -109,9 +91,7 @@ Package Dependencies:
 ================== ====================================
   HDF5               Sidre
   Conduit            Sidre
-  Sparse Hash        Sidre (optional)
   SCR                Sidre (optional)
-  Boost              Slam, Quest
 ================== ====================================
 
 ================== ====================================
@@ -289,7 +269,7 @@ i.e.,::
 You can also pass extra CMake configuration variables through the script; e.g.,::
 
    $ ./config-build.py -hc {host-config file name} \
-                       -DENABLE_PYTHON=ON -DENABLE_FORTRAN=OFF
+                       -DAXOM_ENABLE_PYTHON=ON -DENABLE_FORTRAN=OFF
 
 This will enable python and disable fortran for the generated configuration.
 
@@ -334,36 +314,40 @@ CMake options
            Check what's there now for correctness. Move options for developers
            into separate table here (for convenience) or to Dev Guide?
 
-+---------------------------+--------------------------------+---------+
-| OPTION                    | Description                    | Default |
-+===========================+================================+=========+
-| ENABLE_ALL_COMPONENTS     | Enable all components          | ON      |
-|                           | by default                     |         |
-+---------------------------+--------------------------------+---------+
-| ENABLE_ALL_WARNINGS       | Enable extra compiler warnings | ON      |
-|                           | in all build targets           |         |
-+---------------------------+--------------------------------+---------+
-| ENABLE_BENCHMARKS         | Enable google benchmark        | OFF     |
-+---------------------------+--------------------------------+---------+
-| ENABLE_CODECOV            | Enable code coverage via gcov  | ON      |
-+---------------------------+--------------------------------+---------+
-| ENABLE_FORTRAN            | Enable Fortran compiler        | ON      |
-|                           | support                        |         |
-+---------------------------+--------------------------------+---------+
-| ENABLE_MPI                | Enable MPI                     | OFF     |
-+---------------------------+--------------------------------+---------+
-| ENABLE_OPENMP             | Enable OpenMP                  | OFF     |
-+---------------------------+--------------------------------+---------+
-| ENABLE_SHARED_LIBS        | Build shared libraries.        | OFF     |
-|                           | Default is Static libraries    |         |
-+---------------------------+--------------------------------+---------+
-| ENABLE_TESTS              | Builds unit tests              | ON      |
-+---------------------------+--------------------------------+---------+
-| ENABLE_WARNINGS_AS_ERRORS | Compiler warnings treated as   | OFF     |
-|                           | errors.                        |         |
-+---------------------------+--------------------------------+---------+
++------------------------------+--------------------------------+---------+
+| OPTION                       | Description                    | Default |
++==============================+================================+=========+
+| AXOM_ENABLE_ALL_COMPONENTS   | Enable all components          | ON      |
+|                              | by default                     |         |
++------------------------------+--------------------------------+---------+
+| ENABLE_ALL_WARNINGS          | Enable extra compiler warnings | ON      |
+|                              | in all build targets           |         |
++------------------------------+--------------------------------+---------+
+| ENABLE_BENCHMARKS            | Enable google benchmark        | OFF     |
++------------------------------+--------------------------------+---------+
+| ENABLE_CODECOV               | Enable code coverage via gcov  | ON      |
++------------------------------+--------------------------------+---------+
+| ENABLE_FORTRAN               | Enable Fortran compiler        | ON      |
+|                              | support                        |         |
++------------------------------+--------------------------------+---------+
+| ENABLE_MPI                   | Enable MPI                     | OFF     |
++------------------------------+--------------------------------+---------+
+| ENABLE_OPENMP                | Enable OpenMP                  | OFF     |
++------------------------------+--------------------------------+---------+
+| ENABLE_SHARED_LIBS           | Build shared libraries.        | OFF     |
+|                              | Default is Static libraries    |         |
++------------------------------+--------------------------------+---------+
+| AXOM_ENABLE_TESTS            | Builds unit tests              | ON      |
++------------------------------+--------------------------------+---------+
+| AXOM_ENABLE_DOCS             | Builds documentation           | ON      |
++------------------------------+--------------------------------+---------+
+| AXOM_ENABLE_EXAMPLES         | Builds examples                | ON      |
++------------------------------+--------------------------------+---------+
+| ENABLE_WARNINGS_AS_ERRORS    | Compiler warnings treated as   | OFF     |
+|                              | errors.                        |         |
++------------------------------+--------------------------------+---------+
 
-If 'ENABLE_ALL_COMPONENTS' is OFF, you must explicitly enable the desired
+If 'AXOM_ENABLE_ALL_COMPONENTS' is OFF, you must explicitly enable the desired
 components (other than 'common', which is always enabled).
 
 .. note :: To configure the version of the C++ standard, you can supply one of the
@@ -380,11 +364,9 @@ CMake Options used to include Third-party Libraries:
 +-------------------+-------------------------------+
 | CONDUIT_DIR       | Path to Conduit install       |
 +-------------------+-------------------------------+
+| MFEM_DIR          | Path to MFEM install          |
++-------------------+-------------------------------+
 | PYTHON_EXECUTABLE | Path to Python executable     |
-+-------------------+-------------------------------+
-| SPARSEHASH_DIR    | Path to Sparsehash install    |
-+-------------------+-------------------------------+
-| BOOST_DIR         | Path to Boost headers install |
 +-------------------+-------------------------------+
 
 

@@ -16,7 +16,7 @@
  */
 
 #include "primal/Plane.hpp"
-#include "axom_utils/vector_utilities.hpp"
+#include "axom_utils/matvecops.hpp"
 
 #include "gtest/gtest.h"
 
@@ -36,6 +36,57 @@ void ensure_unit_norm( const double* v, int n )
 {
   const double norm = std::sqrt( numerics::dot_product(v,v,n) );
   EXPECT_DOUBLE_EQ( norm, 1.0 );
+}
+
+//------------------------------------------------------------------------------
+template < int NDIMS >
+void check_copy_constructor( )
+{
+  const double MAGIC_NUM = 42;
+  double n1[ 3 ]         = { MAGIC_NUM, MAGIC_NUM, MAGIC_NUM };
+  double offset          = MAGIC_NUM;
+
+  primal::Plane< double, NDIMS > p2( n1, offset );
+  primal::Plane< double, NDIMS > p1( p2 );
+
+  numerics::normalize( n1, NDIMS );
+
+  for ( int i=0 ; i < NDIMS ; ++i )
+  {
+    EXPECT_DOUBLE_EQ( p1.getNormal()[ i ], p2.getNormal()[ i ] );
+    EXPECT_DOUBLE_EQ( p1.getNormal()[ i ], n1[ i ] );
+  }
+
+  EXPECT_DOUBLE_EQ( p1.getOffset(), p2.getOffset() );
+  EXPECT_DOUBLE_EQ( p1.getOffset(), MAGIC_NUM );
+}
+
+//------------------------------------------------------------------------------
+template < int NDIMS >
+void check_assignment_operator( )
+{
+  const double MAGIC_NUM = 42;
+  double x[ 3 ]          = { 0.0, 0.0, 0.0 };
+  double n0[ 3 ]         = { 1.0, 0.0, 0.0 };
+  double n1[ 3 ]         = { MAGIC_NUM, MAGIC_NUM, MAGIC_NUM };
+  double offset          = MAGIC_NUM;
+
+  primal::Plane< double, NDIMS > p1( n0, x );
+  primal::Plane< double, NDIMS > p2( n1, offset );
+
+  /* test assignment */
+  p1 = p2;
+
+  numerics::normalize( n1, NDIMS );
+
+  for ( int i=0 ; i < NDIMS ; ++i )
+  {
+    EXPECT_DOUBLE_EQ( p1.getNormal()[ i ], p2.getNormal()[ i ] );
+    EXPECT_DOUBLE_EQ( p1.getNormal()[ i ], n1[ i ] );
+  }
+
+  EXPECT_DOUBLE_EQ( p1.getOffset(), p2.getOffset() );
+  EXPECT_DOUBLE_EQ( p1.getOffset(), MAGIC_NUM );
 }
 
 } /* end anonymous namespace */
@@ -119,6 +170,20 @@ TEST( primal_plane, construct_from_points )
   primal::Plane< double, 2 > P2( a, b, AXOM_NULLPTR );
   ensure_unit_norm( P2.getNormal(), 2 );
   EXPECT_DOUBLE_EQ( P2.getOffset(), -2.0 );
+}
+
+//------------------------------------------------------------------------------
+TEST( primal_plane, copy_constructor )
+{
+  check_copy_constructor< 2 >( );
+  check_copy_constructor< 3 >( );
+}
+
+//------------------------------------------------------------------------------
+TEST( primal_plane, assignment_operator )
+{
+  check_assignment_operator< 2 >( );
+  check_assignment_operator< 3 >( );
 }
 
 //------------------------------------------------------------------------------

@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_03_07_16_07_57/spack/opt/spack/chaos_5_x86_64_ib/intel-17.0.174/cmake-3.8.2-j4f2uiw4gpt5acb6f4p7rjn6jvpbue5i/bin/cmake
+# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_05_04_12_22_49/spack/opt/spack/chaos_5_x86_64_ib/intel-17.0.174/cmake-3.8.2-j4f2uiw4gpt5acb6f4p7rjn6jvpbue5i/bin/cmake
 
 #######
 # using intel@17.0.174 compiler spec
@@ -25,7 +25,7 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 set(CMAKE_Fortran_COMPILER "/usr/local/tools/ic-17.0.174/bin/ifort" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_03_07_16_07_57/spack/opt/spack/chaos_5_x86_64_ib/intel-17.0.174" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_05_04_12_22_49/spack/opt/spack/chaos_5_x86_64_ib/intel-17.0.174" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-yle5lfpy32ffwzm54w2btci2rwgxpnj5" CACHE PATH "")
@@ -38,22 +38,16 @@ set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.3.1-ownyq4n6cwxyfry3c3ajz3thvgzbvaqw" CAC
 # mfem from uberenv
 set(MFEM_DIR "${TPL_ROOT}/mfem-3.3.2-hyb5naavqgv7cqibw7lozrgom3ynczek" CACHE PATH "")
 
-# boost headers from uberenv
-set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-f3qubdpgb5tjxupxkfeo6vhjqp336w66" CACHE PATH "")
-
 # python from uberenv
 set(PYTHON_EXECUTABLE "${TPL_ROOT}/python-2.7.11-gsatbg7hsqa6y57pmds3ysr6zhhxmleh/bin/python" CACHE PATH "")
-
-# lua from uberenv
-set(LUA_DIR "${TPL_ROOT}/lua-5.1.5-mne43sd5phd4m5qp23urcngva3xzjfq2" CACHE PATH "")
 
 # doxygen from uberenv
 set(DOXYGEN_EXECUTABLE "${TPL_ROOT}/doxygen-1.8.11-33gzcqdym2leojxte3y235y35xf6wmrd/bin/doxygen" CACHE PATH "")
 
-# sphinx from uberenv
+# sphinx 1.4.5 from uberenv
 set(SPHINX_EXECUTABLE "${TPL_ROOT}/python-2.7.11-gsatbg7hsqa6y57pmds3ysr6zhhxmleh/bin/sphinx-build" CACHE PATH "")
 
-# shroud from uberenv
+# shroud 0.9.0 from uberenv
 set(SHROUD_EXECUTABLE "${TPL_ROOT}/python-2.7.11-gsatbg7hsqa6y57pmds3ysr6zhhxmleh/bin/shroud" CACHE PATH "")
 
 # uncrustify from uberenv
@@ -63,9 +57,6 @@ set(UNCRUSTIFY_EXECUTABLE "${TPL_ROOT}/uncrustify-0.61-4mhnkbt4d4vjxremrvvyknidk
 set(LCOV_PATH "${TPL_ROOT}/lcov-1.11-4bjbbbg3jjp5apf3qcvbwhxspyfjrkmv/usr/bin/lcov" CACHE PATH "")
 
 set(GENHTML_PATH "${TPL_ROOT}/lcov-1.11-4bjbbbg3jjp5apf3qcvbwhxspyfjrkmv/usr/bin/genhtml" CACHE PATH "")
-
-# Disable CXX11 on chaos5 intel/clang builds
-set(BLT_CXX_STD "c++98" CACHE PATH "")
 
 ##################################
 # end uberenv host-config
@@ -93,6 +84,13 @@ set(BLT_CXX_STD "c++98" CACHE PATH "")
 ##############################################################################
 
 set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
+
+# Set flags for intel to use a gcc standard library with C++11
+set(GNU_PREFIX           "/usr/apps/gnu/4.9.3")
+set(BLT_C_FLAGS          "-gnu-prefix=${GNU_PREFIX}/bin/" CACHE STRING "")
+set(BLT_CXX_FLAGS        "-gnu-prefix=${GNU_PREFIX}/bin/" CACHE STRING "")
+set(BLT_FORTRAN_FLAGS    "-gnu-prefix=${GNU_PREFIX}/bin/" CACHE STRING "")
+set(BLT_EXE_LINKER_FLAGS "-Wl,-rpath,${GNU_PREFIX}/lib64" CACHE STRING "")
 
 ##############################################################################
 # MPI - manually added for now

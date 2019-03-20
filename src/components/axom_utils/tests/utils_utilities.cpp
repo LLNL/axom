@@ -19,6 +19,37 @@
 
 #include "axom_utils/Utilities.hpp"
 
+TEST(axom_utils_Utilities, allocation)
+{
+  std::cout<<"Testing allocation functions."<< std::endl;
+  for ( int initial_size = 2 ; initial_size <= 1048576 ; initial_size *= 2 )
+  {
+    int buffer_size = initial_size;
+    int* buffer = axom::utilities::alloc<int>(buffer_size);
+
+    for (int i = 0 ; i < buffer_size ; i++)
+    {
+      buffer[i] = i;
+    }
+
+    buffer_size *= 2;
+    buffer = axom::utilities::realloc(buffer, buffer_size);
+    for (int i = 0 ; i < buffer_size / 2 ; i++)
+    {
+      EXPECT_EQ(buffer[i],  i);
+    }
+
+    buffer_size /= 4;
+    buffer = axom::utilities::realloc(buffer, buffer_size);
+    for (int i = 0 ; i < buffer_size ; i++)
+    {
+      EXPECT_EQ(buffer[i],  i);
+    }
+
+    axom::utilities::free(buffer);
+  }
+}
+
 
 TEST(axom_utils_Utilities,log2)
 {
@@ -51,6 +82,60 @@ TEST(axom_utils_Utilities,log2)
     double exp = 4.3219281;
     EXPECT_NEAR(exp, axom::utilities::log2(val), 1e-5);
   }
+}
+
+TEST(axom_utils_Utilities,random_real)
+{
+  std::cout<<"Testing random_real functions (non-deterministic)."<< std::endl;
+
+  int min = 0;
+  int max = 1;
+  for (int offset = 0 ; offset < 10 ; ++offset)
+  {
+    int cur_min = min - offset;
+    int cur_max = max + offset;
+    for (int i = 0 ; i < 100 ; ++i)
+    {
+      float f_val = axom::utilities::random_real<float>(cur_min, cur_max);
+      EXPECT_GE(f_val, cur_min);
+      EXPECT_LT(f_val, cur_max);
+
+      double d_val = axom::utilities::random_real<double>(cur_min, cur_max);
+      EXPECT_GE(d_val, cur_min);
+      EXPECT_LT(d_val, cur_max);
+
+      long double ld_val = axom::utilities::random_real<long double>(cur_min,
+                                                                     cur_max);
+      EXPECT_GE(ld_val, cur_min);
+      EXPECT_LT(ld_val, cur_max);
+    }
+  }
+}
+
+TEST( axom_utils_Utilities,random_real_with_seed )
+{
+  std::cout<<"Testing random_real functions (deterministic)."<< std::endl;
+  constexpr unsigned int seed = 123456789;
+
+  constexpr double a = -5.0;
+  constexpr double b =  5.0;
+
+  const double expected_reals[ 5 ] = {
+    -1.5112829544380526,
+    -2.3311429024686219,
+    -3.6335370551231403,
+    -4.714431326610093,
+    3.6893326916732878
+  };
+
+  for ( int i=0 ; i < 5 ; ++i )
+  {
+    const double real = axom::utilities::random_real( a, b, seed );
+    EXPECT_DOUBLE_EQ( real, expected_reals[ i ] );
+    EXPECT_GE(real, a);
+    EXPECT_LT(real, b);
+  }
+
 }
 
 TEST(axom_utils_Utilities,minmax)

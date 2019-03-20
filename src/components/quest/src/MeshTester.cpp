@@ -18,24 +18,33 @@
 // Axom includes
 #include "quest/MeshTester.hpp"
 
+#include "axom/Types.hpp"
+
 #include "primal/BoundingBox.hpp"
 #include "primal/intersect.hpp"
 #include "primal/Point.hpp"
 #include "primal/Triangle.hpp"
 #include "primal/UniformGrid.hpp"
+#include "primal/RectangularLattice.hpp"
+#include "primal/MortonIndex.hpp"
 
 // C++ includes
 #include <cmath>
 #include <algorithm>
+#include <vector>
+
+#ifdef AXOM_USE_CXX11
+#include <unordered_map>
+#else
 #include <map>
-#include <set>
+#endif
 
 namespace axom
 {
 namespace quest
 {
 
-typedef mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+typedef mint::UnstructuredMesh< mint::SINGLE_SHAPE > UMesh;
 typedef primal::Triangle<double, 3> Triangle3;
 
 typedef primal::Point<double, 3> Point3;
@@ -44,20 +53,42 @@ typedef primal::UniformGrid<int, 3> UniformGrid3;
 typedef primal::Vector<double, 3> Vector3;
 typedef primal::Segment<double, 3> Segment3;
 
-inline SpatialBoundingBox compute_bounds(mint::Mesh* mesh)
+typedef axom::common::uint64 IndexType;
+typedef primal::RectangularLattice<3, double, IndexType> Lattice3;
+typedef primal::Mortonizer<IndexType, IndexType, 3> Morton3;
+
+#ifdef AXOM_USE_CXX11
+typedef std::unordered_map<IndexType, IndexType> MortonMap;
+#else
+typedef std::map<IndexType, IndexType> MortonMap;
+#endif
+typedef std::pair<MortonMap::iterator, bool> MortonMapResult;
+
+inline SpatialBoundingBox compute_bounds( UMesh* mesh)
 {
   SLIC_ASSERT( mesh != AXOM_NULLPTR );
 
   SpatialBoundingBox meshBB;
   Point3 pt;
 
-  for ( int i=0 ; i < mesh->getMeshNumberOfNodes() ; ++i )
+  const double* x = mesh->getCoordinateArray( mint::X_COORDINATE );
+  const double* y = mesh->getCoordinateArray( mint::Y_COORDINATE );
+  const double* z = mesh->getCoordinateArray( mint::Z_COORDINATE );
+
+  const mint::IndexType numNodes = mesh->getNumberOfNodes();
+  for ( mint::IndexType i=0 ; i < numNodes ; ++i )
   {
-    mesh->getMeshNode( i, pt.data() );
+    pt[ 0 ] = x[ i ];
+    pt[ 1 ] = y[ i ];
+    pt[ 2 ] = z[ i ];
+
     meshBB.addPoint( pt );
   } // END for all nodes
 
-  SLIC_ASSERT( meshBB.isValid() );
+  if(numNodes > 0)
+  {
+    SLIC_ASSERT( meshBB.isValid() );
+  }
 
   return meshBB;
 }
@@ -74,18 +105,36 @@ inline SpatialBoundingBox compute_bounds(const Triangle3 & tri)
   return triBB;
 }
 
-inline Triangle3 getMeshTriangle(int i, mint::Mesh* surface_mesh)
+inline Triangle3 getMeshTriangle(mint::IndexType i, UMesh* surface_mesh)
 {
-  SLIC_ASSERT(surface_mesh->getMeshNumberOfCellNodes(i) == 3);
-  primal::Point<int, 3> triCell;
-  Triangle3 tri;
-  surface_mesh->getMeshCell(i, triCell.data());
+  SLIC_ASSERT( surface_mesh->getNumberOfCellNodes( i ) == 3);
 
-  surface_mesh->getMeshNode(triCell[0], tri[0].data());
-  surface_mesh->getMeshNode(triCell[1], tri[1].data());
-  surface_mesh->getMeshNode(triCell[2], tri[2].data());
+  Triangle3 tri;
+
+  const mint::IndexType* triCell = surface_mesh->getCell( i );
+
+  const double* x = surface_mesh->getCoordinateArray( mint::X_COORDINATE );
+  const double* y = surface_mesh->getCoordinateArray( mint::Y_COORDINATE );
+  const double* z = surface_mesh->getCoordinateArray( mint::Z_COORDINATE );
+
+  for ( int n=0 ; n < 3 ; ++n )
+  {
+    const mint::IndexType nodeIdx = triCell[ n ];
+    tri[ n ][ 0 ] = x[ nodeIdx ];
+    tri[ n ][ 1 ] = y[ nodeIdx ];
+    tri[ n ][ 2 ] = z[ nodeIdx ];
+  }
 
   return tri;
+}
+
+inline bool areTriangleIndicesDistinct( mint::IndexType* indices)
+{
+  SLIC_ASSERT(indices != AXOM_NULLPTR);
+
+  return indices[0] != indices[1]
+         && indices[1] != indices[2]
+         && indices[2] != indices[0];
 }
 
 /*!
@@ -94,7 +143,7 @@ inline Triangle3 getMeshTriangle(int i, mint::Mesh* surface_mesh)
  * \see findTriMeshIntersections
  */
 void findTriMeshIntersections(
-  TriangleMesh* surface_mesh,
+  UMesh* surface_mesh,
   std::vector<std::pair<int, int> > & intersections,
   std::vector<int> & degenerateIndices,
   int spatialIndexResolution)
@@ -108,7 +157,7 @@ void findTriMeshIntersections(
   const Point3 & minBBPt = meshBB.getMin();
   const Point3 & maxBBPt = meshBB.getMax();
 
-  const int ncells = surface_mesh->getMeshNumberOfCells();
+  const int ncells = surface_mesh->getNumberOfCells();
 
   // find the specified resolution.  If we're passed a number less than one,
   // use the cube root of the number of triangles.
@@ -191,6 +240,119 @@ void findTriMeshIntersections(
     }
   }
 }
+
+
+/* Weld vertices of a triangle mesh that are closer than \a eps  */
+void weldTriMeshVertices(UMesh** surface_mesh,double eps)
+{
+  /// Implementation notes:
+  ///
+  /// This function welds vertices in the triangle mesh by
+  /// quantizing them to an integer lattice with spacing \a eps.
+  ///
+  /// To avoid searching neighbor elements on the grid, we run the
+  /// algorithm twice. Once on the original lattice, and once on a
+  /// lattice that is shifted by half the grid spacing.
+  ///
+  /// Due to running this algorithm twice, it is possible in extreme cases
+  /// for vertices that are at distances up to (1.5 * eps)
+  /// (under the max norm) to be identified in this process.
+  /// This can correspond to distances of at most 1.5 * eps * \sqrt(2)
+  /// in the Euclidean norm.
+
+  SLIC_ASSERT_MSG(
+    eps > 0.,
+    "Epsilon must be greater than 0. Passed in value was " << eps);
+  SLIC_ASSERT_MSG(
+    surface_mesh != AXOM_NULLPTR
+    && *surface_mesh != AXOM_NULLPTR,
+    "surface_mesh must be a valid pointer to a pointer to a triangle mesh");
+
+  int const DIM = 3;
+  UMesh* oldMesh = *surface_mesh;
+
+  SpatialBoundingBox meshBB = compute_bounds(oldMesh).expand(eps);
+
+  // Run the algorithm twice -- on the original grid and a translated grid
+  std::vector<double> offsets;
+  offsets.push_back(0);
+  offsets.push_back(eps/2.);
+  for(std::vector<double>::const_iterator it = offsets.begin() ;
+      it != offsets.end() ; ++it)
+  {
+    // We will build up a new triangle mesh with the welded indices
+    UMesh* newMesh = new UMesh(DIM, mint::TRIANGLE);
+
+    // Set up the lattice for quantizing points to an integer lattice
+    Point3 origin(meshBB.getMin().array() - Point3(*it).array() );
+    Lattice3 lattice( origin, Point3(eps));
+
+    // A map from Morton indices to the new vertex indices
+    MortonMap vertexIndexMap;
+
+    // First, find unique indices for the welded vertices
+    const int numVerts = oldMesh->getNumberOfNodes();
+    int uniqueVertCount = 0;
+
+    std::vector<int> vertex_remap; // stores the new vertex indices
+    vertex_remap.resize(numVerts); // for each old vertex
+
+    Point3 vert;
+    const double* x = oldMesh->getCoordinateArray( mint::X_COORDINATE );
+    const double* y = oldMesh->getCoordinateArray( mint::Y_COORDINATE );
+    const double* z = oldMesh->getCoordinateArray( mint::Z_COORDINATE );
+
+    for(int i =0 ; i < numVerts ; ++i)
+    {
+      // get the vertex from the mesh
+      vert[ 0 ] = x[ i ];
+      vert[ 1 ] = y[ i ];
+      vert[ 2 ] = z[ i ];
+
+      // find the Morton index of the point w.r.t. the lattice
+      IndexType morton = Morton3::mortonize(lattice.gridCell(vert));
+
+      // find the new vertex index; if not present, insert vertex into new mesh
+      MortonMapResult res = vertexIndexMap.insert(
+        std::make_pair(morton, uniqueVertCount) );
+      if(res.second == true)
+      {
+        uniqueVertCount++;
+        newMesh->appendNodes(vert.data());
+      }
+      vertex_remap[i] = res.first->second;
+    }
+
+    // Next, add triangles into the new mesh using the unique vertex indices
+    const int NUM_TRI_VERTS = 3;
+    mint::IndexType triInds[ NUM_TRI_VERTS ];
+    const mint::IndexType numTris = oldMesh->getNumberOfCells();
+    for( mint::IndexType i =0 ; i < numTris ; ++i)
+    {
+      memcpy( triInds, oldMesh->getCell( i ),
+              NUM_TRI_VERTS*sizeof( mint::IndexType ) );
+
+      for(int d =0 ; d < NUM_TRI_VERTS ; ++d)
+      {
+        triInds[d] = vertex_remap [ triInds[d] ];
+      }
+
+      // Degeneracy check -- vertices need to be distinct
+      if( areTriangleIndicesDistinct(triInds) )
+      {
+        newMesh->appendCell(triInds, mint::TRIANGLE);
+      }
+    }
+
+    // Finally, delete old mesh and swap pointers
+    delete oldMesh;
+    oldMesh = newMesh;
+  }
+
+  // Update the original mesh pointer to the new mesh
+  *surface_mesh = oldMesh;
+}
+
 
 } // end namespace quest
 } // end namespace axom

@@ -15,43 +15,74 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#ifndef FIELDTYPES_HPP_
-#define FIELDTYPES_HPP_
+#ifndef MINT_FIELDTYPES_HPP_
+#define MINT_FIELDTYPES_HPP_
+
+#include "axom/Types.hpp" // for axom type definitions
 
 namespace axom
 {
 namespace mint
 {
 
-enum FieldTypes
+/*!
+ * \brief Enumerates the set of allowable field types.
+ */
+enum FieldType
 {
-  UNDEFINED_FIELD_TYPE =-1,
+  UNDEFINED_FIELD_TYPE =-1, //!< UNDEFINED_FIELD_TYPE
 
-  DOUBLE_FIELD_TYPE,
-  INTEGER_FIELD_TYPE,
+  FLOAT_FIELD_TYPE,         //!< single-precision floating point field type
+  DOUBLE_FIELD_TYPE,        //!< double-precision floating point field type
+  INT32_FIELD_TYPE,         //!< fixed width 32-bit integer field type
+  INT64_FIELD_TYPE,         //!< fixed width 64-bit integer field type
 
-  NUMBER_OF_FIELD_TYPES
+  NUMBER_OF_FIELD_TYPES     //!< NUMBER_OF_FIELD_TYPES
 };
 
+/*!
+ * \brief Field traits struct to map a C++ primitive type to a FieldType
+ */
 template < typename FieldType >
-struct field_of
+struct field_traits
 {
-  static const int type = UNDEFINED_FIELD_TYPE;
+  static constexpr int type() { return UNDEFINED_FIELD_TYPE; };
 };
 
+/// \name Specialization of field_traits
+/// @{
+
+//------------------------------------------------------------------------------
 template < >
-struct field_of< double >
+struct field_traits< float >
 {
-  static const int type = DOUBLE_FIELD_TYPE;
+  static constexpr int type() { return FLOAT_FIELD_TYPE; };
 };
 
+//------------------------------------------------------------------------------
 template < >
-struct field_of< int >
+struct field_traits< double >
 {
-  static const int type = INTEGER_FIELD_TYPE;
+  static constexpr int type() { return DOUBLE_FIELD_TYPE; };
 };
+
+//------------------------------------------------------------------------------
+template < >
+struct field_traits< common::int32 >
+{
+  static constexpr int type() { return INT32_FIELD_TYPE; };
+};
+
+//------------------------------------------------------------------------------
+template < >
+struct field_traits< common::int64 >
+{
+  static constexpr int type() { return INT64_FIELD_TYPE; };
+};
+
+/// @}
 
 } /* namespace mint */
 } /* namespace axom */
 
-#endif /* FIELDTYPES_HPP_ */
+#endif /* MINT_FIELDTYPES_HPP_ */

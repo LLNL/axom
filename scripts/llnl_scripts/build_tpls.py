@@ -64,20 +64,11 @@ def main():
         if not os.path.exists(builds_dir):
             os.makedirs(builds_dir)
     else:
-        if on_rz():
-            builds_dir = "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/"
-        else:
-            builds_dir = "/usr/workspace/wsa/axom/thirdparty_libs/builds/"
+        builds_dir = get_shared_tpl_builds_dir()
     builds_dir = os.path.abspath(builds_dir)
 
-    # Make sure builds_dir is not located inside of the repository (CMake hates this)
     repo_dir = get_repo_dir()
-    if builds_dir.startswith(repo_dir):
-        print "Error: TPL build directory cannot be inside of the AXOM repository."
-        print "   CMake will not allow you to use any TPL's include directory inside the repository."
-        return False
 
-    
     if opts["archive"] != "":
         job_name = opts["archive"]
     else:
@@ -88,24 +79,17 @@ def main():
         os.chdir(repo_dir)
 
         timestamp = get_timestamp()
-        specs = get_specs_for_current_machine()
-        res = full_build_and_test_of_tpls(builds_dir, specs, job_name, timestamp)
+        res = full_build_and_test_of_tpls(builds_dir, job_name, timestamp)
 
         if opts["archive"] != "":
             # Get information for archiving
             archive_base_dir = get_archive_base_dir()
-            if opts["archive"] != "":
-                job_name = opts["archive"]
-            else:
-                job_name = get_username() + "/" + os.path.basename(__file__)
-
             archive_tpl_logs(builds_dir, job_name, timestamp)
     finally:
         os.chdir(original_wd)
-    
-
 
     return res
+
 
 if __name__ == "__main__":
     sys.exit(main())

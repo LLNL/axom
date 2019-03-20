@@ -47,8 +47,6 @@ class UberenvAxom(Package):
     variant('devtools',default=True, description="Build development tools (such as sphinx, uncrustify, etc)")
 
     variant("python",  default=True, description="Build python")
-    variant("lua",     default=True, description="Build lua")
-    variant("boost",   default=True, description="Build boost headers")
 
     variant("mfem",   default=True, description="Build mfem")
 
@@ -57,6 +55,8 @@ class UberenvAxom(Package):
     variant("scr", default=False, description="Build SCR")
 
     depends_on("hdf5~cxx~shared~fortran", when="+hdf5")
+
+    depends_on("conduit~shared") # needed so we can optionally use ^conduit@master
 
     depends_on("conduit~shared+cmake+hdf5",when="+cmake+hdf5")
     depends_on("conduit~shared~cmake+hdf5",when="~cmake+hdf5")
@@ -69,17 +69,13 @@ class UberenvAxom(Package):
     depends_on("mfem~mpi",   when="+mfem")
 
     # optional tpl builds
-    depends_on("cmake@3.8.2",when="+cmake")
+    depends_on("cmake@3.9.6",when="+cmake")
 
     depends_on("python",    when="+devtools")
     depends_on("doxygen",   when="+devtools")
     depends_on("uncrustify",when="+devtools")
 
     depends_on("python",   when="+python")
-    depends_on("lua@5.1.5",when="+lua")
-
-    # boost, header only
-    depends_on("boost-headers", when="+boost")
 
     depends_on("py-sphinx", when="+devtools")
     depends_on("py-breathe",when="+devtools")
@@ -194,13 +190,6 @@ class UberenvAxom(Package):
         cfg.write("# mfem from uberenv\n")
         cfg.write(cmake_cache_entry("MFEM_DIR",mfem_dir))
 
-        if "boost-headers" in spec:
-            boost_headers_dir = get_spec_path(spec, "boost-headers", path_replacements)
-            cfg.write("# boost headers from uberenv\n")
-            cfg.write(cmake_cache_entry("BOOST_DIR",boost_headers_dir))
-        else:
-            cfg.write("# boost headers not installed by uberenv\n\n")
-
         # optional tpls
 
         if "python" in spec or "devtools" in spec:
@@ -209,13 +198,6 @@ class UberenvAxom(Package):
             cfg.write(cmake_cache_entry("PYTHON_EXECUTABLE",pjoin(python_bin_dir, "python")))
         else:
             cfg.write("# python not built by uberenv\n\n")
-
-        if "lua" in spec:
-            lua_dir = get_spec_path(spec, "lua", path_replacements)
-            cfg.write("# lua from uberenv\n")
-            cfg.write(cmake_cache_entry("LUA_DIR",lua_dir))
-        else:
-            cfg.write("# lua not built by uberenv\n\n")
 
         # optional tpls (dev tools)
 
@@ -228,14 +210,14 @@ class UberenvAxom(Package):
 
         if "py-sphinx" in spec:
             python_bin_dir = get_spec_path(spec, "python", path_replacements, use_bin=True)
-            cfg.write("# sphinx from uberenv\n")
+            cfg.write("# sphinx {} from uberenv\n".format(spec["py-sphinx"].version))
             cfg.write(cmake_cache_entry("SPHINX_EXECUTABLE", pjoin(python_bin_dir, "sphinx-build")))
         else:
             cfg.write("# sphinx not built by uberenv\n\n")
 
         if "py-shroud" in spec:
             python_bin_dir = get_spec_path(spec, "python", path_replacements, use_bin=True)
-            cfg.write("# shroud from uberenv\n")
+            cfg.write("# shroud {} from uberenv\n".format(spec["py-shroud"].version))
             cfg.write(cmake_cache_entry("SHROUD_EXECUTABLE", pjoin(python_bin_dir, "shroud")))
         else:
             cfg.write("# shroud not built by uberenv\n\n")
@@ -268,11 +250,6 @@ class UberenvAxom(Package):
             cfg.write(cmake_cache_entry("MPI_CXX_COMPILER",mpicc))
             cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER",mpif90))
             cfg.write(cmake_cache_entry("MPIEXEC",mpiexec))
-
-        # Note: We are disabling CXX11 for default configurations on chaos5 intel/clang builds, machine is being retired
-        if "chaos_5_x86_64_ib" in sys_type and (("intel" in spec.compiler.name) or ("clang" in spec.compiler.name)):
-            cfg.write("# Disable CXX11 on chaos5 intel/clang builds\n")
-            cfg.write(cmake_cache_entry("BLT_CXX_STD","c++98"))
 
         cfg.write("##################################\n")
         cfg.write("# end uberenv host-config\n")

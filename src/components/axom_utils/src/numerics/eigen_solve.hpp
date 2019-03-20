@@ -20,7 +20,7 @@
 
 #include "axom/Types.hpp" // for AXOM_NULLPTR
 
-#include "axom_utils/vector_utilities.hpp" // for Determinants
+#include "axom_utils/matvecops.hpp"    // for matrix vector operators
 #include "axom_utils/Determinants.hpp" // for Determinants
 #include "axom_utils/LU.hpp"           // for lu_decompose()/lu_solve()
 #include "axom_utils/Matrix.hpp"       // for Matrix
@@ -66,7 +66,7 @@ namespace numerics
  */
 template < typename T >
 int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas,
-                int numIterations=125);
+                int numIterations=160);
 
 } /* end namespace numerics */
 } /* end namespace axom */
@@ -149,7 +149,7 @@ int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int numIterations)
     for (int j = 0 ; j < numIterations ; j++)
     {
       // multiply
-      vector_multiply(A, vec, temp);
+      matrix_vector_multiply(A, vec, temp);
 
       // make ortho to previous (for stability)
       for (int k = 0 ; k < i ; k++)
@@ -173,7 +173,7 @@ int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int numIterations)
     }
 
     // 4: store the eigenval (already stored the eigenvec)
-    vector_multiply(A, vec, temp);
+    matrix_vector_multiply(A, vec, temp);
 
     lambdas[i] = dot_product(vec, temp, N);
   }

@@ -24,6 +24,7 @@
 #define MESH_TESTER_HPP_
 
 // Axom includes
+#include "axom/config.hpp"
 #include "mint/UnstructuredMesh.hpp"
 #include "slic/slic.hpp"
 
@@ -58,10 +59,47 @@ namespace quest
  * based on the cube root of the number of cells in the mesh.
  */
 void findTriMeshIntersections(
-  mint::UnstructuredMesh< MINT_TRIANGLE >* surface_mesh,
+  mint::UnstructuredMesh< mint::SINGLE_SHAPE >* surface_mesh,
   std::vector<std::pair<int, int> > & intersections,
   std::vector<int> & degenerateIndices,
   int spatialIndexResolution = 0);
+
+
+/*!
+ * \brief Mesh repair function to weld vertices that are closer than \a eps
+ *
+ * \param [in,out] surface_mesh A pointer to a pointer to a triangle mesh
+ * \param [in] eps Distance threshold for welding vertices (using the max norm)
+ *
+ * \pre \a eps must be greater than zero
+ * \pre \a surface_mesh is a pointer to a pointer to a non-null triangle mesh.
+ * \post The triangles of \a surface_mesh are reindexed using the welded
+ * vertices and degenerate triangles are removed.  The mesh can still contain
+ * vertices that are not referenced by any triangles.
+ *
+ * This utility function repairs an input triangle mesh (embedded in three
+ * dimensional space) by 'welding' vertices that are closer than \a eps.
+ * The vertices are quantized to an integer lattice with spacing \a eps
+ * and vertices that fall into the same cell on this lattice are identified.
+ * All identified vertices are given the coordinates of the first such vertex
+ * and all incident triangles use the same index for this vertex.
+ *
+ * The input mesh can be a "soup of triangles", where the vertices
+ * of adjacent triangles have distinct indices.  After running this function,
+ * vertices that are closer than \a eps are welded, and their incident
+ * triangles use the new vertex indices.  Thus, the output is an
+ * "indexed triangle mesh".
+ *
+ * This function also removes degenerate triangles from the mesh.  These
+ * are triangles without three distinct vertices after the welding.
+ *
+ * \note This function is destructive.  It modifies the input triangle
+ * mesh in place.
+ * \note The distance metric in this function uses the "max" norm (l_inf).
+ */
+void weldTriMeshVertices(
+  mint::UnstructuredMesh< mint::SINGLE_SHAPE >** surface_mesh,
+  double eps);
 
 } // end namespace quest
 } // end namespace axom

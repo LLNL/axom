@@ -77,9 +77,39 @@ public:
     return m_sz >= IntType();
   }
 
-private:
+protected:
   IntType m_sz;
 };
+
+
+/**
+ * \brief A policy class for the size of a set whose size can change at runtime.
+ */
+template<typename IntType>
+struct DynamicRuntimeSize : public RuntimeSize<IntType>
+{
+public:
+  static const IntType DEFAULT_VALUE = RuntimeSize<IntType>::DEFAULT_VALUE;
+
+  DynamicRuntimeSize( IntType sz = DEFAULT_VALUE)
+    : RuntimeSize< IntType>(sz) {}
+
+  inline void setSize(IntType s)
+  {
+    if(s>= 0) { RuntimeSize<IntType>::m_sz = s; }
+  }
+
+  inline void add(IntType s)
+  {
+    if(s>= 0) { RuntimeSize<IntType>::m_sz += s; }
+  }
+
+  inline void subtract(IntType s)
+  {
+    if(s>= 0) { RuntimeSize<IntType>::m_sz -= s; }
+  }
+};
+
 
 /**
  * \brief A policy class for a compile-time known set size

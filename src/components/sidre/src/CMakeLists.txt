@@ -56,9 +56,7 @@ endif()
 
 if(SHROUD_FOUND)
     add_subdirectory(interface)
-    if(ENABLE_MPI)
-        add_subdirectory(spio/interface)
-    endif()
+    add_subdirectory(spio/interface)
 endif()
 
 if (ENABLE_FORTRAN)
@@ -113,6 +111,11 @@ if(ENABLE_MPI)
     endif()
 endif()
 
+if(SPARSEHASH_FOUND)
+    list(APPEND sidre_depends sparsehash)
+endif()
+
+
 #
 # make the library
 #
@@ -130,13 +133,6 @@ blt_add_library( NAME
                  FOLDER
                      axom/sidre
                 )
-
-if(SPARSEHASH_FOUND)
-    blt_add_target_definitions(TO                 sidre
-                               TARGET_DEFINITIONS ${SPARSEHASH_COMPILER_DEFS})
-    target_include_directories(sidre PRIVATE
-            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src/thirdparty/sparsehash>)
-endif()
 
 install(TARGETS              sidre
         EXPORT               sidre-targets

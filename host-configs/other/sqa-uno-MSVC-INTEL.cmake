@@ -19,6 +19,19 @@
 #         -T "Intel C++ Compiler 18.0"                       \
 #         -C ..\host-configs\other\sqa-uno-MSVC-intel.cmake  \
 #         <path-to-axom>
+#
+# Build the code from the command line as follows (/m for parallel build in msbuild):
+#   cmake --build . --config {Release, Debug, RelWithDebInfo} [-- /m:8]
+#
+# Test the code as follows (j for parallel testing):
+#   ctest -j8 -C {Release,Debug,RelWithDebInfo}
+# 
+# Install the come from the command line as follows:
+#   cmake --build . --config Release --target install
+#
+# Note: MPI in this configuration requires an initial login.
+# If the MPI tests hang, try to run the blt_mpi_smoke test manually and enter 
+# your credentials. They should work automatically (e.g. through ctest) after that.
 #------------------------------------------------------------------------------
 
 ### Setup Axom components
@@ -30,17 +43,15 @@ set(ENABLE_SIDRE OFF CACHE BOOL "")
 
 # Disable Fortran since Visual Studio is not generating modules for our component Fortan interfaces
 set(ENABLE_FORTRAN OFF CACHE BOOL "")
-
+set(ENABLE_DOCS    OFF CACHE BOOL "")
 
 ### Setup some devtool/TPL paths
 
 # Set the HOME variable (%USERPROFILE% in Windows)
 string(REPLACE "\\" "/" HOME "$ENV{USERPROFILE}")
 
-set(BOOST_DIR "${HOME}/Code/boost" CACHE PATH "")
-
 # Note: Doxygen assumes graphviz 'dot' is in PATH
-set(DOXYGEN_EXECUTABLE "${HOME}/Chocolatey/bin/doxygen.exe" CACHE PATH "") 
+#set(DOXYGEN_EXECUTABLE "${HOME}/Chocolatey/bin/doxygen.exe" CACHE PATH "") 
 
 # Note: uncrustify disabled since this version is different than uberenv version and changes whitespace
 # set(UNCRUSTIFY_EXECUTABLE "${HOME}/Code/UniversalIndentGUI/indenters/uncrustify.exe" CACHE PATH "")

@@ -150,7 +150,8 @@ std::string IOManager::correspondingRelayProtocol(
   {
     return "json";
   }
-  else if(sidre_protocol == "sidre_conduit_json")
+  else if(sidre_protocol == "sidre_conduit_json"
+          || sidre_protocol == "conduit_json")
   {
     return "conduit_json";
   }
@@ -226,16 +227,12 @@ void IOManager::write(sidre::Group* datagroup, int num_files,
       {
         utilities::filesystem::makeDirsForPath(dir_name);
       }
-      h5_file_id = H5Fcreate(hdf5_name.c_str(),
-                             H5F_ACC_TRUNC,
-                             H5P_DEFAULT,
-                             H5P_DEFAULT);
+      h5_file_id = conduit::relay::io::hdf5_create_file(hdf5_name);
     }
     else
     {
-      h5_file_id = H5Fopen(hdf5_name.c_str(),
-                           H5F_ACC_RDWR,
-                           H5P_DEFAULT);
+      h5_file_id =
+        conduit::relay::io::hdf5_open_file_for_read_write(hdf5_name);
     }
     SLIC_ASSERT(h5_file_id >= 0);
 
@@ -453,9 +450,7 @@ void IOManager::loadExternalData(sidre::Group* datagroup,
 
   std::string hdf5_name = getFileNameForRank(file_pattern, root_file, group_id);
 
-  hid_t h5_file_id = H5Fopen(hdf5_name.c_str(),
-                             H5F_ACC_RDONLY,
-                             H5P_DEFAULT);
+  hid_t h5_file_id = conduit::relay::io::hdf5_open_file_for_read(hdf5_name);
   SLIC_ASSERT(h5_file_id >= 0);
 
   std::string group_name = fmt::sprintf("datagroup_%07d", m_my_rank);
@@ -537,7 +532,7 @@ void IOManager::createRootFile(const std::string& file_base,
     n["protocol/name"] = protocol;
     n["protocol/version"] = "0.0";
 
-    root_file_name = file_base + "." + relay_protocol + ".root";
+    root_file_name = file_base + ".root";
   }
 
 #ifdef AXOM_USE_SCR
@@ -599,25 +594,27 @@ std::string IOManager::getProtocol(
                  "The root file name should always end in 'root'."
                  << " File name was '"<< root_name <<"'");
 
-  // Attempt to find a secondary extension
-  std::string extension2;
-  std::string base2;
-  conduit::utils::rsplit_string(base, dot, extension2, base2);
+  std::string relay_protocol = "json";
+#ifdef AXOM_USE_HDF5
+  // Attempt to open the root file using HDF5.  If it succeeds, set
+  // relay_protocol to "hdf5", otherwise we assume a json protocol.
+  //
+  // Suppress error output for H5Fopen, since failure is acceptable here.
+  H5E_auto2_t herr_func;
+  void* old_client_data;
+  H5Eget_auto(H5E_DEFAULT, &herr_func, &old_client_data);
+  H5Eset_auto(H5E_DEFAULT, NULL, NULL);
 
-  // sidre_hdf5 protocol is ".root" others are "*.<relay protocol>.root"
-  std::string relay_protocol = "hdf5";
-  if (extension2 == "json"
-      || extension2 == "conduit_json"
-      || extension2 == "hdf5")
+  hid_t file_id = H5Fopen(root_name.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+  if (file_id > 0)
   {
-    relay_protocol = extension2;
+    relay_protocol = "hdf5";
+    herr_t errv = H5Fclose(file_id);
+    SLIC_ASSERT(errv >= 0);
   }
 
-#ifndef AXOM_USE_HDF5
-  SLIC_WARNING_IF(
-    relay_protocol == "hdf5",
-    "IOManager::getProtocol() -- Attempting to open an 'hdf5'-based "
-    << "root file but axom is not configured with hdf5");
+  // Restore error output
+  H5Eset_auto(H5E_DEFAULT, herr_func, old_client_data);
 #endif
 
   std::string protocol;
@@ -626,8 +623,39 @@ std::string IOManager::getProtocol(
     conduit::Node n;
     conduit::relay::io::load(root_name, relay_protocol, n);
 
-    protocol = n["protocol/name"].as_string();
+    conduit::Node& pnode = n["protocol/name"];
+    if (pnode.dtype().is_string())
+    {
+      protocol = n["protocol/name"].as_string();
+    }
+    else if (relay_protocol == "json")
+    {
+      //If relay_protocol "json" didn't work, try "conduit_json"
+      n.reset();
+      conduit::relay::io::load(root_name, "conduit_json", n);
+      protocol = n["protocol/name"].as_string();
+    }
+
+    if (protocol.empty())
+    {
+      // Did not find protocol name, issue warning and assign a default guess.
+
+      SLIC_WARNING(
+        "'" << root_name
+            << "/protocol/name' does not contain a valid Sidre protocol name.  "
+            << "Will attempt to use a default protocol.");
+
+      if (relay_protocol == "hdf5")
+      {
+        protocol = "sidre_hdf5";
+      }
+      else
+      {
+        protocol = "sidre_json";
+      }
+    }
   }
+
   protocol = broadcastString(protocol, m_mpi_comm, m_my_rank);
   return protocol;
 }
@@ -713,9 +741,7 @@ void IOManager::readSidreHDF5(sidre::Group* datagroup,
 
   std::string hdf5_name = getFileNameForRank(file_pattern, root_file, group_id);
 
-  hid_t h5_file_id = H5Fopen(hdf5_name.c_str(),
-                             H5F_ACC_RDONLY,
-                             H5P_DEFAULT);
+  hid_t h5_file_id = conduit::relay::io::hdf5_open_file_for_read(hdf5_name);
   SLIC_ASSERT(h5_file_id >= 0);
 
   std::string group_name = fmt::sprintf("datagroup_%07d", m_my_rank);
@@ -806,9 +832,8 @@ void IOManager::writeGroupToRootFile(sidre::Group* group,
                                      const std::string& file_name)
 {
 #ifdef AXOM_USE_HDF5
-  hid_t root_file_id = H5Fopen(file_name.c_str(),
-                               H5F_ACC_RDWR,
-                               H5P_DEFAULT);
+  hid_t root_file_id =
+    conduit::relay::io::hdf5_open_file_for_read_write(file_name);
 
   SLIC_ASSERT(root_file_id >= 0);
 
@@ -859,9 +884,8 @@ void IOManager::writeGroupToRootFileAtPath(sidre::Group* group,
                                            const std::string& group_path)
 {
 #ifdef AXOM_USE_HDF5
-  hid_t root_file_id = H5Fopen(file_name.c_str(),
-                               H5F_ACC_RDWR,
-                               H5P_DEFAULT);
+  hid_t root_file_id =
+    conduit::relay::io::hdf5_open_file_for_read_write(file_name);
 
   SLIC_ASSERT(root_file_id >= 0);
 
@@ -917,9 +941,8 @@ void IOManager::writeViewToRootFileAtPath(sidre::View* view,
                                           const std::string& group_path)
 {
 #ifdef AXOM_USE_HDF5
-  hid_t root_file_id = H5Fopen(file_name.c_str(),
-                               H5F_ACC_RDWR,
-                               H5P_DEFAULT);
+  hid_t root_file_id =
+    conduit::relay::io::hdf5_open_file_for_read_write(file_name);
 
   SLIC_ASSERT(root_file_id >= 0);
 

@@ -39,13 +39,9 @@ string(REPLACE "\\" "/" HOME "$ENV{USERPROFILE}")
 
 ### Setup some devtool/TPL paths
 
-# Enable sidre using conduit but not hdf5 (until we resolve configuration problems with hdf5)
-set(ENABLE_SIDRE ON CACHE BOOL "")
+# Sidre will use conduit but not hdf5 until we resolve configuration problems with hdf5
 #set(HDF5_DIR    ... CACHE PATH "")
 set(CONDUIT_DIR "${HOME}/Projects/install/conduit-no-hdf5" CACHE PATH "")
-
-# Boost headers
-set(BOOST_DIR "${HOME}/Code/boost" CACHE PATH "")
 
 # Note: Doxygen assumes graphviz 'dot' is in PATH
 set(DOXYGEN_EXECUTABLE "${HOME}/Chocolatey/bin/doxygen.exe" CACHE PATH "") 
@@ -62,3 +58,6 @@ set(MPI_GUESS_LIBRARY_NAME "MSMPI" CACHE STRING "")
 ### Set some additional options
 set(ENABLE_FOLDERS ON CACHE BOOL "")
 set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
+
+### Disable warning about deprecated TR1 namespace in gtest
+set(BLT_DEFINES "/D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING" CACHE STRING "")

@@ -19,7 +19,7 @@
 #define MINT_PRISM_6_HPP_
 
 // Mint includes
-#include "mint/CellType.hpp"
+#include "mint/CellTypes.hpp"
 #include "mint/FEBasisTypes.hpp"
 #include "mint/ShapeFunction.hpp"
 
@@ -51,11 +51,12 @@ static const double PRISM_ONE_THIRD =  1.0/3.0;
  * \see ShapeFunction
  */
 template < >
-class Lagrange< MINT_PRISM > : public ShapeFunction< Lagrange< MINT_PRISM > >
+class Lagrange< mint::PRISM > :
+  public ShapeFunction< Lagrange< mint::PRISM > >
 {
 public:
 
-  static int getCellType() { return MINT_PRISM; }
+  static CellType getCellType() { return mint::PRISM; }
 
   static int getType() { return MINT_LAGRANGE_BASIS; }
 

@@ -16,6 +16,10 @@ set( quest_headers
 
     SignedDistance.hpp
 
+    ## All-nearest-neighbors query
+    AllNearestNeighbors.hpp
+    detail/AllNearestNeighbors_detail.hpp
+
     ## Geometry Headers
     geom/Brood.hpp
     geom/DenseOctreeLevel.hpp
@@ -66,10 +70,6 @@ set( quest_depends_on
      primal
      )
 
-if (BOOST_FOUND)
-    list(APPEND quest_depends_on boost)
-endif()
-
 if (ENABLE_OPENMP)
     list(APPEND quest_depends_on openmp)
 endif()
@@ -78,7 +78,7 @@ if (ENABLE_MPI)
     list(APPEND quest_headers stl/PSTLReader.hpp)
     list(APPEND quest_sources stl/PSTLReader.cpp)
 
-    if(ENABLE_LUMBERJACK)
+    if(AXOM_ENABLE_LUMBERJACK)
         list(APPEND quest_depends_on lumberjack mpi)
     endif()
 endif()
@@ -87,13 +87,17 @@ if (SHROUD_FOUND)
     add_subdirectory(interface)
 endif()
 
+# Add sparsehash when available
+if(SPARSEHASH_FOUND)
+    list(APPEND quest_depends_on sparsehash)
+endif()
+
+
 if (ENABLE_FORTRAN)
-    if (ENABLE_MPI)
-        ## append shroud generated headers/sources to corresponding lists
-        list(APPEND quest_headers interface/c_fortran/wrapQUEST.h)
-        list(APPEND quest_sources interface/c_fortran/wrapQUEST.cpp)
-        list(APPEND quest_sources interface/c_fortran/wrapfquest.f)
-    endif()
+    ## append shroud generated headers/sources to corresponding lists
+    list(APPEND quest_headers interface/c_fortran/wrapQUEST.h)
+    list(APPEND quest_sources interface/c_fortran/wrapQUEST.cpp)
+    list(APPEND quest_sources interface/c_fortran/wrapfquest.F)
 endif()
 
 blt_add_library(
@@ -104,6 +108,7 @@ blt_add_library(
     DEPENDS_ON  ${quest_depends_on}
     FOLDER      axom/quest
     )
+
 install(TARGETS              quest
         EXPORT               quest-targets
         DESTINATION          lib

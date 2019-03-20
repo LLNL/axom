@@ -18,6 +18,10 @@
 #include "gtest/gtest.h"
 #include <limits>
 
+#ifdef AXOM_USE_CXX11
+#include <type_traits>
+#endif
+
 #include "axom/Types.hpp"
 
 TEST(axom_utils_types,check_types_8)
@@ -107,4 +111,27 @@ TEST(axom_utils_types,check_types_64)
 
   EXPECT_TRUE(true);
 #endif
+}
+
+
+TEST(axom_utils_types,check_types_floating)
+{
+  typedef axom::common::float32 float32;
+  typedef axom::common::float64 float64;
+  static const std::size_t EXP_FLOAT32_BYTES = 4;
+  static const std::size_t EXP_FLOAT64_BYTES = 8;
+
+#ifdef AXOM_USE_CXX11
+  EXPECT_TRUE( std::is_floating_point<float32>::value);
+  EXPECT_TRUE( std::is_floating_point<float64>::value);
+#endif
+
+  EXPECT_FALSE( std::numeric_limits<float32>::is_integer);
+  EXPECT_FALSE( std::numeric_limits<float64>::is_integer);
+
+  EXPECT_TRUE( std::numeric_limits<float32>::is_signed);
+  EXPECT_TRUE( std::numeric_limits<float64>::is_signed);
+
+  EXPECT_EQ(EXP_FLOAT32_BYTES, sizeof(float32) );
+  EXPECT_EQ(EXP_FLOAT64_BYTES, sizeof(float64) );
 }

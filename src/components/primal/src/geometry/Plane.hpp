@@ -20,7 +20,7 @@
 
 #include "axom/Macros.hpp"                 // for Axom macros
 #include "axom/Types.hpp"                  // for AXOM_NULLPTR
-#include "axom_utils/vector_utilities.hpp" // for vector operators
+#include "axom_utils/matvecops.hpp"        // for vector operators
 #include "primal/OrientationResult.hpp"    // for OrientedSide enum
 
 #include "slic/slic.hpp"                   // for SLIC macros
@@ -240,9 +240,6 @@ private:
 
   T m_normal[ NDIMS ]; /*!< plane unit-normal  */
   T m_offset;          /*!< offset from origin */
-
-  DISABLE_COPY_AND_ASSIGNMENT( Plane );
-  DISABLE_MOVE_AND_ASSIGNMENT( Plane );
 };
 
 } /* namespace primal */
@@ -325,9 +322,9 @@ Plane< T, NDIMS >::Plane( const T* x1, const T* x2, const T* x3 )
     degenerate = degenerate && utilities::isNearlyEqual( m_normal[i], 0.0 );
   }
 
-  SLIC_ERROR_IF(
-    degenerate,
-    "Supplied points form a degenerate " << (NDIMS==2 ? "line" : "triangle") );
+  SLIC_ERROR_IF( degenerate,
+                 "Supplied points form a degenerate " <<
+                 ( (NDIMS==2) ? "line" : "triangle" ) );
 
   numerics::normalize( m_normal, NDIMS );
   m_offset = numerics::dot_product( m_normal, x1, NDIMS );

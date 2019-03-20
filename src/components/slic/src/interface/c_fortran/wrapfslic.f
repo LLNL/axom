@@ -20,12 +20,20 @@
 ! splicer begin file_top
 ! splicer end file_top
 module axom_slic
+    use iso_c_binding, only : C_INT
     ! splicer begin module_use
     ! splicer end module_use
     implicit none
 
     ! splicer begin module_top
     ! splicer end module_top
+
+    !  Level
+    integer(C_INT), parameter :: level_error = 0
+    integer(C_INT), parameter :: level_warning = 1
+    integer(C_INT), parameter :: level_info = 2
+    integer(C_INT), parameter :: level_debug = 3
+    integer(C_INT), parameter :: level_num_levels = 4
 
     interface
 
@@ -41,11 +49,6 @@ module axom_slic
             implicit none
             logical(C_BOOL) :: SHT_rv
         end function c_is_initialized
-
-        subroutine slic_finalize() &
-                bind(C, name="SLIC_finalize")
-            implicit none
-        end subroutine slic_finalize
 
         subroutine c_create_logger(name, imask) &
                 bind(C, name="SLIC_create_logger")
@@ -172,6 +175,11 @@ module axom_slic
             integer(C_INT), value, intent(IN) :: line
             logical(C_BOOL), value, intent(IN) :: filter
         end subroutine c_log_message_bufferify
+
+        subroutine slic_finalize() &
+                bind(C, name="SLIC_finalize")
+            implicit none
+        end subroutine slic_finalize
 
         ! splicer begin additional_interfaces
         ! splicer end additional_interfaces

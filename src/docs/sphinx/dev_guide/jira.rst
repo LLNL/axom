@@ -19,9 +19,10 @@ JIRA: Issue Tracking and Release Cycles
 *******************************************
 
 We use our `Axom JIRA project space <https://lc.llnl.gov/jira/browse/ATK>`_ 
-for issue tracking and work planning. In JIRA, you can create, edit and comment 
-on issues.  You can also assign issues to individuals, check on their status, group 
-them together for sprint development, and search for issues in various ways.
+for issue tracking and work planning. In JIRA, you can create, edit and comment
+on issues.  You can also assign issues to individuals, check on their status, 
+group them together for sprint development, and search for issues in various 
+ways.
 
 This section describes Axom software development cycles and basic issue work 
 flow. 
@@ -32,53 +33,68 @@ flow.
 Sprint Cycles and Work Planning
 ========================================
 
-The Axom project plans work for quarterly (3 month) sprint cycles. Although
-three months is long for typical sprint-based development, we find that
-it works well for our project where multiple software components are under
-development concurrently since it gives component developers flexibility to 
-plan and coordinate work with other components in a way that works best for
-them.
+The Axom project plans work regularly for sprint development cycles, which
+are typically 2 or 3 months long. Although this is long for typical 
+sprint-based development, we find that it works well for our project where 
+multiple software components are under development concurrently since it 
+gives component developers flexibility to plan and coordinate work with other 
+components in a way that works best for them.
 
-.. note:: Our three-month sprint development cycles do not necessarily 
-          coincide with software releases. We may do multiple releases in
-          a sprint or a single release may contain work from more than one 
-          sprint. Our releases are driven by the frequency with which it makes
-          sense to get new developments to our users.
+.. note:: Our sprint development cycles often coincide with software releases,
+          but not always. We may do multiple releases in a sprint or a single 
+          release may contain work from more than one sprint. Releases are 
+          determined mostly by when it makes sense to push a set of features 
+          out to our users.
 
-The Axom sprint cycles align with the quarters of the LLNL fiscal year:
+In JIRA, the project maintains two ``Sprints``, called ``Current Sprint`` 
+and ``Next Sprint``. The current sprint contains JIRA issues that are planned,
+in progress, or closed in the current sprint work period. The next sprint
+is used to stage issues for future development in the next sprint. The 
+``Scrum Board`` maintained by the project is called ``Axom Development``; it
+contains the two sprints and the project backlog, which contains issues issues
+that have been identified but have not been planned for work.
 
-* Q1: October 1 -- December 31
-* Q2: January 1 -- March 31
-* Q3: April 1 -- June 30
-* Q4: July 1 -- September 30
+At the end of the current sprint cycle and before starting the next, the team
+meets to discuss any issues encountered in the current sprint. The goal is to
+prevent issues that arise during development from being repeated. Then, issues
+in the next sprint and the backlog are reviewed for working in the next sprint. 
+Any issues in the next sprint that will not be worked on during the next
+sprint cycle are moved to the backlog. Any issues in the backlog that will be
+worked in the next sprint are moved to the next sprint. Next, the team 
+decides which issues that were not completed in the current sprint should be
+moved to the next sprint cycle. Hopefully, there are not many and typically 
+all unresolved issues will propagate to the next sprint. Any unresolved issues 
+that will not be worked on the next sprint are moved to the backlog. While
+identifying issues for the next sprint, the team should attempt to make sure
+that each issue is assigned to a developer to work on.
 
-At the end of one sprint cycle and before starting the next one, we 
-decide which issues that were not completed to move to the next cycle. 
-Hopefully, there are not many and typically we will propagate all 
-such unresolved issues to the next sprint cycle. Before we start the next 
-cycle, we meet as a team to make sure all issues in the associated version 
-are assigned and that everyone is comfortable with their assignments.
+Finally, the Current Sprint is 'Completed' by clicking ``Complete Sprint`` on
+the upper right of the sprint. JIRA will ask what to do with unresolved issues
+and, based on the discussion in the previous paragraph, we move them to the 
+next sprint.
 
-To start a new sprint cycle, we create a new *sprint board* in JIRA 
-(typically named for the sprint end date; e.g., Due 3/31/2018) and move
-all issues in the upcoming version to it. We configure the board so that issues
-are sorted into horizontal "swimlanes" one for each developer. There are 
-three vertical columns on the sprint board that intersect the swimlanes to
-indicate issues that: have not been started, are in progress, are done.
-Then, we start the sprint; i.e., the new sprint cycle.
+Before starting a new sprint cycle, the sprint boards are renamed by swapping 
+their names; ``Current Sprint`` becomes ``Next Sprint`` and ``Next Sprint`` 
+becomes ``Current Sprint`` (just like swapping pointers!). Then, 
+the new sprint is started with the ``Current Sprint`` board.
+This involves setting the completion date for the sprint and configuring the 
+sprint board so that issues are sorted into horizontal "swimlanes" one for 
+each developer. There are three vertical columns on the sprint board that 
+intersect the swimlanes to indicate issues that: have not been started, are 
+in progress, are done.
 
 Note that as development occurs during a sprint, work will be reviewed and
 merged from feature branches to the develop branch using pull requests. 
 Reviewing work in smaller increments is much easier than reviewing everything 
 at once. 
 
-Developers must close issues in JIRA when they are complete.
+.. note:: Developers must close issues in JIRA when they are complete.
 
-Depending on the need to make changes available to users, we may 
-merge the develop branch into the master branch and tag new release numbers
-multiple times during a release cycle. We may also choose to merge develop into 
-master and tag a new release number at the end of a sprint. For a description
-of how the master and develop branches interact, see :ref:`gitflow-label`.
+Depending on the need to make changes available to users, we will 
+merge the develop branch into the master branch and tag a new release on 
+the master branch. This may happen at the end of a sprint or not. For a 
+description of how the master and develop branches interact, 
+see :ref:`gitflow-label`.
 
 
 .. _issueworkflow-label:

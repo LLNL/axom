@@ -25,8 +25,8 @@
 
 #include "primal/BVHTree.hpp"
 #include "primal/BoundingBox.hpp"
-#include "primal/HyperSphere.hpp"
 #include "primal/Point.hpp"
+#include "primal/Sphere.hpp"
 #include "primal/Triangle.hpp"
 #include "primal/Vector.hpp"
 
@@ -36,6 +36,7 @@
 #include "quest/STLReader.hpp"
 #include "quest/SignedDistance.hpp"
 
+#include "mint/config.hpp"
 #include "mint/Field.hpp"
 #include "mint/FieldData.hpp"
 #include "mint/FieldVariable.hpp"
@@ -62,11 +63,11 @@ using axom::primal::Triangle;
 using axom::primal::BoundingBox;
 using axom::primal::BVHTree;
 using axom::primal::Vector;
-using axom::primal::HyperSphere;
+using axom::primal::Sphere;
 
 
 static const int NDIMS = 3;
-typedef axom::mint::UnstructuredMesh< MINT_TRIANGLE > TriangleMesh;
+typedef axom::mint::UnstructuredMesh< mint::SINGLE_SHAPE > UMesh;
 
 static struct
 {
@@ -85,9 +86,9 @@ static struct
 //------------------------------------------------------------------------------
 void init();
 void parse_args( int argc, char** argv );
-void read_stl_mesh( TriangleMesh* stl_mesh );
+void read_stl_mesh( UMesh* stl_mesh );
 BoundingBox< double,NDIMS > compute_bounds( axom::mint::Mesh* mesh );
-void get_uniform_mesh( TriangleMesh* surface_mesh,
+void get_uniform_mesh( UMesh* surface_mesh,
                        axom::mint::UniformMesh*& umesh);
 BoundingBox< double,NDIMS > getCellBoundingBox(
   int cellIdx, axom::mint::Mesh* surface_mesh );
@@ -108,7 +109,7 @@ int main( int argc, char** argv )
   parse_args( argc, argv );
 
   // STEP 1: read file
-  TriangleMesh* surface_mesh = new TriangleMesh( 3 );
+  UMesh* surface_mesh = new UMesh( 3, mint::TRIANGLE );
   read_stl_mesh( surface_mesh );
   axom::mint::write_vtk( surface_mesh, "surface_mesh.vtk" );
 
@@ -172,7 +173,7 @@ int main( int argc, char** argv )
 }
 
 //------------------------------------------------------------------------------
-void get_uniform_mesh( TriangleMesh* surface_mesh,
+void get_uniform_mesh( UMesh* surface_mesh,
                        axom::mint::UniformMesh*& umesh)
 {
   SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
@@ -185,7 +186,7 @@ void get_uniform_mesh( TriangleMesh* surface_mesh,
   h[1] = ( meshBounds.getMax()[1]-meshBounds.getMin()[1] ) / Arguments.ny;
   h[2] = ( meshBounds.getMax()[2]-meshBounds.getMin()[2] ) / Arguments.nz;
 
-  int ext[6];
+  mint::int64 ext[6];
   ext[0] = 0;
   ext[1] = Arguments.nx;
   ext[2] = 0;
@@ -281,7 +282,7 @@ void showHelp()
 }
 
 //------------------------------------------------------------------------------
-void read_stl_mesh( TriangleMesh* stl_mesh )
+void read_stl_mesh( UMesh* stl_mesh )
 {
   SLIC_INFO("Reading file: " << Arguments.fileName << "...");
   quest::STLReader* reader = new quest::STLReader();
@@ -329,13 +330,16 @@ void compute_norms( axom::mint::UniformMesh* umesh,
   const int nnodes = umesh->getNumberOfNodes();
 
   // STEP 0: grab field pointers
-  axom::mint::FieldData* PD = umesh->getNodeFieldData();
-  double* phi_computed  = PD->getField( "phi" )->getDoublePtr();
-  double* phi_expected  = PD->getField( "expected_phi" )->getDoublePtr();
+  double* phi_computed = umesh->getFieldPtr< double >( "phi",
+                                                       mint::NODE_CENTERED );
+  double* phi_expected = umesh->getFieldPtr< double >( "expected_phi",
+                                                       mint::NODE_CENTERED  );
 
-  // STEP 1: add field to store error
-  PD->addField( new axom::mint::FieldVariable< double >( "error", nnodes ) );
-  double* error = PD->getField( "error" )->getDoublePtr();
+  SLIC_ASSERT( phi_computed != AXOM_NULLPTR );
+  SLIC_ASSERT( phi_expected != AXOM_NULLPTR );
+
+  // STEP 1: add field to store erroraddCell
+  double* error = umesh->createField< double >( "error", mint::NODE_CENTERED );
   SLIC_ASSERT( error != AXOM_NULLPTR );
 
   // STEP 2: loop over nodes and calculate norms
@@ -372,15 +376,12 @@ void expected_phi(axom::mint::UniformMesh* umesh)
   SLIC_INFO("sphere radius: " << Arguments.sphere_radius );
   SLIC_INFO("sphere center: " << Arguments.sphere_center );
 
-  HyperSphere< double, 3 > sphere( Arguments.sphere_radius );
+  Sphere< double, 3 > sphere( Arguments.sphere_radius );
 
   // STEP 1: Add node field to stored exact distance field.
-  const int nnodes = umesh->getNumberOfNodes();
-  axom::mint::FieldData* PD = umesh->getNodeFieldData();
-  SLIC_ASSERT( PD != AXOM_NULLPTR );
-
-  PD->addField( new axom::mint::FieldVariable<double>("expected_phi",nnodes) );
-  double* phi = PD->getField( "expected_phi" )->getDoublePtr();
+  const int nnodes    = umesh->getNumberOfNodes();
+  double* phi         = umesh->createField< double >( "expected_phi",
+                                                      mint::NODE_CENTERED  );
   SLIC_ASSERT( phi != AXOM_NULLPTR );
 
   // STEP 2: loop over uniform mesh nodes and compute distance field
@@ -394,7 +395,7 @@ void expected_phi(axom::mint::UniformMesh* umesh)
     double pnt[3];
     umesh->getNode( i, pnt );
 
-    phi[ i ]  = sphere.getSignedDistance( pnt );
+    phi[ i ]  = sphere.computeSignedDistance( pnt );
   }
 
   SLIC_INFO("done.");
@@ -407,14 +408,10 @@ void n2( axom::mint::Mesh* surface_mesh, axom::mint::UniformMesh* umesh )
   SLIC_ASSERT( umesh != AXOM_NULLPTR );
 
   // STEP 1: Setup node-centered signed distance field on uniform mesh
-  const int nnodes = umesh->getNumberOfNodes();
-  axom::mint::FieldData* PD = umesh->getNodeFieldData();
-  SLIC_ASSERT( PD != AXOM_NULLPTR );
-
-  PD->addField( new axom::mint::FieldVariable<double>("n2_phi",nnodes) );
-  double* phi = PD->getField( "n2_phi" )->getDoublePtr();
+  const int nnodes    = umesh->getNumberOfNodes();
+  double* phi         = umesh->createField< double >( "n2_phi",
+                                                      mint::NODE_CENTERED );
   SLIC_ASSERT( phi != AXOM_NULLPTR );
-
 
   // STEP 2: loop over uniform mesh nodes and compute distance field
   SLIC_INFO("Calculating distance field...");
@@ -433,18 +430,17 @@ void n2( axom::mint::Mesh* surface_mesh, axom::mint::UniformMesh* umesh )
     double unsignedMinDistSQ = std::numeric_limits< double >::max();
     int sign = 0;
 
-    const int ncells = surface_mesh->getMeshNumberOfCells();
-    for (int j=0 ; j < ncells ; ++j )
+    const axom::mint::IndexType ncells = surface_mesh->getNumberOfCells();
+    for (axom::mint::IndexType j=0 ; j < ncells ; ++j )
     {
-
       // find minimum distance from query point to triangle
-      int closest_cell[ 3 ];
-      surface_mesh->getMeshCell( j, closest_cell );
+      axom::mint::IndexType closest_cell[ 3 ];
+      surface_mesh->getCell( j, closest_cell );
 
       Point< double,NDIMS > a,b,c;
-      surface_mesh->getMeshNode( closest_cell[0], a.data() );
-      surface_mesh->getMeshNode( closest_cell[1], b.data() );
-      surface_mesh->getMeshNode( closest_cell[2], c.data() );
+      surface_mesh->getNode( closest_cell[0], a.data() );
+      surface_mesh->getNode( closest_cell[1], b.data() );
+      surface_mesh->getNode( closest_cell[2], c.data() );
       Triangle< double,3 > T( a,b,c);
       const double sqDist = axom::primal::squared_distance( Q, T );
       if ( sqDist < unsignedMinDistSQ)
@@ -455,9 +451,7 @@ void n2( axom::mint::Mesh* surface_mesh, axom::mint::UniformMesh* umesh )
 
         sign = negSide ? -1 : 1;
         unsignedMinDistSQ = sqDist;
-
       }     // END if
-
     }   // END for all cells on the surface mesh
 
     phi[i] = sign * std::sqrt( unsignedMinDistSQ );
@@ -476,19 +470,16 @@ void computeUsingBucketTree( axom::mint::Mesh* surface_mesh,
 
   quest::SignedDistance< NDIMS > signedDistance( surface_mesh, 25, 32 );
 
-  const int nnodes = umesh->getNumberOfNodes();
-  axom::mint::FieldData* PD = umesh->getNodeFieldData();
-  SLIC_ASSERT( PD != AXOM_NULLPTR );
-
-  PD->addField( new axom::mint::FieldVariable< double >("phi",nnodes) );
-  double* phi = PD->getField( "phi" )->getDoublePtr();
+  const int nnodes    = umesh->getNumberOfNodes();
+  double* phi         = umesh->createField< double >( "phi",
+                                                      mint::NODE_CENTERED );
   SLIC_ASSERT( phi != AXOM_NULLPTR );
 
   for ( int inode=0 ; inode < nnodes ; ++inode )
   {
 
     Point< double,NDIMS > pt;
-    umesh->getMeshNode( inode, pt.data() );
+    umesh->getNode( inode, pt.data() );
 
     phi[ inode ] = signedDistance.computeDistance( pt );
 
@@ -502,19 +493,14 @@ void computeUsingBucketTree( axom::mint::Mesh* surface_mesh,
   btree->writeVtkFile( "bucket-tree.vtk" );
 
   // mark bucket IDs on surface mesh
-  const int ncells = surface_mesh->getMeshNumberOfCells();
-  axom::mint::FieldData* CD = surface_mesh->getCellFieldData();
-  CD->addField( new axom::mint::FieldVariable<int>( "BucketID", ncells ) );
-  int* bidx = CD->getField( "BucketID" )->getIntPtr();
+  int* bidx = umesh->createField< int >( "BucketID", mint::CELL_CENTERED );
   SLIC_ASSERT( bidx != AXOM_NULLPTR );
 
   const int numObjects = btree->getNumberOfObjects();
   for ( int i=0 ; i < numObjects ; ++i )
   {
-
     const int idx = btree->getObjectBucketIndex( i );
     bidx[ i ] = idx;
-
   } // END for all objects
 
   axom::mint::write_vtk( surface_mesh, "partitioned_surface_mesh.vtk" );
@@ -522,30 +508,27 @@ void computeUsingBucketTree( axom::mint::Mesh* surface_mesh,
 }
 
 //------------------------------------------------------------------------------
-BoundingBox< double,NDIMS > getCellBoundingBox( int cellIdx,
-                                                axom::mint::Mesh* surface_mesh )
+BoundingBox< double,NDIMS > getCellBoundingBox( axom::mint::IndexType cellIdx,
+                                                mint::Mesh* surface_mesh )
 {
   // Sanity checks
   SLIC_ASSERT( surface_mesh != AXOM_NULLPTR );
-  SLIC_ASSERT( cellIdx >= 0 && cellIdx < surface_mesh->getMeshNumberOfCells());
+  SLIC_ASSERT( cellIdx >= 0 && cellIdx < surface_mesh->getNumberOfCells());
 
-  using namespace axom::quest;
-
-  int cell[3];
-  surface_mesh->getMeshCell( cellIdx, cell );
+  axom::mint::IndexType cell[3];
+  surface_mesh->getCell( cellIdx, cell );
 
   BoundingBox< double,3 > bb;
   Point< double,3 > pt;
 
   for ( int i=0 ; i < 3 ; ++i )
   {
-    surface_mesh->getMeshNode( cell[i], pt.data() );
+    surface_mesh->getNode( cell[i], pt.data() );
     bb.addPoint( pt );
   }  // END for all cell nodes
 
   return bb;
 }
-
 
 //------------------------------------------------------------------------------
 BoundingBox< double,NDIMS > compute_bounds( axom::mint::Mesh* mesh)
@@ -555,9 +538,9 @@ BoundingBox< double,NDIMS > compute_bounds( axom::mint::Mesh* mesh)
   BoundingBox< double,NDIMS > meshBB;
   Point< double,NDIMS > pt;
 
-  for ( int i=0 ; i < mesh->getMeshNumberOfNodes() ; ++i )
+  for ( int i=0 ; i < mesh->getNumberOfNodes() ; ++i )
   {
-    mesh->getMeshNode( i, pt.data() );
+    mesh->getNode( i, pt.data() );
     meshBB.addPoint( pt );
   }  // END for all nodes
 

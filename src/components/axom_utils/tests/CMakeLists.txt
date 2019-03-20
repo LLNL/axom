@@ -22,14 +22,17 @@ set(gtest_utils_tests
    utils_fileUtilities.cpp
    utils_types.cpp
    utils_utilities.cpp
+   utils_about.cpp
 
    numerics_determinants.cpp
-   numerics_linear_solve.cpp
    numerics_eigen_solve.cpp
-   numerics_polynomial_solvers.cpp
-   numerics_vector_utilities.cpp
+   numerics_eigen_sort.cpp
+   numerics_jacobi_eigensolve.cpp
+   numerics_linear_solve.cpp
    numerics_lu.cpp
    numerics_matrix.cpp
+   numerics_matvecops.cpp
+   numerics_polynomial_solvers.cpp
    )
 
 
@@ -47,7 +50,7 @@ foreach(test ${gtest_utils_tests})
     blt_add_executable( NAME ${test_name}_test
                         SOURCES ${test}
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON ${utils_tests_depends} 
+                        DEPENDS_ON ${utils_tests_depends}
                         FOLDER axom/axom_utils/tests )
     blt_add_test( NAME ${test_name}
                   COMMAND ${test_name}_test )
@@ -57,17 +60,11 @@ endforeach()
 
 #
 # Add a test to query properties of the configuration
-# Depends on boost to get its version
 #
-
 set(utils_config_test_depends ${utils_tests_depends})
 
-if(BOOST_FOUND)
-    list(APPEND utils_config_test_depends boost)
-endif()
-
 if(MFEM_FOUND)
-    list(APPEND utils_config_test_depends mfem)    
+    list(APPEND utils_config_test_depends mfem)
 endif()
 
 blt_add_executable( NAME utils_config_test

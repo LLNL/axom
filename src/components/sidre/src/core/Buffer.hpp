@@ -256,9 +256,9 @@ public:
 
 
   /*!
-   * \brief Copy given number of bytes of data from source into Buffer.
+   * \brief Copy given number of bytes of data from src into Buffer.
    *
-   * If nbytes < 0 or nbytes > getTotalBytes(), or give ptr is null,
+   * If nbytes < 0 or nbytes > getTotalBytes(), or src is null,
    * method is a no-op.
    *
    * \return pointer to this Buffer object.
@@ -266,7 +266,7 @@ public:
   Buffer* copyBytesIntoBuffer(const void* src, SidreLength nbytes);
 
   /*!
-   * \brief Copy Buffer description to given Conduit node.
+   * \brief Copy Buffer description to a Conduit node.
    */
   void copyToConduitNode(Node& n) const;
 
@@ -281,12 +281,12 @@ public:
   void print(std::ostream& os) const;
 
   /*!
-   * \brief Exports Buffer's state to a conduit node.
+   * \brief Exports Buffer's state to a Conduit node.
    */
   void exportTo( conduit::Node& data_holder );
 
   /*!
-   * \brief Import Buffer's state from a conduit node.
+   * \brief Import Buffer's state from a Conduit node.
    */
   void importFrom( conduit::Node& data_holder );
 

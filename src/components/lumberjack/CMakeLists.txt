@@ -13,6 +13,12 @@
 #------------------------------------------------------------------------------
 
 ################################
+# Check necessary dependencies
+################################
+axom_component_requires(NAME       Lumberjack
+                        COMPONENTS Axom_utils)
+
+################################
 # Add the datastore sources
 ################################
 add_subdirectory(src)
@@ -20,21 +26,21 @@ add_subdirectory(src)
 ################################
 # Add examples
 ################################
-if (ENABLE_EXAMPLES)
+if (AXOM_ENABLE_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
 ################################
 # Add tests
 ################################
-if (ENABLE_TESTS)
+if (AXOM_ENABLE_TESTS)
   add_subdirectory(tests)
 endif()
 
 ################################
 # Add docs
 ################################
-if (ENABLE_DOCS)
+if (AXOM_ENABLE_DOCS)
   add_subdirectory(docs)
 endif()
 

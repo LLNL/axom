@@ -7,7 +7,7 @@
 ##################################
 
 # cmake from uberenv
-# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_03_07_18_04_00/spack/opt/spack/blueos_3_ppc64le_ib/gcc-4.9.3/cmake-3.8.2-riweqtbjy2bwczmiefsbg5hkbkuu3smu/bin/cmake
+# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_06_06_15_19_30/spack/opt/spack/blueos_3_ppc64le_ib/gcc-4.9.3/cmake-3.9.6-i462ncjrxqhqrpkmns3pxxmuo4b7qkpe/bin/cmake
 
 #######
 # using gcc@4.9.3 compiler spec
@@ -25,7 +25,7 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 set(CMAKE_Fortran_COMPILER "/usr/tcetmp/packages/gcc/gcc-4.9.3/bin/gfortran" CACHE PATH "")
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_03_07_18_04_00/spack/opt/spack/blueos_3_ppc64le_ib/gcc-4.9.3" CACHE PATH "")
+set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_06_06_15_19_30/spack/opt/spack/blueos_3_ppc64le_ib/gcc-4.9.3" CACHE PATH "")
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-nj464kx3de5a7cnt3rzn57lltdku4x57" CACHE PATH "")
@@ -33,27 +33,21 @@ set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-nj464kx3de5a7cnt3rzn57lltdku4x57" CACHE PA
 # scr not built by uberenv
 
 # conduit from uberenv
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.3.1-27p3qp2whrsrbgyuvyjoaegf5kxhk2fb" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.3.1-xppzt3nyq2ngpjwtq3ojlei3dnx65rrd" CACHE PATH "")
 
 # mfem from uberenv
 set(MFEM_DIR "${TPL_ROOT}/mfem-3.3.2-4fk5pquwci5yergo67eysgtstybmyme6" CACHE PATH "")
 
-# boost headers from uberenv
-set(BOOST_DIR "${TPL_ROOT}/boost-headers-1.58.0-myxxuxc6xtfpl33e2ubcxr56co54uecn" CACHE PATH "")
-
 # python from uberenv
 set(PYTHON_EXECUTABLE "${TPL_ROOT}/python-2.7.11-jglrxrxkilqp5taspskxs7m5zelglghi/bin/python" CACHE PATH "")
 
-# lua from uberenv
-set(LUA_DIR "${TPL_ROOT}/lua-5.1.5-e4ylj7gougzxlsk5cfbw7tznz2resl2i" CACHE PATH "")
-
 # doxygen from uberenv
-set(DOXYGEN_EXECUTABLE "${TPL_ROOT}/doxygen-1.8.11-e6xs7er7a74ro7xrgxkmnw26jr5yz6gt/bin/doxygen" CACHE PATH "")
+set(DOXYGEN_EXECUTABLE "${TPL_ROOT}/doxygen-1.8.11-7o4ksb5pi6bk6gpfbyqk6to54vfqgy72/bin/doxygen" CACHE PATH "")
 
-# sphinx from uberenv
+# sphinx 1.4.5 from uberenv
 set(SPHINX_EXECUTABLE "${TPL_ROOT}/python-2.7.11-jglrxrxkilqp5taspskxs7m5zelglghi/bin/sphinx-build" CACHE PATH "")
 
-# shroud from uberenv
+# shroud 0.9.0 from uberenv
 set(SHROUD_EXECUTABLE "${TPL_ROOT}/python-2.7.11-jglrxrxkilqp5taspskxs7m5zelglghi/bin/shroud" CACHE PATH "")
 
 # uncrustify from uberenv
@@ -97,13 +91,14 @@ set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 
 set(ENABLE_MPI ON CACHE BOOL "")
 
-set(MPI_HOME                 "/usr/tcetmp/packages/spectrum-mpi/spectrum-mpi-2017.04.03-gcc-4.9.3" CACHE PATH "")
+set(MPI_HOME                 "/usr/tce/packages/spectrum-mpi/spectrum-mpi-2018.04.27-gcc-4.9.3" CACHE PATH "")
 set(MPI_C_COMPILER           "${MPI_HOME}/bin/mpicc"   CACHE PATH "")
 set(MPI_CXX_COMPILER         "${MPI_HOME}/bin/mpicxx"  CACHE PATH "")
 set(MPI_Fortran_COMPILER     "${MPI_HOME}/bin/mpif90" CACHE PATH "")
 
-set(MPIEXEC              "mpirun" CACHE PATH "")
-set(MPIEXEC_NUMPROC_FLAG "-np" CACHE PATH "")
+set(MPIEXEC                "${MPI_HOME}/bin/mpirun" CACHE PATH "")
+set(MPIEXEC_NUMPROC_FLAG   "-np" CACHE PATH "")
+set(BLT_MPI_COMMAND_APPEND "mpibind" CACHE PATH "")
 
 ##############################################################################
 # !---------------------------------------------------------------------------

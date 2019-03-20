@@ -1,5 +1,5 @@
 ##
-## Copyright (c) 2017, Lawrence Livermore National Security, LLC.
+## Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 ##
 ## Produced at the Lawrence Livermore National Laboratory.
 ##
@@ -19,10 +19,14 @@
 # lc blueos xl@coral host configs
 ##############################################################################
 
+set(CMAKE_C_COMPILER_ID       "XL" CACHE STRING "")
+set(CMAKE_CXX_COMPILER_ID     "XL" CACHE STRING "")
+set(CMAKE_Fortran_COMPILER_ID "XL" CACHE STRING "")
+
 set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 
 # Convert C-style comments to Fortran and link fortran exes to C++ libraries
-set(BLT_FORTRAN_FLAGS "-WF,-C! -Wl,-lstdc++ -Wl,/usr/tce/packages/xl/xl-beta-2017.10.13/xlC/13.1.6/lib/libibmc++.so" CACHE STRING "")
+set(BLT_FORTRAN_FLAGS "-WF,-C! -qxlf2003=polymorphic" CACHE STRING "")
 
 ##############################################################################
 # MPI - manually added for now
@@ -30,13 +34,14 @@ set(BLT_FORTRAN_FLAGS "-WF,-C! -Wl,-lstdc++ -Wl,/usr/tce/packages/xl/xl-beta-201
 
 set(ENABLE_MPI ON CACHE BOOL "")
 
-set(MPI_HOME                 "/usr/tce/packages/spectrum-mpi/ibm/spectrum-mpi-2017.11.10/" CACHE PATH "")
+set(MPI_HOME                 "/usr/tce/packages/spectrum-mpi/spectrum-mpi-2018.04.27-xl-2018.05.18/" CACHE PATH "")
 set(MPI_C_COMPILER           "${MPI_HOME}/bin/mpixlc"   CACHE PATH "")
+set(MPI_CXX_COMPILER         "${MPI_HOME}/bin/mpixlC"   CACHE PATH "")
 set(MPI_Fortran_COMPILER     "${MPI_HOME}/bin/mpixlf"   CACHE PATH "")
 
 set(MPIEXEC                  "${MPI_HOME}/bin/mpirun" CACHE PATH "")
 set(MPIEXEC_NUMPROC_FLAG     "-np" CACHE PATH "")
-
+set(BLT_MPI_COMMAND_APPEND   "mpibind" CACHE PATH "")
 
 ##############################################################################
 # !---------------------------------------------------------------------------

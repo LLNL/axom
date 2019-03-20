@@ -50,7 +50,7 @@ using axom::slic::UnitTestLogger;
 
 #include "fmt/format.h"
 
-#include <sstream>
+#include <fstream>
 #include <vector>
 #include <cmath>    // for pow
 #include <cstdlib>  // for srand
@@ -914,24 +914,25 @@ private:
   /*! Compute the norm of the point under class's metric */
   double norm(const SpacePt& pt) const
   {
+    double ret = 0.;
     switch(METRIC)
     {
     case L_1_METRIC:
-    {
-      double ret = 0.;
       for(int i=0 ; i < DIM ; ++i)
       {
         ret += axom::utilities::abs( pt[i] );
       }
-      return ret;
-    }
-
+      break;
     case L_2_METRIC:
-      return SpaceVec(pt).norm();
+      ret = SpaceVec(pt).norm();
+      break;
 
     case L_INF_METRIC:
-      return axom::primal::abs( pt.array() ).max();
+      ret = axom::primal::abs( pt.array() ).max();
+      break;
     }
+
+    return ret;
   }
 
 private:
@@ -1285,25 +1286,29 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
 
   // Setup linear mint mesh to approximate our mesh
   const int res = 25;
-  int ext[4] = { 0,res,0,res};
+  axom::mint::int64 ext[4] = { 0,res,0,res};
   axom::mint::CurvilinearMesh cmesh(2, ext);
 
   {
-    axom::primal::Point<int,3> ext_size;
+    axom::primal::Point<axom::mint::IndexType,3> ext_size;
     cmesh.getExtentSize( ext_size.data() );
     SLIC_INFO( "Extents of curvilinear mesh: " << ext_size    );
   }
 
   // Set the positions of the nodes of the diagnostic mesh
   const double denom = res;
-  for(int i=0 ; i <= res ; ++i)
+  double* x_coords = cmesh.getCoordinateArray( axom::mint::X_COORDINATE );
+  double* y_coords = cmesh.getCoordinateArray( axom::mint::Y_COORDINATE );
+  for(axom::mint::IndexType i=0 ; i <= res ; ++i)
   {
-    for(int j=0 ; j<= res ; ++j)
+    for(axom::mint::IndexType j=0 ; j<= res ; ++j)
     {
       SpacePt isoparPt = SpacePt::make_point(i/denom,j/denom);
       SpacePt spacePt;
       spatialIndex1.reconstructPoint(0, isoparPt.data(), spacePt.data() );
-      cmesh.setNode(i,j,spacePt[0],spacePt[1]);
+      axom::mint::IndexType idx = cmesh.getLinearIndex( i, j );
+      x_coords[ idx ] = spacePt[0];
+      y_coords[ idx ] = spacePt[1];
     }
   }
 
@@ -1311,13 +1316,12 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
   // -- value is 1 when isoparametric transform succeeds, 0 otherwise
   {
     int numSuccesses = 0;
-    const int numCells =  cmesh.getMeshNumberOfCells();
+    const int numCells =  cmesh.getNumberOfCells();
     SLIC_INFO("Mesh has " << numCells << " cells.");
 
     std::string name = "query_status";
-    axom::mint::FieldData* CD = cmesh.getCellFieldData();
-    CD->addField( new axom::mint::FieldVariable< int >(name, numCells ) );
-    int* fld = CD->getField( name )->getIntPtr();
+    int* fld         = cmesh.createField< int >( name,
+                                                 axom::mint::CELL_CENTERED );
 
     for(int i=0 ; i < res ; ++i)
     {
@@ -1337,9 +1341,9 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
 
         // Check that we were able to reverse the xform
         EXPECT_TRUE(found);
-        for(int i=0 ; i< DIM ; ++i)
+        for(int d=0 ; d< DIM ; ++d)
         {
-          EXPECT_NEAR(origIsoPt[i],isoPt[i], ::EPS);
+          EXPECT_NEAR(origIsoPt[d],isoPt[d], ::EPS);
         }
 
         int idx = cmesh.getCellLinearIndex(i,j);

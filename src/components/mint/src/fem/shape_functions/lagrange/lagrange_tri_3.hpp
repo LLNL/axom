@@ -19,7 +19,7 @@
 #define MINT_TRI3_HPP_
 
 // Mint includes
-#include "mint/CellType.hpp"
+#include "mint/CellTypes.hpp"
 #include "mint/FEBasisTypes.hpp"
 #include "mint/ShapeFunction.hpp"
 
@@ -53,12 +53,12 @@ static const double TRI_ONE_THIRD =  1.0/3.0;
  * \see ShapeFunction
  */
 template < >
-class Lagrange< MINT_TRIANGLE > :
-  public ShapeFunction< Lagrange< MINT_TRIANGLE > >
+class Lagrange< mint::TRIANGLE > :
+  public ShapeFunction< Lagrange< mint::TRIANGLE > >
 {
 public:
 
-  static int getCellType() { return MINT_TRIANGLE; }
+  static CellType getCellType() { return mint::TRIANGLE; }
 
   static int getType() { return MINT_LAGRANGE_BASIS; }
 

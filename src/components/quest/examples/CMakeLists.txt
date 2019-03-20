@@ -20,10 +20,6 @@ set(quest_example_depends
         quest
         )
 
-if (BOOST_FOUND)
-    list(APPEND quest_example_depends boost)
-endif()
-
 if (ENABLE_OPENMP)
     list(APPEND quest_example_depends openmp)
 endif()
@@ -54,16 +50,11 @@ blt_add_executable(
 
 ## Quest interface examples
 
-set(quest_interface_extra_depends)
-if (ENABLE_LUMBERJACK)
-    list(APPEND quest_interface_extra_depends lumberjack)
-endif()
-
 blt_add_executable(
     NAME        quest_interface_ex
     SOURCES     quest_interface.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-    DEPENDS_ON  ${quest_example_depends} ${quest_interface_extra_depends}
+    DEPENDS_ON  ${quest_example_depends}
     FOLDER      axom/quest/examples
     )
 
@@ -83,17 +74,28 @@ else()
 endif()
 
 
-# The quest fortran API depends on MPI
-if (ENABLE_MPI AND ENABLE_FORTRAN)
+if (ENABLE_FORTRAN)
     blt_add_executable(
         NAME        quest_interface_F_ex
         SOURCES     quest_interface_fortran.F
         OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-        DEPENDS_ON  ${quest_example_depends} ${quest_interface_extra_depends}
+        DEPENDS_ON  ${quest_example_depends}
         FOLDER      axom/quest/examples
         )
 
     set_target_properties(quest_interface_F_ex
                           PROPERTIES LINKER_LANGUAGE Fortran)
 
+    if (ENABLE_MPI)
+        blt_add_test(
+            NAME quest_interface_mpi_F_test
+            COMMAND quest_interface_F_ex ${quest_data_dir}/sphere_binary.stl
+            NUM_MPI_TASKS 2
+            )
+    else()
+        blt_add_test(
+            NAME quest_interface_F_test
+            COMMAND quest_interface_F_ex ${quest_data_dir}/sphere_binary.stl
+            )
+    endif()
 endif()

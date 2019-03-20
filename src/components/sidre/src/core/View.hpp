@@ -54,8 +54,8 @@ class Attribute;
 /*!
  * \class View
  *
- * \brief A View object describes a "view" into data, which may be
- *        owned by the view object (via an attached Buffer) or
+ * \brief A View object describes data, which may be
+ *        owned by the view object (e.g., via an attached Buffer) or
  *        owned externally.
  *
  * The View class has the following properties:
@@ -71,19 +71,19 @@ class Attribute;
  *      owns it.
  *    - A View object can describe and provide access to data in one of
  *      four ways:
- *        # A view can describe (a subset of) data owned by an existing
+ *        * A view can describe (a subset of) data owned by an existing
  *          Buffer. In this case, the data can be (re)allocated or
  *          deallocated by the view if and only if it is the only view
  *          attached to the buffer.
- *        # A view can describe and allocate data using semantics similar
+ *        * A view can describe and allocate data using semantics similar
  *          to Buffer data description and allocation. In this case, no
  *          other view is allowed to (re)allocate or deallocate the data held
  *          by the associated data buffer.
- *        # A view can describe data associated with a pointer to an
+ *        * A view can describe data associated with a pointer to an
  *          "external" data object. In this case, the view cannot (re)allocate
  *          or deallocate the data. However, all other view operations are
  *          essentially the same as the previous two cases.
- *        # It can hold a pointer to an undescribed (i.e., "opaque") data
+ *        * It can hold a pointer to an undescribed (i.e., "opaque") data
  *          object. In this case, the view knows nothing about the type or
  *          structure of the data; it is essentially just a handle to the data.
  *    - For any View object that is "external" or associated with a
@@ -238,7 +238,7 @@ public:
    *        (i.e., has access to data but has no knowledge of the data
    *        type or structure); false otherwise.
    */
-  bool  isOpaque() const
+  bool isOpaque() const
   {
     return m_state == EXTERNAL && !isApplied();
   }
@@ -278,7 +278,7 @@ public:
   /*!
    * \brief Return total number of bytes associated with this View object.
    *
-   * IMPORTANT: This is the total bytes described by the view; they may not
+   * \attention This is the total bytes described by the view; they may not
    *            yet be allocated.
    */
   SidreLength getTotalBytes() const
@@ -289,7 +289,7 @@ public:
   /*!
    * \brief Return total number of elements described by this View object.
    *
-   * IMPORTANT: This is the number of elements described by the view;
+   * \attention This is the number of elements described by the view;
    *            they may not yet be allocated.
    */
   SidreLength getNumElements() const
@@ -300,7 +300,7 @@ public:
   /*!
    * \brief Return number of bytes per element in the described view.
    *
-   * IMPORTANT: This is the number of bytes per element described by the view
+   * \attention This is the number of bytes per element described by the view
    *            which may not yet be allocated.
    */
   SidreLength getBytesPerElement() const
@@ -313,15 +313,15 @@ public:
    *  this View object.
    *
    * \warning The code currently assumes that offsets into a view are given in
-   *  terms of whole elements. And it is an assertion error if this is not the
-   *  case. If you have a different use case, please talk to the Sidre team
+   *  terms of whole elements.  It is an assertion error if this is not the
+   *  case.  If you have a different use case, please talk to the Sidre team.
    *
-   * \note View::getData() and View::getArray() already account for the offset,
+   * \note View::getData() and View::getArray() already account for the offset
    *        and return a pointer to the first element in the array:
    *        View::getVoidPtr() does not account for the offset.
    *
-   * IMPORTANT: This function is based on the view description, it does not
-   * imply that the data is allocated
+   * \attention This function is based on the view description.  It does not
+   * imply that the data is allocated.
    *
    * \return The offset, in terms of the number of elements, from the described
    *  array to the first element.
@@ -333,11 +333,11 @@ public:
    *  this View object.
    *
    * \warning The code currently assumes that strides into a view are given in
-   *  terms of whole elements. And it is an assertion error if this is not the
-   *  case. If you have a different use case, please talk to the Sidre team
+   *  terms of whole elements.  It is an assertion error if this is not the
+   *  case.  If you have a different use case, please talk to the Sidre team.
    *
-   * IMPORTANT: This function is based on the view description, it does not
-   * imply that the data is allocated
+   * \attention This function is based on the view description.  It does not
+   * imply that the data is allocated.
    *
    * \return The stride, in terms of the number of elements, between elements in
    *  the described array.
@@ -345,7 +345,9 @@ public:
   SidreLength getStride() const;
 
   /*!
-   * \brief Return number of dimensions in data view.
+   * \brief Return dimensionality of this View's data.
+   *
+   * \sa getShape()
    */
   int getNumDimensions() const
   {
@@ -404,7 +406,7 @@ public:
   /*!
    * \brief Allocate data for a view, previously described.
    *
-   * NOTE: Allocation from a view is allowed only if it is the only
+   * \note Allocation from a view is allowed only if it is the only
    *       view associated with its buffer (when it has one), or the view
    *       is not external, not a string view, or not a scalar view.
    *       If none of these condition is true, this method does nothing.
@@ -416,10 +418,9 @@ public:
   /*!
    * \brief Allocate data for view given type and number of elements.
    *
-   * NOTE: The allocate() method describes conditions where view
-   *       allocation is allowed. If none of those is true, or given
-   *       a type of NO_TYPE_ID or number of elements is < 0,
-   *       this method does nothing.
+   * \note The allocate() method (above) describes conditions where View
+   *       allocation is allowed.  If the conditions are not met,
+   *       type is NO_TYPE_ID, or num_elems < 0, this method does nothing.
    *
    * \return pointer to this View object.
    */
@@ -428,8 +429,8 @@ public:
   /*!
    * \brief Allocate data for view described by a Conduit data type object.
    *
-   * NOTE: The allocate() method describes conditions where view
-   *       allocation is allowed. If none of those is true,
+   * \note The allocate() method describes conditions where view
+   *       allocation is allowed. If the conditions are not met,
    *       this method does nothing.
    *
    * \return pointer to this View object.
@@ -440,9 +441,9 @@ public:
    * \brief  Reallocate data for view to given number of elements (type
    *         stays the same).
    *
-   * NOTE: Reallocation from a view is only allowed under that same conditions
-   *       for the allocate() method. If none of those is true,
-   *       or given number of elements is < 0, this method does nothing.
+   * \note Reallocation from a view is only allowed under that same conditions
+   *       for the allocate() method. If the conditions are not met
+   *       or num_elems < 0 this method does nothing.
    *
    * \return pointer to this View object.
    */
@@ -451,11 +452,11 @@ public:
   /*!
    * \brief  Reallocate data for view as specified by Conduit data type object.
    *
-   * NOTE: Reallocation from a view is only allowed under that same conditions
-   *       described by the allocate() method. If none of those is true,
-   *       or data type is undefined, this method does nothing.
+   * \note Reallocation from a view is allowed under the conditions
+   *       described by the allocate() method. If the conditions are not met
+   *       or dtype is undefined, this method does nothing.
    *
-   * NOTE: The given data type object must match the view type, if it is
+   * \note The given data type object must match the view type, if it is
    *       defined. If not, the method does nothing.
    *
    * \return pointer to this View object.
@@ -465,9 +466,9 @@ public:
   /*!
    * \brief  Deallocate data for view.
    *
-   * NOTE: Deallocation from a view is only allowed under that same conditions
-   *       described by the allocate() method. If none of those is true,
-   *       or a Buffer is not attached, this method does nothing.
+   * \note Deallocation from a view is only allowed under the conditions
+   *       described by the allocate() method. If the conditions are not met
+   *       or a Buffer is not attached this method does nothing.
    *
    * \return pointer to this View object.
    */
@@ -555,14 +556,11 @@ public:
    * \brief Apply data description defined by number of elements, and
    *        optionally offset and stride to data view (type remains the same).
    *
-   * NOTE: The units for offset and stride are in number of elements, which
+   * \note The units for offset and stride are in number of elements, which
    *       is different than the Conduit DataType usage below where offset
    *       and stride are in number of bytes.
-     //
-     // RDH -- will this be changed for consistency?
-     //
    *
-   * IMPORTANT: If view has been previously described (or applied), this
+   * \attention If view has been previously described (or applied), this
    *            operation will apply the new data description to the view.
    *
    * If view holds a scalar or a string, is external and does not have a
@@ -579,11 +577,11 @@ public:
    * \brief Apply data description defined by type and number of elements, and
    *        optionally offset and stride to data view.
    *
-   * NOTE: The units for offset and stride are in number of elements, which
+   * \note The units for offset and stride are in number of elements, which
    *       is different than the Conduit DataType usage below where offset
    *       and stride are in number of bytes.
    *
-   * IMPORTANT: If view has been previously described (or applied), this
+   * \attention If view has been previously described (or applied), this
    *            operation will apply the new data description to the view.
    *
    * If view holds a scalar or a string, or type is NO_TYPE_ID,
@@ -599,9 +597,9 @@ public:
    * \brief Apply data description defined by type and shape information
    *        to data view.
    *
-   * NOTE: The units for the shape are in number of elements.
+   * \note The units for the shape are in number of elements.
    *
-   * IMPORTANT: If view has been previously described (or applied), this
+   * \attention If view has been previously described (or applied), this
    *            operation will apply the new data description to the view.
    *
    * If view holds a scalar or a string, or type is NO_TYPE_ID,
@@ -807,10 +805,8 @@ public:
    * Return value depends on variable type caller assigns it to. For example,
    * if view holds an integer array, the following usage is possible:
    *
-   * \verbatim
-   *    int* a = view->getArray();      // Get array as int pointer
-   *    int_array a = view->getArray(); // Get array as Conduit array struct.
-   * \endverbatim
+   *      int* a = view->getArray();      // Get array as int pointer
+   *      int_array a = view->getArray(); // Get array as Conduit array struct.
    *
    * \note The returned pointer accounts for the View's offset, so getArray()[0]
    *       always points to the first element in the array.
@@ -826,13 +822,8 @@ public:
    * \brief Returns a pointer to the string contained in the view.
    *
    *  If the view is not a STRING, then AXOM_NULLPTR is returned.
-     //
-     // RDH -- Should we also provide an overload that returns a const char *?
-     //        It seems excessive to create copies of strings for most usage.
-     //        Conduit also provides a as_string() method.
-     //
    */
-  const char* getString()
+  const char* getString() const
   {
     if (m_state == STRING)
     {
@@ -901,10 +892,10 @@ public:
    * To access the first data element, you will need to cast to the appropriate
    * type and add the offset.  E.g. if the underlying data is an array of
    * integers you can access the first element as follows:
-   * \verbatim
-   *    void* vptr = view->getVoidPtr();
-   *    int*  iptr = static_cast<int*>(vptr) + view->getOffset();
-   * \endverbatim
+   *
+   *      void* vptr = view->getVoidPtr();
+   *      int*  iptr = static_cast<int*>(vptr) + view->getOffset();
+   *
    *
    * \sa getData(), getArray()
    */
@@ -955,9 +946,9 @@ public:
    * identical to a name that is already held by the parent for another
    * Group or View object.
    *
-   * /param new_name    The new name for this view.
+   * \param new_name    The new name for this view.
    *
-   * /return            Success or failure of rename.
+   * \return            Success or failure of rename.
    */
   bool rename(const std::string& new_name);
 
@@ -1330,13 +1321,12 @@ private:
    * \brief Describe a data view with given type and number of elements.
    *
    *
-   * IMPORTANT: If view has been previously described, this operation will
+   * \attention If view has been previously described, this operation will
    *            re-describe the view. To have the new description take effect,
    *            the apply() method must be called.
    *
    * If given type of NO_TYPE_ID, or number of elements < 0, or view is opaque,
    * method does nothing.
-   *
    */
   void describe( TypeID type, SidreLength num_elems);
 
@@ -1345,27 +1335,23 @@ private:
    *        number of elements per dimension.
    *
    *
-   * IMPORTANT: If view has been previously described, this operation will
+   * \attention If view has been previously described, this operation will
    *            re-describe the view. To have the new description take effect,
    *            the apply() method must be called.
    *
    * If given type of NO_TYPE_ID, or number of dimensions or total
    * number of elements < 0, or view is opaque, method does nothing.
-   *
-   * \return pointer to this View object.
    */
   void describe(TypeID type, int ndims, SidreLength* shape);
 
   /*!
    * \brief Declare a data view with a Conduit data type object.
    *
-   * IMPORTANT: If view has been previously described, this operation will
+   * \attention If view has been previously described, this operation will
    *            re-describe the view. To have the new description take effect,
    *            the apply() method must be called.
    *
    * If view is opaque, the method does nothing.
-   *
-   * \return pointer to this View object.
    */
   void describe(const DataType& dtype);
 
