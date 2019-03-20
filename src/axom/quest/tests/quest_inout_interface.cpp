@@ -20,11 +20,11 @@
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/primal.hpp"
+
 #include "axom/quest/interface/inout.hpp"
 #include "axom/quest/interface/internal/QuestHelpers.hpp" // for test that reads
                                                           // in a mesh without
                                                           // the interface
-
 
 #include <string>
 
@@ -139,13 +139,15 @@ TEST_F(InOutInterfaceTest, query_properties)
     EXPECT_FALSE(axom::quest::inout_initialized());
 
     // The following should return an error since initialized is false
-    SLIC_INFO("*** The following three calls might emit warning messages."
-              << " This is expected.");
+    SLIC_INFO("--[==[ \n"
+              <<"\t The following three calls might emit warning messages."
+              <<" This is expected.\n");
+
     EXPECT_EQ(failCode, axom::quest::inout_mesh_min_bounds(lo.data()));
     EXPECT_EQ(failCode, axom::quest::inout_mesh_max_bounds(hi.data()));
     EXPECT_EQ(failCode, axom::quest::inout_mesh_center_of_mass(cm.data()));
     EXPECT_EQ(failCode, axom::quest::inout_get_dimension());
-    SLIC_INFO("*** Done.");
+    SLIC_INFO("--]==]");
   }
 
   // next, test after initialization
@@ -172,21 +174,32 @@ TEST_F(InOutInterfaceTest, set_params)
 {
   const int failCode = axom::quest::QUEST_INOUT_FAILED;
   const int successCode = axom::quest::QUEST_INOUT_SUCCESS;
+  const double EPS = 1E-6;
 
-  EXPECT_FALSE(axom::quest::inout_initialized());
+  // Set parameters at the appropriate time
+  {
+    EXPECT_FALSE(axom::quest::inout_initialized());
 
-  EXPECT_EQ(successCode, axom::quest::inout_set_verbose(true));
+    EXPECT_EQ(successCode, axom::quest::inout_set_verbose(true));
+    EXPECT_EQ(successCode, axom::quest::inout_set_vertex_weld_threshold(EPS));
+  }
 
-  SLIC_INFO("*** About to initialize with verbose output.");
-  axom::quest::inout_init(this->meshfile);
-  SLIC_INFO("*** End verbose output.");
+  // Initialize the query
+  {
+    SLIC_INFO("*** About to initialize with verbose output.");
+    axom::quest::inout_init(this->meshfile);
+    SLIC_INFO("*** End verbose output.\n");
+  }
 
+  // Set parameters at an inappropriate time
   {
     SLIC_INFO("*** The following calls might emit warning messages.");
+    SLIC_INFO("--[==[");
 
     EXPECT_EQ(failCode, axom::quest::inout_set_verbose(true));
+    EXPECT_EQ(failCode, axom::quest::inout_set_vertex_weld_threshold(EPS));
 
-    SLIC_INFO("*** Done.");
+    SLIC_INFO("--]==]");
   }
 
   axom::quest::inout_finalize();
