@@ -206,3 +206,17 @@ endif()
 if(WIN32)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AXOM_ALLOW_CONSTANT_CONDITIONALS}")
 endif()
+
+#------------------------------------------------------------------------------
+# Configure our CTest Dashboard Driver Script
+#------------------------------------------------------------------------------
+#
+# To use this script to build and submit a dashboard
+# result, run the following command in the build dir:
+# > ctest -S Dashboard.cmake 
+#
+configure_file("cmake/Dashboard.cmake.in" 
+               "${PROJECT_BINARY_DIR}/Dashboard.cmake"
+               @ONLY)
+
+
