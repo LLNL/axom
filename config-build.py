@@ -217,6 +217,7 @@ def create_cmake_command_line(
     args, unknown_args, buildpath, hostconfigpath, installpath
 ):
     cmakeline = extract_cmake_location(hostconfigpath)
+    assert cmakeline != None, ("No cmake executable found on path")
     assert executable_exists(cmakeline), (
         "['%s'] invalid path to cmake executable or file does not have execute permissions"
         % cmakeline
