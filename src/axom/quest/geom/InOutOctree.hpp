@@ -32,21 +32,20 @@
 
 #include "axom/quest/geom/SpatialOctree.hpp"
 
-#include <vector>   // For InOutLeafData triangle lists -- TODO replace with
-                    // SLAM DynamicVariableRelation...
-#include <iterator> // For back_inserter
-#include <limits>   // numeric_limits traits
+#include <vector>        // For InOutLeafData triangle lists
+#include <iterator>      // For back_inserter
+#include <limits>        // numeric_limits traits
 #include <sstream>
+#include <unordered_map>
+
 
 #define DEBUG_VERT_IDX  -2  // 1160
-#define DEBUG_TRI_IDX   -2 // 1654
+#define DEBUG_TRI_IDX   -2  // 1654
 
-#define DEBUG_BLOCK_2  BlockIndex::invalid_index() // BlockIndex(
-                                                   // GridPt::make_point(15,15,0),
-                                                   // 5)
-#define DEBUG_BLOCK_1  BlockIndex::invalid_index() // BlockIndex(
-                                                   // GridPt::make_point(7287,0,2986),
-                                                   // 13)
+#define DEBUG_BLOCK_2  BlockIndex::invalid_index()
+//                     BlockIndex(GridPt::make_point(15,15,0),5)
+#define DEBUG_BLOCK_1  BlockIndex::invalid_index()
+//                     BlockIndex(GridPt::make_point(7287,0,2986),13)
 
 #ifndef DUMP_VTK_MESH
 //    #define DUMP_VTK_MESH
@@ -75,9 +74,7 @@ namespace quest
 
 namespace detail
 {
-// Predeclare utility classes that deals with validating and logging stats of
-// InOutOctrees
-
+// Predeclare utility classes for validating and logging stats of InOutOctrees
 template<int DIM> class InOutOctreeStats;
 template<int DIM> class InOutOctreeValidator;
 template<int DIM> class InOutOctreeMeshDumper;
@@ -530,7 +527,7 @@ private:
    * \brief A utility class that wraps the access to the mesh data
    *
    * This class helps separate the specifics of accessing the underlying mesh
-   * for on InOutOctree. It is customized for unstructured Triangle meshes,
+   * for an InOutOctree. It is customized for unstructured Triangle meshes,
    * but we will later want to apply the InOutOctree to other mesh types,
    * e.g. Segments in 2D, Bilinear quads in 3D.
    *
@@ -1490,8 +1487,8 @@ void InOutOctree<DIM>::insertMeshTriangles ()
     int nextLevelDataBlockCounter = 0;
 
     auto& levelLeafMap = this->getOctreeLevel( lev );
-    for(auto it=levelLeafMap.begin(), itEnd = levelLeafMap.end() ;
-        it != itEnd ; ++it)
+    auto itEnd = levelLeafMap.end();
+    for(auto it=levelLeafMap.begin() ; it != itEnd ; ++it)
     {
       InOutBlockData& blkData = *it;
 
@@ -1724,8 +1721,8 @@ void InOutOctree<DIM>::colorOctreeLeaves()
     Timer levelTimer(true);
 
     auto& levelLeafMap = this->getOctreeLevel(lev);
-    for(auto it=levelLeafMap.begin(), itEnd = levelLeafMap.end() ;
-        it != itEnd ; ++it)
+    auto itEnd = levelLeafMap.end();
+    for(auto it=levelLeafMap.begin() ; it != itEnd ; ++it)
     {
       if( !it->isLeaf() )
         continue;
@@ -1946,10 +1943,10 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & queryPt,
                                        const BlockIndex& leafBlk,
                                        const InOutBlockData&  leafData) const
 {
-  /// The algorithm finds a ray from queryPt to a point of any triangle within
-  /// leafBlk. It then finds the first triangle along this ray and tests this
-  /// vector against the triangle normal. queryPt is inside if the dot product
-  /// is positive.
+  /// Finds a ray from queryPt to a point of a triangle within leafBlk.
+  /// Then find the first triangle along this ray. The orientation of the ray
+  /// against this triangle's normal indicates queryPt's containment.
+  /// It is inside when the dot product is positive.
 
   // Bounding box scaling factor for dealing with grazing triangles
   const double BB_SCALE_FACTOR = 1.005;
@@ -2360,8 +2357,8 @@ public:
       diffBlocks[lev] = GridIntMap(0, GridPtHash());
 
       const auto& levelLeafMap = m_octree.getOctreeLevel( lev );
-      for(auto it=levelLeafMap.begin(), itEnd = levelLeafMap.end() ;
-          it != itEnd ; ++it)
+      auto itEnd = levelLeafMap.end();
+      for(auto it=levelLeafMap.begin() ; it != itEnd ; ++it)
       {
         const BlockIndex block(it.pt(), lev);
         const InOutBlockData& data = *it;
@@ -2469,8 +2466,8 @@ public:
     for(int lev=0 ; lev< m_octree.m_levels.size() ; ++lev)
     {
       const auto& levelLeafMap = m_octree.getOctreeLevel( lev );
-      for(auto it=levelLeafMap.begin(), itEnd = levelLeafMap.end() ;
-          it != itEnd ; ++it)
+      auto itEnd = levelLeafMap.end();
+      for(auto it=levelLeafMap.begin() ; it != itEnd ; ++it)
       {
         if( it->isLeaf() && it->hasData() )
         {
@@ -2531,8 +2528,8 @@ public:
     for(int lev=0 ; lev< m_octree.m_levels.size() ; ++lev)
     {
       const auto& levelLeafMap = m_octree.getOctreeLevel( lev );
-      for(auto it=levelLeafMap.begin(),
-          itEnd = levelLeafMap.end() ; it != itEnd ; ++it)
+      auto itEnd = levelLeafMap.end();
+      for(auto it=levelLeafMap.begin() ; it != itEnd ; ++it)
       {
         if( it->isLeaf())
           blocks.push_back( BlockIndex(it.pt(), lev) );
@@ -2853,8 +2850,8 @@ public:
   void checkAllLeavesColoredAtLevel(int level) const
   {
     const auto& levelLeafMap = m_octree.getOctreeLevel( level );
-    for(auto it=levelLeafMap.begin(), itEnd = levelLeafMap.end() ;
-        it != itEnd ; ++it)
+    auto itEnd = levelLeafMap.end();
+    for(auto it=levelLeafMap.begin() ; it != itEnd ; ++it)
     {
       if( !it->isLeaf() )
         continue;
@@ -2955,8 +2952,8 @@ public:
     for(int lev=0 ; lev< m_octree.m_levels.size() ; ++lev)
     {
       const auto& levelLeafMap = m_octree.getOctreeLevel(lev);
-      for(auto it=levelLeafMap.begin(), itEnd = levelLeafMap.end() ;
-          it != itEnd ; ++it)
+      auto itEnd = levelLeafMap.end();
+      for(auto it=levelLeafMap.begin() ; it != itEnd ; ++it)
       {
         const BlockIndex block(it.pt(), lev);
         const InOutBlockData& data = *it;
@@ -3017,8 +3014,8 @@ public:
     for(int lev= m_octree.maxLeafLevel()-1 ; lev >= 0 ; --lev)
     {
       const auto& levelLeafMap = m_octree.getOctreeLevel( lev );
-      for(auto it=levelLeafMap.begin(), itEnd = levelLeafMap.end() ;
-          it != itEnd ; ++it)
+      auto itEnd = levelLeafMap.end();
+      for(auto it=levelLeafMap.begin() ; it != itEnd ; ++it)
       {
         const BlockIndex block(it.pt(), lev);
         const InOutBlockData& data = *it;
@@ -3169,8 +3166,8 @@ public:
       m_levelBlackBlockCount[lev] = 0;
       m_levelGrayBlockCount[lev] = 0;
 
-      for(auto it=levelLeafMap.begin(), itEnd = levelLeafMap.end() ;
-          it != itEnd ; ++it)
+      auto itEnd = levelLeafMap.end();
+      for(auto it=levelLeafMap.begin() ; it != itEnd ; ++it)
       {
         const InOutBlockData& blockData = *it;
         BlockIndex block(it.pt(), lev);
