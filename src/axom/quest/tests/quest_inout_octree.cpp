@@ -151,6 +151,8 @@ void queryOctahedronMesh(axom::mint::Mesh*& mesh,
       break;
     }
 
+    // Unit octahedron is a unit sphere under the L1 metric. Points are
+    // inside when the sum of coordinate magnitudes is less than one
     double absCoordSum = std::abs(pt[0]) + std::abs(pt[1]) + std::abs(pt[2]);
 
     // For the time being, we allow the within() test to fail when the

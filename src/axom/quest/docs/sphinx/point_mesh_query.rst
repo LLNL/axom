@@ -17,50 +17,67 @@ Surface mesh point queries: C API
 *********************************
 
 Quest provides the in/out and distance field queries to test a point against
-a surface mesh.  These queries take a mesh composed of 2D
-triangles in 3D and a query point.  The in/out query tests if the point is or is
-not contained in the surface mesh.  The distance field query calculates the signed
-distance from the query point to the mesh.  
+a surface mesh.  These queries take a mesh composed of triangles in 3D 
+and a query point.  The in/out query tests whether the point is contained within
+the surface mesh.  The distance query calculates the signed distance from
+the query point to the mesh.
 
 .. figure:: figs/surface_mesh_queries.png
    :width: 440px
 
-   Types of point-vs-surface-mesh queries provided by Quest.  **Left:** In/out query,
-   characterizing points as inside or outside the mesh.  Boundary points are
+   Types of point-vs-surface-mesh queries provided by Quest.     
+   **Left:** In/out query, characterizing points as inside or outside the mesh.  
+   Points that lie on the boundary might or might not be categorized as 
    inside the mesh.
-   **Right:** Distance field query, calculating the signed distance from each
+   **Right:** Distance query, calculating the signed distance from each
    query point to its closest point on the mesh.  A negative result indicates an
    interior query point.  
 
 The following examples show Quest's C interface to these queries.  The general
-pattern is to pass a ``mint::Mesh *`` or file name string to an initialization
-function, call an ``evaluate`` function for each query point, then clean up with
-a ``finalize`` function.
+pattern is to set some query parameters, then pass a ``mint::Mesh *`` or file 
+name string to an initialization function, call an ``evaluate`` function 
+for each query point, then clean up with a ``finalize`` function.
 
 In/out C API
 ------------
 
-The in/out query operates on a 3D surface mesh, that is, 2D triangles forming a
-closed manifold in 3D.  These examples are excerpted from
-axom/src/axom/quest/examples/quest_inout_interface.cpp.
-First, include headers.
+The in/out query operates on a 3D surface mesh, that is, triangles forming a
+watertight surface enclosing a 3D volume. The in/out API utilizes integer-valued
+return codes with values ``quest::QUEST_INOUT_SUCCESS`` and 
+``quest::QUEST_INOUT_FAILED`` to indicate the success of each operation. 
+These examples are excerpted from ``<axom>/src/axom/quest/examples/quest_inout_interface.cpp``.
+
+To get started, we first include some header files.
 
 .. literalinclude:: ../../examples/quest_inout_interface.cpp
    :start-after: _quest_inout_interface_include_start
    :end-before: _quest_inout_interface_include_end
    :language: C++
 
-For initialization, note that ``rc`` is a previously declared ``int``.  The
-variable ``fileName`` is a ``std::string`` that indicates a triangle mesh file.
-Another overload of ``quest::inout_init()`` lets a user code pass a reference
-to a ``mint::Mesh*`` to query meshes that were previously read in or built up.
+Before initializing the query, we can set some parameters, for example,
+to control the logging verbosity and to set a threshold for welding vertices
+of the triangle mesh while generating the spatial index.
+
+.. literalinclude:: ../../examples/quest_inout_interface.cpp
+   :start-after: _quest_inout_interface_parameters_start
+   :end-before: _quest_inout_interface_parameters_end
+   :language: C++
+
+By default, the verbosity is set to ``false`` and the welding threshold is 
+set to ``1E-9``.
+
+We are now ready to initialize the query. 
 
 .. literalinclude:: ../../examples/quest_inout_interface.cpp
    :start-after: _quest_inout_interface_init_start
    :end-before: _quest_inout_interface_init_end
    :language: C++
 
-If initialization succeeded (returned ``quest::QUEST_INOUT_SUCCESS``), the code can
+The variable ``fileName`` is a ``std::string`` that indicates a triangle 
+mesh file. Another overload of ``quest::inout_init()`` lets a user code pass 
+a reference to a ``mint::Mesh*`` to query meshes that were previously read in 
+or built up. If initialization succeeded (returned 
+``quest::QUEST_INOUT_SUCCESS``), the code can
 
 - Query the mesh bounds with ``quest::inout_mesh_min_bounds(double[3])`` and 
   ``quest::inout_mesh_max_bounds(double[3])``.
@@ -73,7 +90,7 @@ If initialization succeeded (returned ``quest::QUEST_INOUT_SUCCESS``), the code 
    :end-before: _quest_inout_interface_test_end
    :language: C++
 
-Finally, clean up.
+Once we are done, we clean up with the following command:
 
 .. literalinclude:: ../../examples/quest_inout_interface.cpp
    :start-after: _quest_inout_interface_finalize_start
@@ -83,7 +100,8 @@ Finally, clean up.
 Signed Distance query C API
 ---------------------------
 
-Excerpted from axom/src/axom/quest/examples/quest_signed_distance_interface.cpp.
+Excerpted from ``<axom>/src/axom/quest/examples/quest_signed_distance_interface.cpp``.
+
 Quest header:
 
 .. literalinclude:: ../../examples/quest_signed_distance_interface.cpp

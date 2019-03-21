@@ -26,15 +26,15 @@ In/out Octree
 -------------
 
 The C++ in/out query is provided by the ``quest::InOutOctree`` class, from the
-following header.  See axom/src/axom/quest/tests/quest_inout_octree.cpp.
+following header.  See ``<axom>/src/axom/quest/tests/quest_inout_octree.cpp``.
 
 .. literalinclude:: ../../tests/quest_inout_octree.cpp
    :start-after: _quest_inout_cpp_include_start
    :end-before: _quest_inout_cpp_include_end
    :language: C++
 
-Some typedefs are useful for the sake of brevity.  The class is templated on
-the dimensionality of the mesh.  Currently, only 3D meshes are supported;
+Some type aliases are useful for the sake of brevity.  The class is templated on
+the dimensionality of the mesh.  Currently, only meshes in 3D are supported;
 here ``DIM`` equals 3.
 
 .. literalinclude:: ../../tests/quest_inout_octree.cpp
@@ -82,7 +82,8 @@ Signed Distance
 
 The C++ signed distance query is provided by the ``quest::SignedDistance`` class,
 which wraps an instance of ``primal::BVHTree``.
-Examples from axom/src/axom/quest/tests/quest_signed_distance.cpp.
+Examples from ``<axom>/src/axom/quest/tests/quest_signed_distance.cpp``.
+
 Class header:
 
 .. literalinclude:: ../../tests/quest_signed_distance.cpp

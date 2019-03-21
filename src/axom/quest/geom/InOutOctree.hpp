@@ -1947,10 +1947,9 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & queryPt,
                                        const InOutBlockData&  leafData) const
 {
   /// The algorithm finds a ray from queryPt to a point of any triangle within
-  // leafBlk.
-  /// It then finds the first triangle along this ray and tests this vector
-  /// against the triangle normal. queryPt is inside if the dot product is
-  // positive.
+  /// leafBlk. It then finds the first triangle along this ray and tests this
+  /// vector against the triangle normal. queryPt is inside if the dot product
+  /// is positive.
 
   // Bounding box scaling factor for dealing with grazing triangles
   const double BB_SCALE_FACTOR = 1.005;
@@ -1970,8 +1969,7 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & queryPt,
     TriangleIndex idx = triSet[i];
     SpaceTriangle tri = m_meshWrapper.trianglePositions(idx);
 
-    /// Find a point from this triangle that is within the bounding box of the
-    // mesh
+    /// Find a point from this triangle within the bounding box of the mesh
     primal::Polygon<double, DIM> poly = primal::clip(tri, blockBB);
     if(poly.numVertices() == 0)
     {
@@ -1994,10 +1992,8 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & queryPt,
     triPt = poly.centroid();
 
     /// Use a ray from the query point to the triangle point to find an
-    // intersection
-    /// Note: We have to check all triangles to ensure that there is not a
-    // closer
-    ///       triangle than tri along this direction.
+    /// intersection. Note: We have to check all triangles to ensure that
+    /// there is not a closer triangle than tri along this direction.
     TriangleIndex tIdx = MeshWrapper::NO_TRIANGLE;
     double minRayParam = std::numeric_limits<double>::infinity();
     SpaceRay ray(queryPt, SpaceVector(queryPt,triPt));
@@ -2040,11 +2036,10 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & queryPt,
 
   }
 
-  SLIC_WARNING(
-    "Could not determine inside/outside for point "
-    << queryPt << " on block " << leafBlk);
+  SLIC_WARNING("Could not determine inside/outside for point "
+               << queryPt << " on block " << leafBlk);
 
-  return false;    // should not get here -- revisit this...
+  return false;    // query points on boundary might get here -- revisit this.
 }
 
 

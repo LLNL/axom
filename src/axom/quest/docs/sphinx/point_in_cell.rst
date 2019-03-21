@@ -37,7 +37,7 @@ of the query point within the cell.
 
 The point-in-cell query is currently implemented using MFEM, so to use this query
 Axom must be compiled with MFEM as a dependency.  The following example
-(from axom/src/tests/quest_point_in_cell_mfem.cpp) shows
+(from ``<axom>/src/tests/quest_point_in_cell_mfem.cpp``) shows
 the use of the query, beginning with inclusion of required header files.
 
 .. literalinclude:: ../../tests/quest_point_in_cell_mfem.cpp

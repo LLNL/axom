@@ -32,7 +32,8 @@ the nearest neighbor point not in the same region, as shown in the figure.
    the closest neighbor to each point in another region.
 
 Here is an example of query usage, from
-axom/src/axom/quest/tests/quest_all_nearest_neighbors.cpp.
+``<axom>/src/axom/quest/tests/quest_all_nearest_neighbors.cpp``.
+
 First, include the header.
 
 .. literalinclude:: ../../tests/quest_all_nearest_neighbors.cpp
