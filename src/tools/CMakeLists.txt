@@ -62,7 +62,7 @@ set(mesh_tester_depends
     )
 
 blt_list_append(TO mesh_tester_depends ELEMENTS lumberjack mpi IF AXOM_ENABLE_LUMBERJACK)
-blt_list_append(TO mesh_tester_depends ELEMENTS openmp mpi IF ENABLE_OPENMP)
+blt_list_append(TO mesh_tester_depends ELEMENTS openmp IF ENABLE_OPENMP)
 
 if(AXOM_ENABLE_QUEST)
     blt_add_executable(

@@ -25,6 +25,7 @@
 from __future__ import print_function
 
 import argparse
+import distutils.spawn
 import os
 import platform
 import shutil
@@ -34,7 +35,6 @@ import sys
 
 
 def extract_cmake_location(file_path):
-    # print "Extracting cmake entry from host config file ", file_path
     if os.path.exists(file_path):
         cmake_line_prefix = "# cmake executable path: "
         file_handle = open(file_path, "r")
@@ -42,8 +42,11 @@ def extract_cmake_location(file_path):
         for line in content:
             if line.lower().startswith(cmake_line_prefix):
                 return line.split(" ")[4].strip()
-        print("Could not find a cmake entry in host config file.")
-    return None
+    print("Could not find a cmake entry in host config file.\n"
+          "Attempting to find cmake on your path...")
+    cmake_path = distutils.spawn.find_executable("cmake")
+    print("Found: {0}".format(cmake_path))
+    return cmake_path
 
 
 def parse_arguments():
@@ -214,10 +217,7 @@ def create_cmake_command_line(
     args, unknown_args, buildpath, hostconfigpath, installpath
 ):
     cmakeline = extract_cmake_location(hostconfigpath)
-    assert cmakeline, (
-        "Host config file doesn't contain valid cmake location, value was %s"
-        % cmakeline
-    )
+    assert cmakeline != None, ("No cmake executable found on path")
     assert executable_exists(cmakeline), (
         "['%s'] invalid path to cmake executable or file does not have execute permissions"
         % cmakeline

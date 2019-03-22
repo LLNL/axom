@@ -1,5 +1,3 @@
-
-
 # Python interface for Quest signed distance
 
 Build Axom as usual, then use the generated `setup.py` script.
@@ -29,12 +27,8 @@ These flags may be different than the ones used to compile Axom.
 Some functions in `quest_shroud.yaml` are not wrapped pending fixes to shroud.
 (version 0.10.1 is currently used)
 
-A sample host file is provided in `host-configs/quest-only.cmake`.
-Need to build Axom with shared libaries and the location of MPI.
-
-```
-# Make shared lib
-set(BUILD_SHARED_LIBS "ON" CACHE BOOL "")
-
-set(MPI_HOME "/usr/tce/packages/mvapich2/mvapich2-2.2-intel-18.0.2" CACHE PATH "")
-```
+A sample host-config file is provided in 
+`host-configs/other/no-tpl-toss_3_x86_64_ib-intel@18.0.2.cmake`. This host-config requires
+no third-party libraries but does not enable Sidre.  The Python interface requires you build
+Axom with shared libraries which can be enabled via the CMake command line with 
+`-DBUILD_SHARED_LIBS=ON` and defining MPI_HOME, which is already enabled in the sample host-config.
