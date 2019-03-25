@@ -28,23 +28,17 @@ foreach ( test ${primal_tests} )
 
    get_filename_component( test_name ${test} NAME_WE )
 
-   set(primal_test_dependencies fmt primal slic gtest)
-
-   if ( ${RAJA_FOUND} )
-     list(APPEND primal_test_dependencies raja)
-     list(APPEND primal_test_dependencies umpire)
-   endif()
-
-   if ( ${ENABLE_OPENMP} )
-     list(APPEND primal_test_dependencies openmp)
-   endif()
-
+   set(primal_test_depends fmt primal slic gtest)
+  
+   blt_list_append( TO primal_test_depends ELEMENTS raja IF RAJA_FOUND )
+   blt_list_append( TO primal_test_depends ELEMENTS umpire IF UMPIRE_FOUND )
+   blt_list_append( TO primal_test_depends ELEMENTS openmp  IF ENABLE_OPENMP )
 
    blt_add_executable(
         NAME       ${test_name}_test
         SOURCES    ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-        DEPENDS_ON ${primal_test_dependencies}
+        DEPENDS_ON ${primal_test_depends}
         FOLDER     axom/primal/tests
        )
 
