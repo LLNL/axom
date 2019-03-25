@@ -42,7 +42,7 @@ using UMesh      = axom::mint::UnstructuredMesh< mint::SINGLE_SHAPE >;
 //------------------------------------------------------------------------------
 //  HELPER METHODS
 //------------------------------------------------------------------------------
-namespace detail
+namespace
 {
 
 /*!
@@ -90,7 +90,7 @@ void getUniformMesh( const UMesh* mesh, mint::UniformMesh*& umesh )
 }
 
 
-} /* end detail namespace */
+} /* end anonymous namespace */
 
 //------------------------------------------------------------------------------
 TEST( quest_signed_distance, sphere_test )
@@ -115,7 +115,7 @@ TEST( quest_signed_distance, sphere_test )
 
   SLIC_INFO( "Generating uniform mesh..." );
   mint::UniformMesh* umesh = nullptr;
-  detail::getUniformMesh( surface_mesh, umesh );
+  getUniformMesh( surface_mesh, umesh );
 
   double* phi_computed =
     umesh->createField< double >( "phi_computed", mint::NODE_CENTERED );
