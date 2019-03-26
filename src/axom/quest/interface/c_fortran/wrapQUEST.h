@@ -58,6 +58,8 @@ bool QUEST_inout_initialized();
 
 int QUEST_inout_set_verbose(bool verbosity);
 
+int QUEST_inout_set_vertex_weld_threshold(double thresh);
+
 bool QUEST_inout_evaluate_0(double x, double y);
 
 bool QUEST_inout_evaluate_1(double x, double y, double z);

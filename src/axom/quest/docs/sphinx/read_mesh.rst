@@ -17,12 +17,14 @@ Reading in a mesh
 *****************
 
 Applications commonly need to read a mesh file from disk.  Quest provides the
-``STLReader`` class, which can read binary or ASCII STL files, as well as the
-``PSTLReader`` class for use in parallel codes.  STL (stereolithography) is a common
-file format for triangle surface meshes.  The STL reader classes will read the
-file from disk and build a ``mint::Mesh`` object.
+``STLReader`` class, which can read binary or ASCII `STL`_ files, as well as the
+``PSTLReader`` class for use in parallel codes.  STL (stereolithography)
+is a common file format for triangle surface meshes.  The STL reader classes
+will read the file from disk and build a ``mint::Mesh`` object.
 
-The code examples are excerpts from the file axom/src/tools/mesh_tester.cpp.
+.. _STL: https://en.wikipedia.org/wiki/STL_(file_format)
+
+The code examples are excerpts from the file ``<axom>/src/tools/mesh_tester.cpp``.
 
 We include the STL reader header
 

@@ -205,6 +205,19 @@ Point<double,DIM> getCentroid( const Point<double,DIM>& pt0,
 }
 
 /*!
+ * \brief Simple utility to find the centroid of four points
+ */
+template<int DIM>
+Point<double,DIM> getCentroid( const Point<double,DIM>& pt0,
+                               const Point<double,DIM>& pt1,
+                               const Point<double,DIM>& pt2,
+                               const Point<double,DIM>& pt3  )
+{
+  return (pt0.array() + pt1.array() + pt2.array() + pt3.array()) /4.;
+}
+
+
+/*!
  * \brief Utility function to generate a triangle mesh of an octahedron
  * Vertices of the octahedron are at +-i, +-j and +-k.
  * \note The caller must delete the mesh
@@ -241,25 +254,6 @@ axom::mint::Mesh* make_octahedron_mesh()
         NEG_Z, NEG_X, POS_Y,
         NEG_Z, NEG_Y, NEG_X,
         NEG_Z, POS_X, NEG_Y };
-
-  // Note (KW 3/2016) -- We are not currently using this
-  // Explicit representation of edge-vertex incidence relation
-  // Note: we don't care about the orientation here
-  //const int NUM_EDGES = 12;
-  //const int VERTS_PER_EDGE = 3;
-  //VertexIndex evRelation[NUM_EDGES*VERTS_PER_EDGE]
-  //              = { POS_Z, POS_X  // Four edges incident in +Z
-  //                , POS_Z, POS_Y
-  //                , POS_Z, NEG_X
-  //                , POS_Z, NEG_Y
-  //                , NEG_Z, POS_X  // Four edges incident in -Z
-  //                , NEG_Z, POS_Y
-  //                , NEG_Z, NEG_X
-  //                , NEG_Z, NEG_Y
-  //                , POS_Y, POS_X  // Four edges not incident in Z
-  //                , NEG_Y, POS_Y
-  //                , POS_Y, NEG_X
-  //                , NEG_Y, NEG_Y };
 
   // First, confirm that all triangle normals point away from the origin
   for(int i =0 ; i < NUM_TRIS ; ++i)

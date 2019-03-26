@@ -83,12 +83,13 @@ contains
     integer :: i, rc
     logical :: ins, is_verbose = .true.
     real(C_DOUBLE)  :: x, y, z
+    real(C_DOUBLE)  :: EPS = 1E-7
     real(C_DOUBLE) :: mesh_bb_min(3), mesh_bb_max(3), mesh_center_of_mass(3)
     character(LEN=40) :: Format = "(I4, F8.2, F8.2, F8.2, L3)"
 
-
     !...set parameters for the inout query
     rc = quest_inout_set_verbose(is_verbose)
+    rc = quest_inout_set_vertex_weld_threshold(EPS)
 
     if (rank == 0) then
       write(*,*) "** Initializing quest inout query"

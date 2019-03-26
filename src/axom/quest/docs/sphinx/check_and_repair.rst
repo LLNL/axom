@@ -22,7 +22,7 @@ require a watertight manifold.  Additionally, mesh files often contain
 errors and require some kind of cleanup.
 
 The following code examples are excerpts from the file
-axom/src/tools/mesh_tester.cpp.
+``<axom>/src/tools/mesh_tester.cpp``.
 
 Quest provides a function to weld vertices within a distance of some
 specified epsilon.  This function takes arguments

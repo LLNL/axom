@@ -163,15 +163,24 @@ int main( int argc, char** argv )
   std::string fileName = std::string(argv[1]);
   bool isVerbose = false;
   const int npoints = 100000;
+  double weldThresh = 1E-9;
 
   int rc = quest::QUEST_INOUT_SUCCESS;
 
-  // -- Set quest_inout options
-  quest::inout_set_verbose(isVerbose);
+  // _quest_inout_interface_parameters_start
+  // -- Set quest_inout parameters
+  rc = quest::inout_set_verbose(isVerbose);
   if(rc != quest::QUEST_INOUT_SUCCESS)
   {
     cleanAbort();
   }
+
+  rc = quest::inout_set_vertex_weld_threshold( weldThresh );
+  if(rc != quest::QUEST_INOUT_SUCCESS)
+  {
+    cleanAbort();
+  }
+  // _quest_inout_interface_parameters_end
 
   // -- Initialize quest_inout
   axom::utilities::Timer timer;

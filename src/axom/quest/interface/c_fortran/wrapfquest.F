@@ -95,6 +95,15 @@ module axom_quest
             integer(C_INT) :: SHT_rv
         end function c_inout_set_verbose
 
+        function quest_inout_set_vertex_weld_threshold(thresh) &
+                result(SHT_rv) &
+                bind(C, name="QUEST_inout_set_vertex_weld_threshold")
+            use iso_c_binding, only : C_DOUBLE, C_INT
+            implicit none
+            real(C_DOUBLE), value, intent(IN) :: thresh
+            integer(C_INT) :: SHT_rv
+        end function quest_inout_set_vertex_weld_threshold
+
         function c_inout_evaluate_0(x, y) &
                 result(SHT_rv) &
                 bind(C, name="QUEST_inout_evaluate_0")

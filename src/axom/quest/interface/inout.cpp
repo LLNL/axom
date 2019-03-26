@@ -55,11 +55,13 @@ struct InOutHelper
   {
     bool m_verbose;
     int m_dimension;
+    double m_vertexWeldThreshold;
 
     void setDefault()
     {
       m_verbose = false;
       m_dimension = 3;
+      m_vertexWeldThreshold = 1E-9;
     }
   };
 
@@ -110,6 +112,10 @@ struct InOutHelper
     m_params.m_verbose=verbose;
   }
 
+  void setVertexWeldThreshold(double thresh)
+  {
+    m_params.m_vertexWeldThreshold = thresh;
+  }
 
   /*!
    * Saves the current slic logging level
@@ -217,6 +223,11 @@ struct InOutHelper
 
     // initialize InOutOctree
     m_inoutTree = new InOutOctree<DIM>(m_meshBoundingBox, m_surfaceMesh);
+
+    // set params
+    m_inoutTree->setVertexWeldThreshold(m_params.m_vertexWeldThreshold);
+
+    // initialize the spatial index
     m_inoutTree->generateIndex();
 
     // Update the mesh parameter since the InOutOctree modifies the mesh
@@ -389,6 +400,21 @@ int inout_set_verbose(bool verbosity)
   }
 
   s_inoutHelper.setVerbose(verbosity);
+
+  return QUEST_INOUT_SUCCESS;
+}
+
+int inout_set_vertex_weld_threshold(double thresh)
+{
+  if(inout_initialized())
+  {
+    SLIC_WARNING( "quest inout query must NOT be initialized "
+                  << "prior to calling 'inout_set_vertex_weld_threshold'");
+
+    return QUEST_INOUT_FAILED;
+  }
+
+  s_inoutHelper.setVertexWeldThreshold(thresh);
 
   return QUEST_INOUT_SUCCESS;
 }

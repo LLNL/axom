@@ -222,6 +222,25 @@ int inout_get_dimension();
  */
 int inout_set_verbose(bool verbosity);
 
+/*!
+ * \brief Sets the cutoff distance for welding vertices during initialization
+ *
+ * By default, the welding threshold is 1E-9.
+ *
+ * The inout query requires the input surface to be watertight so this
+ * parameter should be set with care. A welding threshold that is too
+ * high could unnecessarily merge vertices and create topological defects,
+ * while a value that is too low risks leaving gaps in meshes with tolerances
+ * between vertices. The default value tends to work well in practice.
+ *
+ * \param thresh Cutoff distance for welding vertices
+ * \return Return code is QUEST_INOUT_SUCCESS if successful
+ *  and QUEST_INOUT_FAILED otherwise.
+ * \pre inout_initialized() == false
+ * \pre thresh >= 0
+ */
+int inout_set_vertex_weld_threshold(double thresh);
+
 /// @}
 
 

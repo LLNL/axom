@@ -24,6 +24,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added capability in sidre IOManager to read files while running on a number
   of MPI ranks greater than the number of ranks that were used to create
   the files. 
+- Users can now set the vertex welding threshold parameter in Quest's In/Out query.
+  This was previously not exposed to the user. The default value is 1E-9.
 
 ### Removed
 - Moved mint::Array to axom::Array with sidre storage in sidre::Array;

@@ -24,8 +24,6 @@
 #ifndef INOUT_OCTREE__HXX_
 #define INOUT_OCTREE__HXX_
 
-#include "axom/config.hpp"       // defines AXOM_USE_CXX11
-
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
@@ -34,21 +32,20 @@
 
 #include "axom/quest/geom/SpatialOctree.hpp"
 
-#include <vector>   // For InOutLeafData triangle lists -- TODO replace with
-                    // SLAM DynamicVariableRelation...
-#include <iterator> // For back_inserter
-#include <limits>   // numeric_limits traits
+#include <vector>        // For InOutLeafData triangle lists
+#include <iterator>      // For back_inserter
+#include <limits>        // numeric_limits traits
 #include <sstream>
+#include <unordered_map>
+
 
 #define DEBUG_VERT_IDX  -2  // 1160
-#define DEBUG_TRI_IDX   -2 // 1654
+#define DEBUG_TRI_IDX   -2  // 1654
 
-#define DEBUG_BLOCK_2  BlockIndex::invalid_index() // BlockIndex(
-                                                   // GridPt::make_point(15,15,0),
-                                                   // 5)
-#define DEBUG_BLOCK_1  BlockIndex::invalid_index() // BlockIndex(
-                                                   // GridPt::make_point(7287,0,2986),
-                                                   // 13)
+#define DEBUG_BLOCK_2  BlockIndex::invalid_index()
+//                     BlockIndex(GridPt::make_point(15,15,0),5)
+#define DEBUG_BLOCK_1  BlockIndex::invalid_index()
+//                     BlockIndex(GridPt::make_point(7287,0,2986),13)
 
 #ifndef DUMP_VTK_MESH
 //    #define DUMP_VTK_MESH
@@ -77,9 +74,7 @@ namespace quest
 
 namespace detail
 {
-// Predeclare utility classes that deals with validating and logging stats of
-// InOutOctrees
-
+// Predeclare utility classes for validating and logging stats of InOutOctrees
 template<int DIM> class InOutOctreeStats;
 template<int DIM> class InOutOctreeValidator;
 template<int DIM> class InOutOctreeMeshDumper;
@@ -89,9 +84,8 @@ template<int DIM> class InOutOctreeMeshDumper;
 /**
  * \brief Compact BlockDataType for an InOutOctree
  *
- * Storage requirement is one integer per block, which can implicitly determine
- * the color of a block, and for gray block, the index of the associated
- * triangles
+ * Storage requirement is one integer per block to hold the color of a block
+ * and for gray block, the index of the associated triangles
  */
 class InOutBlockData
 {
@@ -112,8 +106,7 @@ public:
   /**
    * \brief Default constructor for an InOutBlockData
    *
-   * \note Default constructed InOutBlockData instances
-   * are assumed to be leaf blocks
+   * \note Default constructed instances are assumed to be leaf blocks
    */
   InOutBlockData()
     : m_idx(LEAF_BLOCK_UNCOLORED) {}
@@ -184,8 +177,7 @@ public:         // Other functions
   }
 
   /**
-   * \brief Sets the block as gray, and provides the index of its associated
-   * data
+   * \brief Sets the block as gray, and provides index of its associated data
    *
    * \param idx The index of the data associated with the gray leaf block
    * \pre The block must be a leaf block
@@ -325,10 +317,10 @@ class DynamicGrayBlockData
 public:
   enum { NO_VERTEX = -1 };
 
-  typedef mint::IndexType VertexIndex;
-  typedef mint::IndexType TriangleIndex;
+  using VertexIndex = mint::IndexType;
+  using TriangleIndex = mint::IndexType;
 
-  typedef std::vector<TriangleIndex> TriangleList;
+  using TriangleList = std::vector<TriangleIndex>;
 
 public:
   /**
@@ -512,15 +504,15 @@ private:
   friend class detail::InOutOctreeMeshDumper<DIM>;
 
 public:
-  typedef OctreeBase<DIM, InOutBlockData> OctreeBaseType;
-  typedef SpatialOctree<DIM, InOutBlockData> SpatialOctreeType;
+  using OctreeBaseType = OctreeBase<DIM, InOutBlockData>;
+  using SpatialOctreeType = SpatialOctree<DIM, InOutBlockData>;
 
-  typedef typename SpatialOctreeType::GeometricBoundingBox GeometricBoundingBox;
-  typedef typename SpatialOctreeType::SpacePt SpacePt;
-  typedef typename SpatialOctreeType::SpaceVector SpaceVector;
-  typedef typename SpatialOctreeType::BlockIndex BlockIndex;
-  typedef typename OctreeBaseType::GridPt GridPt;
-  typedef typename primal::Ray<double, DIM> SpaceRay;
+  using GeometricBoundingBox = typename SpatialOctreeType::GeometricBoundingBox;
+  using SpacePt = typename SpatialOctreeType::SpacePt;
+  using SpaceVector = typename SpatialOctreeType::SpaceVector;
+  using BlockIndex = typename SpatialOctreeType::BlockIndex;
+  using GridPt = typename OctreeBaseType::GridPt;
+  using SpaceRay = typename primal::Ray<double, DIM>;
 
 private:
   enum GenerationState { INOUTOCTREE_UNINITIALIZED,
@@ -529,15 +521,15 @@ private:
                          INOUTOCTREE_ELEMENTS_INSERTED,
                          INOUTOCTREE_LEAVES_COLORED};
 
+  static double DEFAULT_VERTEX_WELD_THRESHOLD;
+
   /**
    * \brief A utility class that wraps the access to the mesh data
    *
    * This class helps separate the specifics of accessing the underlying mesh
-   * for on InOutOctree.
-   * It is customized for unstructured Triangle meshes, but we will later want
-   * to apply
-   * the InOutOctree to other mesh types, e.g. Segments and Nurbs in 2D,
-   * Bilinear quads and NURBS in 3D.
+   * for an InOutOctree. It is customized for unstructured Triangle meshes,
+   * but we will later want to apply the InOutOctree to other mesh types,
+   * e.g. Segments in 2D, Bilinear quads in 3D.
    *
    * We can later specialize this class for triangle meshes and implement other
    * customized mesh wrappers.
@@ -545,9 +537,9 @@ private:
   class MeshWrapper
   {
 public:
-    typedef mint::IndexType VertexIndex;
-    typedef mint::IndexType TriangleIndex;
-    typedef mint::Mesh SurfaceMesh;
+    using VertexIndex = mint::IndexType;
+    using TriangleIndex = mint::IndexType;
+    using SurfaceMesh = mint::Mesh;
 
     /** \brief A vertex index to indicate that there is no associated vertex */
     static const VertexIndex NO_VERTEX = -1;
@@ -558,37 +550,36 @@ public:
     /** \brief A constant for the number of boundary vertices in a triangle */
     static const int NUM_TRI_VERTS = 3;
 
-    typedef primal::Triangle<double, DIM> SpaceTriangle;
+    using SpaceTriangle = primal::Triangle<double, DIM>;
 
 
-    typedef slam::PositionSet MeshVertexSet;
-    typedef slam::PositionSet MeshElementSet;
+    using MeshVertexSet = slam::PositionSet;
+    using MeshElementSet = slam::PositionSet;
 
-    typedef slam::Map<VertexIndex> VertexIndexMap;
-    typedef slam::Map<SpacePt> VertexPositionMap;
+    using VertexIndexMap = slam::Map<VertexIndex>;
+    using VertexPositionMap = slam::Map<SpacePt>;
 
-    typedef slam::policies::
-      STLVectorIndirection<VertexIndex, VertexIndex> STLIndirection;
-    typedef slam::policies::
-      CompileTimeStride<VertexIndex, NUM_TRI_VERTS>  TVStride;
-    typedef slam::policies::
-      ConstantCardinality<VertexIndex, TVStride>     ConstantCardinality;
-    typedef slam::StaticRelation<
-        ConstantCardinality,
-        STLIndirection,
-        MeshElementSet,
-        MeshVertexSet>                                TriangleVertexRelation;
-    typedef typename TriangleVertexRelation::RelationSubset TriVertIndices;
+    using STLIndirection =
+            slam::policies::STLVectorIndirection<VertexIndex, VertexIndex>;
+    using TVStride =
+            slam::policies::CompileTimeStride<VertexIndex, NUM_TRI_VERTS>;
+    using ConstantCardinality =
+            slam::policies::ConstantCardinality<VertexIndex, TVStride>;
+    using TriangleVertexRelation = slam::StaticRelation<ConstantCardinality,
+                                                        STLIndirection,
+                                                        MeshElementSet,
+                                                        MeshVertexSet>;
+    using TriVertIndices = typename TriangleVertexRelation::RelationSubset;
 
 public:
     /** \brief Constructor for a mesh wrapper */
     MeshWrapper(SurfaceMesh*& meshPtr)
-      : m_surfaceMesh(meshPtr),
-      m_vertexSet(0),
-      m_elementSet(0),
-      m_vertexPositions(&m_vertexSet),
-      m_triangleToVertexRelation(),
-      m_meshWasReindexed(false)
+      : m_surfaceMesh(meshPtr)
+      , m_vertexSet(0)
+      , m_elementSet(0)
+      , m_vertexPositions(&m_vertexSet)
+      , m_triangleToVertexRelation()
+      , m_meshWasReindexed(false)
     {}
 
     /** Const accessor to the vertex set of the wrapped surface mesh */
@@ -880,7 +871,7 @@ public:
         m_surfaceMesh = nullptr;
       }
 
-      typedef mint::UnstructuredMesh< mint::SINGLE_SHAPE > UMesh;
+      using UMesh = mint::UnstructuredMesh< mint::SINGLE_SHAPE >;
       UMesh* triMesh =
         new UMesh(3, mint::TRIANGLE, m_vertexSet.size(), m_elementSet.size() );
 
@@ -918,54 +909,46 @@ private:
 
 public:
 
-  typedef typename MeshWrapper::SurfaceMesh SurfaceMesh;
+  using SurfaceMesh = typename MeshWrapper::SurfaceMesh;
 
-  typedef typename mint::IndexType VertexIndex;
-  typedef typename mint::IndexType TriangleIndex;
-  typedef axom::slam::FieldRegistry<VertexIndex>  IndexRegistry;
+  using VertexIndex = typename mint::IndexType;
+  using TriangleIndex = typename mint::IndexType;
+  using IndexRegistry = slam::FieldRegistry<VertexIndex>;
 
-  typedef typename MeshWrapper::SpaceTriangle SpaceTriangle;
+  using SpaceTriangle = typename MeshWrapper::SpaceTriangle;
 
-  typedef typename MeshWrapper::MeshVertexSet MeshVertexSet;
-  typedef typename MeshWrapper::MeshElementSet MeshElementSet;
-  typedef typename MeshWrapper::TriVertIndices TriVertIndices;
-  typedef typename MeshWrapper::VertexIndexMap VertexIndexMap;
+  using MeshVertexSet = typename MeshWrapper::MeshVertexSet;
+  using MeshElementSet = typename MeshWrapper::MeshElementSet;
+  using TriVertIndices = typename MeshWrapper::TriVertIndices;
+  using VertexIndexMap = typename MeshWrapper::VertexIndexMap;
 
-
-
-  // Some type defs for the Relations from Gray leaf blocks to mesh vertices and
-  // elements
-
+  // Type aliases for the Relations from Gray leaf blocks to mesh entities
   static const int MAX_VERTS_PER_BLOCK = 1;
-  typedef axom::slam::Map<BlockIndex> VertexBlockMap;
+  using VertexBlockMap = slam::Map<BlockIndex>;
 
-  typedef axom::slam::policies::
-    STLVectorIndirection<VertexIndex, VertexIndex>       STLIndirection;
+  using STLIndirection =
+          slam::policies::STLVectorIndirection<VertexIndex, VertexIndex>;
 
-  typedef axom::slam::PositionSet GrayLeafSet;
-  typedef axom::slam::policies::
-    CompileTimeStride<VertexIndex, MAX_VERTS_PER_BLOCK>  BVStride;
-  typedef axom::slam::policies::
-    ConstantCardinality<VertexIndex, BVStride>           ConstantCardinality;
-  typedef axom::slam::StaticRelation<
-      ConstantCardinality,
-      STLIndirection,
-      GrayLeafSet,
-      MeshVertexSet>                                     GrayLeafVertexRelation;
+  using GrayLeafSet = slam::PositionSet;
+  using BVStride =
+          slam::policies::CompileTimeStride<VertexIndex, MAX_VERTS_PER_BLOCK>;
+  using ConstantCardinality =
+          slam::policies::ConstantCardinality<VertexIndex, BVStride>;
+  using GrayLeafVertexRelation = slam::StaticRelation<ConstantCardinality,
+                                                      STLIndirection,
+                                                      GrayLeafSet,
+                                                      MeshVertexSet>;
+  using VariableCardinality =
+          slam::policies::VariableCardinality<VertexIndex, STLIndirection>;
+  using GrayLeafElementRelation = slam::StaticRelation<VariableCardinality,
+                                                       STLIndirection,
+                                                       GrayLeafSet,
+                                                       MeshElementSet>;
+  using TriangleIndexSet = typename GrayLeafElementRelation::RelationSubset;
 
-  typedef axom::slam::policies::
-    VariableCardinality<VertexIndex, STLIndirection>     VariableCardinality;
-  typedef axom::slam::StaticRelation<
-      VariableCardinality,
-      STLIndirection,
-      GrayLeafSet,
-      MeshElementSet >                                   GrayLeafElementRelation;
-  typedef typename GrayLeafElementRelation::RelationSubset TriangleIndexSet;
-
-  typedef axom::slam::Map<GrayLeafSet>            GrayLeafsLevelMap;
-  typedef axom::slam::Map<GrayLeafVertexRelation> GrayLeafVertexRelationLevelMap;
-  typedef axom::slam::Map<GrayLeafElementRelation>
-    GrayLeafElementRelationLevelMap;
+  using GrayLeafsLevelMap = slam::Map<GrayLeafSet>;
+  using GrayLeafVertexRelationLevelMap = slam::Map<GrayLeafVertexRelation>;
+  using GrayLeafElementRelationLevelMap = slam::Map<GrayLeafElementRelation>;
 
 public:
   /**
@@ -979,16 +962,18 @@ public:
    * problems.  Please make sure to discard all old copies of the meshPtr.
    */
   InOutOctree(const GeometricBoundingBox& bb, SurfaceMesh*& meshPtr)
-    : SpatialOctreeType( GeometricBoundingBox(bb).scale(1.0001) ),
-    m_meshWrapper(meshPtr),
-    m_vertexToBlockMap(&m_meshWrapper.vertexSet()),
+    : SpatialOctreeType( GeometricBoundingBox(bb).scale(1.0001) )
+    , m_meshWrapper(meshPtr)
+    , m_vertexToBlockMap(&m_meshWrapper.vertexSet())
     //
-    m_grayLeafsMap( &this->m_levels),
-    m_grayLeafToVertexRelationLevelMap( &this->m_levels ),
-    m_grayLeafToElementRelationLevelMap( &this->m_levels ),
+    , m_grayLeafsMap( &this->m_levels)
+    , m_grayLeafToVertexRelationLevelMap( &this->m_levels )
+    , m_grayLeafToElementRelationLevelMap( &this->m_levels )
     //
-    m_generationState( INOUTOCTREE_UNINITIALIZED)
-  {}
+    , m_generationState( INOUTOCTREE_UNINITIALIZED)
+  {
+    setVertexWeldThreshold( DEFAULT_VERTEX_WELD_THRESHOLD);
+  }
 
   /**
    * \brief Generate the spatial index over the triangle mesh
@@ -1000,13 +985,40 @@ public:
   /**
    * \brief The point containment query.
    *
-   * \param pt The point that we want to check for containment within the
-   * surface
+   * \param pt The point at which we are checking for containment
    * \return True if the point is within (or on) the surface, false otherwise
-   * \note Points outside the octree's bounding box are considered outside the
-   * surface
+   * \note Points outside the octree bounding box are considered outside
    */
   bool within(const SpacePt& pt) const;
+
+  /**
+   * \brief Sets the threshold for welding vertices during octree construction
+   *
+   * \param [in] thresh The cutoff distance at which we consider two vertices
+   * to be identical during the octree construction
+   *
+   * \pre thresh >= 0
+   * \pre This function cannot be called after the octree has been constructed
+   *
+   * \note The InOutOctree requires the input surface to be watertight so this
+   * parameter should be set with care. A welding threshold that is too
+   * high could unnecessarily merge vertices and create topological defects,
+   * while a value that is too low risks leaving gaps in meshes with tolerances
+   * between vertices. The default value tends to work well in practice.
+   *
+   * \note The code actually uses the square of the threshold for comparisons
+   */
+  void setVertexWeldThreshold(double thresh)
+  {
+    SLIC_WARNING_IF( thresh < 0.,
+                     "Distance threshold for vertices cannot be negative.");
+
+    SLIC_WARNING_IF( m_generationState > INOUTOCTREE_UNINITIALIZED,
+                     "Can only set the vertex welding threshold "
+                     << "before initializing the InOutOctree");
+
+    m_vertexWeldThresholdSquared = thresh * thresh;
+  }
 
 private:
 
@@ -1255,7 +1267,12 @@ protected:
   GenerationState m_generationState;
 
   IndexRegistry m_indexRegistry;
+
+  double m_vertexWeldThresholdSquared;
 };
+
+template<int DIM>
+double InOutOctree<DIM>::DEFAULT_VERTEX_WELD_THRESHOLD = 1E-9;
 
 
 namespace
@@ -1290,7 +1307,7 @@ inline std::ostream& operator<<(std::ostream& os,
 template<int DIM>
 void InOutOctree<DIM>::generateIndex ()
 {
-  typedef axom::utilities::Timer Timer;
+  using Timer = axom::utilities::Timer;
 
   // Loop through mesh vertices
   SLIC_INFO("  Generating InOutOctree over surface mesh with "
@@ -1377,9 +1394,6 @@ void InOutOctree<DIM>::generateIndex ()
 template<int DIM>
 void InOutOctree<DIM>::insertVertex (VertexIndex idx, int startingLevel)
 {
-  static const double EPS_SQ = 1e-18;
-
-
   const SpacePt pt = m_meshWrapper.getMeshVertexPosition(idx);
 
   BlockIndex block = this->findLeafBlock(pt, startingLevel);
@@ -1405,9 +1419,8 @@ void InOutOctree<DIM>::insertVertex (VertexIndex idx, int startingLevel)
   {
     // check if we should merge the vertices
     VertexIndex origVertInd = blkData.dataIndex();
-    if( squared_distance( pt,
-                          m_meshWrapper.getMeshVertexPosition(origVertInd) ) >=
-        EPS_SQ )
+    if( squared_distance( pt, m_meshWrapper.getMeshVertexPosition(origVertInd) )
+        >= m_vertexWeldThresholdSquared )
     {
       blkData.clear();
       this->refineLeaf(block);
@@ -1428,15 +1441,13 @@ void InOutOctree<DIM>::insertVertex (VertexIndex idx, int startingLevel)
 template<int DIM>
 void InOutOctree<DIM>::insertMeshTriangles ()
 {
-  typedef axom::utilities::Timer Timer;
-
-  typedef typename OctreeBaseType::OctreeLevelType LeavesLevelMap;
-  typedef typename OctreeBaseType::LevelMapIterator LeavesIterator;
+  using Timer = axom::utilities::Timer;
+  using LeavesLevelMap = typename OctreeBaseType::OctreeLevelType;
 
   SLIC_ASSERT( m_meshWrapper.meshWasReindexed() );
 
   // Temporary arrays of DyamicGrayBlockData for current and next level
-  typedef std::vector<DynamicGrayBlockData> DynamicLevelData;
+  using DynamicLevelData = std::vector<DynamicGrayBlockData>;
   const int NUM_INIT_DATA_ENTRIES = 1<<10;
   DynamicLevelData currentLevelData;
   DynamicLevelData nextLevelData;
@@ -1458,30 +1469,26 @@ void InOutOctree<DIM>::insertMeshTriangles ()
   int const numTris = m_meshWrapper.numMeshElements();
   dynamicRootData.triangles().reserve( numTris );
   for(int idx=0 ; idx < numTris ; ++idx)
+  {
     dynamicRootData.addTriangle(idx);
+  }
 
-
-  /// --- Iterate through octree levels and insert triangles into the blocks
-  // that they intersect
+  // Iterate through octree levels
+  // and insert triangles into the blocks that they intersect
   for(int lev=0 ; lev< this->m_levels.size() ; ++lev)
   {
     Timer levelTimer(true);
 
-    typename IndexRegistry::BufferType& gvRelData =
-      m_indexRegistry.addNamelessBuffer();
-
-    typename IndexRegistry::BufferType& geSizeRelData =
-      m_indexRegistry.addNamelessBuffer();
+    auto& gvRelData = m_indexRegistry.addNamelessBuffer();
+    auto& geIndRelData = m_indexRegistry.addNamelessBuffer();
+    auto& geSizeRelData = m_indexRegistry.addNamelessBuffer();
     geSizeRelData.push_back(0);
-
-    typename IndexRegistry::BufferType& geIndRelData =
-      m_indexRegistry.addNamelessBuffer();
 
     int nextLevelDataBlockCounter = 0;
 
-    LeavesLevelMap& levelLeafMap = this->getOctreeLevel( lev );
-    for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end() ;
-        it != itEnd ; ++it)
+    auto& levelLeafMap = this->getOctreeLevel( lev );
+    auto itEnd = levelLeafMap.end();
+    for(auto it=levelLeafMap.begin() ; it != itEnd ; ++it)
     {
       InOutBlockData& blkData = *it;
 
@@ -1703,10 +1710,8 @@ void InOutOctree<DIM>::colorOctreeLeaves()
   // * one of its siblings is gray
   // * one of its siblings has a gray descendant
 
-  typedef axom::utilities::Timer Timer;
-  typedef typename OctreeBaseType::OctreeLevelType LeavesLevelMap;
-  typedef typename OctreeBaseType::LevelMapIterator LeavesIterator;
-  typedef std::vector<GridPt> GridPtVec;
+  using Timer = axom::utilities::Timer;
+  using GridPtVec = std::vector<GridPt>;
   GridPtVec uncoloredBlocks;
 
   // Bottom-up traversal of octree
@@ -1715,9 +1720,9 @@ void InOutOctree<DIM>::colorOctreeLeaves()
     uncoloredBlocks.clear();
     Timer levelTimer(true);
 
-    LeavesLevelMap& levelLeafMap = this->getOctreeLevel(lev);
-    for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end() ;
-        it != itEnd ; ++it)
+    auto& levelLeafMap = this->getOctreeLevel(lev);
+    auto itEnd = levelLeafMap.end();
+    for(auto it=levelLeafMap.begin() ; it != itEnd ; ++it)
     {
       if( !it->isLeaf() )
         continue;
@@ -1729,8 +1734,8 @@ void InOutOctree<DIM>::colorOctreeLeaves()
     }
 
     // Iterate through the uncolored blocks until all have a color
-    // This should terminate since we know that one of its siblings (or their
-    // descendants) is gray
+    // This terminates since we know that one of its siblings
+    // (or their descendants) is gray
     while(!uncoloredBlocks.empty())
     {
       int prevCount = uncoloredBlocks.size();
@@ -1938,11 +1943,10 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & queryPt,
                                        const BlockIndex& leafBlk,
                                        const InOutBlockData&  leafData) const
 {
-  /// The algorithm finds a ray from queryPt to a point of any triangle within
-  // leafBlk.
-  /// It then finds the first triangle along this ray and tests this vector
-  /// against the triangle normal. queryPt is inside if the dot product is
-  // positive.
+  /// Finds a ray from queryPt to a point of a triangle within leafBlk.
+  /// Then find the first triangle along this ray. The orientation of the ray
+  /// against this triangle's normal indicates queryPt's containment.
+  /// It is inside when the dot product is positive.
 
   // Bounding box scaling factor for dealing with grazing triangles
   const double BB_SCALE_FACTOR = 1.005;
@@ -1962,8 +1966,7 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & queryPt,
     TriangleIndex idx = triSet[i];
     SpaceTriangle tri = m_meshWrapper.trianglePositions(idx);
 
-    /// Find a point from this triangle that is within the bounding box of the
-    // mesh
+    /// Find a point from this triangle within the bounding box of the mesh
     primal::Polygon<double, DIM> poly = primal::clip(tri, blockBB);
     if(poly.numVertices() == 0)
     {
@@ -1986,10 +1989,8 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & queryPt,
     triPt = poly.centroid();
 
     /// Use a ray from the query point to the triangle point to find an
-    // intersection
-    /// Note: We have to check all triangles to ensure that there is not a
-    // closer
-    ///       triangle than tri along this direction.
+    /// intersection. Note: We have to check all triangles to ensure that
+    /// there is not a closer triangle than tri along this direction.
     TriangleIndex tIdx = MeshWrapper::NO_TRIANGLE;
     double minRayParam = std::numeric_limits<double>::infinity();
     SpaceRay ray(queryPt, SpaceVector(queryPt,triPt));
@@ -2023,8 +2024,7 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & queryPt,
       continue;
     }
 
-    /// We are inside if the dot product of the normal with this triangle is
-    // positive
+    // Inside when the dot product of the normal with this triangle is positive
     SpaceVector normal = (tIdx == idx)
                          ? tri.normal()
                          : m_meshWrapper.trianglePositions( tIdx ).normal();
@@ -2033,11 +2033,10 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & queryPt,
 
   }
 
-  SLIC_WARNING(
-    "Could not determine inside/outside for point "
-    << queryPt << " on block " << leafBlk);
+  SLIC_WARNING("Could not determine inside/outside for point "
+               << queryPt << " on block " << leafBlk);
 
-  return false;    // should not get here -- revisit this...
+  return false;    // query points on boundary might get here -- revisit this.
 }
 
 
@@ -2094,7 +2093,7 @@ bool InOutOctree<DIM>::allTrianglesIncidentInCommonVertex(
   VertexIndex commonVert = leafData.vertexIndex();
 
   const int numTris = leafData.numTriangles();
-  const DynamicGrayBlockData::TriangleList& tris = leafData.triangles();
+  const auto& tris = leafData.triangles();
 
   if( blockIndexesVertex(commonVert, leafBlock) )
   {
@@ -2295,43 +2294,36 @@ template<int DIM>
 class InOutOctreeMeshDumper
 {
 public:
-  typedef InOutOctree<DIM> InOutOctreeType;
-  typedef typename InOutOctreeType::TriangleIndexSet TriangleIndexSet;
+  using InOutOctreeType = InOutOctree<DIM>;
+  using TriangleIndexSet = typename InOutOctreeType::TriangleIndexSet;
 
-  typedef typename InOutOctreeType::OctreeBaseType OctreeBaseType;
-  typedef typename OctreeBaseType::OctreeLevels OctreeLevels;
-  typedef typename OctreeBaseType::BlockIndex BlockIndex;
-  typedef typename OctreeBaseType::OctreeLevelType LeavesLevelMap;
-  typedef typename OctreeBaseType::LevelMapCIterator LeavesIterator;
+  using OctreeBaseType = typename InOutOctreeType::OctreeBaseType;
+  using OctreeLevels = typename OctreeBaseType::OctreeLevels;
+  using BlockIndex = typename OctreeBaseType::BlockIndex;
 
-  typedef typename InOutOctreeType::SpacePt SpacePt;
-  typedef typename InOutOctreeType::GridPt GridPt;
-  typedef typename InOutOctreeType::VertexIndex VertexIndex;
-  typedef typename InOutOctreeType::TriangleIndex TriangleIndex;
-  typedef typename InOutOctreeType::MeshWrapper::TriVertIndices TriVertIndices;
-  typedef typename InOutOctreeType::GeometricBoundingBox GeometricBoundingBox;
-  typedef typename InOutOctreeType::SpaceTriangle SpaceTriangle;
+  using SpacePt = typename InOutOctreeType::SpacePt;
+  using GridPt = typename InOutOctreeType::GridPt;
+  using VertexIndex = typename InOutOctreeType::VertexIndex;
+  using TriangleIndex = typename InOutOctreeType::TriangleIndex;
+  using TriVertIndices = typename InOutOctreeType::MeshWrapper::TriVertIndices;
+  using GeometricBoundingBox = typename InOutOctreeType::GeometricBoundingBox;
+  using SpaceTriangle = typename InOutOctreeType::SpaceTriangle;
 
-  typedef axom::slam::Map<VertexIndex> LeafVertMap;
-  typedef axom::slam::Map<int> LeafIntMap;
-  typedef axom::slam::Map<GridPt> LeafGridPtMap;
+  using LeafVertMap = slam::Map<VertexIndex>;
+  using LeafIntMap = slam::Map<int>;
+  using LeafGridPtMap = slam::Map<GridPt>;
 
-  typedef mint::UnstructuredMesh< mint::MIXED_SHAPE > DebugMesh;
+  using DebugMesh = mint::UnstructuredMesh< mint::MIXED_SHAPE>;
 
-  typedef std::map< InOutBlockData::LeafColor, int> ColorsMap;
+  using ColorsMap = std::map< InOutBlockData::LeafColor, int>;
 
-  typedef
-    typename InOutOctreeType::OctreeBaseType::SparsePtOctLevType::MapType
-    GridIntMap;
-  typedef
-    typename InOutOctreeType::OctreeBaseType::SparsePtOctLevType::BroodTraits
-    GridIntTraits;
-  typedef typename GridIntMap::iterator GridIntIter;
+  using GridPtHash = primal::PointHash<typename GridPt::CoordType>;
+  using GridIntMap = std::unordered_map<GridPt, int, GridPtHash>;
 
 public:
-  InOutOctreeMeshDumper(const InOutOctreeType& octree) :
-    m_octree(octree),
-    m_generationState(m_octree.m_generationState)
+  InOutOctreeMeshDumper(const InOutOctreeType& octree)
+    : m_octree(octree)
+    , m_generationState(m_octree.m_generationState)
   {
     // Create a small lookup table to map block colors to ints
     m_colorsMap[ InOutBlockData::White ] = -1;
@@ -2353,20 +2345,20 @@ public:
       return;
     }
 
-    typedef axom::slam::Map<GridIntMap> LevelGridIntMap;
+    using LevelGridIntMap = slam::Map<GridIntMap>;
     LevelGridIntMap diffBlocks( &(m_octree.m_levels) );
 
     int totalBlocks = 0;
 
-    // Iterate through the octree leaves looking for neighbor blocks with
-    // different labelings
+    // Iterate through the octree leaves
+    // looking for neighbor blocks with different labelings
     for(int lev=m_octree.maxLeafLevel()-1 ; lev >= 0 ; --lev)
     {
-      GridIntTraits::initializeMap(diffBlocks[lev]);
+      diffBlocks[lev] = GridIntMap(0, GridPtHash());
 
-      const LeavesLevelMap& levelLeafMap = m_octree.getOctreeLevel( lev );
-      for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end() ;
-          it != itEnd ; ++it)
+      const auto& levelLeafMap = m_octree.getOctreeLevel( lev );
+      auto itEnd = levelLeafMap.end();
+      for(auto it=levelLeafMap.begin() ; it != itEnd ; ++it)
       {
         const BlockIndex block(it.pt(), lev);
         const InOutBlockData& data = *it;
@@ -2407,11 +2399,9 @@ public:
 
     for(int lev=m_octree.maxLeafLevel()-1 ; lev >= 0 ; --lev)
     {
-      GridIntMap& levelBlocks = diffBlocks[ lev ];
-      for(GridIntIter it=levelBlocks.begin(), itEnd = levelBlocks.end() ;
-          it != itEnd ; ++it)
+      for( auto&& blk : diffBlocks[lev] )
       {
-        blocks.push_back( BlockIndex(it->first, lev) );
+        blocks.emplace_back( BlockIndex(blk.first, lev) );
       }
     }
 
@@ -2475,9 +2465,9 @@ public:
     std::vector<BlockIndex> blocks;
     for(int lev=0 ; lev< m_octree.m_levels.size() ; ++lev)
     {
-      const LeavesLevelMap& levelLeafMap = m_octree.getOctreeLevel( lev );
-      for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end() ;
-          it != itEnd ; ++it)
+      const auto& levelLeafMap = m_octree.getOctreeLevel( lev );
+      auto itEnd = levelLeafMap.end();
+      for(auto it=levelLeafMap.begin() ; it != itEnd ; ++it)
       {
         if( it->isLeaf() && it->hasData() )
         {
@@ -2537,9 +2527,9 @@ public:
     // Create an stl vector of all leaf blocks
     for(int lev=0 ; lev< m_octree.m_levels.size() ; ++lev)
     {
-      const LeavesLevelMap& levelLeafMap = m_octree.getOctreeLevel( lev );
-      for(LeavesIterator it=levelLeafMap.begin(),
-          itEnd = levelLeafMap.end() ; it != itEnd ; ++it)
+      const auto& levelLeafMap = m_octree.getOctreeLevel( lev );
+      auto itEnd = levelLeafMap.end();
+      for(auto it=levelLeafMap.begin() ; it != itEnd ; ++it)
       {
         if( it->isLeaf())
           blocks.push_back( BlockIndex(it.pt(), lev) );
@@ -2572,8 +2562,6 @@ private:
                             const std::vector<BlockIndex>& blocks,
                             bool shouldLogBlocks = false) const
   {
-    typedef typename std::vector<BlockIndex>::const_iterator BlockIter;
-
     if(blocks.empty())
       return;
 
@@ -2582,14 +2570,14 @@ private:
     std::stringstream fNameStr;
     fNameStr << name << ".vtk";
 
-    DebugMesh* debugMesh= new DebugMesh(3, 8 * blocks.size());
+    DebugMesh* debugMesh= new DebugMesh(3, 8 * blocks.size(), blocks.size());
     const bool hasTriangles =
       (m_generationState >= InOutOctreeType::INOUTOCTREE_ELEMENTS_INSERTED);
     const bool hasColors =
       (m_generationState >= InOutOctreeType::INOUTOCTREE_LEAVES_COLORED);
 
     // Allocate Slam Maps for the field data
-    axom::slam::PositionSet leafSet(blocks.size());
+    slam::PositionSet leafSet(blocks.size());
 
     LeafVertMap leafVertID(&leafSet);
     LeafVertMap leafVertID_unique(&leafSet);
@@ -2600,7 +2588,7 @@ private:
 
     // Iterate through blocks -- and set the field data
     int leafCount = 0;
-    for(BlockIter it = blocks.begin() ; it < blocks.end() ; ++it)
+    for(auto it = blocks.begin() ; it < blocks.end() ; ++it)
     {
       const BlockIndex& block = *it;
 
@@ -2689,14 +2677,12 @@ private:
                         const std::vector<TriangleIndex>& tris,
                         bool shouldLogTris = false) const
   {
-    typedef typename std::vector<TriangleIndex>::const_iterator TriIter;
-
     std::stringstream fNameStr;
     fNameStr << name << ".vtk";
 
-    DebugMesh* debugMesh= new DebugMesh(3, 3 * tris.size());
+    DebugMesh* debugMesh= new DebugMesh(3, 3 * tris.size(), tris.size());
 
-    for(TriIter it = tris.begin() ; it < tris.end() ; ++it)
+    for(auto it = tris.begin() ; it < tris.end() ; ++it)
     {
       TriangleIndex tIdx = *it;
       addTriangle(debugMesh, tIdx, shouldLogTris);
@@ -2739,14 +2725,14 @@ private:
 
   int* addIntField(DebugMesh* mesh, const std::string& name ) const
   {
-    int* fld = mesh->createField< int >( name, mint::NODE_CENTERED );
+    int* fld = mesh->createField< int >( name, mint::CELL_CENTERED );
     SLIC_ASSERT( fld != nullptr );
     return fld;
   }
 
   double* addRealField(DebugMesh* mesh, const std::string& name ) const
   {
-    double* fld = mesh->createField< double >( name, mint::NODE_CENTERED );
+    double* fld = mesh->createField< double >( name, mint::CELL_CENTERED );
     SLIC_ASSERT( fld != nullptr );
     return fld;
   }
@@ -2767,7 +2753,7 @@ private:
       data[i] = vStart + i;
     }
 
-    mesh->appendCell(data);
+    mesh->appendCell(data, mint::TRIANGLE);
 
     // Log the triangle info as primal code to simplify adding a test for this
     // case
@@ -2805,7 +2791,7 @@ private:
     for(int i=0 ; i< 8 ; ++i)
       data[i] = vStart + i;
 
-    mesh->appendCell(data);
+    mesh->appendCell(data, mint::HEX);
 
     // Log bounding box info to simplify adding a test for this case
     if(shouldLogBlocks)
@@ -2830,25 +2816,23 @@ template<int DIM>
 class InOutOctreeValidator
 {
 public:
-  typedef InOutOctree<DIM> InOutOctreeType;
-  typedef typename InOutOctreeType::TriangleIndexSet TriangleIndexSet;
+  using InOutOctreeType = InOutOctree<DIM>;
+  using TriangleIndexSet = typename InOutOctreeType::TriangleIndexSet;
 
-  typedef typename InOutOctreeType::OctreeBaseType OctreeBaseType;
-  typedef typename OctreeBaseType::OctreeLevels OctreeLevels;
-  typedef typename OctreeBaseType::BlockIndex BlockIndex;
-  typedef typename OctreeBaseType::OctreeLevelType LeavesLevelMap;
-  typedef typename OctreeBaseType::LevelMapCIterator LeavesIterator;
+  using OctreeBaseType = typename InOutOctreeType::OctreeBaseType;
+  using OctreeLevels = typename OctreeBaseType::OctreeLevels;
+  using BlockIndex = typename OctreeBaseType::BlockIndex;
 
-  typedef typename InOutOctreeType::SpacePt SpacePt;
-  typedef typename InOutOctreeType::VertexIndex VertexIndex;
-  typedef typename InOutOctreeType::TriangleIndex TriangleIndex;
-  typedef typename InOutOctreeType::MeshWrapper::TriVertIndices TriVertIndices;
-  typedef typename InOutOctreeType::GeometricBoundingBox GeometricBoundingBox;
+  using SpacePt = typename InOutOctreeType::SpacePt;
+  using VertexIndex = typename InOutOctreeType::VertexIndex;
+  using TriangleIndex = typename InOutOctreeType::TriangleIndex;
+  using TriVertIndices = typename InOutOctreeType::MeshWrapper::TriVertIndices;
+  using GeometricBoundingBox = typename InOutOctreeType::GeometricBoundingBox;
 
 public:
-  InOutOctreeValidator(const InOutOctreeType& octree) :
-    m_octree(octree),
-    m_generationState(m_octree.m_generationState)
+  InOutOctreeValidator(const InOutOctreeType& octree)
+    : m_octree(octree)
+    , m_generationState(m_octree.m_generationState)
   {}
 
 
@@ -2865,9 +2849,9 @@ public:
 
   void checkAllLeavesColoredAtLevel(int level) const
   {
-    const LeavesLevelMap& levelLeafMap = m_octree.getOctreeLevel( level );
-    for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end() ;
-        it != itEnd ; ++it)
+    const auto& levelLeafMap = m_octree.getOctreeLevel( level );
+    auto itEnd = levelLeafMap.end();
+    for(auto it=levelLeafMap.begin() ; it != itEnd ; ++it)
     {
       if( !it->isLeaf() )
         continue;
@@ -2967,9 +2951,9 @@ public:
 
     for(int lev=0 ; lev< m_octree.m_levels.size() ; ++lev)
     {
-      const LeavesLevelMap& levelLeafMap = m_octree.getOctreeLevel(lev);
-      for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end() ;
-          it != itEnd ; ++it)
+      const auto& levelLeafMap = m_octree.getOctreeLevel(lev);
+      auto itEnd = levelLeafMap.end();
+      for(auto it=levelLeafMap.begin() ; it != itEnd ; ++it)
       {
         const BlockIndex block(it.pt(), lev);
         const InOutBlockData& data = *it;
@@ -3029,9 +3013,9 @@ public:
     SLIC_DEBUG("--Checking that inside blocks do not neighbor outside blocks");
     for(int lev= m_octree.maxLeafLevel()-1 ; lev >= 0 ; --lev)
     {
-      const LeavesLevelMap& levelLeafMap = m_octree.getOctreeLevel( lev );
-      for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end() ;
-          it != itEnd ; ++it)
+      const auto& levelLeafMap = m_octree.getOctreeLevel( lev );
+      auto itEnd = levelLeafMap.end();
+      for(auto it=levelLeafMap.begin() ; it != itEnd ; ++it)
       {
         const BlockIndex block(it.pt(), lev);
         const InOutBlockData& data = *it;
@@ -3119,23 +3103,21 @@ template<int DIM>
 class InOutOctreeStats
 {
 public:
-  typedef InOutOctree<DIM> InOutOctreeType;
-  typedef typename InOutOctreeType::TriangleIndexSet TriangleIndexSet;
+  using InOutOctreeType = InOutOctree<DIM>;
+  using TriangleIndexSet = typename InOutOctreeType::TriangleIndexSet;
 
-  typedef typename InOutOctreeType::OctreeBaseType OctreeBaseType;
-  typedef typename OctreeBaseType::OctreeLevels OctreeLevels;
-  typedef typename OctreeBaseType::BlockIndex BlockIndex;
-  typedef typename OctreeBaseType::OctreeLevelType LeavesLevelMap;
-  typedef typename OctreeBaseType::LevelMapCIterator LeavesIterator;
+  using OctreeBaseType = typename InOutOctreeType::OctreeBaseType;
+  using OctreeLevels = typename OctreeBaseType::OctreeLevels;
+  using BlockIndex = typename OctreeBaseType::BlockIndex;
 
-  typedef axom::slam::Map<int> LeafCountMap;
-  typedef axom::slam::Map<int> TriCountMap;
-  typedef axom::slam::Map<int> CardinalityVTMap;
+  using LeafCountMap = slam::Map<int>;
+  using TriCountMap = slam::Map<int>;
+  using CardinalityVTMap = slam::Map<int>;
 
-  typedef std::map<int,int> LogHistogram;
-  typedef axom::primal::BoundingBox<double,1> MinMaxRange;
-  typedef MinMaxRange::PointType LengthType;
-  typedef std::map<int,MinMaxRange> LogRangeMap;
+  using LogHistogram = std::map<int,int>;
+  using MinMaxRange = primal::BoundingBox<double,1>;
+  using LengthType = MinMaxRange::PointType;
+  using LogRangeMap = std::map<int,MinMaxRange>;
 
   /** A simple struct to track totals within the octree levels */
   struct Totals
@@ -3154,16 +3136,16 @@ public:
   };
 
 public:
-  InOutOctreeStats(const InOutOctreeType& octree) :
-    m_octree(octree),
-    m_generationState(m_octree.m_generationState),
-    m_levelBlocks( &m_octree.m_levels),
-    m_levelLeaves( &m_octree.m_levels),
-    m_levelLeavesWithVert( &m_octree.m_levels),
-    m_levelTriangleRefCount( &m_octree.m_levels),
-    m_levelWhiteBlockCount( &m_octree.m_levels),
-    m_levelBlackBlockCount( &m_octree.m_levels),
-    m_levelGrayBlockCount( &m_octree.m_levels)
+  InOutOctreeStats(const InOutOctreeType& octree)
+    : m_octree(octree)
+    , m_generationState(m_octree.m_generationState)
+    , m_levelBlocks( &m_octree.m_levels)
+    , m_levelLeaves( &m_octree.m_levels)
+    , m_levelLeavesWithVert( &m_octree.m_levels)
+    , m_levelTriangleRefCount( &m_octree.m_levels)
+    , m_levelWhiteBlockCount( &m_octree.m_levels)
+    , m_levelBlackBlockCount( &m_octree.m_levels)
+    , m_levelGrayBlockCount( &m_octree.m_levels)
   {
     if(m_generationState >= InOutOctreeType::INOUTOCTREE_ELEMENTS_INSERTED)
     {
@@ -3174,7 +3156,7 @@ public:
     // Iterate through blocks -- count the numbers of internal and leaf blocks
     for(int lev=0 ; lev< m_octree.m_levels.size() ; ++lev)
     {
-      const LeavesLevelMap& levelLeafMap = m_octree.getOctreeLevel( lev );
+      const auto& levelLeafMap = m_octree.getOctreeLevel( lev );
 
       m_levelBlocks[lev] = levelLeafMap.numBlocks();
       m_levelLeaves[lev] = levelLeafMap.numLeafBlocks();
@@ -3184,8 +3166,8 @@ public:
       m_levelBlackBlockCount[lev] = 0;
       m_levelGrayBlockCount[lev] = 0;
 
-      for(LeavesIterator it=levelLeafMap.begin(), itEnd = levelLeafMap.end() ;
-          it != itEnd ; ++it)
+      auto itEnd = levelLeafMap.end();
+      for(auto it=levelLeafMap.begin() ; it != itEnd ; ++it)
       {
         const InOutBlockData& blockData = *it;
         BlockIndex block(it.pt(), lev);
@@ -3329,11 +3311,9 @@ public:
     }
 
     std::stringstream triCountStr;
-    triCountStr<<
-      "\tTriangle index count (lg-arithmic bins for number of references per triangle):";
-    for(LogHistogram::const_iterator it = triCountHist.begin()
-        ; it != triCountHist.end()
-        ; ++it)
+    triCountStr<<"\tTriangle index count "
+               <<"(lg-arithmic bins for number of references per triangle):";
+    for(auto it = triCountHist.begin() ; it != triCountHist.end() ; ++it)
     {
       triCountStr << "\n\t exp: " << it->first
                   <<"\t count: " << (it->second)
@@ -3347,7 +3327,8 @@ public:
   {
     std::stringstream sstr;
 
-    typedef typename InOutOctreeType::MeshWrapper::TriVertIndices TriVertIndices;
+    using TriVertIndices =
+            typename InOutOctreeType::MeshWrapper::TriVertIndices;
 
 
     // Generate and output histogram of VT relation
@@ -3362,7 +3343,7 @@ public:
       cardVT[tvRel[2]]++;
     }
 
-    typedef std::map<int,int> LinHistogram;
+    using LinHistogram = std::map<int,int>;
     LinHistogram vtCardHist;
     int numVerts = m_octree.m_meshWrapper.numMeshVertices();
     for ( int i=0 ; i < numVerts ; ++i )
