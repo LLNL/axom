@@ -47,6 +47,7 @@ set( primal_headers
      spatial_acceleration/linear_bvh/aabb.hpp
      spatial_acceleration/linear_bvh/bvh_builder.hpp
      spatial_acceleration/linear_bvh/bvh_builder_impl.hpp
+     spatial_acceleration/linear_bvh/bvh_traverse.hpp
      spatial_acceleration/linear_bvh/math.hpp
      spatial_acceleration/linear_bvh/morton_codes.hpp
      spatial_acceleration/linear_bvh/policies.hpp
