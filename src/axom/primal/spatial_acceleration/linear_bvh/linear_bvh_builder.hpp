@@ -36,8 +36,8 @@ namespace bvh
 
 struct BVH
 {
-  Vec<float32, 4>  *m_inner_nodes;
-  int32            *m_leaf_nodes;
+  Vec<float32, 4>  *m_inner_nodes;  // BVH bins including leafs
+  int32            *m_leaf_nodes;   // leaf data
   AABB              m_bounds;
 
   BVH()
