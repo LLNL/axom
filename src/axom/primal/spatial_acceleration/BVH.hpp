@@ -24,6 +24,9 @@
 
 #include "axom/primal/spatial_acceleration/linear_bvh/linear_bvh_builder.hpp"
 
+// C/C++ includes
+#include <string>  // for std::string
+
 namespace axom
 {
 namespace primal
@@ -150,6 +153,13 @@ public:
              const double* x,
              const double* y,
              const double* z = nullptr );
+
+  /*!
+   * \brief Writes the BVH to the specified VTK file for visualization.
+   * \param [in] fileName the name of VTK file.
+   * \note Primarily used for debugging.
+   */
+  void writeVtkFile( const std::string& fileName ) const;
 
 private:
 
