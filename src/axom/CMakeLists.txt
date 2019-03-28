@@ -43,3 +43,12 @@ foreach(comp ${AXOM_COMPONENTS_FULL})
         message(STATUS "Axom component ${comp} is OFF")
     endif()
 endforeach()
+
+blt_add_library(NAME       axom
+                SOURCES    Empty.cpp
+                DEPENDS_ON ${AXOM_COMPONENTS_ENABLED})
+
+install(TARGETS              axom
+        EXPORT               axom-targets
+        DESTINATION          lib)
+install(EXPORT axom-targets DESTINATION lib/cmake)

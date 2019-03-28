@@ -68,6 +68,7 @@ blt_add_library( NAME                  core
                  HEADERS               ${core_headers}
                  DEPENDS_ON            ${core_depends}
                  FOLDER                axom/core
+                 OBJECT                TRUE
                  )
 
 axom_write_unified_header( NAME    core

@@ -106,6 +106,7 @@ blt_add_library(
     HEADERS     ${slam_headers}
     DEPENDS_ON  ${slam_depends_on}
     FOLDER      axom/slam
+    OBJECT      TRUE
     )
 
 axom_write_unified_header(NAME    slam

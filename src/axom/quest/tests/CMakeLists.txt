@@ -51,7 +51,6 @@ foreach(test ${quest_tests})
         NAME ${test_name}
         COMMAND ${test_name}_test
         )
-
 endforeach()
 
 

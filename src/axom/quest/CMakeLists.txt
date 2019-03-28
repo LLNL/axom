@@ -141,6 +141,7 @@ blt_add_library(
     HEADERS     ${quest_headers}
     DEPENDS_ON  ${quest_depends_on}
     FOLDER      axom/quest
+    OBJECT      TRUE
     )
 
 axom_write_unified_header(NAME    quest

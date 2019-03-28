@@ -81,6 +81,7 @@ blt_add_library(NAME        slic
                 HEADERS     ${slic_headers}
                 DEPENDS_ON  ${slic_depends_on}
                 FOLDER      axom/slic
+                OBJECT      TRUE
                 )
 
 axom_write_unified_header(NAME    slic
