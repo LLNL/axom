@@ -20,7 +20,7 @@
 #include "axom/core/utilities/Utilities.hpp"  // isLittleEndian()/swapEndian()
 
 // Mint includes
-#include "axom/mint/config.hpp"          // for mint::IndexType
+#include "axom/mint/config.hpp"          // for axom::IndexType
 #include "axom/mint/mesh/CellTypes.hpp"       // for mint::Triangle
 
 // Slic includes
@@ -197,7 +197,7 @@ int STLReader::readBinarySTL()
   m_nodes.reserve( m_num_nodes * 3);
 
   // Read the triangles. Cast to doubles and ignore normals and attributes
-  for( mint::IndexType i=0 ; i < m_num_faces ; ++i)
+  for( axom::IndexType i=0 ; i < m_num_faces ; ++i)
   {
     ifs.read( (char*)tri.raw, BINARY_TRI_SIZE);
 
@@ -241,7 +241,7 @@ void STLReader::getMesh(
   SLIC_ERROR_IF( mesh == nullptr,
                  "supplied mesh is null!" );
   SLIC_ERROR_IF(
-    static_cast< mint::IndexType >(m_nodes.size()) != 3*m_num_nodes,
+    static_cast< axom::IndexType >(m_nodes.size()) != 3*m_num_nodes,
     "nodes vector size doesn't match expected size!" );
   SLIC_ERROR_IF( mesh->getDimension() != 3,
                  "STL reader expects a 3D mesh!" );
@@ -267,19 +267,19 @@ void STLReader::getMesh(
   double* z = mesh->getCoordinateArray( mint::Z_COORDINATE );
 
   // Load the vertices into the mesh
-  for ( mint::IndexType i=0 ; i < m_num_nodes ; ++i )
+  for ( axom::IndexType i=0 ; i < m_num_nodes ; ++i )
   {
-    const mint::IndexType offset = i*3;
+    const axom::IndexType offset = i*3;
     x[ i ] = m_nodes[ offset     ];
     y[ i ] = m_nodes[ offset + 1 ];
     z[ i ] = m_nodes[ offset + 2 ];
   }
 
   // Load the triangles.  Note that the indices are implicitly defined.
-  mint::IndexType* conn = mesh->getCellNodesArray();
-  for ( mint::IndexType i=0 ; i < m_num_faces ; ++i )
+  axom::IndexType* conn = mesh->getCellNodesArray();
+  for ( axom::IndexType i=0 ; i < m_num_faces ; ++i )
   {
-    const mint::IndexType offset = i*3;
+    const axom::IndexType offset = i*3;
     conn[ offset   ] = offset;
     conn[ offset+1 ] = offset+1;
     conn[ offset+2 ] = offset+2;

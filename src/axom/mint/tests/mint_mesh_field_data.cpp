@@ -111,7 +111,7 @@ void check_shrink( mint::FieldData& field_data )
   const int numFields = field_data.getNumFields();
 
   // ensure the current capacity is larger than num_tuples
-  mint::IndexType num_tuples = field_data.getField( 0 )->getNumTuples();
+  axom::IndexType num_tuples = field_data.getField( 0 )->getNumTuples();
   field_data.reserve( num_tuples*10 );
   for ( int i=0 ; i < numFields ; ++i )
   {
@@ -153,8 +153,8 @@ void check_create_and_access_data( mint::FieldData& field_data,
   std::fill( f2, f2+(NUM_TUPLES*NUM_COMPONENTS), MAGIC_DOUBLE );
 
   // check f1 pointer access and parameters
-  mint::IndexType N = 0;
-  mint::IndexType M = 0;
+  axom::IndexType N = 0;
+  axom::IndexType M = 0;
   int* f1ptr = field_data.getFieldPtr< int >( "f1", N, M );
   EXPECT_TRUE( f1ptr != nullptr );
   EXPECT_EQ( N, NUM_TUPLES );

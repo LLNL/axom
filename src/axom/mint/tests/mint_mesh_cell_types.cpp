@@ -88,7 +88,7 @@ TEST( mint_mesh_cell_types, check_cell_types )
     { mint::QUAD9, mint::QUAD9, mint::QUAD9, mint::QUAD9, mint::QUAD9, mint::QUAD9 }, // HEX27
   };
 
-  const mint::IndexType
+  const axom::IndexType
     face_nodes[ mint::NUM_CELL_TYPES ][ mint::MAX_ALL_FACES_NODES ] = {
     { 0 },          //            VERTEX
 

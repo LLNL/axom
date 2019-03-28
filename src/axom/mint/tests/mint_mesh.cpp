@@ -158,7 +158,7 @@ void check_append_cells_single( const Mesh* mesh, IndexType x_extent,
 /*!
  * \brief Return true iff the cell (i, j) should be a quad.
  */
-inline bool appendQuad( mint::IndexType i, mint::IndexType j )
+inline bool appendQuad( axom::IndexType i, axom::IndexType j )
 {
   return (i % 2 == 0 && j % 2 == 0) || ( i % 2 == 1 && j % 2 == 1);
 }

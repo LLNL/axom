@@ -34,8 +34,8 @@ namespace utilities = axom::utilities;
 //------------------------------------------------------------------------------
 int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
 {
-  using int64 = mint::IndexType;
-  const mint::IndexType NUM_PARTICLES = 100;
+  using int64 = axom::IndexType;
+  const axom::IndexType NUM_PARTICLES = 100;
   const int DIMENSION = 3;
 
   const double HI  = 10.0;

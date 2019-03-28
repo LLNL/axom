@@ -27,7 +27,7 @@
 
 #include "axom/slic/interface/slic.hpp"    // for slic logging macros
 
-#include "axom/mint/config.hpp"            // for mint::IndexType
+#include "axom/mint/config.hpp"            // for axom::IndexType
 
 namespace axom
 {

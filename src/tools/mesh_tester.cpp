@@ -259,7 +259,7 @@ bool checkTT(Triangle3& t1, Triangle3& t2)
 inline Triangle3 getMeshTriangle(int i, mint::Mesh* surface_mesh)
 {
   SLIC_ASSERT(surface_mesh->getCellType( i ) == mint::TRIANGLE );
-  primal::Point<mint::IndexType, 3> triCell;
+  primal::Point<axom::IndexType, 3> triCell;
   Triangle3 tri;
   surface_mesh->getCellNodeIDs(i, triCell.data());
 

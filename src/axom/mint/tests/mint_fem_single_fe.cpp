@@ -138,7 +138,7 @@ void get_single_fe( mint::FiniteElement*& fe )
 
   const int ndofs = ShapeFunctionType::numDofs();
 
-  mint::IndexType* cell = new mint::IndexType[ ndofs ];
+  axom::IndexType* cell = new axom::IndexType[ ndofs ];
 
   double* center = new double[ ndims ];
   ShapeFunctionType::center( center );

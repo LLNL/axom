@@ -68,7 +68,7 @@ private:
 
     int nelems;
     std::vector< TriangleType > surface_elements;
-    std::vector< axom::mint::IndexType > element_ids;
+    std::vector< axom::IndexType > element_ids;
     std::vector< PointType > closest_pts;
     std::vector< int > cpt_locs;
   };
@@ -171,8 +171,8 @@ public:
    */
   double computeDistance( const PointType& queryPnt,
                           std::vector< int >& bvh_buckets,
-                          std::vector< axom::mint::IndexType >& triangles,
-                          std::vector< axom::mint::IndexType >& my_triangles,
+                          std::vector< axom::IndexType >& triangles,
+                          std::vector< axom::IndexType >& my_triangles,
                           PointType& closest_pt ) const;
 
   /*!
@@ -191,7 +191,7 @@ private:
    * \pre m_surfaceMesh != nullptr
    * \pre icell >= 0 && icell < m_surfaceMesh->getNumberOfCells()
    */
-  BoxType getCellBoundingBox( axom::mint::IndexType icell );
+  BoxType getCellBoundingBox( axom::IndexType icell );
 
   /*!
    * \brief Searches through the list of candidates surface elements and
@@ -240,7 +240,7 @@ private:
    */
   double computeSign( const PointType& pt,
                       const cpt_data* cpt,
-                      std::vector< axom::mint::IndexType >& my_elements ) const;
+                      std::vector< axom::IndexType >& my_elements ) const;
 
   /*!
    * \brief Returns a sorted list of the candidate surface elements.
@@ -327,12 +327,12 @@ SignedDistance< NDIMS >::SignedDistance(
   SLIC_ASSERT( maxLevels >= 1 );
 
   m_surfaceMesh    = surfaceMesh;
-  const axom::mint::IndexType ncells = m_surfaceMesh->getNumberOfCells();
-  const axom::mint::IndexType nnodes = m_surfaceMesh->getNumberOfNodes();
+  const axom::IndexType ncells = m_surfaceMesh->getNumberOfCells();
+  const axom::IndexType nnodes = m_surfaceMesh->getNumberOfNodes();
 
   // compute bounding box of surface mesh
   // NOTE: this should be changed to an oriented bounding box in the future.
-  for ( axom::mint::IndexType inode=0 ; inode < nnodes ; ++inode )
+  for ( axom::IndexType inode=0 ; inode < nnodes ; ++inode )
   {
     PointType pt;
     for ( int i=0 ; i < NDIMS ; ++i )
@@ -345,7 +345,7 @@ SignedDistance< NDIMS >::SignedDistance(
   // Initialize BucketTree with the surface elements.
   m_bvhTree  = new BVHTreeType( ncells, maxLevels );
 
-  for ( axom::mint::IndexType icell=0 ; icell < ncells ; ++icell )
+  for ( axom::IndexType icell=0 ; icell < ncells ; ++icell )
   {
     m_bvhTree->insert( this->getCellBoundingBox( icell ), icell );
   } // END for all cells
@@ -368,8 +368,8 @@ inline double SignedDistance< NDIMS >::computeDistance(
   const PointType& pt) const
 {
   std::vector< int > buckets;
-  std::vector< axom::mint::IndexType > elements;
-  std::vector< axom::mint::IndexType > my_elements;
+  std::vector< axom::IndexType > elements;
+  std::vector< axom::IndexType > my_elements;
   PointType closest_pt;
   double dist = this->computeDistance( pt, buckets, elements, my_elements,
                                        closest_pt );
@@ -381,8 +381,8 @@ template < int NDIMS >
 inline double SignedDistance< NDIMS >::computeDistance(
   const PointType& pt,
   std::vector< int >& buckets,
-  std::vector< axom::mint::IndexType >& AXOM_DEBUG_PARAM(elementIds),
-  std::vector< axom::mint::IndexType >& my_elements,
+  std::vector< axom::IndexType >& AXOM_DEBUG_PARAM(elementIds),
+  std::vector< axom::IndexType >& my_elements,
   PointType& closest_pt ) const
 {
   SLIC_ASSERT( m_surfaceMesh != nullptr );
@@ -419,7 +419,7 @@ template < int NDIMS >
 double SignedDistance< NDIMS >::computeSign(
   const PointType& pt,
   const cpt_data* cpt,
-  std::vector< axom::mint::IndexType >& AXOM_DEBUG_PARAM(my_elements) ) const
+  std::vector< axom::IndexType >& AXOM_DEBUG_PARAM(my_elements) ) const
 {
   // Sanity checks
   SLIC_ASSERT( cpt != nullptr );
@@ -534,7 +534,7 @@ double SignedDistance< NDIMS >::getMinSqDistance( const PointType& pt,
     const int cellIdx = candidates[ i ];
     cpt->element_ids[ i ] = cellIdx;
 
-    mint::IndexType cellIds[3];
+    axom::IndexType cellIds[3];
     m_surfaceMesh->getCellNodeIDs( cellIdx, cellIds );
 
     TriangleType surface_element;
@@ -663,7 +663,7 @@ void SignedDistance< NDIMS >::getCandidateSurfaceElements(
 //------------------------------------------------------------------------------
 template < int NDIMS >
 inline axom::primal::BoundingBox< double,NDIMS >
-SignedDistance< NDIMS >::getCellBoundingBox( axom::mint::IndexType icell )
+SignedDistance< NDIMS >::getCellBoundingBox( axom::IndexType icell )
 {
   // Sanity checks
   SLIC_ASSERT( m_surfaceMesh != nullptr );
@@ -678,7 +678,7 @@ SignedDistance< NDIMS >::getCellBoundingBox( axom::mint::IndexType icell )
   const int nnodes = axom::mint::getCellInfo( cellType ).num_nodes;
 
   // Get the cell node IDs that make up the cell
-  axom::mint::IndexType* cellIds = new axom::mint::IndexType[ nnodes ];
+  axom::IndexType* cellIds = new axom::IndexType[ nnodes ];
   m_surfaceMesh->getCellNodeIDs( icell, cellIds );
 
   // compute the cell's bounding box

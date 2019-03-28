@@ -140,8 +140,8 @@ TEST( quest_stl_reader, read_stl )
   EXPECT_TRUE( y != nullptr );
   EXPECT_TRUE( z != nullptr );
 
-  mint::IndexType numNodes = mesh.getNumberOfNodes();
-  for ( mint::IndexType inode=0 ; inode < numNodes ; ++inode )
+  axom::IndexType numNodes = mesh.getNumberOfNodes();
+  for ( axom::IndexType inode=0 ; inode < numNodes ; ++inode )
   {
     EXPECT_NEAR( x[ inode ], x_expected[ inode ],
                  std::numeric_limits< double >::epsilon() );
@@ -158,8 +158,8 @@ TEST( quest_stl_reader, read_stl )
 //------------------------------------------------------------------------------
 TEST( quest_stl_reader, read_stl_external )
 {
-  constexpr mint::IndexType N_NODES = 3;
-  constexpr mint::IndexType N_FACES = 1;
+  constexpr axom::IndexType N_NODES = 3;
+  constexpr axom::IndexType N_FACES = 1;
   const double x_expected[] = { 0.0, 1.0, 0.0 };
   const double y_expected[] = { 0.0, 0.0, 1.0 };
   const double z_expected[] = { 0.0, 0.0, 0.0 };
@@ -168,7 +168,7 @@ TEST( quest_stl_reader, read_stl_external )
   double yin[] = { -1.0, -1.0, -1.0 };
   double zin[] = { -1.0, -1.0, -1.0 };
 
-  mint::IndexType conn[] = { -1, -1, -1 };
+  axom::IndexType conn[] = { -1, -1, -1 };
 
   const std::string filename = "triangle.stl";
 
@@ -197,8 +197,8 @@ TEST( quest_stl_reader, read_stl_external )
   EXPECT_TRUE( y != nullptr );
   EXPECT_TRUE( z != nullptr );
 
-  mint::IndexType numNodes = mesh.getNumberOfNodes();
-  for ( mint::IndexType inode=0 ; inode < numNodes ; ++inode )
+  axom::IndexType numNodes = mesh.getNumberOfNodes();
+  for ( axom::IndexType inode=0 ; inode < numNodes ; ++inode )
   {
     EXPECT_NEAR( x[ inode ], x_expected[ inode ],
                  std::numeric_limits< double >::epsilon() );

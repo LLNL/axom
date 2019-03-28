@@ -36,6 +36,7 @@ namespace sidre = axom::sidre;
 #include "gtest/gtest.h"           // for gtest macros
 
 using namespace axom::mint;
+using IndexType = axom::IndexType;
 
 // globals
 const char* IGNORE_OUTPUT = ".*";

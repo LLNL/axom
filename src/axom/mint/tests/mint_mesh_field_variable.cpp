@@ -45,13 +45,13 @@ namespace
 template < typename T >
 void populate_array( axom::Array< T >& data )
 {
-  const mint::IndexType numTuples     = data.size( );
-  const mint::IndexType numComponents = data.numComponents( );
+  const axom::IndexType numTuples     = data.size( );
+  const axom::IndexType numComponents = data.numComponents( );
 
-  for ( mint::IndexType i=0 ; i < numTuples ; ++i )
+  for ( axom::IndexType i=0 ; i < numTuples ; ++i )
   {
     const double offset = static_cast< T >( i*numComponents );
-    for ( mint::IndexType j=0 ; j < numComponents ; ++j )
+    for ( axom::IndexType j=0 ; j < numComponents ; ++j )
     {
       data( i,j ) = offset + j;
     }  // END for all j
@@ -63,13 +63,13 @@ void populate_array( axom::Array< T >& data )
 template < typename T >
 void check_array( axom::Array< T >& data )
 {
-  const mint::IndexType numTuples     = data.size( );
-  const mint::IndexType numComponents = data.numComponents( );
+  const axom::IndexType numTuples     = data.size( );
+  const axom::IndexType numComponents = data.numComponents( );
 
-  for ( mint::IndexType i=0 ; i < numTuples ; ++i )
+  for ( axom::IndexType i=0 ; i < numTuples ; ++i )
   {
     const T offset = static_cast< T >( i*numComponents );
-    for ( mint::IndexType j=0 ; j < numComponents ; ++j )
+    for ( axom::IndexType j=0 ; j < numComponents ; ++j )
     {
       const double expected_value = offset +j;
       EXPECT_DOUBLE_EQ( data( i,j ), expected_value );
@@ -82,15 +82,15 @@ void check_array( axom::Array< T >& data )
 template < typename T >
 void populate_field_variable( mint::FieldVariable< T >& fv )
 {
-  const mint::IndexType numTuples     = fv.getNumTuples();
-  const mint::IndexType numComponents = fv.getNumComponents();
+  const axom::IndexType numTuples     = fv.getNumTuples();
+  const axom::IndexType numComponents = fv.getNumComponents();
 
   T* data = fv.getFieldVariablePtr( );
 
-  for ( mint::IndexType i=0 ; i < numTuples ; ++i )
+  for ( axom::IndexType i=0 ; i < numTuples ; ++i )
   {
     const T offset = static_cast< T >( i*numComponents );
-    for ( mint::IndexType j=0 ; j < numComponents ; ++j )
+    for ( axom::IndexType j=0 ; j < numComponents ; ++j )
     {
       const double expected_value = offset + j;
       const int idx               = static_cast< int >( offset ) + j;
@@ -104,8 +104,8 @@ void populate_field_variable( mint::FieldVariable< T >& fv )
 template < typename T >
 void check_field_variable( mint::FieldVariable< T >& fv )
 {
-  const mint::IndexType numTuples     = fv.getNumTuples();
-  const mint::IndexType numComponents = fv.getNumComponents();
+  const axom::IndexType numTuples     = fv.getNumTuples();
+  const axom::IndexType numComponents = fv.getNumComponents();
 
   const T* data = fv.getFieldVariablePtr();
   EXPECT_TRUE( data != nullptr );
@@ -180,8 +180,8 @@ TEST( mint_mesh_field_variable_DeathTest, invalid_operations )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_field_variable, native_constructor )
 {
-  constexpr mint::IndexType NUM_TUPLES     = 4;
-  constexpr mint::IndexType NUM_COMPONENTS = 2;
+  constexpr axom::IndexType NUM_TUPLES     = 4;
+  constexpr axom::IndexType NUM_COMPONENTS = 2;
   mint::FieldVariable< double > field( "rho", NUM_TUPLES, NUM_COMPONENTS );
   EXPECT_EQ( field.getName(), "rho" );
   EXPECT_EQ( field.getNumTuples(), NUM_TUPLES );
@@ -192,8 +192,8 @@ TEST( mint_mesh_field_variable, native_constructor )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_field_variable, external_constructor )
 {
-  constexpr mint::IndexType NUM_TUPLES     = 4;
-  constexpr mint::IndexType NUM_COMPONENTS = 1;
+  constexpr axom::IndexType NUM_TUPLES     = 4;
+  constexpr axom::IndexType NUM_COMPONENTS = 1;
 
   const double MAGIC_NUM = 42;
   double f[]  = { 1.0, 2.0, 3.0, 4.0 };
@@ -326,9 +326,9 @@ TEST( mint_mesh_field_variable, sidre_pull_constructor )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_field_variable, field_array_access )
 {
-  constexpr mint::IndexType NUM_TUPLES     = 4;
-  constexpr mint::IndexType NUM_COMPONENTS = 3;
-  constexpr mint::IndexType TOTAL_SIZE     = 12;
+  constexpr axom::IndexType NUM_TUPLES     = 4;
+  constexpr axom::IndexType NUM_COMPONENTS = 3;
+  constexpr axom::IndexType TOTAL_SIZE     = 12;
 
   const double EXPECTED_DATA[] = {
     10.0, 11.0, 12.0,
@@ -347,10 +347,10 @@ TEST( mint_mesh_field_variable, field_array_access )
 
   // set the field data
   numerics::Matrix< double > A( NUM_COMPONENTS, NUM_TUPLES, data, true );
-  for ( mint::IndexType i=0 ; i < NUM_TUPLES ; ++i )
+  for ( axom::IndexType i=0 ; i < NUM_TUPLES ; ++i )
   {
     const double base = (i+1)*10;
-    for ( mint::IndexType j=0 ; j < NUM_COMPONENTS ; ++j )
+    for ( axom::IndexType j=0 ; j < NUM_COMPONENTS ; ++j )
     {
       A( j,i ) = base + j;
     } // END for all components
@@ -367,9 +367,9 @@ TEST( mint_mesh_field_variable, field_array_access )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_field_variable, resize )
 {
-  constexpr mint::IndexType SMALL_NUM_TUPLES = 5;
-  constexpr mint::IndexType LARGE_NUM_TUPLES = 250;
-  constexpr mint::IndexType NUM_COMPONENTS   = 3;
+  constexpr axom::IndexType SMALL_NUM_TUPLES = 5;
+  constexpr axom::IndexType LARGE_NUM_TUPLES = 250;
+  constexpr axom::IndexType NUM_COMPONENTS   = 3;
 
   mint::FieldVariable< double > field( "f", SMALL_NUM_TUPLES, NUM_COMPONENTS );
   EXPECT_EQ( field.getName(), "f" );
@@ -389,15 +389,15 @@ TEST( mint_mesh_field_variable, resize )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_field_variable, reserve )
 {
-  constexpr mint::IndexType SMALL_NUM_TUPLES = 5;
-  constexpr mint::IndexType LARGE_NUM_TUPLES = 250;
-  constexpr mint::IndexType NUM_COMPONENTS   = 3;
+  constexpr axom::IndexType SMALL_NUM_TUPLES = 5;
+  constexpr axom::IndexType LARGE_NUM_TUPLES = 250;
+  constexpr axom::IndexType NUM_COMPONENTS   = 3;
 
   mint::FieldVariable< double > field( "f", SMALL_NUM_TUPLES, NUM_COMPONENTS );
   EXPECT_EQ( field.getName(), "f" );
   EXPECT_TRUE( field.getCapacity() >= field.getNumTuples() );
 
-  mint::IndexType current_capacity = field.getCapacity( );
+  axom::IndexType current_capacity = field.getCapacity( );
 
   // reserve space for more tuples -- should increase capacity
   field.reserve( LARGE_NUM_TUPLES );
@@ -413,16 +413,16 @@ TEST( mint_mesh_field_variable, reserve )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_field_variable, shrink )
 {
-  constexpr mint::IndexType SMALL_NUM_TUPLES = 5;
-  constexpr mint::IndexType NUM_COMPONENTS   = 3;
+  constexpr axom::IndexType SMALL_NUM_TUPLES = 5;
+  constexpr axom::IndexType NUM_COMPONENTS   = 3;
 
   mint::FieldVariable< double > field( "f", SMALL_NUM_TUPLES, NUM_COMPONENTS );
   EXPECT_EQ( field.getName(), "f" );
 
-  mint::IndexType capacity = SMALL_NUM_TUPLES * field.getResizeRatio() + 0.5;
-  if ( capacity < axom::Array< mint::IndexType >::MIN_DEFAULT_CAPACITY )
+  axom::IndexType capacity = SMALL_NUM_TUPLES * field.getResizeRatio() + 0.5;
+  if ( capacity < axom::Array< axom::IndexType >::MIN_DEFAULT_CAPACITY )
   {
-    capacity = axom::Array< mint::IndexType >::MIN_DEFAULT_CAPACITY;
+    capacity = axom::Array< axom::IndexType >::MIN_DEFAULT_CAPACITY;
   }
   EXPECT_EQ( field.getCapacity(), capacity );
 

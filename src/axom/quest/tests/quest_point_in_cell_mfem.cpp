@@ -1295,9 +1295,9 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
   axom::mint::CurvilinearMesh cmesh(res + 1, res + 1);
 
   {
-    axom::mint::IndexType Ni = cmesh.getNodeResolution(0);
-    axom::mint::IndexType Nj = cmesh.getNodeResolution(1);
-    axom::mint::IndexType Nk = cmesh.getNodeResolution(2);
+    axom::IndexType Ni = cmesh.getNodeResolution(0);
+    axom::IndexType Nj = cmesh.getNodeResolution(1);
+    axom::IndexType Nk = cmesh.getNodeResolution(2);
     SLIC_INFO( "Extents of curvilinear mesh: " << Ni << " " << Nj << " " <<
                Nk );
   }
@@ -1306,14 +1306,14 @@ TEST_F(PointInCell2DTest, pic_curved_quad_c_shaped_output_mesh)
   const double denom = res;
   double* x_coords = cmesh.getCoordinateArray( axom::mint::X_COORDINATE );
   double* y_coords = cmesh.getCoordinateArray( axom::mint::Y_COORDINATE );
-  for(axom::mint::IndexType i=0 ; i <= res ; ++i)
+  for(axom::IndexType i=0 ; i <= res ; ++i)
   {
-    for(axom::mint::IndexType j=0 ; j<= res ; ++j)
+    for(axom::IndexType j=0 ; j<= res ; ++j)
     {
       SpacePt isoparPt = SpacePt::make_point(i/denom,j/denom);
       SpacePt spacePt;
       spatialIndex1.reconstructPoint(0, isoparPt.data(), spacePt.data() );
-      axom::mint::IndexType idx = cmesh.getNodeLinearIndex( i, j );
+      axom::IndexType idx = cmesh.getNodeLinearIndex( i, j );
       x_coords[ idx ] = spacePt[0];
       y_coords[ idx ] = spacePt[1];
     }

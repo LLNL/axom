@@ -23,7 +23,7 @@
 #include "axom/core/Types.hpp"        // for nullptr
 
 // mint includes
-#include "axom/mint/config.hpp"       // for mint::IndexType
+#include "axom/mint/config.hpp"       // for axom::IndexType
 #include "axom/mint/mesh/FieldTypes.hpp"   // for the mint::FieldType enum
 #include "axom/mint/fem/FEBasisTypes.hpp" // for the mint::FEBasisType enum
 

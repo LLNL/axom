@@ -46,7 +46,7 @@ typedef mint::UnstructuredMesh< mint::SINGLE_SHAPE > UMesh;
 
 typedef quest::InOutOctree<3> Octree3D;
 
-typedef primal::Point<mint::IndexType,3> TriVertIndices;
+typedef primal::Point<axom::IndexType,3> TriVertIndices;
 typedef primal::Triangle<double, 3> SpaceTriangle;
 
 typedef Octree3D::GeometricBoundingBox GeometricBoundingBox;
@@ -110,7 +110,7 @@ void testIntersectionOnRegularGrid()
   debugMesh->appendNode( ptY[0], ptY[1], ptY[2]);
   debugMesh->appendNode( ptZ[0], ptZ[1], ptZ[2]);
 
-  mint::IndexType tArr[3] = {0,1,2};
+  axom::IndexType tArr[3] = {0,1,2};
   debugMesh->appendCell(tArr, mint::TRIANGLE);
 
   PointType bbMin(-0.1);
@@ -149,7 +149,7 @@ void testIntersectionOnRegularGrid()
           debugMesh->appendNode( bMax[0], bMax[1], bMax[2]);
           debugMesh->appendNode( bMin[0], bMax[1], bMax[2]);
 
-          mint::IndexType data[8];
+          axom::IndexType data[8];
           for(int x=0 ; x< 8 ; ++x)
             data[x] = vStart + x;
 
@@ -209,7 +209,7 @@ void testContainmentOnRegularGrid(
  * \brief Extracts the vertex indices of cell cellIndex from the mesh
  */
 TriVertIndices getTriangleVertIndices(mint::Mesh* mesh,
-                                      mint::IndexType cellIndex)
+                                      axom::IndexType cellIndex)
 {
   SLIC_ASSERT(mesh != nullptr);
   SLIC_ASSERT(cellIndex >= 0 && cellIndex < mesh->getNumberOfCells());
@@ -254,7 +254,7 @@ void print_surface_stats( mint::Mesh* mesh)
   MinMaxRange meshEdgeLenRange;
   MinMaxRange meshTriAreaRange;
   const int nCells = mesh->getNumberOfCells();
-  typedef std::set<mint::IndexType> TriIdxSet;
+  typedef std::set<axom::IndexType> TriIdxSet;
   TriIdxSet badTriangles;
 
   // simple binning based on the exponent
@@ -266,7 +266,7 @@ void print_surface_stats( mint::Mesh* mesh)
   LogRangeMap edgeLenRangeMap; // Tracks range of edge lengths at each scale
   LogRangeMap areaRangeMap;    // Tracks range of triangle areas at each scale
 
-  typedef axom::primal::Point<mint::IndexType,3> TriVertIndices;
+  typedef axom::primal::Point<axom::IndexType,3> TriVertIndices;
   int expBase2;
 
   // Traverse mesh triangles and bin the edge lengths and areas

@@ -77,7 +77,7 @@ void mpi_comm_free( MPI_Comm* comm )
 int read_and_exchange_mesh_metadata( int global_rank_id,
                                      MPI_Comm global_comm,
                                      quest::STLReader& reader,
-                                     mint::IndexType mesh_metadata[ 2 ] )
+                                     axom::IndexType mesh_metadata[ 2 ] )
 {
   constexpr int NUM_NODES = 0;
   constexpr int NUM_FACES = 1;
@@ -157,11 +157,11 @@ void create_communicators( MPI_Comm global_comm,
  */
 MPI_Aint allocate_shared_buffer( int local_rank_id,
                                  MPI_Comm intra_node_comm,
-                                 const mint::IndexType mesh_metadata[ 2 ],
+                                 const axom::IndexType mesh_metadata[ 2 ],
                                  double*& x,
                                  double*& y,
                                  double*& z,
-                                 mint::IndexType*& conn,
+                                 axom::IndexType*& conn,
                                  unsigned char*& mesh_buffer,
                                  MPI_Win& shared_window )
 {
@@ -172,7 +172,7 @@ MPI_Aint allocate_shared_buffer( int local_rank_id,
 
   int disp          = sizeof( unsigned char );
   MPI_Aint bytesize = nnodes * 3 * sizeof( double ) +
-                      nfaces * 3 * sizeof( mint::IndexType );
+                      nfaces * 3 * sizeof( axom::IndexType );
   MPI_Aint window_size = ( local_rank_id != ROOT_RANK ) ? 0 : bytesize;
 
   MPI_Win_allocate_shared( window_size, disp, MPI_INFO_NULL, intra_node_comm,
@@ -190,7 +190,7 @@ MPI_Aint allocate_shared_buffer( int local_rank_id,
   x    = reinterpret_cast< double* >( &mesh_buffer[ x_offset ] );
   y    = reinterpret_cast< double* >( &mesh_buffer[ y_offset ] );
   z    = reinterpret_cast< double* >( &mesh_buffer[ z_offset ] );
-  conn = reinterpret_cast< mint::IndexType* >( &mesh_buffer[ conn_offset ] );
+  conn = reinterpret_cast< axom::IndexType* >( &mesh_buffer[ conn_offset ] );
 
   return ( bytesize );
 }
@@ -242,7 +242,7 @@ int read_mesh_shared( const std::string& file,
   // STEP 2: Exchange mesh metadata
   constexpr int NUM_NODES = 0;
   constexpr int NUM_FACES = 1;
-  mint::IndexType mesh_metadata[ 2 ]  = { 0, 0 };
+  axom::IndexType mesh_metadata[ 2 ]  = { 0, 0 };
 
   quest::STLReader reader;
   reader.setFileName( file );
@@ -257,7 +257,7 @@ int read_mesh_shared( const std::string& file,
   double* x             = nullptr;
   double* y             = nullptr;
   double* z             = nullptr;
-  mint::IndexType* conn = nullptr;
+  axom::IndexType* conn = nullptr;
   MPI_Aint numBytes     = allocate_shared_buffer( local_rank_id,
                                                   intra_node_comm,
                                                   mesh_metadata,
@@ -369,8 +369,8 @@ void compute_mesh_bounds( const mint::Mesh* mesh, double* lo, double* hi )
 
   // STEP 1: compute lo,hi
   double pt[ 3 ];
-  const mint::IndexType numNodes = mesh->getNumberOfNodes();
-  for ( mint::IndexType inode=0 ; inode < numNodes ; ++inode )
+  const axom::IndexType numNodes = mesh->getNumberOfNodes();
+  for ( axom::IndexType inode=0 ; inode < numNodes ; ++inode )
   {
     mesh->getNode( inode, pt );
     for ( int i=0 ; i < ndims ; ++i )

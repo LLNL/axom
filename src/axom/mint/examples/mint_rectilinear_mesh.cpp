@@ -31,7 +31,7 @@
 // aliases
 namespace mint      = axom::mint;
 namespace utilities = axom::utilities;
-using IndexType     = mint::IndexType;
+using IndexType     = axom::IndexType;
 
 void exponential_distribution( double origin, IndexType N, double* x )
 {

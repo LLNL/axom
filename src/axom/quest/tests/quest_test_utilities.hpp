@@ -83,7 +83,7 @@ void getSphereSurfaceMesh( mint::UnstructuredMesh< mint::SINGLE_SHAPE >* mesh,
 
   double x[3];
   double n[3];
-  mint::IndexType c[3];
+  axom::IndexType c[3];
 
   // North pole point
   x[0] = SPHERE_CENTER[0];
@@ -224,7 +224,7 @@ Point<double,DIM> getCentroid( const Point<double,DIM>& pt0,
  */
 axom::mint::Mesh* make_octahedron_mesh()
 {
-  typedef axom::mint::IndexType VertexIndex;
+  typedef axom::IndexType VertexIndex;
   typedef Point<double, 3> SpacePt;
   typedef Triangle<double, 3> SpaceTriangle;
 
@@ -306,7 +306,7 @@ axom::mint::Mesh* make_tetrahedron_mesh()
   surface_mesh->appendNode(-18.213671,  4.880339, -6.666668);
   surface_mesh->appendNode(  4.880339,-18.213671, -6.666668);
   surface_mesh->appendNode( 13.333334, 13.333334, -6.666663);
-  axom::mint::IndexType cell[3];
+  axom::IndexType cell[3];
   cell[0] = 0;    cell[1] = 1;    cell[2] = 2;
   surface_mesh->appendCell(cell);
   cell[0] = 0;    cell[1] = 3;    cell[2] = 1;
@@ -339,7 +339,7 @@ axom::mint::Mesh* make_crackedtet_mesh()
   surface_mesh->appendNode(  4.880339,-18.213671, -6.666668);
   surface_mesh->appendNode( 13.333334, 13.333334, -6.666663);
   surface_mesh->appendNode( -0.200003, -0.100003, 18.999999);
-  axom::mint::IndexType cell[3];
+  axom::IndexType cell[3];
   cell[0] = 4;    cell[1] = 1;    cell[2] = 2;
   surface_mesh->appendCell(cell);
   cell[0] = 0;    cell[1] = 3;    cell[2] = 1;
@@ -372,7 +372,7 @@ axom::mint::Mesh* make_cavedtet_mesh()
   surface_mesh->appendNode(  4.880339,-18.213671, -6.666668);
   surface_mesh->appendNode( -0.000003, -0.000003, 19.999999);
   surface_mesh->appendNode( 13.333334, 13.333334, -6.666663);
-  axom::mint::IndexType cell[3];
+  axom::IndexType cell[3];
   cell[0] = 0;    cell[1] = 1;    cell[2] = 2;
   surface_mesh->appendCell(cell);
   cell[0] = 3;    cell[1] = 4;    cell[2] = 1;
@@ -406,7 +406,7 @@ axom::mint::Mesh* make_degen_cavedtet_mesh()
   surface_mesh->appendNode(  4.880339,-18.213671, -6.666668);
   surface_mesh->appendNode( -0.000003, -0.000003, 19.999999);
   surface_mesh->appendNode( 13.333334, 13.333334, -6.666663);
-  axom::mint::IndexType cell[3];
+  axom::IndexType cell[3];
   cell[0] = 0;    cell[1] = 1;    cell[2] = 2;
   surface_mesh->appendCell(cell);
   cell[0] = 3;    cell[1] = 4;    cell[2] = 1;

@@ -235,8 +235,8 @@ void check_analytic_plane( bool use_shared=false )
   quest::signed_distance_init( file );
   EXPECT_TRUE( quest::signed_distance_initialized() );
 
-  mint::IndexType nnodes = mesh.getNumberOfNodes();
-  for ( mint::IndexType inode=0 ; inode < nnodes ; ++inode )
+  axom::IndexType nnodes = mesh.getNumberOfNodes();
+  for ( axom::IndexType inode=0 ; inode < nnodes ; ++inode )
   {
     double pt[ NDIMS ];
     mesh.getNode( inode, pt );
@@ -497,8 +497,8 @@ TEST( quest_signed_distance_interface, analytic_sphere )
   double l1norm = 0.0;
   double l2norm = 0.0;
   double linf   = std::numeric_limits< double >:: min( );
-  mint::IndexType nnodes = umesh->getNumberOfNodes();
-  for ( mint::IndexType inode=0 ; inode < nnodes ; ++inode )
+  axom::IndexType nnodes = umesh->getNumberOfNodes();
+  for ( axom::IndexType inode=0 ; inode < nnodes ; ++inode )
   {
     double pt[ NDIMS ];
     umesh->getNode( inode, pt );

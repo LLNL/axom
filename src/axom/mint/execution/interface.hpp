@@ -117,7 +117,7 @@ namespace mint
  * Usage Example:
  * \code
  *
- *   constexpr mint::IndexType N = 10;
+ *   constexpr axom::IndexType N = 10;
  *   double a[ N ];
  *   double b[ N ];
  *   double c[ N];
@@ -126,7 +126,7 @@ namespace mint
  *   ...
  *
  *   using exec = policy::parallel_cpu;
- *   mint::for_all< exec >( 0, N, AXOM_LAMBDA(mint::IndexType idx) {
+ *   mint::for_all< exec >( 0, N, AXOM_LAMBDA(axom::IndexType idx) {
  *     c[ idx ] = a[ idx ] + b[ idx ];
  *   } );
  *
@@ -135,8 +135,8 @@ namespace mint
  * \see policy.hpp
  */
 template < typename ExecPolicy = policy::serial, typename KernelType >
-inline void for_all( const mint::IndexType& begin,
-                     const mint::IndexType& end,
+inline void for_all( const axom::IndexType& begin,
+                     const axom::IndexType& end,
                      KernelType&& kernel )
 {
   // compile-time sanity checks
@@ -149,7 +149,7 @@ inline void for_all( const mint::IndexType& begin,
 
   constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
   AXOM_STATIC_ASSERT( is_serial );
-  for ( mint::IndexType i=begin ; i < end ; ++i )
+  for ( axom::IndexType i=begin ; i < end ; ++i )
   {
     kernel( i );
   }
@@ -184,7 +184,7 @@ inline void for_all( const mint::IndexType& begin,
  *
  *  using exec = policy::parallel_cpu;
  *  mint::for_all< exec >( N,
- *    AXOM_LAMBDA (mint::IndexType idx )
+ *    AXOM_LAMBDA (axom::IndexType idx )
  *    {
  *      c[ idx ] = a[ idx ] + b[ idx ];
  *    }
@@ -195,7 +195,7 @@ inline void for_all( const mint::IndexType& begin,
  * \see policy.hpp
  */
 template < typename ExecPolicy=policy::serial, typename KernelType >
-inline void for_all( const mint::IndexType& N, KernelType&& kernel )
+inline void for_all( const axom::IndexType& N, KernelType&& kernel )
 {
   // compile-time sanity checks
   AXOM_STATIC_ASSERT( policy_traits< ExecPolicy >::valid() );
