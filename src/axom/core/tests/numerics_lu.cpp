@@ -22,6 +22,7 @@
 #include "axom/core/numerics/matvecops.hpp"
 
 namespace numerics = axom::numerics;
+using IndexType = axom::IndexType;
 
 TEST( numerics_lu, lu_decompose_non_square_matrix )
 {
@@ -119,7 +120,6 @@ TEST( numerics_lu, lu_solve )
   double rhs[ 3 ];
   numerics::matrix_vector_multiply( A, x, rhs );
 
-  using IndexType = numerics::Matrix< double >::IndexType;
   for ( IndexType i=0 ; i < N ; ++i )
   {
     EXPECT_DOUBLE_EQ( b[i], rhs[ i ] );

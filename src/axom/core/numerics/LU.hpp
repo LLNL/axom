@@ -113,8 +113,6 @@ int lu_decompose( Matrix< T >& LU, int* pivots )
 
   const int size = LU.getNumRows();
 
-  typedef typename Matrix< T >::IndexType IndexType;
-
   for ( IndexType i=0 ; i < size ; ++i )
   {
 
@@ -183,8 +181,6 @@ int lu_solve( const Matrix< T >& A, const int* pivots, const T* b, T* x )
   const int size = A.getNumRows();
   T* rhs = axom::alloc< T >( size );
   memcpy( rhs, b, size*sizeof( T ) );
-
-  typedef typename Matrix< T >::IndexType IndexType;
 
   // forward-solve L part (top-to-bottom)
   for ( IndexType i=0 ; i < size ; ++i )
