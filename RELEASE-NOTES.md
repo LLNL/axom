@@ -10,9 +10,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
-- Centralized Axom's memory management functions in a seperate header and extended them to support 
-  different memory spaces through Umpire. The caller may now specify the desired memory space by
-  an optional argument or set a different default memory space to use. 
+- Added Umpire and RAJA to the spack build.
+- Centralized Axom's memory management functions in a separate header and extended them 
+  to use Umpire when enabled.
 - Added the ability to point Axom to an UMPIRE build by specifying UMPIRE_DIR either in
   a host-config or at the command line. Axom components can link to Umpire, by specifying
   "umpire" as a dependency. A simple umpire smoke test is also added for regression testing.
@@ -38,6 +38,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Deprecated
 
 ### Changed
+- Updated the fmt tpl.
 - Replaced old quest C-style interface with a new quest inout API.
   Functions related to the inout point containment query are prefixed with "inout_".
   The new API has an option to set the verbosity of the inout initialization and query.

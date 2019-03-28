@@ -29,6 +29,10 @@ set(fmt_headers
     fmt/ostream.h
     fmt/printf.h
     fmt/ranges.h
+    fmt/chrono.h
+    fmt/color.h
+    fmt/locale.h
+    fmt/time.h
     )
 
 # Do not include the following source files in the headers list even
