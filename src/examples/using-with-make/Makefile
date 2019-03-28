@@ -28,7 +28,7 @@
 
 
 INC_FLAGS=-I$(AXOM_DIR)/include/
-LINK_FLAGS=-L$(AXOM_DIR)/lib/ -laxom_utils
+LINK_FLAGS=-L$(AXOM_DIR)/lib/ -laxom
 
 main:
 	$(CXX) $(INC_FLAGS) example.cpp $(LINK_FLAGS) -o example
