@@ -112,8 +112,6 @@ Matrix< T > upper_triangular( const Matrix< T >& A, bool unit_diagonal=true );
  *   const int ncols = A.getNumColumnds(); // ncols=5
  *
  *   // loop over the elements of the matrix, row by row
- *   typedef typename Matrix< double >::IndexType IndexType;
- *
  *   for ( IndexType i=0; i < nrows; ++i ) {
  *      for ( IndexType j=0; j < ncols; ++j ) {
  *
@@ -130,9 +128,6 @@ Matrix< T > upper_triangular( const Matrix< T >& A, bool unit_diagonal=true );
 template < typename T >
 class Matrix
 {
-public:
-  typedef long IndexType;
-
 public:
 
   /*!
@@ -316,8 +311,6 @@ public:
    * \note Example Usage:
    * \code
    *  ...
-   *  typedef typename Matrix< double >::IndexType IndexType;
-   *
    *  Matrix < double > A( MROWS,NCOLS );
    *  const double* column = A.getColumn( j );
    *  for ( IndexType i=0; i < MROWS; ++i ) {
@@ -339,8 +332,6 @@ public:
    * \note Example Usage:
    * \code
    *  ...
-   *  typedef typename Matrix< double >::IndexType IndexType;
-   *
    *  Matrix < double > A( MROWS,NCOLS );
    *  double* column = A.getColumn( j );
    *  for ( IndexType i=0; i < MROWS; ++i ) {
@@ -368,8 +359,6 @@ public:
    * \note Example Usage:
    * \code
    *  ...
-   *  typedef typename Matrix< double >::IndexType IndexType;
-   *
    *  Matrix< double > A (MROWS,NCOLS);
    *
    *  IndexType  p = 0;
@@ -401,8 +390,6 @@ public:
    * \note Example Usage:
    * \code
    *  ...
-   *  typedef typename Matrix< double >::IndexType IndexType;
-   *
    *  Matrix< double > A (MROWS,NCOLS);
    *
    *  IndexType p = 0;
@@ -432,7 +419,6 @@ public:
    * \note Example Usage:
    * \code
    *   ...
-   *   typedef typename Matrix< double >::IndexType IndexType;
    *   Matrix< double > A( MROWS,NCOLS );
    *
    *   IndexType p = 0;
@@ -462,7 +448,6 @@ public:
    * \note Example Usage:
    * \code
    *   ...
-   *   typedef typename Matrix< double >::IndexType IndexType;
    *   Matrix< double > A( MROWS,NCOLS );
    *
    *   IndexType p = 0;
@@ -977,8 +962,6 @@ Matrix< T > lower_triangular( const Matrix< T >& A, bool unit_diagonal )
 
   Matrix< T > L( N,N );
 
-  typedef typename Matrix< T >::IndexType IndexType;
-
   for ( IndexType i=0 ; i < N ; ++i )
   {
     for ( IndexType j=0 ; j < N ; ++j )
@@ -1017,8 +1000,6 @@ Matrix< T > upper_triangular( const Matrix< T >& A, bool unit_diagonal )
 
   Matrix< T > U( N,N );
 
-  typedef typename Matrix< T >::IndexType IndexType;
-
   for ( IndexType i=0 ; i < N ; ++i )
   {
     for ( IndexType j=0 ; j < N ; ++j )
@@ -1049,8 +1030,6 @@ std::ostream& operator<<( std::ostream& os, const Matrix< T >& M )
 {
   const int nrows = M.getNumRows();
   const int ncols = M.getNumColumns();
-
-  typedef typename Matrix< T >::IndexType IndexType;
 
   for ( IndexType i=0 ; i < nrows ; ++i )
   {

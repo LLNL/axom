@@ -86,8 +86,6 @@ void compute_centroid( mint::FiniteElement* fe, double* centroid )
 
     for ( int i=0 ; i < ndims ; ++i )
     {
-
-      typedef numerics::Matrix< double >::IndexType IndexType;
       IndexType p = 0;
       IndexType N = 0;
       const double* xp_i = physical_nodes.getRow(i,p,N);
@@ -138,7 +136,7 @@ void get_single_fe( mint::FiniteElement*& fe )
 
   const int ndofs = ShapeFunctionType::numDofs();
 
-  mint::IndexType* cell = new mint::IndexType[ ndofs ];
+  axom::IndexType* cell = new axom::IndexType[ ndofs ];
 
   double* center = new double[ ndims ];
   ShapeFunctionType::center( center );

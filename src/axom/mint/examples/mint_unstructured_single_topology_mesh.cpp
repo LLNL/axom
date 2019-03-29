@@ -37,14 +37,14 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
   UnitTestLogger logger;  // create & initialize test logger,
 
   constexpr int DIMENSION = 2;
-  constexpr mint::IndexType X_EXTENT = 11;
-  constexpr mint::IndexType Y_EXTENT = 11;
+  constexpr axom::IndexType X_EXTENT = 11;
+  constexpr axom::IndexType Y_EXTENT = 11;
   constexpr double SPACING = 1.0;
   constexpr mint::CellType CELL_TYPE = mint::QUAD;
-  constexpr mint::IndexType NODES_PER_CELL =
+  constexpr axom::IndexType NODES_PER_CELL =
     mint::getCellInfo( CELL_TYPE ).num_nodes;
-  constexpr mint::IndexType NUM_NODES = X_EXTENT * Y_EXTENT;
-  constexpr mint::IndexType NUM_CELLS = (X_EXTENT - 1) * (Y_EXTENT - 1);
+  constexpr axom::IndexType NUM_NODES = X_EXTENT * Y_EXTENT;
+  constexpr axom::IndexType NUM_CELLS = (X_EXTENT - 1) * (Y_EXTENT - 1);
 
   constexpr double HI  = -10.0;
   constexpr double LO  = 10.0;
@@ -69,10 +69,10 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
                                                  mint::NODE_CENTERED );
 
   /* STEP 3: Add the nodes. */
-  mint::IndexType node_ID = 0;
-  for ( mint::IndexType j = 0 ; j < Y_EXTENT ; ++j )
+  axom::IndexType node_ID = 0;
+  for ( axom::IndexType j = 0 ; j < Y_EXTENT ; ++j )
   {
-    for ( mint::IndexType i = 0 ; i < X_EXTENT ; ++i )
+    for ( axom::IndexType i = 0 ; i < X_EXTENT ; ++i )
     {
       mesh.appendNode( i * SPACING, j * SPACING );
 
@@ -86,16 +86,16 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
   }
 
   /* STEP 4: Add the cells. */
-  mint::IndexType cell_ID = 0;
-  for ( mint::IndexType j = 0 ; j < Y_EXTENT - 1 ; ++j )
+  axom::IndexType cell_ID = 0;
+  for ( axom::IndexType j = 0 ; j < Y_EXTENT - 1 ; ++j )
   {
-    for ( mint::IndexType i = 0 ; i < X_EXTENT - 1 ; ++i )
+    for ( axom::IndexType i = 0 ; i < X_EXTENT - 1 ; ++i )
     {
-      const mint::IndexType bottom_left = j * X_EXTENT + i;
-      const mint::IndexType bottom_right = bottom_left + 1;
-      const mint::IndexType top_right = bottom_right + X_EXTENT;
-      const mint::IndexType top_left = bottom_left + X_EXTENT;
-      const mint::IndexType cell[ NODES_PER_CELL ] =
+      const axom::IndexType bottom_left = j * X_EXTENT + i;
+      const axom::IndexType bottom_right = bottom_left + 1;
+      const axom::IndexType top_right = bottom_right + X_EXTENT;
+      const axom::IndexType top_left = bottom_left + X_EXTENT;
+      const axom::IndexType cell[ NODES_PER_CELL ] =
       { bottom_left, bottom_right, top_right, top_left };
       mesh.appendCell( cell );
 
@@ -105,11 +105,11 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
   }
 
   /* STEP 5: Calculate the average pressure at each of the nodes. */
-  const mint::IndexType n_cells = mesh.getNumberOfCells();
+  const axom::IndexType n_cells = mesh.getNumberOfCells();
   for ( cell_ID = 0 ; cell_ID < n_cells ; ++cell_ID )
   {
     const double cell_pressure = p[ cell_ID ];
-    const mint::IndexType* connec = mesh.getCellNodeIDs( cell_ID );
+    const axom::IndexType* connec = mesh.getCellNodeIDs( cell_ID );
     for ( int i = 0 ; i < NODES_PER_CELL ; ++i )
     {
       node_ID = connec[ i ];
@@ -118,7 +118,7 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
     }
   }
 
-  const mint::IndexType n_nodes = mesh.getNumberOfNodes();
+  const axom::IndexType n_nodes = mesh.getNumberOfNodes();
   for ( node_ID = 0 ; node_ID < n_nodes ; ++node_ID )
   {
     p_avg[ node_ID ] /= cells_per_node[ node_ID ];

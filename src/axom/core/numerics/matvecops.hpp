@@ -375,8 +375,6 @@ inline bool matrix_add( const Matrix< T >& A,
     return false;
   }
 
-  typedef typename Matrix< T >::IndexType IndexType;
-
   const int nrows = A.getNumRows();
   const int ncols = A.getNumColumns();
   const int N     = nrows*ncols;
@@ -410,8 +408,6 @@ bool matrix_subtract( const Matrix< T >& A,
     return false;
   }
 
-  typedef typename Matrix< T >::IndexType IndexType;
-
   const int nrows = A.getNumRows();
   const int ncols = A.getNumColumns();
   const int N     = nrows*ncols;
@@ -443,8 +439,6 @@ inline bool matrix_multiply( const Matrix< T >& A,
     return false;
   }
 
-  typedef typename Matrix< T >::IndexType IndexType;
-
   const int nk    = A.getNumColumns();
   const int nrows = C.getNumRows();
   const int ncols = C.getNumColumns();
@@ -475,8 +469,6 @@ inline void matrix_scalar_multiply( Matrix< T >& A, const T& c )
   const int ncols = A.getNumColumns();
   const int N     = nrows*ncols;
 
-  typedef typename Matrix< T >::IndexType IndexType;
-
   T* target = A.data();
   for ( IndexType i=0 ; i < N ; ++i )
   {
@@ -492,8 +484,6 @@ inline void matrix_vector_multiply( const Matrix< T >& A, const T* x, T* b )
   // matrix-vector multiplication
   const int nrows = A.getNumRows();
   const int ncols = A.getNumColumns();
-
-  typedef typename Matrix< T >::IndexType IndexType;
 
   for ( IndexType i=0 ; i < nrows ; ++i )
   {
@@ -523,8 +513,6 @@ inline bool matrix_transpose( const Matrix< T >& A, Matrix< T >& M )
 
   const int ncols = A.getNumColumns();
   const int nrows = A.getNumRows();
-  using IndexType = typename Matrix< T >::IndexType;
-
   for ( IndexType i=0 ; i < nrows ; ++i )
   {
     for ( IndexType j=0 ; j < ncols ; ++j )

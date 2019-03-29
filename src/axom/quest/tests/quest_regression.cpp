@@ -450,7 +450,7 @@ void runContainmentQueries(CommandLineArguments& clargs)
   // Add a scalar field for the containment queries
   SLIC_ASSERT(clargs.queryMesh != nullptr);
   mint::UniformMesh* umesh = clargs.queryMesh;
-  const mint::IndexType nnodes = umesh->getNumberOfNodes();
+  const axom::IndexType nnodes = umesh->getNumberOfNodes();
 
   int* containment =
     umesh->createField< int >( "octree_containment", mint::NODE_CENTERED );
@@ -464,7 +464,7 @@ void runContainmentQueries(CommandLineArguments& clargs)
   #pragma omp parallel for schedule(static)
   for ( int inode=0 ; inode < nnodes ; ++inode )
   {
-    mint::IndexType i, j, k;
+    axom::IndexType i, j, k;
     umesh->getNodeGridIndex( inode, i, j, k );
 
     xcoords[inode] = umesh->evaluateCoordinate( i,mint::X_COORDINATE);
@@ -566,7 +566,7 @@ void runDistanceQueries(CommandLineArguments& clargs)
   #pragma omp parallel for schedule(static)
   for ( int inode=0 ; inode < nnodes ; ++inode )
   {
-    mint::IndexType i, j, k;
+    axom::IndexType i, j, k;
     umesh->getNodeGridIndex( inode, i, j, k );
 
     xcoords[inode] = umesh->evaluateCoordinate( i,axom::mint::X_COORDINATE);

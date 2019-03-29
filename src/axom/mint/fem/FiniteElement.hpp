@@ -23,7 +23,7 @@
 
 #include "axom/core/numerics/Matrix.hpp" // for Matrix definition
 
-#include "axom/mint/config.hpp"       // for mint::IndexType
+#include "axom/mint/config.hpp"       // for axom::IndexType
 #include "axom/mint/fem/FEBasis.hpp"      // for FEBasis traits class
 
 namespace axom

@@ -81,7 +81,7 @@ void mpi_comm_free( MPI_Comm* comm );
 int read_and_exchange_mesh_metadata( int global_rank_id,
                                      MPI_Comm global_comm,
                                      quest::STLReader& reader,
-                                     mint::IndexType mesh_metadata[ 2 ] );
+                                     axom::IndexType mesh_metadata[ 2 ] );
 
 #endif /* AXOM_USE_MPI */
 
@@ -163,11 +163,11 @@ void create_communicators( MPI_Comm global_comm,
  */
 MPI_Aint allocate_shared_buffer( int local_rank_id,
                                  MPI_Comm intra_node_comm,
-                                 const mint::IndexType mesh_metadata[ 2 ],
+                                 const axom::IndexType mesh_metadata[ 2 ],
                                  double*& x,
                                  double*& y,
                                  double*& z,
-                                 mint::IndexType*& conn,
+                                 axom::IndexType*& conn,
                                  unsigned char*& mesh_buffer,
                                  MPI_Win& shared_window );
 #endif

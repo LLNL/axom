@@ -37,8 +37,8 @@ namespace common = axom::common;
 template < typename T >
 void check_field_instantiation( )
 {
-  constexpr mint::IndexType NUM_TUPLES     = 4;
-  constexpr mint::IndexType NUM_COMPONENTS = 1;
+  constexpr axom::IndexType NUM_TUPLES     = 4;
+  constexpr axom::IndexType NUM_COMPONENTS = 1;
 
 
   mint::Field* f =
@@ -64,8 +64,8 @@ void check_field_instantiation( )
 TEST( mintMesh_field_DeathTest, invalid_operations )
 {
   const char* IGNORE_OUTPUT = ".*";
-  constexpr mint::IndexType NUM_TUPLES     = 4;
-  constexpr mint::IndexType NUM_COMPONENTS = 1;
+  constexpr axom::IndexType NUM_TUPLES     = 4;
+  constexpr axom::IndexType NUM_COMPONENTS = 1;
 
   mint::Field* f =
     new mint::FieldVariable< double >( "f", NUM_TUPLES, NUM_COMPONENTS );
@@ -87,8 +87,8 @@ TEST( mint_mesh_field, instantiate )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_field, set_basis )
 {
-  constexpr mint::IndexType NUM_TUPLES     = 4;
-  constexpr mint::IndexType NUM_COMPONENTS = 1;
+  constexpr axom::IndexType NUM_TUPLES     = 4;
+  constexpr axom::IndexType NUM_COMPONENTS = 1;
 
   mint::Field* f =
     new mint::FieldVariable< double >( "f", NUM_TUPLES, NUM_COMPONENTS );
@@ -105,8 +105,8 @@ TEST( mint_mesh_field, set_basis )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_field, get_dataptr )
 {
-  constexpr mint::IndexType NUM_TUPLES     = 4;
-  constexpr mint::IndexType NUM_COMPONENTS = 1;
+  constexpr axom::IndexType NUM_TUPLES     = 4;
+  constexpr axom::IndexType NUM_COMPONENTS = 1;
 
   double f[]  = { 1.0, 2.0, 3.0, 4.0 };
   mint::Field* field =

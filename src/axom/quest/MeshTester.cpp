@@ -55,8 +55,8 @@ inline SpatialBoundingBox compute_bounds( UMesh* mesh)
   const double* y = mesh->getCoordinateArray( mint::Y_COORDINATE );
   const double* z = mesh->getCoordinateArray( mint::Z_COORDINATE );
 
-  const mint::IndexType numNodes = mesh->getNumberOfNodes();
-  for ( mint::IndexType i=0 ; i < numNodes ; ++i )
+  const axom::IndexType numNodes = mesh->getNumberOfNodes();
+  for ( axom::IndexType i=0 ; i < numNodes ; ++i )
   {
     pt[ 0 ] = x[ i ];
     pt[ 1 ] = y[ i ];
@@ -85,13 +85,13 @@ inline SpatialBoundingBox compute_bounds(const Triangle3 & tri)
   return triBB;
 }
 
-inline Triangle3 getMeshTriangle(mint::IndexType i, UMesh* surface_mesh)
+inline Triangle3 getMeshTriangle(axom::IndexType i, UMesh* surface_mesh)
 {
   SLIC_ASSERT( surface_mesh->getNumberOfCellNodes( i ) == 3);
 
   Triangle3 tri;
 
-  const mint::IndexType* triCell = surface_mesh->getCellNodeIDs( i );
+  const axom::IndexType* triCell = surface_mesh->getCellNodeIDs( i );
 
   const double* x = surface_mesh->getCoordinateArray( mint::X_COORDINATE );
   const double* y = surface_mesh->getCoordinateArray( mint::Y_COORDINATE );
@@ -99,7 +99,7 @@ inline Triangle3 getMeshTriangle(mint::IndexType i, UMesh* surface_mesh)
 
   for ( int n=0 ; n < 3 ; ++n )
   {
-    const mint::IndexType nodeIdx = triCell[ n ];
+    const axom::IndexType nodeIdx = triCell[ n ];
     tri[ n ][ 0 ] = x[ nodeIdx ];
     tri[ n ][ 1 ] = y[ nodeIdx ];
     tri[ n ][ 2 ] = z[ nodeIdx ];
@@ -108,7 +108,7 @@ inline Triangle3 getMeshTriangle(mint::IndexType i, UMesh* surface_mesh)
   return tri;
 }
 
-inline bool areTriangleIndicesDistinct( mint::IndexType* indices)
+inline bool areTriangleIndicesDistinct( axom::IndexType* indices)
 {
   SLIC_ASSERT(indices != nullptr);
 
@@ -355,12 +355,12 @@ void weldTriMeshVertices(UMesh** surface_mesh,double eps)
 
     // Next, add triangles into the new mesh using the unique vertex indices
     const int NUM_TRI_VERTS = 3;
-    mint::IndexType triInds[ NUM_TRI_VERTS ];
-    const mint::IndexType numTris = oldMesh->getNumberOfCells();
-    for( mint::IndexType i =0 ; i < numTris ; ++i)
+    axom::IndexType triInds[ NUM_TRI_VERTS ];
+    const axom::IndexType numTris = oldMesh->getNumberOfCells();
+    for( axom::IndexType i =0 ; i < numTris ; ++i)
     {
       memcpy( triInds, oldMesh->getCellNodeIDs( i ),
-              NUM_TRI_VERTS*sizeof( mint::IndexType ) );
+              NUM_TRI_VERTS*sizeof( axom::IndexType ) );
 
       for(int d =0 ; d < NUM_TRI_VERTS ; ++d)
       {

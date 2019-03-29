@@ -49,7 +49,7 @@ static struct
   double dt;
   int ncycles;
   int dumpFrequency;
-  mint::IndexType numParticles;
+  axom::IndexType numParticles;
 } Arguments;
 
 //------------------------------------------------------------------------------
@@ -79,7 +79,7 @@ int main ( int argc, char** argv )
   double* py = particles.getCoordinateArray( mint::Y_COORDINATE );
   double* pz = particles.getCoordinateArray( mint::Z_COORDINATE );
 
-  const mint::IndexType numParticles = particles.getNumberOfNodes();
+  const axom::IndexType numParticles = particles.getNumberOfNodes();
 
   // STEP 2: time march
   const double& dt = Arguments.dt;
@@ -91,7 +91,7 @@ int main ( int argc, char** argv )
     apply_forces( particles, dt );
 
     // integrate positions
-    for ( mint::IndexType i=0 ; i < numParticles ; ++i )
+    for ( axom::IndexType i=0 ; i < numParticles ; ++i )
     {
       px[ i ] += vx[ i ]*dt;
       py[ i ] += vy[ i ]*dt;
@@ -118,7 +118,7 @@ void apply_forces( mint::ParticleMesh& particles, double dt )
 {
   const double ptiny = 1.e-9;
 
-  const mint::IndexType numParticles = particles.getNumberOfNodes();
+  const axom::IndexType numParticles = particles.getNumberOfNodes();
 
   double* vx = particles.getFieldPtr< double >( "vx", mint::NODE_CENTERED );
   double* vy = particles.getFieldPtr< double >( "vy", mint::NODE_CENTERED );
@@ -127,13 +127,13 @@ void apply_forces( mint::ParticleMesh& particles, double dt )
   double* py = particles.getCoordinateArray( mint::Y_COORDINATE );
   double* pz = particles.getCoordinateArray( mint::Z_COORDINATE );
 
-  for ( mint::IndexType i=0 ; i < numParticles ; ++i )
+  for ( axom::IndexType i=0 ; i < numParticles ; ++i )
   {
     double fx = 0.0;
     double fy = 0.0;
     double fz = 0.0;
 
-    for ( mint::IndexType j=0 ; j < numParticles ; ++j )
+    for ( axom::IndexType j=0 ; j < numParticles ; ++j )
     {
       const double dx       = px[ j ] - px[ i ];
       const double dy       = py[ j ] - py[ i ];
@@ -162,7 +162,7 @@ void initialize( mint::ParticleMesh& particles )
   const double LO = Arguments.domain_min;
   const double HI = Arguments.domain_max;
 
-  mint::IndexType numParticles = particles.getNumberOfNodes();
+  axom::IndexType numParticles = particles.getNumberOfNodes();
 
   double* vx = particles.getFieldPtr< double >( "vx", mint::NODE_CENTERED );
   double* vy = particles.getFieldPtr< double >( "vy", mint::NODE_CENTERED );
@@ -171,7 +171,7 @@ void initialize( mint::ParticleMesh& particles )
   double* py = particles.getCoordinateArray( mint::Y_COORDINATE );
   double* pz = particles.getCoordinateArray( mint::Z_COORDINATE );
 
-  for ( mint::IndexType i=0 ; i < numParticles ; ++i )
+  for ( axom::IndexType i=0 ; i < numParticles ; ++i )
   {
     px[ i ] = utilities::random_real( LO, HI );
     py[ i ] = utilities::random_real( LO, HI );

@@ -43,7 +43,7 @@ const char* IGNORE_OUTPUT =  ".*";
 //------------------------------------------------------------------------------
 void check_constructor( mint::ParticleMesh* particles,
                         int expected_dimension,
-                        mint::IndexType expected_num_particles )
+                        axom::IndexType expected_num_particles )
 {
   EXPECT_TRUE( particles != nullptr );
   EXPECT_EQ( particles->getDimension(), expected_dimension );
@@ -56,9 +56,9 @@ void check_constructor( mint::ParticleMesh* particles,
   EXPECT_FALSE( particles->hasMixedCellTypes() );
   EXPECT_EQ( particles->getCellType(), mint::VERTEX );
 
-  mint::IndexType ncells = particles->getNumberOfCells();
-  mint::IndexType cell[ 1 ];
-  for ( mint::IndexType icell=0 ; icell < ncells ; ++icell )
+  axom::IndexType ncells = particles->getNumberOfCells();
+  axom::IndexType cell[ 1 ];
+  for ( axom::IndexType icell=0 ; icell < ncells ; ++icell )
   {
     EXPECT_EQ( particles->getCellType( icell ), mint::VERTEX );
 
@@ -69,8 +69,8 @@ void check_constructor( mint::ParticleMesh* particles,
   const int ndims = particles->getDimension();
   for ( int idim=0 ; idim < ndims ; ++idim )
   {
-    const mint::IndexType numParticles = particles->getNumberOfNodes();
-    const mint::IndexType lastParticle = numParticles-1;
+    const axom::IndexType numParticles = particles->getNumberOfNodes();
+    const axom::IndexType lastParticle = numParticles-1;
     double* pos = particles->getCoordinateArray( idim );
     EXPECT_TRUE( pos != nullptr );
 
@@ -84,7 +84,7 @@ void check_constructor( mint::ParticleMesh* particles,
 void check_resize( mint::ParticleMesh* particles )
 {
   EXPECT_TRUE( particles != nullptr );
-  constexpr mint::IndexType NEW_SIZE = 512;
+  constexpr axom::IndexType NEW_SIZE = 512;
 
   particles->resize( NEW_SIZE );
   EXPECT_EQ( particles->getNumberOfNodes(), NEW_SIZE );
@@ -104,7 +104,7 @@ void check_resize( mint::ParticleMesh* particles )
 void check_reserve( mint::ParticleMesh* particles )
 {
   EXPECT_TRUE( particles != nullptr );
-  constexpr mint::IndexType NEW_CAPACITY = 512;
+  constexpr axom::IndexType NEW_CAPACITY = 512;
 
   particles->reserve( NEW_CAPACITY );
   EXPECT_EQ( particles->getNodeCapacity(), NEW_CAPACITY );
@@ -122,8 +122,8 @@ void check_reserve( mint::ParticleMesh* particles )
 
 //------------------------------------------------------------------------------
 void check_shrink( mint::ParticleMesh* particles,
-                   mint::IndexType NUM_PARTICLES,
-                   mint::IndexType CAPACITY )
+                   axom::IndexType NUM_PARTICLES,
+                   axom::IndexType CAPACITY )
 {
   EXPECT_TRUE( particles != nullptr );
   EXPECT_TRUE( NUM_PARTICLES > 0 );
@@ -169,13 +169,13 @@ void check_append( mint::ParticleMesh* particles )
   const double* x      = nullptr;
   const double* y      = nullptr;
   const double* z      = nullptr;
-  mint::IndexType lidx = -1;
+  axom::IndexType lidx = -1;
 
   const int dimension = particles->getDimension();
 
   for ( int iter=0 ; iter < NUM_APPENDS ; ++iter )
   {
-    mint::IndexType current_num_particles = particles->getNumberOfNodes();
+    axom::IndexType current_num_particles = particles->getNumberOfNodes();
 
     switch ( dimension )
     {
@@ -280,7 +280,7 @@ TEST( mint_mesh_particle_mesh_DeathTest, invalid_construction )
 //-----------------------------------------------------------------------------
 TEST( mint_mesh_particle_mesh_DeathTest, invalid_operations )
 {
-  const mint::IndexType numParticles = 10;
+  const axom::IndexType numParticles = 10;
   mint::ParticleMesh particles( 2, numParticles );
   EXPECT_DEATH_IF_SUPPORTED(particles.getCoordinateArray( mint::Z_COORDINATE),
                             IGNORE_OUTPUT );
@@ -307,7 +307,7 @@ TEST( mint_mesh_particle_mesh_DeathTest, invalid_operations )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_particle_mesh, native_constructor )
 {
-  const mint::IndexType numParticles = 10;
+  const axom::IndexType numParticles = 10;
   for ( int dim=1 ; dim <= 3 ; ++dim )
   {
     mint::ParticleMesh particles( dim, numParticles );
@@ -321,7 +321,7 @@ TEST( mint_mesh_particle_mesh, native_constructor )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_particle_mesh, external_constructor )
 {
-  const mint::IndexType numParticles = 4;
+  const axom::IndexType numParticles = 4;
   double x[]  = { 1.0, 2.0, 3.0, 4.0 };
   double y[]  = { 1.0, 2.0, 3.0, 4.0 };
   double z[]  = { 1.0, 2.0, 3.0, 4.0 };
@@ -366,7 +366,7 @@ TEST( mint_mesh_particle_mesh, external_constructor )
 //------------------------------------------------------------------------------
 TEST( mint_mesh_particle_mesh, sidre_constructor )
 {
-  const mint::IndexType numParticles = 4;
+  const axom::IndexType numParticles = 4;
   double x[]                = { 1.0, 2.0, 3.0, 4.0 };
   double y[]                = { 1.0, 2.0, 3.0, 4.0 };
   double z[]                = { 1.0, 2.0, 3.0, 4.0 };
@@ -402,7 +402,7 @@ TEST( mint_mesh_particle_mesh, sidre_constructor )
       double* foo = particles.getFieldPtr< double >("foo",mint::NODE_CENTERED);
       EXPECT_TRUE( foo != nullptr );
 
-      for ( mint::IndexType ipart=0 ; ipart < numParticles ; ++ipart )
+      for ( axom::IndexType ipart=0 ; ipart < numParticles ; ++ipart )
       {
         foo[ ipart*3   ] = MAGIC_NUMBER;
         foo[ ipart*3+1 ] = MAGIC_NUMBER;
@@ -422,13 +422,13 @@ TEST( mint_mesh_particle_mesh, sidre_constructor )
       EXPECT_EQ( particles.getBlockId(), BLOCK_ID );
       EXPECT_EQ( particles.getPartitionId(), PART_ID );
 
-      mint::IndexType numComp = -1;
+      axom::IndexType numComp = -1;
       const double* foo =
         particles.getFieldPtr< double >("foo", mint::NODE_CENTERED, numComp);
       EXPECT_TRUE( foo != nullptr );
       EXPECT_EQ( numComp, 3 );
 
-      for ( mint::IndexType i=0 ; i < numParticles ; ++i )
+      for ( axom::IndexType i=0 ; i < numParticles ; ++i )
       {
         EXPECT_DOUBLE_EQ( foo[ i*3 ],   MAGIC_NUMBER );
         EXPECT_DOUBLE_EQ( foo[ i*3+1 ], MAGIC_NUMBER );
@@ -441,7 +441,7 @@ TEST( mint_mesh_particle_mesh, sidre_constructor )
         double* pos = particles.getCoordinateArray( idim );
         EXPECT_TRUE( pos != nullptr );
 
-        for ( mint::IndexType i=0 ; i < numParticles ; ++i )
+        for ( axom::IndexType i=0 ; i < numParticles ; ++i )
         {
           const double expected_val = ( (i==0) || (i==numParticles-1) ) ?
                                       42.0 : static_cast< double >( i+1 );
@@ -476,7 +476,7 @@ TEST( mint_mesh_particle_mesh, sidre_constructor )
 TEST( mint_mesh_particle_mesh, append )
 {
   constexpr int NDIMS = 3;
-  constexpr mint::IndexType NUM_PARTICLES = 10;
+  constexpr axom::IndexType NUM_PARTICLES = 10;
 
   for ( int idim=1 ; idim <= NDIMS ; ++idim )
   {
@@ -552,8 +552,8 @@ TEST( mint_mesh_particle_mesh, reserve )
 TEST( mint_mesh_particle_mesh, shrink )
 {
   constexpr int NDIMS=3;
-  constexpr mint::IndexType NUM_PARTICLES = 10;
-  constexpr mint::IndexType CAPACITY      = 512;
+  constexpr axom::IndexType NUM_PARTICLES = 10;
+  constexpr axom::IndexType CAPACITY      = 512;
   mint::ParticleMesh p1 ( NDIMS, NUM_PARTICLES, CAPACITY );
   p1.createField< double >( "vel", mint::NODE_CENTERED, 3, true );
   p1.createField< int >( "id", mint::NODE_CENTERED, 1, true );

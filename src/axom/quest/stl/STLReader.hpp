@@ -122,8 +122,8 @@ private:
 protected:
   std::string m_fileName;
 
-  axom::mint::IndexType m_num_nodes;
-  axom::mint::IndexType m_num_faces;
+  axom::IndexType m_num_nodes;
+  axom::IndexType m_num_faces;
 
   std::vector<double> m_nodes;
 

@@ -77,8 +77,8 @@ IndexType get_max_cell_nodes( const Mesh* mesh, IndexType& total_cell_nodes  )
   }
 
   total_cell_nodes = 0;
-  const mint::IndexType numCells = mesh->getNumberOfCells();
-  for ( mint::IndexType icell=0 ; icell < numCells ; ++icell )
+  const axom::IndexType numCells = mesh->getNumberOfCells();
+  for ( axom::IndexType icell=0 ; icell < numCells ; ++icell )
   {
     CellType cell_type  = mesh->getCellType( icell );
     const int num_nodes = mint::getCellInfo( cell_type ).num_nodes;

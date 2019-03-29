@@ -136,11 +136,11 @@ int main ( int argc, char** argv )
   SLIC_INFO( "evaluating signed distance field on specified box mesh..." );
   slic::flushStreams();
 
-  const mint::IndexType nnodes = mesh->getNumberOfNodes( );
+  const axom::IndexType nnodes = mesh->getNumberOfNodes( );
 
   timer.reset();
   timer.start();
-  for ( mint::IndexType inode=0 ; inode < nnodes ; ++inode )
+  for ( axom::IndexType inode=0 ; inode < nnodes ; ++inode )
   {
     double pt[ 3 ];
     mesh->getNode( inode, pt );
@@ -215,9 +215,9 @@ void generate_uniform_box_mesh( mint::UniformMesh*& mesh )
              " " << Arguments.box_dims[ 1 ] <<
              " " << Arguments.box_dims[ 2 ] << "]" );
 
-  mint::IndexType Ni = static_cast< mint::IndexType >( Arguments.box_dims[0] );
-  mint::IndexType Nj = static_cast< mint::IndexType >( Arguments.box_dims[1] );
-  mint::IndexType Nk = static_cast< mint::IndexType >( Arguments.box_dims[2] );
+  axom::IndexType Ni = static_cast< axom::IndexType >( Arguments.box_dims[0] );
+  axom::IndexType Nj = static_cast< axom::IndexType >( Arguments.box_dims[1] );
+  axom::IndexType Nk = static_cast< axom::IndexType >( Arguments.box_dims[2] );
   mesh = new mint::UniformMesh( lo, hi, Ni, Nj, Nk );
 
   SLIC_ASSERT( mesh != nullptr );

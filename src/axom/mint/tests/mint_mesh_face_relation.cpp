@@ -29,6 +29,8 @@
 #include <sstream>
 #include <vector>
 
+using IndexType = axom::IndexType;
+
 namespace axom
 {
 namespace mint

@@ -46,7 +46,6 @@ namespace internal
 template < typename T >
 inline T matrix_p1_norm( const Matrix< T >& A )
 {
-  using IndexType   = typename Matrix< T >::IndexType;
   const int numRows = A.getNumRows( );
   const int numCols = A.getNumColumns( );
 
@@ -90,7 +89,6 @@ inline T matrix_p1_norm( const Matrix< T >& A )
 template < typename T >
 inline T matrix_infty_norm( const Matrix< T >& A )
 {
-  using IndexType   = typename Matrix< T >::IndexType;
   const int numRows = A.getNumRows( );
   const int numCols = A.getNumColumns( );
 
@@ -140,7 +138,6 @@ inline T matrix_frobenious_norm( const Matrix< T >& A )
   AXOM_STATIC_ASSERT_MSG( std::is_floating_point< T >::value,
                           "T is required to be a floating type for computing the frobenious norm" );
 
-  using IndexType   = typename Matrix< T >::IndexType;
   const int numRows = A.getNumRows( );
   const int numCols = A.getNumColumns( );
 

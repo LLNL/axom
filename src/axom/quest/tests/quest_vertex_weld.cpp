@@ -42,7 +42,7 @@ void insertVertex(UMesh* mesh, double x, double y, double z)
 /*! Insert a triangle with vertex indices (v1,v2,v3) into \a mesh  */
 void insertTriangle(UMesh* mesh, int v1, int v2, int v3)
 {
-  axom::mint::IndexType indices[3] = {v1,v2,v3};
+  axom::IndexType indices[3] = {v1,v2,v3};
   mesh->appendCell(indices);
 }
 

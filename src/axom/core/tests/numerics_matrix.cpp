@@ -23,6 +23,7 @@
 #include <sstream> // for std::ostringstream
 
 namespace numerics = axom::numerics;
+using IndexType = axom::IndexType;
 
 //-----------------------------------------------------------------------------
 // HELPER ROUTINES
@@ -374,7 +375,6 @@ TEST( numerics_matrix, getRow )
 
   int row_sums[]  = { 0, 0, 0 };
 
-  typedef numerics::Matrix< int >::IndexType IndexType;
   for ( IndexType i=0 ; i < N ; ++i )
   {
     A.fillRow( i, i+1 );
@@ -426,8 +426,6 @@ TEST( numerics_matrix, getDiagonal )
 
   EXPECT_EQ( EXPECTED_SUM, sum );
   delete [] diagonal;
-
-  typedef numerics::Matrix< int >::IndexType IndexType;
 
   IndexType p    = 0;
   IndexType size = 0;
@@ -544,8 +542,6 @@ TEST( numerics_matrix, swapRows )
 
   A.swapRows( 0, 1 );
 
-  typedef numerics::Matrix< int >::IndexType IndexType;
-
   for ( IndexType i=0 ; i < N ; ++i )
   {
     int* column = A.getColumn( i );
@@ -562,8 +558,6 @@ TEST( numerics_matrix, swapColumns )
 {
   const int M=3;
   const int N=4;
-
-  typedef numerics::Matrix< int >::IndexType IndexType;
 
   // setup a test matrix
   numerics::Matrix< int > A( M,N );

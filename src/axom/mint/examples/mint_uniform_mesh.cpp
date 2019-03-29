@@ -29,7 +29,7 @@
 
 // namespace aliases
 namespace mint  = axom::mint;
-using IndexType = mint::IndexType;
+using IndexType = axom::IndexType;
 
 //------------------------------------------------------------------------------
 double himmelblaus_function( double x, double y )

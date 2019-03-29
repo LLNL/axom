@@ -30,6 +30,7 @@
 // namespace aliases
 namespace numerics  = axom::numerics;
 namespace utilities = axom::utilities;
+using IndexType = axom::IndexType;
 
 //------------------------------------------------------------------------------
 // HELPER METHODS
@@ -51,7 +52,6 @@ namespace
 template < typename T >
 void random_symmetric_matrix_init( numerics::Matrix< T >& A, T lo, T hi )
 {
-  using IndexType = typename numerics::Matrix< T >::IndexType;
   EXPECT_TRUE( A.isSquare() );
 
   constexpr unsigned int seed = 123456789;
@@ -95,7 +95,6 @@ bool check_eigen_decomposition( const numerics::Matrix< T >& A,
   EXPECT_TRUE( lambdas != nullptr );
 
   bool status = true;
-  using IndexType = typename numerics::Matrix< T >::IndexType;
   constexpr double TOL = 1.e-12;
 
   const int N = A.getNumRows();

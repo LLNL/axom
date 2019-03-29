@@ -37,6 +37,7 @@ namespace sidre = axom::sidre;
 // C/C++ includes
 #include <cmath>                              // for exp
 using namespace axom::mint;
+using IndexType = axom::IndexType;
 
 // globals
 const char* IGNORE_OUTPUT = ".*";

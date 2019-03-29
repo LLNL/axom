@@ -345,7 +345,7 @@ TEST( mint_mesh_blueprint, get_set_uniform_mesh )
   constexpr double DX            = 0.5;
   const double X0[]              = { MAGIC_VAL, MAGIC_VAL, MAGIC_VAL };
   const double H[]               = { DX, DX, DX };
-  const mint::IndexType ext[]    = { 10, 11, 12 };
+  const axom::IndexType ext[]    = { 10, 11, 12 };
   const mint::int64 global_ext[] = { 0, 10, 0, 11, 0, 12 };
 
   for ( int idim=1 ; idim <= NDIMS ; ++idim )

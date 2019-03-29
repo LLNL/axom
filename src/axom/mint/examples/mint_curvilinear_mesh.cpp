@@ -27,7 +27,7 @@ namespace mint      = axom::mint;
 namespace utilities = axom::utilities;
 namespace policy    = mint::policy;
 namespace xargs     = mint::xargs;
-using IndexType     = mint::IndexType;
+using IndexType     = axom::IndexType;
 
 constexpr double R  = 2.5;
 constexpr double M  = (2* M_PI) / 50.0;
