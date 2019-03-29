@@ -57,7 +57,8 @@ int PSTLReader::read()
     rc = STLReader::read();
     if ( rc == READER_SUCCESS )
     {
-      MPI_Bcast( &m_num_nodes, 1, MPI_INT, 0, m_comm );
+      MPI_Bcast( &m_num_nodes, 1, axom::mpi_traits< axom::IndexType >::type,
+                 0, m_comm );
       MPI_Bcast( &m_nodes[0], m_num_nodes*3, MPI_DOUBLE, 0, m_comm );
     } // END if
     else
@@ -71,7 +72,9 @@ int PSTLReader::read()
     // Rank 0 broadcasts the number of nodes, a positive integer, if the
     // STL file is read successfully, or send a READER_FAILED flag, indicating
     // that the read was not successful.
-    MPI_Bcast( &m_num_nodes, 1, MPI_INT, 0, m_comm );
+    MPI_Bcast( &m_num_nodes, 1, axom::mpi_traits< axom::IndexType >::type,
+               0, m_comm );
+
     if ( m_num_nodes != READER_FAILED )
     {
       rc = READER_SUCCESS;

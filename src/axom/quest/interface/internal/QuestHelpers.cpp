@@ -15,6 +15,7 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
+#include "axom/core/Types.hpp"
 #include "axom/quest/interface/internal/QuestHelpers.hpp"
 
 // Slic includes
@@ -97,10 +98,12 @@ int read_and_exchange_mesh_metadata( int global_rank_id,
       mesh_metadata[ NUM_NODES ] = READ_FAILED;
       mesh_metadata[ NUM_FACES ] = READ_FAILED;
     }
-    MPI_Bcast( mesh_metadata, 2, MPI_INT, ROOT_RANK, global_comm );
+    MPI_Bcast( mesh_metadata, 2, axom::mpi_traits< axom::IndexType >::type,
+               ROOT_RANK, global_comm );
     break;
   default:
-    MPI_Bcast( mesh_metadata, 2, MPI_INT, ROOT_RANK, global_comm );
+    MPI_Bcast( mesh_metadata, 2, axom::mpi_traits< axom::IndexType >::type,
+               ROOT_RANK, global_comm );
   }
 
   int rc = (mesh_metadata[NUM_NODES]==READ_FAILED) ? READ_FAILED : READ_SUCCESS;
