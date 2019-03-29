@@ -45,5 +45,5 @@ add_executable(example example.cpp)
 target_include_directories(example PRIVATE ${AXOM_INCLUDE_DIRS})
 
 # link to axom targets
-target_link_libraries(example core)
+target_link_libraries(example axom)
 

@@ -257,12 +257,6 @@ macro(axom_install_component)
 
     set(_header_base_dir include/axom/${arg_NAME})
 
-    install(TARGETS              ${arg_NAME}
-            EXPORT               ${arg_NAME}-targets
-            DESTINATION          lib
-            INCLUDES DESTINATION ${_header_base_dir}
-            )
-
     foreach( _file ${arg_HEADERS} )
         get_filename_component( _dir ${_file} DIRECTORY )
         install(FILES ${_file} DESTINATION ${_header_base_dir}/${_dir} )
@@ -273,8 +267,6 @@ macro(axom_install_component)
         # TODO: Remove optional once all components have fortran wrappers
         install(FILES ${_mod} DESTINATION lib/fortran OPTIONAL)
     endif()
-
-    install(EXPORT ${arg_NAME}-targets DESTINATION lib/cmake)
 
 endmacro(axom_install_component)
 

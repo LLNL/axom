@@ -43,6 +43,7 @@ blt_add_library( NAME        lumberjack
                  HEADERS     ${lumberjack_headers}
                  DEPENDS_ON  core mpi
                  FOLDER      axom/lumberjack
+                 OBJECT      TRUE
                  )
 
 axom_write_unified_header(NAME    lumberjack

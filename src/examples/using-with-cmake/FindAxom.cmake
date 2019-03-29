@@ -35,19 +35,16 @@ endif()
 
 set(AXOM_INCLUDE_DIRS ${AXOM_DIR}/include)
 
-# NOTE: This turns on all components of Axom which may not be true for your code
-set(AXOM_LIBRARIES sparsehash fmt core )
-if (ENABLE_MPI)
-    list(APPEND AXOM_LIBRARIES lumberjack)
-endif()
-list(APPEND AXOM_LIBRARIES slic primal mint slam quest sidre)
+# NOTE: This sparsehash and fmt are useful open-source projects that Axom uses
+# internally and we export for other codes use as well
+set(AXOM_LIBRARIES sparsehash fmt axom )
 
-foreach(_component ${AXOM_LIBRARIES})
+foreach(_library ${AXOM_LIBRARIES})
     
-    set(_target_file ${AXOM_DIR}/lib/cmake/${_component}-targets.cmake)
+    set(_target_file ${AXOM_DIR}/lib/cmake/${_library}-targets.cmake)
 
     if(NOT EXISTS ${_target_file})
-        MESSAGE(FATAL_ERROR "Could not find Axom CMake include file (${_target_file})")
+        MESSAGE(FATAL_ERROR "Could not find Axom CMake exported target file (${_target_file})")
     endif()
 
     include(${_target_file})

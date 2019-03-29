@@ -135,6 +135,7 @@ blt_add_library(
     HEADERS    ${mint_headers}
     DEPENDS_ON ${mint_dependencies}
     FOLDER     axom/mint
+    OBJECT     TRUE
    )
 
 axom_write_unified_header(NAME    mint

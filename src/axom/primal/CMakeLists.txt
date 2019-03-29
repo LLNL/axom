@@ -71,6 +71,7 @@ blt_add_library(
     HEADERS               ${primal_headers}
     FOLDER                axom/primal
     DEPENDS_ON            core slic
+    OBJECT                TRUE
     )
 
 axom_write_unified_header(NAME    primal

@@ -144,6 +144,7 @@ blt_add_library( NAME       sidre
                  HEADERS    ${sidre_headers}
                  DEPENDS_ON ${sidre_depends}
                  FOLDER     axom/sidre
+                 OBJECT     TRUE
                 )
 
 axom_write_unified_header(NAME    sidre
