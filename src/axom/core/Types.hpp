@@ -31,6 +31,10 @@
 // C/C++ includes
 #include <cstdint>          // for c++11 fixed with types
 
+#ifdef AXOM_USE_MPI
+#include <mpi.h>            // for MPI types
+#endif
+
 namespace axom
 {
 
@@ -59,6 +63,97 @@ using IndexType = int64;
 #else
 using IndexType = int32;
 #endif
+
+#ifdef AXOM_USE_MPI
+
+/*!
+ * \brief Traits class to map Axom types to their corresponding MPI type.
+ */
+template < typename AxomType >
+struct mpi_traits
+{
+  static const MPI_Datatype type = MPI_DATATYPE_NULL;
+};
+
+/// \name Specialization of mpi_traits
+/// @{
+
+//------------------------------------------------------------------------------
+template < >
+struct mpi_traits < float64 >
+{
+  static const MPI_Datatype type = MPI_DOUBLE;
+};
+
+//------------------------------------------------------------------------------
+template < >
+struct mpi_traits < float32 >
+{
+  static const MPI_Datatype type = MPI_FLOAT;
+};
+
+//------------------------------------------------------------------------------
+template < >
+struct mpi_traits < int8 >
+{
+  static const MPI_Datatype type = MPI_INT8_T;
+};
+
+//------------------------------------------------------------------------------
+template < >
+struct mpi_traits < uint8 >
+{
+  static const MPI_Datatype type = MPI_UINT8_T;
+};
+
+
+//------------------------------------------------------------------------------
+template < >
+struct mpi_traits < int16 >
+{
+  static const MPI_Datatype type = MPI_INT16_T;
+};
+
+//------------------------------------------------------------------------------
+template < >
+struct mpi_traits < uint16 >
+{
+  static const MPI_Datatype type = MPI_UINT16_T;
+};
+
+//------------------------------------------------------------------------------
+template < >
+struct mpi_traits < int32 >
+{
+  static const MPI_Datatype type = MPI_INT32_T;
+};
+
+//------------------------------------------------------------------------------
+template < >
+struct mpi_traits < uint32 >
+{
+  static const MPI_Datatype type = MPI_UINT32_T;
+};
+
+//------------------------------------------------------------------------------
+#ifndef AXOM_NO_INT64_T
+template < >
+struct mpi_traits < int64 >
+{
+  static const MPI_Datatype type = MPI_INT64_T;
+};
+
+//------------------------------------------------------------------------------
+template < >
+struct mpi_traits < uint64 >
+{
+  static const MPI_Datatype type = MPI_UINT64_T;
+};
+#endif /* end AXOM_NO_INT64_T */
+
+/// @}
+
+#endif /* end AXOM_USE_MPI */
 
 } // end namespace axom
 
