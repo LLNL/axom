@@ -182,58 +182,57 @@ void testMortonizer()
 template < int DIM >
 void testIntegralTypes()
 {
-  namespace common = axom::common;
 
   SLIC_INFO("Testing char in " << DIM << "d -- ");
-  testMortonizer< common::int8,common::uint8,DIM >();
-  testMortonizer< common::int8,common::uint16,DIM >();
-  testMortonizer< common::int8,common::uint32,DIM >();
-  testMortonizer< common::int8,common::uint64,DIM >();
+  testMortonizer< axom::int8,axom::uint8,DIM >();
+  testMortonizer< axom::int8,axom::uint16,DIM >();
+  testMortonizer< axom::int8,axom::uint32,DIM >();
+  testMortonizer< axom::int8,axom::uint64,DIM >();
 
   SLIC_INFO("Testing uchar in " << DIM << "d -- ");
-  testMortonizer< common::uint8,common::uint8,DIM >();
-  testMortonizer< common::uint8,common::uint16,DIM >();
-  testMortonizer< common::uint8,common::uint32,DIM >();
-  testMortonizer< common::uint8,common::uint64,DIM >();
+  testMortonizer< axom::uint8,axom::uint8,DIM >();
+  testMortonizer< axom::uint8,axom::uint16,DIM >();
+  testMortonizer< axom::uint8,axom::uint32,DIM >();
+  testMortonizer< axom::uint8,axom::uint64,DIM >();
 
   // --
   SLIC_INFO("Testing short in " << DIM << "d -- ");
-  testMortonizer< common::int16,common::uint8,DIM >();
-  testMortonizer< common::int16,common::uint16,DIM >();
-  testMortonizer< common::int16,common::uint32,DIM >();
-  testMortonizer< common::int16,common::uint64,DIM >();
+  testMortonizer< axom::int16,axom::uint8,DIM >();
+  testMortonizer< axom::int16,axom::uint16,DIM >();
+  testMortonizer< axom::int16,axom::uint32,DIM >();
+  testMortonizer< axom::int16,axom::uint64,DIM >();
 
   SLIC_INFO("Testing ushort in " << DIM << "d -- ");
-  testMortonizer< common::uint16,common::uint8,DIM >();
-  testMortonizer< common::uint16,common::uint16,DIM >();
-  testMortonizer< common::uint16,common::uint32,DIM >();
-  testMortonizer< common::uint16,common::uint64,DIM >();
+  testMortonizer< axom::uint16,axom::uint8,DIM >();
+  testMortonizer< axom::uint16,axom::uint16,DIM >();
+  testMortonizer< axom::uint16,axom::uint32,DIM >();
+  testMortonizer< axom::uint16,axom::uint64,DIM >();
 
   // --
   SLIC_INFO("Testing int in " << DIM << "d -- ");
-  testMortonizer< common::int32,common::uint8,DIM >();
-  testMortonizer< common::int32,common::uint16,DIM >();
-  testMortonizer< common::int32,common::uint32,DIM >();
-  testMortonizer< common::int32,common::uint64,DIM >();
+  testMortonizer< axom::int32,axom::uint8,DIM >();
+  testMortonizer< axom::int32,axom::uint16,DIM >();
+  testMortonizer< axom::int32,axom::uint32,DIM >();
+  testMortonizer< axom::int32,axom::uint64,DIM >();
 
   SLIC_INFO("Testing uint in " << DIM << "d -- ");
-  testMortonizer< common::uint32,common::uint8,DIM >();
-  testMortonizer< common::uint32,common::uint16,DIM >();
-  testMortonizer< common::uint32,common::uint32,DIM >();
-  testMortonizer< common::uint32,common::uint64,DIM >();
+  testMortonizer< axom::uint32,axom::uint8,DIM >();
+  testMortonizer< axom::uint32,axom::uint16,DIM >();
+  testMortonizer< axom::uint32,axom::uint32,DIM >();
+  testMortonizer< axom::uint32,axom::uint64,DIM >();
 
   // --
   SLIC_INFO("Testing long long in " << DIM << "d -- ");
-  testMortonizer< common::int64,common::uint8,DIM >();
-  testMortonizer< common::int64,common::uint16,DIM >();
-  testMortonizer< common::int64,common::uint32,DIM >();
-  testMortonizer< common::int64,common::uint64,DIM >();
+  testMortonizer< axom::int64,axom::uint8,DIM >();
+  testMortonizer< axom::int64,axom::uint16,DIM >();
+  testMortonizer< axom::int64,axom::uint32,DIM >();
+  testMortonizer< axom::int64,axom::uint64,DIM >();
 
   SLIC_INFO("Testing ull in " << DIM << "d -- ");
-  testMortonizer< common::uint64,common::uint8,DIM >();
-  testMortonizer< common::uint64,common::uint16,DIM >();
-  testMortonizer< common::uint64,common::uint32,DIM >();
-  testMortonizer< common::uint64,common::uint64,DIM >();
+  testMortonizer< axom::uint64,axom::uint8,DIM >();
+  testMortonizer< axom::uint64,axom::uint16,DIM >();
+  testMortonizer< axom::uint64,axom::uint32,DIM >();
+  testMortonizer< axom::uint64,axom::uint64,DIM >();
 }
 
 TEST( primal_morton, test_integral_types_2D)

@@ -1192,22 +1192,22 @@ TEST(sidre_view,view_offset_and_stride)
 
   typedef std::vector<View*> ViewVec;
   ViewVec views;
-  axom::common::uint8 ui8  = 3;
-  axom::common::uint16 ui16 = 4;
-  axom::common::uint32 ui32 = 5;
+  axom::uint8 ui8  = 3;
+  axom::uint16 ui16 = 4;
+  axom::uint32 ui32 = 5;
 #ifndef AXOM_NO_INT46_T
-  axom::common::uint64 ui64 = 6;
+  axom::uint64 ui64 = 6;
 #endif
 
-  axom::common::int8 i8   = -3;
-  axom::common::int16 i16   = -4;
-  axom::common::int32 i32   = -5;
+  axom::int8 i8   = -3;
+  axom::int16 i16   = -4;
+  axom::int32 i32   = -5;
 #ifndef AXOM_NO_INT46_T
-  axom::common::int64 i64   = -6;
+  axom::int64 i64   = -6;
 #endif
 
-  axom::common::float32 f32 = 7.7f;
-  axom::common::float64 f64 = 8.8;
+  axom::float32 f32 = 7.7f;
+  axom::float64 f64 = 8.8;
 
 
   views.push_back( othersGroup->createView("key_empty"));

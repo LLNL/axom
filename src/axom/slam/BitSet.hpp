@@ -123,7 +123,7 @@ class BitSet
 {
 public:
   typedef int Index;
-  typedef axom::common::uint64 Word;
+  typedef axom::uint64 Word;
 
   // Use vector for initial implementation -- TODO: update using a policy
   typedef std::vector<Word> ArrayType;

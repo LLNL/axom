@@ -29,7 +29,6 @@
 
 // namespace aliases
 namespace mint   = axom::mint;
-namespace common = axom::common;
 
 //------------------------------------------------------------------------------
 // HELPER METHODS
@@ -80,8 +79,8 @@ TEST( mint_mesh_field, instantiate )
 {
   check_field_instantiation< double >( );
   check_field_instantiation< float >( );
-  check_field_instantiation< common::int32 >( );
-  check_field_instantiation< common::int64 >( );
+  check_field_instantiation< axom::int32 >( );
+  check_field_instantiation< axom::int64 >( );
 }
 
 //------------------------------------------------------------------------------

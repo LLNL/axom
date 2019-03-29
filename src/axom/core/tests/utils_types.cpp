@@ -26,8 +26,8 @@
 
 TEST(core_types,check_types_8)
 {
-  typedef axom::common::int8 SignedType;
-  typedef axom::common::uint8 UnsigneType;
+  typedef axom::int8 SignedType;
+  typedef axom::uint8 UnsigneType;
   static const std::size_t EXP_BYTES = 1;
 
   EXPECT_TRUE( std::numeric_limits<SignedType>::is_integer);
@@ -48,8 +48,8 @@ TEST(core_types,check_types_8)
 
 TEST(core_types,check_types_16)
 {
-  typedef axom::common::int16 SignedType;
-  typedef axom::common::uint16 UnsigneType;
+  typedef axom::int16 SignedType;
+  typedef axom::uint16 UnsigneType;
   static const std::size_t EXP_BYTES = 2;
 
   EXPECT_TRUE( std::numeric_limits<SignedType>::is_integer);
@@ -68,8 +68,8 @@ TEST(core_types,check_types_16)
 
 TEST(core_types,check_types_32)
 {
-  typedef axom::common::int32 SignedType;
-  typedef axom::common::uint32 UnsigneType;
+  typedef axom::int32 SignedType;
+  typedef axom::uint32 UnsigneType;
   static const std::size_t EXP_BYTES = 4;
 
   EXPECT_TRUE( std::numeric_limits<SignedType>::is_integer);
@@ -89,8 +89,8 @@ TEST(core_types,check_types_32)
 TEST(core_types,check_types_64)
 {
 #ifndef AXOM_NO_INT64_T
-  typedef axom::common::int64 SignedType;
-  typedef axom::common::uint64 UnsigneType;
+  typedef axom::int64 SignedType;
+  typedef axom::uint64 UnsigneType;
   static const std::size_t EXP_BYTES = 8;
 
   EXPECT_TRUE( std::numeric_limits<SignedType>::is_integer);
@@ -116,8 +116,8 @@ TEST(core_types,check_types_64)
 
 TEST(core_types,check_types_floating)
 {
-  typedef axom::common::float32 float32;
-  typedef axom::common::float64 float64;
+  typedef axom::float32 float32;
+  typedef axom::float64 float64;
   static const std::size_t EXP_FLOAT32_BYTES = 4;
   static const std::size_t EXP_FLOAT64_BYTES = 8;
 

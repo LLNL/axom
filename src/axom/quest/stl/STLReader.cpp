@@ -84,17 +84,17 @@ bool STLReader::isAsciiFormat() const
 
   // Find out the file size
   ifs.seekg(0, ifs.end);
-  common::int32 fileSize = static_cast< common::int32>(ifs.tellg());
+  axom::int32 fileSize = static_cast< axom::int32>(ifs.tellg());
 
   const int totalHeaderSize =
-    (BINARY_HEADER_SIZE + sizeof( common::int32 ) );
+    (BINARY_HEADER_SIZE + sizeof( axom::int32 ) );
   if(fileSize < totalHeaderSize)
     return true;
 
   // Find the number of triangles (if the file were binary)
   int numTris = 0;
   ifs.seekg(BINARY_HEADER_SIZE, ifs.beg);
-  ifs.read( (char*)&numTris, sizeof( common::int32));
+  ifs.read( (char*)&numTris, sizeof( axom::int32));
 
   if ( !utilities::isLittleEndian() )
   {
@@ -161,13 +161,13 @@ int STLReader::readBinarySTL()
   // A local union data structure for triangles in a binary STL
   union BinarySTLTri
   {
-    common::int8 raw[BINARY_TRI_SIZE];
+    axom::int8 raw[BINARY_TRI_SIZE];
 
     struct
     {
       float normal[3];
       float vert[9];
-      common::uint16 attr;
+      axom::uint16 attr;
     } data;
 
   } tri;
@@ -185,7 +185,7 @@ int STLReader::readBinarySTL()
   ifs.seekg(BINARY_HEADER_SIZE);
 
   // read the num faces and reserve room for the vertex positions
-  ifs.read( (char*)&m_num_faces, sizeof( common::int32 ) );
+  ifs.read( (char*)&m_num_faces, sizeof( axom::int32 ) );
 
   if ( !isLittleEndian )
   {

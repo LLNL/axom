@@ -41,7 +41,7 @@ namespace internal
 template<typename T> struct BitTraits;
 
 template<>
-struct BitTraits<axom::common::uint64>
+struct BitTraits<axom::uint64>
 {
   enum
   {
@@ -52,7 +52,7 @@ struct BitTraits<axom::common::uint64>
 };
 
 template<>
-struct BitTraits<axom::common::uint32>
+struct BitTraits<axom::uint32>
 {
   enum
   {
@@ -63,7 +63,7 @@ struct BitTraits<axom::common::uint32>
 };
 
 template<>
-struct BitTraits<axom::common::uint16>
+struct BitTraits<axom::uint16>
 {
   enum
   {
@@ -74,7 +74,7 @@ struct BitTraits<axom::common::uint16>
 };
 
 template<>
-struct BitTraits<axom::common::uint8>
+struct BitTraits<axom::uint8>
 {
   enum
   {
@@ -92,16 +92,16 @@ struct BitTraits<axom::common::uint8>
  * starting with the least significant bit, or 64 if \a word == 0.
  */
 /* *INDENT-OFF* */
-inline int trailingZeros(axom::common::uint64 word)
+inline int trailingZeros(axom::uint64 word)
 {
   // Explicit implementation adapted from bit twiddling hacks
   // https://graphics.stanford.edu/~seander/bithacks.html#ZerosOnRightParallel
   // and modified for 64 bits:
 
   // cnt tracks the number of zero bits on the right of the first set bit
-  int cnt = BitTraits<axom::common::uint64>::BITS_PER_WORD;
+  int cnt = BitTraits<axom::uint64>::BITS_PER_WORD;
 
-  word &= -static_cast<axom::common::int64>(word);
+  word &= -static_cast<axom::int64>(word);
   if (word)                      { cnt--;     }
   if (word & 0x00000000FFFFFFFF) { cnt -= 32; }
   if (word & 0x0000FFFF0000FFFF) { cnt -= 16; }
@@ -115,12 +115,12 @@ inline int trailingZeros(axom::common::uint64 word)
 /* *INDENT-ON* */
 
 /** Counts the number of set bits in \a word */
-inline int popCount(axom::common::uint64 word)
+inline int popCount(axom::uint64 word)
 {
   // 64 bit popcount implementation from:
   // http://chessprogramming.wikispaces.com/Population+Count#SWARPopcount
 
-  typedef axom::common::uint64 Word;
+  typedef axom::uint64 Word;
 
   const Word masks[] = {
     0x5555555555555555,                  //  0 --  -1/3

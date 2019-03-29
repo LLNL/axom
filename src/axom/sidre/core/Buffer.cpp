@@ -26,7 +26,7 @@
 #include "Group.hpp"
 #include "View.hpp"
 
-#include "axom/core/Types.hpp" // for common::int8
+#include "axom/core/Types.hpp" // for axom types
 
 namespace axom
 {
@@ -424,7 +424,7 @@ void Buffer::detachFromAllViews()
  */
 void* Buffer::allocateBytes(IndexType num_bytes)
 {
-  return new(std::nothrow) common::int8[num_bytes];
+  return new(std::nothrow) axom::int8[num_bytes];
 }
 
 /*
@@ -449,7 +449,7 @@ void Buffer::copyBytes( const void* src, void* dst, IndexType num_bytes )
 void Buffer::releaseBytes( void* ptr)
 {
   // Pointer type here should always match new call in allocateBytes.
-  delete[] static_cast<common::int8*>(ptr);
+  delete[] static_cast<axom::int8*>(ptr);
 }
 
 

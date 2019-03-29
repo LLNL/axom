@@ -226,8 +226,8 @@ inline bool isLittleEndian()
 
   const union
   {
-    axom::common::uint8 raw[4];
-    axom::common::uint32 value;
+    axom::uint8 raw[4];
+    axom::uint32 value;
   }  host_order = {
     { 0, 1, 2, 3 }
   };
@@ -257,11 +257,11 @@ T swapEndian(T val)
 
   union
   {
-    axom::common::uint8 raw[ NBYTES ];
+    axom::uint8 raw[ NBYTES ];
     T val;
   } swp;
 
-  axom::common::uint8* src = reinterpret_cast<axom::common::uint8*>(&val);
+  axom::uint8* src = reinterpret_cast<axom::uint8*>(&val);
 
   // Reverse the bytes
   for(int i=0 ; i < NBYTES ; ++i)

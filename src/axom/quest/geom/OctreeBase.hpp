@@ -481,13 +481,13 @@ private:
     MAX_SPARSE64_LEV = 64 / DIM
   };
 
-  typedef DenseOctreeLevel<DIM, BlockDataType, axom::common::uint16>
+  typedef DenseOctreeLevel<DIM, BlockDataType, axom::uint16>
     DenseOctLevType;
-  typedef SparseOctreeLevel<DIM, BlockDataType,axom::common::uint16>
+  typedef SparseOctreeLevel<DIM, BlockDataType,axom::uint16>
     Sparse16OctLevType;
-  typedef SparseOctreeLevel<DIM, BlockDataType,axom::common::uint32>
+  typedef SparseOctreeLevel<DIM, BlockDataType,axom::uint32>
     Sparse32OctLevType;
-  typedef SparseOctreeLevel<DIM, BlockDataType,axom::common::uint64>
+  typedef SparseOctreeLevel<DIM, BlockDataType,axom::uint64>
     Sparse64OctLevType;
   typedef SparseOctreeLevel<DIM, BlockDataType,GridPt>
     SparsePtOctLevType;
@@ -519,7 +519,6 @@ public:
   {
     for(int i=0 ; i< maxLeafLevel() ; ++i)
     {
-      namespace common = axom::common;
 
       // Use DenseOctreeLevel on first few levels to reduce allocations
       // and fragmentation Use Morton-based SparseOctreeLevel
