@@ -151,7 +151,7 @@ template<int DIM, typename BlockDataType>
 class OctreeBase
 {
 public:
-  typedef int CoordType;
+  typedef axom::IndexType CoordType;
   typedef primal::Point<CoordType,DIM> GridPt;
   typedef primal::Vector<CoordType,DIM> GridVec;
 
