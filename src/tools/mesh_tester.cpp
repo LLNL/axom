@@ -80,6 +80,7 @@ struct Input
   int resolution;
   double weldThreshold;
   bool skipWeld;
+  bool markBoundaries;
   InputStatus errorCode;
 
   Input() :
@@ -88,6 +89,7 @@ struct Input
     resolution(0),
     weldThreshold(1e-6),
     skipWeld(false),
+    markBoundaries(false),
     errorCode(SUCCESS)
   { };
 
@@ -113,6 +115,7 @@ struct Input
        "\n                   Default: eps = 1e-6"
        "\n  --skipWeld       Don't weld vertices (useful for testing,"
        "\n                   not helpful otherwise)."
+       "\n  --markBoundaries Marks boundary cells on the welded mesh. (Disabled by default)."
       << std::endl << std::endl;
   };
 
@@ -145,6 +148,7 @@ Input::Input(int argc, char** argv) :
   resolution(0),
   weldThreshold(1e-6),
   skipWeld(false),
+  markBoundaries(false),
   errorCode(SUCCESS)
 {
   if (argc < 2)
@@ -176,6 +180,10 @@ Input::Input(int argc, char** argv) :
       else if (arg == "--skipWeld")
       {
         skipWeld = true;
+      }
+      else if ( arg == "--markBoundaries" )
+      {
+        markBoundaries = true;
       }
       else // help or unknown parameter
       {
@@ -485,8 +493,6 @@ int main( int argc, char** argv )
     SLIC_INFO("After welding, mesh has "
               << surface_mesh->getNumberOfNodes() << " vertices and "
               <<  surface_mesh->getNumberOfCells() << " triangles.");
-
-    mint::write_vtk(surface_mesh, params.weldMeshName() );
   }
 
   // Detect collisions
@@ -542,7 +548,7 @@ int main( int argc, char** argv )
     SLIC_INFO("Checking for watertight mesh.");
     axom::utilities::Timer timer2(true);
     quest::WatertightStatus wtstat =
-      quest::isSurfaceMeshWatertight(surface_mesh);
+      quest::isSurfaceMeshWatertight(surface_mesh, params.markBoundaries );
     timer2.stop();
     switch (wtstat)
     {
@@ -560,6 +566,8 @@ int main( int argc, char** argv )
     }
     SLIC_INFO("Testing for watertightness took "
               << timer2.elapsedTimeInSec() << " seconds.");
+
+    mint::write_vtk(surface_mesh, params.weldMeshName() );
   }
 
   // Delete the mesh
