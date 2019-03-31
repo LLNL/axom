@@ -365,6 +365,10 @@ TEST( quest_mesh_tester, surfacemesh_self_intersection_ondisk )
 
 TEST( quest_mesh_tester, surfacemesh_watertight_intrinsic )
 {
+  constexpr int ON_BOUNDARY = 1;
+  constexpr int INTERNAL    = 0;
+
+  constexpr bool MARK_BOUNDARIES = true;
   UMesh* surface_mesh = nullptr;
 
   {
@@ -373,6 +377,27 @@ TEST( quest_mesh_tester, surfacemesh_watertight_intrinsic )
       static_cast<UMesh*>(axom::quest::utilities::make_tetrahedron_mesh());
     EXPECT_EQ(axom::quest::WatertightStatus::WATERTIGHT,
               axom::quest::isSurfaceMeshWatertight(surface_mesh));
+    EXPECT_FALSE(surface_mesh->hasField("boundary",axom::mint::CELL_CENTERED));
+    delete surface_mesh;
+  }
+
+  {
+    SCOPED_TRACE("Closed tetrahedron w/ marked boundaries");
+    surface_mesh =
+      static_cast<UMesh*>(axom::quest::utilities::make_tetrahedron_mesh());
+    EXPECT_EQ(axom::quest::WatertightStatus::WATERTIGHT,
+           axom::quest::isSurfaceMeshWatertight(surface_mesh,MARK_BOUNDARIES) );
+    EXPECT_TRUE(surface_mesh->hasField("boundary", axom::mint::CELL_CENTERED));
+
+    // check boundary flag
+    int* boundary =
+      surface_mesh->getFieldPtr< int >( "boundary", axom::mint::CELL_CENTERED );
+    const axom::IndexType numCells = surface_mesh->getNumberOfCells();
+    for ( axom::IndexType icell=0; icell < numCells; ++icell )
+    {
+      EXPECT_TRUE( boundary[ icell ] == INTERNAL );
+    } // END for all cells
+
     delete surface_mesh;
   }
 
@@ -382,6 +407,30 @@ TEST( quest_mesh_tester, surfacemesh_watertight_intrinsic )
       static_cast<UMesh*>(axom::quest::utilities::make_crackedtet_mesh());
     EXPECT_EQ(axom::quest::WatertightStatus::NOT_WATERTIGHT,
               axom::quest::isSurfaceMeshWatertight(surface_mesh));
+    EXPECT_FALSE(surface_mesh->hasField("boundary",axom::mint::CELL_CENTERED));
+
+    delete surface_mesh;
+  }
+
+  {
+    SCOPED_TRACE("Cracked tetrahedron w/ marked boundaries");
+    surface_mesh =
+      static_cast<UMesh*>(axom::quest::utilities::make_crackedtet_mesh());
+    EXPECT_EQ(axom::quest::WatertightStatus::NOT_WATERTIGHT,
+           axom::quest::isSurfaceMeshWatertight(surface_mesh,MARK_BOUNDARIES) );
+    EXPECT_TRUE(surface_mesh->hasField("boundary", axom::mint::CELL_CENTERED));
+
+    // check boundary flag
+    int* boundary =
+      surface_mesh->getFieldPtr< int >( "boundary", axom::mint::CELL_CENTERED );
+
+    const axom::IndexType numCells = surface_mesh->getNumberOfCells();
+    EXPECT_EQ( numCells, 4 );
+    EXPECT_EQ( boundary[ 0 ], ON_BOUNDARY );
+    EXPECT_EQ( boundary[ 1 ], ON_BOUNDARY );
+    EXPECT_EQ( boundary[ 2 ], ON_BOUNDARY );
+    EXPECT_EQ( boundary[ 3 ], INTERNAL );
+
     delete surface_mesh;
   }
 
@@ -391,6 +440,29 @@ TEST( quest_mesh_tester, surfacemesh_watertight_intrinsic )
       static_cast<UMesh*>(axom::quest::utilities::make_cavedtet_mesh());
     EXPECT_EQ(axom::quest::WatertightStatus::NOT_WATERTIGHT,
               axom::quest::isSurfaceMeshWatertight(surface_mesh));
+    EXPECT_FALSE(surface_mesh->hasField("boundary",axom::mint::CELL_CENTERED));
+    delete surface_mesh;
+  }
+
+  {
+    SCOPED_TRACE("Caved-in tetrahedron w/ marked boundaries");
+    surface_mesh =
+      static_cast<UMesh*>(axom::quest::utilities::make_cavedtet_mesh());
+    EXPECT_EQ(axom::quest::WatertightStatus::NOT_WATERTIGHT,
+           axom::quest::isSurfaceMeshWatertight(surface_mesh,MARK_BOUNDARIES) );
+    EXPECT_TRUE(surface_mesh->hasField("boundary",axom::mint::CELL_CENTERED));
+
+    // check boundary flag
+    int* boundary =
+      surface_mesh->getFieldPtr< int >( "boundary", axom::mint::CELL_CENTERED );
+
+    const axom::IndexType numCells = surface_mesh->getNumberOfCells();
+    EXPECT_EQ( numCells, 4 );
+    EXPECT_EQ( boundary[ 0 ], ON_BOUNDARY );
+    EXPECT_EQ( boundary[ 1 ], ON_BOUNDARY );
+    EXPECT_EQ( boundary[ 2 ], ON_BOUNDARY );
+    EXPECT_EQ( boundary[ 3 ], INTERNAL );
+
     delete surface_mesh;
   }
 
@@ -399,7 +471,9 @@ TEST( quest_mesh_tester, surfacemesh_watertight_intrinsic )
     surface_mesh =
       static_cast<UMesh*>(axom::quest::utilities::make_degen_cavedtet_mesh());
     EXPECT_EQ(axom::quest::WatertightStatus::CHECK_FAILED,
-              axom::quest::isSurfaceMeshWatertight(surface_mesh));
+              axom::quest::isSurfaceMeshWatertight(surface_mesh) );
+    EXPECT_FALSE(surface_mesh->hasField("boundary", axom::mint::CELL_CENTERED));
+
     delete surface_mesh;
   }
 }

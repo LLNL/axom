@@ -220,7 +220,8 @@ void findTriMeshIntersections(
 
 
 /* Check a surface mesh for holes using its face relation. */
-WatertightStatus isSurfaceMeshWatertight(UMesh* surface_mesh)
+WatertightStatus isSurfaceMeshWatertight( UMesh* surface_mesh,
+                                          bool mark_boundaries )
 {
   // Make sure the mesh is reasonable
   SLIC_ASSERT_MSG(surface_mesh != nullptr,
@@ -237,18 +238,74 @@ WatertightStatus isSurfaceMeshWatertight(UMesh* surface_mesh)
   WatertightStatus retval = WatertightStatus::WATERTIGHT;
   IndexType faceCount = surface_mesh->getNumberOfFaces();
 
-  IndexType c1, c2;
-  for (IndexType faceIdx = 0 ;
-       faceIdx < faceCount && retval == WatertightStatus::WATERTIGHT ;
-       ++faceIdx)
+  if ( !mark_boundaries )
   {
-    surface_mesh->getFaceCellIDs(faceIdx, c1, c2);
-    if (c1 == (IndexType)mint::UNDEFINED_CELL ||
-        c2 == (IndexType)mint::UNDEFINED_CELL)
+    IndexType c1, c2;
+    for (IndexType faceIdx = 0 ;
+         faceIdx < faceCount && retval == WatertightStatus::WATERTIGHT ;
+         ++faceIdx)
     {
-      retval = WatertightStatus::NOT_WATERTIGHT;
+      surface_mesh->getFaceCellIDs(faceIdx, c1, c2);
+      SLIC_ASSERT( c1 != (IndexType)mint::UNDEFINED_CELL );
+      if ( c2 == (IndexType)mint::UNDEFINED_CELL)
+      {
+        retval = WatertightStatus::NOT_WATERTIGHT;
+      }
     }
+
   }
+  else
+  {
+    constexpr int ON_BOUNDARY = 1;
+    constexpr int INTERNAL    = 0;
+
+    // Create fields to store boundary
+    int* bndry_face =
+        surface_mesh->createField< int >( "bndry_face", mint::FACE_CENTERED );
+    int* boundary =
+        surface_mesh->createField< int >( "boundary", mint::CELL_CENTERED );
+
+    // Mark boundary faces
+    const IndexType numFaces = surface_mesh->getNumberOfFaces();
+    for ( IndexType iface=0; iface < numFaces; ++iface )
+    {
+      IndexType c1, c2;
+      surface_mesh->getFaceCellIDs( iface, c1, c2 );
+      SLIC_ASSERT( c1 != static_cast< IndexType >( mint::UNDEFINED_CELL ) );
+
+      if ( c2 == static_cast< IndexType >( mint::UNDEFINED_CELL ) )
+      {
+        bndry_face[ iface ] = ON_BOUNDARY;
+        retval = WatertightStatus::NOT_WATERTIGHT;
+      }
+      else
+      {
+        bndry_face[ iface ] = INTERNAL;
+      }
+    } // END for all faces
+
+    // Mark boundary cells
+    const IndexType numCells  = surface_mesh->getNumberOfCells();
+    for ( IndexType icell=0; icell < numCells; ++icell )
+    {
+      // NOTE: this check currently assumes triangles
+      SLIC_ASSERT( surface_mesh->getNumberOfCellFaces( icell ) == 3 );
+      const IndexType* faceids = surface_mesh->getCellFaceIDs( icell );
+
+      if ( ( bndry_face[ faceids[0] ] == ON_BOUNDARY ) ||
+           ( bndry_face[ faceids[1] ] == ON_BOUNDARY ) ||
+           ( bndry_face[ faceids[2] ] == ON_BOUNDARY ) )
+      {
+        boundary[ icell ] = ON_BOUNDARY;
+      }
+      else
+      {
+        boundary[ icell ] = INTERNAL;
+      }
+
+    } // END for all cells
+
+  } // END else mark_boundaries
 
   return retval;
 }
