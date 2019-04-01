@@ -368,7 +368,6 @@ TEST( quest_mesh_tester, surfacemesh_watertight_intrinsic )
   constexpr int ON_BOUNDARY = 1;
   constexpr int INTERNAL    = 0;
 
-  constexpr bool MARK_BOUNDARIES = true;
   UMesh* surface_mesh = nullptr;
 
   {
@@ -376,17 +375,7 @@ TEST( quest_mesh_tester, surfacemesh_watertight_intrinsic )
     surface_mesh =
       static_cast<UMesh*>(axom::quest::utilities::make_tetrahedron_mesh());
     EXPECT_EQ(axom::quest::WatertightStatus::WATERTIGHT,
-              axom::quest::isSurfaceMeshWatertight(surface_mesh));
-    EXPECT_FALSE(surface_mesh->hasField("boundary",axom::mint::CELL_CENTERED));
-    delete surface_mesh;
-  }
-
-  {
-    SCOPED_TRACE("Closed tetrahedron w/ marked boundaries");
-    surface_mesh =
-      static_cast<UMesh*>(axom::quest::utilities::make_tetrahedron_mesh());
-    EXPECT_EQ(axom::quest::WatertightStatus::WATERTIGHT,
-           axom::quest::isSurfaceMeshWatertight(surface_mesh,MARK_BOUNDARIES) );
+           axom::quest::isSurfaceMeshWatertight( surface_mesh ) );
     EXPECT_TRUE(surface_mesh->hasField("boundary", axom::mint::CELL_CENTERED));
 
     // check boundary flag
@@ -406,18 +395,7 @@ TEST( quest_mesh_tester, surfacemesh_watertight_intrinsic )
     surface_mesh =
       static_cast<UMesh*>(axom::quest::utilities::make_crackedtet_mesh());
     EXPECT_EQ(axom::quest::WatertightStatus::NOT_WATERTIGHT,
-              axom::quest::isSurfaceMeshWatertight(surface_mesh));
-    EXPECT_FALSE(surface_mesh->hasField("boundary",axom::mint::CELL_CENTERED));
-
-    delete surface_mesh;
-  }
-
-  {
-    SCOPED_TRACE("Cracked tetrahedron w/ marked boundaries");
-    surface_mesh =
-      static_cast<UMesh*>(axom::quest::utilities::make_crackedtet_mesh());
-    EXPECT_EQ(axom::quest::WatertightStatus::NOT_WATERTIGHT,
-           axom::quest::isSurfaceMeshWatertight(surface_mesh,MARK_BOUNDARIES) );
+           axom::quest::isSurfaceMeshWatertight( surface_mesh ) );
     EXPECT_TRUE(surface_mesh->hasField("boundary", axom::mint::CELL_CENTERED));
 
     // check boundary flag
@@ -439,17 +417,7 @@ TEST( quest_mesh_tester, surfacemesh_watertight_intrinsic )
     surface_mesh =
       static_cast<UMesh*>(axom::quest::utilities::make_cavedtet_mesh());
     EXPECT_EQ(axom::quest::WatertightStatus::NOT_WATERTIGHT,
-              axom::quest::isSurfaceMeshWatertight(surface_mesh));
-    EXPECT_FALSE(surface_mesh->hasField("boundary",axom::mint::CELL_CENTERED));
-    delete surface_mesh;
-  }
-
-  {
-    SCOPED_TRACE("Caved-in tetrahedron w/ marked boundaries");
-    surface_mesh =
-      static_cast<UMesh*>(axom::quest::utilities::make_cavedtet_mesh());
-    EXPECT_EQ(axom::quest::WatertightStatus::NOT_WATERTIGHT,
-           axom::quest::isSurfaceMeshWatertight(surface_mesh,MARK_BOUNDARIES) );
+           axom::quest::isSurfaceMeshWatertight( surface_mesh ) );
     EXPECT_TRUE(surface_mesh->hasField("boundary",axom::mint::CELL_CENTERED));
 
     // check boundary flag
