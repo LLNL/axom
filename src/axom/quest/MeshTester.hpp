@@ -85,7 +85,7 @@ void findTriMeshIntersections(
  * \returns status If the mesh is watertight, is not watertight, or
  *    if an error occurred (possibly due to non-manifold mesh).
  *
- * \note This method marsk the cells on the boundary by creating a new
+ * \note This method marks the cells on the boundary by creating a new
  *  cell-centered field variable, called "boundary", on the given input mesh.
  *
  * \note This function computes the mesh's cell-face and face-vertex relations.
