@@ -264,6 +264,14 @@ WatertightStatus isSurfaceMeshWatertight( UMesh* surface_mesh )
     }
   } // END for all faces
 
+  if ( retval == WatertightStatus::WATERTIGHT )
+  {
+    /* short-circuit */
+    const IndexType numCells = surface_mesh->getNumberOfCells();
+    std::memset( boundary, INTERNAL, sizeof(int)*numCells );
+    return retval;
+  }
+
   // Mark boundary cells
   const IndexType numCells  = surface_mesh->getNumberOfCells();
   for ( IndexType icell=0; icell < numCells; ++icell )
