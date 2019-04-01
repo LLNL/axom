@@ -81,16 +81,20 @@ void findTriMeshIntersections(
  * \brief Check a surface mesh for holes using its face relation.
  *
  * \param [in] surface_mesh A surface mesh in three dimensions
+ *
  * \returns status If the mesh is watertight, is not watertight, or
  *    if an error occurred (possibly due to non-manifold mesh).
  *
- * This function computes the mesh's cell-face and face-vertex relations.
+ * \note This method marks the cells on the boundary by creating a new
+ *  cell-centered field variable, called "boundary", on the given input mesh.
+ *
+ * \note This function computes the mesh's cell-face and face-vertex relations.
  * For large meshes, this can take a long time.  The relations are used to
  * check for holes, and remain cached with the mesh after this function
  * finishes.
  */
 WatertightStatus isSurfaceMeshWatertight(
-  mint::UnstructuredMesh< mint::SINGLE_SHAPE >* surface_mesh);
+  mint::UnstructuredMesh< mint::SINGLE_SHAPE >* surface_mesh );
 
 
 /*!

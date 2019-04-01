@@ -27,6 +27,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Users can now set the vertex welding threshold parameter in Quest's In/Out query.
   This was previously not exposed to the user. The default value is 1E-9.
 - Unify all Axom component libraries into one library named axom.
+- The routine that checks if a surface mesh is watertight now marks boundary
+  cells. A cell-centered field, named "boundary", is used to mark  boundary cells
+  with a value  of  "1" and "0" otherwise. This facilitates in visually inspecting the
+  surface mesh and identify the problematic regions for the In/Out and SignedDistance
+  queries.
 
 ### Removed
 - Moved mint::Array to axom::Array with sidre storage in sidre::Array;

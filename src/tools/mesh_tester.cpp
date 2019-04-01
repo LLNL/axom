@@ -485,8 +485,6 @@ int main( int argc, char** argv )
     SLIC_INFO("After welding, mesh has "
               << surface_mesh->getNumberOfNodes() << " vertices and "
               <<  surface_mesh->getNumberOfCells() << " triangles.");
-
-    mint::write_vtk(surface_mesh, params.weldMeshName() );
   }
 
   // Detect collisions
@@ -542,7 +540,7 @@ int main( int argc, char** argv )
     SLIC_INFO("Checking for watertight mesh.");
     axom::utilities::Timer timer2(true);
     quest::WatertightStatus wtstat =
-      quest::isSurfaceMeshWatertight(surface_mesh);
+      quest::isSurfaceMeshWatertight( surface_mesh );
     timer2.stop();
     switch (wtstat)
     {
@@ -560,6 +558,8 @@ int main( int argc, char** argv )
     }
     SLIC_INFO("Testing for watertightness took "
               << timer2.elapsedTimeInSec() << " seconds.");
+
+    mint::write_vtk(surface_mesh, params.weldMeshName() );
   }
 
   // Delete the mesh
