@@ -32,6 +32,8 @@
 using MPI_Datatype = int;
 constexpr int MPI_INT8_T   = -1;
 constexpr int MPI_UINT8_T  = -1;
+constexpr int MPI_INT16_T  = -1;
+constexpr int MPI_UINT16_T = -1;
 constexpr int MPI_INT32_T  = -1;
 constexpr int MPI_UINT32_T = -1;
 constexpr int MPI_INT64_T  = -1;
@@ -62,7 +64,7 @@ void check_mpi_type( std::size_t expected_num_bytes,
 
   /* silence compiler warnings */
   static_cast< void >( expected_num_bytes );
-  static_cast< void >( mpi_type );
+  static_cast< void >( expected_mpi_type );
 
 #endif /* AXOM_USE_MPI */
 }
