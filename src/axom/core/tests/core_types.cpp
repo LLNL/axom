@@ -111,7 +111,7 @@ TEST( core_types, check_int8 )
 }
 
 //------------------------------------------------------------------------------
-TEST( core_types, check_unit8 )
+TEST( core_types, check_uint8 )
 {
   constexpr std::size_t EXP_BYTES = 1;
   constexpr int NUM_DIGITS        = 8;
@@ -168,7 +168,7 @@ TEST( core_types, check_uint32 )
 #ifndef AXOM_NO_INT64_T
 
 //------------------------------------------------------------------------------
-TEST( core_types, check_int46 )
+TEST( core_types, check_int64 )
 {
   constexpr std::size_t EXP_BYTES = 8;
   constexpr int NUM_DIGITS        = 63;
@@ -179,7 +179,7 @@ TEST( core_types, check_int46 )
 }
 
 //------------------------------------------------------------------------------
-TEST( core_types, check_uint46 )
+TEST( core_types, check_uint64 )
 {
   constexpr std::size_t EXP_BYTES = 8;
   constexpr int NUM_DIGITS        = 64;
@@ -204,6 +204,33 @@ TEST( core_types, check_float64 )
 }
 
 #endif /* AXOM_NO_INT64_T */
+
+//------------------------------------------------------------------------------
+TEST( core_types, check_indextype )
+{
+  constexpr bool IS_SIGNED = true;
+
+#ifdef AXOM_USE_64BIT_INDEXTYPE
+
+  constexpr bool is_int64 = std::is_same< axom::IndexType, axom::int64 >::value;
+  EXPECT_TRUE( is_int64 );
+
+  constexpr std::size_t EXP_BYTES = 8;
+  constexpr int NUM_DIGITS        = 63;
+  check_integral_type< axom::IndexType >( EXP_BYTES, IS_SIGNED, NUM_DIGITS,
+                                          MPI_INT64_T );
+#else
+
+  constexpr bool is_int32 = std::is_same< axom::IndexType, axom::int32 >::value;
+  EXPECT_TRUE( is_int32 );
+
+  constexpr std::size_t EXP_BYTES = 4;
+  constexpr int NUM_DIGITS        = 31;
+  check_integral_type< axom::IndexType >( EXP_BYTES, IS_SIGNED, NUM_DIGITS,
+                                          MPI_INT32_T );
+
+#endif
+}
 
 //------------------------------------------------------------------------------
 int main(int argc, char* argv[])
