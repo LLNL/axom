@@ -28,7 +28,7 @@ namespace mint
 {
 
 constexpr IndexType USE_DEFAULT = -1;
-using int64 = common::int64;
+using int64 = axom::int64;
 
 } /* end namespace mint */
 } /* end namespace axom */

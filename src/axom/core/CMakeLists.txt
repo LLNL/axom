@@ -22,7 +22,6 @@ set(core_headers
     utilities/Utilities.hpp
     utilities/About.hpp
 
-    detail/cstdint_wrapper.hpp
     detail/ChronoTimer.hpp
     detail/TimeofdayTimer.hpp
     detail/TickCountTimer.hpp

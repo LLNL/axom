@@ -301,7 +301,7 @@ WatertightStatus isSurfaceMeshWatertight( UMesh* surface_mesh )
 void weldTriMeshVertices(UMesh** surface_mesh,double eps)
 {
   // Note: Use 64-bit index to accomodate small values of epsilon
-  using IdxType = common::int64;
+  using IdxType = axom::int64;
   using Lattice3 = primal::RectangularLattice<3, double, IdxType>;
   using GridCell = Lattice3::GridCell;
 

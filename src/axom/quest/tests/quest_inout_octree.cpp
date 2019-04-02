@@ -113,9 +113,9 @@ void queryOctahedronMesh(axom::mint::Mesh*& mesh,
     case 6:  case 7:  case 8:  case 9:      // Test point at triangle centers
     case 10: case 11: case 12: case 13:
     {
-      int tIdx = (i-6);
+      axom::IndexType tIdx = (i-6);
       GridPt vertInds;
-      mesh->getCellNodeIDs(tIdx, vertInds.data());
+      mesh->getCellNodeIDs( tIdx, vertInds.data() );
 
       pt = axom::quest::utilities::getCentroid( getVertex(mesh, vertInds[0]),
                                                 getVertex(mesh, vertInds[1]),

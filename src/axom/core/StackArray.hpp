@@ -20,6 +20,7 @@
 
 #include "axom/config.hpp"                   // for compile-time defines
 #include "axom/core/Macros.hpp"              // for axom macros
+#include "axom/core/Types.hpp"               // for axom types
 
 namespace axom
 {
@@ -46,11 +47,11 @@ struct StackArray
   /// @{
 
   AXOM_HOST_DEVICE
-  T& operator[](int i) noexcept
+  T& operator[](IndexType i) noexcept
   { return m_data[ i ]; }
 
   AXOM_HOST_DEVICE 
-  constexpr const T& operator[](int i) const noexcept
+  constexpr const T& operator[](IndexType i) const noexcept
   { return m_data[i]; }
 
   /// @}

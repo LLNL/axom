@@ -54,28 +54,28 @@ struct field_traits
 
 //------------------------------------------------------------------------------
 template < >
-struct field_traits< float >
+struct field_traits< axom::float32 >
 {
   static constexpr int type() { return FLOAT_FIELD_TYPE; };
 };
 
 //------------------------------------------------------------------------------
 template < >
-struct field_traits< double >
+struct field_traits< axom::float64 >
 {
   static constexpr int type() { return DOUBLE_FIELD_TYPE; };
 };
 
 //------------------------------------------------------------------------------
 template < >
-struct field_traits< common::int32 >
+struct field_traits< axom::int32 >
 {
   static constexpr int type() { return INT32_FIELD_TYPE; };
 };
 
 //------------------------------------------------------------------------------
 template < >
-struct field_traits< common::int64 >
+struct field_traits< axom::int64 >
 {
   static constexpr int type() { return INT64_FIELD_TYPE; };
 };

@@ -29,7 +29,7 @@ using axom::sidre::Group;
 using axom::sidre::DataStore;
 using axom::sidre::IOManager;
 
-using axom::common::int64;
+using axom::int64;
 
 namespace
 {

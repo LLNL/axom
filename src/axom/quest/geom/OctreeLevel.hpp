@@ -76,7 +76,7 @@ class OctreeLevel
 {
 public:
   /** The coordinate type of a block in the octree */
-  typedef int CoordType;
+  typedef axom::IndexType CoordType;
 
   /**
    * \brief A type for the grid points of the octree.

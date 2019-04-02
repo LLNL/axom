@@ -38,9 +38,9 @@ TEST(core_endianness,endianness_16)
 {
   union SixteenBit
   {
-    axom::common::uint8 raw[ 2 ];
-    axom::common::int16 i_val;
-    axom::common::uint16 ui_val;
+    axom::uint8 raw[ 2 ];
+    axom::int16 i_val;
+    axom::uint16 ui_val;
     short short_val;
     unsigned short ushort_val;
   };
@@ -76,9 +76,9 @@ TEST(core_endianness,endianness_16)
 
   // Test int16
   {
-    axom::common::int16 v1 = valOrig.i_val;
-    axom::common::int16 v2 = axom::utilities::swapEndian( v1 );
-    axom::common::int16 v3 = axom::utilities::swapEndian( v2 );
+    axom::int16 v1 = valOrig.i_val;
+    axom::int16 v2 = axom::utilities::swapEndian( v1 );
+    axom::int16 v3 = axom::utilities::swapEndian( v2 );
 
     EXPECT_EQ( valOrig.i_val, v1);
     EXPECT_EQ( valSwap.i_val, v2);
@@ -87,9 +87,9 @@ TEST(core_endianness,endianness_16)
 
   // Test uint16
   {
-    axom::common::uint16 v1 = valOrig.i_val;
-    axom::common::uint16 v2 = axom::utilities::swapEndian( v1 );
-    axom::common::uint16 v3 = axom::utilities::swapEndian( v2 );
+    axom::uint16 v1 = valOrig.i_val;
+    axom::uint16 v2 = axom::utilities::swapEndian( v1 );
+    axom::uint16 v3 = axom::utilities::swapEndian( v2 );
 
     EXPECT_EQ( valOrig.ui_val, v1);
     EXPECT_EQ( valSwap.ui_val, v2);
@@ -103,9 +103,9 @@ TEST(core_endianness,endianness_32)
 {
   union ThirtyTwoBit
   {
-    axom::common::uint8 raw[ 4 ];
-    axom::common::int32 i_val;
-    axom::common::uint32 ui_val;
+    axom::uint8 raw[ 4 ];
+    axom::int32 i_val;
+    axom::uint32 ui_val;
     int int_val;
     unsigned int uint_val;
     float f_val;
@@ -142,9 +142,9 @@ TEST(core_endianness,endianness_32)
 
   // Test int32
   {
-    axom::common::int32 v1 = valOrig.i_val;
-    axom::common::int32 v2 = axom::utilities::swapEndian( v1 );
-    axom::common::int32 v3 = axom::utilities::swapEndian( v2 );
+    axom::int32 v1 = valOrig.i_val;
+    axom::int32 v2 = axom::utilities::swapEndian( v1 );
+    axom::int32 v3 = axom::utilities::swapEndian( v2 );
 
     EXPECT_EQ( valOrig.i_val, v1);
     EXPECT_EQ( valSwap.i_val, v2);
@@ -153,9 +153,9 @@ TEST(core_endianness,endianness_32)
 
   // Test uint32
   {
-    axom::common::uint32 v1 = valOrig.i_val;
-    axom::common::uint32 v2 = axom::utilities::swapEndian( v1 );
-    axom::common::uint32 v3 = axom::utilities::swapEndian( v2 );
+    axom::uint32 v1 = valOrig.i_val;
+    axom::uint32 v2 = axom::utilities::swapEndian( v1 );
+    axom::uint32 v3 = axom::utilities::swapEndian( v2 );
 
     EXPECT_EQ( valOrig.ui_val, v1);
     EXPECT_EQ( valSwap.ui_val, v2);
@@ -180,10 +180,10 @@ TEST(core_endianness,endianness_64)
 {
   union SixtyFourBit
   {
-    axom::common::uint8 raw[ 8 ];
+    axom::uint8 raw[ 8 ];
 #ifndef AXOM_NO_INT64_T
-    axom::common::int64 i_val;
-    axom::common::uint64 ui_val;
+    axom::int64 i_val;
+    axom::uint64 ui_val;
 #endif
     double d_val;
   };
@@ -198,9 +198,9 @@ TEST(core_endianness,endianness_64)
 #ifndef AXOM_NO_INT64_T
   // Test int64
   {
-    axom::common::int64 v1 = valOrig.i_val;
-    axom::common::int64 v2 = axom::utilities::swapEndian( v1 );
-    axom::common::int64 v3 = axom::utilities::swapEndian( v2 );
+    axom::int64 v1 = valOrig.i_val;
+    axom::int64 v2 = axom::utilities::swapEndian( v1 );
+    axom::int64 v3 = axom::utilities::swapEndian( v2 );
 
     EXPECT_EQ( valOrig.i_val, v1);
     EXPECT_EQ( valSwap.i_val, v2);
@@ -209,9 +209,9 @@ TEST(core_endianness,endianness_64)
 
   // Test uint64
   {
-    axom::common::uint64 v1 = valOrig.i_val;
-    axom::common::uint64 v2 = axom::utilities::swapEndian( v1 );
-    axom::common::uint64 v3 = axom::utilities::swapEndian( v2 );
+    axom::uint64 v1 = valOrig.i_val;
+    axom::uint64 v2 = axom::utilities::swapEndian( v1 );
+    axom::uint64 v3 = axom::utilities::swapEndian( v2 );
 
     EXPECT_EQ( valOrig.ui_val, v1);
     EXPECT_EQ( valSwap.ui_val, v2);
@@ -237,15 +237,15 @@ TEST(core_endianness,endianness_64)
 TEST(core_endianness,invalid_byte_width)
 {
   {
-    axom::common::int8 v1 = 5;
-    axom::common::int8 v2 = axom::utilities::swapEndian(v1);
+    axom::int8 v1 = 5;
+    axom::int8 v2 = axom::utilities::swapEndian(v1);
 
     EXPECT_EQ(v1, v2);
   }
 
   {
-    axom::common::uint8 v1 = 5;
-    axom::common::uint8 v2 = axom::utilities::swapEndian(v1);
+    axom::uint8 v1 = 5;
+    axom::uint8 v2 = axom::utilities::swapEndian(v1);
 
     EXPECT_EQ(v1, v2);
   }
@@ -260,8 +260,8 @@ TEST(core_endianness,invalid_non_native_types)
 {
   struct AxomUtilsTestsNonNative
   {
-    axom::common::uint16 a;
-    axom::common::uint16 b;
+    axom::uint16 a;
+    axom::uint16 b;
   };
 
   AxomUtilsTestsNonNative v1;

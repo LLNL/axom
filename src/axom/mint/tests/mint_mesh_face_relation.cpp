@@ -1123,7 +1123,7 @@ bool verifyFaceNodesTypes(int fcount,
  */
 void runMeshFaceTest(internal::MeshFaceTest * t)
 {
-  int facecount = -1;
+  IndexType facecount = -1;
   IndexType * f2c = nullptr;
   IndexType * c2f = nullptr;
   IndexType * c2n = nullptr;

@@ -28,8 +28,8 @@ namespace mint = axom::mint;
 //------------------------------------------------------------------------------
 TEST( mint_mesh_fieldtypes, field_traits )
 {
-  using int32 = axom::common::int32;
-  using int64 = axom::common::int64;
+  using int32 = axom::int32;
+  using int64 = axom::int64;
 
   EXPECT_EQ( mint::field_traits< char >::type(), mint::UNDEFINED_FIELD_TYPE );
   EXPECT_EQ( mint::field_traits< float >::type(), mint::FLOAT_FIELD_TYPE );

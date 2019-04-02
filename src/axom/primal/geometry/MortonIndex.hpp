@@ -54,24 +54,24 @@ template < typename IntegerType >
 struct NumReps {  enum {value = 5}; };
 
 template < >
-struct NumReps< axom::common::int64 >  { enum {value = 5}; };
+struct NumReps< axom::int64 >  { enum {value = 5}; };
 template < >
-struct NumReps< axom::common::uint64 > { enum {value = 5}; };
+struct NumReps< axom::uint64 > { enum {value = 5}; };
 
 template < >
-struct NumReps< axom::common::int32 >  { enum {value = 4}; };
+struct NumReps< axom::int32 >  { enum {value = 4}; };
 template < >
-struct NumReps< axom::common::uint32 > { enum {value = 4}; };
+struct NumReps< axom::uint32 > { enum {value = 4}; };
 
 template < >
-struct NumReps< axom::common::int16 >  { enum {value = 3}; };
+struct NumReps< axom::int16 >  { enum {value = 3}; };
 template < >
-struct NumReps< axom::common::uint16 > { enum {value = 3}; };
+struct NumReps< axom::uint16 > { enum {value = 3}; };
 
 template < >
-struct NumReps< axom::common::int8 >   { enum {value = 2}; };
+struct NumReps< axom::int8 >   { enum {value = 2}; };
 template < >
-struct NumReps< axom::common::uint8 >  { enum {value = 2}; };
+struct NumReps< axom::uint8 >  { enum {value = 2}; };
 }
 
 namespace axom

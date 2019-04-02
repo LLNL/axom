@@ -17,14 +17,14 @@
 #
 
 set(gtest_utils_tests
-   core_memory_management.cpp
    core_array.cpp
+   core_memory_management.cpp
    core_stack_array.cpp
+   core_types.cpp
    
    utils_TaskTimer.cpp
    utils_endianness.cpp
    utils_fileUtilities.cpp
-   utils_types.cpp
    utils_utilities.cpp
    utils_about.cpp
 

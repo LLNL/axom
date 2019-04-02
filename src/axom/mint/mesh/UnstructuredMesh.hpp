@@ -1615,7 +1615,7 @@ public:
       m_face_to_node->resize(0, 0);
     }
 
-    int facecount = 0;
+    IndexType facecount = 0;
     IndexType * f2cdata = nullptr;
     IndexType * c2fdata = nullptr;
     IndexType * c2ndata = nullptr;

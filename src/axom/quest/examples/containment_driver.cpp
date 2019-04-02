@@ -129,7 +129,7 @@ void testIntersectionOnRegularGrid()
       for(int k=0 ; k< 1<<lev ; ++k)
       {
         SpaceOctree::BlockIndex block(
-          axom::primal::Point<int,3>::make_point(i,j,k), lev );
+          axom::primal::Point<axom::IndexType,3>::make_point(i,j,k), lev );
         SpaceOctree::GeometricBoundingBox blockBB = oct.blockBoundingBox(block);
 
         if( axom::primal::intersect( unitTri, blockBB))

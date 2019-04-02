@@ -135,45 +135,45 @@ template<typename T> struct SidreTT
   static const DataTypeId id = NO_TYPE_ID;
 };
 
-template<> struct SidreTT<common::int8>
+template<> struct SidreTT<axom::int8>
 {
   static const DataTypeId id = INT8_ID;
 };
-template<> struct SidreTT<common::int16>
+template<> struct SidreTT<axom::int16>
 {
   static const DataTypeId id = INT16_ID;
 };
-template<> struct SidreTT<common::int32>
+template<> struct SidreTT<axom::int32>
 {
   static const DataTypeId id = INT32_ID;
 };
-template<> struct SidreTT<common::int64>
+template<> struct SidreTT<axom::int64>
 {
   static const DataTypeId id = INT64_ID;
 };
 
-template<> struct SidreTT<common::uint8>
+template<> struct SidreTT<axom::uint8>
 {
   static const DataTypeId id = UINT8_ID;
 };
-template<> struct SidreTT<common::uint16>
+template<> struct SidreTT<axom::uint16>
 {
   static const DataTypeId id = UINT16_ID;
 };
-template<> struct SidreTT<common::uint32>
+template<> struct SidreTT<axom::uint32>
 {
   static const DataTypeId id = UINT32_ID;
 };
-template<> struct SidreTT<common::uint64>
+template<> struct SidreTT<axom::uint64>
 {
   static const DataTypeId id = UINT64_ID;
 };
 
-template<> struct SidreTT<common::float32>
+template<> struct SidreTT<axom::float32>
 {
   static const DataTypeId id = FLOAT32_ID;
 };
-template<> struct SidreTT<common::float64>
+template<> struct SidreTT<axom::float64>
 {
   static const DataTypeId id = FLOAT64_ID;
 };

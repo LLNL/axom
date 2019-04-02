@@ -16,7 +16,7 @@
  */
 
 /*!
- *  \file CommonTypes.hpp
+ *  \file Types.hpp
  *
  *  \brief File exposing some common types used by axom components.
  *
@@ -25,46 +25,135 @@
 #ifndef AXOM_TYPES_HPP_
 #define AXOM_TYPES_HPP_
 
+// Axom includes
+#include "axom/config.hpp"  // for compile time definitions
 
-#include "axom/config.hpp"           // defines AXOM_USE_CXX11
-#include "axom/core/detail/cstdint_wrapper.hpp"  // fixed bitwidth integer types
+// C/C++ includes
+#include <cstdint>          // for c++11 fixed with types
 
-#ifndef AXOM_USE_CXX11
-  #include <cstddef>            // brings in NULL
+#ifdef AXOM_USE_MPI
+#include <mpi.h>            // for MPI types
 #endif
 
 namespace axom
 {
-namespace common
-{
 
-typedef detail::int8_t int8;        /*!< 8-bit signed integer type      */
-typedef detail::uint8_t uint8;      /*!< 8-bit unsigned integer type    */
+using int8  = std::int8_t;      /*!< 8-bit signed integer type      */
+using uint8 = std::uint8_t;     /*!< 8-bit unsigned integer type    */
 
-typedef detail::int16_t int16;      /*!< 16-bit signed integer type     */
-typedef detail::uint16_t uint16;    /*!< 16-bit unsigned integer type   */
+using int16  = std::int16_t;    /*!< 16-bit signed integer type     */
+using uint16 = std::uint16_t;   /*!< 16-bit unsigned integer type   */
 
-typedef detail::int32_t int32;      /*!< 32-bit signed integer type     */
-typedef detail::uint32_t uint32;    /*!< 32-bit unsigned integer type   */
+using int32  = std::int32_t;    /*!< 32-bit signed integer type     */
+using uint32 = std::uint32_t;   /*!< 32-bit unsigned integer type   */
 
 // Note: KW -- We assume that AXOM_NO_INT64_T will be defined
 // on systems/compilers that do not support 64 bit integer types
 #ifndef AXOM_NO_INT64_T
-typedef detail::int64_t int64;      /*!< 64-bit signed integer type     */
-typedef detail::uint64_t uint64;    /*!< 64-bit unsigned integer type   */
+using int64  = std::int64_t;    /*!< 64-bit signed integer type     */
+using uint64 = std::uint64_t;   /*!< 64-bit unsigned integer type   */
 #endif
 
-typedef float float32;
-typedef double float64;
+using float32 = float;
+using float64 = double;
 
 
-} // end namespace core
-
-#ifdef AXOM_USE_64BIT_INDEXTYPE
-using IndexType = common::int64;
+#if defined(AXOM_USE_64BIT_INDEXTYPE) && !defined(AXOM_NO_INT64_T)
+using IndexType = int64;
 #else
-using IndexType = common::int32;
+using IndexType = int32;
 #endif
+
+#ifdef AXOM_USE_MPI
+
+/*!
+ * \brief Traits class to map Axom types to their corresponding MPI type.
+ */
+template < class AxomType >
+struct mpi_traits
+{
+  static constexpr MPI_Datatype type = MPI_DATATYPE_NULL;
+};
+
+/// \name Specialization of mpi_traits
+/// @{
+
+//------------------------------------------------------------------------------
+template < >
+struct mpi_traits < float64 >
+{
+  static constexpr MPI_Datatype type = MPI_DOUBLE;
+};
+
+//------------------------------------------------------------------------------
+template < >
+struct mpi_traits < float32 >
+{
+  static constexpr MPI_Datatype type = MPI_FLOAT;
+};
+
+//------------------------------------------------------------------------------
+template < >
+struct mpi_traits < int8 >
+{
+  static constexpr MPI_Datatype type = MPI_INT8_T;
+};
+
+//------------------------------------------------------------------------------
+template < >
+struct mpi_traits < uint8 >
+{
+  static constexpr MPI_Datatype type = MPI_UINT8_T;
+};
+
+
+//------------------------------------------------------------------------------
+template < >
+struct mpi_traits < int16 >
+{
+  static constexpr MPI_Datatype type = MPI_INT16_T;
+};
+
+//------------------------------------------------------------------------------
+template < >
+struct mpi_traits < uint16 >
+{
+  static constexpr MPI_Datatype type = MPI_UINT16_T;
+};
+
+//------------------------------------------------------------------------------
+template < >
+struct mpi_traits < int32 >
+{
+  static constexpr MPI_Datatype type = MPI_INT32_T;
+};
+
+//------------------------------------------------------------------------------
+template < >
+struct mpi_traits < uint32 >
+{
+  static constexpr MPI_Datatype type = MPI_UINT32_T;
+};
+
+//------------------------------------------------------------------------------
+#ifndef AXOM_NO_INT64_T
+template < >
+struct mpi_traits < int64 >
+{
+  static constexpr MPI_Datatype type = MPI_INT64_T;
+};
+
+//------------------------------------------------------------------------------
+template < >
+struct mpi_traits < uint64 >
+{
+  static constexpr MPI_Datatype type = MPI_UINT64_T;
+};
+#endif /* end AXOM_NO_INT64_T */
+
+/// @}
+
+#endif /* end AXOM_USE_MPI */
 
 } // end namespace axom
 
