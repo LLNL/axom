@@ -119,33 +119,27 @@ protected:
 
 
 /**
- * \class
+ * \class OctreeBase
+ * 
  * \brief Handles the non-geometric operations for our octree such as
- * refinement,
- * finding the parents and children of a node and determining whether a leaf
- * node exists
+ * refinement, finding the parents and children of a node and determining 
+ * whether a leaf node exists
  *
- * \note There are two concepts here.
- *      A set of nested dyadic integer grids -- A grid at level n has 2^n cells
- * in each of the DIM dimensions
- *      and an adaptive octree defined by a subset of the grid cells from these
- * nested grids.
- *      The former is a conceptual aid in the sense that it is implicitly
- * encoded.
+ * There are two concepts here: 
+ * A set of nested dyadic integer grids -- A grid at level n has 2^n cells
+ * in each of the DIM dimensions and an adaptive octree defined by a subset
+ * of the grid cells from these nested grids. The former is a conceptual aid
+ * in the sense that it is implicitly encoded.
  *
- *      An octree block at level l is refined by adding its 2^DIM children
- * blocks at level (l+1).
- *      The root of the octree covers the entire domains and has no parent.
- *      The leaf blocks of the octree have no children.
- *      The interior of the children do not overlap, and their union covers that
- * of their parent block.
- *      Non-leaf blocks are referred to as 'internal'
+ * An octree block at level l is refined by adding its 2^DIM children
+ * blocks at level (l+1). The root of the octree covers the entire domains 
+ * and has no parent. The leaf blocks of the octree have no children.
+ * The interior of the children do not overlap, and their union covers that
+ * of their parent block. Non-leaf blocks are referred to as 'internal'
  *
- * \note Requirements for BlockDataType: it must be default constructible and
- * provide an isLeaf() predicate as well
- * as a setInternal() function that changes its state from representing a leaf
- * block to representing an internal
- * block.
+ * Requirements for BlockDataType: it must be default constructible and
+ * provide an isLeaf() predicate as well as a setInternal() function that 
+ * changes its state from representing a leaf block to an internal block.
  */
 template<int DIM, typename BlockDataType>
 class OctreeBase
@@ -156,7 +150,7 @@ public:
   typedef primal::Vector<CoordType,DIM> GridVec;
 
   typedef slam::policies::
-    CompileTimeSize<CoordType,std::numeric_limits<CoordType>::digits>
+    CompileTimeSize<CoordType,std::numeric_limits<int>::digits>
     MAX_LEVEL_SIZE;
   typedef slam::OrderedSet<MAX_LEVEL_SIZE> OctreeLevels;
 
