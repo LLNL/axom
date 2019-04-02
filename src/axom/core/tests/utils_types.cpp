@@ -15,123 +15,214 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include "gtest/gtest.h"
-#include <limits>
-
-#ifdef AXOM_USE_CXX11
-#include <type_traits>
-#endif
-
+// Axom includes
+#include "axom/config.hpp"
 #include "axom/core/Types.hpp"
 
-TEST(core_types,check_types_8)
+// gtest includes
+#include "gtest/gtest.h"
+
+// C/C++ includes
+#include <limits>         // for std::numeric_limits
+#include <type_traits>    // for std::is_same, std::is_integral, etc.
+
+#ifndef AXOM_USE_MPI
+
+// MPI definitions so that the tests work without MPI
+using MPI_Datatype = int;
+constexpr int MPI_INT8_T   = -1;
+constexpr int MPI_UINT8_T  = -1;
+constexpr int MPI_INT32_T  = -1;
+constexpr int MPI_UINT32_T = -1;
+constexpr int MPI_INT64_T  = -1;
+constexpr int MPI_UINT64_T = -1;
+constexpr int MPI_DOUBLE   = -1;
+constexpr int MPI_FLOAT    = -1;
+
+#endif
+
+//------------------------------------------------------------------------------
+// HELPER METHODS
+//------------------------------------------------------------------------------
+
+template < typename AxomType >
+void check_mpi_type( std::size_t expected_num_bytes,
+                     MPI_Datatype expected_mpi_type )
 {
-  typedef axom::int8 SignedType;
-  typedef axom::uint8 UnsigneType;
-  static const std::size_t EXP_BYTES = 1;
+#ifdef AXOM_USE_MPI
 
-  EXPECT_TRUE( std::numeric_limits<SignedType>::is_integer);
-  EXPECT_TRUE( std::numeric_limits<UnsigneType>::is_integer);
+  EXPECT_FALSE( axom::mpi_traits< AxomType >::type == MPI_DATATYPE_NULL );
+  EXPECT_TRUE( axom::mpi_traits< AxomType >::type == expected_mpi_type );
 
-  EXPECT_TRUE( std::numeric_limits<SignedType>::is_signed);
-  EXPECT_FALSE( std::numeric_limits<UnsigneType>::is_signed);
+  int actual_bytes = 0;
+  MPI_Type_size( axom::mpi_traits< AxomType >::type, &actual_bytes );
+  EXPECT_EQ( static_cast< std::size_t >( actual_bytes ), expected_num_bytes );
 
-  EXPECT_EQ( 7, std::numeric_limits<SignedType>::digits);
-  EXPECT_EQ( 8, std::numeric_limits<UnsigneType>::digits);
-
-  EXPECT_EQ(EXP_BYTES, sizeof(SignedType) );
-  EXPECT_EQ(EXP_BYTES, sizeof(UnsigneType) );
-
-}
-
-
-
-TEST(core_types,check_types_16)
-{
-  typedef axom::int16 SignedType;
-  typedef axom::uint16 UnsigneType;
-  static const std::size_t EXP_BYTES = 2;
-
-  EXPECT_TRUE( std::numeric_limits<SignedType>::is_integer);
-  EXPECT_TRUE( std::numeric_limits<UnsigneType>::is_integer);
-
-  EXPECT_TRUE( std::numeric_limits<SignedType>::is_signed);
-  EXPECT_FALSE( std::numeric_limits<UnsigneType>::is_signed);
-
-  EXPECT_EQ( 15, std::numeric_limits<SignedType>::digits);
-  EXPECT_EQ( 16, std::numeric_limits<UnsigneType>::digits);
-
-  EXPECT_EQ(EXP_BYTES, sizeof(SignedType) );
-  EXPECT_EQ(EXP_BYTES, sizeof(UnsigneType) );
-}
-
-
-TEST(core_types,check_types_32)
-{
-  typedef axom::int32 SignedType;
-  typedef axom::uint32 UnsigneType;
-  static const std::size_t EXP_BYTES = 4;
-
-  EXPECT_TRUE( std::numeric_limits<SignedType>::is_integer);
-  EXPECT_TRUE( std::numeric_limits<UnsigneType>::is_integer);
-
-  EXPECT_TRUE( std::numeric_limits<SignedType>::is_signed);
-  EXPECT_FALSE( std::numeric_limits<UnsigneType>::is_signed);
-
-  EXPECT_EQ( 31, std::numeric_limits<SignedType>::digits);
-  EXPECT_EQ( 32, std::numeric_limits<UnsigneType>::digits);
-
-  EXPECT_EQ(EXP_BYTES, sizeof(SignedType) );
-  EXPECT_EQ(EXP_BYTES, sizeof(UnsigneType) );
-}
-
-
-TEST(core_types,check_types_64)
-{
-#ifndef AXOM_NO_INT64_T
-  typedef axom::int64 SignedType;
-  typedef axom::uint64 UnsigneType;
-  static const std::size_t EXP_BYTES = 8;
-
-  EXPECT_TRUE( std::numeric_limits<SignedType>::is_integer);
-  EXPECT_TRUE( std::numeric_limits<UnsigneType>::is_integer);
-
-  EXPECT_TRUE( std::numeric_limits<SignedType>::is_signed);
-  EXPECT_FALSE( std::numeric_limits<UnsigneType>::is_signed);
-
-  EXPECT_EQ( 63, std::numeric_limits<SignedType>::digits);
-  EXPECT_EQ( 64, std::numeric_limits<UnsigneType>::digits);
-
-  EXPECT_EQ(EXP_BYTES, sizeof(SignedType) );
-  EXPECT_EQ(EXP_BYTES, sizeof(UnsigneType) );
 #else
-  std::cout<<" Skipping 64-bit tests --"
-           <<" 64-bit integer typedefs not defined in this configuration."
-           << std::endl;
 
-  EXPECT_TRUE(true);
-#endif
+  /* silence compiler warnings */
+  static_cast< void >( expected_num_bytes );
+  static_cast< void >( mpi_type );
+
+#endif /* AXOM_USE_MPI */
 }
 
-
-TEST(core_types,check_types_floating)
+//------------------------------------------------------------------------------
+template < typename RealType >
+void check_real_type( std::size_t expected_num_bytes,
+                      MPI_Datatype expected_mpi_type )
 {
-  typedef axom::float32 float32;
-  typedef axom::float64 float64;
-  static const std::size_t EXP_FLOAT32_BYTES = 4;
-  static const std::size_t EXP_FLOAT64_BYTES = 8;
+  EXPECT_TRUE( std::is_floating_point< RealType >::value );
+  EXPECT_TRUE( std::numeric_limits< RealType >::is_signed);
+  EXPECT_EQ( sizeof( RealType ), expected_num_bytes );
 
-#ifdef AXOM_USE_CXX11
-  EXPECT_TRUE( std::is_floating_point<float32>::value);
-  EXPECT_TRUE( std::is_floating_point<float64>::value);
+  check_mpi_type< RealType >( expected_num_bytes, expected_mpi_type );
+}
+
+//------------------------------------------------------------------------------
+template < typename IntegralType >
+void check_integral_type( std::size_t expected_num_bytes,
+                          bool is_signed,
+                          int expected_num_digits,
+                          MPI_Datatype expected_mpi_type )
+{
+  EXPECT_TRUE( std::numeric_limits< IntegralType >::is_integer );
+  EXPECT_EQ( std::numeric_limits< IntegralType >::is_signed, is_signed );
+  EXPECT_EQ( std::numeric_limits< IntegralType >::digits, expected_num_digits );
+  EXPECT_EQ( sizeof( IntegralType ), expected_num_bytes );
+
+  check_mpi_type< IntegralType >( expected_num_bytes, expected_mpi_type );
+}
+
+//------------------------------------------------------------------------------
+// UNIT TESTS
+//------------------------------------------------------------------------------
+
+TEST( core_types, check_int8 )
+{
+  constexpr std::size_t EXP_BYTES = 1;
+  constexpr int NUM_DIGITS        = 7;
+  constexpr bool IS_SIGNED        = true;
+
+  check_integral_type< axom::int8 >( EXP_BYTES, IS_SIGNED, NUM_DIGITS,
+                                     MPI_INT8_T );
+}
+
+//------------------------------------------------------------------------------
+TEST( core_types, check_unit8 )
+{
+  constexpr std::size_t EXP_BYTES = 1;
+  constexpr int NUM_DIGITS        = 8;
+  constexpr bool IS_SIGNED        = false;
+
+  check_integral_type< axom::uint8 >( EXP_BYTES, IS_SIGNED, NUM_DIGITS,
+                                      MPI_UINT8_T );
+}
+
+//------------------------------------------------------------------------------
+TEST( core_types, check_int16 )
+{
+  constexpr std::size_t EXP_BYTES = 2;
+  constexpr int NUM_DIGITS        = 15;
+  constexpr bool IS_SIGNED        = true;
+
+  check_integral_type< axom::int16 >( EXP_BYTES, IS_SIGNED, NUM_DIGITS,
+                                      MPI_INT16_T );
+}
+
+//------------------------------------------------------------------------------
+TEST( core_types, check_uint16 )
+{
+  constexpr std::size_t EXP_BYTES = 2;
+  constexpr int NUM_DIGITS        = 16;
+  constexpr bool IS_SIGNED        = false;
+
+  check_integral_type< axom::uint16 >( EXP_BYTES, IS_SIGNED, NUM_DIGITS,
+                                       MPI_UINT16_T );
+}
+
+//------------------------------------------------------------------------------
+TEST( core_types, check_int32 )
+{
+  constexpr std::size_t EXP_BYTES = 4;
+  constexpr int NUM_DIGITS        = 31;
+  constexpr bool IS_SIGNED        = true;
+
+  check_integral_type< axom::int32 >( EXP_BYTES, IS_SIGNED, NUM_DIGITS,
+                                      MPI_INT32_T );
+}
+
+//------------------------------------------------------------------------------
+TEST( core_types, check_uint32 )
+{
+  constexpr std::size_t EXP_BYTES = 4;
+  constexpr int NUM_DIGITS        = 32;
+  constexpr bool IS_SIGNED        = false;
+
+  check_integral_type< axom::uint32 >( EXP_BYTES, IS_SIGNED, NUM_DIGITS,
+                                       MPI_UINT32_T );
+}
+
+#ifndef AXOM_NO_INT64_T
+
+//------------------------------------------------------------------------------
+TEST( core_types, check_int46 )
+{
+  constexpr std::size_t EXP_BYTES = 8;
+  constexpr int NUM_DIGITS        = 63;
+  constexpr bool IS_SIGNED        = true;
+
+  check_integral_type< axom::int64 >( EXP_BYTES, IS_SIGNED, NUM_DIGITS,
+                                      MPI_INT64_T );
+}
+
+//------------------------------------------------------------------------------
+TEST( core_types, check_uint46 )
+{
+  constexpr std::size_t EXP_BYTES = 8;
+  constexpr int NUM_DIGITS        = 64;
+  constexpr bool IS_SIGNED        = false;
+
+  check_integral_type< axom::uint64 >( EXP_BYTES, IS_SIGNED, NUM_DIGITS,
+                                       MPI_UINT64_T );
+}
+
+//------------------------------------------------------------------------------
+TEST( core_types, check_float32 )
+{
+  constexpr std::size_t EXP_BYTES = 4;
+  check_real_type< axom::float32 >( EXP_BYTES, MPI_FLOAT );
+}
+
+//------------------------------------------------------------------------------
+TEST( core_types, check_float64 )
+{
+  constexpr std::size_t EXP_BYTES = 8;
+  check_real_type< axom::float64 >( EXP_BYTES, MPI_DOUBLE );
+}
+
+#endif /* AXOM_NO_INT64_T */
+
+//------------------------------------------------------------------------------
+int main(int argc, char* argv[])
+{
+
+#ifdef AXOM_USE_MPI
+  MPI_Init( &argc, &argv );
 #endif
 
-  EXPECT_FALSE( std::numeric_limits<float32>::is_integer);
-  EXPECT_FALSE( std::numeric_limits<float64>::is_integer);
+  int result = 0;
 
-  EXPECT_TRUE( std::numeric_limits<float32>::is_signed);
-  EXPECT_TRUE( std::numeric_limits<float64>::is_signed);
+  ::testing::InitGoogleTest(&argc, argv);
 
-  EXPECT_EQ(EXP_FLOAT32_BYTES, sizeof(float32) );
-  EXPECT_EQ(EXP_FLOAT64_BYTES, sizeof(float64) );
+  // add this line to avoid a warning in the output about thread safety
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+
+  result = RUN_ALL_TESTS();
+
+#ifdef AXOM_USE_MPI
+  MPI_Finalize();
+#endif
+
+  return result;
 }
