@@ -20,7 +20,6 @@
 #include "axom/core/utilities/Utilities.hpp"  // isLittleEndian()/swapEndian()
 
 // Mint includes
-#include "axom/mint/config.hpp"          // for axom::IndexType
 #include "axom/mint/mesh/CellTypes.hpp"       // for mint::Triangle
 
 // Slic includes
