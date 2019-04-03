@@ -221,7 +221,7 @@ IAMesh<TDIM, SDIM, P>::IAMesh(std::vector<double>& points, std::vector<int>& tri
     ev_rel.insert(idx / VERTS_PER_ELEM, tri[idx]);
   }
   SLIC_ASSERT_MSG(
-    ev_rel.isValid(true),
+    ev_rel.isValid(),
     "Error creating (dynamic) relation from elements to vertices!");
 
   // The map, vertex to coordinates
@@ -704,8 +704,9 @@ void IAMesh<TDIM, SDIM, P>::compact()
   //Construct an array that maps original set indices to new compacted indices
   std::vector<IndexType> vertex_set_map(vertex_set.size(), -1);
   std::vector<IndexType> element_set_map(element_set.size(), -1);
+
   int v_count = 0;
-  for(int i = 0; i < (int)vertex_set.size(); i++)
+  for(auto i = 0; i < vertex_set.size(); ++i)
   {
     if(vertex_set.isValidEntry(i))
     {
@@ -714,7 +715,7 @@ void IAMesh<TDIM, SDIM, P>::compact()
   }
 
   int e_count = 0;
-  for(int i = 0; i < (int)element_set.size(); i++)
+  for(auto i = 0; i < element_set.size(); ++i)
   {
     if(element_set.isValidEntry(i))
     {
@@ -722,17 +723,13 @@ void IAMesh<TDIM, SDIM, P>::compact()
     }
   }
 
-  //update the sets
-  vertex_set = VertexSet(v_count);
-  element_set = ElementSet(e_count);
-
   //update the relations
   typename ElementBoundaryRelation::RelationVec& ev_rel_data = ev_rel.data();
-  for(int i = 0; i < (int)ev_rel.size(); i++)
+  for(auto i = 0; i < ev_rel.size(); ++i)
   {
     int new_entry_index = element_set_map[i];
     if(new_entry_index < 0) continue;
-    for(int j = 0; j < (int)ev_rel[i].size(); j++)
+    for(auto j = 0; j < ev_rel[i].size(); ++j)
     {
       int val = ev_rel_data[i * ev_rel[i].size() + j];
       if(val != ElementBoundaryRelation::INVALID_INDEX)
@@ -784,6 +781,10 @@ void IAMesh<TDIM, SDIM, P>::compact()
     vcoord_map[new_entry_index] = vcoord_map[i];
   }
   vcoord_map.resize(v_count);
+
+  //update the sets
+  vertex_set = VertexSet(v_count);
+  element_set = ElementSet(e_count);
 }
 
 template <unsigned int TDIM, unsigned int SDIM, typename P>

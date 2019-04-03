@@ -668,6 +668,42 @@ TEST(slam_IA, dynamically_build_tet_mesh)
   SLIC_INFO("Done");
 }
 
+TEST(slam_IA, compact_mesh)
+{
+  const int TDIM = 2;
+  const int SDIM = 3;
+  using IAMeshType = slam::IAMesh<TDIM, SDIM, PointType>;
+  using IndexType = IAMeshType::IndexType;
+
+  IAMeshType mesh;
+
+  mesh.addVertex(PointType(0, 0, 1));
+  mesh.addVertex(PointType(0, 1, 0));
+  mesh.addVertex(PointType(1, 0, 0));
+  mesh.addVertex(PointType(1, 1, 1));
+  mesh.addElement(0, 1, 2);
+  mesh.addElement(1, 2, 3);
+
+  mesh.removeVertex(0);
+
+  EXPECT_TRUE(mesh.isValid(true));
+
+  auto v_before = mesh.getNumberOfVertices();
+  auto e_before = mesh.getNumberOfElements();
+  EXPECT_EQ(IndexType(3), v_before);
+  EXPECT_EQ(IndexType(1), e_before);
+
+  mesh.compact();
+
+  auto v_after = mesh.getNumberOfVertices();
+  auto e_after = mesh.getNumberOfElements();
+
+  EXPECT_TRUE(mesh.isValid(true));
+
+  EXPECT_EQ(v_before, v_after);
+  EXPECT_EQ(e_before, e_after);
+}
+
 //----------------------------------------------------------------------
 
 int main(int argc, char* argv[])
