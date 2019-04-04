@@ -39,8 +39,8 @@
       "xl@coral~openmp" ],
 
     "bgqos_0":
-    [ "clang@4.0.0_gfortran ^zlib~shared",
-      "clang@4.0.0_xlf~openmp ^zlib~shared" ],
+    [ "clang@4.0.0_gfortran~umpire ^zlib~shared",
+      "clang@4.0.0_xlf~openmp~umpire ^zlib~shared" ],
 
     "darwin-x86_64":
     [ "clang@9.0.0 ^conduit@master" ]

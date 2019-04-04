@@ -49,18 +49,23 @@ set(CMAKE_Fortran_COMPILER "/opt/ibmcmp/xlf/bg/14.1/bin/bgxlf2003" CACHE PATH ""
 ##############
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_11_14_15_08_15/clang-4.0.0_xlf" CACHE PATH "")
-
-# hdf5 from uberenv
-set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.19" CACHE PATH "")
-
-# scr not built by uberenv
+set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_04_04_12_23_47/clang-4.0.0_xlf" CACHE PATH "")
 
 # conduit from uberenv
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.3.1" CACHE PATH "")
 
 # mfem from uberenv
 set(MFEM_DIR "${TPL_ROOT}/mfem-3.4.0" CACHE PATH "")
+
+# hdf5 from uberenv
+set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.19" CACHE PATH "")
+
+# scr not built by uberenv
+
+# raja from uberenv
+set(RAJA_DIR "${TPL_ROOT}/raja-0.7.0/share/raja/cmake" CACHE PATH "")
+
+# umpire not build by uberenv
 
 # python not built by uberenv
 
@@ -71,6 +76,8 @@ set(ENABLE_DOCS OFF CACHE BOOL "")
 # uncrustify not built by uberenv
 
 # lcov and genhtml not built by uberenv
+
+# cppcheck not built by uberenv
 
 ##############
 # MPI
