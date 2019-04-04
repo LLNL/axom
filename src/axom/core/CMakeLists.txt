@@ -52,6 +52,7 @@ set(core_sources
     utilities/About.cpp
 
     numerics/polynomial_solvers.cpp
+    Types.cpp
     )
 
 ################################
