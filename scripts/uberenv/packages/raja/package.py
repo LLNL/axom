@@ -26,6 +26,9 @@ class Raja(CMakePackage):
 
         options = []
 
+        if 'bgq' in env["SYS_TYPE"]:
+            options.extend(['-DBLT_CXX_FLAGS=-stdlib=libc++'])
+
         if '+openmp' in spec:
             options.extend([
                 '-DENABLE_OPENMP=On'])

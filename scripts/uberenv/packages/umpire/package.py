@@ -27,6 +27,13 @@ class Umpire(CMakePackage):
 
         options = []
 
+        if 'bgq' in env["SYS_TYPE"]:
+            options.extend(['-DENABLE_BENCHMARKS:BOOL=OFF', 
+                            '-DENABLE_TESTS:BOOL=OFF',
+                            '-DENABLE_EXAMPLES:BOOL=OFF',
+                            '-DENABLE_OPENMP:BOOL=OFF',
+                            '-DBLT_CXX_FLAGS=-stdlib=libc++'])
+
         if '+cuda' in spec:
             options.extend([
                 '-DENABLE_CUDA=On',
