@@ -68,11 +68,14 @@ using IndexType = int32;
 
 /*!
  * \brief Traits class to map Axom types to their corresponding MPI type.
+ *
+ * \note The mpi_traits are initialized in Types.cpp
+ * \see Types.cpp
  */
 template < class AxomType >
 struct mpi_traits
 {
-  static constexpr MPI_Datatype type = MPI_DATATYPE_NULL;
+  static const MPI_Datatype type;
 };
 
 /// \name Specialization of mpi_traits
@@ -82,57 +85,56 @@ struct mpi_traits
 template < >
 struct mpi_traits < float64 >
 {
-  static constexpr MPI_Datatype type = MPI_DOUBLE;
+  static const MPI_Datatype type;
 };
 
 //------------------------------------------------------------------------------
 template < >
 struct mpi_traits < float32 >
 {
-  static constexpr MPI_Datatype type = MPI_FLOAT;
+  static const MPI_Datatype type;
 };
 
 //------------------------------------------------------------------------------
 template < >
 struct mpi_traits < int8 >
 {
-  static constexpr MPI_Datatype type = MPI_INT8_T;
+  static const MPI_Datatype type;
 };
 
 //------------------------------------------------------------------------------
 template < >
 struct mpi_traits < uint8 >
 {
-  static constexpr MPI_Datatype type = MPI_UINT8_T;
+  static const MPI_Datatype type;
 };
-
 
 //------------------------------------------------------------------------------
 template < >
 struct mpi_traits < int16 >
 {
-  static constexpr MPI_Datatype type = MPI_INT16_T;
+  static const MPI_Datatype type;
 };
 
 //------------------------------------------------------------------------------
 template < >
 struct mpi_traits < uint16 >
 {
-  static constexpr MPI_Datatype type = MPI_UINT16_T;
+  static const MPI_Datatype type;
 };
 
 //------------------------------------------------------------------------------
 template < >
 struct mpi_traits < int32 >
 {
-  static constexpr MPI_Datatype type = MPI_INT32_T;
+  static const MPI_Datatype type;
 };
 
 //------------------------------------------------------------------------------
 template < >
 struct mpi_traits < uint32 >
 {
-  static constexpr MPI_Datatype type = MPI_UINT32_T;
+  static const MPI_Datatype type;
 };
 
 //------------------------------------------------------------------------------
@@ -140,15 +142,16 @@ struct mpi_traits < uint32 >
 template < >
 struct mpi_traits < int64 >
 {
-  static constexpr MPI_Datatype type = MPI_INT64_T;
+  static const MPI_Datatype type;
 };
 
 //------------------------------------------------------------------------------
 template < >
 struct mpi_traits < uint64 >
 {
-  static constexpr MPI_Datatype type = MPI_UINT64_T;
+  static const MPI_Datatype type;
 };
+
 #endif /* end AXOM_NO_INT64_T */
 
 /// @}
