@@ -20,7 +20,6 @@ set(gtest_utils_tests
    core_array.cpp
    core_memory_management.cpp
    core_stack_array.cpp
-   core_types.cpp
    
    utils_TaskTimer.cpp
    utils_endianness.cpp
@@ -40,6 +39,12 @@ set(gtest_utils_tests
    numerics_polynomial_solvers.cpp
    )
 
+#
+# When MPI is disabled, compile the core_types test with all other tests
+#
+if ( NOT ENABLE_MPI )
+  list( APPEND gtest_utils_tests core_types.cpp )
+endif()
 
 set(utils_tests_depends
    core
@@ -62,7 +67,32 @@ foreach(test ${gtest_utils_tests})
                   COMMAND ${test_name}_test )
 endforeach()
 
-
+#
+# Add MPI tests if MPI is enabled
+#
+if ( ENABLE_MPI )
+  
+  set( core_mpi_tests
+       core_types.cpp
+       )
+       
+  foreach( mpitest ${core_mpi_tests} )
+    
+    get_filename_component( mpitest_name ${mpitest} NAME_WE )
+    
+    blt_add_executable( NAME ${mpitest_name}_test
+                        SOURCES ${mpitest} 
+                        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                        DEPENDS_ON ${utils_tests_depends} mpi 
+                        FOLDER axom/core/tests )
+                        
+    blt_add_test( NAME ${mpitest_name} 
+                  COMMAND ${mpitest_name}_test 
+                  NUM_MPI_TASKS 1 )
+                  
+  endforeach()
+   
+endif()
 
 #
 # Add a test to query properties of the configuration
