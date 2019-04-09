@@ -1,22 +1,14 @@
 #!/usr/bin/env bash
 
-##
-## Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.
-##
-## Produced at the Lawrence Livermore National Laboratory.
-##
-## LLNL-CODE-741217
-##
-## All rights reserved.
-##
-## This file is part of Axom.
-##
-## For details about use and distribution, please read axom/LICENSE.
-##
+# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+#
+# SPDX-License-Identifier: (BSD-3-Clause)
 
 #=============================================================================
 # Change the copyright date in all files that contain the text
-# "This file is part of Axom". We restrict to this subset of files
+# "other Axom Project Developers. See the top-level COPYRIGHT file for details.".
+# We restrict to this subset of files
 # since we do not want to modify files we do not own (e.g., other repos
 # included as submodules). Note that this file and *.git files are omitted
 # as well.
@@ -42,7 +34,7 @@
 #=============================================================================
 # First find all the files we want to modify
 #=============================================================================
-find . -type f ! -name \*.git\* ! -name \*update_copyright\* -exec grep -l "This file is part of Axom" {} \; > files2change
+find . -type f ! -name \*.git\* ! -name \*update_copyright\* -exec grep -l "other Axom Project Developers. See the top-level COPYRIGHT file for details." {} \; > files2change
 
 #=============================================================================
 # Replace the old copyright dates with new dates

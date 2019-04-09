@@ -2,7 +2,7 @@
 
 Axom: ................................, version 0.3.0
 
-Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC. 
+Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC. 
 Produced at the Lawrence Livermore National Laboratory.
 All rights reserved. See details in the file axom/LICENSE.
 
@@ -23,10 +23,3 @@ Lee Taylor (taylor16@llnl.gov)
 Kenny Weiss (kweiss@llnl.gov)
 Chris White (white238@llnl.gov)
 George Zagaris (zagaris2@llnl.gov)
-
-Other contributors include:
-
-Jordan Backes
-Evan Desantola
-Austin Stromme
-Raine Yeh
