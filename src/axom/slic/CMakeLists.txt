@@ -71,7 +71,7 @@ blt_add_library(NAME        slic
                 OBJECT      TRUE
                 )
 
-axom_write_unified_header( NAME slic 
+axom_write_unified_header( NAME slic
                            HEADERS ${slic_headers}
                            )
 
@@ -92,13 +92,6 @@ endif()
 ################################
 if (AXOM_ENABLE_TESTS)
   add_subdirectory(tests)
-endif()
-
-################################
-# Add docs
-################################
-if (AXOM_ENABLE_DOCS)
-    add_subdirectory(docs)
 endif()
 
 ################################
