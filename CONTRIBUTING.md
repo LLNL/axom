@@ -24,6 +24,8 @@ For example:
 # Contributors (In Alphabetical Order)
 
 * Jordan Backes
+* Aaron Black
 * Evan Desantola
+* Randy Settgast
 * Austin Stromme
 * Raine Yeh
