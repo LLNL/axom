@@ -31,8 +31,8 @@ PackageName: BLT
 PackageHomePage: https://github.com/LLNL/blt/
 PackageLicenseDeclared: BSD-3-Clause
 
-PackageName: fruit
-PackageHomePage: https://sourceforge.net/projects/fortranxunit/
+PackageName: fmt
+PackageHomePage: https://github.com/fmtlib/fmt/
 PackageLicenseDeclared: BSD-2-Clause
 
 PackageName: fruit
