@@ -2,6 +2,7 @@
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+
 ##############################################################################
 # Minimal host-config (cmake cache file) to build Axom without any pre-built 
 # third party libraries.

@@ -2,6 +2,8 @@
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+
+#------------------------------------------------------------------------------
 # host-config for 'sqa-uno' Windows machine-- using Visual Studio 15
 #
 # Run the following from a build dir for a 32-bit configuration
