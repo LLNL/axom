@@ -23,7 +23,7 @@ text in the license header:
 
 External Packages
 -------------------
-Axom bundles its external dependencies in its repository.  These
+Axom bundles some of its external dependencies in its repository.  These
 packages are covered by various permissive licenses.  A summary listing
 follows.  See the license included with each package for full details.
 
