@@ -83,11 +83,11 @@ Current limitations
 ^^^^^^^^^^^^^^^^^^^
 
 * Slam is under active development with many features planned.
-* Slam's classes are highly configurable.  However, it is currently not straightforward to
-  set up the templated typedefs for the underlying policy classes. This can be simplified
-  by the introduction of *Generator* classes which use enumerated strings to generate the
-  necessary typedefs.
-* Slam does not yet support GPUs.
+* Support for GPUs in Slam is under development.
+* Slam's policy-based design enable highly configurable classes  which are explicitly
+  defined via type aliases. We are investigating ways to simplify this set up
+  using *Generator* classes where enumerated strings can define related types 
+  within a mesh configuration.
 
 
 Contents
