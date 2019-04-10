@@ -2,7 +2,7 @@
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # SLAM -- Set-theoretic Lightweight API for Meshes (low level mesh API)
 #------------------------------------------------------------------------------
 # Some additional flags that might be useful
