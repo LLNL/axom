@@ -1,19 +1,7 @@
-/*
- *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.
- *
- * Produced at the Lawrence Livermore National Laboratory
- *
- * LLNL-CODE-741217
- *
- * All rights reserved.
- *
- * This file is part of Axom.
- *
- * For details about use and distribution, please read axom/LICENSE.
- *
- *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- */
+// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/config.hpp"  // for AXOM_USE_HDF5
 #include "axom/sidre/core/sidre.hpp"

@@ -1,16 +1,7 @@
-#------------------------------------------------------------------------------
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
-# Produced at the Lawrence Livermore National Laboratory.
-#
-# LLNL-CODE-741217
-#
-# All rights reserved.
-#
-# This file is part of Axom.
-#
-# For details about use and distribution, please read axom/LICENSE.
-#------------------------------------------------------------------------------
+# SPDX-License-Identifier: (BSD-3-Clause)
 
 ##------------------------------------------------------------------------------
 ## axom_add_code_checks( PREFIX     <Prefix used for created targets>
@@ -296,22 +287,11 @@ macro(axom_write_unified_header)
     string(TOLOWER ${arg_NAME} _lcname)
     set(_header ${CMAKE_BINARY_DIR}/include/axom/${_lcname}.hpp)
 
-    file(WRITE ${_header} "\/*
- *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.
- *
- * Produced at the Lawrence Livermore National Laboratory
- *
- * LLNL-CODE-741217
- *
- * All rights reserved.
- *
- * This file is part of Axom.
- *
- * For details about use and distribution, please read axom/LICENSE.
- *
- *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *\/\n
+    file(WRITE ${_header} "\/\/ Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+\/\/ other Axom Project Developers. See the top-level COPYRIGHT file for details.
+\/\/ 
+\/\/ SPDX-License-Identifier: (BSD-3-Clause)
+\n
 ")
 
     file(APPEND ${_header} "#ifndef AXOM_UNIFIED_${_ucname}_HPP\n")

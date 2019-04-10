@@ -1,16 +1,7 @@
-#------------------------------------------------------------------------------
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
-# Produced at the Lawrence Livermore National Laboratory
-#
-# LLNL-CODE-741217
-#
-# All rights reserved.
-#
-# This file is part of Axom.
-#
-# For details about use and distribution, please read axom/LICENSE.
-#------------------------------------------------------------------------------
+# SPDX-License-Identifier: (BSD-3-Clause)
 
 if (ENABLE_CUDA)
     cmake_minimum_required(VERSION 3.9)
