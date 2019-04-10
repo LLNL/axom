@@ -13,7 +13,6 @@
 #include "axom/quest/interface/internal/QuestHelpers.hpp" // for test that reads
                                                           // in a mesh without
                                                           // the interface
-
 #include <string>
 
 
@@ -23,19 +22,22 @@ class InOutInterfaceTest : public ::testing::Test
 public:
   static const int DIM = 3;
 
-  typedef double CoordType;
-  typedef axom::primal::Point<CoordType, DIM>       InOutPoint;
-  typedef axom::primal::BoundingBox<CoordType, DIM> InOutBBox;
+  using CoordType = double;
+  using InOutPoint = axom::primal::Point<CoordType, DIM>;
+  using InOutBBox = axom::primal::BoundingBox<CoordType, DIM>;
 
 protected:
   virtual void SetUp()
   {
     // Setup meshfile
+#ifdef AXOM_DATA_DIR
     namespace fs = axom::utilities::filesystem;
-    const std::string DATA_DIR = fs::joinPath(AXOM_SRC_DIR, "axom/quest/data");
-
+    const std::string DATA_DIR = fs::joinPath(AXOM_DATA_DIR, "quest");
     const std::string fileName = "sphere.stl";
     meshfile = fs::joinPath(DATA_DIR, fileName);
+#else
+    FAIL() << "quest_inout_interface test requires AXOM_DATA_DIR to be defined");
+#endif
   }
 
   std::string meshfile;
@@ -118,8 +120,8 @@ TEST_F(InOutInterfaceTest, query_properties)
   const int failCode = axom::quest::QUEST_INOUT_FAILED;
   const int successCode = axom::quest::QUEST_INOUT_SUCCESS;
 
-  typedef InOutInterfaceTest::InOutPoint PointType;
-  typedef InOutInterfaceTest::InOutBBox BBoxType;
+  using PointType = InOutInterfaceTest::InOutPoint;
+  using BBoxType = InOutInterfaceTest::InOutBBox;
   PointType lo, hi, cm;
 
   // first, test before initializing

@@ -2,18 +2,25 @@
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+#------------------------------------------------------------------------------
+# Quest tests
+#------------------------------------------------------------------------------
 
 set(quest_tests
     quest_all_nearest_neighbors.cpp
     quest_implicit_grid.cpp
     quest_inout_octree.cpp
-    quest_meshtester.cpp
     quest_octree.cpp
     quest_signed_distance.cpp
     quest_spatial_octree.cpp
     quest_stl_reader.cpp
     quest_vertex_weld.cpp
    )
+
+# Optionally, add tests that require AXOM_DATA_DIR
+blt_list_append(TO       quest_tests
+                IF       AXOM_DATA_DIR
+                ELEMENTS quest_meshtester.cpp)
 
 set(quest_tests_depends
     quest
@@ -69,14 +76,19 @@ if(MFEM_FOUND)
 endif()
 
 
-##############################################################
+#------------------------------------------------------------------------------
 # Tests that use MPI when available
-##############################################################
+#------------------------------------------------------------------------------
+
 set(quest_mpi_tests
     quest_initialize.cpp
-    quest_inout_interface.cpp
     quest_signed_distance_interface.cpp
     )
+
+# Optionally, add tests that require AXOM_DATA_DIR
+blt_list_append(TO       quest_mpi_tests 
+                IF       AXOM_DATA_DIR
+                ELEMENTS quest_inout_interface.cpp )
 
 set(quest_mpi_depends ${quest_tests_depends})
 if (ENABLE_MPI)
@@ -116,13 +128,13 @@ foreach(test ${quest_mpi_tests})
 endforeach()
 
 
-###############################################################################
+#------------------------------------------------------------------------------
 # Regression tests for quest signed distance and InOutOctree queries
 #
 # Note: By default we only run a small subset of the quest regression tests.
 #       To run additional regression tests, configure the code
 #       with AXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS set to ON.
-###############################################################################
+#------------------------------------------------------------------------------
 
 cmake_dependent_option(
     AXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS
