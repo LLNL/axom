@@ -85,7 +85,7 @@ set( quest_depends_on
 
 blt_list_append(TO quest_depends_on IF SPARSEHASH_FOUND ELEMENTS sparsehash)
 blt_list_append(TO quest_depends_on IF ENABLE_OPENMP ELEMENTS openmp)
-blt_list_append(TO quest_depends_on IF ENABLE_CUDA   ELEMENTS cuda )
+blt_list_append(TO quest_depends_on IF ENABLE_CUDA ELEMENTS cuda)
 
 if (ENABLE_MPI)
     list(APPEND quest_headers stl/PSTLReader.hpp)
@@ -93,14 +93,14 @@ if (ENABLE_MPI)
 
     blt_list_append(TO quest_depends_on
                     IF AXOM_ENABLE_LUMBERJACK
-                    ELEMENTS lumberjack mpi )
-endif()
+                    ELEMENTS lumberjack )
 
+    list(APPEND quest_depends_on mpi)
+endif()
 
 if (SHROUD_FOUND)
     add_subdirectory(interface)
 endif()
-
 
 if (ENABLE_FORTRAN)
     ## append shroud generated headers/sources to corresponding lists
