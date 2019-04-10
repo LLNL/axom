@@ -2,6 +2,9 @@
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+#------------------------------------------------------------------------------
+# Quest examples
+#------------------------------------------------------------------------------
 
 set(quest_example_depends
         core
@@ -42,8 +45,9 @@ blt_add_executable(
     )
 
 # Add a test for the quest interface.  Set up for MPI, when available
-set(quest_data_dir  ${CMAKE_CURRENT_SOURCE_DIR}/../data)
-if(AXOM_ENABLE_TESTS)
+set(quest_data_dir  ${AXOM_DATA_DIR}/quest)
+
+if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
     if (ENABLE_MPI)
         blt_add_test(
             NAME quest_inout_interface_mpi_test
@@ -68,8 +72,6 @@ if (ENABLE_FORTRAN)
         FOLDER     axom/quest/examples
         )
 
-    
-
     blt_add_executable(
         NAME        quest_inout_interface_F_ex
         SOURCES     quest_inout_interface.F
@@ -93,7 +95,7 @@ if (ENABLE_FORTRAN)
                               PROPERTIES LINKER_LANGUAGE CXX)
     endif()
 
-    if(AXOM_ENABLE_TESTS)
+    if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
         if (ENABLE_MPI)
             blt_add_test(
                 NAME quest_inout_interface_mpi_F_test
