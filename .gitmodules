@@ -1,3 +1,6 @@
 [submodule "src/blt"]
 	path = src/cmake/blt
 	url = https://github.com/LLNL/blt.git
+[submodule "axom_data"]
+	path = data
+	url = ../axom_data.git
