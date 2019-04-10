@@ -62,7 +62,7 @@ Component User Guides
   *  Slic (Simple Logging Interface Code for integrated applications)
   *  `Lumberjack (Scalable parallel message logging and filtering) <../../lumberjack_docs/html/index.html>`_
   *  `Sidre (Simulation data repository) <../../sidre_docs/html/index.html>`_
-  *  Slam (Set-theoretic lightweight API for meshes)
+  *  `Slam (Set-theoretic lightweight API for meshes) <../../slam_docs/html/index.html>`_
   *  `Quest (Querying on surface tool) <../../quest_docs/html/index.html>`_
   *  `Mint (Mesh data model) <../../mint_docs/html/index.html>`_
   *  `Primal (Computational geometry primitives) <../../primal_docs/html/index.html>`_
@@ -104,7 +104,7 @@ Other Tools Application Developers May Find Useful
 Axom developers support other tools that can be used by software 
 projects independent of the Axom. These include:
 
-  *  `BLT <https://github.com/LLNL/blt>`_ (CMake-based buld system developed by the Axom team to simplify CMake usage and development tool integration)
+  *  `BLT <https://github.com/LLNL/blt>`_ (CMake-based build system developed by the Axom team to simplify CMake usage and development tool integration)
   *  `Shroud <https://github.com/LLNL/shroud>`_ (Generator for native C and Fortran APIs from C++ code)
   *  `Conduit <https://lc.llnl.gov/confluence/display/CON/Conduit+Home>`_ (Library for describing and managing in-memory data structures) 
 
@@ -141,8 +141,8 @@ Chat Room
 -------------- 
 
 We also have a chat room on LLNL's Cisco Jabber instance called 
-'Axom Dev'. It is open to anyone. You just have to log on to Jabber and
-join the room.
+'Axom Dev'. It is open to anyone on the llnl network. 
+Just log onto Jabber and join the room.
 
 
 -----------------

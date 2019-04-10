@@ -2,10 +2,13 @@
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+#------------------------------------------------------------------------------
+# Slam unit tests
+#------------------------------------------------------------------------------
 
-#
+#------------------------------------------------------------------------------
 # Specify list of tests
-#
+#------------------------------------------------------------------------------
 
 set(gtest_slam_tests
     # test sets
@@ -39,15 +42,15 @@ set(gtest_slam_tests
 
 set(slam_tests_depends_on core slic slam gtest)
 
-#
+#------------------------------------------------------------------------------
 # Add gtest based tests
-#
+#------------------------------------------------------------------------------
 foreach(test ${gtest_slam_tests})
     get_filename_component( test_name ${test} NAME_WE )
     blt_add_executable( NAME ${test_name}_test
                         SOURCES ${test}
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON ${slam_tests_depends_on} 
+                        DEPENDS_ON ${slam_tests_depends_on}
                         FOLDER axom/slam/tests )
     blt_add_test( NAME ${test_name}
                   COMMAND ${test_name}_test )
@@ -59,9 +62,8 @@ blt_add_executable(
     SOURCES    slam_utilities.cpp
     OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
     DEPENDS_ON ${slam_tests_depends_on}
-    FOLDER     axom/slam/tests
-    )
+    FOLDER     axom/slam/tests )
+
 blt_add_test(
     NAME    slam_utilities
-    COMMAND slam_utilities_test ${CMAKE_CURRENT_SOURCE_DIR}
-    )
+    COMMAND slam_utilities_test ${CMAKE_CURRENT_SOURCE_DIR} )

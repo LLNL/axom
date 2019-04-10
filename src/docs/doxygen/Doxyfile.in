@@ -773,6 +773,7 @@ WARN_LOGFILE           = dox.warnings
 
 INPUT                  = @PROJECT_SOURCE_DIR@/axom/mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/core/README.md \
+                         @PROJECT_SOURCE_DIR@/axom/core \
                          @PROJECT_SOURCE_DIR@/axom/core/utilities \
                          @PROJECT_SOURCE_DIR@/axom/core/numerics \
                          @PROJECT_SOURCE_DIR@/axom/lumberjack \

@@ -26,8 +26,18 @@
 #
 # If you need to modify this script, you may want to run each of these
 # commands individual from the command line to make sure things are doing
-# what you think they should be doing. This is why they are seperated into
+# what you think they should be doing. This is why they are separated into
 # steps here.
+#
+#=============================================================================
+#
+# Note: The following files do not fit this pattern and require hand editing
+# (or integration into this script):
+#
+# - Top-level files: LICENSE, RELEASE
+#
+# - sphinx configuration files with filenames of the form  '*/docs/*/conf.py'
+#   They can be listed using: 'git ls-files | grep conf.py'
 #
 #=============================================================================
 

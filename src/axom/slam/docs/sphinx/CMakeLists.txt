@@ -3,11 +3,11 @@
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
-# Documentation targets for slam
+# Sphinx targets for slam
 #------------------------------------------------------------------------------
 
+blt_add_sphinx_target( slam_docs )
 
-if(SPHINX_FOUND)
-    add_subdirectory(sphinx)
+if (DOXYGEN_FOUND)
+   add_dependencies(slam_docs doxygen_docs)
 endif()
-

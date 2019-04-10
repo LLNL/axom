@@ -2,10 +2,9 @@
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
-
-######################################
-# Slam (MeshAPI) version of lulesh 2.0
-######################################
+#------------------------------------------------------------------------------
+# Slam version of lulesh 2.0
+#------------------------------------------------------------------------------
 
 
 set(lulesh_headers
@@ -43,19 +42,16 @@ blt_add_executable(
     SOURCES     ${lulesh_sources} ${lulesh_headers}
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON  ${slam_tests_depends_on}
-    FOLDER      axom/slam/examples
-    )
+    FOLDER      axom/slam/examples )
 
 if(AXOM_ENABLE_TESTS)
     if(ENABLE_MPI)
         blt_add_test(NAME        slam_lulesh
                      COMMAND     slam_lulesh_ex
-                     NUM_MPI_TASKS   8
-                    )
+                     NUM_MPI_TASKS   8 )
     else()
         blt_add_test(NAME        slam_lulesh
-                     COMMAND     slam_lulesh_ex
-                    )
+                     COMMAND     slam_lulesh_ex )
     endif()
 endif()
 
