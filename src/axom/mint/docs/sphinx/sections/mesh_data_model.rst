@@ -165,6 +165,11 @@ such as, *triangles* or *quads*, depending on the cell type. The faces of a 2D
 cell are 1D topological entities, i.e., *segments*. Last, the faces of a 1D cell
 are 0D topological entities, i.e., :ref:`Nodes`.
 
+.. note::
+
+  Since in 1D the :ref:`Faces` of a cell are equivalent to its
+  constituent :ref:`Nodes`, Mint does not support :ref:`Faces` in 1D.
+
 .. _figs/cellFaces:
 .. figure:: ../figures/cell_faces.png
   :align: center
@@ -490,8 +495,8 @@ One of the important advantages of a :ref:`StructuredMesh` representation is
 that the constituent :ref:`Topology` of the mesh is *implicit*. This enables
 a convenient way for computing the :ref:`Connectivity` information
 automatically without the need to store this information explicitly. For example,
-a 2D cell located at :math:`C=(i,j)`, will always have four face neighbors
-given by the following indices:
+an interior (i.e., not a at the boundary) 2D cell located at :math:`C=(i,j)`,
+will always have four face neighbors given by the following indices:
 
 * :math:`N_0=(i-1,j)`,
 * :math:`N_1=(i+1,j)`,
@@ -973,7 +978,7 @@ Cell Types
 """""""""""
 
 Mint currently supports the common Linear :ref:`CellTypes`,
-depicted in :numref:`figs/linearCells`, as well as, support for high-order,
+depicted in :numref:`figs/linearCells`, as well as, support for
 quadratic, quadrilateral and hexahedron :ref:`Cells`, see :numref:`figs/q2Cells`.
 
 .. _figs/linearCells:
