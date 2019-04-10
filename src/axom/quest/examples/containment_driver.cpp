@@ -386,7 +386,7 @@ int main( int argc, char** argv )
 
   bool hasInputArgs = argc > 1;
 
-  // STEP 1: Get file from user or use default
+  // STEP 1: Get file from user or attempt to use default
   std::string stlFile;
 
   // load the file
@@ -398,9 +398,13 @@ int main( int argc, char** argv )
     }
     else
     {
-      const std::string dir = fs::joinPath(AXOM_SRC_DIR, "axom/quest/data");
+#ifdef AXOM_DATA_DIR
+      const std::string dir = fs::joinPath(AXOM_DATA_DIR, "quest");
       const std::string mesh = "plane_simp.stl";
       stlFile = fs::joinPath(dir, mesh);
+#else
+      SLIC_WARNING("Usage: 'quest_containment_driver_ex <stl_mesh>'");
+#endif
     }
 
     // Verify that the mesh file exists
