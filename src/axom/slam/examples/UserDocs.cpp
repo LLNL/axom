@@ -36,9 +36,6 @@ namespace slam = axom::slam;
 
 /**
  * \brief Simple 2D Point class for example
- *
- * \warning This only has the operators that are needed in the
- * example, and does not have any error checking.
  */
 struct Point2
 {
@@ -70,9 +67,6 @@ struct Point2
  * vertices and five elements.
  *
  * \note This code is in support of the slam user docs.
- * It is organized for easier presentation of the concepts.
- * As such, it takes some liberties with C++ style (and Axom's style
- * guidelines).
  */
 
 struct SimpleQuadMesh

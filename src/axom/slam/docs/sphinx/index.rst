@@ -7,7 +7,7 @@ Slam User Documentation
 =======================
 
 Axom's Set-theoretic Lightweight API for Meshes (SLAM) component provides high performance
-building blocks for distributed mesh data structures in HPC simulation codes.
+building blocks for distributed-memory mesh data structures in HPC simulation codes.
 
 Introduction
 ------------
