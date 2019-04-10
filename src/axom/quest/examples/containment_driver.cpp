@@ -28,20 +28,23 @@
 #include <fstream>
 #include <iomanip>  // for setprecision()
 
-using namespace axom;
 
-typedef mint::UnstructuredMesh< mint::SINGLE_SHAPE > UMesh;
+namespace mint = axom::mint;
+namespace primal = axom::primal;
+namespace quest = axom::quest;
 
-typedef quest::InOutOctree<3> Octree3D;
+using UMesh = mint::UnstructuredMesh< mint::SINGLE_SHAPE >;
 
-typedef primal::Point<axom::IndexType,3> TriVertIndices;
-typedef primal::Triangle<double, 3> SpaceTriangle;
+using TriVertIndices = primal::Point<axom::IndexType,3>;
+using SpaceTriangle = primal::Triangle<double, 3>;
 
-typedef Octree3D::GeometricBoundingBox GeometricBoundingBox;
-typedef Octree3D::SpacePt SpacePt;
-typedef Octree3D::SpaceVector SpaceVector;
-typedef Octree3D::GridPt GridPt;
-typedef Octree3D::BlockIndex BlockIndex;
+using Octree3D = quest::InOutOctree<3>;
+
+using GeometricBoundingBox = Octree3D::GeometricBoundingBox;
+using SpacePt = Octree3D::SpacePt;
+using SpaceVector = Octree3D::SpaceVector;
+using GridPt = Octree3D::GridPt;
+using BlockIndex = Octree3D::BlockIndex;
 
 #ifdef AXOM_DEBUG
 const int MAX_CONTAINMENT_QUERY_LEVEL = 7;
@@ -76,9 +79,9 @@ GeometricBoundingBox compute_bounds( mint::Mesh* mesh)
 void testIntersectionOnRegularGrid()
 {
   static int const DIM = 3;
-  typedef primal::Point< double,DIM >   PointType;
-  typedef primal::Triangle< double,DIM > TriangleType;
-  typedef primal::BoundingBox< double,DIM > BoundingBoxType;
+  using PointType = primal::Point< double,DIM >;
+  using TriangleType = primal::Triangle< double,DIM >;
+  using BoundingBoxType = primal::BoundingBox< double,DIM >;
 
   double xArr[3] = { 1., 0., 0.};
   double yArr[3] = { 0., 1., 0.};
@@ -90,7 +93,7 @@ void testIntersectionOnRegularGrid()
 
   TriangleType unitTri( ptX, ptY, ptZ );
 
-  typedef mint::UnstructuredMesh< mint::MIXED_SHAPE > DebugMesh;
+  using DebugMesh = mint::UnstructuredMesh< mint::MIXED_SHAPE >;
   DebugMesh* debugMesh = new DebugMesh(3);
 
   // Add triangle to mesh
@@ -105,7 +108,7 @@ void testIntersectionOnRegularGrid()
   PointType bbMax(1.1);
   BoundingBoxType bbox( bbMin,bbMax );
 
-  typedef quest::SpatialOctree<DIM, quest::BlockData> SpaceOctree;
+  using SpaceOctree = quest::SpatialOctree<DIM, quest::BlockData>;
   SpaceOctree oct( bbox);
 
 
@@ -169,7 +172,7 @@ void testContainmentOnRegularGrid(
 
   SLIC_ASSERT( containment != nullptr );
 
-  utilities::Timer timer(true);
+  axom::utilities::Timer timer(true);
   for ( int inode=0 ; inode < nnodes ; ++inode )
   {
     primal::Point< double,3 > pt;
@@ -236,25 +239,25 @@ void print_surface_stats( mint::Mesh* mesh)
 
   SpacePt pt;
 
-  typedef primal::BoundingBox<double,1> MinMaxRange;
-  typedef MinMaxRange::PointType LengthType;
+  using MinMaxRange = primal::BoundingBox<double,1>;
+  using LengthType = MinMaxRange::PointType;
 
   MinMaxRange meshEdgeLenRange;
   MinMaxRange meshTriAreaRange;
   const int nCells = mesh->getNumberOfCells();
-  typedef std::set<axom::IndexType> TriIdxSet;
+  using TriIdxSet = std::set<axom::IndexType>;
   TriIdxSet badTriangles;
 
   // simple binning based on the exponent
-  typedef std::map<int,int> LogHistogram;
+  using LogHistogram = std::map<int,int>;
   LogHistogram edgeLenHist;    // Create histogram of edge lengths (log scale)
   LogHistogram areaHist;       // Create histogram of triangle areas (log scale)
 
-  typedef std::map<int,MinMaxRange> LogRangeMap;
+  using LogRangeMap = std::map<int,MinMaxRange>;
   LogRangeMap edgeLenRangeMap; // Tracks range of edge lengths at each scale
   LogRangeMap areaRangeMap;    // Tracks range of triangle areas at each scale
 
-  typedef axom::primal::Point<axom::IndexType,3> TriVertIndices;
+  using TriVertIndices= primal::Point<axom::IndexType,3>;
   int expBase2;
 
   // Traverse mesh triangles and bin the edge lengths and areas
@@ -381,6 +384,7 @@ void refineAndPrint(Octree3D& octree, const SpacePt& queryPt,
 //------------------------------------------------------------------------------
 int main( int argc, char** argv )
 {
+  namespace slic = axom::slic;
   slic::UnitTestLogger logger;  // create & initialize logger
   // slic::debug::checksAreErrors = true;
 
