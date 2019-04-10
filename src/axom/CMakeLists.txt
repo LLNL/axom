@@ -2,10 +2,12 @@
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
-
-## Add components
-## Note: Default state of components is controlled by the
-## AXOM_ENABLE_ALL_COMPONENTS option.
+#------------------------------------------------------------------------------
+# Add Axom components
+#------------------------------------------------------------------------------
+# Note: Default state of components is controlled by the
+# AXOM_ENABLE_ALL_COMPONENTS option.
+#------------------------------------------------------------------------------
 
 # Core is an essential part of Axom and cannot be turned off
 add_subdirectory(core)
@@ -26,15 +28,6 @@ axom_add_component(COMPONENT_NAME sidre  DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONE
 axom_add_component(COMPONENT_NAME mint   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 axom_add_component(COMPONENT_NAME quest  DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 
-foreach(comp ${AXOM_COMPONENTS_FULL})
-    string(TOUPPER ${comp} COMPONENT_NAME_UPPERCASE)
-    if(AXOM_ENABLE_${COMPONENT_NAME_UPPERCASE})
-        message(STATUS "Axom component ${comp} is ON")
-    else()
-        message(STATUS "Axom component ${comp} is OFF")
-    endif()
-endforeach()
-
 # Combine all component object libraries into a unified library
 blt_add_library(NAME       axom
                 SOURCES    Axom.cpp
@@ -44,3 +37,23 @@ install(TARGETS              axom
         EXPORT               axom-targets
         DESTINATION          lib)
 install(EXPORT axom-targets DESTINATION lib/cmake)
+
+
+#------------------------------------------------------------------------------
+# Output some information about the configuration
+#------------------------------------------------------------------------------
+foreach(comp ${AXOM_COMPONENTS_FULL})
+    string(TOUPPER ${comp} COMPONENT_NAME_UPPERCASE)
+    if(AXOM_ENABLE_${COMPONENT_NAME_UPPERCASE})
+        message(STATUS "Axom component ${comp} is ON")
+    else()
+        message(STATUS "Axom component ${comp} is OFF")
+    endif()
+endforeach()
+
+if(AXOM_DATA_DIR)
+    message(STATUS "AXOM_DATA_DIR: ${AXOM_DATA_DIR}")
+else()
+    message(STATUS "AXOM_DATA_DIR: <undefined>")
+endif()
+
