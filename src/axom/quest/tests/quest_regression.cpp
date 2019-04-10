@@ -35,8 +35,7 @@
  *  --mesh <file>                 (required) Surface mesh file
  *                                (STL files are currently supported)
  *  --baseline <file>             root file of baseline, a sidre rootfile.
- *                                (Only supported when Axom configured with
- * hdf5)
+ *                                (Only supported when Axom configured w/ hdf5)
  *
  *  At least one of the following must be enabled:
  *  --[no-]distance               Indicates whether to test signed distance

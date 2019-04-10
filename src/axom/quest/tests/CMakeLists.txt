@@ -129,7 +129,7 @@ endforeach()
 
 
 #------------------------------------------------------------------------------
-# Regression tests for quest signed distance and InOutOctree queries
+# Regression tests for quest signed distance and inout queries
 #
 # Note: By default we only run a small subset of the quest regression tests.
 #       To run additional regression tests, configure the code
@@ -139,7 +139,7 @@ endforeach()
 cmake_dependent_option(
     AXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS
     "Enable extra regression tests for quest" OFF
-    "ENABLE_MPI;AXOM_ENABLE_SIDRE" OFF )
+    "ENABLE_MPI;AXOM_ENABLE_SIDRE;AXOM_DATA_DIR" OFF )
 mark_as_advanced(AXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS)
 
 if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
@@ -150,13 +150,8 @@ if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
         sidre
         )
 
-    if (HDF5_FOUND)
-       list(APPEND quest_regression_depends hdf5)
-    endif()
-
-    if (SCR_FOUND)
-       list(APPEND quest_regression_depends scr)
-    endif()
+    blt_list_append(TO quest_regression_depends ELEMENTS hdf5 IF HDF5_FOUND)
+    blt_list_append(TO quest_regression_depends ELEMENTS scr IF SCR_FOUND)
 
     set(test_name quest_regression_test)
 
@@ -167,8 +162,6 @@ if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
         DEPENDS_ON ${quest_regression_depends}
         FOLDER axom/quest/tests
         )
-
-    set(quest_data_dir  ${CMAKE_CURRENT_SOURCE_DIR}/../data)
 
     if ( NOT ENABLE_OPENMP )
         set(extra_compile_flags "${AXOM_DISABLE_OMP_PRAGMA_WARNINGS}")
@@ -186,36 +179,40 @@ if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
        blt_add_target_link_flags( TO ${test_name} FLAGS "${AXOM_ALLOW_MULTIPLE_DEFINITIONS}" )
     endif()
 
-    set(quest_regression_datasets
-        sphere
-    )
-    set(quest_regression_resolutions
-        16
-    )
-
-    if( ${AXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS} )
-       list(APPEND quest_regression_datasets
-           naca0012
-           plane_simp
-           plane_binary
-           aatbase_3_binary
-       )
-       list(APPEND quest_regression_resolutions
-           32
-       )
-    endif()
-
     # Add resolution tests for each dataset and resolution
-    foreach(dataset ${quest_regression_datasets})
-        foreach(res ${quest_regression_resolutions})
-            blt_add_test(
-                NAME quest_regression_${dataset}_${res}
-                COMMAND ${test_name}
-                        --mesh ${quest_data_dir}/${dataset}.stl
-                        --baseline ${quest_data_dir}/${dataset}_${res}_baseline.root
-                        --resolution ${res} ${res} ${res}
-                NUM_MPI_TASKS 1
-            )
+    if(AXOM_DATA_DIR)
+        set(quest_data_dir  ${AXOM_DATA_DIR}/quest)
+        
+        set(quest_regression_datasets
+            sphere
+        )
+        set(quest_regression_resolutions
+            16
+        )
+
+        if( ${AXOM_QUEST_ENABLE_EXTRA_REGRESSION_TESTS} )
+           list(APPEND quest_regression_datasets
+               naca0012
+               plane_simp
+               plane_binary
+               aatbase_3_binary
+           )
+           list(APPEND quest_regression_resolutions
+               32
+           )
+        endif()
+
+        foreach(dataset ${quest_regression_datasets})
+            foreach(res ${quest_regression_resolutions})
+                blt_add_test(
+                    NAME quest_regression_${dataset}_${res}
+                    COMMAND ${test_name}
+                            --mesh ${quest_data_dir}/${dataset}.stl
+                            --baseline ${quest_data_dir}/regression/${dataset}_${res}_baseline.root
+                            --resolution ${res} ${res} ${res}
+                    NUM_MPI_TASKS 1
+                )
+            endforeach()
         endforeach()
-    endforeach()
+    endif()
 endif()
