@@ -105,6 +105,15 @@ def parse_arguments():
     )
 
     parser.add_argument(
+        "-dd",
+        "--datadir",
+        required=False,
+        type=str,
+        help="Sets the path to the 'axom_data' directory."
+        "This controls the AXOM_DATA_DIR variable, which is used for testing",
+    )
+
+    parser.add_argument(
         "--docs-only",
         action="store_true",
         help="Generate a configuration for working on documentation."
@@ -191,6 +200,18 @@ def setup_install_dir(args, platform_info):
     os.makedirs(installpath)
     return installpath
 
+#####################
+# Setup Data Dir
+#####################
+def setup_data_dir(args):
+    if args.datadir:
+        datadir = os.path.abspath(args.datadir)
+     
+    if not os.path.exists(datadir):
+        print("Warning: specified data directory '{}' does not exist"
+            .format(args.datadir))
+     
+    return datadir
 
 ############################
 # Check if executable exists
@@ -205,7 +226,7 @@ def executable_exists(path):
 # Build CMake command line
 ############################
 def create_cmake_command_line(
-    args, unknown_args, buildpath, hostconfigpath, installpath
+    args, unknown_args, buildpath, hostconfigpath, installpath, datapath
 ):
     cmakeline = extract_cmake_location(hostconfigpath)
     assert cmakeline != None, ("No cmake executable found on path")
@@ -250,6 +271,9 @@ def create_cmake_command_line(
         cmakeline += " -DAXOM_ENABLE_TESTS=OFF"
         cmakeline += " -DAXOM_ENABLE_EXAMPLES=OFF"
         cmakeline += " -DAXOM_ENABLE_DOCS=ON"
+
+    if datapath:
+        cmakeline += " -DAXOM_DATA_DIR:PATH={}".format(datapath)
 
     if unknown_args:
         cmakeline += " " + " ".join(unknown_args)
@@ -297,9 +321,10 @@ def main():
     platform_info = get_platform_info(hostconfigpath)
     buildpath = setup_build_dir(args, platform_info)
     installpath = setup_install_dir(args, platform_info)
+    datapath = setup_data_dir(args)
 
     cmakeline = create_cmake_command_line(
-        args, unknown_args, buildpath, hostconfigpath, installpath
+        args, unknown_args, buildpath, hostconfigpath, installpath, datapath
     )
     return run_cmake(buildpath, cmakeline)
 
