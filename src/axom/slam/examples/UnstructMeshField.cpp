@@ -21,6 +21,7 @@
 #include <cmath>
 #include <cstdlib>
 
+#include "axom/config.hpp"
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
@@ -202,19 +203,16 @@ public:
   SimpleVTKHexMeshReader(const std::string & fileName)
     : vtkMesh( fileName.c_str() )
   {
+    // Handle errors opening file, if any
     if(!vtkMesh)
     {
-      using namespace axom::slam::util;
-      std::string ancesFile = findFileInAncestorDirs( fileName);
-      SLIC_ERROR_IF( !axom::utilities::filesystem::pathExists( ancesFile),
-                     fmt::format(
-                       "Tried opening file '{}', but it does not exist.",
-                       ancesFile) );
-
-      SLIC_INFO("Opening file " << ancesFile);
-      vtkMesh.open( ancesFile.c_str() );
+      bool fExists = axom::utilities::filesystem::pathExists(fileName);
+      SLIC_ERROR( fmt::format(
+                    "Attempted to open file '{}'. It {}.",
+                    fileName,
+                    fExists ? "exists" : "does not exist"
+                    ) );
     }
-
   }
   ~SimpleVTKHexMeshReader()
   {
@@ -505,12 +503,16 @@ int main(int argc, char** argv)
   }
   else
   {
-    // Parse command line for data directory, with fallback
-    const std::string DEFAULT_DATA_DIR = "../src/components/slam/data";
-    dataDir = DEFAULT_DATA_DIR;
-    SLIC_INFO("Using default data directory "
-              << DEFAULT_DATA_DIR
-              << "\n First parameter can be a custom directory.");
+    SLIC_WARNING("Usage: 'slam_unstructMesh_ex <data_directory>'");
+    
+#ifdef AXOM_DATA_DIR
+    namespace fs = axom::utilities::filesystem;
+    dataDir = fs::joinPath(AXOM_DATA_DIR, "slam");
+
+    SLIC_INFO("Using default data directory '"<< dataDir <<"'");
+#else
+    axom::utilities::processAbort();
+#endif
   }
 
   int numFailedTests = 0;

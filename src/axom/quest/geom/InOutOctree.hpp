@@ -899,8 +899,8 @@ public:
 
   using SurfaceMesh = typename MeshWrapper::SurfaceMesh;
 
-  using VertexIndex = typename axom::IndexType;
-  using TriangleIndex = typename axom::IndexType;
+  using VertexIndex = axom::IndexType;
+  using TriangleIndex = axom::IndexType;
   using IndexRegistry = slam::FieldRegistry<VertexIndex>;
 
   using SpaceTriangle = typename MeshWrapper::SpaceTriangle;

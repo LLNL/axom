@@ -5,15 +5,15 @@
 #------------------------------------------------------------------------------
 # Slam examples
 #------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# Single source standalone examples
+#------------------------------------------------------------------------------
 # The following flags might be helpful for analyzing performance:
 #   for TemplateEx:        -S -fverbose-asm
 #   for UnstructMeshField: -fwhole-program -funroll-loops
 #------------------------------------------------------------------------------
 
-
-#------------------------------------------------------------------------------
-# Single source standalone examples
-#------------------------------------------------------------------------------
 set(example_sources
     ShockTube.cpp
     PolicyPrototype.cpp
@@ -59,10 +59,11 @@ blt_add_executable(
     DEPENDS_ON  ${slam_tests_depends_on} ${slam_tests_extra_depends}
     FOLDER      axom/slam/examples )
 
-if(AXOM_ENABLE_TESTS)
+if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
     blt_add_test(
         NAME        slam_unstructMesh
-        COMMAND     slam_unstructMesh_ex ${CMAKE_CURRENT_SOURCE_DIR}/../data )
+        COMMAND     slam_unstructMesh_ex ${AXOM_DATA_DIR}/slam
+        )
 endif()
 
 

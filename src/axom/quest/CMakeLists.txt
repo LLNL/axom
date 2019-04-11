@@ -2,16 +2,19 @@
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+#------------------------------------------------------------------------------
+# Quest component
+#------------------------------------------------------------------------------
 
-################################
+#------------------------------------------------------------------------------
 # Check necessary dependencies
-################################
+#------------------------------------------------------------------------------
 axom_component_requires(NAME       QUEST
                         COMPONENTS MINT PRIMAL SLAM SLIC)
 
-################################
-# Specify all headers/sources
-################################
+#------------------------------------------------------------------------------
+# Specify headers, sources and dependencies
+#------------------------------------------------------------------------------
 set( quest_headers
 
     SignedDistance.hpp
@@ -80,30 +83,22 @@ set( quest_depends_on
      primal
      )
 
-if ( ENABLE_OPENMP )
-    list(APPEND quest_depends_on openmp)
-endif()
-
-if ( ENABLE_CUDA )
-    list(APPEND quest_depends_on cuda)
-endif()
+blt_list_append(TO quest_depends_on IF SPARSEHASH_FOUND ELEMENTS sparsehash)
+blt_list_append(TO quest_depends_on IF ENABLE_OPENMP ELEMENTS openmp)
+blt_list_append(TO quest_depends_on IF ENABLE_CUDA   ELEMENTS cuda )
 
 if (ENABLE_MPI)
     list(APPEND quest_headers stl/PSTLReader.hpp)
     list(APPEND quest_sources stl/PSTLReader.cpp)
 
-    if(AXOM_ENABLE_LUMBERJACK)
-        list(APPEND quest_depends_on lumberjack mpi)
-    endif()
+    blt_list_append(TO quest_depends_on
+                    IF AXOM_ENABLE_LUMBERJACK
+                    ELEMENTS lumberjack mpi )
 endif()
+
 
 if (SHROUD_FOUND)
     add_subdirectory(interface)
-endif()
-
-# Add sparsehash when available
-if(SPARSEHASH_FOUND)
-    list(APPEND quest_depends_on sparsehash)
 endif()
 
 
@@ -123,9 +118,9 @@ if (BUILD_SHARED_LIBS)
                    ${CMAKE_CURRENT_BINARY_DIR}/interface/python/quest_test.py)
 endif()
 
-################################
-# Make/Install the library
-################################
+#------------------------------------------------------------------------------
+# Make and install the library
+#------------------------------------------------------------------------------
 blt_add_library(
     NAME        quest
     SOURCES     ${quest_sources}
@@ -143,28 +138,22 @@ axom_install_component(NAME    quest
                        HEADERS ${quest_headers}
                        )
 
-################################
-# Add examples
-################################
+#------------------------------------------------------------------------------
+# Add tests and examples
+#------------------------------------------------------------------------------
 if (AXOM_ENABLE_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
-################################
-# Add tests
-################################
 if (AXOM_ENABLE_TESTS)
   add_subdirectory(tests)
 endif()
 
-################################
-# Add docs
-################################
+#------------------------------------------------------------------------------
+# Add docs and code checks
+#------------------------------------------------------------------------------
 if (AXOM_ENABLE_DOCS)
   add_subdirectory(docs)
 endif()
 
-################################
-# Add code checks
-################################
 axom_add_code_checks(PREFIX quest)

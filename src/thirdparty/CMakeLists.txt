@@ -39,7 +39,7 @@ blt_add_library(NAME fmt
                 HEADERS ${fmt_headers}
                 HEADERS_OUTPUT_SUBDIR fmt)
 
-target_include_directories(fmt INTERFACE
+target_include_directories(fmt SYSTEM INTERFACE
             $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
 
 # Setup some variables for fmt in Axom's config.hpp
@@ -122,7 +122,7 @@ if (AXOM_ENABLE_SPARSEHASH)
             HEADERS ${sparsehash_headers}
             HEADERS_OUTPUT_SUBDIR sparsehash)
      
-    target_include_directories(sparsehash INTERFACE
+    target_include_directories(sparsehash SYSTEM INTERFACE
                 $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
 
     # Disable warning introduced in gcc@8.1 related to how sparsehash casts memory
