@@ -35,7 +35,8 @@ CMake-based build system example
 
 
 .. literalinclude:: ../../../examples/using-with-cmake/CMakeLists.txt
-   :lines: 35-49
+   :language: cmake
+   :lines: 26-39
 
 See:  ``examples/axom/using-with-cmake``
 
@@ -44,6 +45,7 @@ Makefile-based build system example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. literalinclude:: ../../../examples/using-with-make/Makefile
-   :lines: 29-35
+   :language: make
+   :lines: 21-25
 
 See: ``examples/axom/using-with-make``
