@@ -55,7 +55,7 @@ include(${BLT_SOURCE_DIR}/SetupBLT.cmake)
 if(NOT AXOM_DATA_DIR)
     # Use internal 'axom_dir' submodule path if AXOM_DATA_DIR not provided
     get_filename_component(_data_dir "${PROJECT_SOURCE_DIR}/../data" ABSOLUTE)
-    if(EXISTS ${_data_dir})
+    if(EXISTS ${_data_dir}/README.md)
         set(AXOM_DATA_DIR ${_data_dir} CACHE PATH "")
     endif()
 endif()
