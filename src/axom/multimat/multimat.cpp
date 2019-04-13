@@ -268,6 +268,23 @@ MultiMat::IdSet MultiMat::getMatInCell(int c)
 }
 
 
+MultiMat::IdSet MultiMat::getCellContainingMat(int m)
+{
+  SLIC_ASSERT(m_dataLayout == DataLayout::MAT_CENTRIC);
+  SLIC_ASSERT(m_cellMatRel != nullptr);
+
+  return (*m_cellMatRel)[m];
+}
+
+
+MultiMat::IndexSet MultiMat::getSubfieldIndexingSet(int idx) 
+{
+  if (m_dataLayout == DataLayout::CELL_CENTRIC)
+    return getIndexingSetOfCell(idx);
+  else
+    return getIndexingSetOfMat(idx);
+}
+
 MultiMat::IndexSet MultiMat::getIndexingSetOfCell(int c)
 {
   SLIC_ASSERT(m_dataLayout == DataLayout::CELL_CENTRIC);
@@ -286,6 +303,26 @@ MultiMat::IndexSet MultiMat::getIndexingSetOfCell(int c)
     return RangeSetType::SetBuilder().range(c*size2, (c + 1)*size2 - 1);
   }
 }
+
+MultiMat::IndexSet MultiMat::getIndexingSetOfMat(int m)
+{
+  SLIC_ASSERT(m_dataLayout == DataLayout::MAT_CENTRIC);
+  SLIC_ASSERT(0 <= m && m < (int)m_nmats);
+
+  if (m_sparsityLayout == SparsityLayout::SPARSE)
+  {
+    int start_idx = m_cellMatRel_beginsVec[m];
+    int end_idx = m_cellMatRel_beginsVec[m + 1];
+    return RangeSetType::SetBuilder().range(start_idx, end_idx);
+  }
+  else
+  {
+    SLIC_ASSERT(m_sparsityLayout == SparsityLayout::DENSE);
+    int size2 = m_cellMatProdSet->secondSetSize();
+    return RangeSetType::SetBuilder().range(m * size2, (m + 1) * size2 - 1);
+  }
+}
+
 
 void MultiMat::convertToDynamic()
 {
