@@ -4,40 +4,228 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /**
- * Contains code from Robey's paper for setting up the multimaterial mesh
+ * Set-up the test multi-material data.
+ * From Robey's code for cell-dominant full matrix
  */
 
-#include <vector>
+/*
+struct full 
+{
+  vector<double> Volfrac;
+  float filled_percentage;
 
-void make_other_field_data(int ncells, int nmats,
-                           std::vector<double> &i_Volfrac,
+  vector<double> Vol;
+  vector<double> Density;
+  vector<double> Temperature;
+  vector<double> Pressure;
+  vector<double> Densityfrac;
+  vector<double> Temperaturefrac;
+  vector<double> Pressurefrac;
+};
+
+
+struct compact
+{
+  vector<double> Volfrac_fullcc;
+  float filled_percentage;
+
+    int*& imaterial
+    int*& nmaterials
+    double*& Vol
+    double*& Density
+    double*& Temperature
+    double*& Pressure
+    int*& imaterialfrac
+    int*& nextfrac,
+    int*& frac2cell, 
+    double*& Volfrac
+    double*& Densityfrac
+    double*& Temperaturefrac
+    double*& Pressurefrac
+};
+*/
+
+
+void make_other_field_data_celldom(int ncells, int nmats,
+                           std::vector<double>& i_Volfrac_CD,
+                           std::vector<double>& o_Volfrac,
                            std::vector<double>& o_Vol,
                            std::vector<double>& o_Densityfrac,
                            std::vector<double>& o_Temperaturefrac,
                            std::vector<double>& o_Pressurefrac,
-                           std::vector<double>& o_nmatconsts
-                           )
+                           std::vector<double>& o_Volfrac_sparse,
+                           std::vector<double>& o_Densityfrac_sparse,
+                           std::vector<double>& o_Temperaturefrac_sparse,
+                           std::vector<double>& o_Pressurefrac_sparse,
+                           std::vector<int>& o_begin_idx,
+                           std::vector<int>& o_col_idx
+  )
 {
+  //Set up dense data
   o_Vol.resize(ncells, 0);
+  o_Volfrac.resize(ncells*nmats, 0);
   o_Densityfrac.resize(ncells*nmats, 0);
   o_Temperaturefrac.resize(ncells*nmats, 0);
   o_Pressurefrac.resize(ncells*nmats, 0);
+  int nnz = 0;
   for (int ic = 0 ; ic < ncells ; ic++)
   {
     o_Vol[ic] = 0.0;
     for (int m = 0 ; m < nmats ; m++)
     {
-      if (i_Volfrac[ic*nmats + m] > 0.0)
+      o_Volfrac[ic*nmats + m] = i_Volfrac_CD[ic*nmats + m];
+      if (i_Volfrac_CD[ic*nmats + m] > 0.0)
       {
+        nnz += 1;
         o_Densityfrac[ic*nmats + m] = 2.0;
         o_Temperaturefrac[ic*nmats + m] = 0.5;
       }
-      o_Vol[ic] += i_Volfrac[ic*nmats + m];
+      else
+      {
+        o_Densityfrac[ic * nmats + m] = 0.0;
+        o_Temperaturefrac[ic * nmats + m] = 0.0;
+      }
+      o_Pressurefrac[ic * nmats + m] = 0.0;
+
+      o_Vol[ic] += i_Volfrac_CD[ic*nmats + m];
     }
   }
 
-  o_nmatconsts.resize(nmats, 5.0);
+  //fill in sparse data
+  o_begin_idx.resize(ncells + 1);
+  o_col_idx.resize(nnz);
+  int ii = 0;
+  for (int ic = 0; ic < ncells; ic++)
+  {
+    o_begin_idx[ic] = ii;
+    for (int m = 0; m < nmats; m++)
+    {
+      if (i_Volfrac_CD[ic * nmats + m] > 0.0)
+      {
+        o_col_idx[ii] = m;
+        ii++;
+      }
+    }
+  }
+  o_begin_idx[ncells] = ii;
+  assert(ii == nnz);
+  
+  o_Densityfrac_sparse.resize(nnz);
+  o_Volfrac_sparse.resize(nnz);
+  o_Temperaturefrac_sparse.resize(nnz);
+  o_Pressurefrac_sparse.resize(nnz);
+
+  ii = 0;
+  for (int ci = 0; ci < ncells; ci++)
+  {
+    for (int mi = 0; mi < nmats; mi++)
+    {
+      if (o_Volfrac[ci * nmats + mi] != 0)
+      {
+        o_Densityfrac_sparse[ii] = o_Densityfrac[ci * nmats + mi];
+        o_Volfrac_sparse[ii] = o_Volfrac[ci * nmats + mi];
+        o_Temperaturefrac_sparse[ii] = o_Temperaturefrac[ci * nmats + mi];
+        o_Pressurefrac_sparse[ii] = o_Pressurefrac[ci * nmats + mi];
+        ii++;
+      }
+    }
+  }
+  assert(ii == nnz);
 }
+
+
+
+
+void make_other_field_data_matdom(int ncells, int nmats,
+                          std::vector<double>& i_Volfrac_CD,
+                          std::vector<double>& o_Volfrac,
+                          std::vector<double>& o_Vol,
+                          std::vector<double>& o_Densityfrac,
+                          std::vector<double>& o_Temperaturefrac,
+                          std::vector<double>& o_Pressurefrac,
+                          std::vector<double>& o_Volfrac_sparse,
+                          std::vector<double>& o_Densityfrac_sparse,
+                          std::vector<double>& o_Temperaturefrac_sparse,
+                          std::vector<double>& o_Pressurefrac_sparse,
+                          std::vector<int>& o_begin_idx,
+                          std::vector<int>& o_col_idx
+)
+{
+  //Set up dense data
+  o_Vol.resize(ncells, 0);
+  o_Volfrac.resize(ncells * nmats, 0);
+  o_Densityfrac.resize(ncells * nmats, 0);
+  o_Temperaturefrac.resize(ncells * nmats, 0);
+  o_Pressurefrac.resize(ncells * nmats, 0);
+  int nnz = 0;
+  for (int ic = 0; ic < ncells; ic++)
+  {
+    o_Vol[ic] = 0.0;
+  }
+
+  for (int m = 0; m < nmats; m++)
+  {
+    for (int ic = 0; ic < ncells; ic++)
+    {
+      o_Volfrac[m*ncells + ic] = i_Volfrac_CD[ic * nmats + m];
+      if (i_Volfrac_CD[ic * nmats + m] > 0.0)
+      {
+        nnz += 1;
+        o_Densityfrac[m*ncells + ic] = 2.0;
+        o_Temperaturefrac[m * ncells + ic] = 0.5;
+      }
+      else 
+      {
+        o_Densityfrac[m * ncells + ic] = 0;
+        o_Temperaturefrac[m * ncells + ic] = 0;
+      }
+      o_Pressurefrac[m * ncells + ic] = 0.0;
+      o_Vol[ic] += i_Volfrac_CD[ic * nmats + m];
+    }
+  }
+
+  //fill in sparse data, CSR layout
+  o_begin_idx.resize(nmats + 1);
+  o_col_idx.resize(nnz);
+  int ii = 0;
+  for (int m = 0; m < nmats; m++)
+  {
+    o_begin_idx[m] = ii;
+    for (int ic = 0; ic < ncells; ic++)
+    {
+      if (i_Volfrac_CD[ic * nmats + m] > 0.0)
+      {
+        o_col_idx[ii] = ic;
+        ii++;
+      }
+    }
+  }
+  o_begin_idx[nmats] = ii;
+  assert(ii == nnz);
+
+  o_Densityfrac_sparse.resize(nnz);
+  o_Volfrac_sparse.resize(nnz);
+  o_Temperaturefrac_sparse.resize(nnz);
+  o_Pressurefrac_sparse.resize(nnz);
+
+  ii = 0;
+  for (int mi = 0; mi < nmats; mi++)
+  {
+    for (int ci = 0; ci < ncells; ci++)
+    {
+      if (o_Volfrac[mi * ncells + ci] != 0)
+      {
+        o_Densityfrac_sparse[ii] = o_Densityfrac[mi * ncells + ci];
+        o_Volfrac_sparse[ii] = o_Volfrac[mi * ncells + ci];
+        o_Temperaturefrac_sparse[ii] = o_Temperaturefrac[mi * ncells + ci];
+        o_Pressurefrac_sparse[ii] = o_Pressurefrac[mi * ncells + ci];
+        ii++;
+      }
+    }
+  }
+  assert(ii == nnz);
+}
+
 
 
 void read_vol_frac_matrix_file(std::string filename, int& ncells, int& nmats,
