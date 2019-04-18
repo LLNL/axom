@@ -11,64 +11,12 @@ Mesh Data Model
 ===============
 
 This section presents the key constituents of Mint's :ref:`MeshDataModel`.
-First, :ref:`PreliminaryConcepts` and a high-level description of the underlying
-:ref:`MeshRepresentation` in Mint are presented, followed by,
+First, a high-level description of the underlying
+:ref:`MeshRepresentation` in Mint is presented, followed by,
 a classification and overview of the different :ref:`MeshTypes`.
 These concepts are then combined in presenting the :ref:`Architecture` of
 the Mint :ref:`MeshDataModel` and underlying :ref:`MeshStorageManagement`
 substrate.
-
-.. _PreliminaryConcepts:
-
-Preliminary Concepts
----------------------
-
-A mesh [#f1]_, denoted by :math:`\mathcal{M}(\Omega)`, provides a discrete
-represenation of a geometric domain of interest, :math:`\Omega`, on which, the
-underlying *mathematical model* is evaluated. The mathematical model
-is typically defined by a system of governing *Partial Differential Equations
-(PDEs)* and associated boundary and initial conditions. The solution
-to the governing PDE predicts a physical process that occurs and evolves on
-:math:`\Omega` over time. For example, consider the flow around an aircraft,
-turbulence modeling, blast wave propagation over complex terrains, or,
-heat transfer in contacting objects, to name a few.
-Evolving the mathematical model to predict such a physical process is typically
-done numerically, which requires discretizing the governing PDE by a numerical
-scheme, such as, a Finite Difference (FD), Finite Volume (FV), or, the
-Finite Element Method (FEM), chief among them.
-
-.. _figs/meshedDomain:
-.. figure:: ../figures/meshed_domain.png
-   :align: center
-   :scale: 100%
-   :alt: Sample Mesh domain
-
-   Mesh discretization of a geometric domain: (a) Sample geometric domain,
-   :math:`\Omega`. (b) Corresponding mesh of the domain,
-   :math:`\mathcal{M}(\Omega)`. The *nodes* and *cells* of the mesh, depicted in
-   red, correspond to the discrete locations where the unknown variables of the
-   governing PDE are stored and evaluated.
-
-Discretization of the governing PDE requires the domain to be approximated
-with a mesh. For example, :numref:`figs/meshedDomain` (a) depicts a geometric
-domain, :math:`\Omega`. The corresponding mesh, :math:`\mathcal{M}(\Omega)`,
-is illustrated in :numref:`figs/meshedDomain` (b). The mesh approximates
-the geometric domain, :math:`\Omega`, by a finite number of simple geometric
-entities, such as, *nodes* and *cells*, depicted in red in
-:numref:`figs/meshedDomain` (b). These geometric entities comprising the mesh
-define the discrete locations, in space and time, at which the unknown variables,
-i.e., the *degrees of freedom* of the governing PDE, are evaluated, by the
-numerical scheme being employed.
-
-There are a variety of different :ref:`MeshTypes` one can choose from.
-The type of mesh employed depends on the choice of the underlying
-numerical discretization scheme. For example, a finite difference scheme
-typically requires a :ref:`StructuredMesh`. However, the finite volume and
-finite element methods may be implemented for both :ref:`StructuredMesh` and
-:ref:`UnstructuredMesh` types. In contrast, *meshless* or *mesh-free* methods,
-such as, *Smoothed Particle Hydrodynamics (SPH)*, discretize the governing PDE
-over a set of *particles* or *nodes*, using a :ref:`ParticleMesh`
-representation.
 
 .. #############################################################################
 ..  MESH Representation
@@ -137,7 +85,7 @@ A cell, :math:`\mathcal{C}_i`, is given by an ordered list of :ref:`Nodes`,
 :math:`\mathcal{C}_i=\{n_0,n_1,...n_k\}`, where each entry,
 :math:`n_j \in \mathcal{C}_i`, corresponds to a
 unique node index in the mesh. The order of :ref:`Nodes` defining a cell is
-determined according to a prescribed local numbering convention [#f2]_ for a
+determined according to a prescribed local numbering convention [#f1]_ for a
 particular cell type. See :numref:`figs/linearCells` and :numref:`figs/q2Cells`.
 All Mint :ref:`CellTypes` follow the `CGNS`_ standard local numbering
 convention.
@@ -649,7 +597,7 @@ the most flexibility. Notably, an :ref:`UnstructuredMesh` can accomodate
 different :ref:`CellTypes` and does not enforce any constraints or particular
 ordering on the constituent :ref:`Nodes` and :ref:`Cells`. This makes an
 :ref:`UnstructuredMesh` discretization particularly attractive, especially for
-applications that require *local adaptive mesh refinement* [#f3]_ and deal with
+applications that require *local adaptive mesh refinement* [#f2]_ and deal with
 complex geometries.
 
 Generally, the advantages of using an :ref:`UnstructuredMesh` come at the cost
@@ -1439,9 +1387,8 @@ examples on :ref:`usingMintWithSidre`.
 
 .. rubric:: Footnotes
 
-.. [#f1] A *Mesh* is also sometimes referred to as a *Grid*
-.. [#f2] The cell numbering convention is also referred to as winding convention.
-.. [#f3] Local adaptive refinement is also more broadly known as local h-refinement.
+.. [#f1] The cell numbering convention is also referred to as a winding convention.
+.. [#f2] Local adaptive refinement is also more broadly known as local h-refinement.
 
 .. #############################################################################
 ..  CITATIONS
