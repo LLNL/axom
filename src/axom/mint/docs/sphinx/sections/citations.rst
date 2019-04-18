@@ -16,3 +16,8 @@
 .. _WCI: https://wci.llnl.gov/
 .. _WSC: https://wci.llnl.gov/about-us/weapon-simulation-and-computing
 .. _CGNS: https://cgns.github.io/
+.. _VTK File Format: https://vtk.org/Wiki/images/5/51/VTK-File-Formats.pdf
+.. _VisIt: https://wci.llnl.gov/simulation/computer-codes/visit
+.. _ParaView: https://www.paraview.org/
+.. _Himmelblau's Function: https://en.wikipedia.org/wiki/Himmelblau%27s_function
+.. _Lambda Expression: https://www.cprogramming.com/c++11/c++11-lambda-closures.html

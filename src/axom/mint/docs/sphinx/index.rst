@@ -22,6 +22,6 @@ Table Of Contents
    sections/tutorial.rst
    sections/examples.rst
    sections/faq.rst
-..   sections/appendix.rst
+   sections/appendix.rst
 
 .. include:: sections/citations.rst

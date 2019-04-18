@@ -505,6 +505,9 @@ lines. They can be curves and align with the contours of a solid body. For this
 reason, the resulting :ref:`CurvilinearMesh` is often called a *mapped mesh* or
 *body-fitted mesh*.
 
+See the :ref:`sections/tutorial` for an example that demonstrates how to
+:ref:`createACurvilinearMesh`.
+
 .. _RectilinearMesh:
 
 Rectilinear Mesh
@@ -539,6 +542,9 @@ each dimension respectively. Given the *IJK* index of a node, its corresponding
 physical coordinates can be obtained by taking the *Cartesian* product of the
 corresponding coordinate along each coordinate axis. For this reason, the
 :ref:`RectilinearMesh` is sometimes called a *product* mesh.
+
+See the :ref:`sections/tutorial` for an example that demonstrates how to
+:ref:`createARectilinearMesh`.
 
 .. _UniformMesh:
 
@@ -580,6 +586,8 @@ computed as follows:
       p_z &=& z_0 &+& k &\times& h_z \\
     \end{eqnarray}
 
+See the :ref:`sections/tutorial` for an example that demonstrates how to
+:ref:`createAUniformMesh`.
 
 .. #############################################################################
 ..  UNSTRUCTURED MESH
@@ -757,6 +765,8 @@ of *tetrahedrons* is :math:`4` and the stride for a mesh consisting of
 :ref:`SingleCellTopology`, corresponding *stride* and applicalble topological
 and spatial dimension.
 
+See the :ref:`sections/tutorial` for an example that demonstrates how to
+:ref:`createAnUnstructuredMesh`.
 
 .. _MixedCellTopology:
 
@@ -910,6 +920,9 @@ type for each constituent mesh cell.
         n_k &=& cell\_to\_node[ offset + (k-1)]
       \end{eqnarray}
 
+
+See the :ref:`sections/tutorial` for an example that demonstrates how to
+:ref:`createAMixedUnstructuredMesh`.
 
 .. _CellTypes:
 
@@ -1159,7 +1172,7 @@ Generally, in application code, it is not necessary to create fields using the
 ``mint::FieldVariable`` class directly. The ``mint::Mesh`` object provides
 convenience methods for adding, removing and accessing fields on a mesh.
 Consult the :ref:`sections/tutorial` for more details on
-:ref:`workingWithFieldDataOnAMesh`.
+:ref:`workingWithFields` on a Mesh.
 
 .. _ConcreteMeshClasses:
 
@@ -1350,7 +1363,7 @@ to grow and shrink as needed. However, once the Mint object goes out-of-scope,
 all data is deleted and the memory is returned to the system.
 
 See the :ref:`sections/tutorial` for more information and a set of concrete
-examples on :ref:`constructingAMesh` using :ref:`NativeStorage`.
+examples on how to create a mesh using :ref:`NativeStorage`.
 
 .. _ExternalStorage:
 
@@ -1364,8 +1377,8 @@ cannot be reallocated and once the Mint object goes out-of-scope, the data is no
 deleted. The data remains persistent in the application buffers until it is
 deleted by the application.
 
-See the :ref:`sections/tutorial` for more information and a set of concrete
-examples on :ref:`constructAMeshFromExternal`.
+See the :ref:`sections/tutorial` for more information on
+:ref:`usingExternalStorage`.
 
 .. _SidreStorage:
 
@@ -1379,7 +1392,7 @@ needed. However, when the Mint object goes out-of-scope, the data remains
 persistent in `Sidre`_.
 
 See the :ref:`sections/tutorial` for more information and a set of concrete
-examples on :ref:`usingMintWithSidre`.
+examples on :ref:`usingSidre`.
 
 .. #############################################################################
 ..  FOOTNOTES

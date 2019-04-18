@@ -55,6 +55,13 @@ that comprise the :ref:`sections/execution_model` are:
   Lambda expression, and is given as an argument to the function of the
   :ref:`sections/execution_model`
 
+.. note::
+    By default, if a second template argument is not specified to any of the
+    constituent functions of the :ref:`sections/execution_model`, the kernel,
+    usually specified by a `Lambda Expression`_, is assumed to take a single
+    argument that corresponds to the iteration index.
+
+
 .. _executionPolicies:
 
 Execution Policies
