@@ -44,8 +44,8 @@ Requirements
 
 Mint is designed to be *light-weight* and *self-contained*.
 The only requirement for using Mint is a C++11 compliant compiler.
-However, to realize the full spectrum of capabilities provided, support for
-the following third-party libraries is provided:
+However, to realize the full spectrum of capabilities provided,
+the following third-party libraries are supported:
 
 * `RAJA`_, used for the parallel execution and portability layer.
 
@@ -53,8 +53,8 @@ the following third-party libraries is provided:
 
 * `Umpire`_, for memory management on next-generation architectures.
 
-Consult the `Axom Quick Start Guide`_ for further information on how to build
-the `Axom Toolkit`_,
+For further information on how to build the `Axom Toolkit`_ using these
+third-party libraries, consult the `Axom Quick Start Guide`_
 
 About this Guide
 ^^^^^^^^^^^^^^^^^

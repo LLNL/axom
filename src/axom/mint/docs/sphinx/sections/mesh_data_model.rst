@@ -106,8 +106,9 @@ are 0D topological entities, i.e., :ref:`Nodes`.
 
 .. note::
 
-  Since in 1D the :ref:`Faces` of a cell are equivalent to its
-  constituent :ref:`Nodes`, Mint does not support :ref:`Faces` in 1D.
+  In 1D the :ref:`Faces` of a cell are equivalent to the constituent
+  mesh :ref:`Nodes`, hence, Mint does not explicitly support :ref:`Faces`
+  in 1D.
 
 .. _figs/cellFaces:
 .. figure:: ../figures/cell_faces.png
@@ -434,7 +435,7 @@ One of the important advantages of a :ref:`StructuredMesh` representation is
 that the constituent :ref:`Topology` of the mesh is *implicit*. This enables
 a convenient way for computing the :ref:`Connectivity` information
 automatically without the need to store this information explicitly. For example,
-an interior (i.e., not a at the boundary) 2D cell located at :math:`C=(i,j)`,
+an interior 2D cell (i.e., not at a boundary) located at :math:`C=(i,j)`,
 will always have four face neighbors given by the following indices:
 
 * :math:`N_0=(i-1,j)`,
@@ -717,7 +718,7 @@ cells are stored from left to right. The base offset for a given cell is given
 as a multiple of the cell index and the *stride*. As illustrated in
 :numref:`figs/singleCellTypeRep`, the base offset for cell :math:`C_0` is
 :math:`0 \times 3 = 0`, the offest for cell :math:`C_1` is
-:math:`1 \times 3 = 1`, the offset for cell :math:`C_2` is
+:math:`1 \times 3 = 3`, the offset for cell :math:`C_2` is
 :math:`2 \times 3 = 6` and so on.
 
 .. admonition:: Direct Stride Cell Access in a Single Cell Type Topology UnstructuredMesh
