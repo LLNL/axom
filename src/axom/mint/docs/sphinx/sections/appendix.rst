@@ -8,13 +8,13 @@
 Appendix
 =========
 
-.. _codeForTheBasicMintExample:
+.. _MintApplicationCodeExample:
 
-Code for the Basic Mint Example
---------------------------------
+Mint Application Code Example
+------------------------------
 
-Below is the complete code for the :ref:`basicExample` presented in
-the :ref:`sections/tutorial` section. The code can be found in the Axom
+Below is the complete :ref:`MintApplicationCodeExample` presented in
+the :ref:`sections/quick_introduction` section. The code can be found in the Axom
 source code under ``src/axom/mint/examples/mint_uniform_mesh.cpp``.
 
 .. literalinclude:: ../../../examples/mint_uniform_mesh.cpp

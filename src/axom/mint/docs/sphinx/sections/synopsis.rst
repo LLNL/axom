@@ -60,13 +60,16 @@ About this Guide
 ^^^^^^^^^^^^^^^^^
 
 This guide discusses the basic concepts and overarching design architecture of
-Mint. With an extensive list of examples and code snippets, the
-:ref:`sections/tutorial` section offers an excellent resource to
-get started with using Mint quickly. For more detailed documentation
-of the interfaces of the various classes and functions in Mint, developers are
-advised to consult the `Mint Doxygen API Documentation`_. Last, complete
-examples and code walk-throughs of mini-apps using Mint are provided in the
-:ref:`sections/examples` section.
+Mint. The :ref:`sections/quick_introduction` section offers an excellent resource
+for getting started with Mint quickly, illustrating basic concepts
+and key capabilities in the context of a working code example.
+Additional examples and code snippets are provided in the
+:ref:`sections/tutorial` section that are designed to demonstrate specific Mint
+concepts and capabilities in a structured and simple format. For more detailed
+documentation of the interfaces of the various classes and functions in Mint,
+developers are advised to consult the `Mint Doxygen API Documentation`_. Last,
+complete examples and code walk-throughs of mini-apps using Mint are provided in
+the :ref:`sections/examples` section.
 
 For any questions, please consult the :ref:`sections/faq` section or feel free
 to post your question to the Axom Developers mailing list at axom-dev@llnl.gov.

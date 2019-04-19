@@ -15,6 +15,7 @@ Table Of Contents
 .. toctree::
    :maxdepth: 3
 
+   sections/quick_introduction.rst
    sections/preliminary_concepts.rst
    sections/mesh_data_model.rst
    sections/execution_model.rst
