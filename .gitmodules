@@ -3,4 +3,4 @@
 	url = https://github.com/LLNL/blt.git
 [submodule "axom_data"]
 	path = data
-	url = ../axom_data.git
+	url = https://github.com/LLNL/axom_data.git
