@@ -64,8 +64,10 @@ std::string View::getPathName() const
  *
  *************************************************************************
  */
-View* View::allocate()
+View* View::allocate(int allocID)
 {
+  allocID = getValidAllocatorID(allocID);
+
   if ( isAllocateValid() )
   {
     if (m_state == EMPTY)
@@ -78,7 +80,7 @@ View* View::allocate()
 
     TypeID type = static_cast<TypeID>(m_schema.dtype().id());
     IndexType num_elems = m_schema.dtype().number_of_elements();
-    m_data_buffer->allocate(type, num_elems);
+    m_data_buffer->allocate(type, num_elems, allocID);
     apply();
   }
 
@@ -92,8 +94,10 @@ View* View::allocate()
  *
  *************************************************************************
  */
-View* View::allocate( TypeID type, IndexType num_elems)
+View* View::allocate(TypeID type, IndexType num_elems, int allocID)
 {
+  allocID = getValidAllocatorID(allocID);
+
   if ( type == NO_TYPE_ID || num_elems < 0 )
   {
     SLIC_CHECK(type != NO_TYPE_ID);
@@ -102,7 +106,7 @@ View* View::allocate( TypeID type, IndexType num_elems)
   }
 
   describe(type, num_elems);
-  allocate();
+  allocate(allocID);
 
   return this;
 }
@@ -114,8 +118,10 @@ View* View::allocate( TypeID type, IndexType num_elems)
  *
  *************************************************************************
  */
-View* View::allocate(const DataType& dtype)
+View* View::allocate(const DataType& dtype, int allocID)
 {
+  allocID = getValidAllocatorID(allocID);
+
   if ( dtype.is_empty() )
   {
     SLIC_CHECK_MSG( !dtype.is_empty(),
@@ -125,7 +131,7 @@ View* View::allocate(const DataType& dtype)
   }
 
   describe(dtype);
-  allocate();
+  allocate(allocID);
 
   return this;
 }
@@ -537,7 +543,39 @@ View* View::setExternalDataPtr(void* external_ptr)
 /*
  *************************************************************************
  *
- * Return true if view contains allocated data.  This could mean a buffer
+ * Update the data in this View with the data from other
+ *
+ *************************************************************************
+ */
+View * View::updateFrom(const View* other)
+{
+  if (!isUpdateableFrom(other))
+  {
+    SLIC_WARNING("View " << getPathName() << " is not updateable from View " <<
+                 other->getPathName() );
+    return this;
+  }
+
+  SLIC_WARNING_IF(getTypeID() != other->getTypeID(),
+                  "Updating View " << getPathName() << " with type " << 
+                  getTypeID() << " from View " << other->getPathName() << 
+                  " with type " << other->getTypeID());
+
+  char * dst = static_cast<char *>(getVoidPtr());
+  dst += getOffset() * getBytesPerElement();
+
+  char * src = static_cast<char *>(other->getVoidPtr());
+  src += other->getOffset() * other->getBytesPerElement();
+
+  copy(dst, src, getTotalBytes());
+
+  return this;
+}
+
+/*
+ *************************************************************************
+ *
+ * Return true if view contains allocated data. This could mean a buffer
  * with allocated data, or a scalar value, or a string.
  *
  * Note: Most of our isXXX functions are implemented in the header.
@@ -691,6 +729,23 @@ bool View::isEquivalentTo(const View* other) const
          && (getTotalBytes() == other->getTotalBytes());
 }
 
+/*
+ *************************************************************************
+ *
+ * Test whether the two Views can update each other
+ *
+ *************************************************************************
+ */
+bool View::isUpdateableFrom(const View* other) const
+{
+  const bool valid_state = (m_state == BUFFER) || (m_state == EXTERNAL);
+  const bool other_valid_state = (other->m_state == BUFFER) || 
+                               (other->m_state == EXTERNAL);
+  const bool same_length = (getTotalBytes() == other->getTotalBytes());
+  const bool unit_stride = (getStride() == 1) && (other->getStride() == 1);
+
+  return valid_state && other_valid_state && same_length && unit_stride;
+}
 
 /*
  *************************************************************************
@@ -707,7 +762,7 @@ void View::print() const
 /*
  *************************************************************************
  *
- * Print JSON description of data view to an  ostream.
+ * Print JSON description of data view to an ostream.
  *
  *************************************************************************
  */
@@ -1061,7 +1116,7 @@ char const* View::getStateStringName(State state)
  *
  *************************************************************************
  */
-View::State View::getStateId(const std::string &name)
+View::State View::getStateId(const std::string &name) const
 {
   State res = EMPTY;
   if(name == "EMPTY")
@@ -1534,6 +1589,25 @@ const char* View::getAttributeString( const Attribute* attr ) const
   }
 
   return m_attr_values.getString(attr);
+}
+
+/*
+ *************************************************************************
+ *
+ * PRIVATE method to return a valid umpire::Allocator ID.
+ *
+ *************************************************************************
+ */
+int View::getValidAllocatorID( int allocID )
+{
+#ifdef AXOM_USE_UMPIRE
+  if ( allocID == INVALID_ALLOCATOR_ID )
+  {
+    allocID = getOwningGroup()->getDefaultAllocatorID();
+  }
+#endif
+
+  return allocID;
 }
 
 } /* end namespace sidre */

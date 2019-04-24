@@ -136,6 +136,7 @@ TEST(sidre_opaque,basic_inout)
 
   // clean up...
   delete ext;
+  delete ext2;
   delete ds;
 }
 
