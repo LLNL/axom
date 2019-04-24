@@ -209,7 +209,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 -
 
 
-[Unreleased]: https://lc.llnl.gov/bitbucket/projects/ATK/repos/axom/compare/commits?targetBranch=refs%2Ftags%2Fv0.2.9&sourceBranch=refs%2Fheads%2Fdevelop&targetRepoId=1066
-[Version 0.2.9]: https://lc.llnl.gov/bitbucket/projects/ATK/repos/axom/compare/commits?targetBranch=refs%2Ftags%2Fv0.2.8&sourceBranch=refs%2Ftags%2Fv0.2.9&targetRepoId=1066
+[Unreleased]:    https://github.com/LLNL/axom/compare/v0.3.0...develop
+[Version 0.3.0]: https://github.com/LLNL/axom/compare/v0.2.9...v0.3.0
+[Version 0.2.9]: https://github.com/LLNL/axom/compare/v0.2.8...v0.2.9
 
 [Scalable Checkpoint Restart (SCR)]: https://computation.llnl.gov/projects/scalable-checkpoint-restart-for-mpi
