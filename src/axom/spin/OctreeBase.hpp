@@ -15,18 +15,18 @@
 
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
-#include "axom/primal.hpp"
 
-#include "axom/quest/geom/OctreeLevel.hpp"
-#include "axom/quest/geom/DenseOctreeLevel.hpp"
-#include "axom/quest/geom/SparseOctreeLevel.hpp"
+#include "axom/spin/DenseOctreeLevel.hpp"
+#include "axom/spin/OctreeLevel.hpp"
+#include "axom/spin/Primitives.hpp"
+#include "axom/spin/SparseOctreeLevel.hpp"
 
 
 #include <ostream>   // for ostream in print
 
 namespace axom
 {
-namespace quest
+namespace spin
 {
 
 /**
@@ -133,21 +133,20 @@ template<int DIM, typename BlockDataType>
 class OctreeBase
 {
 public:
-  typedef axom::IndexType CoordType;
-  typedef primal::Point<CoordType,DIM> GridPt;
-  typedef primal::Vector<CoordType,DIM> GridVec;
+  using CoordType = axom::IndexType;
+  using GridPt = Point<CoordType,DIM>;
+  using GridVec = Vector<CoordType,DIM>;
 
-  typedef slam::policies::
-    CompileTimeSize<CoordType,std::numeric_limits<int>::digits>
-    MAX_LEVEL_SIZE;
-  typedef slam::OrderedSet<MAX_LEVEL_SIZE> OctreeLevels;
+  using MAX_LEVEL_SIZE = slam::policies::
+    CompileTimeSize<CoordType,std::numeric_limits<int>::digits>;
+  using OctreeLevels = slam::OrderedSet<MAX_LEVEL_SIZE>;
 
-  typedef OctreeLevel<DIM, BlockDataType>           OctreeLevelType;
-  typedef typename OctreeLevelType::BlockIter LevelMapIterator;
-  typedef typename OctreeLevelType::ConstBlockIter LevelMapCIterator;
+  using OctreeLevelType = OctreeLevel<DIM, BlockDataType>;
+  using LevelMapIterator = typename OctreeLevelType::BlockIter;
+  using LevelMapCIterator = typename OctreeLevelType::ConstBlockIter;
 
 
-  typedef slam::Map<OctreeLevelType*> LeafIndicesLevelMap;
+  using LeafIndicesLevelMap = slam::Map<OctreeLevelType*>;
 
   /**
    * \brief Inner class encapsulating the index of an octree <em>block</em>.
@@ -177,16 +176,14 @@ public:
       NUM_FACE_NEIGHBORS = 2 * DIM
     };
 private:
-    typedef slam::policies::
-      CompileTimeSize<int, NUM_CHILDREN> OCTREE_CHILDREN_SIZE;
-    typedef slam::policies::
-      CompileTimeSize<int, NUM_FACE_NEIGHBORS> OCTREE_FACE_NEIGHBORS_SIZE;
+    using OCTREE_CHILDREN_SIZE =
+      slam::policies::CompileTimeSize<int, NUM_CHILDREN>;
+    using OCTREE_FACE_NEIGHBORS_SIZE =
+      slam::policies::CompileTimeSize<int, NUM_FACE_NEIGHBORS>;
 
 public:
-    typedef slam::OrderedSet<OCTREE_CHILDREN_SIZE>
-      ChildIndexSet;
-    typedef slam::OrderedSet<OCTREE_FACE_NEIGHBORS_SIZE>
-      FaceNeighborIndexSet;
+    using ChildIndexSet = slam::OrderedSet<OCTREE_CHILDREN_SIZE>;
+    using FaceNeighborIndexSet = slam::OrderedSet<OCTREE_FACE_NEIGHBORS_SIZE>;
 
 public:
     /**
@@ -463,22 +460,22 @@ private:
     MAX_SPARSE64_LEV = 64 / DIM
   };
 
-  typedef DenseOctreeLevel<DIM, BlockDataType, axom::uint16>
-    DenseOctLevType;
-  typedef SparseOctreeLevel<DIM, BlockDataType,axom::uint16>
-    Sparse16OctLevType;
-  typedef SparseOctreeLevel<DIM, BlockDataType,axom::uint32>
-    Sparse32OctLevType;
-  typedef SparseOctreeLevel<DIM, BlockDataType,axom::uint64>
-    Sparse64OctLevType;
-  typedef SparseOctreeLevel<DIM, BlockDataType,GridPt>
-    SparsePtOctLevType;
+  using DenseOctLevType =
+    DenseOctreeLevel<DIM, BlockDataType, axom::uint16>;
+  using Sparse16OctLevType =
+    SparseOctreeLevel<DIM, BlockDataType, axom::uint16>;
+  using Sparse32OctLevType =
+    SparseOctreeLevel<DIM, BlockDataType, axom::uint32>;
+  using Sparse64OctLevType =
+    SparseOctreeLevel<DIM, BlockDataType, axom::uint64>;
+  using SparsePtOctLevType =
+    SparseOctreeLevel<DIM, BlockDataType, GridPt>;
 
-  typedef DenseOctLevType* DenseOctLevPtr;
-  typedef Sparse16OctLevType* Sparse16OctLevPtr;
-  typedef Sparse32OctLevType* Sparse32OctLevPtr;
-  typedef Sparse64OctLevType* Sparse64OctLevPtr;
-  typedef SparsePtOctLevType* SparsePtOctLevPtr;
+  using DenseOctLevPtr = DenseOctLevType*;
+  using Sparse16OctLevPtr = Sparse16OctLevType*;
+  using Sparse32OctLevPtr = Sparse32OctLevType*;
+  using Sparse64OctLevPtr = Sparse64OctLevType*;
+  using SparsePtOctLevPtr = SparsePtOctLevType*;
 
   /**
    * \brief Simple utility to check if a pointer of type BasePtrType
@@ -1042,7 +1039,7 @@ protected:
 };
 
 
-} // end namespace quest
+} // end namespace spin
 } // end namespace axom
 
 #endif  // OCTREE_BASE_HXX_

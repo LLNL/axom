@@ -10,8 +10,7 @@
 #include "axom/core/Macros.hpp"   // for DISABLE_COPY_AND_ASSIGNMENT macro
 #include "axom/core/Types.hpp"  // for nullptr
 
-#include "axom/primal/geometry/BoundingBox.hpp"
-#include "axom/primal/geometry/Point.hpp"
+#include "axom/spin/Primitives.hpp"
 #include "axom/primal/operators/squared_distance.hpp"
 
 #include "axom/slic/interface/slic.hpp"          // for logging
@@ -24,7 +23,7 @@
 
 namespace axom
 {
-namespace primal
+namespace spin
 {
 
 /*!
@@ -47,8 +46,8 @@ template < typename T, int NDIMS >
 class BVHTree
 {
 public:
-  typedef BoundingBox< double,NDIMS > BoxType;
-  typedef Point< double,NDIMS > PointType;
+  using BoxType = BoundingBox< double,NDIMS >;
+  using PointType = Point< double,NDIMS >;
 
 public:
 
@@ -451,7 +450,7 @@ private:
   DISABLE_MOVE_AND_ASSIGNMENT(BVHTree);
 };
 
-} /* namespace primal */
+} /* namespace spin */
 } /* namepsace axom */
 
 //------------------------------------------------------------------------------
@@ -459,7 +458,7 @@ private:
 //------------------------------------------------------------------------------
 namespace axom
 {
-namespace primal
+namespace spin
 {
 
 template < typename T, int NDIMS >
@@ -1181,7 +1180,7 @@ void BVHTree< T,NDIMS >::writeVtkFile(
 
 }
 
-} /* namespace primal */
+} /* namespace spin */
 } /* namespace axom */
 
 #endif /* BVHTREE_HPP_ */

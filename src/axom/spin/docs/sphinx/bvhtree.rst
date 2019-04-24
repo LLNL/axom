@@ -40,12 +40,12 @@ The following code example shows how a ``BVHTree`` can be used to accelerate a
 point-mesh intersection algorithm.  First, we insert all triangles into the
 index and call ``BVHTree::build()``.
 
-.. literalinclude:: ../../examples/primal_introduction.cpp
+.. literalinclude:: ../../examples/spin_introduction.cpp
    :start-after: _bvhtree_header_start
    :end-before: _bvhtree_header_end
    :language: C++
 
-.. literalinclude:: ../../examples/primal_introduction.cpp
+.. literalinclude:: ../../examples/spin_introduction.cpp
    :start-after: _bvhtree_build_start
    :end-before: _bvhtree_build_end
    :language: C++
@@ -59,14 +59,14 @@ of the search.  If the probe does intersect a bin, the next level of bins is
 tested for probe intersection.  Without the acceleration data structure, each
 probe point must be tested against each triangle.
 
-.. literalinclude:: ../../examples/primal_introduction.cpp
+.. literalinclude:: ../../examples/spin_introduction.cpp
    :start-after: _bvhtree_candidate_start
    :end-before: _bvhtree_candidate_end
    :language: C++
 
 Finally, test the point against all candidate neighbor triangles.
 
-.. literalinclude:: ../../examples/primal_introduction.cpp
+.. literalinclude:: ../../examples/spin_introduction.cpp
    :start-after: _bvhtree_cand_int_start
    :end-before: _bvhtree_cand_int_end
    :language: C++

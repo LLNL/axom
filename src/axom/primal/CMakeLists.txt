@@ -18,13 +18,11 @@ set( primal_headers
      geometry/BoundingBox.hpp
      geometry/OrientedBoundingBox.hpp
      geometry/OrientationResult.hpp
-     geometry/MortonIndex.hpp
      geometry/NumericArray.hpp
      geometry/Plane.hpp
      geometry/Point.hpp
      geometry/Polygon.hpp
      geometry/Ray.hpp
-     geometry/RectangularLattice.hpp
      geometry/Segment.hpp
      geometry/Sphere.hpp
      geometry/Tetrahedron.hpp
@@ -43,9 +41,6 @@ set( primal_headers
      operators/detail/clip_impl.hpp
      operators/detail/intersect_impl.hpp
 
-     ## spatial acceleration
-     spatial_acceleration/BVHTree.hpp
-     spatial_acceleration/UniformGrid.hpp
    )
 
 set( primal_sources

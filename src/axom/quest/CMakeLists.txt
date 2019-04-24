@@ -24,14 +24,7 @@ set( quest_headers
     detail/AllNearestNeighbors_detail.hpp
 
     ## Geometry Headers
-    geom/Brood.hpp
-    geom/DenseOctreeLevel.hpp
-    geom/ImplicitGrid.hpp
     geom/InOutOctree.hpp
-    geom/OctreeBase.hpp
-    geom/OctreeLevel.hpp
-    geom/SparseOctreeLevel.hpp
-    geom/SpatialOctree.hpp
 
     # Mesh tester headers
     MeshTester.hpp
@@ -80,6 +73,7 @@ set( quest_depends_on
      slic
      mint
      slam
+     spin
      primal
      )
 
@@ -100,7 +94,6 @@ endif()
 if (SHROUD_FOUND)
     add_subdirectory(interface)
 endif()
-
 
 if (ENABLE_FORTRAN)
     ## append shroud generated headers/sources to corresponding lists

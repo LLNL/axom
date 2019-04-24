@@ -10,13 +10,13 @@
 #include "axom/config.hpp"
 #include "axom/core/Types.hpp"
 
-#include "axom/quest/geom/Brood.hpp"
-#include "axom/quest/geom/OctreeLevel.hpp"
+#include "axom/spin/Brood.hpp"
+#include "axom/spin/OctreeLevel.hpp"
 
 
 namespace axom
 {
-namespace quest
+namespace spin
 {
 
 /**
@@ -38,19 +38,19 @@ template<int DIM, typename BlockDataType, typename MortonIndexType>
 class DenseOctreeLevel : public OctreeLevel<DIM,BlockDataType>
 {
 public:
-  typedef OctreeLevel<DIM, BlockDataType> Base;
-  typedef typename Base::GridPt GridPt;
-  typedef typename Base::BroodData BroodData;
-  typedef typename Base::BlockIteratorHelper BaseBlockIteratorHelper;
-  typedef typename Base::ConstBlockIteratorHelper ConstBaseBlockIteratorHelper;
+  using Base = OctreeLevel<DIM, BlockDataType>;
+  using GridPt = typename Base::GridPt;
+  using BroodData = typename Base::BroodData;
+  using BaseBlockIteratorHelper = typename Base::BlockIteratorHelper;
+  using ConstBaseBlockIteratorHelper = typename Base::ConstBlockIteratorHelper;
 
   template<typename OctreeLevelType, typename ParentType> class IteratorHelper;
 
-  typedef IteratorHelper<DenseOctreeLevel, BaseBlockIteratorHelper> IterHelper;
-  typedef IteratorHelper<const DenseOctreeLevel,
-                         ConstBaseBlockIteratorHelper> ConstIterHelper;
+  using IterHelper = IteratorHelper<DenseOctreeLevel, BaseBlockIteratorHelper>;
+  using ConstIterHelper = IteratorHelper<const DenseOctreeLevel,
+                                         ConstBaseBlockIteratorHelper>;
 
-  typedef Brood<GridPt, MortonIndexType> BroodType;
+  using BroodType = Brood<GridPt, MortonIndexType>;
 
 public:
 
@@ -66,8 +66,8 @@ public:
   class IteratorHelper : public ParentType
   {
 public:
-    typedef IteratorHelper<OctreeLevelType, ParentType> self;
-    typedef ParentType BaseBlockItType;
+    using self = IteratorHelper<OctreeLevelType, ParentType>;
+    using BaseBlockItType = ParentType;
 
     IteratorHelper(OctreeLevelType* octLevel, bool begin)
       : m_octreeLevel(octLevel),
@@ -335,7 +335,7 @@ private:
   int m_blockCount;
 };
 
-} // end namespace quest
+} // end namespace spin
 } // end namespace axom
 
 #endif  // DENSE_OCTREE_LEVEL__HXX_

@@ -3,21 +3,19 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef PRIMAL_RECTANGULAR_LATTICE_HPP_
-#define PRIMAL_RECTANGULAR_LATTICE_HPP_
+#ifndef SPIN_RECTANGULAR_LATTICE_HPP_
+#define SPIN_RECTANGULAR_LATTICE_HPP_
 
 #include "axom/core.hpp"
 
-#include "axom/primal/geometry/BoundingBox.hpp"
-#include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/Vector.hpp"
+#include "axom/spin/Primitives.hpp"
 
 #include <cmath>     // for std::floor
 #include <iostream>  // for ostream
 
 namespace axom
 {
-namespace primal
+namespace spin
 {
 
 /*!
@@ -54,10 +52,10 @@ template < int NDIMS,
 class RectangularLattice
 {
 public:
-  using GridCell = primal::Point< CellCoordType, NDIMS >;
-  using SpacePoint = primal::Point< SpaceCoordType, NDIMS >;
-  using SpaceVector = primal::Vector< SpaceCoordType, NDIMS >;
-  using SpatialBoundingBox = primal::BoundingBox< SpaceCoordType, NDIMS >;
+  using GridCell = Point< CellCoordType, NDIMS >;
+  using SpacePoint = Point< SpaceCoordType, NDIMS >;
+  using SpaceVector = Vector< SpaceCoordType, NDIMS >;
+  using SpatialBoundingBox = BoundingBox< SpaceCoordType, NDIMS >;
 
 public:
   /*!
@@ -250,12 +248,13 @@ private:
 template < int NDIMS, typename SpaceCoordType, typename CellCoordType >
 RectangularLattice< NDIMS, SpaceCoordType, CellCoordType >
 rectangular_lattice_from_bounding_box(
-  const primal::BoundingBox< SpaceCoordType, NDIMS >& bbox,
-  const primal::NumericArray< CellCoordType, NDIMS >& gridRes)
+  const BoundingBox< SpaceCoordType, NDIMS >& bbox,
+  const NumericArray< CellCoordType, NDIMS >& gridRes)
 {
-  typedef RectangularLattice< NDIMS, SpaceCoordType,
-                              CellCoordType > LatticeType;
-  typedef typename LatticeType::SpaceVector SpaceVector;
+  using LatticeType = RectangularLattice< NDIMS,
+                                          SpaceCoordType,
+                                          CellCoordType > ;
+  using SpaceVector = typename LatticeType::SpaceVector ;
 
   SpaceVector spacing;
 
@@ -302,7 +301,7 @@ std::ostream& operator<<(
   return lattice.print(os);
 }
 
-} // end namespace primal
+} // end namespace spin
 } // end namespace axom
 
-#endif  // PRIMAL_RECTANGULAR_LATTICE_HPP_
+#endif  // SPIN_RECTANGULAR_LATTICE_HPP_

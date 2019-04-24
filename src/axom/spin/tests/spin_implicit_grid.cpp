@@ -6,7 +6,7 @@
 
 /*!
  * \file
- * \brief Unit tests for quest's ImplicitGrid class
+ * \brief Unit tests for spin's ImplicitGrid class
  *
  * Uses gtest's TYPED_TESTS to test ImplicitGrid in 1,2 and 3 dimensions.
  */
@@ -15,7 +15,7 @@
 
 #include "axom/slic.hpp"
 #include "axom/primal.hpp"
-#include "axom/quest.hpp"
+#include "axom/spin.hpp"
 
 #include <vector>
 #include <algorithm>  // for std::find
@@ -40,9 +40,9 @@ public:
 
 /*! Type list for TypedTests on ImplicitGrid */
 using MyTypes = ::testing::Types <
-        axom::quest::ImplicitGrid<1>,
-        axom::quest::ImplicitGrid<2>,
-        axom::quest::ImplicitGrid<3> >;
+        axom::spin::ImplicitGrid<1>,
+        axom::spin::ImplicitGrid<2>,
+        axom::spin::ImplicitGrid<3> >;
 
 TYPED_TEST_CASE( ImplicitGridTest, MyTypes );
 
@@ -142,7 +142,7 @@ TYPED_TEST( ImplicitGridTest, insert_contains)
   using BBox = typename TestFixture::BBox;
   using GridT = typename TestFixture::GridT;
   using SpacePt = typename TestFixture::SpacePt;
-  using RangeBox = axom::primal::BoundingBox<int, DIM>;
+  using RangeBox = axom::spin::BoundingBox<int, DIM>;
 
   SLIC_INFO("Testing ImplicitGrid insert() and contains() in " << DIM << "D");
 

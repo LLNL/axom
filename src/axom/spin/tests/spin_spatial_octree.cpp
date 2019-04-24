@@ -5,23 +5,23 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/quest/geom/SpatialOctree.hpp"
+#include "axom/spin/SpatialOctree.hpp"
 
 #include "axom/slic/interface/slic.hpp"
 
 
-TEST( quest_spatial_octree, spatial_octree_point_location)
+TEST( spin_spatial_octree, spatial_octree_point_location)
 {
   SLIC_INFO("*** This test verifies that a query point falls into "
             << " a child block.");
 
   static const int DIM = 3;
-  typedef axom::quest::BlockData LeafNodeType;
+  using LeafNodeType = axom::spin::BlockData ;
 
-  typedef axom::quest::SpatialOctree<DIM, LeafNodeType> OctreeType;
-  typedef OctreeType::BlockIndex BlockIndex;
-  typedef OctreeType::SpacePt SpacePt;
-  typedef OctreeType::GeometricBoundingBox GeometricBoundingBox;
+  using OctreeType = axom::spin::SpatialOctree<DIM, LeafNodeType> ;
+  using BlockIndex = OctreeType::BlockIndex ;
+  using SpacePt = OctreeType::SpacePt ;
+  using GeometricBoundingBox = OctreeType::GeometricBoundingBox ;
 
 
   GeometricBoundingBox bb(SpacePt(10), SpacePt(20));

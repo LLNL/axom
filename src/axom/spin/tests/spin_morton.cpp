@@ -5,8 +5,8 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/MortonIndex.hpp"
+#include "axom/spin/Primitives.hpp"
+#include "axom/spin/MortonIndex.hpp"
 
 #include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
@@ -57,14 +57,14 @@ Point< CoordType, DIM > randomPoint(CoordType beg, CoordType end)
 }
 } // end anonymous namespace
 
-TEST( primal_morton, test_max_set_bit)
+TEST( spin_morton, test_max_set_bit)
 {
   SLIC_INFO("Checks that MortonBase's maxSetBit function works properly");
 
-  typedef int CoordType;
-  typedef std::size_t MortonIndexType;
+  using CoordType = int ;
+  using MortonIndexType = std::size_t ;
 
-  axom::primal::Mortonizer< CoordType,MortonIndexType,2 > morton2;
+  axom::spin::Mortonizer< CoordType,MortonIndexType,2 > morton2;
   EXPECT_EQ( morton2.maxSetBit( 0), 0);
 
   int maxBit = std::numeric_limits< CoordType >::digits;
@@ -82,14 +82,14 @@ TEST( primal_morton, test_max_set_bit)
 
 }
 
-TEST( primal_morton, test_mortonizer)
+TEST( spin_morton, test_mortonizer)
 {
-  using namespace axom::primal;
+  using namespace axom::spin;
 
   SLIC_INFO("Testing Morton conversion on some simple points");
 
   axom::slic::setLoggingMsgLevel( axom::slic::message::Debug);
-  typedef std::size_t MortonIndexType;
+  using MortonIndexType = std::size_t ;
 
 
   Point<int,2> pt2(2);  // (0b10, 0b10)
@@ -133,12 +133,12 @@ TEST( primal_morton, test_mortonizer)
 template < typename CoordType, typename MortonIndexType, int DIM >
 void testMortonizer()
 {
-  using namespace axom::primal;
+  using namespace axom::spin;
 
-  typedef Point< CoordType, DIM > GridPoint;
+  using GridPoint = Point< CoordType, DIM > ;
 
   int maxBits =
-    axom::primal::Mortonizer< CoordType,MortonIndexType,
+    axom::spin::Mortonizer< CoordType,MortonIndexType,
                               DIM >::maxBitsPerCoord();
   SLIC_INFO("\tMax bits per dimension: "
             << std::numeric_limits< CoordType >::digits);
@@ -223,7 +223,7 @@ void testIntegralTypes()
   testMortonizer< axom::uint64,axom::uint64,DIM >();
 }
 
-TEST( primal_morton, test_integral_types_2D)
+TEST( spin_morton, test_integral_types_2D)
 {
   SLIC_INFO(
     "*** Testing morton indexing in 2D with different coord and Morton index types");
@@ -232,7 +232,7 @@ TEST( primal_morton, test_integral_types_2D)
   testIntegralTypes< DIM >();
 }
 
-TEST( primal_morton, test_integral_types_3D)
+TEST( spin_morton, test_integral_types_3D)
 {
   SLIC_INFO(
     "*** Testing morton indexing in 3D with different coord and Morton index types");
@@ -241,16 +241,16 @@ TEST( primal_morton, test_integral_types_3D)
   testIntegralTypes< DIM >();
 }
 
-TEST( primal_morton, test_point_hasher)
+TEST( spin_morton, test_point_hasher)
 {
-  using namespace axom::primal;
+  using namespace axom::spin;
 
   SLIC_INFO(
     "** Here we test the point hasher which can be used e.g. in an unordered_map");
 
   axom::slic::setLoggingMsgLevel( axom::slic::message::Debug);
 
-  typedef int CoordType;
+  using CoordType = int ;
   PointHash<CoordType> ptHash;
   Point<CoordType,1> p1(2);
   std::size_t exp = 0x2;        // 0b10

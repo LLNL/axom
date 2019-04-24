@@ -13,6 +13,7 @@
 #include "axom/core.hpp"
 #include "axom/primal.hpp"
 #include "axom/quest.hpp"
+#include "axom/spin.hpp"
 #include "axom/mint.hpp"
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
@@ -108,7 +109,7 @@ void testIntersectionOnRegularGrid()
   PointType bbMax(1.1);
   BoundingBoxType bbox( bbMin,bbMax );
 
-  using SpaceOctree = quest::SpatialOctree<DIM, quest::BlockData>;
+  using SpaceOctree = axom::spin::SpatialOctree<DIM, axom::spin::BlockData>;
   SpaceOctree oct( bbox);
 
 

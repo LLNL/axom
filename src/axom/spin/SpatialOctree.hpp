@@ -9,13 +9,13 @@
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
-#include "axom/primal.hpp"
 
-#include "axom/quest/geom/OctreeBase.hpp"
+#include "axom/spin/OctreeBase.hpp"
+#include "axom/spin/Primitives.hpp"
 
 namespace axom
 {
-namespace quest
+namespace spin
 {
 
 
@@ -29,18 +29,18 @@ class SpatialOctree : public OctreeBase<DIM, BlockDataType>
 {
 public:
 
-  typedef primal::BoundingBox<double,DIM> GeometricBoundingBox;
-  typedef primal::Point<double,DIM> SpacePt;
-  typedef primal::Vector<double,DIM> SpaceVector;
+  using GeometricBoundingBox = BoundingBox<double,DIM> ;
+  using SpacePt = Point<double,DIM> ;
+  using SpaceVector = Vector<double,DIM> ;
 
-  typedef OctreeBase<DIM, BlockDataType> BaseOctree;
+  using BaseOctree = OctreeBase<DIM, BlockDataType> ;
 
-  typedef typename BaseOctree::GridPt GridPt;
-  typedef typename GridPt::CoordType CoordType;
+  using GridPt = typename BaseOctree::GridPt ;
+  using CoordType = typename GridPt::CoordType ;
 
-  typedef typename BaseOctree::BlockIndex BlockIndex;
+  using BlockIndex = typename BaseOctree::BlockIndex ;
 
-  typedef slam::Map<SpaceVector> SpaceVectorLevelMap;
+  using SpaceVectorLevelMap = slam::Map<SpaceVector> ;
 
 public:
   /**
@@ -213,7 +213,7 @@ protected:
 };
 
 
-} // end namespace quest
+} // end namespace spin
 } // end namespace axom
 
 #endif  // SPATIAL_OCTREE__HXX_

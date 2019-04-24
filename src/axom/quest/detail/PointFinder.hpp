@@ -6,7 +6,7 @@
 #ifndef QUEST_POINT_IN_CELL_POINT_FINDER_HPP_
 #define QUEST_POINT_IN_CELL_POINT_FINDER_HPP_
 
-#include "axom/quest/geom/ImplicitGrid.hpp"
+#include "axom/spin/ImplicitGrid.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
 
 
@@ -48,13 +48,13 @@ template<int NDIMS, typename mesh_tag>
 class PointFinder
 {
 public:
-  typedef quest::ImplicitGrid<NDIMS> GridType;
+  using GridType = spin::ImplicitGrid<NDIMS>;
 
-  typedef typename GridType::SpacePoint SpacePoint;
-  typedef typename GridType::SpatialBoundingBox SpatialBoundingBox;
+  using SpacePoint = typename GridType::SpacePoint;
+  using SpatialBoundingBox = typename GridType::SpatialBoundingBox;
 
-  typedef PointInCellMeshWrapper<mesh_tag> MeshWrapperType;
-  typedef typename MeshWrapperType::IndexType IndexType;
+  using MeshWrapperType = PointInCellMeshWrapper<mesh_tag>;
+  using IndexType = typename MeshWrapperType::IndexType;
 
 public:
   /*!
@@ -87,7 +87,7 @@ public:
     // initialize implicit grid, handle case where resolution is a NULL pointer
     if(res != nullptr)
     {
-      typedef axom::primal::Point<int, NDIMS> GridResolution;
+      using GridResolution = axom::primal::Point<int, NDIMS>;
       GridResolution gridRes(res);
       m_grid.initialize(meshBBox, &gridRes, numCells);
     }
@@ -110,7 +110,7 @@ public:
    */
   IndexType locatePoint(const double* pos, double* isoparametric) const
   {
-    typedef typename GridType::BitsetType BitsetType;
+    using BitsetType = typename GridType::BitsetType;
 
     IndexType containingCell = PointInCellTraits<mesh_tag>::NO_CELL;
 

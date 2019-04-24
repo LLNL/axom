@@ -7,12 +7,11 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/BoundingBox.hpp"
-#include "axom/primal/spatial_acceleration/UniformGrid.hpp"
+#include "axom/spin/Primitives.hpp"
+#include "axom/spin/UniformGrid.hpp"
 
 //-----------------------------------------------------------------------------
-TEST( primal_uniform_grid, array_constructor)
+TEST( spin_uniform_grid, array_constructor)
 {
   const int DIM = 3;
 
@@ -21,41 +20,41 @@ TEST( primal_uniform_grid, array_constructor)
   const int resolution = 4;
   int res[DIM] = {resolution, resolution, resolution};
 
-  axom::primal::UniformGrid< int, DIM > valid(p_min, p_max, res);
+  axom::spin::UniformGrid< int, DIM > valid(p_min, p_max, res);
   EXPECT_EQ(valid.getNumBins(),  resolution * resolution * resolution);
   EXPECT_TRUE(valid.isBinEmpty(0));
 
 }
 
-TEST( primal_uniform_grid, bbox_constructor)
+TEST( spin_uniform_grid, bbox_constructor)
 {
   const int DIM = 3;
-  typedef double CoordType;
-  typedef axom::primal::Point< CoordType, DIM > QPoint;
+  using CoordType = double ;
+  using QPoint = axom::spin::Point< CoordType, DIM > ;
 
   QPoint pmax = QPoint::make_point(4, 2, 3);
   QPoint pmin = QPoint::make_point(6, 8, 6);
   int res[DIM] = {2, 3, 4};
 
-  axom::primal::BoundingBox< double, DIM > theBbox(pmin, pmax);
-  axom::primal::UniformGrid< int, DIM > valid(theBbox, res);
+  axom::spin::BoundingBox< double, DIM > theBbox(pmin, pmax);
+  axom::spin::UniformGrid< int, DIM > valid(theBbox, res);
   EXPECT_EQ(valid.getNumBins(),  res[0] * res[1] * res[2]);
   EXPECT_TRUE(valid.isBinEmpty(0));
 
 }
 
-TEST( primal_uniform_grid, indexing)
+TEST( spin_uniform_grid, indexing)
 {
   const int DIM = 3;
-  typedef double CoordType;
-  typedef axom::primal::Point< CoordType, DIM > QPoint;
+  using CoordType = double ;
+  using QPoint = axom::spin::Point< CoordType, DIM > ;
 
   double p_max[DIM] = {100, 100, 100};
   double p_min[DIM] = {0, 0, 0};
   const int resolution = 100;
   int res[DIM] = {resolution, resolution, resolution};
 
-  axom::primal::UniformGrid< int, DIM > valid(p_min, p_max, res);
+  axom::spin::UniformGrid< int, DIM > valid(p_min, p_max, res);
 
   // valid has 100 bins in each dimension, and each bin has a
   // width of 1.0.  The bins are laid out in row-major order.
@@ -122,12 +121,12 @@ TEST( primal_uniform_grid, indexing)
 
   QPoint pt12 = QPoint::make_point(12.5, 100.1, 0);
   // Above 100 is over the fence.
-  expectedBin = axom::primal::UniformGrid< int, DIM >::INVALID_BIN_INDEX;
+  expectedBin = axom::spin::UniformGrid< int, DIM >::INVALID_BIN_INDEX;
   EXPECT_EQ(expectedBin, valid.getBinIndex(pt12));
 
   QPoint pt13 = QPoint::make_point(-0.5, 12, 54.3);
   // Below 0 is over (under?) the fence.
-  expectedBin = axom::primal::UniformGrid< int, DIM >::INVALID_BIN_INDEX;
+  expectedBin = axom::spin::UniformGrid< int, DIM >::INVALID_BIN_INDEX;
   EXPECT_EQ(expectedBin, valid.getBinIndex(pt13));
 }
 
@@ -136,7 +135,7 @@ TEST( primal_uniform_grid, indexing)
 
 // Verify the count in each bin against the map maintained "by hand".
 template < typename T, int NDIMS >
-void checkBinCounts(axom::primal::UniformGrid< T, NDIMS > & v,
+void checkBinCounts(axom::spin::UniformGrid< T, NDIMS > & v,
                     std::map< int, int > & bincounts)
 {
   int bcount = v.getNumBins();
@@ -168,19 +167,19 @@ void zero(std::map< int, int > & m, int idx)
   m.erase(idx);
 }
 
-TEST(primal_uniform_grid, add_stuff_3D)
+TEST(spin_uniform_grid, add_stuff_3D)
 {
   const int DIM = 3;
-  typedef double CoordType;
-  typedef axom::primal::Point< CoordType, DIM > QPoint;
-  typedef axom::primal::BoundingBox< CoordType, DIM > QBBox;
+  using CoordType = double ;
+  using QPoint = axom::spin::Point< CoordType, DIM > ;
+  using QBBox = axom::spin::BoundingBox< CoordType, DIM > ;
 
   double origin[DIM] = {0, 0, 0};
   const int mpt = 6;
   double maxpoint[DIM] = {mpt, mpt, mpt};
   const int resolution = 6;
   int res[DIM] = {resolution, resolution, resolution};
-  axom::primal::UniformGrid< int, DIM > valid(origin, maxpoint, res);
+  axom::spin::UniformGrid< int, DIM > valid(origin, maxpoint, res);
 
   std::map< int, int > check;
 
@@ -249,19 +248,19 @@ TEST(primal_uniform_grid, add_stuff_3D)
   }
 }
 
-TEST(primal_uniform_grid, delete_stuff_3D)
+TEST(spin_uniform_grid, delete_stuff_3D)
 {
   const int DIM = 3;
-  typedef double CoordType;
-  typedef axom::primal::Point< CoordType, DIM > QPoint;
-  typedef axom::primal::BoundingBox< CoordType, DIM > QBBox;
+  using CoordType = double ;
+  using QPoint = axom::spin::Point< CoordType, DIM > ;
+  using QBBox = axom::spin::BoundingBox< CoordType, DIM > ;
 
   double origin[DIM] = {0, 0, 0};
   const int mpt = 6;
   double maxpoint[DIM] = {mpt, mpt, mpt};
   const int resolution = 6;
   int res[DIM] = {resolution, resolution, resolution};
-  axom::primal::UniformGrid< int, DIM > valid(origin, maxpoint, res);
+  axom::spin::UniformGrid< int, DIM > valid(origin, maxpoint, res);
 
   std::map< int, int > check;
 
@@ -315,24 +314,24 @@ TEST(primal_uniform_grid, delete_stuff_3D)
   }
   {
     SCOPED_TRACE("Try clearing the invalid bin");
-    valid.clear(axom::primal::UniformGrid< int, DIM >::INVALID_BIN_INDEX);
+    valid.clear(axom::spin::UniformGrid< int, DIM >::INVALID_BIN_INDEX);
     checkBinCounts(valid, check);
   }
 }
 
-TEST(primal_uniform_grid, add_stuff_2D)
+TEST(spin_uniform_grid, add_stuff_2D)
 {
   const int DIM = 2;
-  typedef double CoordType;
-  typedef axom::primal::Point< CoordType, DIM > QPoint;
-  typedef axom::primal::BoundingBox< CoordType, DIM > QBBox;
+  using CoordType = double ;
+  using QPoint = axom::spin::Point< CoordType, DIM > ;
+  using QBBox = axom::spin::BoundingBox< CoordType, DIM > ;
 
   double origin[DIM] = {0, 0};
   const int mpt = 6;
   double maxpoint[DIM] = {mpt, mpt};
   const int resolution = 6;
   int res[DIM] = {resolution, resolution};
-  axom::primal::UniformGrid< int, DIM > valid(origin, maxpoint, res);
+  axom::spin::UniformGrid< int, DIM > valid(origin, maxpoint, res);
 
   std::map< int, int > check;
 
@@ -398,19 +397,19 @@ TEST(primal_uniform_grid, add_stuff_2D)
   }
 }
 
-TEST(primal_uniform_grid, delete_stuff_2D)
+TEST(spin_uniform_grid, delete_stuff_2D)
 {
   const int DIM = 2;
-  typedef double CoordType;
-  typedef axom::primal::Point< CoordType, DIM > QPoint;
-  typedef axom::primal::BoundingBox< CoordType, DIM > QBBox;
+  using CoordType = double ;
+  using QPoint = axom::spin::Point< CoordType, DIM > ;
+  using QBBox = axom::spin::BoundingBox< CoordType, DIM > ;
 
   double origin[DIM] = {0, 0};
   const int mpt = 6;
   double maxpoint[DIM] = {mpt, mpt};
   const int resolution = 6;
   int res[DIM] = {resolution, resolution};
-  axom::primal::UniformGrid< int, DIM > valid(origin, maxpoint, res);
+  axom::spin::UniformGrid< int, DIM > valid(origin, maxpoint, res);
 
   std::map< int, int > check;
 
@@ -460,7 +459,7 @@ TEST(primal_uniform_grid, delete_stuff_2D)
   }
   {
     SCOPED_TRACE("Try clearing the invalid bin");
-    valid.clear(axom::primal::UniformGrid< int, DIM >::INVALID_BIN_INDEX);
+    valid.clear(axom::spin::UniformGrid< int, DIM >::INVALID_BIN_INDEX);
     checkBinCounts(valid, check);
   }
 }

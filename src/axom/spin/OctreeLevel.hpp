@@ -23,15 +23,15 @@
 #include "axom/config.hpp"
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
-#include "axom/primal.hpp"
 
-#include "axom/quest/geom/Brood.hpp"
+#include "axom/spin/Brood.hpp"
+#include "axom/spin/Primitives.hpp"
 
 #include <iterator>
 
 namespace axom
 {
-namespace quest
+namespace spin
 {
 
 /**
@@ -64,19 +64,19 @@ class OctreeLevel
 {
 public:
   /** The coordinate type of a block in the octree */
-  typedef axom::IndexType CoordType;
+  using CoordType = axom::IndexType ;
 
   /**
    * \brief A type for the grid points of the octree.
    * \note CoordType must be an integral type
    */
-  typedef primal::Point<CoordType,DIM> GridPt;
+  using GridPt = Point<CoordType,DIM> ;
 
   enum { BROOD_SIZE = 1 << DIM };
 
   /** A brood is a collection of sibling blocks that are generated
      simultaneously */
-  typedef primal::NumericArray< BlockDataType, BROOD_SIZE> BroodData;
+  using BroodData = NumericArray< BlockDataType, BROOD_SIZE> ;
 
   /** Predeclare the BlockIterator type */
   template<typename OctreeLevel, typename IterHelper, typename DataType>
@@ -136,11 +136,12 @@ public:
   };
 
 public:
-  typedef BlockIterator<OctreeLevel,
-                        BlockIteratorHelper, BlockDataType> BlockIter;
-  typedef BlockIterator<const OctreeLevel,
-                        ConstBlockIteratorHelper,
-                        const BlockDataType> ConstBlockIter;
+  using BlockIter = BlockIterator<OctreeLevel,
+                                  BlockIteratorHelper,
+                                  BlockDataType> ;
+  using ConstBlockIter = BlockIterator<const OctreeLevel,
+                                       ConstBlockIteratorHelper,
+                                       const BlockDataType> ;
 
 public:
   /** \brief Constructor of an OctreeLevel at level lev */
@@ -208,7 +209,7 @@ public:
       >
   {
 public:
-    typedef BlockIterator<OctreeLevel, IterHelper, DataType>  iter;
+    using iter = BlockIterator<OctreeLevel, IterHelper, DataType>  ;
 
     BlockIterator(OctreeLevel* octLevel, bool begin = false)
       : m_octLevel(octLevel)
@@ -377,7 +378,7 @@ protected:
 };
 
 
-} // end namespace quest
+} // end namespace spin
 } // end namespace axom
 
 #endif  // OCTREE_LEVEL__HXX_

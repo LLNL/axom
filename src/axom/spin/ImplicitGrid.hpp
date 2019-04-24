@@ -3,20 +3,20 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef QUEST_IMPLICIT_GRID__HPP_
-#define QUEST_IMPLICIT_GRID__HPP_
+#ifndef SPIN_IMPLICIT_GRID__HPP_
+#define SPIN_IMPLICIT_GRID__HPP_
 
 #include "axom/config.hpp"
 #include "axom/core.hpp"  // for clamp functions
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
-#include "axom/primal.hpp"
+#include "axom/spin/RectangularLattice.hpp"
 
 #include <vector>
 
 namespace axom
 {
-namespace quest
+namespace spin
 {
 
 
@@ -34,7 +34,7 @@ namespace quest
  * Users can insert items from the indexed set into an ImplicitGrid by providing
  * the item's bounding box and index.
  *
- * In contrast to a primal::UniformGrid, which encodes an array of indices
+ * In contrast to a spin::UniformGrid, which encodes an array of indices
  * for each cell in the underlying multidimensional grid,
  * the ImplicitGrid encodes a single array of bins per dimension, each of which
  * has a bitset over the index space.  Thus, the storage overhead of an
@@ -53,12 +53,12 @@ class ImplicitGrid
 {
 public:
   using IndexType = TheIndexType;
-  using GridCell = primal::Point<IndexType, NDIMS>;
-  using SpacePoint = primal::Point<double, NDIMS>;
-  using SpaceVec = primal::Vector<double, NDIMS>;
+  using GridCell = Point<IndexType, NDIMS>;
+  using SpacePoint = Point<double, NDIMS>;
+  using SpaceVec = Vector<double, NDIMS>;
 
-  using SpatialBoundingBox = primal::BoundingBox<double, NDIMS>;
-  using LatticeType = primal::RectangularLattice<NDIMS, double, IndexType>;
+  using SpatialBoundingBox = BoundingBox<double, NDIMS>;
+  using LatticeType = RectangularLattice<NDIMS, double, IndexType>;
 
   using SizePolicy = slam::policies::RuntimeSize<IndexType>;
   using ElementSet = slam::OrderedSet< SizePolicy >;
@@ -174,8 +174,8 @@ public:
 
     // Setup lattice
     m_bb = boundingBox;
-    m_lattice = primal::rectangular_lattice_from_bounding_box(boundingBox,
-                                                              m_gridRes.array());
+    m_lattice = spin::rectangular_lattice_from_bounding_box(boundingBox,
+                                                            m_gridRes.array());
     m_elementSet = ElementSet(numElts);
 
     for(int i=0 ; i<NDIMS ; ++i)
@@ -433,7 +433,7 @@ private:
 };
 
 
-} // end namespace quest
+} // end namespace spin
 } // end namespace axom
 
-#endif  // QUEST_IMPLICIT_GRID__HPP_
+#endif  // SPIN_IMPLICIT_GRID__HPP_

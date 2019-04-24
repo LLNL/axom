@@ -8,6 +8,7 @@
 
 #include "axom/core.hpp"
 #include "axom/primal.hpp"
+#include "axom/spin.hpp"
 #include "axom/mint.hpp"
 
 // C++ includes
@@ -27,9 +28,15 @@ using Triangle3 = primal::Triangle<double, 3>;
 
 using Point3 = primal::Point<double, 3>;
 using SpatialBoundingBox = primal::BoundingBox<double, 3>;
-using UniformGrid3 = primal::UniformGrid<int, 3>;
+using UniformGrid3 = spin::UniformGrid<int, 3>;
 using Vector3 = primal::Vector<double, 3>;
 using Segment3 = primal::Segment<double, 3>;
+
+using Point3 = primal::Point<double, 3>;
+using SpatialBoundingBox = primal::BoundingBox<double, 3>;
+using Vector3 = primal::Vector<double, 3>;
+using Segment3 = primal::Segment<double, 3>;
+using UniformGrid3 = spin::UniformGrid<int, 3>;
 
 
 inline SpatialBoundingBox compute_bounds( UMesh* mesh)
@@ -290,7 +297,7 @@ void weldTriMeshVertices(UMesh** surface_mesh,double eps)
 {
   // Note: Use 64-bit index to accomodate small values of epsilon
   using IdxType = axom::int64;
-  using Lattice3 = primal::RectangularLattice<3, double, IdxType>;
+  using Lattice3 = spin::RectangularLattice<3, double, IdxType>;
   using GridCell = Lattice3::GridCell;
 
   // Define a lambda for hashing points

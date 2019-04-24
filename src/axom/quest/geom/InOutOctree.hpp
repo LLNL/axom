@@ -18,7 +18,7 @@
 #include "axom/primal.hpp"
 #include "axom/mint.hpp"
 
-#include "axom/quest/geom/SpatialOctree.hpp"
+#include "axom/spin/SpatialOctree.hpp"
 
 #include <vector>        // For InOutLeafData triangle lists
 #include <iterator>      // For back_inserter
@@ -484,7 +484,7 @@ inline std::ostream& operator<<(std::ostream& os,
  * of the Mesh pointer.
  */
 template<int DIM>
-class InOutOctree : public SpatialOctree<DIM, InOutBlockData>
+class InOutOctree : public spin::SpatialOctree<DIM, InOutBlockData>
 {
 private:
   friend class detail::InOutOctreeStats<DIM>;
@@ -492,8 +492,8 @@ private:
   friend class detail::InOutOctreeMeshDumper<DIM>;
 
 public:
-  using OctreeBaseType = OctreeBase<DIM, InOutBlockData>;
-  using SpatialOctreeType = SpatialOctree<DIM, InOutBlockData>;
+  using OctreeBaseType = spin::OctreeBase<DIM, InOutBlockData>;
+  using SpatialOctreeType = spin::SpatialOctree<DIM, InOutBlockData>;
 
   using GeometricBoundingBox = typename SpatialOctreeType::GeometricBoundingBox;
   using SpacePt = typename SpatialOctreeType::SpacePt;
@@ -2305,7 +2305,7 @@ public:
 
   using ColorsMap = std::map< InOutBlockData::LeafColor, int>;
 
-  using GridPtHash = primal::PointHash<typename GridPt::CoordType>;
+  using GridPtHash = spin::PointHash<typename GridPt::CoordType>;
   using GridIntMap = std::unordered_map<GridPt, int, GridPtHash>;
 
 public:

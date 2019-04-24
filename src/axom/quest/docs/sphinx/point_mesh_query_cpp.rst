@@ -3,6 +3,8 @@
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
+.. _surface-query-cpp:
+
 ***********************************
 Surface mesh point queries: C++ API
 ***********************************
@@ -48,25 +50,7 @@ Test a query point.
    bool inside = octree.within(pt);
 
 All cleanup happens when the index object's destructor is called 
-(in this case, because the variable goes out of scope).
-
-Octree spatial data index
-=========================
-
-The ``quest::InOutOctree`` class implements the in/out point query against a surface mesh.
-This class is a subclass of the ``quest::SpatialOctree``, which can be used by client codes
-to implement custom spatial query acceleration data structures.  An N-dimensional
-octree spatial index divides its region of interest into blocks by intersecting a
-subdivision point with N perpendicular planes, resulting in 2^N child blocks contained
-in the parent block.  A common usage is in 3D, hence the name octree.
-
-The ``quest::SpatialOctree`` is templated on dimensionality and block type.  The block type
-can contain any metadata needed to characterize the spatial extent it represents.  The
-reference block type ``quest::BlockData``, for example, stores a numeric ID (possibly
-the ID of the partition point).  The ``InOutOctree`` uses a class for its block type 
-that stores data for the in/out query along with the partition point ID.  To be used 
-as a block data type, a class must be default-constructable and provide the functions 
-``bool isLeaf()``, ``void setInternal()``, ``void setNonBlock()``, and ``bool isBlock()``.
+(in this case, when the variable ``octree`` goes out of scope).
 
 Signed Distance
 ---------------
@@ -83,12 +67,15 @@ Class header:
    :language: C++
 
 The constructor takes several arguments.  Here, ``surface_mesh`` is a pointer to
-a triangle surface mesh.  The second argument indicates the mesh is watertight.
+a triangle surface mesh.  The second argument indicates the mesh is a watertight
+mesh, a manifold.  The signed distance from a point to a manifold is
+mathematically well-defined.  When the input is not a closed surface mesh, the
+mesh span the entire computational mesh domain, dividing it into two regions.
 The third and fourth arguments are used to build the underlying BVH tree
-spatial index and indicate that BVH tree buckets will be split after 25 objects
+spatial index.  They indicate that BVH tree buckets will be split after 25 objects
 and that the BVH tree will contain at most 10 levels.  These are safe default 
-values and can be adjusted after benchmarking shows the need.  Note that the
-second and subsequent arguments to the constructor correspond to the 
+values and can be adjusted if application benchmarking shows a need.  Note that
+the second and subsequent arguments to the constructor correspond to
 ``quest::signed_distance_set`` functions in the C API.
 
 As with the ``InOutOctree``, the class is templated on the dimensionality

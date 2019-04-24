@@ -9,8 +9,7 @@
 #include <cfloat>   // for DBL_MAX
 
 #include "axom/config.hpp"
-#include "axom/primal.hpp"
-
+#include "axom/spin/UniformGrid.hpp"
 
 
 namespace axom
@@ -29,7 +28,7 @@ void all_nearest_neighbors(const double* x, const double* y, const double* z,
   // points in this and neighboring UniformGrid bins (out to distance limit)
   // and report result.
 
-  typedef primal::UniformGrid<int, 3> GridType;
+  typedef spin::UniformGrid<int, 3> GridType;
   typedef GridType::BoxType BoxType;
   typedef GridType::PointType PointType;
   typedef BoxType::VectorType VectorType;

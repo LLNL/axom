@@ -5,9 +5,8 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/BoundingBox.hpp"
-#include "axom/primal/geometry/RectangularLattice.hpp"
+#include "axom/spin/Primitives.hpp"
+#include "axom/spin/RectangularLattice.hpp"
 
 #include "axom/slic/interface/slic.hpp"
 #include "axom/slic/core/UnitTestLogger.hpp"
@@ -18,13 +17,13 @@ namespace lattice_1D
 
 const int DIM = 1;
 
-typedef axom::primal::RectangularLattice< DIM > LatticeT;
+using LatticeT = axom::spin::RectangularLattice< DIM > ;
 
-typedef LatticeT::GridCell GridCell;
-typedef LatticeT::SpacePoint SpacePt;
-typedef LatticeT::SpaceVector SpaceVector;
-typedef LatticeT::SpatialBoundingBox BBox;
-typedef axom::primal::NumericArray< int,DIM > IntArray;
+using GridCell = LatticeT::GridCell ;
+using SpacePt = LatticeT::SpacePoint ;
+using SpaceVector = LatticeT::SpaceVector ;
+using BBox = LatticeT::SpatialBoundingBox ;
+using IntArray = axom::spin::NumericArray< int,DIM > ;
 }
 
 // Define some helpful typedefs for 2D rectangular lattices
@@ -33,13 +32,13 @@ namespace lattice_2D
 
 const int DIM = 2;
 
-typedef axom::primal::RectangularLattice< DIM > LatticeT;
+using LatticeT = axom::spin::RectangularLattice< DIM > ;
 
-typedef LatticeT::GridCell GridCell;
-typedef LatticeT::SpacePoint SpacePt;
-typedef LatticeT::SpaceVector SpaceVector;
-typedef LatticeT::SpatialBoundingBox BBox;
-typedef axom::primal::NumericArray< int,DIM > IntArray;
+using GridCell = LatticeT::GridCell ;
+using SpacePt = LatticeT::SpacePoint ;
+using SpaceVector = LatticeT::SpaceVector ;
+using BBox = LatticeT::SpatialBoundingBox ;
+using IntArray = axom::spin::NumericArray< int,DIM > ;
 }
 
 // Define some helpful typedefs for 3D rectangular lattices
@@ -48,16 +47,16 @@ namespace lattice_3D
 
 const int DIM = 3;
 
-typedef axom::primal::RectangularLattice< DIM > LatticeT;
+using LatticeT = axom::spin::RectangularLattice< DIM > ;
 
-typedef LatticeT::GridCell GridCell;
-typedef LatticeT::SpacePoint SpacePt;
-typedef LatticeT::SpaceVector SpaceVector;
-typedef LatticeT::SpatialBoundingBox BBox;
-typedef axom::primal::NumericArray< int,DIM > IntArray;
+using GridCell = LatticeT::GridCell ;
+using SpacePt = LatticeT::SpacePoint ;
+using SpaceVector = LatticeT::SpaceVector ;
+using BBox = LatticeT::SpatialBoundingBox ;
+using IntArray = axom::spin::NumericArray< int,DIM > ;
 }
 
-TEST( primal_rectangle_lattice, lattice_ctor)
+TEST( spin_rectangle_lattice, lattice_ctor)
 {
   SLIC_INFO("Testing lattice constructors in 1D, 2D and 3D");
   //1D
@@ -106,7 +105,7 @@ TEST( primal_rectangle_lattice, lattice_ctor)
   }
 }
 
-TEST( primal_rectangle_lattice, lattice_ctor_degenerate_spacing)
+TEST( spin_rectangle_lattice, lattice_ctor_degenerate_spacing)
 {
   // The test checks that really small values for the grid spacing snap to zero
   // Here, really small is defined as EPS = 1E-50
@@ -171,7 +170,7 @@ TEST( primal_rectangle_lattice, lattice_ctor_degenerate_spacing)
   }
 }
 
-TEST( primal_rectangle_lattice, lattice_array_ctor)
+TEST( spin_rectangle_lattice, lattice_array_ctor)
 {
   SLIC_INFO("Testing lattice constructors from arrays in 1D, 2D and 3D");
 
@@ -245,7 +244,7 @@ TEST( primal_rectangle_lattice, lattice_array_ctor)
   }
 }
 
-TEST( primal_rectangle_lattice, operators)
+TEST( spin_rectangle_lattice, operators)
 {
   SLIC_INFO("Testing free operators in 1D, 2D and 3D");
   //1D
@@ -366,18 +365,17 @@ TEST( primal_rectangle_lattice, operators)
   }
 }
 
-TEST( primal_rectangle_lattice, from_bounding_box)
+TEST( spin_rectangle_lattice, from_bounding_box)
 {
   SLIC_INFO("Testing lattice creation from 1D, 2D and 3D bounding boxes");
 
   //1D
   {
     using namespace lattice_1D;
-    using namespace axom::primal;
 
     BBox bbox( SpacePt(1.25), SpacePt(2.5));
     IntArray res(5);
-    LatticeT lattice = rectangular_lattice_from_bounding_box(bbox, res);
+    LatticeT lattice = axom::spin::rectangular_lattice_from_bounding_box(bbox, res);
 
     EXPECT_DOUBLE_EQ(1.25, lattice.origin()[0]);
     EXPECT_DOUBLE_EQ( .25,  lattice.spacing()[0]);
@@ -386,11 +384,10 @@ TEST( primal_rectangle_lattice, from_bounding_box)
   //2D
   {
     using namespace lattice_2D;
-    using namespace axom::primal;
 
     BBox bbox( SpacePt(1.25), SpacePt(2.5));
     IntArray res(5);
-    LatticeT lattice = rectangular_lattice_from_bounding_box(bbox, res);
+    LatticeT lattice = axom::spin::rectangular_lattice_from_bounding_box(bbox, res);
 
     EXPECT_DOUBLE_EQ(1.25, lattice.origin()[0]);
     EXPECT_DOUBLE_EQ(1.25, lattice.origin()[1]);
@@ -402,7 +399,6 @@ TEST( primal_rectangle_lattice, from_bounding_box)
   //3D
   {
     using namespace lattice_3D;
-    using namespace axom::primal;
 
     SpacePt bbMin = SpacePt::make_point(1.25, 2.5, 5.);
     SpacePt bbMax = SpacePt::make_point(2.5, 5., 10.);
@@ -410,7 +406,7 @@ TEST( primal_rectangle_lattice, from_bounding_box)
 
     int resData[3] = { 5, 50, 500 };
     IntArray res(resData);
-    LatticeT lattice = rectangular_lattice_from_bounding_box(bbox, res);
+    LatticeT lattice = axom::spin::rectangular_lattice_from_bounding_box(bbox, res);
 
     EXPECT_DOUBLE_EQ(1.25, lattice.origin()[0]);
     EXPECT_DOUBLE_EQ(2.5,  lattice.origin()[1]);
@@ -424,13 +420,12 @@ TEST( primal_rectangle_lattice, from_bounding_box)
   //2D, w/ bounding box that is degenerate in coordinate 1
   {
     using namespace lattice_2D;
-    using namespace axom::primal;
 
     constexpr double EPS = 1E-100;
     BBox bbox( SpacePt::make_point(1.25, 1.25),
                SpacePt::make_point(2.5, 1.25 + EPS) );
     IntArray res(5);
-    LatticeT lattice = rectangular_lattice_from_bounding_box(bbox, res);
+    LatticeT lattice = axom::spin::rectangular_lattice_from_bounding_box(bbox, res);
 
     EXPECT_DOUBLE_EQ(1.25, lattice.origin()[0]);
     EXPECT_DOUBLE_EQ(1.25, lattice.origin()[1]);
@@ -442,14 +437,13 @@ TEST( primal_rectangle_lattice, from_bounding_box)
   //2D, w/ degenerate spacing in coordinate 1
   {
     using namespace lattice_2D;
-    using namespace axom::primal;
 
     BBox bbox( SpacePt(1.25), SpacePt(2.5));
     IntArray res;
     res[0] = 5;
     res[1] = 0;
 
-    LatticeT lattice = rectangular_lattice_from_bounding_box(bbox, res);
+    LatticeT lattice = axom::spin::rectangular_lattice_from_bounding_box(bbox, res);
 
     EXPECT_DOUBLE_EQ(1.25, lattice.origin()[0]);
     EXPECT_DOUBLE_EQ(1.25, lattice.origin()[1]);
@@ -459,7 +453,7 @@ TEST( primal_rectangle_lattice, from_bounding_box)
   }
 }
 
-TEST( primal_rectangle_lattice, convert_point_cell_1D)
+TEST( spin_rectangle_lattice, convert_point_cell_1D)
 {
   SLIC_INFO("Testing point conversion of 1D lattice");
 
@@ -509,7 +503,7 @@ TEST( primal_rectangle_lattice, convert_point_cell_1D)
   }
 }
 
-TEST( primal_rectangle_lattice, convert_point_cell_2D)
+TEST( spin_rectangle_lattice, convert_point_cell_2D)
 {
   SLIC_INFO("Testing point conversion of 2D lattice");
 
@@ -560,7 +554,7 @@ TEST( primal_rectangle_lattice, convert_point_cell_2D)
 
 }
 
-TEST( primal_rectangle_lattice, negative_spacing_2D)
+TEST( spin_rectangle_lattice, negative_spacing_2D)
 {
   SLIC_INFO("Testing point conversion of 2D lattice");
 
@@ -592,7 +586,7 @@ TEST( primal_rectangle_lattice, negative_spacing_2D)
 
 }
 
-TEST( primal_rectangle_lattice, zero_spacing_2D)
+TEST( spin_rectangle_lattice, zero_spacing_2D)
 {
   SLIC_INFO("Testing point conversion of 2D lattice");
 
@@ -643,7 +637,7 @@ TEST( primal_rectangle_lattice, zero_spacing_2D)
 
 }
 
-TEST( primal_rectangle_lattice, cell_bounding_box_3D)
+TEST( spin_rectangle_lattice, cell_bounding_box_3D)
 {
   SLIC_INFO("Testing cell bounding box in 3D");
 

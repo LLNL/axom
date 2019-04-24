@@ -210,10 +210,6 @@ std::vector<std::string> findIntersectTests()
   namespace fs = axom::utilities::filesystem;
   std::string catalogue = fs::joinPath(AXOM_DATA_DIR,
                                        "quest/meshtester/catalogue.txt");
-#else
-  FAIL() << "quest_meshtester test requires AXOM_DATA_DIR to be defined");
-#endif
-
   std::string testdir;
   axom::utilities::filesystem::getDirName(testdir, catalogue);
 
@@ -224,6 +220,8 @@ std::vector<std::string> findIntersectTests()
   {
     tests.push_back(axom::utilities::filesystem::joinPath(testdir, line));
   }
+#endif
+
   return tests;
 }
 

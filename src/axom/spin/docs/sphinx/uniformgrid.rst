@@ -12,7 +12,7 @@ checking if a triangle mesh intersects itself.  The following naive
 implementation is straightforward but runs in :math:`O(n^2)` time, where
 :math:`n` is the number of triangles.
 
-.. literalinclude:: ../../examples/primal_introduction.cpp
+.. literalinclude:: ../../examples/spin_introduction.cpp
    :start-after: _naive_triintersect_start
    :end-before: _naive_triintersect_end
    :language: C++
@@ -34,26 +34,26 @@ to intersect and are not compared with :math:`t`.
 
 First, construct the ``UniformGrid`` and load it with triangles.
 
-.. literalinclude:: ../../examples/primal_introduction.cpp
+.. literalinclude:: ../../examples/spin_introduction.cpp
    :start-after: _ugrid_triintersect_header_start
    :end-before: _ugrid_triintersect_header_end
    :language: C++
 
-.. literalinclude:: ../../examples/primal_introduction.cpp
+.. literalinclude:: ../../examples/spin_introduction.cpp
    :start-after: _ugrid_build_start
    :end-before: _ugrid_build_end
    :language: C++
 
 Then, for every triangle, look up its possible neighbors
 
-.. literalinclude:: ../../examples/primal_introduction.cpp
+.. literalinclude:: ../../examples/spin_introduction.cpp
    :start-after: _ugrid_candidate_start
    :end-before: _ugrid_candidate_end
    :language: C++
 
 and test the triangle against those neighbors.
 
-.. literalinclude:: ../../examples/primal_introduction.cpp
+.. literalinclude:: ../../examples/spin_introduction.cpp
    :start-after: _ugrid_triintersect_start
    :end-before: _ugrid_triintersect_end
    :language: C++

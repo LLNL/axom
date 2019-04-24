@@ -3,15 +3,15 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef QUEST_BROOD__HXX_
-#define QUEST_BROOD__HXX_
+#ifndef SPIN_BROOD__HPP_
+#define SPIN_BROOD__HPP_
 
 #include "axom/config.hpp"
-#include "axom/primal.hpp"
+#include "axom/spin/MortonIndex.hpp"
 
 namespace axom
 {
-namespace quest
+namespace spin
 {
 
 
@@ -35,8 +35,8 @@ struct Brood
   enum { DIM = GridPt::DIMENSION,
          BROOD_BITMASK = (1 << DIM) -1};
 
-  typedef primal::Mortonizer<
-      typename GridPt::CoordType, MortonIndexType, DIM> MortonizerType;
+  using MortonizerType =
+    spin::Mortonizer<typename GridPt::CoordType, MortonIndexType, DIM>;
 
   /**
    * \brief Constructor for a brood offset relative to the given grid point pt
@@ -130,7 +130,7 @@ private:
 
 
 
-} // end namespace quest
+} // end namespace spin
 } // end namespace axom
 
-#endif // QUEST_BROOD__HXX_
+#endif // SPIN_BROOD__HPP_

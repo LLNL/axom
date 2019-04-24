@@ -21,8 +21,7 @@
 #include "axom/core/Types.hpp"
 #include "axom/core/Macros.hpp"    // defines AXOM_STATIC_ASSERT
 
-#include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/Vector.hpp"
+#include "axom/spin/Primitives.hpp"
 
 #ifdef AXOM_USE_CXX11
     #include <type_traits>
@@ -64,7 +63,7 @@ struct NumReps< axom::uint8 >  { enum {value = 2}; };
 
 namespace axom
 {
-namespace primal
+namespace spin
 {
 
 /*!
@@ -180,8 +179,8 @@ struct Mortonizer< CoordType,MortonIndexType, 2 >
   : public MortonBase< CoordType,MortonIndexType,
                        Mortonizer< CoordType, MortonIndexType, 2 > >
 {
-  typedef Mortonizer< CoordType, MortonIndexType, 2 > self;
-  typedef MortonBase< CoordType, MortonIndexType, self > Base;
+  using self = Mortonizer< CoordType, MortonIndexType, 2 >;
+  using Base = MortonBase< CoordType, MortonIndexType, self >;
 
   // Magic numbers in 3D
   static const MortonIndexType B[];
@@ -307,8 +306,8 @@ struct Mortonizer< CoordType,MortonIndexType, 3 >
   : public MortonBase< CoordType,MortonIndexType,
                        Mortonizer< CoordType, MortonIndexType, 3 > >
 {
-  typedef Mortonizer< CoordType, MortonIndexType, 3 > self;
-  typedef MortonBase< CoordType, MortonIndexType, self > Base;
+  using self = Mortonizer< CoordType, MortonIndexType, 3 >;
+  using Base = MortonBase< CoordType, MortonIndexType, self >;
 
   static const MortonIndexType B[];
   static const int S[];
@@ -502,7 +501,7 @@ inline Point< CoordType,DIM > convertMortonToPoint(MortonIndexType idx)
 template < typename CoordType >
 struct PointHash
 {
-  typedef std::size_t MortonIndex;
+  using MortonIndex = std::size_t;
 
   /*!
    * \brief Mortonizes a coordinate (viewed as a 1D point)
@@ -560,7 +559,7 @@ struct PointHash
   {
     // Mortonize two morton indices for a 4D morton index
 
-    typedef Point< MortonIndex,2 > Pt2M;
+    using Pt2M = Point< MortonIndex,2 >;
 
     Pt2M pMorton = Pt2M::make_point(
       Mortonizer< CoordType,MortonIndex,2 >::mortonize(pt[0], pt[2]),
@@ -570,7 +569,7 @@ struct PointHash
   }
 };
 
-} // end namespace primal
+} // end namespace spin
 } // end namespace axom
 
 #endif  // MORTON_INDEX_HXX_

@@ -5,26 +5,25 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/primal/geometry/Point.hpp"
-#include "axom/quest/geom/OctreeBase.hpp"
+#include "axom/spin/OctreeBase.hpp"
 
 #include "axom/slic/interface/slic.hpp"
 
 
 //------------------------------------------------------------------------------
-TEST( quest_octree, topological_octree_parent_child)
+TEST( spin_octree, topological_octree_parent_child)
 {
   SLIC_INFO(
-    "*** This test exercises the parent/child relation in quest::OctreeBase");
+    "*** This test exercises the parent/child relation in spin::OctreeBase");
 
   static const int DIM = 2;
-  typedef int CoordType;
-  typedef axom::quest::BlockData LeafNodeType;
+  using CoordType = int ;
+  using LeafNodeType = axom::spin::BlockData ;
 
-  typedef axom::quest::OctreeBase<DIM, LeafNodeType> OctreeType;
-  typedef OctreeType::GridPt GridPt;
-  typedef OctreeType::BlockIndex BlockIndex;
-  typedef BlockIndex::ChildIndexSet OctreeChildIndexSet;
+  using OctreeType = axom::spin::OctreeBase<DIM, LeafNodeType> ;
+  using GridPt = OctreeType::GridPt ;
+  using BlockIndex = OctreeType::BlockIndex ;
+  using OctreeChildIndexSet = BlockIndex::ChildIndexSet ;
 
   OctreeType octree;
 
@@ -62,18 +61,18 @@ TEST( quest_octree, topological_octree_parent_child)
 }
 
 //------------------------------------------------------------------------------
-TEST( quest_octree, topological_octree_refine)
+TEST( spin_octree, topological_octree_refine)
 {
   SLIC_INFO(
-    "*** This test exercises the block refinement in quest::OctreeBase"
+    "*** This test exercises the block refinement in spin::OctreeBase"
     <<"\nSpecifically, that refining the root block adds "
     << "all its children to the octree.");
 
   static const int DIM = 3;
-  typedef axom::quest::BlockData LeafNodeType;
+  using LeafNodeType = axom::spin::BlockData ;
 
-  typedef axom::quest::OctreeBase<DIM, LeafNodeType> OctreeType;
-  typedef OctreeType::BlockIndex BlockIndex;
+  using OctreeType = axom::spin::OctreeBase<DIM, LeafNodeType> ;
+  using BlockIndex = OctreeType::BlockIndex ;
 
   OctreeType octree;
 
@@ -107,16 +106,16 @@ TEST( quest_octree, topological_octree_refine)
 
 
 //------------------------------------------------------------------------------
-TEST( quest_octree, octree_coveringLeafBlocks)
+TEST( spin_octree, octree_coveringLeafBlocks)
 {
   SLIC_INFO(
     "*** This test exercises the coveringLeafBlock function of OctreeBase");
 
   static const int DIM = 2;
-  typedef axom::quest::BlockData LeafNodeType;
-  typedef axom::quest::OctreeBase<DIM, LeafNodeType> OctreeType;
-  typedef OctreeType::BlockIndex BlockIndex;
-  typedef OctreeType::GridPt GridPt;
+  using LeafNodeType = axom::spin::BlockData ;
+  using OctreeType = axom::spin::OctreeBase<DIM, LeafNodeType> ;
+  using BlockIndex = OctreeType::BlockIndex ;
+  using GridPt = OctreeType::GridPt ;
 
   OctreeType octree;
 
@@ -220,15 +219,15 @@ TEST( quest_octree, octree_coveringLeafBlocks)
 }
 
 //------------------------------------------------------------------------------
-TEST( quest_octree, octree_block_is_descendant)
+TEST( spin_octree, octree_block_is_descendant)
 {
   SLIC_INFO(
     "*** This test exercises the isDescendantOf() function of OctreeBase::BlockIndex");
 
   static const int DIM = 2;
-  typedef axom::quest::BlockData LeafNodeType;
-  typedef axom::quest::OctreeBase<DIM, LeafNodeType> OctreeType;
-  typedef OctreeType::BlockIndex BlockIndex;
+  using LeafNodeType = axom::spin::BlockData ;
+  using OctreeType = axom::spin::OctreeBase<DIM, LeafNodeType> ;
+  using BlockIndex = OctreeType::BlockIndex ;
 
   OctreeType octree;
 
@@ -278,12 +277,11 @@ TEST( quest_octree, octree_block_is_descendant)
 }
 
 
-TEST( quest_octree, count_octree_blocks)
+TEST( spin_octree, count_octree_blocks)
 {
   static const int DIM = 2;
-  typedef axom::quest::BlockData LeafNodeType;
-  typedef axom::quest::OctreeBase<DIM, LeafNodeType> OctreeType;
-  //typedef OctreeType::BlockIndex BlockIndex;
+  using LeafNodeType = axom::spin::BlockData ;
+  using OctreeType = axom::spin::OctreeBase<DIM, LeafNodeType> ;
 
   OctreeType octree;
 

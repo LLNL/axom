@@ -96,7 +96,7 @@ class UberenvAxom(Package):
     depends_on("cmake", when="+cmake")
 
     if "darwin" in platform.system().lower():
-        depends_on("mpich@3.0.4")
+        depends_on("mpich@3.0.4", when="+mpi")
         depends_on("openssl@1.0.2j")
 
     depends_on("python",    when="+devtools")

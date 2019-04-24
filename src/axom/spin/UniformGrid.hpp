@@ -10,10 +10,8 @@
 
 #include "axom/slic/interface/slic.hpp"
 
-#include "axom/primal/geometry/NumericArray.hpp"
-#include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/BoundingBox.hpp"
-#include "axom/primal/geometry/RectangularLattice.hpp"
+#include "axom/spin/Primitives.hpp"
+#include "axom/spin/RectangularLattice.hpp"
 
 // C/C++ includes
 #include <algorithm>
@@ -25,7 +23,7 @@
 
 namespace axom
 {
-namespace primal
+namespace spin
 {
 
 /*!
@@ -56,17 +54,17 @@ class UniformGrid
 {
 public:
   /*! \brief The type used for specifying spatial extent of the contents */
-  typedef BoundingBox< double, NDIMS > BoxType;
+  using BoxType = BoundingBox< double, NDIMS > ;
 
   /*! \brief The type used to query the index */
-  typedef Point< double, NDIMS > PointType;
+  using PointType = Point< double, NDIMS > ;
 
 private:
   /*! \brief The type used for mapping points in space to grid cells */
-  typedef RectangularLattice< NDIMS, double, int > LatticeType;
+  using LatticeType = RectangularLattice< NDIMS, double, int > ;
 
   /*! \brief The type used to represent integer-valued grid cells */
-  typedef typename LatticeType::GridCell GridCell;
+  using GridCell = typename LatticeType::GridCell ;
 
 public:
 
@@ -240,7 +238,7 @@ private:
 
 };//end class
 
-} //end namespace primal
+} //end namespace spin
 } //end namespace axom
 
 //------------------------------------------------------------------------------
@@ -248,7 +246,7 @@ private:
 //------------------------------------------------------------------------------
 namespace axom
 {
-namespace primal
+namespace spin
 {
 
 //------------------------------------------------------------------------------
@@ -475,7 +473,7 @@ UniformGrid< T, NDIMS >::getClampedGridCell(const PointType& pt) const
   return cell;
 }
 
-}  /* end namespace primal */
+}  /* end namespace spin */
 }  /* end namespace axom */
 
 #endif /* UNIFORMGRID_HPP_ */

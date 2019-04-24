@@ -10,10 +10,10 @@
 #include "axom/config.hpp"    // defines AXOM_USE_CXX11
 
 #include "axom/core.hpp"
-#include "axom/primal.hpp"
 
-#include "axom/quest/geom/Brood.hpp"
-#include "axom/quest/geom/OctreeLevel.hpp"
+#include "axom/spin/Brood.hpp"
+#include "axom/spin/OctreeLevel.hpp"
+#include "axom/spin/Primitives.hpp"
 
 
 #ifdef AXOM_USE_CXX11
@@ -26,12 +26,12 @@
   #include <unordered_map>
 #else
   #error \
-  "quest::SparseOctreeLevel requires either sparsehash or C++11's unordered_map"
+  "spin::SparseOctreeLevel requires either sparsehash or C++11's unordered_map"
 #endif
 
 namespace axom
 {
-namespace quest
+namespace spin
 {
 
 /**
@@ -46,8 +46,8 @@ template<typename CoordType, int DIM, typename BroodDataType,
          typename RepresentationType>
 struct BroodRepresentationTraits
 {
-  typedef primal::Point<CoordType,DIM> GridPt;
-  typedef RepresentationType PointRepresenationType;
+  using GridPt = Point<CoordType,DIM> ;
+  using PointRepresenationType = RepresentationType ;
 
   AXOM_STATIC_ASSERT_MSG( std::is_integral<CoordType>::value,
                           "CoordType must be integral" );
@@ -58,12 +58,12 @@ struct BroodRepresentationTraits
 
   // Requires a uint for RepresentationType with 8-,16-,32-, or 64- bits
 #if defined(AXOM_USE_SPARSEHASH)
-  typedef google::dense_hash_map<RepresentationType, BroodDataType> MapType;
+  using MapType = google::dense_hash_map<RepresentationType, BroodDataType> ;
 #elif defined(AXOM_USE_CXX11)
-  typedef std::unordered_map<RepresentationType, BroodDataType> MapType;
+  using MapType = std::unordered_map<RepresentationType, BroodDataType> ;
 #endif
 
-  typedef Brood<GridPt, PointRepresenationType> BroodType;
+  using BroodType = Brood<GridPt, PointRepresenationType> ;
 
   /** Simple function to convert a point to its representation type */
   static PointRepresenationType convertPoint(const GridPt& pt)
@@ -97,22 +97,22 @@ struct BroodRepresentationTraits
  */
 template<typename CoordType, int DIM, typename BroodDataType>
 struct BroodRepresentationTraits<CoordType, DIM, BroodDataType,
-                                 primal::Point<CoordType,DIM> >
+                                 Point<CoordType,DIM> >
 {
-  typedef primal::Point<CoordType,DIM> GridPt;
-  typedef GridPt PointRepresenationType;
-  typedef primal::PointHash<CoordType> PointHashType;
+  using GridPt = Point<CoordType,DIM> ;
+  using PointRepresenationType = GridPt ;
+  using PointHashType = PointHash<CoordType> ;
 
   AXOM_STATIC_ASSERT_MSG( std::is_integral<CoordType>::value,
                           "CoordType must be integral" );
 
 #if defined(AXOM_USE_SPARSEHASH)
-  typedef google::dense_hash_map<GridPt, BroodDataType,PointHashType> MapType;
+  using MapType = google::dense_hash_map<GridPt, BroodDataType,PointHashType> ;
 #elif defined(AXOM_USE_STD_UNORDERED_MAP)
-  typedef std::unordered_map<GridPt, BroodDataType,PointHashType > MapType;
+  using MapType = std::unordered_map<GridPt, BroodDataType,PointHashType > ;
 #endif
 
-  typedef Brood<GridPt, GridPt> BroodType;
+  using BroodType = Brood<GridPt, GridPt> ;
 
   /** Simple function to convert a point to its representation type
    *  \note This is a pass through function
@@ -162,32 +162,33 @@ template<int DIM, typename BlockDataType, typename PointRepresenationType>
 class SparseOctreeLevel : public OctreeLevel<DIM,BlockDataType>
 {
 public:
-  typedef OctreeLevel<DIM, BlockDataType> Base;
-  typedef typename Base::GridPt GridPt;
-  typedef typename Base::BroodData BroodData;
-  typedef typename Base::BlockIteratorHelper BaseBlockIteratorHelper;
-  typedef typename Base::ConstBlockIteratorHelper ConstBaseBlockIteratorHelper;
+  using Base = OctreeLevel<DIM, BlockDataType> ;
+  using GridPt = typename Base::GridPt ;
+  using BroodData = typename Base::BroodData ;
+  using BaseBlockIteratorHelper = typename Base::BlockIteratorHelper ;
+  using ConstBaseBlockIteratorHelper = typename Base::ConstBlockIteratorHelper ;
 
-  typedef BroodRepresentationTraits<typename GridPt::CoordType,
-                                    GridPt::DIMENSION, BroodData,
-                                    PointRepresenationType>         BroodTraits;
-  typedef typename BroodTraits::MapType MapType;
-  typedef typename BroodTraits::BroodType BroodType;
+  using BroodTraits =
+    BroodRepresentationTraits<typename GridPt::CoordType,
+                              GridPt::DIMENSION,
+                              BroodData,
+                              PointRepresenationType> ;
+  using MapType = typename BroodTraits::MapType ;
+  using BroodType = typename BroodTraits::BroodType ;
 
-  typedef typename MapType::iterator MapIter;
-  typedef typename MapType::const_iterator ConstMapIter;
+  using MapIter = typename MapType::iterator ;
+  using ConstMapIter = typename MapType::const_iterator ;
 
   template<typename OctreeLevelType,
            typename AdaptedIterType,
            typename ParentType> class IteratorHelper;
 
-  typedef IteratorHelper<SparseOctreeLevel,
-                         MapIter,
-                         BaseBlockIteratorHelper> IterHelper;
-  typedef IteratorHelper<const SparseOctreeLevel,
-                         ConstMapIter,
-                         ConstBaseBlockIteratorHelper> ConstIterHelper;
-
+  using IterHelper = IteratorHelper<SparseOctreeLevel,
+                                    MapIter,
+                                    BaseBlockIteratorHelper> ;
+  using ConstIterHelper = IteratorHelper<const SparseOctreeLevel,
+                                         ConstMapIter,
+                                         ConstBaseBlockIteratorHelper> ;
 
 
 public:
@@ -202,8 +203,8 @@ public:
   class IteratorHelper : public ParentType
   {
 public:
-    typedef IteratorHelper<OctreeLevelType, AdaptedIterType, ParentType> self;
-    typedef ParentType BaseBlockItType;
+    using self = IteratorHelper<OctreeLevelType, AdaptedIterType, ParentType> ;
+    using BaseBlockItType = ParentType ;
 
     IteratorHelper(OctreeLevelType* octLevel, bool begin)
       : m_offset(0),
@@ -433,7 +434,7 @@ private:
   MapType m_map;
 };
 
-} // end namespace quest
+} // end namespace spin
 } // end namespace axom
 
 #endif  // SPARSE_OCTREE_LEVEL__HXX_
