@@ -4,47 +4,58 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /**
- * Set-up the test multi-material data.
- * From Robey's code for cell-dominant full matrix
+ * Set-up multi-material data, set-up code taken from Robey's repo:
+ * https://github.com/lanl/MultiMatTest/
+ * Also some helper struct-classes.
  */
 
-/*
-struct full 
-{
-  vector<double> Volfrac;
-  float filled_percentage;
 
-  vector<double> Vol;
-  vector<double> Density;
-  vector<double> Temperature;
-  vector<double> Pressure;
-  vector<double> Densityfrac;
-  vector<double> Temperaturefrac;
-  vector<double> Pressurefrac;
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+
+using namespace std;
+
+
+struct Value_Checker
+{
+  std::vector<double> values;
+  void reset() { values.resize(0); }
+  void check(std::vector<double>& vec) {
+    if (values.size() == 0)
+      values = vec;
+    else if (values != vec)
+      SLIC_ERROR("Calculated values are not the same!");
+  }
 };
 
+struct multirun_timer {
+  std::vector<double> time_record;
+  axom::utilities::Timer timer;
+  double time_sum;
 
-struct compact
-{
-  vector<double> Volfrac_fullcc;
-  float filled_percentage;
+  void reset() {
+    time_sum = 0;
+    time_record.resize(0);
+    timer.reset();
+  }
+  void start() {
+    timer.start();
+  }
 
-    int*& imaterial
-    int*& nmaterials
-    double*& Vol
-    double*& Density
-    double*& Temperature
-    double*& Pressure
-    int*& imaterialfrac
-    int*& nextfrac,
-    int*& frac2cell, 
-    double*& Volfrac
-    double*& Densityfrac
-    double*& Temperaturefrac
-    double*& Pressurefrac
+  void record() {
+    timer.stop();
+    double elapsed = timer.elapsed();
+    time_sum += elapsed;
+    time_record.push_back(elapsed);
+  }
+
+  double get_average() {
+    return time_sum / (double)time_record.size();
+  }
+
 };
-*/
-
 
 void make_other_field_data_celldom(int ncells, int nmats,
                            std::vector<double>& i_Volfrac_CD,
@@ -148,7 +159,9 @@ void make_other_field_data_matdom(int ncells, int nmats,
                           std::vector<double>& o_Temperaturefrac_sparse,
                           std::vector<double>& o_Pressurefrac_sparse,
                           std::vector<int>& o_begin_idx,
-                          std::vector<int>& o_col_idx
+                          std::vector<int>& o_col_idx,
+                          std::vector<int>& o_dense2sparse_idx
+
 )
 {
   //Set up dense data
@@ -187,21 +200,25 @@ void make_other_field_data_matdom(int ncells, int nmats,
   //fill in sparse data, CSR layout
   o_begin_idx.resize(nmats + 1);
   o_col_idx.resize(nnz);
+  o_dense2sparse_idx.resize(nmats * ncells, -1);
   int ii = 0;
   for (int m = 0; m < nmats; m++)
   {
     o_begin_idx[m] = ii;
+    int spidx = 0;
     for (int ic = 0; ic < ncells; ic++)
     {
       if (i_Volfrac_CD[ic * nmats + m] > 0.0)
       {
         o_col_idx[ii] = ic;
-        ii++;
+        o_dense2sparse_idx[m * ncells + ic] = spidx;
+        ii++; spidx++;
       }
     }
   }
   o_begin_idx[nmats] = ii;
   assert(ii == nnz);
+
 
   o_Densityfrac_sparse.resize(nnz);
   o_Volfrac_sparse.resize(nnz);
@@ -611,3 +628,212 @@ void get_centroids(int ncells, std::vector<double>& cen) {
     }
   }
 }
+
+
+float filled_fraction = -1;
+
+struct Robey_data
+{
+  /*
+  * Data structure to store Robey's data.
+  * When constructed, the volume fraction data is created.
+  * Then a layout is selected for the other array to be filled in.
+  */
+
+  int ncells;
+  int nmats;
+  float filled_percentage;
+
+  //For creating MultiMat object. Always in dense cell-dominant layout.
+  vector<bool> Volfrac_bool;
+  vector<double> Volfrac_CD; //cell-dominant full volfrac array
+
+
+  vector<double> Vol; //per cell, for all layouts
+
+                      //Per cellmat
+  vector<double> Volfrac;
+  vector<double> Densityfrac;
+  vector<double> Temperaturefrac;
+  vector<double> Pressurefrac;
+
+
+  int cellmatcount;
+
+  vector<double> nmatconsts;
+
+  int nnbrs_max;      //max number of neighbor = 8 for a 2d structured mesh
+  vector<int> nnbrs;  //number of neighbors
+  vector<int> nbrs;   //neighbor element id
+  vector<double> cen; //centroids of cells
+
+  vector<int> subset2mesh;
+  vector<int> mesh2subset;
+  vector<int> nmatscell; //number of materials in a cell
+  vector<int> matids;    //material id in a cell, at most 4 materials per cell
+  vector<int> ncellsmat; //number of cells a material is in
+  vector<int> dense2sparse_idx;
+
+  //For CSR layout
+  vector<int> begin_idx;
+  vector<int> col_idx;
+  vector<double> Volfrac_sparse;
+  vector<double> Densityfrac_sparse;
+  vector<double> Temperaturefrac_sparse;
+  vector<double> Pressurefrac_sparse;
+
+
+  Robey_data(std::string filename = "", int ncells_in = 100, int nmats_in = 50)
+  {
+
+    if (filename != "")
+    {
+      //read from file... large and takes a long time.
+      read_vol_frac_matrix_file(filename, ncells, nmats, Volfrac_CD,
+        filled_percentage);
+    }
+    else
+    {
+      //create random data
+      //get_vol_frac_matrix_rand(ncells, nmats, Volfrac, filled_percentage);
+      get_vol_frac_matrix_rand(ncells, nmats, Volfrac_CD, filled_percentage,
+        ncells_in, nmats_in); //small version
+    }
+
+    filled_fraction = filled_percentage / 100.0f;
+
+    // Some variables on neighbors
+    //float L_f = read_from_file_bool ? 0.5 : 1.0;
+    //// ave frac of nbrs containing material
+    //int nnbrs_ave = 8;  // nearly so; 4000 boundary cells in 1 million cells
+    //                    // in 3D, nnbrs_ave would be 26
+    nnbrs_max = 8;
+    // Build up list of neighbors for each cell
+    // Assuming a 2D structured mesh, each cell will have a maximum of 8 nbrs
+    nnbrs.resize(ncells);
+    nbrs.resize(ncells*nnbrs_max);
+    cen.resize(ncells * 2);
+
+    nmatconsts.resize(nmats, 5.0);
+
+    get_neighbors(ncells, nnbrs_max, nnbrs, nbrs);
+
+    // Compute centroids of cells
+    get_centroids(ncells, cen);
+
+    //Making data for SLAM cell to mat relation
+    Volfrac_bool.resize(ncells*nmats, false);
+    cellmatcount = 0;
+    for (unsigned int i = 0; i < Volfrac_CD.size(); i++)
+    {
+      if (Volfrac_CD[i] > 0)
+      {
+        Volfrac_bool[i] = true;
+        cellmatcount++;
+      }
+    }
+
+  } //end constructor
+
+  void set_up_cell_dom_data() {
+    make_other_field_data_celldom(
+      ncells, nmats, Volfrac_CD, Volfrac, Vol, Densityfrac,
+      Temperaturefrac, Pressurefrac,
+      Volfrac_sparse, Densityfrac_sparse, Temperaturefrac_sparse, Pressurefrac_sparse,
+      begin_idx, col_idx);
+  }
+  void set_up_mat_dom_data() {
+    make_other_field_data_matdom(
+      ncells, nmats, Volfrac_CD, Volfrac, Vol, Densityfrac,
+      Temperaturefrac, Pressurefrac,
+      Volfrac_sparse, Densityfrac_sparse, Temperaturefrac_sparse, Pressurefrac_sparse,
+      begin_idx, col_idx, dense2sparse_idx);
+  }
+};
+
+
+
+static const char * const method_names[] = { "CSR", "MM-Direct", "MM-Index Array",
+"MM-Submap", "MM-Iterator", "MM-Flat Iterator" };
+static const char* const algo_names[] = { "Avg density", "Neighbor material density" };
+static const char* const data_layout_str[] = { "Cell-centric", "Material-centric" };
+static const char* const sparsity_str[] = { "Full Matrix", "Compact" };
+
+
+
+struct Result_Store
+{
+  using DataLayout = axom::multimat::DataLayout;
+  using SparsityLayout = axom::multimat::SparsityLayout;
+  enum Algo { avg_density = 0, neighbor_density = 1 };
+  enum Method { method_csr, mm_direct, mm_idxarray, mm_submap, mm_iter, mm_flatiter };
+  Robey_data* robey_data_ptr;
+
+  std::vector<double> result_vec;
+  Result_Store() {
+    result_vec.resize(2 * 4 * 6, 0.0);
+    //number of enum * types of layouts * number of algorithms
+  }
+
+  void init(Robey_data* robey_data_ptr_in) {
+    robey_data_ptr = robey_data_ptr_in;
+  }
+
+  void add_result(Algo algo, DataLayout data_layout,
+    axom::multimat::SparsityLayout sparsity_layout, Method method, double time)
+  {
+    int data_layout_i = data_layout == DataLayout::CELL_CENTRIC ? 0 : 1;
+    int sparsity_layout_i = sparsity_layout == SparsityLayout::DENSE ? 0 : 1;
+
+    int idx = algo * (4 * 6) +
+      data_layout_i * (2 * 6) +
+      sparsity_layout_i * (6) +
+      method;
+
+    std::cout << idx << ": " << get_algo_name(idx) << " - " << get_method_name(idx) << std::endl;
+    result_vec[idx] = time;
+  }
+
+  const char* get_method_name(int index) {
+    return method_names[index % 6];
+  }
+  std::string get_algo_name(int index) {
+    int algo_i = index / (4 * 6);
+    int data_layout_i = (index / (2 * 6)) % 2;
+    int sparsity_layout_i = (index / (6)) % 2;
+    return std::string(algo_names[algo_i]) + " " +
+      std::string(sparsity_str[sparsity_layout_i]) + " " +
+      std::string(data_layout_str[data_layout_i]);
+  }
+
+  void save_to_csv_file(char* filename)
+  {
+    std::ofstream outputFile;
+    outputFile.open(filename);
+
+    outputFile << "NCells: " << robey_data_ptr->ncells
+      << " NMats: " << robey_data_ptr->nmats
+      << " Sparsity: " << robey_data_ptr->filled_percentage 
+      << " NRuns: "<< ITERMAX << "\n\n";
+
+    outputFile << "Methods";
+    for (int i = 0; i<6; i++)
+      outputFile << "," << method_names[i];
+    outputFile << "\n";
+
+    for (int i = 0; i < (int)result_vec.size() / 6; i++)
+    {
+      int idx = i * 6;
+      outputFile << get_algo_name(idx) << ",";
+      for (int j = 0; j < 6; j++)
+      {
+
+        outputFile << result_vec[idx + j] << ",";
+      }
+      outputFile << "\n";
+    }
+
+    outputFile.close();
+  }
+
+};
