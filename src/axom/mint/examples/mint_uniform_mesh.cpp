@@ -43,6 +43,11 @@ constexpr double ONE_OVER_4 = 1. / static_cast< double >( NUM_NODES_PER_CELL );
 int main ( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
 {
 
+  // NOTE: use unified memory if we are using CUDA
+#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA)
+  axom::setDefaultAllocator( axom::getAllocator( umpire::resource::Unified ) );
+#endif
+
 // sphinx_tutorial_walkthrough_construct_mesh_start
 
   // construct a 100 x 100 grid within a domain defined in [-5.0, 5.0]
