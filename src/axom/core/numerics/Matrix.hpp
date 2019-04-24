@@ -584,7 +584,7 @@ Matrix< T >::Matrix( int rows, int cols, T val ) :
   assert( m_rows > 0 );
   assert( m_cols > 0 );
 
-  m_data = alloc< T >( m_rows * m_cols );
+  m_data = allocate< T >( m_rows * m_cols );
   this->fill( val );
 }
 
@@ -608,7 +608,7 @@ AXOM_HOST_DEVICE Matrix< T >::Matrix( int rows, int cols, T* data, bool external
     assert(false);
 #else
     const int nitems = m_rows * m_cols;
-    m_data = alloc< T >( nitems );
+    m_data = allocate< T >( nitems );
     memcpy( m_data, data, nitems * sizeof(T) );
 #endif
   }
@@ -902,7 +902,7 @@ void Matrix< T >::copy( const Matrix< T >& rhs )
 
     m_rows = rhs.m_rows;
     m_cols = rhs.m_cols;
-    m_data = alloc< T >( m_rows*m_cols );
+    m_data = allocate< T >( m_rows*m_cols );
   }
 
   assert( m_rows==rhs.m_rows );
@@ -923,7 +923,7 @@ AXOM_HOST_DEVICE void Matrix< T >::clear( )
 #else
   if ( !m_usingExternal )
   {
-    free( m_data );
+    deallocate( m_data );
   }
 #endif
 

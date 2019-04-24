@@ -109,7 +109,7 @@ void check_storage( Array< T >& v )
   }
   else
   {
-    T* tuple = alloc< T >( num_components );
+    T* tuple = allocate< T >( num_components );
     for ( IndexType i = capacity / 2 ; i < capacity ; ++i )
     {
       for ( IndexType j = 0 ; j < num_components ; ++j )
@@ -118,7 +118,7 @@ void check_storage( Array< T >& v )
       }
       v.append( tuple, 1 );
     }
-    free( tuple );
+    deallocate( tuple );
     tuple = nullptr;
   }
 
@@ -237,7 +237,7 @@ void check_set( Array< T >& v )
   /* Allocate a buffer half the size of the array. Fill it up with sequential
    * values. */
   const IndexType buffer_size = size / 2;
-  T* buffer = alloc<T>( buffer_size * num_components );
+  T* buffer = allocate<T>( buffer_size * num_components );
   for ( IndexType i = 0 ; i < buffer_size * num_components ; ++i )
   {
     buffer[ i ] = i;
@@ -302,7 +302,7 @@ void check_set( Array< T >& v )
     }
   }
 
-  free( buffer );
+  deallocate( buffer );
 }
 
 /*!
@@ -333,7 +333,7 @@ void check_resize( Array< T >& v )
   /* Append a new tuple, should resize. */
   IndexType old_capacity = capacity;
   capacity = calc_new_capacity( v, 1 );
-  T* tuple = alloc<T>( num_components );
+  T* tuple = allocate<T>( num_components );
   for ( IndexType j = 0 ; j < num_components ; ++j )
   {
     tuple[ j ] = size * j - 5 * size + 7 * j;
@@ -357,7 +357,7 @@ void check_resize( Array< T >& v )
 
   /* Prepare 1000 tuples to be appended. */
   const IndexType n_tuples = 1000;
-  T* values = alloc< T >( n_tuples * num_components );
+  T* values = allocate< T >( n_tuples * num_components );
   for ( IndexType i = 0 ; i < n_tuples ; ++i )
   {
     for ( IndexType j = 0 ; j < num_components ; ++j )
@@ -495,10 +495,10 @@ void check_resize( Array< T >& v )
     }
   }
 
-  free( tuple );
+  deallocate( tuple );
   tuple = nullptr;
 
-  free( values );
+  deallocate( values );
   values = nullptr;
 }
 
@@ -529,7 +529,7 @@ void check_insert( Array< T >& v )
   /* Append a new tuple, should resize. */
   IndexType old_capacity = capacity;
   capacity = calc_new_capacity( v, 1 );
-  T* tuple = alloc< T >( num_components );
+  T* tuple = allocate< T >( num_components );
   for ( IndexType j = 0 ; j < num_components ; ++j )
   {
     tuple[ j ] = size * j - 5 * size + 7 * j;
@@ -551,7 +551,7 @@ void check_insert( Array< T >& v )
 
   /* Append 1000 tuples */
   const IndexType n_tuples = 1000;
-  T* values = alloc< T >( n_tuples * num_components );
+  T* values = allocate< T >( n_tuples * num_components );
   for ( IndexType i = 0 ; i < n_tuples ; ++i )
   {
     for ( IndexType j = 0 ; j < num_components ; ++j )
@@ -610,10 +610,10 @@ void check_insert( Array< T >& v )
     }
   }
 
-  free( tuple );
+  deallocate( tuple );
   tuple = nullptr;
 
-  free( values );
+  deallocate( values );
   values = nullptr;
 }
 
@@ -860,12 +860,12 @@ void check_external( Array< T >& v )
 
   /* Since the array is full all of the following calls should require a
    * reallocation and cause a fatal error. */
-  T* tuple = alloc< T >( num_components );
+  T* tuple = allocate< T >( num_components );
   EXPECT_DEATH_IF_SUPPORTED( v.append( tuple, 1 ), IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( v.insert( tuple, 1, 0 ), IGNORE_OUTPUT );
   EXPECT_DEATH_IF_SUPPORTED( v.reserve( size + 1 ), IGNORE_OUTPUT );
 
-  free( tuple );
+  deallocate( tuple );
   tuple = nullptr;
 }
 

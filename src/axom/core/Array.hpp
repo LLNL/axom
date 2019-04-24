@@ -544,7 +544,7 @@ Array< T >::~Array()
 {
   if ( m_data != nullptr && !m_is_external )
   {
-    axom::free( m_data );
+    axom::deallocate( m_data );
   }
 
   m_data = nullptr;
@@ -728,7 +728,7 @@ inline void Array< T >::setCapacity( IndexType new_capacity )
     updateNumTuples( new_capacity );
   }
 
-  m_data = axom::realloc( m_data, new_capacity * m_num_components );
+  m_data = axom::reallocate( m_data, new_capacity * m_num_components );
   m_capacity = new_capacity;
 
   assert( m_data != nullptr || m_capacity <= 0 );
@@ -756,7 +756,7 @@ inline void Array< T >::dynamicRealloc( IndexType new_num_tuples )
     utilities::processAbort();
   }
 
-  m_data = axom::realloc( m_data, new_capacity * m_num_components );
+  m_data = axom::reallocate( m_data, new_capacity * m_num_components );
   m_capacity = new_capacity;
   
   assert( m_data != nullptr || m_capacity <= 0 );

@@ -167,7 +167,7 @@ int lu_solve( const Matrix< T >& A, const int* pivots, const T* b, T* x )
   }
 
   const int size = A.getNumRows();
-  T* rhs = axom::alloc< T >( size );
+  T* rhs = axom::allocate< T >( size );
   memcpy( rhs, b, size*sizeof( T ) );
 
   // forward-solve L part (top-to-bottom)
@@ -199,7 +199,7 @@ int lu_solve( const Matrix< T >& A, const int* pivots, const T* b, T* x )
     }  // END for j
   } // END for i
 
-  axom::free( rhs );
+  axom::deallocate( rhs );
   return LU_SUCCESS;
 }
 

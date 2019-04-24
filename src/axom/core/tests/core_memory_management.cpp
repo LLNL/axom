@@ -28,7 +28,7 @@ void check_alloc_and_free( bool hostAccessable=true)
   for ( int size = 0; size <= ALLOCATION_SIZE; size = size * 2 + 1 )
   {
 #ifdef AXOM_USE_UMPIRE
-    int* buffer = axom::alloc< int >( size, allocator );
+    int* buffer = axom::allocate< int >( size, allocator );
     
     if (size > 0)
     {
@@ -37,7 +37,7 @@ void check_alloc_and_free( bool hostAccessable=true)
       EXPECT_EQ( allocator_cpy.getId(), allocator.getId() );
     }
 #else
-    int* buffer = axom::alloc< int >( size );
+    int* buffer = axom::allocate< int >( size );
 #endif
 
     if ( hostAccessable )
@@ -53,7 +53,7 @@ void check_alloc_and_free( bool hostAccessable=true)
       }
     }
 
-    axom::free( buffer );
+    axom::deallocate( buffer );
     EXPECT_TRUE( buffer == nullptr );
   }
 }
@@ -69,9 +69,9 @@ void check_alloc_realloc_free( bool hostAccessable=true )
     int buffer_size = size;
 
 #ifdef AXOM_USE_UMPIRE
-    int* buffer = axom::alloc< int >( buffer_size, allocator );
+    int* buffer = axom::allocate< int >( buffer_size, allocator );
 #else
-    int* buffer = axom::alloc< int >( buffer_size );
+    int* buffer = axom::allocate< int >( buffer_size );
 #endif
 
     if ( hostAccessable )
@@ -91,7 +91,7 @@ void check_alloc_realloc_free( bool hostAccessable=true )
 
     // Reallocate to a larger size.
     buffer_size *= 3;
-    buffer = axom::realloc< int >( buffer, buffer_size );
+    buffer = axom::reallocate< int >( buffer, buffer_size );
 
     if ( hostAccessable )
     {
@@ -110,7 +110,7 @@ void check_alloc_realloc_free( bool hostAccessable=true )
 
     // Reallocate to a smaller size.
     buffer_size /= 5;
-    buffer = axom::realloc< int >( buffer, buffer_size );
+    buffer = axom::reallocate< int >( buffer, buffer_size );
 
     if ( hostAccessable )
     {
@@ -122,7 +122,7 @@ void check_alloc_realloc_free( bool hostAccessable=true )
     }
 
     // Free
-    axom::free( buffer );
+    axom::deallocate( buffer );
     EXPECT_TRUE( buffer == nullptr );
   }
 }

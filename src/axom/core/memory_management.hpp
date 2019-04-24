@@ -12,29 +12,47 @@
 // Umpire includes
 #ifdef AXOM_USE_UMPIRE
 #include "umpire/config.hpp"
-#include "umpire/Allocator.hpp"
 #include "umpire/ResourceManager.hpp"
-#endif
-
-// C/C++ includes
-#include <cassert>  // for assert()
+#include "umpire/op/MemoryOperationRegistry.hpp"
+#else
+#include <cstring>  // for std::memcpy
 #include <cstdlib>  // for std::malloc, std::realloc, std::free
+#endif
 
 namespace axom
 {
+
+constexpr int INVALID_ALLOCATOR_ID = -1;
 
 /// \name Memory Management Routines
 /// @{
 
 #ifdef AXOM_USE_UMPIRE
+/*!
+ * \brief Returns the umpire allocator associated with the given ID.
+ * \param [in] allocatorID the ID of the allocator to get.
+ */
+inline umpire::Allocator getAllocator( int allocatorID )
+{
+  return umpire::ResourceManager::getInstance().getAllocator( allocatorID );
+}
 
 /*!
  * \brief Sets the default memory space to use. Default is set to HOST
- * \param [in] spaceId ID of the memory space to use.
+ * \param [in] allocator the umpire::Allocator to make default.
  */
 inline void setDefaultAllocator( umpire::Allocator allocator )
 {
   umpire::ResourceManager::getInstance().setDefaultAllocator( allocator );
+}
+
+/*!
+ * \brief Sets the default memory space to use. Default is set to HOST
+ * \param [in] allocatorID ID of the umpire::Allocator to use.
+ */
+inline void setDefaultAllocator( int allocatorID )
+{
+  setDefaultAllocator( getAllocator( allocatorID ) );
 }
 
 /*!
@@ -43,15 +61,6 @@ inline void setDefaultAllocator( umpire::Allocator allocator )
 inline umpire::Allocator getDefaultAllocator()
 {
   return umpire::ResourceManager::getInstance().getDefaultAllocator();
-}
-
-/*!
- * \brief Returns the umpire allocator associated with the given ID.
- * \param [in] allocatorID the ID of the allocator to get.
- */
-inline umpire::Allocator getAllocator( int allocatorID )
-{
-  return umpire::ResourceManager::getInstance().getAllocator( allocatorID );
 }
 
 #endif
@@ -65,7 +74,7 @@ inline umpire::Allocator getAllocator( int allocatorID )
  *
  * \tparam T the type of pointer returned.
  *
- * \note By default alloc() will use the current default memory space. The
+ * \note By default allocate() will use the current default memory space. The
  *  caller may explicitly specify the memory space to use by specifying the
  *  second, optional argument, or change the default memory space by calling
  *  axom::setDefaultAllocator().
@@ -76,23 +85,23 @@ inline umpire::Allocator getAllocator( int allocatorID )
  */
 template < typename T >
 #ifdef AXOM_USE_UMPIRE
-inline T* alloc( std::size_t n, umpire::Allocator allocator=getDefaultAllocator() ) noexcept;
+inline T* allocate( std::size_t n, umpire::Allocator allocator=getDefaultAllocator() ) noexcept;
 #else
-inline T* alloc( std::size_t n ) noexcept;
+inline T* allocate( std::size_t n ) noexcept;
 #endif
 
 /*!
  * \brief Frees the chunk of memory pointed to by the supplied pointer, p.
- * \param [in] p a pointer to memory allocated with alloc/realloc or a nullptr.
+ * \param [in/out] p a pointer to memory allocated with allocate/reallocate or a nullptr.
  * \post p == nullptr
  */
 template < typename T >
-inline void free( T*& p ) noexcept;
+inline void deallocate( T*& p ) noexcept;
 
 /*!
  * \brief Reallocates the chunk of memory pointed to by the supplied pointer.
  *
- * \param [in] p pointer to memory allocated with alloc/realloc, or a nullptr.
+ * \param [in] p pointer to memory allocated with allocate/reallocate, or a nullptr.
  * \param [in] n the number of elements to allocate.
  *
  * \tparam T the type pointer p points to.
@@ -100,7 +109,7 @@ inline void free( T*& p ) noexcept;
  * \return p pointer to the new allocation or a nullptr if allocation failed.
  */
 template < typename T >
-inline T* realloc( T* p, std::size_t n ) noexcept;
+inline T* reallocate( T* p, std::size_t n ) noexcept;
 
 /// @}
 
@@ -112,7 +121,7 @@ inline T* realloc( T* p, std::size_t n ) noexcept;
 #ifdef AXOM_USE_UMPIRE
 
 template < typename T >
-inline T* alloc( std::size_t n, umpire::Allocator allocator ) noexcept
+inline T* allocate( std::size_t n, umpire::Allocator allocator ) noexcept
 {
   if ( n == 0 ) return nullptr;
 
@@ -123,7 +132,7 @@ inline T* alloc( std::size_t n, umpire::Allocator allocator ) noexcept
 #else
 
 template < typename T >
-inline T* alloc( std::size_t n ) noexcept
+inline T* allocate( std::size_t n ) noexcept
 {
   if ( n == 0 ) return nullptr;
 
@@ -135,7 +144,7 @@ inline T* alloc( std::size_t n ) noexcept
 
 //------------------------------------------------------------------------------
 template < typename T >
-inline void free( T*& pointer ) noexcept
+inline void deallocate( T*& pointer ) noexcept
 {
   if ( pointer == nullptr ) return;
 
@@ -155,11 +164,11 @@ inline void free( T*& pointer ) noexcept
 
 //------------------------------------------------------------------------------
 template < typename T >
-inline T* realloc( T* pointer, std::size_t n ) noexcept
+inline T* reallocate( T* pointer, std::size_t n ) noexcept
 {
   if ( n == 0 )
   {
-    axom::free( pointer );
+    axom::deallocate( pointer );
     return nullptr;
   }
 
