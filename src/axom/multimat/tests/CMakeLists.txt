@@ -1,20 +1,14 @@
+# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+#
+# SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.
-#
-# Produced at the Lawrence Livermore National Laboratory
-#
-# LLNL-CODE-741217
-#
-# All rights reserved.
-#
-# This file is part of Axom.
-#
-# For details about use and distribution, please read axom/LICENSE.
+# Multimat unit tests
 #------------------------------------------------------------------------------
 
-#
+#------------------------------------------------------------------------------
 # Specify list of tests
-#
+#------------------------------------------------------------------------------
 
 set(gtest_multimat_tests
     multimat_test.cpp
@@ -23,9 +17,9 @@ set(gtest_multimat_tests
 
 set(multimat_tests_depends_on core slic slam multimat gtest)
 
-#
+#------------------------------------------------------------------------------
 # Add gtest based tests
-#
+#------------------------------------------------------------------------------
 foreach(test ${gtest_multimat_tests})
     get_filename_component( test_name ${test} NAME_WE )
     blt_add_executable( NAME ${test_name}_test
