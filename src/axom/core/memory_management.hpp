@@ -28,6 +28,7 @@ constexpr int INVALID_ALLOCATOR_ID = -1;
 /// @{
 
 #ifdef AXOM_USE_UMPIRE
+
 /*!
  * \brief Returns the umpire allocator associated with the given ID.
  * \param [in] allocatorID the ID of the allocator to get.
@@ -110,6 +111,19 @@ inline void deallocate( T*& p ) noexcept;
  */
 template < typename T >
 inline T* reallocate( T* p, std::size_t n ) noexcept;
+  
+/*!
+ * \brief Copies memory from the source to the destination.
+ *
+ * \param [in/out] dst the destination to copy to.
+ * \param [in] src the source to copy from.
+ * \param [in] numbytes the number of bytes to copy.
+ * 
+ * \note When using Umpire if either src or dst is not registered with the
+ *  ResourceManager then the default host allocation strategy is assumed for
+ *  that pointer.
+ */
+inline void copy( void* dst, void* src, std::size_t numbytes ) noexcept;
 
 /// @}
 
@@ -186,6 +200,32 @@ inline T* reallocate( T* pointer, std::size_t n ) noexcept
 #endif
 
   return pointer;
+}
+
+inline void copy( void* dst, void* src, std::size_t numbytes ) noexcept
+{
+#ifdef AXOM_USE_UMPIRE
+  umpire::ResourceManager & rm = umpire::ResourceManager::getInstance();
+  umpire::op::MemoryOperationRegistry & op_registry = umpire::op::MemoryOperationRegistry::getInstance();
+
+  auto dstStrategy = rm.getAllocator( "HOST" ).getAllocationStrategy();
+  auto srcStrategy = dstStrategy;
+
+  if (rm.hasAllocator(dst))
+  {
+    dstStrategy = rm.findAllocationRecord( dst )->m_strategy;
+  }
+
+  if (rm.hasAllocator(src))
+  {
+    srcStrategy = rm.findAllocationRecord( src )->m_strategy;
+  }
+
+  auto op = op_registry.find( "COPY", srcStrategy, dstStrategy );
+  op->transform( src, &dst, nullptr, nullptr, numbytes );
+#else
+  std::memcpy( dst, src, numbytes );
+#endif
 }
 
 } // namespace axom
