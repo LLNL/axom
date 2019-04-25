@@ -26,7 +26,7 @@ Value_Checker data_checker;
 Result_Store result_store;
 
 
-////////////////////// Cell Dominant /////////////////////////
+////////////////////// Average density - Cell Dominant /////////////////////////
 
 //    Average density - Cell-Dominant Full Matrix
 //    Robey's
@@ -42,14 +42,14 @@ void average_density_cell_dom_full(Robey_data& data){
 
   timer.reset();
 
-  for (int iter = 0 ; iter < ITERMAX ; iter++)
+  for (int iter = 0 ; iter < ITERMAX ; ++iter)
   {
     timer.start();
 
-    for (int ic = 0 ; ic < ncells ; ic++)
+    for (int ic = 0 ; ic < ncells ; ++ic)
     {
       double density_ave = 0.0;
-      for (int m = 0 ; m < nmats ; m++)
+      for (int m = 0 ; m < nmats ; ++m)
       {
         density_ave += Densityfrac[ic*nmats + m] * Volfrac[ic*nmats + m];
       }
@@ -83,14 +83,14 @@ void average_density_cell_dom_compact(Robey_data& data) {
 
   timer.reset();
 
-  for (int iter = 0; iter < ITERMAX; iter++)
+  for (int iter = 0; iter < ITERMAX; ++iter)
   {
     timer.start();
 
-    for (int ic = 0; ic < ncells; ic++)
+    for (int ic = 0; ic < ncells; ++ic)
     {
       double density_ave = 0.0;
-      for (int ii = begin_idx[ic]; ii < begin_idx[ic + 1]; ii++)
+      for (int ii = begin_idx[ic]; ii < begin_idx[ic + 1]; ++ii)
       {
         density_ave += Densityfrac[ii] * Volfrac[ii];
       }
@@ -134,14 +134,14 @@ void average_density_cell_dom_mm_direct_0(MultiMat& mm) {
 
   timer.reset();
 
-  for (int iter = 0; iter < ITERMAX; iter++)
+  for (int iter = 0; iter < ITERMAX; ++iter)
   {
     timer.start();
 
-    for (int ic = 0; ic < ncells; ic++)
+    for (int ic = 0; ic < ncells; ++ic)
     {
       double density_ave = 0.0;
-      for (int m = 0; m < nmats; m++)
+      for (int m = 0; m < nmats; ++m)
       {
         density_ave += denMap[ic*nmats + m] * volMap[ic*nmats + m];
       }
@@ -185,14 +185,14 @@ void average_density_cell_dom_mm_direct_1(MultiMat& mm) {
 
   timer.reset();
 
-  for (int iter = 0; iter < ITERMAX; iter++)
+  for (int iter = 0; iter < ITERMAX; ++iter)
   {
     timer.start();
 
-    for (int ic = 0; ic < ncells; ic++)
+    for (int ic = 0; ic < ncells; ++ic)
     {
       double density_ave = 0.0;
-      for (int m = 0; m < nmats; m++)
+      for (int m = 0; m < nmats; ++m)
       {
         density_ave += denMap[ic*nmats + m] * volMap[ic*nmats + m];
       }
@@ -234,15 +234,15 @@ void average_density_cell_dom_mm_direct_2(MultiMat& mm) {
 
   timer.reset();
 
-  for (int iter = 0; iter < ITERMAX; iter++)
+  for (int iter = 0; iter < ITERMAX; ++iter)
   {
     timer.start();
     auto& prod_set = *dynamic_cast<const axom::slam::ProductSet*>(Densityfrac.set());
 
-    for (int ic = 0; ic < ncells; ic++)
+    for (int ic = 0; ic < ncells; ++ic)
     {
       double density_ave = 0.0;
-      for (int m = 0; m < nmats; m++)
+      for (int m = 0; m < nmats; ++m)
       {
         int flatIdx = prod_set.findElementFlatIndex(ic,m);
         density_ave += denMap[flatIdx] * volMap[flatIdx];
@@ -285,15 +285,15 @@ void average_density_cell_dom_mm_direct_3(MultiMat& mm) {
 
   timer.reset();
 
-  for (int iter = 0; iter < ITERMAX; iter++)
+  for (int iter = 0; iter < ITERMAX; ++iter)
   {
     timer.start();
     auto prod_set = dynamic_cast<const axom::slam::ProductSet*>(Densityfrac.set());
 
-    for (int ic = 0; ic < ncells; ic++)
+    for (int ic = 0; ic < ncells; ++ic)
     {
       double density_ave = 0.0;
-      for (int m = 0; m < nmats; m++)
+      for (int m = 0; m < nmats; ++m)
       {
         int flatIdx = prod_set->findElementFlatIndex(ic, m);
         density_ave += denMap[flatIdx] * volMap[flatIdx];
@@ -333,15 +333,15 @@ void average_density_cell_dom_mm_direct_4(MultiMat& mm) {
 
   timer.reset();
 
-  for (int iter = 0; iter < ITERMAX; iter++)
+  for (int iter = 0; iter < ITERMAX; ++iter)
   {
     timer.start();
     auto& prod_set = *dynamic_cast<const axom::slam::ProductSet*>(Densityfrac.set());
 
-    for (int ic = 0; ic < ncells; ic++)
+    for (int ic = 0; ic < ncells; ++ic)
     {
       double density_ave = 0.0;
-      for (int m = 0; m < nmats; m++)
+      for (int m = 0; m < nmats; ++m)
       {
         //int flatIdx = ic*nmats + m; 
         int flatIdx = prod_set.findElementFlatIndex(ic, m);
@@ -381,14 +381,14 @@ void average_density_cell_dom_mm_direct(MultiMat& mm) {
 
   timer.reset();
 
-  for (int iter = 0; iter < ITERMAX; iter++)
+  for (int iter = 0; iter < ITERMAX; ++iter)
   {
     timer.start();
 
-    for (int ic = 0; ic < ncells; ic++)
+    for (int ic = 0; ic < ncells; ++ic)
     {
       double density_ave = 0.0;
-      for (int m = 0; m < nmats; m++)
+      for (int m = 0; m < nmats; ++m)
       {
         density_ave += *Densityfrac.findValue(ic, m) * *Volfrac.findValue(ic, m);
       }
@@ -424,11 +424,11 @@ void average_density_cell_dom_mm_submap(MultiMat& mm) {
 
   timer.reset();
 
-  for (int iter = 0; iter < ITERMAX; iter++)
+  for (int iter = 0; iter < ITERMAX; ++iter)
   {
     timer.start();
 
-    for (int ic = 0; ic < ncells; ic++)
+    for (int ic = 0; ic < ncells; ++ic)
     {
       double density_ave = 0.0;
       MultiMat::SubField<double> Densityfrac_row = Densityfrac(ic);
@@ -469,11 +469,11 @@ void average_density_cell_dom_mm_idxarray(MultiMat& mm) {
   
   timer.reset();
 
-  for (int iter = 0; iter < ITERMAX; iter++)
+  for (int iter = 0; iter < ITERMAX; ++iter)
   {
     timer.start();
 
-    for (int ic = 0; ic < ncells; ic++)
+    for (int ic = 0; ic < ncells; ++ic)
     {
       auto idxSet = mm.getIndexingSetOfCell(ic);
       //auto matId = mm.getMatInCell(ic);
@@ -514,7 +514,7 @@ void average_density_cell_dom_mm_flatiter(MultiMat& mm) {
 
   timer.reset();
 
-  for (int iter = 0 ; iter < ITERMAX ; iter++)
+  for (int iter = 0 ; iter < ITERMAX ; ++iter)
   {
     for (auto& v : Density_average)
       v = 0.0;
@@ -525,12 +525,12 @@ void average_density_cell_dom_mm_flatiter(MultiMat& mm) {
     auto VolfracIter = Volfrac.begin();
 
     auto DensityIterEnd = Densityfrac.end();
-    for ( ; DensityIter != DensityIterEnd ; DensityIter++, VolfracIter++)
+    for ( ; DensityIter != DensityIterEnd ; ++DensityIter, ++VolfracIter)
     {
       Density_average[DensityIter.firstIndex()] += *DensityIter * *VolfracIter;
     }
 
-    for (int ic = 0 ; ic < ncells ; ic++)
+    for (int ic = 0 ; ic < ncells ; ++ic)
     {
       Density_average[ic] /= Vol[ic];
     }
@@ -564,14 +564,14 @@ void average_density_cell_dom_mm_iter(MultiMat& mm) {
   
   timer.reset();
 
-  for (int iter = 0; iter < ITERMAX; iter++)
+  for (int iter = 0; iter < ITERMAX; ++iter)
   {
     for (auto& v : Density_average)
       v = 0.0;
 
     timer.start();
     
-    for (int ic = 0; ic < ncells; ic++)
+    for (int ic = 0; ic < ncells; ++ic)
     {
       double density_ave = 0.0;
       auto DensityIter = Densityfrac.begin(ic);
@@ -597,7 +597,7 @@ void average_density_cell_dom_mm_iter(MultiMat& mm) {
 
 
 
-////////////////////// Material Dominant /////////////////////////
+////////////////////// Average density - Material Dominant /////////////////////////
 
 //    Average density - Material-Dominant Full Matrix
 //    Robey's
@@ -614,19 +614,19 @@ double average_density_mat_dom_full(Robey_data& data) {
 	
   timer.reset();
 
-	for (int iter = 0; iter< ITERMAX; iter++) 
+	for (int iter = 0; iter< ITERMAX; ++iter) 
   {
     for (auto& v : Density_average)
       v = 0.0;
 
     timer.start();
 
-		for (int m = 0; m < nmats; m++) {
-			for (int ic = 0; ic < ncells; ic++) {
+		for (int m = 0; m < nmats; ++m) {
+			for (int ic = 0; ic < ncells; ++ic) {
         Density_average[ic] += Densityfrac[m*ncells + ic] * Volfrac[m*ncells + ic];
 			}
 		}
-		for (int ic = 0; ic < ncells; ic++) {
+		for (int ic = 0; ic < ncells; ++ic) {
 			Density_average[ic] /= Vol[ic];
 		}
 
@@ -659,20 +659,20 @@ double average_density_mat_dom_compact(Robey_data& data) {
   
   timer.reset();
 
-  for (int iter = 0; iter < ITERMAX; iter++) 
+  for (int iter = 0; iter < ITERMAX; ++iter) 
   {
     for (auto &v : Density_average)
       v = 0.0;
     
     timer.start();
 
-    for (int m = 0; m < nmats; m++) {
-      for (int ii = begin_idx[m]; ii < begin_idx[m + 1]; ii++)
+    for (int m = 0; m < nmats; ++m) {
+      for (int ii = begin_idx[m]; ii < begin_idx[m + 1]; ++ii)
       {
         Density_average[cell_id[ii]] += Densityfrac[ii] * Volfrac[ii];
       }
     }
-    for (int ic = 0; ic < ncells; ic++) {
+    for (int ic = 0; ic < ncells; ++ic) {
       Density_average[ic] /= Vol[ic];
     }
 
@@ -711,7 +711,7 @@ void average_density_mat_dom_mm_direct(MultiMat& mm) {
 
   timer.reset();
 
-  for (int iter = 0; iter < ITERMAX; iter++)
+  for (int iter = 0; iter < ITERMAX; ++iter)
   {
     for (auto& v : Density_average)
       v = 0.0;
@@ -725,7 +725,7 @@ void average_density_mat_dom_mm_direct(MultiMat& mm) {
         Density_average[ic] += *Densityfrac.findValue(m,ic) * *Volfrac.findValue(m,ic);
       }
     }
-    for (int ic = 0; ic < ncells; ic++)
+    for (int ic = 0; ic < ncells; ++ic)
     {
       Density_average[ic] /= Vol[ic];
     }
@@ -762,23 +762,23 @@ void average_density_mat_dom_mm_submap(MultiMat& mm) {
 
   timer.reset();
 
-  for (int iter = 0 ; iter < ITERMAX ; iter++)
+  for (int iter = 0 ; iter < ITERMAX ; ++iter)
   {
     for (auto& v : Density_average)
       v = 0.0;
 
     timer.start();
 
-    for (int m = 0 ; m < nmats ; m++)
+    for (int m = 0 ; m < nmats ; ++m)
     {
       MultiMat::SubField<double> Densityfrac_row = Densityfrac(m);
       MultiMat::SubField<double> Volfrac_row = Volfrac(m);
-      for (int j = 0 ; j < Volfrac_row.size() ; j++)
+      for (int j = 0 ; j < Volfrac_row.size() ; ++j)
       {
         Density_average[Densityfrac_row.index(j)] += Densityfrac_row(j) * Volfrac_row(j);
       }
     }
-    for (int ic = 0 ; ic < ncells ; ic++)
+    for (int ic = 0 ; ic < ncells ; ++ic)
     {
       Density_average[ic] /= Vol[ic];
     }
@@ -815,23 +815,23 @@ void average_density_mat_dom_mm_idxarray(MultiMat& mm) {
 
   timer.reset();
 
-  for (int iter = 0; iter < ITERMAX; iter++)
+  for (int iter = 0; iter < ITERMAX; ++iter)
   {
     for (auto& v : Density_average)
       v = 0.0;
 
     timer.start();
 
-    for (int m = 0; m < nmats; m++)
+    for (int m = 0; m < nmats; ++m)
     {
       auto idxSet = mm.getIndexingSetOfMat(m);
       auto cellId = mm.getCellContainingMat(m);
-      for (int j = 0; j < idxSet.size(); j++)
+      for (int j = 0; j < idxSet.size(); ++j)
       {
         Density_average[cellId[j]] += Densityfrac[idxSet[j]] * Volfrac[idxSet[j]];
       }
     }
-    for (int ic = 0; ic < ncells; ic++)
+    for (int ic = 0; ic < ncells; ++ic)
     {
       Density_average[ic] /= Vol[ic];
     }
@@ -867,14 +867,14 @@ void average_density_mat_dom_mm_iter(MultiMat& mm) {
 
   timer.reset();
 
-  for (int iter = 0; iter < ITERMAX; iter++)
+  for (int iter = 0; iter < ITERMAX; ++iter)
   {
     for (auto& v : Density_average)
       v = 0.0;
 
     timer.start();
 
-    for (int m = 0; m < nmats; m++)
+    for (int m = 0; m < nmats; ++m)
     {
       auto Density_iter = Densityfrac.begin(m);
       auto Volfrac_iter = Volfrac.begin(m);
@@ -885,7 +885,7 @@ void average_density_mat_dom_mm_iter(MultiMat& mm) {
         ++Density_iter; ++Volfrac_iter;
       }
     }
-    for (int ic = 0; ic < ncells; ic++)
+    for (int ic = 0; ic < ncells; ++ic)
     {
       Density_average[ic] /= Vol[ic];
     }
@@ -919,7 +919,7 @@ void average_density_mat_dom_mm_flatiter(MultiMat& mm) {
 
   timer.reset();
 
-  for (int iter = 0; iter < ITERMAX; iter++)
+  for (int iter = 0; iter < ITERMAX; ++iter)
   {
     for (auto& v : Density_average)
       v = 0.0;
@@ -930,12 +930,12 @@ void average_density_mat_dom_mm_flatiter(MultiMat& mm) {
     auto VolfracIter = Volfrac.begin();
 
     auto DensityIterEnd = Densityfrac.end();
-    for (; DensityIter != DensityIterEnd; DensityIter++, VolfracIter++)
+    for (; DensityIter != DensityIterEnd; ++DensityIter, ++VolfracIter)
     {
       Density_average[DensityIter.secondIndex()] += *DensityIter * *VolfracIter;
     }
 
-    for (int ic = 0; ic < ncells; ic++)
+    for (int ic = 0; ic < ncells; ++ic)
     {
       Density_average[ic] /= Vol[ic];
     }
@@ -968,14 +968,14 @@ void average_density_cell_dom_with_if(Robey_data& data)
   vector<double> Density_average(ncells, 0.0);
   timer.reset();
 
-  for (int iter = 0 ; iter < ITERMAX ; iter++)
+  for (int iter = 0 ; iter < ITERMAX ; ++iter)
   {
     timer.start();
 
-    for (int ic = 0 ; ic < ncells ; ic++)
+    for (int ic = 0 ; ic < ncells ; ++ic)
     {
       double density_ave = 0.0;
-      for (int m = 0 ; m < nmats ; m++)
+      for (int m = 0 ; m < nmats ; ++m)
       {
         if (Volfrac[ic*nmats + m] > 0.0)
         {
@@ -1002,9 +1002,11 @@ void average_density_cell_dom_with_if_mm(MultiMat&) {
 }
 
 
+////////////////////// Calculate pressure - Cell Dominant /////////////////////////
+
 //   Calculate pressure using ideal gas law - Cell-Dominant Full Matrix 
 //     Robey's
-void calculate_pressure(Robey_data& data)
+void calculate_pressure_cell_dom_full(Robey_data& data)
 {
   int ncells = data.ncells;
   int nmats = data.nmats;
@@ -1013,18 +1015,18 @@ void calculate_pressure(Robey_data& data)
   vector<double>& Temperaturefrac = data.Temperaturefrac;
   vector<double>& nmatconsts = data.nmatconsts;
 
-  SLIC_INFO("-- Calculating pressure --");
+  SLIC_INFO("-- Calculating pressure Cell-Dominant Full Matrix array access--");
   vector<double> Pressurefrac(ncells*nmats, 0);
 
   timer.reset();
 
-  for (int iter = 0 ; iter< ITERMAX ; iter++)
+  for (int iter = 0 ; iter< ITERMAX ; ++iter)
   {
     timer.start();
 
-    for (int ic = 0 ; ic < ncells ; ic++)
+    for (int ic = 0 ; ic < ncells ; ++ic)
     {
-      for (int m = 0 ; m < nmats ; m++)
+      for (int m = 0 ; m < nmats ; ++m)
       {
         if (Volfrac[ic*nmats + m] > 0.)
         {
@@ -1041,23 +1043,79 @@ void calculate_pressure(Robey_data& data)
     }
 
     timer.record();
+    data_checker.check(Pressurefrac);
   }
 
   double act_perf = timer.get_average();
-  SLIC_INFO("Pressure Calculation                   with if "
-            << "compute time is " << act_perf << " secs\n");
+  result_store.add_result(Result_Store::pressure_calc, DataLayout::CELL_CENTRIC,
+     SparsityLayout::DENSE, Result_Store::method_csr, act_perf);
+  SLIC_INFO("Pressure Calculation with if           compute time is " 
+      << act_perf << " secs\n");
 }
 
+//   Calculate pressure using ideal gas law - Cell-Dominant
+//     MultiMat - Direct Access
+void calculate_pressure_cell_dom_full_mm_direct(MultiMat& mm)
+{
+  SLIC_INFO("-- Calculating pressure, using MultiMat Direct Access --");
+  mm.convertLayoutToCellDominant();
+  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
+    << mm.getSparsityLayoutAsString());
+  SLIC_ASSERT(mm.isCellDom());
+  SLIC_ASSERT(mm.isDense());
+
+  int ncells = mm.getNumberOfCells();
+  int nmats = mm.getNumberOfMaterials();
+  MultiMat::Field2D<double> & Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> & Volfrac = mm.get2dField<double>("Volfrac");
+  MultiMat::Field2D<double> & Temperaturefrac =
+    mm.get2dField<double>("Tempfrac");
+  MultiMat::Field1D<double> & nmatconsts = mm.get1dField<double>("nmatconsts");
+
+  vector<double> Pressurefrac(ncells * nmats, 0.0);
+
+  timer.reset();
+
+  for (int iter = 0; iter < ITERMAX; ++iter)
+  {
+    timer.start();
+
+    for (int ic = 0; ic < ncells; ++ic)
+    {
+      for (int m = 0; m < nmats; ++m)
+      {
+        if (*Volfrac.findValue(ic,m) > 0.)
+        {
+          Pressurefrac[ic * nmats + m] = (nmatconsts[m] * *Densityfrac.findValue(ic, m) *
+            *Temperaturefrac.findValue(ic, m)) / *Volfrac.findValue(ic, m);
+        }
+        else {
+          Pressurefrac[ic * nmats + m] = 0.0;
+        }
+      }
+    }
+
+    timer.record();
+    data_checker.check(Pressurefrac);
+  }
+
+  double act_perf = timer.get_average();
+  result_store.add_result(Result_Store::pressure_calc, mm.getDataLayout(),
+    mm.getSparsityLayout(), Result_Store::mm_direct, act_perf);
+  SLIC_INFO("Pressure Calculation with if           compute time is "
+    << act_perf << " secs\n");
+}
 
 //   Calculate pressure using ideal gas law - Cell-Dominant
 //     MultiMat - Submap
-void calculate_pressure_mm(MultiMat& mm)
+void calculate_pressure_cell_dom_full_mm_submap(MultiMat& mm)
 {
   SLIC_INFO("-- Calculating pressure, using MultiMat Submap --");
   mm.convertLayoutToCellDominant();
   SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
                                 << mm.getSparsityLayoutAsString());
   SLIC_ASSERT(mm.isCellDom());
+  SLIC_ASSERT(mm.isDense());
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
@@ -1071,32 +1129,422 @@ void calculate_pressure_mm(MultiMat& mm)
 
   timer.reset();
 
-  for (int iter = 0 ; iter< ITERMAX ; iter++)
+  for (int iter = 0 ; iter< ITERMAX ; ++iter)
   {
     timer.start();
 
-    for (int ic = 0 ; ic < ncells ; ic++)
+    for (int ic = 0 ; ic < ncells ; ++ic)
     {
       MultiMat::SubField<double> Densityfrac_row = Densityfrac(ic);
       MultiMat::SubField<double> Volfrac_row = Volfrac(ic);
       MultiMat::SubField<double> Tempfrac_row = Temperaturefrac(ic);
 
-      for (int j = 0 ; j < Volfrac_row.size() ; j++)
+      for (int j = 0 ; j < Volfrac_row.size() ; ++j)
       {
         int m = Volfrac_row.index(j);
-        Pressurefrac[ic*nmats + m] = ( nmatconsts(m) * Densityfrac_row(j) *
-                                       Tempfrac_row(j)) / Volfrac_row(j);
+        if (Volfrac_row(j) > 0.)
+        {
+          Pressurefrac[ic * nmats + m] = (nmatconsts[m] * Densityfrac_row(j) *
+            Tempfrac_row(j)) / Volfrac_row(j);
+        }
+        else {
+          Pressurefrac[ic * nmats + m] = 0;
+        }
       }
     }
 
     timer.record();
+    data_checker.check(Pressurefrac);
   }
 
   double act_perf = timer.get_average();
-  SLIC_INFO("Pressure Calculation                   with if "
-            << "compute time is "<< act_perf << " secs\n");
+  result_store.add_result(Result_Store::pressure_calc, mm.getDataLayout(),
+    mm.getSparsityLayout(), Result_Store::mm_submap, act_perf);
+  SLIC_INFO("Pressure Calculation with if           compute time is "
+    << act_perf << " secs\n");
 }
 
+//   Calculate pressure using ideal gas law - Cell-Dominant
+//     MultiMat - Iterator
+void calculate_pressure_cell_dom_full_mm_iter(MultiMat& mm)
+{
+  SLIC_INFO("-- Calculating pressure, using MultiMat Iterator --");
+  mm.convertLayoutToCellDominant();
+  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
+    << mm.getSparsityLayoutAsString());
+  SLIC_ASSERT(mm.isCellDom());
+  SLIC_ASSERT(mm.isDense());
+
+  int ncells = mm.getNumberOfCells();
+  int nmats = mm.getNumberOfMaterials();
+  MultiMat::Field2D<double> & Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> & Volfrac = mm.get2dField<double>("Volfrac");
+  MultiMat::Field2D<double> & Temperaturefrac =
+    mm.get2dField<double>("Tempfrac");
+  MultiMat::Field1D<double> & nmatconsts = mm.get1dField<double>("nmatconsts");
+
+  vector<double> Pressurefrac(ncells * nmats, 0.0);
+
+  timer.reset();
+
+  for (int iter = 0; iter < ITERMAX; ++iter)
+  {
+    timer.start();
+
+    for (int ic = 0; ic < ncells; ++ic)
+    {
+      auto DensityfracIter = Densityfrac.begin(ic);
+      auto VolfracIter = Volfrac.begin(ic);
+      auto TempfracIter = Temperaturefrac.begin(ic);
+
+      auto VolfracIterEnd = Volfrac.end(ic);
+      for (; VolfracIter != VolfracIterEnd; ++VolfracIter, ++DensityfracIter, ++TempfracIter)
+      {
+        int m = VolfracIter.index();
+        if (*VolfracIter > 0.)
+        {
+          Pressurefrac[ic * nmats + m] = (nmatconsts[m] * *DensityfracIter *
+            *TempfracIter) / *VolfracIter;
+        }
+        else {
+          Pressurefrac[ic * nmats + m] = 0;
+        }
+      }
+    }
+
+    timer.record();
+    data_checker.check(Pressurefrac);
+  }
+
+  double act_perf = timer.get_average();
+  result_store.add_result(Result_Store::pressure_calc, mm.getDataLayout(),
+    mm.getSparsityLayout(), Result_Store::mm_iter, act_perf);
+  SLIC_INFO("Pressure Calculation with if           compute time is "
+    << act_perf << " secs\n");
+}
+
+//   Calculate pressure using ideal gas law - Cell-Dominant
+//     MultiMat - Submap
+void calculate_pressure_cell_dom_full_mm_flatiter(MultiMat& mm)
+{
+  SLIC_INFO("-- Calculating pressure, using MultiMat Flat Iterator --");
+  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
+    << mm.getSparsityLayoutAsString());
+  SLIC_ASSERT(mm.isDense());
+  SLIC_ASSERT(mm.isCellDom());
+
+  int ncells = mm.getNumberOfCells();
+  int nmats = mm.getNumberOfMaterials();
+  MultiMat::Field2D<double> & Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> & Volfrac = mm.get2dField<double>("Volfrac");
+  MultiMat::Field2D<double> & Temperaturefrac =
+    mm.get2dField<double>("Tempfrac");
+  MultiMat::Field1D<double> & nmatconsts = mm.get1dField<double>("nmatconsts");
+
+  vector<double> Pressurefrac(ncells * nmats, 0.0);
+
+  timer.reset();
+
+  for (int iter = 0; iter < ITERMAX; ++iter)
+  {
+    timer.start();
+
+    auto DensityfracIter = Densityfrac.begin();
+    auto VolfracIter = Volfrac.begin();
+    auto TempfracIter = Temperaturefrac.begin();
+
+    int ii = 0;
+    auto VolfracIterEnd = Volfrac.end();
+    for (; VolfracIter != VolfracIterEnd; ++VolfracIter, ++DensityfracIter, ++TempfracIter, ++ii)
+    {
+      int m = VolfracIter.secondIndex();
+      if (*VolfracIter > 0.)
+      {
+        Pressurefrac[ii] = (nmatconsts[m] * *DensityfracIter *
+          *TempfracIter) / *VolfracIter;
+      }
+      else {
+        Pressurefrac[ii] = 0;
+      }
+    }
+
+    timer.record();
+    data_checker.check(Pressurefrac);
+  }
+
+  double act_perf = timer.get_average();
+  result_store.add_result(Result_Store::pressure_calc, mm.getDataLayout(),
+    mm.getSparsityLayout(), Result_Store::mm_flatiter, act_perf);
+  SLIC_INFO("Pressure Calculation with if           compute time is "
+    << act_perf << " secs\n");
+}
+
+////////////////////// Calculate pressure - Material Dominant /////////////////////////
+
+
+//   Calculate pressure using ideal gas law - Material-Dominant Full Matrix 
+//     Robey's
+void calculate_pressure_mat_dom_full(Robey_data& data)
+{
+  int ncells = data.ncells;
+  int nmats = data.nmats;
+  vector<double>& Volfrac = data.Volfrac;
+  vector<double>& Densityfrac = data.Densityfrac;
+  vector<double>& Temperaturefrac = data.Temperaturefrac;
+  vector<double>& nmatconsts = data.nmatconsts;
+
+  SLIC_INFO("-- Calculating pressure Material-Dominant Full Matrix array access--");
+  vector<double> Pressurefrac(ncells*nmats, 0);
+
+  timer.reset();
+
+  for (int iter = 0 ; iter< ITERMAX ; ++iter)
+  {
+    timer.start();
+    for (int m = 0; m < nmats; ++m) {
+      for (int ic = 0; ic < ncells; ++ic) {
+        if (Volfrac[m*ncells+ic] > 0.0) {
+          Pressurefrac[m * ncells + ic] = (nmatconsts[m] * Densityfrac[m * ncells + ic] *
+            Temperaturefrac[m * ncells + ic]) / Volfrac[m * ncells + ic];
+        }
+        else {
+          Pressurefrac[m * ncells + ic] = 0.0;
+        }
+      }
+    }
+
+    timer.record();
+    data_checker.check(Pressurefrac);
+  }
+
+  double act_perf = timer.get_average();
+  result_store.add_result(Result_Store::pressure_calc, DataLayout::MAT_CENTRIC,
+     SparsityLayout::DENSE, Result_Store::method_csr, act_perf);
+  SLIC_INFO("Pressure Calculation with if           compute time is " 
+      << act_perf << " secs\n");
+}
+
+//   Calculate pressure using ideal gas law - Material-Dominant
+//     MultiMat - Direct Access
+void calculate_pressure_mat_dom_full_mm_direct(MultiMat& mm)
+{
+  SLIC_INFO("-- Calculating pressure, using MultiMat Direct Access --");
+  mm.convertLayoutToMaterialDominant();
+  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
+    << mm.getSparsityLayoutAsString());
+  SLIC_ASSERT(mm.isMatDom());
+  SLIC_ASSERT(mm.isDense());
+
+  int ncells = mm.getNumberOfCells();
+  int nmats = mm.getNumberOfMaterials();
+  MultiMat::Field2D<double> & Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> & Volfrac = mm.get2dField<double>("Volfrac");
+  MultiMat::Field2D<double> & Temperaturefrac =
+    mm.get2dField<double>("Tempfrac");
+  MultiMat::Field1D<double> & nmatconsts = mm.get1dField<double>("nmatconsts");
+
+  vector<double> Pressurefrac(ncells * nmats, 0.0);
+
+  timer.reset();
+
+  for (int iter = 0; iter < ITERMAX; ++iter)
+  {
+    timer.start();
+
+    for (int m = 0; m < nmats; ++m) {
+      for (int ic = 0; ic < ncells; ++ic) {
+        if (*Volfrac.findValue(m, ic) > 0.)
+        {
+          Pressurefrac[m*ncells+ic] = (nmatconsts[m] * *Densityfrac.findValue(m,ic) *
+            *Temperaturefrac.findValue(m, ic)) / *Volfrac.findValue(m, ic);
+        }
+        else {
+          Pressurefrac[m * ncells + ic] = 0.0;
+        }
+      }
+    }
+
+    timer.record();
+    data_checker.check(Pressurefrac);
+  }
+
+  double act_perf = timer.get_average();
+  result_store.add_result(Result_Store::pressure_calc, mm.getDataLayout(),
+    mm.getSparsityLayout(), Result_Store::mm_direct, act_perf);
+  SLIC_INFO("Pressure Calculation with if           compute time is "
+    << act_perf << " secs\n");
+}
+
+//   Calculate pressure using ideal gas law - Material-Dominant
+//     MultiMat - Submap
+void calculate_pressure_mat_dom_full_mm_submap(MultiMat& mm)
+{
+  SLIC_INFO("-- Calculating pressure, using MultiMat Submap --");
+  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
+                                << mm.getSparsityLayoutAsString());
+  SLIC_ASSERT(mm.isMatDom());
+  SLIC_ASSERT(mm.isDense());
+
+  int ncells = mm.getNumberOfCells();
+  int nmats = mm.getNumberOfMaterials();
+  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double>& Volfrac = mm.get2dField<double>("Volfrac");
+  MultiMat::Field2D<double>& Temperaturefrac =
+    mm.get2dField<double>("Tempfrac");
+  MultiMat::Field1D<double>& nmatconsts = mm.get1dField<double>("nmatconsts");
+  
+  vector<double> Pressurefrac(ncells*nmats, 0.0);
+
+  timer.reset();
+
+  for (int iter = 0 ; iter< ITERMAX ; ++iter)
+  {
+    timer.start();
+
+    for (int m = 0; m < nmats; ++m) 
+    {
+      MultiMat::SubField<double> Densityfrac_row = Densityfrac(m);
+      MultiMat::SubField<double> Volfrac_row = Volfrac(m);
+      MultiMat::SubField<double> Tempfrac_row = Temperaturefrac(m);
+
+      for (int j = 0 ; j < Volfrac_row.size() ; ++j)
+      {
+        int ic = Volfrac_row.index(j);
+        if (Volfrac_row(j) > 0.)
+        {
+          Pressurefrac[m*ncells+ic] = (nmatconsts[m] * Densityfrac_row(j) *
+            Tempfrac_row(j)) / Volfrac_row(j);
+        }
+        else {
+          Pressurefrac[m * ncells + ic] = 0;
+        }
+      }
+    }
+
+    timer.record();
+    data_checker.check(Pressurefrac);
+  }
+
+  double act_perf = timer.get_average();
+  result_store.add_result(Result_Store::pressure_calc, mm.getDataLayout(),
+    mm.getSparsityLayout(), Result_Store::mm_submap, act_perf);
+  SLIC_INFO("Pressure Calculation with if           compute time is "
+    << act_perf << " secs\n");
+}
+
+//   Calculate pressure using ideal gas law - Material-Dominant
+//     MultiMat - Iterator
+void calculate_pressure_mat_dom_full_mm_iter(MultiMat& mm)
+{
+  SLIC_INFO("-- Calculating pressure, using MultiMat Iter --");
+  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
+    << mm.getSparsityLayoutAsString());
+  SLIC_ASSERT(mm.isMatDom());
+  SLIC_ASSERT(mm.isDense());
+
+  int ncells = mm.getNumberOfCells();
+  int nmats = mm.getNumberOfMaterials();
+  MultiMat::Field2D<double> & Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> & Volfrac = mm.get2dField<double>("Volfrac");
+  MultiMat::Field2D<double> & Temperaturefrac =
+    mm.get2dField<double>("Tempfrac");
+  MultiMat::Field1D<double> & nmatconsts = mm.get1dField<double>("nmatconsts");
+
+  vector<double> Pressurefrac(ncells * nmats, 0.0);
+
+  timer.reset();
+
+  for (int iter = 0; iter < ITERMAX; ++iter)
+  {
+    timer.start();
+
+    for (int m = 0; m < nmats; ++m)
+    {
+      auto DensityfracIter = Densityfrac.begin(m);
+      auto VolfracIter = Volfrac.begin(m);
+      auto TempfracIter = Temperaturefrac.begin(m);
+
+      auto VolfracIterEnd = Volfrac.end(m);
+      for (; VolfracIter != VolfracIterEnd; ++VolfracIter, ++DensityfracIter, ++TempfracIter)
+      {
+        int ic = VolfracIter.index();
+        if (*VolfracIter > 0.)
+        {
+          Pressurefrac[m * ncells + ic] = (nmatconsts[m] * *DensityfracIter *
+            *TempfracIter) / *VolfracIter;
+        }
+        else {
+          Pressurefrac[m * ncells + ic] = 0;
+        }
+      }
+    }
+
+    timer.record();
+    data_checker.check(Pressurefrac);
+  }
+
+  double act_perf = timer.get_average();
+  result_store.add_result(Result_Store::pressure_calc, mm.getDataLayout(),
+    mm.getSparsityLayout(), Result_Store::mm_iter, act_perf);
+  SLIC_INFO("Pressure Calculation with if           compute time is "
+    << act_perf << " secs\n");
+}
+
+//   Calculate pressure using ideal gas law - Cell-Dominant
+//     MultiMat - Submap
+void calculate_pressure_mat_dom_full_mm_flatiter(MultiMat& mm)
+{
+  SLIC_INFO("-- Calculating pressure, using MultiMat Flat Iterator --");
+  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
+    << mm.getSparsityLayoutAsString());
+  SLIC_ASSERT(mm.isDense());
+  SLIC_ASSERT(mm.isMatDom());
+
+  int ncells = mm.getNumberOfCells();
+  int nmats = mm.getNumberOfMaterials();
+  MultiMat::Field2D<double> & Densityfrac = mm.get2dField<double>("Densityfrac");
+  MultiMat::Field2D<double> & Volfrac = mm.get2dField<double>("Volfrac");
+  MultiMat::Field2D<double> & Temperaturefrac =
+    mm.get2dField<double>("Tempfrac");
+  MultiMat::Field1D<double> & nmatconsts = mm.get1dField<double>("nmatconsts");
+
+  vector<double> Pressurefrac(ncells * nmats, 0.0);
+
+  timer.reset();
+
+  for (int iter = 0; iter < ITERMAX; ++iter)
+  {
+    timer.start();
+
+    auto DensityfracIter = Densityfrac.begin();
+    auto VolfracIter = Volfrac.begin();
+    auto TempfracIter = Temperaturefrac.begin();
+
+    int ii = 0;
+    auto VolfracIterEnd = Volfrac.end();
+    for (; VolfracIter != VolfracIterEnd; ++VolfracIter, ++DensityfracIter, ++TempfracIter, ++ii)
+    {
+      int m = VolfracIter.firstIndex();
+      if (*VolfracIter > 0.)
+      {
+        Pressurefrac[ii] = (nmatconsts[m] * *DensityfracIter *
+          *TempfracIter) / *VolfracIter;
+      }
+      else {
+        Pressurefrac[ii] = 0;
+      }
+    }
+
+    timer.record();
+    data_checker.check(Pressurefrac);
+  }
+
+  double act_perf = timer.get_average();
+  result_store.add_result(Result_Store::pressure_calc, mm.getDataLayout(),
+    mm.getSparsityLayout(), Result_Store::mm_flatiter, act_perf);
+  SLIC_INFO("Pressure Calculation with if           compute time is "
+    << act_perf << " secs\n");
+}
 
 
 ////////////////////// Avg Neighbor - Cell Dominant /////////////////////////
@@ -1120,14 +1568,14 @@ void average_density_over_nbr_cell_dom_full(Robey_data& data)
 
   timer.reset();
 
-  for (int iter = 0; iter < ITERMAX; iter++)
+  for (int iter = 0; iter < ITERMAX; ++iter)
   {
     for (auto& v : MatDensity_average)
       v = 0.0;
 
     timer.start();
 
-    for (int ic = 0; ic < ncells; ic++)
+    for (int ic = 0; ic < ncells; ++ic)
     {
       double xc[2];
       xc[0] = cen[ic * 2]; xc[1] = cen[ic * 2 + 1];
@@ -1135,31 +1583,31 @@ void average_density_over_nbr_cell_dom_full(Robey_data& data)
       int cnbrs[8];
       double dsqr[8];
 
-      for (int n = 0; n < nn; n++)
+      for (int n = 0; n < nn; ++n)
         cnbrs[n] = nbrs[ic * 8 + n];
 
-      for (int n = 0; n < nn; n++)
+      for (int n = 0; n < nn; ++n)
       {
         dsqr[n] = 0.0;
-        for (int d = 0; d < 2; d++) //original condition was d < 1 ???
+        for (int d = 0; d < 2; ++d) //original condition was d < 1 ???
         {
           double ddist = (xc[d] - cen[cnbrs[n] * 2 + d]);
           dsqr[n] += ddist * ddist;
         }
       }
 
-      for (int m = 0; m < nmats; m++)
+      for (int m = 0; m < nmats; ++m)
       {
         if (Volfrac[ic * nmats + m] > 0.0)
         {
           int nnm = 0;         // number of nbrs with this material
-          for (int n = 0; n < nn; n++)
+          for (int n = 0; n < nn; ++n)
           {
             int jc = cnbrs[n];
             if (Volfrac[jc * nmats + m] > 0.0)
             {
               MatDensity_average[ic * nmats + m] += Densityfrac[jc * nmats + m] / dsqr[n];
-              nnm++;
+              ++nnm;
             }
           }
           if (nnm > 0)
@@ -1205,14 +1653,14 @@ void average_density_over_nbr_cell_dom_compact(Robey_data& data)
 
   timer.reset();
 
-  for (int iter = 0; iter < ITERMAX; iter++)
+  for (int iter = 0; iter < ITERMAX; ++iter)
   {
     for (auto& v : MatDensity_average)
       v = 0.0;
 
     timer.start();
 
-    for (int ic = 0; ic < ncells; ic++)
+    for (int ic = 0; ic < ncells; ++ic)
     {
       double xc[2];
       xc[0] = cen[ic * 2]; xc[1] = cen[ic * 2 + 1];
@@ -1220,13 +1668,13 @@ void average_density_over_nbr_cell_dom_compact(Robey_data& data)
       int cnbrs[8];
       double dsqr[8];
 
-      for (int n = 0; n < nn; n++)
+      for (int n = 0; n < nn; ++n)
         cnbrs[n] = nbrs[ic * 8 + n];
 
-      for (int n = 0; n < nn; n++)
+      for (int n = 0; n < nn; ++n)
       {
         dsqr[n] = 0.0;
-        for (int d = 0; d < 2; d++) //original condition was  d < 1 ???
+        for (int d = 0; d < 2; ++d) //original condition was  d < 1 ???
         {
           double ddist = (xc[d] - cen[cnbrs[n] * 2 + d]);
           dsqr[n] += ddist * ddist;
@@ -1237,7 +1685,7 @@ void average_density_over_nbr_cell_dom_compact(Robey_data& data)
       {
         int m = mat_id[ii];
         int nnm = 0;         // number of nbrs with this material
-        for (int n = 0; n < nn; n++)
+        for (int n = 0; n < nn; ++n)
         {
           int jc = cnbrs[n];
           for (int jj = begin_idx[jc]; jj < begin_idx[jc + 1]; ++jj) //loop through all map in cell jc to find m
@@ -1245,7 +1693,7 @@ void average_density_over_nbr_cell_dom_compact(Robey_data& data)
             if (mat_id[jj] == m)
             {
               MatDensity_average[ic * nmats + m] += Densityfrac[jj] / dsqr[n];
-              nnm++;
+              ++nnm;
               break;
             }
           }
@@ -1296,14 +1744,14 @@ void average_density_over_nbr_cell_dom_full_mm_direct(MultiMat& mm, Robey_data& 
 
   timer.reset();
 
-  for (int iter = 0; iter < ITERMAX; iter++)
+  for (int iter = 0; iter < ITERMAX; ++iter)
   {
     for (auto& v : MatDensity_average)
       v = 0.0;
 
     timer.start();
 
-    for (int ic = 0; ic < ncells; ic++)
+    for (int ic = 0; ic < ncells; ++ic)
     {
       double xc[2];
       xc[0] = cen[ic * 2]; xc[1] = cen[ic * 2 + 1];
@@ -1311,31 +1759,31 @@ void average_density_over_nbr_cell_dom_full_mm_direct(MultiMat& mm, Robey_data& 
       int cnbrs[8];
       double dsqr[8];
 
-      for (int n = 0; n < nn; n++)
+      for (int n = 0; n < nn; ++n)
         cnbrs[n] = nbrs[ic * 8 + n];
 
-      for (int n = 0; n < nn; n++)
+      for (int n = 0; n < nn; ++n)
       {
         dsqr[n] = 0.0;
-        for (int d = 0; d < 2; d++) //original condition was  d < 1 ???
+        for (int d = 0; d < 2; ++d) //original condition was  d < 1 ???
         {
           double ddist = (xc[d] - cen[cnbrs[n] * 2 + d]);
           dsqr[n] += ddist * ddist;
         }
       }
 
-      for (int m = 0; m < nmats; m++)
+      for (int m = 0; m < nmats; ++m)
       {
         if (*Volfrac.findValue(ic,m) > 0.0)  //this check is not needed in sparse layout.
         {
           int nnm = 0;         // number of nbrs with this material
-          for (int n = 0; n < nn; n++)
+          for (int n = 0; n < nn; ++n)
           {
             int jc = cnbrs[n];
             if (*Volfrac.findValue(jc, m) > 0.0)
             {
               MatDensity_average[ic * nmats + m] += *Densityfrac.findValue(jc,m) / dsqr[n];
-              nnm++;
+              ++nnm;
             }
           }
           if (nnm > 0)
@@ -1389,14 +1837,14 @@ void average_density_over_nbr_cell_dom_full_mm_submap(MultiMat& mm, Robey_data& 
   
   timer.reset();
   
-  for (int iter = 0 ; iter< ITERMAX ; iter++)
+  for (int iter = 0 ; iter< ITERMAX ; ++iter)
   {
     for (auto& v : MatDensity_average)
       v = 0.0;
 
     timer.start();
 
-    for (int ic = 0 ; ic < ncells ; ic++)
+    for (int ic = 0 ; ic < ncells ; ++ic)
     {
       MultiMat::SubField<double> Densityfrac_row = Densityfrac(ic);
       MultiMat::SubField<double> Volfrac_row = Volfrac(ic);
@@ -1407,25 +1855,25 @@ void average_density_over_nbr_cell_dom_full_mm_submap(MultiMat& mm, Robey_data& 
       int cnbrs[8];
       double dsqr[8];
 
-      for (int n = 0 ; n < nn ; n++)
+      for (int n = 0 ; n < nn ; ++n)
         cnbrs[n] = nbrs[ic * 8 + n];
 
-      for (int n = 0 ; n < nn ; n++)
+      for (int n = 0 ; n < nn ; ++n)
       {
         dsqr[n] = 0.0;
-        for (int d = 0 ; d < 2 ; d++) //original condition was  d < 1 ???
+        for (int d = 0 ; d < 2 ; ++d) //original condition was  d < 1 ???
         {
           double ddist = (xc[d] - cen[cnbrs[n] * 2 + d]);
           dsqr[n] += ddist * ddist;
         }
       }
 
-      for (int m = 0; m < nmats; m++)
+      for (int m = 0; m < nmats; ++m)
       {
         if (Volfrac_row(m)> 0.0)  //this check is not needed in sparse layout.
         {
           int nnm = 0;         // number of nbrs with this material
-          for (int n = 0 ; n < nn ; n++)
+          for (int n = 0 ; n < nn ; ++n)
           {
             int jc = cnbrs[n];
             auto Volfrac_jrow = Volfrac(jc);
@@ -1433,7 +1881,7 @@ void average_density_over_nbr_cell_dom_full_mm_submap(MultiMat& mm, Robey_data& 
             {
               auto Densityfrac_jrow = Densityfrac(jc);
               MatDensity_average[ic*nmats + m] += Densityfrac_jrow(m) / dsqr[n];
-              nnm++;
+              ++nnm;
             }
           }
           if (nnm > 0)
@@ -1486,14 +1934,14 @@ void average_density_over_nbr_cell_dom_full_mm_iter(MultiMat& mm, Robey_data& da
 
   timer.reset();
 
-  for (int iter = 0; iter < ITERMAX; iter++)
+  for (int iter = 0; iter < ITERMAX; ++iter)
   {
     for (auto& v : MatDensity_average)
       v = 0.0;
 
     timer.start();
 
-    for (int ic = 0; ic < ncells; ic++)
+    for (int ic = 0; ic < ncells; ++ic)
     {
       double xc[2];
       xc[0] = cen[ic * 2]; xc[1] = cen[ic * 2 + 1];
@@ -1501,13 +1949,13 @@ void average_density_over_nbr_cell_dom_full_mm_iter(MultiMat& mm, Robey_data& da
       int cnbrs[8];
       double dsqr[8];
 
-      for (int n = 0; n < nn; n++)
+      for (int n = 0; n < nn; ++n)
         cnbrs[n] = nbrs[ic * 8 + n];
 
-      for (int n = 0; n < nn; n++)
+      for (int n = 0; n < nn; ++n)
       {
         dsqr[n] = 0.0;
-        for (int d = 0; d < 2; d++) //original condition was  d < 1 ???
+        for (int d = 0; d < 2; ++d) //original condition was  d < 1 ???
         {
           double ddist = (xc[d] - cen[cnbrs[n] * 2 + d]);
           dsqr[n] += ddist * ddist;
@@ -1522,7 +1970,7 @@ void average_density_over_nbr_cell_dom_full_mm_iter(MultiMat& mm, Robey_data& da
         if (*VolfracIter > 0.0)  //this check is not needed in sparse layout.
         {
           int nnm = 0;         // number of nbrs with this material
-          for (int n = 0; n < nn; n++)
+          for (int n = 0; n < nn; ++n)
           {
             int jc = cnbrs[n];
             auto VolfracIterJcm = Volfrac.begin(jc)+m;
@@ -1530,7 +1978,7 @@ void average_density_over_nbr_cell_dom_full_mm_iter(MultiMat& mm, Robey_data& da
             {
               auto DensityIterJcm = Densityfrac.begin(jc) + m;
               MatDensity_average[ic * nmats + m] += *DensityIterJcm / dsqr[n];
-              nnm++;
+              ++nnm;
             }
           }
           if (nnm > 0)
@@ -1584,14 +2032,14 @@ void average_density_over_nbr_cell_dom_compact_mm_submap(MultiMat& mm, Robey_dat
 
   timer.reset();
 
-  for (int iter = 0; iter < ITERMAX; iter++)
+  for (int iter = 0; iter < ITERMAX; ++iter)
   {
     for (auto& v : MatDensity_average)
       v = 0.0;
 
     timer.start();
 
-    for (int ic = 0; ic < ncells; ic++)
+    for (int ic = 0; ic < ncells; ++ic)
     {
       double xc[2];
       xc[0] = cen[ic * 2]; xc[1] = cen[ic * 2 + 1];
@@ -1599,13 +2047,13 @@ void average_density_over_nbr_cell_dom_compact_mm_submap(MultiMat& mm, Robey_dat
       int cnbrs[8];
       double dsqr[8];
 
-      for (int n = 0; n < nn; n++)
+      for (int n = 0; n < nn; ++n)
         cnbrs[n] = nbrs[ic * 8 + n];
 
-      for (int n = 0; n < nn; n++)
+      for (int n = 0; n < nn; ++n)
       {
         dsqr[n] = 0.0;
-        for (int d = 0; d < 2; d++) //original condition was  d < 1 ???
+        for (int d = 0; d < 2; ++d) //original condition was  d < 1 ???
         {
           double ddist = (xc[d] - cen[cnbrs[n] * 2 + d]);
           dsqr[n] += ddist * ddist;
@@ -1614,12 +2062,12 @@ void average_density_over_nbr_cell_dom_compact_mm_submap(MultiMat& mm, Robey_dat
 
       MultiMat::SubField<double> Densityfrac_row = Densityfrac(ic);
 
-      for (int k = 0; k < Densityfrac_row.size(); k++)
+      for (int k = 0; k < Densityfrac_row.size(); ++k)
       {
         int m = Densityfrac_row.index(k);
         
         int nnm = 0;         // number of nbrs with this material
-        for (int n = 0; n < nn; n++)
+        for (int n = 0; n < nn; ++n)
         {
           int jc = cnbrs[n];
           auto Densityfrac_jrow = Densityfrac(jc);
@@ -1628,7 +2076,7 @@ void average_density_over_nbr_cell_dom_compact_mm_submap(MultiMat& mm, Robey_dat
             if (Densityfrac_jrow.index(jj) == m)
             {
               MatDensity_average[ic * nmats + m] += Densityfrac_jrow(jj) / dsqr[n];
-              nnm++;
+              ++nnm;
               break;
             }
           }
@@ -1678,14 +2126,14 @@ void average_density_over_nbr_cell_dom_compact_mm_idxarray(MultiMat& mm, Robey_d
 
   timer.reset();
 
-  for (int iter = 0; iter < ITERMAX; iter++)
+  for (int iter = 0; iter < ITERMAX; ++iter)
   {
     for (auto& v : MatDensity_average)
       v = 0.0;
 
     timer.start();
 
-    for (int ic = 0; ic < ncells; ic++)
+    for (int ic = 0; ic < ncells; ++ic)
     {
       double xc[2];
       xc[0] = cen[ic * 2]; xc[1] = cen[ic * 2 + 1];
@@ -1693,13 +2141,13 @@ void average_density_over_nbr_cell_dom_compact_mm_idxarray(MultiMat& mm, Robey_d
       int cnbrs[8];
       double dsqr[8];
 
-      for (int n = 0; n < nn; n++)
+      for (int n = 0; n < nn; ++n)
         cnbrs[n] = nbrs[ic * 8 + n];
 
-      for (int n = 0; n < nn; n++)
+      for (int n = 0; n < nn; ++n)
       {
         dsqr[n] = 0.0;
-        for (int d = 0; d < 2; d++) //original condition was  d < 1 ???
+        for (int d = 0; d < 2; ++d) //original condition was  d < 1 ???
         {
           double ddist = (xc[d] - cen[cnbrs[n] * 2 + d]);
           dsqr[n] += ddist * ddist;
@@ -1709,11 +2157,11 @@ void average_density_over_nbr_cell_dom_compact_mm_idxarray(MultiMat& mm, Robey_d
       auto IndexSet = mm.getIndexingSetOfCell(ic);
       auto MatId = mm.getMatInCell(ic);
       
-      for (int k = 0; k < IndexSet.size(); k++)
+      for (int k = 0; k < IndexSet.size(); ++k)
       {
         int m = MatId[k];
         int nnm = 0;         // number of nbrs with this material
-        for (int n = 0; n < nn; n++)
+        for (int n = 0; n < nn; ++n)
         {
           int jc = cnbrs[n];
           auto MatIdJc = mm.getMatInCell(jc);
@@ -1723,7 +2171,7 @@ void average_density_over_nbr_cell_dom_compact_mm_idxarray(MultiMat& mm, Robey_d
             {
               auto IndexSetJc = mm.getIndexingSetOfCell(jc);
               MatDensity_average[ic * nmats + m] += Densityfrac[IndexSetJc[jj]] / dsqr[n];
-              nnm++;
+              ++nnm;
               break;
             }
           }
@@ -1773,14 +2221,14 @@ void average_density_over_nbr_cell_dom_compact_mm_iter(MultiMat& mm, Robey_data&
 
   timer.reset();
 
-  for (int iter = 0; iter < ITERMAX; iter++)
+  for (int iter = 0; iter < ITERMAX; ++iter)
   {
     for (auto& v : MatDensity_average)
       v = 0.0;
 
     timer.start();
 
-    for (int ic = 0; ic < ncells; ic++)
+    for (int ic = 0; ic < ncells; ++ic)
     {
       double xc[2];
       xc[0] = cen[ic * 2]; xc[1] = cen[ic * 2 + 1];
@@ -1788,13 +2236,13 @@ void average_density_over_nbr_cell_dom_compact_mm_iter(MultiMat& mm, Robey_data&
       int cnbrs[8];
       double dsqr[8];
 
-      for (int n = 0; n < nn; n++)
+      for (int n = 0; n < nn; ++n)
         cnbrs[n] = nbrs[ic * 8 + n];
 
-      for (int n = 0; n < nn; n++)
+      for (int n = 0; n < nn; ++n)
       {
         dsqr[n] = 0.0;
-        for (int d = 0; d < 2; d++) //original condition was  d < 1 ???
+        for (int d = 0; d < 2; ++d) //original condition was  d < 1 ???
         {
           double ddist = (xc[d] - cen[cnbrs[n] * 2 + d]);
           dsqr[n] += ddist * ddist;
@@ -1803,12 +2251,12 @@ void average_density_over_nbr_cell_dom_compact_mm_iter(MultiMat& mm, Robey_data&
 
       auto DensityfracIter = Densityfrac.begin(ic);
       auto DensityfracIterEnd = Densityfrac.end(ic);
-      for (; DensityfracIter != DensityfracIterEnd ; DensityfracIter++)
+      for (; DensityfracIter != DensityfracIterEnd ; ++DensityfracIter)
       {
         int m = DensityfracIter.index();
 
         int nnm = 0;         // number of nbrs with this material
-        for (int n = 0; n < nn; n++)
+        for (int n = 0; n < nn; ++n)
         {
           int jc = cnbrs[n];
           auto DensityfracIterJc = Densityfrac.begin(jc);
@@ -1818,7 +2266,7 @@ void average_density_over_nbr_cell_dom_compact_mm_iter(MultiMat& mm, Robey_data&
             if (DensityfracIterJc.index() == m)
             {
               MatDensity_average[ic * nmats + m] += *DensityfracIterJc / dsqr[n];
-              nnm++;
+              ++nnm;
               break;
             }
           }
@@ -1865,36 +2313,36 @@ void average_density_over_nbr_mat_dom_full(Robey_data& data)
 
   timer.reset();
 
-  for (int iter = 0; iter < ITERMAX; iter++)
+  for (int iter = 0; iter < ITERMAX; ++iter)
   {
     for (auto& v : MatDensity_average)
       v = 0.0;
 
     timer.start();
 
-    for (int m = 0; m < nmats; m++) {
-      for (int ic = 0; ic < ncells; ic++) {
+    for (int m = 0; m < nmats; ++m) {
+      for (int ic = 0; ic < ncells; ++ic) {
         if (Volfrac[m * ncells + ic] > 0.0) {
           double xc[2];
           xc[0] = cen[ic*2]; xc[1] = cen[ic*2+1];
           int nn = nnbrs[ic];
           int cnbrs[8];
           double dsqr[8];
-          for (int n = 0; n < nn; n++) cnbrs[n] = nbrs[ic * 8 + n];
-          for (int n = 0; n < nn; n++) {
+          for (int n = 0; n < nn; ++n) cnbrs[n] = nbrs[ic * 8 + n];
+          for (int n = 0; n < nn; ++n) {
             dsqr[n] = 0.0;
-            for (int d = 0; d < 2; d++) { //????
+            for (int d = 0; d < 2; ++d) { //????
               double ddist = (xc[d] - cen[cnbrs[n] * 2 + d]);
               dsqr[n] += ddist * ddist;
             }
           }
 
           int nnm = 0;         // number of nbrs with this material
-          for (int n = 0; n < nn; n++) {
+          for (int n = 0; n < nn; ++n) {
             int jc = cnbrs[n];
             if (Volfrac[m*ncells+jc] > 0.0) {
               MatDensity_average[m * ncells + ic] += Densityfrac[m * ncells + jc] / dsqr[n];
-              nnm++;
+              ++nnm;
             }
           }
           if (nnm > 0)
@@ -1940,15 +2388,15 @@ void average_density_over_nbr_mat_dom_compact(Robey_data& data)
 
   timer.reset();
 
-  for (int iter = 0; iter < ITERMAX; iter++)
+  for (int iter = 0; iter < ITERMAX; ++iter)
   {
     for (auto& v : MatDensity_average)
       v = 0.0;
 
     timer.start();
 
-    for (int m = 0; m < nmats; m++) {
-      for (int ii = begin_idx[m]; ii < begin_idx[m + 1]; ii++)
+    for (int m = 0; m < nmats; ++m) {
+      for (int ii = begin_idx[m]; ii < begin_idx[m + 1]; ++ii)
       {
         int ci = cell_id[ii];
 
@@ -1957,10 +2405,10 @@ void average_density_over_nbr_mat_dom_compact(Robey_data& data)
         int nn = nnbrs[ci];
         int cnbrs[9];
         double dsqr[8];
-        for (int n = 0; n < nn; n++) cnbrs[n] = nbrs[ci*8+n];
-        for (int n = 0; n < nn; n++) {
+        for (int n = 0; n < nn; ++n) cnbrs[n] = nbrs[ci*8+n];
+        for (int n = 0; n < nn; ++n) {
           dsqr[n] = 0.0;
-          for (int d = 0; d < 2; d++) { //???
+          for (int d = 0; d < 2; ++d) { //???
             double ddist = (xc[d] - cen[cnbrs[n]*2 + d]);
             dsqr[n] += ddist * ddist;
           }
@@ -1968,12 +2416,12 @@ void average_density_over_nbr_mat_dom_compact(Robey_data& data)
         
         int nnm = 0;         // number of nbrs with this material
         int begin_idx_m = begin_idx[m];
-        for (int n = 0; n < nn; n++) {
+        for (int n = 0; n < nn; ++n) {
           int C_j = cnbrs[n];
           int c_j = data.dense2sparse_idx[m * ncells + C_j];
           if (c_j >= 0) { //the neighbor cell does have this material
             MatDensity_average[m * ncells + ci] += Densityfrac[begin_idx_m + c_j] / dsqr[n];
-            nnm++;
+            ++nnm;
           }
         }
         if (nnm > 0)
@@ -1994,7 +2442,6 @@ void average_density_over_nbr_mat_dom_compact(Robey_data& data)
     << act_perf << " secs\n");
 
 }
-
 
 
 //    Average density over neighbor cells
@@ -2021,36 +2468,36 @@ void average_density_over_nbr_mat_dom_full_mm_direct(MultiMat& mm, Robey_data& d
 
   timer.reset();
 
-  for (int iter = 0; iter < ITERMAX; iter++)
+  for (int iter = 0; iter < ITERMAX; ++iter)
   {
     for (auto& v : MatDensity_average)
       v = 0.0;
 
     timer.start();
 
-    for (int m = 0; m < nmats; m++) {
-      for (int ic = 0; ic < ncells; ic++) {
+    for (int m = 0; m < nmats; ++m) {
+      for (int ic = 0; ic < ncells; ++ic) {
         if (*Volfrac.findValue(m, ic) > 0.0) {
           double xc[2];
           xc[0] = cen[ic * 2]; xc[1] = cen[ic * 2 + 1];
           int nn = nnbrs[ic];
           int cnbrs[8];
           double dsqr[8];
-          for (int n = 0; n < nn; n++) cnbrs[n] = nbrs[ic * 8 + n];
-          for (int n = 0; n < nn; n++) {
+          for (int n = 0; n < nn; ++n) cnbrs[n] = nbrs[ic * 8 + n];
+          for (int n = 0; n < nn; ++n) {
             dsqr[n] = 0.0;
-            for (int d = 0; d < 2; d++) { //????
+            for (int d = 0; d < 2; ++d) { //????
               double ddist = (xc[d] - cen[cnbrs[n] * 2 + d]);
               dsqr[n] += ddist * ddist;
             }
           }
 
           int nnm = 0;         // number of nbrs with this material
-          for (int n = 0; n < nn; n++) {
+          for (int n = 0; n < nn; ++n) {
             int jc = cnbrs[n];
             if (*Volfrac.findValue(m, jc) > 0.0) {
               MatDensity_average[m * ncells + ic] += *Densityfrac.findValue(m,jc) / dsqr[n];
-              nnm++;
+              ++nnm;
             }
           }
           if (nnm > 0)
@@ -2099,14 +2546,14 @@ void average_density_over_nbr_mat_dom_full_mm_submap(MultiMat& mm, Robey_data& d
 
   timer.reset();
 
-  for (int iter = 0; iter < ITERMAX; iter++)
+  for (int iter = 0; iter < ITERMAX; ++iter)
   {
     for (auto& v : MatDensity_average)
       v = 0.0;
 
     timer.start();
 
-    for (int m = 0; m < nmats; m++) {
+    for (int m = 0; m < nmats; ++m) {
       MultiMat::SubField<double> Densityfrac_row = Densityfrac(m);
       MultiMat::SubField<double> Volfrac_row = Volfrac(m);
       for (int ic = 0; ic < Volfrac_row.size(); ++ic) {
@@ -2116,21 +2563,21 @@ void average_density_over_nbr_mat_dom_full_mm_submap(MultiMat& mm, Robey_data& d
           int nn = nnbrs[ic];
           int cnbrs[8];
           double dsqr[8];
-          for (int n = 0; n < nn; n++) cnbrs[n] = nbrs[ic * 8 + n];
-          for (int n = 0; n < nn; n++) {
+          for (int n = 0; n < nn; ++n) cnbrs[n] = nbrs[ic * 8 + n];
+          for (int n = 0; n < nn; ++n) {
             dsqr[n] = 0.0;
-            for (int d = 0; d < 2; d++) { //????
+            for (int d = 0; d < 2; ++d) { //????
               double ddist = (xc[d] - cen[cnbrs[n] * 2 + d]);
               dsqr[n] += ddist * ddist;
             }
           }
 
           int nnm = 0;         // number of nbrs with this material
-          for (int n = 0; n < nn; n++) {
+          for (int n = 0; n < nn; ++n) {
             int jc = cnbrs[n];
             if (Volfrac_row(jc) > 0.0) {
               MatDensity_average[m * ncells + ic] += Densityfrac_row(jc) / dsqr[n];
-              nnm++;
+              ++nnm;
             }
           }
           if (nnm > 0)
@@ -2180,19 +2627,19 @@ void average_density_over_nbr_mat_dom_full_mm_iter(MultiMat& mm, Robey_data& dat
 
   timer.reset();
 
-  for (int iter = 0; iter < ITERMAX; iter++)
+  for (int iter = 0; iter < ITERMAX; ++iter)
   {
     for (auto& v : MatDensity_average)
       v = 0.0;
 
     timer.start();
 
-    for (int m = 0; m < nmats; m++) {
+    for (int m = 0; m < nmats; ++m) {
       auto VolfracIter = Volfrac.begin(m);
       auto VolfracIterEnd = Volfrac.end(m);
       auto DensityIterBegin = Densityfrac.begin(m);
       auto VolfracIterBegin = Volfrac.begin(m);
-      for (; VolfracIter != VolfracIterEnd; VolfracIter++) {
+      for (; VolfracIter != VolfracIterEnd; ++VolfracIter) {
         int ic = VolfracIter.index();
         if (*VolfracIter > 0.0) {
           double xc[2];
@@ -2200,10 +2647,10 @@ void average_density_over_nbr_mat_dom_full_mm_iter(MultiMat& mm, Robey_data& dat
           int nn = nnbrs[ic];
           int cnbrs[8];
           double dsqr[8];
-          for (int n = 0; n < nn; n++) cnbrs[n] = nbrs[ic * 8 + n];
-          for (int n = 0; n < nn; n++) {
+          for (int n = 0; n < nn; ++n) cnbrs[n] = nbrs[ic * 8 + n];
+          for (int n = 0; n < nn; ++n) {
             dsqr[n] = 0.0;
-            for (int d = 0; d < 2; d++) { //????
+            for (int d = 0; d < 2; ++d) { //????
               double ddist = (xc[d] - cen[cnbrs[n] * 2 + d]);
               dsqr[n] += ddist * ddist;
             }
@@ -2211,12 +2658,12 @@ void average_density_over_nbr_mat_dom_full_mm_iter(MultiMat& mm, Robey_data& dat
 
           int nnm = 0;         // number of nbrs with this material
 
-          for (int n = 0; n < nn; n++) {
+          for (int n = 0; n < nn; ++n) {
             int jc = cnbrs[n];
             
             if (*(VolfracIterBegin + jc) > 0.0) {
               MatDensity_average[m * ncells + ic] += *(DensityIterBegin + jc) / dsqr[n];
-              nnm++;
+              ++nnm;
             }
           }
           if (nnm > 0)
@@ -2243,7 +2690,7 @@ void average_density_over_nbr_mat_dom_full_mm_iter(MultiMat& mm, Robey_data& dat
 
 
 //    Average density over neighbor cells
-//      MultiMat - Submap
+//      MultiMat - Compact - Submap
 void average_density_over_nbr_mat_dom_compact_mm_submap(MultiMat& mm, Robey_data& data)
 {
   SLIC_INFO("-- Average Density over Neighbors, Material-Dominant Compact, using MultiMat Submap --");
@@ -2265,17 +2712,17 @@ void average_density_over_nbr_mat_dom_compact_mm_submap(MultiMat& mm, Robey_data
 
   timer.reset();
 
-  for (int iter = 0; iter < ITERMAX; iter++)
+  for (int iter = 0; iter < ITERMAX; ++iter)
   {
     for (auto& v : MatDensity_average)
       v = 0.0;
 
     timer.start();
 
-    for (int m = 0; m < nmats; m++) 
+    for (int m = 0; m < nmats; ++m) 
     {
       MultiMat::SubField<double> Densityfrac_row = Densityfrac(m);
-      for (int k = 0; k < Densityfrac_row.size(); k++)
+      for (int k = 0; k < Densityfrac_row.size(); ++k)
       {
         int ci = Densityfrac_row.index(k);
 
@@ -2284,22 +2731,22 @@ void average_density_over_nbr_mat_dom_compact_mm_submap(MultiMat& mm, Robey_data
         int nn = nnbrs[ci];
         int cnbrs[9];
         double dsqr[8];
-        for (int n = 0; n < nn; n++) cnbrs[n] = nbrs[ci * 8 + n];
-        for (int n = 0; n < nn; n++) {
+        for (int n = 0; n < nn; ++n) cnbrs[n] = nbrs[ci * 8 + n];
+        for (int n = 0; n < nn; ++n) {
           dsqr[n] = 0.0;
-          for (int d = 0; d < 2; d++) { //???
+          for (int d = 0; d < 2; ++d) { //???
             double ddist = (xc[d] - cen[cnbrs[n] * 2 + d]);
             dsqr[n] += ddist * ddist;
           }
         }
 
         int nnm = 0;         // number of nbrs with this material
-        for (int n = 0; n < nn; n++) {
+        for (int n = 0; n < nn; ++n) {
           int C_j = cnbrs[n];
           int k_j = data.dense2sparse_idx[m * ncells + C_j];
           if (k_j >= 0) { //the neighbor cell does have this material
             MatDensity_average[m * ncells + ci] += Densityfrac[k_j] / dsqr[n];
-            nnm++;
+            ++nnm;
           }
         }
         if (nnm > 0)
@@ -2322,7 +2769,7 @@ void average_density_over_nbr_mat_dom_compact_mm_submap(MultiMat& mm, Robey_data
 }
 
 //    Average density over neighbor cells
-//      MultiMat - Index Array
+//      MultiMat - Compact - Index Array
 void average_density_over_nbr_mat_dom_compact_mm_indexarray(MultiMat& mm, Robey_data& data)
 {
   SLIC_INFO("-- Average Density over Neighbors, Material-Dominant Compact, using MultiMat Index Array--");
@@ -2345,19 +2792,19 @@ void average_density_over_nbr_mat_dom_compact_mm_indexarray(MultiMat& mm, Robey_
 
   timer.reset();
 
-  for (int iter = 0; iter < ITERMAX; iter++)
+  for (int iter = 0; iter < ITERMAX; ++iter)
   {
     for (auto& v : MatDensity_average)
       v = 0.0;
 
     timer.start();
 
-    for (int m = 0; m < nmats; m++)
+    for (int m = 0; m < nmats; ++m)
     {
       auto IndexSet = mm.getIndexingSetOfMat(m);
       auto CellIdArr = mm.getCellContainingMat(m);
 
-      for (int k = 0; k < IndexSet.size(); k++)
+      for (int k = 0; k < IndexSet.size(); ++k)
       {
         int ci = CellIdArr[k];
 
@@ -2366,23 +2813,23 @@ void average_density_over_nbr_mat_dom_compact_mm_indexarray(MultiMat& mm, Robey_
         int nn = nnbrs[ci];
         int cnbrs[9];
         double dsqr[8];
-        for (int n = 0; n < nn; n++) cnbrs[n] = nbrs[ci * 8 + n];
-        for (int n = 0; n < nn; n++) {
+        for (int n = 0; n < nn; ++n) cnbrs[n] = nbrs[ci * 8 + n];
+        for (int n = 0; n < nn; ++n) {
           dsqr[n] = 0.0;
-          for (int d = 0; d < 2; d++) { //???
+          for (int d = 0; d < 2; ++d) { //???
             double ddist = (xc[d] - cen[cnbrs[n] * 2 + d]);
             dsqr[n] += ddist * ddist;
           }
         }
 
         int nnm = 0;         // number of nbrs with this material
-        for (int n = 0; n < nn; n++) {
+        for (int n = 0; n < nn; ++n) {
           int C_j = cnbrs[n];
           int k_j = data.dense2sparse_idx[m * ncells + C_j];
           if (k_j >= 0) { //the neighbor cell does have this material
 
             MatDensity_average[m * ncells + ci] += Densityfrac[IndexSet[k_j]] / dsqr[n];
-            nnm++;
+            ++nnm;
           }
         }
         if (nnm > 0)
@@ -2405,7 +2852,7 @@ void average_density_over_nbr_mat_dom_compact_mm_indexarray(MultiMat& mm, Robey_
 }
 
 //    Average density over neighbor cells
-//      MultiMat - Iter
+//      MultiMat - Compact - Iter
 void average_density_over_nbr_mat_dom_compact_mm_iter(MultiMat& mm, Robey_data& data)
 {
   SLIC_INFO("-- Average Density over Neighbors, Material-Dominant compact, using MultiMat Iter --");
@@ -2427,19 +2874,19 @@ void average_density_over_nbr_mat_dom_compact_mm_iter(MultiMat& mm, Robey_data& 
 
   timer.reset();
 
-  for (int iter = 0; iter < ITERMAX; iter++)
+  for (int iter = 0; iter < ITERMAX; ++iter)
   {
     for (auto& v : MatDensity_average)
       v = 0.0;
 
     timer.start();
 
-    for (int m = 0; m < nmats; m++)
+    for (int m = 0; m < nmats; ++m)
     {
       auto DensityfracIter = Densityfrac.begin(m);
       auto DensityfracIterBegin = Densityfrac.begin(m);
       auto DensityfracIterEnd = Densityfrac.end(m);
-      for (;DensityfracIter!= DensityfracIterEnd; DensityfracIter++)
+      for (;DensityfracIter!= DensityfracIterEnd; ++DensityfracIter)
       {
         int ci = DensityfracIter.index();
 
@@ -2448,22 +2895,22 @@ void average_density_over_nbr_mat_dom_compact_mm_iter(MultiMat& mm, Robey_data& 
         int nn = nnbrs[ci];
         int cnbrs[9];
         double dsqr[8];
-        for (int n = 0; n < nn; n++) cnbrs[n] = nbrs[ci * 8 + n];
-        for (int n = 0; n < nn; n++) {
+        for (int n = 0; n < nn; ++n) cnbrs[n] = nbrs[ci * 8 + n];
+        for (int n = 0; n < nn; ++n) {
           dsqr[n] = 0.0;
-          for (int d = 0; d < 2; d++) { //???
+          for (int d = 0; d < 2; ++d) { //???
             double ddist = (xc[d] - cen[cnbrs[n] * 2 + d]);
             dsqr[n] += ddist * ddist;
           }
         }
 
         int nnm = 0;         // number of nbrs with this material
-        for (int n = 0; n < nn; n++) {
+        for (int n = 0; n < nn; ++n) {
           int C_j = cnbrs[n];
           int k_j = data.dense2sparse_idx[m * ncells + C_j];
           if (k_j >= 0) { //the neighbor cell does have this material
             MatDensity_average[m * ncells + ci] += *(DensityfracIterBegin + k_j) / dsqr[n];
-            nnm++;
+            ++nnm;
           }
         }
         if (nnm > 0)
@@ -2641,16 +3088,38 @@ int main(int argc, char** argv)
   average_density_over_nbr_mat_dom_compact_mm_submap(mm, data);
   average_density_over_nbr_mat_dom_compact_mm_iter(mm, data);
 
+  SLIC_INFO("**********************************************************");
+  SLIC_INFO("* ");
+  SLIC_INFO("* Calculate Pressure Using Ideal Gas Law");
+  SLIC_INFO("* ");
+  
+  SLIC_INFO("**************** Full Layout - Cell-Dominant ******************");
+
+  data.set_up_cell_dom_data();
+  data_checker.reset();
+  mm.convertLayoutToCellDominant();
+  mm.convertLayoutToDense();
+  calculate_pressure_cell_dom_full(data);
+  calculate_pressure_cell_dom_full_mm_direct(mm);
+  calculate_pressure_cell_dom_full_mm_submap(mm);
+  calculate_pressure_cell_dom_full_mm_iter(mm);
+  calculate_pressure_cell_dom_full_mm_flatiter(mm);
+   
+  SLIC_INFO("**************** Full Layout - Material-Dominant ******************");
+  data.set_up_mat_dom_data();
+  data_checker.reset();
+  mm.convertLayoutToMaterialDominant();
+  calculate_pressure_mat_dom_full(data);
+  calculate_pressure_mat_dom_full_mm_direct(mm);
+  calculate_pressure_mat_dom_full_mm_submap(mm);
+  calculate_pressure_mat_dom_full_mm_iter(mm);
+  calculate_pressure_mat_dom_full_mm_flatiter(mm);
+
+
   /*
   average_density_cell_dom_with_if(data);
   average_density_cell_dom_with_if_mm(mm);
-
-  calculate_pressure(data);
-  calculate_pressure_mm(mm);
-
   */
-
-
 
 
   SLIC_INFO("*");
