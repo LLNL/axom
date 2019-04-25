@@ -17,7 +17,6 @@
 
 using namespace std;
 
-
 struct Value_Checker
 {
   std::vector<double> values;
@@ -753,26 +752,31 @@ struct Robey_data
 
 
 
-static const char * const method_names[] = { "CSR", "MM-Direct", "MM-Index Array",
-"MM-Submap", "MM-Iterator", "MM-Flat Iterator" };
-static const char* const algo_names[] = { "Avg density", "Neighbor material density" };
-static const char* const data_layout_str[] = { "Cell-centric", "Material-centric" };
-static const char* const sparsity_str[] = { "Full Matrix", "Compact" };
-
-
-
 struct Result_Store
 {
   using DataLayout = axom::multimat::DataLayout;
   using SparsityLayout = axom::multimat::SparsityLayout;
-  enum Algo { avg_density = 0, neighbor_density = 1 };
-  enum Method { method_csr, mm_direct, mm_idxarray, mm_submap, mm_iter, mm_flatiter };
-  Robey_data* robey_data_ptr;
 
+  const int nAlgo = 3;
+  enum Algo { avg_density, neighbor_density, pressure_calc };
+  const char* algo_names[3] = {
+    "Avg density", "Neighbor material density", "Pressure from ideal gas law" };
+
+  const int nMethod = 6;
+  enum Method { method_csr, mm_direct, mm_idxarray, mm_submap, mm_iter, mm_flatiter };
+  const char* method_names[6] = { "CSR", "MM-Direct", "MM-Index Array",
+    "MM-Submap", "MM-Iterator", "MM-Flat Iterator" };
+
+  const int nLayout = 4;
+  const char* const data_layout_str[2] = { "Cell-centric", "Material-centric" };
+  const char* const sparsity_str[2] = { "Full Matrix", "Compact" };
+
+  Robey_data* robey_data_ptr;
   std::vector<double> result_vec;
+
   Result_Store() {
-    result_vec.resize(2 * 4 * 6, 0.0);
-    //number of enum * types of layouts * number of algorithms
+    robey_data_ptr = nullptr;
+    result_vec.resize(nAlgo * nLayout * nMethod, 0.0);
   }
 
   void init(Robey_data* robey_data_ptr_in) {
@@ -785,9 +789,9 @@ struct Result_Store
     int data_layout_i = data_layout == DataLayout::CELL_CENTRIC ? 0 : 1;
     int sparsity_layout_i = sparsity_layout == SparsityLayout::DENSE ? 0 : 1;
 
-    int idx = algo * (4 * 6) +
-      data_layout_i * (2 * 6) +
-      sparsity_layout_i * (6) +
+    int idx = algo * (nLayout * nMethod) +
+      data_layout_i * (nLayout/2 * nMethod) +
+      sparsity_layout_i * (nMethod) +
       method;
 
     std::cout << idx << ": " << get_algo_name(idx) << " - " << get_method_name(idx) << std::endl;
@@ -795,12 +799,12 @@ struct Result_Store
   }
 
   const char* get_method_name(int index) {
-    return method_names[index % 6];
+    return method_names[index % nMethod];
   }
   std::string get_algo_name(int index) {
-    int algo_i = index / (4 * 6);
-    int data_layout_i = (index / (2 * 6)) % 2;
-    int sparsity_layout_i = (index / (6)) % 2;
+    int algo_i = index / (nLayout * nMethod);
+    int data_layout_i = (index / (nLayout/2 * nMethod)) % 2;
+    int sparsity_layout_i = (index / (nMethod)) % 2;
     return std::string(algo_names[algo_i]) + " " +
       std::string(sparsity_str[sparsity_layout_i]) + " " +
       std::string(data_layout_str[data_layout_i]);
@@ -817,15 +821,25 @@ struct Result_Store
       << " NRuns: "<< ITERMAX << "\n\n";
 
     outputFile << "Methods";
-    for (int i = 0; i<6; i++)
+    for (int i = 0; i<nMethod; i++)
       outputFile << "," << method_names[i];
     outputFile << "\n";
 
     for (int i = 0; i < (int)result_vec.size() / 6; i++)
     {
-      int idx = i * 6;
+      int idx = i * nMethod;
+
+      //skip this row if no data is taken
+      bool all_zero = true;
+      for (int j = 0; j < nMethod; j++)
+      {
+        if (result_vec[idx + j] != 0.0)
+          all_zero = false;
+      }
+      if (all_zero) continue;
+
       outputFile << get_algo_name(idx) << ",";
-      for (int j = 0; j < 6; j++)
+      for (int j = 0; j < nMethod; j++)
       {
 
         outputFile << result_vec[idx + j] << ",";
