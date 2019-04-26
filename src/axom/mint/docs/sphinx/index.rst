@@ -13,7 +13,7 @@ Table Of Contents
 ==================
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
    sections/quick_introduction.rst
    sections/preliminary_concepts.rst
