@@ -1,19 +1,36 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
+#
+# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+#
+# SPDX-License-Identifier: (BSD-3-Clause)
+#
 
-trigger:
-- master
+strategy:
+  matrix:
+    linux:
+      imageName: 'ubuntu-16.04'
+      CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE=Off'
+    windows:
+    mac:
 
 pool:
-  vmImage: 'Ubuntu-16.04'
+  vmImage: $(imageName)
+
+variables:
+  DO_BUILD: 'yes'
+  DO_TEST: 'yes'
+  COMPILER: 'g++'
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+- checkout: self
+  clean: boolean
+  submodules: recursive
+- script:  |
+   docker run --rm --user='root' -v `pwd`:/home/axom axom/compilers:gcc-6 chown -R axom /home/axom
+   docker run --rm  -v `pwd`:/home/axom -e COMPILER -e DO_BUILD -e DO_TEST -e CMAKE_EXTRA_FLAGS axom/compilers:gcc-6 ./scripts/azure-pipelines/linux-build_and_test.sh
+  condition: eq( variables['Agent.OS'], 'Linux')
+  displayName: 'Linux (Docker) Build & Test'
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: 'cTest'
+    testResultsFiles: '**/Test.xml'
