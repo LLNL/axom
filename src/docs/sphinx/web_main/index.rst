@@ -7,9 +7,7 @@
 Axom
 ****
 
-.. note:: We recently changed our project name from "The CS Toolkit" to 
-          "Axom". As a result, you may hear either term used. However, they
-          refer to the same project.
+.. note:: This page is under heavy construction.
 
 **This web page is the main place to find information about Axom.**
 
@@ -131,9 +129,6 @@ The project maintains two email lists:
 
   * 'axom-users@llnl.gov' is how Axom users can contact developers for questions, report issues, etc. 
   * 'axom-dev@llnl.gov' is for communication among team members. 
-
-You can add or remove yourself from either of these lists via the 
-`LLNL E-Mail List Manager (ListServ) <https://listserv.llnl.gov>`_
 
 
 -------------- 
