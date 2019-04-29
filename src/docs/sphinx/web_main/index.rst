@@ -9,8 +9,6 @@ Axom
 
 .. note:: This page is under heavy construction.
 
-**This web page is the main place to find information about Axom.**
-
 Axom is a project in WCI/WSC that is funded by ECP/ATDM.
 Its principal goal is to provide a collection of robust and flexible software 
 components that serve as building blocks for LLNL simulation tools. The 
