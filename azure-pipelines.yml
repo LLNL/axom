@@ -10,8 +10,6 @@ strategy:
     linux:
       imageName: 'ubuntu-16.04'
       CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE=Off'
-    windows:
-    mac:
 
 pool:
   vmImage: $(imageName)
