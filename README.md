@@ -1,3 +1,4 @@
+[![Documentation Status](https://readthedocs.org/projects/axom/badge/?version=latest)](https://axom.readthedocs.io/en/latest/?badge=latest)
 
 Axom
 ====
