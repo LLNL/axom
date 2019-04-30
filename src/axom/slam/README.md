@@ -7,6 +7,9 @@ Axom's [Slam](@ref axom::slam) component provides a collection of high performan
 * Relations among pairs of sets (e.g. incidence, adjacency and containment relations)
 * Maps defining fields and attributes on the elements of a given set
 
+The [Slam guide](../../../sphinx/axom_docs/html/axom/slam/docs/sphinx/index.html)
+discusses these concepts at length.
+
 <!--    (see ['components' section](@ref #components) for more detail) -->
 
 # Design goals {#goals}

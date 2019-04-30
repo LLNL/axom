@@ -16,7 +16,7 @@ Primal primitives and operators.  The examples instantiate geometric primitives
 as needed, demonstrate geometric operators, and build the UniformGrid 
 and BVHTree spatial data structures.  These examples show representative 
 overloads of each of the Primal operators (see the
-`API documentation <../../../doxygen/axom_doxygen/html/primaltop.html>`_ 
+`API documentation <../../../../doxygen/axom_doxygen/html/primaltop.html>`_ 
 for more details).
 
 .. toctree::

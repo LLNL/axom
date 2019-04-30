@@ -34,15 +34,14 @@ The main drivers of the Axom project are to:
   *  Provide capabilities for LLNL research codes, proxy apps, etc. that simplify technology
      transfer from research efforts into production applications
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Quickstart Guide
 
-=====================
-Quickstart Guide
-=====================
+   docs/sphinx/quickstart_guide/index
 
-The `Axom Quickstart Guide <../../quickstart_guide_docs/html/index.html>`_ 
-contains information about accessing the code, configuring and building, 
-linking with an application, etc.
-
+The Axom Quickstart Guide contains information about accessing the code,
+configuring and building, linking with an application, etc.
 
 ================================
 Axom Software Documentation
@@ -51,17 +50,17 @@ Axom Software Documentation
 The following lists contain links to user guides and source code documentation
 for Axom software components:
 
-----------------------
-Component User Guides
-----------------------
+.. toctree::
+   :maxdepth: 1
+   :caption: Component User Guides
 
-  *  Slic (Simple Logging Interface Code for integrated applications)
-  *  `Lumberjack (Scalable parallel message logging and filtering) <../../lumberjack_docs/html/index.html>`_
-  *  `Sidre (Simulation data repository) <../../sidre_docs/html/index.html>`_
-  *  `Slam (Set-theoretic lightweight API for meshes) <../../slam_docs/html/index.html>`_
-  *  `Quest (Querying on surface tool) <../../quest_docs/html/index.html>`_
-  *  `Mint (Mesh data model) <../../mint_docs/html/index.html>`_
-  *  `Primal (Computational geometry primitives) <../../primal_docs/html/index.html>`_
+   Slic (Simple Logging Interface Code) <axom/slic/docs/sphinx/index>
+   Lumberjack (Scalable parallel message logging and filtering) <axom/lumberjack/docs/sphinx/index>
+   Sidre (Simulation data repository) <axom/sidre/docs/sphinx/index>
+   Slam (Set-theoretic lightweight API for meshes) <axom/slam/docs/sphinx/index>
+   Quest (Querying on surface tool) <axom/quest/docs/sphinx/index>
+   Mint (Mesh data model) <axom/mint/docs/sphinx/index>
+   Primal (Computational geometry primitives) <axom/primal/docs/sphinx/index>
 
 --------------------------
 Source Code Documentation
@@ -90,7 +89,7 @@ Dependencies between modules are as follows:
 The figure below summarizes the dependencies between the modules.  Solid links
 indicate hard dependencies; dashed links indicate optional dependencies.
 
-.. graphviz:: dependencies.dot
+.. graphviz:: docs/dependencies.dot
 
 
 ======================================================
@@ -104,16 +103,12 @@ projects independent of the Axom. These include:
   *  `Shroud <https://github.com/LLNL/shroud>`_ (Generator for native C and Fortran APIs from C++ code)
   *  `Conduit <https://lc.llnl.gov/confluence/display/CON/Conduit+Home>`_ (Library for describing and managing in-memory data structures) 
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Developer Resources
 
-================================================
-Resources for Axom Developers/Contributors:
-================================================
-
-  * `Axom Developer Guide  <../../dev_guide_docs/html/index.html>`_
-  * `Axom Coding Guidelines  <../../coding_guide_docs/html/index.html>`_
-  * `Axom Testing Coverage <https://lc.llnl.gov/toolkit/coverage/index.html>`_
-
-
+   docs/sphinx/dev_guide/index
+   docs/sphinx/coding_guide/index
 
 ======================================= 
 Communicating with the Axom Team
@@ -176,6 +171,6 @@ LLNL-CODE-741217
 
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 1
 
-   licenses
+   docs/licenses
