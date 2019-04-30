@@ -89,7 +89,7 @@ Dependencies between modules are as follows:
 The figure below summarizes the dependencies between the modules.  Solid links
 indicate hard dependencies; dashed links indicate optional dependencies.
 
-.. graphviz:: dependencies.dot
+.. graphviz:: docs/dependencies.dot
 
 
 ======================================================
