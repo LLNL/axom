@@ -16,7 +16,7 @@ import sys
 import os
 import shlex
 
-# primal, quest, sphinx: Get current directory
+# Get current directory
 conf_directory = os.path.dirname(os.path.realpath(__file__))
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -38,21 +38,13 @@ extensions = [
     'sphinx.ext.doctest',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
-    'sphinx.ext.mathjax',
-    'breathe'
+    'sphinx.ext.mathjax'
 ]
-# web main: graphviz
-# coding guide, dev guide, quickstart: autodoc
-# lumberjack, mint: doctest, todo, coverage, mathjax, breathe
-# primal, quest, sidre add: doctest
 
 # Add any paths that contain templates here, relative to this directory.
 # I think this is right:
 templates_path = [os.path.join(conf_directory, 'docs/sphinx/_templates')]
 # Other variations:
-# templates_path = ['_templates']
-# templates_path = ['../_templates']
-# templates_path = ['@CMAKE_CURRENT_SOURCE_DIR@/_templates']
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -296,7 +288,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   (master_doc, 'Axom', u'Axom Documentation',
-   'Axom Team', 'Axom', 'One line description of project.',
+   'Axom Team', 'Axom', 'Library of CS utilities for HPC applications.',
    'Miscellaneous'),
 ]
 
@@ -311,11 +303,3 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
-
-# add breathe support
-
-breathe_projects = { "axomdoc": "@CMAKE_CURRENT_BINARY_DIR@/../doxygen/xml/" }
-# slam has the variant:
-#breathe_projects = { "slam": "../doxygen/xml/" }
-
-breathe_default_project = "axomdoc"

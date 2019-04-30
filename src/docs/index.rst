@@ -34,18 +34,14 @@ The main drivers of the Axom project are to:
   *  Provide capabilities for LLNL research codes, proxy apps, etc. that simplify technology
      transfer from research efforts into production applications
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Quickstart Guide
 
-=====================
-Quickstart Guide
-=====================
+   sphinx/quickstart_guide/index
 
 The Axom Quickstart Guide contains information about accessing the code,
 configuring and building, linking with an application, etc.
-
-.. toctree::
-   :maxdepth: 1
-
-   sphinx/quickstart_guide/index
 
 ================================
 Axom Software Documentation
@@ -54,18 +50,15 @@ Axom Software Documentation
 The following lists contain links to user guides and source code documentation
 for Axom software components:
 
-----------------------
-Component User Guides
-----------------------
-
 .. toctree::
    :maxdepth: 1
+   :caption: Component User Guides
 
    Slic (Simple Logging Interface Code) <../axom/slic/docs/sphinx/index>
    Lumberjack (Scalable parallel message logging and filtering) <../axom/lumberjack/docs/sphinx/index>
    Sidre (Simulation data repository) <../axom/sidre/docs/sphinx/index>
    Slam (Set-theoretic lightweight API for meshes) <../axom/slam/docs/sphinx/index>
-   Slam (Set-theoretic lightweight API for meshes) <../axom/quest/docs/sphinx/index>
+   Quest (Querying on surface tool) <../axom/quest/docs/sphinx/index>
    Mint (Mesh data model) <../axom/mint/docs/sphinx/index>
    Primal (Computational geometry primitives) <../axom/primal/docs/sphinx/index>
 
@@ -73,15 +66,15 @@ Component User Guides
 Source Code Documentation
 --------------------------
 
-  *  `Axom <../../../doxygen/axom_doxygen/html/index.html>`_
-  *  `Core <../../../doxygen/axom_doxygen/html/coretop.html>`_
-  *  `Lumberjack <../../../doxygen/axom_doxygen/html/lumberjacktop.html>`_
-  *  `Mint <../../../doxygen/axom_doxygen/html/minttop.html>`_
-  *  `Primal <../../../doxygen/axom_doxygen/html/primaltop.html>`_
-  *  `Quest <../../../doxygen/axom_doxygen/html/questtop.html>`_
-  *  `Sidre <../../../doxygen/axom_doxygen/html/sidretop.html>`_
-  *  `Slic <../../../doxygen/axom_doxygen/html/slictop.html>`_
-  *  `Slam <../../../doxygen/axom_doxygen/html/slamtop.html>`_
+  *  `Axom <../../../../doxygen/axom_doxygen/html/index.html>`_
+  *  `Core <../../../../doxygen/axom_doxygen/html/coretop.html>`_
+  *  `Lumberjack <../../../../doxygen/axom_doxygen/html/lumberjacktop.html>`_
+  *  `Mint <../../../../doxygen/axom_doxygen/html/minttop.html>`_
+  *  `Primal <../../../../doxygen/axom_doxygen/html/primaltop.html>`_
+  *  `Quest <../../../../doxygen/axom_doxygen/html/questtop.html>`_
+  *  `Sidre <../../../../doxygen/axom_doxygen/html/sidretop.html>`_
+  *  `Slic <../../../../doxygen/axom_doxygen/html/slictop.html>`_
+  *  `Slam <../../../../doxygen/axom_doxygen/html/slamtop.html>`_
 
 Look for documentation to appear for new components as they are developed.
 
@@ -110,13 +103,9 @@ projects independent of the Axom. These include:
   *  `Shroud <https://github.com/LLNL/shroud>`_ (Generator for native C and Fortran APIs from C++ code)
   *  `Conduit <https://lc.llnl.gov/confluence/display/CON/Conduit+Home>`_ (Library for describing and managing in-memory data structures) 
 
-
-================================================
-Resources for Axom Developers/Contributors:
-================================================
-
 .. toctree::
    :maxdepth: 1
+   :caption: Resources for Axom Developers/Contributors
 
    sphinx/dev_guide/index
    sphinx/coding_guide/index
@@ -182,5 +171,6 @@ LLNL-CODE-741217
 
 
 .. toctree::
+   :maxdepth: 1
 
    licenses
