@@ -13,13 +13,13 @@ strategy:
   matrix:
     linux_gcc6:
       VM_ImageName: 'ubuntu-16.04'
-      Compiler_ImageName: 'gcc-6' 
+      Compiler_ImageName: 'axom/compilers:gcc-6'
       CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE=Off'
       COMPILER: 'g++'
       TEST_TARGET: 'linux_gcc6'
     linux_clang6:
       VM_ImageName: 'ubuntu-16.04'
-      Compiler_ImageName: 'clang-6' 
+      Compiler_ImageName: 'axom/compilers:clang-6'
       CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE=Off'
       COMPILER: 'clang++'
       TEST_TARGET: 'linux_clang6'
@@ -32,8 +32,8 @@ steps:
   clean: boolean
   submodules: recursive
 - script:  |
-   docker run --rm --user='root' -v `pwd`:/home/axom axom/compilers:${Compiler_ImageName} chown -R axom /home/axom
-   docker run --rm  -v `pwd`:/home/axom -e TEST_TARGET -e COMPILER -e DO_BUILD -e DO_TEST -e CMAKE_EXTRA_FLAGS axom/compilers:${Compiler_ImageName} ./scripts/azure-pipelines/linux-build_and_test.sh
+   docker run --rm --user='root' -v `pwd`:/home/axom ${Compiler_ImageName} chown -R axom /home/axom
+   docker run --rm  -v `pwd`:/home/axom -e TEST_TARGET -e COMPILER -e DO_BUILD -e DO_TEST -e CMAKE_EXTRA_FLAGS ${Compiler_ImageName} ./scripts/azure-pipelines/linux-build_and_test.sh
   condition: eq( variables['Agent.OS'], 'Linux')
   displayName: '$(TEST_TARGET) Build & Test'
 - task: PublishTestResults@2
