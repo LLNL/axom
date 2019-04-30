@@ -66,15 +66,15 @@ for Axom software components:
 Source Code Documentation
 --------------------------
 
-  *  `Axom <../../../../doxygen/axom_doxygen/html/index.html>`_
-  *  `Core <../../../../doxygen/axom_doxygen/html/coretop.html>`_
-  *  `Lumberjack <../../../../doxygen/axom_doxygen/html/lumberjacktop.html>`_
-  *  `Mint <../../../../doxygen/axom_doxygen/html/minttop.html>`_
-  *  `Primal <../../../../doxygen/axom_doxygen/html/primaltop.html>`_
-  *  `Quest <../../../../doxygen/axom_doxygen/html/questtop.html>`_
-  *  `Sidre <../../../../doxygen/axom_doxygen/html/sidretop.html>`_
-  *  `Slic <../../../../doxygen/axom_doxygen/html/slictop.html>`_
-  *  `Slam <../../../../doxygen/axom_doxygen/html/slamtop.html>`_
+  *  `Axom <../../../doxygen/axom_doxygen/html/index.html>`_
+  *  `Core <../../../doxygen/axom_doxygen/html/coretop.html>`_
+  *  `Lumberjack <../../../doxygen/axom_doxygen/html/lumberjacktop.html>`_
+  *  `Mint <../../../doxygen/axom_doxygen/html/minttop.html>`_
+  *  `Primal <../../../doxygen/axom_doxygen/html/primaltop.html>`_
+  *  `Quest <../../../doxygen/axom_doxygen/html/questtop.html>`_
+  *  `Sidre <../../../doxygen/axom_doxygen/html/sidretop.html>`_
+  *  `Slic <../../../doxygen/axom_doxygen/html/slictop.html>`_
+  *  `Slam <../../../doxygen/axom_doxygen/html/slamtop.html>`_
 
 Look for documentation to appear for new components as they are developed.
 
@@ -105,7 +105,7 @@ projects independent of the Axom. These include:
 
 .. toctree::
    :maxdepth: 1
-   :caption: Resources for Axom Developers/Contributors
+   :caption: Developer Resources
 
    docs/sphinx/dev_guide/index
    docs/sphinx/coding_guide/index
