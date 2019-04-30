@@ -117,12 +117,8 @@ endif()
 
 
 #------------------------------------------------------------------------------
-# Add docs and code checks
+# Add code checks
 #------------------------------------------------------------------------------
-if (AXOM_ENABLE_DOCS)
-  add_subdirectory(docs)
-endif()
-
 axom_add_code_checks(
         PREFIX slam
         EXCLUDES

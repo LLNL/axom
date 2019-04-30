@@ -149,11 +149,4 @@ if (AXOM_ENABLE_TESTS)
   add_subdirectory(tests)
 endif()
 
-#------------------------------------------------------------------------------
-# Add docs and code checks
-#------------------------------------------------------------------------------
-if (AXOM_ENABLE_DOCS)
-  add_subdirectory(docs)
-endif()
-
 axom_add_code_checks(PREFIX quest)

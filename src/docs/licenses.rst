@@ -12,5 +12,5 @@ License Info
 Axom License
 ------------
 
-.. include:: ../../../../LICENSE
+.. include:: ../../LICENSE
 

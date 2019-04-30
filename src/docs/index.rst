@@ -39,10 +39,13 @@ The main drivers of the Axom project are to:
 Quickstart Guide
 =====================
 
-The `Axom Quickstart Guide <../../quickstart_guide_docs/html/index.html>`_ 
-contains information about accessing the code, configuring and building, 
-linking with an application, etc.
+The Axom Quickstart Guide contains information about accessing the code,
+configuring and building, linking with an application, etc.
 
+.. toctree::
+   :maxdepth: 1
+
+   sphinx/quickstart_guide/index
 
 ================================
 Axom Software Documentation
@@ -55,13 +58,16 @@ for Axom software components:
 Component User Guides
 ----------------------
 
-  *  Slic (Simple Logging Interface Code for integrated applications)
-  *  `Lumberjack (Scalable parallel message logging and filtering) <../../lumberjack_docs/html/index.html>`_
-  *  `Sidre (Simulation data repository) <../../sidre_docs/html/index.html>`_
-  *  `Slam (Set-theoretic lightweight API for meshes) <../../slam_docs/html/index.html>`_
-  *  `Quest (Querying on surface tool) <../../quest_docs/html/index.html>`_
-  *  `Mint (Mesh data model) <../../mint_docs/html/index.html>`_
-  *  `Primal (Computational geometry primitives) <../../primal_docs/html/index.html>`_
+.. toctree::
+   :maxdepth: 1
+
+   Slic (Simple Logging Interface Code) <../axom/slic/docs/sphinx/index>
+   Lumberjack (Scalable parallel message logging and filtering) <../axom/lumberjack/docs/sphinx/index>
+   Sidre (Simulation data repository) <../axom/sidre/docs/sphinx/index>
+   Slam (Set-theoretic lightweight API for meshes) <../axom/slam/docs/sphinx/index>
+   Slam (Set-theoretic lightweight API for meshes) <../axom/quest/docs/sphinx/index>
+   Mint (Mesh data model) <../axom/mint/docs/sphinx/index>
+   Primal (Computational geometry primitives) <../axom/primal/docs/sphinx/index>
 
 --------------------------
 Source Code Documentation
@@ -109,11 +115,11 @@ projects independent of the Axom. These include:
 Resources for Axom Developers/Contributors:
 ================================================
 
-  * `Axom Developer Guide  <../../dev_guide_docs/html/index.html>`_
-  * `Axom Coding Guidelines  <../../coding_guide_docs/html/index.html>`_
-  * `Axom Testing Coverage <https://lc.llnl.gov/toolkit/coverage/index.html>`_
+.. toctree::
+   :maxdepth: 1
 
-
+   sphinx/dev_guide/index
+   sphinx/coding_guide/index
 
 ======================================= 
 Communicating with the Axom Team
@@ -176,6 +182,5 @@ LLNL-CODE-741217
 
 
 .. toctree::
-   :maxdepth: 3
 
    licenses
