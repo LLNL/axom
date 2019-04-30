@@ -5,30 +5,39 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 #
 
-strategy:
-  matrix:
-    linux:
-      imageName: 'ubuntu-16.04'
-      CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE=Off'
-
-pool:
-  vmImage: $(imageName)
-
 variables:
   DO_BUILD: 'yes'
   DO_TEST: 'yes'
-  COMPILER: 'g++'
+
+strategy:
+  matrix:
+    linux_gcc6:
+      VM_ImageName: 'ubuntu-16.04'
+      Compiler_ImageName: 'gcc-6' 
+      CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE=Off'
+      COMPILER: 'g++'
+      Test_Target: 'linux_gcc6'
+    linux_clang6:
+      VM_ImageName: 'ubuntu-16.04'
+      Compiler_ImageName: 'clang-6' 
+      CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE=Off'
+      COMPILER: 'clang++'
+      Test_Target: 'linux_clang6'
+
+pool:
+  vmImage: $(VM_ImageName)
 
 steps:
 - checkout: self
   clean: boolean
   submodules: recursive
 - script:  |
-   docker run --rm --user='root' -v `pwd`:/home/axom axom/compilers:gcc-6 chown -R axom /home/axom
-   docker run --rm  -v `pwd`:/home/axom -e COMPILER -e DO_BUILD -e DO_TEST -e CMAKE_EXTRA_FLAGS axom/compilers:gcc-6 ./scripts/azure-pipelines/linux-build_and_test.sh
+   docker run --rm --user='root' -v `pwd`:/home/axom axom/compilers:$Compiler_ImageName chown -R axom /home/axom
+   docker run --rm  -v `pwd`:/home/axom - Test_Target -e COMPILER -e DO_BUILD -e DO_TEST -e CMAKE_EXTRA_FLAGS axom/compilers:$Compiler_ImageName ./scripts/azure-pipelines/linux-build_and_test.sh
   condition: eq( variables['Agent.OS'], 'Linux')
-  displayName: 'Linux (Docker) Build & Test'
+  displayName: '$(Test_Target) Build & Test'
 - task: PublishTestResults@2
   inputs:
     testResultsFormat: 'cTest'
     testResultsFiles: '**/Test.xml'
+    testRunTitle: '$(Test_Target) Tests'

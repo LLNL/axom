@@ -16,8 +16,8 @@ function or_die () {
     fi
 }
 
-or_die mkdir azure-linux-build
-cd azure-linux-build
+or_die mkdir azure-${Test_Target}-build
+cd azure-${Test_Target}-build
 if [[ "$DO_BUILD" == "yes" ]] ; then
     or_die cmake -DCMAKE_CXX_COMPILER="${COMPILER}" ${CMAKE_EXTRA_FLAGS} ../src
     if [[ ${CMAKE_EXTRA_FLAGS} == *COVERAGE* ]] ; then
