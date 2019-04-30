@@ -38,7 +38,7 @@ The main drivers of the Axom project are to:
    :maxdepth: 1
    :caption: Quickstart Guide
 
-   sphinx/quickstart_guide/index
+   docs/sphinx/quickstart_guide/index
 
 The Axom Quickstart Guide contains information about accessing the code,
 configuring and building, linking with an application, etc.
@@ -54,13 +54,13 @@ for Axom software components:
    :maxdepth: 1
    :caption: Component User Guides
 
-   Slic (Simple Logging Interface Code) <../axom/slic/docs/sphinx/index>
-   Lumberjack (Scalable parallel message logging and filtering) <../axom/lumberjack/docs/sphinx/index>
-   Sidre (Simulation data repository) <../axom/sidre/docs/sphinx/index>
-   Slam (Set-theoretic lightweight API for meshes) <../axom/slam/docs/sphinx/index>
-   Quest (Querying on surface tool) <../axom/quest/docs/sphinx/index>
-   Mint (Mesh data model) <../axom/mint/docs/sphinx/index>
-   Primal (Computational geometry primitives) <../axom/primal/docs/sphinx/index>
+   Slic (Simple Logging Interface Code) <axom/slic/docs/sphinx/index>
+   Lumberjack (Scalable parallel message logging and filtering) <axom/lumberjack/docs/sphinx/index>
+   Sidre (Simulation data repository) <axom/sidre/docs/sphinx/index>
+   Slam (Set-theoretic lightweight API for meshes) <axom/slam/docs/sphinx/index>
+   Quest (Querying on surface tool) <axom/quest/docs/sphinx/index>
+   Mint (Mesh data model) <axom/mint/docs/sphinx/index>
+   Primal (Computational geometry primitives) <axom/primal/docs/sphinx/index>
 
 --------------------------
 Source Code Documentation
@@ -107,8 +107,8 @@ projects independent of the Axom. These include:
    :maxdepth: 1
    :caption: Resources for Axom Developers/Contributors
 
-   sphinx/dev_guide/index
-   sphinx/coding_guide/index
+   docs/sphinx/dev_guide/index
+   docs/sphinx/coding_guide/index
 
 ======================================= 
 Communicating with the Axom Team
@@ -173,4 +173,4 @@ LLNL-CODE-741217
 .. toctree::
    :maxdepth: 1
 
-   licenses
+   docs/licenses
