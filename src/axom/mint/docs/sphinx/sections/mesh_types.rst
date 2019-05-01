@@ -164,7 +164,7 @@ a :ref:`CurvilinearMesh` is *implicit*, however, its :ref:`Geometry`, given
 by the constituent :ref:`Nodes` of the mesh, is *explicit*.
 
 .. _figs/curvilinearMeshExample:
-.. figure:: figures/structured_curvilinear_mesh.png
+.. figure:: ../figures/structured_curvilinear_mesh.png
   :align: center
   :scale: 55%
   :alt: Sample Curvilinear Mesh
@@ -196,7 +196,7 @@ coordinate system. Due to this restriction, the geometric domain and resulting
 mesh are always rectangular.
 
 .. _figs/rectilinearMeshExample:
-.. figure:: figures/structured_rectilinear_mesh.png
+.. figure:: ../figures/structured_rectilinear_mesh.png
   :align: center
   :scale: 35%
   :alt: Sample Rectilinear Mesh
@@ -234,7 +234,7 @@ parallel to each axis. Therefore, in contrast to the :ref:`RectilinearMesh`, the
 spacing between adjacent :ref:`Nodes` in a :ref:`UniformMesh` is constant.
 
 .. _figs/uniformMeshExample:
-.. figure:: figures/structured_uniform_mesh.png
+.. figure:: ../figures/structured_uniform_mesh.png
   :align: center
   :scale: 35%
   :alt: Sample Uniform Mesh
@@ -340,7 +340,7 @@ it is nearly impossible to obtain a :ref:`StructuredMesh` that is adequate for
 computation.
 
 .. _figs/unstructuredMeshSingleShape:
-.. figure:: figures/f17.png
+.. figure:: ../figures/f17.png
    :align: center
    :scale: 35%
    :alt: Sample Unstructured Mesh (single shape topology)
@@ -361,7 +361,7 @@ to the number of :ref:`Cells` in the mesh and the number of columns corresponds
 to the *stride*, i.e., the number of :ref:`Nodes` per cell.
 
 .. _figs/singleCellTypeRep:
-.. figure:: figures/SingleCellTypeMesh.png
+.. figure:: ../figures/SingleCellTypeMesh.png
     :align: center
     :alt: Mesh Representation of the Unstructured Mesh with Single Cell Topology
 
@@ -462,7 +462,7 @@ cell type is said to be *mixed*.
    called a *mixed cell mesh* or *hybrid mesh*.
 
 .. _figs/unstructuredMeshMixedShape:
-.. figure:: figures/unstructured_mixed_mesh.png
+.. figure:: ../figures/unstructured_mixed_mesh.png
    :align: center
    :scale: 95%
    :alt: Sample Unstrucrured Mesh (mixed shape topology)
@@ -507,7 +507,7 @@ obtain cell-to-node information. For a :ref:`MixedCellTopology` an
 *indirect addressing* access scheme must be used instead.
 
 .. _figs/mixedCellTypeRep:
-.. figure:: figures/MixedCellTypeMesh.png
+.. figure:: ../figures/MixedCellTypeMesh.png
     :align: center
     :alt: Mesh Representation of the Unstructured Mesh with Mixed Cell Topology
 
@@ -607,7 +607,7 @@ depicted in :numref:`figs/linearCells`, as well as, support for
 quadratic, quadrilateral and hexahedron :ref:`Cells`, see :numref:`figs/q2Cells`.
 
 .. _figs/linearCells:
-.. figure:: figures/linear_cell_types.png
+.. figure:: ../figures/linear_cell_types.png
   :align: center
   :scale: 95%
   :alt: Supported linear cell types.
@@ -616,7 +616,7 @@ quadratic, quadrilateral and hexahedron :ref:`Cells`, see :numref:`figs/q2Cells`
   numbering.
 
 .. _figs/q2Cells:
-.. figure:: figures/q2_cell_types.png
+.. figure:: ../figures/q2_cell_types.png
   :align: center
   :scale: 95%
   :alt: Supported high-order cell types.
@@ -683,7 +683,7 @@ employ a :ref:`ParticleMesh` discretization are often referred to as
 *meshless* or *mesh-free* methods.
 
 .. _figs/particleMesh:
-.. figure:: figures/particles.png
+.. figure:: ../figures/particles.png
    :align: center
    :scale: 35%
    :alt: Sample Particle Mesh
@@ -704,3 +704,13 @@ be stored explicitly.
     particles, i.e., the :ref:`Nodes` of the mesh. Consequently,
     a :ref:`ParticleMesh` in Mint can only be associated with node-centered
     :ref:`FieldData`.
+
+
+.. #############################################################################
+..  CITATIONS
+.. #############################################################################
+
+.. include:: citations.rst
+
+
+

@@ -42,7 +42,7 @@ mesh respectively. The general form of these functions is shown
 in :numref:`figs/execModel`.
 
 .. _figs/execModel:
-.. figure:: figures/execmodel.png
+.. figure:: ../figures/execmodel.png
    :align: center
    :scale: 50%
    :alt: Execution Model
@@ -170,3 +170,9 @@ The list of available :ref:`executionSignature` options is summarized below:
      :ref:`Faces`, that are bound to a single cell, the second cell is set
      to :math:`-1`.
 
+
+.. #############################################################################
+..  CITATIONS
+.. #############################################################################
+
+.. include:: citations.rst

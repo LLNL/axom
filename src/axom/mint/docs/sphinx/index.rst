@@ -7,20 +7,23 @@
 Mint User Guide
 ================
 
-.. include:: sections/synopsis.rst
-.. include:: sections/preliminary_concepts.rst
-.. include:: sections/quick_introduction.rst
-.. include:: sections/mesh_representation.rst
-.. include:: sections/mesh_types.rst
-.. include:: sections/architecture.rst
-..
-   .. include:: sections/mesh_data_model.rst
+ .. include:: sections/synopsis.rst
 
-.. include:: sections/execution_model.rst
-.. include:: sections/fem.rst
-.. include:: sections/tutorial.rst
-.. include:: sections/examples.rst
-.. include:: sections/faq.rst
-.. include:: sections/appendix.rst
+.. toctree::
+   :caption: Table Of Contents
+   :maxdepth: 2
+   :hidden:
+
+   sections/quick_introduction.rst
+   sections/preliminary_concepts.rst
+   sections/mesh_representation.rst
+   sections/mesh_types.rst
+   sections/architecture.rst
+   sections/execution_model.rst
+   sections/fem.rst
+   sections/tutorial.rst
+   sections/examples.rst
+   sections/faq.rst
+   sections/appendix.rst
 
 .. include:: sections/citations.rst

@@ -7,7 +7,7 @@
 .. _sections/fem:
 
 Finite Elements
-----------------
+-----------------
 
 The Finite Element Method (FEM) is a widely used numerical technique, employed
 for the solution of *partial differential equations* (PDEs), arising in
@@ -21,11 +21,10 @@ integration, etc.
 
 Mint provides basic support for :ref:`sections/fem` that consists:
 
-#. :ref:`LagrangeBasis` :ref:`ShapeFunctions` for commonly employed
-   :ref:`CellTypes`
+#. :ref:`LagrangeBasis` *shape functions* for commonly employed :ref:`CellTypes`
 #. Corresponding :ref:`Quadratures` (under development)
-#. Routines for forward/inverse :ref:`IsoparametricMapping`
-#. Infrastructure to facilitate adding :ref:`ShapeFunctions` for
+#. Routines for forward/inverse :ref:`IsoparametricMapping`, and
+#. Infrastructure to facilitate adding *shape functions* for
    new :ref:`CellTypes`, as well as, to :ref:`AddABasis`.
 
 This functionality is collectively exposed to the application through the
@@ -33,38 +32,32 @@ This functionality is collectively exposed to the application through the
 ``mint::FiniteElement`` class within an application code are provided in the
 :ref:`femTutorial` tutorial section.
 
-.. _ShapeFunctions:
-
-Shape Functions
-^^^^^^^^^^^^^^^
-
-A *Finite Element Basis* consists of a family of *shape functions* [#f1]_
+A *Finite Element Basis* consists of a family of *shape functions*
 corresponding to different :ref:`CellTypes`. Mint currently supports
-isoparametric :ref:`sections/fem` for the :ref:`LagrangeBasis`
-:ref:`ShapeFunctions`.
+Lagrange isoparametric :ref:`sections/fem`.
 
 .. _LagrangeBasis:
 
 Lagrange Basis
-^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^
 
-The Lagrange basis consists of :ref:`CellTypes` whose :ref:`ShapeFunctions` are
+The Lagrange basis consists of :ref:`CellTypes` whose *shape functions* are
 formed from products of the one-dimensional Lagrange polynomial. This
 section provides a summary of supported :ref:`LagrangeBasis` :ref:`CellTypes`,
-their associated :ref:`ShapeFunctions`, and summarize the process to
+their associated *shape functions*, and summarize the process to
 :ref:`AddALagrangeElement`.
 
 .. note::
-
   The shape functions of **all** Lagrange :ref:`Cells` in Mint are defined in a
   reference :math:`\hat{\xi}`-space coordinate system, on the closed interval
   :math:`\hat{\xi} \in [0,1]`.
 
 .. includes cell type aliases to the images
-.. include:: sections/cell_types.rst
+.. include:: cell_types.rst
+
 
 QUAD: *Linear Quadrilateral*
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+""""""""""""""""""""""""""""
 
 |quad|
 
@@ -79,7 +72,7 @@ QUAD: *Linear Quadrilateral*
    \end{eqnarray}
 
 QUAD9: *Quadratic Quadrilateral*
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""""""""""""""""
 
 |quad9|
 
@@ -101,7 +94,7 @@ QUAD9: *Quadratic Quadrilateral*
   \end{eqnarray}
 
 TRIANGLE: *Linear Triangle*
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""""""""""""
 
 |triangle|
 
@@ -115,7 +108,7 @@ TRIANGLE: *Linear Triangle*
    \end{eqnarray}
 
 HEX: *Linear Hexahedron*
-^^^^^^^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""""""""
 
 |hex|
 
@@ -135,7 +128,7 @@ HEX: *Linear Hexahedron*
    \end{eqnarray}
 
 HEX27: *Quadratic Hexahedron*
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+""""""""""""""""""""""""""""""
 
 |hex27|
 
@@ -179,7 +172,7 @@ HEX27: *Quadratic Hexahedron*
     \end{eqnarray}
 
 PYRAMID: *Linear Pyramid*
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+""""""""""""""""""""""""""
 
 |pyramid|
 
@@ -195,7 +188,7 @@ PYRAMID: *Linear Pyramid*
    \end{eqnarray}
 
 PRISM: *Linear Prism/Wedge*
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+""""""""""""""""""""""""""""
 
 |prism|
 
@@ -214,7 +207,7 @@ PRISM: *Linear Prism/Wedge*
 .. _AddALagrangeElement:
 
 Add a New Lagrange Element
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""""""""""
 
 .. warning::
    This section is under construction.
@@ -243,8 +236,5 @@ Add a New Finite Element Basis
 .. warning::
    This section is under construction.
 
-.. rubric:: Footnotes
 
-.. [#f1] In litetrature, *shape functions* are also sometimes refered to as
-         *interpolation functions*, *basis functions*, or *hat functions*
-
+.. include:: citations.rst

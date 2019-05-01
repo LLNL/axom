@@ -14,20 +14,20 @@ Component Architecture
 
 This section links the core concepts, presented in the
 :ref:`MeshRepresentation` and :ref:`MeshTypes` sections, to the underlying
-implementation of the Mint :ref:`MeshDataModel`.
-The :ref:`Architecture` of Mint's :ref:`MeshDataModel` consists of a class
+implementation of the Mint *mesh data model*.
+The :ref:`Architecture` of Mint's *mesh data model* consists of a class
 hierarchy that follows directly the taxonomy of :ref:`MeshTypes` discussed
-earlier. The constituent classes of the :ref:`MeshDataModel` are combined
+earlier. The constituent classes of the *mesh data model* are combined
 using a mix of class *inheritance* and *composition*, as illustrated in
 the class diagram depicted in :numref:`figs/classDiagram`.
 
 .. _figs/classDiagram:
-.. figure:: figures/class_diagram.png
+.. figure:: ../figures/class_diagram.png
    :align: center
    :scale: 50%
    :alt: Mint Class Hierarchy Diagram
 
-   :ref:`Architecture` of the Mint :ref:`MeshDataModel`, depicting the
+   :ref:`Architecture` of the Mint *mesh data model*, depicting the
    core mesh classes and the inter-relationship between them.
    The solid arrows indicate an *inheritance* relationship, while the dashed
    arrows indicate an *ownership* relationship between two classes.
@@ -66,7 +66,7 @@ represented by a corresponding ``mint::Mesh`` instance, which in aggregate
 define the entire problem domain.
 
 .. _figs/decomp:
-.. figure:: figures/decomp.png
+.. figure:: ../figures/decomp.png
    :align: center
    :scale: 35%
    :alt: Block and Domain Decomposition.
@@ -155,7 +155,7 @@ the underlying :ref:`MeshRepresentation` of the various :ref:`MeshTypes`,
 depicted in :numref:`figs/meshtypes`.
 
 .. _figs/meshtypes:
-.. figure:: figures/meshtypes.png
+.. figure:: ../figures/meshtypes.png
    :align: center
    :scale: 35%
    :alt: Supported Mesh Types.
@@ -189,7 +189,7 @@ corresponding IJK lattice coordinates.
 The following code snippet provides a simple example illustrating how to
 construct and operate on a 2-D :ref:`UniformMesh`.
 
-.. literalinclude:: ../../examples/mint_uniform_mesh.cpp
+.. literalinclude:: ../../../examples/mint_uniform_mesh.cpp
    :language: C++
    :linenos:
 
@@ -206,7 +206,7 @@ representation of the :ref:`RectilinearMesh`.
 The following code snippet provides a simple example illustrating how to
 construct and operate on a 2-D :ref:`RectilinearMesh`.
 
-.. literalinclude:: ../../examples/mint_rectilinear_mesh.cpp
+.. literalinclude:: ../../../examples/mint_rectilinear_mesh.cpp
    :language: C++
    :linenos:
 
@@ -219,7 +219,7 @@ spatial coordinates associated with the constituent :ref:`Nodes` of the mesh.
 The following code snippet provides a simple example illustrating how to
 construct and operate on a 2-D :ref:`CurvilinearMesh`.
 
-.. literalinclude:: ../../examples/mint_curvilinear_mesh.cpp
+.. literalinclude:: ../../../examples/mint_curvilinear_mesh.cpp
    :language: C++
    :linenos:
 
@@ -277,7 +277,7 @@ as an internal class member.
 The following code snippet provides a simple examples illustrating how to
 construct and operate on a :ref:`ParticleMesh`.
 
-.. literalinclude:: ../../examples/mint_particle_mesh.cpp
+.. literalinclude:: ../../../examples/mint_particle_mesh.cpp
    :language: C++
    :linenos:
 
@@ -365,3 +365,8 @@ persistent in `Sidre`_.
 See the :ref:`sections/tutorial` for more information and a set of concrete
 examples on :ref:`usingSidre`.
 
+.. #############################################################################
+..  CITATIONS
+.. #############################################################################
+
+.. include:: citations.rst

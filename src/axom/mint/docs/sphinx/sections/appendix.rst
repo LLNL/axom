@@ -17,7 +17,7 @@ Below is the complete :ref:`MintApplicationCodeExample` presented in
 the :ref:`sections/quick_introduction` section. The code can be found in the Axom
 source code under ``src/axom/mint/examples/mint_uniform_mesh.cpp``.
 
-.. literalinclude:: ../../examples/mint_uniform_mesh.cpp
+.. literalinclude:: ../../../examples/mint_uniform_mesh.cpp
    :start-after: sphinx_tutorial_basic_example_start
    :end-before: sphinx_tutorial_basic_example_end
    :language: C++
@@ -38,6 +38,12 @@ The ``AXOM_LAMBDA`` convenience macro expands to:
 Raw Sidre Data
 ^^^^^^^^^^^^^^
 
-.. literalinclude:: sections/raw_sidre_data.txt
+.. literalinclude:: raw_sidre_data.txt
    :language: json
    :linenos:
+
+.. #############################################################################
+..  CITATIONS
+.. #############################################################################
+
+.. include:: citations.rst

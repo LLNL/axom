@@ -48,7 +48,7 @@ in the sample :ref:`UnstructuredMesh` shown in
 and refer to individual entities in the mesh.
 
 .. _figs/meshRepresentation:
-.. figure:: figures/mesh_representation.png
+.. figure:: ../figures/mesh_representation.png
   :align: center
   :scale: 95%
   :alt: Mesh Representation
@@ -99,7 +99,7 @@ are 0D topological entities, i.e., :ref:`Nodes`.
   in 1D.
 
 .. _figs/cellFaces:
-.. figure:: figures/cell_faces.png
+.. figure:: ../figures/cell_faces.png
   :align: center
   :alt: Cell Faces
 
@@ -132,7 +132,7 @@ are 0D topological entities, i.e., :ref:`Nodes`.
    :numref:`figs/faceOrientation`.
 
    .. _figs/faceOrientation:
-   .. figure:: figures/face_orientation.png
+   .. figure:: ../figures/face_orientation.png
       :align: center
       :alt: Face Orientation
 
@@ -220,7 +220,7 @@ dimensional entity comprising the mesh. Each cell is bounded by zero or more
 :ref:`Faces`, each of which is bounded by one or more :ref:`Nodes`.
 
 .. _figs/topological_structure:
-.. figure:: figures/topological_structure.png
+.. figure:: ../figures/topological_structure.png
   :align: center
   :scale: 95%
   :alt: Topological Structure
@@ -319,4 +319,12 @@ application may need.
    :ref:`Cells`, :ref:`Faces` and :ref:`Nodes`. Support for storing
    :ref:`FieldData` on edges will be added in future versions based on
    application demand.
+
+.. #############################################################################
+..  CITATIONS
+.. #############################################################################
+
+.. include:: citations.rst
+
+
 

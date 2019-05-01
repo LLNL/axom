@@ -25,7 +25,7 @@ scheme, such as, a Finite Difference (FD), Finite Volume (FV), or, the
 Finite Element Method (FEM), chief among them.
 
 .. _figs/meshedDomain:
-.. figure:: figures/meshed_domain.png
+.. figure:: ../figures/meshed_domain.png
    :align: center
    :scale: 100%
    :alt: Sample Mesh domain
