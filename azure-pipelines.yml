@@ -17,12 +17,6 @@ strategy:
       CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE=Off'
       COMPILER: 'g++'
       TEST_TARGET: 'linux_gcc6'
-    linux_gcc6_debug:
-      VM_ImageName: 'ubuntu-16.04'
-      Compiler_ImageName: 'axom/compilers:gcc-6'
-      CMAKE_EXTRA_FLAGS: '-DCMAKE_BUILD_TYPE=Debug -DAXOM_ENABLE_SIDRE=Off'
-      COMPILER: 'g++'
-      TEST_TARGET: 'linux_gcc6_debug'
     linux_gcc7:
       VM_ImageName: 'ubuntu-16.04'
       Compiler_ImageName: 'axom/compilers:gcc-7'
