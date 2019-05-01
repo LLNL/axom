@@ -52,22 +52,22 @@ steps:
   inputs:
     workingDir: 'azure-$(TEST_TARGET)-build'
     cmakeArgs: '$(CMAKE_EXTRA_FLAGS) ../src'
-    condition: eq( variables['Agent.OS'], 'Darwin')
+  condition: eq( variables['Agent.OS'], 'Darwin')
 - script: |
     cd azure-$(TEST_TARGET)-build
     make
-    displayName: 'OSX Build'
-    condition: eq( variables['Agent.OS'], 'Darwin')
+  displayName: 'OSX Build'
+  condition: eq( variables['Agent.OS'], 'Darwin')
 - script: |
-    cd build
+    cd azure-$(TEST_TARGET)-build
     ctest -T test
-    displayName: '$(TEST_TARGET) Build & Test'
-    condition: eq( variables['Agent.OS'], 'Darwin')
+  displayName: '$(TEST_TARGET) Build & Test'
+  condition: eq( variables['Agent.OS'], 'Darwin')
 - script:  |
     docker run --rm --user='root' -v `pwd`:/home/axom $(Compiler_ImageName) chown -R axom /home/axom
     docker run --rm  -v `pwd`:/home/axom -e TEST_TARGET -e COMPILER -e DO_BUILD -e DO_TEST -e CMAKE_EXTRA_FLAGS $(Compiler_ImageName) ./scripts/azure-pipelines/linux-build_and_test.sh
-    condition: eq( variables['Agent.OS'], 'Linux')
-    displayName: '$(TEST_TARGET) Build & Test'
+  condition: eq( variables['Agent.OS'], 'Linux')
+  displayName: '$(TEST_TARGET) Build & Test'
 - task: PublishTestResults@2
   inputs:
     testResultsFormat: 'cTest'
