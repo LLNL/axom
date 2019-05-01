@@ -3,9 +3,9 @@
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
-.. _sections/quick_introduction:
+.. _sections/getting_started:
 
-Quick Introduction to Mint
+Getting Started with Mint
 ---------------------------
 
 This section provides a quick introduction to Mint by presenting a

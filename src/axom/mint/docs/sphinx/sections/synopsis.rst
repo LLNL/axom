@@ -56,7 +56,7 @@ third-party libraries, consult the `Axom Quick Start Guide`_
 **About this Guide**
 
 This guide discusses the basic concepts and overarching design architecture of
-Mint. The :ref:`sections/quick_introduction` section offers an excellent resource
+Mint. The :ref:`sections/getting_started` section offers an excellent resource
 for getting started with Mint quickly, illustrating basic concepts
 and key capabilities in the context of a working code example.
 Additional examples and code snippets are provided in the
