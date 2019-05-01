@@ -14,7 +14,7 @@ Mint User Guide
    :maxdepth: 2
    :hidden:
 
-   sections/quick_introduction.rst
+   sections/getting_started.rst
    sections/preliminary_concepts.rst
    sections/mesh_representation.rst
    sections/mesh_types.rst
