@@ -7,7 +7,7 @@
 .. _sections/faq:
 
 FAQ
-====
+----
 
 .. warning::
     This section is under development.

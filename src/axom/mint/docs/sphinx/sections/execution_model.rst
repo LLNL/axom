@@ -7,7 +7,7 @@
 .. _sections/execution_model:
 
 Execution Model
-================
+----------------
 
 Mint provides a mesh-aware :ref:`sections/execution_model`, that
 is based on the `RAJA`_ programming model abstraction layer, enabling the
@@ -36,7 +36,7 @@ mesh respectively. The general form of these functions is shown
 in :numref:`figs/execModel`.
 
 .. _figs/execModel:
-.. figure:: ../figures/execmodel.png
+.. figure:: figures/execmodel.png
    :align: center
    :scale: 50%
    :alt: Execution Model
@@ -71,7 +71,7 @@ the :ref:`NodeTraversalFunctions`, :ref:`CellTraversalFunctions` and
 .. _executionPolicy:
 
 Execution Policy
-----------------
+^^^^^^^^^^^^^^^^^
 
 The :ref:`ExecutionPolicy` is specifed as the first template argument and is
 required by all of the constituent functions of the
@@ -105,7 +105,7 @@ These policies are mapped to corresponding `RAJA`_ execution policies internally
 .. _executionSignature:
 
 Execution Signature
--------------------
+^^^^^^^^^^^^^^^^^^^^
 
 The :ref:`executionSignature` is specified as the second, *optional* template
 argument to the constituent functions of the :ref:`sections/execution_model`.

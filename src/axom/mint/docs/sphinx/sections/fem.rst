@@ -7,7 +7,7 @@
 .. _sections/fem:
 
 Finite Elements
-================
+----------------
 
 The Finite Element Method (FEM) is a widely used numerical technique, employed
 for the solution of *partial differential equations* (PDEs), arising in
@@ -36,7 +36,7 @@ This functionality is collectively exposed to the application through the
 .. _ShapeFunctions:
 
 Shape Functions
-----------------
+^^^^^^^^^^^^^^^
 
 A *Finite Element Basis* consists of a family of *shape functions* [#f1]_
 corresponding to different :ref:`CellTypes`. Mint currently supports
@@ -64,7 +64,7 @@ their associated :ref:`ShapeFunctions`, and summarize the process to
 .. include:: cell_types.rst
 
 QUAD: *Linear Quadrilateral*
-"""""""""""""""""""""""""""""
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 |quad|
 
@@ -79,7 +79,7 @@ QUAD: *Linear Quadrilateral*
    \end{eqnarray}
 
 QUAD9: *Quadratic Quadrilateral*
-"""""""""""""""""""""""""""""""""
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 |quad9|
 
@@ -101,7 +101,7 @@ QUAD9: *Quadratic Quadrilateral*
   \end{eqnarray}
 
 TRIANGLE: *Linear Triangle*
-"""""""""""""""""""""""""""
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 |triangle|
 
@@ -115,7 +115,7 @@ TRIANGLE: *Linear Triangle*
    \end{eqnarray}
 
 HEX: *Linear Hexahedron*
-"""""""""""""""""""""""""
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 |hex|
 
@@ -135,7 +135,7 @@ HEX: *Linear Hexahedron*
    \end{eqnarray}
 
 HEX27: *Quadratic Hexahedron*
-""""""""""""""""""""""""""""""
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 |hex27|
 
@@ -179,7 +179,7 @@ HEX27: *Quadratic Hexahedron*
     \end{eqnarray}
 
 PYRAMID: *Linear Pyramid*
-""""""""""""""""""""""""""
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 |pyramid|
 
@@ -195,7 +195,7 @@ PYRAMID: *Linear Pyramid*
    \end{eqnarray}
 
 PRISM: *Linear Prism/Wedge*
-""""""""""""""""""""""""""""
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 |prism|
 
@@ -214,14 +214,15 @@ PRISM: *Linear Prism/Wedge*
 .. _AddALagrangeElement:
 
 Add a New Lagrange Element
-"""""""""""""""""""""""""""
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 .. warning::
    This section is under construction.
 
 .. _IsoparametricMapping:
 
 Isoparametric Mapping
-----------------------
+^^^^^^^^^^^^^^^^^^^^^^
 
 .. warning::
    This section is under construction.
@@ -229,7 +230,7 @@ Isoparametric Mapping
 .. _Quadratures:
 
 Quadratures
------------
+^^^^^^^^^^^^^
 
 .. warning::
     Support for Quadratures in Mint is under development.
@@ -237,7 +238,7 @@ Quadratures
 .. _AddABasis:
 
 Add a New Finite Element Basis
--------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. warning::
    This section is under construction.

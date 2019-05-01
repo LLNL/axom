@@ -4,34 +4,34 @@
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
 
-.. |quad| image:: ../figures/quad.png
+.. |quad| ..figure:: figures/quad.png
           :scale: 100%
           :alt: Linear Lagrangian Quadrilateral Element
 
-.. |quad9| image:: ../figures/quad9.png
+.. |quad9| ..figure:: figures/quad9.png
            :scale: 100%
            :alt: Quadratic Lagrangian Quadrilateral Element
 
-.. |triangle| image:: ../figures/triangle.png
+.. |triangle| ..figure:: figures/triangle.png
               :scale: 100%
               :alt: Linear Lagrangian Triangle Element
 
-.. |hex| image:: ../figures/hex.png
+.. |hex| ..figure:: figures/hex.png
          :scale: 100%
          :alt: Linear Lagrangian Hexahedron Element
 
-.. |hex27| image:: ../figures/hex27.png
+.. |hex27| ..figure:: figures/hex27.png
            :scale: 100%
            :alt: Quadratic Lagrangian Hexahedron Element
 
-.. |tet| image:: ../figures/tet.png
+.. |tet| ..figure:: figures/tet.png
          :scale: 100%
          :alt: Linear Lagrangian Tetrahedron Element
 
-.. |prism| image:: ../figures/prism.png
+.. |prism| ..figure:: figures/prism.png
            :scale: 100%
            :alt: Linear Lagrangian Prism Element
 
-.. |pyramid| image:: ../figures/pyramid.png
+.. |pyramid| ..figure:: figures/pyramid.png
              :scale: 100%
              :alt: Linear Lagrangian Pyramid Element

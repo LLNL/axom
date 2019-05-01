@@ -6,18 +6,18 @@
 .. _sections/appendix:
 
 Appendix
-=========
+---------
 
 .. _MintApplicationCodeExample:
 
 Mint Application Code Example
-------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Below is the complete :ref:`MintApplicationCodeExample` presented in
 the :ref:`sections/quick_introduction` section. The code can be found in the Axom
 source code under ``src/axom/mint/examples/mint_uniform_mesh.cpp``.
 
-.. literalinclude:: ../../../examples/mint_uniform_mesh.cpp
+.. literalinclude:: ../../examples/mint_uniform_mesh.cpp
    :start-after: sphinx_tutorial_basic_example_start
    :end-before: sphinx_tutorial_basic_example_end
    :language: C++
@@ -26,7 +26,7 @@ source code under ``src/axom/mint/examples/mint_uniform_mesh.cpp``.
 .. _axomLambdaMacro:
 
 AXOM_LAMBDA Macro
-------------------
+^^^^^^^^^^^^^^^^^
 
 The ``AXOM_LAMBDA`` convenience macro expands to:
 
@@ -36,7 +36,7 @@ The ``AXOM_LAMBDA`` convenience macro expands to:
 .. _rawSidreData:
 
 Raw Sidre Data
---------------
+^^^^^^^^^^^^^^
 
 .. literalinclude:: raw_sidre_data.txt
    :language: json

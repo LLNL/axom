@@ -7,7 +7,7 @@
 .. _sections/examples:
 
 Examples
-==========
+---------
 
 .. warning::
    This section is under development

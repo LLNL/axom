@@ -6,7 +6,7 @@
 .. _sections/quick_introduction:
 
 Quick Introduction to Mint
-===========================
+---------------------------
 
 This section provides a quick introduction to Mint by presenting a
 complete walk-through of an example Mint application, illustrating some of the
@@ -35,13 +35,13 @@ The example Mint application illustrates:
 .. _step1:
 
 Step 1: Add Header Includes
-----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 First, the Mint header must be included for the
 definition of the various Mint classes and functions. Note, this example also
 makes use of Axom's Matrix class, which is also included by the following:
 
-.. literalinclude:: ../../../examples/mint_uniform_mesh.cpp
+.. literalinclude:: ../../examples/mint_uniform_mesh.cpp
    :start-after: sphinx_tutorial_walkthrough_includes_start
    :end-before: sphinx_tutorial_walkthrough_includes_end
    :language: C++
@@ -50,13 +50,13 @@ makes use of Axom's Matrix class, which is also included by the following:
 .. _step2:
 
 Step 2: Create a UniformMesh
------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Next, a :math:`100 \times 100` :ref:`UniformMesh`, defined on a
 domain given by the interval :math:`\mathcal{I}:[-5.0,5.0] \times [-5.0,5.0]`,
 is constructed by the following:
 
-.. literalinclude:: ../../../examples/mint_uniform_mesh.cpp
+.. literalinclude:: ../../examples/mint_uniform_mesh.cpp
    :start-after: sphinx_tutorial_walkthrough_construct_mesh_start
    :end-before: sphinx_tutorial_walkthrough_construct_mesh_end
    :language: C++
@@ -65,12 +65,12 @@ is constructed by the following:
 .. _step3:
 
 Step 3: Add Fields
--------------------
+^^^^^^^^^^^^^^^^^^
 
 Fields are added to the mesh by calling the ``createField()`` method
 on the mesh object:
 
-.. literalinclude:: ../../../examples/mint_uniform_mesh.cpp
+.. literalinclude:: ../../examples/mint_uniform_mesh.cpp
    :start-after: sphinx_tutorial_walkthrough_add_fields_start
    :end-before: sphinx_tutorial_walkthrough_add_fields_end
    :language: C++
@@ -102,13 +102,13 @@ supplying the third argument in the ``createField()`` method invocation.
 .. _step4:
 
 Step 4: Himmelblau's Function
-------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The first kernel employs the ``for_all_nodes()`` traversal function
 of the :ref:`sections/execution_model` to iterate over the constituent mesh
 :ref:`Nodes` and evaluate `Himmelblau's Function`_ (an analytic function):
 
-.. literalinclude:: ../../../examples/mint_uniform_mesh.cpp
+.. literalinclude:: ../../examples/mint_uniform_mesh.cpp
    :start-after: sphinx_tutorial_walkthrough_compute_hf_start
    :end-before: sphinx_tutorial_walkthrough_compute_hf_end
    :language: C++
@@ -139,14 +139,14 @@ corresponding field array, ``phi``, which, is captured by the
 .. _step5:
 
 Step 5: Cell Centers
----------------------
+^^^^^^^^^^^^^^^^^^^^
 
 The second kernel employs the ``for_all_cells()`` traversal function of the
 :ref:`sections/execution_model` to iterate over the constituent mesh
 :ref:`Cells` and compute the corresponding cell centroid, a 2D *vector*
 quantity, as follows:
 
-.. literalinclude:: ../../../examples/mint_uniform_mesh.cpp
+.. literalinclude:: ../../examples/mint_uniform_mesh.cpp
    :start-after: sphinx_tutorial_walkthrough_cell_centers_start
    :end-before: sphinx_tutorial_walkthrough_cell_centers_end
    :language: C++
@@ -219,13 +219,13 @@ y-component is stored at ``xc[ cellIdx * NUM_COMPONENTS + 1 ]``, where
 .. _step6:
 
 Step 6: Output the Mesh in VTK
--------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Last, the resulting mesh and data can be output in the Legacy `VTK File Format`_,
 which can be visualized by a variety of visualization tools, such as, `VisIt`_
 and `ParaView`_ as follows:
 
-.. literalinclude:: ../../../examples/mint_uniform_mesh.cpp
+.. literalinclude:: ../../examples/mint_uniform_mesh.cpp
    :start-after: sphinx_tutorial_walkthrough_vtk_start
    :end-before: sphinx_tutorial_walkthrough_vtk_end
    :language: C++
@@ -237,7 +237,7 @@ over the constituent :ref:`Nodes` of the mesh is illustrated in
 :numref:`figs/intro_mesh`.
 
 .. _figs/intro_mesh:
-.. figure:: ../figures/intro_mesh.png
+.. figure:: figures/intro_mesh.png
    :align: center
    :alt: Resulting Uniform mesh
 
@@ -247,7 +247,7 @@ over the constituent :ref:`Nodes` of the mesh is illustrated in
 .. _step7:
 
 Step 7: Run the Example
-------------------------
+^^^^^^^^^^^^^^^^^^^^^^^
 
 After building the `Axom Toolkit`_, the basic Mint example may be run
 from within the build space directory as follows:

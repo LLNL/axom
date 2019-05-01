@@ -6,7 +6,7 @@
 .. _sections/tutorial:
 
 Tutorial
-=========
+---------
 
 The :ref:`sections/tutorial` section consists of simple examples and
 code snippets that illustrate how to use Mint's core classes and
@@ -25,7 +25,7 @@ in Mint, developers are advised to consult the
 .. _createAUniformMesh:
 
 Create a Uniform Mesh
-----------------------
+^^^^^^^^^^^^^^^^^^^^^^
 
 A :ref:`UniformMesh` is relatively the simplest :ref:`StructuredMesh` type,
 but also, the most restrictive mesh out of all :ref:`MeshTypes`.
@@ -38,7 +38,7 @@ For example, a :math:`50 \times 50` :ref:`UniformMesh`, defined on a bounded
 domain given by the interval :math:`\mathcal{I}:[-5.0,5.0] \times [-5.0,5.0]`,
 can be easily constructed as follows:
 
-.. literalinclude:: ../../../examples/mint_tutorial.cpp
+.. literalinclude:: ../../examples/mint_tutorial.cpp
    :start-after: sphinx_tutorial_construct_uniform_start
    :end-before: sphinx_tutorial_construct_uniform_end
    :language: C++
@@ -47,7 +47,7 @@ can be easily constructed as follows:
 The resulting mesh is depicted in :numref:`figs/uniformMesh50x50`.
 
 .. _figs/uniformMesh50x50:
-.. figure:: ../figures/structured_uniform_mesh.png
+.. figure:: figures/structured_uniform_mesh.png
   :align: center
   :scale: 35%
   :alt: Sample Uniform Mesh
@@ -57,7 +57,7 @@ The resulting mesh is depicted in :numref:`figs/uniformMesh50x50`.
 .. _createARectilinearMesh:
 
 Create a Rectilinear Mesh
---------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A :ref:`RectilinearMesh`, also called a *product mesh*, is similar to a
 :ref:`UniformMesh`. However, the constituent :ref:`Nodes` of a
@@ -74,14 +74,14 @@ to an exponential *stretching function* along the :math:`x` and :math:`y` axis
 respectively. The resulting mesh is depicted in
 :numref:`figs/rectilinearMesh25x25`.
 
-.. literalinclude:: ../../../examples/mint_tutorial.cpp
+.. literalinclude:: ../../examples/mint_tutorial.cpp
    :start-after: sphinx_tutorial_construct_rectilinear_start
    :end-before: sphinx_tutorial_construct_rectilinear_end
    :language: C++
    :linenos:
 
 .. _figs/rectilinearMesh25x25:
-.. figure:: ../figures/structured_rectilinear_mesh.png
+.. figure:: figures/structured_rectilinear_mesh.png
   :align: center
   :scale: 35%
   :alt: Sample Rectilinear Mesh
@@ -91,7 +91,7 @@ respectively. The resulting mesh is depicted in
 .. _createACurvilinearMesh:
 
 Create a Curvilinear Mesh
---------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 A :ref:`CurvilinearMesh`, also called a *body-fitted mesh*, is the most
 general of the :ref:`StructuredMesh` types. Similar to the :ref:`UniformMesh`
@@ -108,14 +108,14 @@ The following code snippet illustrates how to construct a :math:`25 \times 25`
 equation of a cylinder with a radius of :math:`2.5`. The resulting mesh is
 depicted in :numref:`figs/curvilinearMesh25x25`.
 
-.. literalinclude:: ../../../examples/mint_tutorial.cpp
+.. literalinclude:: ../../examples/mint_tutorial.cpp
    :start-after: sphinx_tutorial_construct_curvilinear_start
    :end-before: sphinx_tutorial_construct_curvilinear_end
    :language: C++
    :linenos:
 
 .. _figs/curvilinearMesh25x25:
-.. figure:: ../figures/SampleMesh.png
+.. figure:: figures/SampleMesh.png
    :align: center
    :scale: 35%
    :alt: Resulting CurvilinearMesh
@@ -125,7 +125,7 @@ depicted in :numref:`figs/curvilinearMesh25x25`.
 .. _createAnUnstructuredMesh:
 
 Create an Unstructured Mesh
-----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 An :ref:`UnstructuredMesh` with :ref:`SingleCellTopology` has
 both explicit :ref:`Topology` and :ref:`Geometry`. However, the cell type
@@ -141,7 +141,7 @@ Since both :ref:`Geometry` and :ref:`Topology` are explicit, an
    :ref:`Connectivity`
 
 .. _figs/triangularMesh:
-.. figure:: ../figures/sample_unstructured_mesh.png
+.. figure:: figures/sample_unstructured_mesh.png
     :align: center
     :scale: 35%
     :alt: Sample Unstructured Mesh with Single Cell Topology
@@ -151,7 +151,7 @@ Since both :ref:`Geometry` and :ref:`Topology` are explicit, an
 The following code snippet illustrates how to create  the simple
 :ref:`UnstructuredMesh` depicted in :numref:`figs/triangularMesh`.
 
-.. literalinclude:: ../../../examples/mint_tutorial.cpp
+.. literalinclude:: ../../examples/mint_tutorial.cpp
    :start-after: sphinx_tutorial_construct_unstructured_start
    :end-before: sphinx_tutorial_construct_unstructured_end
    :language: C++
@@ -178,7 +178,7 @@ The resulting mesh is shown in :numref:`figs/triangularMesh`.
 .. _createAMixedUnstructuredMesh:
 
 Create a Mixed Unstructured Mesh
----------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Compared to the :ref:`SingleCellTopology` :ref:`UnstructuredMesh`, a
 :ref:`MixedCellTopology` :ref:`UnstructuredMesh` has also explicit
@@ -187,7 +187,7 @@ Notably, the mesh can store different :ref:`CellTypes`, e.g., triangles and quad
 as shown in the simple 2D mesh depicted in :numref:`figs/mixedMesh`.
 
 .. _figs/mixedMesh:
-.. figure:: ../figures/sample_unstructured_mesh_mixed.png
+.. figure:: figures/sample_unstructured_mesh_mixed.png
     :align: center
     :scale: 35%
     :alt: Sample Unstructured Mesh with Single Cell Topology
@@ -206,7 +206,7 @@ The following code snippet illustrates how to create  the simple
 :numref:`figs/mixedMesh`, consisting of :math:`2` *triangles* and
 :math:`1` *quadrilateral* :ref:`Cells`.
 
-.. literalinclude:: ../../../examples/mint_tutorial.cpp
+.. literalinclude:: ../../examples/mint_tutorial.cpp
    :start-after: sphinx_tutorial_construct_unstructured_mixed_start
    :end-before: sphinx_tutorial_construct_unstructured_mixed_end
    :language: C++
@@ -235,7 +235,7 @@ cell type, since that can vary.
 .. _workingWithFields:
 
 Working with Fields
---------------------
+^^^^^^^^^^^^^^^^^^^
 
 A mesh typically has associated :ref:`FieldData` that store various numerical
 quantities on the constituent :ref:`Nodes`, :ref:`Cells` and :ref:`Faces` of
@@ -249,7 +249,7 @@ the mesh.
    their constituent :ref:`Cells`, :ref:`Faces` and :ref:`Nodes`.
 
 Add Fields
-^^^^^^^^^^
+""""""""""
 
 Given a ``mint::Mesh`` instance, a field is created by specifying:
 
@@ -262,7 +262,7 @@ For example, the following code snippet creates the *scalar density* field,
 ``den``, stored at the cell centers, and the *vector velocity* field, ``vel``,
 stored at the :ref:`Nodes`:
 
-.. literalinclude:: ../../../examples/mint_tutorial.cpp
+.. literalinclude:: ../../examples/mint_tutorial.cpp
    :start-after: sphinx_tutorial_add_fields_start
    :end-before: sphinx_tutorial_add_fields_end
    :language: C++
@@ -297,12 +297,12 @@ stored at the :ref:`Nodes`:
     the field is assumed to be a scalar quantity.
 
 Request Fields by Name
-^^^^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""""""
 
 Specific, existing fields can be requested by calling ``getFieldPtr()`` on
 the target mesh as follows:
 
-.. literalinclude:: ../../../examples/mint_tutorial.cpp
+.. literalinclude:: ../../examples/mint_tutorial.cpp
    :start-after: sphinx_tutorial_get_field_by_name_start
    :end-before: sphinx_tutorial_get_field_by_name_end
    :language: C++
@@ -328,13 +328,13 @@ the target mesh as follows:
    * The underlying field type, e.g., ``double``, ``int``, etc.
 
 Check Fields
-^^^^^^^^^^^^
+""""""""""""
 
 An application can also check if a field exists by calling ``hasField()`` on the
 mesh, which takes as arguments the field name and corresponding field
 association as follows:
 
-.. literalinclude:: ../../../examples/mint_tutorial.cpp
+.. literalinclude:: ../../examples/mint_tutorial.cpp
    :start-after: sphinx_tutorial_check_fields_start
    :end-before: sphinx_tutorial_check_fields_end
    :language: C++
@@ -344,13 +344,13 @@ The ``hasField()`` method returns ``true`` or ``false`` indicating whether a
 given field is defined on the mesh.
 
 Remove Fields
-^^^^^^^^^^^^^
+""""""""""""""
 
 A field can be removed from a mesh by calling ``removeField()`` on the target
 mesh, which takes as arguments the field name and corresponding field
 association as follows:
 
-.. literalinclude:: ../../../examples/mint_tutorial.cpp
+.. literalinclude:: ../../examples/mint_tutorial.cpp
    :start-after: sphinx_tutorial_remove_fields_start
    :end-before: sphinx_tutorial_remove_fields_end
    :language: C++
@@ -360,7 +360,7 @@ The ``removeField()`` method returns ``true`` or ``false`` indicating whether
 the corresponding field was removed successfully from the mesh.
 
 Query Fields
-^^^^^^^^^^^^
+"""""""""""""
 
 In some cases, an application may not always know *a priori* the name or type
 of the field, or, we may want to write a function to process all fields,
@@ -368,7 +368,7 @@ regardless of their type.
 
 The following code snippet illustrates how to do that:
 
-.. literalinclude:: ../../../examples/mint_tutorial.cpp
+.. literalinclude:: ../../examples/mint_tutorial.cpp
    :start-after: sphinx_tutorial_query_fields_start
    :end-before: sphinx_tutorial_query_fields_end
    :language: C++
@@ -402,7 +402,7 @@ The following code snippet illustrates how to do that:
 .. _usingExternalStorage:
 
 Using External Storage
------------------------
+^^^^^^^^^^^^^^^^^^^^^^^
 
 A Mint mesh may also be constructed from :ref:`ExternalStorage`. In this
 case, the application holds buffers that describe the constituent
@@ -413,7 +413,7 @@ The following code snippet illustrates how to use :ref:`ExternalStorage` using
 the :ref:`SingleCellTopology` :ref:`UnstructuredMesh` used to demonstrate
 how to :ref:`createAnUnstructuredMesh` with :ref:`NativeStorage`:
 
-.. literalinclude:: ../../../examples/mint_tutorial.cpp
+.. literalinclude:: ../../examples/mint_tutorial.cpp
    :start-after: sphinx_tutorial_using_external_storage_start
    :end-before: sphinx_tutorial_using_external_storage_end
    :language: C++
@@ -463,7 +463,7 @@ dynamically grow or shrink when using :ref:`ExternalStorage`.
 .. _usingSidre:
 
 Using Sidre
-------------
+^^^^^^^^^^^
 
 Mint can also use `Sidre`_ as the underlying :ref:`MeshStorageManagement`
 substrate, thereby, facilitate the integration of packages or
@@ -492,7 +492,7 @@ concepts extend to all supported :ref:`MeshTypes`.
 .. _createANewMeshInSidre:
 
 Create a new Mesh in Sidre
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+""""""""""""""""""""""""""
 
 Creating a mesh using `Sidre`_ is very similar to creating a mesh that uses
 :ref:`NativeStorage`. The key difference is that when calling the mesh
@@ -509,7 +509,7 @@ The following code snippet illustrates this capability using the
 how to :ref:`createAnUnstructuredMesh` with :ref:`NativeStorage`. The key
 differences in the code are highlighted below:
 
-.. literalinclude:: ../../../examples/mint_tutorial.cpp
+.. literalinclude:: ../../examples/mint_tutorial.cpp
    :start-after: sphinx_tutorial_using_sidre_create_mesh_start
    :end-before: sphinx_tutorial_using_sidre_create_mesh_end
    :language: C++
@@ -544,7 +544,7 @@ the corresponding `Sidre`_ API calls.
 .. _importAMeshFromSidre:
 
 Import a Mesh from Sidre
-^^^^^^^^^^^^^^^^^^^^^^^^^
+""""""""""""""""""""""""
 
 Support for importing an existing mesh from `Sidre`_, that conforms to the
 `Conduit`_ `Blueprint`_ mesh description, is provided by the
@@ -555,7 +555,7 @@ instance can be any of the supported :ref:`MeshTypes`.
 
 The following code snippet illustrates this capability:
 
-.. literalinclude:: ../../../examples/mint_tutorial.cpp
+.. literalinclude:: ../../examples/mint_tutorial.cpp
    :start-after: sphinx_tutorial_sidre_import_start
    :end-before: sphinx_tutorial_sidre_import_end
    :language: C++
@@ -613,7 +613,7 @@ the corresponding `Sidre`_ API calls.
 .. _NodeTraversalFunctions:
 
 Node Traversal Functions
-------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 The :ref:`NodeTraversalFunctions` iterate over the constituent :ref:`Nodes`
 of the mesh and apply a user-supplied kernel operation, often specified with a
@@ -631,20 +631,20 @@ supplied kernel.
   of the iteration space, in this case the node index, ``nodeIdx``.
 
 Simple Loop Over Nodes
-^^^^^^^^^^^^^^^^^^^^^^
+""""""""""""""""""""""
 
 The following code snippet illustrates a simple loop over the :ref:`Nodes` of a
 2D mesh that computes the velocity magnitude, ``vmag``, given the corresponding
 velocity components, ``vx`` and ``vy``.
 
-.. literalinclude:: ../../../examples/mint_tutorial.cpp
+.. literalinclude:: ../../examples/mint_tutorial.cpp
    :start-after: sphinx_tutorial_for_all_nodes_index_start
    :end-before: sphinx_tutorial_for_all_nodes_index_end
    :language: C++
    :linenos:
 
 Loop with Coordinates
-^^^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""""
 
 The coordinates of a node are sometimes also required in addition to
 its index. This additional information may be requested by supplying
@@ -657,7 +657,7 @@ a kernel that updates the nodal velocity components, based on
 old node positions, stored at the ``xold`` and ``yold`` node-centered fields,
 respectively.
 
-.. literalinclude:: ../../../examples/mint_tutorial.cpp
+.. literalinclude:: ../../examples/mint_tutorial.cpp
    :start-after: sphinx_tutorial_for_all_nodes_xy_start
    :end-before: sphinx_tutorial_for_all_nodes_xy_end
    :language: C++
@@ -670,7 +670,7 @@ respectively.
     in addition to its ``nodeIdx``.
 
 Loop with IJK Indices
-^^^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""""
 
 When working with a :ref:`StructuredMesh`, it is sometimes required to expose
 the regular :ref:`Topology` of the :ref:`StructuredMesh` to obtain higher
@@ -685,7 +685,7 @@ For example, the following code snippet illustrates how to obtain a node's
 ``i`` and ``j`` indices within a sample kernel that computes the linear index of
 each node and stores the result in a node-centered field, ``ID``.
 
-.. literalinclude:: ../../../examples/mint_tutorial.cpp
+.. literalinclude:: ../../examples/mint_tutorial.cpp
    :start-after: sphinx_tutorial_for_all_nodes_ij_start
    :end-before: sphinx_tutorial_for_all_nodes_ij_end
    :language: C++
@@ -699,7 +699,7 @@ each node and stores the result in a node-centered field, ``ID``.
 .. _CellTraversalFunctions:
 
 Cell Traversal Functions
-------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 The :ref:`CellTraversalFunctions` iterate over the constituent
 :ref:`Cells` of the mesh and apply a user-supplied kernel operation, often
@@ -717,20 +717,20 @@ of the supplied kernel.
   of the iteration space, in this case the cell index, ``cellIdx``.
 
 Simple Loop Over Cells
-^^^^^^^^^^^^^^^^^^^^^^
+""""""""""""""""""""""
 
 The following code snippet illustrates a simple loop over the constituent
 :ref:`Cells` of the mesh that computes the cell density (``den``), given
 corresponding mass (``mass``) and volume (``vol``) quantities.
 
-.. literalinclude:: ../../../examples/mint_tutorial.cpp
+.. literalinclude:: ../../examples/mint_tutorial.cpp
    :start-after: sphinx_tutorial_for_all_cells_index_start
    :end-before: sphinx_tutorial_for_all_cells_index_end
    :language: C++
    :linenos:
 
 Loop with Node IDs
-^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""
 
 Certain operations may require the IDs of the constituent cell :ref:`Nodes` for
 some calculation. The template argument, ``xargs::nodeids``,  may be used as
@@ -742,7 +742,7 @@ that the supplied kernel also takes the the IDs of the constituent cell
 This feature is demonstrated with the following code snippet, which, averages
 the node-centered velocity components to corresponding cell-centered fields:
 
-.. literalinclude:: ../../../examples/mint_tutorial.cpp
+.. literalinclude:: ../../examples/mint_tutorial.cpp
    :start-after: sphinx_tutorial_for_all_cells_nodeids_start
    :end-before: sphinx_tutorial_for_all_cells_nodeids_end
    :language: C++
@@ -759,7 +759,7 @@ the node-centered velocity components to corresponding cell-centered fields:
     * ``N``, the number of :ref:`Nodes` for the given cell.
 
 Loop with Coordinates
-^^^^^^^^^^^^^^^^^^^^^
+""""""""""""""""""""""
 
 The coordinates of the constituent cell :ref:`Nodes` are often required in
 some calculations. A cell's node coordinates may be supplied to the specified
@@ -777,7 +777,7 @@ the cell centroid by averaging the coordinates of the constituent cell
    is annotated using the ``AXOM_NOT_USED`` macro to silence compiler
    warnings.
 
-.. literalinclude:: ../../../examples/mint_tutorial.cpp
+.. literalinclude:: ../../examples/mint_tutorial.cpp
    :start-after: sphinx_tutorial_for_all_cells_coords_start
    :end-before: sphinx_tutorial_for_all_cells_coords_end
    :language: C++
@@ -801,7 +801,7 @@ the cell centroid by averaging the coordinates of the constituent cell
 
 
 Loop with Face IDs
-^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""
 
 The IDs of the constituent cell :ref:`Faces` are sometimes needed to access the
 corresponding face-centered quantities for certain operations. The face IDs
@@ -812,7 +812,7 @@ the supplied kernel.
 This feature is demonstrated with the following code snippet, which, computes
 the perimeter of each cell by summing the pre-computed face areas:
 
-.. literalinclude:: ../../../examples/mint_tutorial.cpp
+.. literalinclude:: ../../examples/mint_tutorial.cpp
    :start-after: sphinx_tutorial_for_all_cells_faceids_start
    :end-before: sphinx_tutorial_for_all_cells_faceids_end
    :language: C++
@@ -830,7 +830,7 @@ the perimeter of each cell by summing the pre-computed face areas:
     * ``N``, the number of :ref:`Faces` for the given cell.
 
 Loop with IJK Indices
-^^^^^^^^^^^^^^^^^^^^^
+""""""""""""""""""""""
 
 As with the :ref:`NodeTraversalFunctions`, when working with a
 :ref:`StructuredMesh`, it is sometimes required to expose the regular
@@ -845,7 +845,7 @@ For example, the following code snippet illustrates to obtain a cell's
 ``i`` and ``j`` indices within a kernel that computes the linear index of each
 cell and stores the result in a cell-centered field, ``ID``.
 
-.. literalinclude:: ../../../examples/mint_tutorial.cpp
+.. literalinclude:: ../../examples/mint_tutorial.cpp
    :start-after: sphinx_tutorial_for_all_cells_ij_start
    :end-before: sphinx_tutorial_for_all_cells_ij_end
    :language: C++
@@ -859,7 +859,7 @@ cell and stores the result in a cell-centered field, ``ID``.
 .. _FaceTraversalFunctions:
 
 Face Traversal Functions
-------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 The :ref:`FaceTraversalFunctions` functions iterate over the constituent
 :ref:`Faces` of the mesh and apply a user-supplied kernel operation,
@@ -877,21 +877,21 @@ of the supplied kernel.
   of the iteration space, in this case the face index, ``faceIdx``.
 
 Simple Loop Over Faces
-^^^^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""""""
 
 The following code snippet illustrates a simple loop over the constituent
 :ref:`Faces` of a 2D mesh that computes an interpolated face-centered quantity
 (``temp``) based on pre-computed interpolation coefficients ``t1`` , ``t2``
 and ``w``.
 
-.. literalinclude:: ../../../examples/mint_tutorial.cpp
+.. literalinclude:: ../../examples/mint_tutorial.cpp
    :start-after: sphinx_tutorial_for_all_faces_index_start
    :end-before: sphinx_tutorial_for_all_faces_index_end
    :language: C++
    :linenos:
 
 Loop with Node IDs
-^^^^^^^^^^^^^^^^^^
+""""""""""""""""""
 
 The IDs of the constituent face :ref:`Nodes` are sometimes needed to access
 associated node-centered data for certain calculations. The template argument,
@@ -905,7 +905,7 @@ This feature is demonstrated with the following code snippet which averages
 the node-centered velocity components to corresponding face-centered
 quantities:
 
-.. literalinclude:: ../../../examples/mint_tutorial.cpp
+.. literalinclude:: ../../examples/mint_tutorial.cpp
    :start-after: sphinx_tutorial_for_all_faces_nodeids_start
    :end-before: sphinx_tutorial_for_all_faces_nodeids_end
    :language: C++
@@ -922,7 +922,7 @@ quantities:
     * ``N``, the number of :ref:`Nodes` for the corresponding face.
 
 Loop with Coordinates
-^^^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""""
 
 The coordinates of the constituent face :ref:`Nodes` are often required in
 some calculations. The constituent face node coordinates may be supplied to
@@ -940,7 +940,7 @@ the face centroid by averaging the coordinates of the constituent face
    is annotated using the ``AXOM_NOT_USED`` macro to silence compiler
    warnings.
 
-.. literalinclude:: ../../../examples/mint_tutorial.cpp
+.. literalinclude:: ../../examples/mint_tutorial.cpp
    :start-after: sphinx_tutorial_for_all_faces_coords_start
    :end-before: sphinx_tutorial_for_all_faces_coords_end
    :language: C++
@@ -963,7 +963,7 @@ the face centroid by averaging the coordinates of the constituent face
   * ``nodeIdx`` array of corresponding node IDs.
 
 Loop with Cell IDs
-^^^^^^^^^^^^^^^^^^
+""""""""""""""""""
 
 The constituent :ref:`Faces` of a mesh can be bound to either one or two
 :ref:`Cells`. The IDs of the :ref:`Cells` abutting a face are required in
@@ -981,7 +981,7 @@ This functionality is demonstrated with the following example that loops
 over the constituent :ref:`Faces` of a mesh and marks external boundary
 faces:
 
-.. literalinclude:: ../../../examples/mint_tutorial.cpp
+.. literalinclude:: ../../examples/mint_tutorial.cpp
    :start-after: sphinx_tutorial_for_all_faces_cellids_start
    :end-before: sphinx_tutorial_for_all_faces_cellids_end
    :language: C++
@@ -1002,7 +1002,7 @@ faces:
 .. _femTutorial:
 
 Finite Elements
-----------------
+^^^^^^^^^^^^^^^^
 
 Mint provides basic support for :ref:`sections/fem` consisting of
 :ref:`LagrangeBasis` :ref:`ShapeFunctions` for commonly employed
@@ -1018,14 +1018,14 @@ Jacobian and compute the forward and inverse :ref:`IsoparametricMapping`.
 .. _createAFiniteElementObject:
 
 Create a Finite Element Object
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+"""""""""""""""""""""""""""""""
 
 All associated functionality with :ref:`sections/fem` is exposed to the
 application through the ``mint::FiniteElement`` class. The following code
 snippet illustrates how to :ref:`createAFiniteElementObject` using a Linear
 Lagrangian Quadrilateral Finite Element as an example:
 
-.. literalinclude:: ../../../examples/mint_tutorial.cpp
+.. literalinclude:: ../../examples/mint_tutorial.cpp
    :start-after: sphinx_tutorial_create_fe_start
    :end-before: sphinx_tutorial_create_fe_end
    :language: C++
@@ -1074,7 +1074,7 @@ to perform the following operations:
 .. _evaluateShapeFunctions:
 
 Evaluate Shape Functions
-^^^^^^^^^^^^^^^^^^^^^^^^
+""""""""""""""""""""""""
 
 The :ref:`ShapeFunctions` can be readily computed from any ``mint::FiniteElement``
 instance by calling the ``evaluateShapeFunctions()`` method on the finite element
@@ -1082,7 +1082,7 @@ object. The following code snippet illustrates how to :ref:`evaluateShapeFunctio
 at the isoparametric center of a quadrilateral element, given by
 :math:`\xi=(0.5,0.5)^T`:
 
-.. literalinclude:: ../../../examples/mint_tutorial.cpp
+.. literalinclude:: ../../examples/mint_tutorial.cpp
    :start-after: sphinx_tutorial_evaluate_shape_functions_start
    :end-before: sphinx_tutorial_evaluate_shape_functions_end
    :language: C++
@@ -1101,14 +1101,14 @@ at the isoparametric center of a quadrilateral element, given by
 .. _evaluateTheJacobian:
 
 Evaluate the Jacobian
-^^^^^^^^^^^^^^^^^^^^^
+""""""""""""""""""""""
 
 Similarly, for a reference point, :math:`\hat{\xi} \in \bar{\Omega}`, the
 Jacobian matrix, consisting the sums of derivatives of :ref:`ShapeFunctions`
 and the corresponding determinant of the Jacobian, can be readily computed
 from the finite element object as follows:
 
-.. literalinclude:: ../../../examples/mint_tutorial.cpp
+.. literalinclude:: ../../examples/mint_tutorial.cpp
    :start-after: sphinx_tutorial_jacobian_start
    :end-before: sphinx_tutorial_jacobian_end
    :language: C++
@@ -1139,14 +1139,14 @@ from the finite element object as follows:
 .. _forwardIsoparametricMap:
 
 Forward Isoparametric Map
-^^^^^^^^^^^^^^^^^^^^^^^^^
+""""""""""""""""""""""""""
 
 Given a point in reference space, :math:`\hat{\xi} \in \bar{\Omega}`, the
 corresponding physical point, :math:`\hat{x} \in \Omega^e` is computed by
 calling the ``computePhysicalCoords()`` method on the finite element
 object as illustrated below:
 
-.. literalinclude:: ../../../examples/mint_tutorial.cpp
+.. literalinclude:: ../../examples/mint_tutorial.cpp
    :start-after: sphinx_tutorial_forward_map_start
    :end-before: sphinx_tutorial_forward_map_end
    :language: C++
@@ -1163,7 +1163,7 @@ The ``computePhysicalCoords()`` method takes two arguments:
 .. _inverseIsoparametricMap:
 
 Inverse Isoparametric Map
-^^^^^^^^^^^^^^^^^^^^^^^^^
+""""""""""""""""""""""""""
 
 Similarly, given a point in physical space, :math:`\hat{x} \in \Omega`,
 a corresponding point in the reference space of the element,
@@ -1171,7 +1171,7 @@ a corresponding point in the reference space of the element,
 the ``computeReferenceCoords()`` method on the finite element object
 as illustrated by the following:
 
-.. literalinclude:: ../../../examples/mint_tutorial.cpp
+.. literalinclude:: ../../examples/mint_tutorial.cpp
    :start-after: sphinx_tutorial_inverse_map_start
    :end-before: sphinx_tutorial_inverse_map_end
    :language: C++
@@ -1209,7 +1209,7 @@ statuses:
 .. _outputToVTK:
 
 Output to VTK
---------------
+^^^^^^^^^^^^^^
 
 Mint provides native support for writing meshes in the ASCII Legacy
 `VTK File Format`_. Legacy VTK files are popular due to their simplicity and
@@ -1229,7 +1229,7 @@ The functionality for outputting a mesh to VTK  is provided by the
 a ``mint::Mesh`` object, and, (2) the filename of the target VTK file,
 as illustrated in the code snippet below:
 
-.. literalinclude:: ../../../examples/mint_tutorial.cpp
+.. literalinclude:: ../../examples/mint_tutorial.cpp
    :start-after: sphinx_tutorial_vtk_output_start
    :end-before: sphinx_tutorial_vtk_output_end
    :language: C++
