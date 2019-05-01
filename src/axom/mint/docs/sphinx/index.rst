@@ -10,9 +10,11 @@ Mint User Guide
 .. include:: sections/synopsis.rst
 .. include:: sections/preliminary_concepts.rst
 .. include:: sections/quick_introduction.rst
-
+.. include:: sections/mesh_representation.rst
+.. include:: sections/mesh_types.rst
+.. include:: sections/architecture.rst
 ..
-  .. include:: sections/mesh_data_model.rst
+   .. include:: sections/mesh_data_model.rst
 
 .. include:: sections/execution_model.rst
 .. include:: sections/fem.rst
