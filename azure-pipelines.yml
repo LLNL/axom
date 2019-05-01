@@ -23,6 +23,12 @@ strategy:
       CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE=Off'
       COMPILER: 'g++'
       TEST_TARGET: 'linux_gcc7'
+    linux_gcc8:
+      VM_ImageName: 'ubuntu-16.04'
+      Compiler_ImageName: 'axom/compilers:gcc-8'
+      CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE=Off'
+      COMPILER: 'g++'
+      TEST_TARGET: 'linux_gcc8'
     linux_clang4:
       VM_ImageName: 'ubuntu-16.04'
       Compiler_ImageName: 'axom/compilers:clang-4'
@@ -55,12 +61,12 @@ steps:
 - script: |
     cd build
     make
-  displayName: '$(TEST_TARGET) Build & Test'
+  displayName: '$(TEST_TARGET) Build'
   condition: eq( variables['Agent.OS'], 'Darwin')
 - script: |
     cd build
     ctest -T test --output-on-failure -V
-  displayName: '$(TEST_TARGET) Build & Test'
+  displayName: '$(TEST_TARGET) Test'
   condition: eq( variables['Agent.OS'], 'Darwin')
 - script:  |
     docker run --rm --user='root' -v `pwd`:/home/axom $(Compiler_ImageName) chown -R axom /home/axom
