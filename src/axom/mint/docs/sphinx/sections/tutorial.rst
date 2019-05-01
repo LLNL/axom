@@ -15,7 +15,7 @@ The examples presented herein aim to illustrate specific Mint concepts and
 capabilities in a structured and simple format.
 To quickly learn basic Mint concepts and capabilities through an illustrative
 walk-through of a complete working code example, see the
-:ref:`sections/quick_introduction` section. Additional code examples, based on
+:ref:`sections/getting_started` section. Additional code examples, based on
 Mint mini-apps, are provided in the :ref:`sections/examples` section. For
 thorough documentation of the interfaces of the various classes and functions
 in Mint, developers are advised to consult the

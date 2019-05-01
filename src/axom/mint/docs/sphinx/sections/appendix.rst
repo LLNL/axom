@@ -14,7 +14,7 @@ Mint Application Code Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Below is the complete :ref:`MintApplicationCodeExample` presented in
-the :ref:`sections/quick_introduction` section. The code can be found in the Axom
+the :ref:`sections/getting_started` section. The code can be found in the Axom
 source code under ``src/axom/mint/examples/mint_uniform_mesh.cpp``.
 
 .. literalinclude:: ../../../examples/mint_uniform_mesh.cpp
