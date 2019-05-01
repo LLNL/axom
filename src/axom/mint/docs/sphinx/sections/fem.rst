@@ -61,7 +61,7 @@ their associated :ref:`ShapeFunctions`, and summarize the process to
   :math:`\hat{\xi} \in [0,1]`.
 
 .. includes cell type aliases to the images
-.. include:: cell_types.rst
+.. include:: sections/cell_types.rst
 
 QUAD: *Linear Quadrilateral*
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -248,4 +248,3 @@ Add a New Finite Element Basis
 .. [#f1] In litetrature, *shape functions* are also sometimes refered to as
          *interpolation functions*, *basis functions*, or *hat functions*
 
-.. include:: citations.rst

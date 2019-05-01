@@ -1247,9 +1247,3 @@ specification.
    output or restart dumps from a simulation. Production I/O capabilities
    in the `Axom Toolkit`_ are supported through `Sidre`_. Consult the
    `Sidre`_ documentation for the details.
-
-.. #############################################################################
-..  CITATIONS
-.. #############################################################################
-
-.. include:: citations.rst

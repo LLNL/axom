@@ -266,10 +266,3 @@ from within the build space directory as follows:
      with `RAJA`_ and OpenMP enabled.
    * Sequentially on the CPU, otherwise.
 
-
-
-.. #############################################################################
-..  CITATIONS
-.. #############################################################################
-
-.. include:: citations.rst

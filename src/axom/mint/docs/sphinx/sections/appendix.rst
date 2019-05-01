@@ -41,9 +41,3 @@ Raw Sidre Data
 .. literalinclude:: raw_sidre_data.txt
    :language: json
    :linenos:
-
-.. #############################################################################
-..  CITATIONS
-.. #############################################################################
-
-.. include:: citations.rst

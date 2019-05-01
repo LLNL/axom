@@ -176,8 +176,3 @@ The list of available :ref:`executionSignature` options is summarized below:
     usually requires more boiler plate code, which reduces readability and may
     potentially have a negative impact on performance.
 
-.. #############################################################################
-..  CITATIONS
-.. #############################################################################
-
-.. include:: citations.rst
