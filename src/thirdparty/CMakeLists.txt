@@ -126,11 +126,13 @@ if (AXOM_ENABLE_SPARSEHASH)
                 $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
 
     # Disable warning introduced in gcc@8.1 related to how sparsehash casts memory
-    if(C_COMPILER_FAMILY_IS_GNU)
-        if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "8.1")
-            blt_add_target_compile_flags(TO sparsehash FLAGS 
-              $<$<NOT:$<COMPILE_LANGUAGE:Fortran>>:-Wno-class-memaccess>)
-        endif()
+    if(C_COMPILER_FAMILY_IS_GNU AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "8.1")
+      if (ENABLE_FORTRAN)
+        blt_add_target_compile_flags(TO sparsehash FLAGS
+            $<$<NOT:$<COMPILE_LANGUAGE:Fortran>>:-Wno-class-memaccess>)
+      else()
+        blt_add_target_compile_flags(TO sparsehash FLAGS -Wno-class-memaccess>)
+      endif()
     endif()
 
     install(TARGETS              sparsehash

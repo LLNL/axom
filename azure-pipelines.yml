@@ -29,6 +29,12 @@ strategy:
       CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE=Off'
       COMPILER: 'g++'
       TEST_TARGET: 'linux_gcc7'
+    linux_gcc8:
+      VM_ImageName: 'ubuntu-16.04'
+      Compiler_ImageName: 'axom/compilers:gcc-8'
+      CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE=Off'
+      COMPILER: 'g++'
+      TEST_TARGET: 'linux_gcc8'
     linux_clang4:
       VM_ImageName: 'ubuntu-16.04'
       Compiler_ImageName: 'axom/compilers:clang-4'
@@ -41,6 +47,10 @@ strategy:
       CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE=Off'
       COMPILER: 'clang++'
       TEST_TARGET: 'linux_clang6'
+    osx_gcc:
+      VM_ImageName: 'macos-10.13'
+      CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE=Off'
+      TEST_TARGET: 'osx_gcc'
 
 pool:
   vmImage: $(VM_ImageName)
@@ -49,9 +59,24 @@ steps:
 - checkout: self
   clean: boolean
   submodules: recursive
+- task: CMake@1
+  inputs:
+    workingDir: 'build'
+    cmakeArgs: '$(CMAKE_EXTRA_FLAGS) ../src'
+  condition: eq( variables['Agent.OS'], 'Darwin')
+- script: |
+    cd build
+    make
+  displayName: '$(TEST_TARGET) Build'
+  condition: eq( variables['Agent.OS'], 'Darwin')
+- script: |
+    cd build
+    ctest -T test --output-on-failure -V
+  displayName: '$(TEST_TARGET) Test'
+  condition: eq( variables['Agent.OS'], 'Darwin')
 - script:  |
-   docker run --rm --user='root' -v `pwd`:/home/axom $(Compiler_ImageName) chown -R axom /home/axom
-   docker run --rm  -v `pwd`:/home/axom -e TEST_TARGET -e COMPILER -e DO_BUILD -e DO_TEST -e CMAKE_EXTRA_FLAGS $(Compiler_ImageName) ./scripts/azure-pipelines/linux-build_and_test.sh
+    docker run --rm --user='root' -v `pwd`:/home/axom $(Compiler_ImageName) chown -R axom /home/axom
+    docker run --rm  -v `pwd`:/home/axom -e TEST_TARGET -e COMPILER -e DO_BUILD -e DO_TEST -e CMAKE_EXTRA_FLAGS $(Compiler_ImageName) ./scripts/azure-pipelines/linux-build_and_test.sh
   condition: eq( variables['Agent.OS'], 'Linux')
   displayName: '$(TEST_TARGET) Build & Test'
 - task: PublishTestResults@2
