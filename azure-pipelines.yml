@@ -53,17 +53,11 @@ steps:
     cmakeArgs: '$(CMAKE_EXTRA_FLAGS) ../src'
   condition: eq( variables['Agent.OS'], 'Darwin')
 - script: |
-    echo 'tmake'
-    pwd
-    ls
     cd build
     make
   displayName: '$(TEST_TARGET) Build & Test'
   condition: eq( variables['Agent.OS'], 'Darwin')
 - script: |
-    echo 'tctest'
-    pwd
-    ls
     cd build
     ctest -T test
   displayName: '$(TEST_TARGET) Build & Test'
