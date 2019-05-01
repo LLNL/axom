@@ -189,7 +189,7 @@ corresponding IJK lattice coordinates.
 The following code snippet provides a simple example illustrating how to
 construct and operate on a 2-D :ref:`UniformMesh`.
 
-.. literalinclude:: ../../../examples/mint_uniform_mesh.cpp
+.. literalinclude:: ../../examples/mint_uniform_mesh.cpp
    :language: C++
    :linenos:
 
@@ -206,7 +206,7 @@ representation of the :ref:`RectilinearMesh`.
 The following code snippet provides a simple example illustrating how to
 construct and operate on a 2-D :ref:`RectilinearMesh`.
 
-.. literalinclude:: ../../../examples/mint_rectilinear_mesh.cpp
+.. literalinclude:: ../../examples/mint_rectilinear_mesh.cpp
    :language: C++
    :linenos:
 
@@ -219,7 +219,7 @@ spatial coordinates associated with the constituent :ref:`Nodes` of the mesh.
 The following code snippet provides a simple example illustrating how to
 construct and operate on a 2-D :ref:`CurvilinearMesh`.
 
-.. literalinclude:: ../../../examples/mint_curvilinear_mesh.cpp
+.. literalinclude:: ../../examples/mint_curvilinear_mesh.cpp
    :language: C++
    :linenos:
 
@@ -277,7 +277,7 @@ as an internal class member.
 The following code snippet provides a simple examples illustrating how to
 construct and operate on a :ref:`ParticleMesh`.
 
-.. literalinclude:: ../../../examples/mint_particle_mesh.cpp
+.. literalinclude:: ../../examples/mint_particle_mesh.cpp
    :language: C++
    :linenos:
 

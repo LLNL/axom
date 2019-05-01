@@ -38,6 +38,6 @@ The ``AXOM_LAMBDA`` convenience macro expands to:
 Raw Sidre Data
 ^^^^^^^^^^^^^^
 
-.. literalinclude:: raw_sidre_data.txt
+.. literalinclude:: sections/raw_sidre_data.txt
    :language: json
    :linenos:
