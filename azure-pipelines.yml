@@ -49,14 +49,14 @@ steps:
   submodules: recursive
 - task: CMake@1
   inputs:
-    workingDir: 'azure-$(TEST_TARGET)-build'
+    workingDir: 'build'
     cmakeArgs: '$(CMAKE_EXTRA_FLAGS) ../src'
   condition: eq( variables['Agent.OS'], 'Darwin')
 - script: |
     echo 'tmake'
     pwd
     ls
-    cd azure-$(TEST_TARGET)-build
+    cd build
     make
   displayName: '$(TEST_TARGET) Build & Test'
   condition: eq( variables['Agent.OS'], 'Darwin')
@@ -64,7 +64,7 @@ steps:
     echo 'tctest'
     pwd
     ls
-    cd azure-$(TEST_TARGET)-build
+    cd build
     ctest -T test
   displayName: '$(TEST_TARGET) Build & Test'
   condition: eq( variables['Agent.OS'], 'Darwin')
