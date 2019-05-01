@@ -65,6 +65,7 @@ In Mint, the three fundamental topological entities comprising a mesh are
   to support in future versions of Mint.
 
 .. _Cells:
+
 Cells
 """"""
 
@@ -78,6 +79,7 @@ All Mint :ref:`CellTypes` follow the `CGNS`_ standard local numbering
 convention.
 
 .. _Faces:
+
 Faces
 """""
 
@@ -164,6 +166,7 @@ are 0D topological entities, i.e., :ref:`Nodes`.
     *external boundary faces*, which are bound to a single cell.
 
 .. _Nodes:
+
 Nodes
 """""
 
@@ -187,23 +190,24 @@ Nodes
       location.
 
 
-  Notably, the nodes of a mesh are not necessarily just the *vertices* of the mesh.
-  As discussed in the :ref:`PreliminaryConcepts` section, a mesh is a
-  discretization of a PDE. Recall, the primary purpose of the mesh is to define
-  the dicsrete locations, in both *space* and *time*, at which the
-  *unknown variables* or *degrees of freedom* of the governing PDE are evaluated.
-  Depending on the numerical scheme employed and the :ref:`CellTypes` used, the
-  :ref:`Nodes` of a mesh may also be located at cell, face and edge centroids.
-  For example, in the Finite Element Method (FEM), the nodes for the linear
-  Lagrange Finite Elements, see :numref:`figs/linearCells`, are located at the
-  cell *vertices*. However, for quadratic :ref:`CellTypes`,
-  see :numref:`figs/q2cells`, the *Lagrange* :math:`P^2` finite element,
-  for the quadrilateral and hexahedron (in 3D) cells, includes as :ref:`Nodes`,
-  the cell, face and edge (in 3D) centroids in addition to the cell *vertices*.
-  Other higher order finite elements may involve additional nodes for each edge
-  and face as well as in the interior of the cell.
+Notably, the nodes of a mesh are not necessarily just the *vertices* of the mesh.
+As discussed in the :ref:`PreliminaryConcepts` section, a mesh is a
+discretization of a PDE. Recall, the primary purpose of the mesh is to define
+the dicsrete locations, in both *space* and *time*, at which the
+*unknown variables* or *degrees of freedom* of the governing PDE are evaluated.
+Depending on the numerical scheme employed and the :ref:`CellTypes` used, the
+:ref:`Nodes` of a mesh may also be located at cell, face and edge centroids.
+For example, in the Finite Element Method (FEM), the nodes for the linear
+Lagrange Finite Elements, see :numref:`figs/linearCells`, are located at the
+cell *vertices*. However, for quadratic :ref:`CellTypes`,
+see :numref:`figs/q2cells`, the *Lagrange* :math:`P^2` finite element,
+for the quadrilateral and hexahedron (in 3D) cells, includes as :ref:`Nodes`,
+the cell, face and edge (in 3D) centroids in addition to the cell *vertices*.
+Other higher order finite elements may involve additional nodes for each edge
+and face as well as in the interior of the cell.
 
 .. _Connectivity:
+
 Connectivity
 """"""""""""
 
