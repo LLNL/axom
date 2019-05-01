@@ -365,11 +365,3 @@ persistent in `Sidre`_.
 See the :ref:`sections/tutorial` for more information and a set of concrete
 examples on :ref:`usingSidre`.
 
-.. #############################################################################
-..  FOOTNOTES
-.. #############################################################################
-
-.. rubric:: Footnotes
-
-.. [#f1] The cell numbering convention is also referred to as a winding convention.
-.. [#f2] Local adaptive refinement is also more broadly known as local h-refinement.

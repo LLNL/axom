@@ -73,7 +73,7 @@ A cell, :math:`\mathcal{C}_i`, is given by an ordered list of :ref:`Nodes`,
 :math:`\mathcal{C}_i=\{n_0,n_1,...n_k\}`, where each entry,
 :math:`n_j \in \mathcal{C}_i`, corresponds to a
 unique node index in the mesh. The order of :ref:`Nodes` defining a cell is
-determined according to a prescribed local numbering convention [#f1]_ for a
+determined according to a prescribed local numbering convention for a
 particular cell type. See :numref:`figs/linearCells` and :numref:`figs/q2Cells`.
 All Mint :ref:`CellTypes` follow the `CGNS`_ standard local numbering
 convention.

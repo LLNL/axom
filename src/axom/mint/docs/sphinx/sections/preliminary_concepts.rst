@@ -10,7 +10,7 @@
 Preliminary Concepts
 --------------------
 
-A mesh [#f1]_, denoted by :math:`\mathcal{M}(\Omega)`, provides a discrete
+A mesh (sometimes also called a *grid*), denoted by :math:`\mathcal{M}(\Omega)`, provides a discrete
 represenation of a geometric domain of interest, :math:`\Omega`, on which, the
 underlying *mathematical model* is evaluated. The mathematical model
 is typically defined by a system of governing *Partial Differential Equations
@@ -56,11 +56,3 @@ finite element methods may be implemented for both :ref:`StructuredMesh` and
 such as, *Smoothed Particle Hydrodynamics (SPH)*, discretize the governing PDE
 over a set of *particles* or *nodes*, using a :ref:`ParticleMesh`
 representation.
-
-.. #############################################################################
-..  FOOTNOTES
-.. #############################################################################
-
-.. rubric:: Footnotes
-
-.. [#f1] A *Mesh* is also sometimes referred to as a *Grid*

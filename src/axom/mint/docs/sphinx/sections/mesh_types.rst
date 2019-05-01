@@ -278,8 +278,8 @@ the most flexibility. Notably, an :ref:`UnstructuredMesh` can accomodate
 different :ref:`CellTypes` and does not enforce any constraints or particular
 ordering on the constituent :ref:`Nodes` and :ref:`Cells`. This makes an
 :ref:`UnstructuredMesh` discretization particularly attractive, especially for
-applications that require *local adaptive mesh refinement* [#f2]_ and deal with
-complex geometries.
+applications that require *local adaptive mesh refinement* (i.e., local h-refinement)
+and deal with complex geometries.
 
 Generally, the advantages of using an :ref:`UnstructuredMesh` come at the cost
 of an increase in memory requirements and computational intensity. This is

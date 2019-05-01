@@ -26,8 +26,14 @@ two arguments:
    :ref:`MeshTypes`.
 
 #. The *kernel* that defines the operations on the supplied mesh, which, is
-   usually specified by a C++11 `Lambda Expression`_ [#f1]_.
+   usually specified by a C++11 `Lambda Expression`.
 
+.. note::
+
+  Instead of a C++11 `Lambda Expression`_ a C++ functor may also be used
+  to encapsulate a kernel. However, in our experience, using C++11 functors,
+  usually requires more boiler plate code, which reduces readability and may
+  potentially have a negative impact on performance.
 
 The :ref:`sections/execution_model` provides :ref:`NodeTraversalFunctions`,
 :ref:`CellTraversalFunctions` and :ref:`FaceTraversalFunctions` to iterate and
@@ -163,16 +169,4 @@ The list of available :ref:`executionSignature` options is summarized below:
      :ref:`Cells` to the given. By conventions, tor *external* *boundary*
      :ref:`Faces`, that are bound to a single cell, the second cell is set
      to :math:`-1`.
-
-
-.. #############################################################################
-..  FOOTNOTES
-.. #############################################################################
-
-.. rubric:: Footnotes
-
-.. [#f1] Instead of a C++11 `Lambda Expression`_ a C++ functor may also be used
-    to encapsulate a kernel. However, in our experience, using C++11 functors,
-    usually requires more boiler plate code, which reduces readability and may
-    potentially have a negative impact on performance.
 
