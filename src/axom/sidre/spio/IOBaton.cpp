@@ -38,47 +38,48 @@ IOBaton::IOBaton(MPI_Comm comm,
   MPI_Comm_rank(comm, &m_my_rank);
   m_num_files = num_files;
   m_num_groups = num_groups;
+
   int active_comm_size = m_comm_size;
   if (m_comm_size > m_num_groups)
   {
     active_comm_size = m_num_groups;
   }
-  m_num_larger_groups = active_comm_size % num_files;
+  m_num_larger_sets = active_comm_size % num_files;
   if (m_my_rank < active_comm_size)
   {
-    m_group_size = active_comm_size / m_num_files; // ?
+    m_set_size = active_comm_size / m_num_files;
   }
   else
   {
-    m_group_size = 1;
+    m_set_size = 1;
   }
-  m_first_regular_group_rank = (m_group_size + 1) * m_num_larger_groups;
-  if (m_my_rank < m_first_regular_group_rank)
+  m_first_regular_set_rank = (m_set_size + 1) * m_num_larger_sets;
+  if (m_my_rank < m_first_regular_set_rank)
   {
-    m_group_id = m_my_rank / (m_group_size + 1);
-    m_rank_within_group = m_my_rank % (m_group_size + 1);
-    if (m_rank_within_group < m_group_size)
+    m_set_id = m_my_rank / (m_set_size + 1);
+    m_rank_within_set = m_my_rank % (m_set_size + 1);
+    if (m_rank_within_set < m_set_size)
     {
       m_rank_after_me = m_my_rank + 1;
     }
   }
   else if (m_my_rank < active_comm_size)
   {
-    m_group_id = m_num_larger_groups +
-                 (m_my_rank - m_first_regular_group_rank) / m_group_size;
-    m_rank_within_group = (m_my_rank - m_first_regular_group_rank) %
-                          m_group_size;
-    if (m_rank_within_group < m_group_size - 1)
+    m_set_id = m_num_larger_sets +
+                 (m_my_rank - m_first_regular_set_rank) / m_set_size;
+    m_rank_within_set = (m_my_rank - m_first_regular_set_rank) %
+                          m_set_size;
+    if (m_rank_within_set < m_set_size - 1)
     {
       m_rank_after_me = m_my_rank + 1;
     }
   }
   else
   {
-    m_group_id = m_my_rank;
-    m_rank_within_group = 0;
+    m_set_id = m_my_rank;
+    m_rank_within_set = 0;
   }
-  if (m_rank_within_group > 0)
+  if (m_rank_within_set > 0)
   {
     m_rank_before_me = m_my_rank - 1;
   }
@@ -107,12 +108,12 @@ int IOBaton::wait()
                            m_mpi_tag, m_mpi_comm, &mpi_stat);
     if (mpi_err == MPI_SUCCESS)
     {
-      return_val = m_group_id;
+      return_val = m_set_id;
     }
   }
   else
   {
-    return_val = m_group_id;
+    return_val = m_set_id;
   }
   return return_val;
 }
@@ -132,8 +133,6 @@ int IOBaton::pass()
   }
   return return_val;
 }
-
-
 
 
 } /* end namespace sidre */

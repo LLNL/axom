@@ -201,10 +201,10 @@ void IOManager::write(sidre::Group* datagroup, int num_files,
 #ifdef AXOM_USE_HDF5
     std::string file_pattern = getHDF5FilePattern(root_name);
 
-    int group_id = m_baton->wait();
+    int set_id = m_baton->wait();
 
     std::string hdf5_name =
-      getFileNameForRank(file_pattern, root_name, group_id);
+      getFileNameForRank(file_pattern, root_name, set_id);
 
     hid_t h5_file_id, h5_group_id;
     if (m_baton->isFirstInGroup())
@@ -249,8 +249,8 @@ void IOManager::write(sidre::Group* datagroup, int num_files,
   }
   else
   {
-    int group_id = m_baton->wait();
-    std::string file_name = fmt::sprintf("%s_%07d", file_string, group_id);
+    int set_id = m_baton->wait();
+    std::string file_name = fmt::sprintf("%s_%07d", file_string, set_id);
 
     std::string obase = file_name + "." + protocol;
     datagroup->save(obase, protocol);
@@ -307,10 +307,10 @@ void IOManager::read(
 
     std::string file_pattern = getFilePatternFromRoot(root_file, protocol);
 
-    int group_id = m_baton->wait();
+    int set_id = m_baton->wait();
 
     std::string file_name =
-      getFileNameForRank(file_pattern, root_file, group_id);
+      getFileNameForRank(file_pattern, root_file, set_id);
 
     datagroup->load(file_name, protocol, preserve_contents);
 
@@ -432,36 +432,69 @@ void IOManager::loadExternalData(sidre::Group* datagroup,
 #ifdef AXOM_USE_HDF5
   std::string file_pattern = getHDF5FilePattern(root_file);
 
-  int group_id = m_baton->wait();
+  int set_id = m_baton->wait();
 
-  if (m_my_rank < num_groups)
+  if (num_groups <= m_comm_size) {
+    if (m_my_rank < num_groups)
+    {
+      herr_t errv;
+      AXOM_DEBUG_VAR(errv);
+
+      std::string hdf5_name =
+        getFileNameForRank(file_pattern, root_file, set_id);
+
+      hid_t h5_file_id = conduit::relay::io::hdf5_open_file_for_read(hdf5_name);
+      SLIC_ASSERT(h5_file_id >= 0);
+
+      std::string group_name = fmt::sprintf("datagroup_%07d", m_my_rank);
+      hid_t h5_group_id = H5Gopen(h5_file_id, group_name.c_str(), 0);
+      SLIC_ASSERT(h5_group_id >= 0);
+
+      datagroup->loadExternalData(h5_group_id);
+
+      errv = H5Gclose(h5_group_id);
+      SLIC_ASSERT(errv >= 0);
+
+      errv = H5Fclose(h5_file_id);
+      SLIC_ASSERT(errv >= 0);
+    }
+  }
+  else
   {
-    herr_t errv;
-    AXOM_DEBUG_VAR(errv);
+    for (int input_rank = m_my_rank; input_rank < num_groups; input_rank += m_comm_size) {
 
-    std::string hdf5_name =
-      getFileNameForRank(file_pattern, root_file, group_id);
+      herr_t errv;
+      AXOM_DEBUG_VAR(errv);
 
-    hid_t h5_file_id = conduit::relay::io::hdf5_open_file_for_read(hdf5_name);
-    SLIC_ASSERT(h5_file_id >= 0);
+      std::string hdf5_name =
+        getFileNameForRank(file_pattern, root_file, input_rank);
 
-    std::string group_name = fmt::sprintf("datagroup_%07d", m_my_rank);
-    hid_t h5_group_id = H5Gopen(h5_file_id, group_name.c_str(), 0);
-    SLIC_ASSERT(h5_group_id >= 0);
+      hid_t h5_file_id = conduit::relay::io::hdf5_open_file_for_read(hdf5_name);
+      SLIC_ASSERT(h5_file_id >= 0);
 
-    datagroup->loadExternalData(h5_group_id);
+      std::string group_name = fmt::sprintf("datagroup_%07d", input_rank);
+      hid_t h5_group_id = H5Gopen(h5_file_id, group_name.c_str(), 0);
+      SLIC_ASSERT(h5_group_id >= 0);
 
-    errv = H5Gclose(h5_group_id);
-    SLIC_ASSERT(errv >= 0);
+      std::string input_name = fmt::sprintf("rank_%07d/sidre_input", input_rank);
+      Group * one_rank_input = datagroup->getGroup(input_name);
 
-    errv = H5Fclose(h5_file_id);
-    SLIC_ASSERT(errv >= 0);
+      one_rank_input->loadExternalData(h5_group_id);
+
+      errv = H5Gclose(h5_group_id);
+      SLIC_ASSERT(errv >= 0);
+
+      errv = H5Fclose(h5_file_id);
+      SLIC_ASSERT(errv >= 0);
+
+    }
+  }
+
 #else
   AXOM_DEBUG_VAR(datagroup);
   SLIC_WARNING("Loading external data only only available "
-               << "when Axom is configured with hdf5");
+                   << "when Axom is configured with hdf5");
 #endif /* AXOM_USE_HDF5 */
-  }
 
   (void)m_baton->pass();
 }
@@ -711,8 +744,8 @@ void IOManager::readSidreHDF5(sidre::Group* datagroup,
   int num_files = getNumFilesFromRoot(root_file);
   int num_groups = getNumGroupsFromRoot(root_file);
   SLIC_ASSERT(num_files > 0);
-  SLIC_ERROR_IF(num_groups > m_comm_size,
-                "IOManager cannot read from files written by more ranks than are being used in the current run.");
+//  SLIC_ERROR_IF(num_groups > m_comm_size,
+//                "IOManager cannot read from files written by more ranks than are being used in the current run.");
 
   if (m_baton)
   {
@@ -730,30 +763,62 @@ void IOManager::readSidreHDF5(sidre::Group* datagroup,
 
   std::string file_pattern = getHDF5FilePattern(root_file);
 
-  int group_id = m_baton->wait();
-  if (m_my_rank < num_groups)
-  {
+  int set_id = m_baton->wait();
+  if (num_groups <= m_comm_size) {
+    if (m_my_rank < num_groups)
+    {
 
-    herr_t errv;
-    AXOM_DEBUG_VAR(errv);
+      herr_t errv;
+      AXOM_DEBUG_VAR(errv);
 
-    std::string hdf5_name =
-      getFileNameForRank(file_pattern, root_file, group_id);
+      std::string hdf5_name =
+        getFileNameForRank(file_pattern, root_file, set_id);
 
-    hid_t h5_file_id = conduit::relay::io::hdf5_open_file_for_read(hdf5_name);
-    SLIC_ASSERT(h5_file_id >= 0);
+      hid_t h5_file_id = conduit::relay::io::hdf5_open_file_for_read(hdf5_name);
+      SLIC_ASSERT(h5_file_id >= 0);
 
-    std::string group_name = fmt::sprintf("datagroup_%07d", m_my_rank);
-    hid_t h5_group_id = H5Gopen(h5_file_id, group_name.c_str(), 0);
-    SLIC_ASSERT(h5_group_id >= 0);
+      std::string group_name = fmt::sprintf("datagroup_%07d", m_my_rank);
+      hid_t h5_group_id = H5Gopen(h5_file_id, group_name.c_str(), 0);
+      SLIC_ASSERT(h5_group_id >= 0);
 
-    datagroup->load(h5_group_id, "sidre_hdf5", preserve_contents);
+      datagroup->load(h5_group_id, "sidre_hdf5", preserve_contents);
 
-    errv = H5Gclose(h5_group_id);
-    SLIC_ASSERT(errv >= 0);
+      errv = H5Gclose(h5_group_id);
+      SLIC_ASSERT(errv >= 0);
 
-    errv = H5Fclose(h5_file_id);
-    SLIC_ASSERT(errv >= 0);
+      errv = H5Fclose(h5_file_id);
+      SLIC_ASSERT(errv >= 0);
+    }
+  } else {
+
+    View * reduced = datagroup->createViewScalar("reduced_input_ranks", num_groups);
+
+    for (int input_rank = m_my_rank; input_rank < num_groups; input_rank += m_comm_size) {
+
+      herr_t errv;
+      AXOM_DEBUG_VAR(errv);
+
+      std::string hdf5_name =
+        getFileNameForRank(file_pattern, root_file, input_rank);
+
+      hid_t h5_file_id = conduit::relay::io::hdf5_open_file_for_read(hdf5_name);
+      SLIC_ASSERT(h5_file_id >= 0);
+
+      std::string group_name = fmt::sprintf("datagroup_%07d", input_rank);
+      hid_t h5_group_id = H5Gopen(h5_file_id, group_name.c_str(), 0);
+      SLIC_ASSERT(h5_group_id >= 0);
+
+      std::string input_name = fmt::sprintf("rank_%07d/sidre_input", input_rank);
+      Group * one_rank_input = datagroup->createGroup(input_name);
+
+      one_rank_input->load(h5_group_id, "sidre_hdf5", preserve_contents);
+
+      errv = H5Gclose(h5_group_id);
+      SLIC_ASSERT(errv >= 0);
+
+      errv = H5Fclose(h5_file_id);
+      SLIC_ASSERT(errv >= 0);
+    }
   }
   (void)m_baton->pass();
 }

@@ -1427,7 +1427,10 @@ void Group::load(const std::string& path,
     SLIC_ERROR("Invalid protocol " << protocol << " for file load.");
   }
 
-  renameOrWarn(new_name);
+  if (!new_name.empty())
+  {
+    renameOrWarn(new_name);
+  }
 }
 
 /*
@@ -1587,7 +1590,10 @@ void Group::load(const hid_t& h5_id,
     SLIC_ERROR("Invalid protocol " << protocol << " for file load.");
   }
 
-  renameOrWarn(new_name);
+  if (!new_name.empty())
+  {
+    renameOrWarn(new_name);
+  }
 }
 
 /*
