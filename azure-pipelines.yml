@@ -59,7 +59,7 @@ steps:
   condition: eq( variables['Agent.OS'], 'Darwin')
 - script: |
     cd build
-    ctest -T test
+    ctest -T test --output-on-failure -V
   displayName: '$(TEST_TARGET) Build & Test'
   condition: eq( variables['Agent.OS'], 'Darwin')
 - script:  |
