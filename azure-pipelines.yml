@@ -30,7 +30,6 @@ steps:
   clean: boolean
   submodules: recursive
 
-steps:
 # Linux build and test
 - script:  |
     docker run --rm --user='root' -v `pwd`:/home/axom $(Compiler_ImageName) chown -R axom /home/axom
