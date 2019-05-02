@@ -19,7 +19,6 @@ strategy:
       TEST_TARGET: 'linux_gcc6'
       OS_TYPE: 'linux'
 
-
 pool:
   vmImage: $(VM_ImageName)
 
