@@ -1,18 +1,15 @@
-parameters: 
-  ostype: []
-
 steps: 
 - script: printenv
   displayName: 'PrintEnv'
 # Linux build and test
-- ${{ if eq(parameters.ostype, 'linux') }}:
+- ${{ if eq(variables['Agent.OS'], 'Linux') }}:
   - script:  |
       docker run --rm --user='root' -v `pwd`:/home/axom $(Compiler_ImageName) chown -R axom /home/axom
       docker run --rm  -v `pwd`:/home/axom -e TEST_TARGET -e COMPILER -e DO_BUILD -e DO_TEST -e CMAKE_EXTRA_FLAGS $(Compiler_ImageName) ./scripts/azure-pipelines/linux-build_and_test.sh
     displayName: '$(TEST_TARGET) Build & Test'
 
 # OSX build and test
-- ${{ if eq(parameters.ostype, 'osx') }}:
+- ${{ if eq(variables['Agent.OS'], 'Darwin') }}:
   - task: CMake@1
     inputs:
       workingDir: 'build'

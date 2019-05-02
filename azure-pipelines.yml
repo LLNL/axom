@@ -17,7 +17,6 @@ strategy:
       CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE=Off'
       COMPILER: 'g++'
       TEST_TARGET: 'linux_gcc6'
-      OS_TYPE: 'linux'
 
 pool:
   vmImage: $(VM_ImageName)
@@ -27,8 +26,6 @@ steps:
   clean: boolean
   submodules: recursive
 - template: scripts/azure-pipelines/build-test-steps.yml
-  parameters:
-    ostype: $(OS_TYPE)
 - task: PublishTestResults@2
   inputs:
     testResultsFormat: 'cTest'
