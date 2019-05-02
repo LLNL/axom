@@ -87,7 +87,7 @@ public:
    */
   PositionType findElementIndex(PositionType pos1, PositionType pos2) const override
   {
-    isValidIndex(pos1, pos2);
+    verifyPositionImpl(pos1, pos2);
     return pos2;
   }
 
@@ -104,7 +104,7 @@ public:
   PositionType findElementFlatIndex(PositionType pos1,
                                     PositionType pos2) const override
   {
-    isValidIndex(pos1, pos2);
+    verifyPositionImpl(pos1, pos2);
     PositionType size2 = this->secondSetSize();
     PositionType pos = size2 * pos1 + pos2;
 
@@ -167,8 +167,14 @@ public:
 
 private:
   /** \brief verify the FlatIndex \a pos is within the valid range. */
-  void verifyPosition(PositionType AXOM_DEBUG_PARAM(pos)) const override
-  {  //from RangeSet, overloading to avoid warning in compiler
+  void verifyPosition(PositionType pos ) const override
+  { //from RangeSet, overloading to avoid warning in compiler
+    verifyPositionImpl(pos);
+  }
+
+  /** \brief implementation for verifyPosition */
+  inline void verifyPositionImpl(PositionType AXOM_DEBUG_PARAM(pos) ) const
+  { //from RangeSet, overloading to avoid warning in compiler
     SLIC_ASSERT_MSG(
       pos >= 0 && pos < size(),
       "SLAM::ProductSet -- requested out-of-range element at position "
@@ -177,8 +183,16 @@ private:
 
   /** \brief verify the SparseIndex (which is the same as its DenseIndex) is
    *         within the valid range. */
-  void verifyPosition(PositionType AXOM_DEBUG_PARAM(pos1),
-                      PositionType AXOM_DEBUG_PARAM(pos2)) const override
+  void verifyPosition(PositionType pos1,
+                      PositionType pos2) const override
+  {
+    verifyPositionImpl(pos1,pos2);
+  }
+
+  /** \brief verify the SparseIndex (which is the same as its DenseIndex) is
+   *         within the valid range. */
+  inline void verifyPositionImpl(PositionType AXOM_DEBUG_PARAM(pos1),
+                                 PositionType AXOM_DEBUG_PARAM(pos2) ) const
   {
     SLIC_ASSERT_MSG(
       isValidIndex(pos1, pos2),
