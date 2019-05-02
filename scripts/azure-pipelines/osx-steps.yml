@@ -1,0 +1,12 @@
+- task: CMake@1
+  inputs:
+    workingDir: 'build'
+    cmakeArgs: '$(CMAKE_EXTRA_FLAGS) ../src'
+- script: |
+    cd build
+    make
+  displayName: '$(TEST_TARGET) Build'
+- script: |
+    cd build
+    ctest -T test --output-on-failure -V
+  displayName: '$(TEST_TARGET) Test'
