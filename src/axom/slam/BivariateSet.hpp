@@ -157,9 +157,9 @@ public:
   virtual PositionType size(PositionType pos1) const = 0; //size of a row
 
   /** \brief Size of the first set.   */
-  PositionType firstSetSize() const { return m_set1 ? m_set1->size() : 0; }
+  inline PositionType firstSetSize() const { return m_set1 ? m_set1->size() : 0; }
   /** \brief Size of the second set.   */
-  PositionType secondSetSize() const { return m_set2 ? m_set2->size() : 0; }
+  inline PositionType secondSetSize() const { return m_set2 ? m_set2->size() : 0; }
 
   /** \brief Returns pointer to the first set.   */
   virtual const SetType* getFirstSet() const { return m_set1; }
