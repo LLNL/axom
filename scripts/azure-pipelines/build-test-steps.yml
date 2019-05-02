@@ -2,6 +2,8 @@ parameters:
   ostype: []
 
 steps: 
+- script: echo $(parameters.ostype) 
+- script: echo parameters.ostype
 # Linux build and test
 - ${{ if eq(parameters.ostype, 'linux') }}:
   - script:  |
