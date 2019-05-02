@@ -17,6 +17,10 @@ strategy:
       CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE=Off'
       COMPILER: 'g++'
       TEST_TARGET: 'linux_gcc6'
+    osx_gcc:
+      VM_ImageName: 'macos-10.13'
+      CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE=Off'
+      TEST_TARGET: 'osx_gcc'
 
 pool:
   vmImage: $(VM_ImageName)
@@ -25,7 +29,29 @@ steps:
 - checkout: self
   clean: boolean
   submodules: recursive
-- template: scripts/azure-pipelines/build-test-steps.yml
+
+steps:
+# Linux build and test
+- script:  |
+    docker run --rm --user='root' -v `pwd`:/home/axom $(Compiler_ImageName) chown -R axom /home/axom
+    docker run --rm  -v `pwd`:/home/axom -e TEST_TARGET -e COMPILER -e DO_BUILD -e DO_TEST -e CMAKE_EXTRA_FLAGS $(Compiler_ImageName) ./scripts/azure-pipelines/linux-build_and_test.sh
+  displayName: 'Linux Build & Test'
+
+# OSX build and test
+- task: CMake@1
+  inputs:
+    workingDir: 'build'
+    cmakeArgs: '$(CMAKE_EXTRA_FLAGS) ../src'
+  displayName: 'OSX CMake'
+- script: |
+    cd build
+    make
+  displayName: 'OSX Build'
+- script: |
+    cd build
+    ctest -T test --output-on-failure -V
+  displayName: 'OSX Test'
+
 - task: PublishTestResults@2
   inputs:
     testResultsFormat: 'cTest'
