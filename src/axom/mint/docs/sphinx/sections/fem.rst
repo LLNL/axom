@@ -48,18 +48,19 @@ their associated *shape functions*, and summarize the process to
 :ref:`AddALagrangeElement`.
 
 .. note::
+
   The shape functions of **all** Lagrange :ref:`Cells` in Mint are defined in a
   reference :math:`\hat{\xi}`-space coordinate system, on the closed interval
   :math:`\hat{\xi} \in [0,1]`.
-
-.. includes cell type aliases to the images
-.. include:: cell_types.rst
 
 
 QUAD: *Linear Quadrilateral*
 """"""""""""""""""""""""""""
 
-|quad|
+.. image:: ../figures/quad.png
+   :scale: 100%
+   :alt: Linear Lagrangian Quadrilateral Element
+
 
 .. math::
    :nowrap:
@@ -74,7 +75,9 @@ QUAD: *Linear Quadrilateral*
 QUAD9: *Quadratic Quadrilateral*
 """""""""""""""""""""""""""""""""
 
-|quad9|
+.. image:: ../figures/quad9.png
+   :scale: 100%
+   :alt: Quadratic Lagrangian Quadrilateral Element
 
 .. math::
   :nowrap:
@@ -96,7 +99,9 @@ QUAD9: *Quadratic Quadrilateral*
 TRIANGLE: *Linear Triangle*
 """""""""""""""""""""""""""""
 
-|triangle|
+.. image:: ../figures/triangle.png
+   :scale: 100%
+   :alt: Linear Lagrangian Triangle Element
 
 .. math::
    :nowrap:
@@ -110,7 +115,9 @@ TRIANGLE: *Linear Triangle*
 HEX: *Linear Hexahedron*
 """""""""""""""""""""""""
 
-|hex|
+.. image:: ../figures/hex.png
+   :scale: 100%
+   :alt: Linear Lagrangian Hexahedron Element
 
 .. math::
    :nowrap:
@@ -130,7 +137,9 @@ HEX: *Linear Hexahedron*
 HEX27: *Quadratic Hexahedron*
 """"""""""""""""""""""""""""""
 
-|hex27|
+.. image:: ../figures/hex27.png
+   :scale: 100%
+   :alt: Quadratic Lagrangian Hexahedron Element
 
 .. math::
   :nowrap:
@@ -174,7 +183,9 @@ HEX27: *Quadratic Hexahedron*
 PYRAMID: *Linear Pyramid*
 """"""""""""""""""""""""""
 
-|pyramid|
+.. image:: ../figures/pyramid.png
+   :scale: 100%
+   :alt: Linear Lagrangian Pyramid Element
 
 .. math::
    :nowrap:
@@ -190,7 +201,9 @@ PYRAMID: *Linear Pyramid*
 PRISM: *Linear Prism/Wedge*
 """"""""""""""""""""""""""""
 
-|prism|
+.. image:: ../figures/prism.png
+   :scale: 100%
+   :alt: Linear Lagrangian Prism Element
 
 .. math::
   :nowrap:
