@@ -32,7 +32,7 @@ steps:
 - checkout: self
   clean: boolean
   submodules: recursive
-- template: ./scripts/azure-pipelines/$(TEMPLATE_NAME)
+- template: axom/scripts/azure-pipelines/$(TEMPLATE_NAME)
 - task: PublishTestResults@2
   inputs:
     testResultsFormat: 'cTest'
