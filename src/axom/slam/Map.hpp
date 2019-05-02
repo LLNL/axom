@@ -170,13 +170,13 @@ public:
    */
   const DataType & operator[](SetPosition setIndex) const
   {
-    verifyPosition(setIndex);
+    verifyPositionImpl(setIndex);
     return m_data[setIndex];
   }
 
   DataType & operator[](SetPosition setIndex)
   {
-    verifyPosition(setIndex);
+    verifyPositionImpl(setIndex);
     return m_data[setIndex];
   }
 
@@ -189,14 +189,14 @@ public:
    */
   const DataType & operator()(SetPosition setIdx, SetPosition comp = 0) const
   {
-    verifyPosition(setIdx, comp);
+    verifyPositionImpl(setIdx, comp);
     SetPosition setIndex = setIdx * StridePolicyType::stride() + comp;
     return m_data[setIndex];
   }
 
   DataType & operator()(SetPosition setIdx, SetPosition comp = 0)
   {
-    verifyPosition(setIdx, comp);
+    verifyPositionImpl(setIdx, comp);
     SetPosition setIndex = setIdx * StridePolicyType::stride() + comp;
     return m_data[setIndex];
   }
@@ -400,7 +400,18 @@ public:
   const OrderedMap &  data() const { return m_data; }
 
 private:
-  inline void verifyPosition(SetPosition AXOM_DEBUG_PARAM(idx))      const
+  inline void verifyPosition(SetPosition idx)      const
+  {
+     verifyPositionImpl(idx);
+  }
+
+  inline void verifyPosition(SetPosition setIdx,
+                             SetPosition compIdx)     const
+  {
+     verifyPositionImpl(setIdx, compIdx);
+  }
+
+  inline void verifyPositionImpl(SetPosition AXOM_DEBUG_PARAM(idx))      const
   {
     SLIC_ASSERT_MSG(
       idx >= 0 && idx < SetPosition( m_data.size()),
@@ -408,7 +419,7 @@ private:
       << idx << " but map's data has size "  << m_data.size() );
   }
 
-  inline void verifyPosition(SetPosition AXOM_DEBUG_PARAM(setIdx),
+  inline void verifyPositionImpl(SetPosition AXOM_DEBUG_PARAM(setIdx),
                              SetPosition AXOM_DEBUG_PARAM(compIdx))     const
   {
     SLIC_ASSERT_MSG(
