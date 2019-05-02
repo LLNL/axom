@@ -17,7 +17,6 @@ strategy:
       CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE=Off'
       COMPILER: 'g++'
       TEST_TARGET: 'linux_gcc6'
-      STEPS_TEMPLATE: 'linux-steps.yml'
 
 
 pool:
@@ -27,7 +26,9 @@ steps:
 - checkout: self
   clean: boolean
   submodules: recursive
-- template: scripts/azure-pipelines/linux-steps.yml  # OS-specific build & test
+- template: scripts/azure-pipelines/build-test-steps.yml
+  parameters:
+    ostype: linux
 - task: PublishTestResults@2
   inputs:
     testResultsFormat: 'cTest'

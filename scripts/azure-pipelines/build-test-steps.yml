@@ -1,0 +1,25 @@
+parameters: 
+  ostype: []
+
+steps: 
+# Linux build and test
+- ${{ if eq(parameters.ostype, 'linux') }}:
+  - script:  |
+      docker run --rm --user='root' -v `pwd`:/home/axom $(Compiler_ImageName) chown -R axom /home/axom
+      docker run --rm  -v `pwd`:/home/axom -e TEST_TARGET -e COMPILER -e DO_BUILD -e DO_TEST -e CMAKE_EXTRA_FLAGS $(Compiler_ImageName) ./scripts/azure-pipelines/linux-build_and_test.sh
+    displayName: '$(TEST_TARGET) Build & Test'
+
+# OSX build and test
+- ${{ if eq(parameters.ostype, 'osx') }}:
+  - task: CMake@1
+    inputs:
+      workingDir: 'build'
+      cmakeArgs: '$(CMAKE_EXTRA_FLAGS) ../src'
+  - script: |
+      cd build
+      make
+    displayName: '$(TEST_TARGET) Build'
+  - script: |
+      cd build
+      ctest -T test --output-on-failure -V
+    displayName: '$(TEST_TARGET) Test'
