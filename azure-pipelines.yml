@@ -17,12 +17,6 @@ strategy:
       CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE=Off'
       COMPILER: 'g++'
       TEST_TARGET: 'linux_gcc6'
-      TEMPLATE_NAME: 'linux-steps.yml'
-    osx_gcc:
-      VM_ImageName: 'macos-10.13'
-      CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE=Off'
-      TEST_TARGET: 'osx_gcc'
-      TEMPLATE_NAME: 'osx-steps.yml'
 
 
 pool:
@@ -32,7 +26,7 @@ steps:
 - checkout: self
   clean: boolean
   submodules: recursive
-- template: axom/scripts/azure-pipelines/$(TEMPLATE_NAME)
+- template: templates/linux-steps.yml
 - task: PublishTestResults@2
   inputs:
     testResultsFormat: 'cTest'
