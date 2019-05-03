@@ -62,7 +62,7 @@ than in other usage patterns, since a Group on one rank will end up with data
 from multiple ranks.  An integer scalar View named ``reduced_input_ranks``
 will be added to the Group with the value being the number of ranks that
 wrote the files.  The data from each output rank will be read into subgroups
-located at ``rank_*******/sidre_input`` in the input Group's data hierarchy.
+located at ``rank_{%07d}/sidre_input`` in the input Group's data hierarchy.
 
 .. warning::
    If ``read()`` is called to read data that was created on a larger
