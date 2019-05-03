@@ -806,6 +806,8 @@ TEST(spio_parallel, parallel_increase_procs)
   delete ds2;
   delete ds;
 
+  MPI_Comm_free(&split_comm);
+
 #endif
 
 }
@@ -944,6 +946,8 @@ TEST(spio_parallel, parallel_decrease_procs)
 
   delete ds2;
   delete ds;
+
+  MPI_Comm_free(&split_comm);
 
 #endif
 
