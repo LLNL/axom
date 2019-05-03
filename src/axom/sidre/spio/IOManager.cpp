@@ -434,7 +434,8 @@ void IOManager::loadExternalData(sidre::Group* datagroup,
 
   int set_id = m_baton->wait();
 
-  if (num_groups <= m_comm_size) {
+  if (num_groups <= m_comm_size)
+  {
     if (m_my_rank < num_groups)
     {
       herr_t errv;
@@ -461,7 +462,9 @@ void IOManager::loadExternalData(sidre::Group* datagroup,
   }
   else
   {
-    for (int input_rank = m_my_rank; input_rank < num_groups; input_rank += m_comm_size) {
+    for (int input_rank = m_my_rank ; input_rank < num_groups ;
+         input_rank += m_comm_size)
+    {
 
       herr_t errv;
       AXOM_DEBUG_VAR(errv);
@@ -476,8 +479,9 @@ void IOManager::loadExternalData(sidre::Group* datagroup,
       hid_t h5_group_id = H5Gopen(h5_file_id, group_name.c_str(), 0);
       SLIC_ASSERT(h5_group_id >= 0);
 
-      std::string input_name = fmt::sprintf("rank_%07d/sidre_input", input_rank);
-      Group * one_rank_input = datagroup->getGroup(input_name);
+      std::string input_name =
+        fmt::sprintf("rank_%07d/sidre_input", input_rank);
+      Group* one_rank_input = datagroup->getGroup(input_name);
 
       one_rank_input->loadExternalData(h5_group_id);
 
@@ -493,7 +497,7 @@ void IOManager::loadExternalData(sidre::Group* datagroup,
 #else
   AXOM_DEBUG_VAR(datagroup);
   SLIC_WARNING("Loading external data only only available "
-                   << "when Axom is configured with hdf5");
+               << "when Axom is configured with hdf5");
 #endif /* AXOM_USE_HDF5 */
 
   (void)m_baton->pass();
@@ -745,9 +749,9 @@ void IOManager::readSidreHDF5(sidre::Group* datagroup,
   int num_groups = getNumGroupsFromRoot(root_file);
   SLIC_ASSERT(num_files > 0);
   SLIC_ERROR_IF(num_groups > m_comm_size && num_groups != num_files,
-        "IOManager attempted to read using a smaller number of processors "
-     << "than were used to produce the I/O files.  This only can work if "
-     << "those files were created in file-per-processor mode.");
+                "IOManager attempted to read using a smaller number of processors "
+                << "than were used to produce the I/O files.  This only can work if "
+                << "those files were created in file-per-processor mode.");
 
   if (m_baton)
   {
@@ -766,7 +770,8 @@ void IOManager::readSidreHDF5(sidre::Group* datagroup,
   std::string file_pattern = getHDF5FilePattern(root_file);
 
   int set_id = m_baton->wait();
-  if (num_groups <= m_comm_size) {
+  if (num_groups <= m_comm_size)
+  {
     if (m_my_rank < num_groups)
     {
 
@@ -791,11 +796,16 @@ void IOManager::readSidreHDF5(sidre::Group* datagroup,
       errv = H5Fclose(h5_file_id);
       SLIC_ASSERT(errv >= 0);
     }
-  } else {
+  }
+  else
+  {
 
-    View * reduced = datagroup->createViewScalar("reduced_input_ranks", num_groups);
+    View* reduced = datagroup->createViewScalar("reduced_input_ranks",
+                                                num_groups);
 
-    for (int input_rank = m_my_rank; input_rank < num_groups; input_rank += m_comm_size) {
+    for (int input_rank = m_my_rank ; input_rank < num_groups ;
+         input_rank += m_comm_size)
+    {
 
       herr_t errv;
       AXOM_DEBUG_VAR(errv);
@@ -810,8 +820,9 @@ void IOManager::readSidreHDF5(sidre::Group* datagroup,
       hid_t h5_group_id = H5Gopen(h5_file_id, group_name.c_str(), 0);
       SLIC_ASSERT(h5_group_id >= 0);
 
-      std::string input_name = fmt::sprintf("rank_%07d/sidre_input", input_rank);
-      Group * one_rank_input = datagroup->createGroup(input_name);
+      std::string input_name =
+        fmt::sprintf("rank_%07d/sidre_input", input_rank);
+      Group* one_rank_input = datagroup->createGroup(input_name);
 
       one_rank_input->load(h5_group_id, "sidre_hdf5", preserve_contents);
 

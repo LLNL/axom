@@ -893,32 +893,35 @@ TEST(spio_parallel, parallel_decrease_procs)
     int num_output_ranks = 1;
     if (num_ranks > 1)
     {
-       EXPECT_TRUE(ds2_root->hasView("reduced_input_ranks"));
+      EXPECT_TRUE(ds2_root->hasView("reduced_input_ranks"));
     }
 
     if (ds2->getRoot()->hasView("reduced_input_ranks"))
     {
-       num_output_ranks = ds2_root->getView("reduced_input_ranks")->getData();
+      num_output_ranks = ds2_root->getView("reduced_input_ranks")->getData();
     }
 
-    for (int output_rank = my_rank; output_rank < num_output_ranks;
+    for (int output_rank = my_rank ; output_rank < num_output_ranks ;
          output_rank += (top_input_rank+1))
     {
       /*
        * Verify that the contents of ds2 on rank 0 match those written from ds.
        */
-      std::string output_name = fmt::sprintf("rank_%07d/sidre_input", output_rank);
+      std::string output_name = fmt::sprintf("rank_%07d/sidre_input",
+                                             output_rank);
 
       int testvalue = 101*output_rank;
       int testvalue2 =
-        ds2_root->getGroup(output_name)->getGroup("fields")->getGroup("a")->getView("i0")->getData();
+        ds2_root->getGroup(output_name)->getGroup("fields")->getGroup("a")->
+        getView("i0")->getData();
 
       EXPECT_EQ(testvalue, testvalue2);
 
       View* view_i1_orig =
         ds->getRoot()->getGroup("fields2")->getGroup("b")->getView("i1");
       View* view_i1_restored =
-        ds2_root->getGroup(output_name)->getGroup("fields2")->getGroup("b")->getView("i1");
+        ds2_root->getGroup(output_name)->getGroup("fields2")->getGroup("b")->
+        getView("i1");
 
       int num_elems = view_i1_orig->getNumElements();
       EXPECT_EQ(view_i1_restored->getNumElements(), num_elems);

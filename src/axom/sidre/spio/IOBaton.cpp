@@ -66,9 +66,9 @@ IOBaton::IOBaton(MPI_Comm comm,
   else if (m_my_rank < active_comm_size)
   {
     m_set_id = m_num_larger_sets +
-                 (m_my_rank - m_first_regular_set_rank) / m_set_size;
+               (m_my_rank - m_first_regular_set_rank) / m_set_size;
     m_rank_within_set = (m_my_rank - m_first_regular_set_rank) %
-                          m_set_size;
+                        m_set_size;
     if (m_rank_within_set < m_set_size - 1)
     {
       m_rank_after_me = m_my_rank + 1;

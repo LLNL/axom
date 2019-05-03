@@ -126,7 +126,7 @@ private:
   int m_num_groups; // number of groups (input ranks)
   int m_num_larger_sets;  // some sets have one extra
   int m_set_size; // regular set size (m_comm_size / m_num_files) w/o
-                    // remainder
+                  // remainder
   int m_set_id;
   int m_first_regular_set_rank;
   int m_rank_within_set;
