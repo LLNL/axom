@@ -9,7 +9,7 @@ Axom provides a robust, flexible software infrastructure for the development of 
 Documentation
 -------------
 
-https://axom.readthedocs.io/en/develop/
+https://axom.readthedocs.io
 
 Getting Involved
 ----------------
@@ -46,7 +46,12 @@ Release
 Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC. 
 Produced at the Lawrence Livermore National Laboratory.
 
-All rights reserved. See details in the file [LICENSE](./LICENSE).
+All rights reserved. 
 
-Unlimited Open Source - BSD Distribution
+Unlimited Open Source - BSD 3-clause Distribution
 `LLNL-CODE-741217` `OCEC-17-187`
+
+Additional license and copyright information can be found in the following files:
+ * [LICENSE](./LICENSE)
+ * [COPYRIGHT](./COPYRIGHT)
+

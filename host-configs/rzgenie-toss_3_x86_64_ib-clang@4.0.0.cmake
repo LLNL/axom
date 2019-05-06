@@ -6,6 +6,7 @@
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+##################################
 
 ##################################
 
@@ -13,7 +14,7 @@
 # Compiler Spec: clang@4.0.0
 ##################################
 
-# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2019_03_14_11_48_30/clang-4.0.0/cmake-3.9.6/bin/cmake
+# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2019_05_02_14_58_31/clang-4.0.0/cmake-3.9.6/bin/cmake
 
 ##############
 # Compilers
@@ -35,7 +36,7 @@ set(CMAKE_Fortran_COMPILER "/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran" CACHE 
 ##############
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_03_14_11_48_30/clang-4.0.0" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_05_02_14_58_31/clang-4.0.0" CACHE PATH "")
 
 # conduit from uberenv
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.3.1" CACHE PATH "")
@@ -82,11 +83,11 @@ set(CPPCHECK_EXECUTABLE "${TPL_ROOT}/cppcheck-1.81/bin/cppcheck" CACHE PATH "")
 
 set(ENABLE_MPI ON CACHE BOOL "")
 
-set(MPI_C_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.2-clang-4.0.0/bin/mpicc" CACHE PATH "")
+set(MPI_C_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.3-clang-4.0.0/bin/mpicc" CACHE PATH "")
 
-set(MPI_CXX_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.2-clang-4.0.0/bin/mpicxx" CACHE PATH "")
+set(MPI_CXX_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.3-clang-4.0.0/bin/mpicxx" CACHE PATH "")
 
-set(MPI_Fortran_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.2-clang-4.0.0/bin/mpif90" CACHE PATH "")
+set(MPI_Fortran_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.3-clang-4.0.0/bin/mpif90" CACHE PATH "")
 
 set(MPIEXEC "/usr/bin/srun" CACHE PATH "")
 
