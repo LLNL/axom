@@ -48,7 +48,7 @@ Produced at the Lawrence Livermore National Laboratory.
 
 All rights reserved. 
 
-Unlimited Open Source - BSD Distribution
+Unlimited Open Source - BSD 3-clause Distribution
 `LLNL-CODE-741217` `OCEC-17-187`
 
 Additional license and copyright information can be found in the following files:
