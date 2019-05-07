@@ -11,7 +11,7 @@
 #include "axom/mint.hpp"
 
 // _quest_inout_cpp_include_start
-#include "axom/quest/geom/InOutOctree.hpp"
+#include "axom/quest/InOutOctree.hpp"
 // _quest_inout_cpp_include_end
 
 #include "quest_test_utilities.hpp"

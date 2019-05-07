@@ -23,8 +23,8 @@ set( quest_headers
     AllNearestNeighbors.hpp
     detail/AllNearestNeighbors_detail.hpp
 
-    ## Geometry Headers
-    geom/InOutOctree.hpp
+    ## In/out query
+    InOutOctree.hpp
 
     # Mesh tester headers
     MeshTester.hpp
