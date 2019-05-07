@@ -38,6 +38,7 @@
 #include <cmath> // do we need this?
 #include <iostream>
 #include <fstream>
+#include <vector>
 
 #include "fmt/fmt.hpp"
 
@@ -56,6 +57,7 @@ using TriangleType = axom::primal::Triangle<double, in3D> ;
 // the UniformGrid will store ints ("thing" indexes) in 3D
 using UniformGridType = axom::spin::UniformGrid<int, in3D> ;
 // _ugrid_triintersect_header_end
+
 // _bvhtree_header_start
 #include "axom/spin/BVHTree.hpp"
 // the BVHTree is in 2D, storing an index to 2D triangles
@@ -65,6 +67,130 @@ using BoundingBox2DType = axom::spin::BoundingBox<double, in2D> ;
 using Point2DType = axom::spin::Point<double, in2D> ;
 using Triangle2DType = axom::primal::Triangle<double, in2D> ;
 // _bvhtree_header_end
+
+// _rectlattice_header_start
+#include "axom/spin/RectangularLattice.hpp"
+// We'll be using a 2D lattice with space coordinates of type double
+// and cell coordinates of type int.
+using RectLatticeType = axom::spin::RectangularLattice<in2D, double, int> ;
+// Get the types of coordinates and bounding box from the RectangularLattice
+using RLGridCell = RectLatticeType::GridCell ;
+using RLSpacePt = RectLatticeType::SpacePoint ;
+using RLSpaceVec = RectLatticeType::SpaceVector ;
+using RLBBox = RectLatticeType::SpatialBoundingBox ;
+// _rectlattice_header_end
+
+// _morton_header_start
+#include "axom/spin/MortonIndex.hpp"
+#include <unordered_map>
+// The PointHash will allow us to use integral N-D coordinates as a hash key.
+// This example will use RectangularLattice grid cell coordinates as keys to
+// a std::unordered_map.
+using PointHashType = axom::spin::PointHash<RLGridCell::CoordType>;
+// Here's a class defined elsewhere that will do some work on a point.
+class DataContainer;
+using MapType = std::unordered_map<RLGridCell, DataContainer, PointHashType>;
+// _morton_header_end
+
+class DataContainer
+{
+public:
+  DataContainer() : count(0) { }
+  void registerPoint(RLSpacePt p)
+  {
+    (void)p;
+    count += 1;
+  }
+  
+  int count;
+};
+
+std::vector<RLSpacePt> generatePoints()
+{
+  std::vector<RLSpacePt> retval;
+
+  retval.push_back(RLSpacePt::make_point(2.8, 3.1));
+  retval.push_back(RLSpacePt::make_point(2.9, 1.9));
+  retval.push_back(RLSpacePt::make_point(1.0, 3.6));
+  retval.push_back(RLSpacePt::make_point(.28, 310));
+  retval.push_back(RLSpacePt::make_point(-460, -0.9));
+
+  return retval;
+}
+
+void demoMorton()
+{
+  std::cout << "----- demoMorton -----" << std::endl;
+
+  // _morton_use_start
+  // Make a RectangularLattice to bin query points.
+  double origin[] = {-0.6, -0.2} ;
+  double spacing[] = {1.2, 0.8} ;
+  RectLatticeType lat(origin, spacing);
+
+  // Make the map from grid point to DataContainer
+  MapType map;
+
+  // For several query points, create a DataContainer if necessary and register the point.
+  std::vector<RLSpacePt> pts = generatePoints();
+  for (RLSpacePt p : pts)
+  {
+    RLGridCell g = lat.gridCell(p);
+    DataContainer dat;
+    if (map.count(g) > 0)
+    {
+      dat = map[g];
+    }
+    dat.registerPoint(p);
+    map[g] = dat;
+  }
+
+  // Report on what was registered.
+  for (auto iter : map)
+  {
+    RLGridCell g = iter.first;
+    DataContainer dat = iter.second;
+    std::cout << "Grid cell " << g << " holds " << dat.count << " points." << std::endl;
+  }
+  // _morton_use_end
+
+  std::cout << std::endl;
+}
+
+void demoRectangularLattice()
+{
+  std::cout << "----- demoRectangularLattice -----" << std::endl;
+
+  // _rectlattice_use_start
+  // Origin and spacing
+  double origin[] = {-0.6, -0.2} ;
+  double spacing[] = {1.2, 0.8} ;
+  
+  // Instantiate a RectangularLattice.
+  // Other constructors allow the use of Point and Vector objects.
+  RectLatticeType lat(origin, spacing);
+
+  // Query point (2.0, 1.2) should be in grid cell (2, 1)
+  RLSpacePt pA = RLSpacePt::make_point(2.0, 1.2);
+  RLGridCell cA = lat.gridCell(pA);
+  std::cout << "Point " << pA << " is in grid cell " << cA <<
+    " (should be (2, 1))" << std::endl;
+
+  // Query point (2.3, 0.8) should also be in grid cell (2, 1)
+  RLSpacePt pB = RLSpacePt::make_point(2.3, 0.8);
+  RLGridCell cB = lat.gridCell(pB);
+  std::cout << "Point " << pB << " is in grid cell " << cB <<
+    " (should be (2, 1))" << std::endl;
+
+  // What is the lowest corner and bounding box of the shared cell?
+  RLSpacePt cellcorner = lat.spacePoint(cB);
+  RLBBox cellbbox = lat.cellBounds(cB);
+  std::cout << "The lower corner of the grid cell is " << cellcorner <<
+    " and its bounding box is " << cellbbox << std::endl;
+  // _rectlattice_use_end
+
+  std::cout << std::endl;
+}
 
 // _naive_triintersect_start
 void findTriIntersectionsNaively(
@@ -427,6 +553,8 @@ int main(int argc, char** argv)
   AXOM_DEBUG_VAR(argc);
   AXOM_DEBUG_VAR(argv);
 
+  demoRectangularLattice();
+  demoMorton();
   driveUniformGrid();
   driveBVHTree();
 
