@@ -26,7 +26,7 @@ Dependencies between components are as follows:
 The figure below summarizes the dependencies between the modules.  Solid links
 indicate hard dependencies; dashed links indicate optional dependencies.
 
-\dotfile dependencies.dot "Module dependencies" width=430px
+\dotfile ../docs/dependencies.dot "Module dependencies" width=430px
 
 
 # Further documentation

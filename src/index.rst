@@ -58,6 +58,7 @@ for Axom software components:
    Lumberjack (Scalable parallel message logging and filtering) <axom/lumberjack/docs/sphinx/index>
    Sidre (Simulation data repository) <axom/sidre/docs/sphinx/index>
    Slam (Set-theoretic lightweight API for meshes) <axom/slam/docs/sphinx/index>
+   Spin (Spatial indexes) <axom/spin/docs/sphinx/index>
    Quest (Querying on surface tool) <axom/quest/docs/sphinx/index>
    Mint (Mesh data model) <axom/mint/docs/sphinx/index>
    Primal (Computational geometry primitives) <axom/primal/docs/sphinx/index>
@@ -73,6 +74,7 @@ Source Code Documentation
   *  `Primal <../../../doxygen/axom_doxygen/html/primaltop.html>`_
   *  `Quest <../../../doxygen/axom_doxygen/html/questtop.html>`_
   *  `Sidre <../../../doxygen/axom_doxygen/html/sidretop.html>`_
+  *  `Spin <../../../doxygen/axom_doxygen/html/spintop.html>`_
   *  `Slic <../../../doxygen/axom_doxygen/html/slictop.html>`_
   *  `Slam <../../../doxygen/axom_doxygen/html/slamtop.html>`_
 
@@ -82,9 +84,9 @@ Dependencies between modules are as follows:
 
 - Core has no dependencies, and the other modules depend on Core
 - Slic optionally depends on Lumberjack
-- Slam, Primal, Mint, Quest, and Sidre depend on Slic
+- Slam, Spin, Primal, Mint, Quest, and Sidre depend on Slic
 - Mint optionally depends on Sidre
-- Quest depends on Slam, Primal, and Mint
+- Quest depends on Slam, Spin, Primal, and Mint
 
 The figure below summarizes the dependencies between the modules.  Solid links
 indicate hard dependencies; dashed links indicate optional dependencies.
