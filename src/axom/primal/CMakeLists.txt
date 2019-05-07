@@ -82,13 +82,6 @@ if (AXOM_ENABLE_TESTS)
 endif()
 
 ################################
-# add docs
-################################
-if (AXOM_ENABLE_DOCS)
-  add_subdirectory(docs)
-endif()
-
-################################
 # Add code checks
 ################################
 axom_add_code_checks(PREFIX primal)

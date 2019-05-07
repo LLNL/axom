@@ -84,6 +84,9 @@ add_subdirectory(tools)
 add_subdirectory(examples)
 
 if (AXOM_ENABLE_DOCS)
+  if (SPHINX_FOUND)
+    blt_add_sphinx_target( axom_docs )
+  endif()
   add_subdirectory(docs)
 endif()
 

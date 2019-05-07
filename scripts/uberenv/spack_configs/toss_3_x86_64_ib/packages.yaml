@@ -52,9 +52,9 @@ packages:
       mvapich2@2.2%intel@17.0.0 arch=linux-rhel7-x86_64: /usr/tce/packages/mvapich2/mvapich2-2.2-intel-17.0.0
       mvapich2@2.2%intel@17.0.2 arch=linux-rhel7-x86_64: /usr/tce/packages/mvapich2/mvapich2-2.2-intel-17.0.2
       mvapich2@2.2%intel@18.0.2 arch=linux-rhel7-x86_64: /usr/tce/packages/mvapich2/mvapich2-2.2-intel-18.0.2
-      mvapich2@2.2%clang@3.9.0 arch=linux-rhel7-x86_64: /usr/tce/packages/mvapich2/mvapich2-2.2-clang-3.9.0
-      mvapich2@2.2%clang@3.9.1 arch=linux-rhel7-x86_64: /usr/tce/packages/mvapich2/mvapich2-2.2-clang-3.9.1
-      mvapich2@2.2%clang@4.0.0 arch=linux-rhel7-x86_64: /usr/tce/packages/mvapich2/mvapich2-2.2-clang-4.0.0
+      mvapich2@2.3%clang@3.9.0 arch=linux-rhel7-x86_64: /usr/tce/packages/mvapich2/mvapich2-2.3-clang-3.9.0
+      mvapich2@2.3%clang@3.9.1 arch=linux-rhel7-x86_64: /usr/tce/packages/mvapich2/mvapich2-2.3-clang-3.9.1
+      mvapich2@2.3%clang@4.0.0 arch=linux-rhel7-x86_64: /usr/tce/packages/mvapich2/mvapich2-2.3-clang-4.0.0
     buildable: False
 # Spack may grab for mpi & we don't want to use them
   charm:
