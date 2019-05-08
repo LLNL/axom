@@ -34,22 +34,23 @@ namespace slam
  *
  * \see   BivariateSet
  */
-template <typename PosType = slam::DefaultPositionType,
-          typename ElemType = slam::DefaultElementType>
-class ProductSet : public BivariateSet<PosType, ElemType>,
-                   RangeSet<PosType, ElemType>
+template<typename SetType1 = slam::Set<>,
+         typename SetType2 = slam::Set<> >
+class ProductSet 
+    : public BivariateSet<SetType1, SetType2>
+    , RangeSet<typename SetType1::PositionType, typename SetType1::ElementType>
 {
 public:
-  using BivariateSetType = BivariateSet<PosType, ElemType>;
+  using RangeSetType = RangeSet<typename SetType1::PositionType, typename SetType1::ElementType>;
+  using FirstSetType = SetType1;
+  using SecondSetType = SetType2;
+  using BivariateSetType = BivariateSet<FirstSetType, SecondSetType>;
   using PositionType = typename BivariateSetType::PositionType;
   using ElementType = typename BivariateSetType::ElementType;
-  using SetType = typename BivariateSetType::SetType;
   using OrderedSetType = typename BivariateSetType::OrderedSetType;
 
-  using RangeSetType = RangeSet<PosType, ElemType>;
-
   /** \brief Default constructor */
-  ProductSet() { }
+  ProductSet() {}
 
   /**
    * \brief Constructor taking in pointers of two Sets.
@@ -58,21 +59,21 @@ public:
    * \param set2  Pointer to the second Set.
    */
 
-  ProductSet(SetType* set1, SetType* set2)
-    : BivariateSetType(set1, set2)
-    , RangeSetType(set1->size() * set2->size())
+  ProductSet(const FirstSetType* set1, const SecondSetType* set2) :
+    BivariateSetType(set1,set2), RangeSetType(set1->size()*set2->size())
   {
-    using OrderedSetBuilder = typename OrderedSetType::SetBuilder;
-
     //fill in the row data now for getElements(i) function,
     //since every row is the same, a call to getElements() returns the same set.
-    PositionType size2 = this->secondSetSize();
+    auto size2 = this->secondSetSize();
     m_rowSet_data.resize(size2);
-    for(int s2 = 0; s2 < size2; s2++)
+    for (int s2 = 0 ; s2 < size2 ; ++s2)
     {
       m_rowSet_data[s2] = s2;
     }
-    m_rowSet = OrderedSetBuilder().size(size2).offset(0).data(&m_rowSet_data);
+    m_rowSet = typename OrderedSetType::SetBuilder()
+               .size(size2)
+               .offset(0)
+               .data(&m_rowSet_data);
   }
 
   /**
@@ -144,7 +145,7 @@ public:
 
   PositionType size() const override
   {
-    return this->firstSetSize() * this->secondSetSize();
+    return this->firstSetSize()*this->secondSetSize();
   }
 
   PositionType size(PositionType) const override
@@ -162,7 +163,7 @@ public:
   bool isValid(bool verboseOutput = false) const override
   {
     return BivariateSetType::isValid(verboseOutput) &&
-      RangeSetType::isValid(verboseOutput);
+           RangeSetType::isValid(verboseOutput);
   }
 
 private:
@@ -178,7 +179,7 @@ private:
     SLIC_ASSERT_MSG(
       pos >= 0 && pos < size(),
       "SLAM::ProductSet -- requested out-of-range element at position "
-        << pos << ", but set only has " << size() << " elements.");
+      << pos << ", but set only has " << size() << " elements.");
   }
 
   /** \brief verify the SparseIndex (which is the same as its DenseIndex) is
@@ -195,7 +196,7 @@ private:
                                  PositionType AXOM_DEBUG_PARAM(pos2) ) const
   {
     SLIC_ASSERT_MSG(
-      isValidIndex(pos1, pos2),
+      isValidIndex(pos1,pos2),
       "SLAM::ProductSet -- requested out-of-range element at position ("
         << pos1 << "," << pos2 << "), but set only has " << this->firstSetSize()
         << "x" << this->secondSetSize() << " elements.");
@@ -206,7 +207,7 @@ private:
   OrderedSetType m_rowSet;
 };
 
-}  // end namespace slam
-}  // end namespace axom
+} // end namespace slam
+} // end namespace axom
 
-#endif  //  SLAM_PRODUCT_SET_H
+#endif //  SLAM_PRODUCT_SET_H
