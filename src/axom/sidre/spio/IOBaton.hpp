@@ -35,10 +35,10 @@ namespace sidre
  * \brief IOBaton ensures that during I/O operations, only one rank will
  * interact with a particular file at one time.
  *
- * Each rank is placed into a group of ranks, with the number of groups being
+ * Each rank is placed into a set of ranks, with the number of sets being
  * equal to the number of I/O files, and then the ranks use the wait and
  * pass methods to pass control of I/O operations from one rank to the next
- * within the group.
+ * within the set.
  */
 class IOBaton
 {
@@ -64,7 +64,7 @@ public:
   /*!
    * \brief Wait for previous rank to pass control to the local rank.
    *
-   * \return An integer id for the group of which this rank is a member.
+   * \return An integer id for the set of which this rank is a member.
    */
   int wait();
 
@@ -76,26 +76,26 @@ public:
   int pass();
 
   /*!
-   * \brief Size of local rank's group.
+   * \brief Size of local rank's set.
    *
-   * \return Number of ranks in the group.
+   * \return Number of ranks in the set.
    */
-  int groupSize() const
+  int setSize() const
   {
     return m_my_rank <
-           m_first_regular_group_rank ? m_group_size + 1 : m_group_size;
+           m_first_regular_set_rank ? m_set_size + 1 : m_set_size;
   }
 
   /*!
-   * \brief Tells if the local rank is the first (lowest) in its group.
+   * \brief Tells if the local rank is the first (lowest) in its set.
    */
   bool isFirstInGroup() const
   {
-    return (m_rank_within_group == 0);
+    return (m_rank_within_set == 0);
   }
 
   /*!
-   * \brief Tells if the local rank is the last (highest) in its group.
+   * \brief Tells if the local rank is the last (highest) in its set.
    */
   bool isLastInGroup() const
   {
@@ -114,6 +114,8 @@ private:
 
   DISABLE_COPY_AND_ASSIGNMENT( IOBaton );
 
+  void setupReducedRanks();
+
   static const int s_invalid_rank_id;
 
   MPI_Comm m_mpi_comm;
@@ -121,13 +123,13 @@ private:
   int m_comm_size;  // num procs in the MPI communicator
   int m_my_rank;    // rank of this proc
   int m_num_files; // number of files
-  int m_num_groups; // number of groups (ranks)
-  int m_num_larger_groups;  // some group have one extra
-  int m_group_size; // regular group size (m_comm_size / m_num_files) w/o
-                    // remainder
-  int m_group_id;
-  int m_first_regular_group_rank;
-  int m_rank_within_group;
+  int m_num_groups; // number of groups (input ranks)
+  int m_num_larger_sets;  // some sets have one extra
+  int m_set_size; // regular set size (m_comm_size / m_num_files) w/o
+                  // remainder
+  int m_set_id;
+  int m_first_regular_set_rank;
+  int m_rank_within_set;
   int m_rank_before_me;
   int m_rank_after_me;
 
