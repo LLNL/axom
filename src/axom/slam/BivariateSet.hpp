@@ -157,9 +157,9 @@ public:
   virtual PositionType size(PositionType pos1) const = 0; //size of a row
 
   /** \brief Size of the first set.   */
-  inline PositionType firstSetSize() const { return m_set1 ? m_set1->size() : 0; }
+  inline PositionType firstSetSize() const { return getSize<FirstSetType>(m_set1); }
   /** \brief Size of the second set.   */
-  inline PositionType secondSetSize() const { return m_set2 ? m_set2->size() : 0; }
+  inline PositionType secondSetSize() const { return getSize<SecondSetType>(m_set2); }
 
   /** \brief Returns pointer to the first set.   */
   const FirstSetType* getFirstSet() const { return m_set1; }
@@ -195,6 +195,23 @@ public:
   }
 
   virtual void verifyPosition(PositionType s1, PositionType s2) const = 0;
+
+private:
+  template<typename SetType>
+  typename std::enable_if<std::is_abstract<SetType>::value, PositionType>::type
+  getSize(const SetType* s) const
+  {
+     SLIC_ASSERT_MSG(s != nullptr, "nullptr in BivariateSet::getSize()");
+     return s->size();
+  }
+
+  template<typename SetType>
+  typename std::enable_if<!std::is_abstract<SetType>::value, PositionType>::type
+  getSize(const SetType* s) const
+  {
+     SLIC_ASSERT_MSG(s != nullptr, "nullptr in BivariateSet::getSize()");
+     return static_cast<SetType>(*s).size();
+  }
 
 protected:
   const FirstSetType* m_set1;
