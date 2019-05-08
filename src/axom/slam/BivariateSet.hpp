@@ -17,6 +17,7 @@
 #include "axom/slam/NullSet.hpp"
 
 #include <cassert>
+#include <type_traits>
 
 namespace axom
 {
@@ -69,16 +70,15 @@ namespace slam
  *
  */
 
-template<
-  typename PosType = slam::DefaultPositionType,
-  typename ElemType = slam::DefaultElementType >
+template<typename FirstSetType = slam::Set<>,
+         typename SecondSetType = slam::Set<>>
 class BivariateSet
 {
 public:
 
-  using PositionType = PosType;
-  using ElementType = ElemType;
-  using SetType = Set<PositionType,ElementType>;
+  using PositionType = typename FirstSetType::PositionType;
+  using ElementType = typename FirstSetType::ElementType;
+
   using OrderedSetType = OrderedSet<
           PositionType,
           ElementType,
@@ -88,7 +88,7 @@ public:
           policies::STLVectorIndirection<PositionType, ElementType> >;
 
   static const PositionType INVALID_POS = PositionType(-1);
-  static const NullSet<PosType,ElemType> s_nullSet;
+  static const NullSet<PositionType,ElementType> s_nullSet;
 
 public:
 
@@ -99,8 +99,8 @@ public:
    * \param set1  Pointer to the first Set.
    * \param set2  Pointer to the second Set.
    */
-  BivariateSet(const SetType* set1 = &s_nullSet,
-               const SetType* set2 = &s_nullSet)
+  BivariateSet(const FirstSetType* set1 = &s_nullSet,
+               const SecondSetType* set2 = &s_nullSet)
     : m_set1(set1), m_set2(set2)
   { }
 
@@ -162,9 +162,9 @@ public:
   inline PositionType secondSetSize() const { return m_set2 ? m_set2->size() : 0; }
 
   /** \brief Returns pointer to the first set.   */
-  virtual const SetType* getFirstSet() const { return m_set1; }
+  const FirstSetType* getFirstSet() const { return m_set1; }
   /** \brief Returns pointer to the second set.   */
-  virtual const SetType* getSecondSet() const { return m_set2; }
+  const SecondSetType* getSecondSet() const { return m_set2; }
 
   /** \brief Returns the element at the given FlatIndex \a pos */
   virtual ElementType at(PositionType pos) const = 0;
@@ -197,8 +197,8 @@ public:
   virtual void verifyPosition(PositionType s1, PositionType s2) const = 0;
 
 protected:
-  const SetType* m_set1;
-  const SetType* m_set2;
+  const FirstSetType* m_set1;
+  const SecondSetType* m_set2;
 };
 
 
@@ -209,17 +209,15 @@ protected:
  *
  * \brief A Null BivariateSet class. Same as the NullSet for Set class.
  */
-template<
-  typename PosType = slam::DefaultPositionType,
-  typename ElemType = slam::DefaultElementType
-  >
-class NullBivariateSet : public BivariateSet<PosType,ElemType>
+template<typename FirstSetType = slam::Set<>,
+         typename SecondSetType = slam::Set<>>
+class NullBivariateSet : public BivariateSet<FirstSetType,SecondSetType>
 {
 public:
-  using PositionType = PosType;
-  using ElementType = ElemType;
-  using OrderedSetType =
-          typename BivariateSet<PosType,ElemType>::OrderedSetType;
+   using BSet = BivariateSet<FirstSetType,SecondSetType>;
+   using PositionType = typename BSet::PositionType;
+   using ElementType = typename BSet::ElementType;
+   using OrderedSetType = typename BSet::OrderedSetType;
 
 public:
   NullBivariateSet() = default;
@@ -276,8 +274,8 @@ private:
   }
 };
 
-template<typename PosType, typename ElemType>
-const NullSet<PosType,ElemType> BivariateSet<PosType,ElemType>::s_nullSet;
+template<typename FirstSetType,typename SecondSetType>
+const NullSet<FirstSetType,SecondSetType> BivariateSet<FirstSetType,SecondSetType>::s_nullSet;
 
 
 } // end namespace slam

@@ -16,7 +16,7 @@ namespace slam
  * \class RelationSet
  *
  * \brief Models a Set whose elements are derived from a relation, one element
- *        per fromSet and toSet pair in the relation.
+ *        per from-set and to-set pair in the relation.
  *
  *  RelationSet models a subset of the Cartesian product of two sets. Users
  *  should refer to the BivariateSet documentation for descriptions of the
@@ -28,23 +28,25 @@ namespace slam
  */
 
 template<
-  typename RelationType
-  >
+  typename Relation,
+  typename FirstSetType = slam::Set<>,
+  typename SecondSetType = slam::Set<> >
 class RelationSet
-  : public OrderedSet<typename RelationType::SetPosition,
-                      typename RelationType::SetElement>
-  , public BivariateSet<typename RelationType::SetPosition,
-                        typename RelationType::SetElement>
+  : public OrderedSet<typename Relation::SetPosition,
+                      typename Relation::SetElement>
+  , public BivariateSet<FirstSetType, SecondSetType>
 {
+private:
+  using RangeSetType = RangeSet<typename RelationType::SetPosition,
+                                typename RelationType::SetElement>
+  using RelationType = Relation;
+  using BivariateSetType = BivariateSet<FirstSetType, SecondSetType>;
 
 public:
   using PositionType = typename RelationType::SetPosition;
   using ElementType = typename RelationType::SetElement;
 
   using RelationSubset = typename RelationType::RelationSubset;
-
-  using BivariateSetType = BivariateSet<PositionType, ElementType>;
-  using SetType = typename BivariateSetType::SetType;
   using OrderedSetType = typename BivariateSetType::OrderedSetType;
 
   using BivariateSetType::INVALID_POS;
@@ -58,8 +60,8 @@ public:
    */
   RelationSet(RelationType* relation)
     : BivariateSetType(
-      relation ? relation->fromSet() : (SetType*)&BivariateSetType::s_nullSet,
-      relation ? relation->toSet()   : (SetType*)&BivariateSetType::s_nullSet )
+      relation ? relation->fromSet() : (FirstSetType*)&BivariateSetType::s_nullSet,
+      relation ? relation->toSet()   : (SecondSetType*)&BivariateSetType::s_nullSet )
     , m_relation(relation)
   {
     SLIC_ASSERT(relation != nullptr);
@@ -92,7 +94,7 @@ public:
       if (ls[i] == pos2)
         return i;
     }
-    return INVALID_POS;
+    return BivariateSetType::INVALID_POS;
   }
 
   /**
@@ -115,7 +117,7 @@ public:
       if (ls[i] == s2)
         return ls.offset() + i;
     }
-    return INVALID_POS;
+    return BivariateSetType::INVALID_POS;
   }
 
 
@@ -136,7 +138,7 @@ public:
     if (ls.size() > 0)
       return ls.offset();
 
-    return INVALID_POS;
+    return BivariateSetType::INVALID_POS;
   }
 
   /**

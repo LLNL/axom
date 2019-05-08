@@ -13,13 +13,7 @@
 #include "gtest/gtest.h"
 
 #include "axom/slic.hpp"
-
-#include "axom/slam/Utilities.hpp"
-#include "axom/slam/Map.hpp"
-#include "axom/slam/BivariateMap.hpp"
-#include "axom/slam/RelationSet.hpp"
-#include "axom/slam/ProductSet.hpp"
-#include "axom/slam/StaticRelation.hpp"
+#include "axom/slam.hpp"
 
 namespace
 {
@@ -47,12 +41,12 @@ using RelationType  =
                              VariableCardinality, STLIndirection,
                              SetType, SetType>;
 
-using BivariateSetType = axom::slam::BivariateSet<SetPosition, SetElement>;
-using ProductSetType = axom::slam::ProductSet<SetPosition, SetElement>;
-using RelationSetType = axom::slam::RelationSet<RelationType>;
+using BivariateSetType = slam::BivariateSet<>;
+using ProductSetType = slam::ProductSet<>;
+using RelationSetType = slam::RelationSet<RelationType>;
 
 template<typename T, typename S>
-using BivariateMapType = axom::slam::BivariateMap<SetType, T, S>;
+using BivariateMapType = slam::BivariateMap<SetType, T, S>;
 
 
 static const SetPosition MAX_SET_SIZE1 = 10;
@@ -95,7 +89,7 @@ void constructAndTestCartesianMap(int stride)
   EXPECT_EQ(s.size(), MAX_SET_SIZE1*MAX_SET_SIZE2);
   EXPECT_TRUE(s.isValid());
 
-  SLIC_INFO("\nCreating " << axom::slam::util::TypeToString<T>::to_string()
+  SLIC_INFO("\nCreating " << slam::util::TypeToString<T>::to_string()
                           << " map on the set ");
 
   MapType m(&s, (T)0, stride);
@@ -212,7 +206,7 @@ void constructAndTestRelationSetMap(int stride)
   EXPECT_EQ(indice_size, s.totalSize());
   EXPECT_TRUE(s.isValid(true));
 
-  SLIC_INFO("\nCreating " << axom::slam::util::TypeToString<T>::to_string()
+  SLIC_INFO("\nCreating " << slam::util::TypeToString<T>::to_string()
                           << " map on the set ");
 
   MapType m(&s, (T)0, stride);
@@ -328,7 +322,7 @@ void constructAndTestBivariateMapIterator(int stride)
   EXPECT_TRUE(s.isValid());
 
   SLIC_INFO(
-    "\nCreating " << axom::slam::util::TypeToString<DataType>::to_string()
+    "\nCreating " << slam::util::TypeToString<DataType>::to_string()
                   << " map on the set ");
   MapType m(&s, 0.0, stride);
   EXPECT_TRUE(m.isValid());

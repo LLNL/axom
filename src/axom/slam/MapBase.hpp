@@ -55,7 +55,7 @@ public:
 
 private:
   /**
-   * \brief Utility function to verify that a SetPosition is in a valid range.
+   * \brief Verifies that the provided SetPosition is in a valid range.
    */
   virtual void verifyPosition(SetPosition)       const = 0;
 

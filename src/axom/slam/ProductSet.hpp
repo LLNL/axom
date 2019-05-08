@@ -35,21 +35,20 @@ namespace slam
  *
  * \see   BivariateSet
  */
-template<
-  typename PosType = slam::DefaultPositionType,
-  typename ElemType = slam::DefaultElementType >
-class ProductSet
-  : public BivariateSet<PosType,ElemType>
-  , RangeSet<PosType,ElemType>
+template<typename SetType1 = slam::Set<>,
+         typename SetType2 = slam::Set<> >
+class ProductSet 
+    : public BivariateSet<SetType1, SetType2>
+    , RangeSet<typename SetType1::PositionType, typename SetType1::ElementType>
 {
 public:
-  using BivariateSetType = BivariateSet<PosType,ElemType>;
+  using RangeSetType = RangeSet<typename SetType1::PositionType, typename SetType1::ElementType>
+  using FirstSetType = SetType1;
+  using SecondSetType = SetType2;
+  using BivariateSetType = BivariateSet<FirstSetType, SecondSetType>;
   using PositionType = typename BivariateSetType::PositionType;
   using ElementType = typename BivariateSetType::ElementType;
-  using SetType = typename BivariateSetType::SetType;
   using OrderedSetType = typename BivariateSetType::OrderedSetType;
-
-  using RangeSetType = RangeSet<PosType,ElemType>;
 
   /** \brief Default constructor */
   ProductSet() {}
@@ -61,20 +60,18 @@ public:
    * \param set2  Pointer to the second Set.
    */
 
-  ProductSet(SetType* set1, SetType* set2) :
-    BivariateSetType(set1,set2), RangeSetType(set1->size()*set2->size())
+  ProductSet(const FirstSetType* set1, const SecondSetType* set2) :
+    BivariateSetType(set1,set2), RangeSet(set1->size()*set2->size())
   {
-    using OrderedSetBuilder = typename OrderedSetType::SetBuilder;
-
     //fill in the row data now for getElements(i) function,
     //since every row is the same, a call to getElements() returns the same set.
-    PositionType size2 = this->secondSetSize();
+    auto size2 = this->secondSetSize();
     m_rowSet_data.resize(size2);
-    for (int s2 = 0 ; s2 < size2 ; s2++)
+    for (int s2 = 0 ; s2 < size2 ; ++s2)
     {
       m_rowSet_data[s2] = s2;
     }
-    m_rowSet = OrderedSetBuilder()
+    m_rowSet = typename OrderedSetType::SetBuilder()
                .size(size2)
                .offset(0)
                .data(&m_rowSet_data);
@@ -150,7 +147,7 @@ public:
 
   PositionType size() const override
   {
-    return this->firstSetSize()*this->secondSetSize();
+    return this->firstSetSize() * this->secondSetSize();
   }
 
   PositionType size(PositionType) const override
@@ -160,8 +157,8 @@ public:
 
   bool isValidIndex(PositionType s1, PositionType s2) const
   {
-    PositionType size1 = this->firstSetSize();
-    PositionType size2 = this->secondSetSize();
+    auto size1 = this->firstSetSize();
+    auto size2 = this->secondSetSize();
     return s1 >= 0 && s1 < size1 && s2 >= 0 && s2 < size2;
   }
 
