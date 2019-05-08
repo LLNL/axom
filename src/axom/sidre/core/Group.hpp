@@ -250,7 +250,8 @@ public:
 #ifdef AXOM_USE_UMPIRE
 
   /*!
-   * \brief Return the ID of the default umpire::Allocator associated with this Group.
+   * \brief Return the ID of the default umpire::Allocator associated with this
+   * Group.
    */
   int getDefaultAllocatorID() const
   {
@@ -1443,9 +1444,9 @@ private:
   void renameOrWarn(const std::string& new_name);
 
   /*!
-  * \brief Private method. If allocatorID is a valid allocator ID then return
-  *  it. Otherwise return the ID of the default allocator of the owning group.
-  */
+   * \brief Private method. If allocatorID is a valid allocator ID then return
+   *  it. Otherwise return the ID of the default allocator of the owning group.
+   */
   int getValidAllocatorID( int allocatorID );
 
   /// Name of this Group object.

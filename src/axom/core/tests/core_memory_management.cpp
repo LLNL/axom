@@ -21,8 +21,8 @@
 // in check_alloc_realloc_free when reallocating to 3 * SIZE.
 constexpr int SIZE = 5345;
 
-class CopyTest : 
-  public ::testing::TestWithParam<::testing::tuple<std::string, std::string>>
+class CopyTest :
+  public ::testing::TestWithParam<::testing::tuple<std::string, std::string> >
 {
 public:
   void SetUp() override
@@ -50,7 +50,8 @@ public:
     else
     {
       auto source_allocator = rm.getAllocator(src_string);
-      src_array = static_cast<int*>(source_allocator.allocate(SIZE * sizeof(int)));
+      src_array =
+        static_cast<int*>(source_allocator.allocate(SIZE * sizeof(int)));
     }
 #endif
 
@@ -70,7 +71,8 @@ public:
     else
     {
       auto source_allocator = rm.getAllocator(dst_string);
-      dst_array = static_cast<int*>(source_allocator.allocate(SIZE * sizeof(int)));
+      dst_array =
+        static_cast<int*>(source_allocator.allocate(SIZE * sizeof(int)));
     }
 #endif
   }
@@ -125,16 +127,18 @@ private:
 };
 
 #ifdef AXOM_USE_UMPIRE
-void check_alloc_and_free( umpire::Allocator allocator=axom::getAllocator( umpire::resource::Host ), bool hostAccessable=true  )
+void check_alloc_and_free(
+  umpire::Allocator allocator=axom::getAllocator( umpire::resource::Host ),
+  bool hostAccessable=true  )
 #else
 void check_alloc_and_free( bool hostAccessable=true)
 #endif
 {
-  for ( int size = 0; size <= SIZE; size = size * 2 + 1 )
+  for ( int size = 0 ; size <= SIZE ; size = size * 2 + 1 )
   {
 #ifdef AXOM_USE_UMPIRE
     int* buffer = axom::allocate< int >( size, allocator );
-    
+
     if (size > 0)
     {
       umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
@@ -146,12 +150,12 @@ void check_alloc_and_free( bool hostAccessable=true)
 
     if ( hostAccessable )
     {
-      for ( int i = 0; i < size; ++i )
+      for ( int i = 0 ; i < size ; ++i )
       {
         buffer[ i ] = i;
       }
 
-      for ( int i = 0; i < size; ++i )
+      for ( int i = 0 ; i < size ; ++i )
       {
         EXPECT_EQ( buffer[ i ], i );
       }
@@ -163,12 +167,14 @@ void check_alloc_and_free( bool hostAccessable=true)
 }
 
 #ifdef AXOM_USE_UMPIRE
-void check_alloc_realloc_free( umpire::Allocator allocator=axom::getAllocator( umpire::resource::Host ), bool hostAccessable=true )
+void check_alloc_realloc_free(
+  umpire::Allocator allocator=axom::getAllocator( umpire::resource::Host ),
+  bool hostAccessable=true )
 #else
 void check_alloc_realloc_free( bool hostAccessable=true )
 #endif
 {
-  for ( int size = 0; size <= SIZE; size = size * 2 + 1 )
+  for ( int size = 0 ; size <= SIZE ; size = size * 2 + 1 )
   {
     int buffer_size = size;
 
@@ -177,7 +183,7 @@ void check_alloc_realloc_free( bool hostAccessable=true )
 
     umpire::ResourceManager & rm = umpire::ResourceManager::getInstance();
     if (buffer_size > 0)
-    { 
+    {
       ASSERT_EQ(allocator.getId(), rm.getAllocator(buffer).getId());
     }
 #else
@@ -187,13 +193,13 @@ void check_alloc_realloc_free( bool hostAccessable=true )
     if ( hostAccessable )
     {
       // Populate the buffer.
-      for ( int i = 0; i < buffer_size; ++i )
+      for ( int i = 0 ; i < buffer_size ; ++i )
       {
         buffer[ i ] = i;
       }
 
       // Check the values.
-      for ( int i = 0; i < buffer_size; ++i )
+      for ( int i = 0 ; i < buffer_size ; ++i )
       {
         EXPECT_EQ( buffer[ i ], i );
       }
@@ -204,7 +210,7 @@ void check_alloc_realloc_free( bool hostAccessable=true )
     buffer = axom::reallocate< int >( buffer, buffer_size );
 #ifdef AXOM_USE_UMPIRE
     if (buffer_size > 0)
-    { 
+    {
       ASSERT_EQ(allocator.getId(), rm.getAllocator(buffer).getId());
     }
 #endif
@@ -212,13 +218,13 @@ void check_alloc_realloc_free( bool hostAccessable=true )
     if ( hostAccessable )
     {
       // Populate the new values.
-      for ( int i = size; i < buffer_size; ++i )
+      for ( int i = size ; i < buffer_size ; ++i )
       {
         buffer[ i ] = i;
       }
 
       // Check all the values.
-      for ( int i = 0; i < buffer_size; ++i )
+      for ( int i = 0 ; i < buffer_size ; ++i )
       {
         EXPECT_EQ( buffer[ i ], i );
       }
@@ -229,7 +235,7 @@ void check_alloc_realloc_free( bool hostAccessable=true )
     buffer = axom::reallocate< int >( buffer, buffer_size );
 #ifdef AXOM_USE_UMPIRE
     if (buffer_size > 0)
-    { 
+    {
       ASSERT_EQ(allocator.getId(), rm.getAllocator(buffer).getId());
     }
 #endif
@@ -237,7 +243,7 @@ void check_alloc_realloc_free( bool hostAccessable=true )
     if ( hostAccessable )
     {
       // Check all the values.
-      for ( int i = 0; i < buffer_size; ++i )
+      for ( int i = 0 ; i < buffer_size ; ++i )
       {
         EXPECT_EQ( buffer[ i ], i );
       }
@@ -288,7 +294,8 @@ TEST( core_memory_management, alloc_free )
 #ifdef AXOM_USE_CUDA
   check_alloc_and_free( axom::getAllocator( umpire::resource::Pinned ), true );
   check_alloc_and_free( axom::getAllocator( umpire::resource::Device ), false );
-  check_alloc_and_free( axom::getAllocator( umpire::resource::Constant ), false );
+  check_alloc_and_free( axom::getAllocator( umpire::resource::Constant ),
+                        false );
   check_alloc_and_free( axom::getAllocator( umpire::resource::Unified ), true );
 #endif
 
@@ -302,14 +309,19 @@ TEST( core_memory_management, alloc_realloc_free )
 {
 #ifdef AXOM_USE_UMPIRE
 
-  check_alloc_realloc_free( axom::getAllocator( umpire::resource::Host ), true );
+  check_alloc_realloc_free( axom::getAllocator( umpire::resource::Host ),
+                            true );
 
 #ifdef AXOM_USE_CUDA
-  check_alloc_realloc_free( axom::getAllocator( umpire::resource::Pinned ), true );
-  check_alloc_realloc_free( axom::getAllocator( umpire::resource::Device ), false );
+  check_alloc_realloc_free( axom::getAllocator( umpire::resource::Pinned ),
+                            true );
+  check_alloc_realloc_free( axom::getAllocator(
+                              umpire::resource::Device ), false );
   // Umpire doesn't allow reallocation of Constant memory.
-  // check_alloc_realloc_free( axom::getAllocator( umpire::resource::Constant ), false );
-  check_alloc_realloc_free( axom::getAllocator( umpire::resource::Unified ), true );
+  // check_alloc_realloc_free( axom::getAllocator( umpire::resource::Constant ),
+  // false );
+  check_alloc_realloc_free( axom::getAllocator(
+                              umpire::resource::Unified ), true );
 #endif
 
 #endif
@@ -320,7 +332,7 @@ TEST( core_memory_management, alloc_realloc_free )
 TEST_P(CopyTest, Copy)
 {
   std::cout << "SRC = " << src_string << ", DST = " << dst_string << std::endl;
-  for (int i = 0; i < SIZE; ++i)
+  for (int i = 0 ; i < SIZE ; ++i)
   {
     host_array[i] = i;
   }
@@ -328,43 +340,43 @@ TEST_P(CopyTest, Copy)
   axom::copy(src_array, host_array, SIZE * sizeof(int));
   axom::copy(dst_array, src_array, SIZE * sizeof(int));
 
-  for (int i = 0; i < SIZE; ++i)
+  for (int i = 0 ; i < SIZE ; ++i)
   {
     host_array[i] = -i;
   }
 
   axom::copy(host_array, src_array, SIZE * sizeof(int));
 
-  for (int i = 0; i < SIZE; ++i)
+  for (int i = 0 ; i < SIZE ; ++i)
   {
     ASSERT_EQ(host_array[i], i);
-  } 
+  }
 }
 
 const std::string copy_locations[] = {
   "NEW", "MALLOC", "STATIC"
 #if defined(AXOM_USE_UMPIRE)
-    , "HOST"
+  , "HOST"
 #if defined(UMPIRE_ENABLE_DEVICE)
-    , "DEVICE"
+  , "DEVICE"
 #endif
 #if defined(UMPIRE_ENABLE_UM)
-    , "UM"
+  , "UM"
 #endif
 #if defined(UMPIRE_ENABLE_PINNED)
-    , "PINNED"
+  , "PINNED"
 #endif
 #endif
 };
-    
+
 
 INSTANTIATE_TEST_CASE_P(
-    core_memory_management,
-    CopyTest,
-    ::testing::Combine(
-      ::testing::ValuesIn(copy_locations),
-      ::testing::ValuesIn(copy_locations)
-));
+  core_memory_management,
+  CopyTest,
+  ::testing::Combine(
+    ::testing::ValuesIn(copy_locations),
+    ::testing::ValuesIn(copy_locations)
+    ));
 
 //------------------------------------------------------------------------------
 int main( int argc, char** argv )

@@ -145,7 +145,8 @@ public:
    * \pre cols >= 1
    * \pre data != nullptr
    */
-  AXOM_HOST_DEVICE Matrix( int rows, int cols, T* data, bool useExternal=false );
+  AXOM_HOST_DEVICE Matrix( int rows, int cols, T* data,
+                           bool useExternal=false );
 
   /*!
    * \brief Copy constructor.
@@ -590,7 +591,8 @@ Matrix< T >::Matrix( int rows, int cols, T val ) :
 
 //-----------------------------------------------------------------------------
 template < typename T >
-AXOM_HOST_DEVICE Matrix< T >::Matrix( int rows, int cols, T* data, bool external ) :
+AXOM_HOST_DEVICE Matrix< T >::Matrix( int rows, int cols, T* data,
+                                      bool external ) :
   m_rows( rows ),
   m_cols( cols ),
   m_usingExternal( external )
@@ -747,7 +749,8 @@ void Matrix< T >::swapColumns( IndexType icol, IndexType jcol )
 
 //-----------------------------------------------------------------------------
 template < typename T >
-AXOM_HOST_DEVICE const T& Matrix< T >::operator()(IndexType i, IndexType j ) const
+AXOM_HOST_DEVICE const T& Matrix< T >::operator()(IndexType i,
+                                                  IndexType j ) const
 {
   assert( (i>=0) && (i < m_rows) );
   assert( (j>=0) && (j < m_cols) );

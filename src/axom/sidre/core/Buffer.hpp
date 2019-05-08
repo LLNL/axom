@@ -209,7 +209,7 @@ public:
    *
    * \return pointer to this Buffer object.
    */
-  Buffer* allocate(TypeID type, IndexType num_elems, 
+  Buffer* allocate(TypeID type, IndexType num_elems,
                    int allocID=INVALID_ALLOCATOR_ID);
 
   /*!

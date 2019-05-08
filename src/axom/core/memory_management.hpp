@@ -86,14 +86,17 @@ inline umpire::Allocator getDefaultAllocator()
  */
 template < typename T >
 #ifdef AXOM_USE_UMPIRE
-inline T* allocate( std::size_t n, umpire::Allocator allocator=getDefaultAllocator() ) noexcept;
+inline T* allocate( std::size_t n,
+                    umpire::Allocator allocator=
+                      getDefaultAllocator() ) noexcept;
 #else
 inline T* allocate( std::size_t n ) noexcept;
 #endif
 
 /*!
  * \brief Frees the chunk of memory pointed to by the supplied pointer, p.
- * \param [in/out] p a pointer to memory allocated with allocate/reallocate or a nullptr.
+ * \param [in/out] p a pointer to memory allocated with allocate/reallocate or a
+ * nullptr.
  * \post p == nullptr
  */
 template < typename T >
@@ -102,7 +105,8 @@ inline void deallocate( T*& p ) noexcept;
 /*!
  * \brief Reallocates the chunk of memory pointed to by the supplied pointer.
  *
- * \param [in] p pointer to memory allocated with allocate/reallocate, or a nullptr.
+ * \param [in] p pointer to memory allocated with allocate/reallocate, or a
+ * nullptr.
  * \param [in] n the number of elements to allocate.
  *
  * \tparam T the type pointer p points to.
@@ -111,14 +115,14 @@ inline void deallocate( T*& p ) noexcept;
  */
 template < typename T >
 inline T* reallocate( T* p, std::size_t n ) noexcept;
-  
+
 /*!
  * \brief Copies memory from the source to the destination.
  *
  * \param [in/out] dst the destination to copy to.
  * \param [in] src the source to copy from.
  * \param [in] numbytes the number of bytes to copy.
- * 
+ *
  * \note When using Umpire if either src or dst is not registered with the
  *  ResourceManager then the default host allocation strategy is assumed for
  *  that pointer.
@@ -137,7 +141,8 @@ inline void copy( void* dst, void* src, std::size_t numbytes ) noexcept;
 template < typename T >
 inline T* allocate( std::size_t n, umpire::Allocator allocator ) noexcept
 {
-  if ( n == 0 ) return nullptr;
+  if ( n == 0 )
+    return nullptr;
 
   const std::size_t numbytes = n * sizeof( T );
   return static_cast< T* >( allocator.allocate( numbytes )  );
@@ -148,7 +153,8 @@ inline T* allocate( std::size_t n, umpire::Allocator allocator ) noexcept
 template < typename T >
 inline T* allocate( std::size_t n ) noexcept
 {
-  if ( n == 0 ) return nullptr;
+  if ( n == 0 )
+    return nullptr;
 
   const std::size_t numbytes = n * sizeof( T );
   return static_cast< T* >( std::malloc( numbytes )  );
@@ -160,7 +166,8 @@ inline T* allocate( std::size_t n ) noexcept
 template < typename T >
 inline void deallocate( T*& pointer ) noexcept
 {
-  if ( pointer == nullptr ) return;
+  if ( pointer == nullptr )
+    return;
 
 #ifdef AXOM_USE_UMPIRE
 
@@ -206,7 +213,8 @@ inline void copy( void* dst, void* src, std::size_t numbytes ) noexcept
 {
 #ifdef AXOM_USE_UMPIRE
   umpire::ResourceManager & rm = umpire::ResourceManager::getInstance();
-  umpire::op::MemoryOperationRegistry & op_registry = umpire::op::MemoryOperationRegistry::getInstance();
+  umpire::op::MemoryOperationRegistry & op_registry =
+    umpire::op::MemoryOperationRegistry::getInstance();
 
   auto dstStrategy = rm.getAllocator( "HOST" ).getAllocationStrategy();
   auto srcStrategy = dstStrategy;

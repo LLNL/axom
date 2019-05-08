@@ -1644,7 +1644,7 @@ Group::Group(const std::string& name,
   m_view_coll(new ViewCollection()),
   m_group_coll(new GroupCollection())
 #ifdef AXOM_USE_UMPIRE
-, m_default_allocator_id(axom::getDefaultAllocator().getId())
+  , m_default_allocator_id(axom::getDefaultAllocator().getId())
 #endif
 {}
 

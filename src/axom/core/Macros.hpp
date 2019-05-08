@@ -25,7 +25,7 @@
  * \note These will expand to the corresponding CUDA decorations when
  *  compiled with -DAXOM_USE_CUDA
  */
-#if defined(__CUDACC__) 
+#if defined(__CUDACC__)
 #define AXOM_DEVICE __device__
 #define AXOM_HOST_DEVICE __host__ __device__
 #else
@@ -62,9 +62,9 @@
  */
 #if defined(AXOM_USE_CUDA)
 #define AXOM_CUDA_TEST(X, Y)         \
-  static void cuda_test_##X##Y();    \
-  TEST(X, Y) { cuda_test_##X##Y(); } \
-  static void cuda_test_##X##Y()
+  static void cuda_test_ ## X ## Y();    \
+  TEST(X, Y) { cuda_test_ ## X ## Y(); } \
+  static void cuda_test_ ## X ## Y()
 #else
 #define AXOM_CUDA_TEST(X, Y) TEST(X, Y)
 #endif

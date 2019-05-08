@@ -1675,7 +1675,7 @@ TEST(sidre_view,value_from_uninited_view)
 
 class UmpireTest : public ::testing::TestWithParam<int>
 {
-public: 
+public:
   void SetUp() override
   {
     allocID = GetParam();
@@ -1689,7 +1689,7 @@ public:
 
   static constexpr int SIZE = 100;
   DataStore ds;
-  Group * root;
+  Group* root;
   umpire::ResourceManager & rm = umpire::ResourceManager::getInstance();
   int allocID;
 };
@@ -1698,7 +1698,7 @@ public:
 TEST_P(UmpireTest, allocate)
 {
   {
-    View * view = root->createView("v");
+    View* view = root->createView("v");
     view->allocate(INT_ID, SIZE, allocID);
 
     ASSERT_EQ(allocID, rm.getAllocator(view->getVoidPtr()).getId());
@@ -1706,7 +1706,7 @@ TEST_P(UmpireTest, allocate)
   }
 
   {
-    View * view = root->createView("v");
+    View* view = root->createView("v");
     DataType dtype = conduit::DataType::default_dtype(INT_ID);
     dtype.set_number_of_elements(SIZE);
     view->allocate(dtype, allocID);
@@ -1722,7 +1722,7 @@ TEST_P(UmpireTest, allocate_default)
   root->setDefaultAllocator(allocID);
 
   {
-    View * view = root->createView("v");
+    View* view = root->createView("v");
     view->allocate(INT_ID, SIZE);
 
     ASSERT_EQ(allocID, rm.getAllocator(view->getVoidPtr()).getId());
@@ -1730,7 +1730,7 @@ TEST_P(UmpireTest, allocate_default)
   }
 
   {
-    View * view = root->createView("v");
+    View* view = root->createView("v");
     DataType dtype = conduit::DataType::default_dtype(INT_ID);
     dtype.set_number_of_elements(SIZE);
     view->allocate(dtype);
@@ -1749,7 +1749,7 @@ TEST_P(UmpireTest, reallocate)
   }
 
   {
-    View * view = root->createView("v");
+    View* view = root->createView("v");
     view->allocate(INT_ID, SIZE, allocID);
     view->reallocate(2 * SIZE);
 
@@ -1758,7 +1758,7 @@ TEST_P(UmpireTest, reallocate)
   }
 
   {
-    View * view = root->createView("v");
+    View* view = root->createView("v");
     DataType dtype = conduit::DataType::default_dtype(INT_ID);
     dtype.set_number_of_elements(SIZE);
     view->allocate(dtype, allocID);
@@ -1778,7 +1778,7 @@ TEST_P(UmpireTest, reallocate_zero)
   }
 
   {
-    View * view = root->createView("v");
+    View* view = root->createView("v");
     view->allocate(INT_ID, SIZE, allocID);
     view->reallocate(0);
     view->reallocate(SIZE);
@@ -1790,7 +1790,7 @@ TEST_P(UmpireTest, reallocate_zero)
   }
 
   {
-    View * view = root->createView("v");
+    View* view = root->createView("v");
     DataType dtype = conduit::DataType::default_dtype(INT_ID);
     dtype.set_number_of_elements(SIZE);
     view->allocate(dtype, allocID);
@@ -1804,20 +1804,20 @@ TEST_P(UmpireTest, reallocate_zero)
   }
 }
 
-const int allocators[] = { umpire::resource::Host 
+const int allocators[] = { umpire::resource::Host
 #ifdef AXOM_USE_CUDA
-                         , umpire::resource::Pinned
-                         , umpire::resource::Device
-                         , umpire::resource::Constant 
-                         , umpire::resource::Unified
+                           , umpire::resource::Pinned
+                           , umpire::resource::Device
+                           , umpire::resource::Constant
+                           , umpire::resource::Unified
 #endif
-                          };
+};
 
 INSTANTIATE_TEST_CASE_P(
   sidre_view,
   UmpireTest,
   ::testing::ValuesIn(allocators)
-);
+  );
 
 #endif // AXOM_USE_UMPIRE
 
@@ -1825,40 +1825,40 @@ TEST(sidre_view, isUpdateableFrom)
 {
   constexpr int SIZE = 100;
   DataStore ds;
-  Group * root = ds.getRoot();
-  View * host = root->createViewAndAllocate("v", INT_ID, SIZE);
-  
+  Group* root = ds.getRoot();
+  View* host = root->createViewAndAllocate("v", INT_ID, SIZE);
+
   // Cannot update from an empty View
   {
-    View * v = root->createView("v0");
+    View* v = root->createView("v0");
     ASSERT_FALSE(host->isUpdateableFrom(v));
     ASSERT_FALSE(v->isUpdateableFrom(host));
   }
 
   // Cannot update from a scalar View
   {
-    View * v = root->createViewScalar("v1", 5);
+    View* v = root->createViewScalar("v1", 5);
     ASSERT_FALSE(host->isUpdateableFrom(v));
     ASSERT_FALSE(v->isUpdateableFrom(host));
   }
 
   // Cannot update from a string View
   {
-    View * v = root->createViewString("v2", "dummy");
+    View* v = root->createViewString("v2", "dummy");
     ASSERT_FALSE(host->isUpdateableFrom(v));
     ASSERT_FALSE(v->isUpdateableFrom(host));
   }
 
   // Cannot update from a View with a different number of bytes
   {
-    View * v = root->createViewAndAllocate("v3", INT_ID, SIZE + 1);
+    View* v = root->createViewAndAllocate("v3", INT_ID, SIZE + 1);
     ASSERT_FALSE(host->isUpdateableFrom(v));
     ASSERT_FALSE(v->isUpdateableFrom(host));
   }
 
   // Cannot update from a View with a non-unit stride.
   {
-    View * v = root->createViewAndAllocate("v4", INT_ID, SIZE);
+    View* v = root->createViewAndAllocate("v4", INT_ID, SIZE);
     v->apply(SIZE / 2, 0, 2);
     ASSERT_FALSE(host->isUpdateableFrom(v));
     ASSERT_FALSE(v->isUpdateableFrom(host));
@@ -1866,14 +1866,14 @@ TEST(sidre_view, isUpdateableFrom)
 
   // Can update from a simlar view.
   {
-    View * v = root->createViewAndAllocate("v5", INT_ID, SIZE);
+    View* v = root->createViewAndAllocate("v5", INT_ID, SIZE);
     ASSERT_TRUE(host->isUpdateableFrom(v));
     ASSERT_TRUE(v->isUpdateableFrom(host));
   }
 
   // Can update from a simlar view with offset.
   {
-    View * v = root->createViewAndAllocate("v6", INT_ID, SIZE + 10);
+    View* v = root->createViewAndAllocate("v6", INT_ID, SIZE + 10);
     v->apply(SIZE, 10);
     ASSERT_TRUE(host->isUpdateableFrom(v));
     ASSERT_TRUE(v->isUpdateableFrom(host));
@@ -1881,15 +1881,16 @@ TEST(sidre_view, isUpdateableFrom)
 
   // Can update from a view with a different type but same number of bytes.
   {
-    View * v = root->createViewAndAllocate("v7", TypeID::INT8_ID, 
-                                           SIZE * sizeof(int));
+    View* v = root->createViewAndAllocate("v7", TypeID::INT8_ID,
+                                          SIZE * sizeof(int));
     ASSERT_TRUE(host->isUpdateableFrom(v));
     ASSERT_TRUE(v->isUpdateableFrom(host));
   }
 }
 
-class UpdateTest : 
-  public ::testing::TestWithParam<::testing::tuple<std::string, std::string, int>>
+class UpdateTest :
+  public ::testing::TestWithParam<::testing::tuple<std::string, std::string,
+                                                   int> >
 {
 public:
   void SetUp() override
@@ -1899,59 +1900,59 @@ public:
     offset = ::testing::get<2>(GetParam());
     int size = SIZE - offset;
 
-    Group * root = ds.getRoot();
+    Group* root = ds.getRoot();
     host = root->createViewAndAllocate("host", INT_ID, size);
-    
+
     if (src_string == "NEW")
     {
       m_src_array = new int[SIZE];
       src = root->createView("src")->setExternalDataPtr(m_src_array)
-                                   ->apply(INT_ID, size, offset);
+            ->apply(INT_ID, size, offset);
     }
     else if (src_string == "MALLOC")
     {
       m_src_array = static_cast<int*>(std::malloc(SIZE * sizeof(int)));
       src = root->createView("src")->setExternalDataPtr(m_src_array)
-                                   ->apply(INT_ID, size, offset);
+            ->apply(INT_ID, size, offset);
     }
     else if (src_string == "STATIC")
     {
       src = root->createView("src")->setExternalDataPtr(m_static_src_array)
-                                   ->apply(INT_ID, size, offset);
+            ->apply(INT_ID, size, offset);
     }
 #ifdef AXOM_USE_UMPIRE
     else
     {
       int src_alloc_id = rm.getAllocator(src_string).getId();
       src = root->createViewAndAllocate("src", INT_ID, SIZE, src_alloc_id)
-                ->apply(size, offset);
+            ->apply(size, offset);
     }
 #endif
 
-  if (dst_string == "NEW")
-  {
-    m_dst_array = new int[SIZE];
-    dst = root->createView("dst")->setExternalDataPtr(m_dst_array)
-                                  ->apply(INT_ID, size, offset);
-  }
-  else if (dst_string == "MALLOC")
-  {
-    m_dst_array = static_cast<int*>(std::malloc(SIZE * sizeof(int)));
-    dst = root->createView("dst")->setExternalDataPtr(m_dst_array)
-                                  ->apply(INT_ID, size, offset);
-  }
-  else if (dst_string == "STATIC")
-  {
-    dst = root->createView("dst")->setExternalDataPtr(m_static_dst_array)
-                                 ->apply(INT_ID, size, offset);
-  }
+    if (dst_string == "NEW")
+    {
+      m_dst_array = new int[SIZE];
+      dst = root->createView("dst")->setExternalDataPtr(m_dst_array)
+            ->apply(INT_ID, size, offset);
+    }
+    else if (dst_string == "MALLOC")
+    {
+      m_dst_array = static_cast<int*>(std::malloc(SIZE * sizeof(int)));
+      dst = root->createView("dst")->setExternalDataPtr(m_dst_array)
+            ->apply(INT_ID, size, offset);
+    }
+    else if (dst_string == "STATIC")
+    {
+      dst = root->createView("dst")->setExternalDataPtr(m_static_dst_array)
+            ->apply(INT_ID, size, offset);
+    }
 #ifdef AXOM_USE_UMPIRE
-  else
-  {
-    int dst_alloc_id = rm.getAllocator(dst_string).getId();
-    dst = root->createViewAndAllocate("dst", INT_ID, SIZE, dst_alloc_id)
-              ->apply(size, offset);
-  }
+    else
+    {
+      int dst_alloc_id = rm.getAllocator(dst_string).getId();
+      dst = root->createViewAndAllocate("dst", INT_ID, SIZE, dst_alloc_id)
+            ->apply(size, offset);
+    }
 #endif
   }
 
@@ -1987,38 +1988,38 @@ public:
   int offset;
 
   DataStore ds;
-  View * host;
-  View * src;
-  View * dst;
+  View* host;
+  View* src;
+  View* dst;
 
 private:
   int m_static_src_array[SIZE];
   int m_static_dst_array[SIZE];
-  int * m_src_array = nullptr;
-  int * m_dst_array = nullptr;
+  int* m_src_array = nullptr;
+  int* m_dst_array = nullptr;
 };
 
 TEST_P(UpdateTest, updateFrom)
 {
-  std::cout << "SRC = " << src_string << ", DST = " << dst_string 
+  std::cout << "SRC = " << src_string << ", DST = " << dst_string
             << ", OFFSET = " << offset << std::endl;
 
   ASSERT_TRUE(src->isUpdateableFrom(host));
   ASSERT_TRUE(dst->isUpdateableFrom(src));
   ASSERT_TRUE(host->isUpdateableFrom(dst));
 
-  int * host_ptr = host->getData();
+  int* host_ptr = host->getData();
   const int size = host->getNumElements();
   ASSERT_EQ(size, SIZE - offset);
 
-  for (int i = 0; i < size; ++i)
+  for (int i = 0 ; i < size ; ++i)
   {
     host_ptr[i] = i;
   }
 
   src->updateFrom(host);
 
-  for (int i = 0; i < size; ++i)
+  for (int i = 0 ; i < size ; ++i)
   {
     host_ptr[i] = -i;
   }
@@ -2026,7 +2027,7 @@ TEST_P(UpdateTest, updateFrom)
   dst->updateFrom(src);
   host->updateFrom(dst);
 
-  for (int i = 0; i < size; ++i)
+  for (int i = 0 ; i < size ; ++i)
   {
     ASSERT_EQ(host_ptr[i], i);
   }
@@ -2035,15 +2036,15 @@ TEST_P(UpdateTest, updateFrom)
 const std::string copy_locations[] = {
   "NEW", "MALLOC", "STATIC"
 #if defined(AXOM_USE_UMPIRE)
-    , "HOST"
+  , "HOST"
 #if defined(UMPIRE_ENABLE_DEVICE)
-    , "DEVICE"
+  , "DEVICE"
 #endif
 #if defined(UMPIRE_ENABLE_UM)
-    , "UM"
+  , "UM"
 #endif
 #if defined(UMPIRE_ENABLE_PINNED)
-    , "PINNED"
+  , "PINNED"
 #endif
 #endif
 };
@@ -2051,13 +2052,13 @@ const std::string copy_locations[] = {
 const int offsets[] = {0, 29};
 
 INSTANTIATE_TEST_CASE_P(
-    sidre_view,
-    UpdateTest,
-    ::testing::Combine(
-      ::testing::ValuesIn(copy_locations),
-      ::testing::ValuesIn(copy_locations),
-      ::testing::ValuesIn(offsets)
-));
+  sidre_view,
+  UpdateTest,
+  ::testing::Combine(
+    ::testing::ValuesIn(copy_locations),
+    ::testing::ValuesIn(copy_locations),
+    ::testing::ValuesIn(offsets)
+    ));
 
 //----------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"

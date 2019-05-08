@@ -547,7 +547,7 @@ View* View::setExternalDataPtr(void* external_ptr)
  *
  *************************************************************************
  */
-View * View::updateFrom(const View* other)
+View* View::updateFrom(const View* other)
 {
   if (!isUpdateableFrom(other))
   {
@@ -557,14 +557,14 @@ View * View::updateFrom(const View* other)
   }
 
   SLIC_WARNING_IF(getTypeID() != other->getTypeID(),
-                  "Updating View " << getPathName() << " with type " << 
-                  getTypeID() << " from View " << other->getPathName() << 
+                  "Updating View " << getPathName() << " with type " <<
+                  getTypeID() << " from View " << other->getPathName() <<
                   " with type " << other->getTypeID());
 
-  char * dst = static_cast<char *>(getVoidPtr());
+  char* dst = static_cast<char*>(getVoidPtr());
   dst += getOffset() * getBytesPerElement();
 
-  char * src = static_cast<char *>(other->getVoidPtr());
+  char* src = static_cast<char*>(other->getVoidPtr());
   src += other->getOffset() * other->getBytesPerElement();
 
   copy(dst, src, getTotalBytes());
@@ -739,8 +739,8 @@ bool View::isEquivalentTo(const View* other) const
 bool View::isUpdateableFrom(const View* other) const
 {
   const bool valid_state = (m_state == BUFFER) || (m_state == EXTERNAL);
-  const bool other_valid_state = (other->m_state == BUFFER) || 
-                               (other->m_state == EXTERNAL);
+  const bool other_valid_state = (other->m_state == BUFFER) ||
+                                 (other->m_state == EXTERNAL);
   const bool same_length = (getTotalBytes() == other->getTotalBytes());
   const bool unit_stride = (getStride() == 1) && (other->getStride() == 1);
 

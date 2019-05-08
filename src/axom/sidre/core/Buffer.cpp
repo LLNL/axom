@@ -21,9 +21,9 @@ namespace sidre
 {
 
 /*!
-  * \brief Helper function. If allocatorID is a valid umpire allocator ID then
-  *  return it. Otherwise return the ID of the default allocator.
-  */
+ * \brief Helper function. If allocatorID is a valid umpire allocator ID then
+ *  return it. Otherwise return the ID of the default allocator.
+ */
 int getValidAllocatorID( int allocID )
 {
 #ifdef AXOM_USE_UMPIRE
@@ -127,7 +127,7 @@ Buffer* Buffer::reallocate( IndexType num_elems)
 {
   if (!isDescribed())
   {
-    SLIC_CHECK_MSG(!isDescribed(), 
+    SLIC_CHECK_MSG(!isDescribed(),
                    "Can't re-allocate Buffer with no type description.");
     return this;
   }
@@ -144,7 +144,8 @@ Buffer* Buffer::reallocate( IndexType num_elems)
   DataType dtype( m_node.dtype() );
   dtype.set_number_of_elements( num_elems );
   IndexType new_size = dtype.strided_bytes();
-  void* new_data_ptr = axom::reallocate(static_cast<axom::uint8 *>(old_data_ptr), new_size);
+  void* new_data_ptr = axom::reallocate(static_cast<axom::uint8*>(old_data_ptr),
+                                        new_size);
 
   if ( num_elems == 0 || new_data_ptr != nullptr )
   {
@@ -438,7 +439,7 @@ void* Buffer::allocateBytes(IndexType num_bytes, int allocID)
 void Buffer::releaseBytes( void* ptr)
 {
   // Pointer type here should always match new call in allocateBytes.
-  axom::int8 * ptr_copy = static_cast<axom::int8*>(ptr);
+  axom::int8* ptr_copy = static_cast<axom::int8*>(ptr);
   axom::deallocate(ptr_copy);
 }
 
