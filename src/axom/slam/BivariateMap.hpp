@@ -119,6 +119,17 @@ public:
     , m_map(&m_rangeSet, defaultValue, stride)
   { }
 
+  template<typename BivariateSetRetType>
+  BivariateSetRetType getBivariateSet() const
+  {
+     using OuterSet = const typename BivariateSetRetType::FirstSetType;
+     using InnerSet = const typename BivariateSetRetType::SecondSetType;
+     OuterSet* outer = dynamic_cast<OuterSet*>(m_set->getFirstSet());
+     InnerSet* inner = dynamic_cast<InnerSet*>(m_set->getSecondSet());
+
+     return BivariateSetRetType(outer, inner);
+  }
+
   /// \name BivariateMap value access functions
   /// @{
   ///
