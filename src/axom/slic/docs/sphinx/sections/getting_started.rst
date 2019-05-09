@@ -10,8 +10,8 @@ Getting Started with Slic
 
 This section illustrates some of the key concepts and capabilities of Slic by
 presenting a short walk-through of a C++ application. The complete
-:ref:`SlicApplicationCodeExample`, discussed herein, is included in the
-:ref:`sections/appendix` section and is also available within the Axom source
+:ref:`SlicApplicationCodeExample` is included in the
+:ref:`sections/appendix` section and is also available within the Slic source
 code, under ``src/axom/slic/examples/basic/logging.cpp``.
 
 This example illustrates the following concepts:
@@ -61,7 +61,7 @@ Step 3: Set the Message Format
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The :ref:`logMessageFormat` is specified as a string consisting of keywords,
-encapsulated in ``< ... >``, that Slic knows how to interpret when assembling
+enclosed in ``< ... >``, that Slic knows how to interpret when assembling
 the log message.
 
 .. literalinclude:: ../../../examples/basic/logging.cpp
@@ -79,18 +79,17 @@ the resulting log messages will have the following format:
 * A third line with the name of the file where the message was emitted and
 * The corresponding line number location within the file, in the fourth line.
 
+The format string is used in :ref:`slicExampleStep5`. Specifically, it is passed
+as an argument to the :ref:`GenericOutputStream` object constructor to
+prescribe the format of the messages.
+
 See the :ref:`logMessageFormat` section for the complete list of keyword options
 available that may be used to customize the format of the messsages.
 
 .. note::
 
-   This step is optional. If the format is not specified, a default format
-   will be used to assemble the message, but, typically, a format is
-   prescribed to suit the needs of the application.
-
-The format string is used in :ref:`slicExampleStep5`. Specifically, it is passed
-as an argument to the :ref:`GenericOutputStream` object constructor to
-prescribe the format of the messages.
+   This step is optional. If the format is not specified, a
+   :ref:`defaultMessageFormat` will be used to assemble the message.
 
 Step 4: Set Severity Level
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -123,7 +122,7 @@ is specified by registering a corresponding :ref:`logStream` object to each
 :ref:`logMessageLevel`.
 
 The following code snippet uses the :ref:`GenericOutputStream` object,
-one of the :ref:`NativeLogStreams` provided by Slic, to specify ``std::cout``
+one of the :ref:`BuiltInLogStreams` provided by Slic, to specify ``std::cout``
 as the output destination for messages at each :ref:`logMessageLevel`.
 
 .. literalinclude:: ../../../examples/basic/logging.cpp

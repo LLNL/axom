@@ -9,12 +9,11 @@ Slic Macros
 ------------
 
 Slic provides a set of convenience macros that can be used to streamline
-logging within the `Axom Toolkit`_ and may be used within any application
-using Slic.
+logging within an application.
 
 .. note::
 
-  The :ref:`sections/slic_macros` presented herein are not the only interface
+  The :ref:`sections/slic_macros` are not the only interface
   to log messages with Slic. They are used within the `Axom Toolkit`_ for
   convenience. Applications or libraries that adopt Slic, typically, use the
   C++ API directly, e.g., call ``slic::logMessage()`` and  wrap the
