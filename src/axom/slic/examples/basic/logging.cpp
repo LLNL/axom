@@ -21,6 +21,8 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
 
   // SPHINX_SLIC_INIT_END
 
+  slic::disableAbortOnError();
+
   // SPHINX_SLIC_FORMAT_MSG_BEGIN
 
   std::string format = std::string( "<TIMESTAMP>\n" ) +
