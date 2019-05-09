@@ -247,6 +247,44 @@ public:
     return m_parent == this;
   }
 
+#ifdef AXOM_USE_UMPIRE
+
+  /*!
+   * \brief Return the ID of the default umpire::Allocator associated with this
+   * Group.
+   */
+  int getDefaultAllocatorID() const
+  {
+    return m_default_allocator_id;
+  }
+
+  /*!
+   * \brief Return the default umpire::Allocator associated with this Group.
+   */
+  umpire::Allocator getDefaultAllocator() const
+  {
+    return getAllocator(m_default_allocator_id);
+  }
+
+  /*!
+   * \brief Set the default umpire::Allocator associated with this Group.
+   */
+  Group* setDefaultAllocator(umpire::Allocator alloc)
+  {
+    m_default_allocator_id = alloc.getId();
+    return this;
+  }
+
+  /*!
+   * \brief Set the default umpire::Allocator associated with this Group.
+   */
+  Group* setDefaultAllocator(int allocId)
+  {
+    m_default_allocator_id = allocId;
+    return this;
+  }
+#endif
+
 //@}
 
 
@@ -649,7 +687,8 @@ public:
    */
   View* createViewAndAllocate( const std::string& path,
                                TypeID type,
-                               IndexType num_elems );
+                               IndexType num_elems,
+                               int allocID=INVALID_ALLOCATOR_ID);
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -669,7 +708,8 @@ public:
   View* createViewAndAllocate( const std::string& path,
                                TypeID type,
                                int ndims,
-                               IndexType* shape );
+                               IndexType* shape,
+                               int allocID=INVALID_ALLOCATOR_ID);
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -686,7 +726,8 @@ public:
    * \sa View::allocate()
    */
   View* createViewAndAllocate( const std::string& path,
-                               const DataType& dtype);
+                               const DataType& dtype,
+                               int allocID=INVALID_ALLOCATOR_ID);
 
   /*!
    * \brief Create View object with given name or path in this Group
@@ -1402,6 +1443,12 @@ private:
    */
   void renameOrWarn(const std::string& new_name);
 
+  /*!
+   * \brief Private method. If allocatorID is a valid allocator ID then return
+   *  it. Otherwise return the ID of the default allocator of the owning group.
+   */
+  int getValidAllocatorID( int allocatorID );
+
   /// Name of this Group object.
   std::string m_name;
 
@@ -1429,6 +1476,10 @@ private:
 
   /// Collection of child Groups
   GroupCollection* m_group_coll;
+
+#ifdef AXOM_USE_UMPIRE
+  int m_default_allocator_id;
+#endif
 
 };
 

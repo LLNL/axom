@@ -91,8 +91,8 @@ void check_for_all_nodes_ij( )
 
   const IndexType numNodes = test_mesh->getNumberOfNodes();
 
-  IndexType* icoords = axom::alloc< IndexType >( numNodes );
-  IndexType* jcoords = axom::alloc< IndexType >( numNodes );
+  IndexType* icoords = axom::allocate< IndexType >( numNodes );
+  IndexType* jcoords = axom::allocate< IndexType >( numNodes );
 
   for_all_nodes< ExecPolicy, xargs::ij >( test_mesh,
     AXOM_LAMBDA( IndexType nodeIdx, IndexType i, IndexType j )
@@ -118,8 +118,8 @@ void check_for_all_nodes_ij( )
   delete test_mesh;
   test_mesh = nullptr;
 
-  axom::free( icoords );
-  axom::free( jcoords );
+  axom::deallocate( icoords );
+  axom::deallocate( jcoords );
 }
 
 //------------------------------------------------------------------------------
@@ -141,9 +141,9 @@ void check_for_all_nodes_ijk( )
 
   const IndexType numNodes = test_mesh->getNumberOfNodes();
 
-  IndexType* icoords = axom::alloc< IndexType >( numNodes );
-  IndexType* jcoords = axom::alloc< IndexType >( numNodes );
-  IndexType* kcoords = axom::alloc< IndexType >( numNodes );
+  IndexType* icoords = axom::allocate< IndexType >( numNodes );
+  IndexType* jcoords = axom::allocate< IndexType >( numNodes );
+  IndexType* kcoords = axom::allocate< IndexType >( numNodes );
 
   for_all_nodes< ExecPolicy, xargs::ijk >( test_mesh,
     AXOM_LAMBDA( IndexType nodeIdx, IndexType i, IndexType j, IndexType k )
@@ -174,9 +174,9 @@ void check_for_all_nodes_ijk( )
   delete test_mesh;
   test_mesh = nullptr;
 
-  axom::free( icoords );
-  axom::free( jcoords );
-  axom::free( kcoords );
+  axom::deallocate( icoords );
+  axom::deallocate( jcoords );
+  axom::deallocate( kcoords );
 }
 
 //------------------------------------------------------------------------------
@@ -199,9 +199,9 @@ void check_for_all_nodes_xyz( )
 
   // STEP 1: generate test coordinate arrays
   const IndexType numNodes = test_mesh->getNumberOfNodes();
-  double* x = axom::alloc< double >( numNodes );
-  double* y = axom::alloc< double >( numNodes );
-  double* z = axom::alloc< double >( numNodes );
+  double* x = axom::allocate< double >( numNodes );
+  double* y = axom::allocate< double >( numNodes );
+  double* z = axom::allocate< double >( numNodes );
   for_all_nodes< ExecPolicy, xargs::xyz >( test_mesh,
     AXOM_LAMBDA( IndexType idx, double xx, double yy, double zz )
     {
@@ -225,9 +225,9 @@ void check_for_all_nodes_xyz( )
   delete test_mesh;
   test_mesh = nullptr;
 
-  axom::free( x );
-  axom::free( y );
-  axom::free( z );
+  axom::deallocate( x );
+  axom::deallocate( y );
+  axom::deallocate( z );
 }
 
 //------------------------------------------------------------------------------
@@ -250,8 +250,8 @@ void check_for_all_nodes_xy( )
 
   // STEP 1: generate test coordinate arrays
   const IndexType numNodes = test_mesh->getNumberOfNodes();
-  double* x = axom::alloc< double >( numNodes );
-  double* y = axom::alloc< double >( numNodes );
+  double* x = axom::allocate< double >( numNodes );
+  double* y = axom::allocate< double >( numNodes );
   for_all_nodes< ExecPolicy, xargs::xy >( test_mesh,
     AXOM_LAMBDA( IndexType idx, double xx, double yy )
     {
@@ -273,8 +273,8 @@ void check_for_all_nodes_xy( )
   delete test_mesh;
   test_mesh = nullptr;
 
-  axom::free( x );
-  axom::free( y );
+  axom::deallocate( x );
+  axom::deallocate( y );
 }
 
 //------------------------------------------------------------------------------
@@ -302,7 +302,7 @@ void check_for_all_nodes_x( )
 
   // STEP 1: generate test coordinate arrays
   const IndexType numNodes = uniform_mesh.getNumberOfNodes();
-  double* x = axom::alloc< double >( numNodes );
+  double* x = axom::allocate< double >( numNodes );
   for_all_nodes< ExecPolicy, xargs::x >( test_mesh,
     AXOM_LAMBDA( IndexType idx, double xx )
     {
@@ -321,7 +321,7 @@ void check_for_all_nodes_x( )
   // STEP 3: clean up
   delete test_mesh;
   test_mesh = nullptr;
-  axom::free( x );
+  axom::deallocate( x );
 }
 
 } /* end anonymous namespace */

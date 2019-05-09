@@ -24,10 +24,7 @@ using axom::sidre::getTypeID;
 //------------------------------------------------------------------------------
 
 int countMismatch(unsigned int elts, int* standard, int* undertest,
-                  bool printTest = false);
-
-int countMismatch(unsigned int elts, int* standard, int* undertest,
-                  bool printTest)
+                  bool printTest = false)
 {
   int retval = 0;
 
@@ -81,13 +78,17 @@ void verifyDescribedBuffer(Buffer* buf, bool isDescribed,
 void verifyAllocatedBuffer(Buffer* buf, DataTypeId tid, int eltsize,
                            int eltcount)
 {
-  EXPECT_TRUE(buf->isAllocated());
   EXPECT_TRUE(buf->isDescribed());
   EXPECT_EQ(tid, buf->getTypeID());
   EXPECT_EQ(eltsize, buf->getBytesPerElement());
   EXPECT_EQ(eltsize * eltcount, buf->getTotalBytes());
   EXPECT_EQ(eltcount, buf->getNumElements());
-  EXPECT_NE(static_cast<void*>(nullptr), buf->getVoidPtr());
+
+  if (eltcount > 0)
+  {
+    EXPECT_TRUE(buf->isAllocated());
+    EXPECT_NE(static_cast<void*>(nullptr), buf->getVoidPtr());
+  }
 }
 
 // Test describe methods
@@ -269,7 +270,7 @@ TEST(sidre_buffer,buffer_allocate)
 
   eltcount = 12;
   {
-    SCOPED_TRACE("REallocate a described zero-element buffer");
+    SCOPED_TRACE("Reallocate a described zero-element buffer");
     buf4a->reallocate(eltcount);
     eltcount = 0;
     buf4a->reallocate(eltcount);
@@ -311,12 +312,12 @@ TEST(sidre_databuffer,buffer_reallocate_zero_elements)
   eltcount = 0;
   buf->reallocate(eltcount);
 
-  EXPECT_TRUE(buf->isAllocated());
+  EXPECT_FALSE(buf->isAllocated());
   EXPECT_TRUE(buf->isDescribed());
   EXPECT_EQ(tid, buf->getTypeID());
   EXPECT_EQ(eltsize * eltcount, buf->getTotalBytes());
   EXPECT_EQ(eltcount, buf->getNumElements());
-  EXPECT_NE(nullptr, buf->getVoidPtr());
+  EXPECT_EQ(nullptr, buf->getVoidPtr());
 
   eltcount = 5;
   buf->reallocate(eltcount);

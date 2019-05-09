@@ -148,7 +148,7 @@ static bool checkViewValues(View* view,
     }
   }
 
-  if (view->isApplied())
+  if (view->isAllocated() && view->isApplied())
   {
     // Fill with data to help the print function
     int* data_ptr = view->getData();
@@ -334,7 +334,7 @@ TEST(sidre_view,scalar_view)
   {}
 #endif
   const char* svalue = empty->getString();
-  EXPECT_EQ(NULL, svalue);
+  EXPECT_EQ(nullptr, svalue);
 
   delete ds;
 }
@@ -423,9 +423,10 @@ TEST(sidre_view,alloc_zero_items)
 
     // Allocate with size zero
     dv->allocate(INT_ID, 0);
-    expDesc = expAlloc = expAppl = true;
+    expDesc = expAppl = true;
+    expAlloc = false;
     EXPECT_TRUE(checkViewValues(dv, BUFFER, expDesc, expAlloc, expAppl, 0));
-    EXPECT_TRUE(dv->getBuffer()->isAllocated());
+    EXPECT_FALSE(dv->getBuffer()->isAllocated());
     EXPECT_EQ(0, dv->getBuffer()->getNumElements());
   }
 
@@ -447,24 +448,25 @@ TEST(sidre_view,alloc_zero_items)
     // Try to reallocate with negative size; no-op
     SLIC_INFO("Attempting View::reallocate(-1).  Warning expected.");
     dv->reallocate(-1);
+    expDesc = expAlloc = expAppl = true;
     EXPECT_TRUE(checkViewValues(dv, BUFFER, expDesc, expAlloc, expAppl, BLEN));
     EXPECT_TRUE(dv->getBuffer()->isAllocated());
     EXPECT_EQ(BLEN, dv->getBuffer()->getNumElements());
 
     // Call realloc(0); view and associated buffer are resized
     dv->reallocate(0);
+    expDesc = expAppl = true;
+    expAlloc = false;
     EXPECT_TRUE(checkViewValues(dv, BUFFER, expDesc, expAlloc, expAppl, 0));
-    EXPECT_TRUE(dv->getBuffer()->isAllocated());
+    EXPECT_FALSE(dv->getBuffer()->isAllocated());
     EXPECT_EQ(0, dv->getBuffer()->getNumElements());
 
     // Deallocate and then allocate() when described with zero items
     dv->deallocate();
-    expDesc = true;
+    expDesc = expAppl = true;
     expAlloc = false;
-    expAppl = false;
     EXPECT_TRUE(checkViewValues(dv, BUFFER, expDesc, expAlloc, expAppl, 0));
     dv->allocate();
-    expDesc = expAlloc = expAppl = true;
     EXPECT_TRUE(checkViewValues(dv, BUFFER, expDesc, expAlloc, expAppl, 0));
 
     // Deallocate and then allocate(0) when described with zero items
@@ -480,6 +482,7 @@ TEST(sidre_view,alloc_zero_items)
     // Deallocate and then reallocate(), non-zero sized
     dv->deallocate();
     dv->reallocate(BLEN);
+    expDesc = expAlloc = expAppl = true;
     EXPECT_TRUE(checkViewValues(dv, BUFFER, expDesc, expAlloc, expAppl, BLEN));
   }
 
@@ -489,7 +492,7 @@ TEST(sidre_view,alloc_zero_items)
     bool expAlloc = true;
     bool expAppl = true;
 
-    Buffer* nonEmptyBuf = ds->createBuffer( INT_ID, BLEN)->allocate();
+    Buffer* nonEmptyBuf = ds->createBuffer(INT_ID, BLEN)->allocate();
 
     View* dv = root->createView("z_nonEmptyBuf_attach_apply");
     dv->attachBuffer(nonEmptyBuf)->apply(0);
@@ -505,11 +508,14 @@ TEST(sidre_view,alloc_zero_items)
 
     // reallocate view to have size zero and check that buffer is resized
     dv->reallocate(0);
+    expDesc = expAppl = true;
+    expAlloc = false;
     EXPECT_TRUE(checkViewValues(dv, BUFFER, expDesc, expAlloc, expAppl, 0));
     EXPECT_EQ(0, dv->getBuffer()->getNumElements());
 
     // reallocate view to have size BLEN and check that buffer is resized
     dv->reallocate(BLEN);
+    expDesc = expAlloc = expAppl = true;
     EXPECT_TRUE(checkViewValues(dv, BUFFER, expDesc, expAlloc, expAppl, BLEN));
     EXPECT_EQ(BLEN, dv->getBuffer()->getNumElements());
 
@@ -523,28 +529,35 @@ TEST(sidre_view,alloc_zero_items)
   // Allocate View of size 0 into empty buffer
   {
     bool expDesc = true;
-    bool expAlloc = true;
+    bool expAlloc = false;
     bool expAppl = true;
 
     Buffer* emptyBuf = ds->createBuffer( INT_ID, 0)->allocate();
     View* dv = root->createView("z_emptyBuf_attach_apply");
     dv->attachBuffer(emptyBuf)->allocate()->apply(0);
-    EXPECT_TRUE(dv->getBuffer()->isAllocated());
+    EXPECT_FALSE(dv->getBuffer()->isAllocated());
     EXPECT_TRUE(checkViewValues(dv, BUFFER, expDesc, expAlloc, expAppl, 0));
 
     // reallocate buffer with non-emtpy size; view should still be zero
     emptyBuf->reallocate(BLEN);
+    expDesc = expAlloc = expAppl = true;
     EXPECT_TRUE(checkViewValues(dv, BUFFER, expDesc, expAlloc, expAppl, 0));
+    EXPECT_TRUE(dv->getBuffer()->isAllocated());
     EXPECT_EQ(BLEN, dv->getBuffer()->getNumElements());
 
     // reallocate view to have size zero; view and buffer should be resized
     dv->reallocate(0);
+    expDesc = expAppl = true;
+    expAlloc = false;
     EXPECT_TRUE(checkViewValues(dv, BUFFER, expDesc, expAlloc, expAppl, 0));
+    EXPECT_FALSE(dv->getBuffer()->isAllocated());
     EXPECT_EQ(0, dv->getBuffer()->getNumElements());
 
     // attach a second view with size zero
     dv = root->createView("z_emptyBuf_described_attach", INT_ID, 0);
     dv->attachBuffer(emptyBuf);
+    expDesc = true;
+    expAlloc = expAppl = false;
     EXPECT_TRUE(checkViewValues(dv, BUFFER, expDesc, expAlloc, expAppl, 0));
     EXPECT_EQ(0, dv->getBuffer()->getNumElements());
   }
@@ -725,7 +738,6 @@ TEST(sidre_view,int_buffer_view)
   Buffer* dbuff, * otherbuffer;
   View* dv;
   IndexType bindex;
-  //  long shape[] = { BLEN };
 
   //     view                        buffer
   //                  undescribed  described  allocated
@@ -742,8 +754,8 @@ TEST(sidre_view,int_buffer_view)
   dv = root->createView("u1");
   EXPECT_TRUE(checkViewValues(dv, EMPTY, false, false, false, 0));
 
-  // no-op, attach NULL buffer to EMPTY view
-  dv->attachBuffer(NULL);
+  // no-op, attach nullptr buffer to EMPTY view
+  dv->attachBuffer(nullptr);
   EXPECT_TRUE(checkViewValues(dv, EMPTY, false, false, false, 0));
 
   dbuff = ds->createBuffer();
@@ -791,9 +803,9 @@ TEST(sidre_view,int_buffer_view)
   EXPECT_EQ(otherbuffer->getNumViews(), 0);
 
   // The current attached buffer will be destroyed.
-  dv->attachBuffer(NULL);
+  dv->attachBuffer(nullptr);
   EXPECT_TRUE(checkViewValues(dv, EMPTY, false, false, false, 0));
-  EXPECT_TRUE(ds->getBuffer(bindex) == NULL);
+  EXPECT_TRUE(ds->getBuffer(bindex) == nullptr);
 
   //---------- 4
   // Attach undescribed buffer to described view
@@ -1620,7 +1632,7 @@ TEST(sidre_datastore,destroy_buffer)
   // destroyBuffer will detach from views.
   IndexType bindex = dbuff1->getIndex();
   ds->destroyBuffer(bindex);
-  EXPECT_TRUE(ds->getBuffer(bindex) == NULL);
+  EXPECT_TRUE(ds->getBuffer(bindex) == nullptr);
 
   // views no longer have buffers (but retain descriptions)
   EXPECT_TRUE(checkViewValues(view1a, EMPTY, true, false, false, BLEN));
@@ -1645,21 +1657,408 @@ TEST(sidre_view,value_from_uninited_view)
 
   // check getArray
   int* aval_ptr =    view->getArray();
-  EXPECT_TRUE( aval_ptr == NULL );
+  EXPECT_TRUE( aval_ptr == nullptr );
 
   int aval = view->getArray();
   EXPECT_EQ(aval,0);
 
   // check getData
   int* dval_ptr =    view->getData();
-  EXPECT_TRUE( dval_ptr == NULL );
+  EXPECT_TRUE( dval_ptr == nullptr );
 
   int dval = view->getData();
   EXPECT_EQ(dval,0);
 
 }
 
+#ifdef AXOM_USE_UMPIRE
 
+class UmpireTest : public ::testing::TestWithParam<int>
+{
+public:
+  void SetUp() override
+  {
+    allocID = GetParam();
+    root = ds.getRoot();
+  }
+
+  void TearDown() override
+  {
+    axom::setDefaultAllocator(umpire::resource::Host);
+  }
+
+  static constexpr int SIZE = 100;
+  DataStore ds;
+  Group* root;
+  umpire::ResourceManager & rm = umpire::ResourceManager::getInstance();
+  int allocID;
+};
+
+//------------------------------------------------------------------------------
+TEST_P(UmpireTest, allocate)
+{
+  {
+    View* view = root->createView("v");
+    view->allocate(INT_ID, SIZE, allocID);
+
+    ASSERT_EQ(allocID, rm.getAllocator(view->getVoidPtr()).getId());
+    root->destroyViewAndData("v");
+  }
+
+  {
+    View* view = root->createView("v");
+    DataType dtype = conduit::DataType::default_dtype(INT_ID);
+    dtype.set_number_of_elements(SIZE);
+    view->allocate(dtype, allocID);
+
+    ASSERT_EQ(allocID, rm.getAllocator(view->getVoidPtr()).getId());
+    root->destroyViewAndData("v");
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST_P(UmpireTest, allocate_default)
+{
+  root->setDefaultAllocator(allocID);
+
+  {
+    View* view = root->createView("v");
+    view->allocate(INT_ID, SIZE);
+
+    ASSERT_EQ(allocID, rm.getAllocator(view->getVoidPtr()).getId());
+    root->destroyViewAndData("v");
+  }
+
+  {
+    View* view = root->createView("v");
+    DataType dtype = conduit::DataType::default_dtype(INT_ID);
+    dtype.set_number_of_elements(SIZE);
+    view->allocate(dtype);
+
+    ASSERT_EQ(allocID, rm.getAllocator(view->getVoidPtr()).getId());
+    root->destroyViewAndData("v");
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST_P(UmpireTest, reallocate)
+{
+  if (allocID == umpire::resource::Constant)
+  {
+    return;
+  }
+
+  {
+    View* view = root->createView("v");
+    view->allocate(INT_ID, SIZE, allocID);
+    view->reallocate(2 * SIZE);
+
+    ASSERT_EQ(allocID, rm.getAllocator(view->getVoidPtr()).getId());
+    root->destroyViewAndData("v");
+  }
+
+  {
+    View* view = root->createView("v");
+    DataType dtype = conduit::DataType::default_dtype(INT_ID);
+    dtype.set_number_of_elements(SIZE);
+    view->allocate(dtype, allocID);
+    view->reallocate(2 * SIZE);
+
+    ASSERT_EQ(allocID, rm.getAllocator(view->getVoidPtr()).getId());
+    root->destroyViewAndData("v");
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST_P(UmpireTest, reallocate_zero)
+{
+  if (allocID == umpire::resource::Constant)
+  {
+    return;
+  }
+
+  {
+    View* view = root->createView("v");
+    view->allocate(INT_ID, SIZE, allocID);
+    view->reallocate(0);
+    view->reallocate(SIZE);
+
+    ASSERT_EQ(axom::getDefaultAllocator().getId(),
+              rm.getAllocator(view->getVoidPtr()).getId());
+
+    root->destroyViewAndData("v");
+  }
+
+  {
+    View* view = root->createView("v");
+    DataType dtype = conduit::DataType::default_dtype(INT_ID);
+    dtype.set_number_of_elements(SIZE);
+    view->allocate(dtype, allocID);
+    view->reallocate(0);
+    view->reallocate(SIZE);
+
+    ASSERT_EQ(axom::getDefaultAllocator().getId(),
+              rm.getAllocator(view->getVoidPtr()).getId());
+
+    root->destroyViewAndData("v");
+  }
+}
+
+const int allocators[] = { umpire::resource::Host
+#ifdef AXOM_USE_CUDA
+                           , umpire::resource::Pinned
+                           , umpire::resource::Device
+                           , umpire::resource::Constant
+                           , umpire::resource::Unified
+#endif
+};
+
+INSTANTIATE_TEST_CASE_P(
+  sidre_view,
+  UmpireTest,
+  ::testing::ValuesIn(allocators)
+  );
+
+#endif // AXOM_USE_UMPIRE
+
+TEST(sidre_view, isUpdateableFrom)
+{
+  constexpr int SIZE = 100;
+  DataStore ds;
+  Group* root = ds.getRoot();
+  View* host = root->createViewAndAllocate("v", INT_ID, SIZE);
+
+  // Cannot update from an empty View
+  {
+    View* v = root->createView("v0");
+    ASSERT_FALSE(host->isUpdateableFrom(v));
+    ASSERT_FALSE(v->isUpdateableFrom(host));
+  }
+
+  // Cannot update from a scalar View
+  {
+    View* v = root->createViewScalar("v1", 5);
+    ASSERT_FALSE(host->isUpdateableFrom(v));
+    ASSERT_FALSE(v->isUpdateableFrom(host));
+  }
+
+  // Cannot update from a string View
+  {
+    View* v = root->createViewString("v2", "dummy");
+    ASSERT_FALSE(host->isUpdateableFrom(v));
+    ASSERT_FALSE(v->isUpdateableFrom(host));
+  }
+
+  // Cannot update from a View with a different number of bytes
+  {
+    View* v = root->createViewAndAllocate("v3", INT_ID, SIZE + 1);
+    ASSERT_FALSE(host->isUpdateableFrom(v));
+    ASSERT_FALSE(v->isUpdateableFrom(host));
+  }
+
+  // Cannot update from a View with a non-unit stride.
+  {
+    View* v = root->createViewAndAllocate("v4", INT_ID, SIZE);
+    v->apply(SIZE / 2, 0, 2);
+    ASSERT_FALSE(host->isUpdateableFrom(v));
+    ASSERT_FALSE(v->isUpdateableFrom(host));
+  }
+
+  // Can update from a simlar view.
+  {
+    View* v = root->createViewAndAllocate("v5", INT_ID, SIZE);
+    ASSERT_TRUE(host->isUpdateableFrom(v));
+    ASSERT_TRUE(v->isUpdateableFrom(host));
+  }
+
+  // Can update from a simlar view with offset.
+  {
+    View* v = root->createViewAndAllocate("v6", INT_ID, SIZE + 10);
+    v->apply(SIZE, 10);
+    ASSERT_TRUE(host->isUpdateableFrom(v));
+    ASSERT_TRUE(v->isUpdateableFrom(host));
+  }
+
+  // Can update from a view with a different type but same number of bytes.
+  {
+    View* v = root->createViewAndAllocate("v7", TypeID::INT8_ID,
+                                          SIZE * sizeof(int));
+    ASSERT_TRUE(host->isUpdateableFrom(v));
+    ASSERT_TRUE(v->isUpdateableFrom(host));
+  }
+}
+
+class UpdateTest :
+  public ::testing::TestWithParam<::testing::tuple<std::string, std::string,
+                                                   int> >
+{
+public:
+  void SetUp() override
+  {
+    src_string = ::testing::get<0>(GetParam());
+    dst_string = ::testing::get<1>(GetParam());
+    offset = ::testing::get<2>(GetParam());
+    int size = SIZE - offset;
+
+    Group* root = ds.getRoot();
+    host = root->createViewAndAllocate("host", INT_ID, size);
+
+    if (src_string == "NEW")
+    {
+      m_src_array = new int[SIZE];
+      src = root->createView("src")->setExternalDataPtr(m_src_array)
+            ->apply(INT_ID, size, offset);
+    }
+    else if (src_string == "MALLOC")
+    {
+      m_src_array = static_cast<int*>(std::malloc(SIZE * sizeof(int)));
+      src = root->createView("src")->setExternalDataPtr(m_src_array)
+            ->apply(INT_ID, size, offset);
+    }
+    else if (src_string == "STATIC")
+    {
+      src = root->createView("src")->setExternalDataPtr(m_static_src_array)
+            ->apply(INT_ID, size, offset);
+    }
+#ifdef AXOM_USE_UMPIRE
+    else
+    {
+      int src_alloc_id = rm.getAllocator(src_string).getId();
+      src = root->createViewAndAllocate("src", INT_ID, SIZE, src_alloc_id)
+            ->apply(size, offset);
+    }
+#endif
+
+    if (dst_string == "NEW")
+    {
+      m_dst_array = new int[SIZE];
+      dst = root->createView("dst")->setExternalDataPtr(m_dst_array)
+            ->apply(INT_ID, size, offset);
+    }
+    else if (dst_string == "MALLOC")
+    {
+      m_dst_array = static_cast<int*>(std::malloc(SIZE * sizeof(int)));
+      dst = root->createView("dst")->setExternalDataPtr(m_dst_array)
+            ->apply(INT_ID, size, offset);
+    }
+    else if (dst_string == "STATIC")
+    {
+      dst = root->createView("dst")->setExternalDataPtr(m_static_dst_array)
+            ->apply(INT_ID, size, offset);
+    }
+#ifdef AXOM_USE_UMPIRE
+    else
+    {
+      int dst_alloc_id = rm.getAllocator(dst_string).getId();
+      dst = root->createViewAndAllocate("dst", INT_ID, SIZE, dst_alloc_id)
+            ->apply(size, offset);
+    }
+#endif
+  }
+
+  void TearDown() override
+  {
+    if (src_string == "NEW")
+    {
+      delete[] m_src_array;
+    }
+    else if (src_string == "MALLOC")
+    {
+      std::free(m_src_array);
+    }
+
+    if (dst_string == "NEW")
+    {
+      delete[] m_dst_array;
+    }
+    else if (dst_string == "MALLOC")
+    {
+      std::free(m_dst_array);
+    }
+  }
+
+  static constexpr int SIZE = 100;
+
+#ifdef AXOM_USE_UMPIRE
+  umpire::ResourceManager & rm = umpire::ResourceManager::getInstance();
+#endif
+
+  std::string src_string;
+  std::string dst_string;
+  int offset;
+
+  DataStore ds;
+  View* host;
+  View* src;
+  View* dst;
+
+private:
+  int m_static_src_array[SIZE];
+  int m_static_dst_array[SIZE];
+  int* m_src_array = nullptr;
+  int* m_dst_array = nullptr;
+};
+
+TEST_P(UpdateTest, updateFrom)
+{
+  std::cout << "SRC = " << src_string << ", DST = " << dst_string
+            << ", OFFSET = " << offset << std::endl;
+
+  ASSERT_TRUE(src->isUpdateableFrom(host));
+  ASSERT_TRUE(dst->isUpdateableFrom(src));
+  ASSERT_TRUE(host->isUpdateableFrom(dst));
+
+  int* host_ptr = host->getData();
+  const int size = host->getNumElements();
+  ASSERT_EQ(size, SIZE - offset);
+
+  for (int i = 0 ; i < size ; ++i)
+  {
+    host_ptr[i] = i;
+  }
+
+  src->updateFrom(host);
+
+  for (int i = 0 ; i < size ; ++i)
+  {
+    host_ptr[i] = -i;
+  }
+
+  dst->updateFrom(src);
+  host->updateFrom(dst);
+
+  for (int i = 0 ; i < size ; ++i)
+  {
+    ASSERT_EQ(host_ptr[i], i);
+  }
+}
+
+const std::string copy_locations[] = {
+  "NEW", "MALLOC", "STATIC"
+#if defined(AXOM_USE_UMPIRE)
+  , "HOST"
+#if defined(UMPIRE_ENABLE_DEVICE)
+  , "DEVICE"
+#endif
+#if defined(UMPIRE_ENABLE_UM)
+  , "UM"
+#endif
+#if defined(UMPIRE_ENABLE_PINNED)
+  , "PINNED"
+#endif
+#endif
+};
+
+const int offsets[] = {0, 29};
+
+INSTANTIATE_TEST_CASE_P(
+  sidre_view,
+  UpdateTest,
+  ::testing::Combine(
+    ::testing::ValuesIn(copy_locations),
+    ::testing::ValuesIn(copy_locations),
+    ::testing::ValuesIn(offsets)
+    ));
 
 //----------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"

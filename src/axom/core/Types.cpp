@@ -32,4 +32,3 @@ const MPI_Datatype mpi_traits< uint64 >::type = MPI_UINT64_T;
 #endif /* end AXOM_USE_MPI */
 
 } // end namespace axom
-

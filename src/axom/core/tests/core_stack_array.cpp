@@ -17,15 +17,15 @@ namespace internal
 template< typename T, int N, typename LAMBDA >
 void check( const StackArray< T, N > & arr, LAMBDA && getValue )
 {
-  for ( int i = 0; i < N; ++i )
+  for ( int i = 0 ; i < N ; ++i )
   {
     EXPECT_EQ( arr[ i ], getValue( i ) );
   }
 
-  const T * ptr = arr;
+  const T* ptr = arr;
   EXPECT_EQ( ptr, &arr[0] );
 
-  for ( int i = 0; i < N; ++i )
+  for ( int i = 0 ; i < N ; ++i )
   {
     EXPECT_EQ( ptr[ i ], getValue( i ) );
   }
@@ -37,7 +37,7 @@ StackArray< T, N > test_storage( LAMBDA && getValue )
 {
   StackArray< T, N > arr;
 
-  for ( int i = 0; i < N; ++i )
+  for ( int i = 0 ; i < N ; ++i )
   {
     arr[ i ] = getValue( i );
   }
@@ -52,7 +52,7 @@ void test_copy( LAMBDA && getValue )
 {
   StackArray< T, N > arr;
 
-  for ( int i = 0; i < N; ++i )
+  for ( int i = 0 ; i < N ; ++i )
   {
     arr[ i ] = getValue( i );
   }
@@ -60,7 +60,7 @@ void test_copy( LAMBDA && getValue )
   StackArray< T, N > copy(arr);
   EXPECT_NE( &arr[0], &copy[0] );
 
-  for ( int i = 0; i < N; ++i )
+  for ( int i = 0 ; i < N ; ++i )
   {
     EXPECT_EQ( arr[ i ], copy[ i ] );
   }
@@ -72,8 +72,10 @@ void test_copy( LAMBDA && getValue )
 template< typename T, typename LAMBDA >
 void test_list_initilization( LAMBDA && getValue )
 {
-  const StackArray< T, 5 > arr = {{ getValue(0), getValue(1), getValue(2),
-                                    getValue(3), getValue(4) }};
+  const StackArray< T, 5 > arr = {
+    { getValue(0), getValue(1), getValue(2),
+      getValue(3), getValue(4) }
+  };
 
   check( arr, std::forward< LAMBDA >( getValue ) );
 }
@@ -85,11 +87,11 @@ struct Tensor
 {
   double x, y, z;
 
-  Tensor():
+  Tensor() :
     x(), y(), z()
   {}
 
-  explicit Tensor( double val ):
+  explicit Tensor( double val ) :
     x( 3 * val ), y( 3 * val + 1 ), z( 3 * val + 2 )
   {}
 
@@ -120,38 +122,56 @@ TEST( StackArray, storage )
 {
   constexpr int N = 100;     /* Number of values to store */
   internal::test_storage< int, N >(
-    []( int i ) { return i; } );
+    []( int i ) {
+      return i;
+    } );
 
   internal::test_storage< Tensor, N >(
-    []( int i ) { return Tensor( i ); } );
+    []( int i ) {
+      return Tensor( i );
+    } );
 
   internal::test_storage< std::string, N >(
-    []( int i ) { return std::to_string( i ); } );
+    []( int i ) {
+      return std::to_string( i );
+    } );
 }
 
 TEST( StackArray, copy )
 {
   constexpr int N = 100;     /* Number of values to store */
   internal::test_copy< int, N >(
-    []( int i ) { return i; } );
+    []( int i ) {
+      return i;
+    } );
 
   internal::test_copy< Tensor, N >(
-    []( int i ) { return Tensor( i ); } );
+    []( int i ) {
+      return Tensor( i );
+    } );
 
   internal::test_copy< std::string, N >(
-    []( int i ) { return std::to_string( i ); } );
+    []( int i ) {
+      return std::to_string( i );
+    } );
 }
 
 TEST( StackArray, list_initilization )
 {
   internal::test_list_initilization< int >(
-    []( int i ) { return i; } );
+    []( int i ) {
+      return i;
+    } );
 
   internal::test_list_initilization< Tensor >(
-    []( int i ) { return Tensor( i ); } );
+    []( int i ) {
+      return Tensor( i );
+    } );
 
   internal::test_list_initilization< std::string >(
-    []( int i ) { return std::to_string( i ); } );
+    []( int i ) {
+      return std::to_string( i );
+    } );
 }
 
 } /* namespace axom */

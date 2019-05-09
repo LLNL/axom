@@ -131,7 +131,7 @@ if (AXOM_ENABLE_SPARSEHASH)
         blt_add_target_compile_flags(TO sparsehash FLAGS
             $<$<NOT:$<COMPILE_LANGUAGE:Fortran>>:-Wno-class-memaccess>)
       else()
-        blt_add_target_compile_flags(TO sparsehash FLAGS -Wno-class-memaccess>)
+        blt_add_target_compile_flags(TO sparsehash FLAGS -Wno-class-memaccess)
       endif()
     endif()
 

@@ -8,7 +8,6 @@
 
 // Standard C++ headers
 #include <algorithm>
-#include <cstring> // for std::memcpy
 
 // Sidre project headers
 #include "Group.hpp"
@@ -20,6 +19,22 @@ namespace axom
 {
 namespace sidre
 {
+
+/*!
+ * \brief Helper function. If allocatorID is a valid umpire allocator ID then
+ *  return it. Otherwise return the ID of the default allocator.
+ */
+int getValidAllocatorID( int allocID )
+{
+#ifdef AXOM_USE_UMPIRE
+  if ( allocID == INVALID_ALLOCATOR_ID )
+  {
+    allocID = getDefaultAllocator().getId();
+  }
+#endif
+
+  return allocID;
+}
 
 /*
  *************************************************************************
@@ -51,8 +66,10 @@ Buffer* Buffer::describe(TypeID type, IndexType num_elems)
  *
  *************************************************************************
  */
-Buffer* Buffer::allocate()
+Buffer* Buffer::allocate(int allocID)
 {
+  allocID = getValidAllocatorID(allocID);
+
   if ( !isDescribed() || isAllocated() )
   {
     SLIC_CHECK_MSG(isDescribed(), "Buffer is not described, cannot allocate.");
@@ -61,9 +78,9 @@ Buffer* Buffer::allocate()
     return this;
   }
 
-  void* data = allocateBytes( getTotalBytes() );
+  void* data = allocateBytes( getTotalBytes(), allocID );
 
-  SLIC_CHECK_MSG( data != nullptr,
+  SLIC_CHECK_MSG( getTotalBytes() == 0 || data != nullptr,
                   "Buffer failed to allocate memory of size " <<
                   getTotalBytes() );
 
@@ -81,8 +98,10 @@ Buffer* Buffer::allocate()
  *
  *************************************************************************
  */
-Buffer* Buffer::allocate(TypeID type, IndexType num_elems)
+Buffer* Buffer::allocate(TypeID type, IndexType num_elems, int allocID)
 {
+  allocID = getValidAllocatorID(allocID);
+
   if (isAllocated())
   {
     SLIC_CHECK_MSG(!isAllocated(), "Buffer is already allocated.");
@@ -91,7 +110,8 @@ Buffer* Buffer::allocate(TypeID type, IndexType num_elems)
   }
 
   describe(type, num_elems);
-  allocate();
+
+  allocate(allocID);
 
   return this;
 }
@@ -105,18 +125,10 @@ Buffer* Buffer::allocate(TypeID type, IndexType num_elems)
  */
 Buffer* Buffer::reallocate( IndexType num_elems)
 {
-  if (!isAllocated())
+  if (!isDescribed())
   {
-    if (isDescribed())
-    {
-      allocate();
-    }
-    else
-    {
-      SLIC_CHECK_MSG(isDescribed(),
-                     "Can't re-allocate Buffer with no type description.");
-    }
-
+    SLIC_CHECK_MSG(!isDescribed(),
+                   "Can't re-allocate Buffer with no type description.");
     return this;
   }
 
@@ -127,24 +139,22 @@ Buffer* Buffer::reallocate( IndexType num_elems)
     return this;
   }
 
-  IndexType old_size = getTotalBytes();
   void* old_data_ptr = getVoidPtr();
 
   DataType dtype( m_node.dtype() );
   dtype.set_number_of_elements( num_elems );
   IndexType new_size = dtype.strided_bytes();
-  void* new_data_ptr = allocateBytes(new_size);
+  void* new_data_ptr = axom::reallocate(static_cast<axom::uint8*>(old_data_ptr),
+                                        new_size);
 
-  if ( new_data_ptr != nullptr )
+  if ( num_elems == 0 || new_data_ptr != nullptr )
   {
     m_node.reset();
     m_node.set_external(dtype, new_data_ptr);
-    copyBytesIntoBuffer(old_data_ptr, std::min(old_size, new_size) );
-    releaseBytes( old_data_ptr);
   }
   else
   {
-    SLIC_CHECK_MSG(new_data_ptr != nullptr,
+    SLIC_CHECK_MSG(num_elems == 0 || new_data_ptr != nullptr,
                    "Buffer re-allocate failed with " << new_size << " bytes.");
   }
 
@@ -185,8 +195,7 @@ Buffer* Buffer::deallocate()
  *
  *************************************************************************
  */
-Buffer* Buffer::copyBytesIntoBuffer(const void* src,
-                                    IndexType nbytes)
+Buffer* Buffer::copyBytesIntoBuffer(void* src, IndexType nbytes)
 {
   if ( src == nullptr || nbytes < 0 || nbytes > getTotalBytes() )
   {
@@ -201,7 +210,7 @@ Buffer* Buffer::copyBytesIntoBuffer(const void* src,
     return this;
   }
 
-  copyBytes(src, getVoidPtr(), nbytes);
+  copy( getVoidPtr(), src, nbytes );
 
   return this;
 }
@@ -410,21 +419,14 @@ void Buffer::detachFromAllViews()
  *
  *************************************************************************
  */
-void* Buffer::allocateBytes(IndexType num_bytes)
+void* Buffer::allocateBytes(IndexType num_bytes, int allocID)
 {
-  return new(std::nothrow) axom::int8[num_bytes];
-}
-
-/*
- *************************************************************************
- *
- * PRIVATE copyBytes
- *
- *************************************************************************
- */
-void Buffer::copyBytes( const void* src, void* dst, IndexType num_bytes )
-{
-  std::memcpy( dst, src, num_bytes );
+  allocID = getValidAllocatorID(allocID);
+#ifdef AXOM_USE_UMPIRE
+  return axom::allocate<axom::int8>(num_bytes, getAllocator(allocID));
+#else
+  return axom::allocate<axom::int8>(num_bytes);
+#endif
 }
 
 /*
@@ -437,9 +439,9 @@ void Buffer::copyBytes( const void* src, void* dst, IndexType num_bytes )
 void Buffer::releaseBytes( void* ptr)
 {
   // Pointer type here should always match new call in allocateBytes.
-  delete[] static_cast<axom::int8*>(ptr);
+  axom::int8* ptr_copy = static_cast<axom::int8*>(ptr);
+  axom::deallocate(ptr_copy);
 }
-
 
 } /* end namespace sidre */
 } /* end namespace axom */

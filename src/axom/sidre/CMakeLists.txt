@@ -10,19 +10,6 @@ axom_component_requires(NAME       Sidre
                         COMPONENTS SLIC
                         TPLS       Conduit)
 
-# Note: Sidre's unordered_map is either sparsehash OR C++11's unordered_map
-#       Default to std::map and warn if neither is available
-if(NOT SPARSEHASH_FOUND)
-  if(NOT CMAKE_CXX_STANDARD EQUAL 11)
-    if(NOT CMAKE_CXX_STANDARD EQUAL 14)
-      message(WARNING "No hashmap implementation available. 
-        Defaulting to using an ordered map for Sidre groups.
-        For improved performance, set SPARSEHASH_DIR to location of a sparsehash install
-        or enable C++11 (e.g. set BLT_CXX_STD to 'c++11').")
-    endif()
-  endif()
-endif()
-
 ################################
 # Add the sidre sources
 ################################
@@ -144,6 +131,7 @@ axom_write_unified_header(NAME    sidre
 axom_install_component(NAME    sidre
                        HEADERS ${sidre_headers}
                        )
+
 if(ENABLE_FORTRAN AND ENABLE_MPI)
     install(FILES ${CMAKE_Fortran_MODULE_DIRECTORY}/axom_spio.mod DESTINATION lib/fortran)
 endif()

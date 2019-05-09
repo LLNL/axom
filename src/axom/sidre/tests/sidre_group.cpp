@@ -2041,3 +2041,127 @@ TEST(sidre_group,save_load_preserve_contents)
   }
 
 }
+
+
+#ifdef AXOM_USE_UMPIRE
+
+class UmpireTest : public ::testing::TestWithParam<int>
+{
+public:
+  void SetUp() override
+  {
+    allocID = GetParam();
+    root = ds.getRoot();
+  }
+
+  void TearDown() override
+  {
+    axom::setDefaultAllocator(umpire::resource::Host);
+  }
+
+  static constexpr int SIZE = 100;
+  DataStore ds;
+  Group* root;
+  umpire::ResourceManager & rm = umpire::ResourceManager::getInstance();
+  int allocID;
+};
+
+TEST_P(UmpireTest, root_default_allocator)
+{
+  axom::setDefaultAllocator(allocID);
+
+  DataStore dsPrime;
+  ASSERT_EQ(dsPrime.getRoot()->getDefaultAllocatorID(), allocID);
+}
+
+TEST_P(UmpireTest, get_set_allocator)
+{
+  int defaultAllocatorID = axom::getDefaultAllocator().getId();
+  ASSERT_EQ(root->getDefaultAllocator().getId(), defaultAllocatorID);
+  ASSERT_EQ(root->getDefaultAllocatorID(), defaultAllocatorID);
+
+  root->setDefaultAllocator(allocID);
+  defaultAllocatorID = axom::getDefaultAllocator().getId();
+  ASSERT_EQ(root->getDefaultAllocator().getId(), axom::getAllocator(
+              allocID).getId());
+  ASSERT_EQ(root->getDefaultAllocatorID(), allocID);
+
+  root->setDefaultAllocator(axom::getDefaultAllocator());
+  ASSERT_EQ(root->getDefaultAllocator().getId(), defaultAllocatorID);
+  ASSERT_EQ(root->getDefaultAllocatorID(), defaultAllocatorID);
+}
+
+//------------------------------------------------------------------------------
+TEST_P(UmpireTest, allocate)
+{
+  {
+    View* view = root->createViewAndAllocate("v", INT_ID, SIZE, allocID);
+
+    ASSERT_EQ(allocID, rm.getAllocator(view->getVoidPtr()).getId());
+    root->destroyViewAndData("v");
+  }
+
+  {
+    IndexType shape[] = {1, SIZE, 1};
+    View* view = root->createViewAndAllocate("v", INT_ID, 3, shape, allocID);
+
+    ASSERT_EQ(allocID, rm.getAllocator(view->getVoidPtr()).getId());
+    root->destroyViewAndData("v");
+  }
+
+  {
+    DataType dtype = conduit::DataType::default_dtype(INT_ID);
+    dtype.set_number_of_elements(SIZE);
+    View* view = root->createViewAndAllocate("v", dtype, allocID);
+
+    ASSERT_EQ(allocID, rm.getAllocator(view->getVoidPtr()).getId());
+    root->destroyViewAndData("v");
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST_P(UmpireTest, allocate_default)
+{
+  root->setDefaultAllocator(allocID);
+
+  {
+    View* view = root->createViewAndAllocate("v", INT_ID, SIZE);
+
+    ASSERT_EQ(allocID, rm.getAllocator(view->getVoidPtr()).getId());
+    root->destroyViewAndData("v");
+  }
+
+  {
+    IndexType shape[] = {1, SIZE, 1};
+    View* view = root->createViewAndAllocate("v", INT_ID, 3, shape);
+
+    ASSERT_EQ(allocID, rm.getAllocator(view->getVoidPtr()).getId());
+    root->destroyViewAndData("v");
+  }
+
+  {
+    DataType dtype = conduit::DataType::default_dtype(INT_ID);
+    dtype.set_number_of_elements(SIZE);
+    View* view = root->createViewAndAllocate("v", dtype);
+
+    ASSERT_EQ(allocID, rm.getAllocator(view->getVoidPtr()).getId());
+    root->destroyViewAndData("v");
+  }
+}
+
+const int allocators[] = { umpire::resource::Host
+#ifdef AXOM_USE_CUDA
+                           , umpire::resource::Pinned
+                           , umpire::resource::Device
+                           , umpire::resource::Constant
+                           , umpire::resource::Unified
+#endif
+};
+
+INSTANTIATE_TEST_CASE_P(
+  sidre_group,
+  UmpireTest,
+  ::testing::ValuesIn(allocators)
+  );
+
+#endif // AXOM_USE_UMPIRE

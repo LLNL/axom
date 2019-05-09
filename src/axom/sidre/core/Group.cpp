@@ -478,12 +478,15 @@ View* Group::createView( const std::string& path,
  */
 View* Group::createViewAndAllocate( const std::string& path,
                                     TypeID type,
-                                    IndexType num_elems )
+                                    IndexType num_elems,
+                                    int allocID )
 {
+  allocID = getValidAllocatorID(allocID);
+
   View* view = createView(path, type, num_elems);
   if ( view != nullptr )
   {
-    view->allocate();
+    view->allocate(allocID);
   }
   return view;
 }
@@ -499,12 +502,15 @@ View* Group::createViewAndAllocate( const std::string& path,
 View* Group::createViewAndAllocate( const std::string& path,
                                     TypeID type,
                                     int ndims,
-                                    IndexType* shape )
+                                    IndexType* shape,
+                                    int allocID )
 {
+  allocID = getValidAllocatorID(allocID);
+
   View* view = createView(path, type, ndims, shape);
   if ( view != nullptr )
   {
-    view->allocate();
+    view->allocate(allocID);
   }
   return view;
 }
@@ -518,12 +524,15 @@ View* Group::createViewAndAllocate( const std::string& path,
  *************************************************************************
  */
 View* Group::createViewAndAllocate( const std::string& path,
-                                    const DataType& dtype)
+                                    const DataType& dtype,
+                                    int allocID )
 {
+  allocID = getValidAllocatorID(allocID);
+
   View* view = createView(path, dtype);
   if ( view != nullptr )
   {
-    view->allocate();
+    view->allocate(allocID);
   }
   return view;
 }
@@ -878,6 +887,10 @@ Group* Group::createGroup( const std::string& path )
   {
     return nullptr;
   }
+
+#ifdef AXOM_USE_UMPIRE
+  new_group->setDefaultAllocator(group->getDefaultAllocator());
+#endif
   return group->attachGroup(new_group);
 }
 
@@ -1636,6 +1649,9 @@ Group::Group(const std::string& name,
   m_datastore(datastore),
   m_view_coll(new ViewCollection()),
   m_group_coll(new GroupCollection())
+#ifdef AXOM_USE_UMPIRE
+  , m_default_allocator_id(axom::getDefaultAllocator().getId())
+#endif
 {}
 
 /*
@@ -2568,7 +2584,24 @@ bool Group::rename(const std::string& new_name)
   return do_rename;
 }
 
+/*
+ *************************************************************************
+ *
+ * PRIVATE method to return a valid umpire::Allocator ID.
+ *
+ *************************************************************************
+ */
+int Group::getValidAllocatorID( int allocID )
+{
+#ifdef AXOM_USE_UMPIRE
+  if ( allocID == INVALID_ALLOCATOR_ID )
+  {
+    allocID = m_default_allocator_id;
+  }
+#endif
 
+  return allocID;
+}
 
 
 } /* end namespace sidre */

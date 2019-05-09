@@ -40,7 +40,7 @@ void check_for_all( bool async=false )
   constexpr int N       = 256;
 
   // STEP 0: allocate buffer
-  int* a = axom::alloc< int >( N );
+  int* a = axom::allocate< int >( N );
 
   // STEP 1: initialize to VALUE_1
   mint::for_all< ExecPolicy >( N,
@@ -81,7 +81,7 @@ void check_for_all( bool async=false )
   }
 
   // STEP 2:
-  axom::free( a );
+  axom::deallocate( a );
 }
 
 } /* end anonymous namespace */
