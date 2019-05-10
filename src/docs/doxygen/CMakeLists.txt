@@ -7,6 +7,7 @@
 # documentation targets
 ################################
 
-if(SPHINX_FOUND)
-    add_subdirectory(sphinx)
-endif()
+blt_add_doxygen_target( axom_doxygen )
+
+
+
