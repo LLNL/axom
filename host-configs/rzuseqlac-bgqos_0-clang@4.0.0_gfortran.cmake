@@ -78,7 +78,7 @@ set(ENABLE_FIND_MPI OFF CACHE BOOL "Use wrapper directly to stop FindMPI returni
 
 set(ENABLE_WRAP_ALL_TESTS_WITH_MPIEXEC ON CACHE BOOL "Ensures that tests will be wrapped with srun to run on the backend nodes")
 
-set(MPI_Fortran_INCLUDE_PATH "/usr/local/tools/deg/drivers/V1R2M0/ppc64/comm/gcc/include" CACHE PATH "Pass in an explicit path to help find mpif.h")
+set(BLT_MPI_INCLUDES "/usr/local/tools/deg/drivers/V1R2M0/ppc64/comm/gcc/include" CACHE PATH "Pass in an explicit path to help find mpif.h")
 
 set(MPIEXEC "/usr/bin/srun" CACHE PATH "")
 
