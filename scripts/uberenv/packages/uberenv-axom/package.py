@@ -323,7 +323,7 @@ class UberenvAxom(Package):
                    "Use wrapper directly to stop FindMPI returning the wrong linker flags."))
                 cfg.write(cmake_cache_option("ENABLE_WRAP_ALL_TESTS_WITH_MPIEXEC", True,
                     "Ensures that tests will be wrapped with srun to run on the backend nodes"))
-                cfg.write(cmake_cache_entry("MPI_Fortran_INCLUDE_PATH",
+                cfg.write(cmake_cache_entry("BLT_MPI_INCLUDES",
                     "/usr/local/tools/deg/drivers/V1R2M0/ppc64/comm/gcc/include",
                     "Pass in an explicit path to help find mpif.h"))
             else:
