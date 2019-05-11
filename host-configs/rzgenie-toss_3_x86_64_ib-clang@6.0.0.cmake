@@ -11,20 +11,20 @@
 ##################################
 
 # SYS_TYPE: toss_3_x86_64_ib
-# Compiler Spec: clang@3.9.1
+# Compiler Spec: clang@6.0.0
 ##################################
 
-# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2019_05_02_14_58_31/clang-3.9.1/cmake-3.9.6/bin/cmake
+# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2019_05_10_14_41_39/clang-6.0.0/cmake-3.9.6/bin/cmake
 
 ##############
 # Compilers
 ##############
 
 # C compiler used by spack
-set(CMAKE_C_COMPILER "/usr/tce/packages/clang/clang-3.9.1/bin/clang" CACHE PATH "")
+set(CMAKE_C_COMPILER "/usr/tce/packages/clang/clang-6.0.0/bin/clang" CACHE PATH "")
 
 # C++ compiler used by spack
-set(CMAKE_CXX_COMPILER "/usr/tce/packages/clang/clang-3.9.1/bin/clang++" CACHE PATH "")
+set(CMAKE_CXX_COMPILER "/usr/tce/packages/clang/clang-6.0.0/bin/clang++" CACHE PATH "")
 
 # Fortran compiler used by spack
 set(ENABLE_FORTRAN ON CACHE BOOL "")
@@ -36,7 +36,7 @@ set(CMAKE_Fortran_COMPILER "/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran" CACHE 
 ##############
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_05_02_14_58_31/clang-3.9.1" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_05_10_14_41_39/clang-6.0.0" CACHE PATH "")
 
 # conduit from uberenv
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.3.1" CACHE PATH "")
@@ -73,11 +73,11 @@ set(ENABLE_DOCS OFF CACHE BOOL "")
 
 set(ENABLE_MPI ON CACHE BOOL "")
 
-set(MPI_C_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.3-clang-3.9.1/bin/mpicc" CACHE PATH "")
+set(MPI_C_COMPILER "/usr/WS1/axom/thirdparty_libs/builds/2019_05_10_14_41_39/clang-6.0.0/intel-mpi-2018.2.199/compilers_and_libraries/linux/mpi/intel64/bin/mpicc" CACHE PATH "")
 
-set(MPI_CXX_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.3-clang-3.9.1/bin/mpicxx" CACHE PATH "")
+set(MPI_CXX_COMPILER "/usr/WS1/axom/thirdparty_libs/builds/2019_05_10_14_41_39/clang-6.0.0/intel-mpi-2018.2.199/compilers_and_libraries/linux/mpi/intel64/bin/mpicxx" CACHE PATH "")
 
-set(MPI_Fortran_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.3-clang-3.9.1/bin/mpif90" CACHE PATH "")
+set(MPI_Fortran_COMPILER "/usr/WS1/axom/thirdparty_libs/builds/2019_05_10_14_41_39/clang-6.0.0/intel-mpi-2018.2.199/compilers_and_libraries/linux/mpi/intel64/bin/mpif90" CACHE PATH "")
 
 set(MPIEXEC "/usr/bin/srun" CACHE PATH "")
 

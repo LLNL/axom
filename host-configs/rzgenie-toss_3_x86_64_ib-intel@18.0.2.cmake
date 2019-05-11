@@ -6,6 +6,7 @@
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+##################################
 
 ##################################
 
@@ -13,7 +14,7 @@
 # Compiler Spec: intel@18.0.2
 ##################################
 
-# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2019_03_08_10_00_53/intel-18.0.2/cmake-3.9.6/bin/cmake
+# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2019_05_10_14_41_39/intel-18.0.2/cmake-3.9.6/bin/cmake
 
 ##############
 # Compilers
@@ -35,7 +36,7 @@ set(CMAKE_Fortran_COMPILER "/usr/tce/packages/intel/intel-18.0.2/bin/ifort" CACH
 ##############
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_03_08_10_00_53/intel-18.0.2" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_05_10_14_41_39/intel-18.0.2" CACHE PATH "")
 
 # conduit from uberenv
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.3.1" CACHE PATH "")
@@ -44,7 +45,7 @@ set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.3.1" CACHE PATH "")
 set(MFEM_DIR "${TPL_ROOT}/mfem-3.4.0" CACHE PATH "")
 
 # hdf5 from uberenv
-set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.21" CACHE PATH "")
+set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.19" CACHE PATH "")
 
 # scr not built by uberenv
 
