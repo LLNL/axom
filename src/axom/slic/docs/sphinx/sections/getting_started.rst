@@ -19,7 +19,7 @@ This example illustrates the following concepts:
 * Initializing the Slic Logging Environment,
 * Prescribing the :ref:`logMessageFormat`,
 * Basic logging to the console using the :ref:`GenericOutputStream`, and,
-* Using some of the various :ref:`sections/slic_macros` to log messages.
+* Using some of the various :ref:`SlicMacros` to log messages.
 
 Step 1: Add Header Includes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -159,7 +159,7 @@ Step 5: Log Messages
 ^^^^^^^^^^^^^^^^^^^^^
 
 Once the output destination of messages is specified, messages can be logged
-using the :ref:`sections/slic_macros`, as demonstrated in the code snippet
+using the :ref:`SlicMacros`, as demonstrated in the code snippet
 below.
 
 .. literalinclude:: ../../../examples/basic/logging.cpp

@@ -15,7 +15,7 @@ Slic User Guide
 
    sections/getting_started.rst
    sections/architecture.rst
-   sections/slic_macros.rst
+   sections/wrapping_slic_in_macros.rst
    sections/appendix.rst
 
 .. include:: sections/citations.rst

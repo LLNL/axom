@@ -8,8 +8,6 @@ infrastructure that simplifies logging application messages.
 
 **Key Features**
 
-* :ref:`sections/slic_macros` to streamline and simplify logging.
-
 * Interoperability across the constituent libraries of an
   application. Messages logged by an application and any of its libraries
   using Slic have a unified format and routed to a centralized output
