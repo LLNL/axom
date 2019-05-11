@@ -171,8 +171,8 @@ below.
 .. note::
 
    By default, ``SLIC_ERROR()`` will print the specified message and a stacktrace
-   to the corresponding output destination and call ``abort()``, which aborts
-   the application. This behavior can be toggled by calling
+   to the corresponding output destination and call :ref:`axomProcessAbort` to
+   gracefully abort the application. This behavior can be toggled by calling
    ``slic::disableAbortOnError()``. See the `Slic Doxygen API Documentation`_
    for more details.
 

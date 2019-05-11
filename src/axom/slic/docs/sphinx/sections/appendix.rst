@@ -23,6 +23,19 @@ source code under ``src/axom/slic/examples/basic/logging.cpp``.
    :language: C++
    :linenos:
 
+
+.. _axomProcessAbort:
+
+axom::utilities::processAbort()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The :ref:`axomProcessAbort` function gracefully aborts the application by:
+
+#. Calling ``abort()`` if it is a serial application.
+
+#. Calls ``MPI_Abort()`` if the `Axom Toolkit`_ is compiled with MPI and the
+   application has initialized MPI, i.e., it's a distributed MPI application.
+
 .. _SlicMacros:
 
 Slic Macros Used in Axom
