@@ -7,7 +7,11 @@
 #ifndef AXOM_PRIMAL_BVH_POLICIES_H_
 #define AXOM_PRIMAL_BVH_POLICIES_H_
 
-#include <RAJA/RAJA.hpp>
+#include "axom/config.hpp"
+
+#ifdef AXOM_USE_RAJA
+#include "RAJA/RAJA.hpp"
+#endif
 
 namespace axom
 {

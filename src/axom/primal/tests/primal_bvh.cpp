@@ -58,10 +58,10 @@ void generate_aabbs_and_centroids2d( const double* origin,
   ncells =  NCi * NCj;
 
   // allocate output arrays
-  aabbs   = axom::alloc< double >( ncells * stride );
-  cellIds = axom::alloc< IndexType >( ncells );
-  xc      = axom::alloc< double >( ncells );
-  yc      = axom::alloc< double >( ncells );
+  aabbs   = axom::allocate< double >( ncells * stride );
+  cellIds = axom::allocate< IndexType >( ncells );
+  xc      = axom::allocate< double >( ncells );
+  yc      = axom::allocate< double >( ncells );
 
   // compute aabbs & cenrtoids for each cell
   for ( IndexType j=0 ; j < NCj ; ++j )
@@ -130,11 +130,11 @@ void generate_aabbs_and_centroids3d( const double* origin,
   ncells = NCi * NCj * NCk;
 
   // allocate output arrays
-  aabbs   = axom::alloc< double >( ncells * stride );
-  cellIds = axom::alloc< IndexType >( ncells );
-  xc      = axom::alloc< double >( ncells );
-  yc      = axom::alloc< double >( ncells );
-  zc      = axom::alloc< double >( ncells );
+  aabbs   = axom::allocate< double >( ncells * stride );
+  cellIds = axom::allocate< IndexType >( ncells );
+  xc      = axom::allocate< double >( ncells );
+  yc      = axom::allocate< double >( ncells );
+  zc      = axom::allocate< double >( ncells );
 
   // compute aabbs & centroids for each cell
   for ( IndexType k=0 ; k < NCk ; ++k )
@@ -229,7 +229,7 @@ TEST( primal_bvh, check_find_3d )
   bvh.build( );
 
   // traverse the BVH to find the candidates for all the centroids
-  IndexType* offsets    = axom::alloc< IndexType >( ncells );
+  IndexType* offsets    = axom::allocate< IndexType >( ncells );
   IndexType* candidates = nullptr;
   bvh.find( offsets, candidates, ncells, xc, yc, zc );
 
@@ -245,14 +245,14 @@ TEST( primal_bvh, check_find_3d )
 
   } // END for all cell centroids
 
-  axom::free( offsets );
+  axom::deallocate( offsets );
 // TODO: add line below
 //  axom::free( candidates );
-  axom::free( aabbs );
-  axom::free( cellIds );
-  axom::free( xc );
-  axom::free( yc );
-  axom::free( zc );
+  axom::deallocate( aabbs );
+  axom::deallocate( cellIds );
+  axom::deallocate( xc );
+  axom::deallocate( yc );
+  axom::deallocate( zc );
 }
 
 //------------------------------------------------------------------------------
@@ -285,7 +285,7 @@ TEST( primal_bvh, check_find_2d )
   bvh.build( );
 
   // traverse the BVH to find the candidates for all the centroids
-  IndexType* offsets    = axom::alloc< IndexType >( ncells );
+  IndexType* offsets    = axom::allocate< IndexType >( ncells );
   IndexType* candidates = nullptr;
   bvh.find( offsets, candidates, ncells, xc, yc );
 // TODO: add check below
@@ -303,13 +303,13 @@ TEST( primal_bvh, check_find_2d )
 
   } // END for all cell centroids
 
-  axom::free( offsets );
+  axom::deallocate( offsets );
 // TODO: add line below
 //  axom::free( candidates );
-  axom::free( aabbs );
-  axom::free( cellIds );
-  axom::free( xc );
-  axom::free( yc );
+  axom::deallocate( aabbs );
+  axom::deallocate( cellIds );
+  axom::deallocate( xc );
+  axom::deallocate( yc );
 }
 
 //------------------------------------------------------------------------------

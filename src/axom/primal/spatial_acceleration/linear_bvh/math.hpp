@@ -43,14 +43,14 @@ namespace detail
 
 union Bits32
 {
-  axom::common::float32 scalar;
-  axom::common::int32  bits;
+  axom::float32 scalar;
+  axom::int32  bits;
 };
 
 union Bits64
 {
-  axom::common::float64 scalar;
-  axom::common::int64  bits;
+  axom::float64 scalar;
+  axom::int64  bits;
 };
 
 } /* namespace detail */
@@ -64,20 +64,20 @@ T epsilon()
 
 template<>
 inline AXOM_HOST_DEVICE
-axom::common::float32 epsilon<axom::common::float32>()
+axom::float32 epsilon<axom::float32>()
 {
   return DRAY_EPSILON_32;
 }
 
 template<>
 inline AXOM_HOST_DEVICE
-axom::common::float64 epsilon<axom::common::float64>()
+axom::float64 epsilon<axom::float64>()
 {
   return DRAY_EPSILON_64;
 }
 
 inline AXOM_HOST_DEVICE
-axom::common::float32 nan32()
+axom::float32 nan32()
 {
   detail::Bits32 nan;
   nan.bits = DRAY_NAN_32;
@@ -85,7 +85,7 @@ axom::common::float32 nan32()
 }
 
 inline AXOM_HOST_DEVICE
-axom::common::float32 infinity32()
+axom::float32 infinity32()
 {
   detail::Bits32 inf;
   inf.bits = DRAY_INF_32;
@@ -93,7 +93,7 @@ axom::common::float32 infinity32()
 }
 
 inline AXOM_HOST_DEVICE
-axom::common::float32 neg_infinity32()
+axom::float32 neg_infinity32()
 {
   detail::Bits32 ninf;
   ninf.bits = DRAY_NG_INF_32;
@@ -101,7 +101,7 @@ axom::common::float32 neg_infinity32()
 }
 
 inline AXOM_HOST_DEVICE
-axom::common::float64 nan64()
+axom::float64 nan64()
 {
   detail::Bits64 nan;
   nan.bits = DRAY_NAN_64;
@@ -109,7 +109,7 @@ axom::common::float64 nan64()
 }
 
 inline AXOM_HOST_DEVICE
-axom::common::float64 infinity64()
+axom::float64 infinity64()
 {
   detail::Bits64 inf;
   inf.bits = DRAY_INF_64;
@@ -117,7 +117,7 @@ axom::common::float64 infinity64()
 }
 
 inline AXOM_HOST_DEVICE
-axom::common::float64 neg_infinity64()
+axom::float64 neg_infinity64()
 {
   detail::Bits64 ninf;
   ninf.bits = DRAY_NG_INF_64;
@@ -130,14 +130,14 @@ T infinity();
 
 template<>
 inline AXOM_HOST_DEVICE
-axom::common::float32 infinity<axom::common::float32>()
+axom::float32 infinity<axom::float32>()
 {
   return infinity32();
 }
 
 template<>
 inline AXOM_HOST_DEVICE
-axom::common::float64 infinity<axom::common::float64>()
+axom::float64 infinity<axom::float64>()
 {
   return infinity64();
 }
@@ -146,10 +146,10 @@ axom::common::float64 infinity<axom::common::float64>()
 // count leading zeros
 //
 inline AXOM_HOST_DEVICE
-axom::common::int32 clz(axom::common::int32 x)
+axom::int32 clz(axom::int32 x)
 {
-  axom::common::int32 y;
-  axom::common::int32 n = 32;
+  axom::int32 y;
+  axom::int32 n = 32;
   y = x >> 16;
   if (y != 0)
   {
@@ -176,36 +176,36 @@ axom::common::int32 clz(axom::common::int32 x)
   }
   y = x >> 1;
   if (y != 0)
-    return axom::common::int32(n - 2);
-  return axom::common::int32(n - x);
+    return axom::int32(n - 2);
+  return axom::int32(n - x);
 }
 
 inline AXOM_HOST_DEVICE
-axom::common::float64 pi()
+axom::float64 pi()
 {
   return 3.14159265358979323846264338327950288;
 }
 
 inline AXOM_HOST_DEVICE
-axom::common::float32 rcp(axom::common::float32 f)
+axom::float32 rcp(axom::float32 f)
 {
   return 1.0f / f;
 }
 
 inline AXOM_HOST_DEVICE
-axom::common::float64 rcp(axom::common::float64 f)
+axom::float64 rcp(axom::float64 f)
 {
   return 1.0 / f;
 }
 
 inline AXOM_HOST_DEVICE
-axom::common::float64 rcp_safe(axom::common::float64 f)
+axom::float64 rcp_safe(axom::float64 f)
 {
   return rcp((fabs(f) < 1e-8) ? 1e-8 : f);
 }
 
 inline AXOM_HOST_DEVICE
-axom::common::float32 rcp_safe(axom::common::float32 f)
+axom::float32 rcp_safe(axom::float32 f)
 {
   return rcp((fabs(f) < 1e-8f) ? 1e-8f : f);
 }

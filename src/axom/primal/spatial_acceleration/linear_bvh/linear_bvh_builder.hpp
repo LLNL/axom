@@ -14,8 +14,6 @@
 // primal includes
 #include "axom/primal/spatial_acceleration/linear_bvh/aabb.hpp"
 
-using namespace axom::common;
-
 namespace axom
 {
 namespace primal
@@ -37,8 +35,8 @@ struct BVH
 
   void free()
   {
-    axom::free(m_inner_nodes);
-    axom::free(m_leaf_nodes);
+    axom::deallocate( m_inner_nodes );
+    axom::deallocate( m_leaf_nodes );
   }
 
   ~BVH()

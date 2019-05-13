@@ -46,7 +46,7 @@ public:
   }
 
   AXOM_HOST_DEVICE
-  void expand(const axom::common::float32 &epsilon)
+  void expand(const axom::float32 &epsilon)
   {
     assert(epsilon > 0.f);
     m_x.include(m_x.min() - epsilon);
@@ -58,7 +58,7 @@ public:
   }
 
   AXOM_HOST_DEVICE
-  void scale(const axom::common::float32 &scale)
+  void scale(const axom::float32 &scale)
   {
     assert(scale >= 1.f);
     m_x.scale(scale);

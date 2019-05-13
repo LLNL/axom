@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+#include "axom/core/Types.hpp"
 
 #include "axom/primal/spatial_acceleration/BVH.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/linear_bvh_builder.hpp"
@@ -41,7 +42,7 @@ void find_candidates( IndexType* offsets,
 {
 
 
-  IndexType *candidate_counts = axom::alloc<IndexType>(numPts);
+  IndexType *candidate_counts = axom::allocate<IndexType>(numPts);
   const bvh::Vec<float32, 4>  *inner_nodes = bvh.m_inner_nodes;
   const int32 *leaf_nodes = bvh.m_leaf_nodes;
   RAJA::forall<bvh::raja_for_policy>(RAJA::RangeSegment(0, numPts), AXOM_LAMBDA (IndexType i)
@@ -140,7 +141,7 @@ void find_candidates( IndexType* offsets,
   // TODO: this will segault with raw(unmanaged) cuda pointers
   IndexType total_candidates = offsets[numPts - 1] + candidate_counts[numPts - 1];
 
-  candidates = axom::alloc< IndexType >( total_candidates);
+  candidates = axom::allocate< IndexType >( total_candidates);
 
   //candidates =
   RAJA::forall<bvh::raja_for_policy>(RAJA::RangeSegment(0, numPts), AXOM_LAMBDA (IndexType i)
@@ -231,7 +232,7 @@ void find_candidates( IndexType* offsets,
 //#endif
   });
 
-  axom::free(candidate_counts);
+  axom::deallocate(candidate_counts);
 }
 
 //------------------------------------------------------------------------------

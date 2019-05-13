@@ -80,7 +80,7 @@ blt_add_library(
     SOURCES               ${primal_sources}
     HEADERS               ${primal_headers}
     FOLDER                axom/primal
-    DEPENDS_ON            core slic
+    DEPENDS_ON            ${primal_dependencies}
     OBJECT                TRUE
     )
 

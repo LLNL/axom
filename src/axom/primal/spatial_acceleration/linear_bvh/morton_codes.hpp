@@ -29,7 +29,7 @@ namespace
 
 //expands 10-bit unsigned int into 30 bits
 inline AXOM_HOST_DEVICE
-axom::common::int32 expand_bits32(axom::common::int32 x32)
+axom::int32 expand_bits32(axom::int32 x32)
 {
   x32 = (x32 | (x32 << 16)) & 0x030000FF;
   x32 = (x32 | (x32 << 8)) & 0x0300F00F;
@@ -39,9 +39,9 @@ axom::common::int32 expand_bits32(axom::common::int32 x32)
 }
 
 inline AXOM_HOST_DEVICE
-axom::common::int64 expand_bits64(axom::common::int32 x)
+axom::int64 expand_bits64(axom::int32 x)
 {
-  axom::common::int64 x64 = x & 0x1FFFFF;
+  axom::int64 x64 = x & 0x1FFFFF;
   x64 = (x64 | x64 << 32) & 0x1F00000000FFFF;
   x64 = (x64 | x64 << 16) & 0x1F0000FF0000FF;
   x64 = (x64 | x64 << 8) & 0x100F00F00F00F00F;
@@ -60,9 +60,9 @@ axom::common::int64 expand_bits64(axom::common::int32 x)
 //Returns 30 bit morton code for coordinates for
 // x, y, and z are expecting to be between [0,1]
 inline AXOM_HOST_DEVICE
-axom::common::int32 morton32_encode( axom::common::float32 x,
-                                     axom::common::float32 y,
-                                     axom::common::float32 z=0.0f )
+axom::int32 morton32_encode( axom::float32 x,
+                             axom::float32 y,
+                             axom::float32 z=0.0f )
 {
   //take the first 10 bits. Note, 2^10 = 1024
   x = fmin(fmax(x * 1024.0f, 0.0f), 1023.0f);
@@ -70,9 +70,9 @@ axom::common::int32 morton32_encode( axom::common::float32 x,
   z = fmin(fmax(z * 1024.0f, 0.0f), 1023.0f);
 
   //expand 10 bits to 30
-  axom::common::int32 xx = expand_bits32((axom::common::int32)x);
-  axom::common::int32 yy = expand_bits32((axom::common::int32)y);
-  axom::common::int32 zz = expand_bits32((axom::common::int32)z);
+  axom::int32 xx = expand_bits32((axom::int32)x);
+  axom::int32 yy = expand_bits32((axom::int32)y);
+  axom::int32 zz = expand_bits32((axom::int32)z);
   //interleave coordinates
   return (zz << 2 | yy << 1 | xx);
 }
@@ -80,9 +80,9 @@ axom::common::int32 morton32_encode( axom::common::float32 x,
 //Returns 30 bit morton code for coordinates for
 //coordinates in the unit cude
 inline AXOM_HOST_DEVICE
-axom::common::int64 morton64_encode( axom::common::float32 x,
-                                     axom::common::float32 y,
-                                     axom::common::float32 z=0.0f )
+axom::int64 morton64_encode( axom::float32 x,
+                             axom::float32 y,
+                             axom::float32 z=0.0f )
 {
   //take the first 21 bits. Note, 2^21= 2097152.0f
   x = fmin(fmax(x * 2097152.0f, 0.0f), 2097151.0f);
@@ -90,9 +90,9 @@ axom::common::int64 morton64_encode( axom::common::float32 x,
   z = fmin(fmax(z * 2097152.0f, 0.0f), 2097151.0f);
 
   //expand the 10 bits to 30
-  axom::common::int64 xx = expand_bits64((axom::common::int32)x);
-  axom::common::int64 yy = expand_bits64((axom::common::int32)y);
-  axom::common::int64 zz = expand_bits64((axom::common::int32)z);
+  axom::int64 xx = expand_bits64((axom::int32)x);
+  axom::int64 yy = expand_bits64((axom::int32)y);
+  axom::int64 zz = expand_bits64((axom::int32)z);
 
   //interleave coordinates
   return (zz << 2 | yy << 1 | xx);

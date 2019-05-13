@@ -15,8 +15,6 @@
 // RAJA includes
 #include "RAJA/RAJA.hpp"
 
-using namespace axom::common;
-
 namespace axom
 {
 namespace primal
@@ -97,7 +95,7 @@ uint32 *get_mcodes(AABB *aabbs, const int32  size, const AABB &bounds)
       utilities::isNearlyEqual( extent[i], .0f ) ? 0.f : 1.f / extent[i];
   }
 
-  uint32 *mcodes = axom::alloc<uint32>(size);
+  uint32 *mcodes = axom::allocate<uint32>(size);
 
   RAJA::forall<raja_for_policy>(RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
   {
@@ -118,7 +116,7 @@ array_counting(const int32 &size,
                const int32 &step)
 {
 
-  int32 *iterator = axom::alloc<int32>(size);
+  int32 *iterator = axom::allocate<int32>(size);
 
   RAJA::forall<raja_for_policy>(RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
   {
@@ -137,7 +135,7 @@ array_counting(const int32 &size,
 template<typename T>
 void reorder(int32 *indices, T *&array, const int32 size)
 {
-  T* temp = axom::alloc<T>(size);
+  T* temp = axom::allocate<T>(size);
 
   RAJA::forall<raja_for_policy>(RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
   {
@@ -146,7 +144,7 @@ void reorder(int32 *indices, T *&array, const int32 size)
   });
 
 
-  axom::free(array);
+  axom::deallocate(array);
   array = temp;
 
 }
@@ -183,19 +181,19 @@ struct BVHData
   allocate(const int32 size)
   {
     m_inner_size = size;
-    m_left_children = axom::alloc<int32>(size);
-    m_right_children = axom::alloc<int32>(size);
-    m_parents = axom::alloc<int32>(size);
-    m_inner_aabbs = axom::alloc<AABB>(size);
+    m_left_children = axom::allocate<int32>(size);
+    m_right_children = axom::allocate<int32>(size);
+    m_parents = axom::allocate<int32>(size);
+    m_inner_aabbs = axom::allocate<AABB>(size);
   }
 
   void
   deallocate()
   {
-    axom::free(m_left_children);
-    axom::free(m_right_children);
-    axom::free(m_parents);
-    axom::free(m_inner_aabbs);
+    axom::deallocate(m_left_children);
+    axom::deallocate(m_right_children);
+    axom::deallocate(m_parents);
+    axom::deallocate(m_inner_aabbs);
   }
 };
 
@@ -335,7 +333,7 @@ void propagate_aabbs(BVHData &data)
 
   AABB  *inner_aabb_ptr = data.m_inner_aabbs;
 
-  int32* counters_ptr = axom::alloc<int32>(inner_size);
+  int32* counters_ptr = axom::allocate<int32>(inner_size);
 
   array_memset(counters_ptr, inner_size, 0);
 
@@ -384,7 +382,7 @@ void propagate_aabbs(BVHData &data)
 
   });
 
-  axom::free(counters_ptr);
+  axom::deallocate(counters_ptr);
   //AABB *inner = data.m_inner_aabbs.get_host_ptr();
   //std::cout<<"Root bounds "<<inner[0]<<"\n";
 }
@@ -399,7 +397,7 @@ Vec<float32,4>* emit(BVHData &data)
   const AABB  *leaf_aabb_ptr  = data.m_leaf_aabbs;
   const AABB  *inner_aabb_ptr = data.m_inner_aabbs;
 
-  Vec<float32,4> *flat_ptr = axom::alloc<Vec<float32,4>>(inner_size * 4);;
+  Vec<float32,4> *flat_ptr = axom::allocate<Vec<float32,4>>(inner_size * 4);;
 
   RAJA::forall<raja_for_policy>(RAJA::RangeSegment(0, inner_size), AXOM_LAMBDA (int32 node)
   {
@@ -470,7 +468,7 @@ BVH
 LinearBVHBuilder::construct(const double *boxes, int size)
 {
   // copy so we don't reorder the input
-  AABB *aabbs = axom::alloc<AABB>(size);
+  AABB *aabbs = axom::allocate<AABB>(size);
   transform_boxes(boxes, aabbs, size);
 
   BVH bvh;
@@ -503,8 +501,8 @@ LinearBVHBuilder::construct(const double *boxes, int size)
   {
     std::cout<<bvh.m_inner_nodes[i]<<"\n";
   }
-  axom::free(mcodes);
-  axom::free(aabbs);
+  axom::deallocate(mcodes);
+  axom::deallocate(aabbs);
 
   return bvh;
 }

@@ -23,19 +23,19 @@ namespace bvh
 class Range
 {
 protected:
-  axom::common::float32 m_min = infinity32();
-  axom::common::float32 m_max = neg_infinity32();
+  axom::float32 m_min = infinity32();
+  axom::float32 m_max = neg_infinity32();
 public:
 
 
   AXOM_HOST_DEVICE
-  axom::common::float32 min() const
+  axom::float32 min() const
   {
     return m_min;
   }
 
   AXOM_HOST_DEVICE
-  axom::common::float32 max() const
+  axom::float32 max() const
   {
     return m_max;
   }
@@ -50,8 +50,8 @@ public:
   AXOM_HOST_DEVICE
   void include(const T &val)
   {
-    m_min = fmin(m_min, axom::common::float32(val));
-    m_max = fmax(m_max, axom::common::float32(val));
+    m_min = fmin(m_min, axom::float32(val));
+    m_max = fmax(m_max, axom::float32(val));
   }
 
   AXOM_HOST_DEVICE
@@ -71,7 +71,7 @@ public:
   }
 
   AXOM_HOST_DEVICE
-  axom::common::float32 center() const
+  axom::float32 center() const
   {
     if(is_empty())
     {
@@ -81,7 +81,7 @@ public:
   }
 
   AXOM_HOST_DEVICE
-  axom::common::float32 length() const
+  axom::float32 length() const
   {
     if(is_empty())
     {
@@ -91,15 +91,15 @@ public:
   }
 
   AXOM_HOST_DEVICE
-  void scale(axom::common::float32 scale)
+  void scale(axom::float32 scale)
   {
     if(is_empty())
     {
       return;
     }
 
-    axom::common::float32 c = center();
-    axom::common::float32 delta = scale * 0.5f * length();
+    axom::float32 c = center();
+    axom::float32 delta = scale * 0.5f * length();
     include(c - delta);
     include(c + delta);
   }
