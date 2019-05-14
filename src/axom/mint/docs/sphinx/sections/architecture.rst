@@ -87,7 +87,7 @@ define the entire problem domain.
 
 Moreover, each ``mint::Mesh`` instance has associated :ref:`MeshFieldData`,
 represented by  the ``mint::FieldData`` class. Each of the constituent
-topological mesh entities, i.e., the :ref:`Cells`, :ref:`Faces` and :ref:`Nodes`
+topological mesh entities, i.e. the :ref:`Cells`, :ref:`Faces` and :ref:`Nodes`
 comprising the mesh, has a handle to a corresponding ``mint::FieldData``
 instance. The ``mint::FieldData`` object essentialy provides a container to
 store and manage a collection of fields, defined over the corresponding mesh
@@ -107,9 +107,9 @@ Mesh Field Data
 
 A ``mint::FieldData`` instance typically stores multiple fields.
 Each field is represented by an instance of a ``mint::Field`` object
-and defines a named numerical quantity, such as, *mass*, *velocity*,
+and defines a named numerical quantity, such as *mass*, *velocity*,
 *temperature*, etc., defined on a given mesh. Moreover, a field can be either
-*single-component*, i.e., a *scalar* quantity, or, *multi-component*, e.g.,
+*single-component*, i.e. a *scalar* quantity, or, *multi-component*, e.g.
 a *vector* or *tensor* quantity. Typically, a field represents some physical
 quantity that is being modeled, or, an auxiliary quantity that is needed to
 perform a particular calculation.
@@ -117,7 +117,7 @@ perform a particular calculation.
 In addition, each ``mint::Field`` instance can be of different data type.
 The ``mint::FieldData`` object can store different types of fields.
 For example, *floating point* quantities i.e., ``float`` or ``double``,
-as well as, *integral* quantities, i.e., ``int32_t``, ``int64_t``, etc. This is
+as well as, *integral* quantities, i.e. ``int32_t``, ``int64_t``, etc. This is
 accomplished using a combination of C++ templates and *inheritance*. The
 ``mint::Field`` object is an abstract base class that defines a type-agnostic
 interface to encapsulate a field. Since ``mint::Field`` is an abstract
@@ -234,7 +234,7 @@ Mint's :ref:`UnstructuredMesh` representation is provided by the
 of the :ref:`UnstructuredMesh` employs the ``mint::MeshCoordinates``. The
 constituent :ref:`Topology` is handled by the ``mint::ConnectivityArray``,
 which is employed for the representation of all the topological
-:ref:`Connectivity` information, i.e., *cell-to-node*, *face-to-node*,
+:ref:`Connectivity` information, i.e. *cell-to-node*, *face-to-node*,
 *face-to-cell*, etc.
 
 .. note::
@@ -252,7 +252,7 @@ can be classified as either a :ref:`SingleCellTopology` :ref:`UnstructuredMesh`
 or a :ref:`MixedCellTopology` :ref:`UnstructuredMesh`. To accomodate these
 two different representations, the ``mint::UnstructuredMesh`` class, is templated
 on ``CELL_TOPOLOGY``. Internally, the template argument is used to indicate
-the type of ``mint::ConnectivityArray`` to use, i.e., whether,
+the type of ``mint::ConnectivityArray`` to use, i.e. whether,
 *stride access addressing* or *indirect addressing* is used, for
 :ref:`SingleCellTopology` and :ref:`MixedCellTopology` respectively.
 
@@ -266,7 +266,7 @@ Support for the :ref:`ParticleMesh` representation is implemented in
 of particles, which correspond to the constituent :ref:`Nodes` of the mesh.
 The :ref:`Nodes` of a :ref:`ParticleMesh` can also be thought of as :ref:`Cells`,
 however, since this information is trivially obtrained, there is not need
-to be stored explicitly, e.g., using a :ref:`SingleCellTopology`
+to be stored explicitly, e.g. using a :ref:`SingleCellTopology`
 :ref:`UnstructuredMesh` representation. Consequently, the :ref:`ParticleMesh`
 representation consists of *explicit* :ref:`Geometry` and *implicit*
 :ref:`Topology`. As with the ``mint::CurvilinearMesh`` and
@@ -342,7 +342,7 @@ External Storage
 """""""""""""""""
 
 A Mint object using :ref:`ExternalStorage` has a pointer to a supplied
-application buffer. In this case, the data can be modified, but, the application
+application buffer. In this case, the data can be modified, but the application
 maintains ownership of the underlying memory. Consequently, the memory space
 cannot be reallocated and once the Mint object goes out-of-scope, the data is not
 deleted. The data remains persistent in the application buffers until it is

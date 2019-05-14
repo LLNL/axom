@@ -28,7 +28,7 @@ The example Mint application illustrates:
     the implementation of various computational kernels that are both
     *mesh-agnostic* and *device-agnostic*. Both kernels discussed in
     this example do not make any assumptions about the underlying mesh
-    type or the target execution device, e.g., CPU or GPU. Consequently, the
+    type or the target execution device, e.g. CPU or GPU. Consequently, the
     same implementation can operate on any of the supported :ref:`MeshTypes`
     and run in parallel on all execution devices supported through `RAJA`_.
 
@@ -80,12 +80,12 @@ on the mesh object:
 * The *cell-centered* field, ``xc``, stores the result computed in :ref:`step5`
 
 Note, the template argument to the ``createField()`` method indicates the
-underlying field type, e.g., ``double``, ``int`` , etc. In this case, both
+underlying field type, e.g. ``double``, ``int`` , etc. In this case, both
 fields are of ``double`` field type.
 
 The first required argument to the ``createField()`` method is a *string*
-corresponding to the *name* of the field. The second argument, which, is also
-required, indicates the centering of the field, i.e., *node-centered*,
+corresponding to the *name* of the field. The second argument, which is also
+required, indicates the centering of the field, i.e. *node-centered*,
 *cell-centered* or *face-centered*.
 
 A third, *optional*, argument *may* be specified to indicate the number of
@@ -133,7 +133,7 @@ of the :ref:`sections/execution_model` to iterate over the constituent mesh
 
 Within the body of the kernel, `Himmelblau's Function`_ is evaluated using the
 supplied ``x`` and ``y`` node coordinates. The result is stored in the
-corresponding field array, ``phi``, which, is captured by the
+corresponding field array, ``phi``, which is captured by the
 `Lambda Expression`_, at the corresponding node location, ``phi[ nodeIdx ]``.
 
 .. _step5:
@@ -204,7 +204,7 @@ averaging the node coordinates. The code loops over the columns of the
 ``coords`` matrix (i.e., the cell nodes) and computes the sum of each
 node coordinate in ``xsum`` and ``ysum`` respectively. Then, the average is
 evaluated by multiplying each coordinate sum with :math:`1/4`. The result is
-stored in the corresponding field array, ``xc``, which, is captured by the
+stored in the corresponding field array, ``xc``, which is captured by the
 `Lambda Expression`_.
 
 Since, the cell centroid is a 2D vector quantity, each cell entry has an
@@ -222,7 +222,7 @@ Step 6: Output the Mesh in VTK
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Last, the resulting mesh and data can be output in the Legacy `VTK File Format`_,
-which can be visualized by a variety of visualization tools, such as, `VisIt`_
+which can be visualized by a variety of visualization tools, such as `VisIt`_
 and `ParaView`_ as follows:
 
 .. literalinclude:: ../../../examples/mint_uniform_mesh.cpp

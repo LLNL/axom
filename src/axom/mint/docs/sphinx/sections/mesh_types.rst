@@ -134,7 +134,7 @@ less effective, since grid lines need to span across the entire range along
 a given dimension. Moreover, meshing of complex geometries, consisting of
 sharp features, is complicated and can lead to degenerate :ref:`Cells` that can be
 problematic in the computation. These shortcomings are alleviated to an extent
-using a *block-structured meshing strategy* and/or *patch-based AMR*, however,
+using a *block-structured meshing strategy* and/or *patch-based AMR*, however
 the fundamental limitations still persist.
 
 All :ref:`StructuredMesh` types have implicit :ref:`Topology`. However, depending
@@ -155,12 +155,12 @@ Curvilinear Mesh
 """""""""""""""""
 
 The :ref:`CurvilinearMesh`, shown in :numref:`figs/curvilinearMeshExample`, is
-logically a *regular* mesh, however, in contrast to the :ref:`RectilinearMesh`
+logically a *regular* mesh, however in contrast to the :ref:`RectilinearMesh`
 and :ref:`UniformMesh`, the :ref:`Nodes` of a :ref:`CurvilinearMesh` are not
 placed along the *Cartesian* grid lines. Instead, the equations of the governing
 PDE are transformed from the *Cartesian* coordinates to a new coordinate system,
 called a *curvilinear coordinate system*. Consequently, the :ref:`Topology` of
-a :ref:`CurvilinearMesh` is *implicit*, however, its :ref:`Geometry`, given
+a :ref:`CurvilinearMesh` is *implicit*, however its :ref:`Geometry`, given
 by the constituent :ref:`Nodes` of the mesh, is *explicit*.
 
 .. _figs/curvilinearMeshExample:
@@ -203,14 +203,14 @@ mesh are always rectangular.
 
   Sample Rectilinear Mesh example.
 
-The :ref:`Topology` of a :ref:`RectilinearMesh` is *implicit*, however, its
+The :ref:`Topology` of a :ref:`RectilinearMesh` is *implicit*, however its
 constituent :ref:`Geometry` is *semi-implicit*. Although, the
 :ref:`Nodes` are aligned with the *Cartesian* coordinate axis, the spacing
 between adjacent :ref:`Nodes` can vary. This allows a :ref:`RectilinearMesh`
 to have tighter spacing over regions of interest and be sufficiently coarse in
 other parts of the domain. Consequently, the spatial coordinates of the
 :ref:`Nodes` along each axis are specified explicitly in a seperate array
-for each coordinate axis, i.e., :math:`x`, :math:`y` and :math:`z` arrays for
+for each coordinate axis, i.e. :math:`x`, :math:`y` and :math:`z` arrays for
 each dimension respectively. Given the *IJK* index of a node, its corresponding
 physical coordinates can be obtained by taking the *Cartesian* product of the
 corresponding coordinate along each coordinate axis. For this reason, the
@@ -244,7 +244,7 @@ spacing between adjacent :ref:`Nodes` in a :ref:`UniformMesh` is constant.
 The inherent constraints of a :ref:`UniformMesh` allow for a more compact
 representation. Notably, both the :ref:`Topology` and :ref:`Geometry` of a
 :ref:`UniformMesh` are *implicit*. Given the origin of the mesh,
-:math:`X_0=(x_0,y_0,z_0)^T`, i.e., the coordinates of the lowest corner of the
+:math:`X_0=(x_0,y_0,z_0)^T`, i.e. the coordinates of the lowest corner of the
 rectangular domain, and spacing along each direction, :math:`H=(h_x,h_y,h_z)^T`,
 the spatial coordinates of any point, :math:`\hat{p}=(p_x,p_y,p_z)^T`,
 corresponding to a node with lattice coordinates, :math:`(i,j,k)`, are
@@ -297,8 +297,8 @@ load/store operations that are generaly slower.
 Depending on the application, the constituent :ref:`Topology` of an
 :ref:`UnstructuredMesh` may employ a:
 
-#. :ref:`SingleCellTopology`, i.e., consisting of :ref:`Cells` of the *same type*, or,
-#. :ref:`MixedCellTopology`, i.e., consisting of :ref:`Cells` of different type, i.e., *mixed cell type*.
+#. :ref:`SingleCellTopology`, i.e. consisting of :ref:`Cells` of the *same type*, or,
+#. :ref:`MixedCellTopology`, i.e. consisting of :ref:`Cells` of different type, i.e. *mixed cell type*.
 
 There are subtle differrences in the underlying :ref:`MeshRepresentation` that
 can result in a more compact and efficient representation when the
@@ -358,7 +358,7 @@ the :ref:`Connectivity` array with a constant stride, where the stride
 corresponds to the number of :ref:`Nodes` of the cell type being used. This is
 equivalent to a 2D row-major array layout where the number of rows corresponds
 to the number of :ref:`Cells` in the mesh and the number of columns corresponds
-to the *stride*, i.e., the number of :ref:`Nodes` per cell.
+to the *stride*, i.e. the number of :ref:`Nodes` per cell.
 
 .. _figs/singleCellTypeRep:
 .. figure:: ../figures/SingleCellTypeMesh.png
@@ -632,7 +632,7 @@ Moreover, Mint is designed to be extensible. It is relatively straightforward
 to :ref:`AddACellType` in Mint. Each of the :ref:`CellTypes` in Mint simply
 encode the following attributes:
 
-* the cell's topology, e.g., number of nodes, faces, local node numbering etc.,
+* the cell's topology, e.g. number of nodes, faces, local node numbering etc.,
 * the corresponding VTK type, used for VTK dumps, and,
 * the associated blueprint name, conforming to the `Blueprint`_
   conventions, used for storing the mesh in `Sidre`_
@@ -667,7 +667,7 @@ Particle Mesh
 A :ref:`ParticleMesh`, depicted in :numref:`figs/particleMesh`, discretizes the
 computational domain by a set of *particles* which correspond to the :ref:`Nodes`
 at which the solution is evaluated. A :ref:`ParticleMesh` is commonly employed in
-the so called *particle* methods, such as, *Smoothed Particle Hydrodynamics*
+the so called *particle* methods, such as *Smoothed Particle Hydrodynamics*
 (SPH) and *Particle-In-Cell* (PIC) methods, which are used in a variety
 of applications ranging from astrophysics and cosmology simulations to plasma
 physics.
@@ -675,7 +675,7 @@ physics.
 There is no special ordering imposed on the particles. Therefore, the particle
 coordinates are explicitly specified by nodal coordinates, similar to an
 :ref:`UnstructuredMesh`. However, the particles are not connected to form a
-*control volume*, i.e., a filled region of space. Consequently,
+*control volume*, i.e. a filled region of space. Consequently,
 a :ref:`ParticleMesh` does not have :ref:`Faces` and any associated
 :ref:`Connectivity` information.  For this reason, methods that
 employ a :ref:`ParticleMesh` discretization are often referred to as
@@ -700,7 +700,7 @@ be stored explicitly.
 .. note::
 
     A :ref:`ParticleMesh` can only store variables at its constituent
-    particles, i.e., the :ref:`Nodes` of the mesh. Consequently,
+    particles, i.e. the :ref:`Nodes` of the mesh. Consequently,
     a :ref:`ParticleMesh` in Mint can only be associated with node-centered
     :ref:`FieldData`.
 

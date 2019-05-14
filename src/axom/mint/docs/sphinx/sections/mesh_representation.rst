@@ -38,7 +38,7 @@ Topology
 ^^^^^^^^
 
 The topology of a mesh, :math:`\mathcal{M}(\Omega) \in \mathbb{R}^d`, is
-defined by the collection of topological entities, e.g., the :ref:`Cells`,
+defined by the collection of topological entities, e.g. the :ref:`Cells`,
 :ref:`Faces` and :ref:`Nodes`, comprising the mesh and the associated
 *adjacency* information that encodes the topological connections between them,
 broadly referred to as :ref:`Connectivity` information.
@@ -87,9 +87,9 @@ Similarly, a face, :math:`\mathcal{F}_i`, is defined by an ordered list of
 :ref:`Cells` whose topological dimension is one less than the dimension of the
 :ref:`Cells` they are bound to. See :numref:`figs/cellFaces`.
 Consequently, the constituent faces of a 3D cell are 2D topological entities,
-such as, *triangles* or *quads*, depending on the cell type. The faces of a 2D
-cell are 1D topological entities, i.e., *segments*. Last, the faces of a 1D cell
-are 0D topological entities, i.e., :ref:`Nodes`.
+such as *triangles* or *quads*, depending on the cell type. The faces of a 2D
+cell are 1D topological entities, i.e. *segments*. Last, the faces of a 1D cell
+are 0D topological entities, i.e. :ref:`Nodes`.
 
 .. note::
 
@@ -103,9 +103,9 @@ are 0D topological entities, i.e., :ref:`Nodes`.
   :alt: Cell Faces
 
   Constituent faces of a cell in 2D and 3D respectively. the constituent faces
-  of a 3D cell are 2D topological entities, such as, *triangles* or *quads*,
+  of a 3D cell are 2D topological entities, such as *triangles* or *quads*,
   depending on the cell type. The faces of a 2D cell are 1D topological
-  entities, i.e., *segments*.
+  entities, i.e. *segments*.
 
 .. admonition:: Face Types
 
@@ -173,7 +173,7 @@ Nodes
   lowest dimensional constituent entities of a mesh. The :ref:`Nodes` are
   associated with the spatial coordinates of the mesh and are used in defining
   the topology of the higher dimensional topological entities comprising the mesh,
-  such as, the :ref:`Cells`, :ref:`Faces`, etc., as discussed earlier.
+  such as the :ref:`Cells`, :ref:`Faces`, etc., as discussed earlier.
   In a sense, the :ref:`Nodes` provide the means to link the :ref:`Topology`
   of the mesh to its constituent :ref:`Geometry` and thereby instantiate the mesh
   in physical space.
@@ -234,11 +234,11 @@ illustrated in :numref:`figs/topological_structure`.
 
 * The downward topological connections encode the connections from
   higher dimensional mesh entities to lower dimensional entities,
-  such as, *cell-to-node*, *face-to-node* or *cell-to-face*.
+  such as *cell-to-node*, *face-to-node* or *cell-to-face*.
 
 * The upward topological connections, also called *reverse connectivities*,
   encode the connections from lower dimensional mesh entities to higher
-  dimensional entities, such as, *face-to-cell*.
+  dimensional entities, such as *face-to-cell*.
 
 Two key guiding considerations in the design and implementation of mesh data
 structures are *storage* and *computational efficiency*.  In that respect,
@@ -291,7 +291,7 @@ Let :math:`\mathcal{N}=\{n_0, n_1, n_2, ..., n_k\}` be the finite set of nodes
 comprising a mesh, :math:`\mathcal{M}(\Omega) \in \mathbb{R}^d`, where :math:`d`
 is the spatial dimension, :math:`d \in \{1,2,3\}`. Each node,
 :math:`n_i \in \mathcal{N}`, corresponds to a point,
-:math:`p_i \in \mathbb{R}^d`, whose spatial coordinates, i.e., an ordered tuple,
+:math:`p_i \in \mathbb{R}^d`, whose spatial coordinates, i.e. an ordered tuple,
 define the physical location of the node in space,
 :math:`n_i \in \mathbb{R}^d` . The :ref:`Nodes` link the
 :ref:`Geometry` of the mesh to its :ref:`Topology`. The :ref:`Geometry` and
@@ -304,10 +304,10 @@ Field Data
 ^^^^^^^^^^^
 
 The :ref:`FieldData` are used to define various physical quantities over
-the constituent mesh entities, i.e., the :ref:`Cells`, :ref:`Faces` and
+the constituent mesh entities, i.e. the :ref:`Cells`, :ref:`Faces` and
 :ref:`Nodes` of the mesh. Each constituent mesh entity can be associated with
 zero or more *fields*, each of which may correspond to a *scalar*, *vector* or
-*tensor* quantity, such as, temperature, velocity, pressure, etc.
+*tensor* quantity, such as temperature, velocity, pressure, etc.
 Essentially, the :ref:`FieldData` are used to define the solution to the
 unknown variables of the governing PDE that are evaluated on a given mesh,
 as well as, any other auxiliary variables or derived quantities that an

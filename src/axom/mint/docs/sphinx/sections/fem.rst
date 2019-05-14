@@ -16,7 +16,7 @@ for the solution of *partial differential equations* (PDEs), arising in
 
 However, due to their generality and mathematically sound foundation,
 :ref:`sections/fem`, are often employed in the implementation of other numerical
-schemes and for various computational operators, e.g., interpolation,
+schemes and for various computational operators, e.g. interpolation,
 integration, etc.
 
 Mint provides basic support for :ref:`sections/fem` that consists:

@@ -25,7 +25,7 @@ two arguments:
 #. A pointer to a mesh object corresponding to one of the supported
    :ref:`MeshTypes`.
 
-#. The *kernel* that defines the operations on the supplied mesh, which, is
+#. The *kernel* that defines the operations on the supplied mesh, which is
    usually specified by a C++11 `Lambda Expression`.
 
 .. note::
@@ -54,7 +54,7 @@ As shown in :numref:`figs/execModel`, the key elements of the functions
 that comprise the :ref:`sections/execution_model` are:
 
 * **The Iteration Space:** Indicated by the function suffix, used to
-  specify the mesh entities to traverse and operate upon, e.g., the
+  specify the mesh entities to traverse and operate upon, e.g. the
   :ref:`Nodes`, :ref:`Cells` or :ref:`Faces` of the mesh.
 
 * The :ref:`executionPolicy`: Specified as as the first, *required*, template
@@ -121,7 +121,7 @@ supplied to the user-specified kernel.
 .. note::
 
     If not specified, the default :ref:`executionSignature` is set to
-    ``mint::xargs::index``, which, indicates that the supplied kernel takes
+    ``mint::xargs::index``, which indicates that the supplied kernel takes
     a single argument that corresponds to the index of the corresponding
     iteration space, i.e, the loop index.
 
@@ -134,7 +134,7 @@ can be extended to accomodate additional access patterns.
    * Default :ref:`ExecutionSignature` to all functions of the
      :ref:`sections/execution_model`
    * Indicates that the supplied kernel takes a single argument that corresponds
-     to the index of the iteration space, i.e., the loop index.
+     to the index of the iteration space, i.e. the loop index.
 
 * ``mint::xargs::ij``/``mint::xargs::ijk``
    * Applicable only with a :ref:`StructuredMesh`.

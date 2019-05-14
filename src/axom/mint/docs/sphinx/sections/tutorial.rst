@@ -32,7 +32,7 @@ but also, the most restrictive mesh out of all :ref:`MeshTypes`.
 The constituent :ref:`Nodes` of the :ref:`UniformMesh` are *uniformly* spaced
 along each axis on a regular lattice. Consequently, a :ref:`UniformMesh` can
 be easily constructed by simply specifying the spatial extents of the domain
-and desired dimensions, e.g., the number of :ref:`Nodes` along each dimension.
+and desired dimensions, e.g. the number of :ref:`Nodes` along each dimension.
 
 For example, a :math:`50 \times 50` :ref:`UniformMesh`, defined on a bounded
 domain given by the interval :math:`\mathcal{I}:[-5.0,5.0] \times [-5.0,5.0]`,
@@ -62,10 +62,10 @@ Create a Rectilinear Mesh
 A :ref:`RectilinearMesh`, also called a *product mesh*, is similar to a
 :ref:`UniformMesh`. However, the constituent :ref:`Nodes` of a
 :ref:`RectilinearMesh` are not uniformly spaced. The spacing between adjacent
-:ref:`Nodes` can vary arbitrarily along each axis, but, the :ref:`Topology` of
+:ref:`Nodes` can vary arbitrarily along each axis, but the :ref:`Topology` of
 the mesh remains a regular :ref:`StructuredMesh` :ref:`Topology`. To allow for
 this flexibility, the coordinates of the :ref:`Nodes` along each axis are
-explicitly stored in separate arrays, i.e., :math:`x`, :math:`y` and :math:`z`,
+explicitly stored in separate arrays, i.e. :math:`x`, :math:`y` and :math:`z`,
 for each coordinate axis respectively.
 
 The following code snippet illustrates how to construct a :math:`25 \times 25`
@@ -183,7 +183,7 @@ Create a Mixed Unstructured Mesh
 Compared to the :ref:`SingleCellTopology` :ref:`UnstructuredMesh`, a
 :ref:`MixedCellTopology` :ref:`UnstructuredMesh` has also explicit
 :ref:`Topology` and :ref:`Geometry`. However, the cell type is not fixed.
-Notably, the mesh can store different :ref:`CellTypes`, e.g., triangles and quads,
+Notably, the mesh can store different :ref:`CellTypes`, e.g. triangles and quads,
 as shown in the simple 2D mesh depicted in :numref:`figs/mixedMesh`.
 
 .. _figs/mixedMesh:
@@ -216,7 +216,7 @@ Similarly, a :ref:`MixedCellTopology` :ref:`UnstructuredMesh` is represented
 by the ``mint::UnstructuredMesh`` template class. However, the template argument
 to the class is ``mint::MIXED_SHAPE``, which indicates that the mesh has
 :ref:`MixedCellTopology`.  In this case, the class constructor takes only a
-single argument that corresponds to the problem  dimension, i.e., :math:`2`.
+single argument that corresponds to the problem  dimension, i.e. :math:`2`.
 Once the mesh is constructed, the constituent :ref:`Nodes` of the mesh are
 specified by calling the ``appendNode()`` method on the mesh. Similarly, the
 :ref:`Cells` are specified by calling the ``appendCell()`` method. However,
@@ -254,7 +254,7 @@ Add Fields
 Given a ``mint::Mesh`` instance, a field is created by specifying:
 
 #. The name of the field,
-#. The field association, i.e., centering, and
+#. The field association, i.e. centering, and
 #. Optionally, the number of components of the field, required if the field
    is not a scalar quantity.
 
@@ -275,7 +275,7 @@ stored at the :ref:`Nodes`:
     See :ref:`usingSidre` for more information.
 
 * Note, the template argument to the ``createField()`` method indicates the
-  underlying field type, e.g., ``double``, ``int`` , etc. In this case, both
+  underlying field type, e.g. ``double``, ``int`` , etc. In this case, both
   fields are of ``double`` field type.
 
 * The *name* of the field is specified by the first required argument to the
@@ -289,7 +289,7 @@ stored at the :ref:`Nodes`:
   *vector quantity* the number of components must be explicitly specified.
 
 * The ``createField()`` method returns a raw pointer to the data corresponding
-  to the new field, which, can be used by the application.
+  to the new field, which can be used by the application.
 
 .. note::
     Absence of the third argument when calling ``createField()`` indicates
@@ -309,7 +309,7 @@ the target mesh as follows:
    :linenos:
 
 * As with the ``createField()`` method, the template argument indicates the
-  underlying field type, e.g., ``double``, ``int`` , etc.
+  underlying field type, e.g. ``double``, ``int`` , etc.
 
 * The first argument specifies the name of the requested field
 
@@ -317,15 +317,15 @@ the target mesh as follows:
   requested field.
 
 * The third argument is optional and it can be used to get back the number of
-  components of the field, i.e., if the field is not a *scalar* quantity.
+  components of the field, i.e. if the field is not a *scalar* quantity.
 
 .. note::
 
    Calls to ``getFieldPtr()`` assume that the caller knows *a priori* the:
 
    * Field name,
-   * Field association, i.e., centering, and
-   * The underlying field type, e.g., ``double``, ``int``, etc.
+   * Field association, i.e. centering, and
+   * The underlying field type, e.g. ``double``, ``int``, etc.
 
 Check Fields
 """"""""""""
@@ -406,7 +406,7 @@ Using External Storage
 
 A Mint mesh may also be constructed from :ref:`ExternalStorage`. In this
 case, the application holds buffers that describe the constituent
-:ref:`Geometry`, :ref:`Topology` and :ref:`FieldData` of the mesh, which, are
+:ref:`Geometry`, :ref:`Topology` and :ref:`FieldData` of the mesh, which are
 wrapped in Mint for further processing.
 
 The following code snippet illustrates how to use :ref:`ExternalStorage` using
@@ -422,7 +422,7 @@ how to :ref:`createAnUnstructuredMesh` with :ref:`NativeStorage`:
 * The application has the following buffers:
 
   * ``x`` and ``y`` buffers to hold the coordinates of the :ref:`Nodes`
-  * ``cell_connectivity``, which, stores the *cell-to-node* connectivity
+  * ``cell_connectivity``, which stores the *cell-to-node* connectivity
   * ``den`` which holds a *scalar density* field defined over the constituent
     :ref:`Cells` of the mesh.
 
@@ -449,7 +449,7 @@ how to :ref:`createAnUnstructuredMesh` with :ref:`NativeStorage`:
 
 The resulting mesh instance points to the application's buffers. Mint may be
 used to process the data e.g., :ref:`outputToVTK`
-etc. The values of the data may also be modified, however, the mesh cannot
+etc. The values of the data may also be modified, however the mesh cannot
 dynamically grow or shrink when using :ref:`ExternalStorage`.
 
 .. warning::
@@ -476,7 +476,7 @@ There are two primary operations a package/code may want to perform:
 
 #. :ref:`createANewMeshInSidre` so that it can be shared with other packages.
 #. :ref:`importAMeshFromSidre`, presumably created by different package or code
-   upstream, to operate on, e.g., evaluate a new field on the mesh, etc.
+   upstream, to operate on, e.g. evaluate a new field on the mesh, etc.
 
 Code snippets illustrating these two operations are presented in the following
 sections using a simple :ref:`UnstructuredMesh` example. However, the basic
@@ -570,7 +570,7 @@ The following code snippet illustrates this capability:
 * Moreover, an application can check if the mesh is bound to a `Sidre`_ group
   by calling ``hasSidreGroup()`` on the mesh.
 
-* Once the mesh is imported, the application can operate on it, e.g.,
+* Once the mesh is imported, the application can operate on it, e.g.
   :ref:`outputToVTK`, etc., as illustrated in the above code snippet.
 
 * Any subsequent changes to the mesh are reflected accordingly to the
@@ -626,7 +626,7 @@ supplied kernel.
 .. note::
 
   If a second template argument is not specified, the
-  default :ref:`ExecutionSignature` is set to ``xargs::index``, which, indicates
+  default :ref:`ExecutionSignature` is set to ``xargs::index``, which indicates
   that the supplied kernel takes a single argument corresponding to the index
   of the iteration space, in this case the node index, ``nodeIdx``.
 
@@ -712,7 +712,7 @@ of the supplied kernel.
 .. note::
 
   If a second template argument is not specified, the
-  default :ref:`ExecutionSignature` is set to ``xargs::index``, which, indicates
+  default :ref:`ExecutionSignature` is set to ``xargs::index``, which indicates
   that the supplied kernel takes a single argument corresponding to the index
   of the iteration space, in this case the cell index, ``cellIdx``.
 
@@ -739,7 +739,7 @@ the :ref:`executionSignature` for the kernel. The ``xargs::nodeids`` indicates
 that the supplied kernel also takes the the IDs of the constituent cell
 :ref:`Nodes` as an argument.
 
-This feature is demonstrated with the following code snippet, which, averages
+This feature is demonstrated with the following code snippet, which averages
 the node-centered velocity components to corresponding cell-centered fields:
 
 .. literalinclude:: ../../../examples/mint_tutorial.cpp
@@ -767,7 +767,7 @@ kernel as an argument using ``xargs::coords`` as the second template argument
 to the ``for_all_cells()`` function, to specify the :ref:`executionSignature`
 of the supplied kernel.
 
-This feature is demonstrated with the following code snippet, which, computes
+This feature is demonstrated with the following code snippet, which computes
 the cell centroid by averaging the coordinates of the constituent cell
 :ref:`Nodes`:
 
@@ -809,7 +809,7 @@ can be obtained using ``xargs::faceids`` as the second template argument to
 the ``for_all_faces()`` function, to specify the :ref:`executionSignature` of
 the supplied kernel.
 
-This feature is demonstrated with the following code snippet, which, computes
+This feature is demonstrated with the following code snippet, which computes
 the perimeter of each cell by summing the pre-computed face areas:
 
 .. literalinclude:: ../../../examples/mint_tutorial.cpp
@@ -872,7 +872,7 @@ of the supplied kernel.
 .. note::
 
   If a second template argument is not specified, the
-  default :ref:`ExecutionSignature` is set to ``xargs::index``, which, indicates
+  default :ref:`ExecutionSignature` is set to ``xargs::index``, which indicates
   that the supplied kernel takes a single argument corresponding to the index
   of the iteration space, in this case the face index, ``faceIdx``.
 
@@ -930,7 +930,7 @@ the specified kernel as an argument using ``xargs::coords`` as the second
 template argument to the ``for_all_faces()`` function, to specify the
 :ref:`executionSignature` of the supplied kernel.
 
-This feature is demonstrated with the following code snippet, which, computes
+This feature is demonstrated with the following code snippet, which computes
 the face centroid by averaging the coordinates of the constituent face
 :ref:`Nodes`:
 
@@ -1006,7 +1006,7 @@ Finite Elements
 
 Mint provides basic support for :ref:`sections/fem` consisting of
 :ref:`LagrangeBasis` *shape functions* for commonly employed
-:ref:`CellTypes` and associated operations, such as, functions to evaluate the
+:ref:`CellTypes` and associated operations, such as functions to evaluate the
 Jacobian and compute the forward and inverse :ref:`IsoparametricMapping`.
 
 .. warning::
@@ -1039,7 +1039,7 @@ Lagrangian Quadrilateral Finite Element as an example:
     are organized in the matrix such that, each column vector stores the
     coordinates of a corresponding node.
 
-  * The cell type, e.g., ``mint::QUAD``
+  * The cell type, e.g. ``mint::QUAD``
 
 * Then, ``mint::bind_basis()`` is called to bind the Finite Element object
   to the :ref:`LagrangeBasis`. Effectively, this step wires the pointers
@@ -1055,7 +1055,7 @@ to perform the following operations:
  #. Given a point in reference space, :math:`\hat{\xi} \in \bar{\Omega}`:
 
     * :ref:`evaluateShapeFunctions`, :math:`N_i(\xi)`, associated with each of
-      the constituent cell nodes, which, are often used as
+      the constituent cell nodes, which are often used as
       *interpolation weights*,
 
     * :ref:`evaluateTheJacobian`, :math:`J(\xi)`, and
@@ -1115,7 +1115,7 @@ from the finite element object as follows:
    :linenos:
 
 * The Jacobian matrix is computed by calling the ``jacobian()`` method on the
-  finite element object, which, takes two arguments:
+  finite element object, which takes two arguments:
 
   * ``xi``, an input argument corresponding to the reference coordinates of
     the point, :math:`\hat{\xi}`, where the Jacobian will be evaluated, and
@@ -1129,7 +1129,7 @@ from the finite element object as follows:
    :math:`N \times M` dimensions, where, :math:`N` corresponds to the
    dimension in the reference :math:`xi`-space and :math:`M` is the physical
    dimension. For example, a quadrilateral element is defined in a 2D
-   reference space, but, it may be instantiated within a 3D ambient space.
+   reference space, but it may be instantiated within a 3D ambient space.
    Consequently, the dimensions of the corresponding Jacobian would be
    :math:`2 \times 3` in this case.
 
@@ -1186,7 +1186,7 @@ The ``computeReferenceCoords()`` method takes two arguments:
   successful.
 
 The :ref:`inverseIsoparametricMap` typically requires an iterative, non-linear
-solve, which, is typically implemented with a Newton-Raphson. Moreover, the
+solve, which is typically implemented with a Newton-Raphson. Moreover, the
 :ref:`inverseIsoparametricMap` is only defined for points within the element,
 :math:`\Omega^e`. Consequently, the ``computeReferenceCoords()`` method
 returns a status that indicates whether the operation was successful.
@@ -1198,7 +1198,7 @@ statuses:
     e.g., negative Jacobian, etc.
 
 * ``OUTSIDE_ELEMENT``
-    This indicates that the Newton-Raphson converged, but, the point is outside
+    This indicates that the Newton-Raphson converged, but the point is outside
     the element. Consequently, valid reference coordinates do not exist for the
     given point with respect to the element.
 
@@ -1213,7 +1213,7 @@ Output to VTK
 
 Mint provides native support for writing meshes in the ASCII Legacy
 `VTK File Format`_. Legacy VTK files are popular due to their simplicity and
-can be read by a variety of visualization tools, such as, `VisIt`_ and
+can be read by a variety of visualization tools, such as `VisIt`_ and
 `ParaView`_. Thereby, enable quick visualization of the various :ref:`MeshTypes`
 and constituent :ref:`FieldData`, which can significantly aid in debugging.
 
@@ -1235,7 +1235,7 @@ as illustrated in the code snippet below:
    :language: C++
    :linenos:
 
-This function can be invoked on a ``mint::Mesh`` object, which, can correspond
+This function can be invoked on a ``mint::Mesh`` object, which can correspond
 to any of the supported :ref:`MeshTypes`. The concrete mesh type will be
 reflected in the resulting VTK output file according to the `VTK File Format`_
 specification.
