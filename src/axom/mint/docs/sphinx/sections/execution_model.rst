@@ -9,10 +9,11 @@
 Execution Model
 ----------------
 
-Mint provides a mesh-aware :ref:`sections/execution_model`, that
-is based on the `RAJA`_ programming model abstraction layer, enabling the
-implementation of computational kernels that are born *parallel* and *portable*
-to emerging architectures.
+Mint provides a mesh-aware :ref:`sections/execution_model`,
+based on the `RAJA`_ programming model abstraction layer. The
+execution model supports on-node fine-grain parallelism for mesh traversals.
+Thereby, enable the implementation of computational kernels that are born parallel
+and portable across different processor architectures.
 
 .. note::
    To utilize NVIDIA GPUs, using the `RAJA`_ CUDA backend, Axom needs to be
