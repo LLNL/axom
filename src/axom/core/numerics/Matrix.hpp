@@ -308,7 +308,7 @@ public:
    *  ...
    * \endcode
    */
-  const T* getColumn( IndexType j ) const;
+  AXOM_HOST_DEVICE const T* getColumn( IndexType j ) const;
 
   /*!
    * \brief Returns pointer to the \f$ jth \f$ column of an \f$ M \times N \f$
@@ -329,7 +329,7 @@ public:
    *  ...
    * \endcode
    */
-  T* getColumn( IndexType j );
+  AXOM_HOST_DEVICE T* getColumn( IndexType j );
 
   /*!
    * \brief Returns a const pointer for strided access along the main diagonal.
@@ -768,7 +768,7 @@ AXOM_HOST_DEVICE T& Matrix< T >::operator()(IndexType i, IndexType j)
 
 //-----------------------------------------------------------------------------
 template < typename T >
-const T* Matrix< T >::getColumn( IndexType j ) const
+AXOM_HOST_DEVICE const T* Matrix< T >::getColumn( IndexType j ) const
 {
   assert( (j>=0) && (j < m_cols) );
   return &m_data[ j*m_rows ];
@@ -776,7 +776,7 @@ const T* Matrix< T >::getColumn( IndexType j ) const
 
 //-----------------------------------------------------------------------------
 template < typename T >
-T* Matrix< T >::getColumn( IndexType j )
+AXOM_HOST_DEVICE T* Matrix< T >::getColumn( IndexType j )
 {
   assert( (j>=0) && (j < m_cols) );
   return &m_data[ j*m_rows ];
