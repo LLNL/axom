@@ -13,6 +13,7 @@
 #ifndef SLAM_BIVARIATE_SET_H_
 #define SLAM_BIVARIATE_SET_H_
 
+#include "axom/slam/Set.hpp"
 #include "axom/slam/OrderedSet.hpp"
 #include "axom/slam/NullSet.hpp"
 
@@ -77,6 +78,7 @@ public:
 
   using PositionType = typename FirstSetType::PositionType;
   using ElementType = typename FirstSetType::ElementType;
+  using NullSetType = NullSet<PositionType, ElementType>;
 
   using OrderedSetType = OrderedSet<
           PositionType,
@@ -86,8 +88,26 @@ public:
           policies::StrideOne<PositionType>,
           policies::STLVectorIndirection<PositionType, ElementType> >;
 
+private:
+  template<typename SetType>
+  static
+  typename std::enable_if<!std::is_base_of<SetType,NullSetType>::value, const SetType*>::type
+  default_param()
+  {
+     return nullptr;
+  };
+
+  template<typename SetType>
+  static
+  typename std::enable_if<std::is_base_of<SetType,NullSetType>::value, const SetType*>::type
+  default_param()
+  {
+     return &s_nullSet;
+  };
+
+
   static const PositionType INVALID_POS = PositionType(-1);
-  static const NullSet<PositionType,ElementType> s_nullSet;
+  static const NullSetType s_nullSet;
 
 public:
   /**
@@ -97,8 +117,8 @@ public:
    * \param set1  Pointer to the first Set.
    * \param set2  Pointer to the second Set.
    */
-  BivariateSet(const FirstSetType* set1 = &s_nullSet,
-               const SecondSetType* set2 = &s_nullSet)
+  BivariateSet(const FirstSetType* set1 = default_param<FirstSetType>(),
+               const SecondSetType* set2 = default_param<SecondSetType>() )
     : m_set1(set1), m_set2(set2)
   { }
 
@@ -152,7 +172,7 @@ public:
    *
    * \pre  0 <= pos1 <= set1.size()
    */
-  virtual PositionType size(PositionType pos1) const = 0;  //size of a row
+  virtual PositionType size(PositionType pos1) const = 0; //size of a row
 
   /** \brief Size of the first set.   */
   inline PositionType firstSetSize() const { return getSize<FirstSetType>(m_set1); }
@@ -178,9 +198,9 @@ public:
 
   virtual bool isValid(bool verboseOutput = false) const
   {
-    if(m_set1 == nullptr || m_set2 == nullptr)
+    if (m_set1 == nullptr || m_set2 == nullptr)
     {
-      if(verboseOutput)
+      if (verboseOutput)
       {
         std::cout << "\n*** BivariateSet is not valid:\n"
                   << "\t* Set pointers should not be null.\n"
@@ -214,6 +234,12 @@ protected:
   const FirstSetType* m_set1;
   const SecondSetType* m_set2;
 };
+
+
+template<typename FirstSetType, typename SecondSetType>
+const typename BivariateSet<FirstSetType, SecondSetType>::NullSetType
+BivariateSet<FirstSetType, SecondSetType>::s_nullSet;
+
 
 /**
  * \class NullBivariateSet
@@ -268,16 +294,14 @@ private:
                       PositionType AXOM_DEBUG_PARAM(pos2)) const override
   {
     SLIC_ASSERT_MSG(false,
-                    "Subscripting on NullSet is never valid."
+      "Subscripting on NullSet is never valid."
                       << "\n\tAttempted to access item at index " << pos1 << ","
                       << pos2 << ".");
   }
 };
 
-template<typename FirstSetType,typename SecondSetType>
-const NullSet<typename FirstSetType::PositionType, typename FirstSetType::ElementType> BivariateSet<FirstSetType,SecondSetType>::s_nullSet;
 
-}  // end namespace slam
-}  // end namespace axom
+} // end namespace slam
+} // end namespace axom
 
-#endif  //  SLAM_BIVARIATE_SET_H_
+#endif //  SLAM_BIVARIATE_SET_H_
