@@ -70,8 +70,6 @@ set(slam_headers
 
 set(slam_sources
     # SRM Set sources
-    # RangeSet.cpp
-    # IndirectionSet.cpp
     BitSet.cpp
     OrderedSet.cpp
 
