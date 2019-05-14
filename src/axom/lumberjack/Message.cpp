@@ -15,10 +15,9 @@
 
 #include "axom/lumberjack/Message.hpp"
 
-#include "axom/core/utilities/StringUtilities.hpp"
-
 #include <algorithm>
 #include <iostream>
+#include <string>
 
 namespace axom
 {
@@ -68,7 +67,7 @@ std::string Message::stringOfRanks(std::string delimiter) const
   int ranksSize = m_ranks.size();
   for(int i=0 ; i<ranksSize ; ++i)
   {
-    returnString += axom::utilities::string::intToString(m_ranks[i]);
+    returnString += std::to_string(m_ranks[i]);
     if (i < (ranksSize-1))
     {
       returnString += delimiter;
@@ -153,7 +152,7 @@ std::string Message::pack()
   int ranksSize = (int)m_ranks.size();
   for (int i=0 ; i<ranksSize ; ++i)
   {
-    packedMessage += axom::utilities::string::intToString(m_ranks[i]);
+    packedMessage += std::to_string(m_ranks[i]);
     if (i < (ranksSize-1))
     {
       packedMessage += rankDelimiter;
@@ -161,19 +160,17 @@ std::string Message::pack()
   }
   packedMessage += memberDelimiter;
 
-  packedMessage += axom::utilities::string::intToString(m_ranksCount) +
-                   memberDelimiter;
+  packedMessage += std::to_string(m_ranksCount) + memberDelimiter;
 
   packedMessage += m_fileName + memberDelimiter;
 
   if (m_lineNumber > 0)
   {
-    packedMessage += axom::utilities::string::intToString(m_lineNumber);
+    packedMessage += std::to_string(m_lineNumber);
   }
   packedMessage += memberDelimiter;
 
-  packedMessage += axom::utilities::string::intToString(m_level) +
-                   memberDelimiter;
+  packedMessage += std::to_string(m_level) + memberDelimiter;
 
   packedMessage += m_tag + memberDelimiter;
 
@@ -208,9 +205,7 @@ void Message::unpack(const std::string& packedMessage, int ranksLimit)
               << std::endl;
     std::cerr << packedMessage << std::endl;
   }
-  m_ranksCount =
-    axom::utilities::string::stringToInt(packedMessage.substr(start,
-                                                              end-start));
+  m_ranksCount = std::stoi(packedMessage.substr(start, end-start));
   start = end + 1;
 
   //Grab file name
@@ -236,9 +231,7 @@ void Message::unpack(const std::string& packedMessage, int ranksLimit)
   }
   if (end-start > 0)
   {
-    m_lineNumber =
-      axom::utilities::string::stringToInt(packedMessage.substr(start,
-                                                                end-start));
+    m_lineNumber = std::stoi(packedMessage.substr(start, end-start));
   }
   start = end + 1;
 
@@ -251,9 +244,7 @@ void Message::unpack(const std::string& packedMessage, int ranksLimit)
               << std::endl;
     std::cerr << packedMessage << std::endl;
   }
-  m_level =
-    axom::utilities::string::stringToInt(packedMessage.substr(start,
-                                                              end-start));
+  m_level = std::stoi(packedMessage.substr(start, end-start));
   start = end + 1;
 
   //Grab tag
@@ -288,15 +279,12 @@ void Message::unpackRanks(const std::string& ranksString, int ranksLimit)
   {
     if (end == std::string::npos)
     {
-      addRank(axom::utilities::string::stringToInt(ranksString.substr(
-                                                     start)), ranksLimit);
+      addRank(std::stoi(ranksString.substr(start)), ranksLimit);
       break;
     }
     else
     {
-      addRank(axom::utilities::string::stringToInt(ranksString.substr(start,
-                                                                      end-start)),
-              ranksLimit);
+      addRank(std::stoi(ranksString.substr(start, end-start)), ranksLimit);
     }
     start = end + 1;
     end = ranksString.find(rankDelimiter, start);
@@ -322,14 +310,13 @@ const char* packMessages(const std::vector<Message*>& messages)
   {
     packedMessages.push_back(messages[i]->pack());
     currSize = packedMessages[i].size();
-    sizeStrings.push_back(axom::utilities::string::intToString(currSize));
+    sizeStrings.push_back(std::to_string(currSize));
     //           message size + size string size + memberDelimiter size
     totalSize += currSize + sizeStrings[i].size() + 1;
   }
 
   // Create and calculate size of message count
-  std::string messageCountString =
-    axom::utilities::string::intToString(messageCount) + memberDelimiter;
+  std::string messageCountString = std::to_string(messageCount) + memberDelimiter;
   totalSize += messageCountString.size();
 
   const char* packedMessagesString = new char[totalSize];
@@ -371,7 +358,7 @@ void unpackMessages(std::vector<Message*>& messages,
   // Get message count
   end = packedMessagesString.find(memberDelimiter);
   tempSubString = packedMessagesString.substr(0, end);
-  int messageCount = axom::utilities::string::stringToInt(tempSubString);
+  int messageCount = std::stoi(tempSubString);
   start = end + 1;
 
   // Grab each message
@@ -382,7 +369,7 @@ void unpackMessages(std::vector<Message*>& messages,
     //Get current message size
     end = packedMessagesString.find(memberDelimiter, start);
     tempSubString = packedMessagesString.substr(start, end-start);
-    messageSize = axom::utilities::string::stringToInt(tempSubString);
+    messageSize = std::stoi(tempSubString);
     start = end + 1;
 
     //Create current message and save

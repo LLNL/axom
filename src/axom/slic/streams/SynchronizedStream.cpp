@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "axom/core/Macros.hpp"
-#include "axom/core/utilities/StringUtilities.hpp"
 
 namespace axom
 {
@@ -93,7 +92,7 @@ void SynchronizedStream::append( message::Level msgLevel,
   m_cache->messages.push_back(
     this->getFormatedMessage(message::getLevelAsString( msgLevel ),
                              message, tagName,
-                             axom::utilities::string::intToString(rank),
+                             std::to_string(rank),
                              fileName, line) );
 }
 

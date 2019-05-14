@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "axom/core/Macros.hpp"
-#include "axom/core/utilities/StringUtilities.hpp"
 
 #include "axom/lumberjack/BinaryTreeCommunicator.hpp"
 #include "axom/lumberjack/Lumberjack.hpp"

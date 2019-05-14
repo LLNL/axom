@@ -7,7 +7,6 @@
 #define COMMON_FILE_UTILITIES_H_
 
 #include <string>
-#include <sys/stat.h>
 
 namespace axom
 {
