@@ -3,20 +3,13 @@
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
-Mint is a component of the `Axom Toolkit`_, being developed at
-`Lawrence Livermore National Laboratory (LLNL) <http://www.llnl.gov>`_,
-consisting of a *comprehensive*, *flexible* and *extensible*
-*mesh data model*, implemented in C++.
-Mint aims to facilitate the development of large-scale, massively parallel,
-multi-physics applications. Towards that goal, Mint serves as a
-foundational building block that underpins the development of computational
-tools and numerical discretization methods, enabling implementations that are
-born *parallel* and *portable* to new and emerging architectures.
+Mint provides a *comprehensive mesh data model* and a mesh-aware, fine-grain,
+parallel execution model that underpins the development of
+computational tools and numerical discretization methods. Thereby, enable
+implementations that are born *parallel* and *portable* to new and emerging
+architectures.
 
-**Salient Features**
-
-Some of the salient features of Mint include, but are not limited to, the
-following:
+**Key Features**
 
 * Support for 1D/2D/3D mesh geometry.
 
@@ -34,15 +27,16 @@ following:
   commonly employed *shape functions* and *quadratures*.
 
 * A Mesh-Aware :ref:`sections/execution_model`, based on the `RAJA`_ programming
-  model abstraction layer, enabling the implementation of computational kernels
-  that are born parallel and portable to emerging architectures.
+  model abstraction layer that supports on-node parallelism for mesh-traversals,
+  enabling the implementation of computational kernels that are born parallel
+  and portable across different processor architectures.
 
 **Requirements**
 
 Mint is designed to be *light-weight* and *self-contained*.
 The only requirement for using Mint is a C++11 compliant compiler.
-However, to realize the full spectrum of capabilities provided,
-the following third-party libraries are supported:
+However, to realize the full spectrum of capabilities, support for
+the following third-party libraries is provided:
 
 * `RAJA`_, used for the parallel execution and portability layer.
 
@@ -51,24 +45,28 @@ the following third-party libraries are supported:
 * `Umpire`_, for memory management on next-generation architectures.
 
 For further information on how to build the `Axom Toolkit`_ using these
-third-party libraries, consult the `Axom Quick Start Guide`_
+third-party libraries, consult the `Axom Quick Start Guide`_.
 
 **About this Guide**
 
-This guide discusses the basic concepts and overarching design architecture of
-Mint. The :ref:`sections/mint/getting_started` section offers an excellent resource
-for getting started with Mint quickly, illustrating basic concepts
-and key capabilities in the context of a working code example.
-Additional examples and code snippets are provided in the
-:ref:`sections/tutorial` section that are designed to demonstrate specific Mint
-concepts and capabilities in a structured and simple format. For more detailed
-documentation of the interfaces of the various classes and functions in Mint,
-developers are advised to consult the `Mint Doxygen API Documentation`_. Last,
-complete examples and code walk-throughs of mini-apps using Mint are provided in
-the :ref:`sections/examples` section.
+This guide discusses the basic concepts and architecture of Mint.
 
-For any questions, please consult the :ref:`sections/faq` section or feel free
-to post your question to the Axom Developers mailing list at axom-dev@llnl.gov.
+* The :ref:`sections/mint/getting_started` section provides a quick introduction
+  to Mint, designed to illustrate high-level concepts and key capabilities, in
+  the context of a small working example.
+
+* The :ref:`sections/tutorial` section provides code snippets that
+  demonstrate specific topics in a structured and simple format.
+
+* For complete documentation of the interfaces of the various classes and
+  functions in Mint consult the `Mint Doxygen API Documentation`_.
+
+* Complete examples and code walk-throughs of mini-apps using Mint are
+  provided in the :ref:`sections/examples` section.
+
+Additional questions, feature requests or bug reports on Mint can be submitted
+by `creating a new issue on Github <https://github.com/LLNL/axom/issues>`_
+or by sending e-mail to the Axom Developers mailing list at axom-dev@llnl.gov.
 
 
 
