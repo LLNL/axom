@@ -31,7 +31,7 @@ template<
   typename Relation,
   typename FirstSetType = slam::Set<>,
   typename SecondSetType = slam::Set<> >
-class RelationSet
+class RelationSet final
   : public OrderedSet<typename Relation::SetPosition,
                       typename Relation::SetElement>
   , public BivariateSet<FirstSetType, SecondSetType>

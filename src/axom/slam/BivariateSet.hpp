@@ -13,6 +13,7 @@
 #ifndef SLAM_BIVARIATE_SET_H_
 #define SLAM_BIVARIATE_SET_H_
 
+#include "axom/slam/Set.hpp"
 #include "axom/slam/OrderedSet.hpp"
 #include "axom/slam/NullSet.hpp"
 
@@ -78,6 +79,7 @@ public:
 
   using PositionType = typename FirstSetType::PositionType;
   using ElementType = typename FirstSetType::ElementType;
+  using NullSetType = NullSet<PositionType, ElementType>;
 
   using OrderedSetType = OrderedSet<
           PositionType,
@@ -87,8 +89,26 @@ public:
           policies::StrideOne<PositionType>,
           policies::STLVectorIndirection<PositionType, ElementType> >;
 
+private:
+  template<typename SetType>
+  static
+  typename std::enable_if<!std::is_base_of<SetType,NullSetType>::value, const SetType*>::type
+  default_param()
+  {
+     return nullptr;
+  };
+
+  template<typename SetType>
+  static
+  typename std::enable_if<std::is_base_of<SetType,NullSetType>::value, const SetType*>::type
+  default_param()
+  {
+     return &s_nullSet;
+  };
+
+
   static const PositionType INVALID_POS = PositionType(-1);
-  static const NullSet<PositionType,ElementType> s_nullSet;
+  static const NullSetType s_nullSet;
 
 public:
 
@@ -99,8 +119,8 @@ public:
    * \param set1  Pointer to the first Set.
    * \param set2  Pointer to the second Set.
    */
-  BivariateSet(const FirstSetType* set1 = &s_nullSet,
-               const SecondSetType* set2 = &s_nullSet)
+  BivariateSet(const FirstSetType* set1 = default_param<FirstSetType>(),
+               const SecondSetType* set2 = default_param<SecondSetType>() )
     : m_set1(set1), m_set2(set2)
   { }
 
@@ -219,6 +239,9 @@ protected:
 };
 
 
+template<typename FirstSetType, typename SecondSetType>
+const typename BivariateSet<FirstSetType, SecondSetType>::NullSetType
+BivariateSet<FirstSetType, SecondSetType>::s_nullSet;
 
 
 /**
@@ -290,9 +313,6 @@ private:
       << pos1 << "," << pos2 << ".");
   }
 };
-
-template<typename FirstSetType,typename SecondSetType>
-const NullSet<FirstSetType,SecondSetType> BivariateSet<FirstSetType,SecondSetType>::s_nullSet;
 
 
 } // end namespace slam

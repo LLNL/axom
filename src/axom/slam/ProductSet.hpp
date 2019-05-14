@@ -37,7 +37,7 @@ namespace slam
  */
 template<typename SetType1 = slam::Set<>,
          typename SetType2 = slam::Set<> >
-class ProductSet 
+class ProductSet final
     : public BivariateSet<SetType1, SetType2>
     , RangeSet<typename SetType1::PositionType, typename SetType1::ElementType>
 {
