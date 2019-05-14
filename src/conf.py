@@ -61,6 +61,10 @@ master_doc = 'index'
 project = u'Axom'
 copyright = u'2017-2019, Lawrence Livermore National Security, LLNS'
 
+# -- Option for numbering figures/tables/etc.-----------------------------------
+# Note: numfig requires Sphinx (1.3+)
+numfig = True
+
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.

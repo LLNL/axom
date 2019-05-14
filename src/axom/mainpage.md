@@ -12,7 +12,7 @@ Axom provides libraries that address common computer science needs.  It grew fro
 * @subpage questtop provides an API to query point distance and position relative to meshes.
 * @subpage sidretop provides a data store with hierarchical structure.
 * @subpage slamtop provides an API to construct and process meshes.
-* @subpage slictop provides logging levels and targets.
+* @subpage slictop provides infrastructure for logging application messages.
 
 Dependencies between components are as follows:
 - Core has no dependencies, and the other modules depend on Core

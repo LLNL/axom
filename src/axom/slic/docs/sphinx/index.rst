@@ -3,7 +3,19 @@
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
-Slic User Documentation
-=======================
+================
+Slic User Guide
+================
 
-Slic provides a lightweight logging facility.
+.. include:: sections/synopsis.rst
+
+.. toctree::
+   :maxdepth: 3
+   :hidden:
+
+   sections/getting_started.rst
+   sections/architecture.rst
+   sections/wrapping_slic_in_macros.rst
+   sections/appendix.rst
+
+.. include:: sections/citations.rst
