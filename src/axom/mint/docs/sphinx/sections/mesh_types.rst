@@ -626,8 +626,7 @@ quadratic, quadrilateral and hexahedron :ref:`Cells`, see :numref:`figs/q2Cells`
 
 .. note::
 
-  All Mint :ref:`CellTypes` follow the `CGNS`_ standard local node numbering
-  conventions.
+  All Mint :ref:`CellTypes` follow the `CGNS Numbering Conventions`_.
 
 Moreover, Mint is designed to be extensible. It is relatively straightforward
 to :ref:`AddACellType` in Mint. Each of the :ref:`CellTypes` in Mint simply

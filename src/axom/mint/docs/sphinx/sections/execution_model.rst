@@ -120,12 +120,15 @@ supplied to the user-specified kernel.
 
 .. note::
 
-    If not specified, the default :ref:`executionSignature` to is set to
+    If not specified, the default :ref:`executionSignature` is set to
     ``mint::xargs::index``, which, indicates that the supplied kernel takes
     a single argument that corresponds to the index of the corresponding
     iteration space, i.e, the loop index.
 
-The list of available :ref:`executionSignature` options is summarized below:
+The list of currently available :ref:`executionSignature` options is based on
+commonly employed access patterns found in various mesh processing and numerical
+kernels. However, the :ref:`sections/execution_model` is designed such that it
+can be extended to accomodate additional access patterns.
 
 * ``mint::xargs::index``
    * Default :ref:`ExecutionSignature` to all functions of the
@@ -169,6 +172,12 @@ The list of available :ref:`executionSignature` options is summarized below:
      :ref:`Cells` to the given. By conventions, tor *external* *boundary*
      :ref:`Faces`, that are bound to a single cell, the second cell is set
      to :math:`-1`.
+
+.. warning::
+
+   Calling a traversal function with an unsupported :ref:`executionSignature`
+   will result in a compile time error.
+
 
 
 .. #############################################################################

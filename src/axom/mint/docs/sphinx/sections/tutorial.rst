@@ -15,7 +15,7 @@ The examples presented herein aim to illustrate specific Mint concepts and
 capabilities in a structured and simple format.
 To quickly learn basic Mint concepts and capabilities through an illustrative
 walk-through of a complete working code example, see the
-:ref:`sections/getting_started` section. Additional code examples, based on
+:ref:`sections/mint/getting_started` section. Additional code examples, based on
 Mint mini-apps, are provided in the :ref:`sections/examples` section. For
 thorough documentation of the interfaces of the various classes and functions
 in Mint, developers are advised to consult the
@@ -456,8 +456,8 @@ dynamically grow or shrink when using :ref:`ExternalStorage`.
 
    A mesh using :ref:`ExternalStorage` may modify the values of the application
    data. However, the data is owned by the application that supplied the
-   external buffers. Consequently, the associated memory cannot be reallocated
-   to grow or shrink the mesh. Once the mesh is deleted, the data remains
+   external buffers. Mint cannot reallocate external buffers to grow or shrink
+   the the mesh. Once the mesh is deleted, the data remains
    persistent in the application buffers until it is deleted by the application.
 
 .. _usingSidre:
@@ -527,7 +527,7 @@ When the constructor is called, the target ``sidre::Group`` is populated
 according to the `Conduit`_ `Blueprint`_ mesh description. Any subsequent
 changes to the mesh are reflected accordingly to the corresponding
 ``sidre::Group``. The :ref:`rawSidreData` generated after the above code
-snippet executes are included for reference in the :ref:`sections/appendix`.
+snippet executes are included for reference in the :ref:`sections/mint/appendix`.
 
 However, once the mesh object goes out-of-scope the mesh description and any
 data remains persisted in `Sidre`_. The mesh can be deleted from `Sidre`_ using
@@ -1224,7 +1224,7 @@ and constituent :ref:`FieldData`, which can significantly aid in debugging.
   cell-centered fields of the mesh.
 
 The functionality for outputting a mesh to VTK  is provided by the
-``mint::write_vtk()`` function. This is a *free* function in the
+``mint::write_vtk()`` function. This is a free function in the
 ``axom::mint`` namespace, which takes two arguments: (1) a pointer to
 a ``mint::Mesh`` object, and, (2) the filename of the target VTK file,
 as illustrated in the code snippet below:

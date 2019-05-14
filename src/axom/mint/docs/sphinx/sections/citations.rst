@@ -15,7 +15,7 @@
 .. _Sidre: https://axom.readthedocs.io/en/develop/axom/sidre/docs/sphinx/index.html
 .. _WCI: https://wci.llnl.gov/
 .. _WSC: https://wci.llnl.gov/about-us/weapon-simulation-and-computing
-.. _CGNS: https://cgns.github.io/
+.. _CGNS Numbering Conventions: https://cgns.github.io/CGNS_docs_current/sids/conv.html#unstructgrid.
 .. _VTK File Format: https://vtk.org/Wiki/images/5/51/VTK-File-Formats.pdf
 .. _VisIt: https://wci.llnl.gov/simulation/computer-codes/visit
 .. _ParaView: https://www.paraview.org/

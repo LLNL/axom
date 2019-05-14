@@ -75,8 +75,7 @@ A cell, :math:`\mathcal{C}_i`, is given by an ordered list of :ref:`Nodes`,
 unique node index in the mesh. The order of :ref:`Nodes` defining a cell is
 determined according to a prescribed local numbering convention for a
 particular cell type. See :numref:`figs/linearCells` and :numref:`figs/q2Cells`.
-All Mint :ref:`CellTypes` follow the `CGNS`_ standard local numbering
-convention.
+All Mint :ref:`CellTypes` follow the `CGNS Numbering Conventions`_.
 
 .. _Faces:
 
@@ -190,13 +189,14 @@ Nodes
       location.
 
 
-Notably, the nodes of a mesh are not necessarily just the *vertices* of the mesh.
+Notably, the nodes of a mesh may be more than just the *vertices* of the mesh.
 As discussed in the :ref:`PreliminaryConcepts` section, a mesh is a
 discretization of a PDE. Recall, the primary purpose of the mesh is to define
-the dicsrete locations, in both *space* and *time*, at which the
+the discrete locations, in both *space* and *time*, at which the
 *unknown variables* or *degrees of freedom* of the governing PDE are evaluated.
-Depending on the numerical scheme employed and the :ref:`CellTypes` used, the
-:ref:`Nodes` of a mesh may also be located at cell, face and edge centroids.
+Depending on the numerical scheme employed and the :ref:`CellTypes` used,
+additional mesh :ref:`Nodes` may be located on the constituent cell faces,
+edges and in the cell interior.
 For example, in the Finite Element Method (FEM), the nodes for the linear
 Lagrange Finite Elements, see :numref:`figs/linearCells`, are located at the
 cell *vertices*. However, for quadratic :ref:`CellTypes`,
@@ -228,17 +228,17 @@ dimensional entity comprising the mesh. Each cell is bounded by zero or more
   Hierarchical topological structure illustrating the *downward* and *upward*
   topological connections of the constituent mesh entities supported in Mint.
 
-  The topological connections between the constituent entities of the mesh can be
-  distinguished in (a) *downward* and (b) *upward* topological connections, as
-  illustrated in :numref:`figs/topological_structure`.
+The topological connections between the constituent entities of the mesh can be
+distinguished in (a) *downward* and (b) *upward* topological connections, as
+illustrated in :numref:`figs/topological_structure`.
 
-  * The downward topological connections encode the connections from
-    higher dimensional mesh entities to lower dimensional entities,
-    such as, *cell-to-node*, *face-to-node* or *cell-to-face*.
+* The downward topological connections encode the connections from
+  higher dimensional mesh entities to lower dimensional entities,
+  such as, *cell-to-node*, *face-to-node* or *cell-to-face*.
 
-  * The upward topological connections, also called *reverse connectivities*,
-    encode the connections from lower dimensional mesh entities to higher
-    dimensional entities, such as, *face-to-cell*.
+* The upward topological connections, also called *reverse connectivities*,
+  encode the connections from lower dimensional mesh entities to higher
+  dimensional entities, such as, *face-to-cell*.
 
 Two key guiding considerations in the design and implementation of mesh data
 structures are *storage* and *computational efficiency*.  In that respect,

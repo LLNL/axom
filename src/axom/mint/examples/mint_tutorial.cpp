@@ -486,7 +486,7 @@ void fem_tutorial()
   switch( status )
   {
   case mint::INVERSE_MAP_FAILED:
-    std::cout << "Newton-Rapshon failed!";
+    std::cout << "Newton-Raphson failed!";
     break;
   case mint::OUTSIDE_ELEMENT:
     std::cout << "point is outside!\n";

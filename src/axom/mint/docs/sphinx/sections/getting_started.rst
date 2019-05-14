@@ -3,7 +3,7 @@
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
-.. _sections/getting_started:
+.. _sections/mint/getting_started:
 
 Getting Started with Mint
 ---------------------------
@@ -11,7 +11,7 @@ Getting Started with Mint
 This section provides a quick introduction to Mint by presenting a
 complete walk-through of an example Mint application, illustrating some of the
 key concepts and capabilities. The complete :ref:`MintApplicationCodeExample`,
-presented herein, is included in the :ref:`sections/appendix` section and is
+presented herein, is included in the :ref:`sections/mint/appendix` section and is
 also available in the Axom source code under
 ``src/axom/mint/examples/mint_uniform_mesh.cpp``.
 
@@ -231,18 +231,6 @@ and `ParaView`_ as follows:
    :language: C++
    :linenos:
 
-The resulting VTK file is stored in the specified file, ``uniform_mesh.vtk``.
-A depiction of the mesh showing a plot of `Himmelblau's Function`_ computed
-over the constituent :ref:`Nodes` of the mesh is illustrated in
-:numref:`figs/intro_mesh`.
-
-.. _figs/intro_mesh:
-.. figure:: ../figures/intro_mesh.png
-   :align: center
-   :alt: Resulting Uniform mesh
-
-   Plot of `Himmelblau's Function`_ computed over the constituent mesh
-   :ref:`Nodes`.
 
 .. _step7:
 
@@ -267,6 +255,18 @@ from within the build space directory as follows:
    * Sequentially on the CPU, otherwise.
 
 
+The resulting VTK file is stored in the specified file, ``uniform_mesh.vtk``.
+A depiction of the mesh showing a plot of `Himmelblau's Function`_ computed
+over the constituent :ref:`Nodes` of the mesh is illustrated in
+:numref:`figs/intro_mesh`.
+
+.. _figs/intro_mesh:
+.. figure:: ../figures/intro_mesh.png
+   :align: center
+   :alt: Resulting Uniform mesh
+
+   Plot of `Himmelblau's Function`_ computed over the constituent mesh
+   :ref:`Nodes`.
 
 .. #############################################################################
 ..  CITATIONS

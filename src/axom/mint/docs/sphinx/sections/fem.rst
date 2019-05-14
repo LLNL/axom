@@ -49,9 +49,9 @@ their associated *shape functions*, and summarize the process to
 
 .. note::
 
-  The shape functions of **all** Lagrange :ref:`Cells` in Mint are defined in a
-  reference :math:`\hat{\xi}`-space coordinate system, on the closed interval
-  :math:`\hat{\xi} \in [0,1]`.
+  The shape functions of **all** Lagrange :ref:`Cells` in Mint, follow the
+  `CGNS Numbering Conventions`_ and are defined within a reference coordinate
+  system, on the closed interval :math:`\hat{\xi} \in [0,1]`.
 
 
 QUAD: *Linear Quadrilateral*
