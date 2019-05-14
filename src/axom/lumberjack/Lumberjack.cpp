@@ -15,8 +15,6 @@
 
 #include "axom/lumberjack/Lumberjack.hpp"
 
-#include "axom/core/utilities/StringUtilities.hpp"
-
 namespace axom
 {
 namespace lumberjack

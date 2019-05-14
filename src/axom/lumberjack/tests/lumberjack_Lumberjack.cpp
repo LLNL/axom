@@ -10,8 +10,6 @@
 #include "axom/lumberjack/Communicator.hpp"
 #include "axom/lumberjack/Message.hpp"
 
-#include "axom/core/utilities/StringUtilities.hpp"
-
 #include <stdlib.h>
 #include <time.h>
 
@@ -266,7 +264,7 @@ TEST(lumberjack_Lumberjack, combineMessages03)
   for(int i=0 ; i<6 ; ++i)
   {
     std::string s = "Should not be combined " +
-                    axom::utilities::string::intToString(i+1) + ".";
+                    std::to_string(i+1) + ".";
     EXPECT_EQ(messages[i]->text(), s);
     EXPECT_EQ(messages[i]->ranksCount(), 1);
   }
@@ -299,7 +297,7 @@ TEST(lumberjack_Lumberjack, combineMixedMessages01)
   for(int i=0 ; i<2 ; ++i)
   {
     std::string s = "Should not be combined " +
-                    axom::utilities::string::intToString(i+1) + ".";
+                    std::to_string(i+1) + ".";
     EXPECT_EQ(messages[i]->text(), s);
     EXPECT_EQ(messages[i]->ranksCount(), 1);
   }
@@ -338,7 +336,7 @@ TEST(lumberjack_Lumberjack, combineMixedMessages02)
   for(int i=0 ; i<2 ; ++i)
   {
     std::string s = "Should not be combined " +
-                    axom::utilities::string::intToString(i+1) + ".";
+                    std::to_string(i+1) + ".";
     EXPECT_EQ(messages[i]->text(), s);
     EXPECT_EQ(messages[i]->ranksCount(), 1);
   }
@@ -381,7 +379,7 @@ TEST(lumberjack_Lumberjack, combineMixedMessages03)
   for(int i=1 ; i<3 ; ++i)
   {
     std::string s = "Should not be combined " +
-                    axom::utilities::string::intToString(i+1) + ".";
+                    std::to_string(i+1) + ".";
     EXPECT_EQ(messages[i]->text(), s);
     EXPECT_EQ(messages[i]->ranksCount(), 1);
   }
@@ -406,7 +404,7 @@ TEST(lumberjack_Lumberjack, combineMessagesManyMessages)
   for(int i=0 ; i<loopCount ; ++i)
   {
     std::string s = "Should not be combined " +
-                    axom::utilities::string::intToString(i) + ".";
+                    std::to_string(i) + ".";
     lumberjack.queueMessage(s);
   }
 
@@ -418,7 +416,7 @@ TEST(lumberjack_Lumberjack, combineMessagesManyMessages)
   for(int i=0 ; i<loopCount ; ++i)
   {
     std::string s = "Should not be combined " +
-                    axom::utilities::string::intToString(i) + ".";
+                    std::to_string(i) + ".";
     EXPECT_EQ(messages[i]->text(), s);
     EXPECT_EQ(messages[i]->ranksCount(), 1);
   }
@@ -445,7 +443,7 @@ TEST(lumberjack_Lumberjack, combineMessagesLargeMessages)
 
   for(int i=0 ; i<loopCount ; ++i)
   {
-    std::string s = axom::utilities::string::intToString(i) + ":" + padding;
+    std::string s = std::to_string(i) + ":" + padding;
     lumberjack.queueMessage(s);
   }
 
@@ -456,7 +454,7 @@ TEST(lumberjack_Lumberjack, combineMessagesLargeMessages)
   EXPECT_EQ((int)messages.size(), loopCount);
   for(int i=0 ; i<loopCount ; ++i)
   {
-    std::string s = axom::utilities::string::intToString(i) + ":" + padding;
+    std::string s = std::to_string(i) + ":" + padding;
     EXPECT_EQ(messages[i]->text(), s);
     EXPECT_EQ(messages[i]->ranksCount(), 1);
   }

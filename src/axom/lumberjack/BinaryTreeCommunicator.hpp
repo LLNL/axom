@@ -14,12 +14,9 @@
 #ifndef BINARYTREECOMMUNICATOR_HPP
 #define BINARYTREECOMMUNICATOR_HPP
 
-#include <string>
-
 #include "mpi.h"
 
 #include "axom/lumberjack/Communicator.hpp"
-#include "axom/lumberjack/Message.hpp"
 
 namespace axom
 {

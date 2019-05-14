@@ -8,8 +8,6 @@
 #include "axom/lumberjack/RootCommunicator.hpp"
 #include "axom/lumberjack/Message.hpp"
 
-#include "axom/core/utilities/StringUtilities.hpp"
-
 #include <mpi.h>
 
 #include <ctime>
@@ -33,7 +31,7 @@ int main(int argc, char** argv)
     return 1;
   }
   std::string communicatorName = "";
-  int cycleLimit = axom::utilities::string::stringToInt(argv[2]);
+  int cycleLimit = std::stoi(argv[2]);
   char* fileName = argv[3];
 
   if (std::string(argv[1]) == "b")

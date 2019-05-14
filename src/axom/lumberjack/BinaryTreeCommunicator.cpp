@@ -17,10 +17,10 @@
 
 #include "axom/core/utilities/Utilities.hpp"
 
-#include <cstdlib>
-#include <cmath>
+#include "mpi.h"
 
 #include "axom/lumberjack/MPIUtility.hpp"
+#include "axom/lumberjack/Message.hpp"
 
 namespace axom
 {
