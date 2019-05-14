@@ -13,6 +13,7 @@
  * A valid stride policy must support the following interface:
  *   * [required]
  *   * DEFAULT_VALUE is a public static const IntType
+ *   * IS_COMPILE_TIME is a public static const bool
  *   * stride() : IntType  -- returns the stride
  *   * isValid() : bool -- indicates whether the Stride policy of the set is
  *     valid
@@ -51,6 +52,7 @@ struct RuntimeStride
 {
 public:
   static const IntType DEFAULT_VALUE = IntType(1);
+  static const bool IS_COMPILE_TIME = false;
 
   RuntimeStride(IntType stride = DEFAULT_VALUE) : m_stride(stride) {}
 
@@ -66,6 +68,7 @@ public:
   inline bool             isValid(bool) const { return (m_stride != 0); }
 
   //inline bool hasStride() const       { return m_stride != IntType(); }
+
 private:
   IntType m_stride;
 };
@@ -78,6 +81,7 @@ template<typename IntType, IntType INT_VAL>
 struct CompileTimeStride
 {
   static const IntType DEFAULT_VALUE = INT_VAL;
+  static const bool IS_COMPILE_TIME = true;
 
   CompileTimeStride(IntType val = DEFAULT_VALUE)
   {
@@ -107,6 +111,7 @@ template<typename IntType>
 struct StrideOne
 {
   static const IntType DEFAULT_VALUE;
+  static const bool IS_COMPILE_TIME = true;
 
   /**
    * This constructor only exists to allow the derived class to not have

@@ -177,7 +177,7 @@ public:
    */
   const DataType & operator[](IndexType idx) const
   {
-    verifyPosition(idx);
+    verifyPositionImpl(idx);
     IndexType flat_idx = getMapCompFlatIndex(idx);
     return (*m_superMap_constptr)[flat_idx];
   }
@@ -185,7 +185,7 @@ public:
   //non-const version
   DataType & operator[](IndexType idx)
   {
-    verifyPosition(idx);
+    verifyPositionImpl(idx);
     SLIC_ASSERT_MSG(m_superMap_ptr != nullptr,
                     "Submap was constructed with const Map pointer, "
                     << "non-const functions should not be called");
@@ -203,14 +203,14 @@ public:
    */
   const DataType & operator()(IndexType idx, IndexType comp = 0) const
   {
-    verifyPosition(idx, comp);
+    verifyPositionImpl(idx, comp);
     return (*m_superMap_constptr)[getMapElemFlatIndex(idx)*numComp() + comp];
   }
 
   //non-const version
   DataType & operator()(IndexType idx, IndexType comp = 0)
   {
-    verifyPosition(idx, comp);
+    verifyPositionImpl(idx, comp);
     SLIC_ASSERT_MSG(m_superMap_ptr != nullptr,
                     "Submap was constructed with const Map pointer, "
                     << "non-const functions should not be called");
@@ -335,7 +335,20 @@ private: //helper functions
   }
 
   /** Checks the ComponentFlatIndex is valid */
-  void verifyPosition(SetPosition AXOM_DEBUG_PARAM(idx) ) const override
+  void verifyPosition(SetPosition idx ) const override
+  {
+    verifyPositionImpl(idx);
+  }
+
+  /** Checks the ElementFlatIndex and the component index is valid */
+  void verifyPosition(SetPosition idx,
+                      SetPosition comp ) const
+  {
+    verifyPositionImpl(idx, comp);
+  }
+
+  /** Checks the ComponentFlatIndex is valid */
+  void verifyPositionImpl(SetPosition AXOM_DEBUG_PARAM(idx) ) const
   {
     SLIC_ASSERT_MSG(idx >= 0 && idx < m_subsetIdx.size()*numComp(),
                     "Attempted to access element "
@@ -344,7 +357,7 @@ private: //helper functions
   }
 
   /** Checks the ElementFlatIndex and the component index is valid */
-  void verifyPosition(SetPosition AXOM_DEBUG_PARAM(idx),
+  void verifyPositionImpl(SetPosition AXOM_DEBUG_PARAM(idx),
                       SetPosition AXOM_DEBUG_PARAM(comp) ) const
   {
     SLIC_ASSERT_MSG(idx >= 0 && idx < m_subsetIdx.size() &&
@@ -354,6 +367,7 @@ private: //helper functions
                     << ", but Submap's data has size " << m_subsetIdx.size()
                     << " with " << numComp() << " component");
   }
+
 public:
 
   /**

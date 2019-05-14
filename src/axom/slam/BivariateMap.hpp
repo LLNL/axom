@@ -17,6 +17,8 @@
 #include "axom/slam/Relation.hpp"
 #include "axom/slam/BivariateSet.hpp"
 #include "axom/slam/SubMap.hpp"
+#include "axom/slam/Set.hpp"
+#include "axom/slam/policies/StridePolicies.hpp"
 
 #include <cassert>
 
@@ -77,27 +79,30 @@ namespace slam
  */
 
 template<
-  typename SetType,
   typename DataType,
-  typename StridePolicy = policies::StrideOne<typename SetType::PositionType>
+  typename BSetType = BivariateSet<>,
+  typename StridePolicy = policies::StrideOne<typename BSetType::PositionType>
   >
 class BivariateMap : public MapBase, public StridePolicy
 {
 public:
-  using SetPosition = typename SetType::PositionType;
-  using SetElement = typename SetType::ElementType;
+  using SetPosition = typename BSetType::PositionType;
+  using SetElement = typename BSetType::ElementType;
+  using SetType = slam::Set<SetPosition,SetElement>;
 
-  using MapType = slam::Map<SetType, DataType, StridePolicy>;
-
-  using BivariateSetType = BivariateSet<SetPosition, SetElement>;
+  using MapType = Map<SetType, DataType, StridePolicy>;
+  using BivariateSetType = BSetType;
   using OrderedSetType = typename BivariateSetType::OrderedSetType;
 
-  using BivariateMapType = BivariateMap<SetType, DataType, StridePolicy>;
+  using BivariateMapType = BivariateMap<DataType, BSetType, StridePolicy>;
   using SubMapType = SubMap<SetType, DataType, BivariateMapType, StridePolicy>;
   using SubMapIterator = typename SubMapType::SubMapIterator;
 
+  using NullBivariateSetType = NullBivariateSet<
+                                    typename BSetType::FirstSetType,
+                                    typename BSetType::SecondSetType>;
 private:
-  static const NullBivariateSet<SetPosition, SetElement> s_nullBiSet;
+  static const NullBivariateSetType s_nullBiSet;
 
 public:
 
@@ -165,7 +170,7 @@ private:
     SLIC_ASSERT_MSG(
       firstIdx >= 0 && firstIdx < firstSetSize(),
       "Attempted to access elements with first set index "
-      << firstIdx << ", but BivairateMap's first set has size "
+      << firstIdx << ", but BivariateMap's first set has size "
       << firstSetSize());
 
     SetPosition start_idx = m_set->findElementFlatIndex(firstIdx);
@@ -203,13 +208,14 @@ public:
   const DataType& operator() (SetPosition s1, SetPosition s2,
                               SetPosition comp = 0) const
   {
-    return m_map(m_set->findElementFlatIndex(s1, s2), comp);
+    auto idx = flatIndex(s1, s2);
+    return useCompIndexing() ? m_map(idx, comp) : m_map[idx];
   }
 
   DataType & operator() (SetPosition s1, SetPosition s2, SetPosition comp = 0)
   {
-    const BivariateMap& constMe = *this;
-    return const_cast<DataType&>(constMe(s1,s2,comp));
+     auto idx = flatIndex(s1, s2);
+     return useCompIndexing() ? m_map(idx, comp) : m_map[idx];
   }
 
   /**
@@ -276,13 +282,26 @@ public:
    * \brief Search for the FlatIndex of an element given its DenseIndex in the
    *        BivariateSet.
    */
-  SetPosition flatIndex(SetPosition s1, SetPosition s2) const
+  inline SetPosition flatIndex(SetPosition s1, SetPosition s2) const
   {
     return m_set->findElementFlatIndex(s1, s2);
   }
 
   /// @}
 
+private:
+
+  /**
+   * \brief Compile time predicate to check if we should use component indexing
+   * 
+   * \note Intended to help optimize internal indexing
+   */
+  constexpr bool useCompIndexing() const
+  {
+     return !(StridePolicy::IS_COMPILE_TIME && StridePolicy::DEFAULT_VALUE==1);
+  }
+
+public:
 
   /**
    * \class BivariateMapIterator
@@ -550,9 +569,9 @@ private:
 
 }; //end BivariateMap
 
-template<typename SetType, typename  DataType, typename StridePolicy>
-NullBivariateSet<typename SetType::PositionType, typename SetType::ElementType>
-const BivariateMap<SetType, DataType, StridePolicy>::s_nullBiSet;
+template<typename  DataType, typename BSetType, typename StridePolicy>
+typename BivariateMap<DataType, BSetType, StridePolicy>::NullBivariateSetType
+const BivariateMap<DataType, BSetType, StridePolicy>::s_nullBiSet;
 
 } // end namespace slam
 } // end namespace axom
