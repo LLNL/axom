@@ -68,8 +68,9 @@ These macros can then be used in the application code as follows:
    pass the ``__FILE__`` and ``__LINE__`` to the ``logMessage()`` function
    each time.
 
-See the :ref:`sections/appendix` for a list of :ref:`SlicMacros` that may be
-useful to adopt in your application.
+The :ref:`SlicMacros` provide a good resource for the type of macros that an
+application may want to adopt and extend. Although these macros are tailored
+for use within the `Axom Toolkit`_, these are also callable by application code.
 
 .. #############################################################################
 ..  CITATIONS

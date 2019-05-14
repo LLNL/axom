@@ -38,7 +38,7 @@ consult the `Axom Quick Start Guide`_.
 
 **About this Guide**
 
-This guide presents *core concepts*, *key capabilities*, and guiding design
+This guide presents core concepts, key capabilities, and guiding design
 principles of Slic's :ref:`sections/architecture`. To get started with
 using Slic quickly within an application, see the
 :ref:`sections/getting_started` section. For more detailed information on
