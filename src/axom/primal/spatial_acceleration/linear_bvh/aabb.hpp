@@ -21,7 +21,23 @@ namespace primal
 namespace bvh
 {
 
+// Forward declarations
+template < typename FloatType, int NDIMS >
 class AABB
+{
+  AXOM_STATIC_ASSERT_MSG( (NDIMS >= 2 && NDIMS <=3),
+      "The AABB class is supported only in 2D and 3D." );
+};
+
+template < typename FloatType, int NDIMS >
+std::ostream& operator<<( std::ostream &os,
+                          const AABB< FloatType, NDIMS > &aabb);
+
+//------------------------------------------------------------------------------
+// 3D AABB Specialization
+//------------------------------------------------------------------------------
+template < typename FloatType >
+class AABB< FloatType, 3 >
 {
 
 public:
@@ -38,7 +54,7 @@ public:
   }
 
   AXOM_HOST_DEVICE
-  void include(const Vec3f &point)
+  void include(const Vec<FloatType,3>& point)
   {
     m_x.include(point[0]);
     m_y.include(point[1]);
@@ -46,7 +62,7 @@ public:
   }
 
   AXOM_HOST_DEVICE
-  void expand(const axom::float32 &epsilon)
+  void expand(const FloatType& epsilon)
   {
     assert(epsilon > 0.f);
     m_x.include(m_x.min() - epsilon);
@@ -58,7 +74,7 @@ public:
   }
 
   AXOM_HOST_DEVICE
-  void scale(const axom::float32 &scale)
+  void scale(const FloatType& scale)
   {
     assert(scale >= 1.f);
     m_x.scale(scale);
@@ -67,43 +83,92 @@ public:
   }
 
   AXOM_HOST_DEVICE
-  Vec3f center() const
+  Vec< FloatType, 3 > center() const
   {
-    return make_vec3f(m_x.center(),
-                      m_y.center(),
-                      m_z.center());
+    return make_vec< FloatType, 3 > ( m_x.center(), m_y.center(),m_z.center() );
   }
 
-  //AXOM_HOST_DEVICE
-  //AABB identity() const
-  //{
-  //  return AABB();
-  //}
+  std::ostream& print( std::ostream& os ) const
+  {
+    os << "x-range: " << m_x << "; "
+       << "y-range: " << m_y << "; "
+       << "z-range: " << m_z;
+    return os;
+  }
 
-  //AXOM_HOST_DEVICE
-  //AABB operator+(const AABB &other) const
-  //{
-  //  AABB res = *this;
-  //  res.include(other);
-  //  return res;
-  //}
-
-  friend std::ostream& operator<<(std::ostream &os, const AABB &aabb);
 };
 
-inline std::ostream& operator<<(std::ostream &os, const AABB &aabb)
+//------------------------------------------------------------------------------
+// 2D AABB Specialization
+//------------------------------------------------------------------------------
+template < typename FloatType >
+class AABB< FloatType, 2 >
 {
-  os<<"[";
-  os<<aabb.m_x.min()<<", ";
-  os<<aabb.m_y.min()<<", ";
-  os<<aabb.m_z.min();
-  os<<"] - [";
-  os<<aabb.m_x.max()<<", ";
-  os<<aabb.m_y.max()<<", ";
-  os<<aabb.m_z.max();
-  os<<"]";
-  return os;
+
+public:
+  Range< double > m_x;
+  Range< double > m_y;
+
+
+  AXOM_HOST_DEVICE
+  void include(const AABB &other)
+  {
+    m_x.include(other.m_x);
+    m_y.include(other.m_y);
+  }
+
+  AXOM_HOST_DEVICE
+  void include(const Vec<FloatType,2>& point)
+  {
+    m_x.include(point[0]);
+    m_y.include(point[1]);
+  }
+
+  AXOM_HOST_DEVICE
+  void expand(const FloatType& epsilon)
+  {
+    assert(epsilon > 0.f);
+    m_x.include(m_x.min() - epsilon);
+    m_x.include(m_x.max() + epsilon);
+    m_y.include(m_y.min() - epsilon);
+    m_y.include(m_y.max() + epsilon);
+  }
+
+  AXOM_HOST_DEVICE
+  void scale(const FloatType& scale)
+  {
+    assert(scale >= 1.f);
+    m_x.scale(scale);
+    m_y.scale(scale);
+  }
+
+  AXOM_HOST_DEVICE
+  Vec< FloatType, 3 > center() const
+  {
+    return make_vec< FloatType, 2 > ( m_x.center(), m_y.center() );
+  }
+
+  std::ostream& print( std::ostream& os ) const
+  {
+    os << "x-range: " << m_x << "; "
+       << "y-range: " << m_y;
+    return os;
+  }
+};
+
+//------------------------------------------------------------------------------
+// FREE FUNCTIONS
+//------------------------------------------------------------------------------
+template < typename FloatType, int NDIMS >
+std::ostream& operator<<( std::ostream &os,
+                          const AABB< FloatType, NDIMS > &aabb)
+{
+  AXOM_STATIC_ASSERT( NDIMS >=1 && NDIMS <= 3 );
+  AXOM_STATIC_ASSERT( std::is_floating_point< FloatType >::value );
+
+  return aabb.print( os );
 }
+
 
 } /* namespace axom */
 } /* namespace primal */

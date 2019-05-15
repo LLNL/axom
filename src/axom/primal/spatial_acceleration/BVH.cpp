@@ -323,7 +323,7 @@ void write_bvh_bins_recursive( bvh::Vec<float32, 4>* inner_nodes,
 }
 
 //------------------------------------------------------------------------------
-void write_bvh_root( const bvh::AABB& root,
+void write_bvh_root( const bvh::AABB<float32,3>& root,
                      int& numPoints,
                      int& numBins,
                      std::ostringstream& nodes,

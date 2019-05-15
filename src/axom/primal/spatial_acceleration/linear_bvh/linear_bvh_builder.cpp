@@ -22,12 +22,12 @@ namespace primal
 namespace bvh
 {
 
-void transform_boxes(const double *boxes, AABB *aabbs, const int32 size)
+void transform_boxes(const double *boxes, AABB<float32,3> *aabbs, const int32 size)
 {
 
   RAJA::forall<raja_for_policy>(RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
   {
-    AABB aabb;
+    AABB<float32, 3> aabb;
     Vec<float32,3> min_point, max_point;
     const int32 offset = i * 6;
     min_point[0] = boxes[offset + 0];
@@ -43,7 +43,7 @@ void transform_boxes(const double *boxes, AABB *aabbs, const int32 size)
 
 }
 
-AABB reduce(AABB *aabbs, const int size)
+AABB<float32,3> reduce(AABB<float32,3> *aabbs, const int size)
 {
 
   RAJA::ReduceMin<raja_reduce_policy, float32> xmin(infinity32());
@@ -57,7 +57,7 @@ AABB reduce(AABB *aabbs, const int size)
   RAJA::forall<raja_for_policy>(RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
   {
 
-    const AABB &aabb = aabbs[i];
+    const AABB<float32, 3> &aabb = aabbs[i];
     //std::cout<<i<<" "<<aabb<<"\n";
     xmin.min(aabb.m_x.min());
     ymin.min(aabb.m_y.min());
@@ -69,7 +69,7 @@ AABB reduce(AABB *aabbs, const int size)
 
   });
 
-  AABB res;
+  AABB<float32,3> res;
   Vec3f mins = make_vec3f(xmin.get(), ymin.get(), zmin.get());
   Vec3f maxs = make_vec3f(xmax.get(), ymax.get(), zmax.get());
 
@@ -78,7 +78,7 @@ AABB reduce(AABB *aabbs, const int size)
   return res;
 }
 
-uint32 *get_mcodes(AABB *aabbs, const int32  size, const AABB &bounds)
+uint32 *get_mcodes(AABB<float32,3> *aabbs, const int32  size, const AABB<float32,3> &bounds)
 {
   Vec3f extent, inv_extent, min_coord;
   extent[0] = bounds.m_x.max() - bounds.m_x.min();
@@ -99,7 +99,7 @@ uint32 *get_mcodes(AABB *aabbs, const int32  size, const AABB &bounds)
 
   RAJA::forall<raja_for_policy>(RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
   {
-    const AABB &aabb = aabbs[i];
+    const AABB<float32,3> &aabb = aabbs[i];
     // get the center and normalize it
     float32 centroid_x = (aabb.m_x.center() - min_coord[0]) * inv_extent[0];
     float32 centroid_y = (aabb.m_y.center() - min_coord[1]) * inv_extent[1];
@@ -175,8 +175,8 @@ struct BVHData
   int32  *m_parents;
   int32  *m_leafs;
   uint32 *m_mcodes;
-  AABB   *m_inner_aabbs;
-  AABB   *m_leaf_aabbs;
+  AABB<float32, 3>   *m_inner_aabbs;
+  AABB<float32, 3>   *m_leaf_aabbs;
   void
   allocate(const int32 size)
   {
@@ -184,7 +184,7 @@ struct BVHData
     m_left_children = axom::allocate<int32>(size);
     m_right_children = axom::allocate<int32>(size);
     m_parents = axom::allocate<int32>(size);
-    m_inner_aabbs = axom::allocate<AABB>(size);
+    m_inner_aabbs = axom::allocate<AABB<float32,3>>(size);
   }
 
   void
@@ -329,9 +329,9 @@ void propagate_aabbs(BVHData &data)
   const int32 *lchildren_ptr = data.m_left_children;
   const int32 *rchildren_ptr = data.m_right_children;
   const int32 *parent_ptr = data.m_parents;
-  const AABB  *leaf_aabb_ptr = data.m_leaf_aabbs;
+  const AABB<float32, 3>  *leaf_aabb_ptr = data.m_leaf_aabbs;
 
-  AABB  *inner_aabb_ptr = data.m_inner_aabbs;
+  AABB<float32,3>  *inner_aabb_ptr = data.m_inner_aabbs;
 
   int32* counters_ptr = axom::allocate<int32>(inner_size);
 
@@ -354,7 +354,7 @@ void propagate_aabbs(BVHData &data)
       int32 lchild = lchildren_ptr[current_node];
       int32 rchild = rchildren_ptr[current_node];
       // gather the aabbs
-      AABB aabb;
+      AABB<float32,3> aabb;
       if(lchild >= inner_size)
       {
         aabb.include(leaf_aabb_ptr[lchild - inner_size]);
@@ -394,8 +394,8 @@ Vec<float32,4>* emit(BVHData &data)
   const int32 *lchildren_ptr = data.m_left_children;
   const int32 *rchildren_ptr = data.m_right_children;
 
-  const AABB  *leaf_aabb_ptr  = data.m_leaf_aabbs;
-  const AABB  *inner_aabb_ptr = data.m_inner_aabbs;
+  const AABB<float32,3>  *leaf_aabb_ptr  = data.m_leaf_aabbs;
+  const AABB<float32,3>  *inner_aabb_ptr = data.m_inner_aabbs;
 
   Vec<float32,4> *flat_ptr = axom::allocate<Vec<float32,4>>(inner_size * 4);;
 
@@ -406,7 +406,7 @@ Vec<float32,4>* emit(BVHData &data)
     Vec<float32,4> vec3;
     Vec<float32,4> vec4;
 
-    AABB l_aabb, r_aabb;
+    AABB<float32,3> l_aabb, r_aabb;
 
     int32 lchild = lchildren_ptr[node];
     if(lchild >= inner_size)
@@ -468,11 +468,11 @@ BVH
 LinearBVHBuilder::construct(const double *boxes, int size)
 {
   // copy so we don't reorder the input
-  AABB *aabbs = axom::allocate<AABB>(size);
+  AABB<float32,3> *aabbs = axom::allocate< AABB<float32,3> >(size);
   transform_boxes(boxes, aabbs, size);
 
   BVH bvh;
-  AABB bounds = reduce(aabbs, size);
+  AABB<float32,3> bounds = reduce(aabbs, size);
   uint32 *mcodes = get_mcodes(aabbs, size, bounds);
 
   // original positions of the sorted morton codes.
