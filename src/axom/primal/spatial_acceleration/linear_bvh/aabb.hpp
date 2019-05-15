@@ -25,9 +25,9 @@ class AABB
 {
 
 public:
-  Range m_x;
-  Range m_y;
-  Range m_z;
+  Range< double > m_x;
+  Range< double > m_y;
+  Range< double > m_z;
 
   AXOM_HOST_DEVICE
   void include(const AABB &other)

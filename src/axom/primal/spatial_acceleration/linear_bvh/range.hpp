@@ -20,22 +20,30 @@ namespace primal
 namespace bvh
 {
 
+// Forward declarations
+template < typename FloatType >
+class Range;
+
+template < typename FloatType >
+std::ostream& operator<<( std::ostream &os,
+                          const Range< FloatType >& range);
+
+template < typename FloatType >
 class Range
 {
-protected:
-  axom::float32 m_min = infinity32();
-  axom::float32 m_max = neg_infinity32();
+  AXOM_STATIC_ASSERT( std::is_floating_point< FloatType >::value );
+
 public:
 
 
   AXOM_HOST_DEVICE
-  axom::float32 min() const
+  FloatType min() const
   {
     return m_min;
   }
 
   AXOM_HOST_DEVICE
-  axom::float32 max() const
+  FloatType max() const
   {
     return m_max;
   }
@@ -46,12 +54,11 @@ public:
     return m_min > m_max;
   }
 
-  template<typename T>
   AXOM_HOST_DEVICE
-  void include(const T &val)
+  void include(const FloatType& val)
   {
-    m_min = fmin(m_min, axom::float32(val));
-    m_max = fmax(m_max, axom::float32(val));
+    m_min = fmin( m_min, FloatType(val) );
+    m_max = fmax( m_max, FloatType(val) );
   }
 
   AXOM_HOST_DEVICE
@@ -71,7 +78,7 @@ public:
   }
 
   AXOM_HOST_DEVICE
-  axom::float32 center() const
+  FloatType center() const
   {
     if(is_empty())
     {
@@ -81,7 +88,7 @@ public:
   }
 
   AXOM_HOST_DEVICE
-  axom::float32 length() const
+  FloatType length() const
   {
     if(is_empty())
     {
@@ -91,15 +98,15 @@ public:
   }
 
   AXOM_HOST_DEVICE
-  void scale(axom::float32 scale)
+  void scale(FloatType scale)
   {
     if(is_empty())
     {
       return;
     }
 
-    axom::float32 c = center();
-    axom::float32 delta = scale * 0.5f * length();
+    FloatType c = center();
+    FloatType delta = scale * 0.5f * length();
     include(c - delta);
     include(c + delta);
   }
@@ -114,12 +121,15 @@ public:
     return res;
   }
 
-
-  friend std::ostream& operator<<(std::ostream &os, const Range &range);
+private:
+  FloatType m_min = infinity32();
+  FloatType m_max = neg_infinity32();
 
 };
 
-inline std::ostream& operator<<(std::ostream &os, const Range &range)
+template < typename FloatType >
+std::ostream& operator<<( std::ostream &os,
+                          const Range< FloatType >& range)
 {
   os<<"[";
   os<<range.min()<<", ";
