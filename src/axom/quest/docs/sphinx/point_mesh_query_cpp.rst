@@ -70,7 +70,7 @@ The constructor takes several arguments.  Here, ``surface_mesh`` is a pointer to
 a triangle surface mesh.  The second argument indicates the mesh is a watertight
 mesh, a manifold.  The signed distance from a point to a manifold is
 mathematically well-defined.  When the input is not a closed surface mesh, the
-mesh span the entire computational mesh domain, dividing it into two regions.
+mesh must span the entire computational mesh domain, dividing it into two regions.
 The third and fourth arguments are used to build the underlying BVH tree
 spatial index.  They indicate that BVH tree buckets will be split after 25 objects
 and that the BVH tree will contain at most 10 levels.  These are safe default 

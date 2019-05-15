@@ -33,11 +33,22 @@ Use the ``RectangularLattice`` to find grid cells.
 Mortonizer
 ^^^^^^^^^^
 
-The ``Mortonizer`` (along with its associated class ``MortonBase``)
-implements the Morton index, an operation that associates each point
-in N-D space with a point on a space-filling curve.  The ``PointHash`` class
-adapts the ``Mortonizer`` to provide a hashing functionality for use with
+The ``Mortonizer`` (along with its associated class ``MortonBase``) implements
+the Morton index, an operation that associates each point in N-D space with a
+point on a space-filling curve [#f1]_.  The ``PointHash`` class adapts the
+``Mortonizer`` to provide a hashing functionality for use with
 ``std::unordered_map`` or similar container classes.
+
+The math of the Morton index works with integers.  Thus the ``Mortonizer`` and
+its dependent class ``PointHash`` will not work with floating point coordinates.
+The following code example shows how the cells of a ``RectangularLattice``,
+which have integer coordinates, can be used with a hash table.
+
+The ``Mortonizer`` works by interleaving bits from each coordinate of the input
+point and finite computer hardware limits its resolution.  If the
+``MortonIndexType`` is 64-bits, then in 2D it can uniquely index the least
+significant 32 bits of the x- and y-coordinates.  In 3D, it can uniquely index
+the least significant 21 bits of the x-, y-, and z-coordinates.
 
 To use the ``PointHash``, include the header and (as desired) declare type aliases.
 
@@ -54,9 +65,7 @@ stored, using a ``PointHash``, in a ``std::unordered_map``.
    :end-before: _morton_use_end
    :language: C++
 
+.. rubric:: Footnotes
 
-The Morton index or Z-index curve is a fractal space-filling curve.  The first
-four iterations of the 2D curve's construction are shown below, and a 3D
-analogue exists as well.
-
-(insert figures)
+.. [#f1] The Morton index is also known, among other things, as the Z-order curve: 
+         see its `Wikipedia page <https://wikipedia.org/wiki/Z-order_curve>`_.

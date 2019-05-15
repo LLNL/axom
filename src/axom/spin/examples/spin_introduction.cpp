@@ -68,6 +68,24 @@ using Point2DType = axom::spin::Point<double, in2D> ;
 using Triangle2DType = axom::primal::Triangle<double, in2D> ;
 // _bvhtree_header_end
 
+// _igrid_header_start
+#include "axom/spin/ImplicitGrid.hpp"
+
+// the ImplicitGrid will be in 2D
+using IGridT = axom::spin::ImplicitGrid<in2D> ;
+
+// useful derived types
+using IGridCell = typename IGridT::GridCell;
+using ISpacePt = typename IGridT::SpacePoint;
+using IBBox = typename IGridT::SpatialBoundingBox;
+using IBitsetType = typename IGridT::BitsetType;
+using IBitsetIndexType = typename IBitsetType::Index;
+
+// some functions we'll use
+bool expensiveTest(ISpacePt & query, Triangle2DType & tri) ;
+void makeTriangles(std::vector<Triangle2DType> & tris) ;
+// _igrid_header_end
+
 // _rectlattice_header_start
 #include "axom/spin/RectangularLattice.hpp"
 // We'll be using a 2D lattice with space coordinates of type double
@@ -91,6 +109,18 @@ using PointHashType = axom::spin::PointHash<RLGridCell::CoordType>;
 class DataContainer;
 using MapType = std::unordered_map<RLGridCell, DataContainer, PointHashType>;
 // _morton_header_end
+
+// _octree_header_start
+#include "axom/spin/SpatialOctree.hpp"
+
+using LeafNodeType = axom::spin::BlockData ;
+
+using OctreeType = axom::spin::SpatialOctree<in3D, LeafNodeType> ;
+using OctBlockIndex = OctreeType::BlockIndex ;
+using OctSpacePt = OctreeType::SpacePt ;
+using OctBBox = OctreeType::GeometricBoundingBox ;
+// _octree_header_end
+
 
 class DataContainer
 {
@@ -349,7 +379,63 @@ void findTriIntersectionsAccel(
 }
 // _ugrid_triintersect_end
 
-void makeUniformGridTriangles(std::vector<TriangleType> & tris)
+bool expensiveTest(ISpacePt & query, Triangle2DType & tri)
+{
+  // This is supposed to be really expensive.  Thankfully it isn't quite.
+  return tri.checkInTriangle(query);
+}
+
+void showImplicitGrid()
+{
+  // _igrid_build_start
+  // here are the triangles.
+  std::vector<Triangle2DType> tris;
+  makeTriangles(tris);
+
+  // Set up the ImplicitGrid: ten bins on an axis
+  IGridCell res(10);
+  // establish the domain of the ImplicitGrid.
+  IBBox bbox(ISpacePt::zero(), ISpacePt::ones());
+  // room for one hundred elements in the index
+  const int numElts = tris.size();
+  IGridT grid(bbox, &res, numElts);
+
+  // load the bounding box of each triangle, along with its index,
+  // into the ImplicitGrid.
+  for (int i = 0; i < numElts; ++i)
+  {
+    grid.insert(findBbox(tris[i]), i);
+  }
+  // _igrid_build_end
+
+  // _igrid_query_start
+  // Here is our query point
+  ISpacePt qpt = ISpacePt::make_point(0.63, 0.42);
+
+  // Which triangles might it intersect?
+  IBitsetType candidates = grid.getCandidates(qpt);
+  int totalTrue = 0;
+
+  // Iterate over the bitset and test the candidates expensively.
+  IBitsetIndexType index = candidates.find_first();
+  while (index != IBitsetType::npos)
+  {
+    if (expensiveTest(qpt, tris[index]))
+    {
+      totalTrue += 1;
+    }
+    index = candidates.find_next(index);
+  }
+  // _igrid_query_end
+
+  // Report on intersection tests
+  std::cout << "----- showImplicitGrid -----" << std::endl;
+  std::cout << numElts << " total triangles, " << candidates.count() << 
+    " triangles expensively tested against query point, " << totalTrue << 
+    " found true." << std::endl;
+}
+
+void makeTriangles(std::vector<TriangleType> & tris)
 {
   PointType p[8];
   p[0] = PointType::make_point(0.3,  0.93, 0.03);
@@ -369,6 +455,26 @@ void makeUniformGridTriangles(std::vector<TriangleType> & tris)
   TriangleType t5(p[4], p[5], p[7]);    tris.push_back(t5);
 }
 
+void makeTriangles(std::vector<Triangle2DType> & tris)
+{
+  Point2DType p[8];
+  p[0] = Point2DType::make_point(0.3,  0.93);
+  p[1] = Point2DType::make_point(0.1,  0.85);
+  p[2] = Point2DType::make_point(0.3,  0.78);
+  p[3] = Point2DType::make_point(0.18, 0.36);
+  p[4] = Point2DType::make_point(0.8,  0.58);
+  p[5] = Point2DType::make_point(0.6,  0.5);
+  p[6] = Point2DType::make_point(0.55, 0.42);
+  p[7] = Point2DType::make_point(0.61, 0.1);
+
+  Triangle2DType t0(p[0], p[1], p[2]);    tris.push_back(t0);
+  Triangle2DType t1(p[2], p[1], p[3]);    tris.push_back(t1);
+  Triangle2DType t2(p[2], p[3], p[6]);    tris.push_back(t2);
+  Triangle2DType t3(p[6], p[3], p[7]);    tris.push_back(t3);
+  Triangle2DType t4(p[4], p[2], p[6]);    tris.push_back(t4);
+  Triangle2DType t5(p[4], p[5], p[7]);    tris.push_back(t5);
+}
+
 void printPairs(std::string title,
                 std::vector< std::pair<int, int> > & clashes)
 {
@@ -383,7 +489,7 @@ void printPairs(std::string title,
 void driveUniformGrid()
 {
   std::vector<TriangleType> tris;
-  makeUniformGridTriangles(tris);
+  makeTriangles(tris);
 
   std::vector< std::pair<int, int> > naiveclashes;
   findTriIntersectionsNaively(tris, naiveclashes);
@@ -481,7 +587,7 @@ void findIntersectionsWithCandidates(std::vector<Triangle2DType> & tris,
 }
 // _bvhtree_cand_int_end
 
-void makeBVHTreeTriangles(std::vector<Triangle2DType> & tris)
+void makeTreeTriangles(std::vector<Triangle2DType> & tris)
 {
   Point2DType p[19];
   p[0] = Point2DType::make_point(.13, .88);
@@ -526,7 +632,7 @@ void makeBVHTreeTriangles(std::vector<Triangle2DType> & tris)
 void driveBVHTree()
 {
   std::vector<Triangle2DType> tris;
-  makeBVHTreeTriangles(tris);
+  makeTreeTriangles(tris);
   Point2DType ppoint = Point2DType::make_point(0.45, 0.25);
   std::vector<int> intersections, candidates;
 
@@ -546,6 +652,33 @@ void driveBVHTree()
   delete tree;
 }
 
+void driveOctree()
+{
+  // _octree_start
+  OctBBox bb(OctSpacePt(10), OctSpacePt(20));
+
+  // Generate a point within the bounding box
+  double alpha = 2./3.;
+  OctSpacePt queryPt = OctSpacePt::lerp(bb.getMin(), bb.getMax(), alpha);
+
+  // Instantiate the Octree
+  OctreeType octree(bb);
+
+  // Find the block containing the query point
+  OctBlockIndex leafBlock = octree.findLeafBlock(queryPt);
+  // and the bounding box of the block.
+  OctBBox leafBB = octree.blockBoundingBox(leafBlock);
+
+  for(int i=0 ; i< octree.maxInternalLevel() ; ++i)
+  {
+    // SpatialOctree allows a code to refine (subdivide) a block
+    octree.refineLeaf( leafBlock );
+    // and locate the (new) child block containing the query point.
+    leafBlock = octree.findLeafBlock(queryPt);
+  }
+  // _octree_end
+}
+
 int main(int argc, char** argv)
 {
 
@@ -556,7 +689,9 @@ int main(int argc, char** argv)
   demoRectangularLattice();
   demoMorton();
   driveUniformGrid();
+  showImplicitGrid();
   driveBVHTree();
+  driveOctree();
 
   return 0;
 }
