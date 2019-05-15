@@ -289,10 +289,10 @@ Plane< T, NDIMS >::Plane( const T* x1, const T* x2, const T* x3 )
   {
     SLIC_ASSERT( NDIMS==3 );
 
-    T r1[ NDIMS ];
-    T r2[ NDIMS ];
+    T r1[ 3 ];
+    T r2[ 3 ];
 
-    for ( int i=0 ; i < NDIMS ; ++i )
+    for ( int i=0 ; i < 3 ; ++i )
     {
       r1[ i ] = x2[ i ] - x1[ i ];
       r2[ i ] = x3[ i ] - x1[ i ];

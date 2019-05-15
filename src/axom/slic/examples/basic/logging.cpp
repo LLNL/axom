@@ -3,56 +3,63 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-// C/C++ includes
-#include <cstdlib> // for rand()
+// SPHINX_SLIC_BASIC_EXAMPLE_BEGIN
 
-// Logging includes
-#include "axom/slic/interface/slic.hpp"
-#include "axom/slic/streams/GenericOutputStream.hpp"
+// SPHINX_SLIC_INCLUDES_BEGIN
+// Slic includes
+#include "axom/slic.hpp"
+// SPHINX_SLIC_INCLUDES_END
 
 using namespace axom;
 
-#define N 10
-
-slic::message::Level getRandomEvent( const int start, const int end )
-{
-  return( static_cast<slic::message::Level>(std::rand() % (end-start) + start));
-}
-
 //------------------------------------------------------------------------------
-int main( int argc, char** argv )
+int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
 {
-  static_cast<void>(argc);
-  static_cast<void>(argv);
+  // SPHINX_SLIC_INIT_BEGIN
 
-  // STEP 0: initialize logging environment
   slic::initialize();
+
+  // SPHINX_SLIC_INIT_END
+
   slic::disableAbortOnError();
 
-  std::string format =  std::string( "***********************************\n" )+
-                       std::string( "* <TIMESTAMP>\n\n" ) +
-                       std::string( "* LEVEL=<LEVEL>\n" ) +
-                       std::string( "* MESSAGE=<MESSAGE>\n" ) +
-                       std::string( "* FILE=<FILE>\n" ) +
-                       std::string( "* LINE=<LINE>\n" ) +
-                       std::string( "***********************************\n" );
+  // SPHINX_SLIC_FORMAT_MSG_BEGIN
+
+  std::string format = std::string( "<TIMESTAMP>\n" ) +
+                       std::string( "[<LEVEL>]: <MESSAGE> \n" ) +
+                       std::string( "FILE=<FILE>\n" ) +
+                       std::string( "LINE=<LINE>\n\n" );
+
+  // SPHINX_SLIC_FORMAT_MSG_END
+
+  // SPHINX_SLIC_SET_SEVERITY_BEGIN
 
   slic::setLoggingMsgLevel( slic::message::Debug );
+
+  // SPHINX_SLIC_SET_SEVERITY_END
+
+  // SPHINX_SLIC_SET_STREAM_BEGIN
   slic::addStreamToAllMsgLevels(
-    new slic::GenericOutputStream( &std::cout, format ) );
+      new slic::GenericOutputStream( &std::cout,format) );
 
+  // SPHINX_SLIC_SET_STREAM_END
 
-  // STEP 1: loop N times and generate a random logging event
-  for ( int i=0 ; i < N ; ++i )
-  {
+  // SPHINX_SLIC_LOG_MESSAGES_BEGIN
 
-    slic::logMessage( getRandomEvent(0,slic::message::Num_Levels),
-                      "a random message", __FILE__,  __LINE__  );
+  SLIC_DEBUG( "Here is a debug message!" );
+  SLIC_INFO( "Here is an info mesage!" );
+  SLIC_WARNING( "Here is a warning!" );
+  SLIC_ERROR( "Here is an error message!" );
 
-  }
+  // SPHINX_SLIC_LOG_MESSAGES_END
 
-  // STEP 2: shutdown logging environment
+  // SPHINX_SLIC_FINALIZE_BEGIN
+
   slic::finalize();
+
+  // SPHINX_SLIC_FINALIZE_END
 
   return 0;
 }
+
+// SPHINX_SLIC_BASIC_EXAMPLE_END

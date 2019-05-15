@@ -21,6 +21,7 @@
 #include <set>
 
 // Other axom headers
+#include "axom/core/memory_management.hpp"
 #include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"
 #include "axom/slic/interface/slic.hpp"
@@ -383,6 +384,12 @@ public:
    */
   bool isEquivalentTo(const View* other) const;
 
+  /*!
+   * \brief Returns true if both Views are either associated with a buffer or
+   * external, they span the same number of bytes and have unit stride.
+   */
+  bool isUpdateableFrom(const View* other) const;
+
 //@}
 
 
@@ -399,7 +406,7 @@ public:
    *
    * \return pointer to this View object.
    */
-  View* allocate();
+  View* allocate(int allocID=INVALID_ALLOCATOR_ID);
 
   /*!
    * \brief Allocate data for view given type and number of elements.
@@ -410,7 +417,8 @@ public:
    *
    * \return pointer to this View object.
    */
-  View* allocate( TypeID type, IndexType num_elems);
+  View* allocate(TypeID type, IndexType num_elems,
+                 int allocID=INVALID_ALLOCATOR_ID);
 
   /*!
    * \brief Allocate data for view described by a Conduit data type object.
@@ -421,7 +429,7 @@ public:
    *
    * \return pointer to this View object.
    */
-  View* allocate(const DataType& dtype);
+  View* allocate(const DataType& dtype, int allocID=INVALID_ALLOCATOR_ID);
 
   /*!
    * \brief  Reallocate data for view to given number of elements (type
@@ -781,6 +789,13 @@ public:
 
 //@}
 
+/*!
+ * \brief Update the data in this View with the data in other
+ * if isUpdateableFrom( other ). Otherwise nothing is done.
+ *
+ * \return pointer to this View object.
+ */
+  View* updateFrom(const View* other);
 
 //@{
 //! @name Methods to retrieve data in a view.
@@ -1482,7 +1497,13 @@ private:
   /*!
    *  \brief Private method returns state enum value give a state name.
    */
-  State getStateId(const std::string &name);
+  State getStateId(const std::string &name) const;
+
+  /*!
+   * \brief Private method. If allocatorID is a valid allocator ID then return
+   *  it. Otherwise return the ID of the default allocator of the owning group.
+   */
+  int getValidAllocatorID( int allocatorID );
 
   /// Name of this View object.
   std::string m_name;

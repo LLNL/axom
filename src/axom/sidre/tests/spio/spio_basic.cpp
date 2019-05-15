@@ -92,7 +92,7 @@ void checkBaton(int numFiles, int numRanks, int myRank)
 
   // Num files and groups
   EXPECT_EQ(numFiles, baton.getNumFiles());
-  EXPECT_EQ(myGroup.m_size, baton.groupSize());
+  EXPECT_EQ(myGroup.m_size, baton.setSize());
 
   // First and last index in the group
   const bool expFirst = (myRank == myGroup.m_firstIdx);

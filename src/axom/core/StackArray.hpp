@@ -38,7 +38,7 @@ struct StackArray
   T& operator[](IndexType i) noexcept
   { return m_data[ i ]; }
 
-  AXOM_HOST_DEVICE 
+  AXOM_HOST_DEVICE
   constexpr const T& operator[](IndexType i) const noexcept
   { return m_data[i]; }
 
@@ -52,7 +52,7 @@ struct StackArray
   AXOM_HOST_DEVICE operator T* () noexcept
   { return &m_data[0]; }
 
-  AXOM_HOST_DEVICE 
+  AXOM_HOST_DEVICE
   constexpr operator const T* () const noexcept
   { return &m_data[0]; }
 

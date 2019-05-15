@@ -327,8 +327,8 @@ void deleteExternalMesh( UnstructuredMesh< TOPO >*& mesh )
 
   const int ndims = mesh->getDimension();
   double* x = mesh->getCoordinateArray( X_COORDINATE );
-  double* y;
-  double* z;
+  double* y = nullptr;
+  double* z = nullptr;
   if ( ndims > 1 )
   {
     y = mesh->getCoordinateArray( Y_COORDINATE );

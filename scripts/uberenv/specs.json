@@ -14,15 +14,13 @@
     "__comment__":"##############################################################################",
 
     "toss_3_x86_64_ib":
-    [ "clang@3.9.1",
-      "clang@4.0.0+devtools",
-      "gcc@4.9.3",
+    [ "clang@4.0.0+devtools",
+      "clang@6.0.0",
       "gcc@6.1.0",
       "gcc@7.3.0",
       "gcc@8.1.0",
-      "intel@16.0.4~umpire",
-      "intel@17.0.2",
-      "intel@18.0.2" ],
+      "intel@18.0.2",
+      "intel@19.0.0" ],
 
     "blueos_3_ppc64le_ib":
     [ "clang@upstream_xlf~openmp",

@@ -6,11 +6,24 @@ compilers:
     modules: []
     operating_system: rhel7
     paths:
-      cc:  /usr/tce/packages/gcc/gcc-4.9.3/bin/gcc
-      cxx: /usr/tce/packages/gcc/gcc-4.9.3/bin/g++
+      cc:  /usr/tce/packages/clang/clang-4.0.0/bin/clang
+      cxx: /usr/tce/packages/clang/clang-4.0.0/bin/clang++
       f77: /usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran
       fc:  /usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran
-    spec: gcc@4.9.3
+    spec: clang@4.0.0
+    target: x86_64
+- compiler:
+    environment: {}
+    extra_rpaths: []
+    flags: {}
+    modules: []
+    operating_system: rhel7
+    paths:
+      cc:  /usr/tce/packages/clang/clang-6.0.0/bin/clang
+      cxx: /usr/tce/packages/clang/clang-6.0.0/bin/clang++
+      f77: /usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran
+      fc:  /usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran
+    spec: clang@6.0.0
     target: x86_64
 - compiler:
     environment: {}
@@ -53,46 +66,6 @@ compilers:
     target: x86_64
 - compiler:
     environment: {}
-    extra_rpaths: 
-      - /usr/tce/packages/intel/intel-17.0.0/lib/intel64_lin
-    flags: {}
-    modules: []
-    operating_system: rhel7
-    paths:
-      cc:  /usr/tce/packages/intel/intel-17.0.0/bin/icc
-      cxx: /usr/tce/packages/intel/intel-17.0.0/bin/icpc
-      f77: /usr/tce/packages/intel/intel-17.0.0/bin/ifort
-      fc:  /usr/tce/packages/intel/intel-17.0.0/bin/ifort
-    spec: intel@17.0.0
-    target: x86_64
-- compiler:
-    environment: {}
-    extra_rpaths: []
-    flags: {}
-    modules: []
-    operating_system: rhel7
-    paths:
-      cc:  /usr/tce/packages/intel/intel-16.0.4/bin/icc
-      cxx: /usr/tce/packages/intel/intel-16.0.4/bin/icpc
-      f77: /usr/tce/packages/intel/intel-16.0.4/bin/ifort
-      fc:  /usr/tce/packages/intel/intel-16.0.4/bin/ifort
-    spec: intel@16.0.4
-    target: x86_64
-- compiler:
-    environment: {}
-    extra_rpaths: []
-    flags: {}
-    modules: []
-    operating_system: rhel7
-    paths:
-      cc:  /usr/tce/packages/intel/intel-17.0.2/bin/icc
-      cxx: /usr/tce/packages/intel/intel-17.0.2/bin/icpc
-      f77: /usr/tce/packages/intel/intel-17.0.2/bin/ifort
-      fc:  /usr/tce/packages/intel/intel-17.0.2/bin/ifort
-    spec: intel@17.0.2
-    target: x86_64
-- compiler:
-    environment: {}
     extra_rpaths: []
     flags: {}
     modules: []
@@ -111,35 +84,9 @@ compilers:
     modules: []
     operating_system: rhel7
     paths:
-      cc:  /usr/tce/packages/clang/clang-3.9.0/bin/clang
-      cxx: /usr/tce/packages/clang/clang-3.9.0/bin/clang++
-      f77: None
-      fc:  None
-    spec: clang@3.9.0
-    target: x86_64
-- compiler:
-    environment: {}
-    extra_rpaths: []
-    flags: {}
-    modules: []
-    operating_system: rhel7
-    paths:
-      cc:  /usr/tce/packages/clang/clang-3.9.1/bin/clang
-      cxx: /usr/tce/packages/clang/clang-3.9.1/bin/clang++
-      f77: /usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran
-      fc:  /usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran 
-    spec: clang@3.9.1
-    target: x86_64
-- compiler:
-    environment: {}
-    extra_rpaths: []
-    flags: {}
-    modules: []
-    operating_system: rhel7
-    paths:
-      cc:  /usr/tce/packages/clang/clang-4.0.0/bin/clang
-      cxx: /usr/tce/packages/clang/clang-4.0.0/bin/clang++
-      f77: /usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran
-      fc:  /usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran
-    spec: clang@4.0.0
+      cc:  /usr/tce/packages/intel/intel-19.0.0/bin/icc
+      cxx: /usr/tce/packages/intel/intel-19.0.0/bin/icpc
+      f77: /usr/tce/packages/intel/intel-19.0.0/bin/ifort
+      fc:  /usr/tce/packages/intel/intel-19.0.0/bin/ifort
+    spec: intel@19.0.0
     target: x86_64

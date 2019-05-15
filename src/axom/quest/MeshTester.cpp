@@ -32,12 +32,6 @@ using UniformGrid3 = spin::UniformGrid<int, 3>;
 using Vector3 = primal::Vector<double, 3>;
 using Segment3 = primal::Segment<double, 3>;
 
-using Point3 = primal::Point<double, 3>;
-using SpatialBoundingBox = primal::BoundingBox<double, 3>;
-using Vector3 = primal::Vector<double, 3>;
-using Segment3 = primal::Segment<double, 3>;
-using UniformGrid3 = spin::UniformGrid<int, 3>;
-
 
 inline SpatialBoundingBox compute_bounds( UMesh* mesh)
 {

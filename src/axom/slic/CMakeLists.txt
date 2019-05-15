@@ -57,44 +57,41 @@ endif()
 ################################
 # Make/Install the library
 ################################
-set(slic_depends_on core)
+set(slic_depends core)
 
-if (AXOM_ENABLE_LUMBERJACK)
-    list(APPEND slic_depends_on lumberjack mpi)
-endif()
-
-if (WIN32)
-    list(APPEND slic_depends_on dbghelp)  
-endif()
+blt_list_append( TO slic_depends ELEMENTS lumberjack IF ${AXOM_ENABLE_LUMBERJACK} )
+blt_list_append( TO slic_depends ELEMENTS mpi IF ${ENABLE_MPI} )
+blt_list_append( TO slic_depends ELEMENTS dbghelp IF ${WIN32} )
 
 blt_add_library(NAME        slic
                 SOURCES     ${slic_sources}
                 HEADERS     ${slic_headers}
-                DEPENDS_ON  ${slic_depends_on}
+                DEPENDS_ON  ${slic_depends}
                 FOLDER      axom/slic
                 OBJECT      TRUE
                 )
 
-axom_write_unified_header(NAME    slic
-                          HEADERS ${slic_headers})
+axom_write_unified_header( NAME slic
+                           HEADERS ${slic_headers}
+                           )
 
-axom_install_component(NAME    slic
-                       HEADERS ${slic_headers}
-                       )
+axom_install_component( NAME    slic
+                        HEADERS ${slic_headers}
+                        )
 
 
 ################################
 # Add examples
 ################################
 if (AXOM_ENABLE_EXAMPLES)
-    add_subdirectory(examples)
+  add_subdirectory(examples)
 endif()
 
 ################################
 # Add tests
 ################################
 if (AXOM_ENABLE_TESTS)
-    add_subdirectory(tests)
+  add_subdirectory(tests)
 endif()
 
 ################################

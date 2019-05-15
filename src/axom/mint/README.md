@@ -1,7 +1,17 @@
-Mint: Mesh data model {#minttop}
+Mint: Mesh Data Model {#minttop}
 ============
 
-[Mint](@ref axom::mint) provides a flexible [mesh](@ref axom::mint::Mesh) data model that allows the representation of structured, unstructured, and other mesh types.  Mint also provides an extensible [finite element](@ref axom::mint::FiniteElement) discretization library.
+[Mint](@ref axom::mint) is a C++ library that provides:
 
-The [Mint guide](../../../sphinx/axom_docs/html/axom/mint/docs/sphinx/index.html)
+1. A comprehensive  [mesh](@ref axom::mint::Mesh) data model that can support
+   structured, unstructured and particle mesh discretizations.
+
+2. A mesh-aware execution model that supports on-node fine-grain parallelism for 
+   traversing and operating on a mesh. 
+   
+Mint serves as as fundmental building block that underpins the development of
+computational tools and numerical discretization methods, enabling implementations 
+that are born *parallel* and *portable* to new and emerging architectures.
+
+The [Mint User Guide](https://axom.readthedocs.io/en/develop/axom/mint/docs/sphinx/index.html)
 introduces these concepts in more detail.

@@ -46,17 +46,29 @@ management (such as using burst buffers if available).
 
 In typical usage, a run that calls ``read()`` on a certain set of files
 should be executed on the same number of MPI ranks as the run that created
-those files with a ``write()`` call.  Still a ``read()`` call, if using
-the "sidre_hdf5" protocol, can work when called from a greater number of
-processors.  If ``write()`` was executed on N ranks and ``read()`` is called
-while running on M ranks (M > N), then data will be read into ranks 0 to N-1,
-and all ranks higher than N-1 will receive no data.
+those files with a ``write()`` call.  However, if using the "sidre_hdf5"
+protocol, there are some usage patterns that do not have this limitation.
+
+A ``read()`` call using "sidre_hdf5" will work when called from a greater
+number of processors.  If ``write()`` was executed on N ranks and ``read()``
+is called while running on M ranks (M > N), then data will be read into ranks
+0 to N-1, and all ranks higher than N-1 will receive no data.
+
+If ``read()`` is called using "sidre_hdf5" to read data that was created on
+a larger number of processors, this will work only in the case that the data
+was written in a file-per-processor mode (M ranks to M files).  In this case
+the data in the Group being filled with file input will look a bit different
+than in other usage patterns, since a Group on one rank will end up with data
+from multiple ranks.  An integer scalar View named ``reduced_input_ranks``
+will be added to the Group with the value being the number of ranks that
+wrote the files.  The data from each output rank will be read into subgroups
+located at ``rank_{%07d}/sidre_input`` in the input Group's data hierarchy.
 
 .. warning::
-   If ``read()`` is called in an attempt to read data that was created on a
-   larger number of processors than the current run, an error will occur.
-   Support for this type of usage is intended to be added in future
-   releases.
+   If ``read()`` is called to read data that was created on a larger
+   number of processors than the current run with files produced in M-to-N
+   mode (M > N), an error will occur.  Support for this type of usage is
+   intended to be added in future releases.
 
 In the following example, an IOManager is created and used to write the contents
 of the Group "root" in parallel.

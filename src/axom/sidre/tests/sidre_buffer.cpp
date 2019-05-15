@@ -350,7 +350,6 @@ TEST(sidre_buffer,move_buffer)
 }
 
 //------------------------------------------------------------------------------
-
 TEST(sidre_buffer,destroy_all_buffers)
 {
   DataStore* ds = new DataStore();
@@ -366,3 +365,187 @@ TEST(sidre_buffer,destroy_all_buffers)
 
   delete ds;
 }
+
+#ifdef AXOM_USE_UMPIRE
+
+class UmpireTest : public ::testing::TestWithParam<int>
+{
+public:
+  void SetUp() override
+  {
+    allocID = GetParam();
+  }
+
+  void TearDown() override
+  {
+    axom::setDefaultAllocator(umpire::resource::Host);
+  }
+
+  DataStore ds;
+  umpire::ResourceManager & rm = umpire::ResourceManager::getInstance();
+  int allocID;
+};
+
+//------------------------------------------------------------------------------
+TEST_P(UmpireTest, allocate)
+{
+  constexpr int SIZE = 100;
+
+  {
+    Buffer* buff = ds.createBuffer();
+    buff->describe(INT_ID, SIZE);
+    buff->allocate(allocID);
+
+    ASSERT_EQ(allocID, rm.getAllocator(buff->getVoidPtr()).getId());
+    buff->deallocate();
+  }
+
+  {
+    Buffer* buff = ds.createBuffer();
+    buff->allocate(INT_ID, SIZE, allocID);
+
+    ASSERT_EQ(allocID, rm.getAllocator(buff->getVoidPtr()).getId());
+    buff->deallocate();
+  }
+
+  {
+    Buffer* buff = ds.createBuffer(INT_ID, SIZE);
+    buff->allocate(allocID);
+
+    ASSERT_EQ(allocID, rm.getAllocator(buff->getVoidPtr()).getId());
+    buff->deallocate();
+  }
+}
+
+TEST_P(UmpireTest, allocate_default)
+{
+  constexpr int SIZE = 100;
+
+  axom::setDefaultAllocator(allocID);
+
+  {
+    Buffer* buff = ds.createBuffer();
+    buff->describe(INT_ID, SIZE);
+    buff->allocate();
+
+    ASSERT_EQ(allocID, rm.getAllocator(buff->getVoidPtr()).getId());
+    buff->deallocate();
+  }
+
+  {
+    Buffer* buff = ds.createBuffer();
+    buff->allocate(INT_ID, SIZE);
+
+    ASSERT_EQ(allocID, rm.getAllocator(buff->getVoidPtr()).getId());
+    buff->deallocate();
+  }
+
+  {
+    Buffer* buff = ds.createBuffer(INT_ID, SIZE);
+    buff->allocate();
+
+    ASSERT_EQ(allocID, rm.getAllocator(buff->getVoidPtr()).getId());
+    buff->deallocate();
+  }
+}
+
+TEST_P(UmpireTest, reallocate)
+{
+  constexpr int SIZE = 100;
+
+  if (allocID == umpire::resource::Constant)
+  {
+    return;
+  }
+
+  {
+    Buffer* buff = ds.createBuffer();
+    buff->describe(INT_ID, SIZE);
+    buff->allocate(allocID);
+    buff->reallocate(2 * SIZE);
+
+    ASSERT_EQ(allocID, rm.getAllocator(buff->getVoidPtr()).getId());
+
+    buff->deallocate();
+  }
+
+  {
+    Buffer* buff = ds.createBuffer();
+    buff->allocate(INT_ID, SIZE, allocID);
+    buff->reallocate(2 * SIZE);
+
+    ASSERT_EQ(allocID, rm.getAllocator(buff->getVoidPtr()).getId());
+    buff->deallocate();
+  }
+
+  {
+    Buffer* buff = ds.createBuffer(INT_ID, SIZE);
+    buff->allocate(allocID);
+    buff->reallocate(2 * SIZE);
+
+    ASSERT_EQ(allocID, rm.getAllocator(buff->getVoidPtr()).getId());
+    buff->deallocate();
+  }
+}
+
+TEST_P(UmpireTest, reallocate_zero)
+{
+  constexpr int SIZE = 100;
+
+  if (allocID == umpire::resource::Constant)
+  {
+    return;
+  }
+
+  {
+    Buffer* buff = ds.createBuffer();
+    buff->describe(INT_ID, SIZE);
+    buff->allocate(allocID);
+    buff->reallocate(0);
+    buff->reallocate(SIZE);
+
+    ASSERT_EQ(axom::getDefaultAllocator().getId(),
+              rm.getAllocator(buff->getVoidPtr()).getId());
+
+    buff->deallocate();
+  }
+
+  {
+    Buffer* buff = ds.createBuffer();
+    buff->allocate(INT_ID, SIZE, allocID);
+    buff->reallocate(0);
+    buff->reallocate(SIZE);
+
+    ASSERT_EQ(axom::getDefaultAllocator().getId(),
+              rm.getAllocator(buff->getVoidPtr()).getId());
+    buff->deallocate();
+  }
+
+  {
+    Buffer* buff = ds.createBuffer(INT_ID, SIZE);
+    buff->allocate(allocID);
+    buff->reallocate(0);
+    buff->reallocate(SIZE);
+
+    ASSERT_EQ(axom::getDefaultAllocator().getId(),
+              rm.getAllocator(buff->getVoidPtr()).getId());
+    buff->deallocate();
+  }
+}
+
+const int allocators[] = { umpire::resource::Host
+#ifdef AXOM_USE_CUDA
+                           , umpire::resource::Pinned
+                           , umpire::resource::Device
+                           , umpire::resource::Constant
+                           , umpire::resource::Unified
+#endif
+};
+
+INSTANTIATE_TEST_CASE_P(
+  sidre_buffer,
+  UmpireTest,
+  ::testing::ValuesIn(allocators)
+  );
+
+#endif // AXOM_USE_UMPIRE

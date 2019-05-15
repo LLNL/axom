@@ -145,7 +145,8 @@ public:
    * \pre cols >= 1
    * \pre data != nullptr
    */
-  AXOM_HOST_DEVICE Matrix( int rows, int cols, T* data, bool useExternal=false );
+  AXOM_HOST_DEVICE Matrix( int rows, int cols, T* data,
+                           bool useExternal=false );
 
   /*!
    * \brief Copy constructor.
@@ -307,7 +308,7 @@ public:
    *  ...
    * \endcode
    */
-  const T* getColumn( IndexType j ) const;
+  AXOM_HOST_DEVICE const T* getColumn( IndexType j ) const;
 
   /*!
    * \brief Returns pointer to the \f$ jth \f$ column of an \f$ M \times N \f$
@@ -328,7 +329,7 @@ public:
    *  ...
    * \endcode
    */
-  T* getColumn( IndexType j );
+  AXOM_HOST_DEVICE T* getColumn( IndexType j );
 
   /*!
    * \brief Returns a const pointer for strided access along the main diagonal.
@@ -584,13 +585,14 @@ Matrix< T >::Matrix( int rows, int cols, T val ) :
   assert( m_rows > 0 );
   assert( m_cols > 0 );
 
-  m_data = alloc< T >( m_rows * m_cols );
+  m_data = allocate< T >( m_rows * m_cols );
   this->fill( val );
 }
 
 //-----------------------------------------------------------------------------
 template < typename T >
-AXOM_HOST_DEVICE Matrix< T >::Matrix( int rows, int cols, T* data, bool external ) :
+AXOM_HOST_DEVICE Matrix< T >::Matrix( int rows, int cols, T* data,
+                                      bool external ) :
   m_rows( rows ),
   m_cols( cols ),
   m_usingExternal( external )
@@ -608,7 +610,7 @@ AXOM_HOST_DEVICE Matrix< T >::Matrix( int rows, int cols, T* data, bool external
     assert(false);
 #else
     const int nitems = m_rows * m_cols;
-    m_data = alloc< T >( nitems );
+    m_data = allocate< T >( nitems );
     memcpy( m_data, data, nitems * sizeof(T) );
 #endif
   }
@@ -747,7 +749,8 @@ void Matrix< T >::swapColumns( IndexType icol, IndexType jcol )
 
 //-----------------------------------------------------------------------------
 template < typename T >
-AXOM_HOST_DEVICE const T& Matrix< T >::operator()(IndexType i, IndexType j ) const
+AXOM_HOST_DEVICE const T& Matrix< T >::operator()(IndexType i,
+                                                  IndexType j ) const
 {
   assert( (i>=0) && (i < m_rows) );
   assert( (j>=0) && (j < m_cols) );
@@ -765,7 +768,7 @@ AXOM_HOST_DEVICE T& Matrix< T >::operator()(IndexType i, IndexType j)
 
 //-----------------------------------------------------------------------------
 template < typename T >
-const T* Matrix< T >::getColumn( IndexType j ) const
+AXOM_HOST_DEVICE const T* Matrix< T >::getColumn( IndexType j ) const
 {
   assert( (j>=0) && (j < m_cols) );
   return &m_data[ j*m_rows ];
@@ -773,7 +776,7 @@ const T* Matrix< T >::getColumn( IndexType j ) const
 
 //-----------------------------------------------------------------------------
 template < typename T >
-T* Matrix< T >::getColumn( IndexType j )
+AXOM_HOST_DEVICE T* Matrix< T >::getColumn( IndexType j )
 {
   assert( (j>=0) && (j < m_cols) );
   return &m_data[ j*m_rows ];
@@ -902,7 +905,7 @@ void Matrix< T >::copy( const Matrix< T >& rhs )
 
     m_rows = rhs.m_rows;
     m_cols = rhs.m_cols;
-    m_data = alloc< T >( m_rows*m_cols );
+    m_data = allocate< T >( m_rows*m_cols );
   }
 
   assert( m_rows==rhs.m_rows );
@@ -923,7 +926,7 @@ AXOM_HOST_DEVICE void Matrix< T >::clear( )
 #else
   if ( !m_usingExternal )
   {
-    free( m_data );
+    deallocate( m_data );
   }
 #endif
 

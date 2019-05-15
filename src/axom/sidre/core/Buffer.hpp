@@ -20,6 +20,7 @@
 #include <set>
 
 // Other axom headers
+#include "axom/core/memory_management.hpp"
 #include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"
 #include "axom/slic/interface/slic.hpp"
@@ -197,7 +198,7 @@ public:
    *
    * \return pointer to this Buffer object.
    */
-  Buffer* allocate();
+  Buffer* allocate(int allocID=INVALID_ALLOCATOR_ID);
 
   /*!
    * \brief Allocate Buffer with data type and number of elements.
@@ -208,7 +209,8 @@ public:
    *
    * \return pointer to this Buffer object.
    */
-  Buffer* allocate(TypeID type, IndexType num_elems);
+  Buffer* allocate(TypeID type, IndexType num_elems,
+                   int allocID=INVALID_ALLOCATOR_ID);
 
   /*!
    * \brief Reallocate data to given number of elements.
@@ -242,7 +244,6 @@ public:
 
 //@}
 
-
   /*!
    * \brief Copy given number of bytes of data from src into Buffer.
    *
@@ -251,7 +252,7 @@ public:
    *
    * \return pointer to this Buffer object.
    */
-  Buffer* copyBytesIntoBuffer(const void* src, IndexType nbytes);
+  Buffer* copyBytesIntoBuffer(void* src, IndexType nbytes);
 
   /*!
    * \brief Copy Buffer description to a Conduit node.
@@ -277,8 +278,6 @@ public:
    * \brief Import Buffer's state from a Conduit node.
    */
   void importFrom( conduit::Node& data_holder );
-
-
 
 private:
   DISABLE_DEFAULT_CTOR(Buffer);
@@ -320,15 +319,10 @@ private:
   void detachFromAllViews( );
 
   /*!
-   * \brief Private method to allocate num_bytes bytes of data and
-   * return void-pointer to allocation.
+   * \brief Private method to allocate num_bytes bytes of data using the given
+   * allocator and return a void-pointer to the allocation.
    */
-  void* allocateBytes(IndexType num_bytes);
-
-  /*!
-   * \brief Private method to copy num_bytes of data from src to dst.
-   */
-  void copyBytes( const void* src, void* dst, IndexType num_bytes );
+  void* allocateBytes(IndexType num_bytes, int allocID=INVALID_ALLOCATOR_ID);
 
   /*!
    * \brief Private method to delete data referenced by pointer.

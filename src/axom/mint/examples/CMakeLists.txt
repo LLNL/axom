@@ -9,6 +9,7 @@ set( mint_examples
      mint_nbody_solver.cpp
      mint_particle_mesh.cpp
      mint_rectilinear_mesh.cpp
+     mint_tutorial.cpp
      mint_uniform_mesh.cpp
      mint_unstructured_mixed_topology_mesh.cpp
      mint_unstructured_single_topology_mesh.cpp

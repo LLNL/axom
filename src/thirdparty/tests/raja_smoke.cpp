@@ -25,9 +25,9 @@ template< typename execution_policy >
 void raja_basic_usage_test( )
 {
   constexpr int N = 100;
-  int* a = axom::alloc< int >( N );
-  int* b = axom::alloc< int >( N );
-  int* c = axom::alloc< int >( N );
+  int* a = axom::allocate< int >( N );
+  int* b = axom::allocate< int >( N );
+  int* c = axom::allocate< int >( N );
 
   // initialize
   RAJA::forall< execution_policy >( RAJA::RangeSegment( 0, N ), 
@@ -50,9 +50,9 @@ void raja_basic_usage_test( )
     EXPECT_EQ( c[ i ], 2 );
   }
 
-  axom::free( a );
-  axom::free( b );
-  axom::free( c );
+  axom::deallocate( a );
+  axom::deallocate( b );
+  axom::deallocate( c );
 }
 
 } /* end anonymous namespace */

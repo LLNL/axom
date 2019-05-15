@@ -1,6 +1,7 @@
-Slic: Logging priority and target specification {#slictop}
-========
+Slic: Simple Logging Interface Code {#slictop}
+===============================================
 
-[Slic](@ref axom::slic) allows a user to log events at varying priorities.  Log events can be directed to multiple targets based on priority and optional source tags.
+[Slic](@ref axom::slic) provides a *light-wieght*, *modular* and *extensible* 
+logging infrastructure that simplifies logging application messages.
 
-Also see the [Slic user guide](../../../sphinx/axom_docs/html/axom/slic/docs/sphinx/index.html).
+Also see the [Slic user guide](https://axom.readthedocs.io/en/develop/axom/slic/docs/sphinx/index.html#).
