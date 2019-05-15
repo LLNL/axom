@@ -275,7 +275,7 @@ The following code snippet illustrates how to register a
 .. note::
 
    Since, the :ref:`SynchronizedOutputStream` works across MPI ranks, logging
-   messages using the :ref:`sections/slic_macros` or the static API directly
+   messages using the :ref:`SlicMacros` or the static API directly
    only logs the messages locally. To send the messages to the output destination
    the application must call ``slic::flushStreams()`` explicitly, which, in
    this context is a collective call.
@@ -314,7 +314,7 @@ object with Slic to log messages to ``std::cout``.
 .. note::
 
    Since, the :ref:`LumberjackStream` works across MPI ranks, logging
-   messages using the :ref:`sections/slic_macros` or the static API directly
+   messages using the :ref:`SlicMacros` or the static API directly
    only logs the messages locally. To send the messages to the output destination
    the application must call ``slic::flushStreams()`` explicitly, which, in
    this context is a collective call.
