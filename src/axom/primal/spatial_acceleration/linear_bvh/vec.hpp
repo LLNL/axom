@@ -244,6 +244,34 @@ using Vec4li  = Vec< axom::int64,4 >;
 using Vec4f   = Vec< axom::float32,4 >;
 using Vec4d   = Vec< axom::float64,4 >;
 
+template < typename FloatType >
+inline AXOM_HOST_DEVICE
+Vec< FloatType, 2 > make_vec( const FloatType& a,
+                              const FloatType& b )
+{
+  AXOM_STATIC_ASSERT( std::is_floating_point< FloatType >::value );
+
+  Vec< FloatType, 2 > res;
+  res[ 0 ] = a;
+  res[ 1 ] = b;
+  return res;
+}
+
+template < typename FloatType >
+inline AXOM_HOST_DEVICE
+Vec< FloatType, 3 > make_vec( const FloatType& a,
+                              const FloatType& b,
+                              const FloatType& c )
+{
+  AXOM_STATIC_ASSERT( std::is_floating_point< FloatType >::value );
+
+  Vec< FloatType, 3 > res;
+  res[ 0 ] = a;
+  res[ 1 ] = b;
+  res[ 2 ] = c;
+  return res;
+}
+
 inline AXOM_HOST_DEVICE
 Vec2i make_vec2i( const axom::int32 &a,
                   const axom::int32 &b  )
