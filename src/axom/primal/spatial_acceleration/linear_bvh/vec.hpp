@@ -229,23 +229,24 @@ std::ostream& operator<<(std::ostream &os, const Vec<TT,SS> &vec)
 }
 
 // typedefs
-typedef Vec<axom::int32,2> Vec2i;
-typedef Vec<axom::int64,2> Vec2li;
-typedef Vec<axom::float32,2> Vec2f;
-typedef Vec<axom::float64,2> Vec2d;
+using Vec2i  = Vec< axom::int32,2 >;
+using Vec2li = Vec< axom::int64,2 >;
+using Vec2f  = Vec< axom::float32,2 >;
+using Vec2d  = Vec< axom::float64,2 >;
 
-typedef Vec<axom::int32,3> Vec3i;
-typedef Vec<axom::int64,3> Vec3li;
-typedef Vec<axom::float32,3> Vec3f;
-typedef Vec<axom::float64,3> Vec3d;
+using Vec3i  = Vec< axom::int32,3 >;
+using Vec3li = Vec< axom::int64,3 >;
+using Vec3f  = Vec< axom::float32,3 >;
+using Vec3d  = Vec< axom::float64,3 >;
 
-typedef Vec<axom::int32,4> Vec4i;
-typedef Vec<axom::int64,4> Vec4li;
-typedef Vec<axom::float32,4> Vec4f;
-typedef Vec<axom::float64,4> Vec4d;
+using Vec4i   = Vec< axom::int32,4 >;
+using Vec4li  = Vec< axom::int64,4 >;
+using Vec4f   = Vec< axom::float32,4 >;
+using Vec4d   = Vec< axom::float64,4 >;
 
 inline AXOM_HOST_DEVICE
-Vec2i make_vec2i(const axom::int32 &a, const axom::int32 &b)
+Vec2i make_vec2i( const axom::int32 &a,
+                  const axom::int32 &b  )
 {
   Vec2i res;
   res[0] = a;
@@ -254,7 +255,8 @@ Vec2i make_vec2i(const axom::int32 &a, const axom::int32 &b)
 }
 
 inline AXOM_HOST_DEVICE
-Vec2li make_vec2li(const axom::int64 &a, const axom::int64 &b)
+Vec2li make_vec2li( const axom::int64 &a,
+                    const axom::int64 &b  )
 {
   Vec2li res;
   res[0] = a;
@@ -263,7 +265,8 @@ Vec2li make_vec2li(const axom::int64 &a, const axom::int64 &b)
 }
 
 inline AXOM_HOST_DEVICE
-Vec2f make_vec2f(const axom::float32 &a, const axom::float32 &b)
+Vec2f make_vec2f( const axom::float32 &a,
+                  const axom::float32 &b  )
 {
   Vec2f res;
   res[0] = a;
@@ -272,7 +275,8 @@ Vec2f make_vec2f(const axom::float32 &a, const axom::float32 &b)
 }
 
 inline AXOM_HOST_DEVICE
-Vec2d make_vec2d(const axom::float64 &a, const axom::float64 &b)
+Vec2d make_vec2d( const axom::float64 &a,
+                  const axom::float64 &b  )
 {
   Vec2d res;
   res[0] = a;
@@ -281,7 +285,9 @@ Vec2d make_vec2d(const axom::float64 &a, const axom::float64 &b)
 }
 
 inline AXOM_HOST_DEVICE
-Vec3i make_vec3i(const axom::int32 &a, const axom::int32 &b, const axom::int32 &c)
+Vec3i make_vec3i( const axom::int32 &a,
+                  const axom::int32 &b,
+                  const axom::int32 &c  )
 {
   Vec3i res;
   res[0] = a;
@@ -291,7 +297,9 @@ Vec3i make_vec3i(const axom::int32 &a, const axom::int32 &b, const axom::int32 &
 }
 
 inline AXOM_HOST_DEVICE
-Vec3li make_vec3li(const axom::int64 &a, const axom::int64 &b, const axom::int64 &c)
+Vec3li make_vec3li( const axom::int64 &a,
+                    const axom::int64 &b,
+                    const axom::int64 &c  )
 {
   Vec3li res;
   res[0] = a;
@@ -301,7 +309,9 @@ Vec3li make_vec3li(const axom::int64 &a, const axom::int64 &b, const axom::int64
 }
 
 inline AXOM_HOST_DEVICE
-Vec3f make_vec3f(const axom::float32 &a, const axom::float32 &b, const axom::float32 &c)
+Vec3f make_vec3f( const axom::float32 &a,
+                  const axom::float32 &b,
+                  const axom::float32 &c  )
 {
   Vec3f res;
   res[0] = a;
@@ -311,7 +321,9 @@ Vec3f make_vec3f(const axom::float32 &a, const axom::float32 &b, const axom::flo
 }
 
 inline AXOM_HOST_DEVICE
-Vec3d make_vec3d(const axom::float64 &a, const axom::float64 &b, const axom::float64 &c)
+Vec3d make_vec3d( const axom::float64 &a,
+                  const axom::float64 &b,
+                  const axom::float64 &c  )
 {
   Vec3d res;
   res[0] = a;
@@ -321,7 +333,10 @@ Vec3d make_vec3d(const axom::float64 &a, const axom::float64 &b, const axom::flo
 }
 
 inline AXOM_HOST_DEVICE
-Vec4i make_vec4i(const axom::int32 &a, const axom::int32 &b, const axom::int32 &c, const axom::int32 &d)
+Vec4i make_vec4i( const axom::int32 &a,
+                  const axom::int32 &b,
+                  const axom::int32 &c,
+                  const axom::int32 &d  )
 {
   Vec4i res;
   res[0] = a;
@@ -332,7 +347,10 @@ Vec4i make_vec4i(const axom::int32 &a, const axom::int32 &b, const axom::int32 &
 }
 
 inline AXOM_HOST_DEVICE
-Vec4li make_vec4li(const axom::int64 &a, const axom::int64 &b, const axom::int64 &c, const axom::int64 &d)
+Vec4li make_vec4li( const axom::int64 &a,
+                    const axom::int64 &b,
+                    const axom::int64 &c,
+                    const axom::int64 &d  )
 {
   Vec4li res;
   res[0] = a;
@@ -343,7 +361,10 @@ Vec4li make_vec4li(const axom::int64 &a, const axom::int64 &b, const axom::int64
 }
 
 inline AXOM_HOST_DEVICE
-Vec4f make_vec4f(const axom::float32 &a, const axom::float32 &b, const axom::float32 &c, const axom::float32 &d)
+Vec4f make_vec4f( const axom::float32 &a,
+                  const axom::float32 &b,
+                  const axom::float32 &c,
+                  const axom::float32 &d  )
 {
   Vec4f res;
   res[0] = a;
@@ -354,7 +375,10 @@ Vec4f make_vec4f(const axom::float32 &a, const axom::float32 &b, const axom::flo
 }
 
 inline AXOM_HOST_DEVICE
-Vec4d make_vec4d(const axom::float64 &a, const axom::float64 &b, const axom::float64 &c, const axom::float64 &d)
+Vec4d make_vec4d( const axom::float64 &a,
+                  const axom::float64 &b,
+                  const axom::float64 &c,
+                  const axom::float64 &d  )
 {
   Vec4d res;
   res[0] = a;
