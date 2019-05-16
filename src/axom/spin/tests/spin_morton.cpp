@@ -5,9 +5,9 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/spin/Primitives.hpp"
 #include "axom/spin/MortonIndex.hpp"
 
+#include "axom/primal/geometry/Point.hpp"
 #include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
@@ -61,8 +61,8 @@ TEST( spin_morton, test_max_set_bit)
 {
   SLIC_INFO("Checks that MortonBase's maxSetBit function works properly");
 
-  using CoordType = int ;
-  using MortonIndexType = std::size_t ;
+  using CoordType = int;
+  using MortonIndexType = std::size_t;
 
   axom::spin::Mortonizer< CoordType,MortonIndexType,2 > morton2;
   EXPECT_EQ( morton2.maxSetBit( 0), 0);
@@ -89,7 +89,7 @@ TEST( spin_morton, test_mortonizer)
   SLIC_INFO("Testing Morton conversion on some simple points");
 
   axom::slic::setLoggingMsgLevel( axom::slic::message::Debug);
-  using MortonIndexType = std::size_t ;
+  using MortonIndexType = std::size_t;
 
 
   Point<int,2> pt2(2);  // (0b10, 0b10)
@@ -135,11 +135,11 @@ void testMortonizer()
 {
   using namespace axom::spin;
 
-  using GridPoint = Point< CoordType, DIM > ;
+  using GridPoint = Point< CoordType, DIM >;
 
   int maxBits =
     axom::spin::Mortonizer< CoordType,MortonIndexType,
-                              DIM >::maxBitsPerCoord();
+                            DIM >::maxBitsPerCoord();
   SLIC_INFO("\tMax bits per dimension: "
             << std::numeric_limits< CoordType >::digits);
   SLIC_INFO("\tMax unique bits per dimension: " << maxBits);
@@ -250,7 +250,7 @@ TEST( spin_morton, test_point_hasher)
 
   axom::slic::setLoggingMsgLevel( axom::slic::message::Debug);
 
-  using CoordType = int ;
+  using CoordType = int;
   PointHash<CoordType> ptHash;
   Point<CoordType,1> p1(2);
   std::size_t exp = 0x2;        // 0b10

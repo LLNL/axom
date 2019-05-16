@@ -20,8 +20,7 @@
 #include "axom/config.hpp"    // defines AXOM_USE_CXX11
 #include "axom/core/Types.hpp"
 #include "axom/core/Macros.hpp"    // defines AXOM_STATIC_ASSERT
-
-#include "axom/spin/Primitives.hpp"
+#include "axom/primal/geometry/Point.hpp"
 
 #ifdef AXOM_USE_CXX11
     #include <type_traits>
@@ -248,7 +247,8 @@ struct Mortonizer< CoordType,MortonIndexType, 2 >
    *
    * \see mortonize(CoordType, CoordType)
    */
-  static inline MortonIndexType mortonize(const Point< CoordType,NDIM > & pt)
+  static inline MortonIndexType mortonize(const primal::Point< CoordType,
+                                                               NDIM > & pt)
   {
     return (  Base::expandBits(pt[0])
               | (Base::expandBits(pt[1])<< 1) );
@@ -277,9 +277,10 @@ struct Mortonizer< CoordType,MortonIndexType, 2 >
    *
    * \see demortonize(MortonIndex,CoordType,CoordType)
    */
-  static inline Point< CoordType,NDIM > demortonize(MortonIndexType morton)
+  static inline primal::Point< CoordType,NDIM > demortonize(
+    MortonIndexType morton)
   {
-    Point< CoordType,NDIM > pt;
+    primal::Point< CoordType,NDIM > pt;
     demortonize(morton, pt[0],pt[1]);
     return pt;
   }
@@ -376,7 +377,8 @@ struct Mortonizer< CoordType,MortonIndexType, 3 >
    *
    * \see mortonize(CoordType, CoordType, CoordType)
    */
-  static inline MortonIndexType mortonize(const Point< CoordType,NDIM > & pt)
+  static inline MortonIndexType mortonize(const primal::Point< CoordType,
+                                                               NDIM > & pt)
   {
     static const MortonIndexType b5 = B[5];
 
@@ -410,9 +412,10 @@ struct Mortonizer< CoordType,MortonIndexType, 3 >
    *
    * \see demortonize(MortonIndex,CoordType,CoordType,CoordType)
    */
-  static inline Point< CoordType,NDIM > demortonize(MortonIndexType morton)
+  static inline primal::Point< CoordType,NDIM > demortonize(
+    MortonIndexType morton)
   {
-    Point< CoordType,NDIM > pt;
+    primal::Point< CoordType,NDIM > pt;
     demortonize(morton, pt[0],pt[1],pt[2]);
     return pt;
   }
@@ -476,7 +479,8 @@ const int Mortonizer< CoordType,MortonIndexType,
  * \return The Morton index of the point
  */
 template < typename MortonIndexType, typename CoordType, int DIM >
-inline MortonIndexType convertPointToMorton(const Point< CoordType,DIM >& pt)
+inline MortonIndexType convertPointToMorton(const primal::Point< CoordType,
+                                                                 DIM >& pt)
 {
   return Mortonizer< CoordType,MortonIndexType,DIM >::mortonize(pt);
 }
@@ -487,7 +491,7 @@ inline MortonIndexType convertPointToMorton(const Point< CoordType,DIM >& pt)
  * \return The demortonized Point
  */
 template < typename CoordType, int DIM, typename MortonIndexType >
-inline Point< CoordType,DIM > convertMortonToPoint(MortonIndexType idx)
+inline primal::Point< CoordType,DIM > convertMortonToPoint(MortonIndexType idx)
 {
   return Mortonizer< CoordType,MortonIndexType,DIM >::demortonize(idx);
 }
@@ -522,7 +526,7 @@ struct PointHash
    * \param [in] pt The 1D point
    * \returns The morton index of the point
    */
-  std::size_t operator()(Point< CoordType,1 > const& pt) const
+  std::size_t operator()(primal::Point< CoordType,1 > const& pt) const
   {
     return static_cast< std::size_t >(pt[0]);
   }
@@ -533,7 +537,7 @@ struct PointHash
    * \param [in] pt The 2D point
    * \returns The morton index of the point
    */
-  std::size_t operator()(Point< CoordType,2 > const& pt) const
+  std::size_t operator()(primal::Point< CoordType,2 > const& pt) const
   {
     return Mortonizer< CoordType,MortonIndex,2 >::mortonize(pt);
   }
@@ -544,7 +548,7 @@ struct PointHash
    * \param [in] pt The 3D point
    * \returns The morton index of the point
    */
-  std::size_t operator()(Point< CoordType,3 > const& pt) const
+  std::size_t operator()(primal::Point< CoordType,3 > const& pt) const
   {
     return Mortonizer< CoordType,MortonIndex,3 >::mortonize(pt);
   }
@@ -555,11 +559,11 @@ struct PointHash
    * \param [in] pt The 4D point
    * \returns A morton index of the point
    */
-  std::size_t operator()(Point< CoordType,4 > const& pt) const
+  std::size_t operator()(primal::Point< CoordType,4 > const& pt) const
   {
     // Mortonize two morton indices for a 4D morton index
 
-    using Pt2M = Point< MortonIndex,2 >;
+    using Pt2M = primal::Point< MortonIndex,2 >;
 
     Pt2M pMorton = Pt2M::make_point(
       Mortonizer< CoordType,MortonIndex,2 >::mortonize(pt[0], pt[2]),

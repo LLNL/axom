@@ -230,13 +230,13 @@ WatertightStatus isSurfaceMeshWatertight( UMesh* surface_mesh )
 
   // Create fields to store boundary
   int* bndry_face =
-      surface_mesh->createField< int >( "bndry_face", mint::FACE_CENTERED );
+    surface_mesh->createField< int >( "bndry_face", mint::FACE_CENTERED );
   int* boundary =
-      surface_mesh->createField< int >( "boundary", mint::CELL_CENTERED );
+    surface_mesh->createField< int >( "boundary", mint::CELL_CENTERED );
 
   // Mark boundary faces
   const IndexType numFaces = surface_mesh->getNumberOfFaces();
-  for ( IndexType iface=0; iface < numFaces; ++iface )
+  for ( IndexType iface=0 ; iface < numFaces ; ++iface )
   {
     IndexType c1, c2;
     surface_mesh->getFaceCellIDs( iface, c1, c2 );
@@ -263,7 +263,7 @@ WatertightStatus isSurfaceMeshWatertight( UMesh* surface_mesh )
 
   // Mark boundary cells
   const IndexType numCells  = surface_mesh->getNumberOfCells();
-  for ( IndexType icell=0; icell < numCells; ++icell )
+  for ( IndexType icell=0 ; icell < numCells ; ++icell )
   {
     // NOTE: this check currently assumes triangles
     SLIC_ASSERT( surface_mesh->getNumberOfCellFaces( icell ) == 3 );

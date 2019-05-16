@@ -5,8 +5,9 @@
 
 #include "gtest/gtest.h"
 
+#include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/geometry/Point.hpp"
 #include "axom/spin/BVHTree.hpp"
-#include "axom/spin/Primitives.hpp"
 
 using namespace axom;
 
@@ -14,9 +15,9 @@ using namespace axom;
 TEST( spin_bucket_tree, insert_object )
 {
   // some typedef short-cuts
-  using TreeType = spin::BVHTree< int,3 > ;
-  using BoxType = spin::BoundingBox< double,3 > ;
-  using PointType = spin::Point< double,3 > ;
+  using TreeType = spin::BVHTree< int,3 >;
+  using BoxType = primal::BoundingBox< double,3 >;
+  using PointType = primal::Point< double,3 >;
 
   BoxType bb( PointType::zero(), PointType::ones() );
 

@@ -16,12 +16,12 @@ TEST( spin_spatial_octree, spatial_octree_point_location)
             << " a child block.");
 
   static const int DIM = 3;
-  using LeafNodeType = axom::spin::BlockData ;
+  using LeafNodeType = axom::spin::BlockData;
 
-  using OctreeType = axom::spin::SpatialOctree<DIM, LeafNodeType> ;
-  using BlockIndex = OctreeType::BlockIndex ;
-  using SpacePt = OctreeType::SpacePt ;
-  using GeometricBoundingBox = OctreeType::GeometricBoundingBox ;
+  using OctreeType = axom::spin::SpatialOctree<DIM, LeafNodeType>;
+  using BlockIndex = OctreeType::BlockIndex;
+  using SpacePt = OctreeType::SpacePt;
+  using GeometricBoundingBox = OctreeType::GeometricBoundingBox;
 
 
   GeometricBoundingBox bb(SpacePt(10), SpacePt(20));

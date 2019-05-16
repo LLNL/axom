@@ -10,7 +10,9 @@
 
 #include "axom/slic/interface/slic.hpp"
 
-#include "axom/spin/Primitives.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/geometry/NumericArray.hpp"
+#include "axom/primal/geometry/Point.hpp"
 #include "axom/spin/RectangularLattice.hpp"
 
 // C/C++ includes
@@ -54,17 +56,17 @@ class UniformGrid
 {
 public:
   /*! \brief The type used for specifying spatial extent of the contents */
-  using BoxType = BoundingBox< double, NDIMS > ;
+  using BoxType = primal::BoundingBox< double, NDIMS >;
 
   /*! \brief The type used to query the index */
-  using PointType = Point< double, NDIMS > ;
+  using PointType = primal::Point< double, NDIMS >;
 
 private:
   /*! \brief The type used for mapping points in space to grid cells */
-  using LatticeType = RectangularLattice< NDIMS, double, int > ;
+  using LatticeType = RectangularLattice< NDIMS, double, int >;
 
   /*! \brief The type used to represent integer-valued grid cells */
-  using GridCell = typename LatticeType::GridCell ;
+  using GridCell = typename LatticeType::GridCell;
 
 public:
 
@@ -279,7 +281,7 @@ UniformGrid< T, NDIMS >::UniformGrid(const double* lower_bound,
 
   // set up the lattice for point conversions
   m_lattice = rectangular_lattice_from_bounding_box(
-    m_boundingBox, NumericArray< T,NDIMS >(m_resolution));
+    m_boundingBox, primal::NumericArray< T,NDIMS >(m_resolution));
 }
 
 template < typename T, int NDIMS >
@@ -293,7 +295,7 @@ UniformGrid< T, NDIMS >::UniformGrid(const BoxType & bbox, const int* res)
 
   // set up the bounding box and lattice for point conversions
   m_lattice = rectangular_lattice_from_bounding_box(
-    m_boundingBox, NumericArray< T,NDIMS >(m_resolution));
+    m_boundingBox, primal::NumericArray< T,NDIMS >(m_resolution));
 }
 
 template < typename T, int NDIMS >

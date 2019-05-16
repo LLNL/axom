@@ -27,7 +27,8 @@
  */
 
 // Axom primitives
-#include "axom/spin/Primitives.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
 
 // Axom operations
@@ -47,32 +48,32 @@ const int in3D = 3;
 const int in2D = 2;
 
 // primitives represented by doubles in 3D
-using BoundingBoxType = axom::spin::BoundingBox<double, in3D> ;
-using PointType = axom::spin::Point<double, in3D> ;
-using TriangleType = axom::primal::Triangle<double, in3D> ;
+using BoundingBoxType = axom::primal::BoundingBox<double, in3D>;
+using PointType = axom::primal::Point<double, in3D>;
+using TriangleType = axom::primal::Triangle<double, in3D>;
 
 // Axom spatial index
 // _ugrid_triintersect_header_start
 #include "axom/spin/UniformGrid.hpp"
 // the UniformGrid will store ints ("thing" indexes) in 3D
-using UniformGridType = axom::spin::UniformGrid<int, in3D> ;
+using UniformGridType = axom::spin::UniformGrid<int, in3D>;
 // _ugrid_triintersect_header_end
 
 // _bvhtree_header_start
 #include "axom/spin/BVHTree.hpp"
 // the BVHTree is in 2D, storing an index to 2D triangles
-using BVHTree2DType = axom::spin::BVHTree<int, in2D> ;
+using BVHTree2DType = axom::spin::BVHTree<int, in2D>;
 // supporting classes
-using BoundingBox2DType = axom::spin::BoundingBox<double, in2D> ;
-using Point2DType = axom::spin::Point<double, in2D> ;
-using Triangle2DType = axom::primal::Triangle<double, in2D> ;
+using BoundingBox2DType = axom::primal::BoundingBox<double, in2D>;
+using Point2DType = axom::primal::Point<double, in2D>;
+using Triangle2DType = axom::primal::Triangle<double, in2D>;
 // _bvhtree_header_end
 
 // _igrid_header_start
 #include "axom/spin/ImplicitGrid.hpp"
 
 // the ImplicitGrid will be in 2D
-using IGridT = axom::spin::ImplicitGrid<in2D> ;
+using IGridT = axom::spin::ImplicitGrid<in2D>;
 
 // useful derived types
 using IGridCell = typename IGridT::GridCell;
@@ -82,20 +83,20 @@ using IBitsetType = typename IGridT::BitsetType;
 using IBitsetIndexType = typename IBitsetType::Index;
 
 // some functions we'll use
-bool expensiveTest(ISpacePt & query, Triangle2DType & tri) ;
-void makeTriangles(std::vector<Triangle2DType> & tris) ;
+bool expensiveTest(ISpacePt & query, Triangle2DType & tri);
+void makeTriangles(std::vector<Triangle2DType> & tris);
 // _igrid_header_end
 
 // _rectlattice_header_start
 #include "axom/spin/RectangularLattice.hpp"
 // We'll be using a 2D lattice with space coordinates of type double
 // and cell coordinates of type int.
-using RectLatticeType = axom::spin::RectangularLattice<in2D, double, int> ;
+using RectLatticeType = axom::spin::RectangularLattice<in2D, double, int>;
 // Get the types of coordinates and bounding box from the RectangularLattice
-using RLGridCell = RectLatticeType::GridCell ;
-using RLSpacePt = RectLatticeType::SpacePoint ;
-using RLSpaceVec = RectLatticeType::SpaceVector ;
-using RLBBox = RectLatticeType::SpatialBoundingBox ;
+using RLGridCell = RectLatticeType::GridCell;
+using RLSpacePt = RectLatticeType::SpacePoint;
+using RLSpaceVec = RectLatticeType::SpaceVector;
+using RLBBox = RectLatticeType::SpatialBoundingBox;
 // _rectlattice_header_end
 
 // _morton_header_start
@@ -113,12 +114,12 @@ using MapType = std::unordered_map<RLGridCell, DataContainer, PointHashType>;
 // _octree_header_start
 #include "axom/spin/SpatialOctree.hpp"
 
-using LeafNodeType = axom::spin::BlockData ;
+using LeafNodeType = axom::spin::BlockData;
 
-using OctreeType = axom::spin::SpatialOctree<in3D, LeafNodeType> ;
-using OctBlockIndex = OctreeType::BlockIndex ;
-using OctSpacePt = OctreeType::SpacePt ;
-using OctBBox = OctreeType::GeometricBoundingBox ;
+using OctreeType = axom::spin::SpatialOctree<in3D, LeafNodeType>;
+using OctBlockIndex = OctreeType::BlockIndex;
+using OctSpacePt = OctreeType::SpacePt;
+using OctBBox = OctreeType::GeometricBoundingBox;
 // _octree_header_end
 
 
@@ -131,7 +132,7 @@ public:
     (void)p;
     count += 1;
   }
-  
+
   int count;
 };
 
@@ -154,14 +155,15 @@ void demoMorton()
 
   // _morton_use_start
   // Make a RectangularLattice to bin query points.
-  double origin[] = {-0.6, -0.2} ;
-  double spacing[] = {1.2, 0.8} ;
+  double origin[] = {-0.6, -0.2};
+  double spacing[] = {1.2, 0.8};
   RectLatticeType lat(origin, spacing);
 
   // Make the map from grid point to DataContainer
   MapType map;
 
-  // For several query points, create a DataContainer if necessary and register the point.
+  // For several query points, create a DataContainer if necessary and register
+  // the point.
   std::vector<RLSpacePt> pts = generatePoints();
   for (RLSpacePt p : pts)
   {
@@ -180,7 +182,8 @@ void demoMorton()
   {
     RLGridCell g = iter.first;
     DataContainer dat = iter.second;
-    std::cout << "Grid cell " << g << " holds " << dat.count << " points." << std::endl;
+    std::cout << "Grid cell " << g << " holds " << dat.count << " points." <<
+    std::endl;
   }
   // _morton_use_end
 
@@ -193,9 +196,9 @@ void demoRectangularLattice()
 
   // _rectlattice_use_start
   // Origin and spacing
-  double origin[] = {-0.6, -0.2} ;
-  double spacing[] = {1.2, 0.8} ;
-  
+  double origin[] = {-0.6, -0.2};
+  double spacing[] = {1.2, 0.8};
+
   // Instantiate a RectangularLattice.
   // Other constructors allow the use of Point and Vector objects.
   RectLatticeType lat(origin, spacing);
@@ -285,7 +288,7 @@ BoundingBox2DType findBbox(Triangle2DType & tri)
 BoundingBoxType findBbox(std::vector<TriangleType> & tris);
 BoundingBoxType findBbox(TriangleType & tri);
 
-UniformGridType * buildUniformGrid(std::vector<TriangleType> & tris)
+UniformGridType* buildUniformGrid(std::vector<TriangleType> & tris)
 {
   // Prepare to construct the UniformGrid.
   BoundingBoxType allbbox = findBbox(tris);
@@ -301,7 +304,7 @@ UniformGridType * buildUniformGrid(std::vector<TriangleType> & tris)
 
   // Construct the UniformGrid with minimum point, maximum point,
   // and number of bins along each side.  Then insert the triangles.
-  UniformGridType * ugrid =
+  UniformGridType* ugrid =
     new UniformGridType(minBBPt.data(), maxBBPt.data(), ress);
   for (int i = 0 ; i < tcount ; ++i)
   {
@@ -317,7 +320,7 @@ UniformGridType * buildUniformGrid(std::vector<TriangleType> & tris)
 // _ugrid_candidate_start
 void findNeighborCandidates(TriangleType & t1,
                             int i,
-                            UniformGridType * ugrid,
+                            UniformGridType* ugrid,
                             std::vector<int> & neighbors)
 {
   BoundingBoxType bbox = findBbox(t1);
@@ -352,7 +355,7 @@ void findNeighborCandidates(TriangleType & t1,
 // _ugrid_triintersect_start
 void findTriIntersectionsAccel(
   std::vector<TriangleType> & tris,
-  UniformGridType * ugrid,
+  UniformGridType* ugrid,
   std::vector< std::pair<int, int> > & clashes)
 {
   int tcount = tris.size();
@@ -366,7 +369,7 @@ void findTriIntersectionsAccel(
 
     // Test for intersection between t1 and each of its neighbors.
     int ncount = neighbors.size();
-    for (int n = 0; n < ncount; ++n)
+    for (int n = 0 ; n < ncount ; ++n)
     {
       int j = neighbors[n];
       TriangleType & t2 = tris[j];
@@ -402,7 +405,7 @@ void showImplicitGrid()
 
   // load the bounding box of each triangle, along with its index,
   // into the ImplicitGrid.
-  for (int i = 0; i < numElts; ++i)
+  for (int i = 0 ; i < numElts ; ++i)
   {
     grid.insert(findBbox(tris[i]), i);
   }
@@ -430,8 +433,8 @@ void showImplicitGrid()
 
   // Report on intersection tests
   std::cout << "----- showImplicitGrid -----" << std::endl;
-  std::cout << numElts << " total triangles, " << candidates.count() << 
-    " triangles expensively tested against query point, " << totalTrue << 
+  std::cout << numElts << " total triangles, " << candidates.count() <<
+    " triangles expensively tested against query point, " << totalTrue <<
     " found true." << std::endl;
 }
 
@@ -494,7 +497,7 @@ void driveUniformGrid()
   std::vector< std::pair<int, int> > naiveclashes;
   findTriIntersectionsNaively(tris, naiveclashes);
 
-  UniformGridType * ugrid = buildUniformGrid(tris);
+  UniformGridType* ugrid = buildUniformGrid(tris);
   std::vector< std::pair<int, int> > accelclashes;
   findTriIntersectionsAccel(tris, ugrid, accelclashes);
   delete ugrid;
@@ -529,7 +532,7 @@ BVHTree2DType* buildBVHTree(std::vector<Triangle2DType> & tris)
 // _bvhtree_build_end
 
 // _bvhtree_candidate_start
-void findCandidateBVHTreeBins(BVHTree2DType * tree,
+void findCandidateBVHTreeBins(BVHTree2DType* tree,
                               Point2DType ppoint,
                               std::vector<int> & candidates)
 {
@@ -576,7 +579,7 @@ void findIntersectionsWithCandidates(std::vector<Triangle2DType> & tris,
 {
   // Test if ppoint lands in any of its neighbor triangles.
   int csize = candidates.size();
-  for (int i = 0; i < csize; ++i)
+  for (int i = 0 ; i < csize ; ++i)
   {
     Triangle2DType & t = tris[candidates[i]];
     if (t.checkInTriangle(ppoint))

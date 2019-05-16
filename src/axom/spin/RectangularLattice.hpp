@@ -8,7 +8,10 @@
 
 #include "axom/core.hpp"
 
-#include "axom/spin/Primitives.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/geometry/NumericArray.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Vector.hpp"
 
 #include <cmath>     // for std::floor
 #include <iostream>  // for ostream
@@ -52,10 +55,10 @@ template < int NDIMS,
 class RectangularLattice
 {
 public:
-  using GridCell = Point< CellCoordType, NDIMS >;
-  using SpacePoint = Point< SpaceCoordType, NDIMS >;
-  using SpaceVector = Vector< SpaceCoordType, NDIMS >;
-  using SpatialBoundingBox = BoundingBox< SpaceCoordType, NDIMS >;
+  using GridCell = primal::Point< CellCoordType, NDIMS >;
+  using SpacePoint = primal::Point< SpaceCoordType, NDIMS >;
+  using SpaceVector = primal::Vector< SpaceCoordType, NDIMS >;
+  using SpatialBoundingBox = primal::BoundingBox< SpaceCoordType, NDIMS >;
 
 public:
   /*!
@@ -248,13 +251,13 @@ private:
 template < int NDIMS, typename SpaceCoordType, typename CellCoordType >
 RectangularLattice< NDIMS, SpaceCoordType, CellCoordType >
 rectangular_lattice_from_bounding_box(
-  const BoundingBox< SpaceCoordType, NDIMS >& bbox,
-  const NumericArray< CellCoordType, NDIMS >& gridRes)
+  const primal::BoundingBox< SpaceCoordType, NDIMS >& bbox,
+  const primal::NumericArray< CellCoordType, NDIMS >& gridRes)
 {
   using LatticeType = RectangularLattice< NDIMS,
                                           SpaceCoordType,
-                                          CellCoordType > ;
-  using SpaceVector = typename LatticeType::SpaceVector ;
+                                          CellCoordType >;
+  using SpaceVector = typename LatticeType::SpaceVector;
 
   SpaceVector spacing;
 

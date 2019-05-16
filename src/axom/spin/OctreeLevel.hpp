@@ -24,8 +24,9 @@
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/spin/Brood.hpp"
-#include "axom/spin/Primitives.hpp"
 
 #include <iterator>
 
@@ -64,19 +65,19 @@ class OctreeLevel
 {
 public:
   /** The coordinate type of a block in the octree */
-  using CoordType = axom::IndexType ;
+  using CoordType = axom::IndexType;
 
   /**
    * \brief A type for the grid points of the octree.
    * \note CoordType must be an integral type
    */
-  using GridPt = Point<CoordType,DIM> ;
+  using GridPt = primal::Point<CoordType,DIM>;
 
   enum { BROOD_SIZE = 1 << DIM };
 
   /** A brood is a collection of sibling blocks that are generated
      simultaneously */
-  using BroodData = NumericArray< BlockDataType, BROOD_SIZE> ;
+  using BroodData = primal::NumericArray< BlockDataType, BROOD_SIZE>;
 
   /** Predeclare the BlockIterator type */
   template<typename OctreeLevel, typename IterHelper, typename DataType>
@@ -138,10 +139,10 @@ public:
 public:
   using BlockIter = BlockIterator<OctreeLevel,
                                   BlockIteratorHelper,
-                                  BlockDataType> ;
+                                  BlockDataType>;
   using ConstBlockIter = BlockIterator<const OctreeLevel,
                                        ConstBlockIteratorHelper,
-                                       const BlockDataType> ;
+                                       const BlockDataType>;
 
 public:
   /** \brief Constructor of an OctreeLevel at level lev */
@@ -209,7 +210,7 @@ public:
       >
   {
 public:
-    using iter = BlockIterator<OctreeLevel, IterHelper, DataType>  ;
+    using iter = BlockIterator<OctreeLevel, IterHelper, DataType>;
 
     BlockIterator(OctreeLevel* octLevel, bool begin = false)
       : m_octLevel(octLevel)

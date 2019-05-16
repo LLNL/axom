@@ -10,8 +10,10 @@
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
 
+#include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Vector.hpp"
 #include "axom/spin/OctreeBase.hpp"
-#include "axom/spin/Primitives.hpp"
 
 namespace axom
 {
@@ -29,18 +31,18 @@ class SpatialOctree : public OctreeBase<DIM, BlockDataType>
 {
 public:
 
-  using GeometricBoundingBox = BoundingBox<double,DIM> ;
-  using SpacePt = Point<double,DIM> ;
-  using SpaceVector = Vector<double,DIM> ;
+  using GeometricBoundingBox = primal::BoundingBox<double,DIM>;
+  using SpacePt = primal::Point<double,DIM>;
+  using SpaceVector = primal::Vector<double,DIM>;
 
-  using BaseOctree = OctreeBase<DIM, BlockDataType> ;
+  using BaseOctree = OctreeBase<DIM, BlockDataType>;
 
-  using GridPt = typename BaseOctree::GridPt ;
-  using CoordType = typename GridPt::CoordType ;
+  using GridPt = typename BaseOctree::GridPt;
+  using CoordType = typename GridPt::CoordType;
 
-  using BlockIndex = typename BaseOctree::BlockIndex ;
+  using BlockIndex = typename BaseOctree::BlockIndex;
 
-  using SpaceVectorLevelMap = slam::Map<SpaceVector> ;
+  using SpaceVectorLevelMap = slam::Map<SpaceVector>;
 
 public:
   /**

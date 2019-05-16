@@ -10,7 +10,8 @@
 #include "axom/core/Macros.hpp"   // for DISABLE_COPY_AND_ASSIGNMENT macro
 #include "axom/core/Types.hpp"  // for nullptr
 
-#include "axom/spin/Primitives.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/operators/squared_distance.hpp"
 
 #include "axom/slic/interface/slic.hpp"          // for logging
@@ -46,8 +47,8 @@ template < typename T, int NDIMS >
 class BVHTree
 {
 public:
-  using BoxType = BoundingBox< double,NDIMS >;
-  using PointType = Point< double,NDIMS >;
+  using BoxType = primal::BoundingBox< double,NDIMS >;
+  using PointType = primal::Point< double,NDIMS >;
 
 public:
 
@@ -58,7 +59,7 @@ public:
   BVHTree( int maxNumLevel=5 );
 
   /*!
-   * \brief Creates a BoundingBoxTree instance that can grow up to the specified
+   * \brief Creates a BVHTree instance that can grow up to the specified
    *  number of levels and can hold approximately the given number of objects.
    * \param [in] estNumObjects user-supplied estimated number of objects.
    * \param [in] maxNumLevels the maximum number of levels.
@@ -315,7 +316,7 @@ private:
    * \note This is just a helper routine used when writing out the tree.
    */
   static int write_box( std::ostringstream& oss,
-                        const BoundingBox< double,2 >& box )
+                        const primal::BoundingBox< double,2 >& box )
   {
     const PointType& min = box.getMin();
     const PointType& max = box.getMax();
@@ -336,7 +337,7 @@ private:
    * \note This is just a helper routine used when writing out the tree.
    */
   static int write_box( std::ostringstream& oss,
-                        const BoundingBox< double,3 >& box )
+                        const primal::BoundingBox< double,3 >& box )
   {
     const PointType& min = box.getMin();
     const PointType& max = box.getMax();
@@ -982,7 +983,7 @@ void BVHTree< T,NDIMS >::find( const PointType& pt,
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-const BoundingBox< double,NDIMS >&
+const primal::BoundingBox< double,NDIMS >&
 BVHTree< T,NDIMS >::getBucketBox( int bucketIdx ) const
 {
   SLIC_ASSERT( bucketIdx >= 0 &&
@@ -1010,7 +1011,7 @@ const int* BVHTree< T,NDIMS >::getBucketObjectArray( int bucketIdx ) const
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >
-const BoundingBox< double,NDIMS >&
+const primal::BoundingBox< double,NDIMS >&
 BVHTree< T,NDIMS >::getObjectBox( int objIdx ) const
 {
   SLIC_ASSERT( objIdx >= 0 && objIdx < static_cast< int >(m_objects.size()) );

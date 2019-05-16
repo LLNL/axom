@@ -16,9 +16,11 @@
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
 
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Vector.hpp"
+
 #include "axom/spin/DenseOctreeLevel.hpp"
 #include "axom/spin/OctreeLevel.hpp"
-#include "axom/spin/Primitives.hpp"
 #include "axom/spin/SparseOctreeLevel.hpp"
 
 
@@ -108,25 +110,25 @@ protected:
 
 /**
  * \class OctreeBase
- * 
+ *
  * \brief Handles the non-geometric operations for our octree such as
- * refinement, finding the parents and children of a node and determining 
+ * refinement, finding the parents and children of a node and determining
  * whether a leaf node exists
  *
- * There are two concepts here: 
+ * There are two concepts here:
  * A set of nested dyadic integer grids -- A grid at level n has 2^n cells
  * in each of the DIM dimensions and an adaptive octree defined by a subset
  * of the grid cells from these nested grids. The former is a conceptual aid
  * in the sense that it is implicitly encoded.
  *
  * An octree block at level l is refined by adding its 2^DIM children
- * blocks at level (l+1). The root of the octree covers the entire domains 
+ * blocks at level (l+1). The root of the octree covers the entire domains
  * and has no parent. The leaf blocks of the octree have no children.
  * The interior of the children do not overlap, and their union covers that
  * of their parent block. Non-leaf blocks are referred to as 'internal'
  *
  * Requirements for BlockDataType: it must be default constructible and
- * provide an isLeaf() predicate as well as a setInternal() function that 
+ * provide an isLeaf() predicate as well as a setInternal() function that
  * changes its state from representing a leaf block to an internal block.
  */
 template<int DIM, typename BlockDataType>
@@ -134,11 +136,12 @@ class OctreeBase
 {
 public:
   using CoordType = axom::IndexType;
-  using GridPt = Point<CoordType,DIM>;
-  using GridVec = Vector<CoordType,DIM>;
+  using GridPt = primal::Point<CoordType,DIM>;
+  using GridVec = primal::Vector<CoordType,DIM>;
 
   using MAX_LEVEL_SIZE = slam::policies::
-    CompileTimeSize<CoordType,std::numeric_limits<int>::digits>;
+                         CompileTimeSize<CoordType,
+                                         std::numeric_limits<int>::digits>;
   using OctreeLevels = slam::OrderedSet<MAX_LEVEL_SIZE>;
 
   using OctreeLevelType = OctreeLevel<DIM, BlockDataType>;
@@ -177,9 +180,9 @@ public:
     };
 private:
     using OCTREE_CHILDREN_SIZE =
-      slam::policies::CompileTimeSize<int, NUM_CHILDREN>;
+            slam::policies::CompileTimeSize<int, NUM_CHILDREN>;
     using OCTREE_FACE_NEIGHBORS_SIZE =
-      slam::policies::CompileTimeSize<int, NUM_FACE_NEIGHBORS>;
+            slam::policies::CompileTimeSize<int, NUM_FACE_NEIGHBORS>;
 
 public:
     using ChildIndexSet = slam::OrderedSet<OCTREE_CHILDREN_SIZE>;
@@ -461,15 +464,15 @@ private:
   };
 
   using DenseOctLevType =
-    DenseOctreeLevel<DIM, BlockDataType, axom::uint16>;
+          DenseOctreeLevel<DIM, BlockDataType, axom::uint16>;
   using Sparse16OctLevType =
-    SparseOctreeLevel<DIM, BlockDataType, axom::uint16>;
+          SparseOctreeLevel<DIM, BlockDataType, axom::uint16>;
   using Sparse32OctLevType =
-    SparseOctreeLevel<DIM, BlockDataType, axom::uint32>;
+          SparseOctreeLevel<DIM, BlockDataType, axom::uint32>;
   using Sparse64OctLevType =
-    SparseOctreeLevel<DIM, BlockDataType, axom::uint64>;
+          SparseOctreeLevel<DIM, BlockDataType, axom::uint64>;
   using SparsePtOctLevType =
-    SparseOctreeLevel<DIM, BlockDataType, GridPt>;
+          SparseOctreeLevel<DIM, BlockDataType, GridPt>;
 
   using DenseOctLevPtr = DenseOctLevType*;
   using Sparse16OctLevPtr = Sparse16OctLevType*;

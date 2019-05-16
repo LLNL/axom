@@ -7,7 +7,8 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/spin/Primitives.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/geometry/Point.hpp"
 #include "axom/spin/UniformGrid.hpp"
 
 //-----------------------------------------------------------------------------
@@ -29,14 +30,14 @@ TEST( spin_uniform_grid, array_constructor)
 TEST( spin_uniform_grid, bbox_constructor)
 {
   const int DIM = 3;
-  using CoordType = double ;
-  using QPoint = axom::spin::Point< CoordType, DIM > ;
+  using CoordType = double;
+  using QPoint = axom::primal::Point< CoordType, DIM >;
 
   QPoint pmax = QPoint::make_point(4, 2, 3);
   QPoint pmin = QPoint::make_point(6, 8, 6);
   int res[DIM] = {2, 3, 4};
 
-  axom::spin::BoundingBox< double, DIM > theBbox(pmin, pmax);
+  axom::primal::BoundingBox< double, DIM > theBbox(pmin, pmax);
   axom::spin::UniformGrid< int, DIM > valid(theBbox, res);
   EXPECT_EQ(valid.getNumBins(),  res[0] * res[1] * res[2]);
   EXPECT_TRUE(valid.isBinEmpty(0));
@@ -46,8 +47,8 @@ TEST( spin_uniform_grid, bbox_constructor)
 TEST( spin_uniform_grid, indexing)
 {
   const int DIM = 3;
-  using CoordType = double ;
-  using QPoint = axom::spin::Point< CoordType, DIM > ;
+  using CoordType = double;
+  using QPoint = axom::primal::Point< CoordType, DIM >;
 
   double p_max[DIM] = {100, 100, 100};
   double p_min[DIM] = {0, 0, 0};
@@ -170,9 +171,9 @@ void zero(std::map< int, int > & m, int idx)
 TEST(spin_uniform_grid, add_stuff_3D)
 {
   const int DIM = 3;
-  using CoordType = double ;
-  using QPoint = axom::spin::Point< CoordType, DIM > ;
-  using QBBox = axom::spin::BoundingBox< CoordType, DIM > ;
+  using CoordType = double;
+  using QPoint = axom::primal::Point< CoordType, DIM >;
+  using QBBox = axom::primal::BoundingBox< CoordType, DIM >;
 
   double origin[DIM] = {0, 0, 0};
   const int mpt = 6;
@@ -251,9 +252,9 @@ TEST(spin_uniform_grid, add_stuff_3D)
 TEST(spin_uniform_grid, delete_stuff_3D)
 {
   const int DIM = 3;
-  using CoordType = double ;
-  using QPoint = axom::spin::Point< CoordType, DIM > ;
-  using QBBox = axom::spin::BoundingBox< CoordType, DIM > ;
+  using CoordType = double;
+  using QPoint = axom::primal::Point< CoordType, DIM >;
+  using QBBox = axom::primal::BoundingBox< CoordType, DIM >;
 
   double origin[DIM] = {0, 0, 0};
   const int mpt = 6;
@@ -322,9 +323,9 @@ TEST(spin_uniform_grid, delete_stuff_3D)
 TEST(spin_uniform_grid, add_stuff_2D)
 {
   const int DIM = 2;
-  using CoordType = double ;
-  using QPoint = axom::spin::Point< CoordType, DIM > ;
-  using QBBox = axom::spin::BoundingBox< CoordType, DIM > ;
+  using CoordType = double;
+  using QPoint = axom::primal::Point< CoordType, DIM >;
+  using QBBox = axom::primal::BoundingBox< CoordType, DIM >;
 
   double origin[DIM] = {0, 0};
   const int mpt = 6;
@@ -400,9 +401,9 @@ TEST(spin_uniform_grid, add_stuff_2D)
 TEST(spin_uniform_grid, delete_stuff_2D)
 {
   const int DIM = 2;
-  using CoordType = double ;
-  using QPoint = axom::spin::Point< CoordType, DIM > ;
-  using QBBox = axom::spin::BoundingBox< CoordType, DIM > ;
+  using CoordType = double;
+  using QPoint = axom::primal::Point< CoordType, DIM >;
+  using QBBox = axom::primal::BoundingBox< CoordType, DIM >;
 
   double origin[DIM] = {0, 0};
   const int mpt = 6;

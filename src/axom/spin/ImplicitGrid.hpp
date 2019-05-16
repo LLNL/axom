@@ -10,6 +10,10 @@
 #include "axom/core.hpp"  // for clamp functions
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
+
+#include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Vector.hpp"
 #include "axom/spin/RectangularLattice.hpp"
 
 #include <vector>
@@ -53,11 +57,11 @@ class ImplicitGrid
 {
 public:
   using IndexType = TheIndexType;
-  using GridCell = Point<IndexType, NDIMS>;
-  using SpacePoint = Point<double, NDIMS>;
-  using SpaceVec = Vector<double, NDIMS>;
+  using GridCell = primal::Point<IndexType, NDIMS>;
+  using SpacePoint = primal::Point<double, NDIMS>;
+  using SpaceVec = primal::Vector<double, NDIMS>;
 
-  using SpatialBoundingBox = BoundingBox<double, NDIMS>;
+  using SpatialBoundingBox = primal::BoundingBox<double, NDIMS>;
   using LatticeType = RectangularLattice<NDIMS, double, IndexType>;
 
   using SizePolicy = slam::policies::RuntimeSize<IndexType>;

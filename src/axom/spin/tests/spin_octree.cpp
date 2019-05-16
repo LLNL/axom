@@ -17,13 +17,13 @@ TEST( spin_octree, topological_octree_parent_child)
     "*** This test exercises the parent/child relation in spin::OctreeBase");
 
   static const int DIM = 2;
-  using CoordType = int ;
-  using LeafNodeType = axom::spin::BlockData ;
+  using CoordType = int;
+  using LeafNodeType = axom::spin::BlockData;
 
-  using OctreeType = axom::spin::OctreeBase<DIM, LeafNodeType> ;
-  using GridPt = OctreeType::GridPt ;
-  using BlockIndex = OctreeType::BlockIndex ;
-  using OctreeChildIndexSet = BlockIndex::ChildIndexSet ;
+  using OctreeType = axom::spin::OctreeBase<DIM, LeafNodeType>;
+  using GridPt = OctreeType::GridPt;
+  using BlockIndex = OctreeType::BlockIndex;
+  using OctreeChildIndexSet = BlockIndex::ChildIndexSet;
 
   OctreeType octree;
 
@@ -69,10 +69,10 @@ TEST( spin_octree, topological_octree_refine)
     << "all its children to the octree.");
 
   static const int DIM = 3;
-  using LeafNodeType = axom::spin::BlockData ;
+  using LeafNodeType = axom::spin::BlockData;
 
-  using OctreeType = axom::spin::OctreeBase<DIM, LeafNodeType> ;
-  using BlockIndex = OctreeType::BlockIndex ;
+  using OctreeType = axom::spin::OctreeBase<DIM, LeafNodeType>;
+  using BlockIndex = OctreeType::BlockIndex;
 
   OctreeType octree;
 
@@ -112,10 +112,10 @@ TEST( spin_octree, octree_coveringLeafBlocks)
     "*** This test exercises the coveringLeafBlock function of OctreeBase");
 
   static const int DIM = 2;
-  using LeafNodeType = axom::spin::BlockData ;
-  using OctreeType = axom::spin::OctreeBase<DIM, LeafNodeType> ;
-  using BlockIndex = OctreeType::BlockIndex ;
-  using GridPt = OctreeType::GridPt ;
+  using LeafNodeType = axom::spin::BlockData;
+  using OctreeType = axom::spin::OctreeBase<DIM, LeafNodeType>;
+  using BlockIndex = OctreeType::BlockIndex;
+  using GridPt = OctreeType::GridPt;
 
   OctreeType octree;
 
@@ -225,9 +225,9 @@ TEST( spin_octree, octree_block_is_descendant)
     "*** This test exercises the isDescendantOf() function of OctreeBase::BlockIndex");
 
   static const int DIM = 2;
-  using LeafNodeType = axom::spin::BlockData ;
-  using OctreeType = axom::spin::OctreeBase<DIM, LeafNodeType> ;
-  using BlockIndex = OctreeType::BlockIndex ;
+  using LeafNodeType = axom::spin::BlockData;
+  using OctreeType = axom::spin::OctreeBase<DIM, LeafNodeType>;
+  using BlockIndex = OctreeType::BlockIndex;
 
   OctreeType octree;
 
@@ -280,8 +280,8 @@ TEST( spin_octree, octree_block_is_descendant)
 TEST( spin_octree, count_octree_blocks)
 {
   static const int DIM = 2;
-  using LeafNodeType = axom::spin::BlockData ;
-  using OctreeType = axom::spin::OctreeBase<DIM, LeafNodeType> ;
+  using LeafNodeType = axom::spin::BlockData;
+  using OctreeType = axom::spin::OctreeBase<DIM, LeafNodeType>;
 
   OctreeType octree;
 

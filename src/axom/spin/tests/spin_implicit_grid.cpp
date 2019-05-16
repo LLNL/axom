@@ -142,7 +142,7 @@ TYPED_TEST( ImplicitGridTest, insert_contains)
   using BBox = typename TestFixture::BBox;
   using GridT = typename TestFixture::GridT;
   using SpacePt = typename TestFixture::SpacePt;
-  using RangeBox = axom::spin::BoundingBox<int, DIM>;
+  using RangeBox = axom::primal::BoundingBox<int, DIM>;
 
   SLIC_INFO("Testing ImplicitGrid insert() and contains() in " << DIM << "D");
 

@@ -5,7 +5,6 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/spin/Primitives.hpp"
 #include "axom/spin/RectangularLattice.hpp"
 
 #include "axom/slic/interface/slic.hpp"
@@ -17,13 +16,13 @@ namespace lattice_1D
 
 const int DIM = 1;
 
-using LatticeT = axom::spin::RectangularLattice< DIM > ;
+using LatticeT = axom::spin::RectangularLattice< DIM >;
 
-using GridCell = LatticeT::GridCell ;
-using SpacePt = LatticeT::SpacePoint ;
-using SpaceVector = LatticeT::SpaceVector ;
-using BBox = LatticeT::SpatialBoundingBox ;
-using IntArray = axom::spin::NumericArray< int,DIM > ;
+using GridCell = LatticeT::GridCell;
+using SpacePt = LatticeT::SpacePoint;
+using SpaceVector = LatticeT::SpaceVector;
+using BBox = LatticeT::SpatialBoundingBox;
+using IntArray = axom::primal::NumericArray< int,DIM >;
 }
 
 // Define some helpful typedefs for 2D rectangular lattices
@@ -32,13 +31,13 @@ namespace lattice_2D
 
 const int DIM = 2;
 
-using LatticeT = axom::spin::RectangularLattice< DIM > ;
+using LatticeT = axom::spin::RectangularLattice< DIM >;
 
-using GridCell = LatticeT::GridCell ;
-using SpacePt = LatticeT::SpacePoint ;
-using SpaceVector = LatticeT::SpaceVector ;
-using BBox = LatticeT::SpatialBoundingBox ;
-using IntArray = axom::spin::NumericArray< int,DIM > ;
+using GridCell = LatticeT::GridCell;
+using SpacePt = LatticeT::SpacePoint;
+using SpaceVector = LatticeT::SpaceVector;
+using BBox = LatticeT::SpatialBoundingBox;
+using IntArray = axom::primal::NumericArray< int,DIM >;
 }
 
 // Define some helpful typedefs for 3D rectangular lattices
@@ -47,13 +46,13 @@ namespace lattice_3D
 
 const int DIM = 3;
 
-using LatticeT = axom::spin::RectangularLattice< DIM > ;
+using LatticeT = axom::spin::RectangularLattice< DIM >;
 
-using GridCell = LatticeT::GridCell ;
-using SpacePt = LatticeT::SpacePoint ;
-using SpaceVector = LatticeT::SpaceVector ;
-using BBox = LatticeT::SpatialBoundingBox ;
-using IntArray = axom::spin::NumericArray< int,DIM > ;
+using GridCell = LatticeT::GridCell;
+using SpacePt = LatticeT::SpacePoint;
+using SpaceVector = LatticeT::SpaceVector;
+using BBox = LatticeT::SpatialBoundingBox;
+using IntArray = axom::primal::NumericArray< int,DIM >;
 }
 
 TEST( spin_rectangle_lattice, lattice_ctor)
@@ -375,7 +374,8 @@ TEST( spin_rectangle_lattice, from_bounding_box)
 
     BBox bbox( SpacePt(1.25), SpacePt(2.5));
     IntArray res(5);
-    LatticeT lattice = axom::spin::rectangular_lattice_from_bounding_box(bbox, res);
+    LatticeT lattice = axom::spin::rectangular_lattice_from_bounding_box(bbox,
+                                                                         res);
 
     EXPECT_DOUBLE_EQ(1.25, lattice.origin()[0]);
     EXPECT_DOUBLE_EQ( .25,  lattice.spacing()[0]);
@@ -387,7 +387,8 @@ TEST( spin_rectangle_lattice, from_bounding_box)
 
     BBox bbox( SpacePt(1.25), SpacePt(2.5));
     IntArray res(5);
-    LatticeT lattice = axom::spin::rectangular_lattice_from_bounding_box(bbox, res);
+    LatticeT lattice = axom::spin::rectangular_lattice_from_bounding_box(bbox,
+                                                                         res);
 
     EXPECT_DOUBLE_EQ(1.25, lattice.origin()[0]);
     EXPECT_DOUBLE_EQ(1.25, lattice.origin()[1]);
@@ -406,7 +407,8 @@ TEST( spin_rectangle_lattice, from_bounding_box)
 
     int resData[3] = { 5, 50, 500 };
     IntArray res(resData);
-    LatticeT lattice = axom::spin::rectangular_lattice_from_bounding_box(bbox, res);
+    LatticeT lattice = axom::spin::rectangular_lattice_from_bounding_box(bbox,
+                                                                         res);
 
     EXPECT_DOUBLE_EQ(1.25, lattice.origin()[0]);
     EXPECT_DOUBLE_EQ(2.5,  lattice.origin()[1]);
@@ -425,7 +427,8 @@ TEST( spin_rectangle_lattice, from_bounding_box)
     BBox bbox( SpacePt::make_point(1.25, 1.25),
                SpacePt::make_point(2.5, 1.25 + EPS) );
     IntArray res(5);
-    LatticeT lattice = axom::spin::rectangular_lattice_from_bounding_box(bbox, res);
+    LatticeT lattice = axom::spin::rectangular_lattice_from_bounding_box(bbox,
+                                                                         res);
 
     EXPECT_DOUBLE_EQ(1.25, lattice.origin()[0]);
     EXPECT_DOUBLE_EQ(1.25, lattice.origin()[1]);
@@ -443,7 +446,8 @@ TEST( spin_rectangle_lattice, from_bounding_box)
     res[0] = 5;
     res[1] = 0;
 
-    LatticeT lattice = axom::spin::rectangular_lattice_from_bounding_box(bbox, res);
+    LatticeT lattice = axom::spin::rectangular_lattice_from_bounding_box(bbox,
+                                                                         res);
 
     EXPECT_DOUBLE_EQ(1.25, lattice.origin()[0]);
     EXPECT_DOUBLE_EQ(1.25, lattice.origin()[1]);
