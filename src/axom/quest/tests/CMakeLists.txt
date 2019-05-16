@@ -8,11 +8,8 @@
 
 set(quest_tests
     quest_all_nearest_neighbors.cpp
-    quest_implicit_grid.cpp
     quest_inout_octree.cpp
-    quest_octree.cpp
     quest_signed_distance.cpp
-    quest_spatial_octree.cpp
     quest_stl_reader.cpp
     quest_vertex_weld.cpp
    )

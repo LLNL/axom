@@ -16,7 +16,7 @@ It provides instructions for:
   * Compiling and linking an application with Axom
 
 Additional information about Axom can be found on the main
-`Axom Web Page <../../web_main_docs/html/index.html>`_:
+`Axom Web Page <../../../index.html>`_:
 
   * Build system
   * User guides and source code documentation for individual Axom components

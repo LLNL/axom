@@ -23,15 +23,8 @@ set( quest_headers
     AllNearestNeighbors.hpp
     detail/AllNearestNeighbors_detail.hpp
 
-    ## Geometry Headers
-    geom/Brood.hpp
-    geom/DenseOctreeLevel.hpp
-    geom/ImplicitGrid.hpp
-    geom/InOutOctree.hpp
-    geom/OctreeBase.hpp
-    geom/OctreeLevel.hpp
-    geom/SparseOctreeLevel.hpp
-    geom/SpatialOctree.hpp
+    ## In/out query
+    InOutOctree.hpp
 
     # Mesh tester headers
     MeshTester.hpp
@@ -80,6 +73,7 @@ set( quest_depends_on
      slic
      mint
      slam
+     spin
      primal
      )
 

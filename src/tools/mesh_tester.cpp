@@ -19,7 +19,7 @@
 #include "axom/primal/operators/intersect.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
-#include "axom/primal/spatial_acceleration/UniformGrid.hpp"
+#include "axom/spin/UniformGrid.hpp"
 
 // _read_stl_include1_start
 #include "axom/quest/stl/STLReader.hpp"
@@ -47,7 +47,7 @@ typedef primal::Triangle<double, 3> Triangle3;
 
 typedef primal::Point<double, 3> Point3;
 typedef primal::BoundingBox<double, 3> SpatialBoundingBox;
-typedef primal::UniformGrid<int, 3> UniformGrid3;
+typedef spin::UniformGrid<int, 3> UniformGrid3;
 typedef primal::Vector<double, 3> Vector3;
 typedef primal::Segment<double, 3> Segment3;
 
@@ -527,9 +527,12 @@ int main( int argc, char** argv )
   {
     SLIC_INFO("Checking for watertight mesh.");
     axom::utilities::Timer timer2(true);
+    // _check_watertight_start
     quest::WatertightStatus wtstat =
-      quest::isSurfaceMeshWatertight( surface_mesh );
+      quest::isSurfaceMeshWatertight(surface_mesh);
+    // _check_watertight_end
     timer2.stop();
+    // _report_watertight_start
     switch (wtstat)
     {
     case quest::WatertightStatus::WATERTIGHT:
@@ -544,6 +547,7 @@ int main( int argc, char** argv )
         "This may be due to a non-manifold mesh." << std::endl;
       break;
     }
+    // _report_watertight_end
     SLIC_INFO("Testing for watertightness took "
               << timer2.elapsedTimeInSec() << " seconds.");
 

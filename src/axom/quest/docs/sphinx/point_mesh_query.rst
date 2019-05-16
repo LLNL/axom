@@ -3,6 +3,8 @@
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
+.. _surface-query-c:
+
 *********************************
 Surface mesh point queries: C API
 *********************************

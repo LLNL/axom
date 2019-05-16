@@ -22,7 +22,7 @@
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
 
-#include "axom/quest/geom/ImplicitGrid.hpp"
+#include "axom/spin/ImplicitGrid.hpp"
 // _quest_pic_include_start
 #include "axom/quest/PointInCell.hpp"
 

@@ -12,7 +12,7 @@
 #include "axom/core/utilities/Utilities.hpp"
 
 // primal includes
-#include "axom/primal/spatial_acceleration/BVHTree.hpp"
+#include "axom/spin/BVHTree.hpp"
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
@@ -37,11 +37,11 @@ template < int NDIMS >
 class SignedDistance
 {
 public:
-  typedef axom::primal::Point< double,NDIMS > PointType;
-  typedef axom::primal::Vector< double,NDIMS > VectorType;
-  typedef axom::primal::Triangle< double,NDIMS > TriangleType;
-  typedef axom::primal::BoundingBox< double,NDIMS > BoxType;
-  typedef axom::primal::BVHTree< int,NDIMS > BVHTreeType;
+  using PointType = axom::primal::Point< double,NDIMS >;
+  using VectorType = axom::primal::Vector< double,NDIMS >;
+  using TriangleType = axom::primal::Triangle< double,NDIMS >;
+  using BoxType = axom::primal::BoundingBox< double,NDIMS >;
+  using BVHTreeType = axom::spin::BVHTree< int,NDIMS >;
 
 private:
 

@@ -3,6 +3,8 @@
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
+.. _point-in-cell:
+
 *******************
 Point-in-cell query
 *******************
@@ -74,5 +76,5 @@ coordinates.
    :language: C++
 
 The destructor of the index object cleans up resources used
-(in this case, when the variable goes out of scope).
+(in this case, when the variable ``spatialIndex`` goes out of scope).
 

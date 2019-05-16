@@ -13,18 +13,20 @@ Axom provides libraries that address common computer science needs.  It grew fro
 * @subpage sidretop provides a data store with hierarchical structure.
 * @subpage slamtop provides an API to construct and process meshes.
 * @subpage slictop provides infrastructure for logging application messages.
+* @subpage spintop provides spatial acceleration data structures, also known as spatial indexes.
 
 Dependencies between components are as follows:
 - Core has no dependencies, and the other modules depend on Core
 - Slic optionally depends on Lumberjack
-- Slam, Primal, Mint, Quest, and Sidre depend on Slic
+- Slam, Primal, Mint, Quest, Spin, and Sidre depend on Slic
 - Mint optionally depends on Sidre
-- Quest depends on Slam, Primal, and Mint
+- Spin depends on Primal and Slam
+- Quest depends on Slam, Primal, Spin, and Mint
 
 The figure below summarizes the dependencies between the modules.  Solid links
 indicate hard dependencies; dashed links indicate optional dependencies.
 
-\dotfile dependencies.dot
+\dotfile ../docs/dependencies.dot "Module dependencies" width=430px
 
 
 # Further documentation

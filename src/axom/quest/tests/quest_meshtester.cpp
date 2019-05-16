@@ -210,10 +210,6 @@ std::vector<std::string> findIntersectTests()
   namespace fs = axom::utilities::filesystem;
   std::string catalogue = fs::joinPath(AXOM_DATA_DIR,
                                        "quest/meshtester/catalogue.txt");
-#else
-  FAIL() << "quest_meshtester test requires AXOM_DATA_DIR to be defined");
-#endif
-
   std::string testdir;
   axom::utilities::filesystem::getDirName(testdir, catalogue);
 
@@ -224,6 +220,8 @@ std::vector<std::string> findIntersectTests()
   {
     tests.push_back(axom::utilities::filesystem::joinPath(testdir, line));
   }
+#endif
+
   return tests;
 }
 
@@ -369,14 +367,14 @@ TEST( quest_mesh_tester, surfacemesh_watertight_intrinsic )
     surface_mesh =
       static_cast<UMesh*>(quest::utilities::make_tetrahedron_mesh());
     EXPECT_EQ(quest::WatertightStatus::WATERTIGHT,
-           quest::isSurfaceMeshWatertight( surface_mesh ) );
+              quest::isSurfaceMeshWatertight( surface_mesh ) );
     EXPECT_TRUE(surface_mesh->hasField("boundary", mint::CELL_CENTERED));
 
     // check boundary flag
     int* boundary =
       surface_mesh->getFieldPtr< int >( "boundary", mint::CELL_CENTERED );
     const axom::IndexType numCells = surface_mesh->getNumberOfCells();
-    for ( axom::IndexType icell=0; icell < numCells; ++icell )
+    for ( axom::IndexType icell=0 ; icell < numCells ; ++icell )
     {
       EXPECT_TRUE( boundary[ icell ] == INTERNAL );
     } // END for all cells
@@ -389,7 +387,7 @@ TEST( quest_mesh_tester, surfacemesh_watertight_intrinsic )
     surface_mesh =
       static_cast<UMesh*>(quest::utilities::make_crackedtet_mesh());
     EXPECT_EQ(quest::WatertightStatus::NOT_WATERTIGHT,
-           quest::isSurfaceMeshWatertight( surface_mesh ) );
+              quest::isSurfaceMeshWatertight( surface_mesh ) );
     EXPECT_TRUE(surface_mesh->hasField("boundary", mint::CELL_CENTERED));
 
     // check boundary flag
@@ -411,7 +409,7 @@ TEST( quest_mesh_tester, surfacemesh_watertight_intrinsic )
     surface_mesh =
       static_cast<UMesh*>(quest::utilities::make_cavedtet_mesh());
     EXPECT_EQ(quest::WatertightStatus::NOT_WATERTIGHT,
-           quest::isSurfaceMeshWatertight( surface_mesh ) );
+              quest::isSurfaceMeshWatertight( surface_mesh ) );
     EXPECT_TRUE(surface_mesh->hasField("boundary", mint::CELL_CENTERED));
 
     // check boundary flag

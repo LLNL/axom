@@ -11,7 +11,7 @@
 #include "axom/primal.hpp"
 
 #include "axom/quest/interface/internal/QuestHelpers.hpp"
-#include "axom/quest/geom/InOutOctree.hpp"
+#include "axom/quest/InOutOctree.hpp"
 
 
 namespace axom
