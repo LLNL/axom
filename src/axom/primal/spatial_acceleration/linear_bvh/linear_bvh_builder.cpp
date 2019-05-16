@@ -22,43 +22,73 @@ namespace primal
 namespace bvh
 {
 
-void transform_boxes(const double *boxes, AABB<float32,3> *aabbs, const int32 size)
+template < typename FloatType >
+void transform_boxes(const double *boxes, AABB<FloatType,3> *aabbs, int32 size)
 {
 
-  RAJA::forall<raja_for_policy>(RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
+  RAJA::forall<raja_for_policy>(
+      RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
   {
-    AABB<float32, 3> aabb;
-    Vec<float32,3> min_point, max_point;
+    AABB< FloatType, 3> aabb;
+    Vec< FloatType,3 > min_point, max_point;
+
     const int32 offset = i * 6;
     min_point[0] = boxes[offset + 0];
     min_point[1] = boxes[offset + 1];
     min_point[2] = boxes[offset + 2];
+
     max_point[0] = boxes[offset + 3];
     max_point[1] = boxes[offset + 4];
     max_point[2] = boxes[offset + 5];
+
     aabb.include(min_point);
     aabb.include(max_point);
     aabbs[i] = aabb;
-  });
+  } );
 
 }
 
-AABB<float32,3> reduce(AABB<float32,3> *aabbs, const int size)
+template < typename FloatType >
+void transform_boxes(const double *boxes, AABB<FloatType,2> *aabbs, int32 size)
 {
 
-  RAJA::ReduceMin<raja_reduce_policy, float32> xmin(infinity32());
-  RAJA::ReduceMin<raja_reduce_policy, float32> ymin(infinity32());
-  RAJA::ReduceMin<raja_reduce_policy, float32> zmin(infinity32());
+  RAJA::forall<raja_for_policy>(
+      RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
+  {
+    AABB< FloatType, 2> aabb;
+    Vec< FloatType,2 > min_point, max_point;
 
-  RAJA::ReduceMax<raja_reduce_policy, float32> xmax(neg_infinity32());
-  RAJA::ReduceMax<raja_reduce_policy, float32> ymax(neg_infinity32());
-  RAJA::ReduceMax<raja_reduce_policy, float32> zmax(neg_infinity32());
+    const int32 offset = i * 4;
+    min_point[0] = boxes[offset + 0];
+    min_point[1] = boxes[offset + 1];
+
+    max_point[0] = boxes[offset + 2];
+    max_point[1] = boxes[offset + 3];
+
+    aabb.include(min_point);
+    aabb.include(max_point);
+    aabbs[ i ] = aabb;
+  } );
+
+}
+
+template < typename FloatType >
+AABB<FloatType,3> reduce(AABB<FloatType,3> *aabbs, int32 size)
+{
+
+  RAJA::ReduceMin<raja_reduce_policy, FloatType> xmin(infinity32());
+  RAJA::ReduceMin<raja_reduce_policy, FloatType> ymin(infinity32());
+  RAJA::ReduceMin<raja_reduce_policy, FloatType> zmin(infinity32());
+
+  RAJA::ReduceMax<raja_reduce_policy, FloatType> xmax(neg_infinity32());
+  RAJA::ReduceMax<raja_reduce_policy, FloatType> ymax(neg_infinity32());
+  RAJA::ReduceMax<raja_reduce_policy, FloatType> zmax(neg_infinity32());
 
   RAJA::forall<raja_for_policy>(RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
   {
 
-    const AABB<float32, 3> &aabb = aabbs[i];
-    //std::cout<<i<<" "<<aabb<<"\n";
+    const AABB<FloatType, 3> &aabb = aabbs[i];
+
     xmin.min(aabb.m_x.min());
     ymin.min(aabb.m_y.min());
     zmin.min(aabb.m_z.min());
@@ -67,18 +97,92 @@ AABB<float32,3> reduce(AABB<float32,3> *aabbs, const int size)
     ymax.max(aabb.m_y.max());
     zmax.max(aabb.m_z.max());
 
-  });
+  } );
 
-  AABB<float32,3> res;
-  Vec3f mins = make_vec3f(xmin.get(), ymin.get(), zmin.get());
-  Vec3f maxs = make_vec3f(xmax.get(), ymax.get(), zmax.get());
+  AABB<FloatType,3> res;
+  Vec< FloatType, 3 > mins =
+      make_vec< FloatType >( xmin.get(), ymin.get(), zmin.get() );
+  Vec< FloatType, 3 > maxs =
+      make_vec< FloatType >( xmax.get(), ymax.get(), zmax.get() );
 
   res.include(mins);
   res.include(maxs);
   return res;
 }
 
-uint32 *get_mcodes(AABB<float32,3> *aabbs, const int32  size, const AABB<float32,3> &bounds)
+template < typename FloatType >
+AABB<FloatType,2> reduce(AABB<FloatType,2> *aabbs, int32 size)
+{
+
+  RAJA::ReduceMin<raja_reduce_policy, FloatType> xmin(infinity32());
+  RAJA::ReduceMin<raja_reduce_policy, FloatType> ymin(infinity32());
+
+  RAJA::ReduceMax<raja_reduce_policy, FloatType> xmax(neg_infinity32());
+  RAJA::ReduceMax<raja_reduce_policy, FloatType> ymax(neg_infinity32());
+
+
+  RAJA::forall<raja_for_policy>(
+      RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
+  {
+
+    const AABB<FloatType, 2> &aabb = aabbs[ i ];
+    xmin.min(aabb.m_x.min());
+    ymin.min(aabb.m_y.min());
+
+
+    xmax.max(aabb.m_x.max());
+    ymax.max(aabb.m_y.max());
+
+  } );
+
+  AABB<FloatType,2> res;
+  Vec< FloatType, 2 > mins = make_vec< FloatType >(xmin.get(), ymin.get() );
+  Vec< FloatType, 2 > maxs = make_vec< FloatType >(xmax.get(), ymax.get() );
+
+  res.include(mins);
+  res.include(maxs);
+  return res;
+}
+
+template < typename FloatType >
+uint32 *get_mcodes( AABB<FloatType,2> *aabbs,
+                    int32 size,
+                    const AABB< FloatType,2 > &bounds )
+{
+  Vec<FloatType,2> extent, inv_extent, min_coord;
+  extent[0] = bounds.m_x.max() - bounds.m_x.min();
+  extent[1] = bounds.m_y.max() - bounds.m_y.min();
+
+  min_coord[0] = bounds.m_x.min();
+  min_coord[1] = bounds.m_y.min();
+
+  for ( int i = 0; i < 2; ++i )
+  {
+    inv_extent[ i ] =
+      utilities::isNearlyEqual( extent[i], .0f ) ? 0.f : 1.f / extent[i];
+  }
+
+  uint32 *mcodes = axom::allocate<uint32>(size);
+
+  RAJA::forall<raja_for_policy>(RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
+  {
+    const AABB<FloatType,3> &aabb = aabbs[i];
+
+    // get the center and normalize it
+    FloatType dx = aabb.m_x.center() - min_coord[ 0 ];
+    FloatType dy = aabb.m_y.center() - min_coord[ 1 ];
+    float32 centroid_x = static_cast< float32 >( dx * inv_extent[0] );
+    float32 centroid_y = static_cast< float32 >( dy * inv_extent[1] );
+    mcodes[ i ] = morton32_encode(centroid_x, centroid_y );
+  } );
+
+  return mcodes;
+}
+
+template < typename FloatType >
+uint32 *get_mcodes( AABB<FloatType,3> *aabbs,
+                    int32 size,
+                    const AABB< FloatType,3 > &bounds )
 {
   Vec3f extent, inv_extent, min_coord;
   extent[0] = bounds.m_x.max() - bounds.m_x.min();
@@ -99,29 +203,33 @@ uint32 *get_mcodes(AABB<float32,3> *aabbs, const int32  size, const AABB<float32
 
   RAJA::forall<raja_for_policy>(RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
   {
-    const AABB<float32,3> &aabb = aabbs[i];
+    const AABB<FloatType,3> &aabb = aabbs[i];
+
     // get the center and normalize it
-    float32 centroid_x = (aabb.m_x.center() - min_coord[0]) * inv_extent[0];
-    float32 centroid_y = (aabb.m_y.center() - min_coord[1]) * inv_extent[1];
-    float32 centroid_z = (aabb.m_z.center() - min_coord[2]) * inv_extent[2];
-    mcodes[i] = morton32_encode(centroid_x, centroid_y, centroid_z);
-  });
+    FloatType dx = aabb.m_x.center() - min_coord[0];
+    FloatType dy = aabb.m_y.center() - min_coord[1];
+    FloatType dz = aabb.m_z.center() - min_coord[2];
+    float32 centroid_x = static_cast< float32 >( dx * inv_extent[0] );
+    float32 centroid_y = static_cast< float32 >( dy * inv_extent[1] );
+    float32 centroid_z = static_cast< float32 >( dz * inv_extent[2] );
+    mcodes[ i ] = morton32_encode(centroid_x, centroid_y, centroid_z);
+  } );
 
   return mcodes;
 }
 
-int32*
-array_counting(const int32 &size,
-               const int32 &start,
-               const int32 &step)
+int32* array_counting( const int32 &size,
+                       const int32 &start,
+                       const int32 &step)
 {
 
   int32 *iterator = axom::allocate<int32>(size);
 
-  RAJA::forall<raja_for_policy>(RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
+  RAJA::forall<raja_for_policy>(
+      RAJA::RangeSegment(0, size), AXOM_LAMBDA(int32 i)
   {
     iterator[i] = start + i * step;
-  });
+  } );
 
   return iterator;
 
@@ -167,6 +275,7 @@ int32* sort_mcodes(uint32 *&mcodes, const int32 size)
   return iter;
 }
 
+template < typename FloatType, int NDIMS >
 struct BVHData
 {
   int32  m_inner_size;
@@ -175,26 +284,27 @@ struct BVHData
   int32  *m_parents;
   int32  *m_leafs;
   uint32 *m_mcodes;
-  AABB<float32, 3>   *m_inner_aabbs;
-  AABB<float32, 3>   *m_leaf_aabbs;
-  void
-  allocate(const int32 size)
+
+  AABB< FloatType, NDIMS > *m_inner_aabbs;
+  AABB< FloatType, NDIMS > *m_leaf_aabbs;
+
+  void allocate(int32 size)
   {
     m_inner_size = size;
     m_left_children = axom::allocate<int32>(size);
     m_right_children = axom::allocate<int32>(size);
     m_parents = axom::allocate<int32>(size);
-    m_inner_aabbs = axom::allocate<AABB<float32,3>>(size);
+    m_inner_aabbs = axom::allocate< AABB<FloatType,NDIMS> >( size );
   }
 
-  void
-  deallocate()
+  void deallocate()
   {
-    axom::deallocate(m_left_children);
-    axom::deallocate(m_right_children);
-    axom::deallocate(m_parents);
-    axom::deallocate(m_inner_aabbs);
+    axom::deallocate( m_left_children );
+    axom::deallocate( m_right_children );
+    axom::deallocate( m_parents );
+    axom::deallocate( m_inner_aabbs );
   }
+
 };
 
 
@@ -221,7 +331,8 @@ AXOM_HOST_DEVICE int32 delta(const int32 &a,
   return count;
 }
 
-void build_tree(BVHData &data)
+template < typename FloatType, int NDIMS >
+void build_tree(  BVHData< FloatType, NDIMS > &data )
 {
   // http://research.nvidia.com/sites/default/files/publications/karras2012hpg_paper.pdf
 
@@ -235,7 +346,8 @@ void build_tree(BVHData &data)
   int32 *parent_ptr = data.m_parents;
   const uint32 *mcodes_ptr = data.m_mcodes;
 
-  RAJA::forall<raja_for_policy>(RAJA::RangeSegment(0, inner_size), AXOM_LAMBDA (int32 i)
+  RAJA::forall<raja_for_policy>(
+      RAJA::RangeSegment(0, inner_size), AXOM_LAMBDA (int32 i)
   {
     //determine range direction
     int32 d = 0 > (delta(i, i + 1, inner_size, mcodes_ptr) - delta(i, i - 1, inner_size, mcodes_ptr)) ? -1 : 1;
@@ -259,7 +371,7 @@ void build_tree(BVHData &data)
     int32 j = i + l * d;
     int32 delta_node = delta(i, j, inner_size, mcodes_ptr);
     int32 s = 0;
-    float32 div_factor = 2.f;
+    FloatType div_factor = 2.f;
     //find the split postition using a binary search
     for (int32 t = (int32)ceil(float32(l) / div_factor);;
          div_factor *= 2, t = (int32)ceil(float32(l) / div_factor))
@@ -305,23 +417,26 @@ void build_tree(BVHData &data)
       parent_ptr[0] = -1;
     }
 
-  });
+  } );
 
 }
 
 template<typename T>
 static void array_memset(T* array, const int32 size, const T val)
 {
-  RAJA::forall<raja_for_policy>(RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
+  RAJA::forall<raja_for_policy>(
+      RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
   {
     array[i] = val;
-  });
+  } );
 }
 
-void propagate_aabbs(BVHData &data)
+template < typename FloatType, int NDIMS >
+void propagate_aabbs( BVHData< FloatType, NDIMS >& data)
 {
   const int inner_size = data.m_inner_size;
   const int leaf_size = data.m_inner_size + 1;
+
   // Pointers and vars are redeclared because I have a faint memory
   // of a huge amount of pain and suffering due so cuda
   // labda captures of pointers indide a struct. Bad memories
@@ -329,9 +444,9 @@ void propagate_aabbs(BVHData &data)
   const int32 *lchildren_ptr = data.m_left_children;
   const int32 *rchildren_ptr = data.m_right_children;
   const int32 *parent_ptr = data.m_parents;
-  const AABB<float32, 3>  *leaf_aabb_ptr = data.m_leaf_aabbs;
+  const AABB< FloatType,NDIMS >  *leaf_aabb_ptr = data.m_leaf_aabbs;
 
-  AABB<float32,3>  *inner_aabb_ptr = data.m_inner_aabbs;
+  AABB<FloatType,NDIMS>  *inner_aabb_ptr = data.m_inner_aabbs;
 
   int32* counters_ptr = axom::allocate<int32>(inner_size);
 
@@ -353,8 +468,9 @@ void propagate_aabbs(BVHData &data)
 
       int32 lchild = lchildren_ptr[current_node];
       int32 rchild = rchildren_ptr[current_node];
+
       // gather the aabbs
-      AABB<float32,3> aabb;
+      AABB< FloatType,NDIMS > aabb;
       if(lchild >= inner_size)
       {
         aabb.include(leaf_aabb_ptr[lchild - inner_size]);
@@ -380,33 +496,35 @@ void propagate_aabbs(BVHData &data)
 
     //printf("There can be only one\n");
 
-  });
+  } );
 
   axom::deallocate(counters_ptr);
   //AABB *inner = data.m_inner_aabbs.get_host_ptr();
   //std::cout<<"Root bounds "<<inner[0]<<"\n";
 }
 
-Vec<float32,4>* emit(BVHData &data)
+template < typename FloatType  >
+Vec< FloatType,4 >* emit( BVHData<FloatType, 3>& data)
 {
   const int inner_size = data.m_inner_size;
 
   const int32 *lchildren_ptr = data.m_left_children;
   const int32 *rchildren_ptr = data.m_right_children;
 
-  const AABB<float32,3>  *leaf_aabb_ptr  = data.m_leaf_aabbs;
-  const AABB<float32,3>  *inner_aabb_ptr = data.m_inner_aabbs;
+  const AABB<FloatType,3>  *leaf_aabb_ptr  = data.m_leaf_aabbs;
+  const AABB<FloatType,3>  *inner_aabb_ptr = data.m_inner_aabbs;
 
-  Vec<float32,4> *flat_ptr = axom::allocate<Vec<float32,4>>(inner_size * 4);;
+  Vec<FloatType,4> *flat_ptr = axom::allocate<Vec<FloatType,4>>(inner_size * 4);
 
-  RAJA::forall<raja_for_policy>(RAJA::RangeSegment(0, inner_size), AXOM_LAMBDA (int32 node)
+  RAJA::forall<raja_for_policy>(
+      RAJA::RangeSegment(0, inner_size), AXOM_LAMBDA (int32 node)
   {
-    Vec<float32,4> vec1;
-    Vec<float32,4> vec2;
-    Vec<float32,4> vec3;
-    Vec<float32,4> vec4;
+    Vec<FloatType,4> vec1;
+    Vec<FloatType,4> vec2;
+    Vec<FloatType,4> vec3;
+    Vec<FloatType,4> vec4;
 
-    AABB<float32,3> l_aabb, r_aabb;
+    AABB<FloatType,3> l_aabb, r_aabb;
 
     int32 lchild = lchildren_ptr[node];
     if(lchild >= inner_size)
@@ -464,6 +582,86 @@ Vec<float32,4>* emit(BVHData &data)
   return flat_ptr;
 }
 
+template < typename FloatType  >
+Vec< FloatType,4 >* emit( BVHData<FloatType, 2>& data)
+{
+  const int inner_size = data.m_inner_size;
+
+  const int32 *lchildren_ptr = data.m_left_children;
+  const int32 *rchildren_ptr = data.m_right_children;
+
+  const AABB<FloatType,2>  *leaf_aabb_ptr  = data.m_leaf_aabbs;
+  const AABB<FloatType,2>  *inner_aabb_ptr = data.m_inner_aabbs;
+
+  Vec<FloatType,4> *flat_ptr =
+      axom::allocate< Vec< FloatType,4> >( inner_size * 4);
+
+  RAJA::forall<raja_for_policy>(
+      RAJA::RangeSegment(0, inner_size), AXOM_LAMBDA (int32 node)
+  {
+    Vec<FloatType,4> vec1;
+    Vec<FloatType,4> vec2;
+    Vec<FloatType,4> vec3;
+    Vec<FloatType,4> vec4;
+
+    AABB<FloatType,2> l_aabb, r_aabb;
+
+    int32 lchild = lchildren_ptr[node];
+    if(lchild >= inner_size)
+    {
+      l_aabb = leaf_aabb_ptr[lchild - inner_size];
+      lchild = -(lchild - inner_size + 1);
+    }
+    else
+    {
+      l_aabb = inner_aabb_ptr[lchild];
+      // do the offset now
+      lchild *= 4;
+    }
+
+    int32 rchild = rchildren_ptr[node];
+    if(rchild >= inner_size)
+    {
+      r_aabb = leaf_aabb_ptr[rchild - inner_size];
+      rchild = -(rchild - inner_size + 1);
+    }
+    else
+    {
+      r_aabb = inner_aabb_ptr[rchild];
+      // do the offset now
+      rchild *= 4;
+    }
+    vec1[0] = l_aabb.m_x.min();
+    vec1[1] = l_aabb.m_y.min();
+    vec1[2] = 0.0;
+
+    vec1[3] = l_aabb.m_x.max();
+    vec2[0] = l_aabb.m_y.max();
+    vec2[1] = 0.0;
+
+    vec2[2] = r_aabb.m_x.min();
+    vec2[3] = r_aabb.m_y.min();
+    vec3[0] = r_aabb.m_z.min();
+
+    vec3[1] = r_aabb.m_x.max();
+    vec3[2] = r_aabb.m_y.max();
+    vec3[3] = 0.0;
+
+    const int32 out_offset = node * 4;
+    flat_ptr[out_offset + 0] = vec1;
+    flat_ptr[out_offset + 1] = vec2;
+    flat_ptr[out_offset + 2] = vec3;
+
+    constexpr int32 isize = sizeof(int32);
+    // memcopy so we do not truncate the ints
+    memcpy(&vec4[0], &lchild, isize);
+    memcpy(&vec4[1], &rchild, isize);
+    flat_ptr[out_offset + 3] = vec4;
+  } );
+
+  return flat_ptr;
+}
+
 BVH
 LinearBVHBuilder::construct(const double *boxes, int size)
 {
@@ -481,7 +679,7 @@ LinearBVHBuilder::construct(const double *boxes, int size)
 
   reorder(ids, aabbs, size);
 
-  BVHData bvh_data;
+  BVHData< float32, 3 > bvh_data;
   bvh_data.allocate(size - 1);
   // the arrays that already exist
   bvh_data.m_leafs  = ids;
