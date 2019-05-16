@@ -16,7 +16,8 @@ point.  It will also return the bounding box of a cell, or the coordinates of a
 cell's lower-left corner.
 
 The following example shows the use of the ``RectangularLattice``.  First, include
-the header and (if desired) declare type aliases.
+the header and (if desired) declare type aliases.  Using ``const int in2d = 2``
+makes a 2D lattice.
 
 .. literalinclude:: ../../examples/spin_introduction.cpp
    :start-after: _rectlattice_header_start

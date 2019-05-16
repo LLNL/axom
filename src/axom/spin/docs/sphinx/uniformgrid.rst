@@ -1,7 +1,7 @@
 UniformGrid
 ^^^^^^^^^^^
 
-The ``UniformGrid`` implements the 
+The ``UniformGrid`` is inspired by and can be used to implement the
 `Cell list <https://en.wikipedia.org/wiki/Cell_lists>`_.
 This data structure tiles a rectilinear region of interest into
 non-intersecting subregions (or "bins") of uniform size.  Each bin gets a

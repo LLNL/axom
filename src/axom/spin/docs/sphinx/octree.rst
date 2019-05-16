@@ -6,9 +6,7 @@ Axom provides an implementation of the octree spatial index.  The
 non-intersecting bounding boxes.  Each level of subdivision divides the bounding
 box of interest along each of its dimensions, so 2D ``SpatialOctree`` objects
 contain four child bounding boxes at each level, while 3D objects contain eight
-children at each level.  The process stops when each a bounding box contains
-less than a specified number of objects or when the tree reaches a specified
-height.
+children at each level.
 
 The ``Octree`` class hierarchy is useful for building custom spatial acceleration
 data structures, such as ``quest::InOutOctree``.
