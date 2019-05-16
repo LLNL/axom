@@ -48,7 +48,7 @@ set(FMT_HEADER_ONLY TRUE PARENT_SCOPE)
 
 install(TARGETS              fmt
         EXPORT               fmt-targets
-        INCLUDES DESTINATION include/fmt)
+        INCLUDES DESTINATION include)
 install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/fmt
         DESTINATION include
         )
