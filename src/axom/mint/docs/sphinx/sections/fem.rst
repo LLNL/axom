@@ -65,12 +65,12 @@ QUAD: *Linear Quadrilateral*
 .. math::
    :nowrap:
 
-   \begin{eqnarray}
+   \begin{array}{r c l c l}
      N_0 &=& (1 - \xi) &\times& (1 - \eta)  \\
      N_1 &=& \xi       &\times& (1 - \eta)  \\
      N_2 &=& \xi       &\times& \eta        \\
      N_3 &=& (1 - \xi) &\times& \eta        \\
-   \end{eqnarray}
+   \end{array}
 
 QUAD9: *Quadratic Quadrilateral*
 """""""""""""""""""""""""""""""""
@@ -82,7 +82,7 @@ QUAD9: *Quadratic Quadrilateral*
 .. math::
   :nowrap:
 
-   \begin{eqnarray}
+   \begin{array}{r c l c l}
      N_0 &=&  (\xi-1)( 2\xi -1) &\times& (\eta-1)(2\eta-1) \\
      N_1 &=&  \xi(2\xi-1)       &\times& (\eta-1)(2\eta-1) \\
      N_2 &=&  \xi(2\xi-1)       &\times& \eta(2\eta-1)     \\
@@ -94,7 +94,7 @@ QUAD9: *Quadratic Quadrilateral*
      N_7 &=&  (\xi-1)( 2\xi -1) &\times& 4\eta(1-\eta)     \\
                                                            \\
      N_8 &=&  4\xi(1-\xi)       &\times& 4\eta(1-\eta)     \\
-  \end{eqnarray}
+  \end{array}
 
 TRIANGLE: *Linear Triangle*
 """""""""""""""""""""""""""""
@@ -106,11 +106,11 @@ TRIANGLE: *Linear Triangle*
 .. math::
    :nowrap:
 
-   \begin{eqnarray}
+   \begin{array}{r c l}
       N_0 & = & 1 - \xi - \eta  \\
       N_1 & = & \xi             \\
       N_2 & = & \eta            \\
-   \end{eqnarray}
+   \end{array}
 
 HEX: *Linear Hexahedron*
 """""""""""""""""""""""""
@@ -122,7 +122,7 @@ HEX: *Linear Hexahedron*
 .. math::
    :nowrap:
 
-   \begin{eqnarray}
+   \begin{array}{r c l c l c l}
       N_0 &=& (1-\xi) &\times& (1-\eta) &\times& (1-\zeta) \\
       N_1 &=& \xi     &\times& (1-\eta) &\times& (1-\zeta) \\
       N_2 &=& \xi     &\times& \eta     &\times& (1-\zeta) \\
@@ -132,7 +132,7 @@ HEX: *Linear Hexahedron*
       N_5 &=& \xi     &\times& (1-\eta) &\times& \zeta     \\
       N_6 &=& \xi     &\times& \eta     &\times& \zeta     \\
       N_7 &=& (1-\xi) &\times& \eta     &\times& \zeta     \\
-   \end{eqnarray}
+   \end{array}
 
 HEX27: *Quadratic Hexahedron*
 """"""""""""""""""""""""""""""
@@ -144,7 +144,7 @@ HEX27: *Quadratic Hexahedron*
 .. math::
   :nowrap:
 
-   \begin{eqnarray}
+   \begin{array}{r c l c l c l}
      N_0 &=& (\xi-1)(2\xi-1)  &\times& (\eta-1)(2\eta-1) &\times& (\zeta-1)(2\zeta-1) \\
      N_1 &=& \xi(2\xi-1)      &\times& (\eta-1)(2\eta-1) &\times& (\zeta-1)(2\zeta-1) \\
      N_2 &=& \xi(2\xi-1)      &\times& \eta(2\eta-1)     &\times& (\zeta-1)(2\zeta-1) \\
@@ -178,7 +178,7 @@ HEX27: *Quadratic Hexahedron*
   N_{25} &=& 4\xi(1-\xi)      &\times& 4\eta(1-\eta)     &\times& \zeta(2\zeta-1)     \\
                                                                                       \\
   N_{26} &=& 4\xi(1-\xi)      &\times& 4\eta(1-\eta)     &\times& 4\zeta(1-\zeta)     \\
-    \end{eqnarray}
+    \end{array}
 
 PYRAMID: *Linear Pyramid*
 """"""""""""""""""""""""""
@@ -190,13 +190,13 @@ PYRAMID: *Linear Pyramid*
 .. math::
    :nowrap:
 
-   \begin{eqnarray}
+   \begin{array}{r c l c l c l}
       N_0 &=& (1-\xi) &\times& (1-\eta) &\times& (1-\zeta) \\
       N_1 &=& \xi     &\times& (1-\eta) &\times& (1-\zeta) \\
       N_2 &=& \xi     &\times& \eta     &\times& (1-\zeta) \\
       N_3 &=& (1-\xi) &\times& \eta     &\times& (1-\zeta) \\
       N_4 &=& \zeta                                        \\
-   \end{eqnarray}
+   \end{array}
 
 PRISM: *Linear Prism/Wedge*
 """"""""""""""""""""""""""""
@@ -208,14 +208,14 @@ PRISM: *Linear Prism/Wedge*
 .. math::
   :nowrap:
 
-   \begin{eqnarray}
+   \begin{array}{r c l c l c l}
      N_0 &=& (1-\xi) - \eta &\times& (1-\zeta) \\
      N_1 &=& \xi            &\times& (1-\zeta) \\
      N_2 &=& \eta           &\times& (1-\zeta) \\
      N_3 &=& (1-\xi) - \eta &\times& \zeta     \\
      N_4 &=& \xi            &\times& \zeta     \\
      N_5 &=& \eta           &\times& \zeta     \\
-  \end{eqnarray}
+  \end{array}
 
 .. _AddALagrangeElement:
 
