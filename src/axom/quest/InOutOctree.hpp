@@ -17,8 +17,7 @@
 #include "axom/slam.hpp"
 #include "axom/primal.hpp"
 #include "axom/mint.hpp"
-
-#include "axom/spin/SpatialOctree.hpp"
+#include "axom/spin.hpp"
 
 #include <vector>        // For InOutLeafData triangle lists
 #include <iterator>      // For back_inserter

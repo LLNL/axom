@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /**
- * \file
+ * \file RangeSet.hpp
  *
  * \brief Basic API for an ordered set of entities in a simulation
  *
@@ -22,14 +22,41 @@ namespace slam
 
 
 /**
+ * \class PositionSet
  * \brief Alias template for an OrderedSet whose elements belong
  * to a contiguous range \f$ \in [0,size) \f$
+ *
  * \tparam P The PositionType
  * \tparam E The ElementType
  * \sa OrderedSet
  */
 template<typename P = slam::PositionType, typename E = slam::ElementType>
-using PositionSet = OrderedSet<P,E>;
+class PositionSet : public OrderedSet<P,E>
+{
+
+  using OrderedSetType =  OrderedSet<P,E> ;
+
+  static const PositionType DEFAULT_SIZE =
+    OrderedSetType::SizePolicyType::DEFAULT_VALUE;
+
+  static const PositionType DEFAULT_OFFSET =
+    OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
+
+  static const PositionType DEFAULT_STRIDE =
+    OrderedSetType::StridePolicyType::DEFAULT_VALUE;
+
+public:
+  using PositionType = typename OrderedSetType::PositionType;
+  using ElementType = typename OrderedSetType::ElementType ;
+
+
+public:
+  PositionSet(PositionType size = DEFAULT_SIZE)
+    : OrderedSetType(size, DEFAULT_OFFSET, DEFAULT_STRIDE) {}
+
+  PositionSet(const typename OrderedSetType::SetBuilder & builder)
+    : OrderedSetType(builder) {}
+};
 
 /**
  * \class GenericRangeSet
@@ -89,8 +116,8 @@ public:
 
 
 /**
- * \brief Alias template for a GenericRangeSet whose elements belong
- * to a contiguous range \f$ \in [lowerIndex,upperIndex) \f$
+ * \class RangeSet
+ * \brief A specialization of GenericRangeSet with stride 1 and no indirection
  *
  * \tparam P The PositionType
  * \tparam E The ElementType
@@ -101,7 +128,35 @@ public:
  * Examples include: signed and unsigned integral types
  */
 template<typename P = slam::PositionType, typename E = slam::ElementType>
-using RangeSet = GenericRangeSet<P,E>;
+class RangeSet : public GenericRangeSet<P,E>
+{
+
+private:
+  using GenericRangeSetType = GenericRangeSet<P,E>;
+
+public:
+  using PositionType = typename GenericRangeSetType::PositionType ;
+  using ElementType = typename GenericRangeSetType::ElementType ;
+private:
+  static const PositionType DEFAULT_SIZE =
+    GenericRangeSetType::SizePolicyType::DEFAULT_VALUE;
+  static const PositionType DEFAULT_OFFSET =
+    GenericRangeSetType::OffsetPolicyType::DEFAULT_VALUE;
+  static const PositionType DEFAULT_STRIDE =
+    GenericRangeSetType::StridePolicyType::DEFAULT_VALUE;
+
+
+public:
+  RangeSet(PositionType size = DEFAULT_SIZE)
+    : GenericRangeSetType(size) {}
+
+  RangeSet(PositionType lowerIndex, PositionType upperIndex)
+    : GenericRangeSetType(lowerIndex, upperIndex) {}
+
+  RangeSet(const typename GenericRangeSetType::SetBuilder & builder) 
+    : GenericRangeSetType(builder) {}
+
+};
 
 
 } // end namespace slam

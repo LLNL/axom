@@ -39,7 +39,9 @@ public:
   using SetPosition = slam::PositionType;
 
 public:
-  //MapBase(){};
+  MapBase() = default;
+  MapBase(const MapBase&) = default;
+
   virtual ~MapBase() {};
 
   /**

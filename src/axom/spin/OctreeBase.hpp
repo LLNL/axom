@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /**
- * \file
+ * \file OctreeBase.hpp
  * \brief Defines templated OctreeBase class and its inner class BlockIndex
  */
 
@@ -12,7 +12,6 @@
 #define OCTREE_BASE__HXX_
 
 #include "axom/config.hpp"
-
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
 #include "axom/primal.hpp"
@@ -144,9 +143,6 @@ public:
           slam::OrderedSet<CoordType, CoordType, MAX_LEVEL_SIZE>;
 
   using OctreeLevelType = OctreeLevel<DIM, BlockDataType>;
-  using LevelMapIterator = typename OctreeLevelType::BlockIter;
-  using LevelMapCIterator = typename OctreeLevelType::ConstBlockIter;
-
   using LeafIndicesLevelMap = slam::Map<slam::Set<CoordType,CoordType>,
                                         OctreeLevelType*>;
 
@@ -170,11 +166,9 @@ public:
 
     enum
     {
-      /** The number of children of an octree block (\f$ 2^{DIM} \f$ in
-         dimension DIM ) */
+      /// The number of children of an octree block (2^D in dimension D)
       NUM_CHILDREN = 1 << DIM,
-      /** The number of face neighbors of an octree block (\f$ 2 * {DIM} \f$ in
-         dimension DIM ) */
+      /// The number of face neighbors of an octree block (2*D in dimension D)
       NUM_FACE_NEIGHBORS = 2 * DIM
     };
 private:
@@ -463,16 +457,11 @@ private:
     MAX_SPARSE64_LEV = 64 / DIM
   };
 
-  using DenseOctLevType =
-          DenseOctreeLevel<DIM, BlockDataType, axom::uint16>;
-  using Sparse16OctLevType =
-          SparseOctreeLevel<DIM, BlockDataType,axom::uint16>;
-  using Sparse32OctLevType =
-          SparseOctreeLevel<DIM, BlockDataType,axom::uint32>;
-  using Sparse64OctLevType =
-          SparseOctreeLevel<DIM, BlockDataType,axom::uint64>;
-  using SparsePtOctLevType =
-          SparseOctreeLevel<DIM, BlockDataType,GridPt>;
+  using DenseOctLevType = DenseOctreeLevel<DIM,BlockDataType,axom::uint16>;
+  using Sparse16OctLevType = SparseOctreeLevel<DIM,BlockDataType,axom::uint16>;
+  using Sparse32OctLevType = SparseOctreeLevel<DIM,BlockDataType,axom::uint32>;
+  using Sparse64OctLevType = SparseOctreeLevel<DIM,BlockDataType,axom::uint64>;
+  using SparsePtOctLevType = SparseOctreeLevel<DIM,BlockDataType,GridPt>;
 
   using DenseOctLevPtr = DenseOctLevType*;
   using Sparse16OctLevPtr = Sparse16OctLevType*;

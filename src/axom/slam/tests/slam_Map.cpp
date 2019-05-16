@@ -53,25 +53,25 @@ bool constructAndTestMap()
 {
   SetType s(MAX_SET_SIZE);
 
-  SLIC_INFO("\nCreating set of size " << s.size() );
+  SLIC_INFO("Creating set of size " << s.size() );
 
   EXPECT_EQ(s.size(), MAX_SET_SIZE);
   EXPECT_TRUE(s.isValid());
 
-  SLIC_INFO("\nCreating "<< slam::util::TypeToString<T>::to_string()
+  SLIC_INFO("Creating "<< slam::util::TypeToString<T>::to_string()
                          << " map on the set ");
 
   slam::Map<SetBase, T> m(&s);
   EXPECT_TRUE(m.isValid());
 
-  SLIC_INFO( "\nSetting the elements.");
+  SLIC_INFO( "Setting the elements.");
   double multFac = 1.0001;
   for(auto idx = 0 ; idx < m.size() ; ++idx)
   {
     m[idx] = static_cast<T>(idx * multFac);
   }
 
-  SLIC_INFO("\nChecking the elements.");
+  SLIC_INFO("Checking the elements.");
   for(auto idx = 0 ; idx < m.size() ; ++idx)
   {
     EXPECT_EQ( m[idx], static_cast<T>(idx * multFac) );
