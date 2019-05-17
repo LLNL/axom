@@ -10,10 +10,6 @@
 ## Get Axom version information
 message(STATUS "Configuring Axom version ${AXOM_VERSION_FULL}")
 
-if( (CMAKE_CXX_STANDARD EQUAL 11) OR (CMAKE_CXX_STANDARD EQUAL 14) )
-    set(AXOM_USE_CXX11 TRUE)
-endif()
-
 
 ## Add a definition to the generated config file for each library dependency
 ## (optional and built-in) that we might need to know about in the code. We
@@ -29,18 +25,6 @@ endforeach()
 if(ENABLE_MPI AND ENABLE_FORTRAN)
   if(MPI_Fortran_USE_MPIF)
     set(AXOM_USE_MPIF_HEADER TRUE)
-  endif()
-endif()
-
-
-# If Sparsehash was found, AXOM_USE_SPARSEHASH was set above in the TPL_DEPS
-# loop.  If not, we must use a standard container--std::unordered_map when
-# using C++11, std::map otherwise.  std::map is expected to perform poorly
-# with large amounts of Sidre objects, so it is recommended to make sure
-# Sparsehash is available for non-C++ 11 builds.
-if(NOT AXOM_USE_SPARSEHASH)
-  if(AXOM_USE_CXX11)
-    set(AXOM_USE_STD_UNORDERED_MAP TRUE)
   endif()
 endif()
 

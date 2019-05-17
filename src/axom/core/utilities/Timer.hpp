@@ -18,27 +18,12 @@
 #define TIMER_HPP_
 
 #include "axom/config.hpp"
-#ifdef AXOM_USE_CXX11
-  #include "axom/core/detail/ChronoTimer.hpp"
-#else
-  #ifdef WIN32
-    #include "axom/core/detail/TickCountTimer.hpp"
-  #else
-    #include "axom/core/detail/TimeofdayTimer.hpp"
-  #endif
-#endif
+
+#include "axom/core/detail/ChronoTimer.hpp"
 
 namespace
 {
-#ifdef AXOM_USE_CXX11
 typedef axom::utilities::detail::ChronoTimer HighPrecisionTimer;
-#else
-  #ifdef WIN32
-typedef axom::utilities::detail::TickCountTimer HighPrecisionTimer;
-  #else
-typedef axom::utilities::detail::TimeofdayTimer HighPrecisionTimer;
-  #endif
-#endif
 }
 
 

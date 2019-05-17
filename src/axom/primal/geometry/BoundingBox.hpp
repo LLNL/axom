@@ -8,7 +8,7 @@
 
 #include <limits>
 
-#include "axom/config.hpp"    // defines AXOM_USE_CXX11
+#include "axom/config.hpp"
 
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
@@ -70,39 +70,9 @@ struct ValueRange
   /*! \brief Returns the lowest representable value of type T */
   static T lowest()
   {
-    #ifdef AXOM_USE_CXX11
     return std::numeric_limits< T >::lowest();
-    #else
-    return std::numeric_limits< T >::min();
-    #endif
   }
 };
-
-#ifndef AXOM_USE_CXX11
-/*!
- * \brief Template specialization of ValueRange for float types
- * \note Only necessary for pre-CXX11
- */
-template < >
-struct ValueRange< float >
-{
-  typedef float T;
-  static T highest() { return std::numeric_limits< T >::max(); }
-  static T lowest()  { return -std::numeric_limits< T >::max(); }
-};
-
-/*!
- * \brief Template specialization of ValueRange for double types
- * \note Only necessary for pre-CXX11
- */
-template < >
-struct ValueRange< double >
-{
-  typedef double T;
-  static T highest() { return std::numeric_limits< T >::max(); }
-  static T lowest()  { return -std::numeric_limits< T >::max(); }
-};
-#endif  // AXOM_USE_CXX11
 
 /*!
  * \class

@@ -34,6 +34,7 @@
 /*
  * Platform specific definitions
  */
+#define AXOM_CXX_STD "@BLT_CXX_STD@"
 #cmakedefine AXOM_NO_INT64_T
 #cmakedefine AXOM_USE_MPI3
 
@@ -52,7 +53,6 @@
  */
 #cmakedefine AXOM_USE_CONDUIT
 #cmakedefine AXOM_USE_CUDA
-#cmakedefine AXOM_USE_CXX11
 #cmakedefine AXOM_USE_FMT
 #cmakedefine AXOM_USE_HDF5
 #cmakedefine AXOM_USE_MFEM
@@ -61,7 +61,6 @@
 #cmakedefine AXOM_USE_RAJA
 #cmakedefine AXOM_USE_SCR
 #cmakedefine AXOM_USE_SPARSEHASH
-#cmakedefine AXOM_USE_STD_UNORDERED_MAP
 #cmakedefine AXOM_USE_UMPIRE
 
 /*
@@ -79,7 +78,7 @@
 /*
  * We need to explicitly add some definitions on Windows
  * for math defines (_USE_MATH_DEFINES), and to disambiguate
- *  Windows GDI geometry classes (NOGDI).
+ * Windows GDI geometry classes (NOGDI).
  */
 #ifdef WIN32
 #define _USE_MATH_DEFINES
@@ -97,6 +96,7 @@
 #cmakedefine AXOM_USE_SIDRE
 #cmakedefine AXOM_USE_SLAM
 #cmakedefine AXOM_USE_SLIC
+#cmakedefine AXOM_USE_SPIN
 
 
 /*
