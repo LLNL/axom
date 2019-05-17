@@ -3,9 +3,9 @@
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
-***********************
+=======================
 An introductory example
-***********************
+=======================
 
 This file contains an introductory example to define and traverse a simple quadrilateral
 mesh. The code for this example can be found in
@@ -40,7 +40,8 @@ with slam:
 
 
 Type aliases and variables
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+==========================
+
 
 We begin by defining some type aliases for the Sets, Relations and Maps in our mesh.
 These type aliases would typically be found in a configuration file or in class header
@@ -55,7 +56,7 @@ We use the following types throughout this example:
 
 
 Sets
-""""
+----
 
 Our mesh is defined in terms of two sets: Vertices and Elements, whose entities are
 referenced by integer-valued indices. Since both sets use a contiguous range of indices
@@ -78,7 +79,7 @@ and declare them as:
 For other available set types, see :ref:`set-concept-label`.
 
 Relations
-"""""""""
+---------
 
 We also have relations describing the incidences between the mesh vertices and elements.
 
@@ -111,7 +112,7 @@ We declare them as:
 For other available set types, see :ref:`relation-concept-label`.
 
 Maps
-""""
+----
 
 Finally, we have some maps that attach data to our sets.
 
@@ -132,13 +133,13 @@ It is declared as:
 
 
 Constructing the mesh
-^^^^^^^^^^^^^^^^^^^^^
+=====================
 
 This example uses a very simple fixed mesh, which is assumed to not change after it has
 been initialized.
 
 Sets
-""""
+----
 
 The sets are created using a constructor that takes the number of elements.
 
@@ -160,7 +161,7 @@ for ``elems``).
 
 
 Relations
-"""""""""
+---------
 
 The relations are constructed by binding their associated sets and arrays of data to the
 relation instance. In this example, we use an internal helper class ``RelationBuilder``.
@@ -192,7 +193,7 @@ See :ref:`setup-label` for more details about Slam's ``Builder`` classes for set
 relations and maps.
 
 Maps
-""""
+----
 
 We define the positions of the mesh vertices as a ``Map`` on the ``verts`` set.
 For this example, we set the first vertex to lie at the origin, and the remaining
@@ -205,13 +206,13 @@ vertices line within an annulus around the unit circle.
 
 
 Traversing the mesh
-^^^^^^^^^^^^^^^^^^^
+===================
 
 Now that we've constructed the mesh, we can start traversing the mesh connectivity
 and attaching more fields.
 
 Computing a derived field
-"""""""""""""""""""""""""
+-------------------------
 
 Our first traversal loops through the vertices and computes a derived field on the
 position map. For each vertex, we compute its distance to the origin.
@@ -222,7 +223,7 @@ position map. For each vertex, we compute its distance to the origin.
    :language: C++
 
 Computing element centroids
-"""""""""""""""""""""""""""
+---------------------------
 
 Our next example uses element-to-vertex boundary relation to compute the
 *centroids* of each element as the average of its vertex positions.
@@ -239,7 +240,7 @@ As such, we can use all functions in the Set API on this return type, e.g. ``siz
 and the subscript operator.
 
 Outputting mesh to disk
-"""""""""""""""""""""""
+-----------------------
 
 As a final example, we highlight several different ways to iterate through the
 mesh's Sets, Relations and Maps as we output the mesh to disk (in the ``vtk`` format).
