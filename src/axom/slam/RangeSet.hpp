@@ -33,7 +33,11 @@ namespace slam
 template<typename P = slam::PositionType, typename E = slam::ElementType>
 class PositionSet : public OrderedSet<P,E>
 {
+public:
+  using PositionType = P;
+  using ElementType = E;
 
+private:
   using OrderedSetType =  OrderedSet<P,E>;
 
   static const PositionType DEFAULT_SIZE =
@@ -44,11 +48,6 @@ class PositionSet : public OrderedSet<P,E>
 
   static const PositionType DEFAULT_STRIDE =
     OrderedSetType::StridePolicyType::DEFAULT_VALUE;
-
-public:
-  using PositionType = typename OrderedSetType::PositionType;
-  using ElementType = typename OrderedSetType::ElementType;
-
 
 public:
   PositionSet(PositionType size = DEFAULT_SIZE)
@@ -130,13 +129,13 @@ public:
 template<typename P = slam::PositionType, typename E = slam::ElementType>
 class RangeSet : public GenericRangeSet<P,E>
 {
+public:
+  using PositionType = P;
+  using ElementType = E;
 
 private:
   using GenericRangeSetType = GenericRangeSet<P,E>;
 
-public:
-  using PositionType = typename GenericRangeSetType::PositionType;
-  using ElementType = typename GenericRangeSetType::ElementType;
 private:
   static const PositionType DEFAULT_SIZE =
     GenericRangeSetType::SizePolicyType::DEFAULT_VALUE;
@@ -144,7 +143,6 @@ private:
     GenericRangeSetType::OffsetPolicyType::DEFAULT_VALUE;
   static const PositionType DEFAULT_STRIDE =
     GenericRangeSetType::StridePolicyType::DEFAULT_VALUE;
-
 
 public:
   RangeSet(PositionType size = DEFAULT_SIZE)

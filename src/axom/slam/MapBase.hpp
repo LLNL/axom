@@ -39,9 +39,6 @@ public:
   using SetPosition = slam::PositionType;
 
 public:
-  MapBase() = default;
-  MapBase(const MapBase&) = default;
-
   virtual ~MapBase() {};
 
   /**
@@ -58,8 +55,7 @@ public:
 
 private:
   /**
-   * \brief Utility function to verify that the given SetPosition is in a valid
-   * range.
+   * \brief Utility function to verify that a SetPosition is in a valid range.
    */
   virtual void verifyPosition(SetPosition)       const = 0;
 
