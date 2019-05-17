@@ -219,22 +219,23 @@ uint32 *get_mcodes( AABB<FloatType,3> *aabbs,
   return mcodes;
 }
 
-int32* array_counting( const int32 &size,
-                       const int32 &start,
-                       const int32 &step)
+template < typename IntType >
+IntType* array_counting( const IntType& size,
+                         const IntType& start,
+                         const IntType& step)
 {
 
-  int32 *iterator = axom::allocate<int32>(size);
+  IntType *iterator = axom::allocate< IntType >( size );
 
   RAJA::forall<raja_for_policy>(
       RAJA::RangeSegment(0, size), AXOM_LAMBDA(int32 i)
   {
-    iterator[i] = start + i * step;
+    iterator[ i ] = start + i * step;
   } );
 
   return iterator;
-
 }
+
 //
 // reorder and array based on a new set of indices.
 // array   [a,b,c]
@@ -242,23 +243,24 @@ int32* array_counting( const int32 &size,
 // result  [b,a,c]
 //
 template<typename T>
-void reorder(int32 *indices, T *&array, const int32 size)
+void reorder(int32 *indices, T *&array, int32 size)
 {
-  T* temp = axom::allocate<T>(size);
+  T* temp = axom::allocate< T >( size );
 
-  RAJA::forall<raja_for_policy>(RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
+  RAJA::forall<raja_for_policy>(
+      RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
   {
-    int32 in_idx = indices[i];
-    temp[i] = array[in_idx];
-  });
+    int32 in_idx = indices[ i ];
+    temp[ i ]    = array[ in_idx ];
+  } );
 
 
   axom::deallocate(array);
   array = temp;
-
 }
 
-int32* sort_mcodes(uint32 *&mcodes, const int32 size)
+template < typename MCType >
+int32* sort_mcodes( MCType *&mcodes, int32 size)
 {
   int32* iter = array_counting(size, 0, 1);
   // TODO: create custom sort for GPU / CPU
@@ -268,7 +270,7 @@ int32* sort_mcodes(uint32 *&mcodes, const int32 size)
             [=](int32 i1, int32 i2)
             {
               return mcodes[i1] < mcodes[i2];
-            });
+            } );
 
 
   reorder(iter, mcodes, size);
@@ -308,11 +310,11 @@ struct BVHData
 
 };
 
-
-AXOM_HOST_DEVICE int32 delta(const int32 &a,
-                             const int32 &b,
-                             const int32 &inner_size,
-                             const uint32 *mcodes)
+template < typename IntType, typename MCType >
+AXOM_HOST_DEVICE IntType delta( const IntType &a,
+                                const IntType &b,
+                                const IntType &inner_size,
+                                const MCType *mcodes )
 {
   bool tie = false;
   bool out_of_range = (b < 0 || b > inner_size);

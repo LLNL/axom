@@ -58,6 +58,9 @@ set( primal_sources
 
      ## operators
      operators/detail/intersect_impl.cpp
+     
+     ## spatial acceleration
+     spatial_acceleration/linear_bvh/morton_codes.cpp
    )
 
 ################################
