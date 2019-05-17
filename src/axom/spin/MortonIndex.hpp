@@ -17,15 +17,12 @@
 #ifndef MORTON_INDEX_HXX_
 #define MORTON_INDEX_HXX_
 
-#include "axom/config.hpp"    // defines AXOM_USE_CXX11
+#include "axom/config.hpp"
 #include "axom/core/Types.hpp"
 #include "axom/core/Macros.hpp"    // defines AXOM_STATIC_ASSERT
 #include "axom/primal/geometry/Point.hpp"
 
-#ifdef AXOM_USE_CXX11
-    #include <type_traits>
-#endif
-
+#include <type_traits>
 #include <limits>           // for numeric_limits
 
 namespace

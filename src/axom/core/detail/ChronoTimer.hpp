@@ -17,10 +17,6 @@
 #ifndef CHRONO_TIMER_HPP_
 #define CHRONO_TIMER_HPP_
 
-#include "axom/config.hpp"    // defines AXOM_USE_CXX11
-
-#ifdef AXOM_USE_CXX11
-
 #include <chrono>
 
 namespace axom
@@ -94,7 +90,5 @@ private:
 } /* namespace detail */
 } /* namespace utilities */
 } /* namespace axom */
-
-#endif // AXOM_USE_CXX11
 
 #endif // CHRONO_TIMER_HPP_
