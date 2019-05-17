@@ -12,10 +12,6 @@ set(core_headers
     utilities/Utilities.hpp
     utilities/About.hpp
 
-    detail/ChronoTimer.hpp
-    detail/TimeofdayTimer.hpp
-    detail/TickCountTimer.hpp
-
     numerics/internal/matrix_norms.hpp
 
     numerics/Determinants.hpp
