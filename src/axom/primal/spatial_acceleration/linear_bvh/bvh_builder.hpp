@@ -21,16 +21,18 @@ namespace primal
 namespace bvh
 {
 
+template < typename FloatType, int NDIMS >
 struct BVH
 {
-  Vec<float32, 4>  *m_inner_nodes;  // BVH bins including leafs
-  int32            *m_leaf_nodes;   // leaf data
-  AABB<float32,3>   m_bounds;
+  Vec< FloatType, 4 > *m_inner_nodes;  // BVH bins including leafs
+  int32  *m_leaf_nodes;   // leaf data
+  AABB< FloatType, NDIMS > m_bounds;
 
-  BVH()
+  BVH() :
+    m_inner_nodes( nullptr ),
+    m_leaf_nodes( nullptr )
   {
-    m_inner_nodes = nullptr;
-    m_leaf_nodes = nullptr;
+
   }
 
   void free()
@@ -41,18 +43,28 @@ struct BVH
 
   ~BVH()
   {
+
   }
+
 };
 
 class LinearBVHBuilder
 {
 
 public:
-  BVH construct(const double *boxes, int size);
+
+  template < typename FloatType, int NDIMS >
+  BVH< FloatType, NDIMS > construct(const FloatType *boxes, int size);
 
 };
 
-} /* namespace axom */
+} /* namespace bvh    */
 } /* namespace primal */
-} /* namespace bvh */
+} /* namespace axom   */
+
+//------------------------------------------------------------------------------
+//  BVH BUILDINER IMPLEMENTATION
+//------------------------------------------------------------------------------
+#include "axom/primal/spatial_acceleration/linear_bvh/bvh_builder_impl.hpp"
+
 #endif

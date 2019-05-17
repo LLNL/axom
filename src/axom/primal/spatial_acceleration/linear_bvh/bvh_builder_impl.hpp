@@ -3,9 +3,10 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+#ifndef AXOM_PRIMAL_BVH_BUILDER_IMPL_H_
+#define AXOM_PRIMAL_BVH_BUILDER_IMPL_H_
 
-#include "axom/primal/spatial_acceleration/linear_bvh/linear_bvh_builder.hpp"
-
+#include "axom/primal/spatial_acceleration/linear_bvh/aabb.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/math.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/morton_codes.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/policies.hpp"
@@ -23,7 +24,7 @@ namespace bvh
 {
 
 template < typename FloatType >
-void transform_boxes(const double *boxes, AABB<FloatType,3> *aabbs, int32 size)
+void transform_boxes(const FloatType *boxes, AABB<FloatType,3> *aabbs, int32 size)
 {
 
   RAJA::forall<raja_for_policy>(
@@ -49,7 +50,7 @@ void transform_boxes(const double *boxes, AABB<FloatType,3> *aabbs, int32 size)
 }
 
 template < typename FloatType >
-void transform_boxes(const double *boxes, AABB<FloatType,2> *aabbs, int32 size)
+void transform_boxes(const FloatType *boxes, AABB<FloatType,2> *aabbs, int32 size)
 {
 
   RAJA::forall<raja_for_policy>(
@@ -662,15 +663,16 @@ Vec< FloatType,4 >* emit( BVHData<FloatType, 2>& data)
   return flat_ptr;
 }
 
-BVH
-LinearBVHBuilder::construct(const double *boxes, int size)
+template < typename FloatType, int NDIMS >
+BVH< FloatType, NDIMS >
+LinearBVHBuilder::construct( const FloatType *boxes, int size)
 {
   // copy so we don't reorder the input
-  AABB<float32,3> *aabbs = axom::allocate< AABB<float32,3> >(size);
+  AABB<FloatType,NDIMS >* aabbs = axom::allocate< AABB<FloatType,NDIMS> >(size);
   transform_boxes(boxes, aabbs, size);
 
-  BVH bvh;
-  AABB<float32,3> bounds = reduce(aabbs, size);
+  BVH< FloatType, NDIMS > bvh;
+  AABB< FloatType,NDIMS > bounds = reduce(aabbs, size);
   uint32 *mcodes = get_mcodes(aabbs, size, bounds);
 
   // original positions of the sorted morton codes.
@@ -679,31 +681,31 @@ LinearBVHBuilder::construct(const double *boxes, int size)
 
   reorder(ids, aabbs, size);
 
-  BVHData< float32, 3 > bvh_data;
+  BVHData< FloatType, NDIMS > bvh_data;
   bvh_data.allocate(size - 1);
+
   // the arrays that already exist
-  bvh_data.m_leafs  = ids;
-  bvh_data.m_mcodes = mcodes;
+  bvh_data.m_leafs      = ids;
+  bvh_data.m_mcodes     = mcodes;
   bvh_data.m_leaf_aabbs = aabbs;
 
   // assign parent and child pointers
-  build_tree(bvh_data);
+  build_tree( bvh_data );
 
   propagate_aabbs(bvh_data);
 
+  bvh.m_inner_nodes = emit( bvh_data );
+  bvh.m_leaf_nodes  = bvh_data.m_leafs;
+  bvh.m_bounds      = bounds;
 
-  bvh.m_inner_nodes = emit(bvh_data);
-  bvh.m_leaf_nodes = bvh_data.m_leafs;
-  bvh.m_bounds = bounds;
-  for(int i = 0; i < 3; ++i)
-  {
-    std::cout<<bvh.m_inner_nodes[i]<<"\n";
-  }
-  axom::deallocate(mcodes);
-  axom::deallocate(aabbs);
+  axom::deallocate( mcodes) ;
+  axom::deallocate( aabbs );
 
   return bvh;
 }
+
 } /* namespace axom */
 } /* namespace primal */
 } /* namespace bvh */
+
+#endif

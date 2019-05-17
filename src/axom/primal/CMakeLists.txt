@@ -58,9 +58,6 @@ set( primal_sources
 
      ## operators
      operators/detail/intersect_impl.cpp
-
-     ## spatial acceleration
-     spatial_acceleration/BVH.cpp
    )
 
 ################################

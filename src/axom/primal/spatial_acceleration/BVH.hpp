@@ -10,7 +10,7 @@
 #include "axom/core/Macros.hpp"   // for Axom macros
 #include "axom/core/Types.hpp"    // for fixed bitwidth types
 
-#include "axom/primal/spatial_acceleration/linear_bvh/linear_bvh_builder.hpp"
+#include "axom/primal/spatial_acceleration/linear_bvh/bvh_builder.hpp"
 
 // C/C++ includes
 #include <string>  // for std::string
@@ -44,9 +44,20 @@ enum BVHReturnCodes
  * geometric entities to check for a given query.
  *
  */
+template < int NDIMS, typename FloatType = double >
 class BVH
 {
 public:
+
+  AXOM_STATIC_ASSERT_MSG( ( (NDIMS==2) || (NDIMS==3) ),
+                          "The BVH class may be used only in 2D or 3D." );
+  AXOM_STATIC_ASSERT_MSG( std::is_floating_point< FloatType >::value,
+                          "A valid FloatingType must be used for the BVH." );
+
+  /*!
+   * \brief Default constructor. Disabled.
+   */
+  BVH() = delete;
 
   /*!
    * \brief Creates a BVH instance, of specified dimension, over a given set
@@ -77,7 +88,7 @@ public:
    * \pre boxes != nullptr
    * \pre numItems > 0
    */
-  BVH( int dimension, const double* boxes, IndexType numItems );
+  BVH( const FloatType* boxes, IndexType numItems );
 
   /*!
    * \brief Destructor.
@@ -90,27 +101,6 @@ public:
    */
   int build( );
 
-  /*!
-   * \brief Finds the candidate geometric entities that contain a given point.
-   *
-   * \param [out] candidates buffer consisting of the candidate IDs
-   * \param [out] numCandidates the total number of candidates found
-   * \param [in] x the x-coordinate of the query point
-   * \param [in] y the y-coordinate of the query point
-   * \param [in] z the z-coordinate of the query point (needed for 3D only)
-   *
-   * \note The candidates array is allocated internally by the method and
-   *  ownership of the memory is transferred to the caller. Consequently, the
-   *  caller is responsible for properly deallocating the candidates buffer.
-   *
-   * \pre pt != nullptr
-   * \pre candidates == nullptr
-   */
-  void find( IndexType*& candidates,
-             IndexType& numCandidates,
-             double x,
-             double y,
-             double z = 0.0f );
 
   /*!
    * \brief Finds the candidate geometric entities that contain each of the
@@ -138,9 +128,9 @@ public:
   void find( IndexType* offsets,
              IndexType*& candidates,
              IndexType numPts,
-             const double* x,
-             const double* y,
-             const double* z = nullptr );
+             const FloatType* x,
+             const FloatType* y,
+             const FloatType* z = nullptr );
 
   /*!
    * \brief Writes the BVH to the specified VTK file for visualization.
@@ -154,10 +144,9 @@ private:
 /// \name Private Members
 /// @{
 
-  int m_dimension;
   IndexType m_numItems;
-  const double* m_boxes;
-  bvh::BVH m_bvh;
+  const FloatType* m_boxes;
+  bvh::BVH< FloatType,NDIMS > m_bvh;
 
 /// @}
 
@@ -165,7 +154,55 @@ private:
   DISABLE_MOVE_AND_ASSIGNMENT(BVH);
 };
 
+//------------------------------------------------------------------------------
+//  BVH IMPLEMENTATION
+//------------------------------------------------------------------------------
+template< int NDIMS, typename FloatType >
+BVH< NDIMS, FloatType >::BVH( const FloatType* boxes, IndexType numItems ) :
+  m_numItems( numItems ),
+  m_boxes( boxes )
+{
+
+}
+
+//------------------------------------------------------------------------------
+template< int NDIMS, typename FloatType >
+BVH< NDIMS, FloatType >::~BVH()
+{
+  m_bvh.free();
+}
+
+//------------------------------------------------------------------------------
+template< int NDIMS, typename FloatType >
+int BVH< NDIMS, FloatType >::build()
+{
+  bvh::LinearBVHBuilder builder;
+  m_bvh = builder.construct< FloatType, NDIMS >( m_boxes, m_numItems );
+  std::cout << "BOUNDS: " << m_bvh.m_bounds << "\n";
+  return BVH_BUILD_OK;
+}
+
+//------------------------------------------------------------------------------
+template< int NDIMS, typename FloatType >
+void BVH< NDIMS, FloatType >::find( IndexType* offsets,
+                                    IndexType*& candidates,
+                                    IndexType numPts,
+                                    const FloatType* x,
+                                    const FloatType* y,
+                                    const FloatType* z )
+{
+  // TODO: implement this
+}
+
+//------------------------------------------------------------------------------
+template < int NDIMS, typename FloatType >
+void BVH< NDIMS, FloatType >::writeVtkFile( const std::string& fileName ) const
+{
+  // TODO: implement this
+}
+
 } /* namespace primal */
 } /* namespace axom */
+
 
 #endif /* AXOM_PRIMAL_BVH_H_ */

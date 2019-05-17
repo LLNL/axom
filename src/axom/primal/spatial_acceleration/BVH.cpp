@@ -6,7 +6,6 @@
 #include "axom/core/Types.hpp"
 
 #include "axom/primal/spatial_acceleration/BVH.hpp"
-#include "axom/primal/spatial_acceleration/linear_bvh/linear_bvh_builder.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/aabb.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/vec.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/policies.hpp"
@@ -38,7 +37,7 @@ void find_candidates( IndexType* offsets,
                        const double* x,
                        const double* y,
                        const double* z,
-                       bvh::BVH &bvh)
+                       bvh::BVH<float32,3> &bvh)
 {
 
 
@@ -375,7 +374,7 @@ int BVH::build( )
 {
 
   bvh::LinearBVHBuilder builder;
-  m_bvh = builder.construct(m_boxes, m_numItems);
+  m_bvh = builder.construct<float32,3>( static_cast<float32*>(m_boxes), m_numItems);
   std::cout<<"BOUNDS "<<m_bvh.m_bounds<<"\n";
   return BVH_BUILD_OK;
 }
@@ -409,59 +408,59 @@ void BVH::find( IndexType* offsets,
 //------------------------------------------------------------------------------
 void BVH::writeVtkFile( const std::string& fileName ) const
 {
-  int32 numPoints = 0;
-  int32 numBins   = 0;
-
-  std::ostringstream coordinates;
-  std::ostringstream cells;
-  std::ostringstream levels;
-
-  // STEP 0: Write VTK header
-  std::ofstream ofs;
-  ofs.open( fileName.c_str() );
-  ofs << "# vtk DataFile Version 3.0\n";
-  ofs << " BVHTree \n";
-  ofs << "ASCII\n";
-  ofs << "DATASET UNSTRUCTURED_GRID\n";
-
-  // STEP 1: extract root
-  write_bvh_root( m_bvh.m_bounds, numPoints, numBins,
-                  coordinates, cells, levels );
-  SLIC_ASSERT( numPoints == 8 );
-  SLIC_ASSERT( numBins == 1 );
-
-  // STEP 2: recursively traverse the tree write the data
-  constexpr int32 ROOT = 0;
-  write_bvh_bins_recursive( m_bvh.m_inner_nodes, ROOT, 1, numPoints, numBins,
-                            coordinates,
-                            cells,
-                            levels );
-
-  // STEP 3: write nodal coordinates
-  ofs << "POINTS " << numPoints << " double\n";
-  ofs << coordinates.str() << std::endl;
-
-  // STEP 4: write cell connectivity
-  const int nnodes = (m_dimension==2) ? 4 : 8;
-  ofs << "CELLS " << numBins << " " << numBins*(nnodes+1) << std::endl;
-  ofs << cells.str() << std::endl;
-
-  // STEP 5: write cell types
-  ofs << "CELL_TYPES " << numBins << std::endl;
-  const int cellType = (m_dimension==2) ? 9 : 12;
-  for ( int i=0; i < numBins; ++i )
-  {
-    ofs << cellType << std::endl;
-  } // END for all bins
-
-  // STEP 6: write level information
-  ofs << "CELL_DATA " << numBins << std::endl;
-  ofs << "SCALARS level int\n";
-  ofs << "LOOKUP_TABLE default\n";
-  ofs << levels.str() << std::endl;
-  ofs << std::endl;
-
-  ofs.close();
+//  int32 numPoints = 0;
+//  int32 numBins   = 0;
+//
+//  std::ostringstream coordinates;
+//  std::ostringstream cells;
+//  std::ostringstream levels;
+//
+//  // STEP 0: Write VTK header
+//  std::ofstream ofs;
+//  ofs.open( fileName.c_str() );
+//  ofs << "# vtk DataFile Version 3.0\n";
+//  ofs << " BVHTree \n";
+//  ofs << "ASCII\n";
+//  ofs << "DATASET UNSTRUCTURED_GRID\n";
+//
+//  // STEP 1: extract root
+//  write_bvh_root( m_bvh.m_bounds, numPoints, numBins,
+//                  coordinates, cells, levels );
+//  SLIC_ASSERT( numPoints == 8 );
+//  SLIC_ASSERT( numBins == 1 );
+//
+//  // STEP 2: recursively traverse the tree write the data
+//  constexpr int32 ROOT = 0;
+//  write_bvh_bins_recursive( m_bvh.m_inner_nodes, ROOT, 1, numPoints, numBins,
+//                            coordinates,
+//                            cells,
+//                            levels );
+//
+//  // STEP 3: write nodal coordinates
+//  ofs << "POINTS " << numPoints << " double\n";
+//  ofs << coordinates.str() << std::endl;
+//
+//  // STEP 4: write cell connectivity
+//  const int nnodes = (m_dimension==2) ? 4 : 8;
+//  ofs << "CELLS " << numBins << " " << numBins*(nnodes+1) << std::endl;
+//  ofs << cells.str() << std::endl;
+//
+//  // STEP 5: write cell types
+//  ofs << "CELL_TYPES " << numBins << std::endl;
+//  const int cellType = (m_dimension==2) ? 9 : 12;
+//  for ( int i=0; i < numBins; ++i )
+//  {
+//    ofs << cellType << std::endl;
+//  } // END for all bins
+//
+//  // STEP 6: write level information
+//  ofs << "CELL_DATA " << numBins << std::endl;
+//  ofs << "SCALARS level int\n";
+//  ofs << "LOOKUP_TABLE default\n";
+//  ofs << levels.str() << std::endl;
+//  ofs << std::endl;
+//
+//  ofs.close();
 }
 
 } /* namespace primal */
