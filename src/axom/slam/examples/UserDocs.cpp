@@ -90,15 +90,17 @@ struct SimpleQuadMesh
   enum { VertsPerElem = 4};
   using CTStride = slam::policies::CompileTimeStride<PosType,VertsPerElem>;
   using ConstCard = slam::policies::ConstantCardinality<PosType, CTStride>;
-  using ElemToVertRelation =
-          slam::StaticRelation<PosType,ElemType,ConstCard,ArrayIndir,ElemSet,VertSet>;
+  using ElemToVertRelation = slam::StaticRelation<PosType,ElemType,
+                                                  ConstCard,ArrayIndir,
+                                                  ElemSet,VertSet>;
   // _quadmesh_example_bdry_relation_typedefs_end
 
   // _quadmesh_example_cobdry_relation_typedefs_start
   // Type aliases for vertex-to-element coboundary relation
   using VarCard = slam::policies::VariableCardinality<PosType, ArrayIndir>;
-  using VertToElemRelation =
-          slam::StaticRelation<PosType,ElemType,VarCard,ArrayIndir,VertSet, ElemSet>;
+  using VertToElemRelation = slam::StaticRelation<PosType,ElemType,
+                                                  VarCard,ArrayIndir,
+                                                  VertSet,ElemSet>;
   // _quadmesh_example_cobdry_relation_typedefs_end
 
   /// Type alias for position map

@@ -112,8 +112,8 @@ public:
   {
     friend class StaticRelation;
 
-    using BeginsSetBuilder = 
-        typename StaticRelation::CardinalityPolicy::BeginsSet::SetBuilder;
+    using BeginsSetBuilder =
+            typename StaticRelation::CardinalityPolicy::BeginsSet::SetBuilder;
     using IndicesSetBuilder = typename StaticRelation::IndicesSet::SetBuilder;
 
     RelationBuilder()

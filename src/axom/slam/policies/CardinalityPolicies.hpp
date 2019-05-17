@@ -78,10 +78,10 @@ struct ConstantCardinality
 
   // The cardinality of each relational operator is determined by the
   // StridePolicy of the relation
-  using RelationalOperatorSizeType = 
-    typename StrideToSize<BeginsStridePolicy,
-                          ElementType,
-                          BeginsStridePolicy::DEFAULT_VALUE>::SizeType;
+  using RelationalOperatorSizeType =
+          typename StrideToSize<BeginsStridePolicy,
+                                ElementType,
+                                BeginsStridePolicy::DEFAULT_VALUE>::SizeType;
 
 
   ConstantCardinality() : m_begins() {}
@@ -141,7 +141,7 @@ struct VariableCardinality
   using BeginsSizePolicy = RuntimeSize<ElementType>;
   using BeginsOffsetPolicy = ZeroOffset<ElementType>;
   using BeginsStridePolicy = StrideOne<ElementType>;
-  using BeginsIndirectionPolicy = IndirectionPolicy ;
+  using BeginsIndirectionPolicy = IndirectionPolicy;
 
   // runtime size (fromSet.size()), striding from template parameter, no offset
   using BeginsSet = OrderedSet<ElementType,ElementType,
@@ -155,7 +155,7 @@ struct VariableCardinality
   // StridePolicy of the relation
   using RelationalOperatorSizeType = BeginsSizePolicy;
 
-  using IndirectionBufferType= typename IndirectionPolicy::IndirectionBufferType;
+  using IndirectionBufferType=typename IndirectionPolicy::IndirectionBufferType;
 
   VariableCardinality() : m_begins() {}
   VariableCardinality(BeginsSet begins) : m_begins(begins) {}

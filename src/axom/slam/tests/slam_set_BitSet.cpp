@@ -216,7 +216,7 @@ TEST_P(SlamBitSet, iterator)
   const int NBITS = GetParam();
   SLIC_INFO("Testing bitset iterator interface with " << NBITS << " bits");
 
-  using Index = slam::BitSet::Index ;
+  using Index = slam::BitSet::Index;
   const Index STRIDE = 5;
   const Index OFFSET = 2;
 

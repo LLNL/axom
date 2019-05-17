@@ -92,7 +92,7 @@ TEST(core_fileUtilities,changeCWD_smoke)
   EXPECT_EQ(0, rc);
   std::cout<<"[Updated cwd]: '" << fs::getCWD() <<"'" << std::endl;
 
-  // Note: newCWD might contain symbolic links, 
+  // Note: newCWD might contain symbolic links,
   // so don't directly compare newCWD and getCWD()
   if(origCWD != newCWD)
   {
@@ -102,8 +102,8 @@ TEST(core_fileUtilities,changeCWD_smoke)
   // Change back to original directory
   rc = fs::changeCWD(origCWD);
   EXPECT_EQ(0, rc);
-  
+
   EXPECT_EQ(origCWD, fs::getCWD() );
   std::cout<<"[cwd after change]: '" << fs::getCWD() <<"'" << std::endl;
- 
+
 }

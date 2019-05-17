@@ -59,7 +59,7 @@ bool constructAndTestMap()
   EXPECT_TRUE(s.isValid());
 
   SLIC_INFO("Creating "<< slam::util::TypeToString<T>::to_string()
-                         << " map on the set ");
+                       << " map on the set ");
 
   slam::Map<BaseSet, T> m(&s);
   EXPECT_TRUE(m.isValid());

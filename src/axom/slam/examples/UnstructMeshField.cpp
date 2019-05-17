@@ -517,7 +517,7 @@ int main(int argc, char** argv)
   else
   {
     SLIC_WARNING("Usage: 'slam_unstructMesh_ex <data_directory>'");
-    
+
 #ifdef AXOM_DATA_DIR
     namespace fs = axom::utilities::filesystem;
     dataDir = fs::joinPath(AXOM_DATA_DIR, "slam");

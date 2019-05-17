@@ -34,7 +34,7 @@ template<typename P = slam::PositionType, typename E = slam::ElementType>
 class PositionSet : public OrderedSet<P,E>
 {
 
-  using OrderedSetType =  OrderedSet<P,E> ;
+  using OrderedSetType =  OrderedSet<P,E>;
 
   static const PositionType DEFAULT_SIZE =
     OrderedSetType::SizePolicyType::DEFAULT_VALUE;
@@ -47,7 +47,7 @@ class PositionSet : public OrderedSet<P,E>
 
 public:
   using PositionType = typename OrderedSetType::PositionType;
-  using ElementType = typename OrderedSetType::ElementType ;
+  using ElementType = typename OrderedSetType::ElementType;
 
 
 public:
@@ -135,8 +135,8 @@ private:
   using GenericRangeSetType = GenericRangeSet<P,E>;
 
 public:
-  using PositionType = typename GenericRangeSetType::PositionType ;
-  using ElementType = typename GenericRangeSetType::ElementType ;
+  using PositionType = typename GenericRangeSetType::PositionType;
+  using ElementType = typename GenericRangeSetType::ElementType;
 private:
   static const PositionType DEFAULT_SIZE =
     GenericRangeSetType::SizePolicyType::DEFAULT_VALUE;
@@ -153,7 +153,7 @@ public:
   RangeSet(PositionType lowerIndex, PositionType upperIndex)
     : GenericRangeSetType(lowerIndex, upperIndex) {}
 
-  RangeSet(const typename GenericRangeSetType::SetBuilder & builder) 
+  RangeSet(const typename GenericRangeSetType::SetBuilder & builder)
     : GenericRangeSetType(builder) {}
 
 };

@@ -36,7 +36,7 @@ protected:
     const std::string fileName = "sphere.stl";
     meshfile = fs::joinPath(DATA_DIR, fileName);
 #else
-    FAIL() << "quest_inout_interface test requires AXOM_DATA_DIR to be defined");
+    FAIL() << "quest_inout_interface test requires AXOM_DATA_DIR";
 #endif
   }
 
