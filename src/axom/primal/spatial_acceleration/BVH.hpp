@@ -11,9 +11,12 @@
 #include "axom/core/Types.hpp"    // for fixed bitwidth types
 
 #include "axom/primal/spatial_acceleration/linear_bvh/bvh_builder.hpp"
+#include "axom/primal/spatial_acceleration/linear_bvh/bvh_vtkio.hpp"
 
 // C/C++ includes
-#include <string>  // for std::string
+#include <fstream>  // for std::ofstream
+#include <sstream>  // for std::ostringstream
+#include <string>   // for std::string
 
 namespace axom
 {
@@ -28,6 +31,7 @@ enum BVHReturnCodes
   BVH_BUILD_FAILED=-1, //!< indicates that generation of the BVH failed
   BVH_BUILD_OK,        //!< indicates that the BVH was generated successfully
 };
+
 
 /*!
  * \class BVH
@@ -198,7 +202,55 @@ void BVH< NDIMS, FloatType >::find( IndexType* offsets,
 template < int NDIMS, typename FloatType >
 void BVH< NDIMS, FloatType >::writeVtkFile( const std::string& fileName ) const
 {
-  // TODO: implement this
+  std::ostringstream nodes;
+  std::ostringstream cells;
+  std::ostringstream levels;
+
+  // STEP 0: Write VTK header
+  std::ofstream ofs;
+  ofs.open( fileName.c_str() );
+  ofs << "# vtk DataFile Version 3.0\n";
+  ofs << " BVHTree \n";
+  ofs << "ASCII\n";
+  ofs << "DATASET UNSTRUCTURED_GRID\n";
+
+  // STEP 1: write root
+  int32 numPoints = 0;
+  int32 numBins   = 0;
+  bvh::write_root( m_bvh.m_bounds, numPoints, numBins,nodes,cells,levels );
+
+
+  // STEP 2: traverse the BVH and dump each bin
+  constexpr int32 ROOT = 0;
+  bvh::write_recursive< FloatType, NDIMS >(
+      m_bvh.m_inner_nodes, ROOT, 1, numPoints, numBins, nodes, cells, levels );
+
+  // STEP 3: write nodes
+  ofs << "POINTS " << numPoints << " double\n";
+  ofs << nodes.str() << std::endl;
+
+  // STEP 4: write cells
+  const int32 nnodes = (NDIMS==2) ? 4 : 8;
+  ofs << "CELLS " << numBins << " " << numBins*(nnodes+1) << std::endl;
+  ofs << cells.str() << std::endl;
+
+  // STEP 5: write cell types
+  ofs << "CELL_TYPES " << numBins << std::endl;
+  const int32 cellType = (NDIMS==2) ? 9 : 12;
+  for ( int32 i=0; i < numBins; ++i )
+  {
+    ofs << cellType << std::endl;
+  }
+
+  // STEP 6: dump level information
+  ofs << "CELL_DATA " << numBins << std::endl;
+  ofs << "SCALARS level int\n";
+  ofs << "LOOKUP_TABLE default\n";
+  ofs << levels.str() << std::endl;
+  ofs << std::endl;
+
+  // STEP 7: close file
+  ofs.close();
 }
 
 } /* namespace primal */

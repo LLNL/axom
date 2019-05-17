@@ -160,14 +160,15 @@ uint32 *get_mcodes( AABB<FloatType,2> *aabbs,
   for ( int i = 0; i < 2; ++i )
   {
     inv_extent[ i ] =
-      utilities::isNearlyEqual( extent[i], .0f ) ? 0.f : 1.f / extent[i];
+        utilities::isNearlyEqual< FloatType >( extent[i], .0f ) ?
+            0.f : 1.f / extent[i];
   }
 
   uint32 *mcodes = axom::allocate<uint32>(size);
 
   RAJA::forall<raja_for_policy>(RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
   {
-    const AABB<FloatType,3> &aabb = aabbs[i];
+    const AABB<FloatType,2> &aabb = aabbs[i];
 
     // get the center and normalize it
     FloatType dx = aabb.m_x.center() - min_coord[ 0 ];
@@ -185,7 +186,7 @@ uint32 *get_mcodes( AABB<FloatType,3> *aabbs,
                     int32 size,
                     const AABB< FloatType,3 > &bounds )
 {
-  Vec3f extent, inv_extent, min_coord;
+  Vec< FloatType, 3 > extent, inv_extent, min_coord;
   extent[0] = bounds.m_x.max() - bounds.m_x.min();
   extent[1] = bounds.m_y.max() - bounds.m_y.min();
   extent[2] = bounds.m_z.max() - bounds.m_z.min();
@@ -197,7 +198,8 @@ uint32 *get_mcodes( AABB<FloatType,3> *aabbs,
   for ( int i = 0; i < 3; ++i )
   {
     inv_extent[ i ] =
-      utilities::isNearlyEqual( extent[i], .0f ) ? 0.f : 1.f / extent[i];
+      utilities::isNearlyEqual< FloatType >( extent[i], .0f ) ?
+          0.f : 1.f / extent[i];
   }
 
   uint32 *mcodes = axom::allocate<uint32>(size);
@@ -644,7 +646,7 @@ Vec< FloatType,4 >* emit( BVHData<FloatType, 2>& data)
 
     vec2[2] = r_aabb.m_x.min();
     vec2[3] = r_aabb.m_y.min();
-    vec3[0] = r_aabb.m_z.min();
+    vec3[0] = 0.0;
 
     vec3[1] = r_aabb.m_x.max();
     vec3[2] = r_aabb.m_y.max();
