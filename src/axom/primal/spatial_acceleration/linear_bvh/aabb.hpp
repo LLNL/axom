@@ -41,9 +41,9 @@ class AABB< FloatType, 3 >
 {
 
 public:
-  Range< double > m_x;
-  Range< double > m_y;
-  Range< double > m_z;
+  Range< FloatType > m_x;
+  Range< FloatType > m_y;
+  Range< FloatType > m_z;
 
   AXOM_HOST_DEVICE
   void include(const AABB &other)
@@ -106,8 +106,8 @@ class AABB< FloatType, 2 >
 {
 
 public:
-  Range< double > m_x;
-  Range< double > m_y;
+  Range< FloatType > m_x;
+  Range< FloatType > m_y;
 
 
   AXOM_HOST_DEVICE
