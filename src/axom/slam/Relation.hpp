@@ -29,7 +29,7 @@ class NullSet;
 template<typename SetType>
 struct EmptySetTraits
 {
-  typedef SetType* EmptySetType;
+  using EmptySetType = SetType*;
   static EmptySetType emptySet() { return nullptr; }
 
   template<typename ASetType>
@@ -43,7 +43,7 @@ struct EmptySetTraits
    template<>
    struct EmptySetTraits<Set>
    {
-   typedef Set* EmptySetType;
+   using EmptySetType = Set*;
    static EmptySetType emptySet() {
     static NullSet s_nullSet;
 

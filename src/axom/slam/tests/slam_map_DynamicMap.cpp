@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-/**
+/*
  * \file slam_map_DynamicMap.cpp
  *
  * \brief Unit tests for slam's DynamicMap
@@ -29,8 +29,8 @@ using SetType = slam::DynamicSet<SetPosition, SetElement>;
 
 static const SetPosition MAX_SET_SIZE = 10;
 
-typedef axom::slam::DynamicMap<SetType, int>    IntMap;
-typedef axom::slam::DynamicMap<SetType, double> RealMap;
+using IntMap = slam::DynamicMap<SetType, int>;
+using RealMap = slam::DynamicMap<SetType, double>;
 
 } // end anonymous namespace
 

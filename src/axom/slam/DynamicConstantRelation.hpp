@@ -245,7 +245,7 @@ public:
     // TODO: Fix this!
 
     verifyPosition(fromSetIndex);
-    typedef typename RelationSubset::SetBuilder SetBuilder;
+    using SetBuilder = typename RelationSubset::SetBuilder;
     return SetBuilder()
            //.size( CardinalityPolicy::size(fromSetIndex) )
            .size( m_relationCardinality )
@@ -257,7 +257,7 @@ public:
   RelationSubset operator[](SetPosition fromSetIndex)
   {
     verifyPosition(fromSetIndex);
-    typedef typename RelationSubset::SetBuilder SetBuilder;
+    using SetBuilder = typename RelationSubset::SetBuilder;
     return SetBuilder()
            //.size( CardinalityPolicy::size(fromSetIndex) )
            .size( m_relationCardinality )

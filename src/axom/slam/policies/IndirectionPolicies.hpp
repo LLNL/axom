@@ -12,7 +12,7 @@
  * for a SLAM set, relation or map. A valid indirection policy must support the
  * following interface:
  *   * [required]
- *   * typedef IndirectionResult -- the type of the result of an indirection
+ *   * type alias IndirectionResult -- the type of the result of an indirection
  *      (const/nonconst and ref/nonref)
  *   * indirection() : IntType  -- returns the value of the element after
  *     indirection

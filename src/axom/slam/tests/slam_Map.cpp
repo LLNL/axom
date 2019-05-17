@@ -27,9 +27,9 @@ using SetPosition = slam::PositionType;
 using SetElement = slam::ElementType;
 
 using SetType = slam::RangeSet<SetPosition, SetElement>;
-using SetBase = slam::Set<SetPosition, SetElement>;
-using IntMap = slam::Map<SetBase, int>;
-using RealMap = slam::Map<SetBase, double>;
+using BaseSet = slam::Set<SetPosition, SetElement>;
+using IntMap = slam::Map<BaseSet, int>;
+using RealMap = slam::Map<BaseSet, double>;
 
 static SetPosition const MAX_SET_SIZE = 10;
 
@@ -61,7 +61,7 @@ bool constructAndTestMap()
   SLIC_INFO("Creating "<< slam::util::TypeToString<T>::to_string()
                          << " map on the set ");
 
-  slam::Map<SetBase, T> m(&s);
+  slam::Map<BaseSet, T> m(&s);
   EXPECT_TRUE(m.isValid());
 
   SLIC_INFO( "Setting the elements.");
@@ -160,10 +160,10 @@ void constructAndTestMapWithStride(int stride)
   EXPECT_EQ(s.size(), MAX_SET_SIZE);
   EXPECT_TRUE(s.isValid());
 
-  SLIC_INFO("\nCreating " << axom::slam::util::TypeToString<T>::to_string()
+  SLIC_INFO("\nCreating " << slam::util::TypeToString<T>::to_string()
                           << " map with stride " << stride << " on the set ");
 
-  axom::slam::Map<SetBase, T, StrideType> m(&s, 0, stride);
+  axom::slam::Map<BaseSet, T, StrideType> m(&s, 0, stride);
   EXPECT_TRUE(m.isValid());
 
   EXPECT_EQ(m.stride(), stride);
@@ -219,13 +219,13 @@ TEST(slam_map, iterate)
   EXPECT_TRUE(s.isValid());
 
   SLIC_INFO(
-    "\nCreating "
-    << axom::slam::util::TypeToString<double>::to_string()
-    << " map on the set ");
+    "Creating '"
+    << slam::util::TypeToString<double>::to_string()
+    << "' map on the set ");
   RealMap m(&s);
   EXPECT_TRUE(m.isValid());
 
-  SLIC_INFO("\nSetting the elements.");
+  SLIC_INFO("Setting the elements.");
   double multFac = 1.0001;
   {
     int idx = 0;
@@ -236,7 +236,7 @@ TEST(slam_map, iterate)
     }
   }
 
-  SLIC_INFO("\nChecking the elements by iterator.");
+  SLIC_INFO("Checking the elements by iterator.");
   EXPECT_EQ(RealMap::iterator(0, &m), m.begin());
 
   //iter++ access
@@ -317,7 +317,7 @@ TEST(slam_map, iterate)
 template<typename StrideType>
 void constructAndTestMapIteratorWithStride(int stride)
 {
-  using RealMap = axom::slam::Map<slam::Set<>, double, StrideType>;
+  using RealMap = slam::Map<slam::Set<>, double, StrideType>;
   using MapIterator = typename RealMap::MapIterator;
 
   SetType s(MAX_SET_SIZE);
@@ -328,7 +328,7 @@ void constructAndTestMapIteratorWithStride(int stride)
   EXPECT_TRUE(s.isValid());
 
   SLIC_INFO(
-    "\nCreating double map with stride " << stride << " on the set ");
+    "Creating double map with stride " << stride << " on the set ");
 
 
   RealMap m(&s, 0, stride);
@@ -336,7 +336,7 @@ void constructAndTestMapIteratorWithStride(int stride)
 
   EXPECT_EQ(m.stride(), stride);
 
-  SLIC_INFO("\nSetting the elements using iterator.");
+  SLIC_INFO("Setting the elements using iterator.");
   double multFac = 100.0001;
   double multFac2 = 1.010;
   {
@@ -353,7 +353,7 @@ void constructAndTestMapIteratorWithStride(int stride)
 
   EXPECT_TRUE(m.isValid());
 
-  SLIC_INFO("\nChecking the elements by iterator.");
+  SLIC_INFO("Checking the elements by iterator.");
 
   //iter++ access
   {

@@ -22,8 +22,7 @@ namespace slam
 {
 
 /**
- * \brief Very simple container for fields of a given type DataType with minimal
- *  error checking.
+ * \brief Simple container for fields of type DataType w/ minimal error checking
  *
  * \note We are using concrete instances for int and double in the code below.
  *       This should eventually be replaced with the sidre datastore.
@@ -38,9 +37,9 @@ public:
   using MapType = slam::Map<SetType, DataType>;
   using BufferType = typename MapType::OrderedMap;
 
-  typedef std::map<KeyType, MapType>    DataVecMap;
-  typedef std::map<KeyType, BufferType> DataBufferMap;
-  typedef std::map<KeyType, DataType>   DataAttrMap;
+  using DataVecMap = std::map<KeyType, MapType>;
+  using DataBufferMap =  std::map<KeyType, BufferType>;
+  using DataAttrMap = std::map<KeyType, DataType>;
 
 public:
 

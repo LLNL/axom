@@ -10,9 +10,13 @@
  */
 
 #include "axom/config.hpp"
+#include "axom/slic.hpp"
+
 #include "axom/slam/BitSet.hpp"
 
 #include "gtest/gtest.h"
+
+namespace slam = axom::slam;
 
 namespace
 {
@@ -20,11 +24,11 @@ namespace
 // where every stride^th bit is set, starting with offset \a offset
 // Note: Use only after establishing that the constructor and set(idx)
 //       functions work properly
-axom::slam::BitSet generateBitset(int size, int stride = 1, int offset = 0)
+slam::BitSet generateBitset(int size, int stride = 1, int offset = 0)
 {
-  typedef axom::slam::BitSet::Index Index;
+  using Index = slam::BitSet::Index;
 
-  axom::slam::BitSet bitset(size);
+  slam::BitSet bitset(size);
   for (Index i = offset ; i < size ; i += stride)
   {
     bitset.set(i);
@@ -60,7 +64,7 @@ TEST_P(SlamBitSet, checkInitEmpty)
   const int NBITS = GetParam();
   SLIC_INFO("Testing bitset construction (" << NBITS << " bits)");
 
-  axom::slam::BitSet bitset(NBITS);
+  slam::BitSet bitset(NBITS);
 
   EXPECT_TRUE(bitset.isValid());
   EXPECT_EQ(NBITS, bitset.size());
@@ -78,7 +82,7 @@ TEST_P(SlamBitSet, setClearFlipAllBits)
   const int NBITS = GetParam();
   SLIC_INFO("Testing bitset set, clear and flip (" << NBITS << " bits)");
 
-  axom::slam::BitSet bitset(NBITS);
+  slam::BitSet bitset(NBITS);
 
   // count should be 0
   EXPECT_EQ(0, bitset.count());
@@ -113,7 +117,7 @@ TEST_P(SlamBitSet, setAndTestIndividualBits)
 
   const int STRIDE = 5;
 
-  axom::slam::BitSet bitset(NBITS);
+  slam::BitSet bitset(NBITS);
 
   int nSetBits = 0;
   for (int i = 0 ; i < NBITS ; i += STRIDE)
@@ -138,7 +142,7 @@ TEST_P(SlamBitSet, flipAndTestIndividualBits)
   int const NBITS = GetParam();
   SLIC_INFO("Testing bitset flip for individual bits (" << NBITS << " bits)");
 
-  axom::slam::BitSet bitset(NBITS);
+  slam::BitSet bitset(NBITS);
 
   // Set fizzbuzz bits
   const int STRIDE1 = 3;
@@ -177,7 +181,7 @@ TEST_P(SlamBitSet, flipAndTestIndividualBits)
 
 TEST_P(SlamBitSet, copyAssign)
 {
-  typedef axom::slam::BitSet::Index Index;
+  using Index = slam::BitSet::Index;
   const int NBITS = GetParam();
   const Index STRIDE = 5;
   const Index OFFSET = 2;
@@ -185,12 +189,12 @@ TEST_P(SlamBitSet, copyAssign)
   SLIC_INFO("Testing bitset copy and assignment (" << NBITS << " bits)");
 
   // Construct the first bitset and check validity
-  axom::slam::BitSet bitset1 = generateBitset(NBITS, STRIDE, OFFSET);
+  slam::BitSet bitset1 = generateBitset(NBITS, STRIDE, OFFSET);
   EXPECT_TRUE(bitset1.isValid());
   EXPECT_EQ(NBITS, bitset1.size());
 
   // Test copy constructor and check validity
-  axom::slam::BitSet bitset2(bitset1);
+  slam::BitSet bitset2(bitset1);
   EXPECT_TRUE(bitset2.isValid());
 
   EXPECT_EQ(bitset1.size(), bitset2.size());
@@ -198,7 +202,7 @@ TEST_P(SlamBitSet, copyAssign)
   EXPECT_EQ(bitset1, bitset2);
 
   // Test the assignment operator and check validity
-  axom::slam::BitSet bitset3(NBITS);
+  slam::BitSet bitset3(NBITS);
   EXPECT_EQ(bitset1.size(), bitset3.size());
 
   bitset3 = bitset1;
@@ -212,12 +216,12 @@ TEST_P(SlamBitSet, iterator)
   const int NBITS = GetParam();
   SLIC_INFO("Testing bitset iterator interface with " << NBITS << " bits");
 
-  typedef axom::slam::BitSet::Index Index;
+  using Index = slam::BitSet::Index ;
   const Index STRIDE = 5;
   const Index OFFSET = 2;
 
-  const Index npos = axom::slam::BitSet::npos;
-  axom::slam::BitSet bitset = generateBitset(NBITS, STRIDE, OFFSET);
+  const Index npos = slam::BitSet::npos;
+  slam::BitSet bitset = generateBitset(NBITS, STRIDE, OFFSET);
 
   if (NBITS < OFFSET)
   {
@@ -230,7 +234,7 @@ TEST_P(SlamBitSet, iterator)
 
     int numFound = 0;
     for (Index idx = startIdx ;
-         idx != axom::slam::BitSet::npos ;
+         idx != slam::BitSet::npos ;
          idx = bitset.find_next(idx))
     {
       EXPECT_EQ(OFFSET, idx % STRIDE);
@@ -246,15 +250,15 @@ TEST_P(SlamBitSet, unionOperator)
   const int NBITS = GetParam();
   SLIC_INFO("Testing bitset union operator (" << NBITS << " bits");
 
-  typedef axom::slam::BitSet::Index Index;
+  using Index = slam::BitSet::Index;
   const Index STRIDE1 = 3;
   const Index STRIDE2 = 5;
 
-  axom::slam::BitSet bitset1 = generateBitset(NBITS, STRIDE1);
-  axom::slam::BitSet bitset2 = generateBitset(NBITS, STRIDE2);
+  slam::BitSet bitset1 = generateBitset(NBITS, STRIDE1);
+  slam::BitSet bitset2 = generateBitset(NBITS, STRIDE2);
 
   // Apply and test union operator
-  axom::slam::BitSet bitset3 = bitset1 | bitset2;
+  slam::BitSet bitset3 = bitset1 | bitset2;
 
   for (int i = 0 ; i < NBITS ; ++i)
   {
@@ -276,15 +280,15 @@ TEST_P(SlamBitSet, intersectOperator)
   const int NBITS = GetParam();
   SLIC_INFO("Testing bitset intersect operator (" << NBITS << " bits");
 
-  typedef axom::slam::BitSet::Index Index;
+  using Index = slam::BitSet::Index;
   const Index STRIDE1 = 3;
   const Index STRIDE2 = 5;
 
-  axom::slam::BitSet bitset1 = generateBitset(NBITS, STRIDE1);
-  axom::slam::BitSet bitset2 = generateBitset(NBITS, STRIDE2);
+  slam::BitSet bitset1 = generateBitset(NBITS, STRIDE1);
+  slam::BitSet bitset2 = generateBitset(NBITS, STRIDE2);
 
   // Apply and test intersection operator
-  axom::slam::BitSet bitset3 = bitset1 & bitset2;
+  slam::BitSet bitset3 = bitset1 & bitset2;
 
   for (int i = 0 ; i < NBITS ; ++i)
   {
@@ -306,15 +310,15 @@ TEST_P(SlamBitSet, xorOperator)
   const int NBITS = GetParam();
   SLIC_INFO("Testing bitset xor operator (" << NBITS << " bits");
 
-  typedef axom::slam::BitSet::Index Index;
+  using Index = slam::BitSet::Index;
   const Index STRIDE1 = 3;
   const Index STRIDE2 = 5;
 
-  axom::slam::BitSet bitset1 = generateBitset(NBITS, STRIDE1);
-  axom::slam::BitSet bitset2 = generateBitset(NBITS, STRIDE2);
+  slam::BitSet bitset1 = generateBitset(NBITS, STRIDE1);
+  slam::BitSet bitset2 = generateBitset(NBITS, STRIDE2);
 
   // Apply and test xor operator
-  axom::slam::BitSet bitset3 = bitset1 ^ bitset2;
+  slam::BitSet bitset3 = bitset1 ^ bitset2;
 
   for (int i = 0 ; i < NBITS ; ++i)
   {
@@ -336,15 +340,15 @@ TEST_P(SlamBitSet, differenceOperator)
   const int NBITS = GetParam();
   SLIC_INFO("Testing bitset difference operator (" << NBITS << " bits");
 
-  typedef axom::slam::BitSet::Index Index;
+  using Index = slam::BitSet::Index;
   const Index STRIDE1 = 3;
   const Index STRIDE2 = 5;
 
-  axom::slam::BitSet bitset1 = generateBitset(NBITS, STRIDE1);
-  axom::slam::BitSet bitset2 = generateBitset(NBITS, STRIDE2);
+  slam::BitSet bitset1 = generateBitset(NBITS, STRIDE1);
+  slam::BitSet bitset2 = generateBitset(NBITS, STRIDE2);
 
   // Apply and test difference operator
-  axom::slam::BitSet bitset3 = bitset1 - bitset2;
+  slam::BitSet bitset3 = bitset1 - bitset2;
 
   for (int i = 0 ; i < NBITS ; ++i)
   {
@@ -373,7 +377,7 @@ TEST(slam_set_bitset, settingOutOfRange)
 
   // set a bit on a zero-sized bitset
   {
-    axom::slam::BitSet bitset(0);
+    slam::BitSet bitset(0);
 
 #ifdef AXOM_DEBUG
     SLIC_INFO("** Expecting error ** ");
@@ -387,7 +391,7 @@ TEST(slam_set_bitset, settingOutOfRange)
   // set a bit on a bitset that is less than one word long
   {
     int const NBITS = 20;
-    axom::slam::BitSet bitset(NBITS);
+    slam::BitSet bitset(NBITS);
 
 #ifdef AXOM_DEBUG
     SLIC_INFO("** Expecting error ** ");
@@ -401,7 +405,7 @@ TEST(slam_set_bitset, settingOutOfRange)
   // set a bit on a bitset that is more than one word long
   {
     int const NBITS = 120;
-    axom::slam::BitSet bitset(NBITS);
+    slam::BitSet bitset(NBITS);
 
 #ifdef AXOM_DEBUG
     SLIC_INFO("** Expecting error ** ");
@@ -423,13 +427,13 @@ TEST(slam_set_bitset, moreIterators)
   SLIC_INFO(
     "More testing of BitSet iteration interface (first_bit(), next_bit())");
 
-  typedef axom::slam::BitSet::Index Index;
+  using Index = slam::BitSet::Index;
 
-  const Index npos = axom::slam::BitSet::npos;
+  const Index npos = slam::BitSet::npos;
 
   // Test empty bitset
   {
-    axom::slam::BitSet bitset(0);
+    slam::BitSet bitset(0);
 
     EXPECT_EQ(npos, bitset.find_first());
     EXPECT_EQ(npos, bitset.find_next(npos));
@@ -438,7 +442,7 @@ TEST(slam_set_bitset, moreIterators)
   // Test non-empty bitset with one word
   {
     const int NBITS = 21;
-    axom::slam::BitSet bitset(NBITS);
+    slam::BitSet bitset(NBITS);
     bitset.set(10);
 
     EXPECT_EQ(10, bitset.find_first());
@@ -462,9 +466,6 @@ TEST(slam_set_bitset, moreIterators)
 
 //----------------------------------------------------------------------
 
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
@@ -477,7 +478,7 @@ int main(int argc, char* argv[])
 #endif
 
   // create & initialize test logger. finalized when exiting main scope
-  UnitTestLogger logger;
+  axom::slic::UnitTestLogger logger;
 
   result = RUN_ALL_TESTS();
 

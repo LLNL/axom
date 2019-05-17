@@ -426,7 +426,7 @@ TEST(slam_relation_static_constant,runtime_stride_STLIndirection)
   iterateRelation_range(relation);
 
   // -- Construction using set and relation builder objects
-  typedef StaticConstantRelation_RT_STL::RelationBuilder RelationBuilder;
+  using RelationBuilder =  StaticConstantRelation_RT_STL::RelationBuilder;
   StaticConstantRelation_RT_STL builderRel =
     RelationBuilder()
     .fromSet( &fromSet)

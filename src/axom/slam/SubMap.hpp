@@ -75,7 +75,7 @@ public:
 
   using SubsetBuilder = typename SubsetType::SetBuilder;
 
-//iterator typedef
+  //iterator type aliases
   class SubMapIterator;
   using const_iterator = SubMapIterator;
   using const_iterator_pair = std::pair<const_iterator, const_iterator>;

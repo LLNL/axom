@@ -29,7 +29,7 @@ namespace policies
 template<typename StridePolicyType, typename IntType, int VAL = 1>
 struct StrideToSize
 {
-  typedef CompileTimeSize<IntType, VAL> SizeType;
+  using SizeType = CompileTimeSize<IntType, VAL>;
 };
 
 /**
@@ -38,7 +38,7 @@ struct StrideToSize
 template<typename IntType>
 struct StrideToSize < RuntimeStride<IntType>, IntType >
 {
-  typedef RuntimeSize<IntType> SizeType;
+  using SizeType = RuntimeSize<IntType>;
 };
 
 /**
@@ -47,7 +47,7 @@ struct StrideToSize < RuntimeStride<IntType>, IntType >
 template<typename IntType, int VAL>
 struct StrideToSize< CompileTimeStride<IntType, IntType(VAL)>, IntType, VAL >
 {
-  typedef CompileTimeSize<IntType, IntType(VAL)> SizeType;
+  using SizeType = CompileTimeSize<IntType, IntType(VAL)>;
 };
 
 /**
@@ -56,7 +56,7 @@ struct StrideToSize< CompileTimeStride<IntType, IntType(VAL)>, IntType, VAL >
 template<typename IntType>
 struct StrideToSize< StrideOne<IntType>, IntType >
 {
-  typedef CompileTimeSize<IntType, StrideOne<IntType>::DEFAULT_VALUE > SizeType;
+  using SizeType = CompileTimeSize<IntType, StrideOne<IntType>::DEFAULT_VALUE >;
 };
 
 

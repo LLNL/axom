@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-/**
+/*
  * \file slam_AccessingRelationDataInMap.cpp
  *
  * \brief This file tests Sets, Relations and Maps working together.
@@ -161,8 +161,6 @@ TEST(slam_set_relation_map,access_pattern)
 
 
 //----------------------------------------------------------------------
-//----------------------------------------------------------------------
-#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])

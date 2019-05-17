@@ -112,9 +112,9 @@ public:
   {
     friend class StaticRelation;
 
-    typedef typename StaticRelation::CardinalityPolicy::BeginsSet::
-      SetBuilder BeginsSetBuilder;
-    typedef typename StaticRelation::IndicesSet::SetBuilder IndicesSetBuilder;
+    using BeginsSetBuilder = 
+        typename StaticRelation::CardinalityPolicy::BeginsSet::SetBuilder;
+    using IndicesSetBuilder = typename StaticRelation::IndicesSet::SetBuilder;
 
     RelationBuilder()
       : m_fromSet( EmptySetTraits<FromSetType>::emptySet() ),
@@ -167,7 +167,7 @@ public:
   {
     SLIC_ASSERT( m_relationIndices.isValid(true) );
 
-    typedef typename RelationSubset::SetBuilder SetBuilder;
+    using SetBuilder = typename RelationSubset::SetBuilder;
     return SetBuilder()
            .size( CardinalityPolicy::size( fromSetInd ) )
            .offset ( CardinalityPolicy::offset( fromSetInd ))
@@ -179,7 +179,7 @@ public:
   {
     SLIC_ASSERT( m_relationIndices.isValid(true) );
 
-    typedef typename RelationSubset::SetBuilder SetBuilder;
+    using SetBuilder = typename RelationSubset::SetBuilder;
     return SetBuilder()
            .size( CardinalityPolicy::size( fromSetInd ) )
            .offset ( CardinalityPolicy::offset( fromSetInd ))

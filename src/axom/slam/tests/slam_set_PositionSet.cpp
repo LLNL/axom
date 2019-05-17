@@ -79,8 +79,7 @@ TEST(slam_set_positionset,construct_set_builder)
 {
   SLIC_INFO("Testing construction of PositionSets using SetBuilders");
 
-  typedef SetType::SetBuilder SetBuilder;
-
+  using SetBuilder = SetType::SetBuilder;
   SetBuilder builder = SetBuilder()
                        .size( MAX_SET_SIZE );
 

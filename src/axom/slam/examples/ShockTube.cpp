@@ -272,7 +272,7 @@ void CreateShockTubeMesh(ShockTubeMesh* mesh)
 
   // construct the element subsets
   ShockTubeMesh::PositionType numElems = mesh->elems.size();
-  typedef ShockTubeMesh::ElemSubset::SetBuilder ElemSubsetBuilder;
+  using ElemSubsetBuilder = ShockTubeMesh::ElemSubset::SetBuilder;
   mesh->inFlowElems    = ElemSubsetBuilder()
                          .range(0,1)
                          .parent( &mesh->elems);
@@ -293,7 +293,7 @@ void CreateShockTubeMesh(ShockTubeMesh* mesh)
   //       -- no storage should be necessary for regular grid neighbors
   //       For now, we use explicitly storage for the relation data...
 
-  typedef ShockTubeMesh::IndexVec IndexVec;
+  using IndexVec = ShockTubeMesh::IndexVec;
 
   /// Setup the FaceToElem relation
   IndexVec& feRelVec = intsRegistry
@@ -342,8 +342,8 @@ void CreateShockTubeMesh(ShockTubeMesh* mesh)
  *************************************************************************/
 void InitializeShockTube(ShockTubeMesh const& mesh)
 {
-  typedef ShockTubeMesh::IndexType IndexType;
-  typedef ShockTubeMesh::RangeSet RangeSet;
+  using IndexType = ShockTubeMesh::IndexType;
+  using RangeSet = ShockTubeMesh::RangeSet;
 
   // Create element centered fields
   RealField& mass      = realsRegistry.addField("mass", &mesh.elems);
@@ -418,7 +418,7 @@ void InitializeShockTube(ShockTubeMesh const& mesh)
  */
 void ComputeFaceInfo(ShockTubeMesh const& mesh)
 {
-  typedef ShockTubeMesh::IndexType IndexType;
+  using IndexType = ShockTubeMesh::IndexType;
 
   // Face fields
   RealField & F0 = realsRegistry.getField("F0");
@@ -562,7 +562,7 @@ void dumpData(ShockTubeMesh const& mesh)
   static const ShockTubeMesh::PositionType MAX_ELEM_DUMP = 20;
   const int maxDumpPerSide = std::min(mesh.elems.size(), MAX_ELEM_DUMP) / 2;
 
-  typedef ShockTubeMesh::ElemSubset::SetBuilder ElemSubsetBuilder;
+  using ElemSubsetBuilder = ShockTubeMesh::ElemSubset::SetBuilder;
   ShockTubeMesh::ElemSubset begSet, endSet;
   begSet = ElemSubsetBuilder()
            .parent(&mesh.elems)

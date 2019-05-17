@@ -149,11 +149,11 @@ public:
   using ZoneNodeIterator = ZoneToNodeRelation::RelationConstIterator;
 
   /// types for maps
-  using SetBase = axom::slam::Set<PositionType, ElementType>;
-  using NodalPositions = slam::Map< SetBase, Point >;
-  using ZonalPositions = slam::Map< SetBase, Point >;
-  using NodeField = slam::Map< SetBase, DataType >;
-  using ZoneField = slam::Map< SetBase, DataType >;
+  using BaseSet = axom::slam::Set<PositionType, ElementType>;
+  using NodalPositions = slam::Map< BaseSet, Point >;
+  using ZonalPositions = slam::Map< BaseSet, Point >;
+  using NodeField = slam::Map< BaseSet, DataType >;
+  using ZoneField = slam::Map< BaseSet, DataType >;
 
 public:
   /** \brief Simple accessor for the number of nodes in the mesh  */

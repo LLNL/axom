@@ -86,7 +86,7 @@ TEST(slam_range_set,set_builder)
 {
   SLIC_INFO("Testing construction RangeSets using SetBuilders");
 
-  typedef SetType::SetBuilder SetBuilder;
+  using SetBuilder = SetType::SetBuilder;
 
 
   // Empty set, with and without offset
@@ -197,7 +197,7 @@ TEST(slam_range_set,iterate)
   {
     std::stringstream sstr;
 
-    typedef SetType::iterator SetIterator;
+    using SetIterator = SetType::iterator;
 
     EXPECT_EQ(SetIterator(s.offset(), s), s.begin());
 
