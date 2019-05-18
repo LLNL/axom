@@ -182,6 +182,54 @@ void generate_aabbs_and_centroids3d( const double* origin,
   EXPECT_TRUE( zc != nullptr );
 }
 
+//------------------------------------------------------------------------------
+template < typename FloatType >
+void check_build_bvh2d( )
+{
+  constexpr int NUM_BOXES = 2;
+  constexpr int NDIMS     = 2;
+  FloatType boxes[ ]      = { 0., 0., 1., 1.,
+                              1., 1., 2., 2. };
+
+  primal::BVH< NDIMS, FloatType > bvh( boxes, NUM_BOXES );
+  bvh.build( );
+
+  FloatType lo[ NDIMS ];
+  FloatType hi[ NDIMS ];
+  bvh.getBounds( lo, hi );
+
+  for ( int idim=0; idim < NDIMS; ++idim )
+  {
+    EXPECT_DOUBLE_EQ( lo[ idim ], 0.0 );
+    EXPECT_DOUBLE_EQ( hi[ idim ], 2.0 );
+  }
+
+}
+
+//------------------------------------------------------------------------------
+template < typename FloatType >
+void check_build_bvh3d( )
+{
+  constexpr int NUM_BOXES = 2;
+  constexpr int NDIMS     = 3;
+  FloatType boxes[ ]      = { 0., 0., 0., 1., 1., 1.,
+                              1., 1., 1., 2., 2., 2. };
+
+  primal::BVH< NDIMS, FloatType > bvh( boxes, NUM_BOXES );
+  bvh.build( );
+
+  FloatType lo[ NDIMS ];
+  FloatType hi[ NDIMS ];
+  bvh.getBounds( lo, hi );
+
+  for ( int idim=0; idim < NDIMS; ++idim )
+  {
+    EXPECT_DOUBLE_EQ( lo[ idim ], 0.0 );
+    EXPECT_DOUBLE_EQ( hi[ idim ], 2.0 );
+  }
+
+}
+
 } /* end unnamed namespace */
 
 //------------------------------------------------------------------------------
@@ -189,14 +237,19 @@ void generate_aabbs_and_centroids3d( const double* origin,
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-TEST( primal_bvh, contruct)
+TEST( primal_bvh, contruct2D)
 {
-  float boxes[12] = { 0., 0., 0., 1., 1., 1.,
-                       1., 1., 1., 2., 2., 2. };
-  constexpr int NDIMS = 3;
-  primal::BVH< 3, float > bvh( boxes, 2);
-  bvh.build();
+  check_build_bvh2d< float >( );
+  check_build_bvh2d< double >( );
 }
+
+//------------------------------------------------------------------------------
+TEST( primal_bvh, contruct3D)
+{
+  check_build_bvh3d< float >( );
+  check_build_bvh3d< double >( );
+}
+
 
 //------------------------------------------------------------------------------
 //TEST( primal_bvh, check_find_3d )
