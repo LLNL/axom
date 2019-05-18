@@ -514,26 +514,26 @@ TEST( primal_boundingBox, highest_lowest_values)
   // Test double
   double maxD = std::numeric_limits< double >::max();
   double minD = -maxD;
-  EXPECT_EQ(  maxD, ValueRange< double >::highest());
-  EXPECT_EQ(  minD, ValueRange< double >::lowest());
+  EXPECT_EQ(  maxD, std::numeric_limits< double >::max());
+  EXPECT_EQ(  minD, std::numeric_limits< double >::lowest());
 
   // Test float
   double maxF = std::numeric_limits< float >::max();
   double minF = -maxF;
-  EXPECT_EQ(  maxF, ValueRange< float >::highest());
-  EXPECT_EQ(  minF, ValueRange< float >::lowest());
+  EXPECT_EQ(  maxF, std::numeric_limits< float >::max());
+  EXPECT_EQ(  minF, std::numeric_limits< float >::lowest());
 
   // Test int
   int maxI = std::numeric_limits< int >::max();
   int minI = std::numeric_limits< int >::min();
-  EXPECT_EQ(  maxI, ValueRange< int >::highest());
-  EXPECT_EQ(  minI, ValueRange< int >::lowest());
+  EXPECT_EQ(  maxI, std::numeric_limits< int >::max());
+  EXPECT_EQ(  minI, std::numeric_limits< int >::lowest());
 
   // Test uint
   unsigned int maxU = std::numeric_limits< unsigned int >::max();
   unsigned int minU = std::numeric_limits< unsigned int >::min();
-  EXPECT_EQ(  maxU, ValueRange< unsigned int >::highest());
-  EXPECT_EQ(  minU, ValueRange< unsigned int >::lowest());
+  EXPECT_EQ(  maxU, std::numeric_limits< unsigned int >::max());
+  EXPECT_EQ(  minU, std::numeric_limits< unsigned int >::lowest());
 
   // Testing that our default constructor for bounding boxes is properly
   // setting the range.

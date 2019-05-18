@@ -498,7 +498,7 @@ OrientedBoundingBox< T, NDIMS >::OrientedBoundingBox(
 template < typename T, int NDIMS >
 void OrientedBoundingBox< T, NDIMS >::clear()
 {
-  (this->m_u[0])[0] = ValueRange< T >::lowest();
+  (this->m_u[0])[0] = std::numeric_limits< T >::lowest();
 }
 
 //------------------------------------------------------------------------------
@@ -717,7 +717,7 @@ Point< T, NDIMS > OrientedBoundingBox< T, NDIMS >::furthestPoint(
 template < typename T, int NDIMS >
 bool OrientedBoundingBox< T, NDIMS >::isValid() const
 {
-  return !((this->m_u[0])[0] == ValueRange< T >::lowest());
+  return !((this->m_u[0])[0] == std::numeric_limits< T >::lowest());
 }
 
 //------------------------------------------------------------------------------
