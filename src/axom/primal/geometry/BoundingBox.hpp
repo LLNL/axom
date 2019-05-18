@@ -50,29 +50,6 @@ std::ostream& operator<<( std::ostream & os,
 
 ///@}
 
-/*!
- * \brief Type trait to find highest and lowest values for a given type.
- */
-
-// NOTE: numeric_limits::min() for floats and doubles returns the smallest
-// positive number. C++11 "fixed" this by providing an additional function,
-// numeric_limits::lowest(). Prior to C++11, one would have to negate the
-// output of numeric_limits::min(). The ValueRange type trait class encapsulates
-// this behavior and provides a unified interface to get the lowest and highest
-// values of a type regardless of whether a C++11 compiler is used.
-
-template < typename T >
-struct ValueRange
-{
-  /*! \brief Returns the highest representable value of type T */
-  static T highest() { return std::numeric_limits< T >::max(); }
-
-  /*! \brief Returns the lowest representable value of type T */
-  static T lowest()
-  {
-    return std::numeric_limits< T >::lowest();
-  }
-};
 
 /*!
  * \class
@@ -100,8 +77,8 @@ public:
    * is set to the smallest possible point.  This way adding any point resets
    * the bounds to a valid range.
    */
-  BoundingBox() : m_min( PointType( ValueRange< T >::highest() ) ),
-    m_max( PointType( ValueRange< T >::lowest() ) ) { }
+  BoundingBox() : m_min( PointType( std::numeric_limits< T >::max() ) ),
+    m_max( PointType( std::numeric_limits< T >::lowest() ) ) { }
 
   /*!
    * \brief Constructor. Creates a bounding box containing a single point
@@ -605,8 +582,8 @@ void BoundingBox< T,NDIMS >::checkAndFixBounds()
 template < typename T,int NDIMS >
 void BoundingBox< T,NDIMS >::clear()
 {
-  m_min = PointType( ValueRange< T >::highest() );
-  m_max = PointType( ValueRange< T >::lowest() );
+  m_min = PointType( std::numeric_limits< T >::max() );
+  m_max = PointType( std::numeric_limits< T >::lowest() );
 }
 
 //------------------------------------------------------------------------------
