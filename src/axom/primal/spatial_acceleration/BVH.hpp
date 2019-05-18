@@ -6,9 +6,10 @@
 #ifndef AXOM_PRIMAL_BVH_H_
 #define AXOM_PRIMAL_BVH_H_
 
-#include "axom/config.hpp"        // for Axom compile-time definitions
-#include "axom/core/Macros.hpp"   // for Axom macros
-#include "axom/core/Types.hpp"    // for fixed bitwidth types
+#include "axom/config.hpp"               // for Axom compile-time definitions
+#include "axom/core/Macros.hpp"          // for Axom macros
+#include "axom/core/Types.hpp"           // for fixed bitwidth types
+#include "axom/slic/interface/slic.hpp"  // for SLIC macros
 
 #include "axom/primal/spatial_acceleration/linear_bvh/bvh_builder.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/bvh_vtkio.hpp"
@@ -105,6 +106,18 @@ public:
    */
   int build( );
 
+  /*!
+   * \brief Returns the bounds of the BVH, given by the the root bounding box.
+   *
+   * \param [out] min buffer to store the lower corner of the root bounding box.
+   * \param [out] max buffer to store the upper corner of the root bounding box.
+   *
+   * \note min/max point to arrays that are at least NDIMS long.
+   *
+   * \pre min != nullptr
+   * \pre max != nullptr
+   */
+  void getBounds( FloatType* min, FloatType* max ) const;
 
   /*!
    * \brief Finds the candidate geometric entities that contain each of the
@@ -134,7 +147,7 @@ public:
              IndexType numPts,
              const FloatType* x,
              const FloatType* y,
-             const FloatType* z = nullptr );
+             const FloatType* z = nullptr ) const;
 
   /*!
    * \brief Writes the BVH to the specified VTK file for visualization.
@@ -182,8 +195,17 @@ int BVH< NDIMS, FloatType >::build()
 {
   bvh::LinearBVHBuilder builder;
   m_bvh = builder.construct< FloatType, NDIMS >( m_boxes, m_numItems );
-  std::cout << "BOUNDS: " << m_bvh.m_bounds << "\n";
   return BVH_BUILD_OK;
+}
+
+//------------------------------------------------------------------------------
+template< int NDIMS, typename FloatType >
+void BVH< NDIMS, FloatType >::getBounds( FloatType* min, FloatType* max ) const
+{
+  SLIC_ASSERT( min != nullptr );
+  SLIC_ASSERT( max != nullptr );
+  m_bvh.m_bounds.min( min );
+  m_bvh.m_bounds.max( max );
 }
 
 //------------------------------------------------------------------------------
@@ -193,7 +215,7 @@ void BVH< NDIMS, FloatType >::find( IndexType* offsets,
                                     IndexType numPts,
                                     const FloatType* x,
                                     const FloatType* y,
-                                    const FloatType* z )
+                                    const FloatType* z ) const
 {
   // TODO: implement this
 }

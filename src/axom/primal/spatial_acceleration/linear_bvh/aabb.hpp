@@ -88,6 +88,22 @@ public:
     return make_vec< FloatType, 3 > ( m_x.center(), m_y.center(),m_z.center() );
   }
 
+  AXOM_HOST_DEVICE
+  void min( FloatType* lo ) const
+  {
+    lo[ 0 ] = m_x.min();
+    lo[ 1 ] = m_y.min();
+    lo[ 2 ] = m_z.min();
+  }
+
+  AXOM_HOST_DEVICE
+  void max( FloatType* hi ) const
+  {
+    hi[ 0 ] = m_x.max();
+    hi[ 1 ] = m_y.max();
+    hi[ 2 ] = m_z.max();
+  }
+
   std::ostream& print( std::ostream& os ) const
   {
     os << "x-range: " << m_x << "; "
@@ -146,6 +162,20 @@ public:
   Vec< FloatType, 3 > center() const
   {
     return make_vec< FloatType, 2 > ( m_x.center(), m_y.center() );
+  }
+
+  AXOM_HOST_DEVICE
+  void min( FloatType* lo ) const
+  {
+    lo[ 0 ] = m_x.min();
+    lo[ 1 ] = m_y.min();
+  }
+
+  AXOM_HOST_DEVICE
+  void max( FloatType* hi ) const
+  {
+    hi[ 0 ] = m_x.max();
+    hi[ 1 ] = m_y.max();
   }
 
   std::ostream& print( std::ostream& os ) const
