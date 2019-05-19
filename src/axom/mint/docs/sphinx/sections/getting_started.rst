@@ -13,7 +13,7 @@ complete walk-through of an example Mint application, illustrating some of the
 key concepts and capabilities. The complete :ref:`MintApplicationCodeExample`,
 presented herein, is included in the :ref:`sections/mint/appendix` section and is
 also available in the Axom source code under
-``src/axom/mint/examples/mint_uniform_mesh.cpp``.
+``src/axom/mint/examples/user_guide/mint_getting_started.cpp``.
 
 The example Mint application illustrates:
 
@@ -41,7 +41,7 @@ First, the Mint header must be included for the
 definition of the various Mint classes and functions. Note, this example also
 makes use of Axom's Matrix class, which is also included by the following:
 
-.. literalinclude:: ../../../examples/mint_uniform_mesh.cpp
+.. literalinclude:: ../../../examples/user_guide/mint_getting_started.cpp
    :start-after: sphinx_tutorial_walkthrough_includes_start
    :end-before: sphinx_tutorial_walkthrough_includes_end
    :language: C++
@@ -56,7 +56,7 @@ Next, a :math:`100 \times 100` :ref:`UniformMesh`, defined on a
 domain given by the interval :math:`\mathcal{I}:[-5.0,5.0] \times [-5.0,5.0]`,
 is constructed by the following:
 
-.. literalinclude:: ../../../examples/mint_uniform_mesh.cpp
+.. literalinclude:: ../../../examples/user_guide/mint_getting_started.cpp
    :start-after: sphinx_tutorial_walkthrough_construct_mesh_start
    :end-before: sphinx_tutorial_walkthrough_construct_mesh_end
    :language: C++
@@ -70,7 +70,7 @@ Step 3: Add Fields
 Fields are added to the mesh by calling the ``createField()`` method
 on the mesh object:
 
-.. literalinclude:: ../../../examples/mint_uniform_mesh.cpp
+.. literalinclude:: ../../../examples/user_guide/mint_getting_started.cpp
    :start-after: sphinx_tutorial_walkthrough_add_fields_start
    :end-before: sphinx_tutorial_walkthrough_add_fields_end
    :language: C++
@@ -108,7 +108,7 @@ The first kernel employs the ``for_all_nodes()`` traversal function
 of the :ref:`sections/execution_model` to iterate over the constituent mesh
 :ref:`Nodes` and evaluate `Himmelblau's Function`_ (an analytic function):
 
-.. literalinclude:: ../../../examples/mint_uniform_mesh.cpp
+.. literalinclude:: ../../../examples/user_guide/mint_getting_started.cpp
    :start-after: sphinx_tutorial_walkthrough_compute_hf_start
    :end-before: sphinx_tutorial_walkthrough_compute_hf_end
    :language: C++
@@ -146,7 +146,7 @@ The second kernel employs the ``for_all_cells()`` traversal function of the
 :ref:`Cells` and compute the corresponding cell centroid, a 2D *vector*
 quantity, as follows:
 
-.. literalinclude:: ../../../examples/mint_uniform_mesh.cpp
+.. literalinclude:: ../../../examples/user_guide/mint_getting_started.cpp
    :start-after: sphinx_tutorial_walkthrough_cell_centers_start
    :end-before: sphinx_tutorial_walkthrough_cell_centers_end
    :language: C++
@@ -225,7 +225,7 @@ Last, the resulting mesh and data can be output in the Legacy `VTK File Format`_
 which can be visualized by a variety of visualization tools, such as `VisIt`_
 and `ParaView`_ as follows:
 
-.. literalinclude:: ../../../examples/mint_uniform_mesh.cpp
+.. literalinclude:: ../../../examples/user_guide/mint_getting_started.cpp
    :start-after: sphinx_tutorial_walkthrough_vtk_start
    :end-before: sphinx_tutorial_walkthrough_vtk_end
    :language: C++
