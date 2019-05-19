@@ -63,10 +63,12 @@ int main ( int argc, char** argv )
 
   parse_args( argc, argv );
 
+// sphinx_tutorial_walkthrough_set_memory_start
   // NOTE: use unified memory if we are using CUDA
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA)
   axom::setDefaultAllocator( axom::getAllocator( umpire::resource::Unified ) );
 #endif
+// sphinx_tutorial_walkthrough_set_memory_end
 
 // sphinx_tutorial_walkthrough_construct_mesh_start
 
@@ -182,7 +184,7 @@ void parse_args( int argc, char** argv )
 // sphinx_tutorial_walkthrough_construct_umesh_start
 mint::Mesh* getUniformMesh( )
 {
-  // construct a 100 x 100 grid within a domain defined in [-5.0, 5.0]
+  // construct a N x N grid within a domain defined in [-5.0, 5.0]
   const double lo[]   = { -5.0, -5.0 };
   const double hi[]   = {  5.0,  5.0 };
   mint::Mesh* m = new mint::UniformMesh( lo, hi, Arguments.res, Arguments.res );
