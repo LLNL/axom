@@ -59,7 +59,7 @@ TEST(core_config,config_libraries)
   libs.push_back("conduit");
 #endif
 
-libs.push_back("C++11");
+libs.push_back(AXOM_CXX_STD);
 
 #ifdef AXOM_USE_FMT
   libs.push_back("fmt");
