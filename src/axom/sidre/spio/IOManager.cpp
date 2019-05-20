@@ -800,8 +800,7 @@ void IOManager::readSidreHDF5(sidre::Group* datagroup,
   else
   {
 
-    View* reduced = datagroup->createViewScalar("reduced_input_ranks",
-                                                num_groups);
+    datagroup->createViewScalar("reduced_input_ranks", num_groups);
 
     for (int input_rank = m_my_rank ; input_rank < num_groups ;
          input_rank += m_comm_size)
