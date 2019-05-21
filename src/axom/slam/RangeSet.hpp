@@ -40,14 +40,9 @@ public:
 private:
   using OrderedSetType =  OrderedSet<P,E>;
 
-  static const PositionType DEFAULT_SIZE =
-    OrderedSetType::SizePolicyType::DEFAULT_VALUE;
-
-  static const PositionType DEFAULT_OFFSET =
-    OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
-
-  static const PositionType DEFAULT_STRIDE =
-    OrderedSetType::StridePolicyType::DEFAULT_VALUE;
+  static const PositionType DEFAULT_SIZE;
+  static const PositionType DEFAULT_OFFSET;
+  static const PositionType DEFAULT_STRIDE;
 
 public:
   PositionSet(PositionType size = DEFAULT_SIZE)
@@ -56,6 +51,19 @@ public:
   PositionSet(const typename OrderedSetType::SetBuilder & builder)
     : OrderedSetType(builder) {}
 };
+
+template<typename P, typename E>
+const P PositionSet<P,E>::DEFAULT_SIZE =
+  PositionSet<P, E>::OrderedSetType::SizePolicyType::DEFAULT_VALUE;
+
+template<typename P, typename E>
+const P PositionSet<P, E>::DEFAULT_OFFSET =
+  PositionSet<P, E>::OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
+
+template<typename P, typename E>
+const P PositionSet<P, E>::DEFAULT_STRIDE =
+  PositionSet<P, E>::OrderedSetType::StridePolicyType::DEFAULT_VALUE;
+
 
 /**
  * \class GenericRangeSet
@@ -137,12 +145,9 @@ private:
   using GenericRangeSetType = GenericRangeSet<P,E>;
 
 private:
-  static const PositionType DEFAULT_SIZE =
-    GenericRangeSetType::SizePolicyType::DEFAULT_VALUE;
-  static const PositionType DEFAULT_OFFSET =
-    GenericRangeSetType::OffsetPolicyType::DEFAULT_VALUE;
-  static const PositionType DEFAULT_STRIDE =
-    GenericRangeSetType::StridePolicyType::DEFAULT_VALUE;
+  static const PositionType DEFAULT_SIZE;
+  static const PositionType DEFAULT_OFFSET;
+  static const PositionType DEFAULT_STRIDE;
 
 public:
   RangeSet(PositionType size = DEFAULT_SIZE)
@@ -155,6 +160,20 @@ public:
     : GenericRangeSetType(builder) {}
 
 };
+
+template<typename P, typename E>
+const P RangeSet<P, E>::DEFAULT_SIZE =
+  RangeSet<P, E>::GenericRangeSetType::SizePolicyType::DEFAULT_VALUE;
+
+template<typename P, typename E>
+const P RangeSet<P, E>::DEFAULT_OFFSET =
+  RangeSet<P, E>::GenericRangeSetType::OffsetPolicyType::DEFAULT_VALUE;
+
+template<typename P, typename E>
+const P RangeSet<P, E>::DEFAULT_STRIDE =
+  RangeSet<P, E>::GenericRangeSetType::StridePolicyType::DEFAULT_VALUE;
+
+
 
 
 } // end namespace slam
