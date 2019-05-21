@@ -223,19 +223,32 @@ void setup_blueprint_coords(DataStore* ds, Group* coords)
   // Set up the coordinates as Mesh Blueprint requires
   coords->createViewString("type", "explicit");
   // We use prior knowledge of the layout of the original datastore
-  View* origv = ds->getRoot()->getView("nodes/xs");
   Group* conduitval = coords->createGroup("values");
-  conduitval->createView("x", sidre::DOUBLE_ID,
-                         origv->getNumElements(),
-                         static_cast<double*>(origv->getArray()));
-  origv = ds->getRoot()->getView("nodes/ys");
-  conduitval->createView("y", sidre::DOUBLE_ID,
-                         origv->getNumElements(),
-                         static_cast<double*>(origv->getArray()));
-  origv = ds->getRoot()->getView("nodes/zs");
-  conduitval->createView("z", sidre::DOUBLE_ID,
-                         origv->getNumElements(),
-                         static_cast<double*>(origv->getArray()));
+  View* xorigv = ds->getRoot()->getView("nodes/xs");
+  View* xvalues = conduitval->createViewAndAllocate("x", sidre::DOUBLE_ID,
+                                                    xorigv->getNumElements());
+  View* yorigv = ds->getRoot()->getView("nodes/ys");
+  View* yvalues = conduitval->createViewAndAllocate("y", sidre::DOUBLE_ID,
+                                                    yorigv->getNumElements());
+  View* zorigv = ds->getRoot()->getView("nodes/zs");
+  View* zvalues = conduitval->createViewAndAllocate("z", sidre::DOUBLE_ID,
+                                                    zorigv->getNumElements());
+
+  double* xoarray = xorigv->getArray();
+  double* yoarray = yorigv->getArray();
+  double* zoarray = zorigv->getArray();
+  double* xarray = xvalues->getArray();
+  double* yarray = yvalues->getArray();
+  double* zarray = zvalues->getArray();
+
+  SIDRE_IndexType nodecount = xorigv->getNumElements();
+  for (SIDRE_IndexType i = 0 ; i < nodecount ; ++i)
+  {
+    xarray[i] = xoarray[i];
+    yarray[i] = yoarray[i];
+    zarray[i] = zoarray[i];
+  }
+
   // _blueprint_restructure_coords_end
 }
 
@@ -415,6 +428,60 @@ void generate_blueprint(DataStore* ds) {
   // _blueprint_generate_save_end
 }
 
+void generate_blueprint_to_path(DataStore* ds) {
+  // _blueprint_generate_path_start
+  // Conduit needs a specific hierarchy.
+  // For this example, we locate the domain data at a path
+  // that is not the top level of its Sidre heirarchy.
+  DataStore cds;
+  std::string domain_name = "domain";
+  std::string domain_location = "domain_data/level/domains/" + domain_name;
+  std::string mesh_name = "mesh";
+  std::string domain_mesh = domain_location + "/" + mesh_name;
+
+  Group* mroot = cds.getRoot()->createGroup(domain_location);
+  Group* coords = mroot->createGroup(mesh_name + "/coordsets/coords");
+  Group* topos = mroot->createGroup(mesh_name + "/topologies");
+  // no material sets in this example
+  Group* fields = mroot->createGroup(mesh_name + "/fields");
+  // no adjacency sets in this (single-domain) example
+  // _blueprint_generate_path_end
+
+  setup_blueprint_coords(ds, coords);
+
+  setup_blueprint_topos(ds, topos);
+
+  setup_blueprint_fields(ds, fields);
+
+  // _blueprint_generate_path_save_start
+  conduit::Node info, mesh_node, root_node;
+  cds.getRoot()->createNativeLayout(mesh_node);
+  if (conduit::blueprint::verify("mesh", mesh_node[domain_mesh], info))
+  {
+    std::string bp("rootfile_data/blueprint_index/automesh");
+
+    cds.generateBlueprintIndex(domain_mesh, mesh_name, bp, 1);
+
+    Group* rootfile_grp = cds.getRoot()->getGroup("rootfile_data");
+    rootfile_grp->createViewString("protocol/name", "json");
+    rootfile_grp->createViewString("protocol/version", "0.1");
+    rootfile_grp->createViewScalar("number_of_files", 1);
+    rootfile_grp->createViewScalar("number_of_trees", 1);
+    rootfile_grp->createViewScalar("file_pattern", "pathbp.json");
+    rootfile_grp->createViewScalar("tree_pattern", "level/domains/domain");
+    rootfile_grp->save("pathbp.root", "json");
+
+    cds.getRoot()->getGroup("domain_data")->save("pathbp.json", "json");
+  }
+  else
+  {
+    std::cout << "does not conform to Mesh Blueprint: ";
+    info.print();
+    std::cout << std::endl;
+  }
+  // _blueprint_generate_path_save_end
+}
+
 #ifdef AXOM_USE_MPI
 void generate_spio_blueprint(DataStore* ds) {
   // _blueprint_spio_toplevel_start
@@ -446,17 +513,60 @@ void generate_spio_blueprint(DataStore* ds) {
   if (conduit::blueprint::verify("mesh", mesh_node[domain_mesh], info))
   {
 
-    std::string bp("rootfile_data/blueprint_index/automesh");
     std::string bp_rootfile("bpspio.root");
 
     writer.write(cds.getRoot()->getGroup(
                    domain_location), 1, "bpspio", "sidre_hdf5");
 
     writer.writeBlueprintIndexToRootFile(&cds, domain_mesh, bp_rootfile,
-                                         mesh_name);
+                                         mesh_name, "automesh");
 
   }
   // _blueprint_generate_spio_end
+}
+
+
+void generate_spio_blueprint_to_path(DataStore* ds) {
+  // _blueprint_spio_path_start
+  DataStore cds;
+  std::string domain_name = "domain";
+  std::string domain_location = "domain_data/level/domains/" + domain_name;
+  std::string mesh_name = "mesh";
+  std::string domain_mesh = domain_location + "/" + mesh_name;
+
+  Group* mroot = cds.getRoot()->createGroup(domain_location);
+  Group* coords = mroot->createGroup(mesh_name + "/coordsets/coords");
+  Group* topos = mroot->createGroup(mesh_name + "/topologies");
+  // no material sets in this example
+  Group* fields = mroot->createGroup(mesh_name + "/fields");
+  // no adjacency sets in this (single-domain) example
+  // _blueprint_spio_path_end
+
+  setup_blueprint_coords(ds, coords);
+
+  setup_blueprint_topos(ds, topos);
+
+  setup_blueprint_fields(ds, fields);
+
+  // _blueprint_generate_spio_path_start
+  IOManager writer(MPI_COMM_WORLD);
+
+  conduit::Node info, mesh_node, root_node;
+  cds.getRoot()->createNativeLayout(mesh_node);
+  if (conduit::blueprint::verify("mesh", mesh_node[domain_mesh], info))
+  {
+
+    std::string bp_rootfile("pathbpspio.root");
+
+    writer.write(cds.getRoot()->getGroup(
+                   "domain_data"), 1, "pathbpspio", "sidre_hdf5");
+
+    writer.writeBlueprintIndexToRootFile(&cds, domain_mesh, bp_rootfile,
+                                         "level/domains/domain/" + mesh_name,
+                                         "pathmesh");
+
+  }
+  // _blueprint_generate_spio_path_end
 }
 #endif
 
@@ -494,10 +604,15 @@ int main(int argc, char** argv)
   DataStore* bds = create_tiny_datastore();
   generate_blueprint(bds);
 
+  DataStore* pds = create_tiny_datastore();
+  generate_blueprint_to_path(pds);
+
 #ifdef AXOM_USE_MPI
   DataStore* sds = create_tiny_datastore();
+  DataStore* spds = create_tiny_datastore();
   MPI_Init(&argc, &argv);
   generate_spio_blueprint(sds);
+  generate_spio_blueprint_to_path(spds);
   MPI_Finalize();
 #endif
 

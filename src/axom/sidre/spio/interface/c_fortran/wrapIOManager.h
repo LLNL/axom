@@ -4,7 +4,8 @@
 // Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
-// SPDX-License-Identifier: (BSD-3-Clause)
+// SPDX-License-Identifier (BSD-3-Clause)
+//
 /**
  * \file wrapIOManager.h
  * \brief Shroud generated wrapper for IOManager class
@@ -55,13 +56,14 @@ void SPIO_iomanager_write_group_to_root_file_bufferify(SPIO_iomanager* self,
                                                        int Lfile_name);
 
 void SPIO_iomanager_write_blueprint_index_to_root_file(SPIO_iomanager* self,
-                                                       SIDRE_datastore* datastore, const char* domain_path, const char* file_name,
-                                                       const char* mesh_name);
+                                                       SIDRE_datastore* datastore, const char* domain_path, const char* file_name, const char* mesh_path,
+                                                       const char* blueprint_name);
 
 void SPIO_iomanager_write_blueprint_index_to_root_file_bufferify(
   SPIO_iomanager* self, SIDRE_datastore* datastore, const char* domain_path,
   int Ldomain_path, const char* file_name, int Lfile_name,
-  const char* mesh_name, int Lmesh_name);
+  const char* mesh_path, int Lmesh_path, const char* blueprint_name,
+  int Lblueprint_name);
 
 void SPIO_iomanager_read_0(SPIO_iomanager* self, SIDRE_group* group,
                            const char* file_string, const char* protocol);

@@ -184,7 +184,8 @@ public:
   void writeBlueprintIndexToRootFile(DataStore* datastore,
                                      const std::string& domain_path,
                                      const std::string& file_name,
-                                     const std::string& mesh_name);
+                                     const std::string& mesh_name,
+                                     const std::string& blueprint_name);
 
   /*!
    * \brief read from input files
