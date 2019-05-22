@@ -72,8 +72,8 @@ namespace slam
  * The interface is for constant access to the elements.
  */
 template<
-  typename PosType = slam::PositionType,
-  typename ElemType = slam::ElementType >
+  typename PosType = slam::DefaultPositionType,
+  typename ElemType = slam::DefaultElementType >
 class Set
 {
 public:
@@ -167,7 +167,7 @@ inline bool operator==(const Set<P1,E1>& set1, const Set<P2, E2>& set2)
     return false;
 
   // Otherwise, compare the indices element wise
-  for(PosType pos = PositionType() ; pos < numElts ; ++pos)
+  for(PosType pos = PosType() ; pos < numElts ; ++pos)
   {
     auto&& e1 = static_cast<ElemType&&>(set1.at(static_cast<P1>(pos)));
     auto&& e2 = static_cast<ElemType&&>(set2.at(static_cast<P2>(pos)));

@@ -47,7 +47,7 @@ namespace sidre = axom::sidre;
 namespace slam = axom::slam;
 namespace slic = axom::slic;
 
-using PosType = slam::PositionType;
+using PosType = slam::DefaultPositionType;
 using ElemType = sidre::IndexType;
 
 using SzPol = slam::policies::RuntimeSize<PosType>;

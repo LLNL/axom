@@ -31,8 +31,8 @@ namespace slam
 {
 
 template<
-  typename PosType = slam::PositionType,
-  typename ElemType = slam::ElementType >
+  typename PosType = slam::DefaultPositionType,
+  typename ElemType = slam::DefaultElementType >
 class DynamicVariableRelation : public Relation<PosType, ElemType>
 {
 public:

@@ -37,7 +37,7 @@ TEST(slam_set_virtualbase,construct)
   EXPECT_EQ(NUM_ELEMS, s->size());
 
   // Tests function: at()
-  for(slam::PositionType idx = 0 ; idx < s->size() ; ++idx)
+  for(auto idx = 0 ; idx < s->size() ; ++idx)
   {
     EXPECT_EQ(idx, s->at(idx));
   }

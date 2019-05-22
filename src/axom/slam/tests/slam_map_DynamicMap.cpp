@@ -23,8 +23,8 @@ namespace
 
 namespace slam = axom::slam;
 
-using SetPosition = slam::PositionType;
-using SetElement = slam::ElementType;
+using SetPosition = slam::DefaultPositionType;
+using SetElement = slam::DefaultElementType;
 using SetType = slam::DynamicSet<SetPosition, SetElement>;
 
 static const SetPosition MAX_SET_SIZE = 10;

@@ -31,8 +31,8 @@ namespace slam
  * \sa OrderedSet
  */
 template<
-  typename PosType = slam::PositionType,
-  typename ElemType = slam::ElementType >
+  typename PosType = slam::DefaultPositionType,
+  typename ElemType = slam::DefaultElementType >
 using ArrayIndirectionSet =
         OrderedSet<
           PosType,
@@ -50,8 +50,8 @@ using ArrayIndirectionSet =
  * \sa OrderedSet
  */
 template<
-  typename PosType = slam::PositionType,
-  typename ElemType = slam::ElementType >
+  typename PosType = slam::DefaultPositionType,
+  typename ElemType = slam::DefaultElementType >
 using VectorIndirectionSet =
         OrderedSet<
           PosType,

@@ -54,8 +54,8 @@ namespace slam
  * more convenient value, when necessary.
  */
 template<
-  typename PosType,   //= slam::PositionType,
-  typename ElemType,   // = slam::ElementType,
+  typename PosType,   //= slam::DefaultPositionType,
+  typename ElemType,   // = slam::DefaultElementType,
   typename CardinalityPolicy>
 class DynamicConstantRelation : public /*Relation,*/ CardinalityPolicy
 {

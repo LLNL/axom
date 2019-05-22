@@ -30,7 +30,8 @@ namespace slam
  * \tparam E The ElementType
  * \sa OrderedSet
  */
-template<typename P = slam::PositionType, typename E = slam::ElementType>
+template<typename P = slam::DefaultPositionType,
+         typename E = slam::DefaultElementType>
 class PositionSet : public OrderedSet<P,E>
 {
 public:
@@ -78,8 +79,8 @@ const P PositionSet<P, E>::DEFAULT_STRIDE =
  *  \sa OrderedSet, PositionSet, RangeSet
  */
 template<
-  typename P = slam::PositionType,
-  typename E = slam::ElementType,
+  typename P = slam::DefaultPositionType,
+  typename E = slam::DefaultElementType,
   typename StridingPolicy = policies::StrideOne<P>,
   typename IndirectionPolicy = policies::NoIndirection<P, E>,
   typename SubsettingPolicy = policies::NoSubset >
@@ -134,7 +135,8 @@ public:
  * \a PositionType) from the lowerIndex.
  * Examples include: signed and unsigned integral types
  */
-template<typename P = slam::PositionType, typename E = slam::ElementType>
+template<typename P = slam::DefaultPositionType,
+         typename E = slam::DefaultElementType>
 class RangeSet : public GenericRangeSet<P,E>
 {
 public:

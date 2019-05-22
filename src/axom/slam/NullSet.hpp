@@ -28,8 +28,8 @@ namespace slam
  * \brief An indexed set (a tuple) of entities in a simulation
  */
 template<
-  typename PosType  = slam::PositionType,
-  typename ElemType = slam::ElementType >
+  typename PosType  = slam::DefaultPositionType,
+  typename ElemType = slam::DefaultElementType >
 class NullSet : public Set<PosType, ElemType>
 {
 public:

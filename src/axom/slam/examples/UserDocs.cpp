@@ -73,8 +73,8 @@ struct SimpleQuadMesh
 {
   /// Type aliases for sets
   // _quadmesh_example_set_typedefs_start
-  using PosType = int;
-  using ElemType = int;
+  using PosType = slam::DefaultPositionType;
+  using ElemType = slam::DefaultElementType;
   using VertSet = slam::PositionSet<PosType, ElemType>;
   using ElemSet = slam::PositionSet<PosType, ElemType>;
   // _quadmesh_example_set_typedefs_end

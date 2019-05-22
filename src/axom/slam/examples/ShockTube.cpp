@@ -54,8 +54,8 @@ namespace slamShocktube
 
 namespace slam = axom::slam;
 
-using PositionType = slam::PositionType;
-using ElementType = slam::ElementType;
+using PositionType = slam::DefaultPositionType;
+using ElementType = slam::DefaultElementType;
 
 using BaseSet = slam::Set<PositionType, ElementType>;
 

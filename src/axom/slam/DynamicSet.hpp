@@ -48,8 +48,8 @@ namespace slam
  */
 
 template<
-  typename PosType       = slam::PositionType,
-  typename ElemType      = slam::ElementType,
+  typename PosType       = slam::DefaultPositionType,
+  typename ElemType      = slam::DefaultElementType,
   typename SizePolicy    = policies::DynamicRuntimeSize<PosType>,
   typename OffsetPolicy  = policies::ZeroOffset<PosType>,
   typename StridePolicy  = policies::StrideOne<PosType> >

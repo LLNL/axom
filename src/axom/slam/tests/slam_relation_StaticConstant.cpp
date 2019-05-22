@@ -42,8 +42,8 @@ namespace
 namespace slam = axom::slam;
 namespace policies = axom::slam::policies;
 
-using SetPosition = slam::PositionType;
-using SetElement = slam::ElementType;
+using SetPosition = slam::DefaultPositionType;
+using SetElement = slam::DefaultElementType;
 
 using RangeSetType = slam::RangeSet<SetPosition, SetElement>;
 

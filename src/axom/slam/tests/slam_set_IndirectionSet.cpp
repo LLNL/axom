@@ -451,8 +451,8 @@ TEST(slam_set_indirectionset,negative_stride)
 
   namespace policies = axom::slam::policies;
 
-  using SetPosition = slam::PositionType;
-  using SetElement = slam::ElementType;
+  using SetPosition = slam::DefaultPositionType;
+  using SetElement = slam::DefaultElementType;
 
   using SizePol   = policies::RuntimeSize<SetPosition>;;
   using OffPol    = policies::RuntimeOffset<SetPosition>;

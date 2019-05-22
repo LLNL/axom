@@ -65,7 +65,7 @@ int main(int, char**)
 {
   slic::UnitTestLogger logger;
 
-  using PosType = slam::PositionType;
+  using PosType = slam::DefaultPositionType;
   using HandleType = Handle<PosType>;
 
   using HandleSet = slam::VectorIndirectionSet<PosType, HandleType>;

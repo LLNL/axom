@@ -70,8 +70,8 @@ namespace slam
  */
 
 template<
-  typename PosType = slam::PositionType,
-  typename ElemType = slam::ElementType >
+  typename PosType = slam::DefaultPositionType,
+  typename ElemType = slam::DefaultElementType >
 class BivariateSet
 {
 public:
@@ -210,13 +210,14 @@ protected:
  * \brief A Null BivariateSet class. Same as the NullSet for Set class.
  */
 template<
-  typename PosType = slam::PositionType,
-  typename ElemType = slam::ElementType
+  typename PosType = slam::DefaultPositionType,
+  typename ElemType = slam::DefaultElementType
   >
 class NullBivariateSet : public BivariateSet<PosType,ElemType>
 {
 public:
   using PositionType = PosType;
+  using ElementType = ElemType;
   using OrderedSetType =
           typename BivariateSet<PosType,ElemType>::OrderedSetType;
 

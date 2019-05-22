@@ -51,8 +51,8 @@ namespace slam
  *     static_cast<ElementType>( indirection[ pos * stride + offset ] )
  */
 template<
-  typename PosType             = slam::PositionType,
-  typename ElemType            = PosType,
+  typename PosType             = slam::DefaultPositionType,
+  typename ElemType            = slam::DefaultElementType,
   typename SizePolicy          = policies::RuntimeSize<PosType>,
   typename OffsetPolicy        = policies::ZeroOffset<PosType>,
   typename StridePolicy        = policies::StrideOne<PosType>,

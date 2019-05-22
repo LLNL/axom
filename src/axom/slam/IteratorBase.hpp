@@ -74,7 +74,7 @@ private:
 
 private:
   /// Call the derived iterator's advance() function
-  void adv(IterType& derived, PositionType n) const {
+  void adv(IterType& derived, PosType n) const {
     accessor::adv(derived, n);
   }
 
@@ -171,7 +171,7 @@ private:
   }
 
 protected:
-  PositionType m_pos;
+  PosType m_pos;
 };
 
 } // end namespace slam

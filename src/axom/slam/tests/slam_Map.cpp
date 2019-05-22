@@ -23,8 +23,8 @@ namespace
 {
 namespace slam = axom::slam;
 
-using SetPosition = slam::PositionType;
-using SetElement = slam::ElementType;
+using SetPosition = slam::DefaultPositionType;
+using SetElement = slam::DefaultElementType;
 
 using SetType = slam::RangeSet<SetPosition, SetElement>;
 using BaseSet = slam::Set<SetPosition, SetElement>;

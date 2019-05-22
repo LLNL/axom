@@ -36,7 +36,7 @@ namespace slam
 class MapBase
 {
 public:
-  using SetPosition = slam::PositionType;
+  using SetPosition = slam::DefaultPositionType;
 
 public:
   virtual ~MapBase() {};

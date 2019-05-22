@@ -121,8 +121,8 @@ public:
   };
 
   /// types for sets
-  using PositionType = slam::PositionType;
-  using ElementType = slam::ElementType;
+  using PositionType = slam::DefaultPositionType;
+  using ElementType = slam::DefaultElementType;
 
   using NodeSet = slam::PositionSet<PositionType, ElementType>;
   using ZoneSet = slam::PositionSet<PositionType, ElementType>;

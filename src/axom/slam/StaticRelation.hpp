@@ -34,8 +34,8 @@ namespace slam
 
 
 template<
-  typename PosType,  // = slam::PositionType,
-  typename ElemType, // = slam::ElementType,
+  typename PosType,  // = slam::DefaultPositionType,
+  typename ElemType, // = slam::DefaultElementType,
   typename RelationCardinalityPolicy,
   typename RelationIndicesIndirectionPolicy,
   typename TheFromSet = Set<PosType,ElemType>,

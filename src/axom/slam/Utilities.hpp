@@ -19,9 +19,9 @@ namespace axom
 namespace slam
 {
 
-using IndexType = axom::IndexType;
-using PositionType = axom::IndexType;
-using ElementType = axom::IndexType;
+using DefaultIndexType = axom::IndexType;
+using DefaultPositionType = axom::IndexType;
+using DefaultElementType = axom::IndexType;
 
 class NotImplementedException
 {};
