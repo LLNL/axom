@@ -26,11 +26,11 @@ extern "C" {
 //  Level
 enum SLIC_Level
 {
-  SLIC_Level_Error,
-  SLIC_Level_Warning,
-  SLIC_Level_Info,
-  SLIC_Level_Debug,
-  SLIC_Level_Num_Levels
+  SLIC_Error,
+  SLIC_Warning,
+  SLIC_Info,
+  SLIC_Debug,
+  SLIC_Num_Levels
 };
 
 // splicer begin C_declarations

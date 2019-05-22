@@ -19,7 +19,7 @@ options:
   # Change the default template for Fortran functions to include the library name.
   F_name_impl_template: "{library_lower}_{class_prefix}{underscore_name}{function_suffix}"
   # XXX - This will eventually become the default in Shroud
-  C_enum_member_template: "{C_enum}_{enum_member_name}"
+  C_enum_member_template: "{C_prefix}{enum_member_name}"
 
 format:
   C_prefix: SLIC_
