@@ -19,7 +19,6 @@ namespace axom
 namespace slam
 {
 
-using DefaultIndexType = axom::IndexType;
 using DefaultPositionType = axom::IndexType;
 using DefaultElementType = axom::IndexType;
 
