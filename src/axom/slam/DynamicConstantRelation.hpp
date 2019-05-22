@@ -18,8 +18,8 @@
 #define SLAM_DYNAMIC_CONSTANT_RELATION_HPP_
 
 #include "axom/config.hpp"
+#include "axom/slic.hpp"
 
-#include "axom/slic/interface/slic.hpp"
 #include "axom/slam/Set.hpp"
 #include "axom/slam/Relation.hpp"
 #include "axom/slam/OrderedSet.hpp"
@@ -53,7 +53,10 @@ namespace slam
  * A future update will allow users to set the value of INVALID_INDEX to a
  * more convenient value, when necessary.
  */
-template<typename CardinalityPolicy>
+template<
+  typename PosType,   //= slam::DefaultPositionType,
+  typename ElemType,   // = slam::DefaultElementType,
+  typename CardinalityPolicy>
 class DynamicConstantRelation : public /*Relation,*/ CardinalityPolicy
 {
 public:
@@ -62,39 +65,43 @@ public:
     INVALID_INDEX = ~0  ///< value to mark indices of deleted elements
   };
 
-  typedef Relation::SetPosition SetPosition;
-  typedef std::vector<SetPosition>                  RelationVec;
+  using SetPosition = PosType;
+  using SetElement = ElemType;
+  using RelationVec = std::vector<SetPosition>;
 
-  typedef DynamicSet<>                              FromSetType;
-  typedef DynamicSet<>                              ToSetType;
+  using FromSetType = DynamicSet<PosType,ElemType>;
+  using ToSetType = DynamicSet<PosType,ElemType>;
 
-  typedef typename CardinalityPolicy::
-    RelationalOperatorSizeType BeginsSizePolicy;
+  using BeginsSizePolicy =
+          typename CardinalityPolicy::RelationalOperatorSizeType;
 
-  typedef axom::slam::policies::
-    STLVectorIndirection<SetPosition,SetPosition>   STLIndirection;
-  typedef OrderedSet<
-      BeginsSizePolicy,
-      policies::RuntimeOffset<SetPosition>,
-      policies::StrideOne<SetPosition>,
-      STLIndirection >                              RelationSubset;
+  using STLIndirection =
+          policies::STLVectorIndirection<SetPosition,SetElement>;
+  using RelationSubset =
+          OrderedSet<
+            SetPosition,
+            SetElement,
+            BeginsSizePolicy,
+            policies::RuntimeOffset<SetPosition>,
+            policies::StrideOne<SetPosition>,
+            STLIndirection >;
 
-#ifdef AXOM_USE_CXX11
-  typedef typename RelationSubset::iterator RelationIterator;
-  typedef typename RelationSubset::iterator_pair RelationIteratorPair;
+  // types for iterator
+  using RelationIterator = typename RelationSubset::iterator;
+  using RelationIteratorPair = typename RelationSubset::iterator_pair;
 
-  typedef typename RelationSubset::const_iterator RelationConstIterator;
-  typedef typename RelationSubset::const_iterator_pair RelationConstIteratorPair;
-#endif // AXOM_USE_CXX11
+  using RelationConstIterator = typename RelationSubset::const_iterator;
+  using RelationConstIteratorPair =
+          typename RelationSubset::const_iterator_pair;
 
 public:
 
   /**
    * \brief Default constructor with empty set for toSet and fromSet
    */
-  DynamicConstantRelation () :
-    m_fromSet( EmptySetTraits<FromSetType>::emptySet()  ),
-    m_toSet(  EmptySetTraits<ToSetType>::emptySet() )
+  DynamicConstantRelation ()
+    : m_fromSet( EmptySetTraits<FromSetType>::emptySet()  )
+    , m_toSet(  EmptySetTraits<ToSetType>::emptySet() )
   {
     m_relationCardinality = CardinalityPolicy::size( 0 );
   }
@@ -104,10 +111,11 @@ public:
    * to \a toSet
    */
   DynamicConstantRelation (FromSetType* fromSet, ToSetType* toSet)
-    : CardinalityPolicy(
-      EmptySetTraits<Set>::isEmpty(fromSet) ? 0 : fromSet->size() ),
-    m_fromSet(fromSet ),
-    m_toSet( toSet )
+    : CardinalityPolicy(EmptySetTraits<FromSetType>::isEmpty(fromSet)
+                        ? 0
+                        : fromSet->size() )
+    , m_fromSet(fromSet )
+    , m_toSet( toSet )
   {
     m_relationCardinality = CardinalityPolicy::size( 0 );
     m_relationsVec.resize(m_relationCardinality*fromSet->size(), INVALID_INDEX);
@@ -117,7 +125,7 @@ public:
 
 
 public:
-#ifdef AXOM_USE_CXX11
+
   /// \name DynamicConstantRelation iterator interface
   /// @{
 
@@ -128,20 +136,20 @@ public:
    * \param fromSetInd The index of the element in the FromSet
    * \return A begin iterator to the set of related elements in ToSet
    */
-  RelationIterator          begin(SetPosition fromSetInd)
+  RelationIterator begin(SetPosition fromSetInd)
   {
     verifyPosition(fromSetInd);
     return (*this)[fromSetInd].begin();
   }
 
   /**
-   * \brief Returns a const begin iterator to the set of entities in the ToSet
+   * \brief Returns a begin const iterator to the set of entities in the ToSet
    * that are related to the element with index \a fromSetInd in the FromSet
    *
    * \param fromSetInd The index of the element in the FromSet
    * \return A const begin iterator to the set of related elements in ToSet
    */
-  RelationConstIterator     begin(SetPosition fromSetInd ) const
+  RelationConstIterator begin(SetPosition fromSetInd ) const
   {
     verifyPosition(fromSetInd);
     return (*this)[fromSetInd].begin();
@@ -154,20 +162,20 @@ public:
    * \param fromSetInd The index of the element in the FromSet
    * \return An end iterator to the set of related elements in ToSet
    */
-  RelationIterator          end(SetPosition fromSetInd)
+  RelationIterator end(SetPosition fromSetInd)
   {
     verifyPosition(fromSetInd);
     return (*this)[fromSetInd].end();
   }
 
   /**
-   * \brief Returns a const end iterator to the set of entities in the ToSet
+   * \brief Returns a end const iterator to the set of entities in the ToSet
    * that are related to the element with index \a fromSetInd in the FromSet
    *
    * \param fromSetInd The index of the element in the FromSet
    * \return A const end iterator to the set of related elements in ToSet
    */
-  RelationConstIterator     end(SetPosition fromSetInd)    const
+  RelationConstIterator end(SetPosition fromSetInd)    const
   {
     verifyPosition(fromSetInd);
     return (*this)[fromSetInd].end();
@@ -181,7 +189,7 @@ public:
    * \return An iterator range (begin/end pair) to the set of related
    * elements in ToSet
    */
-  RelationIteratorPair      range(SetPosition fromSetInd)
+  RelationIteratorPair range(SetPosition fromSetInd)
   {
     return (*this)[fromSetInd].range();
   }
@@ -201,8 +209,6 @@ public:
 
   /// @}
 
-#endif // AXOM_USE_CXX11
-
 public:
 
   /// \name DynamicConstantRelation per-element relation access functions
@@ -220,6 +226,12 @@ public:
     return operator[](fromSetIndex);
   }
 
+  RelationSubset at(SetPosition fromSetIndex)
+  {
+    verifyPosition(fromSetIndex);
+    return operator[](fromSetIndex);
+  }
+
   /**
    * \brief Returns the const set of entities in the ToSet related to the
    * element with index \a fromSetIndex in the FromSet
@@ -227,14 +239,31 @@ public:
    */
   RelationSubset const operator[](SetPosition fromSetIndex) const
   {
+    // NOTE: Need to const_cast the pointer to the vector
+    // since SetBuilder, and the IndirectionPolicy don't
+    // currently support const buffers
+    // TODO: Fix this!
+
     verifyPosition(fromSetIndex);
-    typedef typename RelationSubset::SetBuilder SetBuilder;
+    using SetBuilder = typename RelationSubset::SetBuilder;
     return SetBuilder()
            //.size( CardinalityPolicy::size(fromSetIndex) )
            .size( m_relationCardinality )
            //.offset( CardinalityPolicy::offset( fromSetIndex) )
            .offset( fromSetIndex * m_relationCardinality )
-           .data( &m_relationsVec);
+           .data( const_cast<RelationVec*>(&m_relationsVec) );
+  }
+
+  RelationSubset operator[](SetPosition fromSetIndex)
+  {
+    verifyPosition(fromSetIndex);
+    using SetBuilder = typename RelationSubset::SetBuilder;
+    return SetBuilder()
+           //.size( CardinalityPolicy::size(fromSetIndex) )
+           .size( m_relationCardinality )
+           //.offset( CardinalityPolicy::offset( fromSetIndex) )
+           .offset( fromSetIndex * m_relationCardinality )
+           .data( &m_relationsVec );
   }
 
   /**
@@ -425,9 +454,9 @@ private:
 
 
 /* Checks whether the relation is valid.  */
-template<typename CardinalityPolicy>
-bool DynamicConstantRelation<CardinalityPolicy>::isValid(bool verboseOutput)
-const
+template<typename PosType, typename ElemType, typename CardinalityPolicy>
+bool DynamicConstantRelation<PosType, ElemType, CardinalityPolicy>
+::isValid(bool verboseOutput) const
 {
   std::stringstream errSstr;
 

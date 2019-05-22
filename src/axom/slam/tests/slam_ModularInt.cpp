@@ -24,12 +24,12 @@ namespace
 template <int N>
 using IntSize = slam::policies::CompileTimeSize<int, N>;
 
-typedef slam::policies::RuntimeSize<int> RTIntSize;
+using RTIntSize = slam::policies::RuntimeSize<int>;
 }
 
 TEST(slam_modInt,runtime_modular_int_unitialized_and_full)
 {
-  typedef slam::ModularInt< RTIntSize > ModularIntType;
+  using ModularIntType = slam::ModularInt< RTIntSize >;
 
 #ifdef AXOM_DEBUG
   // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail
@@ -65,7 +65,7 @@ TEST(slam_modInt,compile_modular_int_unitialized_and_full)
 {
 
 #ifdef AXOM_DEBUG
-  typedef slam::ModularInt< IntSize<0> > ModularIntZero;
+  using ModularIntZero = slam::ModularInt< IntSize<0> >;
 
   // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail
   // in debug mode
@@ -108,7 +108,7 @@ TEST(slam_modInt,runtime_modular_int)
   SLIC_INFO("Checking modular int addition and subtraction"
             <<" when supplying the max value at runtime");
 
-  typedef axom::slam::ModularInt<RTIntSize> ModularIntType;
+  using ModularIntType = slam::ModularInt<RTIntSize>;
 
   volatile int sz = 937;
 
@@ -144,7 +144,7 @@ TEST(slam_modInt,equality)
 {
   SLIC_INFO("Checking modular int equality");
 
-  typedef slam::ModularInt<RTIntSize> RTModularInt;
+  using RTModularInt = slam::ModularInt<RTIntSize>;
 
   // check equality when both have runtime size policies
   {
@@ -227,7 +227,7 @@ TEST(slam_modInt,copy_and_assign)
 {
   SLIC_INFO("Checking modular int copy and assignment");
 
-  typedef axom::slam::ModularInt<RTIntSize> ModularIntType;
+  using ModularIntType = axom::slam::ModularInt<RTIntSize>;
 
   volatile int sz = 7;
 
@@ -266,7 +266,7 @@ TEST(slam_modInt,copy_and_assign)
 
 TEST(slam_modInt,runtime_modular_int_mult)
 {
-  typedef slam::ModularInt< RTIntSize > ModularIntType;
+  using ModularIntType = slam::ModularInt< RTIntSize >;
 
   volatile int sz = 10;
 
@@ -301,7 +301,7 @@ TEST(slam_modInt,compiletime_modular_int)
 
   const int SZ = 937;
 
-  typedef slam::ModularInt< IntSize<SZ> > ModularIntType;
+  using ModularIntType = slam::ModularInt< IntSize<SZ> >;
 
   int sz = SZ;
 

@@ -1,6 +1,6 @@
 // Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
-// 
+//
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #ifndef SLAM_MAPPED_RELATION_SET_H_
@@ -16,7 +16,7 @@ namespace slam
  * \class RelationSet
  *
  * \brief Models a Set whose elements are derived from a relation, one element
- *        per from-set and to-set pair in the relation.
+ *        per fromSet and toSet pair in the relation.
  *
  *  RelationSet models a subset of the Cartesian product of two sets. Users
  *  should refer to the BivariateSet documentation for descriptions of the
@@ -28,20 +28,26 @@ namespace slam
  */
 
 template<
-  typename Relation
+  typename RelationType
   >
-class RelationSet : public OrderedSet<>, public BivariateSet
+class RelationSet
+  : public OrderedSet<typename RelationType::SetPosition,
+                      typename RelationType::SetElement>
+  , public BivariateSet<typename RelationType::SetPosition,
+                        typename RelationType::SetElement>
 {
-private:
-  using RangeSetType = RangeSet;
-  using RelationType = Relation;
 
 public:
-  using PositionType = RangeSetType::PositionType;
-  using IndexType = RangeSetType::IndexType;
-  using ElementType = RangeSetType::ElementType;
+  using PositionType = typename RelationType::SetPosition;
+  using ElementType = typename RelationType::SetElement;
 
   using RelationSubset = typename RelationType::RelationSubset;
+
+  using BivariateSetType = BivariateSet<PositionType, ElementType>;
+  using SetType = typename BivariateSetType::SetType;
+  using OrderedSetType = typename BivariateSetType::OrderedSetType;
+
+  using BivariateSetType::INVALID_POS;
 
 public:
   RelationSet() {}
@@ -51,9 +57,9 @@ public:
    * \pre relation pointer must not be a null pointer
    */
   RelationSet(RelationType* relation)
-    : BivariateSet(
-      relation ? relation->fromSet() : (Set*)&BivariateSet::s_nullSet,
-      relation ? relation->toSet()   : (Set*)&BivariateSet::s_nullSet )
+    : BivariateSetType(
+      relation ? relation->fromSet() : (SetType*)&BivariateSetType::s_nullSet,
+      relation ? relation->toSet()   : (SetType*)&BivariateSetType::s_nullSet )
     , m_relation(relation)
   {
     SLIC_ASSERT(relation != nullptr);
@@ -193,7 +199,7 @@ private:
   //hiding size() from the Set base class, replaced with totalSize().
   //but still implemented due to the function being virtual
   //(and can be called from base ptr)
-  PositionType    size() const override
+  PositionType size() const override
   {
     return PositionType( m_relation->relationData()->size() );
   }
@@ -221,7 +227,8 @@ private:
       isValidIndex(s1, s2),
       "SLAM::RelationSet -- requested out-of-range element at position ("
       << s1 << "," << s2 << "), but set only has "
-      << firstSetSize() << "x" << secondSetSize() << " elements.");
+      << this->firstSetSize() << "x"
+      << this->secondSetSize() << " elements.");
   }
 
 

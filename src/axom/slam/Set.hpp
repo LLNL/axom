@@ -6,7 +6,7 @@
 /**
  * \file Set.hpp
  *
- * \brief Basic API for a set of entities in a simulation
+ * \brief Basic API for a Set of entities in a simulation
  *
  */
 
@@ -15,8 +15,9 @@
 
 #include <cstddef>
 #include <vector>
+#include <type_traits>  // for std::common_type
 
-#include "axom/core/utilities/Utilities.hpp"
+#include "axom/core.hpp"
 #include "axom/slam/Utilities.hpp"
 
 namespace axom
@@ -28,9 +29,10 @@ namespace slam
 /**
  * \class Set
  *
- * \brief An indexed set (a tuple) of entities in a simulation
+ * \brief Abstract base class for a Set of entities in a simulation
  *
- * A container class for a set of entities in a simulation.
+ * This class defines the minimal required API for a slam Set,
+ * a container class for a set of entities in a simulation.
  * Each entity has an index.
  *
  * Examples of sets include:
@@ -69,18 +71,18 @@ namespace slam
  *
  * The interface is for constant access to the elements.
  */
+template<
+  typename PosType = slam::DefaultPositionType,
+  typename ElemType = slam::DefaultElementType >
 class Set
 {
 public:
-  typedef MeshIndexType IndexType;                          // Index into a set
-  typedef MeshSizeType PositionType;                        // Position in which
-                                                            // we are indexing
-  typedef MeshIndexType ElementType;
-
+  using PositionType = PosType;
+  using ElementType = ElemType;
 
 public:
   // Set () {}
-  virtual ~Set () {}
+  virtual ~Set () = default;
 
 
   /**
@@ -150,31 +152,37 @@ private:
 /**
  * \brief General equality operator for two sets.
  * \details Two sets are considered equal if they have the same number of
- * elements,
- * and their ordered indices agree.
+ * elements and their ordered indices agree.
  */
-inline bool operator==(Set const& set1, Set const& set2)
+template<typename P1, typename E1, typename P2, typename E2>
+inline bool operator==(const Set<P1,E1>& set1, const Set<P2, E2>& set2)
 {
-  typedef Set::PositionType PositionType;
+  using PosType = typename std::common_type<P1,P2>::type;
+  using ElemType = typename std::common_type<E1, E2>::type;
 
-  PositionType const numElts = set1.size();
+  PosType const numElts = set1.size();
 
   // Sets are different if they have a different size
   if(set2.size() != numElts)
     return false;
 
   // Otherwise, compare the indices element wise
-  for(PositionType pos = PositionType() ; pos < numElts ; ++pos)
+  for(PosType pos = PosType() ; pos < numElts ; ++pos)
   {
-    if(set1.at(pos) != set2.at(pos))
+    auto&& e1 = static_cast<ElemType&&>(set1.at(static_cast<P1>(pos)));
+    auto&& e2 = static_cast<ElemType&&>(set2.at(static_cast<P2>(pos)));
+    if (e1 != e2)
+    {
       return false;
+    }
   }
   return true;
 }
 /**
  * \brief Set inequality operator
  */
-inline bool operator!=(Set const& set1, Set const& set2)
+template<typename P1, typename E1, typename P2, typename E2>
+inline bool operator!=(const Set<P1,E1>& set1, const Set<P2, E2>& set2)
 {
   return !(set1 == set2);
 }

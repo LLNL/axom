@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /**
- * \file
+ * \file RangeSet.hpp
  *
  * \brief Basic API for an ordered set of entities in a simulation
  *
@@ -23,33 +23,47 @@ namespace slam
 
 /**
  * \class PositionSet
- * \brief Models a set whose elements belong to a contiguous range
- *  \f$ \in [0,size) \f$
+ * \brief Alias template for an OrderedSet whose elements belong
+ * to a contiguous range \f$ \in [0,size) \f$
+ *
+ * \tparam P The PositionType
+ * \tparam E The ElementType
+ * \sa OrderedSet
  */
-class PositionSet : public OrderedSet<>
+template<typename P = slam::DefaultPositionType,
+         typename E = slam::DefaultElementType>
+class PositionSet : public OrderedSet<P,E>
 {
-
-  typedef OrderedSet<> OrderedSetType;
-  static const PositionType DEFAULT_SIZE =
-    OrderedSetType::SizePolicyType::DEFAULT_VALUE;
-  static const PositionType DEFAULT_OFFSET =
-    OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
-  static const PositionType DEFAULT_STRIDE =
-    OrderedSetType::StridePolicyType::DEFAULT_VALUE;
-
 public:
-  typedef OrderedSetType::PositionType PositionType;
-  typedef OrderedSetType::IndexType IndexType;
-  typedef OrderedSetType::ElementType ElementType;
+  using PositionType = P;
+  using ElementType = E;
 
+private:
+  using OrderedSetType =  OrderedSet<P,E>;
+
+  static const PositionType DEFAULT_SIZE;
+  static const PositionType DEFAULT_OFFSET;
+  static const PositionType DEFAULT_STRIDE;
 
 public:
   PositionSet(PositionType size = DEFAULT_SIZE)
     : OrderedSetType(size, DEFAULT_OFFSET, DEFAULT_STRIDE) {}
 
-  PositionSet(const OrderedSetType::SetBuilder & builder)
+  PositionSet(const typename OrderedSetType::SetBuilder & builder)
     : OrderedSetType(builder) {}
 };
+
+template<typename P, typename E>
+const P PositionSet<P,E>::DEFAULT_SIZE =
+  PositionSet<P, E>::OrderedSetType::SizePolicyType::DEFAULT_VALUE;
+
+template<typename P, typename E>
+const P PositionSet<P, E>::DEFAULT_OFFSET =
+  PositionSet<P, E>::OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
+
+template<typename P, typename E>
+const P PositionSet<P, E>::DEFAULT_STRIDE =
+  PositionSet<P, E>::OrderedSetType::StridePolicyType::DEFAULT_VALUE;
 
 
 /**
@@ -57,100 +71,111 @@ public:
  * \brief Models a set whose elements belong to a contiguous range
  *  \f$ \in [lowerIndex,upperIndex) \f$
  *
- * \details The ElementType here needs to be computable as offsets
- *  (of PositionType) from the lowerIndex. Examples include: signed and unsigned
- *  integral types This version of a range set still allows you to have
- * different policies on striding, indirection and subsetting
+ * \note The \a ElementType here needs to be computable as offsets
+ *  (of \a PositionType) from the lowerIndex.
+ *  Examples include: signed and unsigned integral types.
+ *  This version of a range set still allows you to have
+ *  different policies on striding, indirection and subsetting
+ *  \sa OrderedSet, PositionSet, RangeSet
  */
 template<
-  typename StridingPolicy,
-  typename IndirectionPolicy,
-  typename SubsettingPolicy
-  >
+  typename P = slam::DefaultPositionType,
+  typename E = slam::DefaultElementType,
+  typename StridingPolicy = policies::StrideOne<P>,
+  typename IndirectionPolicy = policies::NoIndirection<P, E>,
+  typename SubsettingPolicy = policies::NoSubset >
 class GenericRangeSet : public OrderedSet<
-    policies::RuntimeSize<Set::PositionType>,
-    policies::RuntimeOffset<Set::PositionType>,
+    P,
+    E,
+    policies::RuntimeSize<P>,
+    policies::RuntimeOffset<P>,
     StridingPolicy,
     IndirectionPolicy,
     SubsettingPolicy >
 {
+public:
+  using PositionType = P;
+  using ElementType = E;
 
 private:
-  typedef OrderedSet<
-      policies::RuntimeSize<Set::PositionType>,
-      policies::RuntimeOffset<Set::PositionType>,
-      StridingPolicy,
-      IndirectionPolicy,
-      SubsettingPolicy                                     > OrderedSetType;
-
-  static const typename OrderedSetType::PositionType DEFAULT_SIZE =
-    OrderedSetType::SizePolicyType::DEFAULT_VALUE;
-  static const typename OrderedSetType::PositionType DEFAULT_OFFSET =
-    OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
-  static const typename OrderedSetType::PositionType DEFAULT_STRIDE =
-    OrderedSetType::StridePolicyType::DEFAULT_VALUE;
+  using OrderedSetType =
+          OrderedSet<P,E,
+                     policies::RuntimeSize<P>,
+                     policies::RuntimeOffset<P>,
+                     StridingPolicy,
+                     IndirectionPolicy,
+                     SubsettingPolicy>;
 
 public:
-  typedef typename OrderedSetType::PositionType PositionType;
-  typedef typename OrderedSetType::IndexType IndexType;
-  typedef typename OrderedSetType::ElementType ElementType;
-
-public:
-  GenericRangeSet(PositionType size = DEFAULT_SIZE)
-    : OrderedSetType(size, DEFAULT_OFFSET, DEFAULT_STRIDE) {}
+  GenericRangeSet(
+    PositionType size = OrderedSetType::SizePolicyType::DEFAULT_VALUE)
+    : OrderedSetType(size,
+                     OrderedSetType::OffsetPolicyType::DEFAULT_VALUE,
+                     OrderedSetType::StridePolicyType::DEFAULT_VALUE) {}
 
   GenericRangeSet(const typename OrderedSetType::SetBuilder & builder)
     : OrderedSetType(builder) {}
 
   GenericRangeSet(PositionType lowerIndex, PositionType upperIndex)
-    : OrderedSetType(upperIndex - lowerIndex, lowerIndex,DEFAULT_STRIDE) {}
+    : OrderedSetType(upperIndex - lowerIndex,
+                     lowerIndex,
+                     OrderedSetType::StridePolicyType::DEFAULT_VALUE) {}
 };
 
 
 /**
  * \class RangeSet
+ * \brief A specialization of GenericRangeSet with stride 1 and no indirection
  *
- * \brief Models a set whose elements belong to a contiguous range
- *  \f$ \in [lowerIndex,upperIndex) \f$
+ * \tparam P The PositionType
+ * \tparam E The ElementType
+ *  \sa GenericRangeSet, OrderedSet, PositionSet
  *
- * \details The ElementType here needs to be computable as offsets (of
- *  PositionType) from the lowerIndex Examples include: signed and unsigned
- *  integral types
+ * \note The \a ElementType needs to be computable as offsets (of
+ * \a PositionType) from the lowerIndex.
+ * Examples include: signed and unsigned integral types
  */
-class RangeSet : public OrderedSet<
-    policies::RuntimeSize<Set::PositionType>,
-    policies::RuntimeOffset<Set::PositionType> >
+template<typename P = slam::DefaultPositionType,
+         typename E = slam::DefaultElementType>
+class RangeSet : public GenericRangeSet<P,E>
 {
-
-private:
-  typedef OrderedSet< policies::RuntimeSize<Set::PositionType>,
-                      policies::RuntimeOffset<Set::PositionType>  >
-    OrderedSetType;
-
 public:
-  typedef OrderedSetType::PositionType PositionType;
-  typedef OrderedSetType::IndexType IndexType;
-  typedef OrderedSetType::ElementType ElementType;
-private:
-  static const PositionType DEFAULT_SIZE =
-    OrderedSetType::SizePolicyType::DEFAULT_VALUE;
-  static const PositionType DEFAULT_OFFSET =
-    OrderedSetType::OffsetPolicyType::DEFAULT_VALUE;
-  static const PositionType DEFAULT_STRIDE =
-    OrderedSetType::StridePolicyType::DEFAULT_VALUE;
+  using PositionType = P;
+  using ElementType = E;
 
+private:
+  using GenericRangeSetType = GenericRangeSet<P,E>;
+
+private:
+  static const PositionType DEFAULT_SIZE;
+  static const PositionType DEFAULT_OFFSET;
+  static const PositionType DEFAULT_STRIDE;
 
 public:
   RangeSet(PositionType size = DEFAULT_SIZE)
-    : OrderedSetType(size, DEFAULT_OFFSET, DEFAULT_STRIDE) {}
+    : GenericRangeSetType(size) {}
 
   RangeSet(PositionType lowerIndex, PositionType upperIndex)
-    : OrderedSetType(upperIndex - lowerIndex, lowerIndex,DEFAULT_STRIDE) {}
+    : GenericRangeSetType(lowerIndex, upperIndex) {}
 
-  RangeSet(const OrderedSetType::SetBuilder & builder) : OrderedSetType(builder)
-  {}
+  RangeSet(const typename GenericRangeSetType::SetBuilder & builder)
+    : GenericRangeSetType(builder) {}
 
 };
+
+template<typename P, typename E>
+const P RangeSet<P, E>::DEFAULT_SIZE =
+  RangeSet<P, E>::GenericRangeSetType::SizePolicyType::DEFAULT_VALUE;
+
+template<typename P, typename E>
+const P RangeSet<P, E>::DEFAULT_OFFSET =
+  RangeSet<P, E>::GenericRangeSetType::OffsetPolicyType::DEFAULT_VALUE;
+
+template<typename P, typename E>
+const P RangeSet<P, E>::DEFAULT_STRIDE =
+  RangeSet<P, E>::GenericRangeSetType::StridePolicyType::DEFAULT_VALUE;
+
+
 
 
 } // end namespace slam

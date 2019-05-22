@@ -17,9 +17,8 @@
 #include <sstream>
 #include <iostream>
 
-#include "axom/core/Macros.hpp"
-#include "axom/core/Types.hpp"
-#include "axom/slic/interface/slic.hpp"
+#include "axom/core.hpp"
+#include "axom/slic.hpp"
 
 #include "axom/slam/MapBase.hpp"
 #include "axom/slam/Set.hpp"
@@ -60,8 +59,9 @@ namespace slam
  */
 
 template<
+  typename SetType,
   typename DataType,
-  typename StridePolicy = policies::StrideOne<Set::IndexType>
+  typename StridePolicy = policies::StrideOne<typename SetType::PositionType>
   >
 class Map : public MapBase, public StridePolicy
 {
@@ -70,17 +70,19 @@ public:
   using OrderedMap = std::vector<DataType>;
   using StridePolicyType = StridePolicy;
 
-  static const NullSet s_nullSet;
+
+  using SetPosition = typename SetType::PositionType;
+  using SetElement = typename SetType::ElementType;
+  static const NullSet<SetPosition, SetElement> s_nullSet;
 
   class MapBuilder;
 
-#ifdef AXOM_USE_CXX11
+  // types for iterator
   class MapIterator;
   using const_iterator = MapIterator;
   using const_iterator_pair = std::pair<const_iterator, const_iterator>;
   using iterator = const_iterator;
   using iterator_pair = const_iterator_pair;
-#endif
 
 public:
 
@@ -97,9 +99,10 @@ public:
    *        \a stride(), when provided.
    */
 
-  Map(const Set* theSet = &s_nullSet, DataType defaultValue = DataType(),
-      Set::IndexType stride = StridePolicyType::DEFAULT_VALUE ) :
-    StridePolicyType(stride), m_set(theSet)
+  Map(const SetType* theSet = &s_nullSet,
+      DataType defaultValue = DataType(),
+      SetPosition stride = StridePolicyType::DEFAULT_VALUE )
+    :  StridePolicyType(stride), m_set(theSet)
   {
     m_data.resize( m_set->size() * StridePolicy::stride(), defaultValue);
   }
@@ -107,9 +110,9 @@ public:
   /**
    * Copy constructor from another map
    */
-  Map(const Map& otherMap) :
-    StridePolicyType(otherMap.StridePolicyType::stride()),
-    m_set(otherMap.m_set)
+  Map(const Map& otherMap)
+    : StridePolicyType(otherMap.StridePolicyType::stride())
+    , m_set(otherMap.m_set)
   {
     m_data.resize( otherMap.m_data.size() );
     copy( otherMap );
@@ -124,7 +127,8 @@ public:
     //copy the data if exists
     if (builder.m_data_ptr)
     {
-      for (SetIndex idx = SetIndex() ; idx < builder.m_set->size() ; ++idx)
+      for (SetPosition idx = SetPosition() ; idx < builder.m_set->size() ;
+           ++idx)
       {
         m_data[idx] = builder.m_data_ptr[idx];
       }
@@ -150,7 +154,7 @@ public:
   /**
    * \brief Returns a pointer to the map's underlying set
    */
-  const Set* set() const { return m_set; }
+  const SetType* set() const { return m_set; }
 
   /// \name Map individual access functions
   /// @{
@@ -228,9 +232,9 @@ public:
   /** Set each entry in the map to the given value  */
   void        fill(DataType val = DataType())
   {
-    const SetIndex sz = m_data.size();
+    const SetPosition sz = m_data.size();
 
-    for(SetIndex idx = SetIndex() ; idx < sz ; ++idx)
+    for(SetPosition idx = SetPosition() ; idx < sz ; ++idx)
     {
       m_data[idx] = val;
     }
@@ -242,8 +246,8 @@ public:
     SLIC_ASSERT( other.size() == size() );
     SLIC_ASSERT( other.stride() == StridePolicyType::stride() );
 
-    const SetIndex sz = size() * StridePolicyType::stride();
-    for(SetIndex idx = SetIndex() ; idx < sz ; ++idx)
+    const SetPosition sz = size() * StridePolicyType::stride();
+    for(SetPosition idx = SetPosition() ; idx < sz ; ++idx)
     {
       m_data[idx] = other[idx];
     }
@@ -273,7 +277,7 @@ public:
     MapBuilder() : m_set(&s_nullSet) {}
 
     /** \brief Provide the Set to be used by the Map */
-    MapBuilder& set(const Set* set)
+    MapBuilder& set(const SetType* set)
     {
       m_set = set;
       return *this;
@@ -296,7 +300,7 @@ public:
     }
 
 private:
-    const Set* m_set = &s_nullSet;
+    const SetType* m_set = &s_nullSet;
     StridePolicyType m_stride;
     DataType* m_data_ptr = nullptr;
     DataType m_defaultValue = DataType();
@@ -304,7 +308,6 @@ private:
 
 
 
-#ifdef AXOM_USE_CXX11
   /**
    * \class   MapIterator
    * \brief   An iterator type for a map.
@@ -321,10 +324,14 @@ private:
    *          the currently pointed to element (where 0 <= j < numComp()).\n
    *          For example: `iter[off]` is the same as `(iter+off)(0)`
    */
-  class MapIterator : public IteratorBase<MapIterator, DataType>
+  class MapIterator : public IteratorBase<MapIterator, SetPosition>
   {
 public:
-    using IterBase = IteratorBase<MapIterator, DataType>;
+    using iterator_category = std::random_access_iterator_tag;
+    using value_type = DataType;
+    using difference_type = SetPosition;
+
+    using IterBase = IteratorBase<MapIterator, SetPosition>;
     using iter = MapIterator;
     using PositionType = SetPosition;
     using IterBase::m_pos;
@@ -362,7 +369,7 @@ public:
 
     DataType & operator[](PositionType n)
     {
-      return *(this->operator+(n));
+      return *(*this+n);
     }
 
     /** \brief Returns the number of components per element in the Map. */
@@ -383,10 +390,6 @@ public:     // Functions related to iteration
   MapIterator         begin()   {    return MapIterator(0, this);  }
   MapIterator         end()     {    return MapIterator(size(), this); }
   const_iterator_pair range() const { return std::make_pair(begin(), end()); }
-
-#endif //AXOM_USE_CXX11
-
-
 
 
 public:
@@ -424,7 +427,7 @@ private:
   }
 
 private:
-  const Set* m_set;
+  const SetType* m_set;
   OrderedMap m_data;
 };
 
@@ -435,12 +438,13 @@ private:
  * \note Should this be a singleton or a global object?  Should the scope be
  * public?
  */
-template<typename DataType, typename StridePolicy>
-NullSet const Map<DataType, StridePolicy>::s_nullSet;
+template<typename SetType, typename DataType, typename StridePolicy>
+NullSet<typename SetType::PositionType, typename SetType::ElementType>
+const Map<SetType, DataType, StridePolicy>::s_nullSet;
 
 
-template<typename DataType, typename StridePolicy>
-bool Map<DataType, StridePolicy>::isValid(bool verboseOutput) const
+template<typename SetType, typename DataType, typename StridePolicy>
+bool Map<SetType, DataType, StridePolicy>::isValid(bool verboseOutput) const
 {
   bool bValid = true;
 
@@ -502,8 +506,8 @@ bool Map<DataType, StridePolicy>::isValid(bool verboseOutput) const
 }
 
 
-template<typename DataType, typename StridePolicy>
-void Map<DataType, StridePolicy>::print() const
+template<typename SetType, typename DataType, typename StridePolicy>
+void Map<SetType, DataType, StridePolicy>::print() const
 {
   bool valid = isValid(true);
   std::stringstream sstr;
@@ -534,8 +538,6 @@ void Map<DataType, StridePolicy>::print() const
 
   std::cout << sstr.str() << std::endl;
 }
-
-
 
 
 } // end namespace slam

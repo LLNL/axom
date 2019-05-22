@@ -65,11 +65,12 @@ public:
   using LatticeType = RectangularLattice<NDIMS, double, IndexType>;
 
   using SizePolicy = slam::policies::RuntimeSize<IndexType>;
-  using ElementSet = slam::OrderedSet< SizePolicy >;
-  using BinSet = slam::OrderedSet< SizePolicy >;
+  using ElementSet = slam::OrderedSet<IndexType,IndexType,SizePolicy>;
+  using BinSet = slam::OrderedSet<IndexType,IndexType, SizePolicy>;
 
-  using BitsetType= slam::BitSet;
-  using BinBitMap = slam::Map<BitsetType>;
+
+  using BitsetType = slam::BitSet;
+  using BinBitMap = slam::Map<slam::Set<>, BitsetType>;
 
   /*!
    * \brief Default constructor for an ImplicitGrid
@@ -223,8 +224,8 @@ public:
 
     bbox.expand(m_expansionFactor);
 
-    const GridCell& lowerCell = m_lattice.gridCell( bbox.getMin() );
-    const GridCell& upperCell = m_lattice.gridCell( bbox.getMax() );
+    const GridCell lowerCell = m_lattice.gridCell( bbox.getMin() );
+    const GridCell upperCell = m_lattice.gridCell( bbox.getMax() );
 
     for(int i=0 ; i< NDIMS ; ++i)
     {
@@ -287,8 +288,8 @@ public:
     if(!m_initialized || !m_bb.intersectsWith(box) )
       return BitsetType(0);
 
-    const GridCell& lowerCell = m_lattice.gridCell(box.getMin());
-    const GridCell& upperCell = m_lattice.gridCell(box.getMax());
+    const GridCell lowerCell = m_lattice.gridCell(box.getMin());
+    const GridCell upperCell = m_lattice.gridCell(box.getMax());
 
     BitsetType bits = getBitsInRange(0, lowerCell[0], upperCell[0]);
 

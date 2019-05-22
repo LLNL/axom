@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-/**
+/*
  * \file slam_map_DynamicMap.cpp
  *
  * \brief Unit tests for slam's DynamicMap
@@ -16,19 +16,23 @@
 #include "axom/slam/DynamicSet.hpp"
 #include "axom/slam/DynamicMap.hpp"
 
-#include "axom/slic/interface/slic.hpp"
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
+#include "axom/slic.hpp"
 
+namespace
+{
 
-typedef axom::slam::DynamicSet<> SetType;
-typedef SetType::PositionType SetPosition;
-typedef SetType::ElementType SetElement;
+namespace slam = axom::slam;
+
+using SetPosition = slam::DefaultPositionType;
+using SetElement = slam::DefaultElementType;
+using SetType = slam::DynamicSet<SetPosition, SetElement>;
 
 static const SetPosition MAX_SET_SIZE = 10;
 
-typedef axom::slam::DynamicMap<int>    IntMap;
-typedef axom::slam::DynamicMap<double> RealMap;
+using IntMap = slam::DynamicMap<SetType, int>;
+using RealMap = slam::DynamicMap<SetType, double>;
+
+} // end anonymous namespace
 
 TEST(slam_map,construct_empty_map)
 {
@@ -119,7 +123,7 @@ int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
 
-  UnitTestLogger logger;  // create & initialize test logger,
+  axom::slic::UnitTestLogger logger;  // create & initialize test logger,
   axom::slic::setLoggingMsgLevel( axom::slic::message::Info );
 
   int result = RUN_ALL_TESTS();

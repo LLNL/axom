@@ -35,14 +35,21 @@ namespace slam
  *
  * \see   BivariateSet
  */
-class ProductSet : public BivariateSet, RangeSet
+template<
+  typename PosType = slam::DefaultPositionType,
+  typename ElemType = slam::DefaultElementType >
+class ProductSet
+  : public BivariateSet<PosType,ElemType>
+  , RangeSet<PosType,ElemType>
 {
-  using SetType = Set;
 public:
-  using RangeSetType = RangeSet;
-  using PositionType = BivariateSet::PositionType;
-  using ElementType = BivariateSet::ElementType;
-  using OrderedSetType = BivariateSet::OrderedSetType;
+  using BivariateSetType = BivariateSet<PosType,ElemType>;
+  using PositionType = typename BivariateSetType::PositionType;
+  using ElementType = typename BivariateSetType::ElementType;
+  using SetType = typename BivariateSetType::SetType;
+  using OrderedSetType = typename BivariateSetType::OrderedSetType;
+
+  using RangeSetType = RangeSet<PosType,ElemType>;
 
   /** \brief Default constructor */
   ProductSet() {}
@@ -54,18 +61,20 @@ public:
    * \param set2  Pointer to the second Set.
    */
 
-  ProductSet(Set* set1, Set* set2) :
-    BivariateSet(set1,set2), RangeSet(set1->size()*set2->size())
+  ProductSet(SetType* set1, SetType* set2) :
+    BivariateSetType(set1,set2), RangeSetType(set1->size()*set2->size())
   {
+    using OrderedSetBuilder = typename OrderedSetType::SetBuilder;
+
     //fill in the row data now for getElements(i) function,
     //since every row is the same, a call to getElements() returns the same set.
-    PositionType size2 = secondSetSize();
+    PositionType size2 = this->secondSetSize();
     m_rowSet_data.resize(size2);
     for (int s2 = 0 ; s2 < size2 ; s2++)
     {
       m_rowSet_data[s2] = s2;
     }
-    m_rowSet = OrderedSetType::SetBuilder()
+    m_rowSet = OrderedSetBuilder()
                .size(size2)
                .offset(0)
                .data(&m_rowSet_data);
@@ -102,7 +111,7 @@ public:
                                     PositionType pos2) const override
   {
     isValidIndex(pos1, pos2);
-    PositionType size2 = secondSetSize();
+    PositionType size2 = this->secondSetSize();
     PositionType pos = size2 * pos1 + pos2;
 
     return pos;
@@ -130,36 +139,36 @@ public:
   const OrderedSetType getElements(
     PositionType AXOM_DEBUG_PARAM(pos1) ) const override
   {
-    SLIC_ASSERT(pos1 >= 0 && pos1 < firstSetSize());
+    SLIC_ASSERT(pos1 >= 0 && pos1 < this->firstSetSize());
 
     return m_rowSet;
   }
 
   ElementType at(PositionType pos) const override {
-    return pos % secondSetSize();
+    return pos % this->secondSetSize();
   }
 
   PositionType size() const override
   {
-    return firstSetSize()*secondSetSize();
+    return this->firstSetSize()*this->secondSetSize();
   }
 
   PositionType size(PositionType) const override
   {
-    return secondSetSize();
+    return this->secondSetSize();
   }
 
   bool isValidIndex(PositionType s1, PositionType s2) const
   {
-    PositionType size1 = firstSetSize();
-    PositionType size2 = secondSetSize();
+    PositionType size1 = this->firstSetSize();
+    PositionType size2 = this->secondSetSize();
     return s1 >= 0 && s1 < size1 && s2 >= 0 && s2 < size2;
   }
 
   bool isValid(bool verboseOutput = false) const override
   {
-    return BivariateSet::isValid(verboseOutput) &&
-           RangeSet::isValid(verboseOutput);
+    return BivariateSetType::isValid(verboseOutput) &&
+           RangeSetType::isValid(verboseOutput);
   }
 
 private:
@@ -181,7 +190,8 @@ private:
       isValidIndex(pos1,pos2),
       "SLAM::ProductSet -- requested out-of-range element at position ("
       << pos1 << "," << pos2 << "), but set only has "
-      << firstSetSize() << "x" << secondSetSize() << " elements.");
+      << this->firstSetSize() << "x"
+      << this->secondSetSize() << " elements.");
   }
 
 private:

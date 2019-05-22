@@ -86,7 +86,7 @@ template<
 struct OrderedSet :
   public Set, TranslationPolicy, IndirectionPolicy, StridePolicy
 {
-  typedef TranslationPolicy MyTranslationPolicy;
+  using MyTranslationPolicy = TranslationPolicy;
 
 
   OrderedSet(int sz) : TranslationPolicy(0,sz) {}
@@ -111,24 +111,24 @@ struct OrderedSet :
 
 struct PositionSet : OrderedSet<int>
 {
-  typedef OrderedSet<int>                 ParentType;
-  typedef ParentType::MyTranslationPolicy MyTranslationPolicy;
+  using ParentType = OrderedSet<int>;
+  using MyTranslationPolicy = ParentType::MyTranslationPolicy;
 
   PositionSet(int n) : ParentType(n) {}
 };
 
 struct RangeSet : OrderedSet<int, HasTranslation>
 {
-  typedef OrderedSet<int, HasTranslation> ParentType;
-  typedef ParentType::MyTranslationPolicy MyTranslationPolicy;
+  using ParentType = OrderedSet<int, HasTranslation>;
+  using MyTranslationPolicy = ParentType::MyTranslationPolicy;
 
   RangeSet(int lo, int hi) : ParentType(lo,hi) {}
 };
 
 struct IndirectionSet : OrderedSet<int, NoTranslation, HasIndirection>
 {
-  typedef OrderedSet<int, NoTranslation, HasIndirection>  ParentType;
-  typedef ParentType::MyTranslationPolicy MyTranslationPolicy;
+  using ParentType =  OrderedSet<int, NoTranslation, HasIndirection>;
+  using MyTranslationPolicy = ParentType::MyTranslationPolicy;
 
   IndirectionSet(int n) : ParentType(n) {}
 };
@@ -156,8 +156,7 @@ struct IndirectionSet : OrderedSet<int, NoTranslation, HasIndirection>
    }
  */
 
-//typedef long long int ResType;
-typedef int ResType;
+using ResType = int; // = long long int;
 
 template<typename SetType>
 inline ResType sumSet(const SetType& set)

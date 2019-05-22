@@ -44,6 +44,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Deprecated
 
 ### Changed
+- Slam's Set and Relation classes are now parameterized by a PositionType and ElementType.
+  Its Map classes are now parametrized by a SetType.
 - Updated the fmt tpl.
 - Replaced old quest C-style interface with a new quest inout API.
   Functions related to the inout point containment query are prefixed with "inout_".

@@ -3,14 +3,16 @@
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
+=======================
 Slam User Documentation
 =======================
 
 Axom's Set-theoretic Lightweight API for Meshes (SLAM) component provides high performance
 building blocks for distributed-memory mesh data structures in HPC simulation codes.
 
-Introduction
-------------
+.. raw:: html
+
+    <h2>Introduction</h2>
 
 Simulation codes have a broad range of requirements for their mesh data structures,
 spanning the complexity gamut from structured Cartesian grids to fully unstructured
@@ -22,8 +24,9 @@ Slam targets the low level implementation of these distributed mesh data structu
 aimed at developers who implement mesh data structures within HPC applications.
 
 
-Set-theoretic abstraction
-^^^^^^^^^^^^^^^^^^^^^^^^^
+.. raw:: html
+
+    <h3>Set-theoretic abstraction</h3>
 
 Slam's design is motivated by the observation that despite vast differences in the high
 level features of such mesh data structures, many of the core concepts are shared at a
@@ -45,8 +48,10 @@ domain scientists) who operate on the meshes that are built up from Slam's abstr
 See :ref:`srm-label` for more details.
 
 
-Policy-based design
-^^^^^^^^^^^^^^^^^^^
+.. raw:: html
+
+    <h3>Policy-based design</h3>
+
 
 There is considerable variability in how these abstractions can be implemented and user
 codes make many different design choices.  For example, we often need different data
@@ -70,8 +75,9 @@ relations and maps and to extend support for custom features extend the basic in
 See :ref:`policy-label` for more details.
 
 
-Current limitations
-^^^^^^^^^^^^^^^^^^^
+.. raw:: html
+
+    <h3>Current limitations</h3>
 
 * Slam is under active development with many features planned.
 * Support for GPUs in Slam is under development.
@@ -81,8 +87,9 @@ Current limitations
   within a mesh configuration.
 
 
-Contents
-^^^^^^^^
+.. raw:: html
+
+    <h3>Contents</h3>
 
 .. toctree::
    :maxdepth: 2
@@ -94,8 +101,10 @@ Contents
 .. examples
 .. more
 
-Additional links
-^^^^^^^^^^^^^^^^
+.. raw:: html
+
+    <h3>Additional links</h3>
+
 
 * `API documentation <../../../doxygen/axom_doxygen/html/slamtop.html>`_
 * `Axom main docs <../../web_main_docs/html/index.html>`_

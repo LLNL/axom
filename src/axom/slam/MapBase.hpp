@@ -36,11 +36,9 @@ namespace slam
 class MapBase
 {
 public:
-  using SetIndex = Set::IndexType;
-  using SetPosition = Set::PositionType;
+  using SetPosition = slam::DefaultPositionType;
 
 public:
-  //MapBase(){};
   virtual ~MapBase() {};
 
   /**
@@ -53,12 +51,11 @@ public:
    * \brief Checks whether the Map is valid.
    * \return   True if valid, false otherwise.
    */
-  virtual bool        isValid(bool verboseOutput) const = 0;
+  virtual bool isValid(bool verboseOutput) const = 0;
 
 private:
   /**
-   * \brief Utility function to verify that the given SetPosition is in a valid
-   * range.
+   * \brief Utility function to verify that a SetPosition is in a valid range.
    */
   virtual void verifyPosition(SetPosition)       const = 0;
 

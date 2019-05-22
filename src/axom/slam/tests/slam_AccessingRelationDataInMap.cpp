@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-/**
+/*
  * \file slam_AccessingRelationDataInMap.cpp
  *
  * \brief This file tests Sets, Relations and Maps working together.
@@ -18,7 +18,7 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/slic/interface/slic.hpp"
+#include "axom/slic.hpp"
 
 #include "axom/slam/ModularInt.hpp"
 #include "axom/slam/RangeSet.hpp"
@@ -39,41 +39,42 @@ namespace
 namespace slam = axom::slam;
 namespace policies = axom::slam::policies;
 
-using slam::RangeSet;
-using slam::Relation;
+using SetPosition = slam::DefaultPositionType;
+using SetElement = slam::DefaultElementType;
 
-typedef RangeSet::ElementType ElementType;
-typedef RangeSet::PositionType PositionType;
-typedef PositionType SetPosition;
-typedef std::vector<SetPosition>  IndexVec;
+using RangeSetType = slam::RangeSet<SetPosition, SetElement>;
+using RelationType = slam::Relation<SetPosition, SetElement>;
 
-const PositionType FROMSET_SIZE = 10;
-const PositionType TOSET_SIZE = 8;
+using IndexVec = std::vector<SetPosition>;
 
-typedef policies::STLVectorIndirection<PositionType, PositionType>
-  STLIndirection;
-typedef policies::ArrayIndirection<PositionType, PositionType>
-  ArrayIndirection;
+const SetPosition FROMSET_SIZE = 10;
+const SetPosition TOSET_SIZE = 8;
 
-typedef policies::VariableCardinality<PositionType, STLIndirection>
-  VariableCardinality;
+using STLIndirection =
+        policies::STLVectorIndirection<SetPosition, SetElement>;
 
-typedef slam::StaticRelation<VariableCardinality, STLIndirection,
-                             slam::RangeSet,slam::RangeSet>
-  StaticVariableRelationType;
+using ArrayIndirection =
+        policies::ArrayIndirection<SetPosition, SetElement>;
 
+using VariableCardinality =
+        policies::VariableCardinality<SetPosition, STLIndirection>;
+
+using StaticVariableRelationType =
+        slam::StaticRelation<SetPosition, SetElement,
+                             VariableCardinality, STLIndirection,
+                             RangeSetType, RangeSetType>;
 
 // Use a slam::ModularInt type for more interesting test data
-typedef policies::CompileTimeSize<PositionType, TOSET_SIZE >  CTSize;
-typedef slam::ModularInt< CTSize >                            FixedModularInt;
+using CTSize = policies::CompileTimeSize<SetPosition, TOSET_SIZE >;
+using FixedModularInt = slam::ModularInt< CTSize >;
 
 
-PositionType elementCardinality(PositionType fromPos)
+SetPosition elementCardinality(SetPosition fromPos)
 {
   return fromPos;
 }
 
-PositionType relationData(PositionType fromPos, PositionType toPos)
+SetPosition relationData(SetPosition fromPos, SetPosition toPos)
 {
   return FixedModularInt(fromPos + toPos);
 }
@@ -87,7 +88,7 @@ void printVector(StrType const& msg, VecType const& vec)
   sstr << "\n** " << msg << "\n\t";
   sstr << "Array of size " << vec.size() << ": ";
   std::copy(vec.begin(), vec.end(),
-            std::ostream_iterator<PositionType>(sstr, " "));
+            std::ostream_iterator<SetPosition>(sstr, " "));
 
   SLIC_INFO( sstr.str() );
 }
@@ -99,12 +100,12 @@ void generateIncrementingRelations(VecType* begins, VecType* offsets)
   VecType& beginsVec = *begins;
   VecType& offsetsVec = *offsets;
 
-  PositionType curIdx = PositionType();
+  auto curIdx = SetPosition();
 
-  for(PositionType i = 0 ; i < FROMSET_SIZE ; ++i)
+  for(auto i = 0 ; i < FROMSET_SIZE ; ++i)
   {
     beginsVec.push_back( curIdx );
-    for(PositionType j = 0 ; j < elementCardinality(i) ; ++j)
+    for(auto j = 0 ; j < elementCardinality(i) ; ++j)
     {
       offsetsVec.push_back( relationData(i,j) );
       ++curIdx;
@@ -113,7 +114,7 @@ void generateIncrementingRelations(VecType* begins, VecType* offsets)
   beginsVec.push_back ( curIdx );
 }
 
-}
+} // end anonymous namesapce
 
 TEST(slam_set_relation_map,access_pattern)
 {
@@ -122,7 +123,7 @@ TEST(slam_set_relation_map,access_pattern)
   IndexVec relOffsets, relIndices;
   generateIncrementingRelations(&relOffsets, &relIndices);
 
-  RangeSet fromSet(FROMSET_SIZE), toSet(TOSET_SIZE);
+  RangeSetType fromSet(FROMSET_SIZE), toSet(TOSET_SIZE);
   StaticVariableRelationType incrementingRel(&fromSet, &toSet);
   incrementingRel.bindBeginOffsets(fromSet.size(), &relOffsets);
   incrementingRel.bindIndices(relIndices.size(), &relIndices);
@@ -133,7 +134,7 @@ TEST(slam_set_relation_map,access_pattern)
   EXPECT_TRUE(incrementingRel.isValid(true));
 
   SLIC_INFO("-- Looking at relation's stored values...");
-  for(SetPosition fromPos = SetPosition() ; fromPos < fromSet.size() ;
+  for(auto fromPos = SetPosition() ; fromPos < fromSet.size() ;
       ++fromPos)
   {
     SLIC_INFO(
@@ -141,10 +142,10 @@ TEST(slam_set_relation_map,access_pattern)
       << fromSet[fromPos]
       << " in position " << fromPos << " of first set.");
 
-    for(SetPosition idx = 0 ; idx< incrementingRel.size( fromPos ) ; ++idx)
+    for(auto idx = 0 ; idx< incrementingRel.size( fromPos ) ; ++idx)
     {
-      SetPosition posInToSet_actual = incrementingRel[fromPos][idx];
-      SetPosition posInToSet_expected = relationData(fromPos,idx);
+      auto posInToSet_actual = incrementingRel[fromPos][idx];
+      auto posInToSet_expected = relationData(fromPos,idx);
       EXPECT_EQ( posInToSet_expected, posInToSet_actual);
 
       SLIC_INFO(
@@ -160,8 +161,6 @@ TEST(slam_set_relation_map,access_pattern)
 
 
 //----------------------------------------------------------------------
-//----------------------------------------------------------------------
-#include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])
@@ -171,8 +170,7 @@ int main(int argc, char* argv[])
   ::testing::InitGoogleTest(&argc, argv);
 
   // create & initialize test logger. finalized when exiting main scope
-  UnitTestLogger logger;
-
+  axom::slic::UnitTestLogger logger;
   // axom::slic::setLoggingMsgLevel( axom::slic::message::Debug);
 
   result = RUN_ALL_TESTS();

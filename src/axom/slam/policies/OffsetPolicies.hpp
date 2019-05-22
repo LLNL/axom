@@ -48,21 +48,24 @@ template<typename IntType>
 struct RuntimeOffset
 {
 public:
-  static const IntType DEFAULT_VALUE = IntType();
+  static const IntType DEFAULT_VALUE;
 
   RuntimeOffset(IntType off = DEFAULT_VALUE) : m_off(off) {}
 
-  inline IntType          offset() const { return m_off; }
-  inline IntType&         offset() { return m_off; }
+  inline IntType offset() const { return m_off; }
+  inline IntType& offset() { return m_off; }
 
   inline IntType operator ()() const { return offset(); }
   inline IntType& operator()() { return offset(); }
 
-  inline bool             isValid(bool) const { return true; }
+  inline bool isValid(bool) const { return true; }
+
 private:
   IntType m_off;
 };
 
+template<typename IntType>
+const IntType RuntimeOffset<IntType>::DEFAULT_VALUE = IntType {};
 
 /**
  * \brief A policy class for a compile-time known set offset
@@ -81,11 +84,11 @@ struct CompileTimeOffset
       << "the template parameter of " << INT_VAL << ".");
   }
 
-  inline IntType          offset() const { return INT_VAL; }
+  inline IntType offset() const { return INT_VAL; }
 
   inline IntType operator ()() const { return offset(); }
 
-  inline bool             isValid(bool) const { return true; }
+  inline bool isValid(bool) const { return true; }
 };
 
 /**
@@ -94,7 +97,7 @@ struct CompileTimeOffset
 template<typename IntType>
 struct ZeroOffset
 {
-  static const IntType DEFAULT_VALUE = IntType();
+  static const IntType DEFAULT_VALUE;
 
   ZeroOffset(IntType val = DEFAULT_VALUE)
   {
@@ -102,15 +105,19 @@ struct ZeroOffset
     SLIC_ASSERT_MSG(
       val == DEFAULT_VALUE,
       "slam::ZeroOffset policy -- tried to initialize a NoOffset policy"
-      << " with (" << val << ", but should always be 0");
+      << " with offset value " << val << ", but should always be 0");
   }
 
-  inline IntType          offset() const { return DEFAULT_VALUE; }
+  inline IntType offset() const { return DEFAULT_VALUE; }
 
   inline IntType operator ()() const { return offset(); }
 
-  inline bool             isValid(bool) const { return true; }
+  inline bool isValid(bool) const { return true; }
 };
+
+template<typename IntType>
+const IntType ZeroOffset<IntType>::DEFAULT_VALUE = IntType {};
+
 
 /// \}
 
