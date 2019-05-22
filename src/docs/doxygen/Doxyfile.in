@@ -786,6 +786,7 @@ INPUT                  = @PROJECT_SOURCE_DIR@/axom/mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/mint/mesh \
                          @PROJECT_SOURCE_DIR@/axom/mint/utils \
                          @PROJECT_SOURCE_DIR@/axom/mint/execution \
+                         @PROJECT_SOURCE_DIR@/axom/mir/README.md \
                          @PROJECT_SOURCE_DIR@/axom/primal/README.md \
                          @PROJECT_SOURCE_DIR@/axom/primal/geometry \
                          @PROJECT_SOURCE_DIR@/axom/primal/operators \
