@@ -61,6 +61,7 @@ for Axom software components:
    Spin (Spatial indexes) <axom/spin/docs/sphinx/index>
    Quest (Querying on surface tool) <axom/quest/docs/sphinx/index>
    Mint (Mesh data model) <axom/mint/docs/sphinx/index>
+   Mir (Material interface reconstruction) <axom/mir/docs/sphinx/index>
    Primal (Computational geometry primitives) <axom/primal/docs/sphinx/index>
 
 --------------------------
@@ -71,6 +72,7 @@ Source Code Documentation
   *  `Core <../../../doxygen/axom_doxygen/html/coretop.html>`_
   *  `Lumberjack <../../../doxygen/axom_doxygen/html/lumberjacktop.html>`_
   *  `Mint <../../../doxygen/axom_doxygen/html/minttop.html>`_
+  *  `Mir <../../../doxygen/axom_doxygen/html/mirtop.html>`_
   *  `Primal <../../../doxygen/axom_doxygen/html/primaltop.html>`_
   *  `Quest <../../../doxygen/axom_doxygen/html/questtop.html>`_
   *  `Sidre <../../../doxygen/axom_doxygen/html/sidretop.html>`_
@@ -86,6 +88,7 @@ Dependencies between modules are as follows:
 - Slic optionally depends on Lumberjack
 - Slam, Spin, Primal, Mint, Quest, and Sidre depend on Slic
 - Mint optionally depends on Sidre
+- Mir depends on Slic
 - Quest depends on Slam, Spin, Primal, and Mint
 
 The figure below summarizes the dependencies between the modules.  Solid links

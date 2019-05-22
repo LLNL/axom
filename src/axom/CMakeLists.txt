@@ -30,6 +30,7 @@ axom_add_component(COMPONENT_NAME spin   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONE
 axom_add_component(COMPONENT_NAME sidre  DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 axom_add_component(COMPONENT_NAME mint   DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 axom_add_component(COMPONENT_NAME quest  DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
+axom_add_component(COMPONENT_NAME mir    DEFAULT_STATE ${AXOM_ENABLE_ALL_COMPONENTS})
 
 # Combine all component object libraries into a unified library
 blt_add_library(NAME       axom
