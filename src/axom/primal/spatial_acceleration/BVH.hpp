@@ -6,18 +6,24 @@
 #ifndef AXOM_PRIMAL_BVH_H_
 #define AXOM_PRIMAL_BVH_H_
 
-#include "axom/config.hpp"               // for Axom compile-time definitions
-#include "axom/core/Macros.hpp"          // for Axom macros
-#include "axom/core/Types.hpp"           // for fixed bitwidth types
-#include "axom/slic/interface/slic.hpp"  // for SLIC macros
+#include "axom/config.hpp"                 // for Axom compile-time definitions
+#include "axom/core/Macros.hpp"            // for Axom macros
+#include "axom/core/memory_management.hpp" // for memory functions
+#include "axom/core/Types.hpp"             // for fixed bitwidth types
+#include "axom/slic/interface/slic.hpp"    // for SLIC macros
 
 #include "axom/primal/spatial_acceleration/linear_bvh/bvh_builder.hpp"
+#include "axom/primal/spatial_acceleration/linear_bvh/bvh_traverse.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/bvh_vtkio.hpp"
 
 // C/C++ includes
 #include <fstream>  // for std::ofstream
 #include <sstream>  // for std::ostringstream
 #include <string>   // for std::string
+
+#ifdef AXOM_USE_RAJA
+#include "RAJA/RAJA.hpp"
+#endif
 
 namespace axom
 {
@@ -142,12 +148,12 @@ public:
    * \pre y != nullptr if dimension==2 || dimension==3
    * \pre z != nullptr if dimension==3
    */
-  void find( IndexType* offsets,
-             IndexType*& candidates,
-             IndexType numPts,
-             const FloatType* x,
-             const FloatType* y,
-             const FloatType* z = nullptr ) const;
+  /// @{
+  void find( IndexType* offsets, IndexType*& candidates, IndexType numPts,
+             const FloatType* x, const FloatType* y ) const;
+  void find( IndexType* offsets, IndexType*& candidates, IndexType numPts,
+             const FloatType* x, const FloatType* y, const FloatType* z ) const;
+  /// @}
 
   /*!
    * \brief Writes the BVH to the specified VTK file for visualization.
@@ -217,7 +223,252 @@ void BVH< NDIMS, FloatType >::find( IndexType* offsets,
                                     const FloatType* y,
                                     const FloatType* z ) const
 {
-  // TODO: implement this
+  AXOM_STATIC_ASSERT_MSG( NDIMS==3,
+      "The 3D version of find() must be called on a 3D BVH" );
+
+  SLIC_ASSERT( offsets != nullptr );
+  SLIC_ASSERT( candidates == nullptr );
+
+  // STEP 0: count candidates
+  IndexType* candidate_counts = axom::allocate< IndexType >( numPts );
+
+  using exec_pol = bvh::raja_for_policy;
+  RAJA::forall< exec_pol >(
+      RAJA::RangeSegment(0,numPts), AXOM_LAMBDA(IndexType i)
+  {
+
+    int32 count = 0;
+
+    bvh::Vec< FloatType, NDIMS > point;
+    point[ 0 ] = x[ i ];
+    point[ 1 ] = y[ i ];
+    point[ 2 ] = z[ i ];
+
+    auto inLeft = [&] AXOM_DEVICE ( const bvh::Vec< FloatType,4 >& s1,
+                                    const bvh::Vec< FloatType,4 >& s2  )
+    {
+      bool in_left = true;
+      if(point[0]  < s1[0]) in_left = false; // L.x min
+      if(point[1]  < s1[1]) in_left = false; // L.y min
+      if(point[2]  < s1[2]) in_left = false; // L.z min
+
+      if(point[0]  > s2[3]) in_left = false; // L.x max
+      if(point[1]  > s2[0]) in_left = false; // L.y max
+      if(point[2]  > s2[1]) in_left = false; // L.z max
+      return in_left;
+    };
+
+    auto inRight = [&] AXOM_DEVICE ( const bvh::Vec< FloatType,4 >& s2,
+                                     const bvh::Vec< FloatType,4 >& s3 )
+    {
+      bool in_right = true;
+      if(point[0]  < s2[2]) in_right = false; // R.x min
+      if(point[1]  < s2[3]) in_right = false; // R.y min
+      if(point[2]  < s3[0]) in_right = false; // R.z min
+
+      if(point[0]  > s3[1]) in_right = false; // R.x max
+      if(point[1]  > s3[2]) in_right = false; // R.y max
+      if(point[2]  > s3[3]) in_right = false; // R.z max
+      return in_right;
+    };
+
+    auto leafKernel = [&] AXOM_DEVICE (
+                        int32 AXOM_NOT_USED(current_node),
+                        const bvh::BVH< FloatType,NDIMS >& AXOM_NOT_USED(bvh) )
+    {
+      ++count;
+    };
+
+    bvh_traverse< NDIMS, FloatType >( m_bvh, inLeft, inRight, leafKernel );
+
+    candidate_counts[ i ] = count;
+  } );
+
+  // STEP 1: prefix sum of candidate counts
+  RAJA::exclusive_scan< bvh::raja_for_policy >(
+      candidate_counts, candidate_counts + numPts, offsets,
+      RAJA::operators::plus<IndexType>{} );
+
+  // STEP 2: populate candidates
+  // TODO: this will segault with raw(unmanaged) cuda pointers
+  IndexType total_candidates = offsets[numPts-1] + candidate_counts[numPts-1];
+
+  candidates = axom::allocate< IndexType >( total_candidates );
+
+  RAJA::forall< exec_pol >(
+        RAJA::RangeSegment(0,numPts), AXOM_LAMBDA(IndexType i)
+    {
+
+      int32 offset = offsets[ i ];
+
+      bvh::Vec< FloatType, NDIMS > point;
+      point[ 0 ] = x[ i ];
+      point[ 1 ] = y[ i ];
+      point[ 2 ] = z[ i ];
+
+      auto inLeft = [&] AXOM_DEVICE ( const bvh::Vec< FloatType,4 >& s1,
+                                      const bvh::Vec< FloatType,4 >& s2  )
+      {
+        bool in_left = true;
+        if(point[0]  < s1[0]) in_left = false; // L.x min
+        if(point[1]  < s1[1]) in_left = false; // L.y min
+        if(point[2]  < s1[2]) in_left = false; // L.z min
+
+        if(point[0]  > s2[3]) in_left = false; // L.x max
+        if(point[1]  > s2[0]) in_left = false; // L.y max
+        if(point[2]  > s2[1]) in_left = false; // L.z max
+        return in_left;
+      };
+
+      auto inRight = [&] AXOM_DEVICE ( const bvh::Vec< FloatType,4 >& s2,
+                                       const bvh::Vec< FloatType,4 >& s3 )
+      {
+        bool in_right = true;
+        if(point[0]  < s2[2]) in_right = false; // R.x min
+        if(point[1]  < s2[3]) in_right = false; // R.y min
+        if(point[2]  < s3[0]) in_right = false; // R.z min
+
+        if(point[0]  > s3[1]) in_right = false; // R.x max
+        if(point[1]  > s3[2]) in_right = false; // R.y max
+        if(point[2]  > s3[3]) in_right = false; // R.z max
+        return in_right;
+      };
+
+      auto leafKernel = [&] AXOM_DEVICE (
+                          int32 current_node,
+                          const bvh::BVH< FloatType,NDIMS >& bvh )
+      {
+        candidates[ offset ] = bvh.m_leaf_nodes[ current_node ];
+        ++offset;
+      };
+
+      bvh_traverse< NDIMS, FloatType >( m_bvh, inLeft, inRight, leafKernel );
+
+    } );
+
+}
+
+//------------------------------------------------------------------------------
+template< int NDIMS, typename FloatType >
+void BVH< NDIMS, FloatType >::find( IndexType* offsets,
+                                    IndexType*& candidates,
+                                    IndexType numPts,
+                                    const FloatType* x,
+                                    const FloatType* y ) const
+{
+  AXOM_STATIC_ASSERT_MSG( NDIMS==2,
+        "The 2D version of find() must be called on a 2D BVH" );
+
+  SLIC_ASSERT( offsets != nullptr );
+  SLIC_ASSERT( candidates == nullptr );
+
+  // STEP 0: count candidates
+  IndexType* candidate_counts = axom::allocate< IndexType >( numPts );
+
+  using exec_pol = bvh::raja_for_policy;
+  RAJA::forall< exec_pol >(
+      RAJA::RangeSegment(0,numPts), AXOM_LAMBDA(IndexType i)
+  {
+
+    int32 count = 0;
+
+    bvh::Vec< FloatType, NDIMS > point;
+    point[ 0 ] = x[ i ];
+    point[ 1 ] = y[ i ];
+
+    auto inLeft = [&] AXOM_DEVICE ( const bvh::Vec< FloatType,4 >& s1,
+                                    const bvh::Vec< FloatType,4 >& s2  )
+    {
+      bool in_left = true;
+      if(point[0]  < s1[0]) in_left = false; // L.x min
+      if(point[1]  < s1[1]) in_left = false; // L.y min
+
+      if(point[0]  > s2[3]) in_left = false; // L.x max
+      if(point[1]  > s2[0]) in_left = false; // L.y max
+      return in_left;
+    };
+
+    auto inRight = [&] AXOM_DEVICE ( const bvh::Vec< FloatType,4 >& s2,
+                                     const bvh::Vec< FloatType,4 >& s3 )
+    {
+      bool in_right = true;
+      if(point[0]  < s2[2]) in_right = false; // R.x min
+      if(point[1]  < s2[3]) in_right = false; // R.y min
+
+      if(point[0]  > s3[1]) in_right = false; // R.x max
+      if(point[1]  > s3[2]) in_right = false; // R.y max
+      return in_right;
+    };
+
+    auto leafKernel = [&] AXOM_DEVICE (
+                        int32 AXOM_NOT_USED(current_node),
+                        const bvh::BVH< FloatType,NDIMS >& AXOM_NOT_USED(bvh) )
+    {
+      ++count;
+    };
+
+    bvh_traverse< NDIMS, FloatType >( m_bvh, inLeft, inRight, leafKernel );
+
+    candidate_counts[ i ] = count;
+  } );
+
+  // STEP 1: prefix sum of candidate counts
+  RAJA::exclusive_scan< bvh::raja_for_policy >(
+      candidate_counts, candidate_counts + numPts, offsets,
+      RAJA::operators::plus<IndexType>{} );
+
+  // STEP 2: populate candidates
+  // TODO: this will segault with raw(unmanaged) cuda pointers
+  IndexType total_candidates = offsets[numPts-1] + candidate_counts[numPts-1];
+
+  candidates = axom::allocate< IndexType >( total_candidates );
+
+  RAJA::forall< exec_pol >(
+        RAJA::RangeSegment(0,numPts), AXOM_LAMBDA(IndexType i)
+  {
+
+    int32 offset = offsets[ i ];
+
+    bvh::Vec< FloatType, NDIMS > point;
+    point[ 0 ] = x[ i ];
+    point[ 1 ] = y[ i ];
+
+    auto inLeft = [&] AXOM_DEVICE ( const bvh::Vec< FloatType,4 >& s1,
+                                    const bvh::Vec< FloatType,4 >& s2  )
+    {
+      bool in_left = true;
+      if(point[0]  < s1[0]) in_left = false; // L.x min
+      if(point[1]  < s1[1]) in_left = false; // L.y min
+
+      if(point[0]  > s2[3]) in_left = false; // L.x max
+      if(point[1]  > s2[0]) in_left = false; // L.y max
+      return in_left;
+    };
+
+    auto inRight = [&] AXOM_DEVICE ( const bvh::Vec< FloatType,4 >& s2,
+                                     const bvh::Vec< FloatType,4 >& s3 )
+    {
+      bool in_right = true;
+      if(point[0]  < s2[2]) in_right = false; // R.x min
+      if(point[1]  < s2[3]) in_right = false; // R.y min
+
+      if(point[0]  > s3[1]) in_right = false; // R.x max
+      if(point[1]  > s3[2]) in_right = false; // R.y max
+      return in_right;
+    };
+
+    auto leafKernel = [&] AXOM_DEVICE (
+                        int32 current_node,
+                        const bvh::BVH< FloatType,NDIMS >& bvh )
+    {
+      candidates[ offset ] = bvh.m_leaf_nodes[ current_node ];
+      ++offset;
+    };
+
+    bvh_traverse< NDIMS, FloatType >( m_bvh, inLeft, inRight, leafKernel );
+
+  } );
+
 }
 
 //------------------------------------------------------------------------------
