@@ -6,8 +6,7 @@ copyright:
   - Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
   - other Axom Project Developers. See the top-level COPYRIGHT file for details.
   -
-  - SPDX-License-Identifier (BSD-3-Clause)
-  -
+  - "SPDX-License-Identifier: (BSD-3-Clause)"
 
 library: SLIC
 cxx_header: axom/slic/interface/slic.hpp
@@ -19,6 +18,8 @@ options:
 #  F_module_per_class: False
   # Change the default template for Fortran functions to include the library name.
   F_name_impl_template: "{library_lower}_{class_prefix}{underscore_name}{function_suffix}"
+  # XXX - This will eventually become the default in Shroud
+  C_enum_member_template: "{C_prefix}{enum_member_name}"
 
 format:
   C_prefix: SLIC_
