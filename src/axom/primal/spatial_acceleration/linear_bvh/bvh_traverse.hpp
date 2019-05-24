@@ -32,7 +32,7 @@ template < int NDIMS, typename FloatType,
            typename InLeftType,
            typename InRightType,
            typename LeafKernelType >
-AXOM_HOST_DEVICE void bvh_traverse( bvh::BVH< FloatType, NDIMS >& bvh,
+AXOM_HOST_DEVICE void bvh_traverse( const bvh::BVH< FloatType, NDIMS >& bvh,
                                     InLeftType&& inLeft,
                                     InRightType&& inRight,
                                     LeafKernelType&& leafKernel )

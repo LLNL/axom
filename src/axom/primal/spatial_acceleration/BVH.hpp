@@ -229,6 +229,10 @@ void BVH< NDIMS, FloatType >::find( IndexType* offsets,
   SLIC_ASSERT( offsets != nullptr );
   SLIC_ASSERT( candidates == nullptr );
 
+  // create local reference to member to capture by value on the device,
+  // otherwise, the capture would attempt to capture (this)
+  auto const& mybvh = this->m_bvh;
+
   // STEP 0: count candidates
   IndexType* candidate_counts = axom::allocate< IndexType >( numPts );
 
@@ -279,7 +283,7 @@ void BVH< NDIMS, FloatType >::find( IndexType* offsets,
       ++count;
     };
 
-    bvh_traverse< NDIMS, FloatType >( m_bvh, inLeft, inRight, leafKernel );
+    bvh_traverse< NDIMS, FloatType >( mybvh, inLeft, inRight, leafKernel );
 
     candidate_counts[ i ] = count;
   } );
@@ -336,13 +340,13 @@ void BVH< NDIMS, FloatType >::find( IndexType* offsets,
 
       auto leafKernel = [&] AXOM_DEVICE (
                           int32 current_node,
-                          const bvh::BVH< FloatType,NDIMS >& bvh )
+                          const bvh::BVH< FloatType,NDIMS >& mybvh )
       {
-        candidates[ offset ] = bvh.m_leaf_nodes[ current_node ];
+        candidates[ offset ] = mybvh.m_leaf_nodes[ current_node ];
         ++offset;
       };
 
-      bvh_traverse< NDIMS, FloatType >( m_bvh, inLeft, inRight, leafKernel );
+      bvh_traverse< NDIMS, FloatType >( mybvh, inLeft, inRight, leafKernel );
 
     } );
 
@@ -361,6 +365,10 @@ void BVH< NDIMS, FloatType >::find( IndexType* offsets,
 
   SLIC_ASSERT( offsets != nullptr );
   SLIC_ASSERT( candidates == nullptr );
+
+  // create local reference to member to capture by value on the device,
+  // otherwise, the capture would attempt to capture (this)
+  auto const& mybvh = this->m_bvh;
 
   // STEP 0: count candidates
   IndexType* candidate_counts = axom::allocate< IndexType >( numPts );
@@ -401,13 +409,13 @@ void BVH< NDIMS, FloatType >::find( IndexType* offsets,
     };
 
     auto leafKernel = [&] AXOM_DEVICE (
-                        int32 AXOM_NOT_USED(current_node),
-                        const bvh::BVH< FloatType,NDIMS >& AXOM_NOT_USED(bvh) )
+                       int32 AXOM_NOT_USED(current_node),
+                       const bvh::BVH< FloatType,NDIMS >& AXOM_NOT_USED(mybvh))
     {
       ++count;
     };
 
-    bvh_traverse< NDIMS, FloatType >( m_bvh, inLeft, inRight, leafKernel );
+    bvh_traverse< NDIMS, FloatType >( mybvh, inLeft, inRight, leafKernel );
 
     candidate_counts[ i ] = count;
   } );
@@ -459,13 +467,13 @@ void BVH< NDIMS, FloatType >::find( IndexType* offsets,
 
     auto leafKernel = [&] AXOM_DEVICE (
                         int32 current_node,
-                        const bvh::BVH< FloatType,NDIMS >& bvh )
+                        const bvh::BVH< FloatType,NDIMS >& mybvh )
     {
-      candidates[ offset ] = bvh.m_leaf_nodes[ current_node ];
+      candidates[ offset ] = mybvh.m_leaf_nodes[ current_node ];
       ++offset;
     };
 
-    bvh_traverse< NDIMS, FloatType >( m_bvh, inLeft, inRight, leafKernel );
+    bvh_traverse< NDIMS, FloatType >( mybvh, inLeft, inRight, leafKernel );
 
   } );
 
