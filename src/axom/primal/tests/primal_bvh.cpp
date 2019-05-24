@@ -250,120 +250,115 @@ TEST( primal_bvh, contruct3D)
   check_build_bvh3d< double >( );
 }
 
+//------------------------------------------------------------------------------
+TEST( primal_bvh, check_find_3d )
+{
+  using PointType         = primal::Point< double, 3 >;
+  constexpr int NDIMS     = 3;
+  constexpr IndexType N   = 4;
+
+  double lo[ NDIMS ] = { 0.0, 0.0, 0.0 };
+  double hi[ NDIMS ] = { 3.0, 3.0, 3.0 };
+  int res[ NDIMS ]   = { N-1, N-1, N-1 };
+
+  double mesh_origin[ NDIMS ]  = { 0.0, 0.0, 0.0 };
+  double mesh_spacing[ NDIMS ] = { 1.0, 1.0, 1.0 };
+
+  double* aabbs      = nullptr;
+  IndexType* cellIds = nullptr;
+  double* xc         = nullptr;
+  double* yc         = nullptr;
+  double* zc         = nullptr;
+  IndexType ncells   = 0;
+
+  // generate bounding boxes
+  generate_aabbs_and_centroids3d(
+      mesh_origin, mesh_spacing, N, N, N, ncells, aabbs, cellIds, xc, yc, zc );
+  EXPECT_EQ( ncells, (N-1) * (N-1) * (N-1) );
+
+  // construct the BVH
+  primal::BVH< NDIMS > bvh( aabbs, ncells );
+  bvh.build( );
+
+  // traverse the BVH to find the candidates for all the centroids
+  IndexType* offsets    = axom::allocate< IndexType >( ncells );
+  IndexType* candidates = nullptr;
+  bvh.find( offsets, candidates, ncells, xc, yc, zc );
+
+  EXPECT_TRUE( candidates != nullptr );
+
+  primal::UniformGrid< IndexType, NDIMS > ug( lo, hi, res );
+
+  for ( IndexType i=0; i < ncells; ++i )
+  {
+    PointType q            = PointType::make_point( xc[ i ],yc[ i ],zc[ i ] );
+    const int donorCellIdx = ug.getBinIndex( q );
+    EXPECT_EQ( donorCellIdx, cellIds[ i ] );
+
+  } // END for all cell centroids
+
+  axom::deallocate( offsets );
+
+  axom::deallocate( candidates );
+  axom::deallocate( aabbs );
+  axom::deallocate( cellIds );
+  axom::deallocate( xc );
+  axom::deallocate( yc );
+  axom::deallocate( zc );
+}
 
 //------------------------------------------------------------------------------
-//TEST( primal_bvh, check_find_3d )
-//{
-//  using PointType         = primal::Point< double, 3 >;
-//  constexpr int NDIMS     = 3;
-//  constexpr IndexType N   = 4;
-//
-//  double lo[ NDIMS ] = { 0.0, 0.0, 0.0 };
-//  double hi[ NDIMS ] = { 3.0, 3.0, 3.0 };
-//  int res[ NDIMS ]   = { N-1, N-1, N-1 };
-//
-//  double mesh_origin[ NDIMS ]  = { 0.0, 0.0, 0.0 };
-//  double mesh_spacing[ NDIMS ] = { 1.0, 1.0, 1.0 };
-//
-//  double* aabbs      = nullptr;
-//  IndexType* cellIds = nullptr;
-//  double* xc         = nullptr;
-//  double* yc         = nullptr;
-//  double* zc         = nullptr;
-//  IndexType ncells   = 0;
-//
-//  // generate bounding boxes
-//  generate_aabbs_and_centroids3d(
-//      mesh_origin, mesh_spacing, N, N, N, ncells, aabbs, cellIds, xc, yc, zc );
-//  EXPECT_EQ( ncells, (N-1) * (N-1) * (N-1) );
-//
-//  // construct the BVH
-//  primal::BVH bvh( NDIMS, aabbs, ncells );
-//  bvh.build( );
-//
-//  // traverse the BVH to find the candidates for all the centroids
-//  IndexType* offsets    = axom::allocate< IndexType >( ncells );
-//  IndexType* candidates = nullptr;
-//  bvh.find( offsets, candidates, ncells, xc, yc, zc );
-//
-//  EXPECT_TRUE( candidates != nullptr );
-//
-//  primal::UniformGrid< IndexType, NDIMS > ug( lo, hi, res );
-//
-//  for ( IndexType i=0; i < ncells; ++i )
-//  {
-//    PointType q            = PointType::make_point( xc[ i ],yc[ i ],zc[ i ] );
-//    const int donorCellIdx = ug.getBinIndex( q );
-//    EXPECT_EQ( donorCellIdx, cellIds[ i ] );
-//
-//  } // END for all cell centroids
-//
-//  axom::deallocate( offsets );
-//// TODO: add line below
-////  axom::free( candidates );
-//  axom::deallocate( aabbs );
-//  axom::deallocate( cellIds );
-//  axom::deallocate( xc );
-//  axom::deallocate( yc );
-//  axom::deallocate( zc );
-//}
+TEST( primal_bvh, check_find_2d )
+{
+  using PointType         = primal::Point< double, 2 >;
+  constexpr int NDIMS     = 2;
+  constexpr IndexType N   = 4;
 
-//------------------------------------------------------------------------------
-//TEST( primal_bvh, check_find_2d )
-//{
-//  using PointType         = primal::Point< double, 2 >;
-//  constexpr int NDIMS     = 2;
-//  constexpr IndexType N   = 4;
-//
-//  double lo[ NDIMS ] = { 0.0, 0.0 };
-//  double hi[ NDIMS ] = { 3.0, 3.0 };
-//  int res[ NDIMS ]   = { N-1, N-1 };
-//
-//  double mesh_origin[ NDIMS ]  = { 0.0, 0.0 };
-//  double mesh_spacing[ NDIMS ] = { 1.0, 1.0 };
-//
-//  double* aabbs      = nullptr;
-//  IndexType* cellIds = nullptr;
-//  double* xc         = nullptr;
-//  double* yc         = nullptr;
-//  IndexType ncells   = 0;
-//
-//  // generate bounding boxes
-//  generate_aabbs_and_centroids2d(
-//      mesh_origin, mesh_spacing, N, N, ncells, aabbs, cellIds, xc, yc );
-//  EXPECT_EQ( ncells, (N-1) * (N-1) );
-//
-//  // construct the BVH
-//  primal::BVH bvh( NDIMS, aabbs, ncells );
-//  bvh.build( );
-//
-//  // traverse the BVH to find the candidates for all the centroids
-//  IndexType* offsets    = axom::allocate< IndexType >( ncells );
-//  IndexType* candidates = nullptr;
-//  bvh.find( offsets, candidates, ncells, xc, yc );
-//// TODO: add check below
-////  EXPECT_TRUE( candidates != nullptr );
-//
-//  primal::UniformGrid< IndexType, NDIMS > ug( lo, hi, res );
-//
-//  for ( IndexType i=0 ; i < ncells ; ++i )
-//  {
-//    PointType q            = PointType::make_point( xc[ i ], yc[ i ] );
-//    const int donorCellIdx = ug.getBinIndex( q );
-//    EXPECT_EQ( donorCellIdx, cellIds[ i ] );
-//
-//    // TODO: check candidates found by BVH
-//
-//  } // END for all cell centroids
-//
-//  axom::deallocate( offsets );
-//// TODO: add line below
-////  axom::free( candidates );
-//  axom::deallocate( aabbs );
-//  axom::deallocate( cellIds );
-//  axom::deallocate( xc );
-//  axom::deallocate( yc );
-//}
+  double lo[ NDIMS ] = { 0.0, 0.0 };
+  double hi[ NDIMS ] = { 3.0, 3.0 };
+  int res[ NDIMS ]   = { N-1, N-1 };
+
+  double mesh_origin[ NDIMS ]  = { 0.0, 0.0 };
+  double mesh_spacing[ NDIMS ] = { 1.0, 1.0 };
+
+  double* aabbs      = nullptr;
+  IndexType* cellIds = nullptr;
+  double* xc         = nullptr;
+  double* yc         = nullptr;
+  IndexType ncells   = 0;
+
+  // generate bounding boxes
+  generate_aabbs_and_centroids2d(
+      mesh_origin, mesh_spacing, N, N, ncells, aabbs, cellIds, xc, yc );
+  EXPECT_EQ( ncells, (N-1) * (N-1) );
+
+  // construct the BVH
+  primal::BVH< NDIMS > bvh( aabbs, ncells );
+  bvh.build( );
+
+  // traverse the BVH to find the candidates for all the centroids
+  IndexType* offsets    = axom::allocate< IndexType >( ncells );
+  IndexType* candidates = nullptr;
+  bvh.find( offsets, candidates, ncells, xc, yc );
+  EXPECT_TRUE( candidates != nullptr );
+
+  primal::UniformGrid< IndexType, NDIMS > ug( lo, hi, res );
+
+  for ( IndexType i=0 ; i < ncells ; ++i )
+  {
+    PointType q            = PointType::make_point( xc[ i ], yc[ i ] );
+    const int donorCellIdx = ug.getBinIndex( q );
+    EXPECT_EQ( donorCellIdx, cellIds[ i ] );
+
+  } // END for all cell centroids
+
+  axom::deallocate( offsets );
+  axom::deallocate( candidates );
+  axom::deallocate( aabbs );
+  axom::deallocate( cellIds );
+  axom::deallocate( xc );
+  axom::deallocate( yc );
+}
 
 //------------------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"
