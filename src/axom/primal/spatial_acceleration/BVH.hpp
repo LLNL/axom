@@ -130,28 +130,37 @@ public:
    *  given query points.
    *
    * \param [out] offsets offset to the candidates array for each query point
+   * \param [out] counts stores the number of candidates per query point
    * \param [out] candidates array of the candidate IDs for each query point
    * \param [in]  numPts the total number of query points supplied
    * \param [in]  x array of x-coordinates
-   * \param [in]  y array of y-coordinates, may be nullptr if 1D
-   * \param [in]  z array of z-coordinates, may be nullptr if 1D or 2D
+   * \param [in]  y array of y-coordinates
+   * \param [in]  z array of z-coordinates, may be nullptr if 2D
    *
-   * \note the offsets array must be pre-allocated by the caller and
+   * \note offsets and counts are pointers to arrays of size numPts that are
+   *  pre-allocated by the caller before calling find().
    *
    * \note The candidates array is allocated internally by the method and
    *  ownership of the memory is transferred to the caller. Consequently, the
    *  caller is responsible for properly deallocating the candidates buffer.
    *
+   * \note Upon completion, the ith query point has:
+   *  * counts[ i ] candidates
+   *  * Stored in the candidates array in the following range:
+   *    [ offsets[ i ], offsets[ i ]+counts[ i ] ]
+   *
    * \pre offsets != nullptr
+   * \pre counts  != nullptr
    * \pre candidates == nullptr
    * \pre x != nullptr
    * \pre y != nullptr if dimension==2 || dimension==3
    * \pre z != nullptr if dimension==3
    */
   /// @{
-  void find( IndexType* offsets, IndexType*& candidates, IndexType numPts,
-             const FloatType* x, const FloatType* y ) const;
-  void find( IndexType* offsets, IndexType*& candidates, IndexType numPts,
+  void find( IndexType* offsets, IndexType* counts, IndexType*& candidates,
+             IndexType numPts, const FloatType* x, const FloatType* y ) const;
+  void find( IndexType* offsets, IndexType* counts,
+             IndexType*& candidates, IndexType numPts,
              const FloatType* x, const FloatType* y, const FloatType* z ) const;
   /// @}
 
@@ -217,6 +226,7 @@ void BVH< NDIMS, FloatType >::getBounds( FloatType* min, FloatType* max ) const
 //------------------------------------------------------------------------------
 template< int NDIMS, typename FloatType >
 void BVH< NDIMS, FloatType >::find( IndexType* offsets,
+                                    IndexType* counts,
                                     IndexType*& candidates,
                                     IndexType numPts,
                                     const FloatType* x,
@@ -227,6 +237,7 @@ void BVH< NDIMS, FloatType >::find( IndexType* offsets,
       "The 3D version of find() must be called on a 3D BVH" );
 
   SLIC_ASSERT( offsets != nullptr );
+  SLIC_ASSERT( counts != nullptr );
   SLIC_ASSERT( candidates == nullptr );
 
   // create local reference to member to capture by value on the device,
@@ -234,8 +245,6 @@ void BVH< NDIMS, FloatType >::find( IndexType* offsets,
   auto const& mybvh = this->m_bvh;
 
   // STEP 0: count candidates
-  IndexType* candidate_counts = axom::allocate< IndexType >( numPts );
-
   using exec_pol = bvh::raja_for_policy;
   RAJA::forall< exec_pol >(
       RAJA::RangeSegment(0,numPts), AXOM_LAMBDA(IndexType i)
@@ -285,17 +294,17 @@ void BVH< NDIMS, FloatType >::find( IndexType* offsets,
 
     bvh_traverse< NDIMS, FloatType >( mybvh, inLeft, inRight, leafKernel );
 
-    candidate_counts[ i ] = count;
+    counts[ i ] = count;
   } );
 
   // STEP 1: prefix sum of candidate counts
   RAJA::exclusive_scan< bvh::raja_for_policy >(
-      candidate_counts, candidate_counts + numPts, offsets,
+      counts, counts + numPts, offsets,
       RAJA::operators::plus<IndexType>{} );
 
   // STEP 2: populate candidates
   // TODO: this will segault with raw(unmanaged) cuda pointers
-  IndexType total_candidates = offsets[numPts-1] + candidate_counts[numPts-1];
+  IndexType total_candidates = offsets[numPts-1] + counts[numPts-1];
 
   candidates = axom::allocate< IndexType >( total_candidates );
 
@@ -355,6 +364,7 @@ void BVH< NDIMS, FloatType >::find( IndexType* offsets,
 //------------------------------------------------------------------------------
 template< int NDIMS, typename FloatType >
 void BVH< NDIMS, FloatType >::find( IndexType* offsets,
+                                    IndexType* counts,
                                     IndexType*& candidates,
                                     IndexType numPts,
                                     const FloatType* x,
@@ -371,8 +381,6 @@ void BVH< NDIMS, FloatType >::find( IndexType* offsets,
   auto const& mybvh = this->m_bvh;
 
   // STEP 0: count candidates
-  IndexType* candidate_counts = axom::allocate< IndexType >( numPts );
-
   using exec_pol = bvh::raja_for_policy;
   RAJA::forall< exec_pol >(
       RAJA::RangeSegment(0,numPts), AXOM_LAMBDA(IndexType i)
@@ -417,17 +425,17 @@ void BVH< NDIMS, FloatType >::find( IndexType* offsets,
 
     bvh_traverse< NDIMS, FloatType >( mybvh, inLeft, inRight, leafKernel );
 
-    candidate_counts[ i ] = count;
+    counts[ i ] = count;
   } );
 
   // STEP 1: prefix sum of candidate counts
   RAJA::exclusive_scan< bvh::raja_for_policy >(
-      candidate_counts, candidate_counts + numPts, offsets,
+      counts, counts + numPts, offsets,
       RAJA::operators::plus<IndexType>{} );
 
   // STEP 2: populate candidates
   // TODO: this will segault with raw(unmanaged) cuda pointers
-  IndexType total_candidates = offsets[numPts-1] + candidate_counts[numPts-1];
+  IndexType total_candidates = offsets[numPts-1] + counts[numPts-1];
 
   candidates = axom::allocate< IndexType >( total_candidates );
 
