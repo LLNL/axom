@@ -6,6 +6,7 @@
 #ifndef AXOM_PRIMAL_BVH_BUILDER_IMPL_H_
 #define AXOM_PRIMAL_BVH_BUILDER_IMPL_H_
 
+#include "axom/primal/spatial_acceleration/linear_bvh/RadixTree.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/aabb.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/math.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/morton_codes.hpp"
@@ -280,37 +281,7 @@ int32* sort_mcodes( MCType *&mcodes, int32 size)
   return iter;
 }
 
-template < typename FloatType, int NDIMS >
-struct BVHData
-{
-  int32  m_inner_size;
-  int32  *m_left_children;
-  int32  *m_right_children;
-  int32  *m_parents;
-  int32  *m_leafs;
-  uint32 *m_mcodes;
 
-  AABB< FloatType, NDIMS > *m_inner_aabbs;
-  AABB< FloatType, NDIMS > *m_leaf_aabbs;
-
-  void allocate(int32 size)
-  {
-    m_inner_size = size;
-    m_left_children = axom::allocate<int32>(size);
-    m_right_children = axom::allocate<int32>(size);
-    m_parents = axom::allocate<int32>(size);
-    m_inner_aabbs = axom::allocate< AABB<FloatType,NDIMS> >( size );
-  }
-
-  void deallocate()
-  {
-    axom::deallocate( m_left_children );
-    axom::deallocate( m_right_children );
-    axom::deallocate( m_parents );
-    axom::deallocate( m_inner_aabbs );
-  }
-
-};
 
 template < typename IntType, typename MCType >
 AXOM_HOST_DEVICE IntType delta( const IntType &a,
@@ -337,7 +308,7 @@ AXOM_HOST_DEVICE IntType delta( const IntType &a,
 }
 
 template < typename FloatType, int NDIMS >
-void build_tree(  BVHData< FloatType, NDIMS > &data )
+void build_tree(  RadixTree< FloatType, NDIMS > &data )
 {
   // http://research.nvidia.com/sites/default/files/publications/karras2012hpg_paper.pdf
 
@@ -437,7 +408,7 @@ static void array_memset(T* array, const int32 size, const T val)
 }
 
 template < typename FloatType, int NDIMS >
-void propagate_aabbs( BVHData< FloatType, NDIMS >& data)
+void propagate_aabbs( RadixTree< FloatType, NDIMS >& data)
 {
   const int inner_size = data.m_inner_size;
   const int leaf_size = data.m_inner_size + 1;
@@ -509,7 +480,7 @@ void propagate_aabbs( BVHData< FloatType, NDIMS >& data)
 }
 
 template < typename FloatType  >
-Vec< FloatType,4 >* emit( BVHData<FloatType, 3>& data)
+Vec< FloatType,4 >* emit( RadixTree<FloatType, 3>& data)
 {
   const int inner_size = data.m_inner_size;
 
@@ -588,7 +559,7 @@ Vec< FloatType,4 >* emit( BVHData<FloatType, 3>& data)
 }
 
 template < typename FloatType  >
-Vec< FloatType,4 >* emit( BVHData<FloatType, 2>& data)
+Vec< FloatType,4 >* emit( RadixTree<FloatType, 2>& data)
 {
   const int inner_size = data.m_inner_size;
 
@@ -685,7 +656,7 @@ LinearBVHBuilder::construct( const FloatType *boxes, int size)
 
   reorder(ids, aabbs, size);
 
-  BVHData< FloatType, NDIMS > bvh_data;
+  RadixTree< FloatType, NDIMS > bvh_data;
   bvh_data.allocate(size - 1);
 
   // the arrays that already exist
