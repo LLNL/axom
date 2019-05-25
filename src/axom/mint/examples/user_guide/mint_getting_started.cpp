@@ -35,7 +35,6 @@ using IndexType    = axom::IndexType;
   using ExecPolicy = mint::policy::serial;
 #endif
 
-constexpr IndexType NUM_COMPONENTS     = 2;
 constexpr IndexType NUM_NODES_PER_CELL = 4;
 constexpr double ONE_OVER_4 = 1. / static_cast< double >( NUM_NODES_PER_CELL );
 
@@ -82,7 +81,9 @@ int main ( int argc, char** argv )
   // add a cell-centered and a node-centered field
   double* phi = mesh->createField< double >( "phi", mint::NODE_CENTERED );
   double* hc  = mesh->createField< double >( "hc", mint::CELL_CENTERED );
-  double* xc  = mesh->createField< double >( "xc", mint::CELL_CENTERED, 2 );
+
+  constexpr int NUM_COMPONENTS = 2;
+  double* xc  = mesh->createField< double >( "xc", mint::CELL_CENTERED, NUM_COMPONENTS );
 
 // sphinx_tutorial_walkthrough_add_fields_end
 
@@ -201,8 +202,10 @@ mint::Mesh* getUnstructuredMesh( )
 
   const IndexType ncells = umesh_ncells * 4; // split each quad into 4 triangles
   const IndexType nnodes = umesh_nnodes + umesh_ncells;
+
+  constexpr int DIMENSION = 2;
   using MeshType = mint::UnstructuredMesh< mint::SINGLE_SHAPE >;
-  MeshType* m = new MeshType( 2, mint::TRIANGLE, nnodes, ncells );
+  MeshType* m = new MeshType( DIMENSION, mint::TRIANGLE, nnodes, ncells );
   m->resize( nnodes, ncells );
 
   double* x = m->getCoordinateArray( mint::X_COORDINATE );
