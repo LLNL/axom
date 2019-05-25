@@ -21,3 +21,4 @@
 .. _ParaView: https://www.paraview.org/
 .. _Himmelblau's Function: https://en.wikipedia.org/wiki/Himmelblau%27s_function
 .. _Lambda Expression: https://www.cprogramming.com/c++11/c++11-lambda-closures.html
+.. _CUDA Unified Memory: https://devblogs.nvidia.com/unified-memory-cuda-beginners/
