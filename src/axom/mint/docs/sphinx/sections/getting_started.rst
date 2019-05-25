@@ -52,6 +52,10 @@ Understanding the discussion and material presented in this section requires:
    :end-before: sphinx_tutorial_walkthrough_set_memory_end
    :language: C++
 
+  When `Umpire`_ , `RAJA`_ and CUDA are not enabled, the code will use the
+  ``malloc()`` internally to allocate memory on the host and all kernels will
+  be executed on the CPU.
+
 Goals
 ^^^^^^
 
@@ -60,7 +64,7 @@ few minutes. Upon completion, the user will be familiar with using Mint to:
 
 * Create and evaluate fields on a mesh
 * Use the :ref:`NodeTraversalFunctions` and :ref:`CellTraversalFunctions` of the
-  :ref:`sections/execution_model` to implement kernels to operate on the
+  :ref:`sections/execution_model` to implement kernels that operate on the
   mesh and associated fields.
 * Plot the mesh and associated fields in VTK for visualization.
 
@@ -140,8 +144,8 @@ on the mesh object:
 * The *cell-centered* field, ``xc``, stores the cell-centers, computed in :ref:`step5`
 
 Note, the template argument to the ``createField()`` method indicates the
-underlying field type, e.g. ``double``, ``int`` , etc. In this case, both
-fields are of ``double`` field type.
+underlying field type, e.g. ``double``, ``int`` , etc. In this case, all three
+fields have a ``double`` field type.
 
 The first required argument to the ``createField()`` method is a *string*
 corresponding to the *name* of the field. The second argument, which is also
@@ -164,12 +168,12 @@ on a mesh.
 
 .. _step4:
 
-Step 4: Himmelblau's Function
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Step 4: Evaluate a Scalar Field
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The first kernel employs the ``for_all_nodes()`` traversal function of the
 :ref:`sections/execution_model` to iterate over the constituent
-mesh :ref:`Nodes` and evaluate `Himmelblau's Function`_ (an analytic function):
+mesh :ref:`Nodes` and evaluate `Himmelblau's Function`_ at each node:
 
 .. literalinclude:: ../../../examples/user_guide/mint_getting_started.cpp
    :start-after: sphinx_tutorial_walkthrough_compute_hf_start
@@ -240,11 +244,6 @@ The second kernel employs the ``for_all_cells()`` traversal function of the
       a. ``coords``, a matrix that stores the node coordinates of the cell, and
       b. ``nodeIds``, an array that stores the IDs of the constituent cell nodes.
 
-.. note::
-
-   Since in this kernel the ``nodeIds`` are not used, the third kernel argument
-   is annotated with the ``AXOM_NOT_USED`` macro to silence compiler warnings.
-
 The cell node coordinates matrix, defined by ``axom::numerics::Matrix`` is
 organized such that:
 
@@ -286,8 +285,8 @@ y-component is stored at ``xc[ cellIdx * NUM_COMPONENTS + 1 ]``, where
 ``NUM_COMPONENTS=2``.
 
 In addition, the node-centered quantity, ``phi``, computed in :ref:`step4` is
-averaged and stored at the cell centered, by first summing all the nodal
-contributions in ``hsum`` and then multiplying by :math:`1/N`, where :math:`N`
+averaged and stored at the cell centers. The kernel first sums all the nodal
+contributions in ``hsum`` and then multiplies by :math:`1/N`, where :math:`N`
 is the number of nodes of a cell.
 
 See the :ref:`sections/tutorial` for more details on using the
