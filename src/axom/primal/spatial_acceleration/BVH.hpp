@@ -187,6 +187,88 @@ private:
 };
 
 //------------------------------------------------------------------------------
+//  BVH IMPLEMENTATION HELPER METHODS
+//------------------------------------------------------------------------------
+namespace
+{
+
+//------------------------------------------------------------------------------
+template< typename FloatType >
+AXOM_HOST_DEVICE
+bool InLeft( const bvh::Vec< FloatType, 3>& point,
+             const bvh::Vec< FloatType, 4>& s1,
+             const bvh::Vec< FloatType, 4>& s2 )
+{
+  bool in_left = true;
+  if ( point[0]  < s1[0] ) in_left = false;
+  if ( point[1]  < s1[1] ) in_left = false;
+  if ( point[2]  < s1[2] ) in_left = false;
+
+  if ( point[0]  > s1[3] ) in_left = false;
+  if ( point[1]  > s2[0] ) in_left = false;
+  if ( point[2]  > s2[1] ) in_left = false;
+
+  return in_left;
+}
+
+//------------------------------------------------------------------------------
+template< typename FloatType >
+AXOM_HOST_DEVICE
+bool InLeft( const bvh::Vec< FloatType, 2>& point,
+             const bvh::Vec< FloatType, 4>& s1,
+             const bvh::Vec< FloatType, 4>& s2 )
+{
+  bool in_left = true;
+  if ( point[0]  < s1[0] ) in_left = false;
+  if ( point[1]  < s1[1] ) in_left = false;
+
+  if ( point[0]  > s1[3] ) in_left = false;
+  if ( point[1]  > s2[0] ) in_left = false;
+
+  return in_left;
+}
+
+//------------------------------------------------------------------------------
+template< typename FloatType >
+AXOM_HOST_DEVICE
+bool InRight( const bvh::Vec< FloatType, 3>& point,
+              const bvh::Vec< FloatType, 4>& s2,
+              const bvh::Vec< FloatType, 4>& s3 )
+{
+  bool in_right = true;
+
+  if ( point[0] < s2[2] ) in_right = false;
+  if ( point[1] < s2[3] ) in_right = false;
+  if ( point[2] < s3[0] ) in_right = false;
+
+  if ( point[0] > s3[1] ) in_right = false;
+  if ( point[1] > s3[2] ) in_right = false;
+  if ( point[2] > s3[3] ) in_right = false;
+
+  return in_right;
+}
+
+//------------------------------------------------------------------------------
+template< typename FloatType >
+AXOM_HOST_DEVICE
+bool InRight( const bvh::Vec< FloatType, 2>& point,
+              const bvh::Vec< FloatType, 4>& s2,
+              const bvh::Vec< FloatType, 4>& s3 )
+{
+  bool in_right = true;
+
+  if ( point[0] < s2[2] ) in_right = false;
+  if ( point[1] < s2[3] ) in_right = false;
+
+  if ( point[0] > s3[1] ) in_right = false;
+  if ( point[1] > s3[2] ) in_right = false;
+
+  return in_right;
+}
+
+}
+
+//------------------------------------------------------------------------------
 //  BVH IMPLEMENTATION
 //------------------------------------------------------------------------------
 template< int NDIMS, typename FloatType >
@@ -234,130 +316,163 @@ void BVH< NDIMS, FloatType >::find( IndexType* offsets,
                                     const FloatType* z ) const
 {
   AXOM_STATIC_ASSERT_MSG( NDIMS==3,
-      "The 3D version of find() must be called on a 3D BVH" );
+     "The 3D version of find() must be called on a 3D BVH" );
 
   SLIC_ASSERT( offsets != nullptr );
   SLIC_ASSERT( counts != nullptr );
   SLIC_ASSERT( candidates == nullptr );
+  SLIC_ASSERT( x != nullptr );
+  SLIC_ASSERT( y != nullptr );
+  SLIC_ASSERT( z != nullptr );
 
-  // create local reference to member to capture by value on the device,
-  // otherwise, the capture would attempt to capture (this)
-  auto const& mybvh = this->m_bvh;
-
-  // STEP 0: count candidates
-  using exec_pol = bvh::raja_for_policy;
-  RAJA::forall< exec_pol >(
-      RAJA::RangeSegment(0,numPts), AXOM_LAMBDA(IndexType i)
+  const bvh::Vec< FloatType, 4>  *inner_nodes = m_bvh.m_inner_nodes;
+  const int32 *leaf_nodes = m_bvh.m_leaf_nodes;
+  RAJA::forall< bvh::raja_for_policy >(
+      RAJA::RangeSegment(0, numPts), AXOM_LAMBDA (IndexType i)
   {
-
     int32 count = 0;
-
     bvh::Vec< FloatType, NDIMS > point;
-    point[ 0 ] = x[ i ];
-    point[ 1 ] = y[ i ];
-    point[ 2 ] = z[ i ];
+    point[0] = x[i];
+    point[1] = y[i];
+    point[2] = z[i];
 
-    auto inLeft = [&] AXOM_DEVICE ( const bvh::Vec< FloatType,4 >& s1,
-                                    const bvh::Vec< FloatType,4 >& s2  )
-    {
-      bool in_left = true;
-      if(point[0]  < s1[0]) in_left = false; // L.x min
-      if(point[1]  < s1[1]) in_left = false; // L.y min
-      if(point[2]  < s1[2]) in_left = false; // L.z min
+   int32 current_node = 0;
+   int32 todo[64];
+   int32 stackptr = 0;
 
-      if(point[0]  > s2[3]) in_left = false; // L.x max
-      if(point[1]  > s2[0]) in_left = false; // L.y max
-      if(point[2]  > s2[1]) in_left = false; // L.z max
-      return in_left;
-    };
+   constexpr int32 barrier = -2000000000;
+   todo[stackptr] = barrier;
+   while (current_node != barrier)
+   {
+     if (current_node > -1)
+     {
+       const bvh::Vec< FloatType, 4> first4  = inner_nodes[current_node + 0];
+       const bvh::Vec< FloatType, 4> second4 = inner_nodes[current_node + 1];
+       const bvh::Vec< FloatType, 4> third4  = inner_nodes[current_node + 2];
 
-    auto inRight = [&] AXOM_DEVICE ( const bvh::Vec< FloatType,4 >& s2,
-                                     const bvh::Vec< FloatType,4 >& s3 )
-    {
-      bool in_right = true;
-      if(point[0]  < s2[2]) in_right = false; // R.x min
-      if(point[1]  < s2[3]) in_right = false; // R.y min
-      if(point[2]  < s3[0]) in_right = false; // R.z min
+       const bool in_left  = InLeft( point, first4, second4 );
+       const bool in_right = InRight( point, second4, third4 );
 
-      if(point[0]  > s3[1]) in_right = false; // R.x max
-      if(point[1]  > s3[2]) in_right = false; // R.y max
-      if(point[2]  > s3[3]) in_right = false; // R.z max
-      return in_right;
-    };
+       if (!in_left && !in_right)
+       {
+         // pop the stack and continue
+         current_node = todo[stackptr];
+         stackptr--;
+       }
+       else
+       {
+         bvh::Vec<FloatType, 4> children = inner_nodes[current_node + 3];
+         int32 l_child;
+         constexpr int32 isize = sizeof(int32);
+         // memcpy the int bits hidden in the floats
+         memcpy(&l_child, &children[0], isize);
+         int32 r_child;
+         memcpy(&r_child, &children[1], isize);
 
-    auto leafKernel = [&] AXOM_DEVICE (
-                        int32 AXOM_NOT_USED(current_node),
-                        const bvh::BVH< FloatType,NDIMS >& AXOM_NOT_USED(bvh) )
-    {
-      ++count;
-    };
+         current_node = (in_left) ? l_child : r_child;
 
-    bvh_traverse< NDIMS, FloatType >( mybvh, inLeft, inRight, leafKernel );
+          if (in_left && in_right)
+          {
+            stackptr++;
+            todo[stackptr] = r_child;
+            // TODO: if we are in both children we could
+            // go down the "closer" first by perhaps the distance
+            // from the point to the center of the aabb
+          }
 
-    counts[ i ] = count;
+       } // END else
+
+     } // END if
+     else
+     {
+       // leaf node
+       count++;
+       current_node = todo[stackptr];
+       stackptr--;
+     }
+
+   } // while
+
+  counts[ i ] = count;
+
   } );
 
-  // STEP 1: prefix sum of candidate counts
   RAJA::exclusive_scan< bvh::raja_for_policy >(
-      counts, counts + numPts, offsets,
-      RAJA::operators::plus<IndexType>{} );
+      counts, counts+numPts, offsets, RAJA::operators::plus<IndexType>{} );
 
-  // STEP 2: populate candidates
   // TODO: this will segault with raw(unmanaged) cuda pointers
-  IndexType total_candidates = offsets[numPts-1] + counts[numPts-1];
+  IndexType total_candidates = offsets[numPts-1] + counts[numPts - 1];
 
-  candidates = axom::allocate< IndexType >( total_candidates );
+  candidates = axom::allocate< IndexType >( total_candidates);
 
-  RAJA::forall< exec_pol >(
-        RAJA::RangeSegment(0,numPts), AXOM_LAMBDA(IndexType i)
+   //candidates =
+  RAJA::forall< bvh::raja_for_policy >(
+      RAJA::RangeSegment(0, numPts), AXOM_LAMBDA (IndexType i)
+  {
+    int32 offset = offsets[ i ];
+
+    bvh::Vec< FloatType,NDIMS > point;
+    point[0] = x[i];
+    point[1] = y[i];
+    point[2] = z[i];
+
+    int32 current_node = 0;
+    int32 todo[64];
+    int32 stackptr = 0;
+
+    constexpr int32 barrier = -2000000000;
+    todo[stackptr] = barrier;
+    while (current_node != barrier)
     {
-
-      int32 offset = offsets[ i ];
-
-      bvh::Vec< FloatType, NDIMS > point;
-      point[ 0 ] = x[ i ];
-      point[ 1 ] = y[ i ];
-      point[ 2 ] = z[ i ];
-
-      auto inLeft = [&] AXOM_DEVICE ( const bvh::Vec< FloatType,4 >& s1,
-                                      const bvh::Vec< FloatType,4 >& s2  )
+      if (current_node > -1)
       {
-        bool in_left = true;
-        if(point[0]  < s1[0]) in_left = false; // L.x min
-        if(point[1]  < s1[1]) in_left = false; // L.y min
-        if(point[2]  < s1[2]) in_left = false; // L.z min
+        const bvh::Vec<FloatType, 4> first4  = inner_nodes[current_node + 0];
+        const bvh::Vec<FloatType, 4> second4 = inner_nodes[current_node + 1];
+        const bvh::Vec<FloatType, 4> third4  = inner_nodes[current_node + 2];
 
-        if(point[0]  > s2[3]) in_left = false; // L.x max
-        if(point[1]  > s2[0]) in_left = false; // L.y max
-        if(point[2]  > s2[1]) in_left = false; // L.z max
-        return in_left;
-      };
+        const bool in_left  = InLeft( point, first4, second4 );
+        const bool in_right = InRight( point, second4, third4 );
 
-      auto inRight = [&] AXOM_DEVICE ( const bvh::Vec< FloatType,4 >& s2,
-                                       const bvh::Vec< FloatType,4 >& s3 )
+        if (!in_left && !in_right)
+        {
+          // pop the stack and continue
+          current_node = todo[stackptr];
+          stackptr--;
+        }
+        else
+        {
+          bvh::Vec<FloatType, 4> children = inner_nodes[current_node + 3];
+          int32 l_child;
+          constexpr int32 isize = sizeof(int32);
+          // memcpy the int bits hidden in the floats
+          memcpy(&l_child, &children[0], isize);
+          int32 r_child;
+          memcpy(&r_child, &children[1], isize);
+
+          current_node = (in_left) ? l_child : r_child;
+
+          if (in_left && in_right)
+          {
+            stackptr++;
+            todo[stackptr] = r_child;
+            // TODO: if we are in both children we could
+            // go down the "closer" first by perhaps the distance
+            // from the point to the center of the aabb
+          }
+        }
+      }
+      else
       {
-        bool in_right = true;
-        if(point[0]  < s2[2]) in_right = false; // R.x min
-        if(point[1]  < s2[3]) in_right = false; // R.y min
-        if(point[2]  < s3[0]) in_right = false; // R.z min
+        current_node = -current_node - 1; //swap the neg address
+        candidates[offset] = leaf_nodes[current_node];
+        offset++;
+        current_node = todo[stackptr];
+        stackptr--;
+      }
 
-        if(point[0]  > s3[1]) in_right = false; // R.x max
-        if(point[1]  > s3[2]) in_right = false; // R.y max
-        if(point[2]  > s3[3]) in_right = false; // R.z max
-        return in_right;
-      };
+    } // while
 
-      auto leafKernel = [&] AXOM_DEVICE (
-                          int32 current_node,
-                          const bvh::BVH< FloatType,NDIMS >& mybvh )
-      {
-        candidates[ offset ] = mybvh.m_leaf_nodes[ current_node ];
-        ++offset;
-      };
-
-      bvh_traverse< NDIMS, FloatType >( mybvh, inLeft, inRight, leafKernel );
-
-    } );
+  } );
 
 }
 
@@ -371,117 +486,158 @@ void BVH< NDIMS, FloatType >::find( IndexType* offsets,
                                     const FloatType* y ) const
 {
   AXOM_STATIC_ASSERT_MSG( NDIMS==2,
-        "The 2D version of find() must be called on a 2D BVH" );
+     "The 2D version of find() must be called on a 2D BVH" );
 
   SLIC_ASSERT( offsets != nullptr );
+  SLIC_ASSERT( counts != nullptr );
   SLIC_ASSERT( candidates == nullptr );
+  SLIC_ASSERT( x != nullptr );
+  SLIC_ASSERT( y != nullptr );
 
-  // create local reference to member to capture by value on the device,
-  // otherwise, the capture would attempt to capture (this)
-  auto const& mybvh = this->m_bvh;
-
-  // STEP 0: count candidates
-  using exec_pol = bvh::raja_for_policy;
-  RAJA::forall< exec_pol >(
-      RAJA::RangeSegment(0,numPts), AXOM_LAMBDA(IndexType i)
+  const bvh::Vec< FloatType, 4>  *inner_nodes = m_bvh.m_inner_nodes;
+  const int32 *leaf_nodes = m_bvh.m_leaf_nodes;
+  RAJA::forall<bvh::raja_for_policy>(
+      RAJA::RangeSegment(0, numPts), AXOM_LAMBDA (IndexType i)
   {
-
     int32 count = 0;
-
     bvh::Vec< FloatType, NDIMS > point;
-    point[ 0 ] = x[ i ];
-    point[ 1 ] = y[ i ];
+    point[0] = x[i];
+    point[1] = y[i];
 
-    auto inLeft = [&] AXOM_DEVICE ( const bvh::Vec< FloatType,4 >& s1,
-                                    const bvh::Vec< FloatType,4 >& s2  )
-    {
-      bool in_left = true;
-      if(point[0]  < s1[0]) in_left = false; // L.x min
-      if(point[1]  < s1[1]) in_left = false; // L.y min
+   int32 current_node = 0;
+   int32 todo[64];
+   int32 stackptr = 0;
 
-      if(point[0]  > s2[3]) in_left = false; // L.x max
-      if(point[1]  > s2[0]) in_left = false; // L.y max
-      return in_left;
-    };
+   constexpr int32 barrier = -2000000000;
+   todo[stackptr] = barrier;
+   while (current_node != barrier)
+   {
+     if (current_node > -1)
+     {
+       const bvh::Vec< FloatType, 4> first4  = inner_nodes[current_node + 0];
+       const bvh::Vec< FloatType, 4> second4 = inner_nodes[current_node + 1];
+       const bvh::Vec< FloatType, 4> third4  = inner_nodes[current_node + 2];
 
-    auto inRight = [&] AXOM_DEVICE ( const bvh::Vec< FloatType,4 >& s2,
-                                     const bvh::Vec< FloatType,4 >& s3 )
-    {
-      bool in_right = true;
-      if(point[0]  < s2[2]) in_right = false; // R.x min
-      if(point[1]  < s2[3]) in_right = false; // R.y min
+       const bool in_left  = InLeft( point, first4, second4 );
+       const bool in_right = InRight( point, second4, third4 );
 
-      if(point[0]  > s3[1]) in_right = false; // R.x max
-      if(point[1]  > s3[2]) in_right = false; // R.y max
-      return in_right;
-    };
+       if (!in_left && !in_right)
+       {
+         // pop the stack and continue
+         current_node = todo[stackptr];
+         stackptr--;
+       }
+       else
+       {
+         bvh::Vec<FloatType, 4> children = inner_nodes[current_node + 3];
+         int32 l_child;
+         constexpr int32 isize = sizeof(int32);
+         // memcpy the int bits hidden in the floats
+         memcpy(&l_child, &children[0], isize);
+         int32 r_child;
+         memcpy(&r_child, &children[1], isize);
 
-    auto leafKernel = [&] AXOM_DEVICE (
-                       int32 AXOM_NOT_USED(current_node),
-                       const bvh::BVH< FloatType,NDIMS >& AXOM_NOT_USED(mybvh))
-    {
-      ++count;
-    };
+         current_node = (in_left) ? l_child : r_child;
 
-    bvh_traverse< NDIMS, FloatType >( mybvh, inLeft, inRight, leafKernel );
+          if (in_left && in_right)
+          {
+            stackptr++;
+            todo[stackptr] = r_child;
+            // TODO: if we are in both children we could
+            // go down the "closer" first by perhaps the distance
+            // from the point to the center of the aabb
+          }
 
-    counts[ i ] = count;
+       } // END else
+
+     } // END if
+     else
+     {
+       // leaf node
+       count++;
+       current_node = todo[stackptr];
+       stackptr--;
+     }
+
+   } // while
+
+  counts[ i ] = count;
+
   } );
 
-  // STEP 1: prefix sum of candidate counts
   RAJA::exclusive_scan< bvh::raja_for_policy >(
-      counts, counts + numPts, offsets,
-      RAJA::operators::plus<IndexType>{} );
+      counts, counts+numPts, offsets, RAJA::operators::plus<IndexType>{} );
 
-  // STEP 2: populate candidates
   // TODO: this will segault with raw(unmanaged) cuda pointers
-  IndexType total_candidates = offsets[numPts-1] + counts[numPts-1];
+  IndexType total_candidates = offsets[numPts-1] + counts[numPts - 1];
 
-  candidates = axom::allocate< IndexType >( total_candidates );
+  candidates = axom::allocate< IndexType >( total_candidates);
 
-  RAJA::forall< exec_pol >(
-        RAJA::RangeSegment(0,numPts), AXOM_LAMBDA(IndexType i)
+   //candidates =
+  RAJA::forall<bvh::raja_for_policy>(
+      RAJA::RangeSegment(0, numPts), AXOM_LAMBDA (IndexType i)
   {
-
     int32 offset = offsets[ i ];
 
-    bvh::Vec< FloatType, NDIMS > point;
-    point[ 0 ] = x[ i ];
-    point[ 1 ] = y[ i ];
+    bvh::Vec< FloatType,NDIMS > point;
+    point[0] = x[i];
+    point[1] = y[i];
 
-    auto inLeft = [&] AXOM_DEVICE ( const bvh::Vec< FloatType,4 >& s1,
-                                    const bvh::Vec< FloatType,4 >& s2  )
+    int32 current_node = 0;
+    int32 todo[64];
+    int32 stackptr = 0;
+
+    constexpr int32 barrier = -2000000000;
+    todo[stackptr] = barrier;
+    while (current_node != barrier)
     {
-      bool in_left = true;
-      if(point[0]  < s1[0]) in_left = false; // L.x min
-      if(point[1]  < s1[1]) in_left = false; // L.y min
+      if (current_node > -1)
+      {
+        const bvh::Vec<FloatType, 4> first4  = inner_nodes[current_node + 0];
+        const bvh::Vec<FloatType, 4> second4 = inner_nodes[current_node + 1];
+        const bvh::Vec<FloatType, 4> third4  = inner_nodes[current_node + 2];
 
-      if(point[0]  > s2[3]) in_left = false; // L.x max
-      if(point[1]  > s2[0]) in_left = false; // L.y max
-      return in_left;
-    };
+        const bool in_left  = InLeft( point, first4, second4 );
+        const bool in_right = InRight( point, second4, third4 );
 
-    auto inRight = [&] AXOM_DEVICE ( const bvh::Vec< FloatType,4 >& s2,
-                                     const bvh::Vec< FloatType,4 >& s3 )
-    {
-      bool in_right = true;
-      if(point[0]  < s2[2]) in_right = false; // R.x min
-      if(point[1]  < s2[3]) in_right = false; // R.y min
+        if (!in_left && !in_right)
+        {
+          // pop the stack and continue
+          current_node = todo[stackptr];
+          stackptr--;
+        }
+        else
+        {
+          bvh::Vec<FloatType, 4> children = inner_nodes[current_node + 3];
+          int32 l_child;
+          constexpr int32 isize = sizeof(int32);
+          // memcpy the int bits hidden in the floats
+          memcpy(&l_child, &children[0], isize);
+          int32 r_child;
+          memcpy(&r_child, &children[1], isize);
 
-      if(point[0]  > s3[1]) in_right = false; // R.x max
-      if(point[1]  > s3[2]) in_right = false; // R.y max
-      return in_right;
-    };
+          current_node = (in_left) ? l_child : r_child;
 
-    auto leafKernel = [&] AXOM_DEVICE (
-                        int32 current_node,
-                        const bvh::BVH< FloatType,NDIMS >& mybvh )
-    {
-      candidates[ offset ] = mybvh.m_leaf_nodes[ current_node ];
-      ++offset;
-    };
+          if (in_left && in_right)
+          {
+            stackptr++;
+            todo[stackptr] = r_child;
+            // TODO: if we are in both children we could
+            // go down the "closer" first by perhaps the distance
+            // from the point to the center of the aabb
+          }
+        }
+      }
+      else
+      {
+        current_node = -current_node - 1; //swap the neg address
+        candidates[offset] = leaf_nodes[current_node];
+        offset++;
+        current_node = todo[stackptr];
+        stackptr--;
+      }
 
-    bvh_traverse< NDIMS, FloatType >( mybvh, inLeft, inRight, leafKernel );
+    } // while
 
   } );
 

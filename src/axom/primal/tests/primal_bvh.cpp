@@ -15,17 +15,31 @@
  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  */
 
-#include "gtest/gtest.h"
-
+// axom/core includes
 #include "axom/core/Types.hpp"
+#include "axom/core/numerics/Matrix.hpp"
 #include "axom/core/memory_management.hpp"
 
-// primal includes
+// axom/primal includes
 #include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/spatial_acceleration/linear_bvh/range.hpp"
 #include "axom/primal/spatial_acceleration/BVH.hpp"
 #include "axom/primal/spatial_acceleration/UniformGrid.hpp"
 
+// axom/mint includes
+#include "axom/mint/mesh/Mesh.hpp"
+#include "axom/mint/mesh/UniformMesh.hpp"
+#include "axom/mint/execution/interface.hpp"
+#include "axom/mint/utils/vtk_utils.hpp"
+
+// gtest includes
+#include "gtest/gtest.h"
+
 using namespace axom;
+namespace mint   = axom::mint;
+namespace xargs  = mint::xargs;
+namespace policy = mint::policy;
+
 //------------------------------------------------------------------------------
 // HELPER METHODS
 //------------------------------------------------------------------------------
@@ -33,153 +47,132 @@ namespace
 {
 
 //------------------------------------------------------------------------------
-void generate_aabbs_and_centroids2d( const double* origin,
-                                     const double* h,
-                                     IndexType Ni,
-                                     IndexType Nj,
-                                     IndexType& ncells,
+void generate_aabbs_and_centroids2d( const mint::Mesh* mesh,
                                      double*& aabbs,
-                                     IndexType*& cellIds,
-                                     double*& xc,
-                                     double*& yc )
+                                     double* xc,
+                                     double* yc )
 {
-  // pre-condition sanity checks
+  // sanity checks
   EXPECT_TRUE( aabbs == nullptr );
-  EXPECT_TRUE( cellIds == nullptr );
-  EXPECT_TRUE( xc == nullptr );
-  EXPECT_TRUE( yc == nullptr );
+  EXPECT_TRUE( xc != nullptr );
+  EXPECT_TRUE( yc != nullptr );
 
   // calculate some constants
-  constexpr int ndims    = 2;
-  constexpr int stride   = 2 * ndims;
-  const IndexType NCi    = Ni - 1;
-  const IndexType NCj    = Nj - 1;
-  const IndexType jp     = NCi;
-  ncells =  NCi * NCj;
+  constexpr double ONE_OVER_4 = 1.f / 4.f;
+  constexpr int ndims         = 2;
+  constexpr int stride        = 2 * ndims;
+
+  EXPECT_EQ( ndims, mesh->getDimension() );
 
   // allocate output arrays
-  aabbs   = axom::allocate< double >( ncells * stride );
-  cellIds = axom::allocate< IndexType >( ncells );
-  xc      = axom::allocate< double >( ncells );
-  yc      = axom::allocate< double >( ncells );
+  const IndexType ncells = mesh->getNumberOfCells();
+  aabbs = axom::allocate< double >( ncells * stride );
 
-  // compute aabbs & cenrtoids for each cell
-  for ( IndexType j=0 ; j < NCj ; ++j )
+  using exec_policy = policy::serial;
+  mint::for_all_cells< exec_policy, xargs::coords >(
+      mesh, AXOM_LAMBDA( IndexType cellIdx,
+                         numerics::Matrix< double >& coords,
+                         const IndexType* AXOM_NOT_USED(nodeIds) )
   {
-    const IndexType jp_offset = j * jp;
-    for ( IndexType i=0 ; i < NCi ; ++i )
+
+    primal::bvh::Range< double > xrange;
+    primal::bvh::Range< double > yrange;
+
+    double xsum = 0.0;
+    double ysum = 0.0;
+
+    for ( IndexType inode=0; inode < 4; ++inode )
     {
-      // compute linear cell index
-      const IndexType cellIdx = i + jp_offset;
-      cellIds[ cellIdx ]      = cellIdx;
+      const double* node = coords.getColumn( inode );
+      xsum += node[ mint::X_COORDINATE ];
+      ysum += node[ mint::Y_COORDINATE ];
 
-      // compute min/max bounds of aabb
-      const IndexType offset = cellIdx * stride;
-      const double xmin      = origin[ 0 ] + i     * h[ 0 ] ;
-      const double xmax      = origin[ 0 ] + (i+1) * h[ 0 ] ;
-      const double ymin      = origin[ 1 ] + j     * h[ 1 ] ;
-      const double ymax      = origin[ 1 ] + (j+1) * h[ 1 ] ;
+      xrange.include( node[ mint::X_COORDINATE ] );
+      yrange.include( node[ mint::Y_COORDINATE ] );
+    } // END for all cells nodes
 
-      aabbs[ offset     ]    =  xmin ;
-      aabbs[ offset + 1 ]    =  xmax ;
-      aabbs[ offset + 2 ]    =  ymin ;
-      aabbs[ offset + 3 ]    =  ymax ;
+    xc[ cellIdx ] = xsum * ONE_OVER_4;
+    yc[ cellIdx ] = ysum * ONE_OVER_4;
+    const IndexType offset  = cellIdx * stride ;
+    aabbs[ offset     ] = xrange.min();
+    aabbs[ offset + 1 ] = yrange.min();
+    aabbs[ offset + 2 ] = xrange.max();
+    aabbs[ offset + 3 ] = yrange.max();
 
-      // compute centroid
-      xc[ cellIdx ] = 0.5 * ( xmin + xmax ) ;
-      yc[ cellIdx ] = 0.5 * ( ymin + ymax ) ;
-
-    } // END for all i
-  } // END for all j
+  } );
 
   // post-condition sanity checks
   EXPECT_TRUE( aabbs != nullptr );
-  EXPECT_TRUE( cellIds != nullptr );
-  EXPECT_TRUE( xc != nullptr );
-  EXPECT_TRUE( yc != nullptr );
+
 }
 
 //------------------------------------------------------------------------------
-void generate_aabbs_and_centroids3d( const double* origin,
-                                     const double* h,
-                                     IndexType Ni,
-                                     IndexType Nj,
-                                     IndexType Nk,
-                                     IndexType& ncells,
+void generate_aabbs_and_centroids3d( const mint::Mesh* mesh,
                                      double*& aabbs,
-                                     IndexType*& cellIds,
-                                     double*& xc,
-                                     double*& yc,
-                                     double*& zc )
+                                     double* xc,
+                                     double* yc,
+                                     double* zc )
 {
-  // pre-condition sanity checks
+  // sanity checks
   EXPECT_TRUE( aabbs == nullptr );
-  EXPECT_TRUE( cellIds == nullptr );
-  EXPECT_TRUE( xc == nullptr );
-  EXPECT_TRUE( yc == nullptr );
-  EXPECT_TRUE( zc == nullptr );
-
-  // calculate some constants
-  constexpr int ndims  = 3;
-  constexpr int stride = 2 * ndims;
-  const IndexType NCi  = Ni - 1;
-  const IndexType NCj  = Nj - 1;
-  const IndexType NCk  = Nk - 1;
-  const IndexType jp   = NCi;
-  const IndexType kp   = NCi * NCj;
-  ncells = NCi * NCj * NCk;
-
-  // allocate output arrays
-  aabbs   = axom::allocate< double >( ncells * stride );
-  cellIds = axom::allocate< IndexType >( ncells );
-  xc      = axom::allocate< double >( ncells );
-  yc      = axom::allocate< double >( ncells );
-  zc      = axom::allocate< double >( ncells );
-
-  // compute aabbs & centroids for each cell
-  for ( IndexType k=0 ; k < NCk ; ++k )
-  {
-    const IndexType kp_offset = k * kp ;
-    for ( IndexType j=0 ; j < NCj ; ++j )
-    {
-      const IndexType jp_offset = j * jp ;
-      for ( IndexType i=0 ; i < NCi ; ++i )
-      {
-        // compute linear cell index
-        const IndexType cellIdx = i + jp_offset + kp_offset ;
-        cellIds[ cellIdx ]      = cellIdx ;
-
-        // compute min/max bounds of aabb
-        const IndexType offset  = cellIdx * stride ;
-        const double xmin       = origin[ 0 ] + i     * h[ 0 ] ;
-        const double xmax       = origin[ 0 ] + (i+1) * h[ 0 ] ;
-        const double ymin       = origin[ 1 ] + j     * h[ 1 ] ;
-        const double ymax       = origin[ 1 ] + (j+1) * h[ 1 ] ;
-        const double zmin       = origin[ 2 ] + k     * h[ 2 ] ;
-        const double zmax       = origin[ 2 ] + (k+1) * h[ 2 ] ;
-
-        aabbs[ offset     ] = xmin ;
-        aabbs[ offset + 1 ] = xmax ;
-        aabbs[ offset + 2 ] = ymin ;
-        aabbs[ offset + 3 ] = ymax ;
-        aabbs[ offset + 4 ] = zmin ;
-        aabbs[ offset + 5 ] = zmax ;
-
-        // compute centroid
-        xc[ cellIdx ] = 0.5 * ( xmin + xmax );
-        yc[ cellIdx ] = 0.5 * ( ymin + ymax );
-        zc[ cellIdx ] = 0.5 * ( zmin + zmax );
-
-      } // END for all i
-    } // END for all j
-  } // END for all k
-
-  // post-condition sanity checks
-  EXPECT_TRUE( aabbs != nullptr );
-  EXPECT_TRUE( cellIds != nullptr );
   EXPECT_TRUE( xc != nullptr );
   EXPECT_TRUE( yc != nullptr );
   EXPECT_TRUE( zc != nullptr );
+
+  // calculate some constants
+  constexpr double ONE_OVER_8 = 1.f / 8.f;
+  constexpr int ndims         = 3;
+  constexpr int stride        = 2 * ndims;
+
+  EXPECT_EQ( ndims, mesh->getDimension() );
+
+  // allocate output arrays
+  const IndexType ncells = mesh->getNumberOfCells();
+  aabbs = axom::allocate< double >( ncells * stride );
+
+  using exec_policy = policy::serial;
+  mint::for_all_cells< exec_policy, xargs::coords >(
+      mesh, AXOM_LAMBDA( IndexType cellIdx,
+                         numerics::Matrix< double >& coords,
+                         const IndexType* AXOM_NOT_USED(nodeIds) )
+  {
+
+    primal::bvh::Range< double > xrange;
+    primal::bvh::Range< double > yrange;
+    primal::bvh::Range< double > zrange;
+
+    double xsum = 0.0;
+    double ysum = 0.0;
+    double zsum = 0.0;
+
+    for ( IndexType inode=0; inode < 8; ++inode )
+    {
+      const double* node = coords.getColumn( inode );
+      xsum += node[ mint::X_COORDINATE ];
+      ysum += node[ mint::Y_COORDINATE ];
+      zsum += node[ mint::Z_COORDINATE ];
+
+      xrange.include( node[ mint::X_COORDINATE ] );
+      yrange.include( node[ mint::Y_COORDINATE ] );
+      zrange.include( node[ mint::Z_COORDINATE ] );
+    } // END for all cells nodes
+
+    xc[ cellIdx ] = xsum * ONE_OVER_8;
+    yc[ cellIdx ] = ysum * ONE_OVER_8;
+    zc[ cellIdx ] = zsum * ONE_OVER_8;
+
+    const IndexType offset  = cellIdx * stride ;
+    aabbs[ offset     ] = xrange.min();
+    aabbs[ offset + 1 ] = yrange.min();
+    aabbs[ offset + 2 ] = zrange.min();
+    aabbs[ offset + 3 ] = xrange.max();
+    aabbs[ offset + 4 ] = yrange.max();
+    aabbs[ offset + 5 ] = zrange.max();
+
+  } );
+
+  // post-condition sanity checks
+  EXPECT_TRUE( aabbs != nullptr );
 }
 
 //------------------------------------------------------------------------------
@@ -253,37 +246,42 @@ TEST( primal_bvh, contruct3D)
 //------------------------------------------------------------------------------
 TEST( primal_bvh, check_find_3d )
 {
-  using PointType         = primal::Point< double, 3 >;
-  constexpr int NDIMS     = 3;
-  constexpr IndexType N   = 4;
+  constexpr int NDIMS   = 3;
+  constexpr IndexType N = 4;
+
+  using PointType = primal::Point< double, NDIMS >;
 
   double lo[ NDIMS ] = { 0.0, 0.0, 0.0 };
   double hi[ NDIMS ] = { 3.0, 3.0, 3.0 };
   int res[ NDIMS ]   = { N-1, N-1, N-1 };
 
-  double mesh_origin[ NDIMS ]  = { 0.0, 0.0, 0.0 };
-  double mesh_spacing[ NDIMS ] = { 1.0, 1.0, 1.0 };
+  mint::UniformMesh mesh( lo, hi, N, N, N );
+  double* xc = mesh.createField< double >( "xc", mint::CELL_CENTERED );
+  double* yc = mesh.createField< double >( "yc", mint::CELL_CENTERED );
+  double* zc = mesh.createField< double >( "zc", mint::CELL_CENTERED );
+  const IndexType ncells = mesh.getNumberOfCells();
 
-  double* aabbs      = nullptr;
-  IndexType* cellIds = nullptr;
-  double* xc         = nullptr;
-  double* yc         = nullptr;
-  double* zc         = nullptr;
-  IndexType ncells   = 0;
-
-  // generate bounding boxes
-  generate_aabbs_and_centroids3d(
-      mesh_origin, mesh_spacing, N, N, N, ncells, aabbs, cellIds, xc, yc, zc );
-  EXPECT_EQ( ncells, (N-1) * (N-1) * (N-1) );
+  double* aabbs = nullptr;
+  generate_aabbs_and_centroids3d( &mesh, aabbs, xc, yc, zc );
 
   // construct the BVH
   primal::BVH< NDIMS > bvh( aabbs, ncells );
   bvh.build( );
 
+  double min[ NDIMS ];
+  double max[ NDIMS ];
+  bvh.getBounds( min, max );
+  for ( int i=0; i < NDIMS; ++i )
+  {
+    EXPECT_DOUBLE_EQ( min[ i ], lo[ i ] );
+    EXPECT_DOUBLE_EQ( max[ i ], hi[ i ] );
+  }
+
   // traverse the BVH to find the candidates for all the centroids
   IndexType* offsets    = axom::allocate< IndexType >( ncells );
+  IndexType* counts     = axom::allocate< IndexType >( ncells );
   IndexType* candidates = nullptr;
-  bvh.find( offsets, candidates, ncells, xc, yc, zc );
+  bvh.find( offsets, counts, candidates, ncells, xc, yc, zc );
 
   EXPECT_TRUE( candidates != nullptr );
 
@@ -293,71 +291,71 @@ TEST( primal_bvh, check_find_3d )
   {
     PointType q            = PointType::make_point( xc[ i ],yc[ i ],zc[ i ] );
     const int donorCellIdx = ug.getBinIndex( q );
-    EXPECT_EQ( donorCellIdx, cellIds[ i ] );
-
+    EXPECT_EQ( counts[ i ], 1 );
+    EXPECT_EQ( donorCellIdx, candidates[ offsets[ i ] ] );
   } // END for all cell centroids
 
   axom::deallocate( offsets );
-
   axom::deallocate( candidates );
+  axom::deallocate( counts );
   axom::deallocate( aabbs );
-  axom::deallocate( cellIds );
-  axom::deallocate( xc );
-  axom::deallocate( yc );
-  axom::deallocate( zc );
 }
 
 //------------------------------------------------------------------------------
 TEST( primal_bvh, check_find_2d )
 {
-  using PointType         = primal::Point< double, 2 >;
-  constexpr int NDIMS     = 2;
-  constexpr IndexType N   = 4;
+  constexpr int NDIMS   = 2;
+  constexpr IndexType N = 4;
+
+  using PointType = primal::Point< double, NDIMS >;
 
   double lo[ NDIMS ] = { 0.0, 0.0 };
   double hi[ NDIMS ] = { 3.0, 3.0 };
   int res[ NDIMS ]   = { N-1, N-1 };
 
-  double mesh_origin[ NDIMS ]  = { 0.0, 0.0 };
-  double mesh_spacing[ NDIMS ] = { 1.0, 1.0 };
+  mint::UniformMesh mesh( lo, hi, N, N );
+  double* xc = mesh.createField< double >( "xc", mint::CELL_CENTERED );
+  double* yc = mesh.createField< double >( "yc", mint::CELL_CENTERED );
+  const IndexType ncells = mesh.getNumberOfCells();
 
-  double* aabbs      = nullptr;
-  IndexType* cellIds = nullptr;
-  double* xc         = nullptr;
-  double* yc         = nullptr;
-  IndexType ncells   = 0;
-
-  // generate bounding boxes
-  generate_aabbs_and_centroids2d(
-      mesh_origin, mesh_spacing, N, N, ncells, aabbs, cellIds, xc, yc );
-  EXPECT_EQ( ncells, (N-1) * (N-1) );
+  double* aabbs = nullptr;
+  generate_aabbs_and_centroids2d( &mesh, aabbs, xc, yc );
 
   // construct the BVH
   primal::BVH< NDIMS > bvh( aabbs, ncells );
   bvh.build( );
 
+  double min[ NDIMS ];
+  double max[ NDIMS ];
+  bvh.getBounds( min, max );
+  for ( int i=0; i < NDIMS; ++i )
+  {
+    EXPECT_DOUBLE_EQ( min[ i ], lo[ i ] );
+    EXPECT_DOUBLE_EQ( max[ i ], hi[ i ] );
+  }
+
   // traverse the BVH to find the candidates for all the centroids
   IndexType* offsets    = axom::allocate< IndexType >( ncells );
+  IndexType* counts     = axom::allocate< IndexType >( ncells );
   IndexType* candidates = nullptr;
-  bvh.find( offsets, candidates, ncells, xc, yc );
+  bvh.find( offsets, counts, candidates, ncells, xc, yc );
+
   EXPECT_TRUE( candidates != nullptr );
 
   primal::UniformGrid< IndexType, NDIMS > ug( lo, hi, res );
 
-  for ( IndexType i=0 ; i < ncells ; ++i )
+  for ( IndexType i=0; i < ncells; ++i )
   {
-    PointType q            = PointType::make_point( xc[ i ], yc[ i ] );
+    PointType q            = PointType::make_point( xc[ i ],yc[ i ] );
     const int donorCellIdx = ug.getBinIndex( q );
-    EXPECT_EQ( donorCellIdx, cellIds[ i ] );
-
+    EXPECT_EQ( counts[ i ], 1 );
+    EXPECT_EQ( donorCellIdx, candidates[ offsets[ i ] ] );
   } // END for all cell centroids
 
   axom::deallocate( offsets );
   axom::deallocate( candidates );
+  axom::deallocate( counts );
   axom::deallocate( aabbs );
-  axom::deallocate( cellIds );
-  axom::deallocate( xc );
-  axom::deallocate( yc );
 }
 
 //------------------------------------------------------------------------------
