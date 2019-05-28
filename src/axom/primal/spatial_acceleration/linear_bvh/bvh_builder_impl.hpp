@@ -6,6 +6,7 @@
 #ifndef AXOM_PRIMAL_BVH_BUILDER_IMPL_H_
 #define AXOM_PRIMAL_BVH_BUILDER_IMPL_H_
 
+#include "axom/primal/spatial_acceleration/linear_bvh/BVHData.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/RadixTree.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/aabb.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/math.hpp"
@@ -639,14 +640,14 @@ Vec< FloatType,4 >* emit( RadixTree<FloatType, 2>& data)
 }
 
 template < typename FloatType, int NDIMS >
-BVH< FloatType, NDIMS >
+BVHData< FloatType, NDIMS >
 LinearBVHBuilder::construct( const FloatType *boxes, int size)
 {
   // copy so we don't reorder the input
   AABB<FloatType,NDIMS >* aabbs = axom::allocate< AABB<FloatType,NDIMS> >(size);
   transform_boxes(boxes, aabbs, size);
 
-  BVH< FloatType, NDIMS > bvh;
+  BVHData< FloatType, NDIMS > bvh;
   AABB< FloatType,NDIMS > bounds = reduce(aabbs, size);
   uint32 *mcodes = get_mcodes(aabbs, size, bounds);
 

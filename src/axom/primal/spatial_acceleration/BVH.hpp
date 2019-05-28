@@ -12,9 +12,11 @@
 #include "axom/core/Types.hpp"             // for fixed bitwidth types
 #include "axom/slic/interface/slic.hpp"    // for SLIC macros
 
+#include "axom/primal/spatial_acceleration/linear_bvh/BVHData.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/bvh_builder.hpp"
-#include "axom/primal/spatial_acceleration/linear_bvh/bvh_traverse.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/bvh_vtkio.hpp"
+#include "axom/primal/spatial_acceleration/linear_bvh/aabb.hpp"
+#include "axom/primal/spatial_acceleration/linear_bvh/vec.hpp"
 
 // C/C++ includes
 #include <fstream>  // for std::ofstream
@@ -178,7 +180,7 @@ private:
 
   IndexType m_numItems;
   const FloatType* m_boxes;
-  bvh::BVH< FloatType,NDIMS > m_bvh;
+  bvh::BVHData< FloatType,NDIMS > m_bvh;
 
 /// @}
 

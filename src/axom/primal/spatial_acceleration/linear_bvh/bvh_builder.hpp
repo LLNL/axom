@@ -13,6 +13,7 @@
 
 // primal includes
 #include "axom/primal/spatial_acceleration/linear_bvh/aabb.hpp"
+#include "axom/primal/spatial_acceleration/linear_bvh/BVHData.hpp"
 
 namespace axom
 {
@@ -21,32 +22,7 @@ namespace primal
 namespace bvh
 {
 
-template < typename FloatType, int NDIMS >
-struct BVH
-{
-  Vec< FloatType, 4 > *m_inner_nodes;  // BVH bins including leafs
-  int32  *m_leaf_nodes;   // leaf data
-  AABB< FloatType, NDIMS > m_bounds;
 
-  BVH() :
-    m_inner_nodes( nullptr ),
-    m_leaf_nodes( nullptr )
-  {
-
-  }
-
-  void free()
-  {
-    axom::deallocate( m_inner_nodes );
-    axom::deallocate( m_leaf_nodes );
-  }
-
-  ~BVH()
-  {
-
-  }
-
-};
 
 class LinearBVHBuilder
 {
@@ -54,7 +30,7 @@ class LinearBVHBuilder
 public:
 
   template < typename FloatType, int NDIMS >
-  BVH< FloatType, NDIMS > construct(const FloatType *boxes, int size);
+  BVHData< FloatType, NDIMS > construct(const FloatType *boxes, int size);
 
 };
 

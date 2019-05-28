@@ -43,7 +43,8 @@ set( primal_headers
 
      ## spatial acceleration
      spatial_acceleration/BVH.hpp
-     
+
+     spatial_acceleration/linear_bvh/BVHData.hpp
      spatial_acceleration/linear_bvh/RadixTree.hpp
      spatial_acceleration/linear_bvh/aabb.hpp
      spatial_acceleration/linear_bvh/bvh_builder.hpp
