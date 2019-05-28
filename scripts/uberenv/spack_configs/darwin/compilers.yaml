@@ -23,3 +23,15 @@ compilers:
       f77: /usr/local/bin/gfortran
       fc: /usr/local/bin/gfortran
     spec: clang@9.0.0
+- compiler:
+    environment: {}
+    extra_rpaths: []
+    flags: {}
+    modules: []
+    operating_system: mojave
+    paths:
+      cc: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
+      cxx: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++
+      f77: /usr/local/bin/gfortran
+      fc: /usr/local/bin/gfortran
+    spec: clang@10.0.0-apple
