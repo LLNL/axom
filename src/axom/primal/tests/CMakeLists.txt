@@ -24,16 +24,15 @@ set( primal_tests
     primal_vector.cpp
    )
 
+set(primal_test_depends fmt primal slic mint gtest)
+blt_list_append( TO primal_test_depends ELEMENTS raja IF ${RAJA_FOUND} )
+blt_list_append( TO primal_test_depends ELEMENTS umpire IF ${UMPIRE_FOUND} )
+blt_list_append( TO primal_test_depends ELEMENTS openmp  IF ${ENABLE_OPENMP} )
+  
 foreach ( test ${primal_tests} )
 
    get_filename_component( test_name ${test} NAME_WE )
-
-   set(primal_test_depends fmt primal slic mint gtest)
   
-   blt_list_append( TO primal_test_depends ELEMENTS raja IF RAJA_FOUND )
-   blt_list_append( TO primal_test_depends ELEMENTS umpire IF UMPIRE_FOUND )
-   blt_list_append( TO primal_test_depends ELEMENTS openmp  IF ENABLE_OPENMP )
-
    blt_add_executable(
         NAME       ${test_name}_test
         SOURCES    ${test}
