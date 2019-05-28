@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
 from spack import *
+import os
 
 
 class Raja(CMakePackage):
@@ -26,7 +27,7 @@ class Raja(CMakePackage):
 
         options = []
 
-        if 'bgq' in env["SYS_TYPE"]:
+        if 'bgq' in os.getenv('SYS_TYPE', ""):
             options.extend(['-DBLT_CXX_FLAGS=-stdlib=libc++'])
 
         if '+openmp' in spec:

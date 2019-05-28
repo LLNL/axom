@@ -3,8 +3,8 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
-
 from spack import *
+import os
 
 
 class Umpire(CMakePackage):
@@ -27,7 +27,7 @@ class Umpire(CMakePackage):
 
         options = []
 
-        if 'bgq' in env["SYS_TYPE"]:
+        if 'bgq' in os.getenv('SYS_TYPE', ""):
             options.extend(['-DENABLE_BENCHMARKS:BOOL=OFF', 
                             '-DENABLE_TESTS:BOOL=OFF',
                             '-DENABLE_EXAMPLES:BOOL=OFF',
