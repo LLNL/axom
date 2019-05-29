@@ -81,6 +81,8 @@ namespace slam
 template<
   typename DataType,
   typename BSetType = BivariateSet<>,
+  typename IndPolicy =
+    policies::STLVectorIndirection<typename BSetType::PositionType, DataType>,
   typename StridePolicy = policies::StrideOne<typename BSetType::PositionType>
   >
 class BivariateMap : public MapBase, public StridePolicy
@@ -90,17 +92,18 @@ public:
   using SetElement = typename BSetType::ElementType;
   using SetType = slam::Set<SetPosition,SetElement>;
 
-  using MapType = Map<SetType, DataType, StridePolicy>;
+  using MapType = Map<DataType, SetType, IndPolicy, StridePolicy>;
   using BivariateSetType = BSetType;
   using OrderedSetType = typename BivariateSetType::OrderedSetType;
 
-  using BivariateMapType = BivariateMap<DataType, BSetType, StridePolicy>;
-  using SubMapType = SubMap<SetType, DataType, BivariateMapType, StridePolicy>;
+  using BivariateMapType =
+          BivariateMap<DataType, BSetType, IndPolicy, StridePolicy>;
+  using SubMapType = SubMap<DataType, SetType, BivariateMapType, StridePolicy>;
   using SubMapIterator = typename SubMapType::SubMapIterator;
 
   using NullBivariateSetType = NullBivariateSet<
-                                    typename BSetType::FirstSetType,
-                                    typename BSetType::SecondSetType>;
+          typename BSetType::FirstSetType,
+          typename BSetType::SecondSetType>;
 private:
   static const NullBivariateSetType s_nullBiSet;
 
@@ -132,12 +135,12 @@ public:
   template<typename BivariateSetRetType>
   BivariateSetRetType getBivariateSet() const
   {
-     using OuterSet = const typename BivariateSetRetType::FirstSetType;
-     using InnerSet = const typename BivariateSetRetType::SecondSetType;
-     OuterSet* outer = dynamic_cast<OuterSet*>(m_set->getFirstSet());
-     InnerSet* inner = dynamic_cast<InnerSet*>(m_set->getSecondSet());
+    using OuterSet = const typename BivariateSetRetType::FirstSetType;
+    using InnerSet = const typename BivariateSetRetType::SecondSetType;
+    OuterSet* outer = dynamic_cast<OuterSet*>(m_set->getFirstSet());
+    InnerSet* inner = dynamic_cast<InnerSet*>(m_set->getSecondSet());
 
-     return BivariateSetRetType(outer, inner);
+    return BivariateSetRetType(outer, inner);
   }
 
   /// \name BivariateMap value access functions
@@ -214,8 +217,8 @@ public:
 
   DataType & operator() (SetPosition s1, SetPosition s2, SetPosition comp = 0)
   {
-     auto idx = flatIndex(s1, s2);
-     return useCompIndexing() ? m_map(idx, comp) : m_map[idx];
+    auto idx = flatIndex(s1, s2);
+    return useCompIndexing() ? m_map(idx, comp) : m_map[idx];
   }
 
   /**
@@ -243,10 +246,16 @@ public:
     return &(m_map(i, comp));
   }
 
-  DataType* findValue(SetPosition s1, SetPosition s2, SetPosition comp = 0)
+  DataType* findValue(SetPosition s1, SetPosition s2,
+                      SetPosition comp = 0)
   {
-    const BivariateMap& constMe = *this;
-    return const_cast<DataType*>(constMe.findValue(s1, s2, comp));
+    SetPosition i = m_set->findElementFlatIndex(s1, s2);
+    if (i == BivariateSetType::INVALID_POS)
+    {
+      //the BivariateSet does not contain this index pair
+      return nullptr;
+    }
+    return &(m_map(i, comp));
   }
 
   /// @}
@@ -293,12 +302,12 @@ private:
 
   /**
    * \brief Compile time predicate to check if we should use component indexing
-   * 
+   *
    * \note Intended to help optimize internal indexing
    */
   constexpr bool useCompIndexing() const
   {
-     return !(StridePolicy::IS_COMPILE_TIME && StridePolicy::DEFAULT_VALUE==1);
+    return !(StridePolicy::IS_COMPILE_TIME && StridePolicy::DEFAULT_VALUE==1);
   }
 
 public:
@@ -345,7 +354,10 @@ public:
     {
       return (m_map == other.m_map) && (m_pos == other.m_pos);
     }
-    bool operator!=(const iter& other) const { return !operator==(other); }
+    bool operator!=(const iter& other) const
+    {
+      return !(this->operator==(other));
+    }
 
     /**
      * \brief Returns the current iterator value. If the BivariateMap has
@@ -384,7 +396,7 @@ public:
     /**
      * \brief return the current iterator's first index into the BivariateSet
      */
-    PositionType firstIndex()
+    PositionType firstIndex() const
     {
       return firstIdx;
     }
@@ -393,7 +405,7 @@ public:
      * \brief return the current iterator's second index (DenseIndex)
      *        into the BivariateSet
      */
-    PositionType secondIndex()
+    PositionType secondIndex() const
     {
       return m_map->set()->at(m_pos);
     }
@@ -569,9 +581,11 @@ private:
 
 }; //end BivariateMap
 
-template<typename  DataType, typename BSetType, typename StridePolicy>
-typename BivariateMap<DataType, BSetType, StridePolicy>::NullBivariateSetType
-const BivariateMap<DataType, BSetType, StridePolicy>::s_nullBiSet;
+template<typename  DataType, typename BSetType, typename IndPolicy,
+         typename StridePolicy>
+typename BivariateMap<DataType, BSetType, IndPolicy,
+                      StridePolicy>::NullBivariateSetType
+const BivariateMap<DataType, BSetType, IndPolicy, StridePolicy>::s_nullBiSet;
 
 } // end namespace slam
 } // end namespace axom

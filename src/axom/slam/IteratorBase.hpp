@@ -80,28 +80,30 @@ private:
 
 public:
 
-
   /// \name Equality and relational operators
   /// \{
 
+  using iterator = IteratorBase<IterType, PosType>;
+
   /// Equality operator
-  friend bool operator==(const IterType& lhs,
-                         const IterType& rhs) { return lhs.m_pos == rhs.m_pos; }
+  friend bool operator==(const iterator& lhs,
+                         const iterator& rhs) { return lhs.m_pos == rhs.m_pos; }
   /// Inequality operator
-  friend bool operator!=(const IterType& lhs,
-                         const IterType& rhs) { return lhs.m_pos != rhs.m_pos; }
+  friend bool operator!=(const iterator& lhs,
+                         const iterator& rhs) { return lhs.m_pos != rhs.m_pos; }
+
   /// Less than operator
-  friend bool operator<(const IterType& lhs,
-                        const IterType& rhs) { return lhs.m_pos < rhs.m_pos; }
+  friend bool operator<(const iterator& lhs,
+                        const iterator& rhs) { return lhs.m_pos < rhs.m_pos; }
   /// Less than or equal operator
-  friend bool operator<=(const IterType& lhs,
-                         const IterType& rhs) { return lhs.m_pos <= rhs.m_pos; }
+  friend bool operator<=(const iterator& lhs,
+                         const iterator& rhs) { return lhs.m_pos <= rhs.m_pos; }
   /// Greater than operator
-  friend bool operator>(const IterType& lhs,
-                        const IterType& rhs) { return lhs.m_pos > rhs.m_pos; }
+  friend bool operator>(const iterator& lhs,
+                        const iterator& rhs) { return lhs.m_pos > rhs.m_pos; }
   /// Greater than or equal operator
-  friend bool operator>=(const IterType& lhs,
-                         const IterType& rhs) { return lhs.m_pos >= rhs.m_pos; }
+  friend bool operator>=(const iterator& lhs,
+                         const iterator& rhs) { return lhs.m_pos >= rhs.m_pos; }
   /// \}
 
   /// \name Iterator advance and distance operators

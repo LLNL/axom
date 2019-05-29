@@ -30,23 +30,23 @@ template<unsigned int S>
 using CompileTimeStrideType = policies::CompileTimeStride<SetPosition, S>;
 using RuntimeStrideType = policies::RuntimeStride<SetPosition>;
 
+template<typename T>
 using STLIndirection =
-        policies::STLVectorIndirection<SetPosition, SetElement>;
+        policies::STLVectorIndirection<SetPosition, T>;
 using VariableCardinality =
-        policies::VariableCardinality<SetPosition, STLIndirection>;
+        policies::VariableCardinality<SetPosition, STLIndirection<SetElement> >;
 
 using RelationType  =
         slam::StaticRelation<SetPosition, SetElement,
-                             VariableCardinality, STLIndirection,
+                             VariableCardinality, STLIndirection<SetElement>,
                              SetType, SetType>;
 
 using BivariateSetType = slam::BivariateSet<>;
 using ProductSetType = slam::ProductSet<>;
 using RelationSetType = slam::RelationSet<RelationType>;
 
-template<typename T, typename B, typename S>
-using BivariateMapType = slam::BivariateMap<T, B, S>;
-
+template<typename T, typename B, typename I, typename S>
+using BivariateMapType = slam::BivariateMap<T, B, I, S>;
 
 static const SetPosition MAX_SET_SIZE1 = 10;
 static const SetPosition MAX_SET_SIZE2 = 15;
@@ -59,7 +59,7 @@ static double const multFac2 = 0010.0;
 
 TEST(slam_bivariate_map,construct_empty_map)
 {
-  BivariateMapType<int, BivariateSetType, StrideOneType> m;
+  slam::BivariateMap<int> m;
 
   EXPECT_TRUE(m.isValid(true));
   EXPECT_EQ(m.totalSize(), 0);
@@ -72,14 +72,14 @@ inline T getVal(SetPosition idx1, SetPosition idx2, SetPosition idx3 = 0) {
   return static_cast<T>(idx1 * multFac1 + idx2 * multFac2 + idx3 * multFac3);
 }
 
-template<typename T, typename B, typename S>
+template<typename T, typename B, typename I, typename S>
 void constructAndTestCartesianMap(int stride)
 {
   SLIC_INFO("Testing BivariateMap on ProductSet with stride " << stride);
 
-  SLIC_INFO("\nCreating set");
-  using MapType = BivariateMapType<T, B, S>;
-  using SubMapType = typename MapType::SubMapType;
+  SLIC_INFO("Creating set");
+  using BMapType = BivariateMapType<T, B, I, S>;
+  using SubMapType = typename BMapType::SubMapType;
 
   SetType s1(MAX_SET_SIZE1);
   SetType s2(MAX_SET_SIZE2);
@@ -88,16 +88,16 @@ void constructAndTestCartesianMap(int stride)
   EXPECT_EQ(s.size(), MAX_SET_SIZE1*MAX_SET_SIZE2);
   EXPECT_TRUE(s.isValid());
 
-  SLIC_INFO("\nCreating " << slam::util::TypeToString<T>::to_string()
-                          << " map on the set ");
+  SLIC_INFO("Creating " << slam::util::TypeToString<T>::to_string()
+                        << " map on the set ");
 
-  MapType m(&s, (T)0, stride);
+  BMapType m(&s, static_cast<T>(0), stride);
 
   EXPECT_TRUE(m.isValid());
   EXPECT_EQ(s.size(), m.totalSize());
   EXPECT_EQ(m.stride(), stride);
 
-  SLIC_INFO( "\nSetting the elements in the map.");
+  SLIC_INFO( "Setting the elements in the map.");
 
   for(auto idx1 = 0 ; idx1 < m.firstSetSize() ; ++idx1)
     for (auto idx2 = 0 ; idx2 < m.secondSetSize() ; ++idx2)
@@ -108,7 +108,7 @@ void constructAndTestCartesianMap(int stride)
         *valPtr = getVal<T>(idx1, idx2, i);
       }
 
-  SLIC_INFO("\nChecking the elements with findValue().");
+  SLIC_INFO("Checking the elements with findValue().");
   for (auto idx1 = 0 ; idx1 < m.firstSetSize() ; ++idx1)
     for (auto idx2 = 0 ; idx2 < m.secondSetSize() ; ++idx2)
       for (auto i = 0 ; i < stride ; i++)
@@ -119,7 +119,7 @@ void constructAndTestCartesianMap(int stride)
         EXPECT_EQ(*ptr, getVal<T>(idx1, idx2, i));
       }
 
-  SLIC_INFO("\nChecking the elements with SubMap.");
+  SLIC_INFO("Checking the elements with SubMap.");
   for (auto idx1 = 0 ; idx1 < m.firstSetSize() ; ++idx1)
   {
     SubMapType sm = m(idx1);
@@ -138,43 +138,46 @@ void constructAndTestCartesianMap(int stride)
 TEST(slam_bivariate_map,construct_int_map)
 {
   using BSet = BivariateSetType;
+  using IndPol = STLIndirection<int>;
 
-  constructAndTestCartesianMap<int, BSet, RuntimeStrideType>(1);
-  constructAndTestCartesianMap<int, BSet, RuntimeStrideType>(2);
-  constructAndTestCartesianMap<int, BSet, RuntimeStrideType>(3);
+  constructAndTestCartesianMap<int, BSet, IndPol, RuntimeStrideType>(1);
+  constructAndTestCartesianMap<int, BSet, IndPol, RuntimeStrideType>(2);
+  constructAndTestCartesianMap<int, BSet, IndPol, RuntimeStrideType>(3);
 
-  constructAndTestCartesianMap<int, BSet, StrideOneType>(1);
+  constructAndTestCartesianMap<int, BSet, IndPol, StrideOneType>(1);
 
-  constructAndTestCartesianMap<int, BSet, CompileTimeStrideType<1> >(1);
-  constructAndTestCartesianMap<int, BSet, CompileTimeStrideType<2> >(2);
-  constructAndTestCartesianMap<int, BSet, CompileTimeStrideType<3> >(3);
-
+  constructAndTestCartesianMap<int, BSet, IndPol, CompileTimeStrideType<1> >(1);
+  constructAndTestCartesianMap<int, BSet, IndPol, CompileTimeStrideType<2> >(2);
+  constructAndTestCartesianMap<int, BSet, IndPol, CompileTimeStrideType<3> >(3);
 }
 
 TEST(slam_bivariate_map,construct_double_map)
 {
   using BSet = BivariateSetType;
+  using IndPol = STLIndirection<double>;
 
-  constructAndTestCartesianMap<double, BSet, StrideOneType>(1);
+  constructAndTestCartesianMap<double, BSet, IndPol, StrideOneType>(1);
 
-  constructAndTestCartesianMap<double, BSet, CompileTimeStrideType<1> >(1);
-  constructAndTestCartesianMap<double, BSet, CompileTimeStrideType<2> >(2);
-  constructAndTestCartesianMap<double, BSet, CompileTimeStrideType<3> >(3);
+  constructAndTestCartesianMap<double, BSet, IndPol, CompileTimeStrideType<1> >(
+    1);
+  constructAndTestCartesianMap<double, BSet, IndPol, CompileTimeStrideType<2> >(
+    2);
+  constructAndTestCartesianMap<double, BSet, IndPol, CompileTimeStrideType<3> >(
+    3);
 
-  constructAndTestCartesianMap<double, BSet, RuntimeStrideType>(1);
-  constructAndTestCartesianMap<double, BSet, RuntimeStrideType>(2);
-  constructAndTestCartesianMap<double, BSet, RuntimeStrideType>(3);
+  constructAndTestCartesianMap<double, BSet, IndPol, RuntimeStrideType>(1);
+  constructAndTestCartesianMap<double, BSet, IndPol, RuntimeStrideType>(2);
+  constructAndTestCartesianMap<double, BSet, IndPol, RuntimeStrideType>(3);
 }
 
 
-
-template<typename T, typename B, typename S>
+template<typename T, typename B, typename I, typename S>
 void constructAndTestRelationSetMap(int stride)
 {
   SLIC_INFO("Testing BivariateMap on RelationSet with stride " << stride);
 
-  SLIC_INFO("\nCreating set");
-  using MapType = BivariateMapType<T, B, S>;
+  SLIC_INFO("Creating set");
+  using MapType = BivariateMapType<T, B, I, S>;
   using SubMapType = typename MapType::SubMapType;
 
   SetType s1(MAX_SET_SIZE1);
@@ -209,8 +212,8 @@ void constructAndTestRelationSetMap(int stride)
   EXPECT_EQ(indice_size, s.totalSize());
   EXPECT_TRUE(s.isValid(true));
 
-  SLIC_INFO("\nCreating " << slam::util::TypeToString<T>::to_string()
-                          << " map on the set ");
+  SLIC_INFO("Creating " << slam::util::TypeToString<T>::to_string()
+                        << " map on the set ");
 
   MapType m(&s, (T)0, stride);
 
@@ -220,7 +223,7 @@ void constructAndTestRelationSetMap(int stride)
   EXPECT_EQ(rel.toSetSize(), m.secondSetSize());
   EXPECT_EQ(m.stride(), stride);
 
-  SLIC_INFO("\nSetting the elements in the map.");
+  SLIC_INFO("Setting the elements in the map.");
 
   for (auto idx1 = 0 ; idx1 < rel.fromSetSize() ; idx1++)
   {
@@ -237,7 +240,7 @@ void constructAndTestRelationSetMap(int stride)
     }
   }
 
-  SLIC_INFO("\nChecking the elements with findValue().");
+  SLIC_INFO("Checking the elements with findValue().");
   for (auto idx1 = 0 ; idx1 < rel.fromSetSize() ; idx1++)
   {
     auto relsubset = rel[idx1];
@@ -263,7 +266,7 @@ void constructAndTestRelationSetMap(int stride)
     }
   }
 
-  SLIC_INFO("\nChecking the elements with SubMap.");
+  SLIC_INFO("Checking the elements with SubMap.");
   for (auto idx1 = 0 ; idx1 < rel.fromSetSize() ; idx1++)
   {
     auto relsubset = rel[idx1];
@@ -286,40 +289,49 @@ void constructAndTestRelationSetMap(int stride)
 TEST(slam_bivariate_map, construct_int_relset_map)
 {
   using BSet = BivariateSetType;
+  using IndPol = STLIndirection<int>;
 
-  constructAndTestRelationSetMap<int, BSet, RuntimeStrideType>(1);
-  constructAndTestRelationSetMap<int, BSet, RuntimeStrideType>(2);
-  constructAndTestRelationSetMap<int, BSet, RuntimeStrideType>(3);
+  constructAndTestRelationSetMap<int, BSet, IndPol, RuntimeStrideType>(1);
+  constructAndTestRelationSetMap<int, BSet, IndPol, RuntimeStrideType>(2);
+  constructAndTestRelationSetMap<int, BSet, IndPol, RuntimeStrideType>(3);
 
-  constructAndTestRelationSetMap<int, BSet, StrideOneType>(1);
+  constructAndTestRelationSetMap<int, BSet, IndPol, StrideOneType>(1);
 
-  constructAndTestRelationSetMap<int, BSet, CompileTimeStrideType<1> >(1);
-  constructAndTestRelationSetMap<int, BSet, CompileTimeStrideType<2> >(2);
-  constructAndTestRelationSetMap<int, BSet, CompileTimeStrideType<3> >(3);
+  constructAndTestRelationSetMap<int, BSet, IndPol,
+                                 CompileTimeStrideType<1> >(1);
+  constructAndTestRelationSetMap<int, BSet, IndPol,
+                                 CompileTimeStrideType<2> >(2);
+  constructAndTestRelationSetMap<int, BSet, IndPol,
+                                 CompileTimeStrideType<3> >(3);
 }
 
 TEST(slam_bivariate_map, construct_double_relset_map)
 {
   using BSet = BivariateSetType;
+  using IndPol = STLIndirection<double>;
 
-  constructAndTestRelationSetMap<double, BSet, StrideOneType>(1);
+  constructAndTestRelationSetMap<double, BSet, IndPol, StrideOneType>(1);
 
-  constructAndTestRelationSetMap<double, BSet, CompileTimeStrideType<1> >(1);
-  constructAndTestRelationSetMap<double, BSet, CompileTimeStrideType<2> >(2);
-  constructAndTestRelationSetMap<double, BSet, CompileTimeStrideType<3> >(3);
+  constructAndTestRelationSetMap<double, BSet, IndPol,
+                                 CompileTimeStrideType<1> >(1);
+  constructAndTestRelationSetMap<double, BSet, IndPol,
+                                 CompileTimeStrideType<2> >(2);
+  constructAndTestRelationSetMap<double, BSet, IndPol,
+                                 CompileTimeStrideType<3> >(3);
 
-  constructAndTestRelationSetMap<double, BSet, RuntimeStrideType>(1);
-  constructAndTestRelationSetMap<double, BSet, RuntimeStrideType>(2);
-  constructAndTestRelationSetMap<double, BSet, RuntimeStrideType>(3);
+  constructAndTestRelationSetMap<double, BSet, IndPol, RuntimeStrideType>(1);
+  constructAndTestRelationSetMap<double, BSet, IndPol, RuntimeStrideType>(2);
+  constructAndTestRelationSetMap<double, BSet, IndPol, RuntimeStrideType>(3);
 }
 
 
 template<typename BSet, typename StridePolicy>
 void constructAndTestBivariateMapIterator(int stride)
 {
-  SLIC_INFO("\nCreating set");
+  SLIC_INFO("Creating set");
   using DataType = double;
-  using MapType = BivariateMapType<DataType, BSet, StridePolicy>;
+  using IndPol = STLIndirection<DataType>;
+  using MapType = BivariateMapType<DataType, BSet, IndPol, StridePolicy>;
 
   SetType s1(MAX_SET_SIZE1);
   SetType s2(MAX_SET_SIZE2);
@@ -329,14 +341,14 @@ void constructAndTestBivariateMapIterator(int stride)
   EXPECT_TRUE(s.isValid());
 
   SLIC_INFO(
-    "\nCreating " << slam::util::TypeToString<DataType>::to_string()
-                  << " map on the set ");
+    "Creating " << slam::util::TypeToString<DataType>::to_string()
+                << " map on the set ");
   MapType m(&s, 0.0, stride);
   EXPECT_TRUE(m.isValid());
   EXPECT_EQ(s.size(), m.totalSize());
   EXPECT_EQ(m.stride(), stride);
 
-  SLIC_INFO("\nSetting the elements in the map.");
+  SLIC_INFO("Setting the elements in the map.");
   //currently can't set value using iterator
   for (auto idx1 = 0 ; idx1 < m.firstSetSize() ; ++idx1)
     for (auto idx2 = 0 ; idx2 < m.secondSetSize() ; ++idx2)
@@ -347,7 +359,7 @@ void constructAndTestBivariateMapIterator(int stride)
         *valPtr = getVal<DataType>(idx1, idx2, i);
       }
 
-  SLIC_INFO("\nChecking the elements with SubMap iterator.");
+  SLIC_INFO("Checking the elements with SubMap iterator.");
   for (auto idx1 = 0 ; idx1 < m.firstSetSize() ; ++idx1)
   {
     int idx2 = 0;
@@ -363,7 +375,7 @@ void constructAndTestBivariateMapIterator(int stride)
     }
   }
 
-  SLIC_INFO("\nChecking the elements with BivariateMap iterator.");
+  SLIC_INFO("Checking the elements with BivariateMap iterator.");
   {
     auto iter = m.begin();
     auto begin_iter = m.begin();

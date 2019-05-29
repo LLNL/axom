@@ -26,6 +26,7 @@
 #include "axom/slam/IteratorBase.hpp"
 
 #include "axom/slam/policies/StridePolicies.hpp"
+#include "axom/slam/policies/IndirectionPolicies.hpp"
 
 namespace axom
 {
@@ -59,15 +60,17 @@ namespace slam
  */
 
 template<
-  typename SetType,
   typename DataType,
+  typename SetType = Set<>,
+  typename IndirectionPolicy =
+    policies::STLVectorIndirection<typename SetType::PositionType, DataType>,
   typename StridePolicy = policies::StrideOne<typename SetType::PositionType>
   >
 class Map : public MapBase, public StridePolicy
 {
 public:
 
-  using OrderedMap = std::vector<DataType>;
+  using OrderedMap = typename IndirectionPolicy::VectorType;
   using StridePolicyType = StridePolicy;
 
 
@@ -127,8 +130,8 @@ public:
     //copy the data if exists
     if (builder.m_data_ptr)
     {
-      for (SetPosition idx = SetPosition() ; idx < builder.m_set->size() ;
-           ++idx)
+      const auto sz = this->size();
+      for (auto idx = SetPosition() ; idx < sz ; ++idx)
       {
         m_data[idx] = builder.m_data_ptr[idx];
       }
@@ -158,7 +161,6 @@ public:
 
   /// \name Map individual access functions
   /// @{
-  ///
 
   /**
    * \brief  Access the value in the map using a flat index in the range of 0 to
@@ -307,7 +309,6 @@ private:
   };
 
 
-
   /**
    * \class   MapIterator
    * \brief   An iterator type for a map.
@@ -364,7 +365,7 @@ public:
     /** \brief Returns the first component value after n increments.  */
     const DataType & operator[](PositionType n) const
     {
-      return *(this->operator+(n));
+      return *(*this+n);
     }
 
     DataType & operator[](PositionType n)
@@ -402,13 +403,13 @@ public:
 private:
   inline void verifyPosition(SetPosition idx)      const
   {
-     verifyPositionImpl(idx);
+    verifyPositionImpl(idx);
   }
 
   inline void verifyPosition(SetPosition setIdx,
                              SetPosition compIdx)     const
   {
-     verifyPositionImpl(setIdx, compIdx);
+    verifyPositionImpl(setIdx, compIdx);
   }
 
   inline void verifyPositionImpl(SetPosition AXOM_DEBUG_PARAM(idx))      const
@@ -420,7 +421,8 @@ private:
   }
 
   inline void verifyPositionImpl(SetPosition AXOM_DEBUG_PARAM(setIdx),
-                             SetPosition AXOM_DEBUG_PARAM(compIdx))     const
+                                 SetPosition AXOM_DEBUG_PARAM(compIdx))
+  const
   {
     SLIC_ASSERT_MSG(
       setIdx >= 0 && setIdx < size() && compIdx >= 0 && compIdx < numComp(),
@@ -449,13 +451,16 @@ private:
  * \note Should this be a singleton or a global object?  Should the scope be
  * public?
  */
-template<typename SetType, typename DataType, typename StridePolicy>
+template<typename DataType, typename SetType, typename IndirectionPolicy,
+         typename StridePolicy>
 NullSet<typename SetType::PositionType, typename SetType::ElementType>
-const Map<SetType, DataType, StridePolicy>::s_nullSet;
+const Map<DataType, SetType, IndirectionPolicy, StridePolicy>::s_nullSet;
 
 
-template<typename SetType, typename DataType, typename StridePolicy>
-bool Map<SetType, DataType, StridePolicy>::isValid(bool verboseOutput) const
+template<typename DataType, typename SetType, typename IndirectionPolicy,
+         typename StridePolicy>
+bool Map<DataType, SetType, IndirectionPolicy, StridePolicy>
+::isValid( bool verboseOutput) const
 {
   bool bValid = true;
 
@@ -517,8 +522,9 @@ bool Map<SetType, DataType, StridePolicy>::isValid(bool verboseOutput) const
 }
 
 
-template<typename SetType, typename DataType, typename StridePolicy>
-void Map<SetType, DataType, StridePolicy>::print() const
+template<typename DataType, typename SetType, typename IndirectionPolicy,
+         typename StridePolicy>
+void Map<DataType, SetType, IndirectionPolicy, StridePolicy>::print() const
 {
   bool valid = isValid(true);
   std::stringstream sstr;

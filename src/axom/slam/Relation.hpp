@@ -26,38 +26,6 @@ namespace slam
 template<typename PosType, typename ElemType>
 class NullSet;
 
-template<typename SetType>
-struct EmptySetTraits
-{
-  using EmptySetType = SetType*;
-  static EmptySetType emptySet() { return nullptr; }
-
-  template<typename ASetType>
-  static bool         isEmpty(ASetType* set)
-  {
-    return set == nullptr || set->empty();
-  }
-};
-
-/*
-   template<>
-   struct EmptySetTraits<Set>
-   {
-   using EmptySetType = Set*;
-   static EmptySetType emptySet() {
-    static NullSet s_nullSet;
-
-    return &s_nullSet;
-   }
-   static bool isEmpty(Set* set)
-   {
-    return *set == *emptySet() || set->empty();
-   }
-
-   };
- */
-
-
 template<
   typename PosType = slam::DefaultPositionType,
   typename ElemType = slam::DefaultElementType >

@@ -13,6 +13,8 @@
  * A collection of utility traits classes for Slam policies.
  */
 
+#include "axom/slam/Set.hpp"
+#include "axom/slam/NullSet.hpp"
 #include "axom/slam/policies/SizePolicies.hpp"
 #include "axom/slam/policies/StridePolicies.hpp"
 
@@ -57,6 +59,50 @@ template<typename IntType>
 struct StrideToSize< StrideOne<IntType>, IntType >
 {
   using SizeType = CompileTimeSize<IntType, StrideOne<IntType>::DEFAULT_VALUE >;
+};
+
+
+/**
+ * \brief Type traits for null sets.
+ *
+ * The null pointer for most sets is nullptr
+ */
+template<typename SetType,
+         typename P = typename SetType::PositionType,
+         typename E = typename SetType::ElementType>
+struct EmptySetTraits
+{
+  using EmptySetType = SetType;
+
+  static EmptySetType* emptySet() { return nullptr; }
+
+  static bool isEmpty(const EmptySetType* set)
+  {
+    return (set==emptySet() || set->empty() );
+  }
+};
+
+/**
+ * \brief Specialization of NullSetTraits for the base class Set
+ *
+ * The null pointer is of type NullSet
+ */
+template<typename P, typename E>
+struct EmptySetTraits<slam::Set<P,E> >
+{
+  using EmptySetType = slam::Set<P,E>;
+
+  static EmptySetType* emptySet()
+  {
+    static slam::NullSet<P,E> s_nullSet;
+    return &s_nullSet;
+  }
+
+  static bool isEmpty(const EmptySetType* set)
+  {
+    return *set == *(emptySet()) || set->empty();
+  }
+
 };
 
 

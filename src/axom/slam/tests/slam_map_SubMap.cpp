@@ -31,10 +31,10 @@ using ElementType = SetBase::ElementType;
 using RangeSetType = slam::RangeSet<PositionType, ElementType>;
 
 template<typename T>
-using Map = slam::Map<SetBase, T>;
+using Map = slam::Map<T, SetBase>;
 
 template<typename T, typename M>
-using SubMap= slam::SubMap<SetBase, T, M>;
+using SubMap= slam::SubMap<T, SetBase, M>;
 
 using OrderedSetType = axom::slam::OrderedSet<
         PositionType,
@@ -178,18 +178,18 @@ bool constructBySubMap()
   int submapOffset = 3;
   int submapSize = 5;
 
-  SLIC_INFO("\nCreating the Subset.");
+  SLIC_INFO("Creating the Subset.");
   RangeSetType ss(submapOffset, submapOffset + submapSize);
   SubMapType ssm(&m, ss);
   EXPECT_TRUE(m.isValid(true));
 
-  SLIC_INFO("\nNegating elements");
+  SLIC_INFO("Negating elements");
   for (PositionType idx = 0 ; idx < submapSize ; ++idx)
   {
     ssm[idx] = -getValue<T>(submapOffset + idx);
   }
 
-  SLIC_INFO("\nChecking the elements.");
+  SLIC_INFO("Checking the elements.");
   for (PositionType idx = 0 ; idx < m.size() ; ++idx)
   {
     T val = getValue<T>(idx);
@@ -198,7 +198,7 @@ bool constructBySubMap()
     EXPECT_EQ(m[idx], val);
   }
 
-  SLIC_INFO("\nChecking elements");
+  SLIC_INFO("Checking elements");
 
   return true;
 }

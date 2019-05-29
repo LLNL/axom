@@ -6,6 +6,7 @@
 #ifndef SLAM_MAPPED_RELATION_SET_H_
 #define SLAM_MAPPED_RELATION_SET_H_
 
+#include "axom/slam/RangeSet.hpp"
 #include "axom/slam/BivariateSet.hpp"
 
 namespace axom
@@ -37,9 +38,9 @@ class RelationSet final
   , public BivariateSet<FirstSetType, SecondSetType>
 {
 private:
-  using RangeSetType = RangeSet<typename RelationType::SetPosition,
-                                typename RelationType::SetElement>
   using RelationType = Relation;
+  using RangeSetType = RangeSet<typename RelationType::SetPosition,
+                                typename RelationType::SetElement>;
   using BivariateSetType = BivariateSet<FirstSetType, SecondSetType>;
 
 public:

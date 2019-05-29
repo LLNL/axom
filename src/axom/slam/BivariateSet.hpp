@@ -71,11 +71,13 @@ namespace slam
  *
  */
 
-template<typename FirstSetType = slam::Set<>,
-         typename SecondSetType = slam::Set<>>
+template<typename Set1 = slam::Set<>,
+         typename Set2 = slam::Set<> >
 class BivariateSet
 {
 public:
+  using FirstSetType = Set1;
+  using SecondSetType = Set2;
 
   using PositionType = typename FirstSetType::PositionType;
   using ElementType = typename FirstSetType::ElementType;
@@ -89,24 +91,7 @@ public:
           policies::StrideOne<PositionType>,
           policies::STLVectorIndirection<PositionType, ElementType> >;
 
-private:
-  template<typename SetType>
-  static
-  typename std::enable_if<!std::is_base_of<SetType,NullSetType>::value, const SetType*>::type
-  default_param()
-  {
-     return nullptr;
-  };
-
-  template<typename SetType>
-  static
-  typename std::enable_if<std::is_base_of<SetType,NullSetType>::value, const SetType*>::type
-  default_param()
-  {
-     return &s_nullSet;
-  };
-
-
+public:
   static const PositionType INVALID_POS = PositionType(-1);
   static const NullSetType s_nullSet;
 
@@ -119,8 +104,10 @@ public:
    * \param set1  Pointer to the first Set.
    * \param set2  Pointer to the second Set.
    */
-  BivariateSet(const FirstSetType* set1 = default_param<FirstSetType>(),
-               const SecondSetType* set2 = default_param<SecondSetType>() )
+  BivariateSet(
+    const FirstSetType* set1 = policies::EmptySetTraits<FirstSetType>::emptySet(),
+    const SecondSetType* set2 =
+      policies::EmptySetTraits<SecondSetType>::emptySet() )
     : m_set1(set1), m_set2(set2)
   { }
 
@@ -177,9 +164,15 @@ public:
   virtual PositionType size(PositionType pos1) const = 0; //size of a row
 
   /** \brief Size of the first set.   */
-  inline PositionType firstSetSize() const { return getSize<FirstSetType>(m_set1); }
+  inline PositionType firstSetSize() const
+  {
+    return getSize<FirstSetType>(m_set1);
+  }
   /** \brief Size of the second set.   */
-  inline PositionType secondSetSize() const { return getSize<SecondSetType>(m_set2); }
+  inline PositionType secondSetSize() const
+  {
+    return getSize<SecondSetType>(m_set2);
+  }
 
   /** \brief Returns pointer to the first set.   */
   const FirstSetType* getFirstSet() const { return m_set1; }
@@ -221,16 +214,16 @@ private:
   typename std::enable_if<std::is_abstract<SetType>::value, PositionType>::type
   getSize(const SetType* s) const
   {
-     SLIC_ASSERT_MSG(s != nullptr, "nullptr in BivariateSet::getSize()");
-     return s->size();
+    SLIC_ASSERT_MSG(s != nullptr, "nullptr in BivariateSet::getSize()");
+    return s->size();
   }
 
   template<typename SetType>
   typename std::enable_if<!std::is_abstract<SetType>::value, PositionType>::type
   getSize(const SetType* s) const
   {
-     SLIC_ASSERT_MSG(s != nullptr, "nullptr in BivariateSet::getSize()");
-     return static_cast<SetType>(*s).size();
+    SLIC_ASSERT_MSG(s != nullptr, "nullptr in BivariateSet::getSize()");
+    return static_cast<SetType>(*s).size();
   }
 
 protected:
@@ -250,14 +243,14 @@ BivariateSet<FirstSetType, SecondSetType>::s_nullSet;
  * \brief A Null BivariateSet class. Same as the NullSet for Set class.
  */
 template<typename FirstSetType = slam::Set<>,
-         typename SecondSetType = slam::Set<>>
+         typename SecondSetType = slam::Set<> >
 class NullBivariateSet : public BivariateSet<FirstSetType,SecondSetType>
 {
 public:
-   using BSet = BivariateSet<FirstSetType,SecondSetType>;
-   using PositionType = typename BSet::PositionType;
-   using ElementType = typename BSet::ElementType;
-   using OrderedSetType = typename BSet::OrderedSetType;
+  using BSet = BivariateSet<FirstSetType,SecondSetType>;
+  using PositionType = typename BSet::PositionType;
+  using ElementType = typename BSet::ElementType;
+  using OrderedSetType = typename BSet::OrderedSetType;
 
 public:
   NullBivariateSet() = default;

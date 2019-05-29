@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /**
- * \file
+ * \file UserDocs.cpp
  *
  * \brief Example code to support slam user doc examples
  */
@@ -106,8 +106,8 @@ struct SimpleQuadMesh
   /// Type alias for position map
   // _quadmesh_example_maps_typedefs_start
   using BaseSet = slam::Set<PosType,ElemType>;
-  using ScalarMap = slam::Map<BaseSet, Point2>;
-  using PointMap = slam::Map<BaseSet, Point2>;
+  using ScalarMap = slam::Map<Point2, BaseSet>;
+  using PointMap = slam::Map<Point2, BaseSet>;
   using VertPositions = PointMap;
   // _quadmesh_example_maps_typedefs_end
 

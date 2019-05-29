@@ -35,8 +35,8 @@ namespace slam
  * SubMap is used by BivariateMap to return a set of values mapped to each item
  * in its first set.
  *
- * \tparam SetType defines the Position and Element types of the underlying set
  * \tparam DataType the data type of the SuperMap
+ * \tparam SetType defines the Position and Element types of the underlying set
  * \tparam SuperMapType the type of SuperMap
  * \tparam StridePolicy the stride of SuperMap
  *
@@ -48,30 +48,33 @@ namespace slam
  */
 
 template<
-  typename SetType,
   typename DataType,
+  typename SetType,
   typename SuperMapType,
   typename StridePolicy = policies::StrideOne<typename SetType::PositionType>
   >
 class SubMap : public MapBase, public StridePolicy
 {
-private:
+public:
   using SetPosition = typename SetType::PositionType;
   using SetElement = typename SetType::ElementType;
 
+private:
   using RangeSetType = RangeSet<SetPosition, SetElement>;
-  using MapType = Map<SetType, DataType, StridePolicy>;
+
+  template<typename T>  // TODO: Generalize this
+  using IndPol = policies::STLVectorIndirection<SetPosition, T>;
+
+  using MapType = Map<SetType, DataType, IndPol<DataType>, StridePolicy>;
 
 public:
-  using IndexType = SetPosition;
   using SubsetType = OrderedSet<
           SetPosition,
           SetElement,
           policies::RuntimeSize<SetPosition>,
           policies::ZeroOffset<SetPosition>,
           policies::StrideOne<SetPosition>,
-          policies::STLVectorIndirection<SetPosition, SetElement>
-          >;
+          IndPol<SetElement> >;
 
   using SubsetBuilder = typename SubsetType::SetBuilder;
 
@@ -358,7 +361,7 @@ private: //helper functions
 
   /** Checks the ElementFlatIndex and the component index is valid */
   void verifyPositionImpl(SetPosition AXOM_DEBUG_PARAM(idx),
-                      SetPosition AXOM_DEBUG_PARAM(comp) ) const
+                          SetPosition AXOM_DEBUG_PARAM(comp) ) const
   {
     SLIC_ASSERT_MSG(idx >= 0 && idx < m_subsetIdx.size() &&
                     comp >= 0 && comp < numComp(),

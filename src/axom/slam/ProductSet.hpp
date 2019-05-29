@@ -38,11 +38,12 @@ namespace slam
 template<typename SetType1 = slam::Set<>,
          typename SetType2 = slam::Set<> >
 class ProductSet final
-    : public BivariateSet<SetType1, SetType2>
-    , RangeSet<typename SetType1::PositionType, typename SetType1::ElementType>
+  : public BivariateSet<SetType1, SetType2>
+  , RangeSet<typename SetType1::PositionType, typename SetType1::ElementType>
 {
 public:
-  using RangeSetType = RangeSet<typename SetType1::PositionType, typename SetType1::ElementType>
+  using RangeSetType = RangeSet<typename SetType1::PositionType,
+                                typename SetType1::ElementType>;
   using FirstSetType = SetType1;
   using SecondSetType = SetType2;
   using BivariateSetType = BivariateSet<FirstSetType, SecondSetType>;
@@ -61,7 +62,7 @@ public:
    */
 
   ProductSet(const FirstSetType* set1, const SecondSetType* set2) :
-    BivariateSetType(set1,set2), RangeSet(set1->size()*set2->size())
+    BivariateSetType(set1,set2), RangeSetType(set1->size()*set2->size())
   {
     //fill in the row data now for getElements(i) function,
     //since every row is the same, a call to getElements() returns the same set.

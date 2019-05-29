@@ -4,10 +4,9 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /**
- * \file
+ * \file UnstructMeshField.cpp
  *
- * \brief Simple example that uses Slam for generating and processing a simple
- *  3D mesh.
+ * \brief Slam example that generates and processing a simple 3D mesh.
  *
  * \details Loads a hex mesh from a VTK file, generates the Node to Zone
  *  relation and does simple mesh processing.
@@ -150,10 +149,10 @@ public:
 
   /// types for maps
   using BaseSet = axom::slam::Set<PositionType, ElementType>;
-  using NodalPositions = slam::Map< BaseSet, Point >;
-  using ZonalPositions = slam::Map< BaseSet, Point >;
-  using NodeField = slam::Map< BaseSet, DataType >;
-  using ZoneField = slam::Map< BaseSet, DataType >;
+  using NodalPositions = slam::Map< Point>;
+  using ZonalPositions = slam::Map< Point>;
+  using NodeField = slam::Map< DataType>;
+  using ZoneField = slam::Map< DataType>;
 
 public:
   /** \brief Simple accessor for the number of nodes in the mesh  */
@@ -191,8 +190,8 @@ struct Repository
   using SetType = axom::slam::Set<>;
   using IntsRegistry = slam::FieldRegistry<SetType, int>;
   using RealsRegistry = slam::FieldRegistry<SetType, double>;
-  using IntField = slam::Map<SetType, int>;
-  using RealField = slam::Map<SetType, double>;
+  using IntField = slam::Map<int>;
+  using RealField = slam::Map<double>;
 
   static IntsRegistry intsRegistry;
   static RealsRegistry realsRegistry;

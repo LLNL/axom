@@ -70,7 +70,7 @@ public:
 
 
   using BitsetType = slam::BitSet;
-  using BinBitMap = slam::Map<slam::Set<>, BitsetType>;
+  using BinBitMap = slam::Map<BitsetType>;
 
   /*!
    * \brief Default constructor for an ImplicitGrid

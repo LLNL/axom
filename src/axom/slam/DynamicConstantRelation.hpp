@@ -25,6 +25,7 @@
 #include "axom/slam/OrderedSet.hpp"
 #include "axom/slam/DynamicSet.hpp"
 #include "axom/slam/policies/CardinalityPolicies.hpp"
+#include "axom/slam/policies/PolicyTraits.hpp"
 
 #include <vector>
 
@@ -100,8 +101,8 @@ public:
    * \brief Default constructor with empty set for toSet and fromSet
    */
   DynamicConstantRelation ()
-    : m_fromSet( EmptySetTraits<FromSetType>::emptySet()  )
-    , m_toSet(  EmptySetTraits<ToSetType>::emptySet() )
+    : m_fromSet( policies::EmptySetTraits<FromSetType>::emptySet()  )
+    , m_toSet(  policies::EmptySetTraits<ToSetType>::emptySet() )
   {
     m_relationCardinality = CardinalityPolicy::size( 0 );
   }
@@ -111,9 +112,9 @@ public:
    * to \a toSet
    */
   DynamicConstantRelation (FromSetType* fromSet, ToSetType* toSet)
-    : CardinalityPolicy(EmptySetTraits<FromSetType>::isEmpty(fromSet)
-                        ? 0
-                        : fromSet->size() )
+    : CardinalityPolicy( policies::EmptySetTraits<FromSetType>::isEmpty(fromSet)
+                         ? 0
+                         : fromSet->size() )
     , m_fromSet(fromSet )
     , m_toSet( toSet )
   {

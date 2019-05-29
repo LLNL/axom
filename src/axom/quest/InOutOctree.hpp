@@ -543,10 +543,8 @@ public:
     using MeshVertexSet = slam::PositionSet<>;
     using MeshElementSet = slam::PositionSet<>;
 
-    using VertexIndexMap = slam::Map<slam::Set<VertexIndex>,
-                                     VertexIndex>;
-    using VertexPositionMap = slam::Map<slam::Set<VertexIndex>,
-                                        SpacePt>;
+    using VertexIndexMap = slam::Map<VertexIndex>;
+    using VertexPositionMap = slam::Map<SpacePt>;
 
     using STLIndirection =
             slam::policies::STLVectorIndirection<VertexIndex, VertexIndex>;
@@ -917,8 +915,7 @@ public:
 
   // Type aliases for the Relations from Gray leaf blocks to mesh entities
   static const int MAX_VERTS_PER_BLOCK = 1;
-  using VertexBlockMap = slam::Map<slam::Set<>,
-                                   BlockIndex>;
+  using VertexBlockMap = slam::Map<BlockIndex>;
   using STLIndirection =
           slam::policies::STLVectorIndirection<VertexIndex, VertexIndex>;
 
@@ -947,12 +944,9 @@ public:
             MeshElementSet >;
   using TriangleIndexSet = typename GrayLeafElementRelation::RelationSubset;
 
-  using GrayLeafsLevelMap = slam::Map<slam::Set<>,GrayLeafSet>;
-  using GrayLeafVertexRelationLevelMap =
-          slam::Map<slam::Set<>,GrayLeafVertexRelation>;
-  using GrayLeafElementRelationLevelMap =
-          slam::Map<slam::Set<>,GrayLeafElementRelation>;
-
+  using GrayLeafsLevelMap = slam::Map<GrayLeafSet>;
+  using GrayLeafVertexRelationLevelMap = slam::Map<GrayLeafVertexRelation>;
+  using GrayLeafElementRelationLevelMap = slam::Map<GrayLeafElementRelation>;
 
 public:
   /**
@@ -2313,9 +2307,9 @@ public:
   using GeometricBoundingBox = typename InOutOctreeType::GeometricBoundingBox;
   using SpaceTriangle = typename InOutOctreeType::SpaceTriangle;
 
-  using LeafVertMap = slam::Map<slam::Set<VertexIndex>, VertexIndex>;
-  using LeafIntMap = slam::Map<slam::Set<int>, int>;
-  using LeafGridPtMap = slam::Map<slam::Set<int>, GridPt>;
+  using LeafVertMap = slam::Map<VertexIndex>;
+  using LeafIntMap = slam::Map<int>;
+  using LeafGridPtMap = slam::Map<GridPt>;
 
   using DebugMesh = mint::UnstructuredMesh< mint::MIXED_SHAPE>;
 
@@ -2349,7 +2343,7 @@ public:
       return;
     }
 
-    using LevelGridIntMap = slam::Map<slam::Set<>, GridIntMap>;
+    using LevelGridIntMap = slam::Map<GridIntMap>;
     LevelGridIntMap diffBlocks( &(m_octree.m_levels) );
 
     int totalBlocks = 0;
@@ -3115,9 +3109,9 @@ public:
   using OctreeLevels = typename OctreeBaseType::OctreeLevels;
   using BlockIndex = typename OctreeBaseType::BlockIndex;
 
-  using LeafCountMap = slam::Map<slam::Set<>, int>;
-  using TriCountMap = slam::Map<slam::Set<>, int>;
-  using CardinalityVTMap = slam::Map<slam::Set<>, int>;
+  using LeafCountMap = slam::Map<int>;
+  using TriCountMap = slam::Map<int>;
+  using CardinalityVTMap = slam::Map<int>;
 
   using LogHistogram = std::map<int,int>;
   using MinMaxRange = primal::BoundingBox<double,1>;

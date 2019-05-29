@@ -34,7 +34,7 @@ public:
   using PositionType = typename SetType::PositionType;
   using DataType = TheDataType;
   using KeyType = std::string;
-  using MapType = slam::Map<SetType, DataType>;
+  using MapType = slam::Map<DataType, SetType>;
   using BufferType = typename MapType::OrderedMap;
 
   using DataVecMap = std::map<KeyType, MapType>;

@@ -89,13 +89,13 @@ public:
   struct RelationBuilder;
 
   StaticRelation()
-    : m_fromSet( EmptySetTraits<FromSetType>::emptySet() )
-    , m_toSet( EmptySetTraits<ToSetType>::emptySet() )
+    : m_fromSet( policies::EmptySetTraits<FromSetType>::emptySet() )
+    , m_toSet( policies::EmptySetTraits<ToSetType>::emptySet() )
   {}
 
 
   StaticRelation(FromSetType* fromSet, ToSetType* toSet)
-    : CardinalityPolicy( EmptySetTraits<FromSetType>::
+    : CardinalityPolicy( policies::EmptySetTraits<FromSetType>::
                          isEmpty(fromSet) ? 0 : fromSet->size() )
     , m_fromSet(fromSet)
     , m_toSet(toSet)
@@ -117,15 +117,15 @@ public:
     using IndicesSetBuilder = typename StaticRelation::IndicesSet::SetBuilder;
 
     RelationBuilder()
-      : m_fromSet( EmptySetTraits<FromSetType>::emptySet() ),
-      m_toSet( EmptySetTraits<ToSetType>::emptySet() )
+      : m_fromSet( policies::EmptySetTraits<FromSetType>::emptySet() ),
+      m_toSet( policies::EmptySetTraits<ToSetType>::emptySet() )
     {}
 
     RelationBuilder& fromSet(FromSetType* pFromSet)
     {
       m_fromSet = pFromSet;
       if(m_cardPolicy.totalSize() == 0
-         && !EmptySetTraits<FromSetType>::isEmpty(m_fromSet))
+         && !policies::EmptySetTraits<FromSetType>::isEmpty(m_fromSet))
       {
         m_cardPolicy = CardinalityPolicy( m_fromSet->size() );
       }
@@ -141,7 +141,7 @@ public:
     RelationBuilder& begins(BeginsSetBuilder& beginsBuilder)
     {
       SLIC_ASSERT_MSG(
-        !EmptySetTraits<FromSetType>::isEmpty(m_fromSet),
+        !policies::EmptySetTraits<FromSetType>::isEmpty(m_fromSet),
         "Must set the 'fromSet' pointer before setting the begins set");
 
       m_cardPolicy = CardinalityPolicy( m_fromSet->size(), beginsBuilder);
@@ -222,34 +222,33 @@ public:
   }
 
 
-  bool                hasFromSet() const
+  bool hasFromSet() const
   {
-    return !EmptySetTraits<FromSetType>::isEmpty(m_fromSet);
+    return !policies::EmptySetTraits<FromSetType>::isEmpty(m_fromSet);
   }
   FromSetType* fromSet()       { return m_fromSet; }
   const FromSetType* fromSet() const { return m_fromSet; }
 
 
-  bool                hasToSet() const
+  bool hasToSet() const
   {
-    return !EmptySetTraits<ToSetType>::isEmpty(m_toSet);
+    return !policies::EmptySetTraits<ToSetType>::isEmpty(m_toSet);
   }
-  ToSetType* toSet()       { return m_toSet; }
+  ToSetType* toSet() { return m_toSet; }
   const ToSetType* toSet() const { return m_toSet; }
 
-  SetPosition    fromSetSize()
+  SetPosition fromSetSize()
   {
     return m_fromSet->size();
   }
 
-  SetPosition    toSetSize()
+  SetPosition toSetSize()
   {
     return m_toSet->size();
   }
 
 
-  void                bindIndices(SetPosition size,
-                                  IndirectionBufferType* data)
+  void bindIndices(SetPosition size, IndirectionBufferType* data)
   {
     m_relationIndices  = typename IndicesSet::SetBuilder()
                          .size(size)

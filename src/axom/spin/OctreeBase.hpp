@@ -143,8 +143,7 @@ public:
           slam::OrderedSet<CoordType, CoordType, MAX_LEVEL_SIZE>;
 
   using OctreeLevelType = OctreeLevel<DIM, BlockDataType>;
-  using LeafIndicesLevelMap = slam::Map<slam::Set<CoordType,CoordType>,
-                                        OctreeLevelType*>;
+  using LeafIndicesLevelMap = slam::Map<OctreeLevelType*>;
 
   /**
    * \brief Inner class encapsulating the index of an octree <em>block</em>.
