@@ -53,7 +53,7 @@ if (AXOM_ENABLE_TESTS)
 endif()
 
 if (AXOM_ENABLE_EXAMPLES)
-  #add_subdirectory(examples)
+  add_subdirectory(examples)
 endif()
 
 
