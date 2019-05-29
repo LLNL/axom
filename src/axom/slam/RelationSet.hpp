@@ -6,6 +6,7 @@
 #ifndef SLAM_MAPPED_RELATION_SET_H_
 #define SLAM_MAPPED_RELATION_SET_H_
 
+#include "axom/slam/RangeSet.hpp"
 #include "axom/slam/BivariateSet.hpp"
 
 namespace axom
