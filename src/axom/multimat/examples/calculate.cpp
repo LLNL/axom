@@ -12,13 +12,19 @@
 
 #include "axom/multimat/multimat.hpp"
 
-#include "axom/slic/core/UnitTestLogger.hpp"
-#include "axom/core/utilities/Timer.hpp"
+#include "axom/core.hpp"
+#include "axom/slic.hpp"
+#include "axom/slam.hpp"
 
-#define ITERMAX 20  //define how many iterations to run test code
+#ifdef AXOM_DEBUG
+# define ITERMAX 3   //define how many iterations to run test code
+#else
+# define ITERMAX 50  //define how many iterations to run test code
+#endif
 
 #include "helper.hpp"
 
+namespace slam = axom::slam;
 using namespace axom::multimat;
 
 multirun_timer timer;
@@ -111,8 +117,8 @@ void average_density_cell_dom_compact(Robey_data& data) {
 
 //    Average density - Cell-Dominant Full Matrix
 //    MultiMat - Direct Access
-void average_density_cell_dom_mm_direct_0(MultiMat& mm) {
-  SLIC_INFO("-- Averaging Density cell-dominant using MultiMat Direct (Dense) Access, 0: vector directly --");
+void average_density_cell_dom_mm_template(MultiMat& mm) {
+  SLIC_INFO("-- Averaging Density cell-dominant using MultiMat Direct (Dense) Access w/ template cast --");
 
   mm.convertLayoutToCellDominant();
   SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
@@ -122,13 +128,13 @@ void average_density_cell_dom_mm_direct_0(MultiMat& mm) {
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double> & Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double> & Volfrac = mm.get2dField<double>("Volfrac");
-  MultiMat::Field1D<double> & Vol = mm.get1dField<double>("Vol");
+  auto& Densityfrac = mm.get2dField<double>("Densityfrac");
+  auto& Volfrac = mm.get2dField<double>("Volfrac");
+  auto& Vol = mm.get1dField<double>("Vol");
 
-  vector<double>& denMap = Densityfrac.getMap()->data();   // Change 1: Extract underlying vector<double>
-  vector<double>& volMap = Volfrac.getMap()->data();       // from Field2D (product set) -> slam::Map -> vector
-  vector<double>& v = Vol.data();
+  using SetType = slam::RangeSet<>;
+  using ProductSet = slam::ProductSet<SetType,SetType>;
+  auto prodset = Densityfrac.getBivariateSet<ProductSet>();
 
   vector<double> Density_average(ncells);
 
@@ -143,222 +149,21 @@ void average_density_cell_dom_mm_direct_0(MultiMat& mm) {
       double density_ave = 0.0;
       for (int m = 0; m < nmats; ++m)
       {
-        density_ave += denMap[ic*nmats + m] * volMap[ic*nmats + m];
+         auto flatIdx = prodset.findElementFlatIndex(ic, m);
+         density_ave += Densityfrac[flatIdx] * Volfrac[flatIdx];
       }
-      Density_average[ic] = density_ave / v[ic];
+      Density_average[ic] = density_ave / Vol[ic];
     }
 
     timer.record();
-
     data_checker.check(Density_average);
   }
   double act_perf = timer.get_average();
+  result_store.add_result(Result_Store::avg_density, mm.getDataLayout(),
+    mm.getSparsityLayout(), Result_Store::mm_direct, act_perf);
   SLIC_INFO("Average Density                      compute time is "
     << act_perf << " secs\n");
 }
-
-//    Average density - Cell-Dominant Full Matrix
-//    MultiMat - Direct Access
-void average_density_cell_dom_mm_direct_1(MultiMat& mm) {
-  SLIC_INFO("-- Averaging Density cell-dominant using MultiMat Direct (Dense) Access, 1: SLAM::Map[flat_idx] --");
-
-  mm.convertLayoutToCellDominant();
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-    << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isDense());
-  SLIC_ASSERT(mm.isCellDom());
-
-  int ncells = mm.getNumberOfCells();
-  int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double> & Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double> & Volfrac = mm.get2dField<double>("Volfrac");
-  MultiMat::Field1D<double> & Vol = mm.get1dField<double>("Vol");
-
-  const auto& denMap = *Densityfrac.getMap();   // The underlying map
-  const auto& volMap = *Volfrac.getMap();    
-  
-  //vector<double>& denMap = Densityfrac.getMap()->data();
-  //vector<double>& volMap = Volfrac.getMap()->data();
-  vector<double>& v = Vol.data();
-
-  vector<double> Density_average(ncells);
-
-  timer.reset();
-
-  for (int iter = 0; iter < ITERMAX; ++iter)
-  {
-    timer.start();
-
-    for (int ic = 0; ic < ncells; ++ic)
-    {
-      double density_ave = 0.0;
-      for (int m = 0; m < nmats; ++m)
-      {
-        density_ave += denMap[ic*nmats + m] * volMap[ic*nmats + m];
-      }
-      Density_average[ic] = density_ave / v[ic];
-    }
-
-    timer.record();
-
-    data_checker.check(Density_average);
-  }
-  double act_perf = timer.get_average();
-  SLIC_INFO("Average Density                      compute time is "
-    << act_perf << " secs\n");
-}
-
-
-//    Average density - Cell-Dominant Full Matrix
-//    MultiMat - Direct Access
-void average_density_cell_dom_mm_direct_2(MultiMat& mm) {
-  SLIC_INFO("-- Averaging Density cell-dominant using MultiMat Direct (Dense) Access, 2: vector with ElementFlatIdx --");
-
-  mm.convertLayoutToCellDominant();
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-    << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isDense());
-  SLIC_ASSERT(mm.isCellDom());
-
-  int ncells = mm.getNumberOfCells();
-  int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double> & Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double> & Volfrac = mm.get2dField<double>("Volfrac");
-  MultiMat::Field1D<double> & Vol = mm.get1dField<double>("Vol");
-
-  vector<double>& denMap = Densityfrac.getMap()->data(); //underlying vector
-  vector<double>& volMap = Volfrac.getMap()->data();    
-  vector<double>& v = Vol.data();
-
-  vector<double> Density_average(ncells);
-
-  timer.reset();
-
-  for (int iter = 0; iter < ITERMAX; ++iter)
-  {
-    timer.start();
-    auto& prod_set = *dynamic_cast<const axom::slam::ProductSet*>(Densityfrac.set());
-
-    for (int ic = 0; ic < ncells; ++ic)
-    {
-      double density_ave = 0.0;
-      for (int m = 0; m < nmats; ++m)
-      {
-        int flatIdx = prod_set.findElementFlatIndex(ic,m);
-        density_ave += denMap[flatIdx] * volMap[flatIdx];
-      }
-      Density_average[ic] = density_ave / v[ic];
-    }
-
-    timer.record();
-
-    data_checker.check(Density_average);
-  }
-  double act_perf = timer.get_average();
-  SLIC_INFO("Average Density                      compute time is "
-    << act_perf << " secs\n");
-}
-
-//    Average density - Cell-Dominant Full Matrix
-//    MultiMat - Direct Access
-void average_density_cell_dom_mm_direct_3(MultiMat& mm) {
-  SLIC_INFO("-- Averaging Density cell-dominant using MultiMat Direct (Dense) Access, 3: SLAM::Map[] with ElementFlatIdx --");
-
-  mm.convertLayoutToCellDominant();
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-    << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isDense());
-  SLIC_ASSERT(mm.isCellDom());
-
-  int ncells = mm.getNumberOfCells();
-  int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double> & Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double> & Volfrac = mm.get2dField<double>("Volfrac");
-  MultiMat::Field1D<double> & Vol = mm.get1dField<double>("Vol");
-
-  const auto& denMap = *Densityfrac.getMap();   // The underlying map
-  const auto& volMap = *Volfrac.getMap();
-
-  vector<double>& v = Vol.data();
-
-  vector<double> Density_average(ncells);
-
-  timer.reset();
-
-  for (int iter = 0; iter < ITERMAX; ++iter)
-  {
-    timer.start();
-    auto prod_set = dynamic_cast<const axom::slam::ProductSet*>(Densityfrac.set());
-
-    for (int ic = 0; ic < ncells; ++ic)
-    {
-      double density_ave = 0.0;
-      for (int m = 0; m < nmats; ++m)
-      {
-        int flatIdx = prod_set->findElementFlatIndex(ic, m);
-        density_ave += denMap[flatIdx] * volMap[flatIdx];
-      }
-      Density_average[ic] = density_ave / v[ic];
-    }
-
-    timer.record();
-
-    data_checker.check(Density_average);
-  }
-  double act_perf = timer.get_average();
-  SLIC_INFO("Average Density                      compute time is "
-    << act_perf << " secs\n");
-}
-
-//    Average density - Cell-Dominant Full Matrix
-//    MultiMat - Direct Access
-void average_density_cell_dom_mm_direct_4(MultiMat& mm) {
-  SLIC_INFO("-- Averaging Density cell-dominant using MultiMat Direct (Dense) Access, 4: SLAM::BiMap[] directly --");
-
-  mm.convertLayoutToCellDominant();
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-    << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isDense());
-  SLIC_ASSERT(mm.isCellDom());
-
-  int ncells = mm.getNumberOfCells();
-  int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double> & Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double> & Volfrac = mm.get2dField<double>("Volfrac");
-  MultiMat::Field1D<double> & Vol = mm.get1dField<double>("Vol");
-
-  vector<double>& v = Vol.data();
-
-  vector<double> Density_average(ncells);
-
-  timer.reset();
-
-  for (int iter = 0; iter < ITERMAX; ++iter)
-  {
-    timer.start();
-    auto& prod_set = *dynamic_cast<const axom::slam::ProductSet*>(Densityfrac.set());
-
-    for (int ic = 0; ic < ncells; ++ic)
-    {
-      double density_ave = 0.0;
-      for (int m = 0; m < nmats; ++m)
-      {
-        //int flatIdx = ic*nmats + m; 
-        int flatIdx = prod_set.findElementFlatIndex(ic, m);
-        density_ave += Densityfrac[flatIdx] * Volfrac[flatIdx];
-      }
-      Density_average[ic] = density_ave / v[ic];
-    }
-
-    timer.record();
-
-    data_checker.check(Density_average);
-  }
-  double act_perf = timer.get_average();
-  SLIC_INFO("Average Density                      compute time is "
-    << act_perf << " secs\n");
-}
-
 
 //    Average density - Cell-Dominant Full Matrix
 //    MultiMat - Direct Access
@@ -373,11 +178,30 @@ void average_density_cell_dom_mm_direct(MultiMat& mm) {
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double> & Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double> & Volfrac = mm.get2dField<double>("Volfrac");
-  MultiMat::Field1D<double> & Vol = mm.get1dField<double>("Vol");
+  auto& Densityfrac = mm.get2dField<double>("Densityfrac");
+  auto& Volfrac = mm.get2dField<double>("Volfrac");
+  auto& Vol = mm.get1dField<double>("Vol");
 
   vector<double> Density_average(ncells);
+
+  using SetType = slam::RangeSet<>;
+  using ProductSet = slam::ProductSet<SetType,SetType>;
+  using Stride = slam::policies::StrideOne<int>;
+                 //slam::policies::RuntimeStride<int> >
+  using Ind = slam::policies::STLVectorIndirection<int, double>;
+
+  /**** BEGIN MOVE THIS CODE INTO MULTIMAT  *****/
+  // convert DensityFrac to use ProductSets
+  using BMapT = slam::BivariateMap<double, ProductSet, Ind, Stride>;
+
+  auto prodSet = Densityfrac.getBivariateSet<ProductSet>();
+  auto densityMap = BMapT(&prodSet);
+  densityMap.copy(Densityfrac.getMap()->data().data() );
+
+  auto volfracMap = BMapT(&prodSet);
+  volfracMap.copy(Volfrac.getMap()->data().data() );
+  /**** END MOVE THIS CODE INTO MULTIMAT  *****/
+
 
   timer.reset();
 
@@ -390,7 +214,7 @@ void average_density_cell_dom_mm_direct(MultiMat& mm) {
       double density_ave = 0.0;
       for (int m = 0; m < nmats; ++m)
       {
-        density_ave += *Densityfrac.findValue(ic, m) * *Volfrac.findValue(ic, m);
+        density_ave += densityMap(ic, m) * volfracMap(ic, m);
       }
       Density_average[ic] = density_ave / Vol[ic];
     }
@@ -415,12 +239,26 @@ void average_density_cell_dom_mm_submap(MultiMat& mm) {
     << mm.getSparsityLayoutAsString());
   SLIC_ASSERT(mm.isCellDom());
 
+  using SetType = slam::RangeSet<>;
+  using ProductSet = slam::ProductSet<SetType,SetType>;
+
   int ncells = mm.getNumberOfCells();
-  MultiMat::Field2D<double> & Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double> & Volfrac = mm.get2dField<double>("Volfrac");
-  MultiMat::Field1D<double> & Vol = mm.get1dField<double>("Vol");
+  auto& Densityfrac = mm.get2dField<double>("Densityfrac");
+  auto& Volfrac = mm.get2dField<double>("Volfrac");
+  auto& Vol = mm.get1dField<double>("Vol");
 
   vector<double> Density_average(ncells);
+
+  // convert DensityFrac to use ProductSets
+  //using BMapT = slam::BivariateMap<double, ProductSet,
+  //      slam::policies::RuntimeStride<int> >;
+
+  //auto prodSet = Densityfrac.getBivariateSet<ProductSet>();
+  //auto densityMap = BMapT(&prodSet);
+  //densityMap.copy(Densityfrac.getMap()->data().data() );
+
+  //auto volfracMap = BMapT(&prodSet);
+  //volfracMap.copy(Volfrac.getMap()->data().data() );
 
   timer.reset();
 
@@ -431,8 +269,8 @@ void average_density_cell_dom_mm_submap(MultiMat& mm) {
     for (int ic = 0; ic < ncells; ++ic)
     {
       double density_ave = 0.0;
-      MultiMat::SubField<double> Densityfrac_row = Densityfrac(ic);
-      MultiMat::SubField<double> Volfrac_row = Volfrac(ic);
+      auto Densityfrac_row = Densityfrac(ic);
+      auto Volfrac_row = Volfrac(ic);
       for (int j = 0; j < Densityfrac_row.size(); ++j)
       {
         density_ave += Densityfrac_row(j) * Volfrac_row(j);
@@ -3000,27 +2838,26 @@ int main(int argc, char** argv)
 
 
   average_density_cell_dom_full(data);
-  //average_density_cell_dom_mm_direct_0(mm);
-  //average_density_cell_dom_mm_direct_1(mm);
-  //average_density_cell_dom_mm_direct_2(mm);
-  //average_density_cell_dom_mm_direct_3(mm);
-  //average_density_cell_dom_mm_direct_4(mm);
+  average_density_cell_dom_mm_template(mm);
   average_density_cell_dom_mm_direct(mm);
 
-  //return 0;
   average_density_cell_dom_mm_submap(mm);
-  average_density_cell_dom_mm_iter(mm);
-  average_density_cell_dom_mm_flatiter(mm);
-  
+  //average_density_cell_dom_mm_iter(mm);
+  //average_density_cell_dom_mm_flatiter(mm);
+
+
   //Run the Compact layout, cell dom
   SLIC_INFO("*************** Compact Layout - Cell Dominant **************");
   average_density_cell_dom_compact(data);
   mm.convertLayoutToSparse();
   average_density_cell_dom_mm_idxarray(mm);
+
   average_density_cell_dom_mm_submap(mm);
-  average_density_cell_dom_mm_iter(mm);
-  average_density_cell_dom_mm_flatiter(mm);
-  
+  //average_density_cell_dom_mm_iter(mm);
+  //average_density_cell_dom_mm_flatiter(mm);
+
+  return 0;
+
   //Run the Full layout, material dom
   SLIC_INFO("*************** Full Layout - Material Dominant **************");
   data_checker.reset();

@@ -13,14 +13,8 @@
 #define MULTIMAT_H_
 
 
-#include "axom/slam/RangeSet.hpp"
-#include "axom/slam/OrderedSet.hpp"
-#include "axom/slam/StaticRelation.hpp"
-#include "axom/slam/DynamicVariableRelation.hpp"
-#include "axom/slam/Map.hpp"
-#include "axom/slam/RelationSet.hpp"
-#include "axom/slam/ProductSet.hpp"
-#include "axom/slam/BivariateMap.hpp"
+#include "axom/slam.hpp"
+
 #include <vector>
 #include <cassert>
 #include <stdexcept>
@@ -49,49 +43,66 @@ enum class DataTypeSupported
  */
 class MultiMat
 {
+public:
+  using BivariateSetType = slam::BivariateSet<>;//RangeSetType, RangeSetType>;
+  using ProductSetType = slam::ProductSet<>;//RangeSetType, RangeSetType>;
+
 private:
   // SLAM Set type definitions
-  using SetType = slam::Set;
-  using RangeSetType   = slam::RangeSet;
-  using BivariateSetType = slam::BivariateSet;
-  using SetPosType  = SetType::PositionType;
-  using SetElemType = SetType::ElementType;
+  using SetPosType  = slam::DefaultPositionType;
+  using SetElemType = slam::DefaultPositionType;
+  using SetType = slam::Set<SetPosType,SetElemType>;
+  using RangeSetType   = slam::RangeSet<SetPosType,SetElemType>;
   // SLAM Relation typedef
-  using STLIndirection = policies::STLVectorIndirection<SetPosType, SetPosType>;
+  template<typename T>
+  using IndPolicy = policies::STLVectorIndirection<SetPosType, T>;
   using VariableCardinality =
-          policies::VariableCardinality<SetPosType, STLIndirection>;
+          policies::VariableCardinality<SetPosType, IndPolicy<SetElemType> >;
   using StaticVariableRelationType = slam::StaticRelation<
-          VariableCardinality, STLIndirection, RangeSetType, RangeSetType>;
-  using DynamicVariableRelationType = slam::DynamicVariableRelation;
+          SetPosType, SetElemType, VariableCardinality, 
+          IndPolicy<SetElemType>, RangeSetType, RangeSetType>;
+  using DynamicVariableRelationType =
+          slam::DynamicVariableRelation<SetPosType,SetElemType>;
   using OrderedSetType = slam::OrderedSet<
-          policies::RuntimeSize<SetType::PositionType>,
-          policies::RuntimeOffset<SetType::PositionType>,
-          policies::StrideOne<SetType::PositionType>,
-          STLIndirection,
+          SetPosType,SetElemType,
+          policies::RuntimeSize<SetPosType>,
+          policies::RuntimeOffset<SetPosType>,
+          policies::StrideOne<SetPosType>,
+          IndPolicy<SetElemType>,
           policies::NoSubset>;
-  using ProductSetType = slam::ProductSet;
-  // SLAM RelationSet for the set of non-zero cell to mat variables
-  using RelationSetType = slam::RelationSet<StaticVariableRelationType>;
-  using RelationSetDynType = slam::RelationSet<DynamicVariableRelationType>;
 
   // SLAM Map type
   using MapStrideType = slam::policies::RuntimeStride<SetPosType>;
   using MapBaseType = slam::MapBase;
+
   template <typename T>
-  using MapType = slam::Map<T, MapStrideType>;
+  using MapType = slam::Map<T, SetType, IndPolicy<T>, MapStrideType>;
+
   template <typename T>
-  using BivariateMapType = slam::BivariateMap<T, MapStrideType>;
+  using BivariateMapType =
+          slam::BivariateMap<T, BivariateSetType, IndPolicy<T>, MapStrideType>;
+
   template<typename T, typename M>
-  using SubMap = slam::SubMap<T, M, MapStrideType>;
+  using SubMap = slam::SubMap<T, SetType, M, MapStrideType>;
+
+public:
+
+  // SLAM RelationSet for the set of non-zero cell to mat variables
+  using RelationSetType = 
+        slam::RelationSet<StaticVariableRelationType>;//, RangeSetType
+  using RelationSetDynType = slam::RelationSet<DynamicVariableRelationType>;
 
 public:
   //public typedef
   template <typename T>
   using Field1D = MapType<T>;
+
   template <typename T>
   using Field2D = BivariateMapType<T>;
+
   template <typename T>
   using SubField = SubMap<T, Field2D<T> >;
+
   using IndexSet = RangeSetType; //For returning set of SparseIndex
   using IdSet = OrderedSetType;  //For returning set of DenseIndex
 
@@ -208,6 +219,12 @@ public:
    */
   template<typename T>
   Field2D<T>& get2dField(const std::string& field_name);
+
+
+
+  template<typename T, typename BMapType>
+  BMapType& get2dField(const std::string& field_name);
+
 
   /**
    * \brief Get the volume fraction field
@@ -450,8 +467,8 @@ int MultiMat::addFieldArray_impl(const std::string& arr_name,
     //copy data
     int i = 0;
     for (auto iter = new_map_ptr->begin() ; iter != new_map_ptr->end() ; iter++)
-      for (auto s = 0 ; s < stride ; ++s)
-        iter(s) = data_arr[i++];
+      for (auto str = 0 ; str < stride ; ++str)
+        iter(str) = data_arr[i++];
 
     m_mapVec.push_back(new_map_ptr);
   }
@@ -547,6 +564,18 @@ MultiMat::Field2D<T>& MultiMat::get2dField(const std::string& field_name)
   return *dynamic_cast<Field2D<T>*>(m_mapVec[fieldIdx]);
 }
 
+
+template<typename T, typename BMapType>
+BMapType& get2dField(const std::string& /*field_name*/)
+{
+//   using BSetType = typename BMapType::BivariateSetType;
+//
+//   Field2D<T>& fld = get2DField(field_name);
+//
+//   auto bset = fld.getBivariateSet<BSetType>();
+
+
+}
 
 template<typename DataType>
 void MultiMat::convertToSparse_helper(int map_i)
