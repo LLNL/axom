@@ -243,6 +243,12 @@ void make_other_field_data_matdom(int ncells, int nmats,
 }
 
 
+template<typename T1, typename T2>
+float ratio_percent(T1 numer, T2 denom)
+{
+    return static_cast<float>(numer * 100.0) / static_cast<float>(denom);
+}
+
 
 void read_vol_frac_matrix_file(std::string filename, int& ncells, int& nmats,
                                std::vector<double> &Volfrac,
@@ -336,42 +342,37 @@ void read_vol_frac_matrix_file(std::string filename, int& ncells, int& nmats,
   fclose(fp);
 
   printf("Ratios to Full Data Structure\n");
-  filled_percentage = (float)filled_count*100.0 / (float)(ncells*nmats);
-  float sparsity_percentage = (float)(ncells*nmats - filled_count)*100.0 /
-                              (float)(ncells*nmats);
+  filled_percentage = ratio_percent(filled_count, ncells*nmats);
+  float sparsity_percentage = ratio_percent(ncells*nmats - filled_count, ncells*nmats);
   printf("Sparsity %lf percent/Filled %lf percent\n\n",
          sparsity_percentage, filled_percentage);
 
   printf("Ratios to Number of Cells\n");
-  float pure_cell_percentage = (float)pure_cell_count*100.0 / (float)ncells;
-  float mixed_cell_percentage = (float)mixed_cell_count*100.0 / (float)ncells;
+  float pure_cell_percentage = ratio_percent(pure_cell_count, ncells);
+  float mixed_cell_percentage = ratio_percent(mixed_cell_count, ncells);
   printf("Pure cell %lf percentage/Mixed material %lf percentage\n\n",
          pure_cell_percentage, mixed_cell_percentage);
 
   printf("Ratios to Mixed Material Data Structure\n");
-  float mixed_material_sparsity_percentage = (float)mixed_frac_count*100.0 /
-                                             (float)(mixed_cell_count*nmats);
-  float mixed_material_filled_percentage =
-    (float)(mixed_cell_count*nmats - mixed_frac_count)*100.0 /
-    (float)(mixed_cell_count*nmats);
+  float mixed_material_sparsity_percentage = ratio_percent(mixed_frac_count, mixed_cell_count*nmats);
+  float mixed_material_filled_percentage = ratio_percent(mixed_cell_count*nmats - mixed_frac_count, mixed_cell_count*nmats);
   printf(
     "Mixed material Sparsity %lf percent/Mixed material Filled %lf percent\n\n",
     mixed_material_sparsity_percentage, mixed_material_filled_percentage);
 
   printf("Vol Total %lf\n", VolTotal);
   printf("%f percent of the cells are filled\n",
-         (float)filled_count*100.0 / (float)(ncells*nmats));
+      ratio_percent(filled_count, ncells*nmats) );
   printf("%f percent of the cells are mixed\n",
-         (float)mixed_cell_count*100.0 / (float)ncells);
+      ratio_percent(mixed_cell_count, ncells) );
   printf("%f percent of the total are mixed\n",
-         (float)mixed_frac_count*100.0 / (float)(ncells*nmats));
+      ratio_percent(mixed_frac_count, ncells*nmats) );
   printf("%f percent of the frac are mixed\n",
-         (float)mixed_frac_count*100.0 / (float)(mixed_cell_count*nmats));
+      ratio_percent(mixed_frac_count, mixed_cell_count*nmats) );
   printf("%f percent sparsity\n",
-         (float)(ncells*nmats - mixed_frac_count)*100.0 /
-         (float)(ncells*nmats));
+      ratio_percent(ncells*nmats - mixed_frac_count, ncells*nmats) );
   printf("%f percent of the frac are pure\n",
-         (float)pure_frac_count*100.0 / (float)ncells);
+      ratio_percent(pure_frac_count, ncells) );
   printf("1 matcell %d 2 matcell %d 3 matcell %d 4 matcell %d 5 matcell %d\n\n",
          onematcell, twomatcell, threematcell, fourmatcell, fiveplusmatcell);
   printf("Total cells %d\n\n",
@@ -810,10 +811,10 @@ struct Result_Store
       std::string(data_layout_str[data_layout_i]);
   }
 
-  void save_to_csv_file(char* filename)
+  void save_to_csv_file(const std::string& filename)
   {
     std::ofstream outputFile;
-    outputFile.open(filename);
+    outputFile.open(filename.c_str());
 
     outputFile << "NCells: " << robey_data_ptr->ncells
       << " NMats: " << robey_data_ptr->nmats

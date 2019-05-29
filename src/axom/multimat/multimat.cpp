@@ -10,16 +10,14 @@
  */
 
 #include "axom/multimat/multimat.hpp"
+#include "axom/slic.hpp"
 
 #include <iostream>
 #include <sstream>
 #include <iterator>
 #include <algorithm>
 
-#include "axom/slic/interface/slic.hpp"
 #include <cassert>
-
-#include "multimat.hpp"
 
 
 using namespace std;
@@ -91,8 +89,8 @@ MultiMat::MultiMat(const MultiMat& other) :
   m_dataTypeVec(other.m_dataTypeVec),
   m_dynamic_mode(false)
 {
-  RangeSetType& set1 = (isCellDom() ? m_cellSet : m_matSet);
-  RangeSetType& set2 = (isCellDom() ? m_matSet : m_cellSet);
+  auto& set1 = (isCellDom() ? m_cellSet : m_matSet);
+  auto& set2 = (isCellDom() ? m_matSet : m_cellSet);
   m_cellMatRel = new StaticVariableRelationType(&set1, &set2);
   m_cellMatRel->bindBeginOffsets(set1.size(), &m_cellMatRel_beginsVec);
   m_cellMatRel->bindIndices(m_cellMatRel_indicesVec.size(),
@@ -277,7 +275,7 @@ MultiMat::IdSet MultiMat::getCellContainingMat(int m)
 }
 
 
-MultiMat::IndexSet MultiMat::getSubfieldIndexingSet(int idx) 
+MultiMat::IndexSet MultiMat::getSubfieldIndexingSet(int idx)
 {
   if (m_dataLayout == DataLayout::CELL_CENTRIC)
     return getIndexingSetOfCell(idx);
@@ -294,13 +292,13 @@ MultiMat::IndexSet MultiMat::getIndexingSetOfCell(int c)
   {
     int start_idx = m_cellMatRel_beginsVec[c];
     int end_idx = m_cellMatRel_beginsVec[c + 1];
-    return RangeSetType::SetBuilder().range(start_idx, end_idx);
+    return RangeSetType(start_idx, end_idx);
   }
   else
   {
     SLIC_ASSERT(m_sparsityLayout == SparsityLayout::DENSE);
     int size2 = m_cellMatProdSet->secondSetSize();
-    return RangeSetType::SetBuilder().range(c*size2, (c + 1)*size2 - 1);
+    return RangeSetType(c*size2, (c + 1)*size2 - 1);
   }
 }
 
@@ -600,8 +598,8 @@ void MultiMat::transposeData_helper(int map_i,
   int stride = old_map.stride();
   std::vector<DataType> arr_data;
 
-  RangeSetType& set1 = *(m_cellMatRel->fromSet());
-  RangeSetType& set2 = *(m_cellMatRel->toSet());
+  auto& set1 = *(m_cellMatRel->fromSet());
+  auto& set2 = *(m_cellMatRel->toSet());
 
   int set1Size = set1.size();
   int set2Size = set2.size();
