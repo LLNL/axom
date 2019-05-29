@@ -81,6 +81,8 @@ namespace slam
 template<
   typename DataType,
   typename BSetType = BivariateSet<>,
+  typename IndPolicy =
+    policies::STLVectorIndirection<typename BSetType::PositionType, DataType>,
   typename StridePolicy = policies::StrideOne<typename BSetType::PositionType>
   >
 class BivariateMap : public MapBase, public StridePolicy
@@ -90,12 +92,13 @@ public:
   using SetElement = typename BSetType::ElementType;
   using SetType = slam::Set<SetPosition,SetElement>;
 
-  using MapType = Map<SetType, DataType, StridePolicy>;
+  using MapType = Map<DataType, SetType, IndPolicy, StridePolicy>;
   using BivariateSetType = BSetType;
   using OrderedSetType = typename BivariateSetType::OrderedSetType;
 
-  using BivariateMapType = BivariateMap<DataType, BSetType, StridePolicy>;
-  using SubMapType = SubMap<SetType, DataType, BivariateMapType, StridePolicy>;
+  using BivariateMapType =
+          BivariateMap<DataType, BSetType, IndPolicy, StridePolicy>;
+  using SubMapType = SubMap<DataType, SetType, BivariateMapType, StridePolicy>;
   using SubMapIterator = typename SubMapType::SubMapIterator;
 
   using NullBivariateSetType = NullBivariateSet<
@@ -235,10 +238,16 @@ public:
     return &(m_map(i, comp));
   }
 
-  DataType* findValue(SetPosition s1, SetPosition s2, SetPosition comp = 0)
+  DataType* findValue(SetPosition s1, SetPosition s2,
+                      SetPosition comp = 0)
   {
-    const BivariateMap& constMe = *this;
-    return const_cast<DataType*>(constMe.findValue(s1, s2, comp));
+    SetPosition i = m_set->findElementFlatIndex(s1, s2);
+    if (i == BivariateSetType::INVALID_POS)
+    {
+      //the BivariateSet does not contain this index pair
+      return nullptr;
+    }
+    return &(m_map(i, comp));
   }
 
   /// @}
@@ -372,13 +381,19 @@ public:
     /**
      * \brief return the current iterator's first index into the BivariateSet
      */
-    PositionType firstIndex() { return firstIdx; }
+    PositionType firstIndex() const
+    {
+      return firstIdx;
+    }
 
     /**
      * \brief return the current iterator's second index (DenseIndex)
      *        into the BivariateSet
      */
-    PositionType secondIndex() { return m_map->set()->at(m_pos); }
+    PositionType secondIndex() const
+    {
+      return m_map->set()->at(m_pos);
+    }
 
     /** \brief Returns the number of components per element in the map. */
     PositionType numComp() const { return m_map->numComp(); }
@@ -545,9 +560,11 @@ private:
 
 }; //end BivariateMap
 
-template<typename  DataType, typename BSetType, typename StridePolicy>
-typename BivariateMap<DataType, BSetType, StridePolicy>::NullBivariateSetType
-const BivariateMap<DataType, BSetType, StridePolicy>::s_nullBiSet;
+template<typename  DataType, typename BSetType, typename IndPolicy,
+         typename StridePolicy>
+typename BivariateMap<DataType, BSetType, IndPolicy,
+                      StridePolicy>::NullBivariateSetType
+const BivariateMap<DataType, BSetType, IndPolicy, StridePolicy>::s_nullBiSet;
 
 } // end namespace slam
 } // end namespace axom

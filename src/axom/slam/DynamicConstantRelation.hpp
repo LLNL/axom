@@ -25,6 +25,7 @@
 #include "axom/slam/OrderedSet.hpp"
 #include "axom/slam/DynamicSet.hpp"
 #include "axom/slam/policies/CardinalityPolicies.hpp"
+#include "axom/slam/policies/PolicyTraits.hpp"
 
 #include "axom/fmt.hpp"
 

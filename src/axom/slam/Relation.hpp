@@ -22,42 +22,12 @@ namespace axom
 {
 namespace slam
 {
-template <typename PosType, typename ElemType>
+template<typename PosType, typename ElemType>
 class NullSet;
 
-template <typename SetType>
-struct EmptySetTraits
-{
-  using EmptySetType = SetType*;
-  static EmptySetType emptySet() { return nullptr; }
-
-  template <typename ASetType>
-  static bool isEmpty(ASetType* set)
-  {
-    return set == nullptr || set->empty();
-  }
-};
-
-/*
-   template<>
-   struct EmptySetTraits<Set>
-   {
-   using EmptySetType = Set*;
-   static EmptySetType emptySet() {
-    static NullSet s_nullSet;
-
-    return &s_nullSet;
-   }
-   static bool isEmpty(Set* set)
-   {
-    return *set == *emptySet() || set->empty();
-   }
-
-   };
- */
-
-template <typename PosType = slam::DefaultPositionType,
-          typename ElemType = slam::DefaultElementType>
+template<
+  typename PosType = slam::DefaultPositionType,
+  typename ElemType = slam::DefaultElementType >
 class Relation
 {
 public:
@@ -72,10 +42,10 @@ public:
   using RelationVecConstIteratorPair =
     std::pair<RelationVecConstIterator, RelationVecConstIterator>;
 
-  static NullSet<PosType, ElemType> s_nullSet;
+  static NullSet<PosType,ElemType> s_nullSet;
 
 public:
-  virtual ~Relation() { }
+  virtual ~Relation(){}
 
   virtual RelationVecConstIterator begin(SetPosition fromSetIndex) const = 0;
 
@@ -116,10 +86,10 @@ public:
  * \note Should this be a singleton or a global object?  Should the scope be
  *  public?
  */
-template <typename PosType, typename ElemType>
-NullSet<PosType, ElemType> Relation<PosType, ElemType>::s_nullSet;
+template<typename PosType, typename ElemType>
+NullSet<PosType,ElemType> Relation<PosType, ElemType>::s_nullSet;
 
-}  // end namespace slam
-}  // end namespace axom
+} // end namespace slam
+} // end namespace axom
 
-#endif  // SLAM_RELATION_HPP_
+#endif // SLAM_RELATION_HPP_

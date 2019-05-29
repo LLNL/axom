@@ -27,7 +27,7 @@
 #include "axom/core/IteratorBase.hpp"
 
 #include "axom/slam/policies/StridePolicies.hpp"
-#include "axom/slam/policies/StoragePolicies.hpp"
+#include "axom/slam/policies/IndirectionPolicies.hpp"
 
 namespace axom
 {
@@ -58,16 +58,18 @@ namespace slam
  *
  */
 
-template <typename SetType,
-          typename DataType,
-          typename StridePolicy = policies::StrideOne<typename SetType::PositionType>,
-          typename StoragePolicy = policies::STLVectorStorage<DataType>>
-class Map : public MapBase<typename SetType::PositionType>,
-            public StridePolicy,
-            StoragePolicy
+template<
+  typename DataType,
+  typename SetType = Set<>,
+  typename IndirectionPolicy =
+    policies::STLVectorIndirection<typename SetType::PositionType, DataType>,
+  typename StridePolicy = policies::StrideOne<typename SetType::PositionType>
+  >
+class Map : public MapBase, public StridePolicy
 {
 public:
-  using OrderedMap = typename StoragePolicy::StorageType;
+
+  using OrderedMap = typename IndirectionPolicy::VectorType;
   using StridePolicyType = StridePolicy;
 
   using SetPosition = typename SetType::PositionType;
@@ -99,13 +101,11 @@ public:
 
   Map(const SetType* theSet = &s_nullSet,
       DataType defaultValue = DataType(),
-      SetPosition stride = StridePolicyType::DEFAULT_VALUE,
-      int allocatorID = axom::getDefaultAllocatorID())
+      SetPosition stride = StridePolicyType::DEFAULT_VALUE )
     : StridePolicyType(stride)
     , m_set(theSet)
   {
-    int elems = m_set->size() * StridePolicy::stride();
-    m_data = StoragePolicy::create(elems, defaultValue, allocatorID);
+    m_data.resize( m_set->size() * StridePolicy::stride(), defaultValue);
   }
 
   /**
@@ -326,7 +326,7 @@ public:
     /** \brief Returns the first component value after n increments.  */
     const DataType& operator[](PositionType n) const
     {
-      return *(this->operator+(n));
+      return *(*this+n);
     }
 
     DataType& operator[](PositionType n) { return *(*this + n); }
@@ -402,13 +402,16 @@ private:
  * \note Should this be a singleton or a global object?  Should the scope be
  * public?
  */
-template <typename SetType, typename DataType, typename StridePolicy, typename StoragePolicy>
-NullSet<typename SetType::PositionType, typename SetType::ElementType> const
-  Map<SetType, DataType, StridePolicy, StoragePolicy>::s_nullSet;
+template<typename DataType, typename SetType, typename IndirectionPolicy,
+         typename StridePolicy>
+NullSet<typename SetType::PositionType, typename SetType::ElementType>
+const Map<DataType, SetType, IndirectionPolicy, StridePolicy>::s_nullSet;
 
-template <typename SetType, typename DataType, typename StridePolicy, typename StoragePolicy>
-bool Map<SetType, DataType, StridePolicy, StoragePolicy>::isValid(
-  bool verboseOutput) const
+
+template<typename DataType, typename SetType, typename IndirectionPolicy,
+         typename StridePolicy>
+bool Map<DataType, SetType, IndirectionPolicy, StridePolicy>
+::isValid( bool verboseOutput) const
 {
   bool bValid = true;
 
@@ -466,8 +469,10 @@ bool Map<SetType, DataType, StridePolicy, StoragePolicy>::isValid(
   return bValid;
 }
 
-template <typename SetType, typename DataType, typename StridePolicy, typename StoragePolicy>
-void Map<SetType, DataType, StridePolicy, StoragePolicy>::print() const
+
+template<typename DataType, typename SetType, typename IndirectionPolicy,
+         typename StridePolicy>
+void Map<DataType, SetType, IndirectionPolicy, StridePolicy>::print() const
 {
   bool valid = isValid(true);
   std::stringstream sstr;
