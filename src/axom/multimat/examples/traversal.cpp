@@ -125,6 +125,9 @@ void various_traversal_methods(int nmats, int ncells, int ncomp,
   MultiMat::Field2D<double>& volfrac_map2 = mm.get2dField<double>("Volfrac");
   SLIC_ASSERT(&volfrac_map == &volfrac_map2);
   //volfrac field is access the same way as a regular Field2d
+  AXOM_DEBUG_VAR(volfrac_map);
+  AXOM_DEBUG_VAR(volfrac_map2);
+
 
   // --------- returning SLAM map and submap -----------
   SLIC_INFO("\n -- Access from SLAM map (and submap) -- ");
@@ -166,6 +169,8 @@ void various_traversal_methods(int nmats, int ncells, int ncomp,
         int idx = submap.index(k);  //mat id
         int idx2 = rel_set[k]; //another way to get mat id
         SLIC_ASSERT(idx == idx2);
+        AXOM_DEBUG_VAR(idx);
+        AXOM_DEBUG_VAR(idx2);
 
         for (int c = 0 ; c < submap.numComp() ; ++c)
         {
