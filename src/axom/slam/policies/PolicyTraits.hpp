@@ -12,6 +12,8 @@
  * A collection of utility traits classes for Slam policies.
  */
 
+#include "axom/slam/Set.hpp"
+#include "axom/slam/NullSet.hpp"
 #include "axom/slam/policies/SizePolicies.hpp"
 #include "axom/slam/policies/StridePolicies.hpp"
 
@@ -24,7 +26,7 @@ namespace policies
 /**
  * \brief Definition of a type trait to adapt a StridePolicy into a SizePolicy
  */
-template <typename StridePolicyType, typename IntType, int VAL = 1>
+template<typename StridePolicyType, typename IntType, int VAL = 1>
 struct StrideToSize
 {
   using SizeType = CompileTimeSize<IntType, VAL>;
@@ -33,8 +35,8 @@ struct StrideToSize
 /**
  * \brief Specialization of StrideToSize trait for a RuntimeStride
  */
-template <typename IntType>
-struct StrideToSize<RuntimeStride<IntType>, IntType>
+template<typename IntType>
+struct StrideToSize < RuntimeStride<IntType>, IntType >
 {
   using SizeType = RuntimeSize<IntType>;
 };
@@ -42,8 +44,8 @@ struct StrideToSize<RuntimeStride<IntType>, IntType>
 /**
  * \brief Specialization of StrideToSize trait for a CompileTimeStride
  */
-template <typename IntType, int VAL>
-struct StrideToSize<CompileTimeStride<IntType, IntType(VAL)>, IntType, VAL>
+template<typename IntType, int VAL>
+struct StrideToSize< CompileTimeStride<IntType, IntType(VAL)>, IntType, VAL >
 {
   using SizeType = CompileTimeSize<IntType, IntType(VAL)>;
 };
@@ -51,14 +53,59 @@ struct StrideToSize<CompileTimeStride<IntType, IntType(VAL)>, IntType, VAL>
 /**
  * \brief Specialization of StrideToSize trait for a StrideOne type
  */
-template <typename IntType>
-struct StrideToSize<StrideOne<IntType>, IntType>
+template<typename IntType>
+struct StrideToSize< StrideOne<IntType>, IntType >
 {
-  using SizeType = CompileTimeSize<IntType, StrideOne<IntType>::DEFAULT_VALUE>;
+  using SizeType = CompileTimeSize<IntType, StrideOne<IntType>::DEFAULT_VALUE >;
 };
 
-}  // end namespace policies
-}  // end namespace slam
-}  // end namespace axom
 
-#endif  // SLAM_POLICY_TRAITS_H_
+/**
+ * \brief Type traits for null sets.
+ *
+ * The null pointer for most sets is nullptr
+ */
+template<typename SetType,
+         typename P = typename SetType::PositionType,
+         typename E = typename SetType::ElementType>
+struct EmptySetTraits
+{
+  using EmptySetType = SetType;
+
+  static EmptySetType* emptySet() { return nullptr; }
+
+  static bool isEmpty(const EmptySetType* set)
+  {
+    return (set==emptySet() || set->empty() );
+  }
+};
+
+/**
+ * \brief Specialization of NullSetTraits for the base class Set
+ *
+ * The null pointer is of type NullSet
+ */
+template<typename P, typename E>
+struct EmptySetTraits<slam::Set<P,E> >
+{
+  using EmptySetType = slam::Set<P,E>;
+
+  static EmptySetType* emptySet()
+  {
+    static slam::NullSet<P,E> s_nullSet;
+    return &s_nullSet;
+  }
+
+  static bool isEmpty(const EmptySetType* set)
+  {
+    return *set == *(emptySet()) || set->empty();
+  }
+
+};
+
+
+} // end namespace policies
+} // end namespace slam
+} // end namespace axom
+
+#endif // SLAM_POLICY_TRAITS_H_

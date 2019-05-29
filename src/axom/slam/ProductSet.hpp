@@ -41,7 +41,8 @@ class ProductSet final
     , RangeSet<typename SetType1::PositionType, typename SetType1::ElementType>
 {
 public:
-  using RangeSetType = RangeSet<typename SetType1::PositionType, typename SetType1::ElementType>;
+  using RangeSetType = RangeSet<typename SetType1::PositionType,
+                                typename SetType1::ElementType>;
   using FirstSetType = SetType1;
   using SecondSetType = SetType2;
   using BivariateSetType = BivariateSet<FirstSetType, SecondSetType>;
@@ -145,7 +146,7 @@ public:
 
   PositionType size() const override
   {
-    return this->firstSetSize()*this->secondSetSize();
+    return this->firstSetSize() * this->secondSetSize();
   }
 
   PositionType size(PositionType) const override

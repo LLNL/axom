@@ -62,9 +62,9 @@ public:
   using GeometricBoundingBox = typename InOutOctreeType::GeometricBoundingBox;
   using SpaceCell = typename InOutOctreeType::SpaceCell;
 
-  using LeafVertMap = slam::Map<slam::Set<VertexIndex>, VertexIndex>;
-  using LeafIntMap = slam::Map<slam::Set<axom::IndexType>, axom::IndexType>;
-  using LeafGridPtMap = slam::Map<slam::Set<axom::IndexType>, GridPt>;
+  using LeafVertMap = slam::Map<VertexIndex>;
+  using LeafIntMap = slam::Map<axom::IndexType>;
+  using LeafGridPtMap = slam::Map<GridPt>;
 
   using DebugMesh = mint::UnstructuredMesh<mint::MIXED_SHAPE>;
 
@@ -129,7 +129,7 @@ public:
       return;
     }
 
-    using LevelGridIntMap = slam::Map<slam::Set<>, GridIntMap>;
+    using LevelGridIntMap = slam::Map<GridIntMap>;
     LevelGridIntMap diffBlocks(&(m_octree.m_levels));
 
     int totalBlocks = 0;
