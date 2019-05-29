@@ -133,7 +133,7 @@ public:
 
   // Type aliases for the Relations from Gray leaf blocks to mesh entities
   static const int MAX_VERTS_PER_BLOCK = 1;
-  using VertexBlockMap = slam::Map<slam::Set<>, BlockIndex>;
+  using VertexBlockMap = slam::Map<BlockIndex>;
   using STLIndirection =
     slam::policies::STLVectorIndirection<VertexIndex, VertexIndex>;
 
@@ -159,11 +159,9 @@ public:
                                                        MeshElementSet>;
   using CellIndexSet = typename GrayLeafElementRelation::RelationSubset;
 
-  using GrayLeafsLevelMap = slam::Map<slam::Set<>, GrayLeafSet>;
-  using GrayLeafVertexRelationLevelMap =
-    slam::Map<slam::Set<>, GrayLeafVertexRelation>;
-  using GrayLeafElementRelationLevelMap =
-    slam::Map<slam::Set<>, GrayLeafElementRelation>;
+  using GrayLeafsLevelMap = slam::Map<GrayLeafSet>;
+  using GrayLeafVertexRelationLevelMap = slam::Map<GrayLeafVertexRelation>;
+  using GrayLeafElementRelationLevelMap = slam::Map<GrayLeafElementRelation>;
 
 public:
   /**

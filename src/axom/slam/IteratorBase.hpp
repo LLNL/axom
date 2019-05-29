@@ -47,14 +47,14 @@ namespace slam
  *          Must be a signed integral type
  */
 
-template <typename IterType, typename PosType>
+template<typename IterType, typename PosType>
 class IteratorBase
 {
-  static_assert(std::is_signed<PosType>::value, "PosType must be signed");
-  static_assert(std::is_integral<PosType>::value, "PosType must be integral");
+  static_assert( std::is_signed<PosType>::value, "PosType must be signed");
+  static_assert( std::is_integral<PosType>::value, "PosType must be integral");
 
 protected:
-  IteratorBase() : m_pos(PosType()) { }
+  IteratorBase() : m_pos(PosType() ) { }
   explicit IteratorBase(PosType pos) : m_pos(pos) { }
 
 private:
@@ -66,7 +66,7 @@ private:
   {
     static void adv(IterType& derived, PosType n)
     {
-      void (IterType::*fn)(PosType) = &accessor::advance;
+      void (IterType::* fn)(PosType) = &accessor::advance;
       (derived.*fn)(n);
     }
   };
@@ -79,36 +79,27 @@ public:
   /// \name Equality and relational operators
   /// \{
 
+  using iterator = IteratorBase<IterType, PosType>;
+
   /// Equality operator
-  friend bool operator==(const IterType& lhs, const IterType& rhs)
-  {
-    return lhs.m_pos == rhs.m_pos;
-  }
+  friend bool operator==(const iterator& lhs,
+                         const iterator& rhs) { return lhs.m_pos == rhs.m_pos; }
   /// Inequality operator
-  friend bool operator!=(const IterType& lhs, const IterType& rhs)
-  {
-    return lhs.m_pos != rhs.m_pos;
-  }
+  friend bool operator!=(const iterator& lhs,
+                         const iterator& rhs) { return lhs.m_pos != rhs.m_pos; }
+
   /// Less than operator
-  friend bool operator<(const IterType& lhs, const IterType& rhs)
-  {
-    return lhs.m_pos < rhs.m_pos;
-  }
+  friend bool operator<(const iterator& lhs,
+                        const iterator& rhs) { return lhs.m_pos < rhs.m_pos; }
   /// Less than or equal operator
-  friend bool operator<=(const IterType& lhs, const IterType& rhs)
-  {
-    return lhs.m_pos <= rhs.m_pos;
-  }
+  friend bool operator<=(const iterator& lhs,
+                         const iterator& rhs) { return lhs.m_pos <= rhs.m_pos; }
   /// Greater than operator
-  friend bool operator>(const IterType& lhs, const IterType& rhs)
-  {
-    return lhs.m_pos > rhs.m_pos;
-  }
+  friend bool operator>(const iterator& lhs,
+                        const iterator& rhs) { return lhs.m_pos > rhs.m_pos; }
   /// Greater than or equal operator
-  friend bool operator>=(const IterType& lhs, const IterType& rhs)
-  {
-    return lhs.m_pos >= rhs.m_pos;
-  }
+  friend bool operator>=(const iterator& lhs,
+                         const iterator& rhs) { return lhs.m_pos >= rhs.m_pos; }
   /// \}
 
   /// \name Iterator advance and distance operators
@@ -137,7 +128,7 @@ public:
   IterType operator--(int)
   {
     IterType ret = getIter();
-    adv(getIter(), -1);
+    adv(getIter(),-1);
     return ret;
   }
 
@@ -158,7 +149,7 @@ public:
   friend IterType operator+(const IterType& it, PosType n)
   {
     IterType ret(it);
-    ret.adv(ret, n);
+    ret.adv(ret,n);
     return ret;
   }
   /// Addition operator with position on left and iterator on right
@@ -198,7 +189,7 @@ protected:
   PosType m_pos;
 };
 
-}  // end namespace slam
-}  // end namespace axom
+} // end namespace slam
+} // end namespace axom
 
-#endif  //  SLAM_ITERATOR_BASE_H_
+#endif //  SLAM_ITERATOR_BASE_H_
