@@ -81,8 +81,10 @@ class UberenvAxom(Package):
     depends_on("raja~openmp+cuda", when="+raja~openmp+cuda")
     depends_on("raja+openmp+cuda", when="+raja+openmp+cuda")
 
-    depends_on("umpire", when="+umpire")
-    depends_on("umpire+cuda", when="+umpire+cuda")
+    depends_on("umpire~openmp", when="+umpire~openmp")
+    depends_on("umpire+openmp", when="+umpire+openmp")
+    depends_on("umpire~openmp+cuda", when="+umpire~openmp+cuda")
+    depends_on("umpire+openmp+cuda", when="+umpire+openmp+cuda")
 
     # builds serial version of mfem that does not depend on Sidre
     depends_on("mfem~hypre~metis~mpi~gzstream",   when="+mfem")
