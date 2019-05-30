@@ -285,7 +285,7 @@ BVH< NDIMS, FloatType >::BVH( const FloatType* boxes, IndexType numItems ) :
 template< int NDIMS, typename FloatType >
 BVH< NDIMS, FloatType >::~BVH()
 {
-  m_bvh.free();
+  m_bvh.deallocate();
 }
 
 //------------------------------------------------------------------------------
@@ -293,7 +293,7 @@ template< int NDIMS, typename FloatType >
 int BVH< NDIMS, FloatType >::build()
 {
   bvh::LinearBVHBuilder builder;
-  m_bvh = builder.construct< FloatType, NDIMS >( m_boxes, m_numItems );
+  builder.construct< FloatType, NDIMS >( m_boxes, m_numItems, m_bvh );
   return BVH_BUILD_OK;
 }
 
@@ -329,6 +329,9 @@ void BVH< NDIMS, FloatType >::find( IndexType* offsets,
 
   const bvh::Vec< FloatType, 4>  *inner_nodes = m_bvh.m_inner_nodes;
   const int32 *leaf_nodes = m_bvh.m_leaf_nodes;
+  SLIC_ASSERT( inner_nodes != nullptr );
+  SLIC_ASSERT( leaf_nodes != nullptr );
+
   RAJA::forall< bvh::raja_for_policy >(
       RAJA::RangeSegment(0, numPts), AXOM_LAMBDA (IndexType i)
   {
@@ -498,6 +501,9 @@ void BVH< NDIMS, FloatType >::find( IndexType* offsets,
 
   const bvh::Vec< FloatType, 4>  *inner_nodes = m_bvh.m_inner_nodes;
   const int32 *leaf_nodes = m_bvh.m_leaf_nodes;
+  SLIC_ASSERT( inner_nodes != nullptr );
+  SLIC_ASSERT( leaf_nodes != nullptr );
+
   RAJA::forall<bvh::raja_for_policy>(
       RAJA::RangeSegment(0, numPts), AXOM_LAMBDA (IndexType i)
   {

@@ -30,7 +30,9 @@ class LinearBVHBuilder
 public:
 
   template < typename FloatType, int NDIMS >
-  BVHData< FloatType, NDIMS > construct(const FloatType *boxes, int size);
+  void construct( const FloatType *boxes,
+                  int size,
+                  BVHData< FloatType, NDIMS >& bvh_data );
 
 };
 

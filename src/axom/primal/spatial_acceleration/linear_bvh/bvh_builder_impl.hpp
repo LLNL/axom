@@ -14,6 +14,7 @@
 #include "axom/primal/spatial_acceleration/linear_bvh/policies.hpp"
 
 #include "axom/core/utilities/Utilities.hpp" // for isNearlyEqual()
+#include "axom/slic/interface/slic.hpp"      // for slic
 
 // RAJA includes
 #include "RAJA/RAJA.hpp"
@@ -25,8 +26,11 @@ namespace primal
 namespace bvh
 {
 
+
 template < typename FloatType >
-void transform_boxes(const FloatType *boxes, AABB<FloatType,3> *aabbs, int32 size)
+void transform_boxes( const FloatType *boxes,
+                      AABB<FloatType,3> *aabbs,
+                      int32 size)
 {
 
   RAJA::forall<raja_for_policy>(
@@ -51,8 +55,11 @@ void transform_boxes(const FloatType *boxes, AABB<FloatType,3> *aabbs, int32 siz
 
 }
 
+//------------------------------------------------------------------------------
 template < typename FloatType >
-void transform_boxes(const FloatType *boxes, AABB<FloatType,2> *aabbs, int32 size)
+void transform_boxes( const FloatType *boxes,
+                      AABB<FloatType,2> *aabbs,
+                      int32 size)
 {
 
   RAJA::forall<raja_for_policy>(
@@ -75,6 +82,7 @@ void transform_boxes(const FloatType *boxes, AABB<FloatType,2> *aabbs, int32 siz
 
 }
 
+//------------------------------------------------------------------------------
 template < typename FloatType >
 AABB<FloatType,3> reduce(AABB<FloatType,3> *aabbs, int32 size)
 {
@@ -87,7 +95,7 @@ AABB<FloatType,3> reduce(AABB<FloatType,3> *aabbs, int32 size)
   RAJA::ReduceMax<raja_reduce_policy, FloatType> ymax(neg_infinity32());
   RAJA::ReduceMax<raja_reduce_policy, FloatType> zmax(neg_infinity32());
 
-  RAJA::forall<raja_for_policy>(RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
+  RAJA::forall<raja_for_policy>(RAJA::RangeSegment(0,size), AXOM_LAMBDA(int32 i)
   {
 
     const AABB<FloatType, 3> &aabb = aabbs[i];
@@ -113,6 +121,7 @@ AABB<FloatType,3> reduce(AABB<FloatType,3> *aabbs, int32 size)
   return res;
 }
 
+//------------------------------------------------------------------------------
 template < typename FloatType >
 AABB<FloatType,2> reduce(AABB<FloatType,2> *aabbs, int32 size)
 {
@@ -147,10 +156,12 @@ AABB<FloatType,2> reduce(AABB<FloatType,2> *aabbs, int32 size)
   return res;
 }
 
+//------------------------------------------------------------------------------
 template < typename FloatType >
-uint32 *get_mcodes( AABB<FloatType,2> *aabbs,
+void get_mcodes( AABB<FloatType,2> *aabbs,
                     int32 size,
-                    const AABB< FloatType,2 > &bounds )
+                    const AABB< FloatType,2 > &bounds,
+                    uint32* mcodes )
 {
   Vec<FloatType,2> extent, inv_extent, min_coord;
   extent[0] = bounds.m_x.max() - bounds.m_x.min();
@@ -166,9 +177,7 @@ uint32 *get_mcodes( AABB<FloatType,2> *aabbs,
             0.f : 1.f / extent[i];
   }
 
-  uint32 *mcodes = axom::allocate<uint32>(size);
-
-  RAJA::forall<raja_for_policy>(RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
+  RAJA::forall<raja_for_policy>(RAJA::RangeSegment(0,size), AXOM_LAMBDA(int32 i)
   {
     const AABB<FloatType,2> &aabb = aabbs[i];
 
@@ -180,13 +189,14 @@ uint32 *get_mcodes( AABB<FloatType,2> *aabbs,
     mcodes[ i ] = morton32_encode(centroid_x, centroid_y );
   } );
 
-  return mcodes;
 }
 
+//------------------------------------------------------------------------------
 template < typename FloatType >
-uint32 *get_mcodes( AABB<FloatType,3> *aabbs,
+void get_mcodes( AABB<FloatType,3> *aabbs,
                     int32 size,
-                    const AABB< FloatType,3 > &bounds )
+                    const AABB< FloatType,3 > &bounds,
+                    uint32* mcodes )
 {
   Vec< FloatType, 3 > extent, inv_extent, min_coord;
   extent[0] = bounds.m_x.max() - bounds.m_x.min();
@@ -204,9 +214,7 @@ uint32 *get_mcodes( AABB<FloatType,3> *aabbs,
           0.f : 1.f / extent[i];
   }
 
-  uint32 *mcodes = axom::allocate<uint32>(size);
-
-  RAJA::forall<raja_for_policy>(RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
+  RAJA::forall<raja_for_policy>(RAJA::RangeSegment(0,size), AXOM_LAMBDA(int32 i)
   {
     const AABB<FloatType,3> &aabb = aabbs[i];
 
@@ -220,26 +228,23 @@ uint32 *get_mcodes( AABB<FloatType,3> *aabbs,
     mcodes[ i ] = morton32_encode(centroid_x, centroid_y, centroid_z);
   } );
 
-  return mcodes;
 }
 
+//------------------------------------------------------------------------------
 template < typename IntType >
-IntType* array_counting( const IntType& size,
-                         const IntType& start,
-                         const IntType& step)
+void array_counting( IntType* iterator,
+                     const IntType& size,
+                     const IntType& start,
+                     const IntType& step)
 {
-
-  IntType *iterator = axom::allocate< IntType >( size );
-
   RAJA::forall<raja_for_policy>(
       RAJA::RangeSegment(0, size), AXOM_LAMBDA(int32 i)
   {
     iterator[ i ] = start + i * step;
   } );
-
-  return iterator;
 }
 
+//------------------------------------------------------------------------------
 //
 // reorder and array based on a new set of indices.
 // array   [a,b,c]
@@ -263,10 +268,12 @@ void reorder(int32 *indices, T *&array, int32 size)
   array = temp;
 }
 
+//------------------------------------------------------------------------------
 template < typename MCType >
-int32* sort_mcodes( MCType *&mcodes, int32 size)
+int32* sort_mcodes( MCType*& mcodes, int32 size, int32* iter )
 {
-  int32* iter = array_counting(size, 0, 1);
+  array_counting(iter, size, 0, 1);
+
   // TODO: create custom sort for GPU / CPU
   // WARNING: this will segfault with CUDA and not unified memory
   std::sort(iter,
@@ -282,8 +289,7 @@ int32* sort_mcodes( MCType *&mcodes, int32 size)
   return iter;
 }
 
-
-
+//------------------------------------------------------------------------------
 template < typename IntType, typename MCType >
 AXOM_HOST_DEVICE IntType delta( const IntType &a,
                                 const IntType &b,
@@ -308,6 +314,7 @@ AXOM_HOST_DEVICE IntType delta( const IntType &a,
   return count;
 }
 
+//------------------------------------------------------------------------------
 template < typename FloatType, int NDIMS >
 void build_tree(  RadixTree< FloatType, NDIMS > &data )
 {
@@ -398,6 +405,7 @@ void build_tree(  RadixTree< FloatType, NDIMS > &data )
 
 }
 
+//------------------------------------------------------------------------------
 template<typename T>
 static void array_memset(T* array, const int32 size, const T val)
 {
@@ -408,11 +416,13 @@ static void array_memset(T* array, const int32 size, const T val)
   } );
 }
 
+//------------------------------------------------------------------------------
 template < typename FloatType, int NDIMS >
 void propagate_aabbs( RadixTree< FloatType, NDIMS >& data)
 {
   const int inner_size = data.m_inner_size;
   const int leaf_size = data.m_inner_size + 1;
+  SLIC_ASSERT( leaf_size == data.m_size );
 
   // Pointers and vars are redeclared because I have a faint memory
   // of a huge amount of pain and suffering due so cuda
@@ -429,11 +439,12 @@ void propagate_aabbs( RadixTree< FloatType, NDIMS >& data)
 
   array_memset(counters_ptr, inner_size, 0);
 
-  RAJA::forall<raja_for_policy>(RAJA::RangeSegment(0, leaf_size), AXOM_LAMBDA (int32 i)
+  RAJA::forall<raja_for_policy>(
+      RAJA::RangeSegment(0,leaf_size), AXOM_LAMBDA(int32 i)
   {
     int32 current_node = parent_ptr[inner_size + i];
 
-    while(current_node != -1)
+    while( current_node != -1)
     {
       int32 old = RAJA::atomic::atomicAdd<raja_atomic_policy>(&(counters_ptr[current_node]), 1);
 
@@ -471,19 +482,19 @@ void propagate_aabbs( RadixTree< FloatType, NDIMS >& data)
       current_node = parent_ptr[current_node];
     }
 
-    //printf("There can be only one\n");
-
   } );
 
   axom::deallocate(counters_ptr);
-  //AABB *inner = data.m_inner_aabbs.get_host_ptr();
-  //std::cout<<"Root bounds "<<inner[0]<<"\n";
 }
 
+//------------------------------------------------------------------------------
 template < typename FloatType  >
-Vec< FloatType,4 >* emit( RadixTree<FloatType, 3>& data)
+void emit_bvh( RadixTree<FloatType, 3>& data,
+               BVHData< FloatType, 3 >& bvh_data )
 {
-  const int inner_size = data.m_inner_size;
+  const int32 size       = data.m_size;
+  const int32 inner_size = data.m_inner_size;
+  SLIC_ASSERT( inner_size == size-1 );
 
   const int32 *lchildren_ptr = data.m_left_children;
   const int32 *rchildren_ptr = data.m_right_children;
@@ -491,7 +502,7 @@ Vec< FloatType,4 >* emit( RadixTree<FloatType, 3>& data)
   const AABB<FloatType,3>  *leaf_aabb_ptr  = data.m_leaf_aabbs;
   const AABB<FloatType,3>  *inner_aabb_ptr = data.m_inner_aabbs;
 
-  Vec<FloatType,4> *flat_ptr = axom::allocate<Vec<FloatType,4>>(inner_size * 4);
+  Vec<FloatType,4> *flat_ptr = bvh_data.m_inner_nodes;
 
   RAJA::forall<raja_for_policy>(
       RAJA::RangeSegment(0, inner_size), AXOM_LAMBDA (int32 node)
@@ -556,13 +567,24 @@ Vec< FloatType,4 >* emit( RadixTree<FloatType, 3>& data)
     flat_ptr[out_offset + 3] = vec4;
   });
 
-  return flat_ptr;
+  int32* radix_tree_leafs = data.m_leafs;
+  int32* bvh_leafs        = bvh_data.m_leaf_nodes;
+  RAJA::forall< raja_for_policy >(
+      RAJA::RangeSegment(0,size), AXOM_LAMBDA(int32 i)
+  {
+    bvh_leafs[ i ] = radix_tree_leafs[ i ];
+  } );
+
 }
 
+//------------------------------------------------------------------------------
 template < typename FloatType  >
-Vec< FloatType,4 >* emit( RadixTree<FloatType, 2>& data)
+void emit_bvh( RadixTree<FloatType, 2>& data,
+               BVHData< FloatType, 2 >& bvh_data )
 {
-  const int inner_size = data.m_inner_size;
+  const int32 size       = data.m_size;
+  const int32 inner_size = data.m_inner_size;
+  SLIC_ASSERT( inner_size == size-1 );
 
   const int32 *lchildren_ptr = data.m_left_children;
   const int32 *rchildren_ptr = data.m_right_children;
@@ -570,8 +592,8 @@ Vec< FloatType,4 >* emit( RadixTree<FloatType, 2>& data)
   const AABB<FloatType,2>  *leaf_aabb_ptr  = data.m_leaf_aabbs;
   const AABB<FloatType,2>  *inner_aabb_ptr = data.m_inner_aabbs;
 
-  Vec<FloatType,4> *flat_ptr =
-      axom::allocate< Vec< FloatType,4> >( inner_size * 4);
+
+  Vec<FloatType,4> *flat_ptr = bvh_data.m_inner_nodes;
 
   RAJA::forall<raja_for_policy>(
       RAJA::RangeSegment(0, inner_size), AXOM_LAMBDA (int32 node)
@@ -636,48 +658,65 @@ Vec< FloatType,4 >* emit( RadixTree<FloatType, 2>& data)
     flat_ptr[out_offset + 3] = vec4;
   } );
 
-  return flat_ptr;
+  int32* radix_tree_leafs = data.m_leafs;
+  int32* bvh_leafs        = bvh_data.m_leaf_nodes;
+  RAJA::forall< raja_for_policy >(
+      RAJA::RangeSegment(0,size), AXOM_LAMBDA(int32 i)
+  {
+    bvh_leafs[ i ] = radix_tree_leafs[ i ];
+  } );
+
 }
 
+//------------------------------------------------------------------------------
 template < typename FloatType, int NDIMS >
-BVHData< FloatType, NDIMS >
-LinearBVHBuilder::construct( const FloatType *boxes, int size)
+void build_radix_tree( const FloatType* boxes,
+                       int size,
+                       AABB< FloatType, NDIMS >& bounds,
+                       RadixTree< FloatType, NDIMS >& radix_tree )
 {
+  radix_tree.allocate( size );
+
   // copy so we don't reorder the input
-  AABB<FloatType,NDIMS >* aabbs = axom::allocate< AABB<FloatType,NDIMS> >(size);
-  transform_boxes(boxes, aabbs, size);
+  transform_boxes(boxes, radix_tree.m_leaf_aabbs, size);
 
-  BVHData< FloatType, NDIMS > bvh;
-  AABB< FloatType,NDIMS > bounds = reduce(aabbs, size);
-  uint32 *mcodes = get_mcodes(aabbs, size, bounds);
 
+  // evaluate global bounds
+  bounds = reduce(radix_tree.m_leaf_aabbs, size);
+
+  // sort aabbs based on morton code
   // original positions of the sorted morton codes.
   // allows us to gather / sort other arrays.
-  int32 *ids = sort_mcodes(mcodes, size);
+  get_mcodes( radix_tree.m_leaf_aabbs, size, bounds, radix_tree.m_mcodes );
+  sort_mcodes( radix_tree.m_mcodes, size, radix_tree.m_leafs );
+  reorder( radix_tree.m_leafs, radix_tree.m_leaf_aabbs, size );
 
-  reorder(ids, aabbs, size);
+  build_tree( radix_tree );
 
-  RadixTree< FloatType, NDIMS > bvh_data;
-  bvh_data.allocate(size - 1);
+  propagate_aabbs( radix_tree );
+}
 
-  // the arrays that already exist
-  bvh_data.m_leafs      = ids;
-  bvh_data.m_mcodes     = mcodes;
-  bvh_data.m_leaf_aabbs = aabbs;
+//------------------------------------------------------------------------------
+template < typename FloatType, int NDIMS >
+void LinearBVHBuilder::construct( const FloatType *boxes,
+                                  int size,
+                                  BVHData< FloatType, NDIMS >& bvh_data )
+{
 
-  // assign parent and child pointers
-  build_tree( bvh_data );
+  // STEP 0: Build a RadixTree consisting of the bounding boxes, sorted
+  // by their corresponding morton code.
+  RadixTree< FloatType, NDIMS > radix_tree;
+  AABB< FloatType, NDIMS > global_bounds;
+  build_radix_tree( boxes, size, global_bounds, radix_tree );
 
-  propagate_aabbs(bvh_data);
+  // STEP 1: emit the BVH data-structure from the radix tree
+  bvh_data.m_bounds = global_bounds;
+  bvh_data.allocate( size );
 
-  bvh.m_inner_nodes = emit( bvh_data );
-  bvh.m_leaf_nodes  = bvh_data.m_leafs;
-  bvh.m_bounds      = bounds;
+  // STEP 2: emit the BVH
+  emit_bvh( radix_tree, bvh_data );
 
-  axom::deallocate( mcodes) ;
-  axom::deallocate( aabbs );
-
-  return bvh;
+  radix_tree.deallocate();
 }
 
 } /* namespace axom */

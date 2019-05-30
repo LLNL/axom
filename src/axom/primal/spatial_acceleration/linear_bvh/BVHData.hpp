@@ -34,7 +34,13 @@ struct BVHData
 
   }
 
-  void free()
+  void allocate( int32 size )
+  {
+    m_inner_nodes = axom::allocate< Vec< FloatType,4 > >( (size-1)*4 );
+    m_leaf_nodes  = axom::allocate< int32 >( size );
+  }
+
+  void deallocate()
   {
     axom::deallocate( m_inner_nodes );
     axom::deallocate( m_leaf_nodes );

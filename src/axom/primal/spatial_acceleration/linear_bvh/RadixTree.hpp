@@ -26,35 +26,46 @@ namespace bvh
 template < typename FloatType, int NDIMS >
 struct RadixTree
 {
+  int32   m_size;
   int32   m_inner_size;
+
   int32*  m_left_children;
   int32*  m_right_children;
   int32*  m_parents;
+  AABB< FloatType, NDIMS >* m_inner_aabbs;
+
   int32*  m_leafs;
   uint32* m_mcodes;
-
-  bvh::AABB< FloatType, NDIMS > *m_inner_aabbs;
-  bvh::AABB< FloatType, NDIMS > *m_leaf_aabbs;
+  AABB< FloatType, NDIMS >* m_leaf_aabbs;
 
   void allocate( int32 size )
   {
-    m_inner_size = size;
-    m_left_children = axom::allocate<int32>(size);
-    m_right_children = axom::allocate<int32>(size);
-    m_parents     = axom::allocate<int32>(size);
-    m_inner_aabbs = axom::allocate< bvh::AABB< FloatType,NDIMS > >( size );
+    m_size           = size;
+    m_inner_size     = m_size-1;
+
+    m_left_children  = axom::allocate<int32>( m_inner_size );
+    m_right_children = axom::allocate<int32>( m_inner_size );
+    m_parents        = axom::allocate<int32>( m_size + m_inner_size );
+    m_inner_aabbs    = axom::allocate< AABB< FloatType,NDIMS > >(m_inner_size);
+
+    m_leafs      = axom::allocate< int32 >( m_size );
+    m_mcodes     = axom::allocate< uint32 >( m_size );
+    m_leaf_aabbs = axom::allocate< AABB< FloatType,NDIMS > >( m_size );
   }
 
   void deallocate()
   {
     m_inner_size = 0;
+    m_size       = 0;
+
     axom::deallocate( m_left_children );
     axom::deallocate( m_right_children );
     axom::deallocate( m_parents );
     axom::deallocate( m_inner_aabbs );
-    axom::deallocate( m_leaf_aabbs );
+
     axom::deallocate( m_leafs );
     axom::deallocate( m_mcodes );
+    axom::deallocate( m_leaf_aabbs );
   }
 
 };
