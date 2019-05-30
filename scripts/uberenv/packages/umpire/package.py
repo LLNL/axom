@@ -18,6 +18,7 @@ class Umpire(CMakePackage):
 
     variant('cuda', default=False, description='Build with CUDA support')
     variant('fortran', default=False, description='Build C/Fortran API')
+    variant('openmp', default=True, description='Build with OpenMP support')
 
     depends_on('cuda', when='+cuda')
     depends_on('cmake@3.3:', type='build')
@@ -43,5 +44,10 @@ class Umpire(CMakePackage):
 
         if '+fortran' in spec:
             options.append('-DENABLE_FORTRAN=On')
+
+        if '+openmp' in spec:
+            options.append('-DENABLE_OPENMP=On')
+        else:
+            options.append('-DENABLE_OPENMP=Off')
 
         return options
