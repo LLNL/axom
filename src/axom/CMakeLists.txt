@@ -47,7 +47,8 @@ endif()
 # Combine all component object libraries into a unified library
 blt_add_library(NAME       axom
                 SOURCES    Axom.cpp
-                DEPENDS_ON ${AXOM_COMPONENTS_ENABLED})
+                DEPENDS_ON ${AXOM_COMPONENTS_ENABLED}
+                FOLDER     axom)
 
 install(TARGETS              axom
         EXPORT               axom-targets
