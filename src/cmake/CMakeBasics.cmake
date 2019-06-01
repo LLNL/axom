@@ -157,6 +157,17 @@ blt_append_custom_compiler_flag(FLAGS_VAR AXOM_NINJA_FLAGS
                   GNU         "-fdiagnostics-color=always"
                   CLANG       "-fcolor-diagnostics"
                   )
+list(APPEND custom_compiler_flags_list AXOM_NINJA_FLAGS)
+
+
+# message(STATUS "Custom compiler flags:")
+# foreach(flag ${custom_compiler_flags_list})
+#    message(STATUS "\tvalue of ${flag} is '${${flag}}'")
+# endforeach()
+
+################################
+# Miscelaneous cmake commands
+################################
 
 if(${AXOM_ENABLE_EXPORTS})
   set(CMAKE_ENABLE_EXPORTS ON)
@@ -166,13 +177,18 @@ if( ${CMAKE_MAKE_PROGRAM} STREQUAL "ninja" OR ${CMAKE_MAKE_PROGRAM} MATCHES ".*/
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AXOM_NINJA_FLAGS}")
 endif()
 
-# message(STATUS "Custom compiler flags:")
-# foreach(flag ${custom_compiler_flags_list})
-#    message(STATUS "\tvalue of ${flag} is '${${flag}}'")
-# endforeach()
-
 # Disable warnings about conditionals over constants
 if(WIN32)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AXOM_ALLOW_CONSTANT_CONDITIONALS}")
 endif()
 
+# Set FOLDER property for some high-level code health and documentation targets
+foreach(_target astyle_check astyle_style 
+                check style 
+                uncrustify_check uncrustify_style
+                docs doxygen doxygen_docs sphinx sphinx_docs)
+    if(TARGET ${_target})
+        blt_set_target_folder(TARGET ${_target} 
+                              FOLDER code_health)
+    endif()
+endforeach()

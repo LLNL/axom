@@ -54,6 +54,15 @@ macro(axom_add_code_checks)
     blt_add_code_checks(PREFIX    ${arg_PREFIX}
                         SOURCES   ${_sources}
                         UNCRUSTIFY_CFG_FILE ${PROJECT_SOURCE_DIR}/uncrustify.cfg)
+    
+    # Set FOLDER property for the new targets
+    foreach(_suffix _uncrustify_check _uncrustify_style 
+                    _astyle_check _astyle_style)
+        if(TARGET ${arg_PREFIX}${_suffix})
+            blt_set_target_folder(TARGET ${arg_PREFIX}${_suffix} 
+                                  FOLDER code_health)
+        endif()
+    endforeach()
 
 endmacro(axom_add_code_checks)
 
