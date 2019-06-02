@@ -12,7 +12,7 @@
 
 #include "axom/slic/core/Logger.hpp"
 #include "axom/slic/core/LogStream.hpp"
-#include "axom/slic/core/MessageLevel.h"
+#include "axom/slic/core/MessageLevel.hpp"
 #include "axom/slic/interface/slic_macros.hpp"
 
 // C/C++ includes
