@@ -13,6 +13,7 @@ set(slic_headers
     core/UnitTestLogger.hpp
 
     interface/slic.hpp
+    interface/slic_macros.hpp
 
     internal/stacktrace.hpp
 
