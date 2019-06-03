@@ -121,8 +121,7 @@ void SPIO_iomanager_write_group_to_root_file_bufferify(SPIO_iomanager* self,
 }
 
 void SPIO_iomanager_write_blueprint_index_to_root_file(SPIO_iomanager* self,
-                                                       SIDRE_datastore* datastore, const char* domain_path, const char* file_name, const char* mesh_path,
-                                                       const char* blueprint_name)
+                                                       SIDRE_datastore* datastore, const char* domain_path, const char* file_name, const char* mesh_path)
 {
 // splicer begin class.IOManager.method.write_blueprint_index_to_root_file
   axom::sidre::IOManager* SH_this =
@@ -132,10 +131,8 @@ void SPIO_iomanager_write_blueprint_index_to_root_file(SPIO_iomanager* self,
   const std::string SH_domain_path(domain_path);
   const std::string SH_file_name(file_name);
   const std::string SH_mesh_path(mesh_path);
-  const std::string SH_blueprint_name(blueprint_name);
   SH_this->writeBlueprintIndexToRootFile(SHCXX_datastore, SH_domain_path,
-                                         SH_file_name, SH_mesh_path,
-                                         SH_blueprint_name);
+                                         SH_file_name, SH_mesh_path);
   return;
 // splicer end class.IOManager.method.write_blueprint_index_to_root_file
 }
@@ -143,8 +140,7 @@ void SPIO_iomanager_write_blueprint_index_to_root_file(SPIO_iomanager* self,
 void SPIO_iomanager_write_blueprint_index_to_root_file_bufferify(
   SPIO_iomanager* self, SIDRE_datastore* datastore, const char* domain_path,
   int Ldomain_path, const char* file_name, int Lfile_name,
-  const char* mesh_path, int Lmesh_path, const char* blueprint_name,
-  int Lblueprint_name)
+  const char* mesh_path, int Lmesh_path)
 {
 // splicer begin
 // class.IOManager.method.write_blueprint_index_to_root_file_bufferify
@@ -155,10 +151,8 @@ void SPIO_iomanager_write_blueprint_index_to_root_file_bufferify(
   const std::string SH_domain_path(domain_path, Ldomain_path);
   const std::string SH_file_name(file_name, Lfile_name);
   const std::string SH_mesh_path(mesh_path, Lmesh_path);
-  const std::string SH_blueprint_name(blueprint_name, Lblueprint_name);
   SH_this->writeBlueprintIndexToRootFile(SHCXX_datastore, SH_domain_path,
-                                         SH_file_name, SH_mesh_path,
-                                         SH_blueprint_name);
+                                         SH_file_name, SH_mesh_path);
   return;
 // splicer end
 // class.IOManager.method.write_blueprint_index_to_root_file_bufferify

@@ -519,7 +519,7 @@ void generate_spio_blueprint(DataStore* ds) {
                    domain_location), 1, "bpspio", "sidre_hdf5");
 
     writer.writeBlueprintIndexToRootFile(&cds, domain_mesh, bp_rootfile,
-                                         mesh_name, "automesh");
+                                         mesh_name);
 
   }
   // _blueprint_generate_spio_end
@@ -562,8 +562,7 @@ void generate_spio_blueprint_to_path(DataStore* ds) {
                    "domain_data"), 1, "pathbpspio", "sidre_hdf5");
 
     writer.writeBlueprintIndexToRootFile(&cds, domain_mesh, bp_rootfile,
-                                         "level/domains/domain/" + mesh_name,
-                                         "pathmesh");
+                                         "level/domains/domain/" + mesh_name);
 
   }
   // _blueprint_generate_spio_path_end

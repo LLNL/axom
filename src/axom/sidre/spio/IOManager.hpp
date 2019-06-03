@@ -172,20 +172,23 @@ public:
    * DataStore specified by domain_path argument.
    *
    * This currently only works if the root file was created for protocol
-   * sidre_hdf5.
+   * sidre_hdf5.  This must be called after calling write().
+   *
+   * This is not an MPI collective call.  One rank writes to blueprint index
+   * to one root file.
    *
    * \param datastore     DataStore containing Groups that hold domains
    *                      that adhere to the Blueprint format
-   * \param domain_path   path to the domain in the DataStore that will be
+   * \param domain_path   path in the the DataStore to the domain that will be
    *                      used to generate a Blueprint index
    * \param file_name     name of existing root file
-   * \param mesh_name     name of the mesh described by the Blueprint index
+   * \param mesh_path     path in the data file to the domain that will be
+   *                      used to generate a Blueprint index
    */
   void writeBlueprintIndexToRootFile(DataStore* datastore,
                                      const std::string& domain_path,
                                      const std::string& file_name,
-                                     const std::string& mesh_name,
-                                     const std::string& blueprint_name);
+                                     const std::string& mesh_path);
 
   /*!
    * \brief read from input files

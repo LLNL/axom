@@ -1078,8 +1078,7 @@ void IOManager::writeViewToRootFileAtPath(sidre::View* view,
 void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
                                               const std::string& domain_path,
                                               const std::string& file_name,
-                                              const std::string& mesh_name,
-                                              const std::string& blueprint_name)
+                                              const std::string& mesh_path)
 {
 #ifdef AXOM_USE_HDF5
   hid_t root_file_id =
@@ -1088,10 +1087,18 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
   AXOM_DEBUG_VAR(root_file_id);
   SLIC_ASSERT(root_file_id >= 0);
 
+  std::string blueprint_name;
+  std::string path_to_mesh;
+  std::string slash = "/";
+
+  // Separate the first extension from the root file name
+  // It should always be "root"
+  conduit::utils::rsplit_string(mesh_path, slash, blueprint_name, path_to_mesh);
+
   std::string bp_index("blueprint_index/" + blueprint_name);
 
   bool success = datastore->generateBlueprintIndex(domain_path,
-                                                   mesh_name, bp_index,
+                                                   mesh_path, bp_index,
                                                    m_comm_size);
 
   if (success)
@@ -1110,7 +1117,7 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
   AXOM_DEBUG_VAR(datastore);
   AXOM_DEBUG_VAR(domain_path);
   AXOM_DEBUG_VAR(file_name);
-  AXOM_DEBUG_VAR(mesh_name);
+  AXOM_DEBUG_VAR(mesh_path);
   AXOM_DEBUG_VAR(blueprint_name);
 
   SLIC_WARNING("Axom configured without hdf5. "

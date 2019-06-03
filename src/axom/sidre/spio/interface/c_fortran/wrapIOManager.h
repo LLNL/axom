@@ -56,14 +56,12 @@ void SPIO_iomanager_write_group_to_root_file_bufferify(SPIO_iomanager* self,
                                                        int Lfile_name);
 
 void SPIO_iomanager_write_blueprint_index_to_root_file(SPIO_iomanager* self,
-                                                       SIDRE_datastore* datastore, const char* domain_path, const char* file_name, const char* mesh_path,
-                                                       const char* blueprint_name);
+                                                       SIDRE_datastore* datastore, const char* domain_path, const char* file_name, const char* mesh_path);
 
 void SPIO_iomanager_write_blueprint_index_to_root_file_bufferify(
   SPIO_iomanager* self, SIDRE_datastore* datastore, const char* domain_path,
   int Ldomain_path, const char* file_name, int Lfile_name,
-  const char* mesh_path, int Lmesh_path, const char* blueprint_name,
-  int Lblueprint_name);
+  const char* mesh_path, int Lmesh_path);
 
 void SPIO_iomanager_read_0(SPIO_iomanager* self, SIDRE_group* group,
                            const char* file_string, const char* protocol);
