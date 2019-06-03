@@ -9,8 +9,7 @@
 #include <iostream>
 
 #include "benchmark/benchmark_api.h"
-#include "axom/slic/interface/slic.hpp"
-#include "axom/slic/core/UnitTestLogger.hpp"
+#include "axom/slic.hpp"
 
 #include "axom/slam/policies/SizePolicies.hpp"
 #include "axom/slam/OrderedSet.hpp"
@@ -19,15 +18,18 @@
 //------------------------------------------------------------------------------
 namespace
 {
+
+namespace slam = axom::slam;
+
 const int STRIDE = 7;
 const int OFFSET = 12;
 
 
-typedef int IndexType;
-typedef IndexType* IndexArray;
+using IndexType =  int;
+using IndexArray = IndexType*;
 
-typedef double DataType;
-typedef DataType* DataArray;
+using DataType = double;
+using DataArray = DataType*;
 /*
     // Generate an array of of size sz of indices in the range of [0,sz)
     // NOTE: Caller must delete the array
@@ -134,8 +136,8 @@ void CustomArgs(benchmark::internal::Benchmark* b) {
 
 template<int SZ>
 void positionSet_compileTimeSize(benchmark::State& state) {
-  typedef axom::slam::policies::CompileTimeSize<int, SZ>  StaticSetSize;
-  typedef axom::slam::OrderedSet<StaticSetSize>           SetType;
+  using StaticSetSize = slam::policies::CompileTimeSize<int, SZ>;
+  using SetType = slam::OrderedSet<StaticSetSize>;
   SetType set(SZ);
 
   while (state.KeepRunning())
@@ -156,7 +158,7 @@ BENCHMARK_TEMPLATE( positionSet_compileTimeSize,  S3);
 template<int SZ>
 void positionSet_runtimeTimeSize_template(benchmark::State& state)
 {
-  typedef axom::slam::OrderedSet<> SetType;
+  using SetType = slam::OrderedSet<>;
   SetType set(SZ);
 
   while (state.KeepRunning())
@@ -175,7 +177,7 @@ BENCHMARK_TEMPLATE( positionSet_runtimeTimeSize_template, S2);
 BENCHMARK_TEMPLATE( positionSet_runtimeTimeSize_template, S3);
 
 void positionSet_runtimeTimeSize_function(benchmark::State& state) {
-  typedef axom::slam::OrderedSet<> SetType;
+  using SetType = slam::OrderedSet<>;
   SetType set(state.range_x());
 
   while (state.KeepRunning())
@@ -193,7 +195,7 @@ BENCHMARK(positionSet_runtimeTimeSize_function)->Apply(CustomArgs);
 
 void positionSet_runtimeTimeSize_function_sizeOutside(benchmark::State& state)
 {
-  typedef axom::slam::OrderedSet<> SetType;
+  using SetType = slam::OrderedSet<>;
   SetType set(state.range_x());
 
   const int sz = set.size();
@@ -213,7 +215,7 @@ BENCHMARK(positionSet_runtimeTimeSize_function_sizeOutside)->Apply(CustomArgs);
 void positionSet_runtimeTimeSize_function_volatileSizeOutside(
   benchmark::State& state)
 {
-  typedef axom::slam::OrderedSet<> SetType;
+  using SetType = slam::OrderedSet<>;
   SetType set(state.range_x());
 
   volatile int sz = set.size();
@@ -232,8 +234,8 @@ BENCHMARK(positionSet_runtimeTimeSize_function_volatileSizeOutside)
 
 
 void positionSet_runtimeTimeSize_iter(benchmark::State& state) {
-  typedef axom::slam::OrderedSet<>  SetType;
-  typedef SetType::iterator SetIter;
+  using SetType = slam::OrderedSet<>;
+  using SetIter = SetType::iterator;
   SetType set(state.range_x());
 
   while (state.KeepRunning())

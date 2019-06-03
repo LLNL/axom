@@ -23,6 +23,13 @@ std::string getCWD();
 
 
 /*!
+ * \brief Changes the current working directory within the file system
+ * \param [in] dirName an absolute or relative directory path
+ * \return Status code 0 for success, non-zero otherwise
+ */
+int changeCWD(const std::string& dirName);
+
+/*!
  * \brief Checks if the path pointed to by fileName exists
  * \param [in] fileName name of the file to check
  * \return true if file system contains a file named fileName, false otherwise

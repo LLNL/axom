@@ -73,14 +73,15 @@ struct SimpleQuadMesh
 {
   /// Type aliases for sets
   // _quadmesh_example_set_typedefs_start
-  using VertSet = slam::PositionSet;
-  using ElemSet = slam::PositionSet;
+  using PosType = slam::DefaultPositionType;
+  using ElemType = slam::DefaultElementType;
+  using VertSet = slam::PositionSet<PosType, ElemType>;
+  using ElemSet = slam::PositionSet<PosType, ElemType>;
   // _quadmesh_example_set_typedefs_end
 
 
   // _quadmesh_example_common_typedefs_start
-  using PosType = int;
-  using ArrayIndir = slam::policies::ArrayIndirection<PosType,PosType>;
+  using ArrayIndir = slam::policies::ArrayIndirection<PosType,ElemType>;
   // _quadmesh_example_common_typedefs_end
 
   /// Type aliases for relations
@@ -89,20 +90,25 @@ struct SimpleQuadMesh
   enum { VertsPerElem = 4};
   using CTStride = slam::policies::CompileTimeStride<PosType,VertsPerElem>;
   using ConstCard = slam::policies::ConstantCardinality<PosType, CTStride>;
-  using ElemToVertRelation =
-          slam::StaticRelation<ConstCard, ArrayIndir,ElemSet,VertSet>;
+  using ElemToVertRelation = slam::StaticRelation<PosType,ElemType,
+                                                  ConstCard,ArrayIndir,
+                                                  ElemSet,VertSet>;
   // _quadmesh_example_bdry_relation_typedefs_end
 
   // _quadmesh_example_cobdry_relation_typedefs_start
   // Type aliases for vertex-to-element coboundary relation
   using VarCard = slam::policies::VariableCardinality<PosType, ArrayIndir>;
-  using VertToElemRelation =
-          slam::StaticRelation<VarCard, ArrayIndir,VertSet, ElemSet>;
+  using VertToElemRelation = slam::StaticRelation<PosType,ElemType,
+                                                  VarCard,ArrayIndir,
+                                                  VertSet,ElemSet>;
   // _quadmesh_example_cobdry_relation_typedefs_end
 
   /// Type alias for position map
   // _quadmesh_example_maps_typedefs_start
-  using VertPositions = slam::Map<Point2>;
+  using BaseSet = slam::Set<PosType,ElemType>;
+  using ScalarMap = slam::Map<BaseSet, Point2>;
+  using PointMap = slam::Map<BaseSet, Point2>;
+  using VertPositions = PointMap;
   // _quadmesh_example_maps_typedefs_end
 
   SimpleQuadMesh()
@@ -234,7 +240,6 @@ struct SimpleQuadMesh
   {
     // _quadmesh_example_vert_distances_start
     // Create a Map of scalars over the vertices
-    using ScalarMap = slam::Map<double>;
     ScalarMap distances( &verts );
 
     for(int i=0 ; i< distances.size() ; ++i)    // <-- Map::size()
@@ -260,7 +265,7 @@ struct SimpleQuadMesh
   {
     // _quadmesh_example_elem_centroids_start
     // Create a Map of Point2 over the mesh elements
-    using  ElemCentroidMap = slam::Map<Point2>;
+    using ElemCentroidMap = PointMap;
     ElemCentroidMap centroid = ElemCentroidMap( &elems );
 
     // for each element...

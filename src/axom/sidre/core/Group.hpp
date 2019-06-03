@@ -16,7 +16,7 @@
 #ifndef DATAGROUP_HPP_
 #define DATAGROUP_HPP_
 
-#include "axom/config.hpp"    // defines AXOM_USE_CXX11
+#include "axom/config.hpp"
 #include "axom/core/Macros.hpp"
 
 // Standard C++ headers

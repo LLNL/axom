@@ -133,10 +133,8 @@
 
 #if defined(AXOM_USE_SPARSEHASH)
   #include <sparsehash/dense_hash_map>
-#elif defined(AXOM_USE_STD_UNORDERED_MAP)
+#else
   #include <unordered_map>
-#else // AXOM_USE_STD_MAP
-  #include <map>
 #endif
 
 
@@ -284,10 +282,8 @@ private:
 
 #if defined(AXOM_USE_SPARSEHASH)
   typedef google::dense_hash_map<std::string, IndexType> MapType;
-#elif defined(AXOM_USE_STD_UNORDERED_MAP)
+#else
   typedef std::unordered_map<std::string, IndexType> MapType;
-#else // AXOM_USE_STD_MAP
-  typedef std::map<std::string, IndexType> MapType;
 #endif
 
   MapType m_name2idx_map;

@@ -106,7 +106,7 @@ struct CompileTimeStride
 template<typename IntType>
 struct StrideOne
 {
-  static const IntType DEFAULT_VALUE = IntType(1);
+  static const IntType DEFAULT_VALUE;
 
   /**
    * This constructor only exists to allow the derived class to not have
@@ -129,6 +129,9 @@ struct StrideOne
   }
   inline bool isValid(bool) const { return true; }
 };
+
+template<typename IntType>
+const IntType StrideOne<IntType>::DEFAULT_VALUE = IntType {1};
 
 
 /// \}

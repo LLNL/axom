@@ -59,9 +59,7 @@ TEST(core_config,config_libraries)
   libs.push_back("conduit");
 #endif
 
-#ifdef AXOM_USE_CXX11
-  libs.push_back("C++11");
-#endif
+libs.push_back(AXOM_CXX_STD);
 
 #ifdef AXOM_USE_FMT
   libs.push_back("fmt");
@@ -91,9 +89,7 @@ TEST(core_config,config_libraries)
   libs.push_back("sparsehash");
 #endif
 
-#ifdef AXOM_USE_STD_UNORDERED_MAP
   libs.push_back("std::unordered_map");
-#endif
 
   std::stringstream sstr;
   std::copy( libs.begin(), libs.end(),

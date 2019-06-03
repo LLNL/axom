@@ -32,9 +32,9 @@ namespace internal
 template<int DIM>
 struct InOutHelper
 {
-  typedef primal::BoundingBox< double, DIM> GeometricBoundingBox;
-  typedef primal::Point< double, DIM> SpacePt;
-  typedef primal::Vector< double, DIM> SpaceVec;
+  using GeometricBoundingBox = primal::BoundingBox< double, DIM>;
+  using SpacePt = primal::Point< double, DIM>;
+  using SpaceVec = primal::Vector< double, DIM>;
 
   /*!
    * Parameter variables for the InOutQuery

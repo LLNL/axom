@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-/**
+/*
  * \file slam_relation_DynamicConstant.cpp
  *
  * \brief Unit tests for Slam's DynamicConstantRelation class
@@ -12,9 +12,8 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/config.hpp"        // for AXOM_USE_CXX11
-
-#include "axom/slic/interface/slic.hpp"
+#include "axom/config.hpp"
+#include "axom/slic.hpp"
 
 #include "axom/slam/RangeSet.hpp"
 #include "axom/slam/Relation.hpp"
@@ -22,7 +21,6 @@
 #include "axom/slam/policies/IndirectionPolicies.hpp"
 #include "axom/slam/policies/CardinalityPolicies.hpp"
 #include "axom/slam/ModularInt.hpp"
-
 
 #include "axom/slam/policies/StridePolicies.hpp"
 #include "axom/slam/DynamicConstantRelation.hpp"
@@ -34,30 +32,32 @@ namespace
 namespace slam = axom::slam;
 namespace policies = axom::slam::policies;
 
+using PositionType = slam::DefaultPositionType;
+using ElementType = slam::DefaultElementType;
 
-typedef slam::RangeSet::ElementType ElementType;
-typedef slam::RangeSet::PositionType PositionType;
+using RangeSetType = slam::RangeSet<PositionType, ElementType>;
 
 const PositionType FROMSET_SIZE = 5;
 const PositionType TOSET_SIZE = 6;
 const PositionType ELEM_STRIDE = 6;
 
-typedef policies::CompileTimeStride<PositionType, ELEM_STRIDE>      CTStride;
-typedef policies::RuntimeStride<PositionType>                       RTStride;
+using CTStride = policies::CompileTimeStride<PositionType, ELEM_STRIDE>;
+using RTStride = policies::RuntimeStride<PositionType>;
 
-typedef policies::
-  ConstantCardinality<PositionType,CTStride>       ConstantCardinalityCT;
-typedef policies::
-  ConstantCardinality<PositionType, RTStride>       ConstantCardinalityRT;
+using ConstantCardinalityCT =
+        policies::ConstantCardinality<PositionType,CTStride>;
+using ConstantCardinalityRT =
+        policies::ConstantCardinality<PositionType, RTStride>;
 
-typedef policies::
-  STLVectorIndirection<PositionType, PositionType>  STLIndirection;
-typedef policies::
-  ArrayIndirection<PositionType, PositionType>      ArrayIndirection;
+using STLIndirection =
+        policies::STLVectorIndirection<PositionType, ElementType>;
+using ArrayIndirection =
+        policies::ArrayIndirection<PositionType, ElementType>;
 
-typedef std::vector<PositionType>                                   IndexVec;
-
-typedef slam::DynamicConstantRelation<ConstantCardinalityCT>        RelationType;
+using IndexVec = std::vector<PositionType>;
+using RelationType =
+        slam::DynamicConstantRelation<PositionType, ElementType,
+                                      ConstantCardinalityCT>;
 
 } //end anonymous namespace
 
@@ -97,8 +97,8 @@ TEST(slam_relation_dynamic_constant, assignment)
 {
   SLIC_INFO("Testing assignment of values to relation");
 
-  slam::DynamicSet<> fromSet(FROMSET_SIZE);
-  slam::DynamicSet<> toSet(TOSET_SIZE);
+  slam::DynamicSet<PositionType, ElementType> fromSet(FROMSET_SIZE);
+  slam::DynamicSet<PositionType, ElementType> toSet(TOSET_SIZE);
 
   RelationType rel = generateRelation(fromSet,toSet);
 
@@ -137,14 +137,13 @@ TEST(slam_relation_dynamic_constant, assignment)
 
 }
 
-#ifdef AXOM_USE_CXX11
 TEST(slam_relation_dynamic_constant, iterators)
 {
   SLIC_INFO("Testing iterator interface");
 
   // Add tests for relation iterators
-  slam::DynamicSet<> fromSet(FROMSET_SIZE);
-  slam::DynamicSet<> toSet(TOSET_SIZE);
+  slam::DynamicSet<PositionType, ElementType> fromSet(FROMSET_SIZE);
+  slam::DynamicSet<PositionType, ElementType> toSet(TOSET_SIZE);
 
   {
     RelationType rel = generateRelation(fromSet,toSet);
@@ -175,8 +174,8 @@ TEST(slam_relation_dynamic_constant, const_iterators)
   SLIC_INFO("Testing iterator interface");
 
   // Add tests for relation iterators
-  slam::DynamicSet<> fromSet(FROMSET_SIZE);
-  slam::DynamicSet<> toSet(TOSET_SIZE);
+  slam::DynamicSet<PositionType, ElementType> fromSet(FROMSET_SIZE);
+  slam::DynamicSet<PositionType, ElementType> toSet(TOSET_SIZE);
 
   {
     const RelationType rel = generateRelation(fromSet,toSet);
@@ -202,14 +201,13 @@ TEST(slam_relation_dynamic_constant, const_iterators)
     }
   }
 }
-#endif // AXOM_USE_CXX11
 
 TEST(slam_relation_dynamic_constant, remove)
 {
   SLIC_INFO("Testing ability to remove relations");
 
-  slam::DynamicSet<> fromSet(FROMSET_SIZE);
-  slam::DynamicSet<> toSet(TOSET_SIZE);
+  slam::DynamicSet<PositionType, ElementType> fromSet(FROMSET_SIZE);
+  slam::DynamicSet<PositionType, ElementType> toSet(TOSET_SIZE);
 
   RelationType rel = generateRelation(fromSet,toSet);
   EXPECT_EQ(rel.size(), rel.numberOfValidEntries());
@@ -242,16 +240,13 @@ TEST(slam_relation_dynamic_constant, remove)
 }
 
 //----------------------------------------------------------------------
-//----------------------------------------------------------------------
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
 
   // create & initialize test logger. finalized when exiting main scope
-  UnitTestLogger logger;
+  axom::slic::UnitTestLogger logger;
   axom::slic::setLoggingMsgLevel( axom::slic::message::Info);
 
   int result = RUN_ALL_TESTS();

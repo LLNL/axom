@@ -16,46 +16,54 @@
 #define SLAM_DYNAMIC_VARIABLE_RELATION_HPP_
 
 #include "axom/config.hpp"
+#include "axom/slic.hpp"
 
-#include "axom/slic/interface/slic.hpp"
 #include "axom/slam/Set.hpp"
 #include "axom/slam/Relation.hpp"
 
 #include <vector>
-//#include <iostream>
+#include <sstream>
+#include <iterator>
 
 namespace axom
 {
 namespace slam
 {
 
-class DynamicVariableRelation : public Relation
+template<
+  typename PosType = slam::DefaultPositionType,
+  typename ElemType = slam::DefaultElementType >
+class DynamicVariableRelation : public Relation<PosType, ElemType>
 {
 public:
-  typedef Relation::SetPosition SetPosition;
+  using SetType = Set<PosType,ElemType>;
+  using SetPosition = PosType;
 
-  typedef std::vector<SetPosition>
-    RelationVec;
-  typedef RelationVec::iterator RelationVecIterator;
-  typedef std::pair<RelationVecIterator,RelationVecIterator>
-    RelationVecIteratorPair;
+  using RelationVec = std::vector<SetPosition>;
+  using RelationVecIterator = typename RelationVec::iterator;
+  using RelationVecIteratorPair = std::pair<RelationVecIterator,
+                                            RelationVecIterator>;
+  using RelationVecConstIterator = typename RelationVec::const_iterator;
+  using RelationVecConstIteratorPair = std::pair<RelationVecConstIterator,
+                                                 RelationVecConstIterator>;
+  using RelationsContainer = std::vector< RelationVec>;
+  using RelationsContainerCIt = typename RelationsContainer::const_iterator;
+  using RelationsContainerIt = typename RelationsContainer::iterator;
 
-  typedef RelationVec::const_iterator RelationVecConstIterator;
-  typedef std::pair<RelationVecConstIterator,RelationVecConstIterator>
-    RelationVecConstIteratorPair;
-
-  typedef std::vector< RelationVec>
-    RelationsContainer;
-  typedef RelationsContainer::const_iterator RelationsContainerCIt;
-  typedef RelationsContainer::iterator RelationsContainerIt;
+  using Relation<PosType, ElemType>::s_nullSet;
 
 public:
-  DynamicVariableRelation (Set* fromSet = &s_nullSet,
-                           Set* toSet = &s_nullSet);
+  DynamicVariableRelation (SetType* fromSet = &s_nullSet,
+                           SetType* toSet = &s_nullSet)
+    : m_fromSet(fromSet), m_toSet(toSet)
+  {
+    m_relationsVec.resize( m_fromSet->size() );
+  }
+
   ~DynamicVariableRelation(){}
 
 public:
-#ifdef AXOM_USE_CXX11
+
   /// \name DynamicVariableRelation iterator interface
   /// @{
   RelationVecConstIterator begin(SetPosition fromSetIndex)       const
@@ -75,8 +83,6 @@ public:
     return std::make_pair(begin(fromSetIndex), end(fromSetIndex));
   }
   /// @}
-
-#endif // AXOM_USE_CXX11
 
 
   RelationVec const& operator[](SetPosition fromSetIndex) const
@@ -185,11 +191,128 @@ private:
 
 private:
 
-  Set* m_fromSet;
-  Set* m_toSet;
+  SetType* m_fromSet;
+  SetType* m_toSet;
 
   RelationsContainer m_relationsVec;
 };
+
+
+template<typename PosType, typename ElemType>
+bool DynamicVariableRelation<PosType,
+                             ElemType>::isValid(bool verboseOutput) const
+{
+  bool bValid = true;
+
+  std::stringstream sstr;
+
+  if( *m_fromSet == s_nullSet || *m_toSet == s_nullSet)
+  {
+    if(!m_relationsVec.empty())
+    {
+      if(verboseOutput)
+      {
+        sstr << "\n\t* relations vector was not empty "<< " -- fromSet was "
+             << (*m_fromSet == s_nullSet ? "" : " not ") << "null"
+             << " , toSet was " << (*m_toSet == s_nullSet ? "" : " not ")
+             << "null";
+      }
+
+      bValid = false;
+    }
+  }
+  else
+  {
+    if(verboseOutput)
+      sstr << "\n\t* Neither set was null";
+
+    // Check that the the relations vector has the right size
+    // (should be same as fromSet's size() )
+    if( static_cast<SetPosition>(m_relationsVec.size()) != m_fromSet->size() )
+    {
+      if(verboseOutput)
+      {
+        sstr << "\n\t* relations vector has the wrong size."
+             << "\n\t-- from set size is: " << m_fromSet->size()
+             << "\n\t-- expected relation size: " << m_fromSet->size()
+             << "\n\t-- actual size: " << m_relationsVec.size()
+        ;
+      }
+      bValid = false;
+    }
+
+    // Check that all elements of the relations vector point to
+    // valid  set elements in the toSet
+    for(SetPosition fromIdx = 0 ; fromIdx < m_fromSet->size() ; ++fromIdx)
+    {
+      SetPosition idx = fromIdx;
+      for(RelationVecConstIterator rIt = begin(idx), rEnd = end(idx) ;
+          rIt < rEnd ; ++rIt)
+      {
+        if( *rIt >= m_toSet->size() )
+        {
+          if(verboseOutput)
+          {
+            sstr << "\n\t* relation for element " << m_fromSet->at(fromIdx)
+                 << " of fromSet had an out-of-range element.-- value "
+                 << std::distance( begin(idx), rIt) << " was " << *rIt
+                 << ". Max possible value should be " << m_toSet->size() << ".";
+          }
+          bValid = false;
+        }
+      }
+    }
+  }
+
+
+  if(verboseOutput)
+  {
+    std::stringstream sstr2;
+    sstr2 << "\n*** Detailed results of isValid on the relation.\n";
+    if(bValid)
+    {
+      sstr2 << "(dynamic,variable) Relation was valid." << std::endl;
+    }
+    else
+    {
+      sstr2 << "Relation was NOT valid.\n"
+            << sstr.str()
+            << std::endl;
+    }
+
+    if(m_fromSet)
+      sstr2 << "\n** fromSet has size " << m_fromSet->size() << ": ";
+    if(m_toSet)
+      sstr2 << "\n** toSet has size " << m_toSet->size() << ": ";
+
+    if(m_relationsVec.empty())
+    {
+      sstr2 << "\n** relations vec is empty:";
+    }
+    else
+    {
+      SetPosition overallCount = 0;
+      sstr2 << "\n** relations vec elements:";
+
+      for(SetPosition fromIdx = 0 ; fromIdx < m_fromSet->size() ; ++fromIdx)
+      {
+        SetPosition idx = fromIdx;
+        sstr2 << "\n\t" << m_fromSet->at(fromIdx)
+              <<  " (" << size(idx)  << "):\t";
+        std::copy(begin(idx), end(idx),
+                  std::ostream_iterator<SetPosition>(sstr2, " "));
+        overallCount += size(idx);
+      }
+      sstr2 << "\n\n\tOverall size of relation"
+            << overallCount << std::endl;
+
+      SLIC_INFO( sstr2.str() );
+    }
+  }
+
+  return bValid;
+}
+
 
 
 } // end namespace slam

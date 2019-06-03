@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "axom/config.hpp"   // defines AXOM_USE_CXX11
+#include "axom/config.hpp"
 #include "axom/core/Macros.hpp"   // for AXOM_DEBUG_VAR
 
 #include "axom/primal/geometry/NumericArray.hpp"     // for numeric arrays
@@ -498,7 +498,7 @@ OrientedBoundingBox< T, NDIMS >::OrientedBoundingBox(
 template < typename T, int NDIMS >
 void OrientedBoundingBox< T, NDIMS >::clear()
 {
-  (this->m_u[0])[0] = ValueRange< T >::lowest();
+  (this->m_u[0])[0] = std::numeric_limits< T >::lowest();
 }
 
 //------------------------------------------------------------------------------
@@ -717,7 +717,7 @@ Point< T, NDIMS > OrientedBoundingBox< T, NDIMS >::furthestPoint(
 template < typename T, int NDIMS >
 bool OrientedBoundingBox< T, NDIMS >::isValid() const
 {
-  return !((this->m_u[0])[0] == ValueRange< T >::lowest());
+  return !((this->m_u[0])[0] == std::numeric_limits< T >::lowest());
 }
 
 //------------------------------------------------------------------------------

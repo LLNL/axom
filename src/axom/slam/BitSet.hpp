@@ -12,9 +12,8 @@
 #ifndef SLAM_BITSET_H_
 #define SLAM_BITSET_H_
 
-#include "axom/core/Types.hpp"
-#include "axom/core/utilities/Utilities.hpp"
-#include "axom/slic/interface/slic.hpp"
+#include "axom/core.hpp"
+#include "axom/slic.hpp"
 
 #include "axom/slam/internal/BitTwiddle.hpp"
 
@@ -110,11 +109,11 @@ BitSet operator-(const BitSet & lhs, const BitSet & rhs);
 class BitSet
 {
 public:
-  typedef int Index;
-  typedef axom::uint64 Word;
+  using Index = int;
+  using Word = axom::uint64;
 
   // Use vector for initial implementation -- TODO: update using a policy
-  typedef std::vector<Word> ArrayType;
+  using ArrayType = std::vector<Word>;
 
   static const Index npos;
 

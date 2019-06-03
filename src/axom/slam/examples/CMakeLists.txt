@@ -15,8 +15,9 @@
 #------------------------------------------------------------------------------
 
 set(example_sources
-    ShockTube.cpp
+    HandleMesh.cpp
     PolicyPrototype.cpp
+    ShockTube.cpp
     UserDocs.cpp
     )
 
@@ -62,8 +63,7 @@ blt_add_executable(
 if(AXOM_ENABLE_TESTS AND AXOM_DATA_DIR)
     blt_add_test(
         NAME        slam_unstructMesh
-        COMMAND     slam_unstructMesh_ex ${AXOM_DATA_DIR}/slam
-        )
+        COMMAND     slam_unstructMesh_ex ${AXOM_DATA_DIR}/slam )
 endif()
 
 

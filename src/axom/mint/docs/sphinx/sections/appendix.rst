@@ -15,9 +15,9 @@ Mint Application Code Example
 
 Below is the complete :ref:`MintApplicationCodeExample` presented in
 the :ref:`sections/mint/getting_started` section. The code can be found in the Axom
-source code under ``src/axom/mint/examples/mint_uniform_mesh.cpp``.
+source code under ``src/axom/mint/examples/user_guide/mint_getting_started.cpp``.
 
-.. literalinclude:: ../../../examples/mint_uniform_mesh.cpp
+.. literalinclude:: ../../../examples/user_guide/mint_getting_started.cpp
    :start-after: sphinx_tutorial_basic_example_start
    :end-before: sphinx_tutorial_basic_example_end
    :language: C++

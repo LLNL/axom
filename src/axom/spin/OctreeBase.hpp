@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /**
- * \file
+ * \file OctreeBase.hpp
  * \brief Defines templated OctreeBase class and its inner class BlockIndex
  */
 
@@ -12,12 +12,9 @@
 #define OCTREE_BASE__HXX_
 
 #include "axom/config.hpp"
-
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
-
-#include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/Vector.hpp"
+#include "axom/primal.hpp"
 
 #include "axom/spin/DenseOctreeLevel.hpp"
 #include "axom/spin/OctreeLevel.hpp"
@@ -139,17 +136,15 @@ public:
   using GridPt = primal::Point<CoordType,DIM>;
   using GridVec = primal::Vector<CoordType,DIM>;
 
-  using MAX_LEVEL_SIZE = slam::policies::
-                         CompileTimeSize<CoordType,
-                                         std::numeric_limits<int>::digits>;
-  using OctreeLevels = slam::OrderedSet<MAX_LEVEL_SIZE>;
+  using MAX_LEVEL_SIZE =
+          slam::policies::CompileTimeSize<CoordType,
+                                          std::numeric_limits<CoordType>::digits>;
+  using OctreeLevels =
+          slam::OrderedSet<CoordType, CoordType, MAX_LEVEL_SIZE>;
 
   using OctreeLevelType = OctreeLevel<DIM, BlockDataType>;
-  using LevelMapIterator = typename OctreeLevelType::BlockIter;
-  using LevelMapCIterator = typename OctreeLevelType::ConstBlockIter;
-
-
-  using LeafIndicesLevelMap = slam::Map<OctreeLevelType*>;
+  using LeafIndicesLevelMap = slam::Map<slam::Set<CoordType,CoordType>,
+                                        OctreeLevelType*>;
 
   /**
    * \brief Inner class encapsulating the index of an octree <em>block</em>.
@@ -171,11 +166,9 @@ public:
 
     enum
     {
-      /** The number of children of an octree block (\f$ 2^{DIM} \f$ in
-         dimension DIM ) */
+      /// The number of children of an octree block (2^D in dimension D)
       NUM_CHILDREN = 1 << DIM,
-      /** The number of face neighbors of an octree block (\f$ 2 * {DIM} \f$ in
-         dimension DIM ) */
+      /// The number of face neighbors of an octree block (2*D in dimension D)
       NUM_FACE_NEIGHBORS = 2 * DIM
     };
 private:
@@ -185,8 +178,9 @@ private:
             slam::policies::CompileTimeSize<int, NUM_FACE_NEIGHBORS>;
 
 public:
-    using ChildIndexSet = slam::OrderedSet<OCTREE_CHILDREN_SIZE>;
-    using FaceNeighborIndexSet = slam::OrderedSet<OCTREE_FACE_NEIGHBORS_SIZE>;
+    using ChildIndexSet = slam::OrderedSet<int, int, OCTREE_CHILDREN_SIZE>;
+    using FaceNeighborIndexSet =
+            slam::OrderedSet<int, int, OCTREE_FACE_NEIGHBORS_SIZE>;
 
 public:
     /**
@@ -463,16 +457,11 @@ private:
     MAX_SPARSE64_LEV = 64 / DIM
   };
 
-  using DenseOctLevType =
-          DenseOctreeLevel<DIM, BlockDataType, axom::uint16>;
-  using Sparse16OctLevType =
-          SparseOctreeLevel<DIM, BlockDataType, axom::uint16>;
-  using Sparse32OctLevType =
-          SparseOctreeLevel<DIM, BlockDataType, axom::uint32>;
-  using Sparse64OctLevType =
-          SparseOctreeLevel<DIM, BlockDataType, axom::uint64>;
-  using SparsePtOctLevType =
-          SparseOctreeLevel<DIM, BlockDataType, GridPt>;
+  using DenseOctLevType = DenseOctreeLevel<DIM,BlockDataType,axom::uint16>;
+  using Sparse16OctLevType = SparseOctreeLevel<DIM,BlockDataType,axom::uint16>;
+  using Sparse32OctLevType = SparseOctreeLevel<DIM,BlockDataType,axom::uint32>;
+  using Sparse64OctLevType = SparseOctreeLevel<DIM,BlockDataType,axom::uint64>;
+  using SparsePtOctLevType = SparseOctreeLevel<DIM,BlockDataType,GridPt>;
 
   using DenseOctLevPtr = DenseOctLevType*;
   using Sparse16OctLevPtr = Sparse16OctLevType*;
@@ -501,7 +490,6 @@ public:
   {
     for(int i=0 ; i< maxLeafLevel() ; ++i)
     {
-
       // Use DenseOctreeLevel on first few levels to reduce allocations
       // and fragmentation Use Morton-based SparseOctreeLevel
       // (key is smallest possible integer) on next few levels.

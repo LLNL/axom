@@ -5,9 +5,9 @@
 
 .. _srm-label:
 
-*************
+=============
 Core concepts
-*************
+=============
 
 Describe Slam concepts, what they mean, how they are used, etc.
 
@@ -22,7 +22,8 @@ Describe Slam concepts, what they mean, how they are used, etc.
 .. _set-concept-label:
 
 Set
----
+===
+
 * Taxonomy of set types (OrderedSet, IndirectionSet, Subset, static vs. dynamic)
 * Simple API (including semantics of operator[] and iterators )
 * Example to show how we iterate through a set
@@ -34,7 +35,8 @@ Set
 .. _relation-concept-label:
 
 Relation
---------
+========
+
 * Relational operator (from element of Set A to set of elements in Set B)
 * Taxonomy:
     * Cardinality: Fixed vs Variable number of elements per relation
@@ -50,7 +52,7 @@ Relation
 .. _map-concept-label:
 
 Map
----
+===
 
 * Data associated with all members of a set
 * Simple API (including semantics of operator[] )

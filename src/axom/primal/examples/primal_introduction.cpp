@@ -73,8 +73,7 @@ using namespace axom;
 using namespace primal;
 
 // almost all our examples are in 3D
-const int in3D = 3;
-const int in2D = 2;
+constexpr int in3D = 3;
 
 // primitives represented by doubles in 3D
 typedef Point<double, in3D> PointType;

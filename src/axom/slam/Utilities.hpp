@@ -10,6 +10,8 @@
 #ifndef SLAM_UTILITIES_H_
 #define SLAM_UTILITIES_H_
 
+#include "axom/core.hpp"
+
 #include <string>
 
 namespace axom
@@ -17,8 +19,8 @@ namespace axom
 namespace slam
 {
 
-typedef int MeshIndexType;
-typedef int MeshSizeType;
+using DefaultPositionType = axom::IndexType;
+using DefaultElementType = axom::IndexType;
 
 class NotImplementedException
 {};

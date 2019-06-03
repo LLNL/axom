@@ -23,12 +23,13 @@ namespace axom
 namespace slam
 {
 
+template<typename PosType, typename ElemType>
 class NullSet;
 
 template<typename SetType>
 struct EmptySetTraits
 {
-  typedef SetType* EmptySetType;
+  using EmptySetType = SetType*;
   static EmptySetType emptySet() { return nullptr; }
 
   template<typename ASetType>
@@ -38,40 +39,43 @@ struct EmptySetTraits
   }
 };
 
-template<>
-struct EmptySetTraits<Set>
-{
-  typedef Set* EmptySetType;
-  static EmptySetType emptySet() {
+/*
+   template<>
+   struct EmptySetTraits<Set>
+   {
+   using EmptySetType = Set*;
+   static EmptySetType emptySet() {
     static NullSet s_nullSet;
 
     return &s_nullSet;
-  }
-  static bool isEmpty(Set* set)
-  {
+   }
+   static bool isEmpty(Set* set)
+   {
     return *set == *emptySet() || set->empty();
-  }
+   }
 
-};
+   };
+ */
 
 
-
+template<
+  typename PosType = slam::DefaultPositionType,
+  typename ElemType = slam::DefaultElementType >
 class Relation
 {
 public:
-  typedef Set::PositionType SetPosition;
+  using SetPosition = typename Set<PosType, ElemType>::PositionType;
+  using SetElement = typename Set<PosType, ElemType>::ElementType;
 
-  typedef std::vector<SetPosition>
-    RelationVec;
-  typedef RelationVec::iterator RelationVecIterator;
-  typedef std::pair<RelationVecIterator,
-                    RelationVecIterator>            RelationVecIteratorPair;
+  using RelationVec = std::vector<SetPosition>;
+  using RelationVecIterator = typename RelationVec::iterator;
+  using RelationVecIteratorPair = std::pair<RelationVecIterator,
+                                            RelationVecIterator>;
+  using RelationVecConstIterator = typename RelationVec::const_iterator;
+  using RelationVecConstIteratorPair = std::pair<RelationVecConstIterator,
+                                                 RelationVecConstIterator>;
 
-  typedef RelationVec::const_iterator RelationVecConstIterator;
-  typedef std::pair<RelationVecConstIterator,
-                    RelationVecConstIterator>  RelationVecConstIteratorPair;
-
-  static NullSet s_nullSet;
+  static NullSet<PosType,ElemType> s_nullSet;
 
 public:
   virtual ~Relation(){}
@@ -115,6 +119,14 @@ public:
 #endif
 
 };
+
+/**
+ * \brief Definition of static instance of nullSet for all relations
+ * \note Should this be a singleton or a global object?  Should the scope be
+ *  public?
+ */
+template<typename PosType, typename ElemType>
+NullSet<PosType,ElemType> Relation<PosType, ElemType>::s_nullSet;
 
 
 } // end namespace slam

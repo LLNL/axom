@@ -4,8 +4,11 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 
-/**
+/*
  * \file slam_set_indirectionset.cpp
+ *
+ * Most unit tests in this file are parametrized on an Indirection set type
+ * using the IndirectionSetTester class
  */
 
 
@@ -15,116 +18,238 @@
 #include <iterator>                 // for std::ostream_iterator
 #include "gtest/gtest.h"
 
-#include "axom/config.hpp"          // for AXOM_USE_CXX11
-#include "axom/core/Types.hpp"           // for nullptr
-
-#include "axom/slic/interface/slic.hpp"
+#include "axom/core.hpp"
+#include "axom/slic.hpp"
 
 #include "axom/slam/Utilities.hpp"
 #include "axom/slam/IndirectionSet.hpp"
 #include "axom/slam/RangeSet.hpp"        // for PositionSet
 
+namespace slam = axom::slam;
 
 namespace
 {
-typedef axom::slam::ArrayIndirectionSet SetType;
-typedef SetType::PositionType SetPosition;
-typedef SetType::ElementType SetElement;
 
-static const SetPosition MAX_SET_SIZE = 10;
+static const int MAX_SET_SIZE = 10;
 
-SetPosition* allocIncrementingArray(int size)
+} // end anonymous namespace
+
+
+/**
+ * Simple test class for IndirectionSets
+ * Initializes three vectors of data
+ *
+ * \note Uses specialized variants of getDataBuffer() to access
+ * the data in an appropriated way for the indirectionSet \a TheSet
+ */
+template<typename TheSet>
+class IndirectionSetTester : public ::testing::Test
 {
-  SLIC_ASSERT(size > 0);
+public:
+  using SetType = TheSet;
+  using IndirectionType = typename SetType::IndirectionPolicyType;
+  using BufferType = typename IndirectionType::IndirectionBufferType;
 
-  SetPosition* arr = new SetPosition[size];
+  using PosType = typename SetType::PositionType;
+  using ElemType = typename SetType::ElementType;
 
-  for(int i = 0 ; i< size ; ++i)
-    arr[i] = i;
-
-  return arr;
-}
-
-void permuteArray(SetPosition* arr, int size)
-{
-  for(int i = 0 ; i<1000 ; ++i)
+  virtual void SetUp()
   {
-    std::next_permutation(arr, arr + size);
+    // Allocate and initialize three incrementing vectors
+    // vecs 0 and 1 have the same size; vec 2 is shorter
+
+    mDataVec[0].reserve( MAX_SET_SIZE );
+    mDataVec[1].reserve( MAX_SET_SIZE );
+    mDataVec[2].reserve( MAX_SET_SIZE / 2 );
+
+    for(int i = 0 ; i< MAX_SET_SIZE ; ++i)
+    {
+      mDataVec[0].push_back( static_cast<ElemType>( i) );
+      mDataVec[1].push_back( static_cast<ElemType>( i) );
+    }
+    for(int i = 0 ; i< MAX_SET_SIZE / 2 ; ++i)
+    {
+      mDataVec[2].push_back( static_cast<ElemType>( i) );
+    }
+  }
+
+  /**
+   * Permute the data buffer with index \a index
+   * \pre index must be 0, 1 or 2
+   */
+  void permuteData(int index = 0)
+  {
+    checkIndex(index);
+
+    for(int i = 0 ; i<1000 ; ++i)
+    {
+      std::next_permutation(mDataVec[index].begin(), mDataVec[index].end());
+    }
+  }
+
+  /**
+   * Get a pointer to the data buffer
+   * Specialization for ArrayIndirection
+   * \pre index must be 0, 1 or 2
+   */
+  void getDataBuffer(ElemType*& ptr, int index = 0)
+  {
+    checkIndex(index);
+
+    ptr = mDataVec[index].data();
+  }
+
+  /**
+   * Get a pointer to the data buffer
+   * Specialization for VectorIndirection
+   * \pre index must be 0, 1 or 2
+   */
+  void getDataBuffer(std::vector<ElemType>*& ptr, int index = 0)
+  {
+    checkIndex(index);
+
+    ptr = &mDataVec[index];
+  }
+
+private:
+
+  /** Check that the index is valid; fail test if not */
+  void checkIndex(int index)
+  {
+    ASSERT_GE(index, 0);
+    ASSERT_LT(index, 3);
+  }
+
+private:
+  std::vector<ElemType> mDataVec[3];
+};
+
+
+// Tests several types of indirection sets
+using MyTypes = ::testing::Types<
+        slam::ArrayIndirectionSet< axom::int32, axom::int64>,
+        slam::VectorIndirectionSet< axom::int32, axom::int64 >
+        >;
+
+TYPED_TEST_CASE(IndirectionSetTester, MyTypes);
+
+
+TYPED_TEST(IndirectionSetTester, constuct)
+{
+  SLIC_INFO("Testing simple indirection Set constructors");
+
+  using SetType = typename TestFixture::SetType;
+
+  // Empty set
+  {
+    SetType s_empty;
+    EXPECT_TRUE(s_empty.empty());
+    EXPECT_EQ(0, s_empty.size() );
+    EXPECT_TRUE(s_empty.isValid());
+    EXPECT_FALSE(s_empty.hasIndirection());
+  }
+
+  // Incrementally build the set
+  {
+    SetType s(MAX_SET_SIZE);
+
+    // set is originally empty
+    EXPECT_FALSE(s.empty());
+    EXPECT_EQ(MAX_SET_SIZE, s.size() );
+    EXPECT_FALSE(s.hasIndirection());
+    EXPECT_FALSE(s.isValid())
+      << "IndirectionSet not valid until we set the indirection buffer";
+
+    // Add data to the set
+    this->getDataBuffer(s.data());
+
+    EXPECT_FALSE(s.empty());
+    EXPECT_EQ(MAX_SET_SIZE, s.size() );
+    EXPECT_TRUE(s.hasIndirection());
+    EXPECT_TRUE(s.isValid());
   }
 }
-}
 
-TEST(slam_set_indirectionset,construct)
-{
-  SLIC_INFO("Testing constructors for IndirectionSet");
-
-  SetType s_empty;
-  EXPECT_TRUE(s_empty.empty());
-  EXPECT_EQ(0, s_empty.size() );
-  EXPECT_TRUE(s_empty.isValid());
-
-
-  SetType s(MAX_SET_SIZE);
-  EXPECT_FALSE(s.empty());
-  EXPECT_EQ(MAX_SET_SIZE, s.size() );
-  EXPECT_FALSE(s.isValid())
-    << "IndirectionSet not valid until we set the indirection buffer";
-
-  s.data() = allocIncrementingArray(MAX_SET_SIZE);
-
-  EXPECT_FALSE(s.empty());
-  EXPECT_EQ(MAX_SET_SIZE, s.size() );
-  EXPECT_TRUE(s.isValid());
-
-  delete [] s.data();
-}
-
-TEST(slam_set_indirectionset,set_builder)
+TYPED_TEST(IndirectionSetTester,set_builder)
 {
   SLIC_INFO("Testing construction of IndirectionSet using SetBuilders");
 
-  typedef SetType::SetBuilder SetBuilder;
+  using SetType = typename TestFixture::SetType;
+  using BufferType = typename TestFixture::BufferType;
+  using SetBuilder = typename SetType::SetBuilder;
 
-  bool bVerbose = true;
+  BufferType* bufPtr = nullptr;
+  this->getDataBuffer(bufPtr);
 
+  bool bVerbose = false;
+
+  // Only set the size, but not the data
   {
     SetType s_empty(SetBuilder()
                     .size(MAX_SET_SIZE) );
 
     EXPECT_FALSE(s_empty.empty());
     EXPECT_EQ(MAX_SET_SIZE, s_empty.size() );
+    EXPECT_FALSE(s_empty.hasIndirection());
     EXPECT_FALSE(s_empty.isValid(bVerbose));
   }
 
+  // Set the data but not the size
   {
     SetType s_empty2(SetBuilder()
-                     .data(allocIncrementingArray(MAX_SET_SIZE) ) );
+                     .data(bufPtr) );
 
     EXPECT_TRUE(s_empty2.empty());
     EXPECT_EQ(0, s_empty2.size() );
+    EXPECT_TRUE(s_empty2.hasIndirection());
     EXPECT_TRUE(s_empty2.isValid(bVerbose));
-
-    delete [] s_empty2.data();
   }
 
+  // Set the data and the size
   {
     SetType s(SetBuilder()
               .size(MAX_SET_SIZE)
-              .data(allocIncrementingArray(MAX_SET_SIZE) ) );
+              .data(bufPtr) );
 
     EXPECT_FALSE(s.empty());
     EXPECT_EQ(MAX_SET_SIZE, s.size() );
+    EXPECT_EQ(0, s.offset() );
+    EXPECT_EQ(1, s.stride() );
+    EXPECT_TRUE(s.hasIndirection());
     EXPECT_TRUE(s.isValid(bVerbose));
+  }
 
-    delete [] s.data();
+  // Set the data and the size
+  // also set the offset to 0 and the stride to 1
+  {
+    SetType s(SetBuilder()
+              .size(MAX_SET_SIZE)
+              .offset(0)
+              .stride(1)
+              .data(bufPtr) );
+
+    EXPECT_FALSE(s.empty());
+    EXPECT_EQ(MAX_SET_SIZE, s.size() );
+    EXPECT_EQ(0, s.offset() );
+    EXPECT_EQ(1, s.stride() );
+    EXPECT_TRUE(s.hasIndirection());
+    EXPECT_TRUE(s.isValid(bVerbose));
   }
 }
 
-TEST(slam_set_indirectionset,iterate)
+TYPED_TEST(IndirectionSetTester,iterate)
 {
-  SetType s(SetType::SetBuilder()
+  using SetType = typename TestFixture::SetType;
+  using BufferType = typename TestFixture::BufferType;
+  using SetPosition = typename TestFixture::PosType;
+  using SetElement = typename TestFixture::ElemType;
+
+  BufferType* bufPtr = nullptr;
+  this->getDataBuffer(bufPtr);
+
+  SetType s(typename SetType::SetBuilder()
             .size(MAX_SET_SIZE)
-            .data(allocIncrementingArray(MAX_SET_SIZE) ) );
+            .data(bufPtr) );
 
   SLIC_INFO("Iterating through set of size " << s.size());
   EXPECT_EQ(MAX_SET_SIZE, s.size());
@@ -142,19 +267,37 @@ TEST(slam_set_indirectionset,iterate)
       sstr << s[pos] << "\t";
     }
     SLIC_INFO("Data using operator[]:\t" << sstr.str());
+
+    // using range for over OrderedSet::positions()
+    int count = 0;
+    for(auto pos : s.positions() )
+    {
+      SetElement exp = static_cast<SetElement>(pos);
+      EXPECT_EQ(exp,s[pos]);
+      EXPECT_EQ(exp,s.at(pos));
+      ++count;
+    }
+    EXPECT_EQ( s.size(), count);
+
   }
 
-#ifdef AXOM_USE_CXX11
   SLIC_INFO("Using iterator interface");
   {
+    // also tests default .ctor and operator=()
+
     std::stringstream sstr;
-    typedef SetType::iterator SetIterator;
-    for(SetIterator it = s.begin(), itEnd = s.end() ; it != itEnd ; ++it)
+    int count = 0;
+    typename SetType::iterator it, itEnd;
+    EXPECT_EQ(it, itEnd);
+
+    for(it = s.begin(), itEnd = s.end() ; it != itEnd ; ++it)
     {
       EXPECT_EQ( std::distance(s.begin(), it), *it );
+      ++count;
 
       sstr << *it << "\t";
     }
+    EXPECT_EQ( s.size(), count);
     SLIC_INFO("Data from iterator:\t" << sstr.str());
   }
 
@@ -162,145 +305,144 @@ TEST(slam_set_indirectionset,iterate)
   SLIC_INFO("Printing a few permutations of the data.");
   for(int i = 0 ; i< NUM_PERMUTATIONS ; ++i)
   {
-    permuteArray(s.data(), s.size());
+    this->permuteData();
     std::stringstream sstr;
     std::copy(s.begin(), s.end(),
               std::ostream_iterator<SetPosition>(sstr, "\t") );
     SLIC_INFO("Permutation " << i << ":\t" << sstr.str());
   }
-#endif
-
-  delete [] s.data();
 }
 
-TEST(slam_set_indirectionset,equality)
+TYPED_TEST(IndirectionSetTester,equality)
 {
   SLIC_INFO("Testing equality/inequality for several sets");
 
-  SetType s1(SetType::SetBuilder()
+  using SetType = typename TestFixture::SetType;
+  using BufferType = typename TestFixture::BufferType;
+  using SetPosition = typename TestFixture::PosType;
+  using SetElement = typename TestFixture::ElemType;
+
+  // Get pointers to the data
+  BufferType* bufPtr[3] = {nullptr, nullptr, nullptr};
+  this->getDataBuffer(bufPtr[0], 0);
+  this->getDataBuffer(bufPtr[1], 1);
+  this->getDataBuffer(bufPtr[2], 2);
+  EXPECT_NE(bufPtr[0], bufPtr[1]);
+  EXPECT_NE(bufPtr[0], bufPtr[2]);
+  EXPECT_NE(bufPtr[1], bufPtr[2]);
+
+  // Initialize the first set
+  SetType s0(typename SetType::SetBuilder()
              .size(MAX_SET_SIZE)
-             .data(allocIncrementingArray(MAX_SET_SIZE) ) );
-  EXPECT_TRUE(s1.isValid());
+             .data(bufPtr[0]) );
+
+  EXPECT_TRUE(s0.isValid());
 
   // Test self-equality
-  EXPECT_EQ(s1, s1);
+  EXPECT_EQ(s0, s0);
 
   // Test equality against a set with the same array
-  SetType s1b(SetType::SetBuilder()
-              .size(MAX_SET_SIZE)
-              .data(s1.data() ) );
-  EXPECT_TRUE(s1b.isValid());
-  EXPECT_EQ(s1, s1b);
+  SetType s0_b(typename SetType::SetBuilder()
+               .size(MAX_SET_SIZE)
+               .data(s0.data() ) );
+  EXPECT_TRUE(s0_b.isValid());
+  EXPECT_EQ(s0, s0_b);
+  EXPECT_EQ(s0.data(), s0_b.data());
 
   // Test equality against a set with a different array (same values)
-  SetType s2(SetType::SetBuilder()
+
+  SetType s1(typename SetType::SetBuilder()
              .size(MAX_SET_SIZE)
-             .data(allocIncrementingArray(MAX_SET_SIZE) ) );
-  EXPECT_TRUE(s2.isValid());
-  EXPECT_EQ(s1, s2);
-  EXPECT_EQ(s2, s1);
+             .data(bufPtr[1] ) );
+  EXPECT_TRUE(s1.isValid());
+  EXPECT_EQ(s0, s1);
+  EXPECT_EQ(s1, s0);
 
   // Check that sets are not equal if we permute the data
-  permuteArray(s2.data(), s2.size());
-  EXPECT_NE(s1, s2);
+  this->permuteData(1);
+  EXPECT_NE(s0, s1);
 
   // Test against a smaller set
-  const int S3_SIZE = MAX_SET_SIZE / 2;
-  SetType s3(SetType::SetBuilder()
-             .size(S3_SIZE)
-             .data(allocIncrementingArray(S3_SIZE) ) );
-  EXPECT_TRUE(s3.isValid());
-  EXPECT_NE(s1, s3);
-  EXPECT_NE(s2, s3);
+  SetType s2(typename SetType::SetBuilder()
+             .size(MAX_SET_SIZE / 2)
+             .data(bufPtr[2] ) );
+  EXPECT_TRUE(s2.isValid());
+  EXPECT_NE(s0, s2);
+  EXPECT_NE(s1, s2);
 
 
   // Check against a PositionSet with the same elements
-  axom::slam::PositionSet posSet(MAX_SET_SIZE);
+  slam::PositionSet<SetPosition, SetElement> posSet(MAX_SET_SIZE);
   EXPECT_TRUE(posSet.isValid() );
-  EXPECT_EQ(posSet, s1);
-
-
-  // Reclaim memory
-  delete [] s1.data();
-  delete [] s2.data();
-  delete [] s3.data();
+  EXPECT_EQ(posSet, s0);
 }
 
 
-TEST(slam_set_indirectionset,out_of_bounds)
+TYPED_TEST(IndirectionSetTester,out_of_bounds)
 {
   SLIC_INFO("Testing out of bounds access on initialized set"
             <<"-- code is expected to assert and die.");
 
-  SetType s(SetType::SetBuilder()
+  using SetType = typename TestFixture::SetType;
+  using BufferType = typename TestFixture::BufferType;
+
+  BufferType* bufPtr = nullptr;
+  this->getDataBuffer(bufPtr);
+
+  SetType s(typename SetType::SetBuilder()
             .size(MAX_SET_SIZE)
-            .data(allocIncrementingArray(MAX_SET_SIZE) ) );
-  EXPECT_TRUE(s.isValid());
+            .data(bufPtr) );
 
 #ifdef AXOM_DEBUG
-  // NOTE: AXOM_DEBUG is disabled in release mode, so this test will only fail
-  // in debug mode
+  // NOTE: AXOM_DEBUG is disabled in release mode,
+  // so this test will only fail in debug mode
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   EXPECT_DEATH_IF_SUPPORTED( s[MAX_SET_SIZE], "");
 #else
   SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif
-
-  delete [] s.data();
 }
 
 
-TEST(slam_set_indirectionset,vector_indirection)
+TEST(slam_set_indirectionset,compare_array_and_vector)
 {
-  SLIC_INFO("Testing basic set operations on a VectorIndirectionSet");
+  SLIC_INFO("Comparing Array and Vector indirection Sets");
 
-  typedef axom::slam::VectorIndirectionSet VectorIndirectionSet;
-  typedef VectorIndirectionSet::SetBuilder Builder;
+  using P = int;
+  using E = int;
 
-  // Set up data -- an array of incrementing integers
-  std::vector<int> intVec;
-  intVec.reserve(MAX_SET_SIZE);
-  for(int i = 0 ; i<MAX_SET_SIZE ; ++i)
+  using VecSet = slam::VectorIndirectionSet<P,E>;
+  using ArrSet = slam::ArrayIndirectionSet<P,E>;
+  using PosSet = slam::PositionSet<P,E>;
+
+  const int SZ = MAX_SET_SIZE;
+  std::vector<E> vVals(SZ);
+  std::vector<E> aVals(SZ);
+
+  PosSet ps(SZ);
+
+  // Create vector and array sets without initializing their elements
+  VecSet vs( VecSet::SetBuilder()
+             .size(SZ)
+             .data(&vVals) );
+
+  ArrSet as( ArrSet::SetBuilder()
+             .size(SZ)
+             .data(aVals.data()) );
+
+  EXPECT_NE( vs, ps);
+  EXPECT_NE( as, ps);
+
+  // Use position set to initialize vector and array set elements
+  for(auto i : ps)
   {
-    intVec.push_back(i);
+    vs[i] = i;
+    as[i] = i;
   }
 
-  // Setup the VectorIndirectionSet and test basic functionality
-  VectorIndirectionSet vecSet(Builder()
-                              .size(MAX_SET_SIZE)
-                              .data(&intVec));
-  EXPECT_TRUE(vecSet.isValid());
-  EXPECT_FALSE(vecSet.empty());
-  EXPECT_EQ(MAX_SET_SIZE, vecSet.size());
-  EXPECT_TRUE(vecSet.hasIndirection());
-
-  // Compare the values
-  for(int i = 0 ; i<MAX_SET_SIZE ; ++i)
-  {
-    EXPECT_EQ(  i,  vecSet[i]);
-    EXPECT_EQ(  i,  vecSet.at(i));
-  }
-
-  // Test equality with an array indirection set
-  {
-    SetType arrSet(SetType::SetBuilder()
-                   .size(MAX_SET_SIZE)
-                   .data(allocIncrementingArray(MAX_SET_SIZE) ) );
-    EXPECT_TRUE(arrSet.isValid());
-
-    EXPECT_EQ(vecSet, arrSet);
-    EXPECT_EQ(arrSet, vecSet);
-
-    delete [] arrSet.data();
-  }
-
-  // Test equality with a position set
-  {
-    axom::slam::PositionSet posSet(MAX_SET_SIZE);
-    EXPECT_TRUE(posSet.isValid() );
-    EXPECT_EQ(vecSet, posSet);
-    EXPECT_EQ(posSet, vecSet);
-  }
+  EXPECT_EQ( vs, as);
+  EXPECT_EQ( as, ps);
+  EXPECT_EQ( ps, vs);
 }
 
 TEST(slam_set_indirectionset,negative_stride)
@@ -309,52 +451,52 @@ TEST(slam_set_indirectionset,negative_stride)
 
   namespace policies = axom::slam::policies;
 
-  typedef axom::slam::Set::PositionType SetPosition;
+  using SetPosition = slam::DefaultPositionType;
+  using SetElement = slam::DefaultElementType;
 
-  typedef policies::RuntimeSize<SetPosition>                          SizePol;
-  typedef policies::RuntimeOffset<SetPosition>                        OffPol;
-  typedef policies::RuntimeStride<SetPosition>                        StridePol;
-  typedef policies::STLVectorIndirection<SetPosition, SetPosition>    VecIndPol;
-  typedef policies::ArrayIndirection<SetPosition, SetPosition>        ArrIndPol;
+  using SizePol   = policies::RuntimeSize<SetPosition>;;
+  using OffPol    = policies::RuntimeOffset<SetPosition>;
+  using StridePol = policies::RuntimeStride<SetPosition>;
+  using VecIndPol = policies::STLVectorIndirection<SetPosition, SetElement>;
+  using ArrIndPol = policies::ArrayIndirection<SetPosition, SetElement>;
 
-  typedef axom::slam::OrderedSet<SizePol,OffPol,StridePol, VecIndPol> VecSet;
-  typedef VecSet::SetBuilder VecSetBuilder;
+  using VecSet = slam::OrderedSet<SetPosition, SetElement,
+                                  SizePol,OffPol,StridePol, VecIndPol>;
 
-  typedef axom::slam::OrderedSet<SizePol,OffPol,StridePol, ArrIndPol> ArrSet;
-  typedef ArrSet::SetBuilder ArrSetBuilder;
+  using ArrSet = slam::OrderedSet<SetPosition, SetElement,
+                                  SizePol,OffPol,StridePol, ArrIndPol>;
 
   // Set up data -- an array of incrementing integers
-  std::vector<int> intVec;
-  intVec.reserve(MAX_SET_SIZE);
-  for(int i = 0 ; i<MAX_SET_SIZE ; ++i)
+  std::vector<int> intVec(MAX_SET_SIZE);
+  for(auto i: slam::PositionSet<>(MAX_SET_SIZE) )
   {
-    intVec.push_back(i);
+    intVec[i] = i;
   }
 
   const int setSize = MAX_SET_SIZE / 2;
   const int setOffset = MAX_SET_SIZE - 1;
   const int setStride = -2;
+  const bool bVerbose = false;
 
   // Setup the VectorIndirectionSet and test basic functionality
+  VecSet vSet(VecSet::SetBuilder()
+              .size(setSize)
+              .offset(setOffset)
+              .stride(setStride)
+              .data(&intVec));
   {
-    VecSet vSet(VecSetBuilder()
-                .size(setSize)
-                .offset(setOffset)
-                .stride(setStride)
-                .data(&intVec));
-
     EXPECT_TRUE(vSet.isValid());
     EXPECT_FALSE(vSet.empty());
     EXPECT_EQ(setSize, vSet.size());
     EXPECT_TRUE(vSet.hasIndirection());
 
     SLIC_INFO("Ordered vector set has:"
-              << "\n\t --size "   << vSet.size()
-              << "\n\t --stride " << vSet.stride()
-              << "\n\t --offset " << vSet.offset()
-              << "\n\t --first elt " << vSet[0]
-              << "\n\t --last elt " << vSet[ vSet.size() - 1 ]
-              );
+              << "{ size: "   << vSet.size()
+              << ", stride: " << vSet.stride()
+              << ", offset: " << vSet.offset()
+              << ", first elt: " << vSet[0]
+              << ", last elt: " << vSet[ vSet.size() - 1 ]
+              << "}" );
 
     // Test the elements
     EXPECT_EQ(intVec[setOffset], vSet[0]);
@@ -363,46 +505,48 @@ TEST(slam_set_indirectionset,negative_stride)
       EXPECT_EQ( setOffset + setStride * i, vSet[i] );
     }
 
-    /// Several tests to check that sets with bad offsets and strides are not
-    // valid
-
-    VecSet noDataVSet(VecSetBuilder()  // Note: Missing a data pointer
+    /// Several checks that sets with bad offsets and strides are invalid
+    SLIC_DEBUG_IF(bVerbose, "--- Checking isValid() on several sets with "
+                  << "bad sizes, offsets and strides.");
+    VecSet noDataVSet(VecSet::SetBuilder()  // Note: Missing a data pointer
                       .size(setSize)
                       .offset(setOffset)
                       .stride(setStride));
-    EXPECT_FALSE(noDataVSet.isValid(true));
+    EXPECT_FALSE(noDataVSet.isValid(bVerbose));
 
-    VecSet outOfBoundsVSet(VecSetBuilder()
+    VecSet outOfBoundsVSet(VecSet::SetBuilder()
                            .size(setSize + 1) // Note: This will cause the last
                                               // index to be out of bounds
                            .offset(setOffset)
                            .stride(setStride)
                            .data(&intVec));
-    EXPECT_FALSE(outOfBoundsVSet.isValid(true));
+    EXPECT_FALSE(outOfBoundsVSet.isValid(bVerbose));
 
-    VecSet outOfBoundsVSet2(VecSetBuilder()
+    VecSet outOfBoundsVSet2(VecSet::SetBuilder()
                             .size(setSize)
                             .offset(-1) // Note: This will cause the first index
                                         // to be out of bounds
                             .stride(1)
                             .data(&intVec));
-    EXPECT_FALSE(outOfBoundsVSet2.isValid(true));
+    EXPECT_FALSE(outOfBoundsVSet2.isValid(bVerbose));
 
-    VecSet zeroStrideVSet(VecSetBuilder()
+    VecSet zeroStrideVSet(VecSet::SetBuilder()
                           .size(setSize)
                           .offset(setOffset)
                           .stride(0) // Note: A stride of zero is not valid
                           .data(&intVec));
-    EXPECT_FALSE(zeroStrideVSet.isValid(true));
+    EXPECT_FALSE(zeroStrideVSet.isValid(bVerbose));
+
+    SLIC_DEBUG_IF(bVerbose, "--- Done.");
   }
 
   // Setup the VectorIndirectionSet and test basic functionality
+  ArrSet aSet(ArrSet::SetBuilder()
+              .size(setSize)
+              .offset(setOffset)
+              .stride(setStride)
+              .data(intVec.data()));
   {
-    ArrSet aSet(ArrSetBuilder()
-                .size(setSize)
-                .offset(setOffset)
-                .stride(setStride)
-                .data(&intVec[0]));
 
     EXPECT_TRUE(aSet.isValid());
     EXPECT_FALSE(aSet.empty());
@@ -412,64 +556,66 @@ TEST(slam_set_indirectionset,negative_stride)
     EXPECT_EQ(intVec[setOffset], aSet[0]);
 
     SLIC_INFO("Ordered array set has:"
-              << "\n\t --size "   << aSet.size()
-              << "\n\t --stride " << aSet.stride()
-              << "\n\t --offset " << aSet.offset()
-              << "\n\t --first elt " << aSet[0]
-              << "\n\t --last elt " << aSet[ aSet.size() - 1 ]
-              );
+              << "{ size: "   << aSet.size()
+              << ", stride: " << aSet.stride()
+              << ", offset: " << aSet.offset()
+              << ", first elt: " << aSet[0]
+              << ", last elt: " << aSet[ aSet.size() - 1 ]
+              << "}" );
 
     for(int i = 0 ; i< aSet.size() ; ++i)
     {
       EXPECT_EQ( setOffset + setStride * i, aSet[i] );
     }
 
-    /// Several tests to check that sets with bad offsets and strides are not
-    // valid
+    /// Several checks that sets with bad offsets and strides are invalid
+    SLIC_DEBUG_IF(bVerbose, "--- Checking isValid() on several sets with "
+                  << "bad sizes, offsets and strides.");
 
-    ArrSet noDataASet(ArrSetBuilder()  // Note: Missing a data pointer
+    ArrSet noDataASet(ArrSet::SetBuilder()  // Note: Missing a data pointer
                       .size(setSize)
                       .offset(setOffset)
                       .stride(setStride));
-    EXPECT_FALSE(noDataASet.isValid(true));
+    EXPECT_FALSE(noDataASet.isValid(bVerbose));
 
-    ArrSet outOfBoundsASet1(ArrSetBuilder()
+    ArrSet outOfBoundsASet1(ArrSet::SetBuilder()
                             .size(setSize + 1) // Note: This will cause the last
                                                // index to be out of bounds
                             .offset(setOffset)
                             .stride(setStride)
-                            .data(&intVec[0]));
-    EXPECT_FALSE(outOfBoundsASet1.isValid(true));
+                            .data(intVec.data()));
+    EXPECT_FALSE(outOfBoundsASet1.isValid(bVerbose));
 
-    ArrSet outOfBoundsASet2(ArrSetBuilder()
+    ArrSet outOfBoundsASet2(ArrSet::SetBuilder()
                             .size(setSize)
                             .offset(-1) // Note: This will cause the first index
                                         // to be out of bounds
                             .stride(1)
-                            .data(&intVec[0]));
-    EXPECT_FALSE(outOfBoundsASet2.isValid(true));
+                            .data(intVec.data()));
+    EXPECT_FALSE(outOfBoundsASet2.isValid(bVerbose));
 
-    ArrSet zeroStrideASet(ArrSetBuilder()
+    ArrSet zeroStrideASet(ArrSet::SetBuilder()
                           .size(setSize)
                           .offset(setOffset)
                           .stride(0) // Note: A stride of zero is not valid
-                          .data(&intVec[0]));
-    EXPECT_FALSE(zeroStrideASet.isValid(true));
+                          .data(intVec.data()));
+    EXPECT_FALSE(zeroStrideASet.isValid(bVerbose));
+
+    SLIC_DEBUG_IF(bVerbose, "--- Done.");
   }
 
+  // check that vset and aset are equivalent
+  EXPECT_EQ(vSet, aSet);
 }
 
 //----------------------------------------------------------------------
-//----------------------------------------------------------------------
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])
 {
   ::testing::InitGoogleTest(&argc, argv);
 
   // create & initialize test logger. finalized when exiting main scope
-  UnitTestLogger logger;
+  axom::slic::UnitTestLogger logger;
 
   int result = RUN_ALL_TESTS();
 

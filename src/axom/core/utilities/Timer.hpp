@@ -9,8 +9,6 @@
  *
  * \brief Defines a simple Timer class to measure execution time.
  *
- * \note The actual underlying timers are platform dependent and are defined
- * in the axom::utilities::detail namespace.
  ******************************************************************************
  */
 
@@ -18,30 +16,8 @@
 #define TIMER_HPP_
 
 #include "axom/config.hpp"
-#ifdef AXOM_USE_CXX11
-  #include "axom/core/detail/ChronoTimer.hpp"
-#else
-  #ifdef WIN32
-    #include "axom/core/detail/TickCountTimer.hpp"
-  #else
-    #include "axom/core/detail/TimeofdayTimer.hpp"
-  #endif
-#endif
 
-namespace
-{
-#ifdef AXOM_USE_CXX11
-typedef axom::utilities::detail::ChronoTimer HighPrecisionTimer;
-#else
-  #ifdef WIN32
-typedef axom::utilities::detail::TickCountTimer HighPrecisionTimer;
-  #else
-typedef axom::utilities::detail::TimeofdayTimer HighPrecisionTimer;
-  #endif
-#endif
-}
-
-
+#include <chrono>
 
 namespace axom
 {
@@ -50,11 +26,6 @@ namespace utilities
 
 /*!
  * \brief A simple Timer class to measure execution time.
- *
- * \note The actual timing functionality is implemented using a
- *  HighPrecisionTimer instance.  These are located in the detail namespace
- *  using the chrono library in C++11, GetTickCount64() on Windows
- *  and glibc's gettimeofday() otherwise.
  *
  *  \note We might want to extend the functionality of the timer class
  *   by making HighPrecisionTimer a template parameter.
@@ -89,6 +60,13 @@ namespace utilities
  */
 class Timer
 {
+private:
+  using ClockType     = std::chrono::high_resolution_clock;
+  using TimeStruct    = std::chrono::time_point<ClockType>;
+  using TimeDiff      = std::chrono::duration<double>;
+  using MilliTimeDiff = std::chrono::duration<double, std::milli>;
+  using MicroTimeDiff = std::chrono::duration<double, std::micro>;
+
 public:
 
   /*!
@@ -99,18 +77,18 @@ public:
   Timer(bool startRunning = false) : m_running(startRunning)
   {
     if(m_running)
-      m_hpTimer.start();
+      start();
   }
 
   /*!
    * \brief Starts the timer.Sets the start time of this Timer instance.
    */
-  void start() { m_running = true; m_hpTimer.start(); }
+  void start() { m_running = true; m_startTime = ClockType::now(); }
 
   /*!
    * \brief Stops the timer. Sets the end time of this Timer instance.
    */
-  void stop() { m_hpTimer.stop(); m_running = false; }
+  void stop() { m_stopTime = ClockType::now(); m_running = false; }
 
   /*!
    * \brief Returns the elapsed time in seconds.
@@ -125,8 +103,8 @@ public:
   double elapsedTimeInSec()
   {
     if(m_running)
-      m_hpTimer.stop();
-    return m_hpTimer.elapsedTimeInSec();
+      stop();
+    return clockDiff().count();
   }
 
   /*!
@@ -136,8 +114,8 @@ public:
   double elapsedTimeInMilliSec()
   {
     if(m_running)
-      m_hpTimer.stop();
-    return m_hpTimer.elapsedTimeInMilliSec();
+      stop();
+    return std::chrono::duration_cast< MilliTimeDiff >( clockDiff() ).count();
   }
 
   /*!
@@ -147,19 +125,24 @@ public:
   double elapsedTimeInMicroSec()
   {
     if(m_running)
-      m_hpTimer.stop();
-    return m_hpTimer.elapsedTimeInMicroSec();
+      stop();
+    return std::chrono::duration_cast< MicroTimeDiff >( clockDiff() ).count();
   }
 
   /*!
    * \brief Resets the timer.
    * \post this->elapsed()==0.0
    */
-  void reset() { m_running = false; m_hpTimer.reset(); }
+  void reset() { m_running = false; m_startTime = m_stopTime = TimeStruct(); }
 
 private:
-  HighPrecisionTimer m_hpTimer;
-  bool m_running;
+
+  /*! \brief Computes the difference between start() and stop() */
+  TimeDiff clockDiff() const { return m_stopTime - m_startTime; }
+
+  TimeStruct m_startTime;
+  TimeStruct m_stopTime;
+  bool       m_running;
 };
 
 } // namespace utilities

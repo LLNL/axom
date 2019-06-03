@@ -111,7 +111,7 @@ TEST(slam_tinyHydro,test_03_gradAndForce)
       << "\t*******************************************************");
 
 
-  typedef std::vector<int> IntVec;
+  using IntVec = std::vector<int>;
   IntVec vals;
   vals. push_back(0);
   vals. push_back(1);

@@ -9,10 +9,8 @@
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
+#include "axom/primal.hpp"
 
-#include "axom/primal/geometry/BoundingBox.hpp"
-#include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/geometry/Vector.hpp"
 #include "axom/spin/OctreeBase.hpp"
 
 namespace axom
@@ -21,9 +19,8 @@ namespace spin
 {
 
 
-
 /**
- * \class
+ * \class SpatialOctree
  * \brief Adds spatial extents to an OctreeBase, allowing point location
  */
 template<int DIM, typename BlockDataType>
@@ -42,8 +39,8 @@ public:
 
   using BlockIndex = typename BaseOctree::BlockIndex;
 
-  using SpaceVectorLevelMap = slam::Map<SpaceVector>;
-
+  using SpaceVectorLevelMap = slam::Map<slam::Set<>,
+                                        SpaceVector>;
 public:
   /**
    * \brief Construct a spatial octree from a spatial bounding box

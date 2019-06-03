@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-/**
+/*
  * \file slam_set_rangeset.cpp
  *
  * \brief Unit tests for Slam's RangeSet
@@ -18,26 +18,24 @@
 #include <iterator>
 #include "gtest/gtest.h"
 
-#include "axom/config.hpp"  // for AXOM_USE_CXX11
-
-#include "axom/slic/interface/slic.hpp"
+#include "axom/config.hpp"
+#include "axom/slic.hpp"
 
 #include "axom/slam/Set.hpp"
 #include "axom/slam/RangeSet.hpp"
 
 namespace
 {
-typedef axom::slam::RangeSet SetType;
-typedef SetType::PositionType SetPosition;
-typedef SetType::ElementType SetElement;
+using SetType = axom::slam::RangeSet<>;
+using SetPosition = SetType::PositionType;
+using SetElement = SetType::ElementType;
 
-static const SetPosition MAX_SET_SIZE = 20;
-static const SetElement lowerIndex =
-  static_cast<SetElement>( .3 * MAX_SET_SIZE);
-static const SetElement upperIndex =
-  static_cast<SetElement>( .7 * MAX_SET_SIZE);
+static const SetPosition MAX_SIZE = 20;
+static const SetElement lowerIndex = static_cast<SetElement>( .3 * MAX_SIZE);
+static const SetElement upperIndex = static_cast<SetElement>( .7 * MAX_SIZE);
 static const SetElement range = upperIndex - lowerIndex;
-}
+
+} // end anonymous namespace
 
 
 TEST(slam_range_set,construct)
@@ -88,7 +86,7 @@ TEST(slam_range_set,set_builder)
 {
   SLIC_INFO("Testing construction RangeSets using SetBuilders");
 
-  typedef SetType::SetBuilder SetBuilder;
+  using SetBuilder = SetType::SetBuilder;
 
 
   // Empty set, with and without offset
@@ -184,14 +182,22 @@ TEST(slam_range_set,iterate)
       sstr << s[pos] << "\t";
     }
     SLIC_INFO(sstr.str());
+
+    // same test, using range-for over OrderedSet::positions()
+    for(auto pos : s.positions() )
+    {
+      SetElement expected = pos + lowerIndex;
+      EXPECT_EQ(  expected, s[pos] );
+      EXPECT_EQ(  expected, s.at(pos) );
+      EXPECT_EQ(  s[pos],   s.at(pos) );
+    }
   }
 
-#ifdef AXOM_USE_CXX11
   SLIC_INFO("Testing iterator access");
   {
     std::stringstream sstr;
 
-    typedef SetType::iterator SetIterator;
+    using SetIterator = SetType::iterator;
 
     EXPECT_EQ(SetIterator(s.offset(), s), s.begin());
 
@@ -304,7 +310,6 @@ TEST(slam_range_set,iterate)
 
     SLIC_INFO(sstr.str());
   }
-#endif //AXOM_USE_CXX11
 }
 
 TEST(slam_range_set,out_of_range)
@@ -317,7 +322,7 @@ TEST(slam_range_set,out_of_range)
   // NOTE: AXOM_DEBUG is disabled in release mode,
   // so this test will only fail in debug mode
   EXPECT_DEATH_IF_SUPPORTED(  s.at(upperIndex),   "");
-  EXPECT_DEATH_IF_SUPPORTED(  s.at(MAX_SET_SIZE), "");
+  EXPECT_DEATH_IF_SUPPORTED(  s.at(MAX_SIZE), "");
 #else
   SLIC_INFO("Skipped assertion failure check in release mode.");
 #endif
@@ -327,15 +332,17 @@ TEST(slam_generic_range_set,virtual_parent_set)
 {
   namespace policies = axom::slam::policies;
 
-  typedef axom::slam::GenericRangeSet<
-      policies::StrideOne<SetPosition>,
-      policies::NoIndirection<SetPosition,SetElement>,
-      policies::VirtualParentSubset>        GenericRangeSet;
+  using GenericRangeSet =
+          axom::slam::GenericRangeSet<
+            SetPosition, SetElement,
+            policies::StrideOne<SetPosition>,
+            policies::NoIndirection<SetPosition,SetElement>,
+            policies::VirtualParentSubset>;
 
-  typedef GenericRangeSet::SetBuilder SetBuilder;
+  using SetBuilder = GenericRangeSet::SetBuilder;
 
   SLIC_INFO("Generating a parent set, and a subset and checking validity");
-  GenericRangeSet parentSet(SetBuilder().size(MAX_SET_SIZE));
+  GenericRangeSet parentSet(SetBuilder().size(MAX_SIZE));
   GenericRangeSet childSet( SetBuilder()
                             .range(lowerIndex, upperIndex)
                             .parent(&parentSet));
@@ -377,17 +384,19 @@ TEST(slam_generic_range_set,concrete_parent_set)
 {
   namespace policies = axom::slam::policies;
 
-  typedef SetType ParentType;
+  using ParentType = SetType;
 
-  typedef axom::slam::GenericRangeSet<
-      policies::StrideOne<SetPosition>,
-      policies::NoIndirection<SetPosition,SetElement>,
-      policies::ConcreteParentSubset<ParentType> >        GenericRangeSet;
+  using GenericRangeSet =
+          axom::slam::GenericRangeSet<
+            SetPosition, SetElement,
+            policies::StrideOne<SetPosition>,
+            policies::NoIndirection<SetPosition,SetElement>,
+            policies::ConcreteParentSubset<ParentType> >;
 
-  typedef GenericRangeSet::SetBuilder SetBuilder;
+  using SetBuilder = GenericRangeSet::SetBuilder;
 
   SLIC_INFO("Generating a parent set, and a subset and checking validity");
-  ParentType parentSet(ParentType::SetBuilder().size(MAX_SET_SIZE));
+  ParentType parentSet(ParentType::SetBuilder().size(MAX_SIZE));
   GenericRangeSet childSet( SetBuilder()
                             .range(lowerIndex, upperIndex)
                             .parent(&parentSet));
@@ -427,10 +436,6 @@ TEST(slam_generic_range_set,concrete_parent_set)
 }
 
 //----------------------------------------------------------------------
-//----------------------------------------------------------------------
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
@@ -441,10 +446,8 @@ int main(int argc, char* argv[])
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
 #endif
 
-  UnitTestLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
-
+  // create & initialize test logger, finalized when exiting main scope
+  axom::slic::UnitTestLogger logger;
   //axom::slic::debug::checksAreErrors = true;
 
   result = RUN_ALL_TESTS();

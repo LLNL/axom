@@ -3,14 +3,14 @@
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
-**********************
+======================
 Implementation details
-**********************
+======================
 
 .. _policy-label:
 
 Policy-based design
--------------------
+===================
 
 Handling the combinatorial explosion of features; avoid paying for what we don't need
 
@@ -32,7 +32,7 @@ The figure shows how certain these policies interact with the subscript operator
 .. _setup-label:
 
 Simplifying mesh setup
-----------------------
+======================
 
 * Builder classes
     * Chained initialization using named-parameter idiom

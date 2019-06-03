@@ -16,12 +16,15 @@
     #include <direct.h>
     #include <sys/stat.h>
 
-    #define GetCurrentDir _getcwd
+    #define GetCurrentDir    _getcwd
+    #define ChangeCurrentDir _chdir
     #define Stat _stat
 #else
     #include <unistd.h>                 // for getcwd
     #include <sys/stat.h>               // for stat
-    #define GetCurrentDir getcwd
+
+    #define GetCurrentDir    getcwd
+    #define ChangeCurrentDir chdir
     #define Stat stat
 #endif
 
@@ -48,6 +51,11 @@ std::string getCWD()
   }
 
   return std::string(cCurrentPath);
+}
+
+int changeCWD(const std::string& dirName)
+{
+  return ChangeCurrentDir( dirName.c_str() );
 }
 
 //-----------------------------------------------------------------------------

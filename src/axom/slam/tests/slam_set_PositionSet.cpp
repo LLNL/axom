@@ -15,20 +15,21 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/config.hpp"      // for AXOM_USE_CXX11
-
-#include "axom/slic/interface/slic.hpp"        // for SLIC_INFO
+#include "axom/config.hpp"
+#include "axom/slic.hpp"
 
 #include "axom/slam/RangeSet.hpp"    // for PositionSet
 #include "axom/slam/Utilities.hpp"
 
-
-typedef axom::slam::PositionSet SetType;
-typedef SetType::PositionType SetPosition;
-typedef SetType::ElementType SetElement;
+namespace
+{
+using SetType = axom::slam::PositionSet<>;
+using SetPosition = SetType::PositionType;
+using SetElement = SetType::ElementType;
 
 static const SetPosition MAX_SET_SIZE = 10;
 
+} // end anonymous namespace
 
 TEST(slam_set_positionset,construct_valid)
 {
@@ -78,8 +79,7 @@ TEST(slam_set_positionset,construct_set_builder)
 {
   SLIC_INFO("Testing construction of PositionSets using SetBuilders");
 
-  typedef SetType::SetBuilder SetBuilder;
-
+  using SetBuilder = SetType::SetBuilder;
   SetBuilder builder = SetBuilder()
                        .size( MAX_SET_SIZE );
 
@@ -149,6 +149,18 @@ TEST(slam_set_positionset,iterate)
       sstr << s[pos] << "\t";
     }
     SLIC_INFO("Element of slam set using operator[]:\n" << sstr.str());
+
+    // same test, using range-for over OrderedSet::positions()
+    int count = 0;
+    for(auto pos : s.positions() )
+    {
+      SetElement elt = static_cast<SetElement>(pos);
+      EXPECT_EQ( elt, s[pos] );
+      EXPECT_EQ( elt, s.at(pos) );
+      EXPECT_EQ( s[pos], s.at(pos) );
+      ++count;
+    }
+    EXPECT_EQ( s.size(), count );
   }
 
   SLIC_INFO("Using checked random access -- at()");
@@ -164,20 +176,26 @@ TEST(slam_set_positionset,iterate)
     SLIC_INFO("Element of slam set using at():\n" << sstr.str());
   }
 
-#ifdef AXOM_USE_CXX11
   SLIC_INFO("Using iterators begin/end");
   {
+    // also tests default constructor and operator=
     std::stringstream sstr;
-    typedef SetType::iterator SetIterator;
-    for(SetIterator it = s.begin(), itEnd = s.end() ; it != itEnd ; ++it)
+
+    SetType::iterator it, itEnd;
+    EXPECT_EQ(it, itEnd);
+
+    int count = 0;
+    for(it = s.begin(), itEnd = s.end() ; it != itEnd ; ++it)
     {
       EXPECT_EQ( std::distance(s.begin(), it), *it );
+      ++count;
+
       sstr << *it << "\t";
     }
+    EXPECT_EQ( s.size(), count);
 
     SLIC_INFO("Element of slam set using iterators:\n" << sstr.str());
   }
-#endif
 }
 
 
@@ -245,10 +263,6 @@ TEST(slam_set_positionset,awkward_resize)
 }
 
 //----------------------------------------------------------------------
-//----------------------------------------------------------------------
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
-
 int main(int argc, char* argv[])
 {
   int result = 0;
@@ -256,7 +270,7 @@ int main(int argc, char* argv[])
   ::testing::InitGoogleTest(&argc, argv);
 
   // create & initialize test logger. finalized when exiting main scope
-  UnitTestLogger logger;
+  axom::slic::UnitTestLogger logger;
 
   result = RUN_ALL_TESTS();
 

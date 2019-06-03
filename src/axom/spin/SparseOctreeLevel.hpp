@@ -7,7 +7,7 @@
 #define SPARSE_OCTREE_LEVEL__HXX_
 
 
-#include "axom/config.hpp"    // defines AXOM_USE_CXX11
+#include "axom/config.hpp"
 
 #include "axom/core.hpp"
 
@@ -17,17 +17,12 @@
 #include "axom/spin/OctreeLevel.hpp"
 
 
-#ifdef AXOM_USE_CXX11
-  #include <type_traits>
-#endif
+#include <type_traits>
 
 #if defined(AXOM_USE_SPARSEHASH)
   #include <sparsehash/dense_hash_map>
-#elif defined(AXOM_USE_STD_UNORDERED_MAP)
-  #include <unordered_map>
 #else
-  #error \
-  "spin::SparseOctreeLevel requires either sparsehash or C++11's unordered_map"
+  #include <unordered_map>
 #endif
 
 namespace axom
@@ -60,7 +55,7 @@ struct BroodRepresentationTraits
   // Requires a uint for RepresentationType with 8-,16-,32-, or 64- bits
 #if defined(AXOM_USE_SPARSEHASH)
   using MapType = google::dense_hash_map<RepresentationType, BroodDataType>;
-#elif defined(AXOM_USE_CXX11)
+#else
   using MapType = std::unordered_map<RepresentationType, BroodDataType>;
 #endif
 
@@ -109,7 +104,7 @@ struct BroodRepresentationTraits<CoordType, DIM, BroodDataType,
 
 #if defined(AXOM_USE_SPARSEHASH)
   using MapType = google::dense_hash_map<GridPt, BroodDataType,PointHashType>;
-#elif defined(AXOM_USE_STD_UNORDERED_MAP)
+#else
   using MapType = std::unordered_map<GridPt, BroodDataType,PointHashType >;
 #endif
 

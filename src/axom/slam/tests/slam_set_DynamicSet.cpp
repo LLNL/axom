@@ -13,9 +13,9 @@
 #include "axom/slam/DynamicSet.hpp"
 
 
-typedef axom::slam::DynamicSet<> SetType;
-typedef SetType::PositionType SetPosition;
-typedef SetType::ElementType SetElement;
+using SetType = axom::slam::DynamicSet<>;
+using SetPosition = SetType::PositionType;
+using SetElement = SetType::ElementType;
 
 static const SetPosition MAX_SET_SIZE = 10;
 static const SetPosition ADDITIONAL_ADD_SIZE = 5;
@@ -62,7 +62,7 @@ TEST(slam_set_dynamicset,construct_set_builder)
 {
   SLIC_INFO("Testing construction of DynamicSet using SetBuilders");
 
-  typedef SetType::SetBuilder SetBuilder;
+  using SetBuilder = SetType::SetBuilder;
 
   // Construct a first set using only size
   SetBuilder builder = SetBuilder()

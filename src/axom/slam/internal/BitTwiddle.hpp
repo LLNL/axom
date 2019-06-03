@@ -108,7 +108,7 @@ inline int popCount(axom::uint64 word)
   // 64 bit popcount implementation from:
   // http://chessprogramming.wikispaces.com/Population+Count#SWARPopcount
 
-  typedef axom::uint64 Word;
+  using Word = axom::uint64;
 
   const Word masks[] = {
     0x5555555555555555,                  //  0 --  -1/3

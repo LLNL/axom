@@ -2,7 +2,7 @@
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
-#include "axom/config.hpp"                  // defines AXOM_USE_CXX11
+#include "axom/config.hpp"
 #include <cassert>                          // for assert()
 
 /*!
@@ -91,16 +91,11 @@
  * \def AXOM_STATIC_ASSERT(cond)
  * \def AXOM_STATIC_ASSERT_MSG(cond, MSG)
  *
- * \brief This macro wraps C++11 compile time static_assert functionality. Used
- *  for backwards compatibility with non C++11 compilers.
+ * \brief This macro wraps the compile time static_assert functionality
+ *  so you don't have to provide a message.
  */
-#ifdef AXOM_USE_CXX11
 #define AXOM_STATIC_ASSERT( cond ) static_assert( cond, #cond )
 #define AXOM_STATIC_ASSERT_MSG( cond, MSG ) static_assert( cond, MSG )
-#else
-#define AXOM_STATIC_ASSERT( cond )
-#define AXOM_STATIC_ASSERT_MSG( cond, MSG )
-#endif
 
 /*!
  *
@@ -165,13 +160,8 @@
  *
  * \endcode
  */
-#ifdef AXOM_USE_CXX11
 #define DISABLE_DEFAULT_CTOR(className)                      \
   className( ) = delete
-#else
-#define DISABLE_DEFAULT_CTOR(className)                      \
-  className( )
-#endif
 
 /*!
  * \def DISABLE_COPY_AND_ASSIGNMENT(className)
@@ -195,15 +185,9 @@
  *
  * \endcode
  */
-#ifdef AXOM_USE_CXX11
 #define DISABLE_COPY_AND_ASSIGNMENT(className)                                 \
   className( const className & ) = delete;                                     \
   className& operator=(const className&) = delete
-#else
-#define DISABLE_COPY_AND_ASSIGNMENT(className)                                 \
-  className( const className & );                                              \
-  className& operator=( const className& )
-#endif
 
 /*!
  * \def DISABLE_MOVE_AND_ASSIGNMENT(className)
@@ -228,13 +212,9 @@
  *
  * \endcode
  */
-#ifdef AXOM_USE_CXX11
 #define DISABLE_MOVE_AND_ASSIGNMENT(className)                                \
   className( const className&& ) = delete;                                    \
   className& operator=(const className&&) = delete
-#else
-#define DISABLE_MOVE_AND_ASSIGNMENT(className)
-#endif
 
 
 #endif /* AXOM_MACROS_HPP_ */

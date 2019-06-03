@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 
-/**
+/*
  * \file slam_map_SubMap.cpp
  *
  * \brief Unit tests for Slam's SubMap
@@ -13,37 +13,44 @@
 #include <iterator>
 #include "gtest/gtest.h"
 
-#include "axom/slam/Utilities.hpp"
+#include "axom/slic.hpp"
 
+#include "axom/slam/Utilities.hpp"
 #include "axom/slam/RangeSet.hpp"
 #include "axom/slam/SubMap.hpp"
 
-#include "axom/slic/interface/slic.hpp"
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
+namespace
+{
 
+namespace slam = axom::slam;
 
-typedef axom::slam::RangeSet RangeSetType;
+using SetBase = slam::Set<>;
+using PositionType = SetBase::PositionType;
+using ElementType = SetBase::ElementType;
+
+using RangeSetType = slam::RangeSet<PositionType, ElementType>;
 
 template<typename T>
-using Map = axom::slam::Map<T>;
+using Map = slam::Map<SetBase, T>;
+
 template<typename T, typename M>
-using SubMap= axom::slam::SubMap<T, M>;
+using SubMap= slam::SubMap<SetBase, T, M>;
 
 using OrderedSetType = axom::slam::OrderedSet<
-        axom::slam::policies::RuntimeSize<axom::slam::Set::PositionType>,
-        axom::slam::policies::ZeroOffset<axom::slam::Set::PositionType>,
-        axom::slam::policies::StrideOne<axom::slam::Set::PositionType>,
-        axom::slam::policies::STLVectorIndirection<axom::slam::Set::PositionType,
-                                                   axom::slam::Set::ElementType>
+        PositionType,
+        ElementType,
+        slam::policies::RuntimeSize<PositionType>,
+        slam::policies::ZeroOffset<PositionType>,
+        slam::policies::StrideOne<PositionType>,
+        slam::policies::STLVectorIndirection<PositionType,ElementType>
         >;
-
-typedef RangeSetType::PositionType PositionType;
-typedef RangeSetType::ElementType ElementType;
 
 static const double multFac = 1.0001;
 
 static PositionType const MAX_SET_SIZE = 10;
+
+} // end anonymous namepsace
+
 
 TEST(slam_map,construct_empty_subsetmap)
 {
@@ -78,9 +85,8 @@ struct MapForTest
     EXPECT_EQ(s.size(), size);
     EXPECT_TRUE(s.isValid());
 
-    SLIC_INFO(
-      "\nCreating "
-      << axom::slam::util::TypeToString<T>::to_string() << " map on the set ");
+    SLIC_INFO("\nCreating " << slam::util::TypeToString<T>::to_string()
+                            << " map on the set ");
 
     EXPECT_TRUE(m.isValid());
 
@@ -220,7 +226,7 @@ int main(int argc, char* argv[])
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
 #endif
 
-  UnitTestLogger logger;  // create & initialize test logger,
+  axom::slic::UnitTestLogger logger;  // create & initialize test logger,
   axom::slic::setLoggingMsgLevel( axom::slic::message::Info );
 
   int result = RUN_ALL_TESTS();

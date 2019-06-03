@@ -186,13 +186,6 @@ store the *origin* and *spacing* of  the :ref:`UniformMesh` and provides
 functionality for evaluating the spatial coordinates of a node given its
 corresponding IJK lattice coordinates.
 
-The following code snippet provides a simple example illustrating how to
-construct and operate on a 2-D :ref:`UniformMesh`.
-
-.. literalinclude:: ../../../examples/mint_uniform_mesh.cpp
-   :language: C++
-   :linenos:
-
 Similarly, support for the :ref:`RectilinearMesh` is implemented in
 ``mint::RectilinearMesh``. The constituent :ref:`Geometry` representation of
 the :ref:`RectilinearMesh` is *semi-implicit*. The spatial coordinates
@@ -203,25 +196,11 @@ axis. The ``mint::RectilinearMesh`` consists of seperate arrays to
 store the coordinates along each axis for the *semi-implicit* :ref:`Geometry`
 representation of the :ref:`RectilinearMesh`.
 
-The following code snippet provides a simple example illustrating how to
-construct and operate on a 2-D :ref:`RectilinearMesh`.
-
-.. literalinclude:: ../../../examples/mint_rectilinear_mesh.cpp
-   :language: C++
-   :linenos:
-
 Support for the :ref:`CurvilinearMesh` is implemented by the
 ``mint::CurvilinearMesh`` class. The :ref:`CurvilinearMesh` requires *explicit*
 representation of its constituent :ref:`Geometry`. The ``mint::CurvilinearMesh``
 makes use of the ``mint::MeshCoordinates`` class to explicitly represent the
 spatial coordinates associated with the constituent :ref:`Nodes` of the mesh.
-
-The following code snippet provides a simple example illustrating how to
-construct and operate on a 2-D :ref:`CurvilinearMesh`.
-
-.. literalinclude:: ../../../examples/mint_curvilinear_mesh.cpp
-   :language: C++
-   :linenos:
 
 Unstructured Mesh
 """"""""""""""""""

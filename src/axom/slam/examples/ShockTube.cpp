@@ -52,8 +52,15 @@
 namespace slamShocktube
 {
 
-axom::slam::MeshIndexType const UPWIND   = 0;
-axom::slam::MeshIndexType const DOWNWIND = 1;
+namespace slam = axom::slam;
+
+using PositionType = slam::DefaultPositionType;
+using ElementType = slam::DefaultElementType;
+
+using BaseSet = slam::Set<PositionType, ElementType>;
+
+PositionType const UPWIND   = 0;
+PositionType const DOWNWIND = 1;
 
 const double gammaa = M_SQRT2;
 const double gammaaInverse = M_SQRT1_2;
@@ -68,6 +75,7 @@ const double INIT_D_RATIO = 0.5;
 #ifdef AXOM_DEBUG
 const bool verboseOutput = false;
 #endif
+
 
 /**
  * \brief Simple representation of the mesh for this 1D example
@@ -94,44 +102,44 @@ class ShockTubeMesh
 public:
 
   /// types for Element and Face sets
-  typedef axom::slam::PositionSet ElemSet;
-  typedef axom::slam::PositionSet FaceSet;
+  using PositionType = slamShocktube::PositionType;
 
-  typedef axom::slam::PositionSet::IndexType IndexType;
-  typedef axom::slam::PositionSet::PositionType PositionType;
-  typedef axom::slam::PositionSet::ElementType ElementType;
+  using ElemSet = slam::PositionSet<PositionType,ElementType>;
+  using FaceSet = slam::PositionSet<PositionType,ElementType>;
+
+  using IndexType = PositionType;
 
   /// types for Tube and {In,Out}Flow subsets
-  typedef axom::slam::policies::
-    StrideOne<PositionType>                               StrideOnePolicy;
-  typedef axom::slam::policies::
-    NoIndirection<PositionType,ElementType>               NoIndirectionPolicy;
-  typedef axom::slam::policies::
-    ConcreteParentSubset<ElemSet>                         TubeSubsetPolicy;
-  typedef axom::slam::GenericRangeSet<
-      StrideOnePolicy, NoIndirectionPolicy, TubeSubsetPolicy>      ElemSubset;
-  typedef axom::slam::RangeSet RangeSet;
+  using StrideOnePolicy = slam::policies::StrideOne<PositionType>;
+  using NoIndirectionPolicy =
+          slam::policies::NoIndirection<PositionType,ElementType>;
+  using TubeSubsetPolicy = slam::policies::ConcreteParentSubset<ElemSet>;
+  using ElemSubset =
+          slam::GenericRangeSet<PositionType, ElementType, StrideOnePolicy,
+                                NoIndirectionPolicy, TubeSubsetPolicy>;
+  using RangeSet = slam::RangeSet<PositionType, ElementType>;
 
   /// types for relations
   enum { ELEMS_PER_FACE = 2, FACES_PER_ELEM = 2};
-  typedef axom::slam::policies::
-    CompileTimeStride<PositionType, FACES_PER_ELEM>       EFStride;
-  typedef axom::slam::policies::
-    CompileTimeStride<PositionType, ELEMS_PER_FACE>       FEStride;
-  typedef axom::slam::policies::
-    ConstantCardinality<PositionType, EFStride>           EFCard;
-  typedef axom::slam::policies::
-    ConstantCardinality<PositionType, FEStride>           FECard;
-  typedef axom::slam::policies::
-    STLVectorIndirection<PositionType, PositionType>      STLIndirection;
-  typedef STLIndirection::VectorType IndexVec;
 
-  typedef axom::slam::
-    StaticRelation<EFCard, STLIndirection, ElemSubset, FaceSet>
-    TubeElemToFaceRelation;
-  typedef axom::slam::
-    StaticRelation<FECard, STLIndirection, FaceSet, ElemSet>
-    FaceToElemRelation;
+  using EFStride =
+          slam::policies::CompileTimeStride<PositionType, FACES_PER_ELEM>;
+  using FEStride =
+          slam::policies::CompileTimeStride<PositionType, ELEMS_PER_FACE>;
+
+  using EFCard = slam::policies::ConstantCardinality<PositionType, EFStride>;
+  using FECard = slam::policies::ConstantCardinality<PositionType, FEStride>;
+  using STLIndirection =
+          slam::policies::STLVectorIndirection<PositionType, ElementType>;
+  using IndexVec = STLIndirection::VectorType;
+
+  using TubeElemToFaceRelation =
+          slam::StaticRelation<PositionType, ElementType,
+                               EFCard, STLIndirection, ElemSubset, FaceSet>;
+  using FaceToElemRelation =
+          slam::StaticRelation<PositionType, ElementType,
+                               FECard, STLIndirection, FaceSet, ElemSet>;
+
 
 public:
   ElemSet elems;                // The entire set of elements
@@ -147,12 +155,11 @@ public:
 };
 
 
-// Define the explicit instances of our local (key/value) datastore for int and
-// double
-typedef axom::slam::FieldRegistry<int>    IntsRegistry;
-typedef axom::slam::FieldRegistry<double> RealsRegistry;
-typedef axom::slam::Map<int>              IntField;
-typedef axom::slam::Map<double>           RealField;
+// Define explicit instances of local (key/value) datastore for int and double
+using IntsRegistry = slam::FieldRegistry<BaseSet, int>;
+using RealsRegistry = slam::FieldRegistry<BaseSet, double>;
+using IntField = IntsRegistry::MapType;
+using RealField = RealsRegistry::MapType;
 
 IntsRegistry intsRegistry;
 RealsRegistry realsRegistry;
@@ -265,7 +272,7 @@ void CreateShockTubeMesh(ShockTubeMesh* mesh)
 
   // construct the element subsets
   ShockTubeMesh::PositionType numElems = mesh->elems.size();
-  typedef ShockTubeMesh::ElemSubset::SetBuilder ElemSubsetBuilder;
+  using ElemSubsetBuilder = ShockTubeMesh::ElemSubset::SetBuilder;
   mesh->inFlowElems    = ElemSubsetBuilder()
                          .range(0,1)
                          .parent( &mesh->elems);
@@ -286,7 +293,7 @@ void CreateShockTubeMesh(ShockTubeMesh* mesh)
   //       -- no storage should be necessary for regular grid neighbors
   //       For now, we use explicitly storage for the relation data...
 
-  typedef ShockTubeMesh::IndexVec IndexVec;
+  using IndexVec = ShockTubeMesh::IndexVec;
 
   /// Setup the FaceToElem relation
   IndexVec& feRelVec = intsRegistry
@@ -335,8 +342,8 @@ void CreateShockTubeMesh(ShockTubeMesh* mesh)
  *************************************************************************/
 void InitializeShockTube(ShockTubeMesh const& mesh)
 {
-  typedef ShockTubeMesh::IndexType IndexType;
-  typedef ShockTubeMesh::RangeSet RangeSet;
+  using IndexType = ShockTubeMesh::IndexType;
+  using RangeSet = ShockTubeMesh::RangeSet;
 
   // Create element centered fields
   RealField& mass      = realsRegistry.addField("mass", &mesh.elems);
@@ -411,7 +418,7 @@ void InitializeShockTube(ShockTubeMesh const& mesh)
  */
 void ComputeFaceInfo(ShockTubeMesh const& mesh)
 {
-  typedef ShockTubeMesh::IndexType IndexType;
+  using IndexType = ShockTubeMesh::IndexType;
 
   // Face fields
   RealField & F0 = realsRegistry.getField("F0");
@@ -555,7 +562,7 @@ void dumpData(ShockTubeMesh const& mesh)
   static const ShockTubeMesh::PositionType MAX_ELEM_DUMP = 20;
   const int maxDumpPerSide = std::min(mesh.elems.size(), MAX_ELEM_DUMP) / 2;
 
-  typedef ShockTubeMesh::ElemSubset::SetBuilder ElemSubsetBuilder;
+  using ElemSubsetBuilder = ShockTubeMesh::ElemSubset::SetBuilder;
   ShockTubeMesh::ElemSubset begSet, endSet;
   begSet = ElemSubsetBuilder()
            .parent(&mesh.elems)

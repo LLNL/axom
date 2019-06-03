@@ -11,14 +11,14 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/slic/interface/slic.hpp"
+#include "axom/slic.hpp"
 
 #include "axom/slam/Set.hpp"
 #include "axom/slam/NullSet.hpp"
 
 TEST(slam_set_nullset,construct)
 {
-  axom::slam::NullSet ns;
+  axom::slam::NullSet<> ns;
 
   // Test function: isValid()
   EXPECT_TRUE(  ns.isValid() );
@@ -39,8 +39,8 @@ TEST(slam_set_nullset,subscript_fails)
   SLIC_INFO("Testing subscript access on NullSet"
             <<" -- code is expected to assert and die.");
 
-  typedef axom::slam::Set::PositionType SetPosition;
-  axom::slam::NullSet n;
+  using SetPosition = axom::slam::DefaultPositionType;
+  axom::slam::NullSet<SetPosition> n;
 
   EXPECT_EQ(n.size(), SetPosition())
     << "size of null set is defined to be zero";
@@ -60,21 +60,14 @@ TEST(slam_set_nullset,subscript_fails)
 
 
 //----------------------------------------------------------------------
-//----------------------------------------------------------------------
-#include "axom/slic/core/UnitTestLogger.hpp"
-using axom::slic::UnitTestLogger;
 
 int main(int argc, char* argv[])
 {
   int result = 0;
-
   ::testing::InitGoogleTest(&argc, argv);
 
-  UnitTestLogger logger;  // create & initialize test logger,
-
-  // finalized when exiting main scope
+  axom::slic::UnitTestLogger logger;  // create & initialize test logger,
 
   result = RUN_ALL_TESTS();
-
   return result;
 }

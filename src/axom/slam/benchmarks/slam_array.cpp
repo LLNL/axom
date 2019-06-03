@@ -9,8 +9,7 @@
 #include <iostream>
 
 #include "benchmark/benchmark_api.h"
-#include "axom/slic/interface/slic.hpp"
-#include "axom/slic/core/UnitTestLogger.hpp"
+#include "axom/slic.hpp"
 
 //------------------------------------------------------------------------------
 namespace
@@ -18,12 +17,11 @@ namespace
 const int STRIDE = 7;
 const int OFFSET = 12;
 
+using IndexType = int;
+using IndexArray = IndexType*;
 
-typedef int IndexType;
-typedef IndexType* IndexArray;
-
-typedef double DataType;
-typedef DataType* DataArray;
+using DataType = double;
+using DataArray = DataType*;
 
 // Generate an array of of size sz of indices in the range of [0,sz)
 // NOTE: Caller must delete the array

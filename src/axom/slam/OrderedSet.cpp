@@ -17,8 +17,8 @@ namespace slam
 namespace policies
 {
 
-const NullSet NoSubset::s_nullSet;
-NullSet VirtualParentSubset::s_nullSet;
+const NullSet<> NoSubset::s_nullSet;
+NullSet<> VirtualParentSubset::s_nullSet;
 
 } // namespace policies
 } // namespace slam

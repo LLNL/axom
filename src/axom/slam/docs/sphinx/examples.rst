@@ -5,19 +5,20 @@
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
-*****************
+
+=================
 Detailed examples
-*****************
+=================
 
 Example 1
----------
+=========
 
 Setting up and iterating a relation between two sets
 Demonstrates looping through elements using single and double subscript operators as well as iterators.
 
 
 Example 2
----------
+=========
 
 Define a simple hexahedral mesh using Nodes and Zones, relations from nodes to zones and from zones to nodes.
 Show how we iterate on the nodes of a zone and on the zones of a node.

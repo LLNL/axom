@@ -65,23 +65,23 @@ template<
   typename StridePolicy = RuntimeStride<ElementType> >
 struct ConstantCardinality
 {
-  typedef RuntimeSize<ElementType>                BeginsSizePolicy;
-  typedef ZeroOffset<ElementType>                 BeginsOffsetPolicy;
-  typedef StridePolicy BeginsStridePolicy;
-  typedef NoIndirection<ElementType,ElementType>  BeginsIndirectionPolicy;
+  using BeginsSizePolicy = RuntimeSize<ElementType>;
+  using BeginsOffsetPolicy = ZeroOffset<ElementType>;
+  using BeginsStridePolicy = StridePolicy;
+  using BeginsIndirectionPolicy = NoIndirection<ElementType,ElementType>;
 
   // runtime size (fromSet.size()), striding from template parameter, no offset
-  typedef OrderedSet<
-      BeginsSizePolicy,
-      BeginsOffsetPolicy,
-      BeginsStridePolicy >                      BeginsSet;
+  using BeginsSet = OrderedSet<ElementType, ElementType,
+                               BeginsSizePolicy,
+                               BeginsOffsetPolicy,
+                               BeginsStridePolicy >;
 
   // The cardinality of each relational operator is determined by the
   // StridePolicy of the relation
-  typedef typename StrideToSize<
-      BeginsStridePolicy,
-      ElementType,
-      BeginsStridePolicy::DEFAULT_VALUE>::SizeType RelationalOperatorSizeType;
+  using RelationalOperatorSizeType =
+          typename StrideToSize<BeginsStridePolicy,
+                                ElementType,
+                                BeginsStridePolicy::DEFAULT_VALUE>::SizeType;
 
 
   ConstantCardinality() : m_begins() {}
@@ -138,25 +138,24 @@ template<
   >
 struct VariableCardinality
 {
-  typedef RuntimeSize<ElementType>  BeginsSizePolicy;
-  typedef ZeroOffset<ElementType>   BeginsOffsetPolicy;
-  typedef StrideOne<ElementType>    BeginsStridePolicy;
-  typedef IndirectionPolicy BeginsIndirectionPolicy;
+  using BeginsSizePolicy = RuntimeSize<ElementType>;
+  using BeginsOffsetPolicy = ZeroOffset<ElementType>;
+  using BeginsStridePolicy = StrideOne<ElementType>;
+  using BeginsIndirectionPolicy = IndirectionPolicy;
 
   // runtime size (fromSet.size()), striding from template parameter, no offset
-  typedef OrderedSet<
-      BeginsSizePolicy,
-      BeginsOffsetPolicy,
-      BeginsStridePolicy,
-      IndirectionPolicy>                BeginsSet;
+  using BeginsSet = OrderedSet<ElementType,ElementType,
+                               BeginsSizePolicy,
+                               BeginsOffsetPolicy,
+                               BeginsStridePolicy,
+                               IndirectionPolicy>;
 
 
   // The cardinality of each relational operator is determined by the
   // StridePolicy of the relation
-  typedef BeginsSizePolicy RelationalOperatorSizeType;
+  using RelationalOperatorSizeType = BeginsSizePolicy;
 
-  typedef typename IndirectionPolicy::IndirectionBufferType
-    IndirectionBufferType;
+  using IndirectionBufferType=typename IndirectionPolicy::IndirectionBufferType;
 
   VariableCardinality() : m_begins() {}
   VariableCardinality(BeginsSet begins) : m_begins(begins) {}
