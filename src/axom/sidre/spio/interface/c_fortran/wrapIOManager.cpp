@@ -121,7 +121,8 @@ void SPIO_iomanager_write_group_to_root_file_bufferify(SPIO_iomanager* self,
 }
 
 void SPIO_iomanager_write_blueprint_index_to_root_file(SPIO_iomanager* self,
-                                                       SIDRE_datastore* datastore, const char* domain_path, const char* file_name, const char* mesh_path)
+                                                       SIDRE_datastore* datastore, const char* domain_path, const char* file_name,
+                                                       const char* mesh_path)
 {
 // splicer begin class.IOManager.method.write_blueprint_index_to_root_file
   axom::sidre::IOManager* SH_this =
