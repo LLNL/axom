@@ -79,31 +79,34 @@ namespace slam
  */
 
 template<
-  typename DataType,
-  typename BSetType = BivariateSet<>,
-  typename IndPolicy =
-    policies::STLVectorIndirection<typename BSetType::PositionType, DataType>,
-  typename StridePolicy = policies::StrideOne<typename BSetType::PositionType>
+  typename T,
+  typename BSet = BivariateSet<>,
+  typename IndPol =
+    policies::STLVectorIndirection<typename BSet::PositionType, T>,
+  typename StrPol = policies::StrideOne<typename BSet::PositionType>
   >
-class BivariateMap : public MapBase, public StridePolicy
+class BivariateMap : public MapBase, public StrPol
 {
 public:
-  using SetPosition = typename BSetType::PositionType;
-  using SetElement = typename BSetType::ElementType;
+  using DataType = T;
+  using BivariateSetType = BSet;
+  using IndirectionPolicy = IndPol;
+  using StridePolicyType = StrPol;
+
+  using SetPosition = typename BSet::PositionType;
+  using SetElement = typename BSet::ElementType;
+  
   using SetType = slam::Set<SetPosition,SetElement>;
+  using MapType = Map<DataType, SetType, IndPol, StrPol>;
+  using OrderedSetType = typename BSet::OrderedSetType;
 
-  using MapType = Map<DataType, SetType, IndPolicy, StridePolicy>;
-  using BivariateSetType = BSetType;
-  using OrderedSetType = typename BivariateSetType::OrderedSetType;
+  using BivariateMapType = BivariateMap<DataType, BSet, IndPol, StrPol>;
 
-  using BivariateMapType =
-          BivariateMap<DataType, BSetType, IndPolicy, StridePolicy>;
-  using SubMapType = SubMap<DataType, SetType, BivariateMapType, StridePolicy>;
+  using SubMapType = SubMap<DataType, SetType, BivariateMapType, StrPol>;
   using SubMapIterator = typename SubMapType::SubMapIterator;
 
-  using NullBivariateSetType = NullBivariateSet<
-          typename BSetType::FirstSetType,
-          typename BSetType::SecondSetType>;
+  using NullBivariateSetType = NullBivariateSet<typename BSet::FirstSetType,
+                                                typename BSet::SecondSetType>;
 private:
   static const NullBivariateSetType s_nullBiSet;
 
@@ -124,8 +127,8 @@ public:
 
   BivariateMap(const BivariateSetType* bSet = &s_nullBiSet,
                DataType defaultValue = DataType(),
-               SetPosition stride = StridePolicy::DEFAULT_VALUE)
-    : StridePolicy(stride)
+               SetPosition stride = StridePolicyType::DEFAULT_VALUE)
+    : StridePolicyType(stride)
     , m_set(bSet)
     , m_rangeSet(0, bSet->size())
     , m_map(&m_rangeSet, defaultValue, stride)
@@ -307,7 +310,7 @@ private:
    */
   constexpr bool useCompIndexing() const
   {
-    return !(StridePolicy::IS_COMPILE_TIME && StridePolicy::DEFAULT_VALUE==1);
+    return !(StrPol::IS_COMPILE_TIME && StrPol::DEFAULT_VALUE==1);
   }
 
 public:
@@ -540,7 +543,7 @@ public:
    *         the given first set index. */
   SetPosition size(SetPosition s) const { return m_set->size(s); }
   /** \brief Return the number of components of the map  */
-  SetPosition numComp() const { return StridePolicy::stride(); }
+  SetPosition numComp() const { return StrPol::stride(); }
 
   /// @}
 
@@ -554,7 +557,7 @@ public:
    */
   void copy(DataType* data_arr)
   {
-    for (int i = 0 ; i < m_map.size() * StridePolicy::stride() ; i++)
+    for (int i = 0 ; i < m_map.size() * StrPol::stride() ; i++)
       m_map[i] = data_arr[i];
   }
 
@@ -581,11 +584,10 @@ private:
 
 }; //end BivariateMap
 
-template<typename  DataType, typename BSetType, typename IndPolicy,
-         typename StridePolicy>
-typename BivariateMap<DataType, BSetType, IndPolicy,
-                      StridePolicy>::NullBivariateSetType
-const BivariateMap<DataType, BSetType, IndPolicy, StridePolicy>::s_nullBiSet;
+
+template<typename  T, typename BSet, typename IndPol, typename StrPol>
+typename BivariateMap<T, BSet, IndPol, StrPol>::NullBivariateSetType
+const BivariateMap<T, BSet, IndPol, StrPol>::s_nullBiSet;
 
 } // end namespace slam
 } // end namespace axom

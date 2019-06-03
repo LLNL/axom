@@ -44,8 +44,10 @@ namespace slam
  * \brief   A Map class that associates a constant number of values to every
  *          element in a set.
  *
- * \tparam  DataType The data type of each value
- * \tparam  StridePolicy A policy class that determines how many values to
+ * \tparam  T The data type of each value
+ * \tparam  S The map's set type 
+ * \tparam  IndPol The map's indirection policy
+ * \tparam  StrPol A policy class that determines how many values to
  *          associate with each element. There is a fixed \a stride between
  *          the data associated with each element of the set.
  * \details The map class associates a fixed number of values, also referred
@@ -60,18 +62,20 @@ namespace slam
  */
 
 template<
-  typename DataType,
-  typename SetType = Set<>,
-  typename IndirectionPolicy =
-    policies::STLVectorIndirection<typename SetType::PositionType, DataType>,
-  typename StridePolicy = policies::StrideOne<typename SetType::PositionType>
+  typename T,
+  typename S = Set<>,
+  typename IndPol = policies::STLVectorIndirection<typename S::PositionType, T>,
+  typename StrPol = policies::StrideOne<typename S::PositionType>
   >
-class Map : public MapBase, public StridePolicy
+class Map : public MapBase, public StrPol
 {
 public:
+  using DataType = T;
+  using SetType = S;
+  using IndirectionPolicy = IndPol;
+  using StridePolicyType = StrPol;
 
   using OrderedMap = typename IndirectionPolicy::VectorType;
-  using StridePolicyType = StridePolicy;
 
 
   using SetPosition = typename SetType::PositionType;
@@ -107,7 +111,7 @@ public:
       SetPosition stride = StridePolicyType::DEFAULT_VALUE )
     :  StridePolicyType(stride), m_set(theSet)
   {
-    m_data.resize( m_set->size() * StridePolicy::stride(), defaultValue);
+    m_data.resize( m_set->size() * StridePolicyType::stride(), defaultValue);
   }
 
   /**
@@ -147,7 +151,7 @@ public:
     {
       m_set = otherMap.m_set;
       m_data = otherMap.m_data;
-      StridePolicy::operator=(otherMap);
+      StridePolicyType::operator=(otherMap);
     }
     return *this;
   }
@@ -451,16 +455,13 @@ private:
  * \note Should this be a singleton or a global object?  Should the scope be
  * public?
  */
-template<typename DataType, typename SetType, typename IndirectionPolicy,
-         typename StridePolicy>
-NullSet<typename SetType::PositionType, typename SetType::ElementType>
-const Map<DataType, SetType, IndirectionPolicy, StridePolicy>::s_nullSet;
+template<typename T,typename S, typename IndPol, typename StrPol>
+NullSet<typename S::PositionType, typename S::ElementType>
+const Map<T, S, IndPol, StrPol>::s_nullSet;
 
 
-template<typename DataType, typename SetType, typename IndirectionPolicy,
-         typename StridePolicy>
-bool Map<DataType, SetType, IndirectionPolicy, StridePolicy>
-::isValid( bool verboseOutput) const
+template<typename T, typename S, typename IndPol, typename StrPol>
+bool Map<T, S, IndPol, StrPol>::isValid( bool verboseOutput) const
 {
   bool bValid = true;
 
@@ -490,7 +491,7 @@ bool Map<DataType, SetType, IndirectionPolicy, StridePolicy>
         errStr << "\n\t* the underlying set and its associated mapped data"
                << " have different sizes"
                << " , underlying set has size " << m_set->size()
-               << " with stride " << StridePolicy::stride()
+               << " with stride " << StridePolicyType::stride()
                << " , data has size " << m_data.size();
       }
 
@@ -522,9 +523,8 @@ bool Map<DataType, SetType, IndirectionPolicy, StridePolicy>
 }
 
 
-template<typename DataType, typename SetType, typename IndirectionPolicy,
-         typename StridePolicy>
-void Map<DataType, SetType, IndirectionPolicy, StridePolicy>::print() const
+template<typename T, typename S, typename IndPol, typename StrPol>
+void Map<T, S, IndPol, StrPol>::print() const
 {
   bool valid = isValid(true);
   std::stringstream sstr;
@@ -538,13 +538,13 @@ void Map<DataType, SetType, IndirectionPolicy, StridePolicy>::print() const
     else
     {
       sstr << "** underlying set has size " << m_set->size() << ": ";
-      sstr << "\n** the stride of the map is " << StridePolicy::stride()
+      sstr << "\n** the stride of the map is " << StridePolicyType::stride()
            << ": ";
 
       sstr << "\n** Mapped data:";
       for (SetPosition idx = 0 ; idx < this->size() ; ++idx)
       {
-        for (SetPosition idx2 = 0 ; idx2 < StridePolicy::stride() ; ++idx2)
+        for (SetPosition idx2 = 0 ; idx2 < StridePolicyType::stride() ; ++idx2)
         {
           sstr << "\n\telt[" << idx << "," << idx2 << "]:\t"
                << (*this)[idx*StridePolicyType::stride() + idx2];
