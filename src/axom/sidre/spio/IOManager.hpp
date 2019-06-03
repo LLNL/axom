@@ -174,6 +174,14 @@ public:
    * This currently only works if the root file was created for protocol
    * sidre_hdf5.  This must be called after calling write().
    *
+   * The parameters domain_path and mesh_path are related. domain_path is the
+   * path from the root of the DataStore to the domain that is being used to
+   * generate the index.  mesh_path is the path from the group that was
+   * passed into the preceding write() call to the same domain.  If write()
+   * was called using the root group of the DataStore, then domain_path and
+   * mesh_path will be identical.  Otherwise mesh_path is a sub-path of
+   * domain_path.
+   *
    * This is not an MPI collective call.  One rank writes to blueprint index
    * to one root file.
    *
