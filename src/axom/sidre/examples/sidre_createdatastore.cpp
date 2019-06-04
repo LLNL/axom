@@ -223,32 +223,19 @@ void setup_blueprint_coords(DataStore* ds, Group* coords)
   // Set up the coordinates as Mesh Blueprint requires
   coords->createViewString("type", "explicit");
   // We use prior knowledge of the layout of the original datastore
+  View* origv = ds->getRoot()->getView("nodes/xs");
   Group* conduitval = coords->createGroup("values");
-  View* xorigv = ds->getRoot()->getView("nodes/xs");
-  View* xvalues = conduitval->createViewAndAllocate("x", sidre::DOUBLE_ID,
-                                                    xorigv->getNumElements());
-  View* yorigv = ds->getRoot()->getView("nodes/ys");
-  View* yvalues = conduitval->createViewAndAllocate("y", sidre::DOUBLE_ID,
-                                                    yorigv->getNumElements());
-  View* zorigv = ds->getRoot()->getView("nodes/zs");
-  View* zvalues = conduitval->createViewAndAllocate("z", sidre::DOUBLE_ID,
-                                                    zorigv->getNumElements());
-
-  double* xoarray = xorigv->getArray();
-  double* yoarray = yorigv->getArray();
-  double* zoarray = zorigv->getArray();
-  double* xarray = xvalues->getArray();
-  double* yarray = yvalues->getArray();
-  double* zarray = zvalues->getArray();
-
-  SIDRE_IndexType nodecount = xorigv->getNumElements();
-  for (SIDRE_IndexType i = 0 ; i < nodecount ; ++i)
-  {
-    xarray[i] = xoarray[i];
-    yarray[i] = yoarray[i];
-    zarray[i] = zoarray[i];
-  }
-
+  conduitval->createView("x", sidre::DOUBLE_ID,
+                         origv->getNumElements(),
+                         static_cast<double*>(origv->getArray()));
+  origv = ds->getRoot()->getView("nodes/ys");
+  conduitval->createView("y", sidre::DOUBLE_ID,
+                         origv->getNumElements(),
+                         static_cast<double*>(origv->getArray()));
+  origv = ds->getRoot()->getView("nodes/zs");
+  conduitval->createView("z", sidre::DOUBLE_ID,
+                         origv->getNumElements(),
+                         static_cast<double*>(origv->getArray()));
   // _blueprint_restructure_coords_end
 }
 
