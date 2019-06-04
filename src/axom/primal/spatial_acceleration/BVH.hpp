@@ -12,11 +12,11 @@
 #include "axom/core/Types.hpp"             // for fixed bitwidth types
 #include "axom/slic/interface/slic.hpp"    // for SLIC macros
 
-#include "axom/primal/spatial_acceleration/linear_bvh/BVHData.hpp"
-#include "axom/primal/spatial_acceleration/linear_bvh/bvh_builder.hpp"
-#include "axom/primal/spatial_acceleration/linear_bvh/bvh_vtkio.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/aabb.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/vec.hpp"
+#include "axom/primal/spatial_acceleration/linear_bvh/bvh_vtkio.hpp"
+#include "axom/primal/spatial_acceleration/linear_bvh/BVHData.hpp"
+#include "axom/primal/spatial_acceleration/linear_bvh/bvh_builder.hpp"
 
 // C/C++ includes
 #include <fstream>  // for std::ofstream
@@ -56,6 +56,9 @@ enum BVHReturnCodes
  * search space for a given operation to an abbreviated list of candidate
  * geometric entities to check for a given query.
  *
+ * \tparam FloatType the floating point precision, e.g., `double` or `float`
+ * \tparam NDIMS the number of dimensions, e.g., 2 or 3.
+ *
  */
 template < int NDIMS, typename FloatType = double >
 class BVH
@@ -77,7 +80,6 @@ public:
    *  of geometric entities, each represented by its corresponding axis-aligned
    *  bounding box.
    *
-   * \param [in] dimension the spatial dimension for the BVH
    * \param [in] boxes buffer consisting of bounding boxes for each entity.
    * \param [in] numItems the total number of items to store in the BVH.
    *
@@ -292,8 +294,21 @@ BVH< NDIMS, FloatType >::~BVH()
 template< int NDIMS, typename FloatType >
 int BVH< NDIMS, FloatType >::build()
 {
-  bvh::LinearBVHBuilder builder;
-  builder.construct< FloatType, NDIMS >( m_boxes, m_numItems, m_bvh );
+  // STEP 0: Build a RadixTree consisting of the bounding boxes, sorted
+  // by their corresponding morton code.
+  bvh::RadixTree< FloatType, NDIMS > radix_tree;
+  bvh::AABB< FloatType, NDIMS > global_bounds;
+  build_radix_tree( m_boxes, m_numItems, global_bounds, radix_tree );
+
+  // STEP 1: emit the BVH data-structure from the radix tree
+  m_bvh.m_bounds = global_bounds;
+  m_bvh.allocate( m_numItems );
+
+  // STEP 2: emit the BVH
+  emit_bvh( radix_tree, m_bvh );
+
+  radix_tree.deallocate();
+
   return BVH_BUILD_OK;
 }
 
