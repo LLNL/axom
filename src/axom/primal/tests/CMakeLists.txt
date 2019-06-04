@@ -24,7 +24,7 @@ set( primal_tests
     primal_vector.cpp
    )
 
-set(primal_test_depends fmt primal slic mint sidre gtest)
+set(primal_test_depends fmt primal slic mint gtest)
 blt_list_append( TO primal_test_depends ELEMENTS raja IF ${RAJA_FOUND} )
 blt_list_append( TO primal_test_depends ELEMENTS umpire IF ${UMPIRE_FOUND} )
 blt_list_append( TO primal_test_depends ELEMENTS openmp  IF ${ENABLE_OPENMP} )
