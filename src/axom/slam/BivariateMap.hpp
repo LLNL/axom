@@ -95,14 +95,14 @@ public:
 
   using SetPosition = typename BSet::PositionType;
   using SetElement = typename BSet::ElementType;
-  
+
   using SetType = slam::Set<SetPosition,SetElement>;
   using MapType = Map<DataType, SetType, IndPol, StrPol>;
   using OrderedSetType = typename BSet::OrderedSetType;
 
   using BivariateMapType = BivariateMap<DataType, BSet, IndPol, StrPol>;
 
-  using SubMapType = SubMap<DataType, SetType, BivariateMapType, StrPol>;
+  using SubMapType = SubMap<DataType, SetType, BivariateMapType>;
   using SubMapIterator = typename SubMapType::SubMapIterator;
 
   using NullBivariateSetType = NullBivariateSet<typename BSet::FirstSetType,

@@ -45,7 +45,7 @@ namespace slam
  *          element in a set.
  *
  * \tparam  T The data type of each value
- * \tparam  S The map's set type 
+ * \tparam  S The map's set type
  * \tparam  IndPol The map's indirection policy
  * \tparam  StrPol A policy class that determines how many values to
  *          associate with each element. There is a fixed \a stride between

@@ -83,7 +83,7 @@ private:
           slam::BivariateMap<T, BivariateSetType, IndPolicy<T>, MapStrideType>;
 
   template<typename T, typename M>
-  using SubMap = slam::SubMap<T, SetType, M, MapStrideType>;
+  using SubMap = slam::SubMap<T, SetType, M>;
 
 public:
 

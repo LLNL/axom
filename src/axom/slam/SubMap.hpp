@@ -38,7 +38,6 @@ namespace slam
  * \tparam DataType the data type of the SuperMap
  * \tparam SetType defines the Position and Element types of the underlying set
  * \tparam SuperMapType the type of SuperMap
- * \tparam StridePolicy the stride of SuperMap
  *
  * \warning SubMap constructor can take a const Map pointer or a non-const Map
  *        pointer. A non-const value access function in SubMap will fail if the
@@ -50,14 +49,14 @@ namespace slam
 template<
   typename DataType,
   typename SetType,
-  typename SuperMapType,
-  typename StridePolicy = policies::StrideOne<typename SetType::PositionType>
+  typename SuperMapType
   >
-class SubMap : public MapBase, public StridePolicy
+class SubMap : public MapBase, public SuperMapType::StridePolicyType
 {
 public:
   using SetPosition = typename SetType::PositionType;
   using SetElement = typename SetType::ElementType;
+  using StridePolicyType = typename SuperMapType::StridePolicyType;
 
 private:
   using RangeSetType = RangeSet<SetPosition, SetElement>;
@@ -65,7 +64,7 @@ private:
   template<typename T>  // TODO: Generalize this
   using IndPol = policies::STLVectorIndirection<SetPosition, T>;
 
-  using MapType = Map<SetType, DataType, IndPol<DataType>, StridePolicy>;
+  using MapType = Map<SetType, DataType, IndPol<DataType>, StridePolicyType>;
 
 public:
   using SubsetType = OrderedSet<
@@ -95,13 +94,13 @@ public:
    * \param supermap The map that this SubMap is a subset of.
    * \param subset_idx a Set of ElementFlatIndex into the SuperMap
    */
-  SubMap(const SuperMapType* supermap, SetType& subset_idx) :
-    StridePolicy(supermap->stride()),
-    m_superMap_constptr(supermap), m_superMap_ptr(nullptr),
-    m_subsetIdx_data(subset_idx.size()),
-    m_subsetIdx( SubsetBuilder()
-                 .size(subset_idx.size())
-                 .data(&m_subsetIdx_data) )
+  SubMap(const SuperMapType* supermap, SetType& subset_idx)
+    : StridePolicyType(supermap->stride())
+    , m_superMap_constptr(supermap), m_superMap_ptr(nullptr)
+    , m_subsetIdx_data(subset_idx.size())
+    , m_subsetIdx( SubsetBuilder()
+                   .size(subset_idx.size())
+                   .data(&m_subsetIdx_data) )
   {
     //copy the elements in the SuperMap's Set
     for (int i = 0 ; i < subset_idx.size() ; i++)
@@ -119,7 +118,7 @@ public:
 
   /** Copy Constructor */
   SubMap(const SubMap& otherMap) :
-    StridePolicy(otherMap),
+    StridePolicyType(otherMap),
     m_superMap_constptr(otherMap.m_superMap_constptr),
     m_superMap_ptr(otherMap.m_superMap_ptr),
     m_subsetIdx_data(otherMap.m_subsetIdx_data),
@@ -131,7 +130,7 @@ public:
   /** Assignment Operator */
   SubMap& operator=(const SubMap& otherMap)
   {
-    StridePolicy::operator=(otherMap);
+    StridePolicyType::operator=(otherMap);
     m_superMap_constptr = otherMap.m_superMap_constptr;
     m_superMap_ptr = otherMap.m_superMap_ptr;
     m_subsetIdx_data = otherMap.m_subsetIdx_data;
@@ -143,7 +142,7 @@ public:
 
   /** Move Constructor */
   SubMap(SubMap&& otherMap) :
-    StridePolicy(otherMap),
+    StridePolicyType(otherMap),
     m_superMap_constptr(otherMap.m_superMap_constptr),
     m_superMap_ptr(otherMap.m_superMap_ptr),
     m_subsetIdx_data(std::move(otherMap.m_subsetIdx_data)),
@@ -155,7 +154,7 @@ public:
   /** Move Assignment Operator */
   SubMap& operator=(SubMap&& otherMap)
   {
-    StridePolicy::operator=(otherMap);
+    StridePolicyType::operator=(otherMap);
     m_superMap_constptr = otherMap.m_superMap_constptr;
     m_superMap_ptr = otherMap.m_superMap_ptr,
     m_subsetIdx_data = std::move(otherMap.m_subsetIdx_data);
@@ -260,7 +259,7 @@ public:
   }
 
   /** \brief returns the number of components (aka. stride) of the SubMap  */
-  IndexType numComp() const { return StridePolicy::stride(); }
+  IndexType numComp() const { return StridePolicyType::stride(); }
 
   /// @}
 
