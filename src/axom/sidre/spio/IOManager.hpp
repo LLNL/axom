@@ -182,12 +182,37 @@ public:
    * mesh_path will be identical.  Otherwise mesh_path is a sub-path of
    * domain_path.
    *
-   * This is not an MPI collective call.  One rank writes to blueprint index
+   * For example, the DataStore may contain a hierarchy of data that looks
+   * like this, and we want to generate a blueprint index based on the mesh
+   * located at "/hierarchy/domain_data/domain/blueprint_mesh":
+   *
+   * <root>
+   * |--hierarchy
+   * |  |--domain_data
+   * |     |--domain
+   * |     |  |--blueprint_mesh
+   * |     |     |--coordsets
+   * |     |     |  |--...
+   * |     |     |--topologies
+   * |     |     |  |--...
+   * |     |     |--fields
+   * |     |        |--...
+   * |     |--...
+   * |--
+   *
+   * If write() is called using the Group located at "/hierarchy/domain_data",
+   * then only the Groups and Views descending from that Group are written
+   * to the file.  To call this method, we would choose the full path in 
+   * the DataStore "hierarchy/domain_data/domain/blueprint_mesh" for
+   * domain_path.  For the mesh_path argument, we choose only the path that
+   * exists in the file:  "domain/blueprint_mesh".
+   *
+   * This is not an MPI collective call.  One rank writes a blueprint index
    * to one root file.
    *
    * \param datastore     DataStore containing Groups that hold domains
    *                      that adhere to the Blueprint format
-   * \param domain_path   path in the the DataStore to the domain that will be
+   * \param domain_path   path in the DataStore to the domain that will be
    *                      used to generate a Blueprint index
    * \param file_name     name of existing root file
    * \param mesh_path     path in the data file to the domain that will be

@@ -12,6 +12,34 @@
  *  visualization.
  */
 
+/*
+ * Summary of the functions called by main this example:
+ *
+ * create_datastore           -- Builds a DataStore containing various Groups,
+ *                               Views, Buffers, and Attributes
+ *                               
+ * create_tiny_datastore      -- Builds a DataStore that holds a small 3D mesh
+ *                               conforming to the conduit mesh blueprint
+ *
+ * access_datastore           -- Exercises access methods that get data from
+ *                               the DataStore created by create_datastore
+ *
+ * save_as_blueprint          -- Generates a blueprint index and writes data
+ *                               to file using direct calls to conduit
+ *
+ * generate_blueprint         -- Generates a blueprint index and writes data
+ *                               to file using Sidre DataStore and Group calls
+ *
+ * generate_blueprint_to_path -- Similar to above, but uses path arguments to 
+ *                               find data deeper in Sidre hierarchy
+ *
+ * generate_spio_blueprint    -- Uses SPIO/IOManager calls to write data to
+ *                               file and generate blueprint index
+ * 
+ * generate_blueprint_to_path -- Similar to above, but uses path arguments to 
+ *                               find data deeper in Sidre hierarchy
+ */
+
 /* This example code contains snippets used in the Sidre Sphinx documentation.
  * They begin and end with comments
  *
@@ -29,8 +57,8 @@
  * serial_io_save_end
  * tiny_create_start
  * tiny_create_end
- * blueprint_restructure_start
- * blueprint_restructure_end
+ * blueprint_restructure_save_start
+ * blueprint_restructure_save_end
  * blueprint_save_start
  * blueprint_save_end
  *
@@ -329,7 +357,8 @@ void save_as_blueprint(DataStore* ds) {
   // _blueprint_restructure_save_start
   conduit::Node info, mesh_node, root_node;
   cds.getRoot()->createNativeLayout(mesh_node);
-  if (conduit::blueprint::verify("mesh", mesh_node[mesh_name], info))
+  std::string bp_protocol = "mesh";
+  if (conduit::blueprint::verify(bp_protocol, mesh_node[mesh_name], info))
   {
     // Generate the Conduit index
     conduit::Node & index = root_node["blueprint_index"];
@@ -389,7 +418,8 @@ void generate_blueprint(DataStore* ds) {
   // _blueprint_generate_save_start
   conduit::Node info, mesh_node, root_node;
   cds.getRoot()->createNativeLayout(mesh_node);
-  if (conduit::blueprint::verify("mesh", mesh_node[domain_mesh], info))
+  std::string bp_protocol = "mesh";
+  if (conduit::blueprint::verify(bp_protocol, mesh_node[domain_mesh], info))
   {
     std::string bp("rootfile_data/blueprint_index/automesh");
 
@@ -423,7 +453,7 @@ void generate_blueprint_to_path(DataStore* ds) {
   DataStore cds;
   std::string domain_name = "domain";
   std::string domain_location = "domain_data/level/domains/" + domain_name;
-  std::string mesh_name = "mesh";
+  std::string mesh_name = "pathmesh";
   std::string domain_mesh = domain_location + "/" + mesh_name;
 
   Group* mroot = cds.getRoot()->createGroup(domain_location);
@@ -443,7 +473,8 @@ void generate_blueprint_to_path(DataStore* ds) {
   // _blueprint_generate_path_save_start
   conduit::Node info, mesh_node, root_node;
   cds.getRoot()->createNativeLayout(mesh_node);
-  if (conduit::blueprint::verify("mesh", mesh_node[domain_mesh], info))
+  std::string bp_protocol = "mesh";
+  if (conduit::blueprint::verify(bp_protocol, mesh_node[domain_mesh], info))
   {
     std::string bp("rootfile_data/blueprint_index/automesh");
 
@@ -497,7 +528,8 @@ void generate_spio_blueprint(DataStore* ds) {
 
   conduit::Node info, mesh_node, root_node;
   cds.getRoot()->createNativeLayout(mesh_node);
-  if (conduit::blueprint::verify("mesh", mesh_node[domain_mesh], info))
+  std::string bp_protocol = "mesh";
+  if (conduit::blueprint::verify(bp_protocol, mesh_node[domain_mesh], info))
   {
 
     std::string bp_rootfile("bpspio.root");
@@ -518,7 +550,7 @@ void generate_spio_blueprint_to_path(DataStore* ds) {
   DataStore cds;
   std::string domain_name = "domain";
   std::string domain_location = "domain_data/level/domains/" + domain_name;
-  std::string mesh_name = "mesh";
+  std::string mesh_name = "spiopathmesh";
   std::string domain_mesh = domain_location + "/" + mesh_name;
 
   Group* mroot = cds.getRoot()->createGroup(domain_location);
@@ -540,7 +572,8 @@ void generate_spio_blueprint_to_path(DataStore* ds) {
 
   conduit::Node info, mesh_node, root_node;
   cds.getRoot()->createNativeLayout(mesh_node);
-  if (conduit::blueprint::verify("mesh", mesh_node[domain_mesh], info))
+  std::string bp_protocol = "mesh";
+  if (conduit::blueprint::verify(bp_protocol, mesh_node[domain_mesh], info))
   {
 
     std::string bp_rootfile("pathbpspio.root");
