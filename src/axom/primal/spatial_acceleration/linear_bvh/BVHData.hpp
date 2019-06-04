@@ -11,6 +11,7 @@
 #include "axom/core/memory_management.hpp"   // for alloc()/free()
 
 // primal includes
+#include "axom/primal/spatial_acceleration/linear_bvh/vec.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/aabb.hpp"
 
 namespace axom

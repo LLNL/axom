@@ -6,6 +6,7 @@
 #ifndef AXOM_PRIMAL_LINEAR_BVH_VTKIO_HPP_
 #define AXOM_PRIMAL_LINEAR_BVH_VTKIO_HPP_
 
+#include "axom/primal/spatial_acceleration/linear_bvh/vec.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/aabb.hpp"
 
 namespace axom
