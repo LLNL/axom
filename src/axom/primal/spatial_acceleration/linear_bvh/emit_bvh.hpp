@@ -16,6 +16,7 @@
 #include "axom/primal/spatial_acceleration/linear_bvh/aabb.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/BVHData.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/RadixTree.hpp"
+#include "axom/primal/spatial_acceleration/linear_bvh/policies.hpp"
 
 #ifdef AXOM_USE_RAJA
 #include "RAJA/RAJA.hpp"
