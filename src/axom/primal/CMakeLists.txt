@@ -47,9 +47,8 @@ set( primal_headers
      spatial_acceleration/linear_bvh/BVHData.hpp
      spatial_acceleration/linear_bvh/RadixTree.hpp
      spatial_acceleration/linear_bvh/aabb.hpp
-     spatial_acceleration/linear_bvh/bvh_builder.hpp
-     spatial_acceleration/linear_bvh/bvh_builder_impl.hpp
-     spatial_acceleration/linear_bvh/bvh_traverse.hpp
+     spatial_acceleration/linear_bvh/emit_bvh.hpp
+     spatial_acceleration/linear_bvh/build_radix_tree.hpp
      spatial_acceleration/linear_bvh/math.hpp
      spatial_acceleration/linear_bvh/morton_codes.hpp
      spatial_acceleration/linear_bvh/policies.hpp
@@ -61,7 +60,7 @@ set( primal_sources
 
      ## operators
      operators/detail/intersect_impl.cpp
-     
+
      ## spatial acceleration
      spatial_acceleration/linear_bvh/morton_codes.cpp
    )

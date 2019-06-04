@@ -16,7 +16,8 @@
 #include "axom/primal/spatial_acceleration/linear_bvh/vec.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/bvh_vtkio.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/BVHData.hpp"
-#include "axom/primal/spatial_acceleration/linear_bvh/bvh_builder.hpp"
+#include "axom/primal/spatial_acceleration/linear_bvh/emit_bvh.hpp"
+#include "axom/primal/spatial_acceleration/linear_bvh/build_radix_tree.hpp"
 
 // C/C++ includes
 #include <fstream>  // for std::ofstream
@@ -298,14 +299,14 @@ int BVH< NDIMS, FloatType >::build()
   // by their corresponding morton code.
   bvh::RadixTree< FloatType, NDIMS > radix_tree;
   bvh::AABB< FloatType, NDIMS > global_bounds;
-  build_radix_tree( m_boxes, m_numItems, global_bounds, radix_tree );
+  bvh::build_radix_tree( m_boxes, m_numItems, global_bounds, radix_tree );
 
   // STEP 1: emit the BVH data-structure from the radix tree
   m_bvh.m_bounds = global_bounds;
   m_bvh.allocate( m_numItems );
 
   // STEP 2: emit the BVH
-  emit_bvh( radix_tree, m_bvh );
+  bvh::emit_bvh( radix_tree, m_bvh );
 
   radix_tree.deallocate();
 
