@@ -203,7 +203,7 @@ public:
     return (*this)[fromSetInd].range();
   }
 
-  bool                hasFromSet() const
+  bool hasFromSet() const
   {
     return !policies::EmptySetTraits<FromSetType>::isEmpty(m_fromSet);
   }
@@ -215,7 +215,7 @@ public:
   {
     return !policies::EmptySetTraits<ToSetType>::isEmpty(m_toSet);
   }
-  ToSetType* toSet()       { return m_toSet; }
+  ToSetType* toSet() { return m_toSet; }
   const ToSetType* toSet() const { return m_toSet; }
 
   SetPosition fromSetSize() { return m_fromSet->size(); }
@@ -274,8 +274,9 @@ bool StaticRelation<PosType,
   bool relationdataIsValid = true;
 
   // Step 1: Check if the sets are valid
-  bool isFromSetNull = (m_fromSet == nullptr);
-  bool isToSetNull   = (m_toSet == nullptr);
+  bool isFromSetNull =
+    policies::EmptySetTraits<FromSetType>::isEmpty(m_fromSet);
+  bool isToSetNull   = policies::EmptySetTraits<ToSetType>::isEmpty(m_toSet);
 
   if(isFromSetNull || isToSetNull)
   {
@@ -306,7 +307,7 @@ bool StaticRelation<PosType,
   }
 
   // Step 3: Check if the relation data is valid
-  if(cardinalityIsValid)
+  if(setsAreValid && cardinalityIsValid)
   {
     if( m_relationIndices.size() != this->totalSize() )
     {
@@ -343,15 +344,17 @@ bool StaticRelation<PosType,
     }
 
     // Check that all relation indices are in range for m_toSet
+    auto toSetSize = m_toSet->size();
     for(SetPosition pos = 0 ; pos < m_relationIndices.size() ; ++pos)
     {
-      if (!m_toSet->isValidIndex ( m_relationIndices[pos]))
+      auto el = m_relationIndices[pos];
+      if (el < 0 || el >= toSetSize )
       {
         if(verboseOutput)
         {
           errSstr << "\n\t* Relation index was out of range."
                   << "\n\t-- value: " << m_relationIndices[pos]
-                  << " needs to be in range [0," << m_toSet->size() << ")";
+                  << " needs to be in range [0," << toSetSize << ")";
         }
         relationdataIsValid = false;
       }
