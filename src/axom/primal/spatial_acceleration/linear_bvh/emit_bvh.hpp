@@ -12,11 +12,11 @@
 #include "axom/core/memory_management.hpp"   // for alloc()/free()
 
 // primal includes
+#include "axom/primal/spatial_acceleration/ExecutionSpace.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/vec.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/aabb.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/BVHData.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/RadixTree.hpp"
-#include "axom/primal/spatial_acceleration/linear_bvh/policies.hpp"
 
 #ifdef AXOM_USE_RAJA
 #include "RAJA/RAJA.hpp"
@@ -41,10 +41,10 @@ namespace bvh
  */
 /// @{
 
-template < typename FloatType  >
+template < typename ExecSpace, typename FloatType  >
 void emit_bvh(RadixTree< FloatType,3 >& data, BVHData< FloatType,3 >& bvh_data);
 
-template < typename FloatType  >
+template < typename ExecSpace, typename FloatType  >
 void emit_bvh(RadixTree< FloatType,2 >& data, BVHData< FloatType,2 >& bvh_data);
 
 /// @}
@@ -52,7 +52,7 @@ void emit_bvh(RadixTree< FloatType,2 >& data, BVHData< FloatType,2 >& bvh_data);
 //------------------------------------------------------------------------------
 //                        IMPLEMENTATION
 //------------------------------------------------------------------------------
-template < typename FloatType  >
+template < typename ExecSpace, typename FloatType  >
 void emit_bvh( RadixTree<FloatType, 3>& data,
                BVHData< FloatType, 3 >& bvh_data )
 {
@@ -68,7 +68,8 @@ void emit_bvh( RadixTree<FloatType, 3>& data,
 
   Vec<FloatType,4> *flat_ptr = bvh_data.m_inner_nodes;
 
-  RAJA::forall<raja_for_policy>(
+  using exec_policy = typename primal::execution_space< ExecSpace >::raja_exec;
+  RAJA::forall< exec_policy >(
       RAJA::RangeSegment(0, inner_size), AXOM_LAMBDA (int32 node)
   {
     Vec<FloatType,4> vec1;
@@ -133,7 +134,7 @@ void emit_bvh( RadixTree<FloatType, 3>& data,
 
   int32* radix_tree_leafs = data.m_leafs;
   int32* bvh_leafs        = bvh_data.m_leaf_nodes;
-  RAJA::forall< raja_for_policy >(
+  RAJA::forall< exec_policy >(
       RAJA::RangeSegment(0,size), AXOM_LAMBDA(int32 i)
   {
     bvh_leafs[ i ] = radix_tree_leafs[ i ];
@@ -142,7 +143,7 @@ void emit_bvh( RadixTree<FloatType, 3>& data,
 }
 
 //------------------------------------------------------------------------------
-template < typename FloatType  >
+template < typename ExecSpace, typename FloatType  >
 void emit_bvh( RadixTree<FloatType, 2>& data,
                BVHData< FloatType, 2 >& bvh_data )
 {
@@ -159,7 +160,8 @@ void emit_bvh( RadixTree<FloatType, 2>& data,
 
   Vec<FloatType,4> *flat_ptr = bvh_data.m_inner_nodes;
 
-  RAJA::forall<raja_for_policy>(
+  using exec_policy = typename primal::execution_space< ExecSpace >::raja_exec;
+  RAJA::forall< exec_policy >(
       RAJA::RangeSegment(0, inner_size), AXOM_LAMBDA (int32 node)
   {
     Vec<FloatType,4> vec1;
@@ -224,7 +226,7 @@ void emit_bvh( RadixTree<FloatType, 2>& data,
 
   int32* radix_tree_leafs = data.m_leafs;
   int32* bvh_leafs        = bvh_data.m_leaf_nodes;
-  RAJA::forall< raja_for_policy >(
+  RAJA::forall< exec_policy >(
       RAJA::RangeSegment(0,size), AXOM_LAMBDA(int32 i)
   {
     bvh_leafs[ i ] = radix_tree_leafs[ i ];

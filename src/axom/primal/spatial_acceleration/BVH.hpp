@@ -12,6 +12,7 @@
 #include "axom/core/Types.hpp"             // for fixed bitwidth types
 #include "axom/slic/interface/slic.hpp"    // for SLIC macros
 
+#include "axom/primal/spatial_acceleration/ExecutionSpace.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/aabb.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/vec.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/bvh_vtkio.hpp"
@@ -57,11 +58,14 @@ enum BVHReturnCodes
  * search space for a given operation to an abbreviated list of candidate
  * geometric entities to check for a given query.
  *
- * \tparam FloatType the floating point precision, e.g., `double` or `float`
  * \tparam NDIMS the number of dimensions, e.g., 2 or 3.
+ * \tparam ExecSpace the execution space to use, e.g. SEQ_EXEC, CUDA_EXEC, etc.
+ * \tparam FloatType floating point precision, e.g., `double` or `float`.
+ *  The last template parameter is optional, defaults to double if not
+ *  specified.
  *
  */
-template < int NDIMS, typename FloatType = double >
+template < int NDIMS, typename ExecSpace, typename FloatType = double >
 class BVH
 {
 public:
@@ -70,6 +74,9 @@ public:
                           "The BVH class may be used only in 2D or 3D." );
   AXOM_STATIC_ASSERT_MSG( std::is_floating_point< FloatType >::value,
                           "A valid FloatingType must be used for the BVH." );
+  AXOM_STATIC_ASSERT_MSG( primal::execution_space< ExecSpace >::valid(),
+      "A valid execution space must be supplied to the BVH." );
+
 
   /*!
    * \brief Default constructor. Disabled.
@@ -276,8 +283,9 @@ bool InRight( const bvh::Vec< FloatType, 2>& point,
 //------------------------------------------------------------------------------
 //  BVH IMPLEMENTATION
 //------------------------------------------------------------------------------
-template< int NDIMS, typename FloatType >
-BVH< NDIMS, FloatType >::BVH( const FloatType* boxes, IndexType numItems ) :
+template< int NDIMS, typename ExecSpace, typename FloatType >
+BVH< NDIMS, ExecSpace, FloatType >::BVH( const FloatType* boxes,
+                                         IndexType numItems ) :
   m_numItems( numItems ),
   m_boxes( boxes )
 {
@@ -285,37 +293,46 @@ BVH< NDIMS, FloatType >::BVH( const FloatType* boxes, IndexType numItems ) :
 }
 
 //------------------------------------------------------------------------------
-template< int NDIMS, typename FloatType >
-BVH< NDIMS, FloatType >::~BVH()
+template< int NDIMS, typename ExecSpace, typename FloatType >
+BVH< NDIMS, ExecSpace, FloatType >::~BVH()
 {
   m_bvh.deallocate();
 }
 
 //------------------------------------------------------------------------------
-template< int NDIMS, typename FloatType >
-int BVH< NDIMS, FloatType >::build()
+template< int NDIMS, typename ExecSpace, typename FloatType >
+int BVH< NDIMS, ExecSpace, FloatType >::build()
 {
-  // STEP 0: Build a RadixTree consisting of the bounding boxes, sorted
+  // STEP 0: set the default memory allocator to use for the execution space.
+  umpire::Allocator current_allocator = axom::getDefaultAllocator();
+  const int allocatorID = primal::execution_space< ExecSpace >::allocatorID();
+  axom::setDefaultAllocator( allocatorID );
+
+  // STEP 1: Build a RadixTree consisting of the bounding boxes, sorted
   // by their corresponding morton code.
   bvh::RadixTree< FloatType, NDIMS > radix_tree;
   bvh::AABB< FloatType, NDIMS > global_bounds;
-  bvh::build_radix_tree( m_boxes, m_numItems, global_bounds, radix_tree );
+  bvh::build_radix_tree< ExecSpace >(
+      m_boxes, m_numItems, global_bounds, radix_tree );
 
-  // STEP 1: emit the BVH data-structure from the radix tree
+  // STEP 2: emit the BVH data-structure from the radix tree
   m_bvh.m_bounds = global_bounds;
   m_bvh.allocate( m_numItems );
 
-  // STEP 2: emit the BVH
-  bvh::emit_bvh( radix_tree, m_bvh );
+  // STEP 3: emit the BVH
+  bvh::emit_bvh< ExecSpace >( radix_tree, m_bvh );
 
   radix_tree.deallocate();
 
+  // STEP 4: restore default allocator
+  axom::setDefaultAllocator( current_allocator );
   return BVH_BUILD_OK;
 }
 
 //------------------------------------------------------------------------------
-template< int NDIMS, typename FloatType >
-void BVH< NDIMS, FloatType >::getBounds( FloatType* min, FloatType* max ) const
+template< int NDIMS, typename ExecSpace, typename FloatType >
+void BVH< NDIMS, ExecSpace, FloatType >::getBounds( FloatType* min,
+                                                    FloatType* max ) const
 {
   SLIC_ASSERT( min != nullptr );
   SLIC_ASSERT( max != nullptr );
@@ -324,14 +341,14 @@ void BVH< NDIMS, FloatType >::getBounds( FloatType* min, FloatType* max ) const
 }
 
 //------------------------------------------------------------------------------
-template< int NDIMS, typename FloatType >
-void BVH< NDIMS, FloatType >::find( IndexType* offsets,
-                                    IndexType* counts,
-                                    IndexType*& candidates,
-                                    IndexType numPts,
-                                    const FloatType* x,
-                                    const FloatType* y,
-                                    const FloatType* z ) const
+template< int NDIMS, typename ExecSpace, typename FloatType >
+void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
+                                               IndexType* counts,
+                                               IndexType*& candidates,
+                                               IndexType numPts,
+                                               const FloatType* x,
+                                               const FloatType* y,
+                                               const FloatType* z ) const
 {
   AXOM_STATIC_ASSERT_MSG( NDIMS==3,
      "The 3D version of find() must be called on a 3D BVH" );
@@ -343,13 +360,20 @@ void BVH< NDIMS, FloatType >::find( IndexType* offsets,
   SLIC_ASSERT( y != nullptr );
   SLIC_ASSERT( z != nullptr );
 
+  // STEP 0: set the default memory allocator to use for the execution space.
+  umpire::Allocator current_allocator = axom::getDefaultAllocator();
+  const int allocatorID = primal::execution_space< ExecSpace >::allocatorID();
+  axom::setDefaultAllocator( allocatorID );
+
+  // STEP 1: count number of candidates for each query point
   const bvh::Vec< FloatType, 4>  *inner_nodes = m_bvh.m_inner_nodes;
   const int32 *leaf_nodes = m_bvh.m_leaf_nodes;
   SLIC_ASSERT( inner_nodes != nullptr );
   SLIC_ASSERT( leaf_nodes != nullptr );
 
-  RAJA::forall< bvh::raja_for_policy >(
-      RAJA::RangeSegment(0, numPts), AXOM_LAMBDA (IndexType i)
+  using exec_policy = typename primal::execution_space< ExecSpace >::raja_exec;
+  RAJA::forall< exec_policy >(
+      RAJA::RangeSegment(0,numPts), AXOM_LAMBDA(IndexType i)
   {
     int32 count = 0;
     bvh::Vec< FloatType, NDIMS > point;
@@ -418,7 +442,7 @@ void BVH< NDIMS, FloatType >::find( IndexType* offsets,
 
   } );
 
-  RAJA::exclusive_scan< bvh::raja_for_policy >(
+  RAJA::exclusive_scan< exec_policy >(
       counts, counts+numPts, offsets, RAJA::operators::plus<IndexType>{} );
 
   // TODO: this will segault with raw(unmanaged) cuda pointers
@@ -426,8 +450,8 @@ void BVH< NDIMS, FloatType >::find( IndexType* offsets,
 
   candidates = axom::allocate< IndexType >( total_candidates);
 
-   //candidates =
-  RAJA::forall< bvh::raja_for_policy >(
+  // STEP 2: fill in candidates for each point
+  RAJA::forall< exec_policy >(
       RAJA::RangeSegment(0, numPts), AXOM_LAMBDA (IndexType i)
   {
     int32 offset = offsets[ i ];
@@ -495,16 +519,18 @@ void BVH< NDIMS, FloatType >::find( IndexType* offsets,
 
   } );
 
+  // STEP 3: restore default allocator
+  axom::setDefaultAllocator( current_allocator );
 }
 
 //------------------------------------------------------------------------------
-template< int NDIMS, typename FloatType >
-void BVH< NDIMS, FloatType >::find( IndexType* offsets,
-                                    IndexType* counts,
-                                    IndexType*& candidates,
-                                    IndexType numPts,
-                                    const FloatType* x,
-                                    const FloatType* y ) const
+template< int NDIMS, typename ExecSpace, typename FloatType >
+void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
+                                               IndexType* counts,
+                                               IndexType*& candidates,
+                                               IndexType numPts,
+                                               const FloatType* x,
+                                               const FloatType* y ) const
 {
   AXOM_STATIC_ASSERT_MSG( NDIMS==2,
      "The 2D version of find() must be called on a 2D BVH" );
@@ -515,12 +541,19 @@ void BVH< NDIMS, FloatType >::find( IndexType* offsets,
   SLIC_ASSERT( x != nullptr );
   SLIC_ASSERT( y != nullptr );
 
+  // STEP 0: set the default memory allocator to use for the execution space.
+  umpire::Allocator current_allocator = axom::getDefaultAllocator();
+  const int allocatorID = primal::execution_space< ExecSpace >::allocatorID();
+  axom::setDefaultAllocator( allocatorID );
+
+  // STEP 1: count number of candidates for each query point
   const bvh::Vec< FloatType, 4>  *inner_nodes = m_bvh.m_inner_nodes;
   const int32 *leaf_nodes = m_bvh.m_leaf_nodes;
   SLIC_ASSERT( inner_nodes != nullptr );
   SLIC_ASSERT( leaf_nodes != nullptr );
 
-  RAJA::forall<bvh::raja_for_policy>(
+  using exec_policy = typename primal::execution_space< ExecSpace >::raja_exec;
+  RAJA::forall< exec_policy >(
       RAJA::RangeSegment(0, numPts), AXOM_LAMBDA (IndexType i)
   {
     int32 count = 0;
@@ -589,7 +622,7 @@ void BVH< NDIMS, FloatType >::find( IndexType* offsets,
 
   } );
 
-  RAJA::exclusive_scan< bvh::raja_for_policy >(
+  RAJA::exclusive_scan< exec_policy >(
       counts, counts+numPts, offsets, RAJA::operators::plus<IndexType>{} );
 
   // TODO: this will segault with raw(unmanaged) cuda pointers
@@ -597,8 +630,8 @@ void BVH< NDIMS, FloatType >::find( IndexType* offsets,
 
   candidates = axom::allocate< IndexType >( total_candidates);
 
-   //candidates =
-  RAJA::forall<bvh::raja_for_policy>(
+  // STEP 2: fill in candidates for each point
+  RAJA::forall< exec_policy >(
       RAJA::RangeSegment(0, numPts), AXOM_LAMBDA (IndexType i)
   {
     int32 offset = offsets[ i ];
@@ -665,11 +698,14 @@ void BVH< NDIMS, FloatType >::find( IndexType* offsets,
 
   } );
 
+  // STEP 3: restore default allocator
+  axom::setDefaultAllocator( current_allocator );
 }
 
 //------------------------------------------------------------------------------
-template < int NDIMS, typename FloatType >
-void BVH< NDIMS, FloatType >::writeVtkFile( const std::string& fileName ) const
+template < int NDIMS, typename ExecSpace, typename FloatType >
+void BVH< NDIMS, ExecSpace, FloatType >::writeVtkFile(
+    const std::string& fileName ) const
 {
   std::ostringstream nodes;
   std::ostringstream cells;

@@ -22,6 +22,7 @@
 
 // axom/primal includes
 #include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/spatial_acceleration/ExecutionSpace.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/range.hpp"
 #include "axom/primal/spatial_acceleration/BVH.hpp"
 #include "axom/primal/spatial_acceleration/UniformGrid.hpp"
@@ -176,7 +177,7 @@ void generate_aabbs_and_centroids3d( const mint::Mesh* mesh,
 }
 
 //------------------------------------------------------------------------------
-template < typename FloatType >
+template < typename ExecSpace, typename FloatType >
 void check_build_bvh2d( )
 {
   constexpr int NUM_BOXES = 2;
@@ -184,7 +185,7 @@ void check_build_bvh2d( )
   FloatType boxes[ ]      = { 0., 0., 1., 1.,
                               1., 1., 2., 2. };
 
-  primal::BVH< NDIMS, FloatType > bvh( boxes, NUM_BOXES );
+  primal::BVH< NDIMS, ExecSpace, FloatType > bvh( boxes, NUM_BOXES );
   bvh.build( );
 
   FloatType lo[ NDIMS ];
@@ -200,7 +201,7 @@ void check_build_bvh2d( )
 }
 
 //------------------------------------------------------------------------------
-template < typename FloatType >
+template < typename ExecSpace, typename FloatType >
 void check_build_bvh3d( )
 {
   constexpr int NUM_BOXES = 2;
@@ -208,7 +209,7 @@ void check_build_bvh3d( )
   FloatType boxes[ ]      = { 0., 0., 0., 1., 1., 1.,
                               1., 1., 1., 2., 2., 2. };
 
-  primal::BVH< NDIMS, FloatType > bvh( boxes, NUM_BOXES );
+  primal::BVH< NDIMS, ExecSpace, FloatType > bvh( boxes, NUM_BOXES );
   bvh.build( );
 
   FloatType lo[ NDIMS ];
@@ -232,15 +233,15 @@ void check_build_bvh3d( )
 //------------------------------------------------------------------------------
 TEST( primal_bvh, contruct2D)
 {
-  check_build_bvh2d< float >( );
-  check_build_bvh2d< double >( );
+  check_build_bvh2d< primal::SEQ_EXEC, float >( );
+  check_build_bvh2d< primal::SEQ_EXEC, double >( );
 }
 
 //------------------------------------------------------------------------------
 TEST( primal_bvh, contruct3D)
 {
-  check_build_bvh3d< float >( );
-  check_build_bvh3d< double >( );
+  check_build_bvh3d< primal::SEQ_EXEC, float >( );
+  check_build_bvh3d< primal::SEQ_EXEC, double >( );
 }
 
 //------------------------------------------------------------------------------
@@ -265,7 +266,7 @@ TEST( primal_bvh, check_find_3d )
   generate_aabbs_and_centroids3d( &mesh, aabbs, xc, yc, zc );
 
   // construct the BVH
-  primal::BVH< NDIMS > bvh( aabbs, ncells );
+  primal::BVH< NDIMS, primal::SEQ_EXEC > bvh( aabbs, ncells );
   bvh.build( );
 
   double min[ NDIMS ];
@@ -322,7 +323,7 @@ TEST( primal_bvh, check_find_2d )
   generate_aabbs_and_centroids2d( &mesh, aabbs, xc, yc );
 
   // construct the BVH
-  primal::BVH< NDIMS > bvh( aabbs, ncells );
+  primal::BVH< NDIMS, primal::SEQ_EXEC > bvh( aabbs, ncells );
   bvh.build( );
 
   double min[ NDIMS ];

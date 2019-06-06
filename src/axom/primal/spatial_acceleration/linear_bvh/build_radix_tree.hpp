@@ -6,11 +6,11 @@
 #ifndef AXOM_PRIMAL_BVH_BUILDER_IMPL_H_
 #define AXOM_PRIMAL_BVH_BUILDER_IMPL_H_
 
+#include "axom/primal/spatial_acceleration/ExecutionSpace.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/BVHData.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/RadixTree.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/vec.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/aabb.hpp"
-#include "axom/primal/spatial_acceleration/linear_bvh/policies.hpp"
 
 #include "axom/core/utilities/Utilities.hpp" // for isNearlyEqual()
 #include "axom/slic/interface/slic.hpp"      // for slic
@@ -93,13 +93,13 @@ axom::int64 morton64_encode( axom::float32 x,
   return (zz << 2 | yy << 1 | xx);
 }
 
-template < typename FloatType >
+template < typename ExecSpace, typename FloatType >
 void transform_boxes( const FloatType *boxes,
                       AABB<FloatType,3> *aabbs,
                       int32 size)
 {
-
-  RAJA::forall<raja_for_policy>(
+  using exec_policy = typename primal::execution_space< ExecSpace >::raja_exec;
+  RAJA::forall< exec_policy >(
       RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
   {
     AABB< FloatType, 3> aabb;
@@ -122,13 +122,13 @@ void transform_boxes( const FloatType *boxes,
 }
 
 //------------------------------------------------------------------------------
-template < typename FloatType >
+template < typename ExecSpace, typename FloatType >
 void transform_boxes( const FloatType *boxes,
                       AABB<FloatType,2> *aabbs,
                       int32 size)
 {
-
-  RAJA::forall<raja_for_policy>(
+  using exec_policy = typename primal::execution_space< ExecSpace >::raja_exec;
+  RAJA::forall< exec_policy >(
       RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
   {
     AABB< FloatType, 2> aabb;
@@ -149,19 +149,22 @@ void transform_boxes( const FloatType *boxes,
 }
 
 //------------------------------------------------------------------------------
-template < typename FloatType >
+template < typename ExecSpace, typename FloatType >
 AABB<FloatType,3> reduce(AABB<FloatType,3> *aabbs, int32 size)
 {
 
-  RAJA::ReduceMin<raja_reduce_policy, FloatType> xmin(infinity32());
-  RAJA::ReduceMin<raja_reduce_policy, FloatType> ymin(infinity32());
-  RAJA::ReduceMin<raja_reduce_policy, FloatType> zmin(infinity32());
+  using reduce_policy =
+      typename primal::execution_space< ExecSpace >::raja_reduce;
+  RAJA::ReduceMin< reduce_policy, FloatType> xmin(infinity32());
+  RAJA::ReduceMin< reduce_policy, FloatType> ymin(infinity32());
+  RAJA::ReduceMin< reduce_policy, FloatType> zmin(infinity32());
 
-  RAJA::ReduceMax<raja_reduce_policy, FloatType> xmax(neg_infinity32());
-  RAJA::ReduceMax<raja_reduce_policy, FloatType> ymax(neg_infinity32());
-  RAJA::ReduceMax<raja_reduce_policy, FloatType> zmax(neg_infinity32());
+  RAJA::ReduceMax< reduce_policy, FloatType> xmax(neg_infinity32());
+  RAJA::ReduceMax< reduce_policy, FloatType> ymax(neg_infinity32());
+  RAJA::ReduceMax< reduce_policy, FloatType> zmax(neg_infinity32());
 
-  RAJA::forall<raja_for_policy>(RAJA::RangeSegment(0,size), AXOM_LAMBDA(int32 i)
+  using exec_policy = typename primal::execution_space< ExecSpace >::raja_exec;
+  RAJA::forall< exec_policy >(RAJA::RangeSegment(0,size), AXOM_LAMBDA(int32 i)
   {
 
     const AABB<FloatType, 3> &aabb = aabbs[i];
@@ -188,18 +191,22 @@ AABB<FloatType,3> reduce(AABB<FloatType,3> *aabbs, int32 size)
 }
 
 //------------------------------------------------------------------------------
-template < typename FloatType >
+template < typename ExecSpace, typename FloatType >
 AABB<FloatType,2> reduce(AABB<FloatType,2> *aabbs, int32 size)
 {
 
-  RAJA::ReduceMin<raja_reduce_policy, FloatType> xmin(infinity32());
-  RAJA::ReduceMin<raja_reduce_policy, FloatType> ymin(infinity32());
+  using reduce_policy =
+      typename primal::execution_space< ExecSpace >::raja_reduce;
+  RAJA::ReduceMin< reduce_policy, FloatType> xmin(infinity32());
+  RAJA::ReduceMin< reduce_policy, FloatType> ymin(infinity32());
 
-  RAJA::ReduceMax<raja_reduce_policy, FloatType> xmax(neg_infinity32());
-  RAJA::ReduceMax<raja_reduce_policy, FloatType> ymax(neg_infinity32());
+  RAJA::ReduceMax< reduce_policy, FloatType> xmax(neg_infinity32());
+  RAJA::ReduceMax< reduce_policy, FloatType> ymax(neg_infinity32());
 
 
-  RAJA::forall<raja_for_policy>(
+  using exec_policy =
+      typename primal::execution_space< ExecSpace >::raja_exec;
+  RAJA::forall< exec_policy >(
       RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
   {
 
@@ -223,7 +230,7 @@ AABB<FloatType,2> reduce(AABB<FloatType,2> *aabbs, int32 size)
 }
 
 //------------------------------------------------------------------------------
-template < typename FloatType >
+template < typename ExecSpace, typename FloatType >
 void get_mcodes( AABB<FloatType,2> *aabbs,
                     int32 size,
                     const AABB< FloatType,2 > &bounds,
@@ -243,7 +250,9 @@ void get_mcodes( AABB<FloatType,2> *aabbs,
             0.f : 1.f / extent[i];
   }
 
-  RAJA::forall<raja_for_policy>(RAJA::RangeSegment(0,size), AXOM_LAMBDA(int32 i)
+  using exec_policy =
+      typename primal::execution_space< ExecSpace >::raja_exec;
+  RAJA::forall< exec_policy >(RAJA::RangeSegment(0,size), AXOM_LAMBDA(int32 i)
   {
     const AABB<FloatType,2> &aabb = aabbs[i];
 
@@ -258,7 +267,7 @@ void get_mcodes( AABB<FloatType,2> *aabbs,
 }
 
 //------------------------------------------------------------------------------
-template < typename FloatType >
+template < typename ExecSpace, typename FloatType >
 void get_mcodes( AABB<FloatType,3> *aabbs,
                     int32 size,
                     const AABB< FloatType,3 > &bounds,
@@ -280,7 +289,9 @@ void get_mcodes( AABB<FloatType,3> *aabbs,
           0.f : 1.f / extent[i];
   }
 
-  RAJA::forall<raja_for_policy>(RAJA::RangeSegment(0,size), AXOM_LAMBDA(int32 i)
+  using exec_policy =
+      typename primal::execution_space< ExecSpace >::raja_exec;
+  RAJA::forall< exec_policy >(RAJA::RangeSegment(0,size), AXOM_LAMBDA(int32 i)
   {
     const AABB<FloatType,3> &aabb = aabbs[i];
 
@@ -297,13 +308,14 @@ void get_mcodes( AABB<FloatType,3> *aabbs,
 }
 
 //------------------------------------------------------------------------------
-template < typename IntType >
+template < typename ExecSpace, typename IntType >
 void array_counting( IntType* iterator,
                      const IntType& size,
                      const IntType& start,
                      const IntType& step)
 {
-  RAJA::forall<raja_for_policy>(
+  using exec_policy = typename primal::execution_space< ExecSpace >::raja_exec;
+  RAJA::forall< exec_policy >(
       RAJA::RangeSegment(0, size), AXOM_LAMBDA(int32 i)
   {
     iterator[ i ] = start + i * step;
@@ -317,12 +329,13 @@ void array_counting( IntType* iterator,
 // indices [1,0,2]
 // result  [b,a,c]
 //
-template<typename T>
+template< typename ExecSpace, typename T>
 void reorder(int32 *indices, T *&array, int32 size)
 {
   T* temp = axom::allocate< T >( size );
 
-  RAJA::forall<raja_for_policy>(
+  using exec_policy = typename primal::execution_space< ExecSpace >::raja_exec;
+  RAJA::forall< exec_policy >(
       RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
   {
     int32 in_idx = indices[ i ];
@@ -335,10 +348,10 @@ void reorder(int32 *indices, T *&array, int32 size)
 }
 
 //------------------------------------------------------------------------------
-template < typename MCType >
+template < typename ExecSpace, typename MCType >
 int32* sort_mcodes( MCType*& mcodes, int32 size, int32* iter )
 {
-  array_counting(iter, size, 0, 1);
+  array_counting< ExecSpace >(iter, size, 0, 1);
 
   // TODO: create custom sort for GPU / CPU
   // WARNING: this will segfault with CUDA and not unified memory
@@ -350,7 +363,7 @@ int32* sort_mcodes( MCType*& mcodes, int32 size, int32* iter )
             } );
 
 
-  reorder(iter, mcodes, size);
+  reorder< ExecSpace >(iter, mcodes, size);
 
   return iter;
 }
@@ -381,7 +394,7 @@ AXOM_HOST_DEVICE IntType delta( const IntType &a,
 }
 
 //------------------------------------------------------------------------------
-template < typename FloatType, int NDIMS >
+template < typename ExecSpace, typename FloatType, int NDIMS >
 void build_tree(  RadixTree< FloatType, NDIMS > &data )
 {
   // http://research.nvidia.com/sites/default/files/publications/karras2012hpg_paper.pdf
@@ -396,7 +409,8 @@ void build_tree(  RadixTree< FloatType, NDIMS > &data )
   int32 *parent_ptr = data.m_parents;
   const uint32 *mcodes_ptr = data.m_mcodes;
 
-  RAJA::forall<raja_for_policy>(
+  using exec_policy = typename primal::execution_space< ExecSpace >::raja_exec;
+  RAJA::forall< exec_policy >(
       RAJA::RangeSegment(0, inner_size), AXOM_LAMBDA (int32 i)
   {
     //determine range direction
@@ -472,18 +486,19 @@ void build_tree(  RadixTree< FloatType, NDIMS > &data )
 }
 
 //------------------------------------------------------------------------------
-template<typename T>
+template< typename ExecSpace, typename T>
 static void array_memset(T* array, const int32 size, const T val)
 {
-  RAJA::forall<raja_for_policy>(
+  using exec_policy = typename primal::execution_space< ExecSpace >::raja_exec;
+  RAJA::forall< exec_policy >(
       RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
   {
-    array[i] = val;
+    array[ i ] = val;
   } );
 }
 
 //------------------------------------------------------------------------------
-template < typename FloatType, int NDIMS >
+template < typename ExecSpace, typename FloatType, int NDIMS >
 void propagate_aabbs( RadixTree< FloatType, NDIMS >& data)
 {
   const int inner_size = data.m_inner_size;
@@ -503,16 +518,21 @@ void propagate_aabbs( RadixTree< FloatType, NDIMS >& data)
 
   int32* counters_ptr = axom::allocate<int32>(inner_size);
 
-  array_memset(counters_ptr, inner_size, 0);
+  array_memset< ExecSpace >(counters_ptr, inner_size, 0);
 
-  RAJA::forall<raja_for_policy>(
+  using exec_policy   =
+      typename primal::execution_space< ExecSpace >::raja_exec;
+  using atomic_policy =
+      typename primal::execution_space< ExecSpace >::raja_atomic;
+
+  RAJA::forall< exec_policy >(
       RAJA::RangeSegment(0,leaf_size), AXOM_LAMBDA(int32 i)
   {
     int32 current_node = parent_ptr[inner_size + i];
 
     while( current_node != -1)
     {
-      int32 old = RAJA::atomic::atomicAdd<raja_atomic_policy>(&(counters_ptr[current_node]), 1);
+      int32 old= RAJA::atomic::atomicAdd< atomic_policy >(&(counters_ptr[current_node]),1);
 
       if(old == 0)
       {
@@ -555,7 +575,7 @@ void propagate_aabbs( RadixTree< FloatType, NDIMS >& data)
 
 
 //------------------------------------------------------------------------------
-template < typename FloatType, int NDIMS >
+template < typename ExecSpace, typename FloatType, int NDIMS >
 void build_radix_tree( const FloatType* boxes,
                        int size,
                        AABB< FloatType, NDIMS >& bounds,
@@ -564,22 +584,23 @@ void build_radix_tree( const FloatType* boxes,
   radix_tree.allocate( size );
 
   // copy so we don't reorder the input
-  transform_boxes(boxes, radix_tree.m_leaf_aabbs, size);
-
+  transform_boxes< ExecSpace >(boxes, radix_tree.m_leaf_aabbs, size);
 
   // evaluate global bounds
-  bounds = reduce(radix_tree.m_leaf_aabbs, size);
+  bounds = reduce< ExecSpace >(radix_tree.m_leaf_aabbs, size);
 
   // sort aabbs based on morton code
   // original positions of the sorted morton codes.
   // allows us to gather / sort other arrays.
-  get_mcodes( radix_tree.m_leaf_aabbs, size, bounds, radix_tree.m_mcodes );
-  sort_mcodes( radix_tree.m_mcodes, size, radix_tree.m_leafs );
-  reorder( radix_tree.m_leafs, radix_tree.m_leaf_aabbs, size );
+  get_mcodes< ExecSpace >( radix_tree.m_leaf_aabbs, size, bounds,
+                           radix_tree.m_mcodes );
+  sort_mcodes< ExecSpace >( radix_tree.m_mcodes, size,
+                            radix_tree.m_leafs );
+  reorder< ExecSpace >( radix_tree.m_leafs, radix_tree.m_leaf_aabbs, size );
 
-  build_tree( radix_tree );
+  build_tree< ExecSpace >( radix_tree );
 
-  propagate_aabbs( radix_tree );
+  propagate_aabbs< ExecSpace >( radix_tree );
 }
 
 } /* nanmespace axom */
