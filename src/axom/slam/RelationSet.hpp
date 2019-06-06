@@ -30,13 +30,17 @@ namespace slam
 
 template<
   typename Relation,
-  typename FirstSetType = slam::Set<>,
-  typename SecondSetType = slam::Set<> >
+  typename SetType1 = slam::Set<>,
+  typename SetType2 = slam::Set<> >
 class RelationSet final
   : public OrderedSet<typename Relation::SetPosition,
                       typename Relation::SetElement>
-  , public BivariateSet<FirstSetType, SecondSetType>
+  , public BivariateSet<SetType1, SetType2>
 {
+public:
+  using FirstSetType = SetType1;
+  using SecondSetType = SetType2;
+
 private:
   using RelationType = Relation;
   using RangeSetType = RangeSet<typename RelationType::SetPosition,
