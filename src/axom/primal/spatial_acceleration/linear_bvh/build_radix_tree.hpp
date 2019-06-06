@@ -98,14 +98,17 @@ void transform_boxes( const FloatType *boxes,
                       AABB<FloatType,3> *aabbs,
                       int32 size)
 {
+  constexpr int NDIMS  = 3;
+  constexpr int STRIDE = 2 * NDIMS;
+
   using exec_policy = typename primal::execution_space< ExecSpace >::raja_exec;
   RAJA::forall< exec_policy >(
       RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
   {
-    AABB< FloatType, 3> aabb;
-    Vec< FloatType,3 > min_point, max_point;
+    AABB< FloatType, NDIMS > aabb;
+    Vec< FloatType, NDIMS > min_point, max_point;
 
-    const int32 offset = i * 6;
+    const int32 offset = i * STRIDE;
     min_point[0] = boxes[offset + 0];
     min_point[1] = boxes[offset + 1];
     min_point[2] = boxes[offset + 2];
@@ -127,14 +130,17 @@ void transform_boxes( const FloatType *boxes,
                       AABB<FloatType,2> *aabbs,
                       int32 size)
 {
+  constexpr int NDIMS  = 2;
+  constexpr int STRIDE = 2 * NDIMS;
+
   using exec_policy = typename primal::execution_space< ExecSpace >::raja_exec;
   RAJA::forall< exec_policy >(
       RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
   {
-    AABB< FloatType, 2> aabb;
-    Vec< FloatType,2 > min_point, max_point;
+    AABB< FloatType, NDIMS > aabb;
+    Vec< FloatType, NDIMS > min_point, max_point;
 
-    const int32 offset = i * 4;
+    const int32 offset = i * STRIDE;
     min_point[0] = boxes[offset + 0];
     min_point[1] = boxes[offset + 1];
 
@@ -152,6 +158,7 @@ void transform_boxes( const FloatType *boxes,
 template < typename ExecSpace, typename FloatType >
 AABB<FloatType,3> reduce(AABB<FloatType,3> *aabbs, int32 size)
 {
+  constexpr int NDIMS = 3;
 
   using reduce_policy =
       typename primal::execution_space< ExecSpace >::raja_reduce;
@@ -167,7 +174,7 @@ AABB<FloatType,3> reduce(AABB<FloatType,3> *aabbs, int32 size)
   RAJA::forall< exec_policy >(RAJA::RangeSegment(0,size), AXOM_LAMBDA(int32 i)
   {
 
-    const AABB<FloatType, 3> &aabb = aabbs[i];
+    const AABB< FloatType, NDIMS > &aabb = aabbs[i];
 
     xmin.min(aabb.m_x.min());
     ymin.min(aabb.m_y.min());
@@ -179,10 +186,12 @@ AABB<FloatType,3> reduce(AABB<FloatType,3> *aabbs, int32 size)
 
   } );
 
-  AABB<FloatType,3> res;
-  Vec< FloatType, 3 > mins =
+  AABB< FloatType, NDIMS > res;
+
+  Vec< FloatType, NDIMS > mins =
       make_vec< FloatType >( xmin.get(), ymin.get(), zmin.get() );
-  Vec< FloatType, 3 > maxs =
+
+  Vec< FloatType, NDIMS > maxs =
       make_vec< FloatType >( xmax.get(), ymax.get(), zmax.get() );
 
   res.include(mins);
@@ -194,6 +203,7 @@ AABB<FloatType,3> reduce(AABB<FloatType,3> *aabbs, int32 size)
 template < typename ExecSpace, typename FloatType >
 AABB<FloatType,2> reduce(AABB<FloatType,2> *aabbs, int32 size)
 {
+  constexpr int NDIMS = 2;
 
   using reduce_policy =
       typename primal::execution_space< ExecSpace >::raja_reduce;
@@ -210,7 +220,7 @@ AABB<FloatType,2> reduce(AABB<FloatType,2> *aabbs, int32 size)
       RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
   {
 
-    const AABB<FloatType, 2> &aabb = aabbs[ i ];
+    const AABB<FloatType, NDIMS > &aabb = aabbs[ i ];
     xmin.min(aabb.m_x.min());
     ymin.min(aabb.m_y.min());
 
@@ -220,9 +230,9 @@ AABB<FloatType,2> reduce(AABB<FloatType,2> *aabbs, int32 size)
 
   } );
 
-  AABB<FloatType,2> res;
-  Vec< FloatType, 2 > mins = make_vec< FloatType >(xmin.get(), ymin.get() );
-  Vec< FloatType, 2 > maxs = make_vec< FloatType >(xmax.get(), ymax.get() );
+  AABB<FloatType,NDIMS > res;
+  Vec< FloatType,NDIMS > mins = make_vec< FloatType >(xmin.get(), ymin.get() );
+  Vec< FloatType,NDIMS > maxs = make_vec< FloatType >(xmax.get(), ymax.get() );
 
   res.include(mins);
   res.include(maxs);
@@ -236,14 +246,16 @@ void get_mcodes( AABB<FloatType,2> *aabbs,
                     const AABB< FloatType,2 > &bounds,
                     uint32* mcodes )
 {
-  Vec<FloatType,2> extent, inv_extent, min_coord;
+  constexpr int NDIMS = 2;
+
+  Vec< FloatType,NDIMS > extent, inv_extent, min_coord;
   extent[0] = bounds.m_x.max() - bounds.m_x.min();
   extent[1] = bounds.m_y.max() - bounds.m_y.min();
 
   min_coord[0] = bounds.m_x.min();
   min_coord[1] = bounds.m_y.min();
 
-  for ( int i = 0; i < 2; ++i )
+  for ( int i = 0; i < NDIMS; ++i )
   {
     inv_extent[ i ] =
         utilities::isNearlyEqual< FloatType >( extent[i], .0f ) ?
@@ -254,7 +266,7 @@ void get_mcodes( AABB<FloatType,2> *aabbs,
       typename primal::execution_space< ExecSpace >::raja_exec;
   RAJA::forall< exec_policy >(RAJA::RangeSegment(0,size), AXOM_LAMBDA(int32 i)
   {
-    const AABB<FloatType,2> &aabb = aabbs[i];
+    const AABB<FloatType,NDIMS> &aabb = aabbs[i];
 
     // get the center and normalize it
     FloatType dx = aabb.m_x.center() - min_coord[ 0 ];
@@ -273,7 +285,9 @@ void get_mcodes( AABB<FloatType,3> *aabbs,
                     const AABB< FloatType,3 > &bounds,
                     uint32* mcodes )
 {
-  Vec< FloatType, 3 > extent, inv_extent, min_coord;
+  constexpr int NDIMS = 3;
+
+  Vec< FloatType, NDIMS > extent, inv_extent, min_coord;
   extent[0] = bounds.m_x.max() - bounds.m_x.min();
   extent[1] = bounds.m_y.max() - bounds.m_y.min();
   extent[2] = bounds.m_z.max() - bounds.m_z.min();
@@ -282,7 +296,7 @@ void get_mcodes( AABB<FloatType,3> *aabbs,
   min_coord[1] = bounds.m_y.min();
   min_coord[2] = bounds.m_z.min();
 
-  for ( int i = 0; i < 3; ++i )
+  for ( int i = 0; i < NDIMS; ++i )
   {
     inv_extent[ i ] =
       utilities::isNearlyEqual< FloatType >( extent[i], .0f ) ?
@@ -293,7 +307,7 @@ void get_mcodes( AABB<FloatType,3> *aabbs,
       typename primal::execution_space< ExecSpace >::raja_exec;
   RAJA::forall< exec_policy >(RAJA::RangeSegment(0,size), AXOM_LAMBDA(int32 i)
   {
-    const AABB<FloatType,3> &aabb = aabbs[i];
+    const AABB<FloatType,NDIMS> &aabb = aabbs[i];
 
     // get the center and normalize it
     FloatType dx = aabb.m_x.center() - min_coord[0];
