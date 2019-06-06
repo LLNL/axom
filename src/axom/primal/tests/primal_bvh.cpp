@@ -231,18 +231,50 @@ void check_build_bvh3d( )
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-TEST( primal_bvh, contruct2D)
+TEST( primal_bvh, contruct2D_sequential )
 {
   check_build_bvh2d< primal::SEQ_EXEC, float >( );
   check_build_bvh2d< primal::SEQ_EXEC, double >( );
 }
 
 //------------------------------------------------------------------------------
-TEST( primal_bvh, contruct3D)
+TEST( primal_bvh, contruct3D_sequential )
 {
   check_build_bvh3d< primal::SEQ_EXEC, float >( );
   check_build_bvh3d< primal::SEQ_EXEC, double >( );
 }
+
+//------------------------------------------------------------------------------
+#ifdef AXOM_USE_OPENMP
+TEST( primal_bvh, contruct2D_omp )
+{
+  check_build_bvh2d< primal::OMP_EXEC, float >( );
+  check_build_bvh2d< primal::OMP_EXEC, double >( );
+}
+
+//------------------------------------------------------------------------------
+TEST( primal_bvh, contruct3D_omp )
+{
+  check_build_bvh3d< primal::OMP_EXEC, float >( );
+  check_build_bvh3d< primal::OMP_EXEC, double >( );
+}
+#endif
+
+//------------------------------------------------------------------------------
+#ifdef AXOM_USE_CUDA
+TEST( primal_bvh, contruct2D_cuda )
+{
+  check_build_bvh2d< primal::OMP_EXEC, float >( );
+  check_build_bvh2d< primal::OMP_EXEC, double >( );
+}
+
+//------------------------------------------------------------------------------
+TEST( primal_bvh, contruct3D_cuda )
+{
+  check_build_bvh3d< primal::OMP_EXEC, float >( );
+  check_build_bvh3d< primal::OMP_EXEC, double >( );
+}
+#endif
 
 //------------------------------------------------------------------------------
 TEST( primal_bvh, check_find_3d )
