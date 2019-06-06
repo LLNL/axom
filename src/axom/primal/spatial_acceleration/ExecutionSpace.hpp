@@ -77,13 +77,10 @@ struct execution_space
   using raja_reduce = void;
   using raja_atomic = void;
 
-  static constexpr bool valid() { return false; };
-  static constexpr char* name() { return (char*)"[UNDEFINED]"; };
-  static umpire::Allocator allocator()
-  {
-    return axom::getAllocator( umpire::resource::Host );
-  };
-
+  static constexpr bool valid() noexcept { return false; };
+  static constexpr char* name() noexcept { return (char*)"[UNDEFINED]"; };
+  static constexpr int allocatorID() noexcept
+  { return axom::INVALID_ALLOCATOR_ID; };
 };
 
 //------------------------------------------------------------------------------
@@ -105,11 +102,8 @@ struct execution_space< CUDA_EXEC< BLOCK_SIZE > >
 
   static constexpr bool valid() noexcept { return true; };
   static constexpr char* name() noexcept { return (char*)"[CUDA_EXEC]"; };
-  static umpire::Allocator allocator() noexcept
-  {
-    return axom::getAllocator( umpire::resource::Unified);
-  };
-
+  static constexpr int allocatorID() noexcept
+  { return umpire::resource::Unified; };
 };
 
 #endif
@@ -130,11 +124,8 @@ struct execution_space< OMP_EXEC >
 
   static constexpr bool valid() noexcept { return true; };
   static constexpr char* name() noexcept { return (char*)"[OMP_EXEC]"; };
-  static umpire::Allocator allocator() noexcept
-  {
-    return axom::getAllocator( umpire::resource::Host );
-  };
-
+  static constexpr int allocatorID() noexcept
+  { return umpire::resource::Host; };
 };
 
 #endif
@@ -145,17 +136,15 @@ struct execution_space< OMP_EXEC >
 template < >
 struct execution_space< SEQ_EXEC >
 {
-  using raja_exec   = RAJA::loop_exec;
-  using raja_reduce = RAJA::loop_reduce;
-  using raja_atomic = RAJA::atomic::loop_atomic;
+  using raja_exec                   = RAJA::loop_exec;
+  using raja_reduce                 = RAJA::loop_reduce;
+  using raja_atomic                 = RAJA::atomic::loop_atomic;
+  static const int allocator_id = umpire::resource::Host;
 
   static constexpr bool valid() noexcept { return true; };
   static constexpr char* name() noexcept { return (char*)"[SEQ_EXEC]"; };
-  static umpire::Allocator allocator() noexcept
-  {
-    return axom::getAllocator( umpire::resource::Host );
-  };
-
+  static constexpr int allocatorID() noexcept
+  { return umpire::resource::Host; };
 };
 
 /// @}

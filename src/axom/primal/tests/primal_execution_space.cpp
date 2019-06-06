@@ -45,10 +45,14 @@ void check_invalid( )
 {
   SLIC_INFO( "checking execution space:" <<
               primal::execution_space< ExecSpace >::name() );
+
   EXPECT_FALSE( primal::execution_space< ExecSpace >::valid() );
+
+  EXPECT_EQ( primal::execution_space< ExecSpace >::allocatorID(),
+             axom::INVALID_ALLOCATOR_ID );
+
   EXPECT_EQ( strcmp(primal::execution_space< ExecSpace >::name(),"[UNDEFINED]"),
              0 );
-
 }
 
 //------------------------------------------------------------------------------
@@ -74,8 +78,8 @@ void check_execution_mappings( )
   EXPECT_TRUE( valid_raja_reduce );
   EXPECT_TRUE( valid_raja_atomic );
 
-  umpire::Allocator allocator = primal::execution_space<ExecSpace>::allocator();
-  EXPECT_EQ( allocator.getId(), UmpireAllocator );
+  int allocatorID = primal::execution_space< ExecSpace >::allocatorID();
+  EXPECT_EQ( allocatorID, UmpireAllocator );
 }
 
 } /* end anonymous namespace */
