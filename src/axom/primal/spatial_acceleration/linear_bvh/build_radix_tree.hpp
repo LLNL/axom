@@ -349,7 +349,7 @@ void reorder(int32 *indices, T *&array, int32 size)
 
 //------------------------------------------------------------------------------
 template < typename ExecSpace, typename MCType >
-int32* sort_mcodes( MCType*& mcodes, int32 size, int32* iter )
+void sort_mcodes( MCType*& mcodes, int32 size, int32* iter )
 {
   array_counting< ExecSpace >(iter, size, 0, 1);
 
@@ -364,8 +364,6 @@ int32* sort_mcodes( MCType*& mcodes, int32 size, int32* iter )
 
 
   reorder< ExecSpace >(iter, mcodes, size);
-
-  return iter;
 }
 
 //------------------------------------------------------------------------------
