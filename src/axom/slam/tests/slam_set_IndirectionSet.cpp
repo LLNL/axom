@@ -5,7 +5,7 @@
 
 
 /*
- * \file slam_set_indirectionset.cpp
+ * \file slam_set_IndirectionSet.cpp
  *
  * Most unit tests in this file are parametrized on an Indirection set type
  * using the IndirectionSetTester class

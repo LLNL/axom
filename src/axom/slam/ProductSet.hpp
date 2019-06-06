@@ -61,17 +61,23 @@ public:
    * \param set2  Pointer to the second Set.
    */
 
-  ProductSet(const FirstSetType* set1, const SecondSetType* set2) :
-    BivariateSetType(set1,set2), RangeSetType(set1->size()*set2->size())
+  ProductSet(const FirstSetType* set1, const SecondSetType* set2)
+    : BivariateSetType(set1,set2)
+    , RangeSetType(set1->size()*set2->size())
   {
     //fill in the row data now for getElements(i) function,
     //since every row is the same, a call to getElements() returns the same set.
+    //
+    // HACK -- this should actually be returning a PositionSet since it always
+    //         goes from 0 to secondSetSize()
+    // This requires a change to the return type of BivariateSet::getElements()
     auto size2 = this->secondSetSize();
     m_rowSet_data.resize(size2);
     for (int s2 = 0 ; s2 < size2 ; ++s2)
     {
       m_rowSet_data[s2] = s2;
     }
+
     m_rowSet = typename OrderedSetType::SetBuilder()
                .size(size2)
                .offset(0)

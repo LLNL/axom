@@ -96,13 +96,14 @@ public:
   using SetPosition = typename BSet::PositionType;
   using SetElement = typename BSet::ElementType;
 
-  using SetType = slam::Set<SetPosition,SetElement>;
-  using MapType = Map<DataType, SetType, IndPol, StrPol>;
+  using SetType = slam::RangeSet<SetPosition, SetElement>;
+  using MapType = Map<DataType, Set<SetPosition, SetElement>, IndPol, StrPol>;
   using OrderedSetType = typename BSet::OrderedSetType;
 
   using BivariateMapType = BivariateMap<DataType, BSet, IndPol, StrPol>;
 
-  using SubMapType = SubMap<DataType, SetType, BivariateMapType>;
+  using SubMapSet = typename BSet::SecondSetType;
+  using SubMapType = SubMap<DataType, SubMapSet, BivariateMapType>;
   using SubMapIterator = typename SubMapType::SubMapIterator;
 
   using NullBivariateSetType = NullBivariateSet<typename BSet::FirstSetType,
@@ -129,9 +130,9 @@ public:
                DataType defaultValue = DataType(),
                SetPosition stride = StridePolicyType::DEFAULT_VALUE)
     : StridePolicyType(stride)
-    , m_set(bSet)
-    , m_rangeSet(0, bSet->size())
-    , m_map(&m_rangeSet, defaultValue, stride)
+    , m_bset(bSet)
+    , m_mapSet(bSet->size())
+    , m_map(&m_mapSet, defaultValue, stride)
   {}
 
 
@@ -140,8 +141,8 @@ public:
   {
     using OuterSet = const typename BivariateSetRetType::FirstSetType;
     using InnerSet = const typename BivariateSetRetType::SecondSetType;
-    OuterSet* outer = dynamic_cast<OuterSet*>(m_set->getFirstSet());
-    InnerSet* inner = dynamic_cast<InnerSet*>(m_set->getSecondSet());
+    OuterSet* outer = dynamic_cast<OuterSet*>(m_bset->getFirstSet());
+    InnerSet* inner = dynamic_cast<InnerSet*>(m_bset->getSecondSet());
 
     return BivariateSetRetType(outer, inner);
   }
@@ -179,8 +180,8 @@ private:
       << firstIdx << ", but BivariateMap's first set has size "
       << firstSetSize());
 
-    SetPosition start_idx = m_set->findElementFlatIndex(firstIdx);
-    SetPosition size = m_set->size(firstIdx);
+    SetPosition start_idx = m_bset->findElementFlatIndex(firstIdx);
+    SetPosition size = m_bset->size(firstIdx);
     RangeSet<> rng_set(start_idx, start_idx + size);
     return SubMapType(map_ptr, rng_set);
   }
@@ -240,7 +241,7 @@ public:
   const DataType* findValue(SetPosition s1, SetPosition s2,
                             SetPosition comp = 0) const
   {
-    SetPosition i = m_set->findElementFlatIndex(s1, s2);
+    SetPosition i = m_bset->findElementFlatIndex(s1, s2);
     if (i == BivariateSetType::INVALID_POS)
     {
       //the BivariateSet does not contain this index pair
@@ -252,7 +253,7 @@ public:
   DataType* findValue(SetPosition s1, SetPosition s2,
                       SetPosition comp = 0)
   {
-    SetPosition i = m_set->findElementFlatIndex(s1, s2);
+    SetPosition i = m_bset->findElementFlatIndex(s1, s2);
     if (i == BivariateSetType::INVALID_POS)
     {
       //the BivariateSet does not contain this index pair
@@ -276,7 +277,7 @@ public:
    */
   SetPosition index(SetPosition s1, SetPosition s2) const
   {
-    return m_set->findElementIndex(s1, s2);
+    return m_bset->findElementIndex(s1, s2);
   }
 
   /**
@@ -287,7 +288,7 @@ public:
    */
   OrderedSetType indexSet(SetPosition s1) const
   {
-    return m_set->getElements(s1);
+    return m_bset->getElements(s1);
   }
 
   /**
@@ -296,7 +297,7 @@ public:
    */
   inline SetPosition flatIndex(SetPosition s1, SetPosition s2) const
   {
-    return m_set->findElementFlatIndex(s1, s2);
+    return m_bset->findElementFlatIndex(s1, s2);
   }
 
   /// @}
@@ -516,32 +517,30 @@ public:
 
 
 public:
-  const BivariateSetType* set() const { return m_set; }
+  const BivariateSetType* set() const { return m_bset; }
   const MapType* getMap() const { return &m_map; }
   MapType* getMap() { return &m_map; }
 
 
-  virtual bool        isValid(bool verboseOutput = false) const override
+  virtual bool isValid(bool verboseOutput = false) const override
   {
-    return m_set->isValid(verboseOutput) && m_map.isValid(verboseOutput);
+    return m_bset->isValid(verboseOutput) && m_map.isValid(verboseOutput);
   }
-
-
 
   /// \name BivariateMap cardinality functions
   /// @{
   ///
 
   /** \brief Returns the BivariateSet size. */
-  SetPosition size() const override { return m_set->size(); }
+  SetPosition size() const override { return m_bset->size(); }
   /** \brief Returns the BivariateSet size. */
-  SetPosition totalSize() const { return m_set->size(); }
+  SetPosition totalSize() const { return m_bset->size(); }
 
-  SetPosition firstSetSize() const { return m_set->firstSetSize(); }
-  SetPosition secondSetSize() const { return m_set->secondSetSize(); }
+  SetPosition firstSetSize() const { return m_bset->firstSetSize(); }
+  SetPosition secondSetSize() const { return m_bset->secondSetSize(); }
   /** \brief Returns the number of the BivariateSet ordered pairs with
    *         the given first set index. */
-  SetPosition size(SetPosition s) const { return m_set->size(s); }
+  SetPosition size(SetPosition s) const { return m_bset->size(s); }
   /** \brief Return the number of components of the map  */
   SetPosition numComp() const { return StrPol::stride(); }
 
@@ -565,7 +564,7 @@ private:
   /** \brief Check the indices (DenseIndex) are valid   */
   void verifyPosition(SetPosition s1, SetPosition s2) const
   {
-    m_set->verifyPosition(s1, s2);
+    m_bset->verifyPosition(s1, s2);
   }
 
   /** \brief Check the given ElementFlatIndex is valid.  */
@@ -574,12 +573,12 @@ private:
     SLIC_ASSERT_MSG(
       pos >= 0 && pos < SetPosition(m_map.size()),
       "Attempted to access element "
-      << pos << " but BivairateMap's data has size " << m_map.size());
+      << pos << " but BivariateMap's data has size " << m_map.size());
   }
 
 private:
-  const BivariateSetType* m_set;
-  RangeSet<> m_rangeSet; //for the map... since BivariateSet isn't a slam::Set
+  const BivariateSetType* m_bset;
+  SetType m_mapSet; //for the map... since BivariateSet isn't a slam::Set
   MapType m_map;
 
 }; //end BivariateMap

@@ -13,6 +13,8 @@
 #ifndef SLAM_BIVARIATE_SET_H_
 #define SLAM_BIVARIATE_SET_H_
 
+#include "axom/slic.hpp"
+
 #include "axom/slam/Set.hpp"
 #include "axom/slam/OrderedSet.hpp"
 #include "axom/slam/NullSet.hpp"
@@ -46,9 +48,10 @@ namespace slam
  *
  *  For example, a 2 x 4 sparse matrix below:
  *     \code
- *        0  1  2  3
- *     0  a     b
- *     1     c     d
+ *         0  1  2  3
+ *         _  _  _  _
+ *     0 | a     b
+ *     1 |    c     d
  *     \endcode
  *
  *   Access the elements using DenseIndex `(i,j)` would be...\n
@@ -76,12 +79,12 @@ template<typename Set1 = slam::Set<>,
 class BivariateSet
 {
 public:
-  using FirstSetType = Set1;
+  using FirstSetType  = Set1;
   using SecondSetType = Set2;
 
   using PositionType = typename FirstSetType::PositionType;
-  using ElementType = typename FirstSetType::ElementType;
-  using NullSetType = NullSet<PositionType, ElementType>;
+  using ElementType  = typename FirstSetType::ElementType;
+  using NullSetType  = NullSet<PositionType, ElementType>;
 
   using OrderedSetType = OrderedSet<
           PositionType,
@@ -105,11 +108,17 @@ public:
    * \param set2  Pointer to the second Set.
    */
   BivariateSet(
-    const FirstSetType* set1 = policies::EmptySetTraits<FirstSetType>::emptySet(),
-    const SecondSetType* set2 =
-      policies::EmptySetTraits<SecondSetType>::emptySet() )
+    const Set1* set1 = policies::EmptySetTraits<Set1>::emptySet(),
+    const Set2* set2 = policies::EmptySetTraits<Set2>::emptySet() )
     : m_set1(set1), m_set2(set2)
   { }
+
+  /**
+   * \brief Default virtual destructor
+   *
+   * \note BivariateSet does not own the two underlying sets
+   */
+  virtual ~BivariateSet() = default;
 
   /**
    * \brief Searches for the SparseIndex of the element given its DenseIndex.
@@ -191,21 +200,7 @@ public:
    */
   virtual const OrderedSetType getElements(PositionType s1) const = 0;
 
-  virtual bool isValid(bool verboseOutput = false) const
-  {
-
-    if (m_set1 == nullptr || m_set2 == nullptr)
-    {
-      if (verboseOutput)
-      {
-        std::cout << "\n*** BivariateSet is not valid:\n"
-                  << "\t* Set pointers should not be null.\n"
-                  << std::endl;
-      }
-      return false;
-    }
-    return true;
-  }
+  virtual bool isValid(bool verboseOutput = false) const;
 
   virtual void verifyPosition(PositionType s1, PositionType s2) const = 0;
 
@@ -232,9 +227,26 @@ protected:
 };
 
 
-template<typename FirstSetType, typename SecondSetType>
-const typename BivariateSet<FirstSetType, SecondSetType>::NullSetType
-BivariateSet<FirstSetType, SecondSetType>::s_nullSet;
+template<typename Set1, typename Set2>
+const typename BivariateSet<Set1, Set2>::NullSetType
+BivariateSet<Set1, Set2>::s_nullSet;
+
+
+template<typename Set1, typename Set2>
+bool BivariateSet<Set1, Set2>::isValid(bool verboseOutput) const
+{
+
+  if (m_set1 == nullptr || m_set2 == nullptr)
+  {
+    if (verboseOutput)
+    {
+      SLIC_INFO("BivariateSet is not valid: "
+                << " Set pointers should not be null.");
+    }
+    return false;
+  }
+  return m_set1->isValid(verboseOutput) && m_set2->isValid(verboseOutput);
+}
 
 
 /**
@@ -242,11 +254,13 @@ BivariateSet<FirstSetType, SecondSetType>::s_nullSet;
  *
  * \brief A Null BivariateSet class. Same as the NullSet for Set class.
  */
-template<typename FirstSetType = slam::Set<>,
-         typename SecondSetType = slam::Set<> >
-class NullBivariateSet : public BivariateSet<FirstSetType,SecondSetType>
+template<typename SetType1 = slam::Set<>,
+         typename SetType2 = slam::Set<> >
+class NullBivariateSet : public BivariateSet<SetType1,SetType2>
 {
 public:
+  using FirstSetType = SetType1;
+  using SecondSetType = SetType2;
   using BSet = BivariateSet<FirstSetType,SecondSetType>;
   using PositionType = typename BSet::PositionType;
   using ElementType = typename BSet::ElementType;
