@@ -181,8 +181,15 @@ void check_build_bvh2d( )
 {
   constexpr int NUM_BOXES = 2;
   constexpr int NDIMS     = 2;
-  FloatType boxes[ ]      = { 0., 0., 1., 1.,
-                              1., 1., 2., 2. };
+
+  umpire::Allocator current_allocator = axom::getDefaultAllocator();
+  axom::setDefaultAllocator( primal::execution_space<ExecSpace>::allocatorID());
+
+  FloatType* boxes = axom::allocate< FloatType >( 8 );
+  boxes[ 0 ] = boxes[ 1 ] = 0.;
+  boxes[ 2 ] = boxes[ 3 ] = 1.;
+  boxes[ 4 ] = boxes[ 5 ] = 1.;
+  boxes[ 6 ] = boxes[ 7 ] = 2.;
 
   primal::BVH< NDIMS, ExecSpace, FloatType > bvh( boxes, NUM_BOXES );
   bvh.build( );
@@ -197,6 +204,8 @@ void check_build_bvh2d( )
     EXPECT_DOUBLE_EQ( hi[ idim ], 2.0 );
   }
 
+  axom::deallocate( boxes );
+  axom::setDefaultAllocator( current_allocator );
 }
 
 //------------------------------------------------------------------------------
@@ -205,8 +214,15 @@ void check_build_bvh3d( )
 {
   constexpr int NUM_BOXES = 2;
   constexpr int NDIMS     = 3;
-  FloatType boxes[ ]      = { 0., 0., 0., 1., 1., 1.,
-                              1., 1., 1., 2., 2., 2. };
+
+  umpire::Allocator current_allocator = axom::getDefaultAllocator();
+  axom::setDefaultAllocator( primal::execution_space<ExecSpace>::allocatorID());
+
+  FloatType* boxes = axom::allocate< FloatType >( 12 );
+  boxes[ 0 ] = boxes[  1 ] = boxes[  2 ] = 0.;
+  boxes[ 3 ] = boxes[  4 ] = boxes[  5 ] = 1.;
+  boxes[ 6 ] = boxes[  7 ] = boxes[  8 ] = 1.;
+  boxes[ 9 ] = boxes[ 10 ] = boxes[ 11 ] = 2.;
 
   primal::BVH< NDIMS, ExecSpace, FloatType > bvh( boxes, NUM_BOXES );
   bvh.build( );
@@ -221,6 +237,8 @@ void check_build_bvh3d( )
     EXPECT_DOUBLE_EQ( hi[ idim ], 2.0 );
   }
 
+  axom::deallocate( boxes );
+  axom::setDefaultAllocator( current_allocator );
 }
 
 } /* end unnamed namespace */
@@ -261,7 +279,7 @@ TEST( primal_bvh, contruct3D_omp )
 
 //------------------------------------------------------------------------------
 #ifdef AXOM_USE_CUDA
-TEST( primal_bvh, contruct2D_cuda )
+AXOM_CUDA_TEST( primal_bvh, contruct2D_cuda )
 {
   constexpr int BLOCK_SIZE = 256;
   check_build_bvh2d< primal::CUDA_EXEC< BLOCK_SIZE >, float >( );
@@ -269,7 +287,7 @@ TEST( primal_bvh, contruct2D_cuda )
 }
 
 //------------------------------------------------------------------------------
-TEST( primal_bvh, contruct3D_cuda )
+AXOM_CUDA_TEST( primal_bvh, contruct3D_cuda )
 {
   constexpr int BLOCK_SIZE = 256;
   check_build_bvh3d< primal::CUDA_EXEC< BLOCK_SIZE >, float >( );
