@@ -92,9 +92,13 @@ void check_execution_mappings( )
 TEST( primal_execution_space, check_valid )
 {
   check_valid< primal::SEQ_EXEC >( );
+
+#ifdef AXOM_USE_OPENMP
   check_valid< primal::OMP_EXEC >( );
+#endif
+
 #ifdef AXOM_USE_CUDA
-  check_valid< primal::CUDA_EXEC >( );
+  check_valid< primal::CUDA_EXEC< 256 > >( );
 #endif
 }
 
@@ -144,7 +148,7 @@ TEST( primal_execution_space, check_cuda_exec )
 
   check_execution_mappings< primal::CUDA_EXEC< BLOCK_SIZE >,
                             RAJA::cuda_exec< BLOCK_SIZE >,
-                            RAJA::cuda_reduce< BLOCK_SIZE >,
+                            RAJA::cuda_reduce,
                             RAJA::atomic::cuda_atomic,
                             umpire::resource::Unified >( );
 

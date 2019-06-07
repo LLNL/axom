@@ -37,7 +37,6 @@
 #include "gtest/gtest.h"
 
 using namespace axom;
-namespace mint   = axom::mint;
 namespace xargs  = mint::xargs;
 namespace policy = mint::policy;
 
@@ -264,15 +263,17 @@ TEST( primal_bvh, contruct3D_omp )
 #ifdef AXOM_USE_CUDA
 TEST( primal_bvh, contruct2D_cuda )
 {
-  check_build_bvh2d< primal::OMP_EXEC, float >( );
-  check_build_bvh2d< primal::OMP_EXEC, double >( );
+  constexpr int BLOCK_SIZE = 256;
+  check_build_bvh2d< primal::CUDA_EXEC< BLOCK_SIZE >, float >( );
+  check_build_bvh2d< primal::CUDA_EXEC< BLOCK_SIZE >, double >( );
 }
 
 //------------------------------------------------------------------------------
 TEST( primal_bvh, contruct3D_cuda )
 {
-  check_build_bvh3d< primal::OMP_EXEC, float >( );
-  check_build_bvh3d< primal::OMP_EXEC, double >( );
+  constexpr int BLOCK_SIZE = 256;
+  check_build_bvh3d< primal::CUDA_EXEC< BLOCK_SIZE >, float >( );
+  check_build_bvh3d< primal::CUDA_EXEC< BLOCK_SIZE >, double >( );
 }
 #endif
 

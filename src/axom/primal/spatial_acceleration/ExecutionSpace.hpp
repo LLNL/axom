@@ -97,7 +97,7 @@ template < int BLOCK_SIZE >
 struct execution_space< CUDA_EXEC< BLOCK_SIZE > >
 {
   using raja_exec   = RAJA::cuda_exec< BLOCK_SIZE >;
-  using raja_reduce = RAJA::cude_reduce< BLOCK_SIZE >;
+  using raja_reduce = RAJA::cuda_reduce;
   using raja_atomic = RAJA::atomic::cuda_atomic;
 
   static constexpr bool valid() noexcept { return true; };
