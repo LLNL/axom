@@ -102,8 +102,7 @@ public:
 
   using BivariateMapType = BivariateMap<DataType, BSet, IndPol, StrPol>;
 
-  using SubMapSet = typename BSet::SecondSetType;
-  using SubMapType = SubMap<DataType, SubMapSet, BivariateMapType>;
+  using SubMapType = SubMap<BivariateMapType, SetType>;
   using SubMapIterator = typename SubMapType::SubMapIterator;
 
   using NullBivariateSetType = NullBivariateSet<typename BSet::FirstSetType,

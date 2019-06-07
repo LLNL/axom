@@ -78,12 +78,12 @@ private:
   template <typename T>
   using MapType = slam::Map<T, SetType, IndPolicy<T>, MapStrideType>;
 
-  template <typename T>
+  template <typename T, typename BSet = BivariateSetType>
   using BivariateMapType =
-          slam::BivariateMap<T, BivariateSetType, IndPolicy<T>, MapStrideType>;
+          slam::BivariateMap<T, BSet, IndPolicy<T>, MapStrideType>;
 
-  template<typename T, typename M>
-  using SubMap = slam::SubMap<T, SetType, M>;
+  template<typename M>
+  using SubMap = slam::SubMap<M,SetType>;
 
 public:
 
@@ -97,11 +97,12 @@ public:
   template <typename T>
   using Field1D = MapType<T>;
 
-  template <typename T>
-  using Field2D = BivariateMapType<T>;
+  template <typename T,typename BSet = BivariateSetType>
+  using Field2D = BivariateMapType<T, BSet>;
+
 
   template <typename T>
-  using SubField = SubMap<T, Field2D<T> >;
+  using SubField = SubMap< Field2D<T> >;
 
   using IndexSet = RangeSetType; //For returning set of SparseIndex
   using IdSet = OrderedSetType;  //For returning set of DenseIndex
@@ -561,6 +562,9 @@ MultiMat::Field2D<T>& MultiMat::get2dField(const std::string& field_name)
     throw std::invalid_argument("No field with this name is found");
 
   SLIC_ASSERT(m_fieldMappingVec[fieldIdx] == FieldMapping::PER_CELL_MAT);
+
+  //auto* pmap = dynamic_cast<Field2D<T>*>(m_mapVec[fieldIdx]);
+
   return *dynamic_cast<Field2D<T>*>(m_mapVec[fieldIdx]);
 }
 

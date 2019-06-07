@@ -162,7 +162,7 @@ void various_traversal_methods(int nmats, int ncells, int ncomp,
     for (int i = 0 ; i < map2d.firstSetSize() ; i++)
     {
       MultiMat::IdSet rel_set = map2d.indexSet(i);
-      MultiMat::SubField<double> submap = map2d(i);
+      auto submap = map2d(i);
       SLIC_ASSERT(rel_set.size() == submap.size());
       for (int k = 0 ; k < submap.size() ; k++)
       {
@@ -282,7 +282,7 @@ void various_traversal_methods(int nmats, int ncells, int ncomp,
     MultiMat::Field2D<double>& map2d = mm.get2dField<double>("CellMat Array");
     for (int i = 0 ; i < map2d.firstSetSize() ; i++)
     {
-      MultiMat::SubField<double> submap = map2d(i);
+      auto submap = map2d(i);
       for (auto iter = submap.begin() ; iter != submap.end() ; iter++)
       {
         //int idx = iter.index();  //get the index
@@ -310,8 +310,7 @@ void various_traversal_methods(int nmats, int ncells, int ncomp,
     MultiMat::Field2D<double>& map2d = mm.get2dField<double>("CellMat Array");
     for (int i = 0 ; i < mm.getNumberOfCells() /*map2d.firstSetSize()*/ ; i++)
     {
-      for (MultiMat::SubField<double>::SubMapIterator iter = map2d.begin(i) ;
-           iter != map2d.end(i) ; iter++)
+      for (auto iter = map2d.begin(i); iter != map2d.end(i) ; iter++)
       {
         // int idx = iter.index(); get the index
         for (int comp = 0 ; comp < map2d.numComp() ; ++comp)
@@ -341,8 +340,7 @@ void various_traversal_methods(int nmats, int ncells, int ncomp,
     MultiMat::Field2D<double>& map2d = mm.get2dField<double>("CellMat Array");
     for (int i = 0 ; i < mm.getNumberOfCells() ; i++)
     {
-      MultiMat::SubField<double> submap = map2d(i);
-      for (double val : submap)
+      for (double val : map2d(i) )
       {
         sum += val;          //<----
       }

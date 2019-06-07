@@ -239,8 +239,8 @@ void average_density_cell_dom_mm_submap(MultiMat& mm) {
     << mm.getSparsityLayoutAsString());
   SLIC_ASSERT(mm.isCellDom());
 
-  using SetType = slam::RangeSet<>;
-  using ProductSet = slam::ProductSet<SetType,SetType>;
+  //using SetType = slam::RangeSet<>;
+  //using ProductSet = slam::ProductSet<SetType,SetType>;
 
   int ncells = mm.getNumberOfCells();
   auto& Densityfrac = mm.get2dField<double>("Densityfrac");
@@ -299,9 +299,9 @@ void average_density_cell_dom_mm_idxarray(MultiMat& mm) {
   SLIC_ASSERT(mm.isCellDom());
 
   int ncells = mm.getNumberOfCells();
-  MultiMat::Field2D<double> & Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double> & Volfrac = mm.get2dField<double>("Volfrac");
-  MultiMat::Field1D<double> & Vol = mm.get1dField<double>("Vol");
+  auto& Densityfrac = mm.get2dField<double>("Densityfrac");
+  auto& Volfrac = mm.get2dField<double>("Volfrac");
+  auto& Vol = mm.get1dField<double>("Vol");
 
   vector<double> Density_average(ncells);
   
@@ -609,8 +609,8 @@ void average_density_mat_dom_mm_submap(MultiMat& mm) {
 
     for (int m = 0 ; m < nmats ; ++m)
     {
-      MultiMat::SubField<double> Densityfrac_row = Densityfrac(m);
-      MultiMat::SubField<double> Volfrac_row = Volfrac(m);
+      auto Densityfrac_row = Densityfrac(m);
+      auto Volfrac_row = Volfrac(m);
       for (int j = 0 ; j < Volfrac_row.size() ; ++j)
       {
         Density_average[Densityfrac_row.index(j)] += Densityfrac_row(j) * Volfrac_row(j);
@@ -973,9 +973,9 @@ void calculate_pressure_cell_dom_full_mm_submap(MultiMat& mm)
 
     for (int ic = 0 ; ic < ncells ; ++ic)
     {
-      MultiMat::SubField<double> Densityfrac_row = Densityfrac(ic);
-      MultiMat::SubField<double> Volfrac_row = Volfrac(ic);
-      MultiMat::SubField<double> Tempfrac_row = Temperaturefrac(ic);
+      auto Densityfrac_row = Densityfrac(ic);
+      auto Volfrac_row = Volfrac(ic);
+      auto Tempfrac_row = Temperaturefrac(ic);
 
       for (int j = 0 ; j < Volfrac_row.size() ; ++j)
       {
@@ -1241,9 +1241,9 @@ void calculate_pressure_mat_dom_full_mm_submap(MultiMat& mm)
 
     for (int m = 0; m < nmats; ++m) 
     {
-      MultiMat::SubField<double> Densityfrac_row = Densityfrac(m);
-      MultiMat::SubField<double> Volfrac_row = Volfrac(m);
-      MultiMat::SubField<double> Tempfrac_row = Temperaturefrac(m);
+      auto Densityfrac_row = Densityfrac(m);
+      auto Volfrac_row = Volfrac(m);
+      auto Tempfrac_row = Temperaturefrac(m);
 
       for (int j = 0 ; j < Volfrac_row.size() ; ++j)
       {
@@ -1684,8 +1684,8 @@ void average_density_over_nbr_cell_dom_full_mm_submap(MultiMat& mm, Robey_data& 
 
     for (int ic = 0 ; ic < ncells ; ++ic)
     {
-      MultiMat::SubField<double> Densityfrac_row = Densityfrac(ic);
-      MultiMat::SubField<double> Volfrac_row = Volfrac(ic);
+      auto Densityfrac_row = Densityfrac(ic);
+      auto Volfrac_row = Volfrac(ic);
 
       double xc[2];
       xc[0] = cen[ic * 2]; xc[1] = cen[ic * 2 + 1];
@@ -1898,7 +1898,7 @@ void average_density_over_nbr_cell_dom_compact_mm_submap(MultiMat& mm, Robey_dat
         }
       }
 
-      MultiMat::SubField<double> Densityfrac_row = Densityfrac(ic);
+      auto Densityfrac_row = Densityfrac(ic);
 
       for (int k = 0; k < Densityfrac_row.size(); ++k)
       {
@@ -2392,8 +2392,8 @@ void average_density_over_nbr_mat_dom_full_mm_submap(MultiMat& mm, Robey_data& d
     timer.start();
 
     for (int m = 0; m < nmats; ++m) {
-      MultiMat::SubField<double> Densityfrac_row = Densityfrac(m);
-      MultiMat::SubField<double> Volfrac_row = Volfrac(m);
+      auto Densityfrac_row = Densityfrac(m);
+      auto Volfrac_row = Volfrac(m);
       for (int ic = 0; ic < Volfrac_row.size(); ++ic) {
         if (Volfrac_row(ic) > 0.0) {
           double xc[2];
@@ -2559,7 +2559,7 @@ void average_density_over_nbr_mat_dom_compact_mm_submap(MultiMat& mm, Robey_data
 
     for (int m = 0; m < nmats; ++m) 
     {
-      MultiMat::SubField<double> Densityfrac_row = Densityfrac(m);
+      auto Densityfrac_row = Densityfrac(m);
       for (int k = 0; k < Densityfrac_row.size(); ++k)
       {
         int ci = Densityfrac_row.index(k);
@@ -2842,6 +2842,8 @@ int main(int argc, char** argv)
   average_density_cell_dom_mm_direct(mm);
 
   average_density_cell_dom_mm_submap(mm);
+  average_density_cell_dom_mm_idxarray(mm);
+
   //average_density_cell_dom_mm_iter(mm);
   //average_density_cell_dom_mm_flatiter(mm);
 
