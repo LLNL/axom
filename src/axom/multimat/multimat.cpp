@@ -298,7 +298,7 @@ MultiMat::IndexSet MultiMat::getIndexingSetOfCell(int c)
   {
     SLIC_ASSERT(m_sparsityLayout == SparsityLayout::DENSE);
     int size2 = m_cellMatProdSet->secondSetSize();
-    return RangeSetType(c*size2, (c + 1)*size2 - 1);
+    return RangeSetType(c*size2, (c + 1)*size2);
   }
 }
 
