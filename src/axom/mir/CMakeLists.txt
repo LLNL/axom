@@ -16,11 +16,19 @@ axom_component_requires(NAME       MIR
 # Specify all headers/sources
 #------------------------------------------------------------------------------
 set(mir_headers
-
+    MIRMesh.hpp
+    MIRMeshTypes.hpp
+    ZooBitMaps.hpp
+    InterfaceReconstructor.hpp
+    CellData.hpp
     )
 
 set(mir_sources
     ../Axom.cpp
+    MIRMesh.cpp
+    InterfaceReconstructor.cpp
+    ZooBitMaps.cpp
+    CellData.cpp
     )
 
 #------------------------------------------------------------------------------

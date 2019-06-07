@@ -5,6 +5,7 @@
 
 set( mir_examples
      mir_tutorial.cpp
+     mir_tutorial_simple.cpp
    )
 
 set( mir_example_dependencies
