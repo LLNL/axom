@@ -17,6 +17,9 @@
 
 // RAJA includes
 #include "RAJA/RAJA.hpp"
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
+#include "cub/device/device_radix_sort.cuh"
+#endif
 
 namespace axom
 {
@@ -362,13 +365,11 @@ void reorder(int32 *indices, T *&array, int32 size)
 }
 
 //------------------------------------------------------------------------------
-template < typename ExecSpace, typename MCType >
-void sort_mcodes( MCType*& mcodes, int32 size, int32* iter )
+template < typename ExecSpace >
+void custom_sort( ExecSpace, uint32*& mcodes, int32 size, int32* iter )
 {
   array_counting< ExecSpace >(iter, size, 0, 1);
 
-  // TODO: create custom sort for GPU / CPU
-  // WARNING: this will segfault with CUDA and not unified memory
   std::sort(iter,
             iter + size,
             [=](int32 i1, int32 i2)
@@ -378,6 +379,52 @@ void sort_mcodes( MCType*& mcodes, int32 size, int32* iter )
 
 
   reorder< ExecSpace >(iter, mcodes, size);
+}
+
+//------------------------------------------------------------------------------
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA) && \
+    defined(RAJA_ENABLE_CUDA)
+template < int BLOCK_SIZE >
+void custom_sort( primal::CUDA_EXEC< BLOCK_SIZE >,
+                  uint32*& mcodes, int32 size, int32* iter )
+{
+  using ExecSpace = primal::CUDA_EXEC< BLOCK_SIZE >;
+  array_counting< primal::CUDA_EXEC< BLOCK_SIZE > >(iter, size, 0, 1);
+
+  uint32* mcodes_alt_buf = axom::allocate< uint32 >( size );
+  int32*  iter_alt_buf   = axom::allocate< int32 >( size );
+
+  // create double buffers
+  ::cub::DoubleBuffer< uint32 > d_keys( mcodes, mcodes_alt_buf );
+  ::cub::DoubleBuffer< int32 >  d_values( iter, iter_alt_buf );
+
+  // determine temporary device storage requirements
+  void * d_temp_storage     = nullptr;
+  size_t temp_storage_bytes = 0;
+  ::cub::DeviceRadixSort::SortPairs( d_temp_storage, temp_storage_bytes,
+                                   d_keys, d_values, size );
+
+  // Allocate temporary storage
+  d_temp_storage = (void*)axom::allocate< unsigned char >( temp_storage_bytes );
+
+
+  // Run sorting operation
+  ::cub::DeviceRadixSort::SortPairs( d_temp_storage, temp_storage_bytes,
+                                     d_keys, d_values, size );
+
+  // Free temporary storage
+  axom::deallocate( d_temp_storage );
+  axom::deallocate( mcodes_alt_buf );
+  axom::deallocate( iter_alt_buf );
+}
+#endif
+
+//------------------------------------------------------------------------------
+template < typename ExecSpace  >
+void sort_mcodes( uint32*& mcodes, int32 size, int32* iter )
+{
+  // dispatch
+  custom_sort( ExecSpace(), mcodes, size, iter );
 }
 
 //------------------------------------------------------------------------------
