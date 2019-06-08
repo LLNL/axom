@@ -103,6 +103,7 @@ public:
   using BivariateMapType = BivariateMap<DataType, BSet, IndPol, StrPol>;
 
   using SubMapType = SubMap<BivariateMapType, SetType>;
+  using ConstSubMapType = const SubMap<const BivariateMapType, SetType>;
   using SubMapIterator = typename SubMapType::SubMapIterator;
 
   using NullBivariateSetType = NullBivariateSet<typename BSet::FirstSetType,
@@ -162,37 +163,28 @@ public:
   }
   DataType& operator[](SetPosition setIndex) { return m_map[setIndex]; }
 
-private:
-  //template for both const / non-const SubMap creator, given the firstIdx and
-  //this pointer, which could be const or non-const.
-  template <class constOrNonConstMap>
-  SubMapType makeSubMap(SetPosition firstIdx, constOrNonConstMap* map_ptr) const
-  {
-    SLIC_ASSERT_MSG(firstIdx >= 0 && firstIdx < firstSetSize(),
-      "Attempted to access elements with first set index "
-      << firstIdx << ", but BivariateMap's first set has size "
-      << firstSetSize());
-
-    SetPosition start_idx = m_bset->findElementFlatIndex(firstIdx);
-    SetPosition size = m_bset->size(firstIdx);
-    RangeSet<> rng_set(start_idx, start_idx + size);
-    return SubMapType(map_ptr, rng_set);
-  }
-
 public:
   /**
    * \brief Returns a SubMap containing the subset of the BivariateMap given the
    *        first set index
    * \pre 0 <= firstIdx < size(firstIdx)
    */
-  const SubMapType operator() (SetPosition firstIdx) const
+  const ConstSubMapType operator() (SetPosition firstIdx) const
   {
-    return makeSubMap<const BivariateMapType>(firstIdx, this);
+      verifyFirstSetIndex(firstIdx);
+      const SetPosition start_idx = m_bset->findElementFlatIndex(firstIdx);
+      const SetPosition end_idx = start_idx + m_bset->size(firstIdx);
+      SetType s(start_idx, end_idx);
+      return ConstSubMapType(this, s );
   }
 
   SubMapType operator() (SetPosition firstIdx)
   {
-    return makeSubMap<BivariateMapType>(firstIdx, this);
+      verifyFirstSetIndex(firstIdx);
+      const SetPosition start_idx = m_bset->findElementFlatIndex(firstIdx);
+      const SetPosition end_idx = start_idx + m_bset->size(firstIdx);
+      SetType s(start_idx, end_idx);
+      return SubMapType(this, s);
   }
 
   /**
@@ -504,7 +496,7 @@ public:
   const MapType* getMap() const { return &m_map; }
   MapType* getMap() { return &m_map; }
 
-  virtual bool        isValid(bool verboseOutput = false) const override
+  virtual bool isValid(bool verboseOutput = false) const override
   {
     return m_bset->isValid(verboseOutput) && m_map.isValid(verboseOutput);
   }
@@ -554,6 +546,16 @@ private:
       "Attempted to access element "
       << pos << " but BivariateMap's data has size " << m_map.size());
   }
+
+  void verifyFirstSetIndex(SetPosition AXOM_DEBUG_PARAM(firstIdx)) const
+  {
+      SLIC_ASSERT_MSG(
+          firstIdx >= 0 && firstIdx < firstSetSize(),
+          "Attempted to access elements with first set index "
+          << firstIdx << ", but BivariateMap's first set has size "
+          << firstSetSize());
+  }
+
 
 private:
   const BivariateSetType* m_bset;
