@@ -133,7 +133,7 @@ MultiMat& MultiMat::operator=(const MultiMat& other)
 
   throw axom::slam::NotImplementedException();
 
-  return *this;
+  //return *this;
 }
 
 
@@ -806,8 +806,7 @@ bool MultiMat::isValid(bool verboseOutput) const
     }
     else
     {
-      const Field2D<double>& volfrac_map =
-        *dynamic_cast<Field2D<double>*>(m_mapVec[0]);
+      const auto& volfrac_map = *dynamic_cast<Field2D<double>*>(m_mapVec[0]);
 
       //Check Volfrac values match the relation value (if dense)
       if (isDense() && !m_dynamic_mode)
@@ -846,7 +845,7 @@ bool MultiMat::isValid(bool verboseOutput) const
       std::vector<double> volfrac_sum(m_cellSet.size(), 0.0);
       for (int i = 0 ; i < volfrac_map.firstSetSize() ; ++i)
       {
-        auto& submap = volfrac_map(i);
+        const auto& submap = volfrac_map(i);
         for (int j = 0 ; j < submap.size() ; ++j)
         {
           if (isCellDom())

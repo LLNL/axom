@@ -19,6 +19,8 @@
 #include "axom/slam/RangeSet.hpp"
 #include "axom/slam/SubMap.hpp"
 
+#include <type_traits>
+
 namespace
 {
 
@@ -31,10 +33,7 @@ using ElementType = SetBase::ElementType;
 using RangeSetType = slam::RangeSet<PositionType, ElementType>;
 
 template<typename T>
-using Map = slam::Map<T, SetBase>;
-
-template<typename M>
-using SubMap= slam::SubMap<M,SetBase>;
+using SuperMap = slam::Map<T, SetBase>;
 
 using OrderedSetType = axom::slam::OrderedSet<
         PositionType,
@@ -49,64 +48,53 @@ static const double multFac = 1.0001;
 
 static PositionType const MAX_SET_SIZE = 10;
 
-} // end anonymous namepsace
-
-
-TEST(slam_map,construct_empty_subsetmap)
-{
-  SubMap<Map<int> > m;
-
-  EXPECT_TRUE(m.isValid(true));
-}
-
 template<typename T>
 T getValue(int idx)
 {
-  return static_cast<T>(idx * multFac);
+    return static_cast<T>(idx * multFac);
 }
 
 //A struct to construct the Map for testing
 template<typename T>
 struct MapForTest
 {
-  MapForTest(int size) :
-    set_data(size),
-    s(OrderedSetType::SetBuilder()
-      .size(size)
-      .data(&set_data)),
-    m(&s)
-  {
-    SLIC_INFO("\nCreating set of size " << s.size());
-    for (int i = 0 ; i < size ; i++)
+    MapForTest(int size)
+        : set_data(size)
+        , s(OrderedSetType::SetBuilder().size(size).data(&set_data))
+        , m(&s)
     {
-      set_data[i] = 100 + i;
+        SLIC_INFO("Initializing set of size " << s.size()
+            << " and '" << slam::util::TypeToString<T>::to_string()
+            << "' map on the set ");
+
+        for (auto i : s.positions())
+        {
+            s[i] = 100 + i;
+            m[i] = getValue<T>(i);
+        }
+
+        EXPECT_TRUE(s.isValid());
+        EXPECT_TRUE(m.isValid());
     }
 
-    EXPECT_EQ(s.size(), size);
-    EXPECT_TRUE(s.isValid());
-
-    SLIC_INFO("\nCreating " << slam::util::TypeToString<T>::to_string()
-                            << " map on the set ");
-
-    EXPECT_TRUE(m.isValid());
-
-    SLIC_INFO("\nSetting the elements.");
-    for (PositionType idx = 0 ; idx < m.size() ; ++idx)
-    {
-      m[idx] = getValue<T>(idx);
-    }
-  }
-
-  std::vector<PositionType> set_data;
-  OrderedSetType s;
-  Map<T> m;
+    std::vector<PositionType> set_data;
+    OrderedSetType s;
+    SuperMap<T> m;
 };
+
+} // end anonymous namepsace
+
+
+TEST(slam_map,construct_empty_subsetmap)
+{
+  slam::SubMap<SuperMap<int>, RangeSetType > m;
+  EXPECT_TRUE(m.isValid(true));
+}
 
 template<typename T>
 bool constructAndTestSubMap()
 {
-  using MapType = Map<T>;
-  using SubMapType = SubMap<MapType>;
+  using MapType = SuperMap<T>;
 
   MapForTest<T> mft(MAX_SET_SIZE);
   MapType& m = mft.m;
@@ -115,33 +103,60 @@ bool constructAndTestSubMap()
   int submapOffset = 3;
   int submapSize = 5;
   {
-    SLIC_INFO("\nCreating the Subset.");
+    using SubMapType = slam::SubMap<MapType, RangeSetType>;
+
+    SLIC_INFO("Creating the Subset.");
     RangeSetType ss(submapOffset, submapOffset + submapSize);
     SubMapType ssm(&m, ss);
-    EXPECT_TRUE(m.isValid(true));
+    EXPECT_TRUE(ssm.isValid(true));
 
-    SLIC_INFO("\nChecking the elements.");
-    for (PositionType idx = 0 ; idx < submapSize ; ++idx)
+    SLIC_INFO("Checking the elements.");
+    for (auto idx = 0 ; idx < ssm.size() ; ++idx)
     {
-      EXPECT_EQ(ssm[idx], getValue<T>(submapOffset + idx));
+      auto expVal = getValue<T>(submapOffset + idx);
+      EXPECT_EQ(expVal, ssm[idx]);
     }
 
-    EXPECT_TRUE(ssm.isValid(true));
+    SLIC_INFO("Checking the elements using SubMap iterator.");
+    int cnt = 0;
+    for (auto it = ssm.begin(); it != ssm.end(); ++it, ++cnt)
+    {
+        // Check iterator's .index() function
+        {
+           auto subMapElt = it.index();
+
+           auto setIdx = ss[cnt];
+           auto expSetElt = s[setIdx];
+           EXPECT_EQ(expSetElt, subMapElt);
+        }
+
+        // Check iterator's value access functions
+        {
+           auto mapVal = it.value();
+           EXPECT_EQ(mapVal, *it);
+           EXPECT_EQ(mapVal, it());
+           EXPECT_EQ(mapVal, it[0]);
+
+           auto expVal = getValue<T>(submapOffset + cnt);
+           EXPECT_EQ(expVal, mapVal);
+        }
+    }
   }
 
   {
-    SLIC_INFO("\nCreating Subset 2");
+    using SubMapType = slam::SubMap<MapType, OrderedSetType>;
+
+    SLIC_INFO("Creating Subset 2");
     std::vector<PositionType> subset_indices_data(submapSize);
     for (int i = 0 ; i < submapSize ; i++)
       subset_indices_data[i] = i * 2;
     OrderedSetType subset_indices = OrderedSetType::SetBuilder()
                                     .size(5)
-                                    .offset(0)
                                     .data(&subset_indices_data);
 
     SubMapType ssm(&m, subset_indices);
 
-    SLIC_INFO("\nChecking the elements.");
+    SLIC_INFO("Checking the elements.");
     for (PositionType idx = 0 ; idx < submapSize ; ++idx)
     {
       EXPECT_EQ(ssm[idx], getValue<T>(subset_indices[idx] ));
@@ -154,12 +169,12 @@ bool constructAndTestSubMap()
 
 TEST(slam_map,construct_int_submap)
 {
-  //EXPECT_TRUE(constructAndTestSubMap<int>() );
+  EXPECT_TRUE(constructAndTestSubMap<int>() );
 }
 
 TEST(slam_map,construct_double_submap)
 {
-  //EXPECT_TRUE(constructAndTestSubMap<double>());
+  EXPECT_TRUE(constructAndTestSubMap<double>());
 }
 
 
@@ -169,8 +184,8 @@ bool constructBySubMap()
   //This tests modifying the values in the original map via a Submap
   //Create a Map, then create a SubMap on the Map, negate all values covered by
   //the Submap, then check the values are negative in the SubMap range.
-  using MapType = Map<T>;
-  using SubMapType = SubMap<MapType>;
+  using MapType = SuperMap<T>;
+  using SubMapType = slam::SubMap<MapType, RangeSetType>;
 
   MapForTest<T> mft(MAX_SET_SIZE);
   MapType& m = mft.m;
@@ -205,16 +220,13 @@ bool constructBySubMap()
 
 TEST(slam_map, construct_with_int_submap)
 {
-  //EXPECT_TRUE(constructBySubMap<int>());
+  EXPECT_TRUE(constructBySubMap<int>());
 }
 
 TEST(slam_map, construct_with_double_submap)
 {
-  //EXPECT_TRUE(constructBySubMap<double>());
+  EXPECT_TRUE(constructBySubMap<double>());
 }
-
-//Some SubMap iterator tests in BivariateMap.
-//TODO add more iterator tests here
 
 //----------------------------------------------------------------------
 

@@ -41,7 +41,8 @@ namespace slam
  * in its first set.
  *
  * \tparam SuperMapType the type of SuperMap
- * \tparam SetType defines the Position and Element types of the underlying set
+ * \tparam SetType defines the indices int the super map. 
+ *         SetType cannot be abstract.
  *
  * \warning SubMap constructor can take a const Map pointer or a non-const Map
  *        pointer. A non-const value access function in SubMap will fail if the
@@ -50,44 +51,26 @@ namespace slam
  * \see Map, BivariateMap
  */
 
-/// TODO: Modify code so that default SetType uses an indirection set, as it currently is
-///       But when the user passes in a custom set type (e.g. RangeSet) -- use that.
-
 template<
   typename SuperMapType,
-  typename SetType
+  typename SubsetType
   >
 class SubMap : public MapBase, public SuperMapType::StridePolicyType
 {
 public:
+
+  static_assert( ! std::is_abstract< SubsetType>::value,
+                      "SetType for slam::SubMap cannot be abstract" );
+
   using DataType = typename SuperMapType::DataType;
 
-  using SetPosition = typename SetType::PositionType;
-  using SetElement = typename SetType::ElementType;
+  using SetPosition = typename SubsetType::PositionType;
+  using SetElement = typename SubsetType::ElementType;
 
   using StridePolicyType = typename SuperMapType::StridePolicyType;
+  using IndirectionPolicyType = typename SuperMapType::IndirectionPolicy;
 
-private:
-  using RangeSetType = RangeSet<SetPosition, SetElement>;
-
-  template<typename T>  // TODO: Generalize this
-  using IndPol = policies::STLVectorIndirection<SetPosition, T>;
-
-  using MapType = Map<SetType, DataType, IndPol<DataType>, StridePolicyType>;
-
-  using IndirSet = OrderedSet<SetPosition,SetElement,
-                              policies::RuntimeSize<SetPosition>,
-                              policies::ZeroOffset<SetPosition>,
-                              policies::StrideOne<SetPosition>,
-                              IndPol<SetElement> >;
-
-  enum { USE_RANGE_SET = std::is_same<SetType, RangeSetType>::value };
-
-public:
-  using SubsetType = typename std::conditional<USE_RANGE_SET,
-                                               RangeSetType,
-                                               IndirSet
-                                              >::type;
+  using MapType = Map<DataType, SubsetType, IndirectionPolicyType, StridePolicyType>;
 
   using SubsetBuilder = typename SubsetType::SetBuilder;
 
@@ -98,51 +81,9 @@ public:
   using iterator = const_iterator;
   using iterator_pair = const_iterator_pair;
 
-private:
-
-//  template<typename S>
-//  typename std::enable_if< USE_RANGE_SET, void>::type
-//  initSubset(const S& subset_idx)
-//  {
-//     m_subsetIdx = subset_idx;
-//  }
-//
-//  template<typename S>
-//  typename std::enable_if< ! USE_RANGE_SET, void>::type
-//  initSubset(const S& subset_idx)
-//  {
-//     m_subsetIdx_data.resize(subset_idx.size());
-//     m_subsetIdx = SubsetBuilder()
-//                         .size(subset_idx.size())
-//                         .offset()
-//                         .data(&m_subsetIdx_data);
-//
-//     //copy the elements in the SuperMap's Set
-//     for (int i = 0 ; i < subset_idx.size() ; i++)
-//     {
-//       m_subsetIdx_data[i] = subset_idx.at(i);
-//     }
-//  }
-//
-//  template<typename S>
-//  typename std::enable_if< USE_RANGE_SET, void>::type
-//  copySubset(const SubMap& other)
-//  {
-//     m_subsetIdx = other.m_subsetIdx;
-//  }
-//
-//  template<typename S>
-//  typename std::enable_if< ! USE_RANGE_SET, void>::type
-//  copySubset(const SubMap& other)
-//  {
-//     m_subsetIdx_data = other.m_subsetIdx_data;
-//     m_subsetIdx = SubsetBuilder()
-//                   .size(m_subsetIdx_data.size())
-//                   .data(&m_subsetIdx_data);
-//  }
 public:
   /** Default Constructor */
-  SubMap() : m_superMap_constptr(nullptr), m_superMap_ptr(nullptr) {}
+  SubMap() : m_superMap(nullptr) {}
 
   /**
    * \brief Constructor for SubMap given the ElementFlatIndex into the SuperMap
@@ -150,104 +91,28 @@ public:
    * \param supermap The map that this SubMap is a subset of.
    * \param subset_idx a Set of ElementFlatIndex into the SuperMap
    */
-  template<typename TheSetType,
-           typename std::enable_if<std::is_same<TheSetType, RangeSetType>::value,int>::type = 0>
-  SubMap(const SuperMapType* supermap,  TheSetType& subset_idx)
+  SubMap(SuperMapType* supermap,  SubsetType& subset_idx)
     : StridePolicyType(supermap->stride())
-    , m_superMap_constptr(supermap), m_superMap_ptr(nullptr)
+    , m_superMap(supermap)
     , m_subsetIdx(subset_idx)
-  {
-  }
+  { }
 
-  template<typename TheSetType,
-           typename std::enable_if<!std::is_same<TheSetType, RangeSetType>::value,int>::type = 0>
-  SubMap(const SuperMapType* supermap,  TheSetType& subset_idx)
-    : StridePolicyType(supermap->stride())
-    , m_superMap_constptr(supermap), m_superMap_ptr(nullptr)
-    , m_subsetIdx_data( subset_idx.size() )
-    , m_subsetIdx ( SubsetBuilder()
-                        .size(subset_idx.size())
-                        .data(&m_subsetIdx_data) )
-  {
-     //copy the elements in the SuperMap's Set
-     for (int i = 0 ; i < subset_idx.size() ; i++)
-     {
-       m_subsetIdx_data[i] = subset_idx.at(i);
-     }
-  }
-
-  //non-const version of above constructor
-  template<typename TheSetType,
-           typename std::enable_if<std::is_same<TheSetType, RangeSetType>::value,int>::type = 0>
-  SubMap(SuperMapType* supermap,  TheSetType& subset_idx)
-    : StridePolicyType(supermap->stride())
-    , m_superMap_constptr(supermap), m_superMap_ptr(supermap)
-    , m_subsetIdx(subset_idx)
-  {
-  }
-
-  template<typename TheSetType,
-           typename std::enable_if<!std::is_same<TheSetType, RangeSetType>::value,int>::type = 0>
-  SubMap(SuperMapType* supermap,  TheSetType& subset_idx)
-    : StridePolicyType(supermap->stride())
-    , m_superMap_constptr(supermap), m_superMap_ptr(supermap)
-    , m_subsetIdx_data( subset_idx.size() )
-    , m_subsetIdx ( SubsetBuilder()
-                        .size(subset_idx.size())
-                        .data(&m_subsetIdx_data) )
-  {
-     //copy the elements in the SuperMap's Set
-     for (int i = 0 ; i < subset_idx.size() ; i++)
-     {
-       m_subsetIdx_data[i] = subset_idx.at(i);
-     }
-  }
   /** Copy Constructor */
   SubMap(const SubMap& otherMap)
     : StridePolicyType(otherMap)
-    , m_superMap_constptr(otherMap.m_superMap_constptr)
-    , m_superMap_ptr(otherMap.m_superMap_ptr)
-  {
-     //copySubset<SetType>(otherMap);
-  }
+    , m_superMap(otherMap.m_superMap)
+    , m_subsetIdx(otherMap.m_subsetIdx)
+  { }
 
   /** Assignment Operator */
   SubMap& operator=(const SubMap& otherMap)
   {
     StridePolicyType::operator=(otherMap);
-    m_superMap_constptr = otherMap.m_superMap_constptr;
-    m_superMap_ptr = otherMap.m_superMap_ptr;
-    //copySubset<SetType>(otherMap);
+    m_superMap = otherMap.m_superMap;
+    m_subsetIdx = otherMap.m_subsetIdx;
 
     return *this;
   }
-
-//  /** Move Constructor */
-//  SubMap(SubMap&& otherMap)
-//    : StridePolicyType(otherMap),
-//    , m_superMap_constptr(otherMap.m_superMap_constptr),
-//    , m_superMap_ptr(otherMap.m_superMap_ptr),
-//    , m_subsetIdx_data(std::move(otherMap.m_subsetIdx_data)),
-//    , m_subsetIdx( SubsetBuilder()
-//                 .size(m_subsetIdx_data.size())
-//                 //.data(&m_subsetIdx_data)
-//                 )
-//  { }
-//
-//  /** Move Assignment Operator */
-//  SubMap& operator=(SubMap&& otherMap)
-//  {
-//    StridePolicyType::operator=(otherMap);
-//    m_superMap_constptr = otherMap.m_superMap_constptr;
-//    m_superMap_ptr = otherMap.m_superMap_ptr,
-//    m_subsetIdx_data = std::move(otherMap.m_subsetIdx_data);
-//    m_subsetIdx = SubsetBuilder()
-//                  .size(m_subsetIdx_data.size())
-//                  //.data(&m_subsetIdx_data)
-//                  ;
-//    return *this;
-//  }
-
 
   /// \name SubMap individual access functions
   /// @{
@@ -265,19 +130,15 @@ public:
   {
     verifyPositionImpl(idx);
     IndexType flat_idx = getMapCompFlatIndex(idx);
-    return (*m_superMap_constptr)[flat_idx];
+    return (*m_superMap)[flat_idx];
   }
 
   //non-const version
   DataType & operator[](IndexType idx)
   {
     verifyPositionImpl(idx);
-    SLIC_ASSERT_MSG(m_superMap_ptr != nullptr,
-                    "Submap was constructed with const Map pointer, "
-                    << "non-const functions should not be called");
-
     IndexType flat_idx = getMapCompFlatIndex(idx);
-    return (*m_superMap_ptr)[flat_idx];
+    return (*m_superMap)[flat_idx];
   }
 
   /**
@@ -290,18 +151,18 @@ public:
   const DataType & operator()(IndexType idx, IndexType comp = 0) const
   {
     verifyPositionImpl(idx, comp);
-    return (*m_superMap_constptr)[getMapElemFlatIndex(idx)*numComp() + comp];
+    return (*m_superMap)[getMapElemFlatIndex(idx)*numComp() + comp];
   }
 
   //non-const version
   DataType & operator()(IndexType idx, IndexType comp = 0)
   {
     verifyPositionImpl(idx, comp);
-    SLIC_ASSERT_MSG(m_superMap_ptr != nullptr,
+    SLIC_ASSERT_MSG(m_superMap != nullptr,
                     "Submap was constructed with const Map pointer, "
                     << "non-const functions should not be called");
 
-    return (*m_superMap_ptr)[getMapElemFlatIndex(idx)*numComp() + comp];
+    return (*m_superMap)[getMapElemFlatIndex(idx)*numComp() + comp];
   }
 
   /**
@@ -326,7 +187,7 @@ public:
    */
   IndexType index(IndexType idx) const
   {
-    return m_superMap_constptr->set()->at( m_subsetIdx[idx] );
+    return m_superMap->set()->at( m_subsetIdx[idx] );
   }
 
   /// @}
@@ -496,16 +357,10 @@ public:     // Functions related to iteration
 
 
 protected:     //Member variables
-  const SuperMapType* m_superMap_constptr;
-  SuperMapType* m_superMap_ptr;
-
-  //Stores the ElementFlatIndex into the SuperMap
-  std::vector<IndexType> m_subsetIdx_data;
+  SuperMapType* m_superMap;
   SubsetType m_subsetIdx;
 
 }; //end SubMap
-
-
 
 
 template<typename SuperMapType,typename SetType>
@@ -514,7 +369,7 @@ bool SubMap<SuperMapType,SetType>::isValid(bool verboseOutput) const
   bool isValid = true;
   std::stringstream errStr;
 
-  if (m_superMap_constptr == nullptr)
+  if (m_superMap == nullptr)
   {
     if (m_subsetIdx.size() > 0)
     {
@@ -525,11 +380,10 @@ bool SubMap<SuperMapType,SetType>::isValid(bool verboseOutput) const
                 << "but the subset index is non-empty";
       }
     }
-
   }
   else
   {
-    int map_size = ((const MapBase*)m_superMap_constptr)->size();
+    int map_size = m_superMap->size();
     //Check all indices is inside the SuperMap range
     for (int i = 0 ; i < m_subsetIdx.size() ; i++)
     {
@@ -559,7 +413,5 @@ bool SubMap<SuperMapType,SetType>::isValid(bool verboseOutput) const
 
 } // end namespace slam
 } // end namespace axom
-
-
 
 #endif // SLAM_SUBMAP_HPP_
