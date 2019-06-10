@@ -392,8 +392,8 @@ template < int BLOCK_SIZE >
 void custom_sort( spin::CUDA_EXEC< BLOCK_SIZE >,
                   uint32*& mcodes, int32 size, int32* iter )
 {
-  using ExecSpace = spin::CUDA_EXEC< BLOCK_SIZE >;
-  array_counting< spin::CUDA_EXEC< BLOCK_SIZE > >(iter, size, 0, 1);
+  using ExecSpace = typename spin::CUDA_EXEC< BLOCK_SIZE >;
+  array_counting< ExecSpace >(iter, size, 0, 1);
 
   uint32* mcodes_alt_buf = axom::allocate< uint32 >( size );
   int32*  iter_alt_buf   = axom::allocate< int32 >( size );
@@ -415,6 +415,17 @@ void custom_sort( spin::CUDA_EXEC< BLOCK_SIZE >,
   // Run sorting operation
   ::cub::DeviceRadixSort::SortPairs( d_temp_storage, temp_storage_bytes,
                                      d_keys, d_values, size );
+
+  uint32* sorted_keys = d_keys.Current();
+  int32*  sorted_vals = d_values.Current();
+
+  using exec_policy = typename spin::execution_space< ExecSpace >::raja_exec;
+  RAJA::forall< exec_policy >(
+      RAJA::RangeSegment(0,size), AXOM_LAMBDA (int32 i)
+  {
+    mcodes[ i ] = sorted_keys[ i ];
+    iter[ i ]   = sorted_vals[ i ];
+  } );
 
   // Free temporary storage
   axom::deallocate( d_temp_storage );
