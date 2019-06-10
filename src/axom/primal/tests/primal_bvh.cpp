@@ -26,7 +26,7 @@
 #include "axom/primal/spatial_acceleration/ExecutionSpace.hpp"
 #include "axom/primal/spatial_acceleration/linear_bvh/range.hpp"
 #include "axom/primal/spatial_acceleration/BVH.hpp"
-#include "axom/primal/spatial_acceleration/UniformGrid.hpp"
+#include "axom/spin/UniformGrid.hpp"
 
 // axom/mint includes
 #include "axom/mint/mesh/Mesh.hpp"
@@ -290,7 +290,7 @@ void check_find3d( )
 
   EXPECT_TRUE( candidates != nullptr );
 
-  primal::UniformGrid< IndexType, NDIMS > ug( lo, hi, res );
+  spin::UniformGrid< IndexType, NDIMS > ug( lo, hi, res );
 
   for ( IndexType i=0; i < ncells; ++i )
   {
@@ -353,7 +353,7 @@ void check_find2d( )
 
   EXPECT_TRUE( candidates != nullptr );
 
-  primal::UniformGrid< IndexType, NDIMS > ug( lo, hi, res );
+  spin::UniformGrid< IndexType, NDIMS > ug( lo, hi, res );
 
   for ( IndexType i=0; i < ncells; ++i )
   {
