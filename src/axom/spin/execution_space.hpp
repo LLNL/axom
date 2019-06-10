@@ -4,20 +4,22 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 
-#ifndef AXOM_PRIMAL_EXECUTIONSPACE_HPP_
-#define AXOM_PRIMAL_EXECUTIONSPACE_HPP_
+#ifndef AXOM_SPIN_EXECUTIONSPACE_HPP_
+#define AXOM_SPIN_EXECUTIONSPACE_HPP_
 
 #include "axom/config.hpp"
+#include "axom/core/memory_management.hpp"
+
+#if !defined(AXOM_USE_RAJA) || !defined(AXOM_USE_UMPIRE)
+#error *** The spin::BVH class requires RAJA and Umpire ***
+#endif
+
 
 // RAJA includes
 #include "RAJA/RAJA.hpp"
 
 // Umpire includes
-#include "umpire/config.hpp"
-#include "umpire/ResourceManager.hpp"
-#include "umpire/op/MemoryOperationRegistry.hpp"
-
-#include "axom/core/memory_management.hpp"
+#include "umpire/Umpire.hpp"
 
 /*!
  * \file
@@ -31,7 +33,7 @@
 
 namespace axom
 {
-namespace primal
+namespace spin
 {
 
 /// \name Execution Spaces
@@ -148,7 +150,7 @@ struct execution_space< SEQ_EXEC >
 };
 
 /// @}
-} /* namespace primal */
+} /* namespace spin */
 } /* namespace axom   */
 
-#endif /* AXOM_PRIMAL_EXECUTIONSPACE_HPP_ */
+#endif /* AXOM_SPIN_EXECUTIONSPACE_HPP_ */

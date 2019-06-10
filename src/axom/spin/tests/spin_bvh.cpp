@@ -23,9 +23,10 @@
 
 // axom/primal includes
 #include "axom/primal/geometry/Point.hpp"
-#include "axom/primal/spatial_acceleration/ExecutionSpace.hpp"
-#include "axom/primal/spatial_acceleration/linear_bvh/range.hpp"
-#include "axom/primal/spatial_acceleration/BVH.hpp"
+
+// axom/spin includes
+#include "axom/spin/execution_space.hpp"
+#include "axom/spin/BVH.hpp"
 #include "axom/spin/UniformGrid.hpp"
 
 // axom/mint includes
@@ -77,8 +78,8 @@ void generate_aabbs_and_centroids2d( const mint::Mesh* mesh,
                          const IndexType* AXOM_NOT_USED(nodeIds) )
   {
 
-    primal::bvh::Range< double > xrange;
-    primal::bvh::Range< double > yrange;
+    spin::internal::linear_bvh::Range< double > xrange;
+    spin::internal::linear_bvh::Range< double > yrange;
 
     double xsum = 0.0;
     double ysum = 0.0;
@@ -140,9 +141,9 @@ void generate_aabbs_and_centroids3d( const mint::Mesh* mesh,
                          const IndexType* AXOM_NOT_USED(nodeIds) )
   {
 
-    primal::bvh::Range< double > xrange;
-    primal::bvh::Range< double > yrange;
-    primal::bvh::Range< double > zrange;
+    spin::internal::linear_bvh::Range< double > xrange;
+    spin::internal::linear_bvh::Range< double > yrange;
+    spin::internal::linear_bvh::Range< double > zrange;
 
     double xsum = 0.0;
     double ysum = 0.0;
@@ -186,7 +187,7 @@ void check_build_bvh2d( )
   constexpr int NDIMS     = 2;
 
   umpire::Allocator current_allocator = axom::getDefaultAllocator();
-  axom::setDefaultAllocator( primal::execution_space<ExecSpace>::allocatorID());
+  axom::setDefaultAllocator( spin::execution_space<ExecSpace>::allocatorID());
 
   FloatType* boxes = axom::allocate< FloatType >( 8 );
   boxes[ 0 ] = boxes[ 1 ] = 0.;
@@ -194,7 +195,7 @@ void check_build_bvh2d( )
   boxes[ 4 ] = boxes[ 5 ] = 1.;
   boxes[ 6 ] = boxes[ 7 ] = 2.;
 
-  primal::BVH< NDIMS, ExecSpace, FloatType > bvh( boxes, NUM_BOXES );
+  spin::BVH< NDIMS, ExecSpace, FloatType > bvh( boxes, NUM_BOXES );
   bvh.build( );
 
   FloatType lo[ NDIMS ];
@@ -219,7 +220,7 @@ void check_build_bvh3d( )
   constexpr int NDIMS     = 3;
 
   umpire::Allocator current_allocator = axom::getDefaultAllocator();
-  axom::setDefaultAllocator( primal::execution_space<ExecSpace>::allocatorID());
+  axom::setDefaultAllocator( spin::execution_space<ExecSpace>::allocatorID());
 
   FloatType* boxes = axom::allocate< FloatType >( 12 );
   boxes[ 0 ] = boxes[  1 ] = boxes[  2 ] = 0.;
@@ -227,7 +228,7 @@ void check_build_bvh3d( )
   boxes[ 6 ] = boxes[  7 ] = boxes[  8 ] = 1.;
   boxes[ 9 ] = boxes[ 10 ] = boxes[ 11 ] = 2.;
 
-  primal::BVH< NDIMS, ExecSpace, FloatType > bvh( boxes, NUM_BOXES );
+  spin::BVH< NDIMS, ExecSpace, FloatType > bvh( boxes, NUM_BOXES );
   bvh.build( );
 
   FloatType lo[ NDIMS ];
@@ -252,7 +253,7 @@ void check_find3d( )
   constexpr IndexType N = 4;
 
   umpire::Allocator current_allocator = axom::getDefaultAllocator();
-  axom::setDefaultAllocator( primal::execution_space<ExecSpace>::allocatorID());
+  axom::setDefaultAllocator( spin::execution_space<ExecSpace>::allocatorID());
 
   using PointType = primal::Point< double, NDIMS >;
 
@@ -270,7 +271,7 @@ void check_find3d( )
   generate_aabbs_and_centroids3d( &mesh, aabbs, xc, yc, zc );
 
   // construct the BVH
-  primal::BVH< NDIMS, ExecSpace, FloatType > bvh( aabbs, ncells );
+  spin::BVH< NDIMS, ExecSpace, FloatType > bvh( aabbs, ncells );
   bvh.build( );
 
   FloatType min[ NDIMS ];
@@ -316,7 +317,7 @@ void check_find2d( )
   constexpr IndexType N = 4;
 
   umpire::Allocator current_allocator = axom::getDefaultAllocator();
-  axom::setDefaultAllocator( primal::execution_space<ExecSpace>::allocatorID());
+  axom::setDefaultAllocator( spin::execution_space<ExecSpace>::allocatorID());
 
   using PointType = primal::Point< double, NDIMS >;
 
@@ -333,7 +334,7 @@ void check_find2d( )
   generate_aabbs_and_centroids2d( &mesh, aabbs, xc, yc );
 
   // construct the BVH
-  primal::BVH< NDIMS, ExecSpace, FloatType > bvh( aabbs, ncells );
+  spin::BVH< NDIMS, ExecSpace, FloatType > bvh( aabbs, ncells );
   bvh.build( );
 
   FloatType min[ NDIMS ];
@@ -378,61 +379,61 @@ void check_find2d( )
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-TEST( primal_bvh, contruct2D_sequential )
+TEST( spin_bvh, contruct2D_sequential )
 {
-  check_build_bvh2d< primal::SEQ_EXEC, float >( );
-  check_build_bvh2d< primal::SEQ_EXEC, double >( );
+  check_build_bvh2d< spin::SEQ_EXEC, float >( );
+  check_build_bvh2d< spin::SEQ_EXEC, double >( );
 }
 
 //------------------------------------------------------------------------------
-TEST( primal_bvh, contruct3D_sequential )
+TEST( spin_bvh, contruct3D_sequential )
 {
-  check_build_bvh3d< primal::SEQ_EXEC, float >( );
-  check_build_bvh3d< primal::SEQ_EXEC, double >( );
+  check_build_bvh3d< spin::SEQ_EXEC, float >( );
+  check_build_bvh3d< spin::SEQ_EXEC, double >( );
 }
 
 //------------------------------------------------------------------------------
-TEST( primal_bvh, find_3d_sequential )
+TEST( spin_bvh, find_3d_sequential )
 {
-  check_find3d< primal::SEQ_EXEC, float >( );
-  check_find3d< primal::SEQ_EXEC, double >( );
+  check_find3d< spin::SEQ_EXEC, float >( );
+  check_find3d< spin::SEQ_EXEC, double >( );
 }
 
 //------------------------------------------------------------------------------
-TEST( primal_bvh, find_2d_sequential )
+TEST( spin_bvh, find_2d_sequential )
 {
-  check_find2d< primal::SEQ_EXEC, float >( );
-  check_find2d< primal::SEQ_EXEC, double >( );
+  check_find2d< spin::SEQ_EXEC, float >( );
+  check_find2d< spin::SEQ_EXEC, double >( );
 }
 
 //------------------------------------------------------------------------------
 #ifdef AXOM_USE_OPENMP
 
-TEST( primal_bvh, contruct2D_omp )
+TEST( spin_bvh, contruct2D_omp )
 {
-  check_build_bvh2d< primal::OMP_EXEC, float >( );
-  check_build_bvh2d< primal::OMP_EXEC, double >( );
+  check_build_bvh2d< spin::OMP_EXEC, float >( );
+  check_build_bvh2d< spin::OMP_EXEC, double >( );
 }
 
 //------------------------------------------------------------------------------
-TEST( primal_bvh, contruct3D_omp )
+TEST( spin_bvh, contruct3D_omp )
 {
-  check_build_bvh3d< primal::OMP_EXEC, float >( );
-  check_build_bvh3d< primal::OMP_EXEC, double >( );
+  check_build_bvh3d< spin::OMP_EXEC, float >( );
+  check_build_bvh3d< spin::OMP_EXEC, double >( );
 }
 
 //------------------------------------------------------------------------------
-TEST( primal_bvh, find_3d_omp )
+TEST( spin_bvh, find_3d_omp )
 {
-  check_find3d< primal::OMP_EXEC, float >( );
-  check_find3d< primal::OMP_EXEC, double >( );
+  check_find3d< spin::OMP_EXEC, float >( );
+  check_find3d< spin::OMP_EXEC, double >( );
 }
 
 //------------------------------------------------------------------------------
-TEST( primal_bvh, find_2d_omp )
+TEST( spin_bvh, find_2d_omp )
 {
-  check_find2d< primal::OMP_EXEC, float >( );
-  check_find2d< primal::OMP_EXEC, double >( );
+  check_find2d< spin::OMP_EXEC, float >( );
+  check_find2d< spin::OMP_EXEC, double >( );
 }
 
 #endif
@@ -440,40 +441,40 @@ TEST( primal_bvh, find_2d_omp )
 //------------------------------------------------------------------------------
 #ifdef AXOM_USE_CUDA
 
-AXOM_CUDA_TEST( primal_bvh, contruct2D_cuda )
+AXOM_CUDA_TEST( spin_bvh, contruct2D_cuda )
 {
   constexpr int BLOCK_SIZE = 256;
-  using exec  = primal::CUDA_EXEC< BLOCK_SIZE >;
+  using exec  = spin::CUDA_EXEC< BLOCK_SIZE >;
 
   check_build_bvh2d< exec, float >( );
   check_build_bvh2d< exec, double >( );
 }
 
 //------------------------------------------------------------------------------
-AXOM_CUDA_TEST( primal_bvh, contruct3D_cuda )
+AXOM_CUDA_TEST( spin_bvh, contruct3D_cuda )
 {
   constexpr int BLOCK_SIZE = 256;
-  using exec  = primal::CUDA_EXEC< BLOCK_SIZE >;
+  using exec  = spin::CUDA_EXEC< BLOCK_SIZE >;
 
   check_build_bvh3d< exec, float >( );
   check_build_bvh3d< exec, double >( );
 }
 
 //------------------------------------------------------------------------------
-AXOM_CUDA_TEST( primal_bvh, find_3d_cuda )
+AXOM_CUDA_TEST( spin_bvh, find_3d_cuda )
 {
   constexpr int BLOCK_SIZE = 256;
-  using exec  = primal::CUDA_EXEC< BLOCK_SIZE >;
+  using exec  = spin::CUDA_EXEC< BLOCK_SIZE >;
 
   check_find3d< exec, float >( );
   check_find3d< exec, double >( );
 }
 
 //------------------------------------------------------------------------------
-AXOM_CUDA_TEST( primal_bvh, find_2d_cuda )
+AXOM_CUDA_TEST( spin_bvh, find_2d_cuda )
 {
   constexpr int BLOCK_SIZE = 256;
-  using exec  = primal::CUDA_EXEC< BLOCK_SIZE >;
+  using exec  = spin::CUDA_EXEC< BLOCK_SIZE >;
 
   check_find2d< exec, float >( );
   check_find2d< exec, double >( );

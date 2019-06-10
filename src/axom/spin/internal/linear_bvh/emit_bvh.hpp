@@ -4,29 +4,29 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 
-#ifndef AXOM_PRIMAL_BVH_LINEAR_BUILDER_H_
-#define AXOM_PRIMAL_BVH_LINEAR_BUILDER_H_
+#ifndef AXOM_SPIN_EMIT_BVH_H_
+#define AXOM_SPIN_EMIT_BVH_H_
 
 // axom core includes
 #include "axom/core/Types.hpp"               // for fixed bitwidth types
 #include "axom/core/memory_management.hpp"   // for alloc()/free()
 
-// primal includes
-#include "axom/primal/spatial_acceleration/ExecutionSpace.hpp"
-#include "axom/primal/spatial_acceleration/linear_bvh/vec.hpp"
-#include "axom/primal/spatial_acceleration/linear_bvh/aabb.hpp"
-#include "axom/primal/spatial_acceleration/linear_bvh/BVHData.hpp"
-#include "axom/primal/spatial_acceleration/linear_bvh/RadixTree.hpp"
+// spin includes
+#include "axom/spin/execution_space.hpp"
+#include "axom/spin/internal/linear_bvh/vec.hpp"
+#include "axom/spin/internal/linear_bvh/aabb.hpp"
+#include "axom/spin/internal/linear_bvh/BVHData.hpp"
+#include "axom/spin/internal/linear_bvh/RadixTree.hpp"
 
-#ifdef AXOM_USE_RAJA
 #include "RAJA/RAJA.hpp"
-#endif
 
 namespace axom
 {
-namespace primal
+namespace spin
 {
-namespace bvh
+namespace internal
+{
+namespace linear_bvh
 {
 
 /*!
@@ -68,7 +68,7 @@ void emit_bvh( RadixTree<FloatType, 3>& data,
 
   Vec<FloatType,4> *flat_ptr = bvh_data.m_inner_nodes;
 
-  using exec_policy = typename primal::execution_space< ExecSpace >::raja_exec;
+  using exec_policy = typename spin::execution_space< ExecSpace >::raja_exec;
   RAJA::forall< exec_policy >(
       RAJA::RangeSegment(0, inner_size), AXOM_LAMBDA (int32 node)
   {
@@ -160,7 +160,7 @@ void emit_bvh( RadixTree<FloatType, 2>& data,
 
   Vec<FloatType,4> *flat_ptr = bvh_data.m_inner_nodes;
 
-  using exec_policy = typename primal::execution_space< ExecSpace >::raja_exec;
+  using exec_policy = typename spin::execution_space< ExecSpace >::raja_exec;
   RAJA::forall< exec_policy >(
       RAJA::RangeSegment(0, inner_size), AXOM_LAMBDA (int32 node)
   {
@@ -235,9 +235,8 @@ void emit_bvh( RadixTree<FloatType, 2>& data,
 }
 
 
-} /* namespace bvh    */
-} /* namespace primal */
-} /* namespace axom   */
-
-
+} /* namespace linear_bvh */
+} /* namespace internal */
+} /* namespace spin */
+} /* namespace axom */
 #endif

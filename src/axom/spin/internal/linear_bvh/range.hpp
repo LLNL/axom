@@ -4,20 +4,22 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 
-#ifndef AXOM_PRIMAL_BVH_RANGE_H_
-#define AXOM_PRIMAL_BVH_RANGE_H_
+#ifndef AXOM_SPIN_BVH_RANGE_H_
+#define AXOM_SPIN_BVH_RANGE_H_
 
 #include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"    // for fixed bitwidth types
-#include "axom/primal/spatial_acceleration/linear_bvh/math.hpp"
+#include "axom/spin/internal/linear_bvh/math.hpp"
 
 #include <iostream>
 
 namespace axom
 {
-namespace primal
+namespace spin
 {
-namespace bvh
+namespace internal
+{
+namespace linear_bvh
 {
 
 // Forward declarations
@@ -138,7 +140,10 @@ std::ostream& operator<<( std::ostream &os,
   return os;
 }
 
+
+} /* namespace linear_bvh */
+} /* namespace internal */
+} /* namespace spin */
 } /* namespace axom */
-} /* namespace primal */
-} /* namespace bvh */
+
 #endif

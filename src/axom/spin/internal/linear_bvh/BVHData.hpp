@@ -3,22 +3,24 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef AXOM_PRIMAL_BVHDATA_HPP_
-#define AXOM_PRIMAL_BVHDATA_HPP_
+#ifndef AXOM_SPIN_BVHDATA_HPP_
+#define AXOM_SPIN_BVHDATA_HPP_
 
 // axom core includes
 #include "axom/core/Types.hpp"               // for fixed bitwidth types
 #include "axom/core/memory_management.hpp"   // for alloc()/free()
 
-// primal includes
-#include "axom/primal/spatial_acceleration/linear_bvh/vec.hpp"
-#include "axom/primal/spatial_acceleration/linear_bvh/aabb.hpp"
+// spin includes
+#include "axom/spin/internal/linear_bvh/vec.hpp"
+#include "axom/spin/internal/linear_bvh/aabb.hpp"
 
 namespace axom
 {
-namespace primal
+namespace spin
 {
-namespace bvh
+namespace internal
+{
+namespace linear_bvh
 {
 
 template < typename FloatType, int NDIMS >
@@ -54,8 +56,9 @@ struct BVHData
 
 };
 
-} /* namespace bvh */
-} /* namespace primal */
-} /* namespace axom */
 
-#endif /* AXOM_PRIMAL_BVHDATA_HPP_ */
+} /* namespace linear_bvh */
+} /* namespace internal */
+} /* namespace spin */
+} /* namespace axom */
+#endif /* AXOM_SPIN_BVHDATA_HPP_ */

@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef AXOM_PRIMAL_BVH_MATH_H_
-#define AXOM_PRIMAL_BVH_MATH_H_
+#ifndef AXOM_SPIN_BVH_MATH_H_
+#define AXOM_SPIN_BVH_MATH_H_
 
 #include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"    // for fixed bitwidth types
@@ -34,11 +34,11 @@ using namespace std;
 
 namespace axom
 {
-namespace primal
+namespace spin
 {
-namespace bvh
+namespace internal
 {
-namespace detail
+namespace linear_bvh
 {
 
 union Bits32
@@ -53,7 +53,6 @@ union Bits64
   axom::int64  bits;
 };
 
-} /* namespace detail */
 
 template<typename T>
 inline AXOM_HOST_DEVICE
@@ -79,7 +78,7 @@ axom::float64 epsilon<axom::float64>()
 inline AXOM_HOST_DEVICE
 axom::float32 nan32()
 {
-  detail::Bits32 nan;
+  Bits32 nan;
   nan.bits = DRAY_NAN_32;
   return nan.scalar;
 }
@@ -87,7 +86,7 @@ axom::float32 nan32()
 inline AXOM_HOST_DEVICE
 axom::float32 infinity32()
 {
-  detail::Bits32 inf;
+  Bits32 inf;
   inf.bits = DRAY_INF_32;
   return inf.scalar;
 }
@@ -95,7 +94,7 @@ axom::float32 infinity32()
 inline AXOM_HOST_DEVICE
 axom::float32 neg_infinity32()
 {
-  detail::Bits32 ninf;
+  Bits32 ninf;
   ninf.bits = DRAY_NG_INF_32;
   return ninf.scalar;
 }
@@ -103,7 +102,7 @@ axom::float32 neg_infinity32()
 inline AXOM_HOST_DEVICE
 axom::float64 nan64()
 {
-  detail::Bits64 nan;
+  Bits64 nan;
   nan.bits = DRAY_NAN_64;
   return nan.scalar;
 }
@@ -111,7 +110,7 @@ axom::float64 nan64()
 inline AXOM_HOST_DEVICE
 axom::float64 infinity64()
 {
-  detail::Bits64 inf;
+  Bits64 inf;
   inf.bits = DRAY_INF_64;
   return inf.scalar;
 }
@@ -119,7 +118,7 @@ axom::float64 infinity64()
 inline AXOM_HOST_DEVICE
 axom::float64 neg_infinity64()
 {
-  detail::Bits64 ninf;
+  Bits64 ninf;
   ninf.bits = DRAY_NG_INF_64;
   return ninf.scalar;
 }
@@ -217,7 +216,9 @@ T clamp(const T &val, const T &min_val, const T &max_val)
   return min(max_val, max(min_val, val));
 }
 
+
+} /* namespace linear_bvh */
+} /* namespace internal */
+} /* namespace spin */
 } /* namespace axom */
-} /* namespace primal */
-} /* namespace bvh */
 #endif

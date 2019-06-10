@@ -46,3 +46,23 @@ foreach ( test ${spin_tests} )
        )
 
 endforeach()
+
+if ( ${RAJA_FOUND} AND ${UMPIRE_FOUND} )
+
+  blt_add_executable(
+      NAME       spin_execution_space_test
+      SOURCES    spin_execution_space.cpp
+      OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+      DEPENDS_ON ${spin_depends}
+      FOLDER     axom/spin/tests
+      )
+
+   blt_add_executable(
+      NAME       spin_bvh_test
+      SOURCES    spin_bvh.cpp
+      OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+      DEPENDS_ON mint ${spin_depends}
+      FOLDER     axom/spin/tests
+      )
+
+endif()

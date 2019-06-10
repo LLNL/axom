@@ -3,17 +3,19 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef AXOM_PRIMAL_LINEAR_BVH_VTKIO_HPP_
-#define AXOM_PRIMAL_LINEAR_BVH_VTKIO_HPP_
+#ifndef AXOM_SPIN_LINEAR_BVH_VTKIO_HPP_
+#define AXOM_SPIN_LINEAR_BVH_VTKIO_HPP_
 
-#include "axom/primal/spatial_acceleration/linear_bvh/vec.hpp"
-#include "axom/primal/spatial_acceleration/linear_bvh/aabb.hpp"
+#include "axom/spin/internal/linear_bvh/vec.hpp"
+#include "axom/spin/internal/linear_bvh/aabb.hpp"
 
 namespace axom
 {
-namespace primal
+namespace spin
 {
-namespace bvh
+namespace internal
+{
+namespace linear_bvh
 {
 
 //------------------------------------------------------------------------------
@@ -186,7 +188,7 @@ void write_root( const AABB< FloatType, 3 >& root,
 
 //------------------------------------------------------------------------------
 template < typename FloatType, int NDIMS  >
-void write_recursive( bvh::Vec< FloatType, 4 >* inner_nodes,
+void write_recursive( Vec< FloatType, 4 >* inner_nodes,
                       int32 current_node,
                       int32 level,
                       int32& numPoints,
@@ -196,15 +198,15 @@ void write_recursive( bvh::Vec< FloatType, 4 >* inner_nodes,
                       std::ostringstream& levels )
 {
   // STEP 0: get the flat BVH layout
-  const bvh::Vec< FloatType, 4> first4  = inner_nodes[current_node + 0];
-  const bvh::Vec< FloatType, 4> second4 = inner_nodes[current_node + 1];
-  const bvh::Vec< FloatType, 4> third4  = inner_nodes[current_node + 2];
+  const Vec< FloatType, 4> first4  = inner_nodes[current_node + 0];
+  const Vec< FloatType, 4> second4 = inner_nodes[current_node + 1];
+  const Vec< FloatType, 4> third4  = inner_nodes[current_node + 2];
 
   // STEP 1: extract children information
   int32 l_child;
   int32 r_child;
   constexpr int32 isize = sizeof(int32);
-  bvh::Vec< FloatType, 4 > children = inner_nodes[current_node + 3];
+  Vec< FloatType, 4 > children = inner_nodes[current_node + 3];
   memcpy(&l_child,&children[0],isize);
   memcpy(&r_child,&children[1],isize);
 
@@ -235,8 +237,10 @@ void write_recursive( bvh::Vec< FloatType, 4 >* inner_nodes,
 
 }
 
-} /* namespace bvh */
-} /* namespace primal */
+
+} /* namespace linear_bvh */
+} /* namespace internal */
+} /* namespace spin */
 } /* namespace axom */
 
-#endif /* AXOM_PRIMAL_LINEAR_BVH_VTKIO_HPP_ */
+#endif /* AXOM_SPIN_LINEAR_BVH_VTKIO_HPP_ */

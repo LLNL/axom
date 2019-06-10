@@ -4,8 +4,8 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 
-#ifndef AXOM_PRIMAL_BVH_VEC_H_
-#define AXOM_PRIMAL_BVH_VEC_H_
+#ifndef AXOM_SPIN_BVH_VEC_H_
+#define AXOM_SPIN_BVH_VEC_H_
 
 #include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"    // for fixed bitwidth types
@@ -21,9 +21,11 @@
 
 namespace axom
 {
-namespace primal
+namespace spin
 {
-namespace bvh
+namespace internal
+{
+namespace linear_bvh
 {
 
 template<typename T, axom::int32 S>
@@ -416,8 +418,10 @@ Vec4d make_vec4d( const axom::float64 &a,
   return res;
 }
 
+
+} /* namespace linear_bvh */
+} /* namespace internal */
+} /* namespace spin */
 } /* namespace axom */
-} /* namespace primal */
-} /* namespace bvh */
 
 #endif

@@ -3,17 +3,19 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef AXOM_PRIMAL_RADIXTREE_HPP_
-#define AXOM_PRIMAL_RADIXTREE_HPP_
+#ifndef AXOM_SPIN_RADIXTREE_HPP_
+#define AXOM_SPIN_RADIXTREE_HPP_
 
 #include "axom/core/memory_management.hpp"
-#include "axom/primal/spatial_acceleration/linear_bvh/aabb.hpp"
+#include "axom/spin/internal/linear_bvh/aabb.hpp"
 
 namespace axom
 {
-namespace primal
+namespace spin
 {
-namespace bvh
+namespace internal
+{
+namespace linear_bvh
 {
 
 /*!
@@ -70,11 +72,10 @@ struct RadixTree
 
 };
 
-} /* namespace bvh */
-} /* namespace primal */
+
+} /* namespace linear_bvh */
+} /* namespace internal */
+} /* namespace spin */
 } /* namespace axom */
-
-
-
 
 #endif /* AXOM_RADIXTREE_HPP_ */

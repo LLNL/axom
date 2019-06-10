@@ -8,8 +8,8 @@
 // slic
 #include "axom/slic.hpp"
 
-// primal includes
-#include "axom/primal/spatial_acceleration/ExecutionSpace.hpp"
+// spin includes
+#include "axom/spin/execution_space.hpp"
 
 #include "umpire/Umpire.hpp"  // for Umpire
 #include "RAJA/RAJA.hpp"      // for RAJA
@@ -22,7 +22,7 @@
 #include <type_traits> // for std::is_same
 
 // namespace aliases
-namespace primal = axom::primal;
+namespace spin = axom::spin;
 
 //------------------------------------------------------------------------------
 //  HELPER METHODS
@@ -34,9 +34,9 @@ template< typename ExecSpace >
 void check_valid( )
 {
   SLIC_INFO( "checking execution space:" <<
-              primal::execution_space< ExecSpace >::name() );
-  EXPECT_TRUE( primal::execution_space< ExecSpace >::valid() );
-  EXPECT_TRUE( strlen( primal::execution_space< ExecSpace >::name() ) > 0 );
+              spin::execution_space< ExecSpace >::name() );
+  EXPECT_TRUE( spin::execution_space< ExecSpace >::valid() );
+  EXPECT_TRUE( strlen( spin::execution_space< ExecSpace >::name() ) > 0 );
 }
 
 //------------------------------------------------------------------------------
@@ -44,14 +44,14 @@ template < typename ExecSpace >
 void check_invalid( )
 {
   SLIC_INFO( "checking execution space:" <<
-              primal::execution_space< ExecSpace >::name() );
+              spin::execution_space< ExecSpace >::name() );
 
-  EXPECT_FALSE( primal::execution_space< ExecSpace >::valid() );
+  EXPECT_FALSE( spin::execution_space< ExecSpace >::valid() );
 
-  EXPECT_EQ( primal::execution_space< ExecSpace >::allocatorID(),
+  EXPECT_EQ( spin::execution_space< ExecSpace >::allocatorID(),
              axom::INVALID_ALLOCATOR_ID );
 
-  EXPECT_EQ( strcmp(primal::execution_space< ExecSpace >::name(),"[UNDEFINED]"),
+  EXPECT_EQ( strcmp(spin::execution_space< ExecSpace >::name(),"[UNDEFINED]"),
              0 );
 }
 
@@ -64,11 +64,11 @@ template < typename ExecSpace,
 void check_execution_mappings( )
 {
   SLIC_INFO( "checking execution space: " <<
-             primal::execution_space< ExecSpace >::name());
+             spin::execution_space< ExecSpace >::name());
 
-  using exec   = typename primal::execution_space< ExecSpace >::raja_exec;
-  using reduce = typename primal::execution_space< ExecSpace >::raja_reduce;
-  using atomic = typename primal::execution_space< ExecSpace >::raja_atomic;
+  using exec   = typename spin::execution_space< ExecSpace >::raja_exec;
+  using reduce = typename spin::execution_space< ExecSpace >::raja_reduce;
+  using atomic = typename spin::execution_space< ExecSpace >::raja_atomic;
 
   bool valid_raja_exec   = std::is_same< exec, RajaExec >::value;
   bool valid_raja_reduce = std::is_same< reduce, RajaReduce >::value;
@@ -78,7 +78,7 @@ void check_execution_mappings( )
   EXPECT_TRUE( valid_raja_reduce );
   EXPECT_TRUE( valid_raja_atomic );
 
-  int allocatorID = primal::execution_space< ExecSpace >::allocatorID();
+  int allocatorID = spin::execution_space< ExecSpace >::allocatorID();
   EXPECT_EQ( allocatorID, UmpireAllocator );
 }
 
@@ -89,32 +89,32 @@ void check_execution_mappings( )
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-TEST( primal_execution_space, check_valid )
+TEST( spin_execution_space, check_valid )
 {
-  check_valid< primal::SEQ_EXEC >( );
+  check_valid< spin::SEQ_EXEC >( );
 
 #ifdef AXOM_USE_OPENMP
-  check_valid< primal::OMP_EXEC >( );
+  check_valid< spin::OMP_EXEC >( );
 #endif
 
 #ifdef AXOM_USE_CUDA
-  check_valid< primal::CUDA_EXEC< 256 > >( );
+  check_valid< spin::CUDA_EXEC< 256 > >( );
 #endif
 }
 
 //------------------------------------------------------------------------------
-TEST( primal_execution_space, check_invalid )
+TEST( spin_execution_space, check_invalid )
 {
   struct InvalidSpace { };
   check_invalid< InvalidSpace >( );
 }
 
 //------------------------------------------------------------------------------
-TEST( primal_execution_space, check_seq_exec )
+TEST( spin_execution_space, check_seq_exec )
 {
-  check_valid< primal::SEQ_EXEC >( );
+  check_valid< spin::SEQ_EXEC >( );
 
-  check_execution_mappings< primal::SEQ_EXEC,
+  check_execution_mappings< spin::SEQ_EXEC,
                             RAJA::loop_exec,
                             RAJA::loop_reduce,
                             RAJA::atomic::loop_atomic,
@@ -124,12 +124,12 @@ TEST( primal_execution_space, check_seq_exec )
 
 //------------------------------------------------------------------------------
 #ifdef AXOM_USE_OPENMP
-TEST( primal_execution_space, check_omp_exec )
+TEST( spin_execution_space, check_omp_exec )
 {
 
-  check_valid< primal::OMP_EXEC >( );
+  check_valid< spin::OMP_EXEC >( );
 
-  check_execution_mappings< primal::OMP_EXEC,
+  check_execution_mappings< spin::OMP_EXEC,
                             RAJA::omp_parallel_for_exec,
                             RAJA::omp_reduce,
                             RAJA::atomic::omp_atomic,
@@ -140,13 +140,13 @@ TEST( primal_execution_space, check_omp_exec )
 
 //------------------------------------------------------------------------------
 #ifdef AXOM_USE_CUDA
-TEST( primal_execution_space, check_cuda_exec )
+TEST( spin_execution_space, check_cuda_exec )
 {
   constexpr int BLOCK_SIZE = 256;
 
-  check_valid< primal::CUDA_EXEC< BLOCK_SIZE > >( );
+  check_valid< spin::CUDA_EXEC< BLOCK_SIZE > >( );
 
-  check_execution_mappings< primal::CUDA_EXEC< BLOCK_SIZE >,
+  check_execution_mappings< spin::CUDA_EXEC< BLOCK_SIZE >,
                             RAJA::cuda_exec< BLOCK_SIZE >,
                             RAJA::cuda_reduce,
                             RAJA::atomic::cuda_atomic,
