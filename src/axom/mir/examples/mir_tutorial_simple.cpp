@@ -102,18 +102,24 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
     points[15] = mir::Point2( 3.0, 0.0 );
   }
 
+  int elementParents[9] = { 0,1,2,3,4,5,6,7,8 }; // For the base mesh, the parents are always themselves
+
+  std::vector<int> elementDominantMaterials = {NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT};
+
   // Build the mesh
   mir::MIRMesh testMesh;
   testMesh.InitializeMesh(evInds, evBegins, veInds, veBegins, verts, elems, numMaterials);
   testMesh.constructMeshRelations();
   testMesh.constructMeshVolumeFractionMaps(materialVolumeFractionsData);
   testMesh.constructVertexPositionMap(points);
+  testMesh.constructElementParentMap(elementParents);
+  testMesh.constructElementDominantMaterialMap(elementDominantMaterials);
 
   // Begin material interface reconstruction
   mir::InterfaceReconstructor reconstructor(&testMesh);
   mir::MIRMesh processedMesh = reconstructor.computeReconstructedInterface();
   processedMesh.print();
-  // processedMesh.writeMeshToFile("/Users/sterbentz3/Desktop/markoTestMesh.vtk");
+  processedMesh.writeMeshToFile("/Users/sterbentz3/Desktop/processedTestMesh.vtk");
 
   return 0;
 }

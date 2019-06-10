@@ -30,34 +30,30 @@ namespace mir
 
       mir::MIRMesh              computeReconstructedInterface();
 
-      
-      // std::vector<ScalarMap>    computeVolumeFractionAverages(mir::MIRMesh* tempMesh);
+    private:
+      mir::MIRMesh* originalMesh;
 
     private:
-      mir::MIRMesh* mesh;
-    
-    public:
-      std::vector<ScalarMap> materialVolumeFractionsVertex; // volume fractions for each material for each vertex
 
-    private:
-      void                computeClippingPoints(const int eID, const int matOneID, const int matTwoID, mir::MIRMesh* tempMesh,
-                                                std::vector<mir::PosType>& _evInds, std::vector<mir::PosType>& _evBegins, std::vector<mir::PosType>& _veInds, std::vector<mir::PosType>& _veBegins,
-                                                std::vector<mir::Point2>& _vertexPositions, std::vector<axom::float64*>& _materialInCell, int* _numVerts, int* _numElements, std::vector<std::vector<axom::float64> >& _newVolumeFractionsAtVerts);
-                                                
-      void                computeTriangleClippingPoints(const int eID, const int matOneID, const int matTwoID, mir::MIRMesh* tempMesh,
-                                                std::vector<mir::PosType>& _evInds, std::vector<mir::PosType>& _evBegins, std::vector<mir::PosType>& _veInds, std::vector<mir::PosType>& _veBegins,
-                                                std::vector<mir::Point2>& _vertexPositions, std::vector<axom::float64*>& _materialInCell, int* _numVerts, int* _numElements, std::vector<std::vector<axom::float64> >& _newVolumeFractionsAtVerts);
+      // general clipping function
+      void                computeQuadClippingPoints(const int eID, const int matOneID, const int matTwoID, mir::MIRMesh* tempMesh, CellData& out_cellData);
 
-      void                computeQuadClippingPoints(const int eID, const int matOneID, const int matTwoID, mir::MIRMesh* tempMesh,
-                                                std::vector<mir::PosType>& out_evInds, std::vector<mir::PosType>& out_evBegins, std::vector<mir::PosType>& out_veInds, std::vector<mir::PosType>& out_veBegins,
-                                                std::vector<mir::Point2>& out_vertexPositions, std::vector<axom::float64*>& out_materialInCell, int* out_numVerts, int* out_numElements, std::vector<std::vector<axom::float64> >& out_newVolumeFractionsAtVerts);
+      // triangle clipping function
+      void                computeTriangleClippingPoints(const int eID, const int matOneID, const int matTwoID, mir::MIRMesh* tempMesh, CellData& out_cellData);
 
+      // quad clipping functions
+      void                computeClippingPoints(const int eID, const int matOneID, const int matTwoID, mir::MIRMesh* tempMesh, CellData& out_cellData);
+
+      // quad clipping interpolation functions
       mir::Point2         interpolateVertexPosition(mir::Point2 vertexOnePos, mir::Point2 vertexTwoPos, float t);
       axom::float64       lerpFloat(axom::float64 f0, axom::float64 f1, axom::float64 t);
       axom::float64       computeClippingPointOnEdge(const int vertexOneID, const int vertexTwoID, const int matOneID, const int matTwoID, mir::MIRMesh* tempMesh);
 
-      void                mergeCellSplitData();
-
+      // quad clipping points helper functions
+      unsigned int        determineQuadClippingCase(const int eID, mir::MIRMesh* tempMesh, const int matOneID, const int matTwoID, const int upperLeftVertex, const int lowerLeftVertex, const int lowerRightVertex, const int upperRightVertex);
+      void                generateTopologyDataFromQuad(std::map<int, std::vector<int> > newElements, std::map<int, std::vector<int> > newVertices, CellData& out_cellData);
+      void                generateVertexPositionsFromQuad(std::map<int, std::vector<int> > newVertices, mir::MIRMesh* tempMesh, axom::float64* verticesClippingTValue, int upperLeftVertex, int lowerLeftVertex, int lowerRightVertex, int upperRightVertex, CellData& out_cellData);
+      void                generateVertexVolumeFractionsFromQuad(std::map<int, std::vector<int> > newVertices, mir::MIRMesh* tempMesh, axom::float64* verticesClippingTValue, int upperLeftVertex, int lowerLeftVertex, int lowerRightVertex, int upperRightVertex, CellData& out_cellData);
   };
 }
 }

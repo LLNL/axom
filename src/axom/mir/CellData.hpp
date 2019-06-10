@@ -9,7 +9,7 @@
 #include "axom/core.hpp"  // for axom macros
 #include "axom/slam.hpp"
 
-#include "MIRMesh.hpp"
+#include "MIRMeshTypes.hpp"
 
 namespace numerics = axom::numerics;
 namespace slam = axom::slam;
@@ -19,6 +19,8 @@ namespace axom
 namespace mir
 {
 
+  /// Represents an arbitrary number of cells that are within the same local coordinate system (i.e. share a set of vertices and elements).
+  /// Intended to be used as a helper class to hold intermediate data while processing a mesh, and to be used as input to the MIRMesh class to fully initialize it.
   class CellData
   {
 
@@ -40,9 +42,23 @@ namespace mir
       std::vector<PosType> veInds;
       std::vector<PosType> veBegins;
 
-      std::vector<mir::Point2> vertexPositions;
-      std::vector<axom::float64> materialsInCell;     // TODO: This is not currently being used.
-      std::vector<std::vector<axom::float64> > vertexVolumeFractions;
+      std::vector<mir::Point2> vertexPositions;                               // Data that goes into MIRMesh's vertexPositions PointMap
+      std::vector<std::vector<axom::float64> > vertexVolumeFractions;         // Data that goes into MIRMesh's materialVolumeFractionsVertex ScalarMap
+      std::vector<int> elementDominantMaterials;                              // Data that goes into MIRMesh's elementDominantColors IntMap
+      std::vector<int> elementParents;                                        // Data that goes into MIRMesh's elementParentIDs IntMap
+  };
+
+  class CellTopology
+  {
+    public:
+      CellTopology();
+      ~CellTopology();
+
+    public:
+      std::vector<PosType> evInds;
+      std::vector<PosType> evBegins;
+      std::vector<PosType> veInds;
+      std::vector<PosType> veBegins;
   };
 
 }

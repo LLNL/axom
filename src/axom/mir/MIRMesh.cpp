@@ -16,10 +16,10 @@ namespace mir
 
   MIRMesh::MIRMesh(MIRMesh* _mesh)  // copy constructor
   {
-      evInds = _mesh->evInds;
-      evBegins = _mesh->evBegins;
-      veInds = _mesh->veInds;
-      veBegins = _mesh->veBegins;
+      data.evInds = _mesh->data.evInds;
+      data.evBegins = _mesh->data.evBegins;
+      data.veInds = _mesh->data.veInds;
+      data.veBegins = _mesh->data.veBegins;
       verts = _mesh->verts;
       elems = _mesh->elems;
       bdry = _mesh->bdry;
@@ -27,6 +27,8 @@ namespace mir
       vertexPositions = _mesh->vertexPositions;
       materialVolumeFractionsElement = _mesh->materialVolumeFractionsElement;
       materialVolumeFractionsVertex = _mesh->materialVolumeFractionsVertex;
+      elementParentIDs = _mesh->elementParentIDs;
+      elementDominantMaterials = _mesh->elementDominantMaterials;
       numMaterials = _mesh->numMaterials;
   }
 
@@ -38,10 +40,10 @@ namespace mir
   /// Initializes a mesh with the given topology.
   void MIRMesh::InitializeMesh(std::vector<PosType> _evInds, std::vector<PosType> _evBegins, std::vector<PosType> _veInds, std::vector<PosType> _veBegins, VertSet _verts, ElemSet _elems, int _numMaterials)
   {
-    evInds = _evInds;
-    evBegins = _evBegins;
-    veInds = _veInds;
-    veBegins = _veBegins;
+    data.evInds = _evInds;
+    data.evBegins = _evBegins;
+    data.veInds = _veInds;
+    data.veBegins = _veBegins;
     verts = _verts;
     elems = _elems;
     numMaterials = _numMaterials;
@@ -64,10 +66,10 @@ namespace mir
               .toSet( &verts )
               .begins( RelationBuilder::BeginsSetBuilder()
                         .size( elems.size() ) 
-                        .data( evBegins.data() )  )
+                        .data( data.evBegins.data() )  )
               .indices ( RelationBuilder::IndicesSetBuilder() 
-                          .size( evInds.size() ) 
-                          .data( evInds.data() ) );
+                          .size( data.evInds.size() ) 
+                          .data( data.evInds.data() ) );
     }
 
 
@@ -80,10 +82,10 @@ namespace mir
                .toSet( &elems )
                .begins( RelationBuilder::BeginsSetBuilder()
                         .size( verts.size() )
-                        .data( veBegins.data() ) )
+                        .data( data.veBegins.data() ) )
                .indices( RelationBuilder::IndicesSetBuilder()
-                         .size( veInds.size() )
-                         .data( veInds.data() ) );
+                         .size( data.veInds.size() )
+                         .data( data.veInds.data() ) );
       // _quadmesh_example_construct_cobdry_relation_end
     }
 
@@ -175,6 +177,36 @@ void MIRMesh::constructMeshVolumeFractionsVertex(std::vector<std::vector<axom::f
     SLIC_ASSERT_MSG( vertexPositions.isValid(), "Position map is not valid.");
   }
 
+//--------------------------------------------------------------------------------  
+
+  /// Constructs the elementParentsID map of the ID of the parent element in the original mesh for each generated element
+  void MIRMesh::constructElementParentMap(int* elementParents)
+  {
+    // Initialize the map for the elements' parent IDs
+    elementParentIDs = IntMap( &elems );
+
+    // Copy the data for the elements
+    for (int eID = 0; eID < elems.size(); ++eID)
+      elementParentIDs[eID] = elementParents[eID];
+
+    SLIC_ASSERT_MSG( elementParentIDs.isValid(), "Element parent map is not valid.");
+  }
+
+//--------------------------------------------------------------------------------  
+
+  /// Constructs the elementDominantMaterials map of each element's single most dominant material
+  void MIRMesh::constructElementDominantMaterialMap(std::vector<int> dominantMaterials)
+  {
+    // Initialize the map for the elements' dominant colors
+    elementDominantMaterials = IntMap( &elems );
+
+    // Copy the dat for the elements
+    for (int eID = 0; eID < elems.size(); ++eID)
+      elementDominantMaterials[eID] = dominantMaterials[eID];
+
+    SLIC_ASSERT_MSG( elementDominantMaterials.isValid(), "Element dominant materials map is not valid.");
+  }
+
 //--------------------------------------------------------------------------------
 
   /// Prints out the map values for each element
@@ -203,56 +235,91 @@ void MIRMesh::constructMeshVolumeFractionsVertex(std::vector<std::vector<axom::f
 
   void MIRMesh::print()
   {
-    printf("------------------------Printing Mesh Information:------------------------\n");
+    printf("\n------------------------Printing Mesh Information:------------------------\n");
     printf("number of vertices: %d\n", verts.size());
     printf("number of elements: %d\n", elems.size());
     printf("number of materials: %d\n", numMaterials);
 
     printf("evInds: { ");
-    for (int i = 0; i < evInds.size(); i++)
+    for (int i = 0; i < data.evInds.size(); i++)
     {
-      printf("%d ", evInds[i]);
+      printf("%d ", data.evInds[i]);
     }
     printf("}\n");
 
     printf("evBegins: { ");
-    for (int i = 0; i < evBegins.size(); i++)
+    for (int i = 0; i < data.evBegins.size(); i++)
     {
-      printf("%d ", evBegins[i]);
+      printf("%d ", data.evBegins[i]);
     }
     printf("}\n");
 
     printf("veInds: { ");
-    for (int i = 0; i < veInds.size(); i++)
+    for (int i = 0; i < data.veInds.size(); i++)
     {
-      printf("%d ", veInds[i]);
+      printf("%d ", data.veInds[i]);
     }
     printf("}\n");
 
     printf("veBegins: { ");
-    for (int i = 0; i < veBegins.size(); i++)
+    for (int i = 0; i < data.veBegins.size(); i++)
     {
-      printf("%d ", veBegins[i]);
+      printf("%d ", data.veBegins[i]);
     }
     printf("}\n");
 
     printf("vertexPositions: { ");
-    for (int i = 0; i < vertexPositions.size(); ++i)
+    for (int i = 0; i < verts.size(); ++i)      // TODO: This was previously vertexPositions.size() and was working...
     {
       printf("{%.2f, %.2f} ", vertexPositions[i].m_x, vertexPositions[i].m_y);
     }
+    printf("}\n");
 
+    printf("elementParentIDs: { ");
+    for (int i = 0; i < elementParentIDs.size(); ++i)
+    {
+      printf("%d ", elementParentIDs[i]);
+    }
+    printf("}\n");
+
+    printf("elementDominantMaterials: { ");
+    for (int i = 0; i < elems.size(); ++i)
+    {
+      printf("%d ", elementDominantMaterials[i]);
+    }
+    printf("}\n");
+
+    printf("vertexVolumeFractions: { \n");
+    for (int i = 0; i < materialVolumeFractionsVertex.size(); ++i)
+    {
+      printf("  { ");
+      for (int j = 0; j < verts.size(); ++j)
+      {
+        printf("%.3f, ", materialVolumeFractionsVertex[i][j]);
+      }
+      printf("}\n");
+    }
     printf("}\n");
     printf("--------------------------------------------------------------------------\n");
   }
 
 //--------------------------------------------------------------------------------
 
-  /// Reads in a constructs a mesh from the given file
-  void MIRMesh::readMeshFromFile()
+  /// Reads in and constructs a mesh from the given file
+  /// Note: Must currently be an ASCII, UNSTRUCTURED_GRID .vtk file
+  void MIRMesh::readMeshFromFile(std::string filename)
   {
-    printf("Mesh writing functionality not implemented yet.");
+    printf("Mesh reading functionality not implemented yet.");
     
+    // Read in header
+
+    // Read in POINTS
+
+    // Read in CELLS
+
+    // Read in CELL_TYPES
+
+    // Read in CELL_DATA (element volume fractions)
   }
 
 //--------------------------------------------------------------------------------
@@ -268,7 +335,7 @@ void MIRMesh::constructMeshVolumeFractionsVertex(std::vector<std::vector<axom::f
     meshfile << "# vtk DataFile Version 3.0\n"
              << "vtk output\n"
              << "ASCII\n"
-             << "DATASET UNSTRUCTURED_GRID\n\n"
+             << "DATASET UNSTRUCTURED_GRID\n"
              << "POINTS " << verts.size() << " double\n";
 
     // write positions
@@ -277,38 +344,37 @@ void MIRMesh::constructMeshVolumeFractionsVertex(std::vector<std::vector<axom::f
       meshfile << vertexPositions[vID].m_x << " " << vertexPositions[vID].m_y << " 0\n"; // must always set all 3 coords; set Z=0 for 2D
     }
 
-    // // write elem-to-vert boundary relation
-    // meshfile << "\nCELLS " << elems.size() << " " << 5 * elems.size();  // TODO: This will not always be 5
-    // for(auto e: elems)
-    // {
-    //   meshfile<<"\n4 ";                                                 // TODO: This will not always be 4
-    //   std::copy ( bdry.begin(e), bdry.end(e), out_it );
-    // }
+    meshfile << "\nCELLS " << elems.size() << " " << data.evInds.size() + elems.size();
+    for (int i = 0; i < elems.size(); ++i)
+    {
+      int nVerts = data.evBegins[i+1] - data.evBegins[i];
+      meshfile << "\n" << nVerts;
+      for (int j = 0; j < nVerts; ++j)
+      {
+        int startIndex = data.evBegins[i];
+        meshfile << " " << data.evInds[startIndex + j];
+      }
+    } 
 
-    // // write element types ( 9 == VTK_QUAD, 5 == VTK_TRIANGLE )
-    // meshfile << "\n\nCELL_TYPES " << elems.size() << "\n";
-    // for(int i=0 ; i< elems.size() ; ++i)
-    // {
-    //   meshfile << "9 ";                                                 // TODO: This will not always be 9, but will be 5 for any triangle elements
-    // }    
+    meshfile << "\n\nCELL_TYPES " << elems.size() << "\n";
+    for (int i = 0; i < elems.size(); ++i)
+    {
+      int nVerts = data.evBegins[i + 1] - data.evBegins[i];
+      if (nVerts == 3)
+        meshfile << "5\n";
+      else if (nVerts == 4)
+        meshfile << "9\n";
+    }
 
-    // // write element ids
-    // meshfile << "\n\nCELL_DATA " << elems.size()
-    //          << "\nSCALARS cellIds int 1"
-    //          << "\nLOOKUP_TABLE default \n";
-    // for(int i=0 ; i< elems.size() ; ++i)
-    // {
-    //   meshfile << elems[i] <<" ";
-    // }
+    // write element materials
+    meshfile << "\n\nCELL_DATA " << elems.size()
+             << "\nSCALARS cellIds int 1"
+             << "\nLOOKUP_TABLE default \n";
+    for(int i=0 ; i< elems.size() ; ++i)
+    {
+      meshfile << elementDominantMaterials[i] << " ";
+    }
 
-    // // write vertex ids
-    // meshfile << "\n\nPOINT_DATA " << verts.size()
-    //          << "\nSCALARS vertIds int 1"
-    //          << "\nLOOKUP_TABLE default \n";
-    // for(int i=0 ; i< verts.size() ; ++i)
-    // {
-    //   meshfile << verts[i] <<" ";
-    // }
     meshfile <<"\n";
   }
 
