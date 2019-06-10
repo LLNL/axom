@@ -40,18 +40,6 @@ set( primal_headers
 
      operators/detail/clip_impl.hpp
      operators/detail/intersect_impl.hpp
-
-     ## spatial acceleration
-     spatial_acceleration/BVH.hpp
-
-     spatial_acceleration/linear_bvh/BVHData.hpp
-     spatial_acceleration/linear_bvh/RadixTree.hpp
-     spatial_acceleration/linear_bvh/aabb.hpp
-     spatial_acceleration/linear_bvh/emit_bvh.hpp
-     spatial_acceleration/linear_bvh/build_radix_tree.hpp
-     spatial_acceleration/linear_bvh/math.hpp
-     spatial_acceleration/linear_bvh/range.hpp
-     spatial_acceleration/linear_bvh/vec.hpp
    )
 
 set( primal_sources
@@ -67,10 +55,6 @@ set( primal_dependencies
      core
      slic
      )
-
-blt_list_append( TO primal_dependencies ELEMENTS raja IF ${RAJA_FOUND} )
-blt_list_append( TO primal_dependencies ELEMENTS umpire IF ${UMPIRE_FOUND} )
-blt_list_append( TO primal_dependencies ELEMENTS openmp IF ${ENABLE_OPENMP} )
 
 blt_add_library(
     NAME                  primal

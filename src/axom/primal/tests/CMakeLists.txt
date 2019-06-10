@@ -6,7 +6,6 @@
 set( primal_tests
     primal_boundingbox.cpp
     primal_orientedboundingbox.cpp
-    primal_bvh.cpp
     primal_clip.cpp
     primal_closest_point.cpp
     primal_in_sphere.cpp
@@ -22,14 +21,9 @@ set( primal_tests
     primal_triangle.cpp
     primal_tetrahedron.cpp
     primal_vector.cpp
-    primal_execution_space.cpp
    )
 
 set(primal_test_depends fmt primal slic mint gtest)
-blt_list_append( TO primal_test_depends ELEMENTS raja IF ${RAJA_FOUND} )
-blt_list_append( TO primal_test_depends ELEMENTS umpire IF ${UMPIRE_FOUND} )
-blt_list_append( TO primal_test_depends ELEMENTS openmp  IF ${ENABLE_OPENMP} )
-blt_list_append( TO primal_test_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
 
 foreach ( test ${primal_tests} )
 
