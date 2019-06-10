@@ -68,7 +68,7 @@ namespace mir
   using BaseSet = slam::Set< PosType, ElemType >;
   using ScalarMap = slam::Map< BaseSet, axom::float64 >;  // Note: Documentation has a typo in it.
   using PointMap = slam::Map< BaseSet, Point2 >;
-  
+  using IntMap = slam::Map< BaseSet, int >;
 }
 }
 #endif

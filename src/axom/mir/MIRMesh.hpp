@@ -11,6 +11,7 @@
 #include "axom/slam.hpp"  // unified header for slam classes and functions
 
 #include "MIRMeshTypes.hpp"
+#include "CellData.hpp"
 
 // C/C++ includes
 #include <cmath>          // for definition of M_PI, exp()
@@ -21,12 +22,14 @@
 namespace numerics = axom::numerics;
 namespace slam = axom::slam;
 
-
 //--------------------------------------------------------------------------------
 namespace axom
 {
 namespace mir
 {
+
+  #define NULL_MAT -1
+
   struct EdgeClipInfo
   {
     int vertexOne;
@@ -54,26 +57,21 @@ namespace mir
       void        constructMeshVolumeFractionMaps(std::vector<axom::float64*> materialVolumeFractionsData); /// Constructs the volume fraction maps on the vertices
       void        constructMeshVolumeFractionsVertex(std::vector<std::vector<axom::float64> > vertexVF);  /// Constructs the vertex volume fraction map
       void        constructVertexPositionMap(Point2* data);                                /// Constucts the positions map on the vertices
+      void        constructElementParentMap(int* cellParents);                                /// Constructs the map of cells to their original cell parent
+      void        constructElementDominantMaterialMap(std::vector<int> dominantMaterials);                      /// Constructs the map of elements to their dominant materials
 
       void        printElementScalarMap(ScalarMap& elements, std::string prefix);           /// Prints out the map values for each element
       void        printVertexScalarMap(ScalarMap& vertices, std::string prefix);            /// Prints out the map values for each vertex
 
       void        print();                                                                  // Print out a variety of useful information about the mesh
 
-      void        readMeshFromFile();                                                       /// Reads in and constructs a mesh from a file
+      void        readMeshFromFile(std::string filename);                                   /// Reads in and constructs a mesh from a file
       void        writeMeshToFile(std::string filename);                                    /// Writes out the current mesh to a file
       void        attachVertexMap();                                                        /// Adds a map of data to the mesh
 
     /****************************************************************
      *                        VARIABLES
      ****************************************************************/
-    public:
-      // support data for mesh connectivity
-      std::vector<PosType> evInds;
-      std::vector<PosType> evBegins;
-      std::vector<PosType> veInds;
-      std::vector<PosType> veBegins;
-
     public:
       // Mesh Set Definitions
       VertSet verts;  // the set of vertices in the mesh
@@ -82,16 +80,23 @@ namespace mir
     public:
       // Mesh Relation Definitions
       ElemToVertRelation bdry;      // Boundary relation from elements to vertices
-      VertToElemRelation cobdry;   // Coboundary relation from vertices to elements
+      VertToElemRelation cobdry;    // Coboundary relation from vertices to elements
 
     public:
       // Mesh Map Definitions
-      PointMap vertexPositions;   // vertex position
+      PointMap vertexPositions;                               // vertex position for each vertex
       std::vector<ScalarMap> materialVolumeFractionsElement;  // the volume fractions of each material for each element
       std::vector<ScalarMap> materialVolumeFractionsVertex;   // the volume fractions of each material for each vertex
 
     public:
       int numMaterials;
+
+    public:
+      IntMap elementParentIDs;              // the ID of the parent element from the original mesh
+      IntMap elementDominantMaterials;      // the dominant material of the cell (a processed mesh should have only one material per cell)
+
+      public:
+      CellData data;                        // Contains mesh connectivity data, volume fraction data, vertex position data
   };
 
   //--------------------------------------------------------------------------------

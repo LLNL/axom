@@ -86,6 +86,18 @@ namespace mir
         vertexVolumeFractions[matID].push_back(cellToMerge.vertexVolumeFractions[matID][vID]);
       }
     }
+
+    // Merge the elements' dominant materials
+    for (auto i = 0; i < cellToMerge.elementDominantMaterials.size(); ++i)
+    {
+      elementDominantMaterials.push_back(cellToMerge.elementDominantMaterials[i]);
+    }
+
+    // Merge the elements' parent ids
+    for (auto i = 0; i < cellToMerge.elementParents.size(); ++i)
+    {
+      elementParents.push_back(cellToMerge.elementParents[i]);
+    }
     
     // Merge the total number of verts and elems in the resulting cell
     numVerts += cellToMerge.numVerts;
