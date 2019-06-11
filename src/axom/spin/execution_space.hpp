@@ -40,12 +40,6 @@ namespace spin
 /// @{
 
 /*!
- * \brief Indicates parallel execution on the GPU with CUDA.
- */
-template < int BLOCK_SIZE >
-struct CUDA_EXEC{ };
-
-/*!
  * \brief Indicates sequential execution on the CPU.
  */
 struct SEQ_EXEC{ };
@@ -53,7 +47,19 @@ struct SEQ_EXEC{ };
 /*!
  * \brief Indicates parallel execution on the CPU using OpenMP.
  */
+#ifdef AXOM_USE_OPENMP
 struct OMP_EXEC{ };
+#endif
+
+
+/*!
+ * \brief Indicates parallel execution on the GPU with CUDA.
+ * \tparam BLOCK_SIZE the number of CUDA threads in a block.
+ */
+#if defined(AXOM_USE_CUDA) && defined(RAJA_ENABLE_CUDA)
+template < int BLOCK_SIZE >
+struct CUDA_EXEC{ };
+#endif
 
 /// @}
 
