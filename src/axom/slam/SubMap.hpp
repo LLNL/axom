@@ -159,8 +159,7 @@ public:
   {
     verifyPositionImpl(idx, comp);
     SLIC_ASSERT_MSG(m_superMap != nullptr,
-                    "Submap was constructed with const Map pointer, "
-                    << "non-const functions should not be called");
+                    "Submap's super map was null.");
 
     return (*m_superMap)[getMapElemFlatIndex(idx)*numComp() + comp];
   }

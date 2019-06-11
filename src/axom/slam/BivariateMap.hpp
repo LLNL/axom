@@ -21,6 +21,7 @@
 #include "axom/slam/policies/StridePolicies.hpp"
 
 #include <cassert>
+#include <typeinfo>
 
 namespace axom
 {
@@ -135,7 +136,13 @@ public:
     , m_map(&m_mapSet, defaultValue, stride)
   {}
 
+  //template<typename OtherBivariateMapType>
+  //BivariateMap(const OtherBivariateMapType& otherBMap)
+  //{
 
+  //}
+
+  // (KW) Problem -- does not work with RelationSet
   template<typename BivariateSetRetType>
   BivariateSetRetType getBivariateSet() const
   {
@@ -146,6 +153,16 @@ public:
 
     return BivariateSetRetType(outer, inner);
   }
+
+  template<typename BivariateSetRetType, typename RelType>
+  BivariateSetRetType getBivariateSet() const
+  {
+     auto* rel = dynamic_cast<const RelType*>(m_bset)->getRelation();
+     SLIC_ASSERT(rel != nullptr);
+
+     return BivariateSetRetType(rel);
+  }
+
 
   /// \name BivariateMap value access functions
   /// @{
