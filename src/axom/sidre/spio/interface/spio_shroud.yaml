@@ -63,7 +63,7 @@ declarations:
   - decl: void writeBlueprintIndexToRootFile(DataStore* datastore,
                                              const std::string& domain_path,
                                              const std::string& file_name,
-                                             const std::string& mesh_name)
+                                             const std::string& mesh_path)
   - decl: void read(Group * group,
                     const std::string& file_string,
                     const std::string& protocol,
