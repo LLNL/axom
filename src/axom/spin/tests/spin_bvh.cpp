@@ -301,6 +301,25 @@ void check_find3d( )
     EXPECT_EQ( donorCellIdx, candidates[ offsets[ i ] ] );
   } // END for all cell centroids
 
+  axom::deallocate( candidates );
+
+  // check points that are outside by shifting the query points
+  constexpr double OFFSET = 10.0;
+  for ( IndexType i=0; i < ncells; ++i )
+  {
+     xc[ i ] += OFFSET;
+     yc[ i ] += OFFSET;
+     zc[ i ] += OFFSET;
+  }
+
+  bvh.find( offsets, counts, candidates, ncells, xc, yc, zc );
+
+  for ( IndexType i=0; i < ncells; ++i )
+  {
+    EXPECT_EQ( counts[ i ], 0 );
+  }
+  EXPECT_TRUE( candidates == nullptr );
+
   axom::deallocate( offsets );
   axom::deallocate( candidates );
   axom::deallocate( counts );
@@ -363,6 +382,24 @@ void check_find2d( )
     EXPECT_EQ( counts[ i ], 1 );
     EXPECT_EQ( donorCellIdx, candidates[ offsets[ i ] ] );
   } // END for all cell centroids
+
+  axom::deallocate( candidates );
+
+  // check points that are outside by shifting the query points
+  constexpr double OFFSET = 10.0;
+  for ( IndexType i=0; i < ncells; ++i )
+  {
+     xc[ i ] += OFFSET;
+     yc[ i ] += OFFSET;
+  }
+
+  bvh.find( offsets, counts, candidates, ncells, xc, yc );
+
+  for ( IndexType i=0; i < ncells; ++i )
+  {
+    EXPECT_EQ( counts[ i ], 0 );
+  }
+  EXPECT_TRUE( candidates == nullptr );
 
   axom::deallocate( offsets );
   axom::deallocate( candidates );
