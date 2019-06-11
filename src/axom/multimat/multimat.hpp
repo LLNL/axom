@@ -58,9 +58,11 @@ private:
   using IndPolicy = policies::STLVectorIndirection<SetPosType, T>;
   using VariableCardinality =
           policies::VariableCardinality<SetPosType, IndPolicy<SetElemType> >;
+public:
   using StaticVariableRelationType = slam::StaticRelation<
           SetPosType, SetElemType, VariableCardinality, 
           IndPolicy<SetElemType>, RangeSetType, RangeSetType>;
+private:
   using DynamicVariableRelationType =
           slam::DynamicVariableRelation<SetPosType,SetElemType>;
   using OrderedSetType = slam::OrderedSet<
@@ -82,9 +84,6 @@ private:
   using BivariateMapType =
           slam::BivariateMap<T, BSet, IndPolicy<T>, MapStrideType>;
 
-  template<typename M>
-  using SubMap = slam::SubMap<M,SetType>;
-
 public:
 
   // SLAM RelationSet for the set of non-zero cell to mat variables
@@ -99,10 +98,6 @@ public:
 
   template <typename T,typename BSet = BivariateSetType>
   using Field2D = BivariateMapType<T, BSet>;
-
-
-  template <typename T>
-  using SubField = SubMap< Field2D<T> >;
 
   using IndexSet = RangeSetType; //For returning set of SparseIndex
   using IdSet = OrderedSetType;  //For returning set of DenseIndex
@@ -563,22 +558,30 @@ MultiMat::Field2D<T>& MultiMat::get2dField(const std::string& field_name)
 
   SLIC_ASSERT(m_fieldMappingVec[fieldIdx] == FieldMapping::PER_CELL_MAT);
 
-  //auto* pmap = dynamic_cast<Field2D<T>*>(m_mapVec[fieldIdx]);
-
   return *dynamic_cast<Field2D<T>*>(m_mapVec[fieldIdx]);
 }
 
 
 template<typename T, typename BMapType>
-BMapType& get2dField(const std::string& /*field_name*/)
+MultiMat::Field2D<T,BMapType>& get2dField(const std::string& /*field_name*/)
 {
-//   using BSetType = typename BMapType::BivariateSetType;
-//
-//   Field2D<T>& fld = get2DField(field_name);
-//
-//   auto bset = fld.getBivariateSet<BSetType>();
+    //int fieldIdx = getFieldIdx(field_name);
 
+    //if (fieldIdx < 0)
+    //    throw std::invalid_argument("No field with this name is found");
 
+    //SLIC_ASSERT(m_fieldMappingVec[fieldIdx] == FieldMapping::PER_CELL_MAT);
+
+    //using BSet = typename BMapType::BivariateSetType;
+
+    //// Gets the BMap, cast to BivariateMap<T,slam::BivariateSet>
+    //auto* bmap = dynamic_cast<Field2D<T>*>(m_mapVec[fieldIdx]);
+    //SLIC_ASSERT(bmap != nullptr);
+
+    //auto* bset = bmap->getBivariateSet<BSet>();
+    //SLIC_ASSERT(bset != nullptr);
+
+    //return *dynamic_cast<Field2D<T,BMapType>*>(m_mapVec[fieldIdx]);
 }
 
 template<typename DataType>

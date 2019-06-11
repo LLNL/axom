@@ -17,7 +17,7 @@
 #include "axom/slam.hpp"
 
 #ifdef AXOM_DEBUG
-# define ITERMAX 3   //define how many iterations to run test code
+# define ITERMAX 1   //define how many iterations to run test code
 #else
 # define ITERMAX 50  //define how many iterations to run test code
 #endif
@@ -239,26 +239,12 @@ void average_density_cell_dom_mm_submap(MultiMat& mm) {
     << mm.getSparsityLayoutAsString());
   SLIC_ASSERT(mm.isCellDom());
 
-  //using SetType = slam::RangeSet<>;
-  //using ProductSet = slam::ProductSet<SetType,SetType>;
-
   int ncells = mm.getNumberOfCells();
   auto& Densityfrac = mm.get2dField<double>("Densityfrac");
   auto& Volfrac = mm.get2dField<double>("Volfrac");
   auto& Vol = mm.get1dField<double>("Vol");
 
   vector<double> Density_average(ncells);
-
-  // convert DensityFrac to use ProductSets
-  //using BMapT = slam::BivariateMap<double, ProductSet,
-  //      slam::policies::RuntimeStride<int> >;
-
-  //auto prodSet = Densityfrac.getBivariateSet<ProductSet>();
-  //auto densityMap = BMapT(&prodSet);
-  //densityMap.copy(Densityfrac.getMap()->data().data() );
-
-  //auto volfracMap = BMapT(&prodSet);
-  //volfracMap.copy(Volfrac.getMap()->data().data() );
 
   timer.reset();
 
@@ -287,6 +273,127 @@ void average_density_cell_dom_mm_submap(MultiMat& mm) {
   SLIC_INFO("Average Density                      compute time is "
     << act_perf << " secs\n");
 }
+
+//    Average density - Cell-Dominant
+//    MultiMat - Submap
+template<typename BSet>
+void average_density_cell_dom_mm_submap_templated(MultiMat& mm) {
+    SLIC_INFO("-- Averaging Density cell-dominant using MultiMat Submap -- templated on concrete bivariate set");
+
+    mm.convertLayoutToCellDominant();
+    SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
+        << mm.getSparsityLayoutAsString());
+    SLIC_ASSERT(mm.isCellDom());
+
+    int ncells = mm.getNumberOfCells();
+    auto& Densityfrac = mm.get2dField<double>("Densityfrac");
+    auto& Volfrac = mm.get2dField<double>("Volfrac");
+    auto& Vol = mm.get1dField<double>("Vol");
+
+    vector<double> Density_average(ncells);
+
+    /***** BEGIN CUSTOM PRODUCT SET TYPES   ******/
+    // convert DensityFrac to use ProductSets
+    using BMapT = slam::BivariateMap<double, BSet>;
+
+    auto bSet = Densityfrac.getBivariateSet<BSet>();
+    
+    auto densityMap = BMapT(&bSet);
+    densityMap.copy(Densityfrac.getMap()->data().data() );
+
+    auto volfracMap = BMapT(&bSet);
+    volfracMap.copy(Volfrac.getMap()->data().data() );
+
+    /***** END CUSTOM PRODUCT SET TYPES     *****/
+
+    timer.reset();
+
+    for (int iter = 0; iter < ITERMAX; ++iter)
+    {
+        timer.start();
+
+        for (int ic = 0; ic < ncells; ++ic)
+        {
+            double density_ave = 0.0;
+            auto Densityfrac_row = densityMap(ic);
+            auto Volfrac_row = volfracMap(ic);
+      for (int j = 0; j < Densityfrac_row.size(); ++j)
+      {
+        density_ave += Densityfrac_row(j) * Volfrac_row(j);
+      }
+      Density_average[ic] = density_ave / Vol[ic];
+    }
+
+    timer.record();
+    data_checker.check(Density_average);
+  }
+  double act_perf = timer.get_average();
+  result_store.add_result(Result_Store::avg_density, mm.getDataLayout(),
+    mm.getSparsityLayout(), Result_Store::mm_submap, act_perf);
+  SLIC_INFO("Average Density                      compute time is "
+    << act_perf << " secs\n");
+}
+
+//    Average density - Cell-Dominant
+//    MultiMat - Submap
+template<typename BSet, typename Rel>
+void average_density_cell_dom_mm_submap_templated(MultiMat& mm) {
+    SLIC_INFO("-- Averaging Density cell-dominant using MultiMat Submap -- templated on concrete bivariate set");
+
+    mm.convertLayoutToCellDominant();
+    SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
+        << mm.getSparsityLayoutAsString());
+    SLIC_ASSERT(mm.isCellDom());
+
+    int ncells = mm.getNumberOfCells();
+    auto& Densityfrac = mm.get2dField<double>("Densityfrac");
+    auto& Volfrac = mm.get2dField<double>("Volfrac");
+    auto& Vol = mm.get1dField<double>("Vol");
+
+    vector<double> Density_average(ncells);
+
+    /***** BEGIN CUSTOM PRODUCT SET TYPES   ******/
+    // convert DensityFrac to use ProductSets
+    using BMapT = slam::BivariateMap<double, BSet>;
+
+    auto bSet = Densityfrac.getBivariateSet<BSet, Rel>();
+
+    auto densityMap = BMapT(&bSet);
+    densityMap.copy(Densityfrac.getMap()->data().data());
+
+    auto volfracMap = BMapT(&bSet);
+    volfracMap.copy(Volfrac.getMap()->data().data());
+
+    /***** END CUSTOM PRODUCT SET TYPES     *****/
+
+    timer.reset();
+
+    for (int iter = 0; iter < ITERMAX; ++iter)
+    {
+        timer.start();
+
+        for (int ic = 0; ic < ncells; ++ic)
+        {
+            double density_ave = 0.0;
+            auto Densityfrac_row = densityMap(ic);
+            auto Volfrac_row = volfracMap(ic);
+            for (int j = 0; j < Densityfrac_row.size(); ++j)
+            {
+                density_ave += Densityfrac_row(j) * Volfrac_row(j);
+            }
+            Density_average[ic] = density_ave / Vol[ic];
+        }
+
+        timer.record();
+        data_checker.check(Density_average);
+    }
+    double act_perf = timer.get_average();
+    result_store.add_result(Result_Store::avg_density, mm.getDataLayout(),
+        mm.getSparsityLayout(), Result_Store::mm_submap, act_perf);
+    SLIC_INFO("Average Density                      compute time is "
+        << act_perf << " secs\n");
+}
+
 
 //    Average density - Cell-Dominant
 //    MultiMat - Index Array
@@ -2827,6 +2934,14 @@ int main(int argc, char** argv)
   //printself and check
   mm.isValid(true);
 
+    using SetType = slam::RangeSet<>;
+    using ProductSetType = slam::ProductSet<SetType, SetType>;
+
+    using RelType = MultiMat::StaticVariableRelationType;
+    using RelationSetType = slam::RelationSet<RelType, SetType, SetType>;
+    using MMRelSet = MultiMat::RelationSetType;
+
+
   SLIC_INFO("**********************************************************");
   SLIC_INFO("* ");
   SLIC_INFO("* Average Density");
@@ -2836,17 +2951,19 @@ int main(int argc, char** argv)
   SLIC_INFO("*************** Full Layout - Cell Dominant **************");
   data_checker.reset();
 
-
+if (0) {
   average_density_cell_dom_full(data);
   average_density_cell_dom_mm_template(mm);
   average_density_cell_dom_mm_direct(mm);
 
   average_density_cell_dom_mm_submap(mm);
+    average_density_cell_dom_mm_submap_templated<ProductSetType>(mm);
+
   average_density_cell_dom_mm_idxarray(mm);
 
   //average_density_cell_dom_mm_iter(mm);
   //average_density_cell_dom_mm_flatiter(mm);
-
+}
 
   //Run the Compact layout, cell dom
   SLIC_INFO("*************** Compact Layout - Cell Dominant **************");
@@ -2855,6 +2972,7 @@ int main(int argc, char** argv)
   average_density_cell_dom_mm_idxarray(mm);
 
   average_density_cell_dom_mm_submap(mm);
+  average_density_cell_dom_mm_submap_templated<RelationSetType, MMRelSet>(mm);
   //average_density_cell_dom_mm_iter(mm);
   //average_density_cell_dom_mm_flatiter(mm);
 
