@@ -10,8 +10,13 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
+- Added a new implementation of the Bounding Volume Hierarchy(BVH) spatial
+  acceleration data-structure to spin. The new BVH implementation relies on RAJA
+  and allows for constructing and using the BVH sequentially or in parallel on
+  the CPU or in parallel on the GPU. The new implementation is available only
+  when Axom is compiled with RAJA and Umpire support.
 - Added Umpire and RAJA to the spack build.
-- Centralized Axom's memory management functions in a separate header and extended them 
+- Centralized Axom's memory management functions in a separate header and extended them
   to use Umpire when enabled.
 - Added the ability to point Axom to an UMPIRE build by specifying UMPIRE_DIR either in
   a host-config or at the command line. Axom components can link to Umpire, by specifying
@@ -23,7 +28,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   See the file src/axom/quest/interface/python/README.md for more information.
 - Added capability in sidre IOManager to read files while running on a number
   of MPI ranks greater than the number of ranks that were used to create
-  the files. 
+  the files.
 - Users can now set the vertex welding threshold parameter in Quest's In/Out query.
   This was previously not exposed to the user. The default value is 1E-9.
 - Unify all Axom component libraries into one library named axom.
@@ -86,7 +91,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added the ability to call resize() on a Mint UnstructuredMesh. This functionality
   was not previously exposed in the UnstructuredMesh API.
 - Added support for non-closed surface mesh input to the signed distance query.
-- Added new interface for the signed distance query along with corresponding tests 
+- Added new interface for the signed distance query along with corresponding tests
   and examples.
 - Updated to [fmt version 5.1.0](https://github.com/fmtlib/fmt/releases/tag/5.1.0)
 - Added AXOM_ENABLE_TESTS which is a CMake dependent option of ENABLE_TESTS
@@ -98,16 +103,16 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   supports the p1-norm, infinity-norm and frobenious matrix norm.
 - Added eigen_sort() routine for sorting the supplied eigenvalues and corresponding
   eigenvectors in ascending order.
-- Initial integration of Mint and Sidre. Mint can now operate on meshes 
+- Initial integration of Mint and Sidre. Mint can now operate on meshes
   stored in Sidre and conform to the [computational mesh blueprint conventions](http://llnl-conduit.readthedocs.io/en/latest/blueprint.html).
 - Added a sphere-sphere intersection test to Primal.
-- Added a utility function to Quest to *weld* vertices in a triangle mesh that 
-  are within a given tolerance. After welding, all triangles incident in a 
+- Added a utility function to Quest to *weld* vertices in a triangle mesh that
+  are within a given tolerance. After welding, all triangles incident in a
   vertex have the same index for that vertex. This function has been integrated
   into the ``mesh_tester`` utility.
 - Added a bounded All-Nearest-Neighbor query to Quest. This query takes a list
-  of point locations and associated regions, and for each point reports the 
-  nearest point in a different region that is no farther than a max search 
+  of point locations and associated regions, and for each point reports the
+  nearest point in a different region that is no farther than a max search
   radius.
 - Axom now exports [sparsehash version 2.0.3](https://github.com/sparsehash/sparsehash). Previously, it was only used internally.
 - Added a BitSet class to Slam.
@@ -125,12 +130,12 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Removed AXOM_NULLPTR. Use nullptr instead.
 
 ### Deprecated
-- 
+-
 
 ### Changed
-- Simplified the external constructors for the Mint UnstructuredMesh. Specifically, 
+- Simplified the external constructors for the Mint UnstructuredMesh. Specifically,
   the caller is no longer required to: (a) specify the dimension, which can be computed
-  internaly based on other input arguments, and (b) specify explicitly the capacity for 
+  internaly based on other input arguments, and (b) specify explicitly the capacity for
   the node coordinate and connectivity arrays. In the more common case, the capacity is
   equivalent to the associated size when constructing a mesh by supplied external buffers.
 - Restructured source directory.  #includes will now mirror file structure.  For
@@ -146,8 +151,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - CMake minimum is now 3.8 for non-CUDA builds and 3.9 for CUDA builds
 - Axom now requires a C++11 compiler.
 - Refactored Axom's Matrix/Vector operators and consolidated them in one file.
-- Removed overloaded arithmetic operators from the Matrix class to avoid 
-  potential negative performance impacts. Applications should use the new 
+- Removed overloaded arithmetic operators from the Matrix class to avoid
+  potential negative performance impacts. Applications should use the new
 ``matvecops`` methods for such operations.
 - Quest STL reader now returns a status code, indicating whether reading
   the STL file was successful. Also, the reader now leverages the improved
@@ -185,14 +190,14 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   If such a cell exists, it also finds the isoparametric coordinates of the
   point with respect to the cell. The query supports higher order
   [mfem](http://mfem.org) meshes.
-- Added cross-product and linspace operators to the vector utilities in 
+- Added cross-product and linspace operators to the vector utilities in
 ``numerics``
 
 ### Removed
-- 
+-
 
 ### Deprecated
-- 
+-
 
 ### Changed
 - The root cmake file for Axom is now located in ``<axom>``'s root directory,
