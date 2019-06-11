@@ -13,17 +13,6 @@
 // in both cuda and c
 #include <math.h>
 
-#define DRAY_INF_32 0x7f800000U
-#define DRAY_NG_INF_32 0xff800000U
-
-#define DRAY_INF_64 0x7ff0000000000000ULL
-#define DRAY_NG_INF_64 0xfff0000000000000ULL
-
-#define DRAY_NAN_32 0x7FC00000U
-#define DRAY_NAN_64 0x7FF8000000000000ULL
-
-#define DRAY_EPSILON_32 1e-5f
-#define DRAY_EPSILON_64 1e-9f
 
 #ifndef __CUDACC__
 // make sure min / max resolve for both cuda and cpu
@@ -40,6 +29,18 @@ namespace internal
 {
 namespace linear_bvh
 {
+
+constexpr axom::int32 AXOM_INF_32    = 0x7f800000U;
+constexpr axom::int32 AXOM_NG_INF_32 = 0xff800000U;
+
+constexpr axom::int64 AXOM_INF_64    = 0x7ff0000000000000ULL;
+constexpr axom::int64 AXOM_NG_INF_64 = 0xfff0000000000000ULL;
+
+constexpr axom::int32  AXOM_NAN_32   = 0x7FC00000U;
+constexpr axom::int64 AXOM_NAN_64    = 0x7FF8000000000000ULL;
+
+constexpr float  AXOM_EPSILON_32 = 1e-5f;
+constexpr double AXOM_EPSILON_64 = 1e-9f;
 
 union Bits32
 {
@@ -65,21 +66,21 @@ template<>
 inline AXOM_HOST_DEVICE
 axom::float32 epsilon<axom::float32>()
 {
-  return DRAY_EPSILON_32;
+  return AXOM_EPSILON_32;
 }
 
 template<>
 inline AXOM_HOST_DEVICE
 axom::float64 epsilon<axom::float64>()
 {
-  return DRAY_EPSILON_64;
+  return AXOM_EPSILON_64;
 }
 
 inline AXOM_HOST_DEVICE
 axom::float32 nan32()
 {
   Bits32 nan;
-  nan.bits = DRAY_NAN_32;
+  nan.bits = AXOM_NAN_32;
   return nan.scalar;
 }
 
@@ -87,7 +88,7 @@ inline AXOM_HOST_DEVICE
 axom::float32 infinity32()
 {
   Bits32 inf;
-  inf.bits = DRAY_INF_32;
+  inf.bits = AXOM_INF_32;
   return inf.scalar;
 }
 
@@ -95,7 +96,7 @@ inline AXOM_HOST_DEVICE
 axom::float32 neg_infinity32()
 {
   Bits32 ninf;
-  ninf.bits = DRAY_NG_INF_32;
+  ninf.bits = AXOM_NG_INF_32;
   return ninf.scalar;
 }
 
@@ -103,7 +104,7 @@ inline AXOM_HOST_DEVICE
 axom::float64 nan64()
 {
   Bits64 nan;
-  nan.bits = DRAY_NAN_64;
+  nan.bits = AXOM_NAN_64;
   return nan.scalar;
 }
 
@@ -111,7 +112,7 @@ inline AXOM_HOST_DEVICE
 axom::float64 infinity64()
 {
   Bits64 inf;
-  inf.bits = DRAY_INF_64;
+  inf.bits = AXOM_INF_64;
   return inf.scalar;
 }
 
@@ -119,7 +120,7 @@ inline AXOM_HOST_DEVICE
 axom::float64 neg_infinity64()
 {
   Bits64 ninf;
-  ninf.bits = DRAY_NG_INF_64;
+  ninf.bits = AXOM_NG_INF_64;
   return ninf.scalar;
 }
 
