@@ -161,6 +161,11 @@ public:
   /** \brief Returns the relation pointer   */
   RelationType* getRelation() const { return m_relation; }
 
+  RelationType* getRelation()
+  {
+      return m_relation;
+  }
+
   /** \brief Return the size of the relation   */
   PositionType    totalSize() const
   {
@@ -193,10 +198,11 @@ public:
     return m_relation->isValid(verboseOutput);
   }
 
-private:
+public:
   //hiding size() from the Set base class, replaced with totalSize().
   //but still implemented due to the function being virtual
   //(and can be called from base ptr)
+  // KW -- made this public to use from BivariateMap
   PositionType size() const override
   {
     return PositionType( m_relation->relationData()->size() );
