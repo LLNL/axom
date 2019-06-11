@@ -61,13 +61,82 @@ enum BVHReturnCodes
  * Once the BVH structure is generated, it is used to accelerate various spatial
  * queries, such as, collision detection, ray tracing, etc., by reducing the
  * search space for a given operation to an abbreviated list of candidate
- * geometric entities to check for a given query.
+ * geometric entities to check for a particular query.
  *
  * \tparam NDIMS the number of dimensions, e.g., 2 or 3.
  * \tparam ExecSpace the execution space to use, e.g. SEQ_EXEC, CUDA_EXEC, etc.
- * \tparam FloatType floating point precision, e.g., `double` or `float`.
- *  The last template parameter is optional, defaults to double if not
- *  specified.
+ * \tparam FloatType floating precision, e.g., `double` or `float`. Optional.
+ *
+ * \note The last template parameter is optional. Defaults to double precision
+ *  if not specified.
+ *
+ * \pre The spin::BVH class requires RAJA and Umpire. For a CPU-only, sequential
+ *  implementation, see the spin::BVHTree class.
+ *
+ * \note The Execution Space, supplied as the 2nd template argument, specifies
+ *
+ *  1. Where and how the BVH is generated and stored
+ *  2. Where and how subsequent queries are performed
+ *  3. The default memory space, bound to the corresponding execution space
+ *
+ *  The list of currently available options are:
+ *
+ *  * <b> SEQ_EXEC </b> <br />
+ *
+ *    The BVH is constructed sequentially and stored on the CPU. All subsequent
+ *    queries are performed sequentially on the CPU. This option is always
+ *    available. The default memory space for SEQ_EXEC is host/cpu memory.
+ *
+ *  * <b> OMP_EXEC </b> <br />
+ *
+ *    The BVH is constructed in parallel on the CPU, using OpenMP, and likewise
+ *    all subsequent queries are performed in parallel on the CPU. This option
+ *    is available when Axom is compiled with OpenMP enabled. The default
+ *    memory space used for OMP_EXEC is host/cpu memory.
+ *
+ *  * <b> CUDA_EXEC </b> <br />
+ *
+ *    The BVH is constructed in parallel and stored on the GPU, using CUDA.
+ *    Likewise all subsequent queries are perfomed in parallel on the GPU.
+ *    This option is availe when Axom is compiled with CUDA support. The
+ *    default memory space used for CUDA_EXEC is unified memory, which can
+ *    be accessed both from the CPU and GPU.
+ *
+ *  A simple example illustrating how to use the BVH class is given below:
+ *  \code
+ *
+ *     namespace spin = axom::spin;
+ *     constexpr int DIMENSION = 3;
+ *
+ *     // get a list of axis-aligned bounding boxes in a flat array
+ *     const double* aabbs = ...
+ *
+ *     // create a 3D BVH instance in parallel on the CPU using OpenMP
+ *     spin::BVH< DIMENSION, spin::OMP_EXEC > bvh( aabbs, numItems );
+ *     bvh.build();
+ *
+ *     // query points supplied in arrays, qx, qy, qz,
+ *     const axom::IndexType numPoints = ...
+ *     const double* qx = ...
+ *     const double* qy = ...
+ *     const double* qz = ...
+ *
+ *     // output array buffers
+ *     axom::IndexType* offsets    = axom::allocate< IndexType >( numPoints );
+ *     axom::IndexType* counts     = axom::allocate< IndexType >( numPoints );
+ *     axom::IndexType* candidates = nullptr;
+ *
+ *     // find candidates in parallel, allocates and populates the supplied
+ *     // candidates array
+ *     bvh.find( offsets, counts, candidates, numPoints, qx, qy, qz );
+ *     SLIC_ASSERT( candidates != nullptr );
+ *
+ *     ...
+ *
+ *     // caller is repsponsible for properly de-allocating the candidates array
+ *     axom::deallocate( candidates );
+ *
+ *  \endcode
  *
  */
 template < int NDIMS, typename ExecSpace, typename FloatType = double >
@@ -111,6 +180,11 @@ public:
    *    double ymax = boxes[ offset+4 ];
    *    double zmax = boxes[ offset+5 ];
    *  \endcode
+   *
+   * \warning The supplied boxes array must point to a buffer in a memory space
+   *  that is compatible with the execution space. For example, when using
+   *  CUDA_EXEC, boxes must be in unified memory or GPU memory. The code
+   *  currently does not check for that.
    *
    * \pre dimension >= 1 && dimension <= 3
    * \pre boxes != nullptr
@@ -371,13 +445,14 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
   axom::setDefaultAllocator( allocatorID );
 
   // STEP 1: count number of candidates for each query point
-  const internal::linear_bvh::Vec< FloatType, 4>  *inner_nodes = m_bvh.m_inner_nodes;
-  const int32 *leaf_nodes = m_bvh.m_leaf_nodes;
+  using vec4_t = internal::linear_bvh::Vec< FloatType, 4 >;
+
+  const vec4_t* inner_nodes = m_bvh.m_inner_nodes;
+  const int32*  leaf_nodes  = m_bvh.m_leaf_nodes;
   SLIC_ASSERT( inner_nodes != nullptr );
   SLIC_ASSERT( leaf_nodes != nullptr );
 
   using exec_policy = typename spin::execution_space< ExecSpace >::raja_exec;
-  using vec4_t      = internal::linear_bvh::Vec< FloatType, 4 >;
   RAJA::forall< exec_policy >(
       RAJA::RangeSegment(0,numPts), AXOM_LAMBDA(IndexType i)
   {

@@ -11,7 +11,7 @@
 #include "axom/core/memory_management.hpp"
 
 #if !defined(AXOM_USE_RAJA) || !defined(AXOM_USE_UMPIRE)
-#error *** The spin::BVH class requires RAJA and Umpire ***
+#error *** The execution_space traits class requires RAJA and Umpire ***
 #endif
 
 

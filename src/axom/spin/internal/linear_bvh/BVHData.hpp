@@ -23,6 +23,35 @@ namespace internal
 namespace linear_bvh
 {
 
+/*!
+ * \brief BVHData provides a data-structure that represent the internal data
+ *  layout of the BVH.
+ *
+ * \note <b> Internal Data Layout </b>
+ * \verbatim
+ *                      |               |               |               |
+ *             S0       |      S1       |       S2      |       S3      |
+ *      +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+ * .... | 0 | 1 | 2 | 3 | 0 | 1 | 2 | 3 | 0 | 1 | 2 | 3 | 0 | 1 | X | X | .....
+ *      +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+ *                      |               |               |
+ *                      |               |               |
+ *        S0.0 = L.xmin | S1.0 = L.ymax | S2.0 = R.zmin | S3.0 = left_child
+ *        S0.1 = L.ymin | S1.1 = L.zmax | S2.1 = R.xmax | S3.1 = right_child
+ *        S0.2 = L.zmin | S1.2 = R.xmin | S2.2 = R.ymax | S3.2 = padded
+ *        S0.3 = L.xmax | S1.3 = R.ymin | S2.3 = R.zmax | S3.3 = padded
+ *
+ * \endverbatim
+ *
+ * \note The internal data layout is organized in a flat buffer of 4 segments,
+ *  where each segment is a Vec< FloatType, 4 > type, that stores the left
+ *  and righ boxes of a given node, as well as, the IDs of the right and
+ *  left children, as illustrated above.
+ *
+ * \note A Vec< FloatType,4 > is chosen b/c it fits into GPU texture memory and
+ *  allows for additional performance optimizations down the road
+ *
+ */
 template < typename FloatType, int NDIMS >
 struct BVHData
 {
