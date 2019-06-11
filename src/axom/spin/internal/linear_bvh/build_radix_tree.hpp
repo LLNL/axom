@@ -655,6 +655,10 @@ void build_radix_tree( const FloatType* boxes,
                        AABB< FloatType, NDIMS >& bounds,
                        RadixTree< FloatType, NDIMS >& radix_tree )
 {
+  // sanity checks
+  SLIC_ASSERT( boxes !=nullptr );
+  SLIC_ASSERT( size > 0 );
+
   radix_tree.allocate( size );
 
   // copy so we don't reorder the input
