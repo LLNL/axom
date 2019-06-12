@@ -397,12 +397,14 @@ int BVH< NDIMS, ExecSpace, FloatType >::build()
     const int N       = numBoxes * M;   // number of entries for N boxes
     boxesptr          = axom::allocate< FloatType >( N );
 
+    const FloatType* myboxes = m_boxes;
+
     // copy first box
     using exec_policy = typename spin::execution_space< ExecSpace >::raja_exec;
     RAJA::forall< exec_policy >(
           RAJA::RangeSegment(0,M), AXOM_LAMBDA(IndexType i)
     {
-      boxesptr[ i ] = m_boxes[ i ];
+      boxesptr[ i ] = myboxes[ i ];
     } );
 
     // add a fake 2nd box
