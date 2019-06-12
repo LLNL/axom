@@ -82,7 +82,7 @@ private:
 
   template <typename T, typename BSet = BivariateSetType>
   using BivariateMapType =
-          slam::BivariateMap<T, BSet, IndPolicy<T>, MapStrideType>;
+          slam::BivariateMap<T,BSet,IndPolicy<T>,MapStrideType>;
 
 public:
 
@@ -96,8 +96,8 @@ public:
   template <typename T>
   using Field1D = MapType<T>;
 
-  template <typename T,typename BSet = BivariateSetType>
-  using Field2D = BivariateMapType<T, BSet>;
+  template <typename T, typename BSet = BivariateSetType>
+  using Field2D = BivariateMapType<T,BSet>;
 
   using IndexSet = RangeSetType; //For returning set of SparseIndex
   using IdSet = OrderedSetType;  //For returning set of DenseIndex
@@ -218,9 +218,8 @@ public:
 
 
 
-  template<typename T, typename BMapType>
-  BMapType& get2dField(const std::string& field_name);
-
+  template<typename T, typename BSetType>
+  slam::BivariateMap<T,BSetType> get2dField(const std::string& field_name);
 
   /**
    * \brief Get the volume fraction field
@@ -542,7 +541,7 @@ MultiMat::Field1D<T>& MultiMat::get1dField(const std::string& field_name)
     //Right now we're allowing Field2D (BivariateMap) to be returned as
     // a Field1D (Map) so it can be accessed like a 1d array, but the
     // indexing information would be lost.
-    Field2D<T>* map_2d = dynamic_cast<Field2D<T>*>(m_mapVec[fieldIdx]);
+    auto* map_2d = dynamic_cast<Field2D<T>*>(m_mapVec[fieldIdx]);
     return *(map_2d->getMap());
   }
 }
@@ -562,26 +561,25 @@ MultiMat::Field2D<T>& MultiMat::get2dField(const std::string& field_name)
 }
 
 
-template<typename T, typename BMapType>
-MultiMat::Field2D<T,BMapType>& get2dField(const std::string& /*field_name*/)
+// Warning: The return type uses a compile time stride of one!
+template<typename T, typename BSetType>
+slam::BivariateMap<T,BSetType> MultiMat::get2dField(const std::string& field_name)
 {
-    //int fieldIdx = getFieldIdx(field_name);
+  // Get a reference to the unspecialized BMap
+  auto& bmap = get2dField<T>(field_name);
 
-    //if (fieldIdx < 0)
-    //    throw std::invalid_argument("No field with this name is found");
+  auto bset = bmap.template getBivariateSet<BSetType, RelationSetType>();
 
-    //SLIC_ASSERT(m_fieldMappingVec[fieldIdx] == FieldMapping::PER_CELL_MAT);
+  // Create instance of templated BivariateMap
+  slam::BivariateMap<T,BSetType> typedBMap(new BSetType(bset));
+  typedBMap.setManagesBSetPtr(true);
 
-    //using BSet = typename BMapType::BivariateSetType;
+  // Copy data from original map to templated map
+  // WARNING: Map and BMap should take a pointer to the data
+  // instead of copying it!
+  typedBMap.copy(bmap.getMap()->data().data());
 
-    //// Gets the BMap, cast to BivariateMap<T,slam::BivariateSet>
-    //auto* bmap = dynamic_cast<Field2D<T>*>(m_mapVec[fieldIdx]);
-    //SLIC_ASSERT(bmap != nullptr);
-
-    //auto* bset = bmap->getBivariateSet<BSet>();
-    //SLIC_ASSERT(bset != nullptr);
-
-    //return *dynamic_cast<Field2D<T,BMapType>*>(m_mapVec[fieldIdx]);
+  return typedBMap;
 }
 
 template<typename DataType>
