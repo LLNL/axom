@@ -26,6 +26,7 @@
 #include <fstream>  // for std::ofstream
 #include <sstream>  // for std::ostringstream
 #include <string>   // for std::string
+#include <cstring>  // for memcpy
 
 #if !defined(AXOM_USE_RAJA) || !defined(AXOM_USE_UMPIRE)
 #error *** The spin::BVH class requires RAJA and Umpire ***
@@ -387,23 +388,61 @@ int BVH< NDIMS, ExecSpace, FloatType >::build()
   const int allocatorID = spin::execution_space< ExecSpace >::allocatorID();
   axom::setDefaultAllocator( allocatorID );
 
-  // STEP 1: Build a RadixTree consisting of the bounding boxes, sorted
+  // STEP 1: Handle case when user supplied a single bounding box
+  int numBoxes        = m_numItems;
+  FloatType* boxesptr = nullptr;
+  if ( m_numItems == 1 )
+  {
+    numBoxes          = 2;
+    constexpr int32 M = NDIMS * 2;      // number of entries for one box
+    const int N       = numBoxes * M;   // number of entries for N boxes
+    boxesptr          = axom::allocate< FloatType >( N );
+
+    // copy first box
+    using exec_policy = typename spin::execution_space< ExecSpace >::raja_exec;
+    RAJA::forall< exec_policy >(
+          RAJA::RangeSegment(0,M), AXOM_LAMBDA(IndexType i)
+    {
+      boxesptr[ i ] = m_boxes[ i ];
+    } );
+
+    // add a fake 2nd box
+    RAJA::forall< exec_policy >(
+              RAJA::RangeSegment(M,N), AXOM_LAMBDA(IndexType i)
+    {
+      boxesptr[ i ] = 0.0;
+    } );
+
+  } // END if single item
+  else
+  {
+    boxesptr = const_cast< FloatType* >( m_boxes );
+  }
+
+  // STEP 2: Build a RadixTree consisting of the bounding boxes, sorted
   // by their corresponding morton code.
   internal::linear_bvh::RadixTree< FloatType, NDIMS > radix_tree;
   internal::linear_bvh::AABB< FloatType, NDIMS > global_bounds;
   internal::linear_bvh::build_radix_tree< ExecSpace >(
-      m_boxes, m_numItems, global_bounds, radix_tree );
+      boxesptr, numBoxes, global_bounds, radix_tree );
 
-  // STEP 2: emit the BVH data-structure from the radix tree
+  // STEP 3: emit the BVH data-structure from the radix tree
   m_bvh.m_bounds = global_bounds;
-  m_bvh.allocate( m_numItems );
+  m_bvh.allocate( numBoxes );
 
-  // STEP 3: emit the BVH
+  // STEP 4: emit the BVH
   internal::linear_bvh::emit_bvh< ExecSpace >( radix_tree, m_bvh );
 
   radix_tree.deallocate();
 
-  // STEP 4: restore default allocator
+  // STEP 5: deallocate boxesptr if user supplied a single box
+  if ( m_numItems == 1 )
+  {
+    SLIC_ASSERT( boxesptr != m_boxes );
+    axom::deallocate( boxesptr );
+  }
+
+  // STEP 6: restore default allocator
   axom::setDefaultAllocator( current_allocator );
   return BVH_BUILD_OK;
 }

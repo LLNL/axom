@@ -409,6 +409,124 @@ void check_find2d( )
   axom::setDefaultAllocator( current_allocator );
 }
 
+//------------------------------------------------------------------------------
+template < typename ExecSpace, typename FloatType >
+void check_single_box2d( )
+{
+  constexpr int NUM_BOXES = 1;
+  constexpr int NDIMS     = 2;
+
+  umpire::Allocator current_allocator = axom::getDefaultAllocator();
+  axom::setDefaultAllocator( spin::execution_space<ExecSpace>::allocatorID());
+
+  // single bounding box in [0,1] x [0,1]
+  FloatType* boxes = axom::allocate< FloatType >( 4 );
+  boxes[ 0 ] = boxes[ 1 ] = 0.;
+  boxes[ 2 ] = boxes[ 3 ] = 1.;
+
+  // construct a BVH with a single box
+  spin::BVH< NDIMS, ExecSpace, FloatType > bvh( boxes, NUM_BOXES );
+  bvh.build( );
+
+  // check the bounds -- should match the bounds of the input bounding box
+  FloatType lo[ NDIMS ];
+  FloatType hi[ NDIMS ];
+  bvh.getBounds( lo, hi );
+
+  for ( int idim=0; idim < NDIMS; ++idim )
+  {
+    EXPECT_DOUBLE_EQ( lo[ idim ], 0.0 );
+    EXPECT_DOUBLE_EQ( hi[ idim ], 1.0 );
+  }
+
+  // run the find algorithm w/ the centroid of the bounding box as input.
+  // Should return one and only one candidate that corresponds to the
+  // single bounding box.
+  FloatType* xc = axom::allocate< FloatType >( NUM_BOXES );
+  FloatType* yc = axom::allocate< FloatType >( NUM_BOXES );
+  xc[ 0 ] = yc[ 0 ] = 0.5;
+
+  IndexType* offsets    = axom::allocate< IndexType >( NUM_BOXES );
+  IndexType* counts     = axom::allocate< IndexType >( NUM_BOXES );
+  IndexType* candidates = nullptr;
+  bvh.find( offsets, counts, candidates, NUM_BOXES, xc, yc );
+  EXPECT_TRUE( candidates != nullptr );
+  EXPECT_EQ( counts[ 0 ], 1 );
+  EXPECT_EQ( 0, candidates[ offsets[ 0 ] ] );
+  axom::deallocate( candidates );
+
+  // shift centroid outside of the BVH, should return no candidates.
+  xc[ 0 ] += 10.0; yc[ 0 ] += 10.0;
+  bvh.find( offsets, counts, candidates, NUM_BOXES, xc, yc );
+  EXPECT_EQ( counts[ 0 ], 0 );
+  EXPECT_TRUE( candidates == nullptr );
+
+  axom::deallocate( xc );
+  axom::deallocate( yc );
+  axom::deallocate( boxes );
+  axom::setDefaultAllocator( current_allocator );
+}
+
+//------------------------------------------------------------------------------
+template < typename ExecSpace, typename FloatType >
+void check_single_box3d( )
+{
+  constexpr int NUM_BOXES = 1;
+  constexpr int NDIMS     = 3;
+
+  umpire::Allocator current_allocator = axom::getDefaultAllocator();
+  axom::setDefaultAllocator( spin::execution_space<ExecSpace>::allocatorID());
+
+  // single bounding box in [0,1] x [0,1] x [0,1]
+  FloatType* boxes = axom::allocate< FloatType >( 6 );
+  boxes[ 0 ] = boxes[  1 ] = boxes[  2 ] = 0.;
+  boxes[ 3 ] = boxes[  4 ] = boxes[  5 ] = 1.;
+
+  // construct a BVH with a single box
+  spin::BVH< NDIMS, ExecSpace, FloatType > bvh( boxes, NUM_BOXES );
+  bvh.build( );
+
+  // check the bounds -- should match the bounds of the input bounding box
+  FloatType lo[ NDIMS ];
+  FloatType hi[ NDIMS ];
+  bvh.getBounds( lo, hi );
+
+  for ( int idim=0; idim < NDIMS; ++idim )
+  {
+    EXPECT_DOUBLE_EQ( lo[ idim ], 0.0 );
+    EXPECT_DOUBLE_EQ( hi[ idim ], 1.0 );
+  }
+
+  // run the find algorithm w/ the centroid of the bounding box as input.
+  // Should return one and only one candidate that corresponds to the
+  // single bounding box.
+  FloatType* xc = axom::allocate< FloatType >( NUM_BOXES );
+  FloatType* yc = axom::allocate< FloatType >( NUM_BOXES );
+  FloatType* zc = axom::allocate< FloatType >( NUM_BOXES );
+  xc[ 0 ] = yc[ 0 ] = zc[ 0 ] = 0.5;
+
+  IndexType* offsets    = axom::allocate< IndexType >( NUM_BOXES );
+  IndexType* counts     = axom::allocate< IndexType >( NUM_BOXES );
+  IndexType* candidates = nullptr;
+  bvh.find( offsets, counts, candidates, NUM_BOXES, xc, yc, zc );
+  EXPECT_TRUE( candidates != nullptr );
+  EXPECT_EQ( counts[ 0 ], 1 );
+  EXPECT_EQ( 0, candidates[ offsets[ 0 ] ] );
+  axom::deallocate( candidates );
+
+  // shift centroid outside of the BVH, should return no candidates.
+  xc[ 0 ] += 10.0; yc[ 0 ] += 10.0;
+  bvh.find( offsets, counts, candidates, NUM_BOXES, xc, yc, zc );
+  EXPECT_EQ( counts[ 0 ], 0 );
+  EXPECT_TRUE( candidates == nullptr );
+
+  axom::deallocate( xc );
+  axom::deallocate( yc );
+  axom::deallocate( zc );
+  axom::deallocate( boxes );
+  axom::setDefaultAllocator( current_allocator );
+}
+
 } /* end unnamed namespace */
 
 //------------------------------------------------------------------------------
@@ -444,6 +562,20 @@ TEST( spin_bvh, find_2d_sequential )
 }
 
 //------------------------------------------------------------------------------
+TEST( spin_bvh, single_box2d_sequential )
+{
+  check_single_box2d< spin::SEQ_EXEC, float >( );
+  check_single_box2d< spin::SEQ_EXEC, double >( );
+}
+
+//------------------------------------------------------------------------------
+TEST( spin_bvh, single_box3d_sequential )
+{
+  check_single_box3d< spin::SEQ_EXEC, float >( );
+  check_single_box3d< spin::SEQ_EXEC, double >( );
+}
+
+//------------------------------------------------------------------------------
 #ifdef AXOM_USE_OPENMP
 
 TEST( spin_bvh, contruct2D_omp )
@@ -471,6 +603,20 @@ TEST( spin_bvh, find_2d_omp )
 {
   check_find2d< spin::OMP_EXEC, float >( );
   check_find2d< spin::OMP_EXEC, double >( );
+}
+
+//------------------------------------------------------------------------------
+TEST( spin_bvh, single_box2d_omp )
+{
+  check_single_box2d< spin::OMP_EXEC, float >( );
+  check_single_box2d< spin::OMP_EXEC, double >( );
+}
+
+//------------------------------------------------------------------------------
+TEST( spin_bvh, single_box3d_omp )
+{
+  check_single_box3d< spin::OMP_EXEC, float >( );
+  check_single_box3d< spin::OMP_EXEC, double >( );
 }
 
 #endif
@@ -517,8 +663,28 @@ AXOM_CUDA_TEST( spin_bvh, find_2d_cuda )
   check_find2d< exec, double >( );
 }
 
-#endif
+//------------------------------------------------------------------------------
+AXOM_CUDA_TEST( spin_bvh, single_box2d_cuda )
+{
+  constexpr int BLOCK_SIZE = 256;
+  using exec  = spin::CUDA_EXEC< BLOCK_SIZE >;
 
+  check_single_box2d< exec, float >( );
+  check_single_box2d< exec, double >( );
+}
+
+//------------------------------------------------------------------------------
+AXOM_CUDA_TEST( spin_bvh, single_box3d_cuda )
+{
+  constexpr int BLOCK_SIZE = 256;
+  using exec  = spin::CUDA_EXEC< BLOCK_SIZE >;
+
+  check_single_box3d< exec, float >( );
+  check_single_box3d< exec, double >( );
+}
+
+
+#endif
 
 //------------------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"
