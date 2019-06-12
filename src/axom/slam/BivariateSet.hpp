@@ -18,6 +18,7 @@
 #include "axom/slam/Set.hpp"
 #include "axom/slam/OrderedSet.hpp"
 #include "axom/slam/NullSet.hpp"
+#include "axom/slam/RangeSet.hpp"
 
 #include <cassert>
 #include <type_traits>
@@ -47,7 +48,7 @@ namespace slam
  *
  *  For example, a 2 x 4 sparse matrix below:
  *     \code
- *        0  1  2  3
+ *         0  1  2  3
  *         _  _  _  _
  *     0 | a     b
  *     1 |    c     d
@@ -78,12 +79,12 @@ template<typename Set1 = slam::Set<>,
 class BivariateSet
 {
 public:
-  using FirstSetType = Set1;
+  using FirstSetType  = Set1;
   using SecondSetType = Set2;
 
   using PositionType = typename FirstSetType::PositionType;
-  using ElementType = typename FirstSetType::ElementType;
-  using NullSetType = NullSet<PositionType, ElementType>;
+  using ElementType  = typename FirstSetType::ElementType;
+  using NullSetType  = NullSet<PositionType, ElementType>;
 
   using OrderedSetType = OrderedSet<
           PositionType,
@@ -92,6 +93,9 @@ public:
           policies::RuntimeOffset<PositionType>,
           policies::StrideOne<PositionType>,
           policies::STLVectorIndirection<PositionType, ElementType> >;
+
+
+  using RangeSetType = RangeSet<PositionType, ElementType>;
 
 public:
   static const PositionType INVALID_POS = PositionType(-1);
@@ -157,6 +161,14 @@ public:
    */
   virtual PositionType findElementFlatIndex(PositionType pos1) const = 0;
 
+
+  /**
+   * \brief Finds the range of indices o
+   * \param Position of the element in the first set
+   *
+   * \return A range set of the positions in the second set
+   */
+  virtual RangeSetType elementRangeSet(PositionType pos1) const =0;
   /**
    * \brief Size of the BivariateSet, which is the number of non-zero entries
    *        in the BivariateSet.
@@ -263,6 +275,7 @@ public:
   using PositionType = typename BSet::PositionType;
   using ElementType = typename BSet::ElementType;
   using OrderedSetType = typename BSet::OrderedSetType;
+  using RangeSetType = typename BSet::RangeSetType;
 
 public:
   NullBivariateSet() = default;
@@ -283,6 +296,11 @@ public:
   PositionType findElementFlatIndex(PositionType s1) const override
   {
     return findElementFlatIndex(s1, 0);
+  }
+
+  RangeSetType elementRangeSet(PositionType) const override
+  {
+    return RangeSetType();
   }
 
   ElementType at(PositionType) const override { return PositionType(); }

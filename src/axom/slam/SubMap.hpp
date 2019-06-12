@@ -40,7 +40,7 @@ namespace slam
  * in its first set.
  *
  * \tparam SuperMapType the type of SuperMap
- * \tparam SetType defines the indices int the super map. 
+ * \tparam SetType defines the indices int the super map.
  *         SetType cannot be abstract.
  *
  * \warning SubMap constructor can take a const Map pointer or a non-const Map
@@ -58,8 +58,8 @@ class SubMap : public MapBase<typename SubsetType::PositionType>, public SuperMa
 {
 public:
 
-  static_assert( ! std::is_abstract< SubsetType>::value,
-                      "SetType for slam::SubMap cannot be abstract" );
+  static_assert( !std::is_abstract< SubsetType>::value,
+                 "SetType for slam::SubMap cannot be abstract" );
 
   using DataType = typename SuperMapType::DataType;
 
@@ -69,7 +69,8 @@ public:
   using StridePolicyType = typename SuperMapType::StridePolicyType;
   using IndirectionPolicyType = typename SuperMapType::IndirectionPolicy;
 
-  using MapType = Map<DataType, SubsetType, IndirectionPolicyType, StridePolicyType>;
+  using MapType =
+          Map<DataType, SubsetType, IndirectionPolicyType, StridePolicyType>;
 
   using SubsetBuilder = typename SubsetType::SetBuilder;
 
@@ -275,7 +276,7 @@ public:
    */
   class SubMapIterator : public IteratorBase<SubMapIterator, SetPosition>
   {
-  public:
+public:
     using iterator_category = std::random_access_iterator_tag;
     using value_type = DataType;
     using difference_type = SetPosition;
@@ -316,11 +317,11 @@ public:
     /** \brief Returns the number of component per element in the SubMap. */
     PositionType numComp() const { return m_submap.numComp(); }
 
-  protected:
+protected:
     /* Implementation of advance() as required by IteratorBase */
     void advance(PositionType pos) { m_pos += pos; }
 
-  private:
+private:
     SubMap m_submap;
   };
 
@@ -350,8 +351,8 @@ bool SubMap<SuperMapType,SetType>::isValid(bool verboseOutput) const
       isValid = false;
       if(verboseOutput)
       {
-         errStr << "\n\t*SuperMap pointer is null, "
-                << "but the subset index is non-empty";
+        errStr << "\n\t*SuperMap pointer is null, "
+               << "but the subset index is non-empty";
       }
     }
 
@@ -368,9 +369,9 @@ bool SubMap<SuperMapType,SetType>::isValid(bool verboseOutput) const
         isValid = false;
         if(verboseOutput)
         {
-           errStr << "\n\t* The given subset index " << pos
-                  << "is outside of the SuperMap range of 0 to "
-                  << map_size;
+          errStr << "\n\t* The given subset index " << pos
+                 << "is outside of the SuperMap range of 0 to "
+                 << map_size;
         }
       }
     }
@@ -379,8 +380,8 @@ bool SubMap<SuperMapType,SetType>::isValid(bool verboseOutput) const
   if(verboseOutput)
   {
     SLIC_INFO("Detailed results of isValid on the SubMap.\n"
-       << "SubMap was " << (isValid ? "valid" : "NOT valid") << "\n"
-       << errStr.str() );
+              << "SubMap was " << (isValid ? "valid" : "NOT valid") << "\n"
+              << errStr.str() );
   }
 
   return isValid;
