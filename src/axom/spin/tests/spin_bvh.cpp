@@ -49,6 +49,29 @@ namespace
 {
 
 //------------------------------------------------------------------------------
+
+/*!
+ * \brief Give a 2D mesh object, this method generates an array of axis-aligned
+ *  bounding boxes corresponding to each constituent cell of the mesh and
+ *  a corresponding centroid.
+ *
+ * \param [in]  mesh pointer to the mesh object.
+ * \param [out] aabbs flat array of bounding boxes [xmin,ymin,xmax,ymax....]
+ * \param [out] xc buffer to store the x-component of the cell centroids
+ * \param [out] yc buffer to store the y-component of the cell centroids
+ *
+ * \note The intent of this method is to generate synthetic input test data
+ *  to test the functionality of the BVH.
+ *
+ * \warning This method allocates aabbs internally. The caller is responsible
+ *  for properly deallocating aabbs.
+ *
+ * \pre aabbs == nullptr
+ * \pre xc != nullptr
+ * \pre yc != nullptr
+ *
+ * \post aabbs != nullptr
+ */
 template < typename FloatType >
 void generate_aabbs_and_centroids2d( const mint::Mesh* mesh,
                                      FloatType*& aabbs,
@@ -110,6 +133,31 @@ void generate_aabbs_and_centroids2d( const mint::Mesh* mesh,
 }
 
 //------------------------------------------------------------------------------
+
+/*!
+ * \brief Give a 3D mesh object, this method generates an array of axis-aligned
+ *  bounding boxes (AABBS) corresponding to each constituent cell of the mesh
+ *  and a corresponding centroid.
+ *
+ * \param [in]  mesh pointer to the mesh object.
+ * \param [out] aabbs flat array of AABBS [xmin,ymin,zmin,xmax,ymax,zmax....]
+ * \param [out] xc buffer to store the x-component of the cell centroids
+ * \param [out] yc buffer to store the y-component of the cell centroids
+ * \param [out] zc buffer to store the z-component of the cell centroids
+ *
+ * \note The intent of this method is to generate synthetic input test data
+ *  to test the functionality of the BVH.
+ *
+ * \warning This method allocates aabbs internally. The caller is responsible
+ *  for properly deallocating aabbs.
+ *
+ * \pre aabbs == nullptr
+ * \pre xc != nullptr
+ * \pre yc != nullptr
+ * \pre zc != nullptr
+ *
+ * \post aabbs != nullptr
+ */
 template < typename FloatType >
 void generate_aabbs_and_centroids3d( const mint::Mesh* mesh,
                                      FloatType*& aabbs,
@@ -180,6 +228,11 @@ void generate_aabbs_and_centroids3d( const mint::Mesh* mesh,
 }
 
 //------------------------------------------------------------------------------
+
+/*!
+ * \brief Tests the construction of the BVH in 2D by inserting two bounding
+ *  boxes in the BVH and ensuring that the bounds of the BVH are as expected.
+ */
 template < typename ExecSpace, typename FloatType >
 void check_build_bvh2d( )
 {
@@ -213,6 +266,11 @@ void check_build_bvh2d( )
 }
 
 //------------------------------------------------------------------------------
+
+/*!
+ * \brief Tests the construction of the BVH in 3D by inserting two bounding
+ *  boxes in the BVH and ensuring that the bounds of the BVH are as expected.
+ */
 template < typename ExecSpace, typename FloatType >
 void check_build_bvh3d( )
 {
@@ -246,6 +304,21 @@ void check_build_bvh3d( )
 }
 
 //------------------------------------------------------------------------------
+
+/*!
+ * \brief Tests the find algorithm of the BVH in 3D.
+ *
+ *  A uniform mesh is used for this test where the query points are generated
+ *  by taking the centroids of the constituent cells of the mesh. Since the
+ *  mesh is a uniform, cartesian mesh the find algorithm should return exactly
+ *  one candidate for each query point corresponding to the cell on the mesh
+ *  that generated the centroid. This property is checked by using the
+ *  spin::UniformGrid class.
+ *
+ *  In addition, the test shifts the points by an offset to ensure that points
+ *  outside the mesh return no candidate.
+ *
+ */
 template < typename ExecSpace, typename FloatType >
 void check_find3d( )
 {
@@ -329,6 +402,21 @@ void check_find3d( )
 }
 
 //------------------------------------------------------------------------------
+
+/*!
+ * \brief Tests the find algorithm of the BVH in 2D.
+ *
+ *  A uniform mesh is used for this test where the query points are generated
+ *  by taking the centroids of the constituent cells of the mesh. Since the
+ *  mesh is a uniform, cartesian mesh the find algorithm should return exactly
+ *  one candidate for each query point corresponding to the cell on the mesh
+ *  that generated the centroid. This property is checked by using the
+ *  spin::UniformGrid class.
+ *
+ *  In addition, the test shifts the points by an offset to ensure that points
+ *  outside the mesh return no candidate.
+ *
+ */
 template < typename ExecSpace, typename FloatType >
 void check_find2d( )
 {
@@ -410,6 +498,14 @@ void check_find2d( )
 }
 
 //------------------------------------------------------------------------------
+
+/*!
+ * \brief Checks that the BVH behaves properly when user supplies a single box.
+ *
+ *  The Test inserts a single bounding box that spans [0,1] x [0,1] and tests
+ *  that the centroid xc=(0.5,0.5) can be found. Moreover, it shifts the point
+ *  by an offset and ensures that a point that is outside is not found.
+ */
 template < typename ExecSpace, typename FloatType >
 void check_single_box2d( )
 {
@@ -468,6 +564,13 @@ void check_single_box2d( )
 }
 
 //------------------------------------------------------------------------------
+/*!
+ * \brief Checks that the BVH behaves properly when user supplies a single box.
+ *
+ *  The Test inserts a single bounding box that spans [0,1] x [0,1] x [0,1] and
+ *  tests that the centroid xc=(0.5,0.5) can be found. Moreover, it shifts the
+ *  point by an offset and ensures that a point that is outside is not found.
+ */
 template < typename ExecSpace, typename FloatType >
 void check_single_box3d( )
 {
