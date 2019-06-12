@@ -560,6 +560,8 @@ void check_single_box2d( )
   axom::deallocate( xc );
   axom::deallocate( yc );
   axom::deallocate( boxes );
+  axom::deallocate( offsets );
+  axom::deallocate( counts );
   axom::setDefaultAllocator( current_allocator );
 }
 
@@ -627,6 +629,8 @@ void check_single_box3d( )
   axom::deallocate( yc );
   axom::deallocate( zc );
   axom::deallocate( boxes );
+  axom::deallocate( offsets );
+  axom::deallocate( counts );
   axom::setDefaultAllocator( current_allocator );
 }
 
