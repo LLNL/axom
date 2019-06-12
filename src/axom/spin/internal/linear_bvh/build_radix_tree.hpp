@@ -475,7 +475,7 @@ void build_tree(  RadixTree< FloatType, NDIMS > &data )
 
   // Pointers and vars are redeclared because I have a faint memory
   // of a huge amount of pain and suffering due so cuda
-  // labda captures of pointers indide a struct. Bad memories
+  // lambda captures of pointers inside a struct. Bad memories
   // of random segfaults ........ be warned
   const int32 inner_size = data.m_inner_size;
   int32 *lchildren_ptr = data.m_left_children;

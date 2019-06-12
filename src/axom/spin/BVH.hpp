@@ -134,7 +134,7 @@ enum BVHReturnCodes
  *
  *     ...
  *
- *     // caller is repsponsible for properly de-allocating the candidates array
+ *     // caller is responsible for properly de-allocating the candidates array
  *     axom::deallocate( candidates );
  *
  *  \endcode
@@ -187,7 +187,6 @@ public:
    *  CUDA_EXEC, boxes must be in unified memory or GPU memory. The code
    *  currently does not check for that.
    *
-   * \pre dimension >= 1 && dimension <= 3
    * \pre boxes != nullptr
    * \pre numItems > 0
    */

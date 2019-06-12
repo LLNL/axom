@@ -45,7 +45,7 @@ namespace linear_bvh
  *
  * \note The internal data layout is organized in a flat buffer of 4 segments,
  *  where each segment is a Vec< FloatType, 4 > type, that stores the left
- *  and righ boxes of a given node, as well as, the IDs of the right and
+ *  and right boxes of a given node, as well as, the IDs of the right and
  *  left children, as illustrated above.
  *
  * \note A Vec< FloatType,4 > is chosen b/c it fits into GPU texture memory and
