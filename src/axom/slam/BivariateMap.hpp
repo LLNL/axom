@@ -19,6 +19,7 @@
 #include "axom/slam/SubMap.hpp"
 #include "axom/slam/Set.hpp"
 #include "axom/slam/policies/StridePolicies.hpp"
+#include "axom/slam/policies/PolicyTraits.hpp"
 
 #include <cassert>
 #include <typeinfo>
@@ -27,7 +28,6 @@ namespace axom
 {
 namespace slam
 {
-
 
 /**
  * \class BivariateMap
@@ -134,17 +134,31 @@ public:
     , m_bset(bSet)
     , m_mapSet(bSet->size())
     , m_map(&m_mapSet, defaultValue, stride)
+    , m_managesBSet(false)
   {}
 
-  //template<typename OtherBivariateMapType>
-  //BivariateMap(const OtherBivariateMapType& otherBMap)
-  //{
+  ~BivariateMap()
+  {
+    if(m_managesBSet && m_bset != nullptr)
+    {
+      delete m_bset;
+      m_bset = nullptr;
+    }
+  }
 
-  //}
+  /**
+   * \brief Sets flag to indicate if instance manages its bivariate set pointer
+   *
+   * By default, a BivariateMap does not manage the memory associated with
+   * its BivariateSet.
+   */
+  void setManagesBSetPtr(bool flag) { m_managesBSet = flag; }
 
   // (KW) Problem -- does not work with RelationSet
-  template<typename BivariateSetRetType>
-  BivariateSetRetType getBivariateSet() const
+  template<typename BivariateSetRetType, typename RelType = void>
+  typename std::enable_if< !traits::has_relation_ptr<BivariateSetRetType>::value,
+                           BivariateSetRetType>::type
+  getBivariateSet() const
   {
     using OuterSet = const typename BivariateSetRetType::FirstSetType;
     using InnerSet = const typename BivariateSetRetType::SecondSetType;
@@ -155,12 +169,14 @@ public:
   }
 
   template<typename BivariateSetRetType, typename RelType>
-  BivariateSetRetType getBivariateSet() const
+  typename std::enable_if< traits::has_relation_ptr<BivariateSetRetType>::value,
+                           BivariateSetRetType>::type
+  getBivariateSet() const
   {
-     auto* rel = dynamic_cast<const RelType*>(m_bset)->getRelation();
-     SLIC_ASSERT(rel != nullptr);
+    auto* rel = dynamic_cast<const RelType*>(m_bset)->getRelation();
+    SLIC_ASSERT(rel != nullptr);
 
-     return BivariateSetRetType(rel);
+    return BivariateSetRetType(rel);
   }
 
 
@@ -193,20 +209,16 @@ public:
    */
   const ConstSubMapType operator() (SetPosition firstIdx) const
   {
-      verifyFirstSetIndex(firstIdx);
-      const SetPosition start_idx = m_bset->findElementFlatIndex(firstIdx);
-      const SetPosition end_idx = start_idx + m_bset->size(firstIdx);
-      SetType s(start_idx, end_idx);
-      return ConstSubMapType(this, s );
+    verifyFirstSetIndex(firstIdx);
+    auto s = m_bset->elementRangeSet(firstIdx);
+    return ConstSubMapType(this, s );
   }
 
   SubMapType operator() (SetPosition firstIdx)
   {
-      verifyFirstSetIndex(firstIdx);
-      const SetPosition start_idx = m_bset->findElementFlatIndex(firstIdx);
-      const SetPosition end_idx = start_idx + m_bset->size(firstIdx);
-      SetType s(start_idx, end_idx);
-      return SubMapType(this, s);
+    verifyFirstSetIndex(firstIdx);
+    auto s = m_bset->elementRangeSet(firstIdx);
+    return SubMapType(this, s );
   }
 
   /**
@@ -583,11 +595,11 @@ private:
 
   void verifyFirstSetIndex(SetPosition AXOM_DEBUG_PARAM(firstIdx)) const
   {
-      SLIC_ASSERT_MSG(
-          firstIdx >= 0 && firstIdx < firstSetSize(),
-          "Attempted to access elements with first set index "
-          << firstIdx << ", but BivariateMap's first set has size "
-          << firstSetSize());
+    SLIC_ASSERT_MSG(
+      firstIdx >= 0 && firstIdx < firstSetSize(),
+      "Attempted to access elements with first set index "
+      << firstIdx << ", but BivariateMap's first set has size "
+      << firstSetSize());
   }
 
 
@@ -595,6 +607,7 @@ private:
   const BivariateSetType* m_bset;
   SetType m_mapSet; //for the map... since BivariateSet isn't a slam::Set
   MapType m_map;
+  bool m_managesBSet;
 
 }; //end BivariateMap
 

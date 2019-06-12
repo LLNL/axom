@@ -51,35 +51,36 @@ static PositionType const MAX_SET_SIZE = 10;
 template<typename T>
 T getValue(int idx)
 {
-    return static_cast<T>(idx * multFac);
+  return static_cast<T>(idx * multFac);
 }
 
 //A struct to construct the Map for testing
 template<typename T>
 struct MapForTest
 {
-    MapForTest(int size)
-        : set_data(size)
-        , s(OrderedSetType::SetBuilder().size(size).data(&set_data))
-        , m(&s)
+  MapForTest(int size)
+    : set_data(size)
+    , s(OrderedSetType::SetBuilder().size(size).data(&set_data))
+    , m(&s)
+  {
+    SLIC_INFO("Initializing set of size "
+              << s.size() << " and '"
+              << slam::util::TypeToString<T>::to_string()
+              <<"' map on the set ");
+
+    for (auto i : s.positions())
     {
-        SLIC_INFO("Initializing set of size " << s.size()
-            << " and '" << slam::util::TypeToString<T>::to_string()
-            << "' map on the set ");
-
-        for (auto i : s.positions())
-        {
-            s[i] = 100 + i;
-            m[i] = getValue<T>(i);
-        }
-
-        EXPECT_TRUE(s.isValid());
-        EXPECT_TRUE(m.isValid());
+      s[i] = 100 + i;
+      m[i] = getValue<T>(i);
     }
 
-    std::vector<PositionType> set_data;
-    OrderedSetType s;
-    SuperMap<T> m;
+    EXPECT_TRUE(s.isValid());
+    EXPECT_TRUE(m.isValid());
+  }
+
+  std::vector<PositionType> set_data;
+  OrderedSetType s;
+  SuperMap<T> m;
 };
 
 } // end anonymous namepsace
@@ -119,27 +120,27 @@ bool constructAndTestSubMap()
 
     SLIC_INFO("Checking the elements using SubMap iterator.");
     int cnt = 0;
-    for (auto it = ssm.begin(); it != ssm.end(); ++it, ++cnt)
+    for (auto it = ssm.begin() ; it != ssm.end() ; ++it, ++cnt)
     {
-        // Check iterator's .index() function
-        {
-           auto subMapElt = it.index();
+      // Check iterator's .index() function
+      {
+        auto subMapElt = it.index();
 
-           auto setIdx = ss[cnt];
-           auto expSetElt = s[setIdx];
-           EXPECT_EQ(expSetElt, subMapElt);
-        }
+        auto setIdx = ss[cnt];
+        auto expSetElt = s[setIdx];
+        EXPECT_EQ(expSetElt, subMapElt);
+      }
 
-        // Check iterator's value access functions
-        {
-           auto mapVal = it.value();
-           EXPECT_EQ(mapVal, *it);
-           EXPECT_EQ(mapVal, it());
-           EXPECT_EQ(mapVal, it[0]);
+      // Check iterator's value access functions
+      {
+        auto mapVal = it.value();
+        EXPECT_EQ(mapVal, *it);
+        EXPECT_EQ(mapVal, it());
+        EXPECT_EQ(mapVal, it[0]);
 
-           auto expVal = getValue<T>(submapOffset + cnt);
-           EXPECT_EQ(expVal, mapVal);
-        }
+        auto expVal = getValue<T>(submapOffset + cnt);
+        EXPECT_EQ(expVal, mapVal);
+      }
     }
   }
 

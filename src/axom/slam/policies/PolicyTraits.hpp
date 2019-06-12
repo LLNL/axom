@@ -10,13 +10,15 @@
 /**
  * \file PolicyTraits.hpp
  *
- * A collection of utility traits classes for Slam policies.
+ * A collection of utility policy and traits classes for Slam.
  */
 
 #include "axom/slam/Set.hpp"
 #include "axom/slam/NullSet.hpp"
 #include "axom/slam/policies/SizePolicies.hpp"
 #include "axom/slam/policies/StridePolicies.hpp"
+
+#include <utility>
 
 namespace axom
 {
@@ -107,6 +109,28 @@ struct EmptySetTraits<slam::Set<P,E> >
 
 
 } // end namespace policies
+
+namespace traits
+{
+// Implementation of void_t from-C++17
+template <class ... Ts>
+using void_t = void;
+
+
+///\name has_relation_ptr traits class
+///@{
+
+template<class T, class=void>
+struct has_relation_ptr : std::false_type {};
+
+template<class T>
+struct has_relation_ptr<T, void_t<decltype(std::declval<T>().getRelation() )> >
+  : std::true_type {};
+
+///@}
+
+} // end namespace traits
+
 } // end namespace slam
 } // end namespace axom
 

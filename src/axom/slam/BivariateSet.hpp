@@ -18,6 +18,7 @@
 #include "axom/slam/Set.hpp"
 #include "axom/slam/OrderedSet.hpp"
 #include "axom/slam/NullSet.hpp"
+#include "axom/slam/RangeSet.hpp"
 
 #include <cassert>
 #include <type_traits>
@@ -94,6 +95,9 @@ public:
           policies::StrideOne<PositionType>,
           policies::STLVectorIndirection<PositionType, ElementType> >;
 
+
+  using RangeSetType = RangeSet<PositionType, ElementType>;
+
 public:
   static const PositionType INVALID_POS = PositionType(-1);
   static const NullSetType s_nullSet;
@@ -159,6 +163,14 @@ public:
    */
   virtual PositionType findElementFlatIndex(PositionType pos1) const = 0;
 
+
+  /**
+   * \brief Finds the range of indices o
+   * \param Position of the element in the first set
+   *
+   * \return A range set of the positions in the second set
+   */
+  virtual RangeSetType elementRangeSet(PositionType pos1) const =0;
   /**
    * \brief Size of the BivariateSet, which is the number of non-zero entries
    *        in the BivariateSet.
@@ -265,6 +277,7 @@ public:
   using PositionType = typename BSet::PositionType;
   using ElementType = typename BSet::ElementType;
   using OrderedSetType = typename BSet::OrderedSetType;
+  using RangeSetType = typename BSet::RangeSetType;
 
 public:
   NullBivariateSet() = default;
@@ -286,6 +299,11 @@ public:
   PositionType findElementFlatIndex(PositionType s1) const override
   {
     return findElementFlatIndex(s1, 0);
+  }
+
+  RangeSetType elementRangeSet(PositionType) const override
+  {
+    return RangeSetType();
   }
 
   ElementType at(PositionType) const override

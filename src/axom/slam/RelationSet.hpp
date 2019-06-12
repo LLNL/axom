@@ -41,8 +41,9 @@ public:
   using FirstSetType = SetType1;
   using SecondSetType = SetType2;
 
-private:
   using RelationType = Relation;
+
+private:
   using RangeSetType = RangeSet<typename RelationType::SetPosition,
                                 typename RelationType::SetElement>;
   using BivariateSetType = BivariateSet<FirstSetType, SecondSetType>;
@@ -146,6 +147,15 @@ public:
     return BivariateSetType::INVALID_POS;
   }
 
+
+  RangeSetType elementRangeSet(PositionType pos1) const override
+  {
+    return typename RangeSetType::SetBuilder()
+           .size( m_relation->size( pos1 ) )
+           .offset ( m_relation->offset( pos1 ) );
+  }
+
+
   /**
    * \brief A set of elements with the given first set index.
    *
@@ -172,7 +182,7 @@ public:
 
   RelationType* getRelation()
   {
-      return m_relation;
+    return m_relation;
   }
 
   /** \brief Return the size of the relation   */
