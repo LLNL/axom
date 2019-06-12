@@ -399,19 +399,12 @@ int BVH< NDIMS, ExecSpace, FloatType >::build()
 
     const FloatType* myboxes = m_boxes;
 
-    // copy first box
+    // copy first box and add a fake 2nd box
     using exec_policy = typename spin::execution_space< ExecSpace >::raja_exec;
     RAJA::forall< exec_policy >(
-          RAJA::RangeSegment(0,M), AXOM_LAMBDA(IndexType i)
+          RAJA::RangeSegment(0,N), AXOM_LAMBDA(IndexType i)
     {
-      boxesptr[ i ] = myboxes[ i ];
-    } );
-
-    // add a fake 2nd box
-    RAJA::forall< exec_policy >(
-              RAJA::RangeSegment(M,N), AXOM_LAMBDA(IndexType i)
-    {
-      boxesptr[ i ] = 0.0;
+      boxesptr[ i ] = ( i < M ) ? myboxes[ i ] : 0.0;
     } );
 
   } // END if single item
