@@ -48,7 +48,7 @@ static PositionType const MAX_SET_SIZE = 10;
 template<typename T>
 T getValue(int idx)
 {
-  return static_cast<T>(idx * multFac);
+    return static_cast<T>(idx * multFac);
 }
 
 //A struct to construct the Map for testing
@@ -59,23 +59,23 @@ struct MapForTest
         : set_data(size)
         , s(OrderedSetType::SetBuilder().size(size).data(&set_data))
         , m(&s)
-  {
+    {
         SLIC_INFO("Initializing set of size " << s.size()
             << " and '" << slam::util::TypeToString<T>::to_string()
             << "' map on the set ");
 
         for (auto i : s.positions())
-    {
+        {
             s[i] = 100 + i;
             m[i] = getValue<T>(i);
+        }
+
+        EXPECT_TRUE(s.isValid());
+        EXPECT_TRUE(m.isValid());
     }
 
-    EXPECT_TRUE(s.isValid());
-    EXPECT_TRUE(m.isValid());
-  }
-
-  std::vector<PositionType> set_data;
-  OrderedSetType s;
+    std::vector<PositionType> set_data;
+    OrderedSetType s;
     SuperMap<T> m;
 };
 
@@ -125,10 +125,10 @@ bool constructAndTestSubMap()
            auto setIdx = ss[cnt];
            auto expSetElt = s[setIdx];
            EXPECT_EQ(expSetElt, subMapElt);
-  }
+        }
 
         // Check iterator's value access functions
-  {
+        {
            auto mapVal = it.value();
            EXPECT_EQ(mapVal, *it);
            EXPECT_EQ(mapVal, it());

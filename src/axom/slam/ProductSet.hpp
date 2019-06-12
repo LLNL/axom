@@ -160,6 +160,14 @@ public:
     return this->secondSetSize();
   }
 
+  RangeSetType elementRangeSet(PositionType pos1) const override
+  {
+    const auto sz = this->secondSetSize();
+    return typename RangeSetType::SetBuilder()
+           .size( sz )
+           .offset ( sz * pos1 );
+  }
+
   bool isValidIndex(PositionType s1, PositionType s2) const
   {
     PositionType size1 = this->firstSetSize();
