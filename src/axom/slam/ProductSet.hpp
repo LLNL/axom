@@ -49,6 +49,7 @@ public:
   using PositionType = typename BivariateSetType::PositionType;
   using ElementType = typename BivariateSetType::ElementType;
   using OrderedSetType = typename BivariateSetType::OrderedSetType;
+  using ProductSetType = ProductSet<SetType1, SetType2>;
 
   /** \brief Default constructor */
   ProductSet() {}
