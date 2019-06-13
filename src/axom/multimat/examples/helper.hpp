@@ -14,6 +14,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 
@@ -50,8 +51,24 @@ struct multirun_timer {
     time_record.push_back(elapsed);
   }
 
-  double get_average() {
-    return time_sum / (double)time_record.size();
+  /// Returns the median time
+  double get_median()
+  {
+    auto sz = time_record.size();
+    if(sz == 0)
+       return 0.;
+
+    std::vector<double> sorted(time_record);
+    std::sort(sorted.begin(), sorted.end());
+
+    return (sz %2) == 0
+          ? 0.5*(sorted[(sz >> 1) - 1] + sorted[sz >>1])
+          : sorted[sz >> 1];
+  }
+
+  double get_average()
+  {
+      return time_sum / (double)time_record.size();
   }
 
 };
