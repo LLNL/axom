@@ -25,6 +25,7 @@
 #include "helper.hpp"
 
 namespace slam = axom::slam;
+namespace policies = axom::slam::policies;
 using namespace axom::multimat;
 
 multirun_timer timer;
@@ -1836,6 +1837,140 @@ void average_density_over_nbr_cell_dom_full_mm_submap(MultiMat& mm, Robey_data& 
 
 
 //    Average material density over neighborhood of each cell
+//      MultiMat - Dense - Submap
+template<typename BSet>
+void average_density_over_nbr_cell_dom_full_mm_submap(MultiMat& mm, Robey_data& data)
+{
+  SLIC_INFO("-- Average Density over Neighbors, Cell-Dominant Full Matrix,"
+            << " Multimat Submap -- using templated BSet ");
+  mm.convertLayoutToCellDominant();
+  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
+                                << mm.getSparsityLayoutAsString());
+  SLIC_ASSERT(mm.isCellDom());
+  SLIC_ASSERT(mm.isDense());
+
+  int ncells = mm.getNumberOfCells();
+  int nmats = mm.getNumberOfMaterials();
+  auto Densityfrac = mm.get2dField<double,BSet>("Densityfrac");
+  auto Volfrac = mm.get2dField<double,BSet>("Volfrac");
+
+  /***   BEGIN CUSTOM CODE TO SET UP SLAM SETS, RELATIONS and MAPS ***/
+  using P = int;
+  using ElemSet = slam::PositionSet<P,P>;
+  using Ind = policies::STLVectorIndirection<P,P>;
+  using Card = policies::VariableCardinality<P, Ind>;
+  using NbrRel = slam::StaticRelation<P,P, Card, Ind, ElemSet,ElemSet>;
+  using NBuilder = typename NbrRel::RelationBuilder;
+  using NBuilderBeg = typename NBuilder::BeginsSetBuilder;
+  using NBuilderInd = typename NBuilder::IndicesSetBuilder;
+
+  // Initialize the elems set
+  auto elems = ElemSet(ncells);
+
+  // Initialize the begin indices for the nbrs relation
+  //via prefix sum on nnbrs array
+  std::vector<int> nbr_begins(data.nbrs.size()+1);
+  nbr_begins[0] = 0;
+  for(auto i: elems.positions())
+  {
+     nbr_begins[i+1] = nbr_begins[i]+data.nnbrs[i];
+  }
+
+  // Initialize the indices for the nbrs relation
+  // Note -- we're compacting an array of 8 neighbors per element
+  //         to one that has the correct size
+  const int MAX_NBRS = 8;
+  std::vector<int> nbr_inds(nbr_begins[elems.size()]);
+  int cur = 0;
+  for(auto i: elems.positions())
+  {
+     for(int j=0; j< data.nnbrs[i];++j)
+     {
+        nbr_inds[cur++] = data.nbrs[i*MAX_NBRS + j];
+     }
+  }
+
+  // Initialize the nbrs relation
+  NbrRel neighbors = NBuilder()
+     .fromSet(&elems)
+     .toSet(&elems)
+     .begins( NBuilderBeg().size(nbr_begins.size()).data(&nbr_begins))
+     .indices( NBuilderInd().size(nbr_inds.size()).data(&nbr_inds));
+
+  // Initialize map over centroids
+  using DataInd = policies::STLVectorIndirection<P,double>;
+  using CentroidMap = slam::Map<double, ElemSet, DataInd, policies::CompileTimeStride<P, 2> >;
+  CentroidMap cen(&elems);
+  std::copy(data.cen.begin(), data.cen.end(), cen.data().begin());
+
+  /***   END CUSTOM CODE TO SET UP SLAM SETS, RELATIONS and MAPS ***/
+
+  MultiMat::Field2D<double, BSet> MatDensity_average(Volfrac.set());
+
+  timer.reset();
+
+  for (int iter = 0 ; iter< ITERMAX ; ++iter)
+  {
+    MatDensity_average.clear();
+
+    timer.start();
+
+    for (int ic = 0 ; ic < ncells ; ++ic)
+    {
+      auto Volfrac_row = Volfrac(ic);
+      auto AvgMatDensity_row = MatDensity_average(ic);
+
+      // Get the set of neighbors
+      auto nbrs = neighbors[ic];
+
+      // compute the squared distances to neighbors
+      double xc[2] = {cen(ic,0), cen(ic,1)};
+      double dsqr[MAX_NBRS];
+
+      for (int n : nbrs.positions() )
+      {
+        double dx = xc[0] - cen(nbrs[n],0);
+        double dy = xc[1] - cen(nbrs[n],1);
+        dsqr[n] = dx*dx + dy * dy;
+      }
+
+      for (int m = 0; m < nmats; ++m)
+      {
+        if (Volfrac_row(m) > 0.0)  //this check is not needed in sparse layout.
+        {
+          double avg_density = 0.;
+          int nnm = 0;             // number of nbrs with this material
+          for (int n: nbrs.positions())
+          {
+            if( Volfrac(nbrs[n], m) > 0.0)
+            {
+              avg_density += Densityfrac(nbrs[n], m) / dsqr[n];
+              ++nnm;
+            }
+          }
+          AvgMatDensity_row(m) = nnm > 0 ? avg_density / nnm : 0.;
+        }
+        else
+        {
+           AvgMatDensity_row(m) = 0.;
+        }
+      }
+    }
+
+    timer.record();
+    data_checker.check(MatDensity_average.getMap()->data());
+  }
+
+  double act_perf = timer.get_median();
+  result_store.add_result(Result_Store::neighbor_density, mm.getDataLayout(),
+    mm.getSparsityLayout(), Result_Store::mm_submap, act_perf);
+
+  SLIC_INFO("Average Material Density            compute time is "
+            << act_perf << " secs\n");
+
+}
+
+//    Average material density over neighborhood of each cell
 //      MultiMat - Dense - Iterator
 void average_density_over_nbr_cell_dom_full_mm_iter(MultiMat& mm, Robey_data& data)
 {
@@ -2980,8 +3115,6 @@ int main(int argc, char** argv)
   //average_density_mat_dom_mm_iter(mm);
   //average_density_mat_dom_mm_flatiter(mm);
 
-return 0;
-
   SLIC_INFO("**********************************************************");
   SLIC_INFO("* ");
   SLIC_INFO("* Average Density over Neighbor");
@@ -2995,7 +3128,11 @@ return 0;
   average_density_over_nbr_cell_dom_full(data);
   average_density_over_nbr_cell_dom_full_mm_direct(mm, data);
   average_density_over_nbr_cell_dom_full_mm_submap(mm, data);
+  average_density_over_nbr_cell_dom_full_mm_submap<ProductSetType>(mm, data);
   average_density_over_nbr_cell_dom_full_mm_iter(mm, data);
+
+return 0;
+
 
   SLIC_INFO("**************** Compact Layout - Cell-Dominant ******************");
   mm.convertLayoutToSparse();
