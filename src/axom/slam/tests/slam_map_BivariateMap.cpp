@@ -19,6 +19,7 @@ namespace
 {
 namespace slam = axom::slam;
 namespace policies = axom::slam::policies;
+namespace traits = axom::slam::traits;
 
 using SetPosition = slam::DefaultPositionType;
 using SetElement = slam::DefaultElementType;
@@ -419,6 +420,13 @@ TEST(slam_bivariate_map, iterate)
   constructAndTestBivariateMapIterator<BSet, CompileTimeStrideType<3> >(3);
 
   constructAndTestBivariateMapIterator<BSet, StrideOneType>(1);
+}
+
+TEST(slam_bivariate_map, traits)
+{
+  EXPECT_TRUE(traits::indices_use_indirection<RelationSetType>::value);
+  EXPECT_TRUE(traits::indices_use_indirection<BivariateSetType>::value);
+  EXPECT_FALSE(traits::indices_use_indirection<ProductSetType>::value);
 }
 
 //----------------------------------------------------------------------

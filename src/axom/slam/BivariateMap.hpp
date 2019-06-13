@@ -211,14 +211,16 @@ public:
   {
     verifyFirstSetIndex(firstIdx);
     auto s = m_bset->elementRangeSet(firstIdx);
-    return ConstSubMapType(this, s );
+    const bool hasInd = submapIndicesHaveIndirection();
+    return ConstSubMapType(this, s, hasInd);
   }
 
   SubMapType operator() (SetPosition firstIdx)
   {
     verifyFirstSetIndex(firstIdx);
     auto s = m_bset->elementRangeSet(firstIdx);
-    return SubMapType(this, s );
+    const bool hasInd = submapIndicesHaveIndirection();
+    return SubMapType(this, s, hasInd);
   }
 
   /**
@@ -329,6 +331,19 @@ private:
   constexpr bool useCompIndexing() const
   {
     return !(StrPol::IS_COMPILE_TIME && StrPol::DEFAULT_VALUE==1);
+  }
+
+  /**
+   * \brief Utility function to determine if submaps should use indirection
+   * when finding the set indices of their elements.
+   *
+   * This test distinguishes between ProductSet whose second set do not use
+   * indirection and other BivariateSet types
+   */
+  constexpr bool submapIndicesHaveIndirection() const
+  {
+    return traits::indices_use_indirection<BivariateSetType>::value
+           || (m_bset->getSecondSet()->at(0) != 0);
   }
 
 public:

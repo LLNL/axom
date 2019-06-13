@@ -170,7 +170,7 @@ public:
 
   ElementType at(PositionType pos) const override
   {
-    verifyPosition(pos);
+    verifyPositionImpl(pos);
     return (*m_relation->relationData())[pos];
   }
 
@@ -235,16 +235,26 @@ private:
            s2 >= 0 && s2 < m_relation->size(s1);
   }
 
-  void verifyPosition(PositionType AXOM_DEBUG_PARAM(sPos) ) const override
+  void verifyPosition(PositionType sPos) const override
   { //override function from RangeSet, overloading to avoid warning in compiler
+    verifyPositionImpl(sPos );
+  }
+
+  void verifyPositionImpl(PositionType AXOM_DEBUG_PARAM(sPos) ) const
+  {
     SLIC_ASSERT_MSG(
       sPos >= 0 && sPos < size(),
       "SLAM::RelationSet -- requested out-of-range element at position "
       << sPos << ", but set only has " << size() << " elements.");
   }
 
-  void verifyPosition(PositionType AXOM_DEBUG_PARAM(s1),
-                      PositionType AXOM_DEBUG_PARAM(s2) ) const override
+  void verifyPosition(PositionType s1, PositionType s2 ) const override
+  {
+    verifyPositionImpl(s1,s2);
+  }
+
+  void verifyPositionImpl(PositionType AXOM_DEBUG_PARAM(s1),
+                          PositionType AXOM_DEBUG_PARAM(s2) ) const
   {
     SLIC_ASSERT_MSG(
       isValidIndex(s1, s2),
@@ -253,7 +263,6 @@ private:
       << this->firstSetSize() << "x"
       << this->secondSetSize() << " elements.");
   }
-
 
 private:
   RelationType* m_relation; //the relation that this set is based off of
