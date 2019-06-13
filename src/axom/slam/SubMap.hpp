@@ -83,7 +83,7 @@ public:
 
 public:
   /** Default Constructor */
-  SubMap() : m_superMap(nullptr) {}
+  SubMap() : m_superMap(nullptr), m_indicesHaveIndirection(true) {}
 
   /**
    * \brief Constructor for SubMap given the ElementFlatIndex into the SuperMap
@@ -91,10 +91,13 @@ public:
    * \param supermap The map that this SubMap is a subset of.
    * \param subset_idx a Set of ElementFlatIndex into the SuperMap
    */
-  SubMap(SuperMapType* supermap,  SubsetType& subset_idx)
+  SubMap(SuperMapType* supermap,
+         SubsetType& subset_idx,
+         bool indicesHaveIndirection = true)
     : StridePolicyType(supermap->stride())
     , m_superMap(supermap)
     , m_subsetIdx(subset_idx)
+    , m_indicesHaveIndirection(indicesHaveIndirection)
   { }
 
   /** Copy Constructor */
@@ -102,6 +105,7 @@ public:
     : StridePolicyType(otherMap)
     , m_superMap(otherMap.m_superMap)
     , m_subsetIdx(otherMap.m_subsetIdx)
+    , m_indicesHaveIndirection(otherMap.m_indicesHaveIndirection)
   { }
 
   /** Assignment Operator */
@@ -110,6 +114,7 @@ public:
     StridePolicyType::operator=(otherMap);
     m_superMap = otherMap.m_superMap;
     m_subsetIdx = otherMap.m_subsetIdx;
+    m_indicesHaveIndirection = otherMap.m_indicesHaveIndirection;
 
     return *this;
   }
@@ -186,7 +191,9 @@ public:
    */
   IndexType index(IndexType idx) const
   {
-    return m_superMap->set()->at( m_subsetIdx[idx] );
+    return m_indicesHaveIndirection
+           ? m_superMap->set()->at( m_subsetIdx[idx] )
+           : idx;
   }
 
   /// @}
@@ -332,6 +339,7 @@ public:     // Functions related to iteration
 protected:     //Member variables
   SuperMapType* m_superMap;
   SubsetType m_subsetIdx;
+  bool m_indicesHaveIndirection;
 
 }; //end SubMap
 
