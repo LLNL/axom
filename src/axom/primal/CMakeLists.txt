@@ -40,23 +40,28 @@ set( primal_headers
 
      operators/detail/clip_impl.hpp
      operators/detail/intersect_impl.hpp
-
    )
 
 set( primal_sources
 
+     ## operators
      operators/detail/intersect_impl.cpp
    )
 
 ################################
 # Make/Install the library
 ################################
+set( primal_dependencies
+     core
+     slic
+     )
+
 blt_add_library(
     NAME                  primal
     SOURCES               ${primal_sources}
     HEADERS               ${primal_headers}
     FOLDER                axom/primal
-    DEPENDS_ON            core slic
+    DEPENDS_ON            ${primal_dependencies}
     OBJECT                TRUE
     )
 

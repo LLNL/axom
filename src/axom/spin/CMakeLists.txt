@@ -31,14 +31,41 @@ set( spin_sources
      ../Axom.cpp
    )
 
+################################################################
+# Specify Spin headers/sources that depend on RAJA and Umpire
+################################################################
+if ( ${RAJA_FOUND} AND ${UMPIRE_FOUND} )
+
+  set( spin_headers
+       ${spin_headers}
+       BVH.hpp
+
+       ## internal
+       internal/linear_bvh/aabb.hpp
+       internal/linear_bvh/build_radix_tree.hpp
+       internal/linear_bvh/bvh_vtkio.hpp
+       internal/linear_bvh/BVHData.hpp
+       internal/linear_bvh/emit_bvh.hpp
+       internal/linear_bvh/math.hpp
+       internal/linear_bvh/RadixTree.hpp
+       internal/linear_bvh/range.hpp
+       internal/linear_bvh/vec.hpp
+
+      )
+
+endif()
+
+################################
+# Specify spin dependencies
+################################
 set( spin_depends_on
      core slic primal slam )
 
-# Add sparsehash when available
-if(SPARSEHASH_FOUND)
-    list(APPEND spin_depends_on sparsehash)
-endif()
-
+blt_list_append( TO spin_depends_on ELEMENTS sparsehash IF ${SPARSEHASH_FOUND} )
+blt_list_append( TO spin_depends_on ELEMENTS raja IF ${RAJA_FOUND} )
+blt_list_append( TO spin_depends_on ELEMENTS umpire IF ${UMPIRE_FOUND} )
+blt_list_append( TO spin_depends_on ELEMENTS openmp  IF ${ENABLE_OPENMP} )
+blt_list_append( TO spin_depends_on ELEMENTS cuda IF ${ENABLE_CUDA} )
 
 ################################
 # Make/Install the library

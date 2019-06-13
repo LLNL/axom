@@ -13,6 +13,21 @@ set( spin_tests
     spin_uniform_grid.cpp
    )
 
+set( spin_depends
+     core
+     slic
+     slam
+     primal
+     spin
+     gtest
+     fmt
+    )
+
+blt_list_append( TO spin_depends ELEMENTS raja IF ${RAJA_FOUND} )
+blt_list_append( TO spin_depends ELEMENTS umpire IF ${UMPIRE_FOUND} )
+blt_list_append( TO spin_depends ELEMENTS openmp  IF ${ENABLE_OPENMP} )
+blt_list_append( TO spin_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
+
 foreach ( test ${spin_tests} )
 
    get_filename_component( test_name ${test} NAME_WE )
@@ -21,7 +36,7 @@ foreach ( test ${spin_tests} )
         NAME       ${test_name}_test
         SOURCES    ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-        DEPENDS_ON core slam fmt spin primal slic gtest
+        DEPENDS_ON ${spin_depends}
         FOLDER     axom/spin/tests
        )
 
@@ -31,3 +46,23 @@ foreach ( test ${spin_tests} )
        )
 
 endforeach()
+
+if ( ${RAJA_FOUND} AND ${UMPIRE_FOUND} )
+
+  blt_add_executable(
+      NAME       spin_execution_space_test
+      SOURCES    spin_execution_space.cpp
+      OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+      DEPENDS_ON ${spin_depends}
+      FOLDER     axom/spin/tests
+      )
+
+   blt_add_executable(
+      NAME       spin_bvh_test
+      SOURCES    spin_bvh.cpp
+      OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+      DEPENDS_ON mint ${spin_depends}
+      FOLDER     axom/spin/tests
+      )
+
+endif()
