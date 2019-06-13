@@ -592,6 +592,13 @@ public:
       m_map[i] = data_arr[i];
   }
 
+  /** \brief replace all elements in the Map with the default DataType */
+  void clear()
+  {
+    m_map.clear();
+  }
+
+
 private:
   /** \brief Check the indices (DenseIndex) are valid   */
   void verifyPosition(SetPosition s1, SetPosition s2) const
