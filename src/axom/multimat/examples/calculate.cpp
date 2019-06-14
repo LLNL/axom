@@ -25,7 +25,6 @@
 #include "helper.hpp"
 
 namespace slam = axom::slam;
-namespace policies = axom::slam::policies;
 using namespace axom::multimat;
 
 multirun_timer timer;
@@ -134,8 +133,8 @@ void average_density_cell_dom_mm_template(MultiMat& mm) {
   auto& Vol = mm.get1dField<double>("Vol");
 
   using SetType = slam::RangeSet<>;
-  using ProductSet = slam::ProductSet<SetType,SetType>;
-  auto prodset = Densityfrac.getBivariateSet<ProductSet>();
+  using ProductSetType = slam::ProductSet<SetType,SetType>;
+  auto prodset = Densityfrac.getBivariateSet<ProductSetType>();
 
   vector<double> Density_average(ncells);
 
@@ -1857,8 +1856,8 @@ void average_density_over_nbr_cell_dom_full_mm_submap(MultiMat& mm, Robey_data& 
   /***   BEGIN CUSTOM CODE TO SET UP SLAM SETS, RELATIONS and MAPS ***/
   using P = int;
   using ElemSet = slam::PositionSet<P,P>;
-  using Ind = policies::STLVectorIndirection<P,P>;
-  using Card = policies::VariableCardinality<P, Ind>;
+  using Ind = slam::policies::STLVectorIndirection<P,P>;
+  using Card = slam::policies::VariableCardinality<P, Ind>;
   using NbrRel = slam::StaticRelation<P,P, Card, Ind, ElemSet,ElemSet>;
   using NBuilder = typename NbrRel::RelationBuilder;
   using NBuilderBeg = typename NBuilder::BeginsSetBuilder;
@@ -1898,8 +1897,8 @@ void average_density_over_nbr_cell_dom_full_mm_submap(MultiMat& mm, Robey_data& 
      .indices( NBuilderInd().size(nbr_inds.size()).data(&nbr_inds));
 
   // Initialize map over centroids
-  using DataInd = policies::STLVectorIndirection<P,double>;
-  using CentroidMap = slam::Map<double, ElemSet, DataInd, policies::CompileTimeStride<P, 2> >;
+  using DataInd = slam::policies::STLVectorIndirection<P,double>;
+  using CentroidMap = slam::Map<double, ElemSet, DataInd, slam::policies::CompileTimeStride<P, 2> >;
   CentroidMap cen(&elems);
   std::copy(data.cen.begin(), data.cen.end(), cen.data().begin());
 

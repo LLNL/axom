@@ -24,8 +24,6 @@ namespace axom
 namespace multimat
 {
 
-namespace policies = slam::policies;
-
 enum class FieldMapping { PER_CELL, PER_MAT, PER_CELL_MAT };
 enum class DataLayout { CELL_CENTRIC, MAT_CENTRIC };
 enum class SparsityLayout { SPARSE, DENSE };
@@ -55,9 +53,9 @@ private:
   using RangeSetType   = slam::RangeSet<SetPosType,SetElemType>;
   // SLAM Relation typedef
   template<typename T>
-  using IndPolicy = policies::STLVectorIndirection<SetPosType, T>;
+  using IndPolicy = slam::policies::STLVectorIndirection<SetPosType, T>;
   using VariableCardinality =
-          policies::VariableCardinality<SetPosType, IndPolicy<SetElemType> >;
+        slam::policies::VariableCardinality<SetPosType, IndPolicy<SetElemType> >;
 public:
   using StaticVariableRelationType = slam::StaticRelation<
           SetPosType, SetElemType, VariableCardinality, 
@@ -67,11 +65,11 @@ private:
           slam::DynamicVariableRelation<SetPosType,SetElemType>;
   using OrderedSetType = slam::OrderedSet<
           SetPosType,SetElemType,
-          policies::RuntimeSize<SetPosType>,
-          policies::RuntimeOffset<SetPosType>,
-          policies::StrideOne<SetPosType>,
+          slam::policies::RuntimeSize<SetPosType>,
+          slam::policies::RuntimeOffset<SetPosType>,
+          slam::policies::StrideOne<SetPosType>,
           IndPolicy<SetElemType>,
-          policies::NoSubset>;
+          slam::policies::NoSubset>;
 
   // SLAM Map type
   using MapStrideType = slam::policies::RuntimeStride<SetPosType>;
@@ -573,7 +571,7 @@ slam::BivariateMap<T,BSetType> MultiMat::get2dField(const std::string& field_nam
   // Create instance of templated BivariateMap
   slam::BivariateMap<T,BSetType> typedBMap(new BSetType(bset));
   typedBMap.setManagesBSetPtr(true);
-
+  
   // Copy data from original map to templated map
   // WARNING: Map and BMap should take a pointer to the data
   // instead of copying it!
