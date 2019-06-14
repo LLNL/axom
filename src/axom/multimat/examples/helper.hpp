@@ -11,12 +11,15 @@
  * Also defines some helper struct-classes.
  */
 
+#include "axom/slam.hpp"
 
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
 #include <algorithm>
+
+namespace slam = axom::slam;
 
 struct Value_Checker
 {
@@ -699,6 +702,22 @@ struct Robey_data
   std::vector<double> Temperaturefrac_sparse;
   std::vector<double> Pressurefrac_sparse;
 
+  // For slam's sets, relations and maps
+  using P = int;
+  using ElemSet = slam::PositionSet<P, P>;
+  using Ind = slam::policies::STLVectorIndirection<P, P>;
+  using Card = slam::policies::VariableCardinality<P, Ind>;
+  using NbrRel = slam::StaticRelation<P, P, Card, Ind, ElemSet, ElemSet>;
+  using DataInd = slam::policies::STLVectorIndirection<P, double>;
+  using CentroidMap = slam::Map<double, ElemSet, DataInd, slam::policies::CompileTimeStride<P, 2> >;
+  
+  std::vector<int> slam_nbr_beg;
+  std::vector<int> slam_nbr_ind;
+
+  ElemSet slam_elems;
+  NbrRel slam_neighbors;
+  CentroidMap slam_centroids;
+  
 
   Robey_data(std::string filename = "", int ncells_in = 100, int nmats_in = 50)
   {
@@ -749,6 +768,53 @@ struct Robey_data
         cellmatcount++;
       }
     }
+
+    /// Set up slam neighbor relation
+    {
+      // Initialize the elems set
+      slam_elems = ElemSet(ncells);
+
+      // Initialize the begin indices for the nbrs relation
+      //via prefix sum on nnbrs array
+      slam_nbr_beg.resize(ncells + 1);
+      slam_nbr_beg[0] = 0;
+      for (auto i : slam_elems.positions())
+      {
+        slam_nbr_beg[i + 1] = slam_nbr_beg[i] + nnbrs[i];
+      }
+    
+      // Initialize the indices for the nbrs relation
+      // Note -- we're compacting an array of 8 neighbors per element
+      //         to one that has the correct size
+      const int MAX_NBRS = nnbrs_max;
+      slam_nbr_ind.resize(slam_nbr_beg[ncells]);
+      int cur = 0;
+      for (auto i : slam_elems.positions())
+      {
+          for (int j = 0; j< nnbrs[i]; ++j)
+          {
+            slam_nbr_ind[cur++] = nbrs[i*MAX_NBRS + j];
+          }
+      }
+
+      using NBuilder = typename NbrRel::RelationBuilder;
+      using BuildBeg = typename NBuilder::BeginsSetBuilder;
+      using BuildInd = typename NBuilder::IndicesSetBuilder;
+
+      // Initialize the nbrs relation
+      slam_neighbors = NBuilder()
+          .fromSet(&slam_elems)
+          .toSet(&slam_elems)
+          .begins(BuildBeg().size(slam_nbr_beg.size()).data(&slam_nbr_beg))
+          .indices(BuildInd().size(slam_nbr_ind.size()).data(&slam_nbr_ind));
+
+      // Initialize map over centroids
+      slam_centroids = CentroidMap(&slam_elems);
+      std::copy(cen.begin(), cen.end(), slam_centroids.data().begin());
+    }
+
+
+
 
   } //end constructor
 
