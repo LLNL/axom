@@ -4,9 +4,11 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /**
- * Set-up multi-material data, set-up code taken from Robey's repo:
- * https://github.com/lanl/MultiMatTest/
- * Also some helper struct-classes.
+ * Set-up multi-material data for examples
+ *
+ * Set-up code from LANL's MultiMatTest repo:
+ *     https://github.com/lanl/MultiMatTest
+ * Also defines some helper struct-classes.
  */
 
 
@@ -15,8 +17,6 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-
-using namespace std;
 
 struct Value_Checker
 {
@@ -662,42 +662,42 @@ struct Robey_data
   float filled_percentage;
 
   //For creating MultiMat object. Always in dense cell-dominant layout.
-  vector<bool> Volfrac_bool;
-  vector<double> Volfrac_CD; //cell-dominant full volfrac array
+  std::vector<bool> Volfrac_bool;
+  std::vector<double> Volfrac_CD; //cell-dominant full volfrac array
 
 
-  vector<double> Vol; //per cell, for all layouts
+  std::vector<double> Vol; //per cell, for all layouts
 
                       //Per cellmat
-  vector<double> Volfrac;
-  vector<double> Densityfrac;
-  vector<double> Temperaturefrac;
-  vector<double> Pressurefrac;
+  std::vector<double> Volfrac;
+  std::vector<double> Densityfrac;
+  std::vector<double> Temperaturefrac;
+  std::vector<double> Pressurefrac;
 
 
   int cellmatcount;
 
-  vector<double> nmatconsts;
+  std::vector<double> nmatconsts;
 
   int nnbrs_max;      //max number of neighbor = 8 for a 2d structured mesh
-  vector<int> nnbrs;  //number of neighbors
-  vector<int> nbrs;   //neighbor element id
-  vector<double> cen; //centroids of cells
+  std::vector<int> nnbrs;  //number of neighbors
+  std::vector<int> nbrs;   //neighbor element id
+  std::vector<double> cen; //centroids of cells
 
-  vector<int> subset2mesh;
-  vector<int> mesh2subset;
-  vector<int> nmatscell; //number of materials in a cell
-  vector<int> matids;    //material id in a cell, at most 4 materials per cell
-  vector<int> ncellsmat; //number of cells a material is in
-  vector<int> dense2sparse_idx;
+  std::vector<int> subset2mesh;
+  std::vector<int> mesh2subset;
+  std::vector<int> nmatscell; //number of materials in a cell
+  std::vector<int> matids;    //material id in a cell, at most 4 materials per cell
+  std::vector<int> ncellsmat; //number of cells a material is in
+  std::vector<int> dense2sparse_idx;
 
   //For CSR layout
-  vector<int> begin_idx;
-  vector<int> col_idx;
-  vector<double> Volfrac_sparse;
-  vector<double> Densityfrac_sparse;
-  vector<double> Temperaturefrac_sparse;
-  vector<double> Pressurefrac_sparse;
+  std::vector<int> begin_idx;
+  std::vector<int> col_idx;
+  std::vector<double> Volfrac_sparse;
+  std::vector<double> Densityfrac_sparse;
+  std::vector<double> Temperaturefrac_sparse;
+  std::vector<double> Pressurefrac_sparse;
 
 
   Robey_data(std::string filename = "", int ncells_in = 100, int nmats_in = 50)
