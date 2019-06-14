@@ -109,7 +109,7 @@ public:
     : StridePolicyType(stride)
     , m_set(theSet)
   {
-    m_data.resize( m_set->size() * StridePolicyType::stride(), defaultValue);
+    m_data.resize(size() * numComp(), defaultValue);
   }
 
   /**
@@ -216,7 +216,12 @@ public:
    *
    * The total storage size for the map's values is `size() * numComp()`
    */
-  SetPosition size() const { return SetPosition(m_set->size()); }
+  SetPosition size() const
+  {
+    return !policies::EmptySetTraits<SetType>::isEmpty(m_set)
+           ? static_cast<SetPosition>(m_set->size())
+           : SetPosition(0);
+  }
 
   /*
    * \brief  Gets the number of component values associated with each element.
