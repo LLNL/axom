@@ -12,27 +12,27 @@ namespace mir
 
 //--------------------------------------------------------------------------------
 
-  /// Default constructor
-  InterfaceReconstructor::InterfaceReconstructor()
-  {
-    
-  }
+/// Default constructor
+InterfaceReconstructor::InterfaceReconstructor()
+{
+  
+}
 
 //--------------------------------------------------------------------------------
 
-  /// Constructor
-  InterfaceReconstructor::InterfaceReconstructor(mir::MIRMesh* _mesh)
-  {
-    originalMesh = _mesh;
-  }
+/// Constructor
+InterfaceReconstructor::InterfaceReconstructor(mir::MIRMesh* _mesh)
+{
+  originalMesh = _mesh;
+}
 
 //--------------------------------------------------------------------------------
 
-  /// Destructor
-  InterfaceReconstructor::~InterfaceReconstructor()
-  {
+/// Destructor
+InterfaceReconstructor::~InterfaceReconstructor()
+{
 
-  }
+}
 
 //--------------------------------------------------------------------------------
 
@@ -81,9 +81,14 @@ mir::MIRMesh InterfaceReconstructor::computeReconstructedInterface()
 
     // Store the current mesh to be passed into the next iteration
     finalMesh = processedMesh;
-    finalMesh.constructMeshRelations();                                                   // TODO: Figure out why this is necessary here...
+    finalMesh.constructMeshRelations();
 
     printf("-------------Finished processing material-------------\n");
+
+    // Write out the intermediate meshes that are processed
+    std::string outFilename = "/Users/sterbentz3/Desktop/intermediateMesh" + std::to_string(matID) + ".vtk";
+    finalMesh.writeMeshToFile(outFilename);
+    // finalMesh.print();
   }
 
   // TODO: Run post-processing on mesh to meld the mesh vertices that are within a certain epsilon
@@ -93,168 +98,168 @@ mir::MIRMesh InterfaceReconstructor::computeReconstructedInterface()
 
 //--------------------------------------------------------------------------------
 
-  /// Computes the points where the element should be clipped based on the volume fractions of mat one and two.
-  void InterfaceReconstructor::computeClippingPoints(const int eID, const int matOneID, const int matTwoID, mir::MIRMesh* tempMesh, CellData& out_cellData)
-  {
-    // Find the vertices associated with each element
-    auto elementVertices = tempMesh->bdry[eID];
+/// Computes the points where the element should be clipped based on the volume fractions of mat one and two.
+void InterfaceReconstructor::computeClippingPoints(const int eID, const int matOneID, const int matTwoID, mir::MIRMesh* tempMesh, CellData& out_cellData)
+{
+  // Find the vertices associated with each element
+  auto elementVertices = tempMesh->bdry[eID];
 
-    // Triangle Case
-    if (elementVertices.size() == 3)
-    {
-      computeTriangleClippingPoints(eID, matOneID, matTwoID, tempMesh, out_cellData);
-    }
-    // Quad Case
-    if (elementVertices.size() == 4)
-    {
-      computeQuadClippingPoints(eID, matOneID, matTwoID, tempMesh, out_cellData);
-    }
+  // Triangle Case
+  if (elementVertices.size() == 3)
+  {
+    computeTriangleClippingPoints(eID, matOneID, matTwoID, tempMesh, out_cellData);
   }
+  // Quad Case
+  if (elementVertices.size() == 4)
+  {
+    computeQuadClippingPoints(eID, matOneID, matTwoID, tempMesh, out_cellData);
+  }
+}
 
 //--------------------------------------------------------------------------------
 
-  void InterfaceReconstructor::computeQuadClippingPoints(const int eID, const int matOneID, const int matTwoID, mir::MIRMesh* tempMesh, CellData& out_cellData)
+void InterfaceReconstructor::computeQuadClippingPoints(const int eID, const int matOneID, const int matTwoID, mir::MIRMesh* tempMesh, CellData& out_cellData)
+{
+  printf("  Processing QUAD element %d: ", eID);
+
+  // Determine the clipping case
+  auto elementVertices = tempMesh->bdry[eID];
+
+  int upperLeftVertex = elementVertices[0];
+  int lowerLeftVertex = elementVertices[1];
+  int lowerRightVertex = elementVertices[2];
+  int upperRightVertex = elementVertices[3];
+
+  unsigned int caseIndex = determineQuadClippingCase(eID, tempMesh, matOneID, matTwoID, upperLeftVertex, lowerLeftVertex, lowerRightVertex, upperRightVertex);
+  printf("caseIndex: %d\n", caseIndex);
+
+  // Generate new elements
+  std::map<int, std::vector<int> > newElements;             // hashmap of the new elements' vertices | Note: maps are ordered sets
+  std::map<int, std::vector<int> > newVertices;             // hashmap of the new vertices' elements | Note: maps are ordered sets
+  int verticesPresent[8] = {0,0,0,0,0,0,0,0};               // Array of flags denoting whether the vertex is present in the current case or not
+  axom::float64 verticesClippingTValue[8] = {0,0,0,0,0,0,0,0}; // Array of t values that denote the percent value of where the edge should be clipped
+
+  // Create the new polygons based on the clipping case
+  int currentElementIndex = 0;    // the next available element index
+  int i = 0;
+  int numVertices = quadClipTable[caseIndex][i];
+  
+  // for each new element in the current clipping case
+  while (numVertices != -1)   
   {
-    printf("  Processing element %d: ", eID);
-
-    // Determine the clipping case
-    auto elementVertices = tempMesh->bdry[eID];
-
-    int upperLeftVertex = elementVertices[0];
-    int lowerLeftVertex = elementVertices[1];
-    int lowerRightVertex = elementVertices[2];
-    int upperRightVertex = elementVertices[3];
-
-    unsigned int caseIndex = determineQuadClippingCase(eID, tempMesh, matOneID, matTwoID, upperLeftVertex, lowerLeftVertex, lowerRightVertex, upperRightVertex);
-    printf("caseIndex: %d\n", caseIndex);
-
-    // Generate new elements
-    std::map<int, std::vector<int> > newElements;             // hashmap of the new elements' vertices | Note: maps are ordered sets
-    std::map<int, std::vector<int> > newVertices;             // hashmap of the new vertices' elements | Note: maps are ordered sets
-    int verticesPresent[8];                                   // Array of flags denoting whether the vertex is present in the current case or not
-    axom::float64 verticesClippingTValue[8];                  // Array of t values that denote the percent value of where the edge should be clipped
-
-    // Create the new polygons based on the clipping case
-    int currentElementIndex = 0;    // the next available element index
-    int i = 0;
-    int numVertices = quadClipTable[caseIndex][i];
-    
-    // for each new element in the current clipping case
-    while (numVertices != -1)   
+    // for each vertex of the new element
+    for (int j = 0; j < numVertices; ++j)
     {
-      // for each vertex of the new element
-      for (int j = 0; j < numVertices; ++j)
+      // Find the id of the next vertex of the new element
+      int vID = quadClipTable[caseIndex][i + (j+1)];
+
+      // Associate the vertex and element together
+      newElements[currentElementIndex].push_back(vID);
+      newVertices[vID].push_back(currentElementIndex);
+      verticesPresent[vID] = 1;
+
+      // Find t using linear interpolation for any vertex that is not one of the original 4 vertices
+      if(vID == 4)
       {
-        // Find the id of the next vertex of the new element
-        int vID = quadClipTable[caseIndex][i + (j+1)];
-
-        // Associate the vertex and element together
-        newElements[currentElementIndex].push_back(vID);
-        newVertices[vID].push_back(currentElementIndex);
-        verticesPresent[vID] = 1;
-
-        // Find t using linear interpolation for any vertex that is not one of the original 4 vertices
-        if(vID == 4)
-        {
-          verticesClippingTValue[vID] = computeClippingPointOnEdge(upperLeftVertex, lowerLeftVertex, matOneID, matTwoID, tempMesh);
-        }
-        else if(vID == 5)
-        {
-          verticesClippingTValue[vID] = computeClippingPointOnEdge(lowerLeftVertex, lowerRightVertex, matOneID, matTwoID, tempMesh);
-        }
-        else if(vID == 6)
-        {
-          verticesClippingTValue[vID] = computeClippingPointOnEdge(lowerRightVertex, upperRightVertex, matOneID, matTwoID, tempMesh);
-        }
-        else if(vID == 7)
-        {
-          verticesClippingTValue[vID] = computeClippingPointOnEdge(upperRightVertex, upperLeftVertex, matOneID, matTwoID, tempMesh);
-        }
+        verticesClippingTValue[vID] = computeClippingPointOnEdge(upperLeftVertex, lowerLeftVertex, matOneID, matTwoID, tempMesh);
       }
-
-      // Increment the element index counter, marking the current element as being finished processed
-      currentElementIndex++;
-
-      // Increase index into lookup table to the next element
-      i += (numVertices + 1);
-      numVertices = quadClipTable[caseIndex][i];
-    }
-
-    /****************************************************************
-     *                CALCULATE THE NEW CELLS' DATA
-     ****************************************************************/
-    // Calculate the total number of elements and vertices that were generated from splitting the current element
-    out_cellData.numElems = (int) newElements.size();
-    out_cellData.numVerts = (int) newVertices.size();
-
-    generateTopologyDataFromQuad(newElements, newVertices, out_cellData);
-    generateVertexPositionsFromQuad(newVertices, tempMesh, verticesClippingTValue, upperLeftVertex, lowerLeftVertex, lowerRightVertex, upperRightVertex, out_cellData);
-    generateVertexVolumeFractionsFromQuad(newVertices, tempMesh, verticesClippingTValue, upperLeftVertex, lowerLeftVertex, lowerRightVertex, upperRightVertex, out_cellData);
-
-    // Determine and store the dominant material of this element
-    for (auto itr = newElements.begin(); itr != newElements.end(); itr++)
-    {
-      int currentDominantMat = NULL_MAT;
-      for (int it = 0; it < itr->second.size(); ++it)
+      else if(vID == 5)
       {
-        // int temp_vID = newElements[currentElementIndex][it];
-        int temp_vID = itr->second[it];
-    
-        // Find the vertex that is one of the four original vertices of the quad element
-        if (temp_vID == 0 || temp_vID == 1 || temp_vID == 2 || temp_vID == 3)
-        {
-          axom::float64 matOneVolumeFraction = -1.0, matTwoVolumeFraction = -1.0;
-          if (matOneID != NULL_MAT)
-            matOneVolumeFraction = out_cellData.vertexVolumeFractions[matOneID][temp_vID];
-          if (matTwoID != NULL_MAT)
-            matTwoVolumeFraction = out_cellData.vertexVolumeFractions[matTwoID][temp_vID];
-
-          currentDominantMat = (matOneVolumeFraction > matTwoVolumeFraction) ? matOneID : matTwoID;
-        }
+        verticesClippingTValue[vID] = computeClippingPointOnEdge(lowerLeftVertex, lowerRightVertex, matOneID, matTwoID, tempMesh);
       }
-      out_cellData.elementDominantMaterials.push_back(currentDominantMat);  
-    }
-
-    // Determine and store the parent of this element
-    out_cellData.elementParents.resize(newElements.size());
-    for (auto itr = newElements.begin(); itr != newElements.end(); itr++)
-    {
-      out_cellData.elementParents[itr->first] = tempMesh->elementParentIDs[eID];
-    }
-
-    // Check that each element is dominated by a material that is actually present in the original parent cell
-    for (auto itr = newElements.begin(); itr != newElements.end(); itr++)
-    {
-      int parentElementID = out_cellData.elementParents[itr->first];
-      int currentDominantMaterial = out_cellData.elementDominantMaterials[itr->first];
-
-      if (originalMesh->materialVolumeFractionsElement[currentDominantMaterial][parentElementID] == 0)
+      else if(vID == 6)
       {
-        // This material is not present in the original element from which the current element comes from
-        if (currentDominantMaterial == matOneID)
-          out_cellData.elementDominantMaterials[itr->first] = matTwoID;
-        else
-          out_cellData.elementDominantMaterials[itr->first] = matOneID;
+        verticesClippingTValue[vID] = computeClippingPointOnEdge(lowerRightVertex, upperRightVertex, matOneID, matTwoID, tempMesh);
+      }
+      else if(vID == 7)
+      {
+        verticesClippingTValue[vID] = computeClippingPointOnEdge(upperRightVertex, upperLeftVertex, matOneID, matTwoID, tempMesh);
       }
     }
-    
-    // Modify the evIndex values to account for the fact that perhaps not all 8 possible vertices are present
-    int evIndexSubtract[8];
-    for (int i = 0; i < 8; ++i)
+
+    // Increment the element index counter, marking the current element as being finished processed
+    currentElementIndex++;
+
+    // Increase index into lookup table to the next element
+    i += (numVertices + 1);
+    numVertices = quadClipTable[caseIndex][i];
+  }
+
+  /****************************************************************
+   *                CALCULATE THE NEW CELLS' DATA
+   ****************************************************************/
+  // Calculate the total number of elements and vertices that were generated from splitting the current element
+  out_cellData.numElems = (int) newElements.size();
+  out_cellData.numVerts = (int) newVertices.size();
+
+  generateTopologyData(newElements, newVertices, out_cellData);
+  generateVertexPositionsFromQuad(newVertices, tempMesh, verticesClippingTValue, upperLeftVertex, lowerLeftVertex, lowerRightVertex, upperRightVertex, out_cellData);
+  generateVertexVolumeFractionsFromQuad(newVertices, tempMesh, verticesClippingTValue, upperLeftVertex, lowerLeftVertex, lowerRightVertex, upperRightVertex, out_cellData);
+
+  // Determine and store the dominant material of this element
+  for (auto itr = newElements.begin(); itr != newElements.end(); itr++)
+  {
+    int currentDominantMat = NULL_MAT;
+    for (int it = 0; it < itr->second.size(); ++it)
     {
-      if (verticesPresent[i] == 1)
-        evIndexSubtract[i] = 0;
+      // int temp_vID = newElements[currentElementIndex][it];
+      int temp_vID = itr->second[it];
+  
+      // Find the vertex that is one of the four original vertices of the quad element
+      if (temp_vID == 0 || temp_vID == 1 || temp_vID == 2 || temp_vID == 3)
+      {
+        axom::float64 matOneVolumeFraction = -1.0, matTwoVolumeFraction = -1.0;
+        if (matOneID != NULL_MAT)
+          matOneVolumeFraction = out_cellData.vertexVolumeFractions[matOneID][temp_vID];
+        if (matTwoID != NULL_MAT)
+          matTwoVolumeFraction = out_cellData.vertexVolumeFractions[matTwoID][temp_vID];
+
+        currentDominantMat = (matOneVolumeFraction > matTwoVolumeFraction) ? matOneID : matTwoID;
+      }
+    }
+    out_cellData.elementDominantMaterials.push_back(currentDominantMat);  
+  }
+
+  // Determine and store the parent of this element
+  out_cellData.elementParents.resize(newElements.size());
+  for (auto itr = newElements.begin(); itr != newElements.end(); itr++)
+  {
+    out_cellData.elementParents[itr->first] = tempMesh->elementParentIDs[eID];
+  }
+
+  // Check that each element is dominated by a material that is actually present in the original parent cell
+  for (auto itr = newElements.begin(); itr != newElements.end(); itr++)
+  {
+    int parentElementID = out_cellData.elementParents[itr->first];
+    int currentDominantMaterial = out_cellData.elementDominantMaterials[itr->first];
+
+    if (originalMesh->materialVolumeFractionsElement[currentDominantMaterial][parentElementID] == 0)
+    {
+      // This material is not present in the original element from which the current element comes from
+      if (currentDominantMaterial == matOneID)
+        out_cellData.elementDominantMaterials[itr->first] = matTwoID;
       else
-        evIndexSubtract[i] = 1;
-    }
-    for (int i = 1; i < 8; ++i)
-      evIndexSubtract[i] += evIndexSubtract[i - 1];
-
-    for (unsigned int i = 0; i < out_cellData.evInds.size(); ++i)
-    {
-      out_cellData.evInds[i] -= evIndexSubtract[ out_cellData.evInds[i] ];
+        out_cellData.elementDominantMaterials[itr->first] = matOneID;
     }
   }
+  
+  // Modify the evIndex values to account for the fact that perhaps not all 8 possible vertices are present
+  int evIndexSubtract[8];
+  for (int i = 0; i < 8; ++i)
+  {
+    if (verticesPresent[i] == 1)
+      evIndexSubtract[i] = 0;
+    else
+      evIndexSubtract[i] = 1;
+  }
+  for (int i = 1; i < 8; ++i)
+    evIndexSubtract[i] += evIndexSubtract[i - 1];
+
+  for (unsigned int i = 0; i < out_cellData.evInds.size(); ++i)
+  {
+    out_cellData.evInds[i] -= evIndexSubtract[ out_cellData.evInds[i] ];
+  }
+}
 
 //--------------------------------------------------------------------------------
 
@@ -319,16 +324,10 @@ axom::float64 InterfaceReconstructor::computeClippingPointOnEdge(const int verte
   axom::float64 vfMatTwoVertexTwo = tempMesh->materialVolumeFractionsVertex[matTwoID][vertexTwoID];  
 
   if (matOneID == NULL_MAT)
-  {
-    vfMatOneVertexOne = 0.0;
-    vfMatOneVertexTwo = 0.0;
-  }
+    vfMatOneVertexOne = vfMatOneVertexTwo = 0.0;
 
   if (matTwoID == NULL_MAT)
-  {
-    vfMatTwoVertexOne = 0.0;
-    vfMatTwoVertexTwo = 0.0;
-  }
+    vfMatTwoVertexOne = vfMatTwoVertexTwo = 0.0;
 
   axom::float64 numerator = vfMatTwoVertexOne - vfMatOneVertexOne;
   axom::float64 denominator = -vfMatOneVertexOne + vfMatOneVertexTwo + vfMatTwoVertexOne - vfMatTwoVertexTwo;
@@ -345,7 +344,7 @@ axom::float64 InterfaceReconstructor::computeClippingPointOnEdge(const int verte
   if (ret > 1.0 || ret < 0.0)
   {
     // This shouldn't happen...
-    printf("OUT OF BOUNDS T VALUE: %f\n", ret);
+    printf("    OUT OF BOUNDS T VALUE: %f\n", ret);
 
     // Clamp the t value
     ret = fmin(1.0, ret);
@@ -357,8 +356,8 @@ axom::float64 InterfaceReconstructor::computeClippingPointOnEdge(const int verte
 
 //--------------------------------------------------------------------------------
 
-/// Generate the topology of the new elements (evInds, evBegins, veInds, veBegins) resulting from splitting a quad.
-void InterfaceReconstructor::generateTopologyDataFromQuad(std::map<int, std::vector<int> > newElements, std::map<int, std::vector<int> > newVertices, CellData& out_cellData)
+/// Generate the topology of the new elements (evInds, evBegins, veInds, veBegins) resulting from a split.
+void InterfaceReconstructor::generateTopologyData(std::map<int, std::vector<int> > newElements, std::map<int, std::vector<int> > newVertices, CellData& out_cellData)
 {
     // Store the evInds and evBegins data in the output vectors
     int currentEVBeginIndex = 0;
@@ -471,7 +470,229 @@ void InterfaceReconstructor::generateVertexVolumeFractionsFromQuad(std::map<int,
 
 void InterfaceReconstructor::computeTriangleClippingPoints(const int eID, const int matOneID, const int matTwoID, mir::MIRMesh* tempMesh, CellData& out_cellData)
 {
-  printf("Triangle clipping case not yet implemented.\n");
+  printf("  Processing TRIANGLE element %d: ", eID);
+
+  // Determine the clipping case
+  auto elementVertices = tempMesh->bdry[eID];
+
+  int upperVertex = elementVertices[0];
+  int lowerLeftVertex = elementVertices[1];
+  int lowerRightVertex = elementVertices[2];
+
+  unsigned int caseIndex = determineTriangleClippingCase(eID, tempMesh, matOneID, matTwoID, upperVertex, lowerLeftVertex, lowerRightVertex);
+  printf("caseIndex: %d\n", caseIndex);
+
+  // Generate new elements
+  std::map<int, std::vector<int> > newElements;             // hashmap of the new elements' vertices | Note: maps are ordered sets
+  std::map<int, std::vector<int> > newVertices;             // hashmap of the new vertices' elements | Note: maps are ordered sets
+  int verticesPresent[6] = {0,0,0,0,0,0};                   // Array of flags denoting whether the vertex is present in the current case or not
+  axom::float64 verticesClippingTValue[6] = {0,0,0,0,0,0};  // Array of t values that denote the percent value of where the edge should be clipped
+
+  // Create the new polygons based on the clipping case
+  int currentElementIndex = 0;    // the next available element index
+  int i = 0;
+  int numVertices = triangleClipTable[caseIndex][i];
+
+  // for each new element in the current clipping case
+  while (numVertices != -1)   
+  {
+    // for each vertex of the new element
+    for (int j = 0; j < numVertices; ++j)
+    {
+      // Find the id of the next vertex of the new element
+      int vID = triangleClipTable[caseIndex][i + (j+1)];
+
+      // Associate the vertex and element together
+      newElements[currentElementIndex].push_back(vID);
+      newVertices[vID].push_back(currentElementIndex);
+      verticesPresent[vID] = 1;
+
+      // Find t using linear interpolation for any vertex that is not one of the original 3 vertices
+      if(vID == 3)
+      {
+        verticesClippingTValue[vID] = computeClippingPointOnEdge(upperVertex, lowerLeftVertex, matOneID, matTwoID, tempMesh);
+      }
+      else if(vID == 4)
+      {
+        verticesClippingTValue[vID] = computeClippingPointOnEdge(lowerLeftVertex, lowerRightVertex, matOneID, matTwoID, tempMesh);
+      }
+      else if(vID == 5)
+      {
+        verticesClippingTValue[vID] = computeClippingPointOnEdge(lowerRightVertex, upperVertex, matOneID, matTwoID, tempMesh);
+      }
+    }
+
+    // Increment the element index counter, marking the current element as being finished processed
+    currentElementIndex++;
+
+    // Increase index into lookup table to the next element
+    i += (numVertices + 1);
+    numVertices = triangleClipTable[caseIndex][i];
+  }
+
+  /****************************************************************
+   *                CALCULATE THE NEW CELLS' DATA
+   ****************************************************************/
+  // Calculate the total number of elements and vertices that were generated from splitting the current element
+  out_cellData.numElems = (int) newElements.size();
+  out_cellData.numVerts = (int) newVertices.size();
+
+  generateTopologyData(newElements, newVertices, out_cellData);
+  generateVertexPositionsFromTriangle(newVertices, tempMesh, verticesClippingTValue, upperVertex, lowerLeftVertex, lowerRightVertex, out_cellData);
+  generateVertexVolumeFractionsFromTriangle(newVertices, tempMesh, verticesClippingTValue, upperVertex, lowerLeftVertex, lowerRightVertex, out_cellData);
+
+  // Determine and store the dominant material of this element
+  for (auto itr = newElements.begin(); itr != newElements.end(); itr++)
+  {
+    int currentDominantMat = NULL_MAT;
+    for (int it = 0; it < itr->second.size(); ++it)
+    {
+      int temp_vID = itr->second[it];
+  
+      // Find the vertex that is one of the three original vertices of the triangle element
+      if (temp_vID == 0 || temp_vID == 1 || temp_vID == 2)
+      {
+        axom::float64 matOneVolumeFraction = -1.0, matTwoVolumeFraction = -1.0;
+        if (matOneID != NULL_MAT)
+          matOneVolumeFraction = out_cellData.vertexVolumeFractions[matOneID][temp_vID];
+        if (matTwoID != NULL_MAT)
+          matTwoVolumeFraction = out_cellData.vertexVolumeFractions[matTwoID][temp_vID];
+
+        currentDominantMat = (matOneVolumeFraction > matTwoVolumeFraction) ? matOneID : matTwoID;
+      }
+    }
+    out_cellData.elementDominantMaterials.push_back(currentDominantMat);  
+  }
+
+  // Determine and store the parent of this element
+  out_cellData.elementParents.resize(newElements.size());
+  for (auto itr = newElements.begin(); itr != newElements.end(); itr++)
+  {
+    out_cellData.elementParents[itr->first] = tempMesh->elementParentIDs[eID];
+  }
+
+  // Check that each element is dominated by a material that is actually present in the original parent cell
+  for (auto itr = newElements.begin(); itr != newElements.end(); itr++)
+  {
+    int parentElementID = out_cellData.elementParents[itr->first];
+    int currentDominantMaterial = out_cellData.elementDominantMaterials[itr->first];
+
+    if (originalMesh->materialVolumeFractionsElement[currentDominantMaterial][parentElementID] == 0)
+    {
+      // This material is not present in the original element from which the current element comes from
+      if (currentDominantMaterial == matOneID)
+        out_cellData.elementDominantMaterials[itr->first] = matTwoID;
+      else
+        out_cellData.elementDominantMaterials[itr->first] = matOneID;
+    }
+  }  
+
+  // Modify the evIndex values to account for the fact that perhaps not all 6 possible vertices are present
+  int evIndexSubtract[6];
+  for (int i = 0; i < 6; ++i)
+  {
+    if (verticesPresent[i] == 1)
+      evIndexSubtract[i] = 0;
+    else
+      evIndexSubtract[i] = 1;
+  }
+
+  for (int i = 1; i < 6; ++i)
+    evIndexSubtract[i] += evIndexSubtract[i - 1];
+
+  for (unsigned int i = 0; i < out_cellData.evInds.size(); ++i)
+    out_cellData.evInds[i] -= evIndexSubtract[ out_cellData.evInds[i] ];
+
+}
+
+//--------------------------------------------------------------------------------
+
+/// Finds the bit map representing the clipping case for a triangle.
+unsigned int InterfaceReconstructor::determineTriangleClippingCase(const int eID, mir::MIRMesh* tempMesh, const int matOneID, const int matTwoID, const int upperVertex, const int lowerLeftVertex, const int lowerRightVertex)
+{
+ // Determine the dominant color at each vertex
+    int upperColor = matOneID, lowerLeftColor = matOneID, lowerRightColor = matOneID;
+
+    if (matOneID == NULL_MAT)
+      upperColor = lowerLeftColor = lowerRightColor = matTwoID;
+    if (matTwoID == NULL_MAT)
+      upperColor = lowerLeftColor = lowerRightColor = matOneID;
+    if (matOneID != NULL_MAT && matTwoID != NULL_MAT)
+    {
+      upperColor = tempMesh->materialVolumeFractionsVertex[matOneID][upperVertex] > tempMesh->materialVolumeFractionsVertex[matTwoID][upperVertex] ? matOneID : matTwoID;
+      lowerLeftColor = tempMesh->materialVolumeFractionsVertex[matOneID][lowerLeftVertex] > tempMesh->materialVolumeFractionsVertex[matTwoID][lowerLeftVertex] ? matOneID : matTwoID;
+      lowerRightColor = tempMesh->materialVolumeFractionsVertex[matOneID][lowerRightVertex] > tempMesh->materialVolumeFractionsVertex[matTwoID][lowerRightVertex] ? matOneID : matTwoID;
+    }
+    
+    // Create the index into the quad clipping lookup table using the dominant colors at each vertex
+    unsigned int caseIndex = 0;
+    if (upperColor == matOneID)  caseIndex |= 4;
+    if (lowerLeftColor == matOneID)  caseIndex |= 2;
+    if (lowerRightColor == matOneID) caseIndex |= 1;
+
+    return caseIndex;
+}
+
+//--------------------------------------------------------------------------------
+
+/// Generate the vertex position data for the new elements resulting from spltting a quad.
+void InterfaceReconstructor::generateVertexPositionsFromTriangle(std::map<int, std::vector<int> > newVertices, mir::MIRMesh* tempMesh, axom::float64* verticesClippingTValue, int upperVertex, int lowerLeftVertex, int lowerRightVertex, CellData& out_cellData)
+{
+  std::map<int, mir::Point2> newPoints;           // hashmap of the new vertices' positions | Note: maps are ordered sets
+
+  // Find the position coordinates of the vertices and then store the positions of the vertices in the return vector
+  for (auto itr = newVertices.begin(); itr != newVertices.end(); itr++)
+  {
+    int vID = itr->first;
+    if (vID == 0)
+      newPoints[vID] = tempMesh->vertexPositions[upperVertex];
+    if (vID == 1)
+      newPoints[vID] = tempMesh->vertexPositions[lowerLeftVertex];
+    if (vID == 2)
+      newPoints[vID] = tempMesh->vertexPositions[lowerRightVertex];
+    if (vID == 3)
+      newPoints[vID] = interpolateVertexPosition(tempMesh->vertexPositions[upperVertex], tempMesh->vertexPositions[lowerLeftVertex], verticesClippingTValue[vID]);
+    if (vID == 4)
+      newPoints[vID] = interpolateVertexPosition(tempMesh->vertexPositions[lowerLeftVertex], tempMesh->vertexPositions[lowerRightVertex], verticesClippingTValue[vID]);
+    if (vID == 5)
+      newPoints[vID] = interpolateVertexPosition(tempMesh->vertexPositions[lowerRightVertex], tempMesh->vertexPositions[upperVertex], verticesClippingTValue[vID]);
+  } 
+
+  // Store the positions of the vertices in the return vector
+  for (auto itr = newPoints.begin(); itr != newPoints.end(); itr++)
+  {
+    out_cellData.vertexPositions.push_back(itr->second);
+  }
+}
+
+//--------------------------------------------------------------------------------
+
+/// Generate the vertex volume fraction data for the new vertices resulting from splitting a quad. 
+void InterfaceReconstructor::generateVertexVolumeFractionsFromTriangle(std::map<int, std::vector<int> > newVertices, mir::MIRMesh* tempMesh, axom::float64* verticesClippingTValue, int upperVertex, int lowerLeftVertex, int lowerRightVertex, CellData& out_cellData)
+{
+    // Calculate the vertex fractions at each vertex (use t value!)
+    // Make sure the output volume fractions containers are the proper size
+    out_cellData.vertexVolumeFractions.resize(tempMesh->numMaterials);
+    
+    for (auto itr = newVertices.begin(); itr != newVertices.end(); itr++)
+    {
+      int vID = itr->first;
+      for (int matID = 0; matID < tempMesh->numMaterials; ++matID)
+      {
+        if (vID == 0)
+          out_cellData.vertexVolumeFractions[matID].push_back(tempMesh->materialVolumeFractionsVertex[matID][upperVertex]);
+        if (vID == 1)
+          out_cellData.vertexVolumeFractions[matID].push_back(tempMesh->materialVolumeFractionsVertex[matID][lowerLeftVertex]);
+        if (vID == 2)
+          out_cellData.vertexVolumeFractions[matID].push_back(tempMesh->materialVolumeFractionsVertex[matID][lowerRightVertex]);
+        if (vID == 3)
+          out_cellData.vertexVolumeFractions[matID].push_back(lerpFloat(tempMesh->materialVolumeFractionsVertex[matID][upperVertex], tempMesh->materialVolumeFractionsVertex[matID][lowerLeftVertex], verticesClippingTValue[vID]));
+        if (vID == 4)
+          out_cellData.vertexVolumeFractions[matID].push_back(lerpFloat(tempMesh->materialVolumeFractionsVertex[matID][lowerLeftVertex], tempMesh->materialVolumeFractionsVertex[matID][lowerRightVertex], verticesClippingTValue[vID]));
+        if (vID == 5)
+          out_cellData.vertexVolumeFractions[matID].push_back(lerpFloat(tempMesh->materialVolumeFractionsVertex[matID][lowerRightVertex], tempMesh->materialVolumeFractionsVertex[matID][upperVertex], verticesClippingTValue[vID]));    
+      }
+    }
 }
 
 //--------------------------------------------------------------------------------
