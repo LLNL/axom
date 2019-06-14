@@ -131,6 +131,19 @@ public:
    */
   void setNumberOfCells(int num_cells);
 
+  /// \brief Returns a pointer to the dense 2d field set
+  const ProductSetType* getDense2dFieldSet() const
+  {
+    return m_cellMatProdSet;
+  }
+
+  /// \brief Returns a pointer to the sparse 2d field set
+  const RelationSetType* getSparse2dFieldSet() const
+  {
+    return m_cellMatNZSet;
+  }
+
+
   /**
    * \brief Set the cell-material relation.
    *
