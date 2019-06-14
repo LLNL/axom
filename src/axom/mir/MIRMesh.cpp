@@ -276,7 +276,7 @@ void MIRMesh::constructMeshVolumeFractionsVertex(std::vector<std::vector<axom::f
     printf("}\n");
 
     printf("elementParentIDs: { ");
-    for (int i = 0; i < elementParentIDs.size(); ++i)
+    for (int i = 0; i < elems.size(); ++i)
     {
       printf("%d ", elementParentIDs[i]);
     }

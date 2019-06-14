@@ -66,7 +66,7 @@ namespace mir
 
   // MAP TYPE ALIASES
   using BaseSet = slam::Set< PosType, ElemType >;
-  using ScalarMap = slam::Map< BaseSet, axom::float64 >;  // Note: Documentation has a typo in it.
+  using ScalarMap = slam::Map< BaseSet, axom::float64 >;
   using PointMap = slam::Map< BaseSet, Point2 >;
   using IntMap = slam::Map< BaseSet, int >;
 }

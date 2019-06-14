@@ -12,6 +12,7 @@ namespace axom
 namespace mir
 {
   extern const int quadClipTable[16][19];
+  extern const int triangleClipTable[8][10];
 }
 }
 #endif

@@ -51,9 +51,14 @@ namespace mir
 
       // quad clipping points helper functions
       unsigned int        determineQuadClippingCase(const int eID, mir::MIRMesh* tempMesh, const int matOneID, const int matTwoID, const int upperLeftVertex, const int lowerLeftVertex, const int lowerRightVertex, const int upperRightVertex);
-      void                generateTopologyDataFromQuad(std::map<int, std::vector<int> > newElements, std::map<int, std::vector<int> > newVertices, CellData& out_cellData);
+      void                generateTopologyData(std::map<int, std::vector<int> > newElements, std::map<int, std::vector<int> > newVertices, CellData& out_cellData);
       void                generateVertexPositionsFromQuad(std::map<int, std::vector<int> > newVertices, mir::MIRMesh* tempMesh, axom::float64* verticesClippingTValue, int upperLeftVertex, int lowerLeftVertex, int lowerRightVertex, int upperRightVertex, CellData& out_cellData);
       void                generateVertexVolumeFractionsFromQuad(std::map<int, std::vector<int> > newVertices, mir::MIRMesh* tempMesh, axom::float64* verticesClippingTValue, int upperLeftVertex, int lowerLeftVertex, int lowerRightVertex, int upperRightVertex, CellData& out_cellData);
+
+      // triangle clipping points helper functions
+      unsigned int        determineTriangleClippingCase(const int eID, mir::MIRMesh* tempMesh, const int matOneID, const int matTwoID, const int upperVertex, const int lowerLeftVertex, const int lowerRightVertex);
+      void                generateVertexPositionsFromTriangle(std::map<int, std::vector<int> > newVertices, mir::MIRMesh* tempMesh, axom::float64* verticesClippingTValue, int upperVertex, int lowerLeftVertex, int lowerRightVertex, CellData& out_cellData);
+      void                generateVertexVolumeFractionsFromTriangle(std::map<int, std::vector<int> > newVertices, mir::MIRMesh* tempMesh, axom::float64* verticesClippingTValue, int upperVertex, int lowerLeftVertex, int lowerRightVertex, CellData& out_cellData);
   };
 }
 }
