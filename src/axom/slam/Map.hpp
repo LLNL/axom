@@ -27,6 +27,7 @@
 
 #include "axom/slam/policies/StridePolicies.hpp"
 #include "axom/slam/policies/IndirectionPolicies.hpp"
+#include "axom/slam/policies/PolicyTraits.hpp"
 
 namespace axom
 {
@@ -102,7 +103,7 @@ public:
    *        \a stride(), when provided.
    */
 
-  Map(const SetType* theSet = &s_nullSet,
+  Map(const SetType* theSet = policies::EmptySetTraits<SetType>::emptySet(),
       DataType defaultValue = DataType(),
       SetPosition stride = StridePolicyType::DEFAULT_VALUE )
     : StridePolicyType(stride)
@@ -274,7 +275,7 @@ public:
 public:
     friend class Map;
 
-    MapBuilder() : m_set(&s_nullSet) {}
+    MapBuilder() : m_set(policies::EmptySetTraits<SetType>::emptySet()) {}
 
     /** \brief Provide the Set to be used by the Map */
     MapBuilder& set(const SetType* set)
@@ -300,7 +301,7 @@ public:
     }
 
 private:
-    const SetType* m_set = &s_nullSet;
+    const SetType* m_set;
     StridePolicyType m_stride;
     DataType* m_data_ptr = nullptr;
     DataType m_defaultValue = DataType();
@@ -428,16 +429,6 @@ private:
   OrderedMap m_data;
 };
 
-/**
- * \brief Definition of static instance of nullSet for all maps
- * \note Should this be a singleton or a global object?  Should the scope be
- * public?
- */
-template<typename T,typename S, typename IndPol, typename StrPol>
-NullSet<typename S::PositionType, typename S::ElementType>
-const Map<T, S, IndPol, StrPol>::s_nullSet;
-
-
 template<typename T, typename S, typename IndPol, typename StrPol>
 bool Map<T, S, IndPol, StrPol>::isValid( bool verboseOutput) const
 {
@@ -445,7 +436,7 @@ bool Map<T, S, IndPol, StrPol>::isValid( bool verboseOutput) const
 
   std::stringstream errStr;
 
-  if(*m_set == s_nullSet)
+  if(policies::EmptySetTraits<S>::isEmpty(m_set))
   {
     if(!m_data.empty() )
     {
