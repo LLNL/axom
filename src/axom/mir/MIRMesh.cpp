@@ -380,5 +380,88 @@ void MIRMesh::constructMeshVolumeFractionsVertex(std::vector<std::vector<axom::f
 
 //--------------------------------------------------------------------------------
 
+/// Computes the volume fractions of the elements of the original mesh,
+void MIRMesh::computeOriginalElementVolumeFractions()
+{
+  std::map<int, axom::float64> totalAreaOriginalElements; // the total area of the original elements
+  std::map<int, axom::float64> newElementAreas;           // the area of each of the generated child elements
+  std::map<int, int> numChildren;                         // the number of child elements generated from one of the original elements
+
+  // Compute the total area of each element of the original mesh and also the area of each new element
+  for (int eID = 0; eID < elems.size(); ++eID)
+  {
+    int numVertices = data.evBegins[eID + 1] - data.evBegins[eID];
+    if (numVertices == 3)
+    {
+      Point2 trianglePoints[3];
+      for (int i = 0; i < 3; ++i)
+        trianglePoints[i] = vertexPositions[data.evInds[ data.evBegins[eID] + i] ];
+      newElementAreas[eID] = computeTriangleArea(trianglePoints[0], trianglePoints[1], trianglePoints[2]);
+    }
+    if (numVertices == 4) 
+    {
+      Point2 trianglePoints[4];
+      for (int i = 0; i < 4; ++i)
+        trianglePoints[i] = vertexPositions[data.evInds[ data.evBegins[eID] + i] ];
+      newElementAreas[eID] = computeQuadArea(trianglePoints[0], trianglePoints[1], trianglePoints[2], trianglePoints[3]);
+    }
+   
+    totalAreaOriginalElements[ elementParentIDs[eID] ] += newElementAreas[eID];
+    numChildren[ elementParentIDs[eID] ] += .4;
+  }
+  
+  // Intialize the element volume fraction vectors
+  std::vector<std::vector<axom::float64> > elementVolumeFractions;    // indexed as: elementVolumeFractions[material][originalElementID] = volumeFraction
+  elementVolumeFractions.resize( numMaterials );
+  for (int i = 0; i < elementVolumeFractions.size(); ++i)
+    elementVolumeFractions[i].resize( totalAreaOriginalElements.size(), 0.0 );
+
+  // Compute the volume fractions for each of the original mesh elements
+  for (auto itr = newElementAreas.begin(); itr != newElementAreas.end(); itr++)
+  {
+    int parentElementID = elementParentIDs[itr->first];
+    int materialID = elementDominantMaterials[itr->first];
+    elementVolumeFractions[materialID][parentElementID] += (itr->second / totalAreaOriginalElements[parentElementID]);
+  }
+
+  // Print out the results // TODO: Return the values and use them.
+  printf("elementVolumeFractions: {\n");
+  for (int matID = 0; matID < elementVolumeFractions.size(); ++matID)
+  {
+    printf("Material %d: {", matID);
+    for (int eID = 0; eID < elementVolumeFractions[matID].size(); ++eID)
+    {
+      printf(" %f,", elementVolumeFractions[matID][eID]);
+    }
+    printf("}\n");
+  }
+  printf("}\n");
+}
+
+//--------------------------------------------------------------------------------
+
+/// Computes the area of the triangle defined by the given three vertex positions. Uses Heron's formula.
+axom::float64 MIRMesh::computeTriangleArea(Point2 p0, Point2 p1, Point2 p2)
+{
+  axom::float64 a = sqrt( ((p1.m_x - p0.m_x) * (p1.m_x - p0.m_x)) + ((p1.m_y - p0.m_y) * (p1.m_y - p0.m_y)) );// the distance from p0 to p1
+  axom::float64 b = sqrt( ((p2.m_x - p1.m_x) * (p2.m_x - p1.m_x)) + ((p2.m_y - p1.m_y) * (p2.m_y - p1.m_y)) );// the distance from p1 to p2
+  axom::float64 c = sqrt( ((p0.m_x - p2.m_x) * (p0.m_x - p2.m_x)) + ((p0.m_y - p2.m_y) * (p0.m_y - p2.m_y)) );// the distance from p2 to p0
+
+  axom::float64 s = (a + b + c) / 2;  // the semi-perimeter of the triangle
+
+  return sqrt(s * (s - a) * (s - b) * (s - c));
+}
+
+//--------------------------------------------------------------------------------
+
+/// Computes the area of the quad defined by the given four vertex positions.
+/// Note: It is assumed the points are given in consecutive order.
+axom::float64 MIRMesh::computeQuadArea(Point2 p0, Point2 p1, Point2 p2, Point2 p3)
+{
+  return computeTriangleArea(p0, p1, p2) + computeTriangleArea(p2, p3, p0);
+}
+
+//--------------------------------------------------------------------------------
+
 }
 }

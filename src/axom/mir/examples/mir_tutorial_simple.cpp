@@ -40,6 +40,7 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
   // Output results
   processedMesh.print();
   processedMesh.writeMeshToFile("/Users/sterbentz3/Desktop/processedTestMesh.vtk");
+  processedMesh.computeOriginalElementVolumeFractions();
 
   return 0;
 }
@@ -193,12 +194,8 @@ mir::MIRMesh initTestCaseTwo()
   mir::VertSet  verts = mir::VertSet(numVertices);  // Construct a vertex set with 16 vertices
   mir::ElemSet  elems = mir::ElemSet(numElements);   // Construct an element set with 9 elements
 
-
   int numMaterials = 3;
-  enum { BLUE = 2, RED = 0, ORANGE = 1 }; // TODO: the order orange, blue red causes bugs... might be fixed now... was due to incorrect clipping table entries
-  // TODO: orange, blue, red is fine
-  // TODO: blue, red, orange is fine
-  // TODO: red, orange, blue is fine
+  enum { BLUE = 2, RED = 0, ORANGE = 1 };
 
   std::vector<axom::float64*> materialVolumeFractionsData;
   materialVolumeFractionsData.resize(numMaterials);

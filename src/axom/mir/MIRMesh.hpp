@@ -69,6 +69,13 @@ namespace mir
       void        writeMeshToFile(std::string filename);                                    /// Writes out the current mesh to a file
       void        attachVertexMap();                                                        /// Adds a map of data to the mesh
 
+
+      void        computeOriginalElementVolumeFractions();
+    
+    private:
+      axom::float64 computeTriangleArea(Point2 p0, Point2 p1, Point2 p2);
+      axom::float64 computeQuadArea(Point2 p0, Point2 p1, Point2 p2, Point2 p3);
+
     /****************************************************************
      *                        VARIABLES
      ****************************************************************/
