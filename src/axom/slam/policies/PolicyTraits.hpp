@@ -112,9 +112,16 @@ struct EmptySetTraits<slam::Set<P,E> >
 
 namespace traits
 {
-// Implementation of void_t from-C++17
-template <class ... Ts>
-using void_t = void;
+// Implementation of void_t (from C++17) with bug fix for
+// earlier versions of gcc. Credit: https://stackoverflow.com/a/35754473
+namespace void_details
+{
+template <class ... >
+struct make_void { using type = void; };
+}
+
+template <class ... T>
+using void_t = typename void_details::make_void<T ...>::type;
 
 
 ///\name has_relation_ptr traits class

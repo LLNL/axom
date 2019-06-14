@@ -126,10 +126,11 @@ TEST(slam_map, map_builder)
   SLIC_INFO("Testing construction of Map using MapBuilders");
 
   using DataType = double;
-  using MapType = slam::Map<DataType, slam::Set<> >;
+  using MapSet = slam::Set<>;
+  using MapType = slam::Map<DataType, MapSet >;
   using MapBuilder = MapType::MapBuilder;
 
-  MapType m( MapBuilder().set(&MapType::s_nullSet) );
+  MapType m( MapBuilder().set(policies::EmptySetTraits<MapSet>::emptySet()) );
   EXPECT_TRUE(m.isValid());
   EXPECT_EQ(m.size(), 0);
   EXPECT_EQ(m.stride(), 1);
