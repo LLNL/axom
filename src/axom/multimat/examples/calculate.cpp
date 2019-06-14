@@ -39,12 +39,12 @@ Result_Store result_store;
 void average_density_cell_dom_full(Robey_data& data){
   int ncells = data.ncells;
   int nmats = data.nmats;
-  vector<double>& Volfrac = data.Volfrac;
-  vector<double>& Densityfrac = data.Densityfrac;
-  vector<double>& Vol = data.Vol;
+  std::vector<double>& Volfrac = data.Volfrac;
+  std::vector<double>& Densityfrac = data.Densityfrac;
+  std::vector<double>& Vol = data.Vol;
 
   SLIC_INFO("-- Averaging Density, Cell-Dominant Full Matrix Array Access --");
-  vector<double> Density_average(ncells);
+  std::vector<double> Density_average(ncells);
 
   timer.reset();
 
@@ -79,13 +79,13 @@ void average_density_cell_dom_full(Robey_data& data){
 //    Robey's
 void average_density_cell_dom_compact(Robey_data& data) {
   int ncells = data.ncells;
-  vector<double>& Volfrac = data.Volfrac_sparse;
-  vector<double>& Densityfrac = data.Densityfrac_sparse;
-  vector<double>& Vol = data.Vol;
-  vector<int>& begin_idx = data.begin_idx;
+  std::vector<double>& Volfrac = data.Volfrac_sparse;
+  std::vector<double>& Densityfrac = data.Densityfrac_sparse;
+  std::vector<double>& Vol = data.Vol;
+  std::vector<int>& begin_idx = data.begin_idx;
 
   SLIC_INFO("-- Averaging Density cell-dominant compact array-access --");
-  vector<double> Density_average(ncells);
+  std::vector<double> Density_average(ncells);
 
   timer.reset();
 
@@ -136,7 +136,7 @@ void average_density_cell_dom_mm_template(MultiMat& mm) {
   using ProductSetType = slam::ProductSet<SetType,SetType>;
   auto prodset = Densityfrac.getBivariateSet<ProductSetType>();
 
-  vector<double> Density_average(ncells);
+  std::vector<double> Density_average(ncells);
 
   timer.reset();
 
@@ -182,7 +182,7 @@ void average_density_cell_dom_mm_direct(MultiMat& mm) {
   auto& Volfrac = mm.get2dField<double>("Volfrac");
   auto& Vol = mm.get1dField<double>("Vol");
 
-  vector<double> Density_average(ncells);
+  std::vector<double> Density_average(ncells);
 
   using SetType = slam::RangeSet<>;
   using ProductSet = slam::ProductSet<SetType,SetType>;
@@ -244,7 +244,7 @@ void average_density_cell_dom_mm_submap(MultiMat& mm) {
   auto& Volfrac = mm.get2dField<double>("Volfrac");
   auto& Vol = mm.get1dField<double>("Vol");
 
-  vector<double> Density_average(ncells);
+  std::vector<double> Density_average(ncells);
 
   timer.reset();
 
@@ -288,10 +288,11 @@ void average_density_cell_dom_mm_submap(MultiMat& mm)
 
   int ncells = mm.getNumberOfCells();
   auto Densityfrac = mm.get2dField<double, BSet>("Densityfrac");
+
   auto Volfrac = mm.get2dField<double, BSet>("Volfrac");
   auto& Vol = mm.get1dField<double>("Vol");
 
-  vector<double> Density_average(ncells);
+  std::vector<double> Density_average(ncells);
 
   timer.reset();
 
@@ -336,7 +337,7 @@ void average_density_cell_dom_mm_idxarray(MultiMat& mm) {
   auto& Volfrac = mm.get2dField<double>("Volfrac");
   auto& Vol = mm.get1dField<double>("Vol");
 
-  vector<double> Density_average(ncells);
+  std::vector<double> Density_average(ncells);
   
   timer.reset();
 
@@ -381,7 +382,7 @@ void average_density_cell_dom_mm_flatiter(MultiMat& mm) {
   MultiMat::Field2D<double>& Volfrac = mm.get2dField<double>("Volfrac");
   MultiMat::Field1D<double>& Vol = mm.get1dField<double>("Vol");
 
-  vector<double> Density_average(ncells, 0.0);
+  std::vector<double> Density_average(ncells, 0.0);
 
   timer.reset();
 
@@ -431,7 +432,7 @@ void average_density_cell_dom_mm_iter(MultiMat& mm) {
   MultiMat::Field2D<double> & Volfrac = mm.get2dField<double>("Volfrac");
   MultiMat::Field1D<double> & Vol = mm.get1dField<double>("Vol");
   
-  vector<double> Density_average(ncells, 0.0);
+  std::vector<double> Density_average(ncells, 0.0);
   
   timer.reset();
 
@@ -472,16 +473,17 @@ void average_density_cell_dom_mm_iter(MultiMat& mm) {
 
 //    Average density - Material-Dominant Full Matrix
 //    Robey's
-double average_density_mat_dom_full(Robey_data& data) {
-	int ncells = data.ncells;
-	int nmats = data.nmats;
-	vector<double>& Volfrac = data.Volfrac;
-	vector<double>& Densityfrac = data.Densityfrac;
-	vector<double>& Vol = data.Vol;
+double average_density_mat_dom_full(Robey_data& data) 
+{
+  int ncells = data.ncells;
+  int nmats = data.nmats;
+  std::vector<double>& Volfrac = data.Volfrac;
+  std::vector<double>& Densityfrac = data.Densityfrac;
+  std::vector<double>& Vol = data.Vol;
+  
+  SLIC_INFO("-- Averaging Density material-dominant full matrix array-access --");
 
-	SLIC_INFO("-- Averaging Density material-dominant full matrix array-access --");
-
-  vector<double> Density_average(ncells, 0.0);
+  std::vector<double> Density_average(ncells, 0.0);
 	
   timer.reset();
 
@@ -518,15 +520,15 @@ double average_density_mat_dom_full(Robey_data& data) {
 double average_density_mat_dom_compact(Robey_data& data) {
   int ncells = data.ncells;
   int nmats = data.nmats;
-  vector<double>& Volfrac = data.Volfrac_sparse;
-  vector<double>& Densityfrac = data.Densityfrac_sparse;
-  vector<double>& Vol = data.Vol;
-  vector<int>& begin_idx = data.begin_idx;
-  vector<int>& cell_id = data.col_idx;
+  std::vector<double>& Volfrac = data.Volfrac_sparse;
+  std::vector<double>& Densityfrac = data.Densityfrac_sparse;
+  std::vector<double>& Vol = data.Vol;
+  std::vector<int>& begin_idx = data.begin_idx;
+  std::vector<int>& cell_id = data.col_idx;
 
   SLIC_INFO("-- Averaging Density material-dominant compact array-access --");
 
-  vector<double> Density_average(ncells, 0.0);
+  std::vector<double> Density_average(ncells, 0.0);
   
   timer.reset();
 
@@ -578,7 +580,7 @@ void average_density_mat_dom_mm_direct(MultiMat& mm) {
   MultiMat::Field2D<double> & Volfrac = mm.get2dField<double>("Volfrac");
   MultiMat::Field1D<double> & Vol = mm.get1dField<double>("Vol");
 
-  vector<double> Density_average(ncells, 0.0);
+  std::vector<double> Density_average(ncells, 0.0);
 
   timer.reset();
 
@@ -629,7 +631,7 @@ void average_density_mat_dom_mm_submap(MultiMat& mm) {
   auto& Volfrac = mm.get2dField<double>("Volfrac");
   auto& Vol = mm.get1dField<double>("Vol");
 
-  vector<double> Density_average(ncells, 0.0);
+  std::vector<double> Density_average(ncells, 0.0);
 
   timer.reset();
 
@@ -683,7 +685,7 @@ void average_density_mat_dom_mm_submap(MultiMat& mm) {
   auto Volfrac = mm.get2dField<double,BSetType>("Volfrac");
   auto& Vol = mm.get1dField<double>("Vol");
 
-  vector<double> Density_average(ncells, 0.0);
+  std::vector<double> Density_average(ncells, 0.0);
 
   timer.reset();
 
@@ -736,7 +738,7 @@ void average_density_mat_dom_mm_idxarray(MultiMat& mm) {
   MultiMat::Field2D<double> & Volfrac = mm.get2dField<double>("Volfrac");
   MultiMat::Field1D<double> & Vol = mm.get1dField<double>("Vol");
 
-  vector<double> Density_average(ncells, 0.0);
+  std::vector<double> Density_average(ncells, 0.0);
 
   timer.reset();
 
@@ -788,7 +790,7 @@ void average_density_mat_dom_mm_iter(MultiMat& mm) {
   MultiMat::Field2D<double> & Volfrac = mm.get2dField<double>("Volfrac");
   MultiMat::Field1D<double> & Vol = mm.get1dField<double>("Vol");
 
-  vector<double> Density_average(ncells, 0.0);
+  std::vector<double> Density_average(ncells, 0.0);
 
   timer.reset();
 
@@ -840,7 +842,7 @@ void average_density_mat_dom_mm_flatiter(MultiMat& mm) {
   MultiMat::Field2D<double> & Volfrac = mm.get2dField<double>("Volfrac");
   MultiMat::Field1D<double> & Vol = mm.get1dField<double>("Vol");
 
-  vector<double> Density_average(ncells, 0.0);
+  std::vector<double> Density_average(ncells, 0.0);
 
   timer.reset();
 
@@ -884,13 +886,13 @@ void average_density_cell_dom_with_if(Robey_data& data)
 {
   int ncells = data.ncells;
   int nmats = data.nmats;
-  vector<double>& Volfrac = data.Volfrac;
-  vector<double>& Densityfrac = data.Densityfrac;
-  vector<double>& Vol = data.Vol;
+  std::vector<double>& Volfrac = data.Volfrac;
+  std::vector<double>& Densityfrac = data.Densityfrac;
+  std::vector<double>& Vol = data.Vol;
 
   SLIC_INFO("-- Averaging Density with if --");
 
-  vector<double> Density_average(ncells, 0.0);
+  std::vector<double> Density_average(ncells, 0.0);
   timer.reset();
 
   for (int iter = 0 ; iter < ITERMAX ; ++iter)
@@ -935,13 +937,13 @@ void calculate_pressure_cell_dom_full(Robey_data& data)
 {
   int ncells = data.ncells;
   int nmats = data.nmats;
-  vector<double>& Volfrac = data.Volfrac;
-  vector<double>& Densityfrac = data.Densityfrac;
-  vector<double>& Temperaturefrac = data.Temperaturefrac;
-  vector<double>& nmatconsts = data.nmatconsts;
+  std::vector<double>& Volfrac = data.Volfrac;
+  std::vector<double>& Densityfrac = data.Densityfrac;
+  std::vector<double>& Temperaturefrac = data.Temperaturefrac;
+  std::vector<double>& nmatconsts = data.nmatconsts;
 
   SLIC_INFO("-- Calculating pressure Cell-Dominant Full Matrix array access--");
-  vector<double> Pressurefrac(ncells*nmats, 0);
+  std::vector<double> Pressurefrac(ncells*nmats, 0);
 
   timer.reset();
 
@@ -997,7 +999,7 @@ void calculate_pressure_cell_dom_full_mm_direct(MultiMat& mm)
     mm.get2dField<double>("Tempfrac");
   MultiMat::Field1D<double> & nmatconsts = mm.get1dField<double>("nmatconsts");
 
-  vector<double> Pressurefrac(ncells * nmats, 0.0);
+  std::vector<double> Pressurefrac(ncells * nmats, 0.0);
 
   timer.reset();
 
@@ -1050,7 +1052,7 @@ void calculate_pressure_cell_dom_full_mm_submap(MultiMat& mm)
     mm.get2dField<double>("Tempfrac");
   MultiMat::Field1D<double>& nmatconsts = mm.get1dField<double>("nmatconsts");
   
-  vector<double> Pressurefrac(ncells*nmats, 0.0);
+  std::vector<double> Pressurefrac(ncells*nmats, 0.0);
 
   timer.reset();
 
@@ -1108,7 +1110,7 @@ void calculate_pressure_cell_dom_full_mm_iter(MultiMat& mm)
     mm.get2dField<double>("Tempfrac");
   MultiMat::Field1D<double> & nmatconsts = mm.get1dField<double>("nmatconsts");
 
-  vector<double> Pressurefrac(ncells * nmats, 0.0);
+  std::vector<double> Pressurefrac(ncells * nmats, 0.0);
 
   timer.reset();
 
@@ -1166,7 +1168,7 @@ void calculate_pressure_cell_dom_full_mm_flatiter(MultiMat& mm)
     mm.get2dField<double>("Tempfrac");
   MultiMat::Field1D<double> & nmatconsts = mm.get1dField<double>("nmatconsts");
 
-  vector<double> Pressurefrac(ncells * nmats, 0.0);
+  std::vector<double> Pressurefrac(ncells * nmats, 0.0);
 
   timer.reset();
 
@@ -1213,13 +1215,13 @@ void calculate_pressure_mat_dom_full(Robey_data& data)
 {
   int ncells = data.ncells;
   int nmats = data.nmats;
-  vector<double>& Volfrac = data.Volfrac;
-  vector<double>& Densityfrac = data.Densityfrac;
-  vector<double>& Temperaturefrac = data.Temperaturefrac;
-  vector<double>& nmatconsts = data.nmatconsts;
+  std::vector<double>& Volfrac = data.Volfrac;
+  std::vector<double>& Densityfrac = data.Densityfrac;
+  std::vector<double>& Temperaturefrac = data.Temperaturefrac;
+  std::vector<double>& nmatconsts = data.nmatconsts;
 
   SLIC_INFO("-- Calculating pressure Material-Dominant Full Matrix array access--");
-  vector<double> Pressurefrac(ncells*nmats, 0);
+  std::vector<double> Pressurefrac(ncells*nmats, 0);
 
   timer.reset();
 
@@ -1268,7 +1270,7 @@ void calculate_pressure_mat_dom_full_mm_direct(MultiMat& mm)
     mm.get2dField<double>("Tempfrac");
   MultiMat::Field1D<double> & nmatconsts = mm.get1dField<double>("nmatconsts");
 
-  vector<double> Pressurefrac(ncells * nmats, 0.0);
+  std::vector<double> Pressurefrac(ncells * nmats, 0.0);
 
   timer.reset();
 
@@ -1318,7 +1320,7 @@ void calculate_pressure_mat_dom_full_mm_submap(MultiMat& mm)
     mm.get2dField<double>("Tempfrac");
   MultiMat::Field1D<double>& nmatconsts = mm.get1dField<double>("nmatconsts");
   
-  vector<double> Pressurefrac(ncells*nmats, 0.0);
+  std::vector<double> Pressurefrac(ncells*nmats, 0.0);
 
   timer.reset();
 
@@ -1375,7 +1377,7 @@ void calculate_pressure_mat_dom_full_mm_iter(MultiMat& mm)
     mm.get2dField<double>("Tempfrac");
   MultiMat::Field1D<double> & nmatconsts = mm.get1dField<double>("nmatconsts");
 
-  vector<double> Pressurefrac(ncells * nmats, 0.0);
+  std::vector<double> Pressurefrac(ncells * nmats, 0.0);
 
   timer.reset();
 
@@ -1433,7 +1435,7 @@ void calculate_pressure_mat_dom_full_mm_flatiter(MultiMat& mm)
     mm.get2dField<double>("Tempfrac");
   MultiMat::Field1D<double> & nmatconsts = mm.get1dField<double>("nmatconsts");
 
-  vector<double> Pressurefrac(ncells * nmats, 0.0);
+  std::vector<double> Pressurefrac(ncells * nmats, 0.0);
 
   timer.reset();
 
@@ -1489,7 +1491,7 @@ void average_density_over_nbr_cell_dom_full(Robey_data& data)
 
   SLIC_INFO("-- Average Density over Neighbors, Cell-Dominant Full Matrix Array Access --");
 
-  vector<double> MatDensity_average(ncells * nmats, 0.0);
+  std::vector<double> MatDensity_average(ncells * nmats, 0.0);
 
   timer.reset();
 
@@ -1569,12 +1571,12 @@ void average_density_over_nbr_cell_dom_compact(Robey_data& data)
   const std::vector<double>& cen = data.cen;
   const std::vector<int>& nnbrs = data.nnbrs;
   const std::vector<int>& nbrs = data.nbrs;
-  vector<int>& begin_idx = data.begin_idx;
-  vector<int>& mat_id = data.col_idx;
+  std::vector<int>& begin_idx = data.begin_idx;
+  std::vector<int>& mat_id = data.col_idx;
 
   SLIC_INFO("-- Average Density over Neighbors, Cell-Dominant Compact Matrix Array Access --");
 
-  vector<double> MatDensity_average(ncells * nmats, 0.0);
+  std::vector<double> MatDensity_average(ncells * nmats, 0.0);
 
   timer.reset();
 
@@ -1665,7 +1667,7 @@ void average_density_over_nbr_cell_dom_full_mm_direct(MultiMat& mm, Robey_data& 
   MultiMat::Field2D<double> & Densityfrac = mm.get2dField<double>("Densityfrac");
   MultiMat::Field2D<double> & Volfrac = mm.get2dField<double>("Volfrac");
 
-  vector<double> MatDensity_average(ncells * nmats, 0);
+  std::vector<double> MatDensity_average(ncells * nmats, 0);
 
   timer.reset();
 
@@ -1758,7 +1760,7 @@ void average_density_over_nbr_cell_dom_full_mm_submap(MultiMat& mm, Robey_data& 
   MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
   MultiMat::Field2D<double>& Volfrac = mm.get2dField<double>("Volfrac");
 
-  vector<double> MatDensity_average(ncells*nmats, 0);
+  std::vector<double> MatDensity_average(ncells*nmats, 0);
   
   timer.reset();
   
@@ -1989,7 +1991,7 @@ void average_density_over_nbr_cell_dom_full_mm_iter(MultiMat& mm, Robey_data& da
   MultiMat::Field2D<double> & Densityfrac = mm.get2dField<double>("Densityfrac");
   MultiMat::Field2D<double> & Volfrac = mm.get2dField<double>("Volfrac");
 
-  vector<double> MatDensity_average(ncells * nmats, 0);
+  std::vector<double> MatDensity_average(ncells * nmats, 0);
 
   timer.reset();
 
@@ -2087,7 +2089,7 @@ void average_density_over_nbr_cell_dom_compact_mm_submap(MultiMat& mm, Robey_dat
   MultiMat::Field2D<double> & Densityfrac = mm.get2dField<double>("Densityfrac");
   //MultiMat::Field2D<double> & Volfrac = mm.get2dField<double>("Volfrac");
 
-  vector<double> MatDensity_average(ncells * nmats, 0);
+  std::vector<double> MatDensity_average(ncells * nmats, 0);
 
   timer.reset();
 
@@ -2181,7 +2183,7 @@ void average_density_over_nbr_cell_dom_compact_mm_idxarray(MultiMat& mm, Robey_d
   MultiMat::Field2D<double> & Densityfrac = mm.get2dField<double>("Densityfrac");
   //MultiMat::Field2D<double> & Volfrac = mm.get2dField<double>("Volfrac");
   
-  vector<double> MatDensity_average(ncells * nmats, 0);
+  std::vector<double> MatDensity_average(ncells * nmats, 0);
 
   timer.reset();
 
@@ -2276,7 +2278,7 @@ void average_density_over_nbr_cell_dom_compact_mm_iter(MultiMat& mm, Robey_data&
   int nmats = mm.getNumberOfMaterials();
   MultiMat::Field2D<double> & Densityfrac = mm.get2dField<double>("Densityfrac");
   
-  vector<double> MatDensity_average(ncells * nmats, 0);
+  std::vector<double> MatDensity_average(ncells * nmats, 0);
 
   timer.reset();
 
@@ -2368,7 +2370,7 @@ void average_density_over_nbr_mat_dom_full(Robey_data& data)
 
   SLIC_INFO("-- Average Density over Neighbors, Material-Dominant Full Matrix Array Access --");
 
-  vector<double> MatDensity_average(ncells * nmats, 0.0);
+  std::vector<double> MatDensity_average(ncells * nmats, 0.0);
 
   timer.reset();
 
@@ -2438,12 +2440,12 @@ void average_density_over_nbr_mat_dom_compact(Robey_data& data)
   const std::vector<double>& cen = data.cen;
   const std::vector<int>& nnbrs = data.nnbrs;
   const std::vector<int>& nbrs = data.nbrs;
-  vector<int>& begin_idx = data.begin_idx;
-  vector<int>& cell_id = data.col_idx;
+  std::vector<int>& begin_idx = data.begin_idx;
+  std::vector<int>& cell_id = data.col_idx;
 
   SLIC_INFO("-- Average Density over Neighbors, Material-Dominant Compact Matrix Array Access --");
 
-  vector<double> MatDensity_average(ncells * nmats, 0.0);
+  std::vector<double> MatDensity_average(ncells * nmats, 0.0);
 
   timer.reset();
 
@@ -2523,7 +2525,7 @@ void average_density_over_nbr_mat_dom_full_mm_direct(MultiMat& mm, Robey_data& d
   const std::vector<int>& nnbrs = data.nnbrs;
   const std::vector<int>& nbrs = data.nbrs;
 
-  vector<double> MatDensity_average(ncells * nmats, 0.0);
+  std::vector<double> MatDensity_average(ncells * nmats, 0.0);
 
   timer.reset();
 
@@ -2601,7 +2603,7 @@ void average_density_over_nbr_mat_dom_full_mm_submap(MultiMat& mm, Robey_data& d
   const std::vector<int> & nnbrs = data.nnbrs;
   const std::vector<int> & nbrs = data.nbrs;
 
-  vector<double> MatDensity_average(ncells * nmats, 0.0);
+  std::vector<double> MatDensity_average(ncells * nmats, 0.0);
 
   timer.reset();
 
@@ -2682,7 +2684,7 @@ void average_density_over_nbr_mat_dom_full_mm_iter(MultiMat& mm, Robey_data& dat
   const std::vector<int> & nnbrs = data.nnbrs;
   const std::vector<int> & nbrs = data.nbrs;
 
-  vector<double> MatDensity_average(ncells * nmats, 0.0);
+  std::vector<double> MatDensity_average(ncells * nmats, 0.0);
 
   timer.reset();
 
@@ -2767,7 +2769,7 @@ void average_density_over_nbr_mat_dom_compact_mm_submap(MultiMat& mm, Robey_data
   const std::vector<int>& nnbrs = data.nnbrs;
   const std::vector<int>& nbrs = data.nbrs;
 
-  vector<double> MatDensity_average(ncells * nmats, 0.0);
+  std::vector<double> MatDensity_average(ncells * nmats, 0.0);
 
   timer.reset();
 
@@ -2847,7 +2849,7 @@ void average_density_over_nbr_mat_dom_compact_mm_indexarray(MultiMat& mm, Robey_
   const std::vector<int> & nnbrs = data.nnbrs;
   const std::vector<int> & nbrs = data.nbrs;
 
-  vector<double> MatDensity_average(ncells * nmats, 0.0);
+  std::vector<double> MatDensity_average(ncells * nmats, 0.0);
 
   timer.reset();
 
@@ -2929,7 +2931,7 @@ void average_density_over_nbr_mat_dom_compact_mm_iter(MultiMat& mm, Robey_data& 
   const std::vector<int>& nnbrs = data.nnbrs;
   const std::vector<int>& nbrs = data.nbrs;
 
-  vector<double> MatDensity_average(ncells * nmats, 0.0);
+  std::vector<double> MatDensity_average(ncells * nmats, 0.0);
 
   timer.reset();
 
