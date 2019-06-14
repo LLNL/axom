@@ -257,7 +257,9 @@ void average_density_cell_dom_mm_submap(MultiMat& mm) {
       double density_ave = 0.0;
       auto Densityfrac_row = Densityfrac(ic);
       auto Volfrac_row = Volfrac(ic);
-      for (int j = 0; j < Densityfrac_row.size(); ++j)
+
+      const auto cellMats = Densityfrac_row.size();
+      for (int j = 0; j < cellMats; ++j)
       {
         density_ave += Densityfrac_row(j) * Volfrac_row(j);
       }
@@ -288,7 +290,6 @@ void average_density_cell_dom_mm_submap(MultiMat& mm)
 
   int ncells = mm.getNumberOfCells();
   auto Densityfrac = mm.get2dField<double, BSet>("Densityfrac");
-
   auto Volfrac = mm.get2dField<double, BSet>("Volfrac");
   auto& Vol = mm.get1dField<double>("Vol");
 
@@ -305,7 +306,9 @@ void average_density_cell_dom_mm_submap(MultiMat& mm)
       double density_ave = 0.0;
       auto Densityfrac_row = Densityfrac(ic);
       auto Volfrac_row = Volfrac(ic);
-      for (int j = 0; j < Densityfrac_row.size(); ++j)
+
+      const auto cellMats = Densityfrac_row.size();
+      for (int j = 0; j < cellMats; ++j)
       {
         density_ave += Densityfrac_row(j) * Volfrac_row(j);
       }
@@ -317,7 +320,7 @@ void average_density_cell_dom_mm_submap(MultiMat& mm)
   }
   double act_perf = timer.get_median();
   result_store.add_result(Result_Store::avg_density, mm.getDataLayout(),
-      mm.getSparsityLayout(), Result_Store::mm_submap, act_perf);
+      mm.getSparsityLayout(), Result_Store::mm_submap_templated, act_perf);
   SLIC_INFO("Average Density                      compute time is "
       << act_perf << " secs\n");
 }
@@ -715,7 +718,7 @@ void average_density_mat_dom_mm_submap(MultiMat& mm) {
   }
   double act_perf = timer.get_median();
   result_store.add_result(Result_Store::avg_density, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_submap, act_perf);
+    mm.getSparsityLayout(), Result_Store::mm_submap_templated, act_perf);
 
   SLIC_INFO("Average Density                      compute time is "
             << act_perf << " secs\n");
@@ -1035,24 +1038,24 @@ void calculate_pressure_cell_dom_full_mm_direct(MultiMat& mm)
 
 //   Calculate pressure using ideal gas law - Cell-Dominant
 //     MultiMat - Submap
-void calculate_pressure_cell_dom_full_mm_submap(MultiMat& mm)
+void calculate_pressure_cell_dom_mm_submap(MultiMat& mm)
 {
   SLIC_INFO("-- Calculating pressure, using MultiMat Submap --");
   mm.convertLayoutToCellDominant();
   SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
                                 << mm.getSparsityLayoutAsString());
   SLIC_ASSERT(mm.isCellDom());
-  SLIC_ASSERT(mm.isDense());
 
   int ncells = mm.getNumberOfCells();
-  int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double>& Volfrac = mm.get2dField<double>("Volfrac");
-  MultiMat::Field2D<double>& Temperaturefrac =
-    mm.get2dField<double>("Tempfrac");
-  MultiMat::Field1D<double>& nmatconsts = mm.get1dField<double>("nmatconsts");
+  auto& Densityfrac = mm.get2dField<double>("Densityfrac");
+  auto& Volfrac = mm.get2dField<double>("Volfrac");
+  auto& Temperaturefrac = mm.get2dField<double>("Tempfrac");
+  auto& nmatconsts = mm.get1dField<double>("nmatconsts");
   
-  std::vector<double> Pressurefrac(ncells*nmats, 0.0);
+  // Store result in a dense field
+  using DenseFieldSet = typename MultiMat::ProductSetType;
+  using DenseField = MultiMat::Field2D<double, DenseFieldSet>;
+  DenseField Pressurefrac(mm.getDense2dFieldSet());
 
   timer.reset();
 
@@ -1062,26 +1065,25 @@ void calculate_pressure_cell_dom_full_mm_submap(MultiMat& mm)
 
     for (int ic = 0 ; ic < ncells ; ++ic)
     {
-      auto Densityfrac_row = Densityfrac(ic);
-      auto Volfrac_row = Volfrac(ic);
-      auto Tempfrac_row = Temperaturefrac(ic);
+      const auto Densityfrac_row = Densityfrac(ic);
+      const auto Volfrac_row = Volfrac(ic);
+      const auto Tempfrac_row = Temperaturefrac(ic);
+      auto Pressurefrac_row = Pressurefrac(ic);
 
-      for (int j = 0 ; j < Volfrac_row.size() ; ++j)
+      const auto cellMats = Volfrac_row.size();
+      for (int j = 0; j < cellMats; ++j)
       {
-        int m = Volfrac_row.index(j);
-        if (Volfrac_row(j) > 0.)
-        {
-          Pressurefrac[ic * nmats + m] = (nmatconsts[m] * Densityfrac_row(j) *
-            Tempfrac_row(j)) / Volfrac_row(j);
-        }
-        else {
-          Pressurefrac[ic * nmats + m] = 0;
-        }
+        const int m = Volfrac_row.index(j);
+        const auto vf = Volfrac_row(j);
+      
+        Pressurefrac_row(m) = vf > 0.
+            ? (nmatconsts[m] * Densityfrac_row(j) * Tempfrac_row(j)) / vf
+            : 0.;
       }
     }
 
     timer.record();
-    data_checker.check(Pressurefrac);
+    data_checker.check(Pressurefrac.getMap()->data());
   }
 
   double act_perf = timer.get_median();
@@ -1089,6 +1091,62 @@ void calculate_pressure_cell_dom_full_mm_submap(MultiMat& mm)
     mm.getSparsityLayout(), Result_Store::mm_submap, act_perf);
   SLIC_INFO("Pressure Calculation with if           compute time is "
     << act_perf << " secs\n");
+}
+
+template<typename BSet>
+void calculate_pressure_cell_dom_mm_submap(MultiMat& mm)
+{
+  SLIC_INFO("-- Calculating pressure, using MultiMat Submap \t\t-- templated on BSet");
+  mm.convertLayoutToCellDominant();
+  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
+      << mm.getSparsityLayoutAsString());
+  SLIC_ASSERT(mm.isCellDom());
+
+  int ncells = mm.getNumberOfCells();
+  auto Densityfrac = mm.get2dField<double,BSet>("Densityfrac");
+  auto Volfrac = mm.get2dField<double,BSet>("Volfrac");
+  auto Temperaturefrac = mm.get2dField<double,BSet>("Tempfrac");
+  auto& nmatconsts = mm.get1dField<double>("nmatconsts");
+
+  // Store result in a dense field
+  using DenseFieldSet = typename MultiMat::ProductSetType;
+  using DenseField = MultiMat::Field2D<double, DenseFieldSet>;
+  DenseField Pressurefrac(mm.getDense2dFieldSet());
+
+  timer.reset();
+  
+  for (int iter = 0; iter< ITERMAX; ++iter)
+  {
+    timer.start();
+    
+    for (int ic = 0; ic < ncells; ++ic)
+    {
+      const auto Densityfrac_row = Densityfrac(ic);
+      const auto Volfrac_row = Volfrac(ic);
+      const auto Tempfrac_row = Temperaturefrac(ic);
+      auto Pressurefrac_row = Pressurefrac(ic);
+
+      const auto cellMats = Volfrac_row.size();
+      for (int j = 0; j < cellMats; ++j)
+      {
+        const int m = Volfrac_row.index(j);
+        const auto vf = Volfrac_row(j);
+
+        Pressurefrac_row(m) = (vf > 0.)
+            ? (nmatconsts[m] * Densityfrac_row(j) * Tempfrac_row(j)) / vf
+            : 0.;
+      }
+    }
+
+    timer.record();
+    data_checker.check(Pressurefrac.getMap()->data());
+  }
+
+  double act_perf = timer.get_median();
+  result_store.add_result(Result_Store::pressure_calc, mm.getDataLayout(),
+      mm.getSparsityLayout(), Result_Store::mm_submap_templated, act_perf);
+  SLIC_INFO("Pressure Calculation with if           compute time is "
+      << act_perf << " secs\n");
 }
 
 //   Calculate pressure using ideal gas law - Cell-Dominant
@@ -1304,23 +1362,23 @@ void calculate_pressure_mat_dom_full_mm_direct(MultiMat& mm)
 
 //   Calculate pressure using ideal gas law - Material-Dominant
 //     MultiMat - Submap
-void calculate_pressure_mat_dom_full_mm_submap(MultiMat& mm)
+void calculate_pressure_mat_dom_mm_submap(MultiMat& mm)
 {
   SLIC_INFO("-- Calculating pressure, using MultiMat Submap --");
   SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
                                 << mm.getSparsityLayoutAsString());
   SLIC_ASSERT(mm.isMatDom());
-  SLIC_ASSERT(mm.isDense());
 
-  int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
-  MultiMat::Field2D<double>& Volfrac = mm.get2dField<double>("Volfrac");
-  MultiMat::Field2D<double>& Temperaturefrac =
-    mm.get2dField<double>("Tempfrac");
-  MultiMat::Field1D<double>& nmatconsts = mm.get1dField<double>("nmatconsts");
+  auto& Densityfrac = mm.get2dField<double>("Densityfrac");
+  auto& Volfrac = mm.get2dField<double>("Volfrac");
+  auto& Temperaturefrac = mm.get2dField<double>("Tempfrac");
+  auto& nmatconsts = mm.get1dField<double>("nmatconsts");
   
-  std::vector<double> Pressurefrac(ncells*nmats, 0.0);
+  // Store result in a dense field
+  using DenseFieldSet = typename MultiMat::ProductSetType;
+  using DenseField = MultiMat::Field2D<double, DenseFieldSet>;
+  DenseField Pressurefrac(mm.getDense2dFieldSet());
 
   timer.reset();
 
@@ -1330,26 +1388,27 @@ void calculate_pressure_mat_dom_full_mm_submap(MultiMat& mm)
 
     for (int m = 0; m < nmats; ++m) 
     {
-      auto Densityfrac_row = Densityfrac(m);
-      auto Volfrac_row = Volfrac(m);
-      auto Tempfrac_row = Temperaturefrac(m);
+      const auto Densityfrac_row = Densityfrac(m);
+      const auto Volfrac_row = Volfrac(m);
+      const auto Tempfrac_row = Temperaturefrac(m);
+      auto Pressurefrac_row = Pressurefrac(m);
 
-      for (int j = 0 ; j < Volfrac_row.size() ; ++j)
+      const auto mprop = nmatconsts[m];
+
+      const int matCells = Volfrac_row.size();
+      for (int j = 0; j < matCells; ++j)
       {
-        int ic = Volfrac_row.index(j);
-        if (Volfrac_row(j) > 0.)
-        {
-          Pressurefrac[m*ncells+ic] = (nmatconsts[m] * Densityfrac_row(j) *
-            Tempfrac_row(j)) / Volfrac_row(j);
-        }
-        else {
-          Pressurefrac[m * ncells + ic] = 0;
-        }
+        const int ic = Volfrac_row.index(j);
+        const auto vf = Volfrac_row(j);
+
+        Pressurefrac_row(ic) = (vf > 0.)
+            ? (mprop * Densityfrac_row(j) * Tempfrac_row(j)) / vf
+            : 0.;
       }
     }
 
     timer.record();
-    data_checker.check(Pressurefrac);
+    data_checker.check(Pressurefrac.getMap()->data());
   }
 
   double act_perf = timer.get_median();
@@ -1358,6 +1417,65 @@ void calculate_pressure_mat_dom_full_mm_submap(MultiMat& mm)
   SLIC_INFO("Pressure Calculation with if           compute time is "
     << act_perf << " secs\n");
 }
+
+template<typename BSet>
+void calculate_pressure_mat_dom_mm_submap(MultiMat& mm)
+{
+  SLIC_INFO("-- Calculating pressure, using MultiMat Submap \t\t-- using templated BSet");
+  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
+      << mm.getSparsityLayoutAsString());
+  SLIC_ASSERT(mm.isMatDom());
+
+  int nmats = mm.getNumberOfMaterials();
+  auto Densityfrac = mm.get2dField<double,BSet>("Densityfrac");
+  auto Volfrac = mm.get2dField<double,BSet>("Volfrac");
+  auto Temperaturefrac = mm.get2dField<double>("Tempfrac");
+
+  MultiMat::Field1D<double>& nmatconsts = mm.get1dField<double>("nmatconsts");
+
+  // Store result in a dense field
+  using DenseFieldSet = typename MultiMat::ProductSetType;
+  using DenseField = MultiMat::Field2D<double, DenseFieldSet>;
+  DenseField Pressurefrac(mm.getDense2dFieldSet());
+
+  timer.reset();
+
+  for (int iter = 0; iter< ITERMAX; ++iter)
+  {
+    timer.start();
+
+    for (int m = 0; m < nmats; ++m)
+    {
+      const auto Densityfrac_row = Densityfrac(m);
+      const auto Volfrac_row = Volfrac(m);
+      const auto Tempfrac_row = Temperaturefrac(m);
+      auto Pressurefrac_row = Pressurefrac(m);
+
+      const auto mprop = nmatconsts[m];
+
+      const int matCells = Volfrac_row.size();
+      for (int j = 0; j < matCells; ++j)
+      {
+        const int ic = Volfrac_row.index(j);
+        const auto vf = Volfrac_row(j);
+
+        Pressurefrac_row(ic) = (vf > 0)
+            ? (mprop * Densityfrac_row(j) * Tempfrac_row(j)) / vf
+            : 0;
+      }
+    }
+
+    timer.record();
+    data_checker.check(Pressurefrac.getMap()->data());
+  }
+
+  double act_perf = timer.get_median();
+  result_store.add_result(Result_Store::pressure_calc, mm.getDataLayout(),
+      mm.getSparsityLayout(), Result_Store::mm_submap_templated, act_perf);
+  SLIC_INFO("Pressure Calculation with if           compute time is "
+      << act_perf << " secs\n");
+}
+
 
 //   Calculate pressure using ideal gas law - Material-Dominant
 //     MultiMat - Iterator
@@ -1918,7 +2036,7 @@ void average_density_over_nbr_cell_dom_full_mm_submap(MultiMat& mm, Robey_data& 
 
   double act_perf = timer.get_median();
   result_store.add_result(Result_Store::neighbor_density, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_submap, act_perf);
+    mm.getSparsityLayout(), Result_Store::mm_submap_templated, act_perf);
 
   SLIC_INFO("Average Material Density            compute time is "
             << act_perf << " secs\n");
@@ -2192,7 +2310,7 @@ void average_density_over_nbr_cell_dom_compact_mm_submap(MultiMat& mm, Robey_dat
 
   double act_perf = timer.get_median();
   result_store.add_result(Result_Store::neighbor_density, mm.getDataLayout(),
-       mm.getSparsityLayout(), Result_Store::mm_submap, act_perf);
+       mm.getSparsityLayout(), Result_Store::mm_submap_templated, act_perf);
   SLIC_INFO("Average Material Density            compute time is "
      << act_perf << " secs\n");
 }
@@ -2771,7 +2889,7 @@ void average_density_over_nbr_mat_dom_full_mm_submap(MultiMat& mm, Robey_data& d
 
   double act_perf = timer.get_median();
   result_store.add_result(Result_Store::neighbor_density, mm.getDataLayout(),
-      mm.getSparsityLayout(), Result_Store::mm_submap, act_perf);
+      mm.getSparsityLayout(), Result_Store::mm_submap_templated, act_perf);
   SLIC_INFO("Average Material Density            compute time is "
       << act_perf << " secs\n");
 }
@@ -3013,7 +3131,7 @@ void average_density_over_nbr_mat_dom_compact_mm_submap(MultiMat& mm, Robey_data
 
   double act_perf = timer.get_median();
   result_store.add_result(Result_Store::neighbor_density, mm.getDataLayout(),
-     mm.getSparsityLayout(), Result_Store::mm_submap, act_perf);
+     mm.getSparsityLayout(), Result_Store::mm_submap_templated, act_perf);
   SLIC_INFO("Average Material Density            compute time is "
       << act_perf << " secs\n");
 }
@@ -3350,8 +3468,6 @@ int main(int argc, char** argv)
   average_density_over_nbr_mat_dom_compact_mm_submap<RelationSetType>(mm, data);
   average_density_over_nbr_mat_dom_compact_mm_iter(mm, data);
 
-  return 0;
-
   SLIC_INFO("**********************************************************");
   SLIC_INFO("* ");
   SLIC_INFO("* Calculate Pressure Using Ideal Gas Law");
@@ -3365,20 +3481,32 @@ int main(int argc, char** argv)
   mm.convertLayoutToDense();
   calculate_pressure_cell_dom_full(data);
   calculate_pressure_cell_dom_full_mm_direct(mm);
-  calculate_pressure_cell_dom_full_mm_submap(mm);
+  calculate_pressure_cell_dom_mm_submap(mm);
+  calculate_pressure_cell_dom_mm_submap<ProductSetType>(mm);
   calculate_pressure_cell_dom_full_mm_iter(mm);
   //calculate_pressure_cell_dom_full_mm_flatiter(mm);
-   
+
+  SLIC_INFO("**************** Compact Layout - Cell-Dominant ******************");
+  mm.convertLayoutToSparse();
+  calculate_pressure_cell_dom_mm_submap(mm);
+  calculate_pressure_cell_dom_mm_submap<RelationSetType>(mm);
+
   SLIC_INFO("**************** Full Layout - Material-Dominant ******************");
   data.set_up_mat_dom_data();
+  mm.convertLayoutToDense();
   data_checker.reset();
   mm.convertLayoutToMaterialDominant();
   calculate_pressure_mat_dom_full(data);
   calculate_pressure_mat_dom_full_mm_direct(mm);
-  calculate_pressure_mat_dom_full_mm_submap(mm);
+  calculate_pressure_mat_dom_mm_submap(mm);
+  calculate_pressure_mat_dom_mm_submap<ProductSetType>(mm);
   calculate_pressure_mat_dom_full_mm_iter(mm);
   //calculate_pressure_mat_dom_full_mm_flatiter(mm);
 
+  SLIC_INFO("**************** Compact Layout - Cell-Dominant ******************");
+  mm.convertLayoutToSparse();
+  calculate_pressure_mat_dom_mm_submap(mm);
+  calculate_pressure_mat_dom_mm_submap<RelationSetType>(mm);
 
   /*
   average_density_cell_dom_with_if(data);

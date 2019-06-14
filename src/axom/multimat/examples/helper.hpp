@@ -846,10 +846,21 @@ struct Result_Store
   const char* algo_names[3] = {
     "Avg density", "Neighbor material density", "Pressure from ideal gas law" };
 
-  const int nMethod = 6;
-  enum Method { method_csr, mm_direct, mm_idxarray, mm_submap, mm_iter, mm_flatiter };
-  const char* method_names[6] = { "CSR", "MM-Direct", "MM-Index Array",
-    "MM-Submap", "MM-Iterator", "MM-Flat Iterator" };
+  const int nMethod = 7;
+  enum Method { method_csr
+              , mm_direct
+              , mm_idxarray
+              , mm_submap
+              , mm_submap_templated
+              , mm_iter
+              , mm_flatiter };
+  const char* method_names[7] = { "CSR"
+                                , "MM-Direct"
+                                , "MM-Index Array"
+                                , "MM-Submap"
+                                , "MM-Submap-Templated"
+                                , "MM-Iterator"
+                                , "MM-Flat Iterator" };
 
   const int nLayout = 4;
   const char* const data_layout_str[2] = { "Cell-centric", "Material-centric" };
@@ -909,7 +920,7 @@ struct Result_Store
       outputFile << "," << method_names[i];
     outputFile << "\n";
 
-    for (int i = 0; i < (int)result_vec.size() / 6; i++)
+    for (int i = 0; i < (int)result_vec.size() / nMethod; i++)
     {
       int idx = i * nMethod;
 
