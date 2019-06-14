@@ -1855,56 +1855,11 @@ void average_density_over_nbr_cell_dom_full_mm_submap(MultiMat& mm, Robey_data& 
   auto Densityfrac = mm.get2dField<double,BSet>("Densityfrac");
   auto Volfrac = mm.get2dField<double,BSet>("Volfrac");
 
-  /***   BEGIN CUSTOM CODE TO SET UP SLAM SETS, RELATIONS and MAPS ***/
-  using P = int;
-  using ElemSet = slam::PositionSet<P,P>;
-  using Ind = slam::policies::STLVectorIndirection<P,P>;
-  using Card = slam::policies::VariableCardinality<P, Ind>;
-  using NbrRel = slam::StaticRelation<P,P, Card, Ind, ElemSet,ElemSet>;
-  using NBuilder = typename NbrRel::RelationBuilder;
-  using NBuilderBeg = typename NBuilder::BeginsSetBuilder;
-  using NBuilderInd = typename NBuilder::IndicesSetBuilder;
-
-  // Initialize the elems set
-  auto elems = ElemSet(ncells);
-
-  // Initialize the begin indices for the nbrs relation
-  //via prefix sum on nnbrs array
-  std::vector<int> nbr_begins(data.nbrs.size()+1);
-  nbr_begins[0] = 0;
-  for(auto i: elems.positions())
-  {
-     nbr_begins[i+1] = nbr_begins[i]+data.nnbrs[i];
-  }
-
-  // Initialize the indices for the nbrs relation
-  // Note -- we're compacting an array of 8 neighbors per element
-  //         to one that has the correct size
+  // Get the slam relations and maps for the mesh data
+  const auto& neighbors = data.slam_neighbors;
+  const auto& cen = data.slam_centroids;
   const int MAX_NBRS = 8;
-  std::vector<int> nbr_inds(nbr_begins[elems.size()]);
-  int cur = 0;
-  for(auto i: elems.positions())
-  {
-     for(int j=0; j< data.nnbrs[i];++j)
-     {
-        nbr_inds[cur++] = data.nbrs[i*MAX_NBRS + j];
-     }
-  }
 
-  // Initialize the nbrs relation
-  NbrRel neighbors = NBuilder()
-     .fromSet(&elems)
-     .toSet(&elems)
-     .begins( NBuilderBeg().size(nbr_begins.size()).data(&nbr_begins))
-     .indices( NBuilderInd().size(nbr_inds.size()).data(&nbr_inds));
-
-  // Initialize map over centroids
-  using DataInd = slam::policies::STLVectorIndirection<P,double>;
-  using CentroidMap = slam::Map<double, ElemSet, DataInd, slam::policies::CompileTimeStride<P, 2> >;
-  CentroidMap cen(&elems);
-  std::copy(data.cen.begin(), data.cen.end(), cen.data().begin());
-
-  /***   END CUSTOM CODE TO SET UP SLAM SETS, RELATIONS and MAPS ***/
 
   MultiMat::Field2D<double, BSet> MatDensity_average(Volfrac.set());
 
