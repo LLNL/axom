@@ -95,12 +95,12 @@ void average_density_cell_dom_compact(Robey_data& data) {
 
     for (int ic = 0; ic < ncells; ++ic)
     {
-      double density_ave = 0.0;
+      double den = 0.0;
       for (int ii = begin_idx[ic]; ii < begin_idx[ic + 1]; ++ii)
       {
-        density_ave += Densityfrac[ii] * Volfrac[ii];
+          den += Densityfrac[ii] * Volfrac[ii];
       }
-      Density_average[ic] = density_ave / Vol[ic];
+      Density_average[ic] = den / Vol[ic];
     }
 
     timer.record();
@@ -958,17 +958,11 @@ void calculate_pressure_cell_dom_full(Robey_data& data)
     {
       for (int m = 0 ; m < nmats ; ++m)
       {
-        if (Volfrac[ic*nmats + m] > 0.)
-        {
-          Pressurefrac[ic*nmats + m] = (nmatconsts[m] *
-                                        Densityfrac[ic*nmats + m] *
-                                        Temperaturefrac[ic*nmats + m])
-                                       / (Volfrac[ic*nmats + m]);
-        }
-        else
-        {
-          Pressurefrac[ic*nmats + m] = 0.0;
-        }
+        const auto vf = Volfrac[ic*nmats + m];
+        
+        Pressurefrac[ic*nmats + m] = (vf > 0.)
+            ? (nmatconsts[m] * Densityfrac[ic*nmats + m] * Temperaturefrac[ic*nmats + m]) / vf
+            : 0.0;
       }
     }
 
@@ -982,6 +976,54 @@ void calculate_pressure_cell_dom_full(Robey_data& data)
   SLIC_INFO("Pressure Calculation with if           compute time is " 
       << act_perf << " secs\n");
 }
+
+//   Calculate pressure using ideal gas law - Cell-Dominant compact
+//     Robey's
+void calculate_pressure_cell_dom_compact(Robey_data& data)
+{
+  int ncells = data.ncells;
+  int nmats = data.nmats;
+  std::vector<double>& Volfrac = data.Volfrac_sparse;
+  std::vector<double>& Densityfrac = data.Densityfrac_sparse;
+  std::vector<double>& Temperaturefrac = data.Temperaturefrac_sparse;
+
+  std::vector<double>& nmatconsts = data.nmatconsts;
+  std::vector<int>& begin_idx = data.begin_idx;
+  std::vector<int>& mat_id = data.col_idx;
+
+  SLIC_INFO("-- Calculating pressure Cell-Dominant compact array access--");
+  std::vector<double> Pressurefrac(ncells*nmats, 0);
+
+  timer.reset();
+
+  for (int iter = 0; iter< ITERMAX; ++iter)
+  {
+    timer.start();
+
+    for (int ic = 0; ic < ncells; ++ic)
+    {
+      for (int ii = begin_idx[ic]; ii < begin_idx[ic + 1]; ++ii)
+      {
+        const int m = mat_id[ii];
+        const auto vf = Volfrac[ii];
+
+        Pressurefrac[ic*nmats + m] = (vf > 0.)
+            ? (nmatconsts[m] * Densityfrac[ii] * Temperaturefrac[ii]) / vf
+            :  0.0;
+      }
+    }
+
+    timer.record();
+    data_checker.check(Pressurefrac);
+  }
+
+  double act_perf = timer.get_median();
+  result_store.add_result(Result_Store::pressure_calc, DataLayout::CELL_CENTRIC,
+      SparsityLayout::SPARSE, Result_Store::method_csr, act_perf);
+  SLIC_INFO("Pressure Calculation with if           compute time is "
+      << act_perf << " secs\n");
+}
+
 
 //   Calculate pressure using ideal gas law - Cell-Dominant
 //     MultiMat - Direct Access
@@ -1075,7 +1117,7 @@ void calculate_pressure_cell_dom_mm_submap(MultiMat& mm)
       {
         const int m = Volfrac_row.index(j);
         const auto vf = Volfrac_row(j);
-      
+
         Pressurefrac_row(m) = vf > 0.
             ? (nmatconsts[m] * Densityfrac_row(j) * Tempfrac_row(j)) / vf
             : 0.;
@@ -1308,6 +1350,54 @@ void calculate_pressure_mat_dom_full(Robey_data& data)
   SLIC_INFO("Pressure Calculation with if           compute time is " 
       << act_perf << " secs\n");
 }
+
+//   Calculate pressure using ideal gas law - Material-Dominant compact Matrix 
+//     Robey's
+void calculate_pressure_mat_dom_compact(Robey_data& data)
+{
+  int ncells = data.ncells;
+  int nmats = data.nmats;
+  std::vector<double>& Volfrac = data.Volfrac_sparse;
+  std::vector<double>& Densityfrac = data.Densityfrac_sparse;
+  std::vector<double>& Temperaturefrac = data.Temperaturefrac_sparse;
+  std::vector<double>& nmatconsts = data.nmatconsts;
+  std::vector<int>& begin_idx = data.begin_idx;
+  std::vector<int>& cell_id = data.col_idx;
+
+  SLIC_INFO("-- Calculating pressure Material-Dominant compact array access--");
+  std::vector<double> Pressurefrac(ncells*nmats, 0);
+
+  timer.reset();
+
+  for (int iter = 0; iter< ITERMAX; ++iter)
+  {
+    timer.start();
+    for (int m = 0; m < nmats; ++m) 
+    {
+      const auto matconst = nmatconsts[m];
+
+      for (int ii = begin_idx[m]; ii < begin_idx[m + 1]; ++ii)
+      { 
+        const int ci = cell_id[ii];
+        const auto vf = Volfrac[ii];
+
+        Pressurefrac[m * ncells + ci] = (vf > 0.0)
+          ? ( matconst * Densityfrac[ii] * Temperaturefrac[ii]) / vf
+          : 0.;
+      }
+    }
+
+    timer.record();
+    data_checker.check(Pressurefrac);
+  }
+
+  double act_perf = timer.get_median();
+  result_store.add_result(Result_Store::pressure_calc, DataLayout::MAT_CENTRIC,
+        SparsityLayout::SPARSE, Result_Store::method_csr, act_perf);
+  SLIC_INFO("Pressure Calculation with if           compute time is "
+        << act_perf << " secs\n");
+}
+
 
 //   Calculate pressure using ideal gas law - Material-Dominant
 //     MultiMat - Direct Access
@@ -3488,6 +3578,8 @@ int main(int argc, char** argv)
 
   SLIC_INFO("**************** Compact Layout - Cell-Dominant ******************");
   mm.convertLayoutToSparse();
+  calculate_pressure_cell_dom_compact(data);
+
   calculate_pressure_cell_dom_mm_submap(mm);
   calculate_pressure_cell_dom_mm_submap<RelationSetType>(mm);
 
@@ -3503,8 +3595,10 @@ int main(int argc, char** argv)
   calculate_pressure_mat_dom_full_mm_iter(mm);
   //calculate_pressure_mat_dom_full_mm_flatiter(mm);
 
-  SLIC_INFO("**************** Compact Layout - Cell-Dominant ******************");
+  SLIC_INFO("**************** Compact Layout - Material-Dominant ******************");
   mm.convertLayoutToSparse();
+  calculate_pressure_mat_dom_compact(data);
+
   calculate_pressure_mat_dom_mm_submap(mm);
   calculate_pressure_mat_dom_mm_submap<RelationSetType>(mm);
 
