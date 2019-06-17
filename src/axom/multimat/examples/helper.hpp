@@ -863,7 +863,7 @@ struct Result_Store
                                 , "MM-Flat Iterator" };
 
   const int nLayout = 4;
-  const char* const data_layout_str[2] = { "Cell-centric", "Material-centric" };
+  const char* const data_layout_str[2] = { "Cell Dominant", "Material Dominant" };
   const char* const sparsity_str[2] = { "Full Matrix", "Compact" };
 
   Robey_data* robey_data_ptr;
@@ -900,8 +900,8 @@ struct Result_Store
     int algo_i = index / (nLayout * nMethod);
     int data_layout_i = (index / (nLayout/2 * nMethod)) % 2;
     int sparsity_layout_i = (index / (nMethod)) % 2;
-    return std::string(algo_names[algo_i]) + " " +
-      std::string(sparsity_str[sparsity_layout_i]) + " " +
+    return std::string(algo_names[algo_i]) + "|" +
+      std::string(sparsity_str[sparsity_layout_i]) + "|" +
       std::string(data_layout_str[data_layout_i]);
   }
 
@@ -909,6 +909,11 @@ struct Result_Store
   {
     std::ofstream outputFile;
     outputFile.open(filename.c_str());
+    if (!outputFile)
+    {
+      std::cout << "Writing result to file failed." << std::endl;
+      return;
+    }
 
     outputFile << "NCells: " << robey_data_ptr->ncells
       << " NMats: " << robey_data_ptr->nmats
@@ -936,13 +941,14 @@ struct Result_Store
       outputFile << get_algo_name(idx) << ",";
       for (int j = 0; j < nMethod; j++)
       {
-
         outputFile << result_vec[idx + j] << ",";
       }
       outputFile << "\n";
     }
 
     outputFile.close();
+
+    std::cout << "Result written to csv file." << std::endl;
   }
 
 };
