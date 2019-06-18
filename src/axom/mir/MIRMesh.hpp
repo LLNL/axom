@@ -30,15 +30,6 @@ namespace mir
 
   #define NULL_MAT -1
 
-  struct EdgeClipInfo
-  {
-    int vertexOne;
-    int vertexTwo;
-    int colorOne;
-    int colorTwo;
-    float t;        // The percent distance from vertexOne to VertexTwo where the clip occurs.
-  };
-
   //--------------------------------------------------------------------------------
 
   class MIRMesh
@@ -54,14 +45,11 @@ namespace mir
       void        InitializeMesh(std::vector<PosType> _evInds, std::vector<PosType> _evBegins, std::vector<PosType> _veInds, std::vector<PosType> _veBegins, VertSet _verts, ElemSet _elems, int _numMaterials);
 
       void        constructMeshRelations();                                                 /// Constructs the mesh boundary and coboundary relations   
-      void        constructMeshVolumeFractionMaps(std::vector<axom::float64*> materialVolumeFractionsData); /// Constructs the volume fraction maps on the vertices
+      void        constructMeshVolumeFractionsMaps(std::vector<std::vector<axom::float64> > elementVF);  /// Constructs the element and vertex volume fraction maps
       void        constructMeshVolumeFractionsVertex(std::vector<std::vector<axom::float64> > vertexVF);  /// Constructs the vertex volume fraction map
       void        constructVertexPositionMap(Point2* data);                                /// Constucts the positions map on the vertices
       void        constructElementParentMap(int* cellParents);                                /// Constructs the map of cells to their original cell parent
       void        constructElementDominantMaterialMap(std::vector<int> dominantMaterials);                      /// Constructs the map of elements to their dominant materials
-
-      void        printElementScalarMap(ScalarMap& elements, std::string prefix);           /// Prints out the map values for each element
-      void        printVertexScalarMap(ScalarMap& vertices, std::string prefix);            /// Prints out the map values for each vertex
 
       void        print();                                                                  // Print out a variety of useful information about the mesh
 
@@ -69,8 +57,7 @@ namespace mir
       void        writeMeshToFile(std::string filename);                                    /// Writes out the current mesh to a file
       void        attachVertexMap();                                                        /// Adds a map of data to the mesh
 
-
-      void        computeOriginalElementVolumeFractions();
+      std::vector<std::vector<axom::float64> >        computeOriginalElementVolumeFractions();
     
     private:
       axom::float64 computeTriangleArea(Point2 p0, Point2 p1, Point2 p2);

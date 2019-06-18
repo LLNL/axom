@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef __ZOO_BIT_MAPS_H__
-#define __ZOO_BIT_MAPS_H__
+#ifndef __ZOO_CLIPPING_TABLES_H__
+#define __ZOO_CLIPPING_TABLES_H__
 
 
 namespace axom

@@ -52,49 +52,49 @@ namespace mir
     int elementIndexOffset = numElems;
 
     // Merge the cell topology information
-    for (auto i = 0; i < cellToMerge.evInds.size(); ++i)
+    for (unsigned long i = 0; i < cellToMerge.evInds.size(); ++i)
     {
       evInds.push_back(cellToMerge.evInds[i] + vertexIndexOffset);
     }
 
-    for (auto i = 1; i < cellToMerge.evBegins.size(); ++i)
+    for (unsigned long i = 1; i < cellToMerge.evBegins.size(); ++i)
     {
       evBegins.push_back(cellToMerge.evBegins[i] + evBeginsOffset);
     }
 
-    for (auto i = 0; i < cellToMerge.veInds.size(); ++i)
+    for (unsigned long i = 0; i < cellToMerge.veInds.size(); ++i)
     {
       veInds.push_back(cellToMerge.veInds[i] + elementIndexOffset);
     }
 
-    for (auto i = 1; i < cellToMerge.veBegins.size(); ++i)
+    for (unsigned long i = 1; i < cellToMerge.veBegins.size(); ++i)
     {
       veBegins.push_back(cellToMerge.veBegins[i] + veBeginsOffset);
     }
 
     // Merge the vertex positions
-    for (auto i = 0; i < cellToMerge.vertexPositions.size(); ++i)
+    for (unsigned long i = 0; i < cellToMerge.vertexPositions.size(); ++i)
     {
       vertexPositions.push_back(cellToMerge.vertexPositions[i]);
     }
 
     // Merge the vertex volume fractions
-    for (auto matID = 0; matID < vertexVolumeFractions.size(); ++matID)
+    for (unsigned long matID = 0; matID < vertexVolumeFractions.size(); ++matID)
     {
-      for (auto vID = 0; vID < cellToMerge.vertexVolumeFractions[matID].size(); ++vID)
+      for (unsigned long vID = 0; vID < cellToMerge.vertexVolumeFractions[matID].size(); ++vID)
       {
         vertexVolumeFractions[matID].push_back(cellToMerge.vertexVolumeFractions[matID][vID]);
       }
     }
 
     // Merge the elements' dominant materials
-    for (auto i = 0; i < cellToMerge.elementDominantMaterials.size(); ++i)
+    for (unsigned long i = 0; i < cellToMerge.elementDominantMaterials.size(); ++i)
     {
       elementDominantMaterials.push_back(cellToMerge.elementDominantMaterials[i]);
     }
 
     // Merge the elements' parent ids
-    for (auto i = 0; i < cellToMerge.elementParents.size(); ++i)
+    for (unsigned long i = 0; i < cellToMerge.elementParents.size(); ++i)
     {
       elementParents.push_back(cellToMerge.elementParents[i]);
     }
