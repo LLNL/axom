@@ -4,8 +4,8 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 
 set( mir_examples
-     mir_tutorial.cpp
      mir_tutorial_simple.cpp
+     mirConcentricCircles.cpp
    )
 
 set( mir_example_dependencies

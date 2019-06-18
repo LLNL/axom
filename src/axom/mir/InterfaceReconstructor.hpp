@@ -11,7 +11,7 @@
 
 #include "MIRMesh.hpp"
 #include "CellData.hpp"
-#include "ZooBitMaps.hpp"
+#include "ZooClippingTables.hpp"
 #include <map>
 
 namespace numerics = axom::numerics;
@@ -25,10 +25,10 @@ namespace mir
   {
     public:
       InterfaceReconstructor();
-      InterfaceReconstructor(mir::MIRMesh* _mesh);
       ~InterfaceReconstructor();
 
-      mir::MIRMesh              computeReconstructedInterface();
+      mir::MIRMesh              computeReconstructedInterface(mir::MIRMesh* inputMesh);
+      mir::MIRMesh              computeReconstructedInterfaceIterative(mir::MIRMesh* inputMesh, int numIterations, axom::float64 percent);
 
     private:
       mir::MIRMesh* originalMesh;
@@ -50,13 +50,13 @@ namespace mir
       axom::float64       computeClippingPointOnEdge(const int vertexOneID, const int vertexTwoID, const int matOneID, const int matTwoID, mir::MIRMesh* tempMesh);
 
       // quad clipping points helper functions
-      unsigned int        determineQuadClippingCase(const int eID, mir::MIRMesh* tempMesh, const int matOneID, const int matTwoID, const int upperLeftVertex, const int lowerLeftVertex, const int lowerRightVertex, const int upperRightVertex);
+      unsigned int        determineQuadClippingCase(mir::MIRMesh* tempMesh, const int matOneID, const int matTwoID, const int upperLeftVertex, const int lowerLeftVertex, const int lowerRightVertex, const int upperRightVertex);
       void                generateTopologyData(std::map<int, std::vector<int> > newElements, std::map<int, std::vector<int> > newVertices, CellData& out_cellData);
       void                generateVertexPositionsFromQuad(std::map<int, std::vector<int> > newVertices, mir::MIRMesh* tempMesh, axom::float64* verticesClippingTValue, int upperLeftVertex, int lowerLeftVertex, int lowerRightVertex, int upperRightVertex, CellData& out_cellData);
       void                generateVertexVolumeFractionsFromQuad(std::map<int, std::vector<int> > newVertices, mir::MIRMesh* tempMesh, axom::float64* verticesClippingTValue, int upperLeftVertex, int lowerLeftVertex, int lowerRightVertex, int upperRightVertex, CellData& out_cellData);
 
       // triangle clipping points helper functions
-      unsigned int        determineTriangleClippingCase(const int eID, mir::MIRMesh* tempMesh, const int matOneID, const int matTwoID, const int upperVertex, const int lowerLeftVertex, const int lowerRightVertex);
+      unsigned int        determineTriangleClippingCase(mir::MIRMesh* tempMesh, const int matOneID, const int matTwoID, const int upperVertex, const int lowerLeftVertex, const int lowerRightVertex);
       void                generateVertexPositionsFromTriangle(std::map<int, std::vector<int> > newVertices, mir::MIRMesh* tempMesh, axom::float64* verticesClippingTValue, int upperVertex, int lowerLeftVertex, int lowerRightVertex, CellData& out_cellData);
       void                generateVertexVolumeFractionsFromTriangle(std::map<int, std::vector<int> > newVertices, mir::MIRMesh* tempMesh, axom::float64* verticesClippingTValue, int upperVertex, int lowerLeftVertex, int lowerRightVertex, CellData& out_cellData);
   };

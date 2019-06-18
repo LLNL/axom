@@ -20,14 +20,6 @@ InterfaceReconstructor::InterfaceReconstructor()
 
 //--------------------------------------------------------------------------------
 
-/// Constructor
-InterfaceReconstructor::InterfaceReconstructor(mir::MIRMesh* _mesh)
-{
-  originalMesh = _mesh;
-}
-
-//--------------------------------------------------------------------------------
-
 /// Destructor
 InterfaceReconstructor::~InterfaceReconstructor()
 {
@@ -37,8 +29,11 @@ InterfaceReconstructor::~InterfaceReconstructor()
 //--------------------------------------------------------------------------------
 
 /// Reconstructs the material interface and returns the resulting output mesh.
-mir::MIRMesh InterfaceReconstructor::computeReconstructedInterface()
+mir::MIRMesh InterfaceReconstructor::computeReconstructedInterface(mir::MIRMesh* inputMesh)
 {
+  // Store a pointer to the original mesh
+  originalMesh = inputMesh;
+
   // Initialize the final mesh to be the same as the input mesh
   mir::MIRMesh finalMesh(originalMesh);
 
@@ -59,12 +54,11 @@ mir::MIRMesh InterfaceReconstructor::computeReconstructedInterface()
     {
       // Update the materials upon which the split will occur (should be the currently dominant material and the next material in the list that hasn't yet been split on)
       int currentDominantMat = intermediateMesh.elementDominantMaterials[eID];
-      printf("Processing materials: %d and %d for Element %d\n", currentDominantMat, matOne, eID);
       computeClippingPoints(eID, currentDominantMat, matOne, &intermediateMesh, temp_cellData[eID]);
     }
 
     // Merge each of the cells into the first CellData struct
-    for (unsigned int eID = 1; eID < intermediateMesh.elems.size(); ++eID)
+    for (int eID = 1; eID < intermediateMesh.elems.size(); ++eID)
       temp_cellData[0].mergeCell(temp_cellData[eID]);
 
     mir::VertSet combined_verts(temp_cellData[0].numVerts);
@@ -82,18 +76,53 @@ mir::MIRMesh InterfaceReconstructor::computeReconstructedInterface()
     // Store the current mesh to be passed into the next iteration
     finalMesh = processedMesh;
     finalMesh.constructMeshRelations();
-
-    printf("-------------Finished processing material-------------\n");
-
-    // Write out the intermediate meshes that are processed
-    std::string outFilename = "/Users/sterbentz3/Desktop/intermediateMesh" + std::to_string(matID) + ".vtk";
-    finalMesh.writeMeshToFile(outFilename);
-    // finalMesh.print();
   }
 
   // TODO: Run post-processing on mesh to meld the mesh vertices that are within a certain epsilon
 
   return finalMesh;
+}
+
+/// Reconstructs the material interface using an iterative optimization to improve the volume fractions of the resulting mesh.
+/// Based on the Meredith and Childs 2010 paper.
+mir::MIRMesh InterfaceReconstructor::computeReconstructedInterfaceIterative(mir::MIRMesh* inputMesh, int numIterations, axom::float64 percent)
+{
+  int numElems = inputMesh->elems.size();
+  int numMaterials = inputMesh->numMaterials;
+
+  // Make a copy of the original input mesh
+  mir::MIRMesh meshToImprove(inputMesh);
+
+  // Calculate the reconstruction on the unmodified, input mesh
+  mir::MIRMesh resultingMesh = computeReconstructedInterface(&meshToImprove);
+
+  for (int it = 0; it < numIterations; ++it)
+  {
+    // Calculate the output element volume fractions of the resulting output mesh
+    std::vector<std::vector<axom::float64> > resultingElementVF = resultingMesh.computeOriginalElementVolumeFractions();
+
+    // Initialize the vector to store the improved element volume fractions
+    std::vector<std::vector<axom::float64> > improvedElementVF;
+    improvedElementVF.resize(numMaterials);
+      
+    // Modify the copy of the original mesh's element volume fractions by percent difference (modify meshToImprove's elementVF)
+    for (int matID = 0; matID < numMaterials; ++matID)
+    {
+      for (int eID = 0; eID < numElems; ++eID)
+      {
+        axom::float64 difference = inputMesh->materialVolumeFractionsElement[matID][eID] - resultingElementVF[matID][eID];
+        improvedElementVF[matID].push_back(   inputMesh->materialVolumeFractionsElement[matID][eID] + ( difference * percent ) );
+      }
+    }
+
+    // Reconstruct the element AND vertex VFs
+    meshToImprove.constructMeshVolumeFractionsMaps(improvedElementVF);
+
+    // Calculate the reconstruction on the modified, input mesh
+    resultingMesh = computeReconstructedInterface(&meshToImprove);
+  }
+
+  return resultingMesh;
 }
 
 //--------------------------------------------------------------------------------
@@ -120,7 +149,7 @@ void InterfaceReconstructor::computeClippingPoints(const int eID, const int matO
 
 void InterfaceReconstructor::computeQuadClippingPoints(const int eID, const int matOneID, const int matTwoID, mir::MIRMesh* tempMesh, CellData& out_cellData)
 {
-  printf("  Processing QUAD element %d: ", eID);
+  // printf("  Processing QUAD element %d: ", eID);
 
   // Determine the clipping case
   auto elementVertices = tempMesh->bdry[eID];
@@ -130,8 +159,8 @@ void InterfaceReconstructor::computeQuadClippingPoints(const int eID, const int 
   int lowerRightVertex = elementVertices[2];
   int upperRightVertex = elementVertices[3];
 
-  unsigned int caseIndex = determineQuadClippingCase(eID, tempMesh, matOneID, matTwoID, upperLeftVertex, lowerLeftVertex, lowerRightVertex, upperRightVertex);
-  printf("caseIndex: %d\n", caseIndex);
+  unsigned int caseIndex = determineQuadClippingCase(tempMesh, matOneID, matTwoID, upperLeftVertex, lowerLeftVertex, lowerRightVertex, upperRightVertex);
+  // printf("caseIndex: %d\n", caseIndex);
 
   // Generate new elements
   std::map<int, std::vector<int> > newElements;             // hashmap of the new elements' vertices | Note: maps are ordered sets
@@ -200,7 +229,7 @@ void InterfaceReconstructor::computeQuadClippingPoints(const int eID, const int 
   for (auto itr = newElements.begin(); itr != newElements.end(); itr++)
   {
     int currentDominantMat = NULL_MAT;
-    for (int it = 0; it < itr->second.size(); ++it)
+    for (unsigned long it = 0; it < itr->second.size(); ++it)
     {
       // int temp_vID = newElements[currentElementIndex][it];
       int temp_vID = itr->second[it];
@@ -264,7 +293,7 @@ void InterfaceReconstructor::computeQuadClippingPoints(const int eID, const int 
 //--------------------------------------------------------------------------------
 
 /// Finds the bit map representing the clipping case for a quad.
-unsigned int InterfaceReconstructor::determineQuadClippingCase(const int eID, mir::MIRMesh* tempMesh, const int matOneID, const int matTwoID, const int upperLeftVertex, const int lowerLeftVertex, const int lowerRightVertex, const int upperRightVertex)
+unsigned int InterfaceReconstructor::determineQuadClippingCase(mir::MIRMesh* tempMesh, const int matOneID, const int matTwoID, const int upperLeftVertex, const int lowerLeftVertex, const int lowerRightVertex, const int upperRightVertex)
 {
     // Determine the dominant color at each vertex
     int upperLeftColor = matOneID, lowerLeftColor = matOneID, lowerRightColor = matOneID, upperRightColor = matOneID;
@@ -331,12 +360,6 @@ axom::float64 InterfaceReconstructor::computeClippingPointOnEdge(const int verte
 
   axom::float64 numerator = vfMatTwoVertexOne - vfMatOneVertexOne;
   axom::float64 denominator = -vfMatOneVertexOne + vfMatOneVertexTwo + vfMatTwoVertexOne - vfMatTwoVertexTwo;
-
-  // axom::float64 numerator = originalMesh->materialVolumeFractionsVertex[matTwoID][vertexOneID] - originalMesh->materialVolumeFractionsVertex[matOneID][vertexOneID];
-  // axom::float64 denominator = -originalMesh->materialVolumeFractionsVertex[matOneID][vertexOneID]
-  //                                   + originalMesh->materialVolumeFractionsVertex[matOneID][vertexTwoID]
-  //                                   + originalMesh->materialVolumeFractionsVertex[matTwoID][vertexOneID]
-  //                                   - originalMesh->materialVolumeFractionsVertex[matTwoID][vertexTwoID];
         
   if (denominator != 0.0)
     ret = numerator / denominator;
@@ -470,8 +493,6 @@ void InterfaceReconstructor::generateVertexVolumeFractionsFromQuad(std::map<int,
 
 void InterfaceReconstructor::computeTriangleClippingPoints(const int eID, const int matOneID, const int matTwoID, mir::MIRMesh* tempMesh, CellData& out_cellData)
 {
-  printf("  Processing TRIANGLE element %d: ", eID);
-
   // Determine the clipping case
   auto elementVertices = tempMesh->bdry[eID];
 
@@ -479,8 +500,7 @@ void InterfaceReconstructor::computeTriangleClippingPoints(const int eID, const 
   int lowerLeftVertex = elementVertices[1];
   int lowerRightVertex = elementVertices[2];
 
-  unsigned int caseIndex = determineTriangleClippingCase(eID, tempMesh, matOneID, matTwoID, upperVertex, lowerLeftVertex, lowerRightVertex);
-  printf("caseIndex: %d\n", caseIndex);
+  unsigned int caseIndex = determineTriangleClippingCase(tempMesh, matOneID, matTwoID, upperVertex, lowerLeftVertex, lowerRightVertex);
 
   // Generate new elements
   std::map<int, std::vector<int> > newElements;             // hashmap of the new elements' vertices | Note: maps are ordered sets
@@ -545,7 +565,7 @@ void InterfaceReconstructor::computeTriangleClippingPoints(const int eID, const 
   for (auto itr = newElements.begin(); itr != newElements.end(); itr++)
   {
     int currentDominantMat = NULL_MAT;
-    for (int it = 0; it < itr->second.size(); ++it)
+    for (unsigned long it = 0; it < itr->second.size(); ++it)
     {
       int temp_vID = itr->second[it];
   
@@ -608,7 +628,7 @@ void InterfaceReconstructor::computeTriangleClippingPoints(const int eID, const 
 //--------------------------------------------------------------------------------
 
 /// Finds the bit map representing the clipping case for a triangle.
-unsigned int InterfaceReconstructor::determineTriangleClippingCase(const int eID, mir::MIRMesh* tempMesh, const int matOneID, const int matTwoID, const int upperVertex, const int lowerLeftVertex, const int lowerRightVertex)
+unsigned int InterfaceReconstructor::determineTriangleClippingCase(mir::MIRMesh* tempMesh, const int matOneID, const int matTwoID, const int upperVertex, const int lowerLeftVertex, const int lowerRightVertex)
 {
  // Determine the dominant color at each vertex
     int upperColor = matOneID, lowerLeftColor = matOneID, lowerRightColor = matOneID;

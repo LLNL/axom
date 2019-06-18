@@ -96,51 +96,55 @@ namespace mir
     SLIC_INFO("Vert-Elem relation has size " << cobdry.totalSize());
   }
 
-//--------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------  
 
-  /// Constructs the volume fraction maps on the elements and vertices given element volume fraction data.
-  void MIRMesh::constructMeshVolumeFractionMaps(std::vector<axom::float64*> materialVolumeFractionsData)
+/// Construct the and the element and vertex volume fraction data given the element volume fraction data
+void MIRMesh::constructMeshVolumeFractionsMaps(std::vector<std::vector<axom::float64> > elementVF)
+{
+  // Clear the old maps
+  materialVolumeFractionsElement.clear();
+  materialVolumeFractionsVertex.clear();
+
+  // Initialize the maps for all of the materials with the input volume fraction data for each material
+  for (int matID = 0; matID < numMaterials; ++matID)
   {
-    // Initialize the maps for all of the materials with the input volume fraction data for each material
-    for (int matID = 0; matID < materialVolumeFractionsData.size(); ++matID)
+    // Initialize the map for the current material
+    materialVolumeFractionsElement.push_back(ScalarMap( &elems ));
+
+    // Copy the data for the current material
+    for (int eID = 0; eID < elems.size(); ++eID)
     {
-      // Initialize the map for the current material
-      materialVolumeFractionsElement.push_back(ScalarMap( &elems ));
-
-      // Copy the data for the current material
-      for (int eID = 0; eID < elems.size(); ++eID)
-      {
-        materialVolumeFractionsElement[matID][eID] = materialVolumeFractionsData[matID][eID];
-      }
-
-      SLIC_ASSERT_MSG( materialVolumeFractionsElement[matID].isValid(), "Element volume fraction map is not valid.");
+      materialVolumeFractionsElement[matID][eID] = elementVF[matID][eID];
     }
 
-    // Initialize the maps for all of the vertex volume fractions
-    for (int matID = 0; matID < materialVolumeFractionsData.size(); ++matID)
-    {
-      // Initialize the new map for the volume fractions
-      materialVolumeFractionsVertex.push_back(ScalarMap( &verts ) );
-
-      // Calculate the average volume fraction value for the current vertex for the current material
-      for (int vID = 0; vID < verts.size(); ++vID)
-      {
-        // Compute the per vertex volume fractions for the green material
-        axom::float64 sum = 0;
-        auto vertexElements = cobdry[vID];
-
-        for (int i = 0; i < vertexElements.size(); ++i)
-        {
-          auto eID = vertexElements[i];
-          sum += materialVolumeFractionsElement[matID][eID];
-        }
-
-        materialVolumeFractionsVertex[matID][vID] = sum / vertexElements.size();
-      }
-
-      SLIC_ASSERT_MSG( materialVolumeFractionsVertex[matID].isValid(), "Vertex volume fraction map is not valid.");
-    }
+    SLIC_ASSERT_MSG( materialVolumeFractionsElement[matID].isValid(), "Element volume fraction map is not valid.");
   }
+
+  // Initialize the maps for all of the vertex volume fractions
+  for (int matID = 0; matID < numMaterials; ++matID)
+  {
+    // Initialize the new map for the volume fractions
+    materialVolumeFractionsVertex.push_back(ScalarMap( &verts ) );
+
+    // Calculate the average volume fraction value for the current vertex for the current material
+    for (int vID = 0; vID < verts.size(); ++vID)
+    {
+      // Compute the per vertex volume fractions for the green material
+      axom::float64 sum = 0;
+      auto vertexElements = cobdry[vID];
+
+      for (int i = 0; i < vertexElements.size(); ++i)
+      {
+        auto eID = vertexElements[i];
+        sum += materialVolumeFractionsElement[matID][eID];
+      }
+
+      materialVolumeFractionsVertex[matID][vID] = sum / vertexElements.size();
+    }
+
+    SLIC_ASSERT_MSG( materialVolumeFractionsVertex[matID].isValid(), "Vertex volume fraction map is not valid.");
+  }
+}
 
 //--------------------------------------------------------------------------------  
 
@@ -209,30 +213,7 @@ void MIRMesh::constructMeshVolumeFractionsVertex(std::vector<std::vector<axom::f
 
 //--------------------------------------------------------------------------------
 
-  /// Prints out the map values for each element
-  void MIRMesh::printElementScalarMap(ScalarMap& elements, std::string prefix)
-  {
-    std::cout << prefix;
-    for (int eID = 0; eID < elems.size(); ++eID)
-    {
-      printf("Element %d: %f\n", eID, elements[eID]);
-    }
-  }
-
-//--------------------------------------------------------------------------------
-
-  /// Prints out the map values for each vertex
-  void MIRMesh::printVertexScalarMap(ScalarMap& vertices, std::string prefix)
-  {
-    std::cout << prefix;
-    for (int vID = 0; vID < verts.size(); ++vID)
-    {
-      printf("Vertex %d: %f\n", vID, vertices[vID]);
-    }
-  }
-
-//--------------------------------------------------------------------------------
-
+  /// Print out the properties of the mesh.
   void MIRMesh::print()
   {
     printf("\n------------------------Printing Mesh Information:------------------------\n");
@@ -241,28 +222,28 @@ void MIRMesh::constructMeshVolumeFractionsVertex(std::vector<std::vector<axom::f
     printf("number of materials: %d\n", numMaterials);
 
     printf("evInds: { ");
-    for (int i = 0; i < data.evInds.size(); i++)
+    for (unsigned long i = 0; i < data.evInds.size(); i++)
     {
       printf("%d ", data.evInds[i]);
     }
     printf("}\n");
 
     printf("evBegins: { ");
-    for (int i = 0; i < data.evBegins.size(); i++)
+    for (unsigned long i = 0; i < data.evBegins.size(); i++)
     {
       printf("%d ", data.evBegins[i]);
     }
     printf("}\n");
 
     printf("veInds: { ");
-    for (int i = 0; i < data.veInds.size(); i++)
+    for (unsigned long i = 0; i < data.veInds.size(); i++)
     {
       printf("%d ", data.veInds[i]);
     }
     printf("}\n");
 
     printf("veBegins: { ");
-    for (int i = 0; i < data.veBegins.size(); i++)
+    for (unsigned long i = 0; i < data.veBegins.size(); i++)
     {
       printf("%d ", data.veBegins[i]);
     }
@@ -290,7 +271,7 @@ void MIRMesh::constructMeshVolumeFractionsVertex(std::vector<std::vector<axom::f
     printf("}\n");
 
     printf("vertexVolumeFractions: { \n");
-    for (int i = 0; i < materialVolumeFractionsVertex.size(); ++i)
+    for (unsigned long i = 0; i < materialVolumeFractionsVertex.size(); ++i)
     {
       printf("  { ");
       for (int j = 0; j < verts.size(); ++j)
@@ -309,7 +290,7 @@ void MIRMesh::constructMeshVolumeFractionsVertex(std::vector<std::vector<axom::f
   /// Note: Must currently be an ASCII, UNSTRUCTURED_GRID .vtk file
   void MIRMesh::readMeshFromFile(std::string filename)
   {
-    printf("Mesh reading functionality not implemented yet.");
+    printf("Mesh reading functionality not implemented yet. Can't read file: %s", filename.c_str());
     
     // Read in header
 
@@ -381,7 +362,7 @@ void MIRMesh::constructMeshVolumeFractionsVertex(std::vector<std::vector<axom::f
 //--------------------------------------------------------------------------------
 
 /// Computes the volume fractions of the elements of the original mesh,
-void MIRMesh::computeOriginalElementVolumeFractions()
+std::vector<std::vector<axom::float64> > MIRMesh::computeOriginalElementVolumeFractions()
 {
   std::map<int, axom::float64> totalAreaOriginalElements; // the total area of the original elements
   std::map<int, axom::float64> newElementAreas;           // the area of each of the generated child elements
@@ -413,7 +394,7 @@ void MIRMesh::computeOriginalElementVolumeFractions()
   // Intialize the element volume fraction vectors
   std::vector<std::vector<axom::float64> > elementVolumeFractions;    // indexed as: elementVolumeFractions[material][originalElementID] = volumeFraction
   elementVolumeFractions.resize( numMaterials );
-  for (int i = 0; i < elementVolumeFractions.size(); ++i)
+  for (unsigned long i = 0; i < elementVolumeFractions.size(); ++i)
     elementVolumeFractions[i].resize( totalAreaOriginalElements.size(), 0.0 );
 
   // Compute the volume fractions for each of the original mesh elements
@@ -424,18 +405,7 @@ void MIRMesh::computeOriginalElementVolumeFractions()
     elementVolumeFractions[materialID][parentElementID] += (itr->second / totalAreaOriginalElements[parentElementID]);
   }
 
-  // Print out the results // TODO: Return the values and use them.
-  printf("elementVolumeFractions: {\n");
-  for (int matID = 0; matID < elementVolumeFractions.size(); ++matID)
-  {
-    printf("Material %d: {", matID);
-    for (int eID = 0; eID < elementVolumeFractions[matID].size(); ++eID)
-    {
-      printf(" %f,", elementVolumeFractions[matID][eID]);
-    }
-    printf("}\n");
-  }
-  printf("}\n");
+  return elementVolumeFractions;
 }
 
 //--------------------------------------------------------------------------------
@@ -455,7 +425,7 @@ axom::float64 MIRMesh::computeTriangleArea(Point2 p0, Point2 p1, Point2 p2)
 //--------------------------------------------------------------------------------
 
 /// Computes the area of the quad defined by the given four vertex positions.
-/// Note: It is assumed the points are given in consecutive order.
+/// Note: It is assumed the points are given in consecutive, counter-clockwise order.
 axom::float64 MIRMesh::computeQuadArea(Point2 p0, Point2 p1, Point2 p2, Point2 p3)
 {
   return computeTriangleArea(p0, p1, p2) + computeTriangleArea(p2, p3, p0);

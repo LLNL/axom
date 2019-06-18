@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "ZooBitMaps.hpp"
+#include "ZooClippingTables.hpp"
 
 namespace axom
 {
