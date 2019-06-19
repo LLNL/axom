@@ -44,14 +44,16 @@ namespace mir
       // quad clipping functions
       void                computeClippingPoints(const int eID, const int matOneID, const int matTwoID, mir::MIRMesh* tempMesh, CellData& out_cellData);
 
-      // quad clipping interpolation functions
+      // clipping interpolation functions
       mir::Point2         interpolateVertexPosition(mir::Point2 vertexOnePos, mir::Point2 vertexTwoPos, float t);
       axom::float64       lerpFloat(axom::float64 f0, axom::float64 f1, axom::float64 t);
       axom::float64       computeClippingPointOnEdge(const int vertexOneID, const int vertexTwoID, const int matOneID, const int matTwoID, mir::MIRMesh* tempMesh);
 
+      // general helper functions
+      void                generateTopologyData(std::map<int, std::vector<int> > newElements, std::map<int, std::vector<int> > newVertices, CellData& out_cellData);
+
       // quad clipping points helper functions
       unsigned int        determineQuadClippingCase(mir::MIRMesh* tempMesh, const int matOneID, const int matTwoID, const int upperLeftVertex, const int lowerLeftVertex, const int lowerRightVertex, const int upperRightVertex);
-      void                generateTopologyData(std::map<int, std::vector<int> > newElements, std::map<int, std::vector<int> > newVertices, CellData& out_cellData);
       void                generateVertexPositionsFromQuad(std::map<int, std::vector<int> > newVertices, mir::MIRMesh* tempMesh, axom::float64* verticesClippingTValue, int upperLeftVertex, int lowerLeftVertex, int lowerRightVertex, int upperRightVertex, CellData& out_cellData);
       void                generateVertexVolumeFractionsFromQuad(std::map<int, std::vector<int> > newVertices, mir::MIRMesh* tempMesh, axom::float64* verticesClippingTValue, int upperLeftVertex, int lowerLeftVertex, int lowerRightVertex, int upperRightVertex, CellData& out_cellData);
 

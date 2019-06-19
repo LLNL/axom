@@ -19,21 +19,6 @@ namespace mir
 
   //--------------------------------------------------------------------------------
 
-  CellData::CellData(int _numVerts, int _numElems, std::vector<PosType> _evInds, std::vector<PosType> _evBegins, std::vector<PosType> _veInds, std::vector<PosType> _veBegins, 
-                      std::vector<mir::Point2> _vertexPositions, std::vector<std::vector<axom::float64> > _vertexVolumeFractions)
-  {
-    numVerts = _numVerts;
-    numElems = _numElems;
-    evInds = _evInds;
-    evBegins = _evBegins;
-    veInds = _veInds;
-    veBegins = _veBegins;
-    vertexPositions = _vertexPositions;
-    vertexVolumeFractions = _vertexVolumeFractions;
-  }
-
-  //--------------------------------------------------------------------------------
-
   CellData::~CellData()
   {
 
@@ -45,64 +30,63 @@ namespace mir
   void CellData::mergeCell(CellData cellToMerge)
   {
     // Initialize index offsets
-    int evBeginsOffset = evInds.size();
-    int veBeginsOffset = veInds.size();
+    int evBeginsOffset = topology.evInds.size();
+    int veBeginsOffset = topology.veInds.size();
 
     int vertexIndexOffset = numVerts;
     int elementIndexOffset = numElems;
 
     // Merge the cell topology information
-    for (unsigned long i = 0; i < cellToMerge.evInds.size(); ++i)
+    for (unsigned long i = 0; i < cellToMerge.topology.evInds.size(); ++i)
     {
-      evInds.push_back(cellToMerge.evInds[i] + vertexIndexOffset);
+      topology.evInds.push_back(cellToMerge.topology.evInds[i] + vertexIndexOffset);
     }
 
-    for (unsigned long i = 1; i < cellToMerge.evBegins.size(); ++i)
+    for (unsigned long i = 1; i < cellToMerge.topology.evBegins.size(); ++i)
     {
-      evBegins.push_back(cellToMerge.evBegins[i] + evBeginsOffset);
+      topology.evBegins.push_back(cellToMerge.topology.evBegins[i] + evBeginsOffset);
     }
 
-    for (unsigned long i = 0; i < cellToMerge.veInds.size(); ++i)
+    for (unsigned long i = 0; i < cellToMerge.topology.veInds.size(); ++i)
     {
-      veInds.push_back(cellToMerge.veInds[i] + elementIndexOffset);
+      topology.veInds.push_back(cellToMerge.topology.veInds[i] + elementIndexOffset);
     }
 
-    for (unsigned long i = 1; i < cellToMerge.veBegins.size(); ++i)
+    for (unsigned long i = 1; i < cellToMerge.topology.veBegins.size(); ++i)
     {
-      veBegins.push_back(cellToMerge.veBegins[i] + veBeginsOffset);
+      topology.veBegins.push_back(cellToMerge.topology.veBegins[i] + veBeginsOffset);
     }
 
     // Merge the vertex positions
-    for (unsigned long i = 0; i < cellToMerge.vertexPositions.size(); ++i)
+    for (unsigned long i = 0; i < cellToMerge.mapData.vertexPositions.size(); ++i)
     {
-      vertexPositions.push_back(cellToMerge.vertexPositions[i]);
+      mapData.vertexPositions.push_back(cellToMerge.mapData.vertexPositions[i]);
     }
 
     // Merge the vertex volume fractions
-    for (unsigned long matID = 0; matID < vertexVolumeFractions.size(); ++matID)
+    for (unsigned long matID = 0; matID < mapData.vertexVolumeFractions.size(); ++matID)
     {
-      for (unsigned long vID = 0; vID < cellToMerge.vertexVolumeFractions[matID].size(); ++vID)
+      for (unsigned long vID = 0; vID < cellToMerge.mapData.vertexVolumeFractions[matID].size(); ++vID)
       {
-        vertexVolumeFractions[matID].push_back(cellToMerge.vertexVolumeFractions[matID][vID]);
+        mapData.vertexVolumeFractions[matID].push_back(cellToMerge.mapData.vertexVolumeFractions[matID][vID]);
       }
     }
 
     // Merge the elements' dominant materials
-    for (unsigned long i = 0; i < cellToMerge.elementDominantMaterials.size(); ++i)
+    for (unsigned long i = 0; i < cellToMerge.mapData.elementDominantMaterials.size(); ++i)
     {
-      elementDominantMaterials.push_back(cellToMerge.elementDominantMaterials[i]);
+      mapData.elementDominantMaterials.push_back(cellToMerge.mapData.elementDominantMaterials[i]);
     }
 
     // Merge the elements' parent ids
-    for (unsigned long i = 0; i < cellToMerge.elementParents.size(); ++i)
+    for (unsigned long i = 0; i < cellToMerge.mapData.elementParents.size(); ++i)
     {
-      elementParents.push_back(cellToMerge.elementParents[i]);
+      mapData.elementParents.push_back(cellToMerge.mapData.elementParents[i]);
     }
     
     // Merge the total number of verts and elems in the resulting cell
     numVerts += cellToMerge.numVerts;
     numElems += cellToMerge.numElems;
-
   }
 
   //--------------------------------------------------------------------------------
