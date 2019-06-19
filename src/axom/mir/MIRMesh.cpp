@@ -9,92 +9,117 @@ namespace axom
 {
 namespace mir
 {
-  MIRMesh::MIRMesh()
-  {
-
-  }
-
-  MIRMesh::MIRMesh(MIRMesh* _mesh)  // copy constructor
-  {
-      data.evInds = _mesh->data.evInds;
-      data.evBegins = _mesh->data.evBegins;
-      data.veInds = _mesh->data.veInds;
-      data.veBegins = _mesh->data.veBegins;
-      verts = _mesh->verts;
-      elems = _mesh->elems;
-      bdry = _mesh->bdry;
-      cobdry = _mesh->cobdry;
-      vertexPositions = _mesh->vertexPositions;
-      materialVolumeFractionsElement = _mesh->materialVolumeFractionsElement;
-      materialVolumeFractionsVertex = _mesh->materialVolumeFractionsVertex;
-      elementParentIDs = _mesh->elementParentIDs;
-      elementDominantMaterials = _mesh->elementDominantMaterials;
-      numMaterials = _mesh->numMaterials;
-  }
-
-  MIRMesh::~MIRMesh()
-  {
-
-  }
-
-  /// Initializes a mesh with the given topology.
-  void MIRMesh::InitializeMesh(std::vector<PosType> _evInds, std::vector<PosType> _evBegins, std::vector<PosType> _veInds, std::vector<PosType> _veBegins, VertSet _verts, ElemSet _elems, int _numMaterials)
-  {
-    data.evInds = _evInds;
-    data.evBegins = _evBegins;
-    data.veInds = _veInds;
-    data.veBegins = _veBegins;
-    verts = _verts;
-    elems = _elems;
-    numMaterials = _numMaterials;
-
-    // Check validity of the sets
-    SLIC_ASSERT_MSG( verts.isValid(), "Vertex set is not valid.");
-    SLIC_ASSERT_MSG( elems.isValid(), "Element set is not valid.");
-  }
 
 //--------------------------------------------------------------------------------
 
-  /// Constructs the mesh boundary and coboundary relations
-  void MIRMesh::constructMeshRelations()
+MIRMesh::MIRMesh()
+{
+
+}
+
+//--------------------------------------------------------------------------------
+
+MIRMesh::MIRMesh(MIRMesh* _mesh)  // copy constructor
+{
+    meshTopology.evInds = _mesh->meshTopology.evInds;
+    meshTopology.evBegins = _mesh->meshTopology.evBegins;
+    meshTopology.veInds = _mesh->meshTopology.veInds;
+    meshTopology.veBegins = _mesh->meshTopology.veBegins;
+    verts = _mesh->verts;
+    elems = _mesh->elems;
+    bdry = _mesh->bdry;
+    cobdry = _mesh->cobdry;
+    vertexPositions = _mesh->vertexPositions;
+    materialVolumeFractionsElement = _mesh->materialVolumeFractionsElement;
+    materialVolumeFractionsVertex = _mesh->materialVolumeFractionsVertex;
+    elementParentIDs = _mesh->elementParentIDs;
+    elementDominantMaterials = _mesh->elementDominantMaterials;
+    numMaterials = _mesh->numMaterials;
+}
+
+//--------------------------------------------------------------------------------
+
+MIRMesh::~MIRMesh()
+{
+
+}
+
+//--------------------------------------------------------------------------------
+
+/// Initialize a mesh with the given topology and data.
+void MIRMesh::initializeMesh(VertSet _verts, ElemSet _elems, int _numMaterials, CellTopologyData _topology, CellMapData _mapData, std::vector<std::vector<axom::float64> > _elementVF)
+{
+  // Initialize the vertex and element sets
+  verts = _verts;
+  elems = _elems;
+
+  numMaterials = _numMaterials;
+
+  // Intialize the mesh topology
+  meshTopology.evInds = _topology.evInds;
+  meshTopology.evBegins = _topology.evBegins;
+  meshTopology.veInds = _topology.veInds;
+  meshTopology.veBegins = _topology.veBegins;
+
+  // Initialize the mesh relations
+  constructMeshRelations();
+
+  // Initialize the mesh's data maps
+  constructVertexPositionMap(_mapData.vertexPositions.data());
+  constructElementParentMap(_mapData.elementParents.data());
+  constructElementDominantMaterialMap(_mapData.elementDominantMaterials);
+
+  // Initialize the element and vertex volume fraction maps
+  if (_elementVF.size() > 0)
+    constructMeshVolumeFractionsMaps(_elementVF);
+
+  // Check validity of the sets
+  SLIC_ASSERT_MSG( verts.isValid(), "Vertex set is not valid.");
+  SLIC_ASSERT_MSG( elems.isValid(), "Element set is not valid.");
+}
+
+//--------------------------------------------------------------------------------
+
+/// Constructs the mesh boundary and coboundary relations
+void MIRMesh::constructMeshRelations()
+{
+  // construct boundary relation from elements to vertices using variable cardinality
   {
-    // construct boundary relation from elements to vertices using variable cardinality
-    {
-      using RelationBuilder = ElemToVertRelation::RelationBuilder;
-      bdry = RelationBuilder()
-              .fromSet( &elems )
-              .toSet( &verts )
-              .begins( RelationBuilder::BeginsSetBuilder()
-                        .size( elems.size() ) 
-                        .data( data.evBegins.data() )  )
-              .indices ( RelationBuilder::IndicesSetBuilder() 
-                          .size( data.evInds.size() ) 
-                          .data( data.evInds.data() ) );
-    }
-
-
-    {
-      // _quadmesh_example_construct_cobdry_relation_start
-      // construct coboundary relation from vertices to elements
-      using RelationBuilder = VertToElemRelation::RelationBuilder;
-      cobdry = RelationBuilder()
-               .fromSet( &verts )
-               .toSet( &elems )
-               .begins( RelationBuilder::BeginsSetBuilder()
-                        .size( verts.size() )
-                        .data( data.veBegins.data() ) )
-               .indices( RelationBuilder::IndicesSetBuilder()
-                         .size( data.veInds.size() )
-                         .data( data.veInds.data() ) );
-      // _quadmesh_example_construct_cobdry_relation_end
-    }
-
-    SLIC_ASSERT_MSG( bdry.isValid(), "Boundary relation is not valid.");
-    SLIC_ASSERT_MSG( cobdry.isValid(), "Coboundary relation is not valid.");
-
-    SLIC_INFO("Elem-Vert relation has size " << bdry.totalSize());
-    SLIC_INFO("Vert-Elem relation has size " << cobdry.totalSize());
+    using RelationBuilder = ElemToVertRelation::RelationBuilder;
+    bdry = RelationBuilder()
+            .fromSet( &elems )
+            .toSet( &verts )
+            .begins( RelationBuilder::BeginsSetBuilder()
+                      .size( elems.size() ) 
+                      .data( meshTopology.evBegins.data() )  )
+            .indices ( RelationBuilder::IndicesSetBuilder() 
+                        .size( meshTopology.evInds.size() ) 
+                        .data( meshTopology.evInds.data() ) );
   }
+
+
+  {
+    // _quadmesh_example_construct_cobdry_relation_start
+    // construct coboundary relation from vertices to elements
+    using RelationBuilder = VertToElemRelation::RelationBuilder;
+    cobdry = RelationBuilder()
+              .fromSet( &verts )
+              .toSet( &elems )
+              .begins( RelationBuilder::BeginsSetBuilder()
+                      .size( verts.size() )
+                      .data( meshTopology.veBegins.data() ) )
+              .indices( RelationBuilder::IndicesSetBuilder()
+                        .size( meshTopology.veInds.size() )
+                        .data( meshTopology.veInds.data() ) );
+    // _quadmesh_example_construct_cobdry_relation_end
+  }
+
+  SLIC_ASSERT_MSG( bdry.isValid(), "Boundary relation is not valid.");
+  SLIC_ASSERT_MSG( cobdry.isValid(), "Coboundary relation is not valid.");
+
+  SLIC_INFO("Elem-Vert relation has size " << bdry.totalSize());
+  SLIC_INFO("Vert-Elem relation has size " << cobdry.totalSize());
+}
 
 //--------------------------------------------------------------------------------  
 
@@ -169,195 +194,195 @@ void MIRMesh::constructMeshVolumeFractionsVertex(std::vector<std::vector<axom::f
 
 //--------------------------------------------------------------------------------  
 
-  /// Constucts the positions map on the vertices
-  void MIRMesh::constructVertexPositionMap(Point2* data)
-  {
-    // construct the position map on the vertices
-    vertexPositions = PointMap( &verts );
+/// Constucts the positions map on the vertices
+void MIRMesh::constructVertexPositionMap(Point2* data)
+{
+  // construct the position map on the vertices
+  vertexPositions = PointMap( &verts );
 
-    for (int vID = 0; vID < verts.size(); ++vID)
-      vertexPositions[vID] = data[vID];
+  for (int vID = 0; vID < verts.size(); ++vID)
+    vertexPositions[vID] = data[vID];
 
-    SLIC_ASSERT_MSG( vertexPositions.isValid(), "Position map is not valid.");
-  }
-
-//--------------------------------------------------------------------------------  
-
-  /// Constructs the elementParentsID map of the ID of the parent element in the original mesh for each generated element
-  void MIRMesh::constructElementParentMap(int* elementParents)
-  {
-    // Initialize the map for the elements' parent IDs
-    elementParentIDs = IntMap( &elems );
-
-    // Copy the data for the elements
-    for (int eID = 0; eID < elems.size(); ++eID)
-      elementParentIDs[eID] = elementParents[eID];
-
-    SLIC_ASSERT_MSG( elementParentIDs.isValid(), "Element parent map is not valid.");
-  }
+  SLIC_ASSERT_MSG( vertexPositions.isValid(), "Position map is not valid.");
+}
 
 //--------------------------------------------------------------------------------  
 
-  /// Constructs the elementDominantMaterials map of each element's single most dominant material
-  void MIRMesh::constructElementDominantMaterialMap(std::vector<int> dominantMaterials)
-  {
-    // Initialize the map for the elements' dominant colors
-    elementDominantMaterials = IntMap( &elems );
+/// Constructs the elementParentsID map of the ID of the parent element in the original mesh for each generated element
+void MIRMesh::constructElementParentMap(int* elementParents)
+{
+  // Initialize the map for the elements' parent IDs
+  elementParentIDs = IntMap( &elems );
 
-    // Copy the dat for the elements
-    for (int eID = 0; eID < elems.size(); ++eID)
-      elementDominantMaterials[eID] = dominantMaterials[eID];
+  // Copy the data for the elements
+  for (int eID = 0; eID < elems.size(); ++eID)
+    elementParentIDs[eID] = elementParents[eID];
 
-    SLIC_ASSERT_MSG( elementDominantMaterials.isValid(), "Element dominant materials map is not valid.");
-  }
+  SLIC_ASSERT_MSG( elementParentIDs.isValid(), "Element parent map is not valid.");
+}
 
-//--------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------  
 
-  /// Print out the properties of the mesh.
-  void MIRMesh::print()
-  {
-    printf("\n------------------------Printing Mesh Information:------------------------\n");
-    printf("number of vertices: %d\n", verts.size());
-    printf("number of elements: %d\n", elems.size());
-    printf("number of materials: %d\n", numMaterials);
+/// Constructs the elementDominantMaterials map of each element's single most dominant material
+void MIRMesh::constructElementDominantMaterialMap(std::vector<int> dominantMaterials)
+{
+  // Initialize the map for the elements' dominant colors
+  elementDominantMaterials = IntMap( &elems );
 
-    printf("evInds: { ");
-    for (unsigned long i = 0; i < data.evInds.size(); i++)
-    {
-      printf("%d ", data.evInds[i]);
-    }
-    printf("}\n");
+  // Copy the dat for the elements
+  for (int eID = 0; eID < elems.size(); ++eID)
+    elementDominantMaterials[eID] = dominantMaterials[eID];
 
-    printf("evBegins: { ");
-    for (unsigned long i = 0; i < data.evBegins.size(); i++)
-    {
-      printf("%d ", data.evBegins[i]);
-    }
-    printf("}\n");
-
-    printf("veInds: { ");
-    for (unsigned long i = 0; i < data.veInds.size(); i++)
-    {
-      printf("%d ", data.veInds[i]);
-    }
-    printf("}\n");
-
-    printf("veBegins: { ");
-    for (unsigned long i = 0; i < data.veBegins.size(); i++)
-    {
-      printf("%d ", data.veBegins[i]);
-    }
-    printf("}\n");
-
-    printf("vertexPositions: { ");
-    for (int i = 0; i < verts.size(); ++i)      // TODO: This was previously vertexPositions.size() and was working...
-    {
-      printf("{%.2f, %.2f} ", vertexPositions[i].m_x, vertexPositions[i].m_y);
-    }
-    printf("}\n");
-
-    printf("elementParentIDs: { ");
-    for (int i = 0; i < elems.size(); ++i)
-    {
-      printf("%d ", elementParentIDs[i]);
-    }
-    printf("}\n");
-
-    printf("elementDominantMaterials: { ");
-    for (int i = 0; i < elems.size(); ++i)
-    {
-      printf("%d ", elementDominantMaterials[i]);
-    }
-    printf("}\n");
-
-    printf("vertexVolumeFractions: { \n");
-    for (unsigned long i = 0; i < materialVolumeFractionsVertex.size(); ++i)
-    {
-      printf("  { ");
-      for (int j = 0; j < verts.size(); ++j)
-      {
-        printf("%.3f, ", materialVolumeFractionsVertex[i][j]);
-      }
-      printf("}\n");
-    }
-    printf("}\n");
-    printf("--------------------------------------------------------------------------\n");
-  }
+  SLIC_ASSERT_MSG( elementDominantMaterials.isValid(), "Element dominant materials map is not valid.");
+}
 
 //--------------------------------------------------------------------------------
 
-  /// Reads in and constructs a mesh from the given file
-  /// Note: Must currently be an ASCII, UNSTRUCTURED_GRID .vtk file
-  void MIRMesh::readMeshFromFile(std::string filename)
+/// Print out the properties of the mesh.
+void MIRMesh::print()
+{
+  printf("\n------------------------Printing Mesh Information:------------------------\n");
+  printf("number of vertices: %d\n", verts.size());
+  printf("number of elements: %d\n", elems.size());
+  printf("number of materials: %d\n", numMaterials);
+
+  printf("evInds: { ");
+  for (unsigned long i = 0; i < meshTopology.evInds.size(); i++)
   {
-    printf("Mesh reading functionality not implemented yet. Can't read file: %s", filename.c_str());
-    
-    // Read in header
-
-    // Read in POINTS
-
-    // Read in CELLS
-
-    // Read in CELL_TYPES
-
-    // Read in CELL_DATA (element volume fractions)
+    printf("%d ", meshTopology.evInds[i]);
   }
+  printf("}\n");
+
+  printf("evBegins: { ");
+  for (unsigned long i = 0; i < meshTopology.evBegins.size(); i++)
+  {
+    printf("%d ", meshTopology.evBegins[i]);
+  }
+  printf("}\n");
+
+  printf("veInds: { ");
+  for (unsigned long i = 0; i < meshTopology.veInds.size(); i++)
+  {
+    printf("%d ", meshTopology.veInds[i]);
+  }
+  printf("}\n");
+
+  printf("veBegins: { ");
+  for (unsigned long i = 0; i < meshTopology.veBegins.size(); i++)
+  {
+    printf("%d ", meshTopology.veBegins[i]);
+  }
+  printf("}\n");
+
+  printf("vertexPositions: { ");
+  for (int i = 0; i < verts.size(); ++i)
+  {
+    printf("{%.2f, %.2f} ", vertexPositions[i].m_x, vertexPositions[i].m_y);
+  }
+  printf("}\n");
+
+  printf("elementParentIDs: { ");
+  for (int i = 0; i < elems.size(); ++i)
+  {
+    printf("%d ", elementParentIDs[i]);
+  }
+  printf("}\n");
+
+  printf("elementDominantMaterials: { ");
+  for (int i = 0; i < elems.size(); ++i)
+  {
+    printf("%d ", elementDominantMaterials[i]);
+  }
+  printf("}\n");
+
+  printf("vertexVolumeFractions: { \n");
+  for (unsigned long i = 0; i < materialVolumeFractionsVertex.size(); ++i)
+  {
+    printf("  { ");
+    for (int j = 0; j < verts.size(); ++j)
+    {
+      printf("%.3f, ", materialVolumeFractionsVertex[i][j]);
+    }
+    printf("}\n");
+  }
+  printf("}\n");
+  printf("--------------------------------------------------------------------------\n");
+}
 
 //--------------------------------------------------------------------------------
 
-  /// Writes out the mesh to a file
-  void MIRMesh::writeMeshToFile(std::string filename)
-  {
-    std::ofstream meshfile;
-    meshfile.open(filename);
-    std::ostream_iterator<PosType> out_it(meshfile, " ");
+/// Reads in and constructs a mesh from the given file
+/// Note: Must currently be an ASCII, UNSTRUCTURED_GRID .vtk file
+void MIRMesh::readMeshFromFile(std::string filename)
+{
+  printf("Mesh reading functionality not implemented yet. Can't read file: %s", filename.c_str());
+  
+  // Read in header
 
-    // write header
-    meshfile << "# vtk DataFile Version 3.0\n"
-             << "vtk output\n"
-             << "ASCII\n"
-             << "DATASET UNSTRUCTURED_GRID\n"
-             << "POINTS " << verts.size() << " double\n";
+  // Read in POINTS
 
-    // write positions
-    for (int vID = 0; vID < verts.size(); ++vID)
-    {      
-      meshfile << vertexPositions[vID].m_x << " " << vertexPositions[vID].m_y << " 0\n"; // must always set all 3 coords; set Z=0 for 2D
-    }
+  // Read in CELLS
 
-    meshfile << "\nCELLS " << elems.size() << " " << data.evInds.size() + elems.size();
-    for (int i = 0; i < elems.size(); ++i)
-    {
-      int nVerts = data.evBegins[i+1] - data.evBegins[i];
-      meshfile << "\n" << nVerts;
-      for (int j = 0; j < nVerts; ++j)
-      {
-        int startIndex = data.evBegins[i];
-        meshfile << " " << data.evInds[startIndex + j];
-      }
-    } 
+  // Read in CELL_TYPES
 
-    meshfile << "\n\nCELL_TYPES " << elems.size() << "\n";
-    for (int i = 0; i < elems.size(); ++i)
-    {
-      int nVerts = data.evBegins[i + 1] - data.evBegins[i];
-      if (nVerts == 3)
-        meshfile << "5\n";
-      else if (nVerts == 4)
-        meshfile << "9\n";
-    }
+  // Read in CELL_DATA (element volume fractions)
+}
 
-    // write element materials
-    meshfile << "\n\nCELL_DATA " << elems.size()
-             << "\nSCALARS cellIds int 1"
-             << "\nLOOKUP_TABLE default \n";
-    for(int i=0 ; i< elems.size() ; ++i)
-    {
-      meshfile << elementDominantMaterials[i] << " ";
-    }
+//--------------------------------------------------------------------------------
 
-    meshfile <<"\n";
+/// Writes out the mesh to a file
+void MIRMesh::writeMeshToFile(std::string filename)
+{
+  std::ofstream meshfile;
+  meshfile.open(filename);
+  std::ostream_iterator<PosType> out_it(meshfile, " ");
+
+  // write header
+  meshfile << "# vtk DataFile Version 3.0\n"
+            << "vtk output\n"
+            << "ASCII\n"
+            << "DATASET UNSTRUCTURED_GRID\n"
+            << "POINTS " << verts.size() << " double\n";
+
+  // write positions
+  for (int vID = 0; vID < verts.size(); ++vID)
+  {      
+    meshfile << vertexPositions[vID].m_x << " " << vertexPositions[vID].m_y << " 0\n"; // must always set all 3 coords; set Z=0 for 2D
   }
+
+  meshfile << "\nCELLS " << elems.size() << " " << meshTopology.evInds.size() + elems.size();
+  for (int i = 0; i < elems.size(); ++i)
+  {
+    int nVerts = meshTopology.evBegins[i+1] - meshTopology.evBegins[i];
+    meshfile << "\n" << nVerts;
+    for (int j = 0; j < nVerts; ++j)
+    {
+      int startIndex = meshTopology.evBegins[i];
+      meshfile << " " << meshTopology.evInds[startIndex + j];
+    }
+  } 
+
+  meshfile << "\n\nCELL_TYPES " << elems.size() << "\n";
+  for (int i = 0; i < elems.size(); ++i)
+  {
+    int nVerts = meshTopology.evBegins[i + 1] - meshTopology.evBegins[i];
+    if (nVerts == 3)
+      meshfile << "5\n";
+    else if (nVerts == 4)
+      meshfile << "9\n";
+  }
+
+  // write element materials
+  meshfile << "\n\nCELL_DATA " << elems.size()
+            << "\nSCALARS cellIds int 1"
+            << "\nLOOKUP_TABLE default \n";
+  for(int i=0 ; i< elems.size() ; ++i)
+  {
+    meshfile << elementDominantMaterials[i] << " ";
+  }
+
+  meshfile <<"\n";
+}
 
 //--------------------------------------------------------------------------------
 
@@ -371,19 +396,19 @@ std::vector<std::vector<axom::float64> > MIRMesh::computeOriginalElementVolumeFr
   // Compute the total area of each element of the original mesh and also the area of each new element
   for (int eID = 0; eID < elems.size(); ++eID)
   {
-    int numVertices = data.evBegins[eID + 1] - data.evBegins[eID];
+    int numVertices = meshTopology.evBegins[eID + 1] - meshTopology.evBegins[eID];
     if (numVertices == 3)
     {
       Point2 trianglePoints[3];
       for (int i = 0; i < 3; ++i)
-        trianglePoints[i] = vertexPositions[data.evInds[ data.evBegins[eID] + i] ];
+        trianglePoints[i] = vertexPositions[meshTopology.evInds[ meshTopology.evBegins[eID] + i] ];
       newElementAreas[eID] = computeTriangleArea(trianglePoints[0], trianglePoints[1], trianglePoints[2]);
     }
     if (numVertices == 4) 
     {
       Point2 trianglePoints[4];
       for (int i = 0; i < 4; ++i)
-        trianglePoints[i] = vertexPositions[data.evInds[ data.evBegins[eID] + i] ];
+        trianglePoints[i] = vertexPositions[meshTopology.evInds[ meshTopology.evBegins[eID] + i] ];
       newElementAreas[eID] = computeQuadArea(trianglePoints[0], trianglePoints[1], trianglePoints[2], trianglePoints[3]);
     }
    

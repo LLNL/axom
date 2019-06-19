@@ -41,11 +41,8 @@ namespace mir
   /// Intended to be used as a helper class to hold intermediate data while processing a mesh, and to be used as input to the MIRMesh class to fully initialize it.
   class CellData
   {
-
     public:
       CellData();
-      CellData(int _numVerts, int _numElems, std::vector<PosType> _evInds, std::vector<PosType> _evBegins, std::vector<PosType> _veInds, std::vector<PosType> _veBegins, 
-                      std::vector<mir::Point2> _vertexPositions, std::vector<std::vector<axom::float64> > _vertexVolumeFractions);
       ~CellData();
 
       void mergeCell(CellData cellToMerge);
@@ -54,16 +51,8 @@ namespace mir
       int numVerts;
       int numElems;
 
-      // Cell connectivity/topology
-      std::vector<PosType> evInds;
-      std::vector<PosType> evBegins;
-      std::vector<PosType> veInds;
-      std::vector<PosType> veBegins;
-
-      std::vector<mir::Point2> vertexPositions;                               // Data that goes into MIRMesh's vertexPositions PointMap
-      std::vector<std::vector<axom::float64> > vertexVolumeFractions;         // Data that goes into MIRMesh's materialVolumeFractionsVertex ScalarMap
-      std::vector<int> elementDominantMaterials;                              // Data that goes into MIRMesh's elementDominantColors IntMap
-      std::vector<int> elementParents;                                        // Data that goes into MIRMesh's elementParentIDs IntMap
+      CellTopologyData topology;
+      CellMapData mapData;
   };
 }
 }

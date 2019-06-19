@@ -66,12 +66,8 @@ mir::MIRMesh InterfaceReconstructor::computeReconstructedInterface(mir::MIRMesh*
 
     // Create the final, processed mesh
     mir::MIRMesh processedMesh;
-    processedMesh.InitializeMesh(temp_cellData[0].evInds, temp_cellData[0].evBegins, temp_cellData[0].veInds, temp_cellData[0].veBegins, combined_verts, combined_elems, intermediateMesh.numMaterials);
-    processedMesh.constructMeshRelations();
-    processedMesh.constructMeshVolumeFractionsVertex(temp_cellData[0].vertexVolumeFractions);
-    processedMesh.constructVertexPositionMap(temp_cellData[0].vertexPositions.data());  
-    processedMesh.constructElementParentMap(temp_cellData[0].elementParents.data());
-    processedMesh.constructElementDominantMaterialMap(temp_cellData[0].elementDominantMaterials);
+    processedMesh.initializeMesh(combined_verts, combined_elems, intermediateMesh.numMaterials, temp_cellData[0].topology, temp_cellData[0].mapData);
+    processedMesh.constructMeshVolumeFractionsVertex(temp_cellData[0].mapData.vertexVolumeFractions);
 
     // Store the current mesh to be passed into the next iteration
     finalMesh = processedMesh;
@@ -239,36 +235,36 @@ void InterfaceReconstructor::computeQuadClippingPoints(const int eID, const int 
       {
         axom::float64 matOneVolumeFraction = -1.0, matTwoVolumeFraction = -1.0;
         if (matOneID != NULL_MAT)
-          matOneVolumeFraction = out_cellData.vertexVolumeFractions[matOneID][temp_vID];
+          matOneVolumeFraction = out_cellData.mapData.vertexVolumeFractions[matOneID][temp_vID];
         if (matTwoID != NULL_MAT)
-          matTwoVolumeFraction = out_cellData.vertexVolumeFractions[matTwoID][temp_vID];
+          matTwoVolumeFraction = out_cellData.mapData.vertexVolumeFractions[matTwoID][temp_vID];
 
         currentDominantMat = (matOneVolumeFraction > matTwoVolumeFraction) ? matOneID : matTwoID;
       }
     }
-    out_cellData.elementDominantMaterials.push_back(currentDominantMat);  
+    out_cellData.mapData.elementDominantMaterials.push_back(currentDominantMat);  
   }
 
   // Determine and store the parent of this element
-  out_cellData.elementParents.resize(newElements.size());
+  out_cellData.mapData.elementParents.resize(newElements.size());
   for (auto itr = newElements.begin(); itr != newElements.end(); itr++)
   {
-    out_cellData.elementParents[itr->first] = tempMesh->elementParentIDs[eID];
+    out_cellData.mapData.elementParents[itr->first] = tempMesh->elementParentIDs[eID];
   }
 
   // Check that each element is dominated by a material that is actually present in the original parent cell
   for (auto itr = newElements.begin(); itr != newElements.end(); itr++)
   {
-    int parentElementID = out_cellData.elementParents[itr->first];
-    int currentDominantMaterial = out_cellData.elementDominantMaterials[itr->first];
+    int parentElementID = out_cellData.mapData.elementParents[itr->first];
+    int currentDominantMaterial = out_cellData.mapData.elementDominantMaterials[itr->first];
 
     if (originalMesh->materialVolumeFractionsElement[currentDominantMaterial][parentElementID] == 0)
     {
       // This material is not present in the original element from which the current element comes from
       if (currentDominantMaterial == matOneID)
-        out_cellData.elementDominantMaterials[itr->first] = matTwoID;
+        out_cellData.mapData.elementDominantMaterials[itr->first] = matTwoID;
       else
-        out_cellData.elementDominantMaterials[itr->first] = matOneID;
+        out_cellData.mapData.elementDominantMaterials[itr->first] = matOneID;
     }
   }
   
@@ -284,9 +280,9 @@ void InterfaceReconstructor::computeQuadClippingPoints(const int eID, const int 
   for (int i = 1; i < 8; ++i)
     evIndexSubtract[i] += evIndexSubtract[i - 1];
 
-  for (unsigned int i = 0; i < out_cellData.evInds.size(); ++i)
+  for (unsigned int i = 0; i < out_cellData.topology.evInds.size(); ++i)
   {
-    out_cellData.evInds[i] -= evIndexSubtract[ out_cellData.evInds[i] ];
+    out_cellData.topology.evInds[i] -= evIndexSubtract[ out_cellData.topology.evInds[i] ];
   }
 }
 
@@ -387,36 +383,36 @@ void InterfaceReconstructor::generateTopologyData(std::map<int, std::vector<int>
     for (auto itr = newElements.begin(); itr != newElements.end(); itr++)
     {
       // Push the start index of the next element
-      out_cellData.evBegins.push_back(currentEVBeginIndex);
+      out_cellData.topology.evBegins.push_back(currentEVBeginIndex);
 
       // Push the next element's vertices
       for (unsigned int vIndex = 0; vIndex < itr->second.size(); ++vIndex)
       {
-        out_cellData.evInds.push_back(itr->second[vIndex]);
+        out_cellData.topology.evInds.push_back(itr->second[vIndex]);
         ++currentEVBeginIndex;
       }
     }
 
     // Push the index that occurs after the last vertex
-    out_cellData.evBegins.push_back(currentEVBeginIndex);
+    out_cellData.topology.evBegins.push_back(currentEVBeginIndex);
     
     // Store the veInds and veBegins data in the output vectors
     int currentVEBeginIndex = 0;
     for (auto itr = newVertices.begin(); itr != newVertices.end(); itr++)
     {
       // Push the start index of the vertex's elements
-      out_cellData.veBegins.push_back(currentVEBeginIndex);
+      out_cellData.topology.veBegins.push_back(currentVEBeginIndex);
 
       // Push the next vertex's elements
       for (unsigned int eIndex = 0; eIndex < itr->second.size(); eIndex++)
       {
-        out_cellData.veInds.push_back(itr->second[eIndex]);
+        out_cellData.topology.veInds.push_back(itr->second[eIndex]);
         ++currentVEBeginIndex;
       }
     }
     
     // Push the index that occurs after the last element
-    out_cellData.veBegins.push_back(currentVEBeginIndex);
+    out_cellData.topology.veBegins.push_back(currentVEBeginIndex);
 }
 
 //--------------------------------------------------------------------------------
@@ -451,7 +447,7 @@ void InterfaceReconstructor::generateVertexPositionsFromQuad(std::map<int, std::
   // Store the positions of the vertices in the return vector
   for (auto itr = newPoints.begin(); itr != newPoints.end(); itr++)
   {
-    out_cellData.vertexPositions.push_back(itr->second);
+    out_cellData.mapData.vertexPositions.push_back(itr->second);
   }
 }
 
@@ -462,7 +458,7 @@ void InterfaceReconstructor::generateVertexVolumeFractionsFromQuad(std::map<int,
 {
    // Calculate the vertex fractions at each vertex (use t value!)
     // Make sure the output volume fractions containers are the proper size
-    out_cellData.vertexVolumeFractions.resize(tempMesh->numMaterials);
+    out_cellData.mapData.vertexVolumeFractions.resize(tempMesh->numMaterials);
     
     for (auto itr = newVertices.begin(); itr != newVertices.end(); itr++)
     {
@@ -470,21 +466,21 @@ void InterfaceReconstructor::generateVertexVolumeFractionsFromQuad(std::map<int,
       for (int matID = 0; matID < tempMesh->numMaterials; ++matID)
       {
         if (vID == 0)
-          out_cellData.vertexVolumeFractions[matID].push_back(tempMesh->materialVolumeFractionsVertex[matID][upperLeftVertex]);
+          out_cellData.mapData.vertexVolumeFractions[matID].push_back(tempMesh->materialVolumeFractionsVertex[matID][upperLeftVertex]);
         if (vID == 1)
-          out_cellData.vertexVolumeFractions[matID].push_back(tempMesh->materialVolumeFractionsVertex[matID][lowerLeftVertex]);
+          out_cellData.mapData.vertexVolumeFractions[matID].push_back(tempMesh->materialVolumeFractionsVertex[matID][lowerLeftVertex]);
         if (vID == 2)
-          out_cellData.vertexVolumeFractions[matID].push_back(tempMesh->materialVolumeFractionsVertex[matID][lowerRightVertex]);
+          out_cellData.mapData.vertexVolumeFractions[matID].push_back(tempMesh->materialVolumeFractionsVertex[matID][lowerRightVertex]);
         if (vID == 3)
-          out_cellData.vertexVolumeFractions[matID].push_back(tempMesh->materialVolumeFractionsVertex[matID][upperRightVertex]);
+          out_cellData.mapData.vertexVolumeFractions[matID].push_back(tempMesh->materialVolumeFractionsVertex[matID][upperRightVertex]);
         if (vID == 4)
-          out_cellData.vertexVolumeFractions[matID].push_back(lerpFloat(tempMesh->materialVolumeFractionsVertex[matID][upperLeftVertex], tempMesh->materialVolumeFractionsVertex[matID][lowerLeftVertex], verticesClippingTValue[vID]));
+          out_cellData.mapData.vertexVolumeFractions[matID].push_back(lerpFloat(tempMesh->materialVolumeFractionsVertex[matID][upperLeftVertex], tempMesh->materialVolumeFractionsVertex[matID][lowerLeftVertex], verticesClippingTValue[vID]));
         if (vID == 5)
-          out_cellData.vertexVolumeFractions[matID].push_back(lerpFloat(tempMesh->materialVolumeFractionsVertex[matID][lowerLeftVertex], tempMesh->materialVolumeFractionsVertex[matID][lowerRightVertex], verticesClippingTValue[vID]));
+          out_cellData.mapData.vertexVolumeFractions[matID].push_back(lerpFloat(tempMesh->materialVolumeFractionsVertex[matID][lowerLeftVertex], tempMesh->materialVolumeFractionsVertex[matID][lowerRightVertex], verticesClippingTValue[vID]));
         if (vID == 6)
-          out_cellData.vertexVolumeFractions[matID].push_back(lerpFloat(tempMesh->materialVolumeFractionsVertex[matID][lowerRightVertex], tempMesh->materialVolumeFractionsVertex[matID][upperRightVertex], verticesClippingTValue[vID]));
+          out_cellData.mapData.vertexVolumeFractions[matID].push_back(lerpFloat(tempMesh->materialVolumeFractionsVertex[matID][lowerRightVertex], tempMesh->materialVolumeFractionsVertex[matID][upperRightVertex], verticesClippingTValue[vID]));
         if (vID == 7)
-          out_cellData.vertexVolumeFractions[matID].push_back(lerpFloat(tempMesh->materialVolumeFractionsVertex[matID][upperRightVertex], tempMesh->materialVolumeFractionsVertex[matID][upperLeftVertex], verticesClippingTValue[vID]));
+          out_cellData.mapData.vertexVolumeFractions[matID].push_back(lerpFloat(tempMesh->materialVolumeFractionsVertex[matID][upperRightVertex], tempMesh->materialVolumeFractionsVertex[matID][upperLeftVertex], verticesClippingTValue[vID]));
       }
     }
 }
@@ -574,36 +570,36 @@ void InterfaceReconstructor::computeTriangleClippingPoints(const int eID, const 
       {
         axom::float64 matOneVolumeFraction = -1.0, matTwoVolumeFraction = -1.0;
         if (matOneID != NULL_MAT)
-          matOneVolumeFraction = out_cellData.vertexVolumeFractions[matOneID][temp_vID];
+          matOneVolumeFraction = out_cellData.mapData.vertexVolumeFractions[matOneID][temp_vID];
         if (matTwoID != NULL_MAT)
-          matTwoVolumeFraction = out_cellData.vertexVolumeFractions[matTwoID][temp_vID];
+          matTwoVolumeFraction = out_cellData.mapData.vertexVolumeFractions[matTwoID][temp_vID];
 
         currentDominantMat = (matOneVolumeFraction > matTwoVolumeFraction) ? matOneID : matTwoID;
       }
     }
-    out_cellData.elementDominantMaterials.push_back(currentDominantMat);  
+    out_cellData.mapData.elementDominantMaterials.push_back(currentDominantMat);  
   }
 
   // Determine and store the parent of this element
-  out_cellData.elementParents.resize(newElements.size());
+  out_cellData.mapData.elementParents.resize(newElements.size());
   for (auto itr = newElements.begin(); itr != newElements.end(); itr++)
   {
-    out_cellData.elementParents[itr->first] = tempMesh->elementParentIDs[eID];
+    out_cellData.mapData.elementParents[itr->first] = tempMesh->elementParentIDs[eID];
   }
 
   // Check that each element is dominated by a material that is actually present in the original parent cell
   for (auto itr = newElements.begin(); itr != newElements.end(); itr++)
   {
-    int parentElementID = out_cellData.elementParents[itr->first];
-    int currentDominantMaterial = out_cellData.elementDominantMaterials[itr->first];
+    int parentElementID = out_cellData.mapData.elementParents[itr->first];
+    int currentDominantMaterial = out_cellData.mapData.elementDominantMaterials[itr->first];
 
     if (originalMesh->materialVolumeFractionsElement[currentDominantMaterial][parentElementID] == 0)
     {
       // This material is not present in the original element from which the current element comes from
       if (currentDominantMaterial == matOneID)
-        out_cellData.elementDominantMaterials[itr->first] = matTwoID;
+        out_cellData.mapData.elementDominantMaterials[itr->first] = matTwoID;
       else
-        out_cellData.elementDominantMaterials[itr->first] = matOneID;
+        out_cellData.mapData.elementDominantMaterials[itr->first] = matOneID;
     }
   }  
 
@@ -620,8 +616,8 @@ void InterfaceReconstructor::computeTriangleClippingPoints(const int eID, const 
   for (int i = 1; i < 6; ++i)
     evIndexSubtract[i] += evIndexSubtract[i - 1];
 
-  for (unsigned int i = 0; i < out_cellData.evInds.size(); ++i)
-    out_cellData.evInds[i] -= evIndexSubtract[ out_cellData.evInds[i] ];
+  for (unsigned int i = 0; i < out_cellData.topology.evInds.size(); ++i)
+    out_cellData.topology.evInds[i] -= evIndexSubtract[ out_cellData.topology.evInds[i] ];
 
 }
 
@@ -681,7 +677,7 @@ void InterfaceReconstructor::generateVertexPositionsFromTriangle(std::map<int, s
   // Store the positions of the vertices in the return vector
   for (auto itr = newPoints.begin(); itr != newPoints.end(); itr++)
   {
-    out_cellData.vertexPositions.push_back(itr->second);
+    out_cellData.mapData.vertexPositions.push_back(itr->second);
   }
 }
 
@@ -692,7 +688,7 @@ void InterfaceReconstructor::generateVertexVolumeFractionsFromTriangle(std::map<
 {
     // Calculate the vertex fractions at each vertex (use t value!)
     // Make sure the output volume fractions containers are the proper size
-    out_cellData.vertexVolumeFractions.resize(tempMesh->numMaterials);
+    out_cellData.mapData.vertexVolumeFractions.resize(tempMesh->numMaterials);
     
     for (auto itr = newVertices.begin(); itr != newVertices.end(); itr++)
     {
@@ -700,17 +696,17 @@ void InterfaceReconstructor::generateVertexVolumeFractionsFromTriangle(std::map<
       for (int matID = 0; matID < tempMesh->numMaterials; ++matID)
       {
         if (vID == 0)
-          out_cellData.vertexVolumeFractions[matID].push_back(tempMesh->materialVolumeFractionsVertex[matID][upperVertex]);
+          out_cellData.mapData.vertexVolumeFractions[matID].push_back(tempMesh->materialVolumeFractionsVertex[matID][upperVertex]);
         if (vID == 1)
-          out_cellData.vertexVolumeFractions[matID].push_back(tempMesh->materialVolumeFractionsVertex[matID][lowerLeftVertex]);
+          out_cellData.mapData.vertexVolumeFractions[matID].push_back(tempMesh->materialVolumeFractionsVertex[matID][lowerLeftVertex]);
         if (vID == 2)
-          out_cellData.vertexVolumeFractions[matID].push_back(tempMesh->materialVolumeFractionsVertex[matID][lowerRightVertex]);
+          out_cellData.mapData.vertexVolumeFractions[matID].push_back(tempMesh->materialVolumeFractionsVertex[matID][lowerRightVertex]);
         if (vID == 3)
-          out_cellData.vertexVolumeFractions[matID].push_back(lerpFloat(tempMesh->materialVolumeFractionsVertex[matID][upperVertex], tempMesh->materialVolumeFractionsVertex[matID][lowerLeftVertex], verticesClippingTValue[vID]));
+          out_cellData.mapData.vertexVolumeFractions[matID].push_back(lerpFloat(tempMesh->materialVolumeFractionsVertex[matID][upperVertex], tempMesh->materialVolumeFractionsVertex[matID][lowerLeftVertex], verticesClippingTValue[vID]));
         if (vID == 4)
-          out_cellData.vertexVolumeFractions[matID].push_back(lerpFloat(tempMesh->materialVolumeFractionsVertex[matID][lowerLeftVertex], tempMesh->materialVolumeFractionsVertex[matID][lowerRightVertex], verticesClippingTValue[vID]));
+          out_cellData.mapData.vertexVolumeFractions[matID].push_back(lerpFloat(tempMesh->materialVolumeFractionsVertex[matID][lowerLeftVertex], tempMesh->materialVolumeFractionsVertex[matID][lowerRightVertex], verticesClippingTValue[vID]));
         if (vID == 5)
-          out_cellData.vertexVolumeFractions[matID].push_back(lerpFloat(tempMesh->materialVolumeFractionsVertex[matID][lowerRightVertex], tempMesh->materialVolumeFractionsVertex[matID][upperVertex], verticesClippingTValue[vID]));    
+          out_cellData.mapData.vertexVolumeFractions[matID].push_back(lerpFloat(tempMesh->materialVolumeFractionsVertex[matID][lowerRightVertex], tempMesh->materialVolumeFractionsVertex[matID][upperVertex], verticesClippingTValue[vID]));    
       }
     }
 }

@@ -27,10 +27,10 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
   auto start_time = Clock::now();
   mir::MeshTester tester;
   // mir::MIRMesh testMesh = tester.initTestCaseOne();
-  mir::MIRMesh testMesh = tester.initTestCaseTwo();
+  // mir::MIRMesh testMesh = tester.initTestCaseTwo();
   // mir::MIRMesh testMesh = tester.initTestCaseThree();
   // mir::MIRMesh testMesh = tester.initTestCaseFour();
-  // mir::MIRMesh testMesh = tester.initTestCaseFive(20, 5);
+  mir::MIRMesh testMesh = tester.initTestCaseFive(25, 7);
 
   auto end_time = Clock::now();
   std::cout << "Mesh init time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count() << " ms" << std::endl;
@@ -40,13 +40,13 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
 
   mir::InterfaceReconstructor reconstructor;
   // mir::MIRMesh processedMesh = reconstructor.computeReconstructedInterface(&testMesh);
-  mir::MIRMesh processedMesh = reconstructor.computeReconstructedInterfaceIterative(&testMesh, 5, 0.9);  // 5 iterations, 90 percent
+  mir::MIRMesh processedMesh = reconstructor.computeReconstructedInterfaceIterative(&testMesh, 5, 0.3);  // 5 iterations, 90 percent
 
   end_time = Clock::now();
   std::cout << "Material interface reconstruction time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count() << " ms" << std::endl;
 
   // Output results
-  processedMesh.writeMeshToFile("/Users/sterbentz3/Desktop/iterativeOutputTestMesh2.vtk");
+  processedMesh.writeMeshToFile("/Users/sterbentz3/Desktop/iterativeOutputTestMesh5.vtk");
 
   return 0;
 }

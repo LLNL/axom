@@ -84,41 +84,43 @@ MIRMesh MeshTester::initTestCaseOne()
   std::vector<axom::float64> blueVolumeFractions = {0.0, 0.0, 0.0, 0.0, 0.5, 0.8, 0.8, 1.0, 1.0};
   elementVF[BLUE] = blueVolumeFractions;
 
-  mir::Point2 points[numVertices];
+  std::vector<mir::Point2> points =
   {
-    points[0] = mir::Point2( 0.0, 3.0 );
-    points[1] = mir::Point2( 1.0, 3.0 );
-    points[2] = mir::Point2( 2.0, 3.0 );
-    points[3] = mir::Point2( 3.0, 3.0 );
+    mir::Point2( 0.0, 3.0 ),
+    mir::Point2( 1.0, 3.0 ),
+    mir::Point2( 2.0, 3.0 ),
+    mir::Point2( 3.0, 3.0 ),
 
-    points[4] = mir::Point2( 0.0, 2.0 );
-    points[5] = mir::Point2( 1.0, 2.0 );
-    points[6] = mir::Point2( 2.0, 2.0 );
-    points[7] = mir::Point2( 3.0, 2.0 );
+    mir::Point2( 0.0, 2.0 ),
+    mir::Point2( 1.0, 2.0 ),
+    mir::Point2( 2.0, 2.0 ),
+    mir::Point2( 3.0, 2.0 ),
 
-    points[8] = mir::Point2( 0.0, 1.0 );
-    points[9] = mir::Point2( 1.0, 1.0 );
-    points[10] = mir::Point2( 2.0, 1.0 );
-    points[11] = mir::Point2( 3.0, 1.0 );
+    mir::Point2( 0.0, 1.0 ),
+    mir::Point2( 1.0, 1.0 ),
+    mir::Point2( 2.0, 1.0 ),
+    mir::Point2( 3.0, 1.0 ),
 
-    points[12] = mir::Point2( 0.0, 0.0 );
-    points[13] = mir::Point2( 1.0, 0.0 );
-    points[14] = mir::Point2( 2.0, 0.0 );
-    points[15] = mir::Point2( 3.0, 0.0 );
-  }
+    mir::Point2( 0.0, 0.0 ),
+    mir::Point2( 1.0, 0.0 ),
+    mir::Point2( 2.0, 0.0 ),
+    mir::Point2( 3.0, 0.0 )
+  };
 
-  int elementParents[9] = { 0,1,2,3,4,5,6,7,8 }; // For the base mesh, the parents are always themselves
+  CellTopologyData topology;
+  topology.evInds = evInds;
+  topology.evBegins = evBegins;
+  topology.veInds = veInds;
+  topology.veBegins = veBegins;
 
-  std::vector<int> elementDominantMaterials = {NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT};
+  CellMapData mapData;
+  mapData.elementDominantMaterials = {NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT};
+  mapData.elementParents = { 0,1,2,3,4,5,6,7,8 }; // For the base mesh, the parents are always themselves
+  mapData.vertexPositions = points;
 
   // Build the mesh
   mir::MIRMesh testMesh;
-  testMesh.InitializeMesh(evInds, evBegins, veInds, veBegins, verts, elems, numMaterials);
-  testMesh.constructMeshRelations();
-  testMesh.constructMeshVolumeFractionsMaps(elementVF);
-  testMesh.constructVertexPositionMap(points);
-  testMesh.constructElementParentMap(elementParents);
-  testMesh.constructElementDominantMaterialMap(elementDominantMaterials);
+  testMesh.initializeMesh(verts, elems, numMaterials, topology, mapData, elementVF);
 
   return testMesh;
 }
@@ -184,42 +186,43 @@ mir::MIRMesh MeshTester::initTestCaseTwo()
   std::vector<axom::float64> orangeVolumeFractions = {0.0, 0.0, 0.0, 0.0, 0.2, 0.0, 0.8, 0.7, 0.0};
   elementVF[ORANGE] = orangeVolumeFractions;
 
-  mir::Point2 points[numVertices];
+  std::vector<mir::Point2> points =
   {
-    points[0] = mir::Point2( 0.0, 3.0 );
-    points[1] = mir::Point2( 1.0, 3.0 );
-    points[2] = mir::Point2( 2.0, 3.0 );
-    points[3] = mir::Point2( 3.0, 3.0 );
+    mir::Point2( 0.0, 3.0 ),
+    mir::Point2( 1.0, 3.0 ),
+    mir::Point2( 2.0, 3.0 ),
+    mir::Point2( 3.0, 3.0 ),
 
-    points[4] = mir::Point2( 0.0, 2.0 );
-    points[5] = mir::Point2( 1.0, 2.0 );
-    points[6] = mir::Point2( 2.0, 2.0 );
-    points[7] = mir::Point2( 3.0, 2.0 );
+    mir::Point2( 0.0, 2.0 ),
+    mir::Point2( 1.0, 2.0 ),
+    mir::Point2( 2.0, 2.0 ),
+    mir::Point2( 3.0, 2.0 ),
 
-    points[8] = mir::Point2( 0.0, 1.0 );
-    points[9] = mir::Point2( 1.0, 1.0 );
-    points[10] = mir::Point2( 2.0, 1.0 );
-    points[11] = mir::Point2( 3.0, 1.0 );
+    mir::Point2( 0.0, 1.0 ),
+    mir::Point2( 1.0, 1.0 ),
+    mir::Point2( 2.0, 1.0 ),
+    mir::Point2( 3.0, 1.0 ),
 
-    points[12] = mir::Point2( 0.0, 0.0 );
-    points[13] = mir::Point2( 1.0, 0.0 );
-    points[14] = mir::Point2( 2.0, 0.0 );
-    points[15] = mir::Point2( 3.0, 0.0 );
-  }
+    mir::Point2( 0.0, 0.0 ),
+    mir::Point2( 1.0, 0.0 ),
+    mir::Point2( 2.0, 0.0 ),
+    mir::Point2( 3.0, 0.0 )
+  };
 
+  CellTopologyData topology;
+  topology.evInds = evInds;
+  topology.evBegins = evBegins;
+  topology.veInds = veInds;
+  topology.veBegins = veBegins;
 
-  int elementParents[9] = { 0,1,2,3,4,5,6,7,8 }; // For the base mesh, the parents are always themselves
-
-  std::vector<int> elementDominantMaterials = {NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT};
+  CellMapData mapData;
+  mapData.elementDominantMaterials = {NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT};
+  mapData.elementParents = { 0,1,2,3,4,5,6,7,8 }; // For the base mesh, the parents are always themselves
+  mapData.vertexPositions = points;
 
   // Build the mesh
   mir::MIRMesh testMesh;
-  testMesh.InitializeMesh(evInds, evBegins, veInds, veBegins, verts, elems, numMaterials);
-  testMesh.constructMeshRelations();
-  testMesh.constructMeshVolumeFractionsMaps(elementVF);
-  testMesh.constructVertexPositionMap(points);
-  testMesh.constructElementParentMap(elementParents);
-  testMesh.constructElementDominantMaterialMap(elementDominantMaterials);
+  testMesh.initializeMesh(verts, elems, numMaterials, topology, mapData, elementVF);
 
   return testMesh;
 }
@@ -268,29 +271,31 @@ mir::MIRMesh MeshTester::initTestCaseThree()
   std::vector<axom::float64> redVolumeFractions = {1.0, 0.5, 0.2, 0.5};
   elementVF[RED] = redVolumeFractions;
 
-  mir::Point2 points[numVertices];
+  std::vector<mir::Point2> points =
   {
-    points[0] = mir::Point2( 1.0, 2.0 );
-    points[1] = mir::Point2( 0.5, 1.0 );
-    points[2] = mir::Point2( 1.5, 1.0 );
-    points[3] = mir::Point2( 0.0, 0.0 );
-    points[4] = mir::Point2( 1.0, 0.0 );
-    points[5] = mir::Point2( 2.0, 0.0 );
-  }
+    mir::Point2( 1.0, 2.0 ),
+    mir::Point2( 0.5, 1.0 ),
+    mir::Point2( 1.5, 1.0 ),
+    mir::Point2( 0.0, 0.0 ),
+    mir::Point2( 1.0, 0.0 ),
+    mir::Point2( 2.0, 0.0 )
+  };
 
 
-  int elementParents[4] = { 0,1,2,3 }; // For the base mesh, the parents are always themselves
+  CellTopologyData topology;
+  topology.evInds = evInds;
+  topology.evBegins = evBegins;
+  topology.veInds = veInds;
+  topology.veBegins = veBegins;
 
-  std::vector<int> elementDominantMaterials = {NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT};
+  CellMapData mapData;
+  mapData.elementDominantMaterials = {NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT};
+  mapData.elementParents = { 0,1,2,3 }; // For the base mesh, the parents are always themselves
+  mapData.vertexPositions = points;
 
   // Build the mesh
   mir::MIRMesh testMesh;
-  testMesh.InitializeMesh(evInds, evBegins, veInds, veBegins, verts, elems, numMaterials);
-  testMesh.constructMeshRelations();
-  testMesh.constructMeshVolumeFractionsMaps(elementVF);
-  testMesh.constructVertexPositionMap(points);
-  testMesh.constructElementParentMap(elementParents);
-  testMesh.constructElementDominantMaterialMap(elementDominantMaterials);
+  testMesh.initializeMesh(verts, elems, numMaterials, topology, mapData, elementVF);
 
   return testMesh;
 }
@@ -344,28 +349,28 @@ mir::MIRMesh MeshTester::initTestCaseFour()
   mir::VertSet  verts = mir::VertSet(numVertices);  // Construct a vertex set with 16 vertices
   mir::ElemSet  elems = mir::ElemSet(numElements);   // Construct an element set with 9 elements
 
-  mir::Point2 points[numVertices];
+  std::vector<mir::Point2> points =
   {
-    points[0] = mir::Point2( 0.0, 3.0 );
-    points[1] = mir::Point2( 1.0, 3.0 );
-    points[2] = mir::Point2( 2.0, 3.0 );
-    points[3] = mir::Point2( 3.0, 3.0 );
+    mir::Point2( 0.0, 3.0 ),
+    mir::Point2( 1.0, 3.0 ),
+    mir::Point2( 2.0, 3.0 ),
+    mir::Point2( 3.0, 3.0 ),
 
-    points[4] = mir::Point2( 0.0, 2.0 );
-    points[5] = mir::Point2( 1.0, 2.0 );
-    points[6] = mir::Point2( 2.0, 2.0 );
-    points[7] = mir::Point2( 3.0, 2.0 );
+    mir::Point2( 0.0, 2.0 ),
+    mir::Point2( 1.0, 2.0 ),
+    mir::Point2( 2.0, 2.0 ),
+    mir::Point2( 3.0, 2.0 ),
 
-    points[8] = mir::Point2( 0.0, 1.0 );
-    points[9] = mir::Point2( 1.0, 1.0 );
-    points[10] = mir::Point2( 2.0, 1.0 );
-    points[11] = mir::Point2( 3.0, 1.0 );
+    mir::Point2( 0.0, 1.0 ),
+    mir::Point2( 1.0, 1.0 ),
+    mir::Point2( 2.0, 1.0 ),
+    mir::Point2( 3.0, 1.0 ),
 
-    points[12] = mir::Point2( 0.0, 0.0 );
-    points[13] = mir::Point2( 1.0, 0.0 );
-    points[14] = mir::Point2( 2.0, 0.0 );
-    points[15] = mir::Point2( 3.0, 0.0 );
-  }
+    mir::Point2( 0.0, 0.0 ),
+    mir::Point2( 1.0, 0.0 ),
+    mir::Point2( 2.0, 0.0 ),
+    mir::Point2( 3.0, 0.0 )
+  };
 
   int numMaterials = 2;
   enum { GREEN = 0, BLUE = 1 };
@@ -388,18 +393,20 @@ mir::MIRMesh MeshTester::initTestCaseFour()
   elementVF[GREEN] = greenVolumeFractions;
   elementVF[BLUE] = blueVolumeFractions;
 
-  int elementParents[9] = { 0,1,2,3,4,5,6,7,8 }; // For the base mesh, the parents are always themselves
+  CellTopologyData topology;
+  topology.evInds = evInds;
+  topology.evBegins = evBegins;
+  topology.veInds = veInds;
+  topology.veBegins = veBegins;
 
-  std::vector<int> elementDominantMaterials = {NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT};
+  CellMapData mapData;
+  mapData.elementDominantMaterials = {NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT};
+  mapData.elementParents = { 0,1,2,3,4,5,6,7,8 }; // For the base mesh, the parents are always themselves
+  mapData.vertexPositions = points;
 
   // Build the mesh
   mir::MIRMesh testMesh;
-  testMesh.InitializeMesh(evInds, evBegins, veInds, veBegins, verts, elems, numMaterials);
-  testMesh.constructMeshRelations();
-  testMesh.constructMeshVolumeFractionsMaps(elementVF);
-  testMesh.constructVertexPositionMap(points);
-  testMesh.constructElementParentMap(elementParents);
-  testMesh.constructElementDominantMaterialMap(elementDominantMaterials);
+  testMesh.initializeMesh(verts, elems, numMaterials, topology, mapData, elementVF);
 
   return testMesh;
 }
@@ -428,35 +435,40 @@ mir::MIRMesh MeshTester::createUniformGridTestCaseMesh(int gridSize, mir::Point2
   for (int i = 0; i < cellData.numElems; ++i)
   {
     greenVolumeFractions[i] = calculatePercentOverlapMonteCarlo(numMonteCarloSamples, circleCenter, circleRadius, 
-                                                                cellData.vertexPositions[cellData.evInds[i * 4 + 0]], 
-                                                                cellData.vertexPositions[cellData.evInds[i * 4 + 1]], 
-                                                                cellData.vertexPositions[cellData.evInds[i * 4 + 2]], 
-                                                                cellData.vertexPositions[cellData.evInds[i * 4 + 3]]);
+                                                                cellData.mapData.vertexPositions[cellData.topology.evInds[i * 4 + 0]], 
+                                                                cellData.mapData.vertexPositions[cellData.topology.evInds[i * 4 + 1]], 
+                                                                cellData.mapData.vertexPositions[cellData.topology.evInds[i * 4 + 2]], 
+                                                                cellData.mapData.vertexPositions[cellData.topology.evInds[i * 4 + 3]]);
     blueVolumeFractions[i] = 1.0 - greenVolumeFractions[i];
   }
 
   elementVF[GREEN] = greenVolumeFractions;
   elementVF[BLUE] = blueVolumeFractions;
 
-  int elementParents[cellData.numElems]; // For the base mesh, the parents are always themselves
+  std::vector<int> elementParents;// For the base mesh, the parents are always themselves
   std::vector<int> elementDominantMaterials;
   for (int i = 0; i < cellData.numElems; ++i)
   {
-    elementParents[i] = i;
+    elementParents.push_back(i);
     elementDominantMaterials.push_back(NULL_MAT);
   }
 
+  CellTopologyData topology;
+  topology.evInds = cellData.topology.evInds;
+  topology.evBegins = cellData.topology.evBegins;
+  topology.veInds = cellData.topology.veInds;
+  topology.veBegins = cellData.topology.veBegins;
+
+  CellMapData mapData;
+  mapData.elementDominantMaterials = elementDominantMaterials;
+  mapData.elementParents = elementParents;
+  mapData.vertexPositions = cellData.mapData.vertexPositions;
+
   // Build the mesh
   mir::MIRMesh testMesh;
-  testMesh.InitializeMesh(cellData.evInds, cellData.evBegins, cellData.veInds, cellData.veBegins, verts, elems, numMaterials);
-  testMesh.constructMeshRelations();
-  testMesh.constructMeshVolumeFractionsMaps(elementVF);
-  testMesh.constructVertexPositionMap(cellData.vertexPositions.data());
-  testMesh.constructElementParentMap(elementParents);
-  testMesh.constructElementDominantMaterialMap(elementDominantMaterials);
+  testMesh.initializeMesh(verts, elems, numMaterials, topology, mapData, elementVF);
 
   return testMesh;
-
 }
 
 //--------------------------------------------------------------------------------
@@ -572,11 +584,11 @@ mir::CellData MeshTester::generateGrid(int n)
   mir::CellData data;
   data.numVerts = numVertices;
   data.numElems = numElements;
-  data.evInds = evInds;
-  data.evBegins = evBegins;
-  data.veInds = veInds;
-  data.veBegins = veBegins;
-  data.vertexPositions = points;
+  data.topology.evInds = evInds;
+  data.topology.evBegins = evBegins;
+  data.topology.veInds = veInds;
+  data.topology.veBegins = veBegins;
+  data.mapData.vertexPositions = points;
 
   // // Print out the results
   // printf("evInds: { ");
@@ -674,10 +686,10 @@ mir::MIRMesh MeshTester::initTestCaseFive(int gridSize, int numCircles)
   // Use the uniform sampling method to generate volume fractions for each material
   for (int eID = 0; eID < cellData.numElems; ++eID)
   {
-    mir::Point2 v0 = cellData.vertexPositions[cellData.evInds[eID * 4 + 0]]; 
-    mir::Point2 v1 = cellData.vertexPositions[cellData.evInds[eID * 4 + 1]]; 
-    mir::Point2 v2 = cellData.vertexPositions[cellData.evInds[eID * 4 + 2]]; 
-    mir::Point2 v3 = cellData.vertexPositions[cellData.evInds[eID * 4 + 3]];
+    mir::Point2 v0 = cellData.mapData.vertexPositions[cellData.topology.evInds[eID * 4 + 0]]; 
+    mir::Point2 v1 = cellData.mapData.vertexPositions[cellData.topology.evInds[eID * 4 + 1]]; 
+    mir::Point2 v2 = cellData.mapData.vertexPositions[cellData.topology.evInds[eID * 4 + 2]]; 
+    mir::Point2 v3 = cellData.mapData.vertexPositions[cellData.topology.evInds[eID * 4 + 3]];
 
     // Run the uniform sampling to determine how much of the current cell is composed of each material
     int materialCount[numMaterials];  for (int i = 0; i < numMaterials; ++i) materialCount[i] = 0;
@@ -719,25 +731,30 @@ mir::MIRMesh MeshTester::initTestCaseFive(int gridSize, int numCircles)
     }
   }
 
-  int elementParents[cellData.numElems]; // For the base mesh, the parents are always themselves
+  std::vector<int> elementParents; // For the base mesh, the parents are always themselves
   std::vector<int> elementDominantMaterials;
   for (int i = 0; i < cellData.numElems; ++i)
   {
-    elementParents[i] = i;
+    elementParents.push_back(i);
     elementDominantMaterials.push_back(NULL_MAT);
   }
 
+  CellTopologyData topology;
+  topology.evInds = cellData.topology.evInds;
+  topology.evBegins = cellData.topology.evBegins;
+  topology.veInds = cellData.topology.veInds;
+  topology.veBegins = cellData.topology.veBegins;
+
+  CellMapData mapData;
+  mapData.elementDominantMaterials = elementDominantMaterials;
+  mapData.elementParents = elementParents;
+  mapData.vertexPositions = cellData.mapData.vertexPositions;
+
   // Build the mesh
   mir::MIRMesh testMesh;
-  testMesh.InitializeMesh(cellData.evInds, cellData.evBegins, cellData.veInds, cellData.veBegins, verts, elems, numMaterials);
-  testMesh.constructMeshRelations();
-  testMesh.constructMeshVolumeFractionsMaps(materialVolumeFractionsData);
-  testMesh.constructVertexPositionMap(cellData.vertexPositions.data());
-  testMesh.constructElementParentMap(elementParents);
-  testMesh.constructElementDominantMaterialMap(elementDominantMaterials);
+  testMesh.initializeMesh(verts, elems, numMaterials, topology, mapData, materialVolumeFractionsData);
 
   return testMesh;
-
 }
 
 //--------------------------------------------------------------------------------
