@@ -39,6 +39,7 @@ if ( RAJA_FOUND AND UMPIRE_FOUND )
   set( spin_headers
        ${spin_headers}
        BVH.hpp
+       execution_space.hpp
 
        ## internal
        internal/linear_bvh/aabb.hpp
