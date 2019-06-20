@@ -28,6 +28,7 @@ set( primal_headers
      geometry/Tetrahedron.hpp
      geometry/Triangle.hpp
      geometry/Vector.hpp
+     geometry/BezierCurve.hpp
 
      ## operators
      operators/clip.hpp
