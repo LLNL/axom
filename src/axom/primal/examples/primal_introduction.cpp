@@ -36,6 +36,7 @@
 #include "axom/primal/geometry/Segment.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
 #include "axom/primal/geometry/Vector.hpp"
+#include "axom/primal/geometry/BezierCurve.hpp"
 // _prims_header_end
 
 // Axom operations
@@ -84,6 +85,7 @@ typedef Polygon<double, in3D> PolygonType;
 typedef Ray<double, in3D> RayType;
 typedef Segment<double, in3D> SegmentType;
 typedef Vector<double, in3D> VectorType;
+typedef BezierCurve<double, in3D> BezierCurveType;
 // _using_end
 
 std::string asyheader =
@@ -121,6 +123,17 @@ void writeToFile(std::string fname, std::string contents)
   {
     outfile << contents;
   }
+}
+
+BezierCurveType showOrderBezier()
+{
+  //_ctrlpts_start
+  BezierCurveType bCurve(4);
+  std::cout << "----------------------Checking Bezier Functions-----------------------" << std::endl;
+  std::cout << bCurve.getOrder() << std::endl;
+  //_ctrlpts_end
+
+  return bCurve;
 }
 
 PolygonType showClip()
@@ -724,6 +737,7 @@ int main(int argc, char** argv)
   showIntersect();
   showOrientation();
   showDistance();
+  showOrderBezier();
 
   return 0;
 }

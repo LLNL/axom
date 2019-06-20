@@ -55,18 +55,20 @@ public:
    * \brief Constructor for an empty Bezier Curve that reserves space for
    *  the given order of the curve
    *
-   * \param [in] order number of control points minus 1 for which to reserve space
+   * \param [in] order number of control points minus 1 for which to reserve control point space
    * \pre order is not negative
    *
    */
-  BezierCurve(int order)
+  BezierCurve(int ord)
   {
-    SLIC_ASSERT(order >= 0);
-    m_controlpoints.reserve(order + 1);
+    SLIC_ASSERT(ord >= 0);
+    m_controlpoints.reserve(ord+1);
+    m_order=ord;
   }
 
   /*! Return the order of the Bezier Curve*/
-  int order() const { return m_controlpoints.size()-1; }
+  int getOrder() const
+  { return m_order; }
 
   /*! Appends a control point to the list of control points*/
   void addControlpoint(const PointType& pt)
@@ -93,14 +95,14 @@ public:
    */
   std::ostream& print(std::ostream& os) const 
   {
-    const int sz = order();
+    const int sz = m_order;
 
-    os <<"{" << sz <<"-order Bezier Curve:";
+    os <<"{" << sz <<"-degree Bezier Curve:";
     for (int i=0 ; i< sz; ++i)
     {
       os << m_controlpoints[i] << ",";
     }
-    if (sz >= 1)
+    if (sz >= 2)
     {
       os<<m_controlpoints[sz];
     }
@@ -119,9 +121,9 @@ public:
   {
     return m_controlpoints.size() >= 2;
   }
-
 private:
   Coords m_controlpoints;
+  int m_order;
 }; // class BezierCurve
 
 //------------------------------------------------------------------------------
