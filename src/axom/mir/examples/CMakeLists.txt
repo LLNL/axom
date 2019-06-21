@@ -5,7 +5,7 @@
 
 set( mir_examples
      mir_tutorial_simple.cpp
-     mirConcentricCircles.cpp
+     mir_concentric_circles.cpp
    )
 
 set( mir_example_dependencies

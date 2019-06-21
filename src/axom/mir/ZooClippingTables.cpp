@@ -10,7 +10,7 @@ namespace axom
 namespace mir
 {
 
-  //      Quad Vertex Indices
+  //      Quad Vertex Local Indices
   //
   //      0         7         3
   //      @---------@---------@
@@ -45,7 +45,7 @@ namespace mir
   };
 
 
-  //      Triangle Vertex Indices
+  //      Triangle Vertex Local Indices
   //                  0
   //                  @
   //                 / \

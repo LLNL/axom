@@ -13,6 +13,7 @@
 
 set(gtest_mir_tests
     mir_smoke.cpp
+    mir_interface_reconstructor.cpp
     )
 
 
