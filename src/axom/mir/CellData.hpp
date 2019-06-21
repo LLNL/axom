@@ -3,6 +3,13 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+/**
+ * \file CellData.hpp
+ * 
+ * \brief Contains the specifications for the CellData class 
+ *        and CellTopologyData and CellMapData structs.
+ */
+
 #ifndef __CELL_DATA_H__
 #define __CELL_DATA_H__
 
@@ -19,40 +26,69 @@ namespace axom
 namespace mir
 {
 
-  // Struct for collecting data that specifies a mesh or cell's connectivity/topology.
+  /**
+   * \struct CellTopologyData
+   * 
+   * \brief Struct for collecting data that specifies a mesh or cell's connectivity/topology.
+   */
   struct CellTopologyData
   {
-      std::vector<PosType> evInds;
-      std::vector<PosType> evBegins;
-      std::vector<PosType> veInds;
-      std::vector<PosType> veBegins;
+      std::vector<PosType> m_evInds;
+      std::vector<PosType> m_evBegins;
+      std::vector<PosType> m_veInds;
+      std::vector<PosType> m_veBegins;
   };
 
-  // Struct for collecting the data that will populate a mesh's map data structures.
+  /**
+   * \struct CellMapData
+   * 
+   * \brief Struct for collecting the data that will populate a mesh's map data structures.
+   */
   struct CellMapData
   {
-      std::vector<mir::Point2> vertexPositions;                               // Data that goes into MIRMesh's vertexPositions PointMap
-      std::vector<std::vector<axom::float64> > vertexVolumeFractions;         // Data that goes into MIRMesh's materialVolumeFractionsVertex ScalarMap
-      std::vector<int> elementDominantMaterials;                              // Data that goes into MIRMesh's elementDominantColors IntMap
-      std::vector<int> elementParents;                                        // Data that goes into MIRMesh's elementParentIDs IntMap
+      std::vector<mir::Point2> m_vertexPositions;                               // Data that goes into MIRMesh's vertexPositions PointMap
+      std::vector<std::vector<axom::float64> > m_vertexVolumeFractions;         // Data that goes into MIRMesh's materialVolumeFractionsVertex ScalarMap
+      std::vector<int> m_elementDominantMaterials;                              // Data that goes into MIRMesh's elementDominantColors IntMap
+      std::vector<int> m_elementParents;                                        // Data that goes into MIRMesh's elementParentIDs IntMap
   };
 
-  /// Represents an arbitrary number of cells that are within the same local coordinate system (i.e. share a set of vertices and elements).
-  /// Intended to be used as a helper class to hold intermediate data while processing a mesh, and to be used as input to the MIRMesh class to fully initialize it.
+  /**
+   * \class CellData
+   * 
+   * \brief The CellData class represents an arbitrary number of cells that are 
+   *        within the same local coordinate system (i.e. share a set of vertices 
+   *        and elements).
+   * 
+   * \detail This class is intended to be used as a helper class to hold intermediate 
+   *         data while processing a mesh, and to be used as input to the MIRMesh class
+   *         to fully initialize it.
+   */
   class CellData
   {
     public:
+      /**
+      * \brief Default constructor.
+      */
       CellData();
+
+      /**
+       * \brief Default destructor.
+       */
       ~CellData();
 
-      void mergeCell(CellData cellToMerge);
+      /**
+       * \brief Merges the cell data from the given cell into this cell.
+       * 
+       * \param cellToMerge  The cell whose data will be taken and merged in.
+       */
+      void mergeCell(const CellData& cellToMerge);
 
     public:
-      int numVerts;
-      int numElems;
+      int m_numVerts;
+      int m_numElems;
 
-      CellTopologyData topology;
-      CellMapData mapData;
+      CellTopologyData m_topology;
+      CellMapData m_mapData;
   };
 }
 }

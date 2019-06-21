@@ -18,35 +18,35 @@ namespace mir = axom::mir;
 //--------------------------------------------------------------------------------
 
 /*!
- * \brief Tutorial main
+ * \brief Tutorial main showing how to initialize test cases and perform mir.
  */
 int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
 {
   
   // Intialize a mesh for testing MIR
-  auto start_time = Clock::now();
+  auto startTime = Clock::now();
   mir::MeshTester tester;
   // mir::MIRMesh testMesh = tester.initTestCaseOne();
   // mir::MIRMesh testMesh = tester.initTestCaseTwo();
   // mir::MIRMesh testMesh = tester.initTestCaseThree();
   // mir::MIRMesh testMesh = tester.initTestCaseFour();
-  mir::MIRMesh testMesh = tester.initTestCaseFive(25, 7);
+  mir::MIRMesh testMesh = tester.initTestCaseFive(50, 25);
 
-  auto end_time = Clock::now();
-  std::cout << "Mesh init time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count() << " ms" << std::endl;
+  auto endTime = Clock::now();
+  std::cout << "Mesh init time: " << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() << " ms" << std::endl;
 
   // Begin material interface reconstruction
-  start_time = Clock::now();
+  startTime = Clock::now();
 
   mir::InterfaceReconstructor reconstructor;
-  // mir::MIRMesh processedMesh = reconstructor.computeReconstructedInterface(&testMesh);
-  mir::MIRMesh processedMesh = reconstructor.computeReconstructedInterfaceIterative(&testMesh, 5, 0.3);  // 5 iterations, 90 percent
+  // mir::MIRMesh processedMesh = reconstructor.computeReconstructedInterface(testMesh);                // Process once, with original Meredith algorithm
+  mir::MIRMesh processedMesh = reconstructor.computeReconstructedInterfaceIterative(testMesh, 5, 0.3);  // 5 iterations, 30 percent with iterative Meredith algorithm
 
-  end_time = Clock::now();
-  std::cout << "Material interface reconstruction time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count() << " ms" << std::endl;
+  endTime = Clock::now();
+  std::cout << "Material interface reconstruction time: " << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() << " ms" << std::endl;
 
   // Output results
-  processedMesh.writeMeshToFile("/Users/sterbentz3/Desktop/iterativeOutputTestMesh5.vtk");
+  processedMesh.writeMeshToFile("/Users/sterbentz3/Desktop/testOutputIterative6.vtk");
 
   return 0;
 }

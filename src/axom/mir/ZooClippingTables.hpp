@@ -6,11 +6,28 @@
 #ifndef __ZOO_CLIPPING_TABLES_H__
 #define __ZOO_CLIPPING_TABLES_H__
 
+/**
+ * \file ZooClippingTables.hpp
+ * 
+ * \brief Contains the defintions for the clipping cases and enumerator
+ *        for the shape types in the zoo.
+ */
 
 namespace axom
 {
 namespace mir
 {
+
+  enum Shape
+  {
+    Triangle,
+    Quad,
+    Tetrahedron,
+    Triangular_Prism,
+    Pyramid,
+    Hexahedron
+  };
+
   extern const int quadClipTable[16][19];
   extern const int triangleClipTable[8][10];
 }

@@ -3,6 +3,12 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+/**
+ * \file MIRMeshTypes.hpp
+ * 
+ * \brief Contains the specifications for types aliases used throughout the MIR component.
+ */
+
 #ifndef __MIR_MESH_TYPES_H__
 #define __MIR_MESH_TYPES_H__
 

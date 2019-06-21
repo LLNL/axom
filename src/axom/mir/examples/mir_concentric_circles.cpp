@@ -39,18 +39,18 @@ int main( int argc, char** argv )
     std::string outputFilePath = std::string(argv[3]);
 
     // Intialize a mesh for testing MIR
-    auto start_time = Clock::now();
+    auto startTime = Clock::now();
     mir::MeshTester tester;
-    mir::MIRMesh testMesh = tester.initTestCaseFive(gridSize, numCircles);  // grid size, numCircles
-    auto end_time = Clock::now();
-    std::cout << "Mesh init time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count() << " ms" << std::endl;
+    mir::MIRMesh testMesh = tester.initTestCaseFive(gridSize, numCircles);
+    auto endTime = Clock::now();
+    std::cout << "Mesh init time: " << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() << " ms" << std::endl;
 
     // Begin material interface reconstruction
-    start_time = Clock::now();
+    startTime = Clock::now();
     mir::InterfaceReconstructor reconstructor;
-    mir::MIRMesh processedMesh = reconstructor.computeReconstructedInterface(&testMesh); 
-    end_time = Clock::now();
-    std::cout << "Material interface reconstruction time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count() << " ms" << std::endl;
+    mir::MIRMesh processedMesh = reconstructor.computeReconstructedInterface(testMesh); 
+    endTime = Clock::now();
+    std::cout << "Material interface reconstruction time: " << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() << " ms" << std::endl;
 
     // Output results
     processedMesh.writeMeshToFile(outputFilePath + "outputConcentricCircles.vtk");

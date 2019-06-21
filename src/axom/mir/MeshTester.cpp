@@ -26,7 +26,6 @@ MeshTester::~MeshTester()
 
 //--------------------------------------------------------------------------------
 
-/// Initialize mesh for Test Case 1 (from Meredith 2004)
 MIRMesh MeshTester::initTestCaseOne()
 {
   int numElements = 9;
@@ -108,15 +107,15 @@ MIRMesh MeshTester::initTestCaseOne()
   };
 
   CellTopologyData topology;
-  topology.evInds = evInds;
-  topology.evBegins = evBegins;
-  topology.veInds = veInds;
-  topology.veBegins = veBegins;
+  topology.m_evInds = evInds;
+  topology.m_evBegins = evBegins;
+  topology.m_veInds = veInds;
+  topology.m_veBegins = veBegins;
 
   CellMapData mapData;
-  mapData.elementDominantMaterials = {NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT};
-  mapData.elementParents = { 0,1,2,3,4,5,6,7,8 }; // For the base mesh, the parents are always themselves
-  mapData.vertexPositions = points;
+  mapData.m_elementDominantMaterials = {NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT};
+  mapData.m_elementParents = { 0,1,2,3,4,5,6,7,8 }; // For the base mesh, the parents are always themselves
+  mapData.m_vertexPositions = points;
 
   // Build the mesh
   mir::MIRMesh testMesh;
@@ -127,7 +126,6 @@ MIRMesh MeshTester::initTestCaseOne()
 
 //--------------------------------------------------------------------------------
 
-/// Initialize mesh for Test Case 2 (from Meredith and Childs 2010)
 mir::MIRMesh MeshTester::initTestCaseTwo()
 {
   int numElements = 9;
@@ -210,15 +208,15 @@ mir::MIRMesh MeshTester::initTestCaseTwo()
   };
 
   CellTopologyData topology;
-  topology.evInds = evInds;
-  topology.evBegins = evBegins;
-  topology.veInds = veInds;
-  topology.veBegins = veBegins;
+  topology.m_evInds = evInds;
+  topology.m_evBegins = evBegins;
+  topology.m_veInds = veInds;
+  topology.m_veBegins = veBegins;
 
   CellMapData mapData;
-  mapData.elementDominantMaterials = {NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT};
-  mapData.elementParents = { 0,1,2,3,4,5,6,7,8 }; // For the base mesh, the parents are always themselves
-  mapData.vertexPositions = points;
+  mapData.m_elementDominantMaterials = {NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT};
+  mapData.m_elementParents = { 0,1,2,3,4,5,6,7,8 }; // For the base mesh, the parents are always themselves
+  mapData.m_vertexPositions = points;
 
   // Build the mesh
   mir::MIRMesh testMesh;
@@ -229,7 +227,6 @@ mir::MIRMesh MeshTester::initTestCaseTwo()
 
 //--------------------------------------------------------------------------------
 
-/// Initialize mesh for Test Case 3, which tests all the triangle clipping cases.
 mir::MIRMesh MeshTester::initTestCaseThree()
 {
   int numElements = 4;
@@ -283,15 +280,15 @@ mir::MIRMesh MeshTester::initTestCaseThree()
 
 
   CellTopologyData topology;
-  topology.evInds = evInds;
-  topology.evBegins = evBegins;
-  topology.veInds = veInds;
-  topology.veBegins = veBegins;
+  topology.m_evInds = evInds;
+  topology.m_evBegins = evBegins;
+  topology.m_veInds = veInds;
+  topology.m_veBegins = veBegins;
 
   CellMapData mapData;
-  mapData.elementDominantMaterials = {NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT};
-  mapData.elementParents = { 0,1,2,3 }; // For the base mesh, the parents are always themselves
-  mapData.vertexPositions = points;
+  mapData.m_elementDominantMaterials = {NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT};
+  mapData.m_elementParents = { 0,1,2,3 }; // For the base mesh, the parents are always themselves
+  mapData.m_vertexPositions = points;
 
   // Build the mesh
   mir::MIRMesh testMesh;
@@ -302,7 +299,6 @@ mir::MIRMesh MeshTester::initTestCaseThree()
 
 //--------------------------------------------------------------------------------
 
-/// Initialize mesh for Test Case 4, a 3x3 grid with a circle of one material in the middle
 mir::MIRMesh MeshTester::initTestCaseFour()
 {
   int numElements = 9;
@@ -394,15 +390,15 @@ mir::MIRMesh MeshTester::initTestCaseFour()
   elementVF[BLUE] = blueVolumeFractions;
 
   CellTopologyData topology;
-  topology.evInds = evInds;
-  topology.evBegins = evBegins;
-  topology.veInds = veInds;
-  topology.veBegins = veBegins;
+  topology.m_evInds = evInds;
+  topology.m_evBegins = evBegins;
+  topology.m_veInds = veInds;
+  topology.m_veBegins = veBegins;
 
   CellMapData mapData;
-  mapData.elementDominantMaterials = {NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT};
-  mapData.elementParents = { 0,1,2,3,4,5,6,7,8 }; // For the base mesh, the parents are always themselves
-  mapData.vertexPositions = points;
+  mapData.m_elementDominantMaterials = {NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT};
+  mapData.m_elementParents = { 0,1,2,3,4,5,6,7,8 }; // For the base mesh, the parents are always themselves
+  mapData.m_vertexPositions = points;
 
   // Build the mesh
   mir::MIRMesh testMesh;
@@ -413,32 +409,31 @@ mir::MIRMesh MeshTester::initTestCaseFour()
 
 //--------------------------------------------------------------------------------
 
-/// Intializes a uniform grid with a circle of one material surrounded by another material.
 mir::MIRMesh MeshTester::createUniformGridTestCaseMesh(int gridSize, mir::Point2 circleCenter, axom::float64 circleRadius)
 {
   // Generate the mesh topology
   mir::CellData cellData = generateGrid(gridSize);
 
-  mir::VertSet  verts = mir::VertSet(cellData.numVerts);  // Construct the vertex set
-  mir::ElemSet  elems = mir::ElemSet(cellData.numElems);   // Construct the element set
+  mir::VertSet  verts = mir::VertSet(cellData.m_numVerts);  // Construct the vertex set
+  mir::ElemSet  elems = mir::ElemSet(cellData.m_numElems);   // Construct the element set
 
   int numMaterials = 2;
   enum { GREEN = 0, BLUE = 1 };
 
   std::vector<std::vector<axom::float64> > elementVF;   elementVF.resize(numMaterials);
 
-  std::vector<axom::float64> greenVolumeFractions;      greenVolumeFractions.resize(cellData.numElems);
-  std::vector<axom::float64> blueVolumeFractions;       blueVolumeFractions.resize(cellData.numElems);
+  std::vector<axom::float64> greenVolumeFractions;      greenVolumeFractions.resize(cellData.m_numElems);
+  std::vector<axom::float64> blueVolumeFractions;       blueVolumeFractions.resize(cellData.m_numElems);
 
   // Generate the element volume fractions for the circle
   int numMonteCarloSamples = 100;
-  for (int i = 0; i < cellData.numElems; ++i)
+  for (int i = 0; i < cellData.m_numElems; ++i)
   {
     greenVolumeFractions[i] = calculatePercentOverlapMonteCarlo(numMonteCarloSamples, circleCenter, circleRadius, 
-                                                                cellData.mapData.vertexPositions[cellData.topology.evInds[i * 4 + 0]], 
-                                                                cellData.mapData.vertexPositions[cellData.topology.evInds[i * 4 + 1]], 
-                                                                cellData.mapData.vertexPositions[cellData.topology.evInds[i * 4 + 2]], 
-                                                                cellData.mapData.vertexPositions[cellData.topology.evInds[i * 4 + 3]]);
+                                                                cellData.m_mapData.m_vertexPositions[cellData.m_topology.m_evInds[i * 4 + 0]], 
+                                                                cellData.m_mapData.m_vertexPositions[cellData.m_topology.m_evInds[i * 4 + 1]], 
+                                                                cellData.m_mapData.m_vertexPositions[cellData.m_topology.m_evInds[i * 4 + 2]], 
+                                                                cellData.m_mapData.m_vertexPositions[cellData.m_topology.m_evInds[i * 4 + 3]]);
     blueVolumeFractions[i] = 1.0 - greenVolumeFractions[i];
   }
 
@@ -447,22 +442,22 @@ mir::MIRMesh MeshTester::createUniformGridTestCaseMesh(int gridSize, mir::Point2
 
   std::vector<int> elementParents;// For the base mesh, the parents are always themselves
   std::vector<int> elementDominantMaterials;
-  for (int i = 0; i < cellData.numElems; ++i)
+  for (int i = 0; i < cellData.m_numElems; ++i)
   {
     elementParents.push_back(i);
     elementDominantMaterials.push_back(NULL_MAT);
   }
 
   CellTopologyData topology;
-  topology.evInds = cellData.topology.evInds;
-  topology.evBegins = cellData.topology.evBegins;
-  topology.veInds = cellData.topology.veInds;
-  topology.veBegins = cellData.topology.veBegins;
+  topology.m_evInds = cellData.m_topology.m_evInds;
+  topology.m_evBegins = cellData.m_topology.m_evBegins;
+  topology.m_veInds = cellData.m_topology.m_veInds;
+  topology.m_veBegins = cellData.m_topology.m_veBegins;
 
   CellMapData mapData;
-  mapData.elementDominantMaterials = elementDominantMaterials;
-  mapData.elementParents = elementParents;
-  mapData.vertexPositions = cellData.mapData.vertexPositions;
+  mapData.m_elementDominantMaterials = elementDominantMaterials;
+  mapData.m_elementParents = elementParents;
+  mapData.m_vertexPositions = cellData.m_mapData.m_vertexPositions;
 
   // Build the mesh
   mir::MIRMesh testMesh;
@@ -473,32 +468,31 @@ mir::MIRMesh MeshTester::createUniformGridTestCaseMesh(int gridSize, mir::Point2
 
 //--------------------------------------------------------------------------------
 
-// Assumes the quad vertices are ordered the same as the clipping case.
-axom::float64 MeshTester::calculatePercentOverlapMonteCarlo(int gridSize, mir::Point2 circle_center, axom::float64 circle_radius, mir::Point2 q_p0, mir::Point2 q_p1, mir::Point2 q_p2, mir::Point2 q_p3)
+axom::float64 MeshTester::calculatePercentOverlapMonteCarlo(int gridSize, mir::Point2 circleCenter, axom::float64 circleRadius, mir::Point2 quadP0, mir::Point2 quadP1, mir::Point2 quadP2, mir::Point2 quadP3)
 {
   // Check if any of the quad's corners are within the circle
-  axom::float64 distP0 = distance(q_p0, circle_center);
-  axom::float64 distP1 = distance(q_p1, circle_center);
-  axom::float64 distP2 = distance(q_p2, circle_center);
-  axom::float64 distP3 = distance(q_p3, circle_center);
+  axom::float64 distP0 = distance(quadP0, circleCenter);
+  axom::float64 distP1 = distance(quadP1, circleCenter);
+  axom::float64 distP2 = distance(quadP2, circleCenter);
+  axom::float64 distP3 = distance(quadP3, circleCenter);
 
-  if (distP0 < circle_radius && distP1 < circle_radius && distP2 < circle_radius && distP3 < circle_radius)
+  if (distP0 < circleRadius && distP1 < circleRadius && distP2 < circleRadius && distP3 < circleRadius)
   {
     // The entire quad overlaps the circle
     return 1.0;
   }
-  else if (distP0 < circle_radius || distP1 < circle_radius || distP2 < circle_radius || distP3 < circle_radius)
+  else if (distP0 < circleRadius || distP1 < circleRadius || distP2 < circleRadius || distP3 < circleRadius)
   {
     // Some of the quad overlaps the circle, so run the Monte Carlo sampling to determine how much
-    axom::float64 delta_x = abs(q_p2.m_x - q_p1.m_x) / (double) (gridSize - 1);
-    axom::float64 delta_y = abs(q_p0.m_y - q_p1.m_y) / (double) (gridSize - 1);
+    axom::float64 delta_x = abs(quadP2.m_x - quadP1.m_x) / (double) (gridSize - 1);
+    axom::float64 delta_y = abs(quadP0.m_y - quadP1.m_y) / (double) (gridSize - 1);
     int countOverlap = 0;
     for (int y = 0; y < gridSize; ++y)
     {
       for (int x = 0; x < gridSize; ++x)
       {
-        mir::Point2 samplePoint(delta_x * x + q_p1.m_x, delta_y * y + q_p1.m_y);
-        if (distance(samplePoint, circle_center) < circle_radius)
+        mir::Point2 samplePoint(delta_x * x + quadP1.m_x, delta_y * y + quadP1.m_y);
+        if (distance(samplePoint, circleCenter) < circleRadius)
           ++countOverlap;
       }
     }
@@ -513,20 +507,19 @@ axom::float64 MeshTester::calculatePercentOverlapMonteCarlo(int gridSize, mir::P
 
 //--------------------------------------------------------------------------------
 
-/// Generates a 2D uniform grid with n x n elements.
-mir::CellData MeshTester::generateGrid(int n)
+mir::CellData MeshTester::generateGrid(int gridSize)
 {
   // Generate the topology for a uniform quad mesh with n x n elements automatically
-  int numElements = n * n;
-  int numVertices = (n + 1) * (n + 1);
+  int numElements = gridSize * gridSize;
+  int numVertices = (gridSize + 1) * (gridSize + 1);
 
   // Generate the evInds
   std::vector<mir::PosType> evInds;
   for (int eID = 0; eID < numElements; ++eID)
   {
-    int row = eID / n;  // note the integer division
-    int vertsPerRow = n + 1;
-    int elemsPerRow = n;
+    int row = eID / gridSize;  // note the integer division
+    int vertsPerRow = gridSize + 1;
+    int elemsPerRow = gridSize;
 
     evInds.push_back( (eID % elemsPerRow) + row * vertsPerRow + 0);
     evInds.push_back( (eID % elemsPerRow) + (row + 1) * vertsPerRow + 0);
@@ -537,7 +530,7 @@ mir::CellData MeshTester::generateGrid(int n)
   // Generate the evBegins
   std::vector<mir::PosType> evBegins;
   evBegins.push_back(0);
-  for (int i = 0; i < n * n; ++i)
+  for (int i = 0; i < numElements; ++i)
   {
     evBegins.push_back((i + 1) * 4);
   }
@@ -573,22 +566,22 @@ mir::CellData MeshTester::generateGrid(int n)
 
   // Generate the vertex positions
   std::vector<mir::Point2> points;
-  for (int y = n; y > -1; --y)
+  for (int y = gridSize; y > -1; --y)
   {
-    for (int x = 0; x < n + 1; ++x)
+    for (int x = 0; x < gridSize + 1; ++x)
     {
       points.push_back(mir::Point2(x, y));
     }
   }
 
   mir::CellData data;
-  data.numVerts = numVertices;
-  data.numElems = numElements;
-  data.topology.evInds = evInds;
-  data.topology.evBegins = evBegins;
-  data.topology.veInds = veInds;
-  data.topology.veBegins = veBegins;
-  data.mapData.vertexPositions = points;
+  data.m_numVerts = numVertices;
+  data.m_numElems = numElements;
+  data.m_topology.m_evInds = evInds;
+  data.m_topology.m_evBegins = evBegins;
+  data.m_topology.m_veInds = veInds;
+  data.m_topology.m_veBegins = veBegins;
+  data.m_mapData.m_vertexPositions = points;
 
   // // Print out the results
   // printf("evInds: { ");
@@ -633,7 +626,6 @@ mir::CellData MeshTester::generateGrid(int n)
 
 //--------------------------------------------------------------------------------
 
-/// Calculate the distance between the two given points.
 axom::float64 MeshTester::distance(mir::Point2 p0, mir::Point2 p1)
 {
   return sqrt( ((p1.m_x - p0.m_x) * (p1.m_x - p0.m_x)) + ((p1.m_y - p0.m_y) * (p1.m_y - p0.m_y)) );
@@ -641,16 +633,14 @@ axom::float64 MeshTester::distance(mir::Point2 p0, mir::Point2 p1)
 
 //--------------------------------------------------------------------------------
 
-/// Multiple materials, multiple concentric circles.
-/// Note: Assumes each circle has a unique material.
 mir::MIRMesh MeshTester::initTestCaseFive(int gridSize, int numCircles)
 {
 
   // Generate the mesh topology
   mir::CellData cellData = generateGrid(gridSize);
 
-  mir::VertSet  verts = mir::VertSet(cellData.numVerts);  // Construct the vertex set
-  mir::ElemSet  elems = mir::ElemSet(cellData.numElems);   // Construct the element set
+  mir::VertSet  verts = mir::VertSet(cellData.m_numVerts);  // Construct the vertex set
+  mir::ElemSet  elems = mir::ElemSet(cellData.m_numElems);   // Construct the element set
 
   // Generate the element volume fractions with concentric circles
   int numMaterials = numCircles + 1;
@@ -679,17 +669,17 @@ mir::MIRMesh MeshTester::initTestCaseFive(int gridSize, int numCircles)
   for (int i = 0; i < numMaterials; ++i)
   {
     std::vector<axom::float64> tempVec;
-    tempVec.resize(cellData.numElems);
+    tempVec.resize(cellData.m_numElems);
     materialVolumeFractionsData.push_back(tempVec);
   }
 
   // Use the uniform sampling method to generate volume fractions for each material
-  for (int eID = 0; eID < cellData.numElems; ++eID)
+  for (int eID = 0; eID < cellData.m_numElems; ++eID)
   {
-    mir::Point2 v0 = cellData.mapData.vertexPositions[cellData.topology.evInds[eID * 4 + 0]]; 
-    mir::Point2 v1 = cellData.mapData.vertexPositions[cellData.topology.evInds[eID * 4 + 1]]; 
-    mir::Point2 v2 = cellData.mapData.vertexPositions[cellData.topology.evInds[eID * 4 + 2]]; 
-    mir::Point2 v3 = cellData.mapData.vertexPositions[cellData.topology.evInds[eID * 4 + 3]];
+    mir::Point2 v0 = cellData.m_mapData.m_vertexPositions[cellData.m_topology.m_evInds[eID * 4 + 0]]; 
+    mir::Point2 v1 = cellData.m_mapData.m_vertexPositions[cellData.m_topology.m_evInds[eID * 4 + 1]]; 
+    mir::Point2 v2 = cellData.m_mapData.m_vertexPositions[cellData.m_topology.m_evInds[eID * 4 + 2]]; 
+    mir::Point2 v3 = cellData.m_mapData.m_vertexPositions[cellData.m_topology.m_evInds[eID * 4 + 3]];
 
     // Run the uniform sampling to determine how much of the current cell is composed of each material
     int materialCount[numMaterials];  for (int i = 0; i < numMaterials; ++i) materialCount[i] = 0;
@@ -733,22 +723,22 @@ mir::MIRMesh MeshTester::initTestCaseFive(int gridSize, int numCircles)
 
   std::vector<int> elementParents; // For the base mesh, the parents are always themselves
   std::vector<int> elementDominantMaterials;
-  for (int i = 0; i < cellData.numElems; ++i)
+  for (int i = 0; i < cellData.m_numElems; ++i)
   {
     elementParents.push_back(i);
     elementDominantMaterials.push_back(NULL_MAT);
   }
 
   CellTopologyData topology;
-  topology.evInds = cellData.topology.evInds;
-  topology.evBegins = cellData.topology.evBegins;
-  topology.veInds = cellData.topology.veInds;
-  topology.veBegins = cellData.topology.veBegins;
+  topology.m_evInds = cellData.m_topology.m_evInds;
+  topology.m_evBegins = cellData.m_topology.m_evBegins;
+  topology.m_veInds = cellData.m_topology.m_veInds;
+  topology.m_veBegins = cellData.m_topology.m_veBegins;
 
   CellMapData mapData;
-  mapData.elementDominantMaterials = elementDominantMaterials;
-  mapData.elementParents = elementParents;
-  mapData.vertexPositions = cellData.mapData.vertexPositions;
+  mapData.m_elementDominantMaterials = elementDominantMaterials;
+  mapData.m_elementParents = elementParents;
+  mapData.m_vertexPositions = cellData.m_mapData.m_vertexPositions;
 
   // Build the mesh
   mir::MIRMesh testMesh;
@@ -759,27 +749,62 @@ mir::MIRMesh MeshTester::initTestCaseFive(int gridSize, int numCircles)
 
 //--------------------------------------------------------------------------------
 
-/// Calculate the number of corners of the quad that are within the circle
-int MeshTester::circleQuadCornersOverlaps(mir::Point2 circle_center, axom::float64 circle_radius, mir::Point2 q_p0, mir::Point2 q_p1, mir::Point2 q_p2, mir::Point2 q_p3)
+int MeshTester::circleQuadCornersOverlaps(mir::Point2 circleCenter, axom::float64 circleRadius, mir::Point2 quadP0, mir::Point2 quadP1, mir::Point2 quadP2, mir::Point2 quadP3)
 {
   // Check if any of the quad's corners are within the circle
-  axom::float64 distP0 = distance(q_p0, circle_center);
-  axom::float64 distP1 = distance(q_p1, circle_center);
-  axom::float64 distP2 = distance(q_p2, circle_center);
-  axom::float64 distP3 = distance(q_p3, circle_center);
+  axom::float64 distP0 = distance(quadP0, circleCenter);
+  axom::float64 distP1 = distance(quadP1, circleCenter);
+  axom::float64 distP2 = distance(quadP2, circleCenter);
+  axom::float64 distP3 = distance(quadP3, circleCenter);
 
   int numCorners = 0;
 
-  if (distP0 < circle_radius)
+  if (distP0 < circleRadius)
     numCorners++;
-  if (distP1 < circle_radius)
+  if (distP1 < circleRadius)
     numCorners++;
-  if (distP2 < circle_radius)
+  if (distP2 < circleRadius)
     numCorners++;
-  if (distP3 < circle_radius)
+  if (distP3 < circleRadius)
     numCorners++;
 
   return numCorners;
+}
+
+//--------------------------------------------------------------------------------
+
+mir::MIRMesh MeshTester::initQuadClippingTestMesh()
+{
+  // Generate the mesh topology
+  int gridSize = 3;
+  mir::CellData cellData = generateGrid(gridSize);
+
+  mir::VertSet  verts = mir::VertSet(cellData.m_numVerts);  // Construct the vertex set
+  mir::ElemSet  elems = mir::ElemSet(cellData.m_numElems);   // Construct the element set
+
+  int numMaterials = 2;
+
+  std::vector<std::vector<axom::float64> > elementVF;
+  elementVF.resize(numMaterials);
+  elementVF[0] = {1.0, 1.0, 1.0, 0.5, 0.5, 0.5, 0.0, 0.0, 0.0};
+  elementVF[1] = {0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 1.0, 1.0, 1.0};
+
+  std::vector<int> elementParents;
+  std::vector<int> elementDominantMaterials;
+  for (int i = 0; i < cellData.m_numElems; ++i)
+  {
+    elementParents.push_back(i);
+    elementDominantMaterials.push_back(NULL_MAT);
+  }
+  
+  cellData.m_mapData.m_elementDominantMaterials = elementDominantMaterials;
+  cellData.m_mapData.m_elementParents = elementParents;
+
+  // Build the mesh
+  mir::MIRMesh testMesh;
+  testMesh.initializeMesh(verts, elems, numMaterials, cellData.m_topology, cellData.m_mapData, elementVF);
+
+  return testMesh;
 }
 
 //--------------------------------------------------------------------------------
