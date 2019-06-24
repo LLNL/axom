@@ -60,6 +60,9 @@
 // _sqdist_header_start
 #include "axom/primal/operators/squared_distance.hpp"
 // _sqdist_header_end
+// _eval_bez_start
+#include "axom/primal/operators/eval_bezier.hpp"
+// _eval_bez_end
 
 // C++ headers
 #include <cmath> // do we need this?
@@ -128,9 +131,34 @@ void writeToFile(std::string fname, std::string contents)
 BezierCurveType showOrderBezier()
 {
   //_ctrlpts_start
-  BezierCurveType bCurve(4);
+  BezierCurveType bCurve(1);
   std::cout << "----------------------Checking Bezier Functions-----------------------" << std::endl;
-  std::cout << bCurve.getOrder() << std::endl;
+  std::cout << "Checking the order constructor:" << std::endl;
+  std::cout << "Expected order: " << 1 << ". Order obtained from getOrder: " << bCurve.getOrder() << "." <<  std::endl;
+  std::cout << "Adding points (.6, 1.2, 1.0) and (0.0 , 1.6, 1.8)" << std::endl;
+  
+  bCurve.addControlpoint( PointType::make_point( 0.6, 1.2, 1.0 ) );
+  bCurve.addControlpoint( PointType::make_point( 0.0, 1.6, 1.8 ) );
+
+
+  std::cout << bCurve << std::endl;
+
+  const int nbr_points = 4;
+  PointType data[nbr_points];
+  data[0] = PointType::make_point(0.6, 1.2, 1.0);
+  data[1] = PointType::make_point(1.3, 1.6, 1.8);
+  data[2] = PointType::make_point(2.9, 2.4, 2.3);
+  data[3] = PointType::make_point(3.2, 3.5, 3.0);
+  BezierCurveType b2Curve(data, 4);
+  std::cout << "Checking the control point constructor:" << std::endl;
+  std::cout << b2Curve << std::endl;
+
+  std::cout << "Checking indexing operator: " << std::endl;
+  std::cout << "The final control points of the above two bezier curves are " << bCurve[1] << " and " << b2Curve[3] << "." << std::endl; 
+ 
+  std::cout << "Checking the evaluation of bezier curves above: " << std::endl; 
+  std::cout << "Curve 1 at t=0 is " << eval_bezier(bCurve,0.0) << " and Curve 2 at t=.5 is " << eval_bezier(b2Curve,.5) <<  std::endl;
+  std::cout << "------------------End checking Bezier Functions---------------------" << std::endl;
   //_ctrlpts_end
 
   return bCurve;
