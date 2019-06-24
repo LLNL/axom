@@ -66,7 +66,25 @@ public:
     m_order=ord;
   }
 
-  /*! Return the order of the Bezier Curve*/
+  BezierCurve(PointType* pts, int n)
+  {
+    if (n <= 0)
+    {
+      clear();
+    }
+    // sanity check
+    SLIC_ASSERT(pts != nullptr);
+
+    m_controlpoints.reserve(n);
+    m_order=n-1;
+
+    for (int i = 0 ; i <= n ; i++)
+    {
+      this->addControlpoint(pts[i]);
+    }
+  }
+
+  /*! Returns the order of the Bezier Curve*/
   int getOrder() const
   { return m_order; }
 
@@ -82,10 +100,22 @@ public:
     m_controlpoints.clear();
   }
 
-  /*! Retrieves the vertex at index idx */
+  /*! Retrieves the control point at index idx */
   PointType& operator[](int idx) { return m_controlpoints[idx]; }
-  /*! Retrieves the vertex at index idx */
+  /*! Retrieves the control point at index idx */
   const PointType& operator[](int idx) const { return m_controlpoints[idx]; }
+ 
+  std::vector< Point< T, NDIMS > > getControlPoints() const
+  {
+    std::vector< Point< T, NDIMS > > cpts;
+    cpts.reserve(m_order+1);
+
+    for (int i=0 ; i < m_order-1 ; i++)
+    {
+      cpts[i]=m_controlpoints[i];
+    }
+    return cpts; 
+  }
 
   /*!
    * \brief Simple formatted print of a Bezier Curve instance
@@ -102,10 +132,7 @@ public:
     {
       os << m_controlpoints[i] << ",";
     }
-    if (sz >= 2)
-    {
-      os<<m_controlpoints[sz];
-    }
+    os<<m_controlpoints[sz];
     os<< "}";
 
     return os;
