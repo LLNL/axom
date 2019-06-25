@@ -66,6 +66,13 @@ BezierCurveType testBezier()
  
   std::cout << "Checking the evaluation of bezier curves above: " << std::endl; 
   std::cout << "Curve 1 at t=0 is " << eval_bezier(bCurve,0.0) << " and Curve 2 at t=.5 is " << eval_bezier(b2Curve,.5) <<  std::endl;
+
+  BezierCurveType b3Curve(3);
+  BezierCurveType b4Curve(3);
+  split_bezier(b2Curve,.5,b3Curve,b4Curve);
+
+  std::cout << "Checking the splitting of bezier curve 2: " << std::endl;
+  std::cout << "The two resulting curves are: " << b3Curve << " and " << b4Curve << "." << std::endl; 
   std::cout << "------------------End checking Bezier Functions---------------------" << std::endl;
   //_ctrlpts_end
 

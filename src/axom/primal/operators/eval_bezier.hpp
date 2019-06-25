@@ -62,6 +62,33 @@ Point< T, NDIMS > eval_bezier(const BezierCurve< T, NDIMS > bcurve, T t)
   return ptval;
 }
 
+template < typename T, int NDIMS >
+void split_bezier(const BezierCurve< T, NDIMS > bcurve, T t, BezierCurve< T, NDIMS >& c1, BezierCurve< T, NDIMS>& c2)
+{ 
+  int ord = bcurve.getOrder();
+  //SLIC_ASSERT( (ord == c1.getOrder()) && (ord == c2.getOrder()) );
+  T* dCarray = new T[NDIMS*2*(ord+1)];
+  for ( int i=0; i < NDIMS; i++)
+  {
+     for ( int j=0 ; j <= ord ; j++)
+     {
+       dCarray[i*(2*(ord)+1)+j] = bcurve[j][i];
+     }
+     for ( int j=1 ; j <= ord ; j++)
+     {
+       dCarray[i*(2*(ord)+1)+(ord)+j]=dCarray[0];
+       for ( int k=0 ; k <= ord-j ; k++)
+       {
+         dCarray[i*(2*(ord)+1)+k]=(1-t)*dCarray[i*(2*(ord)+1)+k]+t*dCarray[i*(2*(ord)+1)+k+1];
+       }       
+     }
+  }
+     c1=BezierCurve< T, NDIMS> (dCarray,ord+1);
+     c2=BezierCurve< T, NDIMS> (dCarray+NDIMS*(ord),ord+1);
+     delete [] dCarray;
+     return;
+}
+
 } /* namespace primal */
 } /* namespace axom */
 
