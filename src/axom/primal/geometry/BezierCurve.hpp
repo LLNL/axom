@@ -66,6 +66,29 @@ public:
     m_order=ord;
   }
 
+  BezierCurve(T* pts, int n)
+  {
+    if (n<=0)
+    {
+      clear();
+    }
+    // sanity check
+    SLIC_ASSERT(pts != nullptr);
+
+    m_controlpoints.reserve(n);
+    m_order=n-1;
+    
+    T tempar[NDIMS];
+    for ( int i = 0 ; i<=n ; i++)
+    {
+      for ( int j = 0 ; j< NDIMS ; j++)
+      {
+        tempar[j]=pts[j*n+i];
+      }
+      this->addControlpoint(tempar);
+    }
+  }
+
   BezierCurve(PointType* pts, int n)
   {
     if (n <= 0)
