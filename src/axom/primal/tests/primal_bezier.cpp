@@ -7,69 +7,141 @@
  * /brief This file tests the BezierCurve.hpp and eval_bezier.hpp files
 */
 
-// _prims_header_start
-// Axom primitives
-#include "axom/primal/geometry/Point.hpp"
+#include "gtest/gtest.h"
+
 #include "axom/primal/geometry/BezierCurve.hpp"
-// _prims_header_end
-
-// _eval_bez_start
-#include "axom/primal/operators/eval_bezier.hpp"
-// _eval_bez_end
-
-// C++ headers
-#include <iostream>
-#include <fstream>
-
-#include "fmt/fmt.hpp"
 
 // _using_start
-// "using" directives to simplify code
 using namespace axom;
 using namespace primal;
-
-// almost all our examples are in 3D
-constexpr int in3D = 3;
-
-// primitives represented by doubles in 3D
-typedef Point<double, in3D> PointType;
-typedef BezierCurve<double, in3D> BezierCurveType;
 // _using_end
+  constexpr int DIM = 3;
+  typedef double CoordType;
+  typedef primal::Point< CoordType, DIM > PointType;
+  typedef primal::BezierCurve< CoordType, DIM > BezierCurveType;
+//----------------------------------------------------------------------------------
+TEST( primal_beziercurve, bezier_constructor )
+{
+  static const int DIM = 3;
+  typedef double CoordType;
+  typedef primal::BezierCurve< CoordType, DIM > BezierCurveType;
+  SLIC_INFO("\nprimal: testing default bezier constructor ") ;
+  BezierCurveType bCurve;
+
+  EXPECT_EQ(bCurve.getControlPoints() ,(std::vector< Point< CoordType, DIM > >()));
+}
+
+//----------------------------------------------------------------------------------
+TEST( primal_beziercurve, bezier_order_constructor )
+{
+  static const int DIM = 3;
+  typedef double CoordType;
+  typedef primal::BezierCurve< CoordType, DIM > BezierCurveType;
+  SLIC_INFO("\nprimal: testing bezier order constructor ") ;
+
+  BezierCurveType bCurve(1);
+  
+  EXPECT_EQ(bCurve.getOrder(), 1);
+}
+
+//----------------------------------------------------------------------------------
+TEST( primal_beziercurve, bezier_add_controlpoints )
+{
+  static const int DIM =3;
+  typedef double CoordType;
+  typedef primal::Point< CoordType, DIM > PointType;
+  typedef primal::BezierCurve< CoordType, DIM > BezierCurveType;
+  SLIC_INFO("\nprimal: testing adding control points to empty beziercurve");
+
+  BezierCurveType bCurve;
+  
+  CoordType coords[6] = {.6,1.2,1.0,0.0,1.6,1.8};
+  bCurve.addControlpoint( PointType::make_point( coords[0], coords[1], coords[2] ) );
+  bCurve.addControlpoint( PointType::make_point( coords[3], coords[4], coords[5] ) );
+  
+  EXPECT_EQ(bCurve.getOrder(), 1);
+  for (int i=0; i<DIM; i++)
+  {
+    for (int j=0; j<2; j++)
+    { 
+      EXPECT_TRUE(utilities::isNearlyEqual(bCurve[j][i],coords[j*DIM+i], 1.0e-14));
+    }
+  }
+}
+
+//----------------------------------------------------------------------------------
+TEST( primal_beziercurve, bezier_point_vector_constructor )
+{
+  static const int DIM =3;
+  typedef double CoordType;
+  typedef primal::Point< CoordType, DIM > PointType;
+  typedef primal::BezierCurve< CoordType, DIM > BezierCurveType;
+  SLIC_INFO("\nprimal: testing point vector constructor");
+  
+  CoordType coords[6] = {.6,1.2,1.0,0.0,1.6,1.8};
+  PointType pts[2] = {PointType::make_point(coords[0], coords[1], coords[2]),PointType::make_point(coords[3], coords[4], coords[5])}; 
+
+  BezierCurveType bCurve(pts,1);
+  EXPECT_EQ(bCurve.getOrder(), 1);
+  for (int i=0; i<DIM; i++)
+  {
+    for (int j=0; j<2; j++)
+    { 
+      EXPECT_TRUE(utilities::isNearlyEqual(bCurve[j][i],coords[j*DIM+i], 1.0e-14));
+    }
+  }
+}
+
+//----------------------------------------------------------------------------------
+TEST( primal_beziercurve, bezier_double_array_constructor )
+{
+  static const int DIM =3;
+  typedef double CoordType;
+  typedef primal::Point< CoordType, DIM > PointType;
+  typedef primal::BezierCurve< CoordType, DIM > BezierCurveType;
+  SLIC_INFO("\nprimal: testing point vector constructor");
+  
+  CoordType coords[6] = {.6,1.2,1.0,0.0,1.6,1.8};
+  PointType pts[2] = {PointType::make_point(coords[0], coords[1], coords[2]),PointType::make_point(coords[3], coords[4], coords[5])}; 
+
+  BezierCurveType bCurve(pts,1);
+  EXPECT_EQ(bCurve.getOrder(), 1);
+  for (int i=0; i<DIM; i++)
+  {
+    for (int j=0; j<2; j++)
+    { 
+      EXPECT_TRUE(utilities::isNearlyEqual(bCurve[j][i],coords[j*DIM+i], 1.0e-14));
+    }
+  }
+}
 
 BezierCurveType testBezier()
 {
-  //_ctrlpts_start
-  BezierCurveType bCurve(1);
-  std::cout << "----------------------Checking Bezier Functions-----------------------" << std::endl;
-  std::cout << "Checking the order constructor:" << std::endl;
-  std::cout << "Expected order: " << 1 << ". Order obtained from getOrder: " << bCurve.getOrder() << "." <<  std::endl;
-  std::cout << "Adding points (.6, 1.2, 1.0) and (0.0 , 1.6, 1.8)" << std::endl;
+  BezierCurveType bCurve;
   
-  bCurve.addControlpoint( PointType::make_point( 0.6, 1.2, 1.0 ) );
-  bCurve.addControlpoint( PointType::make_point( 0.0, 1.6, 1.8 ) );
-
-
-  std::cout << bCurve << std::endl;
-
+  CoordType coords[6] = {.6,1.2,1.0,0.0,1.6,1.8};
+  bCurve.addControlpoint( PointType::make_point( coords[0], coords[1], coords[2] ) );
+  bCurve.addControlpoint( PointType::make_point( coords[3], coords[4], coords[5] ) );
+  
   const int nbr_points = 4;
   PointType data[nbr_points];
   data[0] = PointType::make_point(0.6, 1.2, 1.0);
   data[1] = PointType::make_point(1.3, 1.6, 1.8);
   data[2] = PointType::make_point(2.9, 2.4, 2.3);
   data[3] = PointType::make_point(3.2, 3.5, 3.0);
-  BezierCurveType b2Curve(data, 4);
-  std::cout << "Checking the control point constructor:" << std::endl;
-  std::cout << b2Curve << std::endl;
+  BezierCurveType b2Curve(data, nbr_points-1);
+  SLIC_INFO( "\nChecking the control point constructor." );
+  SLIC_INFO( "\n" <<  b2Curve);
 
   std::cout << "Checking indexing operator: " << std::endl;
   std::cout << "The final control points of the above two bezier curves are " << bCurve[1] << " and " << b2Curve[3] << "." << std::endl; 
  
   std::cout << "Checking the evaluation of bezier curves above: " << std::endl; 
-  std::cout << "Curve 1 at t=0 is " << eval_bezier(bCurve,0.0) << " and Curve 2 at t=.5 is " << eval_bezier(b2Curve,.5) <<  std::endl;
+  std::cout << "Curve 1 at t=0 is " << bCurve.eval_bezier(0.0) << " and Curve 2 at t=.5 is " << b2Curve.eval_bezier(.5) <<  std::endl;
 
   BezierCurveType b3Curve(3);
   BezierCurveType b4Curve(3);
-  split_bezier(b2Curve,.5,b3Curve,b4Curve);
+  b2Curve.split_bezier(.5,b3Curve,b4Curve);
 
   std::cout << "Checking the splitting of bezier curve 2: " << std::endl;
   std::cout << "The two resulting curves are: " << b3Curve << " and " << b4Curve << "." << std::endl; 
@@ -79,15 +151,21 @@ BezierCurveType testBezier()
   return bCurve;
 }
 
-int main(int argc, char** argv)
-{
+int main(int argc, char* argv[])
+   {
+     int result = 0;
+   
+     ::testing::InitGoogleTest(&argc, argv);
+   
+     axom::slic::UnitTestLogger logger;  // create & initialize test logger,
+   
+     // finalized when exiting main scope
+   
+     result = RUN_ALL_TESTS();
+   
 
-  // Deal with unused variables
-  AXOM_DEBUG_VAR(argc);
-  AXOM_DEBUG_VAR(argv);
+     return result;
+   }
 
-  testBezier();
 
-  return 0;
-}
 
