@@ -7,12 +7,16 @@
 #ifndef PRIMAL_BEZIERCURVE_HPP_
 #define PRIMAL_BEZIERCURVE_HPP_
 
+#include "axom/slic.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/NumericArray.hpp"
 
+#include "fmt/fmt.hpp"
 #include <vector>
 #include <ostream> // for std::ostream
+#include <iostream>
+#include <fstream>
 
 namespace axom
 {
@@ -45,7 +49,7 @@ public:
   typedef NumericArray< T,NDIMS > NumArrayType;
 
 private:
-  typedef std::vector< PointType > Coords;
+  typedef std::vector< PointType > CoordsVec;
 
 public:
   /*! Default constructor for an empty Bezier Curve*/
@@ -55,7 +59,7 @@ public:
    * \brief Constructor for an empty Bezier Curve that reserves space for
    *  the given order of the curve
    *
-   * \param [in] order number of control points minus 1 for which to reserve control point space
+   * \param [in] order the order of the resulting Bezier curve
    * \pre order is not negative
    *
    */
@@ -63,45 +67,62 @@ public:
   {
     SLIC_ASSERT(ord >= 0);
     m_controlpoints.reserve(ord+1);
-    m_order=ord;
+    m_controlpoints.resize(ord+1);
   }
+  
+  /*!
+   * \brief Constructor for a Bezier Curve from a list of Points 
+   * \verbatim {x_0, x_1, x_2, x_3, y_0, y_1, y_2, y_3, z_0, z_1, z_2, z_3}  
+   *
+   * \param [in] pts an array with (n+1)*NDIMS entries, ordered by coordinate then by control point order
+   * \param [in] ord number of control points minus 1 for which to reserve control point space
+   * \pre order is not negative
+   *
+   */
 
-  BezierCurve(T* pts, int n)
+  BezierCurve(T* pts, int ord)
   {
-    if (n<=0)
+    if ( ord <= 0 )
     {
       clear();
     }
     // sanity check
     SLIC_ASSERT(pts != nullptr);
 
-    m_controlpoints.reserve(n);
-    m_order=n-1;
+    m_controlpoints.reserve(ord+1);
     
     T tempar[NDIMS];
-    for ( int i = 0 ; i<=n ; i++)
+    for ( int i = 0 ; i <= ord ; i++)
     {
-      for ( int j = 0 ; j< NDIMS ; j++)
+      for ( int j = 0 ; j < NDIMS ; j++)
       {
-        tempar[j]=pts[j*n+i];
+        tempar[j]=pts[j*(ord+1)+i];
       }
       this->addControlpoint(tempar);
     }
   }
 
-  BezierCurve(PointType* pts, int n)
+  /*!
+   * \brief Constructor for a Bezier Curve from an array of coordinates 
+   *
+   * \param [in] pts a vector with ord+1 points in it
+   * \param [in] ord number of control points minus 1 for which to reserve control point space
+   * \pre order is not negative
+   *
+   */
+
+  BezierCurve(PointType* pts, int ord)
   {
-    if (n <= 0)
+    if (ord <= 0)
     {
       clear();
     }
     // sanity check
     SLIC_ASSERT(pts != nullptr);
 
-    m_controlpoints.reserve(n);
-    m_order=n-1;
+    m_controlpoints.reserve(ord+1);
 
-    for (int i = 0 ; i <= n ; i++)
+    for (int i = 0 ; i <= ord ; i++)
     {
       this->addControlpoint(pts[i]);
     }
@@ -109,7 +130,7 @@ public:
 
   /*! Returns the order of the Bezier Curve*/
   int getOrder() const
-  { return m_order; }
+  { return m_controlpoints.size()-1; }
 
   /*! Appends a control point to the list of control points*/
   void addControlpoint(const PointType& pt)
@@ -130,14 +151,66 @@ public:
  
   std::vector< Point< T, NDIMS > > getControlPoints() const
   {
-    std::vector< Point< T, NDIMS > > cpts;
-    cpts.reserve(m_order+1);
+    return m_controlpoints; 
+  }
 
-    for (int i=0 ; i < m_order-1 ; i++)
+  /*!
+ * \brief Evaluates a Bezier Curve at particular parameter value between 0 and 1
+ *
+ * \param [in] t parameter value between 0 and 1 at which to evaluate
+ * \return p the value of the Bezier Curve at t
+ *
+ */
+
+  Point< T, NDIMS > eval_bezier(T t)
+  {
+    Point< T, NDIMS > ptval(0.0,NDIMS);
+    int ord = m_controlpoints.size()-1;
+    T dCarray[ord+1];
+    
+    for ( int i=0; i < NDIMS; i++)
     {
-      cpts[i]=m_controlpoints[i];
+       for ( int j=0 ; j <= ord ; j++)
+       {
+         dCarray[j] = m_controlpoints[j][i];
+       }
+       for ( int j=1 ; j <= ord ; j++)
+       {
+         for ( int k=0 ; k <= ord-j ; k++)
+         {
+           dCarray[k]=(1-t)*dCarray[k]+t*dCarray[k+1];  
+         }        
+       }
+       ptval[i]=dCarray[0];
     }
-    return cpts; 
+  
+    return ptval;
+  }
+  
+  void split_bezier(T t, BezierCurve< T, NDIMS >& c1, BezierCurve< T, NDIMS>& c2)
+  { 
+    int ord = m_controlpoints.size()-1;
+    T* dCarray = new T[NDIMS*2*(ord+1)];
+    for ( int i=0; i < NDIMS; i++)
+    {
+       for ( int j=0 ; j <= ord ; j++)
+       {
+         dCarray[i*((ord+1))+j] = m_controlpoints[j][i];
+       }
+       dCarray[NDIMS*(ord+1)+(i)*((ord+1))]= dCarray[i*((ord+1))];
+       for ( int j=1 ; j <= ord ; j++)
+       {
+         for ( int k=0 ; k <= ord-j ; k++)
+         {
+           dCarray[i*((ord+1))+k]=(1-t)*dCarray[i*((ord+1))+k]+t*dCarray[i*((ord+1))+k+1];
+         }       
+         dCarray[NDIMS*(ord+1)+(i)*((ord+1))+j]=dCarray[i*((ord+1))];
+       }
+    }
+       c2=BezierCurve< T, NDIMS> (dCarray,ord);
+       c1=BezierCurve< T, NDIMS> (dCarray+NDIMS*(ord+1),ord);
+       delete [] dCarray;
+       return;
   }
 
   /*!
@@ -148,7 +221,7 @@ public:
    */
   std::ostream& print(std::ostream& os) const 
   {
-    const int sz = m_order;
+    const int sz = m_controlpoints.size()-1;
 
     os <<"{" << sz <<"-degree Bezier Curve:";
     for (int i=0 ; i< sz; ++i)
@@ -172,8 +245,7 @@ public:
     return m_controlpoints.size() >= 2;
   }
 private:
-  Coords m_controlpoints;
-  int m_order;
+  CoordsVec m_controlpoints;
 }; // class BezierCurve
 
 //------------------------------------------------------------------------------
