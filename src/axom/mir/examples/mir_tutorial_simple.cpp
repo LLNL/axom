@@ -48,7 +48,7 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
   std::cout << "Material interface reconstruction time: " << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() << " ms" << std::endl;
 
   // Output results
-  processedMesh.writeMeshToFile("/Users/sterbentz3/Desktop/testOutputNewMARKONEW4.vtk");
+  processedMesh.writeMeshToFile("/Users/sterbentz3/Desktop/processedMesh.vtk");
 
   std::vector<std::vector<axom::float64> > materialVolumeFractionsElement = processedMesh.computeOriginalElementVolumeFractions();
   
