@@ -177,6 +177,80 @@ namespace utilities
         if ( midpointVertexID == 7 && isFromVertex  ) { return 3; }
         if ( midpointVertexID == 7 && !isFromVertex ) { return 0; }
         break;
+      case mir::Shape::Tetrahedron:
+        if ( midpointVertexID == 4 && isFromVertex  ) { return 0; }
+        if ( midpointVertexID == 4 && !isFromVertex ) { return 1; }
+        if ( midpointVertexID == 5 && isFromVertex  ) { return 0; }
+        if ( midpointVertexID == 5 && !isFromVertex ) { return 2; } 
+        if ( midpointVertexID == 6 && isFromVertex  ) { return 0; }
+        if ( midpointVertexID == 6 && !isFromVertex ) { return 3; }
+        if ( midpointVertexID == 7 && isFromVertex  ) { return 1; }
+        if ( midpointVertexID == 7 && !isFromVertex ) { return 2; }
+        if ( midpointVertexID == 8 && isFromVertex  ) { return 2; }
+        if ( midpointVertexID == 8 && !isFromVertex ) { return 3; }
+        if ( midpointVertexID == 9 && isFromVertex  ) { return 3; }
+        if ( midpointVertexID == 9 && !isFromVertex ) { return 1; }
+      case mir::Shape::Pyramid:
+        if ( midpointVertexID ==  5 && isFromVertex  ) { return 0; }
+        if ( midpointVertexID ==  5 && !isFromVertex ) { return 1; } 
+        if ( midpointVertexID ==  6 && isFromVertex  ) { return 0; }
+        if ( midpointVertexID ==  6 && !isFromVertex ) { return 2; }
+        if ( midpointVertexID ==  7 && isFromVertex  ) { return 0; }
+        if ( midpointVertexID ==  7 && !isFromVertex ) { return 3; }
+        if ( midpointVertexID ==  8 && isFromVertex  ) { return 0; }
+        if ( midpointVertexID ==  8 && !isFromVertex ) { return 4; }
+        if ( midpointVertexID ==  9 && isFromVertex  ) { return 1; }
+        if ( midpointVertexID ==  9 && !isFromVertex ) { return 2; }
+        if ( midpointVertexID == 10 && isFromVertex  ) { return 2; }
+        if ( midpointVertexID == 10 && !isFromVertex ) { return 3; }
+        if ( midpointVertexID == 11 && isFromVertex  ) { return 3; }
+        if ( midpointVertexID == 11 && !isFromVertex ) { return 4; }
+        if ( midpointVertexID == 12 && isFromVertex  ) { return 4; }
+        if ( midpointVertexID == 12 && !isFromVertex ) { return 1; }
+      case mir::Shape::Triangular_Prism:
+        if ( midpointVertexID ==  6 && isFromVertex  ) { return 0; }
+        if ( midpointVertexID ==  6 && !isFromVertex ) { return 1; }
+        if ( midpointVertexID ==  7 && isFromVertex  ) { return 1; }
+        if ( midpointVertexID ==  7 && !isFromVertex ) { return 2; }
+        if ( midpointVertexID ==  8 && isFromVertex  ) { return 2; }
+        if ( midpointVertexID ==  8 && !isFromVertex ) { return 0; }
+        if ( midpointVertexID ==  9 && isFromVertex  ) { return 0; }
+        if ( midpointVertexID ==  9 && !isFromVertex ) { return 3; }
+        if ( midpointVertexID == 10 && isFromVertex  ) { return 1; }
+        if ( midpointVertexID == 10 && !isFromVertex ) { return 4; }
+        if ( midpointVertexID == 11 && isFromVertex  ) { return 2; }
+        if ( midpointVertexID == 11 && !isFromVertex ) { return 5; }
+        if ( midpointVertexID == 12 && isFromVertex  ) { return 3; }
+        if ( midpointVertexID == 12 && !isFromVertex ) { return 4; }
+        if ( midpointVertexID == 13 && isFromVertex  ) { return 4; }
+        if ( midpointVertexID == 13 && !isFromVertex ) { return 5; }
+        if ( midpointVertexID == 14 && isFromVertex  ) { return 5; }
+        if ( midpointVertexID == 14 && !isFromVertex ) { return 3; }
+      case mir::Shape::Hexahedron:
+        if ( midpointVertexID ==  8 && isFromVertex  ) { return 0; }
+        if ( midpointVertexID ==  8 && !isFromVertex ) { return 1; }
+        if ( midpointVertexID ==  9 && isFromVertex  ) { return 1; }
+        if ( midpointVertexID ==  9 && !isFromVertex ) { return 2; }
+        if ( midpointVertexID == 10 && isFromVertex  ) { return 2; }
+        if ( midpointVertexID == 10 && !isFromVertex ) { return 3; }
+        if ( midpointVertexID == 11 && isFromVertex  ) { return 3; }
+        if ( midpointVertexID == 11 && !isFromVertex ) { return 0; }
+        if ( midpointVertexID == 12 && isFromVertex  ) { return 0; }
+        if ( midpointVertexID == 12 && !isFromVertex ) { return 4; }
+        if ( midpointVertexID == 13 && isFromVertex  ) { return 1; }
+        if ( midpointVertexID == 13 && !isFromVertex ) { return 5; }
+        if ( midpointVertexID == 14 && isFromVertex  ) { return 2; }
+        if ( midpointVertexID == 14 && !isFromVertex ) { return 6; }
+        if ( midpointVertexID == 15 && isFromVertex  ) { return 3; }
+        if ( midpointVertexID == 15 && !isFromVertex ) { return 7; }
+        if ( midpointVertexID == 16 && isFromVertex  ) { return 4; }
+        if ( midpointVertexID == 16 && !isFromVertex ) { return 5; }
+        if ( midpointVertexID == 17 && isFromVertex  ) { return 5; }
+        if ( midpointVertexID == 17 && !isFromVertex ) { return 6; }
+        if ( midpointVertexID == 18 && isFromVertex  ) { return 6; }
+        if ( midpointVertexID == 18 && !isFromVertex ) { return 7; }
+        if ( midpointVertexID == 19 && isFromVertex  ) { return 7; }
+        if ( midpointVertexID == 19 && !isFromVertex ) { return 4; }
       default:
         printf("Edge endpoint case not implemented.\n");
         return -1;

@@ -110,7 +110,7 @@ void  CellGenerator::generateVertexVolumeFractions(const mir::Shape shapeType,
   {
     int vID = itr->first;
   
-    for (int matID = 0; matID < vertexVF.size(); ++matID)
+    for (unsigned long matID = 0; matID < vertexVF.size(); ++matID)
     {
       if ( vID < mir::utilities::numVerts(shapeType) )
       {
