@@ -128,6 +128,10 @@ public:
     }
   }
 
+  /*! Sets the order of the Bezier Curve*/
+  void setOrder( int ord)
+  { m_controlpoints.resize(ord+1); }
+
   /*! Returns the order of the Bezier Curve*/
   int getOrder() const
   { return m_controlpoints.size()-1; }
@@ -190,6 +194,8 @@ public:
   void split_bezier(T t, BezierCurve< T, NDIMS >& c1, BezierCurve< T, NDIMS>& c2)
   { 
     int ord = m_controlpoints.size()-1;
+    c1.setOrder(ord);
+    c2.setOrder(ord);
     T* dCarray = new T[NDIMS*2*(ord+1)];
     for ( int i=0; i < NDIMS; i++)
     {
