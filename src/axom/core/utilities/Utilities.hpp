@@ -41,7 +41,8 @@ void processAbort();
  * \return abs(x) the absolute value of x.
  */
 template < typename T >
-inline T abs( const T& x )
+inline AXOM_HOST_DEVICE
+T abs( const T& x )
 {
   return ( x < T(0) ) ? -x : x;
 }
@@ -53,7 +54,8 @@ inline T abs( const T& x )
  * \return max(x, y) the max value of x and y.
  */
 template < typename T >
-inline const T& max( const T& x, const T& y )
+inline AXOM_HOST_DEVICE
+const T& max( const T& x, const T& y )
 {
   return ( y < x ) ? x : y;
 }
@@ -65,7 +67,8 @@ inline const T& max( const T& x, const T& y )
  * \return min(x, y) the min value of x and y.
  */
 template < typename T >
-inline const T& min( const T& x, const T& y )
+inline AXOM_HOST_DEVICE
+const T& min( const T& x, const T& y )
 {
   return ( y < x ) ? y : x;
 }
@@ -76,7 +79,8 @@ inline const T& min( const T& x, const T& y )
  * \param [in,out] b 2nd object to swap.
  */
 template < typename T >
-inline void swap( T& a, T& b )
+inline AXOM_HOST_DEVICE
+void swap( T& a, T& b )
 {
   T tmp = a;
   a = b; b = tmp;
@@ -102,7 +106,8 @@ inline T log2( T& val)
  * \post lower <= returned value <= upper.
  */
 template < typename T >
-inline T clampVal( T val, T lower, T upper )
+inline AXOM_HOST_DEVICE
+T clampVal( T val, T lower, T upper )
 {
   return (val < lower) ? lower
          : (val > upper) ? upper : val;
@@ -118,7 +123,8 @@ inline T clampVal( T val, T lower, T upper )
  * \post returned value is less than or equal to upper
  */
 template < typename T >
-inline T clampUpper(T val, T upper)
+inline AXOM_HOST_DEVICE
+T clampUpper(T val, T upper)
 {
   return val > upper ? upper : val;
 }
@@ -132,7 +138,8 @@ inline T clampUpper(T val, T upper)
  * \post returned value is greater than or equal to lower
  */
 template < typename T >
-inline T clampLower(T val, T lower)
+inline AXOM_HOST_DEVICE
+T clampLower(T val, T lower)
 {
   return val < lower ? lower : val;
 }
@@ -269,6 +276,7 @@ T swapEndian(T val)
  *  false otherwise.
  */
 template<typename RealType>
+inline AXOM_HOST_DEVICE
 bool isNearlyEqual(RealType a, RealType b, RealType thresh = 1.0e-8)
 {
   return abs(a-b) <= thresh;
@@ -287,6 +295,7 @@ bool isNearlyEqual(RealType a, RealType b, RealType thresh = 1.0e-8)
  *  a and b).
  */
 template<typename RealType>
+inline AXOM_HOST_DEVICE
 bool isNearlyEqualRelative(RealType a, RealType b, RealType relThresh = 1.0e-6,
                            RealType absThresh = 1.0e-8)
 {

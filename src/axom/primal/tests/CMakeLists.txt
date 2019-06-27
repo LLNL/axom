@@ -23,6 +23,8 @@ set( primal_tests
     primal_vector.cpp
    )
 
+set(primal_test_depends fmt primal slic mint gtest)
+
 foreach ( test ${primal_tests} )
 
    get_filename_component( test_name ${test} NAME_WE )
@@ -31,7 +33,7 @@ foreach ( test ${primal_tests} )
         NAME       ${test_name}_test
         SOURCES    ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-        DEPENDS_ON fmt primal slic gtest
+        DEPENDS_ON ${primal_test_depends}
         FOLDER     axom/primal/tests
        )
 

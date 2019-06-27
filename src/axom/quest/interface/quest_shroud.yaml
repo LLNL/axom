@@ -7,8 +7,7 @@ copyright:
   - Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
   - other Axom Project Developers. See the top-level COPYRIGHT file for details.
   -
-  - SPDX-License-Identifier (BSD-3-Clause)
-  -
+  - "SPDX-License-Identifier: (BSD-3-Clause)"
 
 library: QUEST
 cxx_header: axom/quest/interface/inout.hpp axom/quest/interface/signed_distance.hpp

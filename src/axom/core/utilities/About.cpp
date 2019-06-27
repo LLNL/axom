@@ -40,20 +40,14 @@ void about(std::ostream &oss)
 #endif
 
   oss << "Compiler Settings: "  << std::endl
-      << "   C++11 support: "
-#ifdef AXOM_USE_CXX11
-    << "ENABLED"
-#else
-    << "DISABLED"
-#endif
-    << std::endl
-    << "   OpenMP support: "
+      << "   C++ Standard: " << AXOM_CXX_STD << std::endl
+      << "   OpenMP support: "
 #ifdef AXOM_USE_OPENMP
-    << "ENABLED"
+      << "ENABLED"
 #else
-    << "DISABLED"
+      << "DISABLED"
 #endif
-    << std::endl;
+      << std::endl;
 
   oss << "Available components: " << std::endl;
 

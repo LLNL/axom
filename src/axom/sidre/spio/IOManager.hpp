@@ -172,19 +172,56 @@ public:
    * DataStore specified by domain_path argument.
    *
    * This currently only works if the root file was created for protocol
-   * sidre_hdf5.
+   * sidre_hdf5.  This must be called after calling write().
+   *
+   * The parameters domain_path and mesh_path are related. domain_path is the
+   * path from the root of the DataStore to the domain that is being used to
+   * generate the index.  mesh_path is the path from the group that was
+   * passed into the preceding write() call to the same domain.  If write()
+   * was called using the root group of the DataStore, then domain_path and
+   * mesh_path will be identical.  Otherwise mesh_path is a sub-path of
+   * domain_path.
+   *
+   * For example, the DataStore may contain a hierarchy of data that looks
+   * like this, and we want to generate a blueprint index based on the mesh
+   * located at "/hierarchy/domain_data/domain/blueprint_mesh":
+   *
+   * <root>
+   * |--hierarchy
+   * |  |--domain_data
+   * |     |--domain
+   * |     |  |--blueprint_mesh
+   * |     |     |--coordsets
+   * |     |     |  |--...
+   * |     |     |--topologies
+   * |     |     |  |--...
+   * |     |     |--fields
+   * |     |        |--...
+   * |     |--...
+   * |--
+   *
+   * If write() is called using the Group located at "/hierarchy/domain_data",
+   * then only the Groups and Views descending from that Group are written
+   * to the file.  To call this method, we would choose the full path in 
+   * the DataStore "hierarchy/domain_data/domain/blueprint_mesh" for
+   * domain_path.  For the mesh_path argument, we choose only the path that
+   * exists in the file:  "domain/blueprint_mesh".
+   *
+   * This is not an MPI collective call.  One rank writes a blueprint index
+   * to one root file.
    *
    * \param datastore     DataStore containing Groups that hold domains
    *                      that adhere to the Blueprint format
-   * \param domain_path   path to the domain in the DataStore that will be
+   * \param domain_path   path in the DataStore to the domain that will be
    *                      used to generate a Blueprint index
    * \param file_name     name of existing root file
-   * \param mesh_name     name of the mesh described by the Blueprint index
+   * \param mesh_path     path in the data file to the domain that will be
+   *                      used to generate a Blueprint index
    */
   void writeBlueprintIndexToRootFile(DataStore* datastore,
                                      const std::string& domain_path,
                                      const std::string& file_name,
-                                     const std::string& mesh_name);
+                                     const std::string& mesh_path);
 
   /*!
    * \brief read from input files

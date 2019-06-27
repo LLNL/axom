@@ -574,7 +574,9 @@ bool DataStore::generateBlueprintIndex(const std::string& domain_path,
   conduit::Node mesh_node;
   domain->createNativeLayout(mesh_node);
 
-  Group* bpindex = getRoot()->createGroup(index_path);
+  Group* bpindex = getRoot()->hasGroup(index_path)
+                   ? getRoot()->getGroup(index_path)
+                   : getRoot()->createGroup(index_path);
 
   bool success = false;
   conduit::Node info;

@@ -1,9 +1,11 @@
 ! wrapfspio.f
 ! This is generated code, do not edit
+!
 ! Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
 ! other Axom Project Developers. See the top-level COPYRIGHT file for details.
 !
-! SPDX-License-Identifier: (BSD-3-Clause)
+! SPDX-License-Identifier (BSD-3-Clause)
+!
 !>
 !! \file wrapfspio.f
 !! \brief Shroud generated wrapper for SPIO library
@@ -146,7 +148,7 @@ module axom_spio
         end subroutine c_iomanager_write_group_to_root_file_bufferify
 
         subroutine c_iomanager_write_blueprint_index_to_root_file(self, &
-                datastore, domain_path, file_name, mesh_name) &
+                datastore, domain_path, file_name, mesh_path) &
                 bind(C, name="SPIO_iomanager_write_blueprint_index_to_root_file")
             use axom_sidre, only : SHROUD_datastore_capsule
             use iso_c_binding, only : C_CHAR
@@ -156,12 +158,12 @@ module axom_spio
             type(SHROUD_datastore_capsule), intent(IN) :: datastore
             character(kind=C_CHAR), intent(IN) :: domain_path(*)
             character(kind=C_CHAR), intent(IN) :: file_name(*)
-            character(kind=C_CHAR), intent(IN) :: mesh_name(*)
+            character(kind=C_CHAR), intent(IN) :: mesh_path(*)
         end subroutine c_iomanager_write_blueprint_index_to_root_file
 
         subroutine c_iomanager_write_blueprint_index_to_root_file_bufferify( &
                 self, datastore, domain_path, Ldomain_path, file_name, &
-                Lfile_name, mesh_name, Lmesh_name) &
+                Lfile_name, mesh_path, Lmesh_path) &
                 bind(C, name="SPIO_iomanager_write_blueprint_index_to_root_file_bufferify")
             use axom_sidre, only : SHROUD_datastore_capsule
             use iso_c_binding, only : C_CHAR, C_INT
@@ -173,8 +175,8 @@ module axom_spio
             integer(C_INT), value, intent(IN) :: Ldomain_path
             character(kind=C_CHAR), intent(IN) :: file_name(*)
             integer(C_INT), value, intent(IN) :: Lfile_name
-            character(kind=C_CHAR), intent(IN) :: mesh_name(*)
-            integer(C_INT), value, intent(IN) :: Lmesh_name
+            character(kind=C_CHAR), intent(IN) :: mesh_path(*)
+            integer(C_INT), value, intent(IN) :: Lmesh_path
         end subroutine c_iomanager_write_blueprint_index_to_root_file_bufferify
 
         subroutine c_iomanager_read_0(self, group, file_string, &
@@ -413,20 +415,20 @@ contains
     end subroutine iomanager_write_group_to_root_file
 
     subroutine iomanager_write_blueprint_index_to_root_file(obj, &
-            datastore, domain_path, file_name, mesh_name)
+            datastore, domain_path, file_name, mesh_path)
         use axom_sidre, only : SidreDataStore
         use iso_c_binding, only : C_INT
         class(iomanager) :: obj
         type(SidreDataStore), intent(IN) :: datastore
         character(len=*), intent(IN) :: domain_path
         character(len=*), intent(IN) :: file_name
-        character(len=*), intent(IN) :: mesh_name
+        character(len=*), intent(IN) :: mesh_path
         ! splicer begin class.IOManager.method.write_blueprint_index_to_root_file
         call c_iomanager_write_blueprint_index_to_root_file_bufferify(obj%cxxmem, &
             datastore%cxxmem, domain_path, &
             len_trim(domain_path, kind=C_INT), file_name, &
-            len_trim(file_name, kind=C_INT), mesh_name, &
-            len_trim(mesh_name, kind=C_INT))
+            len_trim(file_name, kind=C_INT), mesh_path, &
+            len_trim(mesh_path, kind=C_INT))
         ! splicer end class.IOManager.method.write_blueprint_index_to_root_file
     end subroutine iomanager_write_blueprint_index_to_root_file
 
