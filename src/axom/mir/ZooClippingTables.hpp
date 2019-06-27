@@ -13,23 +13,17 @@
  *        for the shape types in the zoo.
  */
 
+#include <vector>
+
 namespace axom
 {
 namespace mir
 {
-
-  enum Shape
-  {
-    Triangle,
-    Quad,
-    Tetrahedron,
-    Triangular_Prism,
-    Pyramid,
-    Hexahedron
-  };
-
   extern const int quadClipTable[16][19];
   extern const int triangleClipTable[8][10];
+  
+  extern const std::vector<std::vector<int> > triangleClipTableVec;
+  extern const std::vector<std::vector<int> > quadClipTableVec;
 }
 }
 #endif

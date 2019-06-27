@@ -48,7 +48,8 @@ int main( int argc, char** argv )
     // Begin material interface reconstruction
     startTime = Clock::now();
     mir::InterfaceReconstructor reconstructor;
-    mir::MIRMesh processedMesh = reconstructor.computeReconstructedInterface(testMesh); 
+    mir::MIRMesh processedMesh;
+    reconstructor.computeReconstructedInterface(testMesh, processedMesh); 
     endTime = Clock::now();
     std::cout << "Material interface reconstruction time: " << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() << " ms" << std::endl;
 
