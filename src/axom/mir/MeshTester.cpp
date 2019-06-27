@@ -116,6 +116,7 @@ MIRMesh MeshTester::initTestCaseOne()
   mapData.m_elementDominantMaterials = {NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT};
   mapData.m_elementParents = { 0,1,2,3,4,5,6,7,8 }; // For the base mesh, the parents are always themselves
   mapData.m_vertexPositions = points;
+  mapData.m_shapeTypes = {mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad};
 
   // Build the mesh
   mir::MIRMesh testMesh;
@@ -217,6 +218,7 @@ mir::MIRMesh MeshTester::initTestCaseTwo()
   mapData.m_elementDominantMaterials = {NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT};
   mapData.m_elementParents = { 0,1,2,3,4,5,6,7,8 }; // For the base mesh, the parents are always themselves
   mapData.m_vertexPositions = points;
+  mapData.m_shapeTypes = {mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad};
 
   // Build the mesh
   mir::MIRMesh testMesh;
@@ -289,6 +291,7 @@ mir::MIRMesh MeshTester::initTestCaseThree()
   mapData.m_elementDominantMaterials = {NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT};
   mapData.m_elementParents = { 0,1,2,3 }; // For the base mesh, the parents are always themselves
   mapData.m_vertexPositions = points;
+  mapData.m_shapeTypes = {mir::Shape::Triangle, mir::Shape::Triangle, mir::Shape::Triangle, mir::Shape::Triangle};
 
   // Build the mesh
   mir::MIRMesh testMesh;
@@ -399,6 +402,7 @@ mir::MIRMesh MeshTester::initTestCaseFour()
   mapData.m_elementDominantMaterials = {NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT};
   mapData.m_elementParents = { 0,1,2,3,4,5,6,7,8 }; // For the base mesh, the parents are always themselves
   mapData.m_vertexPositions = points;
+  mapData.m_shapeTypes = {mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad};
 
   // Build the mesh
   mir::MIRMesh testMesh;
@@ -442,10 +446,12 @@ mir::MIRMesh MeshTester::createUniformGridTestCaseMesh(int gridSize, mir::Point2
 
   std::vector<int> elementParents;// For the base mesh, the parents are always themselves
   std::vector<int> elementDominantMaterials;
+  std::vector<mir::Shape> elementShapeTypes;
   for (int i = 0; i < cellData.m_numElems; ++i)
   {
     elementParents.push_back(i);
     elementDominantMaterials.push_back(NULL_MAT);
+    elementShapeTypes.push_back(mir::Shape::Quad);
   }
 
   CellTopologyData topology;
@@ -471,10 +477,10 @@ mir::MIRMesh MeshTester::createUniformGridTestCaseMesh(int gridSize, mir::Point2
 axom::float64 MeshTester::calculatePercentOverlapMonteCarlo(int gridSize, mir::Point2 circleCenter, axom::float64 circleRadius, mir::Point2 quadP0, mir::Point2 quadP1, mir::Point2 quadP2, mir::Point2 quadP3)
 {
   // Check if any of the quad's corners are within the circle
-  axom::float64 distP0 = distance(quadP0, circleCenter);
-  axom::float64 distP1 = distance(quadP1, circleCenter);
-  axom::float64 distP2 = distance(quadP2, circleCenter);
-  axom::float64 distP3 = distance(quadP3, circleCenter);
+  axom::float64 distP0 = mir::utilities::distance(quadP0, circleCenter);
+  axom::float64 distP1 = mir::utilities::distance(quadP1, circleCenter);
+  axom::float64 distP2 = mir::utilities::distance(quadP2, circleCenter);
+  axom::float64 distP3 = mir::utilities::distance(quadP3, circleCenter);
 
   if (distP0 < circleRadius && distP1 < circleRadius && distP2 < circleRadius && distP3 < circleRadius)
   {
@@ -492,7 +498,7 @@ axom::float64 MeshTester::calculatePercentOverlapMonteCarlo(int gridSize, mir::P
       for (int x = 0; x < gridSize; ++x)
       {
         mir::Point2 samplePoint(delta_x * x + quadP1.m_x, delta_y * y + quadP1.m_y);
-        if (distance(samplePoint, circleCenter) < circleRadius)
+        if (mir::utilities::distance(samplePoint, circleCenter) < circleRadius)
           ++countOverlap;
       }
     }
@@ -626,13 +632,6 @@ mir::CellData MeshTester::generateGrid(int gridSize)
 
 //--------------------------------------------------------------------------------
 
-axom::float64 MeshTester::distance(mir::Point2 p0, mir::Point2 p1)
-{
-  return sqrt( ((p1.m_x - p0.m_x) * (p1.m_x - p0.m_x)) + ((p1.m_y - p0.m_y) * (p1.m_y - p0.m_y)) );
-}
-
-//--------------------------------------------------------------------------------
-
 mir::MIRMesh MeshTester::initTestCaseFive(int gridSize, int numCircles)
 {
 
@@ -700,7 +699,7 @@ mir::MIRMesh MeshTester::initTestCaseFive(int gridSize, int numCircles)
         bool isPointSampled = false;
         for (int cID = 0; cID < numCircles && !isPointSampled; ++cID)
         {
-          if (distance(samplePoint, circleCenter) < circleRadii[cID])
+          if (mir::utilities::distance(samplePoint, circleCenter) < circleRadii[cID])
           {
             materialCount[cID]++;
             isPointSampled = true;
@@ -723,10 +722,12 @@ mir::MIRMesh MeshTester::initTestCaseFive(int gridSize, int numCircles)
 
   std::vector<int> elementParents; // For the base mesh, the parents are always themselves
   std::vector<int> elementDominantMaterials;
+  std::vector<mir::Shape> elementShapeTypes;
   for (int i = 0; i < cellData.m_numElems; ++i)
   {
     elementParents.push_back(i);
     elementDominantMaterials.push_back(NULL_MAT);
+    elementShapeTypes.push_back(mir::Shape::Quad);
   }
 
   CellTopologyData topology;
@@ -739,6 +740,7 @@ mir::MIRMesh MeshTester::initTestCaseFive(int gridSize, int numCircles)
   mapData.m_elementDominantMaterials = elementDominantMaterials;
   mapData.m_elementParents = elementParents;
   mapData.m_vertexPositions = cellData.m_mapData.m_vertexPositions;
+  mapData.m_shapeTypes = elementShapeTypes;
 
   // Build the mesh
   mir::MIRMesh testMesh;
@@ -752,10 +754,10 @@ mir::MIRMesh MeshTester::initTestCaseFive(int gridSize, int numCircles)
 int MeshTester::circleQuadCornersOverlaps(mir::Point2 circleCenter, axom::float64 circleRadius, mir::Point2 quadP0, mir::Point2 quadP1, mir::Point2 quadP2, mir::Point2 quadP3)
 {
   // Check if any of the quad's corners are within the circle
-  axom::float64 distP0 = distance(quadP0, circleCenter);
-  axom::float64 distP1 = distance(quadP1, circleCenter);
-  axom::float64 distP2 = distance(quadP2, circleCenter);
-  axom::float64 distP3 = distance(quadP3, circleCenter);
+  axom::float64 distP0 = mir::utilities::distance(quadP0, circleCenter);
+  axom::float64 distP1 = mir::utilities::distance(quadP1, circleCenter);
+  axom::float64 distP2 = mir::utilities::distance(quadP2, circleCenter);
+  axom::float64 distP3 = mir::utilities::distance(quadP3, circleCenter);
 
   int numCorners = 0;
 
@@ -791,14 +793,17 @@ mir::MIRMesh MeshTester::initQuadClippingTestMesh()
 
   std::vector<int> elementParents;
   std::vector<int> elementDominantMaterials;
+  std::vector<mir::Shape> elementShapeTypes;
   for (int i = 0; i < cellData.m_numElems; ++i)
   {
     elementParents.push_back(i);
     elementDominantMaterials.push_back(NULL_MAT);
+    elementShapeTypes.push_back(mir::Shape::Quad);
   }
   
   cellData.m_mapData.m_elementDominantMaterials = elementDominantMaterials;
   cellData.m_mapData.m_elementParents = elementParents;
+  cellData.m_mapData.m_shapeTypes = elementShapeTypes;
 
   // Build the mesh
   mir::MIRMesh testMesh;

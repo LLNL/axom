@@ -17,6 +17,7 @@
 #include "axom/slam.hpp"  // unified header for slam classes and functions
 
 #include "MIRMesh.hpp"
+#include "MIRUtilities.hpp"
 
 #include <algorithm>
 
@@ -119,17 +120,6 @@ namespace mir
       mir::MIRMesh  initQuadClippingTestMesh();
 
     private:
-
-      /**
-       * \brief Calculate the distance between the two given points.
-       * 
-       * \param p0  The first point.
-       * \param p1  The second point.
-       * 
-       * \return The distance between the two points.
-       */
-      axom::float64  distance(mir::Point2 p0, mir::Point2 p1);
-
       /**
        * \brief Generates a 2D uniform grid of n x n elements.
        * 

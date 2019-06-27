@@ -25,6 +25,17 @@ namespace axom
 {
 namespace mir
 {
+  
+  enum Shape
+  {
+    Triangle,
+    Quad,
+    Tetrahedron,
+    Triangular_Prism,
+    Pyramid,
+    Hexahedron
+  };
+
   /**
    * \brief Simple 2D Point class for example
    */

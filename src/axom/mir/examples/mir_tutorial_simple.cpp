@@ -27,10 +27,10 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
   auto startTime = Clock::now();
   mir::MeshTester tester;
   // mir::MIRMesh testMesh = tester.initTestCaseOne();
-  // mir::MIRMesh testMesh = tester.initTestCaseTwo();
+  mir::MIRMesh testMesh = tester.initTestCaseTwo();
   // mir::MIRMesh testMesh = tester.initTestCaseThree();
   // mir::MIRMesh testMesh = tester.initTestCaseFour();
-  mir::MIRMesh testMesh = tester.initTestCaseFive(50, 25);
+  // mir::MIRMesh testMesh = tester.initTestCaseFive(25, 12);
 
   auto endTime = Clock::now();
   std::cout << "Mesh init time: " << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() << " ms" << std::endl;
@@ -38,15 +38,33 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
   // Begin material interface reconstruction
   startTime = Clock::now();
 
+  mir::MIRMesh processedMesh;
+  
   mir::InterfaceReconstructor reconstructor;
-  // mir::MIRMesh processedMesh = reconstructor.computeReconstructedInterface(testMesh);                // Process once, with original Meredith algorithm
-  mir::MIRMesh processedMesh = reconstructor.computeReconstructedInterfaceIterative(testMesh, 5, 0.3);  // 5 iterations, 30 percent with iterative Meredith algorithm
+  reconstructor.computeReconstructedInterface(testMesh, processedMesh);                // Process once, with original Meredith algorithm
+  // reconstructor.computeReconstructedInterfaceIterative(testMesh, 100, 0.3, processedMesh);  // 100 iterations, 20 percent with iterative Meredith algorithm
 
   endTime = Clock::now();
   std::cout << "Material interface reconstruction time: " << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() << " ms" << std::endl;
 
   // Output results
-  processedMesh.writeMeshToFile("/Users/sterbentz3/Desktop/testOutputIterative6.vtk");
+  processedMesh.writeMeshToFile("/Users/sterbentz3/Desktop/testOutputNewMARKONEW4.vtk");
+
+  std::vector<std::vector<axom::float64> > materialVolumeFractionsElement = processedMesh.computeOriginalElementVolumeFractions();
+  
+    // // Print out the results 
+    // printf("elementVolumeFractions: {\n");
+    // for (int matID = 0; matID < processedMesh.m_numMaterials; ++matID)
+    // {
+    //   printf("Material %d: {", matID);
+    //   for (int eID = 0; eID < materialVolumeFractionsElement[matID].size(); ++eID)
+    //   {
+    //     printf(" %f,", materialVolumeFractionsElement[matID][eID]);
+    //   }
+    //   printf("}\n");
+    // }
+    // printf("}\n");
+    // // END TESTING
 
   return 0;
 }

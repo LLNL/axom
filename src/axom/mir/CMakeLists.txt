@@ -22,15 +22,19 @@ set(mir_headers
     InterfaceReconstructor.hpp
     CellData.hpp
     MeshTester.hpp
+    CellClipper.hpp
+    MIRUtilities.hpp
+    CellGenerator.hpp
     )
 
 set(mir_sources
-    ../Axom.cpp
     MIRMesh.cpp
     InterfaceReconstructor.cpp
     ZooClippingTables.cpp
     CellData.cpp
     MeshTester.cpp
+    CellClipper.cpp
+    CellGenerator.cpp
     )
 
 #------------------------------------------------------------------------------

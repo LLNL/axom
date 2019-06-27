@@ -33,6 +33,7 @@ MIRMesh::MIRMesh(MIRMesh* _mesh)
     m_materialVolumeFractionsElement = _mesh->m_materialVolumeFractionsElement;
     m_materialVolumeFractionsVertex = _mesh->m_materialVolumeFractionsVertex;
     m_elementParentIDs = _mesh->m_elementParentIDs;
+    m_shapeTypes = _mesh->m_shapeTypes;
     m_elementDominantMaterials = _mesh->m_elementDominantMaterials;
     m_numMaterials = _mesh->m_numMaterials;
 }
@@ -46,7 +47,12 @@ MIRMesh::~MIRMesh()
 
 //--------------------------------------------------------------------------------
 
-void MIRMesh::initializeMesh(VertSet _verts, ElemSet _elems, int _numMaterials, CellTopologyData _topology, CellMapData _mapData, std::vector<std::vector<axom::float64> > _elementVF)
+void MIRMesh::initializeMesh(const VertSet _verts, 
+                             const ElemSet _elems, 
+                             const int _numMaterials, 
+                             const CellTopologyData& _topology, 
+                             const CellMapData& _mapData, 
+                             const std::vector<std::vector<axom::float64> >& _elementVF)
 {
   // Initialize the vertex and element sets
   m_verts = _verts;
@@ -64,9 +70,10 @@ void MIRMesh::initializeMesh(VertSet _verts, ElemSet _elems, int _numMaterials, 
   constructMeshRelations();
 
   // Initialize the mesh's data maps
-  constructVertexPositionMap(_mapData.m_vertexPositions.data());
-  constructElementParentMap(_mapData.m_elementParents.data());
+  constructVertexPositionMap(_mapData.m_vertexPositions);
+  constructElementParentMap(_mapData.m_elementParents);
   constructElementDominantMaterialMap(_mapData.m_elementDominantMaterials);
+  constructElementShapeTypesMap(_mapData.m_shapeTypes);
 
   // Initialize the element and vertex volume fraction maps
   if (_elementVF.size() > 0)
@@ -121,7 +128,7 @@ void MIRMesh::constructMeshRelations()
 
 //--------------------------------------------------------------------------------  
 
-void MIRMesh::constructMeshVolumeFractionsMaps(std::vector<std::vector<axom::float64> > elementVF)
+void MIRMesh::constructMeshVolumeFractionsMaps(const std::vector<std::vector<axom::float64> >& elementVF)
 {
   // Clear the old maps
   m_materialVolumeFractionsElement.clear();
@@ -170,7 +177,7 @@ void MIRMesh::constructMeshVolumeFractionsMaps(std::vector<std::vector<axom::flo
 
 //--------------------------------------------------------------------------------  
 
-void MIRMesh::constructMeshVolumeFractionsVertex(std::vector<std::vector<axom::float64> > vertexVF)
+void MIRMesh::constructMeshVolumeFractionsVertex(const std::vector<std::vector<axom::float64> >& vertexVF)
 {
   // Initialize the maps for all of the materials with the input volume fraction data for each vertex
   for (int matID = 0; matID < m_numMaterials; ++matID)
@@ -190,7 +197,7 @@ void MIRMesh::constructMeshVolumeFractionsVertex(std::vector<std::vector<axom::f
 
 //--------------------------------------------------------------------------------  
 
-void MIRMesh::constructVertexPositionMap(Point2* data)
+void MIRMesh::constructVertexPositionMap(const std::vector<Point2>& data)
 {
   // construct the position map on the vertices
   m_vertexPositions = PointMap( &m_verts );
@@ -203,7 +210,7 @@ void MIRMesh::constructVertexPositionMap(Point2* data)
 
 //--------------------------------------------------------------------------------  
 
-void MIRMesh::constructElementParentMap(int* elementParents)
+void MIRMesh::constructElementParentMap(const std::vector<int>& elementParents)
 {
   // Initialize the map for the elements' parent IDs
   m_elementParentIDs = IntMap( &m_elems );
@@ -217,7 +224,7 @@ void MIRMesh::constructElementParentMap(int* elementParents)
 
 //--------------------------------------------------------------------------------  
 
-void MIRMesh::constructElementDominantMaterialMap(std::vector<int> dominantMaterials)
+void MIRMesh::constructElementDominantMaterialMap(const std::vector<int>& dominantMaterials)
 {
   // Initialize the map for the elements' dominant colors
   m_elementDominantMaterials = IntMap( &m_elems );
@@ -227,6 +234,20 @@ void MIRMesh::constructElementDominantMaterialMap(std::vector<int> dominantMater
     m_elementDominantMaterials[eID] = dominantMaterials[eID];
 
   SLIC_ASSERT_MSG( m_elementDominantMaterials.isValid(), "Element dominant materials map is not valid.");
+}
+
+//--------------------------------------------------------------------------------
+
+void MIRMesh::constructElementShapeTypesMap(const std::vector<mir::Shape>& shapeTypes)
+{
+  // Initialize the map for the elements' dominant colors
+  m_shapeTypes = IntMap( &m_elems );
+
+  // Copy the dat for the elements
+  for (int eID = 0; eID < m_elems.size(); ++eID)
+    m_shapeTypes[eID] = shapeTypes[eID];
+
+  SLIC_ASSERT_MSG( m_shapeTypes.isValid(), "Element dominant materials map is not valid.");
 }
 
 //--------------------------------------------------------------------------------
@@ -284,6 +305,13 @@ void MIRMesh::print()
   for (int i = 0; i < m_elems.size(); ++i)
   {
     printf("%d ", m_elementDominantMaterials[i]);
+  }
+  printf("}\n");
+
+  printf("shapeTypes: { ");
+  for (int i = 0; i < m_elems.size(); ++i)
+  {
+    printf("%d ", m_shapeTypes[i]);
   }
   printf("}\n");
 
@@ -354,10 +382,9 @@ void MIRMesh::writeMeshToFile(std::string filename)
   meshfile << "\n\nCELL_TYPES " << m_elems.size() << "\n";
   for (int i = 0; i < m_elems.size(); ++i)
   {
-    int nVerts = m_meshTopology.m_evBegins[i + 1] - m_meshTopology.m_evBegins[i];
-    if (nVerts == 3)
+    if (m_shapeTypes[i] == mir::Shape::Triangle)
       meshfile << "5\n";
-    else if (nVerts == 4)
+    else if (m_shapeTypes[i] == mir::Shape::Quad)
       meshfile << "9\n";
   }
 
@@ -423,7 +450,9 @@ std::vector<std::vector<axom::float64> > MIRMesh::computeOriginalElementVolumeFr
 
 //--------------------------------------------------------------------------------
 
-axom::float64 MIRMesh::computeTriangleArea(Point2 p0, Point2 p1, Point2 p2)
+axom::float64 MIRMesh::computeTriangleArea(Point2 p0, 
+                                           Point2 p1, 
+                                           Point2 p2)
 {
   axom::float64 a = sqrt( ((p1.m_x - p0.m_x) * (p1.m_x - p0.m_x)) + ((p1.m_y - p0.m_y) * (p1.m_y - p0.m_y)) );// the distance from p0 to p1
   axom::float64 b = sqrt( ((p2.m_x - p1.m_x) * (p2.m_x - p1.m_x)) + ((p2.m_y - p1.m_y) * (p2.m_y - p1.m_y)) );// the distance from p1 to p2
@@ -436,7 +465,10 @@ axom::float64 MIRMesh::computeTriangleArea(Point2 p0, Point2 p1, Point2 p2)
 
 //--------------------------------------------------------------------------------
 
-axom::float64 MIRMesh::computeQuadArea(Point2 p0, Point2 p1, Point2 p2, Point2 p3)
+axom::float64 MIRMesh::computeQuadArea(Point2 p0,
+                                       Point2 p1,
+                                       Point2 p2, 
+                                       Point2 p3)
 {
   return computeTriangleArea(p0, p1, p2) + computeTriangleArea(p2, p3, p0);
 }

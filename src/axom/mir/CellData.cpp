@@ -83,6 +83,12 @@ namespace mir
       m_mapData.m_elementParents.push_back(cellToMerge.m_mapData.m_elementParents[i]);
     }
     
+    // Merge the elements' shape types
+    for (unsigned long i = 0; i < cellToMerge.m_mapData.m_shapeTypes.size(); ++i)
+    {
+      m_mapData.m_shapeTypes.push_back(cellToMerge.m_mapData.m_shapeTypes[i]);
+    }
+
     // Merge the total number of verts and elems in the resulting cell
     m_numVerts += cellToMerge.m_numVerts;
     m_numElems += cellToMerge.m_numElems;

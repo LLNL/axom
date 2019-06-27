@@ -14,6 +14,9 @@
 set(gtest_mir_tests
     mir_smoke.cpp
     mir_interface_reconstructor.cpp
+    mir_cell_clipper.cpp
+    mir_utilities.cpp
+    mir_cell_generator.cpp
     )
 
 
