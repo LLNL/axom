@@ -153,6 +153,17 @@ public:
   /*! Retrieves the control point at index idx */
   const PointType& operator[](int idx) const { return m_controlpoints[idx]; }
  
+  /* Checks equality of two Bezier Curve */
+  friend inline bool operator==(const BezierCurve< T, NDIMS>& lhs, const BezierCurve< T, NDIMS>& rhs)
+  {
+    return lhs.m_controlpoints == rhs.m_controlpoints;
+  }
+
+  friend inline bool operator!=(const BezierCurve< T, NDIMS>& lhs, const BezierCurve< T, NDIMS>& rhs)
+  {
+    return !(lhs == rhs);
+  }
+
   std::vector< Point< T, NDIMS > > getControlPoints() const
   {
     return m_controlpoints; 
@@ -191,11 +202,19 @@ public:
     return ptval;
   }
   
+  /*!
+ * \brief Splits a Bezier Curve into two Bezier Curves at particular parameter value between 0 and 1
+ *
+ * \param [in] t parameter value between 0 and 1 at which to evaluate
+ * \param [in] c1, c2 two BezierCurves objects to store output in
+ * \param [out] c1, c2 two new Bezier Curves that split the original
+ * \return p the value of the Bezier Curve at t
+ *
+ */
+
   void split_bezier(T t, BezierCurve< T, NDIMS >& c1, BezierCurve< T, NDIMS>& c2)
   { 
     int ord = m_controlpoints.size()-1;
-    c1.setOrder(ord);
-    c2.setOrder(ord);
     T* dCarray = new T[NDIMS*2*(ord+1)];
     for ( int i=0; i < NDIMS; i++)
     {
