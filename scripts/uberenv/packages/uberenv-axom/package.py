@@ -110,7 +110,6 @@ class UberenvAxom(Package):
     depends_on("python",   when="+python")
 
     depends_on("py-sphinx", when="+devtools")
-    depends_on("py-breathe", when="+devtools")
     depends_on("py-shroud", when="+devtools")
 
     depends_on("mpi",when="+mpi")
