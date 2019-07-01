@@ -21,7 +21,8 @@ set( primal_tests
     primal_triangle.cpp
     primal_tetrahedron.cpp
     primal_vector.cpp
-    primal_bezier.cpp
+    primal_bezier_curve.cpp
+    primal_bezier_intersect.cpp
    )
 
 set(primal_test_depends fmt primal slic mint gtest)

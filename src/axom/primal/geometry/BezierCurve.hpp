@@ -11,6 +11,9 @@
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/NumericArray.hpp"
+#include "axom/primal/geometry/Segment.hpp"
+
+#include "axom/primal/operators/squared_distance.hpp"
 
 #include "fmt/fmt.hpp"
 #include <vector>
@@ -47,7 +50,7 @@ public:
   typedef Point< T,NDIMS >  PointType;
   typedef Vector< T,NDIMS > VectorType;
   typedef NumericArray< T,NDIMS > NumArrayType;
-
+  typedef Segment< T, NDIMS > SegmentType;
 private:
   typedef std::vector< PointType > CoordsVec;
 
@@ -212,7 +215,7 @@ public:
  *
  */
 
-  void split_bezier(T t, BezierCurve< T, NDIMS >& c1, BezierCurve< T, NDIMS>& c2)
+  void split_bezier(T t, BezierCurve< T, NDIMS >& c1, BezierCurve< T, NDIMS>& c2) const
   { 
     int ord = m_controlpoints.size()-1;
     T* dCarray = new T[NDIMS*2*(ord+1)];
@@ -239,11 +242,31 @@ public:
   }
 
   /*!
+   * \brief
+   *
+   * \param [in] tol a tolerance parameter controlling definition of near-linearity
+   * \param [out] boolean TRUE if c1 is near-linear
+   */
+
+  bool is_linear(double tol) const
+  {
+    int ord1 = m_controlpoints.size()-1;
+    SegmentType linear1(m_controlpoints[0],m_controlpoints[ord1]);
+    double d1=0.0;
+    for (int i=1; i<ord1; i++) // Only adds interior, since line is defined by endpoints
+    {
+      d1=d1+squared_distance(m_controlpoints[i],linear1);
+    }
+  return (d1<tol); // Note: tolerance is squared
+  }
+
+  /*!
    * \brief Simple formatted print of a Bezier Curve instance
    *
    * \param os The output stream to write to
    * \return A reference to the modified ostream
    */
+
   std::ostream& print(std::ostream& os) const 
   {
     const int sz = m_controlpoints.size()-1;
