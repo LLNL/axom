@@ -28,6 +28,12 @@
       "gcc@4.9.3",
       "xl@coral~openmp" ],
 
+    "blueos_3_ppc64le_ib_p9":
+    [ "clang@upstream_xlf~openmp",
+      "clang@upstream_nvcc_xlf~openmp+cuda",
+      "gcc@7.3.1",
+      "xl@coral~openmp" ],
+
     "bgqos_0":
     [ "clang@4.0.0_gfortran~umpire ^zlib~shared",
       "clang@4.0.0_xlf~openmp~umpire ^zlib~shared" ],

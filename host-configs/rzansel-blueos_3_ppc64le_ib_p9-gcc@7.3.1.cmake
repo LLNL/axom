@@ -10,33 +10,33 @@
 
 ##################################
 
-# SYS_TYPE: toss_3_x86_64_ib
-# Compiler Spec: gcc@8.1.0
+# SYS_TYPE: blueos_3_ppc64le_ib_p9
+# Compiler Spec: gcc@7.3.1
 ##################################
 
-# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2019_06_27_22_15_01/gcc-8.1.0/cmake-3.9.6/bin/cmake
+# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2019_06_27_22_06_03/gcc-7.3.1/cmake-3.9.6/bin/cmake
 
 ##############
 # Compilers
 ##############
 
 # C compiler used by spack
-set(CMAKE_C_COMPILER "/usr/tce/packages/gcc/gcc-8.1.0/bin/gcc" CACHE PATH "")
+set(CMAKE_C_COMPILER "/usr/tce/packages/gcc/gcc-7.3.1/bin/gcc" CACHE PATH "")
 
 # C++ compiler used by spack
-set(CMAKE_CXX_COMPILER "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++" CACHE PATH "")
+set(CMAKE_CXX_COMPILER "/usr/tce/packages/gcc/gcc-7.3.1/bin/g++" CACHE PATH "")
 
 # Fortran compiler used by spack
 set(ENABLE_FORTRAN ON CACHE BOOL "")
 
-set(CMAKE_Fortran_COMPILER "/usr/tce/packages/gcc/gcc-8.1.0/bin/gfortran" CACHE PATH "")
+set(CMAKE_Fortran_COMPILER "/usr/tce/packages/gcc/gcc-7.3.1/bin/gfortran" CACHE PATH "")
 
 ##############
 # TPLs
 ##############
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_06_27_22_15_01/gcc-8.1.0" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_06_27_22_06_03/gcc-7.3.1" CACHE PATH "")
 
 # conduit from uberenv
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.4.0" CACHE PATH "")
@@ -73,15 +73,17 @@ set(ENABLE_DOCS OFF CACHE BOOL "")
 
 set(ENABLE_MPI ON CACHE BOOL "")
 
-set(MPI_C_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-8.1.0/bin/mpicc" CACHE PATH "")
+set(MPI_C_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-7.3.1/bin/mpicc" CACHE PATH "")
 
-set(MPI_CXX_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-8.1.0/bin/mpicxx" CACHE PATH "")
+set(MPI_CXX_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-7.3.1/bin/mpicxx" CACHE PATH "")
 
-set(MPI_Fortran_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.2-gcc-8.1.0/bin/mpif90" CACHE PATH "")
+set(MPI_Fortran_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-7.3.1/bin/mpif90" CACHE PATH "")
 
-set(MPIEXEC "/usr/bin/srun" CACHE PATH "")
+set(MPIEXEC "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-7.3.1/bin/mpirun" CACHE PATH "")
 
-set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
+set(MPIEXEC_NUMPROC_FLAG "-np" CACHE PATH "")
+
+set(BLT_MPI_COMMAND_APPEND "mpibind" CACHE PATH "")
 
 ##############
 # Other machine specifics

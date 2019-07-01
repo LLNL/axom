@@ -85,7 +85,6 @@ Tool dependencies
 ================== ==================================== =====================
   Tool               Purpose                            Build system variable
 ================== ==================================== =====================
-  `Breathe`_         Doxygen integration for Sphinx     BREATHE_EXECUTABLE
   `CppCheck`_        Static C/C++ code analysis         CPPCHECK_EXECUTABLE
   `Doxygen`_         Source Code Docs                   DOXYGEN_EXECUTABLE
   `Lcov`_            Code Coverage Reports              LCOV_EXECUTABLE
@@ -97,7 +96,6 @@ Tool dependencies
 .. TODO: add ``python`` if we return to using it as a tool
 
 .. _CppCheck: http://cppcheck.sourceforge.net/
-.. _Breathe: https://breathe.readthedocs.io/en/latest/
 .. _Doxygen: http://www.doxygen.nl/
 .. _Lcov: http://ltp.sourceforge.net/coverage/lcov.php
 .. _Shroud: https://shroud.readthedocs.io/en/develop/

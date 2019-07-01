@@ -49,6 +49,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Deprecated
 
 ### Changed
+- Updated conduit TPL to v0.4.0
+- Updated mfem TPL to v4.0
 - Slam's Set and Relation classes are now parameterized by a PositionType and ElementType.
   Its Map classes are now parametrized by a SetType.
 - Updated the fmt tpl.

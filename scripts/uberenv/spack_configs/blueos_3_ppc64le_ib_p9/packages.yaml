@@ -39,18 +39,18 @@ packages:
 # LLNL blueos CUDA
   cuda:
     paths:
+      cuda@10.1.168: /usr/tce/packages/cuda/cuda-10.1.168
       cuda@9.2.148: /usr/tce/packages/cuda/cuda-9.2.148
-      cuda@8.0: /usr/tce/packages/cuda/cuda-8.0
     buildable: False
 # LLNL blueos mpi
 # note, we need to fake this as an existing mpi package
 # so even though this is spectrum mpi, we call it mvapich2
   mvapich2:
     paths:
-      mvapich2@2.2%gcc@4.9.3: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-4.9.3
-      mvapich2@2.2%clang@upstream_xlf: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2018.11.09
-      mvapich2@2.2%clang@upstream_nvcc_xlf: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2018.11.09
-      mvapich2@2.2%xl@coral : /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2018.11.26
+      mvapich2@2.2%gcc@7.3.1: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-7.3.1/
+      mvapich2@2.2%clang@upstream_xlf: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2019.03.26/
+      mvapich2@2.2%clang@upstream_nvcc_xlf: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2019.03.26/
+      mvapich2@2.2%xl@coral : /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2019.03.26/
     buildable: False
 # System level packages to not build
   bzip2:

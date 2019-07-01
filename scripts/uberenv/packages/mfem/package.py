@@ -65,10 +65,14 @@ class Mfem(Package):
     version('develop',
             git='https://github.com/mfem/mfem', branch='master')
 
+    version('4.0',
+            'acbc9ca4398f3cc19762abdc47654607',
+            url='https://bit.ly/mfem-4-0', extension='.tar.gz',
+            preferred=True)
+
     version('3.4.0',
             '4e73e4fe0482636de3c5dc983cd395839a83cb16f6f509bd88b053e8b3858e05',
-            url='https://bit.ly/mfem-3-4', extension='.tar.gz',
-            preferred=True)
+            url='https://bit.ly/mfem-3-4', extension='.tar.gz')
 
     version('3.3.2',
             'b70fa3c5080b9ec514fc05f4a04ff74322b99ac4ecd6d99c229f0ed5188fc0ce',
