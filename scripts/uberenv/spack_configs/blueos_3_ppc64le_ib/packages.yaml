@@ -65,6 +65,10 @@ packages:
    paths:
       m4: /usr/bin/
    buildable: False
+  pkg-config:
+    paths:
+      pkg-config: /usr/bin/
+    buildable: False 
   tar:
    paths:
       tar: /usr/bin/
