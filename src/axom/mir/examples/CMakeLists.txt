@@ -9,15 +9,10 @@ set( mir_examples
    )
 
 set( mir_example_dependencies
-     #core
+     core
+     slic
      mir
-     #slic
    )
-
-blt_list_append( TO mir_example_dependencies ELEMENTS sidre conduit IF AXOM_MIR_USE_SIDRE )
-blt_list_append( TO mir_example_dependencies ELEMENTS raja IF RAJA_FOUND )
-blt_list_append( TO mir_example_dependencies ELEMENTS openmp IF ENABLE_OPENMP )
-blt_list_append( TO mir_example_dependencies ELEMENTS cuda IF ENABLE_CUDA )
 
 foreach( example ${mir_examples} )
 
