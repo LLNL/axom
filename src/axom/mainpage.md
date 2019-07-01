@@ -21,7 +21,7 @@ Dependencies between components are as follows:
 - Slic optionally depends on Lumberjack
 - Slam, Primal, Mint, Quest, Spin, and Sidre depend on Slic
 - Mint optionally depends on Sidre
-- Mir depends on Slic
+- Mir depends on Slic and Slam
 - Spin depends on Primal and Slam
 - Quest depends on Slam, Primal, Spin, and Mint
 

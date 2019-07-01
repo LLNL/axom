@@ -10,7 +10,7 @@
 # Check necessary dependencies
 #------------------------------------------------------------------------------
 axom_component_requires(NAME       MIR
-                        COMPONENTS SLIC)
+                        COMPONENTS SLIC SLAM)
 
 #------------------------------------------------------------------------------
 # Specify all headers/sources
@@ -40,7 +40,7 @@ set(mir_sources
 #------------------------------------------------------------------------------
 # Build and install the library
 #------------------------------------------------------------------------------
-set(mir_depends_on core slic)
+set(mir_depends_on core slic slam)
 
 blt_add_library(
     NAME        mir
@@ -61,9 +61,6 @@ axom_install_component(NAME    mir
 #------------------------------------------------------------------------------
 if (AXOM_ENABLE_TESTS)
   add_subdirectory(tests)
-  if (ENABLE_BENCHMARKS)
-  #  add_subdirectory(benchmarks)
-  endif()
 endif()
 
 if (AXOM_ENABLE_EXAMPLES)
