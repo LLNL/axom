@@ -57,7 +57,7 @@ void CellClipper::computeClippingPoints(const mir::Shape shapeType,
       newElements[currentElementIndex].push_back(vID);
       newVertices[vID].push_back(currentElementIndex);
 
-      if ( vID >= mir::utilities::numVerts(shapeType) )
+      if ( vID >= mir::utilities::numVerts(shapeType) && vID < (mir::utilities::maxPossibleNumVerts(shapeType) - 1) )
       {
         int vertexOneID = mir::utilities::getEdgeEndpoint(shapeType, vID, true);
         int vertexTwoID = mir::utilities::getEdgeEndpoint(shapeType, vID, false);
@@ -145,6 +145,14 @@ const std::vector<std::vector<int> >& CellClipper::getClipTable(const mir::Shape
       return triangleClipTableVec;
     case mir::Shape::Quad:
       return quadClipTableVec;
+    case mir::Shape::Tetrahedron:
+      return tetrahedronClipTableVec;
+    case mir::Shape::Pyramid:
+      return pyramidClipTableVec;
+    case mir::Shape::Triangular_Prism:
+      return triangularPrismClipTableVec;
+    case mir::Shape::Hexahedron:
+      return hexahedronClipTableVec;
     default:
       printf("No clipping table for this shape type.\n");
       return triangleClipTableVec;

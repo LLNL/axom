@@ -396,8 +396,13 @@ void MIRMesh::writeMeshToFile(std::string filename)
 
   // write positions
   for (int vID = 0; vID < m_verts.size(); ++vID)
-  {      
-    meshfile << m_vertexPositions[vID][0] << " " << m_vertexPositions[vID][1] << " 0\n"; // must always set all 3 coords; set Z=0 for 2D
+  { 
+    auto& pt = m_vertexPositions[vID];
+    for(int i=0; i < pt.dimension(); ++i)
+    {
+      meshfile << pt[i] << " ";
+    }
+    meshfile << (pt.dimension()==2 ? "0" : "") <<  "\n";
   }
 
   meshfile << "\nCELLS " << m_elems.size() << " " << m_meshTopology.m_evInds.size() + m_elems.size();
@@ -419,6 +424,14 @@ void MIRMesh::writeMeshToFile(std::string filename)
       meshfile << "5\n";
     else if (m_shapeTypes[i] == mir::Shape::Quad)
       meshfile << "9\n";
+    else if (m_shapeTypes[i] == mir::Shape::Tetrahedron)
+      meshfile << "10\n";
+    else if (m_shapeTypes[i] == mir::Shape::Triangular_Prism)
+      meshfile << "13\n";
+    else if (m_shapeTypes[i] == mir::Shape::Pyramid)
+      meshfile << "14\n";
+    else if (m_shapeTypes[i] == mir::Shape::Hexahedron)
+      meshfile << "12\n";
   }
 
   // write element materials

@@ -11,152 +11,76 @@
 #include "axom/slic.hpp"
 #include "axom/mir.hpp"
 
+#include <cmath>
+
 using namespace axom;
 
 //----------------------------------------------------------------------
 
-TEST(mir_clipping_case, triangle_case_zero)
+TEST(mir_clipping_case, all_triangle_cases)
 {
   mir::Shape shape = mir::Shape::Triangle;
-  std::vector<axom::float64> matOneVF = {0.0, 0.0, 0.0};
-  std::vector<axom::float64> matTwoVF = {1.0, 1.0, 1.0};
+  int numVerts = mir::utilities::numVerts(shape);
+  int numCases = pow(2, numVerts);
 
-  mir::CellClipper clipper;
-  unsigned int clippingCase = clipper.determineClippingCase(shape, matOneVF, matTwoVF);
+  for (auto actualClippingCase = 0; actualClippingCase < numCases; ++actualClippingCase)
+  {
+    std::vector<axom::float64> matOneVF;
+    std::vector<axom::float64> matTwoVF;
 
-  EXPECT_EQ( 0 , clippingCase);
+    for (auto bitIndex = 0; bitIndex < numVerts; ++bitIndex)
+    {
+      unsigned int shiftedBit = 1;
+      shiftedBit = shiftedBit << (numVerts - 1 - bitIndex);
+
+      axom::float64 matOneValue = 0.0;
+      if (actualClippingCase & shiftedBit)
+      {
+        matOneValue = 1.0;
+      }
+
+      matOneVF.push_back( matOneValue );
+      matTwoVF.push_back( 1.0 - matOneValue );
+    }
+
+    mir::CellClipper clipper;
+    unsigned int computedClippingCase = clipper.determineClippingCase(shape, matOneVF, matTwoVF);
+
+    EXPECT_EQ ( computedClippingCase, actualClippingCase );
+  }
 }
 
-//----------------------------------------------------------------------
-
-TEST(mir_clipping_case, triangle_case_three)
-{
-  mir::Shape shape = mir::Shape::Triangle;
-  std::vector<axom::float64> matOneVF = {0.0, 1.0, 1.0};
-  std::vector<axom::float64> matTwoVF = {1.0, 0.0, 0.0};
-
-  mir::CellClipper clipper;
-  unsigned int clippingCase = clipper.determineClippingCase(shape, matOneVF, matTwoVF);
-  EXPECT_EQ( 3 , clippingCase);
-}
-
-//----------------------------------------------------------------------
-
-TEST(mir_clipping_case, triangle_case_four)
-{
-  mir::Shape shape = mir::Shape::Triangle;
-  std::vector<axom::float64> matOneVF = {1.0, 0.0, 0.0};
-  std::vector<axom::float64> matTwoVF = {0.0, 1.0, 1.0};
-
-  mir::CellClipper clipper;
-  unsigned int clippingCase = clipper.determineClippingCase(shape, matOneVF, matTwoVF);
-
-  EXPECT_EQ( 4 , clippingCase);
-}
-
-//----------------------------------------------------------------------
-
-TEST(mir_clipping_case, triangle_case_seven)
-{
-  mir::Shape shape = mir::Shape::Triangle;
-  std::vector<axom::float64> matOneVF = {1.0, 1.0, 1.0};
-  std::vector<axom::float64> matTwoVF = {0.0, 0.0, 0.0};
-
-  mir::CellClipper clipper;
-  unsigned int clippingCase = clipper.determineClippingCase(shape, matOneVF, matTwoVF);
-  
-  EXPECT_EQ( 7 , clippingCase);
-}
-
-//----------------------------------------------------------------------
-
-TEST(mir_clipping_case, quad_case_zero)
+TEST(mir_clipping_case, all_quad_cases)
 {
   mir::Shape shape = mir::Shape::Quad;
-  std::vector<axom::float64> matOneVF = {0.0, 0.0, 0.0, 0.0};
-  std::vector<axom::float64> matTwoVF = {1.0, 1.0, 1.0, 1.0};
+  int numVerts = mir::utilities::numVerts(shape);
+  int numCases = pow(2, numVerts);
 
-  mir::CellClipper clipper;
-  unsigned int clippingCase = clipper.determineClippingCase(shape, matOneVF, matTwoVF);
-  EXPECT_EQ( 0 , clippingCase);
-}
+  for (auto actualClippingCase = 0; actualClippingCase < numCases; ++actualClippingCase)
+  {
+    std::vector<axom::float64> matOneVF;
+    std::vector<axom::float64> matTwoVF;
 
-//----------------------------------------------------------------------
+    for (auto bitIndex = 0; bitIndex < numVerts; ++bitIndex)
+    {
+      unsigned int shiftedBit = 1;
+      shiftedBit = shiftedBit << (numVerts - 1 - bitIndex);
 
-TEST(mir_clipping_case, quad_case_one)
-{
-  mir::Shape shape = mir::Shape::Quad;
-  std::vector<axom::float64> matOneVF = {0.0, 0.0, 0.0, 1.0};
-  std::vector<axom::float64> matTwoVF = {1.0, 1.0, 1.0, 0.0};
+      axom::float64 matOneValue = 0.0;
+      if (actualClippingCase & shiftedBit)
+      {
+        matOneValue = 1.0;
+      }
 
-  mir::CellClipper clipper;
-  unsigned int clippingCase = clipper.determineClippingCase(shape, matOneVF, matTwoVF);
-  EXPECT_EQ( 1 , clippingCase);
-}
+      matOneVF.push_back( matOneValue );
+      matTwoVF.push_back( 1.0 - matOneValue );
+    }
 
-//----------------------------------------------------------------------
+    mir::CellClipper clipper;
+    unsigned int computedClippingCase = clipper.determineClippingCase(shape, matOneVF, matTwoVF);
 
-TEST(mir_clipping_case, quad_case_two)
-{
-  mir::Shape shape = mir::Shape::Quad;
-  std::vector<axom::float64> matOneVF = {0.0, 0.0, 1.0, 0.0};
-  std::vector<axom::float64> matTwoVF = {1.0, 1.0, 0.0, 1.0};
-
-  mir::CellClipper clipper;
-  unsigned int clippingCase = clipper.determineClippingCase(shape, matOneVF, matTwoVF);
-  EXPECT_EQ( 2 , clippingCase);
-}
-
-//----------------------------------------------------------------------
-
-TEST(mir_clipping_case, quad_case_three)
-{
-  mir::Shape shape = mir::Shape::Quad;
-  std::vector<axom::float64> matOneVF = {0.0, 0.0, 1.0, 1.0};
-  std::vector<axom::float64> matTwoVF = {1.0, 1.0, 0.0, 0.0};
-
-  mir::CellClipper clipper;
-  unsigned int clippingCase = clipper.determineClippingCase(shape, matOneVF, matTwoVF);
-  EXPECT_EQ( 3 , clippingCase);
-}
-
-//----------------------------------------------------------------------
-
-TEST(mir_clipping_case, quad_case_five)
-{
-  mir::Shape shape = mir::Shape::Quad;
-  std::vector<axom::float64> matOneVF = {0.0, 1.0, 0.0, 1.0};
-  std::vector<axom::float64> matTwoVF = {1.0, 0.0, 1.0, 0.0};
-
-  mir::CellClipper clipper;
-  unsigned int clippingCase = clipper.determineClippingCase(shape, matOneVF, matTwoVF);
-  EXPECT_EQ( 5 , clippingCase);
-}
-
-//----------------------------------------------------------------------
-
-TEST(mir_clipping_case, quad_case_ten)
-{
-  mir::Shape shape = mir::Shape::Quad;
-  std::vector<axom::float64> matOneVF = {1.0, 0.0, 1.0, 0.0};
-  std::vector<axom::float64> matTwoVF = {0.0, 1.0, 0.0, 1.0};
-
-  mir::CellClipper clipper;
-  unsigned int clippingCase = clipper.determineClippingCase(shape, matOneVF, matTwoVF);
-  EXPECT_EQ( 10 , clippingCase);
-}
-
-//----------------------------------------------------------------------
-
-TEST(mir_clipping_case, quad_case_fifteen)
-{
-  mir::Shape shape = mir::Shape::Quad;
-  std::vector<axom::float64> matOneVF = {1.0, 1.0, 1.0, 1.0};
-  std::vector<axom::float64> matTwoVF = {0.0, 0.0, 0.0, 0.0};
-
-  mir::CellClipper clipper;
-  unsigned int clippingCase = clipper.determineClippingCase(shape, matOneVF, matTwoVF);
-  EXPECT_EQ( 15 , clippingCase);
+    EXPECT_EQ ( computedClippingCase, actualClippingCase );
+  }
 }
 
 //----------------------------------------------------------------------
@@ -433,6 +357,278 @@ TEST(mir_clipping_cell_and_vertex_output, clip_quad_case_five)
   EXPECT_EQ( 3, newVertices[7][1] );
 
 }
+
+//----------------------------------------------------------------------
+
+TEST(clipping_table_mesh_generation, triangle_meshes)
+{
+  mir::Shape shape = mir::Shape::Triangle;
+  int numVerts = mir::utilities::numVerts(shape);
+  //int numCases = pow(2, numVerts);
+
+  for (auto actualClippingCase = 0u; actualClippingCase < mir::triangleClipTableVec.size(); ++actualClippingCase)
+  {
+    // Initialize the mesh
+    int numElements = 1;
+    int numVertices = 3;
+
+    // Create the mesh connectivity information
+    mir::CellTopologyData topology;
+    topology.m_evInds = { 0,1,2 };
+    topology.m_evBegins = { 0,3 };
+    topology.m_veInds = { 0,0,0 };
+    topology.m_veBegins = { 0,1,2,3 };
+
+    mir::VertSet  verts = mir::VertSet(numVertices);
+    mir::ElemSet  elems = mir::ElemSet(numElements);
+
+    // Calculate the vertex volume fractions needed to clip with the current case
+    std::vector<axom::float64> matOneVF;
+    std::vector<axom::float64> matTwoVF;
+    std::string bitString("");
+    for (auto bitIndex = 0; bitIndex < numVerts; ++bitIndex)
+    {
+      unsigned int shiftedBit = 1;
+      shiftedBit = shiftedBit << (numVerts - 1 - bitIndex);
+
+      axom::float64 matOneValue;
+      if (actualClippingCase & shiftedBit)
+      {
+        matOneValue = 1.0;
+        bitString += "1";
+      }
+      else
+      {
+        matOneValue = 0.0;
+        bitString += "0";
+      }
+
+      matOneVF.push_back( matOneValue );
+      matTwoVF.push_back( 1.0 - matOneValue );
+    }
+
+    std::vector<std::vector<axom::float64> > vertexVF = {
+      matOneVF,
+      matTwoVF
+    };
+
+    std::vector<std::vector<axom::float64> > elementVF = {
+      { 0.5 },
+      { 0.5 }
+    };
+
+
+    std::vector<mir::Point2> points =
+    {
+      mir::Point2::make_point( 0.5, 0.717 ),
+      mir::Point2::make_point( 0.0, 0.0 ),
+      mir::Point2::make_point( 1.0, 0.0 )
+    };
+
+    mir::CellMapData mapData;
+    mapData.m_elementDominantMaterials = { mir::NULL_MAT };
+    mapData.m_elementParents = { 0 };
+    mapData.m_vertexPositions = points;
+    mapData.m_shapeTypes = { mir::Shape::Triangle };
+
+    // Build the mesh
+    mir::MIRMesh testMesh;
+    testMesh.initializeMesh(verts, elems, 2, topology, mapData, elementVF);
+    testMesh.constructMeshVolumeFractionsVertex(vertexVF);
+
+    // Clip the mesh using the actualClippingCase index
+    mir::MIRMesh outputMesh;
+    mir::InterfaceReconstructor interfaceReconstructor;
+    interfaceReconstructor.computeReconstructedInterface(testMesh, outputMesh);
+
+    // Write out the processed mesh
+    std::string filepath = "/Users/sterbentz3/Desktop/clipping_test_cases/";
+    std::string filename = "mir_clippingcase_triangle_" + std::to_string(actualClippingCase) + "_" + bitString + ".vtk";
+    outputMesh.writeMeshToFile(filepath + filename);
+  }    
+}
+
+//----------------------------------------------------------------------
+
+TEST(clipping_table_mesh_generation, tetrahedron_meshes)
+{
+  mir::Shape shape = mir::Shape::Tetrahedron;
+  int numVerts = mir::utilities::numVerts(shape);
+  //int numCases = pow(2, numVerts);
+
+  for (unsigned int actualClippingCase = 0; actualClippingCase < mir::tetrahedronClipTableVec.size(); ++actualClippingCase)
+  {
+    // Initialize the mesh
+    int numElements = 1;
+    int numVertices = 4;
+
+    // Create the mesh connectivity information
+    mir::CellTopologyData topology;
+    topology.m_evInds = { 0,1,2,3 };
+    topology.m_evBegins = { 0,4 };
+    topology.m_veInds = { 0,0,0,0 };
+    topology.m_veBegins = { 0,1,2,3,4 };
+
+    mir::VertSet  verts = mir::VertSet(numVertices);
+    mir::ElemSet  elems = mir::ElemSet(numElements);
+
+    // Calculate the vertex volume fractions needed to clip with the current case
+    std::vector<axom::float64> matOneVF;
+    std::vector<axom::float64> matTwoVF;
+    std::string bitString("");
+    for (auto bitIndex = 0; bitIndex < numVerts; ++bitIndex)
+    {
+      unsigned int shiftedBit = 1;
+      shiftedBit = shiftedBit << (numVerts - 1 - bitIndex);
+
+      axom::float64 matOneValue;
+      if (actualClippingCase & shiftedBit)
+      {
+        matOneValue = 1.0;
+        bitString += "1";
+      }
+      else
+      {
+        matOneValue = 0.0;
+        bitString += "0";
+      }
+
+      matOneVF.push_back( matOneValue );
+      matTwoVF.push_back( 1.0 - matOneValue );
+    }
+
+    std::vector<std::vector<axom::float64> > vertexVF = {
+      matOneVF,
+      matTwoVF
+    };
+
+    std::vector<std::vector<axom::float64> > elementVF = {
+      { 0.5 },
+      { 0.5 }
+    };
+
+
+    std::vector<mir::Point2> points =
+    {
+      mir::Point2::make_point( 0.5, 0.717, 0.0 ),
+      mir::Point2::make_point( 0.0, 0.0, 0.0 ),
+      mir::Point2::make_point( 1.0, 0.0, 0.0 ),
+      mir::Point2::make_point( 0.5, 0.3585, 0.717 )
+    };
+
+    mir::CellMapData mapData;
+    mapData.m_elementDominantMaterials = { mir::NULL_MAT };
+    mapData.m_elementParents = { 0 };
+    mapData.m_vertexPositions = points;
+    mapData.m_shapeTypes = { mir::Shape::Tetrahedron };
+
+    // Build the mesh
+    mir::MIRMesh testMesh;
+    testMesh.initializeMesh(verts, elems, 2, topology, mapData, elementVF);
+    testMesh.constructMeshVolumeFractionsVertex(vertexVF);
+
+    // Clip the mesh using the actualClippingCase index
+    mir::MIRMesh outputMesh;
+    mir::InterfaceReconstructor interfaceReconstructor;
+    interfaceReconstructor.computeReconstructedInterface(testMesh, outputMesh);
+
+    // Write out the processed mesh
+    std::string filepath = "/Users/sterbentz3/Desktop/clipping_test_cases/";
+    std::string filename = "mir_clippingcase_tetrahedron_" + std::to_string(actualClippingCase) + "_" + bitString + ".vtk";
+    outputMesh.writeMeshToFile(filepath + filename);
+  }    
+}
+
+//----------------------------------------------------------------------
+
+// TEST(clipping_table_mesh_generation, quad_meshes)
+// {
+//   mir::Shape shape = mir::Shape::Quad;
+//   int numVerts = mir::utilities::numVerts(shape);
+//   int numCases = pow(2, numVerts);
+
+//   for (unsigned int actualClippingCase = 0; actualClippingCase < mir::quadClipTableVec.size(); ++actualClippingCase)
+//   {
+//     // Initialize the mesh
+//     int numElements = 1;
+//     int numVertices = 4;
+
+//     // Create the mesh connectivity information
+//     mir::CellTopologyData topology;
+//     topology.m_evInds = { 0,1,2,3 };
+//     topology.m_evBegins = { 0,4 };
+//     topology.m_veInds = { 0,0,0,0 };
+//     topology.m_veBegins = { 0,1,2,3,4 };
+
+//     mir::VertSet  verts = mir::VertSet(numVertices);
+//     mir::ElemSet  elems = mir::ElemSet(numElements);
+
+//     // Calculate the vertex volume fractions needed to clip with the current case
+//     std::vector<axom::float64> matOneVF;
+//     std::vector<axom::float64> matTwoVF;
+//     std::string bitString("");
+//     for (unsigned int bitIndex = 0; bitIndex < numVerts; ++bitIndex)
+//     {
+//       unsigned int shiftedBit = 1;
+//       shiftedBit = shiftedBit << (numVerts - 1 - bitIndex);
+
+//       axom::float64 matOneValue;
+//       if (actualClippingCase & shiftedBit)
+//       {
+//         matOneValue = 1.0;
+//         bitString += "1";
+//       }
+//       else
+//       {
+//         matOneValue = 0.0;
+//         bitString += "0";
+//       }
+
+//       matOneVF.push_back( matOneValue );
+//       matTwoVF.push_back( 1.0 - matOneValue );
+//     }
+
+//     std::vector<std::vector<axom::float64> > vertexVF = {
+//       matOneVF,
+//       matTwoVF
+//     };
+
+//     std::vector<std::vector<axom::float64> > elementVF = {
+//       { 0.5 },
+//       { 0.5 }
+//     };
+
+
+//     std::vector<mir::Point2> points =
+//     {
+//       mir::Point2( 0.0, 1.0 ),
+//       mir::Point2( 0.0, 0.0 ),
+//       mir::Point2( 1.0, 0.0 ),
+//       mir::Point2( 1.0, 1.0 )
+//     };
+
+//     mir::CellMapData mapData;
+//     mapData.m_elementDominantMaterials = { mir::NULL_MAT };
+//     mapData.m_elementParents = { 0 };
+//     mapData.m_vertexPositions = points;
+//     mapData.m_shapeTypes = { mir::Shape::Quad };
+
+//     // Build the mesh
+//     mir::MIRMesh testMesh;
+//     testMesh.initializeMesh(verts, elems, 2, topology, mapData, elementVF);
+//     testMesh.constructMeshVolumeFractionsVertex(vertexVF);
+
+//     // Clip the mesh using the actualClippingCase index
+//     mir::MIRMesh outputMesh;
+//     mir::InterfaceReconstructor interfaceReconstructor;
+//     interfaceReconstructor.computeReconstructedInterface(testMesh, outputMesh);
+
+//     // Write out the processed mesh
+//     std::string filepath = "/Users/sterbentz3/Desktop/clipping_test_cases/";
+//     std::string filename = "mir_clippingcase_quad_" + std::to_string(actualClippingCase) + "_" + bitString + ".vtk";
+//     outputMesh.writeMeshToFile(filepath + filename);
+//   }    
+// }
 
 //----------------------------------------------------------------------
 

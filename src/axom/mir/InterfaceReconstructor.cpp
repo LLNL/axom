@@ -246,7 +246,7 @@ void  InterfaceReconstructor::generateCleanCells(const int eID,
     }
   }
   
-  // Modify the evIndex values to account for the fact that perhaps not all 8 possible vertices are present
+  // Modify the evIndex values to account for the fact that perhaps not all possible vertices are present
   std::vector<int> evIndexSubtract;
   evIndexSubtract.resize(mir::utilities::maxPossibleNumVerts(shapeType), 0);
   for (unsigned long i = 0; i < evIndexSubtract.size(); ++i)

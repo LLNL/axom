@@ -85,6 +85,20 @@ void  CellGenerator::generateVertexPositions(const mir::Shape shapeType,
       // This vertex is one of the shape's original vertices
       out_cellData.m_mapData.m_vertexPositions.push_back( vertexPositions[vID] );
     }
+    else if (mir::utilities::isShapeThreeDimensional(shapeType) && vID == (mir::utilities::maxPossibleNumVerts(shapeType) - 1) )
+    {
+      // This vertex is the central vertex of a three dimensional shape being decomposed/tesselated (tetrahedrons don't decompose)
+
+      // Average the vertex position values at the corners of the shape
+      mir::Point2 centroid;
+      for (auto i = 0u; i < vertexPositions.size(); ++i)
+      {
+        centroid.array() += vertexPositions[i].array();
+      }
+      centroid.array() /= vertexPositions.size();
+
+      out_cellData.m_mapData.m_vertexPositions.push_back( centroid );
+    }
     else
     {
       // This vertex is between two of the shape's original vertices
@@ -117,6 +131,20 @@ void  CellGenerator::generateVertexVolumeFractions(const mir::Shape shapeType,
       {
         // This vertex is one of the shape's original vertices
         out_cellData.m_mapData.m_vertexVolumeFractions[matID].push_back( vertexVF[matID][vID] );
+      }
+      else if (mir::utilities::isShapeThreeDimensional(shapeType) && vID == (mir::utilities::maxPossibleNumVerts(shapeType) - 1) )
+      {
+        // This vertex is the central vertex of a three dimensional shape being decomposed/tesselated (tetrahedrons don't decompose)
+
+        // Average the vertex volume fractions values at the corners of the shape
+        axom::float64 averageValue(0.0);
+        for (auto i = 0u; i < vertexVF[matID].size(); ++i)
+        {
+          averageValue += vertexVF[matID][i];
+        }
+        averageValue /= (axom::float64) vertexVF[matID].size();
+        
+        out_cellData.m_mapData.m_vertexVolumeFractions[matID].push_back( averageValue );
       }
       else
       {
@@ -185,7 +213,7 @@ mir::Shape  CellGenerator::determineElementShapeType(const Shape parentShapeType
         break;
       default:
         newShapeType = mir::Shape::Triangle;
-        printf("Invalid number of vertices in determineElementShapeType().\n");
+        printf("2D Case: Invalid number of vertices in determineElementShapeType().\n");
         break;
     }
   }
@@ -208,7 +236,7 @@ mir::Shape  CellGenerator::determineElementShapeType(const Shape parentShapeType
         break;
       default:
         newShapeType = mir::Shape::Tetrahedron;
-        printf("Invalid number of vertices in determineElementShapeType().\n");
+        printf("3D Case: Invalid number of vertices in determineElementShapeType().\n");
         break;
     }
   }
