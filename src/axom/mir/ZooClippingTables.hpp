@@ -9,7 +9,7 @@
 /**
  * \file ZooClippingTables.hpp
  * 
- * \brief Contains the defintions for the clipping cases and enumerator
+ * \brief Contains the definitions for the clipping cases and enumerator
  *        for the shape types in the zoo.
  */
 
