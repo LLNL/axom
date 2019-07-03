@@ -57,14 +57,19 @@ namespace mir
       MIRMesh();
 
       /**
-       * \brief Copy constrcutor.
+       * \brief Copy constructor.
        */
-      MIRMesh(MIRMesh* _mesh);
+      MIRMesh(const MIRMesh& other);
 
       /**
        * \brief Default destructor.
        */
-      ~MIRMesh();
+      ~MIRMesh() = default;
+
+      /**
+       * \brief Copy assignment.
+       */
+      MIRMesh& operator=(const MIRMesh& other);
 
       /**
        * \brief Initializes a mesh with the provided data and topology.
@@ -132,10 +137,24 @@ namespace mir
        */
       std::vector<std::vector<axom::float64> >  computeOriginalElementVolumeFractions();
     
+      /**
+       * \brief Checks that this instance of MIRMesh is valid
+       *
+       * \return True if this instance is valid, false otherwise
+       */
+      bool isValid(bool verbose) const;
+
     private:
 
+      /// Utility predicate to check if the mesh's topology is valid
+      bool isTopologyValid(bool verbose) const;
+      /// Utility predicate to check if the mesh's volume fractions are valid
+      bool areVolumeFractionsValid(bool verbose) const;
+      /// Utility predicate to check if the mesh's maps are valid
+      bool areMapsValid(bool verbose) const;
+
       /**
-       * \brief Constucts the positions map on the vertices.
+       * \brief Constructs the positions map on the vertices.
        * 
        * \param data  The vector of position data for each vertex.
        */

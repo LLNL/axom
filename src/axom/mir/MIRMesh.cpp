@@ -5,44 +5,64 @@
 
 #include "MIRMesh.hpp"
 
+#include "axom/core.hpp"
+
 namespace axom
 {
 namespace mir
 {
 
-//--------------------------------------------------------------------------------
 
 MIRMesh::MIRMesh()
-{
-
-}
-
-//--------------------------------------------------------------------------------
-
-MIRMesh::MIRMesh(MIRMesh* _mesh)
-{
-    m_meshTopology.m_evInds = _mesh->m_meshTopology.m_evInds;
-    m_meshTopology.m_evBegins = _mesh->m_meshTopology.m_evBegins;
-    m_meshTopology.m_veInds = _mesh->m_meshTopology.m_veInds;
-    m_meshTopology.m_veBegins = _mesh->m_meshTopology.m_veBegins;
-    m_verts = _mesh->m_verts;
-    m_elems = _mesh->m_elems;
-    m_bdry = _mesh->m_bdry;
-    m_cobdry = _mesh->m_cobdry;
-    m_vertexPositions = _mesh->m_vertexPositions;
-    m_materialVolumeFractionsElement = _mesh->m_materialVolumeFractionsElement;
-    m_materialVolumeFractionsVertex = _mesh->m_materialVolumeFractionsVertex;
-    m_elementParentIDs = _mesh->m_elementParentIDs;
-    m_shapeTypes = _mesh->m_shapeTypes;
-    m_elementDominantMaterials = _mesh->m_elementDominantMaterials;
-    m_numMaterials = _mesh->m_numMaterials;
-}
+   : m_verts(0)
+   , m_elems(0)
+   , m_numMaterials(0)
+{}
 
 //--------------------------------------------------------------------------------
 
-MIRMesh::~MIRMesh()
+MIRMesh::MIRMesh(const MIRMesh& other)
+  : m_verts(other.m_verts)
+  , m_elems(other.m_elems)
+  , m_materialVolumeFractionsElement(other.m_materialVolumeFractionsElement)
+  , m_materialVolumeFractionsVertex(other.m_materialVolumeFractionsVertex)
+  , m_numMaterials(other.m_numMaterials)
+  , m_meshTopology(other.m_meshTopology)
 {
+    constructMeshRelations();
+    constructVertexPositionMap(other.m_vertexPositions.data());
+    constructElementParentMap(other.m_elementParentIDs.data());
+    constructElementDominantMaterialMap(other.m_elementDominantMaterials.data());
 
+    m_shapeTypes= IntMap( &m_elems );
+    for(auto el: m_elems) { m_shapeTypes[el] = other.m_shapeTypes[el]; }
+
+}
+
+MIRMesh& MIRMesh::operator=(const MIRMesh& other)
+{
+   if(this != &other)
+   {
+      m_verts = other.m_verts;
+      m_elems = other.m_elems;
+
+      m_meshTopology = other.m_meshTopology;
+
+      constructMeshRelations();
+      constructVertexPositionMap(other.m_vertexPositions.data());
+      constructElementParentMap(other.m_elementParentIDs.data());
+      constructElementDominantMaterialMap(other.m_elementDominantMaterials.data());
+
+
+      m_shapeTypes = IntMap( &m_elems );
+      for(auto el: m_elems) { m_shapeTypes[el] = other.m_shapeTypes[el]; }
+
+      m_materialVolumeFractionsElement = other.m_materialVolumeFractionsElement;
+      m_materialVolumeFractionsVertex = other.m_materialVolumeFractionsVertex;
+
+      m_numMaterials = other.m_numMaterials;
+   }
+   return *this;
 }
 
 //--------------------------------------------------------------------------------
@@ -122,8 +142,8 @@ void MIRMesh::constructMeshRelations()
   SLIC_ASSERT_MSG( m_bdry.isValid(), "Boundary relation is not valid.");
   SLIC_ASSERT_MSG( m_cobdry.isValid(), "Coboundary relation is not valid.");
 
-  SLIC_INFO("Elem-Vert relation has size " << m_bdry.totalSize());
-  SLIC_INFO("Vert-Elem relation has size " << m_cobdry.totalSize());
+  SLIC_DEBUG("Elem-Vert relation has size " << m_bdry.totalSize());
+  SLIC_DEBUG("Vert-Elem relation has size " << m_cobdry.totalSize());
 }
 
 //--------------------------------------------------------------------------------  
@@ -243,7 +263,7 @@ void MIRMesh::constructElementShapeTypesMap(const std::vector<mir::Shape>& shape
   // Initialize the map for the elements' dominant colors
   m_shapeTypes = IntMap( &m_elems );
 
-  // Copy the dat for the elements
+  // Copy the data for the elements
   for (int eID = 0; eID < m_elems.size(); ++eID)
     m_shapeTypes[eID] = shapeTypes[eID];
 
@@ -312,6 +332,18 @@ void MIRMesh::print()
   for (int i = 0; i < m_elems.size(); ++i)
   {
     printf("%d ", m_shapeTypes[i]);
+  }
+  printf("}\n");
+
+  printf("elementVolumeFractions: { \n");
+  for (unsigned long i = 0; i < m_materialVolumeFractionsElement.size(); ++i)
+  {
+    printf("  { ");
+    for (int j = 0; j < m_elems.size(); ++j)
+    {
+      printf("%.3f, ", m_materialVolumeFractionsElement[i][j]);
+    }
+    printf("}\n");
   }
   printf("}\n");
 
@@ -474,6 +506,174 @@ axom::float64 MIRMesh::computeQuadArea(Point2 p0,
 }
 
 //--------------------------------------------------------------------------------
+
+bool MIRMesh::isValid(bool verbose) const
+{
+   bool bValid = true;
+
+   // Check the topology data
+   bValid = bValid && isTopologyValid(verbose);
+
+   // Check the volume fraction data
+   bValid = bValid && areVolumeFractionsValid(verbose);
+
+   // Check the map data
+   bValid = bValid && areMapsValid(verbose);
+
+   return bValid;
+}
+
+bool MIRMesh::isTopologyValid(bool verbose) const
+{
+   bool bValid = true;
+
+   // check the vertex and element sets
+   bValid = bValid && m_verts.isValid(verbose);
+   bValid = bValid && m_elems.isValid(verbose);
+
+   // check the relations
+   if(!m_verts.empty() && !m_elems.empty() )
+   {
+      bValid = bValid && m_bdry.isValid(verbose);
+      bValid = bValid && m_cobdry.isValid(verbose);
+  }
+
+  if(!bValid && verbose)
+  {
+     SLIC_WARNING("MIRMesh invalid: Invalid topology");
+  }
+
+  return bValid;
+}
+
+bool MIRMesh::areVolumeFractionsValid(bool verbose) const
+{
+  bool bValid = true;
+
+  int vfElemSize = m_materialVolumeFractionsElement.size();
+  if( vfElemSize != m_numMaterials)
+  {
+     bValid = false;
+     if(verbose)
+     {
+       SLIC_WARNING("MIRMesh invalid: Invalid number of materials in volume fraction array.");
+     }
+     return bValid;
+   }
+
+  // Check the sizes of the volume fraction arrays
+   for(int i=0; i < m_numMaterials; ++i)
+   {
+      const auto& mats = m_materialVolumeFractionsElement[i];
+      if( mats.size() != m_elems.size())
+      {
+         bValid = false;
+         if(verbose)
+         {
+            SLIC_WARNING("MIRMesh invalid: Material " << i <<" has wrong "
+                  << " number of materials in volume fraction array."
+                  << " Expected " << m_elems.size()
+                  << ", got " << mats.size() << ".");
+         }
+      }
+   }
+
+   if(!bValid)
+   {
+      return false;
+   }
+
+   // Check that the volume fractions sum to 1.0
+   for(auto el : m_elems.positions())
+   {
+      double sum = 0;
+      for(int m=0; m < m_numMaterials; ++m)
+      {
+         sum += m_materialVolumeFractionsElement[m][el];
+      }
+
+      if(! axom::utilities::isNearlyEqual(sum, 1.))
+      {
+         bValid = false;
+         if(verbose)
+         {
+            std::stringstream sstr;
+
+            for(int m=0; m < m_numMaterials; ++m)
+            {
+               sstr << m_materialVolumeFractionsElement[m][el] << "  ";
+            }
+
+            SLIC_WARNING("MIRMesh invalid: Sum of materials in element"
+                  << el << " was " << sum << ". Expected 1."
+                  << " Values were: " << sstr.str() );
+         }
+      }
+   }
+
+   return bValid;
+}
+
+bool MIRMesh::areMapsValid(bool verbose) const
+{
+   bool bValid = true;
+
+   // Check the positions map
+   if( m_vertexPositions.size() != m_verts.size())
+   {
+      bValid = false;
+      if(verbose)
+      {
+         SLIC_WARNING("MIRMesh invalid: Incorrect number of vertex positions."
+               << " Expected " << m_verts.size()
+               << ". Got " << m_vertexPositions.size());
+      }
+   }
+
+   bValid = bValid && m_vertexPositions.isValid(verbose);
+
+   // Check the element maps
+   bValid = bValid && m_elementParentIDs.isValid(verbose);
+   bValid = bValid && m_elementDominantMaterials.isValid(verbose);
+   bValid = bValid && m_shapeTypes.isValid(verbose);
+
+   if( m_elementParentIDs.size() != m_elems.size() )
+   {
+      bValid = false;
+      if(verbose)
+      {
+         SLIC_WARNING("MIRMesh invalid: Incorrect number of elem parent IDs."
+               << " Expected " << m_elems.size()
+               << ". Got " << m_elementParentIDs.size());
+      }
+   }
+
+   if( m_elementDominantMaterials.size() != m_elems.size() )
+   {
+      bValid = false;
+      if(verbose)
+      {
+         SLIC_WARNING("MIRMesh invalid: Incorrect number of elem dominant mats."
+               << " Expected " << m_elems.size()
+               << ". Got " << m_elementDominantMaterials.size());
+      }
+   }
+
+   if( m_shapeTypes.size() != m_elems.size() )
+   {
+      bValid = false;
+      if(verbose)
+      {
+         SLIC_WARNING("MIRMesh invalid: Incorrect number of elem shape types."
+               << " Expected " << m_elems.size()
+               << ". Got " << m_shapeTypes.size());
+      }
+   }
+
+   return bValid;
+
+}
+
 
 }
 }
