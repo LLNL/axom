@@ -5,34 +5,30 @@
 
 #include "MeshTester.hpp"
 
+namespace numerics = axom::numerics;
+namespace slam = axom::slam;
+
 namespace axom
 {
 namespace mir
 {
-      
-//--------------------------------------------------------------------------------
-
-MeshTester::MeshTester()
-{
-
-}
-
-//--------------------------------------------------------------------------------
-
-MeshTester::~MeshTester()
-{
-
-}
 
 //--------------------------------------------------------------------------------
 
 MIRMesh MeshTester::initTestCaseOne()
 {
+   mir::CellTopologyData topoData;
+   mir::CellMapData mapData;
+   mir::CellData cellData;
+   VolumeFractions volFracs;
+
   int numElements = 9;
   int numVertices = 16;
+  mir::VertSet  verts(numVertices);  // Construct a vertex set with 16 vertices
+  mir::ElemSet  elems(numElements);   // Construct an element set with 9 elements
 
   // Create the mesh connectivity information
-  std::vector<mir::PosType>  evInds = {
+  topoData.m_evInds = {
       0,4,5,1,     // elem 0, card 4, start 0
       1,5,6,2,     // elem 1, card 4, start 4
       2,6,7,3,     // elem 2, card 4, start 8
@@ -44,10 +40,10 @@ MIRMesh MeshTester::initTestCaseOne()
       10,14,15,11  // elem 8, card 4, start 32, end 36
     };
 
-  std::vector<mir::PosType>  evBegins = {
+  topoData.m_evBegins = {
       0,4,8,12,16,20,24,28,32,36
     };
-  std::vector<mir::PosType>  veInds = {
+  topoData.m_veInds = {
       0,          // vert  0, card 1, start 0
       0,1,        // vert  1, card 2, start 1
       1,2,        // vert  2, card 2, start 3
@@ -65,25 +61,20 @@ MIRMesh MeshTester::initTestCaseOne()
       7,8,        // vert  14, card 2, start 33
       8,          // vert  15, card 1, start 35, end 36
     };
-  std::vector<mir::PosType>  veBegins = {
+  topoData.m_veBegins = {
       0,1,3,5,6,8,12,16,18,20,24,28,30,31,33,35,36
     };
-
-  mir::VertSet  verts = mir::VertSet(numVertices);  // Construct a vertex set with 16 vertices
-  mir::ElemSet  elems = mir::ElemSet(numElements);   // Construct an element set with 9 elements
-
 
   int numMaterials = 2;
   enum { GREEN = 0, BLUE = 1 };
 
-  std::vector<std::vector<axom::float64> > elementVF;   elementVF.resize(numMaterials);
+  volFracs.resize(numMaterials);
 
-  std::vector<axom::float64> greenVolumeFractions = {1.0, 1.0, 1.0, 1.0, 0.5, 0.2, 0.2, 0.0, 0.0};
-  elementVF[GREEN] = greenVolumeFractions;
-  std::vector<axom::float64> blueVolumeFractions = {0.0, 0.0, 0.0, 0.0, 0.5, 0.8, 0.8, 1.0, 1.0};
-  elementVF[BLUE] = blueVolumeFractions;
+  volFracs[GREEN] = {1.0, 1.0, 1.0, 1.0, 0.5, 0.2, 0.2, 0.0, 0.0};
+  volFracs[BLUE] = {0.0, 0.0, 0.0, 0.0, 0.5, 0.8, 0.8, 1.0, 1.0};
 
-  std::vector<mir::Point2> points =
+
+  mapData.m_vertexPositions =
   {
     mir::Point2( 0.0, 3.0 ),
     mir::Point2( 1.0, 3.0 ),
@@ -106,21 +97,13 @@ MIRMesh MeshTester::initTestCaseOne()
     mir::Point2( 3.0, 0.0 )
   };
 
-  CellTopologyData topology;
-  topology.m_evInds = evInds;
-  topology.m_evBegins = evBegins;
-  topology.m_veInds = veInds;
-  topology.m_veBegins = veBegins;
-
-  CellMapData mapData;
-  mapData.m_elementDominantMaterials = {NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT};
+  mapData.m_elementDominantMaterials = Vec<int>(numElements, NULL_MAT);
   mapData.m_elementParents = { 0,1,2,3,4,5,6,7,8 }; // For the base mesh, the parents are always themselves
-  mapData.m_vertexPositions = points;
-  mapData.m_shapeTypes = {mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad};
+  mapData.m_shapeTypes = Vec<mir::Shape>(numElements, mir::Shape::Quad);
 
   // Build the mesh
   mir::MIRMesh testMesh;
-  testMesh.initializeMesh(verts, elems, numMaterials, topology, mapData, elementVF);
+  testMesh.initializeMesh(verts, elems, numMaterials, topoData, mapData, volFracs);
 
   return testMesh;
 }
@@ -129,11 +112,18 @@ MIRMesh MeshTester::initTestCaseOne()
 
 mir::MIRMesh MeshTester::initTestCaseTwo()
 {
+  mir::CellTopologyData topoData;
+  mir::CellMapData mapData;
+  mir::CellData cellData;
+  VolumeFractions volFracs;
+
   int numElements = 9;
   int numVertices = 16;
+  mir::VertSet  verts(numVertices);  // Construct a vertex set with 16 vertices
+  mir::ElemSet  elems(numElements);   // Construct an element set with 9 elements
 
   // Create the mesh connectivity information
-  std::vector<mir::PosType>  evInds = {
+  topoData.m_evInds = {
       0,4,5,1,     // elem 0, card 4, start 0
       1,5,6,2,     // elem 1, card 4, start 4
       2,6,7,3,     // elem 2, card 4, start 8
@@ -145,10 +135,10 @@ mir::MIRMesh MeshTester::initTestCaseTwo()
       10,14,15,11  // elem 8, card 4, start 32, end 36
     };
 
-  std::vector<mir::PosType>  evBegins = {
+  topoData.m_evBegins = {
       0,4,8,12,16,20,24,28,32,36
     };
-  std::vector<mir::PosType>  veInds = {
+  topoData.m_veInds = {
       0,          // vert  0, card 1, start 0
       0,1,        // vert  1, card 2, start 1
       1,2,        // vert  2, card 2, start 3
@@ -166,26 +156,19 @@ mir::MIRMesh MeshTester::initTestCaseTwo()
       7,8,        // vert  14, card 2, start 33
       8,          // vert  15, card 1, start 35, end 36
     };
-  std::vector<mir::PosType>  veBegins = {
+  topoData.m_veBegins = {
       0,1,3,5,6,8,12,16,18,20,24,28,30,31,33,35,36
     };
-
-  mir::VertSet  verts = mir::VertSet(numVertices);  // Construct a vertex set with 16 vertices
-  mir::ElemSet  elems = mir::ElemSet(numElements);   // Construct an element set with 9 elements
 
   int numMaterials = 3;
   enum { BLUE = 0, RED = 1, ORANGE = 2 };
 
-  std::vector<std::vector<axom::float64> > elementVF;   elementVF.resize(numMaterials);
+  volFracs.resize(numMaterials);
+  volFracs[BLUE]   = {1.0, 1.0, 1.0, 1.0, 0.5, 0.2, 0.2, 0.0, 0.0};
+  volFracs[RED]    = {0.0, 0.0, 0.0, 0.0, 0.3, 0.8, 0.0, 0.3, 1.0};
+  volFracs[ORANGE] = {0.0, 0.0, 0.0, 0.0, 0.2, 0.0, 0.8, 0.7, 0.0};
 
-  std::vector<axom::float64> blueVolumeFractions = {1.0, 1.0, 1.0, 1.0, 0.5, 0.2, 0.2, 0.0, 0.0};
-  elementVF[BLUE] = blueVolumeFractions;
-  std::vector<axom::float64>  redVolumeFractions = {0.0, 0.0, 0.0, 0.0, 0.3, 0.8, 0.0, 0.3, 1.0};
-  elementVF[RED] = redVolumeFractions;
-  std::vector<axom::float64> orangeVolumeFractions = {0.0, 0.0, 0.0, 0.0, 0.2, 0.0, 0.8, 0.7, 0.0};
-  elementVF[ORANGE] = orangeVolumeFractions;
-
-  std::vector<mir::Point2> points =
+  mapData.m_vertexPositions =
   {
     mir::Point2( 0.0, 3.0 ),
     mir::Point2( 1.0, 3.0 ),
@@ -208,21 +191,13 @@ mir::MIRMesh MeshTester::initTestCaseTwo()
     mir::Point2( 3.0, 0.0 )
   };
 
-  CellTopologyData topology;
-  topology.m_evInds = evInds;
-  topology.m_evBegins = evBegins;
-  topology.m_veInds = veInds;
-  topology.m_veBegins = veBegins;
-
-  CellMapData mapData;
-  mapData.m_elementDominantMaterials = {NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT};
+  mapData.m_elementDominantMaterials = Vec<int>(numElements, NULL_MAT);
   mapData.m_elementParents = { 0,1,2,3,4,5,6,7,8 }; // For the base mesh, the parents are always themselves
-  mapData.m_vertexPositions = points;
-  mapData.m_shapeTypes = {mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad};
+  mapData.m_shapeTypes = Vec<mir::Shape>(numElements, mir::Shape::Quad);
 
   // Build the mesh
   mir::MIRMesh testMesh;
-  testMesh.initializeMesh(verts, elems, numMaterials, topology, mapData, elementVF);
+  testMesh.initializeMesh(verts, elems, numMaterials, topoData, mapData, volFracs);
 
   return testMesh;
 }
@@ -231,21 +206,29 @@ mir::MIRMesh MeshTester::initTestCaseTwo()
 
 mir::MIRMesh MeshTester::initTestCaseThree()
 {
-  int numElements = 4;
-  int numVertices = 6;      // OR create a middle triangle with all of one material, and then a ring of triangles around it that are full of the other material
+   mir::CellTopologyData topoData;
+   mir::CellMapData mapData;
+   mir::CellData cellData;
+   VolumeFractions volFracs;
+
+   int numElements = 4;
+   int numVertices = 6;      // OR create a middle triangle with all of one material, and then a ring of triangles around it that are full of the other material
+
+   mir::VertSet  verts = mir::VertSet(numVertices);
+   mir::ElemSet  elems = mir::ElemSet(numElements);
 
   // Create the mesh connectivity information
-  std::vector<mir::PosType>  evInds = {
+  topoData.m_evInds = {
       0,1,2,     // elem 0, card 3, start 0
       1,3,4,     // elem 1, card 3, start 3
       1,4,2,     // elem 2, card 3, start 6
       2,4,5      // elem 3, card 3, start 9, end 12
     };
 
-  std::vector<mir::PosType>  evBegins = {
+  topoData.m_evBegins = {
       0,3,6,9,12
     };
-  std::vector<mir::PosType>  veInds = {
+  topoData.m_veInds = {
       0,          // vert  0, card 1, start 0
       0,1,2,      // vert  1, card 3, start 1
       0,2,3,      // vert  2, card 3, start 4
@@ -253,24 +236,19 @@ mir::MIRMesh MeshTester::initTestCaseThree()
       1,2,3,      // vert  4, card 3, start 8
       3           // vert  5, card 1, start 11, end 12
     };
-  std::vector<mir::PosType>  veBegins = {
+  topoData.m_veBegins = {
       0,1,4,7,8,11,12
     };
 
-  mir::VertSet  verts = mir::VertSet(numVertices);  // Construct a vertex set with 24 vertices
-  mir::ElemSet  elems = mir::ElemSet(numElements);   // Construct an element set with 8 elements
 
   int numMaterials = 2;
   enum { BLUE = 0, RED = 1, };
 
-  std::vector<std::vector<axom::float64> > elementVF;   elementVF.resize(numMaterials);
+  volFracs.resize(numMaterials);
+  volFracs[BLUE] = {0.0, 0.5, 0.8, 0.5};
+  volFracs[RED] =  {1.0, 0.5, 0.2, 0.5};
 
-  std::vector<axom::float64> blueVolumeFractions = {0.0, 0.5, 0.8, 0.5};
-  elementVF[BLUE] = blueVolumeFractions;
-  std::vector<axom::float64> redVolumeFractions = {1.0, 0.5, 0.2, 0.5};
-  elementVF[RED] = redVolumeFractions;
-
-  std::vector<mir::Point2> points =
+  mapData.m_vertexPositions =
   {
     mir::Point2( 1.0, 2.0 ),
     mir::Point2( 0.5, 1.0 ),
@@ -280,22 +258,13 @@ mir::MIRMesh MeshTester::initTestCaseThree()
     mir::Point2( 2.0, 0.0 )
   };
 
-
-  CellTopologyData topology;
-  topology.m_evInds = evInds;
-  topology.m_evBegins = evBegins;
-  topology.m_veInds = veInds;
-  topology.m_veBegins = veBegins;
-
-  CellMapData mapData;
-  mapData.m_elementDominantMaterials = {NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT};
+  mapData.m_elementDominantMaterials = Vec<int>(numElements, NULL_MAT);
   mapData.m_elementParents = { 0,1,2,3 }; // For the base mesh, the parents are always themselves
-  mapData.m_vertexPositions = points;
-  mapData.m_shapeTypes = {mir::Shape::Triangle, mir::Shape::Triangle, mir::Shape::Triangle, mir::Shape::Triangle};
+  mapData.m_shapeTypes = Vec<mir::Shape>(numElements, mir::Shape::Triangle);
 
   // Build the mesh
   mir::MIRMesh testMesh;
-  testMesh.initializeMesh(verts, elems, numMaterials, topology, mapData, elementVF);
+  testMesh.initializeMesh(verts, elems, numMaterials, topoData, mapData, volFracs);
 
   return testMesh;
 }
@@ -304,11 +273,18 @@ mir::MIRMesh MeshTester::initTestCaseThree()
 
 mir::MIRMesh MeshTester::initTestCaseFour()
 {
+  mir::CellTopologyData topoData;
+  mir::CellMapData mapData;
+  mir::CellData cellData;
+  VolumeFractions volFracs;
+
   int numElements = 9;
   int numVertices = 16;
+  mir::VertSet  verts = mir::VertSet(numVertices);  // Construct a vertex set with 16 vertices
+  mir::ElemSet  elems = mir::ElemSet(numElements);   // Construct an element set with 9 elements
 
   // Create the mesh connectivity information
-  std::vector<mir::PosType>  evInds = {
+  topoData.m_evInds = {
       0,4,5,1,     // elem 0, card 4, start 0
       1,5,6,2,     // elem 1, card 4, start 4
       2,6,7,3,     // elem 2, card 4, start 8
@@ -320,10 +296,10 @@ mir::MIRMesh MeshTester::initTestCaseFour()
       10,14,15,11  // elem 8, card 4, start 32, end 36
     };
 
-  std::vector<mir::PosType>  evBegins = {
+  topoData.m_evBegins = {
       0,4,8,12,16,20,24,28,32,36
     };
-  std::vector<mir::PosType>  veInds = {
+  topoData.m_veInds = {
       0,          // vert  0, card 1, start 0
       0,1,        // vert  1, card 2, start 1
       1,2,        // vert  2, card 2, start 3
@@ -341,14 +317,12 @@ mir::MIRMesh MeshTester::initTestCaseFour()
       7,8,        // vert  14, card 2, start 33
       8,          // vert  15, card 1, start 35, end 36
     };
-  std::vector<mir::PosType>  veBegins = {
+  topoData.m_veBegins = {
       0,1,3,5,6,8,12,16,18,20,24,28,30,31,33,35,36
     };
 
-  mir::VertSet  verts = mir::VertSet(numVertices);  // Construct a vertex set with 16 vertices
-  mir::ElemSet  elems = mir::ElemSet(numElements);   // Construct an element set with 9 elements
 
-  std::vector<mir::Point2> points =
+  mapData.m_vertexPositions =
   {
     mir::Point2( 0.0, 3.0 ),
     mir::Point2( 1.0, 3.0 ),
@@ -374,10 +348,15 @@ mir::MIRMesh MeshTester::initTestCaseFour()
   int numMaterials = 2;
   enum { GREEN = 0, BLUE = 1 };
 
-  std::vector<std::vector<axom::float64> > elementVF;   elementVF.resize(numMaterials);
+  volFracs.resize(numMaterials);
 
-  std::vector<axom::float64> greenVolumeFractions;      greenVolumeFractions.resize(numElements);
-  std::vector<axom::float64> blueVolumeFractions;       blueVolumeFractions.resize(numElements);
+  auto& greenVolumeFractions = volFracs[GREEN];
+  auto& blueVolumeFractions = volFracs[BLUE];
+  const auto& points = mapData.m_vertexPositions;
+  const auto& evInds = topoData.m_evInds;
+
+  greenVolumeFractions.resize(numElements);
+  blueVolumeFractions.resize(numElements);
 
   // Generate the element volume fractions for the circle
   mir::Point2 circleCenter(1.5, 1.5);
@@ -385,28 +364,24 @@ mir::MIRMesh MeshTester::initTestCaseFour()
   int gridSize = 1000;
   for (int i = 0; i < numElements; ++i)
   {
-    greenVolumeFractions[i] = calculatePercentOverlapMonteCarlo(gridSize, circleCenter, circleRadius, points[evInds[i * 4 + 0]], points[evInds[i * 4 + 1]], points[evInds[i * 4 + 2]], points[evInds[i * 4 + 3]]);
-    blueVolumeFractions[i] = 1.0 - greenVolumeFractions[i];
+    auto vf = calculatePercentOverlapMonteCarlo(gridSize,
+                                                circleCenter,
+                                                circleRadius,
+                                                points[evInds[i * 4 + 0]],
+                                                points[evInds[i * 4 + 1]],
+                                                points[evInds[i * 4 + 2]],
+                                                points[evInds[i * 4 + 3]]);
+    greenVolumeFractions[i] = vf;
+    blueVolumeFractions[i] = 1.0 - vf;
   }
 
-  elementVF[GREEN] = greenVolumeFractions;
-  elementVF[BLUE] = blueVolumeFractions;
-
-  CellTopologyData topology;
-  topology.m_evInds = evInds;
-  topology.m_evBegins = evBegins;
-  topology.m_veInds = veInds;
-  topology.m_veBegins = veBegins;
-
-  CellMapData mapData;
-  mapData.m_elementDominantMaterials = {NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT, NULL_MAT};
+  mapData.m_elementDominantMaterials = Vec<int>(numElements, NULL_MAT);
   mapData.m_elementParents = { 0,1,2,3,4,5,6,7,8 }; // For the base mesh, the parents are always themselves
-  mapData.m_vertexPositions = points;
-  mapData.m_shapeTypes = {mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad, mir::Shape::Quad};
+  mapData.m_shapeTypes = Vec<mir::Shape>(numElements, mir::Shape::Quad);
 
   // Build the mesh
   mir::MIRMesh testMesh;
-  testMesh.initializeMesh(verts, elems, numMaterials, topology, mapData, elementVF);
+  testMesh.initializeMesh(verts, elems, numMaterials, topoData, mapData, volFracs);
 
   return testMesh;
 }
@@ -424,50 +399,39 @@ mir::MIRMesh MeshTester::createUniformGridTestCaseMesh(int gridSize, mir::Point2
   int numMaterials = 2;
   enum { GREEN = 0, BLUE = 1 };
 
-  std::vector<std::vector<axom::float64> > elementVF;   elementVF.resize(numMaterials);
-
-  std::vector<axom::float64> greenVolumeFractions;      greenVolumeFractions.resize(cellData.m_numElems);
-  std::vector<axom::float64> blueVolumeFractions;       blueVolumeFractions.resize(cellData.m_numElems);
+  VolumeFractions volFracs;
+  volFracs.resize(numMaterials);
+  volFracs[GREEN].resize(cellData.m_numElems);
+  volFracs[BLUE].resize(cellData.m_numElems);
 
   // Generate the element volume fractions for the circle
-  int numMonteCarloSamples = 100;
+  const int numMonteCarloSamples = 100;
+  auto& pos = cellData.m_mapData.m_vertexPositions;
+  const auto& evInds = cellData.m_topology.m_evInds;
   for (int i = 0; i < cellData.m_numElems; ++i)
   {
-    greenVolumeFractions[i] = calculatePercentOverlapMonteCarlo(numMonteCarloSamples, circleCenter, circleRadius, 
-                                                                cellData.m_mapData.m_vertexPositions[cellData.m_topology.m_evInds[i * 4 + 0]], 
-                                                                cellData.m_mapData.m_vertexPositions[cellData.m_topology.m_evInds[i * 4 + 1]], 
-                                                                cellData.m_mapData.m_vertexPositions[cellData.m_topology.m_evInds[i * 4 + 2]], 
-                                                                cellData.m_mapData.m_vertexPositions[cellData.m_topology.m_evInds[i * 4 + 3]]);
-    blueVolumeFractions[i] = 1.0 - greenVolumeFractions[i];
+     auto vf = calculatePercentOverlapMonteCarlo(numMonteCarloSamples,
+                                                 circleCenter,
+                                                 circleRadius,
+                                                 pos[evInds[i * 4 + 0]],
+                                                 pos[evInds[i * 4 + 1]],
+                                                 pos[evInds[i * 4 + 2]],
+                                                 pos[evInds[i * 4 + 3]]);
+     volFracs[GREEN][i] = vf;
+     volFracs[BLUE][i]  = 1.0 - vf;
   }
 
-  elementVF[GREEN] = greenVolumeFractions;
-  elementVF[BLUE] = blueVolumeFractions;
-
-  std::vector<int> elementParents;// For the base mesh, the parents are always themselves
-  std::vector<int> elementDominantMaterials;
-  std::vector<mir::Shape> elementShapeTypes;
-  for (int i = 0; i < cellData.m_numElems; ++i)
+  cellData.m_mapData.m_elementDominantMaterials = Vec<int>(cellData.m_numVerts, NULL_MAT);
+  cellData.m_mapData.m_shapeTypes = Vec<mir::Shape>(cellData.m_numVerts, mir::Shape::Quad);
+  cellData.m_mapData.m_elementParents.resize(cellData.m_numVerts);
+  for (auto i : elems.positions() )
   {
-    elementParents.push_back(i);
-    elementDominantMaterials.push_back(NULL_MAT);
-    elementShapeTypes.push_back(mir::Shape::Quad);
+     cellData.m_mapData.m_elementParents[i] = i;
   }
-
-  CellTopologyData topology;
-  topology.m_evInds = cellData.m_topology.m_evInds;
-  topology.m_evBegins = cellData.m_topology.m_evBegins;
-  topology.m_veInds = cellData.m_topology.m_veInds;
-  topology.m_veBegins = cellData.m_topology.m_veBegins;
-
-  CellMapData mapData;
-  mapData.m_elementDominantMaterials = elementDominantMaterials;
-  mapData.m_elementParents = elementParents;
-  mapData.m_vertexPositions = cellData.m_mapData.m_vertexPositions;
 
   // Build the mesh
   mir::MIRMesh testMesh;
-  testMesh.initializeMesh(verts, elems, numMaterials, topology, mapData, elementVF);
+  testMesh.initializeMesh(verts, elems, numMaterials, cellData.m_topology, cellData.m_mapData, volFracs);
 
   return testMesh;
 }
@@ -519,8 +483,13 @@ mir::CellData MeshTester::generateGrid(int gridSize)
   int numElements = gridSize * gridSize;
   int numVertices = (gridSize + 1) * (gridSize + 1);
 
+   mir::CellData data;
+
+  data.m_numVerts = numVertices;
+  data.m_numElems = numElements;
+
   // Generate the evInds
-  std::vector<mir::PosType> evInds;
+  auto& evInds = data.m_topology.m_evInds;
   for (int eID = 0; eID < numElements; ++eID)
   {
     int row = eID / gridSize;  // note the integer division
@@ -534,7 +503,7 @@ mir::CellData MeshTester::generateGrid(int gridSize)
   }
 
   // Generate the evBegins
-  std::vector<mir::PosType> evBegins;
+  auto& evBegins = data.m_topology.m_evBegins;
   evBegins.push_back(0);
   for (int i = 0; i < numElements; ++i)
   {
@@ -542,8 +511,9 @@ mir::CellData MeshTester::generateGrid(int gridSize)
   }
 
   // Generate the veInds
+  auto& veInds = data.m_topology.m_veInds;
+  auto& veBegins = data.m_topology.m_veBegins;
   std::map<int, std::vector<int> > veInds_data;
-  std::vector<mir::PosType> veInds;
   for (int evInd_itr = 0; evInd_itr < numElements * 4; ++evInd_itr)
   {
     int currentElementID = evInd_itr / 4; // note the integer division
@@ -561,7 +531,6 @@ mir::CellData MeshTester::generateGrid(int gridSize)
   }
 
   // Generate the veBegins
-  std::vector<mir::PosType> veBegins;
   veBegins.push_back(0);
   int currentIndexCount = 0;
   for (auto itr = veInds_data.begin(); itr != veInds_data.end(); itr++)
@@ -571,7 +540,7 @@ mir::CellData MeshTester::generateGrid(int gridSize)
   }
 
   // Generate the vertex positions
-  std::vector<mir::Point2> points;
+  auto& points =   data.m_mapData.m_vertexPositions;
   for (int y = gridSize; y > -1; --y)
   {
     for (int x = 0; x < gridSize + 1; ++x)
@@ -579,15 +548,6 @@ mir::CellData MeshTester::generateGrid(int gridSize)
       points.push_back(mir::Point2(x, y));
     }
   }
-
-  mir::CellData data;
-  data.m_numVerts = numVertices;
-  data.m_numElems = numElements;
-  data.m_topology.m_evInds = evInds;
-  data.m_topology.m_evBegins = evBegins;
-  data.m_topology.m_veInds = veInds;
-  data.m_topology.m_veBegins = veBegins;
-  data.m_mapData.m_vertexPositions = points;
 
   // // Print out the results
   // printf("evInds: { ");
