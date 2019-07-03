@@ -1,18 +1,22 @@
 
-# One line description
+# Summary
 
-Please include a paragraph here describing what this PR does:
-what kind of change (refactoring, bugfix, feature), what is changed
-(short summary of new features or fix).
+- This PR is a (refactoring, bugfix, feature, something else)
+- It does the following (modify list as needed):
+  - Modifies/refactors (class or method) (how?)
+  - Fixes (issue number(s))
+  - Adds (specific feature) at the request of (project or person)
 
-If bugs are addressed in this PR, include the issue numbers.
+# Design review (for API changes or additions---delete if unneeded)
 
-# Who benefits?
+On (date), we reviewed this PR.  We discussed the design ideas:
 
-Axom team, "LLNL customers" if you can't mention in detail,
-specific LLNL projects if you can, or outside feature request.
+1. First idea or goal
+2. Second idea
+3. Third idea
 
-# Design review
+This PR implements 1. and 3.  It leaves out 2. for the following reasons
 
-If this is a big change, describe design review meetings:
-the date, what was discussed, the agreed outcome(s).
+- (impractical)
+- (too big)
+- (not a good idea anyway)
