@@ -4,31 +4,30 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #include "axom/core.hpp"  // for axom macros
+#include "axom/slic.hpp"
 #include "axom/mir.hpp"  // for Mir classes & functions
-#include "axom/slam.hpp"
 
-#include <chrono>
 #include <string>
 
-using Clock = std::chrono::high_resolution_clock;
-
 // namespace aliases
-namespace numerics = axom::numerics;
-namespace slam = axom::slam;
 namespace mir = axom::mir;
 
 //--------------------------------------------------------------------------------
 
-/*!
- * \brief Tutorial main
- */
+std::string usageString()
+{
+   return "Args are <grid size> <number of circles> <output file path>";
+}
+
 int main( int argc, char** argv )
 {
+   axom::slic::UnitTestLogger logger;  // create & initialize test logger
+   axom::slic::setLoggingMsgLevel( axom::slic::message::Info );
   
   if (argc != 4)
   {
-    printf("Incorrect number of args. Args are <grid size> <number of circles> <output file path>\n");
-    return 0;
+    SLIC_WARNING("Incorrect number of args. " << usageString() );
+    return 1;
   }
 
   try
@@ -38,20 +37,21 @@ int main( int argc, char** argv )
     int numCircles = std::stoi(argv[2]);
     std::string outputFilePath = std::string(argv[3]);
 
-    // Intialize a mesh for testing MIR
-    auto startTime = Clock::now();
+    // Initialize a mesh for testing MIR
+    auto timer = axom::utilities::Timer(true);
     mir::MeshTester tester;
     mir::MIRMesh testMesh = tester.initTestCaseFive(gridSize, numCircles);
-    auto endTime = Clock::now();
-    std::cout << "Mesh init time: " << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() << " ms" << std::endl;
+    timer.stop();
+    SLIC_INFO("Mesh init time: " << timer.elapsedTimeInMilliSec() << " ms.");
 
     // Begin material interface reconstruction
-    startTime = Clock::now();
+    timer.start();
     mir::InterfaceReconstructor reconstructor;
     mir::MIRMesh processedMesh;
     reconstructor.computeReconstructedInterface(testMesh, processedMesh); 
-    endTime = Clock::now();
-    std::cout << "Material interface reconstruction time: " << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() << " ms" << std::endl;
+    timer.stop();
+    SLIC_INFO("Material interface reconstruction time: "
+          << timer.elapsedTimeInMilliSec() << " ms.");
 
     // Output results
     processedMesh.writeMeshToFile(outputFilePath + "outputConcentricCircles.vtk");
@@ -60,12 +60,12 @@ int main( int argc, char** argv )
   }
   catch (std::invalid_argument const &e)
   {
-    printf("Bad input. Arguments are <grid size> <number of circles> <output file path>\n");
-    return 0;
+    SLIC_WARNING("Bad input. " << usageString() );
+    return 1;
   }
   catch (std::out_of_range const &e)
   {
-    printf("Integer overflow. Arguments are <grid size> <number of circles> <output file path>\n");
-    return 0;
+    SLIC_WARNING("Integer overflow. " << usageString() );
+    return 1;
   }
 }
