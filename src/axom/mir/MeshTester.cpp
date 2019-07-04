@@ -76,25 +76,25 @@ MIRMesh MeshTester::initTestCaseOne()
 
   mapData.m_vertexPositions =
   {
-    mir::Point2( 0.0, 3.0 ),
-    mir::Point2( 1.0, 3.0 ),
-    mir::Point2( 2.0, 3.0 ),
-    mir::Point2( 3.0, 3.0 ),
+    mir::Point2::make_point( 0.0, 3.0 ),
+    mir::Point2::make_point( 1.0, 3.0 ),
+    mir::Point2::make_point( 2.0, 3.0 ),
+    mir::Point2::make_point( 3.0, 3.0 ),
 
-    mir::Point2( 0.0, 2.0 ),
-    mir::Point2( 1.0, 2.0 ),
-    mir::Point2( 2.0, 2.0 ),
-    mir::Point2( 3.0, 2.0 ),
+    mir::Point2::make_point( 0.0, 2.0 ),
+    mir::Point2::make_point( 1.0, 2.0 ),
+    mir::Point2::make_point( 2.0, 2.0 ),
+    mir::Point2::make_point( 3.0, 2.0 ),
 
-    mir::Point2( 0.0, 1.0 ),
-    mir::Point2( 1.0, 1.0 ),
-    mir::Point2( 2.0, 1.0 ),
-    mir::Point2( 3.0, 1.0 ),
+    mir::Point2::make_point( 0.0, 1.0 ),
+    mir::Point2::make_point( 1.0, 1.0 ),
+    mir::Point2::make_point( 2.0, 1.0 ),
+    mir::Point2::make_point( 3.0, 1.0 ),
 
-    mir::Point2( 0.0, 0.0 ),
-    mir::Point2( 1.0, 0.0 ),
-    mir::Point2( 2.0, 0.0 ),
-    mir::Point2( 3.0, 0.0 )
+    mir::Point2::make_point( 0.0, 0.0 ),
+    mir::Point2::make_point( 1.0, 0.0 ),
+    mir::Point2::make_point( 2.0, 0.0 ),
+    mir::Point2::make_point( 3.0, 0.0 )
   };
 
   mapData.m_elementDominantMaterials = Vec<int>(numElements, NULL_MAT);
@@ -170,25 +170,25 @@ mir::MIRMesh MeshTester::initTestCaseTwo()
 
   mapData.m_vertexPositions =
   {
-    mir::Point2( 0.0, 3.0 ),
-    mir::Point2( 1.0, 3.0 ),
-    mir::Point2( 2.0, 3.0 ),
-    mir::Point2( 3.0, 3.0 ),
+    mir::Point2::make_point( 0.0, 3.0 ),
+    mir::Point2::make_point( 1.0, 3.0 ),
+    mir::Point2::make_point( 2.0, 3.0 ),
+    mir::Point2::make_point( 3.0, 3.0 ),
 
-    mir::Point2( 0.0, 2.0 ),
-    mir::Point2( 1.0, 2.0 ),
-    mir::Point2( 2.0, 2.0 ),
-    mir::Point2( 3.0, 2.0 ),
+    mir::Point2::make_point( 0.0, 2.0 ),
+    mir::Point2::make_point( 1.0, 2.0 ),
+    mir::Point2::make_point( 2.0, 2.0 ),
+    mir::Point2::make_point( 3.0, 2.0 ),
 
-    mir::Point2( 0.0, 1.0 ),
-    mir::Point2( 1.0, 1.0 ),
-    mir::Point2( 2.0, 1.0 ),
-    mir::Point2( 3.0, 1.0 ),
+    mir::Point2::make_point( 0.0, 1.0 ),
+    mir::Point2::make_point( 1.0, 1.0 ),
+    mir::Point2::make_point( 2.0, 1.0 ),
+    mir::Point2::make_point( 3.0, 1.0 ),
 
-    mir::Point2( 0.0, 0.0 ),
-    mir::Point2( 1.0, 0.0 ),
-    mir::Point2( 2.0, 0.0 ),
-    mir::Point2( 3.0, 0.0 )
+    mir::Point2::make_point( 0.0, 0.0 ),
+    mir::Point2::make_point( 1.0, 0.0 ),
+    mir::Point2::make_point( 2.0, 0.0 ),
+    mir::Point2::make_point( 3.0, 0.0 )
   };
 
   mapData.m_elementDominantMaterials = Vec<int>(numElements, NULL_MAT);
@@ -250,12 +250,12 @@ mir::MIRMesh MeshTester::initTestCaseThree()
 
   mapData.m_vertexPositions =
   {
-    mir::Point2( 1.0, 2.0 ),
-    mir::Point2( 0.5, 1.0 ),
-    mir::Point2( 1.5, 1.0 ),
-    mir::Point2( 0.0, 0.0 ),
-    mir::Point2( 1.0, 0.0 ),
-    mir::Point2( 2.0, 0.0 )
+    mir::Point2::make_point( 1.0, 2.0 ),
+    mir::Point2::make_point( 0.5, 1.0 ),
+    mir::Point2::make_point( 1.5, 1.0 ),
+    mir::Point2::make_point( 0.0, 0.0 ),
+    mir::Point2::make_point( 1.0, 0.0 ),
+    mir::Point2::make_point( 2.0, 0.0 )
   };
 
   mapData.m_elementDominantMaterials = Vec<int>(numElements, NULL_MAT);
@@ -324,25 +324,25 @@ mir::MIRMesh MeshTester::initTestCaseFour()
 
   mapData.m_vertexPositions =
   {
-    mir::Point2( 0.0, 3.0 ),
-    mir::Point2( 1.0, 3.0 ),
-    mir::Point2( 2.0, 3.0 ),
-    mir::Point2( 3.0, 3.0 ),
+    mir::Point2::make_point( 0.0, 3.0 ),
+    mir::Point2::make_point( 1.0, 3.0 ),
+    mir::Point2::make_point( 2.0, 3.0 ),
+    mir::Point2::make_point( 3.0, 3.0 ),
 
-    mir::Point2( 0.0, 2.0 ),
-    mir::Point2( 1.0, 2.0 ),
-    mir::Point2( 2.0, 2.0 ),
-    mir::Point2( 3.0, 2.0 ),
+    mir::Point2::make_point( 0.0, 2.0 ),
+    mir::Point2::make_point( 1.0, 2.0 ),
+    mir::Point2::make_point( 2.0, 2.0 ),
+    mir::Point2::make_point( 3.0, 2.0 ),
 
-    mir::Point2( 0.0, 1.0 ),
-    mir::Point2( 1.0, 1.0 ),
-    mir::Point2( 2.0, 1.0 ),
-    mir::Point2( 3.0, 1.0 ),
+    mir::Point2::make_point( 0.0, 1.0 ),
+    mir::Point2::make_point( 1.0, 1.0 ),
+    mir::Point2::make_point( 2.0, 1.0 ),
+    mir::Point2::make_point( 3.0, 1.0 ),
 
-    mir::Point2( 0.0, 0.0 ),
-    mir::Point2( 1.0, 0.0 ),
-    mir::Point2( 2.0, 0.0 ),
-    mir::Point2( 3.0, 0.0 )
+    mir::Point2::make_point( 0.0, 0.0 ),
+    mir::Point2::make_point( 1.0, 0.0 ),
+    mir::Point2::make_point( 2.0, 0.0 ),
+    mir::Point2::make_point( 3.0, 0.0 )
   };
 
   int numMaterials = 2;
@@ -359,7 +359,7 @@ mir::MIRMesh MeshTester::initTestCaseFour()
   blueVolumeFractions.resize(numElements);
 
   // Generate the element volume fractions for the circle
-  mir::Point2 circleCenter(1.5, 1.5);
+  auto circleCenter = mir::Point2::make_point(1.5, 1.5);
   axom::float64 circleRadius = 1.25;
   int gridSize = 1000;
   for (int i = 0; i < numElements; ++i)
@@ -388,7 +388,7 @@ mir::MIRMesh MeshTester::initTestCaseFour()
 
 //--------------------------------------------------------------------------------
 
-mir::MIRMesh MeshTester::createUniformGridTestCaseMesh(int gridSize, mir::Point2 circleCenter, axom::float64 circleRadius)
+mir::MIRMesh MeshTester::createUniformGridTestCaseMesh(int gridSize, const mir::Point2& circleCenter, axom::float64 circleRadius)
 {
   // Generate the mesh topology
   mir::CellData cellData = generateGrid(gridSize);
@@ -438,40 +438,55 @@ mir::MIRMesh MeshTester::createUniformGridTestCaseMesh(int gridSize, mir::Point2
 
 //--------------------------------------------------------------------------------
 
-axom::float64 MeshTester::calculatePercentOverlapMonteCarlo(int gridSize, mir::Point2 circleCenter, axom::float64 circleRadius, mir::Point2 quadP0, mir::Point2 quadP1, mir::Point2 quadP2, mir::Point2 quadP3)
+axom::float64 MeshTester::calculatePercentOverlapMonteCarlo(
+      int gridSize,
+      const mir::Point2& circleCenter,
+      axom::float64 circleRadius,
+      const mir::Point2& quadP0,
+      const mir::Point2& quadP1,
+      const mir::Point2& quadP2,
+      const mir::Point2& quadP3)
 {
   // Check if any of the quad's corners are within the circle
-  axom::float64 distP0 = mir::utilities::distance(quadP0, circleCenter);
-  axom::float64 distP1 = mir::utilities::distance(quadP1, circleCenter);
-  axom::float64 distP2 = mir::utilities::distance(quadP2, circleCenter);
-  axom::float64 distP3 = mir::utilities::distance(quadP3, circleCenter);
+  auto d0Sq = primal::squared_distance(quadP0, circleCenter);
+  auto d1Sq = primal::squared_distance(quadP1, circleCenter);
+  auto d2Sq = primal::squared_distance(quadP2, circleCenter);
+  auto d3Sq = primal::squared_distance(quadP3, circleCenter);
+  auto dRSq = circleRadius * circleRadius;
 
-  if (distP0 < circleRadius && distP1 < circleRadius && distP2 < circleRadius && distP3 < circleRadius)
+  int inFlags = ((d0Sq < dRSq) ? 1 << 0 : 0)
+              + ((d1Sq < dRSq) ? 1 << 1 : 0)
+              + ((d2Sq < dRSq) ? 1 << 2 : 0)
+              + ((d3Sq < dRSq) ? 1 << 3 : 0);
+  const int allFlags = 15;
+  const int noFlags = 0;
+
+  if (inFlags == allFlags )
   {
     // The entire quad overlaps the circle
-    return 1.0;
+    return 1.;
   }
-  else if (distP0 < circleRadius || distP1 < circleRadius || distP2 < circleRadius || distP3 < circleRadius)
+  else if( inFlags == noFlags)
+  {
+     return 0.;
+  }
+  else
   {
     // Some of the quad overlaps the circle, so run the Monte Carlo sampling to determine how much
-    axom::float64 delta_x = abs(quadP2.m_x - quadP1.m_x) / (double) (gridSize - 1);
-    axom::float64 delta_y = abs(quadP0.m_y - quadP1.m_y) / (double) (gridSize - 1);
+    axom::float64 delta_x = axom::utilities::abs(quadP2[0] - quadP1[0]) / static_cast<double>(gridSize - 1);
+    axom::float64 delta_y = axom::utilities::abs(quadP0[1] - quadP1[1]) / static_cast<double>(gridSize - 1);
     int countOverlap = 0;
     for (int y = 0; y < gridSize; ++y)
     {
       for (int x = 0; x < gridSize; ++x)
       {
-        mir::Point2 samplePoint(delta_x * x + quadP1.m_x, delta_y * y + quadP1.m_y);
-        if (mir::utilities::distance(samplePoint, circleCenter) < circleRadius)
+        mir::Point2 samplePoint = mir::Point2::make_point(delta_x * x + quadP1[0],
+                                                          delta_y * y + quadP1[1]);
+        if (primal::squared_distance(samplePoint, circleCenter) < dRSq)
           ++countOverlap;
       }
     }
-    return countOverlap / (double) (gridSize * gridSize);
-  }
-  else
-  {
-    // None of the quad overlaps the circle
-    return 0;
+    return countOverlap / static_cast<double>(gridSize * gridSize);
   }
 }
 
@@ -545,7 +560,7 @@ mir::CellData MeshTester::generateGrid(int gridSize)
   {
     for (int x = 0; x < gridSize + 1; ++x)
     {
-      points.push_back(mir::Point2(x, y));
+      points.push_back(mir::Point2::make_point(x, y));
     }
   }
 
@@ -583,7 +598,7 @@ mir::CellData MeshTester::generateGrid(int gridSize)
   // printf("points: { ");
   // for (int i = 0; i < numVertices; ++i)
   // {
-  //   printf("{%.2f, %.2f} ", points[i].m_x, points[i].m_y);
+  //   printf("{%.2f, %.2f} ", points[i][0], points[i][1]);
   // }
   // printf("}\n");
 
@@ -605,7 +620,7 @@ mir::MIRMesh MeshTester::initTestCaseFive(int gridSize, int numCircles)
   int numMaterials = numCircles + 1;
   int defaultMaterialID = numMaterials - 1;   // default material is always the last index
 
-  mir::Point2 circleCenter(gridSize / 2.0, gridSize / 2.0);   // all circles are centered around the same point
+  mir::Point2 circleCenter = mir::Point2::make_point(gridSize / 2.0, gridSize / 2.0);   // all circles are centered around the same point
 
   // Initialize the radii of the circles
   std::vector<axom::float64> circleRadii;   
@@ -633,12 +648,13 @@ mir::MIRMesh MeshTester::initTestCaseFive(int gridSize, int numCircles)
   }
 
   // Use the uniform sampling method to generate volume fractions for each material
+  // Note: Assumes that the cell is a parallelogram. This could be modified via biliear interpolation
   for (int eID = 0; eID < cellData.m_numElems; ++eID)
   {
-    mir::Point2 v0 = cellData.m_mapData.m_vertexPositions[cellData.m_topology.m_evInds[eID * 4 + 0]]; 
-    mir::Point2 v1 = cellData.m_mapData.m_vertexPositions[cellData.m_topology.m_evInds[eID * 4 + 1]]; 
-    mir::Point2 v2 = cellData.m_mapData.m_vertexPositions[cellData.m_topology.m_evInds[eID * 4 + 2]]; 
-    mir::Point2 v3 = cellData.m_mapData.m_vertexPositions[cellData.m_topology.m_evInds[eID * 4 + 3]];
+    mir::Point2& v0 = cellData.m_mapData.m_vertexPositions[cellData.m_topology.m_evInds[eID * 4 + 0]]; 
+    mir::Point2& v1 = cellData.m_mapData.m_vertexPositions[cellData.m_topology.m_evInds[eID * 4 + 1]]; 
+    mir::Point2& v2 = cellData.m_mapData.m_vertexPositions[cellData.m_topology.m_evInds[eID * 4 + 2]]; 
+    //mir::Point2& v3 = cellData.m_mapData.m_vertexPositions[cellData.m_topology.m_evInds[eID * 4 + 3]];
 
     // Run the uniform sampling to determine how much of the current cell is composed of each material
     int materialCount[numMaterials];  for (int i = 0; i < numMaterials; ++i) materialCount[i] = 0;
@@ -648,18 +664,19 @@ mir::MIRMesh MeshTester::initTestCaseFive(int gridSize, int numCircles)
       materialVolumeFractionsData[matID][eID] = materialCount[matID] / (double) (gridSize * gridSize);
     }
 
-    axom::float64 delta_x = abs(v2.m_x - v1.m_x) / (double) (gridSize - 1);
-    axom::float64 delta_y = abs(v0.m_y - v1.m_y) / (double) (gridSize - 1);
+    axom::float64 delta_x = axom::utilities::abs(v2[0] - v1[1]) / (double) (gridSize - 1);
+    axom::float64 delta_y = axom::utilities::abs(v0[1] - v1[1]) / (double) (gridSize - 1);
 
     for (int y = 0; y < gridSize; ++y)
     {
       for (int x = 0; x < gridSize; ++x)
       {
-        mir::Point2 samplePoint(delta_x * x + v1.m_x, delta_y * y + v1.m_y);
+        mir::Point2 samplePoint = mir::Point2::make_point(delta_x * x + v1[0], delta_y * y + v1[1]);
         bool isPointSampled = false;
         for (int cID = 0; cID < numCircles && !isPointSampled; ++cID)
         {
-          if (mir::utilities::distance(samplePoint, circleCenter) < circleRadii[cID])
+          const auto r = circleRadii[cID];
+          if (primal::squared_distance(samplePoint, circleCenter) < r*r)
           {
             materialCount[cID]++;
             isPointSampled = true;
@@ -711,23 +728,29 @@ mir::MIRMesh MeshTester::initTestCaseFive(int gridSize, int numCircles)
 
 //--------------------------------------------------------------------------------
 
-int MeshTester::circleQuadCornersOverlaps(mir::Point2 circleCenter, axom::float64 circleRadius, mir::Point2 quadP0, mir::Point2 quadP1, mir::Point2 quadP2, mir::Point2 quadP3)
+int MeshTester::circleQuadCornersOverlaps(const mir::Point2& circleCenter, 
+                                          axom::float64 circleRadius, 
+                                          const mir::Point2& quadP0, 
+                                          const mir::Point2& quadP1, 
+                                          const mir::Point2& quadP2, 
+                                          const mir::Point2& quadP3)
 {
   // Check if any of the quad's corners are within the circle
-  axom::float64 distP0 = mir::utilities::distance(quadP0, circleCenter);
-  axom::float64 distP1 = mir::utilities::distance(quadP1, circleCenter);
-  axom::float64 distP2 = mir::utilities::distance(quadP2, circleCenter);
-  axom::float64 distP3 = mir::utilities::distance(quadP3, circleCenter);
+  auto d0Sq = primal::squared_distance(quadP0, circleCenter);
+  auto d1Sq = primal::squared_distance(quadP1, circleCenter);
+  auto d2Sq = primal::squared_distance(quadP2, circleCenter);
+  auto d3Sq = primal::squared_distance(quadP3, circleCenter);
+  auto dRSq = circleRadius * circleRadius;
 
   int numCorners = 0;
 
-  if (distP0 < circleRadius)
+  if (d0Sq < dRSq)
     numCorners++;
-  if (distP1 < circleRadius)
+  if (d1Sq < dRSq)
     numCorners++;
-  if (distP2 < circleRadius)
+  if (d2Sq < dRSq)
     numCorners++;
-  if (distP3 < circleRadius)
+  if (d3Sq < dRSq)
     numCorners++;
 
   return numCorners;

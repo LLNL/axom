@@ -14,12 +14,9 @@
 
 
 #include "axom/core.hpp"  // for axom macros
-// #include "axom/mir.hpp"  // for Mir classes & functions
 #include "axom/slam.hpp"
+#include "axom/primal.hpp"
 
-
-namespace numerics = axom::numerics;
-namespace slam = axom::slam;
 
 namespace axom
 {
@@ -36,32 +33,8 @@ namespace mir
     Hexahedron
   };
 
-  /**
-   * \brief Simple 2D Point class for example
-   */
-  struct Point2
-  {
-    Point2(double x = 0., double y = 0.) : m_x(x), m_y(y) {}
 
-    Point2(const Point2& other) : m_x(other.m_x), m_y(other.m_y) {}
-
-    Point2& operator=(const Point2& other)
-    { m_x = other.m_x; m_y = other.m_y; return *this; }
-
-    Point2& operator+=(const Point2& other)
-    { m_x += other.m_x; m_y += other.m_y; return *this; }
-
-    Point2& operator/=(double val)
-    { m_x /= val; m_y += val; return *this; }
-
-    double& operator[] (int i) { return (i==0) ? m_x : m_y; }
-    const double& operator[] (int i) const { return (i==0) ? m_x : m_y; }
-
-    friend std::ostream& operator<<(std::ostream& os, const Point2& pt)
-    { return os << "{x:" << pt.m_x << ", y:" << pt.m_y <<"}"; }
-
-    double m_x, m_y;
-  };
+  using Point2 = primal::Point<double, 2>;
 
   // SET TYPE ALIASES
   using PosType = slam::DefaultPositionType;
