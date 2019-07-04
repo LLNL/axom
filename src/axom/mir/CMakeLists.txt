@@ -10,7 +10,7 @@
 # Check necessary dependencies
 #------------------------------------------------------------------------------
 axom_component_requires(NAME       MIR
-                        COMPONENTS SLIC SLAM)
+                        COMPONENTS SLIC SLAM PRIMAL)
 
 #------------------------------------------------------------------------------
 # Specify all headers/sources
