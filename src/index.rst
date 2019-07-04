@@ -88,7 +88,7 @@ Dependencies between modules are as follows:
 - Slic optionally depends on Lumberjack
 - Slam, Spin, Primal, Mint, Quest, and Sidre depend on Slic
 - Mint optionally depends on Sidre
-- Mir depends on Slic and Slam
+- Mir depends on Slic, Slam and Primal
 - Quest depends on Slam, Spin, Primal, and Mint
 
 The figure below summarizes the dependencies between the modules.  Solid links
