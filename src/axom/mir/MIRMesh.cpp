@@ -6,6 +6,7 @@
 #include "MIRMesh.hpp"
 
 #include "axom/core.hpp"
+#include "axom/primal.hpp"
 
 namespace axom
 {
@@ -310,7 +311,7 @@ void MIRMesh::print()
   printf("vertexPositions: { ");
   for (int i = 0; i < m_verts.size(); ++i)
   {
-    printf("{%.2f, %.2f} ", m_vertexPositions[i].m_x, m_vertexPositions[i].m_y);
+    printf("{%.2f, %.2f} ", m_vertexPositions[i][0], m_vertexPositions[i][1]);
   }
   printf("}\n");
 
@@ -396,7 +397,7 @@ void MIRMesh::writeMeshToFile(std::string filename)
   // write positions
   for (int vID = 0; vID < m_verts.size(); ++vID)
   {      
-    meshfile << m_vertexPositions[vID].m_x << " " << m_vertexPositions[vID].m_y << " 0\n"; // must always set all 3 coords; set Z=0 for 2D
+    meshfile << m_vertexPositions[vID][0] << " " << m_vertexPositions[vID][1] << " 0\n"; // must always set all 3 coords; set Z=0 for 2D
   }
 
   meshfile << "\nCELLS " << m_elems.size() << " " << m_meshTopology.m_evInds.size() + m_elems.size();
@@ -486,13 +487,7 @@ axom::float64 MIRMesh::computeTriangleArea(Point2 p0,
                                            Point2 p1, 
                                            Point2 p2)
 {
-  axom::float64 a = sqrt( ((p1.m_x - p0.m_x) * (p1.m_x - p0.m_x)) + ((p1.m_y - p0.m_y) * (p1.m_y - p0.m_y)) );// the distance from p0 to p1
-  axom::float64 b = sqrt( ((p2.m_x - p1.m_x) * (p2.m_x - p1.m_x)) + ((p2.m_y - p1.m_y) * (p2.m_y - p1.m_y)) );// the distance from p1 to p2
-  axom::float64 c = sqrt( ((p0.m_x - p2.m_x) * (p0.m_x - p2.m_x)) + ((p0.m_y - p2.m_y) * (p0.m_y - p2.m_y)) );// the distance from p2 to p0
-
-  axom::float64 s = (a + b + c) / 2;  // the semi-perimeter of the triangle
-
-  return sqrt(s * (s - a) * (s - b) * (s - c));
+  return primal::Triangle<double,2>(p0,p1,p2).area();
 }
 
 //--------------------------------------------------------------------------------

@@ -102,44 +102,6 @@ namespace utilities
     return numVertices;
   }
 
-//--------------------------------------------------------------------------------
-
-  /**
-   * \brief Performs linear interpolation between the two given float values.
-   * 
-   * \param f0  The first float value.
-   * \param f1  The second float value.
-   * \param t  The percent of the distance from the first float value to the second.
-   * 
-   * \return  The interpolated value.
-   */
-  inline axom::float64  lerpFloat(const axom::float64 f0, 
-                                  const axom::float64 f1, 
-                                  const axom::float64 t)
-  {
-    return (1 - t) * f0 + t * f1;
-  }
-
-//--------------------------------------------------------------------------------
-
-  /**
-   * \brief Performs linear interpolation between the two vertex positions.
-   * 
-   * \param vertexOnePos  The position of the first vertex.
-   * \param vertexTwoPos  The position of the second vertex.
-   * \param t  The percent of the distance from vertex one to vertex two to interpolate at.
-   * 
-   * \return  The interpolated position.
-   */
-  inline mir::Point2  interpolateVertexPosition(const mir::Point2& vertexOnePos, 
-                                                const mir::Point2& vertexTwoPos, 
-                                                const float t)
-  {
-    mir::Point2 interpolatedPoint;
-    interpolatedPoint.m_x = lerpFloat(vertexOnePos.m_x, vertexTwoPos.m_x, t);
-    interpolatedPoint.m_y = lerpFloat(vertexOnePos.m_y, vertexTwoPos.m_y, t);
-    return interpolatedPoint;
-  }
 
 //--------------------------------------------------------------------------------
 
@@ -259,20 +221,6 @@ namespace utilities
     return -1;
   }
 
-//--------------------------------------------------------------------------------
-
-/**
- * \brief Calculate the distance between the two given points.
- * 
- * \param p0  The first point.
- * \param p1  The second point.
- * 
- * \return The distance between the two points.
- */
-inline axom::float64 distance(mir::Point2 p0, mir::Point2 p1)
-{
-  return sqrt( ((p1.m_x - p0.m_x) * (p1.m_x - p0.m_x)) + ((p1.m_y - p0.m_y) * (p1.m_y - p0.m_y)) );
-}
 
 //--------------------------------------------------------------------------------
 
