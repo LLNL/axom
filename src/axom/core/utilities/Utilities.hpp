@@ -96,6 +96,22 @@ inline T log2( T& val)
   return std::log2(val);
 }
 
+
+/*!
+ * \brief Linearly interpolates between two values
+ * \param [in] val0 The first value
+ * \param [in] val2 The second value
+ * \param [in] t The interpolation parameter.
+ * \return The interpolated value
+ */
+template < typename T >
+inline AXOM_HOST_DEVICE
+T lerp( T v0, T v1, T t)
+{
+  constexpr T one = T(1);
+  return (one-t)*v0 + t*v1;
+}
+
 /*!
  * \brief Clamps an input value to a given range.
  * \param [in] val  The value to clamp.
@@ -112,7 +128,6 @@ T clampVal( T val, T lower, T upper )
   return (val < lower) ? lower
          : (val > upper) ? upper : val;
 }
-
 
 /*!
  * \brief Clamps the upper range on an input value
