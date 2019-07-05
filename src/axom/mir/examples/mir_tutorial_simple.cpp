@@ -106,7 +106,7 @@ struct Input
        << "Argument usage:"
         "\n  --help            Show this help message."
         "\n  --test-case N     Mesh test case.  Default N = 2."
-        "\n                    Valid values {1,2,3,4,5}"
+        "\n                    Valid values {1,2,3,4,5,6}"
         "\n  --output-dir dir  Directory for output mesh"
         "\n                    Default is: '${AXOM_BIN_DIR}/mir_examples'"
         "\n  --iter-count N    Number of iterations for iterative algorithm"
@@ -122,7 +122,7 @@ struct Input
 private:
    void checkTestCase()
    {
-      if(m_test_case < 1 || m_test_case > 5)
+      if(m_test_case < 1 || m_test_case > 6)
       {
          m_status = INVALID;
          SLIC_WARNING("Invalid test case " << m_test_case);
@@ -194,6 +194,7 @@ int main(int argc, char** argv)
   case 3: testMesh = tester.initTestCaseThree(); break;
   case 4: testMesh = tester.initTestCaseFour(); break;
   case 5: testMesh = tester.initTestCaseFive(25, 12); break;
+  case 6: testMesh = tester.initTestCaseSix(15, 3); break;
   }
 
   timer.stop();
@@ -229,8 +230,7 @@ int main(int argc, char** argv)
   SLIC_INFO( "Reconstruction time: " << timer.elapsedTimeInMilliSec() << " ms.");
 
   // Output results
-  std::string dir = params.m_output_dir;
-  processedMesh.writeMeshToFile(  fs::joinPath(dir, "processedMesh.vtk") );
+  processedMesh.writeMeshToFile(params.m_output_dir, "processedMesh.vtk");
 
   using VolFracs =  std::vector<std::vector<axom::float64> >;
   timer.start();

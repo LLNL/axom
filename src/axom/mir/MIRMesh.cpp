@@ -8,6 +8,8 @@
 #include "axom/core.hpp"
 #include "axom/primal.hpp"
 
+#include <sstream>
+
 namespace axom
 {
 namespace mir
@@ -109,7 +111,7 @@ void MIRMesh::initializeMesh(const VertSet _verts,
 
 void MIRMesh::constructMeshRelations()
 {
-  // construct boundary relation from elements to vertices using variable cardinality
+  // construct boundary relation from elements to vertices
   {
     using RelationBuilder = ElemToVertRelation::RelationBuilder;
     m_bdry = RelationBuilder()
@@ -125,7 +127,6 @@ void MIRMesh::constructMeshRelations()
 
 
   {
-    // _quadmesh_example_construct_cobdry_relation_start
     // construct coboundary relation from vertices to elements
     using RelationBuilder = VertToElemRelation::RelationBuilder;
     m_cobdry = RelationBuilder()
@@ -137,14 +138,13 @@ void MIRMesh::constructMeshRelations()
               .indices( RelationBuilder::IndicesSetBuilder()
                         .size( m_meshTopology.m_veInds.size() )
                         .data( m_meshTopology.m_veInds.data() ) );
-    // _quadmesh_example_construct_cobdry_relation_end
   }
 
   SLIC_ASSERT_MSG( m_bdry.isValid(), "Boundary relation is not valid.");
   SLIC_ASSERT_MSG( m_cobdry.isValid(), "Coboundary relation is not valid.");
 
-  SLIC_DEBUG("Elem-Vert relation has size " << m_bdry.totalSize());
-  SLIC_DEBUG("Vert-Elem relation has size " << m_cobdry.totalSize());
+  // SLIC_DEBUG("Elem-Vert relation has size " << m_bdry.totalSize());
+  // SLIC_DEBUG("Vert-Elem relation has size " << m_cobdry.totalSize());
 }
 
 //--------------------------------------------------------------------------------  
@@ -200,6 +200,8 @@ void MIRMesh::constructMeshVolumeFractionsMaps(const std::vector<std::vector<axo
 
 void MIRMesh::constructMeshVolumeFractionsVertex(const std::vector<std::vector<axom::float64> >& vertexVF)
 {
+  m_materialVolumeFractionsVertex.clear();
+
   // Initialize the maps for all of the materials with the input volume fraction data for each vertex
   for (int matID = 0; matID < m_numMaterials; ++matID)
   {
@@ -311,7 +313,9 @@ void MIRMesh::print()
   printf("vertexPositions: { ");
   for (int i = 0; i < m_verts.size(); ++i)
   {
-    printf("{%.2f, %.2f} ", m_vertexPositions[i][0], m_vertexPositions[i][1]);
+    std::stringstream sstr;
+    sstr<< m_vertexPositions[i];
+    printf("%s", sstr.str().c_str());
   }
   printf("}\n");
 
@@ -381,10 +385,20 @@ void MIRMesh::readMeshFromFile(std::string filename)
 
 //--------------------------------------------------------------------------------
 
-void MIRMesh::writeMeshToFile(std::string filename)
+void MIRMesh::writeMeshToFile(const std::string& dirName,
+                              const std::string& fileName,
+                              const std::string& separator)
 {
+  // Ensure that the directory to write to exists
+  if ( !axom::utilities::filesystem::pathExists( dirName ) )
+  {
+    axom::utilities::filesystem::makeDirsForPath( dirName );
+  }
+
+  std::string outputLocation = axom::utilities::filesystem::joinPath(dirName, fileName, separator);
+
   std::ofstream meshfile;
-  meshfile.open(filename);
+  meshfile.open(outputLocation);
   std::ostream_iterator<PosType> out_it(meshfile, " ");
 
   // write header
@@ -402,7 +416,7 @@ void MIRMesh::writeMeshToFile(std::string filename)
     {
       meshfile << pt[i] << " ";
     }
-    meshfile << (pt.dimension()==2 ? "0" : "") <<  "\n";
+    meshfile << "\n";
   }
 
   meshfile << "\nCELLS " << m_elems.size() << " " << m_meshTopology.m_evInds.size() + m_elems.size();
@@ -500,7 +514,7 @@ axom::float64 MIRMesh::computeTriangleArea(Point2 p0,
                                            Point2 p1, 
                                            Point2 p2)
 {
-  return primal::Triangle<double,2>(p0,p1,p2).area();
+  return primal::Triangle<double,3>(p0,p1,p2).area();
 }
 
 //--------------------------------------------------------------------------------

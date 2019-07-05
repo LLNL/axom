@@ -87,17 +87,23 @@ namespace mir
       /**
        * \brief Generates a set of clean cells by splitting the element with the two given materials.
        * 
-       * \param  eID  The ID of the element to be split.
+       * \param  shapeType  The shape type of the element to be split.
+       * \param  parentElementID  The ID parent element.
        * \param  matOne  The first material to split with.
        * \param  matTwo  The second material to split with.
-       * \param  tempMesh  A reference to the mesh the element comes from.
+       * \param  elementVertices  The vertices of the element to be split.
+       * \param  originalElementVertexVF  The original vertex volume fractions associated with the vertices of the element to be split.
+       * \param  originalElementVertexPositions  The original vertex positions associated with the vertices of the element to be split.
        * \param out_cellData  Container to store the data of the generated elements.
-       */
-      void  generateCleanCells(const int eID, 
-                               const int matOne, 
-                               const int matTwo, 
-                               mir::MIRMesh& tempMesh, 
-                               CellData& out_cellData);
+       */ 
+      void generateCleanCells(mir::Shape shapeType,
+                              const int parentElementID,
+                              const int matOne,
+                              const int matTwo,
+                              const std::vector<int>& elementVertices,
+                              const std::vector<std::vector<axom::float64> >& originalElementVertexVF,
+                              const std::vector<mir::Point2>& originalElementVertexPositions,
+                              CellData& out_cellData);
 
       private:
         mir::MIRMesh m_originalMesh;

@@ -85,17 +85,10 @@ void  CellGenerator::generateVertexPositions(const mir::Shape shapeType,
       // This vertex is one of the shape's original vertices
       out_cellData.m_mapData.m_vertexPositions.push_back( vertexPositions[vID] );
     }
-    else if (mir::utilities::isShapeThreeDimensional(shapeType) && vID == (mir::utilities::maxPossibleNumVerts(shapeType) - 1) )
+    else if ( mir::utilities::isCenterVertex(shapeType, vID) )
     {
-      // This vertex is the central vertex of a three dimensional shape being decomposed/tesselated (tetrahedrons don't decompose)
-
       // Average the vertex position values at the corners of the shape
-      mir::Point2 centroid;
-      for (auto i = 0u; i < vertexPositions.size(); ++i)
-      {
-        centroid.array() += vertexPositions[i].array();
-      }
-      centroid.array() /= vertexPositions.size();
+      mir::Point2 centroid = mir::utilities::computeAveragePoint(vertexPositions);
 
       out_cellData.m_mapData.m_vertexPositions.push_back( centroid );
     }
@@ -132,18 +125,11 @@ void  CellGenerator::generateVertexVolumeFractions(const mir::Shape shapeType,
         // This vertex is one of the shape's original vertices
         out_cellData.m_mapData.m_vertexVolumeFractions[matID].push_back( vertexVF[matID][vID] );
       }
-      else if (mir::utilities::isShapeThreeDimensional(shapeType) && vID == (mir::utilities::maxPossibleNumVerts(shapeType) - 1) )
+      else if ( mir::utilities::isCenterVertex(shapeType, vID) )
       {
-        // This vertex is the central vertex of a three dimensional shape being decomposed/tesselated (tetrahedrons don't decompose)
-
         // Average the vertex volume fractions values at the corners of the shape
-        axom::float64 averageValue(0.0);
-        for (auto i = 0u; i < vertexVF[matID].size(); ++i)
-        {
-          averageValue += vertexVF[matID][i];
-        }
-        averageValue /= (axom::float64) vertexVF[matID].size();
-        
+        axom::float64 averageValue = mir::utilities::computeAverageFloat( vertexVF[matID] );
+
         out_cellData.m_mapData.m_vertexVolumeFractions[matID].push_back( averageValue );
       }
       else
@@ -195,54 +181,6 @@ int  CellGenerator::determineCleanCellMaterial(const Shape elementShape,
 }
 
 //--------------------------------------------------------------------------------
-
-mir::Shape  CellGenerator::determineElementShapeType(const Shape parentShapeType,
-                                                     const int numVerts)
-{
-  mir::Shape newShapeType;
-  if (parentShapeType == mir::Shape::Triangle || parentShapeType == mir::Shape::Quad)
-  {
-    // Handle the two-dimensional case
-    switch (numVerts)
-    {
-      case 3:
-        newShapeType = mir::Shape::Triangle;
-        break;
-      case 4:
-        newShapeType = mir::Shape::Quad;
-        break;
-      default:
-        newShapeType = mir::Shape::Triangle;
-        printf("2D Case: Invalid number of vertices in determineElementShapeType().\n");
-        break;
-    }
-  }
-  else
-  {
-    // Handle the three-dimensional case
-    switch (numVerts)
-    {
-      case 4:
-        newShapeType = mir::Shape::Tetrahedron;
-        break;
-      case 5:
-        newShapeType = mir::Shape::Pyramid;
-        break;
-      case 6:
-        newShapeType = mir::Shape::Triangular_Prism;
-        break;
-      case 8:
-        newShapeType = mir::Shape::Hexahedron;
-        break;
-      default:
-        newShapeType = mir::Shape::Tetrahedron;
-        printf("3D Case: Invalid number of vertices in determineElementShapeType().\n");
-        break;
-    }
-  }
-    return newShapeType;
-}
-
 
 }
 }

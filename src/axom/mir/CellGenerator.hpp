@@ -122,24 +122,6 @@ namespace mir
                                       const int matOne, 
                                       const int matTwo, 
                                       const std::vector<std::vector<axom::float64> >& vertexVF);
-
-      /**
-       * \brief Determine the shape type of an element.
-       * 
-       * \param parentShapeType  The shape of the element from which the new element is generated.
-       * \param numVerts  The number of vertices of the new element.
-       * 
-       * \note It is assumed that the given cell is one that results from splitting its parent cell.
-       */
-      mir::Shape  determineElementShapeType(const Shape parentShapeType,
-                                            const int numVerts);
-
-      /**
-       * \brief  Ensures that the element is dominated by a material that is actually present in the original parent cell.
-       * 
-       * \param
-       */
-      // void  fixDominantMaterial(mir::MIRMesh& originalMesh, const std::map<int, std::vector<int> >& newElements, const int matOne, const int matTwo, CellData& out_cellData);
   };
 
 //--------------------------------------------------------------------------------

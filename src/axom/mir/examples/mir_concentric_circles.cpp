@@ -54,7 +54,7 @@ int main( int argc, char** argv )
           << timer.elapsedTimeInMilliSec() << " ms.");
 
     // Output results
-    processedMesh.writeMeshToFile(outputFilePath + "outputConcentricCircles.vtk");
+    processedMesh.writeMeshToFile(outputFilePath, "outputConcentricCircles.vtk");
     
     return 0;
   }

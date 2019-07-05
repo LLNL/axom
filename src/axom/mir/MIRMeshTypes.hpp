@@ -34,7 +34,7 @@ namespace mir
   };
 
 
-  using Point2 = primal::Point<double, 2>;
+  using Point2 = primal::Point<double, 3>;
 
   // SET TYPE ALIASES
   using PosType = slam::DefaultPositionType;
