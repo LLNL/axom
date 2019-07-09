@@ -130,9 +130,8 @@ The project maintains two email lists:
 Chat Room
 -------------- 
 
-We also have a chat room on LLNL's Cisco Jabber instance called 
-'Axom Dev'. It is open to anyone on the llnl network. 
-Just log onto Jabber and join the room.
+We also have a chat room on LLNL's Cisco Jabber instance called 'Axom Dev'. 
+It is open to anyone on the llnl network.  Just log onto Jabber and join the room.
 
 
 -----------------
