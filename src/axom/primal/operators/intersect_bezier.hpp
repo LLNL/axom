@@ -61,7 +61,7 @@ bool intersect_bezier( const BezierCurve< T, NDIMS>& c1,
   else
   {
     BezierCurve< T, NDIMS> c3(ord1); BezierCurve< T, NDIMS> c4(ord1);
-    c1.split_bezier(.5,c3,c4);
+    c1.split(.5,c3,c4);
 
     std::vector<Point<T, NDIMS> > Ptv3 = c3.getControlPoints();
     BoundingBox < T, NDIMS> b3(Ptv3.data(),ord1+1);
