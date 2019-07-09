@@ -13,14 +13,17 @@
 
 set(gtest_mir_tests
     mir_smoke.cpp
+    mir_mesh.cpp
     mir_interface_reconstructor.cpp
     mir_cell_clipper.cpp
     mir_utilities.cpp
     mir_cell_generator.cpp
     )
 
-
-set(mir_tests_depends_on core slic mir gtest)
+set(mir_tests_depends_on 
+    slic
+    mir 
+    gtest)
 
 #------------------------------------------------------------------------------
 # Add gtest based tests
@@ -32,6 +35,7 @@ foreach(test ${gtest_mir_tests})
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                         DEPENDS_ON ${mir_tests_depends_on}
                         FOLDER axom/mir/tests )
+
     blt_add_test( NAME ${test_name}
                   COMMAND ${test_name}_test )
 endforeach()

@@ -101,10 +101,10 @@ TEST(mir_cell_generator, generate_vertex_positions)
   vertexMap[7] = { 2, 3 };
 
   std::vector<mir::Point2> originalVertexPositions;
-  originalVertexPositions.push_back( mir::Point2(0.0, 1.0) );
-  originalVertexPositions.push_back( mir::Point2(0.0, 0.0) );
-  originalVertexPositions.push_back( mir::Point2(1.0, 0.0) );
-  originalVertexPositions.push_back( mir::Point2(1.0, 1.0) );
+  originalVertexPositions.push_back( mir::Point2::make_point(0.0, 1.0) );
+  originalVertexPositions.push_back( mir::Point2::make_point(0.0, 0.0) );
+  originalVertexPositions.push_back( mir::Point2::make_point(1.0, 0.0) );
+  originalVertexPositions.push_back( mir::Point2::make_point(1.0, 1.0) );
 
   axom::float64 tValues[8] = { 0, 0, 0, 0, 0.5, 0.5, 0.5, 0.5 };
 
@@ -112,30 +112,30 @@ TEST(mir_cell_generator, generate_vertex_positions)
   mir::CellGenerator cellGenerator;
   cellGenerator.generateVertexPositions(shapeType, vertexMap, originalVertexPositions, tValues, cellData);
 
+  const auto& positions = cellData.m_mapData.m_vertexPositions;
+  EXPECT_NEAR(  positions[0][0], 0.0, 0.00001 );
+  EXPECT_NEAR(  positions[0][1], 1.0, 0.00001 );
 
-  EXPECT_NEAR(  cellData.m_mapData.m_vertexPositions[0].m_x, 0.0, 0.00001 );
-  EXPECT_NEAR(  cellData.m_mapData.m_vertexPositions[0].m_y, 1.0, 0.00001 );
+  EXPECT_NEAR(  positions[1][0], 0.0, 0.00001 );
+  EXPECT_NEAR(  positions[1][1], 0.0, 0.00001 );
 
-  EXPECT_NEAR(  cellData.m_mapData.m_vertexPositions[1].m_x, 0.0, 0.00001 );
-  EXPECT_NEAR(  cellData.m_mapData.m_vertexPositions[1].m_y, 0.0, 0.00001 );
+  EXPECT_NEAR(  positions[2][0], 1.0, 0.00001 );
+  EXPECT_NEAR(  positions[2][1], 0.0, 0.00001 );
 
-  EXPECT_NEAR(  cellData.m_mapData.m_vertexPositions[2].m_x, 1.0, 0.00001 );
-  EXPECT_NEAR(  cellData.m_mapData.m_vertexPositions[2].m_y, 0.0, 0.00001 );
+  EXPECT_NEAR(  positions[3][0], 1.0, 0.00001 );
+  EXPECT_NEAR(  positions[3][1], 1.0, 0.00001 );
 
-  EXPECT_NEAR(  cellData.m_mapData.m_vertexPositions[3].m_x, 1.0, 0.00001 );
-  EXPECT_NEAR(  cellData.m_mapData.m_vertexPositions[3].m_y, 1.0, 0.00001 );
+  EXPECT_NEAR(  positions[4][0], 0.0, 0.00001 );
+  EXPECT_NEAR(  positions[4][1], 0.5, 0.00001 );
 
-  EXPECT_NEAR(  cellData.m_mapData.m_vertexPositions[4].m_x, 0.0, 0.00001 );
-  EXPECT_NEAR(  cellData.m_mapData.m_vertexPositions[4].m_y, 0.5, 0.00001 );
+  EXPECT_NEAR(  positions[5][0], 0.5, 0.00001 );
+  EXPECT_NEAR(  positions[5][1], 0.0, 0.00001 );
 
-  EXPECT_NEAR(  cellData.m_mapData.m_vertexPositions[5].m_x, 0.5, 0.00001 );
-  EXPECT_NEAR(  cellData.m_mapData.m_vertexPositions[5].m_y, 0.0, 0.00001 );
+  EXPECT_NEAR(  positions[6][0], 1.0, 0.00001 );
+  EXPECT_NEAR(  positions[6][1], 0.5, 0.00001 );
 
-  EXPECT_NEAR(  cellData.m_mapData.m_vertexPositions[6].m_x, 1.0, 0.00001 );
-  EXPECT_NEAR(  cellData.m_mapData.m_vertexPositions[6].m_y, 0.5, 0.00001 );
-
-  EXPECT_NEAR(  cellData.m_mapData.m_vertexPositions[7].m_x, 0.5, 0.00001 );
-  EXPECT_NEAR(  cellData.m_mapData.m_vertexPositions[7].m_y, 1.0, 0.00001 );
+  EXPECT_NEAR(  positions[7][0], 0.5, 0.00001 );
+  EXPECT_NEAR(  positions[7][1], 1.0, 0.00001 );
 }
 
 //----------------------------------------------------------------------

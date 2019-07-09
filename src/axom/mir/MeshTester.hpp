@@ -20,9 +20,7 @@
 #include "MIRUtilities.hpp"
 
 #include <algorithm>
-
-namespace numerics = axom::numerics;
-namespace slam = axom::slam;
+#include <vector>
 
 namespace axom
 {
@@ -37,16 +35,25 @@ namespace mir
    */
   class MeshTester
   {
+public:
+     template<typename T>
+     using Vec = std::vector<T>;
+
+     using IndexVec = Vec<mir::PosType>;
+     using VolFracVec = Vec<axom::float64>;
+     using VolumeFractions = Vec<VolFracVec>;
+
+
     public:
       /**
       * \brief Default constructor. 
       */
-      MeshTester();
+      MeshTester() = default;
 
       /**
        * \brief Default destructor.
        */
-      ~MeshTester();
+      ~MeshTester() = default;
 
     public:
       /**
@@ -56,7 +63,7 @@ namespace mir
        * 
        * \return  The generated mesh.
        */
-      MIRMesh  initTestCaseOne();
+      mir::MIRMesh  initTestCaseOne();
 
       /**
        * \brief Initializes an MIRMesh based on the example from Meredith and Childs 2010 paper.
@@ -107,10 +114,12 @@ namespace mir
        * 
        * \return  The generated mesh.
        */
-      mir::MIRMesh  createUniformGridTestCaseMesh(int gridSize, mir::Point2 circleCenter, axom::float64 circleRadius);
+      mir::MIRMesh  createUniformGridTestCaseMesh(int gridSize,
+                                                  const mir::Point2& circleCenter,
+                                                  axom::float64 circleRadius);
       
       /**
-       * \brief Intializes a mesh to be used for validating the results of quad clipping.
+       * \brief Initializes a mesh to be used for validating the results of quad clipping.
        * 
        * \note The mesh is a 3x3 uniform grid with 2 materials and element volume fraction such
        *       that the mesh would be split horizontally through the middle.
@@ -140,7 +149,14 @@ namespace mir
        * 
        * /return The percent value overlap of the circle and the quad between [0, 1].
        */
-      axom::float64  calculatePercentOverlapMonteCarlo(int gridSize, mir::Point2 circleCenter, axom::float64 circleRadius, mir::Point2 quadP0, mir::Point2 quadP1, mir::Point2 quadP2, mir::Point2 quadP3);
+      axom::float64  calculatePercentOverlapMonteCarlo(
+            int gridSize,
+            const mir::Point2& circleCenter,
+            axom::float64 circleRadius,
+            const mir::Point2& quadP0,
+            const mir::Point2& quadP1,
+            const mir::Point2& quadP2,
+            const mir::Point2& quadP3);
       
       /**
        * \brief Calculates the number of corners of the quad that are within the circle.
@@ -154,7 +170,13 @@ namespace mir
        * 
        * \return The number of corners of the quad that are within the circle.
        */
-      int  circleQuadCornersOverlaps(mir::Point2 circleCenter, axom::float64 circleRadius, mir::Point2 quadP0, mir::Point2 quadP1, mir::Point2 quadP2, mir::Point2 quadP3);
+      int  circleQuadCornersOverlaps(const mir::Point2& circleCenter,
+                                     axom::float64 circleRadius,
+                                     const mir::Point2& quadP0,
+                                     const mir::Point2& quadP1,
+                                     const mir::Point2& quadP2,
+                                     const mir::Point2& quadP3);
+
   };
 }
 }

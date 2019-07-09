@@ -91,7 +91,8 @@ void  CellGenerator::generateVertexPositions(const mir::Shape shapeType,
       int vIDFrom = mir::utilities::getEdgeEndpoint(shapeType, vID, true);
       int vIDTo = mir::utilities::getEdgeEndpoint(shapeType, vID, false);
 
-      out_cellData.m_mapData.m_vertexPositions.push_back( mir::utilities::interpolateVertexPosition( vertexPositions[vIDFrom], vertexPositions[vIDTo], tValues[vID] ) );
+      out_cellData.m_mapData.m_vertexPositions.push_back(
+            mir::Point2::lerp( vertexPositions[vIDFrom], vertexPositions[vIDTo], tValues[vID] ) );
     }
   }
 }
@@ -123,7 +124,8 @@ void  CellGenerator::generateVertexVolumeFractions(const mir::Shape shapeType,
         int vIDFrom = mir::utilities::getEdgeEndpoint(shapeType, vID, true);
         int vIDTo = mir::utilities::getEdgeEndpoint(shapeType, vID, false);
 
-        out_cellData.m_mapData.m_vertexVolumeFractions[matID].push_back( mir::utilities::lerpFloat( vertexVF[matID][vIDFrom], vertexVF[matID][vIDTo], tValues[vID] ) );
+        out_cellData.m_mapData.m_vertexVolumeFractions[matID].push_back(
+              axom::utilities::lerp( vertexVF[matID][vIDFrom], vertexVF[matID][vIDTo], tValues[vID] ) );
       }
     }
   }

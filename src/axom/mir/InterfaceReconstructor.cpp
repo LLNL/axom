@@ -39,7 +39,7 @@ void InterfaceReconstructor::computeReconstructedInterface(mir::MIRMesh& inputMe
   for (int matID = 0; matID < m_originalMesh.m_numMaterials; ++matID)
   {
     // Copy the mesh to be split
-    mir::MIRMesh intermediateMesh(&finalMesh);
+    mir::MIRMesh intermediateMesh(finalMesh);
 
     // Create an array to store the output of each element being split.
     CellData temp_cellData[intermediateMesh.m_elems.size()];
