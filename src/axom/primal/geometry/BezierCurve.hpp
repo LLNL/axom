@@ -42,6 +42,9 @@ template < typename T,int NDIMS >
 std::ostream& operator<<(std::ostream & os,
                          const BezierCurve< T,NDIMS > & bCurve);
 
+// UedaAreaMats is where all of the area matrices from Ueda '99 are stored
+extern std::map<int, std::vector<double> > UedaAreaMats;
+
 /*!
  * \class BezierCurve
  *
@@ -266,6 +269,49 @@ public:
     return;
   }
 
+
+ /* 
+   * \brief Calculates the sector area (area between curve and origin) of a Bezier Curve
+   *
+   * \param [in] tol a tolerance parameter controlling definition of
+   * near-linearity
+   * \param [out] boolean TRUE if c1 is near-linear
+   */
+  T sectorArea() const
+  {
+    T A = 0;
+        int ord = getOrder();
+        if (UedaAreaMats.find(ord)==UedaAreaMats.end())
+        {
+          std::vector<double>  newUedaAreaMat((ord+1)*(ord+1));
+          int twonchoosen=axom::utilities::binomial_coefficient(2*ord,ord);
+          for (int i=0; i<=ord; ++i)
+          { 
+            for (int j=0; j<=ord; ++j)
+            {
+              if ((i==0 && j==0) || (i==(ord)&& j==(ord)))
+              {newUedaAreaMat[i*(ord+1)+j]=0.0;}
+              else
+              {
+              newUedaAreaMat[i*(ord+1)+j]=((1.0*j-i)/2)*(2.0*(ord)/(1.0*twonchoosen))*
+                (1.0*axom::utilities::binomial_coefficient(i+j,i)/(1.0*i+j))*
+                (1.0*axom::utilities::binomial_coefficient(2*(ord)-i-j,(ord)-j)/(1.0*(ord)-j+(ord)-i));
+              }
+            } 
+          }
+          UedaAreaMats.insert(std::pair<int,std::vector<double>>(ord,newUedaAreaMat));
+        }
+        const std::vector<double> &whicharea = (UedaAreaMats.find(ord)->second);
+        for (int i=0; i<=ord; ++i)
+        { 
+          for (int j=0; j<=ord; ++j)
+          {
+            A+=static_cast<T>(whicharea[i*(ord+1)+j])*m_controlpoints[i][1]*m_controlpoints[j][0];
+          } 
+        }
+      return A;
+  } 
+  
   /*!
    * \brief Predicate to check if the Bezier curve is approximately linear
    *
