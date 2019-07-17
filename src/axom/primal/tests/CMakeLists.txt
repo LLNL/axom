@@ -13,6 +13,7 @@ set( primal_tests
     primal_clip.cpp
     primal_closest_point.cpp
     primal_compute_bounding_box.cpp
+    primal_curved_polygon.cpp
     primal_in_sphere.cpp
     primal_intersect.cpp
     primal_intersect_impl.cpp

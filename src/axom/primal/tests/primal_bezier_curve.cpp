@@ -14,6 +14,7 @@
 
 namespace primal = axom::primal;
 
+std::map<int, std::vector<double>> primal::UedaAreaMats;  //TODO: put this in the BezierCurve.cpp file
 //------------------------------------------------------------------------------
 TEST(primal_beziercurve, constructor)
 {
@@ -160,6 +161,45 @@ TEST(primal_beziercurve, evaluate)
     EXPECT_DOUBLE_EQ(b2Curve[0][i], eval0[i]);
     EXPECT_DOUBLE_EQ(b2Curve[order][i], eval1[i]);
     EXPECT_DOUBLE_EQ(midtval[i], evalMid[i]);
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_beziercurve, sector_area_cubic)
+{
+  const int DIM = 2;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
+
+  {
+    SLIC_INFO("Testing Bezier sector area calculation for a cubic");
+    const int order = 3;
+    PointType data[order + 1] = {PointType::make_point(0.6, 1.2),
+                                 PointType::make_point(1.3, 1.6),
+                                 PointType::make_point(2.9, 2.4),
+                                 PointType::make_point(3.2, 3.5)};
+
+    BezierCurveType bCurve(data, order);
+    EXPECT_TRUE(axom::utilities::isNearlyEqual(bCurve.sectorArea(), .1455));
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_beziercurve, sector_area_point)
+{
+  const int DIM = 2;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
+
+  {
+    SLIC_INFO("Testing Bezier sector area calculation for a cubic");
+    const int order = 0;
+    PointType data[order + 1] = {PointType::make_point(0.6, 1.2)};
+
+    BezierCurveType bCurve(data, order);
+    EXPECT_DOUBLE_EQ(bCurve.sectorArea(), 0.0);
   }
 }
 
