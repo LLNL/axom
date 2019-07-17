@@ -9,99 +9,168 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/primal/geometry/BezierCurve.hpp"
+#include "axom/primal/geometry/CurvedPolygon.hpp"
 
 namespace primal = axom::primal;
 
-std::map<int, std::vector<double> > primal::UedaAreaMats;//TODO: put this in the BezierCurve.cpp file
+std::map<int, std::vector<double> > primal::UedaAreaMats; //TODO: put this in the BezierCurve.cpp file 
 //------------------------------------------------------------------------------
-TEST( primal_beziercurve, constructor )
+TEST( primal_curvedpolygon, constructor )
 {
   const int DIM = 3;
   using CoordType = double;
+  using CurvedPolygonType = primal::CurvedPolygon< CoordType, DIM>;
   using BezierCurveType = primal::BezierCurve< CoordType, DIM >;
-  using CoordsVec = BezierCurveType::CoordsVec;
 
   {
-    SLIC_INFO("Testing default BezierCurve constructor ");
-    BezierCurveType bCurve;
+    SLIC_INFO("Testing default CurvedPolygon constructor ");
+    CurvedPolygonType bPolygon;
 
-    int expOrder = -1;
-    EXPECT_EQ(expOrder, bCurve.getOrder());
-    EXPECT_EQ(expOrder+1, bCurve.getControlPoints().size());
-    EXPECT_EQ(CoordsVec(), bCurve.getControlPoints());
+    int expNumEdges = 0;
+    EXPECT_EQ(expNumEdges, bPolygon.numEdges());
+    EXPECT_EQ(expNumEdges, bPolygon.getEdges().size());
+    EXPECT_EQ(std::vector<BezierCurveType>(), bPolygon.getEdges());
   }
 
   {
-    SLIC_INFO("Testing BezierCurve order constructor ");
+    SLIC_INFO("Testing CurvedPolygon order constructor ");
 
-    BezierCurveType bCurve(1);
-    int expOrder = 1;
-    EXPECT_EQ(expOrder, bCurve.getOrder());
-    EXPECT_EQ(expOrder+1, static_cast<int>(bCurve.getControlPoints().size()));
-  }
-}
-
-//----------------------------------------------------------------------------------
-TEST( primal_beziercurve, add_controlpoints )
-{
-  const int DIM = 3;
-  using CoordType = double;
-  using PointType = primal::Point< CoordType, DIM >;
-  using BezierCurveType = primal::BezierCurve< CoordType, DIM >;
-
-  SLIC_INFO("Test adding control points to empty Bezier curve");
-
-  BezierCurveType bCurve;
-  EXPECT_EQ(-1, bCurve.getOrder());
-
-  PointType controlPoints[2] = {
-    PointType::make_point(0.6, 1.2, 1.0),
-    PointType::make_point(0.0, 1.6, 1.8)
-  };
-
-  bCurve.addControlPoint(controlPoints[0]);
-  bCurve.addControlPoint(controlPoints[1]);
-
-  EXPECT_EQ(1, bCurve.getOrder());
-  for (int p=0 ; p<=bCurve.getOrder() ; ++p)
-  {
-    auto& pt = bCurve[p];
-    for (int i=0 ; i < DIM ; ++i)
-    {
-      EXPECT_DOUBLE_EQ(controlPoints[p][i], pt[i]);
-    }
+    CurvedPolygonType bPolygon(1);
+    int expNumEdges = 1;
+    EXPECT_EQ(expNumEdges, bPolygon.numEdges());
+    EXPECT_EQ(expNumEdges, static_cast<int>(bPolygon.getEdges().size()));
   }
 }
 
 //----------------------------------------------------------------------------------
-TEST( primal_beziercurve, point_array_constructor )
+TEST( primal_curvedpolygon, add_edges )
 {
-  SLIC_INFO("Testing point array constructor");
-
-  const int DIM = 3;
+  const int DIM = 2;
   using CoordType = double;
+  using CurvedPolygonType = primal::CurvedPolygon< CoordType, DIM>;
   using PointType = primal::Point< CoordType, DIM >;
   using BezierCurveType = primal::BezierCurve< CoordType, DIM >;
 
+  SLIC_INFO("Test adding edges to empty CurvedPolygon");
+
+  CurvedPolygonType bPolygon;
+  EXPECT_EQ(0, bPolygon.numEdges());
+
   PointType controlPoints[2] = {
-    PointType::make_point(0.6, 1.2, 1.0),
-    PointType::make_point(0.0, 1.6, 1.8)
+    PointType::make_point(0.6, 1.2),
+    PointType::make_point(0.0, 1.6)
   };
 
   BezierCurveType bCurve(controlPoints,1);
+  
+  bPolygon.addEdge(bCurve);
+  bPolygon.addEdge(bCurve);
 
-  EXPECT_EQ(1, bCurve.getOrder());
-  for (int p=0 ; p<=bCurve.getOrder() ; ++p)
+  EXPECT_EQ(2, bPolygon.numEdges());
+  for (int p=0 ; p<bPolygon.numEdges() ; ++p)
   {
-    auto& pt = bCurve[p];
-    for (int i=0 ; i < DIM ; ++i)
+    BezierCurveType& bc = bPolygon[p];
+    for (int sz=0; sz<=bc.getOrder(); ++sz)
     {
-      EXPECT_DOUBLE_EQ(controlPoints[p][i], pt[i]);
+      auto& pt = bc[sz];
+      for (int i=0 ; i < DIM ; ++i)
+      {
+        EXPECT_DOUBLE_EQ(controlPoints[sz][i], pt[i]);
+      }
     }
   }
 }
 
+//----------------------------------------------------------------------------------
+TEST( primal_curvedpolygon, is_Valid )
+{
+  const int DIM = 2;
+  using CoordType = double;
+  using CurvedPolygonType = primal::CurvedPolygon< CoordType, DIM>;
+  using PointType = primal::Point< CoordType, DIM >;
+  using BezierCurveType = primal::BezierCurve< CoordType, DIM >;
+
+  SLIC_INFO("Test checking if CurvedPolygon is closed.");
+
+  CurvedPolygonType bPolygon;
+  EXPECT_EQ(0, bPolygon.numEdges());
+
+  PointType controlPoints[2] = {
+    PointType::make_point(0.6, 1.2),
+    PointType::make_point(0.0, 1.6)
+  };
+
+  PointType controlPoints2[2] = {
+    PointType::make_point( 0.0, 1.6),
+    PointType::make_point( 0.3 , 2.0)
+  };
+
+  PointType controlPoints3[2] = {
+    PointType::make_point( 0.3 , 2.0),
+    PointType::make_point( 0.6, 1.2)
+  };
+
+  BezierCurveType bCurve(controlPoints,1);
+  bPolygon.addEdge(bCurve);
+  
+  BezierCurveType bCurve2(controlPoints2,1);
+  bPolygon.addEdge(bCurve2);
+
+  EXPECT_EQ(2,bPolygon.numEdges());
+  EXPECT_EQ(false,bPolygon.isClosed());
+  
+  BezierCurveType bCurve3(controlPoints3,1);
+  bPolygon.addEdge(bCurve3);
+
+  EXPECT_EQ(3,bPolygon.numEdges());
+  EXPECT_EQ(true,bPolygon.isClosed());
+}
+
+//----------------------------------------------------------------------------------
+TEST( primal_beziercurve, area )
+{
+  const int DIM = 2;
+  using CoordType = double;
+  using CurvedPolygonType = primal::CurvedPolygon< CoordType, DIM>;
+  using PointType = primal::Point< CoordType, DIM >;
+  using BezierCurveType = primal::BezierCurve< CoordType, DIM >;
+
+  SLIC_INFO("Test checking if CurvedPolygon is closed.");
+
+  CurvedPolygonType bPolygon;
+  EXPECT_EQ(0, bPolygon.numEdges());
+
+  PointType controlPoints[2] = {
+    PointType::make_point(0.6, 1.2),
+    PointType::make_point(0.0, 1.6)
+  };
+
+  PointType controlPoints2[2] = {
+    PointType::make_point( 0.0, 1.6),
+    PointType::make_point( 0.3 , 2.0)
+  };
+
+  PointType controlPoints3[2] = {
+    PointType::make_point( 0.3 , 2.0),
+    PointType::make_point( 0.6, 1.2)
+  };
+
+  BezierCurveType bCurve(controlPoints,1);
+  bPolygon.addEdge(bCurve);
+  
+  BezierCurveType bCurve2(controlPoints2,1);
+  bPolygon.addEdge(bCurve2);
+
+  BezierCurveType bCurve3(controlPoints3,1);
+  bPolygon.addEdge(bCurve3);
+
+  CoordType A= bPolygon.area();
+  CoordType trueA= .18;
+  
+  EXPECT_TRUE(axom::utilities::isNearlyEqual(trueA,A));
+}
+
+/*
 //----------------------------------------------------------------------------------
 TEST( primal_beziercurve, coordinate_array_constructor )
 {
@@ -162,47 +231,6 @@ TEST( primal_beziercurve, evaluate)
     EXPECT_DOUBLE_EQ(midtval[i],        evalMid[i]);
   }
 }
-
-//------------------------------------------------------------------------------
-TEST( primal_beziercurve, sector_area_cubic )
-{
-  const int DIM = 2;
-  using CoordType = double;
-  using PointType = primal::Point< CoordType, DIM >;
-  using BezierCurveType = primal::BezierCurve< CoordType, DIM >;
-
-  {
-    SLIC_INFO("Testing Bezier sector area calculation for a cubic");
-    const int order = 3;
-    PointType data[order+1] =  { PointType::make_point(0.6, 1.2),
-                                 PointType::make_point(1.3, 1.6),
-                                 PointType::make_point(2.9, 2.4),
-                                 PointType::make_point(3.2, 3.5) };
-
-    BezierCurveType bCurve(data, order);
-    EXPECT_TRUE(axom::utilities::isNearlyEqual(bCurve.sectorArea(),.1455));
-  }
-}
-
-
-//------------------------------------------------------------------------------
-TEST( primal_beziercurve, sector_area_point )
-{
-  const int DIM = 2;
-  using CoordType = double;
-  using PointType = primal::Point< CoordType, DIM >;
-  using BezierCurveType = primal::BezierCurve< CoordType, DIM >;
-
-  {
-    SLIC_INFO("Testing Bezier sector area calculation for a cubic");
-    const int order = 0;
-    PointType data[order+1] =  { PointType::make_point(0.6, 1.2)};
-
-    BezierCurveType bCurve(data, order);
-    EXPECT_DOUBLE_EQ(bCurve.sectorArea(),0.0);
-  }
-}
-
 
 //------------------------------------------------------------------------------
 TEST( primal_beziercurve, split_cubic )
@@ -376,7 +404,7 @@ TEST( primal_beziercurve, split_quadratic)
 
 
 //------------------------------------------------------------------------------
-
+*/
 int main(int argc, char* argv[])
 {
   int result = 0;

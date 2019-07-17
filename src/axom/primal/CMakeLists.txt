@@ -29,6 +29,7 @@ set( primal_headers
      geometry/Triangle.hpp
      geometry/Vector.hpp
      geometry/BezierCurve.hpp
+     geometry/CurvedPolygon.hpp
 
      ## operators
      operators/clip.hpp

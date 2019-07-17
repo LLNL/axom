@@ -23,6 +23,7 @@ set( primal_tests
     primal_vector.cpp
     primal_bezier_curve.cpp
     primal_bezier_intersect.cpp
+    primal_curved_polygon.cpp
    )
 
 set(primal_test_depends fmt primal slic mint gtest)
