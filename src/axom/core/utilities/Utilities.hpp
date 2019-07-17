@@ -32,7 +32,7 @@ namespace utilities
  * \brief Gracefully aborts the application
  */
 void processAbort();
-
+int binomial_coefficient(int n, int k);
 /*!
  * \brief Returns the absolute value of x.
  * \param [in] x value whose absolute value is computed.

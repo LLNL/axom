@@ -20,6 +20,7 @@ set( primal_headers
      ## geometry
      geometry/BezierCurve.hpp
      geometry/BoundingBox.hpp
+     geometry/CurvedPolygon.hpp
      geometry/OrientedBoundingBox.hpp
      geometry/OrientationResult.hpp
      geometry/NumericArray.hpp
@@ -62,7 +63,7 @@ set( primal_dependencies
      core
      slic
      )
-     
+
 blt_list_append( TO primal_dependencies ELEMENTS cuda IF ENABLE_CUDA )
 
 blt_add_library(

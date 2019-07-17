@@ -24,6 +24,21 @@ namespace axom
 {
 namespace utilities
 {
+int binomial_coefficient(int n, int k)
+{
+  if(k > n - k)
+  {
+    k = n - k;
+  }
+  int val = 1;
+  for(int i = 1; i <= k; ++i)
+  {
+    val *= (n - k + i);
+    val /= i;
+  }
+  return val;
+}
+
 void processAbort()
 {
 #ifndef AXOM_USE_MPI
