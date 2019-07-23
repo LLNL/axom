@@ -231,8 +231,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Known Bugs
 -
 
-
-[Unreleased]:    https://github.com/LLNL/axom/compare/v0.3.0...develop
+[Unreleased]:    https://github.com/LLNL/axom/compare/v0.3.1...develop
+[Version 0.3.1]: https://github.com/LLNL/axom/compare/v0.3.0...v0.3.1
 [Version 0.3.0]: https://github.com/LLNL/axom/compare/v0.2.9...v0.3.0
 [Version 0.2.9]: https://github.com/LLNL/axom/compare/v0.2.8...v0.2.9
 
