@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,8 +9,8 @@
  * \brief A CurvedPolygon primitive for primal based on Bezier Curves
  */
 
-#ifndef PRIMAL_CURVEDPOLYGON_HPP_
-#define PRIMAL_CURVEDPOLYGON_HPP_
+#ifndef AXOM_PRIMAL_CURVEDPOLYGON_HPP_
+#define AXOM_PRIMAL_CURVEDPOLYGON_HPP_
 
 #include "axom/slic.hpp"
 
@@ -73,6 +73,19 @@ public:
     m_edges.resize(nEdges);
   }
 
+  CurvedPolygon(BezierCurveType* curves, int nEdges)
+  {
+    SLIC_ASSERT(curves != nullptr);
+    SLIC_ASSERT(nEdges >= 1);
+
+    m_edges.reserve(nEdges);
+
+    for(int e = 0; e < nEdges; ++e)
+    {
+      this->addEdge(curves[e]);
+    }
+  }
+
   /*! Return the number of edges in the polygon */
   int numEdges() const { return m_edges.size(); }
 
@@ -97,6 +110,14 @@ public:
 
   /*! Appends a BezierCurve to the list of edges */
   void addEdge(const BezierCurveType& c1) { m_edges.push_back(c1); }
+
+  /*! Splits an edge "in place" */
+  void splitEdge(int idx, T t)
+  {
+    m_edges.insert(m_edges.begin() + idx + 1, 1, m_edges[idx]);
+    BezierCurve<T, NDIMS> csplit = m_edges[idx];
+    csplit.split(t, m_edges[idx], m_edges[idx + 1]);
+  }
 
   /*! Clears the list of edges */
   void clear() { m_edges.clear(); }
@@ -210,4 +231,4 @@ std::ostream& operator<<(std::ostream& os, const CurvedPolygon<T, NDIMS>& poly)
 }  // namespace primal
 }  // namespace axom
 
-#endif  // PRIMAL_CURVEDPOLYGON_HPP_
+#endif  // AXOM_PRIMAL_CURVEDPOLYGON_HPP_
