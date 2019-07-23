@@ -142,16 +142,16 @@ namespace utilities
       case mir::Shape::Tetrahedron:
         if ( midpointVertexID == 4 && isFromVertex  ) { return 0; }
         if ( midpointVertexID == 4 && !isFromVertex ) { return 1; }
-        if ( midpointVertexID == 5 && isFromVertex  ) { return 0; }
+        if ( midpointVertexID == 5 && isFromVertex  ) { return 1; }
         if ( midpointVertexID == 5 && !isFromVertex ) { return 2; } 
-        if ( midpointVertexID == 6 && isFromVertex  ) { return 0; }
-        if ( midpointVertexID == 6 && !isFromVertex ) { return 3; }
-        if ( midpointVertexID == 7 && isFromVertex  ) { return 1; }
-        if ( midpointVertexID == 7 && !isFromVertex ) { return 2; }
-        if ( midpointVertexID == 8 && isFromVertex  ) { return 2; }
+        if ( midpointVertexID == 6 && isFromVertex  ) { return 2; }
+        if ( midpointVertexID == 6 && !isFromVertex ) { return 0; }
+        if ( midpointVertexID == 7 && isFromVertex  ) { return 0; }
+        if ( midpointVertexID == 7 && !isFromVertex ) { return 3; }
+        if ( midpointVertexID == 8 && isFromVertex  ) { return 1; }
         if ( midpointVertexID == 8 && !isFromVertex ) { return 3; }
-        if ( midpointVertexID == 9 && isFromVertex  ) { return 3; }
-        if ( midpointVertexID == 9 && !isFromVertex ) { return 1; }
+        if ( midpointVertexID == 9 && isFromVertex  ) { return 2; }
+        if ( midpointVertexID == 9 && !isFromVertex ) { return 3; }
       case mir::Shape::Pyramid:
         if ( midpointVertexID ==  5 && isFromVertex  ) { return 0; }
         if ( midpointVertexID ==  5 && !isFromVertex ) { return 1; } 
@@ -389,6 +389,131 @@ inline mir::Shape determineElementShapeType(const Shape parentShapeType,
     }
   }
     return newShapeType;
+}
+
+//--------------------------------------------------------------------------------
+
+/**
+ * \brief Computes the area of the triangle defined by the given three vertex positions using Heron's formula.
+ * 
+ * \param p0  The position of the first vertex.
+ * \param p1  The position of the second vertex.
+ * \param p2  The position of the third vertex.
+ * 
+ * \return  The area of the triangle.
+ */
+inline axom::float64 computeTriangleArea(Point2 p0, 
+                                         Point2 p1, 
+                                         Point2 p2)
+{
+  return primal::Triangle<double,3>(p0,p1,p2).area();
+}
+
+//--------------------------------------------------------------------------------
+
+/**
+ * \brief  Computes the area of the quad defined by the given four vertex positions.
+ * 
+ * \param p0  The position of the first vertex.
+ * \param p1  The position of the second vertex.
+ * \param p2  The position of the third vertex.
+ * \param p3  The position of the fourth vertex.
+ * 
+ * 
+ * \return  The area of the quad.
+ * 
+ * \note  It is assumed that the points are given in consecutive, counter-clockwise order.
+ */
+inline axom::float64 computeQuadArea(Point2 p0,
+                                     Point2 p1,
+                                     Point2 p2, 
+                                     Point2 p3)
+{
+  return computeTriangleArea(p0, p1, p2) + computeTriangleArea(p2, p3, p0);
+}
+
+//--------------------------------------------------------------------------------
+
+inline axom::float64 computeTetrahedronVolume(const Point2* points)
+{
+  return primal::Tetrahedron<double, 3>(points[0], points[1], points[2], points[3]).signedVolume();
+}
+
+//--------------------------------------------------------------------------------
+
+inline axom::float64 computePyramidVolume(const Point2* points)
+{
+  axom::float64 volume = 0.0;
+
+  // Tetrahedralize the pyramid and compute the volumes of each
+  volume += primal::Tetrahedron<double, 3>( points[0], points[1], points[3], points[4]).signedVolume();
+  volume += primal::Tetrahedron<double, 3>( points[1], points[2], points[3], points[4]).signedVolume();
+
+  return volume;
+}
+
+//--------------------------------------------------------------------------------
+
+inline axom::float64 computeTriangularPrismVolume(const Point2* points)
+{
+  axom::float64 volume = 0.0;
+
+  // Tetrahedralize the triangular prism and compute the volumes of each
+  volume += primal::Tetrahedron<double, 3>( points[0], points[2], points[1], points[4]).signedVolume();
+  volume += primal::Tetrahedron<double, 3>( points[2], points[4], points[3], points[5]).signedVolume();
+  volume += primal::Tetrahedron<double, 3>( points[2], points[3], points[4], points[0]).signedVolume();
+
+  return volume;
+}
+
+//--------------------------------------------------------------------------------
+
+inline axom::float64 computeHexahedronVolume(const Point2* points)
+{
+  axom::float64 volume = 0.0;
+
+  // Tetrahedralize the triangular prism and compute the volumes of each
+  volume += primal::Tetrahedron<double, 3>( points[0], points[7], points[2], points[3]).signedVolume();
+  volume += primal::Tetrahedron<double, 3>( points[0], points[5], points[7], points[4]).signedVolume();
+  volume += primal::Tetrahedron<double, 3>( points[0], points[1], points[2], points[5]).signedVolume();
+  volume += primal::Tetrahedron<double, 3>( points[2], points[7], points[5], points[6]).signedVolume();
+  volume += primal::Tetrahedron<double, 3>( points[0], points[5], points[2], points[7]).signedVolume();
+
+  return volume;
+}
+
+//--------------------------------------------------------------------------------
+
+/**
+ * \brief  Computes the area/volume of the shape defined by the given points.
+ * 
+ * \param  shapeType  The shape type of the element.
+ * \param  points  The points that define the shape.
+ * 
+ * \return The area/volume of the shape.
+ * 
+ * \note  This function acts as a wrapper for the other shape area/volume computation functions.
+ */
+inline axom::float64 computeShapeVolume(const mir::Shape shapeType,
+                                        const Point2* points)
+{
+  switch( shapeType )
+  {
+    case mir::Shape::Triangle:
+      return computeTriangleArea( points[0], points[1], points[2] );
+    case mir::Shape::Quad:
+      return computeQuadArea( points[0], points[1], points[2], points[3] );
+    case mir::Shape::Tetrahedron:
+      return computeTetrahedronVolume( points );
+    case mir::Shape::Pyramid:
+      return computePyramidVolume( points );
+    case mir::Shape::Triangular_Prism:
+      return computeTriangularPrismVolume( points );
+    case mir::Shape::Hexahedron:
+      return computeHexahedronVolume( points );
+    default:
+      return 0;
+  }
 }
 
 //--------------------------------------------------------------------------------

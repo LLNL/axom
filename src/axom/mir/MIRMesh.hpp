@@ -19,6 +19,7 @@
 
 #include "MIRMeshTypes.hpp"
 #include "CellData.hpp"
+#include "MIRUtilities.hpp"
 
 // C/C++ includes
 #include <cmath>          // for definition of M_PI, exp()
@@ -182,32 +183,6 @@ namespace mir
        * \param shapeTypes  A vector of shape enumerators that are the shape type of each element.
        */
       void  constructElementShapeTypesMap(const std::vector<mir::Shape>& shapeTypes);
-
-      /**
-       * \brief Computes the area of the triangle defined by the given three vertex positions using Heron's formula.
-       * 
-       * \param p0  The position of the first vertex.
-       * \param p1  The position of the second vertex.
-       * \param p2  The position of the third vertex.
-       */
-      axom::float64  computeTriangleArea(Point2 p0, 
-                                         Point2 p1, 
-                                         Point2 p2);
-
-      /**
-       * \brief  Computes the area of the quad defined by the given four vertex positions.
-       * 
-       * \param p0  The position of the first vertex.
-       * \param p1  The position of the second vertex.
-       * \param p2  The position of the third vertex.
-       * \param p3  The position of the fourth vertex.
-       * 
-       * \note It is assumed that the points are given in consecutive, counter-clockwise order.
-       */
-      axom::float64  computeQuadArea(Point2 p0, 
-                                     Point2 p1, 
-                                     Point2 p2, 
-                                     Point2 p3);
 
     /****************************************************************
      *                        VARIABLES

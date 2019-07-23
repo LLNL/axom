@@ -355,7 +355,8 @@ void  InterfaceReconstructor::generateCleanCells(mir::Shape shapeType,
       out_cellData.m_topology.m_evInds[i] -= evIndexSubtract[ out_cellData.m_topology.m_evInds[i] ];
     }
   }
-  
+
+
   // Memory management
   delete[] tValues;
 }

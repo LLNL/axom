@@ -91,9 +91,94 @@ TEST(mir_compute_averages, point_value)
 
   mir::Point2 centroid = mir::utilities::computeAveragePoint( points );
 
-  EXPECT_DOUBLE_EQ(  centroid[0], 0.5);
-  EXPECT_DOUBLE_EQ(  centroid[1], 0.5);
-  EXPECT_DOUBLE_EQ(  centroid[2], 0.5);
+  EXPECT_DOUBLE_EQ(  centroid[0], 0.5  );
+  EXPECT_DOUBLE_EQ(  centroid[1], 0.5  );
+  EXPECT_DOUBLE_EQ(  centroid[2], 0.5  );
+}
+
+//----------------------------------------------------------------------
+
+TEST(mir_compute_shape_volumes, triangle)
+{
+  std::vector<mir::Point2> points = {
+    mir::Point2::make_point(0.0, 0.0, 0.0),
+    mir::Point2::make_point(1.0, 0.0, 0.0),
+    mir::Point2::make_point(0.0, 1.0, 0.0)
+  };
+  
+  axom::float64 area = mir::utilities::computeShapeVolume( mir::Shape::Triangle, points.data() );
+
+  EXPECT_DOUBLE_EQ(  area, 0.5  );
+}
+
+//----------------------------------------------------------------------
+
+TEST(mir_compute_shape_volumes, quad)
+{
+  std::vector<mir::Point2> points = {
+    mir::Point2::make_point(0.0, 0.0, 0.0),
+    mir::Point2::make_point(1.0, 0.0, 0.0),
+    mir::Point2::make_point(0.0, 1.0, 0.0),
+    mir::Point2::make_point(1.0, 1.0, 0.0),
+  };
+  
+  axom::float64 area = mir::utilities::computeShapeVolume( mir::Shape::Quad, points.data() );
+
+  EXPECT_DOUBLE_EQ(  area, 1.0  );
+}
+
+//----------------------------------------------------------------------
+
+TEST(mir_compute_shape_volumes, tetrahedron)
+{
+  std::vector<mir::Point2> points = {
+    mir::Point2::make_point(0.0, 0.0, 0.0),
+    mir::Point2::make_point(0.0, 0.0, 1.0),
+    mir::Point2::make_point(1.0, 0.0, 0.0),
+    mir::Point2::make_point(1.0, 1.0, 0.0),
+  };
+  
+  axom::float64 volume = mir::utilities::computeShapeVolume( mir::Shape::Tetrahedron, points.data() );
+
+  EXPECT_DOUBLE_EQ(  volume, 1.0/ (6.0)  );
+}
+
+//----------------------------------------------------------------------
+
+TEST(mir_compute_shape_volumes, pyramid)
+{
+  std::vector<mir::Point2> points = {
+    mir::Point2::make_point(0.0, 0.0, 1.0),
+    mir::Point2::make_point(1.0, 0.0, 1.0),
+    mir::Point2::make_point(1.0, 0.0, 0.0),
+    mir::Point2::make_point(0.0, 0.0, 0.0),
+    mir::Point2::make_point(0.5, 0.5, 0.5)
+  };
+  
+  axom::float64 volume = mir::utilities::computeShapeVolume( mir::Shape::Pyramid, points.data() );
+
+  EXPECT_DOUBLE_EQ(  volume, 1.0/ (6.0)  );
+}
+
+//----------------------------------------------------------------------
+
+TEST(mir_compute_shape_volumes, hexahedron)
+{
+  std::vector<mir::Point2> points = {
+    mir::Point2::make_point(0.0, 0.0, 1.0),
+    mir::Point2::make_point(1.0, 0.0, 1.0),
+    mir::Point2::make_point(1.0, 0.0, 0.0),
+    mir::Point2::make_point(0.0, 0.0, 0.0),
+
+    mir::Point2::make_point(0.0, 1.0, 1.0),
+    mir::Point2::make_point(1.0, 1.0, 1.0),
+    mir::Point2::make_point(1.0, 1.0, 0.0),
+    mir::Point2::make_point(0.0, 1.0, 0.0)
+  };
+  
+  axom::float64 volume = mir::utilities::computeShapeVolume( mir::Shape::Hexahedron, points.data() );
+
+  EXPECT_DOUBLE_EQ(  volume, 1.0  );
 }
 
 //----------------------------------------------------------------------

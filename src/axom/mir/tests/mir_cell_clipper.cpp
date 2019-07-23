@@ -586,6 +586,30 @@ TEST(clipping_table_mesh_generation, triangle_meshes)
     std::string dirName = std::string(AXOM_BIN_DIR) + "/meshes";
     std::string fileName = "mir_clippingcase_triangle_" + std::to_string(actualClippingCase) + "_" + bitString + ".vtk";
     outputMesh.writeMeshToFile(dirName, fileName, "/");
+
+    // Ensure that all elements have a positive volume
+    for (int eID = 0; eID < outputMesh.m_elems.size(); ++eID)
+    {
+      // Get the element's shape
+      mir::Shape shapeType = (mir::Shape) outputMesh.m_shapeTypes[eID];
+
+      // Get the element's points
+      std::vector<int> elementVertices;
+      for (int vID = 0; vID < outputMesh.m_bdry[eID].size(); ++vID)
+      {
+        elementVertices.push_back(outputMesh.m_bdry[eID][vID]);
+      }
+      std::vector<mir::Point2> points;
+      for (int vID = 0; vID < mir::utilities::numVerts(shapeType); ++vID)
+      {
+        int originalVID = elementVertices[vID];
+        points.push_back(outputMesh.m_vertexPositions[originalVID] );
+      }
+
+      axom::float64 volume = mir::utilities::computeShapeVolume( shapeType, points.data());
+
+      EXPECT_TRUE(  volume > 0.0  );
+    }
   }    
 }
 
@@ -676,6 +700,30 @@ TEST(clipping_table_mesh_generation, quad_meshes)
     std::string dirName = std::string(AXOM_BIN_DIR) + "/meshes";
     std::string fileName = "mir_clippingcase_quad_" + std::to_string(actualClippingCase) + "_" + bitString + ".vtk";
     outputMesh.writeMeshToFile(dirName, fileName, "/");
+
+    // Ensure that all elements have a positive volume
+    for (int eID = 0; eID < outputMesh.m_elems.size(); ++eID)
+    {
+      // Get the element's shape
+      mir::Shape shapeType = (mir::Shape) outputMesh.m_shapeTypes[eID];
+
+      // Get the element's points
+      std::vector<int> elementVertices;
+      for (int vID = 0; vID < outputMesh.m_bdry[eID].size(); ++vID)
+      {
+        elementVertices.push_back(outputMesh.m_bdry[eID][vID]);
+      }
+      std::vector<mir::Point2> points;
+      for (int vID = 0; vID < mir::utilities::numVerts(shapeType); ++vID)
+      {
+        int originalVID = elementVertices[vID];
+        points.push_back(outputMesh.m_vertexPositions[originalVID] );
+      }
+
+      axom::float64 volume = mir::utilities::computeShapeVolume( shapeType, points.data());
+
+      EXPECT_TRUE(  volume > 0.0  );
+    }
   }    
 }
 
@@ -766,6 +814,36 @@ TEST(clipping_table_mesh_generation, tetrahedron_meshes)
     std::string dirName = std::string(AXOM_BIN_DIR) + "/meshes";
     std::string fileName = "mir_clippingcase_tetrahedron_" + std::to_string(actualClippingCase) + "_" + bitString + ".vtk";
     outputMesh.writeMeshToFile(dirName, fileName, "/");
+
+    // Ensure that all elements have a positive volume
+    axom::float64 totalVolume = 0.0;
+    for (int eID = 0; eID < outputMesh.m_elems.size(); ++eID)
+    {
+      // Get the element's shape
+      mir::Shape shapeType = (mir::Shape) outputMesh.m_shapeTypes[eID];
+
+      // Get the element's points
+      std::vector<int> elementVertices;
+      for (int vID = 0; vID < outputMesh.m_bdry[eID].size(); ++vID)
+      {
+        elementVertices.push_back(outputMesh.m_bdry[eID][vID]);
+      }
+      std::vector<mir::Point2> points;
+      for (int vID = 0; vID < mir::utilities::numVerts(shapeType); ++vID)
+      {
+        int originalVID = elementVertices[vID];
+        points.push_back(outputMesh.m_vertexPositions[originalVID] );
+      }
+
+      axom::float64 volume = mir::utilities::computeShapeVolume( shapeType, points.data() );
+
+      EXPECT_TRUE(  volume > 0.0  );
+
+      totalVolume += volume;
+    }
+
+    // Ensure that the total volume of the generated elements equals the original
+    EXPECT_DOUBLE_EQ( totalVolume, 0.0856815 );
   }    
 }
 
@@ -858,6 +936,36 @@ TEST(clipping_table_mesh_generation, pyramid_meshes)
       std::string dirName = std::string(AXOM_BIN_DIR) + "/meshes";
       std::string fileName = "mir_clippingcase_pyramid_" + std::to_string(actualClippingCase) + "_" + bitString + ".vtk";
       outputMesh.writeMeshToFile(dirName, fileName, "/");
+
+      // Ensure that all elements have a positive volume
+      axom::float64 totalVolume = 0.0;
+      for (int eID = 0; eID < outputMesh.m_elems.size(); ++eID)
+      {
+        // Get the element's shape
+        mir::Shape shapeType = (mir::Shape) outputMesh.m_shapeTypes[eID];
+
+        // Get the element's points
+        std::vector<int> elementVertices;
+        for (int vID = 0; vID < outputMesh.m_bdry[eID].size(); ++vID)
+        {
+          elementVertices.push_back(outputMesh.m_bdry[eID][vID]);
+        }
+        std::vector<mir::Point2> points;
+        for (int vID = 0; vID < mir::utilities::numVerts(shapeType); ++vID)
+        {
+          int originalVID = elementVertices[vID];
+          points.push_back(outputMesh.m_vertexPositions[originalVID] );
+        }
+
+        axom::float64 volume = mir::utilities::computeShapeVolume( shapeType, points.data());
+
+        EXPECT_TRUE(  volume > 0.0  );
+
+        totalVolume += volume;
+      }
+      
+      // Ensure that the total volume of the generated elements equals the original
+      EXPECT_NEAR( 0.239, totalVolume, 0.00001 );
     }  
   }
     
@@ -927,9 +1035,9 @@ TEST(clipping_table_mesh_generation, triangular_prism_meshes)
       mir::Point2::make_point( 0.5, 0.717, 0.0 ),
       mir::Point2::make_point( 0.0, 0.0, 0.0 ),
       mir::Point2::make_point( 1.0, 0.0, 0.0 ),
-      mir::Point2::make_point( 0.5, 0.717, 2.0 ),
-      mir::Point2::make_point( 0.0, 0.0, 2.0 ),
-      mir::Point2::make_point( 1.0, 0.0, 2.0 )
+      mir::Point2::make_point( 0.5, 0.717, -2.0 ),
+      mir::Point2::make_point( 0.0, 0.0, -2.0 ),
+      mir::Point2::make_point( 1.0, 0.0, -2.0 )
     };
 
     mir::CellMapData mapData;
@@ -952,6 +1060,36 @@ TEST(clipping_table_mesh_generation, triangular_prism_meshes)
     std::string dirName = std::string(AXOM_BIN_DIR) + "/meshes";
     std::string fileName = "mir_clippingcase_triangular_prism_" + std::to_string(actualClippingCase) + "_" + bitString + ".vtk";
     outputMesh.writeMeshToFile(dirName, fileName, "/");
+
+    // Ensure that all elements have a positive volume
+    axom::float64 totalVolume = 0.0;
+    for (int eID = 0; eID < outputMesh.m_elems.size(); ++eID)
+    {
+      // Get the element's shape
+      mir::Shape shapeType = (mir::Shape) outputMesh.m_shapeTypes[eID];
+
+      // Get the element's points
+      std::vector<int> elementVertices;
+      for (int vID = 0; vID < outputMesh.m_bdry[eID].size(); ++vID)
+      {
+        elementVertices.push_back(outputMesh.m_bdry[eID][vID]);
+      }
+      std::vector<mir::Point2> points;
+      for (int vID = 0; vID < mir::utilities::numVerts(shapeType); ++vID)
+      {
+        int originalVID = elementVertices[vID];
+        points.push_back(outputMesh.m_vertexPositions[originalVID] );
+      }
+
+      axom::float64 volume = mir::utilities::computeShapeVolume( shapeType, points.data());
+
+      EXPECT_TRUE(  volume >= 0.0  );
+
+      totalVolume += volume;
+    }
+
+    // Ensure that the total volume of the generated elements equals the original
+    EXPECT_NEAR( 0.717, totalVolume, 0.00001 );
   }    
 }
 
@@ -1013,17 +1151,16 @@ TEST(clipping_table_mesh_generation, hexahedron_meshes)
       { 0.5 }
     };
 
-
     std::vector<mir::Point2> points =
     {
       mir::Point2::make_point( 0.0, 0.0, 0.0 ),
       mir::Point2::make_point( 1.0, 0.0, 0.0 ),
-      mir::Point2::make_point( 1.0, 1.0, 0.0 ),
+      mir::Point2::make_point( 1.0, 0.0, -1.0 ),
+      mir::Point2::make_point( 0.0, 0.0, -1.0 ),
       mir::Point2::make_point( 0.0, 1.0, 0.0 ),
-      mir::Point2::make_point( 0.0, 0.0, 1.0 ),
-      mir::Point2::make_point( 1.0, 0.0, 1.0 ),
-      mir::Point2::make_point( 1.0, 1.0, 1.0 ),
-      mir::Point2::make_point( 0.0, 1.0, 1.0 )
+      mir::Point2::make_point( 1.0, 1.0, 0.0 ),
+      mir::Point2::make_point( 1.0, 1.0, -1.0 ),
+      mir::Point2::make_point( 0.0, 1.0, -1.0 )
     };
 
     mir::CellMapData mapData;
@@ -1046,6 +1183,36 @@ TEST(clipping_table_mesh_generation, hexahedron_meshes)
     std::string dirName = std::string(AXOM_BIN_DIR) + "/meshes";
     std::string fileName = "mir_clippingcase_hexahedron_" + std::to_string(actualClippingCase) + "_" + bitString + ".vtk";
     outputMesh.writeMeshToFile(dirName, fileName, "/");
+
+    // Ensure that all elements have a positive volume
+    axom::float64 totalVolume = 0.0;
+    for (int eID = 0; eID < outputMesh.m_elems.size(); ++eID)
+    {
+      // Get the element's shape
+      mir::Shape shapeType = (mir::Shape) outputMesh.m_shapeTypes[eID];
+
+      // Get the element's points
+      std::vector<int> elementVertices;
+      for (int vID = 0; vID < outputMesh.m_bdry[eID].size(); ++vID)
+      {
+        elementVertices.push_back(outputMesh.m_bdry[eID][vID]);
+      }
+      std::vector<mir::Point2> points;
+      for (int vID = 0; vID < mir::utilities::numVerts(shapeType); ++vID)
+      {
+        int originalVID = elementVertices[vID];
+        points.push_back(outputMesh.m_vertexPositions[originalVID] );
+      }
+
+      axom::float64 volume = mir::utilities::computeShapeVolume( shapeType, points.data());
+
+      EXPECT_TRUE(  volume >= 0.0  );
+      
+      totalVolume += volume;
+    }
+
+    // Ensure that the total volume of the generated elements equals the original
+    EXPECT_NEAR( 1.0, totalVolume, 0.00001 );
   }    
 }
 

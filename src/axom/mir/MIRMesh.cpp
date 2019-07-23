@@ -466,29 +466,27 @@ std::vector<std::vector<axom::float64> > MIRMesh::computeOriginalElementVolumeFr
 {
   std::map<int, axom::float64> totalAreaOriginalElements; // the total area of the original elements
   std::map<int, axom::float64> newElementAreas;           // the area of each of the generated child elements
-  std::map<int, int> numChildren;                         // the number of child elements generated from one of the original elements
 
   // Compute the total area of each element of the original mesh and also the area of each new element
   for (int eID = 0; eID < m_elems.size(); ++eID)
   {
-    int numVertices = m_meshTopology.m_evBegins[eID + 1] - m_meshTopology.m_evBegins[eID];
-    if (numVertices == 3)
-    {
-      Point2 trianglePoints[3];
-      for (int i = 0; i < 3; ++i)
-        trianglePoints[i] = m_vertexPositions[m_meshTopology.m_evInds[ m_meshTopology.m_evBegins[eID] + i] ];
-      newElementAreas[eID] = computeTriangleArea(trianglePoints[0], trianglePoints[1], trianglePoints[2]);
-    }
-    if (numVertices == 4) 
-    {
-      Point2 trianglePoints[4];
-      for (int i = 0; i < 4; ++i)
-        trianglePoints[i] = m_vertexPositions[m_meshTopology.m_evInds[ m_meshTopology.m_evBegins[eID] + i] ];
-      newElementAreas[eID] = computeQuadArea(trianglePoints[0], trianglePoints[1], trianglePoints[2], trianglePoints[3]);
-    }
-   
+    // Determine the shape of the current element and its total number of vertices
+    mir::Shape currentElementShapeType = (mir::Shape) m_shapeTypes[eID];
+    int numVerts = mir::utilities::numVerts( currentElementShapeType );
+
+    // Get the vertices of the current element
+    Point2* currentElementPoints = new Point2[numVerts];
+
+    for (int i = 0; i < numVerts; ++i)
+      currentElementPoints[i] = m_vertexPositions[m_meshTopology.m_evInds[ m_meshTopology.m_evBegins[eID] + i] ];
+
+    // Compute the area/volume of the current element.
+    newElementAreas[eID] = mir::utilities::computeShapeVolume( currentElementShapeType, currentElementPoints );
+
+    // Memory management
+    delete[] currentElementPoints;
+
     totalAreaOriginalElements[ m_elementParentIDs[eID] ] += newElementAreas[eID];
-    numChildren[ m_elementParentIDs[eID] ] += .4;
   }
   
   // Intialize the element volume fraction vectors
@@ -506,25 +504,6 @@ std::vector<std::vector<axom::float64> > MIRMesh::computeOriginalElementVolumeFr
   }
 
   return elementVolumeFractions;
-}
-
-//--------------------------------------------------------------------------------
-
-axom::float64 MIRMesh::computeTriangleArea(Point2 p0, 
-                                           Point2 p1, 
-                                           Point2 p2)
-{
-  return primal::Triangle<double,3>(p0,p1,p2).area();
-}
-
-//--------------------------------------------------------------------------------
-
-axom::float64 MIRMesh::computeQuadArea(Point2 p0,
-                                       Point2 p1,
-                                       Point2 p2, 
-                                       Point2 p3)
-{
-  return computeTriangleArea(p0, p1, p2) + computeTriangleArea(p2, p3, p0);
 }
 
 //--------------------------------------------------------------------------------

@@ -182,5 +182,82 @@ int  CellGenerator::determineCleanCellMaterial(const Shape elementShape,
 
 //--------------------------------------------------------------------------------
 
+void  CellGenerator::fixInvertedElements(const std::vector<Shape>& elementShapes,
+                                         const std::vector<mir::Point2>& vertexPositions,
+                                         std::vector<PosType>& evInds)
+{
+  int currentEvIndsIndex = 0;
+  for (unsigned long eID = 0; eID < elementShapes.size(); ++eID)
+  {
+    // printf("generated element %d\n", eID);
+    mir::Shape shape = elementShapes[eID];
+
+    // Get the vertex positions of the current element
+    std::vector<mir::Point2> points;
+    for (int vID = 0; vID < mir::utilities::numVerts(shape); ++vID)
+    {
+      int index = evInds[currentEvIndsIndex + vID];
+      // printf("index: %d\n", index);
+      points.push_back( vertexPositions[ index ] );
+    }
+
+    // Check the volume of the element
+    axom::float64 volume = mir::utilities::computeShapeVolume( shape, points.data() );
+    if ( volume < 0 )
+    {
+      printf("SHAPE IS INVERTED! Volume: %f\n", volume);
+      // TODO: Re-Arrange the vertices based on the element's shape type
+      if ( shape == mir::Shape::Tetrahedron )
+      {
+        // Swap 0 and 2
+        int temp = evInds[ currentEvIndsIndex ];
+        evInds[ currentEvIndsIndex ] = evInds[ currentEvIndsIndex + 2];
+        evInds[ currentEvIndsIndex + 2 ] = temp;
+      }
+      else if ( shape == mir::Shape::Pyramid )
+      {
+        // Reverse the first four element indices
+        // Swap 0 and 3
+        int temp = evInds[ currentEvIndsIndex ];
+        evInds[ currentEvIndsIndex ] = evInds[ currentEvIndsIndex + 3 ];
+        evInds[ currentEvIndsIndex + 3 ] = temp;
+
+        // Swap 1 and 2
+        temp = evInds[ currentEvIndsIndex + 1 ];
+        evInds[ currentEvIndsIndex + 1 ] = evInds[ currentEvIndsIndex + 2 ];
+        evInds[ currentEvIndsIndex + 2 ] = temp;
+      }
+      else if ( shape == mir::Shape::Triangular_Prism )
+      {
+        // Swap 2 and 1
+        int temp = evInds[ currentEvIndsIndex + 1 ];
+        evInds[ currentEvIndsIndex + 1 ] = evInds[ currentEvIndsIndex + 2 ];
+        evInds[ currentEvIndsIndex + 2 ] = temp;
+
+        // Swap 4 and 5
+        temp = evInds[ currentEvIndsIndex + 4 ];
+        evInds[ currentEvIndsIndex + 4 ] = evInds[ currentEvIndsIndex + 5 ];
+        evInds[ currentEvIndsIndex + 5 ] = temp;
+      }
+      else if (shape == mir::Shape::Hexahedron )
+      {
+        // Swap 1 and 3
+        int temp = evInds[ currentEvIndsIndex + 1];
+        evInds[ currentEvIndsIndex + 1 ] = evInds[ currentEvIndsIndex + 3 ];
+        evInds[ currentEvIndsIndex + 3 ] = temp;
+        // Swap 5 and 7
+        temp = evInds[ currentEvIndsIndex + 5];
+        evInds[ currentEvIndsIndex + 5 ] = evInds[ currentEvIndsIndex + 7 ];
+        evInds[ currentEvIndsIndex + 7 ] = temp;
+      }
+    }
+
+    // Update the index for the next element
+    currentEvIndsIndex += mir::utilities::numVerts( shape );
+  }
+}
+
+//--------------------------------------------------------------------------------
+
 }
 }

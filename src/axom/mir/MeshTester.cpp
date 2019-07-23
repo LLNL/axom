@@ -466,10 +466,10 @@ axom::float64 MeshTester::calculatePercentOverlapMonteCarlo(
     // The entire quad overlaps the circle
     return 1.;
   }
-  else if( inFlags == noFlags)
-  {
-     return 0.;
-  }
+  // else if( inFlags == noFlags)
+  // {
+  //    return 0.;
+  // }
   else
   {
     // Some of the quad overlaps the circle, so run the Monte Carlo sampling to determine how much
@@ -643,7 +643,7 @@ mir::MIRMesh MeshTester::initTestCaseFive(int gridSize, int numCircles)
   for (int i = 0; i < numMaterials; ++i)
   {
     std::vector<axom::float64> tempVec;
-    tempVec.resize(cellData.m_numElems);
+    tempVec.resize(cellData.m_numElems, 0);
     materialVolumeFractionsData.push_back(tempVec);
   }
 
@@ -661,10 +661,10 @@ mir::MIRMesh MeshTester::initTestCaseFive(int gridSize, int numCircles)
 
     for (int matID = 0; matID < numMaterials; ++matID)
     {
-      materialVolumeFractionsData[matID][eID] = materialCount[matID] / (double) (gridSize * gridSize);
+      materialVolumeFractionsData[matID][eID] = 0;
     }
 
-    axom::float64 delta_x = axom::utilities::abs(v2[0] - v1[1]) / (double) (gridSize - 1);
+    axom::float64 delta_x = axom::utilities::abs(v2[0] - v1[0]) / (double) (gridSize - 1);
     axom::float64 delta_y = axom::utilities::abs(v0[1] - v1[1]) / (double) (gridSize - 1);
 
     for (int y = 0; y < gridSize; ++y)

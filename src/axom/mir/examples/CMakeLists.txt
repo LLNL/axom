@@ -5,6 +5,7 @@
 
 set( mir_examples
      mir_tutorial_simple.cpp
+     mir_minimal_tutorial.cpp
      mir_concentric_circles.cpp
    )
 

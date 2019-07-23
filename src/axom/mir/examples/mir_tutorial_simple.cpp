@@ -97,7 +97,7 @@ struct Input
 
    bool shouldIterate() const { return m_should_iterate; }
    int numIterations() const { return m_iter_count; }
-   int iterPercentage() const { return m_iter_percent; }
+   double iterPercentage() const { return m_iter_percent; }
 
 
    void showhelp()
@@ -193,8 +193,8 @@ int main(int argc, char** argv)
   case 2: testMesh = tester.initTestCaseTwo(); break;
   case 3: testMesh = tester.initTestCaseThree(); break;
   case 4: testMesh = tester.initTestCaseFour(); break;
-  case 5: testMesh = tester.initTestCaseFive(25, 12); break;
-  case 6: testMesh = tester.initTestCaseSix(15, 3); break;
+  case 5: testMesh = tester.initTestCaseFive(25, 5); break;
+  case 6: testMesh = tester.initTestCaseSix(20, 3); break;
   }
 
   timer.stop();

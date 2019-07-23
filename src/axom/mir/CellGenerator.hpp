@@ -57,7 +57,7 @@ namespace mir
        * \brief Generates the topology of the new elements resulting from a split.
        * 
        * \param newElements  An ordered map of the generated elements' IDs to a list of the vertex IDs in the local frame of the output element.
-       * \param newVertices  An order map of the vertex IDs in the local frame of the output element to the generated elements' IDs it is associated with.
+       * \param newVertices  An ordered map of the vertex IDs in the local frame of the output element to the generated elements' IDs it is associated with.
        * \param out_cellData  Container to store the topology data of the generated elements.
        */
       void  generateTopologyData(const std::map<int, std::vector<int> >& newElements, 
@@ -122,6 +122,20 @@ namespace mir
                                       const int matOne, 
                                       const int matTwo, 
                                       const std::vector<std::vector<axom::float64> >& vertexVF);
+
+      /**
+       * \brief De-inverts any element that is detected to have a negative volume.
+       * 
+       * \param elementShapes  The shape types of each of the elements.
+       * \param vertexPositions  A vector of positions for each of the original element's vertices.
+       * \param evInds  The vertex indices associated with each element, in the local frame of the parent element.
+       * 
+       * \note This is currently not used for anything, but may be useful in the future if it is possible that 
+       *       inverted elements can be given as input.
+       */
+      void  fixInvertedElements(const std::vector<Shape>& elementShapes,
+                                const std::vector<mir::Point2>& vertexPositions,
+                                std::vector<PosType>& evInds);
   };
 
 //--------------------------------------------------------------------------------
