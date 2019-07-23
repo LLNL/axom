@@ -12,6 +12,7 @@
 #ifndef PRIMAL_BEZIERCURVE_HPP_
 #define PRIMAL_BEZIERCURVE_HPP_
 
+#include "axom/core.hpp"
 #include "axom/slic.hpp"
 
 #include "axom/primal/geometry/NumericArray.hpp"
@@ -48,8 +49,9 @@ std::ostream& operator<<(std::ostream & os,
  * \tparam T the coordinate type, e.g., double, float, etc.
  * \tparam NDIMS the number of dimensions
  *
- * \note The order of a Bezier curve with N+1 control points is N
- * \note The control points should be ordered from t=0 to t=1
+ * The order of a Bezier curve with N+1 control points is N.
+ * The curve is approximated by the control points,
+ * parametrized from t=0 to t=1.
  */
 
 template < typename T,int NDIMS >
@@ -65,106 +67,93 @@ public:
   using OrientedBoundingBox = OrientedBoundingBox< T, NDIMS >;
 
 public:
-  /*! Default constructor for an empty Bezier Curve*/
-  BezierCurve() = default;
 
   /*!
-   * \brief Constructor for an empty Bezier Curve that reserves space for
+   * \brief Constructor for a Bezier Curve that reserves space for
    *  the given order of the curve
    *
    * \param [in] order the order of the resulting Bezier curve
-   * \pre order is not negative
+   * \pre order is greater than or equal to -1.
    */
-  BezierCurve(int ord)
+  explicit BezierCurve(int ord = -1)
   {
-    SLIC_ASSERT(ord >= 0);
-    m_controlPoints.reserve(ord+1);
-    m_controlPoints.resize(ord+1);
+    SLIC_ASSERT(ord >= -1);
+    const int sz = utilities::max(-1, ord+1);
+    m_controlPoints.resize(sz);
   }
 
   /*!
-   * \brief Constructor for a Bezier Curve from a list of Points
-   * \verbatim {x_0, x_1, x_2, x_3,
-   *            y_0, y_1, y_2, y_3,
-   *            z_0, z_1, z_2, z_3}
+   * \brief Constructor for an order \a ord= n Bezier curve
+   * from a list of coordinates:
+   * \verbatim {x_0, x_1, x_2,...,x_n,
+   *            y_0, y_1, y_2,...,y_n,
+   *            z_0, z_1, z_2,...,z_n}
    *
    * \param [in] pts an array with (n+1)*NDIMS entries, ordered by coordinate
-   * then by control point order
-   * \param [in] ord number of control points minus 1 for which to reserve
-   * control point space
-   * \pre order is not negative
+   * then by polynomial order
+   * \param [in] ord Polynomial order of the curve
+   * \pre order is greater than or equal to zero
    */
   BezierCurve(T* pts, int ord)
   {
-    if ( ord <= 0 )
-    {
-      clear();
-    }
-    // sanity check
     SLIC_ASSERT(pts != nullptr);
+    SLIC_ASSERT(ord >= 0);
 
-    m_controlPoints.reserve(ord+1);
+    const int sz = utilities::max(0, ord+1);
+    m_controlPoints.resize(sz);
 
-    T tempar[NDIMS];
     for ( int p = 0 ; p <= ord ; p++)
     {
+      auto& pt = m_controlPoints[p];
       for ( int j = 0 ; j < NDIMS ; j++)
       {
-        tempar[j]=pts[j*(ord+1)+p];
+        pt[j]=pts[j*(ord+1)+p];
       }
-      this->addControlPoint(tempar);
     }
   }
 
   /*!
    * \brief Constructor for a Bezier Curve from an array of coordinates
    *
-   * \param [in] pts a vector with ord+1 points in it
-   * \param [in] ord number of control points minus 1 for which to reserve
-   * control point space
-   * \pre order is not negative
+   * \param [in] pts a vector with ord+1 control points
+   * \param [in] ord The Curve's polynomial order
+   * \pre order is greater than or equal to zero
    *
    */
 
   BezierCurve(PointType* pts, int ord)
   {
-    if (ord <= 0)
-    {
-      clear();
-    }
-    // sanity check
     SLIC_ASSERT(pts != nullptr);
+    SLIC_ASSERT(ord >= 0);
 
-    m_controlPoints.reserve(ord+1);
+    const int sz = utilities::max(0, ord+1);
+    m_controlPoints.resize(sz);
 
     for (int p = 0 ; p <= ord ; ++p)
     {
-      this->addControlPoint(pts[p]);
+      m_controlPoints[p] = pts[p];
     }
   }
 
   /*! Sets the order of the Bezier Curve*/
-  void setOrder( int ord)
-  { m_controlPoints.resize(ord+1); }
+  void setOrder( int ord) { m_controlPoints.resize(ord+1); }
 
   /*! Returns the order of the Bezier Curve*/
-  int getOrder() const
-  { return m_controlPoints.size()-1; }
-
-  /*! Appends a control point to the list of control points*/
-  void addControlPoint(const PointType& pt)
-  {
-    m_controlPoints.push_back(pt);
-  }
+  int getOrder() const { return m_controlPoints.size()-1; }
 
   /*! Clears the list of control points*/
   void clear()
   {
-    m_controlPoints.clear();
+    const int ord = getOrder();
+    for (int p = 0 ; p <= ord ; ++p)
+    {
+      m_controlPoints[p] = PointType();
+    }
   }
 
   /*! Retrieves the control point at index \a idx */
   PointType& operator[](int idx) { return m_controlPoints[idx]; }
+
   /*! Retrieves the control point at index \a idx */
   const PointType& operator[](int idx) const { return m_controlPoints[idx]; }
 
@@ -314,12 +303,11 @@ public:
   {
     const int ord = getOrder();
 
-    os <<"{" << ord <<"-degree Bezier Curve:";
-    for (int p=0 ; p< ord ; ++p)
+    os <<"{ order " << ord <<" Bezier Curve ";
+    for (int p=0 ; p<= ord ; ++p)
     {
-      os << m_controlPoints[p] << ",";
+      os << m_controlPoints[p] << (p<ord ? "," : "");
     }
-    os<<m_controlPoints[ord];
     os<< "}";
 
     return os;

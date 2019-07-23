@@ -43,7 +43,7 @@ TEST( primal_beziercurve, constructor )
 }
 
 //----------------------------------------------------------------------------------
-TEST( primal_beziercurve, add_controlpoints )
+TEST( primal_beziercurve, set_order )
 {
   const int DIM = 3;
   using CoordType = double;
@@ -55,15 +55,19 @@ TEST( primal_beziercurve, add_controlpoints )
   BezierCurveType bCurve;
   EXPECT_EQ(-1, bCurve.getOrder());
 
-  PointType controlPoints[2] = {
+  const int order = 1;
+  PointType controlPoints[] = {
     PointType::make_point(0.6, 1.2, 1.0),
     PointType::make_point(0.0, 1.6, 1.8)
   };
 
-  bCurve.addControlPoint(controlPoints[0]);
-  bCurve.addControlPoint(controlPoints[1]);
+  bCurve.setOrder(order);
+  EXPECT_EQ(order, bCurve.getOrder());
 
-  EXPECT_EQ(1, bCurve.getOrder());
+
+  bCurve[0] = controlPoints[0];
+  bCurve[1] = controlPoints[1];
+
   for (int p=0 ; p<=bCurve.getOrder() ; ++p)
   {
     auto& pt = bCurve[p];
