@@ -10,6 +10,7 @@
 #include "gtest/gtest.h"
 
 #include "axom/primal/geometry/BezierCurve.hpp"
+#include "axom/primal/operators/squared_distance.hpp"
 
 namespace primal = axom::primal;
 
@@ -332,6 +333,76 @@ TEST( primal_beziercurve, split_quadratic)
   }
 }
 
+TEST( primal_beziercurve, isLinear)
+{
+  SLIC_INFO("Testing isLinear() on Bezier curves");
+
+  const int DIM = 2;
+  using CoordType = double;
+  using PointType = primal::Point< CoordType, DIM >;
+  using VectorType = primal::Vector< CoordType, DIM >;
+  using SegmentType = primal::Segment< CoordType, DIM >;
+  using BezierCurveType = primal::BezierCurve< CoordType, DIM >;
+
+  // order 0 -- always true
+  {
+    const int order = 0;
+    auto curve = BezierCurveType(order);
+    EXPECT_TRUE(curve.isLinear());
+
+    curve[0] = PointType::make_point(1.,1.);
+    EXPECT_TRUE(curve.isLinear());
+  }
+
+  // order 1 -- always true
+  {
+    const int order = 1;
+    auto curve = BezierCurveType(order);
+    EXPECT_TRUE(curve.isLinear());
+
+    curve[0] = PointType::make_point(1.,1.8);
+    curve[1] = PointType::make_point(-12.,3.5);
+    EXPECT_TRUE(curve.isLinear());
+  }
+
+  // order 2
+  {
+    const int order = 2;
+    auto curve = BezierCurveType(order);
+    EXPECT_TRUE(curve.isLinear());
+
+    // straight line
+    curve[0] = PointType::make_point(1,1);
+    curve[1] = PointType::make_point(2,2);
+    curve[2] = PointType::make_point(3,3);
+    EXPECT_TRUE(curve.isLinear());
+
+    // move middle point and check linearity with different tolerances
+    VectorType v(curve[2], curve[0]);
+    auto normal = VectorType::make_vector(-v[1], v[0]);
+    curve[1].array() += 0.005 * normal.array();
+    SLIC_INFO("Updated curve: " << curve);
+
+    SegmentType s(curve[2], curve[0]);
+    SLIC_INFO("Sq dist: " << primal::squared_distance(curve[1], s));
+
+    // linear for a coarse tolerance
+    {
+      const double tol = 0.1;
+      const double tol_sq = tol*tol;
+      EXPECT_TRUE(curve.isLinear(tol_sq));
+    }
+
+    // non-linear for a finer tolerance
+    {
+      const double tol = 0.01;
+      const double tol_sq = tol*tol;
+      EXPECT_FALSE(curve.isLinear(tol_sq));
+    }
+
+  }
+
+}
 
 //------------------------------------------------------------------------------
 

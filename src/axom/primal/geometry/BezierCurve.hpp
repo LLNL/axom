@@ -14,10 +14,13 @@
 
 #include "axom/slic.hpp"
 
+#include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
-#include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/primal/geometry/Segment.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/geometry/OrientedBoundingBox.hpp"
+
 #include "axom/primal/operators/squared_distance.hpp"
 
 #include "fmt/fmt.hpp"
@@ -58,6 +61,8 @@ public:
   using NumArrayType = NumericArray< T,NDIMS >;
   using SegmentType = Segment< T, NDIMS >;
   using CoordsVec = std::vector< PointType >;
+  using BoundingBox = BoundingBox< T, NDIMS >;
+  using OrientedBoundingBox = OrientedBoundingBox< T, NDIMS >;
 
 public:
   /*! Default constructor for an empty Bezier Curve*/
@@ -73,8 +78,8 @@ public:
   BezierCurve(int ord)
   {
     SLIC_ASSERT(ord >= 0);
-    m_controlpoints.reserve(ord+1);
-    m_controlpoints.resize(ord+1);
+    m_controlPoints.reserve(ord+1);
+    m_controlPoints.resize(ord+1);
   }
 
   /*!
@@ -98,7 +103,7 @@ public:
     // sanity check
     SLIC_ASSERT(pts != nullptr);
 
-    m_controlpoints.reserve(ord+1);
+    m_controlPoints.reserve(ord+1);
 
     T tempar[NDIMS];
     for ( int p = 0 ; p <= ord ; p++)
@@ -130,7 +135,7 @@ public:
     // sanity check
     SLIC_ASSERT(pts != nullptr);
 
-    m_controlpoints.reserve(ord+1);
+    m_controlPoints.reserve(ord+1);
 
     for (int p = 0 ; p <= ord ; ++p)
     {
@@ -140,34 +145,34 @@ public:
 
   /*! Sets the order of the Bezier Curve*/
   void setOrder( int ord)
-  { m_controlpoints.resize(ord+1); }
+  { m_controlPoints.resize(ord+1); }
 
   /*! Returns the order of the Bezier Curve*/
   int getOrder() const
-  { return m_controlpoints.size()-1; }
+  { return m_controlPoints.size()-1; }
 
   /*! Appends a control point to the list of control points*/
   void addControlPoint(const PointType& pt)
   {
-    m_controlpoints.push_back(pt);
+    m_controlPoints.push_back(pt);
   }
 
   /*! Clears the list of control points*/
   void clear()
   {
-    m_controlpoints.clear();
+    m_controlPoints.clear();
   }
 
   /*! Retrieves the control point at index \a idx */
-  PointType& operator[](int idx) { return m_controlpoints[idx]; }
+  PointType& operator[](int idx) { return m_controlPoints[idx]; }
   /*! Retrieves the control point at index \a idx */
-  const PointType& operator[](int idx) const { return m_controlpoints[idx]; }
+  const PointType& operator[](int idx) const { return m_controlPoints[idx]; }
 
   /* Checks equality of two Bezier Curve */
   friend inline bool operator==(const BezierCurve< T, NDIMS>& lhs,
                                 const BezierCurve< T, NDIMS>& rhs)
   {
-    return lhs.m_controlpoints == rhs.m_controlpoints;
+    return lhs.m_controlPoints == rhs.m_controlPoints;
   }
 
   friend inline bool operator!=(const BezierCurve< T, NDIMS>& lhs,
@@ -176,9 +181,22 @@ public:
     return !(lhs == rhs);
   }
 
+  /*! Returns a copy of the Bezier curve's control points */
   CoordsVec getControlPoints() const
   {
-    return m_controlpoints;
+    return m_controlPoints;
+  }
+
+  /*! Returns an axis-aligned bounding box containing the Bezier curve */
+  BoundingBox boundingBox() const
+  {
+    return BoundingBox(m_controlPoints.data(), m_controlPoints.size());
+  }
+
+  /*! Returns an oriented bounding box containing the Bezier curve */
+  OrientedBoundingBox orientedBoundingBox() const
+  {
+    return OrientedBoundingBox(m_controlPoints.data(), m_controlPoints.size());
   }
 
   /*!
@@ -190,7 +208,7 @@ public:
    * \note We typically evaluate the curve at \a t between 0 and 1
    */
 
-  PointType evaluate(T t)
+  PointType evaluate(T t) const
   {
     PointType ptval;
 
@@ -202,7 +220,7 @@ public:
     {
       for ( int p=0 ; p <= ord ; ++p)
       {
-        dCarray[p] = m_controlpoints[p][i];
+        dCarray[p] = m_controlPoints[p][i];
       }
 
       for ( int p=1 ; p <= ord ; ++p)
@@ -261,21 +279,28 @@ public:
   /*!
    * \brief Predicate to check if the Bezier curve is approximately linear
    *
-   * \param [in] tol a tolerance parameter controlling definition of
-   * near-linearity
-   * \param [out] boolean TRUE if c1 is near-linear
+   * This function checks if the internal control points of the BezierCurve
+   * are approximately on the line defined by its two endpoints
+   *
+   * \param [in] tol Threshold for sum of squared distances
+   * \return True if c1 is near-linear
    */
 
-  bool is_linear(double tol) const
+  bool isLinear(double tol = 1E-8) const
   {
-    int ord1 = m_controlpoints.size()-1;
-    SegmentType linear1(m_controlpoints[0],m_controlpoints[ord1]);
-    double d1=0.0;
-    for (int p=1 ; p<ord1 ; ++p) // line defined by endpoints; only add interior
+    const int ord = getOrder();
+    if(ord <= 1)
     {
-      d1=d1+squared_distance(m_controlpoints[p],linear1);
+      return true;
     }
-    return (d1<tol); // Note: tolerance is squared
+
+    SegmentType seg(m_controlPoints[0], m_controlPoints[ord]);
+    double sqDist =0.0;
+    for (int p=1 ; p<ord && sqDist < tol ; ++p) // check interior control points
+    {
+      sqDist += squared_distance(m_controlPoints[p],seg);
+    }
+    return (sqDist < tol);
   }
 
   /*!
@@ -292,17 +317,17 @@ public:
     os <<"{" << ord <<"-degree Bezier Curve:";
     for (int p=0 ; p< ord ; ++p)
     {
-      os << m_controlpoints[p] << ",";
+      os << m_controlPoints[p] << ",";
     }
-    os<<m_controlpoints[ord];
+    os<<m_controlPoints[ord];
     os<< "}";
 
     return os;
   }
 
 private:
-  CoordsVec m_controlpoints;
-}; // class BezierCurve
+  CoordsVec m_controlPoints;
+};
 
 //------------------------------------------------------------------------------
 /// Free functions implementing BezierCurve's operators

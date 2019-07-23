@@ -144,7 +144,8 @@ bool intersect( const Sphere< T,DIM >& s1,
  * \return true iff tri intersects with bb, otherwise, false.
  */
 template < typename T >
-bool intersect( const Triangle< T, 3 >& tri, const BoundingBox< T, 3 >& bb)
+bool intersect( const Triangle< T, 3 >& tri,
+                const BoundingBox< T, 3 >& bb)
 {
   return detail::intersect_tri_bbox(tri, bb);
 }
@@ -156,7 +157,8 @@ bool intersect( const Triangle< T, 3 >& tri, const BoundingBox< T, 3 >& bb)
  * \return true iff tri intersects with ray, otherwise, false.
  */
 template < typename T >
-bool intersect(const Triangle< T, 3 >& tri, const Ray< T,3 >& ray)
+bool intersect(const Triangle< T, 3 >& tri,
+               const Ray< T,3 >& ray)
 {
   T t = T();
   Point< double, 3 > p;
@@ -172,7 +174,8 @@ bool intersect(const Triangle< T, 3 >& tri, const Ray< T,3 >& ray)
  * \return true iff tri intersects with ray, otherwise, false.
  */
 template < typename T >
-bool intersect(const Triangle< T, 3 >& tri, const Ray< T,3 >& ray, T& t)
+bool intersect(const Triangle< T, 3 >& tri,
+               const Ray< T,3 >& ray, T& t)
 {
   Point< double, 3 > p;
   return detail::intersect_tri_ray(tri, ray, t, p);
@@ -213,7 +216,8 @@ bool intersect(const Triangle< T, 3 >& tri, const Ray< T,3 >& ray,
  * \return true iff tri intersects with seg, otherwise, false.
  */
 template < typename T >
-bool intersect(const Triangle< T, 3 >& tri, const Segment< T,3 >& seg)
+bool intersect(const Triangle< T, 3 >& tri,
+               const Segment< T,3 >& seg)
 {
   T t = T();
   Point< double, 3 > p;
@@ -229,7 +233,8 @@ bool intersect(const Triangle< T, 3 >& tri, const Segment< T,3 >& seg)
  * \return true iff tri intersects with seg, otherwise, false.
  */
 template < typename T >
-bool intersect(const Triangle< T, 3 >& tri, const Segment< T,3 >& seg, T& t)
+bool intersect(const Triangle< T, 3 >& tri,
+               const Segment< T,3 >& seg, T& t)
 {
   Point< double, 3 > p;
   return detail::intersect_tri_segment(tri, seg, t, p);
