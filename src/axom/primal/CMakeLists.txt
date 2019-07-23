@@ -18,6 +18,7 @@ axom_component_requires(NAME       PRIMAL
 set( primal_headers
 
      ## geometry
+     geometry/BezierCurve.hpp
      geometry/BoundingBox.hpp
      geometry/OrientedBoundingBox.hpp
      geometry/OrientationResult.hpp
@@ -31,7 +32,6 @@ set( primal_headers
      geometry/Tetrahedron.hpp
      geometry/Triangle.hpp
      geometry/Vector.hpp
-     geometry/BezierCurve.hpp
 
      ## operators
      operators/clip.hpp
@@ -41,7 +41,6 @@ set( primal_headers
      operators/squared_distance.hpp
      operators/compute_bounding_box.hpp
      operators/in_sphere.hpp
-     operators/intersect_bezier.hpp
 
      operators/detail/clip_impl.hpp
      operators/detail/intersect_bezier_impl.hpp

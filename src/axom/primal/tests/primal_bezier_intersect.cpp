@@ -12,7 +12,7 @@
 #include "axom/slic.hpp"
 
 #include "axom/primal/geometry/BezierCurve.hpp"
-#include "axom/primal/operators/intersect_bezier.hpp"
+#include "axom/primal/operators/intersect.hpp"
 
 #include <cmath>
 #include <iomanip>
@@ -52,7 +52,7 @@ void checkIntersections(const primal::BezierCurve<CoordType, DIM>& curve1,
   // Intersect the two curves, intersection parameters will be
   // in arrays s and t, for curve1 and curve2, respectively
   Array s, t;
-  bool curves_intersect = intersect_bezier(curve1, curve2, s, t, eps*eps);
+  bool curves_intersect = intersect(curve1, curve2, s, t, eps);
   EXPECT_EQ( exp_intersect, curves_intersect );
   EXPECT_EQ(s.size(), t.size());
 

@@ -59,7 +59,7 @@ namespace detail
  * \sa intersect_bezier
  */
 template < typename T, int NDIMS>
-bool intersect_bezier_helper( const BezierCurve< T, NDIMS>& c1,
+bool intersect_bezier_curves( const BezierCurve< T, NDIMS>& c1,
                               const BezierCurve< T, NDIMS>& c2,
                               std::vector< T >& sp,
                               std::vector< T >& tp,
@@ -67,7 +67,6 @@ bool intersect_bezier_helper( const BezierCurve< T, NDIMS>& c1,
                               int order1, int order2,
                               double s_offset, double s_scale,
                               double t_offset, double t_scale);
-
 
 /*!
  * \brief Tests intersection of two line segments defined by
@@ -102,7 +101,7 @@ bool intersect_2d_linear( const Point<T,NDIMS> &a, const Point<T,NDIMS> &b,
 
 
 template < typename T, int NDIMS>
-bool intersect_bezier_helper( const BezierCurve< T, NDIMS>& c1,
+bool intersect_bezier_curves( const BezierCurve< T, NDIMS>& c1,
                               const BezierCurve< T, NDIMS>& c2,
                               std::vector< T >& sp,
                               std::vector< T >& tp,
@@ -114,7 +113,7 @@ bool intersect_bezier_helper( const BezierCurve< T, NDIMS>& c1,
   using BCurve = BezierCurve< T, NDIMS>;
 
   // Check bounding boxes to short-circuit the intersection
-  if(!primal::intersect(c1.boundingBox(), c2.boundingBox()) )
+  if(!intersect(c1.boundingBox(), c2.boundingBox()) )
   {
     return false;
   }
@@ -142,14 +141,14 @@ bool intersect_bezier_helper( const BezierCurve< T, NDIMS>& c1,
 
     s_scale *= scaleFac;
 
-    if (intersect_bezier_helper(c2,c3,tp,sp, sq_tol, order2, order1,
+    if (intersect_bezier_curves(c2,c3,tp,sp, sq_tol, order2, order1,
                                 t_offset, t_scale, s_offset, s_scale))
     {
       foundIntersection = true;
 
 
     }
-    if (intersect_bezier_helper(c2,c4,tp,sp, sq_tol, order2, order1,
+    if (intersect_bezier_curves(c2,c4,tp,sp, sq_tol, order2, order1,
                                 t_offset, t_scale, s_offset + s_scale, s_scale))
     {
       foundIntersection = true;

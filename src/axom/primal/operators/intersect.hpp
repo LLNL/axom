@@ -9,8 +9,10 @@
  * \brief Consists of functions to test intersection among geometric primitives.
  */
 
-#ifndef INTERSECTION_HPP_
-#define INTERSECTION_HPP_
+#ifndef PRIMAL_INTERSECT_HPP_
+#define PRIMAL_INTERSECT_HPP_
+
+#include "axom/core/utilities/Utilities.hpp"
 
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
@@ -19,10 +21,10 @@
 #include "axom/primal/geometry/Segment.hpp"
 #include "axom/primal/geometry/Sphere.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
-
-#include "axom/core/utilities/Utilities.hpp"
+#include "axom/primal/geometry/BezierCurve.hpp"
 
 #include "axom/primal/operators/detail/intersect_impl.hpp"
+#include "axom/primal/operators/detail/intersect_bezier_impl.hpp"
 
 namespace axom
 {
@@ -304,7 +306,49 @@ bool intersect(const OrientedBoundingBox< T, 3 >& b1,
   return detail::intersect_obb3D_obb3D(b1, b2, EPS);
 }
 
+
+/*!
+ * \brief Tests if two Bezier Curves \a c1 and \a c2 intersect.
+ * \return status true iff \a c1 intersects \a c2, otherwise false.
+ *
+ * \param [in] c1 the first BezierCurve, parametrized in [0,1)
+ * \param [in] c2 the second BezierCurve, parametrized in [0,1)
+ * \param [out] sp vector of parameter space intersection points for \a c1
+ * \param [out] tp vector of parameter space intersection points for \a c2
+ * \param [in] tol tolerance parameter for determining if a curve can
+ * be approximated by a line segment.
+ * \return True if the curves intersect, false otherwise. Intersection
+ * parameters are stored in \a sp and \a tp
+ *
+ * Finds all intersection points between the two curves.
+ *
+ * \note This function assumes that the curves are in general position.
+ * Specifically, we assume that all intersections are at points and that
+ * the curves don't overlap.
+ *
+ * \note This function assumes that the curves are half-open, i.e. they
+ * contain their first endpoint, but not their last endpoint. Thus, the
+ * curves do not intersect at \f$ s==1 \f$ or at \f$ t==1 \f$.
+ */
+template < typename T, int NDIMS>
+bool intersect( const BezierCurve< T, NDIMS>& c1,
+                const BezierCurve< T, NDIMS>& c2,
+                std::vector< T >& sp,
+                std::vector< T >& tp,
+                double tol = 1E-8)
+{
+  const double offset = 0.;
+  const double scale = 1.;
+
+  // for efficiency, linearity check actually uses a squared tolerance
+  const double sq_tol = tol * tol;
+
+  return detail::intersect_bezier_curves(c1, c2, sp, tp, sq_tol,
+                                         c1.getOrder(), c2.getOrder(),
+                                         offset, scale, offset, scale);
+}
+
 } /* namespace primal */
 } /* namespace axom */
 
-#endif /* INTERSECTION_HPP_ */
+#endif // PRIMAL_INTERSECT_HPP_
