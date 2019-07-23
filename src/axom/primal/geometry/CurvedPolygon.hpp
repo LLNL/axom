@@ -173,14 +173,16 @@ public:
         for(int i = 0; i < (ngon - 1); ++i)
         {
           if(!axom::utilities::isNearlyEqual(m_edges[i][m_edges[i].getOrder()][p],
-                                             m_edges[i + 1][0][p]))
+                                             m_edges[i + 1][0][p],
+                                             1e-15))
           {
             return false;
           }
         }
         if(!axom::utilities::isNearlyEqual(
              m_edges[ngon - 1][m_edges[ngon - 1].getOrder()][p],
-             m_edges[0][0][p]))
+             m_edges[0][0][p],
+             1e-15))
         {
           return false;
         }
