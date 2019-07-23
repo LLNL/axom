@@ -2,6 +2,9 @@
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+#------------------------------------------------------------------------------
+# Primal unit tests
+#------------------------------------------------------------------------------
 
 set( primal_tests
     primal_boundingbox.cpp

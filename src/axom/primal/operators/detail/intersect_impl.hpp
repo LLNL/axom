@@ -4,14 +4,14 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /*!
- * \file Intersection.hpp
+ * \file intersect_impl.hpp
  *
- * This file provides several functions to test whether geometric primitives
- * intersect.
+ * This file provides helper functions for testing whether
+ * geometric primitives intersect
  */
 
-#ifndef INTERSECTION_IMPL_HPP_
-#define INTERSECTION_IMPL_HPP_
+#ifndef PRIMAL_INTERSECT_IMPL_HPP_
+#define PRIMAL_INTERSECT_IMPL_HPP_
 
 #include "axom/core/numerics/Determinants.hpp"
 #include "axom/core/utilities/Utilities.hpp"
@@ -30,7 +30,7 @@ namespace primal
 namespace detail
 {
 
-// ================================== FORWARD DECLARATIONS =================
+//---------------------------- FUNCTION DECLARATIONS ---------------------------
 
 typedef primal::Vector< double, 3 > Vector3;
 typedef primal::Point< double, 3 > Point3;
@@ -100,6 +100,8 @@ bool intersectCoplanar3DTriangles(const Point3& p1,
 bool TriangleIntersection2D(const Triangle2& t1,
                             const Triangle2& t2,
                             bool includeBoundary = false);
+
+//------------------------------ IMPLEMENTATIONS ------------------------------
 
 /*! @{ @name 3D triangle-triangle intersection */
 
@@ -1218,4 +1220,4 @@ bool intersect_obb3D_obb3D(const OrientedBoundingBox< T, 3 > &b1,
 } /* end namespace primal */
 } /* end namespace axom */
 
-#endif /* INTERSECTION_IMPL_HPP_ */
+#endif // PRIMAL_INTERSECT_IMPL_HPP_

@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-/* /file bezier_test.cpp
- * /brief This file tests the BezierCurve.hpp and eval_bezier.hpp files
+/* /file primal_bezier_intersect.cpp
+ * /brief This file tests the Bezier curve intersection routines
  */
 
 #include "gtest/gtest.h"
