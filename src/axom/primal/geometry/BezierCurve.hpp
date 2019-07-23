@@ -63,8 +63,8 @@ public:
   using NumArrayType = NumericArray< T,NDIMS >;
   using SegmentType = Segment< T, NDIMS >;
   using CoordsVec = std::vector< PointType >;
-  using BoundingBox = BoundingBox< T, NDIMS >;
-  using OrientedBoundingBox = OrientedBoundingBox< T, NDIMS >;
+  using BoundingBoxType = BoundingBox< T, NDIMS >;
+  using OrientedBoundingBoxType = OrientedBoundingBox< T, NDIMS >;
 
 public:
 
@@ -177,15 +177,16 @@ public:
   }
 
   /*! Returns an axis-aligned bounding box containing the Bezier curve */
-  BoundingBox boundingBox() const
+  BoundingBoxType boundingBox() const
   {
-    return BoundingBox(m_controlPoints.data(), m_controlPoints.size());
+    return BoundingBoxType(m_controlPoints.data(), m_controlPoints.size());
   }
 
   /*! Returns an oriented bounding box containing the Bezier curve */
-  OrientedBoundingBox orientedBoundingBox() const
+  OrientedBoundingBoxType orientedBoundingBox() const
   {
-    return OrientedBoundingBox(m_controlPoints.data(), m_controlPoints.size());
+    return OrientedBoundingBoxType(m_controlPoints.data(),
+                                   m_controlPoints.size());
   }
 
   /*!
