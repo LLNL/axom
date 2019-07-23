@@ -12,6 +12,9 @@
 #ifndef INTERSECTION_BEZIER_HPP_
 #define INTERSECTION_BEZIER_HPP_
 
+#include "axom/core/numerics/Determinants.hpp"
+#include "axom/core/utilities/Utilities.hpp"
+
 #include "axom/primal/geometry/BoundingBox.hpp"
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
 #include "axom/primal/geometry/Point.hpp"
@@ -20,16 +23,76 @@
 #include "axom/primal/geometry/Sphere.hpp"
 #include "axom/primal/geometry/Triangle.hpp"
 #include "axom/primal/geometry/BezierCurve.hpp"
+
 #include "axom/primal/operators/squared_distance.hpp"
-
-#include "axom/core/utilities/Utilities.hpp"
-
 #include "axom/primal/operators/intersect.hpp"
 
 namespace axom
 {
 namespace primal
 {
+
+template < typename T, int NDIMS>
+bool intersect_bezier_helper( const BezierCurve< T, NDIMS>& c1,
+                              const BezierCurve< T, NDIMS>& c2,
+                              std::vector< T >& sp,
+                              std::vector< T >& tp,
+                              double sq_tol,
+                              int order1, int order2,
+                              double s_offset, double s_scale,
+                              double t_offset, double t_scale)
+{
+  using BCurve = BezierCurve< T, NDIMS>;
+
+  // Check bounding boxes to short-circuit the intersection
+  if(!primal::intersect(c1.boundingBox(), c2.boundingBox()) )
+  {
+    return false;
+  }
+
+  //std::cout<< "(";
+  bool foundIntersection = false;
+
+  if ( c1.isLinear(sq_tol) && c2.isLinear(sq_tol))
+  {
+    T s,t;
+    if(intersect_2d_linear(c1[0],c1[order1],c2[0],c2[order2],s,t))
+    {
+      sp.push_back(s_offset + s_scale * s);
+      tp.push_back(t_offset + t_scale * t);
+      foundIntersection = true;
+      //std::cout << "*" ;
+    }
+  }
+  else
+  {
+    constexpr double splitVal = 0.5;
+    constexpr double scaleFac = 0.5;
+
+    BCurve c3(order1);
+    BCurve c4(order1);
+    c1.split(splitVal,c3,c4);
+
+    s_scale *= scaleFac;
+
+    if (intersect_bezier_helper(c2,c3,tp,sp, sq_tol, order2, order1,
+                                t_offset, t_scale, s_offset, s_scale))
+    {
+      foundIntersection = true;
+
+
+    }
+    if (intersect_bezier_helper(c2,c4,tp,sp, sq_tol, order2, order1,
+                                t_offset, t_scale, s_offset + s_scale, s_scale))
+    {
+      foundIntersection = true;
+    }
+  }
+  //std::cout<<")";
+
+  return foundIntersection;
+
+}
 
 /*!
  * \brief Tests if Bezier Curves c1 and c2 intersect.
@@ -43,90 +106,75 @@ template < typename T, int NDIMS>
 bool intersect_bezier( const BezierCurve< T, NDIMS>& c1,
                        const BezierCurve< T, NDIMS>& c2,
                        std::vector< T >& sp,
-                       std::vector< T >& tp)
+                       std::vector< T >& tp,
+                       double sq_tol = 1E-16)
 {
-  int ord1=c1.getOrder();
-  int ord2=c2.getOrder();
-  if ( c1.is_linear(1e-31) && c2.is_linear(1e-31))
-  {
-    T s;
-    T t;
-    intersect_2d_linear(c1[0],c1[ord1],c2[0],c2[ord2],s,t);
-    if (s>=0.0 && s<1.0 && t >=0.0 && t<1.0)
-    {
-      sp.push_back(s);
-      tp.push_back(t);
-    }
-  }
-  else
-  {
-    BezierCurve< T, NDIMS> c3(ord1); BezierCurve< T, NDIMS> c4(ord1);
-    c1.split(.5,c3,c4);
+  const int ord1=c1.getOrder();
+  const int ord2=c2.getOrder();
+  const double offset = 0.;
+  const double scale = 1.;
 
-    std::vector<Point<T, NDIMS> > Ptv3 = c3.getControlPoints();
-    BoundingBox < T, NDIMS> b3(Ptv3.data(),ord1+1);
-
-    std::vector<Point<T, NDIMS> > Ptv4 = c4.getControlPoints();
-    BoundingBox < T, NDIMS> b4(Ptv4.data(),ord1+1);
-
-    std::vector<Point<T, NDIMS> > Ptv2 = c2.getControlPoints();
-    BoundingBox < T, NDIMS> b2(Ptv2.data(),ord1+1);
-    bool checkint = false;
-    int intcount = sp.size();
-    if (intersect(b3,b2))
-    {
-      intcount=sp.size();
-      checkint=intersect_bezier(c2,c3,tp,sp);
-      if (checkint)
-      {
-        for (int i=intcount ; i<static_cast<int>(sp.size()) ; i++)
-        {
-          sp[i] = 0.5*sp[i];
-        }
-      }
-    }
-    if (intersect(b4,b2))
-    {
-      intcount=sp.size();
-      checkint = intersect_bezier(c2,c4,tp,sp);
-      if (checkint)
-      {
-        for (int i=intcount ; i<static_cast<int>(sp.size()) ; i++)
-        {
-          sp[i] = .5+0.5*sp[i];
-        }
-      }
-    }
-  }
-
-  if (sp.size()>0)
-  {
-    return true;
-  }
-  else
-  {
-    return false;
-  }
+  return intersect_bezier_helper(c1,c2,sp,tp, sq_tol, ord1, ord2,
+                                 offset, scale, offset, scale);
 }
 
 /*!
- * \brief Intersects two segments defined by their end points (a,d) and (c,b)
+ * \brief Tests intersection of two line segments defined by
+ * their end points (a,b) and (c,d)
  *
  * \param [in] a,d,c,b the endpoints of the segments
  * \param [out] The parametrized s and t values at which intersection occurs
- * (note these could be outside [0,1]
+ * Range of output values for \a s and \a t is [0,1).
+ *
+ * \return True, if the two line segments intersect, false otherwise.
+ * When the two line segments intersect, their intersection parameters
+ * are stored in output parameters \a s and \a t, respectively, such that,
+ * if \a p is the intersection point,
+ * \f$    p = a + s * (b-a) = c + t * (d-c).  \f$
+ *
+ * \note We consider both line segments to have half-open intervals.
+ * As such, the we do not consider the lines to intersect if they do so
+ * at the endpoints \a b or \d, respectively.
+ *
+ * \note This function does not properly handle collinear lines
  */
 
 template < typename T, int NDIMS>
-void intersect_2d_linear( const Point<T,NDIMS> &a, const Point<T,NDIMS> &d,
-                          const Point<T,NDIMS> &c, const Point<T,NDIMS> &b,
+bool intersect_2d_linear( const Point<T,NDIMS> &a, const Point<T,NDIMS> &b,
+                          const Point<T,NDIMS> &c, const Point<T,NDIMS> &d,
                           T &s, T &t)
 {
-  T determ =  a[1]*b[0]-a[0]*b[1] -a[1]*c[0]+a[0]*c[1]
-             +b[1]*d[0]-c[1]*d[0] -b[0]*d[1]+c[0]*d[1];
-  s = (1.0/determ)*((b[1]-c[1])*(b[0]-a[0])+(c[0]-b[0])*(b[1]-a[1]));
-  t = 1.0-(1.0/determ)*((a[1]-d[1])*(b[0]-a[0])+(d[0]-a[0])*(b[1]-a[1]));
+  // Implementation inspired by Section 5.1.9.1 of
+  // C. Ericson's Real-Time Collision Detection book
+
+  // Note: Uses exact floating point comparisons since the subdivision algorithm
+  // provides both sides of the line segments for interior curve points.
+
+  AXOM_STATIC_ASSERT( NDIMS==2);
+
+  // compute signed areas of endpoints of segment (c,d) w.r.t. segment (a,b)
+  auto area1 = detail::twoDcross(a,b,c);
+  auto area2 = detail::twoDcross(a,b,d);
+
+  // early return if both have same orientation, or if d is collinear w/ (a,b)
+  if( area2 == 0. || (area1 * area2) > 0.)
+    return false;
+
+  // compute signed areas of endpoints of segment (a,b) w.r.t. segment (c,d)
+  auto area3 = detail::twoDcross(c,d,a);
+  auto area4 = area3+area1-area2; // equivalent to detail::twoDcross(c,d,b)
+
+  // early return if both have same orientation, or if b is collinear w/ (c,d)
+  if( area4 == 0. || (area3 * area4) > 0.)
+    return false;
+
+  // Compute intersection parameters using linear interpolation
+  // Divisions are safe due to early return conditions
+  s = area3 / (area3-area4);
+  t = area1 / (area1-area2);
+  return true;
 }
+
 } // namespace primal
 } // namespace axom
 

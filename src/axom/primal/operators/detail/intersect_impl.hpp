@@ -460,6 +460,9 @@ inline bool checkVertex(const Point2& p1,
  * zero Z-coordinate.  Thus we can calculate the cross product of A C with
  * B C using only the k-hat term, since the other terms go to zero.  A
  * positive value indicates CCW orientation.
+ *
+ * \note The result is equal to twice the signed area of a 2D triangle
+ * with vertices (A,B,C) (in CCW order).
  */
 inline double twoDcross(const Point2& A, const Point2& B, const Point2& C)
 {
