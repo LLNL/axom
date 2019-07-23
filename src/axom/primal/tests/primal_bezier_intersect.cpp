@@ -9,6 +9,8 @@
 
 #include "gtest/gtest.h"
 
+#include "axom/slic.hpp"
+
 #include "axom/primal/geometry/BezierCurve.hpp"
 #include "axom/primal/operators/intersect_bezier.hpp"
 

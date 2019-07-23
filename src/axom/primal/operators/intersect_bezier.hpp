@@ -26,11 +26,11 @@ namespace primal
  * \brief Tests if two Bezier Curves \a c1 and \a c2 intersect.
  * \return status true iff \a c1 intersects \a c2, otherwise false.
  *
- * \param [in] c1 The first BezierCurve, parametrized in [0,1)
- * \param [in] c2 The second BezierCurve, parametrized in [0,1)
+ * \param [in] c1 the first BezierCurve, parametrized in [0,1)
+ * \param [in] c2 the second BezierCurve, parametrized in [0,1)
  * \param [out] sp vector of parameter space intersection points for \a c1
  * \param [out] tp vector of parameter space intersection points for \a c2
- * \param [in] sq_tol Tolerance parameter for determining if a curve can
+ * \param [in] tol tolerance parameter for determining if a curve can
  * be approximated by a line segment.
  * \return True if the curves intersect, false otherwise. Intersection
  * parameters are stored in \a sp and \a tp
@@ -50,10 +50,13 @@ bool intersect_bezier( const BezierCurve< T, NDIMS>& c1,
                        const BezierCurve< T, NDIMS>& c2,
                        std::vector< T >& sp,
                        std::vector< T >& tp,
-                       double sq_tol = 1E-16)
+                       double tol = 1E-8)
 {
   const double offset = 0.;
   const double scale = 1.;
+
+  // for efficiency, linearity check actually uses a squared tolerance
+  const double sq_tol = tol * tol;
 
   return detail::intersect_bezier_helper(c1, c2, sp, tp, sq_tol,
                                          c1.getOrder(), c2.getOrder(),
