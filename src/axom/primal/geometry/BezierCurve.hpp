@@ -193,7 +193,7 @@ public:
    * \note We typically evaluate the curve at \a t between 0 and 1
    */
 
-  PointType evaluate(T t)
+  PointType evaluate(T t) const
   {
     PointType ptval;
 

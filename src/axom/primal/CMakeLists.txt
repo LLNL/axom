@@ -40,6 +40,7 @@ set( primal_headers
      operators/compute_bounding_box.hpp
      operators/in_sphere.hpp
      operators/intersect_bezier.hpp
+     operators/intersect_curved_poly.hpp
 
      operators/detail/clip_impl.hpp
      operators/detail/intersect_impl.hpp
