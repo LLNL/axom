@@ -73,6 +73,19 @@ public:
     m_edges.resize(nEdges);
   }
 
+  CurvedPolygon(BezierCurveType* curves, int nEdges)
+  {
+    SLIC_ASSERT(curves != nullptr);
+    SLIC_ASSERT(nEdges >=1);
+    
+    m_edges.reserve(nEdges);
+
+    for (int e =0; e<nEdges; ++e)
+    {
+      this->addEdge(curves[e]);
+    }
+  }
+
   /*! Return the number of edges in the polygon */
   int numEdges() const { return m_edges.size(); }
 
@@ -99,6 +112,14 @@ public:
   void addEdge(const BezierCurveType& c1)
   {
     m_edges.push_back(c1);
+  }
+
+  /*! Splits an edge "in place" */
+  void splitEdge(int idx, T t)
+  {
+     m_edges.insert(m_edges.begin()+idx+1, 1, m_edges[idx]);
+     BezierCurve< T, NDIMS> csplit=m_edges[idx];
+     csplit.split(t,m_edges[idx],m_edges[idx+1]);
   }
 
   /*! Clears the list of edges */
