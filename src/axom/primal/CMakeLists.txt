@@ -45,6 +45,7 @@ set( primal_headers
      operators/compute_bounding_box.hpp
      operators/compute_moments.hpp
      operators/in_sphere.hpp
+     operators/intersect_curved_poly.hpp
      operators/split.hpp
 
      operators/detail/clip_impl.hpp
