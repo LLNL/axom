@@ -212,6 +212,8 @@ TEST(sidre_view,get_path_name)
   EXPECT_EQ(std::string("v3"), v3->getPathName());
 
   EXPECT_EQ(1, v4->getIndex());
+
+  delete ds;
 }
 
 //------------------------------------------------------------------------------
@@ -570,11 +572,19 @@ TEST(sidre_view,save_empty_view_non_empty_buffer)
   DataStore ds;
   Group* root = ds.getRoot();
 
-  Buffer* buf = ds.createBuffer(INT_ID, 10)->allocate();   // allocate non-empty
-                                                           // buffer
+  // allocate non-empty buffer
+  const int SZ = 10;
+  Buffer* buf = ds.createBuffer(INT_ID, SZ)->allocate();
 
-  root->createView("a")->attachBuffer(buf)->apply(0);  // attach zero-sized
-                                                       // array to it
+  // attach zero-sized array to it
+  root->createView("a")->attachBuffer(buf)->apply(0);
+
+  // fill the buffer
+  int* data = buf->getData();
+  for(int i=0 ; i< SZ ; ++i)
+  {
+    data[i] = i;
+  }
 
   root->save("empty_view_non_empty_buffer.sidre.json", "sidre_json"); // ok
 #ifdef AXOM_USE_HDF5
@@ -1611,6 +1621,7 @@ TEST(sidre_view,rename_view)
   EXPECT_FALSE( success );
   EXPECT_TRUE( v3->getName() == "v_c" );
 
+  delete ds;
 }
 
 //------------------------------------------------------------------------------

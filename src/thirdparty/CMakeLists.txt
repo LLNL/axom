@@ -125,14 +125,13 @@ if (AXOM_ENABLE_SPARSEHASH)
     target_include_directories(sparsehash SYSTEM INTERFACE
                 $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
 
-    # Disable warning introduced in gcc@8.1 related to how sparsehash casts memory
+    # Disable warning introduced in gcc@8.1+ related to how sparsehash casts memory
+    # The double guarding for compiler family helps when compiling libraries with GNU
+    # then compiling the main code with another compiler (this is happens for example when
+    # running clang-query)
     if(C_COMPILER_FAMILY_IS_GNU AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "8.1")
-      if (ENABLE_FORTRAN)
         blt_add_target_compile_flags(TO sparsehash FLAGS
-            $<$<NOT:$<COMPILE_LANGUAGE:Fortran>>:-Wno-class-memaccess>)
-      else()
-        blt_add_target_compile_flags(TO sparsehash FLAGS -Wno-class-memaccess)
-      endif()
+            $<$<AND:$<CXX_COMPILER_ID:GNU>,$<COMPILE_LANGUAGE:CXX>>:-Wno-class-memaccess>)
     endif()
 
     install(TARGETS              sparsehash

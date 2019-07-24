@@ -9,7 +9,7 @@
 #include "conduit_relay.hpp"
 
 #ifdef AXOM_USE_HDF5
-#include "conduit_relay_hdf5.hpp"
+#include "conduit_relay_io_hdf5.hpp"
 #endif
 
 // Other axom component headers

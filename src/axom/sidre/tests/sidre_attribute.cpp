@@ -651,6 +651,8 @@ TEST(sidre_attribute, loop_attributes)
   }
 
   // XXX - now delete attribute and check again
+
+  delete ds;
 }
 
 //------------------------------------------------------------------------------
