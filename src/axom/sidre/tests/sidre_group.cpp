@@ -80,6 +80,8 @@ TEST(sidre_group,get_name)
 
   Group* group2 = root->getGroup("foo");
   EXPECT_TRUE(group2 == nullptr);
+
+  delete ds;
 }
 
 //------------------------------------------------------------------------------
@@ -112,6 +114,8 @@ TEST(sidre_group,get_path_name)
   EXPECT_EQ(group->getName(), std::string("c") );
   EXPECT_EQ(group->getPath(), std::string("test/a/b") );
   EXPECT_EQ(group->getPathName(), std::string("test/a/b/c") );
+
+  delete ds;
 }
 
 //------------------------------------------------------------------------------
@@ -183,7 +187,6 @@ TEST(sidre_group,group_with_path)
   EXPECT_EQ(group_testa->getGroup("testb")->getNumGroups(), testbnumgroups);
 
   delete ds;
-
 }
 
 //------------------------------------------------------------------------------
@@ -1224,6 +1227,7 @@ TEST(sidre_group,save_restore_api)
 
   EXPECT_TRUE( load1->isEquivalentTo( load2) );
 
+  delete ds_new;
 }
 
 //------------------------------------------------------------------------------
@@ -1316,6 +1320,7 @@ TEST(sidre_group,rename_group)
   EXPECT_EQ(root, root->getParent());
   EXPECT_EQ("newroot", root->getName());
 
+  delete ds;
 }
 
 //------------------------------------------------------------------------------
@@ -1676,7 +1681,16 @@ TEST(sidre_group,save_restore_other)
   root1->createView("empty_described", INT_ID, ndata);
   root1->createView("empty_shape", INT_ID, 2, shape1);
 
-  root1->createViewAndAllocate("buffer_shape", INT_ID, 2, shape1);
+  auto* view = root1->createViewAndAllocate("buffer_shape", INT_ID, 2, shape1);
+
+  // fill the data
+  {
+    int* data = view->getData();
+    for(int i=0 ; i< ndata * 2 ; ++i)
+    {
+      data[i] = i;
+    }
+  }
 
   for (int i = 0 ; i < nprotocols ; ++i)
   {

@@ -289,7 +289,13 @@ AttrValues::AttrValues() :
  *************************************************************************
  */
 AttrValues::~AttrValues()
-{}
+{
+  if(m_values != nullptr)
+  {
+    delete m_values;
+    m_values = nullptr;
+  }
+}
 
 } /* end namespace sidre */
 } /* end namespace axom */

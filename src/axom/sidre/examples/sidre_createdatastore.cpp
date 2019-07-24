@@ -17,7 +17,7 @@
  *
  * create_datastore           -- Builds a DataStore containing various Groups,
  *                               Views, Buffers, and Attributes
- *                               
+ *
  * create_tiny_datastore      -- Builds a DataStore that holds a small 3D mesh
  *                               conforming to the conduit mesh blueprint
  *
@@ -30,13 +30,13 @@
  * generate_blueprint         -- Generates a blueprint index and writes data
  *                               to file using Sidre DataStore and Group calls
  *
- * generate_blueprint_to_path -- Similar to above, but uses path arguments to 
+ * generate_blueprint_to_path -- Similar to above, but uses path arguments to
  *                               find data deeper in Sidre hierarchy
  *
  * generate_spio_blueprint    -- Uses SPIO/IOManager calls to write data to
  *                               file and generate blueprint index
- * 
- * generate_blueprint_to_path -- Similar to above, but uses path arguments to 
+ *
+ * generate_blueprint_to_path -- Similar to above, but uses path arguments to
  *                               find data deeper in Sidre hierarchy
  */
 
