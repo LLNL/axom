@@ -127,6 +127,7 @@ DataStore::~DataStore()
   // clean up Groups and Views before we destroy Buffers
   delete m_RootGroup;
   destroyAllBuffers();
+  destroyAllAttributes();
   delete m_attribute_coll;
 
   if ( m_need_to_finalize_slic )
