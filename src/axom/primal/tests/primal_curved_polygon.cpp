@@ -35,7 +35,7 @@ TEST(primal_curvedpolygon, constructor)
   }
 
   {
-    SLIC_INFO("Testing CurvedPolygon order constructor ");
+    SLIC_INFO("Testing CurvedPolygon numEdges constructor ");
 
     CurvedPolygonType bPolygon(1);
     int expNumEdges = 1;
@@ -82,7 +82,7 @@ TEST(primal_curvedpolygon, add_edges)
 }
 
 //----------------------------------------------------------------------------------
-TEST(primal_curvedpolygon, is_Valid)
+TEST(primal_curvedpolygon, isClosed)
 {
   const int DIM = 2;
   using CoordType = double;
@@ -94,6 +94,7 @@ TEST(primal_curvedpolygon, is_Valid)
 
   CurvedPolygonType bPolygon;
   EXPECT_EQ(0, bPolygon.numEdges());
+  EXPECT_EQ(false, bPolygon.isClosed());
 
   PointType controlPoints[2] = {PointType::make_point(0.6, 1.2),
                                 PointType::make_point(0.0, 1.6)};
@@ -106,6 +107,7 @@ TEST(primal_curvedpolygon, is_Valid)
 
   BezierCurveType bCurve(controlPoints, 1);
   bPolygon.addEdge(bCurve);
+  EXPECT_EQ(false, bPolygon.isClosed());
 
   BezierCurveType bCurve2(controlPoints2, 1);
   bPolygon.addEdge(bCurve2);
@@ -118,130 +120,13 @@ TEST(primal_curvedpolygon, is_Valid)
 
   EXPECT_EQ(3, bPolygon.numEdges());
   EXPECT_EQ(true, bPolygon.isClosed());
+
+  bPolygon[2][1][0] -= 2e-15;
+  EXPECT_EQ(false, bPolygon.isClosed());
 }
 
 //----------------------------------------------------------------------------------
-TEST(primal_beziercurve, area_triangle_linear)
-{
-  const int DIM = 2;
-  using CoordType = double;
-  using CurvedPolygonType = primal::CurvedPolygon<CoordType, DIM>;
-  using PointType = primal::Point<CoordType, DIM>;
-  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
-
-  SLIC_INFO("Test checking CurvedPolygon linear area triangle computation.");
-
-  CurvedPolygonType bPolygon;
-  EXPECT_EQ(0, bPolygon.numEdges());
-
-  PointType controlPoints[2] = {PointType::make_point(0.6, 1.2),
-                                PointType::make_point(0.0, 1.6)};
-
-  PointType controlPoints2[2] = {PointType::make_point(0.0, 1.6),
-                                 PointType::make_point(0.3, 2.0)};
-
-  PointType controlPoints3[2] = {PointType::make_point(0.3, 2.0),
-                                 PointType::make_point(0.6, 1.2)};
-
-  BezierCurveType bCurve(controlPoints, 1);
-  bPolygon.addEdge(bCurve);
-
-  BezierCurveType bCurve2(controlPoints2, 1);
-  bPolygon.addEdge(bCurve2);
-
-  BezierCurveType bCurve3(controlPoints3, 1);
-  bPolygon.addEdge(bCurve3);
-
-  CoordType A = bPolygon.area();
-  CoordType trueA = .18;
-
-  EXPECT_DOUBLE_EQ(trueA, A);
-}
-
-//----------------------------------------------------------------------------------
-TEST(primal_beziercurve, area_triangle_quadratic)
-{
-  const int DIM = 2;
-  const int order = 2;
-  using CoordType = double;
-  using CurvedPolygonType = primal::CurvedPolygon<CoordType, DIM>;
-  using PointType = primal::Point<CoordType, DIM>;
-  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
-
-  SLIC_INFO("Test checking CurvedPolygon linear area triangle computation.");
-
-  CurvedPolygonType bPolygon;
-  EXPECT_EQ(0, bPolygon.numEdges());
-
-  PointType controlPoints[order + 1] = {PointType::make_point(0.6, 1.2),
-                                        PointType::make_point(0.4, 1.3),
-                                        PointType::make_point(0.3, 2.0)};
-
-  PointType controlPoints2[order + 1] = {PointType::make_point(0.3, 2.0),
-                                         PointType::make_point(0.27, 1.5),
-                                         PointType::make_point(0.0, 1.6)};
-
-  PointType controlPoints3[order + 1] = {PointType::make_point(0.0, 1.6),
-                                         PointType::make_point(0.1, 1.5),
-                                         PointType::make_point(0.6, 1.2)};
-
-  BezierCurveType bCurve(controlPoints, order);
-  bPolygon.addEdge(bCurve);
-
-  BezierCurveType bCurve2(controlPoints2, order);
-  bPolygon.addEdge(bCurve2);
-
-  BezierCurveType bCurve3(controlPoints3, order);
-  bPolygon.addEdge(bCurve3);
-
-  CoordType A = bPolygon.area();
-
-  CoordType trueA = -.09733333333333333333;
-  EXPECT_DOUBLE_EQ(trueA, A);
-}
-
-//----------------------------------------------------------------------------------
-TEST(primal_beziercurve, area_triangle_mixed_order)
-{
-  const int DIM = 2;
-  using CoordType = double;
-  using CurvedPolygonType = primal::CurvedPolygon<CoordType, DIM>;
-  using PointType = primal::Point<CoordType, DIM>;
-  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
-
-  SLIC_INFO("Test checking CurvedPolygon linear area triangle computation.");
-
-  CurvedPolygonType bPolygon;
-  EXPECT_EQ(0, bPolygon.numEdges());
-
-  PointType controlPoints[3] = {PointType::make_point(0.6, 1.2),
-                                PointType::make_point(0.4, 1.3),
-                                PointType::make_point(0.3, 2.0)};
-
-  PointType controlPoints2[3] = {PointType::make_point(0.3, 2.0),
-                                 PointType::make_point(0.27, 1.5),
-                                 PointType::make_point(0.0, 1.6)};
-
-  PointType controlPoints3[2] = {PointType::make_point(0.0, 1.6),
-                                 PointType::make_point(0.6, 1.2)};
-
-  BezierCurveType bCurve(controlPoints, 2);
-  bPolygon.addEdge(bCurve);
-
-  BezierCurveType bCurve2(controlPoints2, 2);
-  bPolygon.addEdge(bCurve2);
-
-  BezierCurveType bCurve3(controlPoints3, 1);
-  bPolygon.addEdge(bCurve3);
-
-  CoordType A = bPolygon.area();
-
-  CoordType trueA = -.0906666666666666666666;
-  EXPECT_DOUBLE_EQ(trueA, A);
-}
-
-//----------------------------------------------------------------------------------
-TEST(primal_beziercurve, split_edge)
+TEST(primal_curvedpolygon, split_edge)
 {
   const int DIM = 2;
   using CoordType = double;
@@ -275,9 +160,6 @@ TEST(primal_beziercurve, split_edge)
   bPolygon.splitEdge(0, .5);
   bCurve.split(.5, bCurve2, bCurve3);
 
-  CurvedPolygonType bPolygon2 = bPolygon;
-  std::vector<CurvedPolygonType> bPolygon3;
-
   EXPECT_EQ(bPolygon.numEdges(), 4);
   for(int i = 0; i < bPolygon[0].getOrder(); ++i)
   {
@@ -289,6 +171,354 @@ TEST(primal_beziercurve, split_edge)
   }
 }
 
+//----------------------------------------------------------------------------------
+TEST(primal_curvedpolygon, area_triangle_degenerate)
+{
+  const int DIM = 2;
+  using CoordType = double;
+  using CurvedPolygonType = primal::CurvedPolygon<CoordType, DIM>;
+  using PointType = primal::Point<CoordType, DIM>;
+  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
+
+  SLIC_INFO(
+    "Test checking CurvedPolygon degenerate triangle area computation.");
+
+  CurvedPolygonType bPolygon;
+  EXPECT_EQ(0, bPolygon.numEdges());
+  EXPECT_EQ(0.0, bPolygon.area());
+
+  PointType controlPoints[2] = {PointType::make_point(0.6, 1.2),
+                                PointType::make_point(0.0, 1.6)};
+
+  PointType controlPoints2[2] = {PointType::make_point(0.0, 1.6),
+                                 PointType::make_point(0.3, 2.0)};
+
+  PointType controlPoints3[2] = {PointType::make_point(0.3, 2.0),
+                                 PointType::make_point(0.6, 1.2)};
+
+  BezierCurveType bCurve(controlPoints, 1);
+  bPolygon.addEdge(bCurve);
+  EXPECT_EQ(0.0, bPolygon.area());
+
+  BezierCurveType bCurve2(controlPoints2, 1);
+  bPolygon.addEdge(bCurve2);
+  EXPECT_EQ(0.0, bPolygon.area());
+
+  BezierCurveType bCurve3(controlPoints3, 1);
+  bPolygon.addEdge(bCurve3);
+
+  bPolygon[2][1][0] -= 2e-15;
+  EXPECT_EQ(0.0, bPolygon.area());
+}
+
+//----------------------------------------------------------------------------------
+TEST(primal_curvedpolygon, area_triangle_linear)
+{
+  const int DIM = 2;
+  using CoordType = double;
+  using CurvedPolygonType = primal::CurvedPolygon<CoordType, DIM>;
+  using PointType = primal::Point<CoordType, DIM>;
+  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
+
+  SLIC_INFO("Test checking CurvedPolygon linear triangle area computation.");
+
+  CurvedPolygonType bPolygon;
+  EXPECT_EQ(0, bPolygon.numEdges());
+
+  PointType controlPoints[2] = {PointType::make_point(0.6, 1.2),
+                                PointType::make_point(0.0, 1.6)};
+
+  PointType controlPoints2[2] = {PointType::make_point(0.0, 1.6),
+                                 PointType::make_point(0.3, 2.0)};
+
+  PointType controlPoints3[2] = {PointType::make_point(0.3, 2.0),
+                                 PointType::make_point(0.6, 1.2)};
+
+  BezierCurveType bCurve(controlPoints, 1);
+  bPolygon.addEdge(bCurve);
+
+  BezierCurveType bCurve2(controlPoints2, 1);
+  bPolygon.addEdge(bCurve2);
+
+  BezierCurveType bCurve3(controlPoints3, 1);
+  bPolygon.addEdge(bCurve3);
+
+  CoordType A = bPolygon.area();
+  CoordType trueA = .18;
+
+  EXPECT_DOUBLE_EQ(trueA, A);
+}
+
+//----------------------------------------------------------------------------------
+TEST(primal_curvedpolygon, area_triangle_quadratic)
+{
+  const int DIM = 2;
+  const int order = 2;
+  using CoordType = double;
+  using CurvedPolygonType = primal::CurvedPolygon<CoordType, DIM>;
+  using PointType = primal::Point<CoordType, DIM>;
+  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
+
+  SLIC_INFO("Test checking CurvedPolygon quadratic triangle area computation.");
+
+  CurvedPolygonType bPolygon;
+  EXPECT_EQ(0, bPolygon.numEdges());
+
+  PointType controlPoints[order + 1] = {PointType::make_point(0.6, 1.2),
+                                        PointType::make_point(0.4, 1.3),
+                                        PointType::make_point(0.3, 2.0)};
+
+  PointType controlPoints2[order + 1] = {PointType::make_point(0.3, 2.0),
+                                         PointType::make_point(0.27, 1.5),
+                                         PointType::make_point(0.0, 1.6)};
+
+  PointType controlPoints3[order + 1] = {PointType::make_point(0.0, 1.6),
+                                         PointType::make_point(0.1, 1.5),
+                                         PointType::make_point(0.6, 1.2)};
+
+  BezierCurveType bCurve(controlPoints, order);
+  bPolygon.addEdge(bCurve);
+
+  BezierCurveType bCurve2(controlPoints2, order);
+  bPolygon.addEdge(bCurve2);
+
+  BezierCurveType bCurve3(controlPoints3, order);
+  bPolygon.addEdge(bCurve3);
+
+  CoordType A = bPolygon.area();
+
+  CoordType trueA = -.09733333333333333333;
+  EXPECT_DOUBLE_EQ(trueA, A);
+}
+
+//----------------------------------------------------------------------------------
+TEST(primal_curvedpolygon, area_triangle_mixed_order)
+{
+  const int DIM = 2;
+  using CoordType = double;
+  using CurvedPolygonType = primal::CurvedPolygon<CoordType, DIM>;
+  using PointType = primal::Point<CoordType, DIM>;
+  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
+
+  SLIC_INFO(
+    "Test checking CurvedPolygon mixed order triangle area computation.");
+
+  CurvedPolygonType bPolygon;
+  EXPECT_EQ(0, bPolygon.numEdges());
+
+  PointType controlPoints[3] = {PointType::make_point(0.6, 1.2),
+                                PointType::make_point(0.4, 1.3),
+                                PointType::make_point(0.3, 2.0)};
+
+  PointType controlPoints2[3] = {PointType::make_point(0.3, 2.0),
+                                 PointType::make_point(0.27, 1.5),
+                                 PointType::make_point(0.0, 1.6)};
+
+  PointType controlPoints3[2] = {PointType::make_point(0.0, 1.6),
+                                 PointType::make_point(0.6, 1.2)};
+
+  BezierCurveType bCurve(controlPoints, 2);
+  bPolygon.addEdge(bCurve);
+
+  BezierCurveType bCurve2(controlPoints2, 2);
+  bPolygon.addEdge(bCurve2);
+
+  BezierCurveType bCurve3(controlPoints3, 1);
+  bPolygon.addEdge(bCurve3);
+
+  CoordType A = bPolygon.area();
+
+  CoordType trueA = -.0906666666666666666666;
+  EXPECT_DOUBLE_EQ(trueA, A);
+}
+
+//----------------------------------------------------------------------------------
+TEST(primal_curvedpolygon, intersection_triangle_linear)
+{
+  const int DIM = 2;
+  const int order = 1;
+  using CoordType = double;
+  using CurvedPolygonType = primal::CurvedPolygon<CoordType, DIM>;
+  using PointType = primal::Point<CoordType, DIM>;
+  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
+
+  SLIC_INFO(
+    "Test intersecting two linear triangular CurvedPolygons (single region).");
+
+  CurvedPolygonType bPolygon;
+  EXPECT_EQ(0, bPolygon.numEdges());
+
+  PointType controlPoints[order + 1] = {PointType::make_point(0.6, 1.2),
+                                        PointType::make_point(0.3, 2.0)};
+
+  PointType controlPoints2[order + 1] = {PointType::make_point(0.3, 2.0),
+                                         PointType::make_point(0.0, 1.6)};
+
+  PointType controlPoints3[order + 1] = {PointType::make_point(0.0, 1.6),
+                                         PointType::make_point(0.6, 1.2)};
+
+  BezierCurveType bCurve(controlPoints, order);
+  bPolygon.addEdge(bCurve);
+
+  BezierCurveType bCurve2(controlPoints2, order);
+  bPolygon.addEdge(bCurve2);
+
+  BezierCurveType bCurve3(controlPoints3, order);
+  bPolygon.addEdge(bCurve3);
+  CurvedPolygonType bPolygon2 = bPolygon;
+  for(int i = 0; i < DIM; ++i)
+  {
+    for(int j = 0; j <= order; ++j)
+    {
+      for(int k = 0; k < bPolygon2.numEdges(); ++k)
+      {
+        bPolygon2[k][j][i] += .11;
+      }
+    }
+  }
+
+  PointType expcontrolPoints[order + 1] = {
+    PointType::make_point(0.3091666666666666666666, 1.9755555555555555555),
+    PointType::make_point(0.11, 1.71)};
+
+  PointType expcontrolPoints2[order + 1] = {
+    PointType::make_point(0.11, 1.71),
+    PointType::make_point(0.5083333333333333333, 1.44444444444444444444)};
+
+  PointType expcontrolPoints3[order + 1] = {
+    PointType::make_point(0.5083333333333333333, 1.44444444444444444444),
+    PointType::make_point(0.3091666666666666666666, 1.9755555555555555555)};
+
+  CurvedPolygonType expbPolygon;
+
+  BezierCurveType expbCurve(expcontrolPoints, order);
+  expbPolygon.addEdge(expbCurve);
+  BezierCurveType expbCurve2(expcontrolPoints2, order);
+  expbPolygon.addEdge(expbCurve2);
+  BezierCurveType expbCurve3(expcontrolPoints3, order);
+  expbPolygon.addEdge(expbCurve3);
+
+  std::vector<CurvedPolygonType> bPolygons3;
+  bool didIntersect = intersect_polygon(bPolygon, bPolygon2, bPolygons3);
+  EXPECT_TRUE(didIntersect);
+
+  for(int i = 0; i < DIM; ++i)
+  {
+    for(int j = 0; j <= order; ++j)
+    {
+      for(int idxcurve = 0; idxcurve < static_cast<int>(bPolygons3.size());
+          ++idxcurve)
+      {
+        for(int k = 0; k < bPolygons3[idxcurve].numEdges(); ++k)
+        {
+          EXPECT_DOUBLE_EQ(expbPolygon[k][j][i], bPolygons3[idxcurve][k][j][i]);
+        }
+      }
+    }
+  }
+}
+
+//----------------------------------------------------------------------------------
+TEST(primal_curvedpolygon, intersection_triangle_quadratic)
+{
+  const int DIM = 2;
+  const int order = 2;
+  using CoordType = double;
+  using CurvedPolygonType = primal::CurvedPolygon<CoordType, DIM>;
+  using PointType = primal::Point<CoordType, DIM>;
+  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
+
+  SLIC_INFO(
+    "Test intersecting two quadratic triangular CurvedPolygons (single "
+    "region).");
+
+  CurvedPolygonType bPolygon;
+  EXPECT_EQ(0, bPolygon.numEdges());
+
+  PointType controlPoints[order + 1] = {PointType::make_point(0.6, 1.2),
+                                        PointType::make_point(0.4, 1.3),
+                                        PointType::make_point(0.3, 2.0)};
+
+  PointType controlPoints2[order + 1] = {PointType::make_point(0.3, 2.0),
+                                         PointType::make_point(0.27, 1.5),
+                                         PointType::make_point(0.0, 1.6)};
+
+  PointType controlPoints3[order + 1] = {PointType::make_point(0.0, 1.6),
+                                         PointType::make_point(0.1, 1.5),
+                                         PointType::make_point(0.6, 1.2)};
+
+  BezierCurveType bCurve(controlPoints, order);
+  bPolygon.addEdge(bCurve);
+
+  BezierCurveType bCurve2(controlPoints2, order);
+  bPolygon.addEdge(bCurve2);
+
+  BezierCurveType bCurve3(controlPoints3, order);
+  bPolygon.addEdge(bCurve3);
+  CurvedPolygonType bPolygon2 = bPolygon;
+  for(int i = 0; i < DIM; ++i)
+  {
+    for(int j = 0; j <= order; ++j)
+    {
+      for(int k = 0; k < bPolygon2.numEdges(); ++k)
+      {
+        bPolygon2[k][j][i] += .11;
+      }
+    }
+  }
+
+  PointType expcontrolPoints[order + 1] = {
+    PointType::make_point(0.335956890729522, 1.784126953773395),
+    PointType::make_point(1.784126953773395, 1.718171485335525),
+    PointType::make_point(0.239567753301698, 1.700128235793372)};
+
+  PointType expcontrolPoints2[order + 1] = {
+    PointType::make_point(0.2395677533016981, 1.700128235793371),
+    PointType::make_point(0.221884203146682, 1.662410644580941),
+    PointType::make_point(0.199328465398189, 1.636873522352205)};
+
+  PointType expcontrolPoints3[order + 1] = {
+    PointType::make_point(0.199328465398188, 0.199328465398188),
+    PointType::make_point(0.277429214338182, 1.579562422716502),
+    PointType::make_point(0.408882616650578, 1.495574996394597)};
+
+  PointType expcontrolPoints4[order + 1] = {
+    PointType::make_point(0.408882616650588, 1.495574996394586),
+    PointType::make_point(0.368520120719339, 1.616453177259694),
+    PointType::make_point(0.335956890729522, 1.784126953773394)};
+
+  CurvedPolygonType expbPolygon;
+
+  BezierCurveType expbCurve(expcontrolPoints, order);
+  expbPolygon.addEdge(expbCurve);
+  BezierCurveType expbCurve2(expcontrolPoints2, order);
+  expbPolygon.addEdge(expbCurve2);
+  BezierCurveType expbCurve3(expcontrolPoints3, order);
+  expbPolygon.addEdge(expbCurve3);
+  BezierCurveType expbCurve4(expcontrolPoints4, order);
+  expbPolygon.addEdge(expbCurve4);
+
+  std::vector<CurvedPolygonType> bPolygons3;
+  bool didIntersect = intersect_polygon(bPolygon, bPolygon2, bPolygons3);
+  EXPECT_TRUE(didIntersect);
+
+  for(int i = 0; i < DIM; ++i)
+  {
+    for(int j = 0; j <= order; ++j)
+    {
+      for(int idxcurve = 0; idxcurve < static_cast<int>(bPolygons3.size());
+          ++idxcurve)
+      {
+        for(int k = 0; k < bPolygons3[idxcurve].numEdges(); ++k)
+        {
+          EXPECT_DOUBLE_EQ(expbPolygon[k][j][i], bPolygons3[idxcurve][k][j][i]);
+        }
+      }
+    }
+  }
+}
+
+//----------------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
   int result = 0;
