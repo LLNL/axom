@@ -45,11 +45,10 @@ Here is the code to create that Dataset ``ds``.
    :end-before: _tiny_create_end
    :language: C++
 
-To use the Mesh Blueprint, make a new Datastore ``cds`` conforming to the protocol
-that points at the data of the original Datastore.  The structure of the
-conforming Datastore is shown below (summarizing the
-`Mesh Blueprint <http://llnl-conduit.readthedocs.io/en/latest/blueprint_mesh.html>`_
-documentation).
+To use the Mesh Blueprint, make a new Group ``tinymesh`` conforming to the protocol.
+.. The structure of the conforming Group is shown below (summarizing the
+.. Mesh Blueprint <http://llnl-conduit.readthedocs.io/en/latest/blueprint_mesh.html>`_
+.. documentation).
 
 First build top-level groups required by the Blueprint.
 
@@ -61,9 +60,9 @@ First build top-level groups required by the Blueprint.
    :end-before: _blueprint_restructure_toplevel_end
    :language: C++
 
-Add the node coordinates.  The Groups in ``cds`` will use the Buffers within ``ds``
-as external pointers that have a description: while Sidre and Conduit will use the
-array type and shape information, ``cds`` will not deallocate the memory.
+Add the node coordinates.  The Views in ``tinymesh`` will point to the Buffers within ``nodes``
+so that ``tinymesh`` can use the data without any new allocation or copying:
+while Sidre and Conduit will use the array type and shape information.
 
 .. image:: figs/cdscoords.png
    :width: 650px
@@ -74,7 +73,7 @@ array type and shape information, ``cds`` will not deallocate the memory.
    :language: C++
 
 Arrange the nodes into elements.  Each simulation has its own knowledge of
-topology.  This tiny example doesn't encode topology in ``ds``,
+topology.  This tiny example didn't previously encode topology,
 so we must explicitly specify it.
 
 .. image:: figs/cdstopo.png
@@ -85,8 +84,8 @@ so we must explicitly specify it.
    :end-before: _blueprint_restructure_topo_end
    :language: C++
 
-Link the fields into ``cds``.  As with the node positions, ``cds`` gets an external
-pointer to the field data.
+Link the fields into ``tinymesh``.  As with the node positions, the Views
+point to the existing Buffers containing the field data.
 
 .. image:: figs/cdsfields.png
    :width: 650px
@@ -97,7 +96,7 @@ pointer to the field data.
    :language: C++
 
 Conduit includes a ``verify`` method to test if the structure
-of the ``cds`` conforms to the Mesh Blueprint.  This is valuable for writing and 
+of the ``tinymesh`` conforms to the Mesh Blueprint.  This is valuable for writing and 
 debugging data adapters.
 Once the Datastore is properly structured, save it, then use Conduit to save the 
 index file (ending with `.root`).  This toy data set is small enough that we can
