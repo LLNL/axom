@@ -46,9 +46,9 @@ Here is the code to create that Dataset ``ds``.
    :language: C++
 
 To use the Mesh Blueprint, make a new Group ``tinymesh`` conforming to the protocol.
-.. The structure of the conforming Group is shown below (summarizing the
-.. Mesh Blueprint <http://llnl-conduit.readthedocs.io/en/latest/blueprint_mesh.html>`_
-.. documentation).
+The structure of the conforming Group is shown below (summarizing the
+Mesh Blueprint <http://llnl-conduit.readthedocs.io/en/latest/blueprint_mesh.html>`_
+documentation).
 
 First build top-level groups required by the Blueprint.
 
