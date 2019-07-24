@@ -97,7 +97,7 @@ struct Input
 
    bool shouldIterate() const { return m_should_iterate; }
    int numIterations() const { return m_iter_count; }
-   int iterPercentage() const { return m_iter_percent; }
+   double iterPercentage() const { return m_iter_percent; }
 
 
    void showhelp()

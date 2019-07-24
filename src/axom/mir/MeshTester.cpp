@@ -664,7 +664,7 @@ mir::MIRMesh MeshTester::initTestCaseFive(int gridSize, int numCircles)
       materialVolumeFractionsData[matID][eID] = materialCount[matID] / (double) (gridSize * gridSize);
     }
 
-    axom::float64 delta_x = axom::utilities::abs(v2[0] - v1[1]) / (double) (gridSize - 1);
+    axom::float64 delta_x = axom::utilities::abs(v2[0] - v1[0]) / (double) (gridSize - 1);
     axom::float64 delta_y = axom::utilities::abs(v0[1] - v1[1]) / (double) (gridSize - 1);
 
     for (int y = 0; y < gridSize; ++y)
