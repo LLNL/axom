@@ -1092,7 +1092,8 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
 
   //The final name in mesh_path will be used as the name of the
   //blueprint index.
-  conduit::utils::rsplit_string(mesh_path, delimiter, blueprint_name, path_to_mesh);
+  conduit::utils::rsplit_string(mesh_path, delimiter, 
+                                blueprint_name, path_to_mesh);
 
   std::string bp_index("blueprint_index/" + blueprint_name);
 

@@ -202,7 +202,7 @@ public:
    *
    * If write() is called using the Group located at "/hierarchy/domain_data",
    * then only the Groups and Views descending from that Group are written
-   * to the file.  To call this method, we would choose the full path in 
+   * to the file.  To call this method, we would choose the full path in
    * the DataStore "hierarchy/domain_data/domain/blueprint_mesh" for
    * domain_path.  For the mesh_path argument, we choose only the path that
    * exists in the file:  "domain/blueprint_mesh".
