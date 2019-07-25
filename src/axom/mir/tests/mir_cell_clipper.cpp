@@ -422,20 +422,20 @@ TEST(mir_clipping_cell_and_vertex_output, clip_quad_case_three)
   EXPECT_EQ( 2, newElements.size() );
   EXPECT_EQ( 6, newVertices.size() );
 
-  EXPECT_EQ( 0, newElements[0][0] );
-  EXPECT_EQ( 1, newElements[0][1] );
-  EXPECT_EQ( 5, newElements[0][2] );
-  EXPECT_EQ( 7, newElements[0][3] );
+  EXPECT_EQ( 2, newElements[0][0] );
+  EXPECT_EQ( 3, newElements[0][1] );
+  EXPECT_EQ( 7, newElements[0][2] );
+  EXPECT_EQ( 5, newElements[0][3] );
 
-  EXPECT_EQ( 7, newElements[1][0] );
-  EXPECT_EQ( 5, newElements[1][1] );
-  EXPECT_EQ( 2, newElements[1][2] );
-  EXPECT_EQ( 3, newElements[1][3] );
+  EXPECT_EQ( 5, newElements[1][0] );
+  EXPECT_EQ( 7, newElements[1][1] );
+  EXPECT_EQ( 0, newElements[1][2] );
+  EXPECT_EQ( 1, newElements[1][3] );
 
-  EXPECT_EQ( 0, newVertices[0][0] );
-  EXPECT_EQ( 0, newVertices[1][0] );
-  EXPECT_EQ( 1, newVertices[2][0] );
-  EXPECT_EQ( 1, newVertices[3][0] );
+  EXPECT_EQ( 1, newVertices[0][0] );
+  EXPECT_EQ( 1, newVertices[1][0] );
+  EXPECT_EQ( 0, newVertices[2][0] );
+  EXPECT_EQ( 0, newVertices[3][0] );
   EXPECT_EQ( 0, newVertices[5][0] );
   EXPECT_EQ( 1, newVertices[5][1] );
   EXPECT_EQ( 0, newVertices[7][0] );
@@ -465,23 +465,23 @@ TEST(mir_clipping_cell_and_vertex_output, clip_quad_case_five)
   EXPECT_EQ( 4, newElements.size() );
   EXPECT_EQ( 8, newVertices.size() );
 
-  EXPECT_EQ( 4, newElements[0][0] );
-  EXPECT_EQ( 1, newElements[0][1] );
-  EXPECT_EQ( 5, newElements[0][2] );
+  EXPECT_EQ( 1, newElements[0][0] );
+  EXPECT_EQ( 5, newElements[0][1] );
+  EXPECT_EQ( 4, newElements[0][2] );
   
-  EXPECT_EQ( 0, newElements[1][0] );
-  EXPECT_EQ( 4, newElements[1][1] );
-  EXPECT_EQ( 5, newElements[1][2] );
-  EXPECT_EQ( 2, newElements[1][3] );
+  EXPECT_EQ( 5, newElements[1][0] );
+  EXPECT_EQ( 2, newElements[1][1] );
+  EXPECT_EQ( 0, newElements[1][2] );
+  EXPECT_EQ( 4, newElements[1][3] );
 
-  EXPECT_EQ( 0, newElements[2][0] );
-  EXPECT_EQ( 2, newElements[2][1] );
-  EXPECT_EQ( 6, newElements[2][2] );
-  EXPECT_EQ( 7, newElements[2][3] );
+  EXPECT_EQ( 2, newElements[2][0] );
+  EXPECT_EQ( 6, newElements[2][1] );
+  EXPECT_EQ( 7, newElements[2][2] );
+  EXPECT_EQ( 0, newElements[2][3] );
 
-  EXPECT_EQ( 7, newElements[3][0] );
-  EXPECT_EQ( 6, newElements[3][1] );
-  EXPECT_EQ( 3, newElements[3][2] );
+  EXPECT_EQ( 6, newElements[3][0] );
+  EXPECT_EQ( 3, newElements[3][1] );
+  EXPECT_EQ( 7, newElements[3][2] );
 
   EXPECT_EQ( 1, newVertices[0][0] );
   EXPECT_EQ( 2, newVertices[0][1] );
