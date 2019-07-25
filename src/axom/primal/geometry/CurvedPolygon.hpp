@@ -159,10 +159,10 @@ public:
    * Check is that the endpoint of each edge coincides with startpoint of next edge
    * \return True, if the polygon is closed, False otherwise
    */
-  bool isClosed() const
+  bool isClosed(double tol = 1e-15) const
   {
     const int ngon = numEdges();
-    if(ngon <= 1)
+    if(ngon <= 2)
     {
       return false;
     }
@@ -174,7 +174,7 @@ public:
         {
           if(!axom::utilities::isNearlyEqual(m_edges[i][m_edges[i].getOrder()][p],
                                              m_edges[i + 1][0][p],
-                                             1e-15))
+                                             tol))
           {
             return false;
           }
@@ -182,7 +182,7 @@ public:
         if(!axom::utilities::isNearlyEqual(
              m_edges[ngon - 1][m_edges[ngon - 1].getOrder()][p],
              m_edges[0][0][p],
-             1e-15))
+             tol))
         {
           return false;
         }
@@ -198,13 +198,14 @@ public:
    * \return True, if the polygon is closed, False otherwise
    */
 
-  T area() const
+  T area(double tol = 1e-15) const
   {
     const int ngon = numEdges();
     T A = 0.0;
-    if(!isClosed())
+    if(!isClosed(tol))
     {
       return A;
+      SLIC_INFO("Warning! The area is 0 because the element is not closed.");
     }
     else
     {

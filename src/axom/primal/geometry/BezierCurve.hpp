@@ -12,7 +12,7 @@
 #ifndef AXOM_PRIMAL_BEZIERCURVE_HPP_
 #define AXOM_PRIMAL_BEZIERCURVE_HPP_
 
-#include "axom/core/utilities/Utilities.hpp"
+#include "axom/core.hpp"
 #include "axom/slic.hpp"
 
 #include "axom/primal/geometry/NumericArray.hpp"
@@ -237,6 +237,44 @@ public:
         }
       }
       ptval[i] = dCarray[0];
+    }
+
+    return ptval;
+  }
+
+  /*!
+   * \brief Computes the tangent of  a Bezier curve at a particular parameter value \a t
+   *
+   * \param [in] t parameter value at which to compute tangent 
+   * \return p the tangent vector of the Bezier curve at t
+   *
+   * \note We typically find the tangent of the curve at \a t between 0 and 1
+   */
+
+  PointType dt(T t) const
+  {
+    PointType ptval;
+
+    const int ord = getOrder();
+    std::vector<T> dCarray(ord + 1);
+
+    // Run de Casteljau algorithm on each dimension
+    for(int i = 0; i < NDIMS; ++i)
+    {
+      for(int p = 0; p <= ord; ++p)
+      {
+        dCarray[p] = m_controlPoints[p][i];
+      }
+
+      for(int p = 1; p <= ord - 1; ++p)
+      {
+        const int end = ord - p;
+        for(int k = 0; k <= end; ++k)
+        {
+          dCarray[k] = (1 - t) * dCarray[k] + t * dCarray[k + 1];
+        }
+      }
+      ptval[i] = ord * (dCarray[1] - dCarray[0]);
     }
 
     return ptval;
