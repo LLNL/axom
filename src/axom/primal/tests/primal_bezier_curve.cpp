@@ -169,6 +169,42 @@ TEST( primal_beziercurve, evaluate)
 }
 
 //------------------------------------------------------------------------------
+TEST( primal_beziercurve_, tangent)
+{
+  SLIC_INFO("Testing Bezier tangent calculation");
+
+  const int DIM = 3;
+  using CoordType = double;
+  using PointType = primal::Point< CoordType, DIM >;
+  using BezierCurveType = primal::BezierCurve< CoordType, DIM >;
+
+  const int order = 3;
+  PointType data[order+1] =  { PointType::make_point(0.6, 1.2, 1.0),
+                               PointType::make_point(1.3, 1.6, 1.8),
+                               PointType::make_point(2.9, 2.4, 2.3),
+                               PointType::make_point(3.2, 3.5, 3.0) };
+
+  BezierCurveType b2Curve(data, order);
+
+  PointType midtval = PointType::make_point(3.15,2.325,1.875);
+  PointType starttval = PointType::make_point(2.1,1.2,2.4);
+  PointType endtval = PointType::make_point(.9,3.3,2.1);
+
+  // Evaluate the curve at several parameter values
+  // Curve should be tangent to control net at endpoints
+  PointType eval0 = b2Curve.dt(0.0);
+  PointType eval1 = b2Curve.dt(1.0);
+  PointType evalMid = b2Curve.dt(0.5);
+
+  for ( int i=0 ; i<DIM ; ++i)
+  {
+    EXPECT_NEAR(starttval[i],     eval0[i],   1e-15);
+    EXPECT_NEAR(endtval[i],       eval1[i],   1e-15);
+    EXPECT_NEAR(midtval[i],       evalMid[i], 1e-15);
+  }
+}
+
+//------------------------------------------------------------------------------
 TEST( primal_beziercurve, sector_area_cubic )
 {
   const int DIM = 2;
@@ -199,7 +235,7 @@ TEST( primal_beziercurve, sector_area_point )
   using BezierCurveType = primal::BezierCurve< CoordType, DIM >;
 
   {
-    SLIC_INFO("Testing Bezier sector area calculation for a cubic");
+    SLIC_INFO("Testing Bezier sector area calculation for a point");
     const int order = 0;
     PointType data[order+1] =  { PointType::make_point(0.6, 1.2)};
 
