@@ -96,12 +96,12 @@ TEST(primal_curvedpolygon, isClosed)
   EXPECT_EQ(false, bPolygon.isClosed());
 
   PointType controlPoints[2] = {PointType::make_point(0.6, 1.2),
-                                PointType::make_point(0.0, 1.6)};
+                                PointType::make_point(0.3, 2.0)};
 
-  PointType controlPoints2[2] = {PointType::make_point(0.0, 1.6),
-                                 PointType::make_point(0.3, 2.0)};
+  PointType controlPoints2[2] = {PointType::make_point(0.3, 2.0),
+                                 PointType::make_point(0.0, 1.6)};
 
-  PointType controlPoints3[2] = {PointType::make_point(0.3, 2.0),
+  PointType controlPoints3[2] = {PointType::make_point(0.0, 1.6),
                                  PointType::make_point(0.6, 1.2)};
 
   BezierCurveType bCurve(controlPoints, 1);
@@ -121,7 +121,7 @@ TEST(primal_curvedpolygon, isClosed)
   EXPECT_EQ(true, bPolygon.isClosed());
 
   bPolygon[2][1][0] -= 2e-15;
-  EXPECT_EQ(false, bPolygon.isClosed());
+  EXPECT_EQ(false, bPolygon.isClosed(1e-15));
 }
 
 //----------------------------------------------------------------------------------
@@ -139,12 +139,12 @@ TEST(primal_curvedpolygon, split_edge)
   EXPECT_EQ(0, bPolygon.numEdges());
 
   PointType controlPoints[2] = {PointType::make_point(0.6, 1.2),
-                                PointType::make_point(0.0, 1.6)};
+                                PointType::make_point(0.3, 2.0)};
 
-  PointType controlPoints2[2] = {PointType::make_point(0.0, 1.6),
-                                 PointType::make_point(0.3, 2.0)};
+  PointType controlPoints2[2] = {PointType::make_point(0.3, 2.0),
+                                 PointType::make_point(0.0, 1.6)};
 
-  PointType controlPoints3[2] = {PointType::make_point(0.3, 2.0),
+  PointType controlPoints3[2] = {PointType::make_point(0.0, 1.6),
                                  PointType::make_point(0.6, 1.2)};
 
   BezierCurveType bCurve(controlPoints, 1);
@@ -187,12 +187,12 @@ TEST(primal_curvedpolygon, area_triangle_degenerate)
   EXPECT_EQ(0.0, bPolygon.area());
 
   PointType controlPoints[2] = {PointType::make_point(0.6, 1.2),
-                                PointType::make_point(0.0, 1.6)};
+                                PointType::make_point(0.3, 2.0)};
 
-  PointType controlPoints2[2] = {PointType::make_point(0.0, 1.6),
-                                 PointType::make_point(0.3, 2.0)};
+  PointType controlPoints2[2] = {PointType::make_point(0.3, 2.0),
+                                 PointType::make_point(0.0, 1.6)};
 
-  PointType controlPoints3[2] = {PointType::make_point(0.3, 2.0),
+  PointType controlPoints3[2] = {PointType::make_point(0.0, 1.6),
                                  PointType::make_point(0.6, 1.2)};
 
   BezierCurveType bCurve(controlPoints, 1);
@@ -225,12 +225,12 @@ TEST(primal_curvedpolygon, area_triangle_linear)
   EXPECT_EQ(0, bPolygon.numEdges());
 
   PointType controlPoints[2] = {PointType::make_point(0.6, 1.2),
-                                PointType::make_point(0.0, 1.6)};
+                                PointType::make_point(0.3, 2.0)};
 
-  PointType controlPoints2[2] = {PointType::make_point(0.0, 1.6),
-                                 PointType::make_point(0.3, 2.0)};
+  PointType controlPoints2[2] = {PointType::make_point(0.3, 2.0),
+                                 PointType::make_point(0.0, 1.6)};
 
-  PointType controlPoints3[2] = {PointType::make_point(0.3, 2.0),
+  PointType controlPoints3[2] = {PointType::make_point(0.0, 1.6),
                                  PointType::make_point(0.6, 1.2)};
 
   BezierCurveType bCurve(controlPoints, 1);
@@ -243,7 +243,7 @@ TEST(primal_curvedpolygon, area_triangle_linear)
   bPolygon.addEdge(bCurve3);
 
   CoordType A = bPolygon.area();
-  CoordType trueA = .18;
+  CoordType trueA = -.18;
 
   EXPECT_DOUBLE_EQ(trueA, A);
 }
