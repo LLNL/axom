@@ -60,9 +60,9 @@ First build top-level groups required by the Blueprint.
    :end-before: _blueprint_restructure_toplevel_end
    :language: C++
 
-Add the node coordinates.  The Views in ``tinymesh`` will point to the Buffers within ``nodes``
-so that ``tinymesh`` can use the data without any new allocation or copying:
-while Sidre and Conduit will use the array type and shape information.
+Add the node coordinates.  The Views under ``tinymesh`` will point to the
+same Buffers that were created for the Views under ``nodes``
+so that ``tinymesh`` can use the data without any new allocation or copying.
 
 .. image:: figs/cdscoords.png
    :width: 650px
