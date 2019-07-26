@@ -17,7 +17,6 @@
 
 namespace primal = axom::primal;
 
-std::map<int, std::vector<double>> primal::UedaAreaMats;  //TODO: put this in the BezierCurve.cpp file
 //------------------------------------------------------------------------------
 TEST(primal_beziercurve, constructor)
 {
@@ -479,6 +478,131 @@ TEST(primal_beziercurve, isLinear)
       const double tol = 0.01;
       const double tol_sq = tol * tol;
       EXPECT_FALSE(curve.isLinear(tol_sq));
+    }
+  }
+}
+
+TEST(primal_beziercurve, sector_weights)
+{
+  SLIC_INFO("Testing weights for BezierCurve::sectorArea()");
+
+  // NOTE: Expected weights are provided in the reference paper [Ueda99]
+  // See doxygen comment for BezierCurve::sectorArea()
+
+  using CoordType = double;
+
+  // order 1
+  {
+    const int ord = 1;
+    auto weights = primal::generateBezierCurveSectorWeights<CoordType>(ord);
+
+    double binomInv = 1. / axom::utilities::binomialCoefficient(2, 1);
+    axom::numerics::Matrix<CoordType> exp(ord + 1, ord + 1);
+    // clang-format off
+    exp(0,0) =  0; exp(0,1) =  1;
+    exp(1,0) = -1; exp(1,1) =  0;
+    // clang-format on
+
+    for(int i = 0; i <= ord; ++i)
+    {
+      for(int j = 0; j <= ord; ++j)
+      {
+        EXPECT_DOUBLE_EQ(exp(i, j) * binomInv, weights(i, j));
+      }
+    }
+  }
+
+  // order 2
+  {
+    const int ord = 2;
+    auto weights = primal::generateBezierCurveSectorWeights<CoordType>(ord);
+
+    double binomInv = 1. / axom::utilities::binomialCoefficient(4, 2);
+    axom::numerics::Matrix<CoordType> exp(ord + 1, ord + 1);
+    // clang-format off
+    exp(0,0) =  0; exp(0,1) =  2; exp(0,2) =  1;
+    exp(1,0) = -2; exp(1,1) =  0; exp(1,2) =  2;
+    exp(2,0) = -1; exp(2,1) = -2; exp(2,2) =  0;
+    // clang-format on
+
+    for(int i = 0; i <= ord; ++i)
+    {
+      for(int j = 0; j <= ord; ++j)
+      {
+        EXPECT_DOUBLE_EQ(exp(i, j) * binomInv, weights(i, j));
+      }
+    }
+  }
+
+  // order 3
+  {
+    const int ord = 3;
+    auto weights = primal::generateBezierCurveSectorWeights<CoordType>(ord);
+
+    double binomInv = 1. / axom::utilities::binomialCoefficient(6, 3);
+    axom::numerics::Matrix<CoordType> exp(ord + 1, ord + 1);
+    // clang-format off
+    exp(0,0) =  0; exp(0,1) =  6; exp(0,2) =  3; exp(0,3) =  1;
+    exp(1,0) = -6; exp(1,1) =  0; exp(1,2) =  3; exp(1,3) =  3;
+    exp(2,0) = -3; exp(2,1) = -3; exp(2,2) =  0; exp(2,3) =  6;
+    exp(3,0) = -1; exp(3,1) = -3; exp(3,2) = -6; exp(3,3) =  0;
+    // clang-format on
+
+    for(int i = 0; i <= ord; ++i)
+    {
+      for(int j = 0; j <= ord; ++j)
+      {
+        EXPECT_DOUBLE_EQ(exp(i, j) * binomInv, weights(i, j));
+      }
+    }
+  }
+
+  // order 4
+  {
+    const int ord = 4;
+    auto weights = primal::generateBezierCurveSectorWeights<CoordType>(ord);
+
+    double binomInv = 1. / axom::utilities::binomialCoefficient(8, 4);
+    axom::numerics::Matrix<CoordType> exp(ord + 1, ord + 1);
+    // clang-format off
+    exp(0,0) =  0; exp(0,1) = 20; exp(0,2) = 10; exp(0,3) =  4; exp(0,4) =  1;
+    exp(1,0) =-20; exp(1,1) =  0; exp(1,2) =  8; exp(1,3) =  8; exp(1,4) =  4;
+    exp(2,0) =-10; exp(2,1) = -8; exp(2,2) =  0; exp(2,3) =  8; exp(2,4) = 10;
+    exp(3,0) = -4; exp(3,1) = -8; exp(3,2) = -8; exp(3,3) =  0; exp(3,4) = 20;
+    exp(4,0) = -1; exp(4,1) = -4; exp(4,2) =-10; exp(4,3) =-20; exp(4,4) =  0;
+    // clang-format on
+
+    for(int i = 0; i <= ord; ++i)
+    {
+      for(int j = 0; j <= ord; ++j)
+      {
+        EXPECT_DOUBLE_EQ(exp(i, j) * binomInv, weights(i, j));
+      }
+    }
+  }
+
+  // order 5
+  {
+    const int ord = 5;
+    auto weights = primal::generateBezierCurveSectorWeights<CoordType>(ord);
+
+    double binomInv = 1. / axom::utilities::binomialCoefficient(10, 5);
+    axom::numerics::Matrix<CoordType> exp(ord + 1, ord + 1);
+    // clang-format off
+    exp(0,0) =  0; exp(0,1) = 70; exp(0,2) = 35; exp(0,3) = 15; exp(0,4) =  5; exp(0,5) =  1;
+    exp(1,0) =-70; exp(1,1) =  0; exp(1,2) = 25; exp(1,3) = 25; exp(1,4) = 15; exp(1,5) =  5;
+    exp(2,0) =-35; exp(2,1) =-25; exp(2,2) =  0; exp(2,3) = 20; exp(2,4) = 25; exp(2,5) = 15;
+    exp(3,0) =-15; exp(3,1) =-25; exp(3,2) =-20; exp(3,3) =  0; exp(3,4) = 25; exp(3,5) = 35;
+    exp(4,0) = -5; exp(4,1) =-15; exp(4,2) =-25; exp(4,3) =-25; exp(4,4) =  0; exp(4,5) = 70;
+    exp(5,0) = -1; exp(5,1) = -5; exp(5,2) =-15; exp(5,3) =-35; exp(5,4) =-70; exp(5,5) =  0;
+    // clang-format on
+
+    for(int i = 0; i <= ord; ++i)
+    {
+      for(int j = 0; j <= ord; ++j)
+      {
+        EXPECT_DOUBLE_EQ(exp(i, j) * binomInv, weights(i, j));
+      }
     }
   }
 }

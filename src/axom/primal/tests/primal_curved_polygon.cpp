@@ -15,7 +15,6 @@
 
 namespace primal = axom::primal;
 
-std::map<int, std::vector<double>> primal::UedaAreaMats;  //TODO: put this in the BezierCurve.cpp file
 //------------------------------------------------------------------------------
 TEST(primal_curvedpolygon, constructor)
 {

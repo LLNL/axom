@@ -25,6 +25,7 @@
 #include "axom/primal/operators/squared_distance.hpp"
 
 #include <vector>
+#include <map>
 #include <ostream>
 
 namespace axom
@@ -39,8 +40,19 @@ class BezierCurve;
 template <typename T, int NDIMS>
 std::ostream& operator<<(std::ostream& os, const BezierCurve<T, NDIMS>& bCurve);
 
-// UedaAreaMats is where all of the area matrices from Ueda '99 are stored
-extern std::map<int, std::vector<double>> UedaAreaMats;
+/*!
+ * \brief Computes the weights for BezierCurve's sectorArea() function
+ *
+ * \param order The polynomial order of the curve
+ * \return An anti-symmetric matrix with (order+1)*{order+1) entries
+ * containing the integration weights for entry (i,j)
+ *
+ * The derivation is provided in:
+ *  Ueda, K. "Signed area of sectors between spline curves and the origin"
+ *  IEEE International Conference on Information Visualization, 1999.
+ */
+template <typename T>
+numerics::Matrix<T> generateBezierCurveSectorWeights(int order);
 
 /*!
  * \class BezierCurve
@@ -65,6 +77,13 @@ public:
   using CoordsVec = std::vector<PointType>;
   using BoundingBoxType = BoundingBox<T, NDIMS>;
   using OrientedBoundingBoxType = OrientedBoundingBox<T, NDIMS>;
+
+private:
+  // Caches of precomputed coefficients for sector area calculations
+  // on a given polynomial order
+  using SectorWeights = numerics::Matrix<T>;
+  using WeightsMap = std::map<int, SectorWeights>;
+  static WeightsMap s_sectorWeightsMap;
 
 public:
   /*!
@@ -320,50 +339,32 @@ public:
   }
 
   /*! 
-   * \brief Calculates the sector area (area between curve and origin) of a Bezier Curve
+   * \brief Calculates the sector area of a Bezier Curve
    *
-   * \param [in] tol a tolerance parameter controlling definition of
-   * near-linearity
-   * \param [out] boolean TRUE if c1 is near-linear
+   * The sector area is the area between the curve and the origin.
+   * The equation and derivation is described in:
+   *  Ueda, K. "Signed area of sectors between spline curves and the origin"
+   *  IEEE International Conference on Information Visualization, 1999.
    */
   T sectorArea() const
   {
     T A = 0;
-    int ord = getOrder();
-    if(UedaAreaMats.find(ord) == UedaAreaMats.end())
+    const int ord = getOrder();
+
+    // Compute and cache the weights if they are not already available
+    if(s_sectorWeightsMap.find(ord) == s_sectorWeightsMap.end())
     {
-      std::vector<double> newUedaAreaMat((ord + 1) * (ord + 1));
-      int twonchoosen = axom::utilities::binomialCoefficient(2 * ord, ord);
-      for(int i = 0; i <= ord; ++i)
-      {
-        for(int j = 0; j <= ord; ++j)
-        {
-          if((i == 0 && j == 0) || (i == (ord) && j == (ord)))
-          {
-            newUedaAreaMat[i * (ord + 1) + j] = 0.0;
-          }
-          else
-          {
-            newUedaAreaMat[i * (ord + 1) + j] = ((1.0 * j - i) / 2) *
-              (2.0 * (ord) / (1.0 * twonchoosen)) *
-              (1.0 * axom::utilities::binomialCoefficient(i + j, i) /
-               (1.0 * i + j)) *
-              (1.0 *
-               axom::utilities::binomialCoefficient(2 * (ord)-i - j, (ord)-j) /
-               (1.0 * (ord)-j + (ord)-i));
-          }
-        }
-      }
-      UedaAreaMats.insert(
-        std::pair<int, std::vector<double>>(ord, newUedaAreaMat));
+      auto wts = generateBezierCurveSectorWeights<T>(ord);
+      s_sectorWeightsMap.emplace(std::make_pair(ord, wts));
     }
-    const std::vector<double>& whicharea = (UedaAreaMats.find(ord)->second);
-    for(int i = 0; i <= ord; ++i)
+
+    const auto& weights = s_sectorWeightsMap[ord];
+
+    for(int p = 0; p <= ord; ++p)
     {
-      for(int j = 0; j <= ord; ++j)
+      for(int q = 0; q <= ord; ++q)
       {
-        A += static_cast<T>(whicharea[i * (ord + 1) + j]) *
-          m_controlPoints[i][1] * m_controlPoints[j][0];
+        A += weights(p, q) * m_controlPoints[p][1] * m_controlPoints[q][0];
       }
     }
     return A;
@@ -421,14 +422,46 @@ private:
   CoordsVec m_controlPoints;
 };
 
+// Declaration of sectorArea weights map
+template <typename T, int NDIMS>
+typename BezierCurve<T, NDIMS>::WeightsMap BezierCurve<T, NDIMS>::s_sectorWeightsMap;
+
 //------------------------------------------------------------------------------
-/// Free functions implementing BezierCurve's operators
+/// Free functions related to BezierCurve
 //------------------------------------------------------------------------------
 template <typename T, int NDIMS>
 std::ostream& operator<<(std::ostream& os, const BezierCurve<T, NDIMS>& bCurve)
 {
   bCurve.print(os);
   return os;
+}
+
+template <typename T>
+numerics::Matrix<T> generateBezierCurveSectorWeights(int ord)
+{
+  numerics::Matrix<T> weights(ord + 1, ord + 1);
+  T binom_2n_n = static_cast<T>(utilities::binomialCoefficient(2 * ord, ord));
+  for(int i = 0; i <= ord; ++i)
+  {
+    weights(i, i) = 0.;  // zero on the diagonal
+    for(int j = i + 1; j <= ord; ++j)
+    {
+      double val = 0.;
+      if(i != j)
+      {
+        T binom_ij_i = static_cast<T>(utilities::binomialCoefficient(i + j, i));
+        T binom_2nij_nj = static_cast<T>(
+          utilities::binomialCoefficient(2 * ord - i - j, ord - j));
+
+        val = ((j - i) * ord) / binom_2n_n *
+          (binom_ij_i / static_cast<T>(i + j)) *
+          (binom_2nij_nj / (2. * ord - j - i));
+      }
+      weights(i, j) = val;  // antisymmetric
+      weights(j, i) = -val;
+    }
+  }
+  return weights;
 }
 
 }  // namespace primal
