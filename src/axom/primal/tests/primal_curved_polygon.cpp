@@ -332,6 +332,88 @@ TEST(primal_curvedpolygon, area_triangle_mixed_order)
 }
 
 //----------------------------------------------------------------------------------
+TEST(primal_curvedpolygon, moment_triangle_linear)
+{
+  const int DIM = 2;
+  using CoordType = double;
+  using CurvedPolygonType = primal::CurvedPolygon<CoordType, DIM>;
+  using PointType = primal::Point<CoordType, DIM>;
+  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
+
+  SLIC_INFO("Test checking CurvedPolygon linear triangle moment computation.");
+
+  CurvedPolygonType bPolygon;
+  EXPECT_EQ(0, bPolygon.numEdges());
+
+  PointType controlPoints[2] = {PointType::make_point(0.6, 1.2),
+                                PointType::make_point(0.3, 2.0)};
+
+  PointType controlPoints2[2] = {PointType::make_point(0.3, 2.0),
+                                 PointType::make_point(0.0, 1.6)};
+  PointType controlPoints3[2] = {PointType::make_point(0.0, 1.6),
+                                 PointType::make_point(0.6, 1.2)};
+
+  BezierCurveType bCurve(controlPoints, 1);
+  bPolygon.addEdge(bCurve);
+
+  BezierCurveType bCurve2(controlPoints2, 1);
+  bPolygon.addEdge(bCurve2);
+
+  BezierCurveType bCurve3(controlPoints3, 1);
+  bPolygon.addEdge(bCurve3);
+
+  PointType M = bPolygon.moment();
+  CoordType trueM1 = 0.3;
+  CoordType trueM2 = 1.6;
+
+  EXPECT_DOUBLE_EQ(trueM1, M[0]);
+  EXPECT_DOUBLE_EQ(trueM2, M[1]);
+}
+
+//----------------------------------------------------------------------------------
+TEST(primal_curvedpolygon, moment_triangle_mixed_order)
+{
+  const int DIM = 2;
+  using CoordType = double;
+  using CurvedPolygonType = primal::CurvedPolygon<CoordType, DIM>;
+  using PointType = primal::Point<CoordType, DIM>;
+  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
+
+  SLIC_INFO(
+    "Test checking CurvedPolygon mixed order triangle area computation.");
+
+  CurvedPolygonType bPolygon;
+  EXPECT_EQ(0, bPolygon.numEdges());
+
+  PointType controlPoints[3] = {PointType::make_point(0.6, 1.2),
+                                PointType::make_point(0.4, 1.3),
+                                PointType::make_point(0.3, 2.0)};
+
+  PointType controlPoints2[3] = {PointType::make_point(0.3, 2.0),
+                                 PointType::make_point(0.27, 1.5),
+                                 PointType::make_point(0.0, 1.6)};
+
+  PointType controlPoints3[2] = {PointType::make_point(0.0, 1.6),
+                                 PointType::make_point(0.6, 1.2)};
+
+  BezierCurveType bCurve(controlPoints, 2);
+  bPolygon.addEdge(bCurve);
+
+  BezierCurveType bCurve2(controlPoints2, 2);
+  bPolygon.addEdge(bCurve2);
+
+  BezierCurveType bCurve3(controlPoints3, 1);
+  bPolygon.addEdge(bCurve3);
+
+  PointType M = bPolygon.moment();
+  CoordType trueM2 = 1.55764705882353;
+  CoordType trueM1 = .2970147058823527;
+
+  EXPECT_DOUBLE_EQ(trueM1, M[0]);
+  EXPECT_DOUBLE_EQ(trueM2, M[1]);
+}
+
+//----------------------------------------------------------------------------------
 TEST(primal_curvedpolygon, intersection_triangle_linear)
 {
   const int DIM = 2;

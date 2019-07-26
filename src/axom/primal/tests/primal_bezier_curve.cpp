@@ -224,6 +224,29 @@ TEST(primal_beziercurve, sector_area_cubic)
 }
 
 //------------------------------------------------------------------------------
+TEST(primal_beziercurve, sector_moment_cubic)
+{
+  const int DIM = 2;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
+
+  {
+    SLIC_INFO("Testing Bezier sector moment calculation for a cubic");
+    const int order = 3;
+    PointType data[order + 1] = {PointType::make_point(0.6, 1.2),
+                                 PointType::make_point(1.3, 1.6),
+                                 PointType::make_point(2.9, 2.4),
+                                 PointType::make_point(3.2, 3.5)};
+
+    BezierCurveType bCurve(data, order);
+    PointType M = bCurve.sectorMoment();
+    EXPECT_NEAR(M[0], -.429321428571429, 2e-15);
+    EXPECT_NEAR(M[1], -.354010714285715, 2e-15);
+  }
+}
+
+//------------------------------------------------------------------------------
 TEST(primal_beziercurve, sector_area_point)
 {
   const int DIM = 2;
@@ -238,6 +261,26 @@ TEST(primal_beziercurve, sector_area_point)
 
     BezierCurveType bCurve(data, order);
     EXPECT_DOUBLE_EQ(bCurve.sectorArea(), 0.0);
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(primal_beziercurve, sector_moment_point)
+{
+  const int DIM = 2;
+  using CoordType = double;
+  using PointType = primal::Point<CoordType, DIM>;
+  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
+
+  {
+    SLIC_INFO("Testing Bezier sector moment calculation for a point");
+    const int order = 0;
+    PointType data[order + 1] = {PointType::make_point(0.6, 1.2)};
+
+    BezierCurveType bCurve(data, order);
+    PointType M = bCurve.sectorMoment();
+    EXPECT_DOUBLE_EQ(M[0], 0.0);
+    EXPECT_DOUBLE_EQ(M[1], 0.0);
   }
 }
 

@@ -20,9 +20,8 @@
 #include "axom/primal/geometry/BezierCurve.hpp"
 #include "axom/primal/operators/intersect.hpp"
 
-#include "fmt/fmt.hpp"
 #include <vector>
-#include <ostream>  // for std::ostream
+#include <ostream>
 
 namespace axom
 {
@@ -197,15 +196,14 @@ public:
    * Check is that the endpoint of each edge coincides with startpoint of next edge
    * \return True, if the polygon is closed, False otherwise
    */
-
   T area(double tol = 1e-15) const
   {
     const int ngon = numEdges();
     T A = 0.0;
     if(!isClosed(tol))
     {
+      SLIC_DEBUG("Warning! The area is 0 because the element is not closed.");
       return A;
-      SLIC_INFO("Warning! The area is 0 because the element is not closed.");
     }
     else
     {
@@ -214,6 +212,33 @@ public:
         A += m_edges[ed].sectorArea();
       }
       return A;
+    }
+  }
+
+  PointType moment(double tol = 1e-15) const
+  {
+    const int ngon = numEdges();
+    PointType M = PointType::make_point(0.0, 0.0);
+    if(!isClosed(tol))
+    {
+      SLIC_DEBUG(
+        "Warning! The moments are 0 because the element is not closed.");
+      return M;
+    }
+    else
+    {
+      const T A = area();
+      if(A != 0.)
+      {
+        for(int ed = 0; ed < ngon; ++ed)
+        {
+          PointType Mc = m_edges[ed].sectorMoment();
+          M[0] += (Mc[0]);
+          M[1] += (Mc[1]);
+        }
+        M.array() /= A;
+      }
+      return M;
     }
   }
 
