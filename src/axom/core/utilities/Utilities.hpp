@@ -34,7 +34,7 @@ namespace utilities
  * \brief Gracefully aborts the application
  */
 void processAbort();
-int binomial_coefficient(int n, int k);
+
 /*!
  * \brief Returns the absolute value of x.
  * \param [in] x value whose absolute value is computed.
@@ -143,6 +143,14 @@ T clampLower(T val, T lower)
 {
   return val < lower ? lower : val;
 }
+
+/*!
+ * \brief Computes the binomial coefficient `n choose k`
+ *
+ * \return \f$ {n\choose k}  = n! / (k! * (n-k)!)\f$
+ * when \f$ n \ge k \ge 0 \f$, 0 otherwise.
+ */
+int binomialCoefficient(int n, int k);
 
 /*!
  * \brief Returns a random real number within the specified interval
