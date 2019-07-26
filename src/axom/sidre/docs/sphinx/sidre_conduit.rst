@@ -36,7 +36,7 @@ A simulation organizes its Sidre data as the code design dictates.
 Here is a simple example.
 
 .. image:: figs/ds.png
-   :width: 300px
+   :width: 650px
 
 Here is the code to create that Dataset ``ds``.
 
@@ -46,8 +46,8 @@ Here is the code to create that Dataset ``ds``.
    :language: C++
 
 To use the Mesh Blueprint, make a new Group ``tinymesh`` conforming to the protocol.
-The structure of the conforming Group is shown below (summarizing the
- `Mesh Blueprint <http://llnl-conduit.readthedocs.io/en/latest/blueprint_mesh.html>`_
+The structure of the conforming Group is shown below (summarizing
+the `Mesh Blueprint <http://llnl-conduit.readthedocs.io/en/latest/blueprint_mesh.html>`_
 documentation).
 
 First build top-level groups required by the Blueprint.
@@ -112,7 +112,7 @@ Any code that uses Mesh Blueprint can open and use this pair of files.
 
 The DataStore also contains a method that can automatically generate the
 Blueprint index within a Sidre Group rather than calling directly into
-Conduit.  Set up a mesh similarly to the above.
+Conduit.  Set up a mesh similarly to the example above.
 
 .. literalinclude:: ../../examples/sidre_createdatastore.cpp
    :start-after: _blueprint_generate_toplevel_start

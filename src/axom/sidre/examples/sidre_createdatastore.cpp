@@ -441,7 +441,7 @@ void save_as_blueprint(DataStore* ds) {
 void generate_blueprint(DataStore* ds) {
   // _blueprint_generate_toplevel_start
   // Conduit needs a specific hierarchy.
-  // We'll make a new DataStore with that hierarchy, pointing at the
+  // We'll make a new Group with that hierarchy, pointing at the
   // application's data.
   std::string domain_name = "domain";
   std::string domain_location = "domain_data/" + domain_name;
