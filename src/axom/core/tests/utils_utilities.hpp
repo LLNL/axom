@@ -135,3 +135,86 @@ TEST(utils_Utilities, minmax)
     EXPECT_EQ(a, temp_max);
   }
 }
+
+TEST(core_Utilities, binomial_coefficient)
+{
+  std::cout << "Testing binomial coefficient function." << std::endl;
+
+  // test n less than zero
+  {
+    const int n = -1;
+    const int exp = 0;
+    for(int k = -1; k < 10; ++k)
+    {
+      auto binom_k_n = axom::utilities::binomialCoefficient(n, k);
+      EXPECT_EQ(exp, binom_k_n);
+    }
+  }
+
+  // test n := 0
+  {
+    const int n = 0;
+
+    EXPECT_EQ(1, axom::utilities::binomialCoefficient(n, 0));
+
+    EXPECT_EQ(0, axom::utilities::binomialCoefficient(n, -1));
+    EXPECT_EQ(0, axom::utilities::binomialCoefficient(n, 1));
+  }
+
+  // test n := 1
+  {
+    const int n = 1;
+
+    EXPECT_EQ(0, axom::utilities::binomialCoefficient(n, -1));
+
+    EXPECT_EQ(1, axom::utilities::binomialCoefficient(n, 0));
+    EXPECT_EQ(1, axom::utilities::binomialCoefficient(n, 1));
+
+    EXPECT_EQ(0, axom::utilities::binomialCoefficient(n, 2));
+  }
+
+  // test n := 2
+  {
+    const int n = 2;
+
+    EXPECT_EQ(1, axom::utilities::binomialCoefficient(n, 0));
+    EXPECT_EQ(2, axom::utilities::binomialCoefficient(n, 1));
+    EXPECT_EQ(1, axom::utilities::binomialCoefficient(n, 2));
+  }
+
+  // test n := 3
+  {
+    const int n = 3;
+
+    EXPECT_EQ(1, axom::utilities::binomialCoefficient(n, 0));
+    EXPECT_EQ(3, axom::utilities::binomialCoefficient(n, 1));
+    EXPECT_EQ(3, axom::utilities::binomialCoefficient(n, 2));
+    EXPECT_EQ(1, axom::utilities::binomialCoefficient(n, 3));
+  }
+
+  // test n := 4
+  {
+    const int n = 4;
+
+    EXPECT_EQ(1, axom::utilities::binomialCoefficient(n, 0));
+    EXPECT_EQ(4, axom::utilities::binomialCoefficient(n, 1));
+    EXPECT_EQ(6, axom::utilities::binomialCoefficient(n, 2));
+    EXPECT_EQ(4, axom::utilities::binomialCoefficient(n, 3));
+    EXPECT_EQ(1, axom::utilities::binomialCoefficient(n, 4));
+  }
+
+  // test recurrence relation  nCk = (n-1)C(k-1) + (n-1)C(k)
+  {
+    for(int n = 1; n < 10; ++n)
+    {
+      for(int k = 1; k <= n; ++k)
+      {
+        auto binom_n_k = axom::utilities::binomialCoefficient(n, k);
+        auto binom_n1_k1 = axom::utilities::binomialCoefficient(n - 1, k - 1);
+        auto binom_n1_k = axom::utilities::binomialCoefficient(n - 1, k);
+
+        EXPECT_EQ(binom_n_k, binom_n1_k1 + binom_n1_k);
+      }
+    }
+  }
+}
