@@ -68,13 +68,23 @@ public:
   }
 
 private:
-  /// Generate a matrix of sector weights; our destructor will manage the associated memory
+  /*!
+   * \brief Computes the weights for BezierCurve's sectorArea() function
+   *
+   * \param order The polynomial order of the curve
+   * \return An anti-symmetric matrix with (order+1)*{order+1) entries
+   * containing the integration weights for entry (i,j)
+   *
+   * The derivation is provided in:
+   *  Ueda, K. "Signed area of sectors between spline curves and the origin"
+   *  IEEE International Conference on Information Visualization, 1999.
+   */
   SectorWeights* generateBezierCurveSectorWeights(int ord) const
   {
     const bool memoryIsExternal = true;
-    const int sz = ord + 1;
+    const int SZ = ord + 1;
     SectorWeights* weights =
-      new SectorWeights(sz, sz, new T[sz * sz], memoryIsExternal);
+      new SectorWeights(SZ, SZ, new T[SZ * SZ], memoryIsExternal);
 
     T binom_2n_n = static_cast<T>(utilities::binomialCoefficient(2 * ord, ord));
     for(int i = 0; i <= ord; ++i)
@@ -103,6 +113,96 @@ private:
 private:
   mutable std::map<int, SectorWeights*> m_sectorWeightsMap;
 };
+
+/// Utility class that caches precomputed coefficient matrices for sectorMoment computation
+template <typename T>
+class MemoizedSectorMomentWeights
+{
+public:
+  using SectorWeights = numerics::Matrix<T>;
+
+  MemoizedSectorMomentWeights() = default;
+
+  ~MemoizedSectorMomentWeights()
+  {
+    for(auto& p : m_sectorWeightsMap)  // for each matrix of weights
+    {
+      delete[] p.second->data();  // delete the matrix's data
+      delete p.second;            // delete the matrix
+      p.second = nullptr;
+    }
+    m_sectorWeightsMap.clear();
+  }
+
+  /// Returns a memoized matrix of sector moment coeficients for component \a dim or order \a order
+  const SectorWeights& getWeights(int order, int dim) const
+  {
+    // Compute and cache the weights if they are not already available
+    if(m_sectorWeightsMap.find(std::make_pair(order, dim)) ==
+       m_sectorWeightsMap.end())
+    {
+      auto vec = generateBezierCurveSectorMomentsWeights(order);
+      for(int d = 0; d <= order; ++d)
+      {
+        m_sectorWeightsMap[std::make_pair(order, d)] = vec[d];
+      }
+    }
+
+    return *(m_sectorWeightsMap[std::make_pair(order, dim)]);
+  }
+
+  /*!
+   * \brief Computes the weights for BezierCurve's sectorMoment() function
+   *
+   * \param order The polynomial order of the curve
+   * \return An anti-symmetric matrix with (order+1)*{order+1) entries
+   * containing the integration weights for entry (i,j)
+   *
+   * The derivation is provided in:
+   *  Ueda, K. "Signed area of sectors between spline curves and the origin"
+   *  IEEE International Conference on Information Visualization, 1999.
+   */
+  std::vector<SectorWeights*> generateBezierCurveSectorMomentsWeights(int ord) const
+  {
+    const bool memoryIsExternal = true;
+    const int SZ = ord + 1;
+
+    std::vector<SectorWeights*> weights;
+    weights.resize(SZ);
+    for(int k = 0; k <= ord; ++k)
+    {
+      SectorWeights* weights_k =
+        new SectorWeights(SZ, SZ, new T[SZ * SZ], memoryIsExternal);
+      for(int i = 0; i <= ord; ++i)
+      {
+        (*weights_k)(i, i) = 0.;  // zero on the diagonal
+        for(int j = i + 1; j <= ord; ++j)
+        {
+          double val = 0.;
+          if(i != j)
+          {
+            T binom_n_i = static_cast<T>(utilities::binomialCoefficient(ord, i));
+            T binom_n_j = static_cast<T>(utilities::binomialCoefficient(ord, j));
+            T binom_n_k = static_cast<T>(utilities::binomialCoefficient(ord, k));
+            T binom_3n2_ijk1 = static_cast<T>(
+              utilities::binomialCoefficient(3 * ord - 2, i + j + k - 1));
+
+            val = (1. * (j - i)) / (3. * (3 * ord - 1)) *
+              (1. * binom_n_i * binom_n_j * binom_n_k / (1. * binom_3n2_ijk1));
+          }
+          (*weights_k)(i, j) = val;  // antisymmetric
+          (*weights_k)(j, i) = -val;
+        }
+      }
+      weights[k] = weights_k;
+    }
+    return weights;
+  }
+
+private:
+  mutable std::map<std::pair<int, int>, SectorWeights*> m_sectorWeightsMap;
+};
+
 }  // namespace internal
 
 // Forward declare the templated classes and operator functions
@@ -112,20 +212,6 @@ class BezierCurve;
 /*! \brief Overloaded output operator for Bezier Curves*/
 template <typename T, int NDIMS>
 std::ostream& operator<<(std::ostream& os, const BezierCurve<T, NDIMS>& bCurve);
-
-/*!
- * \brief Computes the weights for BezierCurve's sectorArea() function
- *
- * \param order The polynomial order of the curve
- * \return An anti-symmetric matrix with (order+1)*{order+1) entries
- * containing the integration weights for entry (i,j)
- *
- * The derivation is provided in:
- *  Ueda, K. "Signed area of sectors between spline curves and the origin"
- *  IEEE International Conference on Information Visualization, 1999.
- */
-template <typename T>
-numerics::Matrix<T> generateBezierCurveSectorWeights(int order);
 
 /*!
  * \class BezierCurve
@@ -404,7 +490,41 @@ public:
     return;
   }
 
-  /*! 
+  /*!
+   * \brief Calculates the sector moment of a Bezier Curve
+   *
+   * The sector moment is the moment between the curve and the origin.
+   * The equation and derivation are generalizations of:
+   *  Ueda, K. "Signed area of sectors between spline curves and the origin"
+   *  IEEE International Conference on Information Visualization, 1999.
+   */
+  PointType sectorMoment() const
+  {
+    // Weights for each polynomial order's moments are precomputed and memoized
+    static internal::MemoizedSectorMomentWeights<T> s_weights;
+
+    T Mx = 0;
+    T My = 0;
+    const int ord = getOrder();
+    for(int r = 0; r <= ord; ++r)
+    {
+      const auto& weights_r = s_weights.getWeights(ord, r);
+      for(int p = 0; p <= ord; ++p)
+      {
+        for(int q = 0; q <= ord; ++q)
+        {
+          Mx += weights_r(p, q) * m_controlPoints[p][1] *
+            m_controlPoints[q][0] * m_controlPoints[r][0];
+          My += weights_r(p, q) * m_controlPoints[p][1] *
+            m_controlPoints[q][0] * m_controlPoints[r][1];
+        }
+      }
+    }
+    PointType M = PointType::make_point(Mx, My);
+    return M;
+  }
+
+  /*!
    * \brief Calculates the sector area of a Bezier Curve
    *
    * The sector area is the area between the curve and the origin.
