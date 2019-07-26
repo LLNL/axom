@@ -4,8 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /*!
- *
- * \file
+ * \file    Utilities.cpp
  *
  * \brief   Implementation file for utility functions.
  *
@@ -24,21 +23,6 @@ namespace axom
 {
 namespace utilities
 {
-int binomial_coefficient(int n, int k)
-{
-  if(k > n - k)
-  {
-    k = n - k;
-  }
-  int val = 1;
-  for(int i = 1; i <= k; ++i)
-  {
-    val *= (n - k + i);
-    val /= i;
-  }
-  return val;
-}
-
 void processAbort()
 {
 #ifndef AXOM_USE_MPI
@@ -52,6 +36,30 @@ void processAbort()
   }
   abort();
 #endif
+}
+
+int binomialCoefficient(int n, int k)
+{
+  if(k > n || k < 0)  // check if out-of-bounds
+  {
+    return 0;
+  }
+  if(k == n || k == 0)  // early return
+  {
+    return 1;
+  }
+  if(k > n - k)  // exploit symmetry to reduce work
+  {
+    k = n - k;
+  }
+
+  int val = 1;
+  for(int i = 1; i <= k; ++i)
+  {
+    val *= (n - k + i);
+    val /= i;
+  }
+  return val;
 }
 
 }  // end namespace utilities
