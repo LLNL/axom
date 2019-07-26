@@ -217,6 +217,26 @@ public:
     }
   } 
   
+  PointType moment(double tol = 1e-15) const
+  {
+    const int ngon = numEdges();
+    PointType M = PointType::make_point(0.0,0.0);
+    if (!isClosed(tol)) {return M; SLIC_INFO("Warning! The moments are 0 because the element is not closed.");}
+    else
+    {  
+      for (int ed = 0; ed<ngon; ++ed)
+      { 
+        PointType Mc = m_edges[ed].sectorMoment();
+        //T A = m_edges[ed].sectorArea;
+        M[0] += (Mc[0]);
+        M[1] += (Mc[1]);
+      }
+      M[0]=M[0]/area();
+      M[1]=M[1]/area();
+      return M;
+    }
+  } 
+  
 private:
   std::vector< BezierCurve<T,NDIMS> > m_edges;
 };

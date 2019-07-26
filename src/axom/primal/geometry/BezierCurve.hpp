@@ -57,6 +57,19 @@ std::ostream& operator<<(std::ostream & os,
 template < typename T>
 numerics::Matrix<T> generateBezierCurveSectorWeights(int order);
 
+/*!
+ * \brief Computes the weights for BezierCurve's sectorMoment() function
+ *
+ * \param order The polynomial order of the curve
+ * \return An anti-symmetric matrix with (order+1)*{order+1) entries
+ * containing the integration weights for entry (i,j)
+ *
+ * The derivation is provided in:
+ *  Ueda, K. "Signed area of sectors between spline curves and the origin"
+ *  IEEE International Conference on Information Visualization, 1999.
+ */
+template < typename T>
+std::vector<numerics::Matrix<T>> generateBezierCurveSectorMomentsWeights(int order);
 
 
 /*!
@@ -88,7 +101,9 @@ private:
   // on a given polynomial order
   using SectorWeights = numerics::Matrix<T>;
   using WeightsMap = std::map<int, SectorWeights>;
+  using MomentsWeightsMap = std::map<int, std::vector<SectorWeights>>;
   static WeightsMap s_sectorWeightsMap;
+  static MomentsWeightsMap s_sectorMomentsWeightsMap;
 
 public:
 
@@ -328,6 +343,44 @@ public:
     return;
   }
 
+
+  /*
+   * \brief Calculates the sector moment of a Bezier Curve
+   *
+   * The sector moment is the moment between the curve and the origin.
+   * The equation and derivation are generalizations of:
+   *  Ueda, K. "Signed area of sectors between spline curves and the origin"
+   *  IEEE International Conference on Information Visualization, 1999.
+   */
+  PointType sectorMoment() const
+  {
+    T Mx = 0;
+    T My = 0;
+    const int ord = getOrder();
+
+    // Compute and cache the weights if they are not already available
+    if (s_sectorMomentsWeightsMap.find(ord)==s_sectorMomentsWeightsMap.end())
+    {
+      auto wts = generateBezierCurveSectorMomentsWeights<T>(ord);
+      s_sectorMomentsWeightsMap.emplace(std::make_pair(ord,wts));
+    }
+
+    const auto& weights = s_sectorMomentsWeightsMap[ord];
+    for (int r=0 ; r<=ord ; ++r)
+    {
+      for (int p=0 ; p<=ord ; ++p)
+      {
+        for (int q=0 ; q<=ord ; ++q)
+        {
+          Mx+= weights[r](p,q)*m_controlPoints[p][1]* m_controlPoints[q][0]* m_controlPoints[r][0];
+          My+= weights[r](p,q)*m_controlPoints[p][1]* m_controlPoints[q][0]* m_controlPoints[r][1];
+        }
+      }
+    }
+    PointType M= PointType::make_point(Mx,My);
+    return M;
+  }
+
   /*
    * \brief Calculates the sector area of a Bezier Curve
    *
@@ -417,6 +470,11 @@ template < typename T, int NDIMS >
 typename BezierCurve<T,NDIMS>::WeightsMap
 BezierCurve<T,NDIMS>::s_sectorWeightsMap;
 
+// Declaration of sectorMoments weights map
+template < typename T, int NDIMS >
+typename BezierCurve<T,NDIMS>::MomentsWeightsMap
+BezierCurve<T,NDIMS>::s_sectorMomentsWeightsMap;
+
 
 //------------------------------------------------------------------------------
 /// Free functions related to BezierCurve
@@ -458,6 +516,42 @@ numerics::Matrix<T> generateBezierCurveSectorWeights(int ord)
    return weights;
 }
 
+template <typename T>
+std::vector<numerics::Matrix<T>> generateBezierCurveSectorMomentsWeights(int ord)
+{
+   std::vector<numerics::Matrix<T>> weights;
+   weights.resize(ord+1);
+   numerics::Matrix<T> weightsr(ord+1,ord+1);
+   for (int k=0 ; k<=ord ; ++k)
+   {
+     for (int i=0 ; i<=ord ; ++i)
+     {
+       weightsr(i,i) = 0.;   // zero on the diagonal
+       for (int j=i+1 ; j<=ord ; ++j)
+       {
+         double val = 0.;
+         if (i != j)
+         {
+           T binom_n_i =
+             static_cast<T>(utilities::binomialCoefficient(ord,i));
+           T binom_n_j =
+             static_cast<T>(utilities::binomialCoefficient(ord,j));
+           T binom_n_k =
+             static_cast<T>(utilities::binomialCoefficient(ord,k));
+           T binom_3n2_ijk1 =
+             static_cast<T>(utilities::binomialCoefficient(3*ord-2,i+j+k-1));
+
+           val = (1.*(j-i) ) / (3.*(3*ord-1))
+                 * (1.*binom_n_i*binom_n_j*binom_n_k/ (1.*binom_3n2_ijk1));
+         }
+         weightsr(i,j) = val;   // antisymmetric
+         weightsr(j,i) = -val;
+       }
+     }
+     weights[k]=weightsr;
+   }
+   return weights;
+}
 
 
 } // namespace primal
