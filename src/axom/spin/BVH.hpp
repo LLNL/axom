@@ -198,6 +198,15 @@ public:
   ~BVH();
 
   /*!
+   * \brief Sets the scale factor for scaling the supplied bounding boxes.
+   * \param [in] scale_factor the scale factor
+   *
+   * \note The default scale factor is set to 1.001
+   */
+  void setScaleFactor( FloatType scale_factor )
+  { m_scaleFactor = scale_factor; };
+
+  /*!
    * \brief Generates the BVH
    * \return status set to BVH_BUILD_OK on success.
    */
@@ -267,6 +276,7 @@ private:
 /// \name Private Members
 /// @{
 
+  FloatType m_scaleFactor;
   IndexType m_numItems;
   const FloatType* m_boxes;
   internal::linear_bvh::BVHData< FloatType,NDIMS > m_bvh;
@@ -365,6 +375,7 @@ bool InRight( const internal::linear_bvh::Vec< FloatType, 2>& point,
 template< int NDIMS, typename ExecSpace, typename FloatType >
 BVH< NDIMS, ExecSpace, FloatType >::BVH( const FloatType* boxes,
                                          IndexType numItems ) :
+  m_scaleFactor( 1.001 ),
   m_numItems( numItems ),
   m_boxes( boxes )
 {
@@ -418,7 +429,7 @@ int BVH< NDIMS, ExecSpace, FloatType >::build()
   internal::linear_bvh::RadixTree< FloatType, NDIMS > radix_tree;
   internal::linear_bvh::AABB< FloatType, NDIMS > global_bounds;
   internal::linear_bvh::build_radix_tree< ExecSpace >(
-      boxesptr, numBoxes, global_bounds, radix_tree );
+      boxesptr, numBoxes, global_bounds, radix_tree, m_scaleFactor );
 
   // STEP 3: emit the BVH data-structure from the radix tree
   m_bvh.m_bounds = global_bounds;
