@@ -374,12 +374,12 @@ void custom_sort( ExecSpace, uint32*& mcodes, int32 size, int32* iter )
 {
   array_counting< ExecSpace >(iter, size, 0, 1);
 
-  std::sort(iter,
-            iter + size,
-            [=](int32 i1, int32 i2)
-            {
-              return mcodes[i1] < mcodes[i2];
-            } );
+  std::stable_sort( iter,
+                    iter + size,
+                    [=](int32 i1, int32 i2)
+                    {
+                    return mcodes[i1] < mcodes[i2];
+                    } );
 
 
   reorder< ExecSpace >(iter, mcodes, size);
