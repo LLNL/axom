@@ -10,6 +10,8 @@ set(quest_example_depends
         axom
         )
 
+blt_list_append(TO quest_example_depends ELEMENTS mpi IF ENABLE_MPI)
+blt_list_append(TO quest_example_depends ELEMENTS openmp IF ENABLE_OPENMP)
 blt_list_append(TO quest_example_depends ELEMENTS cuda IF ENABLE_CUDA)
 blt_list_append(TO quest_example_depends ELEMENTS RAJA IF RAJA_FOUND)
 
@@ -107,4 +109,23 @@ if (ENABLE_FORTRAN)
                 )
         endif()
     endif()
+endif()
+
+if(MFEM_FOUND)
+    blt_add_executable(
+        NAME       quest_high_order_remap_ex
+        SOURCES    quest_high_order_remap.cpp
+        OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
+        DEPENDS_ON ${quest_example_depends} mfem fmt
+        FOLDER      axom/quest/examples
+    )    
+
+    #string(STRIP "${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS}" MFEM_COMPILE_FLAGS)
+
+    #if (ENABLE_CUDA)
+    #    set(MFEM_COMPILE_FLAGS "-Xcompiler=${MFEM_COMPILE_FLAGS}")
+    #endif()
+
+    #blt_add_target_compile_flags( TO quest_high_order_remap_ex FLAGS "${MFEM_COMPILE_FLAGS}" )
+
 endif()
