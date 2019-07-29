@@ -59,8 +59,8 @@ TEST(primal_beziercurve, set_order)
   EXPECT_EQ(-1, bCurve.getOrder());
 
   const int order = 1;
-  PointType controlPoints[] = {PointType::make_point(0.6, 1.2, 1.0),
-                               PointType::make_point(0.0, 1.6, 1.8)};
+  PointType controlPoints[2] = {PointType::make_point(0.6, 1.2, 1.0),
+                                PointType::make_point(0.0, 1.6, 1.8)};
 
   bCurve.setOrder(order);
   EXPECT_EQ(order, bCurve.getOrder());

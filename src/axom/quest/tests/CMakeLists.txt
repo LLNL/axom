@@ -31,6 +31,7 @@ set(quest_tests_depends
     gtest
    )
 
+blt_list_append( TO quest_tests_depends ELEMENTS mpi IF ENABLE_MPI )
 blt_list_append( TO quest_tests_depends ELEMENTS cuda IF ENABLE_CUDA )
 blt_list_append( TO quest_tests_depends ELEMENTS blt::hip IF ENABLE_HIP )
 
