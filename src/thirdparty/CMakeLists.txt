@@ -2,15 +2,36 @@
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
-
-#
+#------------------------------------------------------------------------------
 # Axom third-party builtin libs are all currently header only.
 # We have tests here that make sure they link and can be used.
-#
+#------------------------------------------------------------------------------
 
-############################################################
+
+#------------------------------------------------------------------------------
+# Register the built-in CLI11 library for command line option parsing
+#------------------------------------------------------------------------------
+
+blt_add_library(NAME CLI11
+                HEADERS CLI11/CLI11.hpp
+                HEADERS_OUTPUT_SUBDIR CLI11)
+
+target_include_directories(CLI11 SYSTEM INTERFACE
+            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
+
+install(TARGETS              CLI11
+        EXPORT               CLI11-targets
+        INCLUDES DESTINATION include)
+install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/CLI11
+        DESTINATION include )
+install(EXPORT CLI11-targets DESTINATION lib/cmake)
+
+set(CLI11_FOUND TRUE CACHE INTERNAL "")
+mark_as_advanced(CLI11_FOUND)
+
+#------------------------------------------------------------------------------
 # Register the built-in fmt library for string formatting
-############################################################
+#------------------------------------------------------------------------------
 
 set(fmt_headers
     fmt/fmt.hpp
@@ -57,9 +78,9 @@ install(EXPORT fmt-targets DESTINATION lib/cmake)
 set(FMT_FOUND TRUE CACHE INTERNAL "")
 mark_as_advanced(FMT_FOUND)
 
-############################################################
+#------------------------------------------------------------------------------
 # Register the built-in sparse hash library
-############################################################
+#------------------------------------------------------------------------------
 
 if (AXOM_ENABLE_SPARSEHASH)
 
@@ -148,9 +169,9 @@ if (AXOM_ENABLE_SPARSEHASH)
   endif()
 endif()
 
-################################
+#------------------------------------------------------------------------------
 # Add tests
-################################
+#------------------------------------------------------------------------------
 if (AXOM_ENABLE_TESTS)
     add_subdirectory(tests)
 endif()

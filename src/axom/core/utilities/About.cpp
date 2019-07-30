@@ -92,6 +92,10 @@ void about(std::ostream &oss)
 
   std::vector<std::string> libs;
 
+#ifdef AXOM_USE_CLI11
+  libs.push_back("CLI11");
+#endif
+
 #ifdef AXOM_USE_CONDUIT
   libs.push_back("conduit");
 #endif

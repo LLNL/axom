@@ -74,17 +74,21 @@ Axom bundles some of its external dependencies in its repository.  These
 packages are covered by various permissive licenses.  A summary listing
 follows.  See the license included with each package for full details.
 
-PackageName: BLT  
-PackageHomePage: https://github.com/LLNL/blt/  
-PackageLicenseDeclared: BSD-3-Clause  
+PackageName: BLT
+PackageHomePage: https://github.com/LLNL/blt
+PackageLicenseDeclared: BSD-3-Clause
 
-PackageName: fmt  
-PackageHomePage: https://github.com/fmtlib/fmt/  
-PackageLicenseDeclared: BSD-2-Clause  
+PackageName: CLI11
+PackageHomePage: https://github.com/CLIUtils/CLI11
+PackageLicenseDeclared: BSL-3-Clause
 
-PackageName: sparsehash  
-PackageHomePage: https://github.com/sparsehash/sparsehash  
-PackageLicenseDeclared: BSD-3-Clause  
+PackageName: fmt
+PackageHomePage: https://github.com/fmtlib/fmt
+PackageLicenseDeclared: BSD-2-Clause
+
+PackageName: sparsehash
+PackageHomePage: https://github.com/sparsehash/sparsehash
+PackageLicenseDeclared: BSD-3-Clause
 
 PackageName: uberenv
 PackageHomePage: https://github.com/LLNL/uberenv
