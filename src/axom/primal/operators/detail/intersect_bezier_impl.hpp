@@ -86,6 +86,12 @@ bool intersect_bezier_curves( const BezierCurve< T, NDIMS>& c1,
  * As such, the we do not consider the lines to intersect if they do so
  * at the endpoints \a b or \d, respectively.
  *
+ * \note This function assumes the all intersections have multiplicity 
+ * one, i.e. there are no points at which the curves and their derivatives
+ * both intersect. Thus, the function does not find tangencies.
+ *
+ * \note This function assumes two dimensional curves in a plane.
+ *
  * \note This function does not properly handle collinear lines
  */
 
@@ -111,6 +117,7 @@ bool intersect_bezier_curves( const BezierCurve< T, NDIMS>& c1,
                               double t_offset, double t_scale)
 {
   using BCurve = BezierCurve< T, NDIMS>;
+  SLIC_ASSERT(NDIMS==2);
 
   // Check bounding boxes to short-circuit the intersection
   if(!intersect(c1.boundingBox(), c2.boundingBox()) )

@@ -128,7 +128,7 @@ public:
    * \brief Transform the mfem element into a primal CurvedPolygon
    *
    * \param elemId The index of the element
-   * \return The element as a CurvedPolygon composed of BezierPolygon
+   * \return The element as a CurvedPolygon composed of BezierCurves
    */
   CurvedPolygonType elemAsCurvedPolygon(int elemId)
   {
