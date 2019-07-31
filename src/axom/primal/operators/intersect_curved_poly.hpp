@@ -77,6 +77,8 @@ bool intersect_polygon(CurvedPolygon< T, NDIMS>& p1,
       numinters+=p1times.size();
     }
   }
+  if (numinters>0)
+  {
   for (int i = 0; i < p1.numEdges(); ++i)
   {
     std::sort( E1IntData[i].begin(), E1IntData[i].end() );
@@ -177,6 +179,8 @@ bool intersect_polygon(CurvedPolygon< T, NDIMS>& p1,
     addingcurves=false;
   }
   return true;
+  }
+  return false;
 }
 
 // This determines with curve is "more" counterclockwise using the cross product of tangents
@@ -187,7 +191,7 @@ bool orient(const BezierCurve<T,NDIMS> c1, const BezierCurve<T,NDIMS> c2, T s, T
   Point<T,NDIMS> dc2t = c2.dt(t);
   Point<T,NDIMS> origin = primal::Point< T, NDIMS >::make_point(0.0, 0.0);
   auto orientation = detail::twoDcross(dc1s,dc2t, origin);
-  return (orientation<0);
+  return (orientation>0);
 }
 
 // A class for storing intersection points so they can be easily sorted by parameter value
