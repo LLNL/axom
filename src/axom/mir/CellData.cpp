@@ -89,5 +89,96 @@ namespace mir
 
   //--------------------------------------------------------------------------------
 
+  void CellData::print()
+  {
+    printf("\n------------------------Printing CellData Information:------------------------\n");
+    printf("number of vertices: %d\n", m_numVerts);
+    printf("number of elements: %d\n", m_numElems);
+    printf("evInds: { ");
+    for (unsigned long i = 0; i < m_topology.m_evInds.size(); i++)
+    {
+      printf("%d ", m_topology.m_evInds[i]);
+    }
+    printf("}\n");
+
+    printf("evBegins: { ");
+    for (unsigned long i = 0; i < m_topology.m_evBegins.size(); i++)
+    {
+      printf("%d ", m_topology.m_evBegins[i]);
+    }
+    printf("}\n");
+
+    printf("veInds: { ");
+    for (unsigned long i = 0; i < m_topology.m_veInds.size(); i++)
+    {
+      printf("%d ", m_topology.m_veInds[i]);
+    }
+    printf("}\n");
+
+    printf("veBegins: { ");
+    for (unsigned long i = 0; i < m_topology.m_veBegins.size(); i++)
+    {
+      printf("%d ", m_topology.m_veBegins[i]);
+    }
+    printf("}\n");
+
+    printf("vertexPositions: { ");
+    for (int i = 0; i < m_numVerts; ++i)
+    {
+      std::stringstream sstr;
+      sstr<< m_mapData.m_vertexPositions[i];
+      printf("%s", sstr.str().c_str());
+    }
+    printf("}\n");
+
+    // printf("elementParentIDs: { ");
+    // for (int i = 0; i < m_elems.size(); ++i)
+    // {
+    //   printf("%d ", m_elementParentIDs[i]);
+    // }
+    // printf("}\n");
+
+    // printf("elementDominantMaterials: { ");
+    // for (int i = 0; i < m_elems.size(); ++i)
+    // {
+    //   printf("%d ", m_elementDominantMaterials[i]);
+    // }
+    // printf("}\n");
+
+    // printf("shapeTypes: { ");
+    // for (int i = 0; i < m_elems.size(); ++i)
+    // {
+    //   printf("%d ", m_shapeTypes[i]);
+    // }
+    // printf("}\n");
+
+    // printf("elementVolumeFractions: { \n");
+    // for (unsigned long i = 0; i < m_materialVolumeFractionsElement.size(); ++i)
+    // {
+    //   printf("  { ");
+    //   for (int j = 0; j < m_elems.size(); ++j)
+    //   {
+    //     printf("%.3f, ", m_materialVolumeFractionsElement[i][j]);
+    //   }
+    //   printf("}\n");
+    // }
+    // printf("}\n");
+
+    printf("vertexVolumeFractions: { \n");
+    for (unsigned long i = 0; i < m_mapData.m_vertexVolumeFractions.size(); ++i)
+    {
+      printf("  mat %d :{ ", i);
+      for (int j = 0; j < m_numVerts; ++j)
+      {
+        printf("%.3f, ", m_mapData.m_vertexVolumeFractions[i][j]);
+      }
+      printf("}\n");
+    }
+    printf("}\n");
+    printf("--------------------------------------------------------------------------\n");
+  }
+
+  //--------------------------------------------------------------------------------
+
 }
 }

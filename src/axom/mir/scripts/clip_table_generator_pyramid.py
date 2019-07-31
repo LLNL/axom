@@ -78,6 +78,37 @@ def getAnalogsFromOneBaseVertex( baseVertex ):
 
 #--------------------------------------------------------------------------------
 
+# Returns a list of vertex index analogs as if the given two vertices are vertex zero
+# and one. The rest of the vertices are remapped accordingly.
+def getAnalogsFromEdge( vertexZero, vertexOne ):
+
+    v4Analog = 4
+
+    if ( vertexZero, vertexOne ) == (0, 1) or ( vertexZero, vertexOne ) == (1, 0):
+        v0Analog = 0
+        v1Analog = 1
+        v2Analog = 2
+        v3Analog = 3
+    if ( vertexZero, vertexOne ) == (1, 2) or ( vertexZero, vertexOne ) == (2, 1):
+        v0Analog = 1
+        v1Analog = 2
+        v2Analog = 3
+        v3Analog = 0
+    elif ( vertexZero, vertexOne ) == (2, 3) or ( vertexZero, vertexOne ) == (3, 2):
+        v0Analog = 2
+        v1Analog = 3
+        v2Analog = 0
+        v3Analog = 1
+    elif ( vertexZero, vertexOne ) == (0, 3) or ( vertexZero, vertexOne ) == (3, 0):
+        v0Analog = 3
+        v1Analog = 0
+        v2Analog = 1
+        v3Analog = 2
+    
+    return [ v0Analog, v1Analog, v2Analog, v3Analog, v4Analog ]
+    
+#--------------------------------------------------------------------------------
+
 # Returns a list of node indices adjacent to the given node index.
 def getAdjacentPyramidNodeIndices(node):
     if node == 0:
@@ -233,7 +264,79 @@ def isPyramidCaseFour( onBits, offBits ):
 #--------------------------------------------------------------------------------
 
 def handlePyramidCaseFour(onBits, offBits):
-    return handlePyramidCaseTough( onBits, offBits )
+    # Init the table entry list
+    tableEntry = []
+
+    if len( onBits ) == 2:
+        clipBits = onBits
+        nonClipBits = offBits
+    else:
+        clipBits = offBits
+        nonClipBits = onBits
+
+    analogs = getAnalogsFromEdge( clipBits[0], clipBits[1] )
+    centralVertex = 13
+
+    # Add the wedge adjacent to the two "on" vertices that can be clipped nicely from the pyramid
+    tableEntry.append( 6 )
+    tableEntry.append( analogs[0] )
+    tableEntry.append( pyramidMidpoint[ ( analogs[0], analogs[4] ) ] )
+    tableEntry.append( pyramidMidpoint[ ( analogs[0], analogs[3] ) ] )
+    tableEntry.append( analogs[1] )
+    tableEntry.append( pyramidMidpoint[ ( analogs[1], analogs[4] ) ] )
+    tableEntry.append( pyramidMidpoint[ ( analogs[1], analogs[2] ) ] )
+
+    # Add the decomposition of the remaining polyhedron
+    # Pyramid from base
+    tableEntry.append( 5 )
+    tableEntry.append( pyramidMidpoint[ ( analogs[0], analogs[3] ) ] )
+    tableEntry.append( pyramidMidpoint[ ( analogs[1], analogs[2] ) ] )
+    tableEntry.append( analogs[2] )
+    tableEntry.append( analogs[3] )
+    tableEntry.append( centralVertex )
+
+    # Pyramid from right face
+    tableEntry.append( 5 )
+    tableEntry.append( pyramidMidpoint[ ( analogs[1], analogs[4] ) ] )
+    tableEntry.append( analogs[4] )
+    tableEntry.append( analogs[2] )
+    tableEntry.append( pyramidMidpoint[ ( analogs[1], analogs[2] ) ] )
+    tableEntry.append( centralVertex )
+
+    # Tet from back face
+    tableEntry.append( 4 )
+    tableEntry.append( analogs[2] )
+    tableEntry.append( analogs[4] )
+    tableEntry.append( analogs[3] )
+    tableEntry.append( centralVertex )
+
+    # Pyramid from left face
+    tableEntry.append( 5 )
+    tableEntry.append( pyramidMidpoint[ ( analogs[0], analogs[3] ) ] )
+    tableEntry.append( analogs[3] )
+    tableEntry.append( analogs[4] )
+    tableEntry.append( pyramidMidpoint[ ( analogs[0], analogs[4] ) ] )
+    tableEntry.append( centralVertex )
+
+    # Tet from front face
+    tableEntry.append( 4 )
+    tableEntry.append( pyramidMidpoint[ ( analogs[1], analogs[4] ) ] )
+    tableEntry.append( pyramidMidpoint[ ( analogs[0], analogs[4] ) ] )
+    tableEntry.append( analogs[4] )
+    tableEntry.append( centralVertex )
+
+    # Pyramid from front face
+    tableEntry.append( 5 )
+    tableEntry.append( pyramidMidpoint[ ( analogs[1], analogs[2] ) ] )
+    tableEntry.append( pyramidMidpoint[ ( analogs[0], analogs[3] ) ] )
+    tableEntry.append( pyramidMidpoint[ ( analogs[0], analogs[4] ) ] )
+    tableEntry.append( pyramidMidpoint[ ( analogs[1], analogs[4] ) ] )
+    tableEntry.append( centralVertex )
+
+    # Add the table entry delimiter
+    tableEntry.append( -1 )
+
+    return tableEntry
     
 #--------------------------------------------------------------------------------
 #                              Unique Case Five

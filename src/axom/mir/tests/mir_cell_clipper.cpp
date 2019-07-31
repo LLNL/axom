@@ -502,350 +502,350 @@ TEST(mir_clipping_cell_and_vertex_output, clip_quad_case_five)
 
 //----------------------------------------------------------------------
 
-TEST(clipping_table_mesh_generation, triangle_meshes)
-{
-  mir::Shape shape = mir::Shape::Triangle;
-  int numVerts = mir::utilities::numVerts(shape);
+// TEST(clipping_table_mesh_generation, triangle_meshes)
+// {
+//   mir::Shape shape = mir::Shape::Triangle;
+//   int numVerts = mir::utilities::numVerts(shape);
 
-  for (auto actualClippingCase = 0u; actualClippingCase < mir::triangleClipTableVec.size(); ++actualClippingCase)
-  {
-    // Initialize the mesh
-    int numElements = 1;
-    int numVertices = 3;
+//   for (auto actualClippingCase = 0u; actualClippingCase < mir::triangleClipTableVec.size(); ++actualClippingCase)
+//   {
+//     // Initialize the mesh
+//     int numElements = 1;
+//     int numVertices = 3;
 
-    // Create the mesh connectivity information
-    mir::CellTopologyData topology;
-    topology.m_evInds = { 0,1,2 };
-    topology.m_evBegins = { 0,3 };
-    topology.m_veInds = { 0,0,0 };
-    topology.m_veBegins = { 0,1,2,3 };
+//     // Create the mesh connectivity information
+//     mir::CellTopologyData topology;
+//     topology.m_evInds = { 0,1,2 };
+//     topology.m_evBegins = { 0,3 };
+//     topology.m_veInds = { 0,0,0 };
+//     topology.m_veBegins = { 0,1,2,3 };
 
-    mir::VertSet  verts = mir::VertSet(numVertices);
-    mir::ElemSet  elems = mir::ElemSet(numElements);
+//     mir::VertSet  verts = mir::VertSet(numVertices);
+//     mir::ElemSet  elems = mir::ElemSet(numElements);
 
-    // Calculate the vertex volume fractions needed to clip with the current case
-    std::vector<axom::float64> matOneVF;
-    std::vector<axom::float64> matTwoVF;
-    std::string bitString("");
-    for (auto bitIndex = 0; bitIndex < numVerts; ++bitIndex)
-    {
-      unsigned int shiftedBit = 1;
-      shiftedBit = shiftedBit << (numVerts - 1 - bitIndex);
+//     // Calculate the vertex volume fractions needed to clip with the current case
+//     std::vector<axom::float64> matOneVF;
+//     std::vector<axom::float64> matTwoVF;
+//     std::string bitString("");
+//     for (auto bitIndex = 0; bitIndex < numVerts; ++bitIndex)
+//     {
+//       unsigned int shiftedBit = 1;
+//       shiftedBit = shiftedBit << (numVerts - 1 - bitIndex);
 
-      axom::float64 matOneValue;
-      if (actualClippingCase & shiftedBit)
-      {
-        matOneValue = 1.0;
-        bitString += "1";
-      }
-      else
-      {
-        matOneValue = 0.0;
-        bitString += "0";
-      }
+//       axom::float64 matOneValue;
+//       if (actualClippingCase & shiftedBit)
+//       {
+//         matOneValue = 1.0;
+//         bitString += "1";
+//       }
+//       else
+//       {
+//         matOneValue = 0.0;
+//         bitString += "0";
+//       }
 
-      matOneVF.push_back( matOneValue );
-      matTwoVF.push_back( 1.0 - matOneValue );
-    }
+//       matOneVF.push_back( matOneValue );
+//       matTwoVF.push_back( 1.0 - matOneValue );
+//     }
 
-    std::vector<std::vector<axom::float64> > vertexVF = {
-      matOneVF,
-      matTwoVF
-    };
+//     std::vector<std::vector<axom::float64> > vertexVF = {
+//       matOneVF,
+//       matTwoVF
+//     };
 
-    std::vector<std::vector<axom::float64> > elementVF = {
-      { 0.5 },
-      { 0.5 }
-    };
-
-
-    std::vector<mir::Point2> points =
-    {
-      mir::Point2::make_point( 0.5, 0.717 ),
-      mir::Point2::make_point( 0.0, 0.0 ),
-      mir::Point2::make_point( 1.0, 0.0 )
-    };
-
-    mir::CellMapData mapData;
-    mapData.m_elementDominantMaterials = { mir::NULL_MAT };
-    mapData.m_elementParents = { 0 };
-    mapData.m_vertexPositions = points;
-    mapData.m_shapeTypes = { mir::Shape::Triangle };
-
-    // Build the mesh
-    mir::MIRMesh testMesh;
-    testMesh.initializeMesh(verts, elems, 2, topology, mapData, elementVF);
-    testMesh.constructMeshVolumeFractionsVertex(vertexVF);
-
-    // Clip the mesh using the actualClippingCase index
-    mir::MIRMesh outputMesh;
-    mir::InterfaceReconstructor interfaceReconstructor;
-    interfaceReconstructor.computeReconstructedInterface(testMesh, outputMesh);
-
-    // Write out the processed mesh
-    std::string dirName = std::string(AXOM_BIN_DIR) + "/meshes";
-    std::string fileName = "mir_clippingcase_triangle_" + std::to_string(actualClippingCase) + "_" + bitString + ".vtk";
-    outputMesh.writeMeshToFile(dirName, fileName, "/");
-
-    // Ensure that all elements have a positive volume
-    for (int eID = 0; eID < outputMesh.m_elems.size(); ++eID)
-    {
-      // Get the element's shape
-      mir::Shape shapeType = (mir::Shape) outputMesh.m_shapeTypes[eID];
-
-      // Get the element's points
-      std::vector<int> elementVertices;
-      for (int vID = 0; vID < outputMesh.m_bdry[eID].size(); ++vID)
-      {
-        elementVertices.push_back(outputMesh.m_bdry[eID][vID]);
-      }
-      std::vector<mir::Point2> points;
-      for (int vID = 0; vID < mir::utilities::numVerts(shapeType); ++vID)
-      {
-        int originalVID = elementVertices[vID];
-        points.push_back(outputMesh.m_vertexPositions[originalVID] );
-      }
-
-      axom::float64 volume = mir::utilities::computeShapeVolume( shapeType, points.data());
-
-      EXPECT_TRUE(  volume > 0.0  );
-    }
-  }    
-}
-
-//----------------------------------------------------------------------
-
-TEST(clipping_table_mesh_generation, quad_meshes)
-{
-  mir::Shape shape = mir::Shape::Quad;
-  int numVerts = mir::utilities::numVerts(shape);
-
-  for (unsigned int actualClippingCase = 0; actualClippingCase < mir::quadClipTableVec.size(); ++actualClippingCase)
-  {
-    // Initialize the mesh
-    int numElements = 1;
-    int numVertices = 4;
-
-    // Create the mesh connectivity information
-    mir::CellTopologyData topology;
-    topology.m_evInds = { 0,1,2,3 };
-    topology.m_evBegins = { 0,4 };
-    topology.m_veInds = { 0,0,0,0 };
-    topology.m_veBegins = { 0,1,2,3,4 };
-
-    mir::VertSet  verts = mir::VertSet(numVertices);
-    mir::ElemSet  elems = mir::ElemSet(numElements);
-
-    // Calculate the vertex volume fractions needed to clip with the current case
-    std::vector<axom::float64> matOneVF;
-    std::vector<axom::float64> matTwoVF;
-    std::string bitString("");
-    for (unsigned int bitIndex = 0; bitIndex < (unsigned int) numVerts; ++bitIndex)
-    {
-      unsigned int shiftedBit = 1;
-      shiftedBit = shiftedBit << (numVerts - 1 - bitIndex);
-
-      axom::float64 matOneValue;
-      if (actualClippingCase & shiftedBit)
-      {
-        matOneValue = 1.0;
-        bitString += "1";
-      }
-      else
-      {
-        matOneValue = 0.0;
-        bitString += "0";
-      }
-
-      matOneVF.push_back( matOneValue );
-      matTwoVF.push_back( 1.0 - matOneValue );
-    }
-
-    std::vector<std::vector<axom::float64> > vertexVF = {
-      matOneVF,
-      matTwoVF
-    };
-
-    std::vector<std::vector<axom::float64> > elementVF = {
-      { 0.5 },
-      { 0.5 }
-    };
+//     std::vector<std::vector<axom::float64> > elementVF = {
+//       { 0.5 },
+//       { 0.5 }
+//     };
 
 
-    std::vector<mir::Point2> points =
-    {
-      mir::Point2::make_point( 0.0, 1.0 ),
-      mir::Point2::make_point( 0.0, 0.0 ),
-      mir::Point2::make_point( 1.0, 0.0 ),
-      mir::Point2::make_point( 1.0, 1.0 )
-    };
+//     std::vector<mir::Point2> points =
+//     {
+//       mir::Point2::make_point( 0.5, 0.717 ),
+//       mir::Point2::make_point( 0.0, 0.0 ),
+//       mir::Point2::make_point( 1.0, 0.0 )
+//     };
 
-    mir::CellMapData mapData;
-    mapData.m_elementDominantMaterials = { mir::NULL_MAT };
-    mapData.m_elementParents = { 0 };
-    mapData.m_vertexPositions = points;
-    mapData.m_shapeTypes = { mir::Shape::Quad };
+//     mir::CellMapData mapData;
+//     mapData.m_elementDominantMaterials = { mir::NULL_MAT };
+//     mapData.m_elementParents = { 0 };
+//     mapData.m_vertexPositions = points;
+//     mapData.m_shapeTypes = { mir::Shape::Triangle };
 
-    // Build the mesh
-    mir::MIRMesh testMesh;
-    testMesh.initializeMesh(verts, elems, 2, topology, mapData, elementVF);
-    testMesh.constructMeshVolumeFractionsVertex(vertexVF);
+//     // Build the mesh
+//     mir::MIRMesh testMesh;
+//     testMesh.initializeMesh(verts, elems, 2, topology, mapData, elementVF);
+//     testMesh.constructMeshVolumeFractionsVertex(vertexVF);
 
-    // Clip the mesh using the actualClippingCase index
-    mir::MIRMesh outputMesh;
-    mir::InterfaceReconstructor interfaceReconstructor;
-    interfaceReconstructor.computeReconstructedInterface(testMesh, outputMesh);
+//     // Clip the mesh using the actualClippingCase index
+//     mir::MIRMesh outputMesh;
+//     mir::InterfaceReconstructor interfaceReconstructor;
+//     interfaceReconstructor.computeReconstructedInterface(testMesh, outputMesh);
 
-    // Write out the processed mesh
-    std::string dirName = std::string(AXOM_BIN_DIR) + "/meshes";
-    std::string fileName = "mir_clippingcase_quad_" + std::to_string(actualClippingCase) + "_" + bitString + ".vtk";
-    outputMesh.writeMeshToFile(dirName, fileName, "/");
+//     // Write out the processed mesh
+//     std::string dirName = std::string(AXOM_BIN_DIR) + "/meshes";
+//     std::string fileName = "mir_clippingcase_triangle_" + std::to_string(actualClippingCase) + "_" + bitString + ".vtk";
+//     outputMesh.writeMeshToFile(dirName, fileName, "/");
 
-    // Ensure that all elements have a positive volume
-    for (int eID = 0; eID < outputMesh.m_elems.size(); ++eID)
-    {
-      // Get the element's shape
-      mir::Shape shapeType = (mir::Shape) outputMesh.m_shapeTypes[eID];
+//     // Ensure that all elements have a positive volume
+//     for (int eID = 0; eID < outputMesh.m_elems.size(); ++eID)
+//     {
+//       // Get the element's shape
+//       mir::Shape shapeType = (mir::Shape) outputMesh.m_shapeTypes[eID];
 
-      // Get the element's points
-      std::vector<int> elementVertices;
-      for (int vID = 0; vID < outputMesh.m_bdry[eID].size(); ++vID)
-      {
-        elementVertices.push_back(outputMesh.m_bdry[eID][vID]);
-      }
-      std::vector<mir::Point2> points;
-      for (int vID = 0; vID < mir::utilities::numVerts(shapeType); ++vID)
-      {
-        int originalVID = elementVertices[vID];
-        points.push_back(outputMesh.m_vertexPositions[originalVID] );
-      }
+//       // Get the element's points
+//       std::vector<int> elementVertices;
+//       for (int vID = 0; vID < outputMesh.m_bdry[eID].size(); ++vID)
+//       {
+//         elementVertices.push_back(outputMesh.m_bdry[eID][vID]);
+//       }
+//       std::vector<mir::Point2> points;
+//       for (int vID = 0; vID < mir::utilities::numVerts(shapeType); ++vID)
+//       {
+//         int originalVID = elementVertices[vID];
+//         points.push_back(outputMesh.m_vertexPositions[originalVID] );
+//       }
 
-      axom::float64 volume = mir::utilities::computeShapeVolume( shapeType, points.data());
+//       axom::float64 volume = mir::utilities::computeShapeVolume( shapeType, points.data());
 
-      EXPECT_TRUE(  volume > 0.0  );
-    }
-  }    
-}
+//       EXPECT_TRUE(  volume > 0.0  );
+//     }
+//   }    
+// }
 
-//----------------------------------------------------------------------
+// //----------------------------------------------------------------------
 
-TEST(clipping_table_mesh_generation, tetrahedron_meshes)
-{
-  mir::Shape shape = mir::Shape::Tetrahedron;
-  int numVerts = mir::utilities::numVerts(shape);
+// TEST(clipping_table_mesh_generation, quad_meshes)
+// {
+//   mir::Shape shape = mir::Shape::Quad;
+//   int numVerts = mir::utilities::numVerts(shape);
 
-  for (unsigned int actualClippingCase = 0; actualClippingCase < mir::tetrahedronClipTableVec.size(); ++actualClippingCase)
-  {
-    // Initialize the mesh
-    int numElements = 1;
-    int numVertices = 4;
+//   for (unsigned int actualClippingCase = 0; actualClippingCase < mir::quadClipTableVec.size(); ++actualClippingCase)
+//   {
+//     // Initialize the mesh
+//     int numElements = 1;
+//     int numVertices = 4;
 
-    // Create the mesh connectivity information
-    mir::CellTopologyData topology;
-    topology.m_evInds = { 0,1,2,3 };
-    topology.m_evBegins = { 0,4 };
-    topology.m_veInds = { 0,0,0,0 };
-    topology.m_veBegins = { 0,1,2,3,4 };
+//     // Create the mesh connectivity information
+//     mir::CellTopologyData topology;
+//     topology.m_evInds = { 0,1,2,3 };
+//     topology.m_evBegins = { 0,4 };
+//     topology.m_veInds = { 0,0,0,0 };
+//     topology.m_veBegins = { 0,1,2,3,4 };
 
-    mir::VertSet  verts = mir::VertSet(numVertices);
-    mir::ElemSet  elems = mir::ElemSet(numElements);
+//     mir::VertSet  verts = mir::VertSet(numVertices);
+//     mir::ElemSet  elems = mir::ElemSet(numElements);
 
-    // Calculate the vertex volume fractions needed to clip with the current case
-    std::vector<axom::float64> matOneVF;
-    std::vector<axom::float64> matTwoVF;
-    std::string bitString("");
-    for (auto bitIndex = 0; bitIndex < numVerts; ++bitIndex)
-    {
-      unsigned int shiftedBit = 1;
-      shiftedBit = shiftedBit << (numVerts - 1 - bitIndex);
+//     // Calculate the vertex volume fractions needed to clip with the current case
+//     std::vector<axom::float64> matOneVF;
+//     std::vector<axom::float64> matTwoVF;
+//     std::string bitString("");
+//     for (unsigned int bitIndex = 0; bitIndex < (unsigned int) numVerts; ++bitIndex)
+//     {
+//       unsigned int shiftedBit = 1;
+//       shiftedBit = shiftedBit << (numVerts - 1 - bitIndex);
 
-      axom::float64 matOneValue;
-      if (actualClippingCase & shiftedBit)
-      {
-        matOneValue = 1.0;
-        bitString += "1";
-      }
-      else
-      {
-        matOneValue = 0.0;
-        bitString += "0";
-      }
+//       axom::float64 matOneValue;
+//       if (actualClippingCase & shiftedBit)
+//       {
+//         matOneValue = 1.0;
+//         bitString += "1";
+//       }
+//       else
+//       {
+//         matOneValue = 0.0;
+//         bitString += "0";
+//       }
 
-      matOneVF.push_back( matOneValue );
-      matTwoVF.push_back( 1.0 - matOneValue );
-    }
+//       matOneVF.push_back( matOneValue );
+//       matTwoVF.push_back( 1.0 - matOneValue );
+//     }
 
-    std::vector<std::vector<axom::float64> > vertexVF = {
-      matOneVF,
-      matTwoVF
-    };
+//     std::vector<std::vector<axom::float64> > vertexVF = {
+//       matOneVF,
+//       matTwoVF
+//     };
 
-    std::vector<std::vector<axom::float64> > elementVF = {
-      { 0.5 },
-      { 0.5 }
-    };
+//     std::vector<std::vector<axom::float64> > elementVF = {
+//       { 0.5 },
+//       { 0.5 }
+//     };
 
 
-    std::vector<mir::Point2> points =
-    {
-      mir::Point2::make_point( 0.5, 0.717, 0.0 ),
-      mir::Point2::make_point( 0.0, 0.0, 0.0 ),
-      mir::Point2::make_point( 1.0, 0.0, 0.0 ),
-      mir::Point2::make_point( 0.5, 0.3585, 0.717 )
-    };
+//     std::vector<mir::Point2> points =
+//     {
+//       mir::Point2::make_point( 0.0, 1.0 ),
+//       mir::Point2::make_point( 0.0, 0.0 ),
+//       mir::Point2::make_point( 1.0, 0.0 ),
+//       mir::Point2::make_point( 1.0, 1.0 )
+//     };
 
-    mir::CellMapData mapData;
-    mapData.m_elementDominantMaterials = { mir::NULL_MAT };
-    mapData.m_elementParents = { 0 };
-    mapData.m_vertexPositions = points;
-    mapData.m_shapeTypes = { mir::Shape::Tetrahedron };
+//     mir::CellMapData mapData;
+//     mapData.m_elementDominantMaterials = { mir::NULL_MAT };
+//     mapData.m_elementParents = { 0 };
+//     mapData.m_vertexPositions = points;
+//     mapData.m_shapeTypes = { mir::Shape::Quad };
 
-    // Build the mesh
-    mir::MIRMesh testMesh;
-    testMesh.initializeMesh(verts, elems, 2, topology, mapData, elementVF);
-    testMesh.constructMeshVolumeFractionsVertex(vertexVF);
+//     // Build the mesh
+//     mir::MIRMesh testMesh;
+//     testMesh.initializeMesh(verts, elems, 2, topology, mapData, elementVF);
+//     testMesh.constructMeshVolumeFractionsVertex(vertexVF);
 
-    // Clip the mesh using the actualClippingCase index
-    mir::MIRMesh outputMesh;
-    mir::InterfaceReconstructor interfaceReconstructor;
-    interfaceReconstructor.computeReconstructedInterface(testMesh, outputMesh);
+//     // Clip the mesh using the actualClippingCase index
+//     mir::MIRMesh outputMesh;
+//     mir::InterfaceReconstructor interfaceReconstructor;
+//     interfaceReconstructor.computeReconstructedInterface(testMesh, outputMesh);
 
-    // Write out the processed mesh
-    std::string dirName = std::string(AXOM_BIN_DIR) + "/meshes";
-    std::string fileName = "mir_clippingcase_tetrahedron_" + std::to_string(actualClippingCase) + "_" + bitString + ".vtk";
-    outputMesh.writeMeshToFile(dirName, fileName, "/");
+//     // Write out the processed mesh
+//     std::string dirName = std::string(AXOM_BIN_DIR) + "/meshes";
+//     std::string fileName = "mir_clippingcase_quad_" + std::to_string(actualClippingCase) + "_" + bitString + ".vtk";
+//     outputMesh.writeMeshToFile(dirName, fileName, "/");
 
-    // Ensure that all elements have a positive volume
-    axom::float64 totalVolume = 0.0;
-    for (int eID = 0; eID < outputMesh.m_elems.size(); ++eID)
-    {
-      // Get the element's shape
-      mir::Shape shapeType = (mir::Shape) outputMesh.m_shapeTypes[eID];
+//     // Ensure that all elements have a positive volume
+//     for (int eID = 0; eID < outputMesh.m_elems.size(); ++eID)
+//     {
+//       // Get the element's shape
+//       mir::Shape shapeType = (mir::Shape) outputMesh.m_shapeTypes[eID];
 
-      // Get the element's points
-      std::vector<int> elementVertices;
-      for (int vID = 0; vID < outputMesh.m_bdry[eID].size(); ++vID)
-      {
-        elementVertices.push_back(outputMesh.m_bdry[eID][vID]);
-      }
-      std::vector<mir::Point2> points;
-      for (int vID = 0; vID < mir::utilities::numVerts(shapeType); ++vID)
-      {
-        int originalVID = elementVertices[vID];
-        points.push_back(outputMesh.m_vertexPositions[originalVID] );
-      }
+//       // Get the element's points
+//       std::vector<int> elementVertices;
+//       for (int vID = 0; vID < outputMesh.m_bdry[eID].size(); ++vID)
+//       {
+//         elementVertices.push_back(outputMesh.m_bdry[eID][vID]);
+//       }
+//       std::vector<mir::Point2> points;
+//       for (int vID = 0; vID < mir::utilities::numVerts(shapeType); ++vID)
+//       {
+//         int originalVID = elementVertices[vID];
+//         points.push_back(outputMesh.m_vertexPositions[originalVID] );
+//       }
 
-      axom::float64 volume = mir::utilities::computeShapeVolume( shapeType, points.data() );
+//       axom::float64 volume = mir::utilities::computeShapeVolume( shapeType, points.data());
 
-      EXPECT_TRUE(  volume > 0.0  );
+//       EXPECT_TRUE(  volume > 0.0  );
+//     }
+//   }    
+// }
 
-      totalVolume += volume;
-    }
+// //----------------------------------------------------------------------
 
-    // Ensure that the total volume of the generated elements equals the original
-    EXPECT_DOUBLE_EQ( totalVolume, 0.0856815 );
-  }    
-}
+// TEST(clipping_table_mesh_generation, tetrahedron_meshes)
+// {
+//   mir::Shape shape = mir::Shape::Tetrahedron;
+//   int numVerts = mir::utilities::numVerts(shape);
+
+//   for (unsigned int actualClippingCase = 0; actualClippingCase < mir::tetrahedronClipTableVec.size(); ++actualClippingCase)
+//   {
+//     // Initialize the mesh
+//     int numElements = 1;
+//     int numVertices = 4;
+
+//     // Create the mesh connectivity information
+//     mir::CellTopologyData topology;
+//     topology.m_evInds = { 0,1,2,3 };
+//     topology.m_evBegins = { 0,4 };
+//     topology.m_veInds = { 0,0,0,0 };
+//     topology.m_veBegins = { 0,1,2,3,4 };
+
+//     mir::VertSet  verts = mir::VertSet(numVertices);
+//     mir::ElemSet  elems = mir::ElemSet(numElements);
+
+//     // Calculate the vertex volume fractions needed to clip with the current case
+//     std::vector<axom::float64> matOneVF;
+//     std::vector<axom::float64> matTwoVF;
+//     std::string bitString("");
+//     for (auto bitIndex = 0; bitIndex < numVerts; ++bitIndex)
+//     {
+//       unsigned int shiftedBit = 1;
+//       shiftedBit = shiftedBit << (numVerts - 1 - bitIndex);
+
+//       axom::float64 matOneValue;
+//       if (actualClippingCase & shiftedBit)
+//       {
+//         matOneValue = 1.0;
+//         bitString += "1";
+//       }
+//       else
+//       {
+//         matOneValue = 0.0;
+//         bitString += "0";
+//       }
+
+//       matOneVF.push_back( matOneValue );
+//       matTwoVF.push_back( 1.0 - matOneValue );
+//     }
+
+//     std::vector<std::vector<axom::float64> > vertexVF = {
+//       matOneVF,
+//       matTwoVF
+//     };
+
+//     std::vector<std::vector<axom::float64> > elementVF = {
+//       { 0.5 },
+//       { 0.5 }
+//     };
+
+
+//     std::vector<mir::Point2> points =
+//     {
+//       mir::Point2::make_point( 0.5, 0.717, 0.0 ),
+//       mir::Point2::make_point( 0.0, 0.0, 0.0 ),
+//       mir::Point2::make_point( 1.0, 0.0, 0.0 ),
+//       mir::Point2::make_point( 0.5, 0.3585, 0.717 )
+//     };
+
+//     mir::CellMapData mapData;
+//     mapData.m_elementDominantMaterials = { mir::NULL_MAT };
+//     mapData.m_elementParents = { 0 };
+//     mapData.m_vertexPositions = points;
+//     mapData.m_shapeTypes = { mir::Shape::Tetrahedron };
+
+//     // Build the mesh
+//     mir::MIRMesh testMesh;
+//     testMesh.initializeMesh(verts, elems, 2, topology, mapData, elementVF);
+//     testMesh.constructMeshVolumeFractionsVertex(vertexVF);
+
+//     // Clip the mesh using the actualClippingCase index
+//     mir::MIRMesh outputMesh;
+//     mir::InterfaceReconstructor interfaceReconstructor;
+//     interfaceReconstructor.computeReconstructedInterface(testMesh, outputMesh);
+
+//     // Write out the processed mesh
+//     std::string dirName = std::string(AXOM_BIN_DIR) + "/meshes";
+//     std::string fileName = "mir_clippingcase_tetrahedron_" + std::to_string(actualClippingCase) + "_" + bitString + ".vtk";
+//     outputMesh.writeMeshToFile(dirName, fileName, "/");
+
+//     // Ensure that all elements have a positive volume
+//     axom::float64 totalVolume = 0.0;
+//     for (int eID = 0; eID < outputMesh.m_elems.size(); ++eID)
+//     {
+//       // Get the element's shape
+//       mir::Shape shapeType = (mir::Shape) outputMesh.m_shapeTypes[eID];
+
+//       // Get the element's points
+//       std::vector<int> elementVertices;
+//       for (int vID = 0; vID < outputMesh.m_bdry[eID].size(); ++vID)
+//       {
+//         elementVertices.push_back(outputMesh.m_bdry[eID][vID]);
+//       }
+//       std::vector<mir::Point2> points;
+//       for (int vID = 0; vID < mir::utilities::numVerts(shapeType); ++vID)
+//       {
+//         int originalVID = elementVertices[vID];
+//         points.push_back(outputMesh.m_vertexPositions[originalVID] );
+//       }
+
+//       axom::float64 volume = mir::utilities::computeShapeVolume( shapeType, points.data() );
+
+//       EXPECT_TRUE(  volume > 0.0  );
+
+//       totalVolume += volume;
+//     }
+
+//     // Ensure that the total volume of the generated elements equals the original
+//     EXPECT_DOUBLE_EQ( totalVolume, 0.0856815 );
+//   }    
+// }
 
 //----------------------------------------------------------------------
 
@@ -856,6 +856,9 @@ TEST(clipping_table_mesh_generation, pyramid_meshes)
 
   for (unsigned int actualClippingCase = 0; actualClippingCase < mir::pyramidClipTableVec.size(); ++actualClippingCase)
   {
+    // if (actualClippingCase == 18 || actualClippingCase == 24 || actualClippingCase == 12 || actualClippingCase == 6 
+    //    || actualClippingCase == 7 || actualClippingCase == 19 || actualClippingCase == 25 || actualClippingCase == 13 )
+    if (actualClippingCase == 12)
     {
       // Initialize the mesh
       int numElements = 1;
@@ -935,6 +938,7 @@ TEST(clipping_table_mesh_generation, pyramid_meshes)
       // Write out the processed mesh
       std::string dirName = std::string(AXOM_BIN_DIR) + "/meshes";
       std::string fileName = "mir_clippingcase_pyramid_" + std::to_string(actualClippingCase) + "_" + bitString + ".vtk";
+      // outputMesh.print();
       outputMesh.writeMeshToFile(dirName, fileName, "/");
 
       // Ensure that all elements have a positive volume
@@ -973,248 +977,248 @@ TEST(clipping_table_mesh_generation, pyramid_meshes)
 
 //----------------------------------------------------------------------
 
-TEST(clipping_table_mesh_generation, triangular_prism_meshes)
-{
-  mir::Shape shape = mir::Shape::Triangular_Prism;
-  int numVerts = mir::utilities::numVerts(shape);
+// TEST(clipping_table_mesh_generation, triangular_prism_meshes)
+// {
+//   mir::Shape shape = mir::Shape::Triangular_Prism;
+//   int numVerts = mir::utilities::numVerts(shape);
 
-  for (unsigned int actualClippingCase = 0; actualClippingCase < mir::triangularPrismClipTableVec.size(); ++actualClippingCase)
-  {
-    // Initialize the mesh
-    int numElements = 1;
-    int numVertices = 6;
+//   for (unsigned int actualClippingCase = 0; actualClippingCase < mir::triangularPrismClipTableVec.size(); ++actualClippingCase)
+//   {
+//     // Initialize the mesh
+//     int numElements = 1;
+//     int numVertices = 6;
 
-    // Create the mesh connectivity information
-    mir::CellTopologyData topology;
-    topology.m_evInds = { 0,1,2,3,4,5 };
-    topology.m_evBegins = { 0,6 };
-    topology.m_veInds = { 0,0,0,0,0,0 };
-    topology.m_veBegins = { 0,1,2,3,4,5,6 };
+//     // Create the mesh connectivity information
+//     mir::CellTopologyData topology;
+//     topology.m_evInds = { 0,1,2,3,4,5 };
+//     topology.m_evBegins = { 0,6 };
+//     topology.m_veInds = { 0,0,0,0,0,0 };
+//     topology.m_veBegins = { 0,1,2,3,4,5,6 };
 
-    mir::VertSet  verts = mir::VertSet(numVertices);
-    mir::ElemSet  elems = mir::ElemSet(numElements);
+//     mir::VertSet  verts = mir::VertSet(numVertices);
+//     mir::ElemSet  elems = mir::ElemSet(numElements);
 
-    // Calculate the vertex volume fractions needed to clip with the current case
-    std::vector<axom::float64> matOneVF;
-    std::vector<axom::float64> matTwoVF;
-    std::string bitString("");
-    for (unsigned int bitIndex = 0; bitIndex < (unsigned int) numVerts; ++bitIndex)
-    {
-      unsigned int shiftedBit = 1;
-      shiftedBit = shiftedBit << (numVerts - 1 - bitIndex);
+//     // Calculate the vertex volume fractions needed to clip with the current case
+//     std::vector<axom::float64> matOneVF;
+//     std::vector<axom::float64> matTwoVF;
+//     std::string bitString("");
+//     for (unsigned int bitIndex = 0; bitIndex < (unsigned int) numVerts; ++bitIndex)
+//     {
+//       unsigned int shiftedBit = 1;
+//       shiftedBit = shiftedBit << (numVerts - 1 - bitIndex);
 
-      axom::float64 matOneValue;
-      if (actualClippingCase & shiftedBit)
-      {
-        matOneValue = 1.0;
-        bitString += "1";
-      }
-      else
-      {
-        matOneValue = 0.0;
-        bitString += "0";
-      }
+//       axom::float64 matOneValue;
+//       if (actualClippingCase & shiftedBit)
+//       {
+//         matOneValue = 1.0;
+//         bitString += "1";
+//       }
+//       else
+//       {
+//         matOneValue = 0.0;
+//         bitString += "0";
+//       }
 
-      matOneVF.push_back( matOneValue );
-      matTwoVF.push_back( 1.0 - matOneValue );
-    }
+//       matOneVF.push_back( matOneValue );
+//       matTwoVF.push_back( 1.0 - matOneValue );
+//     }
 
-    std::vector<std::vector<axom::float64> > vertexVF = {
-      matOneVF,
-      matTwoVF
-    };
+//     std::vector<std::vector<axom::float64> > vertexVF = {
+//       matOneVF,
+//       matTwoVF
+//     };
 
-    std::vector<std::vector<axom::float64> > elementVF = {
-      { 0.5 },
-      { 0.5 }
-    };
+//     std::vector<std::vector<axom::float64> > elementVF = {
+//       { 0.5 },
+//       { 0.5 }
+//     };
 
 
-    std::vector<mir::Point2> points =
-    {
-      mir::Point2::make_point( 0.5, 0.717, 0.0 ),
-      mir::Point2::make_point( 0.0, 0.0, 0.0 ),
-      mir::Point2::make_point( 1.0, 0.0, 0.0 ),
-      mir::Point2::make_point( 0.5, 0.717, -2.0 ),
-      mir::Point2::make_point( 0.0, 0.0, -2.0 ),
-      mir::Point2::make_point( 1.0, 0.0, -2.0 )
-    };
+//     std::vector<mir::Point2> points =
+//     {
+//       mir::Point2::make_point( 0.5, 0.717, 0.0 ),
+//       mir::Point2::make_point( 0.0, 0.0, 0.0 ),
+//       mir::Point2::make_point( 1.0, 0.0, 0.0 ),
+//       mir::Point2::make_point( 0.5, 0.717, -2.0 ),
+//       mir::Point2::make_point( 0.0, 0.0, -2.0 ),
+//       mir::Point2::make_point( 1.0, 0.0, -2.0 )
+//     };
 
-    mir::CellMapData mapData;
-    mapData.m_elementDominantMaterials = { mir::NULL_MAT };
-    mapData.m_elementParents = { 0 };
-    mapData.m_vertexPositions = points;
-    mapData.m_shapeTypes = { mir::Shape::Triangular_Prism };
+//     mir::CellMapData mapData;
+//     mapData.m_elementDominantMaterials = { mir::NULL_MAT };
+//     mapData.m_elementParents = { 0 };
+//     mapData.m_vertexPositions = points;
+//     mapData.m_shapeTypes = { mir::Shape::Triangular_Prism };
 
-    // Build the mesh
-    mir::MIRMesh testMesh;
-    testMesh.initializeMesh(verts, elems, 2, topology, mapData, elementVF);
-    testMesh.constructMeshVolumeFractionsVertex(vertexVF);
+//     // Build the mesh
+//     mir::MIRMesh testMesh;
+//     testMesh.initializeMesh(verts, elems, 2, topology, mapData, elementVF);
+//     testMesh.constructMeshVolumeFractionsVertex(vertexVF);
 
-    // Clip the mesh using the actualClippingCase index
-    mir::MIRMesh outputMesh;
-    mir::InterfaceReconstructor interfaceReconstructor;
-    interfaceReconstructor.computeReconstructedInterface(testMesh, outputMesh);
+//     // Clip the mesh using the actualClippingCase index
+//     mir::MIRMesh outputMesh;
+//     mir::InterfaceReconstructor interfaceReconstructor;
+//     interfaceReconstructor.computeReconstructedInterface(testMesh, outputMesh);
 
-    // Write out the processed mesh
-    std::string dirName = std::string(AXOM_BIN_DIR) + "/meshes";
-    std::string fileName = "mir_clippingcase_triangular_prism_" + std::to_string(actualClippingCase) + "_" + bitString + ".vtk";
-    outputMesh.writeMeshToFile(dirName, fileName, "/");
+//     // Write out the processed mesh
+//     std::string dirName = std::string(AXOM_BIN_DIR) + "/meshes";
+//     std::string fileName = "mir_clippingcase_triangular_prism_" + std::to_string(actualClippingCase) + "_" + bitString + ".vtk";
+//     outputMesh.writeMeshToFile(dirName, fileName, "/");
 
-    // Ensure that all elements have a positive volume
-    axom::float64 totalVolume = 0.0;
-    for (int eID = 0; eID < outputMesh.m_elems.size(); ++eID)
-    {
-      // Get the element's shape
-      mir::Shape shapeType = (mir::Shape) outputMesh.m_shapeTypes[eID];
+//     // Ensure that all elements have a positive volume
+//     axom::float64 totalVolume = 0.0;
+//     for (int eID = 0; eID < outputMesh.m_elems.size(); ++eID)
+//     {
+//       // Get the element's shape
+//       mir::Shape shapeType = (mir::Shape) outputMesh.m_shapeTypes[eID];
 
-      // Get the element's points
-      std::vector<int> elementVertices;
-      for (int vID = 0; vID < outputMesh.m_bdry[eID].size(); ++vID)
-      {
-        elementVertices.push_back(outputMesh.m_bdry[eID][vID]);
-      }
-      std::vector<mir::Point2> points;
-      for (int vID = 0; vID < mir::utilities::numVerts(shapeType); ++vID)
-      {
-        int originalVID = elementVertices[vID];
-        points.push_back(outputMesh.m_vertexPositions[originalVID] );
-      }
+//       // Get the element's points
+//       std::vector<int> elementVertices;
+//       for (int vID = 0; vID < outputMesh.m_bdry[eID].size(); ++vID)
+//       {
+//         elementVertices.push_back(outputMesh.m_bdry[eID][vID]);
+//       }
+//       std::vector<mir::Point2> points;
+//       for (int vID = 0; vID < mir::utilities::numVerts(shapeType); ++vID)
+//       {
+//         int originalVID = elementVertices[vID];
+//         points.push_back(outputMesh.m_vertexPositions[originalVID] );
+//       }
 
-      axom::float64 volume = mir::utilities::computeShapeVolume( shapeType, points.data());
+//       axom::float64 volume = mir::utilities::computeShapeVolume( shapeType, points.data());
 
-      EXPECT_TRUE(  volume >= 0.0  );
+//       EXPECT_TRUE(  volume >= 0.0  );
 
-      totalVolume += volume;
-    }
+//       totalVolume += volume;
+//     }
 
-    // Ensure that the total volume of the generated elements equals the original
-    EXPECT_NEAR( 0.717, totalVolume, 0.00001 );
-  }    
-}
+//     // Ensure that the total volume of the generated elements equals the original
+//     EXPECT_NEAR( 0.717, totalVolume, 0.00001 );
+//   }    
+// }
 
-//----------------------------------------------------------------------
+// //----------------------------------------------------------------------
 
-TEST(clipping_table_mesh_generation, hexahedron_meshes)
-{
-  mir::Shape shape = mir::Shape::Hexahedron;
-  int numVerts = mir::utilities::numVerts(shape);
+// TEST(clipping_table_mesh_generation, hexahedron_meshes)
+// {
+//   mir::Shape shape = mir::Shape::Hexahedron;
+//   int numVerts = mir::utilities::numVerts(shape);
 
-  for (unsigned int actualClippingCase = 0; actualClippingCase < mir::hexahedronClipTableVec.size(); ++actualClippingCase)
-  {
-    // Initialize the mesh
-    int numElements = 1;
-    int numVertices = 8;
+//   for (unsigned int actualClippingCase = 0; actualClippingCase < mir::hexahedronClipTableVec.size(); ++actualClippingCase)
+//   {
+//     // Initialize the mesh
+//     int numElements = 1;
+//     int numVertices = 8;
 
-    // Create the mesh connectivity information
-    mir::CellTopologyData topology;
-    topology.m_evInds = { 0,1,2,3,4,5,6,7 };
-    topology.m_evBegins = { 0,8 };
-    topology.m_veInds = { 0,0,0,0,0,0,0,0 };
-    topology.m_veBegins = { 0,1,2,3,4,5,6,7,8 };
+//     // Create the mesh connectivity information
+//     mir::CellTopologyData topology;
+//     topology.m_evInds = { 0,1,2,3,4,5,6,7 };
+//     topology.m_evBegins = { 0,8 };
+//     topology.m_veInds = { 0,0,0,0,0,0,0,0 };
+//     topology.m_veBegins = { 0,1,2,3,4,5,6,7,8 };
 
-    mir::VertSet  verts = mir::VertSet(numVertices);
-    mir::ElemSet  elems = mir::ElemSet(numElements);
+//     mir::VertSet  verts = mir::VertSet(numVertices);
+//     mir::ElemSet  elems = mir::ElemSet(numElements);
 
-    // Calculate the vertex volume fractions needed to clip with the current case
-    std::vector<axom::float64> matOneVF;
-    std::vector<axom::float64> matTwoVF;
-    std::string bitString("");
-    for (unsigned int bitIndex = 0; bitIndex < (unsigned int) numVerts; ++bitIndex)
-    {
-      unsigned int shiftedBit = 1;
-      shiftedBit = shiftedBit << (numVerts - 1 - bitIndex);
+//     // Calculate the vertex volume fractions needed to clip with the current case
+//     std::vector<axom::float64> matOneVF;
+//     std::vector<axom::float64> matTwoVF;
+//     std::string bitString("");
+//     for (unsigned int bitIndex = 0; bitIndex < (unsigned int) numVerts; ++bitIndex)
+//     {
+//       unsigned int shiftedBit = 1;
+//       shiftedBit = shiftedBit << (numVerts - 1 - bitIndex);
 
-      axom::float64 matOneValue;
-      if (actualClippingCase & shiftedBit)
-      {
-        matOneValue = 1.0;
-        bitString += "1";
-      }
-      else
-      {
-        matOneValue = 0.0;
-        bitString += "0";
-      }
+//       axom::float64 matOneValue;
+//       if (actualClippingCase & shiftedBit)
+//       {
+//         matOneValue = 1.0;
+//         bitString += "1";
+//       }
+//       else
+//       {
+//         matOneValue = 0.0;
+//         bitString += "0";
+//       }
 
-      matOneVF.push_back( matOneValue );
-      matTwoVF.push_back( 1.0 - matOneValue );
-    }
+//       matOneVF.push_back( matOneValue );
+//       matTwoVF.push_back( 1.0 - matOneValue );
+//     }
 
-    std::vector<std::vector<axom::float64> > vertexVF = {
-      matOneVF,
-      matTwoVF
-    };
+//     std::vector<std::vector<axom::float64> > vertexVF = {
+//       matOneVF,
+//       matTwoVF
+//     };
 
-    std::vector<std::vector<axom::float64> > elementVF = {
-      { 0.5 },
-      { 0.5 }
-    };
+//     std::vector<std::vector<axom::float64> > elementVF = {
+//       { 0.5 },
+//       { 0.5 }
+//     };
 
-    std::vector<mir::Point2> points =
-    {
-      mir::Point2::make_point( 0.0, 0.0, 0.0 ),
-      mir::Point2::make_point( 1.0, 0.0, 0.0 ),
-      mir::Point2::make_point( 1.0, 0.0, -1.0 ),
-      mir::Point2::make_point( 0.0, 0.0, -1.0 ),
-      mir::Point2::make_point( 0.0, 1.0, 0.0 ),
-      mir::Point2::make_point( 1.0, 1.0, 0.0 ),
-      mir::Point2::make_point( 1.0, 1.0, -1.0 ),
-      mir::Point2::make_point( 0.0, 1.0, -1.0 )
-    };
+//     std::vector<mir::Point2> points =
+//     {
+//       mir::Point2::make_point( 0.0, 0.0, 0.0 ),
+//       mir::Point2::make_point( 1.0, 0.0, 0.0 ),
+//       mir::Point2::make_point( 1.0, 0.0, -1.0 ),
+//       mir::Point2::make_point( 0.0, 0.0, -1.0 ),
+//       mir::Point2::make_point( 0.0, 1.0, 0.0 ),
+//       mir::Point2::make_point( 1.0, 1.0, 0.0 ),
+//       mir::Point2::make_point( 1.0, 1.0, -1.0 ),
+//       mir::Point2::make_point( 0.0, 1.0, -1.0 )
+//     };
 
-    mir::CellMapData mapData;
-    mapData.m_elementDominantMaterials = { mir::NULL_MAT };
-    mapData.m_elementParents = { 0 };
-    mapData.m_vertexPositions = points;
-    mapData.m_shapeTypes = { mir::Shape::Hexahedron };
+//     mir::CellMapData mapData;
+//     mapData.m_elementDominantMaterials = { mir::NULL_MAT };
+//     mapData.m_elementParents = { 0 };
+//     mapData.m_vertexPositions = points;
+//     mapData.m_shapeTypes = { mir::Shape::Hexahedron };
 
-    // Build the mesh
-    mir::MIRMesh testMesh;
-    testMesh.initializeMesh(verts, elems, 2, topology, mapData, elementVF);
-    testMesh.constructMeshVolumeFractionsVertex(vertexVF);
+//     // Build the mesh
+//     mir::MIRMesh testMesh;
+//     testMesh.initializeMesh(verts, elems, 2, topology, mapData, elementVF);
+//     testMesh.constructMeshVolumeFractionsVertex(vertexVF);
 
-    // Clip the mesh using the actualClippingCase index
-    mir::MIRMesh outputMesh;
-    mir::InterfaceReconstructor interfaceReconstructor;
-    interfaceReconstructor.computeReconstructedInterface(testMesh, outputMesh);
+//     // Clip the mesh using the actualClippingCase index
+//     mir::MIRMesh outputMesh;
+//     mir::InterfaceReconstructor interfaceReconstructor;
+//     interfaceReconstructor.computeReconstructedInterface(testMesh, outputMesh);
 
-    // Write out the processed mesh
-    std::string dirName = std::string(AXOM_BIN_DIR) + "/meshes";
-    std::string fileName = "mir_clippingcase_hexahedron_" + std::to_string(actualClippingCase) + "_" + bitString + ".vtk";
-    outputMesh.writeMeshToFile(dirName, fileName, "/");
+//     // Write out the processed mesh
+//     std::string dirName = std::string(AXOM_BIN_DIR) + "/meshes";
+//     std::string fileName = "mir_clippingcase_hexahedron_" + std::to_string(actualClippingCase) + "_" + bitString + ".vtk";
+//     outputMesh.writeMeshToFile(dirName, fileName, "/");
 
-    // Ensure that all elements have a positive volume
-    axom::float64 totalVolume = 0.0;
-    for (int eID = 0; eID < outputMesh.m_elems.size(); ++eID)
-    {
-      // Get the element's shape
-      mir::Shape shapeType = (mir::Shape) outputMesh.m_shapeTypes[eID];
+//     // Ensure that all elements have a positive volume
+//     axom::float64 totalVolume = 0.0;
+//     for (int eID = 0; eID < outputMesh.m_elems.size(); ++eID)
+//     {
+//       // Get the element's shape
+//       mir::Shape shapeType = (mir::Shape) outputMesh.m_shapeTypes[eID];
 
-      // Get the element's points
-      std::vector<int> elementVertices;
-      for (int vID = 0; vID < outputMesh.m_bdry[eID].size(); ++vID)
-      {
-        elementVertices.push_back(outputMesh.m_bdry[eID][vID]);
-      }
-      std::vector<mir::Point2> points;
-      for (int vID = 0; vID < mir::utilities::numVerts(shapeType); ++vID)
-      {
-        int originalVID = elementVertices[vID];
-        points.push_back(outputMesh.m_vertexPositions[originalVID] );
-      }
+//       // Get the element's points
+//       std::vector<int> elementVertices;
+//       for (int vID = 0; vID < outputMesh.m_bdry[eID].size(); ++vID)
+//       {
+//         elementVertices.push_back(outputMesh.m_bdry[eID][vID]);
+//       }
+//       std::vector<mir::Point2> points;
+//       for (int vID = 0; vID < mir::utilities::numVerts(shapeType); ++vID)
+//       {
+//         int originalVID = elementVertices[vID];
+//         points.push_back(outputMesh.m_vertexPositions[originalVID] );
+//       }
 
-      axom::float64 volume = mir::utilities::computeShapeVolume( shapeType, points.data());
+//       axom::float64 volume = mir::utilities::computeShapeVolume( shapeType, points.data());
 
-      EXPECT_TRUE(  volume >= 0.0  );
+//       EXPECT_TRUE(  volume >= 0.0  );
       
-      totalVolume += volume;
-    }
+//       totalVolume += volume;
+//     }
 
-    // Ensure that the total volume of the generated elements equals the original
-    EXPECT_NEAR( 1.0, totalVolume, 0.00001 );
-  }    
-}
+//     // Ensure that the total volume of the generated elements equals the original
+//     EXPECT_NEAR( 1.0, totalVolume, 0.00001 );
+//   }    
+// }
 
 //----------------------------------------------------------------------
 

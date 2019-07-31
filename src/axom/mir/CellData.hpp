@@ -84,6 +84,8 @@ namespace mir
        */
       void mergeCell(const CellData& cellToMerge);
 
+      void print();
+
     public:
       int m_numVerts;
       int m_numElems;

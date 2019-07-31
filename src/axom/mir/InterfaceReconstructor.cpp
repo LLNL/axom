@@ -172,6 +172,7 @@ void  InterfaceReconstructor::generateCleanCells(mir::Shape shapeType,
   std::map<int, std::vector<int> > newVertices;             // hashmap of the new vertices' elements | Note: maps are ordered sets
   std::vector<int> verticesPresent(mir::utilities::maxPossibleNumVerts(shapeType), 0); // Vector of flags denoting whether the vertex is present in the current case or not
   axom::float64* tValues = new axom::float64[ mir::utilities::maxPossibleNumVerts(shapeType) ]{0}; // Array of t values that denote the percent value of where the edge should be clipped
+  std::map<int, std::vector<int> > newElementsTough;
 
   // Set up the volume fractions for the current element for the two materials currently being considered
   std::vector<std::vector<axom::float64> > vertexVF(2);    
@@ -198,30 +199,125 @@ void  InterfaceReconstructor::generateCleanCells(mir::Shape shapeType,
   CellClipper clipper;
   clipper.computeClippingPoints(shapeType, vertexVF, newElements, newVertices, tValues);
   
-  // Determine which vertices are present
-  for (auto itr = newVertices.begin(); itr != newVertices.end(); itr++)
+
+
+  // Check if the center vertex is present in any of the generated elements
+  int centerVertexID = mir::utilities::getCenterVertex(shapeType);
+  auto centerVertexMapItr = newVertices.find( centerVertexID );
+
+  // Check if there are any "tough" cells to handle
+  if (centerVertexMapItr != newVertices.end())
   {
-    int vID = itr->first;
-    verticesPresent[vID] = 1;
+    // For each element associated with the central vertex
+    for (unsigned long i = 0; i < centerVertexMapItr->second.size(); i++)
+    {
+      // Put any "tough" elements into their own map
+      int toughEID = centerVertexMapItr->second[i];
+      newElementsTough[ toughEID ] = newElements[ toughEID ];
+
+      // Remove these "tough" elements from newElements
+      newElements.erase( toughEID );
+    }
+
+    // Rebuild newVertices such that it contains the only the mapping from vertices to non-tough elements
+    newVertices.clear();
+    for (auto e_itr = newElements.begin(); e_itr != newElements.end(); e_itr++)
+    {
+      int nonToughEID = e_itr->first;
+      for (unsigned long i = 0; i < e_itr->second.size(); ++i)
+      {
+        int nonToughVID = e_itr->second[i];
+        newVertices[nonToughVID].push_back(nonToughEID);
+      }
+    }
   }
 
-  int centerVertexID = mir::utilities::getCenterVertex(shapeType);
-  if (centerVertexID != -1 && verticesPresent[centerVertexID] == 1)
-  {
+  // Handle the tough clipping
+  if (newElementsTough.size() > 0)
+  { 
+    // Find the vertex IDs associated with the vertices of the arbitrary polyhedron leftover after clipping some elements
+    std::set<int> arbitraryPolyhedronVIDs;
+    for (auto itr = newElementsTough.begin(); itr != newElementsTough.end(); itr++)
+    {
+      for (unsigned long i = 0; i < itr->second.size(); ++i)
+      {
+        arbitraryPolyhedronVIDs.insert(itr->second[i]);
+      }
+    }
+    arbitraryPolyhedronVIDs.erase( mir::utilities::getCenterVertex( shapeType ) );
+
+    // for (auto itr = arbitraryPolyhedronVIDs.begin(); itr != arbitraryPolyhedronVIDs.end(); ++itr)
+    // {
+    //   printf("%d, ", *itr );
+    // }
+    
+    // Compute the central vertex position (centroid) as an average of the arbitrary polyhedra's vertex positions
+    std::vector<mir::Point2> convexHullVertexPositions;
+    for (auto itr = arbitraryPolyhedronVIDs.begin(); itr != arbitraryPolyhedronVIDs.end(); ++itr)
+    {
+      if ( *itr < mir::utilities::numVerts(shapeType) )
+      {
+        // Is one of the parent element's original vertices
+        convexHullVertexPositions.push_back( originalElementVertexPositions[ *itr ]);
+      }
+      else
+      {
+        // Is one of the midpoint vertices
+        int vIDFrom = mir::utilities::getEdgeEndpoint(shapeType, *itr, true);
+        int vIDTo = mir::utilities::getEdgeEndpoint(shapeType, *itr, false);
+        convexHullVertexPositions.push_back(
+          mir::Point2::lerp(originalElementVertexPositions[vIDFrom], originalElementVertexPositions[vIDTo], tValues[*itr] ) );
+      }
+    }
+    mir::Point2 centralVertexPosition = mir::utilities::computeAveragePoint( convexHullVertexPositions );
+
+    // Calculate the central vertex's volume fractions, for use below
+    std::vector<std::vector<axom::float64> > centralVertexVF;
+    centralVertexVF.resize( originalElementVertexVF.size() );
+    for (unsigned long matID = 0; matID < centralVertexVF.size(); ++matID)
+    {
+      std::vector<axom::float64> arbitraryPolyhedronVertexVF;
+      for (auto itr = arbitraryPolyhedronVIDs.begin(); itr != arbitraryPolyhedronVIDs.end(); ++itr)
+      {
+        if ( *itr < mir::utilities::numVerts( shapeType ) )
+        {
+          // Is one of the parent element's original vertices
+          arbitraryPolyhedronVertexVF.push_back( originalElementVertexVF[matID][*itr] );
+        }
+        else
+        {
+          // Is one of the midpoint vertices
+          int vIDFrom = mir::utilities::getEdgeEndpoint(shapeType, *itr, true);
+          int vIDTo = mir::utilities::getEdgeEndpoint(shapeType, *itr, false);
+          arbitraryPolyhedronVertexVF.push_back(
+            axom::utilities::lerp(originalElementVertexVF[matID][vIDFrom], originalElementVertexVF[matID][vIDTo], tValues[*itr] ) );
+        }
+      }
+      centralVertexVF[matID].push_back( mir::utilities::computeAverageFloat( arbitraryPolyhedronVertexVF ) );
+    }
+
+    printf("centralVertexVF[matOne].size() = %d\n", centralVertexVF[matOne].size());
+    printf("centralVertexVF[matTwo].size() = %d\n", centralVertexVF[matTwo].size());
+    printf("centralVertexVF[matOne][0] = %f\n", centralVertexVF[matOne][0]);
+    printf("centralVertexVF[matTwo][0] = %f\n", centralVertexVF[matTwo][0]);
+
+    printf("centralVertexPosition = (%f, %f, %f)\n", centralVertexPosition[0], centralVertexPosition[1], centralVertexPosition[2]);
+
     // Set up the cell data struct for the results of the decomposed element being clipped
-    CellData decomposed_cellData[newElements.size()];
+    CellData decomposed_cellData[newElementsTough.size()];
     int decompElementID = 0;
     // The clipping is one a tough one, and the element needs to decompose further before splitting with the two materials
-    for (auto itr = newElements.begin(); itr != newElements.end(); itr++, decompElementID++)
+    for (auto itr = newElementsTough.begin(); itr != newElementsTough.end(); itr++, decompElementID++)
     {
       // Determine the shape type of the decomposed element
       mir::Shape decomposedShapeType = mir::utilities::determineElementShapeType(shapeType, itr->second.size());
 
       // Extract the data for the current element
-      std::vector<int> decomposedElementVertices;// = itr->second;
-      for (int i = 0; i < mir::utilities::numVerts(decomposedShapeType); ++i)
+      std::vector<int> decomposedElementVertices;
+      for (unsigned long i = 0; i < itr->second.size(); ++i)
       {
-        decomposedElementVertices.push_back(i);
+        // decomposedElementVertices.push_back(itr->second[i]);  // Note: Was previously just setting to range [0, numVerts(decomposedShapeType)]
+        decomposedElementVertices.push_back( i );
       }
 
       // Extract the vertex volume fractions of the element to split
@@ -234,9 +330,8 @@ void  InterfaceReconstructor::generateCleanCells(mir::Shape shapeType,
           int originalVID = itr->second[vID];
           if ( mir::utilities::isCenterVertex(shapeType, originalVID) )
           {
-            // Compute the central vertex volume fraction as the average of the other 
-            axom::float64 averageMaterialVF = mir::utilities::computeAverageFloat(originalElementVertexVF[matID]);
-            materialVertexVF.push_back( averageMaterialVF );
+            // Use the pre-computed volume fractions for the central vertex
+            materialVertexVF.push_back( centralVertexVF[matID][0] );
           }
           else
           {
@@ -254,9 +349,8 @@ void  InterfaceReconstructor::generateCleanCells(mir::Shape shapeType,
         int originalVID = itr->second[vID];
         if ( mir::utilities::isCenterVertex(shapeType, originalVID) )
         {
-          // Compute the central vertex position as the centroid of the other
-          mir::Point2 centroid =  mir::utilities::computeAveragePoint(originalElementVertexPositions);
-          decomposedElementVertexPositions.push_back( centroid );
+          // Use the pre-computed central vertex position
+          decomposedElementVertexPositions.push_back( centralVertexPosition );
         }
         else
         {
@@ -275,17 +369,35 @@ void  InterfaceReconstructor::generateCleanCells(mir::Shape shapeType,
                          decomposedElementVertexPositions,
                          decomposed_cellData[decompElementID]
                          );
+      
+      decomposed_cellData[decompElementID].print();
     }
 
-    // Merge the decomposed cell data with the outermost cellData
-    out_cellData.m_mapData.m_vertexVolumeFractions.resize(originalElementVertexVF.size());
-    out_cellData.m_topology.m_evBegins.push_back(0);
-    out_cellData.m_topology.m_veBegins.push_back(0);
-    for (int i = 0; i < decompElementID; i++)
-      out_cellData.mergeCell(decomposed_cellData[i]);
+    // // Merge the decomposed cell data with the outermost cellData
+    // out_cellData.m_mapData.m_vertexVolumeFractions.resize(originalElementVertexVF.size());
+    // out_cellData.m_topology.m_evBegins.push_back(0);
+    // out_cellData.m_topology.m_veBegins.push_back(0);
+    // for (int i = 0; i < decompElementID; i++)
+    //   out_cellData.mergeCell(decomposed_cellData[i]);
+
+    // printf("out_celLData.m_topology.m_evBegins: { ");
+    // for (int i = 0; i < out_cellData.m_topology.m_evBegins.size(); ++i)
+    // {
+    //   printf("%d, ", out_cellData.m_topology.m_evBegins[i]);
+    // }
+    // printf(" }\n");
   }
-  else
+
+  // Handle the non-tough clipping
+  if (newElements.size() > 0)
   {
+    // Determine which vertices are present
+    for (auto itr = newVertices.begin(); itr != newVertices.end(); itr++)
+    {
+      int vID = itr->first;
+      verticesPresent[vID] = 1;
+    }
+
     // Calculate the total number of elements and vertices that were generated from splitting the current element
     out_cellData.m_numElems = (int) newElements.size();
     out_cellData.m_numVerts = (int) newVertices.size();
@@ -303,7 +415,7 @@ void  InterfaceReconstructor::generateCleanCells(mir::Shape shapeType,
     // Determine and store the dominant material of this element
     for (auto itr = newElements.begin(); itr != newElements.end(); itr++)
     {
-      int dominantMaterial = cellGenerator.determineCleanCellMaterial(shapeType, itr->second, matOne, matTwo, out_cellData.m_mapData.m_vertexVolumeFractions);
+      int dominantMaterial = cellGenerator.determineCleanCellMaterial(shapeType, itr->second, matOne, matTwo, originalElementVertexVF); //out_cellData.m_mapData.m_vertexVolumeFractions);
       out_cellData.m_mapData.m_elementDominantMaterials.push_back(dominantMaterial);
     }
 
