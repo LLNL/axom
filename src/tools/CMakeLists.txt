@@ -9,12 +9,12 @@
 #------------------------------------------------------------------------------
 
 
-##################################################
+#------------------------------------------------------------------------------
 # convert_protocol is a utility that converts
 # a datastore from the sidre_hdf5 protocol
 # to any of the other supported protocols.
 # It requires slam, sidre, mpi and hdf5.
-##################################################
+#------------------------------------------------------------------------------
 if( AXOM_ENABLE_SLAM AND AXOM_ENABLE_SIDRE AND ENABLE_MPI AND HDF5_FOUND )
     set(datastore_converter_sources
         convert_sidre_protocol.cpp
@@ -26,8 +26,8 @@ if( AXOM_ENABLE_SLAM AND AXOM_ENABLE_SIDRE AND ENABLE_MPI AND HDF5_FOUND )
         mpi
         )
 
-    blt_list_append(TO datastore_converter_depends ELEMENTS lumberjack mpi IF AXOM_ENABLE_LUMBERJACK)
-    blt_list_append(TO datastore_converter_depends ELEMENTS scr IF SCR_FOUND)
+    blt_list_append(TO datastore_converter_depends ELEMENTS lumberjack mpi IF ${AXOM_ENABLE_LUMBERJACK} )
+    blt_list_append(TO datastore_converter_depends ELEMENTS scr IF ${SCR_FOUND} )
 
     blt_add_executable(
         NAME       convert_sidre_protocol
@@ -41,19 +41,18 @@ if( AXOM_ENABLE_SLAM AND AXOM_ENABLE_SIDRE AND ENABLE_MPI AND HDF5_FOUND )
             )
 endif()
 
-##################################################
-# mesh_tester is a utility that tests a mesh for
-# a variety of problems.
-##################################################
+#------------------------------------------------------------------------------
+# mesh_tester is a utility that tests a mesh for a variety of problems.
+#------------------------------------------------------------------------------
 set(mesh_tester_sources
     mesh_tester.cpp
 )
 set(mesh_tester_depends 
-    core slic mint slam quest primal
+    core slic mint slam quest primal CLI11
     )
 
-blt_list_append(TO mesh_tester_depends ELEMENTS lumberjack mpi IF AXOM_ENABLE_LUMBERJACK)
-blt_list_append(TO mesh_tester_depends ELEMENTS openmp IF ENABLE_OPENMP)
+blt_list_append(TO mesh_tester_depends ELEMENTS lumberjack mpi IF ${AXOM_ENABLE_LUMBERJACK} )
+blt_list_append(TO mesh_tester_depends ELEMENTS openmp IF ${ENABLE_OPENMP} )
 
 if(AXOM_ENABLE_QUEST)
     blt_add_executable(
@@ -68,7 +67,7 @@ if(AXOM_ENABLE_QUEST)
             )
 endif()
 
-################################
+#------------------------------------------------------------------------------
 # Add code checks
-################################
+#------------------------------------------------------------------------------
 axom_add_code_checks(PREFIX tools)

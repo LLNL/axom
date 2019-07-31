@@ -31,6 +31,7 @@
 #include "axom/slic/streams/GenericOutputStream.hpp"
 #include "axom/slic/interface/slic.hpp"
 
+#include "CLI11/CLI11.hpp"
 
 // C/C++ includes
 #include <fstream>
@@ -41,24 +42,15 @@
 // _read_stl_typedefs_start
 using namespace axom;
 
-typedef mint::UnstructuredMesh< mint::SINGLE_SHAPE > UMesh;
+using UMesh = mint::UnstructuredMesh< mint::SINGLE_SHAPE >;
 // _read_stl_typedefs_end
-typedef primal::Triangle<double, 3> Triangle3;
+using Triangle3 = primal::Triangle<double, 3>;
 
-typedef primal::Point<double, 3> Point3;
-typedef primal::BoundingBox<double, 3> SpatialBoundingBox;
-typedef spin::UniformGrid<int, 3> UniformGrid3;
-typedef primal::Vector<double, 3> Vector3;
-typedef primal::Segment<double, 3> Segment3;
-
-
-enum InputStatus
-{
-  SUCCESS,
-  SHOWHELP,
-  CANTOPENFILE
-};
-
+using Point3 = primal::Point<double, 3>;
+using SpatialBoundingBox = primal::BoundingBox<double, 3>;
+using UniformGrid3 = spin::UniformGrid<int, 3>;
+using Vector3 = primal::Vector<double, 3>;
+using Segment3 = primal::Segment<double, 3>;
 
 struct Input
 {
@@ -68,53 +60,108 @@ struct Input
   int resolution;
   double weldThreshold;
   bool skipWeld;
-  InputStatus errorCode;
 
-  Input() :
-    stlInput(""),
-    vtkOutput(""),
-    resolution(0),
-    weldThreshold(1e-6),
-    skipWeld(false),
-    errorCode(SUCCESS)
+  Input()
+    : stlInput("")
+    , vtkOutput("")
+    , resolution(0)
+    , weldThreshold(1e-6)
+    , skipWeld(false)
   { };
 
-  Input(int argc, char** argv);
-
-  void showhelp()
-  {
-    std::cout
-      << "Argument usage:"
-       "\n  --help           Show this help message."
-       "\n  --resolution N   Resolution of uniform grid.  Default N = 0."
-       "\n                   - Set to 1 to run the naive algorithm, without"
-       "\n                   a spatial index."
-       "\n                   - Set to less than 1 to use the spatial index"
-       "\n                   with a resolution of the cube root of the"
-       "\n                   number of triangles."
-       "\n  --infile fname   The STL input file (must be specified)."
-       "\n  --outfile fname  Output file name for collisions and welded mesh"
-       "\n                   (defaults to a file in the CWD with the input file name)"
-       "\n                   Collisions mesh will end with '.collisions.vtk' and"
-       "\n                   welded mesh will end with '.welded.vtk'."
-       "\n  --weldThresh eps Distance threshold for welding vertices. "
-       "\n                   Default: eps = 1e-6"
-       "\n  --skipWeld       Don't weld vertices (useful for testing,"
-       "\n                   not helpful otherwise)."
-      << std::endl << std::endl;
-  };
+  void parse(int argc, char** argv, CLI::App& app);
 
   std::string collisionsMeshName() { return vtkOutput + ".collisions.vtk"; }
   std::string collisionsTextName() { return vtkOutput + ".collisions.txt"; }
   std::string weldMeshName() { return vtkOutput + ".weld.vtk"; }
+
+private:
+  void fixOutfilePath();
 };
 
+void Input::parse(int argc, char** argv, CLI::App& app)
+{
+  app.add_option("-r,--resolution", resolution,
+                 "Resolution of uniform grid. \n"
+                 "Set to 1 to run the naive algorithm without a spatial index. \n"
+                 "Set to less than 1 to use the spatial index with a resolution \n"
+                 "of the cube root of the number of triangles.")
+  ->capture_default_str();
+
+  app.add_option("-i,--infile", stlInput,"The STL input file")
+  ->required()
+  ->check(CLI::ExistingFile);
+
+  app.add_option("-o,--outfile", vtkOutput,
+                 "Output file name for collisions and welded mesh. \n"
+                 "Defaults to a file in the CWD with the input file name. \n"
+                 "Collisions mesh will end with '.collisions.vtk' and \n"
+                 "welded mesh will end with '.welded.vtk'.");
+
+  app.add_option("--weldThresh", weldThreshold,
+                 "Distance threshold for welding vertices.")
+  ->capture_default_str();;
+
+  app.add_flag("--skipWeld", skipWeld,
+               "Don't weld vertices (useful for testing, not helpful otherwise).");
+
+  app.get_formatter()->column_width(35);
+
+  // Could throw an exception
+  app.parse(argc, argv);
+
+  // Fix any options that need fixing
+  fixOutfilePath();
+
+  // Output parsed information
+  SLIC_INFO (
+    "Using parameter values: "
+    <<"\n  resolution = " << resolution
+    << (resolution < 1 ? " (use cube root of triangle count)" : "")
+    <<"\n  weld threshold = " <<  weldThreshold
+    <<"\n  " << (skipWeld ? "" : "not ") << "skipping weld"
+    <<"\n  infile = " << stlInput
+    <<"\n  collisions outfile = " << collisionsMeshName()
+    <<"\n  weld outfile = " << weldMeshName()  );
+}
+
+void Input::fixOutfilePath()
+{
+  namespace futil = axom::utilities::filesystem;
+
+  // Extract the stem of the input file, to output files in the CWD
+  std::string inFileDir;
+  axom::utilities::filesystem::getDirName(inFileDir, stlInput);
+  int sepSkip = (int)(inFileDir.size() > 0);
+  std::string inFileStem = stlInput.substr(inFileDir.size() + sepSkip);
+  std::string outFileBase = futil::joinPath(futil::getCWD(),inFileStem);
+
+  // set output file name when not provided
+  int sz = vtkOutput.size();
+  if (sz < 1)
+  {
+    vtkOutput = outFileBase;
+    sz = vtkOutput.size();
+  }
+
+  // ensure that output file does not end with '.vtk'
+  if(sz > 4)
+  {
+    std::string ext = vtkOutput.substr(sz-4, 4);
+    if( ext == ".vtk" || ext == ".stl")
+    {
+      vtkOutput = vtkOutput.substr(0, sz-ext.size());
+    }
+  }
+}
+
+
 inline bool pointIsNearlyEqual(Point3& p1, Point3& p2, double EPS);
+
 bool checkTT(Triangle3& t1, Triangle3& t2);
 std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
   mint::Mesh* surface_mesh,
   std::vector<int> & degenerate);
-bool canOpenFile(const std::string & fname);
 void announceMeshProblems(int triangleCount,
                           int intersectPairCount,
                           int degenerateCount);
@@ -127,103 +174,6 @@ bool writeCollisions(const std::vector< std::pair<int, int> > & c,
                      const std::vector<int> & d,
                      std::string basename);
 
-Input::Input(int argc, char** argv) :
-  stlInput(""),
-  vtkOutput(""),
-  resolution(0),
-  weldThreshold(1e-6),
-  skipWeld(false),
-  errorCode(SUCCESS)
-{
-  if (argc < 2)
-  {
-    errorCode = SHOWHELP;
-    return;
-  }
-  else
-  {
-    for (int i = 1 ; i < argc ; /* increment i in loop */)
-    {
-      std::string arg = argv[i];
-      if (arg == "--resolution")
-      {
-        resolution = atoi(argv[++i]);
-      }
-      else if (arg == "--infile")
-      {
-        stlInput = argv[++i];
-      }
-      else if (arg == "--outfile")
-      {
-        vtkOutput = argv[++i];
-      }
-      else if (arg == "--weldThresh")
-      {
-        weldThreshold = atof(argv[++i]);
-      }
-      else if (arg == "--skipWeld")
-      {
-        skipWeld = true;
-      }
-      else // help or unknown parameter
-      {
-        if(arg != "--help" && arg != "-h")
-        {
-          SLIC_WARNING("Unrecognized parameter: " << arg);
-        }
-
-        errorCode = SHOWHELP;
-        return;
-      }
-      ++i;
-    }
-  }
-
-  if (!canOpenFile(stlInput))
-  {
-    errorCode = CANTOPENFILE;
-    return;
-  }
-
-  // Set the output file name
-  {
-    // Extract the stem of the input file, so can output files in the CWD
-    std::string inFileDir;
-    axom::utilities::filesystem::getDirName(inFileDir, stlInput);
-    int separatorSkip = (int)(inFileDir.size() > 0);
-    std::string inFileStem = stlInput.substr(inFileDir.size() + separatorSkip);
-    std::string outFileBase = axom::utilities::filesystem::joinPath(
-      axom::utilities::filesystem::getCWD(),inFileStem);
-
-    // set output file name when not provided
-    int sz = vtkOutput.size();
-    if (sz < 1)
-    {
-      vtkOutput = outFileBase;
-      sz = vtkOutput.size();
-    }
-
-    // ensure that output file does not end with '.vtk'
-    if(sz > 4)
-    {
-      std::string ext = vtkOutput.substr(sz-4, 4);
-      if( ext == ".vtk" || ext == ".stl")
-      {
-        vtkOutput = vtkOutput.substr(0, sz-ext.size());
-      }
-    }
-  }
-
-  SLIC_INFO (
-    "Using parameter values: "
-    <<"\n  resolution = " << resolution
-    << (resolution < 1 ? " (use cube root of triangle count)" : "")
-    <<"\n  weld threshold = " <<  weldThreshold
-    <<"\n  " << (skipWeld ? "" : "not ") << "skipping weld"
-    <<"\n  infile = " << stlInput
-    <<"\n  collisions outfile = " << collisionsMeshName()
-    <<"\n  weld outfile = " << weldMeshName()  );
-}
 
 inline bool pointIsNearlyEqual(Point3& p1, Point3& p2, double EPS=1.0e-9)
 {
@@ -298,12 +248,6 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
   }
 
   return retval;
-}
-
-bool canOpenFile(const std::string & fname)
-{
-  std::ifstream teststream(fname.c_str());
-  return teststream.good();
 }
 
 void announceMeshProblems(int triangleCount,
@@ -381,6 +325,24 @@ bool writeCollisions(const std::vector< std::pair<int, int> > & c,
   return true;
 }
 
+void initializeLogger()
+{
+  // Initialize the SLIC logger
+  slic::initialize();
+  slic::setLoggingMsgLevel( axom::slic::message::Debug );
+
+  // Customize logging levels and formatting
+  std::string slicFormatStr = "[<LEVEL>] <MESSAGE> \n";
+  slic::GenericOutputStream* defaultStream =
+    new slic::GenericOutputStream(&std::cout);
+  slic::GenericOutputStream* compactStream =
+    new slic::GenericOutputStream(&std::cout, slicFormatStr);
+
+  slic::addStreamToMsgLevel(defaultStream, axom::slic::message::Error);
+  slic::addStreamToMsgLevel(compactStream, axom::slic::message::Warning);
+  slic::addStreamToMsgLevel(compactStream, axom::slic::message::Info);
+  slic::addStreamToMsgLevel(compactStream, axom::slic::message::Debug);
+}
 
 /*!
  * The mesh tester checks a triangulated surface mesh for several problems.
@@ -397,45 +359,19 @@ bool writeCollisions(const std::vector< std::pair<int, int> > & c,
 
 int main( int argc, char** argv )
 {
-  int retval = EXIT_SUCCESS;
+  initializeLogger();
 
-  // Initialize the SLIC logger
-  slic::initialize();
-  slic::setLoggingMsgLevel( axom::slic::message::Debug );
+  // Parse the command line arguments
+  Input params;
+  CLI::App app {"MeshTester example"};
 
-  // Customize logging levels and formatting
-  std::string slicFormatStr = "[<LEVEL>] <MESSAGE> \n";
-  slic::GenericOutputStream* defaultStream =
-    new slic::GenericOutputStream(&std::cout);
-  slic::GenericOutputStream* compactStream =
-    new slic::GenericOutputStream(&std::cout, slicFormatStr);
-  slic::addStreamToMsgLevel(defaultStream, axom::slic::message::Error);
-  slic::addStreamToMsgLevel(compactStream, axom::slic::message::Warning);
-  slic::addStreamToMsgLevel(compactStream, axom::slic::message::Info);
-  slic::addStreamToMsgLevel(compactStream, axom::slic::message::Debug);
-
-  // Initialize default parameters and update with command line arguments:
-  Input params(argc, argv);
-
-  if (params.errorCode != SUCCESS)
+  try
   {
-    if (params.errorCode == SHOWHELP)
-    {
-      params.showhelp();
-      return EXIT_SUCCESS;
-    }
-    else if (params.errorCode == CANTOPENFILE)
-    {
-      std::cerr << "Can't open STL file " << params.stlInput <<
-        " for reading." << std::endl;
-      return EXIT_FAILURE;
-    }
-    else
-    {
-      std::cerr << "Unknown error " << (int)params.errorCode <<
-        " while parsing arguments." << std::endl;
-      return EXIT_FAILURE;
-    }
+    params.parse(argc, argv, app);
+  }
+  catch (const CLI::ParseError &e)
+  {
+    return app.exit(e);
   }
 
   // _read_stl_file_start
@@ -558,5 +494,5 @@ int main( int argc, char** argv )
   delete surface_mesh;
   surface_mesh = nullptr;
 
-  return retval;
+  return 0;
 }
