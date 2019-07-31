@@ -131,7 +131,7 @@ bool intersect_bezier_curves(const BezierCurve<T, NDIMS> &c1,
 
   bool foundIntersection = false;
 
-  if(c1.isLinear(sq_tol) && c2.isLinear(sq_tol))
+  if(s_scale * s_scale < sq_tol && t_scale * t_scale < sq_tol)
   {
     T s, t;
     if(intersect_2d_linear(c1[0], c1[order1], c2[0], c2[order2], s, t))
