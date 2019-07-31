@@ -322,9 +322,15 @@ bool intersect(const OrientedBoundingBox< T, 3 >& b1,
  *
  * Finds all intersection points between the two curves.
  *
+ * \note This function assumes two dimensional curves in a plane.
+ *
  * \note This function assumes that the curves are in general position.
  * Specifically, we assume that all intersections are at points and that
  * the curves don't overlap.
+ *
+ * \note This function assumes the all intersections have multiplicity 
+ * one, i.e. there are no points at which the curves and their derivatives
+ * both intersect. Thus, the function does not find tangencies.
  *
  * \note This function assumes that the curves are half-open, i.e. they
  * contain their first endpoint, but not their last endpoint. Thus, the
@@ -337,6 +343,7 @@ bool intersect( const BezierCurve< T, NDIMS>& c1,
                 std::vector< T >& tp,
                 double tol = 1E-8)
 {
+
   const double offset = 0.;
   const double scale = 1.;
 

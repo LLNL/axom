@@ -199,7 +199,7 @@ TEST( primal_bezier_inter, linear_bezier)
 
 TEST( primal_bezier_inter, linear_bezier_interp_params)
 {
-  static const int DIM =2;
+static const int DIM =2;
 
   using CoordType = double;
   using PointType = primal::Point< CoordType, DIM >;
@@ -245,6 +245,99 @@ TEST( primal_bezier_inter, linear_bezier_interp_params)
                          eps, eps);
     }
   }
+}
+
+//------------------------------------------------------------------------------
+TEST( primal_bezier_inter, no_intersections_bezier )
+{
+  static const int DIM =2;
+  using CoordType = double;
+  using PointType = primal::Point< CoordType, DIM >;
+  using BezierCurveType = primal::BezierCurve< CoordType, DIM >;
+
+  SLIC_INFO("primal: testing bezier intersection");
+  SCOPED_TRACE("no intersections");
+
+  const int order = 3;
+
+  // cubic line
+  PointType data1[order+1] =  { PointType::make_point(0.0, 0.0),
+                                PointType::make_point(1.0, 0.0),
+                                PointType::make_point(2.0, 0.0),
+                                PointType::make_point(3.0, 0.0)};
+
+  BezierCurveType curve1(data1, order);
+
+  // Cubic curve
+  PointType data2[order+1] =  { PointType::make_point(0.0, 0.5),
+                                PointType::make_point(1.0,1.0),
+                                PointType::make_point(2.0, 3.0),
+                                PointType::make_point(3.0,1.5)};
+  BezierCurveType curve2(data2, order);
+
+  std::vector<CoordType> exp_intersections;
+
+  const double eps = 1E-16;
+  const double eps_test = 1E-10;
+  
+  checkIntersections(curve1, curve2,
+                     exp_intersections, exp_intersections,
+                     eps, eps_test);
+}
+
+//------------------------------------------------------------------------------
+TEST( primal_bezier_inter, cubic_quadratic_bezier )
+{
+  static const int DIM =2;
+  using CoordType = double;
+  using PointType = primal::Point< CoordType, DIM >;
+  using BezierCurveType = primal::BezierCurve< CoordType, DIM >;
+
+  SLIC_INFO("primal: testing bezier intersection");
+  SLIC_INFO("different orders");
+
+  const int order2 = 3;
+
+  // cubic line
+  PointType data1 =   PointType::make_point(0.0, 0.0);
+
+  BezierCurveType curve1(0);
+  curve1[0]=data1;
+
+  // Cubic curve
+  PointType data2[order2+1] =  { PointType::make_point(0.0, 0.5),
+                                PointType::make_point(1.0,-1.0),
+                                PointType::make_point(2.0, 1.0),
+                                PointType::make_point(3.0,-0.5)};
+  BezierCurveType curve2(data2, order2);
+
+  // Note: same intersection params for curve and line
+  std::vector<CoordType> exp_intersections = { 0.17267316464601146,
+                                               0.5,
+                                               0.827326835353989};
+
+  const double eps = 1E-16;
+  const double eps_test = 1E-10;
+
+  for(int otherorder=1 ; otherorder<=20 ; ++otherorder)
+  {
+    curve1.setOrder(otherorder);
+    for (int i=0; i<otherorder; ++i)
+      {
+        curve1[i][0]=curve1[i][0]*(otherorder-1)/(1.0*otherorder);
+      }
+    curve1[otherorder]= PointType::make_point(3.0,0);
+    SLIC_INFO("Testing w/ order 3 and " << otherorder );
+
+    std::stringstream sstr;
+    sstr<<"different orders study " << otherorder;
+    SCOPED_TRACE(sstr.str());
+
+    checkIntersections(curve1, curve2,
+                       exp_intersections, exp_intersections,
+                       eps, eps_test);
+  }
+
 }
 
 //------------------------------------------------------------------------------
