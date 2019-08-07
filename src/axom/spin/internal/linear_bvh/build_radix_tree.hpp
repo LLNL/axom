@@ -103,7 +103,8 @@ axom::int64 morton64_encode( axom::float32 x,
 template < typename ExecSpace, typename FloatType >
 void transform_boxes( const FloatType *boxes,
                       AABB<FloatType,3> *aabbs,
-                      int32 size)
+                      int32 size,
+                      FloatType scale_factor )
 {
   constexpr int NDIMS  = 3;
   constexpr int STRIDE = 2 * NDIMS;
@@ -126,6 +127,8 @@ void transform_boxes( const FloatType *boxes,
 
     aabb.include(min_point);
     aabb.include(max_point);
+    aabb.scale( scale_factor );
+
     aabbs[i] = aabb;
   } );
 
@@ -135,7 +138,8 @@ void transform_boxes( const FloatType *boxes,
 template < typename ExecSpace, typename FloatType >
 void transform_boxes( const FloatType *boxes,
                       AABB<FloatType,2> *aabbs,
-                      int32 size)
+                      int32 size,
+                      FloatType scale_factor )
 {
   constexpr int NDIMS  = 2;
   constexpr int STRIDE = 2 * NDIMS;
@@ -156,6 +160,8 @@ void transform_boxes( const FloatType *boxes,
 
     aabb.include(min_point);
     aabb.include(max_point);
+    aabb.scale( scale_factor );
+
     aabbs[ i ] = aabb;
   } );
 
@@ -374,12 +380,12 @@ void custom_sort( ExecSpace, uint32*& mcodes, int32 size, int32* iter )
 {
   array_counting< ExecSpace >(iter, size, 0, 1);
 
-  std::sort(iter,
-            iter + size,
-            [=](int32 i1, int32 i2)
-            {
-              return mcodes[i1] < mcodes[i2];
-            } );
+  std::stable_sort( iter,
+                    iter + size,
+                    [=](int32 i1, int32 i2)
+                    {
+                    return mcodes[i1] < mcodes[i2];
+                    } );
 
 
   reorder< ExecSpace >(iter, mcodes, size);
@@ -653,7 +659,8 @@ template < typename ExecSpace, typename FloatType, int NDIMS >
 void build_radix_tree( const FloatType* boxes,
                        int size,
                        AABB< FloatType, NDIMS >& bounds,
-                       RadixTree< FloatType, NDIMS >& radix_tree )
+                       RadixTree< FloatType, NDIMS >& radix_tree,
+                       FloatType scale_factor )
 {
   // sanity checks
   SLIC_ASSERT( boxes !=nullptr );
@@ -662,7 +669,8 @@ void build_radix_tree( const FloatType* boxes,
   radix_tree.allocate( size );
 
   // copy so we don't reorder the input
-  transform_boxes< ExecSpace >(boxes, radix_tree.m_leaf_aabbs, size);
+  transform_boxes< ExecSpace >( boxes, radix_tree.m_leaf_aabbs,
+                                size, scale_factor );
 
   // evaluate global bounds
   bounds = reduce< ExecSpace >(radix_tree.m_leaf_aabbs, size);
