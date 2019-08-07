@@ -1,17 +1,9 @@
 {
     "__comment__":"##############################################################################",
-    "__comment__":"# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.         ",
+    "__comment__":"# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and      ",
+    "__comment__":"# other Axom Project Developers. See the top-level COPYRIGHT file for details. ",
     "__comment__":"#                                                                             ",
-    "__comment__":"# Produced at the Lawrence Livermore National Laboratory                      ",
-    "__comment__":"#                                                                             ",
-    "__comment__":"# LLNL-CODE-741217                                                            ",
-    "__comment__":"#                                                                             ",
-    "__comment__":"# All rights reserved.                                                        ",
-    "__comment__":"#                                                                             ",
-    "__comment__":"# This file is part of Axom.                                                  ",
-    "__comment__":"#                                                                             ",
-    "__comment__":"# For details about use and distribution, please read axom/LICENSE.           ",
-    "__comment__":"#                                                                             ",
+    "__comment__":"# SPDX-License-Identifier: (BSD-3-Clause)                                     ",
     "__comment__":"##############################################################################",
 
     "__comment__":"##############################################################################",
@@ -21,42 +13,31 @@
     "__comment__":"#                                                                             ",
     "__comment__":"##############################################################################",
 
-
-    "chaos_5_x86_64_ib":
-    [ "clang@3.9.1",
-      "clang@4.0.1",
-      "gcc@4.9.3",
-      "intel@15.0.223",
-      "intel@16.0.258",
-      "intel@17.0.174" ],
-
     "toss_3_x86_64_ib":
-    [ "clang@3.9.1",
-      "clang@4.0.0",
-      "gcc@4.9.3",
+    [ "clang@4.0.0+devtools",
+      "clang@6.0.0",
       "gcc@6.1.0",
-      "gcc@7.1.0",
-      "intel@16.0.4",
-      "intel@17.0.2",
-      "intel@18.0.2" ],
+      "gcc@7.3.0",
+      "gcc@8.1.0",
+      "intel@18.0.2",
+      "intel@19.0.0" ],
 
     "blueos_3_ppc64le_ib":
-    [ "clang@coral_xlf",
+    [ "clang@upstream_xlf~openmp",
+      "clang@upstream_nvcc_xlf~openmp+cuda",
       "gcc@4.9.3",
-      "xl@coral" ],
+      "xl@coral~openmp" ],
+
+    "blueos_3_ppc64le_ib_p9":
+    [ "clang@upstream_xlf~openmp",
+      "clang@upstream_nvcc_xlf~openmp+cuda",
+      "gcc@7.3.1",
+      "xl@coral~openmp" ],
 
     "bgqos_0":
-    [ "clang@4.0.0_gfortran~cmake~devtools~python~lua",
-      "clang@4.0.0_xlf~cmake~devtools~python~lua" ],
-
-    "macosx_10.9_x86_64":
-    [ "clang@3.4svn" ],
+    [ "clang@4.0.0_gfortran~umpire ^zlib~shared",
+      "clang@4.0.0_xlf~openmp~umpire ^zlib~shared" ],
 
     "darwin-x86_64":
-    [ "clang@3.4svn",
-      "clang@apple-fink",
-      "clang@apple-mp",
-      "clang@mp3.7",
-      "gcc@mp49",
-      "gcc@mp5" ]
+    [ "clang@9.0.0 ^conduit@master" ]
 }

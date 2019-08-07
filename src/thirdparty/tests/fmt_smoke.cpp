@@ -1,30 +1,18 @@
-/*
- *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
- *
- * Produced at the Lawrence Livermore National Laboratory
- *
- * LLNL-CODE-741217
- *
- * All rights reserved.
- *
- * This file is part of Axom.
- *
- * For details about use and distribution, please read axom/LICENSE.
- *
- *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- */
+// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
 
 //-----------------------------------------------------------------------------
-///
-/// file: fmt_smoke.cpp
-/// A simple test to see if the thirdparty fmt libary is working properly.
-/// Note: axom/config.hpp must be #included before fmt's headers.
-///
+//
+// file: fmt_smoke.cpp
+// A simple test to see if the thirdparty fmt libary is working properly.
+// Note: To ensure that fmt is configured properly, include the `fmt/fmt.hpp'
+// helper file rather than directly including fmt's header files.
+//
 //-----------------------------------------------------------------------------
 
-#include "axom/config.hpp"
-#include "fmt/format.h"
+#include "fmt/fmt.hpp"
 
 #include "gtest/gtest.h"
 

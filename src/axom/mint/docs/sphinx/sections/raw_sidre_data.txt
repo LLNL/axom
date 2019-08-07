@@ -1,0 +1,195 @@
+
+{
+  "name": "",
+  "groups": 
+  {
+    "state": 
+    {
+      "name": "state",
+      "groups": 
+      {
+        "t1": 
+        {
+          "name": "t1",
+          "views": 
+          {
+            "block_id": 
+            {
+              "name": "block_id",
+              "schema": "{\"dtype\":\"int32\", \"number_of_elements\": 1, \"offset\": 0, \"stride\": 4, \"element_bytes\": 4, \"endianness\": \"little\"}",
+              "value": "-1",
+              "state": "SCALAR",
+              "is_applied": 1
+            },
+            "partition_id": 
+            {
+              "name": "partition_id",
+              "schema": "{\"dtype\":\"int32\", \"number_of_elements\": 1, \"offset\": 0, \"stride\": 4, \"element_bytes\": 4, \"endianness\": \"little\"}",
+              "value": "-1",
+              "state": "SCALAR",
+              "is_applied": 1
+            }
+          }
+        }
+      }
+    },
+    "coordsets": 
+    {
+      "name": "coordsets",
+      "groups": 
+      {
+        "c1": 
+        {
+          "name": "c1",
+          "views": 
+          {
+            "type": 
+            {
+              "name": "type",
+              "schema": "{\"dtype\":\"char8_str\", \"number_of_elements\": 9, \"offset\": 0, \"stride\": 1, \"element_bytes\": 1, \"endianness\": \"little\"}",
+              "value": "\"explicit\"",
+              "state": "STRING",
+              "is_applied": 1
+            }
+          },
+          "groups": 
+          {
+            "values": 
+            {
+              "name": "values",
+              "views": 
+              {
+                "x": 
+                {
+                  "name": "x",
+                  "schema": "{\"dtype\":\"float64\", \"number_of_elements\": 6, \"offset\": 0, \"stride\": 8, \"element_bytes\": 8, \"endianness\": \"little\"}",
+                  "value": "[0.0, 2.0, 1.0, 3.5, 2.5, 5.0]",
+                  "state": "BUFFER",
+                  "is_applied": 1
+                },
+                "y": 
+                {
+                  "name": "y",
+                  "schema": "{\"dtype\":\"float64\", \"number_of_elements\": 6, \"offset\": 0, \"stride\": 8, \"element_bytes\": 8, \"endianness\": \"little\"}",
+                  "value": "[0.0, 0.0, 1.0, 1.0, 2.0, 0.0]",
+                  "state": "BUFFER",
+                  "is_applied": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "topologies": 
+    {
+      "name": "topologies",
+      "groups": 
+      {
+        "t1": 
+        {
+          "name": "t1",
+          "views": 
+          {
+            "coordset": 
+            {
+              "name": "coordset",
+              "schema": "{\"dtype\":\"char8_str\", \"number_of_elements\": 3, \"offset\": 0, \"stride\": 1, \"element_bytes\": 1, \"endianness\": \"little\"}",
+              "value": "\"c1\"",
+              "state": "STRING",
+              "is_applied": 1
+            },
+            "type": 
+            {
+              "name": "type",
+              "schema": "{\"dtype\":\"char8_str\", \"number_of_elements\": 13, \"offset\": 0, \"stride\": 1, \"element_bytes\": 1, \"endianness\": \"little\"}",
+              "value": "\"unstructured\"",
+              "state": "STRING",
+              "is_applied": 1
+            }
+          },
+          "groups": 
+          {
+            "elements": 
+            {
+              "name": "elements",
+              "views": 
+              {
+                "shape": 
+                {
+                  "name": "shape",
+                  "schema": "{\"dtype\":\"char8_str\", \"number_of_elements\": 4, \"offset\": 0, \"stride\": 1, \"element_bytes\": 1, \"endianness\": \"little\"}",
+                  "value": "\"tri\"",
+                  "state": "STRING",
+                  "is_applied": 1
+                },
+                "connectivity": 
+                {
+                  "name": "connectivity",
+                  "schema": "{\"dtype\":\"int32\", \"number_of_elements\": 12, \"offset\": 0, \"stride\": 4, \"element_bytes\": 4, \"endianness\": \"little\"}",
+                  "value": "[1, 3, 2, 2, 0, 1, 3, 4, 2, 1, 5, 3]",
+                  "state": "BUFFER",
+                  "is_applied": 1
+                },
+                "stride": 
+                {
+                  "name": "stride",
+                  "schema": "{\"dtype\":\"int32\", \"number_of_elements\": 1, \"offset\": 0, \"stride\": 4, \"element_bytes\": 4, \"endianness\": \"little\"}",
+                  "value": "3",
+                  "state": "SCALAR",
+                  "is_applied": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "fields": 
+    {
+      "name": "fields",
+      "groups": 
+      {
+        "den": 
+        {
+          "name": "den",
+          "views": 
+          {
+            "association": 
+            {
+              "name": "association",
+              "schema": "{\"dtype\":\"char8_str\", \"number_of_elements\": 8, \"offset\": 0, \"stride\": 1, \"element_bytes\": 1, \"endianness\": \"little\"}",
+              "value": "\"element\"",
+              "state": "STRING",
+              "is_applied": 1
+            },
+            "volume_dependent": 
+            {
+              "name": "volume_dependent",
+              "schema": "{\"dtype\":\"char8_str\", \"number_of_elements\": 5, \"offset\": 0, \"stride\": 1, \"element_bytes\": 1, \"endianness\": \"little\"}",
+              "value": "\"true\"",
+              "state": "STRING",
+              "is_applied": 1
+            },
+            "topology": 
+            {
+              "name": "topology",
+              "schema": "{\"dtype\":\"char8_str\", \"number_of_elements\": 3, \"offset\": 0, \"stride\": 1, \"element_bytes\": 1, \"endianness\": \"little\"}",
+              "value": "\"t1\"",
+              "state": "STRING",
+              "is_applied": 1
+            },
+            "values": 
+            {
+              "name": "values",
+              "schema": "{\"dtype\":\"float64\", \"number_of_elements\": 4, \"offset\": 0, \"stride\": 8, \"element_bytes\": 8, \"endianness\": \"little\"}",
+              "value": "[0.5, 1.2, 2.5, 0.9]",
+              "state": "BUFFER",
+              "is_applied": 1
+            }
+          }
+        }
+      }
+    }
+  }
+}

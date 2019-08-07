@@ -1,0 +1,454 @@
+! wrapfquest.F
+! This is generated code, do not edit
+!
+! Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+! other Axom Project Developers. See the top-level COPYRIGHT file for details.
+!
+! SPDX-License-Identifier: (BSD-3-Clause)
+!>
+!! \file wrapfquest.F
+!! \brief Shroud generated wrapper for QUEST library
+!<
+! splicer begin file_top
+#include <axom/config.hpp>
+! splicer end file_top
+module axom_quest
+    ! splicer begin module_use
+    ! splicer end module_use
+    implicit none
+
+    ! splicer begin module_top
+    ! splicer end module_top
+
+    interface
+
+#ifdef AXOM_USE_MPI
+        function c_inout_init_mpi(fileName, comm) &
+                result(SHT_rv) &
+                bind(C, name="QUEST_inout_init_mpi")
+            use iso_c_binding, only : C_CHAR, C_INT
+            implicit none
+            character(kind=C_CHAR), intent(IN) :: fileName(*)
+            integer(C_INT), value, intent(IN) :: comm
+            integer(C_INT) :: SHT_rv
+        end function c_inout_init_mpi
+#endif
+
+#ifdef AXOM_USE_MPI
+        function c_inout_init_mpi_bufferify(fileName, LfileName, comm) &
+                result(SHT_rv) &
+                bind(C, name="QUEST_inout_init_mpi_bufferify")
+            use iso_c_binding, only : C_CHAR, C_INT
+            implicit none
+            character(kind=C_CHAR), intent(IN) :: fileName(*)
+            integer(C_INT), value, intent(IN) :: LfileName
+            integer(C_INT), value, intent(IN) :: comm
+            integer(C_INT) :: SHT_rv
+        end function c_inout_init_mpi_bufferify
+#endif
+
+#ifndef AXOM_USE_MPI
+        function c_inout_init_serial(fileName) &
+                result(SHT_rv) &
+                bind(C, name="QUEST_inout_init_serial")
+            use iso_c_binding, only : C_CHAR, C_INT
+            implicit none
+            character(kind=C_CHAR), intent(IN) :: fileName(*)
+            integer(C_INT) :: SHT_rv
+        end function c_inout_init_serial
+#endif
+
+#ifndef AXOM_USE_MPI
+        function c_inout_init_serial_bufferify(fileName, LfileName) &
+                result(SHT_rv) &
+                bind(C, name="QUEST_inout_init_serial_bufferify")
+            use iso_c_binding, only : C_CHAR, C_INT
+            implicit none
+            character(kind=C_CHAR), intent(IN) :: fileName(*)
+            integer(C_INT), value, intent(IN) :: LfileName
+            integer(C_INT) :: SHT_rv
+        end function c_inout_init_serial_bufferify
+#endif
+
+        function c_inout_initialized() &
+                result(SHT_rv) &
+                bind(C, name="QUEST_inout_initialized")
+            use iso_c_binding, only : C_BOOL
+            implicit none
+            logical(C_BOOL) :: SHT_rv
+        end function c_inout_initialized
+
+        function c_inout_set_verbose(verbosity) &
+                result(SHT_rv) &
+                bind(C, name="QUEST_inout_set_verbose")
+            use iso_c_binding, only : C_BOOL, C_INT
+            implicit none
+            logical(C_BOOL), value, intent(IN) :: verbosity
+            integer(C_INT) :: SHT_rv
+        end function c_inout_set_verbose
+
+        function quest_inout_set_vertex_weld_threshold(thresh) &
+                result(SHT_rv) &
+                bind(C, name="QUEST_inout_set_vertex_weld_threshold")
+            use iso_c_binding, only : C_DOUBLE, C_INT
+            implicit none
+            real(C_DOUBLE), value, intent(IN) :: thresh
+            integer(C_INT) :: SHT_rv
+        end function quest_inout_set_vertex_weld_threshold
+
+        function c_inout_evaluate_0(x, y) &
+                result(SHT_rv) &
+                bind(C, name="QUEST_inout_evaluate_0")
+            use iso_c_binding, only : C_BOOL, C_DOUBLE
+            implicit none
+            real(C_DOUBLE), value, intent(IN) :: x
+            real(C_DOUBLE), value, intent(IN) :: y
+            logical(C_BOOL) :: SHT_rv
+        end function c_inout_evaluate_0
+
+        function c_inout_evaluate_1(x, y, z) &
+                result(SHT_rv) &
+                bind(C, name="QUEST_inout_evaluate_1")
+            use iso_c_binding, only : C_BOOL, C_DOUBLE
+            implicit none
+            real(C_DOUBLE), value, intent(IN) :: x
+            real(C_DOUBLE), value, intent(IN) :: y
+            real(C_DOUBLE), value, intent(IN) :: z
+            logical(C_BOOL) :: SHT_rv
+        end function c_inout_evaluate_1
+
+        function quest_inout_mesh_min_bounds(coords) &
+                result(SHT_rv) &
+                bind(C, name="QUEST_inout_mesh_min_bounds")
+            use iso_c_binding, only : C_DOUBLE, C_INT
+            implicit none
+            real(C_DOUBLE), intent(OUT) :: coords(*)
+            integer(C_INT) :: SHT_rv
+        end function quest_inout_mesh_min_bounds
+
+        function quest_inout_mesh_max_bounds(coords) &
+                result(SHT_rv) &
+                bind(C, name="QUEST_inout_mesh_max_bounds")
+            use iso_c_binding, only : C_DOUBLE, C_INT
+            implicit none
+            real(C_DOUBLE), intent(OUT) :: coords(*)
+            integer(C_INT) :: SHT_rv
+        end function quest_inout_mesh_max_bounds
+
+        function quest_inout_mesh_center_of_mass(coords) &
+                result(SHT_rv) &
+                bind(C, name="QUEST_inout_mesh_center_of_mass")
+            use iso_c_binding, only : C_DOUBLE, C_INT
+            implicit none
+            real(C_DOUBLE), intent(OUT) :: coords(*)
+            integer(C_INT) :: SHT_rv
+        end function quest_inout_mesh_center_of_mass
+
+        function quest_inout_get_dimension() &
+                result(SHT_rv) &
+                bind(C, name="QUEST_inout_get_dimension")
+            use iso_c_binding, only : C_INT
+            implicit none
+            integer(C_INT) :: SHT_rv
+        end function quest_inout_get_dimension
+
+        function quest_inout_finalize() &
+                result(SHT_rv) &
+                bind(C, name="QUEST_inout_finalize")
+            use iso_c_binding, only : C_INT
+            implicit none
+            integer(C_INT) :: SHT_rv
+        end function quest_inout_finalize
+
+#ifdef AXOM_USE_MPI
+        function c_signed_distance_init_mpi(file, comm) &
+                result(SHT_rv) &
+                bind(C, name="QUEST_signed_distance_init_mpi")
+            use iso_c_binding, only : C_CHAR, C_INT
+            implicit none
+            character(kind=C_CHAR), intent(IN) :: file(*)
+            integer(C_INT), value, intent(IN) :: comm
+            integer(C_INT) :: SHT_rv
+        end function c_signed_distance_init_mpi
+#endif
+
+#ifdef AXOM_USE_MPI
+        function c_signed_distance_init_mpi_bufferify(file, Lfile, comm) &
+                result(SHT_rv) &
+                bind(C, name="QUEST_signed_distance_init_mpi_bufferify")
+            use iso_c_binding, only : C_CHAR, C_INT
+            implicit none
+            character(kind=C_CHAR), intent(IN) :: file(*)
+            integer(C_INT), value, intent(IN) :: Lfile
+            integer(C_INT), value, intent(IN) :: comm
+            integer(C_INT) :: SHT_rv
+        end function c_signed_distance_init_mpi_bufferify
+#endif
+
+#ifndef AXOM_USE_MPI
+        function c_signed_distance_init_serial(file) &
+                result(SHT_rv) &
+                bind(C, name="QUEST_signed_distance_init_serial")
+            use iso_c_binding, only : C_CHAR, C_INT
+            implicit none
+            character(kind=C_CHAR), intent(IN) :: file(*)
+            integer(C_INT) :: SHT_rv
+        end function c_signed_distance_init_serial
+#endif
+
+#ifndef AXOM_USE_MPI
+        function c_signed_distance_init_serial_bufferify(file, Lfile) &
+                result(SHT_rv) &
+                bind(C, name="QUEST_signed_distance_init_serial_bufferify")
+            use iso_c_binding, only : C_CHAR, C_INT
+            implicit none
+            character(kind=C_CHAR), intent(IN) :: file(*)
+            integer(C_INT), value, intent(IN) :: Lfile
+            integer(C_INT) :: SHT_rv
+        end function c_signed_distance_init_serial_bufferify
+#endif
+
+        function c_signed_distance_initialized() &
+                result(SHT_rv) &
+                bind(C, name="QUEST_signed_distance_initialized")
+            use iso_c_binding, only : C_BOOL
+            implicit none
+            logical(C_BOOL) :: SHT_rv
+        end function c_signed_distance_initialized
+
+        subroutine quest_signed_distance_get_mesh_bounds(lo, hi) &
+                bind(C, name="QUEST_signed_distance_get_mesh_bounds")
+            use iso_c_binding, only : C_DOUBLE
+            implicit none
+            real(C_DOUBLE), intent(OUT) :: lo(*)
+            real(C_DOUBLE), intent(OUT) :: hi(*)
+        end subroutine quest_signed_distance_get_mesh_bounds
+
+        subroutine quest_signed_distance_set_dimension(dim) &
+                bind(C, name="QUEST_signed_distance_set_dimension")
+            use iso_c_binding, only : C_INT
+            implicit none
+            integer(C_INT), value, intent(IN) :: dim
+        end subroutine quest_signed_distance_set_dimension
+
+        subroutine c_signed_distance_set_closed_surface(status) &
+                bind(C, name="QUEST_signed_distance_set_closed_surface")
+            use iso_c_binding, only : C_BOOL
+            implicit none
+            logical(C_BOOL), value, intent(IN) :: status
+        end subroutine c_signed_distance_set_closed_surface
+
+        subroutine quest_signed_distance_set_max_levels(maxLevels) &
+                bind(C, name="QUEST_signed_distance_set_max_levels")
+            use iso_c_binding, only : C_INT
+            implicit none
+            integer(C_INT), value, intent(IN) :: maxLevels
+        end subroutine quest_signed_distance_set_max_levels
+
+        subroutine quest_signed_distance_set_max_occupancy(maxOccupancy) &
+                bind(C, name="QUEST_signed_distance_set_max_occupancy")
+            use iso_c_binding, only : C_INT
+            implicit none
+            integer(C_INT), value, intent(IN) :: maxOccupancy
+        end subroutine quest_signed_distance_set_max_occupancy
+
+        subroutine c_signed_distance_set_verbose(status) &
+                bind(C, name="QUEST_signed_distance_set_verbose")
+            use iso_c_binding, only : C_BOOL
+            implicit none
+            logical(C_BOOL), value, intent(IN) :: status
+        end subroutine c_signed_distance_set_verbose
+
+        subroutine c_signed_distance_use_shared_memory(status) &
+                bind(C, name="QUEST_signed_distance_use_shared_memory")
+            use iso_c_binding, only : C_BOOL
+            implicit none
+            logical(C_BOOL), value, intent(IN) :: status
+        end subroutine c_signed_distance_use_shared_memory
+
+        function quest_signed_distance_evaluate(x, y, z) &
+                result(SHT_rv) &
+                bind(C, name="QUEST_signed_distance_evaluate")
+            use iso_c_binding, only : C_DOUBLE
+            implicit none
+            real(C_DOUBLE), value, intent(IN) :: x
+            real(C_DOUBLE), value, intent(IN) :: y
+            real(C_DOUBLE), value, intent(IN) :: z
+            real(C_DOUBLE) :: SHT_rv
+        end function quest_signed_distance_evaluate
+
+        subroutine quest_signed_distance_finalize() &
+                bind(C, name="QUEST_signed_distance_finalize")
+            implicit none
+        end subroutine quest_signed_distance_finalize
+
+        ! splicer begin additional_interfaces
+        ! splicer end additional_interfaces
+    end interface
+
+    interface quest_inout_evaluate
+        module procedure quest_inout_evaluate_0
+        module procedure quest_inout_evaluate_1
+    end interface quest_inout_evaluate
+
+    interface quest_inout_init
+#ifdef AXOM_USE_MPI
+        module procedure quest_inout_init_mpi
+#endif
+#ifndef AXOM_USE_MPI
+        module procedure quest_inout_init_serial
+#endif
+    end interface quest_inout_init
+
+    interface quest_signed_distance_init
+#ifdef AXOM_USE_MPI
+        module procedure quest_signed_distance_init_mpi
+#endif
+#ifndef AXOM_USE_MPI
+        module procedure quest_signed_distance_init_serial
+#endif
+    end interface quest_signed_distance_init
+
+contains
+
+#ifdef AXOM_USE_MPI
+    function quest_inout_init_mpi(fileName, comm) &
+            result(SHT_rv)
+        use iso_c_binding, only : C_INT
+        character(len=*), intent(IN) :: fileName
+        integer, value, intent(IN) :: comm
+        integer(C_INT) :: SHT_rv
+        ! splicer begin function.inout_init_mpi
+        SHT_rv = c_inout_init_mpi_bufferify(fileName, &
+            len_trim(fileName, kind=C_INT), comm)
+        ! splicer end function.inout_init_mpi
+    end function quest_inout_init_mpi
+#endif
+
+#ifndef AXOM_USE_MPI
+    function quest_inout_init_serial(fileName) &
+            result(SHT_rv)
+        use iso_c_binding, only : C_INT
+        character(len=*), intent(IN) :: fileName
+        integer(C_INT) :: SHT_rv
+        ! splicer begin function.inout_init_serial
+        SHT_rv = c_inout_init_serial_bufferify(fileName, &
+            len_trim(fileName, kind=C_INT))
+        ! splicer end function.inout_init_serial
+    end function quest_inout_init_serial
+#endif
+
+    function quest_inout_initialized() &
+            result(SHT_rv)
+        use iso_c_binding, only : C_BOOL
+        logical :: SHT_rv
+        ! splicer begin function.inout_initialized
+        SHT_rv = c_inout_initialized()
+        ! splicer end function.inout_initialized
+    end function quest_inout_initialized
+
+    function quest_inout_set_verbose(verbosity) &
+            result(SHT_rv)
+        use iso_c_binding, only : C_BOOL, C_INT
+        logical, value, intent(IN) :: verbosity
+        logical(C_BOOL) SH_verbosity
+        integer(C_INT) :: SHT_rv
+        SH_verbosity = verbosity  ! coerce to C_BOOL
+        ! splicer begin function.inout_set_verbose
+        SHT_rv = c_inout_set_verbose(SH_verbosity)
+        ! splicer end function.inout_set_verbose
+    end function quest_inout_set_verbose
+
+    function quest_inout_evaluate_0(x, y) &
+            result(SHT_rv)
+        use iso_c_binding, only : C_BOOL, C_DOUBLE
+        real(C_DOUBLE), value, intent(IN) :: x
+        real(C_DOUBLE), value, intent(IN) :: y
+        logical :: SHT_rv
+        ! splicer begin function.inout_evaluate_0
+        SHT_rv = c_inout_evaluate_0(x, y)
+        ! splicer end function.inout_evaluate_0
+    end function quest_inout_evaluate_0
+
+    function quest_inout_evaluate_1(x, y, z) &
+            result(SHT_rv)
+        use iso_c_binding, only : C_BOOL, C_DOUBLE
+        real(C_DOUBLE), value, intent(IN) :: x
+        real(C_DOUBLE), value, intent(IN) :: y
+        real(C_DOUBLE), value, intent(IN) :: z
+        logical :: SHT_rv
+        ! splicer begin function.inout_evaluate_1
+        SHT_rv = c_inout_evaluate_1(x, y, z)
+        ! splicer end function.inout_evaluate_1
+    end function quest_inout_evaluate_1
+
+#ifdef AXOM_USE_MPI
+    function quest_signed_distance_init_mpi(file, comm) &
+            result(SHT_rv)
+        use iso_c_binding, only : C_INT
+        character(len=*), intent(IN) :: file
+        integer, value, intent(IN) :: comm
+        integer(C_INT) :: SHT_rv
+        ! splicer begin function.signed_distance_init_mpi
+        SHT_rv = c_signed_distance_init_mpi_bufferify(file, &
+            len_trim(file, kind=C_INT), comm)
+        ! splicer end function.signed_distance_init_mpi
+    end function quest_signed_distance_init_mpi
+#endif
+
+#ifndef AXOM_USE_MPI
+    function quest_signed_distance_init_serial(file) &
+            result(SHT_rv)
+        use iso_c_binding, only : C_INT
+        character(len=*), intent(IN) :: file
+        integer(C_INT) :: SHT_rv
+        ! splicer begin function.signed_distance_init_serial
+        SHT_rv = c_signed_distance_init_serial_bufferify(file, &
+            len_trim(file, kind=C_INT))
+        ! splicer end function.signed_distance_init_serial
+    end function quest_signed_distance_init_serial
+#endif
+
+    function quest_signed_distance_initialized() &
+            result(SHT_rv)
+        use iso_c_binding, only : C_BOOL
+        logical :: SHT_rv
+        ! splicer begin function.signed_distance_initialized
+        SHT_rv = c_signed_distance_initialized()
+        ! splicer end function.signed_distance_initialized
+    end function quest_signed_distance_initialized
+
+    subroutine quest_signed_distance_set_closed_surface(status)
+        use iso_c_binding, only : C_BOOL
+        logical, value, intent(IN) :: status
+        logical(C_BOOL) SH_status
+        SH_status = status  ! coerce to C_BOOL
+        ! splicer begin function.signed_distance_set_closed_surface
+        call c_signed_distance_set_closed_surface(SH_status)
+        ! splicer end function.signed_distance_set_closed_surface
+    end subroutine quest_signed_distance_set_closed_surface
+
+    subroutine quest_signed_distance_set_verbose(status)
+        use iso_c_binding, only : C_BOOL
+        logical, value, intent(IN) :: status
+        logical(C_BOOL) SH_status
+        SH_status = status  ! coerce to C_BOOL
+        ! splicer begin function.signed_distance_set_verbose
+        call c_signed_distance_set_verbose(SH_status)
+        ! splicer end function.signed_distance_set_verbose
+    end subroutine quest_signed_distance_set_verbose
+
+    subroutine quest_signed_distance_use_shared_memory(status)
+        use iso_c_binding, only : C_BOOL
+        logical, value, intent(IN) :: status
+        logical(C_BOOL) SH_status
+        SH_status = status  ! coerce to C_BOOL
+        ! splicer begin function.signed_distance_use_shared_memory
+        call c_signed_distance_use_shared_memory(SH_status)
+        ! splicer end function.signed_distance_use_shared_memory
+    end subroutine quest_signed_distance_use_shared_memory
+
+    ! splicer begin additional_functions
+    ! splicer end additional_functions
+
+end module axom_quest

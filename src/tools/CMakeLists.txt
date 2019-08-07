@@ -1,16 +1,7 @@
-#------------------------------------------------------------------------------
-# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
-# Produced at the Lawrence Livermore National Laboratory
-#
-# LLNL-CODE-741217
-#
-# All rights reserved.
-#
-# This file is part of Axom.
-#
-# For details about use and distribution, please read axom/LICENSE.
-#------------------------------------------------------------------------------
+# SPDX-License-Identifier: (BSD-3-Clause)
 
 #------------------------------------------------------------------------------
 # This directory contains source code for utility executables that utilize
@@ -35,13 +26,8 @@ if( AXOM_ENABLE_SLAM AND AXOM_ENABLE_SIDRE AND ENABLE_MPI AND HDF5_FOUND )
         mpi
         )
 
-    if(AXOM_ENABLE_LUMBERJACK)
-        list(APPEND datastore_converter_depends lumberjack)
-    endif()
-
-    if(SCR_FOUND)
-        list(APPEND datastore_converter_depends scr)
-    endif()
+    blt_list_append(TO datastore_converter_depends ELEMENTS lumberjack mpi IF AXOM_ENABLE_LUMBERJACK)
+    blt_list_append(TO datastore_converter_depends ELEMENTS scr IF SCR_FOUND)
 
     blt_add_executable(
         NAME       convert_sidre_protocol
@@ -63,12 +49,11 @@ set(mesh_tester_sources
     mesh_tester.cpp
 )
 set(mesh_tester_depends 
-    axom_utils slic mint slam quest primal
+    core slic mint slam quest primal
     )
-if(AXOM_ENABLE_LUMBERJACK)
-    list(APPEND mesh_tester_depends lumberjack mpi)
-endif()
 
+blt_list_append(TO mesh_tester_depends ELEMENTS lumberjack mpi IF AXOM_ENABLE_LUMBERJACK)
+blt_list_append(TO mesh_tester_depends ELEMENTS openmp IF ENABLE_OPENMP)
 
 if(AXOM_ENABLE_QUEST)
     blt_add_executable(

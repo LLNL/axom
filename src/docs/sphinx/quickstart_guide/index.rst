@@ -1,21 +1,12 @@
+.. ## Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+.. ## other Axom Project Developers. See the top-level COPYRIGHT file for details.
 .. ##
-.. ## Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
-.. ##
-.. ## Produced at the Lawrence Livermore National Laboratory.
-.. ##
-.. ## LLNL-CODE-741217
-.. ##
-.. ## All rights reserved.
-.. ##
-.. ## This file is part of Axom.
-.. ##
-.. ## For details about use and distribution, please read axom/LICENSE.
-.. ##
+.. ## SPDX-License-Identifier: (BSD-3-Clause)
 
 Axom Quickstart Guide
-=========================================================
+=====================
 
-This guide provides information to help Axom users and developers get 
+This guide provides information to help Axom users and developers get
 up and running quickly.
 
 It provides instructions for:
@@ -25,18 +16,18 @@ It provides instructions for:
   * Compiling and linking an application with Axom
 
 Additional information about Axom can be found on the main
-`Axom Web Page <https://lc.llnl.gov/toolkit/docs/sphinx/web_docs/html/index.html>`_:
+`Axom Web Page <../../../index.html>`_:
 
   * Build system
   * User guides and source code documentation for individual Axom components
   * Developer guide, coding guidelines, etc.
   * Communicating with the Axom development team (email lists, chat room, etc.)
 
-
 **Contents:**
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
+   zero_to_axom
    the_code
    config_build

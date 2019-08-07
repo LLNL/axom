@@ -16,7 +16,7 @@ if [[ $HOSTNAME == rz* ]]; then
     echo "Error: this job is to be run on the CZ"
     exit 1
 else
-    HOST_CONFIGURATION="host-configs/quartz-toss_3_x86_64_ib-gcc@7.1.0.cmake"
+    HOST_CONFIGURATION="host-configs/quartz-toss_3_x86_64_ib-gcc@7.3.0.cmake"
 fi
 
 

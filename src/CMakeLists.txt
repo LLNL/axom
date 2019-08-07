@@ -1,15 +1,9 @@
+# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+#
+# SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
-# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
-#
-# Produced at the Lawrence Livermore National Laboratory
-#
-# LLNL-CODE-741217
-#
-# All rights reserved.
-#
-# This file is part of Axom.
-#
-# For details about use and distribution, please read axom/LICENSE.
+# Axom project
 #------------------------------------------------------------------------------
 
 if (ENABLE_CUDA)
@@ -20,18 +14,16 @@ endif()
 
 message(STATUS "Using CMake version ${CMAKE_VERSION}")
 
-################################
-# Axom project
-################################
+
 project(axom LANGUAGES C CXX)
 
 if (ENABLE_FORTRAN)
    enable_language(Fortran)
 endif()
 
-################################
-# BLT
-################################
+#------------------------------------------------------------------------------
+# Initialize BLT build system
+#------------------------------------------------------------------------------
 if (DEFINED BLT_SOURCE_DIR)
     # Support having a shared BLT outside of the repository if given a BLT_SOURCE_DIR
 
@@ -39,11 +31,11 @@ if (DEFINED BLT_SOURCE_DIR)
         message(FATAL_ERROR "Given BLT_SOURCE_DIR does not contain SetupBLT.cmake")
     endif()
 else()
-    # Use internal BLT if no BLT_SOURCE_DIR is given
+    # Use internal 'blt' submodule path if BLT_SOURCE_DIR not provided
     set(BLT_SOURCE_DIR "${PROJECT_SOURCE_DIR}/cmake/blt" CACHE PATH "")
     if (NOT EXISTS ${BLT_SOURCE_DIR}/SetupBLT.cmake)
         message(FATAL_ERROR
-            "The BLT is not present. "
+            "Cannot locate BLT. "
             "Either run the following two commands in your git repository: \n"
             "    git submodule init\n"
             "    git submodule update\n"
@@ -51,56 +43,54 @@ else()
     endif()
 endif()
 
-set(ENABLE_COPY_HEADERS ON CACHE BOOL "")
+if (NOT BLT_CXX_STD)
+    set(BLT_CXX_STD "c++11" CACHE STRING "")
+endif()
+
 include(${BLT_SOURCE_DIR}/SetupBLT.cmake)
 
-################################
-# built-in cmake modules
-################################
-include(CMakeDependentOption)
+#------------------------------------------------------------------------------
+# Attempt to set Axom's data directory (used for Axom's tests and examples)
+#------------------------------------------------------------------------------
+if(NOT AXOM_DATA_DIR)
+    # Use internal 'axom_dir' submodule path if AXOM_DATA_DIR not provided
+    get_filename_component(_data_dir "${PROJECT_SOURCE_DIR}/../data" ABSOLUTE)
+    if(EXISTS ${_data_dir}/README.md)
+        set(AXOM_DATA_DIR ${_data_dir} CACHE PATH "")
+    endif()
+endif()
 
-################################
-# Include standard build system logic and options
-################################
+#------------------------------------------------------------------------------
+# Include build system logic and options
+#------------------------------------------------------------------------------
+include(CMakeDependentOption)
 include(cmake/CMakeBasics.cmake)
 
-################################
-# Add Thirdparty Builtin Libs
-################################
+#------------------------------------------------------------------------------
+# Global includes for the Axom projects (restrict these as much as possible)
+#------------------------------------------------------------------------------
+include_directories(${CMAKE_BINARY_DIR}/include)
+include_directories(${PROJECT_SOURCE_DIR})
+
+#------------------------------------------------------------------------------
+# Add source directories
+#------------------------------------------------------------------------------
 add_subdirectory(thirdparty)
 
-#################################
-# Add top-level includes
-#################################
-add_subdirectory(include)
+include(cmake/AxomVersion.cmake)
+add_subdirectory(axom)
 
-################################
-# Add components
-################################
-add_subdirectory(components)
-
-################################
-# Adds directory for tools code
-# that uses axom
-################################
 add_subdirectory(tools)
-
-################################
-# Adds directory for building
-# examples
-################################
 add_subdirectory(examples)
 
-
-################################
-# Add docs
-################################
 if (AXOM_ENABLE_DOCS)
+  if (SPHINX_FOUND)
+    blt_add_sphinx_target( axom_docs )
+  endif()
   add_subdirectory(docs)
 endif()
 
-################################
-# Create header of configuration options
-################################s
+#------------------------------------------------------------------------------
+# Generate header file with configuration options
+#------------------------------------------------------------------------------
 include(cmake/AxomConfig.cmake)
-

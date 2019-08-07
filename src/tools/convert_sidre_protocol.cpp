@@ -1,19 +1,7 @@
-/*
- *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
- *
- * Produced at the Lawrence Livermore National Laboratory
- *
- * LLNL-CODE-741217
- *
- * All rights reserved.
- *
- * This file is part of Axom.
- *
- * For details about use and distribution, please read axom/LICENSE.
- *
- *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- */
+// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
 
 
 /**
@@ -44,46 +32,28 @@
 #include "mpi.h"
 
 #include "axom/config.hpp"
-#include "axom/Types.hpp"
-#include "fmt/format.h"
-#include "slic/slic.hpp"
-#include "slic/LogStream.hpp"
-
-#ifdef AXOM_USE_LUMBERJACK
-  #include "slic/LumberjackStream.hpp"
-#else
-  #include "slic/GenericOutputStream.hpp"
-#endif
-
-#include "sidre/SidreTypes.hpp"
-#include "sidre/DataStore.hpp"
-#include "sidre/Group.hpp"
-#include "sidre/Buffer.hpp"
-#include "sidre/View.hpp"
-
-#include "sidre/IOManager.hpp"
-
-#include "slam/SizePolicies.hpp"
-#include "slam/OffsetPolicies.hpp"
-#include "slam/StridePolicies.hpp"
-#include "slam/OrderedSet.hpp"
+#include "axom/core.hpp"
+#include "fmt/fmt.hpp"
+#include "axom/slic.hpp"
+#include "axom/sidre.hpp"
+#include "axom/slam.hpp"
 
 #include <limits>       // for numeric_limits<int>
 #include <cstdlib>      // for atoi
+#include <sstream>      // for stringstream
 
 
-using axom::sidre::DataStore;
-using axom::sidre::Group;
-using axom::sidre::Buffer;
-using axom::sidre::View;
-using axom::sidre::IOManager;
+namespace sidre = axom::sidre;
+namespace slam = axom::slam;
+namespace slic = axom::slic;
 
+using PosType = slam::DefaultPositionType;
+using ElemType = sidre::IndexType;
 
-typedef axom::sidre::IndexType IndexType;
-typedef axom::slam::policies::RuntimeSize<IndexType>   SzPol;
-typedef axom::slam::policies::ZeroOffset<IndexType> OffPol;
-typedef axom::slam::policies::RuntimeStride<IndexType> StrPol;
-typedef axom::slam::OrderedSet<SzPol, OffPol, StrPol> ViewSet;
+using SzPol = slam::policies::RuntimeSize<PosType>;
+using OffPol = slam::policies::ZeroOffset<PosType>;
+using StrPol= slam::policies::RuntimeStride<PosType>;
+using ViewSet = slam::OrderedSet<PosType, ElemType, SzPol, OffPol, StrPol>;
 
 void setupLogging();
 void teardownLogging();
@@ -100,10 +70,10 @@ struct CommandLineArguments
   int m_numStripElts;
 
   CommandLineArguments()
-    : m_inputName(""),
-    m_outputName(""),
-    m_protocol(""),
-    m_numStripElts(-1)
+    : m_inputName("")
+    , m_outputName("")
+    , m_protocol("")
+    , m_numStripElts(-1)
   {}
 
   bool hasInputName() const { return !m_inputName.empty(); }
@@ -129,25 +99,32 @@ struct CommandLineArguments
   /** Logs usage information for the utility */
   static void usage()
   {
-    fmt::MemoryWriter out;
-    out << "Usage ./convert_sidre_protocol <options>";
-    out.write("\n\t{:<30}{}", "--help", "Output this message and quit");
-    out.write("\n\t{:<30}{}", "--input <file>",
-              "(required) Filename of input datastore");
-    out.write("\n\t{:<30}{}", "--output <file>",
-              "(required) Filename of output datastore");
-    out.write("\n\t{:<30}{}", "--strip <N>", "Indicates if data in output file should be "
-                                             "stripped (to first N entries) (default: off)");
-    out.write("\n\t{:<30}{}", "--protocol <str>",
-              "Desired protocol for output datastore (default: json)");
+    fmt::memory_buffer out;
+    fmt::format_to(out,"Usage ./convert_sidre_protocol <options>");
+    fmt::format_to(out,"\n\t{:<30}{}",
+                   "--help",
+                   "Output this message and quit");
+    fmt::format_to(out,"\n\t{:<30}{}",
+                   "--input <file>",
+                   "(required) Filename of input datastore");
+    fmt::format_to(out,"\n\t{:<30}{}",
+                   "--output <file>",
+                   "(required) Filename of output datastore");
+    fmt::format_to(out,"\n\t{:<30}{}",
+                   "--strip <N>",
+                   "Indicates if data in output file should be "
+                   "stripped (to first N entries) (default: off)");
+    fmt::format_to(out,"\n\t{:<30}{}",
+                   "--protocol <str>",
+                   "Desired protocol for output datastore (default: json)");
 
-    out.write("\n\n\t{: <40}","Available protocols:");
+    fmt::format_to(out,"\n\n\t{: <40}","Available protocols:");
     for(int i=0 ; i< NUM_SIDRE_PROTOCOLS ; ++i)
     {
-      out.write("\n\t  {: <50}", s_validProtocols[i]);
+      fmt::format_to(out,"\n\t  {: <50}", s_validProtocols[i]);
     }
 
-    SLIC_INFO( out.str() );
+    SLIC_INFO( out.data() );
   }
 
 };
@@ -265,16 +242,14 @@ CommandLineArguments parseArguments(int argc, char** argv, int myRank)
  *
  * \note We also set the data in each allocated array to zeros
  */
-void allocateExternalData(Group* grp, std::vector<void*>& extPtrs)
+void allocateExternalData(sidre::Group* grp, std::vector<void*>& extPtrs)
 {
-  using namespace axom;
-
   // for each view
-  for(sidre::IndexType idx =  grp->getFirstValidViewIndex() ;
+  for(auto idx =  grp->getFirstValidViewIndex() ;
       sidre::indexIsValid(idx) ;
       idx = grp->getNextValidViewIndex(idx) )
   {
-    View* view = grp->getView(idx);
+    sidre::View* view = grp->getView(idx);
     if(view->isExternal())
     {
       SLIC_INFO("External view " << view->getPathName()
@@ -291,7 +266,7 @@ void allocateExternalData(Group* grp, std::vector<void*>& extPtrs)
   }
 
   // for each group
-  for(sidre::IndexType idx =  grp->getFirstValidGroupIndex() ;
+  for(auto idx =  grp->getFirstValidGroupIndex() ;
       sidre::indexIsValid(idx) ;
       idx = grp->getNextValidGroupIndex(idx) )
   {
@@ -309,7 +284,7 @@ void allocateExternalData(Group* grp, std::vector<void*>& extPtrs)
  * \param origSize The size of the original array
  */
 template<typename sidre_type>
-void modifyFinalValuesImpl(View* view, int origSize)
+void modifyFinalValuesImpl(sidre::View* view, int origSize)
 {
   SLIC_DEBUG("Looking at view " << view->getPathName());
 
@@ -322,13 +297,13 @@ void modifyFinalValuesImpl(View* view, int origSize)
                    .stride(view->getStride());
 
   #ifdef AXOM_DEBUG
-  fmt::MemoryWriter out_fwd;
+  fmt::memory_buffer out_fwd;
   for(int i=0 ; i < idxSet.size() ; ++i)
   {
-    out_fwd.write("\n\ti: {}; set[i]: {}; arr [ set[i] ] = {}",
-                  i, idxSet[i], arr[ idxSet[i] ] );
+    fmt::format_to(out_fwd,"\n\ti: {}; set[i]: {}; arr [ set[i] ] = {}",
+                   i, idxSet[i], arr[ idxSet[i] ] );
   }
-  SLIC_DEBUG( out_fwd.str() );
+  SLIC_DEBUG( out_fwd.data() );
   #endif
 
   // Shift the data over by two
@@ -343,55 +318,53 @@ void modifyFinalValuesImpl(View* view, int origSize)
   arr[ idxSet[1] ] = std::numeric_limits<sidre_type>::quiet_NaN();
 
   #ifdef AXOM_DEBUG
-  fmt::MemoryWriter out_rev;
+  fmt::memory_buffer out_rev;
   for(int i=0 ; i < idxSet.size() ; ++i)
   {
-    out_rev.write("\n\ti: {}; set[i]: {}; arr [ set[i] ] = {}",
-                  i, idxSet[i], arr[ idxSet[i] ] );
+    fmt::format_to(out_rev,"\n\ti: {}; set[i]: {}; arr [ set[i] ] = {}",
+                   i, idxSet[i], arr[ idxSet[i] ] );
   }
-  SLIC_DEBUG( out_rev.str() );
+  SLIC_DEBUG( out_rev.data() );
   #endif
 
 }
 
 
-void modifyFinalValues(View* view, int origSize)
+void modifyFinalValues(sidre::View* view, int origSize)
 {
   SLIC_DEBUG("Truncating view " << view->getPathName());
-
-  using namespace axom;
 
   switch(view->getTypeID())
   {
   case sidre::INT8_ID:
-    modifyFinalValuesImpl<common::int8>(view, origSize);
+    modifyFinalValuesImpl<axom::int8>(view, origSize);
     break;
   case sidre::INT16_ID:
-    modifyFinalValuesImpl<common::int16>(view, origSize);
+    modifyFinalValuesImpl<axom::int16>(view, origSize);
     break;
   case sidre::INT32_ID:
-    modifyFinalValuesImpl<common::int32>(view, origSize);
+    modifyFinalValuesImpl<axom::int32>(view, origSize);
     break;
   case sidre::INT64_ID:
-    modifyFinalValuesImpl<common::int64>(view, origSize);
+    modifyFinalValuesImpl<axom::int64>(view, origSize);
     break;
   case sidre::UINT8_ID:
-    modifyFinalValuesImpl<common::uint8>(view, origSize);
+    modifyFinalValuesImpl<axom::uint8>(view, origSize);
     break;
   case sidre::UINT16_ID:
-    modifyFinalValuesImpl<common::uint16>(view, origSize);
+    modifyFinalValuesImpl<axom::uint16>(view, origSize);
     break;
   case sidre::UINT32_ID:
-    modifyFinalValuesImpl<common::uint32>(view, origSize);
+    modifyFinalValuesImpl<axom::uint32>(view, origSize);
     break;
   case sidre::UINT64_ID:
-    modifyFinalValuesImpl<common::uint64>(view, origSize);
+    modifyFinalValuesImpl<axom::uint64>(view, origSize);
     break;
   case sidre::FLOAT32_ID:
-    modifyFinalValuesImpl<common::float32>(view, origSize);
+    modifyFinalValuesImpl<axom::float32>(view, origSize);
     break;
   case sidre::FLOAT64_ID:
-    modifyFinalValuesImpl<common::float64>(view, origSize);
+    modifyFinalValuesImpl<axom::float64>(view, origSize);
     break;
   default:
     break;
@@ -408,16 +381,14 @@ void modifyFinalValues(View* view, int origSize)
  * This will be followed by (at most) the first maxSize elements of the original
  * array
  */
-void truncateBulkData(Group* grp, int maxSize)
+void truncateBulkData(sidre::Group* grp, int maxSize)
 {
-  using namespace axom;
-
   // Add two to maxSize
-  for(sidre::IndexType idx =  grp->getFirstValidViewIndex() ;
+  for(auto idx =  grp->getFirstValidViewIndex() ;
       sidre::indexIsValid(idx) ;
       idx = grp->getNextValidViewIndex(idx) )
   {
-    View* view = grp->getView(idx);
+    sidre::View* view = grp->getView(idx);
     bool isArray = view->hasBuffer() || view->isExternal();
 
     if(isArray)
@@ -443,7 +414,7 @@ void truncateBulkData(Group* grp, int maxSize)
   }
 
   // for each group
-  for(sidre::IndexType idx =  grp->getFirstValidGroupIndex() ;
+  for(auto idx =  grp->getFirstValidGroupIndex() ;
       sidre::indexIsValid(idx) ;
       idx = grp->getNextValidGroupIndex(idx) )
   {
@@ -454,10 +425,7 @@ void truncateBulkData(Group* grp, int maxSize)
 /** Sets up the logging using lumberjack */
 void setupLogging()
 {
-  using namespace axom;
-
   slic::initialize();
-
   slic::setLoggingMsgLevel(slic::message::Info);
 
 #ifdef AXOM_USE_LUMBERJACK
@@ -467,7 +435,7 @@ void setupLogging()
 #endif
 
   // Formatting for warning, errors and fatal message
-  fmt::MemoryWriter wefFmt;
+  std::stringstream wefFmt;
   wefFmt << "\n***********************************\n"
          << rankStr << "[<LEVEL> in line <LINE> of file <FILE>]\n"
          <<"MESSAGE=<MESSAGE>\n"
@@ -500,7 +468,7 @@ void setupLogging()
 /** Finalizes logging and flushes streams */
 void teardownLogging()
 {
-  axom::slic::finalize();
+  slic::finalize();
 }
 
 
@@ -519,8 +487,8 @@ int main(int argc, char* argv[])
 
   // Load the original datastore
   SLIC_INFO("Loading datastore from " << args.m_inputName);
-  DataStore ds;
-  IOManager manager(MPI_COMM_WORLD);
+  sidre::DataStore ds;
+  sidre::IOManager manager(MPI_COMM_WORLD);
   manager.read(ds.getRoot(), args.m_inputName);
   int num_files = manager.getNumFilesFromRoot(args.m_inputName);
 
@@ -530,7 +498,7 @@ int main(int argc, char* argv[])
   allocateExternalData(ds.getRoot(), externalDataPointers);
   manager.loadExternalData(ds.getRoot(), args.m_inputName);
 
-  axom::slic::flushStreams();
+  slic::flushStreams();
 
   // Internal processing
   if(args.shouldStripData())
@@ -541,8 +509,8 @@ int main(int argc, char* argv[])
     truncateBulkData(ds.getRoot(), numElts);
 
     // Add a string view to the datastore to indicate that we modified the data
-    fmt::MemoryWriter fout;
-    fout << "This datastore was created by the convert_sidre_protocol "
+    std::stringstream sstr;
+    sstr << "This datastore was created by the convert_sidre_protocol "
          << "utility with option '--strip " << numElts
          << "'. To simplify debugging, the bulk data in this datastore "
          << "has been truncated to have at most " << numElts
@@ -550,7 +518,7 @@ int main(int argc, char* argv[])
          << " array followed by a zero/Nan. These are followed by (at most) "
          << "the first " << numElts << " values of the array.";
 
-    ds.getRoot()->createViewString("Note", fout.str());
+    ds.getRoot()->createViewString("Note", sstr.str());
   }
 
   // Write out datastore to the output file in the specified protocol
@@ -566,7 +534,7 @@ int main(int argc, char* argv[])
       ++it)
   {
     delete [] static_cast<char*>(*it);
-    *it = AXOM_NULLPTR;
+    *it = nullptr;
   }
 
   teardownLogging();

@@ -1,4 +1,0 @@
-Primal User Documentation
-=========================
-
-TODO:

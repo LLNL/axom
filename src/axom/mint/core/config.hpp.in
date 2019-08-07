@@ -1,0 +1,27 @@
+// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+
+#ifndef MINT_CONFIG_HPP_
+#define MINT_CONFIG_HPP_
+
+#include "axom/config.hpp"// for compile-time definitions
+#include "axom/core/Types.hpp" // for fixed-width types
+
+#cmakedefine AXOM_MINT_USE_SIDRE
+
+namespace axom
+{
+namespace mint
+{
+
+constexpr IndexType USE_DEFAULT = -1;
+using int64 = axom::int64;
+
+} /* end namespace mint */
+} /* end namespace axom */
+
+
+
+#endif /* MINT_CONFIG_HPP_ */

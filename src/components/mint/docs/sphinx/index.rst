@@ -1,4 +1,0 @@
-Mint User Documentation
-=======================
-
-TODO:

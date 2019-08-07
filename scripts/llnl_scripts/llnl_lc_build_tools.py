@@ -1,18 +1,9 @@
 #!/usr/local/bin/python
 
-###############################################################################
-# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
-# Produced at the Lawrence Livermore National Laboratory
-#
-# LLNL-CODE-741217
-#
-# All rights reserved.
-#
-# This file is part of Axom.
-#
-# For details about use and distribution, please read axom/LICENSE.
-###############################################################################
+# SPDX-License-Identifier: (BSD-3-Clause)
 
 """
  file: llnl_lc_uberenv_install_tools.py
@@ -31,6 +22,7 @@ import glob
 import json
 import getpass
 import shutil
+import time
 
 from os.path import join as pjoin
 
@@ -129,9 +121,18 @@ def log_failure(prefix, msg, timestamp=""):
     json.dump(info,open(pjoin(prefix,"failed.json"),"w"),indent=2)
 
 
-def copy_if_exists(src, dst):
+def copy_if_exists(src, dst, verbose=True):
     if os.path.exists(src):
         shutil.copy2(src, dst)
+
+    if verbose:
+        if os.path.exists(src):
+            print "[File copied]"
+        else:
+            print "[File not copied because source did not exist]"
+        print "[  Source: {0}]".format(src)
+        print "[  Destination: {0}]".format(dst)
+
 
 
 def normalize_job_name(job_name):
@@ -210,6 +211,7 @@ def archive_tpl_logs(prefix, job_name, timestamp):
     copy_if_exists(pjoin(tpl_build_dir, "info.json"), archive_dir)
 
     build_and_test_root = get_build_and_test_root(tpl_build_dir, timestamp)
+    print "[Build/Test Dir: %s]" % build_and_test_root
 
     tpl_logs = glob.glob(pjoin(tpl_build_dir, "output.log.spack.tpl.build.*"))
     for tpl_log in tpl_logs:
@@ -227,6 +229,8 @@ def archive_tpl_logs(prefix, job_name, timestamp):
         config_spec_logs = glob.glob(pjoin(build_and_test_root, "output.log.*-" + spec + ".configure.txt"))
         if len(config_spec_logs) > 0:
             copy_if_exists(config_spec_logs[0], pjoin(archive_spec_dir, "output.log.config-build.txt"))
+        else:
+            print "[Error: No config-build logs found in Spec Dir.]"
 
         # Find build dir for spec
         # Note: only compiler name/version is used in build directory not full spack spec
@@ -238,6 +242,8 @@ def archive_tpl_logs(prefix, job_name, timestamp):
 
             print "[  Build Dir: %s]" % build_dir
             copy_build_dir_files(build_dir, archive_spec_dir)
+        else:
+            print "[Error: No build dirs found in Build/Test root.]"
 
     set_axom_group_and_perms(archive_dir)
 
@@ -254,11 +260,11 @@ def uberenv_install_tpls(prefix,spec,mirror = None):
     """
     Calls uberenv to install tpls for a given spec to given prefix.
     """
-    cmd = "python scripts/uberenv/uberenv.py --prefix %s --spec %s " % (prefix,spec)
+    cmd = "python scripts/uberenv/uberenv.py --prefix %s --spec=\"%s\" " % (prefix,spec)
     if not mirror is None:
         cmd += "--mirror %s" % mirror
         
-    spack_tpl_build_log = pjoin(prefix,"output.log.spack.tpl.build.%s.txt" % spec)
+    spack_tpl_build_log = pjoin(prefix,"output.log.spack.tpl.build.%s.txt" % spec.replace(" ", "_"))
     print "[starting tpl install of spec %s]" % spec
     print "[log file: %s]" % spack_tpl_build_log
     res = sexe(cmd,
@@ -267,39 +273,6 @@ def uberenv_install_tpls(prefix,spec,mirror = None):
     if res != 0:
         log_failure(prefix,"[ERROR: uberenv/spack build of spec: %s failed]" % spec)
     return res
-
-def patch_host_configs(prefix):
-    """
-    Sanity check that looks for host config files generated at 
-    the given prefix. 
-    """
-    # load manual edits into a dict with keys that we can compare to 
-    # generated host config names
-    manual_edits_pattern = "host-configs/*manual.edits.txt"
-    manual_edits_files = glob.glob(manual_edits_pattern)
-    manual_edits = {}
-    for f in manual_edits_files:
-        base = os.path.basename(f)[:-(len("manual.edits.txt")+1)]
-        manual_edits[base] = open(f).read()
-    # loop over 
-    fs = glob.glob(pjoin(prefix,"*.cmake"))
-    print "[found %d host config files @ %s]" % (len(fs),prefix)
-    for f in fs:
-        print "[ -> %s  ]" %  f
-        for me_key in manual_edits.keys():
-            # see if the key matches
-            if f.count(me_key) == 1:
-                # make sure the text wasn't already appended
-                patch_txt = manual_edits[me_key]
-                host_cfg_txt = open(f).read()
-                if not patch_txt in host_cfg_txt:
-                    # append the manual edits
-                    print "[patching %s with manual edits for %s]" % (f,me_key)
-                    ofile = open(f,"w")
-                    ofile.write(host_cfg_txt)
-                    ofile.write(patch_txt)
-                    ofile.write("\n")
-    return 0
 
 ############################################################
 # helpers for testing a set of host configs
@@ -329,10 +302,12 @@ def build_and_test_host_config(test_root,host_config):
     ####
     # build, test, and install
     ####
+    
+    # build the code
     bld_output_file =  pjoin(build_dir,"output.log.make.txt")
     print "[starting build]"
     print "[log file: %s]" % bld_output_file
-    res = sexe("cd %s && make -j 8 VERBOSE=1 " % build_dir,
+    res = sexe("cd %s && make -j 16 VERBOSE=1 " % build_dir,
                 output_file = bld_output_file,
                 echo=True)
 
@@ -340,6 +315,7 @@ def build_and_test_host_config(test_root,host_config):
         print "[ERROR: Build for host-config: %s failed]\n" % host_config
         return res
 
+    # test the code
     tst_output_file = pjoin(build_dir,"output.log.make.test.txt")
     print "[starting unit tests]"
     print "[log file: %s]" % tst_output_file
@@ -354,7 +330,20 @@ def build_and_test_host_config(test_root,host_config):
         print "[ERROR: Tests for host-config: %s failed]\n" % host_config
         return res
 
+    # build the docs
+    docs_output_file = pjoin(build_dir,"output.log.make.docs.txt")
+    print "[starting docs generation]"
+    print "[log file: %s]" % docs_output_file
 
+    res = sexe("cd %s && make docs " % build_dir,
+               output_file = docs_output_file,
+               echo=True)
+
+    if res != 0:
+        print "[ERROR: Docs generation for host-config: %s failed]\n\n" % host_config
+        return res
+
+    # install the code
     inst_output_file = pjoin(build_dir,"output.log.make.install.txt")
     print "[starting install]"
     print "[log file: %s]" % inst_output_file
@@ -364,7 +353,7 @@ def build_and_test_host_config(test_root,host_config):
                echo=True)
 
     if res != 0:
-        print "[ERROR: Install for host-config: %s failed]\n" % host_config
+        print "[ERROR: Install for host-config: %s failed]\n\n" % host_config
         return res
 
     # simple sanity check for make install
@@ -398,12 +387,15 @@ def build_and_test_host_configs(prefix, job_name, timestamp):
     for host_config in host_configs:
         build_dir = get_build_dir(test_root, host_config)
 
+        start_time = time.time()
         if build_and_test_host_config(test_root,host_config) == 0:
             ok.append(host_config)
             log_success(build_dir, job_name, timestamp)
         else:
             bad.append(host_config)
             log_failure(build_dir, job_name, timestamp)
+        end_time = time.time()
+        print "[build time: {0}]\n".format(convertSecondsToReadableTime(end_time - start_time))
 
 
     # Log overall job success/failure
@@ -470,9 +462,12 @@ def full_build_and_test_of_tpls(builds_dir, job_name, timestamp):
     write_build_info(pjoin(prefix,"info.json"), job_name)
     # use uberenv to install for all specs
     for spec in specs:
+        start_time = time.time()
         res = uberenv_install_tpls(prefix,spec,mirror_dir)
+        end_time = time.time()
+        print "[build time: {0}]".format(convertSecondsToReadableTime(end_time - start_time))
         if res != 0:
-            print "[ERROR: Failed build of tpls for spec %s]" % spec
+            print "[ERROR: Failed build of tpls for spec %s]\n" % spec
             # set perms, then early exit
             # set proper perms for installed tpls
             set_axom_group_and_perms(prefix)
@@ -481,8 +476,6 @@ def full_build_and_test_of_tpls(builds_dir, job_name, timestamp):
             return res
         else:
             print "[SUCCESS: Finished build tpls for spec %s]\n" % spec
-    # patch manual edits into host config files
-    patch_host_configs(prefix)
     # build the axom against the new tpls
     res = build_and_test_host_configs(prefix, job_name, timestamp)
     if res != 0:
@@ -540,27 +533,21 @@ def get_machine_name():
 def get_system_type():
     return os.environ["SYS_TYPE"]
 
+
 def get_platform():
     return get_system_type() if "SYS_TYPE" in os.environ else get_machine_name()
+
 
 def get_username():
     return getpass.getuser()
 
 
 def get_archive_base_dir():
-    if on_rz():
-        archive_base_dir = "/usr/workspace/wsrzd/axomdev/archive"
-    else:
-        archive_base_dir = "/usr/workspace/wsb/axomdev/archive"
-    return archive_base_dir
+    return "/usr/WS2/axomdev/archive"
 
 
 def get_shared_tpl_base_dir():
-    if on_rz():
-        builds_dir = "/usr/workspace/wsrzc/axom/thirdparty_libs"
-    else:
-        builds_dir = "/usr/workspace/wsa/axom/thirdparty_libs"
-    return builds_dir
+    return "/usr/WS1/axom/thirdparty_libs"
 
 
 def get_shared_tpl_mirror_dir():
@@ -599,7 +586,12 @@ def get_spec_from_build_dir(build_dir):
 
 def get_spec_from_tpl_log(tpl_log):
     basename = os.path.basename(tpl_log)
-    return basename[len("output.log.spack.tpl.build.%"):-4]
+    basename = basename[len("output.log.spack.tpl.build.%"):-4]
+    # Remove anything that isn't part of the compiler spec
+    index = basename.find("^")
+    if index > -1:
+        basename = basename[:index-1]
+    return basename
 
 
 def on_rz():
@@ -615,3 +607,10 @@ def get_compiler_from_spec(spec):
         if index != -1: 
             compiler = compiler[:index]
     return compiler
+
+
+def convertSecondsToReadableTime(seconds):
+    m, s = divmod(seconds, 60)
+    h, m = divmod(m, 60)
+    return "%d:%02d:%02d" % (h, m, s)
+

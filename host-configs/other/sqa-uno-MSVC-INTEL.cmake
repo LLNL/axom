@@ -1,21 +1,14 @@
-#------------------------------------------------------------------------------
-# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
-# Produced at the Lawrence Livermore National Laboratory.
-#
-# LLNL-CODE-741217
-#
-# All rights reserved.
-#
-# This file is part of Axom.
-#
-# For details about use and distribution, please read axom/LICENSE.
+# SPDX-License-Identifier: (BSD-3-Clause)
+
 #------------------------------------------------------------------------------
 # host-config for 'sqa-uno' Windows machine
 # using the Intel 18 toolchain for Visual Studio 15
 #
 # Run the following from a build dir for a 64-bit configuration:
-#   cmake -G "Visual Studio 15 2017 Win64"                   \
+#   C:\"Program Files"\CMake\bin\cmake.exe -G "Visual Studio 15 2017 Win64"   \
 #         -T "Intel C++ Compiler 18.0"                       \
 #         -C ..\host-configs\other\sqa-uno-MSVC-intel.cmake  \
 #         <path-to-axom>
@@ -26,7 +19,7 @@
 # Test the code as follows (j for parallel testing):
 #   ctest -j8 -C {Release,Debug,RelWithDebInfo}
 # 
-# Install the come from the command line as follows:
+# Install the code from the command line as follows:
 #   cmake --build . --config Release --target install
 #
 # Note: MPI in this configuration requires an initial login.

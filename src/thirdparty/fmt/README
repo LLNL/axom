@@ -1,0 +1,7 @@
+This directory holds the source files for BSD-licensed fmt libary (version 5.3.0)
+retrieved from https://github.com/fmtlib/fmt/archive/5.3.0.tar.gz
+
+Note: Axom adds a custom header file ('fmt.hpp') to simplify usage of fmt configured as a header only library.
+This can be included in source files as follows:
+
+   #include "fmt/fmt.hpp"

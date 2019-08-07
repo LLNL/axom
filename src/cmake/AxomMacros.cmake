@@ -1,16 +1,7 @@
-#------------------------------------------------------------------------------
-# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
-# Produced at the Lawrence Livermore National Laboratory.
-#
-# LLNL-CODE-741217
-#
-# All rights reserved.
-#
-# This file is part of Axom.
-#
-# For details about use and distribution, please read axom/LICENSE.
-#------------------------------------------------------------------------------
+# SPDX-License-Identifier: (BSD-3-Clause)
 
 ##------------------------------------------------------------------------------
 ## axom_add_code_checks( PREFIX     <Prefix used for created targets>
@@ -76,8 +67,8 @@ endmacro(axom_add_code_checks)
 ## (ON/OFF). This macro also adds an "option" so that the user can control,
 ## which components to build.
 ##------------------------------------------------------------------------------
-set(AXOM_COMPONENTS_FULL    CACHE LIST "List of all components in Axom")
-set(AXOM_COMPONENTS_ENABLED CACHE LIST "List of all enabled components in Axom")
+set(AXOM_COMPONENTS_FULL    CACHE LIST "List of all components in Axom" FORCE)
+set(AXOM_COMPONENTS_ENABLED CACHE LIST "List of all enabled components in Axom" FORCE)
 macro(axom_add_component)
 
     set(options)
@@ -230,3 +221,99 @@ macro(axom_component_requires)
     endforeach()
 
 endmacro(axom_component_requires)
+
+##------------------------------------------------------------------------------
+## axom_install_component
+## 
+## This macro installs libraries, fortran modules, headers, and exports the CMake
+## target while preserving the directory stucture.  This macro assumes the following:
+##
+##    * CMake Target to install is the same as NAME
+##    * If there is a Fortran module built, it is named axom_<NAME>.mod
+##
+## NAME - The name of the component that we are installing.
+##
+## HEADERS - Headers to be installed
+##
+##------------------------------------------------------------------------------
+macro(axom_install_component)
+
+    set(options )
+    set(singleValueArgs NAME)
+    set(multiValueArgs HEADERS)
+
+    # Parse the arguments to the macro
+    cmake_parse_arguments(arg
+         "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    set(_header_base_dir include/axom/${arg_NAME})
+
+    foreach( _file ${arg_HEADERS} )
+        get_filename_component( _dir ${_file} DIRECTORY )
+        install(FILES ${_file} DESTINATION ${_header_base_dir}/${_dir} )
+    endforeach()
+
+    if(ENABLE_FORTRAN)
+        set(_mod ${CMAKE_Fortran_MODULE_DIRECTORY}/axom_${arg_NAME}.mod)
+        # TODO: Remove optional once all components have fortran wrappers
+        install(FILES ${_mod} DESTINATION lib/fortran OPTIONAL)
+    endif()
+
+endmacro(axom_install_component)
+
+
+##------------------------------------------------------------------------------
+## axom_write_unified_header
+## 
+## This macro writes the unified header (axom/<lowered NAME>.hpp) to the build directory for the
+## given component NAME with the given HEADERS included inside of it.
+##
+## NAME - The name of the component for the unified header.
+##
+## HEADERS - Headers to be included in the header.
+##
+##------------------------------------------------------------------------------
+macro(axom_write_unified_header)
+
+    set(options )
+    set(singleValueArgs NAME)
+    set(multiValueArgs HEADERS EXCLUDE)
+
+    # Parse the arguments to the macro
+    cmake_parse_arguments(arg
+         "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    string(TOUPPER ${arg_NAME} _ucname)
+    string(TOLOWER ${arg_NAME} _lcname)
+    set(_header ${CMAKE_BINARY_DIR}/include/axom/${_lcname}.hpp)
+
+    file(WRITE ${_header} "\/\/ Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+\/\/ other Axom Project Developers. See the top-level COPYRIGHT file for details.
+\/\/ 
+\/\/ SPDX-License-Identifier: (BSD-3-Clause)
+\n
+")
+
+    file(APPEND ${_header} "#ifndef AXOM_UNIFIED_${_ucname}_HPP\n")
+    file(APPEND ${_header} "#define AXOM_UNIFIED_${_ucname}_HPP\n\n")
+
+    file(APPEND ${_header} "#include \"axom\/config.hpp\"\n\n")
+
+    foreach(_file ${arg_HEADERS})
+        set(_headerPath "axom\/${_lcname}\/${_file}")
+        
+        if(${_file} IN_LIST arg_EXCLUDE)
+            continue()
+        elseif(${_headerPath} MATCHES "(\/detail\/)|(\/internal\/)")
+            continue()
+        else()
+            file(APPEND ${_header} "#include \"${_headerPath}\"\n")
+        endif()
+    endforeach()
+
+    file(APPEND ${_header} "\n#endif // AXOM_UNIFIED_${_ucname}_HPP\n")
+
+    install(FILES       ${_header}
+            DESTINATION include/axom)
+
+endmacro(axom_write_unified_header)

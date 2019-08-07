@@ -1,0 +1,44 @@
+// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+
+/*!
+ *
+ * \file
+ *
+ * \brief   Implementation file for utility functions.
+ *
+ */
+
+#include "axom/config.hpp"
+#include "axom/core/utilities/Utilities.hpp"
+
+#include <cstdlib> // for exit, EXIT_SUCCESS, EXIT_FAILURE
+
+#ifdef AXOM_USE_MPI
+#include <mpi.h>
+#endif
+
+namespace axom
+{
+namespace utilities
+{
+
+void processAbort()
+{
+#ifndef AXOM_USE_MPI
+  abort();
+#else
+  int mpi = 0;
+  MPI_Initialized( &mpi );
+  if ( mpi )
+  {
+    MPI_Abort( MPI_COMM_WORLD, EXIT_FAILURE );
+  }
+  abort();
+#endif
+}
+
+}   // end namespace utilities
+}   // end namespace axom

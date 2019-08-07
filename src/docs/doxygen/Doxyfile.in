@@ -44,7 +44,7 @@ PROJECT_NUMBER         =
 # for a project that appears at the top of each page and should give viewer a
 # quick idea about the purpose of the project. Keep the description short.
 
-PROJECT_BRIEF          = "Axom:  A set of computer science tools/components that will be the basis of future next generation and current ASC simulation codes at LLNL."
+PROJECT_BRIEF          = "Axom provides a robust, flexible software infrastructure for the development of multi-physics applications and computational tools."
 
 # With the PROJECT_LOGO tag one can specify a logo or an icon that is included
 # in the documentation. The maximum height of the logo should not exceed 55
@@ -771,37 +771,41 @@ WARN_LOGFILE           = dox.warnings
 # spaces. See also FILE_PATTERNS and EXTENSION_MAPPING
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = @PROJECT_SOURCE_DIR@/components/mainpage.md \
-                         @PROJECT_SOURCE_DIR@/components/axom_utils/README.md \
-                         @PROJECT_SOURCE_DIR@/components/axom_utils/src/utilities \
-                         @PROJECT_SOURCE_DIR@/components/axom_utils/src/numerics \
-                         @PROJECT_SOURCE_DIR@/components/lumberjack/README.md \
-                         @PROJECT_SOURCE_DIR@/components/lumberjack/src \
-                         @PROJECT_SOURCE_DIR@/components/mint/README.md \
-                         @PROJECT_SOURCE_DIR@/components/mint/src \
-                         @PROJECT_SOURCE_DIR@/components/mint/src/fem \
-                         @PROJECT_SOURCE_DIR@/components/mint/src/fem/shape_functions \
-                         @PROJECT_SOURCE_DIR@/components/mint/src/fem/shape_functions/lagrange \
-                         @PROJECT_SOURCE_DIR@/components/mint/src/mesh \
-                         @PROJECT_SOURCE_DIR@/components/mint/src/utils \
-                         @PROJECT_SOURCE_DIR@/components/mint/src/core \
-                         @PROJECT_SOURCE_DIR@/components/primal/README.md \
-                         @PROJECT_SOURCE_DIR@/components/primal/src/geometry \
-                         @PROJECT_SOURCE_DIR@/components/primal/src/operators \
-                         @PROJECT_SOURCE_DIR@/components/primal/src/spatial_acceleration \
-                         @PROJECT_SOURCE_DIR@/components/quest/README.md \
-                         @PROJECT_SOURCE_DIR@/components/quest/src \
-                         @PROJECT_SOURCE_DIR@/components/quest/src/geom \
-                         @PROJECT_SOURCE_DIR@/components/quest/src/stl \
-                         @PROJECT_SOURCE_DIR@/components/sidre/README.md \
-                         @PROJECT_SOURCE_DIR@/components/sidre/src/core \
-                         @PROJECT_SOURCE_DIR@/components/sidre/src/spio \
-                         @PROJECT_SOURCE_DIR@/components/slam/README.md \
-                         @PROJECT_SOURCE_DIR@/components/slam/src \
-                         @PROJECT_SOURCE_DIR@/components/slam/src/policies \
-                         @PROJECT_SOURCE_DIR@/components/slic/README.md \
-                         @PROJECT_SOURCE_DIR@/components/slic/src/core \
-                         @PROJECT_SOURCE_DIR@/components/slic/src/streams
+INPUT                  = @PROJECT_SOURCE_DIR@/axom/mainpage.md \
+                         @PROJECT_SOURCE_DIR@/axom/core/README.md \
+                         @PROJECT_SOURCE_DIR@/axom/core \
+                         @PROJECT_SOURCE_DIR@/axom/core/utilities \
+                         @PROJECT_SOURCE_DIR@/axom/core/numerics \
+                         @PROJECT_SOURCE_DIR@/axom/lumberjack \
+                         @PROJECT_SOURCE_DIR@/axom/lumberjack/README.md \
+                         @PROJECT_SOURCE_DIR@/axom/mint/README.md \
+                         @PROJECT_SOURCE_DIR@/axom/mint/core \
+                         @PROJECT_SOURCE_DIR@/axom/mint/fem \
+                         @PROJECT_SOURCE_DIR@/axom/mint/fem/shape_functions \
+                         @PROJECT_SOURCE_DIR@/axom/mint/fem/shape_functions/lagrange \
+                         @PROJECT_SOURCE_DIR@/axom/mint/mesh \
+                         @PROJECT_SOURCE_DIR@/axom/mint/utils \
+                         @PROJECT_SOURCE_DIR@/axom/mint/execution \
+                         @PROJECT_SOURCE_DIR@/axom/primal/README.md \
+                         @PROJECT_SOURCE_DIR@/axom/primal/geometry \
+                         @PROJECT_SOURCE_DIR@/axom/primal/operators \
+                         @PROJECT_SOURCE_DIR@/axom/primal/spatial_acceleration \
+                         @PROJECT_SOURCE_DIR@/axom/quest \
+                         @PROJECT_SOURCE_DIR@/axom/quest/README.md \
+                         @PROJECT_SOURCE_DIR@/axom/quest/interface \
+                         @PROJECT_SOURCE_DIR@/axom/quest/geom \
+                         @PROJECT_SOURCE_DIR@/axom/quest/stl \
+                         @PROJECT_SOURCE_DIR@/axom/sidre/README.md \
+                         @PROJECT_SOURCE_DIR@/axom/sidre/core \
+                         @PROJECT_SOURCE_DIR@/axom/sidre/spio \
+                         @PROJECT_SOURCE_DIR@/axom/slam \
+                         @PROJECT_SOURCE_DIR@/axom/slam/README.md \
+                         @PROJECT_SOURCE_DIR@/axom/slam/policies \
+                         @PROJECT_SOURCE_DIR@/axom/slic/README.md \
+                         @PROJECT_SOURCE_DIR@/axom/slic/core \
+                         @PROJECT_SOURCE_DIR@/axom/slic/streams \
+                         @PROJECT_SOURCE_DIR@/axom/spin/README.md \
+                         @PROJECT_SOURCE_DIR@/axom/spin
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -828,7 +832,6 @@ INPUT_ENCODING         = UTF-8
 
 FILE_PATTERNS          = *.md \
                          *.markdown \
-                         *.cpp \
                          *.hpp \
                          *.dox
 
@@ -2369,7 +2372,7 @@ DOT_PATH               = @DOT_PATH@
 # command).
 # This tag requires that the tag HAVE_DOT is set to YES.
 
-DOTFILE_DIRS           =
+DOTFILE_DIRS           = @PROJECT_SOURCE_DIR@/docs
 
 # The MSCFILE_DIRS tag can be used to specify one or more directories that
 # contain msc files that are included in the documentation (see the \mscfile

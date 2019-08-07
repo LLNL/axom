@@ -1,4 +1,10 @@
 {
-"spack_develop_commit": "4a6ec6377d5101d44a73e99e1a67cfd8f5f8a694",
-"uberenv_package_name" : "uberenv-axom"
+"package_name" : "axom",
+"uberenv_package_name" : "uberenv-axom",
+"spack_commit": "729bed3fd3e7bd3ecabda3ab25525019f3f83661",
+"spack_activate" : {"py-sphinx" : ["+devtools"],
+                    "py-shroud" : ["+devtools"],
+                    "py-pyyaml" : ["+devtools"],
+                    "py-numpy"  : ["+python"],
+                    "conduit"   : ["+python"]}
 }

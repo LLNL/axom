@@ -1,104 +1,94 @@
 ##################################
-# uberenv host-config
+# !!!! This is a generated file, edit at own risk !!!!
+##################################
+
+# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
-# This is a generated file, edit at own risk.
-##################################
-# toss_3_x86_64_ib-intel@18.0.2
+# SPDX-License-Identifier: (BSD-3-Clause)
 ##################################
 
-# cmake from uberenv
-# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_05_01_15_51_01/spack/opt/spack/toss_3_x86_64_ib/intel-18.0.2/cmake-3.8.2-552kvoxaj5bjaqkmsbss3yfsyh3a3ymw/bin/cmake
+##################################
 
-#######
-# using intel@18.0.2 compiler spec
-#######
+# SYS_TYPE: toss_3_x86_64_ib
+# Compiler Spec: intel@18.0.2
+##################################
 
-# c compiler used by spack
+# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2019_06_27_22_15_01/intel-18.0.2/cmake-3.9.6/bin/cmake
+
+##############
+# Compilers
+##############
+
+# C compiler used by spack
 set(CMAKE_C_COMPILER "/usr/tce/packages/intel/intel-18.0.2/bin/icc" CACHE PATH "")
 
-# cpp compiler used by spack
+# C++ compiler used by spack
 set(CMAKE_CXX_COMPILER "/usr/tce/packages/intel/intel-18.0.2/bin/icpc" CACHE PATH "")
 
-# fortran compiler used by spack
+# Fortran compiler used by spack
 set(ENABLE_FORTRAN ON CACHE BOOL "")
 
 set(CMAKE_Fortran_COMPILER "/usr/tce/packages/intel/intel-18.0.2/bin/ifort" CACHE PATH "")
 
+##############
+# TPLs
+##############
+
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_05_01_15_51_01/spack/opt/spack/toss_3_x86_64_ib/intel-18.0.2" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_06_27_22_15_01/intel-18.0.2" CACHE PATH "")
+
+# conduit from uberenv
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.4.0" CACHE PATH "")
+
+# mfem from uberenv
+set(MFEM_DIR "${TPL_ROOT}/mfem-4.0" CACHE PATH "")
 
 # hdf5 from uberenv
-set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-mskm27ow4rq46q2bz4sbgopfpt62m5ro" CACHE PATH "")
+set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.19" CACHE PATH "")
 
 # scr not built by uberenv
 
-# conduit from uberenv
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.3.1-mmkm7rqwsyczug7algzass4qiyute3hz" CACHE PATH "")
+# raja from uberenv
+set(RAJA_DIR "${TPL_ROOT}/raja-0.7.0/share/raja/cmake" CACHE PATH "")
 
-# mfem from uberenv
-set(MFEM_DIR "${TPL_ROOT}/mfem-3.3.2-55mzchl5vkr547s3hioqd7v33n5ikd7m" CACHE PATH "")
+# umpire from uberenv
+set(UMPIRE_DIR "${TPL_ROOT}/umpire-0.3.2/share/umpire/cmake" CACHE PATH "")
 
-# python from uberenv
-set(PYTHON_EXECUTABLE "${TPL_ROOT}/python-2.7.11-hctlj7nkej6e3yyulkgekk3bbztoewyc/bin/python" CACHE PATH "")
+# python not built by uberenv
 
-# doxygen from uberenv
-set(DOXYGEN_EXECUTABLE "${TPL_ROOT}/doxygen-1.8.11-p3udgfxmgoo6iauhfzgd3u33husj73s5/bin/doxygen" CACHE PATH "")
+set(ENABLE_DOCS OFF CACHE BOOL "")
 
-# sphinx 1.4.5 from uberenv
-set(SPHINX_EXECUTABLE "${TPL_ROOT}/python-2.7.11-hctlj7nkej6e3yyulkgekk3bbztoewyc/bin/sphinx-build" CACHE PATH "")
+# shroud not built by uberenv
 
-# shroud 0.9.0 from uberenv
-set(SHROUD_EXECUTABLE "${TPL_ROOT}/python-2.7.11-hctlj7nkej6e3yyulkgekk3bbztoewyc/bin/shroud" CACHE PATH "")
+# uncrustify not built by uberenv
 
-# uncrustify from uberenv
-set(UNCRUSTIFY_EXECUTABLE "${TPL_ROOT}/uncrustify-0.61-25jpbj4qcjmmqh5grq3qa73zwxlfxdld/bin/uncrustify" CACHE PATH "")
+# lcov and genhtml not built by uberenv
 
-# lcov and genhtml from uberenv
-set(LCOV_PATH "${TPL_ROOT}/lcov-1.11-2cxe7ixs7fou3omaloyencb73e437kh7/usr/bin/lcov" CACHE PATH "")
+# cppcheck not built by uberenv
 
-set(GENHTML_PATH "${TPL_ROOT}/lcov-1.11-2cxe7ixs7fou3omaloyencb73e437kh7/usr/bin/genhtml" CACHE PATH "")
+##############
+# MPI
+##############
 
-##################################
-# end uberenv host-config
-##################################
+set(ENABLE_MPI ON CACHE BOOL "")
 
-##
-## Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
-##
-## Produced at the Lawrence Livermore National Laboratory.
-##
-## LLNL-CODE-741217
-##
-## All rights reserved.
-##
-## This file is part of Axom.
-##
-## For details about use and distribution, please read axom/LICENSE.
-##
+set(MPI_C_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.2-intel-18.0.2/bin/mpicc" CACHE PATH "")
 
-##############################################################################
-# !---------------------------------------------------------------------------
-##############################################################################
-# Options added manually to 
-# lc toss3 intel@18.0.2  host configs
-##############################################################################
+set(MPI_CXX_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.2-intel-18.0.2/bin/mpicxx" CACHE PATH "")
+
+set(MPI_Fortran_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.2-intel-18.0.2/bin/mpif90" CACHE PATH "")
+
+set(MPIEXEC "/usr/bin/srun" CACHE PATH "")
+
+set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
+
+##############
+# Other machine specifics
+##############
 
 set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 
-##############################################################################
-# MPI - manually added for now
-##############################################################################
-set(ENABLE_MPI ON CACHE BOOL "")
+set(ENABLE_OPENMP ON CACHE BOOL "")
 
-set(MPI_HOME             "/usr/tce/packages/mvapich2/mvapich2-2.2-intel-18.0.2" CACHE PATH "")
-set(MPI_C_COMPILER       "${MPI_HOME}/bin/mpicc"   CACHE PATH "")
-set(MPI_CXX_COMPILER     "${MPI_HOME}/bin/mpicxx"  CACHE PATH "")
-set(MPI_Fortran_COMPILER "${MPI_HOME}/bin/mpifort" CACHE PATH "")
-
-set(MPIEXEC              "/usr/bin/srun" CACHE PATH "")
-set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
-
-##############################################################################
-# !---------------------------------------------------------------------------
-##############################################################################
 

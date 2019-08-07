@@ -1,0 +1,103 @@
+#
+# API for Quest
+# Includes functions for quest's inout and signed_distance queries
+#
+copyright:
+  -
+  - Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+  - other Axom Project Developers. See the top-level COPYRIGHT file for details.
+  -
+  - "SPDX-License-Identifier: (BSD-3-Clause)"
+
+library: QUEST
+cxx_header: axom/quest/interface/inout.hpp axom/quest/interface/signed_distance.hpp
+namespace: axom quest
+
+options:
+  C_line_length: 1000
+  F_module_name_library_template: axom_{library_lower}
+#  F_module_per_class: False
+  # Change the default template for Fortran functions to include the library name.
+  F_name_impl_template: "{library_lower}_{class_prefix}{underscore_name}{function_suffix}"
+  F_name_generic_template: "{library_lower}_{underscore_name}"
+  wrap_python: True
+
+format:
+  C_prefix: QUEST_
+  # Any C++ function which returns a string will be wrapped in
+  # Fortran as a subroutine with an additional character argument
+  # for the result.
+  F_string_result_as_arg: name
+  F_filename_suffix: F
+
+typemap:
+- type: MPI_Comm
+  fields:
+    cpp_if: ifdef AXOM_USE_MPI
+
+declarations:
+      ## InOut query methods
+      - decl: int inout_init( const std::string& fileName, MPI_Comm comm)
+        format:
+          function_suffix: _mpi
+        cpp_if: ifdef AXOM_USE_MPI
+      - decl: int inout_init( const std::string& fileName)
+        format:
+          function_suffix: _serial
+        cpp_if: ifndef AXOM_USE_MPI
+
+      - decl: bool inout_initialized()
+
+      - decl: int inout_set_verbose( bool verbosity )
+      - decl: int inout_set_vertex_weld_threshold( double thresh )
+
+      - decl: bool inout_evaluate(double x, double y, double z=0.0)
+
+      - decl: int inout_mesh_min_bounds(double* coords+dimension(3)+intent(OUT))
+        options:
+          wrap_python: False
+      - decl: int inout_mesh_max_bounds(double* coords+dimension(3)+intent(OUT))
+        options:
+          wrap_python: False
+      - decl: int inout_mesh_center_of_mass(double* coords+dimension(3)+intent(OUT))
+        options:
+          wrap_python: False
+      - decl: int inout_get_dimension()
+
+      - decl: int inout_finalize()
+
+      ## Signed Distance Function API
+      - decl: int signed_distance_init( const std::string& file, MPI_Comm comm )
+        format:
+          function_suffix: _mpi
+        cpp_if: ifdef AXOM_USE_MPI
+
+      - decl: int signed_distance_init( const std::string& file )
+        format:
+          function_suffix: _serial
+        cpp_if: ifndef AXOM_USE_MPI
+
+      - decl: bool signed_distance_initialized()
+
+      - decl: void signed_distance_get_mesh_bounds(
+                   double* lo+dimension(3)+intent(OUT),
+                   double* hi+dimension(3)+intent(OUT) )
+        options:
+          wrap_python: False
+
+      - decl: void signed_distance_set_dimension( int dim )
+      - decl: void signed_distance_set_closed_surface( bool status )
+      - decl: void signed_distance_set_max_levels( int maxLevels )
+      - decl: void signed_distance_set_max_occupancy( int maxOccupancy )
+      - decl: void signed_distance_set_verbose( bool status )
+      - decl: void signed_distance_use_shared_memory( bool status )
+
+      - decl: double signed_distance_evaluate( double x, double y, double z )
+
+      - decl: void signed_distance_finalize()
+
+
+splicer_code:
+  f:
+    file_top:
+    - "#include <axom/config.hpp>"

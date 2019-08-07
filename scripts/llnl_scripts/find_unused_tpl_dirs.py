@@ -1,19 +1,10 @@
 #!/bin/sh
 "exec" "python" "-u" "-B" "$0" "$@"
 
-###############################################################################
-# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
-# Produced at the Lawrence Livermore National Laboratory
-#
-# LLNL-CODE-741217
-#
-# All rights reserved.
-#
-# This file is part of Axom.
-#
-# For details about use and distribution, please read axom/LICENSE.
-###############################################################################
+# SPDX-License-Identifier: (BSD-3-Clause)
 
 """
  file: llnl_lc_find_unused_tpl_dirs.py
@@ -44,7 +35,7 @@ import sys
 
 from os.path import join as pjoin
 
-from llnl_lc_build_tools import sexe, get_timestamp
+from llnl_lc_build_tools import sexe, get_timestamp, get_shared_tpl_builds_dir
 
 
 def unique(lst):
@@ -56,9 +47,10 @@ def unique(lst):
 
 def lc_tpl_root_dirs():
     """
-    Returns list of root dirs axom uses for tpl installs on lc
+    Returns list of root dirs Axom have used for tpl installs on LC
     """
-    return ["/usr/workspace/wsa/axom/thirdparty_libs/builds/", 
+    return [get_shared_tpl_builds_dir(),
+            "/usr/workspace/wsa/axom/thirdparty_libs/builds/", 
             "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/"]    
 
 def clone_axom():

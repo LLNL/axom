@@ -1,16 +1,7 @@
+.. ## Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+.. ## other Axom Project Developers. See the top-level COPYRIGHT file for details.
 .. ##
-.. ## Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
-.. ##
-.. ## Produced at the Lawrence Livermore National Laboratory.
-.. ##
-.. ## LLNL-CODE-741217
-.. ##
-.. ## All rights reserved.
-.. ##
-.. ## This file is part of Axom.
-.. ##
-.. ## For details about use and distribution, please read axom/LICENSE.
-.. ##
+.. ## SPDX-License-Identifier: (BSD-3-Clause)
 
 .. _headerguide-label:
 
@@ -200,10 +191,10 @@ are contained in the guidelines after the summary.
    #define MYCLASS_HPP
 
    // (4) Header file inclusions (when NEEDED in lieu of forward declarations)
-   #include "..."
+   #include "myHeader.hpp"
 
    // (5) Forward declarations NEEDED in header file (outside of project namespace)
-   class ...;
+   class ForwardDeclaredClass;
 
    // (6a) Axom project namespace declaration
    namespace axom {
@@ -212,7 +203,7 @@ are contained in the guidelines after the summary.
    namespace awesome {
 
    // (8) Forward declarations NEEDED in header file (in project namespace(s))
-   class ...;
+   class AnotherForwardDeclaredClass;
 
    // (9) Type definitions (class, enum, etc.) with Doxygen comments e.g.,
    /*!
@@ -221,7 +212,7 @@ are contained in the guidelines after the summary.
     * ...detailed comment text...
     */
    class MyClass {
-      ...
+      int m_classMember;
    };
 
    // (7b) Internal namespace closing brace (if needed)

@@ -1,0 +1,117 @@
+#!/bin/env python
+
+# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+#
+# SPDX-License-Identifier: (BSD-3-Clause)
+
+"""
+Attempt to convert about 70% of the way from C++ to Fortran
+doing mechanical transitions.
+"""
+
+from __future__ import print_function
+import re
+import tokenize
+import shlex
+
+# http://stackoverflow.com/questions/1175208/elegant-python-function-to-convert-camelcase-to-camel-case
+def un_camel(text):
+    """ Converts a CamelCase name into an under_score name. 
+
+        >>> un_camel('CamelCase')
+        'camel_case'
+        >>> un_camel('getHTTPResponseCode')
+        'get_http_response_code'
+    """
+    result = []
+    pos = 0
+    while pos < len(text):
+        if text[pos].isupper():
+            if pos-1 > 0 and text[pos-1].islower() or pos-1 > 0 and \
+            pos+1 < len(text) and text[pos+1].islower():
+                result.append("_%s" % text[pos].lower())
+            else:
+                result.append(text[pos].lower())
+        else:
+            result.append(text[pos])
+        pos += 1
+    return "".join(result)
+
+def convert(filename):
+   print ("converting " + filename)
+   with open(filename) as fp:
+      for line in fp.readlines():
+
+         line = re.sub('->', '%', line)
+         line = re.sub('\[', '(', line)
+         line = re.sub('\]', ')', line)
+         line = re.sub(';', '', line)
+         line = re.sub('//', '!', line)
+         line = re.sub('EXPECT_TRUE', 'call assert_true', line)
+         line = re.sub('EXPECT_FALSE', 'call assert_true', line)
+         line = re.sub('EXPECT_EQ', 'call assert_equals', line)
+         line = re.sub('new DataStore', 'datastore_new', line)
+
+         m = re.search('TEST\(\w+,(\w+)\)', line)
+         if m:
+            tname = m.group(1)
+            print ('subroutine {}'.format(tname))
+            print ('call set_case_name("{}")'.format(tname))
+            print ('end subroutine {}'.format(tname))
+            continue
+
+         # convert camelCase to snake_case
+         def fixit(m):
+            s = m.group(0)
+            if s in [ 'DataStore', 'Group', 'View', 'Buffer']:
+               return s.lower()
+            return un_camel(m.group(0))
+         line = re.sub('\w+', fixit, line)
+
+         m = re.search('delete (\w+)', line)
+         if m:
+            name = m.group(1)
+            print('call {}%delete()'.format(name))
+            continue
+
+         # functions calls
+         m = re.match('(\s+)(\w+)%(.*)', line)
+         if m:
+            print('{}call {}%{}'.format(*m.groups()))
+            continue
+
+         # declaration calls  'type * name'
+         m = re.match('\s*(\w+)\s*\*\s*(\w+)(.*)', line)
+         if m:
+            print('type({}) {}'.format(m.group(1), m.group(2)))
+            print('{}{}'.format(m.group(2), m.group(3)))
+            continue
+
+         print(line, end='')
+
+def convert3(filename):
+   print ("converting " + filename)
+   with open(filename) as fp:
+      for line in fp.readlines():
+         lexer = shlex.shlex(line)
+         for token in lexer:
+            print (repr(token))
+
+def convert2(filename):
+   print ("converting " + filename)
+   result = []
+   with open(filename) as fp:
+      g = tokenize.generate_tokens(fp.readline)
+      for toknum, tokval, start, end, linenum in g:
+         print(toknum, tokval)
+
+      result.append((toknum, tokval))
+   s = tokenize.untokenize(result)
+
+if __name__ == '__main__':
+   import sys
+   if len(sys.argv) != 2:
+      print ("usage: {} filename".format(sys.argv[0]))
+      raise SystemExit
+   convert(sys.argv[1])

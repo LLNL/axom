@@ -1,24 +1,15 @@
-#------------------------------------------------------------------------------
-# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
-# Produced at the Lawrence Livermore National Laboratory.
-#
-# LLNL-CODE-741217
-#
-# All rights reserved.
-#
-# This file is part of Axom.
-#
-# For details about use and distribution, please read axom/LICENSE.
-#------------------------------------------------------------------------------
+# SPDX-License-Identifier: (BSD-3-Clause)
 
 ## Axom version information that go into the generated axom/config.hpp
 ## NOTE: if we are building from a Git repo these values will be autodetected,
 ##       otherwise, the hard-coded values will go in to the config.
 set(AXOM_VERSION_MAJOR 0)
 set(AXOM_VERSION_MINOR 3)
-set(AXOM_VERSION_PATCH 0)
-string(CONCAT AXOM_VERSION_FULL 
+set(AXOM_VERSION_PATCH 1)
+string(CONCAT AXOM_VERSION_FULL
     "v${AXOM_VERSION_MAJOR}"
     ".${AXOM_VERSION_MINOR}"
     ".${AXOM_VERSION_PATCH}" )

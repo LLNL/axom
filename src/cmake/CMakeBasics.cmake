@@ -1,16 +1,7 @@
-#------------------------------------------------------------------------------
-# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
-# Produced at the Lawrence Livermore National Laboratory.
-#
-# LLNL-CODE-741217
-#
-# All rights reserved.
-#
-# This file is part of Axom.
-#
-# For details about use and distribution, please read axom/LICENSE.
-#------------------------------------------------------------------------------
+# SPDX-License-Identifier: (BSD-3-Clause)
 
 ################################
 # Setup build options and their default values
@@ -161,6 +152,19 @@ blt_append_custom_compiler_flag(FLAGS_VAR CMAKE_CXX_FLAGS_DEBUG
                   CLANG       "-fstandalone-debug"
                   )
 
+blt_append_custom_compiler_flag(FLAGS_VAR AXOM_NINJA_FLAGS
+                  DEFAULT     " "
+                  GNU         "-fdiagnostics-color=always"
+                  CLANG       "-fcolor-diagnostics"
+                  )
+
+if(${AXOM_ENABLE_EXPORTS})
+  set(CMAKE_ENABLE_EXPORTS ON)
+endif()
+
+if( ${CMAKE_MAKE_PROGRAM} STREQUAL "ninja" OR ${CMAKE_MAKE_PROGRAM} MATCHES ".*/ninja$" )
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AXOM_NINJA_FLAGS}")
+endif()
 
 # message(STATUS "Custom compiler flags:")
 # foreach(flag ${custom_compiler_flags_list})
@@ -169,6 +173,6 @@ blt_append_custom_compiler_flag(FLAGS_VAR CMAKE_CXX_FLAGS_DEBUG
 
 # Disable warnings about conditionals over constants
 if(WIN32)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AXOM_ALLOW_CONSTANT_CONDITIONALS}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AXOM_ALLOW_CONSTANT_CONDITIONALS}")
 endif()
 

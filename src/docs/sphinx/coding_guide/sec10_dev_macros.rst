@@ -1,16 +1,7 @@
+.. ## Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+.. ## other Axom Project Developers. See the top-level COPYRIGHT file for details.
 .. ##
-.. ## Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
-.. ##
-.. ## Produced at the Lawrence Livermore National Laboratory.
-.. ##
-.. ## LLNL-CODE-741217
-.. ##
-.. ## All rights reserved.
-.. ##
-.. ## This file is part of Axom.
-.. ##
-.. ## For details about use and distribution, please read axom/LICENSE.
-.. ##
+.. ## SPDX-License-Identifier: (BSD-3-Clause)
 
 .. _codemacros-label:
 
@@ -28,22 +19,6 @@ system that we use in day-to-day code development.
 
                The macros are intended to help users and developers avoid
                unintended or potentially erroneous usage, etc. not confuse them. 
-
-------------------------------------
-Null pointers
-------------------------------------
-
-10.1 For consistency and to make it easier to find where pointer types are
-set to *null*, the `AXOM_NULLPTR` macro **must** be used. For example,::
-
-   double* var = AXOM_NULLPTR;
-
-This macro is defined in the `CommonTypes.hpp` header file in the "common"
-component. This usage prevents inconsistencies that occur when different 
-developers use conventions, such as '= 0', '= NULL', etc. to initialize
-pointer types to null. It also allows us to easily use the standard 'nullptr' 
-keyword/type introduced in C++ 11 when it is available.
-
 
 ------------------------------------
 Unused variables
@@ -128,11 +103,11 @@ problematic usage. Here's an example of common *SLIC* macro usage in AXOM::
 
    Bar* myCoolFunction(int in_val, Foo* in_foo)
    {
-     if ( in_val < 0 || in_foo == AXOM_NULLPTR )  
+     if ( in_val < 0 || in_foo == nullptr )  
      {
        SLIC_CHECK_MSG( in_val >= 0, "in_val must be non-negative" );
-       SLIC_CHECK( in_foo != AXOM_NULLPTR );
-       return AXOM_NULLPTR;
+       SLIC_CHECK( in_foo != nullptr );
+       return nullptr;
      } else if ( !in_foo->isSet() ) {
        SLIC_CHECK_MSG( in_foo->isSet(), 
                        "in_foo is not set, will use default settings");
@@ -148,7 +123,7 @@ problematic usage. Here's an example of common *SLIC* macro usage in AXOM::
 This example uses slic macros that are only active when the code is compiled
 in debug mode. When compiled in release mode, for example, the macros are 
 empty and so do nothing. Also, when a condition is encountered that is 
-problematic, such as 'in_val < 0' or 'in_foo == AXOM_NULLPTR', the code will
+problematic, such as 'in_val < 0' or 'in_foo == nullptr', the code will
 emit the condition and an optional message and not halt. This allows calling
 code to catch the issue (in this case a null return value) and react. There
 are other macros (e.g., SLIC_ASSERT) that will halt the code if that is 

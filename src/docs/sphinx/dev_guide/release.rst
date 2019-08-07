@@ -1,16 +1,7 @@
+.. ## Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+.. ## other Axom Project Developers. See the top-level COPYRIGHT file for details.
 .. ##
-.. ## Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
-.. ##
-.. ## Produced at the Lawrence Livermore National Laboratory.
-.. ##
-.. ## LLNL-CODE-741217
-.. ##
-.. ## All rights reserved.
-.. ##
-.. ## This file is part of Axom.
-.. ##
-.. ## For details about use and distribution, please read axom/LICENSE.
-.. ##
+.. ## SPDX-License-Identifier: (BSD-3-Clause)
 
 .. _release-label:
 
@@ -155,7 +146,7 @@ codes) for details and additional information.
 .. note:: Release notes should be updated as work is completed and reviewed
           along with other documentation in a pull request. This is much 
           easier than attempting to compile release notes before a release 
-          by looking at commit logs, etc. **Preparing release notes as part 
+          by looking at commit logs, etc. Preparing release notes as part 
           of the release process should take no more than one hour.
 
 Lastly, release notes provide an easy-to-find retrospective record of 

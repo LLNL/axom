@@ -1,37 +1,21 @@
-#------------------------------------------------------------------------------
-# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
-# Produced at the Lawrence Livermore National Laboratory.
-#
-# LLNL-CODE-741217
-#
-# All rights reserved.
-#
-# This file is part of Axom.
-#
-# For details about use and distribution, please read axom/LICENSE.
-#------------------------------------------------------------------------------
+# SPDX-License-Identifier: (BSD-3-Clause)
 
 #
 # AxomConfig.cmake - Create header of configuration options
 #
 
 ## Get Axom version information
-include(cmake/AxomVersion.cmake)
 message(STATUS "Configuring Axom version ${AXOM_VERSION_FULL}")
-
-if( (CMAKE_CXX_STANDARD EQUAL 11) OR (CMAKE_CXX_STANDARD EQUAL 14) )
-    set(AXOM_USE_CXX11 TRUE)
-endif()
 
 
 ## Add a definition to the generated config file for each library dependency
-## (optional and built-in) that we might need to know about in the code
-## Note: BLT adds USE_MPI and USE_OPENMP as compile define flags for targets
-##       that are configured with MPI and OPENMP, respectively.
-
-set(TPL_DEPS CONDUIT HDF5 SPARSEHASH FMT MPI MFEM SCR)  # vars of the form DEP_FOUND
-foreach(dep in ${TPL_DEPS})
+## (optional and built-in) that we might need to know about in the code. We
+## check for vars of the form <DEP>_FOUND or ENABLE_<DEP>
+set(TPL_DEPS CONDUIT CUDA FMT HDF5 MFEM MPI RAJA SCR SPARSEHASH UMPIRE )
+foreach(dep ${TPL_DEPS})
     if( ${dep}_FOUND OR ENABLE_${dep} )
         set(AXOM_USE_${dep} TRUE  )
     endif()
@@ -45,23 +29,10 @@ if(ENABLE_MPI AND ENABLE_FORTRAN)
 endif()
 
 
-# If Sparsehash was found, AXOM_USE_SPARSEHASH was set above in the TPL_DEPS
-# loop.  If not, we must use a standard container--std::unordered_map when
-# using C++11, std::map otherwise.  std::map is expected to perform poorly
-# with large amounts of Sidre objects, so it is recommended to make sure
-# Sparsehash is available for non-C++ 11 builds.
-if(NOT AXOM_USE_SPARSEHASH)
-  if(AXOM_USE_CXX11)
-    set(AXOM_USE_STD_UNORDERED_MAP TRUE)
-  endif()
-endif()
-
-
 ## Add a configuration define for each enabled axom component
-foreach(comp in ${AXOM_COMPONENTS_FULL})
-    if( AXOM_ENABLE_${comp} )
-        set(AXOM_USE_${comp} TRUE)
-    endif()
+foreach(comp ${AXOM_COMPONENTS_ENABLED})
+    string(TOUPPER ${comp} comp_uc)
+    set(AXOM_USE_${comp_uc} TRUE)
 endforeach()
 
 convert_to_native_escaped_file_path(${CMAKE_SOURCE_DIR} AXOM_SRC_DIR)
@@ -96,6 +67,8 @@ if(ENABLE_FORTRAN)
 endif(ENABLE_FORTRAN)
 
 configure_file(
-    include/config.hpp.in
-    ${HEADER_INCLUDES_DIRECTORY}/axom/config.hpp
+    ${PROJECT_SOURCE_DIR}/axom/config.hpp.in
+    ${CMAKE_BINARY_DIR}/include/axom/config.hpp
 )
+
+install(FILES ${CMAKE_BINARY_DIR}/include/axom/config.hpp DESTINATION include/axom)

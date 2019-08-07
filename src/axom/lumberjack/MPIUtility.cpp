@@ -1,0 +1,56 @@
+// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+
+/*!
+ ******************************************************************************
+ *
+ * \file MPIUtility.cpp
+ *
+ * \brief Implementation of the MPI utility methods.
+ *
+ ******************************************************************************
+ */
+
+#include "axom/lumberjack/MPIUtility.hpp"
+
+#include <cstring>
+
+namespace axom
+{
+namespace lumberjack
+{
+
+const char* mpiBlockingReceiveMessages(MPI_Comm comm)
+{
+  char* charArray = nullptr;
+  int messageSize = -1;
+  MPI_Status mpiStatus;
+
+  // Get size and source of MPI message
+  MPI_Probe(MPI_ANY_SOURCE, 0, comm, &mpiStatus);
+  MPI_Get_count(&mpiStatus, MPI_CHAR, &messageSize);
+
+  // Setup where to receive the char array
+  charArray = new char[messageSize+1];
+  charArray[messageSize] = '\0';
+
+  // Receive packed Message
+  MPI_Recv(charArray, messageSize, MPI_CHAR, mpiStatus.MPI_SOURCE, 0, comm,
+           &mpiStatus);
+
+  return charArray;
+}
+
+void mpiNonBlockingSendMessages(MPI_Comm comm, int destinationRank,
+                                const char* packedMessagesToBeSent)
+{
+  MPI_Request mpiRequest;
+  MPI_Isend(const_cast<char*>(packedMessagesToBeSent),
+            strlen(packedMessagesToBeSent), MPI_CHAR,
+            destinationRank, 0, comm, &mpiRequest);
+}
+
+} // end namespace lumberjack
+} // end namespace axom

@@ -1,18 +1,9 @@
 #!/usr/bin/env python
 
-###############################################################################
-# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
-#
-# Produced at the Lawrence Livermore National Laboratory
-#
-# LLNL-CODE-741217
-#
-# All rights reserved.
-#
-# This file is part of Axom.
-#
-# For details about use and distribution, please read axom/LICENSE.
-###############################################################################
+# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level COPYRIGHT file for details.
+# 
+# SPDX-License-Identifier: (BSD-3-Clause)
 
 # Python script to add Axom LLNL copyright notice at top of files in a directory
 #
@@ -25,25 +16,13 @@ import os
 import sys
 import argparse
 
-axom_copyright_str = """/*
- *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
- *
- * Produced at the Lawrence Livermore National Laboratory
- *
- * LLNL-CODE-741217
- *
- * All rights reserved.
- *
- * This file is part of Axom.
- *
- * For details about use and distribution, please read axom/LICENSE.
- *
- *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- */
+axom_copyright_str = """// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
 \n\n"""
 
-axom_copyright_begin_str = "Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC."
+axom_copyright_begin_str = "Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and"
 
 def checkAndAddCopyrightHeader(filename, testOnly=False):
 

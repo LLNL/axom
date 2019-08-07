@@ -1,16 +1,7 @@
-#------------------------------------------------------------------------------
-# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
-# Produced at the Lawrence Livermore National Laboratory
-#
-# LLNL-CODE-741217
-#
-# All rights reserved.
-#
-# This file is part of Axom.
-#
-# For details about use and distribution, please read axom/LICENSE.
-#------------------------------------------------------------------------------
+# SPDX-License-Identifier: (BSD-3-Clause)
 
 #
 # Axom third-party builtin libs are all currently header only.
@@ -18,13 +9,21 @@
 #
 
 ############################################################
-# Register the fmt header-only library for string formatting
+# Register the built-in fmt library for string formatting
 ############################################################
 
 set(fmt_headers
+    fmt/fmt.hpp
+    fmt/core.h
     fmt/format.h
+    fmt/format-inl.h
     fmt/ostream.h
     fmt/printf.h
+    fmt/ranges.h
+    fmt/chrono.h
+    fmt/color.h
+    fmt/locale.h
+    fmt/time.h
     )
 
 # Do not include the following source files in the headers list even
@@ -34,43 +33,26 @@ set(fmt_headers
 
 set(fmt_headers_sources
     fmt/format.cc
-    fmt/ostream.cc
     )
 
 blt_add_library(NAME fmt
                 HEADERS ${fmt_headers}
                 HEADERS_OUTPUT_SUBDIR fmt)
 
-target_include_directories(fmt INTERFACE
-            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty/fmt>)
-
+target_include_directories(fmt SYSTEM INTERFACE
+            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
 
 # Setup some variables for fmt in Axom's config.hpp
 set(FMT_EXCEPTIONS FALSE PARENT_SCOPE)
 set(FMT_HEADER_ONLY TRUE PARENT_SCOPE)
 
-if( COMPILER_FAMILY_IS_CLANG )
-    set(FMT_USE_EXTERN_TEMPLATES FALSE PARENT_SCOPE)
-else()
-    set(FMT_USE_EXTERN_TEMPLATES TRUE PARENT_SCOPE)
-endif()
-
-
 install(TARGETS              fmt
         EXPORT               fmt-targets
-        INCLUDES DESTINATION include/fmt)
+        INCLUDES DESTINATION include)
 install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/fmt
         DESTINATION include
         )
 install(EXPORT fmt-targets DESTINATION lib/cmake)
-
-# Manually copy the souce files for the headers to the build directory
-blt_copy_headers_target(
-        NAME        fmt-headers-sources
-        HEADERS     ${fmt_headers_sources}
-        DESTINATION $<BUILD_INTERFACE:${HEADER_INCLUDES_DIRECTORY}>/fmt)
-add_dependencies(blt_copy_headers_fmt blt_copy_headers_fmt-headers-sources)
-
 
 set(FMT_FOUND TRUE CACHE INTERNAL "")
 mark_as_advanced(FMT_FOUND)
@@ -140,6 +122,18 @@ if (AXOM_ENABLE_SPARSEHASH)
             HEADERS ${sparsehash_headers}
             HEADERS_OUTPUT_SUBDIR sparsehash)
      
+    target_include_directories(sparsehash SYSTEM INTERFACE
+                $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
+
+    # Disable warning introduced in gcc@8.1+ related to how sparsehash casts memory
+    # The double guarding for compiler family helps when compiling libraries with GNU
+    # then compiling the main code with another compiler (this is happens for example when
+    # running clang-query)
+    if(C_COMPILER_FAMILY_IS_GNU AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "8.1")
+        blt_add_target_compile_flags(TO sparsehash FLAGS
+            $<$<AND:$<CXX_COMPILER_ID:GNU>,$<COMPILE_LANGUAGE:CXX>>:-Wno-class-memaccess>)
+    endif()
+
     install(TARGETS              sparsehash
             EXPORT               sparsehash-targets
             INCLUDES DESTINATION include)
@@ -149,12 +143,6 @@ if (AXOM_ENABLE_SPARSEHASH)
 
     install(EXPORT sparsehash-targets DESTINATION lib/cmake)
 
-    # Manually copy the souce files for the internal headers to the build directory
-    blt_copy_headers_target(
-            NAME        sparsehash-internal-headers-sources
-            HEADERS     ${sparsehash_headers_internal}
-            DESTINATION $<BUILD_INTERFACE:${HEADER_INCLUDES_DIRECTORY}>/sparsehash/internal)
-    add_dependencies(blt_copy_headers_sparsehash blt_copy_headers_sparsehash-internal-headers-sources)
   else()
     message(STATUS "Could not configure sparsehash")
   endif()

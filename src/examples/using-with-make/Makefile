@@ -1,16 +1,7 @@
-#------------------------------------------------------------------------------
-# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
-# Produced at the Lawrence Livermore National Laboratory
-#
-# LLNL-CODE-741217
-#
-# All rights reserved.
-#
-# This file is part of Axom.
-#
-# For details about use and distribution, please read axom/LICENSE.
-#------------------------------------------------------------------------------
+# SPDX-License-Identifier: (BSD-3-Clause)
 # Example that shows how to use an installed instance of Axom in Makefile
 # based build system.
 #
@@ -28,7 +19,7 @@
 
 
 INC_FLAGS=-I$(AXOM_DIR)/include/
-LINK_FLAGS=-L$(AXOM_DIR)/lib/ -laxom_utils
+LINK_FLAGS=-L$(AXOM_DIR)/lib/ -laxom
 
 main:
 	$(CXX) $(INC_FLAGS) example.cpp $(LINK_FLAGS) -o example

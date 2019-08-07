@@ -1,40 +1,35 @@
-/*
- *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
- *
- * Produced at the Lawrence Livermore National Laboratory
- *
- * LLNL-CODE-741217
- *
- * All rights reserved.
- *
- * This file is part of Axom.
- *
- * For details about use and distribution, please read axom/LICENSE.
- *
- *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- */
+// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
 
 // Axom includes
-#include "axom_utils/FileUtilities.hpp"
-#include "axom_utils/Timer.hpp"
+#include "axom/core/utilities/FileUtilities.hpp"
+#include "axom/core/utilities/Timer.hpp"
 
-#include "mint/FieldVariable.hpp"
-#include "mint/Mesh.hpp"
-#include "mint/UniformMesh.hpp"
-#include "mint/vtk_utils.hpp" // for write_vtk
+#include "axom/mint/mesh/FieldVariable.hpp"
+// _read_stl_include2_start
+#include "axom/mint/mesh/Mesh.hpp"
+#include "axom/mint/mesh/UnstructuredMesh.hpp"
+// _read_stl_include2_end
+#include "axom/mint/mesh/UniformMesh.hpp"
+#include "axom/mint/utils/vtk_utils.hpp" // for write_vtk
 
-#include "primal/BoundingBox.hpp"
-#include "primal/intersect.hpp"
-#include "primal/Point.hpp"
-#include "primal/Triangle.hpp"
-#include "primal/UniformGrid.hpp"
+#include "axom/primal/geometry/BoundingBox.hpp"
+#include "axom/primal/operators/intersect.hpp"
+#include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Triangle.hpp"
+#include "axom/spin/UniformGrid.hpp"
 
-#include "quest/MeshTester.hpp"
-#include "quest/STLReader.hpp"
+// _read_stl_include1_start
+#include "axom/quest/stl/STLReader.hpp"
+// _read_stl_include1_end
+// _check_repair_include_start
+#include "axom/quest/MeshTester.hpp"
+// _check_repair_include_end
 
-#include "slic/GenericOutputStream.hpp"
-#include "slic/slic.hpp"
+#include "axom/slic/streams/GenericOutputStream.hpp"
+#include "axom/slic/interface/slic.hpp"
 
 
 // C/C++ includes
@@ -43,14 +38,16 @@
 #include <utility>
 #include <vector>
 
+// _read_stl_typedefs_start
 using namespace axom;
 
 typedef mint::UnstructuredMesh< mint::SINGLE_SHAPE > UMesh;
+// _read_stl_typedefs_end
 typedef primal::Triangle<double, 3> Triangle3;
 
 typedef primal::Point<double, 3> Point3;
 typedef primal::BoundingBox<double, 3> SpatialBoundingBox;
-typedef primal::UniformGrid<int, 3> UniformGrid3;
+typedef spin::UniformGrid<int, 3> UniformGrid3;
 typedef primal::Vector<double, 3> Vector3;
 typedef primal::Segment<double, 3> Segment3;
 
@@ -222,7 +219,7 @@ Input::Input(int argc, char** argv) :
     <<"\n  resolution = " << resolution
     << (resolution < 1 ? " (use cube root of triangle count)" : "")
     <<"\n  weld threshold = " <<  weldThreshold
-    <<"\n  " << (skipWeld? "": "not ") << "skipping weld"
+    <<"\n  " << (skipWeld ? "" : "not ") << "skipping weld"
     <<"\n  infile = " << stlInput
     <<"\n  collisions outfile = " << collisionsMeshName()
     <<"\n  weld outfile = " << weldMeshName()  );
@@ -250,9 +247,9 @@ bool checkTT(Triangle3& t1, Triangle3& t2)
 inline Triangle3 getMeshTriangle(int i, mint::Mesh* surface_mesh)
 {
   SLIC_ASSERT(surface_mesh->getCellType( i ) == mint::TRIANGLE );
-  primal::Point<mint::IndexType, 3> triCell;
+  primal::Point<axom::IndexType, 3> triCell;
   Triangle3 tri;
-  surface_mesh->getCell(i, triCell.data());
+  surface_mesh->getCellNodeIDs(i, triCell.data());
 
   surface_mesh->getNode(triCell[0], tri[0].data());
   surface_mesh->getNode(triCell[1], tri[1].data());
@@ -441,6 +438,7 @@ int main( int argc, char** argv )
     }
   }
 
+  // _read_stl_file_start
   // Read file
   SLIC_INFO("Reading file: '" <<  params.stlInput << "'...\n");
   quest::STLReader* reader = new quest::STLReader();
@@ -453,18 +451,21 @@ int main( int argc, char** argv )
 
   // Delete the reader
   delete reader;
-  reader = AXOM_NULLPTR;
+  reader = nullptr;
 
   SLIC_INFO(
     "Mesh has " << surface_mesh->getNumberOfNodes() << " vertices and "
                 <<  surface_mesh->getNumberOfCells() << " triangles.");
+  // _read_stl_file_end
 
   // Vertex welding
   if (!params.skipWeld)
   {
     axom::utilities::Timer timer(true);
 
+    // _check_repair_weld_start
     quest::weldTriMeshVertices(&surface_mesh, params.weldThreshold);
+    // _check_repair_weld_end
 
     timer.stop();
     SLIC_INFO("Vertex welding took "
@@ -472,14 +473,14 @@ int main( int argc, char** argv )
     SLIC_INFO("After welding, mesh has "
               << surface_mesh->getNumberOfNodes() << " vertices and "
               <<  surface_mesh->getNumberOfCells() << " triangles.");
-
-    mint::write_vtk(surface_mesh, params.weldMeshName() );
   }
 
   // Detect collisions
   {
+    // _check_repair_intersections_containers_start
     std::vector< std::pair<int, int> > collisions;
     std::vector<int> degenerate;
+    // _check_repair_intersections_containers_end
 
     axom::utilities::Timer timer(true);
     if (params.resolution == 1)
@@ -489,11 +490,13 @@ int main( int argc, char** argv )
     }
     else
     {
+      // _check_repair_intersections_start
       // Use a spatial index
       quest::findTriMeshIntersections(surface_mesh,
                                       collisions,
                                       degenerate,
                                       params.resolution);
+      // _check_repair_intersections_end
     }
     timer.stop();
     SLIC_INFO("Detecting intersecting triangles took "
@@ -515,9 +518,45 @@ int main( int argc, char** argv )
     }
   }
 
+  // Look for holes---must be welded
+  if (params.skipWeld)
+  {
+    SLIC_INFO("Watertight check depends on vertex welding, which was skipped.");
+  }
+  else
+  {
+    SLIC_INFO("Checking for watertight mesh.");
+    axom::utilities::Timer timer2(true);
+    // _check_watertight_start
+    quest::WatertightStatus wtstat =
+      quest::isSurfaceMeshWatertight(surface_mesh);
+    // _check_watertight_end
+    timer2.stop();
+    // _report_watertight_start
+    switch (wtstat)
+    {
+    case quest::WatertightStatus::WATERTIGHT:
+      std::cout << "The mesh is watertight." << std::endl;
+      break;
+    case quest::WatertightStatus::NOT_WATERTIGHT:
+      std::cout << "The mesh is not watertight: at least one " <<
+        "boundary edge was detected." << std::endl;
+      break;
+    default:
+      std::cout << "An error was encountered while checking." << std::endl <<
+        "This may be due to a non-manifold mesh." << std::endl;
+      break;
+    }
+    // _report_watertight_end
+    SLIC_INFO("Testing for watertightness took "
+              << timer2.elapsedTimeInSec() << " seconds.");
+
+    mint::write_vtk(surface_mesh, params.weldMeshName() );
+  }
+
   // Delete the mesh
   delete surface_mesh;
-  surface_mesh = AXOM_NULLPTR;
+  surface_mesh = nullptr;
 
   return retval;
 }

@@ -1,105 +1,104 @@
 ##################################
-# uberenv host-config
+# !!!! This is a generated file, edit at own risk !!!!
+##################################
+
+# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
-# This is a generated file, edit at own risk.
-##################################
-# toss_3_x86_64_ib-clang@4.0.0
+# SPDX-License-Identifier: (BSD-3-Clause)
 ##################################
 
-# cmake from uberenv
-# cmake executable path: /usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_05_01_15_51_01/spack/opt/spack/toss_3_x86_64_ib/clang-4.0.0/cmake-3.8.2-uc5ahergn5qm7tslfedpiplpmxqqfgus/bin/cmake
+##################################
 
-#######
-# using clang@4.0.0 compiler spec
-#######
+# SYS_TYPE: toss_3_x86_64_ib
+# Compiler Spec: clang@4.0.0
+##################################
 
-# c compiler used by spack
+# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2019_06_27_22_15_01/clang-4.0.0/cmake-3.9.6/bin/cmake
+
+##############
+# Compilers
+##############
+
+# C compiler used by spack
 set(CMAKE_C_COMPILER "/usr/tce/packages/clang/clang-4.0.0/bin/clang" CACHE PATH "")
 
-# cpp compiler used by spack
+# C++ compiler used by spack
 set(CMAKE_CXX_COMPILER "/usr/tce/packages/clang/clang-4.0.0/bin/clang++" CACHE PATH "")
 
-# fortran compiler used by spack
+# Fortran compiler used by spack
 set(ENABLE_FORTRAN ON CACHE BOOL "")
 
 set(CMAKE_Fortran_COMPILER "/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran" CACHE PATH "")
 
+##############
+# TPLs
+##############
+
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/2018_05_01_15_51_01/spack/opt/spack/toss_3_x86_64_ib/clang-4.0.0" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_06_27_22_15_01/clang-4.0.0" CACHE PATH "")
+
+# conduit from uberenv
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.4.0" CACHE PATH "")
+
+# mfem from uberenv
+set(MFEM_DIR "${TPL_ROOT}/mfem-4.0" CACHE PATH "")
 
 # hdf5 from uberenv
-set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.16-vmpbfqdli4b5reg5gxkzhm7nx545jzlj" CACHE PATH "")
+set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.19" CACHE PATH "")
 
 # scr not built by uberenv
 
-# conduit from uberenv
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.3.1-2bejwmourypxsgp7xaak2szt4i44o4br" CACHE PATH "")
+# raja from uberenv
+set(RAJA_DIR "${TPL_ROOT}/raja-0.7.0/share/raja/cmake" CACHE PATH "")
 
-# mfem from uberenv
-set(MFEM_DIR "${TPL_ROOT}/mfem-3.3.2-nnwwsm4ussloivedxx4i6gbgy75gjzls" CACHE PATH "")
+# umpire from uberenv
+set(UMPIRE_DIR "${TPL_ROOT}/umpire-0.3.2/share/umpire/cmake" CACHE PATH "")
 
 # python from uberenv
-set(PYTHON_EXECUTABLE "${TPL_ROOT}/python-2.7.11-txzcpqr53dowsgoz2e45xxodgto2f2kf/bin/python" CACHE PATH "")
+set(PYTHON_EXECUTABLE "${TPL_ROOT}/python-2.7.15/bin/python" CACHE PATH "")
+
+set(ENABLE_DOCS ON CACHE BOOL "")
 
 # doxygen from uberenv
-set(DOXYGEN_EXECUTABLE "${TPL_ROOT}/doxygen-1.8.11-j3yankkpbqqptrnc2rdajdlnrhbmw5gw/bin/doxygen" CACHE PATH "")
+set(DOXYGEN_EXECUTABLE "${TPL_ROOT}/doxygen-1.8.14/bin/doxygen" CACHE PATH "")
 
-# sphinx 1.4.5 from uberenv
-set(SPHINX_EXECUTABLE "${TPL_ROOT}/python-2.7.11-txzcpqr53dowsgoz2e45xxodgto2f2kf/bin/sphinx-build" CACHE PATH "")
+# sphinx 1.7.4 from uberenv
+set(SPHINX_EXECUTABLE "${TPL_ROOT}/python-2.7.15/bin/sphinx-build" CACHE PATH "")
 
-# shroud 0.9.0 from uberenv
-set(SHROUD_EXECUTABLE "${TPL_ROOT}/python-2.7.11-txzcpqr53dowsgoz2e45xxodgto2f2kf/bin/shroud" CACHE PATH "")
+# shroud 0.10.1 from uberenv
+set(SHROUD_EXECUTABLE "${TPL_ROOT}/python-2.7.15/bin/shroud" CACHE PATH "")
 
 # uncrustify from uberenv
-set(UNCRUSTIFY_EXECUTABLE "${TPL_ROOT}/uncrustify-0.61-ice6hujmc5ktfrzxx343qs4lduhdai5z/bin/uncrustify" CACHE PATH "")
+set(UNCRUSTIFY_EXECUTABLE "${TPL_ROOT}/uncrustify-0.61/bin/uncrustify" CACHE PATH "")
 
-# lcov and genhtml from uberenv
-set(LCOV_PATH "${TPL_ROOT}/lcov-1.11-k7s5ypbr7xsj67wxcmfkf7hehv5ss7xb/usr/bin/lcov" CACHE PATH "")
+# lcov and genhtml not built by uberenv
 
-set(GENHTML_PATH "${TPL_ROOT}/lcov-1.11-k7s5ypbr7xsj67wxcmfkf7hehv5ss7xb/usr/bin/genhtml" CACHE PATH "")
+# cppcheck from uberenv
+set(CPPCHECK_EXECUTABLE "${TPL_ROOT}/cppcheck-1.81/bin/cppcheck" CACHE PATH "")
 
-##################################
-# end uberenv host-config
-##################################
-
-##
-## Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
-##
-## Produced at the Lawrence Livermore National Laboratory.
-##
-## LLNL-CODE-741217
-##
-## All rights reserved.
-##
-## This file is part of Axom.
-##
-## For details about use and distribution, please read axom/LICENSE.
-##
-
-##############################################################################
-# !---------------------------------------------------------------------------
-##############################################################################
-# Options added manually to 
-# lc toss3 clang@4.0.0  host configs
-##############################################################################
-
-set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
-
-##############################################################################
-# MPI - manually added for now
-##############################################################################
+##############
+# MPI
+##############
 
 set(ENABLE_MPI ON CACHE BOOL "")
 
-set(MPI_HOME             "/usr/tce/packages/mvapich2/mvapich2-2.2-clang-4.0.0" CACHE PATH "")
-set(MPI_C_COMPILER       "${MPI_HOME}/bin/mpicc"   CACHE PATH "")
-set(MPI_CXX_COMPILER     "${MPI_HOME}/bin/mpicxx"  CACHE PATH "")
-set(MPI_Fortran_COMPILER "${MPI_HOME}/bin/mpifort" CACHE PATH "")
+set(MPI_C_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.3-clang-4.0.0/bin/mpicc" CACHE PATH "")
 
-set(MPIEXEC              "/usr/bin/srun" CACHE PATH "")
+set(MPI_CXX_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.3-clang-4.0.0/bin/mpicxx" CACHE PATH "")
+
+set(MPI_Fortran_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.3-clang-4.0.0/bin/mpif90" CACHE PATH "")
+
+set(MPIEXEC "/usr/bin/srun" CACHE PATH "")
+
 set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
 
-##############################################################################
-# !---------------------------------------------------------------------------
-##############################################################################
+##############
+# Other machine specifics
+##############
+
+set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
+
+set(ENABLE_OPENMP ON CACHE BOOL "")
+
 
