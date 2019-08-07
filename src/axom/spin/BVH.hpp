@@ -281,6 +281,7 @@ private:
   const FloatType* m_boxes;
   internal::linear_bvh::BVHData< FloatType,NDIMS > m_bvh;
 
+  static constexpr FloatType DEFAULT_SCALE_FACTOR = 1.001;
 /// @}
 
   DISABLE_COPY_AND_ASSIGNMENT(BVH);
@@ -375,7 +376,7 @@ bool InRight( const internal::linear_bvh::Vec< FloatType, 2>& point,
 template< int NDIMS, typename ExecSpace, typename FloatType >
 BVH< NDIMS, ExecSpace, FloatType >::BVH( const FloatType* boxes,
                                          IndexType numItems ) :
-  m_scaleFactor( 1.001 ),
+  m_scaleFactor( DEFAULT_SCALE_FACTOR ),
   m_numItems( numItems ),
   m_boxes( boxes )
 {
