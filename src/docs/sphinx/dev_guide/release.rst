@@ -35,82 +35,101 @@ work may continue on the develop branch without interruption.
 
 Here are the steps to follow for an Axom release.
 
-  #.  **Create a release branch** off of the develop branch to finalize
-      the release. The name of a release branch must contain the associated
-      release version number. Typically, we use a name like v0.5.0-rc (i.e.,
-      version 0.5.0 release candidate). See :ref:`semver-label` for a
-      description of how version numbers are chosen.
+1: Start Release Candidate Branch
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-  #. **Create a pull request to merge the release branch into master** so that
-     release changes can be reviewed. Such changes include:
+Create a release candidate branch off of the develop branch to initiate a
+release. The name of a release branch must contain the associated release version
+number. Typically, we use a name like v0.5.0-rc
+(i.e., version 0.5.0 release candidate). See :ref:`semver-label` for a
+description of how version numbers are chosen.
 
-     * Update the version information (major, minor, and patch version numbers)
-       at the top of the ``axom/src/cmake/AxomVersion.cmake`` file.
+2: Issue a Pull Request
+^^^^^^^^^^^^^^^^^^^^^^^^
 
-     * Update the release notes in ``axom/RELEASE-NOTES.md`` by adding the
-       release version number and release date in the heading, as well as,
-       the corresponding link to the version on Github.
+Create a pull request to merge the release candidate branch into master so that
+release changes can be reviewed. Such changes include:
 
-     * Test the code by running it through all continuous integration tests
-       and builds. This will ensure that all build configurations are working
-       properly and all tests pass.
+#. Update the version information (major, minor, and patch version numbers)
+   at the top of the ``axom/src/cmake/AxomVersion.cmake`` file.
 
-     * Fix any issues discovered during final release testing if code changes
-       are reasonably small and re-run appropriate tests to ensure issues are
-       resolved. If a major bug is discovered, and it requires significant
-       code modifications to fix, do not fix it on the release branch.
-       `Create a new Github issue for it <https://github.com/LLNL/axom/issues/new>`_
-       and note it in the ``known bugs`` section of the release notes.
+#. Update the release notes in ``axom/RELEASE-NOTES.md`` by adding the
+   release version number and release date in the heading, as well as,
+   the corresponding link to the version on Github.
 
-     * Make sure all documentation (source code, user guides, etc.) is
-       updated and reviewed. This should not be a substantial undertaking as
-       most of this should have been done during the regular development cycle.
+#. Test the code by running it through all continuous integration tests
+   and builds. This will ensure that all build configurations are working
+   properly and all tests pass.
 
-     * Proofread the release notes for completeness and clarity and address
-       any shortcomings. Again, this should not take much time as release notes
-       should be updated during the regular development cycle. See
-       :ref:`release-notes-label` for information about release notes.
+#. Fix any issues discovered during final release testing if code changes
+   are reasonably small and re-run appropriate tests to ensure issues are
+   resolved. If a major bug is discovered, and it requires significant
+   code modifications to fix, do not fix it on the release branch.
+   `Create a new Github issue for it <https://github.com/LLNL/axom/issues/new>`_
+   and note it in the ``known bugs`` section of the release notes.
 
-  #. **Merge the release branch into the master branch** when the release
-     branch is ready and approved.
+#. Make sure all documentation (source code, user guides, etc.) is
+   updated and reviewed. This should not be a substantial undertaking as
+   most of this should have been done during the regular development cycle.
 
-  #. `Draft a new Release on Github <https://github.com/LLNL/axom/releases/new>`_
+#. Proofread the release notes for completeness and clarity and address
+   any shortcomings. Again, this should not take much time as release notes
+   should be updated during the regular development cycle. See
+   :ref:`release-notes-label` for information about release notes.
 
-     * Enter the desired tag version, e.g., v0.5.0
+3: Merge Release Candidate
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-     * Select ``master`` branch as the target branch where the release will be tagged.
+Merge the release candidate branch into master branch once it is ready and
+approved. At this point, the release candidate branch can be deleted.
 
-     * Enter a Release title. We typically using the following form
-       ``Axom-v0.3.1``
 
-     * Copy and paste the information for the release from the
-       ``axom/RELEASE-NOTES.md`` into the release description
-       (ommit any sections if empty).
+4: Draft a Github Release
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
-     * Publish the release. This will create a tag at the tip of the ``master``
-       branch and add corresponding entry in the `Releases section <https://github.com/LLNL/axom/releases>`_
-       Github will add a corresponding tarbal and zipfile with the source files
-       for each release. However, these files do not include any submodules.
-       Consequently, a tarball that includes all of the submodules is generated
-       manually in a seperate step.
+`Draft a new Release on Github <https://github.com/LLNL/axom/releases/new>`_
 
-  #. **Make a release tarball.** Checkout the master branch locally and run
-     the ``axom/scripts/make_release_tarball.sh`` script. This will generate
-     a tarball of the form ``Axom-v0.3.1.tar.gz``
+#. Enter the desired tag version, e.g., v0.5.0
 
-  #. **Upload the tarball.** Go to the `Releases section <https://github.com/LLNL/axom/releases>`_
-     and ``Edit`` the release created earlier.
+#. Select **master** as the target branch to tag a release.
 
-     * Attach the tarball to the release.
+#. Enter a Release title. We typically use titles of the following form *Axom-v0.3.1*
 
-     * Add a note at the top of the release description that indicates which
-       tarbal consists of all the submodules, e.g.,
-       *\"Please download the Axom-v0.3.1.tar.gz tarball below, which includes all of the Axom submodules as well\"*
+#. Copy and paste the information for the release from the
+   ``axom/RELEASE-NOTES.md`` into the release description (omit any sections if empty).
 
-     * Update the release.
+#. Publish the release. This will create a tag at the tip of the master
+   branch and add corresponding entry in the
+   `Releases section <https://github.com/LLNL/axom/releases>`_
 
-  #. **Create a pull request to merge master into develop.** When approved,
-     merge it.
+.. note::
+
+   Github will add a corresponding tarbal and zip archives consisting of the
+   source files for each release. However, these files do not include any
+   submodules. Consequently, a tarball that includes all of the submodules is
+   generated manually in a seperate step.
+
+5: Make a Release Tarball
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* Checkout the master branch locally and run the ``axom/scripts/make_release_tarball.sh``
+  script. This will generate a tarball of the form ``Axom-v0.3.1.tar.gz``
+
+* Upload the tarball for the corresponding release, by going to the
+ `Github Releases section <https://github.com/LLNL/axom/releases>`_ and ``Edit``
+ the release created earlier.
+
+* Attach the tarball to the release.
+
+* Add a note at the top of the release description that indicates which
+  tarbal consists of all the submodules, e.g., *\"Please download the Axom-v0.3.1.tar.gz tarball below, which includes all of the Axom submodules as well\"*
+
+* Update the release.
+
+6: Merge Master to Develop
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Create a pull request to merge master into develop. When approved, merge it.
 
 
 .. _release-notes-label:
