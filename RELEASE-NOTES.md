@@ -10,6 +10,20 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
+
+### Removed
+
+### Deprecated
+
+### Changed
+
+### Fixed
+
+### Known Bugs
+
+## [Version 0.3.1] - Release date 2019-07-22
+
+### Added
 - Added a new implementation of the Bounding Volume Hierarchy(BVH) spatial
   acceleration data-structure to spin. The new BVH implementation relies on RAJA
   and allows for constructing and using the BVH sequentially or in parallel on
@@ -217,8 +231,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Known Bugs
 -
 
-
-[Unreleased]:    https://github.com/LLNL/axom/compare/v0.3.0...develop
+[Unreleased]:    https://github.com/LLNL/axom/compare/v0.3.1...develop
+[Version 0.3.1]: https://github.com/LLNL/axom/compare/v0.3.0...v0.3.1
 [Version 0.3.0]: https://github.com/LLNL/axom/compare/v0.2.9...v0.3.0
 [Version 0.2.9]: https://github.com/LLNL/axom/compare/v0.2.8...v0.2.9
 
