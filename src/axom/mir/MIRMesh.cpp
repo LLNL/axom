@@ -423,7 +423,7 @@ void MIRMesh::writeMeshToFile(std::string filename)
 
   // write element materials
   meshfile << "\n\nCELL_DATA " << m_elems.size()
-            << "\nSCALARS cellIds int 1"
+            << "\nSCALARS materialIDs int 1"
             << "\nLOOKUP_TABLE default \n";
   for(int i=0 ; i< m_elems.size() ; ++i)
   {
