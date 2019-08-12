@@ -15,7 +15,9 @@ reset=$(tput sgr0)
 WITH_DATA=0
 
 TAR_CMD=`which tar`
+TAR_VERSION=`$TAR_CMD --version |head -n 1`
 VERSION=`git describe --tags`
+
 
 ##-----------------------------------------------------------------------------
 ## HELPER FUNCTIONS 
@@ -36,10 +38,16 @@ function show_help() {
   echo -e "\t\t Generate a tarball consisting of the data"
 }
 
+##-----------------------------------------------------------------------------
 function info() {
   echo "$bold[INFO]:$reset $1"
 }
 
+##-----------------------------------------------------------------------------
+function error() {
+  echo "$bold[ERROR]:$reset $1"
+  exit -1
+}
 
 ##-----------------------------------------------------------------------------
 ## MAIN 
@@ -61,6 +69,12 @@ do
 done
 
 info "using tar command [$TAR_CMD]"
+info "detected tar version: $TAR_VERSION"
+
+if [[ $TAR_VERSION != *GNU* ]]; then
+  error "This script requires GNU tar!"
+fi
+
 info "creating archive for version [$VERSION]" 
 git archive --prefix=Axom-${VERSION}/ -o Axom-${VERSION}.tar HEAD 2> /dev/null
 
