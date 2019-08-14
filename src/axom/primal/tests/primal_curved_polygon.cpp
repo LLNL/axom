@@ -718,10 +718,71 @@ TEST(primal_curvedpolygon, area_intersection_triangle_quadratic)
   CoordType A = 0.0;
   for(int i = 0; i < static_cast<int>(bPolygons3.size()); ++i)
   {
-    A += bPolygons3[i].area(1e-13);
+    A += bPolygons3[i].area(1e-14);
   }
   CoordType expA = -0.024649833203616;
   EXPECT_NEAR(A, expA, 1e-14);
+}
+
+TEST(primal_curvedpolygon, area_intersection_triangle_quadratic_two_regions)
+{
+  const int DIM = 2;
+  const int order = 2;
+  using CoordType = double;
+  using CurvedPolygonType = primal::CurvedPolygon<CoordType, DIM>;
+  using PointType = primal::Point<CoordType, DIM>;
+  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
+
+  SLIC_INFO(
+    "Test intersecting two quadratic triangular CurvedPolygons (two regions).");
+
+  CurvedPolygonType bPolygon;
+  EXPECT_EQ(0, bPolygon.numEdges());
+
+  PointType controlPoints[order + 1] = {PointType::make_point(0.6, 1.2),
+                                        PointType::make_point(0.4, 1.3),
+                                        PointType::make_point(0.3, 2.0)};
+
+  PointType controlPoints2[order + 1] = {PointType::make_point(0.3, 2.0),
+                                         PointType::make_point(0.27, 1.5),
+                                         PointType::make_point(0.0, 1.6)};
+
+  PointType controlPoints3[order + 1] = {PointType::make_point(0.0, 1.6),
+                                         PointType::make_point(0.1, 1.5),
+                                         PointType::make_point(0.6, 1.2)};
+
+  PointType controlPoints4[order + 1] = {PointType::make_point(1.0205, 1.6699),
+                                         PointType::make_point(0.8339, 1.5467),
+                                         PointType::make_point(0.1777, 1.8101)};
+
+  PointType controlPoints5[order + 1] = {PointType::make_point(0.1777, 1.8101),
+                                         PointType::make_point(0.5957, 1.5341),
+                                         PointType::make_point(0.3741, 1.3503)};
+
+  PointType controlPoints6[order + 1] = {PointType::make_point(0.3741, 1.3503),
+                                         PointType::make_point(0.5107, 1.3869),
+                                         PointType::make_point(1.0205, 1.6699)};
+  CurvedPolygonType bPolygon2;
+
+  BezierCurveType bCurve(controlPoints, order);
+  BezierCurveType bCurve4(controlPoints4, order);
+  bPolygon2.addEdge(bCurve4);
+  bPolygon.addEdge(bCurve);
+
+  BezierCurveType bCurve2(controlPoints2, order);
+  BezierCurveType bCurve5(controlPoints5, order);
+  bPolygon2.addEdge(bCurve5);
+  bPolygon.addEdge(bCurve2);
+
+  BezierCurveType bCurve3(controlPoints3, order);
+  BezierCurveType bCurve6(controlPoints6, order);
+  bPolygon2.addEdge(bCurve6);
+  bPolygon.addEdge(bCurve3);
+
+  std::vector<CurvedPolygonType> bPolygons3;
+  bool didIntersect = intersect_polygon(bPolygon, bPolygon2, bPolygons3);
+  EXPECT_TRUE(didIntersect);
+  EXPECT_EQ(bPolygons3.size(), 2);
 }
 
 //----------------------------------------------------------------------------------
