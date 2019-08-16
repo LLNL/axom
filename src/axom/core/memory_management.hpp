@@ -221,12 +221,12 @@ inline void copy( void* dst, void* src, std::size_t numbytes ) noexcept
 
   if (rm.hasAllocator(dst))
   {
-    dstStrategy = rm.findAllocationRecord( dst )->m_strategy;
+    dstStrategy = rm.findAllocationRecord( dst )->strategy;
   }
 
   if (rm.hasAllocator(src))
   {
-    srcStrategy = rm.findAllocationRecord( src )->m_strategy;
+    srcStrategy = rm.findAllocationRecord( src )->strategy;
   }
 
   auto op = op_registry.find( "COPY", srcStrategy, dstStrategy );
