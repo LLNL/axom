@@ -361,6 +361,17 @@ public:
   /*! Returns a copy of the Bezier curve's control points */
   CoordsVec getControlPoints() const { return m_controlPoints; }
 
+  /*! Reverses the order of the Bezier curve's control points */
+  void reverseOrientation()
+  {
+    const int ord = getOrder();
+    CoordsVec old_controlPoints = m_controlPoints;
+    for(int i = 0; i <= ord; ++i)
+    {
+      m_controlPoints[i] = old_controlPoints[ord - i];
+    }
+  }
+
   /*! Returns an axis-aligned bounding box containing the Bezier curve */
   BoundingBoxType boundingBox() const
   {

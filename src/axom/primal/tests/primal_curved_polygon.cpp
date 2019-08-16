@@ -785,6 +785,61 @@ TEST(primal_curvedpolygon, area_intersection_triangle_quadratic_two_regions)
   EXPECT_EQ(bPolygons3.size(), 2);
 }
 
+TEST(primal_curvedpolygon, area_intersection_triangle_inclusion)
+{
+  const int DIM = 2;
+  const int order = 2;
+  using CoordType = double;
+  using CurvedPolygonType = primal::CurvedPolygon<CoordType, DIM>;
+  using PointType = primal::Point<CoordType, DIM>;
+  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
+
+  SLIC_INFO(
+    "Test intersecting two quadratic triangular CurvedPolygons (inclusion).");
+
+  CurvedPolygonType bPolygon;
+  EXPECT_EQ(0, bPolygon.numEdges());
+
+  PointType controlPoints[order + 1] = {PointType::make_point(0.0, 0.0),
+                                        PointType::make_point(0.5, 0.0),
+                                        PointType::make_point(1.0, 0.0)};
+
+  PointType controlPoints2[order + 1] = {PointType::make_point(1.0, 0.0),
+                                         PointType::make_point(0.5, 0.5),
+                                         PointType::make_point(0.0, 1.0)};
+
+  PointType controlPoints3[order + 1] = {PointType::make_point(0.0, 1.0),
+                                         PointType::make_point(0.0, 0.5),
+                                         PointType::make_point(0.0, 0.0)};
+
+  BezierCurveType bCurve(controlPoints, order);
+  bPolygon.addEdge(bCurve);
+
+  BezierCurveType bCurve2(controlPoints2, order);
+  bPolygon.addEdge(bCurve2);
+
+  BezierCurveType bCurve3(controlPoints3, order);
+  bPolygon.addEdge(bCurve3);
+
+  CurvedPolygonType bPolygon2 = bPolygon;
+  for(int i = 0; i < DIM; ++i)
+  {
+    for(int j = 0; j <= order; ++j)
+    {
+      for(int k = 0; k < bPolygon2.numEdges(); ++k)
+      {
+        bPolygon2[k][j][i] = bPolygon2[k][j][i] * .5 + .05;
+      }
+    }
+  }
+
+  std::vector<CurvedPolygonType> bPolygons3;
+  bool didIntersect = intersect_polygon(bPolygon, bPolygon2, bPolygons3);
+  bPolygons3.clear();
+  bool didIntersect2 = intersect_polygon(bPolygon2, bPolygon, bPolygons3);
+  EXPECT_TRUE(didIntersect);
+  EXPECT_EQ(bPolygons3.size(), 1);
+}
 //----------------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {

@@ -242,6 +242,20 @@ public:
     }
   }
 
+  /*!
+   * \brief Reverses orientation of a CurvedPolygon
+   */
+  void reverseOrientation()
+  {
+    const int ngon = numEdges();
+    std::vector<BezierCurve<T, NDIMS>> old_edges = m_edges;
+    for(int i = 0; i < ngon; ++i)
+    {
+      old_edges[ngon - 1 - i].reverseOrientation();
+      m_edges[i] = old_edges[ngon - 1 - i];
+    }
+  }
+
 private:
   std::vector<BezierCurve<T, NDIMS>> m_edges;
 };
