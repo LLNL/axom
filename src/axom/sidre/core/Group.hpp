@@ -1254,6 +1254,31 @@ public:
    */
   bool rename(const std::string& new_name);
 
+  /*!
+   * \brief Import data from a conduit Node into a Group
+   *
+   * This imports the hierarchy from the Node into a Sidre Group with the
+   * same tree structure.
+   *
+   * This does not support conduit's list datatype.  If the Node contains a
+   * list any where in its tree, an error will occur.
+   *
+   * If preserve_contents is true, then the names of the children held by the
+   * Node cannot be the same as the names of the children already held by this
+   * Group.  If there is a naming conflict, an error will occur.
+   *
+   * /param node               A conduit Node containing hierarchical data.
+   * /param preserve_contents  If true, any child Groups and Views held by
+   *                           this Group remain in place.  If false, all
+   *                           child Groups and Views are destroyed before
+   *                           importing data from the Node. 
+   */
+  void importConduitTree(const conduit::Node& node,
+     bool preserve_contents = false);
+
+  void importConduitTreeExternal(conduit::Node& node,
+     bool preserve_contents = false);
+
 private:
   DISABLE_DEFAULT_CTOR(Group);
   DISABLE_COPY_AND_ASSIGNMENT(Group);
@@ -1391,15 +1416,6 @@ private:
    */
   void importFrom(conduit::Node& node,
                   const std::map<IndexType, IndexType>& buffer_id_map);
-
-
-  /*!
-   * \brief Private method to build a Group hierarchy from Conduit Node.
-   *
-   * Note: This is for the "conduit_{zzz}" protocols.
-   */
-  void importConduitTree(conduit::Node& node, bool preserve_contents = false);
-
 
 //@}
 
