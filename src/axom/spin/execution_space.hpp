@@ -106,7 +106,7 @@ struct execution_space< CUDA_EXEC< BLOCK_SIZE > >
 {
   using raja_exec   = RAJA::cuda_exec< BLOCK_SIZE >;
   using raja_reduce = RAJA::cuda_reduce;
-  using raja_atomic = RAJA::atomic::cuda_atomic;
+  using raja_atomic = RAJA::cuda_atomic;
 
   static constexpr bool valid() noexcept { return true; };
   static constexpr char* name() noexcept { return (char*)"[CUDA_EXEC]"; };
@@ -128,7 +128,7 @@ struct execution_space< OMP_EXEC >
 {
   using raja_exec   = RAJA::omp_parallel_for_exec;
   using raja_reduce = RAJA::omp_reduce;
-  using raja_atomic = RAJA::atomic::omp_atomic;
+  using raja_atomic = RAJA::omp_atomic;
 
   static constexpr bool valid() noexcept { return true; };
   static constexpr char* name() noexcept { return (char*)"[OMP_EXEC]"; };
@@ -146,7 +146,7 @@ struct execution_space< SEQ_EXEC >
 {
   using raja_exec                   = RAJA::loop_exec;
   using raja_reduce                 = RAJA::loop_reduce;
-  using raja_atomic                 = RAJA::atomic::loop_atomic;
+  using raja_atomic                 = RAJA::loop_atomic;
   static const int allocator_id = umpire::resource::Host;
 
   static constexpr bool valid() noexcept { return true; };

@@ -117,7 +117,7 @@ TEST( spin_execution_space, check_seq_exec )
   check_execution_mappings< spin::SEQ_EXEC,
                             RAJA::loop_exec,
                             RAJA::loop_reduce,
-                            RAJA::atomic::loop_atomic,
+                            RAJA::loop_atomic,
                             umpire::resource::Host >( );
 
 }
@@ -132,7 +132,7 @@ TEST( spin_execution_space, check_omp_exec )
   check_execution_mappings< spin::OMP_EXEC,
                             RAJA::omp_parallel_for_exec,
                             RAJA::omp_reduce,
-                            RAJA::atomic::omp_atomic,
+                            RAJA::omp_atomic,
                             umpire::resource::Host >( );
 
 }
@@ -149,7 +149,7 @@ TEST( spin_execution_space, check_cuda_exec )
   check_execution_mappings< spin::CUDA_EXEC< BLOCK_SIZE >,
                             RAJA::cuda_exec< BLOCK_SIZE >,
                             RAJA::cuda_reduce,
-                            RAJA::atomic::cuda_atomic,
+                            RAJA::cuda_atomic,
                             umpire::resource::Unified >( );
 
 }
