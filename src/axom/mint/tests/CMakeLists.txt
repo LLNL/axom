@@ -35,6 +35,7 @@ set( mint_tests
      mint_fem_single_fe.cpp
 
      ## util tests
+     mint_su2_io.cpp
      mint_util_write_vtk.cpp
    )
 
