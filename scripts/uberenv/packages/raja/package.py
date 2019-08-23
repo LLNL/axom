@@ -11,8 +11,9 @@ class Raja(CMakePackage):
     """RAJA Parallel Framework."""
 
     homepage = "http://software.llnl.gov/RAJA/"
-    url='https://github.com/LLNL/RAJA/releases/download/v0.7.0/RAJA-0.7.0.tar.gz'
+    url="https://github.com/LLNL/RAJA/releases/download/v0.9.0/RAJA-v0.9.0.tar.gz"
 
+    version('0.9.0', '9ff1b7d56bbb6ce4f86183be5b015fda')
     version('0.7.0', '18b9654d75ee2f9278b3a8f19f9989fa')
 
     variant('cuda', default=False, description='Build with CUDA backend')
