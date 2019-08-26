@@ -129,9 +129,9 @@ private:
 #ifdef AXOM_USE_UMPIRE
 void check_alloc_and_free(
   umpire::Allocator allocator=axom::getAllocator( umpire::resource::Host ),
-  bool hostAccessable=true  )
+  bool hostAccessible=true  )
 #else
-void check_alloc_and_free( bool hostAccessable=true)
+void check_alloc_and_free( bool hostAccessible=true)
 #endif
 {
   for ( int size = 0 ; size <= SIZE ; size = size * 2 + 1 )
@@ -148,7 +148,7 @@ void check_alloc_and_free( bool hostAccessable=true)
     int* buffer = axom::allocate< int >( size );
 #endif
 
-    if ( hostAccessable )
+    if ( hostAccessible )
     {
       for ( int i = 0 ; i < size ; ++i )
       {
@@ -169,9 +169,9 @@ void check_alloc_and_free( bool hostAccessable=true)
 #ifdef AXOM_USE_UMPIRE
 void check_alloc_realloc_free(
   umpire::Allocator allocator=axom::getAllocator( umpire::resource::Host ),
-  bool hostAccessable=true )
+  bool hostAccessible=true )
 #else
-void check_alloc_realloc_free( bool hostAccessable=true )
+void check_alloc_realloc_free( bool hostAccessible=true )
 #endif
 {
   for ( int size = 0 ; size <= SIZE ; size = size * 2 + 1 )
@@ -190,7 +190,7 @@ void check_alloc_realloc_free( bool hostAccessable=true )
     int* buffer = axom::allocate< int >( buffer_size );
 #endif
 
-    if ( hostAccessable )
+    if ( hostAccessible )
     {
       // Populate the buffer.
       for ( int i = 0 ; i < buffer_size ; ++i )
@@ -215,7 +215,7 @@ void check_alloc_realloc_free( bool hostAccessable=true )
     }
 #endif
 
-    if ( hostAccessable )
+    if ( hostAccessible )
     {
       // Populate the new values.
       for ( int i = size ; i < buffer_size ; ++i )
@@ -240,7 +240,7 @@ void check_alloc_realloc_free( bool hostAccessable=true )
     }
 #endif
 
-    if ( hostAccessable )
+    if ( hostAccessible )
     {
       // Check all the values.
       for ( int i = 0 ; i < buffer_size ; ++i )
@@ -287,16 +287,33 @@ TEST( core_memory_management, set_get_default_memory_space )
 //------------------------------------------------------------------------------
 TEST( core_memory_management, alloc_free )
 {
+ 
+  constexpr bool HOST_ACCESSIBLE     = true;
+  constexpr bool NOT_HOST_ACCESSIBLE = false;
+
 #ifdef AXOM_USE_UMPIRE
 
-  check_alloc_and_free( axom::getAllocator( umpire::resource::Host ), true );
+  check_alloc_and_free( axom::getAllocator( umpire::resource::Host ),
+                        HOST_ACCESSIBLE 
+                        );
 
 #ifdef AXOM_USE_CUDA
-  check_alloc_and_free( axom::getAllocator( umpire::resource::Pinned ), true );
-  check_alloc_and_free( axom::getAllocator( umpire::resource::Device ), false );
+
+  check_alloc_and_free( axom::getAllocator( umpire::resource::Pinned ), 
+                        HOST_ACCESSIBLE 
+                        );
+
+  check_alloc_and_free( axom::getAllocator( umpire::resource::Device ), 
+                        NOT_HOST_ACCESSIBLE 
+                        );
+
   check_alloc_and_free( axom::getAllocator( umpire::resource::Constant ),
-                        false );
-  check_alloc_and_free( axom::getAllocator( umpire::resource::Unified ), true );
+                        NOT_HOST_ACCESSIBLE 
+                        );
+
+  check_alloc_and_free( axom::getAllocator( umpire::resource::Unified ),
+                        HOST_ACCESSIBLE 
+                        );
 #endif
 
 #endif
@@ -307,21 +324,31 @@ TEST( core_memory_management, alloc_free )
 //------------------------------------------------------------------------------
 TEST( core_memory_management, alloc_realloc_free )
 {
+  constexpr bool HOST_ACCESSIBLE     = true;
+  constexpr bool NOT_HOST_ACCESSIBLE = false;
+
 #ifdef AXOM_USE_UMPIRE
 
   check_alloc_realloc_free( axom::getAllocator( umpire::resource::Host ),
-                            true );
+                            HOST_ACCESSIBLE 
+                            );
 
 #ifdef AXOM_USE_CUDA
   check_alloc_realloc_free( axom::getAllocator( umpire::resource::Pinned ),
-                            true );
-  check_alloc_realloc_free( axom::getAllocator(
-                              umpire::resource::Device ), false );
+                            HOST_ACCESSIBLE 
+                            );
+
+  check_alloc_realloc_free( axom::getAllocator( umpire::resource::Device ), 
+                            NOT_HOST_ACCESSIBLE 
+                            );
+
   // Umpire doesn't allow reallocation of Constant memory.
   // check_alloc_realloc_free( axom::getAllocator( umpire::resource::Constant ),
   // false );
-  check_alloc_realloc_free( axom::getAllocator(
-                              umpire::resource::Unified ), true );
+
+  check_alloc_realloc_free( axom::getAllocator( umpire::resource::Unified ), 
+                            HOST_ACCESSIBLE 
+                            );
 #endif
 
 #endif
