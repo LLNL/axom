@@ -67,8 +67,8 @@ endmacro(axom_add_code_checks)
 ## (ON/OFF). This macro also adds an "option" so that the user can control,
 ## which components to build.
 ##------------------------------------------------------------------------------
-set(AXOM_COMPONENTS_FULL    CACHE LIST "List of all components in Axom" FORCE)
-set(AXOM_COMPONENTS_ENABLED CACHE LIST "List of all enabled components in Axom" FORCE)
+set(AXOM_COMPONENTS_FULL    CACHE STRING "List of all components in Axom" FORCE)
+set(AXOM_COMPONENTS_ENABLED CACHE STRING "List of all enabled components in Axom" FORCE)
 macro(axom_add_component)
 
     set(options)
@@ -90,11 +90,11 @@ macro(axom_add_component)
             ${arg_DEFAULT_STATE})
 
     set(AXOM_COMPONENTS_FULL ${AXOM_COMPONENTS_FULL} ${COMPONENT_NAME_LOWERED}
-        CACHE LIST "List of all components in Axom" FORCE)
+        CACHE STRING "List of all components in Axom" FORCE)
 
     if ( AXOM_ENABLE_${COMPONENT_NAME_CAPITALIZED} )
         set(AXOM_COMPONENTS_ENABLED ${AXOM_COMPONENTS_ENABLED} ${COMPONENT_NAME_LOWERED}
-            CACHE LIST "List of all enabled components in Axom" FORCE)
+            CACHE STRING "List of all enabled components in Axom" FORCE)
         add_subdirectory( ${arg_COMPONENT_NAME} )
     endif()
 
