@@ -1755,10 +1755,13 @@ TEST_P(UmpireTest, allocate_default)
 //------------------------------------------------------------------------------
 TEST_P(UmpireTest, reallocate)
 {
+
+#ifdef AXOM_USE_CUDA
   if (allocID == axom::getResourceAllocatorID( umpire::resource::Constant ) )
   {
     return;
   }
+#endif
 
   {
     View* view = root->createView("v");
@@ -1784,10 +1787,13 @@ TEST_P(UmpireTest, reallocate)
 //------------------------------------------------------------------------------
 TEST_P(UmpireTest, reallocate_zero)
 {
+
+#ifdef AXOM_USE_CUDA
   if (allocID == axom::getResourceAllocatorID( umpire::resource::Constant ) )
   {
     return;
   }
+#endif
 
   {
     View* view = root->createView("v");

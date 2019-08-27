@@ -454,10 +454,12 @@ TEST_P(UmpireTest, reallocate)
 {
   constexpr int SIZE = 100;
 
+#ifdef AXOM_USE_CUDA
   if (allocID == axom::getResourceAllocatorID( umpire::resource::Constant ) )
   {
     return;
   }
+#endif
 
   {
     Buffer* buff = ds.createBuffer();
@@ -493,10 +495,13 @@ TEST_P(UmpireTest, reallocate_zero)
 {
   constexpr int SIZE = 100;
 
+
+#ifdef AXOM_USE_CUDA
   if (allocID == axom::getResourceAllocatorID( umpire::resource::Constant ) )
   {
     return;
   }
+#endif
 
   {
     Buffer* buff = ds.createBuffer();
