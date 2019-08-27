@@ -22,6 +22,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   Axom in parts of the code where OpenMP is enabled. 
 
 ### Fixed
+- Fixed usage of Umpire's MemoryResourceType enum in Axom. Axom was assuming that
+  there was a one-to-one correspondance of the entries in the MemoryResourceType enum
+  and the IDs of the predefined allocators. However, this assumption generally does
+  not hold. This version corrects this by explicitly querying the ID of the predefined
+  allocator for a particular resource and using that subsequently in the code.
 
 ### Known Bugs
 
