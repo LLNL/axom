@@ -158,7 +158,7 @@ public:
    * Check is that the endpoint of each edge coincides with startpoint of next edge
    * \return True, if the polygon is closed, False otherwise
    */
-  bool isClosed(double tol = 1e-15) const
+  bool isClosed(double tol = 1e-8) const
   {
     const int ngon = numEdges();
     if(ngon <= 2)
@@ -196,11 +196,11 @@ public:
    * Check is that the endpoint of each edge coincides with startpoint of next edge
    * \return True, if the polygon is closed, False otherwise
    */
-  T area(double tol = 1e-15) const
+  T area(double tol = 1e-8) const
   {
     const int ngon = numEdges();
     T A = 0.0;
-    if(!isClosed(tol))
+    if(false /*!isClosed(tol)*/)
     {
       SLIC_DEBUG("Warning! The area is 0 because the element is not closed.");
       return A;
@@ -215,7 +215,7 @@ public:
     }
   }
 
-  PointType moment(double tol = 1e-15) const
+  PointType moment(double tol = 1e-8) const
   {
     const int ngon = numEdges();
     PointType M = PointType::make_point(0.0, 0.0);
