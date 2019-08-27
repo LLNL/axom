@@ -27,7 +27,7 @@ set(CMAKE_C_COMPILER "/usr/tce/packages/clang/clang-8.0.0/bin/clang" CACHE PATH 
 set(CMAKE_CXX_COMPILER "/usr/tce/packages/clang/clang-8.0.0/bin/clang++" CACHE PATH "")
 
 # Fortran compiler used by spack
-set(ENABLE_FORTRAN ON CACHE BOOL "")
+set(ENABLE_FORTRAN OFF CACHE BOOL "")
 
 set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-2019.06.12/bin/xlf2003" CACHE PATH "")
 
