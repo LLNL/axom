@@ -6,12 +6,12 @@ import platform
 from os.path import join as pjoin
 
 def cmake_cache_entry(name, value, comment=""):
-    """Generate a string for a cmake cache variable""" 
+    """Generate a string for a cmake cache variable"""
     return 'set(%s "%s" CACHE PATH "%s")\n\n' % (name,value,comment)
 
 def cmake_cache_option(name, boolean_value, comment=""):
-    """Generate a string for a cmake configuration option""" 
-    
+    """Generate a string for a cmake configuration option"""
+
     value = "ON" if boolean_value else "OFF"
     return 'set(%s %s CACHE BOOL "%s")\n\n' % (name,value,comment)
 
@@ -24,10 +24,10 @@ def get_spec_path(spec, package_name, path_replacements = {}, use_bin = False) :
         path = spec[package_name].prefix
     else:
         path = spec[package_name].prefix.bin
-        
+
     for key in path_replacements:
         path = path.replace(key,path_replacements[key])
-        
+
     return path
 
 
@@ -36,14 +36,14 @@ class UberenvAxom(Package):
 
     # hash for dummy tarfile
     version('0.1', '8d378ef62dedc2df5db447b029b71200')
- 
+
     homepage = "http://lc.llnl.gov/axom"
 
     # variants that allow us to winnow what TPLS we build
     variant('devtools', default=False, description="Build development tools (such as sphinx, uncrustify, etc)")
 
     # use ~cmake to skip cmake build and use whatever cmake is in the
-    # users path 
+    # users path
     # (given the pain of building cmake on BGQ, this is really only for BGQ)
     variant('cmake',    default=True, description="Build cmake.")
 
@@ -73,7 +73,7 @@ class UberenvAxom(Package):
     depends_on("conduit~shared~hdf5+python",when="~hdf5+python")
     depends_on("conduit~shared+hdf5~python",when="+hdf5~python")
     depends_on("conduit~shared~hdf5~python",when="~hdf5~python")
-    
+
     depends_on("scr", when="+scr")
 
     depends_on("raja~openmp", when="+raja~openmp")
@@ -126,7 +126,7 @@ class UberenvAxom(Package):
         c_compiler   = env["SPACK_CC"]
         cpp_compiler = env["SPACK_CXX"]
         f_compiler   = None
-        
+
         # see if we should enable fortran support
         if "SPACK_FC" in env.keys():
             # even if this is set, it may not exist
@@ -139,9 +139,10 @@ class UberenvAxom(Package):
         if env.has_key("SYS_TYPE"):
             sys_type = env["SYS_TYPE"]
 
-        # are we on a specific machine 
+        # are we on a specific machine
         on_bgq = 'bgq' in sys_type
         on_blueos = 'blueos' in sys_type
+        on_blueos_p9 = 'p9' in sys_type
         on_toss =  'toss_3' in sys_type
 
         # cmake
@@ -153,7 +154,7 @@ class UberenvAxom(Package):
                 #error could not find cmake!
                 crash()
             cmake_exe = cmake_exe.command
-        
+
         host_cfg_fname = "%s-%s-%s.cmake" % (socket.gethostname().rstrip('1234567890'),sys_type,spec.compiler)
         host_cfg_fname = pjoin(dest_dir,host_cfg_fname)
         cfg = open(host_cfg_fname,"w")
@@ -203,7 +204,7 @@ class UberenvAxom(Package):
         cfg.write("# TPLs\n")
         cfg.write("##############\n\n")
 
-        # Try to find the common prefix of the TPL directory, including the compiler 
+        # Try to find the common prefix of the TPL directory, including the compiler
         # If found, we will use this in the TPL paths
         compiler_str = str(spec.compiler).replace('@','-')
         prefix_paths = prefix.split( compiler_str )
@@ -374,7 +375,7 @@ class UberenvAxom(Package):
             cfg.write(cmake_cache_option("ENABLE_GTEST_DEATH_TESTS", True))
 
         # BGQ
-        if on_bgq:            
+        if on_bgq:
             if "xlf" in str(spec.compiler):
                 cfg.write(cmake_cache_entry("BLT_FORTRAN_FLAGS", "-WF,-C!",
                     "Converts C-style comments to Fortran style in preprocessed files"))
@@ -401,8 +402,8 @@ class UberenvAxom(Package):
                 cfg.write(cmake_cache_entry("BLT_FORTRAN_FLAGS", "-WF,-C!",
                     "Converts C-style comments to Fortran style in preprocessed files"))
                 cfg.write(cmake_cache_entry("BLT_EXE_LINKER_FLAGS",
-                    "-Wl,-rpath,/usr/tce/packages/xl/xl-2018.05.18/lib/", 
-                    "Adds a missing rpath for libraries associated with the fortran compiler"))                
+                    "-Wl,-rpath,/usr/tce/packages/xl/xl-2018.05.18/lib/",
+                    "Adds a missing rpath for libraries associated with the fortran compiler"))
 
             elif "xl@coral" == str(spec.compiler):
                 cfg.write(cmake_cache_entry("BLT_FORTRAN_FLAGS", "-WF,-C! -qxlf2003=polymorphic",
@@ -414,11 +415,16 @@ class UberenvAxom(Package):
                 cfg.write("##############\n\n")
 
                 cfg.write(cmake_cache_option("ENABLE_CUDA", True))
-                cfg.write(cmake_cache_entry("CUDA_TOOLKIT_ROOT_DIR", "/usr/tce/packages/cuda/cuda-9.2.148"))
+                cfg.write(cmake_cache_entry("CUDA_TOOLKIT_ROOT_DIR", "/usr/tce/packages/cuda/cuda-10.1.168"))
                 cfg.write(cmake_cache_entry("CMAKE_CUDA_COMPILER", "${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc"))
-                cfg.write(cmake_cache_entry("CUDA_ARCH", "sm_60"))
+
+                if on_blueos_p9:
+                    cfg.write(cmake_cache_entry("CUDA_ARCH", "sm_70"))
+                else:
+                    cfg.write(cmake_cache_entry("CUDA_ARCH", "sm_60"))
+
                 cfg.write(cmake_cache_entry("CMAKE_CUDA_FLAGS" ,"-restrict -arch ${CUDA_ARCH} -std=c++11 --expt-extended-lambda -G"))
-                
+
                 if "+mpi" in spec:
                     cfg.write(cmake_cache_entry("CMAKE_CUDA_HOST_COMPILER", "${MPI_CXX_COMPILER}"))
                 else:
