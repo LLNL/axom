@@ -30,6 +30,19 @@ constexpr int INVALID_ALLOCATOR_ID = -1;
 #ifdef AXOM_USE_UMPIRE
 
 /*!
+ * \brief Returns the ID of the predefined allocator for a given resource.
+ * \param [in] resource_type the Umpire resource type
+ * \return ID the id of the predefined umpire allocator.
+ */
+inline int getResourceAllocatorID(
+    umpire::resource::MemoryResourceType resource_type )
+{
+  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+  umpire::Allocator alloc     = rm.getAllocator( resource_type );
+  return alloc.getId();
+}
+
+/*!
  * \brief Returns the umpire allocator associated with the given ID.
  * \param [in] allocatorID the ID of the allocator to get.
  */

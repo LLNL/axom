@@ -59,9 +59,8 @@ void check_invalid( )
 template < typename ExecSpace,
            typename RajaExec,
            typename RajaReduce,
-           typename RajaAtomic,
-           umpire::resource::MemoryResourceType UmpireAllocator >
-void check_execution_mappings( )
+           typename RajaAtomic >
+void check_execution_mappings( int expectedAllocatorID )
 {
   SLIC_INFO( "checking execution space: " <<
              spin::execution_space< ExecSpace >::name());
@@ -79,7 +78,7 @@ void check_execution_mappings( )
   EXPECT_TRUE( valid_raja_atomic );
 
   int allocatorID = spin::execution_space< ExecSpace >::allocatorID();
-  EXPECT_EQ( allocatorID, UmpireAllocator );
+  EXPECT_EQ( expectedAllocatorID, allocatorID );
 }
 
 } /* end anonymous namespace */
@@ -114,11 +113,11 @@ TEST( spin_execution_space, check_seq_exec )
 {
   check_valid< spin::SEQ_EXEC >( );
 
+  int allocator_id = axom::getResourceAllocatorID( umpire::resource::Host );
   check_execution_mappings< spin::SEQ_EXEC,
                             RAJA::loop_exec,
                             RAJA::loop_reduce,
-                            RAJA::loop_atomic,
-                            umpire::resource::Host >( );
+                            RAJA::loop_atomic >( allocator_id );
 
 }
 
@@ -129,11 +128,11 @@ TEST( spin_execution_space, check_omp_exec )
 
   check_valid< spin::OMP_EXEC >( );
 
+  int allocator_id = axom::getResourceAllocatorID( umpire::resource::Host );
   check_execution_mappings< spin::OMP_EXEC,
                             RAJA::omp_parallel_for_exec,
                             RAJA::omp_reduce,
-                            RAJA::omp_atomic,
-                            umpire::resource::Host >( );
+                            RAJA::omp_atomic >( allocator_id );
 
 }
 #endif
@@ -146,11 +145,11 @@ TEST( spin_execution_space, check_cuda_exec )
 
   check_valid< spin::CUDA_EXEC< BLOCK_SIZE > >( );
 
+  int allocator_id = axom::getResourceAllocatorID( umpire::resource::Unified );
   check_execution_mappings< spin::CUDA_EXEC< BLOCK_SIZE >,
                             RAJA::cuda_exec< BLOCK_SIZE >,
                             RAJA::cuda_reduce,
-                            RAJA::cuda_atomic,
-                            umpire::resource::Unified >( );
+                            RAJA::cuda_atomic >( allocator_id );
 
 }
 #endif

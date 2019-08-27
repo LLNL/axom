@@ -87,7 +87,7 @@ struct execution_space
 
   static constexpr bool valid() noexcept { return false; };
   static constexpr char* name() noexcept { return (char*)"[UNDEFINED]"; };
-  static constexpr int allocatorID() noexcept
+  static int allocatorID() noexcept
   { return axom::INVALID_ALLOCATOR_ID; };
 };
 
@@ -110,8 +110,8 @@ struct execution_space< CUDA_EXEC< BLOCK_SIZE > >
 
   static constexpr bool valid() noexcept { return true; };
   static constexpr char* name() noexcept { return (char*)"[CUDA_EXEC]"; };
-  static constexpr int allocatorID() noexcept
-  { return umpire::resource::Unified; };
+  static int allocatorID() noexcept
+  { return axom::getResourceAllocatorID(umpire::resource::Unified); };
 };
 
 #endif
@@ -132,8 +132,8 @@ struct execution_space< OMP_EXEC >
 
   static constexpr bool valid() noexcept { return true; };
   static constexpr char* name() noexcept { return (char*)"[OMP_EXEC]"; };
-  static constexpr int allocatorID() noexcept
-  { return umpire::resource::Host; };
+  static int allocatorID() noexcept
+  { return axom::getResourceAllocatorID(umpire::resource::Host); };
 };
 
 #endif
@@ -144,15 +144,14 @@ struct execution_space< OMP_EXEC >
 template < >
 struct execution_space< SEQ_EXEC >
 {
-  using raja_exec                   = RAJA::loop_exec;
-  using raja_reduce                 = RAJA::loop_reduce;
-  using raja_atomic                 = RAJA::loop_atomic;
-  static const int allocator_id = umpire::resource::Host;
+  using raja_exec   = RAJA::loop_exec;
+  using raja_reduce = RAJA::loop_reduce;
+  using raja_atomic = RAJA::loop_atomic;
 
   static constexpr bool valid() noexcept { return true; };
   static constexpr char* name() noexcept { return (char*)"[SEQ_EXEC]"; };
-  static constexpr int allocatorID() noexcept
-  { return umpire::resource::Host; };
+  static int allocatorID() noexcept
+  { return axom::getResourceAllocatorID(umpire::resource::Host); };
 };
 
 /// @}

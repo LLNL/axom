@@ -34,7 +34,7 @@ namespace
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_cells_idx( int dimension )
 {
-  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name(); 
+  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name();
   SLIC_INFO( "dimension=" << dimension << ", policy="
             << policy_traits< ExecPolicy >::name() << ", mesh_type="
             << mesh_name );
@@ -53,7 +53,7 @@ void check_for_all_cells_idx( int dimension )
 
   IndexType* field = test_mesh->template createField< IndexType >( "c1", CELL_CENTERED );
 
-  for_all_cells< ExecPolicy >( test_mesh, 
+  for_all_cells< ExecPolicy >( test_mesh,
     AXOM_LAMBDA( IndexType cellID )
     {
       field[ cellID ] = cellID;
@@ -166,7 +166,7 @@ void check_for_all_cells_ijk( )
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_cell_nodes( int dimension )
 {
-  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name(); 
+  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name();
   SLIC_INFO( "dimension=" << dimension << ", policy="
             << policy_traits< ExecPolicy >::name() << ", mesh_type="
             << mesh_name );
@@ -193,7 +193,7 @@ void check_for_all_cell_nodes( int dimension )
       {
         conn[ cellID * MAX_CELL_NODES + i ] = nodes[ i ];
       } // END for all cell nodes
-    } 
+    }
   );
 
   IndexType cellNodes[ MAX_CELL_NODES ];
@@ -215,7 +215,7 @@ void check_for_all_cell_nodes( int dimension )
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_cell_coords( int dimension )
 {
-  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name(); 
+  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name();
   SLIC_INFO( "dimension=" << dimension << ", policy="
             << policy_traits< ExecPolicy >::name() << ", mesh_type="
             << mesh_name );
@@ -235,7 +235,7 @@ void check_for_all_cell_coords( int dimension )
   const IndexType numCells = test_mesh->getNumberOfCells();
   IndexType* conn = test_mesh->template createField< IndexType >( "conn", CELL_CENTERED,
                                                          MAX_CELL_NODES );
-  double* coords = test_mesh->template createField< double >( "coords", CELL_CENTERED, 
+  double* coords = test_mesh->template createField< double >( "coords", CELL_CENTERED,
                                                      dimension * MAX_CELL_NODES );
 
   for_all_cells< ExecPolicy, xargs::coords >( test_mesh,
@@ -246,7 +246,7 @@ void check_for_all_cell_coords( int dimension )
       for ( int i = 0 ; i < numNodes ; ++i )
       {
         conn[ cellID * MAX_CELL_NODES + i ] = nodes[ i ];
-        
+
         for ( int dim = 0; dim < dimension; ++dim )
         {
           coords[ cellID * dimension * MAX_CELL_NODES + i * dimension + dim ] = coordsMatrix( dim, i );
@@ -263,11 +263,11 @@ void check_for_all_cell_coords( int dimension )
     for ( int i = 0 ; i < numNodes ; ++i )
     {
       EXPECT_EQ( conn[ cellID * MAX_CELL_NODES + i ], cellNodes[ i ] );
-      
+
       for ( int dim = 0; dim < dimension; ++dim )
       {
         test_mesh->getNode( cellNodes[ i ], nodeCoords );
-        EXPECT_NEAR( coords[ cellID * dimension * MAX_CELL_NODES + i * dimension + dim ], 
+        EXPECT_NEAR( coords[ cellID * dimension * MAX_CELL_NODES + i * dimension + dim ],
                      nodeCoords[ dim ],
                      1e-8 );
       }
@@ -283,7 +283,7 @@ void check_for_all_cell_coords( int dimension )
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_cell_faces( int dimension )
 {
-  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name(); 
+  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name();
   SLIC_INFO( "dimension=" << dimension << ", policy="
             << policy_traits< ExecPolicy >::name() << ", mesh_type="
             << mesh_name );
@@ -301,7 +301,7 @@ void check_for_all_cell_faces( int dimension )
   EXPECT_TRUE( test_mesh != nullptr );
 
   const IndexType numCells        = test_mesh->getNumberOfCells();
-  IndexType* cellFaces = test_mesh->template createField< IndexType >( "cellFaces", 
+  IndexType* cellFaces = test_mesh->template createField< IndexType >( "cellFaces",
                                                               CELL_CENTERED,
                                                               MAX_CELL_FACES );
 
@@ -365,8 +365,10 @@ AXOM_CUDA_TEST( mint_execution_cell_traversals, for_all_cells_nodeids )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
     defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
+    const int UnifiedAllocatorID =
+        axom::getResourceAllocatorID( umpire::resource::Unified );
     const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
-    axom::setDefaultAllocator( axom::getAllocator( umpire::resource::Unified ) );
+    axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
 
     using cuda_exec = policy::parallel_gpu< 512 >;
     check_for_all_cell_nodes< cuda_exec, STRUCTURED_UNIFORM_MESH >(i);
@@ -409,8 +411,10 @@ AXOM_CUDA_TEST( mint_execution_cell_traversals, for_all_cells_coords )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
     defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
+    const int UnifiedAllocatorID =
+        axom::getResourceAllocatorID( umpire::resource::Unified );
     const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
-    axom::setDefaultAllocator( axom::getAllocator( umpire::resource::Unified ) );
+    axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
 
     using cuda_exec = policy::parallel_gpu< 512 >;
     check_for_all_cell_coords< cuda_exec, STRUCTURED_UNIFORM_MESH >(i);
@@ -453,8 +457,10 @@ AXOM_CUDA_TEST( mint_execution_cell_traversals, for_all_cells_faceids )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
     defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
+    const int UnifiedAllocatorID =
+        axom::getResourceAllocatorID( umpire::resource::Unified );
     const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
-    axom::setDefaultAllocator( axom::getAllocator( umpire::resource::Unified ) );
+    axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
 
     using cuda_exec = policy::parallel_gpu< 512 >;
     check_for_all_cell_faces< cuda_exec, STRUCTURED_UNIFORM_MESH >(i);
@@ -490,8 +496,10 @@ AXOM_CUDA_TEST( mint_execution_cell_traversals, for_all_cells_ij )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
   defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
+  const int UnifiedAllocatorID =
+      axom::getResourceAllocatorID( umpire::resource::Unified );
   const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
-  axom::setDefaultAllocator( axom::getAllocator( umpire::resource::Unified ) );
+  axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
 
   using cuda_exec = policy::parallel_gpu< 512 >;
   check_for_all_cells_ij< cuda_exec, STRUCTURED_UNIFORM_MESH >();
@@ -524,8 +532,10 @@ AXOM_CUDA_TEST( mint_execution_cell_traversals, for_all_cells_ijk )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
   defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
+  const int UnifiedAllocatorID =
+      axom::getResourceAllocatorID( umpire::resource::Unified );
   const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
-  axom::setDefaultAllocator( axom::getAllocator( umpire::resource::Unified ) );
+  axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
 
 
   using cuda_exec = policy::parallel_gpu< 512 >;
@@ -567,8 +577,10 @@ AXOM_CUDA_TEST( mint_execution_cell_traversals, for_all_cells_index )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
     defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
+    const int UnifiedAllocatorID =
+        axom::getResourceAllocatorID( umpire::resource::Unified );
     const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
-    axom::setDefaultAllocator( axom::getAllocator( umpire::resource::Unified ) );
+    axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
 
     using cuda_exec = policy::parallel_gpu< 512 >;
     check_for_all_cells_idx< cuda_exec, STRUCTURED_UNIFORM_MESH >(i);

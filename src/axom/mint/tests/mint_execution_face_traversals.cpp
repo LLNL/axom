@@ -1,6 +1,6 @@
 // Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
-// 
+//
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 // Axom includes
@@ -33,7 +33,7 @@ namespace
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_faces( int dimension )
 {
-  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name(); 
+  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name();
   SLIC_INFO( "dimension=" << dimension << ", policy="
             << policy_traits< ExecPolicy >::name() << ", mesh_type="
             << mesh_name );
@@ -54,7 +54,7 @@ void check_for_all_faces( int dimension )
 
   IndexType* field = test_mesh->template createField< IndexType >( "f1", FACE_CENTERED );
 
-  for_all_faces< ExecPolicy >( test_mesh, 
+  for_all_faces< ExecPolicy >( test_mesh,
     AXOM_LAMBDA( IndexType faceID )
     {
       field[ faceID ] = faceID;
@@ -74,7 +74,7 @@ void check_for_all_faces( int dimension )
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_face_nodes( int dimension )
 {
-  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name(); 
+  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name();
   SLIC_INFO( "dimension=" << dimension << ", policy="
             << policy_traits< ExecPolicy >::name() << ", mesh_type="
             << mesh_name );
@@ -123,7 +123,7 @@ void check_for_all_face_nodes( int dimension )
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_face_coords( int dimension )
 {
-  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name(); 
+  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name();
   SLIC_INFO( "dimension=" << dimension << ", policy="
             << policy_traits< ExecPolicy >::name() << ", mesh_type="
             << mesh_name );
@@ -173,7 +173,7 @@ void check_for_all_face_coords( int dimension )
       for ( int dim = 0; dim < dimension; ++dim )
       {
         test_mesh->getNode( faceNodes[ i ], nodeCoords );
-        EXPECT_NEAR( coords[ faceID * dimension * MAX_FACE_NODES + i * dimension + dim ], 
+        EXPECT_NEAR( coords[ faceID * dimension * MAX_FACE_NODES + i * dimension + dim ],
                      nodeCoords[ dim ],
                      1e-8 );
       }
@@ -189,7 +189,7 @@ void check_for_all_face_coords( int dimension )
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_face_cells( int dimension )
 {
-  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name(); 
+  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name();
   SLIC_INFO( "dimension=" << dimension << ", policy="
             << policy_traits< ExecPolicy >::name() << ", mesh_type="
             << mesh_name );
@@ -264,8 +264,10 @@ AXOM_CUDA_TEST( mint_execution_face_traversals, for_all_face_nodeids )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
     defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
+    const int UnifiedAllocatorID =
+        axom::getResourceAllocatorID( umpire::resource::Unified );
     const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
-    axom::setDefaultAllocator( axom::getAllocator( umpire::resource::Unified ) );
+    axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
 
     using cuda_exec = policy::parallel_gpu< 512 >;
     check_for_all_face_nodes< cuda_exec, STRUCTURED_UNIFORM_MESH >( dim );
@@ -307,8 +309,10 @@ AXOM_CUDA_TEST( mint_execution_face_traversals, for_all_face_coords )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
     defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
+    const int UnifiedAllocatorID =
+        axom::getResourceAllocatorID( umpire::resource::Unified );
     const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
-    axom::setDefaultAllocator( axom::getAllocator( umpire::resource::Unified ) );
+    axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
 
     using cuda_exec = policy::parallel_gpu< 512 >;
     check_for_all_face_coords< cuda_exec, STRUCTURED_UNIFORM_MESH >( dim );
@@ -350,8 +354,10 @@ AXOM_CUDA_TEST( mint_execution_face_traversals, for_all_face_cellids )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
     defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
+    const int UnifiedAllocatorID =
+        axom::getResourceAllocatorID( umpire::resource::Unified );
     const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
-    axom::setDefaultAllocator( axom::getAllocator( umpire::resource::Unified ) );
+    axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
 
     using cuda_exec = policy::parallel_gpu< 512 >;
     check_for_all_face_cells< cuda_exec, STRUCTURED_UNIFORM_MESH >( dim );
@@ -395,8 +401,10 @@ AXOM_CUDA_TEST( mint_execution_face_traversals, for_all_faces_index )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
     defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
+    const int UnifiedAllocatorID =
+        axom::getResourceAllocatorID( umpire::resource::Unified );
     const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
-    axom::setDefaultAllocator( axom::getAllocator( umpire::resource::Unified ) );
+    axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
 
     using cuda_exec = policy::parallel_gpu< 512 >;
     check_for_all_faces< cuda_exec, STRUCTURED_UNIFORM_MESH >( dim );

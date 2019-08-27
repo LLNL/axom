@@ -378,7 +378,8 @@ public:
 
   void TearDown() override
   {
-    axom::setDefaultAllocator(umpire::resource::Host);
+    int allocID = axom::getResourceAllocatorID( umpire::resource::Host );
+    axom::setDefaultAllocator( allocID );
   }
 
   DataStore ds;
@@ -453,7 +454,7 @@ TEST_P(UmpireTest, reallocate)
 {
   constexpr int SIZE = 100;
 
-  if (allocID == umpire::resource::Constant)
+  if (allocID == axom::getResourceAllocatorID( umpire::resource::Constant ) )
   {
     return;
   }
@@ -492,7 +493,7 @@ TEST_P(UmpireTest, reallocate_zero)
 {
   constexpr int SIZE = 100;
 
-  if (allocID == umpire::resource::Constant)
+  if (allocID == axom::getResourceAllocatorID( umpire::resource::Constant ) )
   {
     return;
   }
@@ -533,12 +534,13 @@ TEST_P(UmpireTest, reallocate_zero)
   }
 }
 
-const int allocators[] = { umpire::resource::Host
+const int allocators[] = { 
+     axom::getResourceAllocatorID( umpire::resource::Host )
 #ifdef AXOM_USE_CUDA
-                           , umpire::resource::Pinned
-                           , umpire::resource::Device
-                           , umpire::resource::Constant
-                           , umpire::resource::Unified
+   , axom::getResourceAllocatorID( umpire::resource::Pinned )
+   , axom::getResourceAllocatorID( umpire::resource::Device )
+   , axom::getResourceAllocatorID( umpire::resource::Constant )
+   , axom::getResourceAllocatorID( umpire::resource::Unified )
 #endif
 };
 
