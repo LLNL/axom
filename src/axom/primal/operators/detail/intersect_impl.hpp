@@ -4,14 +4,14 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /*!
- * \file Intersection.hpp
+ * \file intersect_impl.hpp
  *
- * This file provides several functions to test whether geometric primitives
- * intersect.
+ * This file provides helper functions for testing whether
+ * geometric primitives intersect
  */
 
-#ifndef INTERSECTION_IMPL_HPP_
-#define INTERSECTION_IMPL_HPP_
+#ifndef PRIMAL_INTERSECT_IMPL_HPP_
+#define PRIMAL_INTERSECT_IMPL_HPP_
 
 #include "axom/core/numerics/Determinants.hpp"
 #include "axom/core/utilities/Utilities.hpp"
@@ -30,7 +30,7 @@ namespace primal
 namespace detail
 {
 
-// ================================== FORWARD DECLARATIONS =================
+//---------------------------- FUNCTION DECLARATIONS ---------------------------
 
 typedef primal::Vector< double, 3 > Vector3;
 typedef primal::Point< double, 3 > Point3;
@@ -100,6 +100,8 @@ bool intersectCoplanar3DTriangles(const Point3& p1,
 bool TriangleIntersection2D(const Triangle2& t1,
                             const Triangle2& t2,
                             bool includeBoundary = false);
+
+//------------------------------ IMPLEMENTATIONS ------------------------------
 
 /*! @{ @name 3D triangle-triangle intersection */
 
@@ -460,6 +462,9 @@ inline bool checkVertex(const Point2& p1,
  * zero Z-coordinate.  Thus we can calculate the cross product of A C with
  * B C using only the k-hat term, since the other terms go to zero.  A
  * positive value indicates CCW orientation.
+ *
+ * \note The result is equal to twice the signed area of a 2D triangle
+ * with vertices (A,B,C) (in CCW order).
  */
 inline double twoDcross(const Point2& A, const Point2& B, const Point2& C)
 {
@@ -1215,4 +1220,4 @@ bool intersect_obb3D_obb3D(const OrientedBoundingBox< T, 3 > &b1,
 } /* end namespace primal */
 } /* end namespace axom */
 
-#endif /* INTERSECTION_IMPL_HPP_ */
+#endif // PRIMAL_INTERSECT_IMPL_HPP_
