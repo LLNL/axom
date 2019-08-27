@@ -377,7 +377,7 @@ public:
     }
     // create the target mesh
     {
-      auto* mesh = new mfem::Mesh("./disc-nurbs.mesh",1,1);
+      auto* mesh = new mfem::Mesh("./disc-nurbs-80.mesh",1,1);
       if (mesh->NURBSext)
       {
         int order =tgt_ord;
