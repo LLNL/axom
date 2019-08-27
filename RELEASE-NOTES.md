@@ -16,6 +16,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Deprecated
 
 ### Changed
+- AXOM_USE_OPENMP is now being set at configure time accordingly instead of
+  auto-detected based on whether "_OPENMP" is passed by the compiler. This
+  fixes issues where a host code would compile Axom w/out OpenMP, but, use
+  Axom in parts of the code where OpenMP is enabled. 
 
 ### Fixed
 

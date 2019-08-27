@@ -11,7 +11,7 @@ set(gtest_utils_tests
    core_array.cpp
    core_memory_management.cpp
    core_stack_array.cpp
-   
+
    utils_TaskTimer.cpp
    utils_endianness.cpp
    utils_fileUtilities.cpp
@@ -62,27 +62,27 @@ endforeach()
 # Add MPI tests if MPI is enabled
 #
 if ( ENABLE_MPI )
-  
+
   set( core_mpi_tests
        core_types.cpp
        )
-       
+
   foreach( mpitest ${core_mpi_tests} )
-    
+
     get_filename_component( mpitest_name ${mpitest} NAME_WE )
-    
+
     blt_add_executable( NAME ${mpitest_name}_test
-                        SOURCES ${mpitest} 
+                        SOURCES ${mpitest}
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON ${utils_tests_depends} mpi 
+                        DEPENDS_ON ${utils_tests_depends} mpi
                         FOLDER axom/core/tests )
-                        
-    blt_add_test( NAME ${mpitest_name} 
-                  COMMAND ${mpitest_name}_test 
+
+    blt_add_test( NAME ${mpitest_name}
+                  COMMAND ${mpitest_name}_test
                   NUM_MPI_TASKS 1 )
-                  
+
   endforeach()
-   
+
 endif()
 
 #
@@ -91,6 +91,7 @@ endif()
 set(utils_config_test_depends ${utils_tests_depends})
 
 blt_list_append( TO utils_config_test_depends ELEMENTS mfem IF ${MFEM_FOUND} )
+blt_list_append( TO utils_config_test_depends ELEMENTS openmp IF ${ENABLE_OPENMP} )
 
 blt_add_executable( NAME utils_config_test
                     SOURCES utils_config.cpp
@@ -110,25 +111,4 @@ if(MFEM_FOUND)
     set_property(TARGET utils_config_test
         APPEND_STRING PROPERTY COMPILE_FLAGS "${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS}")
 endif()
-
-
-if(ENABLE_OPENMP)
-    # Add a config test that uses OpenMP
-    blt_add_executable( NAME utils_config_openmp_test
-                        SOURCES utils_config.cpp
-                        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                        DEPENDS_ON ${utils_config_test_depends} openmp
-                        FOLDER axom/core/tests )
-
-    blt_add_test( NAME utils_config_openmp
-                  COMMAND utils_config_openmp_test )
-
-    if(MFEM_FOUND)
-        set_property(TARGET utils_config_openmp_test
-            APPEND_STRING PROPERTY COMPILE_FLAGS "${AXOM_DISABLE_UNUSED_PARAMETER_WARNINGS}")
-    endif()
-
-endif()
-
-
 
