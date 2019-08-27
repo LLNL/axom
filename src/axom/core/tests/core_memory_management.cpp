@@ -302,11 +302,9 @@ TEST( core_memory_management, set_get_default_memory_space )
 //------------------------------------------------------------------------------
 TEST( core_memory_management, alloc_free )
 {
-
-  constexpr bool HOST_ACCESSIBLE     = true;
-  constexpr bool NOT_HOST_ACCESSIBLE = false;
-
 #ifdef AXOM_USE_UMPIRE
+
+  constexpr bool HOST_ACCESSIBLE = true;
 
   const int HostAllocatorID =
         axom::getResourceAllocatorID( umpire::resource::Host );
@@ -315,6 +313,8 @@ TEST( core_memory_management, alloc_free )
                         );
 
 #ifdef AXOM_USE_CUDA
+
+  constexpr bool NOT_HOST_ACCESSIBLE = false;
 
   const int PinnedAllocatorID =
         axom::getResourceAllocatorID( umpire::resource::Pinned );
@@ -349,16 +349,17 @@ TEST( core_memory_management, alloc_free )
 //------------------------------------------------------------------------------
 TEST( core_memory_management, alloc_realloc_free )
 {
-  constexpr bool HOST_ACCESSIBLE     = true;
-  constexpr bool NOT_HOST_ACCESSIBLE = false;
-
 #ifdef AXOM_USE_UMPIRE
+
+  constexpr bool HOST_ACCESSIBLE = true;
 
   check_alloc_realloc_free( axom::getAllocator( umpire::resource::Host ),
                             HOST_ACCESSIBLE
                             );
 
 #ifdef AXOM_USE_CUDA
+
+  constexpr bool NOT_HOST_ACCESSIBLE = false;
 
   const int PinnedAllocatorID =
           axom::getResourceAllocatorID( umpire::resource::Pinned );
