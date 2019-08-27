@@ -16,6 +16,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Deprecated
 
 ### Changed
+- Updated Raja TPL to v0.9.0
+- Updated Umpire TPL to v1.0.0
 - AXOM_USE_OPENMP is now being set at configure time accordingly instead of
   auto-detected based on whether "_OPENMP" is passed by the compiler. This
   fixes issues where a host code would compile Axom w/out OpenMP, but, use
