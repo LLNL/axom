@@ -114,16 +114,16 @@ private:
   mutable std::map<int, SectorWeights*> m_sectorWeightsMap;
 };
 
-/// Utility class that caches precomputed coefficient matrices for sectorMoment computation
+/// Utility class that caches precomputed coefficient matrices for sectorCentroid() computation
 template <typename T>
-class MemoizedSectorMomentWeights
+class MemoizedSectorCentroidWeights
 {
 public:
   using SectorWeights = numerics::Matrix<T>;
 
-  MemoizedSectorMomentWeights() = default;
+  MemoizedSectorCentroidWeights() = default;
 
-  ~MemoizedSectorMomentWeights()
+  ~MemoizedSectorCentroidWeights()
   {
     for(auto& p : m_sectorWeightsMap)  // for each matrix of weights
     {
@@ -141,7 +141,7 @@ public:
     if(m_sectorWeightsMap.find(std::make_pair(order, dim)) ==
        m_sectorWeightsMap.end())
     {
-      auto vec = generateBezierCurveSectorMomentsWeights(order);
+      auto vec = generateBezierCurveSectorCentroidWeights(order);
       for(int d = 0; d <= order; ++d)
       {
         m_sectorWeightsMap[std::make_pair(order, d)] = vec[d];
@@ -152,7 +152,7 @@ public:
   }
 
   /*!
-   * \brief Computes the weights for BezierCurve's sectorMoment() function
+   * \brief Computes the weights for BezierCurve's sectorCentroid() function
    *
    * \param order The polynomial order of the curve
    * \return An anti-symmetric matrix with (order+1)*{order+1) entries
@@ -162,7 +162,7 @@ public:
    *  Ueda, K. "Signed area of sectors between spline curves and the origin"
    *  IEEE International Conference on Information Visualization, 1999.
    */
-  std::vector<SectorWeights*> generateBezierCurveSectorMomentsWeights(int ord) const
+  std::vector<SectorWeights*> generateBezierCurveSectorCentroidWeights(int ord) const
   {
     const bool memoryIsExternal = true;
     const int SZ = ord + 1;
@@ -502,17 +502,17 @@ public:
   }
 
   /*!
-   * \brief Calculates the sector moment of a Bezier Curve
+   * \brief Calculates the sector centroid of a Bezier Curve
    *
-   * The sector moment is the moment between the curve and the origin.
+   * This is the centroid of the region between the curve and the origin.
    * The equation and derivation are generalizations of:
    *  Ueda, K. "Signed area of sectors between spline curves and the origin"
    *  IEEE International Conference on Information Visualization, 1999.
    */
-  PointType sectorMoment() const
+  PointType sectorCentroid() const
   {
-    // Weights for each polynomial order's moments are precomputed and memoized
-    static internal::MemoizedSectorMomentWeights<T> s_weights;
+    // Weights for each polynomial order's centroid are precomputed and memoized
+    static internal::MemoizedSectorCentroidWeights<T> s_weights;
 
     T Mx = 0;
     T My = 0;

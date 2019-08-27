@@ -1,10 +1,10 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-/* /file bezier_test.cpp
- * /brief This file tests the BezierCurve.hpp and eval_bezier.hpp files
+/* /file primal_curved_polygon.cpp
+ * /brief This file tests the CurvedPolygon class
  */
 
 #include "gtest/gtest.h"
@@ -205,8 +205,8 @@ TEST(primal_curvedpolygon, area_triangle_degenerate)
   BezierCurveType bCurve3(controlPoints3, 1);
   bPolygon.addEdge(bCurve3);
 
-  bPolygon[2][1][0] -= 2e-15;
-  EXPECT_EQ(0.0, bPolygon.area());
+  bPolygon[2][1][0] -= 1e-10;
+  EXPECT_EQ(0.0, bPolygon.area(1e-11));
 }
 
 //----------------------------------------------------------------------------------

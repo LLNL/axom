@@ -240,7 +240,7 @@ TEST(primal_beziercurve, sector_moment_cubic)
                                  PointType::make_point(3.2, 3.5)};
 
     BezierCurveType bCurve(data, order);
-    PointType M = bCurve.sectorMoment();
+    PointType M = bCurve.sectorCentroid();
     EXPECT_NEAR(M[0], -.429321428571429, 2e-15);
     EXPECT_NEAR(M[1], -.354010714285715, 2e-15);
   }
@@ -278,7 +278,7 @@ TEST(primal_beziercurve, sector_moment_point)
     PointType data[order + 1] = {PointType::make_point(0.6, 1.2)};
 
     BezierCurveType bCurve(data, order);
-    PointType M = bCurve.sectorMoment();
+    PointType M = bCurve.sectorCentroid();
     EXPECT_DOUBLE_EQ(M[0], 0.0);
     EXPECT_DOUBLE_EQ(M[1], 0.0);
   }
