@@ -419,11 +419,11 @@ class UberenvAxom(Package):
                 cfg.write(cmake_cache_entry("CMAKE_CUDA_COMPILER", "${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc"))
 
                 if on_blueos_p9:
-                    cfg.write(cmake_cache_entry("CUDA_ARCH", "sm_70"))
+                    cfg.write(cmake_cache_entry("AXOM_CUDA_ARCH", "sm_70"))
                 else:
-                    cfg.write(cmake_cache_entry("CUDA_ARCH", "sm_60"))
+                    cfg.write(cmake_cache_entry("AXOM_CUDA_ARCH", "sm_60"))
 
-                cfg.write(cmake_cache_entry("CMAKE_CUDA_FLAGS" ,"-restrict -arch ${CUDA_ARCH} -std=c++11 --expt-extended-lambda -G"))
+                cfg.write(cmake_cache_entry("CMAKE_CUDA_FLAGS" ,"-restrict -arch ${AXOM_CUDA_ARCH} -std=c++11 --expt-extended-lambda -G"))
 
                 if "+mpi" in spec:
                     cfg.write(cmake_cache_entry("CMAKE_CUDA_HOST_COMPILER", "${MPI_CXX_COMPILER}"))
