@@ -10,6 +10,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
+- Added support in Mint for reading and writing an unstructured mesh in the [SU2 Mesh file format].
+  This includes support for both single and mixed cell type topology unstructured mesh types.   
 
 ### Removed
 
@@ -248,3 +250,5 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 [Version 0.2.9]: https://github.com/LLNL/axom/compare/v0.2.8...v0.2.9
 
 [Scalable Checkpoint Restart (SCR)]: https://computation.llnl.gov/projects/scalable-checkpoint-restart-for-mpi
+[SU2 Mesh file format]: https://su2code.github.io/docs/Mesh-File/
+

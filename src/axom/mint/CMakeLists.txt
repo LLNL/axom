@@ -79,6 +79,7 @@ set( mint_headers
 
     ## utils
     utils/vtk_utils.hpp
+    utils/su2_utils.hpp
    )
 
 set( mint_sources
@@ -102,6 +103,7 @@ set( mint_sources
 
     ## utils
     utils/vtk_utils.cpp
+    utils/su2_utils.cpp
    )
 
 ################################

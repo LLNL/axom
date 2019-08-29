@@ -9,9 +9,10 @@ set( mint_examples
      mint_nbody_solver.cpp
      mint_particle_mesh.cpp
      mint_rectilinear_mesh.cpp
+     mint_su2_mesh.cpp
      mint_unstructured_mixed_topology_mesh.cpp
      mint_unstructured_single_topology_mesh.cpp
-     
+
      user_guide/mint_tutorial.cpp
      user_guide/mint_getting_started.cpp
    )
@@ -22,10 +23,17 @@ set( mint_example_dependencies
      slic
    )
 
-blt_list_append( TO mint_example_dependencies ELEMENTS sidre conduit IF AXOM_MINT_USE_SIDRE )
-blt_list_append( TO mint_example_dependencies ELEMENTS raja IF RAJA_FOUND )
-blt_list_append( TO mint_example_dependencies ELEMENTS openmp IF ENABLE_OPENMP )
-blt_list_append( TO mint_example_dependencies ELEMENTS cuda IF ENABLE_CUDA )
+blt_list_append( TO mint_example_dependencies ELEMENTS sidre conduit
+                 IF ${AXOM_MINT_USE_SIDRE} )
+
+blt_list_append( TO mint_example_dependencies ELEMENTS raja
+                 IF ${RAJA_FOUND} )
+
+blt_list_append( TO mint_example_dependencies ELEMENTS openmp
+                 IF ${ENABLE_OPENMP} )
+
+blt_list_append( TO mint_example_dependencies ELEMENTS cuda
+                 IF ${ENABLE_CUDA} )
 
 foreach( example ${mint_examples} )
 
