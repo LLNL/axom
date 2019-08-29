@@ -39,5 +39,5 @@
       "clang@4.0.0_xlf~openmp~umpire ^zlib~shared" ],
 
     "darwin-x86_64":
-    [ "clang@9.0.0 ^conduit@master" ]
+    [ "clang@9.0.0" ]
 }
