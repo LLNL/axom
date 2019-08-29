@@ -102,8 +102,9 @@ TEST( mint_execution_forall_traversals, check_generic_loop )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
   defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
+  int allocator_id = axom::getResourceAllocatorID( umpire::resource::Unified );
   const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
-  axom::setDefaultAllocator( axom::getAllocator( umpire::resource::Unified ) );
+  axom::setDefaultAllocator( axom::getAllocator( allocator_id ) );
 
   constexpr bool async = true;
   check_for_all< policy::parallel_gpu< 512 > >( );

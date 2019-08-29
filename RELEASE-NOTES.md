@@ -16,12 +16,19 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Deprecated
 
 ### Changed
+- Updated Raja TPL to v0.9.0
+- Updated Umpire TPL to v1.0.0
 - AXOM_USE_OPENMP is now being set at configure time accordingly instead of
   auto-detected based on whether "_OPENMP" is passed by the compiler. This
   fixes issues where a host code would compile Axom w/out OpenMP, but, use
   Axom in parts of the code where OpenMP is enabled. 
 
 ### Fixed
+- Fixed usage of Umpire's MemoryResourceType enum in Axom. Axom was assuming that
+  there was a one-to-one correspondance of the entries in the MemoryResourceType enum
+  and the IDs of the predefined allocators. However, this assumption generally does
+  not hold. This version corrects this by explicitly querying the ID of the predefined
+  allocator for a particular resource and using that subsequently in the code.
 
 ### Known Bugs
 

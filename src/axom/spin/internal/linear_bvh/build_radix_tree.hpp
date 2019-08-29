@@ -612,7 +612,7 @@ void propagate_aabbs( RadixTree< FloatType, NDIMS >& data)
 
     while( current_node != -1)
     {
-      int32 old= RAJA::atomic::atomicAdd< atomic_policy >(&(counters_ptr[current_node]),1);
+      int32 old= RAJA::atomicAdd< atomic_policy >(&(counters_ptr[current_node]),1);
 
       if(old == 0)
       {

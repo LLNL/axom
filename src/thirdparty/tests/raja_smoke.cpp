@@ -30,7 +30,7 @@ void raja_basic_usage_test( )
   int* c = axom::allocate< int >( N );
 
   // initialize
-  RAJA::forall< execution_policy >( RAJA::RangeSegment( 0, N ), 
+  RAJA::forall< execution_policy >( RAJA::RangeSegment( 0, N ),
     AXOM_LAMBDA( int i ) {
       a[ i ] = b[ i ] = 1;
       c[ i ] = 0;
@@ -72,7 +72,9 @@ AXOM_CUDA_TEST( raja_smoke, basic_use )
 
 #if defined(AXOM_USE_CUDA) && defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
   const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
-  axom::setDefaultAllocator( axom::getAllocator( umpire::resource::Unified ) );
+  const int UnifiedAllocatorID =
+          axom::getResourceAllocatorID( umpire::resource::Unified );
+  axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
 
   std::cout << "Testing RAJA CUDA execution" << std::endl;
   constexpr int BLOCKSIZE = 256;

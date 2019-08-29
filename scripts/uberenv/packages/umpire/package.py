@@ -12,8 +12,9 @@ class Umpire(CMakePackage):
     architectures"""
 
     homepage = 'https://github.com/LLNL/Umpire'
-    url='https://github.com/LLNL/Umpire/releases/download/v0.3.2/umpire-0.3.2.tar.gz'
+    url='https://github.com/LLNL/Umpire/releases/download/v1.0.0/umpire-1.0.0.tar.gz'
 
+    version('1.0.0', '3435e9c9d48f2b05f838eb64fbf66d8e')
     version('0.3.2', '2b4138fb4d4272de8c34c073b4c6e88c')
 
     variant('cuda', default=False, description='Build with CUDA support')
@@ -29,7 +30,7 @@ class Umpire(CMakePackage):
         options = []
 
         if 'bgq' in os.getenv('SYS_TYPE', ""):
-            options.extend(['-DENABLE_BENCHMARKS:BOOL=OFF', 
+            options.extend(['-DENABLE_BENCHMARKS:BOOL=OFF',
                             '-DENABLE_TESTS:BOOL=OFF',
                             '-DENABLE_EXAMPLES:BOOL=OFF',
                             '-DENABLE_OPENMP:BOOL=OFF',

@@ -15,9 +15,7 @@ if (UMPIRE_DIR)
   blt_register_library( NAME umpire
                         INCLUDES ${UMPIRE_INCLUDE_DIRS}
                         TREAT_INCLUDES_AS_SYSTEM ON
-                        LIBRARIES umpire umpire_tpl_simpool umpire_tpl_judy 
-                                  umpire_resource umpire_alloc umpire_op 
-                                  umpire_util umpire_strategy )
+                        LIBRARIES umpire )
 else()
   message(STATUS "Umpire support is OFF")
 endif()
@@ -41,7 +39,7 @@ endif()
 if (CONDUIT_DIR)
     include(cmake/thirdparty/FindConduit.cmake)
     blt_register_library( NAME conduit
-                          INCLUDES ${CONDUIT_INCLUDE_DIRS} 
+                          INCLUDES ${CONDUIT_INCLUDE_DIRS}
                           LIBRARIES conduit
                           TREAT_INCLUDES_AS_SYSTEM ON)
     blt_register_library( NAME conduit_relay

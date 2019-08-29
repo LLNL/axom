@@ -1695,7 +1695,8 @@ public:
 
   void TearDown() override
   {
-    axom::setDefaultAllocator(umpire::resource::Host);
+    const int allocID = axom::getResourceAllocatorID( umpire::resource::Host );
+    axom::setDefaultAllocator( allocID );
   }
 
   static constexpr int SIZE = 100;
@@ -1754,10 +1755,13 @@ TEST_P(UmpireTest, allocate_default)
 //------------------------------------------------------------------------------
 TEST_P(UmpireTest, reallocate)
 {
-  if (allocID == umpire::resource::Constant)
+
+#ifdef AXOM_USE_CUDA
+  if (allocID == axom::getResourceAllocatorID( umpire::resource::Constant ) )
   {
     return;
   }
+#endif
 
   {
     View* view = root->createView("v");
@@ -1783,10 +1787,13 @@ TEST_P(UmpireTest, reallocate)
 //------------------------------------------------------------------------------
 TEST_P(UmpireTest, reallocate_zero)
 {
-  if (allocID == umpire::resource::Constant)
+
+#ifdef AXOM_USE_CUDA
+  if (allocID == axom::getResourceAllocatorID( umpire::resource::Constant ) )
   {
     return;
   }
+#endif
 
   {
     View* view = root->createView("v");
@@ -1815,12 +1822,13 @@ TEST_P(UmpireTest, reallocate_zero)
   }
 }
 
-const int allocators[] = { umpire::resource::Host
+const int allocators[] = { 
+    axom::getResourceAllocatorID( umpire::resource::Host )
 #ifdef AXOM_USE_CUDA
-                           , umpire::resource::Pinned
-                           , umpire::resource::Device
-                           , umpire::resource::Constant
-                           , umpire::resource::Unified
+  , axom::getResourceAllocatorID( umpire::resource::Pinned )
+  , axom::getResourceAllocatorID( umpire::resource::Device )
+  , axom::getResourceAllocatorID( umpire::resource::Constant )
+  , axom::getResourceAllocatorID( umpire::resource::Unified )
 #endif
 };
 
