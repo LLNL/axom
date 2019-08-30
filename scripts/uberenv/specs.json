@@ -30,7 +30,7 @@
 
     "blueos_3_ppc64le_ib_p9":
     [ "clang@upstream_xlf~openmp",
-      "clang@upstream_nvcc_xlf~openmp+cuda",
+      "clang@8.0.0_nvcc_xlf~openmp+cuda",
       "gcc@7.3.1",
       "xl@coral~openmp" ],
 

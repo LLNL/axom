@@ -2271,12 +2271,12 @@ TEST_P(UmpireTest, allocate_default)
   }
 }
 
-const int allocators[] = { umpire::resource::Host
+const int allocators[] = { axom::getResourceAllocatorID(umpire::resource::Host)
 #ifdef AXOM_USE_CUDA
-                           , umpire::resource::Pinned
-                           , umpire::resource::Device
-                           , umpire::resource::Constant
-                           , umpire::resource::Unified
+                     , axom::getResourceAllocatorID(umpire::resource::Pinned)
+                     , axom::getResourceAllocatorID(umpire::resource::Device)
+                     , axom::getResourceAllocatorID(umpire::resource::Constant)
+                     , axom::getResourceAllocatorID(umpire::resource::Unified)
 #endif
 };
 

@@ -14,7 +14,7 @@ message(STATUS "Configuring Axom version ${AXOM_VERSION_FULL}")
 ## Add a definition to the generated config file for each library dependency
 ## (optional and built-in) that we might need to know about in the code. We
 ## check for vars of the form <DEP>_FOUND or ENABLE_<DEP>
-set(TPL_DEPS CONDUIT CUDA FMT HDF5 MFEM MPI RAJA SCR SPARSEHASH UMPIRE )
+set(TPL_DEPS CONDUIT CUDA FMT HDF5 MFEM MPI RAJA SCR SPARSEHASH UMPIRE OPENMP )
 foreach(dep ${TPL_DEPS})
     if( ${dep}_FOUND OR ENABLE_${dep} )
         set(AXOM_USE_${dep} TRUE  )

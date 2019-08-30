@@ -10,14 +10,27 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
+- Added support in Mint for reading and writing an unstructured mesh in the [SU2 Mesh file format].
+  This includes support for both single and mixed cell type topology unstructured mesh types.   
 
 ### Removed
 
 ### Deprecated
 
 ### Changed
+- Updated Raja TPL to v0.9.0
+- Updated Umpire TPL to v1.0.0
+- AXOM_USE_OPENMP is now being set at configure time accordingly instead of
+  auto-detected based on whether "_OPENMP" is passed by the compiler. This
+  fixes issues where a host code would compile Axom w/out OpenMP, but, use
+  Axom in parts of the code where OpenMP is enabled. 
 
 ### Fixed
+- Fixed usage of Umpire's MemoryResourceType enum in Axom. Axom was assuming that
+  there was a one-to-one correspondance of the entries in the MemoryResourceType enum
+  and the IDs of the predefined allocators. However, this assumption generally does
+  not hold. This version corrects this by explicitly querying the ID of the predefined
+  allocator for a particular resource and using that subsequently in the code.
 
 ### Known Bugs
 
@@ -237,3 +250,5 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 [Version 0.2.9]: https://github.com/LLNL/axom/compare/v0.2.8...v0.2.9
 
 [Scalable Checkpoint Restart (SCR)]: https://computation.llnl.gov/projects/scalable-checkpoint-restart-for-mpi
+[SU2 Mesh file format]: https://su2code.github.io/docs/Mesh-File/
+

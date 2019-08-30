@@ -34,7 +34,7 @@ namespace
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_nodes_idx( int dimension )
 {
-  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name(); 
+  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name();
   SLIC_INFO( "dimension=" << dimension << ", policy="
             << policy_traits< ExecPolicy >::name() << ", mesh_type="
             << mesh_name );
@@ -78,7 +78,7 @@ void check_for_all_nodes_ij( )
 {
   SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
             << internal::mesh_type< MeshType >::name() );
-  
+
   constexpr IndexType N = 20;
   const double lo[] = { -10, -10 };
   const double hi[] = {  10,  10 };
@@ -86,7 +86,7 @@ void check_for_all_nodes_ij( )
 
   // STEP 0: create the test mesh
   using MESH = typename internal::mesh_type< MeshType >::MeshType;
-  MESH* test_mesh = dynamic_cast< MESH* >( internal::create_mesh< MeshType >( uniform_mesh ) ); 
+  MESH* test_mesh = dynamic_cast< MESH* >( internal::create_mesh< MeshType >( uniform_mesh ) );
   EXPECT_TRUE( test_mesh != nullptr );
 
   const IndexType numNodes = test_mesh->getNumberOfNodes();
@@ -136,7 +136,7 @@ void check_for_all_nodes_ijk( )
 
   // STEP 0: create the test mesh
   using MESH = typename internal::mesh_type< MeshType >::MeshType;
-  MESH* test_mesh = dynamic_cast< MESH* >( internal::create_mesh< MeshType >( uniform_mesh ) ); 
+  MESH* test_mesh = dynamic_cast< MESH* >( internal::create_mesh< MeshType >( uniform_mesh ) );
   EXPECT_TRUE( test_mesh != nullptr );
 
   const IndexType numNodes = test_mesh->getNumberOfNodes();
@@ -183,7 +183,7 @@ void check_for_all_nodes_ijk( )
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_nodes_xyz( )
 {
-  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name(); 
+  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name();
   SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
             << mesh_name );
 
@@ -194,7 +194,7 @@ void check_for_all_nodes_xyz( )
 
   // STEP 0: create the test mesh
   using MESH = typename internal::mesh_type< MeshType, Topology >::MeshType;
-  MESH* test_mesh = dynamic_cast< MESH* >( internal::create_mesh< MeshType, Topology >( uniform_mesh ) ); 
+  MESH* test_mesh = dynamic_cast< MESH* >( internal::create_mesh< MeshType, Topology >( uniform_mesh ) );
   EXPECT_TRUE( test_mesh != nullptr );
 
   // STEP 1: generate test coordinate arrays
@@ -234,7 +234,7 @@ void check_for_all_nodes_xyz( )
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_nodes_xy( )
 {
-  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name(); 
+  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name();
   SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
             << mesh_name );
 
@@ -245,7 +245,7 @@ void check_for_all_nodes_xy( )
 
   // STEP 0: create the test mesh
   using MESH = typename internal::mesh_type< MeshType, Topology >::MeshType;
-  MESH* test_mesh = dynamic_cast< MESH* >( internal::create_mesh< MeshType, Topology >( uniform_mesh ) ); 
+  MESH* test_mesh = dynamic_cast< MESH* >( internal::create_mesh< MeshType, Topology >( uniform_mesh ) );
   EXPECT_TRUE( test_mesh != nullptr );
 
   // STEP 1: generate test coordinate arrays
@@ -281,7 +281,7 @@ void check_for_all_nodes_xy( )
 template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_nodes_x( )
 {
-  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name(); 
+  constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name();
   SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
             << mesh_name );
 
@@ -292,7 +292,7 @@ void check_for_all_nodes_x( )
 
   // STEP 0: create the test mesh
   using MESH = typename internal::mesh_type< MeshType, Topology >::MeshType;
-  MESH* test_mesh = dynamic_cast< MESH* >( internal::create_mesh< MeshType, Topology >( uniform_mesh ) ); 
+  MESH* test_mesh = dynamic_cast< MESH* >( internal::create_mesh< MeshType, Topology >( uniform_mesh ) );
   EXPECT_TRUE( test_mesh != nullptr );
 
   if ( MeshType != PARTICLE_MESH )
@@ -356,8 +356,10 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_xyz )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
   defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
+  const int UnifiedAllocatorID =
+      axom::getResourceAllocatorID( umpire::resource::Unified );
   const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
-  axom::setDefaultAllocator( axom::getAllocator( umpire::resource::Unified ) );
+  axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
 
   using cuda_exec = policy::parallel_gpu< 512 >;
   check_for_all_nodes_xyz< cuda_exec, STRUCTURED_UNIFORM_MESH >();
@@ -398,8 +400,10 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_xy )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
   defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
+  const int UnifiedAllocatorID =
+      axom::getResourceAllocatorID( umpire::resource::Unified );
   const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
-  axom::setDefaultAllocator( axom::getAllocator( umpire::resource::Unified ) );
+  axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
 
   using cuda_exec = policy::parallel_gpu< 512 >;
   check_for_all_nodes_xy< cuda_exec, STRUCTURED_UNIFORM_MESH >();
@@ -440,8 +444,10 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_x )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
   defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
+  const int UnifiedAllocatorID =
+      axom::getResourceAllocatorID( umpire::resource::Unified );
   const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
-  axom::setDefaultAllocator( axom::getAllocator( umpire::resource::Unified ) );
+  axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
 
   using cuda_exec = policy::parallel_gpu< 512 >;
   check_for_all_nodes_x< cuda_exec, STRUCTURED_UNIFORM_MESH >();
@@ -477,8 +483,10 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_ijk )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
   defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
+  const int UnifiedAllocatorID =
+      axom::getResourceAllocatorID( umpire::resource::Unified );
   const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
-  axom::setDefaultAllocator( axom::getAllocator( umpire::resource::Unified ) );
+  axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
 
   using cuda_exec = policy::parallel_gpu< 512 >;
   check_for_all_nodes_ijk< cuda_exec, STRUCTURED_UNIFORM_MESH >();
@@ -510,8 +518,10 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_ij )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
   defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
+  const int UnifiedAllocatorID =
+      axom::getResourceAllocatorID( umpire::resource::Unified );
   const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
-  axom::setDefaultAllocator( axom::getAllocator( umpire::resource::Unified ) );
+  axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
 
   using cuda_exec = policy::parallel_gpu< 512 >;
   check_for_all_nodes_ij< cuda_exec, STRUCTURED_UNIFORM_MESH >();
@@ -553,8 +563,10 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_index )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
     defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
+    const int UnifiedAllocatorID =
+        axom::getResourceAllocatorID( umpire::resource::Unified );
     const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
-    axom::setDefaultAllocator( axom::getAllocator( umpire::resource::Unified ) );
+    axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
 
     using cuda_exec = policy::parallel_gpu< 512 >;
     check_for_all_nodes_idx< cuda_exec, STRUCTURED_UNIFORM_MESH >(i);
