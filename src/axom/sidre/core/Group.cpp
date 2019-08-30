@@ -2046,7 +2046,7 @@ void Group::importFrom(conduit::Node& node,
  *************************************************************************
  */
 
-void Group::importConduitTree(conduit::Node &node, bool preserve_contents)
+void Group::importConduitTree(const conduit::Node &node, bool preserve_contents)
 {
   if (!preserve_contents)
   {
@@ -2058,10 +2058,10 @@ void Group::importConduitTree(conduit::Node &node, bool preserve_contents)
   DataType node_dtype = node.dtype();
   if(node_dtype.is_object())
   {
-    conduit::NodeIterator itr = node.children();
+    conduit::NodeConstIterator itr = node.children();
     while (itr.has_next())
     {
-      Node&       cld_node  = itr.next();
+      const Node& cld_node  = itr.next();
       std::string cld_name  = itr.name();
       DataType cld_dtype = cld_node.dtype();
 
@@ -2122,6 +2122,95 @@ void Group::importConduitTree(conduit::Node &node, bool preserve_contents)
           view->apply((TypeID)cld_dtype.id(),
                       cld_dtype.number_of_elements());
         }
+      }
+      else if (cld_dtype.is_list())
+      {
+        SLIC_ERROR( "Group " << getPathName() <<
+        " cannot import Conduit list " << cld_name);
+      }
+      else
+      {
+        // All Nodes should have one of the above datatypes, so if
+        // we get here something is wrong. 
+        SLIC_ERROR( "Conduit child Node " << cld_name <<
+                    " does not have a recognized datatype." <<
+                    " Cannot import into Group " << getPathName());
+      }
+    }
+  }
+  else
+  {
+    SLIC_ERROR( "Group " << getPathName() <<
+                " cannot import non-object Conduit Node");
+  }
+}
+
+void Group::importConduitTreeExternal(conduit::Node &node, bool preserve_contents)
+{
+  if (!preserve_contents)
+  {
+    destroyGroups();
+    destroyViews();
+  }
+
+  //
+  DataType node_dtype = node.dtype();
+  if(node_dtype.is_object())
+  {
+    conduit::NodeIterator itr = node.children();
+    while (itr.has_next())
+    {
+      Node& cld_node  = itr.next();
+      std::string cld_name  = itr.name();
+      DataType cld_dtype = cld_node.dtype();
+
+      if(cld_dtype.is_object())
+      {
+        // create group
+        Group* grp = createGroup(cld_name);
+        grp->importConduitTreeExternal(cld_node, preserve_contents);
+      }
+      else if(cld_dtype.is_empty())
+      {
+        //create empty view
+        createView(cld_name);
+      }
+      else if(cld_dtype.is_string())
+      {
+        if (cld_name != "sidre_group_name")
+        {
+          //create string view
+          createViewString(cld_name,cld_node.as_string());
+        }
+      }
+      else if(cld_dtype.is_number())
+      {
+        if(cld_dtype.number_of_elements() == 1)
+        {
+          // create scalar view
+          View* view = createView(cld_name);
+          view->setScalar(cld_node);
+        }
+        else
+        {
+          void* conduit_ptr = cld_node.data_ptr();
+          View* view = createView(cld_name);
+          view->setExternalDataPtr(conduit_ptr);
+          view->apply(cld_dtype);
+        }
+      }
+      else if (cld_dtype.is_list())
+      {
+        SLIC_ERROR( "Group " << getPathName() <<
+        " cannot import Conduit list " << cld_name);
+      }
+      else
+      {
+        // All Nodes should have one of the above datatypes, so if
+        // we get here something is wrong.
+        SLIC_ERROR( "Conduit child Node " << cld_name <<
+                    " does not have a recognized datatype." <<
+                    " Cannot import into Group " << getPathName());
       }
     }
   }

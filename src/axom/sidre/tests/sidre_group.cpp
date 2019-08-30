@@ -2056,6 +2056,114 @@ TEST(sidre_group,save_load_preserve_contents)
 
 }
 
+//------------------------------------------------------------------------------
+TEST(sidre_group,import_conduit)
+{
+  conduit::Node input;
+
+  input["fields/a/i0"] = (conduit::int64)(100);
+  input["fields/a/d0"] = (conduit::float64)(3000.00);
+  input["fields/b/s0"] = "foo";
+
+  int ndata = 10;
+  std::vector<conduit::int64> ivec(ndata);
+  input["fields/c/int10"].set(&ivec[0], ndata);
+  conduit::int64_array iarray = input["fields/c/int10"].as_int64_array();
+  for (int i = 0 ; i < ndata ; ++i)
+  {
+    iarray[i] = (conduit::int64)i;
+  }
+
+  DataStore ds;
+
+  ds.getRoot()->importConduitTree(input);
+
+  Group* flds = ds.getRoot()->getGroup("fields");
+
+  Group* ga = flds->getGroup("a");
+  Group* gb = flds->getGroup("b");
+  Group* gc = flds->getGroup("c");
+
+  EXPECT_EQ(ds.getRoot()->getView(
+              "fields/a/i0")->getData<conduit::int64>(),100);
+  EXPECT_NEAR(ds.getRoot()->getView(
+                "fields/a/d0")->getData<conduit::float64>(),3000.00,1e-12);
+  EXPECT_EQ(ds.getRoot()->getView("fields/b/s0")->getString(),
+            std::string("foo"));
+
+  conduit::int64* sidre_data_ptr =
+    ds.getRoot()->getView("fields/c/int10")->getData();
+  for(int j=0 ; j< ndata ; j++)
+  {
+    EXPECT_EQ(iarray[j],sidre_data_ptr[j]);
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(sidre_group,import_conduit_external)
+{
+  conduit::Node input;
+
+  input["fields/a/i0"] = (conduit::int64)(100);
+  input["fields/a/d0"] = (conduit::float64)(3000.00);
+  input["fields/b/s0"] = "foo";
+
+  int ndata = 10;
+  std::vector<conduit::int64> ivec(ndata);
+  input["fields/c/int10"].set(&ivec[0], ndata);
+  conduit::int64_array iarray = input["fields/c/int10"].as_int64_array();
+  for (int i = 0 ; i < ndata ; ++i)
+  {
+    iarray[i] = (conduit::int64)i;
+  }
+
+  DataStore ds;
+
+  //Zero copy of array data
+  ds.getRoot()->importConduitTreeExternal(input);
+
+  Group* flds = ds.getRoot()->getGroup("fields");
+
+  Group* ga = flds->getGroup("a");
+  Group* gb = flds->getGroup("b");
+  Group* gc = flds->getGroup("c");
+
+  EXPECT_EQ(ds.getRoot()->getView(
+              "fields/a/i0")->getData<conduit::int64>(),100);
+  EXPECT_NEAR(ds.getRoot()->getView(
+                "fields/a/d0")->getData<conduit::float64>(),3000.00,1e-12);
+  EXPECT_EQ(ds.getRoot()->getView("fields/b/s0")->getString(),
+            std::string("foo"));
+
+  //Scalar and string Views are never external.
+  EXPECT_FALSE(ds.getRoot()->getView("fields/a/i0")->isExternal());
+  EXPECT_FALSE(ds.getRoot()->getView("fields/a/d0")->isExternal());
+  EXPECT_FALSE(ds.getRoot()->getView("fields/b/s0")->isExternal());
+
+  //The View holding an array is external.
+  EXPECT_TRUE(ds.getRoot()->getView("fields/c/int10")->isExternal());
+
+  conduit::int64* sidre_data_ptr =
+    ds.getRoot()->getView("fields/c/int10")->getData();
+  for(int j=0 ; j< ndata ; j++)
+  {
+    EXPECT_EQ(iarray[j],sidre_data_ptr[j]);
+  }
+
+  //Change a value in the original conduit array, test that it's changed
+  //in the Sidre external view.
+  if (ndata > 3)
+  {
+     iarray[3] += 10;
+     EXPECT_EQ(iarray[3],sidre_data_ptr[3]);
+  }
+
+  //The pointers should be the same addresses as the import treated the
+  //array as an external pointer.
+  EXPECT_EQ((void*)sidre_data_ptr, iarray.data_ptr());
+
+}
+
 
 #ifdef AXOM_USE_UMPIRE
 
