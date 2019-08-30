@@ -1248,7 +1248,7 @@ public:
    * identical to a name that is already held by the parent for another
    * Group or View object.
    *
-   * /param new_name    The new name for this group.
+   * \param new_name    The new name for this group.
    *
    * /return            Success or failure of rename.
    */
@@ -1267,8 +1267,8 @@ public:
    * Node cannot be the same as the names of the children already held by this
    * Group.  If there is a naming conflict, an error will occur.
    *
-   * /param node               A conduit Node containing hierarchical data.
-   * /param preserve_contents  If true, any child Groups and Views held by
+   * \param node               A conduit Node containing hierarchical data.
+   * \param preserve_contents  If true, any child Groups and Views held by
    *                           this Group remain in place.  If false, all
    *                           child Groups and Views are destroyed before
    *                           importing data from the Node. 
@@ -1293,8 +1293,8 @@ public:
    * Node cannot be the same as the names of the children already held by this
    * Group.  If there is a naming conflict, an error will occur.
    *
-   * /param node               A conduit Node containing hierarchical data.
-   * /param preserve_contents  If true, any child Groups and Views held by
+   * \param node               A conduit Node containing hierarchical data.
+   * \param preserve_contents  If true, any child Groups and Views held by
    *                           this Group remain in place.  If false, all
    *                           child Groups and Views are destroyed before
    *                           importing data from the Node. 
