@@ -114,7 +114,9 @@ set( mint_dependencies
      slic
      )
 
-blt_list_append( TO mint_dependencies ELEMENTS sidre conduit IF AXOM_MINT_USE_SIDRE )
+blt_list_append( TO mint_dependencies
+                 ELEMENTS sidre conduit::conduit
+                 IF AXOM_MINT_USE_SIDRE )
 
 blt_list_append( TO mint_dependencies ELEMENTS raja IF RAJA_FOUND )
 

@@ -14,7 +14,7 @@
 # Compiler Spec: xl@coral
 ##################################
 
-# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2019_08_27_14_07_53/xl-coral/cmake-3.9.6/bin/cmake
+# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2019_08_29_16_56_32/xl-coral/cmake-3.9.6/bin/cmake
 
 ##############
 # Compilers
@@ -36,10 +36,10 @@ set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-2019.06.12/bin/xlf2003" CACH
 ##############
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_08_27_14_07_53/xl-coral" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_08_29_16_56_32/xl-coral" CACHE PATH "")
 
 # conduit from uberenv
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.4.0" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-master" CACHE PATH "")
 
 # mfem from uberenv
 set(MFEM_DIR "${TPL_ROOT}/mfem-4.0" CACHE PATH "")

@@ -9,9 +9,8 @@
 #
 # This file defines:
 #  CONDUIT_FOUND - If Conduit was found
-#  CONDUIT_INCLUDE_DIRS - The Conduit include directories
 #  
-#  If found, the conduit CMake targets will also be imported
+#  If found, the Conduit CMake targets will also be imported
 #------------------------------------------------------------------------------
 
 # first Check for CONDUIT_DIR
@@ -28,14 +27,3 @@ endif()
 find_package(Conduit REQUIRED
              NO_DEFAULT_PATH
              PATHS ${CONDUIT_DIR}/lib/cmake)
-
-# handle the QUIETLY and REQUIRED arguments and set CONDUIT_FOUND to TRUE
-# if all listed variables are TRUE
-find_package_handle_standard_args(CONDUIT  DEFAULT_MSG
-                                  CONDUIT_INCLUDE_DIRS
-                                  )
-
-
-
-
-

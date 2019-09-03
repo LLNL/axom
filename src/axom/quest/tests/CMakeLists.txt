@@ -143,7 +143,7 @@ if (ENABLE_MPI AND AXOM_ENABLE_SIDRE)
 
     set(quest_regression_depends
         ${quest_tests_depends}
-        conduit
+        conduit::conduit
         sidre
         )
 

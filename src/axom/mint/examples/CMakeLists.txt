@@ -23,7 +23,7 @@ set( mint_example_dependencies
      slic
    )
 
-blt_list_append( TO mint_example_dependencies ELEMENTS sidre conduit
+blt_list_append( TO mint_example_dependencies ELEMENTS sidre conduit::conduit
                  IF ${AXOM_MINT_USE_SIDRE} )
 
 blt_list_append( TO mint_example_dependencies ELEMENTS raja
