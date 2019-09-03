@@ -40,10 +40,6 @@ endif()
 ################################
 if (CONDUIT_DIR)
     include(cmake/thirdparty/FindConduit.cmake)
-    blt_register_library( NAME      conduit
-                          INCLUDES  ${CONDUIT_INCLUDE_DIRS}
-                          LIBRARIES conduit::conduit
-                          TREAT_INCLUDES_AS_SYSTEM ON)
 else()
     message(STATUS "Conduit support is OFF")
 endif()

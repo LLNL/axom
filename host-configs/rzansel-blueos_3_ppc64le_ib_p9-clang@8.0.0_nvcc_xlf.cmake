@@ -14,7 +14,7 @@
 # Compiler Spec: clang@8.0.0_nvcc_xlf
 ##################################
 
-# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2019_08_27_14_07_53/clang-8.0.0_nvcc_xlf/cmake-3.9.6/bin/cmake
+# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2019_08_29_16_56_32/clang-8.0.0_nvcc_xlf/cmake-3.9.6/bin/cmake
 
 ##############
 # Compilers
@@ -26,20 +26,23 @@ set(CMAKE_C_COMPILER "/usr/tce/packages/clang/clang-8.0.0/bin/clang" CACHE PATH 
 # C++ compiler used by spack
 set(CMAKE_CXX_COMPILER "/usr/tce/packages/clang/clang-8.0.0/bin/clang++" CACHE PATH "")
 
+# NOTE: The MPI Fortran wrapper is currently pointing at a non-existant compiler.
+#   So until this is fixed Fortran is turned off on this host-config.
+
 # Fortran compiler used by spack
 set(ENABLE_FORTRAN OFF CACHE BOOL "")
 
-set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-2019.06.12/bin/xlf2003" CACHE PATH "")
+#set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-2019.06.12/bin/xlf2003" CACHE PATH "")
 
 ##############
 # TPLs
 ##############
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_08_27_14_07_53/clang-8.0.0_nvcc_xlf" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_08_29_16_56_32/clang-8.0.0_nvcc_xlf" CACHE PATH "")
 
 # conduit from uberenv
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.4.0" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-master" CACHE PATH "")
 
 # mfem from uberenv
 set(MFEM_DIR "${TPL_ROOT}/mfem-4.0" CACHE PATH "")
@@ -77,7 +80,7 @@ set(MPI_C_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-
 
 set(MPI_CXX_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-8.0.0/bin/mpicxx" CACHE PATH "")
 
-set(MPI_Fortran_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-8.0.0/bin/mpif90" CACHE PATH "")
+#set(MPI_Fortran_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-8.0.0/bin/mpif90" CACHE PATH "")
 
 set(MPIEXEC "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-8.0.0/bin/mpirun" CACHE PATH "")
 

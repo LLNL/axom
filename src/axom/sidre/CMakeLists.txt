@@ -96,7 +96,7 @@ endif()
 ################################
 set(sidre_depends
     core
-    conduit
+    conduit::conduit
     slic)
 
 if(HDF5_FOUND)
