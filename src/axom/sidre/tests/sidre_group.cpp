@@ -2076,7 +2076,7 @@ TEST(sidre_group,import_conduit)
 
   DataStore ds;
 
-  ds.getRoot()->importConduitTree(input);
+  EXPECT_TRUE(ds.getRoot()->importConduitTree(input));
 
   Group* flds = ds.getRoot()->getGroup("fields");
 
@@ -2120,7 +2120,7 @@ TEST(sidre_group,import_conduit_external)
   DataStore ds;
 
   //Zero copy of array data
-  ds.getRoot()->importConduitTreeExternal(input);
+  EXPECT_TRUE(ds.getRoot()->importConduitTreeExternal(input));
 
   Group* flds = ds.getRoot()->getGroup("fields");
 
@@ -2150,7 +2150,7 @@ TEST(sidre_group,import_conduit_external)
     EXPECT_EQ(iarray[j],sidre_data_ptr[j]);
   }
 
-  //Change a value in the original conduit array, test that it's changed
+  //Change a value in the original conduit array, then test that it's changed
   //in the Sidre external view.
   if (ndata > 3)
   {

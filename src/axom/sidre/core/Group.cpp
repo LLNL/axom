@@ -2046,8 +2046,9 @@ void Group::importFrom(conduit::Node& node,
  *************************************************************************
  */
 
-void Group::importConduitTree(const conduit::Node &node, bool preserve_contents)
+bool Group::importConduitTree(const conduit::Node &node, bool preserve_contents)
 {
+  bool success = true;
   if (!preserve_contents)
   {
     destroyGroups();
@@ -2069,7 +2070,7 @@ void Group::importConduitTree(const conduit::Node &node, bool preserve_contents)
       {
         // create group
         Group* grp = createGroup(cld_name);
-        grp->importConduitTree(cld_node, preserve_contents);
+        success = grp->importConduitTree(cld_node, preserve_contents);
       }
       else if(cld_dtype.is_empty())
       {
@@ -2125,8 +2126,9 @@ void Group::importConduitTree(const conduit::Node &node, bool preserve_contents)
       }
       else if (cld_dtype.is_list())
       {
-        SLIC_ERROR( "Group " << getPathName() <<
+        SLIC_WARNING( "Group " << getPathName() <<
         " cannot import Conduit list " << cld_name);
+        success = false; 
       }
       else
       {
@@ -2143,10 +2145,13 @@ void Group::importConduitTree(const conduit::Node &node, bool preserve_contents)
     SLIC_ERROR( "Group " << getPathName() <<
                 " cannot import non-object Conduit Node");
   }
+
+  return success;
 }
 
-void Group::importConduitTreeExternal(conduit::Node &node, bool preserve_contents)
+bool Group::importConduitTreeExternal(conduit::Node &node, bool preserve_contents)
 {
+  bool success = true;
   if (!preserve_contents)
   {
     destroyGroups();
@@ -2168,7 +2173,7 @@ void Group::importConduitTreeExternal(conduit::Node &node, bool preserve_content
       {
         // create group
         Group* grp = createGroup(cld_name);
-        grp->importConduitTreeExternal(cld_node, preserve_contents);
+        success = grp->importConduitTreeExternal(cld_node, preserve_contents);
       }
       else if(cld_dtype.is_empty())
       {
@@ -2201,8 +2206,9 @@ void Group::importConduitTreeExternal(conduit::Node &node, bool preserve_content
       }
       else if (cld_dtype.is_list())
       {
-        SLIC_ERROR( "Group " << getPathName() <<
+        SLIC_WARNING( "Group " << getPathName() <<
         " cannot import Conduit list " << cld_name);
+        success = false;
       }
       else
       {
@@ -2220,6 +2226,7 @@ void Group::importConduitTreeExternal(conduit::Node &node, bool preserve_content
                 " cannot import non-object Conduit Node");
   }
 
+  return success;
 }
 
 /*

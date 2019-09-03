@@ -1261,7 +1261,9 @@ public:
    * same tree structure.
    *
    * This does not support conduit's list datatype.  If the Node contains a
-   * list any where in its tree, an error will occur.
+   * list any where in its tree, the list and any child Nodes descending from
+   * the list will not be imported.  A warning will occur and an unsuccessful
+   * return value will be returned.
    *
    * If preserve_contents is true, then the names of the children held by the
    * Node cannot be the same as the names of the children already held by this
@@ -1271,9 +1273,12 @@ public:
    * \param preserve_contents  If true, any child Groups and Views held by
    *                           this Group remain in place.  If false, all
    *                           child Groups and Views are destroyed before
-   *                           importing data from the Node. 
+   *                           importing data from the Node.
+   *
+   * \return                   true for success, false if the full conduit
+   *                           tree is not succesfully imported.
    */
-  void importConduitTree(const conduit::Node& node,
+  bool importConduitTree(const conduit::Node& node,
      bool preserve_contents = false);
 
   /*!
@@ -1287,7 +1292,9 @@ public:
    * same tree structure.
    *
    * This does not support conduit's list datatype.  If the Node contains a
-   * list any where in its tree, an error will occur.
+   * list any where in its tree, the list and any child Nodes descending from
+   * the list will not be imported.  A warning will occur and an unsuccessful
+   * return value will be returned.
    *
    * If preserve_contents is true, then the names of the children held by the
    * Node cannot be the same as the names of the children already held by this
@@ -1297,9 +1304,12 @@ public:
    * \param preserve_contents  If true, any child Groups and Views held by
    *                           this Group remain in place.  If false, all
    *                           child Groups and Views are destroyed before
-   *                           importing data from the Node. 
+   *                           importing data from the Node.
+   *
+   * \return                   true for success, false if the full conduit
+   *                           tree is not succesfully imported.
    */
-  void importConduitTreeExternal(conduit::Node& node,
+  bool importConduitTreeExternal(conduit::Node& node,
      bool preserve_contents = false);
 
 private:
