@@ -40,6 +40,15 @@ endif()
 ################################
 if (CONDUIT_DIR)
     include(cmake/thirdparty/FindConduit.cmake)
+
+    # Manually set includes as system includes
+    set_property(TARGET conduit::conduit 
+                 APPEND PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
+                 "${CONDUIT_INSTALL_PREFIX}/include/")
+
+    set_property(TARGET conduit::conduit 
+                 APPEND PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
+                 "${CONDUIT_INSTALL_PREFIX}/include/conduit/")
 else()
     message(STATUS "Conduit support is OFF")
 endif()
