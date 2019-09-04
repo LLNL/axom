@@ -393,7 +393,7 @@ void custom_sort( ExecSpace, uint32*& mcodes, int32 size, int32* iter )
 
 //------------------------------------------------------------------------------
 #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA) && \
-    defined(RAJA_ENABLE_CUDA)
+    defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_CUB)
 template < int BLOCK_SIZE >
 void custom_sort( spin::CUDA_EXEC< BLOCK_SIZE >,
                   uint32*& mcodes, int32 size, int32* iter )
