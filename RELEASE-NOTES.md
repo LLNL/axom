@@ -12,6 +12,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Added
 - Added support in Mint for reading and writing an unstructured mesh in the [SU2 Mesh file format].
   This includes support for both single and mixed cell type topology unstructured mesh types.   
+- Added a new option to enable/disable use of CUB, AXOM_USE_CUB, which is disabled by default. This
+  allows to disable CUB to circumvent issues encountered with the device linker.
 
 ### Removed
 

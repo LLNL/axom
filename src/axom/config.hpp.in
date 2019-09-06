@@ -52,6 +52,7 @@
  */
 #cmakedefine AXOM_USE_CONDUIT
 #cmakedefine AXOM_USE_CUDA
+#cmakedefine AXOM_USE_CUB
 #cmakedefine AXOM_USE_FMT
 #cmakedefine AXOM_USE_HDF5
 #cmakedefine AXOM_USE_MFEM
