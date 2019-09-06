@@ -742,7 +742,9 @@ void Matrix< T >::swapColumns( IndexType icol, IndexType jcol )
   T* jcol_data = this->getColumn( jcol );
   for ( IndexType i=0 ; i < m_rows ; ++i )
   {
-    utilities::swap( icol_data[ i ], jcol_data[ i ] );
+    const T temp   = icol_data[ i ];
+    icol_data[ i ] = jcol_data[ i ];
+    jcol_data[ i ] = temp;
   }
 
 }
