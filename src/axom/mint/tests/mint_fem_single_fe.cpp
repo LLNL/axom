@@ -819,7 +819,7 @@ void check_interp( double TOL=1.e-9 )
 //------------------------------------------------------------------------------
 TEST( mint_single_fe, check_override_max_newton )
 {
-  const int MAX_NEWTON = 42; // test value to override max newton
+  constexpr int MAX_NEWTON = 42; // test value to override max newton
 
   // STEP 0: construct a mesh with a single element
   mint::FiniteElement* fe = nullptr;
@@ -839,9 +839,9 @@ TEST( mint_single_fe, check_override_max_newton )
 TEST( mint_fem_single_fe, matrix_constructor_deepcopy )
 {
   // STEP 0: constants used in the test
-  const int NROWS = 2;
-  const int NCOLS = 3;
-  const int NSIZE = NROWS * NCOLS;
+  constexpr int NROWS = 2;
+  constexpr int NCOLS = 3;
+  constexpr int NSIZE = NROWS * NCOLS;
 
   // STEP 1: setup element coordinates matrix
   numerics::Matrix< double > M( NROWS, NCOLS );
@@ -880,9 +880,9 @@ TEST( mint_fem_single_fe, matrix_constructor_deepcopy )
 TEST( mint_fem_single_fe, matrix_constructor_shallowcopy)
 {
   // STEP 0: constants used in the test
-  const int NROWS = 2;
-  const int NCOLS = 3;
-  const int NSIZE = NROWS * NCOLS;
+  constexpr int NROWS = 2;
+  constexpr int NCOLS = 3;
+  constexpr int NSIZE = NROWS * NCOLS;
 
   // STEP 1: setup element coordinates matrix
   numerics::Matrix< double > M( 2, 3 );
