@@ -110,8 +110,8 @@ void get_single_fe( mint::FiniteElement*& fe )
 {
   EXPECT_TRUE( fe==nullptr );
 
-  typedef typename mint::FEBasis< BasisType,CELLTYPE > FEMType;
-  typedef typename FEMType::ShapeFunctionType ShapeFunctionType;
+  using FEMType           = typename mint::FEBasis< BasisType,CELLTYPE >;
+  using ShapeFunctionType = typename FEMType::ShapeFunctionType;
 
   const bool zero_copy = true;
   const double SCALE   = 10.0;
@@ -418,8 +418,8 @@ void check_shape( )
   SLIC_INFO( "checking " << mint::basis_name[ BasisType ] << " / "
                          << mint::getCellInfo( CELLTYPE ).name );
 
-  typedef typename mint::FEBasis< BasisType, CELLTYPE > FEMType;
-  typedef typename FEMType::ShapeFunctionType ShapeFunctionType;
+  using FEMType           = typename mint::FEBasis< BasisType, CELLTYPE >;
+  using ShapeFunctionType = typename FEMType::ShapeFunctionType;
 
   // STEP 0: construct finite element mesh
   mint::FiniteElement* fe = nullptr;
