@@ -1249,10 +1249,14 @@ void Group::copyToConduitNode(Node& n) const
  *
  *************************************************************************
  */
-bool Group::isEquivalentTo(const Group* other) const
+bool Group::isEquivalentTo(const Group* other, bool checkName) const
 {
   // Equality of names
-  bool is_equiv = (m_name == other->m_name);
+  bool is_equiv = true;
+  if (checkName)
+  {
+    is_equiv = (m_name == other->m_name);
+  }
 
   // Sizes of collections of child items must be equal
   if (is_equiv)

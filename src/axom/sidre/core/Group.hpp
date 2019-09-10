@@ -1120,7 +1120,7 @@ public:
    *
    * \sa View::isEquivalentTo()
    */
-  bool isEquivalentTo(const Group* other) const;
+  bool isEquivalentTo(const Group* other, bool checkName = true) const;
 
 
 //@{
