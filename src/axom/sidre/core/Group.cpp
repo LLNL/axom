@@ -1906,34 +1906,24 @@ bool Group::exportTo(conduit::Node& result,
     {
       result.remove("views");
     }
-
   }
 
+  bool hasSavedGroups = false;
   if (getNumGroups() > 0)
   {
-    bool hasSavedGroups = false;
     Node & gnode = result["groups"];
     IndexType gidx = getFirstValidGroupIndex();
     while ( indexIsValid(gidx) )
     {
       const Group* group = getGroup(gidx);
       Node& n_group = gnode.fetch(group->getName());
-      if ( group->exportTo(n_group, attr, buffer_indices) )
-      {
-        hasSavedGroups = true;
-      }
-      else
-      {
-        gnode.remove(group->getName());
-      }
+      bool hsv = group->exportTo(n_group, attr, buffer_indices);
+      hasSavedViews = hasSavedViews || hsv;
+      hasSavedGroups = true;
 
       gidx = getNextValidGroupIndex(gidx);
     }
-    if (hasSavedGroups)
-    {
-      hasSavedViews = true;
-    }
-    else
+    if (!hasSavedGroups)
     {
       result.remove("groups");
     }
