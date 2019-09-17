@@ -42,13 +42,13 @@ set( primal_headers
      operators/squared_distance.hpp
      operators/compute_bounding_box.hpp
      operators/in_sphere.hpp
-     operators/intersect_curved_poly.hpp
 
      operators/detail/clip_impl.hpp
      operators/detail/intersect_bezier_impl.hpp
-     operators/detail/intersect_ray_impl.hpp
      operators/detail/intersect_bounding_box_impl.hpp
+     operators/detail/intersect_curved_poly_impl.hpp
      operators/detail/intersect_impl.hpp
+     operators/detail/intersect_ray_impl.hpp
    )
 
 set( primal_sources
