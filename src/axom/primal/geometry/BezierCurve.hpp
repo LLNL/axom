@@ -58,7 +58,7 @@ template < typename T>
 numerics::Matrix<T> generateBezierCurveSectorWeights(int order);
 
 /*!
- * \brief Computes the weights for BezierCurve's sectorMoment() function
+ * \brief Computes the weights for BezierCurve's sectorCentroid() function
  *
  * \param order The polynomial order of the curve
  * \return An anti-symmetric matrix with (order+1)*{order+1) entries
@@ -69,7 +69,7 @@ numerics::Matrix<T> generateBezierCurveSectorWeights(int order);
  *  IEEE International Conference on Information Visualization, 1999.
  */
 template < typename T>
-std::vector<numerics::Matrix<T>> generateBezierCurveSectorMomentsWeights(int order);
+std::vector<numerics::Matrix<T>> generateBezierCurveSectorCentroidsWeights(int order);
 
 
 /*!
@@ -101,9 +101,9 @@ private:
   // on a given polynomial order
   using SectorWeights = numerics::Matrix<T>;
   using WeightsMap = std::map<int, SectorWeights>;
-  using MomentsWeightsMap = std::map<int, std::vector<SectorWeights>>;
+  using CentroidsWeightsMap = std::map<int, std::vector<SectorWeights>>;
   static WeightsMap s_sectorWeightsMap;
-  static MomentsWeightsMap s_sectorMomentsWeightsMap;
+  static CentroidsWeightsMap s_sectorCentroidsWeightsMap;
 
 public:
 
@@ -363,20 +363,20 @@ public:
    *  Ueda, K. "Signed area of sectors between spline curves and the origin"
    *  IEEE International Conference on Information Visualization, 1999.
    */
-  PointType sectorMoment() const
+  PointType sectorCentroid() const
   {
     T Mx = 0;
     T My = 0;
     const int ord = getOrder();
 
     // Compute and cache the weights if they are not already available
-    if (s_sectorMomentsWeightsMap.find(ord)==s_sectorMomentsWeightsMap.end())
+    if (s_sectorCentroidsWeightsMap.find(ord)==s_sectorCentroidsWeightsMap.end())
     {
-      auto wts = generateBezierCurveSectorMomentsWeights<T>(ord);
-      s_sectorMomentsWeightsMap.emplace(std::make_pair(ord,wts));
+      auto wts = generateBezierCurveSectorCentroidsWeights<T>(ord);
+      s_sectorCentroidsWeightsMap.emplace(std::make_pair(ord,wts));
     }
 
-    const auto& weights = s_sectorMomentsWeightsMap[ord];
+    const auto& weights = s_sectorCentroidsWeightsMap[ord];
     for (int r=0 ; r<=ord ; ++r)
     {
       for (int p=0 ; p<=ord ; ++p)
@@ -481,10 +481,10 @@ template < typename T, int NDIMS >
 typename BezierCurve<T,NDIMS>::WeightsMap
 BezierCurve<T,NDIMS>::s_sectorWeightsMap;
 
-// Declaration of sectorMoments weights map
+// Declaration of sectorCentroids weights map
 template < typename T, int NDIMS >
-typename BezierCurve<T,NDIMS>::MomentsWeightsMap
-BezierCurve<T,NDIMS>::s_sectorMomentsWeightsMap;
+typename BezierCurve<T,NDIMS>::CentroidsWeightsMap
+BezierCurve<T,NDIMS>::s_sectorCentroidsWeightsMap;
 
 
 //------------------------------------------------------------------------------
@@ -528,7 +528,7 @@ numerics::Matrix<T> generateBezierCurveSectorWeights(int ord)
 }
 
 template <typename T>
-std::vector<numerics::Matrix<T>> generateBezierCurveSectorMomentsWeights(int ord)
+std::vector<numerics::Matrix<T>> generateBezierCurveSectorCentroidsWeights(int ord)
 {
    std::vector<numerics::Matrix<T>> weights;
    weights.resize(ord+1);

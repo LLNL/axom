@@ -18,7 +18,6 @@
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/primal/geometry/BezierCurve.hpp"
-#include "axom/primal/operators/intersect.hpp"
 
 #include "fmt/fmt.hpp"
 #include <vector>
@@ -66,7 +65,7 @@ public:
    * \pre numExpectedEdges is at least 1
    *
    */
-  CurvedPolygon(int nEdges)
+  explicit CurvedPolygon(int nEdges)
   {
     SLIC_ASSERT(nEdges >= 1);
     m_edges.reserve(nEdges);
@@ -117,9 +116,10 @@ public:
   /*! Splits an edge "in place" */
   void splitEdge(int idx, T t)
   {
-     m_edges.insert(m_edges.begin()+idx+1, 1, m_edges[idx]);
-     BezierCurve< T, NDIMS> csplit=m_edges[idx];
-     csplit.split(t,m_edges[idx],m_edges[idx+1]);
+    SLIC_ASSERT(idx<m_edges.size());
+    m_edges.insert(m_edges.begin()+idx+1, 1, m_edges[idx]);
+    BezierCurve< T, NDIMS> csplit=m_edges[idx];
+    csplit.split(t,m_edges[idx],m_edges[idx+1]);
   }
 
   /*! Clears the list of edges */
@@ -206,7 +206,7 @@ public:
   {
     const int ngon = numEdges();
     T A = 0.0;
-    if (false /*!isClosed(tol)*/) {return A; SLIC_INFO("Warning! The area is 0 because the element is not closed.");}
+    if (!isClosed(tol)) {return A; SLIC_INFO("Warning! The area is 0 because the element is not closed.");}
     else
     {  
       for (int ed = 0; ed<ngon; ++ed)
@@ -226,7 +226,7 @@ public:
     {  
       for (int ed = 0; ed<ngon; ++ed)
       { 
-        PointType Mc = m_edges[ed].sectorMoment();
+        PointType Mc = m_edges[ed].sectorCentroid();
         //T A = m_edges[ed].sectorArea;
         M[0] += (Mc[0]);
         M[1] += (Mc[1]);

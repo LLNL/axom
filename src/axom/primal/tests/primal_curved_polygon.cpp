@@ -10,7 +10,7 @@
 #include "gtest/gtest.h"
 
 #include "axom/primal/geometry/CurvedPolygon.hpp"
-#include "axom/primal/operators/intersect_curved_poly.hpp"
+#include "axom/primal/operators/intersect.hpp"
 
 namespace primal = axom::primal;
 
@@ -225,8 +225,8 @@ TEST( primal_curvedpolygon, area_triangle_degenerate)
   BezierCurveType bCurve3(controlPoints3,1);
   bPolygon.addEdge(bCurve3);
 
-  bPolygon[2][1][0]-=2e-15;
-  EXPECT_EQ(0.0, bPolygon.area());
+  bPolygon[2][1][0]-=1e-10;
+  EXPECT_EQ(0.0, bPolygon.area(1e-11));
   
 }
 
@@ -536,7 +536,7 @@ TEST( primal_curvedpolygon, intersection_triangle_linear)
   expbPolygon.addEdge(expbCurve3);
   
   std::vector<CurvedPolygonType> bPolygons3;
-  bool didIntersect=intersect_polygon(bPolygon,bPolygon2,bPolygons3);
+  bool didIntersect=intersect(bPolygon,bPolygon2,bPolygons3);
   EXPECT_TRUE(didIntersect);
 
   for (int i=0; i<DIM; ++i)
@@ -547,7 +547,7 @@ TEST( primal_curvedpolygon, intersection_triangle_linear)
       {
         for (int k=0; k<bPolygons3[idxcurve].numEdges(); ++k)
         {
-          EXPECT_TRUE(axom::utilities::isNearlyEqual(expbPolygon[k][j][i],bPolygons3[idxcurve][k][j][i],1e-14));
+          EXPECT_TRUE(axom::utilities::isNearlyEqual(expbPolygon[k][j][i],bPolygons3[idxcurve][k][j][i],2e-5));
         }
       }
     }
@@ -643,7 +643,7 @@ TEST( primal_curvedpolygon, intersection_triangle_quadratic)
   expbPolygon.addEdge(expbCurve4);
   
   std::vector<CurvedPolygonType> bPolygons3;
-  bool didIntersect=intersect_polygon(bPolygon,bPolygon2,bPolygons3);
+  bool didIntersect=intersect(bPolygon,bPolygon2,bPolygons3);
   EXPECT_TRUE(didIntersect);
 
   for (int i=0; i<DIM; ++i)
@@ -654,7 +654,7 @@ TEST( primal_curvedpolygon, intersection_triangle_quadratic)
       {
         for (int k=0; k<bPolygons3[idxcurve].numEdges(); ++k)
         {
-          EXPECT_TRUE(axom::utilities::isNearlyEqual(expbPolygon[k][j][i],bPolygons3[idxcurve][k][j][i],1e-14));
+          EXPECT_TRUE(axom::utilities::isNearlyEqual(expbPolygon[k][j][i],bPolygons3[idxcurve][k][j][i],2e-5));
         }
       }
     }
@@ -712,7 +712,7 @@ TEST( primal_curvedpolygon, area_intersection_triangle_linear)
   }
   
   std::vector<CurvedPolygonType> bPolygons3;
-  bool didIntersect=intersect_polygon(bPolygon,bPolygon2,bPolygons3);
+  bool didIntersect=intersect(bPolygon,bPolygon2,bPolygons3);
   EXPECT_TRUE(didIntersect);
 
 
@@ -722,7 +722,7 @@ TEST( primal_curvedpolygon, area_intersection_triangle_linear)
     A+=bPolygons3[i].area(1e-14);
   }
   CoordType expA=-0.0793347222222222222;
-  EXPECT_NEAR(A,expA,1e-14);
+  EXPECT_NEAR(A,expA,1e-10);
 }
 
 //----------------------------------------------------------------------------------
@@ -779,16 +779,16 @@ TEST( primal_curvedpolygon, area_intersection_triangle_quadratic)
   }
   
   std::vector<CurvedPolygonType> bPolygons3;
-  bool didIntersect=intersect_polygon(bPolygon,bPolygon2,bPolygons3);
+  bool didIntersect=intersect(bPolygon,bPolygon2,bPolygons3);
   EXPECT_TRUE(didIntersect);
   
   CoordType A=0.0;
   for (int i=0; i<static_cast<int>(bPolygons3.size()); ++i)
   {
-    A+=bPolygons3[i].area(1e-14);
+    A+=bPolygons3[i].area(1e-8);
   }
   CoordType expA=-0.024649833203616;
-  EXPECT_NEAR(A,expA,1e-14);
+  EXPECT_NEAR(A,expA,1e-10);
 }
 
 TEST( primal_curvedpolygon, area_intersection_triangle_quadratic_two_regions)
@@ -858,7 +858,7 @@ TEST( primal_curvedpolygon, area_intersection_triangle_quadratic_two_regions)
   bPolygon.addEdge(bCurve3);
   
   std::vector<CurvedPolygonType> bPolygons3;
-  bool didIntersect=intersect_polygon(bPolygon,bPolygon2,bPolygons3);
+  bool didIntersect=intersect(bPolygon,bPolygon2,bPolygons3);
   EXPECT_TRUE(didIntersect);
   EXPECT_EQ(bPolygons3.size(),2);
 }
@@ -917,9 +917,9 @@ TEST( primal_curvedpolygon, area_intersection_triangle_inclusion)
   }
   
   std::vector<CurvedPolygonType> bPolygons3;
-  bool didIntersect=intersect_polygon(bPolygon,bPolygon2,bPolygons3);
+  bool didIntersect=intersect(bPolygon,bPolygon2,bPolygons3);
   bPolygons3.clear();
-  bool didIntersect2=intersect_polygon(bPolygon2,bPolygon,bPolygons3);
+  bool didIntersect2=intersect(bPolygon2,bPolygon,bPolygons3);
   EXPECT_TRUE(didIntersect);
   EXPECT_EQ(bPolygons3.size(),1);
 }
