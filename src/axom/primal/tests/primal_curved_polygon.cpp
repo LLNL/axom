@@ -206,7 +206,7 @@ TEST(primal_curvedpolygon, area_triangle_degenerate)
   bPolygon.addEdge(bCurve3);
 
   bPolygon[2][1][0] -= 1e-10;
-  EXPECT_EQ(0.0, bPolygon.area(1e-11));
+  EXPECT_EQ(0.0, bPolygon.area(1e-14));
 }
 
 //----------------------------------------------------------------------------------
