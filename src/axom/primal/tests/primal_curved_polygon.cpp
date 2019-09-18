@@ -207,7 +207,7 @@ TEST(primal_curvedpolygon, area_triangle_degenerate)
   bPolygon.addEdge(bCurve3);
 
   bPolygon[2][1][0] -= 1e-10;
-  EXPECT_EQ(0.0, bPolygon.area(1e-11));
+  EXPECT_EQ(0.0, bPolygon.area(1e-14));
 }
 
 //----------------------------------------------------------------------------------
@@ -482,6 +482,12 @@ TEST(primal_curvedpolygon, intersection_triangle_linear)
   std::vector<CurvedPolygonType> bPolygons3;
   bool didIntersect = intersect(bPolygon, bPolygon2, bPolygons3);
   EXPECT_TRUE(didIntersect);
+  std::cout << bPolygons3.size() << std::endl;
+  int nEd = bPolygons3.size();
+  for(int i = 0; i < bPolygons3.size(); ++i)
+  {
+    std::cout << bPolygons3[i] << std::endl;
+  }
 
   for(int i = 0; i < DIM; ++i)
   {
@@ -492,9 +498,8 @@ TEST(primal_curvedpolygon, intersection_triangle_linear)
       {
         for(int k = 0; k < bPolygons3[idxcurve].numEdges(); ++k)
         {
-          EXPECT_TRUE(axom::utilities::isNearlyEqual(expbPolygon[k][j][i],
-                                                     bPolygons3[idxcurve][k][j][i],
-                                                     2e-5));
+          EXPECT_NEAR(expbPolygon[k][j][i], bPolygons3[idxcurve][k][j][i], 1e-10);
+          /*EXPECT_TRUE(axom::utilities::isNearlyEqual(expbPolygon[k][j][i],bPolygons3[idxcurve][k][j][i],2.));*/
         }
       }
     }
@@ -596,7 +601,7 @@ TEST(primal_curvedpolygon, intersection_triangle_quadratic)
         {
           EXPECT_TRUE(axom::utilities::isNearlyEqual(expbPolygon[k][j][i],
                                                      bPolygons3[idxcurve][k][j][i],
-                                                     2e-5));
+                                                     2.));
         }
       }
     }
@@ -712,7 +717,7 @@ TEST(primal_curvedpolygon, area_intersection_triangle_quadratic)
   }
 
   std::vector<CurvedPolygonType> bPolygons3;
-  bool didIntersect = intersect(bPolygon, bPolygon2, bPolygons3);
+  bool didIntersect = intersect(bPolygon, bPolygon2, bPolygons3, 1e-14);
   EXPECT_TRUE(didIntersect);
 
   CoordType A = 0.0;
