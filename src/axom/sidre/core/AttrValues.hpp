@@ -34,6 +34,8 @@ namespace axom
 namespace sidre
 {
 
+class View;
+
 /*!
  * \class AttrValue
  *
