@@ -1374,10 +1374,10 @@ void Group::save(const std::string& path,
  *************************************************************************
  */
 void Group::load(const std::string& path,
+                 std::string & new_name,
                  const std::string& protocol,
                  bool preserve_contents)
 {
-  std::string new_name;
   if (protocol == "sidre_hdf5")
   {
     Node n;
@@ -1443,60 +1443,54 @@ void Group::load(const std::string& path,
   {
     SLIC_ERROR("Invalid protocol " << protocol << " for file load.");
   }
-
-  if (!new_name.empty())
-  {
-    renameOrWarn(new_name);
-  }
 }
 
 /*
  *************************************************************************
  *
- * Rename this group unless the new name already is held by the parent.
+ * Load Group (including Views and child Groups) from a file
  *
  *************************************************************************
  */
-void Group::renameOrWarn(const std::string& new_name)
+Group* Group::loadChild(const std::string& path,
+                        std::string & new_name,
+                        const std::string& protocol,
+                        bool preserve_contents)
 {
-  if (new_name != m_name)
-  {
-    if (new_name.empty())
-    {
-      SLIC_WARNING("Attempted to rename group " << getPathName() <<
-                   " with an empty string. The name will not be changed.");
+  std::string tempname = getUniqueGroupName(new_name);
+  Group * child = createGroup(tempname);
+  child->load(path, new_name, protocol, preserve_contents);
 
-    }
-    else
-    {
-      const Group* root = getDataStore()->getRoot();
-      Group* parent = getParent();
-      if (this == root || parent == nullptr)
-      {
-        rename(new_name);
-      }
-      else
-      {
-        if (parent->hasGroup(new_name))
-        {
-          SLIC_WARNING("Parent already has a child group named " << new_name <<
-                       ". The name of group " << getPathName() <<
-                       " will not be changed.");
-        }
-        else if (parent->hasView(new_name))
-        {
-          SLIC_WARNING("Parent already has a child view named " << new_name <<
-                       ". The name of group " << getPathName() <<
-                       " will not be changed.");
-        }
-        else
-        {
-          rename(new_name);
-        }
-      }
-    }
+  if (!new_name.empty())
+  {
+    tempname = getUniqueGroupName(new_name);
+    child->rename(tempname);
   }
+
+  return child;
 }
+
+
+/*
+ *************************************************************************
+ *
+ * Find a valid (unique) name for a new group
+ *
+ *************************************************************************
+ */
+std::string Group::getUniqueGroupName(const std::string & basename) const
+{
+  int counter = 0;
+  std::string name = basename;
+  while (hasGroup(name))
+  {
+    name = basename + std::to_string(counter);
+    counter += 1;
+  }
+
+  return name;
+}
+
 
 /*
  *************************************************************************
@@ -1571,13 +1565,13 @@ void Group::save(const hid_t& h5_id,
  *************************************************************************
  */
 void Group::load(const hid_t& h5_id,
+                 std::string & new_name,
                  const std::string &protocol,
                  bool preserve_contents)
 {
   // supported here:
   // "sidre_hdf5"
   // "conduit_hdf5"
-  std::string new_name;
   if(protocol == "sidre_hdf5")
   {
     Node n;
@@ -1605,11 +1599,6 @@ void Group::load(const hid_t& h5_id,
   else
   {
     SLIC_ERROR("Invalid protocol " << protocol << " for file load.");
-  }
-
-  if (!new_name.empty())
-  {
-    renameOrWarn(new_name);
   }
 }
 

@@ -1179,13 +1179,38 @@ public:
   /*!
    * \brief Load the Group from a file.
    *
-   * \param path      file path
-   * \param protocol  I/O protocol
+   * \param path     file path
+   * \param new_name the group name stored in the file
+   * \param protocol I/O protocol
    * \param preserve_contents   Preserve existing contents of group if true
    */
   void load(const std::string& path,
+            std::string & new_name,
             const std::string& protocol = SIDRE_DEFAULT_PROTOCOL,
             bool preserve_contents = false);
+
+  /*!
+   * \brief Load a file into a new child group.
+   *
+   * This is a convenience routine for the following sequence:
+   * - create a group
+   * - load a file into the newly-created group
+   * - rename the group with the name stored in the file (or if blank,
+   *   the contents of new_name).  If necessary, ensure new name is unique
+   *   by adding a suffix.
+   * - return the group name from the file in parameter new_name
+   *
+   * \param path     file path
+   * \param new_name In: name for the new group if the file's stored group
+   *                 name is the empty string.
+   *                 Out: the group name stored in the file
+   * \param protocol I/O protocol
+   * \param preserve_contents   Preserve existing contents of group if true
+   */
+  Group* loadChild(const std::string& path,
+                   std::string & new_name,
+                   const std::string& protocol = SIDRE_DEFAULT_PROTOCOL,
+                   bool preserve_contents = false);
 
   /*!
    * \brief Load data into the Group's external views from a file.
@@ -1217,10 +1242,12 @@ public:
   /*!
    * \brief Load the Group from an hdf5 handle.
    * \param h5_id      hdf5 handle
+   * \param new_name   the group name stored in the file
    * \param protocol   I/O protocol sidre_hdf5 or conduit_hdf5
    * \param preserve_contents   Preserve existing contents of group if true
    */
   void load( const hid_t& h5_id,
+             std::string & new_name,
              const std::string &protocol = SIDRE_DEFAULT_PROTOCOL,
              bool preserve_contents = false);
 
@@ -1487,20 +1514,16 @@ private:
   const Group* walkPath(std::string& path ) const;
 
   /*!
-   * \brief Private method to rename this Group if possible, give warning if
-   * not.
-   *
-   * If the parent group already holds a Group or View with the new name,
-   * a warning will be given and the name will not be changed.  Otherwise
-   * the name will be changed to the new name.
-   */
-  void renameOrWarn(const std::string& new_name);
-
-  /*!
    * \brief Private method. If allocatorID is a valid allocator ID then return
    *  it. Otherwise return the ID of the default allocator of the owning group.
    */
   int getValidAllocatorID( int allocatorID );
+
+  /*!
+   * \brief Const private method that returns a string that would be valid
+   * to use for a new group name.  Adds a suffix to basename if necessary.
+   */
+  std::string getUniqueGroupName(const std::string & basename) const;
 
   /// Name of this Group object.
   std::string m_name;
