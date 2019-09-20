@@ -1220,6 +1220,7 @@ TEST(sidre_group,save_root_restore_as_child)
       cg->load(file_path, protocols[i]);
 
       EXPECT_TRUE(cg->isEquivalentTo(root, false));
+      EXPECT_TRUE(root->isEquivalentTo(cg, false));
     }
     else
     {
