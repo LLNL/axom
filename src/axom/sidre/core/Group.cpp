@@ -1249,10 +1249,14 @@ void Group::copyToConduitNode(Node& n) const
  *
  *************************************************************************
  */
-bool Group::isEquivalentTo(const Group* other) const
+bool Group::isEquivalentTo(const Group* other, bool checkName) const
 {
   // Equality of names
-  bool is_equiv = (m_name == other->m_name);
+  bool is_equiv = true;
+  if (checkName)
+  {
+    is_equiv = (m_name == other->m_name);
+  }
 
   // Sizes of collections of child items must be equal
   if (is_equiv)
@@ -1902,34 +1906,24 @@ bool Group::exportTo(conduit::Node& result,
     {
       result.remove("views");
     }
-
   }
 
+  bool hasSavedGroups = false;
   if (getNumGroups() > 0)
   {
-    bool hasSavedGroups = false;
     Node & gnode = result["groups"];
     IndexType gidx = getFirstValidGroupIndex();
     while ( indexIsValid(gidx) )
     {
       const Group* group = getGroup(gidx);
       Node& n_group = gnode.fetch(group->getName());
-      if ( group->exportTo(n_group, attr, buffer_indices) )
-      {
-        hasSavedGroups = true;
-      }
-      else
-      {
-        gnode.remove(group->getName());
-      }
+      bool hsv = group->exportTo(n_group, attr, buffer_indices);
+      hasSavedViews = hasSavedViews || hsv;
+      hasSavedGroups = true;
 
       gidx = getNextValidGroupIndex(gidx);
     }
-    if (hasSavedGroups)
-    {
-      hasSavedViews = true;
-    }
-    else
+    if (!hasSavedGroups)
     {
       result.remove("groups");
     }
