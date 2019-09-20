@@ -1118,6 +1118,10 @@ public:
    * Group hierarchy structures with the same names for all Views and
    * Groups in the hierarchy, and the Views are also equivalent.
    *
+   * \param other     The group to compare with
+   * \param checkName If true (default), groups must have the same name
+   *                  to be equivalent.  If false, disregard the name.
+   *
    * \sa View::isEquivalentTo()
    */
   bool isEquivalentTo(const Group* other, bool checkName = true) const;

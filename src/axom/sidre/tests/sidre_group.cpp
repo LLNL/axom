@@ -1223,7 +1223,7 @@ TEST(sidre_group,save_root_restore_as_child)
     }
     else
     {
-      std::cout << "Couldn't load " << file_path << " --- file not there." <<std::endl;
+      FAIL() << "file not present: " << file_path;
     }
 
     delete dscopy;
@@ -1242,16 +1242,27 @@ TEST(sidre_group,save_child_restore_as_root)
   const std::string file_path_base("sidre_save_child_restore_as_root_");
   DataStore* ds = new DataStore();
   Group* root = ds->getRoot();
+  // child1 and all its descendents will get saved into files
   Group* child1 = root->createGroup("g_a");
   Group* child2 = child1->createGroup("g_b");
   child1->createViewScalar<int>("i0", 1);
   child1->createViewString("s0", "I am a string");
+  // everything else won't be put into the files
+  Group* child1a = root->createGroup("g_notSaved");
+  child1a->createViewScalar<int>("i1", 42);
+  root->createViewString("s1", "string view off the root, not saved");
 
   const int num_elems = 4;
+  // included in files
   int * pa0 =
     child2->createViewAndAllocate("a0", INT_ID, num_elems)->getArray();
   double * pa1 =
     child2->createViewAndAllocate("a1", FLOAT64_ID, num_elems)->getArray();
+  // not included
+  int *pa2 =
+    child1a->createViewAndAllocate("a2", INT_ID, num_elems)->getArray();
+  int *pa3 =
+    root->createViewAndAllocate("a3", INT_ID, num_elems)->getArray();
 
   const double factor = 2.3;
   const double offset = -0.23;
@@ -1259,10 +1270,11 @@ TEST(sidre_group,save_child_restore_as_root)
   {
      pa0[i] = i;
      pa1[i] = offset + i*factor;
+     pa2[i] = i + 2;
+     pa3[i] = 4 - i;
   }
 
-  // Save the DataStore's root into a sidre_hdf5 archive, since that is the
-  // protocol that we support for round-trip
+  // Save the Group in question (child1) into an archive
   for (int i = 0; i < nprotocols; ++i)
   {
     const std::string file_path = file_path_base + protocols[i];
@@ -1285,12 +1297,17 @@ TEST(sidre_group,save_child_restore_as_root)
       dscopy->getRoot()->load(file_path, protocols[i]);
 
       EXPECT_TRUE(dscopy->getRoot()->isEquivalentTo(child1, false));
+      EXPECT_TRUE(child1->isEquivalentTo(dscopy->getRoot(), false));
     }
     else
     {
-      std::cout << "Couldn't load " << file_path << " --- file not there." <<std::endl;
+      FAIL() << "file not present: " << file_path;
     }
+
+    delete dscopy;
   }
+
+  delete ds;
 }
 #endif  // AXOM_USE_HDF5
 
