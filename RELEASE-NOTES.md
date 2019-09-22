@@ -7,7 +7,7 @@ The format of this file is based on [Keep a Changelog](http://keepachangelog.com
 
 The Axom project release numbers follow [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - Release date yyyy-mm-dd
+## [Version 0.3.2] - Release date 2019-09-22
 
 ### Added
 - Added support in Mint for reading and writing an unstructured mesh in the [SU2 Mesh file format].
@@ -246,7 +246,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Known Bugs
 -
 
-[Unreleased]:    https://github.com/LLNL/axom/compare/v0.3.1...develop
+[Unreleased]:    https://github.com/LLNL/axom/compare/v0.3.2...develop
+[Version 0.3.2]: https://github.com/LLNL/axom/compare/v0.3.1...v0.3.2
 [Version 0.3.1]: https://github.com/LLNL/axom/compare/v0.3.0...v0.3.1
 [Version 0.3.0]: https://github.com/LLNL/axom/compare/v0.2.9...v0.3.0
 [Version 0.2.9]: https://github.com/LLNL/axom/compare/v0.2.8...v0.2.9
