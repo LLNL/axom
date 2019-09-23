@@ -14,6 +14,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   This includes support for both single and mixed cell type topology unstructured mesh types.   
 - Added a new option to enable/disable use of CUB, AXOM_USE_CUB, which is disabled by default. This
   allows to disable CUB to circumvent issues encountered with the device linker.
+- Added a BezierCurve primitive type to primal. A new ``intersect`` operator was also added to 
+  compute the intersection points between a pair of Bezier curves of arbitrary order.
 
 ### Removed
 
