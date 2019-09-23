@@ -35,7 +35,7 @@ constexpr int INVALID_ALLOCATOR_ID = -1;
  * \return ID the id of the predefined umpire allocator.
  */
 inline int getResourceAllocatorID(
-    umpire::resource::MemoryResourceType resource_type )
+  umpire::resource::MemoryResourceType resource_type )
 {
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
   umpire::Allocator alloc     = rm.getAllocator( resource_type );
