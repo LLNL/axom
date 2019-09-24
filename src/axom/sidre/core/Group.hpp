@@ -1209,7 +1209,7 @@ public:
    * - create a group with name or path group_name
    * - load a Group hierarchy from a file into the newly-created Group
    * - return the newly created Group, or nullptr if creation failed
-   * - in out-parameters, return
+   * - out-parameters return:
    *   - the group name from the file
    *   - a flag indicating success reading the file
    *
