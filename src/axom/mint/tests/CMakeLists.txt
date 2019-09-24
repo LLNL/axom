@@ -35,6 +35,7 @@ set( mint_tests
      mint_fem_single_fe.cpp
 
      ## util tests
+     mint_su2_io.cpp
      mint_util_write_vtk.cpp
    )
 
@@ -45,7 +46,9 @@ set( mint_test_dependencies
      mint
      )
 
-blt_list_append( TO mint_test_dependencies ELEMENTS sidre conduit IF AXOM_MINT_USE_SIDRE )
+blt_list_append( TO mint_test_dependencies
+                 ELEMENTS sidre conduit::conduit
+                 IF AXOM_MINT_USE_SIDRE )
 blt_list_append( TO mint_test_dependencies ELEMENTS raja IF RAJA_FOUND )
 blt_list_append( TO mint_test_dependencies ELEMENTS openmp IF ENABLE_OPENMP )
 blt_list_append( TO mint_test_dependencies ELEMENTS cuda IF ENABLE_CUDA )

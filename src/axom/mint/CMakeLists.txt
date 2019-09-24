@@ -79,6 +79,7 @@ set( mint_headers
 
     ## utils
     utils/vtk_utils.hpp
+    utils/su2_utils.hpp
    )
 
 set( mint_sources
@@ -102,6 +103,7 @@ set( mint_sources
 
     ## utils
     utils/vtk_utils.cpp
+    utils/su2_utils.cpp
    )
 
 ################################
@@ -112,7 +114,9 @@ set( mint_dependencies
      slic
      )
 
-blt_list_append( TO mint_dependencies ELEMENTS sidre conduit IF AXOM_MINT_USE_SIDRE )
+blt_list_append( TO mint_dependencies
+                 ELEMENTS sidre conduit::conduit
+                 IF AXOM_MINT_USE_SIDRE )
 
 blt_list_append( TO mint_dependencies ELEMENTS raja IF RAJA_FOUND )
 

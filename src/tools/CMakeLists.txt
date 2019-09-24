@@ -20,7 +20,7 @@ if( AXOM_ENABLE_SLAM AND AXOM_ENABLE_SIDRE AND ENABLE_MPI AND HDF5_FOUND )
         convert_sidre_protocol.cpp
     )
     set(datastore_converter_depends 
-        sidre conduit conduit_relay hdf5
+        sidre conduit::conduit hdf5
         slic fmt 
         slam 
         mpi

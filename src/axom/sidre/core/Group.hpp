@@ -1118,9 +1118,13 @@ public:
    * Group hierarchy structures with the same names for all Views and
    * Groups in the hierarchy, and the Views are also equivalent.
    *
+   * \param other     The group to compare with
+   * \param checkName If true (default), groups must have the same name
+   *                  to be equivalent.  If false, disregard the name.
+   *
    * \sa View::isEquivalentTo()
    */
-  bool isEquivalentTo(const Group* other) const;
+  bool isEquivalentTo(const Group* other, bool checkName = true) const;
 
 
 //@{
@@ -1248,11 +1252,69 @@ public:
    * identical to a name that is already held by the parent for another
    * Group or View object.
    *
-   * /param new_name    The new name for this group.
+   * \param new_name    The new name for this group.
    *
    * /return            Success or failure of rename.
    */
   bool rename(const std::string& new_name);
+
+  /*!
+   * \brief Import data from a conduit Node into a Group
+   *
+   * This imports the hierarchy from the Node into a Sidre Group with the
+   * same tree structure.
+   *
+   * This does not support conduit's list datatype.  If the Node contains a
+   * list any where in its tree, the list and any child Nodes descending from
+   * the list will not be imported.  A warning will occur and an unsuccessful
+   * return value will be returned.
+   *
+   * If preserve_contents is true, then the names of the children held by the
+   * Node cannot be the same as the names of the children already held by this
+   * Group.  If there is a naming conflict, an error will occur.
+   *
+   * \param node               A conduit Node containing hierarchical data.
+   * \param preserve_contents  If true, any child Groups and Views held by
+   *                           this Group remain in place.  If false, all
+   *                           child Groups and Views are destroyed before
+   *                           importing data from the Node.
+   *
+   * \return                   true for success, false if the full conduit
+   *                           tree is not succesfully imported.
+   */
+  bool importConduitTree(const conduit::Node& node,
+     bool preserve_contents = false);
+
+  /*!
+   * \brief Import data from a conduit Node into a Group without copying arrays
+   *
+   * This differs from the importConduitTree in that it does not copy any
+   * data held by the Node as an array.  Instead it imports the existing
+   * pointer to the array as an external pointer.
+   *
+   * This imports the hierarchy from the Node into a Sidre Group with the
+   * same tree structure.
+   *
+   * This does not support conduit's list datatype.  If the Node contains a
+   * list any where in its tree, the list and any child Nodes descending from
+   * the list will not be imported.  A warning will occur and an unsuccessful
+   * return value will be returned.
+   *
+   * If preserve_contents is true, then the names of the children held by the
+   * Node cannot be the same as the names of the children already held by this
+   * Group.  If there is a naming conflict, an error will occur.
+   *
+   * \param node               A conduit Node containing hierarchical data.
+   * \param preserve_contents  If true, any child Groups and Views held by
+   *                           this Group remain in place.  If false, all
+   *                           child Groups and Views are destroyed before
+   *                           importing data from the Node.
+   *
+   * \return                   true for success, false if the full conduit
+   *                           tree is not succesfully imported.
+   */
+  bool importConduitTreeExternal(conduit::Node& node,
+     bool preserve_contents = false);
 
 private:
   DISABLE_DEFAULT_CTOR(Group);
@@ -1391,15 +1453,6 @@ private:
    */
   void importFrom(conduit::Node& node,
                   const std::map<IndexType, IndexType>& buffer_id_map);
-
-
-  /*!
-   * \brief Private method to build a Group hierarchy from Conduit Node.
-   *
-   * Note: This is for the "conduit_{zzz}" protocols.
-   */
-  void importConduitTree(conduit::Node& node, bool preserve_contents = false);
-
 
 //@}
 

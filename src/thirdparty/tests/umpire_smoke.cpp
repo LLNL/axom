@@ -34,7 +34,7 @@ TEST( umpire_smoke, basic_use )
 
   int* data = static_cast< int* >( allocator.allocate( BYTESIZE ) );
   EXPECT_TRUE( data != nullptr );
-  EXPECT_EQ( BYTESIZE, allocator.getActualSize() );
+  EXPECT_EQ( BYTESIZE, allocator.getCurrentSize() );
 
   for( int i=0 ; i < N ; ++i )
   {

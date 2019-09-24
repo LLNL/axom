@@ -7,17 +7,34 @@ The format of this file is based on [Keep a Changelog](http://keepachangelog.com
 
 The Axom project release numbers follow [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - Release date yyyy-mm-dd
+## [Version 0.3.2] - Release date 2019-09-22
 
 ### Added
+- Added support in Mint for reading and writing an unstructured mesh in the [SU2 Mesh file format].
+  This includes support for both single and mixed cell type topology unstructured mesh types.   
+- Added a new option to enable/disable use of CUB, AXOM_USE_CUB, which is disabled by default. This
+  allows to disable CUB to circumvent issues encountered with the device linker.
+- Added a BezierCurve primitive type to primal. A new ``intersect`` operator was also added to 
+  compute the intersection points between a pair of Bezier curves of arbitrary order.
 
 ### Removed
 
 ### Deprecated
 
 ### Changed
+- Updated Raja TPL to v0.9.0
+- Updated Umpire TPL to v1.0.0
+- AXOM_USE_OPENMP is now being set at configure time accordingly instead of
+  auto-detected based on whether "_OPENMP" is passed by the compiler. This
+  fixes issues where a host code would compile Axom w/out OpenMP, but, use
+  Axom in parts of the code where OpenMP is enabled. 
 
 ### Fixed
+- Fixed usage of Umpire's MemoryResourceType enum in Axom. Axom was assuming that
+  there was a one-to-one correspondance of the entries in the MemoryResourceType enum
+  and the IDs of the predefined allocators. However, this assumption generally does
+  not hold. This version corrects this by explicitly querying the ID of the predefined
+  allocator for a particular resource and using that subsequently in the code.
 
 ### Known Bugs
 
@@ -231,9 +248,12 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Known Bugs
 -
 
-[Unreleased]:    https://github.com/LLNL/axom/compare/v0.3.1...develop
+[Unreleased]:    https://github.com/LLNL/axom/compare/v0.3.2...develop
+[Version 0.3.2]: https://github.com/LLNL/axom/compare/v0.3.1...v0.3.2
 [Version 0.3.1]: https://github.com/LLNL/axom/compare/v0.3.0...v0.3.1
 [Version 0.3.0]: https://github.com/LLNL/axom/compare/v0.2.9...v0.3.0
 [Version 0.2.9]: https://github.com/LLNL/axom/compare/v0.2.8...v0.2.9
 
 [Scalable Checkpoint Restart (SCR)]: https://computation.llnl.gov/projects/scalable-checkpoint-restart-for-mpi
+[SU2 Mesh file format]: https://su2code.github.io/docs/Mesh-File/
+

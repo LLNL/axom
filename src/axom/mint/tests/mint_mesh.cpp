@@ -274,8 +274,8 @@ void check_node_fields( IndexType n_nodes, const double* vx, const double* vy )
 {
   for ( IndexType i = 0 ; i < n_nodes ; ++i )
   {
-    EXPECT_EQ( vx[ i ], std::cos( E * i ) );
-    EXPECT_EQ( vy[ i ], std::sin( E * E * i ) );
+    EXPECT_DOUBLE_EQ( vx[ i ], std::cos( E * i ) );
+    EXPECT_DOUBLE_EQ( vy[ i ], std::sin( E * E * i ) );
   }
 }
 
@@ -303,7 +303,7 @@ void check_cell_fields( IndexType n_cells, const double* p )
 {
   for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
-    EXPECT_EQ( p[ i ], std::cosh( E * i ) );
+    EXPECT_DOUBLE_EQ( p[ i ], std::cosh( E * i ) );
   }
 }
 

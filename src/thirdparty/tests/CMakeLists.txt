@@ -70,20 +70,20 @@ endif()
 # Smoke test for conduit thirdparty library
 ###########################################
 if (CONDUIT_FOUND)
-    blt_add_executable(NAME conduit_smoke_test
-                       SOURCES conduit_smoke.cpp
+    blt_add_executable(NAME       conduit_smoke_test
+                       SOURCES    conduit_smoke.cpp
                        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                       DEPENDS_ON conduit gtest
-                       FOLDER axom/thirdparty/tests )
+                       DEPENDS_ON conduit::conduit gtest
+                       FOLDER     axom/thirdparty/tests )
     blt_add_test(NAME conduit_smoke
                  COMMAND conduit_smoke_test)
 
     if (ENABLE_FORTRAN)
-        blt_add_executable(NAME conduit_smoke_F_test
-                           SOURCES f_conduit_smoke.f
+        blt_add_executable(NAME       conduit_smoke_F_test
+                           SOURCES    f_conduit_smoke.f
                            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                           DEPENDS_ON conduit fruit
-                           FOLDER axom/thirdparty/tests )
+                           DEPENDS_ON conduit::conduit fruit
+                           FOLDER     axom/thirdparty/tests )
         blt_add_test(NAME conduit_smoke_F
                      COMMAND conduit_smoke_F_test)
   endif()

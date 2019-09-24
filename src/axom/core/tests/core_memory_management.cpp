@@ -128,10 +128,11 @@ private:
 
 #ifdef AXOM_USE_UMPIRE
 void check_alloc_and_free(
-  umpire::Allocator allocator=axom::getAllocator( umpire::resource::Host ),
-  bool hostAccessable=true  )
+  umpire::Allocator allocator=
+    axom::getAllocator(axom::getResourceAllocatorID(umpire::resource::Host)),
+  bool hostAccessible=true  )
 #else
-void check_alloc_and_free( bool hostAccessable=true)
+void check_alloc_and_free( bool hostAccessible=true)
 #endif
 {
   for ( int size = 0 ; size <= SIZE ; size = size * 2 + 1 )
@@ -148,7 +149,7 @@ void check_alloc_and_free( bool hostAccessable=true)
     int* buffer = axom::allocate< int >( size );
 #endif
 
-    if ( hostAccessable )
+    if ( hostAccessible )
     {
       for ( int i = 0 ; i < size ; ++i )
       {
@@ -168,10 +169,11 @@ void check_alloc_and_free( bool hostAccessable=true)
 
 #ifdef AXOM_USE_UMPIRE
 void check_alloc_realloc_free(
-  umpire::Allocator allocator=axom::getAllocator( umpire::resource::Host ),
-  bool hostAccessable=true )
+  umpire::Allocator allocator=
+    axom::getAllocator(axom::getResourceAllocatorID(umpire::resource::Host)),
+  bool hostAccessible=true )
 #else
-void check_alloc_realloc_free( bool hostAccessable=true )
+void check_alloc_realloc_free( bool hostAccessible=true )
 #endif
 {
   for ( int size = 0 ; size <= SIZE ; size = size * 2 + 1 )
@@ -190,7 +192,7 @@ void check_alloc_realloc_free( bool hostAccessable=true )
     int* buffer = axom::allocate< int >( buffer_size );
 #endif
 
-    if ( hostAccessable )
+    if ( hostAccessible )
     {
       // Populate the buffer.
       for ( int i = 0 ; i < buffer_size ; ++i )
@@ -215,7 +217,7 @@ void check_alloc_realloc_free( bool hostAccessable=true )
     }
 #endif
 
-    if ( hostAccessable )
+    if ( hostAccessible )
     {
       // Populate the new values.
       for ( int i = size ; i < buffer_size ; ++i )
@@ -240,7 +242,7 @@ void check_alloc_realloc_free( bool hostAccessable=true )
     }
 #endif
 
-    if ( hostAccessable )
+    if ( hostAccessible )
     {
       // Check all the values.
       for ( int i = 0 ; i < buffer_size ; ++i )
@@ -263,23 +265,36 @@ void check_alloc_realloc_free( bool hostAccessable=true )
 
 TEST( core_memory_management, set_get_default_memory_space )
 {
-  EXPECT_EQ( umpire::resource::Host, axom::getDefaultAllocator().getId() );
+  const int HostAllocatorID =
+    axom::getResourceAllocatorID( umpire::resource::Host );
+  EXPECT_EQ( HostAllocatorID, axom::getDefaultAllocator().getId() );
 
 #ifdef AXOM_USE_CUDA
-  axom::setDefaultAllocator( axom::getAllocator( umpire::resource::Pinned ) );
-  EXPECT_EQ( umpire::resource::Pinned, axom::getDefaultAllocator().getId() );
+  const int PinnedAllocatorID =
+    axom::getResourceAllocatorID( umpire::resource::Pinned );
 
-  axom::setDefaultAllocator( axom::getAllocator( umpire::resource::Device ) );
-  EXPECT_EQ( umpire::resource::Device, axom::getDefaultAllocator().getId() );
+  axom::setDefaultAllocator( axom::getAllocator( PinnedAllocatorID ) );
+  EXPECT_EQ( PinnedAllocatorID, axom::getDefaultAllocator().getId() );
 
-  axom::setDefaultAllocator( axom::getAllocator( umpire::resource::Constant ) );
-  EXPECT_EQ( umpire::resource::Constant, axom::getDefaultAllocator().getId() );
+  const int DeviceAllocatorID =
+    axom::getResourceAllocatorID( umpire::resource::Device );
+  axom::setDefaultAllocator( axom::getAllocator( DeviceAllocatorID ) );
+  EXPECT_EQ( DeviceAllocatorID, axom::getDefaultAllocator().getId() );
 
-  axom::setDefaultAllocator( axom::getAllocator( umpire::resource::Unified ) );
-  EXPECT_EQ( umpire::resource::Unified, axom::getDefaultAllocator().getId() );
+  const int ConstantAllocatorID =
+    axom::getResourceAllocatorID( umpire::resource::Constant );
+  axom::setDefaultAllocator( axom::getAllocator( ConstantAllocatorID ) );
+  EXPECT_EQ( ConstantAllocatorID, axom::getDefaultAllocator().getId() );
+
+  const int UnifiedAllocatorID =
+    axom::getResourceAllocatorID( umpire::resource::Unified );
+  axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
+  EXPECT_EQ( UnifiedAllocatorID, axom::getDefaultAllocator().getId() );
 #endif
 
-  axom::setDefaultAllocator( axom::getAllocator( umpire::resource::Host ) );
+
+  axom::setDefaultAllocator( axom::getAllocator( HostAllocatorID ) );
+  EXPECT_EQ( HostAllocatorID, axom::getDefaultAllocator().getId() );
 }
 
 #endif
@@ -289,14 +304,41 @@ TEST( core_memory_management, alloc_free )
 {
 #ifdef AXOM_USE_UMPIRE
 
-  check_alloc_and_free( axom::getAllocator( umpire::resource::Host ), true );
+  constexpr bool HOST_ACCESSIBLE = true;
+
+  const int HostAllocatorID =
+    axom::getResourceAllocatorID( umpire::resource::Host );
+  check_alloc_and_free( axom::getAllocator( HostAllocatorID ),
+                        HOST_ACCESSIBLE
+                        );
 
 #ifdef AXOM_USE_CUDA
-  check_alloc_and_free( axom::getAllocator( umpire::resource::Pinned ), true );
-  check_alloc_and_free( axom::getAllocator( umpire::resource::Device ), false );
-  check_alloc_and_free( axom::getAllocator( umpire::resource::Constant ),
-                        false );
-  check_alloc_and_free( axom::getAllocator( umpire::resource::Unified ), true );
+
+  constexpr bool NOT_HOST_ACCESSIBLE = false;
+
+  const int PinnedAllocatorID =
+    axom::getResourceAllocatorID( umpire::resource::Pinned );
+  check_alloc_and_free( axom::getAllocator( PinnedAllocatorID ),
+                        HOST_ACCESSIBLE
+                        );
+
+  const int DeviceAllocatorID =
+    axom::getResourceAllocatorID( umpire::resource::Device );
+  check_alloc_and_free( axom::getAllocator( DeviceAllocatorID ),
+                        NOT_HOST_ACCESSIBLE
+                        );
+
+  const int ConstantAllocatorID =
+    axom::getResourceAllocatorID( umpire::resource::Constant );
+  check_alloc_and_free( axom::getAllocator( ConstantAllocatorID ),
+                        NOT_HOST_ACCESSIBLE
+                        );
+
+  const int UnifiedAllocatorID =
+    axom::getResourceAllocatorID( umpire::resource::Unified );
+  check_alloc_and_free( axom::getAllocator( UnifiedAllocatorID ),
+                        HOST_ACCESSIBLE
+                        );
 #endif
 
 #endif
@@ -309,19 +351,37 @@ TEST( core_memory_management, alloc_realloc_free )
 {
 #ifdef AXOM_USE_UMPIRE
 
+  constexpr bool HOST_ACCESSIBLE = true;
+
   check_alloc_realloc_free( axom::getAllocator( umpire::resource::Host ),
-                            true );
+                            HOST_ACCESSIBLE
+                            );
 
 #ifdef AXOM_USE_CUDA
-  check_alloc_realloc_free( axom::getAllocator( umpire::resource::Pinned ),
-                            true );
-  check_alloc_realloc_free( axom::getAllocator(
-                              umpire::resource::Device ), false );
+
+  constexpr bool NOT_HOST_ACCESSIBLE = false;
+
+  const int PinnedAllocatorID =
+    axom::getResourceAllocatorID( umpire::resource::Pinned );
+  check_alloc_realloc_free( axom::getAllocator( PinnedAllocatorID ),
+                            HOST_ACCESSIBLE
+                            );
+
+  const int DeviceAllocatorID =
+    axom::getResourceAllocatorID( umpire::resource::Device );
+  check_alloc_realloc_free( axom::getAllocator( DeviceAllocatorID ),
+                            NOT_HOST_ACCESSIBLE
+                            );
+
   // Umpire doesn't allow reallocation of Constant memory.
   // check_alloc_realloc_free( axom::getAllocator( umpire::resource::Constant ),
   // false );
-  check_alloc_realloc_free( axom::getAllocator(
-                              umpire::resource::Unified ), true );
+
+  const int UnifiedAllocatorID =
+    axom::getResourceAllocatorID( umpire::resource::Unified );
+  check_alloc_realloc_free( axom::getAllocator( UnifiedAllocatorID ),
+                            HOST_ACCESSIBLE
+                            );
 #endif
 
 #endif

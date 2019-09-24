@@ -47,32 +47,22 @@
  */
 #cmakedefine USE_C_LOC_WITH_ASSUMED_SHAPE
 
-
 /*
  * Compiler defines for libraries (built-in and third party)
  */
 #cmakedefine AXOM_USE_CONDUIT
 #cmakedefine AXOM_USE_CUDA
+#cmakedefine AXOM_USE_CUB
 #cmakedefine AXOM_USE_FMT
 #cmakedefine AXOM_USE_HDF5
 #cmakedefine AXOM_USE_MFEM
 #cmakedefine AXOM_USE_MPI
 #cmakedefine AXOM_USE_MPIF_HEADER
+#cmakedefine AXOM_USE_OPENMP
 #cmakedefine AXOM_USE_RAJA
 #cmakedefine AXOM_USE_SCR
 #cmakedefine AXOM_USE_SPARSEHASH
 #cmakedefine AXOM_USE_UMPIRE
-
-/*
- * OpenMP is a special case since it varies by target and the compiler
- * provides its own definition. For consistency, the project exposes
- * and uses this through its own AXOM_USE define.
- */
-#ifdef _OPENMP
-#define AXOM_USE_OPENMP
-#else
-#undef AXOM_USE_OPENMP
-#endif
 
 
 /*
