@@ -640,13 +640,13 @@ void serial_save_datastore_and_load_copy_lower(DataStore* ds)
   // saving all Views
   ds->getRoot()->save("example.hdf5");
   // Delete the data hierarchy under the root, then load it from the file
-  std::string groupname;
-  ds->getRoot()->load("example.hdf5", groupname);
+  ds->getRoot()->load("example.hdf5");
   Group* additional = ds->getRoot()->createGroup("additional");
   additional->createGroup("yetanother");
   // Load another copy of the data store into the "additional" group
   // without first clearing all its contents
-  additional->load("example.hdf5", groupname, "sidre_hdf5", true);
+  std::string groupname;
+  additional->load("example.hdf5", "sidre_hdf5", true, groupname);
   // _serial_io_save_end
 }
 

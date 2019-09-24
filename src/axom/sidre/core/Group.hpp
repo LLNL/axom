@@ -1177,40 +1177,63 @@ public:
              const Attribute* attr = nullptr) const;
 
   /*!
-   * \brief Load the Group from a file.
+   * \brief Load a Group hierarchy from a file into this Group
    *
    * \param path     file path
-   * \param new_name the group name stored in the file
    * \param protocol I/O protocol
    * \param preserve_contents   Preserve existing contents of group if true
    */
   void load(const std::string& path,
-            std::string & new_name,
             const std::string& protocol = SIDRE_DEFAULT_PROTOCOL,
             bool preserve_contents = false);
 
   /*!
-   * \brief Load a file into a new child group.
+   * \brief Load a Group hierarchy from a file into this Group, reporting
+   *        the Group name stored in the file
+   *
+   * \param [in]  path     file path to load
+   * \param [in]  protocol I/O protocol to use
+   * \param [in]  preserve_contents Preserve existing contents of group if true
+   * \param [out] name_from_file    Group name stored in the file
+   */
+  void load(const std::string& path,
+            const std::string& protocol,  
+            bool preserve_contents,
+            std::string & name_from_file);
+
+  /*!
+   * \brief Create a child Group and load a Group hierarchy from file
+   *        into the new Group.
    *
    * This is a convenience routine for the following sequence:
-   * - create a group
-   * - load a file into the newly-created group
-   * - rename the group with the name stored in the file (or if blank,
-   *   the contents of new_name).  If necessary, ensure new name is unique
-   *   by adding a suffix.
-   * - return the group name from the file in parameter new_name
+   * - create a group with name or path group_name
+   * - load a Group hierarchy from a file into the newly-created Group
+   * - return the newly created Group, or nullptr if creation failed
+   * - in out-parameters, return
+   *   - the group name from the file
+   *   - a flag indicating success reading the file
    *
-   * \param path     file path
-   * \param new_name In: name for the new group if the file's stored group
-   *                 name is the empty string.
-   *                 Out: the group name stored in the file
-   * \param protocol I/O protocol
-   * \param preserve_contents   Preserve existing contents of group if true
+   * As with the createGroup() method, if group_name is empty or there
+   * already exists a child Group with that name or path, the child Group
+   * will not be created and this method will return nullptr.
+   *
+   * As with the load() method, after calling createAndLoad() a host
+   * code may choose to rename the newly-created Group with the string
+   * returned in group_name.
+   *
+   * \param [in,out] group_name    In: name for the new group.
+   *                               Out: the group name stored in the file.
+   * \param [in]     path          file path
+   * \param [in]     protocol      I/O protocol
+   * \param [out]    load_success  Preserve existing contents of group if true
+   *
+   * \return pointer to created Group object or nullptr if new
+   *         Group is not created.
    */
-  Group* loadChild(const std::string& path,
-                   std::string & new_name,
-                   const std::string& protocol = SIDRE_DEFAULT_PROTOCOL,
-                   bool preserve_contents = false);
+  Group* createAndLoad(std::string & group_name,
+                       const std::string& path,
+                       const std::string& protocol,
+                       bool & load_success);
 
   /*!
    * \brief Load data into the Group's external views from a file.
@@ -1242,14 +1265,24 @@ public:
   /*!
    * \brief Load the Group from an hdf5 handle.
    * \param h5_id      hdf5 handle
-   * \param new_name   the group name stored in the file
    * \param protocol   I/O protocol sidre_hdf5 or conduit_hdf5
    * \param preserve_contents   Preserve existing contents of group if true
    */
   void load( const hid_t& h5_id,
-             std::string & new_name,
              const std::string &protocol = SIDRE_DEFAULT_PROTOCOL,
              bool preserve_contents = false);
+
+  /*!
+   * \brief Load the Group from an hdf5 handle.
+   * \param [in]  h5_id      hdf5 handle
+   * \param [in]  protocol   I/O protocol sidre_hdf5 or conduit_hdf5
+   * \param [in]  preserve_contents Preserve existing contents of group if true
+   * \param [out] name_from_file    Group name stored in the file
+   */
+  void load( const hid_t& h5_id,
+             const std::string &protocol,
+             bool preserve_contents,
+             std::string & name_from_file );
 
   /*!
    * \brief Load data into the Group's external views from a hdf5 handle.

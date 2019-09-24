@@ -1096,8 +1096,7 @@ TEST(sidre_group,save_restore_empty_datastore)
 
     DataStore* ds2 = new DataStore();
     Group* root2 = ds2->getRoot();
-    std::string groupname;
-    root2->load(file_path, groupname, protocols[i]);
+    root2->load(file_path, protocols[i]);
 
     EXPECT_TRUE(ds2->getNumBuffers() == 0 );
     EXPECT_TRUE(root2->getNumGroups() == 0 );
@@ -1131,9 +1130,8 @@ TEST(sidre_group,save_load_via_hdf5_ids)
 
   // load via path based
   DataStore ds_load_generic;
-  std::string groupname;
   ds_load_generic.getRoot()->load("out_save_load_via_hdf5_ids.sidre_hdf5", 
-                                  groupname, "sidre_hdf5");
+                                  "sidre_hdf5");
 
   // load via hdf5 id
   DataStore ds_load_hdf5;
@@ -1144,7 +1142,7 @@ TEST(sidre_group,save_load_via_hdf5_ids)
   EXPECT_TRUE(h5_id >= 0);
 
   // this implies protocol == "sidre_hdf5"
-  ds_load_hdf5.getRoot()->load(h5_id, groupname);
+  ds_load_hdf5.getRoot()->load(h5_id);
 
   // ? Does isEquivalentTo check values?
   // check path based with source
@@ -1199,7 +1197,6 @@ TEST(sidre_group,save_root_restore_as_child)
   }
 
   // Restore the original DataStore into a child group
-  std::string groupname;
   for (int i = 0; i < nprotocols; ++i)
   {
     // Only restore sidre_hdf5 protocol
@@ -1219,7 +1216,7 @@ TEST(sidre_group,save_root_restore_as_child)
     if (axom::utilities::filesystem::pathExists(file_path))
     {
       std::cout << "loading " << file_path << std::endl;
-      cg->load(file_path, groupname, protocols[i]);
+      cg->load(file_path, protocols[i]);
 
       EXPECT_TRUE(cg->isEquivalentTo(root, false));
       EXPECT_TRUE(root->isEquivalentTo(cg, false));
@@ -1285,7 +1282,6 @@ TEST(sidre_group,save_child_restore_as_root)
   }
 
   // Restore the saved child1 into a root group
-  std::string groupname;
   for (int i = 0; i < nprotocols; ++i)
   {
     // Only restore sidre_hdf5 protocol
@@ -1298,7 +1294,7 @@ TEST(sidre_group,save_child_restore_as_root)
     const std::string file_path = file_path_base + protocols[i];
     if (axom::utilities::filesystem::pathExists(file_path))
     {
-      dscopy->getRoot()->load(file_path, groupname, protocols[i]);
+      dscopy->getRoot()->load(file_path, protocols[i]);
 
       EXPECT_TRUE(dscopy->getRoot()->isEquivalentTo(child1, false));
       EXPECT_TRUE(child1->isEquivalentTo(dscopy->getRoot(), false));
@@ -1321,7 +1317,6 @@ TEST(sidre_group,save_restore_api)
   const std::string file_path_base("sidre_save_subtree_");
   DataStore* ds1 = new DataStore();
   Group* root1 = ds1->getRoot();
-  std::string groupname;
 
   root1->createViewScalar<int>("i0", 1);
 
@@ -1343,13 +1338,13 @@ TEST(sidre_group,save_restore_api)
 #if 0
   DataStore* ds2 = new DataStore();
   Group* root2 = ds2->getRoot();
-  root2->load("sidre_save_fulltree_conduit", groupname, "json");
+  root2->load("sidre_save_fulltree_conduit", "json");
   EXPECT_TRUE( ds2->getRoot()->isEquivalentTo(root1) );
   delete ds2;
 
   DataStore* ds3 = new DataStore();
   Group* root3 = ds3->getRoot();
-  root3->load("sidre_save_subtree_sidre_json", groupname, "sidre_json");
+  root3->load("sidre_save_subtree_sidre_json", "sidre_json");
   EXPECT_TRUE( ds3->getRoot()->isEquivalentTo(root1) );
   delete ds3;
 #endif
@@ -1357,7 +1352,7 @@ TEST(sidre_group,save_restore_api)
 #ifdef AXOM_USE_HDF5
   DataStore* ds4 = new DataStore();
   Group* root4 = ds4->getRoot();
-  root4->load("sidre_save_subtree_sidre_hdf5", groupname, "sidre_hdf5");
+  root4->load("sidre_save_subtree_sidre_hdf5", "sidre_hdf5");
   EXPECT_TRUE( ds4->getRoot()->isEquivalentTo(root1) );
   delete ds4;
 #endif
@@ -1365,7 +1360,7 @@ TEST(sidre_group,save_restore_api)
 #if 0
   DataStore* ds5 = new DataStore();
   Group* root5 = ds5->getRoot();
-  root5->load("sidre_save_subtree_json", groupname, "json");
+  root5->load("sidre_save_subtree_json", "json");
   EXPECT_TRUE( ds5->getRoot()->isEquivalentTo(root1) );
   delete ds5;
 #endif
@@ -1379,32 +1374,46 @@ TEST(sidre_group,save_restore_api)
   Group* load1 = tree1->createGroup("subtree");
   Group* load2 = tree2->createGroup("subtree");
 
-  load1->load("sidre_save_subtree_sidre_json", groupname, "sidre_json");
-  load2->load("sidre_save_subtree_sidre_json", groupname, "sidre_json");
+  load1->load("sidre_save_subtree_sidre_json", "sidre_json");
+  load2->load("sidre_save_subtree_sidre_json", "sidre_json");
 
   EXPECT_TRUE( load1->isEquivalentTo( load2) );
 
   std::string newgroupname = "in case of blank";
-  groupname = newgroupname;
+  std::string groupname = newgroupname;
+  bool loadSuccess = false;
   Group * load3 =
-    load2->loadChild("sidre_save_subtree_sidre_json", groupname, "sidre_json");
+    load2->createAndLoad(groupname, "sidre_save_subtree_sidre_json", "sidre_json", loadSuccess);
 
-  EXPECT_EQ(newgroupname, load3->getName());
+  EXPECT_NE(load3, (Group*)nullptr);
+  EXPECT_TRUE(loadSuccess);
   EXPECT_EQ(groupname, "");
-  EXPECT_TRUE( load1->isEquivalentTo( load3, false ) );
+  if (load3 != nullptr)
+  {
+    EXPECT_EQ(newgroupname, load3->getName());
+    EXPECT_TRUE( load1->isEquivalentTo( load3, false ) );
+  }
 
-  groupname = newgroupname;
+  std::string anothergroupname = "another group";
+  groupname = anothergroupname;
+  loadSuccess = false;
   Group * load4 =
-    load2->loadChild("sidre_save_subtree_sidre_json", groupname, "sidre_json");
+    load2->createAndLoad(groupname, "sidre_save_subtree_sidre_json", "sidre_json", loadSuccess);
 
-  EXPECT_TRUE( load3->isEquivalentTo( load4, false ) );
-  // the name of load3 name should be a prefix of the name of load4.
-  std::string load3name = load3->getName();
-  std::string load4name = load4->getName();
-  auto res =
-    std::mismatch(load3name.begin(), load3name.end(), load4name.begin());
-  bool nameIsPrefix = (res.first == load3name.end());
-  EXPECT_TRUE(nameIsPrefix);
+  EXPECT_NE(load4, (Group*)nullptr);
+  EXPECT_TRUE(loadSuccess);
+  if (load4 != nullptr)
+  {
+    EXPECT_EQ(anothergroupname, load4->getName());
+    EXPECT_TRUE( load3->isEquivalentTo( load4, false ) );
+  }
+
+  groupname = anothergroupname;
+  loadSuccess = false;
+  Group * load5 =
+    load2->createAndLoad(groupname, "sidre_save_subtree_sidre_json", "sidre_json", loadSuccess);
+  EXPECT_EQ(load5, (Group*)nullptr);
+  EXPECT_FALSE(loadSuccess);
 
   delete ds_new;
 }
@@ -1429,7 +1438,6 @@ TEST(sidre_group,save_restore_scalars_and_strings)
     root1->save(file_path, protocols[i]);
   }
 
-  std::string groupname;
   for (int i = 0 ; i < nprotocols ; ++i)
   {
     // Only restore sidre_hdf5 protocol
@@ -1443,7 +1451,7 @@ TEST(sidre_group,save_restore_scalars_and_strings)
     DataStore* ds2 = new DataStore();
     Group* root2 = ds2->getRoot();
 
-    root2->load(file_path, groupname, protocols[i]);
+    root2->load(file_path, protocols[i]);
 
     EXPECT_TRUE( root1->isEquivalentTo( root2 ));
 
@@ -1545,7 +1553,7 @@ TEST(sidre_group,save_restore_name_change)
 
     EXPECT_EQ( child2->getName(), "child2" );
 
-    child2->load(file_path, groupname, protocols[i]);
+    child2->load(file_path, protocols[i], false, groupname);
 
     EXPECT_EQ( child2->getName(), "child2" );
 
@@ -1607,7 +1615,6 @@ TEST(sidre_group,save_restore_external_data)
   delete ds1;
 
   // Now load back in.
-  std::string groupname;
   for (int i = 0 ; i < nprotocols ; ++i)
   {
     // Only restore sidre_hdf5 protocol
@@ -1623,7 +1630,7 @@ TEST(sidre_group,save_restore_external_data)
     DataStore* ds2 = new DataStore();
     Group* root2 = ds2->getRoot();
 
-    root2->load(file_path, groupname, protocols[i]);
+    root2->load(file_path, protocols[i]);
 
     // load has set the type and size of the view.
     // Now set the external address before calling loadExternal.
@@ -1821,7 +1828,6 @@ TEST(sidre_group,save_restore_buffer)
   }
 
   // Now load back in.
-  std::string groupname;
   for (int i = 0 ; i < nprotocols ; ++i)
   {
     // Only restore sidre_hdf5 protocol
@@ -1835,7 +1841,7 @@ TEST(sidre_group,save_restore_buffer)
     DataStore* ds2 = new DataStore();
     Group* root2 = ds2->getRoot();
 
-    root2->load(file_path, groupname, protocols[i]);
+    root2->load(file_path, protocols[i]);
 
     bool isequivalent = root1->isEquivalentTo(root2);
     EXPECT_TRUE( isequivalent );
@@ -1885,7 +1891,6 @@ TEST(sidre_group,save_restore_other)
   delete ds1;
 
   // Now load back in.
-  std::string groupname;
   for (int i = 0 ; i < nprotocols ; ++i)
   {
     // Only restore sidre_hdf5 protocol
@@ -1901,7 +1906,7 @@ TEST(sidre_group,save_restore_other)
     DataStore* ds2 = new DataStore();
     Group* root2 = ds2->getRoot();
 
-    root2->load(file_path, groupname, protocols[i]);
+    root2->load(file_path, protocols[i]);
 
     View* view1 = root2->getView("empty_view");
     EXPECT_TRUE(view1->isEmpty());
@@ -1968,7 +1973,6 @@ TEST(sidre_group,save_restore_complex)
     ds1->getRoot()->save(file_path, protocols[i]);
   }
 
-  std::string groupname;
   for (int i = 0 ; i < nprotocols ; ++i)
   {
     // Only restore sidre_hdf5 protocol
@@ -1981,8 +1985,7 @@ TEST(sidre_group,save_restore_complex)
 
     DataStore* ds2 = new DataStore();
 
-    std::string groupname;
-    ds2->getRoot()->load(file_path, groupname, protocols[i]);
+    ds2->getRoot()->load(file_path, protocols[i]);
 
     EXPECT_TRUE( ds1->getRoot()->isEquivalentTo(ds2->getRoot()) );
 
@@ -2105,7 +2108,6 @@ TEST(sidre_group,save_load_all_protocols)
   // test all protocols
   //
   std::vector<std::string> protocols = getAvailableSidreProtocols();
-  std::string groupname;
   for (size_t i = 0 ; i < protocols.size() ; ++i)
   {
     SLIC_INFO("Testing protocol: " << protocols[i]);
@@ -2114,8 +2116,7 @@ TEST(sidre_group,save_load_all_protocols)
     ds.getRoot()->save(file_path, protocols[i]);
 
     DataStore ds_load;
-    std::string groupname;
-    ds_load.getRoot()->load(file_path, groupname, protocols[i]);
+    ds_load.getRoot()->load(file_path, protocols[i]);
 
     SLIC_INFO("Tree from protocol: " <<  protocols[i]);
     // show the result
@@ -2207,8 +2208,8 @@ TEST(sidre_group,save_load_preserve_contents)
 
     DataStore ds_load;
     Group* loadtree0 = ds_load.getRoot()->createGroup("tree0");
-    loadtree0->load(file_path0, groupname, protocol);
-    loadtree0->load(file_path1, groupname, protocol, true);
+    loadtree0->load(file_path0, protocol, false, groupname);
+    loadtree0->load(file_path1, protocol, true, groupname);
     loadtree0->rename(groupname);
 
     SLIC_INFO("Tree from protocol: " << protocol);

@@ -1374,9 +1374,17 @@ void Group::save(const std::string& path,
  *************************************************************************
  */
 void Group::load(const std::string& path,
-                 std::string & new_name,
                  const std::string& protocol,
                  bool preserve_contents)
+{
+  std::string new_name;
+  load(path, protocol, preserve_contents, new_name);
+}
+
+void Group::load(const std::string& path,
+                 const std::string& protocol,
+                 bool preserve_contents,
+                 std::string & name_from_file)
 {
   if (protocol == "sidre_hdf5")
   {
@@ -1388,7 +1396,7 @@ void Group::load(const std::string& path,
     importFrom(n["sidre"], preserve_contents);
     if (n.has_path("sidre_group_name"))
     {
-      new_name = n["sidre_group_name"].as_string();
+      name_from_file = n["sidre_group_name"].as_string();
     }
   }
   else if (protocol == "sidre_conduit_json")
@@ -1401,7 +1409,7 @@ void Group::load(const std::string& path,
     importFrom(n["sidre"], preserve_contents);
     if (n.has_path("sidre_group_name"))
     {
-      new_name = n["sidre_group_name"].as_string();
+      name_from_file = n["sidre_group_name"].as_string();
     }
   }
   else if (protocol == "sidre_json")
@@ -1414,7 +1422,7 @@ void Group::load(const std::string& path,
     importFrom(n["sidre"], preserve_contents);
     if (n.has_path("sidre_group_name"))
     {
-      new_name = n["sidre_group_name"].as_string();
+      name_from_file = n["sidre_group_name"].as_string();
     }
   }
   else if (protocol == "conduit_hdf5")
@@ -1424,7 +1432,7 @@ void Group::load(const std::string& path,
     importConduitTree(n, preserve_contents);
     if (n.has_path("sidre_group_name"))
     {
-      new_name = n["sidre_group_name"].as_string();
+      name_from_file = n["sidre_group_name"].as_string();
     }
   }
   else if (protocol == "conduit_bin"  ||
@@ -1436,7 +1444,7 @@ void Group::load(const std::string& path,
     importConduitTree(n, preserve_contents);
     if (n.has_path("sidre_group_name"))
     {
-      new_name = n["sidre_group_name"].as_string();
+      name_from_file = n["sidre_group_name"].as_string();
     }
   }
   else
@@ -1452,21 +1460,20 @@ void Group::load(const std::string& path,
  *
  *************************************************************************
  */
-Group* Group::loadChild(const std::string& path,
-                        std::string & new_name,
-                        const std::string& protocol,
-                        bool preserve_contents)
+Group* Group::createAndLoad(std::string & group_name,
+                            const std::string& path,
+                            const std::string& protocol,
+                            bool & load_success)
 {
-  std::string tempname = getUniqueGroupName(new_name);
-  Group * child = createGroup(tempname);
-  child->load(path, new_name, protocol, preserve_contents);
-
-  if (!new_name.empty())
+  load_success = false;
+  Group * child = createGroup(group_name);
+  if (child != nullptr)
   {
-    tempname = getUniqueGroupName(new_name);
-    child->rename(tempname);
+    // In a forthcoming PR, load() will return a bool for success/failure
+    load_success = true;
+    child->load(path, protocol, false, group_name);
   }
-
+  
   return child;
 }
 
@@ -1565,9 +1572,17 @@ void Group::save(const hid_t& h5_id,
  *************************************************************************
  */
 void Group::load(const hid_t& h5_id,
-                 std::string & new_name,
                  const std::string &protocol,
                  bool preserve_contents)
+{
+  std::string name_from_file;
+  load(h5_id, protocol, preserve_contents, name_from_file);
+}
+
+void Group::load(const hid_t& h5_id,
+                 const std::string &protocol,
+                 bool preserve_contents,
+                 std::string & name_from_file)
 {
   // supported here:
   // "sidre_hdf5"
@@ -1582,7 +1597,7 @@ void Group::load(const hid_t& h5_id,
     importFrom(n["sidre"], preserve_contents);
     if (n.has_path("sidre_group_name"))
     {
-      new_name = n["sidre_group_name"].as_string();
+      name_from_file = n["sidre_group_name"].as_string();
     }
   }
   else if( protocol == "conduit_hdf5")
@@ -1593,7 +1608,7 @@ void Group::load(const hid_t& h5_id,
     importConduitTree(n, preserve_contents);
     if (n.has_path("sidre_group_name"))
     {
-      new_name = n["sidre_group_name"].as_string();
+      name_from_file = n["sidre_group_name"].as_string();
     }
   }
   else

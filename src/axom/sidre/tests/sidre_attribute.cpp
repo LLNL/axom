@@ -723,7 +723,6 @@ TEST(sidre_attribute,save_attributes)
   delete ds1;
 
   //----------------------------------------
-  std::string groupname;
   for (int i = 0 ; i < g_nprotocols ; ++i)
   {
     // Only restore sidre_hdf5 protocol
@@ -737,7 +736,7 @@ TEST(sidre_attribute,save_attributes)
     DataStore* ds2 = new DataStore();
     Group* root2 = ds2->getRoot();
 
-    root2->load(file_path, groupname, g_protocols[i]);
+    root2->load(file_path, g_protocols[i]);
     EXPECT_EQ(3, ds2->getNumAttributes());
 
     // Check available attributes
@@ -852,7 +851,6 @@ TEST(sidre_attribute,save_by_attribute)
   delete ds1;
 
   //----------------------------------------
-  std::string groupname;
   for (int i = 0 ; i < g_nprotocols ; ++i)
   {
     // Only restore sidre_hdf5 protocol
@@ -866,7 +864,7 @@ TEST(sidre_attribute,save_by_attribute)
     DataStore* ds2 = new DataStore();
     Group* root2 = ds2->getRoot();
 
-    root2->load(file_path, groupname, g_protocols[i]);
+    root2->load(file_path, g_protocols[i]);
 
     // Only views with the dump attribute should exist.
 
