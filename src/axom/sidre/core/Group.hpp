@@ -1179,6 +1179,10 @@ public:
   /*!
    * \brief Load a Group hierarchy from a file into this Group
    *
+   * This method instantiates the Group hierarchy and its Views stored
+   * in the file under this Group.  The name of this Group is not
+   * changed.
+   *
    * \param path     file path
    * \param protocol I/O protocol
    * \param preserve_contents   Preserve existing contents of group if true
@@ -1190,6 +1194,11 @@ public:
   /*!
    * \brief Load a Group hierarchy from a file into this Group, reporting
    *        the Group name stored in the file
+   *
+   * This method instantiates the Group hierarchy and its Views stored
+   * in the file under this Group.  The name of this Group is not
+   * changed.  The calling code may optionally rename this Group with
+   * the string returned in group_name.
    *
    * \param [in]  path     file path to load
    * \param [in]  protocol I/O protocol to use
@@ -1551,12 +1560,6 @@ private:
    *  it. Otherwise return the ID of the default allocator of the owning group.
    */
   int getValidAllocatorID( int allocatorID );
-
-  /*!
-   * \brief Const private method that returns a string that would be valid
-   * to use for a new group name.  Adds a suffix to basename if necessary.
-   */
-  std::string getUniqueGroupName(const std::string & basename) const;
 
   /// Name of this Group object.
   std::string m_name;

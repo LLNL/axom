@@ -1481,27 +1481,6 @@ Group* Group::createAndLoad(std::string & group_name,
 /*
  *************************************************************************
  *
- * Find a valid (unique) name for a new group
- *
- *************************************************************************
- */
-std::string Group::getUniqueGroupName(const std::string & basename) const
-{
-  int counter = 0;
-  std::string name = basename;
-  while (hasGroup(name))
-  {
-    name = basename + std::to_string(counter);
-    counter += 1;
-  }
-
-  return name;
-}
-
-
-/*
- *************************************************************************
- *
  * Load External Data from a file
  *
  *************************************************************************
