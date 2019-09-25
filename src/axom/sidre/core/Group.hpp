@@ -1183,9 +1183,16 @@ public:
    * in the file under this Group.  The name of this Group is not
    * changed.
    *
+   * If preserve_contents is true, then the names of the children held by the
+   * Node cannot be the same as the names of the children already held by this
+   * Group.  If there is a naming conflict, an error will occur.
+   *
    * \param path     file path
    * \param protocol I/O protocol
-   * \param preserve_contents   Preserve existing contents of group if true
+   * \param preserve_contents  If true, any child Groups and Views held by
+   *                           this Group remain in place.  If false, all
+   *                           child Groups and Views are destroyed before
+   *                           loading data from the file.
    */
   void load(const std::string& path,
             const std::string& protocol = SIDRE_DEFAULT_PROTOCOL,
@@ -1197,12 +1204,20 @@ public:
    *
    * This method instantiates the Group hierarchy and its Views stored
    * in the file under this Group.  The name of this Group is not
-   * changed.  The calling code may optionally rename this Group with
-   * the string returned in group_name.
+   * changed.  The name of the group stored in the file is returned in
+   * the output parameter name_from_file.  This can be used to rename the
+   * group in a subsequent call.
+   *
+   * If preserve_contents is true, then the names of the children held by the
+   * Node cannot be the same as the names of the children already held by this
+   * Group.  If there is a naming conflict, an error will occur.
    *
    * \param [in]  path     file path to load
    * \param [in]  protocol I/O protocol to use
-   * \param [in]  preserve_contents Preserve existing contents of group if true
+   * \param [in]  preserve_contents  If true, any child Groups and Views
+   *                           held by this Group remain in place.
+   *                           If false, all child Groups and Views are
+   *                           destroyed before loading data from the file.
    * \param [out] name_from_file    Group name stored in the file
    */
   void load(const std::string& path,
@@ -1226,7 +1241,7 @@ public:
    * already exists a child Group with that name or path, the child Group
    * will not be created and this method will return nullptr.
    *
-   * As with the load() method, after calling createAndLoad() a host
+   * As with the load() method, after calling createGroupAndLoad() a host
    * code may choose to rename the newly-created Group with the string
    * returned in group_name.
    *
@@ -1234,15 +1249,15 @@ public:
    *                               Out: the group name stored in the file.
    * \param [in]     path          file path
    * \param [in]     protocol      I/O protocol
-   * \param [out]    load_success  Preserve existing contents of group if true
+   * \param [out]    load_success  Report success of the load operation
    *
    * \return pointer to created Group object or nullptr if new
    *         Group is not created.
    */
-  Group* createAndLoad(std::string & group_name,
-                       const std::string& path,
-                       const std::string& protocol,
-                       bool & load_success);
+  Group* createGroupAndLoad(std::string & group_name,
+                            const std::string& path,
+                            const std::string& protocol,
+                            bool & load_success);
 
   /*!
    * \brief Load data into the Group's external views from a file.
@@ -1273,9 +1288,17 @@ public:
 
   /*!
    * \brief Load the Group from an hdf5 handle.
+   *
+   * If preserve_contents is true, then the names of the children held by the
+   * Node cannot be the same as the names of the children already held by this
+   * Group.  If there is a naming conflict, an error will occur.
+   *
    * \param h5_id      hdf5 handle
    * \param protocol   I/O protocol sidre_hdf5 or conduit_hdf5
-   * \param preserve_contents   Preserve existing contents of group if true
+   * \param preserve_contents  If true, any child Groups and Views held by
+   *                           this Group remain in place.  If false, all
+   *                           child Groups and Views are destroyed before
+   *                           loading data from the file.
    */
   void load( const hid_t& h5_id,
              const std::string &protocol = SIDRE_DEFAULT_PROTOCOL,
@@ -1283,9 +1306,17 @@ public:
 
   /*!
    * \brief Load the Group from an hdf5 handle.
+   *
+   * If preserve_contents is true, then the names of the children held by the
+   * Node cannot be the same as the names of the children already held by this
+   * Group.  If there is a naming conflict, an error will occur.
+   *
    * \param [in]  h5_id      hdf5 handle
    * \param [in]  protocol   I/O protocol sidre_hdf5 or conduit_hdf5
-   * \param [in]  preserve_contents Preserve existing contents of group if true
+   * \param [in]  preserve_contents  If true, any child Groups and Views held by
+   *                           this Group remain in place.  If false, all
+   *                           child Groups and Views are destroyed before
+   *                           loading data from the file.
    * \param [out] name_from_file    Group name stored in the file
    */
   void load( const hid_t& h5_id,

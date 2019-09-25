@@ -1460,10 +1460,10 @@ void Group::load(const std::string& path,
  *
  *************************************************************************
  */
-Group* Group::createAndLoad(std::string & group_name,
-                            const std::string& path,
-                            const std::string& protocol,
-                            bool & load_success)
+Group* Group::createGroupAndLoad(std::string & group_name,
+                                 const std::string& path,
+                                 const std::string& protocol,
+                                 bool & load_success)
 {
   load_success = false;
   Group * child = createGroup(group_name);

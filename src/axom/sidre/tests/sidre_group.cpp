@@ -1383,7 +1383,8 @@ TEST(sidre_group,save_restore_api)
   std::string groupname = newgroupname;
   bool loadSuccess = false;
   Group * load3 =
-    load2->createAndLoad(groupname, "sidre_save_subtree_sidre_json", "sidre_json", loadSuccess);
+    load2->createGroupAndLoad(groupname, "sidre_save_subtree_sidre_json",
+                              "sidre_json", loadSuccess);
 
   EXPECT_NE(load3, (Group*)nullptr);
   EXPECT_TRUE(loadSuccess);
@@ -1398,7 +1399,8 @@ TEST(sidre_group,save_restore_api)
   groupname = anothergroupname;
   loadSuccess = false;
   Group * load4 =
-    load2->createAndLoad(groupname, "sidre_save_subtree_sidre_json", "sidre_json", loadSuccess);
+    load2->createGroupAndLoad(groupname, "sidre_save_subtree_sidre_json",
+                              "sidre_json", loadSuccess);
 
   EXPECT_NE(load4, (Group*)nullptr);
   EXPECT_TRUE(loadSuccess);
@@ -1411,7 +1413,8 @@ TEST(sidre_group,save_restore_api)
   groupname = anothergroupname;
   loadSuccess = false;
   Group * load5 =
-    load2->createAndLoad(groupname, "sidre_save_subtree_sidre_json", "sidre_json", loadSuccess);
+    load2->createGroupAndLoad(groupname, "sidre_save_subtree_sidre_json",
+                              "sidre_json", loadSuccess);
   EXPECT_EQ(load5, (Group*)nullptr);
   EXPECT_FALSE(loadSuccess);
 
