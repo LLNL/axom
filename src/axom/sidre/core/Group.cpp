@@ -1378,6 +1378,14 @@ void Group::load(const std::string& path,
                  bool preserve_contents)
 {
   std::string new_name;
+  load(path, protocol, preserve_contents, new_name);
+}
+
+void Group::load(const std::string& path,
+                 const std::string& protocol,
+                 bool preserve_contents,
+                 std::string & name_from_file)
+{
   if (protocol == "sidre_hdf5")
   {
     Node n;
@@ -1388,7 +1396,7 @@ void Group::load(const std::string& path,
     importFrom(n["sidre"], preserve_contents);
     if (n.has_path("sidre_group_name"))
     {
-      new_name = n["sidre_group_name"].as_string();
+      name_from_file = n["sidre_group_name"].as_string();
     }
   }
   else if (protocol == "sidre_conduit_json")
@@ -1401,7 +1409,7 @@ void Group::load(const std::string& path,
     importFrom(n["sidre"], preserve_contents);
     if (n.has_path("sidre_group_name"))
     {
-      new_name = n["sidre_group_name"].as_string();
+      name_from_file = n["sidre_group_name"].as_string();
     }
   }
   else if (protocol == "sidre_json")
@@ -1414,7 +1422,7 @@ void Group::load(const std::string& path,
     importFrom(n["sidre"], preserve_contents);
     if (n.has_path("sidre_group_name"))
     {
-      new_name = n["sidre_group_name"].as_string();
+      name_from_file = n["sidre_group_name"].as_string();
     }
   }
   else if (protocol == "conduit_hdf5")
@@ -1424,7 +1432,7 @@ void Group::load(const std::string& path,
     importConduitTree(n, preserve_contents);
     if (n.has_path("sidre_group_name"))
     {
-      new_name = n["sidre_group_name"].as_string();
+      name_from_file = n["sidre_group_name"].as_string();
     }
   }
   else if (protocol == "conduit_bin"  ||
@@ -1436,67 +1444,39 @@ void Group::load(const std::string& path,
     importConduitTree(n, preserve_contents);
     if (n.has_path("sidre_group_name"))
     {
-      new_name = n["sidre_group_name"].as_string();
+      name_from_file = n["sidre_group_name"].as_string();
     }
   }
   else
   {
     SLIC_ERROR("Invalid protocol " << protocol << " for file load.");
   }
-
-  if (!new_name.empty())
-  {
-    renameOrWarn(new_name);
-  }
 }
 
 /*
  *************************************************************************
  *
- * Rename this group unless the new name already is held by the parent.
+ * Load Group (including Views and child Groups) from a file
  *
  *************************************************************************
  */
-void Group::renameOrWarn(const std::string& new_name)
+Group* Group::createGroupAndLoad(std::string & group_name,
+                                 const std::string& path,
+                                 const std::string& protocol,
+                                 bool & load_success)
 {
-  if (new_name != m_name)
+  load_success = false;
+  Group * child = createGroup(group_name);
+  if (child != nullptr)
   {
-    if (new_name.empty())
-    {
-      SLIC_WARNING("Attempted to rename group " << getPathName() <<
-                   " with an empty string. The name will not be changed.");
-
-    }
-    else
-    {
-      const Group* root = getDataStore()->getRoot();
-      Group* parent = getParent();
-      if (this == root || parent == nullptr)
-      {
-        rename(new_name);
-      }
-      else
-      {
-        if (parent->hasGroup(new_name))
-        {
-          SLIC_WARNING("Parent already has a child group named " << new_name <<
-                       ". The name of group " << getPathName() <<
-                       " will not be changed.");
-        }
-        else if (parent->hasView(new_name))
-        {
-          SLIC_WARNING("Parent already has a child view named " << new_name <<
-                       ". The name of group " << getPathName() <<
-                       " will not be changed.");
-        }
-        else
-        {
-          rename(new_name);
-        }
-      }
-    }
+    // In a forthcoming PR, load() will return a bool for success/failure
+    load_success = true;
+    child->load(path, protocol, false, group_name);
   }
+  
+  return child;
 }
+
 
 /*
  *************************************************************************
@@ -1574,10 +1554,18 @@ void Group::load(const hid_t& h5_id,
                  const std::string &protocol,
                  bool preserve_contents)
 {
+  std::string name_from_file;
+  load(h5_id, protocol, preserve_contents, name_from_file);
+}
+
+void Group::load(const hid_t& h5_id,
+                 const std::string &protocol,
+                 bool preserve_contents,
+                 std::string & name_from_file)
+{
   // supported here:
   // "sidre_hdf5"
   // "conduit_hdf5"
-  std::string new_name;
   if(protocol == "sidre_hdf5")
   {
     Node n;
@@ -1588,7 +1576,7 @@ void Group::load(const hid_t& h5_id,
     importFrom(n["sidre"], preserve_contents);
     if (n.has_path("sidre_group_name"))
     {
-      new_name = n["sidre_group_name"].as_string();
+      name_from_file = n["sidre_group_name"].as_string();
     }
   }
   else if( protocol == "conduit_hdf5")
@@ -1599,17 +1587,12 @@ void Group::load(const hid_t& h5_id,
     importConduitTree(n, preserve_contents);
     if (n.has_path("sidre_group_name"))
     {
-      new_name = n["sidre_group_name"].as_string();
+      name_from_file = n["sidre_group_name"].as_string();
     }
   }
   else
   {
     SLIC_ERROR("Invalid protocol " << protocol << " for file load.");
-  }
-
-  if (!new_name.empty())
-  {
-    renameOrWarn(new_name);
   }
 }
 

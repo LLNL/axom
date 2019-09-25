@@ -1096,7 +1096,6 @@ TEST(sidre_group,save_restore_empty_datastore)
 
     DataStore* ds2 = new DataStore();
     Group* root2 = ds2->getRoot();
-
     root2->load(file_path, protocols[i]);
 
     EXPECT_TRUE(ds2->getNumBuffers() == 0 );
@@ -1131,7 +1130,7 @@ TEST(sidre_group,save_load_via_hdf5_ids)
 
   // load via path based
   DataStore ds_load_generic;
-  ds_load_generic.getRoot()->load("out_save_load_via_hdf5_ids.sidre_hdf5",
+  ds_load_generic.getRoot()->load("out_save_load_via_hdf5_ids.sidre_hdf5", 
                                   "sidre_hdf5");
 
   // load via hdf5 id
@@ -1380,6 +1379,45 @@ TEST(sidre_group,save_restore_api)
 
   EXPECT_TRUE( load1->isEquivalentTo( load2) );
 
+  std::string newgroupname = "in case of blank";
+  std::string groupname = newgroupname;
+  bool loadSuccess = false;
+  Group * load3 =
+    load2->createGroupAndLoad(groupname, "sidre_save_subtree_sidre_json",
+                              "sidre_json", loadSuccess);
+
+  EXPECT_NE(load3, (Group*)nullptr);
+  EXPECT_TRUE(loadSuccess);
+  EXPECT_EQ(groupname, "");
+  if (load3 != nullptr)
+  {
+    EXPECT_EQ(newgroupname, load3->getName());
+    EXPECT_TRUE( load1->isEquivalentTo( load3, false ) );
+  }
+
+  std::string anothergroupname = "another group";
+  groupname = anothergroupname;
+  loadSuccess = false;
+  Group * load4 =
+    load2->createGroupAndLoad(groupname, "sidre_save_subtree_sidre_json",
+                              "sidre_json", loadSuccess);
+
+  EXPECT_NE(load4, (Group*)nullptr);
+  EXPECT_TRUE(loadSuccess);
+  if (load4 != nullptr)
+  {
+    EXPECT_EQ(anothergroupname, load4->getName());
+    EXPECT_TRUE( load3->isEquivalentTo( load4, false ) );
+  }
+
+  groupname = anothergroupname;
+  loadSuccess = false;
+  Group * load5 =
+    load2->createGroupAndLoad(groupname, "sidre_save_subtree_sidre_json",
+                              "sidre_json", loadSuccess);
+  EXPECT_EQ(load5, (Group*)nullptr);
+  EXPECT_FALSE(loadSuccess);
+
   delete ds_new;
 }
 
@@ -1501,7 +1539,7 @@ TEST(sidre_group,save_restore_name_change)
     child1->save(file_path, protocols[i]);
   }
 
-
+  std::string groupname;
   for (int i = 0 ; i < nprotocols ; ++i)
   {
     // Only restore sidre_hdf5 protocol
@@ -1518,9 +1556,11 @@ TEST(sidre_group,save_restore_name_change)
 
     EXPECT_EQ( child2->getName(), "child2" );
 
-    child2->load(file_path, protocols[i]);
+    child2->load(file_path, protocols[i], false, groupname);
 
-    EXPECT_EQ( child2->getName(), "child1" );
+    EXPECT_EQ( child2->getName(), "child2" );
+
+    child2->rename(groupname);
 
     EXPECT_TRUE( root1->isEquivalentTo( root2 ) );
 
@@ -2138,6 +2178,7 @@ TEST(sidre_group,save_load_preserve_contents)
   }
 
   std::vector<std::string> protocols = getAvailableSidreProtocols();
+  std::string groupname;
   for(size_t i = 0 ; i < protocols.size() ; ++i)
   {
     std::string& protocol = protocols[i];
@@ -2170,8 +2211,9 @@ TEST(sidre_group,save_load_preserve_contents)
 
     DataStore ds_load;
     Group* loadtree0 = ds_load.getRoot()->createGroup("tree0");
-    loadtree0->load(file_path0, protocol);
-    loadtree0->load(file_path1, protocol, true);
+    loadtree0->load(file_path0, protocol, false, groupname);
+    loadtree0->load(file_path1, protocol, true, groupname);
+    loadtree0->rename(groupname);
 
     SLIC_INFO("Tree from protocol: " << protocol);
     // show the result
