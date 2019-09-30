@@ -15,6 +15,63 @@
 
 namespace primal = axom::primal;
 
+/**
+ * Helper function to compute the area and centroid of a curved polygon and to check that they match expectations, stored in \a expArea and \a expCentroid. Areas and Moments are computed within tolerance \a eps and checks use \a test_eps.
+ */
+template <typename CoordType, int DIM>
+void checkMoments(const primal::CurvedPolygon<CoordType, DIM>& bPolygon,
+                  const CoordType expArea,
+                  const primal::Point<CoordType, DIM>& expMoment,
+                  double eps,
+                  double test_eps)
+{
+  using Array = std::vector<CoordType>;
+
+  EXPECT_DOUBLE_EQ(expArea, bPolygon.area(eps));
+  for(int i = 0; i < DIM; ++i)
+  {
+    EXPECT_DOUBLE_EQ(expMoment[i], bPolygon.centroid(eps)[i]);
+  }
+}
+
+template <typename CoordType, int DIM>
+primal::CurvedPolygon<CoordType, DIM> createPolygon(
+  std::vector<primal::Point<CoordType, DIM>> ControlPoints,
+  std::vector<int> orders)
+{
+  using PointType = primal::Point<CoordType, DIM>;
+  using CurvedPolygonType = primal::CurvedPolygon<CoordType, DIM>;
+  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
+
+  const int num_edges = orders.size();
+  const int num_unique_control_points = ControlPoints.size();
+
+  //std::cout << num_edges << ", " << num_unique_control_points << std::endl;
+  //std::cout << ControlPoints << std::endl;
+  for(int i = 0; i < num_edges; ++i)
+  {
+    std::cout << orders[i] << std::endl;
+  }
+
+  //checks if the orders and control points given will give a valid polygon
+  EXPECT_EQ(accumulate(orders.begin(), orders.end(), 0) + 1,
+            num_unique_control_points);
+
+  CurvedPolygonType bPolygon;
+  int iter = 0;
+  for(int j = 0; j < num_edges; ++j)
+  {
+    std::vector<PointType> subCP;
+    subCP.assign(ControlPoints.begin() + iter,
+                 ControlPoints.begin() + iter + orders[j] + 1);
+    BezierCurveType addCurve(subCP, orders[j]);
+    bPolygon.addEdge(addCurve);
+    iter += (orders[j]);
+  }
+  std::cout << bPolygon << std::endl;
+  return bPolygon;
+}
+
 //------------------------------------------------------------------------------
 TEST(primal_curvedpolygon, constructor)
 {
@@ -87,7 +144,6 @@ TEST(primal_curvedpolygon, isClosed)
   using CoordType = double;
   using CurvedPolygonType = primal::CurvedPolygon<CoordType, DIM>;
   using PointType = primal::Point<CoordType, DIM>;
-  using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
 
   SLIC_INFO("Test checking if CurvedPolygon is closed.");
 
@@ -95,27 +151,19 @@ TEST(primal_curvedpolygon, isClosed)
   EXPECT_EQ(0, bPolygon.numEdges());
   EXPECT_EQ(false, bPolygon.isClosed());
 
-  PointType controlPoints[2] = {PointType::make_point(0.6, 1.2),
-                                PointType::make_point(0.3, 2.0)};
+  std::vector<PointType> CP = {PointType::make_point(0.6, 1.2),
+                               PointType::make_point(0.3, 2.0),
+                               PointType::make_point(0.0, 1.6),
+                               PointType::make_point(0.6, 1.2)};
+  std::vector<int> orders = {1, 1, 1};
 
-  PointType controlPoints2[2] = {PointType::make_point(0.3, 2.0),
-                                 PointType::make_point(0.0, 1.6)};
+  std::vector<PointType> subCP = {PointType::make_point(0.6, 1.2),
+                                  PointType::make_point(0.3, 2.0)};
+  std::vector<int> suborders = {1};
+  CurvedPolygonType subPolygon = createPolygon(subCP, suborders);
+  EXPECT_EQ(false, subPolygon.isClosed());
 
-  PointType controlPoints3[2] = {PointType::make_point(0.0, 1.6),
-                                 PointType::make_point(0.6, 1.2)};
-
-  BezierCurveType bCurve(controlPoints, 1);
-  bPolygon.addEdge(bCurve);
-  EXPECT_EQ(false, bPolygon.isClosed());
-
-  BezierCurveType bCurve2(controlPoints2, 1);
-  bPolygon.addEdge(bCurve2);
-
-  EXPECT_EQ(2, bPolygon.numEdges());
-  EXPECT_EQ(false, bPolygon.isClosed());
-
-  BezierCurveType bCurve3(controlPoints3, 1);
-  bPolygon.addEdge(bCurve3);
+  bPolygon = createPolygon(CP, orders);
 
   EXPECT_EQ(3, bPolygon.numEdges());
   EXPECT_EQ(true, bPolygon.isClosed());
@@ -135,43 +183,37 @@ TEST(primal_curvedpolygon, split_edge)
 
   SLIC_INFO("Test checking CurvedPolygon edge split.");
 
-  CurvedPolygonType bPolygon;
-  EXPECT_EQ(0, bPolygon.numEdges());
+  std::vector<PointType> CP = {PointType::make_point(0.6, 1.2),
+                               PointType::make_point(0.3, 2.0),
+                               PointType::make_point(0.0, 1.6),
+                               PointType::make_point(0.6, 1.2)};
 
-  PointType controlPoints[2] = {PointType::make_point(0.6, 1.2),
-                                PointType::make_point(0.3, 2.0)};
+  std::vector<int> orders32 = {1, 1, 1};
+  CurvedPolygonType bPolygon32 = createPolygon(CP, orders32);
+  std::cout << "Got here!! " << std::endl;
+  std::vector<PointType> subCP;
 
-  PointType controlPoints2[2] = {PointType::make_point(0.3, 2.0),
-                                 PointType::make_point(0.0, 1.6)};
+  subCP.assign(CP.begin(), CP.begin() + 2);
+  BezierCurveType bCurve(subCP, 1);
+  bPolygon32.splitEdge(0, .5);
 
-  PointType controlPoints3[2] = {PointType::make_point(0.0, 1.6),
-                                 PointType::make_point(0.6, 1.2)};
-
-  BezierCurveType bCurve(controlPoints, 1);
-  bPolygon.addEdge(bCurve);
-
-  BezierCurveType bCurve2(controlPoints2, 1);
-  bPolygon.addEdge(bCurve2);
-
-  BezierCurveType bCurve3(controlPoints3, 1);
-  bPolygon.addEdge(bCurve3);
-
-  bPolygon.splitEdge(0, .5);
+  BezierCurveType bCurve2;
+  BezierCurveType bCurve3;
   bCurve.split(.5, bCurve2, bCurve3);
 
-  EXPECT_EQ(bPolygon.numEdges(), 4);
-  for(int i = 0; i < bPolygon[0].getOrder(); ++i)
+  EXPECT_EQ(bPolygon32.numEdges(), 4);
+  for(int i = 0; i < bPolygon32[0].getOrder(); ++i)
   {
     for(int dimi = 0; dimi < DIM; ++dimi)
     {
-      EXPECT_EQ(bPolygon[0][i][dimi], bCurve2[i][dimi]);
-      EXPECT_EQ(bPolygon[1][i][dimi], bCurve3[i][dimi]);
+      EXPECT_EQ(bPolygon32[0][i][dimi], bCurve2[i][dimi]);
+      EXPECT_EQ(bPolygon32[1][i][dimi], bCurve3[i][dimi]);
     }
   }
 }
 
 //----------------------------------------------------------------------------------
-TEST(primal_curvedpolygon, area_triangle_degenerate)
+TEST(primal_curvedpolygon, moments_triangle_degenerate)
 {
   const int DIM = 2;
   using CoordType = double;
@@ -185,29 +227,29 @@ TEST(primal_curvedpolygon, area_triangle_degenerate)
   CurvedPolygonType bPolygon;
   EXPECT_EQ(0, bPolygon.numEdges());
   EXPECT_EQ(0.0, bPolygon.area());
+  PointType origin = PointType::make_point(0.0, 0.0);
 
   PointType controlPoints[2] = {PointType::make_point(0.6, 1.2),
                                 PointType::make_point(0.3, 2.0)};
 
   PointType controlPoints2[2] = {PointType::make_point(0.3, 2.0),
                                  PointType::make_point(0.0, 1.6)};
-
   PointType controlPoints3[2] = {PointType::make_point(0.0, 1.6),
                                  PointType::make_point(0.6, 1.2)};
 
   BezierCurveType bCurve(controlPoints, 1);
   bPolygon.addEdge(bCurve);
-  EXPECT_EQ(0.0, bPolygon.area());
+  checkMoments(bPolygon, 0.0, origin, 1e-14, 1e-15);
 
   BezierCurveType bCurve2(controlPoints2, 1);
   bPolygon.addEdge(bCurve2);
-  EXPECT_EQ(0.0, bPolygon.area());
+  checkMoments(bPolygon, 0.0, origin, 1e-14, 1e-15);
 
   BezierCurveType bCurve3(controlPoints3, 1);
   bPolygon.addEdge(bCurve3);
 
-  bPolygon[2][1][0] -= 1e-10;
-  EXPECT_EQ(0.0, bPolygon.area(1e-14));
+  bPolygon[2][1][0] -= 1e-11;
+  checkMoments(bPolygon, 0.0, origin, 1e-14, 1e-15);
 }
 
 //----------------------------------------------------------------------------------
@@ -362,7 +404,7 @@ TEST(primal_curvedpolygon, moment_triangle_linear)
   BezierCurveType bCurve3(controlPoints3, 1);
   bPolygon.addEdge(bCurve3);
 
-  PointType M = bPolygon.moment();
+  PointType M = bPolygon.centroid();
   CoordType trueM1 = 0.3;
   CoordType trueM2 = 1.6;
 
@@ -405,7 +447,7 @@ TEST(primal_curvedpolygon, moment_triangle_mixed_order)
   BezierCurveType bCurve3(controlPoints3, 1);
   bPolygon.addEdge(bCurve3);
 
-  PointType M = bPolygon.moment();
+  PointType M = bPolygon.centroid();
   CoordType trueM2 = 1.55764705882353;
   CoordType trueM1 = .2970147058823527;
 
@@ -483,8 +525,8 @@ TEST(primal_curvedpolygon, intersection_triangle_linear)
   bool didIntersect = intersect(bPolygon, bPolygon2, bPolygons3);
   EXPECT_TRUE(didIntersect);
   std::cout << bPolygons3.size() << std::endl;
-  int nEd = bPolygons3.size();
-  for(int i = 0; i < bPolygons3.size(); ++i)
+  // int nEd= bPolygons3.size();
+  for(int i = 0; i < static_cast<int>(bPolygons3.size()); ++i)
   {
     std::cout << bPolygons3[i] << std::endl;
   }
@@ -843,6 +885,7 @@ TEST(primal_curvedpolygon, area_intersection_triangle_inclusion)
   bPolygons3.clear();
   bool didIntersect2 = intersect(bPolygon2, bPolygon, bPolygons3);
   EXPECT_TRUE(didIntersect);
+  EXPECT_TRUE(didIntersect2);
   EXPECT_EQ(bPolygons3.size(), 1);
 }
 //----------------------------------------------------------------------------------

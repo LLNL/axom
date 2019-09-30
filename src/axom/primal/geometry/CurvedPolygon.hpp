@@ -215,7 +215,7 @@ public:
     }
   }
 
-  PointType moment(double tol = 1e-8) const
+  PointType centroid(double tol = 1e-8) const
   {
     const int ngon = numEdges();
     PointType M = PointType::make_point(0.0, 0.0);
