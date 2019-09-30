@@ -174,6 +174,29 @@ public:
     }
   }
 
+  /*!
+   * \brief Constructor for a Bezier Curve from an vector of coordinates
+   *
+   * \param [in] pts a vector with ord+1 control points
+   * \param [in] ord The Curve's polynomial order
+   * \pre order is greater than or equal to zero
+   *
+   */
+
+  BezierCurve(std::vector<PointType> pts, int ord)
+  {
+    SLIC_ASSERT(pts != nullptr);
+    SLIC_ASSERT(ord >= 0);
+
+    const int sz = utilities::max(0, ord+1);
+    m_controlPoints.resize(sz);
+    m_controlPoints = pts;
+    /*for (int p = 0 ; p <= ord ; ++p)
+    {
+      m_controlPoints[p] = pts[p];
+    }*/
+  }
+
   /*! Sets the order of the Bezier Curve*/
   void setOrder( int ord) { m_controlPoints.resize(ord+1); }
 
