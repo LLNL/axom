@@ -30,6 +30,7 @@ set( primal_tests
     primal_triangle.cpp
     primal_vector.cpp
     primal_curved_polygon.cpp
+    primal_curved_polygon_intersect.cpp
    )
 
 set(primal_test_depends axom fmt gtest)
