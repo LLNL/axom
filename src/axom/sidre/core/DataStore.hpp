@@ -45,8 +45,9 @@ template <typename TYPE> class MapCollection;
  *        Buffer objects.
  *
  * It maintains a collection of Buffer objects and owns the "root"
- * Group, called "/". A Group hierarchy (a tree) is created by
- * creating child Groups of Groups.
+ * Group.  The initial name of the root Group is the empty string: a
+ * code uses the getRoot() method to retrieve the root Group.  A Group
+ * hierarchy (a tree) is created by creating child Groups of Groups.
  */
 class DataStore
 {
