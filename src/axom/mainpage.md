@@ -14,6 +14,7 @@ Axom provides libraries that address common computer science needs.  It grew fro
 * @subpage slamtop provides an API to construct and process meshes.
 * @subpage slictop provides infrastructure for logging application messages.
 * @subpage spintop provides spatial acceleration data structures, also known as spatial indexes.
+* @subpage curvestop provides a light-weight representation for curve data and associated operators.
 
 Dependencies between components are as follows:
 - Core has no dependencies, and the other modules depend on Core

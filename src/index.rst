@@ -10,16 +10,16 @@ Axom
 .. note:: This page is under heavy construction.
 
 Axom is a project in WCI/WSC that is funded by ECP/ATDM.
-Its principal goal is to provide a collection of robust and flexible software 
-components that serve as building blocks for LLNL simulation tools. The 
-emphasis is on sharing core infrastructure software amongst applications 
+Its principal goal is to provide a collection of robust and flexible software
+components that serve as building blocks for LLNL simulation tools. The
+emphasis is on sharing core infrastructure software amongst applications
 rather than having different codes develop and maintain similar capabilities.
 
-A key objective of Axom is to facilitate integration of novel, 
-forward-looking computer science capabilities into LLNL simulation codes. 
-Thus, a central function of Axom is to enable and simplify data exchange 
-between applications and tools that Axom provides. To meet these 
-objectives, developers of Axom components emphasize the following features 
+A key objective of Axom is to facilitate integration of novel,
+forward-looking computer science capabilities into LLNL simulation codes.
+Thus, a central function of Axom is to enable and simplify data exchange
+between applications and tools that Axom provides. To meet these
+objectives, developers of Axom components emphasize the following features
 in software design and implementation:
 
   * Flexibility to meet the needs of a diverse set of applications
@@ -55,6 +55,7 @@ for Axom software components:
    :caption: Component User Guides
 
    Slic (Simple Logging Interface Code) <axom/slic/docs/sphinx/index>
+   Curves (Curve Data Operators) <axom/curves/docs/sphinx/index>
    Lumberjack (Scalable parallel message logging and filtering) <axom/lumberjack/docs/sphinx/index>
    Sidre (Simulation data repository) <axom/sidre/docs/sphinx/index>
    Slam (Set-theoretic lightweight API for meshes) <axom/slam/docs/sphinx/index>
@@ -69,6 +70,7 @@ Source Code Documentation
 
   *  `Axom <../../../doxygen/axom_doxygen/html/index.html>`_
   *  `Core <../../../doxygen/axom_doxygen/html/coretop.html>`_
+  *  `Curves <../../../doxygen/axom_doxygen/html/curvestop.html>`_
   *  `Lumberjack <../../../doxygen/axom_doxygen/html/lumberjacktop.html>`_
   *  `Mint <../../../doxygen/axom_doxygen/html/minttop.html>`_
   *  `Primal <../../../doxygen/axom_doxygen/html/primaltop.html>`_
@@ -98,12 +100,12 @@ indicate hard dependencies; dashed links indicate optional dependencies.
 Other Tools Application Developers May Find Useful
 ======================================================
 
-Axom developers support other tools that can be used by software 
+Axom developers support other tools that can be used by software
 projects independent of the Axom. These include:
 
   *  `BLT <https://github.com/LLNL/blt>`_ (CMake-based build system developed by the Axom team to simplify CMake usage and development tool integration)
   *  `Shroud <https://github.com/LLNL/shroud>`_ (Generator for native C and Fortran APIs from C++ code)
-  *  `Conduit <https://lc.llnl.gov/confluence/display/CON/Conduit+Home>`_ (Library for describing and managing in-memory data structures) 
+  *  `Conduit <https://lc.llnl.gov/confluence/display/CON/Conduit+Home>`_ (Library for describing and managing in-memory data structures)
 
 .. toctree::
    :maxdepth: 1
@@ -112,7 +114,7 @@ projects independent of the Axom. These include:
    docs/sphinx/dev_guide/index
    docs/sphinx/coding_guide/index
 
-======================================= 
+=======================================
 Communicating with the Axom Team
 =======================================
 
@@ -120,18 +122,18 @@ Communicating with the Axom Team
 Mailing Lists
 --------------
 
-The project maintains two email lists: 
+The project maintains two email lists:
 
-  * 'axom-users@llnl.gov' is how Axom users can contact developers for questions, report issues, etc. 
-  * 'axom-dev@llnl.gov' is for communication among team members. 
+  * 'axom-users@llnl.gov' is how Axom users can contact developers for questions, report issues, etc.
+  * 'axom-dev@llnl.gov' is for communication among team members.
 
 
--------------- 
+--------------
 Chat Room
--------------- 
+--------------
 
-We also have a chat room on LLNL's Cisco Jabber instance called 
-'Axom Dev'. It is open to anyone on the llnl network. 
+We also have a chat room on LLNL's Cisco Jabber instance called
+'Axom Dev'. It is open to anyone on the llnl network.
 Just log onto Jabber and join the room.
 
 
@@ -139,8 +141,8 @@ Just log onto Jabber and join the room.
 Atlassian Tools
 -----------------
 
-The main interaction hub for the Axom software is the Atlassian tool suite 
-on the Livermore Computing Collaboration Zone (CZ). These tools can be 
+The main interaction hub for the Axom software is the Atlassian tool suite
+on the Livermore Computing Collaboration Zone (CZ). These tools can be
 accessed through the `MyLC Portal <https://lc.llnl.gov>`_.
 
 Direct links to the Axom Atlassian projects/spaces are:
