@@ -87,6 +87,7 @@
 #cmakedefine AXOM_USE_SLAM
 #cmakedefine AXOM_USE_SLIC
 #cmakedefine AXOM_USE_SPIN
+#cmakedefine AXOM_USE_CURVES
 
 
 /*
