@@ -19,7 +19,7 @@
 #ifdef AXOM_DEBUG
 # define ITERMAX 1   //define how many iterations to run test code
 #else
-# define ITERMAX 10  //define how many iterations to run test code
+# define ITERMAX 20  //define how many iterations to run test code
 #endif
 
 #include "helper.hpp"
@@ -982,7 +982,6 @@ void calculate_pressure_cell_dom_full(Robey_data& data)
 void calculate_pressure_cell_dom_compact(Robey_data& data)
 {
   int ncells = data.ncells;
-  int nmats = data.nmats;
   std::vector<double>& Volfrac = data.Volfrac_sparse;
   std::vector<double>& Densityfrac = data.Densityfrac_sparse;
   std::vector<double>& Temperaturefrac = data.Temperaturefrac_sparse;
@@ -992,7 +991,7 @@ void calculate_pressure_cell_dom_compact(Robey_data& data)
   std::vector<int>& mat_id = data.col_idx;
 
   SLIC_INFO("-- Calculating pressure Cell-Dominant compact array access--");
-  std::vector<double> Pressurefrac(ncells*nmats, 0);
+  std::vector<double> Pressurefrac(begin_idx.back(), 0);
 
   timer.reset();
 
@@ -1007,7 +1006,7 @@ void calculate_pressure_cell_dom_compact(Robey_data& data)
         const int m = mat_id[ii];
         const auto vf = Volfrac[ii];
 
-        Pressurefrac[ic*nmats + m] = (vf > 0.)
+        Pressurefrac[ii] = (vf > 0.)
             ? (nmatconsts[m] * Densityfrac[ii] * Temperaturefrac[ii]) / vf
             :  0.0;
       }
@@ -1095,9 +1094,12 @@ void calculate_pressure_cell_dom_mm_submap(MultiMat& mm)
   auto& nmatconsts = mm.get1dField<double>("nmatconsts");
   
   // Store result in a dense field
+  /*
   using DenseFieldSet = typename MultiMat::ProductSetType;
   using DenseField = MultiMat::Field2D<double, DenseFieldSet>;
   DenseField Pressurefrac(mm.getDense2dFieldSet());
+  */
+  auto Pressurefrac = mm.get2dField<double>("Pressurefrac");
 
   timer.reset();
 
@@ -1118,7 +1120,7 @@ void calculate_pressure_cell_dom_mm_submap(MultiMat& mm)
         const int m = Volfrac_row.index(j);
         const auto vf = Volfrac_row(j);
 
-        Pressurefrac_row(m) = vf > 0.
+        Pressurefrac_row(j) = vf > 0.
             ? (nmatconsts[m] * Densityfrac_row(j) * Tempfrac_row(j)) / vf
             : 0.;
       }
@@ -1151,9 +1153,12 @@ void calculate_pressure_cell_dom_mm_submap(MultiMat& mm)
   auto& nmatconsts = mm.get1dField<double>("nmatconsts");
 
   // Store result in a dense field
+  /*
   using DenseFieldSet = typename MultiMat::ProductSetType;
   using DenseField = MultiMat::Field2D<double, DenseFieldSet>;
   DenseField Pressurefrac(mm.getDense2dFieldSet());
+  */
+  auto Pressurefrac = mm.get2dField<double, BSet>("Pressurefrac");
 
   timer.reset();
   
@@ -1174,7 +1179,8 @@ void calculate_pressure_cell_dom_mm_submap(MultiMat& mm)
         const int m = Volfrac_row.index(j);
         const auto vf = Volfrac_row(j);
 
-        Pressurefrac_row(m) = (vf > 0.)
+        //Pressurefrac_row(m) 
+        Pressurefrac_row(j) = (vf > 0.)
             ? (nmatconsts[m] * Densityfrac_row(j) * Tempfrac_row(j)) / vf
             : 0.;
       }
@@ -1712,41 +1718,31 @@ void average_density_over_nbr_cell_dom_full(Robey_data& data)
 
     for (int ic = 0; ic < ncells; ++ic)
     {
-      double xc[2];
-      xc[0] = cen[ic * 2]; xc[1] = cen[ic * 2 + 1];
+      double xc[2] = { cen[ic*2], cen[ic*2 + 1] };
       int nn = nnbrs[ic];
-      int cnbrs[8];
-      double dsqr[8];
-
-      for (int n = 0; n < nn; ++n)
-        cnbrs[n] = nbrs[ic * 8 + n];
-
-      for (int n = 0; n < nn; ++n)
-      {
-        dsqr[n] = 0.0;
-        for (int d = 0; d < 2; ++d) //original condition was d < 1 ???
-        {
-          double ddist = (xc[d] - cen[cnbrs[n] * 2 + d]);
-          dsqr[n] += ddist * ddist;
-        }
-      }
-
+      const int* cnbrs = &(nbrs[ic * 8]);
+      
       for (int m = 0; m < nmats; ++m)
       {
         if (Volfrac[ic * nmats + m] > 0.0)
         {
           int nnm = 0;         // number of nbrs with this material
+          double den = 0.0;
           for (int n = 0; n < nn; ++n)
           {
             int jc = cnbrs[n];
             if (Volfrac[jc * nmats + m] > 0.0)
             {
-              MatDensity_average[ic * nmats + m] += Densityfrac[jc * nmats + m] / dsqr[n];
+              double dx = xc[0] - cen[jc * 2 + 0];
+              double dy = xc[1] - cen[jc * 2 + 1];
+              double dsqr = dx * dx + dy * dy;
+
+              den += Densityfrac[jc * nmats + m] / dsqr;
               ++nnm;
             }
           }
           if (nnm > 0)
-            MatDensity_average[ic * nmats + m] /= nnm;
+            MatDensity_average[ic * nmats + m] = den / nnm;
           else
             SLIC_ASSERT(MatDensity_average[ic * nmats + m] == 0.0);
         }
@@ -1774,7 +1770,6 @@ void average_density_over_nbr_cell_dom_full(Robey_data& data)
 void average_density_over_nbr_cell_dom_compact(Robey_data& data)
 {
   int ncells = data.ncells;
-  int nmats = data.nmats;
   std::vector<double>& Densityfrac = data.Densityfrac_sparse;
   const std::vector<double>& cen = data.cen;
   const std::vector<int>& nnbrs = data.nnbrs;
@@ -1784,7 +1779,7 @@ void average_density_over_nbr_cell_dom_compact(Robey_data& data)
 
   SLIC_INFO("-- Average Density over Neighbors, Cell-Dominant Compact Matrix Array Access --");
 
-  std::vector<double> MatDensity_average(ncells * nmats, 0.0);
+  std::vector<double> MatDensity_average(begin_idx.back(), 0.0);
 
   timer.reset();
 
@@ -1797,28 +1792,14 @@ void average_density_over_nbr_cell_dom_compact(Robey_data& data)
 
     for (int ic = 0; ic < ncells; ++ic)
     {
-      double xc[2];
-      xc[0] = cen[ic * 2]; xc[1] = cen[ic * 2 + 1];
+      double xc[2] = { cen[ic * 2], cen[ic * 2 + 1] };
       int nn = nnbrs[ic];
-      int cnbrs[8];
-      double dsqr[8];
-
-      for (int n = 0; n < nn; ++n)
-        cnbrs[n] = nbrs[ic * 8 + n];
-
-      for (int n = 0; n < nn; ++n)
-      {
-        dsqr[n] = 0.0;
-        for (int d = 0; d < 2; ++d) //original condition was  d < 1 ???
-        {
-          double ddist = (xc[d] - cen[cnbrs[n] * 2 + d]);
-          dsqr[n] += ddist * ddist;
-        }
-      }
+      const int* cnbrs = &(nbrs[ic * 8]);
 
       for (int ii = begin_idx[ic]; ii < begin_idx[ic + 1]; ++ii)
       {
         int m = mat_id[ii];
+        double den = 0.0;
         int nnm = 0;         // number of nbrs with this material
         for (int n = 0; n < nn; ++n)
         {
@@ -1827,7 +1808,11 @@ void average_density_over_nbr_cell_dom_compact(Robey_data& data)
           {
             if (mat_id[jj] == m)
             {
-              MatDensity_average[ic * nmats + m] += Densityfrac[jj] / dsqr[n];
+              double dx = xc[0] - cen[jc * 2 + 0];
+              double dy = xc[1] - cen[jc * 2 + 1];
+              double dsqr = dx * dx + dy * dy;
+
+              den += Densityfrac[jj] / dsqr;
               ++nnm;
               break;
             }
@@ -1835,9 +1820,9 @@ void average_density_over_nbr_cell_dom_compact(Robey_data& data)
         }
 
         if(nnm > 0)
-          MatDensity_average[ic * nmats + m] /= nnm;
+          MatDensity_average[ii] = den / nnm;
         else
-          SLIC_ASSERT(MatDensity_average[ic * nmats + m] == 0.0);
+          SLIC_ASSERT(MatDensity_average[ii] == 0.0);
       }
     }
     
@@ -2066,9 +2051,8 @@ void average_density_over_nbr_cell_dom_full_mm_submap(MultiMat& mm, Robey_data& 
   // Get the slam relations and maps for the mesh data
   const auto& neighbors = data.slam_neighbors;
   const auto& cen = data.slam_centroids;
-  const int MAX_NBRS = 8;
 
-  MultiMat::Field2D<double, BSet> MatDensity_average(Volfrac.set());
+  auto MatDensity_average = mm.get2dField<double, BSet>("MatDensityAverage");
 
   timer.reset();
 
@@ -2085,14 +2069,6 @@ void average_density_over_nbr_cell_dom_full_mm_submap(MultiMat& mm, Robey_data& 
 
       // compute the squared distances to neighbors
       double xc[2] = {cen(ic,0), cen(ic,1)};
-      double dsqr[MAX_NBRS];
-
-      for (int n : nbrs.positions() )
-      {
-        double dx = xc[0] - cen(nbrs[n],0);
-        double dy = xc[1] - cen(nbrs[n],1);
-        dsqr[n] = dx*dx + dy * dy;
-      }
 
       auto Volfrac_row = Volfrac(ic);
       auto AvgMatDensity_row = MatDensity_average(ic);
@@ -2105,9 +2081,14 @@ void average_density_over_nbr_cell_dom_full_mm_submap(MultiMat& mm, Robey_data& 
           int nnm = 0;             // number of nbrs with this material
           for (int n: nbrs.positions())
           {
-            if( Volfrac(nbrs[n], m) > 0.0)
+            int jc = nbrs[n];
+            if( Volfrac(jc, m) > 0.0)
             {
-              den += Densityfrac(nbrs[n], m) / dsqr[n];
+              double dx = xc[0] - cen(jc, 0);
+              double dy = xc[1] - cen(jc, 1);
+              double dsqr = dx*dx + dy*dy;
+
+              den += Densityfrac(jc, m) / dsqr;
               ++nnm;
             }
           }
@@ -2242,16 +2223,15 @@ void average_density_over_nbr_cell_dom_compact_mm_submap(MultiMat& mm, Robey_dat
   SLIC_ASSERT(mm.isCellDom());
   SLIC_ASSERT(mm.isSparse());
 
-  const std::vector<double> & cen = data.cen;
-  const std::vector<int> & nnbrs = data.nnbrs;
-  const std::vector<int> & nbrs = data.nbrs;
+  const auto& neighbors = data.slam_neighbors;
+  const auto& cen = data.slam_centroids;
 
   int ncells = mm.getNumberOfCells();
-  int nmats = mm.getNumberOfMaterials();
   MultiMat::Field2D<double> & Densityfrac = mm.get2dField<double>("Densityfrac");
   //MultiMat::Field2D<double> & Volfrac = mm.get2dField<double>("Volfrac");
+  auto MatDensity_average = mm.get2dField<double>("MatDensityAverage");
 
-  std::vector<double> MatDensity_average(ncells * nmats, 0);
+  //std::vector<double> MatDensity_average(ncells * nmats, 0);
 
   timer.reset();
 
@@ -2264,56 +2244,38 @@ void average_density_over_nbr_cell_dom_compact_mm_submap(MultiMat& mm, Robey_dat
 
     for (int ic = 0; ic < ncells; ++ic)
     {
-      double xc[2];
-      xc[0] = cen[ic * 2]; xc[1] = cen[ic * 2 + 1];
-      int nn = nnbrs[ic];
-      int cnbrs[8];
-      double dsqr[8];
-
-      for (int n = 0; n < nn; ++n)
-        cnbrs[n] = nbrs[ic * 8 + n];
-
-      for (int n = 0; n < nn; ++n)
-      {
-        dsqr[n] = 0.0;
-        for (int d = 0; d < 2; ++d) //original condition was  d < 1 ???
-        {
-          double ddist = (xc[d] - cen[cnbrs[n] * 2 + d]);
-          dsqr[n] += ddist * ddist;
-        }
-      }
+      auto nbrs = neighbors[ic];
+      double xc[2] = { cen(ic,0), cen(ic,1) };
 
       auto Densityfrac_row = Densityfrac(ic);
-
+      auto AvgMatDensity_row = MatDensity_average(ic);
       for (int k = 0; k < Densityfrac_row.size(); ++k)
       {
-        int m = Densityfrac_row.index(k);
-        
+        const int m = Densityfrac_row.index(k);
+
+        double den = 0.;
         int nnm = 0;         // number of nbrs with this material
-        for (int n = 0; n < nn; ++n)
+        for (int n : nbrs.positions())
         {
-          int jc = cnbrs[n];
-          auto Densityfrac_jrow = Densityfrac(jc);
-          for (int jj = 0; jj < Densityfrac_jrow.size(); ++jj)
+          int jc = nbrs[n];
+          const auto* val = Densityfrac.findValue(jc, m);
+          if (val != nullptr)
           {
-            if (Densityfrac_jrow.index(jj) == m)
-            {
-              MatDensity_average[ic * nmats + m] += Densityfrac_jrow(jj) / dsqr[n];
-              ++nnm;
-              break;
-            }
+            double dx = xc[0] - cen(jc, 0);
+            double dy = xc[1] - cen(jc, 1);
+            double dsqr = dx*dx + dy * dy;
+
+            den += *val / dsqr;
+            ++nnm;
           }
         }
-        if (nnm > 0)
-          MatDensity_average[ic * nmats + m] /= nnm;
-        else
-          SLIC_ASSERT(MatDensity_average[ic * nmats + m] == 0.0);
 
+        AvgMatDensity_row(k) = nnm > 0 ? den / nnm : 0.;
       }
     }
 
     timer.record();
-    data_checker.check(MatDensity_average);
+    data_checker.check(MatDensity_average.getMap()->data());
   }
 
   double act_perf = timer.get_median();
@@ -2341,12 +2303,14 @@ void average_density_over_nbr_cell_dom_compact_mm_submap(MultiMat& mm, Robey_dat
   // Get the slam relations and maps for the mesh data
   const auto& neighbors = data.slam_neighbors;
   const auto& cen = data.slam_centroids;
-  const int MAX_NBRS = 8;
 
   // Store result in a dense field
+  /*
   using DenseFieldSet = typename MultiMat::ProductSetType;
   using DenseField = MultiMat::Field2D<double, DenseFieldSet>;
   DenseField MatDensity_average(mm.getDense2dFieldSet());
+  */
+  auto MatDensity_average = mm.get2dField<double>("MatDensityAverage");
 
   timer.reset();
 
@@ -2363,14 +2327,6 @@ void average_density_over_nbr_cell_dom_compact_mm_submap(MultiMat& mm, Robey_dat
 
       // compute the squared distances to neighbors
       double xc[2] = { cen(ic,0), cen(ic,1) };
-      double dsqr[MAX_NBRS];
-
-      for (int n : nbrs.positions())
-      {
-        double dx = xc[0] - cen(nbrs[n], 0);
-        double dy = xc[1] - cen(nbrs[n], 1);
-        dsqr[n] = dx*dx + dy * dy;
-      }
 
       auto Densityfrac_row = Densityfrac(ic);
       auto AvgMatDensity_row = MatDensity_average(ic);
@@ -2382,15 +2338,20 @@ void average_density_over_nbr_cell_dom_compact_mm_submap(MultiMat& mm, Robey_dat
         int nnm = 0;         // number of nbrs with this material
         for (int n : nbrs.positions())
         {
-          const auto* val = Densityfrac.findValue(nbrs[n], m);
+          int jc = nbrs[n];
+          const auto* val = Densityfrac.findValue(jc, m);
           if ( val != nullptr)
           {
-            den += *val / dsqr[n];
+            double dx = xc[0] - cen(jc, 0);
+            double dy = xc[1] - cen(jc, 1);
+            double dsqr = dx*dx + dy * dy;
+
+            den += *val / dsqr;
             ++nnm;
           }
         }
                 
-        AvgMatDensity_row(m) = nnm > 0 ? den / nnm : 0.;
+        AvgMatDensity_row(k) = nnm > 0 ? den / nnm : 0.;
       }
     }
 
@@ -2623,33 +2584,32 @@ void average_density_over_nbr_mat_dom_full(Robey_data& data)
 
     timer.start();
 
-    for (int m = 0; m < nmats; ++m) {
-      for (int ic = 0; ic < ncells; ++ic) {
-        if (Volfrac[m * ncells + ic] > 0.0) {
-          double xc[2];
-          xc[0] = cen[ic*2]; xc[1] = cen[ic*2+1];
+    for (int m = 0; m < nmats; ++m) 
+    {
+      for (int ic = 0; ic < ncells; ++ic) 
+      {
+        if (Volfrac[m * ncells + ic] > 0.0) 
+        {
+          double xc[2] = { cen[ic * 2], cen[ic * 2 + 1] };
           int nn = nnbrs[ic];
-          int cnbrs[8];
-          double dsqr[8];
-          for (int n = 0; n < nn; ++n) cnbrs[n] = nbrs[ic * 8 + n];
-          for (int n = 0; n < nn; ++n) {
-            dsqr[n] = 0.0;
-            for (int d = 0; d < 2; ++d) { //????
-              double ddist = (xc[d] - cen[cnbrs[n] * 2 + d]);
-              dsqr[n] += ddist * ddist;
-            }
-          }
+          const int* cnbrs = &(nbrs[ic * 8]);
 
           int nnm = 0;         // number of nbrs with this material
+          double den = 0.0;
           for (int n = 0; n < nn; ++n) {
             int jc = cnbrs[n];
-            if (Volfrac[m*ncells+jc] > 0.0) {
-              MatDensity_average[m * ncells + ic] += Densityfrac[m * ncells + jc] / dsqr[n];
+            if (Volfrac[m*ncells+jc] > 0.0) 
+            {
+              double dx = xc[0] - cen[jc*2 + 0];
+              double dy = xc[1] - cen[jc*2 + 1];
+              double dsqr = dx*dx + dy*dy;
+
+              den += Densityfrac[m * ncells + jc] / dsqr;
               ++nnm;
             }
           }
           if (nnm > 0)
-            MatDensity_average[m * ncells + ic] /= nnm;
+            MatDensity_average[m * ncells + ic] = den / nnm;
           else
             SLIC_ASSERT(MatDensity_average[m * ncells + ic] == 0.0);
         }
@@ -2685,9 +2645,9 @@ void average_density_over_nbr_mat_dom_compact(Robey_data& data)
   std::vector<int>& begin_idx = data.begin_idx;
   std::vector<int>& cell_id = data.col_idx;
 
-  SLIC_INFO("-- Average Density over Neighbors, Material-Dominant Compact Matrix Array Access --");
+  SLIC_INFO("-- Average Density over Neighbors, Material-Dominant Compact Array Access --");
 
-  std::vector<double> MatDensity_average(ncells * nmats, 0.0);
+  std::vector<double> MatDensity_average(begin_idx.back(), 0.0);
 
   timer.reset();
 
@@ -2703,34 +2663,30 @@ void average_density_over_nbr_mat_dom_compact(Robey_data& data)
       {
         int ci = cell_id[ii];
 
-        double xc[2];
-        xc[0] = cen[ci*2]; xc[1] = cen[ci*2+1];
+        double xc[2] = { cen[ci * 2], cen[ci * 2 + 1] };
         int nn = nnbrs[ci];
-        int cnbrs[9];
-        double dsqr[8];
-        for (int n = 0; n < nn; ++n) cnbrs[n] = nbrs[ci*8+n];
-        for (int n = 0; n < nn; ++n) {
-          dsqr[n] = 0.0;
-          for (int d = 0; d < 2; ++d) { //???
-            double ddist = (xc[d] - cen[cnbrs[n]*2 + d]);
-            dsqr[n] += ddist * ddist;
-          }
-        }
+        const int* cnbrs = &(nbrs[ci * 8]);
         
         int nnm = 0;         // number of nbrs with this material
         int begin_idx_m = begin_idx[m];
+        double den = 0.0;
         for (int n = 0; n < nn; ++n) {
           int C_j = cnbrs[n];
           int c_j = data.dense2sparse_idx[m * ncells + C_j];
           if (c_j >= 0) { //the neighbor cell does have this material
-            MatDensity_average[m * ncells + ci] += Densityfrac[begin_idx_m + c_j] / dsqr[n];
+
+            double dx = xc[0] - cen[C_j * 2 + 0];
+            double dy = xc[1] - cen[C_j * 2 + 1];
+            double dsqr = dx*dx + dy*dy;
+
+            den += Densityfrac[begin_idx_m + c_j] / dsqr;
             ++nnm;
           }
         }
         if (nnm > 0)
-          MatDensity_average[m * ncells + ci] /= nnm;
+          MatDensity_average[ii] = den / nnm;
         else
-          SLIC_ASSERT(MatDensity_average[m * ncells + ci] == 0.0);
+          SLIC_ASSERT(MatDensity_average[ii] == 0.0);
       }
     }
 
@@ -2836,16 +2792,14 @@ void average_density_over_nbr_mat_dom_full_mm_submap(MultiMat& mm, Robey_data& d
   SLIC_ASSERT(mm.isMatDom());
   SLIC_ASSERT(mm.isDense());
 
-  int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
   MultiMat::Field2D<double> & Densityfrac = mm.get2dField<double>("Densityfrac");
   MultiMat::Field2D<double> & Volfrac = mm.get2dField<double>("Volfrac");
+  auto MatDensity_average = mm.get2dField<double>("MatDensityAverage");
 
-  const std::vector<double> & cen = data.cen;
-  const std::vector<int> & nnbrs = data.nnbrs;
-  const std::vector<int> & nbrs = data.nbrs;
-
-  std::vector<double> MatDensity_average(ncells * nmats, 0.0);
+  // Get the slam relations and maps for the mesh data
+  const auto& neighbors = data.slam_neighbors;
+  const auto& cen = data.slam_centroids;
 
   timer.reset();
 
@@ -2856,40 +2810,42 @@ void average_density_over_nbr_mat_dom_full_mm_submap(MultiMat& mm, Robey_data& d
 
     timer.start();
 
-    for (int m = 0; m < nmats; ++m) {
+    for (int m = 0; m < nmats; ++m) 
+    {
       auto Densityfrac_row = Densityfrac(m);
       auto Volfrac_row = Volfrac(m);
-      for (int ic = 0; ic < Volfrac_row.size(); ++ic) {
-        if (Volfrac_row(ic) > 0.0) {
-          double xc[2];
-          xc[0] = cen[ic * 2]; xc[1] = cen[ic * 2 + 1];
-          int nn = nnbrs[ic];
-          int cnbrs[8];
-          double dsqr[8];
-          for (int n = 0; n < nn; ++n) cnbrs[n] = nbrs[ic * 8 + n];
-          for (int n = 0; n < nn; ++n) {
-            dsqr[n] = 0.0;
-            for (int d = 0; d < 2; ++d) { //????
-              double ddist = (xc[d] - cen[cnbrs[n] * 2 + d]);
-              dsqr[n] += ddist * ddist;
-            }
-          }
+      auto AvgMatDensity_row = MatDensity_average(m);
+
+      for (int ic = 0; ic < Volfrac_row.size(); ++ic) 
+      {
+        if (Volfrac_row(ic) > 0.0) 
+        {
+          auto nbrs = neighbors[ic];
+          double xc[2] = { cen(ic,0), cen(ic,1) };
+
 
           int nnm = 0;         // number of nbrs with this material
-          for (int n = 0; n < nn; ++n) {
-            int jc = cnbrs[n];
+          double den = 0.0;
+          for (int n : nbrs.positions()) 
+          {
+            int jc = nbrs[n];
             if (Volfrac_row(jc) > 0.0) {
-              MatDensity_average[m * ncells + ic] += Densityfrac_row(jc) / dsqr[n];
+
+              double dx = xc[0] - cen(jc, 0);
+              double dy = xc[1] - cen(jc, 1);
+              double dsqr = dx*dx + dy*dy;
+
+              den += Densityfrac_row(jc) / dsqr;
               ++nnm;
             }
           }
           if (nnm > 0)
-            MatDensity_average[m * ncells + ic] /= nnm;
+            AvgMatDensity_row(ic) = den / nnm;
           else
-            SLIC_ASSERT(MatDensity_average[m * ncells + ic] == 0.0);
+            SLIC_ASSERT(AvgMatDensity_row(ic) == 0.0);
         }
         else {
-          MatDensity_average[m * ncells + ic] = 0.0;
+          AvgMatDensity_row(ic) = 0.0;
         }
       }
     }
@@ -2918,15 +2874,18 @@ void average_density_over_nbr_mat_dom_full_mm_submap(MultiMat& mm, Robey_data& d
   int nmats = mm.getNumberOfMaterials();
   auto Densityfrac = mm.get2dField<double,BSet>("Densityfrac");
   auto Volfrac = mm.get2dField<double,BSet>("Volfrac");
+  auto MatDensity_average = mm.get2dField<double, BSet>("MatDensityAverage");
 
   // Get the slam relations and maps for the mesh data
   const auto& neighbors = data.slam_neighbors;
   const auto& cen = data.slam_centroids;
 
   // Store result in a dense field
+  /*
   using DenseFieldSet = typename MultiMat::ProductSetType;
   using DenseField = MultiMat::Field2D<double, DenseFieldSet>;
   DenseField MatDensity_average(mm.getDense2dFieldSet());
+  */
 
   timer.reset();
 
@@ -2941,6 +2900,7 @@ void average_density_over_nbr_mat_dom_full_mm_submap(MultiMat& mm, Robey_data& d
       auto Densityfrac_row = Densityfrac(m);
       auto Volfrac_row = Volfrac(m);
       auto AvgMatDensity_row = MatDensity_average(m);
+
       for (int ic = 0; ic < Volfrac_row.size(); ++ic)
       {
         if (Volfrac_row(ic) > 0.0) 
@@ -3085,60 +3045,55 @@ void average_density_over_nbr_mat_dom_compact_mm_submap(MultiMat& mm, Robey_data
   int nmats = mm.getNumberOfMaterials();
   MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
 
-  const std::vector<double>& cen = data.cen;
-  const std::vector<int>& nnbrs = data.nnbrs;
-  const std::vector<int>& nbrs = data.nbrs;
+  //std::vector<double> MatDensity_average(Densityfrac.totalSize(), 0.0);
+  MultiMat::Field2D<double>& MatDensity_average = mm.get2dField<double>("MatDensityAverage");
 
-  std::vector<double> MatDensity_average(ncells * nmats, 0.0);
+  // Get the slam relations and maps for the mesh data
+  const auto& neighbors = data.slam_neighbors;
+  const auto& cen = data.slam_centroids;
 
   timer.reset();
 
   for (int iter = 0; iter < ITERMAX; ++iter)
   {
-    for (auto& v : MatDensity_average)
-      v = 0.0;
-
+    MatDensity_average.clear();
+    
     timer.start();
 
     for (int m = 0; m < nmats; ++m) 
     {
       auto Densityfrac_row = Densityfrac(m);
+      auto AvgMatDensity_row = MatDensity_average(m);
       for (int k = 0; k < Densityfrac_row.size(); ++k)
       {
         int ci = Densityfrac_row.index(k);
 
-        double xc[2];
-        xc[0] = cen[ci * 2]; xc[1] = cen[ci * 2 + 1];
-        int nn = nnbrs[ci];
-        int cnbrs[9];
-        double dsqr[8];
-        for (int n = 0; n < nn; ++n) cnbrs[n] = nbrs[ci * 8 + n];
-        for (int n = 0; n < nn; ++n) {
-          dsqr[n] = 0.0;
-          for (int d = 0; d < 2; ++d) { //???
-            double ddist = (xc[d] - cen[cnbrs[n] * 2 + d]);
-            dsqr[n] += ddist * ddist;
-          }
-        }
+        auto nbrs = neighbors[ci];
+        double xc[2] = { cen(ci,0), cen(ci,1) };
 
         int nnm = 0;         // number of nbrs with this material
-        for (int n = 0; n < nn; ++n) {
-          int C_j = cnbrs[n];
+        double den = 0.0;
+        for (int n : nbrs.positions()) {
+          int C_j = nbrs[n];
           int k_j = data.dense2sparse_idx[m * ncells + C_j];
           if (k_j >= 0) { //the neighbor cell does have this material
-            MatDensity_average[m * ncells + ci] += Densityfrac[k_j] / dsqr[n];
+            double dx = xc[0] - cen[C_j * 2 + 0];
+            double dy = xc[1] - cen[C_j * 2 + 1];
+            double dsqr = dx*dx + dy*dy;
+
+            den += Densityfrac_row(k_j) / dsqr;
             ++nnm;
           }
         }
         if (nnm > 0)
-          MatDensity_average[m * ncells + ci] /= nnm;
+          AvgMatDensity_row(k) = den / nnm;
         else
-          SLIC_ASSERT(MatDensity_average[m * ncells + ci] == 0.0);
+          SLIC_ASSERT(AvgMatDensity_row(k) == 0.0);
       }
     }
 
     timer.record();
-    data_checker.check(MatDensity_average);
+    data_checker.check(MatDensity_average.getMap()->data());
   }
 
   double act_perf = timer.get_median();
@@ -3168,9 +3123,13 @@ void average_density_over_nbr_mat_dom_compact_mm_submap(MultiMat& mm, Robey_data
   const auto& cen = data.slam_centroids;
 
   // Store result in a dense field
+  /*
   using DenseFieldSet = typename MultiMat::ProductSetType;
   using DenseField = MultiMat::Field2D<double, DenseFieldSet>;
   DenseField MatDensity_average(mm.getDense2dFieldSet());
+  */
+  auto MatDensity_average = mm.get2dField<double, BSet>("MatDensityAverage");
+  //std::vector<double> MatDensity_average(Densityfrac.totalSize(), 0.0);
 
   timer.reset();
 
@@ -3206,12 +3165,12 @@ void average_density_over_nbr_mat_dom_compact_mm_submap(MultiMat& mm, Robey_data
             const double dy = xc[1] - cen(C_j, 1);
             const double dsqr = dx*dx + dy * dy;
 
-            den += Densityfrac[k_j] / dsqr;
+            den += Densityfrac_row(k_j) / dsqr;
             ++nnm;
           }
         }
 
-        AvgMatDensity_row(ci) = nnm > 0 ? den / nnm : 0;
+        AvgMatDensity_row(k) = nnm > 0 ? den / nnm : 0;
       }
     }
 
@@ -3409,7 +3368,7 @@ int main(int argc, char** argv)
   }
 
   std::string fileName = "";
-  int ncells_to_gen = 160000;
+  int ncells_to_gen = 1600;
   int nmats_to_gen = 10;
 
   if (argc == 2)
@@ -3443,6 +3402,9 @@ int main(int argc, char** argv)
   mm.addField<>("Pressurefrac", FieldMapping::PER_CELL_MAT,
       &data.Pressurefrac[0]);
   mm.addField<>("nmatconsts", FieldMapping::PER_MAT, &data.nmatconsts[0]);
+  mm.addField<>("MatDensityAverage", FieldMapping::PER_CELL_MAT, 
+    &data.Pressurefrac[0]);
+
 
   //printself and check
   mm.isValid(true);
@@ -3531,11 +3493,12 @@ int main(int argc, char** argv)
 
   SLIC_INFO("**************** Compact Layout - Cell-Dominant ******************");
   mm.convertLayoutToSparse();
+  data_checker.reset();
   average_density_over_nbr_cell_dom_compact(data);
-  average_density_over_nbr_cell_dom_compact_mm_idxarray(mm, data);
+  //average_density_over_nbr_cell_dom_compact_mm_idxarray(mm, data);
   average_density_over_nbr_cell_dom_compact_mm_submap(mm, data);
   average_density_over_nbr_cell_dom_compact_mm_submap<RelationSetType>(mm, data);
-  average_density_over_nbr_cell_dom_compact_mm_iter(mm, data);
+  //average_density_over_nbr_cell_dom_compact_mm_iter(mm, data);
 
   SLIC_INFO("**************** Full Layout - Material-Dominant ******************");
   data.set_up_mat_dom_data();
@@ -3547,16 +3510,17 @@ int main(int argc, char** argv)
   average_density_over_nbr_mat_dom_full_mm_direct(mm, data);
   average_density_over_nbr_mat_dom_full_mm_submap(mm, data);
   average_density_over_nbr_mat_dom_full_mm_submap<ProductSetType>(mm, data);
-  average_density_over_nbr_mat_dom_full_mm_iter(mm, data);
+  //average_density_over_nbr_mat_dom_full_mm_iter(mm, data);
 
   SLIC_INFO("**************** Compact Layout - Material-Dominant ******************");
   mm.convertLayoutToSparse();
+  data_checker.reset();
   average_density_over_nbr_mat_dom_compact(data);
 
-  average_density_over_nbr_mat_dom_compact_mm_indexarray(mm, data);
+  //average_density_over_nbr_mat_dom_compact_mm_indexarray(mm, data);
   average_density_over_nbr_mat_dom_compact_mm_submap(mm, data);
   average_density_over_nbr_mat_dom_compact_mm_submap<RelationSetType>(mm, data);
-  average_density_over_nbr_mat_dom_compact_mm_iter(mm, data);
+  //average_density_over_nbr_mat_dom_compact_mm_iter(mm, data);
 
   SLIC_INFO("**********************************************************");
   SLIC_INFO("* ");
@@ -3578,6 +3542,7 @@ int main(int argc, char** argv)
 
   SLIC_INFO("**************** Compact Layout - Cell-Dominant ******************");
   mm.convertLayoutToSparse();
+  data_checker.reset();
   calculate_pressure_cell_dom_compact(data);
 
   calculate_pressure_cell_dom_mm_submap(mm);
