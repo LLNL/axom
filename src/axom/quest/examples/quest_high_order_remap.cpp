@@ -377,7 +377,11 @@ public:
     }
     // create the target mesh
     {
-      auto* mesh = new mfem::Mesh("./disc-nurbs-80.mesh",1,1);
+      // NOTE (KW): For now, assume we have AXOM_DATA_DIR
+      namespace fs = axom::utilities::filesystem;
+      std::string fname = fs::joinPath(AXOM_DATA_DIR, "mfem/disc-nurbs.mesh");
+
+      auto* mesh = new mfem::Mesh(fname.c_str(),1,1);
       if (mesh->NURBSext)
       {
         int order =tgt_ord;
