@@ -6,7 +6,7 @@
 /*!
  * \file CurvedPolygon.hpp
  *
- * \brief A CurvedPolygon primitive for primal based on Bezier Curves
+ * \brief A CurvedPolygon primitive whose edges are Bezier Curves
  */
 
 #ifndef PRIMAL_CURVEDPOLYGON_HPP_
@@ -19,7 +19,6 @@
 #include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/primal/geometry/BezierCurve.hpp"
 
-#include "fmt/fmt.hpp"
 #include <vector>
 #include <ostream> // for std::ostream
 
@@ -39,11 +38,11 @@ std::ostream& operator<<(std::ostream & os, const CurvedPolygon< T,NDIMS > & pol
 /*!
  * \class CurvedPolygon
  *
- * \brief Represents a curved polygon defined by a vector of BezierCurves
+ * \brief Represents a polygon with curved edges defined by BezierCurves
  * \tparam T the coordinate type, e.g., double, float, etc.
  * \tparam NDIMS the number of dimensions
  * \note The component curves should be ordered in a counter clockwise
- *       orientation with respect to the polygon's desired normal vector
+ *       orientation with respect to the polygon's normal vector
  */
 template < typename T,int NDIMS >
 class CurvedPolygon
@@ -118,7 +117,7 @@ public:
   {
     SLIC_ASSERT(idx<m_edges.size());
     m_edges.insert(m_edges.begin()+idx+1, 1, m_edges[idx]);
-    BezierCurve< T, NDIMS> csplit=m_edges[idx];
+    auto& csplit=m_edges[idx];
     csplit.split(t,m_edges[idx],m_edges[idx+1]);
   }
 
