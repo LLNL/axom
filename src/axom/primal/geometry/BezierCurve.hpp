@@ -331,7 +331,7 @@ public:
    * \pre order is greater than or equal to zero
    *
    */
-  BezierCurve(std::vector<PointType> pts, int ord)
+  BezierCurve(const std::vector<PointType>& pts, int ord)
   {
     SLIC_ASSERT(ord >= 0);
 
