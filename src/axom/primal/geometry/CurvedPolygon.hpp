@@ -1,12 +1,12 @@
 // Copyright (c) 2017-2021, Lawrence Livermore National Security, LLC and
-// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+// other Axom Project Developers. See the top-level LICENSE file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 /*!
  * \file CurvedPolygon.hpp
  *
- * \brief A CurvedPolygon primitive for primal based on Bezier Curves
+ * \brief A CurvedPolygon primitive whose edges are Bezier Curves
  */
 
 #ifndef AXOM_PRIMAL_CURVEDPOLYGON_HPP_
@@ -37,11 +37,11 @@ std::ostream& operator<<(std::ostream& os, const CurvedPolygon<T, NDIMS>& poly);
 /*!
  * \class CurvedPolygon
  *
- * \brief Represents a curved polygon defined by a vector of BezierCurves
+ * \brief Represents a polygon with curved edges defined by BezierCurves
  * \tparam T the coordinate type, e.g., double, float, etc.
  * \tparam NDIMS the number of dimensions
  * \note The component curves should be ordered in a counter clockwise
- *       orientation with respect to the polygon's desired normal vector
+ *       orientation with respect to the polygon's normal vector
  */
 template <typename T, int NDIMS>
 class CurvedPolygon
@@ -114,7 +114,7 @@ public:
   {
     SLIC_ASSERT(idx < m_edges.size());
     m_edges.insert(m_edges.begin() + idx + 1, 1, m_edges[idx]);
-    BezierCurve<T, NDIMS> csplit = m_edges[idx];
+    auto& csplit = m_edges[idx];
     csplit.split(t, m_edges[idx], m_edges[idx + 1]);
   }
 
