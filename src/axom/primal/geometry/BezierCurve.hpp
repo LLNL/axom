@@ -183,18 +183,13 @@ public:
    *
    */
 
-  BezierCurve(std::vector<PointType> pts, int ord)
+  BezierCurve(const std::vector<PointType>& pts, int ord)
   {
-    SLIC_ASSERT(pts != nullptr);
     SLIC_ASSERT(ord >= 0);
 
     const int sz = utilities::max(0, ord+1);
     m_controlPoints.resize(sz);
     m_controlPoints = pts;
-    /*for (int p = 0 ; p <= ord ; ++p)
-    {
-      m_controlPoints[p] = pts[p];
-    }*/
   }
 
   /*! Sets the order of the Bezier Curve*/
