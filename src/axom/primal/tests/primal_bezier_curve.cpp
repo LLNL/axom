@@ -174,6 +174,7 @@ TEST(primal_beziercurve_, tangent)
   const int DIM = 3;
   using CoordType = double;
   using PointType = primal::Point<CoordType, DIM>;
+  using VectorType = primal::Vector<CoordType, DIM>;
   using BezierCurveType = primal::BezierCurve<CoordType, DIM>;
 
   const int order = 3;
@@ -184,15 +185,15 @@ TEST(primal_beziercurve_, tangent)
 
   BezierCurveType b2Curve(data, order);
 
-  PointType midtval = PointType::make_point(3.15, 2.325, 1.875);
-  PointType starttval = PointType::make_point(2.1, 1.2, 2.4);
-  PointType endtval = PointType::make_point(.9, 3.3, 2.1);
+  VectorType midtval = VectorType::make_vector(3.15, 2.325, 1.875);
+  VectorType starttval = VectorType::make_vector(2.1, 1.2, 2.4);
+  VectorType endtval = VectorType::make_vector(.9, 3.3, 2.1);
 
   // Evaluate the curve at several parameter values
   // Curve should be tangent to control net at endpoints
-  PointType eval0 = b2Curve.dt(0.0);
-  PointType eval1 = b2Curve.dt(1.0);
-  PointType evalMid = b2Curve.dt(0.5);
+  VectorType eval0 = b2Curve.dt(0.0);
+  VectorType eval1 = b2Curve.dt(1.0);
+  VectorType evalMid = b2Curve.dt(0.5);
 
   for(int i = 0; i < DIM; ++i)
   {
