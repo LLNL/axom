@@ -23,6 +23,8 @@
 #include <numeric>
 #include <math.h>
 
+#include <numeric>
+
 namespace primal = axom::primal;
 
 /*!
