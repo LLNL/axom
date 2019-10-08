@@ -50,9 +50,9 @@ the data is shared by the original and new View.
 
 .. note:: View copy operations perform **shallow** copies of the View data.
 
-Some methods for for creating, destroying, querying, and retrieving Groups and 
+Some methods for creating, destroying, querying, and retrieving Groups and
 Views take a string with *path syntax*, where parent and child Group names
-are joined with the path separator character (usually '/').
+are joined with the path separator character, '/'.
 Other methods take the name of an
 immediate child of a Group. Methods that require the name of a direct child 
 are marked with 'Child' in their name, such as ``hasChildView()`` and 
@@ -92,8 +92,9 @@ Create, Modify, and Destroy Groups
 
  * Create a child Group given a name (child) or path (other descendant). 
    If a path is given, intermediate Groups in path are created, if needed. 
- * Rename a Group.  A Group cannot be renamed to the empty string or to
-   a string containing the path separator character.
+ * Rename a Group.  A Group cannot be renamed to the empty string, to
+   a string containing the path separator character, or to the name of
+   another Group or View owned by the same parent.
  * Destroy a descendant Group with given id (child), or name/path (child or 
    other descendant).
  * Destroy all child groups in a Group.
