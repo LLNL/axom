@@ -1352,9 +1352,13 @@ public:
    * identical to a name that is already held by the parent for another
    * Group or View object.
    *
+   * It is possible to rename the root Group, but a code cannot
+   * subsequently rename root Group back to its original empty string
+   * name.
+   *
    * \param new_name    The new name for this group.
    *
-   * /return            Success or failure of rename.
+   * \return            Success or failure of rename.
    */
   bool rename(const std::string& new_name);
 
