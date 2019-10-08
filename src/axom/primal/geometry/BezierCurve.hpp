@@ -24,7 +24,6 @@
 
 #include "axom/primal/operators/squared_distance.hpp"
 
-#include "fmt/fmt.hpp"
 #include <vector>
 #include <map>
 #include <ostream>
@@ -304,9 +303,9 @@ public:
    * \note We typically find the tangent of the curve at \a t between 0 and 1
    */
 
-  PointType dt(T t) const
+  VectorType dt(T t) const
   {
-    PointType ptval;
+    VectorType val;
 
     const int ord = getOrder();
     std::vector<T> dCarray(ord+1);
@@ -319,6 +318,7 @@ public:
         dCarray[p] = m_controlPoints[p][i];
       }
 
+      // stop one step early and take difference of last two values
       for ( int p=1 ; p <= ord-1 ; ++p)
       {
         const int end = ord-p;
@@ -327,10 +327,10 @@ public:
           dCarray[k]=(1-t)*dCarray[k] + t*dCarray[k+1];
         }
       }
-      ptval[i]=ord*(dCarray[1]-dCarray[0]);
+      val[i]=ord*(dCarray[1]-dCarray[0]);
     }
 
-    return ptval;
+    return val;
   }
 
   /*!
