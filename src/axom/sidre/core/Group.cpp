@@ -239,7 +239,8 @@ View* Group::createView( const std::string& path,
 View* Group::createView( const std::string& path,
                          TypeID type,
                          int ndims,
-                         IndexType* shape )
+                         IndexType* shape,
+                         IndexType* permutation )
 {
   if ( type == NO_TYPE_ID || ndims < 0 || shape == nullptr )
   {
@@ -255,10 +256,16 @@ View* Group::createView( const std::string& path,
     return nullptr;
   }
 
+  if (permutation != nullptr && !utilities::isValidPermutation(permutation, ndims))
+  {
+    SLIC_CHECK_MSG(false, "The provided permutation is invalid.");
+    return nullptr;
+  }
+
   View* view = createView(path);
   if (view != nullptr)
   {
-    view->describe(type, ndims, shape);
+    view->describe(type, ndims, shape, permutation);
   }
   return view;
 }
@@ -341,9 +348,10 @@ View* Group::createView( const std::string& path,
                          TypeID type,
                          int ndims,
                          IndexType* shape,
+                         IndexType* permutation,
                          Buffer* buff )
 {
-  View* view = createView(path, type, ndims, shape);
+  View* view = createView(path, type, ndims, shape, permutation);
   if (view != nullptr)
   {
     view->attachBuffer(buff);
@@ -431,9 +439,10 @@ View* Group::createView( const std::string& path,
                          TypeID type,
                          int ndims,
                          IndexType* shape,
+                         IndexType* permutation,
                          void* external_ptr )
 {
-  View* view = createView(path, type, ndims, shape);
+  View* view = createView(path, type, ndims, shape, permutation);
   if (view != nullptr)
   {
     view->setExternalDataPtr(external_ptr);
@@ -503,11 +512,12 @@ View* Group::createViewAndAllocate( const std::string& path,
                                     TypeID type,
                                     int ndims,
                                     IndexType* shape,
+                                    IndexType* permutation,
                                     int allocID )
 {
   allocID = getValidAllocatorID(allocID);
 
-  View* view = createView(path, type, ndims, shape);
+  View* view = createView(path, type, ndims, shape, permutation);
   if ( view != nullptr )
   {
     view->allocate(allocID);

@@ -18,6 +18,7 @@
 
 #include "axom/config.hpp"
 #include "axom/core/Macros.hpp"
+#include "axom/core/utilities/Utilities.hpp"
 
 // Standard C++ headers
 #include <memory>
@@ -444,7 +445,7 @@ public:
 
   /*!
    * \brief Create View object with given name or path in this Group that
-   *  has a data description with data type and shape.
+   *  has a data description with data type, shape, and dimension permutation.
    *
    * If given data type is undefined, or given number of dimensions is < 0,
    * or given shape ptr is null, method is a no-op.
@@ -454,7 +455,8 @@ public:
   View* createView( const std::string& path,
                     TypeID type,
                     int ndims,
-                    IndexType* shape );
+                    IndexType* shape,
+                    IndexType* permutation=nullptr );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -543,6 +545,32 @@ public:
                     TypeID type,
                     int ndims,
                     IndexType* shape,
+                    Buffer* buff )
+  {
+    return createView(path, type, ndims, shape, nullptr, buff);
+  }
+
+  /*!
+   * \brief Create View object with given name or path in this Group that
+   * has a data description with data type and shape and attach given
+   * Buffer to it.
+   *
+   * If given data type is undefined, or given number of dimensions is < 0,
+   * or given shape ptr is null, method is a no-op.
+   *
+   * This method is equivalent to:
+   * group->createView(name, type, ndims, shape)->attachBuffer(buff), or
+   * group->createView(name)->attachBuffer(buff)->apply(type, ndims, shape).
+   *
+   * \return pointer to new View object or nullptr if one is not created.
+   *
+   * \sa View::attachBuffer()
+   */
+  View* createView( const std::string& path,
+                    TypeID type,
+                    int ndims,
+                    IndexType* shape,
+                    IndexType* permutation,
                     Buffer* buff );
 
   /*!
@@ -640,7 +668,36 @@ public:
                     TypeID type,
                     int ndims,
                     IndexType* shape,
+                    void* external_ptr )
+  {
+    return createView(path, type, ndims, shape, nullptr, external_ptr);
+  }
+
+  /*!
+   * \brief Create View object with given name or path in this Group that
+   * has a data description with data type and shape and attach
+   * externally-owned data to it.
+   *
+   * If given data type is undefined, or given number of dimensions is < 0,
+   * or given shape ptr is null, method is a no-op.
+   *
+   * This method is equivalent to:
+   * group->createView(name, type, ndims, shape)->
+   *        setExternalDataPtr(external_ptr), or
+   * group->createView(name)->setExternalDataPtr(external_ptr)->
+   *        apply(type, ndims, shape).
+   *
+   * \return pointer to new View object or nullptr if one is not created.
+   *
+   * \sa View::setExternalDataPtr()
+   */
+  View* createView( const std::string& path,
+                    TypeID type,
+                    int ndims,
+                    IndexType* shape,
+                    IndexType* permutation,
                     void* external_ptr );
+
   /*!
    * \brief Create View object with given name or path in this Group that
    * is described by a Conduit DataType object and attach externally-owned
@@ -709,6 +766,31 @@ public:
                                TypeID type,
                                int ndims,
                                IndexType* shape,
+                               int allocID=INVALID_ALLOCATOR_ID)
+  {
+    return createViewAndAllocate(path, type, ndims, shape, nullptr, allocID);
+  }
+
+  /*!
+   * \brief Create View object with given name or path in this Group that
+   * has a data description with data type and shape and allocate data for it.
+   *
+   * If given data type is undefined, or given number of dimensions is < 0,
+   * or given shape ptr is null, method is a no-op.
+   *
+   * This method is equivalent to:
+   * group->createView(name)->allocate(type, ndims, shape), or
+   * createView(name, type, ndims, shape)->allocate().
+   *
+   * \return pointer to new View object or nullptr if one is not created.
+   *
+   * \sa View::allocate()
+   */
+  View* createViewAndAllocate( const std::string& path,
+                               TypeID type,
+                               int ndims,
+                               IndexType* shape,
+                               IndexType* permutation,
                                int allocID=INVALID_ALLOCATOR_ID);
 
   /*!

@@ -354,6 +354,19 @@ public:
   int getShape(int ndims, IndexType* shape) const;
 
   /*!
+   * \brief Return number of dimensions in data view and fill in permutation
+   *        information of this data view object.
+   *
+   *  ndims - maximum number of dimensions to return.
+   *  permutation - user supplied buffer assumed to be ndims long.
+   *
+   *  Return the number of dimensions of the view.
+   *  Return -1 if shape is too short to hold all dimensions.
+   */
+  int getPermutation(int ndims, IndexType* permutation) const;
+
+
+  /*!
    * \brief Return const reference to schema describing data.
    */
   const Schema& getSchema() const
@@ -519,7 +532,7 @@ public:
                       IndexType* shape,
                       Buffer* buff )
   {
-    describe(type, ndims, shape);
+    describe(type, ndims, shape, nullptr);
     attachBuffer(buff);
     return this;
   }
@@ -603,6 +616,29 @@ public:
    * \return pointer to this View object.
    */
   View* apply( TypeID type, int ndims, IndexType* shape );
+
+  /*!
+   * \brief Apply data description defined by type, shape and permutation,
+   *        information to data view.
+   *
+   * \note The units for the shape are in number of elements.
+   *
+   * \attention If view has been previously described (or applied), this
+   *            operation will apply the new data description to the view.
+   *
+   * If view holds a scalar or a string, or type is NO_TYPE_ID,
+   * or given number of dimensions < 0, or pointer to shape is null,
+   * the method does nothing.
+   *
+   * If the provided permutation pointer is null the permutation is set to the
+   * identity.
+   *
+   * \return pointer to this View object.
+   */
+  View* apply( TypeID type,
+               int ndims,
+               IndexType* shape,
+               IndexType* permutation );
 
   /*!
    * \brief Apply data description of given Conduit data type to data view.
@@ -782,7 +818,23 @@ public:
                            IndexType* shape,
                            void* external_ptr)
   {
-    describe(type, ndims, shape);
+    return setExternalDataPtr(type, ndims, shape, nullptr, external_ptr);
+  }
+
+  /*!
+   * \brief Set view to hold described external data.
+   *
+   * If external_ptr is NULL, the view will be EMPTY.
+   *
+   * \return pointer to this View object.
+   */
+  View* setExternalDataPtr(TypeID type,
+                           int ndims,
+                           IndexType* shape,
+                           IndexType* permutation,
+                           void* external_ptr)
+  {
+    describe(type, ndims, shape, permutation);
     setExternalDataPtr(external_ptr);
     return this;
   }
@@ -1347,8 +1399,8 @@ private:
   void describe( TypeID type, IndexType num_elems);
 
   /*!
-   * \brief Describe a data view with given type, number of dimensions, and
-   *        number of elements per dimension.
+   * \brief Describe a data view with given type, number of dimensions,
+   *        number of elements per dimension, and dimension permutation.
    *
    *
    * \attention If view has been previously described, this operation will
@@ -1357,8 +1409,14 @@ private:
    *
    * If given type of NO_TYPE_ID, or number of dimensions or total
    * number of elements < 0, or view is opaque, method does nothing.
+   *
+   * If the provided permutation pointer is null the permutation is set to the
+   * identity.
    */
-  void describe(TypeID type, int ndims, IndexType* shape);
+  void describe(TypeID type,
+                int ndims,
+                IndexType* shape,
+                IndexType* permutation);
 
   /*!
    * \brief Declare a data view with a Conduit data type object.
@@ -1378,9 +1436,11 @@ private:
   void describeShape();
 
   /*!
-   * \brief Set the shape to be a ndims dimensions with shape.
+   * \brief Set the shape and permutation to be ndims-dimensional.
+   *        If the provided permutation pointer is null the permutation is
+   *        set to the identity.
    */
-  void describeShape(int ndims, IndexType* shape);
+  void describeShape(int ndims, IndexType* shape, IndexType* permutation);
 
   /*!
    * \brief Copy view contents into an undescribed EMPTY view.
@@ -1525,6 +1585,9 @@ private:
 
   /// Shape information
   std::vector<IndexType> m_shape;
+
+  /// Shape information
+  std::vector<IndexType> m_permutation;
 
   /// Pointer to external memory
   void* m_external_ptr;

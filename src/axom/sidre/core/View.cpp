@@ -8,6 +8,7 @@
 
 // Other axom headers
 #include "axom/core/Types.hpp"
+#include "axom/core/utilities/Utilities.hpp"
 #include "axom/slic/interface/slic.hpp"
 
 // Sidre component headers
@@ -20,6 +21,7 @@ namespace axom
 {
 namespace sidre
 {
+
 
 /*
  *************************************************************************
@@ -413,6 +415,15 @@ View* View::apply(TypeID type, IndexType num_elems,
  */
 View* View::apply(TypeID type, int ndims, IndexType* shape)
 {
+  return apply(type, ndims, shape, nullptr);
+}
+
+
+View* View::apply(TypeID type,
+                  int ndims,
+                  IndexType* shape,
+                  IndexType* permutation)
+{
   if ( type == NO_TYPE_ID || ndims < 1 || shape == nullptr )
   {
     SLIC_CHECK(type != NO_TYPE_ID);
@@ -422,7 +433,13 @@ View* View::apply(TypeID type, int ndims, IndexType* shape)
     return this;
   }
 
-  describe(type, ndims, shape);
+  if (permutation != nullptr)
+  {
+    SLIC_CHECK(utilities::isValidPermutation(shape, ndims));
+    return this;
+  }
+
+  describe(type, ndims, shape, permutation);
   apply();
 
   return this;
@@ -630,15 +647,41 @@ int View::getShape(int ndims, IndexType* shape) const
   }
 
   // Fill the rest of the array with zeros (when ndims > shapeSize)
-  if(ndims > shapeSize)
+  for(int i = shapeSize ; i < ndims ; ++i)
   {
-    for(int i = shapeSize ; i < ndims ; ++i)
-    {
-      shape[i] = 0;
-    }
+    shape[i] = 0;
   }
 
   return m_shape.size();
+}
+
+/*
+ *************************************************************************
+ *
+ * Return number of dimensions and fill in permutation information.
+ *
+ *************************************************************************
+ */
+int View::getPermutation(int ndims, IndexType* permutation) const
+{
+  if (static_cast<unsigned>(ndims) < m_permutation.size())
+  {
+    return -1;
+  }
+
+  const int permutationSize = getNumDimensions();
+  for(int i = 0 ; i < permutationSize ; ++i)
+  {
+    permutation[i] = m_permutation[i];
+  }
+
+  // Fill the rest of the array with -1 (when ndims > permutationSize)
+  for(int i = permutationSize ; i < ndims ; ++i)
+  {
+    permutation[i] = -1;
+  }
+
+  return m_permutation.size();
 }
 
 /*
@@ -867,12 +910,13 @@ void View::describe(TypeID type, IndexType num_elems)
  *************************************************************************
  *
  * PRIVATE method to describe data view with type, number of dimensions,
- *         and number of elements per dimension.
+ *         number of elements per dimension, and the permutation of the
+ *         dimensions.
  *         Caller has already checked arguments.
  *
  *************************************************************************
  */
-void View::describe(TypeID type, int ndims, IndexType* shape)
+void View::describe(TypeID type, int ndims, IndexType* shape, IndexType* permutation)
 {
   IndexType num_elems = 0;
   if (ndims > 0)
@@ -885,7 +929,7 @@ void View::describe(TypeID type, int ndims, IndexType* shape)
   }
 
   describe(type, num_elems);
-  describeShape(ndims, shape);
+  describeShape(ndims, shape, permutation);
 }
 
 /*
@@ -915,6 +959,9 @@ void View::describeShape()
 {
   m_shape.clear();
   m_shape.push_back(m_schema.dtype().number_of_elements());
+
+  m_permutation.clear();
+  m_permutation.push_back(0);
 }
 
 /*
@@ -924,12 +971,14 @@ void View::describeShape()
  *
  *************************************************************************
  */
-void View::describeShape(int ndims, IndexType* shape)
+void View::describeShape(int ndims, IndexType* shape, IndexType* permutation)
 {
   m_shape.clear();
+  m_permutation.clear();
   for (int i=0 ; i < ndims ; i++)
   {
     m_shape.push_back(shape[i]);
+    m_permutation.push_back( permutation ? permutation[ i ] : i );
   }
 }
 
@@ -1276,6 +1325,7 @@ void View::exportDescription(conduit::Node& data_holder) const
   if (getNumDimensions() > 1)
   {
     data_holder["shape"].set(m_shape);
+    data_holder["permutation"].set(m_permutation);
   }
 }
 
@@ -1297,7 +1347,16 @@ void View::importDescription(conduit::Node& data_holder)
       Node & n = data_holder["shape"];
       IndexType* shape = n.value();
       int ndims = n.dtype().number_of_elements();
-      describeShape(ndims, shape);
+
+      IndexType* permutation = nullptr;
+      if (data_holder.has_path("permutation"))
+      {
+        Node & m = data_holder["permutation"];
+        permutation = m.value();
+        SLIC_CHECK(m.dtype().number_of_elements() == ndims);
+      }
+
+      describeShape(ndims, shape, permutation);
     }
   }
 }

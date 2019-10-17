@@ -1585,6 +1585,7 @@ TEST(sidre_group,save_restore_external_data)
   int foo1[nfoo], foo2[nfoo], * foo3, foo4[nfoo];
   int int2d1[nfoo*2], int2d2[nfoo*2];
   IndexType shape[] = { nfoo, 2 };
+  IndexType permutation[] = { 1, 0 };
 
   for (int i = 0 ; i < nfoo ; ++i)
   {
@@ -1607,7 +1608,7 @@ TEST(sidre_group,save_restore_external_data)
   // XXX this falls into createView(name, type, ndims, shape)
   // root1->createView("empty_array", INT_ID, nfoo, NULL);
   root1->createView("external_undescribed")->setExternalDataPtr(foo4);
-  root1->createView("int2d", INT_ID, 2, shape, int2d1);
+  root1->createView("int2d", INT_ID, 2, shape, permutation, int2d1);
 
   for (int i = 0 ; i < nprotocols ; ++i)
   {
@@ -1669,9 +1670,17 @@ TEST(sidre_group,save_restore_external_data)
     EXPECT_EQ(view4->getTypeID(), INT_ID);
     EXPECT_EQ(view4->getNumElements(), nfoo*2);
     EXPECT_EQ(view4->getNumDimensions(), 2);
+    
     rank = view4->getShape(7, extents);
     EXPECT_EQ(rank, 2);
-    EXPECT_TRUE(extents[0] == nfoo && extents[1] == 2);
+    EXPECT_EQ(extents[0], shape[0]);
+    EXPECT_EQ(extents[1], shape[1]);
+
+    rank = view4->getPermutation(7, extents);
+    EXPECT_EQ(rank, 2);
+    EXPECT_EQ(extents[0], permutation[0]);
+    EXPECT_EQ(extents[1], permutation[1]);
+
     view4->setExternalDataPtr(int2d2);
 
     // Read external data into views
@@ -1930,7 +1939,10 @@ TEST(sidre_group,save_restore_other)
     shape2[1] = 0;
     rank = view3->getShape(7, shape2);
     EXPECT_EQ(rank, 2);
-    EXPECT_TRUE(shape2[0] == ndata && shape2[1] == 2);
+    EXPECT_TRUE(shape2[0] == shape1[0] && shape2[1] == shape1[1]);
+    rank = view3->getPermutation(7, shape2);
+    EXPECT_EQ(rank, 2);
+    EXPECT_TRUE(shape2[0] == 0 && shape2[1] == 1);
 
     View* view4 = root2->getView("buffer_shape");
     EXPECT_TRUE(view4->hasBuffer());
@@ -1941,7 +1953,10 @@ TEST(sidre_group,save_restore_other)
     shape2[1] = 0;
     rank = view4->getShape(7, shape2);
     EXPECT_EQ(rank, 2);
-    EXPECT_TRUE(shape2[0] == ndata && shape2[1] == 2);
+    EXPECT_TRUE(shape2[0] == shape1[0] && shape2[1] == shape1[1]);
+    rank = view3->getPermutation(7, shape2);
+    EXPECT_EQ(rank, 2);
+    EXPECT_TRUE(shape2[0] == 0 && shape2[1] == 1);
 
     delete ds2;
   }
@@ -2275,9 +2290,9 @@ TEST(sidre_group,import_conduit)
 
   Group* flds = ds.getRoot()->getGroup("fields");
 
-  Group* ga = flds->getGroup("a");
-  Group* gb = flds->getGroup("b");
-  Group* gc = flds->getGroup("c");
+  EXPECT_NE( flds->getGroup("a"), nullptr );
+  EXPECT_NE( flds->getGroup("b"), nullptr );
+  EXPECT_NE( flds->getGroup("c"), nullptr );
 
   EXPECT_EQ(ds.getRoot()->getView(
               "fields/a/i0")->getData<conduit::int64>(),100);
@@ -2319,9 +2334,9 @@ TEST(sidre_group,import_conduit_external)
 
   Group* flds = ds.getRoot()->getGroup("fields");
 
-  Group* ga = flds->getGroup("a");
-  Group* gb = flds->getGroup("b");
-  Group* gc = flds->getGroup("c");
+  EXPECT_NE( flds->getGroup("a"), nullptr );
+  EXPECT_NE( flds->getGroup("b"), nullptr );
+  EXPECT_NE( flds->getGroup("c"), nullptr );
 
   EXPECT_EQ(ds.getRoot()->getView(
               "fields/a/i0")->getData<conduit::int64>(),100);

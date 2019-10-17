@@ -339,7 +339,27 @@ public:
   }
 };
 
+/*!
+ * \brief Return true if the given values are a permutation of [0, size)
+ */
+template<typename T>
+inline
+bool isValidPermutation(T const * const values,
+                        int const size)
+{
+  bool result = true;
+  for (int i = 0; i < size; ++i)
+  {
+    bool found_i = false;
+    for (int j = 0; j < size; ++j)
+    {
+      found_i |= values[j] == i;
+    }
+    result &= found_i;
+  }
 
+  return result;
+}
 
 
 }  // namespace utilities
