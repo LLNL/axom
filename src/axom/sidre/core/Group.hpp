@@ -559,8 +559,10 @@ public:
    * or given shape ptr is null, method is a no-op.
    *
    * This method is equivalent to:
-   * group->createView(name, type, ndims, shape)->attachBuffer(buff), or
-   * group->createView(name)->attachBuffer(buff)->apply(type, ndims, shape).
+   * group->createView(name, type, ndims, shape, permutation)
+   *      ->attachBuffer(buff), or
+   * group->createView(name)->attachBuffer(buff)
+   *      ->apply(type, ndims, shape, permutation).
    *
    * \return pointer to new View object or nullptr if one is not created.
    *
@@ -682,10 +684,10 @@ public:
    * or given shape ptr is null, method is a no-op.
    *
    * This method is equivalent to:
-   * group->createView(name, type, ndims, shape)->
+   * group->createView(name, type, ndims, shape, permutation)->
    *        setExternalDataPtr(external_ptr), or
    * group->createView(name)->setExternalDataPtr(external_ptr)->
-   *        apply(type, ndims, shape).
+   *        apply(type, ndims, shape, permutation).
    *
    * \return pointer to new View object or nullptr if one is not created.
    *

@@ -340,25 +340,33 @@ public:
 };
 
 /*!
- * \brief Return true if the given values are a permutation of [0, size)
+ * \brief Return true if the given values contain value.
  */
-template<typename T>
+template<typename INTEGER>
 inline
-bool isValidPermutation(T const * const values,
-                        int const size)
+bool find(INTEGER const * const values, INTEGER const value, INTEGER const size)
 {
-  bool result = true;
   for (int i = 0; i < size; ++i)
   {
-    bool found_i = false;
-    for (int j = 0; j < size; ++j)
-    {
-      found_i |= values[j] == i;
-    }
-    result &= found_i;
+    if (values[i] == value) return true;
+  }
+  return false;
+}
+
+/*!
+ * \brief Return true if the given values are a permutation of [0, size)
+ */
+template<typename INTEGER>
+inline
+bool isValidPermutation(INTEGER const * const values,
+                        INTEGER const size)
+{
+  for (INTEGER i = 0; i < size; ++i)
+  {
+    if (!find(values, i, size)) return false;
   }
 
-  return result;
+  return true;
 }
 
 

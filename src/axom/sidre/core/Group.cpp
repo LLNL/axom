@@ -256,7 +256,8 @@ View* Group::createView( const std::string& path,
     return nullptr;
   }
 
-  if (permutation != nullptr && !utilities::isValidPermutation(permutation, ndims))
+  if (permutation != nullptr &&
+      !utilities::isValidPermutation(permutation, IndexType(ndims)))
   {
     SLIC_CHECK_MSG(false, "The provided permutation is invalid.");
     return nullptr;

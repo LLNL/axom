@@ -435,7 +435,7 @@ View* View::apply(TypeID type,
 
   if (permutation != nullptr)
   {
-    SLIC_CHECK(utilities::isValidPermutation(shape, ndims));
+    SLIC_CHECK(utilities::isValidPermutation(shape, IndexType(ndims)));
     return this;
   }
 

@@ -1586,7 +1586,7 @@ private:
   /// Shape information
   std::vector<IndexType> m_shape;
 
-  /// Shape information
+  /// Permutation information
   std::vector<IndexType> m_permutation;
 
   /// Pointer to external memory
