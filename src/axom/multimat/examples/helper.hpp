@@ -881,7 +881,7 @@ struct Result_Store
   void add_result(Algo algo, DataLayout data_layout,
     axom::multimat::SparsityLayout sparsity_layout, Method method, double time)
   {
-    int data_layout_i = data_layout == DataLayout::CELL_CENTRIC ? 0 : 1;
+    int data_layout_i = data_layout == DataLayout::CELL_DOM ? 0 : 1;
     int sparsity_layout_i = sparsity_layout == SparsityLayout::DENSE ? 0 : 1;
 
     int idx = algo * (nLayout * nMethod) +

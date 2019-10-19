@@ -47,7 +47,7 @@ void various_traversal_methods(int nmats, int ncells, int ncomp,
 
   axom::utilities::Timer timer;
 
-  MultiMat mm(DataLayout::CELL_CENTRIC,
+  MultiMat mm(DataLayout::CELL_DOM,
               (use_sparse ? SparsityLayout::SPARSE : SparsityLayout::DENSE));
 
   int nfilled = 0;

@@ -308,6 +308,7 @@ template<typename DataType>
 void check_values(MultiMat& mm, std::string arr_name,
                   MM_test_data<DataType>& data)
 {
+  auto map_i = mm.getFieldIdx(arr_name);
   MultiMat::Field2D<DataType>& map = mm.get2dField<DataType>(arr_name);
   EXPECT_TRUE(map.isValid());
   EXPECT_EQ(data.stride, map.stride());
@@ -321,13 +322,13 @@ void check_values(MultiMat& mm, std::string arr_name,
       for (int s = 0 ; s < data.stride ; ++s)
       {
         double* d;
-        if (mm.getDataLayout() == DataLayout::CELL_CENTRIC)
+        if (mm.getFieldDataLayout(map_i) == DataLayout::CELL_DOM)
           d = map.findValue(ci, mi, s);
         else
           d = map.findValue(mi, ci, s);
         int dense_idx = ci * data.num_mats + mi;
 
-        if (mm.getSparsityLayout() == SparsityLayout::DENSE)
+        if (mm.getFieldSparsityLayout(map_i) == SparsityLayout::DENSE)
         {
           if (*d != data.cellmat_dense_arr[dense_idx*data.stride + s])
           {
@@ -364,44 +365,48 @@ MultiMat* newMM(MM_test_data<T>& data, DataLayout layout_used,
   mm.setNumberOfCells(data.num_cells);
   mm.setNumberOfMaterials(data.num_mats);
 
-  if (layout_used == DataLayout::CELL_CENTRIC)
-    mm.setCellMatRel(data.fillBool_cellcen);
+  if (layout_used == DataLayout::CELL_DOM)
+    mm.setCellMatRel(data.fillBool_cellcen, DataLayout::CELL_DOM);
   else
-    mm.setCellMatRel(data.fillBool_matcen);
+    mm.setCellMatRel(data.fillBool_matcen, DataLayout::MAT_DOM); //todo change to MatCellRel
 
-  if (layout_used == DataLayout::CELL_CENTRIC)
+  if (layout_used == DataLayout::CELL_DOM)
   {
     if (sparsity_used == SparsityLayout::DENSE)
-      mm.setVolfracField(data.volfrac_cellcen_dense.data());
+      mm.setVolfracField(data.volfrac_cellcen_dense.data(), DataLayout::CELL_DOM, SparsityLayout::DENSE);
     else
-      mm.setVolfracField(data.volfrac_cellcen_sparse.data());
+      mm.setVolfracField(data.volfrac_cellcen_sparse.data(), DataLayout::CELL_DOM, SparsityLayout::SPARSE);
   }
   else
   {
     if (sparsity_used == SparsityLayout::DENSE)
-      mm.setVolfracField(data.volfrac_matcen_dense.data());
+      mm.setVolfracField(data.volfrac_matcen_dense.data(), DataLayout::MAT_DOM, SparsityLayout::DENSE);
     else
-      mm.setVolfracField(data.volfrac_matcen_sparse.data());
+      mm.setVolfracField(data.volfrac_matcen_sparse.data(), DataLayout::MAT_DOM, SparsityLayout::SPARSE);
   }
 
   EXPECT_TRUE(mm.isValid());
 
-  if (layout_used == DataLayout::CELL_CENTRIC)
+  if (layout_used == DataLayout::CELL_DOM)
   {
     if (sparsity_used == SparsityLayout::DENSE)
       mm.addField(array_name, FieldMapping::PER_CELL_MAT,
+        layout_used, sparsity_used,
                   data.cellmat_dense_arr.data(), data.stride);
     else
       mm.addField(array_name, FieldMapping::PER_CELL_MAT,
+        layout_used, sparsity_used,
                   data.cellmat_sparse_arr.data(), data.stride);
   }
   else
   {
     if (sparsity_used == SparsityLayout::DENSE)
       mm.addField(array_name, FieldMapping::PER_CELL_MAT,
+        layout_used, sparsity_used,
                   data.matcell_dense_arr.data(), data.stride);
     else
       mm.addField(array_name, FieldMapping::PER_CELL_MAT,
+        layout_used, sparsity_used,
                   data.matcell_sparse_arr.data(), data.stride);
   }
 
@@ -462,8 +467,8 @@ TEST(multimat, construct_multimat_1_array)
   const int stride_val = 4;
   MM_test_data<double> data(num_cells, num_mats, stride_val);
 
-  std::vector<DataLayout> data_layouts = { DataLayout::CELL_CENTRIC,
-                                           DataLayout::MAT_CENTRIC };
+  std::vector<DataLayout> data_layouts = { DataLayout::CELL_DOM,
+                                           DataLayout::MAT_DOM };
   std::vector<SparsityLayout> sparsity_layouts = { SparsityLayout::DENSE,
                                                    SparsityLayout::SPARSE };
 
@@ -478,8 +483,6 @@ TEST(multimat, construct_multimat_1_array)
       MultiMat& mm = *mm_ptr;
 
       EXPECT_TRUE(mm.isValid(true));
-      EXPECT_EQ(mm.getDataLayout(), layout_used);
-      EXPECT_EQ(mm.getSparsityLayout(), sparsity_used);
       EXPECT_EQ(mm.getNumberOfCells(), data.num_cells);
       EXPECT_EQ(mm.getNumberOfMaterials(), data.num_mats);
 
@@ -493,8 +496,6 @@ TEST(multimat, construct_multimat_1_array)
           //Make Copies to test conversion
           MultiMat mm_c(mm);
           EXPECT_TRUE(mm_c.isValid(true));
-          EXPECT_EQ(mm_c.getDataLayout(), layout_used);
-          EXPECT_EQ(mm_c.getSparsityLayout(), sparsity_used);
           EXPECT_EQ(mm_c.getNumberOfCells(), data.num_cells);
           EXPECT_EQ(mm_c.getNumberOfMaterials(), data.num_mats);
 
@@ -503,16 +504,19 @@ TEST(multimat, construct_multimat_1_array)
           SLIC_INFO("Converting layout...");
           mm_c.convertLayout(layout_to_convert, sparsity_to_convert);
           SLIC_INFO( "Layout converted from "
-                     << mm.getDataLayoutAsString() << " and "
-                     << mm.getSparsityLayoutAsString() <<
-                     "\n                          to " << mm_c.getDataLayoutAsString()
-                     << " and " << mm_c.getSparsityLayoutAsString() << "...");
+                     << mm.getFieldDataLayoutAsString(0) << " and "
+                     << mm.getFieldSparsityLayoutAsString(0) <<
+                     "\n                          to " << mm_c.getFieldDataLayoutAsString(0)
+                     << " and " << mm_c.getFieldSparsityLayoutAsString(0) << "...");
 
           EXPECT_TRUE(mm_c.isValid(true));
-          EXPECT_EQ(mm_c.getDataLayout(), layout_to_convert);
-          EXPECT_EQ(mm_c.getSparsityLayout(), sparsity_to_convert);
           EXPECT_EQ(mm_c.getNumberOfCells(), data.num_cells);
           EXPECT_EQ(mm_c.getNumberOfMaterials(), data.num_mats);
+          for (int i = 0; i < mm.getNumberOfFields(); ++i)
+          {
+            EXPECT_EQ(mm_c.getFieldDataLayout(i), layout_to_convert);
+            EXPECT_EQ(mm_c.getFieldSparsityLayout(i), sparsity_to_convert);
+          }
           check_values<double>(mm_c, array_name, data);
         }
       }
@@ -531,8 +535,8 @@ TEST(multimat, test_dynamic_multimat_1_array)
   const int num_mats = 10;
   const int stride_val = 4;
 
-  std::vector<DataLayout> data_layouts = { DataLayout::CELL_CENTRIC,
-                                           DataLayout::MAT_CENTRIC };
+  std::vector<DataLayout> data_layouts = { DataLayout::CELL_DOM,
+                                           DataLayout::MAT_DOM };
   std::vector<SparsityLayout> sparsity_layouts = { SparsityLayout::DENSE,
                                                    SparsityLayout::SPARSE };
 
@@ -547,12 +551,10 @@ TEST(multimat, test_dynamic_multimat_1_array)
       SLIC_INFO("--------------------\nConstructing MultiMat object...");
       MultiMat* mm_ptr = newMM(data, layout_used, sparsity_used, array_name);
       MultiMat& mm = *mm_ptr;
-      SLIC_INFO("Layout: " << mm.getDataLayoutAsString()
-                           << " and " << mm.getSparsityLayoutAsString());
+      SLIC_INFO("Layout: " << mm.getFieldDataLayoutAsString(0)
+                           << " and " << mm.getFieldSparsityLayoutAsString(0));
 
       EXPECT_TRUE(mm.isValid(true));
-      EXPECT_EQ(mm.getDataLayout(), layout_used);
-      EXPECT_EQ(mm.getSparsityLayout(), sparsity_used);
       EXPECT_EQ(mm.getNumberOfCells(), data.num_cells);
       EXPECT_EQ(mm.getNumberOfMaterials(), data.num_mats);
 
@@ -563,7 +565,7 @@ TEST(multimat, test_dynamic_multimat_1_array)
 
       auto& volfrac_field = mm.getVolfracField();
       auto& arr = mm.get2dField<double>(array_name);
-
+      
       SLIC_INFO("Removing every other entries...");
       for (int ci = 0 ; ci < data.num_cells ; ci++)
       {
@@ -574,7 +576,7 @@ TEST(multimat, test_dynamic_multimat_1_array)
           {
             data.setVal(ci, mi, 0);
             int idx1, idx2;
-            if (mm.getDataLayout() == DataLayout::CELL_CENTRIC)
+            if (layout_used == DataLayout::CELL_DOM)
             {
               idx1 = ci; idx2 = mi;
             }
@@ -597,7 +599,7 @@ TEST(multimat, test_dynamic_multimat_1_array)
       {
         data.setVal(ci, 0, 1.0);
         int idx1, idx2;
-        if (mm.getDataLayout() == DataLayout::CELL_CENTRIC)
+        if (layout_used == DataLayout::CELL_DOM)
         {
           idx1 = ci; idx2 = 0;
         }
@@ -614,22 +616,27 @@ TEST(multimat, test_dynamic_multimat_1_array)
       }
 
       EXPECT_TRUE(mm.isValid(true));
-      EXPECT_EQ(mm.getDataLayout(), layout_used);
-      EXPECT_EQ(mm.getSparsityLayout(), SparsityLayout::DENSE);
-      //For now, during dynamic mode, layout is in dense
       EXPECT_EQ(mm.getNumberOfCells(), data.num_cells);
       EXPECT_EQ(mm.getNumberOfMaterials(), data.num_mats);
+      for (int i = 0; i < mm.getNumberOfFields(); ++i)
+      {
+        //For now, during dynamic mode, layout is in dense
+        EXPECT_EQ(mm.getFieldDataLayout(i), layout_used);
+        EXPECT_EQ(mm.getFieldSparsityLayout(i), SparsityLayout::DENSE);
+      }
 
       check_values<double>(mm, array_name, data);
 
       mm.convertToStatic();
 
       EXPECT_TRUE(mm.isValid(true));
-      EXPECT_EQ(mm.getDataLayout(), layout_used);
-      EXPECT_EQ(mm.getSparsityLayout(), sparsity_used);
       EXPECT_EQ(mm.getNumberOfCells(), data.num_cells);
       EXPECT_EQ(mm.getNumberOfMaterials(), data.num_mats);
-
+      for (int i = 0; i < mm.getNumberOfFields(); ++i)
+      {
+        EXPECT_EQ(mm.getFieldDataLayout(i), layout_used);
+        EXPECT_EQ(mm.getFieldSparsityLayout(i), sparsity_used);
+      }
       check_values<double>(mm, array_name, data);
 
 

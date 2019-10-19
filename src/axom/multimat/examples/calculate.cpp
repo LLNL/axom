@@ -67,7 +67,7 @@ void average_density_cell_dom_full(Robey_data& data){
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::avg_density, DataLayout::CELL_CENTRIC,
+  result_store.add_result(Result_Store::avg_density, DataLayout::CELL_DOM,
     SparsityLayout::DENSE, Result_Store::method_csr, act_perf);
 
   SLIC_INFO("Average Density                      compute time is "
@@ -108,7 +108,7 @@ void average_density_cell_dom_compact(Robey_data& data) {
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::avg_density, DataLayout::CELL_CENTRIC,
+  result_store.add_result(Result_Store::avg_density, DataLayout::CELL_DOM,
     SparsityLayout::SPARSE, Result_Store::method_csr, act_perf);
 
   SLIC_INFO("Average Density                      compute time is "
@@ -120,11 +120,11 @@ void average_density_cell_dom_compact(Robey_data& data) {
 void average_density_cell_dom_mm_template(MultiMat& mm) {
   SLIC_INFO("-- Averaging Density cell-dominant using MultiMat Direct (Dense) Access w/ template cast --");
 
-  mm.convertLayoutToCellDominant();
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-    << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isDense());
-  SLIC_ASSERT(mm.isCellDom());
+  mm.convertLayoutToCellDominant(); 
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+    << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldSparsityLayout(0) == SparsityLayout::DENSE);
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::CELL_DOM);
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
@@ -159,8 +159,8 @@ void average_density_cell_dom_mm_template(MultiMat& mm) {
     data_checker.check(Density_average);
   }
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::avg_density, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_direct, act_perf);
+  result_store.add_result(Result_Store::avg_density, mm.getFieldDataLayout(0),
+    mm.getFieldSparsityLayout(0), Result_Store::mm_direct, act_perf);
   SLIC_INFO("Average Density                      compute time is "
     << act_perf << " secs\n");
 }
@@ -171,10 +171,10 @@ void average_density_cell_dom_mm_direct(MultiMat& mm) {
   SLIC_INFO("-- Averaging Density cell-dominant using MultiMat Direct (Dense) Access --");
 
   mm.convertLayoutToCellDominant();
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-    << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isDense());
-  SLIC_ASSERT(mm.isCellDom());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+    << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldSparsityLayout(0) == SparsityLayout::DENSE);
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::CELL_DOM);
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
@@ -223,8 +223,8 @@ void average_density_cell_dom_mm_direct(MultiMat& mm) {
     data_checker.check(Density_average);
   }
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::avg_density, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_direct, act_perf);
+  result_store.add_result(Result_Store::avg_density, mm.getFieldDataLayout(0),
+    mm.getFieldSparsityLayout(0), Result_Store::mm_direct, act_perf);
   SLIC_INFO("Average Density                      compute time is "
     << act_perf << " secs\n");
 }
@@ -234,10 +234,10 @@ void average_density_cell_dom_mm_direct(MultiMat& mm) {
 void average_density_cell_dom_mm_submap(MultiMat& mm) {
   SLIC_INFO("-- Averaging Density cell-dominant using MultiMat Submap --");
 
-  mm.convertLayoutToCellDominant();
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-    << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isCellDom());
+  mm.convertLayoutToCellDominant(); 
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+    << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::CELL_DOM); 
 
   int ncells = mm.getNumberOfCells();
   auto& Densityfrac = mm.get2dField<double>("Densityfrac");
@@ -270,8 +270,8 @@ void average_density_cell_dom_mm_submap(MultiMat& mm) {
     data_checker.check(Density_average);
   }
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::avg_density, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_submap, act_perf);
+  result_store.add_result(Result_Store::avg_density, mm.getFieldDataLayout(0),
+    mm.getFieldSparsityLayout(0), Result_Store::mm_submap, act_perf);
   SLIC_INFO("Average Density                      compute time is "
     << act_perf << " secs\n");
 }
@@ -284,9 +284,9 @@ void average_density_cell_dom_mm_submap(MultiMat& mm)
   SLIC_INFO("-- Averaging Density cell-dominant using MultiMat Submap -- templated on concrete bivariate set");
 
   mm.convertLayoutToCellDominant();
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-      << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isCellDom());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+      << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::CELL_DOM);
 
   int ncells = mm.getNumberOfCells();
   auto Densityfrac = mm.get2dField<double, BSet>("Densityfrac");
@@ -319,8 +319,8 @@ void average_density_cell_dom_mm_submap(MultiMat& mm)
     data_checker.check(Density_average);
   }
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::avg_density, mm.getDataLayout(),
-      mm.getSparsityLayout(), Result_Store::mm_submap_templated, act_perf);
+  result_store.add_result(Result_Store::avg_density, mm.getFieldDataLayout(0),
+      mm.getFieldSparsityLayout(0), Result_Store::mm_submap_templated, act_perf);
   SLIC_INFO("Average Density                      compute time is "
       << act_perf << " secs\n");
 }
@@ -331,9 +331,9 @@ void average_density_cell_dom_mm_idxarray(MultiMat& mm) {
   SLIC_INFO("-- Averaging Density cell-dominant using MultiMat Index Array --");
 
   mm.convertLayoutToCellDominant();
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-    << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isCellDom());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+    << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::CELL_DOM);
 
   int ncells = mm.getNumberOfCells();
   auto& Densityfrac = mm.get2dField<double>("Densityfrac");
@@ -350,7 +350,7 @@ void average_density_cell_dom_mm_idxarray(MultiMat& mm) {
 
     for (int ic = 0; ic < ncells; ++ic)
     {
-      auto idxSet = mm.getIndexingSetOfCell(ic);
+      auto idxSet = mm.getIndexingSetOfCell(ic, mm.getFieldSparsityLayout(0));
       //auto matId = mm.getMatInCell(ic);
       double density_ave = 0.0;
       int sz = idxSet.size();
@@ -366,8 +366,8 @@ void average_density_cell_dom_mm_idxarray(MultiMat& mm) {
     data_checker.check(Density_average);
   }
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::avg_density, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_idxarray, act_perf);
+  result_store.add_result(Result_Store::avg_density, mm.getFieldDataLayout(0),
+    mm.getFieldSparsityLayout(0), Result_Store::mm_idxarray, act_perf);
   SLIC_INFO("Average Density                      compute time is "
     << act_perf << " secs\n");
 }
@@ -377,8 +377,8 @@ void average_density_cell_dom_mm_idxarray(MultiMat& mm) {
 void average_density_cell_dom_mm_flatiter(MultiMat& mm) {
   SLIC_INFO("-- Averaging Density cell-dominant using MultiMat Flat Iter --");
 
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-                                << mm.getSparsityLayoutAsString());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+                                << mm.getFieldSparsityLayoutAsString(0));
   
   int ncells = mm.getNumberOfCells();
   MultiMat::Field2D<double>& Densityfrac = mm.get2dField<double>("Densityfrac");
@@ -414,8 +414,8 @@ void average_density_cell_dom_mm_flatiter(MultiMat& mm) {
     data_checker.check(Density_average);
   }
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::avg_density, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_flatiter, act_perf);
+  result_store.add_result(Result_Store::avg_density, mm.getFieldDataLayout(0),
+    mm.getFieldSparsityLayout(0), Result_Store::mm_flatiter, act_perf);
   SLIC_INFO("Average Density                      compute time is "
             << act_perf <<" secs\n");
 }
@@ -426,9 +426,9 @@ void average_density_cell_dom_mm_iter(MultiMat& mm) {
   SLIC_INFO("-- Averaging Density cell-dominant using MultiMat Iterator Per-row --");
 
   mm.convertLayoutToCellDominant();
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-    << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isCellDom());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+    << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::CELL_DOM);
 
   int ncells = mm.getNumberOfCells();
   MultiMat::Field2D<double> & Densityfrac = mm.get2dField<double>("Densityfrac");
@@ -464,8 +464,8 @@ void average_density_cell_dom_mm_iter(MultiMat& mm) {
     data_checker.check(Density_average);
   }
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::avg_density, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_iter, act_perf);
+  result_store.add_result(Result_Store::avg_density, mm.getFieldDataLayout(0),
+    mm.getFieldSparsityLayout(0), Result_Store::mm_iter, act_perf);
   SLIC_INFO("Average Density                      compute time is "
     << act_perf << " secs\n");
 }
@@ -511,7 +511,7 @@ double average_density_mat_dom_full(Robey_data& data)
 	}
 
 	double act_perf = timer.get_median();
-   result_store.add_result(Result_Store::avg_density, DataLayout::MAT_CENTRIC,
+   result_store.add_result(Result_Store::avg_density, DataLayout::MAT_DOM,
      SparsityLayout::DENSE, Result_Store::method_csr, act_perf);
 	SLIC_INFO("Average Density                      compute time is "
 		<< act_perf << " secs\n");
@@ -557,7 +557,7 @@ double average_density_mat_dom_compact(Robey_data& data) {
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::avg_density, DataLayout::MAT_CENTRIC,
+  result_store.add_result(Result_Store::avg_density, DataLayout::MAT_DOM,
     SparsityLayout::SPARSE, Result_Store::method_csr, act_perf);
   SLIC_INFO("Average Density                      compute time is "
     << act_perf << " secs\n");
@@ -572,10 +572,10 @@ void average_density_mat_dom_mm_direct(MultiMat& mm) {
 
   mm.convertLayoutToMaterialDominant();
 
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-    << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isMatDom());
-  SLIC_ASSERT(mm.isDense());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+    << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::MAT_DOM);
+  SLIC_ASSERT(mm.getFieldSparsityLayout(0) == SparsityLayout::DENSE); 
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
@@ -610,8 +610,8 @@ void average_density_mat_dom_mm_direct(MultiMat& mm) {
     data_checker.check(Density_average);
   }
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::avg_density, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_direct, act_perf);
+  result_store.add_result(Result_Store::avg_density, mm.getFieldDataLayout(0),
+    mm.getFieldSparsityLayout(0), Result_Store::mm_direct, act_perf);
 
   SLIC_INFO("Average Density                      compute time is "
     << act_perf << " secs\n");
@@ -624,9 +624,9 @@ void average_density_mat_dom_mm_submap(MultiMat& mm) {
 
   mm.convertLayoutToMaterialDominant();
 
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-                                << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isMatDom());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+                                << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::MAT_DOM);
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
@@ -663,8 +663,8 @@ void average_density_mat_dom_mm_submap(MultiMat& mm) {
     data_checker.check(Density_average);
   }
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::avg_density, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_submap, act_perf);
+  result_store.add_result(Result_Store::avg_density, mm.getFieldDataLayout(0),
+    mm.getFieldSparsityLayout(0), Result_Store::mm_submap, act_perf);
 
   SLIC_INFO("Average Density                      compute time is "
             << act_perf << " secs\n");
@@ -678,9 +678,9 @@ void average_density_mat_dom_mm_submap(MultiMat& mm) {
 
   mm.convertLayoutToMaterialDominant();
 
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-                                << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isMatDom());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+                                << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::MAT_DOM);
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
@@ -717,8 +717,8 @@ void average_density_mat_dom_mm_submap(MultiMat& mm) {
     data_checker.check(Density_average);
   }
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::avg_density, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_submap_templated, act_perf);
+  result_store.add_result(Result_Store::avg_density, mm.getFieldDataLayout(0),
+    mm.getFieldSparsityLayout(0), Result_Store::mm_submap_templated, act_perf);
 
   SLIC_INFO("Average Density                      compute time is "
             << act_perf << " secs\n");
@@ -731,9 +731,9 @@ void average_density_mat_dom_mm_idxarray(MultiMat& mm) {
 
   mm.convertLayoutToMaterialDominant();
 
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-    << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isMatDom());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+    << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::MAT_DOM);
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
@@ -754,7 +754,7 @@ void average_density_mat_dom_mm_idxarray(MultiMat& mm) {
 
     for (int m = 0; m < nmats; ++m)
     {
-      auto idxSet = mm.getIndexingSetOfMat(m);
+      auto idxSet = mm.getIndexingSetOfMat(m, mm.getFieldSparsityLayout(0));
       auto cellId = mm.getCellContainingMat(m);
       for (int j = 0; j < idxSet.size(); ++j)
       {
@@ -770,8 +770,8 @@ void average_density_mat_dom_mm_idxarray(MultiMat& mm) {
     data_checker.check(Density_average);
   }
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::avg_density, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_idxarray, act_perf);
+  result_store.add_result(Result_Store::avg_density, mm.getFieldDataLayout(0),
+    mm.getFieldSparsityLayout(0), Result_Store::mm_idxarray, act_perf);
   SLIC_INFO("Average Density                      compute time is "
     << act_perf << " secs\n");
 }
@@ -783,9 +783,9 @@ void average_density_mat_dom_mm_iter(MultiMat& mm) {
 
   mm.convertLayoutToMaterialDominant();
 
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-    << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isMatDom());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+    << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::MAT_DOM);
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
@@ -824,8 +824,8 @@ void average_density_mat_dom_mm_iter(MultiMat& mm) {
     data_checker.check(Density_average);
   }
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::avg_density, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_iter, act_perf);
+  result_store.add_result(Result_Store::avg_density, mm.getFieldDataLayout(0),
+    mm.getFieldSparsityLayout(0), Result_Store::mm_iter, act_perf);
 
   SLIC_INFO("Average Density                      compute time is "
     << act_perf << " secs\n");
@@ -837,8 +837,8 @@ void average_density_mat_dom_mm_iter(MultiMat& mm) {
 void average_density_mat_dom_mm_flatiter(MultiMat& mm) {
   SLIC_INFO("-- Averaging Density mat-dominant using MultiMat Flat Iter --");
 
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-    << mm.getSparsityLayoutAsString());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+    << mm.getFieldSparsityLayoutAsString(0));
 
   int ncells = mm.getNumberOfCells();
   MultiMat::Field2D<double> & Densityfrac = mm.get2dField<double>("Densityfrac");
@@ -874,8 +874,8 @@ void average_density_mat_dom_mm_flatiter(MultiMat& mm) {
     data_checker.check(Density_average);
   }
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::avg_density, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_flatiter, act_perf);
+  result_store.add_result(Result_Store::avg_density, mm.getFieldDataLayout(0),
+    mm.getFieldSparsityLayout(0), Result_Store::mm_flatiter, act_perf);
   SLIC_INFO("Average Density                      compute time is "
     << act_perf << " secs\n");
 }
@@ -971,7 +971,7 @@ void calculate_pressure_cell_dom_full(Robey_data& data)
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::pressure_calc, DataLayout::CELL_CENTRIC,
+  result_store.add_result(Result_Store::pressure_calc, DataLayout::CELL_DOM,
      SparsityLayout::DENSE, Result_Store::method_csr, act_perf);
   SLIC_INFO("Pressure Calculation with if           compute time is " 
       << act_perf << " secs\n");
@@ -1017,7 +1017,7 @@ void calculate_pressure_cell_dom_compact(Robey_data& data)
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::pressure_calc, DataLayout::CELL_CENTRIC,
+  result_store.add_result(Result_Store::pressure_calc, DataLayout::CELL_DOM,
       SparsityLayout::SPARSE, Result_Store::method_csr, act_perf);
   SLIC_INFO("Pressure Calculation with if           compute time is "
       << act_perf << " secs\n");
@@ -1030,10 +1030,10 @@ void calculate_pressure_cell_dom_full_mm_direct(MultiMat& mm)
 {
   SLIC_INFO("-- Calculating pressure, using MultiMat Direct Access --");
   mm.convertLayoutToCellDominant();
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-    << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isCellDom());
-  SLIC_ASSERT(mm.isDense());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+    << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::CELL_DOM);
+  SLIC_ASSERT(mm.getFieldSparsityLayout(0) == SparsityLayout::DENSE);
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
@@ -1071,8 +1071,8 @@ void calculate_pressure_cell_dom_full_mm_direct(MultiMat& mm)
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::pressure_calc, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_direct, act_perf);
+  result_store.add_result(Result_Store::pressure_calc, mm.getFieldDataLayout(0),
+    mm.getFieldSparsityLayout(0), Result_Store::mm_direct, act_perf);
   SLIC_INFO("Pressure Calculation with if           compute time is "
     << act_perf << " secs\n");
 }
@@ -1083,9 +1083,9 @@ void calculate_pressure_cell_dom_mm_submap(MultiMat& mm)
 {
   SLIC_INFO("-- Calculating pressure, using MultiMat Submap --");
   mm.convertLayoutToCellDominant();
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-                                << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isCellDom());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+                                << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::CELL_DOM);
 
   int ncells = mm.getNumberOfCells();
   auto& Densityfrac = mm.get2dField<double>("Densityfrac");
@@ -1131,8 +1131,8 @@ void calculate_pressure_cell_dom_mm_submap(MultiMat& mm)
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::pressure_calc, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_submap, act_perf);
+  result_store.add_result(Result_Store::pressure_calc, mm.getFieldDataLayout(0),
+    mm.getFieldSparsityLayout(0), Result_Store::mm_submap, act_perf);
   SLIC_INFO("Pressure Calculation with if           compute time is "
     << act_perf << " secs\n");
 }
@@ -1142,9 +1142,9 @@ void calculate_pressure_cell_dom_mm_submap(MultiMat& mm)
 {
   SLIC_INFO("-- Calculating pressure, using MultiMat Submap \t\t-- templated on BSet");
   mm.convertLayoutToCellDominant();
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-      << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isCellDom());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+      << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::CELL_DOM);
 
   int ncells = mm.getNumberOfCells();
   auto Densityfrac = mm.get2dField<double,BSet>("Densityfrac");
@@ -1191,8 +1191,8 @@ void calculate_pressure_cell_dom_mm_submap(MultiMat& mm)
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::pressure_calc, mm.getDataLayout(),
-      mm.getSparsityLayout(), Result_Store::mm_submap_templated, act_perf);
+  result_store.add_result(Result_Store::pressure_calc, mm.getFieldDataLayout(0),
+      mm.getFieldSparsityLayout(0), Result_Store::mm_submap_templated, act_perf);
   SLIC_INFO("Pressure Calculation with if           compute time is "
       << act_perf << " secs\n");
 }
@@ -1203,10 +1203,10 @@ void calculate_pressure_cell_dom_full_mm_iter(MultiMat& mm)
 {
   SLIC_INFO("-- Calculating pressure, using MultiMat Iterator --");
   mm.convertLayoutToCellDominant();
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-    << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isCellDom());
-  SLIC_ASSERT(mm.isDense());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+    << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::CELL_DOM);
+  SLIC_ASSERT(mm.getFieldSparsityLayout(0) == SparsityLayout::DENSE);
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
@@ -1250,8 +1250,8 @@ void calculate_pressure_cell_dom_full_mm_iter(MultiMat& mm)
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::pressure_calc, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_iter, act_perf);
+  result_store.add_result(Result_Store::pressure_calc, mm.getFieldDataLayout(0),
+    mm.getFieldSparsityLayout(0), Result_Store::mm_iter, act_perf);
   SLIC_INFO("Pressure Calculation with if           compute time is "
     << act_perf << " secs\n");
 }
@@ -1261,10 +1261,10 @@ void calculate_pressure_cell_dom_full_mm_iter(MultiMat& mm)
 void calculate_pressure_cell_dom_full_mm_flatiter(MultiMat& mm)
 {
   SLIC_INFO("-- Calculating pressure, using MultiMat Flat Iterator --");
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-    << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isDense());
-  SLIC_ASSERT(mm.isCellDom());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+    << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldSparsityLayout(0) == SparsityLayout::DENSE);
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::CELL_DOM);
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
@@ -1306,8 +1306,8 @@ void calculate_pressure_cell_dom_full_mm_flatiter(MultiMat& mm)
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::pressure_calc, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_flatiter, act_perf);
+  result_store.add_result(Result_Store::pressure_calc, mm.getFieldDataLayout(0),
+    mm.getFieldSparsityLayout(0), Result_Store::mm_flatiter, act_perf);
   SLIC_INFO("Pressure Calculation with if           compute time is "
     << act_perf << " secs\n");
 }
@@ -1351,7 +1351,7 @@ void calculate_pressure_mat_dom_full(Robey_data& data)
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::pressure_calc, DataLayout::MAT_CENTRIC,
+  result_store.add_result(Result_Store::pressure_calc, DataLayout::MAT_DOM,
      SparsityLayout::DENSE, Result_Store::method_csr, act_perf);
   SLIC_INFO("Pressure Calculation with if           compute time is " 
       << act_perf << " secs\n");
@@ -1398,7 +1398,7 @@ void calculate_pressure_mat_dom_compact(Robey_data& data)
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::pressure_calc, DataLayout::MAT_CENTRIC,
+  result_store.add_result(Result_Store::pressure_calc, DataLayout::MAT_DOM,
         SparsityLayout::SPARSE, Result_Store::method_csr, act_perf);
   SLIC_INFO("Pressure Calculation with if           compute time is "
         << act_perf << " secs\n");
@@ -1411,10 +1411,10 @@ void calculate_pressure_mat_dom_full_mm_direct(MultiMat& mm)
 {
   SLIC_INFO("-- Calculating pressure, using MultiMat Direct Access --");
   mm.convertLayoutToMaterialDominant();
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-    << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isMatDom());
-  SLIC_ASSERT(mm.isDense());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+    << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::MAT_DOM);
+  SLIC_ASSERT(mm.getFieldSparsityLayout(0) == SparsityLayout::DENSE);
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
@@ -1450,8 +1450,8 @@ void calculate_pressure_mat_dom_full_mm_direct(MultiMat& mm)
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::pressure_calc, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_direct, act_perf);
+  result_store.add_result(Result_Store::pressure_calc, mm.getFieldDataLayout(0),
+    mm.getFieldSparsityLayout(0), Result_Store::mm_direct, act_perf);
   SLIC_INFO("Pressure Calculation with if           compute time is "
     << act_perf << " secs\n");
 }
@@ -1461,9 +1461,9 @@ void calculate_pressure_mat_dom_full_mm_direct(MultiMat& mm)
 void calculate_pressure_mat_dom_mm_submap(MultiMat& mm)
 {
   SLIC_INFO("-- Calculating pressure, using MultiMat Submap --");
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-                                << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isMatDom());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+                                << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::MAT_DOM);
 
   int nmats = mm.getNumberOfMaterials();
   auto& Densityfrac = mm.get2dField<double>("Densityfrac");
@@ -1474,7 +1474,7 @@ void calculate_pressure_mat_dom_mm_submap(MultiMat& mm)
   // Store result in a dense field
   using DenseFieldSet = typename MultiMat::ProductSetType;
   using DenseField = MultiMat::Field2D<double, DenseFieldSet>;
-  DenseField Pressurefrac(mm.getDense2dFieldSet());
+  DenseField Pressurefrac(mm.getDense2dFieldSet(DataLayout::MAT_DOM));
 
   timer.reset();
 
@@ -1508,8 +1508,8 @@ void calculate_pressure_mat_dom_mm_submap(MultiMat& mm)
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::pressure_calc, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_submap, act_perf);
+  result_store.add_result(Result_Store::pressure_calc, mm.getFieldDataLayout(0),
+    mm.getFieldSparsityLayout(0), Result_Store::mm_submap, act_perf);
   SLIC_INFO("Pressure Calculation with if           compute time is "
     << act_perf << " secs\n");
 }
@@ -1518,9 +1518,9 @@ template<typename BSet>
 void calculate_pressure_mat_dom_mm_submap(MultiMat& mm)
 {
   SLIC_INFO("-- Calculating pressure, using MultiMat Submap \t\t-- using templated BSet");
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-      << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isMatDom());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+      << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::MAT_DOM);
 
   int nmats = mm.getNumberOfMaterials();
   auto Densityfrac = mm.get2dField<double,BSet>("Densityfrac");
@@ -1532,7 +1532,7 @@ void calculate_pressure_mat_dom_mm_submap(MultiMat& mm)
   // Store result in a dense field
   using DenseFieldSet = typename MultiMat::ProductSetType;
   using DenseField = MultiMat::Field2D<double, DenseFieldSet>;
-  DenseField Pressurefrac(mm.getDense2dFieldSet());
+  DenseField Pressurefrac(mm.getDense2dFieldSet(DataLayout::MAT_DOM));
 
   timer.reset();
 
@@ -1566,8 +1566,8 @@ void calculate_pressure_mat_dom_mm_submap(MultiMat& mm)
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::pressure_calc, mm.getDataLayout(),
-      mm.getSparsityLayout(), Result_Store::mm_submap_templated, act_perf);
+  result_store.add_result(Result_Store::pressure_calc, mm.getFieldDataLayout(0),
+      mm.getFieldSparsityLayout(0), Result_Store::mm_submap_templated, act_perf);
   SLIC_INFO("Pressure Calculation with if           compute time is "
       << act_perf << " secs\n");
 }
@@ -1578,10 +1578,10 @@ void calculate_pressure_mat_dom_mm_submap(MultiMat& mm)
 void calculate_pressure_mat_dom_full_mm_iter(MultiMat& mm)
 {
   SLIC_INFO("-- Calculating pressure, using MultiMat Iter --");
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-    << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isMatDom());
-  SLIC_ASSERT(mm.isDense());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+    << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::MAT_DOM);
+  SLIC_ASSERT(mm.getFieldSparsityLayout(0) == SparsityLayout::DENSE);
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
@@ -1625,8 +1625,8 @@ void calculate_pressure_mat_dom_full_mm_iter(MultiMat& mm)
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::pressure_calc, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_iter, act_perf);
+  result_store.add_result(Result_Store::pressure_calc, mm.getFieldDataLayout(0),
+    mm.getFieldSparsityLayout(0), Result_Store::mm_iter, act_perf);
   SLIC_INFO("Pressure Calculation with if           compute time is "
     << act_perf << " secs\n");
 }
@@ -1636,10 +1636,10 @@ void calculate_pressure_mat_dom_full_mm_iter(MultiMat& mm)
 void calculate_pressure_mat_dom_full_mm_flatiter(MultiMat& mm)
 {
   SLIC_INFO("-- Calculating pressure, using MultiMat Flat Iterator --");
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-    << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isDense());
-  SLIC_ASSERT(mm.isMatDom());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+    << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldSparsityLayout(0) == SparsityLayout::DENSE);
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::MAT_DOM);
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
@@ -1681,8 +1681,8 @@ void calculate_pressure_mat_dom_full_mm_flatiter(MultiMat& mm)
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::pressure_calc, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_flatiter, act_perf);
+  result_store.add_result(Result_Store::pressure_calc, mm.getFieldDataLayout(0),
+    mm.getFieldSparsityLayout(0), Result_Store::mm_flatiter, act_perf);
   SLIC_INFO("Pressure Calculation with if           compute time is "
     << act_perf << " secs\n");
 }
@@ -1758,7 +1758,7 @@ void average_density_over_nbr_cell_dom_full(Robey_data& data)
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::neighbor_density, DataLayout::CELL_CENTRIC,
+  result_store.add_result(Result_Store::neighbor_density, DataLayout::CELL_DOM,
     SparsityLayout::DENSE, Result_Store::method_csr, act_perf);
   SLIC_INFO("Average Material Density            compute time is "
     << act_perf << " secs\n");
@@ -1831,7 +1831,7 @@ void average_density_over_nbr_cell_dom_compact(Robey_data& data)
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::neighbor_density, DataLayout::CELL_CENTRIC,
+  result_store.add_result(Result_Store::neighbor_density, DataLayout::CELL_DOM,
     SparsityLayout::SPARSE, Result_Store::method_csr, act_perf);
   SLIC_INFO("Average Material Density            compute time is "
     << act_perf << " secs\n");
@@ -1846,10 +1846,10 @@ void average_density_over_nbr_cell_dom_full_mm_direct(MultiMat& mm, Robey_data& 
 {
   SLIC_INFO("-- Average Density over Neighbors, Cell-Dominant Full Matrix,"
     << " Multimat Direct Access --");
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-    << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isCellDom());
-  SLIC_ASSERT(mm.isDense());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+    << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::CELL_DOM);
+  SLIC_ASSERT(mm.getFieldSparsityLayout(0) == SparsityLayout::DENSE);
 
   const std::vector<double> & cen = data.cen;
   const std::vector<int> & nnbrs = data.nnbrs;
@@ -1923,8 +1923,8 @@ void average_density_over_nbr_cell_dom_full_mm_direct(MultiMat& mm, Robey_data& 
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::neighbor_density, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_direct, act_perf);
+  result_store.add_result(Result_Store::neighbor_density, mm.getFieldDataLayout(0),
+    mm.getFieldSparsityLayout(0), Result_Store::mm_direct, act_perf);
 
   SLIC_INFO("Average Material Density            compute time is "
     << act_perf << " secs\n");
@@ -1939,10 +1939,10 @@ void average_density_over_nbr_cell_dom_full_mm_submap(MultiMat& mm, Robey_data& 
   SLIC_INFO("-- Average Density over Neighbors, Cell-Dominant Full Matrix,"
             << " Multimat Submap --");
   mm.convertLayoutToCellDominant();
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-                                << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isCellDom());
-  SLIC_ASSERT(mm.isDense());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+                                << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::CELL_DOM);
+  SLIC_ASSERT(mm.getFieldSparsityLayout(0) == SparsityLayout::DENSE);
 
   const std::vector<double>& cen = data.cen;
   const std::vector<int>& nnbrs = data.nnbrs;
@@ -2021,8 +2021,8 @@ void average_density_over_nbr_cell_dom_full_mm_submap(MultiMat& mm, Robey_data& 
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::neighbor_density, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_submap, act_perf);
+  result_store.add_result(Result_Store::neighbor_density, mm.getFieldDataLayout(0),
+    mm.getFieldSparsityLayout(0), Result_Store::mm_submap, act_perf);
 
   SLIC_INFO("Average Material Density            compute time is "
             << act_perf << " secs\n");
@@ -2038,10 +2038,10 @@ void average_density_over_nbr_cell_dom_full_mm_submap(MultiMat& mm, Robey_data& 
   SLIC_INFO("-- Average Density over Neighbors, Cell-Dominant Full Matrix,"
             << " Multimat Submap -- using templated BSet ");
   mm.convertLayoutToCellDominant();
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-                                << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isCellDom());
-  SLIC_ASSERT(mm.isDense());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+                                << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::CELL_DOM);
+  SLIC_ASSERT(mm.getFieldSparsityLayout(0) == SparsityLayout::DENSE);
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
@@ -2106,8 +2106,8 @@ void average_density_over_nbr_cell_dom_full_mm_submap(MultiMat& mm, Robey_data& 
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::neighbor_density, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_submap_templated, act_perf);
+  result_store.add_result(Result_Store::neighbor_density, mm.getFieldDataLayout(0),
+    mm.getFieldSparsityLayout(0), Result_Store::mm_submap_templated, act_perf);
 
   SLIC_INFO("Average Material Density            compute time is "
             << act_perf << " secs\n");
@@ -2120,10 +2120,10 @@ void average_density_over_nbr_cell_dom_full_mm_iter(MultiMat& mm, Robey_data& da
 {
   SLIC_INFO("-- Average Density over Neighbors, Cell-Dominant Full Matrix,"
     << " Multimat Iterator --");
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-    << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isCellDom());
-  SLIC_ASSERT(mm.isDense());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+    << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::CELL_DOM);
+  SLIC_ASSERT(mm.getFieldSparsityLayout(0) == SparsityLayout::DENSE);
 
   const std::vector<double> & cen = data.cen;
   const std::vector<int> & nnbrs = data.nnbrs;
@@ -2199,11 +2199,11 @@ void average_density_over_nbr_cell_dom_full_mm_iter(MultiMat& mm, Robey_data& da
 
     timer.record();
     data_checker.check(MatDensity_average);
-  }
+  } 
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::neighbor_density, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_iter, act_perf);
+  result_store.add_result(Result_Store::neighbor_density, mm.getFieldDataLayout(0),
+    mm.getFieldSparsityLayout(0), Result_Store::mm_iter, act_perf);
   SLIC_INFO("Average Material Density            compute time is "
     << act_perf << " secs\n");
 
@@ -2218,10 +2218,10 @@ void average_density_over_nbr_cell_dom_compact_mm_submap(MultiMat& mm, Robey_dat
   SLIC_INFO("-- Average Density over Neighbors, Cell-Dominant Compact,"
     << " Multimat Submap --");
   mm.convertLayoutToCellDominant();
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-    << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isCellDom());
-  SLIC_ASSERT(mm.isSparse());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+    << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::CELL_DOM);
+  SLIC_ASSERT(mm.getFieldSparsityLayout(0) == SparsityLayout::SPARSE);
 
   const auto& neighbors = data.slam_neighbors;
   const auto& cen = data.slam_centroids;
@@ -2279,8 +2279,8 @@ void average_density_over_nbr_cell_dom_compact_mm_submap(MultiMat& mm, Robey_dat
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::neighbor_density, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_submap, act_perf);
+  result_store.add_result(Result_Store::neighbor_density, mm.getFieldDataLayout(0),
+    mm.getFieldSparsityLayout(0), Result_Store::mm_submap, act_perf);
   SLIC_INFO("Average Material Density            compute time is "
     << act_perf << " secs\n");
 
@@ -2292,10 +2292,10 @@ void average_density_over_nbr_cell_dom_compact_mm_submap(MultiMat& mm, Robey_dat
   SLIC_INFO("-- Average Density over Neighbors, Cell-Dominant Compact, "
       << " Multimat Submap -- templated on BSet type");
   mm.convertLayoutToCellDominant();
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-      << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isCellDom());
-  SLIC_ASSERT(mm.isSparse());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+      << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::CELL_DOM);
+  SLIC_ASSERT(mm.getFieldSparsityLayout(0) == SparsityLayout::SPARSE);
 
   int ncells = mm.getNumberOfCells();
   auto Densityfrac = mm.get2dField<double, BSet>("Densityfrac");
@@ -2360,8 +2360,8 @@ void average_density_over_nbr_cell_dom_compact_mm_submap(MultiMat& mm, Robey_dat
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::neighbor_density, mm.getDataLayout(),
-       mm.getSparsityLayout(), Result_Store::mm_submap_templated, act_perf);
+  result_store.add_result(Result_Store::neighbor_density, mm.getFieldDataLayout(0),
+       mm.getFieldSparsityLayout(0), Result_Store::mm_submap_templated, act_perf);
   SLIC_INFO("Average Material Density            compute time is "
      << act_perf << " secs\n");
 }
@@ -2372,10 +2372,10 @@ void average_density_over_nbr_cell_dom_compact_mm_idxarray(MultiMat& mm, Robey_d
 {
   SLIC_INFO("-- Average Density over Neighbors, Cell-Dominant Compact,"
     << " Multimat Index Array --");
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-    << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isCellDom());
-  SLIC_ASSERT(mm.isSparse());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+    << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::CELL_DOM);
+  SLIC_ASSERT(mm.getFieldSparsityLayout(0) == SparsityLayout::SPARSE);
 
   const std::vector<double> & cen = data.cen;
   const std::vector<int> & nnbrs = data.nnbrs;
@@ -2418,7 +2418,7 @@ void average_density_over_nbr_cell_dom_compact_mm_idxarray(MultiMat& mm, Robey_d
         }
       }
 
-      auto IndexSet = mm.getIndexingSetOfCell(ic);
+      auto IndexSet = mm.getIndexingSetOfCell(ic, mm.getFieldSparsityLayout(0));
       auto MatId = mm.getMatInCell(ic);
       
       for (int k = 0; k < IndexSet.size(); ++k)
@@ -2433,7 +2433,7 @@ void average_density_over_nbr_cell_dom_compact_mm_idxarray(MultiMat& mm, Robey_d
           {
             if (MatIdJc[jj] == m)
             {
-              auto IndexSetJc = mm.getIndexingSetOfCell(jc);
+              auto IndexSetJc = mm.getIndexingSetOfCell(jc, mm.getFieldSparsityLayout(0));
               MatDensity_average[ic * nmats + m] += Densityfrac[IndexSetJc[jj]] / dsqr[n];
               ++nnm;
               break;
@@ -2453,8 +2453,8 @@ void average_density_over_nbr_cell_dom_compact_mm_idxarray(MultiMat& mm, Robey_d
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::neighbor_density, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_idxarray, act_perf);
+  result_store.add_result(Result_Store::neighbor_density, mm.getFieldDataLayout(0),
+    mm.getFieldSparsityLayout(0), Result_Store::mm_idxarray, act_perf);
   SLIC_INFO("Average Material Density            compute time is "
     << act_perf << " secs\n");
 
@@ -2468,10 +2468,10 @@ void average_density_over_nbr_cell_dom_compact_mm_iter(MultiMat& mm, Robey_data&
   SLIC_INFO("-- Average Density over Neighbors, Cell-Dominant Compact,"
     << " Multimat Iter --");
   mm.convertLayoutToCellDominant();
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-    << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isCellDom());
-  SLIC_ASSERT(mm.isSparse());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+    << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::CELL_DOM);
+  SLIC_ASSERT(mm.getFieldSparsityLayout(0) == SparsityLayout::SPARSE);
 
   const std::vector<double> & cen = data.cen;
   const std::vector<int> & nnbrs = data.nnbrs;
@@ -2548,8 +2548,8 @@ void average_density_over_nbr_cell_dom_compact_mm_iter(MultiMat& mm, Robey_data&
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::neighbor_density, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_iter, act_perf);
+  result_store.add_result(Result_Store::neighbor_density, mm.getFieldDataLayout(0),
+    mm.getFieldSparsityLayout(0), Result_Store::mm_iter, act_perf);
   SLIC_INFO("Average Material Density            compute time is "
     << act_perf << " secs\n");
 
@@ -2623,7 +2623,7 @@ void average_density_over_nbr_mat_dom_full(Robey_data& data)
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::neighbor_density, DataLayout::MAT_CENTRIC,
+  result_store.add_result(Result_Store::neighbor_density, DataLayout::MAT_DOM,
     SparsityLayout::DENSE, Result_Store::method_csr, act_perf);
   SLIC_INFO("Average Material Density            compute time is "
     << act_perf << " secs\n");
@@ -2695,7 +2695,7 @@ void average_density_over_nbr_mat_dom_compact(Robey_data& data)
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::neighbor_density, DataLayout::MAT_CENTRIC,
+  result_store.add_result(Result_Store::neighbor_density, DataLayout::MAT_DOM,
     SparsityLayout::SPARSE, Result_Store::method_csr, act_perf);
   SLIC_INFO("Average Material Density            compute time is "
     << act_perf << " secs\n");
@@ -2709,10 +2709,10 @@ void average_density_over_nbr_mat_dom_full_mm_direct(MultiMat& mm, Robey_data& d
 {
   SLIC_INFO("-- Average Density over Neighbors, Material-Dominant, using MultiMat Direct Access --");
 
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-    << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isMatDom());
-  SLIC_ASSERT(mm.isDense());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+    << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::MAT_DOM);
+  SLIC_ASSERT(mm.getFieldSparsityLayout(0) == SparsityLayout::DENSE);
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
@@ -2774,8 +2774,8 @@ void average_density_over_nbr_mat_dom_full_mm_direct(MultiMat& mm, Robey_data& d
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::neighbor_density, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_direct, act_perf);
+  result_store.add_result(Result_Store::neighbor_density, mm.getFieldDataLayout(0),
+    mm.getFieldSparsityLayout(0), Result_Store::mm_direct, act_perf);
   SLIC_INFO("Average Material Density            compute time is "
     << act_perf << " secs\n");
 
@@ -2787,10 +2787,10 @@ void average_density_over_nbr_mat_dom_full_mm_submap(MultiMat& mm, Robey_data& d
 {
   SLIC_INFO("-- Average Density over Neighbors, Material-Dominant, using MultiMat Submap --");
 
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-    << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isMatDom());
-  SLIC_ASSERT(mm.isDense());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+    << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::MAT_DOM);
+  SLIC_ASSERT(mm.getFieldSparsityLayout(0) == SparsityLayout::DENSE);
 
   int nmats = mm.getNumberOfMaterials();
   MultiMat::Field2D<double> & Densityfrac = mm.get2dField<double>("Densityfrac");
@@ -2854,8 +2854,8 @@ void average_density_over_nbr_mat_dom_full_mm_submap(MultiMat& mm, Robey_data& d
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::neighbor_density, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_submap, act_perf);
+  result_store.add_result(Result_Store::neighbor_density, mm.getFieldDataLayout(0),
+    mm.getFieldSparsityLayout(0), Result_Store::mm_submap, act_perf);
   SLIC_INFO("Average Material Density            compute time is "
     << act_perf << " secs\n");
 
@@ -2866,10 +2866,10 @@ void average_density_over_nbr_mat_dom_full_mm_submap(MultiMat& mm, Robey_data& d
 {
   SLIC_INFO("-- Average Density over Neighbors, Material-Dominant, using MultiMat Submap -- templated on BSet");
 
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-      << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isMatDom());
-  SLIC_ASSERT(mm.isDense());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+      << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::MAT_DOM);
+  SLIC_ASSERT(mm.getFieldSparsityLayout(0) == SparsityLayout::DENSE);
 
   int nmats = mm.getNumberOfMaterials();
   auto Densityfrac = mm.get2dField<double,BSet>("Densityfrac");
@@ -2938,8 +2938,8 @@ void average_density_over_nbr_mat_dom_full_mm_submap(MultiMat& mm, Robey_data& d
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::neighbor_density, mm.getDataLayout(),
-      mm.getSparsityLayout(), Result_Store::mm_submap_templated, act_perf);
+  result_store.add_result(Result_Store::neighbor_density, mm.getFieldDataLayout(0),
+      mm.getFieldSparsityLayout(0), Result_Store::mm_submap_templated, act_perf);
   SLIC_INFO("Average Material Density            compute time is "
       << act_perf << " secs\n");
 }
@@ -2950,10 +2950,10 @@ void average_density_over_nbr_mat_dom_full_mm_iter(MultiMat& mm, Robey_data& dat
 {
   SLIC_INFO("-- Average Density over Neighbors, Material-Dominant, using MultiMat Iter --");
 
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-    << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isMatDom());
-  SLIC_ASSERT(mm.isDense());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+    << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::MAT_DOM);
+  SLIC_ASSERT(mm.getFieldSparsityLayout(0) == SparsityLayout::DENSE);
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
@@ -3022,8 +3022,8 @@ void average_density_over_nbr_mat_dom_full_mm_iter(MultiMat& mm, Robey_data& dat
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::neighbor_density, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_iter, act_perf);
+  result_store.add_result(Result_Store::neighbor_density, mm.getFieldDataLayout(0),
+    mm.getFieldSparsityLayout(0), Result_Store::mm_iter, act_perf);
   SLIC_INFO("Average Material Density            compute time is "
     << act_perf << " secs\n");
 
@@ -3036,10 +3036,10 @@ void average_density_over_nbr_mat_dom_compact_mm_submap(MultiMat& mm, Robey_data
 {
   SLIC_INFO("-- Average Density over Neighbors, Material-Dominant Compact, using MultiMat Submap --");
 
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-    << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isMatDom());
-  SLIC_ASSERT(mm.isSparse());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+    << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::MAT_DOM);
+  SLIC_ASSERT(mm.getFieldSparsityLayout(0) == SparsityLayout::SPARSE);
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
@@ -3097,8 +3097,8 @@ void average_density_over_nbr_mat_dom_compact_mm_submap(MultiMat& mm, Robey_data
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::neighbor_density, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_submap, act_perf);
+  result_store.add_result(Result_Store::neighbor_density, mm.getFieldDataLayout(0),
+    mm.getFieldSparsityLayout(0), Result_Store::mm_submap, act_perf);
   SLIC_INFO("Average Material Density            compute time is "
     << act_perf << " secs\n");
 
@@ -3109,10 +3109,10 @@ void average_density_over_nbr_mat_dom_compact_mm_submap(MultiMat& mm, Robey_data
 {
   SLIC_INFO("-- Average Density over Neighbors, Material-Dominant Compact, using MultiMat Submap -- templated on BSet");
 
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-      << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isMatDom());
-  SLIC_ASSERT(mm.isSparse());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+      << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::MAT_DOM);
+  SLIC_ASSERT(mm.getFieldSparsityLayout(0) == SparsityLayout::SPARSE);
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
@@ -3179,8 +3179,8 @@ void average_density_over_nbr_mat_dom_compact_mm_submap(MultiMat& mm, Robey_data
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::neighbor_density, mm.getDataLayout(),
-     mm.getSparsityLayout(), Result_Store::mm_submap_templated, act_perf);
+  result_store.add_result(Result_Store::neighbor_density, mm.getFieldDataLayout(0),
+     mm.getFieldSparsityLayout(0), Result_Store::mm_submap_templated, act_perf);
   SLIC_INFO("Average Material Density            compute time is "
       << act_perf << " secs\n");
 }
@@ -3191,10 +3191,10 @@ void average_density_over_nbr_mat_dom_compact_mm_indexarray(MultiMat& mm, Robey_
 {
   SLIC_INFO("-- Average Density over Neighbors, Material-Dominant Compact, using MultiMat Index Array--");
 
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-    << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isMatDom());
-  SLIC_ASSERT(mm.isSparse());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+    << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::MAT_DOM);
+  SLIC_ASSERT(mm.getFieldSparsityLayout(0) == SparsityLayout::SPARSE);
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
@@ -3218,7 +3218,7 @@ void average_density_over_nbr_mat_dom_compact_mm_indexarray(MultiMat& mm, Robey_
 
     for (int m = 0; m < nmats; ++m)
     {
-      auto IndexSet = mm.getIndexingSetOfMat(m);
+      auto IndexSet = mm.getIndexingSetOfMat(m, SparsityLayout::SPARSE);
       auto CellIdArr = mm.getCellContainingMat(m);
 
       for (int k = 0; k < IndexSet.size(); ++k)
@@ -3261,8 +3261,8 @@ void average_density_over_nbr_mat_dom_compact_mm_indexarray(MultiMat& mm, Robey_
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::neighbor_density, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_idxarray, act_perf);
+  result_store.add_result(Result_Store::neighbor_density, mm.getFieldDataLayout(0),
+    mm.getFieldSparsityLayout(0), Result_Store::mm_idxarray, act_perf);
   SLIC_INFO("Average Material Density            compute time is "
     << act_perf << " secs\n");
 
@@ -3274,10 +3274,10 @@ void average_density_over_nbr_mat_dom_compact_mm_iter(MultiMat& mm, Robey_data& 
 {
   SLIC_INFO("-- Average Density over Neighbors, Material-Dominant compact, using MultiMat Iter --");
 
-  SLIC_INFO("MultiMat layout: " << mm.getDataLayoutAsString() << " & "
-    << mm.getSparsityLayoutAsString());
-  SLIC_ASSERT(mm.isMatDom());
-  SLIC_ASSERT(mm.isSparse());
+  SLIC_INFO("MultiMat layout: " << mm.getFieldDataLayoutAsString(0) << " & "
+    << mm.getFieldSparsityLayoutAsString(0));
+  SLIC_ASSERT(mm.getFieldDataLayout(0) == DataLayout::MAT_DOM);
+  SLIC_ASSERT(mm.getFieldSparsityLayout(0) == SparsityLayout::SPARSE);
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
@@ -3342,8 +3342,8 @@ void average_density_over_nbr_mat_dom_compact_mm_iter(MultiMat& mm, Robey_data& 
   }
 
   double act_perf = timer.get_median();
-  result_store.add_result(Result_Store::neighbor_density, mm.getDataLayout(),
-    mm.getSparsityLayout(), Result_Store::mm_iter, act_perf);
+  result_store.add_result(Result_Store::neighbor_density, mm.getFieldDataLayout(0),
+    mm.getFieldSparsityLayout(0), Result_Store::mm_iter, act_perf);
   SLIC_INFO("Average Material Density            compute time is "
     << act_perf << " secs\n");
 
@@ -3387,23 +3387,19 @@ int main(int argc, char** argv)
   result_store.init(&data);
 
   //Set-up the multimat class
-  MultiMat mm(DataLayout::CELL_CENTRIC, SparsityLayout::DENSE);
+  MultiMat mm(DataLayout::CELL_DOM, SparsityLayout::DENSE);
   mm.setNumberOfMaterials(data.nmats);
   mm.setNumberOfCells(data.ncells);
-  mm.setCellMatRel(data.Volfrac_bool);
+  mm.setCellMatRel(data.Volfrac_bool, DataLayout::CELL_DOM);
 
   //Setting field data in terms of slam
-  mm.addField<>("Densityfrac", FieldMapping::PER_CELL_MAT,
-      &data.Densityfrac[0]);
-  mm.addField<>("Vol", FieldMapping::PER_CELL, &data.Vol[0]);
-  mm.addField<>("Volfrac", FieldMapping::PER_CELL_MAT, &data.Volfrac[0]);
-  mm.addField<>("Tempfrac", FieldMapping::PER_CELL_MAT,
-      &data.Temperaturefrac[0]);
-  mm.addField<>("Pressurefrac", FieldMapping::PER_CELL_MAT,
-      &data.Pressurefrac[0]);
-  mm.addField<>("nmatconsts", FieldMapping::PER_MAT, &data.nmatconsts[0]);
-  mm.addField<>("MatDensityAverage", FieldMapping::PER_CELL_MAT, 
-    &data.Pressurefrac[0]);
+  mm.addField<>("Densityfrac", FieldMapping::PER_CELL_MAT, DataLayout::CELL_DOM, SparsityLayout::DENSE, &data.Densityfrac[0]);
+  mm.addField<>("Vol", FieldMapping::PER_CELL, DataLayout::CELL_DOM, SparsityLayout::DENSE, &data.Vol[0]);
+  mm.addField<>("Volfrac", FieldMapping::PER_CELL_MAT, DataLayout::CELL_DOM, SparsityLayout::DENSE, &data.Volfrac[0]);
+  mm.addField<>("Tempfrac", FieldMapping::PER_CELL_MAT, DataLayout::CELL_DOM, SparsityLayout::DENSE, &data.Temperaturefrac[0]);
+  mm.addField<>("Pressurefrac", FieldMapping::PER_CELL_MAT, DataLayout::CELL_DOM, SparsityLayout::DENSE, &data.Pressurefrac[0]);
+  mm.addField<>("nmatconsts", FieldMapping::PER_MAT, DataLayout::CELL_DOM, SparsityLayout::DENSE, &data.nmatconsts[0]);
+  mm.addField<>("MatDensityAverage", FieldMapping::PER_CELL_MAT, DataLayout::CELL_DOM, SparsityLayout::DENSE, &data.Pressurefrac[0]);
 
 
   //printself and check
@@ -3412,8 +3408,33 @@ int main(int argc, char** argv)
   using SetType = slam::RangeSet<>;
   using ProductSetType = slam::ProductSet<SetType, SetType>;
 
-  using RelType = MultiMat::StaticVariableRelationType;
+  using RelType = MultiMat::SparseRelationType;
   using RelationSetType = slam::RelationSet<RelType, SetType, SetType>;
+
+  // test out field by field change
+  mm.convertFieldToCellDom(1);
+  std::cout << "Layout after CD-convert: " << mm.getFieldDataLayoutAsString(1) << std::endl;
+
+  auto df = mm.get2dField<double>("Densityfrac");
+  std::cout << "first set size: " << df.firstSetSize() << std::endl;
+
+  mm.convertFieldToMatDom(1);
+  std::cout << "Layout after MD-convert: " << mm.getFieldDataLayoutAsString(1) << std::endl;
+
+  df = mm.get2dField<double>("Densityfrac");
+  std::cout << "first set size: " << df.firstSetSize() << std::endl;
+
+  mm.convertFieldToCellDom(1);
+  std::cout << "Layout after CD-convert: " << mm.getFieldDataLayoutAsString(1) << std::endl;
+
+  df = mm.get2dField<double>("Densityfrac");
+  std::cout << "first set size: " << df.firstSetSize() << std::endl;
+
+  mm.convertFieldToMatDom(1);
+  std::cout << "Layout after MD-convert: " << mm.getFieldDataLayoutAsString(1) << std::endl;
+
+  df = mm.get2dField<double>("Densityfrac");
+  std::cout << "first set size: " << df.firstSetSize() << std::endl;
 
 
   SLIC_INFO("**********************************************************");
@@ -3424,14 +3445,17 @@ int main(int argc, char** argv)
   //Run the Full layout, cell dom
   SLIC_INFO("*************** Full Layout - Cell Dominant **************");
   data_checker.reset();
+  mm.convertLayoutToCellDominant();
+  mm.convertLayoutToDense();
 
   average_density_cell_dom_full(data);
   average_density_cell_dom_mm_template(mm);
   average_density_cell_dom_mm_direct(mm);
 
   average_density_cell_dom_mm_submap(mm);
+#ifndef AXOM_DEBUG
   average_density_cell_dom_mm_submap<ProductSetType>(mm);
-
+#endif
   average_density_cell_dom_mm_idxarray(mm);
 
   average_density_cell_dom_mm_iter(mm);
@@ -3444,7 +3468,9 @@ int main(int argc, char** argv)
   average_density_cell_dom_mm_idxarray(mm);
 
   average_density_cell_dom_mm_submap(mm);
+#ifndef AXOM_DEBUG
   average_density_cell_dom_mm_submap<RelationSetType>(mm);
+#endif
 
   average_density_cell_dom_mm_iter(mm);
   //average_density_cell_dom_mm_flatiter(mm);
@@ -3461,7 +3487,9 @@ int main(int argc, char** argv)
 
   average_density_mat_dom_mm_direct(mm);
   average_density_mat_dom_mm_submap(mm);
+#ifndef AXOM_DEBUG
   average_density_mat_dom_mm_submap<ProductSetType>(mm);
+#endif
   average_density_mat_dom_mm_iter(mm);
   //average_density_mat_dom_mm_flatiter(mm);
   
@@ -3471,7 +3499,9 @@ int main(int argc, char** argv)
   average_density_mat_dom_compact(data); 
   average_density_mat_dom_mm_idxarray(mm);
   average_density_mat_dom_mm_submap(mm);
+#ifndef AXOM_DEBUG
   average_density_mat_dom_mm_submap<RelationSetType>(mm);
+#endif
   average_density_mat_dom_mm_iter(mm);
   //average_density_mat_dom_mm_flatiter(mm);
 
@@ -3488,7 +3518,9 @@ int main(int argc, char** argv)
   average_density_over_nbr_cell_dom_full(data);
   average_density_over_nbr_cell_dom_full_mm_direct(mm, data);
   average_density_over_nbr_cell_dom_full_mm_submap(mm, data);
+#ifndef AXOM_DEBUG
   average_density_over_nbr_cell_dom_full_mm_submap<ProductSetType>(mm, data);
+#endif
   average_density_over_nbr_cell_dom_full_mm_iter(mm, data);
 
   SLIC_INFO("**************** Compact Layout - Cell-Dominant ******************");
@@ -3497,7 +3529,9 @@ int main(int argc, char** argv)
   average_density_over_nbr_cell_dom_compact(data);
   //average_density_over_nbr_cell_dom_compact_mm_idxarray(mm, data);
   average_density_over_nbr_cell_dom_compact_mm_submap(mm, data);
+#ifndef AXOM_DEBUG
   average_density_over_nbr_cell_dom_compact_mm_submap<RelationSetType>(mm, data);
+#endif
   //average_density_over_nbr_cell_dom_compact_mm_iter(mm, data);
 
   SLIC_INFO("**************** Full Layout - Material-Dominant ******************");
@@ -3509,7 +3543,9 @@ int main(int argc, char** argv)
   average_density_over_nbr_mat_dom_full(data);
   average_density_over_nbr_mat_dom_full_mm_direct(mm, data);
   average_density_over_nbr_mat_dom_full_mm_submap(mm, data);
+#ifndef AXOM_DEBUG
   average_density_over_nbr_mat_dom_full_mm_submap<ProductSetType>(mm, data);
+#endif
   //average_density_over_nbr_mat_dom_full_mm_iter(mm, data);
 
   SLIC_INFO("**************** Compact Layout - Material-Dominant ******************");
@@ -3519,7 +3555,9 @@ int main(int argc, char** argv)
 
   //average_density_over_nbr_mat_dom_compact_mm_indexarray(mm, data);
   average_density_over_nbr_mat_dom_compact_mm_submap(mm, data);
+#ifndef AXOM_DEBUG
   average_density_over_nbr_mat_dom_compact_mm_submap<RelationSetType>(mm, data);
+#endif
   //average_density_over_nbr_mat_dom_compact_mm_iter(mm, data);
 
   SLIC_INFO("**********************************************************");
@@ -3536,7 +3574,9 @@ int main(int argc, char** argv)
   calculate_pressure_cell_dom_full(data);
   calculate_pressure_cell_dom_full_mm_direct(mm);
   calculate_pressure_cell_dom_mm_submap(mm);
+#ifndef AXOM_DEBUG
   calculate_pressure_cell_dom_mm_submap<ProductSetType>(mm);
+#endif
   calculate_pressure_cell_dom_full_mm_iter(mm);
   //calculate_pressure_cell_dom_full_mm_flatiter(mm);
 
@@ -3546,17 +3586,22 @@ int main(int argc, char** argv)
   calculate_pressure_cell_dom_compact(data);
 
   calculate_pressure_cell_dom_mm_submap(mm);
+#ifndef AXOM_DEBUG
   calculate_pressure_cell_dom_mm_submap<RelationSetType>(mm);
+#endif
 
   SLIC_INFO("**************** Full Layout - Material-Dominant ******************");
   data.set_up_mat_dom_data();
-  mm.convertLayoutToDense();
   data_checker.reset();
+  mm.convertLayoutToDense();
   mm.convertLayoutToMaterialDominant();
+
   calculate_pressure_mat_dom_full(data);
   calculate_pressure_mat_dom_full_mm_direct(mm);
   calculate_pressure_mat_dom_mm_submap(mm);
+#ifndef AXOM_DEBUG
   calculate_pressure_mat_dom_mm_submap<ProductSetType>(mm);
+#endif
   calculate_pressure_mat_dom_full_mm_iter(mm);
   //calculate_pressure_mat_dom_full_mm_flatiter(mm);
 
@@ -3565,7 +3610,9 @@ int main(int argc, char** argv)
   calculate_pressure_mat_dom_compact(data);
 
   calculate_pressure_mat_dom_mm_submap(mm);
+#ifndef AXOM_DEBUG
   calculate_pressure_mat_dom_mm_submap<RelationSetType>(mm);
+#endif
 
   /*
   average_density_cell_dom_with_if(data);
