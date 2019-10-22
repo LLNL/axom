@@ -9,6 +9,7 @@
 
 set(gtest_utils_tests
    core_array.cpp
+   core_execution_space.cpp
    core_memory_management.cpp
    core_stack_array.cpp
 
