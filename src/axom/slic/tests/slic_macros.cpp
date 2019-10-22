@@ -56,7 +56,7 @@ void check_level( const std::string& msg, const std::string& expected_level )
   EXPECT_FALSE( msg.empty() );
 
   // extract level
-  size_t start      = msg.find_first_of( "[" )+1;
+  size_t start      = msg.find( "[" )+1;
   size_t end        = expected_level.length();
   std::string level = msg.substr( start, end );
 
@@ -71,7 +71,7 @@ void check_msg( const std::string& msg, const std::string& expected_message )
   EXPECT_FALSE( msg.empty() );
 
   // extract message
-  size_t start      = msg.find_first_of( ";;" )+2;
+  size_t start      = msg.find( ";;" )+2;
   size_t end        = expected_message.length();
   std::string mymsg = msg.substr( start, end );
 
@@ -87,7 +87,7 @@ void check_file( const std::string& msg )
   const std::string EXPECTED_FILE = std::string( __FILE__ );
 
   // extract filename
-  size_t start       = msg.find_first_of( "@@" )+2;
+  size_t start       = msg.find( "@@" )+2;
   size_t end         = EXPECTED_FILE.length();
   std::string myfile = msg.substr( start, end );
 
@@ -101,9 +101,9 @@ void check_line( const std::string& msg, int expected_line )
   EXPECT_FALSE( msg.empty() );
 
   // extract line
-  size_t start   = msg.find_last_of( "@@" )+1;
-  size_t end     = std::string::npos;
-  const int line = std::stoi( msg.substr( start, end ) );
+  size_t start   = msg.rfind( "@@" )+2;
+  std::string l  = msg.substr( start );
+  const int line = std::stoi( l );
   EXPECT_EQ( line, expected_line );
 }
 
