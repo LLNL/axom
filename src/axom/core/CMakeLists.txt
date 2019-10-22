@@ -46,6 +46,7 @@ set(core_sources
 ################################
 
 set( core_depends )
+blt_list_append( TO core_depends ELEMENTS openmp IF ${ENABLE_OPENMP} )
 blt_list_append( TO core_depends ELEMENTS mpi IF ${ENABLE_MPI} )
 blt_list_append( TO core_depends ELEMENTS umpire IF ${UMPIRE_FOUND} )
 blt_list_append( TO core_depends ELEMENTS raja IF ${RAJA_FOUND} )
