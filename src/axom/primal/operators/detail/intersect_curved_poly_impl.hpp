@@ -320,7 +320,7 @@ class IntersectionInfo
     /*!
    * \brief Comparison operator for sorting by parameter value
    */
-  bool operator<(IntersectionInfo other)
+  bool operator<(const IntersectionInfo& other) const
   {
     return myTime<other.myTime;
   }
