@@ -25,10 +25,11 @@ set(core_headers
     numerics/polynomial_solvers.hpp
 
     Array.hpp
-    StackArray.hpp
     Macros.hpp
-    memory_management.hpp
+    StackArray.hpp
     Types.hpp
+    execution_space.hpp
+    memory_management.hpp
     )
 
 set(core_sources
@@ -47,13 +48,14 @@ set(core_sources
 set( core_depends )
 blt_list_append( TO core_depends ELEMENTS mpi IF ${ENABLE_MPI} )
 blt_list_append( TO core_depends ELEMENTS umpire IF ${UMPIRE_FOUND} )
+blt_list_append( TO core_depends ELEMENTS raja IF ${RAJA_FOUND} )
 
-blt_add_library( NAME                  core
-                 SOURCES               ${core_sources}
-                 HEADERS               ${core_headers}
-                 DEPENDS_ON            ${core_depends}
-                 FOLDER                axom/core
-                 OBJECT                TRUE
+blt_add_library( NAME        core
+                 SOURCES     ${core_sources}
+                 HEADERS     ${core_headers}
+                 DEPENDS_ON  ${core_depends}
+                 FOLDER      axom/core
+                 OBJECT      TRUE
                  )
 
 axom_write_unified_header( NAME    core
