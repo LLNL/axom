@@ -12,7 +12,8 @@
 #include "axom/core/memory_management.hpp"   // for alloc()/free()
 
 // spin includes
-#include "axom/spin/execution_space.hpp"
+#include "axom/core/execution_space.hpp"
+
 #include "axom/spin/internal/linear_bvh/vec.hpp"
 #include "axom/spin/internal/linear_bvh/aabb.hpp"
 #include "axom/spin/internal/linear_bvh/BVHData.hpp"
@@ -68,7 +69,7 @@ void emit_bvh( RadixTree<FloatType, 3>& data,
 
   Vec<FloatType,4> *flat_ptr = bvh_data.m_inner_nodes;
 
-  using exec_policy = typename spin::execution_space< ExecSpace >::raja_exec;
+  using exec_policy = typename axom::execution_space< ExecSpace >::loop_policy;
   RAJA::forall< exec_policy >(
       RAJA::RangeSegment(0, inner_size), AXOM_LAMBDA (int32 node)
   {
@@ -160,7 +161,7 @@ void emit_bvh( RadixTree<FloatType, 2>& data,
 
   Vec<FloatType,4> *flat_ptr = bvh_data.m_inner_nodes;
 
-  using exec_policy = typename spin::execution_space< ExecSpace >::raja_exec;
+  using exec_policy = typename axom::execution_space< ExecSpace >::loop_policy;
   RAJA::forall< exec_policy >(
       RAJA::RangeSegment(0, inner_size), AXOM_LAMBDA (int32 node)
   {

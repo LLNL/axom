@@ -6,7 +6,8 @@
 #ifndef AXOM_SPIN_BUILD_RADIX_TREE_H_
 #define AXOM_SPIN_BUILD_RADIX_TREE_H_
 
-#include "axom/spin/execution_space.hpp"
+#include "axom/core/execution_space.hpp"
+
 #include "axom/spin/internal/linear_bvh/BVHData.hpp"
 #include "axom/spin/internal/linear_bvh/RadixTree.hpp"
 #include "axom/spin/internal/linear_bvh/vec.hpp"
@@ -109,7 +110,7 @@ void transform_boxes( const FloatType *boxes,
   constexpr int NDIMS  = 3;
   constexpr int STRIDE = 2 * NDIMS;
 
-  using exec_policy = typename spin::execution_space< ExecSpace >::raja_exec;
+  using exec_policy = typename axom::execution_space< ExecSpace >::loop_policy;
   RAJA::forall< exec_policy >(
       RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
   {
@@ -144,7 +145,7 @@ void transform_boxes( const FloatType *boxes,
   constexpr int NDIMS  = 2;
   constexpr int STRIDE = 2 * NDIMS;
 
-  using exec_policy = typename spin::execution_space< ExecSpace >::raja_exec;
+  using exec_policy = typename axom::execution_space< ExecSpace >::loop_policy;
   RAJA::forall< exec_policy >(
       RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
   {
@@ -174,7 +175,7 @@ AABB<FloatType,3> reduce(AABB<FloatType,3> *aabbs, int32 size)
   constexpr int NDIMS = 3;
 
   using reduce_policy =
-      typename spin::execution_space< ExecSpace >::raja_reduce;
+      typename axom::execution_space< ExecSpace >::reduce_policy;
   RAJA::ReduceMin< reduce_policy, FloatType> xmin(infinity32());
   RAJA::ReduceMin< reduce_policy, FloatType> ymin(infinity32());
   RAJA::ReduceMin< reduce_policy, FloatType> zmin(infinity32());
@@ -183,7 +184,7 @@ AABB<FloatType,3> reduce(AABB<FloatType,3> *aabbs, int32 size)
   RAJA::ReduceMax< reduce_policy, FloatType> ymax(neg_infinity32());
   RAJA::ReduceMax< reduce_policy, FloatType> zmax(neg_infinity32());
 
-  using exec_policy = typename spin::execution_space< ExecSpace >::raja_exec;
+  using exec_policy = typename axom::execution_space< ExecSpace >::loop_policy;
   RAJA::forall< exec_policy >(RAJA::RangeSegment(0,size), AXOM_LAMBDA(int32 i)
   {
 
@@ -219,7 +220,7 @@ AABB<FloatType,2> reduce(AABB<FloatType,2> *aabbs, int32 size)
   constexpr int NDIMS = 2;
 
   using reduce_policy =
-      typename spin::execution_space< ExecSpace >::raja_reduce;
+      typename axom::execution_space< ExecSpace >::reduce_policy;
   RAJA::ReduceMin< reduce_policy, FloatType> xmin(infinity32());
   RAJA::ReduceMin< reduce_policy, FloatType> ymin(infinity32());
 
@@ -228,7 +229,7 @@ AABB<FloatType,2> reduce(AABB<FloatType,2> *aabbs, int32 size)
 
 
   using exec_policy =
-      typename spin::execution_space< ExecSpace >::raja_exec;
+      typename axom::execution_space< ExecSpace >::loop_policy;
   RAJA::forall< exec_policy >(
       RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
   {
@@ -276,7 +277,7 @@ void get_mcodes( AABB<FloatType,2> *aabbs,
   }
 
   using exec_policy =
-      typename spin::execution_space< ExecSpace >::raja_exec;
+      typename axom::execution_space< ExecSpace >::loop_policy;
   RAJA::forall< exec_policy >(RAJA::RangeSegment(0,size), AXOM_LAMBDA(int32 i)
   {
     const AABB<FloatType,NDIMS> &aabb = aabbs[i];
@@ -317,7 +318,7 @@ void get_mcodes( AABB<FloatType,3> *aabbs,
   }
 
   using exec_policy =
-      typename spin::execution_space< ExecSpace >::raja_exec;
+      typename axom::execution_space< ExecSpace >::loop_policy;
   RAJA::forall< exec_policy >(RAJA::RangeSegment(0,size), AXOM_LAMBDA(int32 i)
   {
     const AABB<FloatType,NDIMS> &aabb = aabbs[i];
@@ -341,7 +342,7 @@ void array_counting( IntType* iterator,
                      const IntType& start,
                      const IntType& step)
 {
-  using exec_policy = typename spin::execution_space< ExecSpace >::raja_exec;
+  using exec_policy = typename axom::execution_space< ExecSpace >::loop_policy;
   RAJA::forall< exec_policy >(
       RAJA::RangeSegment(0, size), AXOM_LAMBDA(int32 i)
   {
@@ -361,7 +362,7 @@ void reorder(int32 *indices, T *&array, int32 size)
 {
   T* temp = axom::allocate< T >( size );
 
-  using exec_policy = typename spin::execution_space< ExecSpace >::raja_exec;
+  using exec_policy = typename axom::execution_space< ExecSpace >::loop_policy;
   RAJA::forall< exec_policy >(
       RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
   {
@@ -425,7 +426,7 @@ void custom_sort( spin::CUDA_EXEC< BLOCK_SIZE >,
   uint32* sorted_keys = d_keys.Current();
   int32*  sorted_vals = d_values.Current();
 
-  using exec_policy = typename spin::execution_space< ExecSpace >::raja_exec;
+  using exec_policy = typename axom::execution_space< ExecSpace >::loop_policy;
   RAJA::forall< exec_policy >(
       RAJA::RangeSegment(0,size), AXOM_LAMBDA (int32 i)
   {
@@ -489,7 +490,7 @@ void build_tree(  RadixTree< FloatType, NDIMS > &data )
   int32 *parent_ptr = data.m_parents;
   const uint32 *mcodes_ptr = data.m_mcodes;
 
-  using exec_policy = typename spin::execution_space< ExecSpace >::raja_exec;
+  using exec_policy = typename axom::execution_space< ExecSpace >::loop_policy;
   RAJA::forall< exec_policy >(
       RAJA::RangeSegment(0, inner_size), AXOM_LAMBDA (int32 i)
   {
@@ -569,7 +570,7 @@ void build_tree(  RadixTree< FloatType, NDIMS > &data )
 template< typename ExecSpace, typename T>
 static void array_memset(T* array, const int32 size, const T val)
 {
-  using exec_policy = typename spin::execution_space< ExecSpace >::raja_exec;
+  using exec_policy = typename axom::execution_space< ExecSpace >::loop_policy;
   RAJA::forall< exec_policy >(
       RAJA::RangeSegment(0, size), AXOM_LAMBDA (int32 i)
   {
@@ -601,9 +602,9 @@ void propagate_aabbs( RadixTree< FloatType, NDIMS >& data)
   array_memset< ExecSpace >(counters_ptr, inner_size, 0);
 
   using exec_policy   =
-      typename spin::execution_space< ExecSpace >::raja_exec;
+      typename axom::execution_space< ExecSpace >::loop_policy;
   using atomic_policy =
-      typename spin::execution_space< ExecSpace >::raja_atomic;
+      typename axom::execution_space< ExecSpace >::atomic_policy;
 
   RAJA::forall< exec_policy >(
       RAJA::RangeSegment(0,leaf_size), AXOM_LAMBDA(int32 i)
