@@ -86,8 +86,12 @@ template < typename ExecSpace >
 struct execution_space
 {
   using loop_policy   = void;
+  using loop2d_policy = void;
+  using loop3d_policy = void;
+
   using reduce_policy = void;
   using atomic_policy = void;
+  using sync_policy   = void;
 
   static constexpr bool valid() noexcept { return false; };
   static constexpr char* name() noexcept { return (char*)"[UNDEFINED]"; };
@@ -113,15 +117,44 @@ struct SEQ_EXEC{ };
 template < >
 struct execution_space< SEQ_EXEC >
 {
+
 #ifdef AXOM_USE_RAJA
   using loop_policy   = RAJA::loop_exec;
+
+  /* *INDENT-OFF* */
+  using loop2d_policy =
+      RAJA::KernelPolicy<
+               RAJA::statement::For< 1, RAJA::loop_exec,   // j
+                 RAJA::statement::For< 0, RAJA::loop_exec, // i
+                   RAJA::statement::Lambda< 0 >
+                 > // END i
+               > // END j
+            >; // END kernel
+
+  using loop3d_policy =
+      RAJA::KernelPolicy<
+              RAJA::statement::For< 2, RAJA::loop_exec,       // k
+                 RAJA::statement::For< 1, RAJA::loop_exec,    // j
+                    RAJA::statement::For< 0, RAJA::loop_exec, // i
+                       RAJA::statement::Lambda< 0 >
+                    > // END i
+                  > // END j
+               > // END k
+            >; // END kernel
+  /* *INDENT-ON* */
+
   using reduce_policy = RAJA::loop_reduce;
   using atomic_policy = RAJA::loop_atomic;
 #else
   using loop_policy   = void;
+  using loop2d_policy = void;
+  using loop3d_policy = void;
+
   using reduce_policy = void;
   using atomic_policy = void;
 #endif
+
+  using sync_policy = void;
 
   static constexpr bool valid() noexcept { return true; };
   static constexpr char* name() noexcept { return (char*)"[SEQ_EXEC]"; };
@@ -160,21 +193,35 @@ struct OMP_EXEC{ };
 template < >
 struct execution_space< OMP_EXEC >
 {
- using loop_policy   = RAJA::omp_parallel_for_exec;
- using reduce_policy = RAJA::omp_reduce;
- using atomic_policy = RAJA::omp_atomic;
+  using loop_policy = RAJA::omp_parallel_for_exec;
 
- static constexpr bool valid() noexcept { return true; };
- static constexpr char* name() noexcept { return (char*)"[OMP_EXEC]"; };
+  /* *INDENT-OFF* */
+  using loop2d_policy = RAJA::KernelPolicy<
+      RAJA::statement::Collapse< RAJA::omp_parallel_collapse_exec,
+                                 RAJA::ArgList< 1,0 >,
+                                 RAJA::statement::Lambda< 0 > > >;
 
- static int allocatorID() noexcept
- {
+  using loop3d_policy = RAJA::KernelPolicy<
+      RAJA::statement::Collapse< RAJA::omp_parallel_collapse_exec,
+                                 RAJA::ArgList< 2,1,0 >,
+                                 RAJA::statement::Lambda< 0 > > >;
+  /* *INDENT-ON* */
+
+  using reduce_policy = RAJA::omp_reduce;
+  using atomic_policy = RAJA::omp_atomic;
+  using sync_policy   = RAJA::omp_synchronize;
+
+  static constexpr bool valid() noexcept { return true; };
+  static constexpr char* name() noexcept { return (char*)"[OMP_EXEC]"; };
+
+  static int allocatorID() noexcept
+  {
 #ifdef AXOM_USE_UMPIRE
-   return axom::getResourceAllocatorID(umpire::resource::Host);
+    return axom::getResourceAllocatorID(umpire::resource::Host);
 #else
-   return 0;
+    return 0;
 #endif
- };
+  };
 
 };
 
@@ -217,8 +264,36 @@ template < int BLOCK_SIZE >
 struct execution_space< CUDA_EXEC< BLOCK_SIZE > >
 {
   using loop_policy   = RAJA::cuda_exec< BLOCK_SIZE >;
+
+  /* *INDENT-OFF* */
+  using loop2d_policy =
+      RAJA::KernelPolicy<
+            RAJA::statement::CudaKernelFixed< 256,
+              RAJA::statement::For<1, RAJA::cuda_block_x_loop,
+                RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+                  RAJA::statement::Lambda<0>
+                >
+              >
+            >
+          >;
+
+  using loop3d_policy =
+      RAJA::KernelPolicy<
+        RAJA::statement::CudaKernelFixed< 256,
+          RAJA::statement::For<2, RAJA::cuda_block_x_loop,
+            RAJA::statement::For<1, RAJA::cuda_block_y_loop,
+              RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+                RAJA::statement::Lambda<0>
+              >
+            >
+          >
+        >
+      >;
+  /* *INDENT-ON* */
+
   using reduce_policy = RAJA::cuda_reduce;
   using atomic_policy = RAJA::cuda_atomic;
+  using sync_policy   = RAJA::cuda_synchronize;
 
   static constexpr bool valid() noexcept { return true; };
   static constexpr char* name() noexcept { return (char*)"[CUDA_EXEC]"; };
