@@ -7,11 +7,14 @@
 # Specify all headers/sources
 ################################
 set(core_headers
+
+    ## utilities
     utilities/FileUtilities.hpp
     utilities/Timer.hpp
     utilities/Utilities.hpp
     utilities/About.hpp
 
+    ## numerics
     numerics/internal/matrix_norms.hpp
 
     numerics/Determinants.hpp
@@ -24,12 +27,18 @@ set(core_headers
     numerics/matvecops.hpp
     numerics/polynomial_solvers.hpp
 
+    ## core
     Array.hpp
     Macros.hpp
     StackArray.hpp
     Types.hpp
     execution_space.hpp
     memory_management.hpp
+
+
+    internal/execution_space/seq_exec.hpp
+    internal/execution_space/omp_exec.hpp
+    internal/execution_space/seq_exec.hpp
     )
 
 set(core_sources
