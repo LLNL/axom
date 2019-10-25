@@ -136,7 +136,7 @@ def parse_args():
     # option to force a spack pull
     parser.add_option("--pull",
                       action="store_true",
-                      dest="spack_pull",
+                      dest="repo_pull",
                       default=False,
                       help="Pull if spack repo already exists")
 
@@ -216,6 +216,14 @@ class UberEnv():
     def setup_paths_and_dirs(self):
         self.uberenv_path = os.path.split(os.path.abspath(__file__))[0]
 
+        self.dest_dir = os.path.abspath(self.opts["prefix"])
+        print("[installing to: {0}]".format(self.dest_dir))
+
+        # print a warning if the dest path already exists
+        if not os.path.isdir(self.dest_dir):
+            os.mkdir(self.dest_dir)
+        else:
+            print("[info: destination '{}' already exists]".format(self.dest_dir))
 
     def detect_platform(self):
         # find supported sets of compilers.yaml, packages,yaml
@@ -233,6 +241,94 @@ class VcpkgEnv(UberEnv):
 
     def __init__(self, opts, extra_opts):
         UberEnv.__init__(self,opts,extra_opts)
+
+    def setup_paths_and_dirs(self):
+        # get the current working path, and the glob used to identify the
+        # package files we want to hot-copy to spack
+
+        UberEnv.setup_paths_and_dirs(self)
+
+        self.ports = pjoin(self.uberenv_path, "vcpkg_ports","*")
+
+        # setup path for vcpkg repo
+        self.dest_vcpkg = pjoin(self.dest_dir,"vcpkg")
+
+        if os.path.isdir(self.dest_vcpkg):
+            print("[info: destination '{}' already exists]".format(self.dest_vcpkg))
+
+    def clone_repo(self):
+        if not os.path.isdir(self.dest_vcpkg):
+            # compose clone command for the dest path, vcpkg url and branch
+            vcpkg_branch = self.project_opts.get("vcpkg_branch", "master")
+            vcpkg_url = self.project_opts.get("vcpkg_url", "https://github.com/microsoft/vcpkg")
+
+            print("[info: cloning vcpkg '{}' branch from {} into {}]"
+                .format(vcpkg_branch,vcpkg_url, self.dest_vcpkg))
+
+            os.chdir(self.dest_dir)
+
+            clone_opts = ("-c http.sslVerify=false " 
+                          if self.opts["ignore_ssl_errors"] else "")
+
+            clone_cmd =  "git {} clone -b {} {}".format(clone_opts, vcpkg_branch,vcpkg_url)
+            sexe(clone_cmd, echo=True)
+
+            # optionally, check out a specific commit
+            if "vcpkg_commit" in self.project_opts:
+                sha1 = self.project_opts["vcpkg_commit"]
+                print("[info: using vcpkg commit {}]".format(sha1))
+                os.chdir(self.dest_vcpkg)
+                sexe("git checkout {}".format(sha1),echo=True)
+                
+        if self.opts["repo_pull"]:
+            # do a pull to make sure we have the latest
+            os.chdir(self.dest_vcpkg)
+            sexe("git stash", echo=True)
+            sexe("git pull", echo=True)
+
+        # Bootstrap vcpkg
+        # TODO: Re-enable
+        if False:
+            os.chdir(self.dest_vcpkg)
+            sexe("bootstrap-vcpkg.bat -disableMetrics", echo=True)
+            
+
+    def patch(self):
+        """ hot-copy our ports into vcpkg """
+        
+        import distutils
+        from distutils import dir_util
+
+        src_vcpkg_ports = pjoin(self.uberenv_path, "vcpkg_ports")
+        dest_vcpkg_ports = pjoin(self.dest_vcpkg,"ports")
+
+        print("[info: copying from {} to {}]".format(src_vcpkg_ports,dest_vcpkg_ports))
+        distutils.dir_util.copy_tree(src_vcpkg_ports,dest_vcpkg_ports)
+
+
+    def clean_build(self):
+        pass
+
+    def show_info(self):
+        os.chdir(self.dest_vcpkg)
+        sexe("vcpkg.exe search " + self.pkg_name, echo=True)
+        sexe("vcpkg.exe depend-info " + self.pkg_name, echo=True)
+
+    def create_mirror(self):
+        pass
+
+    def use_mirror(self):
+        pass
+
+    def install(self):
+        
+        os.chdir(self.dest_vcpkg)
+        install_cmd = "vcpkg.exe "
+        install_cmd += "install {}".format(self.pkg_name)
+
+        res = sexe(install_cmd, echo=True)
+
+        return res
 
 
 class SpackEnv(UberEnv):
@@ -265,16 +361,8 @@ class SpackEnv(UberEnv):
 
         self.pkgs = pjoin(self.uberenv_path, "packages","*")
 
-        # setup destination paths
-        self.dest_dir = os.path.abspath(self.opts["prefix"])
+        # setup path for spack 
         self.dest_spack = pjoin(self.dest_dir,"spack")
-        print("[installing to: {0}]".format(self.dest_dir))
-
-        # print a warning if the dest path already exists
-        if not os.path.isdir(self.dest_dir):
-            os.mkdir(self.dest_dir)
-        else:
-            print("[info: destination '{}' already exists]".format(self.dest_dir))
 
         if os.path.isdir(self.dest_spack):
             print("[info: destination '{}' already exists]".format(self.dest_spack))
@@ -294,17 +382,18 @@ class SpackEnv(UberEnv):
 
     def clone_repo(self):
         if not os.path.isdir(self.dest_spack):
-
             # compose clone command for the dest path, spack url and branch
-            print("[info: cloning spack develop branch from github]")
+            spack_branch = self.project_opts.get("spack_branch", "develop")
+            spack_url = self.project_opts.get("spack_url", "https://github.com/spack/spack.git")
+
+            print("[info: cloning spack '{}' branch from {} into {}]"
+                .format(spack_branch, spack_url, self.dest_spack))
 
             os.chdir(self.dest_dir)
 
             clone_opts = ("-c http.sslVerify=false " 
                           if self.opts["ignore_ssl_errors"] else "")
 
-            spack_branch = self.project_opts.get("spack_branch", "develop")
-            spack_url = self.project_opts.get("spack_url", "https://github.com/spack/spack.git")
 
             clone_cmd =  "git {} clone -b {} {}".format(clone_opts, spack_branch,spack_url)
             sexe(clone_cmd, echo=True)
@@ -313,12 +402,12 @@ class SpackEnv(UberEnv):
             if "spack_commit" in self.project_opts:
                 sha1 = self.project_opts["spack_commit"]
                 print("[info: using spack commit {}]".format(sha1))
-                os.chdir(pjoin(self.dest_dir,"spack"))
+                os.chdir(self.dest_spack)
                 sexe("git checkout {}".format(sha1),echo=True)
                 
-        if self.opts["spack_pull"]:
+        if self.opts["repo_pull"]:
             # do a pull to make sure we have the latest
-            os.chdir(pjoin(self.dest_dir,"spack"))
+            os.chdir(self.dest_spack)
             sexe("git stash", echo=True)
             sexe("git pull", echo=True)
 
@@ -379,6 +468,7 @@ class SpackEnv(UberEnv):
         else:
             # let spack try to auto find compilers
             sexe("spack/bin/spack compiler find", echo=True)
+
         dest_spack_pkgs = pjoin(spack_dir,"var","spack","repos","builtin","packages")
         # hot-copy our packages into spack
         sexe("cp -Rf {} {}".format(self.pkgs,dest_spack_pkgs))
@@ -578,7 +668,7 @@ def main():
     opts, extra_opts = parse_args()
 
     # Initialize the environment -- use vcpkg on windows, spack otherwise
-    env = SpackEnv(opts, extra_opts) if not is_windows() else (opts, extra_opts)
+    env = SpackEnv(opts, extra_opts) if not is_windows() else VcpkgEnv(opts, extra_opts)
 
     # Setup the necessary paths and directories
     env.setup_paths_and_dirs()
