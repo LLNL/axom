@@ -38,7 +38,7 @@ set(core_headers
 
     internal/execution_space/seq_exec.hpp
     internal/execution_space/omp_exec.hpp
-    internal/execution_space/seq_exec.hpp
+    internal/execution_space/cuda_exec.hpp
     )
 
 set(core_sources
@@ -55,10 +55,11 @@ set(core_sources
 ################################
 
 set( core_depends )
-blt_list_append( TO core_depends ELEMENTS openmp IF ${ENABLE_OPENMP} )
-blt_list_append( TO core_depends ELEMENTS mpi IF ${ENABLE_MPI} )
 blt_list_append( TO core_depends ELEMENTS umpire IF ${UMPIRE_FOUND} )
 blt_list_append( TO core_depends ELEMENTS raja IF ${RAJA_FOUND} )
+blt_list_append( TO core_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
+blt_list_append( TO core_depends ELEMENTS openmp IF ${ENABLE_OPENMP} )
+blt_list_append( TO core_depends ELEMENTS mpi IF ${ENABLE_MPI} )
 
 blt_add_library( NAME        core
                  SOURCES     ${core_sources}

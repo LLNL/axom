@@ -44,6 +44,8 @@ set(utils_tests_depends
    )
 
 blt_list_append( TO utils_tests_depends ELEMENTS umpire IF ${UMPIRE_FOUND} )
+blt_list_append( TO utils_tests_depends ELEMENTS raja IF ${RAJA_FOUD} )
+blt_list_append( TO utils_tests_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
 
 #
 # Add gtest based tests
@@ -89,7 +91,7 @@ endif()
 #
 # Add a test to query properties of the configuration
 #
-set(utils_config_test_depends ${utils_tests_depends})
+set(utils_config_test_depends core gtest )
 
 blt_list_append( TO utils_config_test_depends ELEMENTS mfem IF ${MFEM_FOUND} )
 blt_list_append( TO utils_config_test_depends ELEMENTS openmp IF ${ENABLE_OPENMP} )
