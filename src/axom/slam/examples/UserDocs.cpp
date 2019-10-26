@@ -18,7 +18,6 @@
  * each prepended with an underscore.
  */
 
-#include "axom/core.hpp"
 #include "axom/slic.hpp"
 
 // _quadmesh_example_import_header_start

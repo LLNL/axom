@@ -12,7 +12,7 @@
 #ifndef PRIMAL_BEZIERCURVE_HPP_
 #define PRIMAL_BEZIERCURVE_HPP_
 
-#include "axom/core.hpp"
+#include "axom/core/utilities/Utilities.hpp"
 #include "axom/slic.hpp"
 
 #include "axom/primal/geometry/NumericArray.hpp"

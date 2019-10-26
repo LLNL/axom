@@ -16,7 +16,7 @@
 #define SLAM_ORDERED_SET_H_
 
 #include "axom/config.hpp"
-#include "axom/core.hpp"
+#include "axom/core/utilities/Utilities.hpp"
 #include "axom/slic.hpp"
 
 #include "axom/slam/Set.hpp"

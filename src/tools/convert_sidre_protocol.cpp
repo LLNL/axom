@@ -26,7 +26,6 @@
 #include "mpi.h"
 
 #include "axom/config.hpp"
-#include "axom/core.hpp"
 #include "fmt/fmt.hpp"
 #include "axom/slic.hpp"
 #include "axom/sidre.hpp"

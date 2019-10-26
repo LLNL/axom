@@ -18,7 +18,6 @@
 #include <iterator>                 // for std::ostream_iterator
 #include "gtest/gtest.h"
 
-#include "axom/core.hpp"
 #include "axom/slic.hpp"
 
 #include "axom/slam/Utilities.hpp"

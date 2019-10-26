@@ -3,7 +3,6 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/core.hpp"
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
 
