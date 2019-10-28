@@ -17,9 +17,9 @@ class MMSubField2D : public slam::SubMap<typename Field2DType::BiVarMapType,
   slam::RangeSet<int, int> >
 {
 public:
-  using SubSetType = slam::RangeSet<int, int>;
+  using SubSetType = MultiMat::RangeSetType;
   using SubMapType = slam::SubMap<typename Field2DType::BiVarMapType,
-                                  typename SubSetType>;
+                                  SubSetType>;
   using SuperMapType = typename Field2DType::BiVarMapType;
   using BiVarSetType = typename Field2DType::BiVarSetType;
   
@@ -52,6 +52,9 @@ class MMSubField2DWrap : public MMSubField2D<Field2DType>
 {
 };
 
+
+
+
 // specialization for Cell Dom
 template<typename Field2DType>
 class MMSubField2DWrap<Field2DType, DataLayout::CELL_DOM> : public MMSubField2D<Field2DType>
@@ -59,12 +62,12 @@ class MMSubField2DWrap<Field2DType, DataLayout::CELL_DOM> : public MMSubField2D<
 public:
   using SFB = MMSubField2D<Field2DType>;
   MMSubField2DWrap(Field2DType* superfield, int firstIndex, bool indirection = true)
-    : MMSubField2D(superfield, firstIndex, indirection)
+    : SFB(superfield, firstIndex, indirection)
   {}
 
   DataLayout getDataLayout() { return DataLayout::CELL_DOM; }
-  int cellId() { return getOuterIndex(); }
-  int matId(int i) { return index(i); }
+  int cellId() { return this->getOuterIndex(); }
+  int matId(int i) { return this->index(i); }
 };
 
 // specialization for Mat Dom
@@ -74,12 +77,12 @@ class MMSubField2DWrap<Field2DType, DataLayout::MAT_DOM> : public MMSubField2D<F
 public:
   using SFB = MMSubField2D<Field2DType>;
   MMSubField2DWrap(Field2DType* superfield, int firstIndex, bool indirection = true)
-    : MMSubField2D(superfield, firstIndex, indirection)
+    : SFB(superfield, firstIndex, indirection)
   {}
 
   DataLayout getDataLayout() { return DataLayout::MAT_DOM; }
-  int matId() { return getOuterIndex(); }
-  int cellId(int i) { return index(i); }
+  int matId() { return this->getOuterIndex(); }
+  int cellId(int i) { return this->index(i); }
 };
 
 

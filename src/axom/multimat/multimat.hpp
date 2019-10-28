@@ -55,7 +55,7 @@ public:
   using BivariateSetType = slam::BivariateSet<>;//RangeSetType, RangeSetType>;
   using ProductSetType = slam::ProductSet<>;//RangeSetType, RangeSetType>;
 
-private:
+protected:
   // SLAM Set type definitions
   using SetPosType  = slam::DefaultPositionType;
   using SetElemType = slam::DefaultPositionType;
@@ -432,6 +432,7 @@ public:
    */
   bool isValid(bool verboseOutput = false) const;
 
+protected:
   //Return the Set pointer associalted with the given FieldMapping or field idx
   SetType* get_mapped_set(FieldMapping);
   SetType* get_mapped_set(int field_idx);
@@ -510,6 +511,10 @@ private:
 
   template<typename T, typename S>
   friend class MMField2D; // every type of MMField2D is a friend
+  template <typename Field2D>
+  friend class MMSubField2D; // every type of MMSubField2D is a friend
+  template <typename T, DataLayout D, typename S>
+  friend class MMField2DTemplated;
 }; //end MultiMat class
 
 

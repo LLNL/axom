@@ -93,7 +93,7 @@ public:
    * \param subset_idxset a Set of ElementFlatIndex into the SuperMap
    */
   SubMap(SuperMapType* supermap,
-         SubsetType& subset_idxset,
+         SubsetType subset_idxset,
          bool indicesHaveIndirection = true)
     : StridePolicyType(supermap->stride())
     , m_superMap(supermap)

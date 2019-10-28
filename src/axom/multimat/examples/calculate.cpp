@@ -1559,9 +1559,10 @@ void calculate_pressure_mat_dom_mm_submap(MultiMat& mm)
   using DenseFieldSet = typename MultiMat::ProductSetType;
   using DenseField = MultiMat::Field2D<double, DenseFieldSet>;
 
-  //DenseField Pressurefrac(mm.getDense2dFieldSet(DataLayout::MAT_DOM));
-  //DenseField Pressurefrac(mm, mm.getDense2dFieldSet(DataLayout::MAT_DOM));
-  auto Pressurefrac = mm.getTemplated2DField<double, DataLayout::MAT_DOM, BSet>("Pressurefrac");
+  DenseField Pressurefrac(mm, mm.getDense2dFieldSet(DataLayout::MAT_DOM));
+
+  //this field needs to be dense. so not this:
+  //auto Pressurefrac = mm.getTemplated2DField<double, DataLayout::MAT_DOM, BSet>("Pressurefrac");
 
   timer.reset();
 
@@ -2074,14 +2075,18 @@ void average_density_over_nbr_cell_dom_full_mm_submap(MultiMat& mm, Robey_data& 
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  auto Densityfrac = mm.get2dFieldAsSlamBivarMap<double,BSet>("Densityfrac");
-  auto Volfrac = mm.get2dFieldAsSlamBivarMap<double,BSet>("Volfrac");
+  
+  auto Densityfrac = mm.getTemplated2DField<double, DataLayout::CELL_DOM, BSet>("Densityfrac");
+  auto Volfrac = mm.getTemplated2DField<double, DataLayout::CELL_DOM, BSet>("Volfrac");
+  
+  //auto Densityfrac = mm.get2dFieldAsSlamBivarMap<double,BSet>("Densityfrac");
+  //auto Volfrac = mm.get2dFieldAsSlamBivarMap<double,BSet>("Volfrac");
 
   // Get the slam relations and maps for the mesh data
   const auto& neighbors = data.slam_neighbors;
   const auto& cen = data.slam_centroids;
 
-  auto MatDensity_average = mm.get2dFieldAsSlamBivarMap<double, BSet>("MatDensityAverage");
+  auto MatDensity_average = mm.getTemplated2DField<double, DataLayout::CELL_DOM, BSet>("MatDensityAverage");
 
   timer.reset();
 
@@ -2327,7 +2332,10 @@ void average_density_over_nbr_cell_dom_compact_mm_submap(MultiMat& mm, Robey_dat
   SLIC_ASSERT(mm.getFieldSparsityLayout(0) == SparsityLayout::SPARSE);
 
   int ncells = mm.getNumberOfCells();
-  auto Densityfrac = mm.get2dFieldAsSlamBivarMap<double, BSet>("Densityfrac");
+
+  auto Densityfrac = mm.getTemplated2DField<double, DataLayout::CELL_DOM, BSet>("Densityfrac");
+  
+  //auto Densityfrac = mm.get2dFieldAsSlamBivarMap<double, BSet>("Densityfrac");
 
   // Get the slam relations and maps for the mesh data
   const auto& neighbors = data.slam_neighbors;
@@ -2339,7 +2347,8 @@ void average_density_over_nbr_cell_dom_compact_mm_submap(MultiMat& mm, Robey_dat
   using DenseField = MultiMat::Field2D<double, DenseFieldSet>;
   DenseField MatDensity_average(mm.getDense2dFieldSet());
   */
-  auto MatDensity_average = mm.get2dField<double>("MatDensityAverage");
+  auto MatDensity_average = mm.getTemplated2DField<double, DataLayout::CELL_DOM, BSet>("MatDensityAverage");
+
 
   timer.reset();
 
@@ -2901,9 +2910,14 @@ void average_density_over_nbr_mat_dom_full_mm_submap(MultiMat& mm, Robey_data& d
   SLIC_ASSERT(mm.getFieldSparsityLayout(0) == SparsityLayout::DENSE);
 
   int nmats = mm.getNumberOfMaterials();
-  auto Densityfrac = mm.get2dFieldAsSlamBivarMap<double,BSet>("Densityfrac");
-  auto Volfrac = mm.get2dFieldAsSlamBivarMap<double,BSet>("Volfrac");
-  auto MatDensity_average = mm.get2dFieldAsSlamBivarMap<double, BSet>("MatDensityAverage");
+
+  auto Densityfrac = mm.getTemplated2DField<double, DataLayout::MAT_DOM, BSet>("Densityfrac");
+  auto Volfrac = mm.getTemplated2DField<double, DataLayout::MAT_DOM, BSet>("Volfrac");
+  auto MatDensity_average = mm.getTemplated2DField<double, DataLayout::MAT_DOM, BSet>("MatDensityAverage");
+
+  //auto Densityfrac = mm.get2dFieldAsSlamBivarMap<double,BSet>("Densityfrac");
+  //auto Volfrac = mm.get2dFieldAsSlamBivarMap<double,BSet>("Volfrac");
+  //auto MatDensity_average = mm.get2dFieldAsSlamBivarMap<double, BSet>("MatDensityAverage");
 
   // Get the slam relations and maps for the mesh data
   const auto& neighbors = data.slam_neighbors;
@@ -3145,7 +3159,11 @@ void average_density_over_nbr_mat_dom_compact_mm_submap(MultiMat& mm, Robey_data
 
   int ncells = mm.getNumberOfCells();
   int nmats = mm.getNumberOfMaterials();
-  auto Densityfrac = mm.get2dFieldAsSlamBivarMap<double,BSet>("Densityfrac");
+  
+  auto Densityfrac = mm.getTemplated2DField<double, DataLayout::MAT_DOM, BSet>("Densityfrac");
+  auto MatDensity_average = mm.getTemplated2DField<double, DataLayout::MAT_DOM, BSet>("MatDensityAverage");
+
+  //auto Densityfrac = mm.get2dFieldAsSlamBivarMap<double,BSet>("Densityfrac");
 
   // Get the slam relations and maps for the mesh data
   const auto& neighbors = data.slam_neighbors;
@@ -3157,7 +3175,7 @@ void average_density_over_nbr_mat_dom_compact_mm_submap(MultiMat& mm, Robey_data
   using DenseField = MultiMat::Field2D<double, DenseFieldSet>;
   DenseField MatDensity_average(mm.getDense2dFieldSet());
   */
-  auto MatDensity_average = mm.get2dFieldAsSlamBivarMap<double, BSet>("MatDensityAverage");
+  //auto MatDensity_average = mm.get2dFieldAsSlamBivarMap<double, BSet>("MatDensityAverage");
   //std::vector<double> MatDensity_average(Densityfrac.totalSize(), 0.0);
 
   timer.reset();
@@ -3541,9 +3559,7 @@ int main(int argc, char** argv)
   average_density_over_nbr_cell_dom_full(data);
   average_density_over_nbr_cell_dom_full_mm_direct(mm, data);
   average_density_over_nbr_cell_dom_full_mm_submap(mm, data);
-#ifndef AXOM_DEBUG
   average_density_over_nbr_cell_dom_full_mm_submap<ProductSetType>(mm, data);
-#endif
   average_density_over_nbr_cell_dom_full_mm_iter(mm, data);
 
   SLIC_INFO("**************** Compact Layout - Cell-Dominant ******************");
@@ -3552,9 +3568,7 @@ int main(int argc, char** argv)
   average_density_over_nbr_cell_dom_compact(data);
   //average_density_over_nbr_cell_dom_compact_mm_idxarray(mm, data);
   average_density_over_nbr_cell_dom_compact_mm_submap(mm, data);
-#ifndef AXOM_DEBUG
   average_density_over_nbr_cell_dom_compact_mm_submap<RelationSetType>(mm, data);
-#endif
   //average_density_over_nbr_cell_dom_compact_mm_iter(mm, data);
 
   SLIC_INFO("**************** Full Layout - Material-Dominant ******************");
@@ -3566,9 +3580,7 @@ int main(int argc, char** argv)
   average_density_over_nbr_mat_dom_full(data);
   average_density_over_nbr_mat_dom_full_mm_direct(mm, data);
   average_density_over_nbr_mat_dom_full_mm_submap(mm, data);
-#ifndef AXOM_DEBUG
   average_density_over_nbr_mat_dom_full_mm_submap<ProductSetType>(mm, data);
-#endif
   //average_density_over_nbr_mat_dom_full_mm_iter(mm, data);
 
   SLIC_INFO("**************** Compact Layout - Material-Dominant ******************");
@@ -3578,9 +3590,7 @@ int main(int argc, char** argv)
 
   //average_density_over_nbr_mat_dom_compact_mm_indexarray(mm, data);
   average_density_over_nbr_mat_dom_compact_mm_submap(mm, data);
-#ifndef AXOM_DEBUG
   average_density_over_nbr_mat_dom_compact_mm_submap<RelationSetType>(mm, data);
-#endif
   //average_density_over_nbr_mat_dom_compact_mm_iter(mm, data);
 
   SLIC_INFO("**********************************************************");
@@ -3597,9 +3607,7 @@ int main(int argc, char** argv)
   calculate_pressure_cell_dom_full(data);
   calculate_pressure_cell_dom_full_mm_direct(mm);
   calculate_pressure_cell_dom_mm_submap(mm);
-#ifndef AXOM_DEBUG
   calculate_pressure_cell_dom_mm_submap<ProductSetType>(mm);
-#endif
   calculate_pressure_cell_dom_full_mm_iter(mm);
   //calculate_pressure_cell_dom_full_mm_flatiter(mm);
 
@@ -3629,9 +3637,7 @@ int main(int argc, char** argv)
   calculate_pressure_mat_dom_compact(data);
 
   calculate_pressure_mat_dom_mm_submap(mm);
-#ifndef AXOM_DEBUG
   calculate_pressure_mat_dom_mm_submap<RelationSetType>(mm);
-#endif
 
   /*
   average_density_cell_dom_with_if(data);
