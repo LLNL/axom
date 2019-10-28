@@ -316,7 +316,7 @@ public:
 
   /// @}
 
-private:
+protected:
 
   /**
    * \brief Compile time predicate to check if we should use component indexing
@@ -574,6 +574,11 @@ public:
   void copy(DataType* data_arr)
   {
     for (int i = 0 ; i < m_map.size() * StrPol::stride() ; i++)
+      m_map[i] = data_arr[i];
+  }
+  void copy(const DataType* data_arr)
+  {
+    for (int i = 0; i < m_map.size() * StrPol::stride(); i++)
       m_map[i] = data_arr[i];
   }
 
