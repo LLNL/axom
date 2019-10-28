@@ -23,9 +23,14 @@ public:
   using ProductSetType = MultiMat::ProductSetType;
   using RelationSetType = MultiMat::RelationSetType;
 
+  using SetPosition = typename BiVarMapType::SetPosition;
+
   using Field2DType = MMField2D<DataType, BiVarSetType>;
   using SubFieldType = MMSubField2D<Field2DType>;
   using ConstSubFieldType = const MMSubField2D<const Field2DType>;
+
+  //slam typedef
+  using SubMapType = typename BiVarMapType::SubMapType;
 
   /**
   * \brief Constructor
@@ -50,6 +55,8 @@ public:
   //MMField2D& operator=(const MMField2D&);
 
 
+  using BiVarMapType::operator(); //why is this needed?
+
   //subfield (instead of SubMap) 
   SubFieldType getSubfield(SetPosition firstIdx)
   {
@@ -57,20 +64,22 @@ public:
   }
   SubFieldType operator() (SetPosition firstIdx)
   {
-    const bool hasInd = submapIndicesHaveIndirection();
+    const bool hasInd = this->submapIndicesHaveIndirection();
     return SubFieldType(this, firstIdx, hasInd);
   }
   const ConstSubFieldType operator() (SetPosition firstIdx) const
   {
-    const bool hasInd = submapIndicesHaveIndirection();
+    const bool hasInd = this->submapIndicesHaveIndirection();
     return ConstSubFieldType(this, firstIdx, hasInd);
   }
 
   //Mimic BivariateMap operator(i) and return slam submap
   SubMapType getSlamSubMap(SetPosition firstIdx)
   {
-    return BiVarMapType::operator(firstIdx);
+    return BiVarMapType::operator()(firstIdx);
   }
+
+  
 
   
   std::string getName() { return m_field_name; };
@@ -165,6 +174,35 @@ class MMField2DTemplated : public MMField2D<DataType, BiSet>
 //but I didn't figure it out.
 
 
+template<typename Biset>
+struct MMBiSet2Sparsity {};
+
+template<>
+struct MMBiSet2Sparsity<MultiMat::ProductSetType> 
+{ SparsityLayout sparsity = SparsityLayout::DENSE; };
+
+template<>
+struct MMBiSet2Sparsity<MultiMat::RelationSetType>
+{ SparsityLayout sparsity = SparsityLayout::SPARSE; };
+
+
+// CellDOM specialization
+template<typename DataType, typename BiSet>
+class MMField2DTemplated<DataType, DataLayout::CELL_DOM, BiSet> :
+  public MMField2D<DataType, BiSet>
+{
+  using Field2DType = MMField2D<DataType, BiSet>;
+public:
+  MMField2DTemplated(MultiMat& mm, const std::string& arr_name = "unnamed",
+    const DataType* data_arr = nullptr, int stride = 1) :
+    Field2DType(mm, (BiSet*) mm.get_mapped_biSet(DataLayout::CELL_DOM, MMBiSet2Sparsity<BiSet>().sparsity),
+      arr_name, data_arr, stride)
+  {}
+
+};
+
+
+/*
 // CellDOM Dense specialization
 template<typename DataType>
 class MMField2DTemplated<DataType, DataLayout::CELL_DOM, MultiMat::ProductSetType> : 
@@ -195,24 +233,25 @@ public:
       arr_name, data_arr, stride)
   {}
 };
+*/
 
-// MatDom Dense specialization
-template<typename DataType>
-class MMField2DTemplated<DataType, DataLayout::MAT_DOM, MultiMat::ProductSetType> :
-  public MMField2D<DataType, MultiMat::ProductSetType>
+// MatDom specialization
+template<typename DataType, typename BiSet>
+class MMField2DTemplated<DataType, DataLayout::MAT_DOM, BiSet> :
+  public MMField2D<DataType, BiSet>
 {
-  using Field2DType = MMField2D<DataType, MultiMat::ProductSetType>;
+  using Field2DType = MMField2D<DataType, BiSet>;
 public:
   MMField2DTemplated(MultiMat& mm,
     const std::string& arr_name = "unnamed",
     const DataType* data_arr = nullptr,
     int stride = 1) :
-    Field2DType(mm, mm.getDense2dFieldSet(DataLayout::MAT_DOM),
+    Field2DType(mm, (BiSet*) mm.get_mapped_biSet(DataLayout::MAT_DOM, MMBiSet2Sparsity<BiSet>().sparsity),
       arr_name, data_arr, stride)
   {}
 };
 
-
+/*
 // MatDom Sparse specialization
 template<typename DataType>
 class MMField2DTemplated<DataType, DataLayout::MAT_DOM, MultiMat::RelationSetType> :
@@ -227,7 +266,7 @@ public:
     Field2DType(mm, mm.getSparse2dFieldSet(DataLayout::MAT_DOM),
       arr_name, data_arr, stride)
   {}
-};
+}; */
 
 
 
