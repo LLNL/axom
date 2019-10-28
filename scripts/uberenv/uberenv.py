@@ -71,6 +71,7 @@ def sexe(cmd,ret_output=False,echo = False):
     """ Helper for executing shell commands. """
     if echo:
         print("[exe: {}]".format(cmd))
+        sys.stdout.flush()
     if ret_output:
         p = subprocess.Popen(cmd,
                              shell=True,
@@ -311,7 +312,10 @@ class VcpkgEnv(UberEnv):
 
     def show_info(self):
         os.chdir(self.dest_vcpkg)
+        print("[info: Details for package '{}']".format(self.pkg_name))
         sexe("vcpkg.exe search " + self.pkg_name, echo=True)
+
+        print("[info: Dependencies for package '{}']".format(self.pkg_name))
         sexe("vcpkg.exe depend-info " + self.pkg_name, echo=True)
 
     def create_mirror(self):
@@ -326,9 +330,9 @@ class VcpkgEnv(UberEnv):
         install_cmd = "vcpkg.exe "
         install_cmd += "install {}".format(self.pkg_name)
 
-        res = sexe(install_cmd, echo=True)
+        #res = sexe(install_cmd, echo=True)
 
-        return res
+        #return res
 
 
 class SpackEnv(UberEnv):
