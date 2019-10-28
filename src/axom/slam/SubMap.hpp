@@ -53,7 +53,7 @@ namespace slam
 
 template<
   typename SuperMapType,
-  typename SubsetType
+  typename SubsetType //= slam::RangeSet<SetPosition, SetElement>
   >
 class SubMap : public MapBase, public SuperMapType::StridePolicyType
 {
@@ -90,14 +90,14 @@ public:
    * \brief Constructor for SubMap given the ElementFlatIndex into the SuperMap
    *
    * \param supermap The map that this SubMap is a subset of.
-   * \param subset_idx a Set of ElementFlatIndex into the SuperMap
+   * \param subset_idxset a Set of ElementFlatIndex into the SuperMap
    */
   SubMap(SuperMapType* supermap,
-         SubsetType& subset_idx,
+         SubsetType& subset_idxset,
          bool indicesHaveIndirection = true)
     : StridePolicyType(supermap->stride())
     , m_superMap(supermap)
-    , m_subsetIdx(subset_idx)
+    , m_subsetIdx(subset_idxset)
     , m_indicesHaveIndirection(indicesHaveIndirection)
   { }
 

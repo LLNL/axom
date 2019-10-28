@@ -60,10 +60,15 @@ MultiMat::MapBaseType* MultiMat::helper_copyField(const MultiMat& mm, int map_i)
   MapBaseType* other_map_ptr = mm.m_mapVec[map_i];
   if (mm.getFieldMapping(map_i) == FieldMapping::PER_CELL_MAT)
   {
-    BivariateSetType* biSetPtr = get_mapped_biSet(map_i);
+    //BivariateSetType* biSetPtr = get_mapped_biSet(map_i);
     Field2D<T>* typed_ptr = dynamic_cast<Field2D<T>*>(other_map_ptr);
-    Field2D<T>* new_ptr = new Field2D<T>(biSetPtr, T(), typed_ptr->stride());
-    new_ptr->copy(typed_ptr->getMap()->data().data());
+    
+    //old field2d 
+    //Field2D<T>* new_ptr = new Field2D<T>(biSetPtr, T(), typed_ptr->stride());
+    //new_ptr->copy(typed_ptr->getMap()->data().data());
+
+    Field2D<T>* new_ptr = new Field2D<T>(*typed_ptr);
+
     return new_ptr;
   }
   else
@@ -772,6 +777,90 @@ void axom::multimat::MultiMat::convertFieldToDense(int field_idx)
 }
 
 
+template<typename DataType>
+void MultiMat::convertToSparse_helper(int map_i)
+{
+  SLIC_ASSERT(m_fieldSparsityLayoutVec[map_i] != SparsityLayout::SPARSE);
+
+  MapBaseType* mapPtr = m_mapVec[map_i];
+
+  //Skip if no volume fraction array is set-up
+  if (map_i == 0 && mapPtr == nullptr)
+    return;
+
+  StaticVariableRelationType* Rel = getRel(map_i);
+
+  Field2D<DataType>& old_map = *dynamic_cast<Field2D<DataType>*>(mapPtr);
+  int stride = old_map.stride();
+  std::vector<DataType> arr_data(Rel->totalSize()*stride);
+  int idx = 0;
+  for (int i = 0; i < Rel->fromSetSize(); ++i)
+  {
+    auto relset = (*Rel)[i];
+    auto submap = old_map(i);
+    for (int j = 0; j < relset.size(); ++j)
+    {
+      for (int s = 0; s < stride; ++s)
+      {
+        arr_data[idx++] = submap[relset[j] * stride + s];
+      }
+    }
+  }
+  SLIC_ASSERT(idx == Rel->totalSize()*stride);
+
+  RelationSetType* nz_set = m_fieldDataLayoutVec[map_i] == DataLayout::CELL_DOM ?
+    m_cellMatNZSet : m_matCellNZSet;
+  //old field2d
+  //Field2D<DataType>* new_field = new Field2D<DataType>(nz_set, DataType(), stride);
+  //new_field->copy(arr_data.data());
+  Field2D<DataType>* new_field = new Field2D<DataType>(*this, nz_set,
+    old_map.getName(), arr_data.data(), stride);
+
+  delete m_mapVec[map_i];
+  m_mapVec[map_i] = new_field;
+}
+
+
+template<typename DataType>
+void MultiMat::convertToDense_helper(int map_i)
+{
+  SLIC_ASSERT(m_fieldSparsityLayoutVec[map_i] != SparsityLayout::DENSE);
+
+  MapBaseType* mapPtr = m_mapVec[map_i];
+
+  //Skip if no volume fraction array is set-up
+  if (map_i == 0 && mapPtr == nullptr)
+    return;
+
+  ProductSetType* prod_set = m_fieldDataLayoutVec[map_i] == DataLayout::CELL_DOM ?
+    m_cellMatProdSet : m_matCellProdSet;
+
+  Field2D<DataType>& old_map = *dynamic_cast<Field2D<DataType>*>(mapPtr);
+  int stride = old_map.stride();
+  std::vector<DataType> arr_data(prod_set->size()*stride);
+  for (int i = 0; i < old_map.firstSetSize(); ++i)
+  {
+    for (auto iter = old_map.begin(i); iter != old_map.end(i); ++iter)
+    {
+      int elem_idx = i * old_map.secondSetSize() + iter.index();
+      for (int c = 0; c < stride; ++c)
+      {
+        arr_data[elem_idx*stride + c] = iter.value(c);
+      }
+    }
+  }
+
+  //old field2d
+  //Field2D<DataType>* new_field = new Field2D<DataType>(prod_set, DataType(), stride);
+  //new_field->copy(&arr_data[0]);
+  Field2D<DataType>* new_field = new Field2D<DataType>(*this, prod_set,
+    old_map.getName(), arr_data.data(), stride);
+
+  delete m_mapVec[map_i];
+  m_mapVec[map_i] = new_field;
+}
+
+
 DataLayout MultiMat::getFieldDataLayout(int field_idx)
 {
   SLIC_ASSERT(0 <= field_idx && field_idx < m_mapVec.size());
@@ -849,17 +938,20 @@ void MultiMat::transposeField_helper(int field_idx)
       vec_idx = m_cellMatRel_beginsVec;
 
     arr_data.resize(oldRel->totalSize() * stride);
-    for (unsigned int i = 0; i < oldRel->totalSize(); ++i)
+    for (int i = 0; i < oldRel->totalSize(); ++i)
     {
       int col = indicesVec[i];
-      for (unsigned int c = 0; c < stride; ++c)
+      for (int c = 0; c < stride; ++c)
       {
         arr_data[vec_idx[col] * stride + c] = (*old_map.getMap())(i, c);
       }
       ++vec_idx[col];
     }
 
-    new_map = new Field2D<DataType>(newNZSet, DataType(), stride);
+    //old
+    //new_map = new Field2D<DataType>(newNZSet, DataType(), stride);
+    new_map = new Field2D<DataType>(*this, newNZSet,
+      old_map.getName(), arr_data.data(), stride);
   }
   else //dense
   {
@@ -875,10 +967,12 @@ void MultiMat::transposeField_helper(int field_idx)
         }
       }
     }
-    new_map = new Field2D<DataType>(newProdSet, DataType(), stride);
+    //new_map = new Field2D<DataType>(newProdSet, DataType(), stride);
+    new_map = new Field2D<DataType>(*this, newProdSet, old_map.getName(),
+      arr_data.data(), stride);
   }
 
-  new_map->copy(arr_data.data());
+  //new_map->copy(arr_data.data());
   m_mapVec[field_idx] = new_map;
   delete oldMapPtr;
   m_fieldDataLayoutVec[field_idx] = new_layout;

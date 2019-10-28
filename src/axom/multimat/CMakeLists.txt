@@ -17,6 +17,8 @@ axom_component_requires(NAME       MultiMat
 #------------------------------------------------------------------------------
 set(multimat_headers
     multimat.hpp
+	mmfield.hpp
+	mmsubfield.hpp
     )
 
 set(multimat_sources
