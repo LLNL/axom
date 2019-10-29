@@ -15,11 +15,11 @@ namespace multimat {
  * layout (dense/sparse, mat/cell dom, and maybe more). 
  */
 template<typename DataType, typename BiSet = MultiMat::BivariateSetType>
-class MMField2D : public MultiMat::BivariateMapType<DataType, BiSet> 
+class MMField2D : public MultiMat::BivariateMapTypeStrideOne<DataType, BiSet>
 {
 public:
   using BiVarSetType = BiSet;
-  using BiVarMapType = MultiMat::BivariateMapType<DataType, BiVarSetType>;
+  using BiVarMapType = MultiMat::BivariateMapTypeStrideOne<DataType, BiVarSetType>;
   using ProductSetType = MultiMat::ProductSetType;
   using RelationSetType = MultiMat::RelationSetType;
 
@@ -105,7 +105,7 @@ private:
 
 };
 
-///////////////////////////////////////////////////////////////////////////
+//////////////////////// Implementation of MMField2D ////////////////////////////
 
 // Constructor given layouts
 //template<typename DataType, typename BiSet>
@@ -122,7 +122,7 @@ template<typename DataType, typename BiSet>
 inline MMField2D<DataType, BiSet>::MMField2D(MultiMat& mm, const BiSet *biset,
     const std::string& arr_name, const DataType* data_arr, int stride) :
   //call Bivariate map constructor
-  MultiMat::BivariateMapType<DataType, BiSet>(biset, DataType(), stride),
+  BiVarMapType(biset, DataType(), stride),
   m_mm(&mm),
   m_field_name(arr_name)
 {
@@ -162,18 +162,16 @@ inline MMField2D<DataType, BiSet>::MMField2D(const MMField2D & o):
   { }
 
 
-////////////////////////////////////////////////////
+//////////////////////// MMField2D Templated ////////////////////////////
+// Child class of MMField2D, typed with layout (cell/mat dom) and sparsity
 
-// class for field2d in specific format
+
+// basic template
 template<typename DataType, DataLayout DataLayoutT, typename BiSet = MultiMat::BivariateSetType>
 class MMField2DTemplated : public MMField2D<DataType, BiSet>
 { };
 
-
-//maybe there's a way for me to not repeat code for same DataLayout below, 
-//but I didn't figure it out.
-
-
+// A helping struct to map a bivariate set to the corresponding SparsityLayout
 template<typename Biset>
 struct MMBiSet2Sparsity {};
 
@@ -186,7 +184,7 @@ struct MMBiSet2Sparsity<MultiMat::RelationSetType>
 { SparsityLayout sparsity = SparsityLayout::SPARSE; };
 
 
-// CellDOM specialization
+// Cell-Dom specialization
 template<typename DataType, typename BiSet>
 class MMField2DTemplated<DataType, DataLayout::CELL_DOM, BiSet> :
   public MMField2D<DataType, BiSet>
@@ -202,40 +200,8 @@ public:
 };
 
 
-/*
-// CellDOM Dense specialization
-template<typename DataType>
-class MMField2DTemplated<DataType, DataLayout::CELL_DOM, MultiMat::ProductSetType> : 
-  public MMField2D<DataType, MultiMat::ProductSetType>
-{
-  using Field2DType = MMField2D<DataType, MultiMat::ProductSetType>;
-public:
-  MMField2DTemplated(MultiMat& mm, const std::string& arr_name = "unnamed",
-    const DataType* data_arr = nullptr, int stride = 1):
-    Field2DType(mm, mm.getDense2dFieldSet(DataLayout::CELL_DOM), 
-      arr_name, data_arr, stride)
-  {}
 
-
-};
-
-
-// CellDOM Sparse specialization
-template<typename DataType>
-class MMField2DTemplated<DataType, DataLayout::CELL_DOM, MultiMat::RelationSetType> :
-  public MMField2D<DataType, MultiMat::RelationSetType>
-{
-  using Field2DType = MMField2D<DataType, MultiMat::RelationSetType>;
-public:
-  MMField2DTemplated(MultiMat& mm, const std::string& arr_name = "unnamed",
-    const DataType* data_arr = nullptr, int stride = 1) :
-    Field2DType(mm, mm.getSparse2dFieldSet(DataLayout::CELL_DOM), 
-      arr_name, data_arr, stride)
-  {}
-};
-*/
-
-// MatDom specialization
+// Mat-Dom specialization
 template<typename DataType, typename BiSet>
 class MMField2DTemplated<DataType, DataLayout::MAT_DOM, BiSet> :
   public MMField2D<DataType, BiSet>
@@ -250,24 +216,6 @@ public:
       arr_name, data_arr, stride)
   {}
 };
-
-/*
-// MatDom Sparse specialization
-template<typename DataType>
-class MMField2DTemplated<DataType, DataLayout::MAT_DOM, MultiMat::RelationSetType> :
-  public MMField2D<DataType, MultiMat::RelationSetType>
-{
-  using Field2DType = MMField2D<DataType, MultiMat::RelationSetType>;
-public:
-  MMField2DTemplated(MultiMat& mm,
-    const std::string& arr_name = "unnamed",
-    const DataType* data_arr = nullptr,
-    int stride = 1) :
-    Field2DType(mm, mm.getSparse2dFieldSet(DataLayout::MAT_DOM),
-      arr_name, data_arr, stride)
-  {}
-}; */
-
 
 
 } //end namespace multimat
