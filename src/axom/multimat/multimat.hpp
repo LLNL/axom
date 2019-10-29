@@ -88,8 +88,12 @@ protected:
   using MapType = slam::Map<T, SetType, IndPolicy<T>, MapStrideType>;
 
   template <typename T, typename BSet = BivariateSetType>
-  using BivariateMapType =
+  using BivariateMapType = //this one has runtime stride
           slam::BivariateMap<T,BSet,IndPolicy<T>,MapStrideType>;
+
+  template <typename T, typename BSet = BivariateSetType>
+  using BivariateMapTypeStrideOne = //this one has compile time stride 1
+    slam::BivariateMap<T, BSet>;
 
 public:
   using SparseRelationType = StaticVariableRelationType;
@@ -272,11 +276,14 @@ public:
   template<typename T>
   Field2D<T>& get2dField(const std::string& field_name);
 
+  template<typename T, typename BSetType>
+  Field2D<T, BSetType> get2dField(const std::string& field_name);
+
   template<typename T>
   DenseField2D<T> getDense2dField(const std::string& field_name);
 
   template<typename T>
-  DenseField2D<T> getSparse2dField(const std::string& field_name);
+  SparseField2D<T> getSparse2dField(const std::string& field_name);
 
   template<typename T, DataLayout D, typename B>
   Field2DTemplated<T, D, B> getTemplated2DField(const std::string& field_name);
@@ -641,7 +648,7 @@ MultiMat::Field1D<T>& MultiMat::get1dField(const std::string& field_name)
     //Right now we're allowing Field2D (BivariateMap) to be returned as
     // a Field1D (Map) so it can be accessed like a 1d array, but the
     // indexing information would be lost.
-    auto* map_2d = dynamic_cast<Field2D<T>*>(m_mapVec[fieldIdx]);
+    auto* map_2d = dynamic_cast<BivariateMapType<T>*>(m_mapVec[fieldIdx]);
     return *(map_2d->getMap());
   }
 }
@@ -659,6 +666,24 @@ MultiMat::Field2D<T>& MultiMat::get2dField(const std::string& field_name)
 
   return *dynamic_cast<Field2D<T>*>(m_mapVec[fieldIdx]);
 }
+
+
+template<typename T, typename BSetType>
+MultiMat::Field2D<T, BSetType> MultiMat::get2dField(const std::string& field_name)
+{
+  // Get a reference to the unspecialized BMap
+  auto& bmap = get2dField<T>(field_name);
+
+  //create instance of that map
+  int fi = getFieldIdx(field_name);
+  BSetType* bi_set = (BSetType*)this->get_mapped_biSet( 
+        m_fieldDataLayoutVec[fi], m_fieldSparsityLayoutVec[fi]);
+  
+  Field2D<T, BSetType> typedBMap(*this, bi_set, field_name, bmap.getMap()->data().data());
+
+  return typedBMap;
+}
+
 
 template<typename T>
 MultiMat::DenseField2D<T> MultiMat::getDense2dField(const std::string& field_name)

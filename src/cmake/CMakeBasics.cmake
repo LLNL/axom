@@ -23,13 +23,13 @@ if(NOT CMAKE_CONFIGURATION_TYPES)
     # Add define we can use when debug builds are enabled
     ######################################################
     if( CMAKE_BUILD_TYPE MATCHES "(Debug|RelWithDebInfo)" )
-        add_definitions(-DAXOM_DEBUG)
+        #add_definitions(-DAXOM_DEBUG)
     endif()
 else ()
-    set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS
-      $<$<CONFIG:Debug>:AXOM_DEBUG>
-      $<$<CONFIG:RelWithDebInfo>:AXOM_DEBUG>
-    )
+    #set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS
+    #  $<$<CONFIG:Debug>:AXOM_DEBUG>
+    #  $<$<CONFIG:RelWithDebInfo>:AXOM_DEBUG>
+    #)
 endif()
 
 ################################
