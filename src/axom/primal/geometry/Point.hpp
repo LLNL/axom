@@ -10,6 +10,9 @@
 
 #include "axom/primal/geometry/NumericArray.hpp"
 
+// Trying to get functions to work on device
+#include "axom/core/Macros.hpp"
+
 // C/C++ includes
 #include <cstring> // For memcpy()
 #include <ostream> // For print() and operator <<

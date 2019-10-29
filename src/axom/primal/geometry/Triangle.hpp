@@ -14,6 +14,9 @@
 
 #include "axom/slic/interface/slic.hpp"
 
+// Trying to get functions to work on device
+#include "axom/core/Macros.hpp"
+
 #include <cmath>   // for acos()
 #include <ostream> // for std::ostream
 
@@ -80,7 +83,7 @@ public:
    */
   PointType& operator[](int idx)
   {
-    SLIC_ASSERT(idx >=0 && idx < NUM_TRI_VERTS);
+    //SLIC_ASSERT(idx >=0 && idx < NUM_TRI_VERTS);
     return m_points[ idx ];
   }
 

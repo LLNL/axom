@@ -61,6 +61,12 @@ set( primal_dependencies
      slic
      )
 
+blt_list_append( TO primal_dependencies ELEMENTS raja IF ${RAJA_FOUND} )
+blt_list_append( TO primal_dependencies ELEMENTS umpire IF ${UMPIRE_FOUND} )
+blt_list_append( TO primal_dependencies ELEMENTS openmp  IF ${ENABLE_OPENMP} )
+blt_list_append( TO primal_dependencies ELEMENTS cuda IF ${ENABLE_CUDA} )
+
+
 blt_add_library(
     NAME                  primal
     SOURCES               ${primal_sources}

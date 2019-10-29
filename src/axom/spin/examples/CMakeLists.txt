@@ -11,9 +11,10 @@ set(spin_example_depends
         fmt
         )
 
-    #blt_list_append( TO spin_example_depends ELEMENTS raja IF ${RAJA_FOUND} )
-    #blt_list_append( TO spin_example_depends ELEMENTS umpire IF ${UMPIRE_FOUND} )
-    #blt_list_append( TO spin_example_depends ELEMENTS openmp  IF ${ENABLE_OPENMP} )
+# Enabling for RAJA testing
+blt_list_append( TO spin_example_depends ELEMENTS raja IF ${RAJA_FOUND} )
+blt_list_append( TO spin_example_depends ELEMENTS umpire IF ${UMPIRE_FOUND} )
+blt_list_append( TO spin_example_depends ELEMENTS openmp  IF ${ENABLE_OPENMP} )
 blt_list_append( TO spin_example_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
 
 blt_add_executable(
@@ -24,3 +25,10 @@ blt_add_executable(
     FOLDER      axom/spin/examples
     )
 
+blt_add_executable(
+    NAME        naive_intersect_raja_ex
+    SOURCES     naive_intersect_raja.cpp
+    OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
+    DEPENDS_ON  ${spin_example_depends}
+    FOLDER      axom/spin/examples
+    )
