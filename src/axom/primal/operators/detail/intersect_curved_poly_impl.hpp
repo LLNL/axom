@@ -223,7 +223,7 @@ int isContained(const CurvedPolygon<T,2>& p1, const CurvedPolygon<T,2>& p2,doubl
   {
     std::vector<T> temps;
     std::vector<T> tempt;
-    intersect_bezier_curves(LineGuess,p1[j],temps,tempt,sq_tol,1,p1[j].getOrder(),1.,0.,1.,0.);
+    intersect_bezier_curves(LineGuess,p1[j],temps,tempt,sq_tol,1,p1[j].getOrder(),0.,1.,0.,1.);
 
     for (int i=0 ; i<static_cast<int>(temps.size()) ; ++i)
     {
