@@ -110,6 +110,7 @@ TEST( core_execution_space, check_valid )
 
 #ifdef AXOM_USE_CUDA
   check_valid< axom::CUDA_EXEC< 256 > >( );
+  check_valid< axom::CUDA_EXEC< 256, axom::ASYNC > >( );
 #endif
 }
 
@@ -191,6 +192,7 @@ TEST( core_execution_space, check_omp_exec )
 
 //------------------------------------------------------------------------------
 #ifdef AXOM_USE_CUDA
+
 TEST( core_execution_space, check_cuda_exec )
 {
   constexpr int BLOCK_SIZE = 256;
@@ -226,6 +228,50 @@ TEST( core_execution_space, check_cuda_exec )
   int allocator_id = axom::getResourceAllocatorID( umpire::resource::Unified );
   check_execution_mappings< axom::CUDA_EXEC< BLOCK_SIZE >,
                             RAJA::cuda_exec< BLOCK_SIZE >,
+                            raja_loop2d_policy,
+                            raja_loop3d_policy,
+                            RAJA::cuda_reduce,
+                            RAJA::cuda_atomic,
+                            RAJA::cuda_synchronize >( allocator_id );
+
+}
+
+//------------------------------------------------------------------------------
+TEST( core_execution_space, check_cuda_exec_async )
+{
+  constexpr int BLOCK_SIZE = 256;
+
+  check_valid< axom::CUDA_EXEC< BLOCK_SIZE, axom::ASYNC > >( );
+
+  /* *INDENT-OFF* */
+  using raja_loop2d_policy =
+      RAJA::KernelPolicy<
+            RAJA::statement::CudaKernelFixedAsync< 256,
+              RAJA::statement::For<1, RAJA::cuda_block_x_loop,
+                RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+                  RAJA::statement::Lambda<0>
+                >
+              >
+            >
+          >;
+
+  using raja_loop3d_policy =
+      RAJA::KernelPolicy<
+        RAJA::statement::CudaKernelFixedAsync< 256,
+          RAJA::statement::For<2, RAJA::cuda_block_x_loop,
+            RAJA::statement::For<1, RAJA::cuda_block_y_loop,
+              RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+                RAJA::statement::Lambda<0>
+              >
+            >
+          >
+        >
+      >;
+  /* *INDENT-ON* */
+
+  int allocator_id = axom::getResourceAllocatorID( umpire::resource::Unified );
+  check_execution_mappings< axom::CUDA_EXEC< BLOCK_SIZE, axom::ASYNC >,
+                            RAJA::cuda_exec_async< BLOCK_SIZE >,
                             raja_loop2d_policy,
                             raja_loop3d_policy,
                             RAJA::cuda_reduce,

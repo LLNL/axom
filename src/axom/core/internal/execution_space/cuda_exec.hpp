@@ -23,19 +23,29 @@
 namespace axom
 {
 
+enum ExecutionMode
+{
+  SYNCHRONOUS,
+  ASYNC
+};
+
 /*!
  * \brief Indicates parallel execution on the GPU with CUDA.
+ *
  * \tparam BLOCK_SIZE the number of CUDA threads in a block.
+ * \tparam ExecutionMode indicates synchronous or asynchronous execution.
  */
-template < int BLOCK_SIZE >
+template < int BLOCK_SIZE, ExecutionMode EXEC_MODE=SYNCHRONOUS >
 struct CUDA_EXEC{ };
 
 /*!
- * \brief execution_space traits specialization for CUDA_EXEC
+ * \brief execution_space traits specialization for CUDA_EXEC.
+ *
  * \tparam BLOCK_SIZE the number of CUDA threads to launch
+ *
  */
 template < int BLOCK_SIZE >
-struct execution_space< CUDA_EXEC< BLOCK_SIZE > >
+struct execution_space< CUDA_EXEC< BLOCK_SIZE, SYNCHRONOUS > >
 {
   using loop_policy   = RAJA::cuda_exec< BLOCK_SIZE >;
 
@@ -76,6 +86,53 @@ struct execution_space< CUDA_EXEC< BLOCK_SIZE > >
 
 };
 
+/*!
+ * \brief execution_space traits specialization for CUDA_EXEC.
+ *
+ * \tparam BLOCK_SIZE the number of CUDA threads to launch
+ *
+ */
+template < int BLOCK_SIZE >
+struct execution_space< CUDA_EXEC< BLOCK_SIZE, ASYNC > >
+{
+  using loop_policy = RAJA::cuda_exec_async< BLOCK_SIZE >;
+
+  /* *INDENT-OFF* */
+  using loop2d_policy =
+      RAJA::KernelPolicy<
+            RAJA::statement::CudaKernelFixedAsync< 256,
+              RAJA::statement::For<1, RAJA::cuda_block_x_loop,
+                RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+                  RAJA::statement::Lambda<0>
+                >
+              >
+            >
+          >;
+
+  using loop3d_policy =
+      RAJA::KernelPolicy<
+        RAJA::statement::CudaKernelFixedAsync< 256,
+          RAJA::statement::For<2, RAJA::cuda_block_x_loop,
+            RAJA::statement::For<1, RAJA::cuda_block_y_loop,
+              RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+                RAJA::statement::Lambda<0>
+              >
+            >
+          >
+        >
+      >;
+  /* *INDENT-ON* */
+
+  using reduce_policy = RAJA::cuda_reduce;
+  using atomic_policy = RAJA::cuda_atomic;
+  using sync_policy   = RAJA::cuda_synchronize;
+
+  static constexpr bool valid() noexcept { return true; };
+  static constexpr char* name() noexcept { return (char*)"[CUDA_EXEC] (async)"; };
+  static int allocatorID() noexcept
+  { return axom::getResourceAllocatorID(umpire::resource::Unified); };
+
+};
 } /* namespace axom */
 
 #endif /* AXOM_CUDA_EXEC_HPP_ */
