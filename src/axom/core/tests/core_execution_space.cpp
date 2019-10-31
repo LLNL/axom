@@ -59,7 +59,8 @@ void check_invalid( )
 template < typename ExecSpace,
            typename RajaExec,
            typename RajaReduce,
-           typename RajaAtomic >
+           typename RajaAtomic,
+           typename RajaSync >
 void check_execution_mappings( int expectedAllocatorID )
 {
   std::cout << "checking execution space: " <<
@@ -68,14 +69,17 @@ void check_execution_mappings( int expectedAllocatorID )
   using exec   = typename axom::execution_space< ExecSpace >::loop_policy;
   using reduce = typename axom::execution_space< ExecSpace >::reduce_policy;
   using atomic = typename axom::execution_space< ExecSpace >::atomic_policy;
+  using sync   = typename axom::execution_space< ExecSpace >::sync_policy;
 
   bool valid_raja_exec   = std::is_same< exec, RajaExec >::value;
   bool valid_raja_reduce = std::is_same< reduce, RajaReduce >::value;
   bool valid_raja_atomic = std::is_same< atomic, RajaAtomic >::value;
+  bool valid_raja_sync   = std::is_same< sync, RajaSync >::value;
 
   EXPECT_TRUE( valid_raja_exec );
   EXPECT_TRUE( valid_raja_reduce );
   EXPECT_TRUE( valid_raja_atomic );
+  EXPECT_TRUE( valid_raja_sync );
 
   int allocatorID = axom::execution_space< ExecSpace >::allocatorID();
   EXPECT_EQ( expectedAllocatorID, allocatorID );
@@ -117,7 +121,8 @@ TEST( core_execution_space, check_seq_exec )
   check_execution_mappings< axom::SEQ_EXEC,
                             RAJA::loop_exec,
                             RAJA::loop_reduce,
-                            RAJA::loop_atomic >( allocator_id );
+                            RAJA::loop_atomic,
+                            void >( allocator_id );
 
 }
 
@@ -132,7 +137,8 @@ TEST( core_execution_space, check_omp_exec )
   check_execution_mappings< axom::OMP_EXEC,
                             RAJA::omp_parallel_for_exec,
                             RAJA::omp_reduce,
-                            RAJA::omp_atomic >( allocator_id );
+                            RAJA::omp_atomic,
+                            RAJA::omp_synchronize >( allocator_id );
 
 }
 #endif
@@ -149,7 +155,8 @@ TEST( core_execution_space, check_cuda_exec )
   check_execution_mappings< axom::CUDA_EXEC< BLOCK_SIZE >,
                             RAJA::cuda_exec< BLOCK_SIZE >,
                             RAJA::cuda_reduce,
-                            RAJA::cuda_atomic >( allocator_id );
+                            RAJA::cuda_atomic,
+                            RAJA::cuda_synchronize >( allocator_id );
 
 }
 #endif
