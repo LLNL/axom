@@ -19,7 +19,7 @@
 #include "axom/config.hpp"
 
 #include "axom/core/Types.hpp"
-#include "axom/core/execution_space.hpp"
+#include "axom/core/execution/execution_space.hpp"
 #include "axom/core/memory_management.hpp"
 #include "axom/core/numerics/Matrix.hpp"
 

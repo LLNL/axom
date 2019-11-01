@@ -6,7 +6,7 @@
 #ifndef AXOM_SPIN_BUILD_RADIX_TREE_H_
 #define AXOM_SPIN_BUILD_RADIX_TREE_H_
 
-#include "axom/core/execution_space.hpp"
+#include "axom/core/execution/execution_space.hpp"
 
 #include "axom/spin/internal/linear_bvh/BVHData.hpp"
 #include "axom/spin/internal/linear_bvh/RadixTree.hpp"

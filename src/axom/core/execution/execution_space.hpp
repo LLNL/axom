@@ -93,14 +93,14 @@ struct execution_space
 
 
 // execution_space traits specialization
-#include "axom/core/internal/execution_space/seq_exec.hpp"
+#include "axom/core/execution/internal/seq_exec.hpp"
 
 #if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
-#include "axom/core/internal/execution_space/omp_exec.hpp"
+#include "axom/core/execution/internal/omp_exec.hpp"
 #endif
 
 #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
-#include "axom/core/internal/execution_space/cuda_exec.hpp"
+#include "axom/core/execution/internal/cuda_exec.hpp"
 #endif
 
 

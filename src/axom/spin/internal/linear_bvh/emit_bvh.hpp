@@ -12,7 +12,7 @@
 #include "axom/core/memory_management.hpp"   // for alloc()/free()
 
 // spin includes
-#include "axom/core/execution_space.hpp"
+#include "axom/core/execution/execution_space.hpp"
 
 #include "axom/spin/internal/linear_bvh/vec.hpp"
 #include "axom/spin/internal/linear_bvh/aabb.hpp"

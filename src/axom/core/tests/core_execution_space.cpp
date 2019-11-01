@@ -6,7 +6,7 @@
 #include "axom/config.hpp"  // for compile time definitions
 
 // spin includes
-#include "axom/core/execution_space.hpp"
+#include "axom/core/execution/execution_space.hpp"
 
 #ifdef AXOM_USE_UMPIRE
 #include "umpire/Umpire.hpp"  // for Umpire

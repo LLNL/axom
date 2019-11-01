@@ -13,7 +13,7 @@
 #include "axom/slic/interface/slic.hpp"    // for SLIC macros
 
 // spin includes
-#include "axom/core/execution_space.hpp"
+#include "axom/core/execution/execution_space.hpp"
 
 #include "axom/spin/internal/linear_bvh/aabb.hpp"
 #include "axom/spin/internal/linear_bvh/vec.hpp"
