@@ -36,6 +36,8 @@ set(core_headers
 
     ## execution
     execution/execution_space.hpp
+    execution/for_all.hpp
+    execution/synchronize.hpp
 
     execution/internal/seq_exec.hpp
     execution/internal/omp_exec.hpp
