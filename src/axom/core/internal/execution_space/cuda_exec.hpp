@@ -79,6 +79,7 @@ struct execution_space< CUDA_EXEC< BLOCK_SIZE, SYNCHRONOUS > >
   using atomic_policy = RAJA::cuda_atomic;
   using sync_policy   = RAJA::cuda_synchronize;
 
+  static constexpr bool async() noexcept { return false; };
   static constexpr bool valid() noexcept { return true; };
   static constexpr char* name() noexcept { return (char*)"[CUDA_EXEC]"; };
   static int allocatorID() noexcept
@@ -127,6 +128,7 @@ struct execution_space< CUDA_EXEC< BLOCK_SIZE, ASYNC > >
   using atomic_policy = RAJA::cuda_atomic;
   using sync_policy   = RAJA::cuda_synchronize;
 
+  static constexpr bool async() noexcept { return true; };
   static constexpr bool valid() noexcept { return true; };
   static constexpr char* name() noexcept { return (char*)"[CUDA_EXEC] (async)"; };
   static int allocatorID() noexcept

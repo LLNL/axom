@@ -53,6 +53,7 @@ struct execution_space< OMP_EXEC >
   using atomic_policy = RAJA::omp_atomic;
   using sync_policy   = RAJA::omp_synchronize;
 
+  static constexpr bool async() noexcept { return false; };
   static constexpr bool valid() noexcept { return true; };
   static constexpr char* name() noexcept { return (char*)"[OMP_EXEC]"; };
 

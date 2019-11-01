@@ -63,7 +63,7 @@ template < typename ExecSpace,
            typename ReducePolicy,
            typename AtomicPolicy,
            typename SyncPolicy >
-void check_execution_mappings( int expectedAllocatorID )
+void check_execution_mappings( int expectedAllocatorID, bool is_async )
 {
   std::cout << "checking execution space: " <<
                axom::execution_space< ExecSpace >::name() << std::endl;
@@ -88,6 +88,9 @@ void check_execution_mappings( int expectedAllocatorID )
   EXPECT_TRUE( valid_reduce_policy );
   EXPECT_TRUE( valid_atomic_policy );
   EXPECT_TRUE( valid_sync_policy );
+
+  const bool async = axom::execution_space< ExecSpace >::async();
+  EXPECT_EQ( async, is_async );
 
   int allocatorID = axom::execution_space< ExecSpace >::allocatorID();
   EXPECT_EQ( expectedAllocatorID, allocatorID );
@@ -126,6 +129,8 @@ TEST( core_execution_space, check_seq_exec )
 {
   check_valid< axom::SEQ_EXEC >( );
 
+  constexpr bool IS_ASYNC = false;
+
   /* *INDENT-OFF* */
   using raja_loop2d_policy =
       RAJA::KernelPolicy<
@@ -155,7 +160,7 @@ TEST( core_execution_space, check_seq_exec )
                             raja_loop3d_policy,
                             RAJA::loop_reduce,
                             RAJA::loop_atomic,
-                            void >( allocator_id );
+                            void >( allocator_id, IS_ASYNC );
 
 }
 
@@ -165,6 +170,8 @@ TEST( core_execution_space, check_omp_exec )
 {
 
   check_valid< axom::OMP_EXEC >( );
+
+  constexpr bool IS_ASYNC = false;
 
   /* *INDENT-OFF* */
   using raja_loop2d_policy = RAJA::KernelPolicy<
@@ -185,7 +192,7 @@ TEST( core_execution_space, check_omp_exec )
                             raja_loop3d_policy,
                             RAJA::omp_reduce,
                             RAJA::omp_atomic,
-                            RAJA::omp_synchronize >( allocator_id );
+                            RAJA::omp_synchronize >( allocator_id, IS_ASYNC );
 
 }
 #endif
@@ -198,6 +205,8 @@ TEST( core_execution_space, check_cuda_exec )
   constexpr int BLOCK_SIZE = 256;
 
   check_valid< axom::CUDA_EXEC< BLOCK_SIZE > >( );
+
+  constexpr bool IS_ASYNC = false;
 
   /* *INDENT-OFF* */
   using raja_loop2d_policy =
@@ -232,7 +241,7 @@ TEST( core_execution_space, check_cuda_exec )
                             raja_loop3d_policy,
                             RAJA::cuda_reduce,
                             RAJA::cuda_atomic,
-                            RAJA::cuda_synchronize >( allocator_id );
+                            RAJA::cuda_synchronize >( allocator_id, IS_ASYNC );
 
 }
 
@@ -242,6 +251,8 @@ TEST( core_execution_space, check_cuda_exec_async )
   constexpr int BLOCK_SIZE = 256;
 
   check_valid< axom::CUDA_EXEC< BLOCK_SIZE, axom::ASYNC > >( );
+
+  constexpr bool IS_ASYNC = true;
 
   /* *INDENT-OFF* */
   using raja_loop2d_policy =
@@ -276,7 +287,7 @@ TEST( core_execution_space, check_cuda_exec_async )
                             raja_loop3d_policy,
                             RAJA::cuda_reduce,
                             RAJA::cuda_atomic,
-                            RAJA::cuda_synchronize >( allocator_id );
+                            RAJA::cuda_synchronize >( allocator_id, IS_ASYNC );
 
 }
 #endif

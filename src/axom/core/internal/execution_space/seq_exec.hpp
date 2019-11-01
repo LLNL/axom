@@ -74,6 +74,7 @@ struct execution_space< SEQ_EXEC >
 
   using sync_policy = void;
 
+  static constexpr bool async() noexcept { return false; };
   static constexpr bool valid() noexcept { return true; };
   static constexpr char* name() noexcept { return (char*)"[SEQ_EXEC]"; };
   static int allocatorID() noexcept
