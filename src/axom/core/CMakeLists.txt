@@ -32,13 +32,15 @@ set(core_headers
     Macros.hpp
     StackArray.hpp
     Types.hpp
-    execution_space.hpp
     memory_management.hpp
 
+    ## execution
+    execution/execution_space.hpp
 
-    internal/execution_space/seq_exec.hpp
-    internal/execution_space/omp_exec.hpp
-    internal/execution_space/cuda_exec.hpp
+    execution/internal/seq_exec.hpp
+    execution/internal/omp_exec.hpp
+    execution/internal/cuda_exec.hpp
+
     )
 
 set(core_sources
