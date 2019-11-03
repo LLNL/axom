@@ -28,7 +28,6 @@ set( mint_headers
     ## exec
     execution/xargs.hpp
     execution/interface.hpp
-    execution/policy.hpp
     execution/internal/for_all_cells.hpp
     execution/internal/for_all_nodes.hpp
     execution/internal/for_all_faces.hpp
