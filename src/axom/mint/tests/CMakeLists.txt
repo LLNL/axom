@@ -9,7 +9,6 @@ set( mint_tests
      mint_execution_cell_traversals.cpp
      mint_execution_node_traversals.cpp
      mint_execution_face_traversals.cpp
-     mint_execution_policy.cpp
      mint_execution_xargs.cpp
 
      ## mesh tests
