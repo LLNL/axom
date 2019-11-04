@@ -65,7 +65,7 @@ inline void for_all_I_faces( xargs::ij,
 
 #else
 
-  constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
+  constexpr bool is_serial = std::is_same< ExecPolicy, axom::SEQ_EXEC >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
   for ( IndexType j = 0; j < Nj; ++j )
@@ -113,7 +113,7 @@ inline void for_all_I_faces( xargs::ijk,
 
 #else
 
-  constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
+  constexpr bool is_serial = std::is_same< ExecPolicy, axom::SEQ_EXEC >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
   for ( IndexType k = 0; k < Nk; ++k )
@@ -162,7 +162,7 @@ inline void for_all_J_faces( xargs::ij,
 
 #else
 
-  constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
+  constexpr bool is_serial = std::is_same< ExecPolicy, axom::SEQ_EXEC >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
   for ( IndexType j = 0; j < Nj; ++j )
@@ -213,7 +213,7 @@ inline void for_all_J_faces( xargs::ijk,
 
 #else
 
-  constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
+  constexpr bool is_serial = std::is_same< ExecPolicy, axom::SEQ_EXEC >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
   for ( IndexType k = 0; k < Nk; ++k )
@@ -268,7 +268,7 @@ inline void for_all_K_faces( xargs::ijk,
 
 #else
 
-  constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
+  constexpr bool is_serial = std::is_same< ExecPolicy, axom::SEQ_EXEC >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
   for ( IndexType k = 0; k < Nk; ++k )
@@ -306,7 +306,7 @@ inline void for_all_faces( xargs::index, const Mesh& m, KernelType&& kernel )
 {
   return for_all_faces_impl< ExecPolicy >( xargs::index(),
                                            m,
-                                           std::forward< KernelType >( kernel ) );
+                                           std::forward< KernelType >(kernel) );
 }
 
 //------------------------------------------------------------------------------
@@ -346,7 +346,8 @@ inline void for_all_faces_impl( xargs::nodeids,
   }
   else
   {
-    SLIC_ERROR_IF( dimension != 3, "for_all_faces only valid for 2 or 3D meshes." );
+    SLIC_ERROR_IF( dimension != 3,
+                   "for_all_faces is only valid for 2 or 3D meshes." );
 
     const IndexType numIFaces = m.getTotalNumFaces( I_DIRECTION );
     const IndexType numIJFaces = numIFaces + m.getTotalNumFaces( J_DIRECTION );
@@ -532,7 +533,8 @@ inline void for_all_faces_impl( xargs::cellids,
   }
   else
   {
-    SLIC_ERROR_IF( dimension != 3, "for_all_faces only valid for 2 or 3D meshes." );
+    SLIC_ERROR_IF( dimension != 3,
+                   "for_all_faces only valid for 2 or 3D meshes." );
 
     const IndexType KCellResolution = m.getCellResolution( K_DIRECTION );
     const IndexType cellKp = m.cellKp();

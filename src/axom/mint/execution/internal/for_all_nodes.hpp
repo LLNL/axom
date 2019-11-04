@@ -82,7 +82,7 @@ inline void for_all_nodes_impl( xargs::ij,
 
 #else
 
-  constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
+  constexpr bool is_serial = std::is_same< ExecPolicy, axom::SEQ_EXEC >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
   for( IndexType j=0 ; j < Nj ; ++j )
@@ -147,7 +147,7 @@ inline void for_all_nodes_impl( xargs::ijk,
 
 #else
 
-  constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
+  constexpr bool is_serial = std::is_same< ExecPolicy, axom::SEQ_EXEC >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
   for ( IndexType k=0 ; k < Nk ; ++k )
@@ -187,7 +187,8 @@ inline void for_all_nodes( xargs::ijk,
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
-inline void for_all_nodes_impl( xargs::x, const UniformMesh& m, KernelType&& kernel )
+inline void for_all_nodes_impl( xargs::x, const UniformMesh& m,
+                                KernelType&& kernel )
 {
   SLIC_ERROR_IF( m.getDimension() != 1,
                  "xargs::x is only valid for 1D meshes" );

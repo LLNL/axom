@@ -107,11 +107,11 @@ TEST( core_execution_space, check_valid )
 {
   check_valid< axom::SEQ_EXEC >( );
 
-#ifdef AXOM_USE_OPENMP
+#if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
   check_valid< axom::OMP_EXEC >( );
 #endif
 
-#ifdef AXOM_USE_CUDA
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
   check_valid< axom::CUDA_EXEC< 256 > >( );
   check_valid< axom::CUDA_EXEC< 256, axom::ASYNC > >( );
 #endif
@@ -125,6 +125,7 @@ TEST( core_execution_space, check_invalid )
 }
 
 //------------------------------------------------------------------------------
+#ifdef AXOM_USE_RAJA
 TEST( core_execution_space, check_seq_exec )
 {
   check_valid< axom::SEQ_EXEC >( );
@@ -163,9 +164,10 @@ TEST( core_execution_space, check_seq_exec )
                             void >( allocator_id, IS_ASYNC );
 
 }
+#endif
 
 //------------------------------------------------------------------------------
-#ifdef AXOM_USE_OPENMP
+#if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
 TEST( core_execution_space, check_omp_exec )
 {
 
@@ -198,7 +200,7 @@ TEST( core_execution_space, check_omp_exec )
 #endif
 
 //------------------------------------------------------------------------------
-#ifdef AXOM_USE_CUDA
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
 
 TEST( core_execution_space, check_cuda_exec )
 {

@@ -11,6 +11,9 @@
 #include "axom/core/Macros.hpp"                    /* for axom Macros */
 #include "axom/core/Types.hpp"                     /* for axom::IndexType */
 
+// C/C++ includes
+#include <type_traits> // for std::is_same()
+
 namespace axom
 {
 
