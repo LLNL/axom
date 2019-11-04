@@ -41,7 +41,6 @@
 
 using namespace axom;
 namespace xargs  = mint::xargs;
-namespace policy = mint::policy;
 
 //------------------------------------------------------------------------------
 // HELPER METHODS
@@ -95,7 +94,7 @@ void generate_aabbs_and_centroids2d( const mint::Mesh* mesh,
   const IndexType ncells = mesh->getNumberOfCells();
   aabbs = axom::allocate< FloatType >( ncells * stride );
 
-  using exec_policy = policy::serial;
+  using exec_policy = axom::SEQ_EXEC;
   mint::for_all_cells< exec_policy, xargs::coords >(
       mesh, AXOM_LAMBDA( IndexType cellIdx,
                          numerics::Matrix< double >& coords,
@@ -183,7 +182,7 @@ void generate_aabbs_and_centroids3d( const mint::Mesh* mesh,
   const IndexType ncells = mesh->getNumberOfCells();
   aabbs = axom::allocate< FloatType >( ncells * stride );
 
-  using exec_policy = policy::serial;
+  using exec_policy = axom::SEQ_EXEC;
   mint::for_all_cells< exec_policy, xargs::coords >(
       mesh, AXOM_LAMBDA( IndexType cellIdx,
                          numerics::Matrix< double >& coords,

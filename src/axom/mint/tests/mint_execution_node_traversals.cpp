@@ -4,12 +4,12 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 // Axom includes
-#include "axom/config.hpp"                    // for compile-time definitions
-#include "axom/core/memory_management.hpp"   // for alloc() /free()
+#include "axom/config.hpp"                         // compile-time definitions
+#include "axom/core/execution/execution_space.hpp" // for execution_space traits
+#include "axom/core/memory_management.hpp"         // for alloc() /free()
 
 // Mint includes
 #include "axom/mint/config.hpp"               // mint compile-time definitions
-#include "axom/mint/execution/policy.hpp"     // mint execution policies/traits
 #include "axom/mint/execution/interface.hpp"  // for_all()
 
 // Slic includes
@@ -36,7 +36,7 @@ void check_for_all_nodes_idx( int dimension )
 {
   constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name();
   SLIC_INFO( "dimension=" << dimension << ", policy="
-            << policy_traits< ExecPolicy >::name() << ", mesh_type="
+            << execution_space< ExecPolicy >::name() << ", mesh_type="
             << mesh_name );
 
   constexpr int MAGIC_VAL = 42;
@@ -50,7 +50,8 @@ void check_for_all_nodes_idx( int dimension )
   UniformMesh uniform_mesh( lo, hi, Ni, Nj, Nk );
 
   using MESH = typename internal::mesh_type< MeshType, Topology >::MeshType;
-  MESH* test_mesh = dynamic_cast< MESH* >( internal::create_mesh< MeshType, Topology >( uniform_mesh ) );
+  MESH* test_mesh = dynamic_cast< MESH* >(
+      internal::create_mesh< MeshType, Topology >( uniform_mesh ) );
   EXPECT_TRUE( test_mesh != nullptr );
 
   int* field = test_mesh->template createField< int >( "n1", NODE_CENTERED );
@@ -76,8 +77,8 @@ void check_for_all_nodes_idx( int dimension )
 template < typename ExecPolicy, int MeshType >
 void check_for_all_nodes_ij( )
 {
-  SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
-            << internal::mesh_type< MeshType >::name() );
+  SLIC_INFO( "policy=" << execution_space< ExecPolicy >::name() <<
+             ", mesh_type=" << internal::mesh_type< MeshType >::name() );
 
   constexpr IndexType N = 20;
   const double lo[] = { -10, -10 };
@@ -86,7 +87,8 @@ void check_for_all_nodes_ij( )
 
   // STEP 0: create the test mesh
   using MESH = typename internal::mesh_type< MeshType >::MeshType;
-  MESH* test_mesh = dynamic_cast< MESH* >( internal::create_mesh< MeshType >( uniform_mesh ) );
+  MESH* test_mesh = dynamic_cast< MESH* >(
+      internal::create_mesh< MeshType >( uniform_mesh ) );
   EXPECT_TRUE( test_mesh != nullptr );
 
   const IndexType numNodes = test_mesh->getNumberOfNodes();
@@ -126,8 +128,8 @@ void check_for_all_nodes_ij( )
 template < typename ExecPolicy, int MeshType >
 void check_for_all_nodes_ijk( )
 {
-  SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
-            << internal::mesh_type< MeshType >::name() );
+  SLIC_INFO( "policy=" << execution_space< ExecPolicy >::name() <<
+             ", mesh_type=" << internal::mesh_type< MeshType >::name() );
 
   constexpr IndexType N = 20;
   const double lo[] = { -10, -10, -10 };
@@ -136,7 +138,8 @@ void check_for_all_nodes_ijk( )
 
   // STEP 0: create the test mesh
   using MESH = typename internal::mesh_type< MeshType >::MeshType;
-  MESH* test_mesh = dynamic_cast< MESH* >( internal::create_mesh< MeshType >( uniform_mesh ) );
+  MESH* test_mesh = dynamic_cast< MESH* >(
+      internal::create_mesh< MeshType >( uniform_mesh ) );
   EXPECT_TRUE( test_mesh != nullptr );
 
   const IndexType numNodes = test_mesh->getNumberOfNodes();
@@ -184,8 +187,8 @@ template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_nodes_xyz( )
 {
   constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name();
-  SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
-            << mesh_name );
+  SLIC_INFO( "policy=" << execution_space< ExecPolicy >::name() <<
+             ", mesh_type=" << mesh_name );
 
   constexpr IndexType N = 20;
   const double lo[] = { -10, -10, -10 };
@@ -194,7 +197,8 @@ void check_for_all_nodes_xyz( )
 
   // STEP 0: create the test mesh
   using MESH = typename internal::mesh_type< MeshType, Topology >::MeshType;
-  MESH* test_mesh = dynamic_cast< MESH* >( internal::create_mesh< MeshType, Topology >( uniform_mesh ) );
+  MESH* test_mesh = dynamic_cast< MESH* >(
+      internal::create_mesh< MeshType, Topology >( uniform_mesh ) );
   EXPECT_TRUE( test_mesh != nullptr );
 
   // STEP 1: generate test coordinate arrays
@@ -235,8 +239,8 @@ template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_nodes_xy( )
 {
   constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name();
-  SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
-            << mesh_name );
+  SLIC_INFO( "policy=" << execution_space< ExecPolicy >::name() <<
+             ", mesh_type=" << mesh_name );
 
   constexpr IndexType N = 20;
   const double lo[] = { -10, -10 };
@@ -245,7 +249,8 @@ void check_for_all_nodes_xy( )
 
   // STEP 0: create the test mesh
   using MESH = typename internal::mesh_type< MeshType, Topology >::MeshType;
-  MESH* test_mesh = dynamic_cast< MESH* >( internal::create_mesh< MeshType, Topology >( uniform_mesh ) );
+  MESH* test_mesh = dynamic_cast< MESH* >(
+      internal::create_mesh< MeshType, Topology >( uniform_mesh ) );
   EXPECT_TRUE( test_mesh != nullptr );
 
   // STEP 1: generate test coordinate arrays
@@ -282,8 +287,8 @@ template < typename ExecPolicy, int MeshType, int Topology=SINGLE_SHAPE >
 void check_for_all_nodes_x( )
 {
   constexpr char* mesh_name = internal::mesh_type< MeshType, Topology >::name();
-  SLIC_INFO( "policy=" << policy_traits< ExecPolicy >::name() << ", mesh_type="
-            << mesh_name );
+  SLIC_INFO( "policy=" << execution_space< ExecPolicy >::name() <<
+             ", mesh_type=" << mesh_name );
 
   constexpr IndexType Ni = 20;
   const double lo[] = { -10 };
@@ -292,7 +297,8 @@ void check_for_all_nodes_x( )
 
   // STEP 0: create the test mesh
   using MESH = typename internal::mesh_type< MeshType, Topology >::MeshType;
-  MESH* test_mesh = dynamic_cast< MESH* >( internal::create_mesh< MeshType, Topology >( uniform_mesh ) );
+  MESH* test_mesh = dynamic_cast< MESH* >(
+      internal::create_mesh< MeshType, Topology >( uniform_mesh ) );
   EXPECT_TRUE( test_mesh != nullptr );
 
   if ( MeshType != PARTICLE_MESH )
@@ -332,7 +338,7 @@ void check_for_all_nodes_x( )
 
 AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_xyz )
 {
-  using seq_exec = policy::serial;
+  using seq_exec = axom::SEQ_EXEC;
   check_for_all_nodes_xyz< seq_exec, STRUCTURED_UNIFORM_MESH >();
   check_for_all_nodes_xyz< seq_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_xyz< seq_exec, STRUCTURED_RECTILINEAR_MESH >();
@@ -343,7 +349,7 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_xyz )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
   defined(RAJA_ENABLE_OPENMP)
 
-  using openmp_exec = policy::parallel_cpu;
+  using openmp_exec = axom::OMP_EXEC;
   check_for_all_nodes_xyz< openmp_exec, STRUCTURED_UNIFORM_MESH >();
   check_for_all_nodes_xyz< openmp_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_xyz< openmp_exec, STRUCTURED_RECTILINEAR_MESH >();
@@ -361,7 +367,7 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_xyz )
   const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
   axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
 
-  using cuda_exec = policy::parallel_gpu< 512 >;
+  using cuda_exec = axom::CUDA_EXEC< 512 >;
   check_for_all_nodes_xyz< cuda_exec, STRUCTURED_UNIFORM_MESH >();
   check_for_all_nodes_xyz< cuda_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_xyz< cuda_exec, STRUCTURED_RECTILINEAR_MESH >();
@@ -376,7 +382,7 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_xyz )
 //------------------------------------------------------------------------------
 AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_xy )
 {
-  using seq_exec = policy::serial;
+  using seq_exec = axom::SEQ_EXEC;
   check_for_all_nodes_xy< seq_exec, STRUCTURED_UNIFORM_MESH >();
   check_for_all_nodes_xy< seq_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_xy< seq_exec, STRUCTURED_RECTILINEAR_MESH >();
@@ -387,7 +393,7 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_xy )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
   defined(RAJA_ENABLE_OPENMP)
 
-  using openmp_exec = policy::parallel_cpu;
+  using openmp_exec = axom::OMP_EXEC;
   check_for_all_nodes_xy< openmp_exec, STRUCTURED_UNIFORM_MESH >();
   check_for_all_nodes_xy< openmp_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_xy< openmp_exec, STRUCTURED_RECTILINEAR_MESH >();
@@ -405,7 +411,7 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_xy )
   const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
   axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
 
-  using cuda_exec = policy::parallel_gpu< 512 >;
+  using cuda_exec = axom::CUDA_EXEC< 512 >;
   check_for_all_nodes_xy< cuda_exec, STRUCTURED_UNIFORM_MESH >();
   check_for_all_nodes_xy< cuda_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_xy< cuda_exec, STRUCTURED_RECTILINEAR_MESH >();
@@ -420,7 +426,7 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_xy )
 //------------------------------------------------------------------------------
 AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_x )
 {
-  using seq_exec = policy::serial;
+  using seq_exec = axom::SEQ_EXEC;
   check_for_all_nodes_x< seq_exec, STRUCTURED_UNIFORM_MESH >();
   check_for_all_nodes_x< seq_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_x< seq_exec, STRUCTURED_RECTILINEAR_MESH >();
@@ -431,7 +437,7 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_x )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
   defined(RAJA_ENABLE_OPENMP)
 
-  using openmp_exec = policy::parallel_cpu;
+  using openmp_exec = axom::OMP_EXEC;
   check_for_all_nodes_x< openmp_exec, STRUCTURED_UNIFORM_MESH >();
   check_for_all_nodes_x< openmp_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_x< openmp_exec, STRUCTURED_RECTILINEAR_MESH >();
@@ -449,7 +455,7 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_x )
   const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
   axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
 
-  using cuda_exec = policy::parallel_gpu< 512 >;
+  using cuda_exec = axom::CUDA_EXEC< 512 >;
   check_for_all_nodes_x< cuda_exec, STRUCTURED_UNIFORM_MESH >();
   check_for_all_nodes_x< cuda_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_x< cuda_exec, STRUCTURED_RECTILINEAR_MESH >();
@@ -465,7 +471,7 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_x )
 //------------------------------------------------------------------------------
 AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_ijk )
 {
-  using seq_exec = policy::serial;
+  using seq_exec = axom::SEQ_EXEC;
   check_for_all_nodes_ijk< seq_exec, STRUCTURED_UNIFORM_MESH >();
   check_for_all_nodes_ijk< seq_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_ijk< seq_exec, STRUCTURED_RECTILINEAR_MESH >();
@@ -473,7 +479,7 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_ijk )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
   defined(RAJA_ENABLE_OPENMP)
 
-  using openmp_exec = policy::parallel_cpu;
+  using openmp_exec = axom::OMP_EXEC;
   check_for_all_nodes_ijk< openmp_exec, STRUCTURED_UNIFORM_MESH >();
   check_for_all_nodes_ijk< openmp_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_ijk< openmp_exec, STRUCTURED_RECTILINEAR_MESH >();
@@ -488,7 +494,7 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_ijk )
   const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
   axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
 
-  using cuda_exec = policy::parallel_gpu< 512 >;
+  using cuda_exec = axom::CUDA_EXEC< 512 >;
   check_for_all_nodes_ijk< cuda_exec, STRUCTURED_UNIFORM_MESH >();
   check_for_all_nodes_ijk< cuda_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_ijk< cuda_exec, STRUCTURED_RECTILINEAR_MESH >();
@@ -500,7 +506,7 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_ijk )
 //------------------------------------------------------------------------------
 AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_ij )
 {
-  using seq_exec = policy::serial;
+  using seq_exec = axom::SEQ_EXEC;
   check_for_all_nodes_ij< seq_exec, STRUCTURED_UNIFORM_MESH >();
   check_for_all_nodes_ij< seq_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_ij< seq_exec, STRUCTURED_RECTILINEAR_MESH >();
@@ -508,7 +514,7 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_ij )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
   defined(RAJA_ENABLE_OPENMP)
 
-  using openmp_exec = policy::parallel_cpu;
+  using openmp_exec = axom::OMP_EXEC;
   check_for_all_nodes_ij< openmp_exec, STRUCTURED_UNIFORM_MESH >();
   check_for_all_nodes_ij< openmp_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_ij< openmp_exec, STRUCTURED_RECTILINEAR_MESH >();
@@ -523,7 +529,7 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_ij )
   const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
   axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
 
-  using cuda_exec = policy::parallel_gpu< 512 >;
+  using cuda_exec = axom::CUDA_EXEC< 512 >;
   check_for_all_nodes_ij< cuda_exec, STRUCTURED_UNIFORM_MESH >();
   check_for_all_nodes_ij< cuda_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_nodes_ij< cuda_exec, STRUCTURED_RECTILINEAR_MESH >();
@@ -539,7 +545,7 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_index )
   for ( int i=1 ; i <= NDIMS ; ++i )
   {
 
-    using seq_exec = policy::serial;
+    using seq_exec = axom::SEQ_EXEC;
     check_for_all_nodes_idx< seq_exec, STRUCTURED_UNIFORM_MESH >(i);
     check_for_all_nodes_idx< seq_exec, STRUCTURED_CURVILINEAR_MESH >(i);
     check_for_all_nodes_idx< seq_exec, STRUCTURED_RECTILINEAR_MESH >(i);
@@ -550,7 +556,7 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_index )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && \
     defined(RAJA_ENABLE_OPENMP)
 
-    using omp_exec = policy::parallel_cpu;
+    using omp_exec = axom::OMP_EXEC;
     check_for_all_nodes_idx< omp_exec, STRUCTURED_UNIFORM_MESH >(i);
     check_for_all_nodes_idx< omp_exec, STRUCTURED_CURVILINEAR_MESH >(i);
     check_for_all_nodes_idx< omp_exec, STRUCTURED_RECTILINEAR_MESH >(i);
@@ -568,7 +574,7 @@ AXOM_CUDA_TEST( mint_execution_node_traversals, for_all_nodes_index )
     const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
     axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
 
-    using cuda_exec = policy::parallel_gpu< 512 >;
+    using cuda_exec = axom::CUDA_EXEC< 512 >;
     check_for_all_nodes_idx< cuda_exec, STRUCTURED_UNIFORM_MESH >(i);
     check_for_all_nodes_idx< cuda_exec, STRUCTURED_CURVILINEAR_MESH >(i);
     check_for_all_nodes_idx< cuda_exec, STRUCTURED_RECTILINEAR_MESH >(i);

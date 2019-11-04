@@ -13,6 +13,9 @@
 
 // sphinx_tutorial_walkthrough_includes_start
 
+#include "axom/config.hpp"                         // compile time definitions
+#include "axom/core/execution/execution_space.hpp" // for execution_space traits
+
 #include "axom/mint.hpp"                  // for mint classes and functions
 #include "axom/core/numerics/Matrix.hpp"  // for numerics::Matrix
 
@@ -28,11 +31,11 @@ using IndexType    = axom::IndexType;
 // compile-time switch for execution policy
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA)
   constexpr int NUM_BLOCKS = 512;
-  using ExecPolicy = mint::policy::parallel_gpu< NUM_BLOCKS >;
+  using ExecPolicy = axom::CUDA_EXEC< NUM_BLOCKS >;
 #elif defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP)
-  using ExecPolicy = mint::policy::parallel_cpu;
+  using ExecPolicy = axom::OMP_EXEC;
 #else
-  using ExecPolicy = mint::policy::serial;
+  using ExecPolicy = axom::SEQ_EXEC;
 #endif
 
 constexpr IndexType NUM_NODES_PER_CELL = 4;
