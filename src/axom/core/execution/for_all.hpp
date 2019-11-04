@@ -13,6 +13,7 @@
 
 // C/C++ includes
 #include <type_traits> // for std::is_same()
+#include <utility>     // for std::forward()
 
 namespace axom
 {
