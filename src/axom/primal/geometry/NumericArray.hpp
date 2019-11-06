@@ -410,12 +410,18 @@ NumericArray< T,SIZE >::NumericArray(T val, int sz)
 
   // Fill first nvals coordinates with val ( 0 <= nvals <= SIZE )
   const int nvals = axom::utilities::clampVal(sz, 0, SIZE);
-  std::fill( m_components, m_components+nvals, val );
+  //std::fill( m_components, m_components+nvals, val );
+  for (unsigned int i = 0; i < nvals; i++) {
+    m_components[i] = val;    
+  }
 
   // Fill any remaining coordinates with zero
   if ( nvals < SIZE )
   {
-    std::fill( m_components+nvals, m_components+SIZE, T() );
+    //std::fill( m_components+nvals, m_components+SIZE, T() );
+    for (unsigned int j = nvals; j < SIZE; j++) {
+      m_components[j] = T();    
+    }
   }
 }
 
@@ -428,12 +434,18 @@ NumericArray< T, SIZE >::NumericArray(const T* vals, int sz)
   const int nvals = axom::utilities::clampVal(sz, 0, SIZE);
 
   // Copy first nvals coordinates from vals array ( 0 <= nvals <= SIZE )
-  std::copy( vals, vals+nvals, m_components);
+  //std::copy( vals, vals+nvals, m_components);
+  for (unsigned int i = 0; i < nvals; i++) {
+    m_components[i] = *(vals+i);    
+  }
 
   // Fill any remaining coordinates with zero
   if ( nvals < SIZE)
   {
-    std::fill( m_components+nvals, m_components+SIZE, T());
+    //std::fill( m_components+nvals, m_components+SIZE, T());
+    for (unsigned int j = nvals; j < SIZE; j++) {
+      m_components[j] = T();    
+    }
   }
 
 }
