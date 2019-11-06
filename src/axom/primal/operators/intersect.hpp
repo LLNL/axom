@@ -26,6 +26,8 @@
 #include "axom/primal/operators/detail/intersect_impl.hpp"
 #include "axom/primal/operators/detail/intersect_bezier_impl.hpp"
 
+#include "axom/core/Macros.hpp"
+
 namespace axom
 {
 namespace primal
@@ -40,6 +42,7 @@ namespace primal
  * triangle boundaries in intersections, specify includeBoundary as true.
  */
 template < typename T >
+AXOM_HOST_DEVICE
 bool intersect( const Triangle< T, 3 >& t1,
                 const Triangle< T, 3 >& t2,
                 const bool includeBoundary = false)

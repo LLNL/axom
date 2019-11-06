@@ -60,6 +60,8 @@ set( primal_dependencies
      core
      slic
      )
+     
+blt_list_append( TO primal_dependencies ELEMENTS cuda IF ${ENABLE_CUDA} )
 
 blt_add_library(
     NAME                  primal
@@ -69,6 +71,10 @@ blt_add_library(
     DEPENDS_ON            ${primal_dependencies}
     OBJECT                TRUE
     )
+
+if (ENABLE_CUDA)
+  set_target_properties(primal PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+endif()
 
 axom_write_unified_header(NAME    primal
                           HEADERS ${primal_headers})

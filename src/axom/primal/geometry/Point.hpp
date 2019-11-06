@@ -10,6 +10,8 @@
 
 #include "axom/primal/geometry/NumericArray.hpp"
 
+#include "axom/core/Macros.hpp"
+
 // C/C++ includes
 #include <cstring> // For memcpy()
 #include <ostream> // For print() and operator <<
@@ -77,12 +79,14 @@ public:
    * The rest will be set to zero.  Defaults is NDIMS.
    * If sz is greater than NDIMS, we set all coordinates to val
    */
+  AXOM_HOST_DEVICE
   explicit Point(T val = T(), int sz = NDIMS) : m_components(val,sz) { }
 
   /*!
    * \brief Constructor from a numeric array
    * \param [in] arr The numeric array to copy from
    */
+  AXOM_HOST_DEVICE
   Point(const NumericArray< T,NDIMS >& arr) : m_components(arr) { }
 
   /*!
@@ -91,17 +95,20 @@ public:
    * \param [in] sz num values to copy from the vals array. Defaults to NDIMS.
    * \note If sz is greater than NDIMS, we only take the first NDIMS values.
    */
+  AXOM_HOST_DEVICE
   Point(const T* vals, int sz = NDIMS) : m_components(vals,sz) { }
 
   /*!
    * \brief Copy constructor.
    * \param [in] other The point to copy
    */
+  AXOM_HOST_DEVICE
   Point( const Point& other) : m_components( other.m_components) { }
 
   /*!
    * \brief Destructor.
    */
+  AXOM_HOST_DEVICE
   ~Point() { }
 
   /*!
@@ -127,8 +134,8 @@ public:
    * \return p[i] the value at the given component index.
    * \pre (i >= 0) && (i < ndims)
    */
-  const T& operator[](int i) const { return m_components[i]; }
-  T& operator[](int i)             { return m_components[i]; }
+  AXOM_HOST_DEVICE const T& operator[](int i) const { return m_components[i]; }
+  AXOM_HOST_DEVICE T& operator[](int i)             { return m_components[i]; }
 
   ///@}
 
@@ -146,8 +153,8 @@ public:
   /*!
    * \brief Returns a reference to the underlying NumericArray.
    */
-  const NumericArray< T,NDIMS >& array() const { return m_components; }
-  NumericArray< T,NDIMS >& array()              { return m_components; }
+  AXOM_HOST_DEVICE const NumericArray< T,NDIMS >& array() const { return m_components; }
+  AXOM_HOST_DEVICE NumericArray< T,NDIMS >& array()              { return m_components; }
 
   /*!
    * \brief Output the point's coordinates to the array
@@ -183,6 +190,7 @@ public:
    * \param [in] z the z--coordinate of the point. Default is 0.0.
    * \return p a Point instance with the given coordinates.
    */
+  AXOM_HOST_DEVICE
   static Point make_point( const T& x, const T& y, const T& z=0.0 );
 
   /*!

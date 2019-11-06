@@ -24,6 +24,8 @@
 #include <cassert> // for assert()
 #include <cmath>   // for sqrt()
 
+#include "axom/core/Macros.hpp"
+
 namespace axom
 {
 namespace numerics
@@ -85,7 +87,8 @@ inline bool linspace( const T& x0, const T& x1, T* v, int N );
  *
  */
 template < typename T >
-inline void cross_product( const T* u, const T* v, T* w );
+inline AXOM_HOST_DEVICE
+void cross_product( const T* u, const T* v, T* w );
 
 /*!
  * \brief Computes the dot product of the arrays u and v.
@@ -103,7 +106,8 @@ inline void cross_product( const T* u, const T* v, T* w );
  * \pre v has at least dim entries
  */
 template < typename T >
-inline T dot_product( const T* u, const T* v, int dim);
+inline AXOM_HOST_DEVICE
+T dot_product( const T* u, const T* v, int dim);
 
 /*!
  * \brief Makes u orthogonal to v.
@@ -571,9 +575,11 @@ inline bool linspace( const T& x0, const T& x1, T* v, int N )
 template < typename T >
 inline void cross_product( const T* u, const T* v, T* w )
 {
-  assert( "pre: u pointer is null" && (u != nullptr) );
-  assert( "pre: v pointer is null" && (v != nullptr) );
-  assert( "pre: w pointer is null" && (w != nullptr) );
+  #ifndef AXOM_USE_RAJA
+    assert( "pre: u pointer is null" && (u != nullptr) );
+    assert( "pre: v pointer is null" && (v != nullptr) );
+    assert( "pre: w pointer is null" && (w != nullptr) );
+  #endif
 
   w[ 0 ] = numerics::determinant( u[1], u[2], v[1], v[2] );
 
@@ -586,9 +592,11 @@ inline void cross_product( const T* u, const T* v, T* w )
 template < typename T >
 inline T dot_product( const T* u, const T* v, int dim)
 {
-  assert("pre: u pointer is null" && (u != nullptr));
-  assert("pre: v pointer is null" && (v != nullptr));
-  assert("pre: dim >= 1" && (dim >= 1));
+  #ifndef AXOM_USE_RAJA
+    assert("pre: u pointer is null" && (u != nullptr));
+    assert("pre: v pointer is null" && (v != nullptr));
+    assert("pre: dim >= 1" && (dim >= 1));
+  #endif
 
   T res = u[0]*v[0];
   for (int i = 1 ; i < dim ; ++i)
