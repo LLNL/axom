@@ -14,6 +14,8 @@
 #include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
 
+#include "axom/core/Macros.hpp"
+
 // C/C++ includes
 #include <cmath> // for sqrt()
 
@@ -123,12 +125,14 @@ public:
    * \param [in] sz The number of coordinates to set to val.
    * The rest will be set to zero.  Defaults is NDIMS.
    */
+  AXOM_HOST_DEVICE
   explicit Vector( T val = T(), int sz = NDIMS) : m_components(val, sz) { }
 
   /*!
    * \brief Constructor from a numeric array
    * \param [in] arr The numeric array to copy from
    */
+  AXOM_HOST_DEVICE
   Vector( const NumericArray< T,NDIMS >& arr) : m_components(arr) { }
 
   /*!
@@ -138,6 +142,7 @@ public:
    * to NDIMS.
    * If sz is greater than NDIMS, we only take the first NDIMS values.
    */
+  AXOM_HOST_DEVICE
   Vector(const T* vals, int sz = NDIMS) : m_components(vals, sz) {}
 
   /*!
@@ -145,12 +150,14 @@ public:
    * \param [in] pt The point containing the vector's coordinates.
    * \note Equivalent to Vector( Point::zero(), pt)
    */
+  AXOM_HOST_DEVICE
   Vector(const Point< T,NDIMS > & pt) : m_components( pt.array() ) {}
 
   /*!
    * \brief Copy constructor
    * \param [in] other The vector to copy
    */
+  AXOM_HOST_DEVICE
   Vector(const Vector< T,NDIMS > & other) : m_components( other.array() ) {}
 
   /*!
@@ -160,12 +167,14 @@ public:
    * \pre A.dimension() == B.dimension()
    * \pre A.dimension() == ndims
    */
+  AXOM_HOST_DEVICE
   Vector( const Point< T,NDIMS >& A, const Point< T,NDIMS >& B ) :
     m_components(B.array() - A.array()) {}
 
   /*!
    * \brief Destructor.
    */
+  AXOM_HOST_DEVICE
   ~Vector() {}
 
   /*!
@@ -187,14 +196,14 @@ public:
   /*!
    * \brief Returns a reference to the underlying NumericArray.
    */
-  const NumericArray< T,NDIMS > & array() const { return m_components; }
-  NumericArray< T,NDIMS >& array()               { return m_components; }
+  AXOM_HOST_DEVICE const NumericArray< T,NDIMS > & array() const { return m_components; }
+  AXOM_HOST_DEVICE NumericArray< T,NDIMS >& array()               { return m_components; }
 
   /*!
    * \brief Returns a pointer to the underlying data.
    */
-  const T* data() const { return m_components.data(); }
-  T* data()             { return m_components.data(); }
+  AXOM_HOST_DEVICE const T* data() const { return m_components.data(); }
+  AXOM_HOST_DEVICE T* data()             { return m_components.data(); }
 
   /*!
    * \brief Equality comparison operator for vectors.
@@ -235,6 +244,7 @@ public:
    * \pre scalar != 0
    * \return A reference to the vector instance after scalar division.
    */
+  AXOM_HOST_DEVICE
   Vector< T,NDIMS >& operator/=(T scalar);
 
   /*!
@@ -242,6 +252,7 @@ public:
    * \param [in] v the other vector in the dot product
    * \return The dot product of the two vectors.
    */
+  AXOM_HOST_DEVICE
   T dot(const Vector< T,NDIMS >& v ) const;
 
   /*!
@@ -249,6 +260,7 @@ public:
    * \return n the squared norm.
    * \see Vector::norm()
    */
+  AXOM_HOST_DEVICE
   double squared_norm() const;
 
   /*!
@@ -267,6 +279,7 @@ public:
    * \note The unit vector of the zero vector is (1,0,0,...) when normalized.
    * \post this->norm() == 1.0f
    */
+  AXOM_HOST_DEVICE
   Vector unitVector() const;
 
   /*!
@@ -283,6 +296,7 @@ public:
    * \return dotprod the computed dot product.
    * \pre u.dimension() == v.dimension().
    */
+  AXOM_HOST_DEVICE
   static T dot_product( const Vector< T,NDIMS >& u,
                         const Vector< T,NDIMS >& v );
 
@@ -301,6 +315,7 @@ public:
    * \param [in] v the vector on the left-hand side.
    * \return C the resulting vector from A x B.
    */
+  AXOM_HOST_DEVICE
   static Vector< T,3 > cross_product( const Vector< T,3 >& u,
                                       const Vector< T,3 >& v );
 
@@ -445,7 +460,7 @@ template < typename T,int NDIMS >
 inline T Vector< T,NDIMS >::dot_product( const Vector< T,NDIMS >& u,
                                          const Vector< T,NDIMS >& v )
 {
-  SLIC_ASSERT( u.dimension() == v.dimension() );
+  //SLIC_ASSERT( u.dimension() == v.dimension() );
   return static_cast< T >( numerics::dot_product( u.data(), v.data(), NDIMS ) );
 }
 

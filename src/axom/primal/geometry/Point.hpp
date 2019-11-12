@@ -149,8 +149,8 @@ public:
   /*!
    * \brief Returns a reference to the underlying NumericArray.
    */
-  const NumericArray< T,NDIMS >& array() const { return m_components; }
-  NumericArray< T,NDIMS >& array()              { return m_components; }
+  AXOM_HOST_DEVICE const NumericArray< T,NDIMS >& array() const { return m_components; }
+  AXOM_HOST_DEVICE NumericArray< T,NDIMS >& array()              { return m_components; }
 
   /*!
    * \brief Output the point's coordinates to the array

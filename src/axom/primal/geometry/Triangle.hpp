@@ -103,9 +103,10 @@ public:
    * \pre This function is only valid when NDIMS = 3
    * \return n triangle normal when NDIMS=3, zero vector otherwise
    */
+  AXOM_HOST_DEVICE
   VectorType normal() const
   {
-    SLIC_CHECK_MSG(NDIMS==3, "Triangle::normal() is only valid in 3D.");
+    //SLIC_CHECK_MSG(NDIMS==3, "Triangle::normal() is only valid in 3D.");
 
     return (NDIMS==3)
            ? VectorType::cross_product( VectorType(m_points[0],m_points[1]),

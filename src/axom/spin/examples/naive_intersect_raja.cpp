@@ -247,6 +247,7 @@ void try_intersect(umpire::Allocator allocator)
   RAJA::RangeSegment col_range(0, 6);
 
   // Sequential Policies
+  // std::cout << "Using Sequential Policy!!!" << std::endl;
   // using REDUCE_POL = RAJA::seq_reduce;
   // using ATOMIC_POL= RAJA::seq_atomic;
   // using KERNEL_EXEC_POL = 
@@ -260,31 +261,33 @@ void try_intersect(umpire::Allocator allocator)
   
 
   // OpenMP Policies
-  using REDUCE_POL = RAJA::omp_reduce;
-  using ATOMIC_POL= RAJA::omp_atomic;
-  using KERNEL_EXEC_POL = 
-    RAJA::KernelPolicy<
-      RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
-        RAJA::statement::For<0, RAJA::loop_exec,
-          RAJA::statement::Lambda<0>
-        >
-      >
-    >;
-  
-
-  // CUDA Policies
-  // using REDUCE_POL = RAJA::cuda_reduce;
-  // using ATOMIC_POL= RAJA::cuda_atomic;
+  // std::cout << "Using OpenMP Policy!!!" << std::endl;
+  // using REDUCE_POL = RAJA::omp_reduce;
+  // using ATOMIC_POL= RAJA::omp_atomic;
   // using KERNEL_EXEC_POL = 
   //   RAJA::KernelPolicy<
-  //     RAJA::statement::CudaKernelFixed<CUDA_BLOCK_SIZE,
-  //       RAJA::statement::For<1, RAJA::cuda_block_x_loop,
-  //         RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
-  //           RAJA::statement::Lambda<0>
-  //         >
+  //     RAJA::statement::For<1, RAJA::omp_parallel_for_exec,
+  //       RAJA::statement::For<0, RAJA::loop_exec,
+  //         RAJA::statement::Lambda<0>
   //       >
   //     >
   //   >;
+  
+
+  // CUDA Policies
+  std::cout << "Using CUDA Policy!!!" << std::endl;
+  using REDUCE_POL = RAJA::cuda_reduce;
+  using ATOMIC_POL= RAJA::cuda_atomic;
+  using KERNEL_EXEC_POL = 
+    RAJA::KernelPolicy<
+      RAJA::statement::CudaKernelFixed<CUDA_BLOCK_SIZE,
+        RAJA::statement::For<1, RAJA::cuda_block_x_loop,
+          RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+            RAJA::statement::Lambda<0>
+          >
+        >
+      >
+    >;
 
 
   RAJA::ReduceSum< REDUCE_POL, int > numIntersect(0);  
@@ -307,38 +310,38 @@ void try_intersect(umpire::Allocator allocator)
   std::cout << "Number of intersections is " << numIntersect.get() << " (Expected was 5)" << std::endl;
 
   // Allocation to hold intersection pairs and counter to know where to store
-  int * intersections = axom::allocate <int> (numIntersect.get() * 2, allocator);
-  int * counter = axom::allocate <int> (1, allocator);
+  // int * intersections = axom::allocate <int> (numIntersect.get() * 2, allocator);
+  // int * counter = axom::allocate <int> (1, allocator);
   
-  counter[0] = 0;
+  // counter[0] = 0;
 
-  // RAJA loop to populate with intersections
-  RAJA::kernel<KERNEL_EXEC_POL>( RAJA::make_tuple(col_range, row_range),
-    [=] AXOM_HOST_DEVICE (int col, int row) {
-    if (row > col)
-    {
-      if (intersect (tri[row], tri[col]))
-      {
-        auto idx = RAJA::atomicAdd<ATOMIC_POL>(counter, 2);
-        intersections[idx] = row;
-        intersections[idx+1] = col;
+  // // RAJA loop to populate with intersections
+  // RAJA::kernel<KERNEL_EXEC_POL>( RAJA::make_tuple(col_range, row_range),
+  //   [=] AXOM_HOST_DEVICE (int col, int row) {
+  //   if (row > col)
+  //   {
+  //     if (intersect (tri[row], tri[col]))
+  //     {
+  //       auto idx = RAJA::atomicAdd<ATOMIC_POL>(counter, 2);
+  //       intersections[idx] = row;
+  //       intersections[idx+1] = col;
 
-      }
-    }
-  });
+  //     }
+  //   }
+  // });
 
-  // Print intersection pairs
-  std::cout << "Intersection pairs were: " << std::endl;
-  for (int i = 0 ; i < numIntersect.get() * 2 ; i = i + 2)
-  {
-    std::cout << intersections[i] << "   " << intersections[i + 1] << std::endl;
-  }
+  // // Print intersection pairs
+  // std::cout << "Intersection pairs were: " << std::endl;
+  // for (int i = 0 ; i < numIntersect.get() * 2 ; i = i + 2)
+  // {
+  //   std::cout << intersections[i] << "   " << intersections[i + 1] << std::endl;
+  // }
 
   // Deallocate 
   axom::deallocate(tri);
   axom::deallocate(p);
-  axom::deallocate(intersections);
-  axom::deallocate(counter);
+  //axom::deallocate(intersections);
+  //axom::deallocate(counter);
 }
 
 
