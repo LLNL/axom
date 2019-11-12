@@ -40,7 +40,7 @@ typedef primal::Triangle< double, 3 > Triangle3;
 typedef primal::Triangle< double, 2 > Triangle2;
 typedef primal::Point< double, 2 > Point2;
 
-bool isGt(double x, double y, double EPS=1.0e-12);
+AXOM_HOST_DEVICE bool isGt(double x, double y, double EPS=1.0e-12);
 bool isLt(double x, double y, double EPS=1.0e-12);
 bool isLeq(double x, double y, double EPS=1.0e-12);
 bool isLpeq(double x, double y, bool includeEqual = false,
@@ -48,10 +48,10 @@ bool isLpeq(double x, double y, bool includeEqual = false,
 bool isGeq(double x, double y, double EPS=1.0e-12);
 bool isGpeq(double x, double y, bool includeEqual = false,
             double EPS=1.0e-12);
-bool nonzeroSignMatch(double x, double y, double z, double EPS=1.0e-12);
-bool twoZeros(double x, double y, double z, double EPS=1.0e-12);
-bool oneZeroOthersMatch(double x, double y, double z, double EPS=1.0e-12);
-int  countZeros(double x, double y, double z, double EPS=1.0e-12);
+AXOM_HOST_DEVICE bool nonzeroSignMatch(double x, double y, double z, double EPS=1.0e-12);
+AXOM_HOST_DEVICE bool twoZeros(double x, double y, double z, double EPS=1.0e-12);
+AXOM_HOST_DEVICE bool oneZeroOthersMatch(double x, double y, double z, double EPS=1.0e-12);
+AXOM_HOST_DEVICE int  countZeros(double x, double y, double z, double EPS=1.0e-12);
 double twoDcross(const Point2& A, const Point2& B, const Point2& C);
 
 bool checkEdge(const Point2& p1,
@@ -145,25 +145,30 @@ bool intersect_tri3D_tri3D( const Triangle< T, 3 >& t1,
 
   // Vector3 t2Normal = Vector3::cross_product(Vector3(t2[2], t2[0]),
   //                                           Vector3(t2[2], t2[1]));
+  
+  //Line 1
   Vector3 t2Normal = t2.normal().unitVector();
   
+  // Line 2-4
   double dp1 = (Vector3(t2[2],t1[0])).dot(t2Normal);
   double dq1 = (Vector3(t2[2],t1[1])).dot(t2Normal);
   double dr1 = (Vector3(t2[2],t1[2])).dot(t2Normal);
+
+  // Lines 5-8
+  if (nonzeroSignMatch(dp1, dq1, dr1))
+  {
+    return false;
+  }
+
+  // Lines 9-14
+  if (!includeBoundary &&
+      (twoZeros(dp1, dq1, dr1) ||
+       oneZeroOthersMatch(dp1, dq1, dr1)))
+  {
+    return false;
+  }
+
   return false;
-
-  // if (nonzeroSignMatch(dp1, dq1, dr1))
-  // {
-  //   return false;
-  // }
-
-  // if (!includeBoundary &&
-  //     (twoZeros(dp1, dq1, dr1) ||
-  //      oneZeroOthersMatch(dp1, dq1, dr1)))
-  // {
-  //   return false;
-  // }
-
   // // Step 2: Check if all the vertices of triangle 2 lie on the same side of
   // // the plane created by triangle 1:
 
