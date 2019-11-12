@@ -81,6 +81,7 @@ public:
    * \param idx The index of the desired vertex
    * \pre idx is 0, 1 or 2
    */
+  AXOM_HOST_DEVICE
   PointType& operator[](int idx)
   {
     //SLIC_ASSERT(idx >=0 && idx < NUM_TRI_VERTS);
@@ -92,9 +93,10 @@ public:
    * \param idx The index of the desired vertex
    * \pre idx is 0, 1 or 2
    */
+  AXOM_HOST_DEVICE
   const PointType& operator[](int idx) const
   {
-    SLIC_ASSERT(idx >=0 && idx < NUM_TRI_VERTS);
+    //SLIC_ASSERT(idx >=0 && idx < NUM_TRI_VERTS);
     return m_points[ idx ];
   }
 

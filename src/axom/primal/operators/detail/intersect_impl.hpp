@@ -146,10 +146,11 @@ bool intersect_tri3D_tri3D( const Triangle< T, 3 >& t1,
   // Vector3 t2Normal = Vector3::cross_product(Vector3(t2[2], t2[0]),
   //                                           Vector3(t2[2], t2[1]));
   Vector3 t2Normal = t2.normal().unitVector();
+  
+  double dp1 = (Vector3(t2[2],t1[0])).dot(t2Normal);
+  double dq1 = (Vector3(t2[2],t1[1])).dot(t2Normal);
+  double dr1 = (Vector3(t2[2],t1[2])).dot(t2Normal);
   return false;
-  // double dp1 = (Vector3(t2[2],t1[0])).dot(t2Normal);
-  // double dq1 = (Vector3(t2[2],t1[1])).dot(t2Normal);
-  // double dr1 = (Vector3(t2[2],t1[2])).dot(t2Normal);
 
   // if (nonzeroSignMatch(dp1, dq1, dr1))
   // {
