@@ -15,6 +15,7 @@ namespace detail
 {
 
 // -----------------------------------------------------------------------------
+AXOM_HOST_DEVICE
 bool intersectOnePermutedTriangle(
   const Point3 &p1, const Point3 &q1, const Point3 &r1,
   const Point3 &p2, const Point3 &q2, const Point3 &r2,
