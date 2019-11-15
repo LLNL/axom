@@ -22,6 +22,7 @@
 #include "axom/mint/mesh/CurvilinearMesh.hpp"   // for CurvilinearMesh
 #include "axom/mint/mesh/UnstructuredMesh.hpp"  // for UnstructuredMesh
 #include "axom/mint/execution/internal/helpers.hpp"
+#include "axom/mint/execution/internal/structured_exec.hpp"
 
 #include "axom/core/StackArray.hpp"             // for axom::StackArray
 #include "axom/core/numerics/Matrix.hpp"        // for Matrix
@@ -76,7 +77,7 @@ inline void for_all_cells_impl( xargs::ij,
 
   RAJA::RangeSegment i_range(0,Ni);
   RAJA::RangeSegment j_range(0,Nj);
-  using exec_pol = typename axom::execution_space< ExecPolicy >::loop2d_policy;
+  using exec_pol = typename structured_exec< ExecPolicy >::loop2d_policy;
 
   RAJA::kernel< exec_pol >( RAJA::make_tuple(i_range,j_range),
     AXOM_LAMBDA(IndexType i, IndexType j)
@@ -140,7 +141,7 @@ inline void for_all_cells_impl( xargs::ijk,
   RAJA::RangeSegment i_range( 0, Ni );
   RAJA::RangeSegment j_range( 0, Nj );
   RAJA::RangeSegment k_range( 0, Nk );
-  using exec_pol = typename execution_space< ExecPolicy >::loop3d_policy;
+  using exec_pol = typename structured_exec< ExecPolicy >::loop3d_policy;
 
   RAJA::kernel< exec_pol >( RAJA::make_tuple( i_range, j_range, k_range ),
     AXOM_LAMBDA(IndexType i, IndexType j, IndexType k)
