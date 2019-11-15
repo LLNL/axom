@@ -49,32 +49,6 @@ struct execution_space< CUDA_EXEC< BLOCK_SIZE, SYNCHRONOUS > >
 {
   using loop_policy   = RAJA::cuda_exec< BLOCK_SIZE >;
 
-  /* *INDENT-OFF* */
-  using loop2d_policy =
-      RAJA::KernelPolicy<
-            RAJA::statement::CudaKernelFixed< 256,
-              RAJA::statement::For<1, RAJA::cuda_block_x_loop,
-                RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
-                  RAJA::statement::Lambda<0>
-                >
-              >
-            >
-          >;
-
-  using loop3d_policy =
-      RAJA::KernelPolicy<
-        RAJA::statement::CudaKernelFixed< 256,
-          RAJA::statement::For<2, RAJA::cuda_block_x_loop,
-            RAJA::statement::For<1, RAJA::cuda_block_y_loop,
-              RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
-                RAJA::statement::Lambda<0>
-              >
-            >
-          >
-        >
-      >;
-  /* *INDENT-ON* */
-
   using reduce_policy = RAJA::cuda_reduce;
   using atomic_policy = RAJA::cuda_atomic;
   using sync_policy   = RAJA::cuda_synchronize;
@@ -97,32 +71,6 @@ template < int BLOCK_SIZE >
 struct execution_space< CUDA_EXEC< BLOCK_SIZE, ASYNC > >
 {
   using loop_policy = RAJA::cuda_exec_async< BLOCK_SIZE >;
-
-  /* *INDENT-OFF* */
-  using loop2d_policy =
-      RAJA::KernelPolicy<
-            RAJA::statement::CudaKernelFixedAsync< 256,
-              RAJA::statement::For<1, RAJA::cuda_block_x_loop,
-                RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
-                  RAJA::statement::Lambda<0>
-                >
-              >
-            >
-          >;
-
-  using loop3d_policy =
-      RAJA::KernelPolicy<
-        RAJA::statement::CudaKernelFixedAsync< 256,
-          RAJA::statement::For<2, RAJA::cuda_block_x_loop,
-            RAJA::statement::For<1, RAJA::cuda_block_y_loop,
-              RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
-                RAJA::statement::Lambda<0>
-              >
-            >
-          >
-        >
-      >;
-  /* *INDENT-ON* */
 
   using reduce_policy = RAJA::cuda_reduce;
   using atomic_policy = RAJA::cuda_atomic;

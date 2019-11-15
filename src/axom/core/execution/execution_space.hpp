@@ -76,8 +76,6 @@ template < typename ExecSpace >
 struct execution_space
 {
   using loop_policy   = void;
-  using loop2d_policy = void;
-  using loop3d_policy = void;
 
   using reduce_policy = void;
   using atomic_policy = void;

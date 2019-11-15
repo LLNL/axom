@@ -39,35 +39,11 @@ struct execution_space< SEQ_EXEC >
 #ifdef AXOM_USE_RAJA
   using loop_policy   = RAJA::loop_exec;
 
-  /* *INDENT-OFF* */
-  using loop2d_policy =
-      RAJA::KernelPolicy<
-               RAJA::statement::For< 1, RAJA::loop_exec,   // j
-                 RAJA::statement::For< 0, RAJA::loop_exec, // i
-                   RAJA::statement::Lambda< 0 >
-                 > // END i
-               > // END j
-            >; // END kernel
-
-  using loop3d_policy =
-      RAJA::KernelPolicy<
-              RAJA::statement::For< 2, RAJA::loop_exec,       // k
-                 RAJA::statement::For< 1, RAJA::loop_exec,    // j
-                    RAJA::statement::For< 0, RAJA::loop_exec, // i
-                       RAJA::statement::Lambda< 0 >
-                    > // END i
-                  > // END j
-               > // END k
-            >; // END kernel
-  /* *INDENT-ON* */
 
   using reduce_policy = RAJA::loop_reduce;
   using atomic_policy = RAJA::loop_atomic;
 #else
   using loop_policy   = void;
-  using loop2d_policy = void;
-  using loop3d_policy = void;
-
   using reduce_policy = void;
   using atomic_policy = void;
 #endif

@@ -37,18 +37,6 @@ struct execution_space< OMP_EXEC >
 {
   using loop_policy = RAJA::omp_parallel_for_exec;
 
-  /* *INDENT-OFF* */
-  using loop2d_policy = RAJA::KernelPolicy<
-      RAJA::statement::Collapse< RAJA::omp_parallel_collapse_exec,
-                                 RAJA::ArgList< 1,0 >,
-                                 RAJA::statement::Lambda< 0 > > >;
-
-  using loop3d_policy = RAJA::KernelPolicy<
-      RAJA::statement::Collapse< RAJA::omp_parallel_collapse_exec,
-                                 RAJA::ArgList< 2,1,0 >,
-                                 RAJA::statement::Lambda< 0 > > >;
-  /* *INDENT-ON* */
-
   using reduce_policy = RAJA::omp_reduce;
   using atomic_policy = RAJA::omp_atomic;
   using sync_policy   = RAJA::omp_synchronize;
