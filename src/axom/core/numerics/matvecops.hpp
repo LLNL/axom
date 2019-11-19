@@ -574,8 +574,7 @@ inline bool linspace( const T& x0, const T& x1, T* v, int N )
 
 //------------------------------------------------------------------------------
 template < typename T >
-inline
-void cross_product( const T* u, const T* v, T* w )
+inline void cross_product( const T* u, const T* v, T* w )
 {
   assert( "pre: u pointer is null" && (u != nullptr) );
   assert( "pre: v pointer is null" && (v != nullptr) );
@@ -590,8 +589,7 @@ void cross_product( const T* u, const T* v, T* w )
 
 //------------------------------------------------------------------------------
 template < typename T >
-inline
-T dot_product( const T* u, const T* v, int dim)
+inline T dot_product( const T* u, const T* v, int dim)
 {
   assert("pre: u pointer is null" && (u != nullptr));
   assert("pre: v pointer is null" && (v != nullptr));

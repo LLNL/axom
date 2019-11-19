@@ -145,22 +145,16 @@ bool intersect_tri3D_tri3D( const Triangle< T, 3 >& t1,
 
   // Vector3 t2Normal = Vector3::cross_product(Vector3(t2[2], t2[0]),
   //                                           Vector3(t2[2], t2[1]));
-  
-  //Line 1
   Vector3 t2Normal = t2.normal().unitVector();
-  
-  // Line 2-4
   double dp1 = (Vector3(t2[2],t1[0])).dot(t2Normal);
   double dq1 = (Vector3(t2[2],t1[1])).dot(t2Normal);
   double dr1 = (Vector3(t2[2],t1[2])).dot(t2Normal);
 
-  // Lines 5-8
   if (nonzeroSignMatch(dp1, dq1, dr1))
   {
     return false;
   }
 
-  // Lines 9-14
   if (!includeBoundary &&
       (twoZeros(dp1, dq1, dr1) ||
        oneZeroOthersMatch(dp1, dq1, dr1)))
@@ -168,14 +162,11 @@ bool intersect_tri3D_tri3D( const Triangle< T, 3 >& t1,
     return false;
   }
 
-  
-  // // Step 2: Check if all the vertices of triangle 2 lie on the same side of
-  // // the plane created by triangle 1:
+  // Step 2: Check if all the vertices of triangle 2 lie on the same side of
+  // the plane created by triangle 1:
 
-  // // Vector3 t1Normal = Vector3::cross_product(Vector3(t1[0], t1[1]),
-  // //                                           Vector3(t1[0], t1[2]));
-  
-  //Lines 15-28
+  // Vector3 t1Normal = Vector3::cross_product(Vector3(t1[0], t1[1]),
+  //                                           Vector3(t1[0], t1[2]));
   Vector3 t1Normal = t1.normal().unitVector();
   double dp2 = (Vector3(t1[2],t2[0])).dot(t1Normal);
   double dq2 = (Vector3(t1[2],t2[1])).dot(t1Normal);
@@ -193,25 +184,24 @@ bool intersect_tri3D_tri3D( const Triangle< T, 3 >& t1,
     return false;
   }
 
-  // /* Note: Because we know that all the vertices either triangle do not
-  //    lay on the same side of the plane formed by the other triangle, we
-  //    know that for each triangle, exactly 1 out of 3 points exists on one
-  //    side of the plane formed by the other triangle.
+  /* Note: Because we know that all the vertices either triangle do not
+     lay on the same side of the plane formed by the other triangle, we
+     know that for each triangle, exactly 1 out of 3 points exists on one
+     side of the plane formed by the other triangle.
 
 
-  //    Step 3: We apply a circular permutation of triangle 1 such that its
-  //    first point is the only point on the triangle that lies on one side of
-  //    the plane formed by triangle 2 (with the other 2 on the other side),
-  //    while handling the special case of one of the vertices lying on the
-  //    plane formed by triangle 2.  We then perform a swap operation on the
-  //    second and third points of triangle 2 to map the first point of
-  //    triangle 1 to the positive halfspace formed by triangle 2's plane.
-  //  */
+     Step 3: We apply a circular permutation of triangle 1 such that its
+     first point is the only point on the triangle that lies on one side of
+     the plane formed by triangle 2 (with the other 2 on the other side),
+     while handling the special case of one of the vertices lying on the
+     plane formed by triangle 2.  We then perform a swap operation on the
+     second and third points of triangle 2 to map the first point of
+     triangle 1 to the positive halfspace formed by triangle 2's plane.
+   */
 
-  // // compare the signs to create a convenient permutation of the vertices
-  // // of triangle 1
+  // compare the signs to create a convenient permutation of the vertices
+  // of triangle 1
 
-  // Lines 29 - 52
   if (isGt(dp1, 0.0))
   {
     if (isGt(dq1, 0.0))
@@ -236,92 +226,90 @@ bool intersect_tri3D_tri3D( const Triangle< T, 3 >& t1,
                                           includeBoundary);
     }
   }
-
-  return false;
-  // else if (isLt(dp1, 0.0))
-  // {
-  //   if (isLt(dq1, 0.0))
-  //   {
-  //     return intersectOnePermutedTriangle(t1[2], t1[0], t1[1],
-  //                                         t2[0], t2[1], t2[2],
-  //                                         dp2, dq2, dr2, t1Normal,
-  //                                         includeBoundary);
-  //   }
-  //   else if (isLt(dr1, 0.0f))
-  //   {
-  //     return intersectOnePermutedTriangle(t1[1], t1[2], t1[0],
-  //                                         t2[0], t2[1], t2[2],
-  //                                         dp2, dq2, dr2, t1Normal,
-  //                                         includeBoundary);
-  //   }
-  //   else
-  //   {
-  //     return intersectOnePermutedTriangle(t1[0], t1[1], t1[2],
-  //                                         t2[0], t2[2], t2[1],
-  //                                         dp2, dr2, dq2, t1Normal,
-  //                                         includeBoundary);
-  //   }
-  // }
-  // else   //dp1 ~= 0
-  // {
-  //   if (isLt(dq1, 0.0))
-  //   {
-  //     if (isGeq(dr1, 0.0))
-  //     {
-  //       return intersectOnePermutedTriangle(t1[1], t1[2], t1[0],
-  //                                           t2[0], t2[2], t2[1],
-  //                                           dp2, dr2, dq2, t1Normal,
-  //                                           includeBoundary);
-  //     }
-  //     else
-  //     {
-  //       return intersectOnePermutedTriangle(t1[0], t1[1], t1[2],
-  //                                           t2[0], t2[1], t2[2],
-  //                                           dp2, dq2, dr2, t1Normal,
-  //                                           includeBoundary);
-  //     }
-  //   }
-  //   else if (isGt(dq1, 0.0))
-  //   {
-  //     if (isGt(dr1, 0.0))
-  //     {
-  //       return intersectOnePermutedTriangle(t1[0], t1[1], t1[2],
-  //                                           t2[0], t2[2], t2[1],
-  //                                           dp2, dr2, dq2, t1Normal,
-  //                                           includeBoundary);
-  //     }
-  //     else
-  //     {
-  //       return intersectOnePermutedTriangle(t1[1], t1[2], t1[0],
-  //                                           t2[0], t2[1], t2[2],
-  //                                           dp2, dq2, dr2, t1Normal,
-  //                                           includeBoundary);
-  //     }
-  //   }
-  //   else
-  //   {
-  //     if (isGt(dr1, 0.0))
-  //     {
-  //       return intersectOnePermutedTriangle(t1[2], t1[0], t1[1],
-  //                                           t2[0], t2[1], t2[2],
-  //                                           dp2, dq2, dr2, t1Normal,
-  //                                           includeBoundary);
-  //     }
-  //     else if (isLt(dr1, 0.0))
-  //     {
-  //       return intersectOnePermutedTriangle(t1[2], t1[0], t1[1],
-  //                                           t2[0], t2[2], t2[1],
-  //                                           dp2, dr2, dq2, t1Normal,
-  //                                           includeBoundary);
-  //     }
-  //     else
-  //     {
-  //       return intersectCoplanar3DTriangles(t1[0], t1[1], t1[2],
-  //                                           t2[0], t2[1], t2[2], t1Normal,
-  //                                           includeBoundary);
-  //     }
-  //   }
-  // }
+  else if (isLt(dp1, 0.0))
+  {
+    if (isLt(dq1, 0.0))
+    {
+      return intersectOnePermutedTriangle(t1[2], t1[0], t1[1],
+                                          t2[0], t2[1], t2[2],
+                                          dp2, dq2, dr2, t1Normal,
+                                          includeBoundary);
+    }
+    else if (isLt(dr1, 0.0f))
+    {
+      return intersectOnePermutedTriangle(t1[1], t1[2], t1[0],
+                                          t2[0], t2[1], t2[2],
+                                          dp2, dq2, dr2, t1Normal,
+                                          includeBoundary);
+    }
+    else
+    {
+      return intersectOnePermutedTriangle(t1[0], t1[1], t1[2],
+                                          t2[0], t2[2], t2[1],
+                                          dp2, dr2, dq2, t1Normal,
+                                          includeBoundary);
+    }
+  }
+  else   //dp1 ~= 0
+  {
+    if (isLt(dq1, 0.0))
+    {
+      if (isGeq(dr1, 0.0))
+      {
+        return intersectOnePermutedTriangle(t1[1], t1[2], t1[0],
+                                            t2[0], t2[2], t2[1],
+                                            dp2, dr2, dq2, t1Normal,
+                                            includeBoundary);
+      }
+      else
+      {
+        return intersectOnePermutedTriangle(t1[0], t1[1], t1[2],
+                                            t2[0], t2[1], t2[2],
+                                            dp2, dq2, dr2, t1Normal,
+                                            includeBoundary);
+      }
+    }
+    else if (isGt(dq1, 0.0))
+    {
+      if (isGt(dr1, 0.0))
+      {
+        return intersectOnePermutedTriangle(t1[0], t1[1], t1[2],
+                                            t2[0], t2[2], t2[1],
+                                            dp2, dr2, dq2, t1Normal,
+                                            includeBoundary);
+      }
+      else
+      {
+        return intersectOnePermutedTriangle(t1[1], t1[2], t1[0],
+                                            t2[0], t2[1], t2[2],
+                                            dp2, dq2, dr2, t1Normal,
+                                            includeBoundary);
+      }
+    }
+    else
+    {
+      if (isGt(dr1, 0.0))
+      {
+        return intersectOnePermutedTriangle(t1[2], t1[0], t1[1],
+                                            t2[0], t2[1], t2[2],
+                                            dp2, dq2, dr2, t1Normal,
+                                            includeBoundary);
+      }
+      else if (isLt(dr1, 0.0))
+      {
+        return intersectOnePermutedTriangle(t1[2], t1[0], t1[1],
+                                            t2[0], t2[2], t2[1],
+                                            dp2, dr2, dq2, t1Normal,
+                                            includeBoundary);
+      }
+      else
+      {
+        return intersectCoplanar3DTriangles(t1[0], t1[1], t1[2],
+                                            t2[0], t2[1], t2[2], t1Normal,
+                                            includeBoundary);
+      }
+    }
+  }
 }
 
 /*!
@@ -373,6 +361,7 @@ inline bool intersectTwoPermutedTriangles(const Point3& p1,
      if intersecting, have a line that intersects segments p1r1, p1q1,
      p2q2, and p2r2.  We check if these two intervals overlap:
    */
+
   if (!isLpeq(Vector3(q1, q2).dot(Triangle3(q1, p2, p1).normal()), 0.0,
               includeBoundary) ||
       !isLpeq(Vector3(p1, r2).dot(Triangle3(p1, p2, r1).normal()), 0.0,
