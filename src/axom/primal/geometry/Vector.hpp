@@ -190,8 +190,8 @@ public:
    * \return p[i] the value at the given component index.
    * \pre (i >= 0) && (i < ndims)
    */
-  const T& operator[](int i) const { return m_components[i]; }
-  T& operator[](int i)             { return m_components[i]; }
+  AXOM_HOST_DEVICE const T& operator[](int i) const { return m_components[i]; }
+  AXOM_HOST_DEVICE T& operator[](int i)             { return m_components[i]; }
 
   /*!
    * \brief Returns a reference to the underlying NumericArray.

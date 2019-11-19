@@ -68,7 +68,7 @@ public:
    * \param [in] B point instance corresponding to vertex B of the triangle.
    * \param [in] C point instance corresponding to vertex C of the triangle.
    */
-  //AXOM_HOST_DEVICE
+  AXOM_HOST_DEVICE
   Triangle( const PointType& A,
             const PointType& B,
             const PointType& C );
@@ -314,12 +314,9 @@ namespace primal
 template < typename T, int NDIMS >
 Triangle< T,NDIMS >::Triangle( const PointType& A,
                                const PointType& B,
-                               const PointType& C  )
-{
-  m_points[0] = A;
-  m_points[1] = B;
-  m_points[2] = C;
-}
+                               const PointType& C  ):
+  m_points{A,B,C}
+{}
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >

@@ -80,12 +80,14 @@ public:
    * The rest will be set to zero.  Defaults is NDIMS.
    * If sz is greater than NDIMS, we set all coordinates to val
    */
+  AXOM_HOST_DEVICE
   explicit Point(T val = T(), int sz = NDIMS) : m_components(val,sz) { }
 
   /*!
    * \brief Constructor from a numeric array
    * \param [in] arr The numeric array to copy from
    */
+  AXOM_HOST_DEVICE
   Point(const NumericArray< T,NDIMS >& arr) : m_components(arr) { }
 
   /*!
@@ -94,12 +96,14 @@ public:
    * \param [in] sz num values to copy from the vals array. Defaults to NDIMS.
    * \note If sz is greater than NDIMS, we only take the first NDIMS values.
    */
+  AXOM_HOST_DEVICE
   Point(const T* vals, int sz = NDIMS) : m_components(vals,sz) { }
 
   /*!
    * \brief Copy constructor.
    * \param [in] other The point to copy
    */
+  AXOM_HOST_DEVICE
   Point( const Point& other) : m_components( other.m_components) { }
 
   /*!

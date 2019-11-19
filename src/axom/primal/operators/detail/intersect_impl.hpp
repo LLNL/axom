@@ -46,21 +46,21 @@ bool isLeq(double x, double y, double EPS=1.0e-12);
 AXOM_HOST_DEVICE bool isLpeq(double x, double y, bool includeEqual = false,
             double EPS=1.0e-12);
 AXOM_HOST_DEVICE bool isGeq(double x, double y, double EPS=1.0e-12);
-bool isGpeq(double x, double y, bool includeEqual = false,
+AXOM_HOST_DEVICE bool isGpeq(double x, double y, bool includeEqual = false,
             double EPS=1.0e-12);
 AXOM_HOST_DEVICE bool nonzeroSignMatch(double x, double y, double z, double EPS=1.0e-12);
 AXOM_HOST_DEVICE bool twoZeros(double x, double y, double z, double EPS=1.0e-12);
 AXOM_HOST_DEVICE bool oneZeroOthersMatch(double x, double y, double z, double EPS=1.0e-12);
 AXOM_HOST_DEVICE int  countZeros(double x, double y, double z, double EPS=1.0e-12);
-double twoDcross(const Point2& A, const Point2& B, const Point2& C);
+AXOM_HOST_DEVICE double twoDcross(const Point2& A, const Point2& B, const Point2& C);
 
-bool checkEdge(const Point2& p1,
+AXOM_HOST_DEVICE bool checkEdge(const Point2& p1,
                const Point2& q1,
                const Point2& r1,
                const Point2& p2,
                const Point2& r2,
                bool includeBoundary);
-bool checkVertex(const Point2& p1,
+AXOM_HOST_DEVICE bool checkVertex(const Point2& p1,
                  const Point2& q1,
                  const Point2& r1,
                  const Point2& p2,
@@ -68,7 +68,7 @@ bool checkVertex(const Point2& p1,
                  const Point2& r2,
                  bool includeBoundary);
 
-bool intersectPermuted2DTriangles(const Point2& p1,
+AXOM_HOST_DEVICE bool intersectPermuted2DTriangles(const Point2& p1,
                                   const Point2& q1,
                                   const Point2& r1,
                                   const Point2& p2,
@@ -99,7 +99,7 @@ AXOM_HOST_DEVICE bool intersectCoplanar3DTriangles(const Point3& p1,
                                   Vector3 normal,
                                   bool includeBoundary);
 
-bool TriangleIntersection2D(const Triangle2& t1,
+AXOM_HOST_DEVICE bool TriangleIntersection2D(const Triangle2& t1,
                             const Triangle2& t2,
                             bool includeBoundary = false);
 
@@ -373,7 +373,6 @@ inline bool intersectTwoPermutedTriangles(const Point3& p1,
      if intersecting, have a line that intersects segments p1r1, p1q1,
      p2q2, and p2r2.  We check if these two intervals overlap:
    */
-
   if (!isLpeq(Vector3(q1, q2).dot(Triangle3(q1, p2, p1).normal()), 0.0,
               includeBoundary) ||
       !isLpeq(Vector3(p1, r2).dot(Triangle3(p1, p2, r1).normal()), 0.0,
