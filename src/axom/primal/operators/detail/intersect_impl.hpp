@@ -41,11 +41,11 @@ typedef primal::Triangle< double, 2 > Triangle2;
 typedef primal::Point< double, 2 > Point2;
 
 AXOM_HOST_DEVICE bool isGt(double x, double y, double EPS=1.0e-12);
-bool isLt(double x, double y, double EPS=1.0e-12);
+AXOM_HOST_DEVICE bool isLt(double x, double y, double EPS=1.0e-12);
 bool isLeq(double x, double y, double EPS=1.0e-12);
-bool isLpeq(double x, double y, bool includeEqual = false,
+AXOM_HOST_DEVICE bool isLpeq(double x, double y, bool includeEqual = false,
             double EPS=1.0e-12);
-bool isGeq(double x, double y, double EPS=1.0e-12);
+AXOM_HOST_DEVICE bool isGeq(double x, double y, double EPS=1.0e-12);
 bool isGpeq(double x, double y, bool includeEqual = false,
             double EPS=1.0e-12);
 AXOM_HOST_DEVICE bool nonzeroSignMatch(double x, double y, double z, double EPS=1.0e-12);
@@ -82,7 +82,7 @@ AXOM_HOST_DEVICE bool intersectOnePermutedTriangle(
   double dp2, double dq2, double dr2,  Vector3 &normal,
   bool includeBoundary);
 
-bool intersectTwoPermutedTriangles(const Point3& p1,
+AXOM_HOST_DEVICE bool intersectTwoPermutedTriangles(const Point3& p1,
                                    const Point3& q1,
                                    const Point3& r1,
                                    const Point3& p2,
@@ -90,7 +90,7 @@ bool intersectTwoPermutedTriangles(const Point3& p1,
                                    const Point3& r2,
                                    bool includeBoundary);
 
-bool intersectCoplanar3DTriangles(const Point3& p1,
+AXOM_HOST_DEVICE bool intersectCoplanar3DTriangles(const Point3& p1,
                                   const Point3& q1,
                                   const Point3& r1,
                                   const Point3& p2,

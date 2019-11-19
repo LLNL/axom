@@ -59,6 +59,7 @@ public:
   /*!
    * \brief Default constructor. Creates a degenerate triangle.
    */
+  AXOM_HOST_DEVICE
   Triangle() { }
 
   /*!
@@ -67,6 +68,7 @@ public:
    * \param [in] B point instance corresponding to vertex B of the triangle.
    * \param [in] C point instance corresponding to vertex C of the triangle.
    */
+  //AXOM_HOST_DEVICE
   Triangle( const PointType& A,
             const PointType& B,
             const PointType& C );
@@ -74,6 +76,7 @@ public:
   /*!
    * \brief Destructor
    */
+  AXOM_HOST_DEVICE
   ~Triangle() { }
 
   /*!

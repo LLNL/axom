@@ -404,7 +404,7 @@ inline double Vector< T, NDIMS >::norm() const
 template < typename T, int NDIMS >
 inline Vector< T, NDIMS > Vector< T, NDIMS >::unitVector() const
 {
-  static const double EPS = 1.0e-50;
+  constexpr double EPS = 1.0e-50;
 
   Vector v( *this);
 

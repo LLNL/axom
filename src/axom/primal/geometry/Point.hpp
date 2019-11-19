@@ -105,6 +105,7 @@ public:
   /*!
    * \brief Destructor.
    */
+  AXOM_HOST_DEVICE
   ~Point() { }
 
   /*!
@@ -130,8 +131,8 @@ public:
    * \return p[i] the value at the given component index.
    * \pre (i >= 0) && (i < ndims)
    */
-  const T& operator[](int i) const { return m_components[i]; }
-  T& operator[](int i)             { return m_components[i]; }
+  AXOM_HOST_DEVICE const T& operator[](int i) const { return m_components[i]; }
+  AXOM_HOST_DEVICE T& operator[](int i)             { return m_components[i]; }
 
   ///@}
 
@@ -186,6 +187,7 @@ public:
    * \param [in] z the z--coordinate of the point. Default is 0.0.
    * \return p a Point instance with the given coordinates.
    */
+  AXOM_HOST_DEVICE
   static Point make_point( const T& x, const T& y, const T& z=0.0 );
 
   /*!
