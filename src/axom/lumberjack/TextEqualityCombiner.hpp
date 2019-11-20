@@ -91,7 +91,7 @@ public:
    */
   void combine(Message& combined, const Message& combinee, const int ranksLimit)
   {
-    combined.addRanks(combinee.ranks(), combinee.ranksCount(), ranksLimit);
+    combined.addRanks(combinee.ranks(), combinee.count(), ranksLimit);
   }
 private:
   std::string m_id;

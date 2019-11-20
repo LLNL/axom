@@ -17,7 +17,7 @@ Name        Description
 =========== ===================
 text        Contents of the message
 ranks       Truncated list of where the message originated
-ranksCount  Total count of how many ranks generated the message
+count       Total count of how many individual messages occurred
 fileName    File name that generated the message
 lineNumber  Line number that generated the message
 level       Message severity (error, warning, debug, etc.)
