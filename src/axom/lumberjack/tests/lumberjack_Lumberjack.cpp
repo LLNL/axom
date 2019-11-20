@@ -88,7 +88,7 @@ TEST(lumberjack_Lumberjack, combineMessagesPushOnce01)
 
   EXPECT_EQ((int)messages.size(), 1);
   EXPECT_EQ(messages[0]->text(), "Should be combined.");
-  EXPECT_EQ(messages[0]->ranksCount(), 6);
+  EXPECT_EQ(messages[0]->count(), 6);
 
   lumberjack.finalize();
   communicator.finalize();
@@ -115,9 +115,9 @@ TEST(lumberjack_Lumberjack, combineMessagesPushOnce02)
 
   EXPECT_EQ((int)messages.size(), 2);
   EXPECT_EQ(messages[0]->text(), "");
-  EXPECT_EQ(messages[0]->ranksCount(), 1);
+  EXPECT_EQ(messages[0]->count(), 1);
   EXPECT_EQ(messages[1]->text(), "Should be combined.");
-  EXPECT_EQ(messages[1]->ranksCount(), 5);
+  EXPECT_EQ(messages[1]->count(), 5);
 
   lumberjack.finalize();
   communicator.finalize();
@@ -139,7 +139,7 @@ TEST(lumberjack_Lumberjack, combineMessagesPushOnceEmpty)
 
   EXPECT_EQ((int)messages.size(), 1);
   EXPECT_EQ(messages[0]->text(), "");
-  EXPECT_EQ(messages[0]->ranksCount(), 1);
+  EXPECT_EQ(messages[0]->count(), 1);
 
   lumberjack.finalize();
   communicator.finalize();
@@ -206,7 +206,7 @@ TEST(lumberjack_Lumberjack, combineMessages01)
 
   EXPECT_EQ((int)messages.size(), 1);
   EXPECT_EQ(messages[0]->text(), "Should be combined.");
-  EXPECT_EQ(messages[0]->ranksCount(), 6);
+  EXPECT_EQ(messages[0]->count(), 6);
 
   lumberjack.finalize();
   communicator.finalize();
@@ -233,9 +233,9 @@ TEST(lumberjack_Lumberjack, combineMessages02)
 
   EXPECT_EQ((int)messages.size(), 2);
   EXPECT_EQ(messages[0]->text(), "Should be combined 1.");
-  EXPECT_EQ(messages[0]->ranksCount(), 3);
+  EXPECT_EQ(messages[0]->count(), 3);
   EXPECT_EQ(messages[1]->text(), "Should be combined 2.");
-  EXPECT_EQ(messages[1]->ranksCount(), 3);
+  EXPECT_EQ(messages[1]->count(), 3);
 
   lumberjack.finalize();
   communicator.finalize();
@@ -266,7 +266,7 @@ TEST(lumberjack_Lumberjack, combineMessages03)
     std::string s = "Should not be combined " +
                     std::to_string(i+1) + ".";
     EXPECT_EQ(messages[i]->text(), s);
-    EXPECT_EQ(messages[i]->ranksCount(), 1);
+    EXPECT_EQ(messages[i]->count(), 1);
   }
 
   lumberjack.finalize();
@@ -299,14 +299,14 @@ TEST(lumberjack_Lumberjack, combineMixedMessages01)
     std::string s = "Should not be combined " +
                     std::to_string(i+1) + ".";
     EXPECT_EQ(messages[i]->text(), s);
-    EXPECT_EQ(messages[i]->ranksCount(), 1);
+    EXPECT_EQ(messages[i]->count(), 1);
   }
 
   EXPECT_EQ(messages[2]->text(), "");
-  EXPECT_EQ(messages[2]->ranksCount(), 1);
+  EXPECT_EQ(messages[2]->count(), 1);
 
   EXPECT_EQ(messages[3]->text(), "Should be combined.");
-  EXPECT_EQ(messages[3]->ranksCount(), 3);
+  EXPECT_EQ(messages[3]->count(), 3);
 
   lumberjack.finalize();
   communicator.finalize();
@@ -338,14 +338,14 @@ TEST(lumberjack_Lumberjack, combineMixedMessages02)
     std::string s = "Should not be combined " +
                     std::to_string(i+1) + ".";
     EXPECT_EQ(messages[i]->text(), s);
-    EXPECT_EQ(messages[i]->ranksCount(), 1);
+    EXPECT_EQ(messages[i]->count(), 1);
   }
 
   EXPECT_EQ(messages[2]->text(), "Should be combined.");
-  EXPECT_EQ(messages[2]->ranksCount(), 3);
+  EXPECT_EQ(messages[2]->count(), 3);
 
   EXPECT_EQ(messages[3]->text(), "");
-  EXPECT_EQ(messages[3]->ranksCount(), 1);
+  EXPECT_EQ(messages[3]->count(), 1);
 
   lumberjack.finalize();
   communicator.finalize();
@@ -374,18 +374,18 @@ TEST(lumberjack_Lumberjack, combineMixedMessages03)
   EXPECT_EQ((int)messages.size(), 4);
 
   EXPECT_EQ(messages[0]->text(), "");
-  EXPECT_EQ(messages[0]->ranksCount(), 1);
+  EXPECT_EQ(messages[0]->count(), 1);
 
   for(int i=1 ; i<3 ; ++i)
   {
     std::string s = "Should not be combined " +
                     std::to_string(i+1) + ".";
     EXPECT_EQ(messages[i]->text(), s);
-    EXPECT_EQ(messages[i]->ranksCount(), 1);
+    EXPECT_EQ(messages[i]->count(), 1);
   }
 
   EXPECT_EQ(messages[3]->text(), "Should be combined.");
-  EXPECT_EQ(messages[3]->ranksCount(), 3);
+  EXPECT_EQ(messages[3]->count(), 3);
 
   lumberjack.finalize();
   communicator.finalize();
@@ -418,7 +418,7 @@ TEST(lumberjack_Lumberjack, combineMessagesManyMessages)
     std::string s = "Should not be combined " +
                     std::to_string(i) + ".";
     EXPECT_EQ(messages[i]->text(), s);
-    EXPECT_EQ(messages[i]->ranksCount(), 1);
+    EXPECT_EQ(messages[i]->count(), 1);
   }
 
   lumberjack.finalize();
@@ -456,7 +456,7 @@ TEST(lumberjack_Lumberjack, combineMessagesLargeMessages)
   {
     std::string s = std::to_string(i) + ":" + padding;
     EXPECT_EQ(messages[i]->text(), s);
-    EXPECT_EQ(messages[i]->ranksCount(), 1);
+    EXPECT_EQ(messages[i]->count(), 1);
   }
 
   lumberjack.finalize();

@@ -41,17 +41,9 @@ namespace slic
 /*!
  * \class LumberjackStream
  *
- * \brief A concrete instance of LogStream that dumps messages to a C++
- *  std::ostream object.
+ * \brief A concrete instance of LogStream that utilizes Lumberjack to
+ *  filter and pass messagse between MPI nodes.
  *
- * \note The intent of this class is to illustrate how to using the Logging
- *  facility within an MPI distributed environment and provide a utility that
- *  could be useful for debugging problems at small scales.
- *
- * \warning Do not use this for large-scale production runs.
- * \warning The intent of this class is to be used primarily with std::cout,
- *  std::cerr, etc. It is suggested that applications do not use this class
- *  with an std::ofstream object.
  */
 class LumberjackStream : public LogStream
 {

@@ -121,20 +121,21 @@ void LumberjackStream::write()
 
   if ( m_lj->isOutputNode() )
   {
-
     std::vector< axom::lumberjack::Message* > messages =
       m_lj->getMessages();
 
     const int nmessages = static_cast< int >( messages.size() );
+    std::string rankString;
     for ( int i=0 ; i < nmessages ; ++i)
     {
-
+      rankString = std::to_string(messages[i]->count())
+                   + ": " + messages[i]->stringOfRanks();
       (*m_stream) << this->getFormatedMessage( message::getLevelAsString(
                                                  static_cast< message::Level >(
                                                    messages[i]->level()) ),
                                                messages[i]->text(),
                                                messages[i]->tag(),
-                                               messages[i]->stringOfRanks(),
+                                               rankString,
                                                messages[i]->fileName(),
                                                messages[i]->lineNumber() );
     }

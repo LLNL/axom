@@ -32,5 +32,5 @@ TextEqualityCombiner
 
 This Combiner combines the two given Messages if the Message text strings are equal.
 It does so by adding the second Message's ranks to the first Message (if not past
-the ranksLimit) and incrementing the Message's rankCount as well.  This is handled by
+the ranksLimit) and incrementing the Message's count as well.  This is handled by
 Message.addRanks().
