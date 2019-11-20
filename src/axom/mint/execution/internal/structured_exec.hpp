@@ -66,16 +66,28 @@ template < >
 struct structured_exec< OMP_EXEC >
 {
   /* *INDENT-OFF* */
-   using loop2d_policy = RAJA::KernelPolicy<
-       RAJA::statement::Collapse< RAJA::omp_parallel_collapse_exec,
-                                  RAJA::ArgList< 1,0 >,
-                                  RAJA::statement::Lambda< 0 > > >;
 
-   using loop3d_policy = RAJA::KernelPolicy<
-       RAJA::statement::Collapse< RAJA::omp_parallel_collapse_exec,
-                                  RAJA::ArgList< 2,1,0 >,
-                                  RAJA::statement::Lambda< 0 > > >;
-   /* *INDENT-ON* */
+   using loop2d_policy =
+       RAJA::KernelPolicy<
+                RAJA::statement::For< 1, RAJA::omp_parallel_for_exec, // j
+                  RAJA::statement::For< 0, RAJA::loop_exec,           // i
+                    RAJA::statement::Lambda< 0 >
+                  > // END i
+                > // END j
+             >; // END kernel
+
+   using loop3d_policy =
+       RAJA::KernelPolicy<
+                RAJA::statement::For< 2, RAJA::omp_parallel_for_exec, // k
+                   RAJA::statement::For< 1, RAJA::loop_exec,          // j
+                      RAJA::statement::For< 0, RAJA::loop_exec,       // i
+                         RAJA::statement::Lambda< 0 >
+                      > // END i
+                    > // END j
+                 > // END k
+              >; // END kernel
+
+  /* *INDENT-ON* */
 };
 #endif
 
