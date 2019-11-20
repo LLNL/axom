@@ -42,7 +42,7 @@ namespace slic
  * \class LumberjackStream
  *
  * \brief A concrete instance of LogStream that utilizes Lumberjack to
- *  filter and pass messagse between MPI nodes.
+ *  filter and pass messages between MPI nodes.
  *
  */
 class LumberjackStream : public LogStream
