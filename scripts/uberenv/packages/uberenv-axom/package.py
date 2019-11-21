@@ -337,10 +337,10 @@ class UberenvAxom(Package):
                     # blueos_p9
                     if spec['mpi'].mpifc == "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-8.0.0/bin/mpif90":
                         cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", 
-                                                    "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.06.12//bin/mpif90"))
+                                                    "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.06.12/bin/mpif90"))
                     elif spec['mpi'].mpifc == "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2019.03.26/bin/mpif90":
                         cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", 
-                                                    "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.06.12//bin/mpif90"))
+                                                    "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.06.12/bin/mpif90"))
                     # blueos
                     elif spec['mpi'].mpifc == "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2018.11.09/bin/mpif90":
                         cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", 
@@ -402,7 +402,7 @@ class UberenvAxom(Package):
             cfg.write(cmake_cache_option("CMAKE_SKIP_RPATH", True))
 
         # BlueOS
-        elif on_blueos:
+        elif on_blueos or on_blueos_p9:
             if "xlf" in f_compiler:
                 cfg.write(cmake_cache_entry("CMAKE_Fortran_COMPILER_ID", "XL",
                     "All of BlueOS compilers report clang due to nvcc, override to proper compiler family"))
@@ -416,8 +416,10 @@ class UberenvAxom(Package):
             if str(spec.compiler) in ("clang@upstream_xlf", "clang@upstream_nvcc_xlf"):
                 cfg.write(cmake_cache_entry("BLT_FORTRAN_FLAGS", "-WF,-C!",
                     "Converts C-style comments to Fortran style in preprocessed files"))
+                # Grab lib directory for the current fortran compiler
+                libdir = os.path.join(os.path.dirname(os.path.dirname(f_compiler)), "lib")
                 cfg.write(cmake_cache_entry("BLT_EXE_LINKER_FLAGS",
-                    "-Wl,-rpath,/usr/tce/packages/xl/xl-2018.05.18/lib/",
+                    "-Wl,-rpath," + libdir,
                     "Adds a missing rpath for libraries associated with the fortran compiler"))
 
             elif "xl@coral" == str(spec.compiler):
