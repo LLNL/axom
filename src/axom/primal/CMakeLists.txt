@@ -72,10 +72,6 @@ blt_add_library(
     OBJECT                TRUE
     )
 
-if (ENABLE_CUDA)
-  set_target_properties(primal PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-endif()
-
 axom_write_unified_header(NAME    primal
                           HEADERS ${primal_headers})
 
