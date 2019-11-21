@@ -43,7 +43,7 @@ principles of Slic's :ref:`sections/architecture`. To get started with
 using Slic quickly within an application, see the
 :ref:`sections/getting_started` section. For more detailed information on
 the interfaces of the various classes and functions in Slic, developers
-are advised to consult the `Slic Doxygen API Documentation`_.
+are advised to consult the `Slic Doxygen API <../../../../doxygen/html/slictop.html>`_.
 
 Additional questions, feature requests or bug reports on Slic can be submitted
 by `creating a new issue on Github <https://github.com/LLNL/axom/issues>`_

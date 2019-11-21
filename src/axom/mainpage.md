@@ -31,10 +31,10 @@ indicate hard dependencies; dashed links indicate optional dependencies.
 
 # Further documentation
 
-- [User manual](../../../sphinx/axom_docs/html/docs/index.html)
-- [Quick start guide](../../../sphinx/axom_docs/html/docs/sphinx/quickstart_guide/index.html)
-- [Development guide](../../../sphinx/axom_docs/html/docs/sphinx/dev_guide/index.html) (intended for Axom contributors)
-- Coding [style guide](../../../sphinx/axom_docs/html/docs/sphinx/coding_guide/index.html) (intended for Axom contributors)
-- Please see our [license](../../../sphinx/axom_docs/html/docs/licenses.html).
+- [User manual](../../index.html)
+- [Quick start guide](../../docs/sphinx/quickstart_guide/index.html)
+- [Development guide](../../docs/sphinx/dev_guide/index.html) (intended for Axom contributors)
+- Coding [style guide](../../docs/sphinx/coding_guide/index.html) (intended for Axom contributors)
+- Please see our [license](../../docs/licenses.html).
 
 Each component contains a `test` subdirectory containing numerous code unit tests and an `example` subdirectory with more extensive demonstrations of the Axom library.  The Sidre, Mint, and Slam examples include several versions of the `lulesh` mini-app,  an implementation of the heat equation and a 1-D shock tube simulation.

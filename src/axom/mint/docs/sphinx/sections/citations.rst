@@ -6,7 +6,7 @@
 
 .. _LLNL: https://www.llnl.gov/
 .. _Umpire: https://umpire.readthedocs.io/en/develop/
-.. _Mint Doxygen API Documentation: https://lc.llnl.gov/axom/docs/doxygen/axom_doxygen/html/classaxom_1_1mint_1_1Mesh.html
+.. _Mint Doxygen API Documentation: ../../../../../doxygen/html/minttop.html
 .. _Axom Quick Start Guide: https://axom.readthedocs.io/en/develop/docs/sphinx/quickstart_guide/index.html
 .. _Conduit: https://llnl-conduit.readthedocs.io/en/latest/index.html
 .. _Blueprint: https://llnl-conduit.readthedocs.io/en/latest/blueprint.html

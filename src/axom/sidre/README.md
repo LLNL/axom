@@ -26,5 +26,5 @@ Typically, an application code will
 - Delete the data store when done
   - This will also clean up data allocated via Sidre mechanisms; external data must be deallocated by user code
 
-The [Sidre guide](../../../sphinx/axom_docs/html/axom/sidre/docs/sphinx/index.html)
+The [Sidre guide](https://axom.readthedocs.io/en/develop/axom/sidre/docs/sphinx/index.html)
 introduces these concepts in more detail.

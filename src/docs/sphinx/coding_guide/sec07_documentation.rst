@@ -561,7 +561,7 @@ Summary of common Doxygen commands
 --------------------------------------------------------------------
 
 This Section provides an overview of commonly used Doxygen commands.
-Please see the `Doxygen guide <http://www.stack.nl/~dimitri/doxygen/manual/index.html>`_ for more details and information about other commands.
+Please see the `Doxygen guide <http://www.doxygen.nl/manual/>`_ for more details and information about other commands.
 
 Note that to be processed properly, Doxygen commands **must** be preceded with 
 either "\\" or "\@" character. For brevity, we use "\\" for all commands 

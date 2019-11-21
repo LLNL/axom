@@ -16,5 +16,5 @@ associated support classes.
   - [RectangularLattice](@ref axom::spin::RectangularLattice) supports
     computation of coordinates for spatial bins.
 
-The [Spin user documentation](../../../sphinx/axom_docs/html/axom/spin/docs/sphinx/index.html)
+The [Spin user documentation](https://axom.readthedocs.io/en/develop/axom/spin/docs/sphinx/index.html)
 describes these classes and their use.

@@ -5,5 +5,5 @@ Primal: Geometric primitives and associated computational geometry tests {#prima
 
 It also provides spatial acceleration data structures over collections of spatial objects, including the [bounding volume hierarchy](@ref axom::primal::BVHTree) tree and the [uniform grid](@ref axom::primal::UniformGrid) (also known as cell list).
 
-The [introduction to Primal](../../../sphinx/axom_docs/html/axom/primal/docs/sphinx/index.html)
+The [introduction to Primal](https://axom.readthedocs.io/en/develop/axom/primal/docs/sphinx/index.html)
 covers these concepts in more detail.
