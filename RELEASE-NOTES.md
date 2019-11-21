@@ -7,6 +7,23 @@ The format of this file is based on [Keep a Changelog](http://keepachangelog.com
 
 The Axom project release numbers follow [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+### Removed
+
+### Deprecated
+
+### Changed
+- Updated BLT to develop (30ccea5) as of Nov 21, 2019
+- Set CUDA_SEPARABLE_COMPILATION globally instead of just in a few components.
+
+### Fixed
+
+### Known Bugs
+
+
 ## [Version 0.3.2] - Release date 2019-09-22
 
 ### Added
@@ -25,9 +42,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Updated Raja TPL to v0.9.0
 - Updated Umpire TPL to v1.0.0
 - AXOM_USE_OPENMP is now being set at configure time accordingly instead of
-  auto-detected based on whether "_OPENMP" is passed by the compiler. This
+  auto-detected based on whether ``_OPENMP`` is passed by the compiler. This
   fixes issues where a host code would compile Axom w/out OpenMP, but, use
-  Axom in parts of the code where OpenMP is enabled. 
+  Axom in parts of the code where OpenMP is enabled.
 
 ### Fixed
 - Fixed usage of Umpire's MemoryResourceType enum in Axom. Axom was assuming that
