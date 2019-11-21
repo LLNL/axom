@@ -433,6 +433,8 @@ class UberenvAxom(Package):
                 cfg.write(cmake_cache_entry("CUDA_TOOLKIT_ROOT_DIR", "/usr/tce/packages/cuda/cuda-10.1.168"))
                 cfg.write(cmake_cache_entry("CMAKE_CUDA_COMPILER", "${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc"))
 
+                cfg.write(cmake_cache_option("CUDA_SEPARABLE_COMPILATION", True))
+
                 if on_blueos_p9:
                     cfg.write(cmake_cache_entry("AXOM_CUDA_ARCH", "sm_70"))
                 else:
