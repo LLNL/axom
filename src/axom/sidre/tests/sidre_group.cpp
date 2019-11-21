@@ -2273,12 +2273,6 @@ TEST(sidre_group,import_conduit)
 
   EXPECT_TRUE(ds.getRoot()->importConduitTree(input));
 
-  Group* flds = ds.getRoot()->getGroup("fields");
-
-  Group* ga = flds->getGroup("a");
-  Group* gb = flds->getGroup("b");
-  Group* gc = flds->getGroup("c");
-
   EXPECT_EQ(ds.getRoot()->getView(
               "fields/a/i0")->getData<conduit::int64>(),100);
   EXPECT_NEAR(ds.getRoot()->getView(
@@ -2316,12 +2310,6 @@ TEST(sidre_group,import_conduit_external)
 
   //Zero copy of array data
   EXPECT_TRUE(ds.getRoot()->importConduitTreeExternal(input));
-
-  Group* flds = ds.getRoot()->getGroup("fields");
-
-  Group* ga = flds->getGroup("a");
-  Group* gb = flds->getGroup("b");
-  Group* gc = flds->getGroup("c");
 
   EXPECT_EQ(ds.getRoot()->getView(
               "fields/a/i0")->getData<conduit::int64>(),100);

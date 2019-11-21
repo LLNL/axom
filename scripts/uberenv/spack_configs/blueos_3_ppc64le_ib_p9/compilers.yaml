@@ -19,10 +19,10 @@ compilers:
     modules: []
     operating_system: rhel7
     paths:
-      cc:  /usr/tce/packages/clang/clang-upstream-2019.03.26/bin/clang
-      cxx: /usr/tce/packages/clang/clang-upstream-2019.03.26/bin/clang++
-      f77: /usr/tce/packages/xl/xl-2019.06.12/bin/xlf2003
-      fc:  /usr/tce/packages/xl/xl-2019.06.12/bin/xlf2003
+      cc:  /usr/tce/packages/clang/clang-upstream-2019.08.15/bin/clang
+      cxx: /usr/tce/packages/clang/clang-upstream-2019.08.15/bin/clang++
+      f77: /usr/tce/packages/xl/xl-2019.08.20/bin/xlf2003
+      fc:  /usr/tce/packages/xl/xl-2019.08.20/bin/xlf2003
     spec: clang@upstream_xlf
     target: ppc64le
 - compiler:
@@ -34,8 +34,8 @@ compilers:
     paths:
       cc:  /usr/tce/packages/clang/clang-8.0.0/bin/clang
       cxx: /usr/tce/packages/clang/clang-8.0.0/bin/clang++
-      f77: /usr/tce/packages/xl/xl-2019.06.12/bin/xlf2003
-      fc:  /usr/tce/packages/xl/xl-2019.06.12/bin/xlf2003
+      f77: /usr/tce/packages/xl/xl-2019.08.20/bin/xlf2003
+      fc:  /usr/tce/packages/xl/xl-2019.08.20/bin/xlf2003
     spec: clang@8.0.0_nvcc_xlf
     target: ppc64le
 - compiler:

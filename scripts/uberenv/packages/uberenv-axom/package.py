@@ -330,10 +330,25 @@ class UberenvAxom(Package):
                     "Pass in an explicit path to help find mpif.h"))
             else:
                 cfg.write(cmake_cache_entry("MPI_C_COMPILER", spec['mpi'].mpicc))
-                cfg.write(cmake_cache_entry("MPI_CXX_COMPILER",
-                                            spec['mpi'].mpicxx))
-                cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER",
-                                            spec['mpi'].mpifc))
+                cfg.write(cmake_cache_entry("MPI_CXX_COMPILER", spec['mpi'].mpicxx))
+                if on_blueos or on_blueos_p9:
+                    # clang doesn't come with a fortran wrapper on blueos
+
+                    # blueos_p9
+                    if spec['mpi'].mpifc == "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-8.0.0/bin/mpif90":
+                        cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", 
+                                                    "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.06.12//bin/mpif90"))
+                    elif spec['mpi'].mpifc == "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2019.03.26/bin/mpif90":
+                        cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", 
+                                                    "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.06.12//bin/mpif90"))
+                    # blueos
+                    elif spec['mpi'].mpifc == "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2018.11.09/bin/mpif90":
+                        cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", 
+                                                    "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2018.11.26/bin/mpif90"))
+                    else:
+                        cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", spec['mpi'].mpifc))
+                else:
+                    cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", spec['mpi'].mpifc))
 
             # Determine MPIEXEC
             if on_blueos:
