@@ -335,16 +335,17 @@ class UberenvAxom(Package):
                     # clang doesn't come with a fortran wrapper on blueos
 
                     # blueos_p9
-                    if spec['mpi'].mpifc == "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-8.0.0/bin/mpif90":
+                    spectrum_prefix = "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release"
+                    if spec['mpi'].mpifc == spectrum_prefix + "-clang-8.0.0/bin/mpif90":
                         cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", 
-                                                    "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.06.12/bin/mpif90"))
-                    elif spec['mpi'].mpifc == "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2019.03.26/bin/mpif90":
+                                                    spectrum_prefix + "-xl-2019.06.12/bin/mpif90"))
+                    elif spec['mpi'].mpifc == spectrum_prefix + "-clang-upstream-2019.03.26/bin/mpif90":
                         cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", 
-                                                    "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.06.12/bin/mpif90"))
+                                                    spectrum_prefix + "-xl-2019.06.12/bin/mpif90"))
                     # blueos
-                    elif spec['mpi'].mpifc == "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2018.11.09/bin/mpif90":
+                    elif spec['mpi'].mpifc == spectrum_prefix + "-clang-upstream-2018.11.09/bin/mpif90":
                         cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", 
-                                                    "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2018.11.26/bin/mpif90"))
+                                                    spectrum_prefix + "-xl-2018.11.26/bin/mpif90"))
                     else:
                         cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", spec['mpi'].mpifc))
                 else:
@@ -413,8 +414,8 @@ class UberenvAxom(Package):
                 cfg.write(cmake_cache_entry("CMAKE_CXX_COMPILER_ID", "XL",
                     "All of BlueOS compilers report clang due to nvcc, override to proper compiler family"))
 
-            if str(spec.compiler) in ("clang@upstream_xlf", "clang@upstream_nvcc_xlf"):
-                cfg.write(cmake_cache_entry("BLT_FORTRAN_FLAGS", "-WF,-C!",
+            if "xlf" in f_compiler:
+                cfg.write(cmake_cache_entry("BLT_FORTRAN_FLAGS", "-WF,-C!  -qxlf2003=polymorphic",
                     "Converts C-style comments to Fortran style in preprocessed files"))
                 # Grab lib directory for the current fortran compiler
                 libdir = os.path.join(os.path.dirname(os.path.dirname(f_compiler)), "lib")
@@ -422,9 +423,6 @@ class UberenvAxom(Package):
                     "-Wl,-rpath," + libdir,
                     "Adds a missing rpath for libraries associated with the fortran compiler"))
 
-            elif "xl@coral" == str(spec.compiler):
-                cfg.write(cmake_cache_entry("BLT_FORTRAN_FLAGS", "-WF,-C! -qxlf2003=polymorphic",
-                    "Convert C-style comments to Fortran and link fortran exes to C++ libraries"))
 
             if "+cuda" in spec:
                 cfg.write("##############\n")
