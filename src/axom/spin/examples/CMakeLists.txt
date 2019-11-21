@@ -33,6 +33,3 @@ blt_add_executable(
     FOLDER      axom/spin/examples
     )
 
-if (ENABLE_CUDA)
-  set_target_properties(naive_intersect_raja_ex PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-endif()

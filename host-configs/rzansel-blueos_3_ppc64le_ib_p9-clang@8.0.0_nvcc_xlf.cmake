@@ -110,6 +110,7 @@ set(AXOM_CUDA_ARCH "sm_70" CACHE PATH "")
 
 set(CMAKE_CUDA_FLAGS "-restrict -arch ${AXOM_CUDA_ARCH} -std=c++11 --expt-extended-lambda -G" CACHE PATH "")
 
+set(CUDA_SEPARABLE_COMPILATION ON CACHE BOOL "" )
 set(CMAKE_CUDA_HOST_COMPILER "${MPI_CXX_COMPILER}" CACHE PATH "")
 
 # nvcc does not like gtest's 'pthreads' flag
