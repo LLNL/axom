@@ -34,26 +34,25 @@ struct structured_exec< SEQ_EXEC >
 {
 #ifdef AXOM_USE_RAJA
   /* *INDENT-OFF* */
-   using loop2d_policy =
-       RAJA::KernelPolicy<
-                RAJA::statement::For< 1, RAJA::loop_exec,   // j
-                  RAJA::statement::For< 0, RAJA::loop_exec, // i
-                    RAJA::statement::Lambda< 0 >
-                  > // END i
-                > // END j
-             >; // END kernel
+  using loop2d_policy = RAJA::KernelPolicy<
+    RAJA::statement::For< 1, RAJA::loop_exec,   // j
+      RAJA::statement::For< 0, RAJA::loop_exec, // i
+        RAJA::statement::Lambda< 0 >
+      > // END i
+    > // END j
+  >; // END kernel
 
-   using loop3d_policy =
-       RAJA::KernelPolicy<
-               RAJA::statement::For< 2, RAJA::loop_exec,       // k
-                  RAJA::statement::For< 1, RAJA::loop_exec,    // j
-                     RAJA::statement::For< 0, RAJA::loop_exec, // i
-                        RAJA::statement::Lambda< 0 >
-                     > // END i
-                   > // END j
-                > // END k
-             >; // END kernel
-   /* *INDENT-ON* */
+  using loop3d_policy = RAJA::KernelPolicy<
+    RAJA::statement::For< 2, RAJA::loop_exec,     // k
+      RAJA::statement::For< 1, RAJA::loop_exec,   // j
+        RAJA::statement::For< 0, RAJA::loop_exec, // i
+          RAJA::statement::Lambda< 0 >
+        > // END i
+      > // END j
+    > // END k
+  >; // END kernel
+  /* *INDENT-ON* */
+
 #else
   using loop2d_policy = void;
   using loop3d_policy = void;
@@ -67,25 +66,23 @@ struct structured_exec< OMP_EXEC >
 {
   /* *INDENT-OFF* */
 
-   using loop2d_policy =
-       RAJA::KernelPolicy<
-                RAJA::statement::For< 1, RAJA::omp_parallel_for_exec, // j
-                  RAJA::statement::For< 0, RAJA::loop_exec,           // i
-                    RAJA::statement::Lambda< 0 >
-                  > // END i
-                > // END j
-             >; // END kernel
+  using loop2d_policy = RAJA::KernelPolicy<
+    RAJA::statement::For< 1, RAJA::omp_parallel_for_exec, // j
+      RAJA::statement::For< 0, RAJA::loop_exec,           // i
+        RAJA::statement::Lambda< 0 >
+     > // END i
+    > // END j
+  >; // END kernel
 
-   using loop3d_policy =
-       RAJA::KernelPolicy<
-                RAJA::statement::For< 2, RAJA::omp_parallel_for_exec, // k
-                   RAJA::statement::For< 1, RAJA::loop_exec,          // j
-                      RAJA::statement::For< 0, RAJA::loop_exec,       // i
-                         RAJA::statement::Lambda< 0 >
-                      > // END i
-                    > // END j
-                 > // END k
-              >; // END kernel
+  using loop3d_policy = RAJA::KernelPolicy<
+    RAJA::statement::For< 2, RAJA::omp_parallel_for_exec, // k
+      RAJA::statement::For< 1, RAJA::loop_exec,           // j
+        RAJA::statement::For< 0, RAJA::loop_exec,         // i
+          RAJA::statement::Lambda< 0 >
+        > // END i
+      > // END j
+    > // END k
+  >; // END kernel
 
   /* *INDENT-ON* */
 };
@@ -99,31 +96,40 @@ struct structured_exec< CUDA_EXEC< BLOCK_SIZE, SYNCHRONOUS > >
 {
   /* *INDENT-OFF* */
 
-  using loop2d_policy =
-      RAJA::KernelPolicy<
-                  RAJA::statement::CudaKernelFixed< 256,
-                    RAJA::statement::For<1, RAJA::cuda_block_x_loop,
-                      RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
-                        RAJA::statement::Lambda<0>
-                      >
-                    >
-                  >
-                >;
+  using loop2d_policy = RAJA::KernelPolicy<
+    RAJA::statement::CudaKernel<
+      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<16>, RAJA::cuda_block_y_loop,
+        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<16>, RAJA::cuda_block_x_loop,
+          RAJA::statement::For<1, RAJA::cuda_thread_y_loop,
+            RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+              RAJA::statement::Lambda<0>
+            >
+          >
+        >
+      >
+    >
+  >;
 
-  using loop3d_policy =
-      RAJA::KernelPolicy<
-        RAJA::statement::CudaKernelFixed< 256,
-          RAJA::statement::For<2, RAJA::cuda_block_x_loop,
-            RAJA::statement::For<1, RAJA::cuda_block_y_loop,
-              RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
-                RAJA::statement::Lambda<0>
+  using loop3d_policy = RAJA::KernelPolicy<
+    RAJA::statement::CudaKernel<
+      RAJA::statement::Tile<2, RAJA::statement::tile_fixed<8>, RAJA::cuda_block_z_loop,
+        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<8>, RAJA::cuda_block_y_loop,
+          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<8>, RAJA::cuda_block_x_loop,
+            RAJA::statement::For<2, RAJA::cuda_thread_z_loop,
+              RAJA::statement::For<1, RAJA::cuda_thread_y_loop,
+                RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+                  RAJA::statement::Lambda<0>
+                >
               >
             >
           >
         >
-      >;
+      >
+    >
+  >;
 
   /* *INDENT-ON*  */
+
 };
 
 template < int BLOCK_SIZE >
@@ -131,29 +137,37 @@ struct structured_exec< CUDA_EXEC< BLOCK_SIZE, ASYNC > >
 {
   /* *INDENT-OFF* */
 
-  using loop2d_policy =
-        RAJA::KernelPolicy<
-              RAJA::statement::CudaKernelFixedAsync< 256,
-                RAJA::statement::For<1, RAJA::cuda_block_x_loop,
-                  RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
-                    RAJA::statement::Lambda<0>
-                  >
-                >
-              >
-            >;
+  using loop2d_policy = RAJA::KernelPolicy <
+    RAJA::statement::CudaKernelAsync<
+      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<16>, RAJA::cuda_block_y_loop,
+        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<16>, RAJA::cuda_block_x_loop,
+          RAJA::statement::For<1, RAJA::cuda_thread_y_loop,
+            RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+              RAJA::statement::Lambda<0>
+            >
+          >
+        >
+      >
+    >
+  >;
 
-    using loop3d_policy =
-        RAJA::KernelPolicy<
-          RAJA::statement::CudaKernelFixedAsync< 256,
-            RAJA::statement::For<2, RAJA::cuda_block_x_loop,
-              RAJA::statement::For<1, RAJA::cuda_block_y_loop,
+  using loop3d_policy = RAJA::KernelPolicy<
+    RAJA::statement::CudaKernelAsync<
+      RAJA::statement::Tile<2, RAJA::statement::tile_fixed<8>, RAJA::cuda_block_z_loop,
+        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<8>, RAJA::cuda_block_y_loop,
+          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<8>, RAJA::cuda_block_x_loop,
+            RAJA::statement::For<2, RAJA::cuda_thread_z_loop,
+              RAJA::statement::For<1, RAJA::cuda_thread_y_loop,
                 RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
                   RAJA::statement::Lambda<0>
                 >
               >
             >
           >
-        >;
+        >
+      >
+    >
+  >;
 
   /* *INDENT-ON*  */
 };
