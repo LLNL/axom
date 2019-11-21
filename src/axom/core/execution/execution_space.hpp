@@ -47,7 +47,7 @@
  *
  *    The CUDA_EXEC execution space strictly requires Umpire for memory
  *    management. The data must reside either on device memory which, is only
- *    accessible on the GPU, or on Unified memory which, is accessible on both
+ *    accessible on the GPU, or in Unified memory which, is accessible on both
  *    the CPU or GPU. Note, when using Unified memory, the hardware transfers
  *    the data accordingly as needed. Consequently, using unified memory must
  *    be handled with extreme care, in order to avoid the latencies associated

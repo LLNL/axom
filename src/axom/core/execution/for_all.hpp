@@ -22,11 +22,31 @@ namespace axom
 /// @{
 
 /*!
- * \brief
+ * \brief Loops over a specified contiguous range, I:[begin,end-1].
  *
- * \param begin
- * \param end
- * \param kernel
+ * \param [in] begin start index of the iteration.
+ * \param [in] end length of the iteration space.
+ * \param [in] kernel user-supplied kernel, i.e., a lambda or functor.
+ *
+ * \tparam ExecSpace the execution space where to run the supplied kernel
+ * \tparam KernelType the type of the supplied kernel (detected by the compiler)
+ *
+ * \see axom::execution_space
+ *
+ * Usage Example:
+ * \code
+ *
+ *    double* A = ...
+ *    double* B = ...
+ *    double* C = ...
+ *
+ *    // compute C[ idx ] for all entries in [100-499]
+ *    axom::for_all< axom::OMP_EXEC >( 100, 500, AXOM_LAMBDA( IndexType idx ) {
+ *      C[ idx ] = A[ idx ] + B[ idx ];
+ *    } );
+ *
+ * \endcode
+ *
  */
 template < typename ExecSpace, typename KernelType >
 inline void for_all( const IndexType& begin, const IndexType& end,
@@ -54,10 +74,28 @@ inline void for_all( const IndexType& begin, const IndexType& end,
 }
 
 /*!
- * \brief
+ * \brief Loops over the contiguous range, I:[0,N-1], given by its length, N.
  *
- * \param N
- * \param kernel
+ * \param [in] N the length of the contiguous range.
+ * \param [in] kernel user-supplied kernel, i.e., a lambda or functor.
+ *
+ * \tparam ExecSpace the execution space where to run the supplied kernel
+ * \tparam KernelType the type of the supplied kernel (detected by the compiler)
+ *
+ * \see axom::execution_space
+ *
+ * Usage Example:
+ * \code
+ *
+ *    double* A = ...
+ *    double* B = ...
+ *    double* C = ...
+ *
+ *    axom::for_all< axom::OMP_EXEC >( 500, AXOM_LAMBDA( IndexType idx ) {
+ *      C[ idx ] = A[ idx ] + B[ idx ];
+ *    } );
+ *
+ * \endcode
  *
  */
 template < typename ExecSpace, typename KernelType >
