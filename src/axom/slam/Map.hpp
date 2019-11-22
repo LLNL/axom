@@ -15,7 +15,6 @@
 
 #include <vector>
 #include <sstream>
-#include <iostream>
 
 #include "axom/core.hpp"
 #include "axom/slic.hpp"
@@ -483,23 +482,16 @@ bool Map<SetType, DataType, StridePolicy>::isValid(bool verboseOutput) const
   }
 
 
-  if(verboseOutput)
+  if(verboseOutput && !bValid)
   {
     std::stringstream sstr;
 
     sstr << "\n*** Detailed results of isValid on the map.\n";
-    if(bValid)
-    {
-      sstr << "Map was valid." << std::endl;
-    }
-    else
-    {
-      sstr << "Map was NOT valid.\n"
+    sstr << "Map was NOT valid.\n"
            << sstr.str()
            << std::endl;
-    }
 
-    std::cout << sstr.str() << std::endl;
+    SLIC_DEBUG( sstr.str() );
   }
 
   return bValid;
@@ -510,10 +502,11 @@ template<typename SetType, typename DataType, typename StridePolicy>
 void Map<SetType, DataType, StridePolicy>::print() const
 {
   bool valid = isValid(true);
-  std::stringstream sstr;
 
   if (valid)
   {
+    std::stringstream sstr;
+
     if (!m_set)
     {
       sstr << "** map is empty.";
@@ -534,9 +527,14 @@ void Map<SetType, DataType, StridePolicy>::print() const
         }
       }
     }
+
+    SLIC_INFO( sstr.str() );
+  }
+  else
+  {
+     SLIC_INFO("Map was not valid.");
   }
 
-  std::cout << sstr.str() << std::endl;
 }
 
 

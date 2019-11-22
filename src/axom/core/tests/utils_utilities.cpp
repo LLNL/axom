@@ -116,3 +116,34 @@ TEST(core_Utilities,minmax)
     EXPECT_EQ(a, axom::utilities::max(a,b));
   }
 }
+
+TEST(core_Utilities, lerp)
+{
+  std::cout<<"Testing linear interpolation (lerp) function."<< std::endl;
+
+  double f0 = 50.0;
+  double f1 = 100.0;
+
+  // Test end points
+  {
+    EXPECT_DOUBLE_EQ( f0, axom::utilities::lerp(f0, f1, 0.) );
+    EXPECT_DOUBLE_EQ( f1, axom::utilities::lerp(f1, f0, 0.) );
+
+    EXPECT_DOUBLE_EQ( f1, axom::utilities::lerp(f0, f1, 1.) );
+    EXPECT_DOUBLE_EQ( f0, axom::utilities::lerp(f1, f0, 1.) );
+  }
+
+  // Test midpoint
+  {
+    double t = 0.5;
+    double exp = 75.;
+    EXPECT_DOUBLE_EQ(  exp, axom::utilities::lerp(f0, f1, t));
+  }
+
+  // Another test
+  {
+    double t = 0.66;
+    double exp = 83.;
+    EXPECT_DOUBLE_EQ(  exp, axom::utilities::lerp(f0, f1, t));
+  }
+}

@@ -2,6 +2,7 @@ digraph dependencies {
   quest -> {slam primal mint spin};
   {quest slam primal mint spin} -> {slic core};
   mint -> sidre [style="dashed"];
+  mir -> {slic core slam primal};
   spin -> {slam primal};
   sidre -> {slic core};
   slic -> core;
