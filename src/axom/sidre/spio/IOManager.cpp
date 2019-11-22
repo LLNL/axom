@@ -1118,7 +1118,6 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
   AXOM_DEBUG_VAR(domain_path);
   AXOM_DEBUG_VAR(file_name);
   AXOM_DEBUG_VAR(mesh_path);
-  AXOM_DEBUG_VAR(blueprint_name);
 
   SLIC_WARNING("Axom configured without hdf5. "
                <<"writeBlueprintIndexToRootFile() only currently implemented "
