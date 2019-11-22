@@ -249,6 +249,7 @@ void check_build_bvh2d( )
   boxes[ 6 ] = boxes[ 7 ] = 2.;
 
   spin::BVH< NDIMS, ExecSpace, FloatType > bvh( boxes, NUM_BOXES );
+  bvh.setScaleFactor( 1.0 ); // i.e., no scaling
   bvh.build( );
 
   FloatType lo[ NDIMS ];
@@ -287,6 +288,7 @@ void check_build_bvh3d( )
   boxes[ 9 ] = boxes[ 10 ] = boxes[ 11 ] = 2.;
 
   spin::BVH< NDIMS, ExecSpace, FloatType > bvh( boxes, NUM_BOXES );
+  bvh.setScaleFactor( 1.0 ); // i.e., no scaling
   bvh.build( );
 
   FloatType lo[ NDIMS ];
@@ -345,6 +347,7 @@ void check_find3d( )
 
   // construct the BVH
   spin::BVH< NDIMS, ExecSpace, FloatType > bvh( aabbs, ncells );
+  bvh.setScaleFactor( 1.0 ); // i.e., no scaling
   bvh.build( );
 
   FloatType min[ NDIMS ];
@@ -442,6 +445,7 @@ void check_find2d( )
 
   // construct the BVH
   spin::BVH< NDIMS, ExecSpace, FloatType > bvh( aabbs, ncells );
+  bvh.setScaleFactor( 1.0 ); // i.e., no scaling
   bvh.build( );
 
   FloatType min[ NDIMS ];
@@ -522,6 +526,7 @@ void check_single_box2d( )
 
   // construct a BVH with a single box
   spin::BVH< NDIMS, ExecSpace, FloatType > bvh( boxes, NUM_BOXES );
+  bvh.setScaleFactor( 1.0 ); // i.e., no scaling
   bvh.build( );
 
   // check the bounds -- should match the bounds of the input bounding box
@@ -589,6 +594,7 @@ void check_single_box3d( )
 
   // construct a BVH with a single box
   spin::BVH< NDIMS, ExecSpace, FloatType > bvh( boxes, NUM_BOXES );
+  bvh.setScaleFactor( 1.0 ); // i.e., no scaling
   bvh.build( );
 
   // check the bounds -- should match the bounds of the input bounding box
