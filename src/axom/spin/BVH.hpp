@@ -80,28 +80,7 @@ enum BVHReturnCodes
  *  2. Where and how subsequent queries are performed
  *  3. The default memory space, bound to the corresponding execution space
  *
- *  The list of currently available options are:
- *
- *  * <b> SEQ_EXEC </b> <br />
- *
- *    The BVH is constructed sequentially and stored on the CPU. All subsequent
- *    queries are performed sequentially on the CPU. This option is always
- *    available. The default memory space for SEQ_EXEC is host/cpu memory.
- *
- *  * <b> OMP_EXEC </b> <br />
- *
- *    The BVH is constructed in parallel on the CPU, using OpenMP, and likewise
- *    all subsequent queries are performed in parallel on the CPU. This option
- *    is available when Axom is compiled with OpenMP enabled. The default
- *    memory space used for OMP_EXEC is host/cpu memory.
- *
- *  * <b> CUDA_EXEC </b> <br />
- *
- *    The BVH is constructed in parallel and stored on the GPU, using CUDA.
- *    Likewise all subsequent queries are perfomed in parallel on the GPU.
- *    This option is availe when Axom is compiled with CUDA support. The
- *    default memory space used for CUDA_EXEC is unified memory, which can
- *    be accessed both from the CPU and GPU.
+ * \see axom::execution_space for more details.
  *
  *  A simple example illustrating how to use the BVH class is given below:
  *  \code
@@ -113,7 +92,7 @@ enum BVHReturnCodes
  *     const double* aabbs = ...
  *
  *     // create a 3D BVH instance in parallel on the CPU using OpenMP
- *     spin::BVH< DIMENSION, spin::OMP_EXEC > bvh( aabbs, numItems );
+ *     spin::BVH< DIMENSION, axom::OMP_EXEC > bvh( aabbs, numItems );
  *     bvh.build();
  *
  *     // query points supplied in arrays, qx, qy, qz,
