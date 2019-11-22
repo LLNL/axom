@@ -55,6 +55,12 @@ if ( ${RAJA_FOUND} AND ${UMPIRE_FOUND} )
       OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
       DEPENDS_ON mint ${spin_depends}
       FOLDER     axom/spin/tests
-      )
+     )
+
+   blt_add_test(
+      NAME    spin_bvh
+      COMMAND spin_bvh_test
+     )
 
 endif()
+
