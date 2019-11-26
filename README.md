@@ -83,7 +83,7 @@ PackageLicenseDeclared: BSD-3-Clause
 
 PackageName: CLI11  
 PackageHomePage: https://github.com/CLIUtils/CLI11  
-PackageLicenseDeclared: BSL-3-Clause  
+PackageLicenseDeclared: BSD-3-Clause  
 
 PackageName: fmt  
 PackageHomePage: https://github.com/fmtlib/fmt  
