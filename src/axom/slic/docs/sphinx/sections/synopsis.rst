@@ -21,7 +21,7 @@ infrastructure that simplifies logging application messages.
 * :ref:`BuiltInLogStreams` to support common logging use cases, e.g., log to
   a file or console.
 
-* Native integration with `Lumberjack`_ for logging and filtering of messages
+* Native integration with `Lumberjack <../../../lumberjack/docs/sphinx/index.html>`_ for logging and filtering of messages
   at scale.
 
 * Fortran bindings that provide an idiomatic API for Fortran applications.
@@ -31,10 +31,10 @@ infrastructure that simplifies logging application messages.
 Slic is designed to be *light-weight* and *self-contained*. The only requirement
 for using Slic is a C++11 compliant compiler. However, to use Slic in the
 context of a distributed parallel application and in conjunction with
-`Lumberjack`_, support for building with MPI is provided.
+`Lumberjack <../../../lumberjack/docs/sphinx/index.html>`_, support for building with MPI is provided.
 
-For further information on how to build the `Axom Toolkit`_,
-consult the `Axom Quick Start Guide`_.
+For further information on how to build the `Axom Toolkit <../../../../index.html>`_,
+consult the `Axom Quick Start Guide <../../../../docs/sphinx/quickstart_guide/index.html>`_.
 
 **About this Guide**
 

@@ -107,4 +107,4 @@ See :ref:`policy-label` for more details.
 
 
 * `API documentation <../../../../doxygen/html/slamtop.html>`_
-* `Axom main docs <../../web_main_docs/html/index.html>`_
+* `Axom main docs <../../../../index.html>`_

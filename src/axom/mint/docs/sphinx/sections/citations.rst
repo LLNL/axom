@@ -7,12 +7,12 @@
 .. _LLNL: https://www.llnl.gov/
 .. _Umpire: https://umpire.readthedocs.io/en/develop/
 .. _Mint Doxygen API Documentation: ../../../../../doxygen/html/minttop.html
-.. _Axom Quick Start Guide: https://axom.readthedocs.io/en/develop/docs/sphinx/quickstart_guide/index.html
+.. _Axom Quick Start Guide: ../../../../../docs/sphinx/quickstart_guide/index.html
 .. _Conduit: https://llnl-conduit.readthedocs.io/en/latest/index.html
 .. _Blueprint: https://llnl-conduit.readthedocs.io/en/latest/blueprint.html
 .. _RAJA: https://raja.readthedocs.io/en/master/index.html
-.. _Axom Toolkit: https://axom.readthedocs.io/en/develop/
-.. _Sidre: https://axom.readthedocs.io/en/develop/axom/sidre/docs/sphinx/index.html
+.. _Axom Toolkit: ../../../../../index.html
+.. _Sidre: ../../../../sidre/docs/sphinx/index.html
 .. _WCI: https://wci.llnl.gov/
 .. _WSC: https://wci.llnl.gov/about-us/weapon-simulation-and-computing
 .. _CGNS Numbering Conventions: https://cgns.github.io/CGNS_docs_current/sids/conv.html#unstructgrid.

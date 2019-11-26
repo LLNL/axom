@@ -5,9 +5,9 @@
 
 .. _LLNL: https://www.llnl.gov/
 .. _Shroud: https://shroud.readthedocs.io/en/develop/
-.. _Lumberjack: ../../../lumberjack/docs/sphinx/index.html
-.. _Axom Quick Start Guide: https://axom.readthedocs.io/en/develop/docs/sphinx/quickstart_guide/index.html
-.. _Axom Toolkit: https://axom.readthedocs.io/en/develop/
+.. _Lumberjack: ../../../../lumberjack/docs/sphinx/index.html
+.. _Axom Quick Start Guide: ../../../../../docs/sphinx/quickstart_guide/index.html
+.. _Axom Toolkit: ../../../../../index.html
 .. _WCI: https://wci.llnl.gov/
 .. _WSC: https://wci.llnl.gov/about-us/weapon-simulation-and-computing
 .. _Slic Doxygen API Documentation: ../../../../../doxygen/html/slictop.html

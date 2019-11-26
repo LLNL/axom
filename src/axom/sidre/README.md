@@ -25,6 +25,3 @@ Typically, an application code will
   - Save a subset of data in a group hierarchy; e.g., only the views with a specific attribute set
 - Delete the data store when done
   - This will also clean up data allocated via Sidre mechanisms; external data must be deallocated by user code
-
-The [Sidre guide](https://axom.readthedocs.io/en/develop/axom/sidre/docs/sphinx/index.html)
-introduces these concepts in more detail.
