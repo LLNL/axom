@@ -87,6 +87,16 @@ def parse_arguments():
         "-x", "--xcode", action="store_true", help="Create an xcode project."
     )
 
+    # Add supported versions of MS Visual Studio as needed.
+    msvcversions = {'2017': 'Visual Studio 15 2017',
+                    '201764': 'Visual Studio 15 2017 Win64'}
+    parser.add_argument(
+        "--msvc",
+        type=str,
+        choices=msvcversions.keys(),
+        help="Create a MS Visual Studio project."
+    )
+
     parser.add_argument(
         "-ecc",
         "--exportcompilercommands",
@@ -112,6 +122,7 @@ def parse_arguments():
     )
 
     args, unknown_args = parser.parse_known_args()
+    args.msvcversions = msvcversions
     if unknown_args:
         print(
             "[config-build]: Passing the following arguments directly to cmake... %s"
@@ -244,6 +255,9 @@ def create_cmake_command_line(
 
     if args.xcode:
         cmakeline += ' -G "Xcode"'
+
+    if args.msvc:
+        cmakeline += ' -G "%s"' % args.msvcversions[args.msvc]
 
     if args.docs_only:
         cmakeline += " -DENABLE_ALL_COMPONENTS=OFF"
