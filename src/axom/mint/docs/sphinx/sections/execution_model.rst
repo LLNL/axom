@@ -98,7 +98,7 @@ spaces, summarized in the table below.
 | **CUDA_EXEC< NBLOCKS >**         |  `RAJA`_ + CUDA +              | Parallel execution on           |
 |                                  |  `Umpire`_ (memory management) | CUDA-enabled GPUs.              |
 +----------------------------------+--------------------------------+---------------------------------+
-| **CUDA_EXEC< NBLOCKS, ASYNC >**  |  `RAJA`_ + CUDA                | Asynchronous parallel           |
+| **CUDA_EXEC< NBLOCKS, ASYNC >**  |  `RAJA`_ + CUDA +              | Asynchronous parallel           |
 |                                  |  `Umpire`_ (memory management) | execution on CUDA-enabled GPUs. |
 +----------------------------------+--------------------------------+---------------------------------+
 
