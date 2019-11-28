@@ -803,6 +803,7 @@ INPUT                  = @PROJECT_SOURCE_DIR@/axom/mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/slam/policies \
                          @PROJECT_SOURCE_DIR@/axom/slic/README.md \
                          @PROJECT_SOURCE_DIR@/axom/slic/core \
+                         @PROJECT_SOURCE_DIR@/axom/slic/interface \
                          @PROJECT_SOURCE_DIR@/axom/slic/streams \
                          @PROJECT_SOURCE_DIR@/axom/spin/README.md \
                          @PROJECT_SOURCE_DIR@/axom/spin
