@@ -132,7 +132,7 @@ blt_add_executable(
     NAME cli11_smoke_test
     SOURCES cli11_smoke.cpp
     OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-    DEPENDS_ON CLI11
+    DEPENDS_ON cli11
     FOLDER axom/thirdparty/tests )
 
 blt_add_test(

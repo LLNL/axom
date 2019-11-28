@@ -100,7 +100,7 @@ void Input::parse(int argc, char** argv, CLI::App& app)
 
   app.add_option("--weldThresh", weldThreshold,
                  "Distance threshold for welding vertices.")
-  ->capture_default_str();;
+  ->capture_default_str();
 
   app.add_flag("--skipWeld", skipWeld,
                "Don't weld vertices (useful for testing, not helpful otherwise).");

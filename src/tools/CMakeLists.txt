@@ -20,11 +20,11 @@ if( AXOM_ENABLE_SLAM AND AXOM_ENABLE_SIDRE AND ENABLE_MPI AND HDF5_FOUND )
         convert_sidre_protocol.cpp
     )
     set(datastore_converter_depends 
+        cli11
         sidre conduit::conduit hdf5
         slic fmt 
         slam 
-        mpi
-        )
+        mpi)
 
     blt_list_append(TO datastore_converter_depends ELEMENTS lumberjack mpi IF ${AXOM_ENABLE_LUMBERJACK} )
     blt_list_append(TO datastore_converter_depends ELEMENTS scr IF ${SCR_FOUND} )
@@ -48,7 +48,7 @@ set(mesh_tester_sources
     mesh_tester.cpp
 )
 set(mesh_tester_depends 
-    core slic mint slam quest primal CLI11
+    core slic mint slam quest primal cli11
     )
 
 blt_list_append(TO mesh_tester_depends ELEMENTS lumberjack mpi IF ${AXOM_ENABLE_LUMBERJACK} )

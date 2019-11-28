@@ -12,19 +12,19 @@
 # Register the built-in CLI11 library for command line option parsing
 #------------------------------------------------------------------------------
 
-blt_add_library(NAME CLI11
+blt_add_library(NAME cli11
                 HEADERS CLI11/CLI11.hpp
                 HEADERS_OUTPUT_SUBDIR CLI11)
 
-target_include_directories(CLI11 SYSTEM INTERFACE
+target_include_directories(cli11 SYSTEM INTERFACE
             $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
 
-install(TARGETS              CLI11
-        EXPORT               CLI11-targets
+install(TARGETS              cli11
+        EXPORT               cli11-targets
         INCLUDES DESTINATION include)
 install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/CLI11
         DESTINATION include )
-install(EXPORT CLI11-targets DESTINATION lib/cmake)
+install(EXPORT cli11-targets DESTINATION lib/cmake)
 
 set(CLI11_FOUND TRUE CACHE INTERNAL "")
 mark_as_advanced(CLI11_FOUND)
