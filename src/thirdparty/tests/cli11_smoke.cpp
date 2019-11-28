@@ -44,14 +44,15 @@ int main(int argc, char* argv[])
   app.add_flag("-b,--some-bool,!--no-some-bool", opt_bool,"boolean flag")
   ->capture_default_str();
 
-  app.add_option("-i,--some-int", opt_int,
-                 "integer input (required)")->required();
+  app.add_option("-i,--some-int", opt_int,"integer input")->required();
 
   app.add_option("-f,--some-float", opt_float, "float input")
   ->capture_default_str()
-  ->check(CLI::Range(1.,4.).description("Must be between 1. and 4."));
+  ->check(CLI::Range(1.,4.).description("Range [1,4]"));
 
   app.add_option("-s,--some-string", opt_str, "string input");
+
+  app.get_formatter()->column_width(40);
 
   CLI11_PARSE(app, argc,argv);
 
