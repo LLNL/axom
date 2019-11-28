@@ -13,11 +13,11 @@
  * the output datastores.  Optional command line arguments include
  * a '--protocol' option (the default is 'json')
  * and a '--strip' option to truncate the array data to at most N elements.
- * The strip option also prepends each array with its original size and a filler
- * entry of 0 for integer arrays or nan for floating point arrays.
- * E.g. if the array had 6 entries [1.01. 2.02, 3.03, 4.04, 5.05, 6.06]
+ * The strip option also prepends each array with its original size, the new
+ * size and a filler entry of 0 for integer arrays or nan for floating point
+ * arrays. E.g. if the array had 6 entries [1.01. 2.02, 3.03, 4.04, 5.05, 6.06]
  * and the user passed in --strip 3, the array would be converted to
- * [6, nan, 1.01, 2.02, 3.03].
+ * [6, 3, nan, 1.01, 2.02, 3.03].
  *
  * \note The strip option is intended as a temporary solution to truncating
  * a dataset to allow easier debugging.  In the future, we intend to separate
@@ -63,7 +63,6 @@ struct CommandLineArguments
   std::string m_outputName;
   std::string m_protocol;
   int m_numStripElts;
-  bool m_verbose;
 
   CommandLineArguments()
     : m_inputName("")
@@ -189,11 +188,15 @@ void allocateExternalData(sidre::Group* grp, std::vector<void*>& extPtrs)
 }
 
 /**
- * \brief Shifts the data to the right by two elements
+ * \brief Shifts the data to the right by three elements
  *
  * The new first value will be the size of the original array.
- * The next values will be 0 for integer data and Nan for float data.
- * This is followed by the initial values in the original dataset.
+ * The next value will be the number of retained elements and the
+ * third value will be 0 for integer data and Nan for float data.
+ * This is followed by the values in the truncated original dataset.
+ *
+ * \note This function creates a copy of the data since there could be
+ * several views in the original dataset pointing to the same memory
  *
  * \param view The array view on which we are operating
  * \param origSize The size of the original array
@@ -201,47 +204,58 @@ void allocateExternalData(sidre::Group* grp, std::vector<void*>& extPtrs)
 template<typename sidre_type>
 void modifyFinalValuesImpl(sidre::View* view, int origSize)
 {
-  SLIC_DEBUG("Looking at view " << view->getPathName());
-
   sidre_type* arr = view->getData();
+  int sz = view->getNumElements();
 
   // Uses a Slam set to help manage the indirection to the view data
   // Note: offset is zero since getData() already accounts for the offset
-  ViewSet idxSet = ViewSet::SetBuilder()
-                   .size(view->getNumElements())
-                   .stride(view->getStride());
+  ViewSet viewInds = ViewSet::SetBuilder()
+                     .size(sz)
+                     .stride(view->getStride());
 
   #ifdef AXOM_DEBUG
-  fmt::memory_buffer out_fwd;
-  for(auto i : idxSet.positions() )
   {
-    fmt::format_to(out_fwd,"\n\ti: {0}; index: {1}; arr[{1}] = {2}",
-                   i, idxSet[i], arr[ idxSet[i] ] );
+    fmt::memory_buffer out;
+    for(auto i : viewInds.positions() )
+    {
+      fmt::format_to(out,"\n\ti: {0}; index: {1}; arr[{1}] = {2}",
+                     i, viewInds[i], arr[ viewInds[i] ] );
+    }
+    SLIC_DEBUG( "Before truncation" << fmt::to_string(out) );
   }
-  SLIC_DEBUG( "Before" << fmt::to_string(out_fwd) );
   #endif
 
-  // Shift the data over by two
-  const int local_offset = 2;
-  for(int i=idxSet.size()-1 ; i >= local_offset ; --i)
+  // Create a new buffer for copied data
+  auto* ds = view->getOwningGroup()->getDataStore();
+  auto type = view->getTypeID();
+  auto newSz = sz+3;
+  auto* buff = ds->createBuffer(type, newSz)->allocate();
+
+  // Explicitly set the first two elements and copy elements over
+  sidre_type* newArr = buff->getData();
+
+  newArr[ 0 ] = static_cast<sidre_type>(origSize);
+  newArr[ 1 ] = static_cast<sidre_type>(sz);
+  newArr[ 2 ] = std::numeric_limits<sidre_type>::quiet_NaN();
+  for(auto i : viewInds.positions() )
   {
-    arr[ idxSet[i]] = arr[ idxSet[i-local_offset]];
+    newArr[ i+3 ] = arr[ viewInds[i] ];
   }
 
-  // Set the first two elements
-  arr[ idxSet[0] ] = static_cast<sidre_type>(origSize);
-  arr[ idxSet[1] ] = std::numeric_limits<sidre_type>::quiet_NaN();
+  // Update view's buffer to the new data
+  view->detachBuffer();
+  view->attachBuffer(type, newSz, buff);
 
   #ifdef AXOM_DEBUG
-  fmt::memory_buffer out_rev;
-  for(auto i : idxSet.positions() )
   {
-    fmt::format_to(out_rev,"\n\ti: {0}; index: {1}; arr[{1}] = {2}",
-                   i, idxSet[i], arr[ idxSet[i] ] );
+    fmt::memory_buffer out;
+    for(auto i : ViewSet(newSz).positions() )
+    {
+      fmt::format_to(out,"\n\ti: {0}; arr[{0}] = {1}",i, newArr[ i ] );
+    }
+    SLIC_DEBUG( "After truncation" << fmt::to_string(out) );
   }
-  SLIC_DEBUG( "After" << fmt::to_string(out_rev) );
   #endif
-
 }
 
 
@@ -309,7 +323,7 @@ void truncateBulkData(sidre::Group* grp, int maxSize)
     if(isArray)
     {
       const int numOrigElts = view->getNumElements();
-      const int newSize = std::min(maxSize+2, numOrigElts);
+      const int newSize = std::min(maxSize, numOrigElts);
 
       if(view->hasBuffer() && numOrigElts > newSize)
       {
@@ -378,6 +392,9 @@ void setupLogging()
   slic::addStreamToMsgLevel(wefStream, slic::message::Warning);
   slic::addStreamToMsgLevel(diStream,  slic::message::Info);
   slic::addStreamToMsgLevel(diStream,  slic::message::Debug);
+
+  // the following is helpful for debugging
+  // slic::debug::checksAreErrors = true;
 }
 
 /** Finalizes logging and flushes streams */
@@ -440,13 +457,13 @@ int main(int argc, char* argv[])
 
     // Add a string view to the datastore to indicate that we modified the data
     std::stringstream sstr;
-    sstr << "This datastore was created by the convert_sidre_protocol "
-         << "utility with option '--strip " << numElts
-         << "'. To simplify debugging, the bulk data in this datastore "
-         << "has been truncated to have at most " << numElts
-         << " actual values. The first two values are size of the original "
-         << " array followed by a zero/Nan. These are followed by (at most) "
-         << "the first " << numElts << " values of the array.";
+    sstr << "This datastore was created by axom's 'convert_sidre_protocol' "
+         << "utility with option '--strip " << numElts <<"'. "
+         << "To simplify debugging, the bulk data in this datastore has been "
+         << "truncated to have at most " << numElts << " original values "
+         << "per array. Three values have been prepended to each array: "
+         << "the size of the original array, the number of retained elements "
+         << "and a zero/Nan.";
 
     ds.getRoot()->createViewString("Note", sstr.str());
   }
