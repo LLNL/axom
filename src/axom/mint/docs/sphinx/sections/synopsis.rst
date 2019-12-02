@@ -20,13 +20,13 @@ architectures.
 * Native support for a variety of commonly employed :ref:`CellTypes`.
 
 * A flexible :ref:`MeshStorageManagement` system, which can optionally
-  inter-operate with `Sidre`_ as the underlying, in-memory, hierarchical
+  inter-operate with `Sidre <../../../sidre/docs/sphinx/index.html>`_ as the underlying, in-memory, hierarchical
   datastore, facilitating the integration across packages.
 
 * Basic support for :ref:`sections/fem`, consisting of
   commonly employed *shape functions* and *quadratures*.
 
-* A Mesh-Aware :ref:`sections/execution_model`, based on the `RAJA`_ programming
+* A Mesh-Aware :ref:`sections/execution_model`, based on the `RAJA <https://raja.readthedocs.io/en/master/index.html>`_ programming
   model abstraction layer that supports on-node parallelism for mesh-traversals,
   enabling the implementation of computational kernels that are born parallel
   and portable across different processor architectures.
@@ -38,14 +38,14 @@ The only requirement for using Mint is a C++11 compliant compiler.
 However, to realize the full spectrum of capabilities, support for
 the following third-party libraries is provided:
 
-* `RAJA`_, used for the parallel execution and portability layer.
+* `RAJA <https://raja.readthedocs.io/en/master/index.html>`_, used for the parallel execution and portability layer.
 
-* `Conduit`_ , for using `Sidre`_ as the :ref:`MeshStorageManagement` system.
+* `Conduit <https://llnl-conduit.readthedocs.io/en/latest/index.html>`_ , for using `Sidre <../../../sidre/docs/sphinx/index.html>`_ as the :ref:`MeshStorageManagement` system.
 
-* `Umpire`_, for memory management on next-generation architectures.
+* `Umpire <https://umpire.readthedocs.io/en/develop/>`_, for memory management on next-generation architectures.
 
-For further information on how to build the `Axom Toolkit`_ using these
-third-party libraries, consult the `Axom Quick Start Guide`_.
+For further information on how to build the `Axom Toolkit <../../../../index.html>`_ using these
+third-party libraries, consult the `Axom Quick Start Guide <../../../../docs/sphinx/quickstart_guide/index.html>`_.
 
 **About this Guide**
 
@@ -59,7 +59,7 @@ This guide discusses the basic concepts and architecture of Mint.
   demonstrate specific topics in a structured and simple format.
 
 * For complete documentation of the interfaces of the various classes and
-  functions in Mint consult the `Mint Doxygen API Documentation`_.
+  functions in Mint consult the `Mint Doxygen API Documentation <../../../../doxygen/html/minttop.html>`_.
 
 * Complete examples and code walk-throughs of mini-apps using Mint are
   provided in the :ref:`sections/examples` section.

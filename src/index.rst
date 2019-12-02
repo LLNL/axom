@@ -67,16 +67,16 @@ for Axom software components:
 Source Code Documentation
 --------------------------
 
-  *  `Axom <../../../doxygen/axom_doxygen/html/index.html>`_
-  *  `Core <../../../doxygen/axom_doxygen/html/coretop.html>`_
-  *  `Lumberjack <../../../doxygen/axom_doxygen/html/lumberjacktop.html>`_
-  *  `Mint <../../../doxygen/axom_doxygen/html/minttop.html>`_
-  *  `Primal <../../../doxygen/axom_doxygen/html/primaltop.html>`_
-  *  `Quest <../../../doxygen/axom_doxygen/html/questtop.html>`_
-  *  `Sidre <../../../doxygen/axom_doxygen/html/sidretop.html>`_
-  *  `Spin <../../../doxygen/axom_doxygen/html/spintop.html>`_
-  *  `Slic <../../../doxygen/axom_doxygen/html/slictop.html>`_
-  *  `Slam <../../../doxygen/axom_doxygen/html/slamtop.html>`_
+  *  `Axom <doxygen/html/index.html>`_
+  *  `Core <doxygen/html/coretop.html>`_
+  *  `Lumberjack <doxygen/html/lumberjacktop.html>`_
+  *  `Mint <doxygen/html/minttop.html>`_
+  *  `Primal <doxygen/html/primaltop.html>`_
+  *  `Quest <doxygen/html/questtop.html>`_
+  *  `Sidre <doxygen/html/sidretop.html>`_
+  *  `Spin <doxygen/html/spintop.html>`_
+  *  `Slic <doxygen/html/slictop.html>`_
+  *  `Slam <doxygen/html/slamtop.html>`_
 
 Look for documentation to appear for new components as they are developed.
 

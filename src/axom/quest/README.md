@@ -12,6 +12,3 @@ Quest: Query points in meshes {#questtop}
   of a high-order mesh
 - A [function](@ref all_nearest_neighbors()) to find the nearest neighbor for each
   of a set of points
-
-The [Quest user guide](../../../sphinx/axom_docs/html/axom/quest/docs/sphinx/index.html)
-also discusses these concepts.
