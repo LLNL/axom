@@ -22,7 +22,7 @@ blt_add_executable(
     NAME        quest_containment_driver_ex
     SOURCES     containment_driver.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-    DEPENDS_ON  ${quest_example_depends} fmt
+    DEPENDS_ON  ${quest_example_depends} fmt cli11
     FOLDER      axom/quest/examples
     )
 
