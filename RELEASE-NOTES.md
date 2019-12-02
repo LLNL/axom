@@ -10,6 +10,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased]
 
 ### Added
+- Added [CLI11](https://github.com/CLIUtils/CLI11) command line parser as a built-in thirdparty library.
 
 ### Removed
 
@@ -18,8 +19,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Changed
 - Updated BLT to develop (30ccea5) as of Nov 21, 2019
 - Set CUDA_SEPARABLE_COMPILATION globally instead of just in a few components.
+- Reduced verbosity of quest's InOutOctree in cases where query point lies on surface.
 
 ### Fixed
+- Fixed a bug in ``convert_sidre_protocol``'s data tructation functionality 
+  example when multiple Views pointed to the same data.
 
 ### Known Bugs
 
