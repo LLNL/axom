@@ -10,13 +10,13 @@
 axom_add_code_checks(PREFIX thirdparty_tests)
 
 #------------------------------------------------------------------------------
-# Smoke test for Umpire thirdparty library
+# Smoke test for Umpire third party library
 #------------------------------------------------------------------------------
 if ( UMPIRE_FOUND )
 
   set( umpire_smoke_dependencies umpire gtest )
 
-  blt_list_append( TO umpire_smoke_dependencies ELEMENTS mpi IF ${ENABLE_MPI} )
+  blt_list_append( TO umpire_smoke_dependencies ELEMENTS mpi IF ENABLE_MPI)
 
   blt_add_executable( NAME umpire_smoke_test
                       SOURCES umpire_smoke.cpp
@@ -30,19 +30,19 @@ if ( UMPIRE_FOUND )
 endif()
 
 #------------------------------------------------------------------------------
-# Smoke test for RAJA thirdparty library
+# Smoke test for RAJA third party library
 #------------------------------------------------------------------------------
 if ( RAJA_FOUND )
 
   set( raja_smoke_dependencies raja gtest )
 
-  blt_list_append( TO raja_smoke_dependencies ELEMENTS openmp IF ${ENABLE_OPENMP} )
+  blt_list_append( TO raja_smoke_dependencies ELEMENTS openmp IF ENABLE_OPENMP)
 
-  blt_list_append( TO raja_smoke_dependencies ELEMENTS umpire IF ${UMPIRE_FOUND} )
+  blt_list_append( TO raja_smoke_dependencies ELEMENTS umpire IF UMPIRE_FOUND)
 
-  blt_list_append( TO raja_smoke_dependencies ELEMENTS cuda IF ${ENABLE_CUDA} )
+  blt_list_append( TO raja_smoke_dependencies ELEMENTS cuda IF ENABLE_CUDA)
 
-  blt_list_append( TO raja_smoke_dependencies ELEMENTS mpi IF ${ENABLE_MPI} )
+  blt_list_append( TO raja_smoke_dependencies ELEMENTS mpi IF ENABLE_MPI)
 
   blt_add_executable( NAME raja_smoke_test
                       SOURCES raja_smoke.cpp
@@ -56,7 +56,7 @@ if ( RAJA_FOUND )
 endif()
 
 #------------------------------------------------------------------------------
-# Smoke test for hdf5 thirdparty library
+# Smoke test for hdf5 third party library
 #------------------------------------------------------------------------------
 if( HDF5_FOUND)
     blt_add_executable(NAME hdf5_smoke_test
@@ -70,7 +70,7 @@ if( HDF5_FOUND)
 endif()
 
 #------------------------------------------------------------------------------
-# Smoke test for conduit thirdparty library
+# Smoke test for conduit third party library
 #------------------------------------------------------------------------------
 if (CONDUIT_FOUND)
     blt_add_executable(NAME       conduit_smoke_test
@@ -95,7 +95,7 @@ if (CONDUIT_FOUND)
 endif()
 
 #------------------------------------------------------------------------------
-# Smoke test for mfem thirdparty library
+# Smoke test for mfem third party library
 #------------------------------------------------------------------------------
 if (MFEM_FOUND)
     blt_add_executable(NAME mfem_smoke_test
@@ -113,7 +113,7 @@ if (MFEM_FOUND)
 endif()
 
 #------------------------------------------------------------------------------
-# Smoke test for fmt thirdparty library
+# Smoke test for fmt third party library
 #------------------------------------------------------------------------------
 blt_add_executable(
     NAME fmt_smoke_test
@@ -126,7 +126,7 @@ blt_add_test(NAME fmt_smoke
              COMMAND fmt_smoke_test)
 
 #------------------------------------------------------------------------------
-# Smoke test for CLI11 thirdparty library
+# Smoke test for CLI11 third party library
 #------------------------------------------------------------------------------
 blt_add_executable(
     NAME cli11_smoke_test
@@ -144,7 +144,7 @@ blt_add_test(
     COMMAND cli11_smoke_test -b -i 42 --some-float=3.14 --some-string "hello world")
 
 #------------------------------------------------------------------------------
-# Smoke test for sparsehash thirdparty library
+# Smoke test for sparsehash third party library
 #------------------------------------------------------------------------------
 
 if (SPARSEHASH_FOUND)

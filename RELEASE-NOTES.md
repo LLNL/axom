@@ -10,7 +10,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased]
 
 ### Added
-- Added [CLI11](https://github.com/CLIUtils/CLI11) command line parser as a built-in thirdparty library.
+- Added [CLI11](https://github.com/CLIUtils/CLI11) command line parser as a built-in third party library.
 
 ### Removed
 
@@ -22,8 +22,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Reduced verbosity of quest's InOutOctree in cases where query point lies on surface.
 
 ### Fixed
-- Fixed a bug in ``convert_sidre_protocol``'s data tructation functionality 
-  example when multiple Views pointed to the same data.
+- Fixed a bug in ``convert_sidre_protocol`` example. Data tructation functionality now
+  works properly when multiple Views point to the same data.
 
 ### Known Bugs
 

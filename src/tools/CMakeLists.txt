@@ -26,8 +26,8 @@ if( AXOM_ENABLE_SLAM AND AXOM_ENABLE_SIDRE AND ENABLE_MPI AND HDF5_FOUND )
         slam 
         mpi)
 
-    blt_list_append(TO datastore_converter_depends ELEMENTS lumberjack mpi IF ${AXOM_ENABLE_LUMBERJACK} )
-    blt_list_append(TO datastore_converter_depends ELEMENTS scr IF ${SCR_FOUND} )
+    blt_list_append(TO datastore_converter_depends ELEMENTS lumberjack mpi IF AXOM_ENABLE_LUMBERJACK)
+    blt_list_append(TO datastore_converter_depends ELEMENTS scr IF SCR_FOUND)
 
     blt_add_executable(
         NAME       convert_sidre_protocol
@@ -51,8 +51,8 @@ set(mesh_tester_depends
     core slic mint slam quest primal cli11
     )
 
-blt_list_append(TO mesh_tester_depends ELEMENTS lumberjack mpi IF ${AXOM_ENABLE_LUMBERJACK} )
-blt_list_append(TO mesh_tester_depends ELEMENTS openmp IF ${ENABLE_OPENMP} )
+blt_list_append(TO mesh_tester_depends ELEMENTS lumberjack mpi IF AXOM_ENABLE_LUMBERJACK)
+blt_list_append(TO mesh_tester_depends ELEMENTS openmp IF ENABLE_OPENMP)
 
 if(AXOM_ENABLE_QUEST)
     blt_add_executable(

@@ -131,7 +131,7 @@ void Input::fixOutfilePath()
 
   // Extract the stem of the input file, to output files in the CWD
   std::string inFileDir;
-  axom::utilities::filesystem::getDirName(inFileDir, stlInput);
+  futil::getDirName(inFileDir, stlInput);
   int sepSkip = (int)(inFileDir.size() > 0);
   std::string inFileStem = stlInput.substr(inFileDir.size() + sepSkip);
   std::string outFileBase = futil::joinPath(futil::getCWD(),inFileStem);
