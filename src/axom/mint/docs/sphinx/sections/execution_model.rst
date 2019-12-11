@@ -85,22 +85,22 @@ required by all of the constituent functions of the
 :ref:`sections/execution_model`. Axom defines a set of high-level execution
 spaces, summarized in the table below.
 
-+----------------------------------+--------------------------------+---------------------------------+
-| Execution Policy                 |     Requirements               |          Description            |
-|                                  |                                |                                 |
-+==================================+================================+=================================+
-| **SEQ_EXEC**                     |    None.                       | Sequential execution on         |
-|                                  |                                | the CPU.                        |
-+----------------------------------+--------------------------------+---------------------------------+
-| **OMP_EXEC**                     |  `RAJA`_ + OpenMP              | Parallel execution on           |
-|                                  |                                | the CPU using OpenMP.           |
-+----------------------------------+--------------------------------+---------------------------------+
-| **CUDA_EXEC< NBLOCKS >**         |  `RAJA`_ + CUDA +              | Parallel execution on           |
-|                                  |  `Umpire`_ (memory management) | CUDA-enabled GPUs.              |
-+----------------------------------+--------------------------------+---------------------------------+
-| **CUDA_EXEC< NBLOCKS, ASYNC >**  |  `RAJA`_ + CUDA +              | Asynchronous parallel           |
-|                                  |  `Umpire`_ (memory management) | execution on CUDA-enabled GPUs. |
-+----------------------------------+--------------------------------+---------------------------------+
++------------------------------------+--------------------------------+---------------------------------+
+| Execution Policy                   |     Requirements               |          Description            |
+|                                    |                                |                                 |
++====================================+================================+=================================+
+| **SEQ_EXEC**                       |    None.                       | Sequential execution on         |
+|                                    |                                | the CPU.                        |
++------------------------------------+--------------------------------+---------------------------------+
+| **OMP_EXEC**                       |  `RAJA`_ + OpenMP              | Parallel execution on           |
+|                                    |                                | the CPU using OpenMP.           |
++------------------------------------+--------------------------------+---------------------------------+
+| **CUDA_EXEC< BLOCKSIZE >**         |  `RAJA`_ + CUDA +              | Parallel execution on           |
+|                                    |  `Umpire`_ (memory management) | CUDA-enabled GPUs.              |
++------------------------------------+--------------------------------+---------------------------------+
+| **CUDA_EXEC< BLOCKSIZE, ASYNC >**  |  `RAJA`_ + CUDA +              | Asynchronous parallel           |
+|                                    |  `Umpire`_ (memory management) | execution on CUDA-enabled GPUs. |
++------------------------------------+--------------------------------+---------------------------------+
 
 Internally, the implementation uses the ``axom::execution_space`` traits object
 to map each execution space to corresponding `RAJA`_ execution policies and
