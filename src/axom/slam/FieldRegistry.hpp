@@ -7,7 +7,6 @@
 #define SLAM_FIELD_REGISTRY_H_
 
 
-#include "axom/core.hpp"
 #include "axom/slic.hpp"
 
 #include "axom/slam/Utilities.hpp"

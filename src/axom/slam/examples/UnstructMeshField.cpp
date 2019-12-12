@@ -22,7 +22,8 @@
 #include <cstdlib>
 
 #include "axom/config.hpp"
-#include "axom/core.hpp"
+#include "axom/core/utilities/FileUtilities.hpp"
+#include "axom/core/utilities/Utilities.hpp"
 #include "axom/slic.hpp"
 #include "axom/slam.hpp"
 

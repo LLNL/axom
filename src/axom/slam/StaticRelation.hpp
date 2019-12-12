@@ -15,7 +15,6 @@
 #define SLAM_STATIC_RELATION_HPP_
 
 #include "axom/config.hpp"
-#include "axom/core.hpp"
 
 #include "axom/slam/policies/SizePolicies.hpp"
 #include "axom/slam/policies/StridePolicies.hpp"

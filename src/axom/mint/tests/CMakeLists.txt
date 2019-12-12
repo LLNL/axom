@@ -7,10 +7,8 @@ set( mint_tests
 
      ## execution model tests
      mint_execution_cell_traversals.cpp
-     mint_execution_forall_traversals.cpp
      mint_execution_node_traversals.cpp
      mint_execution_face_traversals.cpp
-     mint_execution_policy.cpp
      mint_execution_xargs.cpp
 
      ## mesh tests

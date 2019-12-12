@@ -91,4 +91,6 @@ set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 
 set(ENABLE_OPENMP ON CACHE BOOL "")
 
+set(BLT_EXE_LINKER_FLAGS "-Wl,-rpath,/usr/tce/packages/clang/clang-6.0.0/lib" CACHE PATH "Adds a missing rpath for libraries associated with the fortran compiler")
+
 

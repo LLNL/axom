@@ -13,7 +13,7 @@
 #include "axom/slic/interface/slic.hpp"    // for SLIC macros
 
 // spin includes
-#include "axom/spin/execution_space.hpp"
+#include "axom/core/execution/execution_space.hpp"
 
 #include "axom/spin/internal/linear_bvh/aabb.hpp"
 #include "axom/spin/internal/linear_bvh/vec.hpp"
@@ -80,28 +80,7 @@ enum BVHReturnCodes
  *  2. Where and how subsequent queries are performed
  *  3. The default memory space, bound to the corresponding execution space
  *
- *  The list of currently available options are:
- *
- *  * <b> SEQ_EXEC </b> <br />
- *
- *    The BVH is constructed sequentially and stored on the CPU. All subsequent
- *    queries are performed sequentially on the CPU. This option is always
- *    available. The default memory space for SEQ_EXEC is host/cpu memory.
- *
- *  * <b> OMP_EXEC </b> <br />
- *
- *    The BVH is constructed in parallel on the CPU, using OpenMP, and likewise
- *    all subsequent queries are performed in parallel on the CPU. This option
- *    is available when Axom is compiled with OpenMP enabled. The default
- *    memory space used for OMP_EXEC is host/cpu memory.
- *
- *  * <b> CUDA_EXEC </b> <br />
- *
- *    The BVH is constructed in parallel and stored on the GPU, using CUDA.
- *    Likewise all subsequent queries are perfomed in parallel on the GPU.
- *    This option is availe when Axom is compiled with CUDA support. The
- *    default memory space used for CUDA_EXEC is unified memory, which can
- *    be accessed both from the CPU and GPU.
+ * \see axom::execution_space for more details.
  *
  *  A simple example illustrating how to use the BVH class is given below:
  *  \code
@@ -113,7 +92,7 @@ enum BVHReturnCodes
  *     const double* aabbs = ...
  *
  *     // create a 3D BVH instance in parallel on the CPU using OpenMP
- *     spin::BVH< DIMENSION, spin::OMP_EXEC > bvh( aabbs, numItems );
+ *     spin::BVH< DIMENSION, axom::OMP_EXEC > bvh( aabbs, numItems );
  *     bvh.build();
  *
  *     // query points supplied in arrays, qx, qy, qz,
@@ -149,7 +128,7 @@ public:
                           "The BVH class may be used only in 2D or 3D." );
   AXOM_STATIC_ASSERT_MSG( std::is_floating_point< FloatType >::value,
                           "A valid FloatingType must be used for the BVH." );
-  AXOM_STATIC_ASSERT_MSG( spin::execution_space< ExecSpace >::valid(),
+  AXOM_STATIC_ASSERT_MSG( axom::execution_space< ExecSpace >::valid(),
       "A valid execution space must be supplied to the BVH." );
 
 
@@ -396,7 +375,7 @@ int BVH< NDIMS, ExecSpace, FloatType >::build()
 {
   // STEP 0: set the default memory allocator to use for the execution space.
   umpire::Allocator current_allocator = axom::getDefaultAllocator();
-  const int allocatorID = spin::execution_space< ExecSpace >::allocatorID();
+  const int allocatorID = axom::execution_space< ExecSpace >::allocatorID();
   axom::setDefaultAllocator( allocatorID );
 
   // STEP 1: Handle case when user supplied a single bounding box
@@ -412,7 +391,7 @@ int BVH< NDIMS, ExecSpace, FloatType >::build()
     const FloatType* myboxes = m_boxes;
 
     // copy first box and add a fake 2nd box
-    using exec_policy = typename spin::execution_space< ExecSpace >::raja_exec;
+    using exec_policy = typename axom::execution_space< ExecSpace >::loop_policy;
     RAJA::forall< exec_policy >(
           RAJA::RangeSegment(0,N), AXOM_LAMBDA(IndexType i)
     {
@@ -486,7 +465,7 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
 
   // STEP 0: set the default memory allocator to use for the execution space.
   umpire::Allocator current_allocator = axom::getDefaultAllocator();
-  const int allocatorID = spin::execution_space< ExecSpace >::allocatorID();
+  const int allocatorID = axom::execution_space< ExecSpace >::allocatorID();
   axom::setDefaultAllocator( allocatorID );
 
   // STEP 1: count number of candidates for each query point
@@ -497,7 +476,7 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
   SLIC_ASSERT( inner_nodes != nullptr );
   SLIC_ASSERT( leaf_nodes != nullptr );
 
-  using exec_policy = typename spin::execution_space< ExecSpace >::raja_exec;
+  using exec_policy = typename axom::execution_space< ExecSpace >::loop_policy;
   RAJA::forall< exec_policy >(
       RAJA::RangeSegment(0,numPts), AXOM_LAMBDA(IndexType i)
   {
@@ -669,7 +648,7 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
 
   // STEP 0: set the default memory allocator to use for the execution space.
   umpire::Allocator current_allocator = axom::getDefaultAllocator();
-  const int allocatorID = spin::execution_space< ExecSpace >::allocatorID();
+  const int allocatorID = axom::execution_space< ExecSpace >::allocatorID();
   axom::setDefaultAllocator( allocatorID );
 
   // STEP 1: count number of candidates for each query point
@@ -678,7 +657,7 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
   SLIC_ASSERT( inner_nodes != nullptr );
   SLIC_ASSERT( leaf_nodes != nullptr );
 
-  using exec_policy = typename spin::execution_space< ExecSpace >::raja_exec;
+  using exec_policy = typename axom::execution_space< ExecSpace >::loop_policy;
   using vec4_t      = internal::linear_bvh::Vec< FloatType, 4 >;
   RAJA::forall< exec_policy >(
       RAJA::RangeSegment(0, numPts), AXOM_LAMBDA (IndexType i)

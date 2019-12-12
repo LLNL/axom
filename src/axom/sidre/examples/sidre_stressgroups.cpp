@@ -6,7 +6,8 @@
 /**************************************************************************
  *************************************************************************/
 
-#include "axom/core.hpp"
+#include "axom/core/utilities/Utilities.hpp"
+#include "axom/core/utilities/Timer.hpp"
 #include "axom/sidre.hpp"
 
 #include <algorithm>
