@@ -11,8 +11,8 @@
 #include "axom/core/Types.hpp"               // for fixed bitwidth types
 #include "axom/core/memory_management.hpp"   // for alloc()/free()
 
-// spin includes
 #include "axom/core/execution/execution_space.hpp"
+#include "axom/core/execution/for_all.hpp"
 
 #include "axom/spin/internal/linear_bvh/vec.hpp"
 #include "axom/spin/internal/linear_bvh/aabb.hpp"
@@ -69,9 +69,7 @@ void emit_bvh( RadixTree<FloatType, 3>& data,
 
   Vec<FloatType,4> *flat_ptr = bvh_data.m_inner_nodes;
 
-  using exec_policy = typename axom::execution_space< ExecSpace >::loop_policy;
-  RAJA::forall< exec_policy >(
-      RAJA::RangeSegment(0, inner_size), AXOM_LAMBDA (int32 node)
+  for_all< ExecSpace >( inner_size, AXOM_LAMBDA (int32 node)
   {
     Vec<FloatType,4> vec1;
     Vec<FloatType,4> vec2;
@@ -135,8 +133,7 @@ void emit_bvh( RadixTree<FloatType, 3>& data,
 
   int32* radix_tree_leafs = data.m_leafs;
   int32* bvh_leafs        = bvh_data.m_leaf_nodes;
-  RAJA::forall< exec_policy >(
-      RAJA::RangeSegment(0,size), AXOM_LAMBDA(int32 i)
+  for_all< ExecSpace >( size, AXOM_LAMBDA(int32 i)
   {
     bvh_leafs[ i ] = radix_tree_leafs[ i ];
   } );
@@ -161,9 +158,7 @@ void emit_bvh( RadixTree<FloatType, 2>& data,
 
   Vec<FloatType,4> *flat_ptr = bvh_data.m_inner_nodes;
 
-  using exec_policy = typename axom::execution_space< ExecSpace >::loop_policy;
-  RAJA::forall< exec_policy >(
-      RAJA::RangeSegment(0, inner_size), AXOM_LAMBDA (int32 node)
+  for_all< ExecSpace >( inner_size, AXOM_LAMBDA (int32 node)
   {
     Vec<FloatType,4> vec1;
     Vec<FloatType,4> vec2;
@@ -227,8 +222,7 @@ void emit_bvh( RadixTree<FloatType, 2>& data,
 
   int32* radix_tree_leafs = data.m_leafs;
   int32* bvh_leafs        = bvh_data.m_leaf_nodes;
-  RAJA::forall< exec_policy >(
-      RAJA::RangeSegment(0,size), AXOM_LAMBDA(int32 i)
+  for_all< ExecSpace >( size, AXOM_LAMBDA(int32 i)
   {
     bvh_leafs[ i ] = radix_tree_leafs[ i ];
   } );
