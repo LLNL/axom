@@ -478,6 +478,10 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
   SLIC_ASSERT( inner_nodes != nullptr );
   SLIC_ASSERT( leaf_nodes != nullptr );
 
+  using reduce_policy =
+      typename axom::execution_space< ExecSpace >::reduce_policy;
+  RAJA::ReduceSum< reduce_policy, IndexType > total_count( 0 );
+
   for_all< ExecSpace >( numPts, AXOM_LAMBDA(IndexType i)
   {
     int32 count = 0;
@@ -543,7 +547,8 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
 
    } // while
 
-  counts[ i ] = count;
+  counts[ i ]  = count;
+  total_count += count;
 
   } );
 
@@ -551,9 +556,7 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
   RAJA::exclusive_scan< exec_policy >(
       counts, counts+numPts, offsets, RAJA::operators::plus<IndexType>{} );
 
-  // TODO: this will segault with raw(unmanaged) cuda pointers
-  IndexType total_candidates = offsets[numPts-1] + counts[numPts - 1];
-
+  IndexType total_candidates = static_cast< IndexType >( total_count.get() );
   candidates = axom::allocate< IndexType >( total_candidates);
 
   // STEP 2: fill in candidates for each point
@@ -658,6 +661,11 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
   SLIC_ASSERT( leaf_nodes != nullptr );
 
   using vec4_t      = internal::linear_bvh::Vec< FloatType, 4 >;
+
+  using reduce_policy =
+        typename axom::execution_space< ExecSpace >::reduce_policy;
+  RAJA::ReduceSum< reduce_policy, IndexType > total_count( 0 );
+
   for_all< ExecSpace >( numPts, AXOM_LAMBDA (IndexType i)
   {
     int32 count = 0;
@@ -722,7 +730,8 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
 
    } // while
 
-  counts[ i ] = count;
+   counts[ i ]  = count;
+   total_count += count;
 
   } );
 
@@ -730,8 +739,7 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
   RAJA::exclusive_scan< exec_policy >(
       counts, counts+numPts, offsets, RAJA::operators::plus<IndexType>{} );
 
-  // TODO: this will segault with raw(unmanaged) cuda pointers
-  IndexType total_candidates = offsets[numPts-1] + counts[numPts - 1];
+  IndexType total_candidates = static_cast< IndexType >( total_count.get() );
 
   candidates = axom::allocate< IndexType >( total_candidates);
 
