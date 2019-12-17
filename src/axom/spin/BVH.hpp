@@ -6,15 +6,19 @@
 #ifndef AXOM_SPIN_BVH_H_
 #define AXOM_SPIN_BVH_H_
 
+// axom core includes
 #include "axom/config.hpp"                 // for Axom compile-time definitions
 #include "axom/core/Macros.hpp"            // for Axom macros
 #include "axom/core/memory_management.hpp" // for memory functions
 #include "axom/core/Types.hpp"             // for fixed bitwidth types
+
+#include "axom/core/execution/execution_space.hpp" // for execution spaces
+#include "axom/core/execution/for_all.hpp"         // for generic for_all()
+
+// slic includes
 #include "axom/slic/interface/slic.hpp"    // for SLIC macros
 
 // spin includes
-#include "axom/core/execution/execution_space.hpp"
-
 #include "axom/spin/internal/linear_bvh/aabb.hpp"
 #include "axom/spin/internal/linear_bvh/vec.hpp"
 #include "axom/spin/internal/linear_bvh/bvh_vtkio.hpp"
@@ -391,9 +395,7 @@ int BVH< NDIMS, ExecSpace, FloatType >::build()
     const FloatType* myboxes = m_boxes;
 
     // copy first box and add a fake 2nd box
-    using exec_policy = typename axom::execution_space< ExecSpace >::loop_policy;
-    RAJA::forall< exec_policy >(
-          RAJA::RangeSegment(0,N), AXOM_LAMBDA(IndexType i)
+    for_all< ExecSpace >( N, AXOM_LAMBDA(IndexType i)
     {
       boxesptr[ i ] = ( i < M ) ? myboxes[ i ] : 0.0;
     } );
@@ -476,9 +478,11 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
   SLIC_ASSERT( inner_nodes != nullptr );
   SLIC_ASSERT( leaf_nodes != nullptr );
 
-  using exec_policy = typename axom::execution_space< ExecSpace >::loop_policy;
-  RAJA::forall< exec_policy >(
-      RAJA::RangeSegment(0,numPts), AXOM_LAMBDA(IndexType i)
+  using reduce_policy =
+      typename axom::execution_space< ExecSpace >::reduce_policy;
+  RAJA::ReduceSum< reduce_policy, IndexType > total_count( 0 );
+
+  for_all< ExecSpace >( numPts, AXOM_LAMBDA(IndexType i)
   {
     int32 count = 0;
     internal::linear_bvh::Vec< FloatType, NDIMS > point;
@@ -543,21 +547,20 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
 
    } // while
 
-  counts[ i ] = count;
+  counts[ i ]  = count;
+  total_count += count;
 
   } );
 
+  using exec_policy = typename axom::execution_space< ExecSpace >::loop_policy;
   RAJA::exclusive_scan< exec_policy >(
       counts, counts+numPts, offsets, RAJA::operators::plus<IndexType>{} );
 
-  // TODO: this will segault with raw(unmanaged) cuda pointers
-  IndexType total_candidates = offsets[numPts-1] + counts[numPts - 1];
-
+  IndexType total_candidates = static_cast< IndexType >( total_count.get() );
   candidates = axom::allocate< IndexType >( total_candidates);
 
   // STEP 2: fill in candidates for each point
-  RAJA::forall< exec_policy >(
-      RAJA::RangeSegment(0, numPts), AXOM_LAMBDA (IndexType i)
+  for_all< ExecSpace >( numPts, AXOM_LAMBDA (IndexType i)
   {
     int32 offset = offsets[ i ];
 
@@ -657,10 +660,13 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
   SLIC_ASSERT( inner_nodes != nullptr );
   SLIC_ASSERT( leaf_nodes != nullptr );
 
-  using exec_policy = typename axom::execution_space< ExecSpace >::loop_policy;
   using vec4_t      = internal::linear_bvh::Vec< FloatType, 4 >;
-  RAJA::forall< exec_policy >(
-      RAJA::RangeSegment(0, numPts), AXOM_LAMBDA (IndexType i)
+
+  using reduce_policy =
+        typename axom::execution_space< ExecSpace >::reduce_policy;
+  RAJA::ReduceSum< reduce_policy, IndexType > total_count( 0 );
+
+  for_all< ExecSpace >( numPts, AXOM_LAMBDA (IndexType i)
   {
     int32 count = 0;
     internal::linear_bvh::Vec< FloatType, NDIMS > point;
@@ -724,21 +730,21 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
 
    } // while
 
-  counts[ i ] = count;
+   counts[ i ]  = count;
+   total_count += count;
 
   } );
 
+  using exec_policy = typename axom::execution_space< ExecSpace >::loop_policy;
   RAJA::exclusive_scan< exec_policy >(
       counts, counts+numPts, offsets, RAJA::operators::plus<IndexType>{} );
 
-  // TODO: this will segault with raw(unmanaged) cuda pointers
-  IndexType total_candidates = offsets[numPts-1] + counts[numPts - 1];
+  IndexType total_candidates = static_cast< IndexType >( total_count.get() );
 
   candidates = axom::allocate< IndexType >( total_candidates);
 
   // STEP 2: fill in candidates for each point
-  RAJA::forall< exec_policy >(
-      RAJA::RangeSegment(0, numPts), AXOM_LAMBDA (IndexType i)
+  for_all< ExecSpace >( numPts, AXOM_LAMBDA (IndexType i)
   {
     int32 offset = offsets[ i ];
 
