@@ -156,7 +156,7 @@ Additional BSD Notice
 #include <iostream>
 #include <unistd.h>
 
-#if _OPENMP
+#ifdef _OPENMP
 # include <omp.h>
 #endif
 
@@ -526,7 +526,7 @@ void IntegrateStressForElems( Domain &domain,
                               Real_t *sigxx, Real_t *sigyy, Real_t *sigzz,
                               Real_t *determ, Index_t numElem, Index_t numNode)
 {
-#if _OPENMP
+#ifdef _OPENMP
    Index_t numthreads = omp_get_max_threads();
 #else
    Index_t numthreads = 1;
@@ -751,7 +751,7 @@ void CalcFBHourglassForceForElems( Domain &domain,
                                    Index_t numNode)
 {
 
-#if _OPENMP
+#ifdef _OPENMP
    Index_t numthreads = omp_get_max_threads();
 #else
    Index_t numthreads = 1;
@@ -2555,7 +2555,7 @@ void CalcCourantConstraintForElems(Domain &domain, Index_t length,
                                    Index_t *regElemlist,
                                    Real_t qqc, Real_t& dtcourant)
 {
-#if _OPENMP   
+#ifdef _OPENMP   
    Index_t threads = omp_get_max_threads();
    static Index_t *courant_elem_per_thread;
    static Real_t *dtcourant_per_thread;
@@ -2580,7 +2580,7 @@ void CalcCourantConstraintForElems(Domain &domain, Index_t length,
       Real_t   dtcourant_tmp = dtcourant;
       Index_t  courant_elem  = -1 ;
 
-#if _OPENMP
+#ifdef _OPENMP
       Index_t thread_num = omp_get_thread_num();
 #else
       Index_t thread_num = 0;
@@ -2808,7 +2808,7 @@ int main(int argc, char *argv[])
    if ((myRank == 0) && (opts.quiet == 0)) {
       printf("Running problem size %d^3 per domain until completion\n", opts.nx);
       printf("Num processors: %d\n", numRanks);
-#if _OPENMP
+#ifdef _OPENMP
       printf("Num threads: %d\n", omp_get_max_threads());
 #endif
       printf("Total number of elements: %lld\n\n", (long long int)(numRanks*opts.nx*opts.nx*opts.nx));
