@@ -2809,6 +2809,7 @@ int main(int argc, char *argv[])
       printf("Running problem size %d^3 per domain until completion\n", opts.nx);
       printf("Num processors: %d\n", numRanks);
 #ifdef _OPENMP
+      omp_set_num_threads( 2 );
       printf("Num threads: %d\n", omp_get_max_threads());
 #endif
       printf("Total number of elements: %lld\n\n", (long long int)(numRanks*opts.nx*opts.nx*opts.nx));
