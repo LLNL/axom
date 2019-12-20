@@ -43,7 +43,7 @@ if(AXOM_ENABLE_TESTS)
     if(ENABLE_MPI)
         blt_add_test(NAME sidre_lulesh2
                      COMMAND sidre_lulesh2_ex -s 3
-                     NUM_MPI_TASKS 8 
+                     NUM_MPI_TASKS 1 
                     )
     else()
         blt_add_test(NAME sidre_lulesh2
