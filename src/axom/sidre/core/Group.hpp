@@ -13,11 +13,14 @@
  ******************************************************************************
  */
 
-#ifndef DATAGROUP_HPP_
-#define DATAGROUP_HPP_
+#ifndef SIDRE_GROUP_HPP_
+#define SIDRE_GROUP_HPP_
 
+// axom headers
 #include "axom/config.hpp"
 #include "axom/core/Macros.hpp"
+#include "axom/core/Types.hpp"
+#include "axom/slic.hpp"
 
 // Standard C++ headers
 #include <memory>
@@ -32,11 +35,7 @@
 #include "hdf5.h"
 #endif
 
-// Other axom headers
-#include "axom/slic/interface/slic.hpp"
-#include "axom/core/Types.hpp"
-
-// Sidre project headers
+// Sidre headers
 #include "SidreTypes.hpp"
 #include "View.hpp"
 
@@ -177,12 +176,14 @@ public:
    */
   std::string getPathName() const
   {
-    if (getPath().length() < 1)
+    const auto p = getPath();
+
+    if (p.length() < 1)
     {
       return getName();
     }
 
-    return getPath() + getPathDelimiter() + getName();
+    return p + getPathDelimiter() + getName();
   }
 
   /*!
@@ -1634,4 +1635,4 @@ private:
 } /* end namespace sidre */
 } /* end namespace axom */
 
-#endif /* DATAGROUP_HPP_ */
+#endif /* SIDRE_GROUP_HPP_ */
