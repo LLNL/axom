@@ -1613,9 +1613,9 @@ private:
 
   ///////////////////////////////////////////////////////////////////
   //
-  typedef MapCollection<View> ViewCollection;
+  using ViewCollection = MapCollection<View>;
   //
-  typedef MapCollection<Group> GroupCollection;
+  using GroupCollection =  MapCollection<Group>;
   ///////////////////////////////////////////////////////////////////
 
   /// Collection of Views

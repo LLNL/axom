@@ -25,7 +25,7 @@
  *          we can explore alternative collection implementations for
  *          performance (insertion, lookup, etc.) and memory overhead.
  *          The collection used by the Group class can be changed via
- *          the collection typedef in the Group class header file.
+ *          the collection type alias in the Group class header file.
  *
  *          To try another collection, encapsulate it in a new class with
  *          the API described below or pass it as a template parameter to
@@ -281,9 +281,9 @@ private:
   std::stack< IndexType > m_free_ids;
 
 #if defined(AXOM_USE_SPARSEHASH)
-  typedef google::dense_hash_map<std::string, IndexType> MapType;
+  using MapType = google::dense_hash_map<std::string, IndexType>;
 #else
-  typedef std::unordered_map<std::string, IndexType> MapType;
+  using MapType = std::unordered_map<std::string, IndexType>;
 #endif
 
   MapType m_name2idx_map;
