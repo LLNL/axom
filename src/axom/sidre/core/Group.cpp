@@ -1466,14 +1466,14 @@ Group* Group::createGroupAndLoad(std::string & group_name,
                                  bool & load_success)
 {
   load_success = false;
-  Group * child = createGroup(group_name);
+  Group* child = createGroup(group_name);
   if (child != nullptr)
   {
     // In a forthcoming PR, load() will return a bool for success/failure
     load_success = true;
     child->load(path, protocol, false, group_name);
   }
-  
+
   return child;
 }
 
@@ -2104,13 +2104,13 @@ bool Group::importConduitTree(const conduit::Node &node, bool preserve_contents)
       else if (cld_dtype.is_list())
       {
         SLIC_WARNING( "Group " << getPathName() <<
-        " cannot import Conduit list " << cld_name);
-        success = false; 
+                      " cannot import Conduit list " << cld_name);
+        success = false;
       }
       else
       {
         // All Nodes should have one of the above datatypes, so if
-        // we get here something is wrong. 
+        // we get here something is wrong.
         SLIC_ERROR( "Conduit child Node " << cld_name <<
                     " does not have a recognized datatype." <<
                     " Cannot import into Group " << getPathName());
@@ -2126,7 +2126,8 @@ bool Group::importConduitTree(const conduit::Node &node, bool preserve_contents)
   return success;
 }
 
-bool Group::importConduitTreeExternal(conduit::Node &node, bool preserve_contents)
+bool Group::importConduitTreeExternal(conduit::Node &node,
+                                      bool preserve_contents)
 {
   bool success = true;
   if (!preserve_contents)
@@ -2184,7 +2185,7 @@ bool Group::importConduitTreeExternal(conduit::Node &node, bool preserve_content
       else if (cld_dtype.is_list())
       {
         SLIC_WARNING( "Group " << getPathName() <<
-        " cannot import Conduit list " << cld_name);
+                      " cannot import Conduit list " << cld_name);
         success = false;
       }
       else

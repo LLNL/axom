@@ -1221,7 +1221,7 @@ public:
    * \param [out] name_from_file    Group name stored in the file
    */
   void load(const std::string& path,
-            const std::string& protocol,  
+            const std::string& protocol,
             bool preserve_contents,
             std::string & name_from_file);
 
@@ -1387,7 +1387,7 @@ public:
    *                           tree is not succesfully imported.
    */
   bool importConduitTree(const conduit::Node& node,
-     bool preserve_contents = false);
+                         bool preserve_contents = false);
 
   /*!
    * \brief Import data from a conduit Node into a Group without copying arrays
@@ -1418,7 +1418,7 @@ public:
    *                           tree is not succesfully imported.
    */
   bool importConduitTreeExternal(conduit::Node& node,
-     bool preserve_contents = false);
+                                 bool preserve_contents = false);
 
 private:
   DISABLE_DEFAULT_CTOR(Group);

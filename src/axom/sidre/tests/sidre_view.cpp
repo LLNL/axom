@@ -1822,8 +1822,8 @@ TEST_P(UmpireTest, reallocate_zero)
   }
 }
 
-const int allocators[] = { 
-    axom::getResourceAllocatorID( umpire::resource::Host )
+const int allocators[] = {
+  axom::getResourceAllocatorID( umpire::resource::Host )
 #ifdef AXOM_USE_CUDA
   , axom::getResourceAllocatorID( umpire::resource::Pinned )
   , axom::getResourceAllocatorID( umpire::resource::Device )
