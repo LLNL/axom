@@ -2,10 +2,13 @@
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+#------------------------------------------------------------------------------
+# Spio examples
+#------------------------------------------------------------------------------
 
-#
+#------------------------------------------------------------------------------
 # List of single source file examples
-#
+#------------------------------------------------------------------------------
 set(example_sources
     IORead.cpp
     IOWrite.cpp
@@ -17,19 +20,12 @@ if (SCR_FOUND)
 endif() 
 
 set(spio_example_depends sidre conduit::conduit slic ${EXTRA_LIBS})
+blt_list_append(TO spio_example_depends ELEMENTS hdf5 IF HDF5_FOUND)
+blt_list_append(TO spio_example_depends ELEMENTS scr  IF SCR_FOUND)
 
-if (HDF5_FOUND)
-    list(APPEND spio_example_depends hdf5)
-endif()
-
-if (SCR_FOUND)
-    list(APPEND spio_example_depends scr)
-endif()
-
-
-#
-# Build the example sources
-#
+#------------------------------------------------------------------------------
+# Add targets and tests for spio examples
+#------------------------------------------------------------------------------
 foreach(src ${example_sources})
     get_filename_component(exe_name ${src} NAME_WE)
     blt_add_executable(

@@ -2,17 +2,22 @@
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+#------------------------------------------------------------------------------
+# SIDRE -- SI(mulation) D(ata) RE(pository)
+#
+# Also includes functionality for SPIO -- S(idre) P(arallel) I/O
+#------------------------------------------------------------------------------
 
-################################
+#------------------------------------------------------------------------------
 # Check necessary dependencies
-################################
+#------------------------------------------------------------------------------
 axom_component_requires(NAME       Sidre
                         COMPONENTS SLIC
                         TPLS       Conduit)
 
-################################
+#------------------------------------------------------------------------------
 # Add the sidre sources
-################################
+#------------------------------------------------------------------------------
 set(sidre_headers
     core/Array.hpp
     core/Buffer.hpp
@@ -25,8 +30,7 @@ set(sidre_headers
     core/MapCollection.hpp
     core/SidreTypes.hpp
     core/SidreDataTypeIds.h
-    core/sidre.hpp
-)
+    core/sidre.hpp )
 
 set(sidre_sources
     core/Buffer.cpp
@@ -36,18 +40,15 @@ set(sidre_sources
     core/Attribute.cpp
     core/AttrValues.cpp
     core/Iterator.cpp
-    core/SidreUtilities.cpp
-)
+    core/SidreUtilities.cpp )
 
 if(ENABLE_MPI)
    list(APPEND sidre_headers
         spio/IOManager.hpp
-        spio/IOBaton.hpp
-       )
+        spio/IOBaton.hpp )
    list(APPEND sidre_sources
         spio/IOManager.cpp
-        spio/IOBaton.cpp
-       )
+        spio/IOBaton.cpp )
 endif()
 
 if(SHROUD_FOUND)
@@ -56,8 +57,7 @@ if(SHROUD_FOUND)
 endif()
 
 if (ENABLE_FORTRAN)
-    # The CAPI is only built to provide a Fortran interface.  If no Fortran,
-    # disable CAPI.
+    # The CAPI is only built to provide a Fortran interface.
     list(APPEND sidre_headers
         interface/sidre.h
         interface/SidreTypes.h
@@ -91,37 +91,29 @@ if (ENABLE_FORTRAN)
     endif()
 endif()
 
-################################
-# Make/Install the library
-################################
+#------------------------------------------------------------------------------
+# Build and install the library
+#------------------------------------------------------------------------------
 set(sidre_depends
     core
     conduit::conduit
     slic)
 
-if(HDF5_FOUND)
-    list(APPEND sidre_depends hdf5)
-endif()
+blt_list_append(TO sidre_depends ELEMENTS hdf5 IF HDF5_FOUND)
+blt_list_append(TO sidre_depends ELEMENTS sparsehash IF SPARSEHASH_FOUND)
 
 if(ENABLE_MPI)
     list(APPEND sidre_depends fmt mpi)
-
-    if(SCR_FOUND)
-        list(APPEND sidre_depends scr)
-    endif()
+    blt_list_append(TO sidre_depends ELEMENTS scr  IF SCR_FOUND)
 endif()
 
-if(SPARSEHASH_FOUND)
-    list(APPEND sidre_depends sparsehash)
-endif()
 
 blt_add_library( NAME       sidre
                  SOURCES    ${sidre_sources}
                  HEADERS    ${sidre_headers}
                  DEPENDS_ON ${sidre_depends}
                  FOLDER     axom/sidre
-                 OBJECT     TRUE
-                )
+                 OBJECT     TRUE )
 
 axom_write_unified_header(NAME    sidre
                           HEADERS ${sidre_headers})
@@ -134,22 +126,19 @@ if(ENABLE_FORTRAN AND ENABLE_MPI)
     install(FILES ${CMAKE_Fortran_MODULE_DIRECTORY}/axom_spio.mod DESTINATION lib/fortran)
 endif()
 
-################################
-# Add examples
-################################
-if (AXOM_ENABLE_EXAMPLES)
-  add_subdirectory(examples)
-endif()
-
-################################
-# Add tests
-################################
+#------------------------------------------------------------------------------
+# Add tests and examples
+#------------------------------------------------------------------------------
 if (AXOM_ENABLE_TESTS)
   add_subdirectory(tests)
 endif()
 
-################################
+if (AXOM_ENABLE_EXAMPLES)
+  add_subdirectory(examples)
+endif()
+
+#------------------------------------------------------------------------------
 # Add code checks
-################################
+#------------------------------------------------------------------------------
 axom_add_code_checks(PREFIX   sidre
                      EXCLUDES sidre/examples/lulesh2)
