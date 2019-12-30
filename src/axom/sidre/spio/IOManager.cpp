@@ -1112,7 +1112,6 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
                  <<"based on group at path "
                  << domain_path);
   }
-
 #else
   AXOM_DEBUG_VAR(datastore);
   AXOM_DEBUG_VAR(domain_path);
