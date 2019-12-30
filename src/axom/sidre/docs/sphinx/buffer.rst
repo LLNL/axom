@@ -43,8 +43,8 @@ The Buffer interface includes the following operations:
  * Copy a given number of bytes of data from a given pointer to a Buffer
    allocation.
  * Get data held by a Buffer as a pointer or conduit::Node::Value type.
- * Get information about Buffer data: type, number of elements, total number 
-   of bytes, number of bytes per element, etc.
+ * Get information about data held by a Buffer: type, number of elements,
+   total number of bytes, number of bytes per element, etc.
  * Retrieve the number of Views the Buffer is attached to.
  * Copy Buffer description and its data to/from a conduit::Node.
 

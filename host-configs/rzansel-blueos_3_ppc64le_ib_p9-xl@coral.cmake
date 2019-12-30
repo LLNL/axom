@@ -14,7 +14,7 @@
 # Compiler Spec: xl@coral
 ##################################
 
-# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2019_08_29_16_56_32/xl-coral/cmake-3.9.6/bin/cmake
+# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2019_11_21_10_32_05/xl-coral/cmake-3.9.6/bin/cmake
 
 ##############
 # Compilers
@@ -36,7 +36,7 @@ set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-2019.06.12/bin/xlf2003" CACH
 ##############
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_08_29_16_56_32/xl-coral" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_11_21_10_32_05/xl-coral" CACHE PATH "")
 
 # conduit from uberenv
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-master" CACHE PATH "")
@@ -77,7 +77,7 @@ set(MPI_C_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-
 
 set(MPI_CXX_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2019.03.26/bin/mpicxx" CACHE PATH "")
 
-set(MPI_Fortran_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2019.03.26/bin/mpif90" CACHE PATH "")
+set(MPI_Fortran_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.06.12/bin/mpif90" CACHE PATH "")
 
 set(MPIEXEC "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2019.03.26/bin/mpirun" CACHE PATH "")
 
@@ -97,6 +97,8 @@ set(CMAKE_C_COMPILER_ID "XL" CACHE PATH "All of BlueOS compilers report clang du
 
 set(CMAKE_CXX_COMPILER_ID "XL" CACHE PATH "All of BlueOS compilers report clang due to nvcc, override to proper compiler family")
 
-set(BLT_FORTRAN_FLAGS "-WF,-C! -qxlf2003=polymorphic" CACHE PATH "Convert C-style comments to Fortran and link fortran exes to C++ libraries")
+set(BLT_FORTRAN_FLAGS "-WF,-C!  -qxlf2003=polymorphic" CACHE PATH "Converts C-style comments to Fortran style in preprocessed files")
+
+set(BLT_EXE_LINKER_FLAGS "-Wl,-rpath,/usr/tce/packages/xl/xl-2019.06.12/lib" CACHE PATH "Adds a missing rpath for libraries associated with the fortran compiler")
 
 

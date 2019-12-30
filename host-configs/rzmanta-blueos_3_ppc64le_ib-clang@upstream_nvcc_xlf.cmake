@@ -14,7 +14,7 @@
 # Compiler Spec: clang@upstream_nvcc_xlf
 ##################################
 
-# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2019_08_29_16_56_43/clang-upstream_nvcc_xlf/cmake-3.9.6/bin/cmake
+# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2019_11_21_10_31_52/clang-upstream_nvcc_xlf/cmake-3.9.6/bin/cmake
 
 ##############
 # Compilers
@@ -36,7 +36,7 @@ set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-2018.11.26/bin/xlf2003" CACH
 ##############
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_08_29_16_56_43/clang-upstream_nvcc_xlf" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_11_21_10_31_52/clang-upstream_nvcc_xlf" CACHE PATH "")
 
 # conduit from uberenv
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-master" CACHE PATH "")
@@ -77,7 +77,7 @@ set(MPI_C_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-
 
 set(MPI_CXX_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2018.11.09/bin/mpicxx" CACHE PATH "")
 
-set(MPI_Fortran_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2018.11.09/bin/mpif90" CACHE PATH "")
+set(MPI_Fortran_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2018.11.26/bin/mpif90" CACHE PATH "")
 
 set(MPIEXEC "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2018.11.09/bin/mpirun" CACHE PATH "")
 
@@ -93,9 +93,9 @@ set(ENABLE_GTEST_DEATH_TESTS OFF CACHE BOOL "")
 
 set(CMAKE_Fortran_COMPILER_ID "XL" CACHE PATH "All of BlueOS compilers report clang due to nvcc, override to proper compiler family")
 
-set(BLT_FORTRAN_FLAGS "-WF,-C!" CACHE PATH "Converts C-style comments to Fortran style in preprocessed files")
+set(BLT_FORTRAN_FLAGS "-WF,-C!  -qxlf2003=polymorphic" CACHE PATH "Converts C-style comments to Fortran style in preprocessed files")
 
-set(BLT_EXE_LINKER_FLAGS "-Wl,-rpath,/usr/tce/packages/xl/xl-2018.05.18/lib/" CACHE PATH "Adds a missing rpath for libraries associated with the fortran compiler")
+set(BLT_EXE_LINKER_FLAGS "-Wl,-rpath,/usr/tce/packages/xl/xl-2018.11.26/lib" CACHE PATH "Adds a missing rpath for libraries associated with the fortran compiler")
 
 ##############
 # Cuda

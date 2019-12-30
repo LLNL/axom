@@ -53,7 +53,7 @@ int main(int argc, char** argv)
     {
       // Output a single Message at a time to screen
       std::cout << "(" << messages[i]->stringOfRanks() << ") "
-                << messages[i]->ranksCount() << " '"
+                << messages[i]->count() << " '"
                 << messages[i]->text() << "'" << std::endl;
     }
     // Clear already outputted Messages from Lumberjack

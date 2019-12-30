@@ -13,8 +13,9 @@ Sidre Group objects are used to define a tree-like hierarchical organization
 for application data, such as meshes and fields used in a simulation. Each 
 Group has a name and one parent Group (except for the root Group) and contains
 zero or more child Groups and zero or more Views. A Sidre DataStore has 
-exactly one root Group (named "/"), which is created when the DataStore object
-is created. See :ref:`datastore-label` for more information.
+exactly one root Group which is created when the DataStore object
+is created. The root Group's name is initially the empty string.
+See :ref:`datastore-label` for more information.
 
 A Group hierarchy is constructed by creating Groups that are children of the
 root Group, children of those Groups, and so on. All Groups in a subtree 
@@ -49,8 +50,10 @@ the data is shared by the original and new View.
 
 .. note:: View copy operations perform **shallow** copies of the View data.
 
-Some methods for for creating, destroying, querying, and retrieving Groups and 
-Views take a string with *path syntax*, while others take the name of an
+Some methods for creating, destroying, querying, and retrieving Groups and
+Views take a string with *path syntax*, where parent and child Group names
+are joined with the path separator character, '/'.
+Other methods take the name of an
 immediate child of a Group. Methods that require the name of a direct child 
 are marked with 'Child' in their name, such as ``hasChildView()`` and 
 ``hasChildGroup()``. When a path string is passed to a method that accepts 
@@ -84,14 +87,16 @@ Group objects.
             become invalid. This is analogous to iterator invalidation for
             containers when the container contents change.
 
-Create and Destroy Groups
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+Create, Modify, and Destroy Groups
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
  * Create a child Group given a name (child) or path (other descendant). 
    If a path is given, intermediate Groups in path are created, if needed. 
- * Rename a Group.
+ * Rename a Group.  A Group cannot be renamed to the empty string, to
+   a string containing the path separator character, or to the name of
+   another Group or View owned by the same parent.
  * Destroy a descendant Group with given id (child), or name/path (child or 
-   other descendant)
+   other descendant).
  * Destroy all child groups in a Group.
 
 .. note:: When a Group is destroyed, all Groups and Views in the subtree 

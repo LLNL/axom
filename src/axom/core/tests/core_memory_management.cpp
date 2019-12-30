@@ -129,7 +129,7 @@ private:
 #ifdef AXOM_USE_UMPIRE
 void check_alloc_and_free(
   umpire::Allocator allocator=
-      axom::getAllocator(axom::getResourceAllocatorID(umpire::resource::Host)),
+    axom::getAllocator(axom::getResourceAllocatorID(umpire::resource::Host)),
   bool hostAccessible=true  )
 #else
 void check_alloc_and_free( bool hostAccessible=true)
@@ -170,7 +170,7 @@ void check_alloc_and_free( bool hostAccessible=true)
 #ifdef AXOM_USE_UMPIRE
 void check_alloc_realloc_free(
   umpire::Allocator allocator=
-      axom::getAllocator(axom::getResourceAllocatorID(umpire::resource::Host)),
+    axom::getAllocator(axom::getResourceAllocatorID(umpire::resource::Host)),
   bool hostAccessible=true )
 #else
 void check_alloc_realloc_free( bool hostAccessible=true )
@@ -266,28 +266,28 @@ void check_alloc_realloc_free( bool hostAccessible=true )
 TEST( core_memory_management, set_get_default_memory_space )
 {
   const int HostAllocatorID =
-      axom::getResourceAllocatorID( umpire::resource::Host );
+    axom::getResourceAllocatorID( umpire::resource::Host );
   EXPECT_EQ( HostAllocatorID, axom::getDefaultAllocator().getId() );
 
 #ifdef AXOM_USE_CUDA
   const int PinnedAllocatorID =
-      axom::getResourceAllocatorID( umpire::resource::Pinned );
+    axom::getResourceAllocatorID( umpire::resource::Pinned );
 
   axom::setDefaultAllocator( axom::getAllocator( PinnedAllocatorID ) );
   EXPECT_EQ( PinnedAllocatorID, axom::getDefaultAllocator().getId() );
 
   const int DeviceAllocatorID =
-      axom::getResourceAllocatorID( umpire::resource::Device );
+    axom::getResourceAllocatorID( umpire::resource::Device );
   axom::setDefaultAllocator( axom::getAllocator( DeviceAllocatorID ) );
   EXPECT_EQ( DeviceAllocatorID, axom::getDefaultAllocator().getId() );
 
   const int ConstantAllocatorID =
-      axom::getResourceAllocatorID( umpire::resource::Constant );
+    axom::getResourceAllocatorID( umpire::resource::Constant );
   axom::setDefaultAllocator( axom::getAllocator( ConstantAllocatorID ) );
   EXPECT_EQ( ConstantAllocatorID, axom::getDefaultAllocator().getId() );
 
   const int UnifiedAllocatorID =
-      axom::getResourceAllocatorID( umpire::resource::Unified );
+    axom::getResourceAllocatorID( umpire::resource::Unified );
   axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
   EXPECT_EQ( UnifiedAllocatorID, axom::getDefaultAllocator().getId() );
 #endif
@@ -307,7 +307,7 @@ TEST( core_memory_management, alloc_free )
   constexpr bool HOST_ACCESSIBLE = true;
 
   const int HostAllocatorID =
-        axom::getResourceAllocatorID( umpire::resource::Host );
+    axom::getResourceAllocatorID( umpire::resource::Host );
   check_alloc_and_free( axom::getAllocator( HostAllocatorID ),
                         HOST_ACCESSIBLE
                         );
@@ -317,25 +317,25 @@ TEST( core_memory_management, alloc_free )
   constexpr bool NOT_HOST_ACCESSIBLE = false;
 
   const int PinnedAllocatorID =
-        axom::getResourceAllocatorID( umpire::resource::Pinned );
+    axom::getResourceAllocatorID( umpire::resource::Pinned );
   check_alloc_and_free( axom::getAllocator( PinnedAllocatorID ),
                         HOST_ACCESSIBLE
                         );
 
   const int DeviceAllocatorID =
-        axom::getResourceAllocatorID( umpire::resource::Device );
+    axom::getResourceAllocatorID( umpire::resource::Device );
   check_alloc_and_free( axom::getAllocator( DeviceAllocatorID ),
                         NOT_HOST_ACCESSIBLE
                         );
 
   const int ConstantAllocatorID =
-        axom::getResourceAllocatorID( umpire::resource::Constant );
+    axom::getResourceAllocatorID( umpire::resource::Constant );
   check_alloc_and_free( axom::getAllocator( ConstantAllocatorID ),
                         NOT_HOST_ACCESSIBLE
                         );
 
   const int UnifiedAllocatorID =
-        axom::getResourceAllocatorID( umpire::resource::Unified );
+    axom::getResourceAllocatorID( umpire::resource::Unified );
   check_alloc_and_free( axom::getAllocator( UnifiedAllocatorID ),
                         HOST_ACCESSIBLE
                         );
@@ -362,13 +362,13 @@ TEST( core_memory_management, alloc_realloc_free )
   constexpr bool NOT_HOST_ACCESSIBLE = false;
 
   const int PinnedAllocatorID =
-          axom::getResourceAllocatorID( umpire::resource::Pinned );
+    axom::getResourceAllocatorID( umpire::resource::Pinned );
   check_alloc_realloc_free( axom::getAllocator( PinnedAllocatorID ),
                             HOST_ACCESSIBLE
                             );
 
   const int DeviceAllocatorID =
-         axom::getResourceAllocatorID( umpire::resource::Device );
+    axom::getResourceAllocatorID( umpire::resource::Device );
   check_alloc_realloc_free( axom::getAllocator( DeviceAllocatorID ),
                             NOT_HOST_ACCESSIBLE
                             );
@@ -378,7 +378,7 @@ TEST( core_memory_management, alloc_realloc_free )
   // false );
 
   const int UnifiedAllocatorID =
-        axom::getResourceAllocatorID( umpire::resource::Unified );
+    axom::getResourceAllocatorID( umpire::resource::Unified );
   check_alloc_realloc_free( axom::getAllocator( UnifiedAllocatorID ),
                             HOST_ACCESSIBLE
                             );

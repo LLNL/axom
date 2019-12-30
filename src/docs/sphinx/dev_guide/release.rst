@@ -51,7 +51,8 @@ Create a pull request to merge the release candidate branch into master so that
 release changes can be reviewed. Such changes include:
 
 #. Update the version information (major, minor, and patch version numbers)
-   at the top of the ``axom/src/cmake/AxomVersion.cmake`` file.
+   at the top of the ``axom/src/cmake/AxomVersion.cmake`` file and in
+   the ``axom/RELEASE`` file.
 
 #. Update the release notes in ``axom/RELEASE-NOTES.md`` by adding the
    release version number and release date in the heading, as well as,
@@ -122,7 +123,7 @@ approved. At this point, the release candidate branch can be deleted.
 * Attach the tarball to the release.
 
 * Add a note at the top of the release description that indicates which
-  tarbal consists of all the submodules, e.g., *\"Please download the Axom-v0.3.1.tar.gz tarball below, which includes all of the Axom submodules as well\"*
+  tarball consists of all the submodules, e.g., *\"Please download the Axom-v0.3.1.tar.gz tarball below, which includes all of the Axom submodules as well\"*
 
 * Update the release.
 

@@ -645,7 +645,8 @@ void serial_save_datastore_and_load_copy_lower(DataStore* ds)
   additional->createGroup("yetanother");
   // Load another copy of the data store into the "additional" group
   // without first clearing all its contents
-  additional->load("example.hdf5", "sidre_hdf5", true);
+  std::string groupname;
+  additional->load("example.hdf5", "sidre_hdf5", true, groupname);
   // _serial_io_save_end
 }
 

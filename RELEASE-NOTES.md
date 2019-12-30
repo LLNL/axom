@@ -7,11 +7,32 @@ The format of this file is based on [Keep a Changelog](http://keepachangelog.com
 
 The Axom project release numbers follow [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - Release date yyyy-mm-dd
+## [Unreleased]
+
+### Added
+
+### Removed
+
+### Deprecated
+
+### Changed
+- Updated BLT to develop (30ccea5) as of Nov 21, 2019
+- Set CUDA_SEPARABLE_COMPILATION globally instead of just in a few components.
+
+### Fixed
+
+### Known Bugs
+
+
+## [Version 0.3.2] - Release date 2019-09-22
 
 ### Added
 - Added support in Mint for reading and writing an unstructured mesh in the [SU2 Mesh file format].
   This includes support for both single and mixed cell type topology unstructured mesh types.   
+- Added a new option to enable/disable use of CUB, AXOM_USE_CUB, which is disabled by default. This
+  allows to disable CUB to circumvent issues encountered with the device linker.
+- Added a BezierCurve primitive type to primal. A new ``intersect`` operator was also added to 
+  compute the intersection points between a pair of Bezier curves of arbitrary order.
 
 ### Removed
 
@@ -21,9 +42,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Updated Raja TPL to v0.9.0
 - Updated Umpire TPL to v1.0.0
 - AXOM_USE_OPENMP is now being set at configure time accordingly instead of
-  auto-detected based on whether "_OPENMP" is passed by the compiler. This
+  auto-detected based on whether ``_OPENMP`` is passed by the compiler. This
   fixes issues where a host code would compile Axom w/out OpenMP, but, use
-  Axom in parts of the code where OpenMP is enabled. 
+  Axom in parts of the code where OpenMP is enabled.
 
 ### Fixed
 - Fixed usage of Umpire's MemoryResourceType enum in Axom. Axom was assuming that
@@ -244,7 +265,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Known Bugs
 -
 
-[Unreleased]:    https://github.com/LLNL/axom/compare/v0.3.1...develop
+[Unreleased]:    https://github.com/LLNL/axom/compare/v0.3.2...develop
+[Version 0.3.2]: https://github.com/LLNL/axom/compare/v0.3.1...v0.3.2
 [Version 0.3.1]: https://github.com/LLNL/axom/compare/v0.3.0...v0.3.1
 [Version 0.3.0]: https://github.com/LLNL/axom/compare/v0.2.9...v0.3.0
 [Version 0.2.9]: https://github.com/LLNL/axom/compare/v0.2.8...v0.2.9

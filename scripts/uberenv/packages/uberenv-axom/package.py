@@ -330,10 +330,26 @@ class UberenvAxom(Package):
                     "Pass in an explicit path to help find mpif.h"))
             else:
                 cfg.write(cmake_cache_entry("MPI_C_COMPILER", spec['mpi'].mpicc))
-                cfg.write(cmake_cache_entry("MPI_CXX_COMPILER",
-                                            spec['mpi'].mpicxx))
-                cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER",
-                                            spec['mpi'].mpifc))
+                cfg.write(cmake_cache_entry("MPI_CXX_COMPILER", spec['mpi'].mpicxx))
+                if on_blueos or on_blueos_p9:
+                    # clang doesn't come with a fortran wrapper on blueos
+
+                    # blueos_p9
+                    spectrum_prefix = "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release"
+                    if spec['mpi'].mpifc == spectrum_prefix + "-clang-8.0.0/bin/mpif90":
+                        cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", 
+                                                    spectrum_prefix + "-xl-2019.06.12/bin/mpif90"))
+                    elif spec['mpi'].mpifc == spectrum_prefix + "-clang-upstream-2019.03.26/bin/mpif90":
+                        cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", 
+                                                    spectrum_prefix + "-xl-2019.06.12/bin/mpif90"))
+                    # blueos
+                    elif spec['mpi'].mpifc == spectrum_prefix + "-clang-upstream-2018.11.09/bin/mpif90":
+                        cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", 
+                                                    spectrum_prefix + "-xl-2018.11.26/bin/mpif90"))
+                    else:
+                        cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", spec['mpi'].mpifc))
+                else:
+                    cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", spec['mpi'].mpifc))
 
             # Determine MPIEXEC
             if on_blueos:
@@ -387,7 +403,7 @@ class UberenvAxom(Package):
             cfg.write(cmake_cache_option("CMAKE_SKIP_RPATH", True))
 
         # BlueOS
-        elif on_blueos:
+        elif on_blueos or on_blueos_p9:
             if "xlf" in f_compiler:
                 cfg.write(cmake_cache_entry("CMAKE_Fortran_COMPILER_ID", "XL",
                     "All of BlueOS compilers report clang due to nvcc, override to proper compiler family"))
@@ -398,16 +414,15 @@ class UberenvAxom(Package):
                 cfg.write(cmake_cache_entry("CMAKE_CXX_COMPILER_ID", "XL",
                     "All of BlueOS compilers report clang due to nvcc, override to proper compiler family"))
 
-            if str(spec.compiler) in ("clang@upstream_xlf", "clang@upstream_nvcc_xlf"):
-                cfg.write(cmake_cache_entry("BLT_FORTRAN_FLAGS", "-WF,-C!",
+            if "xlf" in f_compiler:
+                cfg.write(cmake_cache_entry("BLT_FORTRAN_FLAGS", "-WF,-C!  -qxlf2003=polymorphic",
                     "Converts C-style comments to Fortran style in preprocessed files"))
+                # Grab lib directory for the current fortran compiler
+                libdir = os.path.join(os.path.dirname(os.path.dirname(f_compiler)), "lib")
                 cfg.write(cmake_cache_entry("BLT_EXE_LINKER_FLAGS",
-                    "-Wl,-rpath,/usr/tce/packages/xl/xl-2018.05.18/lib/",
+                    "-Wl,-rpath," + libdir,
                     "Adds a missing rpath for libraries associated with the fortran compiler"))
 
-            elif "xl@coral" == str(spec.compiler):
-                cfg.write(cmake_cache_entry("BLT_FORTRAN_FLAGS", "-WF,-C! -qxlf2003=polymorphic",
-                    "Convert C-style comments to Fortran and link fortran exes to C++ libraries"))
 
             if "+cuda" in spec:
                 cfg.write("##############\n")
@@ -417,6 +432,8 @@ class UberenvAxom(Package):
                 cfg.write(cmake_cache_option("ENABLE_CUDA", True))
                 cfg.write(cmake_cache_entry("CUDA_TOOLKIT_ROOT_DIR", "/usr/tce/packages/cuda/cuda-10.1.168"))
                 cfg.write(cmake_cache_entry("CMAKE_CUDA_COMPILER", "${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc"))
+
+                cfg.write(cmake_cache_option("CUDA_SEPARABLE_COMPILATION", True))
 
                 if on_blueos_p9:
                     cfg.write(cmake_cache_entry("AXOM_CUDA_ARCH", "sm_70"))

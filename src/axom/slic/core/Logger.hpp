@@ -10,7 +10,7 @@
 #ifndef LOGGER_HPP_
 #define LOGGER_HPP_
 
-#include "axom/slic/core/MessageLevel.h"
+#include "axom/slic/core/MessageLevel.hpp"
 
 // C/C++ includes
 #include <string> // for STL string

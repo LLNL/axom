@@ -28,9 +28,9 @@ if the Text strings are exactly equal, it signals they should be combined.
 
 The function combine, takes two Messages and combines them in the way that is specific
 to that Combiner class.  For example in the TextEqualityCombiner, the only thing
-that happens is the second Message's ranks gets added to the first.  This is because
-the text strings were equal.  This may not be the case for all Combiners that you write
-yourself.
+that happens is the second Message's ranks gets added to the first and the message count
+is increased.  This is because the text strings were equal.  This may not be the case
+for all Combiners that you write yourself.
 
 
 .. _communication_label:

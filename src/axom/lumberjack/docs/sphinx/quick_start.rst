@@ -107,7 +107,7 @@ Once you are ready to retrieve your messages, do so by the following:
         std::vector<axom::lumberjack::Message*> messages = lj.getMessages();
         for(int i=0; i<(int)(messages.size()); ++i){
             // Output a single Message at a time to screen
-            std::cout << "(" << messages[i]->stringOfRanks() << ") " << messages[i]->ranksCount() <<
+            std::cout << "(" << messages[i]->stringOfRanks() << ") " << messages[i]->count() <<
                          " '" << messages[i]->text() << "'" << std::endl;
         }
         // Clear already outputted Messages from Lumberjack
