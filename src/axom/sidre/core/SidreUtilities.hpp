@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef SIDREUTILITIES_HPP_
-#define SIDREUTILITIES_HPP_
+#ifndef SIDRE_UTILITIES_HPP_
+#define SIDRE_UTILITIES_HPP_
 
 // Standard C++ headers
 #include <string>
@@ -52,4 +52,4 @@ std::string::size_type find_exclusive( const std::string& s, char c);
 
 } // end namespace axom
 
-#endif /* UTILITIES_HPP_ */
+#endif /* SIDRE_UTILITIES_HPP_ */

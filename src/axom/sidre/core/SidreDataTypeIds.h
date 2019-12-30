@@ -12,8 +12,8 @@
  *
  */
 
-#ifndef SIDREDATATYPEIDS_H_
-#define SIDREDATATYPEIDS_H_
+#ifndef SIDRE_DATATYPEIDS_H_
+#define SIDRE_DATATYPEIDS_H_
 
 // Libraries and other axom headers
 #include "conduit.h"
@@ -44,4 +44,4 @@ const SIDRE_IndexType SIDRE_InvalidIndex = -1;
 #define SIDRE_FLOAT_ID   CONDUIT_NATIVE_FLOAT_ID
 #define SIDRE_DOUBLE_ID  CONDUIT_NATIVE_DOUBLE_ID
 
-#endif /* SIDREDATATYPEIDS_H_ */
+#endif /* SIDRE_DATATYPEIDS_H_ */

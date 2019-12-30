@@ -11,8 +11,8 @@
  *
  */
 
-#ifndef SIDRETYPES_HPP_
-#define SIDRETYPES_HPP_
+#ifndef SIDRE_TYPES_HPP_
+#define SIDRE_TYPES_HPP_
 
 #include "SidreDataTypeIds.h"
 #include "conduit.hpp"
@@ -187,4 +187,4 @@ inline TypeID getTypeID( const int typeID )
 } /* end namespace axom */
 
 
-#endif /* SIDRETYPES_HPP_ */
+#endif /* SIDRE_TYPES_HPP_ */

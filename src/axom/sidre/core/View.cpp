@@ -42,14 +42,14 @@ std::string View::getPath() const
  */
 std::string View::getPathName() const
 {
-  const auto p = getPath();
+  const auto path = getPath();
 
-  if (p.length() < 1)
+  if (path.length() < 1)
   {
     return getName();
   }
 
-  return p + getOwningGroup()->getPathDelimiter() + getName();
+  return path + getOwningGroup()->getPathDelimiter() + getName();
 }
 
 
@@ -685,9 +685,9 @@ IndexType View::getOffset() const
       SLIC_ERROR_IF(
         offset % bytes_per_elem != 0,
         SIDRE_VIEW_LOG_PREPEND
-        << "Unsupported operation. "
-        << "Sidre assumes that offsets are  given as integral number "
-        << "of elements into the array.  In this case, the offset was "
+        << "Error calculating offset. "
+        << "Sidre assumes that offsets are given as integral number "
+        << "of elements into the array.  In this View, the offset was "
         << offset << " bytes and each element is "
         << bytes_per_elem << " bytes. If you have a need for "
         << "non-integral offsets, please contact the Sidre team");
@@ -721,9 +721,9 @@ IndexType View::getStride() const
       SLIC_ERROR_IF(
         stride % bytes_per_elem != 0,
         SIDRE_VIEW_LOG_PREPEND
-        << "Unsupported operation. "
+        << "Error caclulating stride. "
         << "Sidre assumes that strides are given as integral number "
-        << "of elements into the array. In this case, the stride was "
+        << "of elements into the array. In this View, the stride was "
         << stride << " bytes and each element is "
         << bytes_per_elem << " bytes. If you have a need for "
         << "non-integral strides, please contact the Sidre team");

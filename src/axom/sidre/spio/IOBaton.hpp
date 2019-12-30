@@ -13,8 +13,8 @@
  ******************************************************************************
  */
 
-#ifndef IOBATON_HPP_
-#define IOBATON_HPP_
+#ifndef SIDRE_IOBATON_HPP_
+#define SIDRE_IOBATON_HPP_
 
 #include "mpi.h"
 
@@ -140,4 +140,4 @@ private:
 } /* end namespace sidre */
 } /* end namespace axom */
 
-#endif /* IOBATON_HPP_ */
+#endif /* SIDRE_IOBATON_HPP_ */

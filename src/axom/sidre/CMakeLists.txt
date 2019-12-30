@@ -42,6 +42,7 @@ set(sidre_sources
     core/Iterator.cpp
     core/SidreUtilities.cpp )
 
+# Add spio headers and sources when MPI is available
 if(ENABLE_MPI)
    list(APPEND sidre_headers
         spio/IOManager.hpp
@@ -57,7 +58,7 @@ if(SHROUD_FOUND)
 endif()
 
 if (ENABLE_FORTRAN)
-    # The CAPI is only built to provide a Fortran interface.
+    # Sidre's C API is only built to provide a Fortran interface.
     list(APPEND sidre_headers
         interface/sidre.h
         interface/SidreTypes.h
@@ -79,6 +80,7 @@ if (ENABLE_FORTRAN)
         interface/c_fortran/wrapfsidre.F
     )
 
+    # Add spio's C API when MPI is available
     if(ENABLE_MPI)
         list(APPEND sidre_headers
              spio/interface/c_fortran/wrapIOManager.h
@@ -102,9 +104,10 @@ set(sidre_depends
 blt_list_append(TO sidre_depends ELEMENTS hdf5 IF HDF5_FOUND)
 blt_list_append(TO sidre_depends ELEMENTS sparsehash IF SPARSEHASH_FOUND)
 
+# Include additional dependencides for spio when MPI is available
 if(ENABLE_MPI)
     list(APPEND sidre_depends fmt mpi)
-    blt_list_append(TO sidre_depends ELEMENTS scr  IF SCR_FOUND)
+    blt_list_append(TO sidre_depends ELEMENTS scr IF SCR_FOUND)
 endif()
 
 
@@ -129,11 +132,11 @@ endif()
 #------------------------------------------------------------------------------
 # Add tests and examples
 #------------------------------------------------------------------------------
-if (AXOM_ENABLE_TESTS)
+if(AXOM_ENABLE_TESTS)
   add_subdirectory(tests)
 endif()
 
-if (AXOM_ENABLE_EXAMPLES)
+if(AXOM_ENABLE_EXAMPLES)
   add_subdirectory(examples)
 endif()
 

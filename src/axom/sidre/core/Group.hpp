@@ -176,14 +176,14 @@ public:
    */
   std::string getPathName() const
   {
-    const auto p = getPath();
+    const auto path = getPath();
 
-    if (p.length() < 1)
+    if (path.length() < 1)
     {
       return getName();
     }
 
-    return p + getPathDelimiter() + getName();
+    return path + getPathDelimiter() + getName();
   }
 
   /*!

@@ -115,8 +115,8 @@
  ******************************************************************************
  */
 
-#ifndef MAP_COLLECTIONS_HPP_
-#define MAP_COLLECTIONS_HPP_
+#ifndef SIDRE_MAP_COLLECTIONS_HPP_
+#define SIDRE_MAP_COLLECTIONS_HPP_
 
 // Standard C++ headers
 #include <map>
@@ -405,4 +405,4 @@ TYPE* MapCollection<TYPE>::removeItem(IndexType idx)
 } /* end namespace sidre */
 } /* end namespace axom */
 
-#endif /* MAP_COLLECTIONS_HPP_ */
+#endif /* SIDRE_MAP_COLLECTIONS_HPP_ */
