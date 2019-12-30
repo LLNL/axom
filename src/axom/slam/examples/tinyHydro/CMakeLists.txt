@@ -34,12 +34,10 @@ blt_add_library(
     SOURCES     ${tinyHydro_lib_sources}
                 ${tinyHydro_lib_headers}
     DEPENDS_ON  ${slam_tiny_hydro_lib_depends_on}
-    FOLDER      axom/slam/examples )
+    FOLDER      axom/slam/examples 
+    OBJECT      TRUE )
 
-
-set(slam_tiny_hydro_tests_depends_on ${slam_tiny_hydro_lib_depends_on})
 list(APPEND slam_tiny_hydro_tests_depends_on slam_tinyHydro_ex)
-
 
 #------------------------------------------------------------------------------
 # Add gtest based tests for tinyHydro
@@ -64,7 +62,7 @@ blt_add_executable(
     NAME        slam_tinyHydro_sod_ex
     SOURCES     tests/slam_tinyHydro_sod1DTwoPart.cpp
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
-    DEPENDS_ON  ${slam_tiny_hydro_tests_depends_on}
+    DEPENDS_ON  ${slam_tiny_hydro_tests_depends_on} 
     FOLDER      axom/slam/examples )
 
 if(AXOM_ENABLE_TESTS)
@@ -83,3 +81,4 @@ blt_add_executable(
     OUTPUT_DIR  ${EXAMPLE_OUTPUT_DIRECTORY}
     DEPENDS_ON  ${slam_tiny_hydro_tests_depends_on}
     FOLDER      axom/slam/examples )
+

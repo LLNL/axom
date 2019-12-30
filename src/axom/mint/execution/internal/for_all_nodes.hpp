@@ -6,6 +6,11 @@
 #ifndef MINT_FOR_ALL_NODES_HPP_
 #define MINT_FOR_ALL_NODES_HPP_
 
+// Axom core includes
+#include "axom/config.hpp"                         // compile time definitions
+#include "axom/core/execution/execution_space.hpp" // for execution_space traits
+#include "axom/core/execution/for_all.hpp"         // for axom::for_all
+
 // mint includes
 #include "axom/mint/execution/xargs.hpp"        // for xargs
 #include "axom/mint/config.hpp"                 // for compile-time definitions
@@ -13,7 +18,7 @@
 #include "axom/mint/mesh/RectilinearMesh.hpp"   // for mint::RectilinearMesh
 #include "axom/mint/mesh/StructuredMesh.hpp"    // for mint::StructuredMesh
 #include "axom/mint/mesh/UniformMesh.hpp"       // for mint::UniformMesh
-#include "axom/mint/execution/policy.hpp"       // for mint execution policies
+#include "axom/mint/execution/internal/structured_exec.hpp"
 
 #include "axom/core/StackArray.hpp"             // for axom::StackArray
 
@@ -34,24 +39,7 @@ inline void for_all_nodes_impl( xargs::index,
                                 KernelType&& kernel )
 {
   const IndexType numNodes = m.getNumberOfNodes();
-
-#ifdef AXOM_USE_RAJA
-
-  using exec_pol = typename policy_traits< ExecPolicy >::raja_exec_policy;
-  RAJA::forall< exec_pol >( RAJA::RangeSegment(0,numNodes), kernel );
-
-#else
-
-  constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
-  AXOM_STATIC_ASSERT( is_serial );
-
-  for ( int nodeIdx=0 ; nodeIdx < numNodes ; ++nodeIdx )
-  {
-    kernel( nodeIdx );
-  }
-
-#endif
-
+  axom::for_all< ExecPolicy >( numNodes, std::forward< KernelType >( kernel ) );
 }
 
 //------------------------------------------------------------------------------
@@ -83,7 +71,7 @@ inline void for_all_nodes_impl( xargs::ij,
 
   RAJA::RangeSegment i_range( 0, Ni );
   RAJA::RangeSegment j_range( 0, Nj );
-  using exec_pol = typename policy_traits< ExecPolicy >::raja_2d_exec;
+  using exec_pol = typename structured_exec< ExecPolicy >::loop2d_policy;
 
   RAJA::kernel< exec_pol >( RAJA::make_tuple( i_range, j_range ),
     AXOM_LAMBDA( IndexType i, IndexType j )
@@ -95,7 +83,7 @@ inline void for_all_nodes_impl( xargs::ij,
 
 #else
 
-  constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
+  constexpr bool is_serial = std::is_same< ExecPolicy, axom::SEQ_EXEC >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
   for( IndexType j=0 ; j < Nj ; ++j )
@@ -148,7 +136,7 @@ inline void for_all_nodes_impl( xargs::ijk,
   RAJA::RangeSegment i_range( 0, Ni );
   RAJA::RangeSegment j_range( 0, Nj );
   RAJA::RangeSegment k_range( 0, Nk );
-  using exec_pol = typename policy_traits< ExecPolicy >::raja_3d_exec;
+  using exec_pol = typename structured_exec< ExecPolicy >::loop3d_policy;
 
   RAJA::kernel< exec_pol >( RAJA::make_tuple(i_range, j_range, k_range),
     AXOM_LAMBDA( IndexType i, IndexType j, IndexType k )
@@ -160,7 +148,7 @@ inline void for_all_nodes_impl( xargs::ijk,
 
 #else
 
-  constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
+  constexpr bool is_serial = std::is_same< ExecPolicy, axom::SEQ_EXEC >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
   for ( IndexType k=0 ; k < Nk ; ++k )
@@ -200,9 +188,10 @@ inline void for_all_nodes( xargs::ijk,
 
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
-inline void for_all_nodes_impl( xargs::x, const UniformMesh& m, KernelType&& kernel )
+inline void for_all_nodes_impl( xargs::x, const UniformMesh& m,
+                                KernelType&& kernel )
 {
-  SLIC_ERROR_IF( m.getDimension() != 1, 
+  SLIC_ERROR_IF( m.getDimension() != 1,
                  "xargs::x is only valid for 1D meshes" );
 
   const double x0 = m.getOrigin()[0];
@@ -251,7 +240,7 @@ inline void for_all_nodes( xargs::x,
   if ( mesh_type == STRUCTURED_UNIFORM_MESH )
   {
     const UniformMesh& um = static_cast< const UniformMesh& >( m );
-    for_all_nodes_impl< ExecPolicy >( xargs::x(), 
+    for_all_nodes_impl< ExecPolicy >( xargs::x(),
                                       um,
                                       std::forward< KernelType >( kernel ) );
   }

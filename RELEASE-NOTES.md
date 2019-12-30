@@ -7,9 +7,15 @@ The format of this file is based on [Keep a Changelog](http://keepachangelog.com
 
 The Axom project release numbers follow [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
+- Define different execution spaces. This refines and consolidates
+  the execution policy concepts from mint and spin, which are now defined in
+  Axom core, such that they can be used by other components.
+- Added a generic axom::for_all(), which can be used to write simple parallel
+  loops.
+- Added [CLI11](https://github.com/CLIUtils/CLI11) command line parser as a built-in third party library.
 
 ### Removed
 
@@ -18,8 +24,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Changed
 - Updated BLT to develop (30ccea5) as of Nov 21, 2019
 - Set CUDA_SEPARABLE_COMPILATION globally instead of just in a few components.
+- Reduced verbosity of quest's InOutOctree in cases where query point lies on surface.
 
 ### Fixed
+- Fixed a bug in ``convert_sidre_protocol`` example. Data tructation functionality now
+  works properly when multiple Views point to the same data.
 
 ### Known Bugs
 
@@ -28,10 +37,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ### Added
 - Added support in Mint for reading and writing an unstructured mesh in the [SU2 Mesh file format].
-  This includes support for both single and mixed cell type topology unstructured mesh types.   
+  This includes support for both single and mixed cell type topology unstructured mesh types.
 - Added a new option to enable/disable use of CUB, AXOM_USE_CUB, which is disabled by default. This
   allows to disable CUB to circumvent issues encountered with the device linker.
-- Added a BezierCurve primitive type to primal. A new ``intersect`` operator was also added to 
+- Added a BezierCurve primitive type to primal. A new ``intersect`` operator was also added to
   compute the intersection points between a pair of Bezier curves of arbitrary order.
 
 ### Removed
@@ -42,7 +51,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Updated Raja TPL to v0.9.0
 - Updated Umpire TPL to v1.0.0
 - AXOM_USE_OPENMP is now being set at configure time accordingly instead of
-  auto-detected based on whether ``_OPENMP`` is passed by the compiler. This
+  auto-detected based on whether "_OPENMP" is passed by the compiler. This
   fixes issues where a host code would compile Axom w/out OpenMP, but, use
   Axom in parts of the code where OpenMP is enabled.
 

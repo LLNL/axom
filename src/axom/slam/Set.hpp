@@ -17,7 +17,7 @@
 #include <vector>
 #include <type_traits>  // for std::common_type
 
-#include "axom/core.hpp"
+#include "axom/core/utilities/Utilities.hpp"
 #include "axom/slam/Utilities.hpp"
 
 namespace axom

@@ -8,7 +8,6 @@
 
 #include "gtest/gtest.h"
 
-#include "axom/core.hpp"
 #include "axom/slic.hpp"
 
 #include "../PolygonMeshXY.hpp"

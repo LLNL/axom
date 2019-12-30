@@ -105,5 +105,7 @@ Axom has the following built-in third party libraries:
 
   `fmt <http://fmtlib.net/latest/index.html>`_
       BSD-licensed string formatting library
+  `CLI11 <https://github.com/CLIUtils/CLI11>`_
+      BSD-licenced C++ options parser
   `sparsehash <https://github.com/sparsehash/sparsehash>`_
       BSD-licenced associative containers for C++

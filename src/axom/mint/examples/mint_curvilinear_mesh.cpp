@@ -13,7 +13,6 @@
 // aliases
 namespace mint      = axom::mint;
 namespace utilities = axom::utilities;
-namespace policy    = mint::policy;
 namespace xargs     = mint::xargs;
 using IndexType     = axom::IndexType;
 
@@ -41,7 +40,7 @@ int main ( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
   double* dy = mesh.createField< double >( "dy", mint::NODE_CENTERED );
 
   // STEP 2: fill in the coordinates
-  mint::for_all_nodes< policy::serial, xargs::ij >( &mesh,
+  mint::for_all_nodes< axom::SEQ_EXEC, xargs::ij >( &mesh,
     AXOM_LAMBDA(IndexType nodeIdx, IndexType i, IndexType j)
     {
       const double xx     = h*i;

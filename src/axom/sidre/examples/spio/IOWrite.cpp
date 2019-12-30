@@ -8,7 +8,8 @@
 
 #include "mpi.h"
 
-#include "axom/core.hpp"
+#include "axom/core/utilities/Utilities.hpp"
+#include "axom/core/utilities/FileUtilities.hpp"
 #include "axom/slic.hpp"
 #include "axom/sidre.hpp"
 

@@ -2,14 +2,16 @@
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
-
+#------------------------------------------------------------------------------
+# Collection of tests for axom's built-in third party libraries
+#------------------------------------------------------------------------------
 
 # Create cmake targets for running the tests through axom's code checks
 axom_add_code_checks(PREFIX thirdparty_tests)
 
-########################################
-# Smoke test for Umpire thirdparty library
-########################################
+#------------------------------------------------------------------------------
+# Smoke test for Umpire third party library
+#------------------------------------------------------------------------------
 if ( UMPIRE_FOUND )
 
   set( umpire_smoke_dependencies umpire gtest )
@@ -27,18 +29,18 @@ if ( UMPIRE_FOUND )
 
 endif()
 
-########################################
-# Smoke test for RAJA thirdparty library
-########################################
+#------------------------------------------------------------------------------
+# Smoke test for RAJA third party library
+#------------------------------------------------------------------------------
 if ( RAJA_FOUND )
 
   set( raja_smoke_dependencies raja gtest )
 
-  blt_list_append( TO raja_smoke_dependencies ELEMENTS openmp IF ENABLE_OPENMP )
+  blt_list_append( TO raja_smoke_dependencies ELEMENTS openmp IF ENABLE_OPENMP)
 
-  blt_list_append( TO raja_smoke_dependencies ELEMENTS umpire IF UMPIRE_FOUND )
+  blt_list_append( TO raja_smoke_dependencies ELEMENTS umpire IF UMPIRE_FOUND)
 
-  blt_list_append( TO raja_smoke_dependencies ELEMENTS cuda IF ENABLE_CUDA )
+  blt_list_append( TO raja_smoke_dependencies ELEMENTS cuda IF ENABLE_CUDA)
 
   blt_list_append( TO raja_smoke_dependencies ELEMENTS mpi IF ENABLE_MPI)
 
@@ -53,28 +55,30 @@ if ( RAJA_FOUND )
 
 endif()
 
-########################################
-# Smoke test for hdf5 thirdparty library
-########################################
+#------------------------------------------------------------------------------
+# Smoke test for hdf5 third party library
+#------------------------------------------------------------------------------
 if( HDF5_FOUND)
     blt_add_executable(NAME hdf5_smoke_test
                        SOURCES hdf5_smoke.cpp
                        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                        DEPENDS_ON hdf5 gtest
                        FOLDER axom/thirdparty/tests )
+
     blt_add_test(NAME hdf5_smoke
                  COMMAND hdf5_smoke_test)
 endif()
 
-###########################################
-# Smoke test for conduit thirdparty library
-###########################################
+#------------------------------------------------------------------------------
+# Smoke test for conduit third party library
+#------------------------------------------------------------------------------
 if (CONDUIT_FOUND)
     blt_add_executable(NAME       conduit_smoke_test
                        SOURCES    conduit_smoke.cpp
                        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                        DEPENDS_ON conduit::conduit gtest
                        FOLDER     axom/thirdparty/tests )
+
     blt_add_test(NAME conduit_smoke
                  COMMAND conduit_smoke_test)
 
@@ -84,14 +88,15 @@ if (CONDUIT_FOUND)
                            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                            DEPENDS_ON conduit::conduit fruit
                            FOLDER     axom/thirdparty/tests )
+
         blt_add_test(NAME conduit_smoke_F
                      COMMAND conduit_smoke_F_test)
   endif()
 endif()
 
-########################################
-# Smoke test for mfem thirdparty library
-########################################
+#------------------------------------------------------------------------------
+# Smoke test for mfem third party library
+#------------------------------------------------------------------------------
 if (MFEM_FOUND)
     blt_add_executable(NAME mfem_smoke_test
                        SOURCES mfem_smoke.cpp
@@ -107,21 +112,40 @@ if (MFEM_FOUND)
 
 endif()
 
-#######################################
-# Smoke test for fmt thirdparty library
-#######################################
+#------------------------------------------------------------------------------
+# Smoke test for fmt third party library
+#------------------------------------------------------------------------------
 blt_add_executable(
     NAME fmt_smoke_test
     SOURCES fmt_smoke.cpp
     OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
     DEPENDS_ON fmt gtest
     FOLDER axom/thirdparty/tests )
+    
 blt_add_test(NAME fmt_smoke
              COMMAND fmt_smoke_test)
 
-##############################################
-# Smoke test for sparsehash thirdparty library
-##############################################
+#------------------------------------------------------------------------------
+# Smoke test for CLI11 third party library
+#------------------------------------------------------------------------------
+blt_add_executable(
+    NAME cli11_smoke_test
+    SOURCES cli11_smoke.cpp
+    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+    DEPENDS_ON cli11
+    FOLDER axom/thirdparty/tests )
+
+blt_add_test(
+    NAME cli11_smoke_help
+    COMMAND cli11_smoke_test --help)
+
+blt_add_test(
+    NAME cli11_smoke_with_options
+    COMMAND cli11_smoke_test -b -i 42 --some-float=3.14 --some-string "hello world")
+
+#------------------------------------------------------------------------------
+# Smoke test for sparsehash third party library
+#------------------------------------------------------------------------------
 
 if (SPARSEHASH_FOUND)
   blt_add_executable(
@@ -135,7 +159,7 @@ if (SPARSEHASH_FOUND)
              COMMAND sparsehash_smoke_test)
 endif()
 
-################################################################################
+#------------------------------------------------------------------------------
 # Add compiler flag tests.
 #
 # Test whether custom compiler flags actually work as expected on all compilers.
@@ -144,7 +168,7 @@ endif()
 # These tests enable all warnings, treat warnings as errors and add the desired
 # flag. They should fail if we have the wrong flag set for the given configuration.
 # Flag variables are defined in blt's SetupCompilerOptions.cmake
-################################################################################
+#------------------------------------------------------------------------------
 
 set( BLT_SMOKE_TESTS
         compiler_flag_uninitialized.cpp
@@ -166,12 +190,12 @@ foreach(test ${BLT_SMOKE_TESTS})
         SOURCES ${test}
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
         USE_OPENMP False
-        FOLDER axom/thirdparty/tests
-        )
+        FOLDER axom/thirdparty/tests)
+
     blt_add_test(
         NAME ${test_name}
-        COMMAND ${test_name}_test
-        )
+        COMMAND ${test_name}_test)
+
 endforeach()
 
 set( ADDL_SMOKE_FLAGS "${BLT_WARNINGS_AS_ERRORS_FLAG} ${BLT_ENABLE_ALL_WARNINGS_FLAG}")

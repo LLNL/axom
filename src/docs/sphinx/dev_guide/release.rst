@@ -117,8 +117,8 @@ approved. At this point, the release candidate branch can be deleted.
   script. This will generate a tarball of the form ``Axom-v0.3.1.tar.gz``
 
 * Upload the tarball for the corresponding release, by going to the
- `Github Releases section <https://github.com/LLNL/axom/releases>`_ and ``Edit``
- the release created earlier.
+  `Github Releases section <https://github.com/LLNL/axom/releases>`_ and ``Edit``
+  the release created earlier.
 
 * Attach the tarball to the release.
 

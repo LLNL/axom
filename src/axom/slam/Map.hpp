@@ -17,7 +17,6 @@
 #include <sstream>
 #include <iostream>
 
-#include "axom/core.hpp"
 #include "axom/slic.hpp"
 
 #include "axom/slam/MapBase.hpp"

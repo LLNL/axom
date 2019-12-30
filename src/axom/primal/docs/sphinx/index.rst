@@ -13,7 +13,7 @@ This tutorial contains a collection of brief examples demonstrating
 Primal primitives and operators.  The examples instantiate geometric primitives
 as needed and demonstrate geometric operators.  These examples also show
 representative overloads of each of the Primal operators (see the
-`API documentation <../../../doxygen/axom_doxygen/html/primaltop.html>`_ 
+`API documentation <../../../../doxygen/html/primaltop.html>`_ 
 for more details).
 
 .. toctree::
