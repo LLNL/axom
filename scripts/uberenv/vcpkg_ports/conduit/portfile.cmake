@@ -6,8 +6,8 @@ include(vcpkg_common_functions)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO llnl/conduit
-    REF master
-    SHA512 6aab055c38709e21343ff164271e1b51cff0a8298b65040500060fe1894d5fc951e9a0a51ef7511bf61217904edc70604d60514f67c7ab39c890dc76f41bc38b
+    REF v0.5.0
+    SHA512 aae329cf7d0329b466e996f81695f4bee66e7732d0d7c49ffd00276ddee82326a261af3135ad1fc7b9903150cadbbaed17c7a1f25b4cc5352fdfed60ed7a7da1
     HEAD_REF master
     PATCHES
         "fix-setup-hdf5-vcpkg.patch"

@@ -288,10 +288,8 @@ class VcpkgEnv(UberEnv):
             sexe("git pull", echo=True)
 
         # Bootstrap vcpkg
-        # TODO: Re-enable
-        if False:
-            os.chdir(self.dest_vcpkg)
-            sexe("bootstrap-vcpkg.bat -disableMetrics", echo=True)
+        os.chdir(self.dest_vcpkg)
+        sexe("bootstrap-vcpkg.bat -disableMetrics", echo=True)
             
 
     def patch(self):
@@ -330,9 +328,9 @@ class VcpkgEnv(UberEnv):
         install_cmd = "vcpkg.exe "
         install_cmd += "install {}".format(self.pkg_name)
 
-        #res = sexe(install_cmd, echo=True)
+        res = sexe(install_cmd, echo=True)
 
-        #return res
+        return res
 
 
 class SpackEnv(UberEnv):
