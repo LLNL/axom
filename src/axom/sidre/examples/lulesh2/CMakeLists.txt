@@ -20,23 +20,36 @@ set(lulesh_sources
     lulesh-viz.cc
     )
 
+set(lulesh_depends
+    core
+    sidre
+    conduit::conduit
+    hdf5
+    slic
+    )
+
+blt_list_append( TO lulesh_depends ELEMENTS mpi IF ${ENABLE_MPI} )
+blt_list_append( TO lulesh_depends ELEMENTS openmp IF ${ENABLE_OPENMP} )
+
 blt_add_executable(
     NAME sidre_lulesh2_ex
     SOURCES ${lulesh_sources} ${lulesh_headers}
     OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-    DEPENDS_ON core sidre conduit::conduit hdf5 slic
+    DEPENDS_ON ${lulesh_depends}
     FOLDER axom/sidre/examples
     )
 
 if(AXOM_ENABLE_TESTS)
     if(ENABLE_MPI)
         blt_add_test(NAME sidre_lulesh2
-                     COMMAND sidre_lulesh2_ex -s 5
-                     NUM_MPI_TASKS 8
+                     COMMAND sidre_lulesh2_ex -s 3
+                     NUM_MPI_TASKS 1
+                     NUM_OMP_THREADS 2
                     )
     else()
         blt_add_test(NAME sidre_lulesh2
-                     COMMAND sidre_lulesh2_ex -s 5
+                     COMMAND sidre_lulesh2_ex -s 3
+                     NUM_OMP_THREADS 2
                     )
     endif()
 endif()

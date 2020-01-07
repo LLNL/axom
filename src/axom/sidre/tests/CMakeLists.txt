@@ -45,15 +45,13 @@ set(fruit_sidre_tests
 )
 
 
-set(sidre_test_depends 
+set(sidre_test_depends
     sidre
     conduit::conduit
     slic
     )
-    
-if(HDF5_FOUND)
-    list(APPEND sidre_test_depends hdf5)
-endif()    
+
+blt_list_append(TO sidre_test_depends ELEMENTS hdf5 IF ${HDF5_FOUND})
 
 #
 # Add gtest C++ based tests
@@ -67,7 +65,7 @@ foreach(test ${gtest_sidre_tests})
                         FOLDER axom/sidre/tests
                         )
 
-    blt_add_test( NAME ${test_name} 
+    blt_add_test( NAME ${test_name}
                   COMMAND ${test_name}_test
                   )
 endforeach()
@@ -84,7 +82,7 @@ if (ENABLE_FORTRAN)
                             DEPENDS_ON ${sidre_test_depends} gtest
                             FOLDER axom/sidre/tests
                             )
-        blt_add_test( NAME ${test_name} 
+        blt_add_test( NAME ${test_name}
                       COMMAND ${test_name}_test
                       )
     endforeach()
@@ -102,7 +100,7 @@ if (ENABLE_FORTRAN)
                             DEPENDS_ON ${sidre_test_depends} fruit
                             FOLDER axom/sidre/tests
                             )
-        blt_add_test( NAME ${test_name} 
+        blt_add_test( NAME ${test_name}
                       COMMAND ${test_name}_test
                       )
     endforeach()

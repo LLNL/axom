@@ -337,14 +337,14 @@ class UberenvAxom(Package):
                     # blueos_p9
                     spectrum_prefix = "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release"
                     if spec['mpi'].mpifc == spectrum_prefix + "-clang-8.0.0/bin/mpif90":
-                        cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", 
+                        cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER",
                                                     spectrum_prefix + "-xl-2019.06.12/bin/mpif90"))
                     elif spec['mpi'].mpifc == spectrum_prefix + "-clang-upstream-2019.03.26/bin/mpif90":
-                        cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", 
+                        cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER",
                                                     spectrum_prefix + "-xl-2019.06.12/bin/mpif90"))
                     # blueos
                     elif spec['mpi'].mpifc == spectrum_prefix + "-clang-upstream-2018.11.09/bin/mpif90":
-                        cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", 
+                        cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER",
                                                     spectrum_prefix + "-xl-2018.11.26/bin/mpif90"))
                     else:
                         cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", spec['mpi'].mpifc))
@@ -455,6 +455,11 @@ class UberenvAxom(Package):
             if "gcc@4.9.3" == str(spec.compiler):
                 cfg.write(cmake_cache_entry("SCR_DIR",
                     "/usr/gapps/axom/thirdparty_libs/scr-1.2.1/toss_3_x86_64_ib/gcc-4.9.3"))
+
+            if ("gfortran" in f_compiler) and ("clang" in cpp_compiler):
+                cfg.write(cmake_cache_entry("BLT_EXE_LINKER_FLAGS",
+                    "-Wl,-rpath,/usr/tce/packages/clang/clang-6.0.0/lib",
+                    "Adds a missing rpath for libraries associated with the fortran compiler"))
 
         if "+openmp" in spec:
             cfg.write(cmake_cache_option("ENABLE_OPENMP", True))

@@ -29,13 +29,8 @@ endif()
 
 set(slam_tests_depends_on core slic slam)
 
-if (ENABLE_OPENMP)
-    list(APPEND slam_tests_depends_on openmp)
-endif()
-
-if (ENABLE_MPI)
-    list(APPEND slam_tests_depends_on mpi)
-endif()
+blt_list_append( TO slam_tests_depends_on ELEMENTS mpi IF ${ENABLE_MPI} )
+blt_list_append( TO slam_tests_depends_on ELEMENTS openmp IF ${ENABLE_OPENMP} )
 
 blt_add_executable(
     NAME        slam_lulesh_ex
@@ -48,10 +43,12 @@ if(AXOM_ENABLE_TESTS)
     if(ENABLE_MPI)
         blt_add_test(NAME        slam_lulesh
                      COMMAND     slam_lulesh_ex
-                     NUM_MPI_TASKS   8 )
+                     NUM_MPI_TASKS   8
+                     NUM_OMP_THREADS 4 )
     else()
         blt_add_test(NAME        slam_lulesh
-                     COMMAND     slam_lulesh_ex )
+                     COMMAND     slam_lulesh_ex
+                     NUM_OMP_THREADS 4 )
     endif()
 endif()
 
