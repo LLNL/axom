@@ -23,7 +23,6 @@
 #ifndef SLAM_POLICIES_SIZE_H_
 #define SLAM_POLICIES_SIZE_H_
 
-#include "axom/core.hpp"
 #include "axom/slic.hpp"
 
 namespace axom

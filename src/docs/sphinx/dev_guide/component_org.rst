@@ -20,7 +20,7 @@ tasks to be done when adding a new software component to Axom. These include:
   * Writing tests
 
 .. note:: The discussion here does not contain coding guidelines. Please see
-          `Axom Coding Guide <../../coding_guide_docs/html/index.html>`_ 
+          `Axom Coding Guide <../coding_guide/index.html>`_ 
           for that information.
 
 ====================================
@@ -392,8 +392,8 @@ reference document of your software interfaces and implementations for
 users who need to understand details of your code.
 
 We have a useful discussion of our Doxygen usage conventions in the 
-`Documentation Section of the Axom Coding Guide <../../coding_guide_docs/html/sec07_documentation.html>`_. 
-The `Doxygen Manual <http://www.stack.nl/~dimitri/doxygen/>`_ contains
+`Documentation Section of the Axom Coding Guide <../coding_guide/sec07_documentation.html>`_. 
+The `Doxygen Manual <http://www.doxygen.nl/manual/>`_ contains
 a lot more details.
 
 **Fill in more details when we have a better handle on how we want to organize 

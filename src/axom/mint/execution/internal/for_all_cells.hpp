@@ -6,6 +6,11 @@
 #ifndef MINT_FOR_ALL_CELLS_HPP_
 #define MINT_FOR_ALL_CELLS_HPP_
 
+// Axom core includes
+#include "axom/config.hpp"                         // compile time definitions
+#include "axom/core/execution/execution_space.hpp" // for execution_space traits
+#include "axom/core/execution/for_all.hpp"         // for axom::for_all
+
 // mint includes
 #include "axom/mint/execution/xargs.hpp"        // for xargs
 
@@ -16,8 +21,8 @@
 #include "axom/mint/mesh/RectilinearMesh.hpp"   // for RectilinearMesh
 #include "axom/mint/mesh/CurvilinearMesh.hpp"   // for CurvilinearMesh
 #include "axom/mint/mesh/UnstructuredMesh.hpp"  // for UnstructuredMesh
-#include "axom/mint/execution/policy.hpp"       // execution policies/traits
 #include "axom/mint/execution/internal/helpers.hpp"
+#include "axom/mint/execution/internal/structured_exec.hpp"
 
 #include "axom/core/StackArray.hpp"             // for axom::StackArray
 #include "axom/core/numerics/Matrix.hpp"        // for Matrix
@@ -40,23 +45,7 @@ inline void for_all_cells_impl( xargs::index,
                                 KernelType&& kernel )
 {
   const IndexType numCells = m.getNumberOfCells();
-
-#ifdef AXOM_USE_RAJA
-
-  using exec_pol = typename policy_traits< ExecPolicy >::raja_exec_policy;
-  RAJA::forall< exec_pol >( RAJA::RangeSegment( 0, numCells ), kernel );
-
-#else
-
-  constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
-  AXOM_STATIC_ASSERT( is_serial );
-
-  for ( IndexType cellID = 0 ; cellID < numCells ; ++cellID )
-  {
-    kernel( cellID );
-  }
-
-#endif
+  axom::for_all< ExecPolicy >( numCells, std::forward< KernelType >( kernel ) );
 }
 
 //------------------------------------------------------------------------------
@@ -77,7 +66,7 @@ inline void for_all_cells_impl( xargs::ij,
                                 KernelType&& kernel )
 {
   // run-time checks
-  SLIC_ERROR_IF( m.getDimension() != 2, 
+  SLIC_ERROR_IF( m.getDimension() != 2,
                  "xargs::ij is only valid for 2D meshes!" );
 
   const IndexType jp = m.cellJp();
@@ -88,7 +77,7 @@ inline void for_all_cells_impl( xargs::ij,
 
   RAJA::RangeSegment i_range(0,Ni);
   RAJA::RangeSegment j_range(0,Nj);
-  using exec_pol = typename policy_traits< ExecPolicy >::raja_2d_exec;
+  using exec_pol = typename structured_exec< ExecPolicy >::loop2d_policy;
 
   RAJA::kernel< exec_pol >( RAJA::make_tuple(i_range,j_range),
     AXOM_LAMBDA(IndexType i, IndexType j)
@@ -100,7 +89,7 @@ inline void for_all_cells_impl( xargs::ij,
 
 #else
 
-  constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
+  constexpr bool is_serial = std::is_same< ExecPolicy, axom::SEQ_EXEC >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
   for( IndexType j=0 ; j < Nj ; ++j )
@@ -152,7 +141,7 @@ inline void for_all_cells_impl( xargs::ijk,
   RAJA::RangeSegment i_range( 0, Ni );
   RAJA::RangeSegment j_range( 0, Nj );
   RAJA::RangeSegment k_range( 0, Nk );
-  using exec_pol = typename policy_traits< ExecPolicy >::raja_3d_exec;
+  using exec_pol = typename structured_exec< ExecPolicy >::loop3d_policy;
 
   RAJA::kernel< exec_pol >( RAJA::make_tuple( i_range, j_range, k_range ),
     AXOM_LAMBDA(IndexType i, IndexType j, IndexType k)
@@ -164,7 +153,7 @@ inline void for_all_cells_impl( xargs::ijk,
 
 #else
 
-  constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
+  constexpr bool is_serial = std::is_same< ExecPolicy, axom::SEQ_EXEC >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
   for ( IndexType k=0 ; k < Nk ; ++k )
@@ -211,11 +200,11 @@ inline void for_all_cells_impl( xargs::nodeids,
   const int dimension      = m.getDimension();
   const IndexType nodeJp   = m.nodeJp();
   const IndexType nodeKp   = m.nodeKp();
-  const StackArray< IndexType, 8 > & offsets = m.getCellNodeOffsetsArray(); 
+  const StackArray< IndexType, 8 > & offsets = m.getCellNodeOffsetsArray();
 
   if ( dimension == 1 )
   {
-    for_all_cells_impl< ExecPolicy >( xargs::index(), m, 
+    for_all_cells_impl< ExecPolicy >( xargs::index(), m,
       AXOM_LAMBDA( IndexType cellID )
       {
         IndexType cell_connectivity[ 2 ] = { cellID, cellID + 1 };
@@ -337,21 +326,21 @@ inline void for_all_cells_impl( xargs::faceids,
 
   if ( dimension == 2 )
   {
-    for_all_cells_impl< ExecPolicy >( xargs::ij(), m, 
+    for_all_cells_impl< ExecPolicy >( xargs::ij(), m,
       AXOM_LAMBDA( IndexType cellID, IndexType AXOM_NOT_USED(i), IndexType j )
       {
         IndexType faces[ 4 ];
-        
+
         /* The I_DIRECTION faces */
         faces[ 0 ] = cellID + j;
         faces[ 1 ] = faces[ 0 ] + 1;
-        
+
         /* The J_DIRECTION faces */
         faces[ 2 ] = cellID + numIFaces;
         faces[ 3 ] = faces[ 2 ] + ICellResolution;
 
         kernel( cellID, faces, 4 );
-      } 
+      }
     );
   }
   else
@@ -362,12 +351,12 @@ inline void for_all_cells_impl( xargs::faceids,
     const IndexType totalIJfaces = numIFaces + m.getTotalNumFaces( J_DIRECTION );
     const IndexType cellKp = m.cellKp();
 
-    for_all_cells_impl< ExecPolicy >( xargs::ijk(), m, 
+    for_all_cells_impl< ExecPolicy >( xargs::ijk(), m,
       AXOM_LAMBDA( IndexType cellID, IndexType AXOM_NOT_USED(i), IndexType j,
                    IndexType k )
       {
         IndexType faces[ 6 ];
-        
+
         /* The I_DIRECTION faces */
         faces[ 0 ] =  cellID + j + JCellResolution * k;
         faces[ 1 ] = faces[ 0 ] + 1;
@@ -389,13 +378,13 @@ inline void for_all_cells_impl( xargs::faceids,
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
 inline void for_all_cells_impl( xargs::faceids,
-                                const UnstructuredMesh< SINGLE_SHAPE >& m, 
+                                const UnstructuredMesh< SINGLE_SHAPE >& m,
                                 KernelType&& kernel )
 {
   const IndexType* cells_to_faces = m.getCellFacesArray();
   const IndexType num_faces = m.getNumberOfCellFaces();
 
-  for_all_cells_impl< ExecPolicy >( xargs::index(), m, 
+  for_all_cells_impl< ExecPolicy >( xargs::index(), m,
     AXOM_LAMBDA( IndexType cellID )
     {
       kernel( cellID, cells_to_faces + cellID * num_faces, num_faces );
@@ -406,13 +395,13 @@ inline void for_all_cells_impl( xargs::faceids,
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
 inline void for_all_cells_impl( xargs::faceids,
-                                const UnstructuredMesh< MIXED_SHAPE > & m, 
+                                const UnstructuredMesh< MIXED_SHAPE > & m,
                                 KernelType&& kernel )
 {
   const IndexType* cells_to_faces = m.getCellFacesArray();
   const IndexType* offsets        = m.getCellFacesOffsetsArray();
 
-  for_all_cells_impl< ExecPolicy >( xargs::index(), m, 
+  for_all_cells_impl< ExecPolicy >( xargs::index(), m,
     AXOM_LAMBDA( IndexType cellID )
     {
       const IndexType num_faces = offsets[ cellID + 1 ] - offsets[ cellID ];
@@ -427,7 +416,7 @@ inline void for_all_cells( xargs::faceids, const Mesh& m, KernelType&& kernel )
 {
   SLIC_ERROR_IF( m.getDimension() == 1,
             "For all cells with face IDs only supported for 2D and 3D meshes" );
-  
+
   if ( m.isStructured() )
   {
     const StructuredMesh& sm = static_cast< const StructuredMesh& >( m );
@@ -469,7 +458,7 @@ inline void for_all_cells_impl( xargs::coords,
 
   const double x0 = origin[0];
   const double dx = spacing[0];
-  
+
   const double y0 = origin[1];
   const double dy = spacing[1];
 
@@ -482,9 +471,9 @@ inline void for_all_cells_impl( xargs::coords,
       AXOM_LAMBDA( IndexType cellID )
       {
         const IndexType nodeIDs[2] = { cellID, cellID + 1 };
-        double coords[2] = { x0 + nodeIDs[0] * dx, 
+        double coords[2] = { x0 + nodeIDs[0] * dx,
                              x0 + nodeIDs[1] * dx };
-      
+
         numerics::Matrix<double> coordsMatrix( dimension, 2, coords, NO_COPY );
         kernel( cellID, coordsMatrix, nodeIDs );
       }
@@ -496,7 +485,7 @@ inline void for_all_cells_impl( xargs::coords,
       AXOM_LAMBDA( IndexType cellID, IndexType i, IndexType j )
       {
         const IndexType n0 = i + j * nodeJp;
-        const IndexType nodeIDs[4] = { n0, 
+        const IndexType nodeIDs[4] = { n0,
                                        n0 + 1,
                                        n0 + 1 + nodeJp,
                                        n0 + nodeJp };
@@ -505,7 +494,7 @@ inline void for_all_cells_impl( xargs::coords,
                              x0 + (i + 1) * dx, y0 +  j      * dy,
                              x0 + (i + 1) * dx, y0 + (j + 1) * dy,
                              x0 +  i      * dx, y0 + (j + 1) * dy };
-        
+
         numerics::Matrix<double> coordsMatrix( dimension, 4, coords, NO_COPY );
         kernel( cellID, coordsMatrix, nodeIDs );
       }
@@ -518,7 +507,7 @@ inline void for_all_cells_impl( xargs::coords,
       AXOM_LAMBDA( IndexType cellID, IndexType i, IndexType j, IndexType k )
       {
         const IndexType n0 = i + j * nodeJp + k * nodeKp;
-        const IndexType nodeIDs[8] = { n0, 
+        const IndexType nodeIDs[8] = { n0,
                                        n0 + 1,
                                        n0 + 1 + nodeJp,
                                        n0 + nodeJp,
@@ -527,7 +516,7 @@ inline void for_all_cells_impl( xargs::coords,
                                        n0 + 1 + nodeJp + nodeKp,
                                        n0 + nodeJp + nodeKp };
 
-        double coords[24] = { 
+        double coords[24] = {
           x0 +  i      * dx, y0 +  j      * dy, z0 +  k      * dz,
           x0 + (i + 1) * dx, y0 +  j      * dy, z0 +  k      * dz,
           x0 + (i + 1) * dx, y0 + (j + 1) * dy, z0 +  k      * dz,
@@ -536,7 +525,7 @@ inline void for_all_cells_impl( xargs::coords,
           x0 + (i + 1) * dx, y0 +  j      * dy, z0 + (k + 1) * dz,
           x0 + (i + 1) * dx, y0 + (j + 1) * dy, z0 + (k + 1) * dz,
           x0 +  i      * dx, y0 + (j + 1) * dy, z0 + (k + 1) * dz };
-        
+
         numerics::Matrix<double> coordsMatrix( dimension, 8, coords, NO_COPY );
         kernel( cellID, coordsMatrix, nodeIDs );
       }
@@ -563,8 +552,8 @@ inline void for_all_cells_impl( xargs::coords,
       AXOM_LAMBDA( IndexType cellID )
       {
         const IndexType nodeIDs[2] = { cellID, cellID + 1 };
-        double coords[2] = { x[ nodeIDs[0] ], x[ nodeIDs[1] ] }; 
-      
+        double coords[2] = { x[ nodeIDs[0] ], x[ nodeIDs[1] ] };
+
         numerics::Matrix<double> coordsMatrix( dimension, 2, coords, NO_COPY );
         kernel( cellID, coordsMatrix, nodeIDs );
       }
@@ -577,7 +566,7 @@ inline void for_all_cells_impl( xargs::coords,
       AXOM_LAMBDA( IndexType cellID, IndexType i, IndexType j )
       {
         const IndexType n0 = i + j * nodeJp;
-        const IndexType nodeIDs[4] = { n0, 
+        const IndexType nodeIDs[4] = { n0,
                                        n0 + 1,
                                        n0 + 1 + nodeJp,
                                        n0 + nodeJp };
@@ -586,7 +575,7 @@ inline void for_all_cells_impl( xargs::coords,
                              x[ i + 1 ], y[ j ],
                              x[ i + 1 ], y[ j + 1 ],
                              x[ i ],     y[ j + 1 ] };
-        
+
         numerics::Matrix<double> coordsMatrix( dimension, 4, coords, NO_COPY );
         kernel( cellID, coordsMatrix, nodeIDs );
       }
@@ -601,7 +590,7 @@ inline void for_all_cells_impl( xargs::coords,
       AXOM_LAMBDA( IndexType cellID, IndexType i, IndexType j, IndexType k )
       {
         const IndexType n0 = i + j * nodeJp + k * nodeKp;
-        const IndexType nodeIDs[8] = { n0, 
+        const IndexType nodeIDs[8] = { n0,
                                        n0 + 1,
                                        n0 + 1 + nodeJp,
                                        n0 + nodeJp,
@@ -618,7 +607,7 @@ inline void for_all_cells_impl( xargs::coords,
                               x[ i + 1 ], y[ j ],     z[ k + 1 ],
                               x[ i + 1 ], y[ j + 1 ], z[ k + 1 ],
                               x[ i ],     y[ j + 1 ], z[ k + 1 ] };
-        
+
         numerics::Matrix<double> coordsMatrix( dimension, 8, coords, NO_COPY );
         kernel( cellID, coordsMatrix, nodeIDs );
       }
@@ -674,7 +663,7 @@ inline void for_all_cells_impl( xargs::coords,
                                 KernelType&& kernel )
 {
   constexpr bool NO_COPY = true;
-  
+
   const int dimension = m.getDimension();
   const double * x = m.getCoordinateArray( X_COORDINATE );
 
@@ -684,8 +673,8 @@ inline void for_all_cells_impl( xargs::coords,
       AXOM_LAMBDA( IndexType cellID, const IndexType * nodeIDs,
                    IndexType AXOM_NOT_USED(numNodes) )
       {
-        double coords[2] = { x[ nodeIDs[0] ], x[ nodeIDs[1] ] }; 
-      
+        double coords[2] = { x[ nodeIDs[0] ], x[ nodeIDs[1] ] };
+
         numerics::Matrix<double> coordsMatrix( dimension, 2, coords, NO_COPY );
         kernel( cellID, coordsMatrix, nodeIDs );
       }
@@ -695,7 +684,7 @@ inline void for_all_cells_impl( xargs::coords,
   {
     const double * y = m.getCoordinateArray( Y_COORDINATE );
     for_all_cells_impl< ExecPolicy >( xargs::nodeids(), m,
-      AXOM_LAMBDA( IndexType cellID, const IndexType * nodeIDs, 
+      AXOM_LAMBDA( IndexType cellID, const IndexType * nodeIDs,
                    IndexType numNodes )
       {
         double coords[ 2 * MAX_CELL_NODES ];
@@ -717,7 +706,7 @@ inline void for_all_cells_impl( xargs::coords,
     const double * y = m.getCoordinateArray( Y_COORDINATE );
     const double * z = m.getCoordinateArray( Z_COORDINATE );
     for_all_cells_impl< ExecPolicy >( xargs::nodeids(), m,
-      AXOM_LAMBDA( IndexType cellID, const IndexType * nodeIDs, 
+      AXOM_LAMBDA( IndexType cellID, const IndexType * nodeIDs,
                    IndexType numNodes )
       {
         double coords[ 3 * MAX_CELL_NODES ];

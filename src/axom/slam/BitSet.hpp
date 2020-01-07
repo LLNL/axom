@@ -12,7 +12,7 @@
 #ifndef SLAM_BITSET_H_
 #define SLAM_BITSET_H_
 
-#include "axom/core.hpp"
+#include "axom/core/utilities/Utilities.hpp"
 #include "axom/slic.hpp"
 
 #include "axom/slam/internal/BitTwiddle.hpp"

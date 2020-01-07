@@ -16,7 +16,7 @@
 #define SLAM_ORDERED_SET_H_
 
 #include "axom/config.hpp"
-#include "axom/core.hpp"
+#include "axom/core/utilities/Utilities.hpp"
 #include "axom/slic.hpp"
 
 #include "axom/slam/Set.hpp"
@@ -305,9 +305,10 @@ public:
     /// \{
 
     /// Convert from iterator type to const_iterator type
-    operator OrderedSetIterator<T, true>() const
+    template<typename U>
+    operator OrderedSetIterator<U, true>() const
     {
-      return OrderedSetIterator<T, true>(this->m_pos, this->m_orderedSet);
+      return OrderedSetIterator<U, true>(this->m_pos, this->m_orderedSet);
     }
     /// \}
 

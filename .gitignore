@@ -14,3 +14,4 @@ _axom_build_and_test_*
 tpl_dirs_summary.json
 *.swp
 *.vscode*
+uberenv_libs

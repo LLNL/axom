@@ -46,10 +46,9 @@ set(fruit_sidre_tests
 
 
 set(sidre_test_depends 
-    sidre 
-    conduit 
-    conduit_relay 
-    slic 
+    sidre
+    conduit::conduit
+    slic
     )
     
 if(HDF5_FOUND)

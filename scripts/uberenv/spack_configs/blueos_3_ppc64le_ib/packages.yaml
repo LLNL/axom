@@ -39,8 +39,7 @@ packages:
 # LLNL blueos CUDA
   cuda:
     paths:
-      cuda@9.2.148: /usr/tce/packages/cuda/cuda-9.2.148
-      cuda@8.0: /usr/tce/packages/cuda/cuda-8.0
+      cuda@10.1.168: /usr/tce/packages/cuda/cuda-10.1.168
     buildable: False
 # LLNL blueos mpi
 # note, we need to fake this as an existing mpi package

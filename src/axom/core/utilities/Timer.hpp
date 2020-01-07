@@ -142,7 +142,7 @@ private:
 
   TimeStruct m_startTime;
   TimeStruct m_stopTime;
-  bool       m_running;
+  bool m_running;
 };
 
 } // namespace utilities

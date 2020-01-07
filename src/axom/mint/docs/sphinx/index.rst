@@ -25,5 +25,3 @@ Mint User Guide
    sections/examples.rst
    sections/faq.rst
    sections/appendix.rst
-
-.. include:: sections/citations.rst

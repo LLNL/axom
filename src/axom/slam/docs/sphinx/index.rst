@@ -106,5 +106,5 @@ See :ref:`policy-label` for more details.
     <h3>Additional links</h3>
 
 
-* `API documentation <../../../doxygen/axom_doxygen/html/slamtop.html>`_
-* `Axom main docs <../../web_main_docs/html/index.html>`_
+* `API documentation <../../../../doxygen/html/slamtop.html>`_
+* `Axom main docs <../../../../index.html>`_

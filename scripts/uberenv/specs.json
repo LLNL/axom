@@ -1,7 +1,7 @@
 {
     "__comment__":"##############################################################################",
     "__comment__":"# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and      ",
-    "__comment__":"# other Axom Project Developers. See the top-level COPYRIGHT file for details. ",
+    "__comment__":"# other Axom Project Developers. See the top-level COPYRIGHT file for details.",
     "__comment__":"#                                                                             ",
     "__comment__":"# SPDX-License-Identifier: (BSD-3-Clause)                                     ",
     "__comment__":"##############################################################################",
@@ -30,7 +30,7 @@
 
     "blueos_3_ppc64le_ib_p9":
     [ "clang@upstream_xlf~openmp",
-      "clang@upstream_nvcc_xlf~openmp+cuda",
+      "clang@8.0.0_nvcc_xlf~openmp+cuda",
       "gcc@7.3.1",
       "xl@coral~openmp" ],
 
@@ -39,5 +39,5 @@
       "clang@4.0.0_xlf~openmp~umpire ^zlib~shared" ],
 
     "darwin-x86_64":
-    [ "clang@9.0.0 ^conduit@master" ]
+    [ "clang@9.0.0" ]
 }

@@ -39,10 +39,10 @@ set(CMAKE_Fortran_COMPILER "/opt/ibmcmp/xlf/bg/14.1/bin/bgxlf2003" CACHE PATH ""
 ##############
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_06_27_21_46_38/clang-4.0.0_xlf" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_09_05_21_45_10/clang-4.0.0_xlf" CACHE PATH "")
 
 # conduit from uberenv
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.4.0" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-master" CACHE PATH "")
 
 # mfem from uberenv
 set(MFEM_DIR "${TPL_ROOT}/mfem-4.0" CACHE PATH "")
@@ -53,7 +53,7 @@ set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.19" CACHE PATH "")
 # scr not built by uberenv
 
 # raja from uberenv
-set(RAJA_DIR "${TPL_ROOT}/raja-0.7.0/share/raja/cmake" CACHE PATH "")
+set(RAJA_DIR "${TPL_ROOT}/raja-0.9.0/share/raja/cmake" CACHE PATH "")
 
 # umpire not build by uberenv
 

@@ -69,7 +69,8 @@ public:
   Message()
     : m_text("")
     , m_ranks()
-    , m_ranksCount(0)
+    , m_ranksLimitReached(false)
+    , m_count(0)
     , m_fileName("")
     , m_lineNumber(0)
     , m_level(0)
@@ -93,7 +94,8 @@ public:
           int level, const std::string& tag)
     : m_text(text)
     , m_ranks(1, rank)
-    , m_ranksCount(1)
+    , m_ranksLimitReached(false)
+    , m_count(1)
     , m_fileName(fileName)
     , m_lineNumber(lineNumber)
     , m_level(level)
@@ -106,8 +108,7 @@ public:
    *
    * \param [in] text Actual text of the Message.
    * \param [in] ranks The rank where the Message originated.
-   * \param [in] ranksCount Total amount of ranks where this Message has
-   *  originated from.
+   * \param [in] count Total number of instances of this Message.
    * \param [in] ranksLimit Limit on how many ranks are individually tracked per
    *  Message.
    * \param [in] fileName The file name where the Message originated.
@@ -117,18 +118,19 @@ public:
    *****************************************************************************
    */
   Message(const std::string& text, const std::vector<int>& ranks,
-          int ranksCount, int ranksLimit,
+          int count, int ranksLimit,
           const std::string& fileName, int lineNumber,
           int level, const std::string& tag)
     : m_text(text)
     , m_ranks()
-    , m_ranksCount(0)
+    , m_ranksLimitReached(false)
+    , m_count(0)
     , m_fileName(fileName)
     , m_lineNumber(lineNumber)
     , m_level(level)
     , m_tag(tag)
   {
-    addRanks(ranks, ranksCount, ranksLimit);
+    addRanks(ranks, count, ranksLimit);
   }
 
   // Getters
@@ -148,10 +150,10 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Returns the total count of ranks where this Message originated.
+   * \brief Returns the total count of this Message.
    *****************************************************************************
    */
-  int ranksCount() const;
+  int count() const;
 
   /*!
    *****************************************************************************
@@ -251,15 +253,15 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Adds multiple ranks to this Message.  ranksCount is used to
-   * increment since duplicates are removed from Message::ranks.
+   * \brief Adds multiple ranks to this Message.  count tracks how many times
+   * this message has occurred since duplicates are being filtered.
    *
    * \param [in] newRanks The new ranks to be added.
-   * \param [in] ranksCount Count to add to Message::ranksCount
+   * \param [in] count Count to add to Message::count
    * \param [in] ranksLimit Limits how many ranks are tracked per Message.
    *****************************************************************************
    */
-  void addRanks(const std::vector<int>& newRanks, int ranksCount,
+  void addRanks(const std::vector<int>& newRanks, int count,
                 int ranksLimit);
 
   // utilities
@@ -295,7 +297,8 @@ private:
 
   std::string m_text;
   std::vector<int> m_ranks;
-  int m_ranksCount;
+  bool m_ranksLimitReached;
+  int m_count;
   std::string m_fileName;
   int m_lineNumber;
   int m_level;

@@ -46,6 +46,7 @@ endif()
 if (NOT BLT_CXX_STD)
     set(BLT_CXX_STD "c++11" CACHE STRING "")
 endif()
+set(ENABLE_ASTYLE OFF CACHE BOOL "")
 
 include(${BLT_SOURCE_DIR}/SetupBLT.cmake)
 

@@ -55,11 +55,15 @@ TEST(core_config,config_libraries)
 
   std::vector<std::string> libs;
 
+#ifdef AXOM_USE_CLI11
+  libs.push_back("CLI11");
+#endif
+
 #ifdef AXOM_USE_CONDUIT
   libs.push_back("conduit");
 #endif
 
-libs.push_back(AXOM_CXX_STD);
+  libs.push_back(AXOM_CXX_STD);
 
 #ifdef AXOM_USE_FMT
   libs.push_back("fmt");

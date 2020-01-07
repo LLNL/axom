@@ -2,19 +2,23 @@
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+#------------------------------------------------------------------------------
+# Primal -- Computational geometry primitives
+#------------------------------------------------------------------------------
 
-################################
+#------------------------------------------------------------------------------
 # Check necessary dependencies
-################################
+#------------------------------------------------------------------------------
 axom_component_requires(NAME       PRIMAL
                         COMPONENTS SLIC)
 
-################################
+#------------------------------------------------------------------------------
 # Specify all headers/sources
-################################
+#------------------------------------------------------------------------------
 set( primal_headers
 
      ## geometry
+     geometry/BezierCurve.hpp
      geometry/BoundingBox.hpp
      geometry/OrientedBoundingBox.hpp
      geometry/OrientationResult.hpp
@@ -39,6 +43,7 @@ set( primal_headers
      operators/in_sphere.hpp
 
      operators/detail/clip_impl.hpp
+     operators/detail/intersect_bezier_impl.hpp
      operators/detail/intersect_impl.hpp
    )
 
@@ -48,9 +53,9 @@ set( primal_sources
      operators/detail/intersect_impl.cpp
    )
 
-################################
-# Make/Install the library
-################################
+#------------------------------------------------------------------------------
+# Build and install the library
+#------------------------------------------------------------------------------
 set( primal_dependencies
      core
      slic
@@ -72,21 +77,18 @@ axom_install_component(NAME    primal
                        HEADERS ${primal_headers}
                        )
 
-################################
-# add examples
-################################
+#------------------------------------------------------------------------------
+# Add tests and examples
+#------------------------------------------------------------------------------
 if (AXOM_ENABLE_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
-################################
-# add tests
-################################
 if (AXOM_ENABLE_TESTS)
   add_subdirectory(tests)
 endif()
 
-################################
+#------------------------------------------------------------------------------
 # Add code checks
-################################
+#------------------------------------------------------------------------------
 axom_add_code_checks(PREFIX primal)

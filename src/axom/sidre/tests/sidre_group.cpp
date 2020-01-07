@@ -5,6 +5,7 @@
 
 #include "axom/config.hpp"  // for AXOM_USE_HDF5
 #include "axom/sidre/core/sidre.hpp"
+#include "axom/core/utilities/FileUtilities.hpp"
 
 #include "gtest/gtest.h"
 
@@ -1095,7 +1096,6 @@ TEST(sidre_group,save_restore_empty_datastore)
 
     DataStore* ds2 = new DataStore();
     Group* root2 = ds2->getRoot();
-
     root2->load(file_path, protocols[i]);
 
     EXPECT_TRUE(ds2->getNumBuffers() == 0 );
@@ -1130,7 +1130,7 @@ TEST(sidre_group,save_load_via_hdf5_ids)
 
   // load via path based
   DataStore ds_load_generic;
-  ds_load_generic.getRoot()->load("out_save_load_via_hdf5_ids.sidre_hdf5",
+  ds_load_generic.getRoot()->load("out_save_load_via_hdf5_ids.sidre_hdf5", 
                                   "sidre_hdf5");
 
   // load via hdf5 id
@@ -1156,6 +1156,158 @@ TEST(sidre_group,save_load_via_hdf5_ids)
 
   // close hdf5 handle
   EXPECT_TRUE(H5Fclose(h5_id) >=0);
+}
+
+//------------------------------------------------------------------------------
+TEST(sidre_group,save_root_restore_as_child)
+{
+  // We'll save the DataStore's root Group into a file then restore it
+  // into a child group of another DataStore.
+
+  // Create a DataStore; put some groups and views into it
+  const std::string file_path_base("sidre_save_root_restore_as_child_");
+  DataStore* ds = new DataStore();
+  Group* root = ds->getRoot();
+  Group* child1 = root->createGroup("g_a");
+  Group* child2 = root->createGroup("g_b");
+  root->createGroup("g_c"); // We don't put anything into g_c
+
+  child1->createViewScalar<int>("i0", 1);
+  child1->createViewString("s0", "I am a string");
+
+  const int num_elems = 4;
+  int * pa0 =
+    child2->createViewAndAllocate("a0", INT_ID, num_elems)->getArray();
+  double * pa1 =
+    child2->createViewAndAllocate("a1", FLOAT64_ID, num_elems)->getArray();
+
+  const double factor = 2.3;
+  const double offset = -0.23;
+  for (int i = 0; i < num_elems; ++i)
+  {
+     pa0[i] = i;
+     pa1[i] = offset + i*factor;
+  }
+
+  // Save the DataStore's root
+  for (int i = 0 ; i < nprotocols ; ++i)
+  {
+    const std::string file_path = file_path_base + protocols[i];
+    root->save(file_path, protocols[i]);
+  }
+
+  // Restore the original DataStore into a child group
+  for (int i = 0; i < nprotocols; ++i)
+  {
+    // Only restore sidre_hdf5 protocol
+    if(protocols[i] != "sidre_hdf5")
+    {
+      continue;
+    }
+
+    DataStore *dscopy = new DataStore();
+    Group * dsroot = dscopy->getRoot();
+    const std::string file_path = file_path_base + protocols[i];
+
+    const std::string group_base("group_");
+    const std::string group_name = group_base + protocols[i];
+    Group* cg = dsroot->createGroup(group_name);
+
+    if (axom::utilities::filesystem::pathExists(file_path))
+    {
+      std::cout << "loading " << file_path << std::endl;
+      cg->load(file_path, protocols[i]);
+
+      EXPECT_TRUE(cg->isEquivalentTo(root, false));
+      EXPECT_TRUE(root->isEquivalentTo(cg, false));
+    }
+    else
+    {
+      FAIL() << "file not present: " << file_path;
+    }
+
+    delete dscopy;
+  }
+
+  delete ds;
+}
+
+//------------------------------------------------------------------------------
+TEST(sidre_group,save_child_restore_as_root)
+{
+  // We'll save a child Group into a file then restore it as the root of
+  // a new DataStore.
+
+  // Create a DataStore; put some groups and views into it
+  const std::string file_path_base("sidre_save_child_restore_as_root_");
+  DataStore* ds = new DataStore();
+  Group* root = ds->getRoot();
+  // child1 and all its descendents will get saved into files
+  Group* child1 = root->createGroup("g_a");
+  Group* child2 = child1->createGroup("g_b");
+  child1->createViewScalar<int>("i0", 1);
+  child1->createViewString("s0", "I am a string");
+  // everything else won't be put into the files
+  Group* child1a = root->createGroup("g_notSaved");
+  child1a->createViewScalar<int>("i1", 42);
+  root->createViewString("s1", "string view off the root, not saved");
+
+  const int num_elems = 4;
+  // included in files
+  int * pa0 =
+    child2->createViewAndAllocate("a0", INT_ID, num_elems)->getArray();
+  double * pa1 =
+    child2->createViewAndAllocate("a1", FLOAT64_ID, num_elems)->getArray();
+  // not included
+  int *pa2 =
+    child1a->createViewAndAllocate("a2", INT_ID, num_elems)->getArray();
+  int *pa3 =
+    root->createViewAndAllocate("a3", INT_ID, num_elems)->getArray();
+
+  const double factor = 2.3;
+  const double offset = -0.23;
+  for (int i = 0; i < num_elems; ++i)
+  {
+     pa0[i] = i;
+     pa1[i] = offset + i*factor;
+     pa2[i] = i + 2;
+     pa3[i] = 4 - i;
+  }
+
+  // Save the Group in question (child1) into an archive
+  for (int i = 0; i < nprotocols; ++i)
+  {
+    const std::string file_path = file_path_base + protocols[i];
+    child1->save(file_path, protocols[i]);
+  }
+
+  // Restore the saved child1 into a root group
+  for (int i = 0; i < nprotocols; ++i)
+  {
+    // Only restore sidre_hdf5 protocol
+    if(protocols[i] != "sidre_hdf5")
+    {
+      continue;
+    }
+
+    DataStore * dscopy = new DataStore();
+    const std::string file_path = file_path_base + protocols[i];
+    if (axom::utilities::filesystem::pathExists(file_path))
+    {
+      dscopy->getRoot()->load(file_path, protocols[i]);
+
+      EXPECT_TRUE(dscopy->getRoot()->isEquivalentTo(child1, false));
+      EXPECT_TRUE(child1->isEquivalentTo(dscopy->getRoot(), false));
+    }
+    else
+    {
+      FAIL() << "file not present: " << file_path;
+    }
+
+    delete dscopy;
+  }
+
+  delete ds;
 }
 #endif  // AXOM_USE_HDF5
 
@@ -1226,6 +1378,45 @@ TEST(sidre_group,save_restore_api)
   load2->load("sidre_save_subtree_sidre_json", "sidre_json");
 
   EXPECT_TRUE( load1->isEquivalentTo( load2) );
+
+  std::string newgroupname = "in case of blank";
+  std::string groupname = newgroupname;
+  bool loadSuccess = false;
+  Group * load3 =
+    load2->createGroupAndLoad(groupname, "sidre_save_subtree_sidre_json",
+                              "sidre_json", loadSuccess);
+
+  EXPECT_NE(load3, (Group*)nullptr);
+  EXPECT_TRUE(loadSuccess);
+  EXPECT_EQ(groupname, "");
+  if (load3 != nullptr)
+  {
+    EXPECT_EQ(newgroupname, load3->getName());
+    EXPECT_TRUE( load1->isEquivalentTo( load3, false ) );
+  }
+
+  std::string anothergroupname = "another group";
+  groupname = anothergroupname;
+  loadSuccess = false;
+  Group * load4 =
+    load2->createGroupAndLoad(groupname, "sidre_save_subtree_sidre_json",
+                              "sidre_json", loadSuccess);
+
+  EXPECT_NE(load4, (Group*)nullptr);
+  EXPECT_TRUE(loadSuccess);
+  if (load4 != nullptr)
+  {
+    EXPECT_EQ(anothergroupname, load4->getName());
+    EXPECT_TRUE( load3->isEquivalentTo( load4, false ) );
+  }
+
+  groupname = anothergroupname;
+  loadSuccess = false;
+  Group * load5 =
+    load2->createGroupAndLoad(groupname, "sidre_save_subtree_sidre_json",
+                              "sidre_json", loadSuccess);
+  EXPECT_EQ(load5, (Group*)nullptr);
+  EXPECT_FALSE(loadSuccess);
 
   delete ds_new;
 }
@@ -1348,7 +1539,7 @@ TEST(sidre_group,save_restore_name_change)
     child1->save(file_path, protocols[i]);
   }
 
-
+  std::string groupname;
   for (int i = 0 ; i < nprotocols ; ++i)
   {
     // Only restore sidre_hdf5 protocol
@@ -1365,9 +1556,11 @@ TEST(sidre_group,save_restore_name_change)
 
     EXPECT_EQ( child2->getName(), "child2" );
 
-    child2->load(file_path, protocols[i]);
+    child2->load(file_path, protocols[i], false, groupname);
 
-    EXPECT_EQ( child2->getName(), "child1" );
+    EXPECT_EQ( child2->getName(), "child2" );
+
+    child2->rename(groupname);
 
     EXPECT_TRUE( root1->isEquivalentTo( root2 ) );
 
@@ -1985,6 +2178,7 @@ TEST(sidre_group,save_load_preserve_contents)
   }
 
   std::vector<std::string> protocols = getAvailableSidreProtocols();
+  std::string groupname;
   for(size_t i = 0 ; i < protocols.size() ; ++i)
   {
     std::string& protocol = protocols[i];
@@ -2017,8 +2211,9 @@ TEST(sidre_group,save_load_preserve_contents)
 
     DataStore ds_load;
     Group* loadtree0 = ds_load.getRoot()->createGroup("tree0");
-    loadtree0->load(file_path0, protocol);
-    loadtree0->load(file_path1, protocol, true);
+    loadtree0->load(file_path0, protocol, false, groupname);
+    loadtree0->load(file_path1, protocol, true, groupname);
+    loadtree0->rename(groupname);
 
     SLIC_INFO("Tree from protocol: " << protocol);
     // show the result
@@ -2053,6 +2248,102 @@ TEST(sidre_group,save_load_preserve_contents)
     // Destroy the group so the name can be reused by the next protocol
     tree0->destroyGroup("tree1");
   }
+
+}
+
+//------------------------------------------------------------------------------
+TEST(sidre_group,import_conduit)
+{
+  conduit::Node input;
+
+  input["fields/a/i0"] = (conduit::int64)(100);
+  input["fields/a/d0"] = (conduit::float64)(3000.00);
+  input["fields/b/s0"] = "foo";
+
+  int ndata = 10;
+  std::vector<conduit::int64> ivec(ndata);
+  input["fields/c/int10"].set(&ivec[0], ndata);
+  conduit::int64_array iarray = input["fields/c/int10"].as_int64_array();
+  for (int i = 0 ; i < ndata ; ++i)
+  {
+    iarray[i] = (conduit::int64)i;
+  }
+
+  DataStore ds;
+
+  EXPECT_TRUE(ds.getRoot()->importConduitTree(input));
+
+  EXPECT_EQ(ds.getRoot()->getView(
+              "fields/a/i0")->getData<conduit::int64>(),100);
+  EXPECT_NEAR(ds.getRoot()->getView(
+                "fields/a/d0")->getData<conduit::float64>(),3000.00,1e-12);
+  EXPECT_EQ(ds.getRoot()->getView("fields/b/s0")->getString(),
+            std::string("foo"));
+
+  conduit::int64* sidre_data_ptr =
+    ds.getRoot()->getView("fields/c/int10")->getData();
+  for(int j=0 ; j< ndata ; j++)
+  {
+    EXPECT_EQ(iarray[j],sidre_data_ptr[j]);
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST(sidre_group,import_conduit_external)
+{
+  conduit::Node input;
+
+  input["fields/a/i0"] = (conduit::int64)(100);
+  input["fields/a/d0"] = (conduit::float64)(3000.00);
+  input["fields/b/s0"] = "foo";
+
+  int ndata = 10;
+  std::vector<conduit::int64> ivec(ndata);
+  input["fields/c/int10"].set(&ivec[0], ndata);
+  conduit::int64_array iarray = input["fields/c/int10"].as_int64_array();
+  for (int i = 0 ; i < ndata ; ++i)
+  {
+    iarray[i] = (conduit::int64)i;
+  }
+
+  DataStore ds;
+
+  //Zero copy of array data
+  EXPECT_TRUE(ds.getRoot()->importConduitTreeExternal(input));
+
+  EXPECT_EQ(ds.getRoot()->getView(
+              "fields/a/i0")->getData<conduit::int64>(),100);
+  EXPECT_NEAR(ds.getRoot()->getView(
+                "fields/a/d0")->getData<conduit::float64>(),3000.00,1e-12);
+  EXPECT_EQ(ds.getRoot()->getView("fields/b/s0")->getString(),
+            std::string("foo"));
+
+  //Scalar and string Views are never external.
+  EXPECT_FALSE(ds.getRoot()->getView("fields/a/i0")->isExternal());
+  EXPECT_FALSE(ds.getRoot()->getView("fields/a/d0")->isExternal());
+  EXPECT_FALSE(ds.getRoot()->getView("fields/b/s0")->isExternal());
+
+  //The View holding an array is external.
+  EXPECT_TRUE(ds.getRoot()->getView("fields/c/int10")->isExternal());
+
+  conduit::int64* sidre_data_ptr =
+    ds.getRoot()->getView("fields/c/int10")->getData();
+  for(int j=0 ; j< ndata ; j++)
+  {
+    EXPECT_EQ(iarray[j],sidre_data_ptr[j]);
+  }
+
+  //Change a value in the original conduit array, then test that it's changed
+  //in the Sidre external view.
+  if (ndata > 3)
+  {
+     iarray[3] += 10;
+     EXPECT_EQ(iarray[3],sidre_data_ptr[3]);
+  }
+
+  //The pointers should be the same addresses as the import treated the
+  //array as an external pointer.
+  EXPECT_EQ((void*)sidre_data_ptr, iarray.data_ptr());
 
 }
 
@@ -2163,12 +2454,12 @@ TEST_P(UmpireTest, allocate_default)
   }
 }
 
-const int allocators[] = { umpire::resource::Host
+const int allocators[] = { axom::getResourceAllocatorID(umpire::resource::Host)
 #ifdef AXOM_USE_CUDA
-                           , umpire::resource::Pinned
-                           , umpire::resource::Device
-                           , umpire::resource::Constant
-                           , umpire::resource::Unified
+                     , axom::getResourceAllocatorID(umpire::resource::Pinned)
+                     , axom::getResourceAllocatorID(umpire::resource::Device)
+                     , axom::getResourceAllocatorID(umpire::resource::Constant)
+                     , axom::getResourceAllocatorID(umpire::resource::Unified)
 #endif
 };
 

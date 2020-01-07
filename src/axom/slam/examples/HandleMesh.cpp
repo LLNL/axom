@@ -36,7 +36,7 @@ struct Handle
   Handle() : mID(T()) {}
   explicit Handle(T id) : mID(id) {}
   Handle(const Handle& h) : mID(h.mID) {}
-  bool operator==(const Handle& h) { return mID == h.mID; }
+  bool operator==(const Handle& h) const { return mID == h.mID; }
 
   static Handle make_handle(T id) { return Handle(id); }
 
@@ -94,6 +94,11 @@ int main(int, char**)
       "  " << i << ": " << hSet[i]
            << " -- double of index is: " << it->twiceIndex() );
   }
+
+  // Check equality
+  SLIC_INFO( "Checking equality of Handle elements: " );
+  SLIC_INFO("  hSet[0] == hSet[0] ? " << (hSet[0] == hSet[0] ? "yes" : "no"));
+  SLIC_INFO("  hSet[0] == hSet[1] ? " << (hSet[0] == hSet[1] ? "yes" : "no"));
 
   return 0;
 }

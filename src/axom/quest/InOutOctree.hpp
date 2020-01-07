@@ -2037,8 +2037,8 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & queryPt,
 
   }
 
-  SLIC_WARNING("Could not determine inside/outside for point "
-               << queryPt << " on block " << leafBlk);
+  SLIC_DEBUG("Could not determine inside/outside for point "
+             << queryPt << " on block " << leafBlk);
 
   return false;    // query points on boundary might get here -- revisit this.
 }

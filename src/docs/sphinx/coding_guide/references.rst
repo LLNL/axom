@@ -13,15 +13,15 @@ Most of the guidelines here were gathered from the following list sources.
 The list contains a variety of useful resources for programming in C++
 beyond what is presented in these guidelines.
 
-#. *The Chromium Projects: C++ Dos and Don'ts*. https://www.chromium.org/developers/coding-style/cpp-dos-and-donts
+#. *The Chromium Projects: C++ Dos and Don'ts*. https://chromium.googlesource.com/chromium/src/+/HEAD/styleguide/c++/c++-dos-and-donts.md
 
 #. Dewhurst, S., *C++ Gotchas: Avoiding Common Problems in Coding and Design*, Addison-Wesley, 2003.
 
 #. Dewhurst S., *C++ Common Knowledge: Essential Intermediate Programming*, Addison-Wesley, 2005.
 
-#. *Doxygen manual*, http://www.stack.nl/~dimitri/doxygen/manual/index.html
+#. *Doxygen manual*, http://www.doxygen.nl/manual/
 
-#. *Google C++ Style Guide*, https://google-styleguide.googlecode.com/svn/trunk/cppguide.html
+#. *Google C++ Style Guide*, https://google.github.io/styleguide/cppguide.html
 
 #. *ISO/IEC 14882:2011 C++ Programming Language Standard*.
 

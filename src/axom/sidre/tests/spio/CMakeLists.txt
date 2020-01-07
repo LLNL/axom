@@ -18,7 +18,7 @@ set(gtest_spio_parallel_tests
 
 set(spio_test_depends
     sidre
-    conduit
+    conduit::conduit
     mpi
     )
 

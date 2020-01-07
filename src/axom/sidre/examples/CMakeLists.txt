@@ -32,10 +32,8 @@ endif()
 
 set(sidre_example_depends
     core
-    sidre 
-    conduit 
-    conduit_blueprint 
-    conduit_relay 
+    sidre
+    conduit::conduit
     slic
     )
 

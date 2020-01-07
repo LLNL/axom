@@ -10,7 +10,7 @@
 #ifndef SLAM_UTILITIES_H_
 #define SLAM_UTILITIES_H_
 
-#include "axom/core.hpp"
+#include "axom/core/Types.hpp"
 
 #include <string>
 

@@ -14,7 +14,7 @@
 # Compiler Spec: clang@upstream_xlf
 ##################################
 
-# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2019_06_27_21_48_07/clang-upstream_xlf/cmake-3.9.6/bin/cmake
+# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2019_11_21_10_31_52/clang-upstream_xlf/cmake-3.9.6/bin/cmake
 
 ##############
 # Compilers
@@ -36,10 +36,10 @@ set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-2018.11.26/bin/xlf2003" CACH
 ##############
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_06_27_21_48_07/clang-upstream_xlf" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_11_21_10_31_52/clang-upstream_xlf" CACHE PATH "")
 
 # conduit from uberenv
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.4.0" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-master" CACHE PATH "")
 
 # mfem from uberenv
 set(MFEM_DIR "${TPL_ROOT}/mfem-4.0" CACHE PATH "")
@@ -50,10 +50,10 @@ set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.19" CACHE PATH "")
 # scr not built by uberenv
 
 # raja from uberenv
-set(RAJA_DIR "${TPL_ROOT}/raja-0.7.0/share/raja/cmake" CACHE PATH "")
+set(RAJA_DIR "${TPL_ROOT}/raja-0.9.0/share/raja/cmake" CACHE PATH "")
 
 # umpire from uberenv
-set(UMPIRE_DIR "${TPL_ROOT}/umpire-0.3.2/share/umpire/cmake" CACHE PATH "")
+set(UMPIRE_DIR "${TPL_ROOT}/umpire-1.0.0/share/umpire/cmake" CACHE PATH "")
 
 # python not built by uberenv
 
@@ -77,7 +77,7 @@ set(MPI_C_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-
 
 set(MPI_CXX_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2018.11.09/bin/mpicxx" CACHE PATH "")
 
-set(MPI_Fortran_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2018.11.09/bin/mpif90" CACHE PATH "")
+set(MPI_Fortran_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2018.11.26/bin/mpif90" CACHE PATH "")
 
 set(MPIEXEC "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2018.11.09/bin/mpirun" CACHE PATH "")
 
@@ -93,8 +93,8 @@ set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 
 set(CMAKE_Fortran_COMPILER_ID "XL" CACHE PATH "All of BlueOS compilers report clang due to nvcc, override to proper compiler family")
 
-set(BLT_FORTRAN_FLAGS "-WF,-C!" CACHE PATH "Converts C-style comments to Fortran style in preprocessed files")
+set(BLT_FORTRAN_FLAGS "-WF,-C!  -qxlf2003=polymorphic" CACHE PATH "Converts C-style comments to Fortran style in preprocessed files")
 
-set(BLT_EXE_LINKER_FLAGS "-Wl,-rpath,/usr/tce/packages/xl/xl-2018.05.18/lib/" CACHE PATH "Adds a missing rpath for libraries associated with the fortran compiler")
+set(BLT_EXE_LINKER_FLAGS "-Wl,-rpath,/usr/tce/packages/xl/xl-2018.11.26/lib" CACHE PATH "Adds a missing rpath for libraries associated with the fortran compiler")
 
 

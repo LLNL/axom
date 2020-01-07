@@ -43,11 +43,11 @@ void about(std::ostream &oss)
       << "   C++ Standard: " << AXOM_CXX_STD << std::endl
       << "   OpenMP support: "
 #ifdef AXOM_USE_OPENMP
-      << "ENABLED"
+    << "ENABLED"
 #else
-      << "DISABLED"
+    << "DISABLED"
 #endif
-      << std::endl;
+    << std::endl;
 
   oss << "Available components: " << std::endl;
 
@@ -91,6 +91,10 @@ void about(std::ostream &oss)
   oss << "Active Dependencies: " << std::endl;
 
   std::vector<std::string> libs;
+
+#ifdef AXOM_USE_CLI11
+  libs.push_back("CLI11");
+#endif
 
 #ifdef AXOM_USE_CONDUIT
   libs.push_back("conduit");

@@ -7,7 +7,7 @@
 #include <vector>
 #include <cmath>
 
-#include "axom/core.hpp"
+#include "axom/core/utilities/Timer.hpp"
 #include "axom/slic.hpp"
 
 #include "../PolygonMeshXY.hpp"

@@ -31,8 +31,8 @@ changes are made, this guide should be updated accordingly.
 .. note:: This document does not describe how to configure and build the
           Axom code, or discuss Axom coding guidelines. For information
           on those topics please refer to the following documents:
-          `Axom Quickstart Guide <../../quickstart_guide_docs/html/index.html>`_,
-          `Axom Coding Guide <../../coding_guide_docs/html/index.html>`_.
+          `Axom Quickstart Guide <../quickstart_guide/index.html>`_,
+          `Axom Coding Guide <../coding_guide/index.html>`_.
 
 
 **Contents:**
