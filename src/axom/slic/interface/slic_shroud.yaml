@@ -15,11 +15,10 @@ namespace: axom slic
 options:
   C_line_length: 1000
   F_module_name_library_template: axom_{library_lower}
-#  F_module_per_class: False
   # Change the default template for Fortran functions to include the library name.
-  F_name_impl_template: "{library_lower}_{class_prefix}{underscore_name}{function_suffix}"
-  # XXX - This will eventually become the default in Shroud
-  C_enum_member_template: "{C_prefix}{enum_member_name}"
+  F_name_impl_template: "{library_lower}_{F_name_scope}{underscore_name}{function_suffix}"
+#  C_enum_member_template: "{C_prefix}{enum_member_name}"
+#  F_enum_member_template: "{enum_name}_{enum_member_name}"
 
 format:
   C_prefix: SLIC_
@@ -33,6 +32,8 @@ format:
 declarations:
 - decl: namespace message
   # MessageLevel.h
+  options:
+    flatten_namespace: True
   declarations:
   - decl: |
         enum Level

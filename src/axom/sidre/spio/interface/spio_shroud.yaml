@@ -27,25 +27,21 @@ typemap:
 - type: axom::sidre::DataStore
   fields:
     base: shadow
-    cxx_header: axom/sidre/core/DataStore.hpp
-#    cxx_type: DataStore
+    wrap_header: axom/sidre/interface/c_fortran/wrapDataStore.h
+    c_type: SIDRE_DataStore
     f_module_name: axom_sidre
     f_derived_type: SidreDataStore
     f_capsule_data_type: SHROUD_datastore_capsule
-    c_type: SIDRE_datastore
-    c_header: axom/sidre/interface/c_fortran/wrapDataStore.h
     f_to_c: '{f_var}%cxxmem'
 
 - type: axom::sidre::Group
   fields:
     base: shadow
-    cxx_header: axom/sidre/core/Group.hpp
-#    cxx_type: Group
+    wrap_header: axom/sidre/interface/c_fortran/wrapGroup.h
+    c_type: SIDRE_Group
     f_module_name: axom_sidre
     f_derived_type: SidreGroup
     f_capsule_data_type: SHROUD_group_capsule
-    c_type: SIDRE_group
-    c_header: axom/sidre/interface/c_fortran/wrapGroup.h
     f_to_c: '{f_var}%cxxmem'
 
 declarations:
