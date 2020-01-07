@@ -60,6 +60,7 @@ if ( ${RAJA_FOUND} AND ${UMPIRE_FOUND} )
    blt_add_test(
       NAME    spin_bvh
       COMMAND spin_bvh_test
+      NUM_OMP_THREADS 4
      )
 
 endif()

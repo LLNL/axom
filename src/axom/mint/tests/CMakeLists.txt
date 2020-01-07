@@ -47,9 +47,9 @@ set( mint_test_dependencies
 blt_list_append( TO mint_test_dependencies
                  ELEMENTS sidre conduit::conduit
                  IF AXOM_MINT_USE_SIDRE )
-blt_list_append( TO mint_test_dependencies ELEMENTS raja IF RAJA_FOUND )
-blt_list_append( TO mint_test_dependencies ELEMENTS openmp IF ENABLE_OPENMP )
-blt_list_append( TO mint_test_dependencies ELEMENTS cuda IF ENABLE_CUDA )
+blt_list_append( TO mint_test_dependencies ELEMENTS raja IF ${RAJA_FOUND} )
+blt_list_append( TO mint_test_dependencies ELEMENTS openmp IF ${ENABLE_OPENMP} )
+blt_list_append( TO mint_test_dependencies ELEMENTS cuda IF ${ENABLE_CUDA} )
 
 foreach( test ${mint_tests} )
 
@@ -65,6 +65,7 @@ foreach( test ${mint_tests} )
 
    blt_add_test( NAME    ${test_name}
                  COMMAND ${test_name}_test
+                 NUM_OMP_THREADS 4
                )
 
 endforeach()
