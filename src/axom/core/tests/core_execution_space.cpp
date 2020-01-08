@@ -116,8 +116,12 @@ TEST( core_execution_space, check_invalid )
   check_invalid< InvalidSpace >( );
 }
 
-//------------------------------------------------------------------------------
-#ifdef AXOM_USE_RAJA
+
+//==============================================================================
+// The following tests require RAJA and UMPIRE
+//==============================================================================
+#if defined(AXOM_USE_UMPIRE) && defined(AXOM_USE_RAJA)
+
 TEST( core_execution_space, check_seq_exec )
 {
   check_valid< axom::SEQ_EXEC >( );
@@ -133,10 +137,9 @@ TEST( core_execution_space, check_seq_exec )
                             void >( allocator_id, IS_ASYNC );
 
 }
-#endif
 
 //------------------------------------------------------------------------------
-#if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_OPENMP)
 TEST( core_execution_space, check_omp_exec )
 {
 
@@ -152,10 +155,10 @@ TEST( core_execution_space, check_omp_exec )
                             RAJA::omp_synchronize >( allocator_id, IS_ASYNC );
 
 }
-#endif
+#endif // defined(AXOM_USE_OPENMP)
 
 //------------------------------------------------------------------------------
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_CUDA)
 
 TEST( core_execution_space, check_cuda_exec )
 {
@@ -191,7 +194,9 @@ TEST( core_execution_space, check_cuda_exec_async )
                             RAJA::cuda_synchronize >( allocator_id, IS_ASYNC );
 
 }
-#endif
+#endif // defined(AXOM_USE_CUDA)
+
+#endif // defined(AXOM_USE_UMPIRE) && defined(AXOM_USE_RAJA)
 
 //------------------------------------------------------------------------------
 int main(int argc, char* argv[])
