@@ -205,6 +205,12 @@ inline T* reallocate( T* pointer, std::size_t n ) noexcept
 
   pointer = static_cast< T* >( std::realloc( pointer, numbytes ) );
 
+  // Consistently handle realloc(0) for std::realloc to match umpire's behavior
+  if(n==0 && pointer == nullptr)
+  {
+    pointer = axom::allocate<T>(0);
+  }
+
 #endif
 
   return pointer;
