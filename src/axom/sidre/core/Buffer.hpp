@@ -165,8 +165,7 @@ public:
   }
 
   /*!
-   * \brief Return true if data description exists.  It may/may not have been
-   * applied to the data yet.  ( Check isApplied() for that. )
+   * \brief Return true if data description exists.
    */
   bool isDescribed() const
   {
