@@ -683,6 +683,21 @@ TEST(sidre_group,create_destroy_has_view)
 }
 
 //------------------------------------------------------------------------------
+// createViewAndAllocate() with zero-sized array
+//------------------------------------------------------------------------------
+TEST(sidre_group,create_zero_sized_view)
+{
+  DataStore* ds = new DataStore();
+  Group* root = ds->getRoot();
+
+  View* zeroSizedView = root->createViewAndAllocate("foo", INT_ID, 0);
+  EXPECT_TRUE( zeroSizedView->isDescribed() );
+  EXPECT_TRUE( zeroSizedView->isAllocated() );
+
+  delete ds;
+}
+
+//------------------------------------------------------------------------------
 // createGroup()
 // destroyGroup()
 // hasGroup()
