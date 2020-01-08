@@ -154,9 +154,6 @@ inline void copy( void* dst, void* src, std::size_t numbytes ) noexcept;
 template < typename T >
 inline T* allocate( std::size_t n, umpire::Allocator allocator ) noexcept
 {
-  if ( n == 0 )
-    return nullptr;
-
   const std::size_t numbytes = n * sizeof( T );
   return static_cast< T* >( allocator.allocate( numbytes )  );
 }
@@ -166,9 +163,6 @@ inline T* allocate( std::size_t n, umpire::Allocator allocator ) noexcept
 template < typename T >
 inline T* allocate( std::size_t n ) noexcept
 {
-  if ( n == 0 )
-    return nullptr;
-
   const std::size_t numbytes = n * sizeof( T );
   return static_cast< T* >( std::malloc( numbytes )  );
 }
@@ -200,12 +194,6 @@ inline void deallocate( T*& pointer ) noexcept
 template < typename T >
 inline T* reallocate( T* pointer, std::size_t n ) noexcept
 {
-  if ( n == 0 )
-  {
-    axom::deallocate( pointer );
-    return nullptr;
-  }
-
   const std::size_t numbytes = n * sizeof( T );
 
 #ifdef AXOM_USE_UMPIRE
