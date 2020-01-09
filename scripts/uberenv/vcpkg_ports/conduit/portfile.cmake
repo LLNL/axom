@@ -31,7 +31,7 @@ vcpkg_configure_cmake(
         -DENABLE_TESTS=OFF
         -DENABLE_UTILS=OFF
         -DBUILD_SHARED_LIBS=${_is_shared}
-        -DHDF5_DIR=${CURRENT_INSTALLED_DIR}/share/hdf5
+        -DHDF5_DIR=${CURRENT_INSTALLED_DIR}
 )
 
 vcpkg_install_cmake()
