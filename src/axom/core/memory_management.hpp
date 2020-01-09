@@ -198,7 +198,31 @@ inline T* reallocate( T* pointer, std::size_t n ) noexcept
 
 #ifdef AXOM_USE_UMPIRE
 
+  // Workaround for bug in Umpire's handling on reallocate(0)
+  // Fixed in Umpire PR #292 (after v1.1.0)
+  if(n==0)
+  {
+    axom::deallocate<T>(pointer);
+    pointer = axom::allocate<T>(0);
+    return pointer;
+  }
+
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+
+  // Workaround for bug in Umpire's handling of reallocate 
+  // called on a zero-sized allocation
+  // Fixed in Umpire PR #292 (after v1.1.0)
+  if(pointer != nullptr)
+  {
+    auto* allocRecord = rm.findAllocationRecord(pointer);
+    if(allocRecord && allocRecord->size == 0)
+    {
+      axom::deallocate<T>(pointer);
+      pointer = axom::allocate<T>(n);
+      return pointer;
+    }
+  }
+
   pointer = static_cast< T* >( rm.reallocate( pointer, numbytes ) );
 
 #else
