@@ -47,7 +47,7 @@ foreach ( test ${spin_tests} )
 
 endforeach()
 
-if ( ${RAJA_FOUND} AND ${UMPIRE_FOUND} )
+if ( RAJA_FOUND AND UMPIRE_FOUND )
 
    blt_add_executable(
       NAME       spin_bvh_test

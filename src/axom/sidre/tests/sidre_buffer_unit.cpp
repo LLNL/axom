@@ -84,11 +84,8 @@ void verifyAllocatedBuffer(Buffer* buf, DataTypeId tid, int eltsize,
   EXPECT_EQ(eltsize * eltcount, buf->getTotalBytes());
   EXPECT_EQ(eltcount, buf->getNumElements());
 
-  if (eltcount > 0)
-  {
-    EXPECT_TRUE(buf->isAllocated());
-    EXPECT_NE(static_cast<void*>(nullptr), buf->getVoidPtr());
-  }
+  EXPECT_TRUE(buf->isAllocated());
+  EXPECT_NE(static_cast<void*>(nullptr), buf->getVoidPtr());
 }
 
 // Test describe methods
@@ -272,6 +269,7 @@ TEST(sidre_buffer,buffer_allocate)
   {
     SCOPED_TRACE("Reallocate a described zero-element buffer");
     buf4a->reallocate(eltcount);
+    verifyAllocatedBuffer(buf4a, tid, eltsize, eltcount);
     eltcount = 0;
     buf4a->reallocate(eltcount);
     verifyAllocatedBuffer(buf4a, tid, eltsize, eltcount);
@@ -312,12 +310,12 @@ TEST(sidre_databuffer,buffer_reallocate_zero_elements)
   eltcount = 0;
   buf->reallocate(eltcount);
 
-  EXPECT_FALSE(buf->isAllocated());
+  EXPECT_TRUE(buf->isAllocated());
   EXPECT_TRUE(buf->isDescribed());
   EXPECT_EQ(tid, buf->getTypeID());
   EXPECT_EQ(eltsize * eltcount, buf->getTotalBytes());
   EXPECT_EQ(eltcount, buf->getNumElements());
-  EXPECT_EQ(nullptr, buf->getVoidPtr());
+  EXPECT_NE(nullptr, buf->getVoidPtr());
 
   eltcount = 5;
   buf->reallocate(eltcount);

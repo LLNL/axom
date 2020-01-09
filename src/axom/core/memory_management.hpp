@@ -83,7 +83,7 @@ inline umpire::Allocator getDefaultAllocator()
  * \brief Allocates a chunk of memory of type T.
  *
  * \param [in] n the number of elements to allocate.
- * \param [in] spaceId the memory space where memory will be allocated
+ * \param [in] allocator the Umpire allocator to use
  *(optional)
  *
  * \tparam T the type of pointer returned.
@@ -94,8 +94,6 @@ inline umpire::Allocator getDefaultAllocator()
  *  axom::setDefaultAllocator().
  *
  * \return p pointer to the new allocation or a nullptr if allocation failed.
- *
- * \pre spaceId >= 0 && spaceId < NUM_MEMORY_SPACES
  */
 template < typename T >
 #ifdef AXOM_USE_UMPIRE
@@ -125,6 +123,10 @@ inline void deallocate( T*& p ) noexcept;
  * \tparam T the type pointer p points to.
  *
  * \return p pointer to the new allocation or a nullptr if allocation failed.
+ * 
+ * \note When n == 0, this function returns a valid pointer (of size 0) in the
+ * current allocator's memory space. This follows the semantics of 
+ * Umpire's reallocate function.
  */
 template < typename T >
 inline T* reallocate( T* p, std::size_t n ) noexcept;
@@ -154,9 +156,6 @@ inline void copy( void* dst, void* src, std::size_t numbytes ) noexcept;
 template < typename T >
 inline T* allocate( std::size_t n, umpire::Allocator allocator ) noexcept
 {
-  if ( n == 0 )
-    return nullptr;
-
   const std::size_t numbytes = n * sizeof( T );
   return static_cast< T* >( allocator.allocate( numbytes )  );
 }
@@ -166,9 +165,6 @@ inline T* allocate( std::size_t n, umpire::Allocator allocator ) noexcept
 template < typename T >
 inline T* allocate( std::size_t n ) noexcept
 {
-  if ( n == 0 )
-    return nullptr;
-
   const std::size_t numbytes = n * sizeof( T );
   return static_cast< T* >( std::malloc( numbytes )  );
 }
@@ -200,22 +196,46 @@ inline void deallocate( T*& pointer ) noexcept
 template < typename T >
 inline T* reallocate( T* pointer, std::size_t n ) noexcept
 {
-  if ( n == 0 )
-  {
-    axom::deallocate( pointer );
-    return nullptr;
-  }
-
   const std::size_t numbytes = n * sizeof( T );
 
 #ifdef AXOM_USE_UMPIRE
 
+  // Workaround for bug in Umpire's handling on reallocate(0)
+  // Fixed in Umpire PR #292 (after v1.1.0)
+  if(n==0)
+  {
+    axom::deallocate<T>(pointer);
+    pointer = axom::allocate<T>(0);
+    return pointer;
+  }
+
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+
+  // Workaround for bug in Umpire's handling of reallocate
+  // called on a zero-sized allocation
+  // Fixed in Umpire PR #292 (after v1.1.0)
+  if(pointer != nullptr)
+  {
+    auto* allocRecord = rm.findAllocationRecord(pointer);
+    if(allocRecord && allocRecord->size == 0)
+    {
+      axom::deallocate<T>(pointer);
+      pointer = axom::allocate<T>(n);
+      return pointer;
+    }
+  }
+
   pointer = static_cast< T* >( rm.reallocate( pointer, numbytes ) );
 
 #else
 
   pointer = static_cast< T* >( std::realloc( pointer, numbytes ) );
+
+  // Consistently handle realloc(0) for std::realloc to match Umpire's behavior
+  if(n==0 && pointer == nullptr)
+  {
+    pointer = axom::allocate<T>(0);
+  }
 
 #endif
 
