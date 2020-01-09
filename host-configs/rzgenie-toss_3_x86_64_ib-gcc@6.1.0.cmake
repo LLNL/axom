@@ -14,7 +14,7 @@
 # Compiler Spec: gcc@6.1.0
 ##################################
 
-# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2019_08_29_16_57_11/gcc-6.1.0/cmake-3.9.6/bin/cmake
+# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2019_12_19_19_05_23/gcc-6.1.0/cmake-3.9.6/bin/cmake
 
 ##############
 # Compilers
@@ -36,7 +36,7 @@ set(CMAKE_Fortran_COMPILER "/usr/tce/packages/gcc/gcc-6.1.0/bin/gfortran" CACHE 
 ##############
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_08_29_16_57_11/gcc-6.1.0" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_12_19_19_05_23/gcc-6.1.0" CACHE PATH "")
 
 # conduit from uberenv
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-master" CACHE PATH "")

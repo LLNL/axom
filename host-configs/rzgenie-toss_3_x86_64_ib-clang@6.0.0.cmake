@@ -14,7 +14,7 @@
 # Compiler Spec: clang@6.0.0
 ##################################
 
-# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2019_08_29_16_57_11/clang-6.0.0/cmake-3.9.6/bin/cmake
+# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2019_12_19_19_05_23/clang-6.0.0/cmake-3.9.6/bin/cmake
 
 ##############
 # Compilers
@@ -36,7 +36,7 @@ set(CMAKE_Fortran_COMPILER "/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran" CACHE 
 ##############
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_08_29_16_57_11/clang-6.0.0" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_12_19_19_05_23/clang-6.0.0" CACHE PATH "")
 
 # conduit from uberenv
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-master" CACHE PATH "")
@@ -89,8 +89,8 @@ set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
 
 set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 
-set(ENABLE_OPENMP ON CACHE BOOL "")
-
 set(BLT_EXE_LINKER_FLAGS "-Wl,-rpath,/usr/tce/packages/clang/clang-6.0.0/lib" CACHE PATH "Adds a missing rpath for libraries associated with the fortran compiler")
+
+set(ENABLE_OPENMP ON CACHE BOOL "")
 
 
