@@ -83,7 +83,7 @@ inline umpire::Allocator getDefaultAllocator()
  * \brief Allocates a chunk of memory of type T.
  *
  * \param [in] n the number of elements to allocate.
- * \param [in] spaceId the memory space where memory will be allocated
+ * \param [in] allocator the Umpire allocator to use
  *(optional)
  *
  * \tparam T the type of pointer returned.
@@ -94,8 +94,6 @@ inline umpire::Allocator getDefaultAllocator()
  *  axom::setDefaultAllocator().
  *
  * \return p pointer to the new allocation or a nullptr if allocation failed.
- *
- * \pre spaceId >= 0 && spaceId < NUM_MEMORY_SPACES
  */
 template < typename T >
 #ifdef AXOM_USE_UMPIRE
@@ -125,6 +123,10 @@ inline void deallocate( T*& p ) noexcept;
  * \tparam T the type pointer p points to.
  *
  * \return p pointer to the new allocation or a nullptr if allocation failed.
+ * 
+ * \note When n == 0, this function returns a valid pointer (of size 0) in the
+ * current allocator's memory space. This follows the semantics of 
+ * Umpire's reallocate function.
  */
 template < typename T >
 inline T* reallocate( T* p, std::size_t n ) noexcept;
@@ -209,7 +211,7 @@ inline T* reallocate( T* pointer, std::size_t n ) noexcept
 
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
 
-  // Workaround for bug in Umpire's handling of reallocate 
+  // Workaround for bug in Umpire's handling of reallocate
   // called on a zero-sized allocation
   // Fixed in Umpire PR #292 (after v1.1.0)
   if(pointer != nullptr)
@@ -229,7 +231,7 @@ inline T* reallocate( T* pointer, std::size_t n ) noexcept
 
   pointer = static_cast< T* >( std::realloc( pointer, numbytes ) );
 
-  // Consistently handle realloc(0) for std::realloc to match umpire's behavior
+  // Consistently handle realloc(0) for std::realloc to match Umpire's behavior
   if(n==0 && pointer == nullptr)
   {
     pointer = axom::allocate<T>(0);
