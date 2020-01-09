@@ -13,8 +13,8 @@
  ******************************************************************************
  */
 
-#ifndef BUFFER_HPP_
-#define BUFFER_HPP_
+#ifndef SIDRE_BUFFER_HPP_
+#define SIDRE_BUFFER_HPP_
 
 // Standard C++ headers
 #include <set>
@@ -343,4 +343,4 @@ private:
 } /* end namespace sidre */
 } /* end namespace axom */
 
-#endif /* BUFFER_HPP_ */
+#endif /* SIDRE_BUFFER_HPP_ */

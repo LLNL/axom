@@ -2,11 +2,10 @@
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+#------------------------------------------------------------------------------
+# Generate sidre's C and Fortran interface 
+#------------------------------------------------------------------------------
 
-#
-# Generate source
-# sidre/src/interface/CMakeLists.txt
-#
 set(YAML_INPUT_FILE sidre_shroud.yaml)
 
 add_shroud(
@@ -16,13 +15,11 @@ add_shroud(
     DEPENDS_SOURCE
         c_fortran/csidresplicer.c
         c_fortran/fsidresplicer.f
-    DEPENDS_BINARY genfsidresplicer.f
-)
+    DEPENDS_BINARY genfsidresplicer.f )
 
 add_custom_command(
     OUTPUT  ${CMAKE_CURRENT_BINARY_DIR}/genfsidresplicer.f
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/c_fortran/genfsidresplicer.py
     COMMAND ${PYTHON_EXECUTABLE}
             ${CMAKE_CURRENT_SOURCE_DIR}/c_fortran/genfsidresplicer.py fortran > 
-            ${CMAKE_CURRENT_BINARY_DIR}/genfsidresplicer.f
-)
+            ${CMAKE_CURRENT_BINARY_DIR}/genfsidresplicer.f )

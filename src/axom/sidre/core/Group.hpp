@@ -13,11 +13,14 @@
  ******************************************************************************
  */
 
-#ifndef DATAGROUP_HPP_
-#define DATAGROUP_HPP_
+#ifndef SIDRE_GROUP_HPP_
+#define SIDRE_GROUP_HPP_
 
+// axom headers
 #include "axom/config.hpp"
 #include "axom/core/Macros.hpp"
+#include "axom/core/Types.hpp"
+#include "axom/slic.hpp"
 
 // Standard C++ headers
 #include <memory>
@@ -32,11 +35,7 @@
 #include "hdf5.h"
 #endif
 
-// Other axom headers
-#include "axom/slic/interface/slic.hpp"
-#include "axom/core/Types.hpp"
-
-// Sidre project headers
+// Sidre headers
 #include "SidreTypes.hpp"
 #include "View.hpp"
 
@@ -177,12 +176,14 @@ public:
    */
   std::string getPathName() const
   {
-    if (getPath().length() < 1)
+    const auto path = getPath();
+
+    if (path.length() < 1)
     {
       return getName();
     }
 
-    return getPath() + getPathDelimiter() + getName();
+    return path + getPathDelimiter() + getName();
   }
 
   /*!
@@ -1221,7 +1222,7 @@ public:
    * \param [out] name_from_file    Group name stored in the file
    */
   void load(const std::string& path,
-            const std::string& protocol,  
+            const std::string& protocol,
             bool preserve_contents,
             std::string & name_from_file);
 
@@ -1387,7 +1388,7 @@ public:
    *                           tree is not succesfully imported.
    */
   bool importConduitTree(const conduit::Node& node,
-     bool preserve_contents = false);
+                         bool preserve_contents = false);
 
   /*!
    * \brief Import data from a conduit Node into a Group without copying arrays
@@ -1418,7 +1419,7 @@ public:
    *                           tree is not succesfully imported.
    */
   bool importConduitTreeExternal(conduit::Node& node,
-     bool preserve_contents = false);
+                                 bool preserve_contents = false);
 
 private:
   DISABLE_DEFAULT_CTOR(Group);
@@ -1613,9 +1614,9 @@ private:
 
   ///////////////////////////////////////////////////////////////////
   //
-  typedef MapCollection<View> ViewCollection;
+  using ViewCollection = MapCollection<View>;
   //
-  typedef MapCollection<Group> GroupCollection;
+  using GroupCollection =  MapCollection<Group>;
   ///////////////////////////////////////////////////////////////////
 
   /// Collection of Views
@@ -1634,4 +1635,4 @@ private:
 } /* end namespace sidre */
 } /* end namespace axom */
 
-#endif /* DATAGROUP_HPP_ */
+#endif /* SIDRE_GROUP_HPP_ */

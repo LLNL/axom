@@ -2,10 +2,13 @@
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+#------------------------------------------------------------------------------
+# Sidre unit tests
+#------------------------------------------------------------------------------
 
-#
+#------------------------------------------------------------------------------
 # Specify list of tests
-#
+#------------------------------------------------------------------------------
 
 set(gtest_sidre_tests
    sidre_smoke.cpp
@@ -42,7 +45,7 @@ set(fruit_sidre_tests
    sidre_external_F.f
    sidre_opaque_F.f
    sidre_allocatable_F.f
-)
+   )
 
 
 set(sidre_test_depends
@@ -51,11 +54,12 @@ set(sidre_test_depends
     slic
     )
 
-blt_list_append(TO sidre_test_depends ELEMENTS hdf5 IF ${HDF5_FOUND})
+blt_list_append(TO sidre_test_depends ELEMENTS hdf5 IF HDF5_FOUND )
 
-#
-# Add gtest C++ based tests
-#
+
+#------------------------------------------------------------------------------
+# Add gtest C++ tests
+#------------------------------------------------------------------------------
 foreach(test ${gtest_sidre_tests})
     get_filename_component( test_name ${test} NAME_WE )
     blt_add_executable( NAME ${test_name}_test
@@ -70,9 +74,9 @@ foreach(test ${gtest_sidre_tests})
                   )
 endforeach()
 
-#
-# Add gtest C based tests
-#
+#------------------------------------------------------------------------------
+# Add gtest C tests
+#------------------------------------------------------------------------------
 if (ENABLE_FORTRAN)
     foreach(test ${gtest_sidre_C_tests})
         get_filename_component( test_name ${test} NAME_WE )
@@ -88,9 +92,9 @@ if (ENABLE_FORTRAN)
     endforeach()
 endif()
 
-#
-# Add fortran tests
-#
+#------------------------------------------------------------------------------
+# Add Fortran tests
+#------------------------------------------------------------------------------
 if (ENABLE_FORTRAN)
     foreach(test ${fruit_sidre_tests})
         get_filename_component( test_name ${test} NAME_WE )

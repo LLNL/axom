@@ -13,8 +13,8 @@
  ******************************************************************************
  */
 
-#ifndef IOPARALLEL_HPP_
-#define IOPARALLEL_HPP_
+#ifndef SIDRE_IOMANAGER_HPP_
+#define SIDRE_IOMANAGER_HPP_
 
 // Other axom headers
 #include "axom/config.hpp"
@@ -341,4 +341,4 @@ private:
 } /* end namespace sidre */
 } /* end namespace axom */
 
-#endif /* IOPARALLEL_HPP_ */
+#endif /* SIDRE_IOMANAGER_HPP_ */
