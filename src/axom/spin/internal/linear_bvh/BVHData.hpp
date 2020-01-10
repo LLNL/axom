@@ -55,16 +55,14 @@ namespace linear_bvh
 template < typename FloatType, int NDIMS >
 struct BVHData
 {
-  Vec< FloatType, 4 > *m_inner_nodes;  // BVH bins including leafs
-  int32  *m_leaf_nodes;   // leaf data
+  Vec< FloatType, 4 >* m_inner_nodes;  // BVH bins including leafs
+  int32* m_leaf_nodes;    // leaf data
   AABB< FloatType, NDIMS > m_bounds;
 
   BVHData() :
     m_inner_nodes( nullptr ),
     m_leaf_nodes( nullptr )
-  {
-
-  }
+  {}
 
   void allocate( int32 size )
   {
@@ -79,9 +77,7 @@ struct BVHData
   }
 
   ~BVHData()
-  {
-
-  }
+  {}
 
 };
 

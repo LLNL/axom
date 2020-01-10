@@ -27,7 +27,7 @@ namespace axom
 /*!
  * \brief Indicates sequential execution on the CPU.
  */
-struct SEQ_EXEC{ };
+struct SEQ_EXEC { };
 
 /*!
  * \brief execution_space traits specialization for SEQ_EXEC

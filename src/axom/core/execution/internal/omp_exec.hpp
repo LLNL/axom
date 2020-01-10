@@ -27,7 +27,7 @@ namespace axom
 /*!
  * \brief Indicates parallel execution on the CPU using OpenMP.
  */
-struct OMP_EXEC{ };
+struct OMP_EXEC { };
 
 /*!
  * \brief execution_space traits specialization for OMP_EXEC

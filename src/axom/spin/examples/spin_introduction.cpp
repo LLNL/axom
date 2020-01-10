@@ -182,8 +182,8 @@ void demoMorton()
   {
     RLGridCell g = iter.first;
     DataContainer dat = iter.second;
-    std::cout << "Grid cell " << g << " holds " << dat.count << " points." <<
-    std::endl;
+    std::cout << "Grid cell " << g << " holds "
+              << dat.count << " points." << std::endl;
   }
   // _morton_use_end
 

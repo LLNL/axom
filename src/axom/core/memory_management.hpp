@@ -123,9 +123,9 @@ inline void deallocate( T*& p ) noexcept;
  * \tparam T the type pointer p points to.
  *
  * \return p pointer to the new allocation or a nullptr if allocation failed.
- * 
+ *
  * \note When n == 0, this function returns a valid pointer (of size 0) in the
- * current allocator's memory space. This follows the semantics of 
+ * current allocator's memory space. This follows the semantics of
  * Umpire's reallocate function.
  */
 template < typename T >

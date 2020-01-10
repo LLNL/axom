@@ -37,7 +37,7 @@ void write_box2d( const FloatType& xmin,
   constexpr int32 NUM_NODES = 4;
   int32 offset = numPoints;
   cells << NUM_NODES << " ";
-  for ( int32 i=0; i < NUM_NODES; ++i )
+  for ( int32 i=0 ; i < NUM_NODES ; ++i )
   {
     cells << (offset + i) << " ";
   }
@@ -73,7 +73,7 @@ void write_box3d( const FloatType& xmin,
   constexpr int32 NUM_NODES = 8;
   int32 offset = numPoints;
   cells << NUM_NODES << " ";
-  for ( int32 i=0; i < NUM_NODES; ++i )
+  for ( int32 i=0 ; i < NUM_NODES ; ++i )
   {
     cells << (offset + i) << " ";
   }
@@ -218,11 +218,11 @@ void write_recursive( Vec< FloatType, 4 >* inner_nodes,
   levels << level << std::endl;
 
   // STEP 2: check left
-  if ( l_child > - 1 )
+  if ( l_child > -1 )
   {
     write_recursive< FloatType, NDIMS >(
-        inner_nodes, l_child, level+1, numPoints, numBins,
-        nodes, cells, levels );
+      inner_nodes, l_child, level+1, numPoints, numBins,
+      nodes, cells, levels );
 
   }
 
@@ -230,8 +230,8 @@ void write_recursive( Vec< FloatType, 4 >* inner_nodes,
   if ( r_child > -1 )
   {
     write_recursive< FloatType, NDIMS >(
-        inner_nodes, r_child, level+1, numPoints, numBins,
-        nodes, cells, levels );
+      inner_nodes, r_child, level+1, numPoints, numBins,
+      nodes, cells, levels );
 
   }
 

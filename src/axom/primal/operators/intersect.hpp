@@ -328,7 +328,7 @@ bool intersect(const OrientedBoundingBox< T, 3 >& b1,
  * Specifically, we assume that all intersections are at points and that
  * the curves don't overlap.
  *
- * \note This function assumes the all intersections have multiplicity 
+ * \note This function assumes the all intersections have multiplicity
  * one, i.e. there are no points at which the curves and their derivatives
  * both intersect. Thus, the function does not find tangencies.
  *

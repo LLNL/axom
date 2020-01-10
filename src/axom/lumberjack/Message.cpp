@@ -122,7 +122,7 @@ void Message::addRank(int newRank, int ranksLimit)
       m_ranks.push_back(newRank);
     }
   }
-  
+
   if (!m_ranksLimitReached &&
       (m_ranks.size() == (std::vector<int>::size_type)ranksLimit))
   {
@@ -336,7 +336,8 @@ const char* packMessages(const std::vector<Message*>& messages)
   }
 
   // Create and calculate size of message count
-  std::string messageCountString = std::to_string(messageCount) + memberDelimiter;
+  std::string messageCountString = std::to_string(messageCount) +
+                                   memberDelimiter;
   totalSize += messageCountString.size();
 
   const char* packedMessagesString = new char[totalSize];

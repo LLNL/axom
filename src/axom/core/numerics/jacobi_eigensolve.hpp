@@ -98,7 +98,7 @@ int jacobi_eigensolve( Matrix < T > A,
   }
 
 
-  T* bw = axom::allocate< T >( n ); 
+  T* bw = axom::allocate< T >( n );
   T* zw = axom::allocate< T >( n );
 
   // initialize

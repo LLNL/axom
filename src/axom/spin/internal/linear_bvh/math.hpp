@@ -36,22 +36,22 @@ constexpr axom::int32 AXOM_NG_INF_32 = 0xff800000U;
 constexpr axom::int64 AXOM_INF_64    = 0x7ff0000000000000ULL;
 constexpr axom::int64 AXOM_NG_INF_64 = 0xfff0000000000000ULL;
 
-constexpr axom::int32  AXOM_NAN_32   = 0x7FC00000U;
+constexpr axom::int32 AXOM_NAN_32    = 0x7FC00000U;
 constexpr axom::int64 AXOM_NAN_64    = 0x7FF8000000000000ULL;
 
-constexpr float  AXOM_EPSILON_32 = 1e-5f;
+constexpr float AXOM_EPSILON_32  = 1e-5f;
 constexpr double AXOM_EPSILON_64 = 1e-9f;
 
 union Bits32
 {
   axom::float32 scalar;
-  axom::int32  bits;
+  axom::int32 bits;
 };
 
 union Bits64
 {
   axom::float64 scalar;
-  axom::int64  bits;
+  axom::int64 bits;
 };
 
 

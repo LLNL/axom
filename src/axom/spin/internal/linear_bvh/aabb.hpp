@@ -29,7 +29,7 @@ template < typename FloatType, int NDIMS >
 class AABB
 {
   AXOM_STATIC_ASSERT_MSG( (NDIMS >= 2 && NDIMS <=3),
-      "The AABB class is supported only in 2D and 3D." );
+                          "The AABB class is supported only in 2D and 3D." );
 };
 
 template < typename FloatType, int NDIMS >

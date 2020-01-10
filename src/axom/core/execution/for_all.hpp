@@ -64,7 +64,7 @@ inline void for_all( const IndexType& begin, const IndexType& end,
 
   constexpr bool is_serial = std::is_same< ExecSpace, SEQ_EXEC >::value;
   AXOM_STATIC_ASSERT( is_serial );
-  for ( IndexType i=begin; i < end; ++i )
+  for ( IndexType i=begin ; i < end ; ++i )
   {
     kernel( i );
   }

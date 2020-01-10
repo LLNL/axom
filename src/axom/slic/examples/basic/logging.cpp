@@ -40,7 +40,7 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
 
   // SPHINX_SLIC_SET_STREAM_BEGIN
   slic::addStreamToAllMsgLevels(
-      new slic::GenericOutputStream( &std::cout,format) );
+    new slic::GenericOutputStream( &std::cout,format) );
 
   // SPHINX_SLIC_SET_STREAM_END
 

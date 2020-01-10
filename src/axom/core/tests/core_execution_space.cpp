@@ -33,7 +33,7 @@ template< typename ExecSpace >
 void check_valid( )
 {
   std::cout << "checking execution space:" <<
-               axom::execution_space< ExecSpace >::name() << std::endl;
+    axom::execution_space< ExecSpace >::name() << std::endl;
 
   EXPECT_TRUE( axom::execution_space< ExecSpace >::valid() );
   EXPECT_TRUE( strlen( axom::execution_space< ExecSpace >::name() ) > 0 );
@@ -44,7 +44,7 @@ template < typename ExecSpace >
 void check_invalid( )
 {
   std::cout << "checking execution space:" <<
-              axom::execution_space< ExecSpace >::name() << std::endl;
+    axom::execution_space< ExecSpace >::name() << std::endl;
 
   EXPECT_FALSE( axom::execution_space< ExecSpace >::valid() );
 
@@ -64,7 +64,7 @@ template < typename ExecSpace,
 void check_execution_mappings( int expectedAllocatorID, bool is_async )
 {
   std::cout << "checking execution space: " <<
-               axom::execution_space< ExecSpace >::name() << std::endl;
+    axom::execution_space< ExecSpace >::name() << std::endl;
 
   using loop_pol   = typename axom::execution_space< ExecSpace >::loop_policy;
   using reduce_pol = typename axom::execution_space< ExecSpace >::reduce_policy;
