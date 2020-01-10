@@ -2,10 +2,10 @@
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
-###############################################################################
-#
+#------------------------------------------------------------------------------
 # Example that shows how to use an installed instance of Axom in another
 # CMake-based build system.
+#------------------------------------------------------------------------------
 #
 # To build:
 #  mkdir build
@@ -14,14 +14,13 @@
 #  make
 #  ./example
 #
-#
 # Note:
 #  If you use features that leverage external third party libraries 
 #  (ex: Conduit features), the imported CMake targets will handle linking 
 #  these libraries, however you may need to add additional include
 #  include directories to use their headers. 
 # 
-###############################################################################
+#------------------------------------------------------------------------------
 
 cmake_minimum_required(VERSION 3.8)
 

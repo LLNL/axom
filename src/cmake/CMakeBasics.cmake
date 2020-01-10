@@ -3,25 +3,26 @@
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 
-################################
+
+#-------------------------------------------------------------------------------
 # Setup build options and their default values
-################################
+#-------------------------------------------------------------------------------
 include(cmake/AxomOptions.cmake)
 
-################################
-# Macros common across projects
-################################
+#------------------------------------------------------------------------------
+# Macros for Axom's build system
+#------------------------------------------------------------------------------
 include(cmake/AxomMacros.cmake)
 
-################################
-# AXOM's Third party library setup
-################################
+#------------------------------------------------------------------------------
+# Axom's Third party library setup
+#------------------------------------------------------------------------------
 include(cmake/thirdparty/SetupAxomThirdParty.cmake)
 
 if(NOT CMAKE_CONFIGURATION_TYPES)
-    ######################################################
+    #--------------------------------------------------------------------------
     # Add define we can use when debug builds are enabled
-    ######################################################
+    #--------------------------------------------------------------------------
     if( CMAKE_BUILD_TYPE MATCHES "(Debug|RelWithDebInfo)" )
         add_definitions(-DAXOM_DEBUG)
     endif()
@@ -32,9 +33,9 @@ else ()
     )
 endif()
 
-################################
+#------------------------------------------------------------------------------
 # Fortran Configuration
-################################
+#------------------------------------------------------------------------------
 if(ENABLE_FORTRAN)
     # Check C/C++ compiler compatiblity with the Fortran compiler
     include(FortranCInterface)
@@ -46,14 +47,14 @@ if(ENABLE_FORTRAN)
 endif()
 
 
-##############################################################################
+#------------------------------------------------------------------------------
 # Setup some additional compiler options that can be useful in various targets
 # These are stored in their own variables.
 # Usage: To add one of these sets of flags to some source files:
 #   get_source_file_property(_origflags <src_file> COMPILE_FLAGS)
 #   set_source_files_properties(<list_of_src_files>
 #        PROPERTIES COMPILE_FLAGS "${_origFlags} ${<flags_variable}" )
-##############################################################################
+#------------------------------------------------------------------------------
 
 set(custom_compiler_flags_list) # Tracks custom compiler flags for logging
 

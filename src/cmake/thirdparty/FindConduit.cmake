@@ -2,11 +2,9 @@
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
-
-
 #------------------------------------------------------------------------------
 # Setup Conduit
-#
+#------------------------------------------------------------------------------
 # This file defines:
 #  CONDUIT_FOUND - If Conduit was found
 #  

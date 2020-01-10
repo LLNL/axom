@@ -3,9 +3,11 @@
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 
-## Axom version information that go into the generated axom/config.hpp
-## NOTE: if we are building from a Git repo these values will be autodetected,
-##       otherwise, the hard-coded values will go in to the config.
+#------------------------------------------------------------------------------
+# Axom version information that go into the generated axom/config.hpp
+# NOTE: if we are building from a Git repo these values will be autodetected,
+#       otherwise, the hard-coded values will go in to the config.
+#------------------------------------------------------------------------------
 set(AXOM_VERSION_MAJOR 0)
 set(AXOM_VERSION_MINOR 3)
 set(AXOM_VERSION_PATCH 2)
@@ -14,18 +16,18 @@ string(CONCAT AXOM_VERSION_FULL
     ".${AXOM_VERSION_MINOR}"
     ".${AXOM_VERSION_PATCH}" )
 
-##------------------------------------------------------------------------------
-## extract_version_components( <tag>, <prefix> )
-##
-## Helper function to extract the version components from a Git tag. The
-## extracted version components are stored in the following variables:
-##   <prefix>_VERSION_MAJOR
-##   <prefix>_VERSION_MINOR
-##   <prefix>_VERSION_PATCH
-##   <prefix>_VERSION_FULL
-##
-## Note: This function assumes tags of the form "vMAJOR.MINOR.PATCH"
-##------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+# extract_version_components( <tag>, <prefix> )
+#
+# Helper function to extract the version components from a Git tag. The
+# extracted version components are stored in the following variables:
+#   <prefix>_VERSION_MAJOR
+#   <prefix>_VERSION_MINOR
+#   <prefix>_VERSION_PATCH
+#   <prefix>_VERSION_FULL
+#
+# Note: This function assumes tags of the form "vMAJOR.MINOR.PATCH"
+#------------------------------------------------------------------------------
 function(axom_extract_version tag_string prefix)
 
   string(REGEX MATCH "v([0-9]+)\\.([0-9]+)\\.([0-9]+)" tmp "${tag_string}" )

@@ -2,11 +2,9 @@
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
-
-
 #------------------------------------------------------------------------------
 # Setup MFEM
-#
+#------------------------------------------------------------------------------
 # This file defines:
 #  MFEM_FOUND        - If mfem was found
 #  MFEM_INCLUDE_DIRS - The mfem include directories

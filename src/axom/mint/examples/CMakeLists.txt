@@ -2,6 +2,9 @@
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+#------------------------------------------------------------------------------
+# Examples for Mint component
+#------------------------------------------------------------------------------
 
 set( mint_examples
      mint_curvilinear_mesh.cpp

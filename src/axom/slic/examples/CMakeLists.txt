@@ -2,6 +2,9 @@
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+#------------------------------------------------------------------------------
+# Examples for Slic component
+#------------------------------------------------------------------------------
 
 set(example_sources
     basic/cpplogger.cpp

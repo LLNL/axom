@@ -2,10 +2,10 @@
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+#------------------------------------------------------------------------------
+# C++ Benchmarks for Slam component
+#------------------------------------------------------------------------------
 
-################
-# C++ Benchmarks
-################
 set(slam_benchmark_files
     slam_array.cpp
     slam_sets.cpp

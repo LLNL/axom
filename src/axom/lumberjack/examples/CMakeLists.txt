@@ -2,6 +2,9 @@
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+#------------------------------------------------------------------------------
+# Examples for Lumberjack component
+#------------------------------------------------------------------------------
 
 blt_add_executable(NAME lumberjack_basic_ex
                    SOURCES basicExample.cpp

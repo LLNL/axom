@@ -2,10 +2,9 @@
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
-###############################################################################
-#
+#------------------------------------------------------------------------------
 # Setup HDF5
-#
+#------------------------------------------------------------------------------
 
 # first Check for HDF5_DIR
 if(NOT HDF5_DIR)

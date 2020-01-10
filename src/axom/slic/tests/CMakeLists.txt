@@ -2,6 +2,9 @@
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+#------------------------------------------------------------------------------
+# Unit tests for Slic component
+#------------------------------------------------------------------------------
 
 #
 # Specify list of tests

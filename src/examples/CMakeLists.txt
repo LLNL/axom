@@ -2,12 +2,9 @@
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
-
-###############################################################################
-#
-# file: src/examples/CMakeLists.txt
-#
-###############################################################################
+#------------------------------------------------------------------------------
+# Example for using Axom from a CMake project
+#------------------------------------------------------------------------------
 
 # install using examples
 install(DIRECTORY using-with-cmake using-with-make
