@@ -34,7 +34,7 @@
 # Note: The following files do not fit this pattern and require hand editing
 # (or integration into this script):
 #
-# - Top-level files: LICENSE, RELEASE
+# - Top-level files: LICENSE, RELEASE, README.md
 #
 # - sphinx configuration files with filenames of the form  '*/docs/*/conf.py'
 #   They can be listed using: 'git ls-files | grep conf.py'
