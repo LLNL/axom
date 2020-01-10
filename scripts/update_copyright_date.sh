@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -44,7 +44,7 @@
 #=============================================================================
 # First find all the files we want to modify
 #=============================================================================
-find . -type f ! -name \*.git\* ! -name \*update_copyright\* -exec grep -l "other Axom Project Developers. See the top-level COPYRIGHT file for details." {} \; > files2change
+git grep -l "other Axom Project Developers. See the top-level COPYRIGHT file for details." | grep -v update_copyright > files2change
 
 #=============================================================================
 # Replace the old copyright dates with new dates
