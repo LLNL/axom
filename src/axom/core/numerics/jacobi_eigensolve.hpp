@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -98,7 +98,7 @@ int jacobi_eigensolve( Matrix < T > A,
   }
 
 
-  T* bw = axom::allocate< T >( n ); 
+  T* bw = axom::allocate< T >( n );
   T* zw = axom::allocate< T >( n );
 
   // initialize

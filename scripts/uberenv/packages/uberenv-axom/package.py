@@ -158,25 +158,25 @@ class UberenvAxom(Package):
         host_cfg_fname = "%s-%s-%s.cmake" % (socket.gethostname().rstrip('1234567890'),sys_type,spec.compiler)
         host_cfg_fname = pjoin(dest_dir,host_cfg_fname)
         cfg = open(host_cfg_fname,"w")
-        cfg.write("##################################\n")
+        cfg.write("#------------------{}\n".format("-"*60))
         cfg.write("# !!!! This is a generated file, edit at own risk !!!!\n")
-        cfg.write("##################################\n\n")
-        cfg.write("# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and\n")
+        cfg.write("#------------------{}\n".format("-"*60))
+        cfg.write("# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and\n")
         cfg.write("# other Axom Project Developers. See the top-level COPYRIGHT file for details.\n")
         cfg.write("#\n")
         cfg.write("# SPDX-License-Identifier: (BSD-3-Clause)\n")
-        cfg.write("##################################\n\n")
-        cfg.write("##################################\n\n")
-        cfg.write("# SYS_TYPE: %s\n" % (sys_type))
-        cfg.write("# Compiler Spec: %s\n" % (spec.compiler))
-        cfg.write("##################################\n\n")
+        cfg.write("#------------------{}\n".format("-"*60))
+        cfg.write("# SYS_TYPE: {}\n".format(sys_type))
+        cfg.write("# Compiler Spec: {}\n".format(spec.compiler))
+        cfg.write("#------------------{}\n".format("-"*60))
         # show path to cmake for reference and to be used by config-build.py
-        cfg.write("# CMake executable path: %s\n\n" % cmake_exe)
+        cfg.write("# CMake executable path: {}\n".format(cmake_exe))
+        cfg.write("#------------------{}\n\n".format("-"*60))
 
         # compiler settings
-        cfg.write("##############\n")
+        cfg.write("#------------------{}\n".format("-"*60))
         cfg.write("# Compilers\n")
-        cfg.write("##############\n\n")
+        cfg.write("#------------------{}\n\n".format("-"*60))
 
         if on_bgq:
             cfg.write("# Note: we build TPLs with the serial compiler then use MPI wrappers on bgq\n")
@@ -200,9 +200,9 @@ class UberenvAxom(Package):
             cfg.write(cmake_cache_entry("CMAKE_Fortran_COMPILER",f_compiler))
 
         # TPL locations
-        cfg.write("##############\n")
+        cfg.write("#------------------{}\n".format("-"*60))
         cfg.write("# TPLs\n")
-        cfg.write("##############\n\n")
+        cfg.write("#------------------{}\n\n".format("-"*60))
 
         # Try to find the common prefix of the TPL directory, including the compiler
         # If found, we will use this in the TPL paths
@@ -314,9 +314,9 @@ class UberenvAxom(Package):
         else:
             cfg.write("# cppcheck not built by uberenv\n\n")
 
-        cfg.write("##############\n")
+        cfg.write("#------------------{}\n".format("-"*60))
         cfg.write("# MPI\n")
-        cfg.write("##############\n\n")
+        cfg.write("#------------------{}\n\n".format("-"*60))
 
         if "+mpi" in spec:
             cfg.write(cmake_cache_option("ENABLE_MPI", True))
@@ -380,9 +380,9 @@ class UberenvAxom(Package):
         # Other machine specifics
         ##################################
 
-        cfg.write("##############\n")
+        cfg.write("#------------------{}\n".format("-"*60))
         cfg.write("# Other machine specifics\n")
-        cfg.write("##############\n\n")
+        cfg.write("#------------------{}\n\n".format("-"*60))
 
         # Enable death tests everwhere but BGQ
         if on_bgq or (on_blueos and "+cuda" in spec):
@@ -425,9 +425,9 @@ class UberenvAxom(Package):
 
 
             if "+cuda" in spec:
-                cfg.write("##############\n")
+                cfg.write("#------------------{}\n".format("-"*60))
                 cfg.write("# Cuda\n")
-                cfg.write("##############\n\n")
+                cfg.write("#------------------{}\n\n".format("-"*60))
 
                 cfg.write(cmake_cache_option("ENABLE_CUDA", True))
                 cfg.write(cmake_cache_entry("CUDA_TOOLKIT_ROOT_DIR", "/usr/tce/packages/cuda/cuda-10.1.168"))

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -42,7 +42,7 @@ public:
   inline AXOM_HOST_DEVICE bool operator==(const Vec<T,S> &other) const
   {
     bool e = true;
-    for(int i = 0; i < S; ++i)
+    for(int i = 0 ; i < S ; ++i)
     {
       if(m_data[i] != other[i]) e = false;
     }
@@ -54,7 +54,7 @@ public:
 
   inline AXOM_HOST_DEVICE void operator=(const Vec<T,S> &other)
   {
-    for(int i = 0; i < S; ++i)
+    for(int i = 0 ; i < S ; ++i)
     {
       m_data[i] = other.m_data[i];
     }
@@ -77,7 +77,7 @@ public:
   {
     Vec<T,S> res;
 
-    for(int i = 0; i < S; ++i)
+    for(int i = 0 ; i < S ; ++i)
     {
       res[i] = m_data[i] * s;
     }
@@ -89,7 +89,7 @@ public:
   {
     Vec<T,S> res;
 
-    for(int i = 0; i < S; ++i)
+    for(int i = 0 ; i < S ; ++i)
     {
       res[i] = m_data[i] / s;
     }
@@ -99,7 +99,7 @@ public:
 
   inline AXOM_HOST_DEVICE void operator*=(const T &s)
   {
-    for(int i = 0; i < S; ++i)
+    for(int i = 0 ; i < S ; ++i)
     {
       m_data[i] *= s;
     }
@@ -107,7 +107,7 @@ public:
 
   inline AXOM_HOST_DEVICE void operator/=(const T &s)
   {
-    for(int i = 0; i < S; ++i)
+    for(int i = 0 ; i < S ; ++i)
     {
       m_data[i] /= s;
     }
@@ -120,7 +120,7 @@ public:
   {
     Vec<T,S> res;
 
-    for(int i = 0; i < S; ++i)
+    for(int i = 0 ; i < S ; ++i)
     {
       res[i] = m_data[i] + other[i];
     }
@@ -132,7 +132,7 @@ public:
   {
     Vec<T,S> res;
 
-    for(int i = 0; i < S; ++i)
+    for(int i = 0 ; i < S ; ++i)
     {
       res[i] = m_data[i] - other[i];
     }
@@ -143,7 +143,7 @@ public:
   inline AXOM_HOST_DEVICE void operator+=(const Vec<T,S> &other)
   {
 
-    for(int i = 0; i < S; ++i)
+    for(int i = 0 ; i < S ; ++i)
     {
       m_data[i] += other[i];
     }
@@ -153,7 +153,7 @@ public:
   inline AXOM_HOST_DEVICE void operator-=(const Vec<T,S> &other)
   {
 
-    for(int i = 0; i < S; ++i)
+    for(int i = 0 ; i < S ; ++i)
     {
       m_data[i] -= other[i];
     }
@@ -164,7 +164,7 @@ public:
   {
     Vec<T,S> res;
 
-    for(int i = 0; i < S; ++i)
+    for(int i = 0 ; i < S ; ++i)
     {
       res[i] = -m_data[i];
     }
@@ -176,7 +176,7 @@ public:
   {
     T sum = T(0);
 
-    for(int i = 0; i < S; ++i)
+    for(int i = 0 ; i < S ; ++i)
     {
       sum += m_data[i] * m_data[i];
     }
@@ -199,7 +199,7 @@ inline AXOM_HOST_DEVICE T dot(const Vec<T,S> &a, const Vec<T,S> &b)
 {
   T res = T(0);
 
-  for(int i = 0; i < S; ++i)
+  for(int i = 0 ; i < S ; ++i)
   {
     res += a[i] * b[i];
   }
@@ -221,10 +221,11 @@ template<typename TT, axom::int32 SS>
 std::ostream& operator<<(std::ostream &os, const Vec<TT,SS> &vec)
 {
   os<<"[";
-  for(int i = 0; i < SS; ++i)
+  for(int i = 0 ; i < SS ; ++i)
   {
     os<<vec[i];
-    if(i != SS - 1) os<<", ";
+    if(i != SS - 1)
+      os<<", ";
   }
   os<<"]";
   return os;

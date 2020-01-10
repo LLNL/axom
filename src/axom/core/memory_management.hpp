@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -123,9 +123,9 @@ inline void deallocate( T*& p ) noexcept;
  * \tparam T the type pointer p points to.
  *
  * \return p pointer to the new allocation or a nullptr if allocation failed.
- * 
+ *
  * \note When n == 0, this function returns a valid pointer (of size 0) in the
- * current allocator's memory space. This follows the semantics of 
+ * current allocator's memory space. This follows the semantics of
  * Umpire's reallocate function.
  */
 template < typename T >

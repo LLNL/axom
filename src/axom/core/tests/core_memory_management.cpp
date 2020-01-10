@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -448,7 +448,7 @@ TEST( core_memory_management, basic_alloc_realloc_dealloc )
   constexpr std::size_t N = 5;
 
   int* buf = nullptr;
-  
+
   // allocate an array of size N
   buf = axom::allocate<int>(N);
   EXPECT_NE(buf, nullptr);

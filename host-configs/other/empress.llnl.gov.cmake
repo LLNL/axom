@@ -1,22 +1,22 @@
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 
-##################################
+#------------------------------------------------------------------------------
 # uberenv host-config
 #
 # This is a generated file, edit at own risk.
-##################################
+#------------------------------------------------------------------------------
 # x86_64-gcc@4.9.3
-##################################
+#------------------------------------------------------------------------------
 
 # cmake from uberenv
 # cmake executable path: /home/taylor16/tpl/v7mpi/spack/opt/spack/x86_64/gcc-4.9.3/cmake-3.3.1-jkk5puodwd24sh2egavyrp2ony2z3wtn/bin/cmake
 
-#######
+#------------------------------------------------------------------------------
 # using gcc@4.9.3 compiler spec
-#######
+#------------------------------------------------------------------------------
 
 # c compiler used by spack
 set(CMAKE_C_COMPILER "/home/taylor16/gapps/gcc-4.9.3/bin/gcc" CACHE PATH "")
@@ -63,13 +63,13 @@ set(LCOV_PATH "/home/taylor16/tpl/v7mpi/spack/opt/spack/x86_64/gcc-4.9.3/lcov-1.
 
 set(GENHTML_PATH "/home/taylor16/tpl/v7mpi/spack/opt/spack/x86_64/gcc-4.9.3/lcov-1.11-h3ijl43wxo53yrr7j7gsnmpuc4wc5nrn/usr/bin/genhtml" CACHE PATH "")
 
-##################################
+#------------------------------------------------------------------------------
 # end uberenv host-config
-##################################
+#------------------------------------------------------------------------------
 
-#######
+#------------------------------------------------------------------------------
 # MPI - manually added these for now.
-#######
+#------------------------------------------------------------------------------
 set(ENABLE_MPI ON CACHE PATH "")
 set(MPI_C_COMPILER "/home/taylor16/local/mpich-3.2/bin/mpicc" CACHE PATH "")
 set(MPI_CXX_COMPILER "/home/taylor16/local/mpich-3.2/bin/mpicxx" CACHE PATH "")
