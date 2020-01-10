@@ -3,19 +3,19 @@
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 
-##################################
+#------------------------------------------------------------------------------
 # uberenv host-config
 #
 # This is a generated file, edit at own risk.
-##################################
+#------------------------------------------------------------------------------
 # x86_64-gcc@4.9.3
-##################################
+#------------------------------------------------------------------------------
 
 # cmake from uberenv
 # cmake executable path: /home/taylor16/apps/cmake-3.8.2/bin/cmake
-#######
+#------------------------------------------------------------------------------
 # using gcc@4.9.3 compiler spec
-#######
+#------------------------------------------------------------------------------
 
 # c compiler used by spack
 set(CMAKE_C_COMPILER "/home/taylor16/apps/gcc-4.9.4/bin/gcc" CACHE PATH "")
@@ -60,20 +60,20 @@ set(LCOV_PATH "${TPL_ROOT}/usr/bin/lcov" CACHE PATH "")
 
 set(GENHTML_PATH "${TPL_ROOT}/usr/bin/genhtml" CACHE PATH "")
 
-##################################
+#------------------------------------------------------------------------------
 # end uberenv host-config
-##################################
+#------------------------------------------------------------------------------
 
-#######
+#------------------------------------------------------------------------------
 # MPI - manually added these for now.
-#######
+#------------------------------------------------------------------------------
 #set(ENABLE_MPI ON CACHE PATH "")
 #set(MPI_C_COMPILER "/home/taylor16/local/mpich-3.2/bin/mpicc" CACHE PATH "")
 #set(MPI_CXX_COMPILER "/home/taylor16/local/mpich-3.2/bin/mpicxx" CACHE PATH "")
 #set(MPI_Fortran_COMPILER "/home/taylor16/local/mpich-3.2/bin/mpif90" CACHE PATH "")
 
-##############################################################################
+#------------------------------------------------------------------------------
 # SHROUD - manually added for now. Use a public build add to TPL later
-##############################################################################
+#------------------------------------------------------------------------------
 set(SHROUD_EXECUTABLE "/home/taylor16/tpl/shroud/bin/shroud" CACHE PATH "")
 

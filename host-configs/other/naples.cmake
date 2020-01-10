@@ -2,10 +2,9 @@
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
-
-#######
+#------------------------------------------------------------------------------
 # uberenv host-config for asctoolkit
-#######
+#------------------------------------------------------------------------------
 # cmake from uberenv
 # cmake executable path: /Users/harrison37/Work/asctoolkit/uberenv_libs/spack/opt/macosx_10.9_x86_64/clang@3.4svn/cmake@3.2.2/bin/cmake
 
@@ -27,5 +26,4 @@ set(SPARSEHASH_DIR "/Users/harrison37/Work/asctoolkit/uberenv_libs/spack/opt/mac
 # boost headers from uberenv
 set(ENABLE_BOOST ON CACHE PATH "")
 set(BOOST_ROOT "/Users/harrison37/Work/asctoolkit/uberenv_libs/spack/opt/macosx_10.9_x86_64/clang@3.4svn/boost-headers@1.58.0" CACHE PATH "")
-
 
