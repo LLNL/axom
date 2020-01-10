@@ -161,7 +161,7 @@ class UberenvAxom(Package):
         cfg.write("##################################\n")
         cfg.write("# !!!! This is a generated file, edit at own risk !!!!\n")
         cfg.write("##################################\n\n")
-        cfg.write("# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and\n")
+        cfg.write("# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and\n")
         cfg.write("# other Axom Project Developers. See the top-level COPYRIGHT file for details.\n")
         cfg.write("#\n")
         cfg.write("# SPDX-License-Identifier: (BSD-3-Clause)\n")
