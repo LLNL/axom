@@ -6,8 +6,8 @@ include(vcpkg_common_functions)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO llnl/blt
-    REF v0.2.5
-    SHA512 82388249b3c7ef0f70862aa5a06ed0d72bf254fead608863b713d5e43a3eae2c03f40dc35ffd4fea9cbb95fbcdcf2aafee4c5d5b65b036520bf71c3c28e0b6b7
+    REF v0.3.0
+    SHA512 87056151c358037e94d3aaee6331ecf0fc1abd9385773c02f7e774472cebb30e524bf37411af0a518417b143cb03a96794fb48949594f6c45ed2bfd3658efda2
     HEAD_REF develop
 )
 

@@ -57,6 +57,15 @@ set(_host-config_hdr [=[
 #   ctest -C Debug [-j8]
 #------------------------------------------------------------------------------
 
+# On Windows, build shared libraries by default.
+set(BUILD_SHARED_LIBS ON CACHE BOOL "")
+# Static builds require some care and effort to get right.  With a static
+# build, choose one of
+#    - disable Google Test and MSVC static MD to MT (see BLT options
+#      section) or
+#    - disable one of HDF5, conduit (which uses HDF5), or sidre (which
+#      uses conduit).
+
 # Toolchain file
 set(CMAKE_TOOLCHAIN_FILE @VCPKG_ROOT_PATH@/scripts/buildsystems/vcpkg.cmake CACHE FILEPATH "")
 set(VCPKG_TARGET_TRIPLET @TARGET_TRIPLET@ CACHE STRING "")
@@ -71,20 +80,38 @@ set(AXOM_ENABLE_EXAMPLES ON CACHE BOOL "")
 # set(AXOM_ENABLE_SIDRE OFF CACHE BOOL "")
 
 # BLT options
-set(ENABLE_MPI ON CACHE BOOL "")
 set(ENABLE_FORTRAN OFF CACHE BOOL "")
 set(ENABLE_FOLDERS ON CACHE BOOL "")
+# Toggle the following to disable gtest if you are compiling with static
+# libraries and need HDF5
+set(ENABLE_GTEST ON CACHE BOOL "")
 set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
+# Toggle the following to disable changing MSVC's /MD to /MT if you are
+# compiling with static libraries and need HDF5
+set(BLT_ENABLE_MSVC_STATIC_MD_TO_MT ON CACHE BOOL "")
+
+# MPI options
+set(ENABLE_MPI OFF CACHE BOOL "")
+# If MSMPI and no other MPI is installed, turn ENABLE_MPI ON and CMake
+# should automatically detect it.  If CMake doesn't auto-detect MSMPI,
+# or if you need to use another MPI, you will need to specify the MPI
+# compiler wrappers and helper settings, such as:
+# set(MPI_C_COMPILER "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2019.5.281/windows/mpi/intel64/bin/mpicc.bat" CACHE PATH "")
+# set(MPI_CXX_COMPILER "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2019.5.281/windows/mpi/intel64/bin/mpicc.bat" CACHE PATH "")
+# set(MPI_Fortran_COMPILER "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2019.5.281/windows/mpi/intel64/bin/mpifc.bat" CACHE PATH "")
+# set(MPIEXEC "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2019.5.281/windows/mpi/intel64/bin/mpiexec.exe" CACHE PATH "")
+# set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
 
 # cmake options
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "")
 
 # TODO:
 #  * Add TPLs: conduit, hdf5, mfem, umpire, raja
-#  * Add MPI
 #  * Add tools: uncrustify, sphinx, doxygen
 
 # DONE:
+#  * Add conduit with HDF5
+#  * Add pointers to get MPI working
 #  * Add vcpkg toolchain file -- CMAKE_TOOLCHAIN_FILE
 #  * Set vcpkg triplet -- VCPKG_TARGET_TRIPLET 
 
