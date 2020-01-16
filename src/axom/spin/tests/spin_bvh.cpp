@@ -1,19 +1,7 @@
-/*
- *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- * Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.
- *
- * Produced at the Lawrence Livermore National Laboratory
- *
- * LLNL-CODE-741217
- *
- * All rights reserved.
- *
- * This file is part of Axom.
- *
- * For details about use and distribution, please read axom/LICENSE.
- *
- *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- */
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
 
 // axom/core includes
 #include "axom/config.hpp"
@@ -394,7 +382,6 @@ void check_find3d( )
   {
     EXPECT_EQ( counts[ i ], 0 );
   }
-  EXPECT_TRUE( candidates == nullptr );
 
   axom::deallocate( offsets );
   axom::deallocate( candidates );
@@ -491,7 +478,6 @@ void check_find2d( )
   {
     EXPECT_EQ( counts[ i ], 0 );
   }
-  EXPECT_TRUE( candidates == nullptr );
 
   axom::deallocate( offsets );
   axom::deallocate( candidates );
@@ -560,13 +546,13 @@ void check_single_box2d( )
   xc[ 0 ] += 10.0; yc[ 0 ] += 10.0;
   bvh.find( offsets, counts, candidates, NUM_BOXES, xc, yc );
   EXPECT_EQ( counts[ 0 ], 0 );
-  EXPECT_TRUE( candidates == nullptr );
 
   axom::deallocate( xc );
   axom::deallocate( yc );
   axom::deallocate( boxes );
   axom::deallocate( offsets );
   axom::deallocate( counts );
+  axom::deallocate( candidates );
   axom::setDefaultAllocator( current_allocator );
 }
 
@@ -629,7 +615,6 @@ void check_single_box3d( )
   xc[ 0 ] += 10.0; yc[ 0 ] += 10.0;
   bvh.find( offsets, counts, candidates, NUM_BOXES, xc, yc, zc );
   EXPECT_EQ( counts[ 0 ], 0 );
-  EXPECT_TRUE( candidates == nullptr );
 
   axom::deallocate( xc );
   axom::deallocate( yc );
@@ -637,6 +622,7 @@ void check_single_box3d( )
   axom::deallocate( boxes );
   axom::deallocate( offsets );
   axom::deallocate( counts );
+  axom::deallocate( candidates );
   axom::setDefaultAllocator( current_allocator );
 }
 

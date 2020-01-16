@@ -1,24 +1,23 @@
-##################################
+#------------------------------------------------------------------------------
 # !!!! This is a generated file, edit at own risk !!!!
-##################################
+#------------------------------------------------------------------------------
 
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
-##################################
+#------------------------------------------------------------------------------
 
-##################################
-
+#------------------------------------------------------------------------------
 # SYS_TYPE: bgqos_0
 # Compiler Spec: clang@4.0.0_gfortran
-##################################
+#------------------------------------------------------------------------------
 
 # CMake executable path: /collab/usr/global/tools/cmake/bgqos_0/cmake-3.8.2/bin/cmake
 
-##############
+#------------------------------------------------------------------------------
 # Compilers
-##############
+#------------------------------------------------------------------------------
 
 # Note: we build TPLs with the serial compiler then use MPI wrappers on bgq
 # Serial compilers used by spack:
@@ -34,9 +33,9 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 
 set(CMAKE_Fortran_COMPILER "/usr/local/tools/toolchain-4.8.4/gnu-linux-4.8.4/bin/powerpc64-bgq-linux-gfortran" CACHE PATH "")
 
-##############
+#------------------------------------------------------------------------------
 # TPLs
-##############
+#------------------------------------------------------------------------------
 
 # Root directory for generated TPLs
 set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_09_05_21_45_10/clang-4.0.0_gfortran" CACHE PATH "")
@@ -69,9 +68,9 @@ set(ENABLE_DOCS OFF CACHE BOOL "")
 
 # cppcheck not built by uberenv
 
-##############
+#------------------------------------------------------------------------------
 # MPI
-##############
+#------------------------------------------------------------------------------
 
 set(ENABLE_MPI ON CACHE BOOL "")
 
@@ -85,9 +84,9 @@ set(MPIEXEC "/usr/bin/srun" CACHE PATH "")
 
 set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
 
-##############
+#------------------------------------------------------------------------------
 # Other machine specifics
-##############
+#------------------------------------------------------------------------------
 
 set(ENABLE_GTEST_DEATH_TESTS OFF CACHE BOOL "")
 

@@ -25,9 +25,13 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Updated BLT to develop (30ccea5) as of Nov 21, 2019
 - Set CUDA_SEPARABLE_COMPILATION globally instead of just in a few components.
 - Reduced verbosity of quest's InOutOctree in cases where query point lies on surface.
+- Changed semantics of ``axom::reallocate(_, 0)`` to always return a valid pointer.
+  This matches the semantics of Umpire's ``reallocate(_, 0)``.
+  Note: Umpire's PR-292 fixed a bug in its handling of this case and Axom
+  includes a workaround to get the new behavior until we upgrade to Umpire v2.0+.
 
 ### Fixed
-- Fixed a bug in ``convert_sidre_protocol`` example. Data tructation functionality now
+- Fixed a bug in ``convert_sidre_protocol`` example. Data truncation functionality now
   works properly when multiple Views point to the same data.
 
 ### Known Bugs

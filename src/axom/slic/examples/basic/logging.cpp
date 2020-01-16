@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -40,7 +40,7 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
 
   // SPHINX_SLIC_SET_STREAM_BEGIN
   slic::addStreamToAllMsgLevels(
-      new slic::GenericOutputStream( &std::cout,format) );
+    new slic::GenericOutputStream( &std::cout,format) );
 
   // SPHINX_SLIC_SET_STREAM_END
 

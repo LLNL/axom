@@ -1,4 +1,5 @@
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+#------------------------------------------------------------------------------
+# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -13,9 +14,7 @@
 #  If you use features that leverage external third party libraries 
 #  (ex: hdf5 features), you may need to pass additional include 
 #   and linking flags. 
-# 
-#
-###############################################################################
+#------------------------------------------------------------------------------
 
 
 INC_FLAGS=-I$(AXOM_DIR)/include/

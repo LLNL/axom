@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -29,7 +29,7 @@ template < typename FloatType, int NDIMS >
 class AABB
 {
   AXOM_STATIC_ASSERT_MSG( (NDIMS >= 2 && NDIMS <=3),
-      "The AABB class is supported only in 2D and 3D." );
+                          "The AABB class is supported only in 2D and 3D." );
 };
 
 template < typename FloatType, int NDIMS >

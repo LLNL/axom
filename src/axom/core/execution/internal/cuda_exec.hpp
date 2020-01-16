@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -36,7 +36,7 @@ enum ExecutionMode
  * \tparam ExecutionMode indicates synchronous or asynchronous execution.
  */
 template < int BLOCK_SIZE, ExecutionMode EXEC_MODE=SYNCHRONOUS >
-struct CUDA_EXEC{ };
+struct CUDA_EXEC { };
 
 /*!
  * \brief execution_space traits specialization for CUDA_EXEC.
@@ -78,7 +78,9 @@ struct execution_space< CUDA_EXEC< BLOCK_SIZE, ASYNC > >
 
   static constexpr bool async() noexcept { return true; };
   static constexpr bool valid() noexcept { return true; };
-  static constexpr char* name() noexcept { return (char*)"[CUDA_EXEC] (async)"; };
+  static constexpr char* name() noexcept {
+    return (char*)"[CUDA_EXEC] (async)";
+  };
   static int allocatorID() noexcept
   { return axom::getResourceAllocatorID(umpire::resource::Unified); };
 

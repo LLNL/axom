@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -683,6 +683,21 @@ TEST(sidre_group,create_destroy_has_view)
 }
 
 //------------------------------------------------------------------------------
+// createViewAndAllocate() with zero-sized array
+//------------------------------------------------------------------------------
+TEST(sidre_group,create_zero_sized_view)
+{
+  DataStore* ds = new DataStore();
+  Group* root = ds->getRoot();
+
+  View* zeroSizedView = root->createViewAndAllocate("foo", INT_ID, 0);
+  EXPECT_TRUE( zeroSizedView->isDescribed() );
+  EXPECT_TRUE( zeroSizedView->isAllocated() );
+
+  delete ds;
+}
+
+//------------------------------------------------------------------------------
 // createGroup()
 // destroyGroup()
 // hasGroup()
@@ -1130,7 +1145,7 @@ TEST(sidre_group,save_load_via_hdf5_ids)
 
   // load via path based
   DataStore ds_load_generic;
-  ds_load_generic.getRoot()->load("out_save_load_via_hdf5_ids.sidre_hdf5", 
+  ds_load_generic.getRoot()->load("out_save_load_via_hdf5_ids.sidre_hdf5",
                                   "sidre_hdf5");
 
   // load via hdf5 id
@@ -1176,17 +1191,17 @@ TEST(sidre_group,save_root_restore_as_child)
   child1->createViewString("s0", "I am a string");
 
   const int num_elems = 4;
-  int * pa0 =
+  int* pa0 =
     child2->createViewAndAllocate("a0", INT_ID, num_elems)->getArray();
-  double * pa1 =
+  double* pa1 =
     child2->createViewAndAllocate("a1", FLOAT64_ID, num_elems)->getArray();
 
   const double factor = 2.3;
   const double offset = -0.23;
-  for (int i = 0; i < num_elems; ++i)
+  for (int i = 0 ; i < num_elems ; ++i)
   {
-     pa0[i] = i;
-     pa1[i] = offset + i*factor;
+    pa0[i] = i;
+    pa1[i] = offset + i*factor;
   }
 
   // Save the DataStore's root
@@ -1197,7 +1212,7 @@ TEST(sidre_group,save_root_restore_as_child)
   }
 
   // Restore the original DataStore into a child group
-  for (int i = 0; i < nprotocols; ++i)
+  for (int i = 0 ; i < nprotocols ; ++i)
   {
     // Only restore sidre_hdf5 protocol
     if(protocols[i] != "sidre_hdf5")
@@ -1205,8 +1220,8 @@ TEST(sidre_group,save_root_restore_as_child)
       continue;
     }
 
-    DataStore *dscopy = new DataStore();
-    Group * dsroot = dscopy->getRoot();
+    DataStore* dscopy = new DataStore();
+    Group* dsroot = dscopy->getRoot();
     const std::string file_path = file_path_base + protocols[i];
 
     const std::string group_base("group_");
@@ -1254,35 +1269,35 @@ TEST(sidre_group,save_child_restore_as_root)
 
   const int num_elems = 4;
   // included in files
-  int * pa0 =
+  int* pa0 =
     child2->createViewAndAllocate("a0", INT_ID, num_elems)->getArray();
-  double * pa1 =
+  double* pa1 =
     child2->createViewAndAllocate("a1", FLOAT64_ID, num_elems)->getArray();
   // not included
-  int *pa2 =
+  int* pa2 =
     child1a->createViewAndAllocate("a2", INT_ID, num_elems)->getArray();
-  int *pa3 =
+  int* pa3 =
     root->createViewAndAllocate("a3", INT_ID, num_elems)->getArray();
 
   const double factor = 2.3;
   const double offset = -0.23;
-  for (int i = 0; i < num_elems; ++i)
+  for (int i = 0 ; i < num_elems ; ++i)
   {
-     pa0[i] = i;
-     pa1[i] = offset + i*factor;
-     pa2[i] = i + 2;
-     pa3[i] = 4 - i;
+    pa0[i] = i;
+    pa1[i] = offset + i*factor;
+    pa2[i] = i + 2;
+    pa3[i] = 4 - i;
   }
 
   // Save the Group in question (child1) into an archive
-  for (int i = 0; i < nprotocols; ++i)
+  for (int i = 0 ; i < nprotocols ; ++i)
   {
     const std::string file_path = file_path_base + protocols[i];
     child1->save(file_path, protocols[i]);
   }
 
   // Restore the saved child1 into a root group
-  for (int i = 0; i < nprotocols; ++i)
+  for (int i = 0 ; i < nprotocols ; ++i)
   {
     // Only restore sidre_hdf5 protocol
     if(protocols[i] != "sidre_hdf5")
@@ -1290,7 +1305,7 @@ TEST(sidre_group,save_child_restore_as_root)
       continue;
     }
 
-    DataStore * dscopy = new DataStore();
+    DataStore* dscopy = new DataStore();
     const std::string file_path = file_path_base + protocols[i];
     if (axom::utilities::filesystem::pathExists(file_path))
     {
@@ -1382,7 +1397,7 @@ TEST(sidre_group,save_restore_api)
   std::string newgroupname = "in case of blank";
   std::string groupname = newgroupname;
   bool loadSuccess = false;
-  Group * load3 =
+  Group* load3 =
     load2->createGroupAndLoad(groupname, "sidre_save_subtree_sidre_json",
                               "sidre_json", loadSuccess);
 
@@ -1398,7 +1413,7 @@ TEST(sidre_group,save_restore_api)
   std::string anothergroupname = "another group";
   groupname = anothergroupname;
   loadSuccess = false;
-  Group * load4 =
+  Group* load4 =
     load2->createGroupAndLoad(groupname, "sidre_save_subtree_sidre_json",
                               "sidre_json", loadSuccess);
 
@@ -1412,7 +1427,7 @@ TEST(sidre_group,save_restore_api)
 
   groupname = anothergroupname;
   loadSuccess = false;
-  Group * load5 =
+  Group* load5 =
     load2->createGroupAndLoad(groupname, "sidre_save_subtree_sidre_json",
                               "sidre_json", loadSuccess);
   EXPECT_EQ(load5, (Group*)nullptr);
@@ -2337,8 +2352,8 @@ TEST(sidre_group,import_conduit_external)
   //in the Sidre external view.
   if (ndata > 3)
   {
-     iarray[3] += 10;
-     EXPECT_EQ(iarray[3],sidre_data_ptr[3]);
+    iarray[3] += 10;
+    EXPECT_EQ(iarray[3],sidre_data_ptr[3]);
   }
 
   //The pointers should be the same addresses as the import treated the
@@ -2454,12 +2469,13 @@ TEST_P(UmpireTest, allocate_default)
   }
 }
 
-const int allocators[] = { axom::getResourceAllocatorID(umpire::resource::Host)
+const int allocators[] = {
+  axom::getResourceAllocatorID(umpire::resource::Host)
 #ifdef AXOM_USE_CUDA
-                     , axom::getResourceAllocatorID(umpire::resource::Pinned)
-                     , axom::getResourceAllocatorID(umpire::resource::Device)
-                     , axom::getResourceAllocatorID(umpire::resource::Constant)
-                     , axom::getResourceAllocatorID(umpire::resource::Unified)
+  , axom::getResourceAllocatorID(umpire::resource::Pinned)
+  , axom::getResourceAllocatorID(umpire::resource::Device)
+  , axom::getResourceAllocatorID(umpire::resource::Constant)
+  , axom::getResourceAllocatorID(umpire::resource::Unified)
 #endif
 };
 

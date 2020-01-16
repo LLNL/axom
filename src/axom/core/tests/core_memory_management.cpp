@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -437,6 +437,46 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::ValuesIn(copy_locations),
     ::testing::ValuesIn(copy_locations)
     ));
+
+
+//------------------------------------------------------------------------------
+TEST( core_memory_management, basic_alloc_realloc_dealloc )
+{
+  // A basic test for axom's allocate, reallocate and deallocate functionality
+  // for the default memory allocator
+
+  constexpr std::size_t N = 5;
+
+  int* buf = nullptr;
+
+  // allocate an array of size N
+  buf = axom::allocate<int>(N);
+  EXPECT_NE(buf, nullptr);
+
+  // free the array
+  axom::deallocate<int>(buf);
+  EXPECT_EQ(buf, nullptr);
+
+  // reallocate array to size 0
+  buf = axom::reallocate<int>(buf, 0);
+  EXPECT_NE(buf, nullptr);
+
+  // reallocate array to size N
+  buf = axom::reallocate<int>(buf, N);
+  EXPECT_NE(buf, nullptr);
+
+  // reallocate array to size 0
+  buf = axom::reallocate<int>(buf, 0);
+  EXPECT_NE(buf, nullptr);
+
+  // reallocate array to size 0, again
+  buf = axom::reallocate<int>(buf, 0);
+  EXPECT_NE(buf, nullptr);
+
+  // Finally, free the array
+  axom::deallocate<int>(buf);
+  EXPECT_EQ(buf, nullptr);
+}
 
 //------------------------------------------------------------------------------
 int main( int argc, char** argv )

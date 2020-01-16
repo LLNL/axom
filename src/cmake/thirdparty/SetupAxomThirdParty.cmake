@@ -1,15 +1,15 @@
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 
-####################################
+#------------------------------------------------------------------------------
 # 3rd Party Dependencies
-####################################
+#------------------------------------------------------------------------------
 
-################################
+#------------------------------------------------------------------------------
 # UMPIRE
-################################
+#------------------------------------------------------------------------------
 if (UMPIRE_DIR)
     include(cmake/thirdparty/FindUmpire.cmake)
     blt_register_library( NAME      umpire
@@ -21,9 +21,9 @@ else()
 endif()
 
 
-################################
+#------------------------------------------------------------------------------
 # RAJA
-################################
+#------------------------------------------------------------------------------
 if (RAJA_DIR)
     include(cmake/thirdparty/FindRAJA.cmake)
     blt_register_library( NAME      raja
@@ -35,9 +35,9 @@ else()
 endif()
 
 
-################################
+#------------------------------------------------------------------------------
 # Conduit
-################################
+#------------------------------------------------------------------------------
 if (CONDUIT_DIR)
     include(cmake/thirdparty/FindConduit.cmake)
 
@@ -54,9 +54,9 @@ else()
 endif()
 
 
-################################
+#------------------------------------------------------------------------------
 # HDF5
-################################
+#------------------------------------------------------------------------------
 if (HDF5_DIR)
     include(cmake/thirdparty/SetupHDF5.cmake)
     if(WIN32 AND TARGET hdf5::hdf5-shared)
@@ -79,10 +79,9 @@ else()
 endif()
 
 
-
-################################
+#------------------------------------------------------------------------------
 # MFEM
-################################
+#------------------------------------------------------------------------------
 if (MFEM_DIR)
     include(cmake/thirdparty/FindMFEM.cmake)
     blt_register_library( NAME      mfem
@@ -94,9 +93,9 @@ else()
 endif()
 
 
-################################
+#------------------------------------------------------------------------------
 # Shroud - Generates C/Fortran/Python bindings
-################################
+#------------------------------------------------------------------------------
 if(EXISTS ${SHROUD_EXECUTABLE})
     if(NOT EXISTS ${PYTHON_EXECUTABLE})
         message(FATAL_ERROR "Shroud requires PYTHON_EXECUTABLE and SHROUD_EXECUTABLE to be defined and exist.")
@@ -114,12 +113,12 @@ else()
 endif()
 
 
-################################
+#------------------------------------------------------------------------------
 # SCR
-################################
+#------------------------------------------------------------------------------
 if (SCR_DIR)
     include(cmake/thirdparty/FindSCR.cmake)
-    blt_register_library( NAME      scr
+f    blt_register_library( NAME      scr
                           INCLUDES  ${SCR_INCLUDE_DIRS}
                           LIBRARIES ${SCR_LIBRARY}
                           TREAT_INCLUDES_AS_SYSTEM ON)
