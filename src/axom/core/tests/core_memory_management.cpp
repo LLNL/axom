@@ -430,7 +430,7 @@ const std::string copy_locations[] = {
 };
 
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
   core_memory_management,
   CopyTest,
   ::testing::Combine(

@@ -1832,7 +1832,7 @@ const int allocators[] = {
 #endif
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
   sidre_view,
   UmpireTest,
   ::testing::ValuesIn(allocators)
@@ -2070,7 +2070,7 @@ const std::string copy_locations[] = {
 
 const int offsets[] = {0, 29};
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
   sidre_view,
   UpdateTest,
   ::testing::Combine(

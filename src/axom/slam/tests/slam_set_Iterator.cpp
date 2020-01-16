@@ -127,7 +127,7 @@ using MyTypes = ::testing::Types<
         VectorSet,
         ArraySet
         >;
-TYPED_TEST_CASE(OrderedSetIteratorTester, MyTypes);
+TYPED_TEST_SUITE(OrderedSetIteratorTester, MyTypes);
 
 
 TYPED_TEST(OrderedSetIteratorTester,basic_operations)

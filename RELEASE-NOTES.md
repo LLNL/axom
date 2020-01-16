@@ -22,7 +22,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Deprecated
 
 ### Changed
-- Updated BLT to develop (30ccea5) as of Nov 21, 2019
+- Updated BLT to develop (f0ab9a4) as of Jan 15, 2020
 - Set CUDA_SEPARABLE_COMPILATION globally instead of just in a few components.
 - Reduced verbosity of quest's InOutOctree in cases where query point lies on surface.
 - Changed semantics of ``axom::reallocate(_, 0)`` to always return a valid pointer.

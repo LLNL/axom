@@ -549,7 +549,7 @@ const int allocators[] = {
 #endif
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
   sidre_buffer,
   UmpireTest,
   ::testing::ValuesIn(allocators)
