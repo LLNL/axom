@@ -118,7 +118,7 @@ endif()
 #------------------------------------------------------------------------------
 if (SCR_DIR)
     include(cmake/thirdparty/FindSCR.cmake)
-f    blt_register_library( NAME      scr
+    blt_register_library( NAME      scr
                           INCLUDES  ${SCR_INCLUDE_DIRS}
                           LIBRARIES ${SCR_LIBRARY}
                           TREAT_INCLUDES_AS_SYSTEM ON)
