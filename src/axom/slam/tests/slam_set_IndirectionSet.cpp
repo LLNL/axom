@@ -130,7 +130,7 @@ using MyTypes = ::testing::Types<
         slam::VectorIndirectionSet< axom::int32, axom::int64 >
         >;
 
-TYPED_TEST_CASE(IndirectionSetTester, MyTypes);
+TYPED_TEST_SUITE(IndirectionSetTester, MyTypes);
 
 
 TYPED_TEST(IndirectionSetTester, constuct)

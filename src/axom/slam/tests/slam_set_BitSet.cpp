@@ -365,7 +365,7 @@ TEST_P(SlamBitSet, differenceOperator)
   EXPECT_TRUE(bitset1.isValid());
 }
 
-INSTANTIATE_TEST_CASE_P(SlamBitSetParam,
+INSTANTIATE_TEST_SUITE_P(SlamBitSetParam,
                         SlamBitSet,
                         ::testing::ValuesIn( testSizes() ));
 
