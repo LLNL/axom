@@ -44,7 +44,7 @@ using MyTypes = ::testing::Types <
         axom::spin::ImplicitGrid<2>,
         axom::spin::ImplicitGrid<3> >;
 
-TYPED_TEST_CASE( ImplicitGridTest, MyTypes );
+TYPED_TEST_SUITE( ImplicitGridTest, MyTypes );
 
 
 TYPED_TEST( ImplicitGridTest, initialization)
