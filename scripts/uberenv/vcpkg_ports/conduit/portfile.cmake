@@ -6,12 +6,13 @@ include(vcpkg_common_functions)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO llnl/conduit
-    REF v0.5.0
-    SHA512 aae329cf7d0329b466e996f81695f4bee66e7732d0d7c49ffd00276ddee82326a261af3135ad1fc7b9903150cadbbaed17c7a1f25b4cc5352fdfed60ed7a7da1
+    REF master
+    SHA512 4fbe276ec67205edf26b95c6e9d5dce4287acede075569a7d8838f00b55d6abc9cc8dceb4be17172963ea511d3aef337a1a934db8a5f2159b90ddfacfaa1dbf0
     HEAD_REF master
     PATCHES
         "fix-setup-hdf5-vcpkg.patch"
 )
+# ref v0.5.0 sha512 aae329cf7d0329b466e996f81695f4bee66e7732d0d7c49ffd00276ddee82326a261af3135ad1fc7b9903150cadbbaed17c7a1f25b4cc5352fdfed60ed7a7da1
 
 set(_is_shared TRUE)
 if(VCPKG_LIBRARY_LINKAGE STREQUAL "static")

@@ -102,6 +102,11 @@ def parse_args():
                       dest="spec",
                       default=None,
                       help="spack compiler spec")
+    # for vcpkg, what architecture to target
+    parser.add_option("--triplet",
+                      dest="triplet",
+                      default=None,
+                      help="vcpkg architecture triplet")
     # optional location of spack mirror
     parser.add_option("--mirror",
                       dest="mirror",
@@ -243,9 +248,14 @@ class VcpkgEnv(UberEnv):
     def __init__(self, opts, extra_opts):
         UberEnv.__init__(self,opts,extra_opts)
 
+        # setup architecture triplet
+        self.triplet = opts["triplet"]
+        if self.triplet is None:
+           self.triplet = os.getenv("VCPKG_DEFAULT_TRIPLET", "x86-windows")
+
     def setup_paths_and_dirs(self):
         # get the current working path, and the glob used to identify the
-        # package files we want to hot-copy to spack
+        # package files we want to hot-copy to vcpkg
 
         UberEnv.setup_paths_and_dirs(self)
 
@@ -326,10 +336,18 @@ class VcpkgEnv(UberEnv):
         
         os.chdir(self.dest_vcpkg)
         install_cmd = "vcpkg.exe "
-        install_cmd += "install {}".format(self.pkg_name)
+        install_cmd += "install {0}:{1}".format(self.pkg_name, self.triplet)
 
         res = sexe(install_cmd, echo=True)
 
+        # Running the install_cmd eventually generates the host config file.
+        # Copy this to the target directory.
+        src_hc = pjoin(self.dest_vcpkg, "installed", self.triplet, "include", self.pkg_name, "hc.cmake")
+        hcfg_fname = pjoin(self.dest_dir, "{0}.{1}.cmake".format(platform.uname()[1], self.triplet))
+        print("[info: copying host config file to {}]".format(hcfg_fname))
+        shutil.copy(os.path.abspath(src_hc), hcfg_fname)
+        print("")
+        print("[install complete!]")
         return res
 
 

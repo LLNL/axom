@@ -37,6 +37,7 @@ set(_host-config_hdr [=[
 #
 # CMake system name: @CMAKE_SYSTEM_NAME@
 # CMake system version: @CMAKE_SYSTEM_VERSION@
+# CMake executable path: @CMAKE_COMMAND@
 #------------------------------------------------------------------------------
 # Empty/useless variables:
 #   VS path: @VCPKG_VISUAL_STUDIO_PATH@

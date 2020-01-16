@@ -37,7 +37,8 @@ def extract_cmake_location(file_path):
           "Attempting to find cmake on your path...")
     cmake_path = distutils.spawn.find_executable("cmake")
     print("Found: {0}".format(cmake_path))
-    return cmake_path
+    ret_cmake_path = "\"{0}\"".format(cmake_path)
+    return ret_cmake_path
 
 
 def parse_arguments():
