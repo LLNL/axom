@@ -32,8 +32,8 @@ set(_host-config_hdr [=[
 # Platform toolset: @VCPKG_PLATFORM_TOOLSET@
 #
 # vcpkg root path: @VCPKG_ROOT_PATH@
-# vcpkg target triple: @TARGET_TRIPLET@
-# vcpkg target triple file: @TARGET_TRIPLET_FILE@
+# vcpkg target triplet: @TARGET_TRIPLET@
+# vcpkg target triplet file: @TARGET_TRIPLET_FILE@
 #
 # CMake system name: @CMAKE_SYSTEM_NAME@
 # CMake system version: @CMAKE_SYSTEM_VERSION@
@@ -107,12 +107,12 @@ set(ENABLE_MPI OFF CACHE BOOL "")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "")
 
 # TODO:
-#  * Add TPLs: conduit, hdf5, mfem, umpire, raja
+#  * Add TPLs: mfem, umpire, raja
 #  * Add tools: uncrustify, sphinx, doxygen
 
 # DONE:
 #  * Add conduit with HDF5
-#  * Add pointers to get MPI working
+#  * Add hints to get MPI working
 #  * Add vcpkg toolchain file -- CMAKE_TOOLCHAIN_FILE
 #  * Set vcpkg triplet -- VCPKG_TARGET_TRIPLET 
 
