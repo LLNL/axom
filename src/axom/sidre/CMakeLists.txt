@@ -13,7 +13,7 @@
 #------------------------------------------------------------------------------
 axom_component_requires(NAME       Sidre
                         COMPONENTS SLIC
-                        TPLS       Conduit hdf5)
+                        TPLS       Conduit )
 
 #------------------------------------------------------------------------------
 # Add the sidre sources

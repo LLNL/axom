@@ -20,7 +20,7 @@ set(_host-config_hdr [=[
 #------------------------------------------------------------------------------
 # !!!! This is a generated file, edit at own risk !!!!
 #------------------------------------------------------------------------------
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -73,6 +73,7 @@ set(VCPKG_TARGET_TRIPLET @TARGET_TRIPLET@ CACHE STRING "")
 
 # Set TPLs
 set(CONDUIT_DIR @CURRENT_INSTALLED_DIR@/share/conduit CACHE PATH "")
+set(HDF5_DIR @CURRENT_INSTALLED_DIR@ CACHE PATH "")
 
 # Axom options
 set(AXOM_ENABLE_TESTS ON CACHE BOOL "")
