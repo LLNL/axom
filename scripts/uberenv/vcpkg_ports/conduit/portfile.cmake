@@ -53,25 +53,30 @@ foreach(_dir "bin" "debug/bin")
     endif()
 endforeach()
 
-# Move dll files to bin directory
-foreach(_dll conduit conduit_blueprint conduit_relay)
-    file(RENAME ${CURRENT_PACKAGES_DIR}/lib/${_dll}.dll
-                ${CURRENT_PACKAGES_DIR}/bin/${_dll}.dll)
-    file(RENAME ${CURRENT_PACKAGES_DIR}/debug/lib/${_dll}.dll
-                ${CURRENT_PACKAGES_DIR}/debug/bin/${_dll}.dll)
-endforeach()
-
-# Update dll paths in config files from 'lib' to 'bin' directory
-foreach(_build debug release)
-    file(READ ${CURRENT_PACKAGES_DIR}/share/conduit/conduit-${_build}.cmake _conf_file)
+if(VCPKG_LIBRARY_LINKAGE STREQUAL static)
+    file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/bin ${CURRENT_PACKAGES_DIR}/debug/bin)
+else()
+    # Move dll files to bin directory
     foreach(_dll conduit conduit_blueprint conduit_relay)
-        string(REPLACE "\${_IMPORT_PREFIX}/debug/lib/${_dll}.dll"
-                       "\${_IMPORT_PREFIX}/debug/bin/${_dll}.dll" _conf_file "${_conf_file}")
-        string(REPLACE "\${_IMPORT_PREFIX}/lib/${_dll}.dll"
-                       "\${_IMPORT_PREFIX}/bin/${_dll}.dll" _conf_file "${_conf_file}")
+        file(RENAME ${CURRENT_PACKAGES_DIR}/lib/${_dll}.dll
+                    ${CURRENT_PACKAGES_DIR}/bin/${_dll}.dll)
+        file(RENAME ${CURRENT_PACKAGES_DIR}/debug/lib/${_dll}.dll
+                    ${CURRENT_PACKAGES_DIR}/debug/bin/${_dll}.dll)
     endforeach()
-    file(WRITE ${CURRENT_PACKAGES_DIR}/share/conduit/conduit-${_build}.cmake "${_conf_file}")
-endforeach()
+
+    # Update dll paths in config files from 'lib' to 'bin' directory
+    foreach(_build debug release)
+        file(READ ${CURRENT_PACKAGES_DIR}/share/conduit/conduit-${_build}.cmake _conf_file)
+        foreach(_dll conduit conduit_blueprint conduit_relay)
+            string(REPLACE "\${_IMPORT_PREFIX}/debug/lib/${_dll}.dll"
+                           "\${_IMPORT_PREFIX}/debug/bin/${_dll}.dll" _conf_file "${_conf_file}")
+            string(REPLACE "\${_IMPORT_PREFIX}/lib/${_dll}.dll"
+                           "\${_IMPORT_PREFIX}/bin/${_dll}.dll" _conf_file "${_conf_file}")
+        endforeach()
+        file(WRITE ${CURRENT_PACKAGES_DIR}/share/conduit/conduit-${_build}.cmake "${_conf_file}")
+    endforeach()
+endif()
+
 
 # Move/shuffle cmake files to 'share' directory
 #file(MAKE_DIRECTORY ${CURRENT_PACKAGES_DIR}/share/conduit )
