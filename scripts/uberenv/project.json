@@ -6,5 +6,6 @@
                     "py-shroud" : ["+devtools"],
                     "py-pyyaml" : ["+devtools"],
                     "py-numpy"  : ["+python"],
-                    "conduit"   : ["+python"]}
+                    "conduit"   : ["+python"]},
+"vcpkg_commit": "24a97b16e70400b874299f9d58f571f215090444"
 }
