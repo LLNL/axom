@@ -22,6 +22,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Deprecated
 
 ### Changed
+- Updated Umpire TPL to v2.0.0, which, natively handles zero byte re-allocations consistently. Workaround
+  for older releases of Umpire is in place for backwards compatibility. 
 - Updated BLT to develop (f0ab9a4) as of Jan 15, 2020
 - Set CUDA_SEPARABLE_COMPILATION globally instead of just in a few components.
 - Reduced verbosity of quest's InOutOctree in cases where query point lies on surface.
