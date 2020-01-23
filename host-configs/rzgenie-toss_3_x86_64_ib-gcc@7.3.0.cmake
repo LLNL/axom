@@ -6,13 +6,11 @@
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
-
-#------------------------------------------------------------------------------
 # SYS_TYPE: toss_3_x86_64_ib
 # Compiler Spec: gcc@7.3.0
 #------------------------------------------------------------------------------
-
-# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2019_12_19_19_05_23/gcc-7.3.0/cmake-3.9.6/bin/cmake
+# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2020_01_30_13_06_51/gcc-7.3.0/cmake-3.9.6/bin/cmake
+#------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------
 # Compilers
@@ -34,10 +32,10 @@ set(CMAKE_Fortran_COMPILER "/usr/tce/packages/gcc/gcc-7.3.0/bin/gfortran" CACHE 
 #------------------------------------------------------------------------------
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_12_19_19_05_23/gcc-7.3.0" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2020_01_30_13_06_51/gcc-7.3.0" CACHE PATH "")
 
 # conduit from uberenv
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-master" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.5.1" CACHE PATH "")
 
 # mfem from uberenv
 set(MFEM_DIR "${TPL_ROOT}/mfem-4.0" CACHE PATH "")
@@ -48,10 +46,10 @@ set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.19" CACHE PATH "")
 # scr not built by uberenv
 
 # raja from uberenv
-set(RAJA_DIR "${TPL_ROOT}/raja-0.9.0/share/raja/cmake" CACHE PATH "")
+set(RAJA_DIR "${TPL_ROOT}/raja-0.11.0/share/raja/cmake" CACHE PATH "")
 
 # umpire from uberenv
-set(UMPIRE_DIR "${TPL_ROOT}/umpire-1.0.0/share/umpire/cmake" CACHE PATH "")
+set(UMPIRE_DIR "${TPL_ROOT}/umpire-2.1.0/share/umpire/cmake" CACHE PATH "")
 
 # python not built by uberenv
 
