@@ -182,6 +182,7 @@ public:
    * \return d the dimension (size) of the vector
    * \post d >= 1.
    */
+  AXOM_HOST_DEVICE
   int dimension() const { return NDIMS; };
 
   /*!

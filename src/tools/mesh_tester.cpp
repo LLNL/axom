@@ -102,7 +102,7 @@ void Input::parse(int argc, char** argv, CLI::App& app)
   app.add_option("-r,--resolution", resolution,
                  "Resolution of uniform grid. \n"
                  "Set to 1 to run the naive algorithm without a spatial index. \n"
-                 "Set to 2 to run the naive algorithm with the GPU. \n"
+                 "Set to 2 to run the naive algorithm with raja. \n"
                  "Set to less than 1 to use the spatial index with a resolution \n"
                  "of the cube root of the number of triangles.")
   ->capture_default_str();
@@ -269,6 +269,7 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
   return retval;
 }
 
+#if defined(AXOM_USE_RAJA)
 template < typename ExecSpace >
 std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
   mint::Mesh* surface_mesh,
@@ -278,16 +279,22 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
     axom::execution_space< ExecSpace >::name());
 
   // Get allocator
-  int allocatorID = axom::execution_space< ExecSpace >::allocatorID();
-  umpire::Allocator allocator = axom::getAllocator(allocatorID);
+  #ifdef AXOM_USE_UMPIRE
+    int allocatorID = axom::execution_space< ExecSpace >::allocatorID();
+    umpire::Allocator allocator = axom::getAllocator(allocatorID);
+  #endif
 
   std::vector< std::pair<int, int> > retval;
 
   const int ncells = surface_mesh->getNumberOfCells();
   SLIC_INFO("Checking mesh with a total of "<< ncells<< " cells.");
 
-  Triangle3 * tris = axom::allocate <Triangle3> (ncells, allocator);
-  
+  #ifdef AXOM_USE_UMPIRE
+    Triangle3 * tris = axom::allocate <Triangle3> (ncells, allocator);
+  #else
+    Triangle3 * tris = axom::allocate <Triangle3> (ncells);
+  #endif
+
   // Get each triangle in the mesh
   for (int i = 0; i < ncells ; i++)
   {
@@ -303,7 +310,7 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
   RAJA::RangeSegment col_range(0, ncells);
 
   // Kernel policy
-  #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA)
+  #if defined(AXOM_USE_CUDA)
     using KERNEL_EXEC_POL = 
       RAJA::KernelPolicy<
         RAJA::statement::CudaKernelFixed<CUDA_BLOCK_SIZE,
@@ -314,7 +321,7 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
           >
         >
       >;
-  #elif defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP)
+  #elif defined(AXOM_USE_OPENMP)
     using KERNEL_EXEC_POL = RAJA::KernelPolicy<
       RAJA::statement::For< 1, RAJA::omp_parallel_for_exec,
         RAJA::statement::For< 0, RAJA::loop_exec,           
@@ -341,7 +348,7 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
 
   // RAJA loop to find size to initialize (number of intersections)
   RAJA::kernel<KERNEL_EXEC_POL>( RAJA::make_tuple(col_range, row_range),
-    [=] AXOM_HOST_DEVICE (int col, int row) {
+    AXOM_LAMBDA(int col, int row) {
     if (row > col)
     {
       if (checkTT (tris[row], tris[col]))
@@ -352,15 +359,21 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
   }); 
 
   // Allocation to hold intersection pairs and counter to know where to store
-  int * intersections =
-    axom::allocate <int> (numIntersect.get() * 2, allocator);
-  int * counter = axom::allocate <int> (1, allocator);
+  #ifdef AXOM_USE_UMPIRE
+    int * intersections =
+      axom::allocate <int> (numIntersect.get() * 2, allocator);
+    int * counter = axom::allocate <int> (1, allocator);
+  #else
+    int * intersections =
+      axom::allocate <int> (numIntersect.get() * 2);
+    int * counter = axom::allocate <int> (1);
+  #endif
   
   counter[0] = 0;
 
   // RAJA loop to populate with intersections
   RAJA::kernel<KERNEL_EXEC_POL>( RAJA::make_tuple(col_range, row_range),
-    [=] AXOM_HOST_DEVICE (int col, int row) {
+    AXOM_LAMBDA(int col, int row) {
     if (row > col)
     {
       if (checkTT (tris[row], tris[col]))
@@ -386,6 +399,7 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
 
   return retval;
 }
+#endif // defined(AXOM_USE_RAJA)
 
 void announceMeshProblems(int triangleCount,
                           int intersectPairCount,
@@ -487,7 +501,7 @@ void initializeLogger()
  * Currently the mesh tester checks for intersecting triangles.  This is
  * implemented in three ways.  First, a naive algorithm tests each triangle
  * against each other triangle.  This is easy to understand and verify,
- * but slow. Second, the same naive algorithm is run on the GPU. A third 
+ * but slow. Second, the same naive algorithm is run using raja. A third 
  * algorithm uses a UniformGrid to index the bounding box of the mesh,
  * and checks each triangle for intersection with the triangles in all the
  * bins the triangle's bounding box falls into.
@@ -563,12 +577,15 @@ int main( int argc, char** argv )
       collisions = naiveIntersectionAlgorithm(surface_mesh, degenerate);
     }
 
+  #ifdef AXOM_USE_RAJA
     else if (params.resolution == 2){
       
-      //GPU naive method
+      // raja naive method
       collisions = naiveIntersectionAlgorithm< exec >(surface_mesh, 
                                                       degenerate);
     }
+  #endif
+
     else
     {
       // _check_repair_intersections_start

@@ -57,7 +57,7 @@ blt_list_append( TO mesh_tester_depends ELEMENTS umpire IF ${UMPIRE_FOUND} )
 blt_list_append( TO mesh_tester_depends ELEMENTS openmp  IF ${ENABLE_OPENMP} )
 blt_list_append( TO mesh_tester_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
 
-if(AXOM_ENABLE_QUEST AND RAJA_FOUND)
+if(AXOM_ENABLE_QUEST)
     blt_add_executable(
         NAME        mesh_tester
         SOURCES     ${mesh_tester_sources}

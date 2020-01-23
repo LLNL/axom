@@ -224,7 +224,7 @@ TEST( slic_macros, test_assert_macros )
 
   constexpr int val = 42;
   SLIC_ASSERT(  val < 0 );
-#ifdef AXOM_DEBUG
+#if defined(AXOM_DEBUG) && !defined(AXOM_DEVICE_CODE)
   EXPECT_FALSE( slic::internal::is_stream_empty() );
   check_level( slic::internal::test_stream.str(), "ERROR" );
   check_msg( slic::internal::test_stream.str(), "Failed Assert: val < 0" );
@@ -241,7 +241,7 @@ TEST( slic_macros, test_assert_macros )
   EXPECT_TRUE( slic::internal::is_stream_empty() );
 
   SLIC_ASSERT_MSG( val < 0, "val should be negative!" );
-#ifdef AXOM_DEBUG
+#if defined(AXOM_DEBUG) && !defined(AXOM_DEVICE_CODE)
   EXPECT_FALSE( slic::internal::is_stream_empty() );
   check_level( slic::internal::test_stream.str(), "ERROR" );
   check_msg( slic::internal::test_stream.str(),
@@ -264,7 +264,7 @@ TEST( slic_macros, test_check_macros )
 
   constexpr int val = 42;
   SLIC_CHECK(  val < 0 );
-#ifdef AXOM_DEBUG
+#if defined(AXOM_DEBUG) && !defined(AXOM_DEVICE_CODE)
   EXPECT_FALSE( slic::internal::is_stream_empty() );
   check_level( slic::internal::test_stream.str(), "WARNING" );
   check_msg( slic::internal::test_stream.str(), "Failed Check: val < 0" );
@@ -281,7 +281,7 @@ TEST( slic_macros, test_check_macros )
   EXPECT_TRUE( slic::internal::is_stream_empty() );
 
   SLIC_CHECK_MSG( val < 0, "val should be negative!" );
-#ifdef AXOM_DEBUG
+#if defined(AXOM_DEBUG) && !defined(AXOM_DEVICE_CODE)
   EXPECT_FALSE( slic::internal::is_stream_empty() );
   check_level( slic::internal::test_stream.str(), "WARNING" );
   check_msg( slic::internal::test_stream.str(),

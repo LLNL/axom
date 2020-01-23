@@ -106,7 +106,8 @@
 
 /// @}
 
-#ifdef AXOM_DEBUG
+// Use complete debug macros when not on device
+#if defined(AXOM_DEBUG) && !defined(AXOM_DEVICE_CODE)
 
 //-----------------------------------------------------------------------------
 /// \name ASSERT MACROS
@@ -222,6 +223,14 @@
   } while ( axom::slic::detail::false_value )
 
 /// @}
+
+// Use assert when on device
+#elif defined(AXOM_DEBUG) && defined(AXOM_DEVICE_CODE)
+
+#define SLIC_ASSERT( EXP )  assert (EXP)                                    
+#define SLIC_ASSERT_MSG( EXP, msg ) assert (EXP) 
+#define SLIC_CHECK( EXP ) assert (EXP)
+#define SLIC_CHECK_MSG( EXP, msg ) assert (EXP)
 
 #else // turn off debug macros and asserts
 
@@ -350,8 +359,8 @@ namespace detail
  */
 struct FalseType
 {
-  FalseType() {}
-  inline operator bool() const { return false; }
+  AXOM_HOST_DEVICE FalseType() {}
+  AXOM_HOST_DEVICE inline operator bool() const { return false; }
 };
 
 static const FalseType false_value;
