@@ -6,13 +6,11 @@
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
-
-#------------------------------------------------------------------------------
 # SYS_TYPE: blueos_3_ppc64le_ib_p9
 # Compiler Spec: clang@8.0.0_nvcc_xlf
 #------------------------------------------------------------------------------
-
-# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2019_11_21_10_32_05/clang-8.0.0_nvcc_xlf/cmake-3.9.6/bin/cmake
+# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2020_01_30_13_08_34/clang-8.0.0_nvcc_xlf/cmake-3.9.6/bin/cmake
+#------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------
 # Compilers
@@ -34,10 +32,10 @@ set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-2019.06.12/bin/xlf2003" CACH
 #------------------------------------------------------------------------------
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_11_21_10_32_05/clang-8.0.0_nvcc_xlf" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2020_01_30_13_08_34/clang-8.0.0_nvcc_xlf" CACHE PATH "")
 
 # conduit from uberenv
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-master" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.5.1" CACHE PATH "")
 
 # mfem from uberenv
 set(MFEM_DIR "${TPL_ROOT}/mfem-4.0" CACHE PATH "")
@@ -48,10 +46,10 @@ set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.19" CACHE PATH "")
 # scr not built by uberenv
 
 # raja from uberenv
-set(RAJA_DIR "${TPL_ROOT}/raja-0.9.0/share/raja/cmake" CACHE PATH "")
+set(RAJA_DIR "${TPL_ROOT}/raja-0.11.0/share/raja/cmake" CACHE PATH "")
 
 # umpire from uberenv
-set(UMPIRE_DIR "${TPL_ROOT}/umpire-1.0.0/share/umpire/cmake" CACHE PATH "")
+set(UMPIRE_DIR "${TPL_ROOT}/umpire-2.1.0/share/umpire/cmake" CACHE PATH "")
 
 # python not built by uberenv
 
@@ -105,7 +103,7 @@ set(CUDA_TOOLKIT_ROOT_DIR "/usr/tce/packages/cuda/cuda-10.1.168" CACHE PATH "")
 
 set(CMAKE_CUDA_COMPILER "${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc" CACHE PATH "")
 
-set(CUDA_SEPARABLE_COMPILATION ON CACHE BOOL "" )
+set(CUDA_SEPARABLE_COMPILATION ON CACHE BOOL "")
 
 set(AXOM_CUDA_ARCH "sm_70" CACHE PATH "")
 
