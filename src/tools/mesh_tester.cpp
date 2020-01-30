@@ -36,17 +36,24 @@
   #include "RAJA/RAJA.hpp"
 #endif 
 
-//Testing structured_exec
-#include "axom/core/execution/execution_space.hpp"
+// RAJA policies
+#include "axom/mint/execution/internal/structured_exec.hpp"
+
 #include "axom/core/Macros.hpp"
 
-#if defined (AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP)
-  using exec = axom::OMP_EXEC;
-#elif defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA)
+#if defined (AXOM_USE_RAJA)
+  using seq_exec = axom::SEQ_EXEC;
   constexpr int CUDA_BLOCK_SIZE = 256;
-  using exec = axom::CUDA_EXEC<CUDA_BLOCK_SIZE>;
-#else
-  using exec = axom::SEQ_EXEC;
+  #if defined(AXOM_USE_OPENMP)
+    using omp_exec = axom::OMP_EXEC;
+  #else
+    using omp_exec = seq_exec;
+  #endif
+  #if defined(AXOM_USE_CUDA)
+    using cuda_exec = axom::CUDA_EXEC<CUDA_BLOCK_SIZE>;
+  #else
+    using cuda_exec = seq_exec;
+  #endif
 #endif
 
 #include "CLI11/CLI11.hpp"
@@ -70,10 +77,15 @@ using UniformGrid3 = spin::UniformGrid<int, 3>;
 using Vector3 = primal::Vector<double, 3>;
 using Segment3 = primal::Segment<double, 3>;
 
+enum rajaPolicy { seq = 0, omp = 1, cuda = 2};
+
 struct Input
 {
+  static const std::set<rajaPolicy> s_validPolicies;
+
   std::string stlInput;
   std::string vtkOutput;
+  rajaPolicy policy;
 
   int resolution;
   double weldThreshold;
@@ -83,6 +95,7 @@ struct Input
     : stlInput("")
     , vtkOutput("")
     , resolution(0)
+    , policy(seq)
     , weldThreshold(1e-6)
     , skipWeld(false)
   { };
@@ -97,6 +110,18 @@ private:
   void fixOutfilePath();
 };
 
+const std::set<rajaPolicy> Input::s_validPolicies({
+  #ifdef AXOM_USE_RAJA
+    seq
+    #ifdef AXOM_USE_CUDA
+    ,cuda
+    #endif
+    #ifdef AXOM_USE_OPENMP
+    ,omp
+    #endif  
+  #endif
+});
+
 void Input::parse(int argc, char** argv, CLI::App& app)
 {
   app.add_option("-r,--resolution", resolution,
@@ -106,6 +131,14 @@ void Input::parse(int argc, char** argv, CLI::App& app)
                  "Set to less than 1 to use the spatial index with a resolution \n"
                  "of the cube root of the number of triangles.")
   ->capture_default_str();
+
+  app.add_option("-p, --policy", policy,
+                 "With \'-r 2\', set policy of the raja kernel. \n"
+                 "Set to 0 to use a sequential policy. \n"
+                 "Set to 1 to use a OpenMP policy. \n"
+                 "Set to 2 to use a CUDA policy.")
+  ->capture_default_str()
+  ->check(CLI::IsMember{Input::s_validPolicies});
 
   app.add_option("-i,--infile", stlInput,"The STL input file")
   ->required()
@@ -137,6 +170,13 @@ void Input::parse(int argc, char** argv, CLI::App& app)
     "Using parameter values: "
     <<"\n  resolution = " << resolution
     << (resolution < 1 ? " (use cube root of triangle count)" : "")
+    << (resolution == 1 ? " (use naive algorithm)" : "")
+    << (resolution == 2 ? " (use naive algorithm with raja)" : "")
+    << (resolution == 2 ? "\n  policy = " : "")
+    << (resolution == 2 ? std::to_string(policy) : "")
+    << (resolution == 2 && policy == seq ? " (use sequential policy)" : "")
+    << (resolution == 2 && policy == omp ? " (use OpenMP policy)" : "")
+    << (resolution == 2 && policy == cuda ? " (use CUDA policy)" : "")
     <<"\n  weld threshold = " <<  weldThreshold
     <<"\n  " << (skipWeld ? "" : "not ") << "skipping weld"
     <<"\n  infile = " << stlInput
@@ -201,6 +241,7 @@ inline bool pointIsNearlyEqual(Point3& p1, Point3& p2, double EPS=1.0e-9)
          axom::utilities::isNearlyEqual(p1[2], p2[2], EPS);
 }
 
+AXOM_HOST_DEVICE
 bool checkTT(Triangle3& t1, Triangle3& t2)
 {
   if (t2.degenerate())
@@ -309,36 +350,8 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
   RAJA::RangeSegment row_range(0, ncells);
   RAJA::RangeSegment col_range(0, ncells);
 
-  // Kernel policy
-  #if defined(AXOM_USE_CUDA)
-    using KERNEL_EXEC_POL = 
-      RAJA::KernelPolicy<
-        RAJA::statement::CudaKernelFixed<CUDA_BLOCK_SIZE,
-          RAJA::statement::For<1, RAJA::cuda_block_x_loop,
-            RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
-              RAJA::statement::Lambda<0>
-            >
-          >
-        >
-      >;
-  #elif defined(AXOM_USE_OPENMP)
-    using KERNEL_EXEC_POL = RAJA::KernelPolicy<
-      RAJA::statement::For< 1, RAJA::omp_parallel_for_exec,
-        RAJA::statement::For< 0, RAJA::loop_exec,           
-          RAJA::statement::Lambda< 0 >
-       > 
-      > 
-    >; 
-  #else
-    using KERNEL_EXEC_POL = RAJA::KernelPolicy<
-      RAJA::statement::For< 1, RAJA::loop_exec,   
-        RAJA::statement::For< 0, RAJA::loop_exec,
-          RAJA::statement::Lambda< 0 >
-        > 
-      >
-    >;
-  #endif
-
+  using KERNEL_POL = 
+    typename axom::mint::internal::structured_exec< ExecSpace >::loop2d_policy;
   using REDUCE_POL =
     typename axom::execution_space< ExecSpace >::reduce_policy;
   using ATOMIC_POL = 
@@ -346,8 +359,7 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
  
    RAJA::ReduceSum< REDUCE_POL, int > numIntersect(0);  
 
-  // RAJA loop to find size to initialize (number of intersections)
-  RAJA::kernel<KERNEL_EXEC_POL>( RAJA::make_tuple(col_range, row_range),
+  RAJA::kernel<KERNEL_POL>( RAJA::make_tuple(col_range, row_range),
     AXOM_LAMBDA(int col, int row) {
     if (row > col)
     {
@@ -356,7 +368,7 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
         numIntersect += 1;
       }
     }
-  }); 
+  });
 
   // Allocation to hold intersection pairs and counter to know where to store
   #ifdef AXOM_USE_UMPIRE
@@ -372,7 +384,7 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
   counter[0] = 0;
 
   // RAJA loop to populate with intersections
-  RAJA::kernel<KERNEL_EXEC_POL>( RAJA::make_tuple(col_range, row_range),
+  RAJA::kernel<KERNEL_POL>( RAJA::make_tuple(col_range, row_range),
     AXOM_LAMBDA(int col, int row) {
     if (row > col)
     {
@@ -579,11 +591,24 @@ int main( int argc, char** argv )
 
   #ifdef AXOM_USE_RAJA
     else if (params.resolution == 2){
-      
-      // raja naive method
-      collisions = naiveIntersectionAlgorithm< exec >(surface_mesh, 
-                                                      degenerate);
-    }
+
+     // raja naive method
+     switch (params.policy)
+     {
+     case omp:
+        collisions = naiveIntersectionAlgorithm< omp_exec >(surface_mesh, 
+                                                          degenerate);
+       break;
+     case cuda:
+        collisions = naiveIntersectionAlgorithm< cuda_exec >(surface_mesh, 
+                                                          degenerate);
+       break;
+     case seq:
+        collisions = naiveIntersectionAlgorithm< seq_exec >(surface_mesh, 
+                                                          degenerate);
+       break;
+     }
+    } // end of resolution == 2
   #endif
 
     else
