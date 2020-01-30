@@ -6,11 +6,9 @@ include(vcpkg_common_functions)
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
     REPO llnl/conduit
-    REF v0.5.0
-    SHA512 aae329cf7d0329b466e996f81695f4bee66e7732d0d7c49ffd00276ddee82326a261af3135ad1fc7b9903150cadbbaed17c7a1f25b4cc5352fdfed60ed7a7da1
+    REF v0.5.1
+    SHA512 fcc03c5bceb8b68c351be4df85cfab86ca9f1d2c39db735f375ff5efcd6921d6e9498ccfd96d914891492d376d0c334b5eff5aad5253630d991095c1fea1fb95
     HEAD_REF master
-    PATCHES
-        "fix-setup-hdf5-vcpkg.patch"
 )
 
 set(_is_shared TRUE)
@@ -55,26 +53,6 @@ endforeach()
 
 if(VCPKG_LIBRARY_LINKAGE STREQUAL static)
     file(REMOVE_RECURSE ${CURRENT_PACKAGES_DIR}/bin ${CURRENT_PACKAGES_DIR}/debug/bin)
-else()
-    # Move dll files to bin directory
-    foreach(_dll conduit conduit_blueprint conduit_relay)
-        file(RENAME ${CURRENT_PACKAGES_DIR}/lib/${_dll}.dll
-                    ${CURRENT_PACKAGES_DIR}/bin/${_dll}.dll)
-        file(RENAME ${CURRENT_PACKAGES_DIR}/debug/lib/${_dll}.dll
-                    ${CURRENT_PACKAGES_DIR}/debug/bin/${_dll}.dll)
-    endforeach()
-
-    # Update dll paths in config files from 'lib' to 'bin' directory
-    foreach(_build debug release)
-        file(READ ${CURRENT_PACKAGES_DIR}/share/conduit/conduit-${_build}.cmake _conf_file)
-        foreach(_dll conduit conduit_blueprint conduit_relay)
-            string(REPLACE "\${_IMPORT_PREFIX}/debug/lib/${_dll}.dll"
-                           "\${_IMPORT_PREFIX}/debug/bin/${_dll}.dll" _conf_file "${_conf_file}")
-            string(REPLACE "\${_IMPORT_PREFIX}/lib/${_dll}.dll"
-                           "\${_IMPORT_PREFIX}/bin/${_dll}.dll" _conf_file "${_conf_file}")
-        endforeach()
-        file(WRITE ${CURRENT_PACKAGES_DIR}/share/conduit/conduit-${_build}.cmake "${_conf_file}")
-    endforeach()
 endif()
 
 

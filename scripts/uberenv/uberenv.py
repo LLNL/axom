@@ -340,8 +340,8 @@ class VcpkgEnv(UberEnv):
 
         res = sexe(install_cmd, echo=True)
 
-        # Running the install_cmd eventually generates the host config file.
-        # Copy this to the target directory.
+        # Running the install_cmd eventually generates the host config file,
+        # which we copy to the target directory.
         src_hc = pjoin(self.dest_vcpkg, "installed", self.triplet, "include", self.pkg_name, "hc.cmake")
         hcfg_fname = pjoin(self.dest_dir, "{0}.{1}.cmake".format(platform.uname()[1], self.triplet))
         print("[info: copying host config file to {}]".format(hcfg_fname))

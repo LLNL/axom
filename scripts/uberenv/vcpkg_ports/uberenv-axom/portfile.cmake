@@ -132,18 +132,3 @@ set(_hc_file ${CURRENT_PACKAGES_DIR}/include/${PORT}/hc.cmake)
 file(WRITE ${_hc_file}.in ${_host-config_hdr})
 configure_file(${_hc_file}.in ${_hc_file} @ONLY)
 
-# print out generated hc to status
-file(READ ${_hc_file} _hc_contents)
-message(STATUS "Host config contents: \n ${_hc_contents}")
-
-
-message(STATUS "****************************************")
-message(STATUS "Printing all cmake variables: ")
-
-get_cmake_property(_variableNames VARIABLES)
-list (SORT _variableNames)
-foreach (_variableName ${_variableNames})
-    message(STATUS "${_variableName}=${${_variableName}}")
-endforeach()
-
-message(STATUS "****************************************")
