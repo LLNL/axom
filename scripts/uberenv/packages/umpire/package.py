@@ -12,8 +12,9 @@ class Umpire(CMakePackage):
     architectures"""
 
     homepage = 'https://github.com/LLNL/Umpire'
-    url='https://github.com/LLNL/Umpire/releases/download/v2.0.0/umpire-2.0.0.tar.gz'
+    url='https://github.com/LLNL/Umpire/releases/download/v2.1.0/umpire-2.1.0.tar.gz'
 
+    version('2.1.0', 'ec779f5a241c39a50d75eef1f248f61f')
     version('2.0.0', '4ba1c960b16552e0a85f28c244a9c383')
     version('1.0.0', '3435e9c9d48f2b05f838eb64fbf66d8e')
     version('0.3.2', '2b4138fb4d4272de8c34c073b4c6e88c')
