@@ -503,6 +503,9 @@ TEST_P(UmpireTest, reallocate_zero)
   }
 #endif
 
+  // set the default allocator
+  axom::setDefaultAllocator( allocID );
+
   {
     Buffer* buff = ds.createBuffer();
     buff->describe(INT_ID, SIZE);

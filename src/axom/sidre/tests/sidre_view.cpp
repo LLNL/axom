@@ -1795,6 +1795,8 @@ TEST_P(UmpireTest, reallocate_zero)
   }
 #endif
 
+  axom::setDefaultAllocator( allocID );
+
   {
     View* view = root->createView("v");
     view->allocate(INT_ID, SIZE, allocID);
