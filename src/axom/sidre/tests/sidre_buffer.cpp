@@ -454,7 +454,7 @@ TEST_P(UmpireTest, reallocate)
 {
   constexpr int SIZE = 100;
 
-#ifdef AXOM_USE_CUDA
+#if defined(AXOM_USE_CUDA) && defined(UMPIRE_ENABLE_CONST)
   if (allocID == axom::getResourceAllocatorID( umpire::resource::Constant ) )
   {
     return;
@@ -496,12 +496,15 @@ TEST_P(UmpireTest, reallocate_zero)
   constexpr int SIZE = 100;
 
 
-#ifdef AXOM_USE_CUDA
+#if defined(AXOM_USE_CUDA) && defined(UMPIRE_ENABLE_CONST)
   if (allocID == axom::getResourceAllocatorID( umpire::resource::Constant ) )
   {
     return;
   }
 #endif
+
+  // set the default allocator
+  axom::setDefaultAllocator( allocID );
 
   {
     Buffer* buff = ds.createBuffer();
@@ -542,11 +545,24 @@ TEST_P(UmpireTest, reallocate_zero)
 const int allocators[] = {
   axom::getResourceAllocatorID( umpire::resource::Host )
 #ifdef AXOM_USE_CUDA
+
+#ifdef UMPIRE_ENABLE_PINNED
   , axom::getResourceAllocatorID( umpire::resource::Pinned )
+#endif
+
+#ifdef UMPIRE_ENABLE_DEVICE
   , axom::getResourceAllocatorID( umpire::resource::Device )
+#endif
+
+#ifdef UMPIRE_ENABLE_CONST
   , axom::getResourceAllocatorID( umpire::resource::Constant )
+#endif
+
+#ifdef UMPIRE_ENABLE_UM
   , axom::getResourceAllocatorID( umpire::resource::Unified )
 #endif
+
+#endif /* AXOM_USE_CUDA */
 };
 
 INSTANTIATE_TEST_SUITE_P(

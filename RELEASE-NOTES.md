@@ -22,7 +22,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Deprecated
 
 ### Changed
-- Updated Umpire TPL to v2.0.0, which, natively handles zero byte re-allocations consistently. Workaround
+- Updated Conduit to v0.5.1
+- Updated RAJA to v0.11.0
+- Updated Umpire to v2.1.0, which, natively handles zero byte re-allocations consistently. Workaround
   for older releases of Umpire is in place for backwards compatibility. 
 - Updated BLT to develop (f0ab9a4) as of Jan 15, 2020
 - Set CUDA_SEPARABLE_COMPILATION globally instead of just in a few components.

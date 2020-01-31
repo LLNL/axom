@@ -46,13 +46,10 @@ class Conduit(Package):
     coupling between packages in-core, serialization, and I/O tasks."""
 
     homepage = "http://software.llnl.gov/conduit"
-    url = "https://github.com/LLNL/conduit/releases/download/v0.4.0/conduit-v0.4.0-src-with-blt.tar.gz"
+    url = "https://github.com/LLNL/conduit/releases/download/v0.5.1/conduit-v0.5.1-src-with-blt.tar.gz"
 
-    version('master', branch='master', submodules=True,
-            git='https://github.com/LLNL/conduit.git',
-            preferred=True)
-    version('0.4.0', 
-            sha256='c228e6f0ce5a9c0ffb98e0b3d886f2758ace1a4b40d00f3f118542c0747c1f52')
+    version('0.5.1', '4aecbd4abb9d7ab8c3a16e4f28fc8871')
+    version('0.4.0', sha256='c228e6f0ce5a9c0ffb98e0b3d886f2758ace1a4b40d00f3f118542c0747c1f52')
     version('0.3.1', 'b98d1476199a46bde197220cd9cde042')
     version('0.3.0', '6396f1d1ca16594d7c66d4535d4f898e')
     # note: checksums on github automatic release source tars changed ~9/17

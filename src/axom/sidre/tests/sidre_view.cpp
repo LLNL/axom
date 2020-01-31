@@ -1756,7 +1756,7 @@ TEST_P(UmpireTest, allocate_default)
 TEST_P(UmpireTest, reallocate)
 {
 
-#ifdef AXOM_USE_CUDA
+#if defined(AXOM_USE_CUDA) && defined(UMPIRE_ENABLE_CONST)
   if (allocID == axom::getResourceAllocatorID( umpire::resource::Constant ) )
   {
     return;
@@ -1788,12 +1788,14 @@ TEST_P(UmpireTest, reallocate)
 TEST_P(UmpireTest, reallocate_zero)
 {
 
-#ifdef AXOM_USE_CUDA
+#if defined(AXOM_USE_CUDA) && defined(UMPIRE_ENABLE_CONST)
   if (allocID == axom::getResourceAllocatorID( umpire::resource::Constant ) )
   {
     return;
   }
 #endif
+
+  axom::setDefaultAllocator( allocID );
 
   {
     View* view = root->createView("v");
@@ -1824,12 +1826,27 @@ TEST_P(UmpireTest, reallocate_zero)
 
 const int allocators[] = {
   axom::getResourceAllocatorID( umpire::resource::Host )
+
 #ifdef AXOM_USE_CUDA
+
+#ifdef UMPIRE_ENABLE_PINNED 
   , axom::getResourceAllocatorID( umpire::resource::Pinned )
+#endif
+
+#ifdef UMPIRE_ENABLE_DEVICE
   , axom::getResourceAllocatorID( umpire::resource::Device )
+#endif
+
+#ifdef UMPIRE_ENABLE_CONST
   , axom::getResourceAllocatorID( umpire::resource::Constant )
+#endif
+
+#ifdef UMPIRE_ENABLE_UM
   , axom::getResourceAllocatorID( umpire::resource::Unified )
 #endif
+
+#endif /* AXOM_USE_CUDA */
+
 };
 
 INSTANTIATE_TEST_SUITE_P(
