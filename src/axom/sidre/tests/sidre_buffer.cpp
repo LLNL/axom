@@ -454,7 +454,7 @@ TEST_P(UmpireTest, reallocate)
 {
   constexpr int SIZE = 100;
 
-#ifdef AXOM_USE_CUDA
+#if defined(AXOM_USE_CUDA) && defined(UMPIRE_ENABLE_CONST)
   if (allocID == axom::getResourceAllocatorID( umpire::resource::Constant ) )
   {
     return;
@@ -496,7 +496,7 @@ TEST_P(UmpireTest, reallocate_zero)
   constexpr int SIZE = 100;
 
 
-#ifdef AXOM_USE_CUDA
+#if defined(AXOM_USE_CUDA) && defined(UMPIRE_ENABLE_CONST)
   if (allocID == axom::getResourceAllocatorID( umpire::resource::Constant ) )
   {
     return;
