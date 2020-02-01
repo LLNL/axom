@@ -3,7 +3,7 @@
 [![Azure Pipelines Build Status](https://dev.azure.com/axom/axom/_apis/build/status/LLNL.axom?branchName=develop)](https://dev.azure.com/axom/axom/_build/latest?definitionId=1&branchName=develop)
 [![Documentation Status](https://readthedocs.org/projects/axom/badge/?version=develop)](https://axom.readthedocs.io/en/develop/?badge=develop)
 
-Axom provides a robust, flexible software infrastructure for the development of multi-physics applications and computational tools.
+Axom provides robust, flexible software infrastructure for the development of multi-physics applications and computational tools.
 
 Documentation
 -------------
