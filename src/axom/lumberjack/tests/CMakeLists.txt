@@ -1,11 +1,14 @@
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+#------------------------------------------------------------------------------
+# Tests for Lumberjack component
+#------------------------------------------------------------------------------
 
-#
+#------------------------------------------------------------------------------
 # Specify list of tests
-#
+#------------------------------------------------------------------------------
 
 # Add Serial GTests based tests
 set(gtest_lumberjack_tests
@@ -26,7 +29,9 @@ foreach(test ${gtest_lumberjack_tests})
 endforeach()
 
 
+#------------------------------------------------------------------------------
 # Add MPI GTest based tests
+#------------------------------------------------------------------------------
 set(mpi_gtest_lumberjack_tests
     lumberjack_BinaryCommunicator.cpp
     lumberjack_RootCommunicator.cpp
@@ -46,7 +51,9 @@ foreach(test ${mpi_gtest_lumberjack_tests})
     endforeach()
 endforeach()
 
-#Unique Tests
+#------------------------------------------------------------------------------
+# Single source file tests
+#------------------------------------------------------------------------------
 blt_add_executable(NAME lumberjack_speed_test
                    SOURCES lumberjack_speedTest.cpp
                    OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}

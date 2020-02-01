@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -12,7 +12,7 @@
 #ifndef PRIMAL_BEZIERCURVE_HPP_
 #define PRIMAL_BEZIERCURVE_HPP_
 
-#include "axom/core.hpp"
+#include "axom/core/utilities/Utilities.hpp"
 #include "axom/slic.hpp"
 
 #include "axom/primal/geometry/NumericArray.hpp"
@@ -77,9 +77,9 @@ public:
   explicit BezierCurve(int ord = -1)
   {
     AXOM_STATIC_ASSERT_MSG( (NDIMS==2) || (NDIMS==3),
-                          "A Bezier Curve object may be defined in 2-D or 3-D" );
+                            "A Bezier Curve object may be defined in 2-D or 3-D" );
     AXOM_STATIC_ASSERT_MSG( std::is_arithmetic<T>::value,
-                          "A Bezier Curve must be defined using an arithmetic type" );
+                            "A Bezier Curve must be defined using an arithmetic type" );
     SLIC_ASSERT(ord >= -1);
     const int sz = utilities::max(-1, ord+1);
     m_controlPoints.resize(sz);
@@ -100,9 +100,9 @@ public:
   BezierCurve(T* pts, int ord)
   {
     AXOM_STATIC_ASSERT_MSG( (NDIMS==2) || (NDIMS==3),
-                          "A Bezier Curve object may be defined in 2-D or 3-D" );
+                            "A Bezier Curve object may be defined in 2-D or 3-D" );
     AXOM_STATIC_ASSERT_MSG( std::is_arithmetic<T>::value,
-                          "A Bezier Curve must be defined using an arithmetic type" );
+                            "A Bezier Curve must be defined using an arithmetic type" );
     SLIC_ASSERT(pts != nullptr);
     SLIC_ASSERT(ord >= 0);
 
@@ -131,9 +131,9 @@ public:
   BezierCurve(PointType* pts, int ord)
   {
     AXOM_STATIC_ASSERT_MSG( (NDIMS==2) || (NDIMS==3),
-                          "A Bezier Curve object may be defined in 2-D or 3-D" );
+                            "A Bezier Curve object may be defined in 2-D or 3-D" );
     AXOM_STATIC_ASSERT_MSG( std::is_arithmetic<T>::value,
-                          "A Bezier Curve must be defined using an arithmetic type" );
+                            "A Bezier Curve must be defined using an arithmetic type" );
     SLIC_ASSERT(pts != nullptr);
     SLIC_ASSERT(ord >= 0);
 

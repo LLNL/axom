@@ -1,16 +1,17 @@
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+#------------------------------------------------------------------------------
+# Tests for Mint component
+#------------------------------------------------------------------------------
 
 set( mint_tests
 
      ## execution model tests
      mint_execution_cell_traversals.cpp
-     mint_execution_forall_traversals.cpp
      mint_execution_node_traversals.cpp
      mint_execution_face_traversals.cpp
-     mint_execution_policy.cpp
      mint_execution_xargs.cpp
 
      ## mesh tests
@@ -49,9 +50,9 @@ set( mint_test_dependencies
 blt_list_append( TO mint_test_dependencies
                  ELEMENTS sidre conduit::conduit
                  IF AXOM_MINT_USE_SIDRE )
-blt_list_append( TO mint_test_dependencies ELEMENTS raja IF RAJA_FOUND )
-blt_list_append( TO mint_test_dependencies ELEMENTS openmp IF ENABLE_OPENMP )
-blt_list_append( TO mint_test_dependencies ELEMENTS cuda IF ENABLE_CUDA )
+blt_list_append( TO mint_test_dependencies ELEMENTS raja IF ${RAJA_FOUND} )
+blt_list_append( TO mint_test_dependencies ELEMENTS openmp IF ${ENABLE_OPENMP} )
+blt_list_append( TO mint_test_dependencies ELEMENTS cuda IF ${ENABLE_CUDA} )
 
 foreach( test ${mint_tests} )
 
@@ -67,6 +68,7 @@ foreach( test ${mint_tests} )
 
    blt_add_test( NAME    ${test_name}
                  COMMAND ${test_name}_test
+                 NUM_OMP_THREADS 4
                )
 
 endforeach()

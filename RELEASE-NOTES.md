@@ -7,14 +7,48 @@ The format of this file is based on [Keep a Changelog](http://keepachangelog.com
 
 The Axom project release numbers follow [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [Version 0.3.3] - Release date 2020-01-31
+
+### Added
+- Define different execution spaces. This refines and consolidates
+  the execution policy concepts from mint and spin, which are now defined in
+  Axom core, such that they can be used by other components.
+- Added a generic axom::for_all(), which can be used to write simple parallel
+  loops.
+- Added [CLI11](https://github.com/CLIUtils/CLI11) command line parser as a built-in third party library.
+
+### Removed
+
+### Deprecated
+
+### Changed
+- Updated Conduit to v0.5.1
+- Updated RAJA to v0.11.0
+- Updated Umpire to v2.1.0, which, natively handles zero byte re-allocations consistently. Workaround
+  for older releases of Umpire is in place for backwards compatibility. 
+- Updated BLT to develop (f0ab9a4) as of Jan 15, 2020
+- Set CUDA_SEPARABLE_COMPILATION globally instead of just in a few components.
+- Reduced verbosity of quest's InOutOctree in cases where query point lies on surface.
+- Changed semantics of ``axom::reallocate(_, 0)`` to always return a valid pointer.
+  This matches the semantics of Umpire's ``reallocate(_, 0)``.
+  Note: Umpire's PR-292 fixed a bug in its handling of this case and Axom
+  includes a workaround to get the new behavior until we upgrade to Umpire v2.0+.
+
+### Fixed
+- Fixed a bug in ``convert_sidre_protocol`` example. Data truncation functionality now
+  works properly when multiple Views point to the same data.
+
+### Known Bugs
+
+
 ## [Version 0.3.2] - Release date 2019-09-22
 
 ### Added
 - Added support in Mint for reading and writing an unstructured mesh in the [SU2 Mesh file format].
-  This includes support for both single and mixed cell type topology unstructured mesh types.   
+  This includes support for both single and mixed cell type topology unstructured mesh types.
 - Added a new option to enable/disable use of CUB, AXOM_USE_CUB, which is disabled by default. This
   allows to disable CUB to circumvent issues encountered with the device linker.
-- Added a BezierCurve primitive type to primal. A new ``intersect`` operator was also added to 
+- Added a BezierCurve primitive type to primal. A new ``intersect`` operator was also added to
   compute the intersection points between a pair of Bezier curves of arbitrary order.
 
 ### Removed
@@ -27,7 +61,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - AXOM_USE_OPENMP is now being set at configure time accordingly instead of
   auto-detected based on whether "_OPENMP" is passed by the compiler. This
   fixes issues where a host code would compile Axom w/out OpenMP, but, use
-  Axom in parts of the code where OpenMP is enabled. 
+  Axom in parts of the code where OpenMP is enabled.
 
 ### Fixed
 - Fixed usage of Umpire's MemoryResourceType enum in Axom. Axom was assuming that
@@ -248,7 +282,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Known Bugs
 -
 
-[Unreleased]:    https://github.com/LLNL/axom/compare/v0.3.2...develop
+[Unreleased]:    https://github.com/LLNL/axom/compare/v0.3.3...develop
+[Version 0.3.3]: https://github.com/LLNL/axom/compare/v0.3.2...v0.3.3
 [Version 0.3.2]: https://github.com/LLNL/axom/compare/v0.3.1...v0.3.2
 [Version 0.3.1]: https://github.com/LLNL/axom/compare/v0.3.0...v0.3.1
 [Version 0.3.0]: https://github.com/LLNL/axom/compare/v0.2.9...v0.3.0

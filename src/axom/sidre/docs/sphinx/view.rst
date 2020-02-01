@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level COPYRIGHT file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -34,7 +34,7 @@ pointer in one of four ways described below. In that case, a View data
 description includes: a data type, a length (number of elements), an offset 
 and a stride (based on the pointer address and data type). 
 
-  * A View can describe (a subset of) data owned by an pre-existing Buffer. 
+  * A View can describe (a subset of) data owned by a pre-existing Buffer.
     In this case, the Buffer is manually *attached* to the View and the
     View's data description is applied to the Buffer data. Buffer data can be 
     (re)allocated or deallocated by the View if and only if it is the only 

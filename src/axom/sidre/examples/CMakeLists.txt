@@ -1,11 +1,14 @@
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+#------------------------------------------------------------------------------
+# Sidre and Spio examples
+#------------------------------------------------------------------------------
 
-#
+#------------------------------------------------------------------------------
 # List of single source file examples
-#
+#------------------------------------------------------------------------------
 set(example_sources
     sidre_stressgroups.cpp
     sidre_shocktube.cpp
@@ -34,20 +37,14 @@ set(sidre_example_depends
     core
     sidre
     conduit::conduit
-    slic
-    )
+    slic )
 
-if(HDF5_FOUND)
-    list(APPEND sidre_example_depends hdf5)
-endif()
+blt_list_append(TO sidre_example_depends ELEMENTS hdf5 IF HDF5_FOUND)
+blt_list_append(TO sidre_example_depends ELEMENTS mpi IF MPI_FOUND)
 
-if(MPI_FOUND)
-    list(APPEND sidre_example_depends mpi)
-endif()
-
-#
-# Build the example sources
-#
+#------------------------------------------------------------------------------
+# Add targets and tests for serial examples
+#------------------------------------------------------------------------------
 foreach(example_source ${example_sources})
     get_filename_component(exe_name ${example_source} NAME_WE)
     blt_add_executable(
@@ -64,6 +61,9 @@ foreach(example_source ${example_sources})
     endif()
 endforeach()
 
+#------------------------------------------------------------------------------
+# Add targets and tests for parallel examples
+#------------------------------------------------------------------------------
 if(ENABLE_MPI)
     foreach(example_source ${example_parallel_sources})
         get_filename_component(exe_name ${example_source} NAME_WE)
@@ -83,6 +83,9 @@ if(ENABLE_MPI)
     endforeach()
 endif()
 
+#------------------------------------------------------------------------------
+# Add targets and tests for Fortran examples
+#------------------------------------------------------------------------------
 if(ENABLE_FORTRAN)
     foreach(example_source ${F_example_sources})
         get_filename_component(exe_name ${example_source} NAME_WE)
@@ -102,11 +105,18 @@ if(ENABLE_FORTRAN)
     set_target_properties(${exe_name}_ex PROPERTIES LINKER_LANGUAGE Fortran)
 endif()
 
-# Note: Lulesh disabled on windows builds due to usage of unix APIs.
+#------------------------------------------------------------------------------
+# Add Spio examples
+#------------------------------------------------------------------------------
+if(ENABLE_MPI)
+    add_subdirectory(spio)
+endif()
+
+#------------------------------------------------------------------------------
+# Sidre version of lulesh 2.0
+# Note: Disabled on windows builds due to Lulesh's usage of unix APIs.
+#------------------------------------------------------------------------------
 if(NOT WIN32)
   add_subdirectory(lulesh2)
 endif()
 
-if(ENABLE_MPI)
-    add_subdirectory(spio)
-endif()

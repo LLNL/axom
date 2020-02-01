@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level COPYRIGHT file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -70,7 +70,7 @@ Beyond build and test correctness, we also want to ensure that code follows
 common conventions before acceptance. The following list is a high-level 
 summary of the types of concerns we want to identify during pull request 
 reviews and resolve before a pull request is merged. Please see the 
-`Axom Coding Guide <../../coding_guide_docs/html/index.html>`_ for details
+`Axom Coding Guide <../coding_guide/index.html>`_ for details
 on items in this list.
 
  #. A new file or directory must be placed in its proper location; e.g.,

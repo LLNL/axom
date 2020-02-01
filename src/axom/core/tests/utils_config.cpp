@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -54,6 +54,10 @@ TEST(core_config,config_libraries)
   std::cout << "Available libraries: " << std::endl;
 
   std::vector<std::string> libs;
+
+#ifdef AXOM_USE_CLI11
+  libs.push_back("CLI11");
+#endif
 
 #ifdef AXOM_USE_CONDUIT
   libs.push_back("conduit");

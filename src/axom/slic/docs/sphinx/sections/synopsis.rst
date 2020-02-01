@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level COPYRIGHT file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -21,7 +21,7 @@ infrastructure that simplifies logging application messages.
 * :ref:`BuiltInLogStreams` to support common logging use cases, e.g., log to
   a file or console.
 
-* Native integration with `Lumberjack`_ for logging and filtering of messages
+* Native integration with `Lumberjack <../../../lumberjack/docs/sphinx/index.html>`_ for logging and filtering of messages
   at scale.
 
 * Fortran bindings that provide an idiomatic API for Fortran applications.
@@ -31,10 +31,10 @@ infrastructure that simplifies logging application messages.
 Slic is designed to be *light-weight* and *self-contained*. The only requirement
 for using Slic is a C++11 compliant compiler. However, to use Slic in the
 context of a distributed parallel application and in conjunction with
-`Lumberjack`_, support for building with MPI is provided.
+`Lumberjack <../../../lumberjack/docs/sphinx/index.html>`_, support for building with MPI is provided.
 
-For further information on how to build the `Axom Toolkit`_,
-consult the `Axom Quick Start Guide`_.
+For further information on how to build the `Axom Toolkit <../../../../index.html>`_,
+consult the `Axom Quick Start Guide <../../../../docs/sphinx/quickstart_guide/index.html>`_.
 
 **About this Guide**
 
@@ -43,7 +43,7 @@ principles of Slic's :ref:`sections/architecture`. To get started with
 using Slic quickly within an application, see the
 :ref:`sections/getting_started` section. For more detailed information on
 the interfaces of the various classes and functions in Slic, developers
-are advised to consult the `Slic Doxygen API Documentation`_.
+are advised to consult the `Slic Doxygen API <../../../../doxygen/html/slictop.html>`_.
 
 Additional questions, feature requests or bug reports on Slic can be submitted
 by `creating a new issue on Github <https://github.com/LLNL/axom/issues>`_

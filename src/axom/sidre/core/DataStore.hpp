@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -13,8 +13,8 @@
  ******************************************************************************
  */
 
-#ifndef DATASTORE_HPP_
-#define DATASTORE_HPP_
+#ifndef SIDRE_DATASTORE_HPP_
+#define SIDRE_DATASTORE_HPP_
 
 // Standard C++ headers
 #include <vector>
@@ -45,8 +45,9 @@ template <typename TYPE> class MapCollection;
  *        Buffer objects.
  *
  * It maintains a collection of Buffer objects and owns the "root"
- * Group, called "/". A Group hierarchy (a tree) is created by
- * creating child Groups of Groups.
+ * Group.  The initial name of the root Group is the empty string: a
+ * code uses the getRoot() method to retrieve the root Group.  A Group
+ * hierarchy (a tree) is created by creating child Groups of Groups.
  */
 class DataStore
 {
@@ -441,7 +442,7 @@ private:
 
   ///////////////////////////////////////////////////////////////////
   //
-  typedef MapCollection<Attribute> AttributeCollection;
+  using AttributeCollection = MapCollection<Attribute>;
   ///////////////////////////////////////////////////////////////////
 
   /// Collection of Attributes
@@ -455,4 +456,4 @@ private:
 } /* end namespace sidre */
 } /* end namespace axom */
 
-#endif /* DATASTORE_HPP_ */
+#endif /* SIDRE_DATASTORE_HPP_ */

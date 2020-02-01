@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -31,7 +31,7 @@ TEST(lumberjack_TextEqualityCombiner, case01)
 
   EXPECT_EQ(shouldMessagesBeCombined, true);
   EXPECT_EQ(m1.text().compare(text), 0);
-  EXPECT_EQ(m1.ranksCount(), 2);
+  EXPECT_EQ(m1.count(), 2);
   EXPECT_EQ(m1.ranks()[0], 13);
   EXPECT_EQ(m1.ranks()[1], 14);
 }
@@ -59,10 +59,10 @@ TEST(lumberjack_TextEqualityCombiner, case02)
 
   EXPECT_EQ(shouldMessagesBeCombined, false);
   EXPECT_EQ(m1.text().compare(text1), 0);
-  EXPECT_EQ(m1.ranksCount(), 1);
+  EXPECT_EQ(m1.count(), 1);
   EXPECT_EQ(m1.ranks()[0], 13);
 
   EXPECT_EQ(m2.text().compare(text2), 0);
-  EXPECT_EQ(m2.ranksCount(), 1);
+  EXPECT_EQ(m2.count(), 1);
   EXPECT_EQ(m2.ranks()[0], 14);
 }

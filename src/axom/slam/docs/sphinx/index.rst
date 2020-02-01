@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level COPYRIGHT file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -106,5 +106,5 @@ See :ref:`policy-label` for more details.
     <h3>Additional links</h3>
 
 
-* `API documentation <../../../doxygen/axom_doxygen/html/slamtop.html>`_
-* `Axom main docs <../../web_main_docs/html/index.html>`_
+* `API documentation <../../../../doxygen/html/slamtop.html>`_
+* `Axom main docs <../../../../index.html>`_

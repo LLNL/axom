@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 # 
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -16,13 +16,13 @@ import os
 import sys
 import argparse
 
-axom_copyright_str = """// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+axom_copyright_str = """// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 \n\n"""
 
-axom_copyright_begin_str = "Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and"
+axom_copyright_begin_str = "Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and"
 
 def checkAndAddCopyrightHeader(filename, testOnly=False):
 

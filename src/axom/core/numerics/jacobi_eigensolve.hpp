@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -98,8 +98,8 @@ int jacobi_eigensolve( Matrix < T > A,
   }
 
 
-  T* bw = new T[n]; // temp array
-  T* zw = new T[n]; // temp array
+  T* bw = axom::allocate< T >( n );
+  T* zw = axom::allocate< T >( n );
 
   // initialize
   for (int i = 0 ; i < n ; ++i)
@@ -250,8 +250,8 @@ int jacobi_eigensolve( Matrix < T > A,
   // sort eigenvalues in ascending order
   eigen_sort( lambdas, V );
 
-  delete[] bw;
-  delete[] zw;
+  axom::deallocate( bw );
+  axom::deallocate( zw );
 
   return( (converged) ? JACOBI_EIGENSOLVE_SUCCESS : JACOBI_EIGENSOLVE_FAILURE );
 }

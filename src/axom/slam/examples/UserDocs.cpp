@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -18,7 +18,6 @@
  * each prepended with an underscore.
  */
 
-#include "axom/core.hpp"
 #include "axom/slic.hpp"
 
 // _quadmesh_example_import_header_start

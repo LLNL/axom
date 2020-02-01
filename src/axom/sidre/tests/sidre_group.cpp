@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -683,6 +683,21 @@ TEST(sidre_group,create_destroy_has_view)
 }
 
 //------------------------------------------------------------------------------
+// createViewAndAllocate() with zero-sized array
+//------------------------------------------------------------------------------
+TEST(sidre_group,create_zero_sized_view)
+{
+  DataStore* ds = new DataStore();
+  Group* root = ds->getRoot();
+
+  View* zeroSizedView = root->createViewAndAllocate("foo", INT_ID, 0);
+  EXPECT_TRUE( zeroSizedView->isDescribed() );
+  EXPECT_TRUE( zeroSizedView->isAllocated() );
+
+  delete ds;
+}
+
+//------------------------------------------------------------------------------
 // createGroup()
 // destroyGroup()
 // hasGroup()
@@ -1096,7 +1111,6 @@ TEST(sidre_group,save_restore_empty_datastore)
 
     DataStore* ds2 = new DataStore();
     Group* root2 = ds2->getRoot();
-
     root2->load(file_path, protocols[i]);
 
     EXPECT_TRUE(ds2->getNumBuffers() == 0 );
@@ -1177,17 +1191,17 @@ TEST(sidre_group,save_root_restore_as_child)
   child1->createViewString("s0", "I am a string");
 
   const int num_elems = 4;
-  int * pa0 =
+  int* pa0 =
     child2->createViewAndAllocate("a0", INT_ID, num_elems)->getArray();
-  double * pa1 =
+  double* pa1 =
     child2->createViewAndAllocate("a1", FLOAT64_ID, num_elems)->getArray();
 
   const double factor = 2.3;
   const double offset = -0.23;
-  for (int i = 0; i < num_elems; ++i)
+  for (int i = 0 ; i < num_elems ; ++i)
   {
-     pa0[i] = i;
-     pa1[i] = offset + i*factor;
+    pa0[i] = i;
+    pa1[i] = offset + i*factor;
   }
 
   // Save the DataStore's root
@@ -1198,7 +1212,7 @@ TEST(sidre_group,save_root_restore_as_child)
   }
 
   // Restore the original DataStore into a child group
-  for (int i = 0; i < nprotocols; ++i)
+  for (int i = 0 ; i < nprotocols ; ++i)
   {
     // Only restore sidre_hdf5 protocol
     if(protocols[i] != "sidre_hdf5")
@@ -1206,8 +1220,8 @@ TEST(sidre_group,save_root_restore_as_child)
       continue;
     }
 
-    DataStore *dscopy = new DataStore();
-    Group * dsroot = dscopy->getRoot();
+    DataStore* dscopy = new DataStore();
+    Group* dsroot = dscopy->getRoot();
     const std::string file_path = file_path_base + protocols[i];
 
     const std::string group_base("group_");
@@ -1255,35 +1269,35 @@ TEST(sidre_group,save_child_restore_as_root)
 
   const int num_elems = 4;
   // included in files
-  int * pa0 =
+  int* pa0 =
     child2->createViewAndAllocate("a0", INT_ID, num_elems)->getArray();
-  double * pa1 =
+  double* pa1 =
     child2->createViewAndAllocate("a1", FLOAT64_ID, num_elems)->getArray();
   // not included
-  int *pa2 =
+  int* pa2 =
     child1a->createViewAndAllocate("a2", INT_ID, num_elems)->getArray();
-  int *pa3 =
+  int* pa3 =
     root->createViewAndAllocate("a3", INT_ID, num_elems)->getArray();
 
   const double factor = 2.3;
   const double offset = -0.23;
-  for (int i = 0; i < num_elems; ++i)
+  for (int i = 0 ; i < num_elems ; ++i)
   {
-     pa0[i] = i;
-     pa1[i] = offset + i*factor;
-     pa2[i] = i + 2;
-     pa3[i] = 4 - i;
+    pa0[i] = i;
+    pa1[i] = offset + i*factor;
+    pa2[i] = i + 2;
+    pa3[i] = 4 - i;
   }
 
   // Save the Group in question (child1) into an archive
-  for (int i = 0; i < nprotocols; ++i)
+  for (int i = 0 ; i < nprotocols ; ++i)
   {
     const std::string file_path = file_path_base + protocols[i];
     child1->save(file_path, protocols[i]);
   }
 
   // Restore the saved child1 into a root group
-  for (int i = 0; i < nprotocols; ++i)
+  for (int i = 0 ; i < nprotocols ; ++i)
   {
     // Only restore sidre_hdf5 protocol
     if(protocols[i] != "sidre_hdf5")
@@ -1291,7 +1305,7 @@ TEST(sidre_group,save_child_restore_as_root)
       continue;
     }
 
-    DataStore * dscopy = new DataStore();
+    DataStore* dscopy = new DataStore();
     const std::string file_path = file_path_base + protocols[i];
     if (axom::utilities::filesystem::pathExists(file_path))
     {
@@ -1379,6 +1393,45 @@ TEST(sidre_group,save_restore_api)
   load2->load("sidre_save_subtree_sidre_json", "sidre_json");
 
   EXPECT_TRUE( load1->isEquivalentTo( load2) );
+
+  std::string newgroupname = "in case of blank";
+  std::string groupname = newgroupname;
+  bool loadSuccess = false;
+  Group* load3 =
+    load2->createGroupAndLoad(groupname, "sidre_save_subtree_sidre_json",
+                              "sidre_json", loadSuccess);
+
+  EXPECT_NE(load3, (Group*)nullptr);
+  EXPECT_TRUE(loadSuccess);
+  EXPECT_EQ(groupname, "");
+  if (load3 != nullptr)
+  {
+    EXPECT_EQ(newgroupname, load3->getName());
+    EXPECT_TRUE( load1->isEquivalentTo( load3, false ) );
+  }
+
+  std::string anothergroupname = "another group";
+  groupname = anothergroupname;
+  loadSuccess = false;
+  Group* load4 =
+    load2->createGroupAndLoad(groupname, "sidre_save_subtree_sidre_json",
+                              "sidre_json", loadSuccess);
+
+  EXPECT_NE(load4, (Group*)nullptr);
+  EXPECT_TRUE(loadSuccess);
+  if (load4 != nullptr)
+  {
+    EXPECT_EQ(anothergroupname, load4->getName());
+    EXPECT_TRUE( load3->isEquivalentTo( load4, false ) );
+  }
+
+  groupname = anothergroupname;
+  loadSuccess = false;
+  Group* load5 =
+    load2->createGroupAndLoad(groupname, "sidre_save_subtree_sidre_json",
+                              "sidre_json", loadSuccess);
+  EXPECT_EQ(load5, (Group*)nullptr);
+  EXPECT_FALSE(loadSuccess);
 
   delete ds_new;
 }
@@ -1501,7 +1554,7 @@ TEST(sidre_group,save_restore_name_change)
     child1->save(file_path, protocols[i]);
   }
 
-
+  std::string groupname;
   for (int i = 0 ; i < nprotocols ; ++i)
   {
     // Only restore sidre_hdf5 protocol
@@ -1518,9 +1571,11 @@ TEST(sidre_group,save_restore_name_change)
 
     EXPECT_EQ( child2->getName(), "child2" );
 
-    child2->load(file_path, protocols[i]);
+    child2->load(file_path, protocols[i], false, groupname);
 
-    EXPECT_EQ( child2->getName(), "child1" );
+    EXPECT_EQ( child2->getName(), "child2" );
+
+    child2->rename(groupname);
 
     EXPECT_TRUE( root1->isEquivalentTo( root2 ) );
 
@@ -2138,6 +2193,7 @@ TEST(sidre_group,save_load_preserve_contents)
   }
 
   std::vector<std::string> protocols = getAvailableSidreProtocols();
+  std::string groupname;
   for(size_t i = 0 ; i < protocols.size() ; ++i)
   {
     std::string& protocol = protocols[i];
@@ -2170,8 +2226,9 @@ TEST(sidre_group,save_load_preserve_contents)
 
     DataStore ds_load;
     Group* loadtree0 = ds_load.getRoot()->createGroup("tree0");
-    loadtree0->load(file_path0, protocol);
-    loadtree0->load(file_path1, protocol, true);
+    loadtree0->load(file_path0, protocol, false, groupname);
+    loadtree0->load(file_path1, protocol, true, groupname);
+    loadtree0->rename(groupname);
 
     SLIC_INFO("Tree from protocol: " << protocol);
     // show the result
@@ -2231,12 +2288,6 @@ TEST(sidre_group,import_conduit)
 
   EXPECT_TRUE(ds.getRoot()->importConduitTree(input));
 
-  Group* flds = ds.getRoot()->getGroup("fields");
-
-  Group* ga = flds->getGroup("a");
-  Group* gb = flds->getGroup("b");
-  Group* gc = flds->getGroup("c");
-
   EXPECT_EQ(ds.getRoot()->getView(
               "fields/a/i0")->getData<conduit::int64>(),100);
   EXPECT_NEAR(ds.getRoot()->getView(
@@ -2275,12 +2326,6 @@ TEST(sidre_group,import_conduit_external)
   //Zero copy of array data
   EXPECT_TRUE(ds.getRoot()->importConduitTreeExternal(input));
 
-  Group* flds = ds.getRoot()->getGroup("fields");
-
-  Group* ga = flds->getGroup("a");
-  Group* gb = flds->getGroup("b");
-  Group* gc = flds->getGroup("c");
-
   EXPECT_EQ(ds.getRoot()->getView(
               "fields/a/i0")->getData<conduit::int64>(),100);
   EXPECT_NEAR(ds.getRoot()->getView(
@@ -2307,8 +2352,8 @@ TEST(sidre_group,import_conduit_external)
   //in the Sidre external view.
   if (ndata > 3)
   {
-     iarray[3] += 10;
-     EXPECT_EQ(iarray[3],sidre_data_ptr[3]);
+    iarray[3] += 10;
+    EXPECT_EQ(iarray[3],sidre_data_ptr[3]);
   }
 
   //The pointers should be the same addresses as the import treated the
@@ -2424,16 +2469,17 @@ TEST_P(UmpireTest, allocate_default)
   }
 }
 
-const int allocators[] = { axom::getResourceAllocatorID(umpire::resource::Host)
+const int allocators[] = {
+  axom::getResourceAllocatorID(umpire::resource::Host)
 #ifdef AXOM_USE_CUDA
-                     , axom::getResourceAllocatorID(umpire::resource::Pinned)
-                     , axom::getResourceAllocatorID(umpire::resource::Device)
-                     , axom::getResourceAllocatorID(umpire::resource::Constant)
-                     , axom::getResourceAllocatorID(umpire::resource::Unified)
+  , axom::getResourceAllocatorID(umpire::resource::Pinned)
+  , axom::getResourceAllocatorID(umpire::resource::Device)
+  , axom::getResourceAllocatorID(umpire::resource::Constant)
+  , axom::getResourceAllocatorID(umpire::resource::Unified)
 #endif
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
   sidre_group,
   UmpireTest,
   ::testing::ValuesIn(allocators)

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -2037,8 +2037,8 @@ bool InOutOctree<DIM>::withinGrayBlock(const SpacePt & queryPt,
 
   }
 
-  SLIC_WARNING("Could not determine inside/outside for point "
-               << queryPt << " on block " << leafBlk);
+  SLIC_DEBUG("Could not determine inside/outside for point "
+             << queryPt << " on block " << leafBlk);
 
   return false;    // query points on boundary might get here -- revisit this.
 }

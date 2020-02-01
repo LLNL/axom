@@ -12,6 +12,3 @@ Mint: Mesh Data Model {#minttop}
 Mint serves as as fundmental building block that underpins the development of
 computational tools and numerical discretization methods, enabling implementations 
 that are born *parallel* and *portable* to new and emerging architectures.
-
-The [Mint User Guide](https://axom.readthedocs.io/en/develop/axom/mint/docs/sphinx/index.html)
-introduces these concepts in more detail.

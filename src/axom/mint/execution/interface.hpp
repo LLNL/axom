@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -6,14 +6,14 @@
 #ifndef MINT_EXECUTION_INTERFACE_HPP_
 #define MINT_EXECUTION_INTERFACE_HPP_
 
-#include "axom/config.hpp"      // compile-time definitions
-#include "axom/core/Macros.hpp" // for AXOM_STATIC_ASSERT
+#include "axom/config.hpp"                         // compile-time definitions
+#include "axom/core/Macros.hpp"                    // for AXOM_STATIC_ASSERT
+#include "axom/core/execution/execution_space.hpp" // for execution_space traits
 
 #include "axom/mint/execution/xargs.hpp"                   // for xargs
 #include "axom/mint/execution/internal/for_all_cells.hpp"  // for_all_cells()
 #include "axom/mint/execution/internal/for_all_nodes.hpp"  // for_all_nodes()
 #include "axom/mint/execution/internal/for_all_faces.hpp"  // for_all_faces()
-#include "axom/mint/execution/policy.hpp"                  // for policy_traits
 
 #include "axom/mint/mesh/Mesh.hpp"                         // for  mint::Mesh
 
@@ -57,7 +57,7 @@
  *     For example, an execution policy may indicate that the mesh traversal
  *     will be executed in parallel on the GPU, or CPU. A list of the
  *     currently supported execution policies and a brief description is given
- *     in policy.hpp
+ *     in execution_space.hpp
  *
  *   * <b> [AXOM_LAMBDA()] </b> <br />
  *     The AXOM_LAMBDA argument encapsulates the loop body, i.e., the kernel
@@ -76,7 +76,7 @@
  *   <a href="https://github.com/LLNL/RAJA"> RAJA </a> programming model
  *   abstraction layer.
  *
- *  \see policy.hpp
+ *  \see execution_space.hpp
  *  \see xargs.hpp
  */
 
@@ -84,113 +84,6 @@ namespace axom
 {
 namespace mint
 {
-
-/// \name Generic Loop Traversal Functions
-/// @{
-
-/*!
- * \brief Iterates over the specified interval, \f$\mathcal{I}\f$:[begin,end-1],
- *  and executes the supplied kernel at each iteration.
- *
- * \param [in] begin the starting index of the iteration.
- * \param [in] end the total number of iterations
- * \param [in] kernel lambda expression consisting of the loop body
- *
- * \tparam ExecPolicy the execution policy
- * \tparam KernelType the type of the supplied lambda expression.
- *
- * \note The supplied lambda expression is expected to take the index of the
- *  iteration as an argument.
- *
- * Usage Example:
- * \code
- *
- *   constexpr axom::IndexType N = 10;
- *   double a[ N ];
- *   double b[ N ];
- *   double c[ N];
- *
- *   // other code
- *   ...
- *
- *   using exec = policy::parallel_cpu;
- *   mint::for_all< exec >( 0, N, AXOM_LAMBDA(axom::IndexType idx) {
- *     c[ idx ] = a[ idx ] + b[ idx ];
- *   } );
- *
- * \endcode
- *
- * \see policy.hpp
- */
-template < typename ExecPolicy = policy::serial, typename KernelType >
-inline void for_all( const axom::IndexType& begin,
-                     const axom::IndexType& end,
-                     KernelType&& kernel )
-{
-  // compile-time sanity checks
-  AXOM_STATIC_ASSERT( policy_traits< ExecPolicy >::valid() );
-
-#ifdef AXOM_USE_RAJA
-  using exec_pol = typename policy_traits< ExecPolicy >::raja_exec_policy;
-  RAJA::forall< exec_pol >( RAJA::RangeSegment(begin,end), kernel );
-#else
-
-  constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
-  AXOM_STATIC_ASSERT( is_serial );
-  for ( axom::IndexType i=begin ; i < end ; ++i )
-  {
-    kernel( i );
-  }
-
-#endif
-
-}
-
-/*!
- * \brief Iterates over the interval, \f$\mathcal{I}\f$:[0, N-1], and
- *  executes the supplied kernel at each iteration.
- *
- * \param [in] N the total number of iterations
- * \param [in] kernel lambda expression consisting of the loop body
- *
- * \tparam ExecPolicy the execution policy
- * \tparam KernelType the type of the supplied lambda expression.
- *
- * \note The supplied lambda expression is expected to take the index of the
- *  iteration as an argument.
- *
- * Usage Example:
- * \code
- *
- *  constexpr int N = 10;
- *  double a[ N ];
- *  double b[ N ];
- *  double c[ N];
- *
- *  // other code
- *  ...
- *
- *  using exec = policy::parallel_cpu;
- *  mint::for_all< exec >( N,
- *    AXOM_LAMBDA (axom::IndexType idx )
- *    {
- *      c[ idx ] = a[ idx ] + b[ idx ];
- *    }
- *  );
- *
- * \endcode
- *
- * \see policy.hpp
- */
-template < typename ExecPolicy=policy::serial, typename KernelType >
-inline void for_all( const axom::IndexType& N, KernelType&& kernel )
-{
-  // compile-time sanity checks
-  AXOM_STATIC_ASSERT( policy_traits< ExecPolicy >::valid() );
-  for_all< ExecPolicy >( 0, N, std::forward< KernelType >( kernel ) );
-}
-
-/// @}
 
 /// \name Mesh Node Traversal Functions
 /// @{
@@ -237,20 +130,19 @@ inline void for_all( const axom::IndexType& N, KernelType&& kernel )
  *
  * \endcode
  *
- * \see policy.hpp
+ * \see execution_space.hpp
  * \see xargs.hpp
  */
 /// @{
-template < typename ExecPolicy = policy::serial,
-           typename ArgType    = xargs::index,
+template < typename ExecPolicy, typename ArgType = xargs::index,
            typename MeshType,
            typename KernelType >
 inline void for_all_nodes( const MeshType* m, KernelType&& kernel )
 {
   // compile-time sanity checks
-  AXOM_STATIC_ASSERT( policy_traits< ExecPolicy >::valid() );
+  AXOM_STATIC_ASSERT( execution_space< ExecPolicy >::valid() );
   AXOM_STATIC_ASSERT( xargs_traits< ArgType >::valid() );
-  
+
   constexpr bool valid_mesh_type = std::is_base_of<Mesh, MeshType>::value;
   AXOM_STATIC_ASSERT( valid_mesh_type );
 
@@ -258,27 +150,24 @@ inline void for_all_nodes( const MeshType* m, KernelType&& kernel )
   SLIC_ASSERT( m != nullptr );
 
   // dispatch
-  internal::for_all_nodes_impl< ExecPolicy >( ArgType(),
-                                              *m,
-                                              std::forward< KernelType >( kernel ) );
+  internal::for_all_nodes_impl< ExecPolicy >(
+      ArgType(),  *m, std::forward< KernelType >( kernel ) );
 }
 
-template < typename ExecPolicy = policy::serial,
-           typename ArgType    = xargs::index,
+template < typename ExecPolicy, typename ArgType = xargs::index,
            typename KernelType >
 inline void for_all_nodes( const Mesh* m, KernelType&& kernel )
 {
   // compile-time sanity checks
-  AXOM_STATIC_ASSERT( policy_traits< ExecPolicy >::valid() );
+  AXOM_STATIC_ASSERT( execution_space< ExecPolicy >::valid() );
   AXOM_STATIC_ASSERT( xargs_traits< ArgType >::valid() );
 
   // run-time sanity checks
   SLIC_ASSERT( m != nullptr );
 
   //dispatch
-  internal::for_all_nodes< ExecPolicy >( ArgType(),
-                                         *m,
-                                         std::forward< KernelType >( kernel ) );
+  internal::for_all_nodes< ExecPolicy >(
+      ArgType(), *m, std::forward< KernelType >( kernel ) );
 }
 
 /// @}
@@ -325,7 +214,7 @@ inline void for_all_nodes( const Mesh* m, KernelType&& kernel )
  *  for_all_cells< exec, xargs::coords >( m,
  *    AXOM_LAMBDA( IndexType cellID, numerics::Matrix<double>& coords,
  *                 const IndexType * nodeIDs )
- *    { ... } 
+ *    { ... }
  *  );
  *
  *  for_all_cells< exec, xargs::faceids >( m,
@@ -335,21 +224,20 @@ inline void for_all_nodes( const Mesh* m, KernelType&& kernel )
  *
  * \endcode
  *
- * \see policy.hpp
+ * \see execution_space.hpp
  * \see xargs.hpp
  */
 /// @{
 
-template < typename ExecPolicy = policy::serial,
-           typename ArgType    = xargs::index,
+template < typename ExecPolicy, typename ArgType = xargs::index,
            typename MeshType,
            typename KernelType >
 inline void for_all_cells( const MeshType* m, KernelType&& kernel )
 {
   // compile-time sanity checks
-  AXOM_STATIC_ASSERT( policy_traits< ExecPolicy >::valid() );
+  AXOM_STATIC_ASSERT( execution_space< ExecPolicy >::valid() );
   AXOM_STATIC_ASSERT( xargs_traits< ArgType >::valid() );
-  
+
   constexpr bool valid_mesh_type = std::is_base_of<Mesh, MeshType>::value;
   AXOM_STATIC_ASSERT( valid_mesh_type );
 
@@ -357,27 +245,24 @@ inline void for_all_cells( const MeshType* m, KernelType&& kernel )
   SLIC_ASSERT( m != nullptr );
 
   // dispatch
-  internal::for_all_cells_impl< ExecPolicy >( ArgType(),
-                                              *m,
-                                              std::forward< KernelType >( kernel ) );
+  internal::for_all_cells_impl< ExecPolicy >(
+      ArgType(), *m, std::forward< KernelType >( kernel ) );
 }
 
-template < typename ExecPolicy = policy::serial,
-           typename ArgType    = xargs::index,
+template < typename ExecPolicy, typename ArgType = xargs::index,
            typename KernelType >
 inline void for_all_cells( const Mesh* m, KernelType&& kernel )
 {
   // compile-time sanity checks
-  AXOM_STATIC_ASSERT( policy_traits< ExecPolicy >::valid() );
+  AXOM_STATIC_ASSERT( execution_space< ExecPolicy >::valid() );
   AXOM_STATIC_ASSERT( xargs_traits< ArgType >::valid() );
 
   // run-time sanity checks
   SLIC_ASSERT( m != nullptr );
 
   //dispatch
-  internal::for_all_cells< ExecPolicy >( ArgType(),
-                                         *m,
-                                         std::forward< KernelType >( kernel ) );
+  internal::for_all_cells< ExecPolicy >(
+      ArgType(), *m, std::forward< KernelType >( kernel ) );
 }
 
 /// @}
@@ -429,19 +314,18 @@ inline void for_all_cells( const Mesh* m, KernelType&& kernel )
  *  is an external boundary face, then only cellIDOne exists and cellIDTwo
  *  will be set to -1.
  *
- * \see policy.hpp
+ * \see execution_space.hpp
  * \see xargs.hpp
  */
 /// @{
 
-template < typename ExecPolicy = policy::serial,
-           typename ArgType    = xargs::index,
+template < typename ExecPolicy, typename ArgType = xargs::index,
            typename MeshType,
            typename KernelType >
 inline void for_all_faces( const MeshType* m, KernelType&& kernel )
 {
   // compile-time sanity checks
-  AXOM_STATIC_ASSERT( policy_traits< ExecPolicy >::valid() );
+  AXOM_STATIC_ASSERT( execution_space< ExecPolicy >::valid() );
   AXOM_STATIC_ASSERT( xargs_traits< ArgType >::valid() );
 
   constexpr bool valid_mesh_type = std::is_base_of<Mesh, MeshType>::value;
@@ -451,58 +335,26 @@ inline void for_all_faces( const MeshType* m, KernelType&& kernel )
   SLIC_ASSERT( m != nullptr );
 
   // dispatch
-  internal::for_all_faces_impl< ExecPolicy >( ArgType(),
-                                              *m,
-                                              std::forward< KernelType >( kernel ) );
+  internal::for_all_faces_impl< ExecPolicy >(
+      ArgType(), *m, std::forward< KernelType >( kernel ) );
 }
 
-template < typename ExecPolicy = policy::serial,
-           typename ArgType    = xargs::index,
+template < typename ExecPolicy, typename ArgType = xargs::index,
            typename KernelType >
 inline void for_all_faces( const Mesh* m, KernelType&& kernel )
 {
   // compile-time sanity checks
-  AXOM_STATIC_ASSERT( policy_traits< ExecPolicy >::valid() );
+  AXOM_STATIC_ASSERT( execution_space< ExecPolicy >::valid() );
   AXOM_STATIC_ASSERT( xargs_traits< ArgType >::valid() );
 
   // run-time sanity checks
   SLIC_ASSERT( m != nullptr );
 
   //dispatch
-  internal::for_all_faces< ExecPolicy >( ArgType(),
-                                         *m,
-                                         std::forward< KernelType >( kernel ) );
+  internal::for_all_faces< ExecPolicy >(
+      ArgType(), *m, std::forward< KernelType >( kernel ) );
 }
 
-/// @}
-
-/// @}
-
-/// \name Synchronization
-/// @{
-
-/*!
- * \brief Synchronizes all execution threads of the specified execution policy.
- *
- * \tparam ExecPolicy the mint execution policy
- */
-/// @{
-template < typename ExecPolicy >
-inline void synchronize( )
-{
-  // compile-time sanity checks
-  AXOM_STATIC_ASSERT( policy_traits< ExecPolicy >::valid() );
-
-#ifdef AXOM_USE_RAJA
-  using sync_pol = typename policy_traits< ExecPolicy >::raja_sync_policy;
-  RAJA::synchronize< sync_pol >( );
-#endif
-}
-
-template < >
-inline void synchronize< policy::serial >( ) {
-  return;
-}
 /// @}
 
 /// @}

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -426,9 +426,9 @@ TEST(sidre_view,alloc_zero_items)
     // Allocate with size zero
     dv->allocate(INT_ID, 0);
     expDesc = expAppl = true;
-    expAlloc = false;
+    expAlloc = true;
     EXPECT_TRUE(checkViewValues(dv, BUFFER, expDesc, expAlloc, expAppl, 0));
-    EXPECT_FALSE(dv->getBuffer()->isAllocated());
+    EXPECT_TRUE(dv->getBuffer()->isAllocated());
     EXPECT_EQ(0, dv->getBuffer()->getNumElements());
   }
 
@@ -458,16 +458,17 @@ TEST(sidre_view,alloc_zero_items)
     // Call realloc(0); view and associated buffer are resized
     dv->reallocate(0);
     expDesc = expAppl = true;
-    expAlloc = false;
+    expAlloc = true;
     EXPECT_TRUE(checkViewValues(dv, BUFFER, expDesc, expAlloc, expAppl, 0));
-    EXPECT_FALSE(dv->getBuffer()->isAllocated());
+    EXPECT_TRUE(dv->getBuffer()->isAllocated());
     EXPECT_EQ(0, dv->getBuffer()->getNumElements());
 
     // Deallocate and then allocate() when described with zero items
     dv->deallocate();
-    expDesc = expAppl = true;
-    expAlloc = false;
+    expDesc = true;
+    expAlloc = expAppl = false;
     EXPECT_TRUE(checkViewValues(dv, BUFFER, expDesc, expAlloc, expAppl, 0));
+    expAlloc = expAppl = true;
     dv->allocate();
     EXPECT_TRUE(checkViewValues(dv, BUFFER, expDesc, expAlloc, expAppl, 0));
 
@@ -511,7 +512,7 @@ TEST(sidre_view,alloc_zero_items)
     // reallocate view to have size zero and check that buffer is resized
     dv->reallocate(0);
     expDesc = expAppl = true;
-    expAlloc = false;
+    expAlloc = true;
     EXPECT_TRUE(checkViewValues(dv, BUFFER, expDesc, expAlloc, expAppl, 0));
     EXPECT_EQ(0, dv->getBuffer()->getNumElements());
 
@@ -531,16 +532,16 @@ TEST(sidre_view,alloc_zero_items)
   // Allocate View of size 0 into empty buffer
   {
     bool expDesc = true;
-    bool expAlloc = false;
+    bool expAlloc = true;
     bool expAppl = true;
 
     Buffer* emptyBuf = ds->createBuffer( INT_ID, 0)->allocate();
     View* dv = root->createView("z_emptyBuf_attach_apply");
     dv->attachBuffer(emptyBuf)->allocate()->apply(0);
-    EXPECT_FALSE(dv->getBuffer()->isAllocated());
+    EXPECT_TRUE(dv->getBuffer()->isAllocated());
     EXPECT_TRUE(checkViewValues(dv, BUFFER, expDesc, expAlloc, expAppl, 0));
 
-    // reallocate buffer with non-emtpy size; view should still be zero
+    // reallocate buffer with non-empty size; view should still be zero
     emptyBuf->reallocate(BLEN);
     expDesc = expAlloc = expAppl = true;
     EXPECT_TRUE(checkViewValues(dv, BUFFER, expDesc, expAlloc, expAppl, 0));
@@ -549,17 +550,16 @@ TEST(sidre_view,alloc_zero_items)
 
     // reallocate view to have size zero; view and buffer should be resized
     dv->reallocate(0);
-    expDesc = expAppl = true;
-    expAlloc = false;
+    expDesc = expAlloc = expAppl = true;
     EXPECT_TRUE(checkViewValues(dv, BUFFER, expDesc, expAlloc, expAppl, 0));
-    EXPECT_FALSE(dv->getBuffer()->isAllocated());
+    EXPECT_TRUE(dv->getBuffer()->isAllocated());
     EXPECT_EQ(0, dv->getBuffer()->getNumElements());
 
     // attach a second view with size zero
-    dv = root->createView("z_emptyBuf_described_attach", INT_ID, 0);
-    dv->attachBuffer(emptyBuf);
+    auto* v2 = root->createView("z_emptyBuf_described_attach", INT_ID, 0);
+    v2->attachBuffer(emptyBuf);
     expDesc = true;
-    expAlloc = expAppl = false;
+    expAlloc = expAppl = true;
     EXPECT_TRUE(checkViewValues(dv, BUFFER, expDesc, expAlloc, expAppl, 0));
     EXPECT_EQ(0, dv->getBuffer()->getNumElements());
   }
@@ -1756,7 +1756,7 @@ TEST_P(UmpireTest, allocate_default)
 TEST_P(UmpireTest, reallocate)
 {
 
-#ifdef AXOM_USE_CUDA
+#if defined(AXOM_USE_CUDA) && defined(UMPIRE_ENABLE_CONST)
   if (allocID == axom::getResourceAllocatorID( umpire::resource::Constant ) )
   {
     return;
@@ -1788,12 +1788,14 @@ TEST_P(UmpireTest, reallocate)
 TEST_P(UmpireTest, reallocate_zero)
 {
 
-#ifdef AXOM_USE_CUDA
+#if defined(AXOM_USE_CUDA) && defined(UMPIRE_ENABLE_CONST)
   if (allocID == axom::getResourceAllocatorID( umpire::resource::Constant ) )
   {
     return;
   }
 #endif
+
+  axom::setDefaultAllocator( allocID );
 
   {
     View* view = root->createView("v");
@@ -1822,17 +1824,32 @@ TEST_P(UmpireTest, reallocate_zero)
   }
 }
 
-const int allocators[] = { 
-    axom::getResourceAllocatorID( umpire::resource::Host )
+const int allocators[] = {
+  axom::getResourceAllocatorID( umpire::resource::Host )
+
 #ifdef AXOM_USE_CUDA
+
+#ifdef UMPIRE_ENABLE_PINNED 
   , axom::getResourceAllocatorID( umpire::resource::Pinned )
+#endif
+
+#ifdef UMPIRE_ENABLE_DEVICE
   , axom::getResourceAllocatorID( umpire::resource::Device )
+#endif
+
+#ifdef UMPIRE_ENABLE_CONST
   , axom::getResourceAllocatorID( umpire::resource::Constant )
+#endif
+
+#ifdef UMPIRE_ENABLE_UM
   , axom::getResourceAllocatorID( umpire::resource::Unified )
 #endif
+
+#endif /* AXOM_USE_CUDA */
+
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
   sidre_view,
   UmpireTest,
   ::testing::ValuesIn(allocators)
@@ -2070,7 +2087,7 @@ const std::string copy_locations[] = {
 
 const int offsets[] = {0, 29};
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
   sidre_view,
   UpdateTest,
   ::testing::Combine(

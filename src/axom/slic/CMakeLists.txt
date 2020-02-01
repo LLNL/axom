@@ -1,18 +1,22 @@
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+#------------------------------------------------------------------------------
+# Slic component
+#------------------------------------------------------------------------------
 
-################################
+#------------------------------------------------------------------------------
 # Specify all headers/sources
-################################
+#------------------------------------------------------------------------------
 set(slic_headers
     core/Logger.hpp
     core/LogStream.hpp
-    core/MessageLevel.h
+    core/MessageLevel.hpp
     core/UnitTestLogger.hpp
 
     interface/slic.hpp
+    interface/slic_macros.hpp
 
     internal/stacktrace.hpp
 
@@ -54,9 +58,9 @@ if (ENABLE_FORTRAN)
     )
 endif()
 
-################################
+#------------------------------------------------------------------------------
 # Make/Install the library
-################################
+#------------------------------------------------------------------------------
 set(slic_depends core)
 
 blt_list_append( TO slic_depends ELEMENTS lumberjack IF ${AXOM_ENABLE_LUMBERJACK} )
@@ -80,21 +84,21 @@ axom_install_component( NAME    slic
                         )
 
 
-################################
+#------------------------------------------------------------------------------
 # Add examples
-################################
+#------------------------------------------------------------------------------
 if (AXOM_ENABLE_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
-################################
+#------------------------------------------------------------------------------
 # Add tests
-################################
+#------------------------------------------------------------------------------
 if (AXOM_ENABLE_TESTS)
   add_subdirectory(tests)
 endif()
 
-################################
+#------------------------------------------------------------------------------
 # Add code checks
-################################
+#------------------------------------------------------------------------------
 axom_add_code_checks(PREFIX slic)

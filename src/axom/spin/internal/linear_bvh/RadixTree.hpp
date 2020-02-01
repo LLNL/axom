@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -28,15 +28,15 @@ namespace linear_bvh
 template < typename FloatType, int NDIMS >
 struct RadixTree
 {
-  int32   m_size;
-  int32   m_inner_size;
+  int32 m_size;
+  int32 m_inner_size;
 
-  int32*  m_left_children;
-  int32*  m_right_children;
-  int32*  m_parents;
+  int32* m_left_children;
+  int32* m_right_children;
+  int32* m_parents;
   AABB< FloatType, NDIMS >* m_inner_aabbs;
 
-  int32*  m_leafs;
+  int32* m_leafs;
   uint32* m_mcodes;
   AABB< FloatType, NDIMS >* m_leaf_aabbs;
 

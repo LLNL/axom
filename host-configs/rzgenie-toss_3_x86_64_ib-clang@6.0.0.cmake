@@ -1,24 +1,20 @@
-##################################
+#------------------------------------------------------------------------------
 # !!!! This is a generated file, edit at own risk !!!!
-##################################
-
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+#------------------------------------------------------------------------------
+# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
-##################################
-
-##################################
-
+#------------------------------------------------------------------------------
 # SYS_TYPE: toss_3_x86_64_ib
 # Compiler Spec: clang@6.0.0
-##################################
+#------------------------------------------------------------------------------
+# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2020_01_30_13_06_51/clang-6.0.0/cmake-3.9.6/bin/cmake
+#------------------------------------------------------------------------------
 
-# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2019_08_29_16_57_11/clang-6.0.0/cmake-3.9.6/bin/cmake
-
-##############
+#------------------------------------------------------------------------------
 # Compilers
-##############
+#------------------------------------------------------------------------------
 
 # C compiler used by spack
 set(CMAKE_C_COMPILER "/usr/tce/packages/clang/clang-6.0.0/bin/clang" CACHE PATH "")
@@ -31,15 +27,15 @@ set(ENABLE_FORTRAN ON CACHE BOOL "")
 
 set(CMAKE_Fortran_COMPILER "/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran" CACHE PATH "")
 
-##############
+#------------------------------------------------------------------------------
 # TPLs
-##############
+#------------------------------------------------------------------------------
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_08_29_16_57_11/clang-6.0.0" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2020_01_30_13_06_51/clang-6.0.0" CACHE PATH "")
 
 # conduit from uberenv
-set(CONDUIT_DIR "${TPL_ROOT}/conduit-master" CACHE PATH "")
+set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.5.1" CACHE PATH "")
 
 # mfem from uberenv
 set(MFEM_DIR "${TPL_ROOT}/mfem-4.0" CACHE PATH "")
@@ -50,10 +46,10 @@ set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.19" CACHE PATH "")
 # scr not built by uberenv
 
 # raja from uberenv
-set(RAJA_DIR "${TPL_ROOT}/raja-0.9.0/share/raja/cmake" CACHE PATH "")
+set(RAJA_DIR "${TPL_ROOT}/raja-0.11.0/share/raja/cmake" CACHE PATH "")
 
 # umpire from uberenv
-set(UMPIRE_DIR "${TPL_ROOT}/umpire-1.0.0/share/umpire/cmake" CACHE PATH "")
+set(UMPIRE_DIR "${TPL_ROOT}/umpire-2.1.0/share/umpire/cmake" CACHE PATH "")
 
 # python not built by uberenv
 
@@ -67,9 +63,9 @@ set(ENABLE_DOCS OFF CACHE BOOL "")
 
 # cppcheck not built by uberenv
 
-##############
+#------------------------------------------------------------------------------
 # MPI
-##############
+#------------------------------------------------------------------------------
 
 set(ENABLE_MPI ON CACHE BOOL "")
 
@@ -83,11 +79,13 @@ set(MPIEXEC "/usr/bin/srun" CACHE PATH "")
 
 set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
 
-##############
+#------------------------------------------------------------------------------
 # Other machine specifics
-##############
+#------------------------------------------------------------------------------
 
 set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
+
+set(BLT_EXE_LINKER_FLAGS "-Wl,-rpath,/usr/tce/packages/clang/clang-6.0.0/lib" CACHE PATH "Adds a missing rpath for libraries associated with the fortran compiler")
 
 set(ENABLE_OPENMP ON CACHE BOOL "")
 

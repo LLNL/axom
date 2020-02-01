@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level COPYRIGHT file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -11,7 +11,7 @@ DataStore
 
 A Sidre DataStore object provides the main access point for Sidre contents,
 including the data managed by Sidre. In particular, a DataStore maintains the 
-group at the root of the Sidre group hierarchy (named "/"), a collection of 
+group at the root of the Sidre group hierarchy, a collection of
 Buffer objects, and a collection of Attribute objects. Generally, the first 
 thing a Sidre user does is create a DataStore; this operation also creates 
 the root group. Apart from providing access to the root group, a DataStore 

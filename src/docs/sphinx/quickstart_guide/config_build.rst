@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level COPYRIGHT file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -320,7 +320,7 @@ Here are the key build system options in Axom.
 If ``AXOM_ENABLE_ALL_COMPONENTS`` is OFF, you must explicitly enable the desired
 components (other than 'common', which is always enabled).
 
-See `Axom software documentation <../../web_main_docs/html/index.html#axom-software-documentation>`_
+See `Axom software documentation <../../../index.html>`_
 for a list of Axom's components and their dependencies.
 
 .. note :: To configure the version of the C++ standard, you can supply one of the

@@ -1,11 +1,14 @@
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+#------------------------------------------------------------------------------
+# Spio unit tests
+#------------------------------------------------------------------------------
 
-#
+#------------------------------------------------------------------------------
 # Specify list of tests
-#
+#------------------------------------------------------------------------------
 
 set(gtest_spio_serial_tests
    spio_serial.cpp
@@ -22,15 +25,16 @@ set(spio_test_depends
     mpi
     )
 
-if(HDF5_FOUND)
-    list(APPEND spio_test_depends hdf5)
-endif()
+blt_list_append(TO spio_test_depends ELEMENTS hdf5 IF HDF5_FOUND)
 
 if(SCR_FOUND)
      list(APPEND spio_test_depends scr)
      list(APPEND gtest_spio_parallel_tests spio_scr.cpp)
 endif()
 
+#------------------------------------------------------------------------------
+# Add gtest C++ tests
+#------------------------------------------------------------------------------
 if (ENABLE_MPI)
 
    foreach(test ${gtest_spio_serial_tests})
@@ -66,6 +70,9 @@ if (ENABLE_MPI)
 
 endif()
 
+#------------------------------------------------------------------------------
+# Add Fortran tests
+#------------------------------------------------------------------------------
 if(ENABLE_FORTRAN)
    if (ENABLE_MPI)
       blt_add_executable(NAME spio_basicWriteRead_F_test

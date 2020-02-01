@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -13,11 +13,14 @@
  ******************************************************************************
  */
 
-#ifndef DATAGROUP_HPP_
-#define DATAGROUP_HPP_
+#ifndef SIDRE_GROUP_HPP_
+#define SIDRE_GROUP_HPP_
 
+// axom headers
 #include "axom/config.hpp"
 #include "axom/core/Macros.hpp"
+#include "axom/core/Types.hpp"
+#include "axom/slic.hpp"
 
 // Standard C++ headers
 #include <memory>
@@ -32,11 +35,7 @@
 #include "hdf5.h"
 #endif
 
-// Other axom headers
-#include "axom/slic/interface/slic.hpp"
-#include "axom/core/Types.hpp"
-
-// Sidre project headers
+// Sidre headers
 #include "SidreTypes.hpp"
 #include "View.hpp"
 
@@ -177,12 +176,14 @@ public:
    */
   std::string getPathName() const
   {
-    if (getPath().length() < 1)
+    const auto path = getPath();
+
+    if (path.length() < 1)
     {
       return getName();
     }
 
-    return getPath() + getPathDelimiter() + getName();
+    return path + getPathDelimiter() + getName();
   }
 
   /*!
@@ -1177,15 +1178,87 @@ public:
              const Attribute* attr = nullptr) const;
 
   /*!
-   * \brief Load the Group from a file.
+   * \brief Load a Group hierarchy from a file into this Group
    *
-   * \param path      file path
-   * \param protocol  I/O protocol
-   * \param preserve_contents   Preserve existing contents of group if true
+   * This method instantiates the Group hierarchy and its Views stored
+   * in the file under this Group.  The name of this Group is not
+   * changed.
+   *
+   * If preserve_contents is true, then the names of the children held by the
+   * Node cannot be the same as the names of the children already held by this
+   * Group.  If there is a naming conflict, an error will occur.
+   *
+   * \param path     file path
+   * \param protocol I/O protocol
+   * \param preserve_contents  If true, any child Groups and Views held by
+   *                           this Group remain in place.  If false, all
+   *                           child Groups and Views are destroyed before
+   *                           loading data from the file.
    */
   void load(const std::string& path,
             const std::string& protocol = SIDRE_DEFAULT_PROTOCOL,
             bool preserve_contents = false);
+
+  /*!
+   * \brief Load a Group hierarchy from a file into this Group, reporting
+   *        the Group name stored in the file
+   *
+   * This method instantiates the Group hierarchy and its Views stored
+   * in the file under this Group.  The name of this Group is not
+   * changed.  The name of the group stored in the file is returned in
+   * the output parameter name_from_file.  This can be used to rename the
+   * group in a subsequent call.
+   *
+   * If preserve_contents is true, then the names of the children held by the
+   * Node cannot be the same as the names of the children already held by this
+   * Group.  If there is a naming conflict, an error will occur.
+   *
+   * \param [in]  path     file path to load
+   * \param [in]  protocol I/O protocol to use
+   * \param [in]  preserve_contents  If true, any child Groups and Views
+   *                           held by this Group remain in place.
+   *                           If false, all child Groups and Views are
+   *                           destroyed before loading data from the file.
+   * \param [out] name_from_file    Group name stored in the file
+   */
+  void load(const std::string& path,
+            const std::string& protocol,
+            bool preserve_contents,
+            std::string & name_from_file);
+
+  /*!
+   * \brief Create a child Group and load a Group hierarchy from file
+   *        into the new Group.
+   *
+   * This is a convenience routine for the following sequence:
+   * - create a group with name or path group_name
+   * - load a Group hierarchy from a file into the newly-created Group
+   * - return the newly created Group, or nullptr if creation failed
+   * - out-parameters return:
+   *   - the group name from the file
+   *   - a flag indicating success reading the file
+   *
+   * As with the createGroup() method, if group_name is empty or there
+   * already exists a child Group with that name or path, the child Group
+   * will not be created and this method will return nullptr.
+   *
+   * As with the load() method, after calling createGroupAndLoad() a host
+   * code may choose to rename the newly-created Group with the string
+   * returned in group_name.
+   *
+   * \param [in,out] group_name    In: name for the new group.
+   *                               Out: the group name stored in the file.
+   * \param [in]     path          file path
+   * \param [in]     protocol      I/O protocol
+   * \param [out]    load_success  Report success of the load operation
+   *
+   * \return pointer to created Group object or nullptr if new
+   *         Group is not created.
+   */
+  Group* createGroupAndLoad(std::string & group_name,
+                            const std::string& path,
+                            const std::string& protocol,
+                            bool & load_success);
 
   /*!
    * \brief Load data into the Group's external views from a file.
@@ -1216,13 +1289,41 @@ public:
 
   /*!
    * \brief Load the Group from an hdf5 handle.
+   *
+   * If preserve_contents is true, then the names of the children held by the
+   * Node cannot be the same as the names of the children already held by this
+   * Group.  If there is a naming conflict, an error will occur.
+   *
    * \param h5_id      hdf5 handle
    * \param protocol   I/O protocol sidre_hdf5 or conduit_hdf5
-   * \param preserve_contents   Preserve existing contents of group if true
+   * \param preserve_contents  If true, any child Groups and Views held by
+   *                           this Group remain in place.  If false, all
+   *                           child Groups and Views are destroyed before
+   *                           loading data from the file.
    */
   void load( const hid_t& h5_id,
              const std::string &protocol = SIDRE_DEFAULT_PROTOCOL,
              bool preserve_contents = false);
+
+  /*!
+   * \brief Load the Group from an hdf5 handle.
+   *
+   * If preserve_contents is true, then the names of the children held by the
+   * Node cannot be the same as the names of the children already held by this
+   * Group.  If there is a naming conflict, an error will occur.
+   *
+   * \param [in]  h5_id      hdf5 handle
+   * \param [in]  protocol   I/O protocol sidre_hdf5 or conduit_hdf5
+   * \param [in]  preserve_contents  If true, any child Groups and Views held by
+   *                           this Group remain in place.  If false, all
+   *                           child Groups and Views are destroyed before
+   *                           loading data from the file.
+   * \param [out] name_from_file    Group name stored in the file
+   */
+  void load( const hid_t& h5_id,
+             const std::string &protocol,
+             bool preserve_contents,
+             std::string & name_from_file );
 
   /*!
    * \brief Load data into the Group's external views from a hdf5 handle.
@@ -1252,9 +1353,13 @@ public:
    * identical to a name that is already held by the parent for another
    * Group or View object.
    *
+   * It is possible to rename the root Group, but a code cannot
+   * subsequently rename root Group back to its original empty string
+   * name.
+   *
    * \param new_name    The new name for this group.
    *
-   * /return            Success or failure of rename.
+   * \return            Success or failure of rename.
    */
   bool rename(const std::string& new_name);
 
@@ -1283,7 +1388,7 @@ public:
    *                           tree is not succesfully imported.
    */
   bool importConduitTree(const conduit::Node& node,
-     bool preserve_contents = false);
+                         bool preserve_contents = false);
 
   /*!
    * \brief Import data from a conduit Node into a Group without copying arrays
@@ -1314,7 +1419,7 @@ public:
    *                           tree is not succesfully imported.
    */
   bool importConduitTreeExternal(conduit::Node& node,
-     bool preserve_contents = false);
+                                 bool preserve_contents = false);
 
 private:
   DISABLE_DEFAULT_CTOR(Group);
@@ -1487,16 +1592,6 @@ private:
   const Group* walkPath(std::string& path ) const;
 
   /*!
-   * \brief Private method to rename this Group if possible, give warning if
-   * not.
-   *
-   * If the parent group already holds a Group or View with the new name,
-   * a warning will be given and the name will not be changed.  Otherwise
-   * the name will be changed to the new name.
-   */
-  void renameOrWarn(const std::string& new_name);
-
-  /*!
    * \brief Private method. If allocatorID is a valid allocator ID then return
    *  it. Otherwise return the ID of the default allocator of the owning group.
    */
@@ -1519,9 +1614,9 @@ private:
 
   ///////////////////////////////////////////////////////////////////
   //
-  typedef MapCollection<View> ViewCollection;
+  using ViewCollection = MapCollection<View>;
   //
-  typedef MapCollection<Group> GroupCollection;
+  using GroupCollection =  MapCollection<Group>;
   ///////////////////////////////////////////////////////////////////
 
   /// Collection of Views
@@ -1540,4 +1635,4 @@ private:
 } /* end namespace sidre */
 } /* end namespace axom */
 
-#endif /* DATAGROUP_HPP_ */
+#endif /* SIDRE_GROUP_HPP_ */

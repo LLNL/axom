@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -48,7 +48,7 @@ void vtk_output( mint::Mesh* mesh, const std::string fileName )
 //------------------------------------------------------------------------------
 void node_traversals()
 {
-  using exec_policy = mint::policy::serial;
+  using exec_policy = axom::SEQ_EXEC;
   using IndexType   = axom::IndexType;
 
   const double lo[]   = { -5.0, -5.0 };
@@ -131,7 +131,7 @@ void node_traversals()
 //------------------------------------------------------------------------------
 void cell_traversals()
 {
-  using exec_policy = mint::policy::serial;
+  using exec_policy = axom::SEQ_EXEC;
   using IndexType   = axom::IndexType;
 
   const double lo[]   = { -5.0, -5.0 };
@@ -289,7 +289,7 @@ void cell_traversals()
 //------------------------------------------------------------------------------
 void face_traversals()
 {
-  using exec_policy = mint::policy::serial;
+  using exec_policy = axom::SEQ_EXEC;
   using IndexType   = axom::IndexType;
 
   const double lo[]   = { -5.0, -5.0 };

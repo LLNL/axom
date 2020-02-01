@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level COPYRIGHT file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -82,32 +82,31 @@ Execution Policy
 
 The :ref:`ExecutionPolicy` is specifed as the first template argument and is
 required by all of the constituent functions of the
-:ref:`sections/execution_model`. Mint defines a set of high-level execution
-policies, summarized in the table below.
+:ref:`sections/execution_model`. Axom defines a set of high-level execution
+spaces, summarized in the table below.
 
-+-------------------------+------------------------+---------------------------------+
-| Execution Policy        |     Requirements       |          Description            |
-|                         |                        |                                 |
-+=========================+========================+=================================+
-| **serial**              |    None.               | Serial execution on             |
-|                         |                        | the CPU.                        |
-+-------------------------+------------------------+---------------------------------+
-| **parallel_cpu**        |  `RAJA`_ + OpenMP      | Parallel execution on           |
-|                         |                        | the CPU with OpenMP.            |
-+-------------------------+------------------------+---------------------------------+
-| **parallel_gpu**        |  `RAJA`_ + CUDA        | Parallel execution on           |
-|                         |                        | CUDA-enabled GPUs.              |
-+-------------------------+------------------------+---------------------------------+
-| **parallel_gpu_async**  |  `RAJA`_ + CUDA        | Asynchronous parallel           |
-|                         |                        | execution on CUDA-enabled GPUs. |
-+-------------------------+------------------------+---------------------------------+
++------------------------------------+--------------------------------+---------------------------------+
+| Execution Policy                   |     Requirements               |          Description            |
+|                                    |                                |                                 |
++====================================+================================+=================================+
+| **SEQ_EXEC**                       |    None.                       | Sequential execution on         |
+|                                    |                                | the CPU.                        |
++------------------------------------+--------------------------------+---------------------------------+
+| **OMP_EXEC**                       |  `RAJA`_ + OpenMP              | Parallel execution on           |
+|                                    |                                | the CPU using OpenMP.           |
++------------------------------------+--------------------------------+---------------------------------+
+| **CUDA_EXEC< BLOCKSIZE >**         |  `RAJA`_ + CUDA +              | Parallel execution on           |
+|                                    |  `Umpire`_ (memory management) | CUDA-enabled GPUs.              |
++------------------------------------+--------------------------------+---------------------------------+
+| **CUDA_EXEC< BLOCKSIZE, ASYNC >**  |  `RAJA`_ + CUDA +              | Asynchronous parallel           |
+|                                    |  `Umpire`_ (memory management) | execution on CUDA-enabled GPUs. |
++------------------------------------+--------------------------------+---------------------------------+
 
-These policies are mapped to corresponding `RAJA`_ execution policies internally.
-
-.. note::
-
-   Mint's execution policies are encapsulated in the ``axom::mint::policy::``
-   namespace.
+Internally, the implementation uses the ``axom::execution_space`` traits object
+to map each execution space to corresponding `RAJA`_ execution policies and
+bind the default memory space for a given execution space. For example, the
+default memory space for the ``axom::CUDA_EXEC`` execution space is unified
+memory, which can be accessed from both the host (CPU ) and device (GPU).
 
 .. _executionSignature:
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -12,15 +12,15 @@
  *
  */
 
-#ifndef SIDREDATATYPEIDS_H_
-#define SIDREDATATYPEIDS_H_
+#ifndef SIDRE_DATATYPEIDS_H_
+#define SIDRE_DATATYPEIDS_H_
 
 // Libraries and other axom headers
 #include "conduit.h"
 
 #include <stdint.h>   /* for int64_t */
 
-typedef int64_t SIDRE_IndexType;
+using SIDRE_IndexType = int64_t;
 
 const SIDRE_IndexType SIDRE_InvalidIndex = -1;
 
@@ -44,4 +44,4 @@ const SIDRE_IndexType SIDRE_InvalidIndex = -1;
 #define SIDRE_FLOAT_ID   CONDUIT_NATIVE_FLOAT_ID
 #define SIDRE_DOUBLE_ID  CONDUIT_NATIVE_DOUBLE_ID
 
-#endif /* SIDREDATATYPEIDS_H_ */
+#endif /* SIDRE_DATATYPEIDS_H_ */

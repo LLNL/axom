@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level COPYRIGHT file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -105,5 +105,7 @@ Axom has the following built-in third party libraries:
 
   `fmt <http://fmtlib.net/latest/index.html>`_
       BSD-licensed string formatting library
+  `CLI11 <https://github.com/CLIUtils/CLI11>`_
+      BSD-licenced C++ options parser
   `sparsehash <https://github.com/sparsehash/sparsehash>`_
       BSD-licenced associative containers for C++

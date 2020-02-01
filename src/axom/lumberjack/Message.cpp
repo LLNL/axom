@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -36,9 +36,9 @@ std::vector<int> Message::ranks() const
   return m_ranks;
 }
 
-int Message::ranksCount() const
+int Message::count() const
 {
-  return m_ranksCount;
+  return m_count;
 }
 
 std::string Message::fileName() const
@@ -72,6 +72,12 @@ std::string Message::stringOfRanks(std::string delimiter) const
     {
       returnString += delimiter;
     }
+  }
+
+  // Indicate we might have more ranks we aren't individually tracking
+  if (m_ranksLimitReached)
+  {
+    returnString += "...";
   }
   return returnString;
 }
@@ -116,11 +122,18 @@ void Message::addRank(int newRank, int ranksLimit)
       m_ranks.push_back(newRank);
     }
   }
-  // Always increment rank count
-  m_ranksCount++;
+
+  if (!m_ranksLimitReached &&
+      (m_ranks.size() == (std::vector<int>::size_type)ranksLimit))
+  {
+    m_ranksLimitReached = true;
+  }
+
+  // Always increment message count
+  m_count++;
 }
 
-void Message::addRanks(const std::vector<int>& newRanks, int ranksCount,
+void Message::addRanks(const std::vector<int>& newRanks, int count,
                        int ranksLimit)
 {
   int newRanksSize = newRanks.size();
@@ -139,8 +152,15 @@ void Message::addRanks(const std::vector<int>& newRanks, int ranksCount,
       m_ranks.push_back(newRanks[i]);
     }
   }
-  // Always increment ranks count
-  m_ranksCount += ranksCount;
+
+  if (!m_ranksLimitReached &&
+      (m_ranks.size() == (std::vector<int>::size_type)ranksLimit))
+  {
+    m_ranksLimitReached = true;
+  }
+
+  // Always increment message count
+  m_count += count;
 }
 
 // Utilities
@@ -160,7 +180,7 @@ std::string Message::pack()
   }
   packedMessage += memberDelimiter;
 
-  packedMessage += std::to_string(m_ranksCount) + memberDelimiter;
+  packedMessage += std::to_string(m_count) + memberDelimiter;
 
   packedMessage += m_fileName + memberDelimiter;
 
@@ -196,7 +216,7 @@ void Message::unpack(const std::string& packedMessage, int ranksLimit)
   unpackRanks(packedMessage.substr(0, end), ranksLimit);
   start = end + 1;
 
-  //Grab rank count since it can differ from list that is sent
+  //Grab message count since it can differ from list that is sent
   end = packedMessage.find(memberDelimiter, start);
   if (end == std::string::npos)
   {
@@ -205,7 +225,7 @@ void Message::unpack(const std::string& packedMessage, int ranksLimit)
               << std::endl;
     std::cerr << packedMessage << std::endl;
   }
-  m_ranksCount = std::stoi(packedMessage.substr(start, end-start));
+  m_count = std::stoi(packedMessage.substr(start, end-start));
   start = end + 1;
 
   //Grab file name
@@ -260,7 +280,7 @@ void Message::unpack(const std::string& packedMessage, int ranksLimit)
   start = end + 1;
 
   //Grab message
-  m_text = packedMessage.substr(end+1);
+  m_text = packedMessage.substr(start);
 }
 
 void Message::unpackRanks(const std::string& ranksString, int ranksLimit)
@@ -316,7 +336,8 @@ const char* packMessages(const std::vector<Message*>& messages)
   }
 
   // Create and calculate size of message count
-  std::string messageCountString = std::to_string(messageCount) + memberDelimiter;
+  std::string messageCountString = std::to_string(messageCount) +
+                                   memberDelimiter;
   totalSize += messageCountString.size();
 
   const char* packedMessagesString = new char[totalSize];

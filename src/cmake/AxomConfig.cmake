@@ -1,11 +1,10 @@
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
-
-#
+#------------------------------------------------------------------------------
 # AxomConfig.cmake - Create header of configuration options
-#
+#------------------------------------------------------------------------------
 
 ## Get Axom version information
 message(STATUS "Configuring Axom version ${AXOM_VERSION_FULL}")
@@ -14,7 +13,7 @@ message(STATUS "Configuring Axom version ${AXOM_VERSION_FULL}")
 ## Add a definition to the generated config file for each library dependency
 ## (optional and built-in) that we might need to know about in the code. We
 ## check for vars of the form <DEP>_FOUND or ENABLE_<DEP>
-set(TPL_DEPS CONDUIT CUDA FMT HDF5 MFEM MPI RAJA SCR SPARSEHASH UMPIRE OPENMP )
+set(TPL_DEPS CLI11 CONDUIT CUDA FMT HDF5 MFEM MPI OPENMP RAJA SCR SPARSEHASH UMPIRE )
 foreach(dep ${TPL_DEPS})
     if( ${dep}_FOUND OR ENABLE_${dep} )
         set(AXOM_USE_${dep} TRUE  )
@@ -35,12 +34,12 @@ foreach(comp ${AXOM_COMPONENTS_ENABLED})
     set(AXOM_USE_${comp_uc} TRUE)
 endforeach()
 
-convert_to_native_escaped_file_path(${CMAKE_SOURCE_DIR} AXOM_SRC_DIR)
+convert_to_native_escaped_file_path(${PROJECT_SOURCE_DIR} AXOM_SRC_DIR)
 convert_to_native_escaped_file_path(${CMAKE_BINARY_DIR} AXOM_BIN_DIR)
 
-################################
+#------------------------------------------------------------------------------
 # Compiler checks
-################################
+#------------------------------------------------------------------------------
 
 if(ENABLE_FORTRAN)
 

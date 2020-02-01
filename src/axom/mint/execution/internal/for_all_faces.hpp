@@ -1,10 +1,15 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
-// 
+//
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 #ifndef MINT_FOR_ALL_FACES_HPP_
 #define MINT_FOR_ALL_FACES_HPP_
+
+// Axom core includes
+#include "axom/config.hpp"                         // compile time definitions
+#include "axom/core/execution/execution_space.hpp" // for execution_space traits
+#include "axom/core/execution/for_all.hpp"         // for axom::for_all
 
 // mint includes
 #include "axom/mint/execution/xargs.hpp"        // for xargs
@@ -14,8 +19,8 @@
 #include "axom/mint/mesh/UniformMesh.hpp"       // for UniformMesh
 #include "axom/mint/mesh/RectilinearMesh.hpp"   // for RectilinearMesh
 #include "axom/mint/mesh/CurvilinearMesh.hpp"   // for CurvilinearMesh
-#include "axom/mint/execution/policy.hpp"       // execution policies/traits
 #include "axom/mint/execution/internal/helpers.hpp" // for for_all_coords
+#include "axom/mint/execution/internal/structured_exec.hpp"
 
 #include "axom/core/numerics/Matrix.hpp"        // for Matrix
 
@@ -50,7 +55,7 @@ inline void for_all_I_faces( xargs::ij,
   RAJA::RangeSegment i_range(0,Ni);
   RAJA::RangeSegment j_range(0,Nj);
 
-  using exec_pol = typename policy_traits< ExecPolicy >::raja_2d_exec;
+  using exec_pol = typename structured_exec< ExecPolicy >::loop2d_policy;
   RAJA::kernel< exec_pol >( RAJA::make_tuple( i_range, j_range ),
     AXOM_LAMBDA( IndexType i, IndexType j )
     {
@@ -61,7 +66,7 @@ inline void for_all_I_faces( xargs::ij,
 
 #else
 
-  constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
+  constexpr bool is_serial = std::is_same< ExecPolicy, axom::SEQ_EXEC >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
   for ( IndexType j = 0; j < Nj; ++j )
@@ -80,13 +85,13 @@ inline void for_all_I_faces( xargs::ij,
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
 inline void for_all_I_faces( xargs::ijk,
-                             const StructuredMesh& m, 
+                             const StructuredMesh& m,
                              KernelType&& kernel )
 {
   SLIC_ERROR_IF( m.getDimension() != 3, "Mesh must be a 3D." );
 
   const IndexType INodeResolution = m.getNodeResolution( I_DIRECTION );
-  const IndexType numIFacesInKSlice = 
+  const IndexType numIFacesInKSlice =
                         INodeResolution * m.getCellResolution( J_DIRECTION );
   const IndexType Ni = INodeResolution;
   const IndexType Nj = m.getCellResolution( J_DIRECTION );
@@ -97,19 +102,19 @@ inline void for_all_I_faces( xargs::ijk,
   RAJA::RangeSegment i_range(0, Ni);
   RAJA::RangeSegment j_range(0, Nj);
   RAJA::RangeSegment k_range(0, Nk);
-  
-  using exec_pol = typename policy_traits< ExecPolicy >::raja_3d_exec;
+
+  using exec_pol = typename structured_exec< ExecPolicy >::loop3d_policy;
   RAJA::kernel< exec_pol >( RAJA::make_tuple( i_range, j_range, k_range ),
     AXOM_LAMBDA( IndexType i, IndexType j, IndexType k )
     {
       const IndexType faceID = i + j * INodeResolution + k * numIFacesInKSlice;
-      kernel( faceID, i, j, k ); 
+      kernel( faceID, i, j, k );
     }
   );
 
 #else
 
-  constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
+  constexpr bool is_serial = std::is_same< ExecPolicy, axom::SEQ_EXEC >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
   for ( IndexType k = 0; k < Nk; ++k )
@@ -146,19 +151,19 @@ inline void for_all_J_faces( xargs::ij,
 
   RAJA::RangeSegment i_range(0, Ni);
   RAJA::RangeSegment j_range(0, Nj);
-  
-  using exec_pol = typename policy_traits< ExecPolicy >::raja_2d_exec;
+
+  using exec_pol = typename structured_exec< ExecPolicy >::loop2d_policy;
   RAJA::kernel< exec_pol >( RAJA::make_tuple( i_range, j_range ),
     AXOM_LAMBDA( IndexType i, IndexType j )
     {
       const IndexType faceID = numIFaces + i + j * ICellResolution;
-      kernel( faceID, i, j ); 
+      kernel( faceID, i, j );
     }
   );
 
 #else
 
-  constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
+  constexpr bool is_serial = std::is_same< ExecPolicy, axom::SEQ_EXEC >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
   for ( IndexType j = 0; j < Nj; ++j )
@@ -177,14 +182,14 @@ inline void for_all_J_faces( xargs::ij,
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
 inline void for_all_J_faces( xargs::ijk,
-                             const StructuredMesh& m, 
+                             const StructuredMesh& m,
                              KernelType&& kernel )
 {
   SLIC_ERROR_IF( m.getDimension() != 3, "Mesh must be 3D." );
 
   const IndexType numIFaces = m.getTotalNumFaces( I_DIRECTION );
   const IndexType ICellResolution = m.getCellResolution( I_DIRECTION );
-  const IndexType numJFacesInKSlice = 
+  const IndexType numJFacesInKSlice =
                         ICellResolution * m.getNodeResolution( J_DIRECTION );
   const IndexType Ni = ICellResolution;
   const IndexType Nj = m.getNodeResolution( J_DIRECTION );
@@ -196,7 +201,7 @@ inline void for_all_J_faces( xargs::ijk,
   RAJA::RangeSegment j_range( 0, Nj );
   RAJA::RangeSegment k_range( 0, Nk );
 
-  using exec_pol = typename policy_traits< ExecPolicy >::raja_3d_exec;
+  using exec_pol = typename structured_exec< ExecPolicy >::loop3d_policy;
   RAJA::kernel< exec_pol >( RAJA::make_tuple( i_range, j_range, k_range ),
     AXOM_LAMBDA( IndexType i, IndexType j, IndexType k )
     {
@@ -209,7 +214,7 @@ inline void for_all_J_faces( xargs::ijk,
 
 #else
 
-  constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
+  constexpr bool is_serial = std::is_same< ExecPolicy, axom::SEQ_EXEC >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
   for ( IndexType k = 0; k < Nk; ++k )
@@ -232,7 +237,7 @@ inline void for_all_J_faces( xargs::ijk,
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
 inline void for_all_K_faces( xargs::ijk,
-                             const StructuredMesh& m, 
+                             const StructuredMesh& m,
                              KernelType&& kernel )
 {
   SLIC_ERROR_IF( m.getDimension() != 3, "Mesh must be 3D." );
@@ -251,7 +256,7 @@ inline void for_all_K_faces( xargs::ijk,
   RAJA::RangeSegment j_range( 0, Nj );
   RAJA::RangeSegment k_range( 0, Nk );
 
-  using exec_pol = typename policy_traits< ExecPolicy >::raja_3d_exec;
+  using exec_pol = typename structured_exec< ExecPolicy >::loop3d_policy;
   RAJA::kernel< exec_pol >( RAJA::make_tuple( i_range, j_range, k_range ),
     AXOM_LAMBDA( IndexType i, IndexType j, IndexType k )
     {
@@ -264,7 +269,7 @@ inline void for_all_K_faces( xargs::ijk,
 
 #else
 
-  constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
+  constexpr bool is_serial = std::is_same< ExecPolicy, axom::SEQ_EXEC >::value;
   AXOM_STATIC_ASSERT( is_serial );
 
   for ( IndexType k = 0; k < Nk; ++k )
@@ -293,23 +298,7 @@ inline void for_all_faces_impl( xargs::index,
                                 KernelType&& kernel )
 {
   const IndexType numFaces = m.getNumberOfFaces();
-
-#ifdef AXOM_USE_RAJA
-
-  using exec_pol = typename policy_traits< ExecPolicy >::raja_exec_policy;
-  RAJA::forall< exec_pol >( RAJA::RangeSegment( 0, numFaces ), kernel );
-
-#else
-
-  constexpr bool is_serial = std::is_same< ExecPolicy, policy::serial >::value;
-  AXOM_STATIC_ASSERT( is_serial );
-
-  for ( IndexType cellID = 0 ; cellID < numFaces ; ++cellID )
-  {
-    kernel( cellID );
-  }
-
-#endif
+  axom::for_all< ExecPolicy >( numFaces, std::forward< KernelType >( kernel ) );
 }
 
 //------------------------------------------------------------------------------
@@ -318,7 +307,7 @@ inline void for_all_faces( xargs::index, const Mesh& m, KernelType&& kernel )
 {
   return for_all_faces_impl< ExecPolicy >( xargs::index(),
                                            m,
-                                           std::forward< KernelType >( kernel ) );
+                                           std::forward< KernelType >(kernel) );
 }
 
 //------------------------------------------------------------------------------
@@ -358,13 +347,14 @@ inline void for_all_faces_impl( xargs::nodeids,
   }
   else
   {
-    SLIC_ERROR_IF( dimension != 3, "for_all_faces only valid for 2 or 3D meshes." );
+    SLIC_ERROR_IF( dimension != 3,
+                   "for_all_faces is only valid for 2 or 3D meshes." );
 
     const IndexType numIFaces = m.getTotalNumFaces( I_DIRECTION );
     const IndexType numIJFaces = numIFaces + m.getTotalNumFaces( J_DIRECTION );
     const IndexType INodeResolution = m.getNodeResolution( I_DIRECTION );
     const IndexType JNodeResolution = m.getNodeResolution( J_DIRECTION );
-    const IndexType KFaceNodeStride = m.getCellResolution( I_DIRECTION ) + 
+    const IndexType KFaceNodeStride = m.getCellResolution( I_DIRECTION ) +
                                       m.getCellResolution( J_DIRECTION ) + 1;
 
     const IndexType cellNodeOffset2 = offsets[ 2 ];
@@ -418,7 +408,7 @@ inline void for_all_faces_impl( xargs::nodeids,
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
 inline void for_all_faces_impl( xargs::nodeids,
-                                const UnstructuredMesh< SINGLE_SHAPE >& m, 
+                                const UnstructuredMesh< SINGLE_SHAPE >& m,
                                 KernelType&& kernel )
 {
   SLIC_ERROR_IF( m.getNumberOfFaces() <= 0,
@@ -428,7 +418,7 @@ inline void for_all_faces_impl( xargs::nodeids,
   const IndexType* faces_to_nodes = m.getFaceNodesArray();
   const IndexType num_nodes = m.getNumberOfFaceNodes();
 
-  for_all_faces_impl< ExecPolicy >( xargs::index(), m, 
+  for_all_faces_impl< ExecPolicy >( xargs::index(), m,
     AXOM_LAMBDA( IndexType faceID )
     {
       kernel( faceID, faces_to_nodes + faceID * num_nodes, num_nodes );
@@ -439,7 +429,7 @@ inline void for_all_faces_impl( xargs::nodeids,
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, typename KernelType >
 inline void for_all_faces_impl( xargs::nodeids,
-                                const UnstructuredMesh< MIXED_SHAPE >& m, 
+                                const UnstructuredMesh< MIXED_SHAPE >& m,
                                 KernelType&& kernel )
 {
   SLIC_ERROR_IF( m.getNumberOfFaces() <= 0,
@@ -449,7 +439,7 @@ inline void for_all_faces_impl( xargs::nodeids,
   const IndexType* faces_to_nodes = m.getFaceNodesArray();
   const IndexType* offsets        = m.getFaceNodesOffsetsArray();
 
-  for_all_faces_impl< ExecPolicy >( xargs::index(), m, 
+  for_all_faces_impl< ExecPolicy >( xargs::index(), m,
     AXOM_LAMBDA( IndexType faceID )
     {
       const IndexType num_nodes = offsets[ faceID + 1 ] - offsets[ faceID ];
@@ -518,7 +508,7 @@ inline void for_all_faces_impl( xargs::cellids,
         {
           cellIDTwo = -1;
         }
-        
+
         kernel( faceID, cellIDOne, cellIDTwo );
       }
     );
@@ -527,7 +517,7 @@ inline void for_all_faces_impl( xargs::cellids,
       AXOM_LAMBDA( IndexType faceID, IndexType i, IndexType j )
       {
         IndexType cellIDTwo = i + j * cellJp;
-        IndexType cellIDOne = cellIDTwo - cellJp; 
+        IndexType cellIDOne = cellIDTwo - cellJp;
         if ( j == 0 )
         {
           cellIDOne = cellIDTwo;
@@ -537,14 +527,15 @@ inline void for_all_faces_impl( xargs::cellids,
         {
           cellIDTwo = -1;
         }
-        
+
         kernel( faceID, cellIDOne, cellIDTwo );
       }
     );
   }
   else
   {
-    SLIC_ERROR_IF( dimension != 3, "for_all_faces only valid for 2 or 3D meshes." );
+    SLIC_ERROR_IF( dimension != 3,
+                   "for_all_faces only valid for 2 or 3D meshes." );
 
     const IndexType KCellResolution = m.getCellResolution( K_DIRECTION );
     const IndexType cellKp = m.cellKp();
@@ -563,7 +554,7 @@ inline void for_all_faces_impl( xargs::cellids,
         {
           cellIDTwo = -1;
         }
-        
+
         kernel( faceID, cellIDOne, cellIDTwo );
       }
     );
@@ -582,7 +573,7 @@ inline void for_all_faces_impl( xargs::cellids,
         {
           cellIDTwo = -1;
         }
-        
+
         kernel( faceID, cellIDOne, cellIDTwo );
       }
     );
@@ -601,7 +592,7 @@ inline void for_all_faces_impl( xargs::cellids,
         {
           cellIDTwo = -1;
         }
-        
+
         kernel( faceID, cellIDOne, cellIDTwo );
       }
     );
@@ -611,7 +602,7 @@ inline void for_all_faces_impl( xargs::cellids,
 //------------------------------------------------------------------------------
 template < typename ExecPolicy, Topology TOPO, typename KernelType >
 inline void for_all_faces_impl( xargs::cellids,
-                                const UnstructuredMesh< TOPO >& m, 
+                                const UnstructuredMesh< TOPO >& m,
                                 KernelType&& kernel )
 {
   SLIC_ERROR_IF( m.getNumberOfFaces() <= 0,
@@ -620,7 +611,7 @@ inline void for_all_faces_impl( xargs::cellids,
 
   const IndexType* faces_to_cells = m.getFaceCellsArray();
 
-  for_all_faces_impl< ExecPolicy >( xargs::index(), m, 
+  for_all_faces_impl< ExecPolicy >( xargs::index(), m,
     AXOM_LAMBDA( IndexType faceID )
     {
       const IndexType offset = 2 * faceID;
@@ -678,7 +669,7 @@ inline void for_all_faces_impl( xargs::coords,
 
   const double x0 = origin[0];
   const double dx = spacing[0];
-  
+
   const double y0 = origin[1];
   const double dy = spacing[1];
 
@@ -695,7 +686,7 @@ inline void for_all_faces_impl( xargs::coords,
 
         double coords[4] = { x0 + i * dx, y0 +  j      * dy,
                              x0 + i * dx, y0 + (j + 1) * dy };
-        
+
         numerics::Matrix<double> coordsMatrix( dimension, 2, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
       }
@@ -709,7 +700,7 @@ inline void for_all_faces_impl( xargs::coords,
 
         double coords[4] = { x0 +  i      * dx, y0 + j * dy,
                              x0 + (i + 1) * dx, y0 + j * dy };
-        
+
         numerics::Matrix<double> coordsMatrix( dimension, 2, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
       }
@@ -726,12 +717,12 @@ inline void for_all_faces_impl( xargs::coords,
                                        n0 + nodeJp + nodeKp,
                                        n0 + nodeJp };
 
-        double coords[12] = { 
+        double coords[12] = {
           x0 + i * dx, y0 +  j      * dy, z0 +  k      * dz,
           x0 + i * dx, y0 +  j      * dy, z0 + (k + 1) * dz,
           x0 + i * dx, y0 + (j + 1) * dy, z0 + (k + 1) * dz,
           x0 + i * dx, y0 + (j + 1) * dy, z0 +  k      * dz };
-        
+
         numerics::Matrix<double> coordsMatrix( dimension, 4, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
       }
@@ -746,12 +737,12 @@ inline void for_all_faces_impl( xargs::coords,
                                        n0 + 1 + nodeKp,
                                        n0 + nodeKp };
 
-        double coords[12] = { 
+        double coords[12] = {
           x0 +  i      * dx, y0 + j * dy, z0 +  k      * dz,
           x0 + (i + 1) * dx, y0 + j * dy, z0 +  k      * dz,
           x0 + (i + 1) * dx, y0 + j * dy, z0 + (k + 1) * dz,
           x0 +  i      * dx, y0 + j * dy, z0 + (k + 1) * dz };
-        
+
         numerics::Matrix<double> coordsMatrix( dimension, 4, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
       }
@@ -766,12 +757,12 @@ inline void for_all_faces_impl( xargs::coords,
                                        n0 + 1 + nodeJp,
                                        n0 + nodeJp };
 
-        double coords[12] = { 
+        double coords[12] = {
           x0 +  i      * dx, y0 +  j      * dy, z0 + k * dz,
           x0 + (i + 1) * dx, y0 +  j      * dy, z0 + k * dz,
           x0 + (i + 1) * dx, y0 + (j + 1) * dy, z0 + k * dz,
           x0 +  i      * dx, y0 + (j + 1) * dy, z0 + k * dz };
-        
+
         numerics::Matrix<double> coordsMatrix( dimension, 4, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
       }
@@ -805,7 +796,7 @@ inline void for_all_faces_impl( xargs::coords,
 
         double coords[4] = { x[ i ], y[ j ],
                              x[ i ], y[ j + 1 ] };
-        
+
         numerics::Matrix<double> coordsMatrix( dimension, 2, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
       }
@@ -819,7 +810,7 @@ inline void for_all_faces_impl( xargs::coords,
 
         double coords[4] = { x[ i ]   , y[ j ],
                              x[ i + 1], y[ j ] };
-        
+
         numerics::Matrix<double> coordsMatrix( dimension, 2, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
       }
@@ -841,7 +832,7 @@ inline void for_all_faces_impl( xargs::coords,
                               x[ i ], y[ j     ], z[ k + 1 ],
                               x[ i ], y[ j + 1 ], z[ k + 1 ],
                               x[ i ], y[ j + 1 ], z[ k     ] };
-        
+
         numerics::Matrix<double> coordsMatrix( dimension, 4, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
       }
@@ -860,7 +851,7 @@ inline void for_all_faces_impl( xargs::coords,
                               x[ i + 1 ], y[ j ], z[ k     ],
                               x[ i + 1 ], y[ j ], z[ k + 1 ],
                               x[ i     ], y[ j ], z[ k + 1 ] };
-        
+
         numerics::Matrix<double> coordsMatrix( dimension, 4, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
       }
@@ -879,7 +870,7 @@ inline void for_all_faces_impl( xargs::coords,
                               x[ i + 1 ], y[ j     ], z[ k ],
                               x[ i + 1 ], y[ j + 1 ], z[ k ],
                               x[ i     ], y[ j + 1 ], z[ k ] };
-        
+
         numerics::Matrix<double> coordsMatrix( dimension, 4, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
       }
@@ -945,7 +936,7 @@ inline void for_all_faces_impl( xargs::coords,
 
   if ( dimension == 2 )
   {
-    for_all_faces_impl< ExecPolicy >( xargs::nodeids(), m, 
+    for_all_faces_impl< ExecPolicy >( xargs::nodeids(), m,
       AXOM_LAMBDA( IndexType faceID, const IndexType * nodeIDs,
                    IndexType numNodes )
       {
@@ -956,7 +947,7 @@ inline void for_all_faces_impl( xargs::coords,
           coords[ 2 * i     ] = x[ nodeID ];
           coords[ 2 * i + 1 ] = y[ nodeID ];
         }
-        
+
         numerics::Matrix<double> coordsMatrix( dimension, 2, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
       }
@@ -965,7 +956,7 @@ inline void for_all_faces_impl( xargs::coords,
   else
   {
     const double * z = m.getCoordinateArray( Z_COORDINATE );
-    for_all_faces_impl< ExecPolicy >( xargs::nodeids(), m, 
+    for_all_faces_impl< ExecPolicy >( xargs::nodeids(), m,
       AXOM_LAMBDA( IndexType faceID, const IndexType * nodeIDs,
                    IndexType numNodes )
       {
@@ -977,7 +968,7 @@ inline void for_all_faces_impl( xargs::coords,
           coords[ 3 * i + 1 ] = y[ nodeID ];
           coords[ 3 * i + 2 ] = z[ nodeID ];
         }
-        
+
         numerics::Matrix<double> coordsMatrix( dimension, 4, coords, NO_COPY );
         kernel( faceID, coordsMatrix, nodeIDs );
       }
@@ -1002,14 +993,14 @@ inline void for_all_faces( xargs::coords, const Mesh& m, KernelType&& kernel )
   else if ( m.getMeshType() == STRUCTURED_RECTILINEAR_MESH )
   {
     const RectilinearMesh& rm = static_cast< const RectilinearMesh& >( m );
-    for_all_faces_impl< ExecPolicy >( xargs::coords(), 
+    for_all_faces_impl< ExecPolicy >( xargs::coords(),
                                       rm,
                                       std::forward< KernelType >( kernel ) );
   }
   else if ( m.getMeshType() == STRUCTURED_CURVILINEAR_MESH )
   {
     const CurvilinearMesh& cm = static_cast< const CurvilinearMesh& >( m );
-    for_all_faces_impl< ExecPolicy >( xargs::coords(), 
+    for_all_faces_impl< ExecPolicy >( xargs::coords(),
                                       cm,
                                       std::forward< KernelType >( kernel ) );
   }

@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level COPYRIGHT file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -215,7 +215,7 @@ files.
 .. code-block:: cpp
 
    /*
-    * Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.
+    * Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC.
     * Produced at the Lawrence Livermore National Laboratory.
     *
     * All rights reserved.
@@ -561,7 +561,7 @@ Summary of common Doxygen commands
 --------------------------------------------------------------------
 
 This Section provides an overview of commonly used Doxygen commands.
-Please see the `Doxygen guide <http://www.stack.nl/~dimitri/doxygen/manual/index.html>`_ for more details and information about other commands.
+Please see the `Doxygen guide <http://www.doxygen.nl/manual/>`_ for more details and information about other commands.
 
 Note that to be processed properly, Doxygen commands **must** be preceded with 
 either "\\" or "\@" character. For brevity, we use "\\" for all commands 

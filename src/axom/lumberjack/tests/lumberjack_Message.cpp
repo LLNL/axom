@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -85,7 +85,7 @@ TEST(lumberjack_Message, getSet)
 
     EXPECT_EQ(m->text(), td.text);
     EXPECT_EQ(m->ranks().size(), (std::vector<int>::size_type) 1);
-    EXPECT_EQ(m->ranksCount(), 1);
+    EXPECT_EQ(m->count(), 1);
     EXPECT_EQ(m->ranks()[0], td.rank);
     EXPECT_EQ(m->level(), td.level);
     EXPECT_EQ(m->tag(), td.tag);
@@ -108,7 +108,7 @@ TEST(lumberjack_Message, getSetCaseConstCharToString)
 
   EXPECT_EQ(m.text(), textString);
   EXPECT_EQ(m.ranks().size(), (std::vector<int>::size_type) 1);
-  EXPECT_EQ(m.ranksCount(), 1);
+  EXPECT_EQ(m.count(), 1);
   EXPECT_EQ(m.ranks()[0], 14);
 }
 
@@ -125,7 +125,7 @@ TEST(lumberjack_Message, getSetFillRankLimit)
 
   EXPECT_EQ(m.text(), "Testing filling rank to rank limit.");
   EXPECT_EQ(m.ranks().size(), (std::vector<int>::size_type)ranksLimit);
-  EXPECT_EQ(m.ranksCount(), ranksLimit);
+  EXPECT_EQ(m.count(), ranksLimit);
   for(int i=0 ; i<(int)ranksLimit ; ++i)
   {
     EXPECT_EQ(m.ranks()[i], i+1);
@@ -145,7 +145,7 @@ TEST(lumberjack_Message, getSetFillPastRankLimit)
 
   EXPECT_EQ(m.text(), "Test filling past rank limit.");
   EXPECT_EQ(m.ranks().size(), (std::vector<int>::size_type)ranksLimit);
-  EXPECT_EQ(m.ranksCount(), (int)ranksLimit*2);
+  EXPECT_EQ(m.count(), (int)ranksLimit*2);
   for(int i=0 ; i<(int)ranksLimit ; ++i)
   {
     EXPECT_EQ(m.ranks()[i], i+1);
@@ -165,7 +165,7 @@ TEST(lumberjack_Message, getSetTestAddingVectorOfOneRank)
 
   EXPECT_EQ(m.text(), "Test adding vector of 1 rank.");
   EXPECT_EQ(m.ranks().size(), (std::vector<int>::size_type) 1);
-  EXPECT_EQ(m.ranksCount(), 1);
+  EXPECT_EQ(m.count(), 1);
   EXPECT_EQ(m.ranks()[0], 123);
 }
 
@@ -186,7 +186,7 @@ TEST(lumberjack_Message, getSetTestAddingVectorOfManyRanks)
 
   EXPECT_EQ(m.text(), "Test adding vector of many ranks over limit.");
   EXPECT_EQ(m.ranks().size(), (std::vector<int>::size_type)ranksLimit);
-  EXPECT_EQ(m.ranksCount(), ranksAdded);
+  EXPECT_EQ(m.count(), ranksAdded);
   for(int i=0 ; i<(int)ranksLimit ; ++i)
   {
     EXPECT_EQ(m.ranks()[i], i);
@@ -210,7 +210,7 @@ TEST(lumberjack_Message, getSetTestAddingExactNumberOfRanksLimit)
 
   EXPECT_EQ(m.text(), "Test adding vector of exactly ranksLimit of ranks.");
   EXPECT_EQ(m.ranks().size(), (std::vector<int>::size_type)ranksLimit);
-  EXPECT_EQ(m.ranksCount(), ranksLimit);
+  EXPECT_EQ(m.count(), ranksLimit);
   for(int i=0 ; i<(int)ranksLimit ; ++i)
   {
     EXPECT_EQ(m.ranks()[i], i+1);
@@ -232,7 +232,7 @@ TEST(lumberjack_Message, getSetAddSameRankMultipleTimes)
 
   EXPECT_EQ(m.text(), "Test adding same rank over and over.");
   EXPECT_EQ(m.ranks().size(), (std::vector<int>::size_type) 1);
-  EXPECT_EQ(m.ranksCount(), (int)ranksLimit*3);
+  EXPECT_EQ(m.count(), (int)ranksLimit*3);
   EXPECT_EQ(m.ranks()[0], 1);
 }
 
@@ -253,7 +253,7 @@ TEST(lumberjack_Message, getSetAddRanksWithOverRankLimit)
 
   EXPECT_EQ(m.text(), "This message is unimportant.");
   EXPECT_EQ(m.ranks().size(), (std::vector<int>::size_type) 1);
-  EXPECT_EQ(m.ranksCount(), (int)ranksLimit*3);
+  EXPECT_EQ(m.count(), (int)ranksLimit*3);
   EXPECT_EQ(m.ranks()[0], 1);
 }
 
@@ -269,7 +269,7 @@ TEST(lumberjack_Message, testConstructor01)
   EXPECT_EQ(m.level(), 1);
   EXPECT_EQ(m.tag(), "tag1");
   EXPECT_EQ(m.ranks().size(), (std::vector<int>::size_type) 1);
-  EXPECT_EQ(m.ranksCount(), 1);
+  EXPECT_EQ(m.count(), 1);
   EXPECT_EQ(m.ranks()[0], 122);
 }
 
@@ -293,7 +293,7 @@ TEST(lumberjack_Message, testConstructor02)
   EXPECT_EQ(m.level(), 2);
   EXPECT_EQ(m.tag(), "mytag");
   EXPECT_EQ(m.ranks().size(), (std::vector<int>::size_type)ranksLimit);
-  EXPECT_EQ(m.ranksCount(), ranksLimit);
+  EXPECT_EQ(m.count(), ranksLimit);
   for(int i=0 ; i<(int)ranksLimit ; ++i)
   {
     EXPECT_EQ(m.ranks()[i], i+1);
@@ -313,7 +313,7 @@ TEST(lumberjack_Message, stringOfRanks01)
   EXPECT_EQ(m.level(), 0);
   EXPECT_EQ(m.tag(), "");
   EXPECT_EQ(m.ranks().size(), (std::vector<int>::size_type) 1);
-  EXPECT_EQ(m.ranksCount(), 1);
+  EXPECT_EQ(m.count(), 1);
   EXPECT_EQ(m.ranks()[0], 400);
   EXPECT_EQ(m.stringOfRanks(), "400");
 }
@@ -335,12 +335,12 @@ TEST(lumberjack_Message, stringOfRanks02)
   EXPECT_EQ(m.fileName(), "");
   EXPECT_EQ(m.lineNumber(), 0);
   EXPECT_EQ(m.ranks().size(), (std::vector<int>::size_type)ranksLimit);
-  EXPECT_EQ(m.ranksCount(), ranksLimit);
+  EXPECT_EQ(m.count(), ranksLimit);
   for(int i=0 ; i<(int)ranksLimit ; ++i)
   {
     EXPECT_EQ(m.ranks()[i], i+1);
   }
-  EXPECT_EQ(m.stringOfRanks(), "1,2,3,4,5");
+  EXPECT_EQ(m.stringOfRanks(), "1,2,3,4,5...");
 }
 
 TEST(lumberjack_Message, stringOfRanks03)
@@ -361,12 +361,12 @@ TEST(lumberjack_Message, stringOfRanks03)
   EXPECT_EQ(m.fileName(), "test/foo.cpp");
   EXPECT_EQ(m.lineNumber(), 987654321);
   EXPECT_EQ(m.ranks().size(), (std::vector<int>::size_type)ranksLimit);
-  EXPECT_EQ(m.ranksCount(), ranksLimit);
+  EXPECT_EQ(m.count(), ranksLimit);
   for(int i=0 ; i<(int)ranksLimit ; ++i)
   {
     EXPECT_EQ(m.ranks()[i], i*2);
   }
-  EXPECT_EQ(m.stringOfRanks(), "0,2,4,6,8");
+  EXPECT_EQ(m.stringOfRanks(), "0,2,4,6,8...");
 }
 
 TEST(lumberjack_Message, pack01)
@@ -387,7 +387,7 @@ TEST(lumberjack_Message, pack01)
   EXPECT_EQ(m.fileName(), "test/foo.cpp");
   EXPECT_EQ(m.lineNumber(), 987654321);
   EXPECT_EQ(m.ranks().size(), (std::vector<int>::size_type)ranksLimit);
-  EXPECT_EQ(m.ranksCount(), ranksLimit);
+  EXPECT_EQ(m.count(), ranksLimit);
   for(int i=0 ; i<(int)ranksLimit ; ++i)
   {
     EXPECT_EQ(m.ranks()[i], i*2);
@@ -413,7 +413,7 @@ TEST(lumberjack_Message, unpack01)
   EXPECT_EQ(m.level(), 1);
   EXPECT_EQ(m.tag(), "gtest");
   EXPECT_EQ(m.ranks().size(), (std::vector<int>::size_type)ranksLimit);
-  EXPECT_EQ(m.ranksCount(), 15);
+  EXPECT_EQ(m.count(), 15);
   for(int i=0 ; i<(int)ranksLimit ; ++i)
   {
     EXPECT_EQ(m.ranks()[i], i*2);
@@ -435,7 +435,7 @@ TEST(lumberjack_Message, unpack02)
   EXPECT_EQ(m.level(), 0);
   EXPECT_EQ(m.tag(), "");
   EXPECT_EQ(m.ranks().size(), (std::vector<int>::size_type)ranksLimit);
-  EXPECT_EQ(m.ranksCount(), 15);
+  EXPECT_EQ(m.count(), 15);
   for(int i=0 ; i<(int)ranksLimit ; ++i)
   {
     EXPECT_EQ(m.ranks()[i], i*2);
@@ -485,7 +485,7 @@ TEST(lumberjack_Message, unpackEmptyMessage)
   EXPECT_EQ(m.level(), 0);
   EXPECT_EQ(m.tag(), "tag");
   EXPECT_EQ(m.ranks().size(), (std::vector<int>::size_type)ranksLimit);
-  EXPECT_EQ(m.ranksCount(), 15);
+  EXPECT_EQ(m.count(), 15);
   for(int i=0 ; i<(int)ranksLimit ; ++i)
   {
     EXPECT_EQ(m.ranks()[i], i*2);
@@ -507,7 +507,7 @@ TEST(lumberjack_Message, unpackEmptyTag)
   EXPECT_EQ(m.level(), 0);
   EXPECT_EQ(m.tag(), "");
   EXPECT_EQ(m.ranks().size(), (std::vector<int>::size_type)ranksLimit);
-  EXPECT_EQ(m.ranksCount(), 15);
+  EXPECT_EQ(m.count(), 15);
   for(int i=0 ; i<(int)ranksLimit ; ++i)
   {
     EXPECT_EQ(m.ranks()[i], i*2);
@@ -529,7 +529,7 @@ TEST(lumberjack_Message, unpackEmptyTagAndMessage)
   EXPECT_EQ(m.level(), 0);
   EXPECT_EQ(m.tag(), "");
   EXPECT_EQ(m.ranks().size(), (std::vector<int>::size_type)ranksLimit);
-  EXPECT_EQ(m.ranksCount(), 15);
+  EXPECT_EQ(m.count(), 15);
   for(int i=0 ; i<(int)ranksLimit ; ++i)
   {
     EXPECT_EQ(m.ranks()[i], i*2);

@@ -158,25 +158,25 @@ class UberenvAxom(Package):
         host_cfg_fname = "%s-%s-%s.cmake" % (socket.gethostname().rstrip('1234567890'),sys_type,spec.compiler)
         host_cfg_fname = pjoin(dest_dir,host_cfg_fname)
         cfg = open(host_cfg_fname,"w")
-        cfg.write("##################################\n")
+        cfg.write("#------------------{}\n".format("-"*60))
         cfg.write("# !!!! This is a generated file, edit at own risk !!!!\n")
-        cfg.write("##################################\n\n")
-        cfg.write("# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and\n")
+        cfg.write("#------------------{}\n".format("-"*60))
+        cfg.write("# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and\n")
         cfg.write("# other Axom Project Developers. See the top-level COPYRIGHT file for details.\n")
         cfg.write("#\n")
         cfg.write("# SPDX-License-Identifier: (BSD-3-Clause)\n")
-        cfg.write("##################################\n\n")
-        cfg.write("##################################\n\n")
-        cfg.write("# SYS_TYPE: %s\n" % (sys_type))
-        cfg.write("# Compiler Spec: %s\n" % (spec.compiler))
-        cfg.write("##################################\n\n")
+        cfg.write("#------------------{}\n".format("-"*60))
+        cfg.write("# SYS_TYPE: {}\n".format(sys_type))
+        cfg.write("# Compiler Spec: {}\n".format(spec.compiler))
+        cfg.write("#------------------{}\n".format("-"*60))
         # show path to cmake for reference and to be used by config-build.py
-        cfg.write("# CMake executable path: %s\n\n" % cmake_exe)
+        cfg.write("# CMake executable path: {}\n".format(cmake_exe))
+        cfg.write("#------------------{}\n\n".format("-"*60))
 
         # compiler settings
-        cfg.write("##############\n")
+        cfg.write("#------------------{}\n".format("-"*60))
         cfg.write("# Compilers\n")
-        cfg.write("##############\n\n")
+        cfg.write("#------------------{}\n\n".format("-"*60))
 
         if on_bgq:
             cfg.write("# Note: we build TPLs with the serial compiler then use MPI wrappers on bgq\n")
@@ -200,9 +200,9 @@ class UberenvAxom(Package):
             cfg.write(cmake_cache_entry("CMAKE_Fortran_COMPILER",f_compiler))
 
         # TPL locations
-        cfg.write("##############\n")
+        cfg.write("#------------------{}\n".format("-"*60))
         cfg.write("# TPLs\n")
-        cfg.write("##############\n\n")
+        cfg.write("#------------------{}\n\n".format("-"*60))
 
         # Try to find the common prefix of the TPL directory, including the compiler
         # If found, we will use this in the TPL paths
@@ -314,9 +314,9 @@ class UberenvAxom(Package):
         else:
             cfg.write("# cppcheck not built by uberenv\n\n")
 
-        cfg.write("##############\n")
+        cfg.write("#------------------{}\n".format("-"*60))
         cfg.write("# MPI\n")
-        cfg.write("##############\n\n")
+        cfg.write("#------------------{}\n\n".format("-"*60))
 
         if "+mpi" in spec:
             cfg.write(cmake_cache_option("ENABLE_MPI", True))
@@ -330,10 +330,26 @@ class UberenvAxom(Package):
                     "Pass in an explicit path to help find mpif.h"))
             else:
                 cfg.write(cmake_cache_entry("MPI_C_COMPILER", spec['mpi'].mpicc))
-                cfg.write(cmake_cache_entry("MPI_CXX_COMPILER",
-                                            spec['mpi'].mpicxx))
-                cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER",
-                                            spec['mpi'].mpifc))
+                cfg.write(cmake_cache_entry("MPI_CXX_COMPILER", spec['mpi'].mpicxx))
+                if on_blueos or on_blueos_p9:
+                    # clang doesn't come with a fortran wrapper on blueos
+
+                    # blueos_p9
+                    spectrum_prefix = "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release"
+                    if spec['mpi'].mpifc == spectrum_prefix + "-clang-8.0.0/bin/mpif90":
+                        cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER",
+                                                    spectrum_prefix + "-xl-2019.06.12/bin/mpif90"))
+                    elif spec['mpi'].mpifc == spectrum_prefix + "-clang-upstream-2019.03.26/bin/mpif90":
+                        cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER",
+                                                    spectrum_prefix + "-xl-2019.06.12/bin/mpif90"))
+                    # blueos
+                    elif spec['mpi'].mpifc == spectrum_prefix + "-clang-upstream-2018.11.09/bin/mpif90":
+                        cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER",
+                                                    spectrum_prefix + "-xl-2018.11.26/bin/mpif90"))
+                    else:
+                        cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", spec['mpi'].mpifc))
+                else:
+                    cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", spec['mpi'].mpifc))
 
             # Determine MPIEXEC
             if on_blueos:
@@ -364,9 +380,9 @@ class UberenvAxom(Package):
         # Other machine specifics
         ##################################
 
-        cfg.write("##############\n")
+        cfg.write("#------------------{}\n".format("-"*60))
         cfg.write("# Other machine specifics\n")
-        cfg.write("##############\n\n")
+        cfg.write("#------------------{}\n\n".format("-"*60))
 
         # Enable death tests everwhere but BGQ
         if on_bgq or (on_blueos and "+cuda" in spec):
@@ -387,7 +403,7 @@ class UberenvAxom(Package):
             cfg.write(cmake_cache_option("CMAKE_SKIP_RPATH", True))
 
         # BlueOS
-        elif on_blueos:
+        elif on_blueos or on_blueos_p9:
             if "xlf" in f_compiler:
                 cfg.write(cmake_cache_entry("CMAKE_Fortran_COMPILER_ID", "XL",
                     "All of BlueOS compilers report clang due to nvcc, override to proper compiler family"))
@@ -398,25 +414,26 @@ class UberenvAxom(Package):
                 cfg.write(cmake_cache_entry("CMAKE_CXX_COMPILER_ID", "XL",
                     "All of BlueOS compilers report clang due to nvcc, override to proper compiler family"))
 
-            if str(spec.compiler) in ("clang@upstream_xlf", "clang@upstream_nvcc_xlf"):
-                cfg.write(cmake_cache_entry("BLT_FORTRAN_FLAGS", "-WF,-C!",
+            if "xlf" in f_compiler:
+                cfg.write(cmake_cache_entry("BLT_FORTRAN_FLAGS", "-WF,-C!  -qxlf2003=polymorphic",
                     "Converts C-style comments to Fortran style in preprocessed files"))
+                # Grab lib directory for the current fortran compiler
+                libdir = os.path.join(os.path.dirname(os.path.dirname(f_compiler)), "lib")
                 cfg.write(cmake_cache_entry("BLT_EXE_LINKER_FLAGS",
-                    "-Wl,-rpath,/usr/tce/packages/xl/xl-2018.05.18/lib/",
+                    "-Wl,-rpath," + libdir,
                     "Adds a missing rpath for libraries associated with the fortran compiler"))
 
-            elif "xl@coral" == str(spec.compiler):
-                cfg.write(cmake_cache_entry("BLT_FORTRAN_FLAGS", "-WF,-C! -qxlf2003=polymorphic",
-                    "Convert C-style comments to Fortran and link fortran exes to C++ libraries"))
 
             if "+cuda" in spec:
-                cfg.write("##############\n")
+                cfg.write("#------------------{}\n".format("-"*60))
                 cfg.write("# Cuda\n")
-                cfg.write("##############\n\n")
+                cfg.write("#------------------{}\n\n".format("-"*60))
 
                 cfg.write(cmake_cache_option("ENABLE_CUDA", True))
                 cfg.write(cmake_cache_entry("CUDA_TOOLKIT_ROOT_DIR", "/usr/tce/packages/cuda/cuda-10.1.168"))
                 cfg.write(cmake_cache_entry("CMAKE_CUDA_COMPILER", "${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc"))
+
+                cfg.write(cmake_cache_option("CUDA_SEPARABLE_COMPILATION", True))
 
                 if on_blueos_p9:
                     cfg.write(cmake_cache_entry("AXOM_CUDA_ARCH", "sm_70"))
@@ -438,6 +455,11 @@ class UberenvAxom(Package):
             if "gcc@4.9.3" == str(spec.compiler):
                 cfg.write(cmake_cache_entry("SCR_DIR",
                     "/usr/gapps/axom/thirdparty_libs/scr-1.2.1/toss_3_x86_64_ib/gcc-4.9.3"))
+
+            if ("gfortran" in f_compiler) and ("clang" in cpp_compiler):
+                cfg.write(cmake_cache_entry("BLT_EXE_LINKER_FLAGS",
+                    "-Wl,-rpath,/usr/tce/packages/clang/clang-6.0.0/lib",
+                    "Adds a missing rpath for libraries associated with the fortran compiler"))
 
         if "+openmp" in spec:
             cfg.write(cmake_cache_option("ENABLE_OPENMP", True))

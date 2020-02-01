@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -365,9 +365,9 @@ TEST_P(SlamBitSet, differenceOperator)
   EXPECT_TRUE(bitset1.isValid());
 }
 
-INSTANTIATE_TEST_CASE_P(SlamBitSetParam,
-                        SlamBitSet,
-                        ::testing::ValuesIn( testSizes() ));
+INSTANTIATE_TEST_SUITE_P(SlamBitSetParam,
+                         SlamBitSet,
+                         ::testing::ValuesIn( testSizes() ));
 
 
 
