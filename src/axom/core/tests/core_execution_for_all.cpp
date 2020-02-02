@@ -44,9 +44,9 @@ void check_for_all( )
 
   // STEP 1: initialize to VALUE_1
   axom::for_all< ExecSpace >( N, AXOM_LAMBDA(axom::IndexType idx)
-  {
-    a[ idx ] = VALUE_1;
-  } );
+    {
+      a[ idx ] = VALUE_1;
+    } );
 
   if ( axom::execution_space< ExecSpace >::async() )
   {
@@ -61,9 +61,9 @@ void check_for_all( )
 
   // STEP 3: add VALUE_2 to all entries resulting to zero
   axom::for_all< ExecSpace >( 0, N, AXOM_LAMBDA(axom::IndexType idx)
-  {
-    a[ idx ] += VALUE_2;
-  } );
+    {
+      a[ idx ] += VALUE_2;
+    } );
 
 
   if ( axom::execution_space< ExecSpace >::async() )

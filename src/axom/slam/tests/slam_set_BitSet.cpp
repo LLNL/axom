@@ -366,8 +366,8 @@ TEST_P(SlamBitSet, differenceOperator)
 }
 
 INSTANTIATE_TEST_SUITE_P(SlamBitSetParam,
-                        SlamBitSet,
-                        ::testing::ValuesIn( testSizes() ));
+                         SlamBitSet,
+                         ::testing::ValuesIn( testSizes() ));
 
 
 

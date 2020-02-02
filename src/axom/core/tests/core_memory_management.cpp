@@ -300,7 +300,7 @@ TEST( core_memory_management, set_get_default_memory_space )
   EXPECT_EQ( UnifiedAllocatorID, axom::getDefaultAllocator().getId() );
 #endif
 
-#endif // AXOM_USE_CUDA 
+#endif // AXOM_USE_CUDA
 
 
   axom::setDefaultAllocator( axom::getAllocator( HostAllocatorID ) );
@@ -357,9 +357,9 @@ TEST( core_memory_management, alloc_free )
                         );
 #endif
 
-#endif // AXOM_USE_CUDA 
+#endif // AXOM_USE_CUDA
 
-#endif // AXOM_USE_UMPIRE 
+#endif // AXOM_USE_UMPIRE
 
   check_alloc_and_free();
 }
@@ -407,7 +407,7 @@ TEST( core_memory_management, alloc_realloc_free )
   check_alloc_realloc_free( axom::getAllocator( UnifiedAllocatorID ),
                             HOST_ACCESSIBLE
                             );
-  
+
 #endif
 
 #endif /* AXOM_USE_CUDA */
