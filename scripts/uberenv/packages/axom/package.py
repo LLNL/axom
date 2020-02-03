@@ -1,3 +1,8 @@
+# Copyright 2013-2020 Lawrence Livermore National Security, LLC and other
+# Spack Project Developers. See the top-level COPYRIGHT file for details.
+#
+# SPDX-License-Identifier: (Apache-2.0 OR MIT)
+
 from spack import *
 
 import socket
@@ -5,15 +10,19 @@ import os
 import platform
 from os.path import join as pjoin
 
+import llnl.util.tty as tty
+
 def cmake_cache_entry(name, value, comment=""):
     """Generate a string for a cmake cache variable"""
     return 'set(%s "%s" CACHE PATH "%s")\n\n' % (name,value,comment)
+
 
 def cmake_cache_option(name, boolean_value, comment=""):
     """Generate a string for a cmake configuration option"""
 
     value = "ON" if boolean_value else "OFF"
     return 'set(%s %s CACHE BOOL "%s")\n\n' % (name,value,comment)
+
 
 def get_spec_path(spec, package_name, path_replacements = {}, use_bin = False) :
     """Extracts the prefix path for the given spack package
@@ -31,48 +40,62 @@ def get_spec_path(spec, package_name, path_replacements = {}, use_bin = False) :
     return path
 
 
-class UberenvAxom(Package):
-    """Spack Based Uberenv Build for Axom TPLs """
+class Axom(Package):
+    """Axom provides a robust, flexible software infrastructure for the development
+       of multi-physics applications and computational tools."""
 
-    # hash for dummy tarfile
-    version('0.1', '8d378ef62dedc2df5db447b029b71200')
+    maintainers = ['white238']
 
-    homepage = "http://lc.llnl.gov/axom"
+    homepage = "https://github.com/LLNL/axom"
+    url      = "https://github.com/LLNL/axom/releases/download/v0.3.2/Axom-v0.3.2.tar.gz"
+    git      = "https://github.com/LLNL/axom.git"
 
-    # variants that allow us to winnow what TPLS we build
-    variant('devtools', default=False, description="Build development tools (such as sphinx, uncrustify, etc)")
+    version('develop', branch='develop', submodules=True, preferred=True)
 
-    # use ~cmake to skip cmake build and use whatever cmake is in the
-    # users path
-    # (given the pain of building cmake on BGQ, this is really only for BGQ)
-    variant('cmake',    default=True, description="Build cmake.")
+    version('0.3.2', sha256='0acbbf0de7154cbd3a204f91ce40f4b756b17cd5a92e75664afac996364503bd')
+    version('0.3.1', sha256='fad9964c32d7f843aa6dd144c32a8de0a135febd82a79827b3f24d7665749ac5')
 
-    variant("python",   default=False, description="Build python")
+    phases = ["hostconfig", "configure", "build", "install"]
+
+    #-----------------------------------------------------------------------
+    # Variants
+    #-----------------------------------------------------------------------
+    variant('debug', default=False,
+            description='Build debug instead of optimized version')
+
+    variant('devtools', default=False,
+            description="Build development tools (such as sphinx, uncrustify, etc)")
+
+    variant("python",   default=False, description="Build python support")
+
     variant("mpi",      default=True, description="Build MPI support")
-    variant("mfem",     default=True, description="Build mfem")
+    variant("cuda",     default=False, description="Turn on CUDA support.")
+    variant('openmp',   default=True, description='Turn on OpenMP support.')
 
-    variant("hdf5",     default=True, description="Build hdf5")
+    variant("mfem",     default=False, description="Build with mfem")
+    variant("hdf5",     default=True, description="Build with hdf5")
+    variant("scr",      default=False, description="Build with SCR")
+    variant("raja",     default=True, description="Build with raja")
+    variant("umpire",   default=True, description="Build with umpire")
 
-    variant("scr",      default=False, description="Build SCR")
-
-    variant("raja",     default=True, description="Build raja")
-
-    variant("umpire",   default=True, description="Build umpire")
-
-    variant("cuda",     default=False, description="Turn on cuda support.")
-
-    variant('openmp',   default=True, description='Turn on openmp support.')
-
+    #-----------------------------------------------------------------------
+    # Dependencies
+    #-----------------------------------------------------------------------
+    # Basics
+    depends_on("cmake@3.8.2:", type='build')
     depends_on("cuda", when="+cuda")
+    depends_on("mpi", when="+mpi")
 
-    depends_on("hdf5~cxx~shared~fortran", when="+hdf5")
+    # Libraries
+    depends_on("conduit~shared+python", when="+python")
+    depends_on("conduit~shared~python", when="~python")
+    depends_on("conduit~shared+hdf5+python", when="+hdf5+python")
+    depends_on("conduit~shared~hdf5+python", when="~hdf5+python")
+    depends_on("conduit~shared+hdf5~python", when="+hdf5~python")
+    depends_on("conduit~shared~hdf5~python", when="~hdf5~python")
 
-    depends_on("conduit~shared+python",when="+python")
-    depends_on("conduit~shared~python",when="~python")
-    depends_on("conduit~shared+hdf5+python",when="+hdf5+python")
-    depends_on("conduit~shared~hdf5+python",when="~hdf5+python")
-    depends_on("conduit~shared+hdf5~python",when="+hdf5~python")
-    depends_on("conduit~shared~hdf5~python",when="~hdf5~python")
+    # HDF5 needs to be the same as Conduit's
+    depends_on("hdf5@1.8.19:1.8.999~mpi~cxx~shared~fortran", when="+hdf5")
 
     depends_on("scr", when="+scr")
 
@@ -86,43 +109,44 @@ class UberenvAxom(Package):
     depends_on("umpire~openmp+cuda", when="+umpire~openmp+cuda")
     depends_on("umpire+openmp+cuda", when="+umpire+openmp+cuda")
 
-    # builds serial version of mfem that does not depend on Sidre
-    depends_on("mfem~hypre~metis~mpi~gzstream",   when="+mfem")
+    #depends_on("mfem~mpi", when="+mfem")
+    depends_on("mfem~mpi~hypre~metis~gzstream", when="+mfem")
 
-    # optional tpl builds
+    depends_on("python", when="+python")
 
-    # NOTE: Due to spack defaulting to the newest version given in a package
-    # The version of CMake is controlled in the <sys_type>/packages.yaml file.
-    # This is a problem when multiple packages depend on another package and
-    # the required (or not required) versions don't match
-    depends_on("cmake", when="+cmake")
-
-    if "darwin" in platform.system().lower():
-        depends_on("mpich@3.0.4", when="+mpi")
-        depends_on("openssl@1.0.2j")
-
-    depends_on("python",    when="+devtools")
-    depends_on("doxygen",   when="+devtools")
-    depends_on("uncrustify@0.61",when="+devtools")
-    depends_on("cppcheck",when="+devtools")
-    depends_on("graphviz",when="+devtools")
-
-    depends_on("python",   when="+python")
-
+    # Devtools
+    depends_on("python", when="+devtools")
+    depends_on("doxygen", when="+devtools")
+    depends_on("uncrustify@0.61", when="+devtools")
+    depends_on("cppcheck", when="+devtools")
+    depends_on("graphviz", when="+devtools")
     depends_on("py-sphinx", when="+devtools")
     depends_on("py-shroud", when="+devtools")
 
-    depends_on("mpi",when="+mpi")
 
-    # use dummy tarfile to avoid downloads
-    def url_for_version(self, version):
-        dummy_tar_path =  os.path.abspath(pjoin(os.path.dirname(__file__)))
-        dummy_tar_path = pjoin(dummy_tar_path,"uberenv-axom.tar.gz")
-        url      = "file://" + dummy_tar_path
-        return url
+    def _get_sys_type(self, spec):
+        sys_type = spec.architecture
+        # if on llnl systems, we can use the SYS_TYPE
+        if "SYS_TYPE" in env:
+            sys_type = env["SYS_TYPE"]
+        return sys_type
 
-    def install(self, spec, prefix):
-        dest_dir     = env["SPACK_DEBUG_LOG_DIR"]
+
+    def _get_host_config_path(self, spec):
+        host_config_path = "%s-%s-%s.cmake" % (socket.gethostname().rstrip('1234567890'),
+                                               self._get_sys_type(spec),
+                                               spec.compiler)
+        #dest_dir     = env["SPACK_DEBUG_LOG_DIR"]
+        dest_dir     = self.stage.source_path
+        host_config_path = os.path.abspath(pjoin(dest_dir, host_config_path))
+        return host_config_path
+
+    def hostconfig(self, spec, prefix):
+        """
+        This method creates a 'host-config' file that specifies
+        all of the options used to configure and build Axom.
+        """
+
         c_compiler   = env["SPACK_CC"]
         cpp_compiler = env["SPACK_CXX"]
         f_compiler   = None
@@ -134,13 +158,9 @@ class UberenvAxom(Package):
             if os.path.isfile(env["SPACK_FC"]):
                 f_compiler  = env["SPACK_FC"]
 
-        sys_type = spec.architecture
-        # if on llnl systems, we can use the SYS_TYPE
-        if env.has_key("SYS_TYPE"):
-            sys_type = env["SYS_TYPE"]
 
         # are we on a specific machine
-        on_bgq = 'bgq' in sys_type
+        sys_type = self._get_sys_type(spec)
         on_blueos = 'blueos' in sys_type
         on_blueos_p9 = 'p9' in sys_type
         on_toss =  'toss_3' in sys_type
@@ -155,9 +175,8 @@ class UberenvAxom(Package):
                 crash()
             cmake_exe = cmake_exe.command
 
-        host_cfg_fname = "%s-%s-%s.cmake" % (socket.gethostname().rstrip('1234567890'),sys_type,spec.compiler)
-        host_cfg_fname = pjoin(dest_dir,host_cfg_fname)
-        cfg = open(host_cfg_fname,"w")
+        host_config_path = self._get_host_config_path(spec)
+        cfg = open(host_config_path,"w")
         cfg.write("#------------------{}\n".format("-"*60))
         cfg.write("# !!!! This is a generated file, edit at own risk !!!!\n")
         cfg.write("#------------------{}\n".format("-"*60))
@@ -178,24 +197,12 @@ class UberenvAxom(Package):
         cfg.write("# Compilers\n")
         cfg.write("#------------------{}\n\n".format("-"*60))
 
-        if on_bgq:
-            cfg.write("# Note: we build TPLs with the serial compiler then use MPI wrappers on bgq\n")
-            cfg.write("# Serial compilers used by spack:\n")
-            cfg.write("# C compiler: {0}\n".format(c_compiler))
-            cfg.write("# C++ compiler: {0}\n\n".format(cpp_compiler))
-            cfg.write(cmake_cache_entry("CMAKE_C_COMPILER", spec['mpi'].prefix.bin.mpiclang))
-            cfg.write(cmake_cache_entry("CMAKE_CXX_COMPILER", spec['mpi'].prefix.bin.mpiclang + "++"))
-        else:
-            cfg.write("# C compiler used by spack\n")
-            cfg.write(cmake_cache_entry("CMAKE_C_COMPILER",c_compiler))
-            cfg.write("# C++ compiler used by spack\n")
-            cfg.write(cmake_cache_entry("CMAKE_CXX_COMPILER",cpp_compiler))
+        cfg.write(cmake_cache_entry("CMAKE_C_COMPILER",c_compiler))
+        cfg.write(cmake_cache_entry("CMAKE_CXX_COMPILER",cpp_compiler))
 
         if f_compiler is None:
-            cfg.write("# No fortran compiler\n\n")
             cfg.write(cmake_cache_option("ENABLE_FORTRAN",False))
         else:
-            cfg.write("# Fortran compiler used by spack\n")
             cfg.write(cmake_cache_option("ENABLE_FORTRAN",True))
             cfg.write(cmake_cache_entry("CMAKE_Fortran_COMPILER",f_compiler))
 
@@ -320,36 +327,27 @@ class UberenvAxom(Package):
 
         if "+mpi" in spec:
             cfg.write(cmake_cache_option("ENABLE_MPI", True))
-            if on_bgq:
-                cfg.write(cmake_cache_option("ENABLE_FIND_MPI", False,
-                   "Use wrapper directly to stop FindMPI returning the wrong linker flags."))
-                cfg.write(cmake_cache_option("ENABLE_WRAP_ALL_TESTS_WITH_MPIEXEC", True,
-                    "Ensures that tests will be wrapped with srun to run on the backend nodes"))
-                cfg.write(cmake_cache_entry("BLT_MPI_INCLUDES",
-                    "/usr/local/tools/deg/drivers/V1R2M0/ppc64/comm/gcc/include",
-                    "Pass in an explicit path to help find mpif.h"))
-            else:
-                cfg.write(cmake_cache_entry("MPI_C_COMPILER", spec['mpi'].mpicc))
-                cfg.write(cmake_cache_entry("MPI_CXX_COMPILER", spec['mpi'].mpicxx))
-                if on_blueos or on_blueos_p9:
-                    # clang doesn't come with a fortran wrapper on blueos
+            cfg.write(cmake_cache_entry("MPI_C_COMPILER", spec['mpi'].mpicc))
+            cfg.write(cmake_cache_entry("MPI_CXX_COMPILER", spec['mpi'].mpicxx))
+            if on_blueos or on_blueos_p9:
+                # clang doesn't come with a fortran wrapper on blueos
 
-                    # blueos_p9
-                    spectrum_prefix = "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release"
-                    if spec['mpi'].mpifc == spectrum_prefix + "-clang-8.0.0/bin/mpif90":
-                        cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER",
-                                                    spectrum_prefix + "-xl-2019.06.12/bin/mpif90"))
-                    elif spec['mpi'].mpifc == spectrum_prefix + "-clang-upstream-2019.03.26/bin/mpif90":
-                        cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER",
-                                                    spectrum_prefix + "-xl-2019.06.12/bin/mpif90"))
-                    # blueos
-                    elif spec['mpi'].mpifc == spectrum_prefix + "-clang-upstream-2018.11.09/bin/mpif90":
-                        cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER",
-                                                    spectrum_prefix + "-xl-2018.11.26/bin/mpif90"))
-                    else:
-                        cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", spec['mpi'].mpifc))
+                # blueos_p9
+                spectrum_prefix = "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release"
+                if spec['mpi'].mpifc == spectrum_prefix + "-clang-8.0.0/bin/mpif90":
+                    cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", 
+                                                spectrum_prefix + "-xl-2019.06.12/bin/mpif90"))
+                elif spec['mpi'].mpifc == spectrum_prefix + "-clang-upstream-2019.03.26/bin/mpif90":
+                    cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", 
+                                                spectrum_prefix + "-xl-2019.06.12/bin/mpif90"))
+                # blueos
+                elif spec['mpi'].mpifc == spectrum_prefix + "-clang-upstream-2018.11.09/bin/mpif90":
+                    cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", 
+                                                spectrum_prefix + "-xl-2018.11.26/bin/mpif90"))
                 else:
                     cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", spec['mpi'].mpifc))
+            else:
+                cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", spec['mpi'].mpifc))
 
             # Determine MPIEXEC
             if on_blueos:
@@ -384,26 +382,18 @@ class UberenvAxom(Package):
         cfg.write("# Other machine specifics\n")
         cfg.write("#------------------{}\n\n".format("-"*60))
 
-        # Enable death tests everwhere but BGQ
-        if on_bgq or (on_blueos and "+cuda" in spec):
+	# OpenMP
+        if "+openmp" in spec:
+            cfg.write(cmake_cache_option("ENABLE_OPENMP", True))
+
+        # Enable death tests
+        if on_blueos and "+cuda" in spec:
             cfg.write(cmake_cache_option("ENABLE_GTEST_DEATH_TESTS", False))
         else:
             cfg.write(cmake_cache_option("ENABLE_GTEST_DEATH_TESTS", True))
 
-        # BGQ
-        if on_bgq:
-            if "xlf" in str(spec.compiler):
-                cfg.write(cmake_cache_entry("BLT_FORTRAN_FLAGS", "-WF,-C!",
-                    "Converts C-style comments to Fortran style in preprocessed files"))
-
-            cfg.write("# Manually set up HDF5 library dependencies for BGQ to bypass errors from CMake's FindHDF5\n")
-            cfg.write(cmake_cache_entry("HDF5_C_LIBRARY_m", "-lm"))
-            cfg.write(cmake_cache_entry("HDF5_C_LIBRARY_dl", "-ldl"))
-
-            cfg.write(cmake_cache_option("CMAKE_SKIP_RPATH", True))
-
         # BlueOS
-        elif on_blueos or on_blueos_p9:
+        if on_blueos or on_blueos_p9:
             if "xlf" in f_compiler:
                 cfg.write(cmake_cache_entry("CMAKE_Fortran_COMPILER_ID", "XL",
                     "All of BlueOS compilers report clang due to nvcc, override to proper compiler family"))
@@ -452,21 +442,46 @@ class UberenvAxom(Package):
 
         # TOSS3
         elif on_toss:
-            if "gcc@4.9.3" == str(spec.compiler):
-                cfg.write(cmake_cache_entry("SCR_DIR",
-                    "/usr/gapps/axom/thirdparty_libs/scr-1.2.1/toss_3_x86_64_ib/gcc-4.9.3"))
-
             if ("gfortran" in f_compiler) and ("clang" in cpp_compiler):
+                clanglibdir = pjoin(os.path.dirname(os.path.dirname(cpp_compiler)), "lib")
                 cfg.write(cmake_cache_entry("BLT_EXE_LINKER_FLAGS",
-                    "-Wl,-rpath,/usr/tce/packages/clang/clang-6.0.0/lib",
+                    "-Wl,-rpath,{0}".format(clanglibdir),
                     "Adds a missing rpath for libraries associated with the fortran compiler"))
-
-        if "+openmp" in spec:
-            cfg.write(cmake_cache_option("ENABLE_OPENMP", True))
 
         cfg.write("\n")
         cfg.close()
-        mkdirp(prefix)
-        install(host_cfg_fname,prefix)
-        print "[result host-config file: %s]" % host_cfg_fname
+        tty.info("Spack generated Axom host-config file: " + host_config_path)
 
+
+    def configure(self, spec, prefix):
+        with working_dir('spack-build', create=True):
+            host_config_path = self._get_host_config_path(spec)
+
+            cmake_args = []
+            cmake_args.extend(std_cmake_args)
+            cmake_args.extend(["-C", host_config_path, "../src"])
+            print("Configuring Axom...")
+            cmake(*cmake_args)
+
+
+    def build(self, spec, prefix):
+        with working_dir('spack-build'):
+            print("Building Axom...")
+            make()
+
+
+    @run_after('build')
+    @on_package_attributes(run_tests=True)
+    def test(self):
+        with working_dir('spack-build'):
+            print("Running Axom's Unit Tests...")
+            make("test")
+
+
+    def install(self, spec, prefix):
+        with working_dir('spack-build'):
+            make("install")
+            # install copy of host config for provenance
+            print("Installing Axom's CMake Host Config File...")
+            host_config_path = self._get_host_config_path(spec)
+            install(host_config_path, prefix)
