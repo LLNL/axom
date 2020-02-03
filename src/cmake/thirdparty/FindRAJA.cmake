@@ -11,7 +11,6 @@ if (NOT RAJA_DIR)
 endif()
 
 find_package(RAJA REQUIRED)
-find_package_handle_standard_args( RAJA DEFAULT_MSG
-                                   RAJA_INCLUDE_DIR
-                                   RAJA_LIB_DIR
-                                   )
+if(TARGET RAJA)
+   message(STATUS "Found RAJA: ${RAJA_DIR}")
+endif()

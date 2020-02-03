@@ -48,7 +48,7 @@ set(utils_tests_depends
    )
 
 blt_list_append( TO utils_tests_depends ELEMENTS umpire IF ${UMPIRE_FOUND} )
-blt_list_append( TO utils_tests_depends ELEMENTS raja IF ${RAJA_FOUD} )
+blt_list_append( TO utils_tests_depends ELEMENTS RAJA IF ${RAJA_FOUD} )
 blt_list_append( TO utils_tests_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
 
 #------------------------------------------------------------------------------

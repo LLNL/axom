@@ -26,10 +26,6 @@ endif()
 #------------------------------------------------------------------------------
 if (RAJA_DIR)
     include(cmake/thirdparty/FindRAJA.cmake)
-    blt_register_library( NAME      raja
-                          INCLUDES  ${RAJA_INCLUDE_DIR}
-                          LIBRARIES ${RAJA_LIB_DIR}/libRAJA.a
-                          TREAT_INCLUDES_AS_SYSTEM ON)
 else()
     message(STATUS "RAJA support is OFF" )
 endif()
@@ -92,10 +88,12 @@ if(EXISTS ${SHROUD_EXECUTABLE})
     execute_process(COMMAND ${SHROUD_EXECUTABLE}
                     --cmake ${CMAKE_CURRENT_BINARY_DIR}/SetupShroud.cmake
                     ERROR_VARIABLE SHROUD_cmake_error
+                    RESULT_VARIABLE SHROUD_cmake_result
                     OUTPUT_STRIP_TRAILING_WHITESPACE )
-    if(${SHROUD_cmake_error})
-        message(FATAL_ERROR "Error from Shroud: ${SHROUD_cmake_error}")
+    if(NOT "${SHROUD_cmake_result}" STREQUAL "0")
+        message(FATAL_ERROR "Error code from Shroud: ${SHROUD_cmake_result}\n${SHROUD_cmake_error}")
     endif()
+
     include(${CMAKE_CURRENT_BINARY_DIR}/SetupShroud.cmake)
 else()
     message(STATUS "Shroud support is OFF")
@@ -115,3 +113,22 @@ else()
     message(STATUS "SCR support is OFF")
 endif()
 
+
+# Remove exported OpenMP flags because they are not language agnostic
+foreach(_target RAJA camp umpire umpire_alloc)
+    if(TARGET ${_target})
+        get_target_property(_flags ${_target} INTERFACE_COMPILE_OPTIONS)
+        if ( _flags )
+
+            message(STATUS "Removing OpenMP Flags from target[${_target}]")
+
+            string( REPLACE "${OpenMP_CXX_FLAGS}" ""
+                    correct_flags "${_flags}" )
+            string( REPLACE "${OpenMP_Fortran_FLAGS}" ""
+                    correct_flags "${correct_flags}" )
+
+            set_target_properties( ${_target} PROPERTIES INTERFACE_COMPILE_OPTIONS
+                                   "${correct_flags}" )
+        endif()
+    endif()
+endforeach()

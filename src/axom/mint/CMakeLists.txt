@@ -121,7 +121,7 @@ blt_list_append( TO mint_dependencies
                  ELEMENTS sidre conduit::conduit
                  IF AXOM_MINT_USE_SIDRE )
 
-blt_list_append( TO mint_dependencies ELEMENTS raja IF RAJA_FOUND )
+blt_list_append( TO mint_dependencies ELEMENTS RAJA IF RAJA_FOUND )
 
 blt_list_append( TO mint_dependencies ELEMENTS openmp IF ENABLE_OPENMP )
 
