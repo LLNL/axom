@@ -11,11 +11,26 @@
 # UMPIRE
 #------------------------------------------------------------------------------
 if (UMPIRE_DIR)
-    include(cmake/thirdparty/FindUmpire.cmake)
-    blt_register_library( NAME      umpire
-                          INCLUDES  ${UMPIRE_INCLUDE_DIRS}
-                          LIBRARIES umpire
-                          TREAT_INCLUDES_AS_SYSTEM ON)
+    if (NOT EXISTS "${UMPIRE_DIR}")
+        message(FATAL_ERROR "Given UMPIRE_DIR does not exist: ${UMPIRE_DIR}")
+    endif()
+
+    if (NOT IS_DIRECTORY "${UMPIRE_DIR}")
+        message(FATAL_ERROR "Given UMPIRE_DIR is not a directory: ${UMPIRE_DIR}")
+    endif()
+
+    find_package(umpire REQUIRED PATHS ${UMPIRE_DIR} )
+
+    message(STATUS "Checking for expected Umpire target 'umpire'")
+    if (NOT TARGET umpire)
+        message(FATAL_ERROR "Umpire failed to load: ${UMPIRE_DIR}")
+    else()
+        message(STATUS "Umpire loaded: ${UMPIRE_DIR}")
+        set_property(TARGET umpire 
+                     APPEND PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
+                    ${UMPIRE_INCLUDE_DIRS})
+
+    endif()
 else()
     message(STATUS "Umpire support is OFF")
 endif()
@@ -25,7 +40,22 @@ endif()
 # RAJA
 #------------------------------------------------------------------------------
 if (RAJA_DIR)
-    include(cmake/thirdparty/FindRAJA.cmake)
+    if (NOT EXISTS "${RAJA_DIR}")
+        message(FATAL_ERROR "Given RAJA_DIR does not exist: ${RAJA_DIR}")
+    endif()
+
+    if (NOT IS_DIRECTORY "${RAJA_DIR}")
+        message(FATAL_ERROR "Given RAJA_DIR is not a directory: ${RAJA_DIR}")
+    endif()
+
+    find_package(RAJA REQUIRED PATHS ${RAJA_DIR} )
+
+    message(STATUS "Checking for expected RAJA target 'RAJA'")
+    if (NOT TARGET RAJA)
+        message(FATAL_ERROR "RAJA failed to load: ${RAJA_DIR}")
+    else()
+        message(STATUS "RAJA loaded: ${RAJA_DIR}")
+    endif()
 else()
     message(STATUS "RAJA support is OFF" )
 endif()
@@ -115,20 +145,26 @@ endif()
 
 
 # Remove exported OpenMP flags because they are not language agnostic
+set(_props)
+if( ${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.13.0" )
+    list(APPEND _props INTERFACE_LINK_OPTIONS)
+endif()
+list(APPEND _props INTERFACE_COMPILE_OPTIONS)
+
 foreach(_target RAJA camp umpire umpire_alloc)
     if(TARGET ${_target})
-        get_target_property(_flags ${_target} INTERFACE_COMPILE_OPTIONS)
-        if ( _flags )
+        message(STATUS "Removing OpenMP Flags from target[${_target}]")
 
-            message(STATUS "Removing OpenMP Flags from target[${_target}]")
+        foreach(_prop ${_props})
+            get_target_property(_flags ${_target} ${_prop})
+            if ( _flags )
+                string( REPLACE "${OpenMP_CXX_FLAGS}" ""
+                        correct_flags "${_flags}" )
+                string( REPLACE "${OpenMP_Fortran_FLAGS}" ""
+                        correct_flags "${correct_flags}" )
 
-            string( REPLACE "${OpenMP_CXX_FLAGS}" ""
-                    correct_flags "${_flags}" )
-            string( REPLACE "${OpenMP_Fortran_FLAGS}" ""
-                    correct_flags "${correct_flags}" )
-
-            set_target_properties( ${_target} PROPERTIES INTERFACE_COMPILE_OPTIONS
-                                   "${correct_flags}" )
-        endif()
+                set_target_properties( ${_target} PROPERTIES ${_prop} "${correct_flags}" )
+            endif()
+        endforeach()
     endif()
 endforeach()

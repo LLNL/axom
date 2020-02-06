@@ -47,4 +47,11 @@ class Raja(CMakePackage):
                 '-DENABLE_CUDA=On',
                 '-DCUDA_TOOLKIT_ROOT_DIR=%s' % (spec['cuda'].prefix)])
 
+        # Work around spack adding -march=ppc64le to SPACK_TARGET_ARGS which is used by the spack compiler wrapper
+        sys_type = ""
+        if "SYS_TYPE" in env:
+            sys_type = env["SYS_TYPE"]
+        if "blueos" in sys_type:
+            options.extend(['-DENABLE_TESTS=OFF'])
+
         return options

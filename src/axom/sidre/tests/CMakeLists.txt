@@ -77,20 +77,18 @@ endforeach()
 #------------------------------------------------------------------------------
 # Add gtest C tests
 #------------------------------------------------------------------------------
-if (ENABLE_FORTRAN)
-    foreach(test ${gtest_sidre_C_tests})
-        get_filename_component( test_name ${test} NAME_WE )
-        blt_add_executable( NAME ${test_name}_test
-                            SOURCES ${test}
-                            OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                            DEPENDS_ON ${sidre_test_depends} gtest
-                            FOLDER axom/sidre/tests
-                            )
-        blt_add_test( NAME ${test_name}
-                      COMMAND ${test_name}_test
-                      )
-    endforeach()
-endif()
+foreach(test ${gtest_sidre_C_tests})
+    get_filename_component( test_name ${test} NAME_WE )
+    blt_add_executable( NAME ${test_name}_test
+                        SOURCES ${test}
+                        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
+                        DEPENDS_ON ${sidre_test_depends} gtest
+                        FOLDER axom/sidre/tests
+                        )
+    blt_add_test( NAME ${test_name}
+                  COMMAND ${test_name}_test
+                  )
+endforeach()
 
 #------------------------------------------------------------------------------
 # Add Fortran tests
