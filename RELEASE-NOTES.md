@@ -7,6 +7,25 @@ The format of this file is based on [Keep a Changelog](http://keepachangelog.com
 
 The Axom project release numbers follow [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] - Release date yyyy-mm-dd
+
+### Added
+
+### Removed
+
+### Deprecated
+
+### Changed
+
+### Fixed
+- Fixed usage of cuda kernel policies in Mint. Raja v0.11.0 changed the way max threads
+  launch bounds is calculated. Consequently, a large number of threads was being launched
+  leading to max registry count violation when linking. We are now using fixed kernel size
+  of 256 threads (16x16 in 2D and 8x8x4 in 3D).
+
+### Known Bugs
+
+
 ## [Version 0.3.3] - Release date 2020-01-31
 
 ### Added
