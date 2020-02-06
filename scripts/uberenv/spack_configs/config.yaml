@@ -43,9 +43,7 @@ config:
   #
   # The build stage can be purged with `spack purge --stage`.
   build_stage:
-    - $tempdir
-    - /nfs/tmp2/$user
-    - $spack/var/spack/stage
+    - $spack/../builds
 
 
   # Cache directory already downloaded source tarballs and archived

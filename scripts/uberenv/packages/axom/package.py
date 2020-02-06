@@ -89,10 +89,10 @@ class Axom(Package):
     # Libraries
     depends_on("conduit~shared+python", when="+python")
     depends_on("conduit~shared~python", when="~python")
-    depends_on("conduit~shared+hdf5+python", when="+hdf5+python")
-    depends_on("conduit~shared~hdf5+python", when="~hdf5+python")
-    depends_on("conduit~shared+hdf5~python", when="+hdf5~python")
-    depends_on("conduit~shared~hdf5~python", when="~hdf5~python")
+    depends_on("conduit~shared+python+hdf5", when="+hdf5+python")
+    depends_on("conduit~shared+python~hdf5", when="~hdf5+python")
+    depends_on("conduit~shared~python+hdf5", when="+hdf5~python")
+    depends_on("conduit~shared~python~hdf5", when="~hdf5~python")
 
     # HDF5 needs to be the same as Conduit's
     depends_on("hdf5@1.8.19:1.8.999~mpi~cxx~shared~fortran", when="+hdf5")
@@ -162,7 +162,7 @@ class Axom(Package):
         # are we on a specific machine
         sys_type = self._get_sys_type(spec)
         on_blueos = 'blueos' in sys_type
-        on_blueos_p9 = 'p9' in sys_type
+        on_blueos_p9 = on_blueos and 'p9' in sys_type
         on_toss =  'toss_3' in sys_type
 
         # cmake
@@ -253,14 +253,14 @@ class Axom(Package):
         if "+raja" in spec:
             raja_dir = get_spec_path(spec, "raja", path_replacements)
             cfg.write("# raja from uberenv\n")
-            cfg.write(cmake_cache_entry("RAJA_DIR", raja_dir + "/share/raja/cmake"))
+            cfg.write(cmake_cache_entry("RAJA_DIR", raja_dir))
         else:
             cfg.write("# raja not build by uberenv\n\n")
 
         if "+umpire" in spec:
             umpire_dir = get_spec_path(spec, "umpire", path_replacements)
             cfg.write("# umpire from uberenv\n")
-            cfg.write(cmake_cache_entry("UMPIRE_DIR", umpire_dir + "/share/umpire/cmake"))
+            cfg.write(cmake_cache_entry("UMPIRE_DIR", umpire_dir))
         else:
             cfg.write("# umpire not build by uberenv\n\n")
 
@@ -331,19 +331,9 @@ class Axom(Package):
             cfg.write(cmake_cache_entry("MPI_CXX_COMPILER", spec['mpi'].mpicxx))
             if on_blueos or on_blueos_p9:
                 # clang doesn't come with a fortran wrapper on blueos
-
-                # blueos_p9
-                spectrum_prefix = "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release"
-                if spec['mpi'].mpifc == spectrum_prefix + "-clang-8.0.0/bin/mpif90":
-                    cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", 
-                                                spectrum_prefix + "-xl-2019.06.12/bin/mpif90"))
-                elif spec['mpi'].mpifc == spectrum_prefix + "-clang-upstream-2019.03.26/bin/mpif90":
-                    cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", 
-                                                spectrum_prefix + "-xl-2019.06.12/bin/mpif90"))
-                # blueos
-                elif spec['mpi'].mpifc == spectrum_prefix + "-clang-upstream-2018.11.09/bin/mpif90":
-                    cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", 
-                                                spectrum_prefix + "-xl-2018.11.26/bin/mpif90"))
+                fortran_wrapper = "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.12.23/bin/mpif90"
+                if not os.path.exists(spec['mpi'].mpifc) and "clang" in spec['mpi'].mpifc:
+                    cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", fortran_wrapper))
                 else:
                     cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", spec['mpi'].mpifc))
             else:
