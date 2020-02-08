@@ -21,25 +21,10 @@ packages:
       blas: [netlib-lapack]
       lapack: [netlib-lapack]
       mpi: [mvapich2]
-
-# LLNL toss3 CUDA 
   cuda:
-    paths:
-      cuda@10.2: /opt/cudatoolkit/10.2
     buildable: False
-
-# Lock down which MPI we are using
   mvapich2:
-    paths:
-      mvapich2@2.3%gcc@6.1.0 arch=linux-rhel7-broadwell: /usr/tce/packages/mvapich2/mvapich2-2.3-gcc-6.1.0
-      mvapich2@2.3%gcc@7.3.0 arch=linux-rhel7-broadwell: /usr/tce/packages/mvapich2/mvapich2-2.3-gcc-7.3.0
-      mvapich2@2.3%gcc@8.1.0 arch=linux-rhel7-broadwell: /usr/tce/packages/mvapich2/mvapich2-2.3-gcc-8.1.0
-      mvapich2@2.3%intel@18.0.2 arch=linux-rhel7-broadwell: /usr/tce/packages/mvapich2/mvapich2-2.3-intel-18.0.2
-      mvapich2@2.3%intel@19.0.0 arch=linux-rhel7-broadwell: /usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.0
-      mvapich2@2.3%clang@4.0.0 arch=linux-rhel7-broadwell: /usr/tce/packages/mvapich2/mvapich2-2.3-clang-4.0.0
-      mvapich2@2.3%clang@6.0.0 arch=linux-rhel7-broadwell: /usr/tce/packages/mvapich2/mvapich2-2.3-clang-6.0.0
     buildable: False
-# Spack may grab for mpi & we don't want to use them
   openmpi:
     buildable: False
   mpich:
@@ -113,9 +98,3 @@ packages:
 # Globally lock in version of CMake
   cmake:
     version: [3.9.6]
-    paths:
-      cmake: /usr/WS1/axom/devtools/toss_3_x86_64_ib/2020_02_07_14_28_45/gcc-8.1.0/cmake-3.9.6
-    buildable: False
-
-  conduit:
-    version: [0.5.1]

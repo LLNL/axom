@@ -63,9 +63,6 @@ class Axom(Package):
     variant('debug', default=False,
             description='Build debug instead of optimized version')
 
-    variant('devtools', default=False,
-            description="Build development tools (such as sphinx, uncrustify, etc)")
-
     variant("python",   default=False, description="Build python support")
 
     variant("mpi",      default=True, description="Build MPI support")
@@ -113,15 +110,6 @@ class Axom(Package):
     depends_on("mfem~mpi~hypre~metis~gzstream", when="+mfem")
 
     depends_on("python", when="+python")
-
-    # Devtools
-    depends_on("python", when="+devtools")
-    depends_on("doxygen", when="+devtools")
-    depends_on("uncrustify@0.61", when="+devtools")
-    depends_on("cppcheck", when="+devtools")
-    depends_on("graphviz", when="+devtools")
-    depends_on("py-sphinx", when="+devtools")
-    depends_on("py-shroud", when="+devtools")
 
 
     def _get_sys_type(self, spec):
@@ -264,7 +252,7 @@ class Axom(Package):
         else:
             cfg.write("# umpire not build by uberenv\n\n")
 
-        if "python" in spec or "devtools" in spec:
+        if "python" in spec:
             python_bin_dir = get_spec_path(spec, "python", path_replacements, use_bin=True)
             cfg.write("# python from uberenv\n")
             cfg.write(cmake_cache_entry("PYTHON_EXECUTABLE",pjoin(python_bin_dir, "python")))

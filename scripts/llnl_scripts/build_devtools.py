@@ -7,11 +7,10 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 
 """
- file: build_tpls.py
+ file: build_devtools.py
 
  description: 
-  uses uberenv to install tpls for the set of compilers we want
-  for current machine.
+  Builds all Axom Devtools
 
 """
 
@@ -25,7 +24,7 @@ import os
 def parse_args():
     "Parses args from command line"
     parser = OptionParser()
-    # Directory to do all the building
+    # Location of source directory to build
     parser.add_option("-d", "--directory",
                       dest="directory",
                       default="",
@@ -51,12 +50,12 @@ def main():
 
     # Determine location to do all the building
     if opts["directory"] != "":
-        builds_dir = opts["directory"]
-        if not os.path.exists(builds_dir):
-            os.makedirs(builds_dir)
+        build_dir = opts["directory"]
+        if not os.path.exists(build_dir):
+            os.makedirs(build_dir)
     else:
-        builds_dir = get_shared_libs_dir()
-    builds_dir = os.path.abspath(builds_dir)
+        build_dir = get_shared_devtool_dir()
+    build_dir = os.path.abspath(build_dir)
 
     repo_dir = get_repo_dir()
 
@@ -69,13 +68,7 @@ def main():
         original_wd = os.getcwd()
         os.chdir(repo_dir)
 
-        timestamp = get_timestamp()
-        res = full_build_and_test_of_tpls(builds_dir, job_name, timestamp)
-
-        if opts["archive"] != "":
-            # Get information for archiving
-            archive_base_dir = get_archive_base_dir()
-            archive_tpl_logs(builds_dir, job_name, timestamp)
+        res = build_devtools(build_dir, job_name, get_timestamp())
     finally:
         os.chdir(original_wd)
 
