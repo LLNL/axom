@@ -248,21 +248,25 @@ def archive_tpl_logs(prefix, job_name, timestamp):
     set_axom_group_and_perms(archive_dir)
 
 
-def uberenv_create_mirror(prefix,mirror_path):
+def uberenv_create_mirror(prefix, project_file, mirror_path):
     """
     Calls uberenv to create a spack mirror.
     """
-    cmd = "python scripts/uberenv/uberenv.py --prefix %s --mirror %s --create-mirror " % (prefix,mirror_path)
+    cmd  = "python scripts/uberenv/uberenv.py --create-mirror"
+    cmd += " --prefix=\"{0}\" --mirror=\"{1}\"".format(prefix, mirror_path)
+    cmd += " --project-json=\"{0}\" ".format(project_file)
     return sexe(cmd,echo=True,error_prefix="WARNING:")
 
 
-def uberenv_install_tpls(prefix,spec,mirror = None):
+def uberenv_build(prefix, spec, project_file, config_dir, mirror_path):
     """
     Calls uberenv to install tpls for a given spec to given prefix.
     """
-    cmd = "python scripts/uberenv/uberenv.py --prefix=\"%s\" --spec=\"%s\" " % (prefix,spec)
-    if not mirror is None:
-        cmd += "--mirror=\"%s\"" % mirror
+    cmd  = "python scripts/uberenv/uberenv.py "
+    cmd += "--prefix=\"{0}\" --spec=\"{1}\" ".format(prefix, spec)
+    cmd += "--project-json=\"{0}\" ".format(project_file)
+    cmd += "--mirror=\"{0}\" ".format(mirror_path)
+    cmd += "--spack-config-dir=\"{0}\" ".format(config_dir)
         
     spack_tpl_build_log = pjoin(prefix,"output.log.spack.tpl.build.%s.txt" % spec.replace(" ", "_"))
     print "[starting tpl install of spec %s]" % spec
@@ -453,6 +457,9 @@ def set_axom_group_and_perms(directory):
 
 
 def full_build_and_test_of_tpls(builds_dir, job_name, timestamp):
+    project_file = "scripts/uberenv/project.json"
+    config_dir = "scripts/uberenv/spack_configs/{0}".format(get_system_type())
+
     specs = get_specs_for_current_machine()
     print "[Building and testing tpls for specs: "
     for spec in specs:
@@ -460,17 +467,21 @@ def full_build_and_test_of_tpls(builds_dir, job_name, timestamp):
     print "]\n"
 
     # Use shared network mirror location otherwise create local one
-    mirror_dir = get_shared_tpl_mirror_dir()
+    mirror_dir = get_shared_mirror_dir()
     if not os.path.exists(mirror_dir):
         mirror_dir = pjoin(builds_dir,"mirror")
     print "[using mirror location: %s]" % mirror_dir
 
     # unique install location
-    prefix =  pjoin(builds_dir, timestamp)
+    prefix = pjoin(builds_dir, get_system_type())
+    if not os.path.exists(prefix):
+        os.mkdir(prefix)
+    prefix = pjoin(prefix, timestamp)
+
     # create a mirror
-    uberenv_create_mirror(prefix,mirror_dir)
+    uberenv_create_mirror(prefix, project_file, mirror_dir)
     # write info about this build
-    write_build_info(pjoin(prefix,"info.json"), job_name)
+    write_build_info(pjoin(prefix, "info.json"), job_name)
 
     repo_dir = get_repo_dir()
     # Clean previously generated host-configs into TPL install directory
@@ -483,12 +494,13 @@ def full_build_and_test_of_tpls(builds_dir, job_name, timestamp):
     tpl_build_failed = False
     for spec in specs:
         start_time = time.time()
-        res = uberenv_install_tpls(prefix,spec,mirror_dir)
+        res = uberenv_build(prefix, spec, project_file, config_dir, mirror_dir)
         end_time = time.time()
         print "[build time: {0}]".format(convertSecondsToReadableTime(end_time - start_time))
         if res != 0:
             print "[ERROR: Failed build of tpls for spec %s]\n" % spec
             tpl_build_failed = True
+            break
         else:
             print "[SUCCESS: Finished build tpls for spec %s]\n" % spec
 
@@ -514,6 +526,72 @@ def full_build_and_test_of_tpls(builds_dir, job_name, timestamp):
     set_axom_group_and_perms(mirror_dir)
     return res
 
+
+def build_devtools(builds_dir, job_name, timestamp):
+    sys_type = get_system_type()
+    config_dir = "scripts/uberenv/spack_configs/{0}/devtools".format(sys_type)
+    project_file = "scripts/uberenv/devtools.json"
+
+    if "toss_3" in sys_type:
+        compiler_spec = "%gcc@8.1.0"
+        compiler_dir  = "gcc-8.1.0"
+    elif "blueos" in sys_type:
+        compiler_spec = "%gcc@8.3.1"
+        compiler_dir  = "gcc-8.3.1"
+
+    print "[Building devtools using compiler spec: {0}]".format(compiler_spec)
+
+    # unique install location
+    prefix = pjoin(builds_dir, sys_type)
+    if not os.path.exists(prefix):
+        os.mkdir(prefix)
+    prefix = pjoin(prefix, timestamp)
+    if not os.path.exists(prefix):
+        os.makedirs(prefix)
+
+    # Use shared mirror
+    mirror_dir = get_shared_mirror_dir()
+    print "[Using mirror location: {0}]".format(mirror_dir)
+    uberenv_create_mirror(prefix, project_file, mirror_dir)
+
+    # write info about this build
+    write_build_info(pjoin(prefix,"info.json"), job_name)
+
+    # use uberenv to install devtools
+    start_time = time.time()
+    res = uberenv_build(prefix, compiler_spec, project_file, config_dir, mirror_dir)
+    end_time = time.time()
+
+    print "[Build time: {0}]".format(convertSecondsToReadableTime(end_time - start_time))
+    if res != 0:
+        print "[ERROR: Failed build of devtools for spec %s]\n" % compiler_spec
+    else:
+        # Only update the latest symlink if successful
+        link_path = pjoin(builds_dir, sys_type)
+        link_path = pjoin(link_path, "latest")
+        install_dir = pjoin(prefix, compiler_dir)
+        print "[Creating symlink to latest devtools build:\n{0}\n->\n{1}]".format(link_path, install_dir)
+        if os.path.exists(link_path) or os.path.islink(link_path):
+            if not os.path.islink(link_path):
+                print "[ERROR: Latest devtools link path exists and is not a link: {0}".format(link_path)
+                return 1
+            os.unlink(link_path)
+        os.symlink(install_dir, link_path)
+
+        # Clean up directories we don't need to save
+        dir_names = ["builds", "spack"]
+        for dir_name in dir_names:
+            path_to_be_deleted = pjoin(prefix, dir_name)
+            print "[Removing path after successful devtools build: {0}]".format(path_to_be_deleted)
+            if os.path.exists(path_to_be_deleted):
+                shutil.rmtree(path_to_be_deleted)
+
+        print "[SUCCESS: Finished build devtools for spec %s]\n" % compiler_spec
+
+    # set proper perms for installed devtools
+    set_axom_group_and_perms(prefix)
+
+    return res
 
 def get_host_configs_for_current_machine(src_dir, use_generated_host_configs):
     host_configs = []
@@ -566,16 +644,20 @@ def get_archive_base_dir():
     return "/usr/WS2/axomdev/archive"
 
 
-def get_shared_tpl_base_dir():
-    return "/usr/WS1/axom/thirdparty_libs"
+def get_shared_base_dir():
+    return "/usr/WS1/axom"
 
 
-def get_shared_tpl_mirror_dir():
-    return pjoin(get_shared_tpl_base_dir(), "mirror")
+def get_shared_mirror_dir():
+    return pjoin(get_shared_base_dir(), "mirror")
 
 
-def get_shared_tpl_builds_dir():
-    return pjoin(get_shared_tpl_base_dir(), "builds")
+def get_shared_libs_dir():
+    return pjoin(get_shared_base_dir(), "libs")
+
+
+def get_shared_devtool_dir():
+    return pjoin(get_shared_base_dir(), "devtools")
 
 
 def get_specs_for_current_machine():

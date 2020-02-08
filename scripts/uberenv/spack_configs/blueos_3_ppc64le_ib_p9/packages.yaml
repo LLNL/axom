@@ -35,7 +35,7 @@ packages:
     paths:
       mvapich2@2.2%gcc@7.3.1: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-7.3.1/
       mvapich2@2.2%clang@upstream_xlf: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2019.08.15/
-      mvapich2@2.2%clang@8.0.0_nvcc_xlf: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-8.0.1/  
+      mvapich2@2.2%clang@8.0.1_nvcc_xlf: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-8.0.1/  
       mvapich2@2.2%xl@coral : /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2019.08.15/
     buildable: False
 # Spack may grab for mpi & we don't want to use them
@@ -111,9 +111,9 @@ packages:
 
 # Globally lock in version of CMake
   cmake:
-    version: [3.14.5]
+    version: [3.9.6]
     paths:
-      cmake: /usr/tce/packages/cmake/cmake-3.14.5
+      cmake: /usr/WS1/axom/devtools/blueos_3_ppc64le_ib_p9/2020_02_07_14_31_19/gcc-8.3.1/cmake-3.9.6
     buildable: False
 
   conduit:

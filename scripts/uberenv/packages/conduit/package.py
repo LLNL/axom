@@ -363,7 +363,7 @@ class Conduit(Package):
                 cfg.write(cmake_cache_entry("BLT_FORTRAN_FLAGS",
                                             "-WF,-C! -qxlf2003=polymorphic"))
                 # Grab lib directory for the current fortran compiler
-                libdir = os.path.join(os.path.dirname(os.path.dirname(f_compiler)), "lib")
+                libdir = os.path.join(os.path.dirname(os.path.dirname(f_compiler.path)), "lib")
                 cfg.write(cmake_cache_entry("BLT_EXE_LINKER_FLAGS",
                     "-Wl,-rpath," + libdir,
                     "Adds a missing rpath for libraries associated with the fortran compiler"))

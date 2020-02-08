@@ -29,10 +29,11 @@ if (UMPIRE_DIR)
         set_property(TARGET umpire 
                      APPEND PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
                     ${UMPIRE_INCLUDE_DIRS})
-
+        set(UMPIRE_FOUND TRUE CACHE BOOL "")
     endif()
 else()
     message(STATUS "Umpire support is OFF")
+    set(UMPIRE_FOUND FALSE CACHE BOOL "")
 endif()
 
 
@@ -55,9 +56,11 @@ if (RAJA_DIR)
         message(FATAL_ERROR "RAJA failed to load: ${RAJA_DIR}")
     else()
         message(STATUS "RAJA loaded: ${RAJA_DIR}")
+        set(RAJA_FOUND TRUE CACHE BOOL "")
     endif()
 else()
     message(STATUS "RAJA support is OFF" )
+    set(RAJA_FOUND FALSE CACHE BOOL "")
 endif()
 
 
