@@ -105,17 +105,50 @@ packages:
    paths:
       tar: /usr
    buildable: False
-  graphviz:
-    paths:
-      graphviz: /usr
-    buildable: False
 
-# Globally lock in version of CMake
+# Globally lock version of third party libraries
+  conduit:
+    version: [0.5.1]
+
+# Globally lock in versions of Devtools
   cmake:
     version: [3.9.6]
     paths:
-      cmake: /usr/WS1/axom/devtools/toss_3_x86_64_ib/2020_02_07_14_28_45/gcc-8.1.0/cmake-3.9.6
+      cmake: /usr/WS1/axom/devtools/toss_3_x86_64_ib/latest/cmake-3.9.6
     buildable: False
 
-  conduit:
-    version: [0.5.1]
+  cppcheck:
+    version: [1.87]
+    paths:
+      cppcheck: /usr/WS1/axom/devtools/toss_3_x86_64_ib/latest/cppcheck-1.87
+    buildable: False
+  doxygen:
+    version: [1.8.14]
+    paths:
+      doxygen: /usr/WS1/axom/devtools/toss_3_x86_64_ib/latest/doxygen-1.8.14
+    buildable: False
+  graphviz:
+    version: [2.42.2]
+    paths:
+      graphviz: /usr/WS1/axom/devtools/toss_3_x86_64_ib/latest/graphviz-2.42.2
+    buildable: False
+  python:
+    version: [3.7.4]
+    paths:
+      python: /usr/WS1/axom/devtools/toss_3_x86_64_ib/latest/python-3.7.4
+    buildable: False
+  py-shroud:
+    version: [0.11.0]
+    paths:
+      py-shroud: /usr/WS1/axom/devtools/toss_3_x86_64_ib/latest/python-3.7.4
+    buildable: False
+  py-sphinx:
+    version: [2.2.0]
+    paths:
+      py-sphinx: /usr/WS1/axom/devtools/toss_3_x86_64_ib/latest/python-3.7.4
+    buildable: False
+  uncrustify:
+    version: [0.61]
+    paths:
+      uncrustify: /usr/WS1/axom/devtools/toss_3_x86_64_ib/latest/uncrustify-0.61
+    buildable: False
