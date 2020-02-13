@@ -9,20 +9,17 @@
 # SYS_TYPE: toss_3_x86_64_ib
 # Compiler Spec: clang@6.0.0
 #------------------------------------------------------------------------------
-# CMake executable path: /usr/WS1/axom/thirdparty_libs/builds/2020_01_30_13_06_51/clang-6.0.0/cmake-3.9.6/bin/cmake
+# CMake executable path: /usr/WS1/axom/devtools/toss_3_x86_64_ib/latest/cmake-3.9.6/bin/cmake
 #------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------
 # Compilers
 #------------------------------------------------------------------------------
 
-# C compiler used by spack
 set(CMAKE_C_COMPILER "/usr/tce/packages/clang/clang-6.0.0/bin/clang" CACHE PATH "")
 
-# C++ compiler used by spack
 set(CMAKE_CXX_COMPILER "/usr/tce/packages/clang/clang-6.0.0/bin/clang++" CACHE PATH "")
 
-# Fortran compiler used by spack
 set(ENABLE_FORTRAN ON CACHE BOOL "")
 
 set(CMAKE_Fortran_COMPILER "/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran" CACHE PATH "")
@@ -32,36 +29,15 @@ set(CMAKE_Fortran_COMPILER "/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran" CACHE 
 #------------------------------------------------------------------------------
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2020_01_30_13_06_51/clang-6.0.0" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/toss_3_x86_64_ib/2020_02_13_13_01_01/clang-6.0.0" CACHE PATH "")
 
-# conduit from uberenv
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.5.1" CACHE PATH "")
 
-# mfem from uberenv
-set(MFEM_DIR "${TPL_ROOT}/mfem-4.0" CACHE PATH "")
+set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.21" CACHE PATH "")
 
-# hdf5 from uberenv
-set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.19" CACHE PATH "")
+set(RAJA_DIR "${TPL_ROOT}/raja-0.11.0" CACHE PATH "")
 
-# scr not built by uberenv
-
-# raja from uberenv
-set(RAJA_DIR "${TPL_ROOT}/raja-0.11.0/share/raja/cmake" CACHE PATH "")
-
-# umpire from uberenv
-set(UMPIRE_DIR "${TPL_ROOT}/umpire-2.1.0/share/umpire/cmake" CACHE PATH "")
-
-# python not built by uberenv
-
-set(ENABLE_DOCS OFF CACHE BOOL "")
-
-# shroud not built by uberenv
-
-# uncrustify not built by uberenv
-
-# lcov and genhtml not built by uberenv
-
-# cppcheck not built by uberenv
+set(UMPIRE_DIR "${TPL_ROOT}/umpire-2.1.0" CACHE PATH "")
 
 #------------------------------------------------------------------------------
 # MPI
@@ -80,13 +56,34 @@ set(MPIEXEC "/usr/bin/srun" CACHE PATH "")
 set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
 
 #------------------------------------------------------------------------------
+# Devtools
+#------------------------------------------------------------------------------
+
+# Root directory for generated developer tools
+set(DEVTOOLS_ROOT "/usr/WS1/axom/devtools/toss_3_x86_64_ib/2020_02_13_10_02_04/gcc-8.1.0" CACHE PATH "")
+
+set(PYTHON_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.7.4/bin/python" CACHE PATH "")
+
+set(ENABLE_DOCS ON CACHE BOOL "")
+
+set(DOXYGEN_EXECUTABLE "${DEVTOOLS_ROOT}/doxygen-1.8.14/bin/doxygen" CACHE PATH "")
+
+set(SPHINX_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.7.4/bin/sphinx-build" CACHE PATH "")
+
+set(SHROUD_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.7.4/bin/shroud" CACHE PATH "")
+
+set(UNCRUSTIFY_EXECUTABLE "${DEVTOOLS_ROOT}/uncrustify-0.61/bin/uncrustify" CACHE PATH "")
+
+set(CPPCHECK_EXECUTABLE "${DEVTOOLS_ROOT}/cppcheck-1.87/bin/cppcheck" CACHE PATH "")
+
+#------------------------------------------------------------------------------
 # Other machine specifics
 #------------------------------------------------------------------------------
+
+set(ENABLE_OPENMP ON CACHE BOOL "")
 
 set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 
 set(BLT_EXE_LINKER_FLAGS "-Wl,-rpath,/usr/tce/packages/clang/clang-6.0.0/lib" CACHE PATH "Adds a missing rpath for libraries associated with the fortran compiler")
-
-set(ENABLE_OPENMP ON CACHE BOOL "")
 
 

@@ -58,6 +58,9 @@ if (RAJA_DIR)
         message(STATUS "RAJA loaded: ${RAJA_DIR}")
         set(RAJA_FOUND TRUE CACHE BOOL "")
     endif()
+
+    # Note: camp sets a compile feature that is not available on XL
+    set_target_properties(camp PROPERTIES INTERFACE_COMPILE_FEATURES "")
 else()
     message(STATUS "RAJA support is OFF" )
     set(RAJA_FOUND FALSE CACHE BOOL "")

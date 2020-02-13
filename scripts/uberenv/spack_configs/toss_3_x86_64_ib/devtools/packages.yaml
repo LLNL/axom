@@ -90,10 +90,6 @@ packages:
    paths:
       tar: /usr
    buildable: False
-  graphviz:
-    paths:
-      graphviz: /usr
-    buildable: False
 
 # Globally lock in version of CMake
   cmake:

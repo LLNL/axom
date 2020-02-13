@@ -5,9 +5,10 @@
 
 from spack import *
 
-import socket
+import glob
 import os
 import platform
+import socket
 from os.path import join as pjoin
 
 import llnl.util.tty as tty
@@ -34,8 +35,10 @@ def get_spec_path(spec, package_name, path_replacements = {}, use_bin = False) :
     else:
         path = spec[package_name].prefix.bin
 
+    path = os.path.realpath(path)
+    
     for key in path_replacements:
-        path = path.replace(key,path_replacements[key])
+        path = path.replace(key, path_replacements[key])
 
     return path
 
@@ -75,6 +78,9 @@ class Axom(Package):
     variant("raja",     default=True, description="Build with raja")
     variant("umpire",   default=True, description="Build with umpire")
 
+    variant("devtools",  default=False,
+            description="Build development tools (such as Sphinx, Uncrustify, etc...)")
+
     #-----------------------------------------------------------------------
     # Dependencies
     #-----------------------------------------------------------------------
@@ -111,6 +117,14 @@ class Axom(Package):
 
     depends_on("python", when="+python")
 
+    # Devtools
+    depends_on("cppcheck", when="+devtools")
+    depends_on("doxygen", when="+devtools")
+    depends_on("graphviz", when="+devtools")
+    depends_on("python", when="+devtools")
+    depends_on("py-sphinx", when="+devtools")
+    depends_on("py-shroud", when="+devtools")
+    depends_on("uncrustify@0.61", when="+devtools")
 
     def _get_sys_type(self, spec):
         sys_type = spec.architecture
@@ -206,108 +220,35 @@ class Axom(Package):
         path_replacements = {}
 
         if len(prefix_paths) == 2:
-            tpl_root = pjoin( prefix_paths[0], compiler_str )
+            tpl_root = os.path.realpath(pjoin(prefix_paths[0], compiler_str))
             path_replacements[tpl_root] = "${TPL_ROOT}"
             cfg.write("# Root directory for generated TPLs\n")
             cfg.write(cmake_cache_entry("TPL_ROOT",tpl_root))
 
         conduit_dir = get_spec_path(spec, "conduit", path_replacements)
-        cfg.write("# conduit from uberenv\n")
         cfg.write(cmake_cache_entry("CONDUIT_DIR",conduit_dir))
 
         # optional tpls
 
         if "+mfem" in spec:
             mfem_dir = get_spec_path(spec, "mfem", path_replacements)
-            cfg.write("# mfem from uberenv\n")
             cfg.write(cmake_cache_entry("MFEM_DIR",mfem_dir))
-        else:
-            cfg.write("# mfem not built by uberenv\n\n")
 
         if "+hdf5" in spec:
             hdf5_dir = get_spec_path(spec, "hdf5", path_replacements)
-            cfg.write("# hdf5 from uberenv\n")
             cfg.write(cmake_cache_entry("HDF5_DIR",hdf5_dir))
-        else:
-            cfg.write("# hdf5 not built by uberenv\n\n")
 
         if "+scr" in spec:
             scr_dir = get_spec_path(spec, "scr", path_replacements)
-            cfg.write("# scr from uberenv\n")
             cfg.write(cmake_cache_entry("SCR_DIR",scr_dir))
-        else:
-            cfg.write("# scr not built by uberenv\n\n")
 
         if "+raja" in spec:
             raja_dir = get_spec_path(spec, "raja", path_replacements)
-            cfg.write("# raja from uberenv\n")
             cfg.write(cmake_cache_entry("RAJA_DIR", raja_dir))
-        else:
-            cfg.write("# raja not build by uberenv\n\n")
 
         if "+umpire" in spec:
             umpire_dir = get_spec_path(spec, "umpire", path_replacements)
-            cfg.write("# umpire from uberenv\n")
             cfg.write(cmake_cache_entry("UMPIRE_DIR", umpire_dir))
-        else:
-            cfg.write("# umpire not build by uberenv\n\n")
-
-        if "python" in spec:
-            python_bin_dir = get_spec_path(spec, "python", path_replacements, use_bin=True)
-            cfg.write("# python from uberenv\n")
-            cfg.write(cmake_cache_entry("PYTHON_EXECUTABLE",pjoin(python_bin_dir, "python")))
-        else:
-            cfg.write("# python not built by uberenv\n\n")
-
-        # optional tpls (dev tools)
-
-        if "doxygen" in spec or "py-sphinx" in spec:
-            cfg.write(cmake_cache_option("ENABLE_DOCS", True))
-
-            if "doxygen" in spec:
-                doxygen_bin_dir = get_spec_path(spec, "doxygen", path_replacements, use_bin=True)
-                cfg.write("# doxygen from uberenv\n")
-                cfg.write(cmake_cache_entry("DOXYGEN_EXECUTABLE", pjoin(doxygen_bin_dir, "doxygen")))
-            else:
-                cfg.write("# doxygen not built by uberenv\n\n")
-
-            if "py-sphinx" in spec:
-                python_bin_dir = get_spec_path(spec, "python", path_replacements, use_bin=True)
-                cfg.write("# sphinx {} from uberenv\n".format(spec["py-sphinx"].version))
-                cfg.write(cmake_cache_entry("SPHINX_EXECUTABLE", pjoin(python_bin_dir, "sphinx-build")))
-            else:
-                cfg.write("# sphinx not built by uberenv\n\n")
-        else:
-            cfg.write(cmake_cache_option("ENABLE_DOCS", False))
-
-        if "py-shroud" in spec:
-            python_bin_dir = get_spec_path(spec, "python", path_replacements, use_bin=True)
-            cfg.write("# shroud {} from uberenv\n".format(spec["py-shroud"].version))
-            cfg.write(cmake_cache_entry("SHROUD_EXECUTABLE", pjoin(python_bin_dir, "shroud")))
-        else:
-            cfg.write("# shroud not built by uberenv\n\n")
-
-        if "uncrustify" in spec:
-            uncrustify_bin_dir = get_spec_path(spec, "uncrustify", path_replacements, use_bin=True)
-            cfg.write("# uncrustify from uberenv\n")
-            cfg.write(cmake_cache_entry("UNCRUSTIFY_EXECUTABLE", pjoin(uncrustify_bin_dir, "uncrustify")))
-        else:
-            cfg.write("# uncrustify not built by uberenv\n\n")
-
-        if "lcov" in spec:
-            lcov_dir = get_spec_path(spec, "lcov", path_replacements)
-            cfg.write("# lcov and genhtml from uberenv\n")
-            cfg.write(cmake_cache_entry("LCOV_PATH", pjoin(lcov_dir,"usr","bin","lcov")))
-            cfg.write(cmake_cache_entry("GENHTML_PATH",pjoin(lcov_dir,"usr","bin","genhtml")))
-        else:
-            cfg.write("# lcov and genhtml not built by uberenv\n\n")
-
-        if "cppcheck" in spec:
-            cppcheck_bin_dir = get_spec_path(spec, "cppcheck", path_replacements, use_bin=True)
-            cfg.write("# cppcheck from uberenv\n")
-            cfg.write(cmake_cache_entry("CPPCHECK_EXECUTABLE", pjoin(cppcheck_bin_dir, "cppcheck")))
-        else:
-            cfg.write("# cppcheck not built by uberenv\n\n")
 
         cfg.write("#------------------{}\n".format("-"*60))
         cfg.write("# MPI\n")
@@ -346,10 +287,58 @@ class Axom(Package):
                 cfg.write(cmake_cache_entry("MPIEXEC_NUMPROC_FLAG", "-np"))
                 cfg.write(cmake_cache_entry("BLT_MPI_COMMAND_APPEND", "mpibind"))
             else:
-                # TODO: see if spack has this
                 cfg.write(cmake_cache_entry("MPIEXEC_NUMPROC_FLAG", "-n"))
         else:
             cfg.write(cmake_cache_option("ENABLE_MPI", False))
+
+
+        ##################################
+        # Devtools
+        ##################################
+
+        cfg.write("#------------------{}\n".format("-"*60))
+        cfg.write("# Devtools\n")
+        cfg.write("#------------------{}\n\n".format("-"*60))
+
+        # Add common prefix to path replacement list
+        if "+devtools" in spec:
+            # Grab common devtools root and strip the trailing slash
+            path1 = os.path.realpath(spec["uncrustify"].prefix)
+            path2 = os.path.realpath(spec["doxygen"].prefix)
+            devtools_root = os.path.commonprefix([path1, path2])[:-1]
+            path_replacements[devtools_root] = "${DEVTOOLS_ROOT}"
+            cfg.write("# Root directory for generated developer tools\n")
+            cfg.write(cmake_cache_entry("DEVTOOLS_ROOT",devtools_root))
+
+
+        if "python" in spec or "devtools" in spec:
+            python_bin_dir = get_spec_path(spec, "python", path_replacements, use_bin=True)
+            cfg.write(cmake_cache_entry("PYTHON_EXECUTABLE",pjoin(python_bin_dir, "python")))
+            
+        if "doxygen" in spec or "py-sphinx" in spec:
+            cfg.write(cmake_cache_option("ENABLE_DOCS", True))
+
+            if "doxygen" in spec:
+                doxygen_bin_dir = get_spec_path(spec, "doxygen", path_replacements, use_bin=True)
+                cfg.write(cmake_cache_entry("DOXYGEN_EXECUTABLE", pjoin(doxygen_bin_dir, "doxygen")))
+
+            if "py-sphinx" in spec:
+                python_bin_dir = get_spec_path(spec, "python", path_replacements, use_bin=True)
+                cfg.write(cmake_cache_entry("SPHINX_EXECUTABLE", pjoin(python_bin_dir, "sphinx-build")))
+        else:
+            cfg.write(cmake_cache_option("ENABLE_DOCS", False))
+
+        if "py-shroud" in spec:
+            python_bin_dir = get_spec_path(spec, "python", path_replacements, use_bin=True)
+            cfg.write(cmake_cache_entry("SHROUD_EXECUTABLE", pjoin(python_bin_dir, "shroud")))
+
+        if "uncrustify" in spec:
+            uncrustify_bin_dir = get_spec_path(spec, "uncrustify", path_replacements, use_bin=True)
+            cfg.write(cmake_cache_entry("UNCRUSTIFY_EXECUTABLE", pjoin(uncrustify_bin_dir, "uncrustify")))
+
+        if "cppcheck" in spec:
+            cppcheck_bin_dir = get_spec_path(spec, "cppcheck", path_replacements, use_bin=True)
+            cfg.write(cmake_cache_entry("CPPCHECK_EXECUTABLE", pjoin(cppcheck_bin_dir, "cppcheck")))
 
 
         ##################################
@@ -360,7 +349,7 @@ class Axom(Package):
         cfg.write("# Other machine specifics\n")
         cfg.write("#------------------{}\n\n".format("-"*60))
 
-	# OpenMP
+        # OpenMP
         if "+openmp" in spec:
             cfg.write(cmake_cache_option("ENABLE_OPENMP", True))
 

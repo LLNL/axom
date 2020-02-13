@@ -283,8 +283,10 @@ class Conduit(Package):
         f_compiler = None
 
         if self.compiler.fc:
-            # even if this is set, it may not exist so do one more sanity check
-            f_compiler = which(env["SPACK_FC"])
+            # even if this is set, it may not exist
+            # do one more sanity check
+            if os.path.isfile(env["SPACK_FC"]):
+                f_compiler  = env["SPACK_FC"]
 
         #######################################################################
         # By directly fetching the names of the actual compilers we appear
@@ -338,7 +340,7 @@ class Conduit(Package):
         if "+fortran" in spec and f_compiler is not None:
             cfg.write(cmake_cache_entry("ENABLE_FORTRAN", "ON"))
             cfg.write(cmake_cache_entry("CMAKE_Fortran_COMPILER",
-                                        f_compiler.path))
+                                        f_compiler))
         else:
             cfg.write("# no fortran compiler found\n\n")
             cfg.write(cmake_cache_entry("ENABLE_FORTRAN", "OFF"))
@@ -357,16 +359,25 @@ class Conduit(Package):
             cfg.write(cmake_cache_entry("ENABLE_TESTS", "OFF"))
 
         # extra fun for blueos
-        if 'blueos_3' in sys_type and "+fortran" in spec:
-            if 'xl@coral' in os.getenv('SPACK_COMPILER_SPEC', ""):
-                # Fix missing std linker flag in xlc compiler
-                cfg.write(cmake_cache_entry("BLT_FORTRAN_FLAGS",
-                                            "-WF,-C! -qxlf2003=polymorphic"))
-                # Grab lib directory for the current fortran compiler
-                libdir = os.path.join(os.path.dirname(os.path.dirname(f_compiler.path)), "lib")
-                cfg.write(cmake_cache_entry("BLT_EXE_LINKER_FLAGS",
-                    "-Wl,-rpath," + libdir,
-                    "Adds a missing rpath for libraries associated with the fortran compiler"))
+        if on_blueos:
+            # All of BlueOS compilers report clang due to nvcc, override to proper compiler family
+            if "xlc" in c_compiler:
+                cfg.write(cmake_cache_entry("CMAKE_C_COMPILER_ID", "XL"))
+            if "xlC" in cpp_compiler:
+                cfg.write(cmake_cache_entry("CMAKE_CXX_COMPILER_ID", "XL"))
+
+            if "+fortran" in spec:
+                if "xlf" in f_compiler:
+                    cfg.write(cmake_cache_entry("CMAKE_Fortran_COMPILER_ID", "XL"))
+
+                if 'xl@coral' in os.getenv('SPACK_COMPILER_SPEC', ""):
+                    # Fix missing std linker flag in xlc compiler
+                    cfg.write(cmake_cache_entry("BLT_FORTRAN_FLAGS",
+                                                "-WF,-C! -qxlf2003=polymorphic"))
+                    # Grab lib directory for the current fortran compiler
+                    libdir = os.path.join(os.path.dirname(os.path.dirname(f_compiler)), "lib")
+                    cfg.write(cmake_cache_entry("BLT_EXE_LINKER_FLAGS",
+                        "-lstdc++ -Wl,-rpath," + libdir))
 
         #######################
         # Python

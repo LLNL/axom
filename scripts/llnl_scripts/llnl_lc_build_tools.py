@@ -494,7 +494,8 @@ def full_build_and_test_of_tpls(builds_dir, job_name, timestamp):
     tpl_build_failed = False
     for spec in specs:
         start_time = time.time()
-        res = uberenv_build(prefix, spec, project_file, config_dir, mirror_dir)
+        fullspec = "{0}+devtools".format(spec)
+        res = uberenv_build(prefix, fullspec, project_file, config_dir, mirror_dir)
         end_time = time.time()
         print "[build time: {0}]".format(convertSecondsToReadableTime(end_time - start_time))
         if res != 0:
@@ -577,14 +578,6 @@ def build_devtools(builds_dir, job_name, timestamp):
                 return 1
             os.unlink(link_path)
         os.symlink(install_dir, link_path)
-
-        # Clean up directories we don't need to save
-        dir_names = ["builds", "spack"]
-        for dir_name in dir_names:
-            path_to_be_deleted = pjoin(prefix, dir_name)
-            print "[Removing path after successful devtools build: {0}]".format(path_to_be_deleted)
-            if os.path.exists(path_to_be_deleted):
-                shutil.rmtree(path_to_be_deleted)
 
         print "[SUCCESS: Finished build devtools for spec %s]\n" % compiler_spec
 
