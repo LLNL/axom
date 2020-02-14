@@ -435,15 +435,7 @@ class Conduit(Package):
             cfg.write(cmake_cache_entry("ENABLE_MPI", "ON"))
             cfg.write(cmake_cache_entry("MPI_C_COMPILER", mpicc_path))
             cfg.write(cmake_cache_entry("MPI_CXX_COMPILER", mpicxx_path))
-
-            if on_blueos or on_blueos_p9:
-                # clang doesn't come with a fortran wrapper on blueos
-                fortran_wrapper = "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.12.23/bin/mpif90"
-                if not os.path.exists(spec['mpi'].mpifc) and "clang" in spec['mpi'].mpifc:
-                    cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", fortran_wrapper))
-                else:
-                    cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", spec['mpi'].mpifc))
-            else:
+            if "+fortran" in spec:
                 cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", spec['mpi'].mpifc))
 
             mpiexe_bin = join_path(spec['mpi'].prefix.bin, 'mpiexec')

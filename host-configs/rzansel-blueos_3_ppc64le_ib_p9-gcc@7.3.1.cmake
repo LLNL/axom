@@ -29,11 +29,15 @@ set(CMAKE_Fortran_COMPILER "/usr/tce/packages/gcc/gcc-7.3.1/bin/gfortran" CACHE 
 #------------------------------------------------------------------------------
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2020_02_13_13_04_56/gcc-7.3.1" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2020_02_13_15_16_57/gcc-7.3.1" CACHE PATH "")
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.5.1" CACHE PATH "")
 
+# MFEM not built
+
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.21" CACHE PATH "")
+
+# SCR not built
 
 set(RAJA_DIR "${TPL_ROOT}/raja-0.11.0" CACHE PATH "")
 
