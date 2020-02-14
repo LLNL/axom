@@ -37,12 +37,12 @@ blt_add_executable(
 if(AXOM_ENABLE_TESTS)
     if(ENABLE_MPI)
         blt_add_test(NAME sidre_lulesh2
-                     COMMAND sidre_lulesh2_ex -s 5
+                     COMMAND sidre_lulesh2_ex
                      NUM_MPI_TASKS 8
-                     NUM_OMP_THREADS 2 )
+                     NUM_OMP_THREADS 4 )
     else()
         blt_add_test(NAME sidre_lulesh2
-                     COMMAND sidre_lulesh2_ex -s 5
-                     NUM_OMP_THREADS 2 )
+                     COMMAND sidre_lulesh2_ex
+                     NUM_OMP_THREADS 4 )
     endif()
 endif()
