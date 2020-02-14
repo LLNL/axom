@@ -33,7 +33,7 @@ if [[ "$DO_BUILD" == "yes" ]] ; then
         or_die make -j 10 VERBOSE=1
     fi
     if [[ "${DO_TEST}" == "yes" ]] ; then
-        make CTEST_OUTPUT_ON_FAILURE=1 test ARGS='-T Test -VV -j4'
+        make -j4 CTEST_OUTPUT_ON_FAILURE=1 test ARGS='-T Test -VV'
     fi
     if [[ "${DO_MEMCHECK}" == "yes" ]] ; then
       or_die ctest -T memcheck
