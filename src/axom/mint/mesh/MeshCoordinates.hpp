@@ -7,7 +7,6 @@
 #define MINT_MESHCOORDINATES_HPP_
 
 #include "axom/core/Macros.hpp"  // for Axom macros and definitions
-#include "axom/core/Array.hpp"   // for axom::Array
 
 #ifdef AXOM_MINT_USE_SIDRE
   #include "axom/sidre/core/Array.hpp"  // for sidre::Array
@@ -15,7 +14,8 @@
 
 #include "axom/slic/interface/slic.hpp"  // for slic logging macros
 
-#include "axom/mint/config.hpp"  // for axom::IndexType
+#include "axom/mint/config.hpp"      // for axom::IndexType
+#include "axom/mint/core/Array.hpp"  // for mint::Array
 
 namespace axom
 {

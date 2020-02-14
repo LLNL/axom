@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/core/Array.hpp"             /* for axom::Array */
+#include "axom/mint/core/Array.hpp"        /* for axom::mint::Array */
 #include "axom/core/memory_management.hpp" /* for alloc() and free() */
 
 #include "gtest/gtest.h" /* for TEST and EXPECT_* macros */
@@ -13,6 +13,10 @@
 
 namespace axom
 {
+
+namespace mint
+{
+
 const char IGNORE_OUTPUT[] = ".*";
 
 namespace internal
@@ -951,7 +955,7 @@ TEST(core_array, checkResize)
 TEST(core_array, deathtest_checkResize)
 {
   /* Resizing isn't allowed with a ratio less than 1.0. */
-  Array<int> v_int(axom::internal::ZERO, 1, 100);
+  Array<int> v_int(axom::mint::internal::ZERO, 1, 100);
   v_int.setResizeRatio(0.99);
   EXPECT_DEATH_IF_SUPPORTED(internal::check_resize(v_int), IGNORE_OUTPUT);
 }
@@ -1042,4 +1046,19 @@ TEST(core_array, deathtest_checkExternal)
   }
 }
 
+} /* end namespace mint */
 } /* end namespace axom */
+
+//------------------------------------------------------------------------------
+int main(int argc, char* argv[])
+{
+  int result = 0;
+
+  ::testing::InitGoogleTest(&argc, argv);
+
+  // finalized when exiting main scope
+
+  result = RUN_ALL_TESTS();
+
+  return result;
+}

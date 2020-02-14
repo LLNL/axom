@@ -11,7 +11,6 @@
 #------------------------------------------------------------------------------
 
 set(gtest_utils_tests
-    core_array.hpp
     core_execution_for_all.hpp
     core_execution_space.hpp
     core_memory_management.hpp
