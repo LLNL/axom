@@ -8,7 +8,7 @@
 
 #include "axom/core/Macros.hpp"  // for disable copy/assignment macro
 #include "axom/core/utilities/Utilities.hpp"  // for memory allocation functions
-#include "axom/core/Array.hpp"                // to inherit
+#include "axom/mint/core/Array.hpp"           // to inherit
 #include "axom/core/Types.hpp"
 
 #include "axom/slic/interface/slic.hpp"  // for slic logging macros
@@ -59,7 +59,7 @@ constexpr axom::IndexType ZERO = 0;
  * \see View
  */
 template <typename T>
-class Array : public axom::Array<T>
+class Array : public axom::mint::Array<T>
 {
 public:
   /*!
@@ -237,7 +237,7 @@ protected:
 
 //------------------------------------------------------------------------------
 template <typename T>
-Array<T>::Array(View* view) : axom::Array<T>()
+Array<T>::Array(View* view) : axom::mint::Array<T>()
                             , m_view(view)
 {
   SLIC_ERROR_IF(m_view == nullptr, "Provided View cannot be null.");
@@ -287,7 +287,7 @@ Array<T>::Array(View* view,
                 axom::IndexType num_tuples,
                 axom::IndexType num_components,
                 axom::IndexType capacity)
-  : axom::Array<T>()
+  : axom::mint::Array<T>()
   , m_view(view)
 {
   SLIC_ERROR_IF(m_view == nullptr, "Provided View cannot be null.");

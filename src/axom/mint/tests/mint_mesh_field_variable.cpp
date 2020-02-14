@@ -6,8 +6,8 @@
 // Axom includes
 #include "axom/mint/mesh/FieldVariable.hpp"  // for mint::FieldVariable
 #include "axom/mint/mesh/FieldTypes.hpp"     // for FieldTypes enum
+#include "axom/mint/core/Array.hpp"          // for mint::Array
 #include "axom/core/numerics/Matrix.hpp"     // for numerics::Matrix
-#include "axom/core/Array.hpp"               // for axom::Array
 #include "axom/slic/interface/slic.hpp"      // for slic macros
 
 // Sidre includes
@@ -30,7 +30,7 @@ namespace utilities = axom::utilities;
 namespace
 {
 template <typename T>
-void populate_array(axom::Array<T>& data)
+void populate_array(mint::Array<T>& data)
 {
   const axom::IndexType numTuples = data.size();
   const axom::IndexType numComponents = data.numComponents();
@@ -47,7 +47,7 @@ void populate_array(axom::Array<T>& data)
 
 //------------------------------------------------------------------------------
 template <typename T>
-void check_array(axom::Array<T>& data)
+void check_array(mint::Array<T>& data)
 {
   const axom::IndexType numTuples = data.size();
   const axom::IndexType numComponents = data.numComponents();
@@ -138,12 +138,12 @@ TEST(mint_mesh_field_variable_DeathTest, invalid_construction)
 
   EXPECT_DEATH_IF_SUPPORTED(
     mint::FieldVariable<invalid_type>("foo",
-                                      axom::internal::ZERO,
-                                      axom::internal::ZERO),
+                                      mint::internal::ZERO,
+                                      mint::internal::ZERO),
     IGNORE_OUTPUT);
   EXPECT_DEATH_IF_SUPPORTED(mint::FieldVariable<double>(EMPTY_STRING,
-                                                        axom::internal::ZERO,
-                                                        axom::internal::ZERO),
+                                                        mint::internal::ZERO,
+                                                        mint::internal::ZERO),
                             IGNORE_OUTPUT);
 }
 
@@ -394,9 +394,9 @@ TEST(mint_mesh_field_variable, shrink)
   axom::IndexType capacity =
     static_cast<axom::IndexType>(SMALL_NUM_TUPLES * ratio + 0.5);
 
-  if(capacity < axom::Array<axom::IndexType>::MIN_DEFAULT_CAPACITY)
+  if(capacity < mint::Array<axom::IndexType>::MIN_DEFAULT_CAPACITY)
   {
-    capacity = axom::Array<axom::IndexType>::MIN_DEFAULT_CAPACITY;
+    capacity = mint::Array<axom::IndexType>::MIN_DEFAULT_CAPACITY;
   }
   EXPECT_EQ(field.getCapacity(), capacity);
 

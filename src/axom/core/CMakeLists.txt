@@ -38,7 +38,6 @@ set(core_headers
     numerics/polynomial_solvers.hpp
 
     ## core
-    Array.hpp
     Macros.hpp
     Map.hpp
     Path.hpp

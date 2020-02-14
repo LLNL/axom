@@ -10,7 +10,7 @@
 
 #include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"
-#include "axom/core/Array.hpp"
+#include "axom/mint/core/Array.hpp"
 #include "axom/mint/mesh/CellTypes.hpp"
 #include "axom/mint/config.hpp"
 #include "axom/mint/mesh/internal/ConnectivityArrayHelpers.hpp"
@@ -73,13 +73,13 @@ public:
     : m_cell_type(cell_type)
     , m_values(nullptr)
     , m_offsets(new Array<IndexType>(
-        axom::internal::ZERO,
+        axom::mint::internal::ZERO,
         1,
         (ID_capacity == USE_DEFAULT) ? USE_DEFAULT : ID_capacity + 1))
   {
     IndexType new_value_capacity =
       internal::calcValueCapacity(0, getIDCapacity(), 0, value_capacity);
-    m_values = new Array<IndexType>(axom::internal::ZERO, 1, new_value_capacity);
+    m_values = new Array<IndexType>(axom::mint::internal::ZERO, 1, new_value_capacity);
 
     m_offsets->append(0);
   }

@@ -7,8 +7,6 @@
 
 // Axom includes
 #include "axom/core/utilities/Utilities.hpp"  // for utilities::max()
-#include "axom/core/Array.hpp"                // for axom::Array
-#include "axom/mint/config.hpp"               // for IndexType
 #include "axom/slic/interface/slic.hpp"       // for slic macros
 
 #ifdef AXOM_MINT_USE_SIDRE
