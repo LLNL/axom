@@ -9,9 +9,9 @@
 // Axom includes
 #include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"
-#include "axom/core/Array.hpp"
 
 // Mint includes
+#include "axom/mint/core/Array.hpp"
 #include "axom/mint/mesh/CellTypes.hpp"
 #include "axom/mint/mesh/internal/ConnectivityArrayHelpers.hpp"
 #include "axom/mint/config.hpp"
@@ -153,7 +153,7 @@ public:
                   "Unknown cell type.");
 
     m_stride = getCellInfo(cell_type).num_nodes;
-    m_values = new Array<IndexType>(axom::internal::ZERO, m_stride, ID_capacity);
+    m_values = new Array<IndexType>(axom::mint::internal::ZERO, m_stride, ID_capacity);
   }
 
   /*!
@@ -173,7 +173,7 @@ public:
   {
     SLIC_ERROR_IF(stride <= 0, "Stride must be greater than zero: " << stride);
 
-    m_values = new Array<IndexType>(axom::internal::ZERO, m_stride, ID_capacity);
+    m_values = new Array<IndexType>(axom::mint::internal::ZERO, m_stride, ID_capacity);
   }
 
   /// @}
