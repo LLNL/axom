@@ -36,7 +36,7 @@ def get_spec_path(spec, package_name, path_replacements = {}, use_bin = False) :
         path = spec[package_name].prefix.bin
 
     path = os.path.realpath(path)
-    
+
     for key in path_replacements:
         path = path.replace(key, path_replacements[key])
 
@@ -65,6 +65,8 @@ class Axom(Package):
     #-----------------------------------------------------------------------
     variant('debug', default=False,
             description='Build debug instead of optimized version')
+
+    variant('fortran', default=True, description="Build with Fortran support")
 
     variant("python",   default=False, description="Build python support")
 
@@ -202,11 +204,11 @@ class Axom(Package):
         cfg.write(cmake_cache_entry("CMAKE_C_COMPILER",c_compiler))
         cfg.write(cmake_cache_entry("CMAKE_CXX_COMPILER",cpp_compiler))
 
-        if f_compiler is None:
-            cfg.write(cmake_cache_option("ENABLE_FORTRAN",False))
-        else:
+        if "+fortran" in spec or not f_compiler is None:
             cfg.write(cmake_cache_option("ENABLE_FORTRAN",True))
             cfg.write(cmake_cache_entry("CMAKE_Fortran_COMPILER",f_compiler))
+        else:
+            cfg.write(cmake_cache_option("ENABLE_FORTRAN",False))
 
         # TPL locations
         cfg.write("#------------------{}\n".format("-"*60))
@@ -233,22 +235,32 @@ class Axom(Package):
         if "+mfem" in spec:
             mfem_dir = get_spec_path(spec, "mfem", path_replacements)
             cfg.write(cmake_cache_entry("MFEM_DIR",mfem_dir))
+        else:
+            cfg.write("# MFEM not built\n\n")
 
         if "+hdf5" in spec:
             hdf5_dir = get_spec_path(spec, "hdf5", path_replacements)
             cfg.write(cmake_cache_entry("HDF5_DIR",hdf5_dir))
+        else:
+            cfg.write("# HDF5 not built\n\n")
 
         if "+scr" in spec:
             scr_dir = get_spec_path(spec, "scr", path_replacements)
             cfg.write(cmake_cache_entry("SCR_DIR",scr_dir))
+        else:
+            cfg.write("# SCR not built\n\n")
 
         if "+raja" in spec:
             raja_dir = get_spec_path(spec, "raja", path_replacements)
             cfg.write(cmake_cache_entry("RAJA_DIR", raja_dir))
+        else:
+            cfg.write("# RAJA not built\n\n")
 
         if "+umpire" in spec:
             umpire_dir = get_spec_path(spec, "umpire", path_replacements)
             cfg.write(cmake_cache_entry("UMPIRE_DIR", umpire_dir))
+        else:
+            cfg.write("# Umpire not built\n\n")
 
         cfg.write("#------------------{}\n".format("-"*60))
         cfg.write("# MPI\n")
@@ -258,14 +270,7 @@ class Axom(Package):
             cfg.write(cmake_cache_option("ENABLE_MPI", True))
             cfg.write(cmake_cache_entry("MPI_C_COMPILER", spec['mpi'].mpicc))
             cfg.write(cmake_cache_entry("MPI_CXX_COMPILER", spec['mpi'].mpicxx))
-            if on_blueos or on_blueos_p9:
-                # clang doesn't come with a fortran wrapper on blueos
-                fortran_wrapper = "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.12.23/bin/mpif90"
-                if not os.path.exists(spec['mpi'].mpifc) and "clang" in spec['mpi'].mpifc:
-                    cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", fortran_wrapper))
-                else:
-                    cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", spec['mpi'].mpifc))
-            else:
+            if "+fortran" in spec or not f_compiler is None:
                 cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", spec['mpi'].mpifc))
 
             # Determine MPIEXEC
