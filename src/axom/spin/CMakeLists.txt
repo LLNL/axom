@@ -52,6 +52,7 @@ if ( RAJA_FOUND AND UMPIRE_FOUND )
        internal/linear_bvh/math.hpp
        internal/linear_bvh/RadixTree.hpp
        internal/linear_bvh/range.hpp
+       internal/linear_bvh/TraversalPredicates.hpp
        internal/linear_bvh/vec.hpp
 
       )

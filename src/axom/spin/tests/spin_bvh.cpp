@@ -18,6 +18,8 @@
 #include "axom/spin/BVH.hpp"
 #include "axom/spin/UniformGrid.hpp"
 
+#include "axom/spin/internal/linear_bvh/TraversalPredicates.hpp"
+
 // axom/mint includes
 #include "axom/mint/mesh/Mesh.hpp"
 #include "axom/mint/mesh/UniformMesh.hpp"
@@ -631,6 +633,62 @@ void check_single_box3d( )
 //------------------------------------------------------------------------------
 // UNIT TESTS
 //------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+TEST( spin_bvh, traversal_predicates_pointInLeftBin )
+{
+  namespace bvh               = axom::spin::internal::linear_bvh;
+  using TraversalPredicates2D = bvh::TraversalPredicates< 2, double >;
+  using TraversalPredicates3D = bvh::TraversalPredicates< 3, double >;
+  using VecType               = bvh::Vec< double, 4 >;
+
+  VecType in_point, out_point, s1, s2;
+
+  in_point[ 0 ]  = in_point[ 1 ]  = in_point[ 2 ]  = 0.5;
+  out_point[ 0 ] = out_point[ 1 ] = out_point[ 2 ] = 1.5;
+
+  s1[ 0 ] = 0.; // LeftBin.xmin
+  s1[ 1 ] = 0.; // LeftBin.ymin
+  s1[ 2 ] = 0.; // LeftBin.zmin
+
+  s1[ 3 ] = 1.; // LeftBin.xmax
+  s2[ 0 ] = 1.; // LeftBin.ymax
+  s2[ 1 ] = 1.; // LeftBin.zmax
+
+  EXPECT_TRUE( TraversalPredicates2D::pointInLeftBin( in_point, s1, s2 ) );
+  EXPECT_TRUE( TraversalPredicates3D::pointInLeftBin( in_point, s1, s2 ) );
+
+  EXPECT_FALSE( TraversalPredicates2D::pointInLeftBin( out_point, s1, s2 ) );
+  EXPECT_FALSE( TraversalPredicates3D::pointInLeftBin( out_point, s1, s2 ) );
+}
+
+//------------------------------------------------------------------------------
+TEST( spin_bvh, traversal_predicates_pointInRightBin )
+{
+  namespace bvh               = axom::spin::internal::linear_bvh;
+  using TraversalPredicates2D = bvh::TraversalPredicates< 2, double >;
+  using TraversalPredicates3D = bvh::TraversalPredicates< 3, double >;
+  using VecType               = bvh::Vec< double, 4 >;
+
+  VecType in_point, out_point, s2, s3;
+
+  in_point[ 0 ]  = in_point[ 1 ]  = in_point[ 2 ]  = 0.5;
+  out_point[ 0 ] = out_point[ 1 ] = out_point[ 2 ] = 1.5;
+
+  s2[ 2 ] = 0.; // RightBin.xmin
+  s2[ 3 ] = 0.; // RightBin.ymin
+  s3[ 0 ] = 0.; // RightBin.zmin
+
+  s3[ 1 ] = 1.; // RightBin.xmax
+  s3[ 2 ] = 1.; // RightBin.ymax
+  s3[ 3 ] = 1.; // RightBin.zmax
+
+  EXPECT_TRUE( TraversalPredicates2D::pointInRightBin( in_point, s2, s3 ) );
+  EXPECT_TRUE( TraversalPredicates3D::pointInRightBin( in_point, s2, s3 ) );
+
+  EXPECT_FALSE( TraversalPredicates2D::pointInRightBin( out_point, s2, s3 ) );
+  EXPECT_FALSE( TraversalPredicates3D::pointInRightBin( out_point, s2, s3 ) );
+}
 
 //------------------------------------------------------------------------------
 TEST( spin_bvh, contruct2D_sequential )
