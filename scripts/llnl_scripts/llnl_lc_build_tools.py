@@ -494,7 +494,7 @@ def full_build_and_test_of_tpls(builds_dir, job_name, timestamp):
     tpl_build_failed = False
     for spec in specs:
         start_time = time.time()
-        fullspec = "{0}+devtools".format(spec)
+        fullspec = "{0}".format(spec)
         res = uberenv_build(prefix, fullspec, project_file, config_dir, mirror_dir)
         end_time = time.time()
         print "[build time: {0}]".format(convertSecondsToReadableTime(end_time - start_time))
