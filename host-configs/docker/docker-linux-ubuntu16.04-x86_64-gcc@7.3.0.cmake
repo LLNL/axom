@@ -50,10 +50,10 @@ set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.19" CACHE PATH "")
 # scr not built by uberenv
 
 # raja from uberenv
-set(RAJA_DIR "/usr/local/share/raja/cmake" CACHE PATH "")
+set(RAJA_DIR "/usr/local/share/raja" CACHE PATH "")
 
 # umpire from uberenv
-set(UMPIRE_DIR "${TPL_ROOT}/umpire-1.0.0/share/umpire/cmake" CACHE PATH "")
+set(UMPIRE_DIR "${TPL_ROOT}/umpire-1.0.0" CACHE PATH "")
 
 # python not built by uberenv
 
