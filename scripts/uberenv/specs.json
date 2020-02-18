@@ -14,26 +14,26 @@
     "__comment__":"##############################################################################",
 
     "toss_3_x86_64_ib":
-    [ "clang@4.0.0",
-      "clang@6.0.0",
-      "gcc@6.1.0",
-      "gcc@7.3.0",
-      "gcc@8.1.0",
-      "intel@18.0.2",
-      "intel@19.0.0" ],
+    [ "clang@4.0.0+devtools+mfem",
+      "clang@6.0.0+devtools+mfem",
+      "gcc@6.1.0+devtools+mfem",
+      "gcc@7.3.0+devtools+mfem",
+      "gcc@8.1.0+devtools+mfem",
+      "intel@18.0.2+devtools+mfem",
+      "intel@19.0.0+devtools+mfem" ],
 
     "blueos_3_ppc64le_ib":
-    [ "clang@upstream_xlf~openmp",
-      "clang@upstream_nvcc_xlf~openmp+cuda",
-      "gcc@4.9.3",
-      "xl@coral~openmp" ],
+    [ "clang@upstream_xlf~openmp+devtools+mfem",
+      "clang@upstream_nvcc_xlf~openmp+cuda+devtools+mfem",
+      "gcc@4.9.3+devtools+mfem",
+      "xl@coral~openmp+devtools+mfem" ],
 
     "blueos_3_ppc64le_ib_p9":
-    [ "clang@upstream_xlf~openmp",
-      "clang@8.0.1_nvcc_xlf~openmp+cuda",
-      "gcc@7.3.1",
-      "xl@coral~openmp" ],
+    [ "clang@upstream_xlf~openmp+devtools+mfem",
+      "clang@8.0.1_nvcc_xlf~openmp+cuda+devtools+mfem",
+      "gcc@7.3.1+devtools+mfem",
+      "xl@coral~openmp+devtools+mfem" ],
 
     "darwin-x86_64":
-    [ "clang@9.0.0" ]
+    [ "clang@9.0.0+devtools+mfem" ]
 }
