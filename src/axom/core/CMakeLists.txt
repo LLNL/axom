@@ -41,6 +41,7 @@ set(core_headers
     Macros.hpp
     Map.hpp
     Path.hpp
+    Array.hpp
     StackArray.hpp
     Types.hpp
     memory_management.hpp
