@@ -655,7 +655,7 @@ inline void Array<T>::initialize(IndexType num_tuples,
   }
   setCapacity(capacity);
 
-  // sanity checks
+  // quick checks
   assert(m_data != nullptr);
   assert(m_num_tuples >= 0);
   assert(m_capacity >= m_num_tuples);
