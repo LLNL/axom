@@ -102,3 +102,4 @@ steps:
     testResultsFormat: 'cTest'
     testResultsFiles: '**/Test.xml'
     testRunTitle: '$(TEST_TARGET) Tests'
+    failTaskOnFailedTests: true
