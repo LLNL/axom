@@ -21,10 +21,12 @@
 // spin includes
 #include "axom/spin/internal/linear_bvh/aabb.hpp"
 #include "axom/spin/internal/linear_bvh/vec.hpp"
+#include "axom/spin/internal/linear_bvh/bvh_traverse.hpp"
 #include "axom/spin/internal/linear_bvh/bvh_vtkio.hpp"
 #include "axom/spin/internal/linear_bvh/BVHData.hpp"
 #include "axom/spin/internal/linear_bvh/emit_bvh.hpp"
 #include "axom/spin/internal/linear_bvh/build_radix_tree.hpp"
+#include "axom/spin/internal/linear_bvh/TraversalPredicates.hpp"
 
 // C/C++ includes
 #include <fstream>  // for std::ofstream
@@ -272,88 +274,6 @@ private:
 };
 
 //------------------------------------------------------------------------------
-//  BVH IMPLEMENTATION HELPER METHODS
-//------------------------------------------------------------------------------
-namespace
-{
-
-//------------------------------------------------------------------------------
-template< typename FloatType >
-AXOM_HOST_DEVICE
-bool InLeft( const internal::linear_bvh::Vec< FloatType, 3>& point,
-             const internal::linear_bvh::Vec< FloatType, 4>& s1,
-             const internal::linear_bvh::Vec< FloatType, 4>& s2 )
-{
-  bool in_left = true;
-  if ( point[0]  < s1[0] ) in_left = false;
-  if ( point[1]  < s1[1] ) in_left = false;
-  if ( point[2]  < s1[2] ) in_left = false;
-
-  if ( point[0]  > s1[3] ) in_left = false;
-  if ( point[1]  > s2[0] ) in_left = false;
-  if ( point[2]  > s2[1] ) in_left = false;
-
-  return in_left;
-}
-
-//------------------------------------------------------------------------------
-template< typename FloatType >
-AXOM_HOST_DEVICE
-bool InLeft( const internal::linear_bvh::Vec< FloatType, 2>& point,
-             const internal::linear_bvh::Vec< FloatType, 4>& s1,
-             const internal::linear_bvh::Vec< FloatType, 4>& s2 )
-{
-  bool in_left = true;
-  if ( point[0]  < s1[0] ) in_left = false;
-  if ( point[1]  < s1[1] ) in_left = false;
-
-  if ( point[0]  > s1[3] ) in_left = false;
-  if ( point[1]  > s2[0] ) in_left = false;
-
-  return in_left;
-}
-
-//------------------------------------------------------------------------------
-template< typename FloatType >
-AXOM_HOST_DEVICE
-bool InRight( const internal::linear_bvh::Vec< FloatType, 3>& point,
-              const internal::linear_bvh::Vec< FloatType, 4>& s2,
-              const internal::linear_bvh::Vec< FloatType, 4>& s3 )
-{
-  bool in_right = true;
-
-  if ( point[0] < s2[2] ) in_right = false;
-  if ( point[1] < s2[3] ) in_right = false;
-  if ( point[2] < s3[0] ) in_right = false;
-
-  if ( point[0] > s3[1] ) in_right = false;
-  if ( point[1] > s3[2] ) in_right = false;
-  if ( point[2] > s3[3] ) in_right = false;
-
-  return in_right;
-}
-
-//------------------------------------------------------------------------------
-template< typename FloatType >
-AXOM_HOST_DEVICE
-bool InRight( const internal::linear_bvh::Vec< FloatType, 2>& point,
-              const internal::linear_bvh::Vec< FloatType, 4>& s2,
-              const internal::linear_bvh::Vec< FloatType, 4>& s3 )
-{
-  bool in_right = true;
-
-  if ( point[0] < s2[2] ) in_right = false;
-  if ( point[1] < s2[3] ) in_right = false;
-
-  if ( point[0] > s3[1] ) in_right = false;
-  if ( point[1] > s3[2] ) in_right = false;
-
-  return in_right;
-}
-
-}
-
-//------------------------------------------------------------------------------
 //  BVH IMPLEMENTATION
 //------------------------------------------------------------------------------
 template< int NDIMS, typename ExecSpace, typename FloatType >
@@ -470,9 +390,12 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
   const int allocatorID = axom::execution_space< ExecSpace >::allocatorID();
   axom::setDefaultAllocator( allocatorID );
 
-  // STEP 1: count number of candidates for each query point
-  using vec4_t = internal::linear_bvh::Vec< FloatType, 4 >;
+  namespace bvh = internal::linear_bvh;
+  using vec4_t  = bvh::Vec< FloatType, 4 >;
+  using point_t = bvh::Vec< FloatType, NDIMS >;
+  using TraversalPredicates = bvh::TraversalPredicates< NDIMS, FloatType >;
 
+  // STEP 1: count number of candidates for each query point
   const vec4_t* inner_nodes = m_bvh.m_inner_nodes;
   const int32*  leaf_nodes  = m_bvh.m_leaf_nodes;
   SLIC_ASSERT( inner_nodes != nullptr );
@@ -485,67 +408,34 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
   for_all< ExecSpace >( numPts, AXOM_LAMBDA(IndexType i)
   {
     int32 count = 0;
-    internal::linear_bvh::Vec< FloatType, NDIMS > point;
+    point_t point;
     point[0] = x[i];
     point[1] = y[i];
     point[2] = z[i];
 
-   int32 current_node = 0;
-   int32 todo[64];
-   int32 stackptr = 0;
+    auto leftPredicate = []( const point_t& p,
+                             const vec4_t& s1,
+                             const vec4_t& s2 ) -> bool {
+      return TraversalPredicates::pointInLeftBin( p, s1, s2 );
+    };
 
-   constexpr int32 barrier = -2000000000;
-   todo[stackptr] = barrier;
-   while (current_node != barrier)
-   {
-     if (current_node > -1)
-     {
-       const vec4_t first4  = inner_nodes[current_node + 0];
-       const vec4_t second4 = inner_nodes[current_node + 1];
-       const vec4_t third4  = inner_nodes[current_node + 2];
+    auto rightPredicate = []( const point_t& p,
+                              const vec4_t& s2,
+                              const vec4_t& s3 ) -> bool {
+      return TraversalPredicates::pointInRightBin( p, s2, s3 );
+    };
 
-       const bool in_left  = InLeft( point, first4, second4 );
-       const bool in_right = InRight( point, second4, third4 );
+    auto leafAction = [&]( int32 AXOM_NOT_USED(current_node),
+                           const int32* AXOM_NOT_USED(leaf_nodes) ) -> void {
+      count++;
+    };
 
-       if (!in_left && !in_right)
-       {
-         // pop the stack and continue
-         current_node = todo[stackptr];
-         stackptr--;
-       }
-       else
-       {
-         vec4_t children = inner_nodes[current_node + 3];
-         int32 l_child;
-         constexpr int32 isize = sizeof(int32);
-         // memcpy the int bits hidden in the floats
-         memcpy(&l_child, &children[0], isize);
-         int32 r_child;
-         memcpy(&r_child, &children[1], isize);
-
-         current_node = (in_left) ? l_child : r_child;
-
-          if (in_left && in_right)
-          {
-            stackptr++;
-            todo[stackptr] = r_child;
-            // TODO: if we are in both children we could
-            // go down the "closer" first by perhaps the distance
-            // from the point to the center of the aabb
-          }
-
-       } // END else
-
-     } // END if
-     else
-     {
-       // leaf node
-       count++;
-       current_node = todo[stackptr];
-       stackptr--;
-     }
-
-   } // while
+    bvh::bvh_traverse( inner_nodes,
+                       leaf_nodes,
+                       point,
+                       leftPredicate,
+                       rightPredicate,
+                       leafAction );
 
   counts[ i ]  = count;
   total_count += count;
@@ -564,66 +454,35 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
   {
     int32 offset = offsets[ i ];
 
-    internal::linear_bvh::Vec< FloatType,NDIMS > point;
+    point_t point;
     point[0] = x[i];
     point[1] = y[i];
     point[2] = z[i];
 
-    int32 current_node = 0;
-    int32 todo[64];
-    int32 stackptr = 0;
+    auto leftPredicate = []( const point_t& p,
+                             const vec4_t& s1,
+                             const vec4_t& s2 ) -> bool {
+      return TraversalPredicates::pointInLeftBin( p, s1, s2 );
+    };
 
-    constexpr int32 barrier = -2000000000;
-    todo[stackptr] = barrier;
-    while (current_node != barrier)
-    {
-      if (current_node > -1)
-      {
-        const vec4_t first4  = inner_nodes[current_node + 0];
-        const vec4_t second4 = inner_nodes[current_node + 1];
-        const vec4_t third4  = inner_nodes[current_node + 2];
+    auto rightPredicate = []( const point_t& p,
+                              const vec4_t& s2,
+                              const vec4_t& s3 ) -> bool {
+      return TraversalPredicates::pointInRightBin( p, s2, s3 );
+    };
 
-        const bool in_left  = InLeft( point, first4, second4 );
-        const bool in_right = InRight( point, second4, third4 );
+    auto leafAction = [=,&offset]( int32 current_node, const int32* leaf_nodes ) -> void {
+      candidates[offset] = leaf_nodes[current_node];
+      offset++;
+    };
 
-        if (!in_left && !in_right)
-        {
-          // pop the stack and continue
-          current_node = todo[stackptr];
-          stackptr--;
-        }
-        else
-        {
-          vec4_t children = inner_nodes[current_node + 3];
-          int32 l_child;
-          constexpr int32 isize = sizeof(int32);
-          // memcpy the int bits hidden in the floats
-          memcpy(&l_child, &children[0], isize);
-          int32 r_child;
-          memcpy(&r_child, &children[1], isize);
 
-          current_node = (in_left) ? l_child : r_child;
-
-          if (in_left && in_right)
-          {
-            stackptr++;
-            todo[stackptr] = r_child;
-            // TODO: if we are in both children we could
-            // go down the "closer" first by perhaps the distance
-            // from the point to the center of the aabb
-          }
-        }
-      }
-      else
-      {
-        current_node = -current_node - 1; //swap the neg address
-        candidates[offset] = leaf_nodes[current_node];
-        offset++;
-        current_node = todo[stackptr];
-        stackptr--;
-      }
-
-    } // while
+    bvh::bvh_traverse( inner_nodes,
+                       leaf_nodes,
+                       point,
+                       leftPredicate,
+                       rightPredicate,
+                       leafAction );
 
   } );
 
@@ -654,6 +513,11 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
   const int allocatorID = axom::execution_space< ExecSpace >::allocatorID();
   axom::setDefaultAllocator( allocatorID );
 
+  namespace bvh = internal::linear_bvh;
+  using vec4_t  = bvh::Vec< FloatType, 4 >;
+  using point_t = bvh::Vec< FloatType, NDIMS >;
+  using TraversalPredicates = bvh::TraversalPredicates< NDIMS, FloatType >;
+
   // STEP 1: count number of candidates for each query point
   const internal::linear_bvh::Vec< FloatType, 4>  *inner_nodes = m_bvh.m_inner_nodes;
   const int32 *leaf_nodes = m_bvh.m_leaf_nodes;
@@ -669,69 +533,36 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
   for_all< ExecSpace >( numPts, AXOM_LAMBDA (IndexType i)
   {
     int32 count = 0;
-    internal::linear_bvh::Vec< FloatType, NDIMS > point;
+    point_t point;
     point[0] = x[i];
     point[1] = y[i];
 
-   int32 current_node = 0;
-   int32 todo[64];
-   int32 stackptr = 0;
+    auto leftPredicate = []( const point_t& p,
+                             const vec4_t& s1,
+                             const vec4_t& s2 ) -> bool {
+      return TraversalPredicates::pointInLeftBin( p, s1, s2 );
+    };
 
-   constexpr int32 barrier = -2000000000;
-   todo[stackptr] = barrier;
-   while (current_node != barrier)
-   {
-     if (current_node > -1)
-     {
-       const vec4_t first4  = inner_nodes[current_node + 0];
-       const vec4_t second4 = inner_nodes[current_node + 1];
-       const vec4_t third4  = inner_nodes[current_node + 2];
+    auto rightPredicate = []( const point_t& p,
+                              const vec4_t& s2,
+                              const vec4_t& s3 ) -> bool {
+      return TraversalPredicates::pointInRightBin( p, s2, s3 );
+    };
 
-       const bool in_left  = InLeft( point, first4, second4 );
-       const bool in_right = InRight( point, second4, third4 );
+    auto leafAction = [&]( int32 AXOM_NOT_USED(current_node),
+                           const int32* AXOM_NOT_USED(leaf_nodes) ) -> void {
+      count++;
+    };
 
-       if (!in_left && !in_right)
-       {
-         // pop the stack and continue
-         current_node = todo[stackptr];
-         stackptr--;
-       }
-       else
-       {
-         vec4_t children = inner_nodes[current_node + 3];
-         int32 l_child;
-         constexpr int32 isize = sizeof(int32);
-         // memcpy the int bits hidden in the floats
-         memcpy(&l_child, &children[0], isize);
-         int32 r_child;
-         memcpy(&r_child, &children[1], isize);
+    bvh::bvh_traverse( inner_nodes,
+                       leaf_nodes,
+                       point,
+                       leftPredicate,
+                       rightPredicate,
+                       leafAction );
 
-         current_node = (in_left) ? l_child : r_child;
-
-          if (in_left && in_right)
-          {
-            stackptr++;
-            todo[stackptr] = r_child;
-            // TODO: if we are in both children we could
-            // go down the "closer" first by perhaps the distance
-            // from the point to the center of the aabb
-          }
-
-       } // END else
-
-     } // END if
-     else
-     {
-       // leaf node
-       count++;
-       current_node = todo[stackptr];
-       stackptr--;
-     }
-
-   } // while
-
-   counts[ i ]  = count;
-   total_count += count;
+    counts[ i ]  = count;
+    total_count += count;
 
   } );
 
@@ -748,65 +579,34 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
   {
     int32 offset = offsets[ i ];
 
-    internal::linear_bvh::Vec< FloatType,NDIMS > point;
+    point_t point;
     point[0] = x[i];
     point[1] = y[i];
 
-    int32 current_node = 0;
-    int32 todo[64];
-    int32 stackptr = 0;
+    auto leftPredicate = []( const point_t& p,
+                             const vec4_t& s1,
+                             const vec4_t& s2 ) -> bool {
+      return TraversalPredicates::pointInLeftBin( p, s1, s2 );
+    };
 
-    constexpr int32 barrier = -2000000000;
-    todo[stackptr] = barrier;
-    while (current_node != barrier)
-    {
-      if (current_node > -1)
-      {
-        const vec4_t first4  = inner_nodes[current_node + 0];
-        const vec4_t second4 = inner_nodes[current_node + 1];
-        const vec4_t third4  = inner_nodes[current_node + 2];
+    auto rightPredicate = []( const point_t& p,
+                              const vec4_t& s2,
+                              const vec4_t& s3 ) -> bool {
+      return TraversalPredicates::pointInRightBin( p, s2, s3 );
+    };
 
-        const bool in_left  = InLeft( point, first4, second4 );
-        const bool in_right = InRight( point, second4, third4 );
+    auto leafAction = [=,&offset]( int32 current_node, const int32* leaf_nodes ) -> void {
+      candidates[offset] = leaf_nodes[current_node];
+      offset++;
+    };
 
-        if (!in_left && !in_right)
-        {
-          // pop the stack and continue
-          current_node = todo[stackptr];
-          stackptr--;
-        }
-        else
-        {
-          vec4_t children = inner_nodes[current_node + 3];
-          int32 l_child;
-          constexpr int32 isize = sizeof(int32);
-          // memcpy the int bits hidden in the floats
-          memcpy(&l_child, &children[0], isize);
-          int32 r_child;
-          memcpy(&r_child, &children[1], isize);
 
-          current_node = (in_left) ? l_child : r_child;
-
-          if (in_left && in_right)
-          {
-            stackptr++;
-            todo[stackptr] = r_child;
-            // TODO: if we are in both children we could
-            // go down the "closer" first by perhaps the distance
-            // from the point to the center of the aabb
-          }
-        }
-      }
-      else
-      {
-        current_node = -current_node - 1; //swap the neg address
-        candidates[offset] = leaf_nodes[current_node];
-        offset++;
-        current_node = todo[stackptr];
-        stackptr--;
-      }
-
-    } // while
+    bvh::bvh_traverse( inner_nodes,
+                       leaf_nodes,
+                       point,
+                       leftPredicate,
+                       rightPredicate,
+                       leafAction );
 
   } );
 
