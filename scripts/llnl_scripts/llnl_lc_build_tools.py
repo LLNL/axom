@@ -206,7 +206,8 @@ def archive_tpl_logs(prefix, job_name, timestamp):
     if not os.path.exists(archive_dir):
         os.makedirs(archive_dir)
 
-    tpl_build_dir = pjoin(prefix, timestamp)
+    tpl_build_dir = pjoin(prefix, get_system_type())
+    tpl_build_dir = pjoin(tpl_build_dir, timestamp)
 
     copy_if_exists(pjoin(tpl_build_dir, "info.json"), archive_dir)
 
