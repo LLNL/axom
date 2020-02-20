@@ -20,13 +20,14 @@
 
 // spin includes
 #include "axom/spin/internal/linear_bvh/aabb.hpp"
-#include "axom/spin/internal/linear_bvh/vec.hpp"
+#include "axom/spin/internal/linear_bvh/build_radix_tree.hpp"
 #include "axom/spin/internal/linear_bvh/bvh_traverse.hpp"
 #include "axom/spin/internal/linear_bvh/bvh_vtkio.hpp"
 #include "axom/spin/internal/linear_bvh/BVHData.hpp"
 #include "axom/spin/internal/linear_bvh/emit_bvh.hpp"
-#include "axom/spin/internal/linear_bvh/build_radix_tree.hpp"
+#include "axom/spin/internal/linear_bvh/QueryAccessor.hpp"
 #include "axom/spin/internal/linear_bvh/TraversalPredicates.hpp"
+#include "axom/spin/internal/linear_bvh/vec.hpp"
 
 // C/C++ includes
 #include <fstream>  // for std::ofstream
@@ -258,6 +259,26 @@ public:
 
 private:
 
+  /*!
+   * \brief Makes a BVH traversal and counts the number of candidates for each
+   *  query point.
+   *
+   * \param [in] N the total number of points
+   * \param [out] counts array of length N consisting of the candidate count
+   * \param [in] leftCheck
+   * \param [in] rightCheck
+   *
+   * \return
+   */
+  template < typename LeftPredicateType, typename RightPredicateType >
+  IndexType getCounts( LeftPredicateType&& leftCheck,
+                       RightPredicateType&& rightCheck,
+                       IndexType N,
+                       IndexType* counts,
+                       const FloatType* x,
+                       const FloatType* y,
+                       const FloatType* z = nullptr ) const;
+
 /// \name Private Members
 /// @{
 
@@ -276,6 +297,74 @@ private:
 //------------------------------------------------------------------------------
 //  BVH IMPLEMENTATION
 //------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+//  PRIVATE HELPER METHOD IMPLEMENTATION
+//------------------------------------------------------------------------------
+
+template < int NDIMS, typename ExecSpace, typename FloatType >
+template < typename LeftPredicate, typename RightPredicate >
+IndexType BVH< NDIMS, ExecSpace, FloatType >::getCounts(
+    LeftPredicate&& leftCheck,
+    RightPredicate&& rightCheck,
+    IndexType N,
+    IndexType* counts,
+    const FloatType* x,
+    const FloatType* y,
+    const FloatType* z ) const
+{
+  // sanity checks
+  SLIC_ERROR_IF( counts == nullptr, "supplied null pointer for counts!" );
+  SLIC_ERROR_IF( x == nullptr, "supplied null pointer for x-coordinates!" );
+  SLIC_ERROR_IF( y == nullptr, "supplied null pointer for y-coordinates!" );
+  SLIC_ERROR_IF( (z==nullptr && NDIMS==3),
+                 "supplied null pointer for z-coordinates!" );
+
+  namespace bvh = internal::linear_bvh;
+  using vec4_t  = bvh::Vec< FloatType, 4 >;
+  using point_t = bvh::Vec< FloatType, NDIMS >;
+
+  // STEP 1: count number of candidates for each query point
+  const vec4_t* inner_nodes = m_bvh.m_inner_nodes;
+  const int32*  leaf_nodes  = m_bvh.m_leaf_nodes;
+  SLIC_ASSERT( inner_nodes != nullptr );
+  SLIC_ASSERT( leaf_nodes != nullptr );
+
+  using reduce_pol = typename axom::execution_space< ExecSpace >::reduce_policy;
+  RAJA::ReduceSum< reduce_pol, IndexType > total_count( 0 );
+
+  using QueryAccessor = bvh::QueryAccessor< NDIMS, FloatType >;
+  for_all< ExecSpace >( N, AXOM_LAMBDA(IndexType i)
+  {
+    int32 count = 0;
+    point_t point;
+    QueryAccessor::getPoint( point, i, x, y, z );
+
+
+    auto leafAction = [&]( int32 AXOM_NOT_USED(current_node),
+                      const int32* AXOM_NOT_USED(leaf_nodes) ) -> void {
+      count++;
+    };
+
+    bvh::bvh_traverse( inner_nodes,
+                       leaf_nodes,
+                       point,
+                       leftCheck,
+                       rightCheck,
+                       leafAction );
+
+    counts[ i ]  = count;
+    total_count += count;
+
+  } );
+
+  return ( total_count.get() );
+}
+
+//------------------------------------------------------------------------------
+//  PUBLIC API IMPLEMENTATION
+//------------------------------------------------------------------------------
+
 template< int NDIMS, typename ExecSpace, typename FloatType >
 BVH< NDIMS, ExecSpace, FloatType >::BVH( const FloatType* boxes,
                                          IndexType numItems ) :
@@ -413,41 +502,14 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
   { return TraversalPredicates::pointInRightBin( p, s2, s3 ); };
 
   // STEP 3: get counts
-  using reduce_policy =
-      typename axom::execution_space< ExecSpace >::reduce_policy;
-  RAJA::ReduceSum< reduce_policy, IndexType > total_count( 0 );
-
-  for_all< ExecSpace >( numPts, AXOM_LAMBDA(IndexType i)
-  {
-    int32 count = 0;
-    point_t point;
-    point[0] = x[i];
-    point[1] = y[i];
-    point[2] = z[i];
-
-
-    auto leafAction = [&]( int32 AXOM_NOT_USED(current_node),
-                           const int32* AXOM_NOT_USED(leaf_nodes) ) -> void {
-      count++;
-    };
-
-    bvh::bvh_traverse( inner_nodes,
-                       leaf_nodes,
-                       point,
-                       leftPredicate,
-                       rightPredicate,
-                       leafAction );
-
-    counts[ i ]  = count;
-    total_count += count;
-
-  } );
+  int total_count = getCounts(
+      leftPredicate, rightPredicate, numPts, counts, x, y, z );
 
   using exec_policy = typename axom::execution_space< ExecSpace >::loop_policy;
   RAJA::exclusive_scan< exec_policy >(
       counts, counts+numPts, offsets, RAJA::operators::plus<IndexType>{} );
 
-  IndexType total_candidates = static_cast< IndexType >( total_count.get() );
+  IndexType total_candidates = static_cast< IndexType >( total_count );
   candidates = axom::allocate< IndexType >( total_candidates);
 
   // STEP 4: fill in candidates for each point
@@ -526,39 +588,14 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
   { return TraversalPredicates::pointInRightBin( p, s2, s3 ); };
 
   // STEP 3: get counts
-  using reduce_policy =
-        typename axom::execution_space< ExecSpace >::reduce_policy;
-  RAJA::ReduceSum< reduce_policy, IndexType > total_count( 0 );
-
-  for_all< ExecSpace >( numPts, AXOM_LAMBDA (IndexType i)
-  {
-    int32 count = 0;
-    point_t point;
-    point[0] = x[i];
-    point[1] = y[i];
-
-    auto leafAction = [&]( int32 AXOM_NOT_USED(current_node),
-                           const int32* AXOM_NOT_USED(leaf_nodes) ) -> void {
-      count++;
-    };
-
-    bvh::bvh_traverse( inner_nodes,
-                       leaf_nodes,
-                       point,
-                       leftPredicate,
-                       rightPredicate,
-                       leafAction );
-
-    counts[ i ]  = count;
-    total_count += count;
-
-  } );
+  int total_count = getCounts(
+        leftPredicate, rightPredicate, numPts, counts, x, y, nullptr );
 
   using exec_policy = typename axom::execution_space< ExecSpace >::loop_policy;
   RAJA::exclusive_scan< exec_policy >(
       counts, counts+numPts, offsets, RAJA::operators::plus<IndexType>{} );
 
-  IndexType total_candidates = static_cast< IndexType >( total_count.get() );
+  IndexType total_candidates = static_cast< IndexType >( total_count );
 
   candidates = axom::allocate< IndexType >( total_candidates);
 
