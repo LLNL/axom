@@ -401,6 +401,18 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
   SLIC_ASSERT( inner_nodes != nullptr );
   SLIC_ASSERT( leaf_nodes != nullptr );
 
+  // STEP 2: define traversal predicates
+  auto leftPredicate = [] AXOM_HOST_DEVICE ( const point_t& p,
+                                             const vec4_t& s1,
+                                             const vec4_t& s2 ) -> bool
+  { return TraversalPredicates::pointInLeftBin( p, s1, s2 ); };
+
+  auto rightPredicate = [] AXOM_HOST_DEVICE ( const point_t& p,
+                                              const vec4_t& s2,
+                                              const vec4_t& s3 ) -> bool
+  { return TraversalPredicates::pointInRightBin( p, s2, s3 ); };
+
+  // STEP 3: get counts
   using reduce_policy =
       typename axom::execution_space< ExecSpace >::reduce_policy;
   RAJA::ReduceSum< reduce_policy, IndexType > total_count( 0 );
@@ -413,17 +425,6 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
     point[1] = y[i];
     point[2] = z[i];
 
-    auto leftPredicate = []( const point_t& p,
-                             const vec4_t& s1,
-                             const vec4_t& s2 ) -> bool {
-      return TraversalPredicates::pointInLeftBin( p, s1, s2 );
-    };
-
-    auto rightPredicate = []( const point_t& p,
-                              const vec4_t& s2,
-                              const vec4_t& s3 ) -> bool {
-      return TraversalPredicates::pointInRightBin( p, s2, s3 );
-    };
 
     auto leafAction = [&]( int32 AXOM_NOT_USED(current_node),
                            const int32* AXOM_NOT_USED(leaf_nodes) ) -> void {
@@ -437,8 +438,8 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
                        rightPredicate,
                        leafAction );
 
-  counts[ i ]  = count;
-  total_count += count;
+    counts[ i ]  = count;
+    total_count += count;
 
   } );
 
@@ -449,7 +450,7 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
   IndexType total_candidates = static_cast< IndexType >( total_count.get() );
   candidates = axom::allocate< IndexType >( total_candidates);
 
-  // STEP 2: fill in candidates for each point
+  // STEP 4: fill in candidates for each point
   for_all< ExecSpace >( numPts, AXOM_LAMBDA (IndexType i)
   {
     int32 offset = offsets[ i ];
@@ -459,19 +460,8 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
     point[1] = y[i];
     point[2] = z[i];
 
-    auto leftPredicate = []( const point_t& p,
-                             const vec4_t& s1,
-                             const vec4_t& s2 ) -> bool {
-      return TraversalPredicates::pointInLeftBin( p, s1, s2 );
-    };
-
-    auto rightPredicate = []( const point_t& p,
-                              const vec4_t& s2,
-                              const vec4_t& s3 ) -> bool {
-      return TraversalPredicates::pointInRightBin( p, s2, s3 );
-    };
-
-    auto leafAction = [=,&offset]( int32 current_node, const int32* leaf_nodes ) -> void {
+    auto leafAction = [=,&offset]( int32 current_node,
+                                   const int32* leaf_nodes ) -> void {
       candidates[offset] = leaf_nodes[current_node];
       offset++;
     };
@@ -519,13 +509,23 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
   using TraversalPredicates = bvh::TraversalPredicates< NDIMS, FloatType >;
 
   // STEP 1: count number of candidates for each query point
-  const internal::linear_bvh::Vec< FloatType, 4>  *inner_nodes = m_bvh.m_inner_nodes;
-  const int32 *leaf_nodes = m_bvh.m_leaf_nodes;
+  const vec4_t* inner_nodes = m_bvh.m_inner_nodes;
+  const int32*  leaf_nodes = m_bvh.m_leaf_nodes;
   SLIC_ASSERT( inner_nodes != nullptr );
   SLIC_ASSERT( leaf_nodes != nullptr );
 
-  using vec4_t      = internal::linear_bvh::Vec< FloatType, 4 >;
+  // STEP 2: define traversal predicates
+  auto leftPredicate = [] AXOM_HOST_DEVICE ( const point_t& p,
+                                             const vec4_t& s1,
+                                             const vec4_t& s2 ) -> bool
+  { return TraversalPredicates::pointInLeftBin( p, s1, s2 ); };
 
+  auto rightPredicate = [] AXOM_HOST_DEVICE ( const point_t& p,
+                                              const vec4_t& s2,
+                                              const vec4_t& s3 ) -> bool
+  { return TraversalPredicates::pointInRightBin( p, s2, s3 ); };
+
+  // STEP 3: get counts
   using reduce_policy =
         typename axom::execution_space< ExecSpace >::reduce_policy;
   RAJA::ReduceSum< reduce_policy, IndexType > total_count( 0 );
@@ -536,18 +536,6 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
     point_t point;
     point[0] = x[i];
     point[1] = y[i];
-
-    auto leftPredicate = []( const point_t& p,
-                             const vec4_t& s1,
-                             const vec4_t& s2 ) -> bool {
-      return TraversalPredicates::pointInLeftBin( p, s1, s2 );
-    };
-
-    auto rightPredicate = []( const point_t& p,
-                              const vec4_t& s2,
-                              const vec4_t& s3 ) -> bool {
-      return TraversalPredicates::pointInRightBin( p, s2, s3 );
-    };
 
     auto leafAction = [&]( int32 AXOM_NOT_USED(current_node),
                            const int32* AXOM_NOT_USED(leaf_nodes) ) -> void {
@@ -574,7 +562,7 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
 
   candidates = axom::allocate< IndexType >( total_candidates);
 
-  // STEP 2: fill in candidates for each point
+  // STEP 4: fill in candidates for each point
   for_all< ExecSpace >( numPts, AXOM_LAMBDA (IndexType i)
   {
     int32 offset = offsets[ i ];
@@ -583,19 +571,8 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
     point[0] = x[i];
     point[1] = y[i];
 
-    auto leftPredicate = []( const point_t& p,
-                             const vec4_t& s1,
-                             const vec4_t& s2 ) -> bool {
-      return TraversalPredicates::pointInLeftBin( p, s1, s2 );
-    };
-
-    auto rightPredicate = []( const point_t& p,
-                              const vec4_t& s2,
-                              const vec4_t& s3 ) -> bool {
-      return TraversalPredicates::pointInRightBin( p, s2, s3 );
-    };
-
-    auto leafAction = [=,&offset]( int32 current_node, const int32* leaf_nodes ) -> void {
+    auto leafAction = [=,&offset]( int32 current_node,
+                                   const int32* leaf_nodes ) -> void {
       candidates[offset] = leaf_nodes[current_node];
       offset++;
     };
