@@ -50,6 +50,7 @@ if ( RAJA_FOUND AND UMPIRE_FOUND )
        internal/linear_bvh/BVHData.hpp
        internal/linear_bvh/emit_bvh.hpp
        internal/linear_bvh/math.hpp
+       internal/linear_bvh/QueryAccessor.hpp
        internal/linear_bvh/RadixTree.hpp
        internal/linear_bvh/range.hpp
        internal/linear_bvh/TraversalPredicates.hpp
