@@ -86,8 +86,6 @@ public:
                                const FloatType* y,
                                const FloatType* AXOM_NOT_USED(z) )
   {
-    SLIC_ASSERT( x != nullptr );
-    SLIC_ASSERT( y != nullptr );
     point[ 0 ] = x[ idx ];
     point[ 1 ] = y[ idx ];
   }
@@ -110,9 +108,6 @@ public:
                                const FloatType* y,
                                const FloatType* z )
   {
-    SLIC_ASSERT( x != nullptr );
-    SLIC_ASSERT( y != nullptr );
-    SLIC_ASSERT( z != nullptr );
     point[ 0 ] = x[ idx ];
     point[ 1 ] = y[ idx ];
     point[ 2 ] = z[ idx ];

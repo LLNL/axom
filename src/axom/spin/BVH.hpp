@@ -255,8 +255,6 @@ public:
    */
   void writeVtkFile( const std::string& fileName ) const;
 
-private:
-
   /*!
    * \brief Makes a BVH traversal and counts the number of candidates for each
    *  query point.
@@ -277,6 +275,8 @@ private:
                        const FloatType* y,
                        const FloatType* z = nullptr ) const;
 
+private:
+  
 /// \name Private Members
 /// @{
 
