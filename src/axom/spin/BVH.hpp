@@ -462,15 +462,11 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
                                                const FloatType* y,
                                                const FloatType* z ) const
 {
-  AXOM_STATIC_ASSERT_MSG( NDIMS==3,
-     "The 3D version of find() must be called on a 3D BVH" );
-
   SLIC_ASSERT( offsets != nullptr );
   SLIC_ASSERT( counts != nullptr );
   SLIC_ASSERT( candidates == nullptr );
   SLIC_ASSERT( x != nullptr );
   SLIC_ASSERT( y != nullptr );
-  SLIC_ASSERT( z != nullptr );
 
   // STEP 0: set the default memory allocator to use for the execution space.
   const int currentAllocatorID = axom::getDefaultAllocatorID();
