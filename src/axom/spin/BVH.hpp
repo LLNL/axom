@@ -242,13 +242,11 @@ public:
    * \pre y != nullptr if dimension==2 || dimension==3
    * \pre z != nullptr if dimension==3
    */
-  /// @{
-  void find( IndexType* offsets, IndexType* counts, IndexType*& candidates,
-             IndexType numPts, const FloatType* x, const FloatType* y ) const;
   void find( IndexType* offsets, IndexType* counts,
              IndexType*& candidates, IndexType numPts,
-             const FloatType* x, const FloatType* y, const FloatType* z ) const;
-  /// @}
+             const FloatType* x,
+             const FloatType* y,
+             const FloatType* z=nullptr ) const;
 
   /*!
    * \brief Writes the BVH to the specified VTK file for visualization.
@@ -483,6 +481,7 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
   using vec4_t  = bvh::Vec< FloatType, 4 >;
   using point_t = bvh::Vec< FloatType, NDIMS >;
   using TraversalPredicates = bvh::TraversalPredicates< NDIMS, FloatType >;
+  using QueryAccessor       = bvh::QueryAccessor< NDIMS, FloatType >;
 
   // STEP 1: count number of candidates for each query point
   const vec4_t* inner_nodes = m_bvh.m_inner_nodes;
@@ -518,95 +517,7 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
     int32 offset = offsets[ i ];
 
     point_t point;
-    point[0] = x[i];
-    point[1] = y[i];
-    point[2] = z[i];
-
-    auto leafAction = [=,&offset]( int32 current_node,
-                                   const int32* leaf_nodes ) -> void {
-      candidates[offset] = leaf_nodes[current_node];
-      offset++;
-    };
-
-
-    bvh::bvh_traverse( inner_nodes,
-                       leaf_nodes,
-                       point,
-                       leftPredicate,
-                       rightPredicate,
-                       leafAction );
-
-  } );
-
-  // STEP 3: restore default allocator
-  axom::setDefaultAllocator( currentAllocatorID );
-}
-
-//------------------------------------------------------------------------------
-template< int NDIMS, typename ExecSpace, typename FloatType >
-void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
-                                               IndexType* counts,
-                                               IndexType*& candidates,
-                                               IndexType numPts,
-                                               const FloatType* x,
-                                               const FloatType* y ) const
-{
-  AXOM_STATIC_ASSERT_MSG( NDIMS==2,
-     "The 2D version of find() must be called on a 2D BVH" );
-
-  SLIC_ASSERT( offsets != nullptr );
-  SLIC_ASSERT( counts != nullptr );
-  SLIC_ASSERT( candidates == nullptr );
-  SLIC_ASSERT( x != nullptr );
-  SLIC_ASSERT( y != nullptr );
-
-  // STEP 0: set the default memory allocator to use for the execution space.
-  const int currentAllocatorID = axom::getDefaultAllocatorID();
-  const int allocatorID = axom::execution_space< ExecSpace >::allocatorID();
-  axom::setDefaultAllocator( allocatorID );
-
-  namespace bvh = internal::linear_bvh;
-  using vec4_t  = bvh::Vec< FloatType, 4 >;
-  using point_t = bvh::Vec< FloatType, NDIMS >;
-  using TraversalPredicates = bvh::TraversalPredicates< NDIMS, FloatType >;
-
-  // STEP 1: count number of candidates for each query point
-  const vec4_t* inner_nodes = m_bvh.m_inner_nodes;
-  const int32*  leaf_nodes = m_bvh.m_leaf_nodes;
-  SLIC_ASSERT( inner_nodes != nullptr );
-  SLIC_ASSERT( leaf_nodes != nullptr );
-
-  // STEP 2: define traversal predicates
-  auto leftPredicate = [] AXOM_HOST_DEVICE ( const point_t& p,
-                                             const vec4_t& s1,
-                                             const vec4_t& s2 ) -> bool
-  { return TraversalPredicates::pointInLeftBin( p, s1, s2 ); };
-
-  auto rightPredicate = [] AXOM_HOST_DEVICE ( const point_t& p,
-                                              const vec4_t& s2,
-                                              const vec4_t& s3 ) -> bool
-  { return TraversalPredicates::pointInRightBin( p, s2, s3 ); };
-
-  // STEP 3: get counts
-  int total_count = getCounts(
-        leftPredicate, rightPredicate, numPts, counts, x, y, nullptr );
-
-  using exec_policy = typename axom::execution_space< ExecSpace >::loop_policy;
-  RAJA::exclusive_scan< exec_policy >(
-      counts, counts+numPts, offsets, RAJA::operators::plus<IndexType>{} );
-
-  IndexType total_candidates = static_cast< IndexType >( total_count );
-
-  candidates = axom::allocate< IndexType >( total_candidates);
-
-  // STEP 4: fill in candidates for each point
-  for_all< ExecSpace >( numPts, AXOM_LAMBDA (IndexType i)
-  {
-    int32 offset = offsets[ i ];
-
-    point_t point;
-    point[0] = x[i];
-    point[1] = y[i];
+    QueryAccessor::getPoint( point, i, x, y, z );
 
     auto leafAction = [=,&offset]( int32 current_node,
                                    const int32* leaf_nodes ) -> void {
