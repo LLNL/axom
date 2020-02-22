@@ -255,28 +255,8 @@ public:
    */
   void writeVtkFile( const std::string& fileName ) const;
 
-  /*!
-   * \brief Makes a BVH traversal and counts the number of candidates for each
-   *  query point.
-   *
-   * \param [in] N the total number of points
-   * \param [out] counts array of length N consisting of the candidate count
-   * \param [in] leftCheck
-   * \param [in] rightCheck
-   *
-   * \return
-   */
-  template < typename LeftPredicateType, typename RightPredicateType >
-  IndexType getCounts( LeftPredicateType&& leftCheck,
-                       RightPredicateType&& rightCheck,
-                       IndexType N,
-                       IndexType* counts,
-                       const FloatType* x,
-                       const FloatType* y,
-                       const FloatType* z = nullptr ) const;
-
 private:
-  
+
 /// \name Private Members
 /// @{
 
@@ -299,19 +279,42 @@ private:
 //------------------------------------------------------------------------------
 //  PRIVATE HELPER METHOD IMPLEMENTATION
 //------------------------------------------------------------------------------
+namespace
+{
 
-template < int NDIMS, typename ExecSpace, typename FloatType >
-template < typename LeftPredicate, typename RightPredicate >
-IndexType BVH< NDIMS, ExecSpace, FloatType >::getCounts(
-    LeftPredicate&& leftCheck,
-    RightPredicate&& rightCheck,
-    IndexType N,
-    IndexType* counts,
-    const FloatType* x,
-    const FloatType* y,
-    const FloatType* z ) const
+/*!
+ * \brief Performs a traversal to count the candidates for each query point.
+ *
+ * \param [in] leftCheck functor for left bin predicate check.
+ * \param [in] rightCheck functor for right bin predicate check.
+ * \param [in] inner_nodes array of vec4s for the BVH inner nodes.
+ * \param [in] leaf_nodes array of BVH leaf node indices
+ * \param [in] N the number of user-supplied query points
+ * \param [out] counts array of candidate counts for each query point.
+ * \param [in] x user-supplied array of x-coordinates
+ * \param [in] y user-supplied array of y-coordinates
+ * \param [in] z user-supplied array of z-coordinates
+ *
+ * \return total_count the total count of candidates for all query points.
+ */
+template < int NDIMS, typename ExecSpace,
+           typename LeftPredicate,
+           typename RightPredicate,
+           typename FloatType >
+IndexType bvh_get_counts(
+                   LeftPredicate&& leftCheck,
+                   RightPredicate&& rightCheck,
+                   const internal::linear_bvh::Vec< FloatType,4 >* inner_nodes,
+                   const int32* leaf_nodes,
+                   IndexType N,
+                   IndexType* counts,
+                   const FloatType* x,
+                   const FloatType* y,
+                   const FloatType* z ) noexcept
 {
   // sanity checks
+  SLIC_ASSERT( inner_nodes != nullptr );
+  SLIC_ASSERT( leaf_nodes != nullptr );
   SLIC_ERROR_IF( counts == nullptr, "supplied null pointer for counts!" );
   SLIC_ERROR_IF( x == nullptr, "supplied null pointer for x-coordinates!" );
   SLIC_ERROR_IF( y == nullptr, "supplied null pointer for y-coordinates!" );
@@ -319,15 +322,9 @@ IndexType BVH< NDIMS, ExecSpace, FloatType >::getCounts(
                  "supplied null pointer for z-coordinates!" );
 
   namespace bvh = internal::linear_bvh;
-  using vec4_t  = bvh::Vec< FloatType, 4 >;
   using point_t = bvh::Vec< FloatType, NDIMS >;
 
   // STEP 1: count number of candidates for each query point
-  const vec4_t* inner_nodes = m_bvh.m_inner_nodes;
-  const int32*  leaf_nodes  = m_bvh.m_leaf_nodes;
-  SLIC_ASSERT( inner_nodes != nullptr );
-  SLIC_ASSERT( leaf_nodes != nullptr );
-
   using reduce_pol = typename axom::execution_space< ExecSpace >::reduce_policy;
   RAJA::ReduceSum< reduce_pol, IndexType > total_count( 0 );
 
@@ -358,6 +355,8 @@ IndexType BVH< NDIMS, ExecSpace, FloatType >::getCounts(
 
   return ( total_count.get() );
 }
+
+} /* end anonymous namespace */
 
 //------------------------------------------------------------------------------
 //  PUBLIC API IMPLEMENTATION
@@ -497,8 +496,9 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
   { return TraversalPredicates::pointInRightBin( p, s2, s3 ); };
 
   // STEP 3: get counts
-  int total_count = getCounts(
-      leftPredicate, rightPredicate, numPts, counts, x, y, z );
+  int total_count = bvh_get_counts< NDIMS,ExecSpace >(
+      leftPredicate, rightPredicate, inner_nodes, leaf_nodes,
+      numPts, counts, x, y, z );
 
   using exec_policy = typename axom::execution_space< ExecSpace >::loop_policy;
   RAJA::exclusive_scan< exec_policy >(
