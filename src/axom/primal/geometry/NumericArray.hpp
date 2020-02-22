@@ -7,12 +7,8 @@
 #define NUMERIC_ARRAY_HPP_
 
 #include "axom/core/Macros.hpp"
-
 #include "axom/core/utilities/Utilities.hpp"
-
 #include "axom/slic/interface/slic.hpp"
-
-#include "axom/core/Macros.hpp"
 
 // C/C++ includes
 #include <cstring>    // For memcpy()
@@ -423,12 +419,14 @@ NumericArray< T,SIZE >::NumericArray(T val, int sz)
 
   // Fill first nvals coordinates with val ( 0 <= nvals <= SIZE )
   const int nvals = axom::utilities::clampVal(sz, 0, SIZE);
-  for (int i = 0; i < nvals; i++) {
+  for (auto i = 0; i < nvals; i++)
+  {
     m_components[i] = val;    
   }
 
   // Fill any remaining coordinates with zero
-  for (int j = nvals; j < SIZE; j++) {
+  for (auto j = nvals; j < SIZE; j++)
+  {
     m_components[j] = T();    
   }
 }
@@ -442,19 +440,22 @@ NumericArray< T, SIZE >::NumericArray(const T* vals, int sz)
   const int nvals = axom::utilities::clampVal(sz, 0, SIZE);
 
   // Copy first nvals coordinates from vals array ( 0 <= nvals <= SIZE )
-  for (int i = 0; i < nvals; i++) {
+  for (auto i = 0; i < nvals; i++)
+  {
     m_components[i] = vals[i];    
   }
 
   // Fill any remaining coordinates with zero
-  for (int j = nvals; j < SIZE; j++) {
+  for (auto j = nvals; j < SIZE; j++) 
+  {
     m_components[j] = T();    
   }
 }
 
 //------------------------------------------------------------------------------
 template < typename T,int SIZE >
-inline  AXOM_HOST_DEVICE NumericArray< T,SIZE >&
+inline  AXOM_HOST_DEVICE 
+NumericArray< T,SIZE >&
 NumericArray< T,SIZE >::operator=( const NumericArray< T,SIZE >& rhs )
 {
 

@@ -6,11 +6,9 @@
 #ifndef POINT_HXX_
 #define POINT_HXX_
 
-#include "axom/slic/interface/slic.hpp"
-
-#include "axom/primal/geometry/NumericArray.hpp"
-
 #include "axom/core/Macros.hpp"
+#include "axom/slic/interface/slic.hpp"
+#include "axom/primal/geometry/NumericArray.hpp"
 
 // C/C++ includes
 #include <cstring> // For memcpy()

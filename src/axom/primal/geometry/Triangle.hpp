@@ -6,15 +6,15 @@
 #ifndef TRIANGLE_HPP_
 #define TRIANGLE_HPP_
 
-#include "axom/core/numerics/Determinants.hpp" // For numerics::determinant()
+#include "axom/core/Macros.hpp"
+#include "axom/core/numerics/Determinants.hpp"
 #include "axom/core/utilities/Utilities.hpp"
+
+#include "axom/slic/interface/slic.hpp"
 
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 
-#include "axom/slic/interface/slic.hpp"
-
-#include "axom/core/Macros.hpp"
 
 #include <cmath>   // for acos()
 #include <ostream> // for std::ostream
@@ -315,8 +315,8 @@ namespace primal
 template < typename T, int NDIMS >
 Triangle< T,NDIMS >::Triangle( const PointType& A,
                                const PointType& B,
-                               const PointType& C  ):
-  m_points{A,B,C}
+                               const PointType& C)
+   : m_points{A,B,C} 
 {}
 
 //------------------------------------------------------------------------------

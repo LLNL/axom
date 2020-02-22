@@ -7,14 +7,13 @@
 #define VECTOR_HPP_
 
 // axom_utils includes
-#include "axom/core/numerics/Determinants.hpp"  // for numerics::determinant()
-#include "axom/core/numerics/matvecops.hpp"     // dot_product()/cross_product()
+#include "axom/core/Macros.hpp"
+#include "axom/core/numerics/Determinants.hpp"
+#include "axom/core/numerics/matvecops.hpp"
 
 // Primal includes
 #include "axom/primal/geometry/NumericArray.hpp"
 #include "axom/primal/geometry/Point.hpp"
-
-#include "axom/core/Macros.hpp"
 
 // C/C++ includes
 #include <cmath> // for sqrt()

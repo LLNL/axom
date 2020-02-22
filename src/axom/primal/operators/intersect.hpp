@@ -12,6 +12,7 @@
 #ifndef PRIMAL_INTERSECT_HPP_
 #define PRIMAL_INTERSECT_HPP_
 
+#include "axom/core/Macros.hpp"
 #include "axom/core/utilities/Utilities.hpp"
 
 #include "axom/primal/geometry/BoundingBox.hpp"
@@ -25,8 +26,6 @@
 
 #include "axom/primal/operators/detail/intersect_impl.hpp"
 #include "axom/primal/operators/detail/intersect_bezier_impl.hpp"
-
-#include "axom/core/Macros.hpp"
 
 namespace axom
 {

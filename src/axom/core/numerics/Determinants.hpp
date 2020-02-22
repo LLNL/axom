@@ -30,7 +30,7 @@ namespace numerics
 template < typename real >
 inline AXOM_HOST_DEVICE 
 real determinant( const real& a00, const real& a01,
-                         const real& a10, const real& a11 )
+                  const real& a10, const real& a11 )
 {
   const real det = a00*a11 - a10*a01;
   return det;
