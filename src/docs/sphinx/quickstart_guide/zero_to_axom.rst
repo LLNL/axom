@@ -14,7 +14,7 @@ The quickest path to install Axom and its dependencies is via `uberenv <https://
 
 .. code:: bash
 
-    $ git clone --recursive ssh://git@cz-bitbucket.llnl.gov:7999/atk/axom.git
+    $ git clone --recursive git@github.com:LLNL/axom.git
     $ cd axom
     $ python scripts/uberenv/uberenv.py --install --prefix="build"
 

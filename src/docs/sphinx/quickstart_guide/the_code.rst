@@ -9,9 +9,9 @@ The Code
 Our Git repository contains the Axom source code, documentation, test
 suites and all files and scripts used for configuring and building the code.
 The repository lives in our
-`CZ Bitbucket project <https://lc.llnl.gov/bitbucket/projects/ATK>`_.
+`Github repository <https://github.com/LLNL/axom>`_.
 
-We use our `JIRA project space <https://lc.llnl.gov/jira/browse/ATK>`_ for
+We use `Github <https://github.com/LLNL/axom/issues>`_ for
 issue tracking. Please report issues, feature requests, etc. there or send
 email to the Axom development team.
 
@@ -26,23 +26,24 @@ group ``axom``. If you're not in the group, please send email to
 SSH keys
 ^^^^^^^^
 
-If you have not used Bitbucket before, you will need to
-`create an SSH key <https://confluence.atlassian.com/bitbucketserver/creating-ssh-keys-776639788.html>`_
-and `add the key to your Bitbucket profile <https://confluence.atlassian.com/bitbucketserver/ssh-user-keys-for-personal-use-776639793.html>`_.
+If you have not used Github before, you should start by creating and adding your SSH keys to Github. 
+Github provides a good tutorial `here <https://help.github.com/en/enterprise/2.18/user/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account>`_.
+Performing these two simple steps will make it easier for you to interact with 
+our Git repository without having to repeatedly enter login credentials. 
 
 Cloning the repo
 ^^^^^^^^^^^^^^^^
 
 To clone the repo into your local working space, type the following::
 
-  $ git clone --recursive ssh://git@cz-bitbucket.llnl.gov:7999/atk/axom.git
+  $ git clone --recursive git@github.com:LLNL/axom.git
 
 Important notes:
 
   * You don't need to remember the URL for the Axom repo above. It can be
-    found by going to the Axom repo on our Bitbucket project and
-    clicking on the 'Clone' button that appears when you hover your
-    mouse cursor over the ellipses at top of the web page on the left.
+    found by going to the Axom repo on our Github project and
+    clicking on the 'Clone or download' button that is on the upper right of the Axom Github
+    page.
   * The ``--recursive`` argument above is needed to pull in Axom's submodules.
     This includes our data directory, which is used for testing, as well as our 
     build system called *BLT*, a standalone product that lives in
