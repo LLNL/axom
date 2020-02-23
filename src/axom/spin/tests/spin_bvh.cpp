@@ -246,7 +246,7 @@ void check_build_bvh2d( )
   FloatType hi[ NDIMS ];
   bvh.getBounds( lo, hi );
 
-  for ( int idim=0; idim < NDIMS; ++idim )
+  for ( int idim=0 ; idim < NDIMS ; ++idim )
   {
     EXPECT_DOUBLE_EQ( lo[ idim ], 0.0 );
     EXPECT_DOUBLE_EQ( hi[ idim ], 2.0 );
@@ -285,7 +285,7 @@ void check_build_bvh3d( )
   FloatType hi[ NDIMS ];
   bvh.getBounds( lo, hi );
 
-  for ( int idim=0; idim < NDIMS; ++idim )
+  for ( int idim=0 ; idim < NDIMS ; ++idim )
   {
     EXPECT_DOUBLE_EQ( lo[ idim ], 0.0 );
     EXPECT_DOUBLE_EQ( hi[ idim ], 2.0 );
@@ -343,7 +343,7 @@ void check_find3d( )
   FloatType min[ NDIMS ];
   FloatType max[ NDIMS ];
   bvh.getBounds( min, max );
-  for ( int i=0; i < NDIMS; ++i )
+  for ( int i=0 ; i < NDIMS ; ++i )
   {
     EXPECT_DOUBLE_EQ( min[ i ], lo[ i ] );
     EXPECT_DOUBLE_EQ( max[ i ], hi[ i ] );
@@ -359,7 +359,7 @@ void check_find3d( )
 
   spin::UniformGrid< IndexType, NDIMS > ug( lo, hi, res );
 
-  for ( IndexType i=0; i < ncells; ++i )
+  for ( IndexType i=0 ; i < ncells ; ++i )
   {
     PointType q            = PointType::make_point( xc[ i ],yc[ i ],zc[ i ] );
     const int donorCellIdx = ug.getBinIndex( q );
@@ -371,16 +371,16 @@ void check_find3d( )
 
   // check points that are outside by shifting the query points
   constexpr double OFFSET = 10.0;
-  for ( IndexType i=0; i < ncells; ++i )
+  for ( IndexType i=0 ; i < ncells ; ++i )
   {
-     xc[ i ] += OFFSET;
-     yc[ i ] += OFFSET;
-     zc[ i ] += OFFSET;
+    xc[ i ] += OFFSET;
+    yc[ i ] += OFFSET;
+    zc[ i ] += OFFSET;
   }
 
   bvh.find( offsets, counts, candidates, ncells, xc, yc, zc );
 
-  for ( IndexType i=0; i < ncells; ++i )
+  for ( IndexType i=0 ; i < ncells ; ++i )
   {
     EXPECT_EQ( counts[ i ], 0 );
   }
@@ -440,7 +440,7 @@ void check_find2d( )
   FloatType min[ NDIMS ];
   FloatType max[ NDIMS ];
   bvh.getBounds( min, max );
-  for ( int i=0; i < NDIMS; ++i )
+  for ( int i=0 ; i < NDIMS ; ++i )
   {
     EXPECT_DOUBLE_EQ( min[ i ], lo[ i ] );
     EXPECT_DOUBLE_EQ( max[ i ], hi[ i ] );
@@ -456,7 +456,7 @@ void check_find2d( )
 
   spin::UniformGrid< IndexType, NDIMS > ug( lo, hi, res );
 
-  for ( IndexType i=0; i < ncells; ++i )
+  for ( IndexType i=0 ; i < ncells ; ++i )
   {
     PointType q            = PointType::make_point( xc[ i ],yc[ i ] );
     const int donorCellIdx = ug.getBinIndex( q );
@@ -468,15 +468,15 @@ void check_find2d( )
 
   // check points that are outside by shifting the query points
   constexpr double OFFSET = 10.0;
-  for ( IndexType i=0; i < ncells; ++i )
+  for ( IndexType i=0 ; i < ncells ; ++i )
   {
-     xc[ i ] += OFFSET;
-     yc[ i ] += OFFSET;
+    xc[ i ] += OFFSET;
+    yc[ i ] += OFFSET;
   }
 
   bvh.find( offsets, counts, candidates, ncells, xc, yc );
 
-  for ( IndexType i=0; i < ncells; ++i )
+  for ( IndexType i=0 ; i < ncells ; ++i )
   {
     EXPECT_EQ( counts[ i ], 0 );
   }
@@ -522,7 +522,7 @@ void check_single_box2d( )
   FloatType hi[ NDIMS ];
   bvh.getBounds( lo, hi );
 
-  for ( int idim=0; idim < NDIMS; ++idim )
+  for ( int idim=0 ; idim < NDIMS ; ++idim )
   {
     EXPECT_DOUBLE_EQ( lo[ idim ], 0.0 );
     EXPECT_DOUBLE_EQ( hi[ idim ], 1.0 );
@@ -590,7 +590,7 @@ void check_single_box3d( )
   FloatType hi[ NDIMS ];
   bvh.getBounds( lo, hi );
 
-  for ( int idim=0; idim < NDIMS; ++idim )
+  for ( int idim=0 ; idim < NDIMS ; ++idim )
   {
     EXPECT_DOUBLE_EQ( lo[ idim ], 0.0 );
     EXPECT_DOUBLE_EQ( hi[ idim ], 1.0 );

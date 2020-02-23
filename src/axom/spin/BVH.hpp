@@ -124,7 +124,7 @@ public:
   AXOM_STATIC_ASSERT_MSG( std::is_floating_point< FloatType >::value,
                           "A valid FloatingType must be used for the BVH." );
   AXOM_STATIC_ASSERT_MSG( axom::execution_space< ExecSpace >::valid(),
-      "A valid execution space must be supplied to the BVH." );
+                          "A valid execution space must be supplied to the BVH." );
 
 
   /*!

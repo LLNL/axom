@@ -37,9 +37,9 @@ class TraversalPredicates
 public:
 
   AXOM_STATIC_ASSERT_MSG( ( (NDIMS==2) || (NDIMS==3) ),
-                       "TraversalPredicates are defined for 2D and 3D only" );
+                          "TraversalPredicates are defined for 2D and 3D only" );
   AXOM_STATIC_ASSERT_MSG( std::is_floating_point< FloatType >::value,
-                   "A valid FloatingType must be used, e.g., double or float" );
+                          "A valid FloatingType must be used, e.g., double or float" );
 
   ///\name Predicates for Point Queries
   /// @{

@@ -70,7 +70,7 @@ using point_t = internal::linear_bvh::Vec< FloatType, NDIMS >;
  * \note This macro is intended to be used internally by the BVH implementation.
  */
 #define BVH_PREDICATE(_predicateName, _p, _s1, _s2 )    \
-  auto _predicateName = [] AXOM_HOST_DEVICE( _p, _s1, _s2 ) -> bool
+  auto _predicateName = [] AXOM_HOST_DEVICE( _p, _s1, _s2 )->bool
 
 /*!
  * \def BVH_LEAF_ACTION
@@ -86,7 +86,7 @@ using point_t = internal::linear_bvh::Vec< FloatType, NDIMS >;
  * \note This macro is intended to be used internally by the BVH implementation.
  */
 #define BVH_LEAF_ACTION( _funcName, _node, _leafNodes ) \
-  auto _funcName = [&]( _node, _leafNodes ) -> void
+  auto _funcName = [&]( _node, _leafNodes )->void
 
 namespace
 {
@@ -111,15 +111,15 @@ template < int NDIMS, typename ExecSpace,
            typename RightPredicate,
            typename FloatType >
 IndexType bvh_get_counts(
-                   LeftPredicate&& leftCheck,
-                   RightPredicate&& rightCheck,
-                   const vec4_t< FloatType >* inner_nodes,
-                   const int32* leaf_nodes,
-                   IndexType N,
-                   IndexType* counts,
-                   const FloatType* x,
-                   const FloatType* y,
-                   const FloatType* z ) noexcept
+  LeftPredicate&& leftCheck,
+  RightPredicate&& rightCheck,
+  const vec4_t< FloatType >* inner_nodes,
+  const int32* leaf_nodes,
+  IndexType N,
+  IndexType* counts,
+  const FloatType* x,
+  const FloatType* y,
+  const FloatType* z ) noexcept
 {
   // sanity checks
   SLIC_ASSERT( inner_nodes != nullptr );
@@ -174,9 +174,7 @@ BVH< NDIMS, ExecSpace, FloatType >::BVH( const FloatType* boxes,
   m_scaleFactor( DEFAULT_SCALE_FACTOR ),
   m_numItems( numItems ),
   m_boxes( boxes )
-{
-
-}
+{}
 
 //------------------------------------------------------------------------------
 template< int NDIMS, typename ExecSpace, typename FloatType >
@@ -223,7 +221,7 @@ int BVH< NDIMS, ExecSpace, FloatType >::build()
   lbvh::RadixTree< FloatType, NDIMS > radix_tree;
   lbvh::AABB< FloatType, NDIMS > global_bounds;
   lbvh::build_radix_tree< ExecSpace >(
-      boxesptr, numBoxes, global_bounds, radix_tree, m_scaleFactor );
+    boxesptr, numBoxes, global_bounds, radix_tree, m_scaleFactor );
 
   // STEP 3: emit the BVH data-structure from the radix tree
   m_bvh.m_bounds = global_bounds;
@@ -284,33 +282,35 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
 
   // STEP 1: count number of candidates for each query point
   const vec4_t< FloatType >* inner_nodes = m_bvh.m_inner_nodes;
-  const int32*  leaf_nodes  = m_bvh.m_leaf_nodes;
+  const int32* leaf_nodes  = m_bvh.m_leaf_nodes;
   SLIC_ASSERT( inner_nodes != nullptr );
   SLIC_ASSERT( leaf_nodes != nullptr );
 
   // STEP 2: define traversal predicates
   BVH_PREDICATE( leftPredicate,
-                 const PointType& p,
-                 const vec4_t< FloatType >& s1,
-                 const vec4_t< FloatType >& s2 ) {
+                 const PointType &p,
+                 const vec4_t< FloatType >&s1,
+                 const vec4_t< FloatType >&s2 )
+  {
     return TraversalPredicates::pointInLeftBin( p, s1, s2 );
   };
 
   BVH_PREDICATE( rightPredicate,
-                 const PointType& p,
-                 const vec4_t< FloatType >& s2,
-                 const vec4_t< FloatType >& s3 ) {
+                 const PointType &p,
+                 const vec4_t< FloatType >&s2,
+                 const vec4_t< FloatType >&s3 )
+  {
     return TraversalPredicates::pointInRightBin( p, s2, s3 );
   };
 
   // STEP 3: get counts
   int total_count = bvh_get_counts< NDIMS,ExecSpace >(
-      leftPredicate, rightPredicate, inner_nodes, leaf_nodes,
-      numPts, counts, x, y, z );
+    leftPredicate, rightPredicate, inner_nodes, leaf_nodes,
+    numPts, counts, x, y, z );
 
   using exec_policy = typename axom::execution_space< ExecSpace >::loop_policy;
   RAJA::exclusive_scan< exec_policy >(
-      counts, counts+numPts, offsets, RAJA::operators::plus<IndexType>{} );
+    counts, counts+numPts, offsets, RAJA::operators::plus<IndexType>{} );
 
   IndexType total_candidates = static_cast< IndexType >( total_count );
   candidates = axom::allocate< IndexType >( total_candidates);
@@ -344,7 +344,7 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
 //------------------------------------------------------------------------------
 template < int NDIMS, typename ExecSpace, typename FloatType >
 void BVH< NDIMS, ExecSpace, FloatType >::writeVtkFile(
-    const std::string& fileName ) const
+  const std::string& fileName ) const
 {
   std::ostringstream nodes;
   std::ostringstream cells;
@@ -367,7 +367,7 @@ void BVH< NDIMS, ExecSpace, FloatType >::writeVtkFile(
   // STEP 2: traverse the BVH and dump each bin
   constexpr int32 ROOT = 0;
   lbvh::write_recursive< FloatType, NDIMS >(
-      m_bvh.m_inner_nodes, ROOT, 1, numPoints, numBins, nodes, cells, levels );
+    m_bvh.m_inner_nodes, ROOT, 1, numPoints, numBins, nodes, cells, levels );
 
   // STEP 3: write nodes
   ofs << "POINTS " << numPoints << " double\n";
@@ -381,7 +381,7 @@ void BVH< NDIMS, ExecSpace, FloatType >::writeVtkFile(
   // STEP 5: write cell types
   ofs << "CELL_TYPES " << numBins << std::endl;
   const int32 cellType = (NDIMS==2) ? 9 : 12;
-  for ( int32 i=0; i < numBins; ++i )
+  for ( int32 i=0 ; i < numBins ; ++i )
   {
     ofs << cellType << std::endl;
   }
