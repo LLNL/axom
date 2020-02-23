@@ -56,7 +56,7 @@ struct execution_space< SEQ_EXEC >
   static int allocatorID() noexcept
   {
 #ifdef AXOM_USE_UMPIRE
-    return axom::getResourceAllocatorID( umpire::resource::Host );
+    return axom::getUmpireResourceAllocatorID( umpire::resource::Host );
 #else
     return 0;
 #endif

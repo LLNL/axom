@@ -57,7 +57,7 @@ struct execution_space< CUDA_EXEC< BLOCK_SIZE, SYNCHRONOUS > >
   static constexpr bool valid() noexcept { return true; };
   static constexpr char* name() noexcept { return (char*)"[CUDA_EXEC]"; };
   static int allocatorID() noexcept
-  { return axom::getResourceAllocatorID(umpire::resource::Unified); };
+  { return axom::getUmpireResourceAllocatorID(umpire::resource::Unified); };
 
 };
 
