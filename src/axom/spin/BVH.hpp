@@ -279,6 +279,40 @@ private:
 //------------------------------------------------------------------------------
 //  PRIVATE HELPER METHOD IMPLEMENTATION
 //------------------------------------------------------------------------------
+
+/*!
+ * \def BVH_PREDICATE
+ *
+ * \brief Macro that defines a traversal predicate functor.
+ *
+ * \param _predicateName the name of the predicate, e.g., `leftPredicate`
+ * \param _p the primitive type
+ * \param _s1 the 1st BVH segment consisting of the BVH bin information
+ * \param _s2 the 2nd BVH segment consisting of the BVH bin information
+ *
+ * \note The BVH_PREDICATE may be instantiated within or outside a kernel.
+ *
+ * \note This macro is intended to be used internally by the BVH implementation.
+ */
+#define BVH_PREDICATE(_predicateName, _p, _s1, _s2 )    \
+  auto _predicateName = [] AXOM_HOST_DEVICE( _p, _s1, _s2 ) -> bool
+
+/*!
+ * \def BVH_LEAF_ACTION
+ *
+ * \brief Macro that defines the leaf action functor for a BVH traversal.
+ *
+ * \param _funcName the nem of the functor, .e.g, `leafAction`
+ * \param _node the BVH node ID
+ * \param _leafNodes the leafNodes
+ *
+ * \note The BVH_LEAF_ACTION macro must be called within a kernel.
+ *
+ * \note This macro is intended to be used internally by the BVH implementation.
+ */
+#define BVH_LEAF_ACTION( _funcName, _node, _leafNodes ) \
+  auto _funcName = [&]( _node, _leafNodes ) -> void
+
 namespace
 {
 
@@ -336,9 +370,10 @@ IndexType bvh_get_counts(
     QueryAccessor::getPoint( point, i, x, y, z );
 
 
-    auto leafAction = [&]( int32 AXOM_NOT_USED(current_node),
-                      const int32* AXOM_NOT_USED(leaf_nodes) ) -> void {
-      count++;
+    BVH_LEAF_ACTION( leafAction,
+                      int32 AXOM_NOT_USED(current_node),
+                     const int32* AXOM_NOT_USED(leaf_nodes) ) {
+      count ++;
     };
 
     bvh::bvh_traverse( inner_nodes,
@@ -361,7 +396,6 @@ IndexType bvh_get_counts(
 //------------------------------------------------------------------------------
 //  PUBLIC API IMPLEMENTATION
 //------------------------------------------------------------------------------
-
 template< int NDIMS, typename ExecSpace, typename FloatType >
 BVH< NDIMS, ExecSpace, FloatType >::BVH( const FloatType* boxes,
                                          IndexType numItems ) :
@@ -485,15 +519,15 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
   SLIC_ASSERT( leaf_nodes != nullptr );
 
   // STEP 2: define traversal predicates
-  auto leftPredicate = [] AXOM_HOST_DEVICE ( const point_t& p,
-                                             const vec4_t& s1,
-                                             const vec4_t& s2 ) -> bool
-  { return TraversalPredicates::pointInLeftBin( p, s1, s2 ); };
+  BVH_PREDICATE( leftPredicate, const point_t& p,
+                 const vec4_t& s1, const vec4_t& s2 ) {
+    return TraversalPredicates::pointInLeftBin( p, s1, s2 );
+  };
 
-  auto rightPredicate = [] AXOM_HOST_DEVICE ( const point_t& p,
-                                              const vec4_t& s2,
-                                              const vec4_t& s3 ) -> bool
-  { return TraversalPredicates::pointInRightBin( p, s2, s3 ); };
+  BVH_PREDICATE( rightPredicate, const point_t& p,
+                 const vec4_t& s2, const vec4_t& s3 ) {
+    return TraversalPredicates::pointInRightBin( p, s2, s3 );
+  };
 
   // STEP 3: get counts
   int total_count = bvh_get_counts< NDIMS,ExecSpace >(
@@ -515,12 +549,10 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
     point_t point;
     QueryAccessor::getPoint( point, i, x, y, z );
 
-    auto leafAction = [=,&offset]( int32 current_node,
-                                   const int32* leaf_nodes ) -> void {
+    BVH_LEAF_ACTION( leafAction, int32 current_node, const int32* leaf_nodes ) {
       candidates[offset] = leaf_nodes[current_node];
       offset++;
     };
-
 
     bvh::bvh_traverse( inner_nodes,
                        leaf_nodes,
@@ -591,6 +623,9 @@ void BVH< NDIMS, ExecSpace, FloatType >::writeVtkFile(
   // STEP 7: close file
   ofs.close();
 }
+
+#undef BVH_PREDICATE
+#undef BVH_LEAF_ACTION
 
 } /* namespace primal */
 } /* namespace axom */
