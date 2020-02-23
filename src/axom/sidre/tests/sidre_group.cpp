@@ -2402,7 +2402,7 @@ TEST_P(UmpireTest, get_set_allocator)
 
   root->setDefaultAllocator(allocID);
   defaultAllocatorID = axom::getDefaultAllocatorID();
-  ASSERT_EQ(root->getDefaultAllocatorID(), defaultAllocatorID );
+  ASSERT_EQ(root->getDefaultAllocatorID(), allocID );
 
   root->setDefaultAllocator(rm.getInstance().getAllocator(defaultAllocatorID));
   ASSERT_EQ(root->getDefaultAllocator().getId(), defaultAllocatorID);
