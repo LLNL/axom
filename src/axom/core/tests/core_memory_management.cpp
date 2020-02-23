@@ -325,25 +325,25 @@ TEST( core_memory_management, alloc_free )
 
 #ifdef UMPIRE_ENABLE_PINNED
   const int PinnedAllocatorID =
-    axom::getResourceAllocatorID( umpire::resource::Pinned );
+    axom::getUmpireResourceAllocatorID( umpire::resource::Pinned );
   check_alloc_and_free( PinnedAllocatorID, HOST_ACCESSIBLE );
 #endif
 
 #ifdef UMPIRE_ENABLE_DEVICE
   const int DeviceAllocatorID =
-    axom::getResourceAllocatorID( umpire::resource::Device );
+    axom::getUmpireResourceAllocatorID( umpire::resource::Device );
   check_alloc_and_free( DeviceAllocatorID, NOT_HOST_ACCESSIBLE );
 #endif
 
 #ifdef UMPIRE_ENABLE_CONST
   const int ConstantAllocatorID =
-    axom::getResourceAllocatorID( umpire::resource::Constant );
+    axom::getUmpireResourceAllocatorID( umpire::resource::Constant );
   check_alloc_and_free( ConstantAllocatorID, NOT_HOST_ACCESSIBLE );
 #endif
 
 #ifdef UMPIRE_ENABLE_UM
   const int UnifiedAllocatorID =
-    axom::getResourceAllocatorID( umpire::resource::Unified );
+    axom::getUmpireResourceAllocatorID( umpire::resource::Unified );
   check_alloc_and_free( UnifiedAllocatorID, HOST_ACCESSIBLE );
 #endif
 

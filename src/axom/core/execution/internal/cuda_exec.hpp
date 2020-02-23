@@ -82,7 +82,7 @@ struct execution_space< CUDA_EXEC< BLOCK_SIZE, ASYNC > >
     return (char*)"[CUDA_EXEC] (async)";
   };
   static int allocatorID() noexcept
-  { return axom::getResourceAllocatorID(umpire::resource::Unified); };
+  { return axom::getUmpireResourceAllocatorID(umpire::resource::Unified); };
 
 };
 } /* namespace axom */

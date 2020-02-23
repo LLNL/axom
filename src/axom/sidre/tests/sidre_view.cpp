@@ -1758,7 +1758,7 @@ TEST_P(UmpireTest, reallocate)
 {
 
 #if defined(AXOM_USE_CUDA) && defined(UMPIRE_ENABLE_CONST)
-  if (allocID == axom::getResourceAllocatorID( umpire::resource::Constant ) )
+  if (allocID == axom::getUmpireResourceAllocatorID(umpire::resource::Constant))
   {
     return;
   }
@@ -1826,24 +1826,24 @@ TEST_P(UmpireTest, reallocate_zero)
 }
 
 const int allocators[] = {
-  axom::getUmpireResourceAllocatorID( umpire::resource::Host )
+  axom::getUmpireResourceAllocatorID(umpire::resource::Host)
 
 #ifdef AXOM_USE_CUDA
 
 #ifdef UMPIRE_ENABLE_PINNED
-  , axom::getUmpireResourceAllocatorID( umpire::resource::Pinned )
+  , axom::getUmpireResourceAllocatorID(umpire::resource::Pinned)
 #endif
 
 #ifdef UMPIRE_ENABLE_DEVICE
-  , axom::getUmpireResourceAllocatorID( umpire::resource::Device )
+  , axom::getUmpireResourceAllocatorID(umpire::resource::Device)
 #endif
 
 #ifdef UMPIRE_ENABLE_CONST
-  , axom::getResourceUmpireAllocatorID( umpire::resource::Constant )
+  , axom::getUmpireResourceAllocatorID(umpire::resource::Constant)
 #endif
 
 #ifdef UMPIRE_ENABLE_UM
-  , axom::getUmpireResourceAllocatorID( umpire::resource::Unified )
+  , axom::getUmpireResourceAllocatorID(umpire::resource::Unified)
 #endif
 
 #endif /* AXOM_USE_CUDA */
