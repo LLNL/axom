@@ -47,6 +47,13 @@ namespace spin
 //------------------------------------------------------------------------------
 //  PRIVATE HELPER METHOD IMPLEMENTATION
 //------------------------------------------------------------------------------
+namespace lbvh = internal::linear_bvh;
+
+template < typename FloatType >
+using vec4_t = internal::linear_bvh::Vec< FloatType, 4 >;
+
+template < typename FloatType, int NDIMS >
+using point_t = internal::linear_bvh::Vec< FloatType, NDIMS >;
 
 /*!
  * \def BVH_PREDICATE
@@ -106,7 +113,7 @@ template < int NDIMS, typename ExecSpace,
 IndexType bvh_get_counts(
                    LeftPredicate&& leftCheck,
                    RightPredicate&& rightCheck,
-                   const internal::linear_bvh::Vec< FloatType,4 >* inner_nodes,
+                   const vec4_t< FloatType >* inner_nodes,
                    const int32* leaf_nodes,
                    IndexType N,
                    IndexType* counts,
@@ -123,18 +130,15 @@ IndexType bvh_get_counts(
   SLIC_ERROR_IF( (z==nullptr && NDIMS==3),
                  "supplied null pointer for z-coordinates!" );
 
-  namespace bvh = internal::linear_bvh;
-  using point_t = bvh::Vec< FloatType, NDIMS >;
-
   // STEP 1: count number of candidates for each query point
   using reduce_pol = typename axom::execution_space< ExecSpace >::reduce_policy;
   RAJA::ReduceSum< reduce_pol, IndexType > total_count( 0 );
 
-  using QueryAccessor = bvh::QueryAccessor< NDIMS, FloatType >;
+  using QueryAccessor = lbvh::QueryAccessor< NDIMS, FloatType >;
   for_all< ExecSpace >( N, AXOM_LAMBDA(IndexType i)
   {
     int32 count = 0;
-    point_t point;
+    point_t< FloatType, NDIMS > point;
     QueryAccessor::getPoint( point, i, x, y, z );
 
 
@@ -144,12 +148,12 @@ IndexType bvh_get_counts(
       count ++;
     };
 
-    bvh::bvh_traverse( inner_nodes,
-                       leaf_nodes,
-                       point,
-                       leftCheck,
-                       rightCheck,
-                       leafAction );
+    lbvh::bvh_traverse( inner_nodes,
+                        leaf_nodes,
+                        point,
+                        leftCheck,
+                        rightCheck,
+                        leafAction );
 
     counts[ i ]  = count;
     total_count += count;
@@ -216,9 +220,9 @@ int BVH< NDIMS, ExecSpace, FloatType >::build()
 
   // STEP 2: Build a RadixTree consisting of the bounding boxes, sorted
   // by their corresponding morton code.
-  internal::linear_bvh::RadixTree< FloatType, NDIMS > radix_tree;
-  internal::linear_bvh::AABB< FloatType, NDIMS > global_bounds;
-  internal::linear_bvh::build_radix_tree< ExecSpace >(
+  lbvh::RadixTree< FloatType, NDIMS > radix_tree;
+  lbvh::AABB< FloatType, NDIMS > global_bounds;
+  lbvh::build_radix_tree< ExecSpace >(
       boxesptr, numBoxes, global_bounds, radix_tree, m_scaleFactor );
 
   // STEP 3: emit the BVH data-structure from the radix tree
@@ -226,7 +230,7 @@ int BVH< NDIMS, ExecSpace, FloatType >::build()
   m_bvh.allocate( numBoxes );
 
   // STEP 4: emit the BVH
-  internal::linear_bvh::emit_bvh< ExecSpace >( radix_tree, m_bvh );
+  lbvh::emit_bvh< ExecSpace >( radix_tree, m_bvh );
 
   radix_tree.deallocate();
 
@@ -274,26 +278,28 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
   const int allocatorID = axom::execution_space< ExecSpace >::allocatorID();
   axom::setDefaultAllocator( allocatorID );
 
-  namespace bvh = internal::linear_bvh;
-  using vec4_t  = bvh::Vec< FloatType, 4 >;
-  using point_t = bvh::Vec< FloatType, NDIMS >;
-  using TraversalPredicates = bvh::TraversalPredicates< NDIMS, FloatType >;
-  using QueryAccessor       = bvh::QueryAccessor< NDIMS, FloatType >;
+  using PointType           = point_t< FloatType, NDIMS >;
+  using TraversalPredicates = lbvh::TraversalPredicates< NDIMS, FloatType >;
+  using QueryAccessor       = lbvh::QueryAccessor< NDIMS, FloatType >;
 
   // STEP 1: count number of candidates for each query point
-  const vec4_t* inner_nodes = m_bvh.m_inner_nodes;
+  const vec4_t< FloatType >* inner_nodes = m_bvh.m_inner_nodes;
   const int32*  leaf_nodes  = m_bvh.m_leaf_nodes;
   SLIC_ASSERT( inner_nodes != nullptr );
   SLIC_ASSERT( leaf_nodes != nullptr );
 
   // STEP 2: define traversal predicates
-  BVH_PREDICATE( leftPredicate, const point_t& p,
-                 const vec4_t& s1, const vec4_t& s2 ) {
+  BVH_PREDICATE( leftPredicate,
+                 const PointType& p,
+                 const vec4_t< FloatType >& s1,
+                 const vec4_t< FloatType >& s2 ) {
     return TraversalPredicates::pointInLeftBin( p, s1, s2 );
   };
 
-  BVH_PREDICATE( rightPredicate, const point_t& p,
-                 const vec4_t& s2, const vec4_t& s3 ) {
+  BVH_PREDICATE( rightPredicate,
+                 const PointType& p,
+                 const vec4_t< FloatType >& s2,
+                 const vec4_t< FloatType >& s3 ) {
     return TraversalPredicates::pointInRightBin( p, s2, s3 );
   };
 
@@ -314,7 +320,7 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
   {
     int32 offset = offsets[ i ];
 
-    point_t point;
+    PointType point;
     QueryAccessor::getPoint( point, i, x, y, z );
 
     BVH_LEAF_ACTION( leafAction, int32 current_node, const int32* leaf_nodes ) {
@@ -322,12 +328,12 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
       offset++;
     };
 
-    bvh::bvh_traverse( inner_nodes,
-                       leaf_nodes,
-                       point,
-                       leftPredicate,
-                       rightPredicate,
-                       leafAction );
+    lbvh::bvh_traverse( inner_nodes,
+                        leaf_nodes,
+                        point,
+                        leftPredicate,
+                        rightPredicate,
+                        leafAction );
 
   } );
 
@@ -355,13 +361,12 @@ void BVH< NDIMS, ExecSpace, FloatType >::writeVtkFile(
   // STEP 1: write root
   int32 numPoints = 0;
   int32 numBins   = 0;
-  internal::linear_bvh::write_root(
-      m_bvh.m_bounds, numPoints, numBins,nodes,cells,levels );
+  lbvh::write_root( m_bvh.m_bounds, numPoints, numBins,nodes,cells,levels );
 
 
   // STEP 2: traverse the BVH and dump each bin
   constexpr int32 ROOT = 0;
-  internal::linear_bvh::write_recursive< FloatType, NDIMS >(
+  lbvh::write_recursive< FloatType, NDIMS >(
       m_bvh.m_inner_nodes, ROOT, 1, numPoints, numBins, nodes, cells, levels );
 
   // STEP 3: write nodes
