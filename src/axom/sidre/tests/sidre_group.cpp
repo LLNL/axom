@@ -2470,11 +2470,24 @@ TEST_P(UmpireTest, allocate_default)
 const int allocators[] = {
   axom::getUmpireResourceAllocatorID(umpire::resource::Host)
 #ifdef AXOM_USE_CUDA
+
+#ifdef UMPIRE_ENABLE_PINNED
   , axom::getUmpireResourceAllocatorID(umpire::resource::Pinned)
+#endif
+
+#ifdef UMPIRE_ENABLE_DEVICE
   , axom::getUmpireResourceAllocatorID(umpire::resource::Device)
+#endif
+
+#ifdef UMPIRE_ENABLE_CONST
   , axom::getUmpireResourceAllocatorID(umpire::resource::Constant)
+#endif
+
+#ifdef UMPIRE_ENABLE_UM
   , axom::getUmpireResourceAllocatorID(umpire::resource::Unified)
 #endif
+
+#endif /* AXOM_USE_CUDA */
 };
 
 INSTANTIATE_TEST_SUITE_P(
