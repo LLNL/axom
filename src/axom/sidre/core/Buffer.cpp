@@ -29,7 +29,7 @@ int getValidAllocatorID( int allocID )
 #ifdef AXOM_USE_UMPIRE
   if ( allocID == INVALID_ALLOCATOR_ID )
   {
-    allocID = getDefaultAllocator().getId();
+    allocID = getDefaultAllocatorID();
   }
 #endif
 
@@ -423,7 +423,7 @@ void* Buffer::allocateBytes(IndexType num_bytes, int allocID)
 {
   allocID = getValidAllocatorID(allocID);
 #ifdef AXOM_USE_UMPIRE
-  return axom::allocate<axom::int8>(num_bytes, getAllocator(allocID));
+  return axom::allocate<axom::int8>(num_bytes, allocID );
 #else
   return axom::allocate<axom::int8>(num_bytes);
 #endif

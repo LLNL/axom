@@ -2396,17 +2396,15 @@ TEST_P(UmpireTest, root_default_allocator)
 
 TEST_P(UmpireTest, get_set_allocator)
 {
-  int defaultAllocatorID = axom::getDefaultAllocator().getId();
+  int defaultAllocatorID = axom::getDefaultAllocatorID();
   ASSERT_EQ(root->getDefaultAllocator().getId(), defaultAllocatorID);
   ASSERT_EQ(root->getDefaultAllocatorID(), defaultAllocatorID);
 
   root->setDefaultAllocator(allocID);
-  defaultAllocatorID = axom::getDefaultAllocator().getId();
-  ASSERT_EQ(root->getDefaultAllocator().getId(), axom::getAllocator(
-              allocID).getId());
-  ASSERT_EQ(root->getDefaultAllocatorID(), allocID);
+  defaultAllocatorID = axom::getDefaultAllocatorID();
+  ASSERT_EQ(root->getDefaultAllocatorID(), defaultAllocatorID );
 
-  root->setDefaultAllocator(axom::getDefaultAllocator());
+  root->setDefaultAllocator(rm.getInstance().getAllocator(defaultAllocatorID));
   ASSERT_EQ(root->getDefaultAllocator().getId(), defaultAllocatorID);
   ASSERT_EQ(root->getDefaultAllocatorID(), defaultAllocatorID);
 }
@@ -2470,12 +2468,12 @@ TEST_P(UmpireTest, allocate_default)
 }
 
 const int allocators[] = {
-  axom::getResourceAllocatorID(umpire::resource::Host)
+  axom::getUmpireResourceAllocatorID(umpire::resource::Host)
 #ifdef AXOM_USE_CUDA
-  , axom::getResourceAllocatorID(umpire::resource::Pinned)
-  , axom::getResourceAllocatorID(umpire::resource::Device)
-  , axom::getResourceAllocatorID(umpire::resource::Constant)
-  , axom::getResourceAllocatorID(umpire::resource::Unified)
+  , axom::getUmpireResourceAllocatorID(umpire::resource::Pinned)
+  , axom::getUmpireResourceAllocatorID(umpire::resource::Device)
+  , axom::getUmpireResourceAllocatorID(umpire::resource::Constant)
+  , axom::getUmpireResourceAllocatorID(umpire::resource::Unified)
 #endif
 };
 

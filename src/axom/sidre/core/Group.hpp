@@ -264,7 +264,8 @@ public:
    */
   umpire::Allocator getDefaultAllocator() const
   {
-    return getAllocator(m_default_allocator_id);
+    umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+    return rm.getAllocator( m_default_allocator_id );
   }
 
   /*!
