@@ -97,7 +97,9 @@ public:
                                      const VecType< FloatType >& s1,
                                      const VecType< FloatType >& s2  ) noexcept
   {
+    // NOTE: See BVHData.hpp for how the BVH bin is organized in the segments.
     bool in_left = true;
+
     if ( point[0] < s1[0] ) in_left = false;
     if ( point[1] < s1[1] ) in_left = false;
 
@@ -113,6 +115,7 @@ public:
                                       const VecType< FloatType >& s2,
                                       const VecType< FloatType >& s3  ) noexcept
   {
+    // NOTE: See BVHData.hpp for how the BVH bin is organized in the segments.
     bool in_right = true;
 
     if ( point[0] < s2[2] ) in_right = false;
@@ -142,7 +145,9 @@ public:
                                      const VecType< FloatType >& s2  ) noexcept
   {
 
+    // NOTE: See BVHData.hpp for how the BVH bin is organized in the segments.
     bool in_left = true;
+
     if ( point[0] < s1[0] ) in_left = false;
     if ( point[1] < s1[1] ) in_left = false;
     if ( point[2] < s1[2] ) in_left = false;
@@ -160,6 +165,7 @@ public:
                                       const VecType< FloatType >& s2,
                                       const VecType< FloatType >& s3 ) noexcept
   {
+    // NOTE: See BVHData.hpp for how the BVH bin is organized in the segments.
     bool in_right = true;
 
     if ( point[0] < s2[2] ) in_right = false;
