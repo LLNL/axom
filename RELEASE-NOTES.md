@@ -10,6 +10,25 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
+
+### Removed
+
+### Deprecated
+
+### Changed
+
+### Fixed
+- Fixed usage of cuda kernel policies in Mint. Raja v0.11.0 changed the way max threads
+  launch bounds is calculated. Consequently, a large number of threads was being launched
+  leading to max registry count violation when linking. We are now using fixed kernel size
+  of 256 threads (16x16 in 2D and 8x8x4 in 3D).
+
+### Known Bugs
+
+
+## [Version 0.3.3] - Release date 2020-01-31
+
+### Added
 - Define different execution spaces. This refines and consolidates
   the execution policy concepts from mint and spin, which are now defined in
   Axom core, such that they can be used by other components.
@@ -22,6 +41,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Deprecated
 
 ### Changed
+- Updated Conduit to v0.5.1
+- Updated RAJA to v0.11.0
+- Updated Umpire to v2.1.0, which, natively handles zero byte re-allocations consistently. Workaround
+  for older releases of Umpire is in place for backwards compatibility. 
 - Updated BLT to develop (f0ab9a4) as of Jan 15, 2020
 - Set CUDA_SEPARABLE_COMPILATION globally instead of just in a few components.
 - Reduced verbosity of quest's InOutOctree in cases where query point lies on surface.
@@ -278,7 +301,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Known Bugs
 -
 
-[Unreleased]:    https://github.com/LLNL/axom/compare/v0.3.2...develop
+[Unreleased]:    https://github.com/LLNL/axom/compare/v0.3.3...develop
+[Version 0.3.3]: https://github.com/LLNL/axom/compare/v0.3.2...v0.3.3
 [Version 0.3.2]: https://github.com/LLNL/axom/compare/v0.3.1...v0.3.2
 [Version 0.3.1]: https://github.com/LLNL/axom/compare/v0.3.0...v0.3.1
 [Version 0.3.0]: https://github.com/LLNL/axom/compare/v0.2.9...v0.3.0

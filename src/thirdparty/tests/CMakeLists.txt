@@ -34,7 +34,7 @@ endif()
 #------------------------------------------------------------------------------
 if ( RAJA_FOUND )
 
-  set( raja_smoke_dependencies raja gtest )
+  set( raja_smoke_dependencies RAJA gtest )
 
   blt_list_append( TO raja_smoke_dependencies ELEMENTS openmp IF ENABLE_OPENMP)
 

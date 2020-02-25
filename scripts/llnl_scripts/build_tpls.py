@@ -55,7 +55,7 @@ def main():
         if not os.path.exists(builds_dir):
             os.makedirs(builds_dir)
     else:
-        builds_dir = get_shared_tpl_builds_dir()
+        builds_dir = get_shared_libs_dir()
     builds_dir = os.path.abspath(builds_dir)
 
     repo_dir = get_repo_dir()

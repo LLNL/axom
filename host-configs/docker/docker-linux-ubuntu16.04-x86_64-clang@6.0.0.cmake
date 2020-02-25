@@ -6,38 +6,33 @@
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
-
+# SYS_TYPE: linux-ubuntu16.04-x86_64
+# Compiler Spec: clang@6.0.0
 #------------------------------------------------------------------------------
-# SYS_TYPE: bgqos_0
-# Compiler Spec: clang@4.0.0_xlf
+# CMake executable path: /home/axom/axom_tpls/clang-6.0.0/cmake-3.10.1/bin/cmake
 #------------------------------------------------------------------------------
-
-# CMake executable path: /collab/usr/global/tools/cmake/bgqos_0/cmake-3.8.2/bin/cmake
 
 #------------------------------------------------------------------------------
 # Compilers
 #------------------------------------------------------------------------------
 
-# Note: we build TPLs with the serial compiler then use MPI wrappers on bgq
-# Serial compilers used by spack:
-# C compiler: /collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/bin/bgclang
-# C++ compiler: /collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/bin/bgclang++
+# C compiler used by spack
+set(CMAKE_C_COMPILER "/usr/bin/clang" CACHE PATH "")
 
-set(CMAKE_C_COMPILER "/collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/llnl/bin/mpiclang" CACHE PATH "")
-
-set(CMAKE_CXX_COMPILER "/collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/llnl/bin/mpiclang++" CACHE PATH "")
+# C++ compiler used by spack
+set(CMAKE_CXX_COMPILER "/usr/bin/clang++" CACHE PATH "")
 
 # Fortran compiler used by spack
 set(ENABLE_FORTRAN ON CACHE BOOL "")
 
-set(CMAKE_Fortran_COMPILER "/opt/ibmcmp/xlf/bg/14.1/bin/bgxlf2003" CACHE PATH "")
+set(CMAKE_Fortran_COMPILER "/usr/bin/gfortran" CACHE PATH "")
 
 #------------------------------------------------------------------------------
 # TPLs
 #------------------------------------------------------------------------------
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/thirdparty_libs/builds/2019_09_05_21_45_10/clang-4.0.0_xlf" CACHE PATH "")
+set(TPL_ROOT "/home/axom/axom_tpls/clang-6.0.0" CACHE PATH "")
 
 # conduit from uberenv
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-master" CACHE PATH "")
@@ -51,9 +46,10 @@ set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.19" CACHE PATH "")
 # scr not built by uberenv
 
 # raja from uberenv
-set(RAJA_DIR "${TPL_ROOT}/raja-0.9.0/share/raja/cmake" CACHE PATH "")
+set(RAJA_DIR "/usr/local/share/raja" CACHE PATH "")
 
-# umpire not build by uberenv
+# umpire from uberenv
+set(UMPIRE_DIR "${TPL_ROOT}/umpire-1.0.0" CACHE PATH "")
 
 # python not built by uberenv
 
@@ -73,13 +69,13 @@ set(ENABLE_DOCS OFF CACHE BOOL "")
 
 set(ENABLE_MPI ON CACHE BOOL "")
 
-set(ENABLE_FIND_MPI OFF CACHE BOOL "Use wrapper directly to stop FindMPI returning the wrong linker flags.")
+set(MPI_C_COMPILER "/home/axom/axom_tpls/clang-6.0.0/mpich-3.0.4/bin/mpicc" CACHE PATH "")
 
-set(ENABLE_WRAP_ALL_TESTS_WITH_MPIEXEC ON CACHE BOOL "Ensures that tests will be wrapped with srun to run on the backend nodes")
+set(MPI_CXX_COMPILER "/home/axom/axom_tpls/clang-6.0.0/mpich-3.0.4/bin/mpic++" CACHE PATH "")
 
-set(BLT_MPI_INCLUDES "/usr/local/tools/deg/drivers/V1R2M0/ppc64/comm/gcc/include" CACHE PATH "Pass in an explicit path to help find mpif.h")
+set(MPI_Fortran_COMPILER "/home/axom/axom_tpls/clang-6.0.0/mpich-3.0.4/bin/mpif90" CACHE PATH "")
 
-set(MPIEXEC "/usr/bin/srun" CACHE PATH "")
+set(MPIEXEC_EXECUTABLE "/home/axom/axom_tpls/clang-6.0.0/mpich-3.0.4/bin/mpiexec" CACHE PATH "")
 
 set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
 
@@ -87,15 +83,8 @@ set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
 # Other machine specifics
 #------------------------------------------------------------------------------
 
-set(ENABLE_GTEST_DEATH_TESTS OFF CACHE BOOL "")
+set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
 
-set(BLT_FORTRAN_FLAGS "-WF,-C!" CACHE PATH "Converts C-style comments to Fortran style in preprocessed files")
-
-# Manually set up HDF5 library dependencies for BGQ to bypass errors from CMake's FindHDF5
-set(HDF5_C_LIBRARY_m "-lm" CACHE PATH "")
-
-set(HDF5_C_LIBRARY_dl "-ldl" CACHE PATH "")
-
-set(CMAKE_SKIP_RPATH ON CACHE BOOL "")
+set(ENABLE_OPENMP ON CACHE BOOL "")
 
 

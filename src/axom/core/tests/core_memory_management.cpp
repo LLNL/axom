@@ -270,34 +270,43 @@ TEST( core_memory_management, set_get_default_memory_space )
   EXPECT_EQ( HostAllocatorID, axom::getDefaultAllocator().getId() );
 
 #ifdef AXOM_USE_CUDA
+
+#ifdef UMPIRE_ENABLE_PINNED
   const int PinnedAllocatorID =
     axom::getResourceAllocatorID( umpire::resource::Pinned );
 
   axom::setDefaultAllocator( axom::getAllocator( PinnedAllocatorID ) );
   EXPECT_EQ( PinnedAllocatorID, axom::getDefaultAllocator().getId() );
+#endif
 
+#ifdef UMPIRE_ENABLE_DEVICE
   const int DeviceAllocatorID =
     axom::getResourceAllocatorID( umpire::resource::Device );
   axom::setDefaultAllocator( axom::getAllocator( DeviceAllocatorID ) );
   EXPECT_EQ( DeviceAllocatorID, axom::getDefaultAllocator().getId() );
+#endif
 
+#ifdef UMPIRE_ENABLE_CONST
   const int ConstantAllocatorID =
     axom::getResourceAllocatorID( umpire::resource::Constant );
   axom::setDefaultAllocator( axom::getAllocator( ConstantAllocatorID ) );
   EXPECT_EQ( ConstantAllocatorID, axom::getDefaultAllocator().getId() );
+#endif
 
+#ifdef UMPIRE_ENABLE_UM
   const int UnifiedAllocatorID =
     axom::getResourceAllocatorID( umpire::resource::Unified );
   axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
   EXPECT_EQ( UnifiedAllocatorID, axom::getDefaultAllocator().getId() );
 #endif
 
+#endif // AXOM_USE_CUDA
+
 
   axom::setDefaultAllocator( axom::getAllocator( HostAllocatorID ) );
   EXPECT_EQ( HostAllocatorID, axom::getDefaultAllocator().getId() );
 }
-
-#endif
+#endif /* AXOM_USE_UMPIRE */
 
 //------------------------------------------------------------------------------
 TEST( core_memory_management, alloc_free )
@@ -316,24 +325,31 @@ TEST( core_memory_management, alloc_free )
 
   constexpr bool NOT_HOST_ACCESSIBLE = false;
 
+#ifdef UMPIRE_ENABLE_PINNED
   const int PinnedAllocatorID =
     axom::getResourceAllocatorID( umpire::resource::Pinned );
   check_alloc_and_free( axom::getAllocator( PinnedAllocatorID ),
                         HOST_ACCESSIBLE
                         );
+#endif
 
+#ifdef UMPIRE_ENABLE_DEVICE
   const int DeviceAllocatorID =
     axom::getResourceAllocatorID( umpire::resource::Device );
   check_alloc_and_free( axom::getAllocator( DeviceAllocatorID ),
                         NOT_HOST_ACCESSIBLE
                         );
+#endif
 
+#ifdef UMPIRE_ENABLE_CONST
   const int ConstantAllocatorID =
     axom::getResourceAllocatorID( umpire::resource::Constant );
   check_alloc_and_free( axom::getAllocator( ConstantAllocatorID ),
                         NOT_HOST_ACCESSIBLE
                         );
+#endif
 
+#ifdef UMPIRE_ENABLE_UM
   const int UnifiedAllocatorID =
     axom::getResourceAllocatorID( umpire::resource::Unified );
   check_alloc_and_free( axom::getAllocator( UnifiedAllocatorID ),
@@ -341,7 +357,9 @@ TEST( core_memory_management, alloc_free )
                         );
 #endif
 
-#endif
+#endif // AXOM_USE_CUDA
+
+#endif // AXOM_USE_UMPIRE
 
   check_alloc_and_free();
 }
@@ -361,30 +379,40 @@ TEST( core_memory_management, alloc_realloc_free )
 
   constexpr bool NOT_HOST_ACCESSIBLE = false;
 
+#ifdef UMPIRE_ENABLE_PINNED
   const int PinnedAllocatorID =
     axom::getResourceAllocatorID( umpire::resource::Pinned );
   check_alloc_realloc_free( axom::getAllocator( PinnedAllocatorID ),
                             HOST_ACCESSIBLE
                             );
+#endif
 
+#ifdef UMPIRE_ENABLE_DEVICE
   const int DeviceAllocatorID =
     axom::getResourceAllocatorID( umpire::resource::Device );
   check_alloc_realloc_free( axom::getAllocator( DeviceAllocatorID ),
                             NOT_HOST_ACCESSIBLE
                             );
+#endif
 
   // Umpire doesn't allow reallocation of Constant memory.
   // check_alloc_realloc_free( axom::getAllocator( umpire::resource::Constant ),
   // false );
+
+
+#ifdef UMPIRE_ENABLE_UM
 
   const int UnifiedAllocatorID =
     axom::getResourceAllocatorID( umpire::resource::Unified );
   check_alloc_realloc_free( axom::getAllocator( UnifiedAllocatorID ),
                             HOST_ACCESSIBLE
                             );
-#endif
 
 #endif
+
+#endif /* AXOM_USE_CUDA */
+
+#endif /* AXOM_USE_UMPIRE */
 
   check_alloc_realloc_free();
 }

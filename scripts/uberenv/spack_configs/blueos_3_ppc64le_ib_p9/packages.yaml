@@ -18,64 +18,136 @@ packages:
   all:
     compiler: [gcc, intel, pgi, clang, xl, nag]
     providers:
-      awk: [gawk]
-      blas: [openblas]
-      daal: [intel-daal]
-      elf: [elfutils]
-      golang: [gcc]
-      ipp: [intel-ipp]
-      java: [jdk]
-      lapack: [openblas]
-      mkl: [intel-mkl]
-      mpe: [mpe2]
+      blas: [netlib-lapack]
+      lapack: [netlib-lapack]
       mpi: [mvapich2]
-      opencl: [pocl]
-      openfoam: [openfoam-com, openfoam-org, foam-extend]
-      pil: [py-pillow]
-      scalapack: [netlib-scalapack]
-      szip: [libszip, libaec]
-      tbb: [intel-tbb]
-      jpeg: [libjpeg-turbo, libjpeg]
+
 # LLNL blueos CUDA
   cuda:
     paths:
-      cuda@10.1.168: /usr/tce/packages/cuda/cuda-10.1.168
+      cuda@10.1.243: /usr/tce/packages/cuda/cuda-10.1.243
     buildable: False
+
 # LLNL blueos mpi
 # note, we need to fake this as an existing mpi package
 # so even though this is spectrum mpi, we call it mvapich2
   mvapich2:
     paths:
       mvapich2@2.2%gcc@7.3.1: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-7.3.1/
-      mvapich2@2.2%clang@upstream_xlf: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2019.03.26/
-      mvapich2@2.2%clang@8.0.0_nvcc_xlf: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-8.0.0/  
-      mvapich2@2.2%xl@coral : /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2019.03.26/
+      mvapich2@2.2%clang@upstream_xlf: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2019.08.15/
+      mvapich2@2.2%clang@8.0.1_nvcc_xlf: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-8.0.1/  
+      mvapich2@2.2%xl@coral : /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2019.08.15/
     buildable: False
+# Spack may grab for mpi & we don't want to use them
+  openmpi:
+    buildable: False
+  mpich:
+    buildable: False
+  spectrum-mpi:
+    buildable: False
+  charmpp:
+    buildable: False
+  charm:
+    buildable: False
+  intel-mpi:
+    buildable: False
+  intel-parallel-studio:
+    buildable: False
+  fujitsu-mpi:
+    buildable: False
+  mpilander:
+    buildable: False
+  mpt:
+    buildable: False
+
+  # blas is a bit more complicated because its a virtual package so fake it with
+  # the following per spack docs
+  netlib-lapack:
+    paths:
+      netlib-lapack@3.6.1: /usr
+    buildable: False
+
 # System level packages to not build
+  autoconf:
+    paths:
+      autoconf: /usr
+    buildable: False 
+  automake:
+    paths:
+      automake: /usr
+    buildable: False
   bzip2:
    paths:
-      bzip2: /usr/bin/
+      bzip2: /usr
    buildable: False
   gettext:
    paths:
-      gettext: /usr/bin/
+      gettext: /usr
+   buildable: False
+  libtool:
+   paths:
+      libtool: /usr
    buildable: False
   m4:
    paths:
-      m4: /usr/bin/
+      m4: /usr
    buildable: False
+  perl:
+    paths:
+      perl: /usr
+    buildable: False 
   pkg-config:
     paths:
-      pkg-config: /usr/bin/
+      pkg-config: /usr
     buildable: False 
   tar:
    paths:
-      tar: /usr/bin/
+      tar: /usr
    buildable: False
-  graphviz:
-    paths:
-      graphviz: /usr/bin/
-    buildable: False
+
+# Globally lock version of third party libraries
+  conduit:
+    version: [0.5.1]
+
+# Globally lock in versions of Devtools
   cmake:
     version: [3.9.6]
+    paths:
+      cmake: /usr/WS1/axom/devtools/blueos_3_ppc64le_ib_p9/latest/cmake-3.9.6
+    buildable: False
 
+  cppcheck:
+    version: [1.87]
+    paths:
+      cppcheck: /usr/WS1/axom/devtools/blueos_3_ppc64le_ib_p9/latest/cppcheck-1.87
+    buildable: False
+  doxygen:
+    version: [1.8.14]
+    paths:
+      doxygen: /usr/WS1/axom/devtools/blueos_3_ppc64le_ib_p9/latest/doxygen-1.8.14
+    buildable: False
+  graphviz:
+    version: [2.42.2]
+    paths:
+      graphviz: /usr/WS1/axom/devtools/blueos_3_ppc64le_ib_p9/latest/graphviz-2.42.2
+    buildable: False
+  python:
+    version: [3.7.4]
+    paths:
+      python: /usr/WS1/axom/devtools/blueos_3_ppc64le_ib_p9/latest/python-3.7.4
+    buildable: False
+  py-shroud:
+    version: [0.11.0]
+    paths:
+      py-shroud: /usr/WS1/axom/devtools/blueos_3_ppc64le_ib_p9/latest/python-3.7.4
+    buildable: False
+  py-sphinx:
+    version: [2.2.0]
+    paths:
+      py-sphinx: /usr/WS1/axom/devtools/blueos_3_ppc64le_ib_p9/latest/python-3.7.4
+    buildable: False
+  uncrustify:
+    version: [0.61]
+    paths:
+      uncrustify: /usr/WS1/axom/devtools/blueos_3_ppc64le_ib_p9/latest/uncrustify-0.61
+    buildable: False

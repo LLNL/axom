@@ -1,11 +1,8 @@
 {
 "package_name" : "axom",
-"uberenv_package_name" : "uberenv-axom",
-"spack_commit": "729bed3fd3e7bd3ecabda3ab25525019f3f83661",
-"spack_activate" : {"py-sphinx" : ["+devtools"],
-                    "py-shroud" : ["+devtools"],
-                    "py-pyyaml" : ["+devtools"],
-                    "py-numpy"  : ["+python"],
-                    "conduit"   : ["+python"]},
-"vcpkg_commit": "24a97b16e70400b874299f9d58f571f215090444"
+"package_version" : "develop",
+"package_final_phase" : "hostconfig",
+"package_source_dir" : "../..",
+"spack_url": "https://github.com/spack/spack",
+"spack_commit": "d98b433a3c14af5aaba03fd439f6e47cb970bac6"
 }

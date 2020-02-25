@@ -36,12 +36,11 @@ packages:
       szip: [libszip, libaec]
       tbb: [intel-tbb]
       jpeg: [libjpeg-turbo, libjpeg]
-# LLNL mpi
-  mpich:
-    paths:
-      mpich@3.bgq.fastmpi %clang@4.0.0_gfortran arch=bgq-cnk-ppc64: /collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/llnl
-      mpich@3.bgq.fastmpi %clang@4.0.0_xlf arch=bgq-cnk-ppc64: /collab/usr/gapps/opnsrc/gnu/dev/lnx-2.12-ppc/bgclang/r284961-stable/llnl
+# Spack may grab for mpi & we don't want to use them
+  charm:
     buildable: False
+  mpilander:
+    buildable: False  
 # System level packages to not build
   autotools:
     paths:
@@ -69,11 +68,12 @@ packages:
    buildable: False
   graphviz:
     paths:
-      graphviz: /usr/local/bin/
+      graphviz: /usr/bin/
     buildable: False
-# On BGQ specifically just use the system CMake
-  cmake:
-    version: [3.8.2]
+  raja:
     paths:
-      cmake: /collab/usr/global/tools/cmake/bgqos_0/cmake-3.8.2/
+      raja: /usr/local/share/raja/cmake
     buildable: False
+# Globally lock in version of CMake
+  cmake:
+    version: [3.10.1]

@@ -9,7 +9,7 @@ compilers:
       cc:  /usr/tce/packages/gcc/gcc-7.3.1/bin/gcc
       cxx: /usr/tce/packages/gcc/gcc-7.3.1/bin/g++
       f77: /usr/tce/packages/gcc/gcc-7.3.1/bin/gfortran
-      fc: /usr/tce/packages/gcc/gcc-7.3.1/bin/gfortran
+      fc:  /usr/tce/packages/gcc/gcc-7.3.1/bin/gfortran
     spec: gcc@7.3.1
     target: ppc64le
 - compiler:
@@ -21,8 +21,8 @@ compilers:
     paths:
       cc:  /usr/tce/packages/clang/clang-upstream-2019.08.15/bin/clang
       cxx: /usr/tce/packages/clang/clang-upstream-2019.08.15/bin/clang++
-      f77: /usr/tce/packages/xl/xl-2019.06.12/bin/xlf2003
-      fc:  /usr/tce/packages/xl/xl-2019.06.12/bin/xlf2003
+      f77: /usr/tce/packages/xl/xl-2019.12.23/bin/xlf2003
+      fc:  /usr/tce/packages/xl/xl-2019.12.23/bin/xlf2003
     spec: clang@upstream_xlf
     target: ppc64le
 - compiler:
@@ -32,11 +32,11 @@ compilers:
     modules: []
     operating_system: rhel7
     paths:
-      cc:  /usr/tce/packages/clang/clang-8.0.0/bin/clang
-      cxx: /usr/tce/packages/clang/clang-8.0.0/bin/clang++
-      f77: /usr/tce/packages/xl/xl-2019.06.12/bin/xlf2003
-      fc:  /usr/tce/packages/xl/xl-2019.06.12/bin/xlf2003
-    spec: clang@8.0.0_nvcc_xlf
+      cc:  /usr/tce/packages/clang/clang-8.0.1/bin/clang
+      cxx: /usr/tce/packages/clang/clang-8.0.1/bin/clang++
+      f77: /usr/tce/packages/xl/xl-2019.12.23/bin/xlf2003
+      fc:  /usr/tce/packages/xl/xl-2019.12.23/bin/xlf2003
+    spec: clang@8.0.1_nvcc_xlf
     target: ppc64le
 - compiler:
     environment: {}
@@ -45,10 +45,10 @@ compilers:
     modules: []
     operating_system: rhel7
     paths:
-      cc:  /usr/tce/packages/xl/xl-2019.06.12/bin/xlc
-      cxx: /usr/tce/packages/xl/xl-2019.06.12/bin/xlC
-      f77: /usr/tce/packages/xl/xl-2019.06.12/bin/xlf2003
-      fc:  /usr/tce/packages/xl/xl-2019.06.12/bin/xlf2003
+      cc:  /usr/tce/packages/xl/xl-2019.12.23/bin/xlc
+      cxx: /usr/tce/packages/xl/xl-2019.12.23/bin/xlC
+      f77: /usr/tce/packages/xl/xl-2019.12.23/bin/xlf2003
+      fc:  /usr/tce/packages/xl/xl-2019.12.23/bin/xlf2003
     spec: xl@coral
     target: ppc64le
 

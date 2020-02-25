@@ -198,10 +198,14 @@ inline T* reallocate( T* pointer, std::size_t n ) noexcept
 {
   const std::size_t numbytes = n * sizeof( T );
 
-#ifdef AXOM_USE_UMPIRE
+#if defined(AXOM_USE_UMPIRE) && !defined(UMPIRE_VERSION_MAJOR)
 
   // Workaround for bug in Umpire's handling on reallocate(0)
   // Fixed in Umpire PR #292 (after v1.1.0)
+
+  // NOTE: The UMPIRE_VERSION_MAJOR macro was added in umpire-v2.0.0. If the
+  // macro is not defined, we assume that the Umpire version is less than 2.0.0
+  // and that the workaround is needed.
   if(n==0)
   {
     axom::deallocate<T>(pointer);
@@ -225,6 +229,13 @@ inline T* reallocate( T* pointer, std::size_t n ) noexcept
     }
   }
 
+  pointer = static_cast< T* >( rm.reallocate( pointer, numbytes ) );
+
+#elif defined(AXOM_USE_UMPIRE) && (UMPIRE_VERSION_MAJOR >= 2) && \
+  (UMPIRE_VERSION_MINOR >= 1)
+
+  // Umpire 2.1.0 and above handles reallocate(0) natively
+  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
   pointer = static_cast< T* >( rm.reallocate( pointer, numbytes ) );
 
 #else
