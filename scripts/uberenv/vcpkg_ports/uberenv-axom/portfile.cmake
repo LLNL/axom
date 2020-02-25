@@ -98,7 +98,18 @@ set(ENABLE_MPI OFF CACHE BOOL "")
 # If MSMPI and no other MPI is installed, turn ENABLE_MPI ON and CMake
 # should automatically detect it.  If CMake doesn't auto-detect MSMPI,
 # or if you need to use another MPI, you will need to specify the MPI
-# compiler wrappers and helper settings, such as:
+# compiler wrappers and helper settings.
+#
+# Here are settings that might be appropriate for Intel compiler:
+#
+# set(MPI_C_COMPILER "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2019.5.281/windows/mpi/intel64/bin/mpicc.bat" CACHE PATH "")
+# set(MPI_CXX_COMPILER "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2019.5.281/windows/mpi/intel64/bin/mpicc.bat" CACHE PATH "")
+# set(MPI_Fortran_COMPILER "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2019.5.281/windows/mpi/intel64/bin/mpifc.bat" CACHE PATH "")
+# set(MPIEXEC "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2019.5.281/windows/mpi/intel64/bin/mpiexec.exe" CACHE PATH "")
+# set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
+#
+# Here are example settings pointing to MSMPI (use when Intel is installed):
+#
 # set(MPI_C_COMPILER "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2019.5.281/windows/mpi/intel64/bin/mpicc.bat" CACHE PATH "")
 # set(MPI_CXX_COMPILER "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2019.5.281/windows/mpi/intel64/bin/mpicc.bat" CACHE PATH "")
 # set(MPI_Fortran_COMPILER "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2019.5.281/windows/mpi/intel64/bin/mpifc.bat" CACHE PATH "")
