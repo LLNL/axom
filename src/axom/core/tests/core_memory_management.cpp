@@ -17,10 +17,6 @@
 // HELPER METHODS
 //------------------------------------------------------------------------------
 
-#ifdef AXOM_USE_UMPIRE
-#else
-#endif
-
 // This value is such that the 64Kb limit on device constant memory is not hit
 // in check_alloc_realloc_free when reallocating to 3 * SIZE.
 constexpr int SIZE = 5345;
