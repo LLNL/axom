@@ -378,7 +378,7 @@ template< int NDIMS, typename ExecSpace, typename FloatType >
 int BVH< NDIMS, ExecSpace, FloatType >::build()
 {
   // STEP 0: set the default memory allocator to use for the execution space.
-  umpire::Allocator current_allocator = axom::getDefaultAllocator();
+  const int currentAllocatorID = axom::getDefaultAllocatorID();
   const int allocatorID = axom::execution_space< ExecSpace >::allocatorID();
   axom::setDefaultAllocator( allocatorID );
 
@@ -430,7 +430,7 @@ int BVH< NDIMS, ExecSpace, FloatType >::build()
   }
 
   // STEP 6: restore default allocator
-  axom::setDefaultAllocator( current_allocator );
+  axom::setDefaultAllocator( currentAllocatorID );
   return BVH_BUILD_OK;
 }
 
@@ -466,7 +466,7 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
   SLIC_ASSERT( z != nullptr );
 
   // STEP 0: set the default memory allocator to use for the execution space.
-  umpire::Allocator current_allocator = axom::getDefaultAllocator();
+  const int currentAllocatorID = axom::getDefaultAllocatorID();
   const int allocatorID = axom::execution_space< ExecSpace >::allocatorID();
   axom::setDefaultAllocator( allocatorID );
 
@@ -628,7 +628,7 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
   } );
 
   // STEP 3: restore default allocator
-  axom::setDefaultAllocator( current_allocator );
+  axom::setDefaultAllocator( currentAllocatorID );
 }
 
 //------------------------------------------------------------------------------
@@ -650,7 +650,7 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
   SLIC_ASSERT( y != nullptr );
 
   // STEP 0: set the default memory allocator to use for the execution space.
-  umpire::Allocator current_allocator = axom::getDefaultAllocator();
+  const int currentAllocatorID = axom::getDefaultAllocatorID();
   const int allocatorID = axom::execution_space< ExecSpace >::allocatorID();
   axom::setDefaultAllocator( allocatorID );
 
@@ -811,7 +811,7 @@ void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
   } );
 
   // STEP 3: restore default allocator
-  axom::setDefaultAllocator( current_allocator );
+  axom::setDefaultAllocator( currentAllocatorID );
 }
 
 //------------------------------------------------------------------------------

@@ -34,10 +34,8 @@ void check_for_all( )
   constexpr int N       = 256;
 
   // STEP 1: set default allocator for the execution space
-#ifdef AXOM_USE_UMPIRE
-  umpire::Allocator current_allocator = axom::getDefaultAllocator();
+  const int currentAllocatorID = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator( axom::execution_space<ExecSpace>::allocatorID() );
-#endif
 
   // STEP 0: allocate buffer
   int* a = axom::allocate< int >( N );
@@ -80,9 +78,8 @@ void check_for_all( )
   // STEP 5: cleanup
   axom::deallocate( a );
 
-#ifdef AXOM_USE_UMPIRE
-  axom::setDefaultAllocator( current_allocator );
-#endif
+
+  axom::setDefaultAllocator( currentAllocatorID );
 }
 
 } /* end anonymous namespace */

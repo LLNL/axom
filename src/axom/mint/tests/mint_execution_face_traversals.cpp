@@ -274,12 +274,12 @@ AXOM_CUDA_TEST( mint_execution_face_traversals, for_all_face_nodeids )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
     defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
-    const int UnifiedAllocatorID =
-        axom::getResourceAllocatorID( umpire::resource::Unified );
-    const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
-    axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
-
     using cuda_exec = axom::CUDA_EXEC< 512 >;
+
+    const int exec_space_id  = axom::execution_space<cuda_exec>::allocatorID();
+    const int prev_allocator = axom::getDefaultAllocatorID();
+    axom::setDefaultAllocator( exec_space_id );
+
     check_for_all_face_nodes< cuda_exec, STRUCTURED_UNIFORM_MESH >( dim );
     check_for_all_face_nodes< cuda_exec, STRUCTURED_CURVILINEAR_MESH >( dim );
     check_for_all_face_nodes< cuda_exec, STRUCTURED_RECTILINEAR_MESH >( dim );
@@ -319,12 +319,12 @@ AXOM_CUDA_TEST( mint_execution_face_traversals, for_all_face_coords )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
     defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
-    const int UnifiedAllocatorID =
-        axom::getResourceAllocatorID( umpire::resource::Unified );
-    const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
-    axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
-
     using cuda_exec = axom::CUDA_EXEC< 512 >;
+
+    const int exec_space_id  = axom::execution_space<cuda_exec>::allocatorID();
+    const int prev_allocator = axom::getDefaultAllocatorID();
+    axom::setDefaultAllocator( exec_space_id );
+
     check_for_all_face_coords< cuda_exec, STRUCTURED_UNIFORM_MESH >( dim );
     check_for_all_face_coords< cuda_exec, STRUCTURED_CURVILINEAR_MESH >( dim );
     check_for_all_face_coords< cuda_exec, STRUCTURED_RECTILINEAR_MESH >( dim );
@@ -364,12 +364,12 @@ AXOM_CUDA_TEST( mint_execution_face_traversals, for_all_face_cellids )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
     defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
-    const int UnifiedAllocatorID =
-        axom::getResourceAllocatorID( umpire::resource::Unified );
-    const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
-    axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
-
     using cuda_exec = axom::CUDA_EXEC< 512 >;
+
+    const int exec_space_id  = axom::execution_space<cuda_exec>::allocatorID();
+    const int prev_allocator = axom::getDefaultAllocatorID();
+    axom::setDefaultAllocator( exec_space_id );
+
     check_for_all_face_cells< cuda_exec, STRUCTURED_UNIFORM_MESH >( dim );
     check_for_all_face_cells< cuda_exec, STRUCTURED_CURVILINEAR_MESH >( dim );
     check_for_all_face_cells< cuda_exec, STRUCTURED_RECTILINEAR_MESH >( dim );
@@ -411,12 +411,12 @@ AXOM_CUDA_TEST( mint_execution_face_traversals, for_all_faces_index )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
     defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
-    const int UnifiedAllocatorID =
-        axom::getResourceAllocatorID( umpire::resource::Unified );
-    const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
-    axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
-
     using cuda_exec = axom::CUDA_EXEC< 512 >;
+
+    const int exec_space_id  = axom::execution_space<cuda_exec>::allocatorID();
+    const int prev_allocator = axom::getDefaultAllocatorID();
+    axom::setDefaultAllocator( exec_space_id );
+
     check_for_all_faces< cuda_exec, STRUCTURED_UNIFORM_MESH >( dim );
     check_for_all_faces< cuda_exec, STRUCTURED_CURVILINEAR_MESH >( dim );
     check_for_all_faces< cuda_exec, STRUCTURED_RECTILINEAR_MESH >( dim );

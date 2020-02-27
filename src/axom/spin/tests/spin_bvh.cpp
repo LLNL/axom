@@ -227,7 +227,7 @@ void check_build_bvh2d( )
   constexpr int NUM_BOXES = 2;
   constexpr int NDIMS     = 2;
 
-  umpire::Allocator current_allocator = axom::getDefaultAllocator();
+  const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator( axom::execution_space<ExecSpace>::allocatorID());
 
   FloatType* boxes = axom::allocate< FloatType >( 8 );
@@ -266,7 +266,7 @@ void check_build_bvh3d( )
   constexpr int NUM_BOXES = 2;
   constexpr int NDIMS     = 3;
 
-  umpire::Allocator current_allocator = axom::getDefaultAllocator();
+  const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator( axom::execution_space<ExecSpace>::allocatorID());
 
   FloatType* boxes = axom::allocate< FloatType >( 12 );
@@ -315,7 +315,7 @@ void check_find3d( )
   constexpr int NDIMS   = 3;
   constexpr IndexType N = 4;
 
-  umpire::Allocator current_allocator = axom::getDefaultAllocator();
+  const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator( axom::execution_space<ExecSpace>::allocatorID());
 
   using PointType = primal::Point< double, NDIMS >;
@@ -413,7 +413,7 @@ void check_find2d( )
   constexpr int NDIMS   = 2;
   constexpr IndexType N = 4;
 
-  umpire::Allocator current_allocator = axom::getDefaultAllocator();
+  const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator( axom::execution_space<ExecSpace>::allocatorID());
 
   using PointType = primal::Point< double, NDIMS >;
@@ -502,7 +502,7 @@ void check_single_box2d( )
   constexpr int NUM_BOXES = 1;
   constexpr int NDIMS     = 2;
 
-  umpire::Allocator current_allocator = axom::getDefaultAllocator();
+  const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator( axom::execution_space<ExecSpace>::allocatorID());
 
   // single bounding box in [0,1] x [0,1]
@@ -570,7 +570,7 @@ void check_single_box3d( )
   constexpr int NUM_BOXES = 1;
   constexpr int NDIMS     = 3;
 
-  umpire::Allocator current_allocator = axom::getDefaultAllocator();
+  const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator( axom::execution_space<ExecSpace>::allocatorID());
 
   // single bounding box in [0,1] x [0,1] x [0,1]

@@ -67,10 +67,8 @@ int main ( int argc, char** argv )
 
 // sphinx_tutorial_walkthrough_set_memory_start
   // NOTE: use unified memory if we are using CUDA
-#if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA)
-  const int allocID = axom::getResourceAllocatorID( umpire::resource::Unified );
-  axom::setDefaultAllocator( axom::getAllocator( allocID) );
-#endif
+  const int allocID = axom::execution_space< ExecPolicy >::allocatorID();
+  axom::setDefaultAllocator( allocID );
 // sphinx_tutorial_walkthrough_set_memory_end
 
 // sphinx_tutorial_walkthrough_construct_mesh_start

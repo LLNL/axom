@@ -129,7 +129,7 @@ TEST( core_execution_space, check_seq_exec )
   constexpr bool IS_ASYNC = false;
 
 
-  int allocator_id = axom::getResourceAllocatorID( umpire::resource::Host );
+  int allocator_id = axom::getUmpireResourceAllocatorID(umpire::resource::Host);
   check_execution_mappings< axom::SEQ_EXEC,
                             RAJA::loop_exec,
                             RAJA::loop_reduce,
@@ -147,7 +147,7 @@ TEST( core_execution_space, check_omp_exec )
 
   constexpr bool IS_ASYNC = false;
 
-  int allocator_id = axom::getResourceAllocatorID( umpire::resource::Host );
+  int allocator_id = axom::getUmpireResourceAllocatorID(umpire::resource::Host);
   check_execution_mappings< axom::OMP_EXEC,
                             RAJA::omp_parallel_for_exec,
                             RAJA::omp_reduce,
@@ -168,7 +168,8 @@ TEST( core_execution_space, check_cuda_exec )
 
   constexpr bool IS_ASYNC = false;
 
-  int allocator_id = axom::getResourceAllocatorID( umpire::resource::Unified );
+  int allocator_id =
+      axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
   check_execution_mappings< axom::CUDA_EXEC< BLOCK_SIZE >,
                             RAJA::cuda_exec< BLOCK_SIZE >,
                             RAJA::cuda_reduce,
@@ -186,7 +187,8 @@ TEST( core_execution_space, check_cuda_exec_async )
 
   constexpr bool IS_ASYNC = true;
 
-  int allocator_id = axom::getResourceAllocatorID( umpire::resource::Unified );
+  int allocator_id =
+      axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
   check_execution_mappings< axom::CUDA_EXEC< BLOCK_SIZE, axom::ASYNC >,
                             RAJA::cuda_exec_async< BLOCK_SIZE >,
                             RAJA::cuda_reduce,

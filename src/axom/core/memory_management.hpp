@@ -22,6 +22,13 @@
 namespace axom
 {
 
+#ifdef AXOM_USE_UMPIRE
+const int DEFAULT_ALLOCATOR_ID =
+  umpire::ResourceManager::getInstance().getAllocator("HOST").getId();
+#else
+constexpr int DEFAULT_ALLOCATOR_ID = 0;
+#endif
+
 constexpr int INVALID_ALLOCATOR_ID = -1;
 
 /// \name Memory Management Routines
@@ -34,7 +41,7 @@ constexpr int INVALID_ALLOCATOR_ID = -1;
  * \param [in] resource_type the Umpire resource type
  * \return ID the id of the predefined umpire allocator.
  */
-inline int getResourceAllocatorID(
+inline int getUmpireResourceAllocatorID(
   umpire::resource::MemoryResourceType resource_type )
 {
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
@@ -42,42 +49,36 @@ inline int getResourceAllocatorID(
   return alloc.getId();
 }
 
-/*!
- * \brief Returns the umpire allocator associated with the given ID.
- * \param [in] allocatorID the ID of the allocator to get.
- */
-inline umpire::Allocator getAllocator( int allocatorID )
-{
-  return umpire::ResourceManager::getInstance().getAllocator( allocatorID );
-}
+#endif
 
 /*!
  * \brief Sets the default memory space to use. Default is set to HOST
- * \param [in] allocator the umpire::Allocator to make default.
- */
-inline void setDefaultAllocator( umpire::Allocator allocator )
-{
-  umpire::ResourceManager::getInstance().setDefaultAllocator( allocator );
-}
-
-/*!
- * \brief Sets the default memory space to use. Default is set to HOST
- * \param [in] allocatorID ID of the umpire::Allocator to use.
+ * \param [in] allocatorID ID of the allocator to use.
  */
 inline void setDefaultAllocator( int allocatorID )
 {
-  setDefaultAllocator( getAllocator( allocatorID ) );
+#ifdef AXOM_USE_UMPIRE
+  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+  umpire::Allocator allocator = rm.getAllocator( allocatorID );
+  rm.setDefaultAllocator( allocator );
+#endif
 }
 
 /*!
  * \brief Returns the current default memory space used.
+ * \note If Umpire is used, the corresponding umpire allocator can be retrieved by:
+ *  <code>
+ *    umpire::Allocator alloc = umpire::ResourceManager::getInstance().getAllocator( allocID );
+ *  </code>
  */
-inline umpire::Allocator getDefaultAllocator()
+inline int getDefaultAllocatorID()
 {
-  return umpire::ResourceManager::getInstance().getDefaultAllocator();
-}
-
+#ifdef AXOM_USE_UMPIRE
+  return umpire::ResourceManager::getInstance().getDefaultAllocator().getId();
+#else
+  return axom::DEFAULT_ALLOCATOR_ID;
 #endif
+}
 
 /*!
  * \brief Allocates a chunk of memory of type T.
@@ -96,13 +97,8 @@ inline umpire::Allocator getDefaultAllocator()
  * \return p pointer to the new allocation or a nullptr if allocation failed.
  */
 template < typename T >
-#ifdef AXOM_USE_UMPIRE
-inline T* allocate( std::size_t n,
-                    umpire::Allocator allocator=
-                      getDefaultAllocator() ) noexcept;
-#else
-inline T* allocate( std::size_t n ) noexcept;
-#endif
+inline T* allocate(std::size_t n, int allocID=getDefaultAllocatorID() )noexcept;
+
 
 /*!
  * \brief Frees the chunk of memory pointed to by the supplied pointer, p.
@@ -150,27 +146,22 @@ inline void copy( void* dst, void* src, std::size_t numbytes ) noexcept;
 //                        IMPLEMENTATION
 //------------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------
+template < typename T >
+inline T* allocate( std::size_t n, int allocID ) noexcept
+{
+  const std::size_t numbytes = n * sizeof( T );
+
 #ifdef AXOM_USE_UMPIRE
 
-template < typename T >
-inline T* allocate( std::size_t n, umpire::Allocator allocator ) noexcept
-{
-  const std::size_t numbytes = n * sizeof( T );
-  return static_cast< T* >( allocator.allocate( numbytes )  );
-}
+  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+  umpire::Allocator allocator = rm.getAllocator( allocID );
+  return static_cast< T* >( allocator.allocate( numbytes ) );
 
 #else
-
-template < typename T >
-inline T* allocate( std::size_t n ) noexcept
-{
-  const std::size_t numbytes = n * sizeof( T );
-  return static_cast< T* >( std::malloc( numbytes )  );
-}
-
+  return static_cast< T* >( std::malloc( numbytes ) );
 #endif
 
+}
 //------------------------------------------------------------------------------
 template < typename T >
 inline void deallocate( T*& pointer ) noexcept

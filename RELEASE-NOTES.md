@@ -16,6 +16,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Deprecated
 
 ### Changed
+- Modified the API of Axom's memory management routines to not leak usage of Umpire. Instead of 
+  passing an `umpire::Allocator` object to specify an allocator, we now use the corresponding
+  integer ID associated with the allocator.
 
 ### Fixed
 - Fixed usage of cuda kernel policies in Mint. Raja v0.11.0 changed the way max threads
