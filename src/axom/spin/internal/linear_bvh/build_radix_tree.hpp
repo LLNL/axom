@@ -103,8 +103,8 @@ axom::int64 morton64_encode( axom::float32 x,
 }
 
 template < typename ExecSpace, typename FloatType >
-void transform_boxes( const FloatType *boxes,
-                      AABB<FloatType,3> *aabbs,
+void transform_boxes( const FloatType* boxes,
+                      AABB<FloatType,3>* aabbs,
                       int32 size,
                       FloatType scale_factor )
 {
@@ -136,8 +136,8 @@ void transform_boxes( const FloatType *boxes,
 
 //------------------------------------------------------------------------------
 template < typename ExecSpace, typename FloatType >
-void transform_boxes( const FloatType *boxes,
-                      AABB<FloatType,2> *aabbs,
+void transform_boxes( const FloatType* boxes,
+                      AABB<FloatType,2>* aabbs,
                       int32 size,
                       FloatType scale_factor )
 {
@@ -167,7 +167,7 @@ void transform_boxes( const FloatType *boxes,
 
 //------------------------------------------------------------------------------
 template < typename ExecSpace, typename FloatType >
-AABB<FloatType,3> reduce(AABB<FloatType,3> *aabbs, int32 size)
+AABB<FloatType,3> reduce(AABB<FloatType,3>* aabbs, int32 size)
 {
   constexpr int NDIMS = 3;
 
@@ -199,10 +199,10 @@ AABB<FloatType,3> reduce(AABB<FloatType,3> *aabbs, int32 size)
   AABB< FloatType, NDIMS > res;
 
   Vec< FloatType, NDIMS > mins =
-      make_vec< FloatType >( xmin.get(), ymin.get(), zmin.get() );
+    make_vec< FloatType >( xmin.get(), ymin.get(), zmin.get() );
 
   Vec< FloatType, NDIMS > maxs =
-      make_vec< FloatType >( xmax.get(), ymax.get(), zmax.get() );
+    make_vec< FloatType >( xmax.get(), ymax.get(), zmax.get() );
 
   res.include(mins);
   res.include(maxs);
@@ -211,12 +211,12 @@ AABB<FloatType,3> reduce(AABB<FloatType,3> *aabbs, int32 size)
 
 //------------------------------------------------------------------------------
 template < typename ExecSpace, typename FloatType >
-AABB<FloatType,2> reduce(AABB<FloatType,2> *aabbs, int32 size)
+AABB<FloatType,2> reduce(AABB<FloatType,2>* aabbs, int32 size)
 {
   constexpr int NDIMS = 2;
 
   using reduce_policy =
-      typename axom::execution_space< ExecSpace >::reduce_policy;
+          typename axom::execution_space< ExecSpace >::reduce_policy;
   RAJA::ReduceMin< reduce_policy, FloatType> xmin(infinity32());
   RAJA::ReduceMin< reduce_policy, FloatType> ymin(infinity32());
 
@@ -248,10 +248,10 @@ AABB<FloatType,2> reduce(AABB<FloatType,2> *aabbs, int32 size)
 
 //------------------------------------------------------------------------------
 template < typename ExecSpace, typename FloatType >
-void get_mcodes( AABB<FloatType,2> *aabbs,
-                    int32 size,
-                    const AABB< FloatType,2 > &bounds,
-                    uint32* mcodes )
+void get_mcodes( AABB<FloatType,2>* aabbs,
+                 int32 size,
+                 const AABB< FloatType,2 > &bounds,
+                 uint32* mcodes )
 {
   constexpr int NDIMS = 2;
 
@@ -262,11 +262,11 @@ void get_mcodes( AABB<FloatType,2> *aabbs,
   min_coord[0] = bounds.m_x.min();
   min_coord[1] = bounds.m_y.min();
 
-  for ( int i = 0; i < NDIMS; ++i )
+  for ( int i = 0 ; i < NDIMS ; ++i )
   {
     inv_extent[ i ] =
-        utilities::isNearlyEqual< FloatType >( extent[i], .0f ) ?
-            0.f : 1.f / extent[i];
+      utilities::isNearlyEqual< FloatType >( extent[i], .0f ) ?
+      0.f : 1.f / extent[i];
   }
 
   for_all< ExecSpace >( size, AXOM_LAMBDA(int32 i)
@@ -285,10 +285,10 @@ void get_mcodes( AABB<FloatType,2> *aabbs,
 
 //------------------------------------------------------------------------------
 template < typename ExecSpace, typename FloatType >
-void get_mcodes( AABB<FloatType,3> *aabbs,
-                    int32 size,
-                    const AABB< FloatType,3 > &bounds,
-                    uint32* mcodes )
+void get_mcodes( AABB<FloatType,3>* aabbs,
+                 int32 size,
+                 const AABB< FloatType,3 > &bounds,
+                 uint32* mcodes )
 {
   constexpr int NDIMS = 3;
 
@@ -301,11 +301,11 @@ void get_mcodes( AABB<FloatType,3> *aabbs,
   min_coord[1] = bounds.m_y.min();
   min_coord[2] = bounds.m_z.min();
 
-  for ( int i = 0; i < NDIMS; ++i )
+  for ( int i = 0 ; i < NDIMS ; ++i )
   {
     inv_extent[ i ] =
       utilities::isNearlyEqual< FloatType >( extent[i], .0f ) ?
-          0.f : 1.f / extent[i];
+      0.f : 1.f / extent[i];
   }
 
   for_all< ExecSpace >( size, AXOM_LAMBDA(int32 i)
@@ -345,7 +345,7 @@ void array_counting( IntType* iterator,
 // result  [b,a,c]
 //
 template< typename ExecSpace, typename T>
-void reorder(int32 *indices, T *&array, int32 size)
+void reorder(int32* indices, T*&array, int32 size)
 {
   T* temp = axom::allocate< T >( size );
 
@@ -379,7 +379,7 @@ void custom_sort( ExecSpace, uint32*& mcodes, int32 size, int32* iter )
 
 //------------------------------------------------------------------------------
 #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA) && \
-    defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_CUB)
+  defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_CUB)
 template < int BLOCK_SIZE >
 void custom_sort( axom::CUDA_EXEC< BLOCK_SIZE >,
                   uint32*& mcodes, int32 size, int32* iter )
@@ -388,17 +388,17 @@ void custom_sort( axom::CUDA_EXEC< BLOCK_SIZE >,
   array_counting< ExecSpace >(iter, size, 0, 1);
 
   uint32* mcodes_alt_buf = axom::allocate< uint32 >( size );
-  int32*  iter_alt_buf   = axom::allocate< int32 >( size );
+  int32* iter_alt_buf   = axom::allocate< int32 >( size );
 
   // create double buffers
   ::cub::DoubleBuffer< uint32 > d_keys( mcodes, mcodes_alt_buf );
   ::cub::DoubleBuffer< int32 >  d_values( iter, iter_alt_buf );
 
   // determine temporary device storage requirements
-  void * d_temp_storage     = nullptr;
+  void* d_temp_storage     = nullptr;
   size_t temp_storage_bytes = 0;
   ::cub::DeviceRadixSort::SortPairs( d_temp_storage, temp_storage_bytes,
-                                   d_keys, d_values, size );
+                                     d_keys, d_values, size );
 
   // Allocate temporary storage
   d_temp_storage = (void*)axom::allocate< unsigned char >( temp_storage_bytes );
@@ -409,7 +409,7 @@ void custom_sort( axom::CUDA_EXEC< BLOCK_SIZE >,
                                      d_keys, d_values, size );
 
   uint32* sorted_keys = d_keys.Current();
-  int32*  sorted_vals = d_values.Current();
+  int32* sorted_vals = d_values.Current();
 
   for_all< ExecSpace >( size, AXOM_LAMBDA (int32 i)
   {
@@ -437,7 +437,7 @@ template < typename IntType, typename MCType >
 AXOM_HOST_DEVICE IntType delta( const IntType &a,
                                 const IntType &b,
                                 const IntType &inner_size,
-                                const MCType *mcodes )
+                                const MCType* mcodes )
 {
   bool tie = false;
   bool out_of_range = (b < 0 || b > inner_size);
@@ -453,7 +453,7 @@ AXOM_HOST_DEVICE IntType delta( const IntType &a,
   int32 count = clz(exor);
   if (tie)
     count += 32;
-  count = (out_of_range) ? - 1 : count;
+  count = (out_of_range) ? -1 : count;
   return count;
 }
 
@@ -468,10 +468,10 @@ void build_tree(  RadixTree< FloatType, NDIMS > &data )
   // lambda captures of pointers inside a struct. Bad memories
   // of random segfaults ........ be warned
   const int32 inner_size = data.m_inner_size;
-  int32 *lchildren_ptr = data.m_left_children;
-  int32 *rchildren_ptr = data.m_right_children;
-  int32 *parent_ptr = data.m_parents;
-  const uint32 *mcodes_ptr = data.m_mcodes;
+  int32* lchildren_ptr = data.m_left_children;
+  int32* rchildren_ptr = data.m_right_children;
+  int32* parent_ptr = data.m_parents;
+  const uint32* mcodes_ptr = data.m_mcodes;
 
   for_all< ExecSpace >( inner_size, AXOM_LAMBDA (int32 i)
   {
@@ -569,19 +569,19 @@ void propagate_aabbs( RadixTree< FloatType, NDIMS >& data)
   // of a huge amount of pain and suffering due so cuda
   // labda captures of pointers indide a struct. Bad memories
   // of random segfaults ........ be warned
-  const int32 *lchildren_ptr = data.m_left_children;
-  const int32 *rchildren_ptr = data.m_right_children;
-  const int32 *parent_ptr = data.m_parents;
-  const AABB< FloatType,NDIMS >  *leaf_aabb_ptr = data.m_leaf_aabbs;
+  const int32* lchildren_ptr = data.m_left_children;
+  const int32* rchildren_ptr = data.m_right_children;
+  const int32* parent_ptr = data.m_parents;
+  const AABB< FloatType,NDIMS >* leaf_aabb_ptr = data.m_leaf_aabbs;
 
-  AABB<FloatType,NDIMS>  *inner_aabb_ptr = data.m_inner_aabbs;
+  AABB<FloatType,NDIMS>* inner_aabb_ptr = data.m_inner_aabbs;
 
   int32* counters_ptr = axom::allocate<int32>(inner_size);
 
   array_memset< ExecSpace >(counters_ptr, inner_size, 0);
 
   using atomic_policy =
-      typename axom::execution_space< ExecSpace >::atomic_policy;
+          typename axom::execution_space< ExecSpace >::atomic_policy;
 
   for_all< ExecSpace >( leaf_size, AXOM_LAMBDA(int32 i)
   {
