@@ -66,13 +66,17 @@ inline void setDefaultAllocator( int allocatorID )
 
 /*!
  * \brief Returns the current default memory space used.
+ * \note If Umpire is used, the corresponding umpire allocator can be retrieved by:
+ *  <code>
+ *    umpire::Allocator alloc = umpire::ResourceManager::getInstance().getAllocator( allocID );
+ *  </code>
  */
 inline int getDefaultAllocatorID()
 {
 #ifdef AXOM_USE_UMPIRE
   return umpire::ResourceManager::getInstance().getDefaultAllocator().getId();
 #else
-  return DEFAULT_ALLOCATOR_ID;
+  return axom::DEFAULT_ALLOCATOR_ID;
 #endif
 }
 
