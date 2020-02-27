@@ -50,7 +50,7 @@ struct execution_space< OMP_EXEC >
 #ifdef AXOM_USE_UMPIRE
     return axom::getUmpireResourceAllocatorID(umpire::resource::Host);
 #else
-    return 0;
+    return axom::DEFAULT_ALLOCATOR_ID;
 #endif
   };
 
