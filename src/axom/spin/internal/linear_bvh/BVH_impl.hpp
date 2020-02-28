@@ -257,13 +257,13 @@ void BVH< NDIMS, ExecSpace, FloatType >::getBounds( FloatType* min,
 
 //------------------------------------------------------------------------------
 template< int NDIMS, typename ExecSpace, typename FloatType >
-void BVH< NDIMS, ExecSpace, FloatType >::find( IndexType* offsets,
-                                               IndexType* counts,
-                                               IndexType*& candidates,
-                                               IndexType numPts,
-                                               const FloatType* x,
-                                               const FloatType* y,
-                                               const FloatType* z ) const
+void BVH< NDIMS, ExecSpace, FloatType >::findPoints( IndexType* offsets,
+                                                     IndexType* counts,
+                                                     IndexType*& candidates,
+                                                     IndexType numPts,
+                                                     const FloatType* x,
+                                                     const FloatType* y,
+                                                     const FloatType* z ) const
 {
   SLIC_ASSERT( offsets != nullptr );
   SLIC_ASSERT( counts != nullptr );

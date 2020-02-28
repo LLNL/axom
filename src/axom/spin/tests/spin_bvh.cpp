@@ -353,7 +353,7 @@ void check_find3d( )
   IndexType* offsets    = axom::allocate< IndexType >( ncells );
   IndexType* counts     = axom::allocate< IndexType >( ncells );
   IndexType* candidates = nullptr;
-  bvh.find( offsets, counts, candidates, ncells, xc, yc, zc );
+  bvh.findPoints( offsets, counts, candidates, ncells, xc, yc, zc );
 
   EXPECT_TRUE( candidates != nullptr );
 
@@ -378,7 +378,7 @@ void check_find3d( )
     zc[ i ] += OFFSET;
   }
 
-  bvh.find( offsets, counts, candidates, ncells, xc, yc, zc );
+  bvh.findPoints( offsets, counts, candidates, ncells, xc, yc, zc );
 
   for ( IndexType i=0 ; i < ncells ; ++i )
   {
@@ -450,7 +450,7 @@ void check_find2d( )
   IndexType* offsets    = axom::allocate< IndexType >( ncells );
   IndexType* counts     = axom::allocate< IndexType >( ncells );
   IndexType* candidates = nullptr;
-  bvh.find( offsets, counts, candidates, ncells, xc, yc );
+  bvh.findPoints( offsets, counts, candidates, ncells, xc, yc );
 
   EXPECT_TRUE( candidates != nullptr );
 
@@ -474,7 +474,7 @@ void check_find2d( )
     yc[ i ] += OFFSET;
   }
 
-  bvh.find( offsets, counts, candidates, ncells, xc, yc );
+  bvh.findPoints( offsets, counts, candidates, ncells, xc, yc );
 
   for ( IndexType i=0 ; i < ncells ; ++i )
   {
@@ -538,7 +538,7 @@ void check_single_box2d( )
   IndexType* offsets    = axom::allocate< IndexType >( NUM_BOXES );
   IndexType* counts     = axom::allocate< IndexType >( NUM_BOXES );
   IndexType* candidates = nullptr;
-  bvh.find( offsets, counts, candidates, NUM_BOXES, xc, yc );
+  bvh.findPoints( offsets, counts, candidates, NUM_BOXES, xc, yc );
   EXPECT_TRUE( candidates != nullptr );
   EXPECT_EQ( counts[ 0 ], 1 );
   EXPECT_EQ( 0, candidates[ offsets[ 0 ] ] );
@@ -546,7 +546,7 @@ void check_single_box2d( )
 
   // shift centroid outside of the BVH, should return no candidates.
   xc[ 0 ] += 10.0; yc[ 0 ] += 10.0;
-  bvh.find( offsets, counts, candidates, NUM_BOXES, xc, yc );
+  bvh.findPoints( offsets, counts, candidates, NUM_BOXES, xc, yc );
   EXPECT_EQ( counts[ 0 ], 0 );
 
   axom::deallocate( xc );
@@ -607,7 +607,7 @@ void check_single_box3d( )
   IndexType* offsets    = axom::allocate< IndexType >( NUM_BOXES );
   IndexType* counts     = axom::allocate< IndexType >( NUM_BOXES );
   IndexType* candidates = nullptr;
-  bvh.find( offsets, counts, candidates, NUM_BOXES, xc, yc, zc );
+  bvh.findPoints( offsets, counts, candidates, NUM_BOXES, xc, yc, zc );
   EXPECT_TRUE( candidates != nullptr );
   EXPECT_EQ( counts[ 0 ], 1 );
   EXPECT_EQ( 0, candidates[ offsets[ 0 ] ] );
@@ -615,7 +615,7 @@ void check_single_box3d( )
 
   // shift centroid outside of the BVH, should return no candidates.
   xc[ 0 ] += 10.0; yc[ 0 ] += 10.0;
-  bvh.find( offsets, counts, candidates, NUM_BOXES, xc, yc, zc );
+  bvh.findPoints( offsets, counts, candidates, NUM_BOXES, xc, yc, zc );
   EXPECT_EQ( counts[ 0 ], 0 );
 
   axom::deallocate( xc );

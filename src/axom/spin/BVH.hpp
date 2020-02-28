@@ -230,11 +230,11 @@ public:
    * \pre y != nullptr if dimension==2 || dimension==3
    * \pre z != nullptr if dimension==3
    */
-  void find( IndexType* offsets, IndexType* counts,
-             IndexType*& candidates, IndexType numPts,
-             const FloatType* x,
-             const FloatType* y,
-             const FloatType* z=nullptr ) const;
+  void findPoints( IndexType* offsets, IndexType* counts,
+                   IndexType*& candidates, IndexType numPts,
+                   const FloatType* x,
+                   const FloatType* y,
+                   const FloatType* z=nullptr ) const;
 
   /*!
    * \brief Writes the BVH to the specified VTK file for visualization.
