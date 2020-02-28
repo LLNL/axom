@@ -25,6 +25,7 @@
 #include "axom/primal/geometry/BezierCurve.hpp"
 
 #include "axom/primal/operators/detail/intersect_impl.hpp"
+#include "axom/primal/operators/detail/intersect_ray_impl.hpp"
 #include "axom/primal/operators/detail/intersect_bezier_impl.hpp"
 
 namespace axom
