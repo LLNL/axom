@@ -25,9 +25,9 @@ namespace detail
  * \return status true iff R intersects with S, otherwise, false.
  */
 template < typename T >
-bool intersect_ray_seg( const primal::Ray< T,2 >& R,
-                        const primal::Segment< T,2 >& S,
-                        primal::Point< T,2 >& ip )
+bool intersect_ray( const primal::Ray< T,2 >& R,
+                    const primal::Segment< T,2 >& S,
+                    primal::Point< T,2 >& ip )
 {
   // STEP 0: Construct a ray from the segment, i.e., represent the
   // segment in parametric form S(t1)=A+td, t \in [0,1]
@@ -89,9 +89,9 @@ bool intersect_ray_seg( const primal::Ray< T,2 >& R,
  * Real Time Collision Detection by Christer Ericson.
  */
 template < typename T, int DIM >
-bool intersect_ray_bbox(const primal::Ray< T,DIM > & R,
-                        const primal::BoundingBox< T,DIM > & bb,
-                        primal::Point< T,DIM > & ip)
+bool intersect_ray( const primal::Ray< T,DIM > & R,
+                    const primal::BoundingBox< T,DIM > & bb,
+                    primal::Point< T,DIM > & ip )
 {
   T tmin = std::numeric_limits< T >::min();
   SLIC_ASSERT(tmin>=0.0);
