@@ -29,7 +29,7 @@ set( primal_tests
     primal_vector.cpp
    )
 
-set(primal_test_depends fmt primal slic mint gtest)
+set(primal_test_depends fmt primal slic gtest)
 
 foreach ( test ${primal_tests} )
 
