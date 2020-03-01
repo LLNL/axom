@@ -55,6 +55,9 @@ using vec4_t = internal::linear_bvh::Vec< FloatType, 4 >;
 template < typename FloatType, int NDIMS >
 using point_t = internal::linear_bvh::Vec< FloatType, NDIMS >;
 
+template < typename FloatType, int NDIMS >
+using ray_t = internal::linear_bvh::Vec< FloatType, NDIMS*2 >;
+
 /*!
  * \def BVH_PREDICATE
  *
@@ -110,16 +113,15 @@ template < int NDIMS, typename ExecSpace,
            typename LeftPredicate,
            typename RightPredicate,
            typename FloatType >
-IndexType bvh_get_counts(
-  LeftPredicate&& leftCheck,
-  RightPredicate&& rightCheck,
-  const vec4_t< FloatType >* inner_nodes,
-  const int32* leaf_nodes,
-  IndexType N,
-  IndexType* counts,
-  const FloatType* x,
-  const FloatType* y,
-  const FloatType* z ) noexcept
+IndexType bvh_get_counts( LeftPredicate&& leftCheck,
+                          RightPredicate&& rightCheck,
+                          const vec4_t< FloatType >* inner_nodes,
+                          const int32* leaf_nodes,
+                          IndexType N,
+                          IndexType* counts,
+                          const FloatType* x,
+                          const FloatType* y,
+                          const FloatType* z ) noexcept
 {
   // sanity checks
   SLIC_ASSERT( inner_nodes != nullptr );
@@ -151,6 +153,87 @@ IndexType bvh_get_counts(
     lbvh::bvh_traverse( inner_nodes,
                         leaf_nodes,
                         point,
+                        leftCheck,
+                        rightCheck,
+                        leafAction );
+
+    counts[ i ]  = count;
+    total_count += count;
+
+  } );
+
+  return ( total_count.get() );
+}
+
+/*!
+ * \brief Performs a traversal to count the number of candidates for each ray.
+ *
+ * \param [in] leftCheck traversal predicate functor for left bin check.
+ * \param [in] rightCheck traversal predicate functor for right bin check.
+ * \param [in] inner_nodes array of vec4s for the BVH inner nodes.
+ * \param [in] leaf_nodes array of BVH leaf node indices
+ * \param [in] N the number of user-supplied rays in query.
+ * \param [out] counts array of length N with candidate counts for each ray.
+ * \param [in] x0 array of length N with ray source point x-coordinates.
+ * \param [in] nx array of length N with ray normal x-components.
+ * \param [in] y0 array of length N with ray source point y-coordinates.
+ * \param [in] ny array of length N with ray normal y-components.
+ * \param [in] z0 array of length N with ray source point z-coordinates.
+ * \param [in] nz array of length N with ray normal z-components.
+ *
+ * \return total_count the aggregate number of candidates for all rays.
+ */
+template < int NDIMS, typename ExecSpace,
+           typename LeftPredicate,
+           typename RightPredicate,
+           typename FloatType >
+IndexType bvh_get_raycounts( LeftPredicate&& leftCheck,
+                             RightPredicate&& rightCheck,
+                             const vec4_t< FloatType >* inner_nodes,
+                             const int32* leaf_nodes,
+                             IndexType N,
+                             IndexType* counts,
+                             const FloatType* x0,
+                             const FloatType* nx,
+                             const FloatType* y0,
+                             const FloatType* ny,
+                             const FloatType* z0,
+                             const FloatType* nz ) noexcept
+{
+  // sanity checks
+  SLIC_ASSERT( inner_nodes != nullptr );
+  SLIC_ASSERT( leaf_nodes != nullptr );
+  SLIC_ERROR_IF( counts == nullptr, "supplied null pointer for counts!" );
+  SLIC_ERROR_IF( x0 == nullptr, "ray source x-coordinates array is null!" );
+  SLIC_ERROR_IF( nx == nullptr, "ray normal x-components array is null!" );
+  SLIC_ERROR_IF( y0 == nullptr, "ray source y-coordinates array is null!" );
+  SLIC_ERROR_IF( ny == nullptr, "ray normal y-components array is null!" );
+  SLIC_ERROR_IF( (z0==nullptr && NDIMS==3),
+                 "ray source z-coordinates array is null!" );
+  SLIC_ERROR_IF( (nz==nullptr && NDIMS==3),
+                 "ray normal z-components is null!" );
+
+  // STEP 1: count number of candidates for each query point
+  using reduce_pol = typename axom::execution_space< ExecSpace >::reduce_policy;
+  RAJA::ReduceSum< reduce_pol, IndexType > total_count( 0 );
+
+  using QueryAccessor = lbvh::QueryAccessor< NDIMS, FloatType >;
+  for_all< ExecSpace >( N, AXOM_LAMBDA(IndexType i)
+  {
+    int32 count = 0;
+    ray_t< FloatType, NDIMS > ray;
+    QueryAccessor::getRay( ray, i, x0, nx, y0, ny, z0, nz );
+
+
+    BVH_LEAF_ACTION( leafAction,
+                      int32 AXOM_NOT_USED(current_node),
+                     const int32* AXOM_NOT_USED(leaf_nodes) ) {
+      count ++;
+    };
+
+    lbvh::bvh_traverse( inner_nodes,
+                        leaf_nodes,
+                        ray,
                         leftCheck,
                         rightCheck,
                         leafAction );
@@ -331,6 +414,97 @@ void BVH< NDIMS, ExecSpace, FloatType >::findPoints( IndexType* offsets,
     lbvh::bvh_traverse( inner_nodes,
                         leaf_nodes,
                         point,
+                        leftPredicate,
+                        rightPredicate,
+                        leafAction );
+
+  } );
+
+  // STEP 3: restore default allocator
+  axom::setDefaultAllocator( currentAllocatorID );
+}
+
+//------------------------------------------------------------------------------
+template< int NDIMS, typename ExecSpace, typename FloatType >
+void BVH< NDIMS, ExecSpace, FloatType >::findRays( IndexType* offsets,
+                                                   IndexType* counts,
+                                                   IndexType*& candidates,
+                                                   IndexType numRays,
+                                                   const FloatType* x0,
+                                                   const FloatType* nx,
+                                                   const FloatType* y0,
+                                                   const FloatType* ny,
+                                                   const FloatType* z0,
+                                                   const FloatType* nz  ) const
+{
+  SLIC_ASSERT( offsets != nullptr );
+  SLIC_ASSERT( counts != nullptr );
+  SLIC_ASSERT( candidates == nullptr );
+  SLIC_ASSERT( x0 != nullptr );
+  SLIC_ASSERT( nx != nullptr );
+  SLIC_ASSERT( y0 != nullptr );
+  SLIC_ASSERT( ny != nullptr );
+
+  // STEP 0: set the default memory allocator to use for the execution space.
+  const int currentAllocatorID = axom::getDefaultAllocatorID();
+  const int allocatorID = axom::execution_space< ExecSpace >::allocatorID();
+  axom::setDefaultAllocator( allocatorID );
+
+  using RayType             = ray_t< FloatType, NDIMS >;
+  using TraversalPredicates = lbvh::TraversalPredicates< NDIMS, FloatType >;
+  using QueryAccessor       = lbvh::QueryAccessor< NDIMS, FloatType >;
+
+  // STEP 1: count number of candidates for each query point
+  const vec4_t< FloatType >* inner_nodes = m_bvh.m_inner_nodes;
+  const int32* leaf_nodes  = m_bvh.m_leaf_nodes;
+  SLIC_ASSERT( inner_nodes != nullptr );
+  SLIC_ASSERT( leaf_nodes != nullptr );
+
+  // STEP 2: define traversal predicates
+  BVH_PREDICATE( leftPredicate,
+                 const RayType &r,
+                 const vec4_t< FloatType >&s1,
+                 const vec4_t< FloatType >&s2 )
+  {
+    return TraversalPredicates::rayIntersectsLeftBin( r, s1, s2 );
+  };
+
+  BVH_PREDICATE( rightPredicate,
+                 const RayType &r,
+                 const vec4_t< FloatType >&s2,
+                 const vec4_t< FloatType >&s3 )
+  {
+    return TraversalPredicates::rayIntersectsRightBin( r, s2, s3 );
+  };
+
+  // STEP 3: get counts
+  int total_count = bvh_get_raycounts< NDIMS,ExecSpace >(
+    leftPredicate, rightPredicate, inner_nodes, leaf_nodes,
+    numRays, counts, x0, nx, y0, ny, z0, nz );
+
+  using exec_policy = typename axom::execution_space< ExecSpace >::loop_policy;
+  RAJA::exclusive_scan< exec_policy >(
+    counts, counts+numRays, offsets, RAJA::operators::plus<IndexType>{} );
+
+  IndexType total_candidates = static_cast< IndexType >( total_count );
+  candidates = axom::allocate< IndexType >( total_candidates);
+
+  // STEP 4: fill in candidates for each point
+  for_all< ExecSpace >( numRays, AXOM_LAMBDA (IndexType i)
+  {
+    int32 offset = offsets[ i ];
+
+    RayType ray;
+    QueryAccessor::getRay( ray, i, x0, nx, y0, ny, z0, nz );
+
+    BVH_LEAF_ACTION( leafAction, int32 current_node, const int32* leaf_nodes ) {
+      candidates[offset] = leaf_nodes[current_node];
+      offset++;
+    };
+
+    lbvh::bvh_traverse( inner_nodes,
+                        leaf_nodes,
+                        ray,
                         leftPredicate,
                         rightPredicate,
                         leafAction );

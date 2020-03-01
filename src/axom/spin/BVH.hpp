@@ -200,8 +200,7 @@ public:
   void getBounds( FloatType* min, FloatType* max ) const;
 
   /*!
-   * \brief Finds the candidate geometric entities that contain each of the
-   *  given query points.
+   * \brief Finds the candidate bins that contain each of the query points.
    *
    * \param [out] offsets offset to the candidates array for each query point
    * \param [out] counts stores the number of candidates per query point
@@ -212,7 +211,7 @@ public:
    * \param [in]  z array of z-coordinates, may be nullptr if 2D
    *
    * \note offsets and counts are pointers to arrays of size numPts that are
-   *  pre-allocated by the caller before calling find().
+   *  pre-allocated by the caller before calling findPoints().
    *
    * \note The candidates array is allocated internally by the method and
    *  ownership of the memory is transferred to the caller. Consequently, the
@@ -235,6 +234,48 @@ public:
                    const FloatType* x,
                    const FloatType* y,
                    const FloatType* z=nullptr ) const;
+
+  /*!
+   * \brief Finds the candidate bins that intersect the given rays.
+   *
+   * \param [out] offsets offset to the candidates array for each ray
+   * \param [out] counts stores the number of candidates for each ray
+   * \param [out] candidates array of candidate IDs for each ray
+   * \param [in] numRays the total number of rays
+   * \param [in] x0 array consisting the ray source point x-coordinates.
+   * \param [in] nx array consisting the ray normal x-components.
+   * \param [in] y0 array consisting the ray source point y-coordinates
+   * \param [in] ny array consisting the ray normal y-components
+   * \param [in] z0 array consisting the ray source point z-coorindates (in 3D)
+   * \param [in] nz array consisting the ray normal z-components (in 3D)
+   *
+   * \note offsets and counts are arrays of size numRays that are pre-allocated
+   *  by the caller, prior to the calling findRays().
+   *
+   * \note After the call to findRays(), the ith ray has:
+   *  * counts[ i ] candidates
+   *  * candidates stored in [ offsets[ i ], offsets[i]+counts[i] ]
+   *
+   * \pre offsets    != nullptr
+   * \pre counts     != nullptr
+   * \pre candidates == nullptr
+   * \pre x0 != nullptr
+   * \pre nx != nullptr
+   * \pre y0 != nullptr
+   * \pre ny != nullptr
+   * \pre z0 != nullptr if dimension==3
+   * \pre nz != nullptr if dimension==3
+   */
+  void findRays( IndexType* offsets,
+                 IndexType* counts,
+                 IndexType*& candidates,
+                 IndexType numRays,
+                 const FloatType* x0,
+                 const FloatType* nx,
+                 const FloatType* y0,
+                 const FloatType* ny,
+                 const FloatType* z0=nullptr,
+                 const FloatType* nz=nullptr  ) const;
 
   /*!
    * \brief Writes the BVH to the specified VTK file for visualization.
@@ -265,4 +306,4 @@ private:
 
 #include "axom/spin/internal/linear_bvh/BVH_impl.hpp"
 
-#endif /* AXOM_PRIMAL_BVH_H_ */
+#endif /* AXOM_SPIN_BVH_H_ */
