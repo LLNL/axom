@@ -190,20 +190,29 @@ public:
    * \return p[i] the value at the given component index.
    * \pre (i >= 0) && (i < ndims)
    */
-  AXOM_HOST_DEVICE const T& operator[](int i) const { return m_components[i]; }
-  AXOM_HOST_DEVICE T& operator[](int i)             { return m_components[i]; }
+  AXOM_HOST_DEVICE
+  const T& operator[](int i) const { return m_components[i]; }
+  
+  AXOM_HOST_DEVICE
+  T& operator[](int i)             { return m_components[i]; }
 
   /*!
    * \brief Returns a reference to the underlying NumericArray.
    */
-  AXOM_HOST_DEVICE const NumericArray< T,NDIMS > & array() const { return m_components; }
-  AXOM_HOST_DEVICE NumericArray< T,NDIMS >& array()               { return m_components; }
+  AXOM_HOST_DEVICE 
+  const NumericArray< T,NDIMS > & array() const { return m_components; }
+  
+  AXOM_HOST_DEVICE 
+  NumericArray< T,NDIMS >& array()              { return m_components; }
 
   /*!
    * \brief Returns a pointer to the underlying data.
    */
-  AXOM_HOST_DEVICE const T* data() const { return m_components.data(); }
-  AXOM_HOST_DEVICE T* data()             { return m_components.data(); }
+  AXOM_HOST_DEVICE
+  const T* data() const { return m_components.data(); }
+  
+  AXOM_HOST_DEVICE
+  T* data()             { return m_components.data(); }
 
   /*!
    * \brief Equality comparison operator for vectors.

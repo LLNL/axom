@@ -339,21 +339,15 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
     << axom::execution_space< ExecSpace >::name());
 
   // Get allocator
-  #ifdef AXOM_USE_UMPIRE
-    int allocatorID = axom::execution_space< ExecSpace >::allocatorID();
-    umpire::Allocator allocator = axom::getAllocator(allocatorID);
-  #endif
+  int allocatorID = axom::execution_space< ExecSpace >::allocatorID();
+  axom::setDefaultAllocator( allocatorID );
 
   std::vector< std::pair<int, int> > retval;
 
   const int ncells = surface_mesh->getNumberOfCells();
   SLIC_INFO("Checking mesh with a total of "<< ncells<< " cells.");
 
-  #ifdef AXOM_USE_UMPIRE
-    Triangle3 * tris = axom::allocate <Triangle3> (ncells, allocator);
-  #else
-    Triangle3 * tris = axom::allocate <Triangle3> (ncells);
-  #endif
+  Triangle3 * tris = axom::allocate <Triangle3> (ncells);
 
   // Get each triangle in the mesh and check for degeneracies
   for (int i = 0; i < ncells ; i++)
@@ -390,15 +384,9 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
   });
 
   // Allocation to hold intersection pairs and counter to know where to store
-  #ifdef AXOM_USE_UMPIRE
-    int * intersections =
-      axom::allocate <int> (numIntersect.get() * 2, allocator);
-    int * counter = axom::allocate <int> (1, allocator);
-  #else
-    int * intersections =
-      axom::allocate <int> (numIntersect.get() * 2);
-    int * counter = axom::allocate <int> (1);
-  #endif
+  int * intersections =
+    axom::allocate <int> (numIntersect.get() * 2);
+  int * counter = axom::allocate <int> (1);
   
   counter[0] = 0;
 

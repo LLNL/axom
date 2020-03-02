@@ -39,19 +39,39 @@ typedef primal::Triangle< double, 3 > Triangle3;
 typedef primal::Triangle< double, 2 > Triangle2;
 typedef primal::Point< double, 2 > Point2;
 
-AXOM_HOST_DEVICE bool isGt(double x, double y, double EPS=1.0e-12);
-AXOM_HOST_DEVICE bool isLt(double x, double y, double EPS=1.0e-12);
+AXOM_HOST_DEVICE
+bool isGt(double x, double y, double EPS=1.0e-12);
+
+AXOM_HOST_DEVICE 
+bool isLt(double x, double y, double EPS=1.0e-12);
+
 bool isLeq(double x, double y, double EPS=1.0e-12);
-AXOM_HOST_DEVICE bool isLpeq(double x, double y, bool includeEqual = false,
+
+AXOM_HOST_DEVICE
+bool isLpeq(double x, double y, bool includeEqual = false,
             double EPS=1.0e-12);
-AXOM_HOST_DEVICE bool isGeq(double x, double y, double EPS=1.0e-12);
-AXOM_HOST_DEVICE bool isGpeq(double x, double y, bool includeEqual = false,
+
+AXOM_HOST_DEVICE
+bool isGeq(double x, double y, double EPS=1.0e-12);
+
+AXOM_HOST_DEVICE
+bool isGpeq(double x, double y, bool includeEqual = false,
             double EPS=1.0e-12);
-AXOM_HOST_DEVICE bool nonzeroSignMatch(double x, double y, double z, double EPS=1.0e-12);
-AXOM_HOST_DEVICE bool twoZeros(double x, double y, double z, double EPS=1.0e-12);
-AXOM_HOST_DEVICE bool oneZeroOthersMatch(double x, double y, double z, double EPS=1.0e-12);
-AXOM_HOST_DEVICE int  countZeros(double x, double y, double z, double EPS=1.0e-12);
-AXOM_HOST_DEVICE double twoDcross(const Point2& A, const Point2& B, const Point2& C);
+
+AXOM_HOST_DEVICE
+bool nonzeroSignMatch(double x, double y, double z, double EPS=1.0e-12);
+
+AXOM_HOST_DEVICE
+bool twoZeros(double x, double y, double z, double EPS=1.0e-12);
+
+AXOM_HOST_DEVICE
+bool oneZeroOthersMatch(double x, double y, double z, double EPS=1.0e-12);
+
+AXOM_HOST_DEVICE
+int  countZeros(double x, double y, double z, double EPS=1.0e-12);
+
+AXOM_HOST_DEVICE
+double twoDcross(const Point2& A, const Point2& B, const Point2& C);
 
 AXOM_HOST_DEVICE
 bool checkEdge(const Point2& p1,

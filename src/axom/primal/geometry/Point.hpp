@@ -132,8 +132,11 @@ public:
    * \return p[i] the value at the given component index.
    * \pre (i >= 0) && (i < ndims)
    */
-  AXOM_HOST_DEVICE const T& operator[](int i) const { return m_components[i]; }
-  AXOM_HOST_DEVICE T& operator[](int i)             { return m_components[i]; }
+  AXOM_HOST_DEVICE 
+  const T& operator[](int i) const { return m_components[i]; }
+  
+  AXOM_HOST_DEVICE 
+  T& operator[](int i)             { return m_components[i]; }
 
   ///@}
 
@@ -151,8 +154,11 @@ public:
   /*!
    * \brief Returns a reference to the underlying NumericArray.
    */
-  AXOM_HOST_DEVICE const NumericArray< T,NDIMS >& array() const { return m_components; }
-  AXOM_HOST_DEVICE NumericArray< T,NDIMS >& array()              { return m_components; }
+  AXOM_HOST_DEVICE 
+  const NumericArray< T,NDIMS >& array() const { return m_components; }
+  
+  AXOM_HOST_DEVICE 
+  NumericArray< T,NDIMS >& array()             { return m_components; }
 
   /*!
    * \brief Output the point's coordinates to the array

@@ -359,8 +359,11 @@ namespace detail
  */
 struct FalseType
 {
-  AXOM_HOST_DEVICE FalseType() {}
-  AXOM_HOST_DEVICE inline operator bool() const { return false; }
+  AXOM_HOST_DEVICE
+  FalseType() {}
+  
+  AXOM_HOST_DEVICE
+  inline operator bool() const { return false; }
 };
 
 static const FalseType false_value;

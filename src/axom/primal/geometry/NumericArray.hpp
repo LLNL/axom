@@ -245,14 +245,20 @@ public:
    * \return \f$ p_i \f$ the value at the given component index.
    * \pre \f$  0 \le i < SIZE \f$
    */
-  AXOM_HOST_DEVICE const T& operator[](int i) const;
-  AXOM_HOST_DEVICE T& operator[](int i);
+  AXOM_HOST_DEVICE 
+  const T& operator[](int i) const;
+  
+  AXOM_HOST_DEVICE 
+  T& operator[](int i);
 
   /*!
    * \brief Returns a pointer to the underlying data.
    */
-  AXOM_HOST_DEVICE const T* data() const;
-  AXOM_HOST_DEVICE T* data();
+  AXOM_HOST_DEVICE 
+  const T* data() const;
+  
+  AXOM_HOST_DEVICE 
+  T* data();
 
   /*!
    *
@@ -419,13 +425,13 @@ NumericArray< T,SIZE >::NumericArray(T val, int sz)
 
   // Fill first nvals coordinates with val ( 0 <= nvals <= SIZE )
   const int nvals = axom::utilities::clampVal(sz, 0, SIZE);
-  for (auto i = 0; i < nvals; i++)
+  for (int i = 0; i < nvals; i++)
   {
     m_components[i] = val;    
   }
 
   // Fill any remaining coordinates with zero
-  for (auto j = nvals; j < SIZE; j++)
+  for (int j = nvals; j < SIZE; j++)
   {
     m_components[j] = T();    
   }
@@ -440,13 +446,13 @@ NumericArray< T, SIZE >::NumericArray(const T* vals, int sz)
   const int nvals = axom::utilities::clampVal(sz, 0, SIZE);
 
   // Copy first nvals coordinates from vals array ( 0 <= nvals <= SIZE )
-  for (auto i = 0; i < nvals; i++)
+  for (int i = 0; i < nvals; i++)
   {
     m_components[i] = vals[i];    
   }
 
   // Fill any remaining coordinates with zero
-  for (auto j = nvals; j < SIZE; j++) 
+  for (int j = nvals; j < SIZE; j++) 
   {
     m_components[j] = T();    
   }
