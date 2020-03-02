@@ -87,19 +87,22 @@ inline bool intersect_ray( const primal::Ray< T,2 >& R,
 }
 
 /*!
- * \brief Helper routine for ray / AABB intersection test
+ * \brief Helper routine for ray / AABB intersection test.
  *
  * \param [in] x0 coordinate component of the ray origin.
  * \param [in] n normal component of the ray direction.
  * \param [in] min the AABB min coordinate along a direction.
  * \param [in] max the AABB max coordinate along a drection.
  *
- * \param [in,out] tmin
- * \param [in,out] tmax
+ * \param [in,out] tmin length of closest intersection point (computed)
+ * \param [in,out] tmax length of farthest intersection point (computed)
  *
- * \param [in] TOL
+ * \param [in] TOL user-supplied tolerance.
  *
- * \return
+ * \return status true if the ray intersects, otherwise false.
+ *
+ * \note This routine is called by the intersect ray/AABB methods for each
+ *  spatial dimension.
  */
 template < typename T >
 AXOM_HOST_DEVICE
@@ -143,17 +146,15 @@ inline bool intersect_ray_bbox_test( const T& x0,
 }
 
 /*!
- * \brief
+ * \brief Checks if a specified ray intersects with the supplied bounding box.
  *
- * \param [in] x0
- * \param [in] n
- * \param [in] xmin
- * \param [in] xmax
- * \param [in] ymin
- * \param [in] ymax
- *
- * \param [out] t
- *
+ * \param [in] x0 the source point of the ray
+ * \param [in] n the ray diection
+ * \param [in] xmin x-coordinate of the lower bounding box corner
+ * \param [in] xmax x-coordinate of the upper bounding box corner
+ * \param [in] ymin y-coordinate of the lower bounding box corner
+ * \param [in] ymax y-coordinate of the upper bounding box corner
+ * \param [out] t length of intersection point from the ray source point.
  * \param [in] TOL optional tolerance. Defaults to 1.e-9 if not specified.
  *
  * \return status true if the ray intersects the bounding box, otherwise, false.
@@ -185,19 +186,17 @@ inline bool intersect_ray( const T* x0,
 }
 
 /*!
- * \brief
+ * \brief Checks if a specified ray intersects with the supplied bounding box.
  *
- * \param [in] x0
- * \param [in] n
- * \param [in] xmin
- * \param [in] xmax
- * \param [in] ymin
- * \param [in] ymax
- * \param [in] zmin
- * \param [in] zmax
- *
- * \param [out] t
- *
+ * \param [in] x0 the source point of the ray
+ * \param [in] n the ray direction
+ * \param [in] xmin x-coordinate of the lower bounding box corner
+ * \param [in] xmax x-coordinate of the upper bounding box corner
+ * \param [in] ymin y-coordinate of the lower bounding box corner
+ * \param [in] ymax y-coordinate of the upper bounding box corner
+ * \param [in] zmin z-coordinate of the lower bounding box corner
+ * \param [in] zmax z-coordinate of the upper bounding box corner
+ * \param [out] t length of intersection point from the ray source point.
  * \param [in] TOL optional tolerance. Defaults to 1.e-9 if not specified.
  *
  * \return status true if the ray intersects the bounding box, otherwise, false.
@@ -233,11 +232,20 @@ inline bool intersect_ray( const T* x0,
 
 /*!
  * \brief Computes the intersection of the given ray, R, with the Box, bb.
- *      ip the point of intersection on R.
+ *
+ * \param [in] R the specified ray
+ * \param [in] bb the user-supplied axis-aligned bounding box
+ *
+ * \param [out] ip the intersection point where R intersects bb.
+ *
  * \return status true iff bb intersects with R, otherwise, false.
  *
- * Computes Ray Box intersection using the slab method from pg 180 of
- * Real Time Collision Detection by Christer Ericson.
+ * \see primal::Ray
+ * \see primal::Segment
+ * \see primal::BoundingBox
+ *
+ * \note Computes Ray Box intersection using the slab method from pg 180 of
+ *  Real Time Collision Detection by Christer Ericson.
  */
 template < typename T, int DIM >
 inline bool intersect_ray( const primal::Ray< T,DIM > & R,

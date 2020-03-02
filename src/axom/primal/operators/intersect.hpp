@@ -209,8 +209,17 @@ bool intersect(const Triangle< T, 3 >& tri, const Segment< T,3 >& seg,
 
 /*!
  * \brief Computes the intersection of the given ray, R, with the segment, S.
- *      ip returns the intersection point on S.
+ *
+ * \param [in] R the specified ray
+ * \param [in] S the segment to check
+ *
+ * \param [out] ip the intersection point on S, valid only if status=true.
+ *
  * \return status true iff R intersects with S, otherwise, false.
+ *
+ * \see primal::Ray
+ * \see primal::Segment
+ * \see primal::Point
  */
 template < typename T >
 bool intersect( const Ray< T,2 >& R, const Segment< T,2 >& S, Point< T,2 >& ip )
@@ -220,11 +229,20 @@ bool intersect( const Ray< T,2 >& R, const Segment< T,2 >& S, Point< T,2 >& ip )
 
 /*!
  * \brief Computes the intersection of the given ray, R, with the Box, bb.
- *      ip the point of intersection on R.
+ *
+ * \param [in] R the specified ray
+ * \param [in] bb the user-supplied axis-aligned bounding box
+ *
+ * \param [out] ip the intersection point where R intersects bb.
+ *
  * \return status true iff bb intersects with R, otherwise, false.
  *
- * Computes Ray Box intersection using the slab method from pg 180 of
- * Real Time Collision Detection by Christer Ericson.
+ * \see primal::Ray
+ * \see primal::Segment
+ * \see primal::BoundingBox
+ *
+ * \note Computes Ray Box intersection using the slab method from pg 180 of
+ *  Real Time Collision Detection by Christer Ericson.
  */
 template < typename T, int DIM >
 bool intersect( const Ray< T,DIM > & R,
