@@ -16,6 +16,7 @@
 #include "axom/primal/geometry/BoundingBox.hpp"
 
 #include <type_traits> // for std::is_floating_point< T >()
+
 namespace axom
 {
 namespace primal
@@ -148,8 +149,10 @@ inline bool intersect_ray_bbox_test( const T& x0,
 /*!
  * \brief Checks if a specified ray intersects with the supplied bounding box.
  *
- * \param [in] x0 the source point of the ray
- * \param [in] n the ray diection
+ * \param [in] x0 x-coordinate of the ray source point
+ * \param [in] nx x-component of the ray normal
+ * \param [in] y0 y-coordinate of the ray source point
+ * \param [in] ny y-component of the ray normal
  * \param [in] xmin x-coordinate of the lower bounding box corner
  * \param [in] xmax x-coordinate of the upper bounding box corner
  * \param [in] ymin y-coordinate of the lower bounding box corner
@@ -161,8 +164,10 @@ inline bool intersect_ray_bbox_test( const T& x0,
  */
 template < typename T >
 AXOM_HOST_DEVICE
-inline bool intersect_ray( const T* x0,
-                           const T* n,
+inline bool intersect_ray( const T& x0,
+                           const T& nx,
+                           const T& y0,
+                           const T& ny,
                            const T& xmin,
                            const T& xmax,
                            const T& ymin,
@@ -172,15 +177,12 @@ inline bool intersect_ray( const T* x0,
 {
   AXOM_STATIC_ASSERT( std::is_floating_point< T >::value );
 
-  SLIC_ASSERT( x0 != nullptr );
-  SLIC_ASSERT( n != nullptr );
-
   t = 0.0f;
   T tmax = axom::numerics::floating_point_limits< T >::max();
 
   bool status = true;
-  status = status && intersect_ray_bbox_test( x0[0],n[0],xmin,xmax,t,tmax,TOL );
-  status = status && intersect_ray_bbox_test( x0[1],n[1],ymin,ymax,t,tmax,TOL );
+  status = status && intersect_ray_bbox_test( x0,nx,xmin,xmax,t,tmax,TOL );
+  status = status && intersect_ray_bbox_test( y0,ny,ymin,ymax,t,tmax,TOL );
 
   return status;
 }
@@ -188,8 +190,12 @@ inline bool intersect_ray( const T* x0,
 /*!
  * \brief Checks if a specified ray intersects with the supplied bounding box.
  *
- * \param [in] x0 the source point of the ray
- * \param [in] n the ray direction
+ * \param [in] x0 x-coordinate of the ray source point
+ * \param [in] nx x-component of the ray normal
+ * \param [in] y0 y-coordinate of the ray source point
+ * \param [in] ny y-component of the ray normal
+ * \param [in] z0 z-coordinate of the ray source point
+ * \param [in] nz z-component of the ray normal
  * \param [in] xmin x-coordinate of the lower bounding box corner
  * \param [in] xmax x-coordinate of the upper bounding box corner
  * \param [in] ymin y-coordinate of the lower bounding box corner
@@ -203,8 +209,12 @@ inline bool intersect_ray( const T* x0,
  */
 template < typename T >
 AXOM_HOST_DEVICE
-inline bool intersect_ray( const T* x0,
-                           const T* n,
+inline bool intersect_ray( const T& x0,
+                           const T& nx,
+                           const T& y0,
+                           const T& ny,
+                           const T& z0,
+                           const T& nz,
                            const T& xmin,
                            const T& xmax,
                            const T& ymin,
@@ -216,16 +226,13 @@ inline bool intersect_ray( const T* x0,
 {
   AXOM_STATIC_ASSERT( std::is_floating_point< T >::value );
 
-  SLIC_ASSERT( x0 != nullptr );
-  SLIC_ASSERT( n != nullptr );
-
   t = 0.0f;
   T tmax = axom::numerics::floating_point_limits< T >::max();
 
   bool status = true;
-  status = status && intersect_ray_bbox_test( x0[0],n[0],xmin,xmax,t,tmax,TOL );
-  status = status && intersect_ray_bbox_test( x0[1],n[1],ymin,ymax,t,tmax,TOL );
-  status = status && intersect_ray_bbox_test( x0[2],n[2],zmin,zmax,t,tmax,TOL );
+  status = status && intersect_ray_bbox_test( x0,nx,xmin,xmax,t,tmax,TOL );
+  status = status && intersect_ray_bbox_test( y0,ny,ymin,ymax,t,tmax,TOL );
+  status = status && intersect_ray_bbox_test( z0,nz,zmin,zmax,t,tmax,TOL );
 
   return status;
 }

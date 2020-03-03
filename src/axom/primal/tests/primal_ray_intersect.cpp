@@ -26,6 +26,8 @@ TEST( primal_ray_intersect, ray_aabb_intersection_2D )
   constexpr double LO = 0.0f;
   constexpr double HI = 1.0f;
 
+  using namespace primal::detail;
+
 // Defines the test box:
 #define TEST_BOX2D LO,HI,LO,HI
 
@@ -35,64 +37,72 @@ TEST( primal_ray_intersect, ray_aabb_intersection_2D )
   // test BOTTOM (-y)
   {
     const double n0[] = { 0.0,  1.0 };
-    const double n1[] = { 0.0, -1.0 };
     const double y0   = -1.0f;
     for ( int i=0; i < N; ++i )
     {
       double tmin = 0.0;
       double tmax = 0.0;
 
-      double s[] = { x[i], y0 };
-      EXPECT_TRUE( primal::detail::intersect_ray(s,n0,TEST_BOX2D,tmin,tmax) );
-      EXPECT_FALSE( primal::detail::intersect_ray(s,n1,TEST_BOX2D,tmin,tmax) );
+      const double sx = x[i];
+      const double sy = y0;
+      const double nx = n0[0];
+      const double ny = n0[1];
+      EXPECT_TRUE( intersect_ray(sx,nx,sy,ny,TEST_BOX2D,tmin,tmax) );
+      EXPECT_FALSE( intersect_ray(sx,-nx,sy,-ny,TEST_BOX2D,tmin,tmax) );
     }
   }
 
   // test RIGHT (+x)
   {
     const double n0[] = { -1.0, 0.0 };
-    const double n1[] = {  1.0, 0.0 };
     const double x0   = 2.0f;
     for ( int i=0; i < N; ++i )
     {
       double tmin = 0.0;
       double tmax = 0.0;
 
-      double s[] = { x0, x[ i ] };
-      EXPECT_TRUE( primal::detail::intersect_ray(s,n0,TEST_BOX2D,tmin,tmax) );
-      EXPECT_FALSE( primal::detail::intersect_ray(s,n1,TEST_BOX2D,tmin,tmax) );
+      const double sx = x0;
+      const double sy = x[ i ];
+      const double nx = n0[0];
+      const double ny = n0[1];
+      EXPECT_TRUE( intersect_ray(sx,nx,sy,ny,TEST_BOX2D,tmin,tmax) );
+      EXPECT_FALSE( intersect_ray(sx,-nx,sy,-ny,TEST_BOX2D,tmin,tmax) );
     }
   }
 
   // test TOP (+y)
   {
     const double n0[] = { 0.0, -1.0 };
-    const double n1[] = { 0.0,  1.0 };
     const double y0   = 2.0f;
     for ( int i=0; i < N; ++i )
     {
       double tmin = 0.0;
       double tmax = 0.0;
 
-      double s[] = { x[ i ], y0 };
-      EXPECT_TRUE( primal::detail::intersect_ray(s,n0,TEST_BOX2D,tmin,tmax) );
-      EXPECT_FALSE( primal::detail::intersect_ray(s,n1,TEST_BOX2D,tmin,tmax) );
+      const double sx = x[ i ];
+      const double sy = y0;
+      const double nx = n0[ 0 ];
+      const double ny = n0[ 1 ];
+      EXPECT_TRUE( intersect_ray(sx,nx,sy,ny,TEST_BOX2D,tmin,tmax) );
+      EXPECT_FALSE( intersect_ray(sx,-nx,sy,-ny,TEST_BOX2D,tmin,tmax) );
     }
   }
 
   // test LEFT (-x)
   {
     const double n0[] = {  1.0, 0.0 };
-    const double n1[] = { -1.0, 0.0 };
     const double x0   = -1.0f;
     for ( int i=0; i < N; ++i )
     {
       double tmin = 0.0;
       double tmax = 0.0;
 
-      double s[] = { x0, x[ i ] };
-      EXPECT_TRUE( primal::detail::intersect_ray(s,n0,TEST_BOX2D,tmin,tmax) );
-      EXPECT_FALSE( primal::detail::intersect_ray(s,n1,TEST_BOX2D,tmin,tmax) );
+      const double sx = x0;
+      const double sy = x[ i ];
+      const double nx = n0[ 0 ];
+      const double ny = n0[ 1 ];
+      EXPECT_TRUE( intersect_ray(sx,nx,sy,ny,TEST_BOX2D,tmin,tmax) );
+      EXPECT_FALSE( intersect_ray(sx,-nx,sy,-ny,TEST_BOX2D,tmin,tmax) );
     }
   }
 
@@ -118,12 +128,14 @@ TEST( primal_ray_intersect, ray_aabb_intersection_2D )
     double n[ 2 ];
     numerics::matrix_vector_multiply( rotation_matrix, e1, n );
 
-    double inv_n[ ] = { -n[ 0 ], -n[ 1 ] };
-
     double tmin = 0.0;
     double tmax = 0.0;
-    EXPECT_TRUE( primal::detail::intersect_ray(xc,n,TEST_BOX2D,tmin,tmax) );
-    EXPECT_TRUE( primal::detail::intersect_ray(xc,inv_n,TEST_BOX2D,tmin,tmax) );
+    const double x0 = xc[ 0 ];
+    const double y0 = xc[ 1 ];
+    const double nx = n[ 0 ];
+    const double ny = n[ 1 ];
+    EXPECT_TRUE( intersect_ray(x0,nx,y0,ny,TEST_BOX2D,tmin,tmax) );
+    EXPECT_TRUE( intersect_ray(x0,-nx,y0,-ny,TEST_BOX2D,tmin,tmax) );
   }
 
 #undef TEST_BOX2D
@@ -136,6 +148,8 @@ TEST( primal_ray_intersect, ray_aabb_intersection_3D )
   constexpr double LO = 0.0f;
   constexpr double HI = 1.0f;
 
+  using namespace primal::detail;
+
 // Defines the test box:
 #define TEST_BOX3D LO,HI,LO,HI,LO,HI
 
@@ -146,7 +160,6 @@ TEST( primal_ray_intersect, ray_aabb_intersection_3D )
   {
 
     const double n0[] = { 0.0, 0.0,  1.0 };
-    const double n1[] = { 0.0, 0.0, -1.0 };
     const double z0   = -1.0f;
 
     for ( int i=0; i < N; ++i )
@@ -156,9 +169,14 @@ TEST( primal_ray_intersect, ray_aabb_intersection_3D )
         double tmin = 0.0;
         double tmax = 0.0;
 
-        double s[] = { x[i], x[j], z0 };
-        EXPECT_TRUE( primal::detail::intersect_ray(s,n0,TEST_BOX3D,tmin,tmax));
-        EXPECT_FALSE( primal::detail::intersect_ray(s,n1,TEST_BOX3D,tmin,tmax));
+        const double sx = x[i];
+        const double sy = x[j];
+        const double sz = z0;
+        const double nx = n0[ 0 ];
+        const double ny = n0[ 1 ];
+        const double nz = n0[ 2 ];
+        EXPECT_TRUE( intersect_ray(sx,nx,sy,ny,sz,nz,TEST_BOX3D,tmin,tmax));
+        EXPECT_FALSE( intersect_ray(sx,-nx,sy,-ny,sz,-nz,TEST_BOX3D,tmin,tmax));
       } // END for all j
     } // END for all i
 
@@ -168,7 +186,6 @@ TEST( primal_ray_intersect, ray_aabb_intersection_3D )
   {
 
     const double n0[] = { 0.0, 0.0, -1.0 };
-    const double n1[] = { 0.0, 0.0, 1.0 };
     const double z0   = 2.0f;
 
     for ( int i=0; i < N; ++i )
@@ -178,9 +195,14 @@ TEST( primal_ray_intersect, ray_aabb_intersection_3D )
         double tmin = 0.0;
         double tmax = 0.0;
 
-        double s[] = { x[i], x[j], z0 };
-        EXPECT_TRUE( primal::detail::intersect_ray(s,n0,TEST_BOX3D,tmin,tmax));
-        EXPECT_FALSE( primal::detail::intersect_ray(s,n1,TEST_BOX3D,tmin,tmax));
+        const double sx = x[i];
+        const double sy = x[j];
+        const double sz = z0;
+        const double nx = n0[ 0 ];
+        const double ny = n0[ 1 ];
+        const double nz = n0[ 2 ];
+        EXPECT_TRUE( intersect_ray(sx,nx,sy,ny,sz,nz,TEST_BOX3D,tmin,tmax));
+        EXPECT_FALSE( intersect_ray(sx,-nx,sy,-ny,sz,-nz,TEST_BOX3D,tmin,tmax));
       } // END for all j
     } // END for all i
 
@@ -190,7 +212,6 @@ TEST( primal_ray_intersect, ray_aabb_intersection_3D )
   {
 
     const double n0[] = { 0.0,  1.0, 0.0 };
-    const double n1[] = { 0.0, -1.0, 0.0 };
     const double y0   = -1.0f;
 
     for ( int i=0; i < N; ++i )
@@ -200,9 +221,14 @@ TEST( primal_ray_intersect, ray_aabb_intersection_3D )
         double tmin = 0.0;
         double tmax = 0.0;
 
-        double s[] = { x[ i ], y0, x[ j ] };
-        EXPECT_TRUE( primal::detail::intersect_ray(s,n0,TEST_BOX3D,tmin,tmax));
-        EXPECT_FALSE( primal::detail::intersect_ray(s,n1,TEST_BOX3D,tmin,tmax));
+        const double sx = x[i];
+        const double sy = y0;
+        const double sz = x[j];
+        const double nx = n0[ 0 ];
+        const double ny = n0[ 1 ];
+        const double nz = n0[ 2 ];
+        EXPECT_TRUE( intersect_ray(sx,nx,sy,ny,sz,nz,TEST_BOX3D,tmin,tmax));
+        EXPECT_FALSE( intersect_ray(sx,-nx,sy,-ny,sz,-nz,TEST_BOX3D,tmin,tmax));
       } // END for all j
     } // END for all i
 
@@ -212,7 +238,6 @@ TEST( primal_ray_intersect, ray_aabb_intersection_3D )
   {
 
     const double n0[] = { 0.0, -1.0, 0.0 };
-    const double n1[] = { 0.0,  1.0, 0.0 };
     const double y0   = 2.0f;
 
     for ( int i=0; i < N; ++i )
@@ -222,9 +247,14 @@ TEST( primal_ray_intersect, ray_aabb_intersection_3D )
         double tmin = 0.0;
         double tmax = 0.0;
 
-        double s[] = { x[ i ], y0, x[ j ] };
-        EXPECT_TRUE( primal::detail::intersect_ray(s,n0,TEST_BOX3D,tmin,tmax));
-        EXPECT_FALSE( primal::detail::intersect_ray(s,n1,TEST_BOX3D,tmin,tmax));
+        const double sx = x[i];
+        const double sy = y0;
+        const double sz = x[j];
+        const double nx = n0[ 0 ];
+        const double ny = n0[ 1 ];
+        const double nz = n0[ 2 ];
+        EXPECT_TRUE( intersect_ray(sx,nx,sy,ny,sz,nz,TEST_BOX3D,tmin,tmax));
+        EXPECT_FALSE( intersect_ray(sx,-nx,sy,-ny,sz,-nz,TEST_BOX3D,tmin,tmax));
       } // END for all j
     } // END for all i
 
@@ -234,7 +264,6 @@ TEST( primal_ray_intersect, ray_aabb_intersection_3D )
   {
 
     const double n0[] = {  1.0, 0.0, 0.0 };
-    const double n1[] = { -1.0, 0.0, 0.0 };
     const double x0   = -1.0f;
 
     for ( int i=0; i < N; ++i )
@@ -244,9 +273,14 @@ TEST( primal_ray_intersect, ray_aabb_intersection_3D )
         double tmin = 0.0;
         double tmax = 0.0;
 
-        double s[] = { x0, x[ i ], x[ j ] };
-        EXPECT_TRUE( primal::detail::intersect_ray(s,n0,TEST_BOX3D,tmin,tmax));
-        EXPECT_FALSE( primal::detail::intersect_ray(s,n1,TEST_BOX3D,tmin,tmax));
+        const double sx = x0;
+        const double sy = x[i];
+        const double sz = x[j];
+        const double nx = n0[ 0 ];
+        const double ny = n0[ 1 ];
+        const double nz = n0[ 2 ];
+        EXPECT_TRUE( intersect_ray(sx,nx,sy,ny,sz,nz,TEST_BOX3D,tmin,tmax));
+        EXPECT_FALSE( intersect_ray(sx,-nx,sy,-ny,sz,-nz,TEST_BOX3D,tmin,tmax));
       } // END for all j
     } // END for all i
 
@@ -256,7 +290,6 @@ TEST( primal_ray_intersect, ray_aabb_intersection_3D )
   {
 
     const double n0[] = { -1.0, 0.0, 0.0 };
-    const double n1[] = {  1.0, 0.0, 0.0 };
     const double x0   = 2.0f;
 
     for ( int i=0; i < N; ++i )
@@ -266,9 +299,14 @@ TEST( primal_ray_intersect, ray_aabb_intersection_3D )
         double tmin = 0.0;
         double tmax = 0.0;
 
-        double s[] = { x0, x[ i ], x[ j ] };
-        EXPECT_TRUE( primal::detail::intersect_ray(s,n0,TEST_BOX3D,tmin,tmax));
-        EXPECT_FALSE( primal::detail::intersect_ray(s,n1,TEST_BOX3D,tmin,tmax));
+        const double sx = x0;
+        const double sy = x[i];
+        const double sz = x[j];
+        const double nx = n0[ 0 ];
+        const double ny = n0[ 1 ];
+        const double nz = n0[ 2 ];
+        EXPECT_TRUE( intersect_ray(sx,nx,sy,ny,sz,nz,TEST_BOX3D,tmin,tmax));
+        EXPECT_FALSE( intersect_ray(sx,-nx,sy,-ny,sz,-nz,TEST_BOX3D,tmin,tmax));
       } // END for all j
     } // END for all i
 
@@ -288,6 +326,7 @@ TEST( primal_ray_intersect, ray_aabb_intersection_3D )
   const double e1[] = { 1.0, 0.0, 0.0 };
   const double e2[] = { 0.0, 1.0, 0.0 };
   const double e3[] = { 0.0, 0.0, 1.0 };
+  double n[3];
   for( int i=0; i < NUM_ANGLES; ++i )
   {
     const double t    = angles[ i ] * PI_OVER_180;
@@ -297,31 +336,44 @@ TEST( primal_ray_intersect, ray_aabb_intersection_3D )
     double tmin = 0.0;
     double tmax = 0.0;
 
+    double nx = 0.0;
+    double ny = 0.0;
+    double nz = 0.0;
+
+    const double x0 = xc[ 0 ];
+    const double y0 = xc[ 1 ];
+    const double z0 = xc[ 2 ];
+
     // Update Rx
     Rx(1,1)=cost; Rx(1,2)= -sint;
     Rx(2,1)=sint; Rx(2,2)= cost;
 
-    double nx[ 3 ];
-    numerics::matrix_vector_multiply( Rx, e1, nx );
-    EXPECT_TRUE( primal::detail::intersect_ray(xc,nx,TEST_BOX3D,tmin,tmax) );
+    numerics::matrix_vector_multiply( Rx, e1, n );
+    nx = n[ 0 ];
+    ny = n[ 1 ];
+    nz = n[ 2 ];
+    EXPECT_TRUE( intersect_ray(x0,nx,y0,ny,z0,nz,TEST_BOX3D,tmin,tmax) );
 
     // Update Ry
     Ry(0,0)=cost;  Ry(0,2)=sint;
     Ry(2,0)=-sint; Ry(2,2)=cost;
 
-    double ny[ 3 ];
-    numerics::matrix_vector_multiply( Ry, e2, ny );
-    EXPECT_TRUE( primal::detail::intersect_ray(xc,ny,TEST_BOX3D,tmin,tmax) );
+    numerics::matrix_vector_multiply( Ry, e2, n );
+    nx = n[ 0 ];
+    ny = n[ 1 ];
+    nz = n[ 2 ];
+    EXPECT_TRUE( intersect_ray(x0,nx,y0,ny,z0,nz,TEST_BOX3D,tmin,tmax) );
 
     // Update Rz
     Rz(0,0)=cost; Rz(0,1)=-sint;
     Rz(1,0)=sint; Rz(1,1)=cost;
 
-    double nz[ 3 ];
-    numerics::matrix_vector_multiply( Rz, e3, nz );
-    EXPECT_TRUE( primal::detail::intersect_ray(xc,nz,TEST_BOX3D,tmin,tmax) );
+    numerics::matrix_vector_multiply( Rz, e3, n );
+    nx = n[ 0 ];
+    ny = n[ 1 ];
+    nz = n[ 2 ];
+    EXPECT_TRUE( intersect_ray(x0,nx,y0,ny,z0,nz,TEST_BOX3D,tmin,tmax) );
   }
-
 
 
 #undef TEST_BOX3D
