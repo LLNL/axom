@@ -35,6 +35,22 @@
 #define AXOM_HOST
 #endif
 
+/*
+ * \def AXOM_SUPPRESS_HD_WARN
+ *
+ * \brief Macro used to silence __host__ __device__ compiler warnings
+ *  when calling __host__ function from __host__ __device function.
+ */
+#if defined(__CUDACC__)
+  #ifdef WIN32
+  #define AXOM_SUPPRESS_HD_WARN __pragma(nv_exec_check_disable)
+  #else
+  #define AXOM_SUPPRESS_HD_WARN _Pragma("nv_exec_check_disable")
+  #endif
+#else
+#define AXOM_SUPPRESS_HD_WARN
+#endif
+
 /*!
  * \def AXOM_LAMBDA
  *

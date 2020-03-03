@@ -316,6 +316,7 @@ public:
    * \param [in] v the vector on the left-hand side.
    * \return C the resulting vector from A x B.
    */
+  AXOM_HOST_DEVICE
   static Vector< T,3 > cross_product( const Vector< T,2 >& u,
                                       const Vector< T,2 >& v );
 
