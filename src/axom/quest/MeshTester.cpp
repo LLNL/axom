@@ -6,32 +6,10 @@
 // Axom includes
 #include "axom/quest/MeshTester.hpp"
 
-#include "axom/core.hpp"
-#include "axom/primal.hpp"
-#include "axom/spin.hpp"
-#include "axom/mint.hpp"
-
-// C++ includes
-#include <cmath>
-#include <algorithm>
-#include <vector>
-#include <unordered_map>
-#include <functional> // for std::hash
-
 namespace axom
 {
 namespace quest
 {
-
-using UMesh = mint::UnstructuredMesh< mint::SINGLE_SHAPE >;
-using Triangle3 = primal::Triangle<double, 3>;
-
-using Point3 = primal::Point<double, 3>;
-using SpatialBoundingBox = primal::BoundingBox<double, 3>;
-using UniformGrid3 = spin::UniformGrid<int, 3>;
-using Vector3 = primal::Vector<double, 3>;
-using Segment3 = primal::Segment<double, 3>;
-
 
 inline SpatialBoundingBox compute_bounds( UMesh* mesh)
 {
@@ -62,41 +40,6 @@ inline SpatialBoundingBox compute_bounds( UMesh* mesh)
   return meshBB;
 }
 
-inline SpatialBoundingBox compute_bounds(const Triangle3 & tri)
-{
-  SpatialBoundingBox triBB;
-  triBB.addPoint(tri[0]);
-  triBB.addPoint(tri[1]);
-  triBB.addPoint(tri[2]);
-
-  SLIC_ASSERT( triBB.isValid() );
-
-  return triBB;
-}
-
-inline Triangle3 getMeshTriangle(axom::IndexType i, UMesh* surface_mesh)
-{
-  SLIC_ASSERT( surface_mesh->getNumberOfCellNodes( i ) == 3);
-
-  Triangle3 tri;
-
-  const axom::IndexType* triCell = surface_mesh->getCellNodeIDs( i );
-
-  const double* x = surface_mesh->getCoordinateArray( mint::X_COORDINATE );
-  const double* y = surface_mesh->getCoordinateArray( mint::Y_COORDINATE );
-  const double* z = surface_mesh->getCoordinateArray( mint::Z_COORDINATE );
-
-  for ( int n=0 ; n < 3 ; ++n )
-  {
-    const axom::IndexType nodeIdx = triCell[ n ];
-    tri[ n ][ 0 ] = x[ nodeIdx ];
-    tri[ n ][ 1 ] = y[ nodeIdx ];
-    tri[ n ][ 2 ] = z[ nodeIdx ];
-  }
-
-  return tri;
-}
-
 inline bool areTriangleIndicesDistinct( axom::IndexType* indices)
 {
   SLIC_ASSERT(indices != nullptr);
@@ -107,7 +50,7 @@ inline bool areTriangleIndicesDistinct( axom::IndexType* indices)
 }
 
 /* Find and report self-intersections and degenerate triangles
- * in a triangle surface mesh. */
+ * in a triangle surface mesh using a Uniform Grid. */
 void findTriMeshIntersections(
   UMesh* surface_mesh,
   std::vector<std::pair<int, int> > & intersections,
@@ -207,7 +150,6 @@ void findTriMeshIntersections(
     }
   }
 }
-
 
 /* Check a surface mesh for holes using its face relation. */
 WatertightStatus isSurfaceMeshWatertight( UMesh* surface_mesh )
