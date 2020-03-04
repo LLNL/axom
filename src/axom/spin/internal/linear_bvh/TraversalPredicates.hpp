@@ -185,7 +185,7 @@ public:
 
     // TODO: in the future we should take `t` into account and organize
     //       candidate bins in a priority queue.
-    double t = 0.0;
+    FloatType t = 0.0;
     return primal::detail::intersect_ray( x0,nx,y0,ny,xmin,xmax,ymin,ymax,t );
   }
 
@@ -208,7 +208,7 @@ public:
 
     // TODO: in the future we should take `t` into account and organize
     //       candidate bins in a priority queue.
-    double t = 0.0;
+    FloatType t = 0.0;
     return primal::detail::intersect_ray( x0,nx,y0,ny,xmin,xmax,ymin,ymax,t );
   }
 
@@ -289,7 +289,7 @@ public:
 
     // TODO: in the future we should take `t` into account and organize
     //       candidate bins in a priority queue.
-    double t = 0.0;
+    FloatType t = 0.0;
     return primal::detail::intersect_ray(
         x0,nx,y0,ny,z0,nz,xmin,xmax,ymin,ymax,zmin,zmax,t );
   }
@@ -317,7 +317,7 @@ public:
 
     // TODO: in the future we should take `t` into account and organize
     //       candidate bins in a priority queue.
-    double t = 0.0;
+    FloatType t = 0.0;
     return primal::detail::intersect_ray(
         x0,nx,y0,ny,z0,nz,xmin,xmax,ymin,ymax,zmin,zmax,t );
   }
