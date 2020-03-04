@@ -313,7 +313,7 @@ void check_build_bvh3d( )
  *
  */
 template < typename ExecSpace, typename FloatType >
-void check_find3d( )
+void check_find_points3d( )
 {
   constexpr int NDIMS   = 3;
   constexpr IndexType N = 4;
@@ -411,7 +411,7 @@ void check_find3d( )
  *
  */
 template < typename ExecSpace, typename FloatType >
-void check_find2d( )
+void check_find_points2d( )
 {
   constexpr int NDIMS   = 2;
   constexpr IndexType N = 4;
@@ -798,17 +798,17 @@ TEST( spin_bvh, contruct3D_sequential )
 }
 
 //------------------------------------------------------------------------------
-TEST( spin_bvh, find_3d_sequential )
+TEST( spin_bvh, find_points_3d_sequential )
 {
-  check_find3d< axom::SEQ_EXEC, float >( );
-  check_find3d< axom::SEQ_EXEC, double >( );
+  check_find_points3d< axom::SEQ_EXEC, float >( );
+  check_find_points3d< axom::SEQ_EXEC, double >( );
 }
 
 //------------------------------------------------------------------------------
-TEST( spin_bvh, find_2d_sequential )
+TEST( spin_bvh, find_points_2d_sequential )
 {
-  check_find2d< axom::SEQ_EXEC, float >( );
-  check_find2d< axom::SEQ_EXEC, double >( );
+  check_find_points2d< axom::SEQ_EXEC, float >( );
+  check_find_points2d< axom::SEQ_EXEC, double >( );
 }
 
 //------------------------------------------------------------------------------
@@ -842,17 +842,17 @@ TEST( spin_bvh, contruct3D_omp )
 }
 
 //------------------------------------------------------------------------------
-TEST( spin_bvh, find_3d_omp )
+TEST( spin_bvh, find_points_3d_omp )
 {
-  check_find3d< axom::OMP_EXEC, float >( );
-  check_find3d< axom::OMP_EXEC, double >( );
+  check_find_points3d< axom::OMP_EXEC, float >( );
+  check_find_points3d< axom::OMP_EXEC, double >( );
 }
 
 //------------------------------------------------------------------------------
-TEST( spin_bvh, find_2d_omp )
+TEST( spin_bvh, find_points_2d_omp )
 {
-  check_find2d< axom::OMP_EXEC, float >( );
-  check_find2d< axom::OMP_EXEC, double >( );
+  check_find_points2d< axom::OMP_EXEC, float >( );
+  check_find_points2d< axom::OMP_EXEC, double >( );
 }
 
 //------------------------------------------------------------------------------
@@ -894,23 +894,23 @@ AXOM_CUDA_TEST( spin_bvh, contruct3D_cuda )
 }
 
 //------------------------------------------------------------------------------
-AXOM_CUDA_TEST( spin_bvh, find_3d_cuda )
+AXOM_CUDA_TEST( spin_bvh, find_points_3d_cuda )
 {
   constexpr int BLOCK_SIZE = 256;
   using exec  = axom::CUDA_EXEC< BLOCK_SIZE >;
 
-  check_find3d< exec, float >( );
-  check_find3d< exec, double >( );
+  check_find_points3d< exec, float >( );
+  check_find_points3d< exec, double >( );
 }
 
 //------------------------------------------------------------------------------
-AXOM_CUDA_TEST( spin_bvh, find_2d_cuda )
+AXOM_CUDA_TEST( spin_bvh, find_points_2d_cuda )
 {
   constexpr int BLOCK_SIZE = 256;
   using exec  = axom::CUDA_EXEC< BLOCK_SIZE >;
 
-  check_find2d< exec, float >( );
-  check_find2d< exec, double >( );
+  check_find_points2d< exec, float >( );
+  check_find_points2d< exec, double >( );
 }
 
 //------------------------------------------------------------------------------
@@ -932,7 +932,6 @@ AXOM_CUDA_TEST( spin_bvh, single_box3d_cuda )
   check_single_box3d< exec, float >( );
   check_single_box3d< exec, double >( );
 }
-
 
 #endif
 
