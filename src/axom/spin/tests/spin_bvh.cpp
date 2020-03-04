@@ -18,6 +18,7 @@
 #include "axom/spin/BVH.hpp"
 #include "axom/spin/UniformGrid.hpp"
 
+#include "axom/spin/internal/linear_bvh/QueryAccessor.hpp"
 #include "axom/spin/internal/linear_bvh/TraversalPredicates.hpp"
 
 // axom/mint includes
@@ -633,6 +634,98 @@ void check_single_box3d( )
 //------------------------------------------------------------------------------
 // UNIT TESTS
 //------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+TEST( spin_bvh, traversal_predicates_rayIntersectsLeftBin )
+{
+  namespace bvh               = axom::spin::internal::linear_bvh;
+  using TraversalPredicates2D = bvh::TraversalPredicates< 2, double >;
+  using TraversalPredicates3D = bvh::TraversalPredicates< 3, double >;
+  using VecType               = bvh::Vec< double, 4 >;
+  using RayType               = bvh::Vec< double, 6 >;
+
+  VecType s1, s2;
+  s1[ 0 ] = 0.; // LeftBin.xmin
+  s1[ 1 ] = 0.; // LeftBin.ymin
+  s1[ 2 ] = 0.; // LeftBin.zmin
+
+  s1[ 3 ] = 1.; // LeftBin.xmax
+  s2[ 0 ] = 1.; // LeftBin.ymax
+  s2[ 1 ] = 1.; // LeftBin.zmax
+
+  RayType ray2d;
+  ray2d[ 0 ] = -1.0;
+  ray2d[ 1 ] = -1.0;
+  ray2d[ 2 ] =  1.0;
+  ray2d[ 3 ] =  1.0;
+  EXPECT_TRUE( TraversalPredicates2D::rayIntersectsLeftBin( ray2d, s1, s2 ) );
+
+  // flip normal
+  ray2d[ 2 ] = -1.0;
+  ray2d[ 3 ] = -1.0;
+  EXPECT_FALSE( TraversalPredicates2D::rayIntersectsLeftBin( ray2d, s1, s2 ) );
+
+  RayType ray3d;
+  ray3d[ 0 ] = -1.0;
+  ray3d[ 1 ] = -1.0;
+  ray3d[ 2 ] = -1.0;
+  ray3d[ 3 ] = 1.0;
+  ray3d[ 4 ] = 1.0;
+  ray3d[ 5 ] = 1.0;
+  EXPECT_TRUE( TraversalPredicates3D::rayIntersectsLeftBin( ray3d, s1, s2) );
+
+  // flip normal
+  ray3d[ 3 ] = -1.0;
+  ray3d[ 4 ] = -1.0;
+  ray3d[ 5 ] = -1.0;
+  EXPECT_FALSE( TraversalPredicates3D::rayIntersectsLeftBin( ray3d, s1, s2 ) );
+}
+
+//------------------------------------------------------------------------------
+TEST( spin_bvh, traversal_predicates_rayIntersectsRightBin )
+{
+  namespace bvh               = axom::spin::internal::linear_bvh;
+  using TraversalPredicates2D = bvh::TraversalPredicates< 2, double >;
+  using TraversalPredicates3D = bvh::TraversalPredicates< 3, double >;
+  using VecType               = bvh::Vec< double, 4 >;
+  using RayType               = bvh::Vec< double, 6 >;
+
+  VecType s2, s3;
+  s2[ 2 ] = 0.; // RightBin.xmin
+  s2[ 3 ] = 0.; // RightBin.ymin
+  s3[ 0 ] = 0.; // RightBin.zmin
+
+  s3[ 1 ] = 1.; // RightBin.xmax
+  s3[ 2 ] = 1.; // RightBin.ymax
+  s3[ 3 ] = 1.; // RightBin.zmax
+
+  RayType ray2d;
+  ray2d[ 0 ] = -1.0;
+  ray2d[ 1 ] = -1.0;
+  ray2d[ 2 ] =  1.0;
+  ray2d[ 3 ] =  1.0;
+  EXPECT_TRUE( TraversalPredicates2D::rayIntersectsRightBin( ray2d, s2, s3 ) );
+
+  // flip normal
+  ray2d[ 2 ] = -1.0;
+  ray2d[ 3 ] = -1.0;
+  EXPECT_FALSE( TraversalPredicates2D::rayIntersectsRightBin( ray2d, s2, s3 ) );
+
+  RayType ray3d;
+  ray3d[ 0 ] = -1.0;
+  ray3d[ 1 ] = -1.0;
+  ray3d[ 2 ] = -1.0;
+  ray3d[ 3 ] = 1.0;
+  ray3d[ 4 ] = 1.0;
+  ray3d[ 5 ] = 1.0;
+  EXPECT_TRUE( TraversalPredicates3D::rayIntersectsRightBin( ray3d, s2, s3) );
+
+  // flip normal
+  ray3d[ 3 ] = -1.0;
+  ray3d[ 4 ] = -1.0;
+  ray3d[ 5 ] = -1.0;
+  EXPECT_FALSE( TraversalPredicates3D::rayIntersectsRightBin( ray3d, s2, s3 ) );
+}
 
 //------------------------------------------------------------------------------
 TEST( spin_bvh, traversal_predicates_pointInLeftBin )
