@@ -127,13 +127,13 @@ public:
   template < typename RayType >
   AXOM_HOST_DEVICE
   static inline void getRay( RayType& ray,
-                               IndexType idx,
-                               const FloatType* x0,
-                               const FloatType* nx,
-                               const FloatType* y0,
-                               const FloatType* ny,
-                               const FloatType* AXOM_NOT_USED(z0),
-                               const FloatType* AXOM_NOT_USED(nz) )
+                             IndexType idx,
+                             const FloatType* x0,
+                             const FloatType* nx,
+                             const FloatType* y0,
+                             const FloatType* ny,
+                             const FloatType* AXOM_NOT_USED(z0),
+                             const FloatType* AXOM_NOT_USED(nz) )
   {
     ray[ 0 ] = x0[ idx ];
     ray[ 1 ] = y0[ idx ];
@@ -168,13 +168,13 @@ public:
   template < typename RayType >
   AXOM_HOST_DEVICE
   static inline void getRay( RayType& ray,
-                               IndexType idx,
-                               const FloatType* x0,
-                               const FloatType* nx,
-                               const FloatType* y0,
-                               const FloatType* ny,
-                               const FloatType* z0,
-                               const FloatType* nz )
+                             IndexType idx,
+                             const FloatType* x0,
+                             const FloatType* nx,
+                             const FloatType* y0,
+                             const FloatType* ny,
+                             const FloatType* z0,
+                             const FloatType* nz )
   {
     ray[ 0 ] = x0[ idx ];
     ray[ 1 ] = y0[ idx ];

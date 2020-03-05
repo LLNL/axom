@@ -544,11 +544,11 @@ void check_find_rays3d()
     iblank[ cellIdx ] = -1;
   } );
 
-  for ( int i=0; i < N; ++i )
+  for ( int i=0 ; i < N ; ++i )
   {
     IndexType ncounts = counts[ i ];
     IndexType offset  = offsets[ i ];
-    for ( int j=0; j < ncounts; ++j )
+    for ( int j=0 ; j < ncounts ; ++j )
     {
       IndexType idx = candidates[ offset + j ];
       iblank[ idx ] = i;
@@ -566,7 +566,7 @@ void check_find_rays3d()
   EXPECT_EQ( counts[ 0 ], EXPECTED_RAY1_INTERSECTIONS );
   EXPECT_EQ( counts[ 1 ], 0 );
 
-  for ( IndexType i=0; i < ncells; ++i )
+  for ( IndexType i=0 ; i < ncells ; ++i )
   {
     switch( i )
     {
@@ -674,11 +674,11 @@ void check_find_rays2d()
     iblank[ cellIdx ] = -1;
   } );
 
-  for ( int i=0; i < N; ++i )
+  for ( int i=0 ; i < N ; ++i )
   {
     IndexType ncounts = counts[ i ];
     IndexType offset  = offsets[ i ];
-    for ( int j=0; j < ncounts; ++j )
+    for ( int j=0 ; j < ncounts ; ++j )
     {
       IndexType idx = candidates[ offset + j ];
       iblank[ idx ] = i;
@@ -696,7 +696,7 @@ void check_find_rays2d()
   EXPECT_EQ( counts[ 0 ], EXPECTED_RAY1_INTERSECTIONS );
   EXPECT_EQ( counts[ 1 ], 0 );
 
-  for ( IndexType i=0; i < ncells; ++i )
+  for ( IndexType i=0 ; i < ncells ; ++i )
   {
 
     if ( i==2 || i==6 )

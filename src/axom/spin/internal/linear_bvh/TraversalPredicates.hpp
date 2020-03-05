@@ -291,7 +291,7 @@ public:
     //       candidate bins in a priority queue.
     FloatType t = 0.0;
     return primal::detail::intersect_ray(
-        x0,nx,y0,ny,z0,nz,xmin,xmax,ymin,ymax,zmin,zmax,t );
+      x0,nx,y0,ny,z0,nz,xmin,xmax,ymin,ymax,zmin,zmax,t );
   }
 
   template < typename RayType >
@@ -319,7 +319,7 @@ public:
     //       candidate bins in a priority queue.
     FloatType t = 0.0;
     return primal::detail::intersect_ray(
-        x0,nx,y0,ny,z0,nz,xmin,xmax,ymin,ymax,zmin,zmax,t );
+      x0,nx,y0,ny,z0,nz,xmin,xmax,ymin,ymax,zmin,zmax,t );
   }
 
 };
