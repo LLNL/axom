@@ -1,4 +1,4 @@
-Source: uberenv-axom
+Source: axom
 Version: develop
 Description: Host-config generator for Axom TPLs
 Build-Depends: hdf5, conduit

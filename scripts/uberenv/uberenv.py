@@ -243,10 +243,7 @@ class UberEnv():
         print("[uberenv options: {}]".format(str(self.opts)))
 
         # setup main package name
-        if opts["install"]:
-            self.pkg_name = self.project_opts["package_name"]
-        else:
-            self.pkg_name = self.project_opts["uberenv_package_name"]
+        self.pkg_name = self.project_opts["package_name"]
 
     def setup_paths_and_dirs(self):
         self.uberenv_path = os.path.split(os.path.abspath(__file__))[0]
