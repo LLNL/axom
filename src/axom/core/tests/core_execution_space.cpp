@@ -169,7 +169,7 @@ TEST( core_execution_space, check_cuda_exec )
   constexpr bool IS_ASYNC = false;
 
   int allocator_id =
-      axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
+    axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
   check_execution_mappings< axom::CUDA_EXEC< BLOCK_SIZE >,
                             RAJA::cuda_exec< BLOCK_SIZE >,
                             RAJA::cuda_reduce,
@@ -188,7 +188,7 @@ TEST( core_execution_space, check_cuda_exec_async )
   constexpr bool IS_ASYNC = true;
 
   int allocator_id =
-      axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
+    axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
   check_execution_mappings< axom::CUDA_EXEC< BLOCK_SIZE, axom::ASYNC >,
                             RAJA::cuda_exec_async< BLOCK_SIZE >,
                             RAJA::cuda_reduce,
