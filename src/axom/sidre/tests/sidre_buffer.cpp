@@ -378,7 +378,7 @@ public:
 
   void TearDown() override
   {
-    int allocID = axom::getResourceAllocatorID( umpire::resource::Host );
+    int allocID = axom::getUmpireResourceAllocatorID( umpire::resource::Host );
     axom::setDefaultAllocator( allocID );
   }
 
@@ -455,7 +455,7 @@ TEST_P(UmpireTest, reallocate)
   constexpr int SIZE = 100;
 
 #if defined(AXOM_USE_CUDA) && defined(UMPIRE_ENABLE_CONST)
-  if (allocID == axom::getResourceAllocatorID( umpire::resource::Constant ) )
+  if (allocID == axom::getUmpireResourceAllocatorID(umpire::resource::Constant))
   {
     return;
   }
@@ -497,7 +497,7 @@ TEST_P(UmpireTest, reallocate_zero)
 
 
 #if defined(AXOM_USE_CUDA) && defined(UMPIRE_ENABLE_CONST)
-  if (allocID == axom::getResourceAllocatorID( umpire::resource::Constant ) )
+  if (allocID == axom::getUmpireResourceAllocatorID(umpire::resource::Constant))
   {
     return;
   }
@@ -513,7 +513,7 @@ TEST_P(UmpireTest, reallocate_zero)
     buff->reallocate(0);
     buff->reallocate(SIZE);
 
-    ASSERT_EQ(axom::getDefaultAllocator().getId(),
+    ASSERT_EQ(axom::getDefaultAllocatorID(),
               rm.getAllocator(buff->getVoidPtr()).getId());
 
     buff->deallocate();
@@ -525,7 +525,7 @@ TEST_P(UmpireTest, reallocate_zero)
     buff->reallocate(0);
     buff->reallocate(SIZE);
 
-    ASSERT_EQ(axom::getDefaultAllocator().getId(),
+    ASSERT_EQ(axom::getDefaultAllocatorID(),
               rm.getAllocator(buff->getVoidPtr()).getId());
     buff->deallocate();
   }
@@ -536,30 +536,30 @@ TEST_P(UmpireTest, reallocate_zero)
     buff->reallocate(0);
     buff->reallocate(SIZE);
 
-    ASSERT_EQ(axom::getDefaultAllocator().getId(),
+    ASSERT_EQ(axom::getDefaultAllocatorID(),
               rm.getAllocator(buff->getVoidPtr()).getId());
     buff->deallocate();
   }
 }
 
 const int allocators[] = {
-  axom::getResourceAllocatorID( umpire::resource::Host )
+  axom::getUmpireResourceAllocatorID( umpire::resource::Host )
 #ifdef AXOM_USE_CUDA
 
 #ifdef UMPIRE_ENABLE_PINNED
-  , axom::getResourceAllocatorID( umpire::resource::Pinned )
+  , axom::getUmpireResourceAllocatorID( umpire::resource::Pinned )
 #endif
 
 #ifdef UMPIRE_ENABLE_DEVICE
-  , axom::getResourceAllocatorID( umpire::resource::Device )
+  , axom::getUmpireResourceAllocatorID( umpire::resource::Device )
 #endif
 
 #ifdef UMPIRE_ENABLE_CONST
-  , axom::getResourceAllocatorID( umpire::resource::Constant )
+  , axom::getUmpireResourceAllocatorID( umpire::resource::Constant )
 #endif
 
 #ifdef UMPIRE_ENABLE_UM
-  , axom::getResourceAllocatorID( umpire::resource::Unified )
+  , axom::getUmpireResourceAllocatorID( umpire::resource::Unified )
 #endif
 
 #endif /* AXOM_USE_CUDA */

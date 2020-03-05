@@ -18,6 +18,8 @@
 #include "axom/spin/BVH.hpp"
 #include "axom/spin/UniformGrid.hpp"
 
+#include "axom/spin/internal/linear_bvh/TraversalPredicates.hpp"
+
 // axom/mint includes
 #include "axom/mint/mesh/Mesh.hpp"
 #include "axom/mint/mesh/UniformMesh.hpp"
@@ -227,7 +229,7 @@ void check_build_bvh2d( )
   constexpr int NUM_BOXES = 2;
   constexpr int NDIMS     = 2;
 
-  umpire::Allocator current_allocator = axom::getDefaultAllocator();
+  const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator( axom::execution_space<ExecSpace>::allocatorID());
 
   FloatType* boxes = axom::allocate< FloatType >( 8 );
@@ -244,7 +246,7 @@ void check_build_bvh2d( )
   FloatType hi[ NDIMS ];
   bvh.getBounds( lo, hi );
 
-  for ( int idim=0; idim < NDIMS; ++idim )
+  for ( int idim=0 ; idim < NDIMS ; ++idim )
   {
     EXPECT_DOUBLE_EQ( lo[ idim ], 0.0 );
     EXPECT_DOUBLE_EQ( hi[ idim ], 2.0 );
@@ -266,7 +268,7 @@ void check_build_bvh3d( )
   constexpr int NUM_BOXES = 2;
   constexpr int NDIMS     = 3;
 
-  umpire::Allocator current_allocator = axom::getDefaultAllocator();
+  const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator( axom::execution_space<ExecSpace>::allocatorID());
 
   FloatType* boxes = axom::allocate< FloatType >( 12 );
@@ -283,7 +285,7 @@ void check_build_bvh3d( )
   FloatType hi[ NDIMS ];
   bvh.getBounds( lo, hi );
 
-  for ( int idim=0; idim < NDIMS; ++idim )
+  for ( int idim=0 ; idim < NDIMS ; ++idim )
   {
     EXPECT_DOUBLE_EQ( lo[ idim ], 0.0 );
     EXPECT_DOUBLE_EQ( hi[ idim ], 2.0 );
@@ -315,7 +317,7 @@ void check_find3d( )
   constexpr int NDIMS   = 3;
   constexpr IndexType N = 4;
 
-  umpire::Allocator current_allocator = axom::getDefaultAllocator();
+  const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator( axom::execution_space<ExecSpace>::allocatorID());
 
   using PointType = primal::Point< double, NDIMS >;
@@ -341,7 +343,7 @@ void check_find3d( )
   FloatType min[ NDIMS ];
   FloatType max[ NDIMS ];
   bvh.getBounds( min, max );
-  for ( int i=0; i < NDIMS; ++i )
+  for ( int i=0 ; i < NDIMS ; ++i )
   {
     EXPECT_DOUBLE_EQ( min[ i ], lo[ i ] );
     EXPECT_DOUBLE_EQ( max[ i ], hi[ i ] );
@@ -357,7 +359,7 @@ void check_find3d( )
 
   spin::UniformGrid< IndexType, NDIMS > ug( lo, hi, res );
 
-  for ( IndexType i=0; i < ncells; ++i )
+  for ( IndexType i=0 ; i < ncells ; ++i )
   {
     PointType q            = PointType::make_point( xc[ i ],yc[ i ],zc[ i ] );
     const int donorCellIdx = ug.getBinIndex( q );
@@ -369,16 +371,16 @@ void check_find3d( )
 
   // check points that are outside by shifting the query points
   constexpr double OFFSET = 10.0;
-  for ( IndexType i=0; i < ncells; ++i )
+  for ( IndexType i=0 ; i < ncells ; ++i )
   {
-     xc[ i ] += OFFSET;
-     yc[ i ] += OFFSET;
-     zc[ i ] += OFFSET;
+    xc[ i ] += OFFSET;
+    yc[ i ] += OFFSET;
+    zc[ i ] += OFFSET;
   }
 
   bvh.find( offsets, counts, candidates, ncells, xc, yc, zc );
 
-  for ( IndexType i=0; i < ncells; ++i )
+  for ( IndexType i=0 ; i < ncells ; ++i )
   {
     EXPECT_EQ( counts[ i ], 0 );
   }
@@ -413,7 +415,7 @@ void check_find2d( )
   constexpr int NDIMS   = 2;
   constexpr IndexType N = 4;
 
-  umpire::Allocator current_allocator = axom::getDefaultAllocator();
+  const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator( axom::execution_space<ExecSpace>::allocatorID());
 
   using PointType = primal::Point< double, NDIMS >;
@@ -438,7 +440,7 @@ void check_find2d( )
   FloatType min[ NDIMS ];
   FloatType max[ NDIMS ];
   bvh.getBounds( min, max );
-  for ( int i=0; i < NDIMS; ++i )
+  for ( int i=0 ; i < NDIMS ; ++i )
   {
     EXPECT_DOUBLE_EQ( min[ i ], lo[ i ] );
     EXPECT_DOUBLE_EQ( max[ i ], hi[ i ] );
@@ -454,7 +456,7 @@ void check_find2d( )
 
   spin::UniformGrid< IndexType, NDIMS > ug( lo, hi, res );
 
-  for ( IndexType i=0; i < ncells; ++i )
+  for ( IndexType i=0 ; i < ncells ; ++i )
   {
     PointType q            = PointType::make_point( xc[ i ],yc[ i ] );
     const int donorCellIdx = ug.getBinIndex( q );
@@ -466,15 +468,15 @@ void check_find2d( )
 
   // check points that are outside by shifting the query points
   constexpr double OFFSET = 10.0;
-  for ( IndexType i=0; i < ncells; ++i )
+  for ( IndexType i=0 ; i < ncells ; ++i )
   {
-     xc[ i ] += OFFSET;
-     yc[ i ] += OFFSET;
+    xc[ i ] += OFFSET;
+    yc[ i ] += OFFSET;
   }
 
   bvh.find( offsets, counts, candidates, ncells, xc, yc );
 
-  for ( IndexType i=0; i < ncells; ++i )
+  for ( IndexType i=0 ; i < ncells ; ++i )
   {
     EXPECT_EQ( counts[ i ], 0 );
   }
@@ -502,7 +504,7 @@ void check_single_box2d( )
   constexpr int NUM_BOXES = 1;
   constexpr int NDIMS     = 2;
 
-  umpire::Allocator current_allocator = axom::getDefaultAllocator();
+  const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator( axom::execution_space<ExecSpace>::allocatorID());
 
   // single bounding box in [0,1] x [0,1]
@@ -520,7 +522,7 @@ void check_single_box2d( )
   FloatType hi[ NDIMS ];
   bvh.getBounds( lo, hi );
 
-  for ( int idim=0; idim < NDIMS; ++idim )
+  for ( int idim=0 ; idim < NDIMS ; ++idim )
   {
     EXPECT_DOUBLE_EQ( lo[ idim ], 0.0 );
     EXPECT_DOUBLE_EQ( hi[ idim ], 1.0 );
@@ -570,7 +572,7 @@ void check_single_box3d( )
   constexpr int NUM_BOXES = 1;
   constexpr int NDIMS     = 3;
 
-  umpire::Allocator current_allocator = axom::getDefaultAllocator();
+  const int current_allocator = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator( axom::execution_space<ExecSpace>::allocatorID());
 
   // single bounding box in [0,1] x [0,1] x [0,1]
@@ -588,7 +590,7 @@ void check_single_box3d( )
   FloatType hi[ NDIMS ];
   bvh.getBounds( lo, hi );
 
-  for ( int idim=0; idim < NDIMS; ++idim )
+  for ( int idim=0 ; idim < NDIMS ; ++idim )
   {
     EXPECT_DOUBLE_EQ( lo[ idim ], 0.0 );
     EXPECT_DOUBLE_EQ( hi[ idim ], 1.0 );
@@ -631,6 +633,62 @@ void check_single_box3d( )
 //------------------------------------------------------------------------------
 // UNIT TESTS
 //------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+TEST( spin_bvh, traversal_predicates_pointInLeftBin )
+{
+  namespace bvh               = axom::spin::internal::linear_bvh;
+  using TraversalPredicates2D = bvh::TraversalPredicates< 2, double >;
+  using TraversalPredicates3D = bvh::TraversalPredicates< 3, double >;
+  using VecType               = bvh::Vec< double, 4 >;
+
+  VecType in_point, out_point, s1, s2;
+
+  in_point[ 0 ]  = in_point[ 1 ]  = in_point[ 2 ]  = 0.5;
+  out_point[ 0 ] = out_point[ 1 ] = out_point[ 2 ] = 1.5;
+
+  s1[ 0 ] = 0.; // LeftBin.xmin
+  s1[ 1 ] = 0.; // LeftBin.ymin
+  s1[ 2 ] = 0.; // LeftBin.zmin
+
+  s1[ 3 ] = 1.; // LeftBin.xmax
+  s2[ 0 ] = 1.; // LeftBin.ymax
+  s2[ 1 ] = 1.; // LeftBin.zmax
+
+  EXPECT_TRUE( TraversalPredicates2D::pointInLeftBin( in_point, s1, s2 ) );
+  EXPECT_TRUE( TraversalPredicates3D::pointInLeftBin( in_point, s1, s2 ) );
+
+  EXPECT_FALSE( TraversalPredicates2D::pointInLeftBin( out_point, s1, s2 ) );
+  EXPECT_FALSE( TraversalPredicates3D::pointInLeftBin( out_point, s1, s2 ) );
+}
+
+//------------------------------------------------------------------------------
+TEST( spin_bvh, traversal_predicates_pointInRightBin )
+{
+  namespace bvh               = axom::spin::internal::linear_bvh;
+  using TraversalPredicates2D = bvh::TraversalPredicates< 2, double >;
+  using TraversalPredicates3D = bvh::TraversalPredicates< 3, double >;
+  using VecType               = bvh::Vec< double, 4 >;
+
+  VecType in_point, out_point, s2, s3;
+
+  in_point[ 0 ]  = in_point[ 1 ]  = in_point[ 2 ]  = 0.5;
+  out_point[ 0 ] = out_point[ 1 ] = out_point[ 2 ] = 1.5;
+
+  s2[ 2 ] = 0.; // RightBin.xmin
+  s2[ 3 ] = 0.; // RightBin.ymin
+  s3[ 0 ] = 0.; // RightBin.zmin
+
+  s3[ 1 ] = 1.; // RightBin.xmax
+  s3[ 2 ] = 1.; // RightBin.ymax
+  s3[ 3 ] = 1.; // RightBin.zmax
+
+  EXPECT_TRUE( TraversalPredicates2D::pointInRightBin( in_point, s2, s3 ) );
+  EXPECT_TRUE( TraversalPredicates3D::pointInRightBin( in_point, s2, s3 ) );
+
+  EXPECT_FALSE( TraversalPredicates2D::pointInRightBin( out_point, s2, s3 ) );
+  EXPECT_FALSE( TraversalPredicates3D::pointInRightBin( out_point, s2, s3 ) );
+}
 
 //------------------------------------------------------------------------------
 TEST( spin_bvh, contruct2D_sequential )

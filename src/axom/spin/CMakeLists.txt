@@ -44,13 +44,16 @@ if ( RAJA_FOUND AND UMPIRE_FOUND )
        BVH.hpp
 
        ## internal
+       internal/linear_bvh/BVHData.hpp
+       internal/linear_bvh/BVH_impl.hpp
+       internal/linear_bvh/QueryAccessor.hpp
+       internal/linear_bvh/RadixTree.hpp
+       internal/linear_bvh/TraversalPredicates.hpp
        internal/linear_bvh/aabb.hpp
        internal/linear_bvh/build_radix_tree.hpp
        internal/linear_bvh/bvh_vtkio.hpp
-       internal/linear_bvh/BVHData.hpp
        internal/linear_bvh/emit_bvh.hpp
        internal/linear_bvh/math.hpp
-       internal/linear_bvh/RadixTree.hpp
        internal/linear_bvh/range.hpp
        internal/linear_bvh/vec.hpp
 
