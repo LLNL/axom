@@ -38,7 +38,7 @@ TEST( primal_ray_intersect, ray_aabb_intersection_2D )
   {
     const double n0[] = { 0.0,  1.0 };
     const double y0   = -1.0f;
-    for ( int i=0; i < N; ++i )
+    for ( int i=0 ; i < N ; ++i )
     {
       double tmin = 0.0;
       double tmax = 0.0;
@@ -56,7 +56,7 @@ TEST( primal_ray_intersect, ray_aabb_intersection_2D )
   {
     const double n0[] = { -1.0, 0.0 };
     const double x0   = 2.0f;
-    for ( int i=0; i < N; ++i )
+    for ( int i=0 ; i < N ; ++i )
     {
       double tmin = 0.0;
       double tmax = 0.0;
@@ -74,7 +74,7 @@ TEST( primal_ray_intersect, ray_aabb_intersection_2D )
   {
     const double n0[] = { 0.0, -1.0 };
     const double y0   = 2.0f;
-    for ( int i=0; i < N; ++i )
+    for ( int i=0 ; i < N ; ++i )
     {
       double tmin = 0.0;
       double tmax = 0.0;
@@ -92,7 +92,7 @@ TEST( primal_ray_intersect, ray_aabb_intersection_2D )
   {
     const double n0[] = {  1.0, 0.0 };
     const double x0   = -1.0f;
-    for ( int i=0; i < N; ++i )
+    for ( int i=0 ; i < N ; ++i )
     {
       double tmin = 0.0;
       double tmax = 0.0;
@@ -116,7 +116,7 @@ TEST( primal_ray_intersect, ray_aabb_intersection_2D )
   constexpr double PI_OVER_180 = M_PI / 180.0;
   const double xc[] = { 0.5, 0.5 };
   const double e1[] = { 1.0, 0.0 };
-  for( int i=0; i < NUM_ANGLES; ++i )
+  for( int i=0 ; i < NUM_ANGLES ; ++i )
   {
     const double t    = angles[ i ] * PI_OVER_180;
     const double cost = cos( t );
@@ -162,9 +162,9 @@ TEST( primal_ray_intersect, ray_aabb_intersection_3D )
     const double n0[] = { 0.0, 0.0,  1.0 };
     const double z0   = -1.0f;
 
-    for ( int i=0; i < N; ++i )
+    for ( int i=0 ; i < N ; ++i )
     {
-      for ( int j=0; j < N; ++j )
+      for ( int j=0 ; j < N ; ++j )
       {
         double tmin = 0.0;
         double tmax = 0.0;
@@ -188,9 +188,9 @@ TEST( primal_ray_intersect, ray_aabb_intersection_3D )
     const double n0[] = { 0.0, 0.0, -1.0 };
     const double z0   = 2.0f;
 
-    for ( int i=0; i < N; ++i )
+    for ( int i=0 ; i < N ; ++i )
     {
-      for ( int j=0; j < N; ++j )
+      for ( int j=0 ; j < N ; ++j )
       {
         double tmin = 0.0;
         double tmax = 0.0;
@@ -214,9 +214,9 @@ TEST( primal_ray_intersect, ray_aabb_intersection_3D )
     const double n0[] = { 0.0,  1.0, 0.0 };
     const double y0   = -1.0f;
 
-    for ( int i=0; i < N; ++i )
+    for ( int i=0 ; i < N ; ++i )
     {
-      for ( int j=0; j < N; ++j )
+      for ( int j=0 ; j < N ; ++j )
       {
         double tmin = 0.0;
         double tmax = 0.0;
@@ -240,9 +240,9 @@ TEST( primal_ray_intersect, ray_aabb_intersection_3D )
     const double n0[] = { 0.0, -1.0, 0.0 };
     const double y0   = 2.0f;
 
-    for ( int i=0; i < N; ++i )
+    for ( int i=0 ; i < N ; ++i )
     {
-      for ( int j=0; j < N; ++j )
+      for ( int j=0 ; j < N ; ++j )
       {
         double tmin = 0.0;
         double tmax = 0.0;
@@ -266,9 +266,9 @@ TEST( primal_ray_intersect, ray_aabb_intersection_3D )
     const double n0[] = {  1.0, 0.0, 0.0 };
     const double x0   = -1.0f;
 
-    for ( int i=0; i < N; ++i )
+    for ( int i=0 ; i < N ; ++i )
     {
-      for ( int j=0; j < N; ++j )
+      for ( int j=0 ; j < N ; ++j )
       {
         double tmin = 0.0;
         double tmax = 0.0;
@@ -292,9 +292,9 @@ TEST( primal_ray_intersect, ray_aabb_intersection_3D )
     const double n0[] = { -1.0, 0.0, 0.0 };
     const double x0   = 2.0f;
 
-    for ( int i=0; i < N; ++i )
+    for ( int i=0 ; i < N ; ++i )
     {
-      for ( int j=0; j < N; ++j )
+      for ( int j=0 ; j < N ; ++j )
       {
         double tmin = 0.0;
         double tmax = 0.0;
@@ -327,7 +327,7 @@ TEST( primal_ray_intersect, ray_aabb_intersection_3D )
   const double e2[] = { 0.0, 1.0, 0.0 };
   const double e3[] = { 0.0, 0.0, 1.0 };
   double n[3];
-  for( int i=0; i < NUM_ANGLES; ++i )
+  for( int i=0 ; i < NUM_ANGLES ; ++i )
   {
     const double t    = angles[ i ] * PI_OVER_180;
     const double cost = cos( t );
@@ -397,6 +397,3 @@ int main(int argc, char* argv[])
 
   return result;
 }
-
-
-
