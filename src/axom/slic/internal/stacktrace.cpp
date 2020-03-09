@@ -144,7 +144,9 @@ std::string demangle( char* backtraceString, int frame )
       oss << "Frame " << frame << ": " << mangledName << std::endl;
     }
 
+#if !defined(_LIBCPP_VERSION)
     free(realName);
+#endif
   }
   // otherwise, print the whole line
   else
