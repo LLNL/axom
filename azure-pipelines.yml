@@ -54,7 +54,7 @@ strategy:
        TEST_TARGET: 'linux_clang6'
        HOST_CONFIG: 'docker-linux-ubuntu16.04-x86_64-clang@6.0.0'
     osx_gcc:
-      VM_ImageName: 'macos-10.13'
+      VM_ImageName: 'macos-10.14'
       CMAKE_EXTRA_FLAGS: '-DAXOM_ENABLE_SIDRE=Off'
       TEST_TARGET: 'osx_gcc'
     windows:
