@@ -13,7 +13,10 @@
   #include <DbgHelp.h>
 #else
   #include <execinfo.h> // for backtrace()
-  #include <cxxabi.h>   // for abi::__cxa_demangle
+  #include <ciso646>
+  #if !defined(_LIBCPP_VERSION)
+     #include <cxxabi.h>   // for abi::__cxa_demangle
+  #endif
 #endif
 
 constexpr int MAX_FRAMES = 25;
@@ -122,9 +125,13 @@ std::string demangle( char* backtraceString, int frame )
     *returnOffset = 0;
     ++returnOffset;
 
-    int status;
+    int status = false;
+#if !defined(_LIBCPP_VERSION)
     char* realName = abi::__cxa_demangle( mangledName, nullptr, nullptr,
                                           &status );
+#else
+    char* realName = mangledName;
+#endif
 
     // if demangling is successful, output the demangled function name
     if (status == 0)
