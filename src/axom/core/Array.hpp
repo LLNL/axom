@@ -13,11 +13,12 @@
 #include "axom/core/Types.hpp"               // for IndexType definition
 
 // C/C++ includes
+#include <iostream>                 // for std::cerr and std::ostream
 #include <cstring>                  // for std::memcpy
-#include <iostream>                 // for std::cerr
 
 namespace axom
 {
+
 
 /* Provided so that 0 doesn't convert to nullptr and lead to ambiguous
  * constructor calls. */
@@ -25,6 +26,26 @@ namespace internal
 {
 constexpr IndexType ZERO = 0;
 }
+
+// Forward declare the templated classes and operator function(s)
+template < typename T >
+class Array;
+
+/// \name Overloaded Array Operator(s)
+/// @{
+
+/*! 
+ * \brief Overloaded output stream operator. Outputs the Array in to the
+ *  given output stream.
+ *
+ * \param [in,out] os output stream object.
+ * \param [in] arr user-supplied Array instance.
+ * \return os the updated output stream object.
+ */
+template< typename T >
+std::ostream& operator<<( std::ostream& os, const Array< T >& arr );
+
+/// @}
 
 /*!
  * \class Array
@@ -224,6 +245,14 @@ public:
   void set( const T* elements, IndexType n, IndexType pos );
 
   /*!
+   * \brief Clears the contents of the array
+   * 
+   * \post size of Array is 0
+   * \post capacity is unchanged
+   */
+  void clear();
+
+  /*!
    * \brief Insert an element into the array at the given position.
    *
    * \param [in] pos the position at which to insert.
@@ -269,6 +298,25 @@ public:
   void insert( IndexType pos, IndexType n, const T& value=T() );
 
   /*!
+   * \brief Erases an element from the Array 
+   *
+   * \param [in] pos the pointer to the element in the Array
+   *
+   * \return A pointer following the last element removed.
+   */
+  T* erase( T* pos );
+
+  /*!
+   * \brief Erases elements in the range [first, last) from the Array
+   *
+   * \param [in] first the pointer to the beginning of the range.
+   * \param [in] last the pointer to end of range.
+   *
+   * \return A pointer following the last element removed. 
+   */
+  T* erase( T* first, T* last );  
+
+  /*!
    * \brief TODO
    *
    * \param [in] pos the position to insert at.
@@ -307,6 +355,17 @@ public:
   }
 
   /*!
+   * \brief Returns a pointer to the first element of the Array
+   */
+  T* begin() { assert( m_data != nullptr ); return m_data; }
+
+  /*!
+   * \brief Returns a pointer to the element following the last
+   *  element of the Array.
+   */
+  T* end() { assert( m_data != nullptr ); return m_data + m_num_elements; }
+
+  /*!
    * \brief Shrink the capacity to be equal to the size.
    */
   void shrink() { setCapacity( m_num_elements ); }
@@ -331,6 +390,13 @@ public:
   void resize( IndexType new_num_elements );
 
   /*!
+   * \brief Exchanges the contents of this Array with the other.
+   *
+   * \note The externality of the buffers will follow the swap
+   */
+  void swap (Array< T >& other);
+
+  /*!
    * \brief Get the ratio by which the capacity increases upon dynamic resize.
    */
   double getResizeRatio() const { return m_resize_ratio; }
@@ -346,6 +412,14 @@ public:
    * \brief Return true iff the external buffer constructor was called.
    */
   bool isExternal() const { return m_is_external; }
+
+  /*!
+   * \brief Prints the Array
+   *
+   * \param os The output stream to write to
+   * \return A reference to the modified ostream
+   */
+  std::ostream& print(std::ostream& os) const;
 
 /// @}
 
@@ -419,7 +493,7 @@ protected:
   IndexType m_num_elements;
   IndexType m_capacity;
   double m_resize_ratio;
-  bool const m_is_external;
+  bool m_is_external;
 
   DISABLE_COPY_AND_ASSIGNMENT( Array );
   DISABLE_MOVE_AND_ASSIGNMENT( Array );
@@ -520,6 +594,19 @@ inline void Array< T >::set( const T* elements, IndexType n, IndexType pos )
 
 //------------------------------------------------------------------------------
 template< typename T >
+inline void Array< T >::clear()
+{
+  // This most likely needs to be a call to erase() instead.
+  for ( IndexType i = 0 ; i < m_num_elements ; ++i )
+  {
+    m_data[ i ].~T();
+  }
+  m_num_elements = 0;
+
+}
+
+//------------------------------------------------------------------------------
+template< typename T >
 inline void Array< T >::insert( IndexType pos, const T& value )
 {
   reserveForInsert( 1, pos );
@@ -551,6 +638,66 @@ inline void Array< T >::insert( IndexType pos, IndexType n, const T& value )
 
 //------------------------------------------------------------------------------
 template< typename T >
+inline T* Array< T >::erase( T* pos )
+{
+  assert( pos != nullptr );
+  assert( pos >= begin() && pos < end() );
+
+  T* next_element = pos;
+
+  while ( pos < end() - 1 )
+  {
+    *pos = *(pos + 1);
+     pos += 1; 
+  }
+  pos->~T();
+
+  updateNumElements( m_num_elements - 1 );
+  return next_element;
+
+}
+
+//------------------------------------------------------------------------------
+template< typename T >
+inline T* Array< T >::erase( T* first, T* last )
+{
+  assert( first != nullptr );
+  assert( last != nullptr );
+  assert( first >= begin() && first < end() );
+  assert( last >= first && last <= end() );
+
+  // Empty range, return last
+  if (first == last)
+  {
+    return last;
+  }
+
+  T* del = first;
+  T* next_element = first;
+  int count = 0;
+
+  // Erase [first,last) elements
+  while( del < last )
+  {
+    del->~T();
+    del++;
+    count++;
+  }
+
+  // Shift [last, end) elements over
+  while( last < end() )
+  {
+    *first = *last;
+    first++;
+    last++;
+  }
+
+  updateNumElements(m_num_elements - count);
+  return next_element;
+}
+
+//------------------------------------------------------------------------------
+template< typename T >
 inline void Array< T >::emplace( IndexType pos )
 {
   // TODO 
@@ -571,6 +718,44 @@ inline void Array< T >::resize( IndexType new_num_elements )
   }
 
   updateNumElements( new_num_elements );
+}
+
+//------------------------------------------------------------------------------
+template< typename T >
+inline void Array< T >::swap ( Array< T >& other )
+{
+  T* temp_data = m_data;
+  IndexType temp_num_elements = m_num_elements;
+  IndexType temp_capacity = m_capacity;
+  double temp_resize_ratio = m_resize_ratio;
+  bool temp_is_external = m_is_external;
+
+  m_data = other.m_data;
+  m_num_elements = other.m_num_elements;
+  m_capacity = other.m_capacity;
+  m_resize_ratio = other.m_resize_ratio;
+  m_is_external = other.m_is_external;
+
+  other.m_data = temp_data;
+  other.m_num_elements = temp_num_elements;
+  other.m_capacity = temp_capacity;
+  other.m_resize_ratio = temp_resize_ratio;
+  other.m_is_external = temp_is_external;
+
+}
+
+//------------------------------------------------------------------------------
+template< typename T >
+inline std::ostream& Array< T >::print(std::ostream& os) const
+{
+ os << "[ ";
+ for ( IndexType i = 0 ; i < m_num_elements; i++ )
+ {
+   os << m_data[i] << " ";
+ }
+ os << " ]";
+
+ return os;
 }
 
 //------------------------------------------------------------------------------
@@ -693,6 +878,16 @@ inline void Array< T >::dynamicRealloc( IndexType new_num_elements )
   m_capacity = new_capacity;
 
   assert( m_data != nullptr || m_capacity <= 0 );
+}
+
+//------------------------------------------------------------------------------
+/// Free functions implementing Array's operator(s)
+//------------------------------------------------------------------------------
+template< typename T >
+std::ostream& operator<<( std::ostream& os, const Array< T >& arr )
+{
+  arr.print(os);
+  return os;
 }
 
 } /* namespace axom */
