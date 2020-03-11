@@ -63,8 +63,13 @@ class Raja(CMakePackage):
                 '-DENABLE_CUDA=On',
                 '-DCUDA_TOOLKIT_ROOT_DIR=%s' % (spec['cuda'].prefix)])
 
-        # Work around spack adding -march=ppc64le to SPACK_TARGET_ARGS which is used by the spack compiler wrapper
-        if on_blueos:
+        # Work around spack adding -march=ppc64le to SPACK_TARGET_ARGS which
+        # is used by the spack compiler wrapper.  This can go away when BLT
+        # removes -Werror from GTest flags
+        sys_type = ""
+        if "SYS_TYPE" in env:
+            sys_type = env["SYS_TYPE"]
+        if "blueos" in sys_type:
             options.extend(['-DENABLE_TESTS=OFF'])
 
         return options

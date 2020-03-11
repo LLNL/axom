@@ -22,6 +22,7 @@ class Umpire(CMakePackage):
     version('1.0.1', tag='v1.0.1', submodules='True')
     version('1.0.0', tag='v1.0.0', submodules='True')
     version('0.3.5', tag='v0.3.5', submodules='True')
+    version('0.3.4', tag='v0.3.4', submodules='True')
     version('0.3.3', tag='v0.3.3', submodules='True')
     version('0.3.2', tag='v0.3.2', submodules='True')
     version('0.3.1', tag='v0.3.1', submodules='True')
@@ -35,7 +36,8 @@ class Umpire(CMakePackage):
     version('0.1.3', tag='v0.1.3', submodules='True')
 
     variant('cuda', default=False, description='Build with CUDA support')
-    variant('fortran', default=False, description='Build C/Fortran API')
+    variant('fortran', default=False, description='Build Fortran API')
+    variant('c', default=True, description='Build C API')
     variant('numa', default=False, description='Enable NUMA support')
     variant('openmp', default=False, description='Build with OpenMP support')
 
@@ -44,6 +46,7 @@ class Umpire(CMakePackage):
     depends_on('cmake@3.9:', when='+cuda', type='build')
 
     conflicts('+numa', when='@:0.3.2')
+    conflicts('~c', when='+fortran', msg='Fortran API requires C API')
 
     def _get_sys_type(self, spec):
         sys_type = spec.architecture
@@ -73,6 +76,9 @@ class Umpire(CMakePackage):
                 '-DCUDA_TOOLKIT_ROOT_DIR=%s' % (spec['cuda'].prefix)])
         else:
             options.append('-DENABLE_CUDA=Off')
+
+        if '+c' in spec:
+            options.append('-DENABLE_C=On')
 
         if '+fortran' in spec:
             options.append('-DENABLE_FORTRAN=On')

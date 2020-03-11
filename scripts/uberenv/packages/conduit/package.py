@@ -34,16 +34,18 @@ class Conduit(Package):
     coupling between packages in-core, serialization, and I/O tasks."""
 
     homepage = "http://software.llnl.gov/conduit"
+    url      = "https://github.com/LLNL/conduit/releases/download/v0.3.0/conduit-v0.3.0-src-with-blt.tar.gz"
     git      = "https://github.com/LLNL/conduit.git"
 
     version('master', branch='master', submodules=True, preferred=True)
-    version('0.5.1', tag='v0.5.1', submodules="True")
-    version('0.5.0', tag='v0.5.0', submodules="True")
-    version('0.4.0', tag='v0.4.0', submodules="True")
-    version('0.3.1', tag='v0.3.1', submodules="True")
-    version('0.3.0', tag='v0.3.0', submodules="True")
-    version('0.2.1', tag='v0.2.1', submodules="True")
-    version('0.2.0', tag='v0.2.0', submodules="True")
+    version('0.5.1', sha256='68a3696d1ec6d3a4402b44a464d723e6529ec41016f9b44c053676affe516d44')
+    version('0.5.0', sha256='7efac668763d02bd0a2c0c1b134d9f5ee27e99008183905bb0512e5502b8b4fe')
+    version('0.4.0', sha256='c228e6f0ce5a9c0ffb98e0b3d886f2758ace1a4b40d00f3f118542c0747c1f52')
+    version('0.3.1', sha256='7b358ca03bb179876291d4a55d6a1c944b7407a80a588795b9e47940b1990521')
+    version('0.3.0', sha256='52e9cf5720560e5f7492876c39ef2ea20ae73187338361d2744bdf67567da155')
+    # note: checksums on github automatic release source tars changed ~9/17
+    version('0.2.1', sha256='796576b9c69717c52f0035542c260eb7567aa351ee892d3fbe3521c38f1520c4')
+    version('0.2.0', sha256='31eff8dbc654a4b235cfcbc326a319e1752728684296721535c7ca1c9b463061')
 
     maintainers = ['cyrush']
 
@@ -301,8 +303,6 @@ class Conduit(Package):
 
         # are we on a specific machine
         on_blueos = 'blueos' in sys_type
-        on_blueos_p9 = on_blueos and 'p9' in sys_type
-        on_toss =  'toss_3' in sys_type
 
         ##############################################
         # Find and record what CMake is used
@@ -360,7 +360,8 @@ class Conduit(Package):
 
         # extra fun for blueos
         if on_blueos:
-            # All of BlueOS compilers report clang due to nvcc, override to proper compiler family
+            # All of BlueOS compilers report clang due to nvcc,
+            # override to proper compiler family
             if "xlc" in c_compiler:
                 cfg.write(cmake_cache_entry("CMAKE_C_COMPILER_ID", "XL"))
             if "xlC" in cpp_compiler:
@@ -368,16 +369,20 @@ class Conduit(Package):
 
             if "+fortran" in spec:
                 if "xlf" in f_compiler:
-                    cfg.write(cmake_cache_entry("CMAKE_Fortran_COMPILER_ID", "XL"))
+                    cfg.write(cmake_cache_entry("CMAKE_Fortran_COMPILER_ID",
+                                                "XL"))
 
                 if 'xl@coral' in os.getenv('SPACK_COMPILER_SPEC', ""):
                     # Fix missing std linker flag in xlc compiler
+                    flags = "-WF,-C! -qxlf2003=polymorphic"
                     cfg.write(cmake_cache_entry("BLT_FORTRAN_FLAGS",
-                                                "-WF,-C! -qxlf2003=polymorphic"))
+                                                flags))
                     # Grab lib directory for the current fortran compiler
-                    libdir = os.path.join(os.path.dirname(os.path.dirname(f_compiler)), "lib")
+                    libdir = os.path.join(os.path.dirname(
+                                          os.path.dirname(f_compiler)), "lib")
+                    flags = "-lstdc++ -Wl,-rpath," + libdir
                     cfg.write(cmake_cache_entry("BLT_EXE_LINKER_FLAGS",
-                        "-lstdc++ -Wl,-rpath," + libdir))
+                                                flags))
 
         #######################
         # Python
@@ -436,7 +441,8 @@ class Conduit(Package):
             cfg.write(cmake_cache_entry("MPI_C_COMPILER", mpicc_path))
             cfg.write(cmake_cache_entry("MPI_CXX_COMPILER", mpicxx_path))
             if "+fortran" in spec:
-                cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER", spec['mpi'].mpifc))
+                cfg.write(cmake_cache_entry("MPI_Fortran_COMPILER",
+                                            mpifc_path))
 
             mpiexe_bin = join_path(spec['mpi'].prefix.bin, 'mpiexec')
             if os.path.isfile(mpiexe_bin):
