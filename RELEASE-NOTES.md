@@ -25,6 +25,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   launch bounds is calculated. Consequently, a large number of threads was being launched
   leading to max registry count violation when linking. We are now using fixed kernel size
   of 256 threads (16x16 in 2D and 8x8x4 in 3D).
+- Third-party libraries can now build on the Windows platform through uberenv using vcpkg
+  ("zero-to-axom support on Windows")
 
 ### Known Bugs
 

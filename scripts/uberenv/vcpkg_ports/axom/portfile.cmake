@@ -108,13 +108,6 @@ set(ENABLE_MPI OFF CACHE BOOL "")
 # set(MPIEXEC "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2019.5.281/windows/mpi/intel64/bin/mpiexec.exe" CACHE PATH "")
 # set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
 #
-# Here are example settings pointing to MSMPI (use when Intel is installed):
-#
-# set(MPI_C_COMPILER "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2019.5.281/windows/mpi/intel64/bin/mpicc.bat" CACHE PATH "")
-# set(MPI_CXX_COMPILER "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2019.5.281/windows/mpi/intel64/bin/mpicc.bat" CACHE PATH "")
-# set(MPI_Fortran_COMPILER "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2019.5.281/windows/mpi/intel64/bin/mpifc.bat" CACHE PATH "")
-# set(MPIEXEC "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2019.5.281/windows/mpi/intel64/bin/mpiexec.exe" CACHE PATH "")
-# set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
 
 # cmake options
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "")
@@ -122,12 +115,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "")
 # TODO:
 #  * Add TPLs: mfem, umpire, raja
 #  * Add tools: uncrustify, sphinx, doxygen
-
-# DONE:
-#  * Add conduit with HDF5
-#  * Add hints to get MPI working
-#  * Add vcpkg toolchain file -- CMAKE_TOOLCHAIN_FILE
-#  * Set vcpkg triplet -- VCPKG_TARGET_TRIPLET 
 
 ]=])
 

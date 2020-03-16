@@ -97,6 +97,7 @@ if (HDF5_DIR)
                                  LIBRARIES hdf5::hdf5-shared
                                  TREAT_INCLUDES_AS_SYSTEM ON)
         else()
+            # Placeholder: we don't (yet) support static builds on Windows
             blt_register_library(NAME hdf5
                                  LIBRARIES hdf5::hdf5-static)
         endif()

@@ -347,8 +347,8 @@ class VcpkgEnv(UberEnv):
 
         # Bootstrap vcpkg
         os.chdir(self.dest_vcpkg)
-        sexe("bootstrap-vcpkg.bat -disableMetrics", echo=True)
-            
+        print("[info: bootstrapping vcpkg]")
+        sexe("bootstrap-vcpkg.bat -disableMetrics")
 
     def patch(self):
         """ hot-copy our ports into vcpkg """
