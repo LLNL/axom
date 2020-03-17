@@ -60,6 +60,8 @@ set( primal_dependencies
      core
      slic
      )
+     
+blt_list_append( TO primal_dependencies ELEMENTS cuda IF ENABLE_CUDA )
 
 blt_add_library(
     NAME                  primal

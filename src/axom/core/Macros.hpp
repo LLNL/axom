@@ -70,6 +70,15 @@
 #endif
 
 /*!
+ * \def AXOM_DEVICE_CODE
+ *
+ * \brief Convenience macro used for kernel code
+ */
+#if defined (__CUDA_ARCH__)
+#define AXOM_DEVICE_CODE
+#endif
+
+/*!
  *
  * \def AXOM_NOT_USED(x)
  * \brief Macro used to silence compiler warnings in methods with unused

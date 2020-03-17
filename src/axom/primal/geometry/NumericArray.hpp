@@ -7,9 +7,7 @@
 #define NUMERIC_ARRAY_HPP_
 
 #include "axom/core/Macros.hpp"
-
 #include "axom/core/utilities/Utilities.hpp"
-
 #include "axom/slic/interface/slic.hpp"
 
 // C/C++ includes
@@ -66,6 +64,7 @@ NumericArray< T,SIZE > operator+( const NumericArray< T,SIZE >& lhs,
  * \result C resulting numeric array from component-wise subtraction.
  */
 template < typename T,int SIZE >
+AXOM_HOST_DEVICE
 NumericArray< T,SIZE > operator-( const NumericArray< T,SIZE >& lhs,
                                   const NumericArray< T,SIZE >& rhs  );
 
@@ -201,6 +200,7 @@ public:
    * The rest will be set to zero.  Defaults is SIZE.
    * If sz is greater than SIZE, we set all coordinates to val
    */
+  AXOM_HOST_DEVICE
   explicit NumericArray( T val = T(), int sz = SIZE);
 
   /*!
@@ -209,17 +209,20 @@ public:
    * \param [in] sz number of coordinates. Defaults to SIZE.
    * \note If sz is greater than SIZE, we only take the first SIZE values.
    */
+  AXOM_HOST_DEVICE
   NumericArray(const T* vals, int sz = SIZE);
 
   /*!
    * \brief Copy constructor.
    * \param [in] other The numeric array to copy
    */
+  AXOM_HOST_DEVICE
   NumericArray( const NumericArray& other ) { *this = other; };
 
   /*!
    * \brief Destructor.
    */
+  AXOM_HOST_DEVICE
   ~NumericArray() { }
 
   /*!
@@ -233,6 +236,7 @@ public:
    * \brief Assignment operator.
    * \param [in] rhs a numeric array instance on the right hand side.
    */
+  AXOM_HOST_DEVICE
   NumericArray& operator=(const NumericArray& rhs);
 
   /*!
@@ -241,13 +245,19 @@ public:
    * \return \f$ p_i \f$ the value at the given component index.
    * \pre \f$  0 \le i < SIZE \f$
    */
+  AXOM_HOST_DEVICE 
   const T& operator[](int i) const;
+  
+  AXOM_HOST_DEVICE 
   T& operator[](int i);
 
   /*!
    * \brief Returns a pointer to the underlying data.
    */
+  AXOM_HOST_DEVICE 
   const T* data() const;
+  
+  AXOM_HOST_DEVICE 
   T* data();
 
   /*!
@@ -280,6 +290,7 @@ public:
    * Subtracts the numeric array arr from this instance (component-wise).
    * \return A reference to the NumericArray instance after subtraction.
    */
+  AXOM_HOST_DEVICE
   NumericArray< T,SIZE >& operator-=( const NumericArray< T,SIZE >& arr );
 
   /*!
@@ -289,6 +300,7 @@ public:
    * \return A reference to the NumericArray instance after scalar
    * multiplication.
    */
+  AXOM_HOST_DEVICE
   NumericArray< T,SIZE >& operator*=(double scalar);
 
   /*!
@@ -298,6 +310,7 @@ public:
    * Each element of the numeric array is divided by scalar
    * \return A reference to the NumericArray instance after scalar division.
    */
+  AXOM_HOST_DEVICE
   NumericArray< T,SIZE >& operator/=(double scalar);
 
   /*!
@@ -307,6 +320,7 @@ public:
    * \return A reference to the NumericArray instance after cwise
    * multiplication.
    */
+  AXOM_HOST_DEVICE
   NumericArray< T,SIZE >& operator*=( const NumericArray< T,SIZE >& arr );
 
   /*!
@@ -379,6 +393,7 @@ public:
   int argMin() const;
 
 private:
+  AXOM_HOST_DEVICE
   void verifyIndex(int AXOM_DEBUG_PARAM(idx)) const
   {
     SLIC_ASSERT(idx >= 0 && idx < SIZE);
@@ -410,12 +425,15 @@ NumericArray< T,SIZE >::NumericArray(T val, int sz)
 
   // Fill first nvals coordinates with val ( 0 <= nvals <= SIZE )
   const int nvals = axom::utilities::clampVal(sz, 0, SIZE);
-  std::fill( m_components, m_components+nvals, val );
+  for (int i = 0; i < nvals; i++)
+  {
+    m_components[i] = val;    
+  }
 
   // Fill any remaining coordinates with zero
-  if ( nvals < SIZE )
+  for (int j = nvals; j < SIZE; j++)
   {
-    std::fill( m_components+nvals, m_components+SIZE, T() );
+    m_components[j] = T();    
   }
 }
 
@@ -428,19 +446,22 @@ NumericArray< T, SIZE >::NumericArray(const T* vals, int sz)
   const int nvals = axom::utilities::clampVal(sz, 0, SIZE);
 
   // Copy first nvals coordinates from vals array ( 0 <= nvals <= SIZE )
-  std::copy( vals, vals+nvals, m_components);
-
-  // Fill any remaining coordinates with zero
-  if ( nvals < SIZE)
+  for (int i = 0; i < nvals; i++)
   {
-    std::fill( m_components+nvals, m_components+SIZE, T());
+    m_components[i] = vals[i];    
   }
 
+  // Fill any remaining coordinates with zero
+  for (int j = nvals; j < SIZE; j++) 
+  {
+    m_components[j] = T();    
+  }
 }
 
 //------------------------------------------------------------------------------
 template < typename T,int SIZE >
-inline NumericArray< T,SIZE >&
+inline  AXOM_HOST_DEVICE 
+NumericArray< T,SIZE >&
 NumericArray< T,SIZE >::operator=( const NumericArray< T,SIZE >& rhs )
 {
 

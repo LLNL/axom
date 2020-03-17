@@ -12,6 +12,7 @@
 #ifndef PRIMAL_INTERSECT_HPP_
 #define PRIMAL_INTERSECT_HPP_
 
+#include "axom/core/Macros.hpp"
 #include "axom/core/utilities/Utilities.hpp"
 
 #include "axom/primal/geometry/BoundingBox.hpp"
@@ -40,6 +41,7 @@ namespace primal
  * triangle boundaries in intersections, specify includeBoundary as true.
  */
 template < typename T >
+AXOM_HOST_DEVICE
 bool intersect( const Triangle< T, 3 >& t1,
                 const Triangle< T, 3 >& t2,
                 const bool includeBoundary = false)

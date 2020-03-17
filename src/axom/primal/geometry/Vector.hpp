@@ -7,8 +7,9 @@
 #define VECTOR_HPP_
 
 // axom_utils includes
-#include "axom/core/numerics/Determinants.hpp"  // for numerics::determinant()
-#include "axom/core/numerics/matvecops.hpp"     // dot_product()/cross_product()
+#include "axom/core/Macros.hpp"
+#include "axom/core/numerics/Determinants.hpp"
+#include "axom/core/numerics/matvecops.hpp"
 
 // Primal includes
 #include "axom/primal/geometry/NumericArray.hpp"
@@ -123,12 +124,14 @@ public:
    * \param [in] sz The number of coordinates to set to val.
    * The rest will be set to zero.  Defaults is NDIMS.
    */
+  AXOM_HOST_DEVICE
   explicit Vector( T val = T(), int sz = NDIMS) : m_components(val, sz) { }
 
   /*!
    * \brief Constructor from a numeric array
    * \param [in] arr The numeric array to copy from
    */
+  AXOM_HOST_DEVICE
   Vector( const NumericArray< T,NDIMS >& arr) : m_components(arr) { }
 
   /*!
@@ -138,6 +141,7 @@ public:
    * to NDIMS.
    * If sz is greater than NDIMS, we only take the first NDIMS values.
    */
+  AXOM_HOST_DEVICE
   Vector(const T* vals, int sz = NDIMS) : m_components(vals, sz) {}
 
   /*!
@@ -145,12 +149,14 @@ public:
    * \param [in] pt The point containing the vector's coordinates.
    * \note Equivalent to Vector( Point::zero(), pt)
    */
+  AXOM_HOST_DEVICE
   Vector(const Point< T,NDIMS > & pt) : m_components( pt.array() ) {}
 
   /*!
    * \brief Copy constructor
    * \param [in] other The vector to copy
    */
+  AXOM_HOST_DEVICE
   Vector(const Vector< T,NDIMS > & other) : m_components( other.array() ) {}
 
   /*!
@@ -160,12 +166,14 @@ public:
    * \pre A.dimension() == B.dimension()
    * \pre A.dimension() == ndims
    */
+  AXOM_HOST_DEVICE
   Vector( const Point< T,NDIMS >& A, const Point< T,NDIMS >& B ) :
     m_components(B.array() - A.array()) {}
 
   /*!
    * \brief Destructor.
    */
+  AXOM_HOST_DEVICE
   ~Vector() {}
 
   /*!
@@ -173,6 +181,7 @@ public:
    * \return d the dimension (size) of the vector
    * \post d >= 1.
    */
+  AXOM_HOST_DEVICE
   int dimension() const { return NDIMS; };
 
   /*!
@@ -181,19 +190,28 @@ public:
    * \return p[i] the value at the given component index.
    * \pre (i >= 0) && (i < ndims)
    */
+  AXOM_HOST_DEVICE
   const T& operator[](int i) const { return m_components[i]; }
+  
+  AXOM_HOST_DEVICE
   T& operator[](int i)             { return m_components[i]; }
 
   /*!
    * \brief Returns a reference to the underlying NumericArray.
    */
+  AXOM_HOST_DEVICE 
   const NumericArray< T,NDIMS > & array() const { return m_components; }
-  NumericArray< T,NDIMS >& array()               { return m_components; }
+  
+  AXOM_HOST_DEVICE 
+  NumericArray< T,NDIMS >& array()              { return m_components; }
 
   /*!
    * \brief Returns a pointer to the underlying data.
    */
+  AXOM_HOST_DEVICE
   const T* data() const { return m_components.data(); }
+  
+  AXOM_HOST_DEVICE
   T* data()             { return m_components.data(); }
 
   /*!
@@ -235,6 +253,7 @@ public:
    * \pre scalar != 0
    * \return A reference to the vector instance after scalar division.
    */
+  AXOM_HOST_DEVICE
   Vector< T,NDIMS >& operator/=(T scalar);
 
   /*!
@@ -242,6 +261,7 @@ public:
    * \param [in] v the other vector in the dot product
    * \return The dot product of the two vectors.
    */
+  AXOM_HOST_DEVICE
   T dot(const Vector< T,NDIMS >& v ) const;
 
   /*!
@@ -249,12 +269,14 @@ public:
    * \return n the squared norm.
    * \see Vector::norm()
    */
+  AXOM_HOST_DEVICE
   double squared_norm() const;
 
   /*!
    * \brief Computes the \f$ l^2 \f$ norm of this vector instance.
    * \return n the norm of the vector, a.k.a., magnitude or length.
    */
+  AXOM_HOST_DEVICE
   double norm() const;
 
   /*!
@@ -267,6 +289,7 @@ public:
    * \note The unit vector of the zero vector is (1,0,0,...) when normalized.
    * \post this->norm() == 1.0f
    */
+  AXOM_HOST_DEVICE
   Vector unitVector() const;
 
   /*!
@@ -283,6 +306,7 @@ public:
    * \return dotprod the computed dot product.
    * \pre u.dimension() == v.dimension().
    */
+  AXOM_HOST_DEVICE
   static T dot_product( const Vector< T,NDIMS >& u,
                         const Vector< T,NDIMS >& v );
 
@@ -301,6 +325,7 @@ public:
    * \param [in] v the vector on the left-hand side.
    * \return C the resulting vector from A x B.
    */
+  AXOM_HOST_DEVICE
   static Vector< T,3 > cross_product( const Vector< T,3 >& u,
                                       const Vector< T,3 >& v );
 
@@ -389,7 +414,7 @@ inline double Vector< T, NDIMS >::norm() const
 template < typename T, int NDIMS >
 inline Vector< T, NDIMS > Vector< T, NDIMS >::unitVector() const
 {
-  static const double EPS = 1.0e-50;
+  constexpr double EPS = 1.0e-50;
 
   Vector v( *this);
 

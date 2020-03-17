@@ -13,6 +13,7 @@
 #ifndef PRIMAL_INTERSECT_IMPL_HPP_
 #define PRIMAL_INTERSECT_IMPL_HPP_
 
+#include "axom/core/Macros.hpp"
 #include "axom/core/numerics/Determinants.hpp"
 #include "axom/core/utilities/Utilities.hpp"
 
@@ -38,26 +39,49 @@ typedef primal::Triangle< double, 3 > Triangle3;
 typedef primal::Triangle< double, 2 > Triangle2;
 typedef primal::Point< double, 2 > Point2;
 
+AXOM_HOST_DEVICE
 bool isGt(double x, double y, double EPS=1.0e-12);
+
+AXOM_HOST_DEVICE 
 bool isLt(double x, double y, double EPS=1.0e-12);
+
 bool isLeq(double x, double y, double EPS=1.0e-12);
+
+AXOM_HOST_DEVICE
 bool isLpeq(double x, double y, bool includeEqual = false,
             double EPS=1.0e-12);
+
+AXOM_HOST_DEVICE
 bool isGeq(double x, double y, double EPS=1.0e-12);
+
+AXOM_HOST_DEVICE
 bool isGpeq(double x, double y, bool includeEqual = false,
             double EPS=1.0e-12);
+
+AXOM_HOST_DEVICE
 bool nonzeroSignMatch(double x, double y, double z, double EPS=1.0e-12);
+
+AXOM_HOST_DEVICE
 bool twoZeros(double x, double y, double z, double EPS=1.0e-12);
+
+AXOM_HOST_DEVICE
 bool oneZeroOthersMatch(double x, double y, double z, double EPS=1.0e-12);
+
+AXOM_HOST_DEVICE
 int  countZeros(double x, double y, double z, double EPS=1.0e-12);
+
+AXOM_HOST_DEVICE
 double twoDcross(const Point2& A, const Point2& B, const Point2& C);
 
+AXOM_HOST_DEVICE
 bool checkEdge(const Point2& p1,
                const Point2& q1,
                const Point2& r1,
                const Point2& p2,
                const Point2& r2,
                bool includeBoundary);
+
+AXOM_HOST_DEVICE
 bool checkVertex(const Point2& p1,
                  const Point2& q1,
                  const Point2& r1,
@@ -66,6 +90,7 @@ bool checkVertex(const Point2& p1,
                  const Point2& r2,
                  bool includeBoundary);
 
+AXOM_HOST_DEVICE 
 bool intersectPermuted2DTriangles(const Point2& p1,
                                   const Point2& q1,
                                   const Point2& r1,
@@ -74,12 +99,14 @@ bool intersectPermuted2DTriangles(const Point2& p1,
                                   const Point2& r2,
                                   bool includeBoundary);
 
+AXOM_HOST_DEVICE
 bool intersectOnePermutedTriangle(
   const Point3 &p1, const Point3 &q1, const Point3 &r1,
   const Point3 &p2, const Point3 &q2, const Point3 &r2,
   double dp2, double dq2, double dr2,  Vector3 &normal,
   bool includeBoundary);
 
+AXOM_HOST_DEVICE
 bool intersectTwoPermutedTriangles(const Point3& p1,
                                    const Point3& q1,
                                    const Point3& r1,
@@ -88,6 +115,7 @@ bool intersectTwoPermutedTriangles(const Point3& p1,
                                    const Point3& r2,
                                    bool includeBoundary);
 
+AXOM_HOST_DEVICE
 bool intersectCoplanar3DTriangles(const Point3& p1,
                                   const Point3& q1,
                                   const Point3& r1,
@@ -97,6 +125,7 @@ bool intersectCoplanar3DTriangles(const Point3& p1,
                                   Vector3 normal,
                                   bool includeBoundary);
 
+AXOM_HOST_DEVICE
 bool TriangleIntersection2D(const Triangle2& t1,
                             const Triangle2& t2,
                             bool includeBoundary = false);
@@ -123,6 +152,7 @@ bool TriangleIntersection2D(const Triangle2& t1,
  * Tests, RR-4488, INRIA (2002).  https://hal.inria.fr/inria-00072100/
  */
 template < typename T >
+AXOM_HOST_DEVICE
 bool intersect_tri3D_tri3D( const Triangle< T, 3 >& t1,
                             const Triangle< T, 3 >& t2,
                             bool includeBoundary = false)
