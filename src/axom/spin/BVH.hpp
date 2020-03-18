@@ -14,7 +14,7 @@
 #include "axom/core/execution/execution_space.hpp"  // for execution spaces
 
 // C/C++ includes
-#include <type_traits> // for std::is_floating_point()
+#include <type_traits> // for std::is_floating_point(), std::is_same()
 
 #if !defined(AXOM_USE_RAJA) || !defined(AXOM_USE_UMPIRE)
 #error *** The spin::BVH class requires RAJA and Umpire ***
@@ -117,15 +117,21 @@ enum BVHReturnCodes
 template < int NDIMS, typename ExecSpace, typename FloatType = double >
 class BVH
 {
-public:
+private:
 
+  // compile time checks
   AXOM_STATIC_ASSERT_MSG( ( (NDIMS==2) || (NDIMS==3) ),
-                          "The BVH class may be used only in 2D or 3D." );
+                            "The BVH class may be used only in 2D or 3D." );
   AXOM_STATIC_ASSERT_MSG( std::is_floating_point< FloatType >::value,
                           "A valid FloatingType must be used for the BVH." );
-  AXOM_STATIC_ASSERT_MSG( axom::execution_space< ExecSpace >::valid(),
-                          "A valid execution space must be supplied to the BVH." );
 
+  // NOTE: prevent instantiating the BVH with single precision since the
+  // parallel scans require do not properly work in single precision.
+  constexpr static bool is_double = std::is_same< FloatType, double >::value;
+  AXOM_STATIC_ASSERT_MSG( is_double, "BVH requires double precision!" );
+  AXOM_STATIC_ASSERT_MSG( axom::execution_space< ExecSpace >::valid(),
+                       "A valid execution space must be supplied to the BVH." );
+public:
 
   /*!
    * \brief Default constructor. Disabled.
