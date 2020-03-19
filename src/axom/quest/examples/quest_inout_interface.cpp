@@ -247,7 +247,8 @@ int main( int argc, char** argv )
     const double rate =  queryPoints.size() / timer.elapsed();
     SLIC_INFO("  query rate: " <<  rate  << " queries per second.");
 
-    const double intPercent = (100 * numInside) / queryPoints.size();
+    const double intPercent =
+       (100 * numInside) / static_cast< double >( queryPoints.size() );
     SLIC_INFO("  " << numInside << " of " << queryPoints.size()
                    << " (" << intPercent << "%) "
                    << " of the query points were contained in the surface.");

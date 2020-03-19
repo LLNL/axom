@@ -32,10 +32,10 @@
 #include "axom/slic/streams/GenericOutputStream.hpp"
 #include "axom/slic/interface/slic.hpp"
 
-// RAJA 
+// RAJA
 #ifdef AXOM_USE_RAJA
   #include "RAJA/RAJA.hpp"
-#endif 
+#endif
 
 // RAJA policies
 #include "axom/mint/execution/internal/structured_exec.hpp"
@@ -78,8 +78,8 @@ using UniformGrid3 = spin::UniformGrid<int, 3>;
 using Vector3 = primal::Vector<double, 3>;
 using Segment3 = primal::Segment<double, 3>;
 
-enum RuntimePolicy { seq = 0, 
-                     raja_seq = 1, 
+enum RuntimePolicy { seq = 0,
+                     raja_seq = 1,
                      raja_omp = 2,
                      raja_cuda = 3};
 
@@ -120,7 +120,7 @@ const std::set<RuntimePolicy> Input::s_validPolicies({
     , raja_seq
     #ifdef AXOM_USE_OPENMP
     , raja_omp
-    #endif  
+    #endif
     #ifdef AXOM_USE_CUDA
     , raja_cuda
     #endif
@@ -143,7 +143,7 @@ void Input::parse(int argc, char** argv, CLI::App& app)
                  "Set to 1 to use the RAJA sequential policy. \n"
     #ifdef AXOM_USE_OPENMP
                  "Set to 2 to use the RAJA OpenMP policy. \n"
-    #endif 
+    #endif
     #ifdef AXOM_USE_CUDA
                  "Set to 3 to use the RAJA CUDA policy."
     #endif
@@ -208,11 +208,11 @@ void Input::fixOutfilePath()
   std::string outFileBase = futil::joinPath(futil::getCWD(),inFileStem);
 
   // set output file name when not provided
-  int sz = vtkOutput.size();
+  int sz = static_cast< int >( vtkOutput.size() );
   if (sz < 1)
   {
     vtkOutput = outFileBase;
-    sz = vtkOutput.size();
+    sz = static_cast< int >( vtkOutput.size() );
   }
 
   // ensure that output file does not end with '.vtk'
@@ -335,7 +335,7 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
   std::vector<int> & degenerate)
 {
   SLIC_INFO("Running naive intersection algorithm "
-    << " in execution Space: " 
+    << " in execution Space: "
     << axom::execution_space< ExecSpace >::name());
 
   // Get allocator
@@ -362,14 +362,14 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
   RAJA::RangeSegment row_range(0, ncells);
   RAJA::RangeSegment col_range(0, ncells);
 
-  using KERNEL_POL = 
+  using KERNEL_POL =
     typename axom::mint::internal::structured_exec< ExecSpace >::loop2d_policy;
   using REDUCE_POL =
     typename axom::execution_space< ExecSpace >::reduce_policy;
-  using ATOMIC_POL = 
+  using ATOMIC_POL =
     typename axom::execution_space< ExecSpace >::atomic_policy;
- 
-  RAJA::ReduceSum< REDUCE_POL, int > numIntersect(0);  
+
+  RAJA::ReduceSum< REDUCE_POL, int > numIntersect(0);
 
   // Compute the number of intersections
   RAJA::kernel<KERNEL_POL>( RAJA::make_tuple(col_range, row_range),
@@ -387,7 +387,7 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
   int * intersections =
     axom::allocate <int> (numIntersect.get() * 2);
   int * counter = axom::allocate <int> (1);
-  
+
   counter[0] = 0;
 
   // RAJA loop to populate with intersections
@@ -410,7 +410,7 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
     retval.push_back(std::make_pair(intersections[i], intersections[i + 1]));
   }
 
-  // Deallocate 
+  // Deallocate
   axom::deallocate(tris);
   axom::deallocate(intersections);
   axom::deallocate(counter);
@@ -519,7 +519,7 @@ void initializeLogger()
  * Currently the mesh tester checks for intersecting triangles.  This is
  * implemented in three ways.  First, a naive algorithm tests each triangle
  * against each other triangle.  This is easy to understand and verify,
- * but slow. Second, the same naive algorithm is run using raja. A third 
+ * but slow. Second, the same naive algorithm is run using raja. A third
  * algorithm uses a UniformGrid to index the bounding box of the mesh,
  * and checks each triangle for intersection with the triangles in all the
  * bins the triangle's bounding box falls into.
@@ -598,18 +598,18 @@ int main( int argc, char** argv )
       collisions = naiveIntersectionAlgorithm(surface_mesh, degenerate);
   #ifdef AXOM_USE_RAJA
      case raja_seq:
-        collisions = naiveIntersectionAlgorithm< seq_exec >(surface_mesh, 
+        collisions = naiveIntersectionAlgorithm< seq_exec >(surface_mesh,
                                                           degenerate);
        break;
     #ifdef AXOM_USE_OPENMP
      case raja_omp:
-        collisions = naiveIntersectionAlgorithm< omp_exec >(surface_mesh, 
+        collisions = naiveIntersectionAlgorithm< omp_exec >(surface_mesh,
                                                           degenerate);
        break;
     #endif
     #ifdef AXOM_USE_CUDA
      case raja_cuda:
-        collisions = naiveIntersectionAlgorithm< cuda_exec >(surface_mesh, 
+        collisions = naiveIntersectionAlgorithm< cuda_exec >(surface_mesh,
                                                           degenerate);
        break;
     #endif
@@ -634,7 +634,9 @@ int main( int argc, char** argv )
               << timer.elapsedTimeInSec() << " seconds.");
 
     announceMeshProblems(surface_mesh->getNumberOfCells(),
-                         collisions.size(), degenerate.size());
+                         static_cast< int >( collisions.size() ),
+                         static_cast< int >( degenerate.size() )
+                         );
 
     saveProblemFlagsToMesh(surface_mesh, collisions, degenerate);
 

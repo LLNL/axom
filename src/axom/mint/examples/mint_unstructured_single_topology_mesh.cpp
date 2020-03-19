@@ -68,7 +68,7 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
       vy[ node_ID ] = utilities::random_real( LO, HI );
       vz[ node_ID ] = utilities::random_real( LO, HI );
       p_avg[ node_ID ] = 0.0;
-      cells_per_node[ node_ID ] = 0.0;
+      cells_per_node[ node_ID ] = 0;
       node_ID++;
     }
   }

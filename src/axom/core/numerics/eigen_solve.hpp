@@ -138,9 +138,9 @@ int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int numIterations)
       matrix_vector_multiply(A, vec, temp);
 
       // make ortho to previous (for stability)
-      for (int k = 0 ; k < i ; k++)
+      for (int kk = 0 ; kk < i ; kk++)
       {
-        make_orthogonal< T >(temp, u + k*N, N);
+        make_orthogonal< T >(temp, u + kk*N, N);
       }
 
       res = normalize< T >(temp, N);

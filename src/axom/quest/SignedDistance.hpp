@@ -380,11 +380,11 @@ inline double SignedDistance< NDIMS >::computeDistance(
   m_bvhTree->find( pt, buckets );
 
   // STEP 1: get candidate surface elements
-  int nbuckets = buckets.size();
+  int nbuckets = static_cast< int >( buckets.size() );
   std::vector< int > candidates;
   this->getCandidateSurfaceElements( pt, &buckets[0], nbuckets, candidates );
 
-  const int nelems = candidates.size();
+  const int nelems = static_cast< int >( candidates.size() );
 
   // STEP 2: process surface elements and compute minimum distance and
   // corresponding closest point.
@@ -596,7 +596,7 @@ void SignedDistance< NDIMS >::getCandidateSurfaceElements(
   int* indx             = new int[ nelems ];
 
   // STEP 1: get flat array of the surface elements and compute distances
-  int icount = 0;
+  int icount( static_cast< int >(0) );
   for ( int ibin=0 ; ibin < nbins ; ++ibin )
   {
 

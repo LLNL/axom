@@ -71,7 +71,7 @@ public:
   }
 
   /*! Return the number of vertices in the polygon */
-  int numVertices() const { return m_vertices.size(); }
+  int numVertices() const { return static_cast< int >( m_vertices.size() ); }
 
   /*! Appends a vertex to the list of vertices */
   void addVertex(const PointType& pt)

@@ -308,11 +308,10 @@ TEST( primal_point, point_midpoint)
 //------------------------------------------------------------------------------
 TEST( primal_point, point_linear_interpolation)
 {
-  static const int DIM = 3;
-  typedef int CoordType;
-  typedef primal::Point< CoordType, DIM > QPoint;
+  constexpr int DIM = 3;
+  using QPoint = primal::Point< double, DIM >;
 
-  QPoint p0(0);
+  QPoint p0;
   QPoint p1(100);
 
   EXPECT_TRUE(QPoint::lerp(p0,p1, 0) == p0);

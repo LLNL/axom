@@ -745,7 +745,8 @@ inline void Array< T >::dynamicRealloc( IndexType new_num_tuples )
   }
 
   assert( m_resize_ratio >= 1.0 );
-  const IndexType new_capacity = new_num_tuples * m_resize_ratio + 0.5;
+  const IndexType new_capacity =
+      static_cast< IndexType >( new_num_tuples * m_resize_ratio + 0.5 );
 
   if ( m_resize_ratio < 1.0 )
   {
