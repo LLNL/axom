@@ -13,8 +13,7 @@
 #------------------------------------------------------------------------------
 
 blt_add_library(NAME cli11
-                HEADERS CLI11/CLI11.hpp
-                HEADERS_OUTPUT_SUBDIR CLI11)
+                HEADERS CLI11/CLI11.hpp)
 
 target_include_directories(cli11 SYSTEM INTERFACE
             $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
@@ -57,8 +56,7 @@ set(fmt_headers_sources
     )
 
 blt_add_library(NAME fmt
-                HEADERS ${fmt_headers}
-                HEADERS_OUTPUT_SUBDIR fmt)
+                HEADERS ${fmt_headers})
 
 target_include_directories(fmt SYSTEM INTERFACE
             $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
@@ -140,8 +138,7 @@ if (AXOM_ENABLE_SPARSEHASH)
      )
      
     blt_add_library(NAME sparsehash
-            HEADERS ${sparsehash_headers}
-            HEADERS_OUTPUT_SUBDIR sparsehash)
+            HEADERS ${sparsehash_headers})
      
     target_include_directories(sparsehash SYSTEM INTERFACE
                 $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
