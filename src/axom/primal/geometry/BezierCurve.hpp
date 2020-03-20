@@ -150,7 +150,7 @@ public:
   void setOrder( int ord) { m_controlPoints.resize(ord+1); }
 
   /*! Returns the order of the Bezier Curve*/
-  int getOrder() const { return m_controlPoints.size()-1; }
+  int getOrder() const { return static_cast< int>(m_controlPoints.size())-1; }
 
   /*! Clears the list of control points*/
   void clear()
@@ -190,14 +190,15 @@ public:
   /*! Returns an axis-aligned bounding box containing the Bezier curve */
   BoundingBoxType boundingBox() const
   {
-    return BoundingBoxType(m_controlPoints.data(), m_controlPoints.size());
+    return BoundingBoxType(m_controlPoints.data(),
+                           static_cast< int >( m_controlPoints.size() ) );
   }
 
   /*! Returns an oriented bounding box containing the Bezier curve */
   OrientedBoundingBoxType orientedBoundingBox() const
   {
     return OrientedBoundingBoxType(m_controlPoints.data(),
-                                   m_controlPoints.size());
+                                   static_cast< int >(m_controlPoints.size()));
   }
 
   /*!

@@ -669,7 +669,7 @@ void findTriIntersectionsNaively(
   std::vector< std::pair<int, int> > & clashes
   )
 {
-  int tcount = tris.size();
+  int tcount = static_cast< int >( tris.size() );
 
   for (int i = 0 ; i < tcount ; ++i)
   {

@@ -49,7 +49,7 @@ IndexType calc_ID_capacity( const ConnectivityArray< NO_INDIRECTION >& connec,
   IndexType new_n_IDs = connec.getNumberOfIDs() + increase;
   if ( new_n_IDs > connec.getIDCapacity() )
   {
-    return new_n_IDs * connec.getResizeRatio() + 0.5;
+    return static_cast< IndexType >( new_n_IDs*connec.getResizeRatio() + 0.5 );
   }
 
   return connec.getIDCapacity();
@@ -71,7 +71,8 @@ IndexType calc_ID_capacity( const ConnectivityArray< INDIRECTION >& connec,
   IndexType new_n_IDs = connec.getNumberOfIDs() + increase;
   if ( new_n_IDs > connec.getIDCapacity() )
   {
-    return ((new_n_IDs + 1) * connec.getResizeRatio() + 0.5) - 1;
+    return (
+      static_cast< IndexType >((new_n_IDs+1)*connec.getResizeRatio() + 0.5)-1);
   }
 
   return connec.getIDCapacity();
@@ -91,7 +92,7 @@ IndexType calc_ID_capacity(
   IndexType new_n_IDs = connec.getNumberOfIDs() + increase;
   if ( new_n_IDs > connec.getIDCapacity() )
   {
-    return new_n_IDs * connec.getResizeRatio() + 0.5;
+    return static_cast< IndexType >( new_n_IDs*connec.getResizeRatio()+0.5);
   }
 
   return connec.getIDCapacity();
@@ -127,7 +128,7 @@ IndexType calc_value_capacity( const ConnectivityArray< TYPE >& connec,
   IndexType new_n_values = connec.getNumberOfValues() + increase;
   if ( new_n_values > connec.getValueCapacity() )
   {
-    return new_n_values * connec.getResizeRatio() + 0.5;
+    return static_cast< IndexType >( new_n_values*connec.getResizeRatio()+0.5 );
   }
 
   return connec.getValueCapacity();

@@ -55,6 +55,10 @@ void LogStream::replaceKey( std::string& msg,
 //------------------------------------------------------------------------------
 std::string LogStream::getTimeStamp( )
 {
+#ifdef WIN32
+#pragma warning(disable : 4996) // _CRT_SECURE_NO_WARNINGS
+#endif
+
   std::time_t t;
   std::time( &t );
   std::string timestamp( std::asctime( std::localtime( &t ) ) );

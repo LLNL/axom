@@ -212,7 +212,7 @@ public:
    */
   PositionType size() const
   {
-    return m_data.size();
+    return static_cast< PositionType >( m_data.size() );
   };
 
 
@@ -285,7 +285,7 @@ public:
    * \brief Insert an entry at the end of the set with value = ( size()-1 )
    */
   IndexType insert(){
-    return insert(m_data.size());
+    return insert( static_cast< IndexType >( m_data.size() ) );
   }
 
   /**
@@ -295,7 +295,7 @@ public:
   IndexType insert(ElementType val)
   {
     m_data.push_back(val);
-    return m_data.size()-1;
+    return static_cast< IndexType >( m_data.size()-1 );
   };
 
   /**

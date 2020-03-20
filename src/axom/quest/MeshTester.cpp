@@ -382,7 +382,7 @@ void weldTriMeshVertices(UMesh** surface_mesh,double eps)
         uniqueVertCount++;
         newMesh->appendNodes(vert.data());
       }
-      vertex_remap[i] = res.first->second;
+      vertex_remap[i] = static_cast< int >( res.first->second );
     }
 
     // Next, add triangles into the new mesh using the unique vertex indices

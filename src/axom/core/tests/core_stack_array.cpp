@@ -105,10 +105,16 @@ struct Tensor
 
   bool operator==( const Tensor& other ) const
   {
+#ifndef WIN32
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
+#endif
+
     return x == other.x && y == other.y && z == other.z;
+
+#ifndef WIN32
 #pragma GCC diagnostic pop
+#endif
   }
 };
 

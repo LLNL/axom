@@ -32,7 +32,7 @@ IndexType calc_new_capacity( Array< T > & v, IndexType increase )
   IndexType new_num_tuples = v.size() + increase;
   if ( new_num_tuples > v.capacity() )
   {
-    return new_num_tuples * v.getResizeRatio() + 0.5;
+    return static_cast< IndexType >( new_num_tuples*v.getResizeRatio() + 0.5 );
   }
 
   return v.capacity();
@@ -227,7 +227,7 @@ void check_fill( Array< T >& v )
 template < typename T >
 void check_set( Array< T >& v )
 {
-  constexpr T ZERO = 0;
+  constexpr T ZERO_VAL = 0;
   const IndexType capacity = v.capacity();
   const IndexType size = v.size();
   const IndexType num_components = v.numComponents();
@@ -244,7 +244,7 @@ void check_set( Array< T >& v )
   }
 
   /* Set all the values in the array to zero. */
-  v.fill( ZERO );
+  v.fill( ZERO_VAL );
 
   /* Set the first half of the tuples in the array to the sequential values in
    * buffer. */
@@ -272,7 +272,7 @@ void check_set( Array< T >& v )
   {
     for ( IndexType j = 0 ; j < num_components ; ++j )
     {
-      EXPECT_EQ( v( i, j ), ZERO );
+      EXPECT_EQ( v( i, j ), ZERO_VAL );
     }
   }
 
@@ -878,16 +878,16 @@ void check_external( Array< T >& v )
 //------------------------------------------------------------------------------
 TEST( core_array, checkStorage )
 {
-  constexpr IndexType ZERO = 0;
+  constexpr IndexType ZERO_VAL = 0;
 
   for ( IndexType capacity = 2 ; capacity < 512 ; capacity *= 2 )
   {
     for ( IndexType n_components = 1 ; n_components <= 4 ; n_components++ )
     {
-      Array< int > v_int( ZERO, n_components, capacity );
+      Array< int > v_int( ZERO_VAL, n_components, capacity );
       internal::check_storage( v_int );
 
-      Array< double > v_double( ZERO, n_components, capacity );
+      Array< double > v_double( ZERO_VAL, n_components, capacity );
       internal::check_storage( v_double );
     }
   }
@@ -929,7 +929,7 @@ TEST( core_array, checkSet )
 //------------------------------------------------------------------------------
 TEST( core_array, checkResize )
 {
-  constexpr IndexType ZERO = 0;
+  constexpr IndexType ZERO_VAL = 0;
 
   for ( double ratio = 1.0 ; ratio <= 2.0 ; ratio += 0.5 )
   {
@@ -937,11 +937,11 @@ TEST( core_array, checkResize )
     {
       for ( IndexType n_components = 1 ; n_components <= 4 ; n_components++ )
       {
-        Array< int > v_int( ZERO, n_components, capacity );
+        Array< int > v_int( ZERO_VAL, n_components, capacity );
         v_int.setResizeRatio( ratio );
         internal::check_resize( v_int );
 
-        Array< double > v_double( ZERO, n_components, capacity );
+        Array< double > v_double( ZERO_VAL, n_components, capacity );
         v_double.setResizeRatio( ratio );
         internal::check_resize( v_double );
       }
@@ -961,7 +961,7 @@ TEST( core_array_DeathTest, checkResize )
 //------------------------------------------------------------------------------
 TEST( core_array, checkInsert )
 {
-  constexpr IndexType ZERO = 0;
+  constexpr IndexType ZERO_VAL = 0;
 
   for ( double ratio = 1.0 ; ratio <= 2.0 ; ratio += 0.5 )
   {
@@ -969,11 +969,11 @@ TEST( core_array, checkInsert )
     {
       for ( IndexType n_components = 1 ; n_components <= 3 ; n_components++ )
       {
-        Array< int > v_int( ZERO, n_components, capacity );
+        Array< int > v_int( ZERO_VAL, n_components, capacity );
         v_int.setResizeRatio( ratio );
         internal::check_insert( v_int );
 
-        Array< double > v_double( ZERO, n_components, capacity );
+        Array< double > v_double( ZERO_VAL, n_components, capacity );
         v_double.setResizeRatio( ratio );
         internal::check_insert( v_double );
       }
@@ -984,7 +984,7 @@ TEST( core_array, checkInsert )
 //------------------------------------------------------------------------------
 TEST( core_array, checkEmplace )
 {
-  constexpr IndexType ZERO = 0;
+  constexpr IndexType ZERO_VAL = 0;
 
   for ( double ratio = 1.0 ; ratio <= 2.0 ; ratio += 0.5 )
   {
@@ -992,11 +992,11 @@ TEST( core_array, checkEmplace )
     {
       for ( IndexType n_components = 1 ; n_components <= 3 ; n_components++ )
       {
-        Array< int > v_int( ZERO, n_components, capacity );
+        Array< int > v_int( ZERO_VAL, n_components, capacity );
         v_int.setResizeRatio( ratio );
         internal::check_emplace( v_int );
 
-        Array< double > v_double( ZERO, n_components, capacity );
+        Array< double > v_double( ZERO_VAL, n_components, capacity );
         v_double.setResizeRatio( ratio );
         internal::check_emplace( v_double );
       }

@@ -71,7 +71,7 @@ public:
 
     IteratorHelper(OctreeLevelType* octLevel, bool begin)
       : m_octreeLevel(octLevel),
-      m_endIdx( octLevel->m_broodCapacity),
+      m_endIdx( static_cast< MortonIndexType >(octLevel->m_broodCapacity) ),
       m_offset(0),
       m_isLevelZero( octLevel->level() == 0)
     {

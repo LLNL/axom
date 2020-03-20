@@ -61,6 +61,8 @@ inline void setDefaultAllocator( int allocatorID )
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
   umpire::Allocator allocator = rm.getAllocator( allocatorID );
   rm.setDefaultAllocator( allocator );
+#else
+  static_cast< void >( allocatorID ); // silence compiler warnings
 #endif
 }
 
@@ -158,6 +160,7 @@ inline T* allocate( std::size_t n, int allocID ) noexcept
   return static_cast< T* >( allocator.allocate( numbytes ) );
 
 #else
+  static_cast< void >( allocID ); // silence compiler warnings
   return static_cast< T* >( std::malloc( numbytes ) );
 #endif
 

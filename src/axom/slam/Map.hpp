@@ -231,7 +231,7 @@ public:
   /** Set each entry in the map to the given value  */
   void        fill(DataType val = DataType())
   {
-    const SetPosition sz = m_data.size();
+    const SetPosition sz = static_cast< SetPosition >( m_data.size() );
 
     for(SetPosition idx = SetPosition() ; idx < sz ; ++idx)
     {

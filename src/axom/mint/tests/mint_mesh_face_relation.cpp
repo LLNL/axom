@@ -86,7 +86,7 @@ std::vector<internal::MeshFaceTest *> generateFaceTestCases()
       new UnstructuredMesh< SINGLE_SHAPE >(TWO_D, TRIANGLE);
     double    trinodes[] = { 0, 0, 1, 0, 0, 1 } ;
     IndexType tricells[] = { 0, 1, 2 } ;
-  
+
     tri->appendNodes(trinodes, 3);
     tri->appendCells(tricells, 1);
     tests.push_back(new internal::MeshFaceTest
@@ -106,7 +106,7 @@ std::vector<internal::MeshFaceTest *> generateFaceTestCases()
     double    twotrisnodes[] = { 0, 0, 1, 0, 0, 1, 0.8, 1.2 } ;
     IndexType twotriscells[] = { 0, 1, 2,
                                  1, 3, 2 } ;
-  
+
     twotris->appendNodes(twotrisnodes, 4);
     twotris->appendCells(twotriscells, 2);
     tests.push_back(new internal::MeshFaceTest
@@ -173,7 +173,7 @@ std::vector<internal::MeshFaceTest *> generateFaceTestCases()
                                   0, 2, 3,
                                   1, 5, 4,
                                   2, 5, 3 };
-  
+
     fourtris->appendNodes(fourtrisxs, fourtrisys, 6);
     fourtris->appendCells(fourtriscells, 4);
     tests.push_back(new internal::MeshFaceTest
@@ -204,7 +204,7 @@ std::vector<internal::MeshFaceTest *> generateFaceTestCases()
       new UnstructuredMesh< SINGLE_SHAPE >(THREE_D, TRIANGLE);
     double    threeDtrinodes[] = { -1, 0, 0, 0, 1, 0.5, 1.2, -.2, 3 };
     IndexType threeDtricells[] = { 0, 1, 2 };
-  
+
     threeDtri->appendNodes(threeDtrinodes, 3);
     threeDtri->appendCells(threeDtricells, 1);
     tests.push_back(new internal::MeshFaceTest
@@ -264,7 +264,7 @@ std::vector<internal::MeshFaceTest *> generateFaceTestCases()
     double    tettrisys[] = { 0,   0,   1, 1 };
     double    tettriszs[] = { 0, -.1, 0.2, 1 };
     IndexType tettriscells[] = { 0, 2, 1, 0, 1, 3, 1, 2, 3, 2, 0, 3 };
-  
+
     tettris->appendNodes(tettrisxs, tettrisys, tettriszs, 4);
     tettris->appendCells(tettriscells, 4);
     tests.push_back(new internal::MeshFaceTest
@@ -300,7 +300,7 @@ std::vector<internal::MeshFaceTest *> generateFaceTestCases()
                                   2, 3, 7, 6,
                                   3, 0, 4, 7,
                                   4, 5, 6, 7 };
-  
+
     hexquads->appendNodes(hexquadsxs, hexquadsys, hexquadszs, 8);
     hexquads->appendCells(hexquadscells, 6);
     tests.push_back(new internal::MeshFaceTest
@@ -378,7 +378,7 @@ std::vector<internal::MeshFaceTest *> generateFaceTestCases()
                                  1,   1,   1 };
     IndexType b2btriscells[] = { 0, 1, 2,
                                  0, 2, 1 };
-  
+
     b2btris->appendNodes(b2btrisnodes, 3);
     b2btris->appendCells(b2btriscells, 2);
     tests.push_back(new internal::MeshFaceTest
@@ -527,7 +527,7 @@ std::vector<internal::MeshFaceTest *> generateFaceTestCases()
     double    crackedtetys[] = { 0,   0,   1, 1, 0.9 };
     double    crackedtetzs[] = { 0, -.1, 0.2, 1, 1 };
     IndexType crackedtetcells[] = { 0, 2, 1, 0, 1, 4, 1, 2, 3, 2, 0, 3 };
-  
+
     crackedtet->appendNodes(crackedtetxs, crackedtetys, crackedtetzs, 5);
     crackedtet->appendCells(crackedtetcells, 4);
     tests.push_back(new internal::MeshFaceTest
@@ -606,10 +606,10 @@ std::vector<internal::MeshFaceTest *> generateFaceTestCases()
     double    notmanfxs[] = {  -1, 0, 0, 0.2, 1 };
     double    notmanfys[] = {   0, 0, 0, -.6, 0 };
     double    notmanfzs[] = { 0.6, 0, 1, 0.4, 0.4 };
-    IndexType notmanfcells[] = { 0, 1, 2, 
+    IndexType notmanfcells[] = { 0, 1, 2,
                                  3, 1, 2,
                                  4, 1, 2 };
-  
+
     notmanf->appendNodes(notmanfxs, notmanfys, notmanfzs, 5);
     notmanf->appendCells(notmanfcells, 3);
     tests.push_back(new internal::MeshFaceTest
@@ -642,7 +642,7 @@ std::vector<internal::MeshFaceTest *> generateFaceTestCases()
     double    egregys[] = { 0, 0, 1, 1, 0.8, 0, 0, -0.4, -0.9 };
     double    egregzs[] = { 0, 0, 0, 0, 0.4, 1, 1,  1.2,  0.5 };
     IndexType egregcells[] = { 0, 1, 2, 3,
-                               0, 1, 4, 
+                               0, 1, 4,
                                0, 1, 5, 6,
                                0, 1, 7,
                                0, 1, 8 } ;
@@ -689,7 +689,7 @@ std::vector<internal::MeshFaceTest *> generateFaceTestCases()
     double    tetys[] = { 0,   0,   1, 1 };
     double    tetzs[] = { 0, -.1, 0.2, 1 };
     IndexType tetcells[] = { 0, 1, 2, 3 };
-  
+
     tet->appendNodes(tetxs, tetys, tetzs, 4);
     tet->appendCells(tetcells, 1);
     tests.push_back(new internal::MeshFaceTest
@@ -717,7 +717,7 @@ std::vector<internal::MeshFaceTest *> generateFaceTestCases()
     double    hexszs[] = { 0, 0.2, 0, 0,   0, 0, 1,   1, 1, 1, 0.8, 1 };
     IndexType hexscells[] = { 0, 1, 4, 3, 6, 7, 10, 9,
                               1, 2, 5, 4, 7, 8, 11, 10 };
-  
+
     hexs->appendNodes(hexsxs, hexsys, hexszs, 12);
     hexs->appendCells(hexscells, 2);
     tests.push_back(new internal::MeshFaceTest
@@ -755,7 +755,7 @@ std::vector<internal::MeshFaceTest *> generateFaceTestCases()
     IndexType hexs3cells[] = { 0, 3, 10,  7, 1, 4, 11,  8,
                                3, 5, 12, 10, 4, 6, 13, 11,
                                0, 2,  9,  7, 3, 5, 12, 10 };
-  
+
     hexs3->appendNodes(hexs3xs, hexs3ys, hexs3zs, 14);
     hexs3->appendCells(hexs3cells, 3);
     tests.push_back(new internal::MeshFaceTest
@@ -798,7 +798,7 @@ std::vector<internal::MeshFaceTest *> generateFaceTestCases()
     double    mtetzs[] = { 0, -.1, 0.2, 1 };
     IndexType mtetcells[] = { 0, 1, 2, 3,
                               0, 2, 1, 3 };
-  
+
     mtet->appendNodes(mtetxs, mtetys, mtetzs, 4);
     mtet->appendCells(mtetcells, 2);
     tests.push_back(new internal::MeshFaceTest
@@ -830,7 +830,7 @@ std::vector<internal::MeshFaceTest *> generateFaceTestCases()
     IndexType badtetscells[] = { 0, 1, 2, 3,
                                  0, 3, 2, 4,
                                  0, 3, 2, 5 };
-  
+
     badtets->appendNodes(badtetsxs, badtetsys, badtetszs, 6);
     badtets->appendCells(badtetscells, 3);
     tests.push_back(new internal::MeshFaceTest
@@ -954,14 +954,15 @@ bool checkAndReportFaceNodes(std::map< std::string, FaceTypeNodes > & fn,
   bool success = true;
   if (fn.size() > 0)
   {
-    int fcount = fn.size();
+    int fcount = static_cast< int >( fn.size() );
     mesg << fcount << label << std::endl;
     for (auto fit = fn.begin(), fend = fn.end(); fit != fend; ++fit)
     {
       FaceTypeNodes & ftn = fit->second;
       mesg << "Type " << getCellInfo(ftn.facetype).name << " (";
-      mesg << internal::join_ints_into_string(ftn.facenodes.size(),
-                                              ftn.facenodes.data(), ' ');
+      mesg << internal::join_ints_into_string(
+          static_cast< int >( ftn.facenodes.size() ),
+          ftn.facenodes.data(), ' ');
       mesg << ") " << std::endl;
     }
     success = false;
@@ -977,7 +978,7 @@ bool matchRotateList(std::vector<T> &a, std::vector<T> &b)
   if (a.size() != b.size() || a.size() < 1) { return false; }
 
   bool matches = false;
-  int elts = a.size();
+  int elts = static_cast< int >( a.size() );
   for (int offset = 0; offset < elts && !matches; ++offset)
   {
     matches = true;
@@ -1131,7 +1132,7 @@ void runMeshFaceTest(internal::MeshFaceTest * t)
   }
   else if (!initresult && t->initShouldSucceed)
   {
-    FAIL() << "test mesh \"" << t->name << 
+    FAIL() << "test mesh \"" << t->name <<
       "\" call to initFaces() failed but should have succeeded.";
   }
   else if (initresult && !(t->initShouldSucceed))
@@ -1144,7 +1145,7 @@ void runMeshFaceTest(internal::MeshFaceTest * t)
     delete [] f2noffsets;
     delete [] f2ntypes;
 
-    FAIL() << "test mesh \"" << t->name << 
+    FAIL() << "test mesh \"" << t->name <<
       "\" call to initFaces() succeeded but should have failed.";
   }
   else
@@ -1178,8 +1179,9 @@ void runMeshFaceTest(internal::MeshFaceTest * t)
       if (!neighborsMatched)
       {
         errmesg << "Cell " << c << " expected neighbors ";
-        IndexType facecount = t->cellFaceCount[c];
-        for (int i = 0; i < facecount; ++i) 
+
+        facecount = t->cellFaceCount[c];
+        for (IndexType i = 0; i < facecount; ++i)
         {
           errmesg << t->cellNeighbors[c2foffsets[c] + i] << " ";
         }
@@ -1393,7 +1395,7 @@ TEST( mint_mesh_face_relation, tf_faceMatches )
 }
 
 /*! \brief Test driver for the mesh face relation construction.
- * 
+ *
  * This TEST does the following:
  * -# generate mesh test sets, each supplied with correct answers, comprising
  *    -# the mesh itself
