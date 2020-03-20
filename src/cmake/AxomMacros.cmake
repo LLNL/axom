@@ -28,7 +28,7 @@ macro(axom_add_code_checks)
 
     # Only do code checks if building Axom by itself and not included in
     # another project
-    if (“${PROJECT_SOURCE_DIR}” STREQUAL “${CMAKE_SOURCE_DIR}”)
+    if ("${PROJECT_SOURCE_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
         set(_all_sources)
         file(GLOB_RECURSE _all_sources
              "*.cpp" "*.hpp" "*.cxx" "*.hxx" "*.cc" "*.c" "*.h" "*.hh"
