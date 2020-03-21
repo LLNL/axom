@@ -1332,7 +1332,7 @@ AXOM_CUDA_TEST( spin_bvh, contruct3D_cuda )
 }
 
 //------------------------------------------------------------------------------
-TEST( spin_bvh, find_rays_3d_cuda )
+AXOM_CUDA_TEST( spin_bvh, find_rays_3d_cuda )
 {
   constexpr int BLOCK_SIZE = 256;
   using exec  = axom::CUDA_EXEC< BLOCK_SIZE >;
@@ -1341,7 +1341,7 @@ TEST( spin_bvh, find_rays_3d_cuda )
 }
 
 //------------------------------------------------------------------------------
-TEST( spin_bvh, find_rays_2d_cuda )
+AXOM_CUDA_TEST( spin_bvh, find_rays_2d_cuda )
 {
   constexpr int BLOCK_SIZE = 256;
   using exec  = axom::CUDA_EXEC< BLOCK_SIZE >;
