@@ -500,7 +500,7 @@ class SpackEnv(UberEnv):
                 os.chdir(pjoin(self.dest_dir,"spack"))
                 sexe("git checkout {0}".format(sha1),echo=True)
 
-        if self.opts["spack_pull"]:
+        if self.opts["repo_pull"]:
             # do a pull to make sure we have the latest
             os.chdir(pjoin(self.dest_dir,"spack"))
             sexe("git stash", echo=True)
