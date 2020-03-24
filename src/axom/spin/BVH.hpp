@@ -187,6 +187,13 @@ public:
   { m_scaleFactor = scale_factor; };
 
   /*!
+   * \brief Returns the scale factor used when constructing the BVH.
+   * \return scale_factor the scale factor
+   */
+  FloatType getScaleFacor( ) const
+  { return m_scaleFactor; };
+
+  /*!
    * \brief Generates the BVH
    * \return status set to BVH_BUILD_OK on success.
    */
