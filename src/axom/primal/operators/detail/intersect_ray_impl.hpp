@@ -173,7 +173,7 @@ inline bool intersect_ray( const T& x0,
                            const T& ymin,
                            const T& ymax,
                            T& t,
-                           T TOL=1.e-9 )
+                           T TOL=numerics::floating_point_limits<T>::epsilon() )
 {
   AXOM_STATIC_ASSERT( std::is_floating_point< T >::value );
 
@@ -222,7 +222,7 @@ inline bool intersect_ray( const T& x0,
                            const T& zmin,
                            const T& zmax,
                            T& t,
-                           T TOL=1.e-9)
+                           T TOL=numerics::floating_point_limits<T>::epsilon() )
 {
   AXOM_STATIC_ASSERT( std::is_floating_point< T >::value );
 
@@ -258,7 +258,7 @@ template < typename T, int DIM >
 inline bool intersect_ray( const primal::Ray< T,DIM > & R,
                            const primal::BoundingBox< T,DIM > & bb,
                            primal::Point< T,DIM > & ip,
-                           T TOL=1.e-9 )
+                           T TOL=numerics::floating_point_limits<T>::epsilon() )
 {
   AXOM_STATIC_ASSERT( std::is_floating_point< T >::value );
 
