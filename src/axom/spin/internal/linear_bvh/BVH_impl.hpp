@@ -35,13 +35,14 @@
 #include <string>   // for std::string
 #include <cstring>  // for memcpy
 
-// namespace aliases
-namespace numerics = axom::numerics;
 
 namespace axom
 {
 namespace spin
 {
+
+template < typename FloatType >
+using floating_point_limits = axom::numerics::floating_point_limits<FloatType>;
 
 //------------------------------------------------------------------------------
 //  BVH IMPLEMENTATION
@@ -257,7 +258,7 @@ IndexType bvh_get_raycounts( LeftPredicate&& leftCheck,
 template< int NDIMS, typename ExecSpace, typename FloatType >
 BVH< NDIMS, ExecSpace, FloatType >::BVH( const FloatType* boxes,
                                          IndexType numItems ) :
-  m_Tolernace( numerics::floating_point_limits< FloatType >::epsilon() ),
+  m_Tolernace( floating_point_limits<FloatType>::epsilon() ),
   m_scaleFactor( DEFAULT_SCALE_FACTOR ),
   m_numItems( numItems ),
   m_boxes( boxes )
