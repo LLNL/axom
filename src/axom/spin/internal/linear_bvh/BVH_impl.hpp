@@ -6,13 +6,13 @@
 #ifndef AXOM_SPIN_BVH_IMPL_HPP_
 #define AXOM_SPIN_BVH_IMPL_HPP_
 
-#include "axom/core/memory_management.hpp"          // for memory functions
-#include "axom/core/Types.hpp"                      // for fixed bitwidth types
-
-#include "axom/core/execution/for_all.hpp"          // for generic for_all()
+#include "axom/core/Types.hpp"                          // fixed bitwidth types
+#include "axom/core/execution/for_all.hpp"              // for generic for_all()
+#include "axom/core/memory_management.hpp"              // for memory functions
+#include "axom/core/numerics/floating_point_limits.hpp" // floating_point_limits
 
 // slic includes
-#include "axom/slic/interface/slic.hpp"             // for SLIC macros
+#include "axom/slic/interface/slic.hpp"                 // for SLIC macros
 
 // linear bvh includes
 #include "axom/spin/internal/linear_bvh/aabb.hpp"
@@ -34,6 +34,9 @@
 #include <sstream>  // for std::ostringstream
 #include <string>   // for std::string
 #include <cstring>  // for memcpy
+
+// namespace aliases
+namespace numerics = axom::numerics;
 
 namespace axom
 {
@@ -73,7 +76,7 @@ using ray_t = internal::linear_bvh::Vec< FloatType, NDIMS*2 >;
  * \note This macro is intended to be used internally by the BVH implementation.
  */
 #define BVH_PREDICATE(_predicateName, _p, _s1, _s2 )    \
-  auto _predicateName = [] AXOM_HOST_DEVICE( _p, _s1, _s2 )->bool
+  auto _predicateName = [=] AXOM_HOST_DEVICE( _p, _s1, _s2 )->bool
 
 /*!
  * \def BVH_LEAF_ACTION
@@ -254,6 +257,7 @@ IndexType bvh_get_raycounts( LeftPredicate&& leftCheck,
 template< int NDIMS, typename ExecSpace, typename FloatType >
 BVH< NDIMS, ExecSpace, FloatType >::BVH( const FloatType* boxes,
                                          IndexType numItems ) :
+  m_Tolernace( numerics::floating_point_limits< FloatType >::epsilon() ),
   m_scaleFactor( DEFAULT_SCALE_FACTOR ),
   m_numItems( numItems ),
   m_boxes( boxes )
@@ -445,6 +449,8 @@ void BVH< NDIMS, ExecSpace, FloatType >::findRays( IndexType* offsets,
   SLIC_ASSERT( y0 != nullptr );
   SLIC_ASSERT( ny != nullptr );
 
+  const FloatType TOL = m_Tolernace;
+
   // STEP 0: set the default memory allocator to use for the execution space.
   const int currentAllocatorID = axom::getDefaultAllocatorID();
   const int allocatorID = axom::execution_space< ExecSpace >::allocatorID();
@@ -466,7 +472,7 @@ void BVH< NDIMS, ExecSpace, FloatType >::findRays( IndexType* offsets,
                  const vec4_t< FloatType >&s1,
                  const vec4_t< FloatType >&s2 )
   {
-    return TraversalPredicates::rayIntersectsLeftBin( r, s1, s2 );
+    return TraversalPredicates::rayIntersectsLeftBin( r, s1, s2, TOL );
   };
 
   BVH_PREDICATE( rightPredicate,
@@ -474,7 +480,7 @@ void BVH< NDIMS, ExecSpace, FloatType >::findRays( IndexType* offsets,
                  const vec4_t< FloatType >&s2,
                  const vec4_t< FloatType >&s3 )
   {
-    return TraversalPredicates::rayIntersectsRightBin( r, s2, s3 );
+    return TraversalPredicates::rayIntersectsRightBin( r, s2, s3, TOL );
   };
 
   // STEP 3: get counts

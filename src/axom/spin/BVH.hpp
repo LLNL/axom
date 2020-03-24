@@ -194,6 +194,22 @@ public:
   { return m_scaleFactor; };
 
   /*!
+   * \brief Sets the tolerance used for querying the BVH.
+   * \param [in] TOL the tolerance to use.
+   *
+   * \note Default tolerance set to floating_point_limits<FloatType>::epsilon()
+   */
+  void setTolerance( FloatType TOL )
+  { m_Tolernace = TOL; };
+
+  /*!
+   * \brief Returns the tolerance value used for BVH queries.
+   * \return TOL the tolerance
+   */
+  FloatType getTolerance() const
+  { return m_Tolernace; };
+
+  /*!
    * \brief Generates the BVH
    * \return status set to BVH_BUILD_OK on success.
    */
@@ -302,6 +318,7 @@ private:
 /// \name Private Members
 /// @{
 
+  FloatType m_Tolernace;
   FloatType m_scaleFactor;
   IndexType m_numItems;
   const FloatType* m_boxes;

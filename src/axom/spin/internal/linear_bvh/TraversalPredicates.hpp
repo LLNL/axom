@@ -8,6 +8,7 @@
 
 #include "axom/spin/internal/linear_bvh/vec.hpp"
 
+#include "axom/core/numerics/floating_point_limits.hpp"
 #include "axom/primal/operators/detail/intersect_ray_impl.hpp"
 
 namespace axom
@@ -61,7 +62,7 @@ public:
   AXOM_HOST_DEVICE
   static inline bool pointInLeftBin( const PointType& point,
                                      const vec4_t& s1,
-                                     const vec4_t& s2 ) noexcept;
+                                     const vec4_t& s2  ) noexcept;
 
   /*!
    * \brief Checks if the supplied point is within the right bin.
@@ -89,14 +90,16 @@ public:
    * \param [in] r the ray in query
    * \param [in] s1 the 1st segment of the BVH that stores the left bin.
    * \param [in] s2 the 2nd segment of the BVH that stores the left bin.
+   * \param [in] TOL optional user-supplied tolerance. Default set to epsilon().
    *
    * \return status true if the ray intersects the left bin, else, false.
    */
   template < typename RayType >
   AXOM_HOST_DEVICE
-  static inline bool rayIntersectsLeftBin( const RayType& r,
-                                           const vec4_t& s1,
-                                           const vec4_t& s2 ) noexcept;
+  static inline bool rayIntersectsLeftBin(
+      const RayType& r, const vec4_t& s1, const vec4_t& s2,
+      FloatType TOL=numerics::floating_point_limits<FloatType>::epsilon()
+      ) noexcept;
 
   /*!
    * \brief Checks if the specified ray intersects with the right bin.
@@ -104,14 +107,17 @@ public:
    * \param [in] r the ray in query
    * \param [in] s2 the 2nd segment of the BVH that stores the right bin.
    * \param [in] s3 the 3rd segment of the BVH that stores the right bin.
+   * \param [in] TOL optional user-supplied tolerance. Default set to epsilon().
    *
    * \return status true if the ray intersects the right bin, else, false.
    */
   template < typename RayType >
   AXOM_HOST_DEVICE
-  static inline bool rayIntersectsRightBin( const RayType& r,
-                                            const vec4_t& s2,
-                                            const vec4_t& s3 ) noexcept;
+  static inline bool rayIntersectsRightBin(
+      const RayType& r, const vec4_t& s2, const vec4_t& s3,
+      FloatType TOL=numerics::floating_point_limits<FloatType>::epsilon()
+      ) noexcept;
+
   /// @}
 
 };
@@ -168,9 +174,10 @@ public:
 
   template < typename RayType >
   AXOM_HOST_DEVICE
-  static inline bool rayIntersectsLeftBin( const RayType& r,
-                                           const vec4_t& s1,
-                                           const vec4_t& s2 ) noexcept
+  static inline bool rayIntersectsLeftBin(
+      const RayType& r, const vec4_t& s1, const vec4_t& s2,
+      FloatType TOL=numerics::floating_point_limits<FloatType>::epsilon()
+      ) noexcept
   {
     const FloatType& x0 = r[ 0 ];
     const FloatType& y0 = r[ 1 ];
@@ -186,14 +193,15 @@ public:
     // TODO: in the future we should take `t` into account and organize
     //       candidate bins in a priority queue.
     FloatType t = 0.0;
-    return primal::detail::intersect_ray( x0,nx,y0,ny,xmin,xmax,ymin,ymax,t );
+    return primal::detail::intersect_ray(x0,nx,y0,ny,xmin,xmax,ymin,ymax,t,TOL);
   }
 
   template < typename RayType >
   AXOM_HOST_DEVICE
-  static inline bool rayIntersectsRightBin( const RayType& r,
-                                            const vec4_t& s2,
-                                            const vec4_t& s3 ) noexcept
+  static inline bool rayIntersectsRightBin(
+      const RayType& r, const vec4_t& s2, const vec4_t& s3,
+      FloatType TOL=numerics::floating_point_limits<FloatType>::epsilon()
+      ) noexcept
   {
     const FloatType& x0 = r[ 0 ];
     const FloatType& y0 = r[ 1 ];
@@ -209,7 +217,7 @@ public:
     // TODO: in the future we should take `t` into account and organize
     //       candidate bins in a priority queue.
     FloatType t = 0.0;
-    return primal::detail::intersect_ray( x0,nx,y0,ny,xmin,xmax,ymin,ymax,t );
+    return primal::detail::intersect_ray(x0,nx,y0,ny,xmin,xmax,ymin,ymax,t,TOL);
   }
 
 };
@@ -268,9 +276,10 @@ public:
 
   template < typename RayType >
   AXOM_HOST_DEVICE
-  static inline bool rayIntersectsLeftBin( const RayType& r,
-                                           const vec4_t& s1,
-                                           const vec4_t& s2 ) noexcept
+  static inline bool rayIntersectsLeftBin(
+      const RayType& r, const vec4_t& s1, const vec4_t& s2,
+      FloatType TOL=numerics::floating_point_limits<FloatType>::epsilon()
+      ) noexcept
   {
     const FloatType& x0 = r[ 0 ];
     const FloatType& y0 = r[ 1 ];
@@ -291,14 +300,15 @@ public:
     //       candidate bins in a priority queue.
     FloatType t = 0.0;
     return primal::detail::intersect_ray(
-      x0,nx,y0,ny,z0,nz,xmin,xmax,ymin,ymax,zmin,zmax,t );
+      x0,nx,y0,ny,z0,nz,xmin,xmax,ymin,ymax,zmin,zmax,t, TOL );
   }
 
   template < typename RayType >
   AXOM_HOST_DEVICE
-  static inline bool rayIntersectsRightBin( const RayType& r,
-                                            const vec4_t& s2,
-                                            const vec4_t& s3 ) noexcept
+  static inline bool rayIntersectsRightBin(
+      const RayType& r, const vec4_t& s2, const vec4_t& s3,
+      FloatType TOL=numerics::floating_point_limits<FloatType>::epsilon()
+      ) noexcept
   {
     const FloatType& x0 = r[ 0 ];
     const FloatType& y0 = r[ 1 ];
@@ -319,7 +329,7 @@ public:
     //       candidate bins in a priority queue.
     FloatType t = 0.0;
     return primal::detail::intersect_ray(
-      x0,nx,y0,ny,z0,nz,xmin,xmax,ymin,ymax,zmin,zmax,t );
+      x0,nx,y0,ny,z0,nz,xmin,xmax,ymin,ymax,zmin,zmax,t, TOL );
   }
 
 };
