@@ -10,8 +10,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
-- Added a portable floating_point_limits traits class, to return min(), max(), lowest() of
-  a `float` or `double` type. The functionality is equivalent to that provided by 
+- Added a portable floating_point_limits traits class, to return min(), max(), lowest() 
+  and epsilon() of a `float` or `double` type. The functionality is equivalent to that provided by 
   std::numeric_limits, but, the code is host/device decorated accordinlgy such that it
   can also be called on the device.
 - Added initial support for ray queries using the BVH. The caller may now supply a set of rays to 

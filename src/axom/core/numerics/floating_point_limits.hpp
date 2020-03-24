@@ -22,9 +22,10 @@ namespace numerics
  *  The floating_point_limits class is traits class providing a standardized
  *  and portable way to query the following information on either host/device:
  *  <ul>
- *   <li> lowest() -- returns the lowest finite value </li>
- *   <li> min()    -- returns the smallest finite value </li>
- *   <li> max()    -- returns the largest finite value </li>
+ *   <li> lowest()  -- returns the lowest finite value </li>
+ *   <li> min()     -- returns the smallest finite value </li>
+ *   <li> max()     -- returns the largest finite value </li>
+ *   <li> epsilon() -- returns difference between 1.0 and the next value </li>
  *  </ul>
  *
  *  \tparam T the floating point type, e.g., float, double, or long double.
@@ -48,6 +49,9 @@ struct floating_point_limits< float >
 
   AXOM_HOST_DEVICE
   static constexpr float max() { return FLT_MAX; };
+
+  AXOM_HOST_DEVICE
+  static constexpr float epsilon() { return FLT_EPSILON; };
 };
 
 //------------------------------------------------------------------------------
@@ -62,6 +66,9 @@ struct floating_point_limits< double >
 
   AXOM_HOST_DEVICE
   static constexpr double max() { return DBL_MAX; };
+
+  AXOM_HOST_DEVICE
+  static constexpr double epsilon() { return DBL_EPSILON; };
 };
 
 //------------------------------------------------------------------------------
@@ -76,6 +83,9 @@ struct floating_point_limits< long double >
 
   AXOM_HOST_DEVICE
   static constexpr long double max() { return LDBL_MAX; };
+
+  AXOM_HOST_DEVICE
+  static constexpr long double epsilon() { return LDBL_EPSILON; };
 };
 
 } /* namespace numerics */

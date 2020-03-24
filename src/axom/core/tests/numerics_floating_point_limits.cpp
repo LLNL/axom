@@ -31,6 +31,9 @@ void check_type_limits( const std::string& typeName )
 
   EXPECT_DOUBLE_EQ( axom::numerics::floating_point_limits< T >::max(),
                     std::numeric_limits< T >::max() );
+
+  EXPECT_DOUBLE_EQ( axom::numerics::floating_point_limits< T >::epsilon(),
+                    std::numeric_limits< T >::epsilon() );
 }
 
 //------------------------------------------------------------------------------
