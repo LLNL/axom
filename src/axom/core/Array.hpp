@@ -11,6 +11,7 @@
 #include "axom/core/memory_management.hpp"   // for memory allocation functions
 #include "axom/core/utilities/Utilities.hpp" // for processAbort()
 #include "axom/core/Types.hpp"               // for IndexType definition
+#include "axom/core/IteratorBase.hpp"        // for Iterator
 
 // C/C++ includes
 #include <iostream>                 // for std::cerr and std::ostream
@@ -101,6 +102,7 @@ class Array
 public:
   static constexpr double DEFAULT_RESIZE_RATIO = 2.0;
   static constexpr IndexType MIN_DEFAULT_CAPACITY = 32;
+  class ArrayIterator;
 
 public:
 
@@ -300,21 +302,21 @@ public:
   /*!
    * \brief Erases an element from the Array 
    *
-   * \param [in] pos the pointer to the element in the Array
+   * \param [in] pos the ArrayIterator to the element in the Array
    *
-   * \return A pointer following the last element removed.
+   * \return An ArrayIterator following the last element removed.
    */
-  T* erase( T* pos );
+  ArrayIterator erase( ArrayIterator pos );
 
   /*!
    * \brief Erases elements in the range [first, last) from the Array
    *
-   * \param [in] first the pointer to the beginning of the range.
-   * \param [in] last the pointer to end of range.
+   * \param [in] first the ArrayIterator to the beginning of the range.
+   * \param [in] last the ArrayIterator to end of range.
    *
-   * \return A pointer following the last element removed. 
+   * \return An ArrayIterator following the last element removed. 
    */
-  T* erase( T* first, T* last );  
+  ArrayIterator erase( ArrayIterator first, ArrayIterator last );  
 
   /*!
    * \brief TODO
@@ -323,8 +325,8 @@ public:
    *
    * \note Reallocation is done if the new size will exceed the capacity.
    * \note The size increases by n.
-   * \note This method is used to create space for elements in the middle of the
-   *  array.
+   * \note This method is used to create space for elements in the middle of
+   *       the array.
    *
    * \pre pos <= m_num_elements.
    */
@@ -355,15 +357,23 @@ public:
   }
 
   /*!
-   * \brief Returns a pointer to the first element of the Array
+   * \brief Returns an ArrayIterator to the first element of the Array
    */
-  T* begin() { assert( m_data != nullptr ); return m_data; }
+  ArrayIterator begin()
+  {
+    assert( m_data != nullptr );
+    return ArrayIterator(0, this); 
+  }
 
   /*!
-   * \brief Returns a pointer to the element following the last
+   * \brief Returns an ArrayIterator to the element following the last
    *  element of the Array.
    */
-  T* end() { assert( m_data != nullptr ); return m_data + m_num_elements; }
+  ArrayIterator end() 
+  { 
+    assert( m_data != nullptr );
+    return ArrayIterator(size(), this);
+  }
 
   /*!
    * \brief Shrink the capacity to be equal to the size.
@@ -420,6 +430,44 @@ public:
    * \return A reference to the modified ostream
    */
   std::ostream& print(std::ostream& os) const;
+
+/// @}
+
+public:
+
+/// \name ArrayIterator to iterate through Array
+/// @{
+
+  /**
+   * \class   ArrayIterator
+   * \brief   An iterator type for Array.
+   *          Each increment operation advances the iterator to the next
+   *          element in the Array.
+   */
+  class ArrayIterator : public IteratorBase<ArrayIterator, IndexType>
+  {
+public:
+    ArrayIterator(IndexType pos, Array* arr)
+    : IteratorBase<ArrayIterator,IndexType>(pos), m_arrayPtr(arr){}
+
+    /**
+     * \brief Returns the current iterator value
+     */ 
+    T& operator*() 
+    { 
+      return (*m_arrayPtr)[IteratorBase<ArrayIterator,IndexType>::m_pos]; 
+    }
+
+protected:
+    /** Implementation of advance() as required by IteratorBase */
+    void advance(IndexType n)
+    { 
+      IteratorBase<ArrayIterator,IndexType>::m_pos += n;
+    }
+
+protected:
+    Array * const m_arrayPtr;
+  }; // end of ArrayIterator class
 
 /// @}
 
@@ -601,7 +649,8 @@ inline void Array< T >::clear()
   {
     m_data[ i ].~T();
   }
-  m_num_elements = 0;
+  
+  updateNumElements( 0 );
 
 }
 
@@ -638,31 +687,32 @@ inline void Array< T >::insert( IndexType pos, IndexType n, const T& value )
 
 //------------------------------------------------------------------------------
 template< typename T >
-inline T* Array< T >::erase( T* pos )
+inline typename Array< T >::ArrayIterator Array< T >::erase( 
+  Array< T >::ArrayIterator pos )
 {
-  assert( pos != nullptr );
   assert( pos >= begin() && pos < end() );
-
-  T* next_element = pos;
+  int counter = 0;
 
   while ( pos < end() - 1 )
   {
     *pos = *(pos + 1);
-     pos += 1; 
+     pos += 1;
+     counter += 1; 
   }
-  pos->~T();
+  (*pos).~T();
+
 
   updateNumElements( m_num_elements - 1 );
-  return next_element;
+  return pos - counter;
 
 }
 
 //------------------------------------------------------------------------------
 template< typename T >
-inline T* Array< T >::erase( T* first, T* last )
+inline typename Array< T >::ArrayIterator Array< T >::erase(
+  Array< T >::ArrayIterator first, 
+  Array< T >::ArrayIterator last )
 {
-  assert( first != nullptr );
-  assert( last != nullptr );
   assert( first >= begin() && first < end() );
   assert( last >= first && last <= end() );
 
@@ -672,17 +722,18 @@ inline T* Array< T >::erase( T* first, T* last )
     return last;
   }
 
-  T* del = first;
-  T* next_element = first;
   int count = 0;
 
   // Erase [first,last) elements
-  while( del < last )
+  while( first < last )
   {
-    del->~T();
-    del++;
+    (*first).~T();
+    first++;
     count++;
   }
+
+  first -= count;
+  int shifted = 0;
 
   // Shift [last, end) elements over
   while( last < end() )
@@ -690,10 +741,11 @@ inline T* Array< T >::erase( T* first, T* last )
     *first = *last;
     first++;
     last++;
+    shifted++;
   }
 
   updateNumElements(m_num_elements - count);
-  return next_element;
+  return first - shifted;
 }
 
 //------------------------------------------------------------------------------
