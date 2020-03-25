@@ -28,7 +28,7 @@
 #include "axom/slam/policies/SubsettingPolicies.hpp"
 #include "axom/slam/ModularInt.hpp"
 
-#include "axom/slam/IteratorBase.hpp"
+#include "axom/core/IteratorBase.hpp"
 
 #include <type_traits>
 #include <cstddef>
