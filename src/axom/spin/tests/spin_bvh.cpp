@@ -562,7 +562,7 @@ void check_find_rays3d()
   // check answer with results verified manually by inspection
   constexpr int INTERSECTS_RAY = 0;
   constexpr int DOES_NOT_INTERSECT_RAY = -1;
-  constexpr int EXPECTED_RAY1_INTERSECTIONS = 14;
+  constexpr int EXPECTED_RAY1_INTERSECTIONS = 15;
   EXPECT_EQ( counts[ 0 ], EXPECTED_RAY1_INTERSECTIONS );
   EXPECT_EQ( counts[ 1 ], 0 );
 
@@ -574,9 +574,6 @@ void check_find_rays3d()
     case 1:
     case 3:
     case 4:
-    case 5:
-    case 7:
-    case 8:
     case 9:
     case 10:
     case 12:
@@ -584,6 +581,10 @@ void check_find_rays3d()
     case 14:
     case 16:
     case 17:
+    case 22:
+    case 23:
+    case 25:
+    case 26:
       EXPECT_EQ( iblank[ i ], INTERSECTS_RAY );
       break;
     default:

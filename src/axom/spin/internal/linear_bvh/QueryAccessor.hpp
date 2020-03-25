@@ -180,9 +180,9 @@ public:
     ray[ 1 ] = y0[ idx ];
     ray[ 2 ] = z0[ idx ];
 
-    ray[ 2 ] = nx[ idx ];
-    ray[ 3 ] = ny[ idx ];
-    ray[ 4 ] = nz[ idx ];
+    ray[ 3 ] = nx[ idx ];
+    ray[ 4 ] = ny[ idx ];
+    ray[ 5 ] = nz[ idx ];
   }
 
 };
