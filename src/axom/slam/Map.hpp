@@ -22,7 +22,8 @@
 #include "axom/slam/MapBase.hpp"
 #include "axom/slam/Set.hpp"
 #include "axom/slam/NullSet.hpp"
-#include "axom/slam/IteratorBase.hpp"
+
+#include "axom/core/IteratorBase.hpp"
 
 #include "axom/slam/policies/StridePolicies.hpp"
 

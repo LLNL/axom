@@ -16,7 +16,7 @@
 #include "axom/slam/Map.hpp"
 #include "axom/slam/OrderedSet.hpp"
 #include "axom/slam/RangeSet.hpp"
-#include "axom/slam/IteratorBase.hpp"
+#include "axom/core/IteratorBase.hpp"
 
 namespace axom
 {

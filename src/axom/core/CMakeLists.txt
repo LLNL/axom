@@ -42,6 +42,7 @@ set(core_headers
     Map.hpp
     Path.hpp
     Array.hpp
+    IteratorBase.hpp
     StackArray.hpp
     Types.hpp
     memory_management.hpp
