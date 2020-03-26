@@ -5,6 +5,7 @@
 
 // axom includes
 #include "axom/core/Macros.hpp"
+#include "axom/core/utilities/Utilities.hpp"
 #include "axom/core/numerics/floating_point_limits.hpp"
 
 // gtest includes
@@ -23,17 +24,20 @@ void check_type_limits( const std::string& typeName )
 
   SCOPED_TRACE( "Testing [" + typeName + "]" );
 
-  EXPECT_DOUBLE_EQ( axom::numerics::floating_point_limits< T >::lowest(),
-                    std::numeric_limits< T >::lowest() );
+  const T EPS     = axom::numerics::floating_point_limits< T >::epsilon();
+  const T LOWEST  = axom::numerics::floating_point_limits< T >::lowest();
+  const T MIN     = axom::numerics::floating_point_limits< T >::min();
+  const T MAX     = axom::numerics::floating_point_limits< T >::max();
 
-  EXPECT_DOUBLE_EQ( axom::numerics::floating_point_limits< T >::min(),
-                    std::numeric_limits< T >::min() );
+  const T STD_EPS    = std::numeric_limits< T >::epsilon();
+  const T STD_LOWEST = std::numeric_limits< T >::lowest();
+  const T STD_MIN    = std::numeric_limits< T >::min();
+  const T STD_MAX    = std::numeric_limits< T >::max();
 
-  EXPECT_DOUBLE_EQ( axom::numerics::floating_point_limits< T >::max(),
-                    std::numeric_limits< T >::max() );
-
-  EXPECT_DOUBLE_EQ( axom::numerics::floating_point_limits< T >::epsilon(),
-                    std::numeric_limits< T >::epsilon() );
+  EXPECT_TRUE( axom::utilities::isNearlyEqual( LOWEST, STD_LOWEST, EPS ) );
+  EXPECT_TRUE( axom::utilities::isNearlyEqual( MIN, STD_MIN, EPS ) );
+  EXPECT_TRUE( axom::utilities::isNearlyEqual( MAX, STD_MAX, EPS ) );
+  EXPECT_TRUE( axom::utilities::isNearlyEqual( EPS, STD_EPS, EPS ) );
 }
 
 //------------------------------------------------------------------------------
