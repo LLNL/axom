@@ -7,28 +7,29 @@
 #------------------------------------------------------------------------------
 
 set( primal_tests
-    primal_boundingbox.cpp
-    primal_orientedboundingbox.cpp
-    primal_clip.cpp
-    primal_closest_point.cpp
-    primal_in_sphere.cpp
-    primal_intersect_impl.cpp
-    primal_intersect.cpp
-    primal_numeric_array.cpp
-    primal_compute_bounding_box.cpp
-    primal_orientation.cpp
-    primal_plane.cpp
-    primal_point.cpp
-    primal_sphere.cpp
-    primal_squared_distance.cpp
-    primal_triangle.cpp
-    primal_tetrahedron.cpp
-    primal_vector.cpp
     primal_bezier_curve.cpp
     primal_bezier_intersect.cpp
+    primal_boundingbox.cpp
+    primal_clip.cpp
+    primal_closest_point.cpp
+    primal_compute_bounding_box.cpp
+    primal_in_sphere.cpp
+    primal_intersect.cpp
+    primal_intersect_impl.cpp
+    primal_numeric_array.cpp
+    primal_orientation.cpp
+    primal_orientedboundingbox.cpp
+    primal_plane.cpp
+    primal_point.cpp
+    primal_ray_intersect.cpp
+    primal_sphere.cpp
+    primal_squared_distance.cpp
+    primal_tetrahedron.cpp
+    primal_triangle.cpp
+    primal_vector.cpp
    )
 
-set(primal_test_depends fmt primal slic mint gtest)
+set(primal_test_depends fmt primal slic gtest)
 
 foreach ( test ${primal_tests} )
 

@@ -8,6 +8,9 @@
 
 #include "axom/spin/internal/linear_bvh/vec.hpp"
 
+#include "axom/core/numerics/floating_point_limits.hpp"
+#include "axom/primal/operators/detail/intersect_ray_impl.hpp"
+
 namespace axom
 {
 namespace spin
@@ -41,6 +44,8 @@ public:
   AXOM_STATIC_ASSERT_MSG( std::is_floating_point< FloatType >::value,
                           "A valid FloatingType must be used, e.g., double or float" );
 
+  using vec4_t = VecType< FloatType >;
+
   ///\name Predicates for Point Queries
   /// @{
 
@@ -52,13 +57,12 @@ public:
    * \param [in] s2 the 2nd segment of the BVH that stores the left bin.
    *
    * \return status true if the point is inside the left bin, else, false.
-   *
    */
   template < typename PointType >
   AXOM_HOST_DEVICE
   static inline bool pointInLeftBin( const PointType& point,
-                                     const VecType< FloatType >& s1,
-                                     const VecType< FloatType >& s2 ) noexcept;
+                                     const vec4_t& s1,
+                                     const vec4_t& s2  ) noexcept;
 
   /*!
    * \brief Checks if the supplied point is within the right bin.
@@ -72,8 +76,47 @@ public:
   template < typename PointType >
   AXOM_HOST_DEVICE
   static inline bool pointInRightBin( const PointType& point,
-                                      const VecType< FloatType >& s2,
-                                      const VecType< FloatType >& s3 ) noexcept;
+                                      const vec4_t& s2,
+                                      const vec4_t& s3 ) noexcept;
+
+  /// @}
+
+  ///\name Predicates for Ray Intersection Queries
+  /// @{
+
+  /*!
+   * \brief Checks if the specified ray intersects with the left bin.
+   *
+   * \param [in] r the ray in query
+   * \param [in] s1 the 1st segment of the BVH that stores the left bin.
+   * \param [in] s2 the 2nd segment of the BVH that stores the left bin.
+   * \param [in] TOL optional user-supplied tolerance. Default set to epsilon().
+   *
+   * \return status true if the ray intersects the left bin, else, false.
+   */
+  template < typename RayType >
+  AXOM_HOST_DEVICE
+  static inline bool rayIntersectsLeftBin(
+      const RayType& r, const vec4_t& s1, const vec4_t& s2,
+      FloatType TOL=numerics::floating_point_limits<FloatType>::epsilon()
+      ) noexcept;
+
+  /*!
+   * \brief Checks if the specified ray intersects with the right bin.
+   *
+   * \param [in] r the ray in query
+   * \param [in] s2 the 2nd segment of the BVH that stores the right bin.
+   * \param [in] s3 the 3rd segment of the BVH that stores the right bin.
+   * \param [in] TOL optional user-supplied tolerance. Default set to epsilon().
+   *
+   * \return status true if the ray intersects the right bin, else, false.
+   */
+  template < typename RayType >
+  AXOM_HOST_DEVICE
+  static inline bool rayIntersectsRightBin(
+      const RayType& r, const vec4_t& s2, const vec4_t& s3,
+      FloatType TOL=numerics::floating_point_limits<FloatType>::epsilon()
+      ) noexcept;
 
   /// @}
 
@@ -91,11 +134,13 @@ class TraversalPredicates< DIMENSION_2, FloatType >
 
 public:
 
+  using vec4_t = VecType< FloatType >;
+
   template < typename PointType >
   AXOM_HOST_DEVICE
   static inline bool pointInLeftBin( const PointType& point,
-                                     const VecType< FloatType >& s1,
-                                     const VecType< FloatType >& s2  ) noexcept
+                                     const vec4_t& s1,
+                                     const vec4_t& s2  ) noexcept
   {
     // NOTE: See BVHData.hpp for how the BVH bin is organized in the segments.
     bool in_left = true;
@@ -112,8 +157,8 @@ public:
   template < typename PointType >
   AXOM_HOST_DEVICE
   static inline bool pointInRightBin( const PointType& point,
-                                      const VecType< FloatType >& s2,
-                                      const VecType< FloatType >& s3  ) noexcept
+                                      const vec4_t& s2,
+                                      const vec4_t& s3  ) noexcept
   {
     // NOTE: See BVHData.hpp for how the BVH bin is organized in the segments.
     bool in_right = true;
@@ -127,6 +172,54 @@ public:
     return in_right;
   }
 
+  template < typename RayType >
+  AXOM_HOST_DEVICE
+  static inline bool rayIntersectsLeftBin(
+      const RayType& r, const vec4_t& s1, const vec4_t& s2,
+      FloatType TOL=numerics::floating_point_limits<FloatType>::epsilon()
+      ) noexcept
+  {
+    const FloatType& x0 = r[ 0 ];
+    const FloatType& y0 = r[ 1 ];
+    const FloatType& nx = r[ 2 ];
+    const FloatType& ny = r[ 3 ];
+
+    // extract left bin, see BVHData.hpp for the internal BVH layout
+    const FloatType& xmin = s1[ 0 ];
+    const FloatType& xmax = s1[ 3 ];
+    const FloatType& ymin = s1[ 1 ];
+    const FloatType& ymax = s2[ 0 ];
+
+    // TODO: in the future we should take `t` into account and organize
+    //       candidate bins in a priority queue.
+    FloatType t = 0.0;
+    return primal::detail::intersect_ray(x0,nx,y0,ny,xmin,xmax,ymin,ymax,t,TOL);
+  }
+
+  template < typename RayType >
+  AXOM_HOST_DEVICE
+  static inline bool rayIntersectsRightBin(
+      const RayType& r, const vec4_t& s2, const vec4_t& s3,
+      FloatType TOL=numerics::floating_point_limits<FloatType>::epsilon()
+      ) noexcept
+  {
+    const FloatType& x0 = r[ 0 ];
+    const FloatType& y0 = r[ 1 ];
+    const FloatType& nx = r[ 2 ];
+    const FloatType& ny = r[ 3 ];
+
+    // extract right bin, see BVHData.hpp for the internal BVH layout
+    const FloatType& xmin = s2[ 2 ];
+    const FloatType& xmax = s3[ 1 ];
+    const FloatType& ymin = s2[ 3 ];
+    const FloatType& ymax = s3[ 2 ];
+
+    // TODO: in the future we should take `t` into account and organize
+    //       candidate bins in a priority queue.
+    FloatType t = 0.0;
+    return primal::detail::intersect_ray(x0,nx,y0,ny,xmin,xmax,ymin,ymax,t,TOL);
+  }
+
 };
 
 //------------------------------------------------------------------------------
@@ -138,11 +231,13 @@ class TraversalPredicates< DIMENSION_3, FloatType >
 
 public:
 
+  using vec4_t = VecType< FloatType >;
+
   template < typename PointType >
   AXOM_HOST_DEVICE
   static inline bool pointInLeftBin( const PointType& point,
-                                     const VecType< FloatType >& s1,
-                                     const VecType< FloatType >& s2  ) noexcept
+                                     const vec4_t& s1,
+                                     const vec4_t& s2  ) noexcept
   {
 
     // NOTE: See BVHData.hpp for how the BVH bin is organized in the segments.
@@ -162,8 +257,8 @@ public:
   template < typename PointType >
   AXOM_HOST_DEVICE
   static inline bool pointInRightBin( const PointType& point,
-                                      const VecType< FloatType >& s2,
-                                      const VecType< FloatType >& s3 ) noexcept
+                                      const vec4_t& s2,
+                                      const vec4_t& s3 ) noexcept
   {
     // NOTE: See BVHData.hpp for how the BVH bin is organized in the segments.
     bool in_right = true;
@@ -177,6 +272,64 @@ public:
     if ( point[2] > s3[3] ) in_right = false;
 
     return in_right;
+  }
+
+  template < typename RayType >
+  AXOM_HOST_DEVICE
+  static inline bool rayIntersectsLeftBin(
+      const RayType& r, const vec4_t& s1, const vec4_t& s2,
+      FloatType TOL=numerics::floating_point_limits<FloatType>::epsilon()
+      ) noexcept
+  {
+    const FloatType& x0 = r[ 0 ];
+    const FloatType& y0 = r[ 1 ];
+    const FloatType& z0 = r[ 2 ];
+    const FloatType& nx = r[ 3 ];
+    const FloatType& ny = r[ 4 ];
+    const FloatType& nz = r[ 5 ];
+
+    // extract left bin, see BVHData.hpp for the internal BVH layout
+    const FloatType& xmin = s1[ 0 ];
+    const FloatType& xmax = s1[ 3 ];
+    const FloatType& ymin = s1[ 1 ];
+    const FloatType& ymax = s2[ 0 ];
+    const FloatType& zmin = s1[ 2 ];
+    const FloatType& zmax = s2[ 1 ];
+
+    // TODO: in the future we should take `t` into account and organize
+    //       candidate bins in a priority queue.
+    FloatType t = 0.0;
+    return primal::detail::intersect_ray(
+      x0,nx,y0,ny,z0,nz,xmin,xmax,ymin,ymax,zmin,zmax,t, TOL );
+  }
+
+  template < typename RayType >
+  AXOM_HOST_DEVICE
+  static inline bool rayIntersectsRightBin(
+      const RayType& r, const vec4_t& s2, const vec4_t& s3,
+      FloatType TOL=numerics::floating_point_limits<FloatType>::epsilon()
+      ) noexcept
+  {
+    const FloatType& x0 = r[ 0 ];
+    const FloatType& y0 = r[ 1 ];
+    const FloatType& z0 = r[ 2 ];
+    const FloatType& nx = r[ 3 ];
+    const FloatType& ny = r[ 4 ];
+    const FloatType& nz = r[ 5 ];
+
+    // extract right bin, see BVHData.hpp for the internal BVH layout
+    const FloatType& xmin = s2[ 2 ];
+    const FloatType& xmax = s3[ 1 ];
+    const FloatType& ymin = s2[ 3 ];
+    const FloatType& ymax = s3[ 2 ];
+    const FloatType& zmin = s3[ 0 ];
+    const FloatType& zmax = s3[ 3 ];
+
+    // TODO: in the future we should take `t` into account and organize
+    //       candidate bins in a priority queue.
+    FloatType t = 0.0;
+    return primal::detail::intersect_ray(
+      x0,nx,y0,ny,z0,nz,xmin,xmax,ymin,ymax,zmin,zmax,t, TOL );
   }
 
 };

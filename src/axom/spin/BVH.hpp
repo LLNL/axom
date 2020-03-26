@@ -14,7 +14,7 @@
 #include "axom/core/execution/execution_space.hpp"  // for execution spaces
 
 // C/C++ includes
-#include <type_traits> // for std::is_floating_point()
+#include <type_traits> // for std::is_floating_point(), std::is_same()
 
 #if !defined(AXOM_USE_RAJA) || !defined(AXOM_USE_UMPIRE)
 #error *** The spin::BVH class requires RAJA and Umpire ***
@@ -117,15 +117,16 @@ enum BVHReturnCodes
 template < int NDIMS, typename ExecSpace, typename FloatType = double >
 class BVH
 {
-public:
+private:
 
+  // compile time checks
   AXOM_STATIC_ASSERT_MSG( ( (NDIMS==2) || (NDIMS==3) ),
-                          "The BVH class may be used only in 2D or 3D." );
+                            "The BVH class may be used only in 2D or 3D." );
   AXOM_STATIC_ASSERT_MSG( std::is_floating_point< FloatType >::value,
                           "A valid FloatingType must be used for the BVH." );
   AXOM_STATIC_ASSERT_MSG( axom::execution_space< ExecSpace >::valid(),
-                          "A valid execution space must be supplied to the BVH." );
-
+                       "A valid execution space must be supplied to the BVH." );
+public:
 
   /*!
    * \brief Default constructor. Disabled.
@@ -181,6 +182,29 @@ public:
   { m_scaleFactor = scale_factor; };
 
   /*!
+   * \brief Returns the scale factor used when constructing the BVH.
+   * \return scale_factor the scale factor
+   */
+  FloatType getScaleFacor( ) const
+  { return m_scaleFactor; };
+
+  /*!
+   * \brief Sets the tolerance used for querying the BVH.
+   * \param [in] TOL the tolerance to use.
+   *
+   * \note Default tolerance set to floating_point_limits<FloatType>::epsilon()
+   */
+  void setTolerance( FloatType TOL )
+  { m_Tolernace = TOL; };
+
+  /*!
+   * \brief Returns the tolerance value used for BVH queries.
+   * \return TOL the tolerance
+   */
+  FloatType getTolerance() const
+  { return m_Tolernace; };
+
+  /*!
    * \brief Generates the BVH
    * \return status set to BVH_BUILD_OK on success.
    */
@@ -200,8 +224,7 @@ public:
   void getBounds( FloatType* min, FloatType* max ) const;
 
   /*!
-   * \brief Finds the candidate geometric entities that contain each of the
-   *  given query points.
+   * \brief Finds the candidate bins that contain each of the query points.
    *
    * \param [out] offsets offset to the candidates array for each query point
    * \param [out] counts stores the number of candidates per query point
@@ -212,7 +235,7 @@ public:
    * \param [in]  z array of z-coordinates, may be nullptr if 2D
    *
    * \note offsets and counts are pointers to arrays of size numPts that are
-   *  pre-allocated by the caller before calling find().
+   *  pre-allocated by the caller before calling findPoints().
    *
    * \note The candidates array is allocated internally by the method and
    *  ownership of the memory is transferred to the caller. Consequently, the
@@ -230,11 +253,53 @@ public:
    * \pre y != nullptr if dimension==2 || dimension==3
    * \pre z != nullptr if dimension==3
    */
-  void find( IndexType* offsets, IndexType* counts,
-             IndexType*& candidates, IndexType numPts,
-             const FloatType* x,
-             const FloatType* y,
-             const FloatType* z=nullptr ) const;
+  void findPoints( IndexType* offsets, IndexType* counts,
+                   IndexType*& candidates, IndexType numPts,
+                   const FloatType* x,
+                   const FloatType* y,
+                   const FloatType* z=nullptr ) const;
+
+  /*!
+   * \brief Finds the candidate bins that intersect the given rays.
+   *
+   * \param [out] offsets offset to the candidates array for each ray
+   * \param [out] counts stores the number of candidates for each ray
+   * \param [out] candidates array of candidate IDs for each ray
+   * \param [in] numRays the total number of rays
+   * \param [in] x0 array consisting the ray source point x-coordinates.
+   * \param [in] nx array consisting the ray normal x-components.
+   * \param [in] y0 array consisting the ray source point y-coordinates
+   * \param [in] ny array consisting the ray normal y-components
+   * \param [in] z0 array consisting the ray source point z-coorindates (in 3D)
+   * \param [in] nz array consisting the ray normal z-components (in 3D)
+   *
+   * \note offsets and counts are arrays of size numRays that are pre-allocated
+   *  by the caller, prior to the calling findRays().
+   *
+   * \note After the call to findRays(), the ith ray has:
+   *  * counts[ i ] candidates
+   *  * candidates stored in [ offsets[ i ], offsets[i]+counts[i] ]
+   *
+   * \pre offsets    != nullptr
+   * \pre counts     != nullptr
+   * \pre candidates == nullptr
+   * \pre x0 != nullptr
+   * \pre nx != nullptr
+   * \pre y0 != nullptr
+   * \pre ny != nullptr
+   * \pre z0 != nullptr if dimension==3
+   * \pre nz != nullptr if dimension==3
+   */
+  void findRays( IndexType* offsets,
+                 IndexType* counts,
+                 IndexType*& candidates,
+                 IndexType numRays,
+                 const FloatType* x0,
+                 const FloatType* nx,
+                 const FloatType* y0,
+                 const FloatType* ny,
+                 const FloatType* z0=nullptr,
+                 const FloatType* nz=nullptr  ) const;
 
   /*!
    * \brief Writes the BVH to the specified VTK file for visualization.
@@ -248,6 +313,7 @@ private:
 /// \name Private Members
 /// @{
 
+  FloatType m_Tolernace;
   FloatType m_scaleFactor;
   IndexType m_numItems;
   const FloatType* m_boxes;
@@ -265,4 +331,4 @@ private:
 
 #include "axom/spin/internal/linear_bvh/BVH_impl.hpp"
 
-#endif /* AXOM_PRIMAL_BVH_H_ */
+#endif /* AXOM_SPIN_BVH_H_ */
