@@ -17,7 +17,8 @@ set(example_sources
 if(ENABLE_MPI)
     set (example_parallel_sources
          sidre_array.cpp
-         sidre_createdatastore.cpp)
+         sidre_createdatastore.cpp
+         sidre_external_array.cpp)
 else()
     list(APPEND example_sources sidre_createdatastore.cpp)
 endif()
