@@ -1281,48 +1281,56 @@ TEST( spin_bvh, traversal_predicates_pointInRightBin )
 TEST( spin_bvh, contruct2D_sequential )
 {
   check_build_bvh2d< axom::SEQ_EXEC, double >( );
+  check_build_bvh2d< axom::SEQ_EXEC, float >( );
 }
 
 //------------------------------------------------------------------------------
 TEST( spin_bvh, contruct3D_sequential )
 {
   check_build_bvh3d< axom::SEQ_EXEC, double >( );
+  check_build_bvh3d< axom::SEQ_EXEC, float >( );
 }
 
 //------------------------------------------------------------------------------
 TEST( spin_bvh, find_rays_3d_sequential )
 {
   check_find_rays3d< axom::SEQ_EXEC, double >( );
+  check_find_rays3d< axom::SEQ_EXEC, float >( );
 }
 
 //------------------------------------------------------------------------------
 TEST( spin_bvh, find_rays_2d_sequential )
 {
   check_find_rays2d< axom::SEQ_EXEC, double >( );
+  check_find_rays2d< axom::SEQ_EXEC, float >( );
 }
 
 //------------------------------------------------------------------------------
 TEST( spin_bvh, find_points_3d_sequential )
 {
   check_find_points3d< axom::SEQ_EXEC, double >( );
+  check_find_points3d< axom::SEQ_EXEC, float >( );
 }
 
 //------------------------------------------------------------------------------
 TEST( spin_bvh, find_points_2d_sequential )
 {
   check_find_points2d< axom::SEQ_EXEC, double >( );
+  check_find_points2d< axom::SEQ_EXEC, float >( );
 }
 
 //------------------------------------------------------------------------------
 TEST( spin_bvh, single_box2d_sequential )
 {
   check_single_box2d< axom::SEQ_EXEC, double >( );
+  check_single_box2d< axom::SEQ_EXEC, float >( );
 }
 
 //------------------------------------------------------------------------------
 TEST( spin_bvh, single_box3d_sequential )
 {
   check_single_box3d< axom::SEQ_EXEC, double >( );
+  check_single_box3d< axom::SEQ_EXEC, float >( );
 }
 
 //------------------------------------------------------------------------------
@@ -1331,42 +1339,49 @@ TEST( spin_bvh, single_box3d_sequential )
 TEST( spin_bvh, contruct2D_omp )
 {
   check_build_bvh2d< axom::OMP_EXEC, double >( );
+  check_build_bvh2d< axom::OMP_EXEC, float >( );
 }
 
 //------------------------------------------------------------------------------
 TEST( spin_bvh, contruct3D_omp )
 {
   check_build_bvh3d< axom::OMP_EXEC, double >( );
+  check_build_bvh3d< axom::OMP_EXEC, float >( );
 }
 
 //------------------------------------------------------------------------------
 TEST( spin_bvh, find_rays_3d_omp )
 {
   check_find_rays3d< axom::OMP_EXEC, double >( );
+  check_find_rays3d< axom::OMP_EXEC, float >( );
 }
 
 //------------------------------------------------------------------------------
 TEST( spin_bvh, find_rays_2d_omp )
 {
   check_find_rays2d< axom::OMP_EXEC, double >( );
+  check_find_rays2d< axom::OMP_EXEC, float >( );
 }
 
 //------------------------------------------------------------------------------
 TEST( spin_bvh, find_points_3d_omp )
 {
   check_find_points3d< axom::OMP_EXEC, double >( );
+  check_find_points3d< axom::OMP_EXEC, float >( );
 }
 
 //------------------------------------------------------------------------------
 TEST( spin_bvh, find_points_2d_omp )
 {
   check_find_points2d< axom::OMP_EXEC, double >( );
+  check_find_points2d< axom::OMP_EXEC, float >( );
 }
 
 //------------------------------------------------------------------------------
 TEST( spin_bvh, single_box2d_omp )
 {
   check_single_box2d< axom::OMP_EXEC, double >( );
+  check_single_box2d< axom::OMP_EXEC, float >( );
 }
 
 //------------------------------------------------------------------------------
@@ -1386,6 +1401,7 @@ AXOM_CUDA_TEST( spin_bvh, contruct2D_cuda )
   using exec  = axom::CUDA_EXEC< BLOCK_SIZE >;
 
   check_build_bvh2d< exec, double >( );
+  check_build_bvh2d< exec, float >( );
 }
 
 //------------------------------------------------------------------------------
@@ -1395,6 +1411,7 @@ AXOM_CUDA_TEST( spin_bvh, contruct3D_cuda )
   using exec  = axom::CUDA_EXEC< BLOCK_SIZE >;
 
   check_build_bvh3d< exec, double >( );
+  check_build_bvh3d< exec, float >( );
 }
 
 //------------------------------------------------------------------------------
@@ -1404,6 +1421,7 @@ AXOM_CUDA_TEST( spin_bvh, find_rays_3d_cuda )
   using exec  = axom::CUDA_EXEC< BLOCK_SIZE >;
 
   check_find_rays3d< exec, double >( );
+  check_find_rays3d< exec, float >( );
 }
 
 //------------------------------------------------------------------------------
@@ -1413,6 +1431,7 @@ AXOM_CUDA_TEST( spin_bvh, find_rays_2d_cuda )
   using exec  = axom::CUDA_EXEC< BLOCK_SIZE >;
 
   check_find_rays2d< exec, double >( );
+  check_find_rays2d< exec, float >( );
 }
 
 //------------------------------------------------------------------------------
@@ -1422,6 +1441,7 @@ AXOM_CUDA_TEST( spin_bvh, find_points_3d_cuda )
   using exec  = axom::CUDA_EXEC< BLOCK_SIZE >;
 
   check_find_points3d< exec, double >( );
+  check_find_points3d< exec, float >( );
 }
 
 //------------------------------------------------------------------------------
@@ -1431,6 +1451,7 @@ AXOM_CUDA_TEST( spin_bvh, find_points_2d_cuda )
   using exec  = axom::CUDA_EXEC< BLOCK_SIZE >;
 
   check_find_points2d< exec, double >( );
+  check_find_points2d< exec, float >( );
 }
 
 //------------------------------------------------------------------------------
@@ -1440,6 +1461,7 @@ AXOM_CUDA_TEST( spin_bvh, single_box2d_cuda )
   using exec  = axom::CUDA_EXEC< BLOCK_SIZE >;
 
   check_single_box2d< exec, double >( );
+  check_single_box2d< exec, float >( );
 }
 
 //------------------------------------------------------------------------------
@@ -1449,6 +1471,7 @@ AXOM_CUDA_TEST( spin_bvh, single_box3d_cuda )
   using exec  = axom::CUDA_EXEC< BLOCK_SIZE >;
 
   check_single_box3d< exec, double >( );
+  check_single_box3d< exec, float >( );
 }
 
 #endif
