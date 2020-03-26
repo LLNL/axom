@@ -12,7 +12,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Added
 - Added a portable floating_point_limits traits class, to return min(), max(), lowest() 
   and epsilon() of a `float` or `double` type. The functionality is equivalent to that provided by 
-  std::numeric_limits, but, the code is host/device decorated accordinlgy such that it
+  std::numeric_limits, but, the code is host/device decorated accordingly such that it
   can also be called on the device.
 - Added initial support for ray queries using the BVH. The caller may now supply a set of rays to 
   a BVH and the BVH will return a set of candidate BVH bins that intersect each ray.
@@ -22,9 +22,6 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Deprecated
 
 ### Changed
-- The BVH may now only be instantiated with double precision floating point types. This is due to
-  an issue with the parallel scan algorithms, used internally, which may not work properly with
-  single precision. This issue was discovered by the new tests for the ray find feature.
 - Modified the API for the BVH to accomodate different query types. The queries are now
   more explicitly called `BVH::findPoints()` and `BVH::findRays()`.
 - Modified the API of Axom's memory management routines to not leak usage of Umpire. Instead of 
