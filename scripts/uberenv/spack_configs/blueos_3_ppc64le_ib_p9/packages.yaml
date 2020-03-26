@@ -37,7 +37,7 @@ packages:
       mvapich2@2.2%clang@upstream_xlf: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2019.08.15/
       mvapich2@2.2%clang@8.0.1_nvcc_xlf: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-8.0.1/  
       mvapich2@2.2%xl@coral : /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2019.08.15/
-      mvapich2@2.2%xl@coral_nvcc : /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.08.20/
+      mvapich2@2.2%xl@nvcc : /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.08.20/
     buildable: False
 # Spack may grab for mpi & we don't want to use them
   openmpi:
