@@ -32,7 +32,8 @@
     [ "clang@upstream_xlf~openmp+devtools+mfem",
       "clang@8.0.1_nvcc_xlf~openmp+cuda+devtools+mfem",
       "gcc@7.3.1+devtools+mfem",
-      "xl@coral~openmp+devtools+mfem" ],
+      "xl@coral~openmp+devtools+mfem",
+      "xl@nvcc~openmp+cuda+devtools+mfem" ],
 
     "darwin-x86_64":
     [ "clang@9.0.0+devtools+mfem" ]
