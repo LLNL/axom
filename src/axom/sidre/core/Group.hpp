@@ -55,7 +55,7 @@ namespace sidre
 class Buffer;
 class Group;
 class DataStore;
-template <typename TYPE> class MapCollection;
+template <typename TYPE> class ItemCollection;
 
 /*!
  * \class Group
@@ -1438,7 +1438,7 @@ private:
    *  attachGroup must be called on a newly created Group to insert it
    *  into the hierarchy. The root group is an exception to this rule.
    */
-  Group(const std::string& name, DataStore* datastore);
+  Group(const std::string& name, DataStore* datastore, bool is_list);
 
   /*!
    * \brief Destructor destroys all Views and child Groups.
@@ -1615,9 +1615,9 @@ private:
 
   ///////////////////////////////////////////////////////////////////
   //
-  using ViewCollection = MapCollection<View>;
+  using ViewCollection = ItemCollection<View>;
   //
-  using GroupCollection =  MapCollection<Group>;
+  using GroupCollection =  ItemCollection<Group>;
   ///////////////////////////////////////////////////////////////////
 
   /// Collection of Views

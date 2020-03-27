@@ -13,6 +13,7 @@
 #endif
 
 // Sidre headers
+#include "ListCollection.hpp"
 #include "MapCollection.hpp"
 #include "Buffer.hpp"
 #include "DataStore.hpp"
@@ -904,7 +905,7 @@ Group* Group::createGroup( const std::string& path )
     return nullptr;
   }
 
-  Group* new_group = new(std::nothrow) Group(intpath, group->getDataStore());
+  Group* new_group = new(std::nothrow) Group(intpath, group->getDataStore(), false);
   if ( new_group == nullptr )
   {
     return nullptr;
@@ -1669,17 +1670,28 @@ void Group::loadExternalData(const hid_t& h5_id)
  *************************************************************************
  */
 Group::Group(const std::string& name,
-             DataStore* datastore)
+             DataStore* datastore,
+             bool is_list)
   : m_name(name)
   , m_index(InvalidIndex)
   , m_parent(nullptr)
   , m_datastore(datastore)
-  , m_view_coll(new ViewCollection())
-  , m_group_coll(new GroupCollection())
+  , m_view_coll(0)
+  , m_group_coll(0)
 #ifdef AXOM_USE_UMPIRE
   , m_default_allocator_id(axom::getDefaultAllocatorID())
 #endif
-{}
+{
+  if (is_list)
+  {
+    m_view_coll = new ListCollection<View>();
+    m_group_coll = new ListCollection<Group>();
+  } else
+  {
+    m_view_coll = new MapCollection<View>();
+    m_group_coll = new MapCollection<Group>();
+  }
+}
 
 /*
  *************************************************************************
@@ -1705,7 +1717,7 @@ Group::~Group()
  */
 View* Group::attachView(View* view)
 {
-  if ( view == nullptr || hasChildView(view->getName()) )
+  if ( view == nullptr || (!view->getName().empty() && hasChildView(view->getName())) )
   {
     return nullptr;
   }

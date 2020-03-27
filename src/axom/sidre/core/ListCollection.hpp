@@ -6,12 +6,12 @@
 /*!
  ******************************************************************************
  *
- * \file MapCollection.hpp
+ * \file ListCollection.hpp
  *
  * \brief   Header file for Collection classes.
  *
  *          Each of these classes holds a collection of items of a fixed
- *          type that can be accessed by string name or sidre::IndexType.
+ *          type that can be accessed by an iterator or sidre::IndexType.
  *
  *          The primary intent is to decouple the implementation of the
  *          collections from the Group class which owns collections of
@@ -115,11 +115,12 @@
  ******************************************************************************
  */
 
-#ifndef SIDRE_MAP_COLLECTIONS_HPP_
-#define SIDRE_MAP_COLLECTIONS_HPP_
+#ifndef SIDRE_LISTCOLLECTIONS_HPP_
+#define SIDRE_LISTCOLLECTIONS_HPP_
 
 // Standard C++ headers
 #include <map>
+#include <list>
 #include <stack>
 #include <string>
 #include <vector>
@@ -132,11 +133,6 @@
 #include "SidreTypes.hpp"
 #include "ItemCollection.hpp"
 
-#if defined(AXOM_USE_SPARSEHASH)
-  #include <sparsehash/dense_hash_map>
-#else
-  #include <unordered_map>
-#endif
 
 
 namespace axom
@@ -146,7 +142,7 @@ namespace sidre
 
 ////////////////////////////////////////////////////////////////////////
 //
-// MapCollection keeps an index constant for each item
+// ListCollection keeps an index constant for each item
 // as long as it remains in the collection; i.e., don't shift indices
 // around.  It has the additional benefit that users can hold on to
 // item indices without them being changed without notice.
@@ -156,20 +152,16 @@ namespace sidre
 /*!
  *************************************************************************
  *
- * \class MapCollection
+ * \class ListCollection
  *
- * \brief MapCollection is a container class template for holding
+ * \brief ListCollection is a container class template for holding
  *        a collection of items of template parameter type TYPE, using
- *        a map container of type MAP_TYPE.
- *
- * \warning Only std::map and std::unordered_map have been tried so far.
- *          These classes have identical APIs for the functionality we
- *          are using.
+ *        a list container.
  *
  *************************************************************************
  */
 template <typename TYPE>
-class MapCollection : public ItemCollection<TYPE>
+class ListCollection : public ItemCollection<TYPE>
 {
 public:
 
@@ -193,8 +185,8 @@ public:
   ///
   bool hasItem(const std::string& name) const
   {
-    typename MapType::const_iterator mit = m_name2idx_map.find(name);
-    return ( mit != m_name2idx_map.end() ? true : false );
+    SLIC_ERROR(" ");
+    return false;
   }
 
   ///
@@ -208,17 +200,15 @@ public:
   ///
   TYPE* getItem(const std::string& name)
   {
-    typename MapType::iterator mit = m_name2idx_map.find(name);
-    return ( mit != m_name2idx_map.end() ?
-             m_items[ mit->second ] : nullptr );
+    SLIC_ERROR(" ");
+    return 0;
   }
 
   ///
   TYPE const* getItem(const std::string& name) const
   {
-    typename MapType::const_iterator mit = m_name2idx_map.find(name);
-    return ( mit != m_name2idx_map.end() ?
-             m_items[ mit->second ] : nullptr );
+    SLIC_ERROR(" ");
+    return 0;
   }
 
   ///
@@ -236,16 +226,14 @@ public:
   ///
   const std::string& getItemName(IndexType idx) const
   {
-    return ( hasItem(idx) ? m_items[static_cast<unsigned>(idx)]->getName() :
-             InvalidName );
+    return InvalidName;
   }
 
   ///
   IndexType getItemIndex(const std::string& name) const
   {
-    typename MapType::const_iterator mit = m_name2idx_map.find(name);
-    return ( mit != m_name2idx_map.end() ?
-             mit->second : InvalidIndex );
+    SLIC_ERROR(" ");
+    return 0;
   }
 
   ///
@@ -265,36 +253,19 @@ public:
     {
       m_free_ids.pop();
     }
-#if defined(AXOM_USE_SPARSEHASH)
-    if (m_name2idx_map.empty() && m_empty_key != "DENSE_MAP_EMPTY_KEY")
-    {
-      m_empty_key = "DENSE_MAP_EMPTY_KEY";
-      m_name2idx_map.set_empty_key(m_empty_key);
-      m_name2idx_map.set_deleted_key("DENSE_MAP_DELETED_KEY");
-    }
-#endif
-
-    m_name2idx_map.clear();
+    m_index_list.clear();
   }
 
 private:
   std::vector<TYPE*>  m_items;
   std::stack< IndexType > m_free_ids;
 
-#if defined(AXOM_USE_SPARSEHASH)
-  using MapType = google::dense_hash_map<std::string, IndexType>;
-#else
-  using MapType = std::unordered_map<std::string, IndexType>;
-#endif
+  std::list< IndexType > m_index_list;
 
-  MapType m_name2idx_map;
-#if defined(AXOM_USE_SPARSEHASH)
-  std::string m_empty_key;
-#endif
 };
 
 template <typename TYPE>
-IndexType MapCollection<TYPE>::getFirstValidIndex() const
+IndexType ListCollection<TYPE>::getFirstValidIndex() const
 {
   IndexType idx = 0;
   while ( static_cast<unsigned>(idx) < m_items.size() &&
@@ -306,7 +277,7 @@ IndexType MapCollection<TYPE>::getFirstValidIndex() const
 }
 
 template <typename TYPE>
-IndexType MapCollection<TYPE>::getNextValidIndex(IndexType idx) const
+IndexType ListCollection<TYPE>::getNextValidIndex(IndexType idx) const
 {
   if (idx == InvalidIndex)
   {
@@ -324,7 +295,7 @@ IndexType MapCollection<TYPE>::getNextValidIndex(IndexType idx) const
 
 
 template <typename TYPE>
-IndexType MapCollection<TYPE>::insertItem(TYPE* item,
+IndexType ListCollection<TYPE>::insertItem(TYPE* item,
                                           const std::string& name)
 {
   bool use_recycled_index = false;
@@ -336,17 +307,9 @@ IndexType MapCollection<TYPE>::insertItem(TYPE* item,
     use_recycled_index = true;
   }
 
-#if defined(AXOM_USE_SPARSEHASH)
-  if (m_name2idx_map.empty() && m_empty_key != "DENSE_MAP_EMPTY_KEY")
+  if ( name.empty() )
   {
-    m_empty_key = "DENSE_MAP_EMPTY_KEY";
-    m_name2idx_map.set_empty_key(m_empty_key);
-    m_name2idx_map.set_deleted_key("DENSE_MAP_DELETED_KEY");
-  }
-#endif
-
-  if ( m_name2idx_map.insert( std::make_pair(name, idx) ).second )
-  {
+    m_index_list.push_back(idx);
     // name was inserted into map
     if ( use_recycled_index )
     {
@@ -370,40 +333,34 @@ IndexType MapCollection<TYPE>::insertItem(TYPE* item,
 }
 
 template <typename TYPE>
-TYPE* MapCollection<TYPE>::removeItem(const std::string& name)
+TYPE* ListCollection<TYPE>::removeItem(const std::string& name)
+{
+  SLIC_ERROR( " " );
+  return 0; 
+}
+
+template <typename TYPE>
+TYPE* ListCollection<TYPE>::removeItem(IndexType idx)
 {
   TYPE* ret_val = nullptr;
-
-  typename MapType::iterator mit = m_name2idx_map.find(name);
-  if ( mit != m_name2idx_map.end() )
+  if ( hasItem(idx) )
   {
-    IndexType idx = mit->second;
-
-    ret_val = m_items[idx];
-
-    m_name2idx_map.erase(mit);
-    m_items[idx] = nullptr;
-    m_free_ids.push(idx);
+    for (auto itr = m_index_list.begin(); itr != m_index_list.end(); ++itr)
+    {
+      if (*itr == idx)
+      {
+        ret_val = m_items[idx];
+        m_index_list.erase(itr);
+        m_items[idx] = nullptr;
+        m_free_ids.push(idx);
+      }
+    }
   }
 
   return ret_val;
 }
 
-template <typename TYPE>
-TYPE* MapCollection<TYPE>::removeItem(IndexType idx)
-{
-  if ( hasItem(idx) )
-  {
-    TYPE* item = removeItem( m_items[idx]->getName() );
-    return item;
-  }
-  else
-  {
-    return nullptr;
-  }
-}
-
 } /* end namespace sidre */
 } /* end namespace axom */
 
-#endif /* SIDRE_MAP_COLLECTIONS_HPP_ */
+#endif /* SIDRE_LIST_COLLECTIONS_HPP_ */
