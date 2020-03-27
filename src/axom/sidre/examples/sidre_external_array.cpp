@@ -74,12 +74,6 @@ void sidre_read( MPI_Comm comm,
   sidre::IOManager sidre_io( comm );
   sidre_io.read( root, file );
 
-// DEBUG
-  SLIC_INFO( "Here is the data that was read back:" );
-  root->print();
-  std::cout << std::endl;
-// DEBUG
-
   SLIC_ASSERT( root->hasChildView("data") );
   sidre::View* view = root->getView( "data" );
 
@@ -93,8 +87,17 @@ void sidre_read( MPI_Comm comm,
 
   data = axom::allocate< int >(nelems);
   SLIC_ASSERT( data != nullptr );
+  SLIC_ASSERT( view->isDescribed() );
+  SLIC_ASSERT( view->isExternal() );
 
-  memcpy( data, view->getVoidPtr(), nelems*sizeof(int) );
+  view->setExternalDataPtr( data );
+  sidre_io.loadExternalData(root,file);
+
+// DEBUG
+  SLIC_INFO( "Here is the data that was read back:" );
+  root->print();
+  std::cout << std::endl;
+// DEBUG
 }
 
 //------------------------------------------------------------------------------
