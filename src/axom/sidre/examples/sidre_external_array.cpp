@@ -4,7 +4,9 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 // Axom includes
-#include "axom/core.hpp"  // for Axom types and macros
+#include "axom/core/Types.hpp"  // for Axom types
+#include "axom/core/Macros.hpp" // for Axom macros
+
 #include "axom/sidre.hpp" // for sidre
 #include "axom/slic.hpp"  // for logging with slic
 
@@ -76,7 +78,10 @@ void sidre_read( MPI_Comm comm,
 
   SLIC_ASSERT( root->hasChildView("data") );
   sidre::View* view = root->getView( "data" );
+  SLIC_ASSERT( view->isDescribed() );
+  SLIC_ASSERT( view->isExternal() );
 
+  // get the array shape information
   sidre::IndexType shape[2];
   view->getShape( 2, shape );
   numTuples     = shape[ 0 ];
@@ -85,12 +90,14 @@ void sidre_read( MPI_Comm comm,
   axom::IndexType nelems = view->getNumElements();
   SLIC_ASSERT( nelems==(numTuples*numComponents) );
 
+  // allocate external data
   data = axom::allocate< int >(nelems);
   SLIC_ASSERT( data != nullptr );
-  SLIC_ASSERT( view->isDescribed() );
-  SLIC_ASSERT( view->isExternal() );
 
+  // set external data for the view
   view->setExternalDataPtr( data );
+
+  // load the external data
   sidre_io.loadExternalData(root,file);
 
 // DEBUG
