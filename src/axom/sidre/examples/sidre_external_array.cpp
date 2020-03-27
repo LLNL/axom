@@ -4,7 +4,9 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 // Axom includes
-#include "axom/core.hpp"  // for Axom types and macros
+#include "axom/core/Types.hpp"  // for Axom types
+#include "axom/core/Macros.hpp" // for Axom macros
+
 #include "axom/sidre.hpp" // for sidre
 #include "axom/slic.hpp"  // for logging with slic
 
