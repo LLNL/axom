@@ -361,11 +361,11 @@ void array_counting( IntType* iterator,
 // result  [b,a,c]
 //
 template< typename ExecSpace, typename T>
-void reorder(int32* indices, T*&array, int32 size)
+void reorder(int32* indices, T*&array, int32 size, int allocatorID)
 {
   AXOM_PERF_MARK_FUNCTION( "reorder" );
 
-  T* temp = axom::allocate< T >( size );
+  T* temp = axom::allocate< T >( size, allocatorID );
 
   for_all< ExecSpace >( size, AXOM_LAMBDA (int32 i)
   {
@@ -380,7 +380,8 @@ void reorder(int32* indices, T*&array, int32 size)
 
 //------------------------------------------------------------------------------
 template < typename ExecSpace >
-void custom_sort( ExecSpace, uint32*& mcodes, int32 size, int32* iter )
+void custom_sort( ExecSpace, uint32*& mcodes, int32 size, int32* iter,
+                  int allocatorID )
 {
   AXOM_PERF_MARK_FUNCTION( "custom_sort" );
 
@@ -397,7 +398,7 @@ void custom_sort( ExecSpace, uint32*& mcodes, int32 size, int32* iter )
 
   );
 
-  reorder< ExecSpace >(iter, mcodes, size);
+  reorder< ExecSpace >(iter, mcodes, size, allocatorID );
 }
 
 //------------------------------------------------------------------------------
@@ -405,7 +406,8 @@ void custom_sort( ExecSpace, uint32*& mcodes, int32 size, int32* iter )
   defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_CUB)
 template < int BLOCK_SIZE, axom::ExecutionMode EXEC_MODE >
 void custom_sort( axom::CUDA_EXEC< BLOCK_SIZE, EXEC_MODE >,
-                  uint32*& mcodes, int32 size, int32* iter )
+                  uint32*& mcodes, int32 size, int32* iter,
+                  int allocatorID )
 {
   AXOM_PERF_MARK_FUNCTION( "custom_sort" );
 
@@ -414,8 +416,8 @@ void custom_sort( axom::CUDA_EXEC< BLOCK_SIZE, EXEC_MODE >,
 
   AXOM_PERF_MARK_SECTION( "gpu_cub_sort",
 
-    uint32* mcodes_alt_buf = axom::allocate< uint32 >( size );
-    int32* iter_alt_buf   = axom::allocate< int32 >( size );
+    uint32* mcodes_alt_buf = axom::allocate< uint32 >( size, allocatorID );
+    int32* iter_alt_buf   = axom::allocate< int32 >( size, allocatorID );
 
     // create double buffers
     ::cub::DoubleBuffer< uint32 > d_keys( mcodes, mcodes_alt_buf );
@@ -428,7 +430,8 @@ void custom_sort( axom::CUDA_EXEC< BLOCK_SIZE, EXEC_MODE >,
                                        d_keys, d_values, size );
 
     // Allocate temporary storage
-    d_temp_storage = (void*)axom::allocate< unsigned char >( temp_storage_bytes );
+    d_temp_storage = 
+      (void*)axom::allocate< unsigned char >( temp_storage_bytes, allocatorID );
 
 
     // Run sorting operation
@@ -455,12 +458,12 @@ void custom_sort( axom::CUDA_EXEC< BLOCK_SIZE, EXEC_MODE >,
 
 //------------------------------------------------------------------------------
 template < typename ExecSpace  >
-void sort_mcodes( uint32*& mcodes, int32 size, int32* iter )
+void sort_mcodes( uint32*& mcodes, int32 size, int32* iter, int allocatorID )
 {
   AXOM_PERF_MARK_FUNCTION( "sort_mcodes" );
 
   // dispatch
-  custom_sort( ExecSpace(), mcodes, size, iter );
+  custom_sort( ExecSpace(), mcodes, size, iter, allocatorID );
 }
 
 //------------------------------------------------------------------------------
@@ -594,7 +597,7 @@ static void array_memset(T* array, const int32 size, const T val)
 
 //------------------------------------------------------------------------------
 template < typename ExecSpace, typename FloatType, int NDIMS >
-void propagate_aabbs( RadixTree< FloatType, NDIMS >& data)
+void propagate_aabbs( RadixTree< FloatType, NDIMS >& data, int allocatorID )
 {
   AXOM_PERF_MARK_FUNCTION( "propagate_abbs" );
 
@@ -613,7 +616,7 @@ void propagate_aabbs( RadixTree< FloatType, NDIMS >& data)
 
   AABB<FloatType,NDIMS>* inner_aabb_ptr = data.m_inner_aabbs;
 
-  int32* counters_ptr = axom::allocate<int32>(inner_size);
+  int32* counters_ptr = axom::allocate<int32>(inner_size, allocatorID );
 
   array_memset< ExecSpace >(counters_ptr, inner_size, 0);
 
@@ -674,7 +677,8 @@ void build_radix_tree( const FloatType* boxes,
                        int size,
                        AABB< FloatType, NDIMS >& bounds,
                        RadixTree< FloatType, NDIMS >& radix_tree,
-                       FloatType scale_factor )
+                       FloatType scale_factor,
+                       int allocatorID )
 {
   AXOM_PERF_MARK_FUNCTION( "build_radix_tree" );
 
@@ -682,7 +686,7 @@ void build_radix_tree( const FloatType* boxes,
   SLIC_ASSERT( boxes !=nullptr );
   SLIC_ASSERT( size > 0 );
 
-  radix_tree.allocate( size );
+  radix_tree.allocate( size, allocatorID );
 
   // copy so we don't reorder the input
   transform_boxes< ExecSpace >( boxes, radix_tree.m_leaf_aabbs,
@@ -696,13 +700,19 @@ void build_radix_tree( const FloatType* boxes,
   // allows us to gather / sort other arrays.
   get_mcodes< ExecSpace >( radix_tree.m_leaf_aabbs, size, bounds,
                            radix_tree.m_mcodes );
-  sort_mcodes< ExecSpace >( radix_tree.m_mcodes, size,
-                            radix_tree.m_leafs );
-  reorder< ExecSpace >( radix_tree.m_leafs, radix_tree.m_leaf_aabbs, size );
+  sort_mcodes< ExecSpace >( radix_tree.m_mcodes, 
+                            size,
+                            radix_tree.m_leafs,
+                            allocatorID );
+
+  reorder< ExecSpace >( radix_tree.m_leafs, 
+                        radix_tree.m_leaf_aabbs, 
+                        size,
+                        allocatorID );
 
   build_tree< ExecSpace >( radix_tree );
 
-  propagate_aabbs< ExecSpace >( radix_tree );
+  propagate_aabbs< ExecSpace >( radix_tree, allocatorID );
 }
 
 

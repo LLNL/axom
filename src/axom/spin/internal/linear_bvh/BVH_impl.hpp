@@ -358,7 +358,9 @@ IndexType bvh_get_boxcounts( LeftPredicate&& leftCheck,
 //------------------------------------------------------------------------------
 template< int NDIMS, typename ExecSpace, typename FloatType >
 BVH< NDIMS, ExecSpace, FloatType >::BVH( const FloatType* boxes,
-                                         IndexType numItems ) :
+                                         IndexType numItems,
+                                         int allocatorID ) :
+  m_AllocatorID( allocatorID ),
   m_Tolernace( floating_point_limits<FloatType>::epsilon() ),
   m_scaleFactor( DEFAULT_SCALE_FACTOR ),
   m_numItems( numItems ),
@@ -378,11 +380,6 @@ int BVH< NDIMS, ExecSpace, FloatType >::build()
 {
   AXOM_PERF_MARK_FUNCTION( "BVH::build" );
 
-  // STEP 0: set the default memory allocator to use for the execution space.
-  const int currentAllocatorID = axom::getDefaultAllocatorID();
-  const int allocatorID = axom::execution_space< ExecSpace >::allocatorID();
-  axom::setDefaultAllocator( allocatorID );
-
   // STEP 1: Handle case when user supplied a single bounding box
   int numBoxes        = m_numItems;
   FloatType* boxesptr = nullptr;
@@ -391,7 +388,7 @@ int BVH< NDIMS, ExecSpace, FloatType >::build()
     numBoxes          = 2;
     constexpr int32 M = NDIMS * 2;      // number of entries for one box
     const int N       = numBoxes * M;   // number of entries for N boxes
-    boxesptr          = axom::allocate< FloatType >( N );
+    boxesptr          = axom::allocate< FloatType >( N, m_AllocatorID );
 
     const FloatType* myboxes = m_boxes;
 
@@ -411,12 +408,13 @@ int BVH< NDIMS, ExecSpace, FloatType >::build()
   // by their corresponding morton code.
   lbvh::RadixTree< FloatType, NDIMS > radix_tree;
   lbvh::AABB< FloatType, NDIMS > global_bounds;
-  lbvh::build_radix_tree< ExecSpace >(
-    boxesptr, numBoxes, global_bounds, radix_tree, m_scaleFactor );
+  lbvh::build_radix_tree< ExecSpace >( 
+    boxesptr, numBoxes, global_bounds, radix_tree, m_scaleFactor, 
+    m_AllocatorID );
 
   // STEP 3: emit the BVH data-structure from the radix tree
   m_bvh.m_bounds = global_bounds;
-  m_bvh.allocate( numBoxes );
+  m_bvh.allocate( numBoxes, m_AllocatorID );
 
   // STEP 4: emit the BVH
   lbvh::emit_bvh< ExecSpace >( radix_tree, m_bvh );
@@ -430,8 +428,6 @@ int BVH< NDIMS, ExecSpace, FloatType >::build()
     axom::deallocate( boxesptr );
   }
 
-  // STEP 6: restore default allocator
-  axom::setDefaultAllocator( currentAllocatorID );
   return BVH_BUILD_OK;
 }
 
@@ -463,11 +459,6 @@ void BVH< NDIMS, ExecSpace, FloatType >::findPoints( IndexType* offsets,
   SLIC_ASSERT( candidates == nullptr );
   SLIC_ASSERT( x != nullptr );
   SLIC_ASSERT( y != nullptr );
-
-  // STEP 0: set the default memory allocator to use for the execution space.
-  const int currentAllocatorID = axom::getDefaultAllocatorID();
-  const int allocatorID = axom::execution_space< ExecSpace >::allocatorID();
-  axom::setDefaultAllocator( allocatorID );
 
   using PointType           = point_t< FloatType, NDIMS >;
   using TraversalPredicates = lbvh::TraversalPredicates< NDIMS, FloatType >;
@@ -506,7 +497,7 @@ void BVH< NDIMS, ExecSpace, FloatType >::findPoints( IndexType* offsets,
     counts, counts+numPts, offsets, RAJA::operators::plus<IndexType>{} );
 
   IndexType total_candidates = static_cast< IndexType >( total_count );
-  candidates = axom::allocate< IndexType >( total_candidates);
+  candidates = axom::allocate< IndexType >( total_candidates, m_AllocatorID );
 
   // STEP 4: fill in candidates for each point
   for_all< ExecSpace >( numPts, AXOM_LAMBDA (IndexType i)
@@ -532,8 +523,6 @@ void BVH< NDIMS, ExecSpace, FloatType >::findPoints( IndexType* offsets,
 
   } );
 
-  // STEP 3: restore default allocator
-  axom::setDefaultAllocator( currentAllocatorID );
 }
 
 //------------------------------------------------------------------------------
@@ -560,11 +549,6 @@ void BVH< NDIMS, ExecSpace, FloatType >::findRays( IndexType* offsets,
   SLIC_ASSERT( ny != nullptr );
 
   const FloatType TOL = m_Tolernace;
-
-  // STEP 0: set the default memory allocator to use for the execution space.
-  const int currentAllocatorID = axom::getDefaultAllocatorID();
-  const int allocatorID = axom::execution_space< ExecSpace >::allocatorID();
-  axom::setDefaultAllocator( allocatorID );
 
   using RayType             = ray_t< FloatType, NDIMS >;
   using TraversalPredicates = lbvh::TraversalPredicates< NDIMS, FloatType >;
@@ -603,7 +587,7 @@ void BVH< NDIMS, ExecSpace, FloatType >::findRays( IndexType* offsets,
     counts, counts+numRays, offsets, RAJA::operators::plus<IndexType>{} );
 
   IndexType total_candidates = static_cast< IndexType >( total_count );
-  candidates = axom::allocate< IndexType >( total_candidates);
+  candidates = axom::allocate< IndexType >( total_candidates, m_AllocatorID );
 
   // STEP 4: fill in candidates for each point
   for_all< ExecSpace >( numRays, AXOM_LAMBDA (IndexType i)
@@ -629,8 +613,6 @@ void BVH< NDIMS, ExecSpace, FloatType >::findRays( IndexType* offsets,
 
   } );
 
-  // STEP 3: restore default allocator
-  axom::setDefaultAllocator( currentAllocatorID );
 }
 
 //------------------------------------------------------------------------------

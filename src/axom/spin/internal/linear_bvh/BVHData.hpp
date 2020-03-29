@@ -66,11 +66,11 @@ struct BVHData
     m_leaf_nodes( nullptr )
   {}
 
-  void allocate( int32 size )
+  void allocate( int32 size, int allocID )
   {
     AXOM_PERF_MARK_FUNCTION( "BVHData::allocate" );
-    m_inner_nodes = axom::allocate< Vec< FloatType,4 > >( (size-1)*4 );
-    m_leaf_nodes  = axom::allocate< int32 >( size );
+    m_inner_nodes = axom::allocate< Vec< FloatType,4 > >( (size-1)*4, allocID );
+    m_leaf_nodes  = axom::allocate< int32 >( size, allocID );
   }
 
   void deallocate()
