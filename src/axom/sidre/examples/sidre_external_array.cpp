@@ -54,6 +54,7 @@ void sidre_write( MPI_Comm comm,
   // STEP 2: save the array data in to a file
   sidre::IOManager sidre_io( comm );
   sidre_io.write( root, nranks, file, "sidre_hdf5" );
+  MPI_Barrier( comm );
 }
 
 //------------------------------------------------------------------------------
@@ -75,6 +76,7 @@ void sidre_read( MPI_Comm comm,
 
   sidre::IOManager sidre_io( comm );
   sidre_io.read( root, file );
+  MPI_Barrier( comm );
 
   SLIC_ASSERT( root->hasChildView("data") );
   sidre::View* view = root->getView( "data" );
@@ -99,6 +101,7 @@ void sidre_read( MPI_Comm comm,
 
   // load the external data
   sidre_io.loadExternalData(root,file);
+  MPI_Barrier( comm );
 
 // DEBUG
   SLIC_INFO( "Here is the data that was read back:" );
