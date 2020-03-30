@@ -257,10 +257,10 @@ void IOManager::write(sidre::Group* datagroup, int num_files,
   }
   (void)m_baton->pass();
 
+  MPI_Barrier(m_mpi_comm);
 #ifdef AXOM_USE_SCR
   if (m_use_scr)
   {
-    MPI_Barrier(m_mpi_comm);
     int valid = 1;
     SCR_Complete_checkpoint(valid);
   }
@@ -280,6 +280,8 @@ void IOManager::read(
   const std::string& protocol,
   bool preserve_contents)
 {
+  MPI_Barrier(m_mpi_comm);
+
   if (protocol == "sidre_hdf5")
   {
 #ifdef AXOM_USE_HDF5
@@ -331,6 +333,7 @@ void IOManager::read(sidre::Group* datagroup,
                      bool preserve_contents,
                      bool read_with_scr)
 {
+  MPI_Barrier(m_mpi_comm);
 
   if (!read_with_scr)
   {
