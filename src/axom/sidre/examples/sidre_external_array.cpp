@@ -54,7 +54,6 @@ void sidre_write( MPI_Comm comm,
   // STEP 2: save the array data in to a file
   sidre::IOManager sidre_io( comm );
   sidre_io.write( root, nranks, file, "sidre_hdf5" );
-  MPI_Barrier( comm );
 }
 
 //------------------------------------------------------------------------------
@@ -76,7 +75,6 @@ void sidre_read( MPI_Comm comm,
 
   sidre::IOManager sidre_io( comm );
   sidre_io.read( root, file );
-  MPI_Barrier( comm );
 
   SLIC_ASSERT( root->hasChildView("data") );
   sidre::View* view = root->getView( "data" );
@@ -101,7 +99,6 @@ void sidre_read( MPI_Comm comm,
 
   // load the external data
   sidre_io.loadExternalData(root,file);
-  MPI_Barrier( comm );
 
 // DEBUG
   SLIC_INFO( "Here is the data that was read back:" );
@@ -133,7 +130,7 @@ int main ( int argc, char** argv )
 
   // STEP 1: dump the data to a file using sidre
   SLIC_INFO( "Writting data..." );
-  sidre_write( problem_comm, "mesh", data, NUM_NODES, DIMENSION );
+  sidre_write( problem_comm, "sidre_external_array_mesh", data, NUM_NODES, DIMENSION );
   SLIC_INFO( "[DONE]" );
 
   // STEP 2: read the data from a file using sidre
@@ -142,7 +139,7 @@ int main ( int argc, char** argv )
   axom::IndexType ncomp   = -1;
 
   SLIC_INFO( "Reading data..." );
-  sidre_read( problem_comm, "mesh.root", data2, ntuples, ncomp );
+  sidre_read( problem_comm, "sidre_external_array_mesh.root", data2, ntuples, ncomp );
   SLIC_INFO( "[DONE]" );
 
   // STEP 3: check the data

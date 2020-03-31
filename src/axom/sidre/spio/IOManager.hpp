@@ -68,6 +68,8 @@ public:
    * The Group, including all of its child groups and views, is written
    * to files according to the given protocol.
    *
+   * This is an MPI collective call.
+   *
    * valid protocols:
    *
    *    sidre_hdf5
@@ -224,7 +226,11 @@ public:
                                      const std::string& mesh_path);
 
   /*!
-   * \brief read from input files
+   * \brief read from input file
+   *
+   * This is an MPI collective call.  Calling code may also need to add
+   * an MPI barrier after this call if invoking subsequent operations that
+   * may change the inpt files.
    *
    * \param group         Group to fill with input data
    * \param file_string   base name of input files
@@ -238,6 +244,10 @@ public:
 
   /*!
    * \brief read from a root file
+   *
+   * This is an MPI collective call.  Calling code may also need to add
+   * an MPI barrier after this call if invoking subsequent operations that
+   * may change the inpt files.
    *
    * \param group      Group to fill with input data
    * \param root_file  root file containing input data
