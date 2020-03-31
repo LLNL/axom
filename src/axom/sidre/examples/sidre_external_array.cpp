@@ -130,7 +130,7 @@ int main ( int argc, char** argv )
 
   // STEP 1: dump the data to a file using sidre
   SLIC_INFO( "Writting data..." );
-  sidre_write( problem_comm, "mesh", data, NUM_NODES, DIMENSION );
+  sidre_write( problem_comm, "sidre_external_array_mesh", data, NUM_NODES, DIMENSION );
   SLIC_INFO( "[DONE]" );
 
   // STEP 2: read the data from a file using sidre
@@ -139,7 +139,7 @@ int main ( int argc, char** argv )
   axom::IndexType ncomp   = -1;
 
   SLIC_INFO( "Reading data..." );
-  sidre_read( problem_comm, "mesh.root", data2, ntuples, ncomp );
+  sidre_read( problem_comm, "sidre_external_array_mesh.root", data2, ntuples, ncomp );
   SLIC_INFO( "[DONE]" );
 
   // STEP 3: check the data

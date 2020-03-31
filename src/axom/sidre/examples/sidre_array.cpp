@@ -60,13 +60,12 @@ int main ( int argc, char** argv )
 
   // STEP 2: save the array data in to a file
   sidre::IOManager sidre_io( problem_comm );
-  sidre_io.write( root1, nranks, "mesh", "sidre_hdf5" );
+  sidre_io.write( root1, nranks, "sidre_array_mesh", "sidre_hdf5" );
 
   // STEP 3: read the data from the file into a new DataStore
   sidre::DataStore* dataStore2 = new sidre::DataStore();
   sidre::Group* root2 = dataStore2->getRoot();
-  sidre_io.read( root2, "mesh.root");
-  MPI_Barrier(problem_comm);
+  sidre_io.read( root2, "sidre_array_mesh.root");
 
 // DEBUG
     SLIC_INFO( "Here is the array data in DataStore_2:\n" );
