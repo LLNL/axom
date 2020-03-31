@@ -66,6 +66,7 @@ int main ( int argc, char** argv )
   sidre::DataStore* dataStore2 = new sidre::DataStore();
   sidre::Group* root2 = dataStore2->getRoot();
   sidre_io.read( root2, "mesh.root");
+  MPI_Barrier(problem_comm);
 
 // DEBUG
     SLIC_INFO( "Here is the array data in DataStore_2:\n" );
