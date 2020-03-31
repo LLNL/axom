@@ -6,5 +6,6 @@
 "spack_url": "https://github.com/spack/spack",
 "spack_commit": "d98b433a3c14af5aaba03fd439f6e47cb970bac6",
 "vcpkg_url": "https://github.com/microsoft/vcpkg",
-"vcpkg_commit": "b79f7675aaa82eb6c5a96ae764fb1ce379a9d5d6"
+"vcpkg_commit": "b79f7675aaa82eb6c5a96ae764fb1ce379a9d5d6",
+"vcpkg_triplet": "x64-windows"
 }
