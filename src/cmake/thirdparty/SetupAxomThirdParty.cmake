@@ -106,10 +106,19 @@ endif()
 # MFEM
 #------------------------------------------------------------------------------
 if (MFEM_DIR)
+
+    set( mfem_link_flags )
+    set( mfem_env "$ENV{SYS_TYPE}")
+    blt_list_append( TO mfem_link_flags 
+                     ELEMENTS "-Wl,--no-toc-optimize"
+                     IF mfem_env STREQUAL "blueos_3_ppc64le_ib_p9"
+                        AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang" )
+
     include(cmake/thirdparty/FindMFEM.cmake)
     blt_register_library( NAME      mfem
                           INCLUDES  ${MFEM_INCLUDE_DIRS}
                           LIBRARIES ${MFEM_LIBRARY}
+                          LINK_FLAGS ${mfem_link_flags}
                           TREAT_INCLUDES_AS_SYSTEM ON)
 else()
     message(STATUS "MFEM support is OFF")
