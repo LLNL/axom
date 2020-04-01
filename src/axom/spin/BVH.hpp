@@ -302,6 +302,48 @@ public:
                  const FloatType* nz=nullptr  ) const;
 
   /*!
+   * \brief Finds the candidate bins that intersect the given bounding boxes.
+   *
+   * \param [out] offsets offset to the candidates array for each bounding box
+   * \param [out] counts stores the number of candidates for each bounding box
+   * \param [out] candidates array of candidate IDs for each bounding box
+   * \param [in]  numBoxes the total number of bounding boxes
+   * \param [in]  xmin array of x-coordinates of lower bounding box corner
+   * \param [in]  xmax array of x-coordinates of upper bounding box corner
+   * \param [in]  ymin array of y-coordinates of lower bounding box corner
+   * \param [in]  ymax array of y-coordinates of upper bounding box corner
+   * \param [in]  zmin array of z-coordinates of lower bounding box corner,
+   *              may be nullptr if 2D
+   * \param [in]  zmax array of z-coordinates of upper bounding box corner,
+   *              may be nullptr if 2D
+   *
+   * \note offsets and counts are pointers to arrays of size numBoxes that are
+   *  pre-allocated by the caller before calling findBoundingBoxes().
+   *
+   * \note After the call to findBoundingBoxes(), the ith bounding box has:
+   *  * counts[ i ] candidates
+   *  * candidates stored in [ offsets[ i ], offsets[i]+counts[i] ]
+   *
+   * \pre offsets    != nullptr
+   * \pre counts     != nullptr
+   * \pre candidates == nullptr
+   * \pre xmin != nullptr
+   * \pre xmax != nullptr
+   * \pre ymin != nullptr
+   * \pre ymax != nullptr
+   * \pre zmin != nullptr if dimension==3
+   * \pre zmax != nullptr if dimension==3
+   */
+  void findBoundingBoxes( IndexType* offsets, IndexType* counts,
+                          IndexType*& candidates, IndexType numBoxes,
+                          const FloatType* xmin,
+                          const FloatType* xmax,
+                          const FloatType* ymin,
+                          const FloatType* ymax,
+                          const FloatType* zmin=nullptr,
+                          const FloatType* zmax=nullptr ) const;
+
+  /*!
    * \brief Writes the BVH to the specified VTK file for visualization.
    * \param [in] fileName the name of VTK file.
    * \note Primarily used for debugging.
