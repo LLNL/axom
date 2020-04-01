@@ -45,6 +45,7 @@ set( primal_headers
      operators/detail/clip_impl.hpp
      operators/detail/intersect_bezier_impl.hpp
      operators/detail/intersect_ray_impl.hpp
+     operators/detail/intersect_bounding_box_impl.hpp
      operators/detail/intersect_impl.hpp
    )
 
