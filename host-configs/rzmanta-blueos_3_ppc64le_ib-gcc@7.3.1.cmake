@@ -7,7 +7,7 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
 # SYS_TYPE: blueos_3_ppc64le_ib
-# Compiler Spec: clang@upstream_xlf
+# Compiler Spec: gcc@7.3.1
 #------------------------------------------------------------------------------
 # CMake executable path: /usr/WS1/axom/devtools/blueos_3_ppc64le_ib/latest/cmake-3.9.6/bin/cmake
 #------------------------------------------------------------------------------
@@ -16,20 +16,20 @@
 # Compilers
 #------------------------------------------------------------------------------
 
-set(CMAKE_C_COMPILER "/usr/tce/packages/clang/clang-upstream-2019.08.15/bin/clang" CACHE PATH "")
+set(CMAKE_C_COMPILER "/usr/tce/packages/gcc/gcc-7.3.1/bin/gcc" CACHE PATH "")
 
-set(CMAKE_CXX_COMPILER "/usr/tce/packages/clang/clang-upstream-2019.08.15/bin/clang++" CACHE PATH "")
+set(CMAKE_CXX_COMPILER "/usr/tce/packages/gcc/gcc-7.3.1/bin/g++" CACHE PATH "")
 
 set(ENABLE_FORTRAN ON CACHE BOOL "")
 
-set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-2019.12.23/bin/xlf2003" CACHE PATH "")
+set(CMAKE_Fortran_COMPILER "/usr/tce/packages/gcc/gcc-7.3.1/bin/gfortran" CACHE PATH "")
 
 #------------------------------------------------------------------------------
 # TPLs
 #------------------------------------------------------------------------------
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib/2020_04_02_19_22_50/clang-upstream_xlf" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib/2020_04_02_19_22_50/gcc-7.3.1" CACHE PATH "")
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.5.1" CACHE PATH "")
 
@@ -49,13 +49,13 @@ set(UMPIRE_DIR "${TPL_ROOT}/umpire-2.1.0" CACHE PATH "")
 
 set(ENABLE_MPI ON CACHE BOOL "")
 
-set(MPI_C_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2019.08.15/bin/mpicc" CACHE PATH "")
+set(MPI_C_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-7.3.1/bin/mpicc" CACHE PATH "")
 
-set(MPI_CXX_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2019.08.15/bin/mpicxx" CACHE PATH "")
+set(MPI_CXX_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-7.3.1/bin/mpicxx" CACHE PATH "")
 
-set(MPI_Fortran_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2019.08.15/bin/mpif90" CACHE PATH "")
+set(MPI_Fortran_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-7.3.1/bin/mpif90" CACHE PATH "")
 
-set(MPIEXEC "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2019.08.15/bin/mpirun" CACHE PATH "")
+set(MPIEXEC "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-7.3.1/bin/mpirun" CACHE PATH "")
 
 set(MPIEXEC_NUMPROC_FLAG "-np" CACHE PATH "")
 
@@ -86,12 +86,8 @@ set(CPPCHECK_EXECUTABLE "${DEVTOOLS_ROOT}/cppcheck-1.87/bin/cppcheck" CACHE PATH
 # Other machine specifics
 #------------------------------------------------------------------------------
 
+set(ENABLE_OPENMP ON CACHE BOOL "")
+
 set(ENABLE_GTEST_DEATH_TESTS ON CACHE BOOL "")
-
-set(CMAKE_Fortran_COMPILER_ID "XL" CACHE PATH "All of BlueOS compilers report clang due to nvcc, override to proper compiler family")
-
-set(BLT_FORTRAN_FLAGS "-WF,-C!  -qxlf2003=polymorphic" CACHE PATH "Converts C-style comments to Fortran style in preprocessed files")
-
-set(BLT_EXE_LINKER_FLAGS "-Wl,-rpath,/usr/tce/packages/xl/xl-2019.12.23/lib" CACHE PATH "Adds a missing rpath for libraries associated with the fortran compiler")
 
 
