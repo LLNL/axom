@@ -43,4 +43,8 @@ fi
 find ./axom/sidre -type d -exec chmod 755 {} \;
 find ./axom/sidre -type f -exec chmod 644 {} \;
 
+if [[ "$DO_CLEAN" == "yes" ]] ; then
+    make clean
+fi
+
 exit 0
