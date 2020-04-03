@@ -28,9 +28,9 @@ if [[ "$DO_BUILD" == "yes" ]] ; then
     or_die ./config-build.py -hc /home/axom/axom/host-configs/docker/${HOST_CONFIG}.cmake -DENABLE_GTEST_DEATH_TESTS=ON
     or_die cd build-$HOST_CONFIG-debug
     if [[ ${CMAKE_EXTRA_FLAGS} == *COVERAGE* ]] ; then
-        or_die make -j 10
+        or_die make -j 8
     else
-        or_die make -j 10 VERBOSE=1
+        or_die make -j 8 VERBOSE=1
     fi
     if [[ "${DO_TEST}" == "yes" ]] ; then
         make CTEST_OUTPUT_ON_FAILURE=1 test ARGS='-T Test -VV -j8'
