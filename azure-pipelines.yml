@@ -67,7 +67,7 @@ pool:
 
 steps:
 - checkout: self
-  clean: boolean
+  clean: true
   submodules: recursive
 - task: CMake@1
   inputs:
