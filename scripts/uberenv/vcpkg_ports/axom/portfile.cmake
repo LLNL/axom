@@ -118,6 +118,7 @@ set(ENABLE_MPI OFF CACHE BOOL "")
 #------------------------------------------------------------------------------
 set(CONDUIT_DIR "@CURRENT_INSTALLED_DIR@/share/conduit" CACHE PATH "")
 set(HDF5_DIR "@CURRENT_INSTALLED_DIR@" CACHE PATH "")
+set(MFEM_DIR "@CURRENT_INSTALLED_DIR@" CACHE PATH "")
 
 # TODO:
 #  * Add TPLs: mfem, umpire, raja
