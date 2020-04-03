@@ -103,3 +103,6 @@ steps:
     testResultsFiles: '**/Test.xml'
     testRunTitle: '$(TEST_TARGET) Tests'
     failTaskOnFailedTests: true
+
+workspace:
+  clean: outputs
