@@ -8,11 +8,12 @@
 variables:
   DO_BUILD: 'yes'
   DO_TEST: 'yes'
-  DO_CLEAN: 'yes'
+  DO_CLEAN: 'no'
 
 strategy:
   matrix:
     linux_gcc6:
+      enabled: false
       VM_ImageName: 'ubuntu-16.04'
       Compiler_ImageName: 'axom/tpls:gcc-6'
       CMAKE_EXTRA_FLAGS: ''
