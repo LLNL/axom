@@ -102,6 +102,41 @@ public:
                              const FloatType* z0,
                              const FloatType* nz );
   /// @}
+
+/// \name Bounding Box Query Access Methods
+  /// @{
+
+  /*!
+   * \brief Gets the bounding box defined by lower and upper bound corners.
+   *
+   * \param [out] box the bounding box where to pack the min and max point
+   * \param [in] idx the index of the bounding box w.r.t. the supplied arrays.
+   * \param [in] xmin array of x-coordinate of the lower bounding box corner
+   * \param [in] xmax array of x-coordinate of the upper bounding box corner
+   * \param [in] ymin array of y-coordinate of the lower bounding box corner
+   * \param [in] ymax array of y-coordinate of the upper bounding box corner
+   * \param [in] zmin array of z-coordinate of the lower bounding box corner
+   * \param [in] zmax array of z-coordinate of the upper bounding box corner
+   *
+   * \tparam BoundingBoxType the data-structure to hold a Bounding Box.
+   *
+   * \note The BoundingBoxType must overload the `[]` operator for accessing
+   *  the lower and upper bound corner coordinates, such that,
+   *  the first NDIMS locations store the lower bound coordinate min followed
+   *  by the upper bound coordinate max.
+   */
+  template < typename BoundingBoxType >
+  AXOM_HOST_DEVICE
+  static inline void getBoundingBox( BoundingBoxType& box,
+                                     IndexType idx,
+                                     const FloatType* xmin,
+                                     const FloatType* xmax,
+                                     const FloatType* ymin,
+                                     const FloatType* ymax,
+                                     const FloatType* zmin,
+                                     const FloatType* zmax );
+  /// @}
+
 };
 
 //------------------------------------------------------------------------------
@@ -140,6 +175,24 @@ public:
 
     ray[ 2 ] = nx[ idx ];
     ray[ 3 ] = ny[ idx ];
+  }
+
+  template < typename BoundingBoxType >
+  AXOM_HOST_DEVICE
+  static inline void getBoundingBox( BoundingBoxType& box,
+                                     IndexType idx,
+                                     const FloatType* xmin,
+                                     const FloatType* xmax,
+                                     const FloatType* ymin,
+                                     const FloatType* ymax,
+                                     const FloatType* AXOM_NOT_USED(zmin),
+                                     const FloatType* AXOM_NOT_USED(zmax) )
+  {
+    box[ 0 ] = xmin[ idx ]; 
+    box[ 1 ] = ymin[ idx ]; 
+
+    box[ 2 ] = xmax[ idx ]; 
+    box[ 3 ] = ymax[ idx ]; 
   }
 
 };
@@ -185,8 +238,27 @@ public:
     ray[ 5 ] = nz[ idx ];
   }
 
-};
+  template < typename BoundingBoxType >
+  AXOM_HOST_DEVICE
+  static inline void getBoundingBox( BoundingBoxType& box,
+                                     IndexType idx,
+                                     const FloatType* xmin,
+                                     const FloatType* xmax,
+                                     const FloatType* ymin,
+                                     const FloatType* ymax,
+                                     const FloatType* zmin,
+                                     const FloatType* zmax )
+  {
+      box[ 0 ] = xmin[ idx ]; 
+      box[ 1 ] = ymin[ idx ];
+      box[ 2 ] = zmin[ idx ]; 
 
+      box[ 3 ] = xmax[ idx ]; 
+      box[ 4 ] = ymax[ idx ];
+      box[ 5 ] = zmax[ idx ];
+  }
+  
+};
 
 } /* namespace linear_bvh */
 } /* namespace internal */

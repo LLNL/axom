@@ -1129,6 +1129,48 @@ TEST( spin_bvh, query_ray_accessor )
   EXPECT_DOUBLE_EQ( ray3d[5], nz[ ID ] );
 }
 
+TEST( spin_bvh, query_bounding_box_accessor )
+{
+  constexpr double VAL   = 42.0;
+  constexpr IndexType ID = 0;
+
+  double xmin[] = { VAL     };
+  double ymin[] = { VAL+1.5 };
+  double zmin[] = { VAL+2.5 };
+
+  double xmax[] = { VAL     };
+  double ymax[] = { VAL+1.5 };
+  double zmax[] = { VAL+2.5 };
+
+  namespace bvh         = axom::spin::internal::linear_bvh;
+  using QueryAccessor2D = bvh::QueryAccessor< 2, double >;
+  using QueryAccessor3D = bvh::QueryAccessor< 3, double >;
+  using BoundingBox2D           = bvh::Vec< double, 4 >;
+  using BoundingBox3D           = bvh::Vec< double, 6 >;
+
+  BoundingBox2D box2D;
+  QueryAccessor2D::getBoundingBox( box2D, ID, xmin, xmax,
+                                   ymin, ymax, nullptr, nullptr );
+
+  EXPECT_DOUBLE_EQ( box2D[0],  xmin[ ID ] );
+  EXPECT_DOUBLE_EQ( box2D[1],  ymin[ ID ] );
+
+  EXPECT_DOUBLE_EQ( box2D[2], xmax[ ID ] );
+  EXPECT_DOUBLE_EQ( box2D[3], ymax[ ID ] );
+
+  BoundingBox3D box3D;
+  QueryAccessor3D::getBoundingBox( box3D, ID, xmin, xmax,
+                                   ymin, ymax, zmin, zmax );
+  
+  EXPECT_DOUBLE_EQ( box3D[0],  xmin[ ID ] );
+  EXPECT_DOUBLE_EQ( box3D[1],  ymin[ ID ] );
+  EXPECT_DOUBLE_EQ( box3D[2],  zmin[ ID ] );
+
+  EXPECT_DOUBLE_EQ( box3D[3], xmax[ ID ] );
+  EXPECT_DOUBLE_EQ( box3D[4], ymax[ ID ] );
+  EXPECT_DOUBLE_EQ( box3D[5], zmax[ ID ] );  
+}
+
 //------------------------------------------------------------------------------
 TEST( spin_bvh, traversal_predicates_rayIntersectsLeftBin )
 {
