@@ -29,6 +29,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   integer ID associated with the allocator.
 
 ### Fixed
+- Fixed issue with missing the bvh_traverse.hpp from the install prefix, which was preventing
+  applications from using the BVH when pointing to an Axom install prefix.
 - Fixed usage of cuda kernel policies in Mint. Raja v0.11.0 changed the way max threads
   launch bounds is calculated. Consequently, a large number of threads was being launched
   leading to max registry count violation when linking. We are now using fixed kernel size
