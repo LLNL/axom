@@ -10,6 +10,7 @@
 
 #include "axom/core/numerics/floating_point_limits.hpp"
 #include "axom/primal/operators/detail/intersect_ray_impl.hpp"
+#include "axom/primal/operators/detail/intersect_bounding_box_impl.hpp"
 
 namespace axom
 {
@@ -120,6 +121,41 @@ public:
 
   /// @}
 
+   ///\name Predicates for Bounding Box Intersection Queries
+  /// @{
+
+  /*!
+   * \brief Checks if the specified bounding box intersects with the left bin.
+   *
+   * \param [in] b the bounding box in the query
+   * \param [in] s1 the 1st segment of the BVH that stores the left bin.
+   * \param [in] s2 the 2nd segment of the BVH that stores the left bin.
+   *
+   * \return status true if the bounding box intersects the left bin, 
+   *  else, false.
+   */
+  template < typename BoundingBoxType >
+  AXOM_HOST_DEVICE
+  static inline bool boundingBoxIntersectsLeftBin(
+      const BoundingBoxType& b, const vec4_t& s1, const vec4_t& s2 ) noexcept;
+
+  /*!
+   * \brief Checks if the specified bounding box intersects with the right bin.
+   *
+   * \param [in] b the bounding box in the query
+   * \param [in] s2 the 2nd segment of the BVH that stores the right bin.
+   * \param [in] s3 the 3rd segment of the BVH that stores the right bin.
+   *
+   * \return status true if the bounding box intersects the right bin,
+   *  else, false.
+   */
+  template < typename BoundingBoxType >
+  AXOM_HOST_DEVICE
+  static inline bool boundingBoxIntersectsRightBin(
+      const BoundingBoxType& b, const vec4_t& s2, const vec4_t& s3 ) noexcept;
+
+  /// @}
+
 };
 
 constexpr int DIMENSION_2 = 2;
@@ -218,6 +254,50 @@ public:
     //       candidate bins in a priority queue.
     FloatType t = 0.0;
     return primal::detail::intersect_ray(x0,nx,y0,ny,xmin,xmax,ymin,ymax,t,TOL);
+  }
+
+  template < typename BoundingBoxType >
+  AXOM_HOST_DEVICE
+  static inline bool boundingBoxIntersectsLeftBin(
+      const BoundingBoxType& b, const vec4_t& s1, const vec4_t& s2 ) noexcept
+  {
+    const FloatType& box_xmin = b[ 0 ];
+    const FloatType& box_ymin = b[ 1 ];
+    const FloatType& box_xmax = b[ 2 ];
+    const FloatType& box_ymax = b[ 3 ];
+
+    // extract left bin, see BVHData.hpp for the internal BVH layout
+    const FloatType& bin_xmin = s1[ 0 ];
+    const FloatType& bin_xmax = s1[ 3 ];
+    const FloatType& bin_ymin = s1[ 1 ];
+    const FloatType& bin_ymax = s2[ 0 ];
+
+    return primal::detail::intersect_bounding_box( box_xmin, box_xmax,
+                                                   box_ymin, box_ymax,
+                                                   bin_xmin, bin_xmax,
+                                                   bin_ymin, bin_ymax );
+  }
+
+  template < typename BoundingBoxType >
+  AXOM_HOST_DEVICE
+  static inline bool boundingBoxIntersectsRightBin(
+      const BoundingBoxType& b, const vec4_t& s2, const vec4_t& s3 ) noexcept
+  {
+    const FloatType& box_xmin = b[ 0 ];
+    const FloatType& box_ymin = b[ 1 ];
+    const FloatType& box_xmax = b[ 2 ];
+    const FloatType& box_ymax = b[ 3 ]; 
+
+    // extract right bin, see BVHData.hpp for the internal BVH layout
+    const FloatType& bin_xmin = s2[ 2 ];
+    const FloatType& bin_xmax = s3[ 1 ];
+    const FloatType& bin_ymin = s2[ 3 ];
+    const FloatType& bin_ymax = s3[ 2 ];
+
+    return primal::detail::intersect_bounding_box( box_xmin, box_xmax,
+                                                   box_ymin, box_ymax,
+                                                   bin_xmin, bin_xmax,
+                                                   bin_ymin, bin_ymax );
   }
 
 };
@@ -330,6 +410,62 @@ public:
     FloatType t = 0.0;
     return primal::detail::intersect_ray(
       x0,nx,y0,ny,z0,nz,xmin,xmax,ymin,ymax,zmin,zmax,t, TOL );
+  }
+
+  template < typename BoundingBoxType >
+  AXOM_HOST_DEVICE
+  static inline bool boundingBoxIntersectsLeftBin(
+      const BoundingBoxType& b, const vec4_t& s1, const vec4_t& s2 ) noexcept
+  {
+    const FloatType& box_xmin = b[ 0 ];
+    const FloatType& box_ymin = b[ 1 ];
+    const FloatType& box_zmin = b[ 2 ];
+    const FloatType& box_xmax = b[ 3 ];
+    const FloatType& box_ymax = b[ 4 ];
+    const FloatType& box_zmax = b[ 5 ];
+
+    // extract left bin, see BVHData.hpp for the internal BVH layout
+    const FloatType& bin_xmin = s1[ 0 ];
+    const FloatType& bin_xmax = s1[ 3 ];
+    const FloatType& bin_ymin = s1[ 1 ];
+    const FloatType& bin_ymax = s2[ 0 ];
+    const FloatType& bin_zmin = s1[ 2 ];
+    const FloatType& bin_zmax = s2[ 1 ];
+
+    return primal::detail::intersect_bounding_box( box_xmin, box_xmax,
+                                                   box_ymin, box_ymax,
+                                                   box_zmin, box_zmax,
+                                                   bin_xmin, bin_xmax,
+                                                   bin_ymin, bin_ymax,
+                                                   bin_zmin, bin_zmax );
+  }
+
+  template < typename BoundingBoxType >
+  AXOM_HOST_DEVICE
+  static inline bool boundingBoxIntersectsRightBin(
+      const BoundingBoxType& b, const vec4_t& s2, const vec4_t& s3 ) noexcept
+  {
+    const FloatType& box_xmin = b[ 0 ];
+    const FloatType& box_ymin = b[ 1 ];
+    const FloatType& box_zmin = b[ 2 ];
+    const FloatType& box_xmax = b[ 3 ];
+    const FloatType& box_ymax = b[ 4 ];
+    const FloatType& box_zmax = b[ 5 ]; 
+
+    // extract right bin, see BVHData.hpp for the internal BVH layout
+    const FloatType& bin_xmin = s2[ 2 ];
+    const FloatType& bin_xmax = s3[ 1 ];
+    const FloatType& bin_ymin = s2[ 3 ];
+    const FloatType& bin_ymax = s3[ 2 ];
+    const FloatType& bin_zmin = s3[ 0 ];
+    const FloatType& bin_zmax = s3[ 3 ];
+
+    return primal::detail::intersect_bounding_box( box_xmin, box_xmax,
+                                                   box_ymin, box_ymax,
+                                                   box_zmin, box_zmax,
+                                                   bin_xmin, bin_xmax,
+                                                   bin_ymin, bin_ymax,
+                                                   bin_zmin, bin_zmax );
   }
 
 };

@@ -1172,6 +1172,106 @@ TEST( spin_bvh, query_bounding_box_accessor )
 }
 
 //------------------------------------------------------------------------------
+TEST( spin_bvh, traversal_predicates_boundingBoxIntersectsLeftBin )
+{
+  namespace bvh               = axom::spin::internal::linear_bvh;
+  using TraversalPredicates2D = bvh::TraversalPredicates< 2, double >;
+  using TraversalPredicates3D = bvh::TraversalPredicates< 3, double >;
+  using BoundingBox2D         = bvh::Vec< double, 4 >;
+  using BoundingBox3D         = bvh::Vec< double, 6 >;
+
+  BoundingBox2D s1, s2;
+  s1[ 0 ] = 0.; // LeftBin.xmin
+  s1[ 1 ] = 0.; // LeftBin.ymin
+  s1[ 2 ] = 0.; // LeftBin.zmin
+
+  s1[ 3 ] = 1.; // LeftBin.xmax
+  s2[ 0 ] = 1.; // LeftBin.ymax
+  s2[ 1 ] = 1.; // LeftBin.zmax
+
+  BoundingBox2D box2d;
+  box2d[ 0 ] = -1.0;
+  box2d[ 1 ] = -1.0;
+  box2d[ 2 ] =  1.0;
+  box2d[ 3 ] =  1.0;
+  EXPECT_TRUE( TraversalPredicates2D::boundingBoxIntersectsLeftBin( box2d, s1,
+                                                                    s2 ) );
+
+  // non-intersecting
+  box2d[ 2 ] = -0.5;
+  box2d[ 3 ] = -0.5;
+  EXPECT_FALSE( TraversalPredicates2D::boundingBoxIntersectsLeftBin( box2d, s1,
+                                                                     s2 ) );
+
+  BoundingBox3D box3d;
+  box3d[ 0 ] = -1.0;
+  box3d[ 1 ] = -1.0;
+  box3d[ 2 ] = -1.0;
+  box3d[ 3 ] = 1.0;
+  box3d[ 4 ] = 1.0;
+  box3d[ 5 ] = 1.0;
+  EXPECT_TRUE( TraversalPredicates3D::boundingBoxIntersectsLeftBin( box3d, s1,
+                                                                    s2) );
+
+  // non-intersecting
+  box3d[ 3 ] = -0.5;
+  box3d[ 4 ] = -0.5;
+  box3d[ 5 ] = -0.5;
+  EXPECT_FALSE( TraversalPredicates3D::boundingBoxIntersectsLeftBin( box3d, s1,
+                                                                     s2 ) );
+}
+
+//------------------------------------------------------------------------------
+TEST( spin_bvh, traversal_predicates_boundingBoxIntersectsRightBin )
+{
+  namespace bvh               = axom::spin::internal::linear_bvh;
+  using TraversalPredicates2D = bvh::TraversalPredicates< 2, double >;
+  using TraversalPredicates3D = bvh::TraversalPredicates< 3, double >;
+  using BoundingBox2D         = bvh::Vec< double, 4 >;
+  using BoundingBox3D         = bvh::Vec< double, 6 >;
+
+  BoundingBox2D s2, s3;
+  s2[ 2 ] = 0.; // RightBin.xmin
+  s2[ 3 ] = 0.; // RightBin.ymin
+  s3[ 0 ] = 0.; // RightBin.zmin
+
+  s3[ 1 ] = 1.; // RightBin.xmax
+  s3[ 2 ] = 1.; // RightBin.ymax
+  s3[ 3 ] = 1.; // RightBin.zmax
+
+  BoundingBox2D box2d;
+  box2d[ 0 ] = -1.0;
+  box2d[ 1 ] = -1.0;
+  box2d[ 2 ] =  1.0;
+  box2d[ 3 ] =  1.0;
+  EXPECT_TRUE( TraversalPredicates2D::boundingBoxIntersectsRightBin( box2d, s2,
+                                                                     s3 ) );
+
+  // non-intersecting
+  box2d[ 2 ] = -0.5;
+  box2d[ 3 ] = -0.5;
+  EXPECT_FALSE( TraversalPredicates2D::boundingBoxIntersectsRightBin( box2d, s2,
+                                                                      s3 ) );
+
+  BoundingBox3D box3d;
+  box3d[ 0 ] = -1.0;
+  box3d[ 1 ] = -1.0;
+  box3d[ 2 ] = -1.0;
+  box3d[ 3 ] = 1.0;
+  box3d[ 4 ] = 1.0;
+  box3d[ 5 ] = 1.0;
+  EXPECT_TRUE( TraversalPredicates3D::boundingBoxIntersectsRightBin( box3d, s2,
+                                                                     s3) );
+
+  // non-intersecting
+  box3d[ 3 ] = -0.5;
+  box3d[ 4 ] = -0.5;
+  box3d[ 5 ] = -0.5;
+  EXPECT_FALSE( TraversalPredicates3D::boundingBoxIntersectsRightBin( box3d, s2,
+                                                                      s3 ) );
+}
+
+//------------------------------------------------------------------------------
 TEST( spin_bvh, traversal_predicates_rayIntersectsLeftBin )
 {
   namespace bvh               = axom::spin::internal::linear_bvh;
