@@ -55,7 +55,10 @@ void NVTXRange::start()
   eventAttrib.message.ascii = m_name.c_str();
 
   nvtxRangePushEx(&eventAttrib);
-
+#else
+  /* silence compiler warnings regarding unused variables */
+  static_cast< void >( m_color );
+  static_cast< void >( m_category );
 #endif
   m_active = true;
 }
@@ -67,8 +70,8 @@ void NVTXRange::stop()
   {
 #ifdef AXOM_USE_CUDA
     nvtxRangePop();
-    m_active = false;
 #endif
+    m_active = false;
   }
 }
 
