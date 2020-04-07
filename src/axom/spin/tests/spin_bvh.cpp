@@ -478,6 +478,243 @@ void check_build_bvh3d( )
 
 //------------------------------------------------------------------------------
 template < typename ExecSpace, typename FloatType >
+void check_find_bounding_boxes3d()
+{
+  constexpr int NDIMS   = 3;
+  constexpr IndexType N = 2;
+
+  const int current_allocator = axom::getDefaultAllocatorID();
+  axom::setDefaultAllocator( axom::execution_space< ExecSpace >::allocatorID());
+
+  // setup query bounding boxes: both boxes have lower left min at
+  // (-1.0,-1.0,-1.0) but different upper right max.
+  // The first bounding box is setup such that it intersects
+  // 18 bounding boxes of the mesh.
+  FloatType* xmin = axom::allocate< FloatType >( N );
+  FloatType* ymin = axom::allocate< FloatType >( N );
+  FloatType* zmin = axom::allocate< FloatType >( N );
+  xmin[ 0 ] = xmin[ 1 ] = ymin[ 0 ] = ymin[ 1 ] = zmin[ 0 ] = zmin[ 1 ] = -1.0;
+
+  FloatType* xmax = axom::allocate< FloatType >( N );
+  FloatType* ymax = axom::allocate< FloatType >( N );
+  FloatType* zmax = axom::allocate< FloatType >( N );
+  xmax[ 0 ] = 2.5;
+  ymax[ 0 ] = 2.5;
+  zmax[ 0 ] = 1.5;
+  xmax[ 1 ] = ymax[ 1 ] = zmax[ 1 ] = -0.5;
+
+  // setup a test mesh (3 x 3 x 3)
+  double lo[ NDIMS ] = { 0.0, 0.0, 0.0 };
+  double hi[ NDIMS ] = { 3.0, 3.0, 3.0 };
+  mint::UniformMesh mesh( lo, hi, 4, 4, 4 );
+  const IndexType ncells = mesh.getNumberOfCells();
+  FloatType* aabbs = nullptr;
+  generate_aabbs3d( &mesh, aabbs );
+  EXPECT_TRUE( aabbs != nullptr );
+
+  // construct the BVH
+  spin::BVH< NDIMS, ExecSpace, FloatType > bvh( aabbs, ncells );
+  bvh.setScaleFactor( 1.0 ); // i.e., no scaling
+  bvh.build( );
+
+  // check BVH bounding box
+  FloatType min[ NDIMS ];
+  FloatType max[ NDIMS ];
+  bvh.getBounds( min, max );
+  for ( int i=0 ; i < NDIMS ; ++i )
+  {
+    EXPECT_DOUBLE_EQ( min[ i ], lo[ i ] );
+    EXPECT_DOUBLE_EQ( max[ i ], hi[ i ] );
+  }
+
+  // traverse the BVH to find the candidates for all the centroids
+  IndexType* offsets    = axom::allocate< IndexType >( N );
+  IndexType* counts     = axom::allocate< IndexType >( N );
+  IndexType* candidates = nullptr;
+  bvh.findBoundingBoxes( offsets, counts, candidates, N, xmin, xmax,
+                         ymin, ymax, zmin, zmax );
+  EXPECT_TRUE( candidates != nullptr );
+
+  // flag cells that are found by the ray ID
+  int* iblank = mesh.createField< int >( "iblank", mint::CELL_CENTERED );
+  mint::for_all_cells< ExecSpace >( &mesh, AXOM_LAMBDA(IndexType cellIdx)
+  {
+    iblank[ cellIdx ] = -1;
+  } );
+
+  for ( int i=0 ; i < N ; ++i )
+  {
+    IndexType ncounts = counts[ i ];
+    IndexType offset  = offsets[ i ];
+    for ( int j=0 ; j < ncounts ; ++j )
+    {
+      IndexType idx = candidates[ offset + j ];
+      iblank[ idx ] = i;
+    } // END for all cells the bounding box intersects
+  } // END for all bounding boxes
+
+  // check answer with results verified manually by inspection
+  constexpr int INTERSECTS_BB = 0;
+  constexpr int DOES_NOT_INTERSECT_BB = -1;
+  constexpr int EXPECTED_BB1_INTERSECTIONS = 18;
+  EXPECT_EQ( counts[ 0 ], EXPECTED_BB1_INTERSECTIONS );
+  EXPECT_EQ( counts[ 1 ], 0 );
+
+  for ( IndexType i=0 ; i < ncells ; ++i )
+  {
+    switch( i )
+    {
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+    case 10:
+    case 11:
+    case 12:
+    case 13:
+    case 14:
+    case 15:
+    case 16:
+    case 17:
+      EXPECT_EQ( iblank[ i ], INTERSECTS_BB );
+      break;
+    default:
+      EXPECT_EQ( iblank[ i ], DOES_NOT_INTERSECT_BB );
+    }
+  } // END for all mesh cells
+
+  // deallocate
+  axom::deallocate( offsets );
+  axom::deallocate( candidates );
+  axom::deallocate( counts );
+  axom::deallocate( aabbs );
+
+  axom::deallocate( xmin );
+  axom::deallocate( xmax );
+  axom::deallocate( ymin );
+  axom::deallocate( ymax );
+  axom::deallocate( zmin );
+  axom::deallocate( zmax );
+
+  axom::setDefaultAllocator( current_allocator );
+}
+
+//------------------------------------------------------------------------------
+
+template < typename ExecSpace, typename FloatType >
+void check_find_bounding_boxes2d()
+{
+  constexpr int NDIMS   = 2;
+  constexpr IndexType N = 2;
+
+  const int current_allocator = axom::getDefaultAllocatorID();
+  axom::setDefaultAllocator( axom::execution_space< ExecSpace >::allocatorID());
+
+  // setup query bounding boxes: both boxes are source at (-1.0,-1.0) but have
+  // different max (upper right). The first box is setup to intersect six
+  // bounding boxes of the mesh.
+  FloatType* xmin = axom::allocate< FloatType >( N );
+  FloatType* ymin = axom::allocate< FloatType >( N );
+  xmin[ 0 ] = xmin[ 1 ] = ymin[ 0 ] = ymin[ 1 ] = -1.0;
+
+  FloatType* xmax = axom::allocate< FloatType >( N );
+  FloatType* ymax = axom::allocate< FloatType >( N );
+  xmax[ 0 ] = 2.5;
+  ymax[ 0 ] = 1.5;
+  xmax[ 1 ] = ymax[ 1 ] = -0.1;
+
+  // setup a test mesh (3 x 3)
+  double lo[ NDIMS ] = { 0.0, 0.0 };
+  double hi[ NDIMS ] = { 3.0, 3.0 };
+  mint::UniformMesh mesh( lo, hi, 4, 4 );
+  const IndexType ncells = mesh.getNumberOfCells();
+  FloatType* aabbs = nullptr;
+  generate_aabbs2d( &mesh, aabbs );
+  EXPECT_TRUE( aabbs != nullptr );
+
+  // construct the BVH
+  spin::BVH< NDIMS, ExecSpace, FloatType > bvh( aabbs, ncells );
+  bvh.setScaleFactor( 1.0 ); // i.e., no scaling
+  bvh.build( );
+
+  // check BVH bounding box
+  FloatType min[ NDIMS ];
+  FloatType max[ NDIMS ];
+  bvh.getBounds( min, max );
+  for ( int i=0 ; i < NDIMS ; ++i )
+  {
+    EXPECT_DOUBLE_EQ( min[ i ], lo[ i ] );
+    EXPECT_DOUBLE_EQ( max[ i ], hi[ i ] );
+  }
+
+  // traverse the BVH to find the candidates for all the centroids
+  IndexType* offsets    = axom::allocate< IndexType >( N );
+  IndexType* counts     = axom::allocate< IndexType >( N );
+  IndexType* candidates = nullptr;
+  bvh.findBoundingBoxes( offsets, counts, candidates, N, xmin, xmax, ymin, ymax );
+  EXPECT_TRUE( candidates != nullptr );
+
+  // flag cells that are found by the bounding box ID
+  int* iblank = mesh.createField< int >( "iblank", mint::CELL_CENTERED );
+  mint::for_all_cells< ExecSpace >( &mesh, AXOM_LAMBDA(IndexType cellIdx)
+  {
+    iblank[ cellIdx ] = -1;
+  } );
+
+  for ( int i=0 ; i < N ; ++i )
+  {
+    IndexType ncounts = counts[ i ];
+    IndexType offset  = offsets[ i ];
+    for ( int j=0 ; j < ncounts ; ++j )
+    {
+      IndexType idx = candidates[ offset + j ];
+      iblank[ idx ] = i;
+    } // END for all cells the bounding boxes intersects with
+  } // END for all bounding boxes
+
+  // check answer with results verified manually by inspection
+  constexpr int INTERSECTS_BB = 0;
+  constexpr int DOES_NOT_INTERSECT_BB = -1;
+  constexpr int EXPECTED_BB1_INTERSECTIONS = 6;
+  EXPECT_EQ( counts[ 0 ], EXPECTED_BB1_INTERSECTIONS );
+  EXPECT_EQ( counts[ 1 ], 0 );
+
+  for ( IndexType i=0 ; i < ncells ; ++i )
+  {
+
+    if ( i==6 || i==7 || i==8)
+    {
+      EXPECT_EQ( iblank[ i ], DOES_NOT_INTERSECT_BB );
+    }
+    else
+    {
+      EXPECT_EQ( iblank[ i ], INTERSECTS_BB );
+    }
+
+  } // END for all mesh cells
+
+  // deallocate
+  axom::deallocate( offsets );
+  axom::deallocate( candidates );
+  axom::deallocate( counts );
+  axom::deallocate( aabbs );
+
+  axom::deallocate( xmin );
+  axom::deallocate( xmax );
+  axom::deallocate( ymin );
+  axom::deallocate( ymax );
+
+  axom::setDefaultAllocator( current_allocator );
+}
+
+//------------------------------------------------------------------------------
+template < typename ExecSpace, typename FloatType >
 void check_find_rays3d()
 {
   constexpr int NDIMS   = 3;
@@ -621,7 +858,7 @@ void check_find_rays2d()
 
   // setup query rays: both rays are source at (-1.0,-1.0) but point in
   // opposite directions. The first ray is setup such that it intersects
-  // three bounding boxes of the mesh.
+  // seven bounding boxes of the mesh.
   FloatType* x0 = axom::allocate< FloatType >( N );
   FloatType* y0 = axom::allocate< FloatType >( N );
   x0[ 0 ] = x0[ 1 ] = y0[ 0 ] = y0[ 1 ] = -1.0;
@@ -1434,6 +1671,20 @@ TEST( spin_bvh, contruct3D_sequential )
 }
 
 //------------------------------------------------------------------------------
+TEST( spin_bvh, find_bounding_boxes_3d_sequential )
+{
+  check_find_bounding_boxes3d< axom::SEQ_EXEC, double >( );
+  check_find_bounding_boxes3d< axom::SEQ_EXEC, float >( );
+}
+
+//------------------------------------------------------------------------------
+TEST( spin_bvh, find_bounding_boxes_2d_sequential )
+{
+  check_find_bounding_boxes2d< axom::SEQ_EXEC, double >( );
+  check_find_bounding_boxes2d< axom::SEQ_EXEC, float >( );
+}
+
+//------------------------------------------------------------------------------
 TEST( spin_bvh, find_rays_3d_sequential )
 {
   check_find_rays3d< axom::SEQ_EXEC, double >( );
@@ -1489,6 +1740,20 @@ TEST( spin_bvh, contruct3D_omp )
 {
   check_build_bvh3d< axom::OMP_EXEC, double >( );
   check_build_bvh3d< axom::OMP_EXEC, float >( );
+}
+
+//------------------------------------------------------------------------------
+TEST( spin_bvh, find_bounding_boxes_3d_omp )
+{
+  check_find_bounding_boxes3d< axom::OMP_EXEC, double >( );
+  check_find_bounding_boxes3d< axom::OMP_EXEC, float >( );
+}
+
+//------------------------------------------------------------------------------
+TEST( spin_bvh, find_bounding_boxes_2d_omp )
+{
+  check_find_bounding_boxes2d< axom::OMP_EXEC, double >( );
+  check_find_bounding_boxes2d< axom::OMP_EXEC, float >( );
 }
 
 //------------------------------------------------------------------------------
@@ -1554,6 +1819,26 @@ AXOM_CUDA_TEST( spin_bvh, contruct3D_cuda )
 
   check_build_bvh3d< exec, double >( );
   check_build_bvh3d< exec, float >( );
+}
+
+//------------------------------------------------------------------------------
+AXOM_CUDA_TEST( spin_bvh, find_bounding_boxes_3d_cuda )
+{
+  constexpr int BLOCK_SIZE = 256;
+  using exec  = axom::CUDA_EXEC< BLOCK_SIZE >;
+
+  check_find_bounding_boxes3d< exec, double >( );
+  check_find_bounding_boxes3d< exec, float >( );
+}
+
+//------------------------------------------------------------------------------
+AXOM_CUDA_TEST( spin_bvh, find_bounding_boxes_2d_cuda )
+{
+  constexpr int BLOCK_SIZE = 256;
+  using exec  = axom::CUDA_EXEC< BLOCK_SIZE >;
+
+  check_find_bounding_boxes2d< exec, double >( );
+  check_find_bounding_boxes2d< exec, float >( );
 }
 
 //------------------------------------------------------------------------------
