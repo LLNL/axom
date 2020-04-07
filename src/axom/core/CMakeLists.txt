@@ -13,6 +13,7 @@ set(core_headers
 
     ## utilities
     utilities/FileUtilities.hpp
+    utilities/NVTXRange.hpp
     utilities/Timer.hpp
     utilities/Utilities.hpp
     utilities/About.hpp
@@ -51,6 +52,7 @@ set(core_headers
 
 set(core_sources
     utilities/FileUtilities.cpp
+    utilities/NVTXRange.cpp
     utilities/Utilities.cpp
     utilities/About.cpp
 
@@ -65,7 +67,7 @@ set(core_sources
 set( core_depends )
 blt_list_append( TO core_depends ELEMENTS umpire IF ${UMPIRE_FOUND} )
 blt_list_append( TO core_depends ELEMENTS RAJA IF ${RAJA_FOUND} )
-blt_list_append( TO core_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
+blt_list_append( TO core_depends ELEMENTS cuda nvToolsExt IF ${ENABLE_CUDA} )
 blt_list_append( TO core_depends ELEMENTS openmp IF ${ENABLE_OPENMP} )
 blt_list_append( TO core_depends ELEMENTS mpi IF ${ENABLE_MPI} )
 
