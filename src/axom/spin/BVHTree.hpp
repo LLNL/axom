@@ -584,7 +584,7 @@ void BVHTree< T,NDIMS >::percolateDown( int parent, int rChild, int lChild )
   const BoxType leftBox  = m_tree[ lChild ].Box;
 
   // STEP 1: pre-allocated space for object at the children
-  const int numObjects   = m_tree[ parent ].ObjectArray.size();
+  const int numObjects   = static_cast<int>(m_tree[parent].ObjectArray.size());
   const int estChildSize = static_cast<int>(0.5 * numObjects);
   m_tree[ rChild ].ObjectArray.reserve( estChildSize );
   m_tree[ lChild  ].ObjectArray.reserve( estChildSize );
@@ -684,7 +684,7 @@ template < typename T, int NDIMS >
 bool BVHTree< T,NDIMS >::shouldRefine( int idx, int threshold )
 {
   SLIC_ASSERT( idx >= 0 && idx < static_cast< int >( m_tree.size() ) );
-  const int numObjects = m_tree[ idx ].ObjectArray.size();
+  const int numObjects = static_cast< int >( m_tree[ idx ].ObjectArray.size() );
   const int level      = m_tree[ idx ].Level;
 
   if ( (numObjects > threshold) && (level < m_maxNumLevels-1) )
@@ -811,7 +811,7 @@ inline double BVHTree< T,NDIMS >::getMaxSqDistanceToBucket(
     BoxType::getPoints( m_tree[ bucketIdx ].Box, pnts );
     SLIC_ASSERT( pnts.size()==4 || pnts.size()==8 );
 
-    const int npoints = pnts.size();
+    const int npoints = static_cast< int >( pnts.size() );
     for ( int i=0 ; i < npoints ; ++i )
     {
       dist = std::max( dist, squared_distance( pt, pnts[ i ] ) );
@@ -864,7 +864,7 @@ void BVHTree< T,NDIMS >::find( const PointType& pt,
   // the estLowerBound and estUpperBound
   for ( int level=1 ; level < m_numLevels ; ++level )
   {
-    const int nbuckets = buckets_to_check.size();
+    const int nbuckets = static_cast< int >( buckets_to_check.size() );
     if ( nbuckets==0 )
     {
       /* short-circuit */
@@ -956,7 +956,7 @@ void BVHTree< T,NDIMS >::find( const PointType& pt,
 
   // STEP 4: further filter first_set_candidate buckets into the final set
   // of candidate buckets to pass back to the caller.
-  const int numCandidates = first_set_candidates.size();
+  const int numCandidates = static_cast< int >( first_set_candidates.size() );
   candidate_buckets.clear();
   candidate_buckets.reserve( numCandidates );
   candidate_buckets.push_back( globalClosestBucketIdx );
@@ -997,7 +997,7 @@ int BVHTree< T,NDIMS >::getBucketNumObjects( int bucketIdx ) const
 {
   SLIC_ASSERT( bucketIdx >= 0 &&
                bucketIdx < static_cast< int >(m_tree.size()) );
-  return ( m_tree[ bucketIdx ].ObjectArray.size() );
+  return ( static_cast< int >( m_tree[ bucketIdx ].ObjectArray.size() ) );
 }
 
 //------------------------------------------------------------------------------

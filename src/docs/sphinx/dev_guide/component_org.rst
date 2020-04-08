@@ -210,8 +210,6 @@ add *sidre* as a library is::
                        "${sidre_fortran_sources}"
                    HEADERS
                        "${sidre_headers}"
-                   HEADERS_OUTPUT_SUBDIR
-                       sidre
                    DEPENDS_ON
                        ${sidre_depends}
                    )

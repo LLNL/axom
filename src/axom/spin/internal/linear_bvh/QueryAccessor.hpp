@@ -42,7 +42,7 @@ public:
   AXOM_STATIC_ASSERT_MSG( std::is_floating_point< FloatType >::value,
                           "A valid FloatingType must be used, e.g., double or float" );
 
-  /// \name Query Point Access methods
+  /// \name Point Query Access Methods
   /// @{
 
   /*!
@@ -68,6 +68,40 @@ public:
                                const FloatType* z );
 
   /// @}
+
+  /// \name Ray Query Access Methods
+  /// @{
+
+  /*!
+   * \brief Gets the ray defined by a source point and normal direction.
+   *
+   * \param [out] ray the ray where to pack the source point and normal.
+   * \param [in] idx the index of the ray w.r.t. the supplied arrays.
+   * \param [in] x0 array of the x-coordinate source point locations.
+   * \param [in] nx array of x-components of the ray normal directions.
+   * \param [in] y0 array of the y-coordinate source point locations.
+   * \param [in] ny array of y-components of the ray normal directions.
+   * \param [in] z0 array of of the z-coorindate source point locations.
+   * \param [in] nz array of z-components of the ray normal directions.
+   *
+   * \tparam RayType the data-structure to hold a ray.
+   *
+   * \note The RayType must overload the `[]` operator for accessing the
+   *  ray source point coordinates and normal direction information, such that,
+   *  the first NDIMS locations store the source points coordinates followed
+   *  by the normal direction.
+   */
+  template < typename RayType >
+  AXOM_HOST_DEVICE
+  static inline void getRay( RayType& ray,
+                             IndexType idx,
+                             const FloatType* x0,
+                             const FloatType* nx,
+                             const FloatType* y0,
+                             const FloatType* ny,
+                             const FloatType* z0,
+                             const FloatType* nz );
+  /// @}
 };
 
 //------------------------------------------------------------------------------
@@ -88,6 +122,24 @@ public:
   {
     point[ 0 ] = x[ idx ];
     point[ 1 ] = y[ idx ];
+  }
+
+  template < typename RayType >
+  AXOM_HOST_DEVICE
+  static inline void getRay( RayType& ray,
+                             IndexType idx,
+                             const FloatType* x0,
+                             const FloatType* nx,
+                             const FloatType* y0,
+                             const FloatType* ny,
+                             const FloatType* AXOM_NOT_USED(z0),
+                             const FloatType* AXOM_NOT_USED(nz) )
+  {
+    ray[ 0 ] = x0[ idx ];
+    ray[ 1 ] = y0[ idx ];
+
+    ray[ 2 ] = nx[ idx ];
+    ray[ 3 ] = ny[ idx ];
   }
 
 };
@@ -111,6 +163,26 @@ public:
     point[ 0 ] = x[ idx ];
     point[ 1 ] = y[ idx ];
     point[ 2 ] = z[ idx ];
+  }
+
+  template < typename RayType >
+  AXOM_HOST_DEVICE
+  static inline void getRay( RayType& ray,
+                             IndexType idx,
+                             const FloatType* x0,
+                             const FloatType* nx,
+                             const FloatType* y0,
+                             const FloatType* ny,
+                             const FloatType* z0,
+                             const FloatType* nz )
+  {
+    ray[ 0 ] = x0[ idx ];
+    ray[ 1 ] = y0[ idx ];
+    ray[ 2 ] = z0[ idx ];
+
+    ray[ 3 ] = nx[ idx ];
+    ray[ 4 ] = ny[ idx ];
+    ray[ 5 ] = nz[ idx ];
   }
 
 };

@@ -376,7 +376,9 @@ public:
   {
     if(empty())
       return 0;
-    return (this->m_level == 0) ? 1 : (m_map.size() * Base::BROOD_SIZE);
+
+    return ( (this->m_level == 0) ?
+                1 : ( static_cast< int >( m_map.size() ) * Base::BROOD_SIZE ) );
   }
 
   /** \brief Returns the number of internal blocks in the level */

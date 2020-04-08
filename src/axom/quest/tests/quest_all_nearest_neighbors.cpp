@@ -242,11 +242,11 @@ TEST(quest_all_nearnbr, cplx_13region_query)
   }
 }
 
-void readPointsFile(char* fname,
+void readPointsFile(char* filename,
                     std::vector<double> &x, std::vector<double> &y,
                     std::vector<double> &z, std::vector<int> &region)
 {
-  std::ifstream infile(fname);
+  std::ifstream infile(filename);
   std::string theline;
   double xi, yi, zi;
   int regioni;
@@ -271,9 +271,9 @@ void readPointsFile(char* fname,
   }
 }
 
-void writeNeigborsFile(char* fname, int* neighbors, int n)
+void writeNeigborsFile(char* filename, int* neighbors, int n)
 {
-  std::ofstream outfile(fname);
+  std::ofstream outfile(filename);
   if (outfile.good())
   {
     for (int i = 0 ; i < n ; ++i)
@@ -298,11 +298,13 @@ TEST(quest_all_nearnbr, file_query)
 
     readPointsFile(fname, x, y, z, region);
 
-    size_t n = region.size();
+    const int n = static_cast< int >( region.size() );
 
     SLIC_INFO("n is " << n);
 
-    if (n > 0 && n == x.size() && n == y.size() && n == z.size())
+    if ( (n > 0) && (n == static_cast< int >(x.size())) &&
+         (n == static_cast< int >(y.size())) &&
+         (n == static_cast< int >(z.size())) )
     {
       double limit = 2.1;
       bfneighbor = new int[n];
@@ -310,7 +312,7 @@ TEST(quest_all_nearnbr, file_query)
       bfsqdst = new double[n];
       idxsqdst = new double[n];
 
-      for (size_t i = 0 ; i < n ; ++i)
+      for ( int i = 0 ; i < n ; ++i)
       {
         bfneighbor[i] = -1;
         idxneighbor[i] = -1;

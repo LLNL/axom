@@ -47,14 +47,13 @@ protected:
 
 TEST_F(InOutInterfaceTest, initialize_and_finalize)
 {
-  const std::string meshfile = this->meshfile;
-  EXPECT_TRUE(axom::utilities::filesystem::pathExists(meshfile));
+  EXPECT_TRUE(axom::utilities::filesystem::pathExists(this->meshfile));
 
   // InOut begins uninitialized
   EXPECT_FALSE(axom::quest::inout_initialized());
 
   // Initialize the InOut query
-  EXPECT_EQ(0, axom::quest::inout_init(meshfile));
+  EXPECT_EQ(0, axom::quest::inout_init(this->meshfile));
 
   // InOut should now be initialized
   EXPECT_TRUE(axom::quest::inout_initialized());
@@ -94,11 +93,10 @@ TEST_F(InOutInterfaceTest, logger_inited)
 
 TEST_F(InOutInterfaceTest, initialize_from_mesh)
 {
-  const std::string meshfile = this->meshfile;
-  EXPECT_TRUE(axom::utilities::filesystem::pathExists(meshfile));
+  EXPECT_TRUE(axom::utilities::filesystem::pathExists(this->meshfile));
 
   axom::mint::Mesh* mesh = nullptr;
-  int rc = axom::quest::internal::read_mesh(meshfile, mesh);
+  int rc = axom::quest::internal::read_mesh(this->meshfile, mesh);
   EXPECT_EQ(0, rc);
 
   // Initialize the InOut query

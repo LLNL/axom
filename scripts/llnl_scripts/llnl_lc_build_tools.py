@@ -105,6 +105,7 @@ def log_success(prefix, msg, timestamp=""):
         info["timestamp"] = timestamp
     json.dump(info,open(pjoin(prefix,"success.json"),"w"),indent=2)
 
+
 def log_failure(prefix, msg, timestamp=""):
     """
     Called when the process failed.
@@ -256,7 +257,15 @@ def uberenv_create_mirror(prefix, project_file, mirror_path):
     cmd  = "python scripts/uberenv/uberenv.py --create-mirror"
     cmd += " --prefix=\"{0}\" --mirror=\"{1}\"".format(prefix, mirror_path)
     cmd += " --project-json=\"{0}\" ".format(project_file)
-    return sexe(cmd,echo=True,error_prefix="WARNING:")
+    print "[~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]"
+    print "[ It is expected for 'spack --create-mirror' to throw warnings.                ]"
+    print "[~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]"
+    res = sexe(cmd, echo=True, error_prefix="WARNING:")
+    print "[~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]"
+    print "[ End of expected warnings from 'spack --create-mirror'                        ]"
+    print "[~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~]"
+    set_axom_group_and_perms(mirror_path)
+    return res
 
 
 def uberenv_build(prefix, spec, project_file, config_dir, mirror_path):

@@ -65,7 +65,7 @@ template < >
 struct mesh_type< STRUCTURED_RECTILINEAR_MESH, SINGLE_SHAPE >
 {
   using MeshType = RectilinearMesh;
-  static constexpr char* name() { 
+  static constexpr char* name() {
     return (char*)"STRUCTURED_RECTILINEAR_MESH";
   };
 };
@@ -120,7 +120,7 @@ Mesh* create_mesh( const UniformMesh& uniform_mesh )
     lo[ i ] = uniform_mesh.evaluateCoordinate(0,i);
     hi[ i ] = uniform_mesh.evaluateCoordinate( N[i]-1, i );
   }
-  UniformMesh* output_mesh = new UniformMesh( lo, hi, N[0], N[1], 
+  UniformMesh* output_mesh = new UniformMesh( lo, hi, N[0], N[1],
                                                           N[2] );
 
   EXPECT_EQ( output_mesh->getMeshType(), STRUCTURED_UNIFORM_MESH );
@@ -144,7 +144,7 @@ Mesh* create_mesh< STRUCTURED_CURVILINEAR_MESH, SINGLE_SHAPE >(
     node_dims[ i ] = uniform_mesh.getNodeResolution( i );
   }
 
-  CurvilinearMesh* output_mesh = new CurvilinearMesh( 
+  CurvilinearMesh* output_mesh = new CurvilinearMesh(
                                                node_dims[ I_DIRECTION ],
                                                node_dims[ J_DIRECTION ],
                                                node_dims[ K_DIRECTION ] );
@@ -239,13 +239,13 @@ Mesh* create_mesh< STRUCTURED_RECTILINEAR_MESH, SINGLE_SHAPE >(
 
 //------------------------------------------------------------------------------
 template < >
-Mesh* create_mesh< PARTICLE_MESH, SINGLE_SHAPE >( 
+Mesh* create_mesh< PARTICLE_MESH, SINGLE_SHAPE >(
                                         const UniformMesh& uniform_mesh )
 {
   const int dimension            = uniform_mesh.getDimension();
   const IndexType numNodes = uniform_mesh.getNumberOfNodes();
 
-  ParticleMesh* output_mesh = 
+  ParticleMesh* output_mesh =
                                   new ParticleMesh( dimension, numNodes );
 
   for ( IndexType inode=0 ; inode < numNodes ; ++inode )
@@ -273,8 +273,8 @@ Mesh* create_mesh< PARTICLE_MESH, SINGLE_SHAPE >(
 
 //------------------------------------------------------------------------------
 template < >
-Mesh* 
-create_mesh< UNSTRUCTURED_MESH, SINGLE_SHAPE >( 
+Mesh*
+create_mesh< UNSTRUCTURED_MESH, SINGLE_SHAPE >(
                                         const UniformMesh& uniform_mesh )
 {
   const int dimension            = uniform_mesh.getDimension();
@@ -285,7 +285,7 @@ create_mesh< UNSTRUCTURED_MESH, SINGLE_SHAPE >(
   CellType cell_type   = ( dimension==3 ) ? HEX :
                                ( (dimension==2) ? QUAD : SEGMENT );
 
-  UnstructuredMeshType* output_mesh = 
+  UnstructuredMeshType* output_mesh =
           new UnstructuredMeshType( dimension, cell_type, numNodes, numCells );
 
   // append nodes
@@ -317,8 +317,8 @@ create_mesh< UNSTRUCTURED_MESH, SINGLE_SHAPE >(
 
 //------------------------------------------------------------------------------
 template < >
-Mesh* 
-create_mesh< UNSTRUCTURED_MESH, MIXED_SHAPE >( 
+Mesh*
+create_mesh< UNSTRUCTURED_MESH, MIXED_SHAPE >(
                                         const UniformMesh& uniform_mesh )
 {
   const int dimension            = uniform_mesh.getDimension();
@@ -331,12 +331,12 @@ create_mesh< UNSTRUCTURED_MESH, MIXED_SHAPE >(
   using UnstructuredMeshType = UnstructuredMesh< MIXED_SHAPE >;
 
   IndexType node_capacity = numNodes + numCells / 2;
-  IndexType cell_capacity = numCells * 2.5;
+  IndexType cell_capacity = static_cast< IndexType >( numCells * 2.5 );
 
   if ( dimension == 3 )
   {
-    node_capacity = numNodes + numCells / 2.0;
-    cell_capacity = numCells * 3.5;
+    node_capacity = static_cast< IndexType >( numNodes + numCells / 2.0 );
+    cell_capacity = static_cast< IndexType >( numCells * 3.5 );
   }
 
   UnstructuredMeshType* output_mesh = new UnstructuredMeshType( dimension,
@@ -415,38 +415,38 @@ create_mesh< UNSTRUCTURED_MESH, MIXED_SHAPE >(
                                          (k + 0.5) * spacing[ 2 ] };
             output_mesh->appendNodes( centroid );
 
-            pyramid[0] = uniformCell[0]; 
+            pyramid[0] = uniformCell[0];
             pyramid[1] = uniformCell[1];
             pyramid[2] = uniformCell[2];
             pyramid[3] = uniformCell[3];
             pyramid[4] = centerNode;
             output_mesh->appendCell( pyramid, PYRAMID );
 
-            pyramid[0] = uniformCell[4]; 
+            pyramid[0] = uniformCell[4];
             pyramid[1] = uniformCell[7];
             pyramid[2] = uniformCell[6];
             pyramid[3] = uniformCell[5];
             output_mesh->appendCell( pyramid, PYRAMID );
 
-            pyramid[0] = uniformCell[1]; 
+            pyramid[0] = uniformCell[1];
             pyramid[1] = uniformCell[5];
             pyramid[2] = uniformCell[6];
             pyramid[3] = uniformCell[2];
             output_mesh->appendCell( pyramid, PYRAMID );
 
-            pyramid[0] = uniformCell[0]; 
+            pyramid[0] = uniformCell[0];
             pyramid[1] = uniformCell[3];
             pyramid[2] = uniformCell[7];
             pyramid[3] = uniformCell[4];
             output_mesh->appendCell( pyramid, PYRAMID );
 
-            pyramid[0] = uniformCell[0]; 
+            pyramid[0] = uniformCell[0];
             pyramid[1] = uniformCell[4];
             pyramid[2] = uniformCell[5];
             pyramid[3] = uniformCell[1];
             output_mesh->appendCell( pyramid, PYRAMID );
 
-            pyramid[0] = uniformCell[3]; 
+            pyramid[0] = uniformCell[3];
             pyramid[1] = uniformCell[2];
             pyramid[2] = uniformCell[6];
             pyramid[3] = uniformCell[7];

@@ -61,14 +61,18 @@ inline void setDefaultAllocator( int allocatorID )
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
   umpire::Allocator allocator = rm.getAllocator( allocatorID );
   rm.setDefaultAllocator( allocator );
+#else
+  static_cast< void >( allocatorID ); // silence compiler warnings
 #endif
 }
 
 /*!
  * \brief Returns the current default memory space used.
- * \note If Umpire is used, the corresponding umpire allocator can be retrieved by:
+ * \note If Umpire is used, the corresponding umpire allocator can be retrieved
+ * by:
  *  <code>
- *    umpire::Allocator alloc = umpire::ResourceManager::getInstance().getAllocator( allocID );
+ *    umpire::Allocator alloc =
+ * umpire::ResourceManager::getInstance().getAllocator( allocID );
  *  </code>
  */
 inline int getDefaultAllocatorID()
@@ -97,7 +101,8 @@ inline int getDefaultAllocatorID()
  * \return p pointer to the new allocation or a nullptr if allocation failed.
  */
 template < typename T >
-inline T* allocate(std::size_t n, int allocID=getDefaultAllocatorID() )noexcept;
+inline T* allocate(std::size_t n,
+                   int allocID=getDefaultAllocatorID() ) noexcept;
 
 
 /*!
@@ -158,6 +163,7 @@ inline T* allocate( std::size_t n, int allocID ) noexcept
   return static_cast< T* >( allocator.allocate( numbytes ) );
 
 #else
+  static_cast< void >( allocID ); // silence compiler warnings
   return static_cast< T* >( std::malloc( numbytes ) );
 #endif
 

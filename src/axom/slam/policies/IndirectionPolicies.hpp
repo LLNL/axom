@@ -294,7 +294,7 @@ bool STLVectorIndirection<PosType,ElemType>::isValid(PosType size,
     // Note: it is valid for the data buffer to have extra space
     PosType firstEltInd = offset;
     PosType lastEltInd = (size - 1) * stride + offset;
-    PosType vecSize = m_vecBuf->size();
+    PosType vecSize = static_cast< PosType >( m_vecBuf->size() );
 
     bool isRangeValid =
       (0 <= firstEltInd) && (firstEltInd < vecSize)

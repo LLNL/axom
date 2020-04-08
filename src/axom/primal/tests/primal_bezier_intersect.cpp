@@ -46,7 +46,7 @@ void checkIntersections(const primal::BezierCurve<CoordType, DIM>& curve1,
   EXPECT_TRUE(std::is_sorted(exp_s.begin(), exp_s.end()));
   EXPECT_TRUE(std::is_sorted(exp_t.begin(), exp_t.end()));
 
-  const int num_exp_intersections = exp_s.size();
+  const int num_exp_intersections = static_cast< int >( exp_s.size() );
   const bool exp_intersect = (num_exp_intersections > 0);
 
   // Intersect the two curves, intersection parameters will be
@@ -57,7 +57,7 @@ void checkIntersections(const primal::BezierCurve<CoordType, DIM>& curve1,
   EXPECT_EQ(s.size(), t.size());
 
   // check that we found the expected number of intersection points
-  const int num_actual_intersections = s.size();
+  const int num_actual_intersections = static_cast< int >( s.size() );
   EXPECT_EQ(num_exp_intersections, num_actual_intersections);
 
   // check that the evaluated intersection points are identical

@@ -132,10 +132,10 @@ public:
    * \return p[i] the value at the given component index.
    * \pre (i >= 0) && (i < ndims)
    */
-  AXOM_HOST_DEVICE 
+  AXOM_HOST_DEVICE
   const T& operator[](int i) const { return m_components[i]; }
-  
-  AXOM_HOST_DEVICE 
+
+  AXOM_HOST_DEVICE
   T& operator[](int i)             { return m_components[i]; }
 
   ///@}
@@ -154,10 +154,10 @@ public:
   /*!
    * \brief Returns a reference to the underlying NumericArray.
    */
-  AXOM_HOST_DEVICE 
+  AXOM_HOST_DEVICE
   const NumericArray< T,NDIMS >& array() const { return m_components; }
-  
-  AXOM_HOST_DEVICE 
+
+  AXOM_HOST_DEVICE
   NumericArray< T,NDIMS >& array()             { return m_components; }
 
   /*!
@@ -225,7 +225,7 @@ public:
    * \post \f$ P==B\f$ when \f$ \alpha=1.0\f$
    * \post The return point, P, and the user-supplied points A, B are collinear.
    */
-  static Point lerp( const Point& A, const Point& B, double alpha);
+  static Point lerp( const Point& A, const Point& B, T alpha);
 
   /*!
    * \brief Helper function to return a point whose coordinates are all 0
@@ -297,10 +297,10 @@ template < typename T, int NDIMS >
 inline Point< T,NDIMS > Point< T,NDIMS >::lerp(
   const Point< T,NDIMS >& A,
   const Point< T,NDIMS >& B,
-  double alpha)
+  T alpha)
 {
   PointType res;
-  const double beta = 1.-alpha;
+  const T beta = 1.-alpha;
   for ( int i=0 ; i < NDIMS ; ++i )
   {
     res[ i ] = beta*A[ i ] + alpha*B[ i ];

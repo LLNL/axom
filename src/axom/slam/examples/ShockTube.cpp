@@ -310,7 +310,8 @@ void CreateShockTubeMesh(ShockTubeMesh* mesh)
 
   mesh->relationFaceElem = ShockTubeMesh::
                            FaceToElemRelation(&mesh->faces, &mesh->elems);
-  mesh->relationFaceElem.bindIndices(feRelVec.size(), &feRelVec);
+  mesh->relationFaceElem.bindIndices( static_cast< int >( feRelVec.size() ),
+                                      &feRelVec);
   SLIC_ASSERT(mesh->relationFaceElem.isValid( verboseOutput ));
 
 
@@ -330,7 +331,8 @@ void CreateShockTubeMesh(ShockTubeMesh* mesh)
 
   mesh->relationTubeFace =
     ShockTubeMesh::TubeElemToFaceRelation(&mesh->tubeElems, &mesh->faces);
-  mesh->relationTubeFace.bindIndices(efRelVec.size(), &efRelVec);
+  mesh->relationTubeFace.bindIndices( static_cast< int >( efRelVec.size() ),
+                                      &efRelVec);
   SLIC_ASSERT(mesh->relationTubeFace.isValid( verboseOutput ));
 
 }

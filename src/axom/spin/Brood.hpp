@@ -64,7 +64,10 @@ struct Brood
    */
   static GridPt reconstructGridPt(MortonIndexType morton, int offset)
   {
-    return MortonizerType::demortonize( (morton << DIM) + offset);
+    return
+      static_cast< GridPt >(
+          MortonizerType::demortonize(
+              static_cast< MortonIndexType >( (morton<<DIM)+offset) ) );
   }
 private:
   MortonIndexType m_broodIdx;           /** MortonIndex of the base point of all

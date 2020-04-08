@@ -16,7 +16,9 @@ set(example_sources
 
 if(ENABLE_MPI)
     set (example_parallel_sources
-         sidre_createdatastore.cpp)
+         sidre_array.cpp
+         sidre_createdatastore.cpp
+         sidre_external_array.cpp)
 else()
     list(APPEND example_sources sidre_createdatastore.cpp)
 endif()
@@ -75,7 +77,7 @@ if(ENABLE_MPI)
             FOLDER axom/sidre/examples)
 
         if(AXOM_ENABLE_TESTS)
-            blt_add_test( NAME ${exe_name} 
+            blt_add_test( NAME ${exe_name}
                           COMMAND ${exe_name}_ex
                           NUM_MPI_TASKS 1
                           )

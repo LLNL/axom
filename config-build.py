@@ -32,7 +32,7 @@ def extract_cmake_location(file_path):
         content = file_handle.readlines()
         for line in content:
             if line.lower().startswith(cmake_line_prefix):
-                return line.split(" ")[4].strip()
+                return line.partition(":")[2].strip()
     print("Could not find a cmake entry in host config file.\n"
           "Attempting to find cmake on your path...")
     cmake_path = distutils.spawn.find_executable("cmake")
@@ -220,6 +220,7 @@ def create_cmake_command_line(
     args, unknown_args, buildpath, hostconfigpath, installpath
 ):
     cmakeline = extract_cmake_location(hostconfigpath)
+    cmakeline = os.path.normpath(cmakeline) # Fixes path for Windows
     assert cmakeline != None, ("No cmake executable found on path")
     assert executable_exists(cmakeline), (
         "['%s'] invalid path to cmake executable or file does not have execute permissions"
@@ -242,7 +243,7 @@ def create_cmake_command_line(
         os.chmod(ccmake_file, st.st_mode | stat.S_IEXEC)
 
     # Add cache file option
-    cmakeline += " -C %s" % hostconfigpath
+    cmakeline = '"{0}" -C {1}'.format(cmakeline,hostconfigpath)
     # Add build type (opt or debug)
     cmakeline += " -DCMAKE_BUILD_TYPE=" + args.buildtype
     # Set install dir

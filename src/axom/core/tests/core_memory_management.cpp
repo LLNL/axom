@@ -312,7 +312,7 @@ TEST( core_memory_management, alloc_free )
   constexpr bool HOST_ACCESSIBLE = true;
 
   const int HostAllocatorID =
-      axom::getUmpireResourceAllocatorID( umpire::resource::Host );
+    axom::getUmpireResourceAllocatorID( umpire::resource::Host );
   check_alloc_and_free( HostAllocatorID, HOST_ACCESSIBLE );
 
 #ifdef AXOM_USE_CUDA
@@ -358,7 +358,7 @@ TEST( core_memory_management, alloc_realloc_free )
   constexpr bool HOST_ACCESSIBLE = true;
 
   const int HostAllocatorID =
-        axom::getUmpireResourceAllocatorID( umpire::resource::Host );
+    axom::getUmpireResourceAllocatorID( umpire::resource::Host );
   check_alloc_realloc_free( HostAllocatorID, HOST_ACCESSIBLE );
 
 #ifdef AXOM_USE_CUDA

@@ -181,7 +181,7 @@ void partition_of_unity()
 
     sf.evaluate( nc, phi );
 
-    double sum=0.0;
+    sum=0.0;
     for ( int j=0 ; j < ndofs ; ++j )
     {
       sum += phi[ j ];

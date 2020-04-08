@@ -106,7 +106,7 @@ def parse_args():
 
     # for vcpkg, what architecture to target
     parser.add_option("--triplet",
-                      dest="triplet",
+                      dest="vcpkg_triplet",
                       default=None,
                       help="vcpkg architecture triplet")
 
@@ -297,9 +297,10 @@ class VcpkgEnv(UberEnv):
         UberEnv.__init__(self,opts,extra_opts)
 
         # setup architecture triplet
-        self.triplet = opts["triplet"]
-        if self.triplet is None:
-           self.triplet = os.getenv("VCPKG_DEFAULT_TRIPLET", "x86-windows")
+        self.vcpkg_triplet = self.set_from_args_or_json("vcpkg_triplet", False)
+        print("triplet: {}".format(self.vcpkg_triplet))
+        if self.vcpkg_triplet is None:
+           self.vcpkg_triplet = os.getenv("VCPKG_DEFAULT_TRIPLET", "x86-windows")
 
     def setup_paths_and_dirs(self):
         # get the current working path, and the glob used to identify the
@@ -384,14 +385,14 @@ class VcpkgEnv(UberEnv):
         
         os.chdir(self.dest_vcpkg)
         install_cmd = "vcpkg.exe "
-        install_cmd += "install {0}:{1}".format(self.pkg_name, self.triplet)
+        install_cmd += "install {0}:{1}".format(self.pkg_name, self.vcpkg_triplet)
 
         res = sexe(install_cmd, echo=True)
 
         # Running the install_cmd eventually generates the host config file,
         # which we copy to the target directory.
-        src_hc = pjoin(self.dest_vcpkg, "installed", self.triplet, "include", self.pkg_name, "hc.cmake")
-        hcfg_fname = pjoin(self.dest_dir, "{0}.{1}.cmake".format(platform.uname()[1], self.triplet))
+        src_hc = pjoin(self.dest_vcpkg, "installed", self.vcpkg_triplet, "include", self.pkg_name, "hc.cmake")
+        hcfg_fname = pjoin(self.dest_dir, "{0}.{1}.cmake".format(platform.uname()[1], self.vcpkg_triplet))
         print("[info: copying host config file to {0}]".format(hcfg_fname))
         shutil.copy(os.path.abspath(src_hc), hcfg_fname)
         print("")
@@ -500,7 +501,7 @@ class SpackEnv(UberEnv):
                 os.chdir(pjoin(self.dest_dir,"spack"))
                 sexe("git checkout {0}".format(sha1),echo=True)
 
-        if self.opts["spack_pull"]:
+        if self.opts["repo_pull"]:
             # do a pull to make sure we have the latest
             os.chdir(pjoin(self.dest_dir,"spack"))
             sexe("git stash", echo=True)
