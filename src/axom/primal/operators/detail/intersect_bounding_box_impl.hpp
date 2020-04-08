@@ -38,7 +38,7 @@ inline bool intersect_bbox_bbox_test( const T& min1,
                                       const T& max2 )
 {
   AXOM_STATIC_ASSERT( std::is_floating_point< T >::value );
-  
+
   bool status = ( ( max1 < min2 || min1 > max2 ) ? false : true );
   return status;
 }
@@ -61,13 +61,13 @@ inline bool intersect_bbox_bbox_test( const T& min1,
 template < typename T >
 AXOM_HOST_DEVICE
 inline bool intersect_bounding_box( const T& xmin1,
-                              			const T& xmax1,
-                           	    		const T& ymin1,
-                               			const T& ymax1,
-                           			    const T& xmin2,
-                           			    const T& xmax2,
-                           			    const T& ymin2,
-                           			    const T& ymax2 )
+                                    const T& xmax1,
+                                    const T& ymin1,
+                                    const T& ymax1,
+                                    const T& xmin2,
+                                    const T& xmax2,
+                                    const T& ymin2,
+                                    const T& ymax2 )
 {
   AXOM_STATIC_ASSERT( std::is_floating_point< T >::value );
 
@@ -99,17 +99,17 @@ inline bool intersect_bounding_box( const T& xmin1,
 template < typename T >
 AXOM_HOST_DEVICE
 inline bool intersect_bounding_box( const T& xmin1,
-                           			    const T& xmax1,
-                           			    const T& ymin1,
-                           			    const T& ymax1,
-                           			    const T& zmin1,
-                           			    const T& zmax1,
-                           			    const T& xmin2,
-                           			    const T& xmax2,
-                           			    const T& ymin2,
-                           			    const T& ymax2,
-                           		    	const T& zmin2,
-                           		    	const T& zmax2 )
+                                    const T& xmax1,
+                                    const T& ymin1,
+                                    const T& ymax1,
+                                    const T& zmin1,
+                                    const T& zmax1,
+                                    const T& xmin2,
+                                    const T& xmax2,
+                                    const T& ymin2,
+                                    const T& ymax2,
+                                    const T& zmin2,
+                                    const T& zmax2 )
 {
   AXOM_STATIC_ASSERT( std::is_floating_point< T >::value );
 

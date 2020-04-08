@@ -104,7 +104,7 @@ public:
   /// @}
 
 /// \name Bounding Box Query Access Methods
-  /// @{
+/// @{
 
   /*!
    * \brief Gets the bounding box defined by lower and upper bound corners.
@@ -188,11 +188,11 @@ public:
                                      const FloatType* AXOM_NOT_USED(zmin),
                                      const FloatType* AXOM_NOT_USED(zmax) )
   {
-    box[ 0 ] = xmin[ idx ]; 
-    box[ 1 ] = ymin[ idx ]; 
+    box[ 0 ] = xmin[ idx ];
+    box[ 1 ] = ymin[ idx ];
 
-    box[ 2 ] = xmax[ idx ]; 
-    box[ 3 ] = ymax[ idx ]; 
+    box[ 2 ] = xmax[ idx ];
+    box[ 3 ] = ymax[ idx ];
   }
 
 };
@@ -249,15 +249,15 @@ public:
                                      const FloatType* zmin,
                                      const FloatType* zmax )
   {
-      box[ 0 ] = xmin[ idx ]; 
-      box[ 1 ] = ymin[ idx ];
-      box[ 2 ] = zmin[ idx ]; 
+    box[ 0 ] = xmin[ idx ];
+    box[ 1 ] = ymin[ idx ];
+    box[ 2 ] = zmin[ idx ];
 
-      box[ 3 ] = xmax[ idx ]; 
-      box[ 4 ] = ymax[ idx ];
-      box[ 5 ] = zmax[ idx ];
+    box[ 3 ] = xmax[ idx ];
+    box[ 4 ] = ymax[ idx ];
+    box[ 5 ] = zmax[ idx ];
   }
-  
+
 };
 
 } /* namespace linear_bvh */

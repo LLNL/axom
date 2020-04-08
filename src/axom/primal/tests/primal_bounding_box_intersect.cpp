@@ -20,29 +20,32 @@ TEST( primal_bounding_box_intersect, aabb_aabb_adjacent )
   using namespace axom::primal::detail;
 
   // Check 2D adjacent and self-intersecting bounding boxes for intersection
-  for ( int i = 0; i < NUM_OFFSETS; i++ )
+  for ( int i = 0 ; i < NUM_OFFSETS ; i++ )
   {
-	for ( int j = 0; j < NUM_OFFSETS; j++ )
-	{
-	  EXPECT_TRUE( intersect_bounding_box( LO + OFFSETS[i], HI + OFFSETS[i],
-		                                   LO + OFFSETS[j], HI + OFFSETS[j],
-		                                   LO, HI, LO, HI ) );   	  
-	}
+    for ( int j = 0 ; j < NUM_OFFSETS ; j++ )
+    {
+      EXPECT_TRUE( intersect_bounding_box( LO + OFFSETS[i], HI + OFFSETS[i],
+                                           LO + OFFSETS[j], HI + OFFSETS[j],
+                                           LO, HI, LO, HI ) );
+    }
   }
 
   // Check 3D adjacent and self-intersecting bounding boxes for intersection
-  for ( int i = 0; i < NUM_OFFSETS; i++ )
+  for ( int i = 0 ; i < NUM_OFFSETS ; i++ )
   {
-	for ( int j = 0; j < NUM_OFFSETS; j++ )
-	{
-	  for ( int k = 0; k < NUM_OFFSETS; k++ )
-	  {
-	    EXPECT_TRUE( intersect_bounding_box( LO + OFFSETS[i], HI + OFFSETS[i],
-		                                     LO + OFFSETS[j], HI + OFFSETS[j],
-		                                     LO + OFFSETS[k], HI + OFFSETS[k],
-		                                     LO, HI, LO, HI, LO, HI ) );  
-	  } 	  
-	}
+    for ( int j = 0 ; j < NUM_OFFSETS ; j++ )
+    {
+      for ( int k = 0 ; k < NUM_OFFSETS ; k++ )
+      {
+        EXPECT_TRUE( intersect_bounding_box( LO + OFFSETS[i],
+                                             HI + OFFSETS[i],
+                                             LO + OFFSETS[j],
+                                             HI + OFFSETS[j],
+                                             LO + OFFSETS[k],
+                                             HI + OFFSETS[k],
+                                             LO, HI, LO, HI, LO, HI ) );
+      }
+    }
   }
 
 }
@@ -58,42 +61,42 @@ TEST( primal_bounding_box_intersect, aabb_aabb_non_intersecting )
   using namespace axom::primal::detail;
 
   // Check 2D bounding boxes for non-intersection
-  for ( int i = 0; i < NUM_OFFSETS; i++ )
+  for ( int i = 0 ; i < NUM_OFFSETS ; i++ )
   {
-	for ( int j = 0; j < NUM_OFFSETS; j++ )
-	{
-	  // Ignore identity box
-	  if ( i != 1 && j != 1 )
-	  {
+    for ( int j = 0 ; j < NUM_OFFSETS ; j++ )
+    {
+      // Ignore identity box
+      if ( i != 1 && j != 1 )
+      {
         EXPECT_FALSE( intersect_bounding_box( LO + OFFSETS[i],
-        	                                  HI + OFFSETS[i],
-		                                      LO + OFFSETS[j],
-		                                      HI + OFFSETS[j],
-		                                      LO, HI, LO, HI ) ); 
-	  }  	  
-	}
+                                              HI + OFFSETS[i],
+                                              LO + OFFSETS[j],
+                                              HI + OFFSETS[j],
+                                              LO, HI, LO, HI ) );
+      }
+    }
   }
-	
+
   // Check 3D bounding boxes for non-intersection
-  for ( int i = 0; i < NUM_OFFSETS; i++ )
+  for ( int i = 0 ; i < NUM_OFFSETS ; i++ )
   {
-	for ( int j = 0; j < NUM_OFFSETS; j++ )
-	{
-	  for ( int k = 0; k < NUM_OFFSETS; k++ )
-	  {
-	    // Ignore identity box
-	    if ( i != 1 && j != 1 )
-	    {
-          EXPECT_FALSE( intersect_bounding_box( LO + OFFSETS[i], 
-          	                                    HI + OFFSETS[i],
-		                                        LO + OFFSETS[j], 
-		                                        HI + OFFSETS[j],
-		                                        LO + OFFSETS[j], 
-		                                        HI + OFFSETS[j],
-		                                        LO, HI, LO, HI, LO, HI ) );
-	    } 
-	  } 	  
-	}
+    for ( int j = 0 ; j < NUM_OFFSETS ; j++ )
+    {
+      for ( int k = 0 ; k < NUM_OFFSETS ; k++ )
+      {
+        // Ignore identity box
+        if ( i != 1 && j != 1 )
+        {
+          EXPECT_FALSE( intersect_bounding_box( LO + OFFSETS[i],
+                                                HI + OFFSETS[i],
+                                                LO + OFFSETS[j],
+                                                HI + OFFSETS[j],
+                                                LO + OFFSETS[j],
+                                                HI + OFFSETS[j],
+                                                LO, HI, LO, HI, LO, HI ) );
+        }
+      }
+    }
   }
 
 }
@@ -115,4 +118,4 @@ int main(int argc, char* argv[])
   result = RUN_ALL_TESTS();
 
   return result;
-} 
+}

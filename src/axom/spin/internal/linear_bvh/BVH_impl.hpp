@@ -152,9 +152,10 @@ IndexType bvh_get_counts( LeftPredicate&& leftCheck,
 
 
     BVH_LEAF_ACTION( leafAction,
-                      int32 AXOM_NOT_USED(current_node),
-                     const int32* AXOM_NOT_USED(leaf_nodes) ) {
-      count ++;
+                     int32 AXOM_NOT_USED(current_node),
+                     const int32* AXOM_NOT_USED(leaf_nodes) )
+    {
+      count++;
     };
 
     lbvh::bvh_traverse( inner_nodes,
@@ -233,9 +234,10 @@ IndexType bvh_get_raycounts( LeftPredicate&& leftCheck,
 
 
     BVH_LEAF_ACTION( leafAction,
-                      int32 AXOM_NOT_USED(current_node),
-                     const int32* AXOM_NOT_USED(leaf_nodes) ) {
-      count ++;
+                     int32 AXOM_NOT_USED(current_node),
+                     const int32* AXOM_NOT_USED(leaf_nodes) )
+    {
+      count++;
     };
 
     lbvh::bvh_traverse( inner_nodes,
@@ -294,13 +296,13 @@ IndexType bvh_get_boxcounts( LeftPredicate&& leftCheck,
   SLIC_ASSERT( inner_nodes != nullptr );
   SLIC_ASSERT( leaf_nodes != nullptr );
   SLIC_ERROR_IF( counts == nullptr, "supplied null pointer for counts!" );
-  SLIC_ERROR_IF( xmin == nullptr, 
+  SLIC_ERROR_IF( xmin == nullptr,
                  "bounding box lower x-coordinates array is null!" );
   SLIC_ERROR_IF( xmax == nullptr,
                  "bounding box upper x-coordinates array is null!" );
-  SLIC_ERROR_IF( ymin == nullptr, 
+  SLIC_ERROR_IF( ymin == nullptr,
                  "bounding box lower y-coordinates array is null!" );
-  SLIC_ERROR_IF( ymax == nullptr, 
+  SLIC_ERROR_IF( ymax == nullptr,
                  "bounding box upper y-coordinates array is null!" );
   SLIC_ERROR_IF( (zmin==nullptr && NDIMS==3),
                  "bounding box lower z-coordinates array is null!" );
@@ -316,13 +318,15 @@ IndexType bvh_get_boxcounts( LeftPredicate&& leftCheck,
   {
     int32 count = 0;
     bounding_box_t< FloatType, NDIMS > box;
-    QueryAccessor::getBoundingBox( box, i, xmin, xmax, ymin, ymax, zmin, zmax );
+    QueryAccessor::getBoundingBox( box, i, xmin, xmax, ymin, ymax, zmin,
+                                   zmax );
 
 
     BVH_LEAF_ACTION( leafAction,
                      int32 AXOM_NOT_USED(current_node),
-                     const int32* AXOM_NOT_USED(leaf_nodes) ) {
-      count ++;
+                     const int32* AXOM_NOT_USED(leaf_nodes) )
+    {
+      count++;
     };
 
     lbvh::bvh_traverse( inner_nodes,
@@ -501,7 +505,9 @@ void BVH< NDIMS, ExecSpace, FloatType >::findPoints( IndexType* offsets,
     PointType point;
     QueryAccessor::getPoint( point, i, x, y, z );
 
-    BVH_LEAF_ACTION( leafAction, int32 current_node, const int32* leaf_nodes ) {
+    BVH_LEAF_ACTION( leafAction, int32 current_node,
+                     const int32* leaf_nodes )
+    {
       candidates[offset] = leaf_nodes[current_node];
       offset++;
     };
@@ -594,7 +600,9 @@ void BVH< NDIMS, ExecSpace, FloatType >::findRays( IndexType* offsets,
     RayType ray;
     QueryAccessor::getRay( ray, i, x0, nx, y0, ny, z0, nz );
 
-    BVH_LEAF_ACTION( leafAction, int32 current_node, const int32* leaf_nodes ) {
+    BVH_LEAF_ACTION( leafAction, int32 current_node,
+                     const int32* leaf_nodes )
+    {
       candidates[offset] = leaf_nodes[current_node];
       offset++;
     };
@@ -682,9 +690,12 @@ void BVH< NDIMS, ExecSpace, FloatType >::findBoundingBoxes(
     int32 offset = offsets[ i ];
 
     BoundingBoxType box;
-    QueryAccessor::getBoundingBox( box, i, xmin, xmax, ymin, ymax, zmin, zmax );
+    QueryAccessor::getBoundingBox( box, i, xmin, xmax, ymin, ymax, zmin,
+                                   zmax );
 
-    BVH_LEAF_ACTION( leafAction, int32 current_node, const int32* leaf_nodes ) {
+    BVH_LEAF_ACTION( leafAction, int32 current_node,
+                     const int32* leaf_nodes )
+    {
       candidates[offset] = leaf_nodes[current_node];
       offset++;
     };

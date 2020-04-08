@@ -98,9 +98,9 @@ public:
   template < typename RayType >
   AXOM_HOST_DEVICE
   static inline bool rayIntersectsLeftBin(
-      const RayType& r, const vec4_t& s1, const vec4_t& s2,
-      FloatType TOL=numerics::floating_point_limits<FloatType>::epsilon()
-      ) noexcept;
+    const RayType& r, const vec4_t& s1, const vec4_t& s2,
+    FloatType TOL=numerics::floating_point_limits<FloatType>::epsilon()
+    ) noexcept;
 
   /*!
    * \brief Checks if the specified ray intersects with the right bin.
@@ -115,13 +115,13 @@ public:
   template < typename RayType >
   AXOM_HOST_DEVICE
   static inline bool rayIntersectsRightBin(
-      const RayType& r, const vec4_t& s2, const vec4_t& s3,
-      FloatType TOL=numerics::floating_point_limits<FloatType>::epsilon()
-      ) noexcept;
+    const RayType& r, const vec4_t& s2, const vec4_t& s3,
+    FloatType TOL=numerics::floating_point_limits<FloatType>::epsilon()
+    ) noexcept;
 
   /// @}
 
-   ///\name Predicates for Bounding Box Intersection Queries
+  ///\name Predicates for Bounding Box Intersection Queries
   /// @{
 
   /*!
@@ -131,13 +131,13 @@ public:
    * \param [in] s1 the 1st segment of the BVH that stores the left bin.
    * \param [in] s2 the 2nd segment of the BVH that stores the left bin.
    *
-   * \return status true if the bounding box intersects the left bin, 
+   * \return status true if the bounding box intersects the left bin,
    *  else, false.
    */
   template < typename BoundingBoxType >
   AXOM_HOST_DEVICE
   static inline bool boundingBoxIntersectsLeftBin(
-      const BoundingBoxType& b, const vec4_t& s1, const vec4_t& s2 ) noexcept;
+    const BoundingBoxType& b, const vec4_t& s1, const vec4_t& s2 ) noexcept;
 
   /*!
    * \brief Checks if the specified bounding box intersects with the right bin.
@@ -152,7 +152,7 @@ public:
   template < typename BoundingBoxType >
   AXOM_HOST_DEVICE
   static inline bool boundingBoxIntersectsRightBin(
-      const BoundingBoxType& b, const vec4_t& s2, const vec4_t& s3 ) noexcept;
+    const BoundingBoxType& b, const vec4_t& s2, const vec4_t& s3 ) noexcept;
 
   /// @}
 
@@ -211,9 +211,9 @@ public:
   template < typename RayType >
   AXOM_HOST_DEVICE
   static inline bool rayIntersectsLeftBin(
-      const RayType& r, const vec4_t& s1, const vec4_t& s2,
-      FloatType TOL=numerics::floating_point_limits<FloatType>::epsilon()
-      ) noexcept
+    const RayType& r, const vec4_t& s1, const vec4_t& s2,
+    FloatType TOL=numerics::floating_point_limits<FloatType>::epsilon()
+    ) noexcept
   {
     const FloatType& x0 = r[ 0 ];
     const FloatType& y0 = r[ 1 ];
@@ -235,9 +235,9 @@ public:
   template < typename RayType >
   AXOM_HOST_DEVICE
   static inline bool rayIntersectsRightBin(
-      const RayType& r, const vec4_t& s2, const vec4_t& s3,
-      FloatType TOL=numerics::floating_point_limits<FloatType>::epsilon()
-      ) noexcept
+    const RayType& r, const vec4_t& s2, const vec4_t& s3,
+    FloatType TOL=numerics::floating_point_limits<FloatType>::epsilon()
+    ) noexcept
   {
     const FloatType& x0 = r[ 0 ];
     const FloatType& y0 = r[ 1 ];
@@ -259,7 +259,7 @@ public:
   template < typename BoundingBoxType >
   AXOM_HOST_DEVICE
   static inline bool boundingBoxIntersectsLeftBin(
-      const BoundingBoxType& b, const vec4_t& s1, const vec4_t& s2 ) noexcept
+    const BoundingBoxType& b, const vec4_t& s1, const vec4_t& s2 ) noexcept
   {
     const FloatType& box_xmin = b[ 0 ];
     const FloatType& box_ymin = b[ 1 ];
@@ -281,12 +281,12 @@ public:
   template < typename BoundingBoxType >
   AXOM_HOST_DEVICE
   static inline bool boundingBoxIntersectsRightBin(
-      const BoundingBoxType& b, const vec4_t& s2, const vec4_t& s3 ) noexcept
+    const BoundingBoxType& b, const vec4_t& s2, const vec4_t& s3 ) noexcept
   {
     const FloatType& box_xmin = b[ 0 ];
     const FloatType& box_ymin = b[ 1 ];
     const FloatType& box_xmax = b[ 2 ];
-    const FloatType& box_ymax = b[ 3 ]; 
+    const FloatType& box_ymax = b[ 3 ];
 
     // extract right bin, see BVHData.hpp for the internal BVH layout
     const FloatType& bin_xmin = s2[ 2 ];
@@ -357,9 +357,9 @@ public:
   template < typename RayType >
   AXOM_HOST_DEVICE
   static inline bool rayIntersectsLeftBin(
-      const RayType& r, const vec4_t& s1, const vec4_t& s2,
-      FloatType TOL=numerics::floating_point_limits<FloatType>::epsilon()
-      ) noexcept
+    const RayType& r, const vec4_t& s1, const vec4_t& s2,
+    FloatType TOL=numerics::floating_point_limits<FloatType>::epsilon()
+    ) noexcept
   {
     const FloatType& x0 = r[ 0 ];
     const FloatType& y0 = r[ 1 ];
@@ -386,9 +386,9 @@ public:
   template < typename RayType >
   AXOM_HOST_DEVICE
   static inline bool rayIntersectsRightBin(
-      const RayType& r, const vec4_t& s2, const vec4_t& s3,
-      FloatType TOL=numerics::floating_point_limits<FloatType>::epsilon()
-      ) noexcept
+    const RayType& r, const vec4_t& s2, const vec4_t& s3,
+    FloatType TOL=numerics::floating_point_limits<FloatType>::epsilon()
+    ) noexcept
   {
     const FloatType& x0 = r[ 0 ];
     const FloatType& y0 = r[ 1 ];
@@ -415,7 +415,7 @@ public:
   template < typename BoundingBoxType >
   AXOM_HOST_DEVICE
   static inline bool boundingBoxIntersectsLeftBin(
-      const BoundingBoxType& b, const vec4_t& s1, const vec4_t& s2 ) noexcept
+    const BoundingBoxType& b, const vec4_t& s1, const vec4_t& s2 ) noexcept
   {
     const FloatType& box_xmin = b[ 0 ];
     const FloatType& box_ymin = b[ 1 ];
@@ -443,14 +443,14 @@ public:
   template < typename BoundingBoxType >
   AXOM_HOST_DEVICE
   static inline bool boundingBoxIntersectsRightBin(
-      const BoundingBoxType& b, const vec4_t& s2, const vec4_t& s3 ) noexcept
+    const BoundingBoxType& b, const vec4_t& s2, const vec4_t& s3 ) noexcept
   {
     const FloatType& box_xmin = b[ 0 ];
     const FloatType& box_ymin = b[ 1 ];
     const FloatType& box_zmin = b[ 2 ];
     const FloatType& box_xmax = b[ 3 ];
     const FloatType& box_ymax = b[ 4 ];
-    const FloatType& box_zmax = b[ 5 ]; 
+    const FloatType& box_zmax = b[ 5 ];
 
     // extract right bin, see BVHData.hpp for the internal BVH layout
     const FloatType& bin_xmin = s2[ 2 ];

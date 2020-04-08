@@ -117,15 +117,15 @@ void generate_aabbs2d( const mint::Mesh* mesh, FloatType*& aabbs )
 
   using exec_policy = axom::SEQ_EXEC;
   mint::for_all_cells< exec_policy, xargs::coords >(
-      mesh, AXOM_LAMBDA( IndexType cellIdx,
-                         numerics::Matrix< double >& coords,
-                         const IndexType* AXOM_NOT_USED(nodeIds) )
+    mesh, AXOM_LAMBDA( IndexType cellIdx,
+                       numerics::Matrix< double >&coords,
+                       const IndexType* AXOM_NOT_USED(nodeIds) )
   {
 
     spin::internal::linear_bvh::Range< double > xrange;
     spin::internal::linear_bvh::Range< double > yrange;
 
-    for ( IndexType inode=0; inode < 4; ++inode )
+    for ( IndexType inode=0 ; inode < 4 ; ++inode )
     {
       const double* node = coords.getColumn( inode );
 
@@ -133,7 +133,7 @@ void generate_aabbs2d( const mint::Mesh* mesh, FloatType*& aabbs )
       yrange.include( node[ mint::Y_COORDINATE ] );
     } // END for all cells nodes
 
-    const IndexType offset  = cellIdx * stride ;
+    const IndexType offset  = cellIdx * stride;
     aabbs[ offset     ] = xrange.min();
     aabbs[ offset + 1 ] = yrange.min();
     aabbs[ offset + 2 ] = xrange.max();
@@ -187,16 +187,16 @@ void generate_aabbs3d( const mint::Mesh* mesh, FloatType*& aabbs )
 
   using exec_policy = axom::SEQ_EXEC;
   mint::for_all_cells< exec_policy, xargs::coords >(
-      mesh, AXOM_LAMBDA( IndexType cellIdx,
-                         numerics::Matrix< double >& coords,
-                         const IndexType* AXOM_NOT_USED(nodeIds) )
+    mesh, AXOM_LAMBDA( IndexType cellIdx,
+                       numerics::Matrix< double >&coords,
+                       const IndexType* AXOM_NOT_USED(nodeIds) )
   {
 
     spin::internal::linear_bvh::Range< double > xrange;
     spin::internal::linear_bvh::Range< double > yrange;
     spin::internal::linear_bvh::Range< double > zrange;
 
-    for ( IndexType inode=0; inode < 8; ++inode )
+    for ( IndexType inode=0 ; inode < 8 ; ++inode )
     {
       const double* node = coords.getColumn( inode );
 
@@ -205,7 +205,7 @@ void generate_aabbs3d( const mint::Mesh* mesh, FloatType*& aabbs )
       zrange.include( node[ mint::Z_COORDINATE ] );
     } // END for all cells nodes
 
-    const IndexType offset  = cellIdx * stride ;
+    const IndexType offset  = cellIdx * stride;
     aabbs[ offset     ] = xrange.min();
     aabbs[ offset + 1 ] = yrange.min();
     aabbs[ offset + 2 ] = zrange.min();
@@ -267,9 +267,9 @@ void generate_aabbs_and_centroids2d( const mint::Mesh* mesh,
 
   using exec_policy = axom::SEQ_EXEC;
   mint::for_all_cells< exec_policy, xargs::coords >(
-      mesh, AXOM_LAMBDA( IndexType cellIdx,
-                         numerics::Matrix< double >& coords,
-                         const IndexType* AXOM_NOT_USED(nodeIds) )
+    mesh, AXOM_LAMBDA( IndexType cellIdx,
+                       numerics::Matrix< double >&coords,
+                       const IndexType* AXOM_NOT_USED(nodeIds) )
   {
 
     spin::internal::linear_bvh::Range< double > xrange;
@@ -278,7 +278,7 @@ void generate_aabbs_and_centroids2d( const mint::Mesh* mesh,
     double xsum = 0.0;
     double ysum = 0.0;
 
-    for ( IndexType inode=0; inode < 4; ++inode )
+    for ( IndexType inode=0 ; inode < 4 ; ++inode )
     {
       const double* node = coords.getColumn( inode );
       xsum += node[ mint::X_COORDINATE ];
@@ -290,7 +290,7 @@ void generate_aabbs_and_centroids2d( const mint::Mesh* mesh,
 
     xc[ cellIdx ] = xsum * ONE_OVER_4;
     yc[ cellIdx ] = ysum * ONE_OVER_4;
-    const IndexType offset  = cellIdx * stride ;
+    const IndexType offset  = cellIdx * stride;
     aabbs[ offset     ] = xrange.min();
     aabbs[ offset + 1 ] = yrange.min();
     aabbs[ offset + 2 ] = xrange.max();
@@ -355,9 +355,9 @@ void generate_aabbs_and_centroids3d( const mint::Mesh* mesh,
 
   using exec_policy = axom::SEQ_EXEC;
   mint::for_all_cells< exec_policy, xargs::coords >(
-      mesh, AXOM_LAMBDA( IndexType cellIdx,
-                         numerics::Matrix< double >& coords,
-                         const IndexType* AXOM_NOT_USED(nodeIds) )
+    mesh, AXOM_LAMBDA( IndexType cellIdx,
+                       numerics::Matrix< double >&coords,
+                       const IndexType* AXOM_NOT_USED(nodeIds) )
   {
 
     spin::internal::linear_bvh::Range< double > xrange;
@@ -368,7 +368,7 @@ void generate_aabbs_and_centroids3d( const mint::Mesh* mesh,
     double ysum = 0.0;
     double zsum = 0.0;
 
-    for ( IndexType inode=0; inode < 8; ++inode )
+    for ( IndexType inode=0 ; inode < 8 ; ++inode )
     {
       const double* node = coords.getColumn( inode );
       xsum += node[ mint::X_COORDINATE ];
@@ -384,7 +384,7 @@ void generate_aabbs_and_centroids3d( const mint::Mesh* mesh,
     yc[ cellIdx ] = ysum * ONE_OVER_8;
     zc[ cellIdx ] = zsum * ONE_OVER_8;
 
-    const IndexType offset  = cellIdx * stride ;
+    const IndexType offset  = cellIdx * stride;
     aabbs[ offset     ] = xrange.min();
     aabbs[ offset + 1 ] = yrange.min();
     aabbs[ offset + 2 ] = zrange.min();
@@ -657,7 +657,8 @@ void check_find_bounding_boxes2d()
   IndexType* offsets    = axom::allocate< IndexType >( N );
   IndexType* counts     = axom::allocate< IndexType >( N );
   IndexType* candidates = nullptr;
-  bvh.findBoundingBoxes( offsets, counts, candidates, N, xmin, xmax, ymin, ymax );
+  bvh.findBoundingBoxes( offsets, counts, candidates, N, xmin, xmax, ymin,
+                         ymax );
   EXPECT_TRUE( candidates != nullptr );
 
   // flag cells that are found by the bounding box ID
@@ -1398,14 +1399,14 @@ TEST( spin_bvh, query_bounding_box_accessor )
   BoundingBox3D box3D;
   QueryAccessor3D::getBoundingBox( box3D, ID, xmin, xmax,
                                    ymin, ymax, zmin, zmax );
-  
+
   EXPECT_DOUBLE_EQ( box3D[0],  xmin[ ID ] );
   EXPECT_DOUBLE_EQ( box3D[1],  ymin[ ID ] );
   EXPECT_DOUBLE_EQ( box3D[2],  zmin[ ID ] );
 
   EXPECT_DOUBLE_EQ( box3D[3], xmax[ ID ] );
   EXPECT_DOUBLE_EQ( box3D[4], ymax[ ID ] );
-  EXPECT_DOUBLE_EQ( box3D[5], zmax[ ID ] );  
+  EXPECT_DOUBLE_EQ( box3D[5], zmax[ ID ] );
 }
 
 //------------------------------------------------------------------------------

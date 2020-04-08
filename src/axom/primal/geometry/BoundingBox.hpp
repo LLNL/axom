@@ -13,6 +13,8 @@
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 
+#include "axom/primal/operators/detail/intersect_bounding_box_impl.hpp"
+
 namespace axom
 {
 namespace primal
@@ -435,21 +437,19 @@ template < typename OtherType  >
 bool BoundingBox< T,NDIMS >::intersectsWith(
   const BoundingBox< OtherType, NDIMS >& otherBB ) const
 {
+  bool status = true;
+
   // AABBs cannot intersect if they are separated along any dimension
   for ( int i=0 ; i < NDIMS ; ++i )
   {
 
-    if ( (m_max[ i ] < otherBB.m_min[ i ]) ||
-         (m_min[ i ] > otherBB.m_max[ i ]) )
-    {
-
-      return false;
-
-    }  // END if
-
+    status = status && detail::intersect_bbox_bbox_test( m_min[ i ],
+                                                         m_max[ i ],
+                                                         otherBB.m_min[ i ],
+                                                         otherBB.m_max[ i ] );
   } // END for all dimensions
 
-  return true;
+  return status;
 }
 
 //------------------------------------------------------------------------------

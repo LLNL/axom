@@ -121,11 +121,11 @@ private:
 
   // compile time checks
   AXOM_STATIC_ASSERT_MSG( ( (NDIMS==2) || (NDIMS==3) ),
-                            "The BVH class may be used only in 2D or 3D." );
+                          "The BVH class may be used only in 2D or 3D." );
   AXOM_STATIC_ASSERT_MSG( std::is_floating_point< FloatType >::value,
                           "A valid FloatingType must be used for the BVH." );
   AXOM_STATIC_ASSERT_MSG( axom::execution_space< ExecSpace >::valid(),
-                       "A valid execution space must be supplied to the BVH." );
+                          "A valid execution space must be supplied to the BVH." );
 public:
 
   /*!
