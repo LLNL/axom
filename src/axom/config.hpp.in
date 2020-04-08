@@ -32,6 +32,12 @@
 #cmakedefine AXOM_DATA_DIR "@AXOM_DATA_DIR@"
 
 /*
+ * Indicates whether Axom is compiled with Annotations that can facilitate
+ * evaluation of performance with various performance tools.
+ */
+#cmakedefine AXOM_ENABLE_ANNOTATIONS
+
+/*
  * Platform specific definitions
  */
 #define AXOM_CXX_STD "@BLT_CXX_STD@"
