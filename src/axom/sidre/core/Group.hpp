@@ -979,7 +979,9 @@ public:
    * \return pointer to created Group object or nullptr if new
    * Group is not created.
    */
-  Group* createGroup( const std::string& path );
+  Group* createGroup( const std::string& path, bool is_list = false );
+
+  Group* createUnnamedGroup( bool is_list = false );
 
   /*!
    * \brief Destroy child Group in this Group with given name or path.

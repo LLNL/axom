@@ -461,6 +461,77 @@ TEST(sidre_group,get_first_and_next_group_index)
   delete ds;
 }
 
+TEST(sidre_group, child_lists)
+{
+  DataStore* ds = new DataStore();
+  Group* root = ds->getRoot();
+
+  Group* parent = root->createGroup("parent", true);
+  for (IndexType i = 0; i < 10; ++i) {
+    Group* unnamed_group = parent->createUnnamedGroup();
+    unnamed_group->createViewScalar("val", i);
+  }
+
+  for (IndexType i = 0; i < 15; ++i) {
+    View* unnamed_view;
+    if (i % 3 == 0) {
+      unnamed_view = parent->createView("");
+    } else if (i % 3 == 1) {
+      unnamed_view = parent->createViewScalar("", i*i);
+    } else {
+      unnamed_view = parent->createViewString("", "foo");
+    }
+    if (!unnamed_view->isApplied()) {
+      unnamed_view->apply(INT_ID, i);
+      unnamed_view->allocate(INT_ID, i);
+      int* vdata = unnamed_view->getData();
+      for (IndexType j = 0; j < i; ++j) {
+        vdata[j] = j + 3;
+      }
+    }
+  }
+
+  std::set<int> scalars;
+ 
+  for (IndexType idx = parent->getFirstValidGroupIndex() ;
+       indexIsValid(idx) ;
+       idx = parent->getNextValidGroupIndex(idx))
+  {
+    Group* unnamed_group = parent->getGroup(idx);
+    View* val_view = unnamed_group->getView("val");
+    IndexType val = val_view->getScalar();
+    EXPECT_TRUE(val >= 0 && val < 10);
+
+    scalars.insert(val);
+  }
+
+  EXPECT_TRUE(scalars.size() == 10);
+
+  for (IndexType idx = parent->getFirstValidViewIndex() ;
+       indexIsValid(idx) ;
+       idx = parent->getNextValidViewIndex(idx))
+  {
+    View* unnamed_view = parent->getView(idx);
+    if (idx % 3 == 0) {
+      EXPECT_EQ(unnamed_view->getTypeID(), INT_ID);
+      IndexType num_elems = unnamed_view->getNumElements();
+      EXPECT_EQ(num_elems, idx);
+      int* vdata = unnamed_view->getData();
+      for (IndexType j = 0; j < num_elems; ++j) {
+        EXPECT_EQ(vdata[j], j+3);
+      }
+    } else if (idx % 3 == 1) {
+      EXPECT_TRUE(unnamed_view->isScalar());
+      IndexType val = unnamed_view->getScalar();
+      EXPECT_EQ(val, idx*idx);
+    } else {
+      EXPECT_TRUE(unnamed_view->isString());
+      std::string vstr = unnamed_view->getString();
+      EXPECT_EQ(vstr, std::string("foo")); 
+    }
+  }
+}
+
 //------------------------------------------------------------------------------
 // Iterate Views with getFirstValidViewIndex, getNextValidViewIndex
 //------------------------------------------------------------------------------

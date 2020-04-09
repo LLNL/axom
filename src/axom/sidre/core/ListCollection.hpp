@@ -296,8 +296,13 @@ IndexType ListCollection<TYPE>::getNextValidIndex(IndexType idx) const
 
 template <typename TYPE>
 IndexType ListCollection<TYPE>::insertItem(TYPE* item,
-                                          const std::string& name)
+                                           const std::string& name)
 {
+  SLIC_WARNING_IF(!name.empty(),
+                  "Item " << name << " added to Group "
+                  << "which holds items in list format. "
+                  << "The name of this item will be ignored.");
+
   bool use_recycled_index = false;
   IndexType idx = m_items.size();
   if ( !m_free_ids.empty() )
@@ -307,29 +312,17 @@ IndexType ListCollection<TYPE>::insertItem(TYPE* item,
     use_recycled_index = true;
   }
 
-  if ( name.empty() )
+  m_index_list.push_back(idx);
+
+  if ( use_recycled_index )
   {
-    m_index_list.push_back(idx);
-    // name was inserted into map
-    if ( use_recycled_index )
-    {
-      m_items[idx] = item;
-    }
-    else
-    {
-      m_items.push_back(item);
-    }
-    return idx;
+    m_items[idx] = item;
   }
   else
   {
-    // name was NOT inserted into map, return free index if necessary
-    if ( use_recycled_index )
-    {
-      m_free_ids.push(idx);
-    }
-    return InvalidIndex;
+    m_items.push_back(item);
   }
+  return idx;
 }
 
 template <typename TYPE>
