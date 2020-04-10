@@ -346,6 +346,7 @@ TYPE* ListCollection<TYPE>::removeItem(IndexType idx)
         m_index_list.erase(itr);
         m_items[idx] = nullptr;
         m_free_ids.push(idx);
+        break;
       }
     }
   }

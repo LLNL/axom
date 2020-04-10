@@ -506,6 +506,21 @@ TEST(sidre_group, child_lists)
   }
 
   EXPECT_TRUE(scalars.size() == 10);
+  EXPECT_TRUE(parent->hasGroup(6));
+  EXPECT_FALSE(parent->hasGroup(20));
+
+  for (IndexType idx = parent->getFirstValidGroupIndex() ;
+       indexIsValid(idx) ;
+       idx = parent->getNextValidGroupIndex(idx))
+  {
+    if (idx % 2 == 1)
+    {
+      parent->destroyGroup(idx);
+    }
+  }
+
+  (void) parent->createUnnamedGroup();
+  EXPECT_EQ(parent->getNumGroups(), 6);
 
   for (IndexType idx = parent->getFirstValidViewIndex() ;
        indexIsValid(idx) ;
@@ -530,6 +545,9 @@ TEST(sidre_group, child_lists)
       EXPECT_EQ(vstr, std::string("foo")); 
     }
   }
+
+  root->destroyGroup("parent");
+
 }
 
 //------------------------------------------------------------------------------
