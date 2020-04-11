@@ -18,6 +18,8 @@ set(core_headers
     utilities/Utilities.hpp
     utilities/About.hpp
 
+    utilities/nvtx/Macros.hpp
+
     ## numerics
     numerics/internal/matrix_norms.hpp
 
