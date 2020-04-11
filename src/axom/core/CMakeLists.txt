@@ -13,12 +13,12 @@ set(core_headers
 
     ## utilities
     utilities/FileUtilities.hpp
-    utilities/NVTXRange.hpp
     utilities/Timer.hpp
     utilities/Utilities.hpp
     utilities/About.hpp
 
     utilities/nvtx/Macros.hpp
+    utilities/nvtx/Range.hpp
 
     ## numerics
     numerics/internal/matrix_norms.hpp
@@ -54,9 +54,10 @@ set(core_headers
 
 set(core_sources
     utilities/FileUtilities.cpp
-    utilities/NVTXRange.cpp
     utilities/Utilities.cpp
     utilities/About.cpp
+
+    utilities/nvtx/Range.cpp
 
     numerics/polynomial_solvers.cpp
     Types.cpp
