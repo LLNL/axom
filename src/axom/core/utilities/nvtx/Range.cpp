@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/core/utilities/NVTXRange.hpp"
+#include "axom/core/utilities/nvtx/Range.hpp"
 
 #include "axom/config.hpp"  // for axom compile-time definitions
 
@@ -19,10 +19,11 @@
 
 namespace axom
 {
+namespace nvtx
+{
 
-NVTXRange::NVTXRange( const std::string& name,
-                      NVTXColor color,
-                      uint32_t category ) :
+
+Range::Range( const std::string& name, Color color, uint32_t category ) :
   m_name( name ),
   m_color( color ),
   m_category( category ),
@@ -34,13 +35,13 @@ NVTXRange::NVTXRange( const std::string& name,
 }
 
 //------------------------------------------------------------------------------
-NVTXRange::~NVTXRange()
+Range::~Range()
 {
   stop();
 }
 
 //------------------------------------------------------------------------------
-void NVTXRange::start()
+void Range::start()
 {
   assert( !m_active );
 #ifdef AXOM_USE_CUDA
@@ -64,7 +65,7 @@ void NVTXRange::start()
 }
 
 //------------------------------------------------------------------------------
-void NVTXRange::stop()
+void Range::stop()
 {
   if ( m_active )
   {
@@ -74,5 +75,7 @@ void NVTXRange::stop()
     m_active = false;
   }
 }
+
+} /* namespace nvtx */
 
 } /* namespace axom */

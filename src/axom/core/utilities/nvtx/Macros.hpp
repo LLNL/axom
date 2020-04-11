@@ -6,7 +6,7 @@
 #ifndef AXOM_NVTX_MACROS_HPP_
 #define AXOM_NVTX_MACROS_HPP_
 
-#include "axom/core/utilities/NVTXRange.hpp"
+#include "axom/core/utilities/nvtx/Range.hpp"
 
 /*!
  * \file
@@ -74,7 +74,7 @@
 #if defined(AXOM_ENABLE_ANNOTATIONS) && defined(AXOM_USE_CUDA)
 #define AXOM_NVTX_SECTION( __name__, ... )                                    \
   do {                                                                        \
-    axom::NVTXRange r(__name__);                                              \
+    axom::nvtx::Range r(__name__);                                            \
     __VA_ARGS__                                                               \
   } while( false )
 #else
@@ -106,7 +106,7 @@
  *
  */
 #if defined(AXOM_ENABLE_ANNOTATIONS) && defined(AXOM_USE_CUDA)
-#define AXOM_NVTX_FUNCTION( __name__ ) axom::NVTXRange __func_range(__name__)
+#define AXOM_NVTX_FUNCTION( __name__ ) axom::nvtx::Range __func_range(__name__)
 #else
 #define AXOM_NVTX_FUNCTION( __name__ )
 #endif

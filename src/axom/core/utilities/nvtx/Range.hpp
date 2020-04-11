@@ -13,11 +13,13 @@
 
 namespace axom
 {
+namespace nvtx
+{
 
 /*!
  * \brief Predefined set of NVTX colors to use with NVTXRange.
  */
-enum class NVTXColor : uint32_t
+enum class Color : uint32_t
 {
   BLACK   = 0x00000000,
   GREEN   = 0x0000FF00,
@@ -36,26 +38,23 @@ enum class NVTXColor : uint32_t
 /*!
  * \brief Default NVTX color to use. Set to GREEN.
  */
-constexpr NVTXColor DEFAULT_NVTX_COLOR = NVTXColor::GREEN;
+constexpr Color DEFAULT_COLOR = Color::GREEN;
 
 /*!
  * \brief Wildcard used for category
  */
-constexpr uint32_t NVTX_ANY_CATEGORY = 0;
+constexpr uint32_t ANY_CATEGORY = 0;
 
 /*!
  * \brief Default NVTX category to use. Set to ANY.
  */
-constexpr uint32_t DEFAULT_NVTX_CATEGORY = NVTX_ANY_CATEGORY;
-
-// Forward Declarations
-class NVTXRange;
+constexpr uint32_t DEFAULT_CATEGORY = ANY_CATEGORY;
 
 
 /*!
- * \class NVTXRange
+ * \class Range
  *
- * \brief NVTXRange is a simple utility class to annotate code.
+ * \brief Range is a simple utility class to annotate code.
  *
  *  The NVTXRange class is a simple utility class that can be used in
  *  conjunction with the NVIDIA Tools Extension library to allow developers
@@ -68,8 +67,8 @@ class NVTXRange;
  *  when the NVTXRange object is instantiated and stopped when the object
  *  goes out of scope.
  *
- * \thanks Jason Burmark (burmark1@llnl.gov) for his original implementation
- *  that inspired the implementation of this class.
+ * \remark Thanks to Jason Burmark (burmark1@llnl.gov) for his original 
+ *  implementation that inspired the implementation of this class.
  *
  * Usage Example:
  * \code
@@ -83,14 +82,14 @@ class NVTXRange;
  * \endcode
  *
  */
-class NVTXRange
+class Range
 {
 public:
 
   /*!
    * \brief Default constructor. Disabled.
    */
-  NVTXRange() = delete;
+  Range() = delete;
 
   /*!
    * \brief Creates an NVTXRage instance with the given name.
@@ -101,14 +100,14 @@ public:
    *
    * \pre name.empty() == false
    */
-  NVTXRange( const std::string& name,
-             NVTXColor color = DEFAULT_NVTX_COLOR,
-             uint32_t category= DEFAULT_NVTX_CATEGORY );
+  Range( const std::string& name,
+         Color color = DEFAULT_COLOR,
+         uint32_t category= DEFAULT_CATEGORY );
 
   /*!
    * \brief Destructor.
    */
-  ~NVTXRange();
+  ~Range();
 
 private:
 
@@ -125,13 +124,15 @@ private:
   void stop();
 
   std::string m_name;
-  NVTXColor m_color;
+  Color m_color;
   uint32_t m_category;
   bool m_active;
 
-  DISABLE_COPY_AND_ASSIGNMENT(NVTXRange);
-  DISABLE_MOVE_AND_ASSIGNMENT(NVTXRange);
+  DISABLE_COPY_AND_ASSIGNMENT(Range);
+  DISABLE_MOVE_AND_ASSIGNMENT(Range);
 };
+
+} /* namespace nvtx */
 
 } /* namespace axom */
 
