@@ -8,10 +8,10 @@
 #define AXOM_SPIN_EMIT_BVH_H_
 
 // axom core includes
-#include "axom/core/Types.hpp"                 // for fixed bitwidth types
-#include "axom/core/memory_management.hpp"     // for alloc()/free()
-#include "axom/core/utilities/NVTXRange.hpp"   // for NVTX annotations
-#include "axom/slic/interface/slic_macros.hpp" // for SLIC_ASSERT()
+#include "axom/core/Types.hpp"                   // for fixed bitwidth types
+#include "axom/core/memory_management.hpp"       // for alloc()/free()
+#include "axom/core/utilities/nvtx/Macros.hpp"   // for NVTX annotations
+#include "axom/slic/interface/slic_macros.hpp"   // for SLIC_ASSERT()
 
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/core/execution/for_all.hpp"

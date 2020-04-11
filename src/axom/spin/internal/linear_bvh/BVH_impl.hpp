@@ -10,7 +10,7 @@
 #include "axom/core/execution/for_all.hpp"              // for generic for_all()
 #include "axom/core/memory_management.hpp"              // for memory functions
 #include "axom/core/numerics/floating_point_limits.hpp" // floating_point_limits
-#include "axom/core/utilities/NVTXRange.hpp"            // for NVTX annotations
+#include "axom/core/utilities/nvtx/Macros.hpp"          // for NVTX annotations
 
 // slic includes
 #include "axom/slic/interface/slic.hpp"                 // for SLIC macros

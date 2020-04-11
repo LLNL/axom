@@ -9,7 +9,7 @@
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/core/execution/for_all.hpp"
 
-#include "axom/core/utilities/NVTXRange.hpp"  // for NVTX annotations
+#include "axom/core/utilities/nvtx/Macros.hpp"  // for NVTX annotations
 
 #include "axom/spin/internal/linear_bvh/BVHData.hpp"
 #include "axom/spin/internal/linear_bvh/RadixTree.hpp"
