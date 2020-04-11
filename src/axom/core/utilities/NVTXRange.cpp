@@ -22,7 +22,7 @@ namespace axom
 
 NVTXRange::NVTXRange( const std::string& name,
                       NVTXColor color,
-                      NVTXCategory category ) :
+                      uint32_t category ) :
   m_name( name ),
   m_color( color ),
   m_category( category ),

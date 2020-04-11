@@ -32,15 +32,6 @@ enum class NVTXColor : uint32_t
   PINK    = 0x00FF69B4
 };
 
-/*!
- * \brief Predefined set of user-specified categories to use with NVTXRange.
- */
-enum class NVTXCategory : uint32_t
-{
-  ANY = 0,          /*!< wildcard used to annotate generic sections */
-  PACKING,          /*!< used to annotate code that is doing packing */
-  MEMTRANSFER,      /*!< used to annotate code that is doing memory transfer */
-};
 
 /*!
  * \brief Default NVTX color to use. Set to GREEN.
@@ -48,9 +39,14 @@ enum class NVTXCategory : uint32_t
 constexpr NVTXColor DEFAULT_NVTX_COLOR = NVTXColor::GREEN;
 
 /*!
+ * \brief Wildcard used for category
+ */
+constexpr uint32_t NVTX_ANY_CATEGORY = 0;
+
+/*!
  * \brief Default NVTX category to use. Set to ANY.
  */
-constexpr NVTXCategory DEFAULT_NVTX_CATEGORY = NVTXCategory::ANY;
+constexpr uint32_t DEFAULT_NVTX_CATEGORY = NVTX_ANY_CATEGORY;
 
 // Forward Declarations
 class NVTXRange;
@@ -200,7 +196,7 @@ public:
    */
   NVTXRange( const std::string& name,
              NVTXColor color = DEFAULT_NVTX_COLOR,
-             NVTXCategory category= DEFAULT_NVTX_CATEGORY );
+             uint32_t category= DEFAULT_NVTX_CATEGORY );
 
   /*!
    * \brief Destructor.
@@ -223,7 +219,7 @@ private:
 
   std::string m_name;
   NVTXColor m_color;
-  NVTXCategory m_category;
+  uint32_t m_category;
   bool m_active;
 
   DISABLE_COPY_AND_ASSIGNMENT(NVTXRange);
