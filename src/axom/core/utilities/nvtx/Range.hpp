@@ -17,41 +17,6 @@ namespace nvtx
 {
 
 /*!
- * \brief Predefined set of NVTX colors to use with NVTXRange.
- */
-enum class Color : uint32_t
-{
-  BLACK   = 0x00000000,
-  GREEN   = 0x0000FF00,
-  LIME    = 0x00BFFF00,
-  RED     = 0x00FF0000,
-  BLUE    = 0x000000FF,
-  YELLOW  = 0x00FFFF00,
-  CYAN    = 0x0000FFFF,
-  MAGENTA = 0x00FF00FF,
-  WHITE   = 0x00FFFFFF,
-  ORANGE  = 0x00FFA500,
-  PINK    = 0x00FF69B4
-};
-
-
-/*!
- * \brief Default NVTX color to use. Set to GREEN.
- */
-constexpr Color DEFAULT_COLOR = Color::GREEN;
-
-/*!
- * \brief Wildcard used for category
- */
-constexpr uint32_t ANY_CATEGORY = 0;
-
-/*!
- * \brief Default NVTX category to use. Set to ANY.
- */
-constexpr uint32_t DEFAULT_CATEGORY = ANY_CATEGORY;
-
-
-/*!
  * \class Range
  *
  * \brief Range is a simple utility class to annotate code.
@@ -95,14 +60,10 @@ public:
    * \brief Creates an NVTXRage instance with the given name.
    *
    * \param [in] name the name to associate with the range
-   * \param [in] color the color to associate with the range (optional)
-   * \param [in] category the category to associate with the range (optional)
    *
    * \pre name.empty() == false
    */
-  Range( const std::string& name,
-         Color color = DEFAULT_COLOR,
-         uint32_t category= DEFAULT_CATEGORY );
+  Range( const std::string& name );
 
   /*!
    * \brief Destructor.
@@ -124,8 +85,6 @@ private:
   void stop();
 
   std::string m_name;
-  Color m_color;
-  uint32_t m_category;
   bool m_active;
 
   DISABLE_COPY_AND_ASSIGNMENT(Range);

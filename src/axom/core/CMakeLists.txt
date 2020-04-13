@@ -17,6 +17,7 @@ set(core_headers
     utilities/Utilities.hpp
     utilities/About.hpp
 
+    utilities/nvtx/interface.hpp
     utilities/nvtx/Macros.hpp
     utilities/nvtx/Range.hpp
 
@@ -57,6 +58,7 @@ set(core_sources
     utilities/Utilities.cpp
     utilities/About.cpp
 
+    utilities/nvtx/interface.cpp
     utilities/nvtx/Range.cpp
 
     numerics/polynomial_solvers.cpp
@@ -64,7 +66,7 @@ set(core_sources
     )
 
 #------------------------------------------------------------------------------
-# Make/Install the library
+# Set library dependencies
 #------------------------------------------------------------------------------
 
 set( core_depends )
@@ -73,6 +75,10 @@ blt_list_append( TO core_depends ELEMENTS RAJA IF ${RAJA_FOUND} )
 blt_list_append( TO core_depends ELEMENTS cuda nvToolsExt IF ${ENABLE_CUDA} )
 blt_list_append( TO core_depends ELEMENTS openmp IF ${ENABLE_OPENMP} )
 blt_list_append( TO core_depends ELEMENTS mpi IF ${ENABLE_MPI} )
+
+#------------------------------------------------------------------------------
+# Make/Install the library
+#------------------------------------------------------------------------------
 
 blt_add_library( NAME        core
                  SOURCES     ${core_sources}
