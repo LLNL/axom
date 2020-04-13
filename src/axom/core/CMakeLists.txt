@@ -12,6 +12,7 @@
 set(core_headers
 
     ## utilities
+    utilities/AnnotationMacros.hpp
     utilities/FileUtilities.hpp
     utilities/Timer.hpp
     utilities/Utilities.hpp
