@@ -8,10 +8,10 @@
 #define AXOM_SPIN_EMIT_BVH_H_
 
 // axom core includes
-#include "axom/core/Types.hpp"                   // for fixed bitwidth types
-#include "axom/core/memory_management.hpp"       // for alloc()/free()
-#include "axom/core/utilities/nvtx/Macros.hpp"   // for NVTX annotations
-#include "axom/slic/interface/slic_macros.hpp"   // for SLIC_ASSERT()
+#include "axom/core/Types.hpp"                        // for fixed bitwidth types
+#include "axom/core/memory_management.hpp"            // for alloc()/free()
+#include "axom/core/utilities/AnnotationMacros.hpp"   // for annotations
+#include "axom/slic/interface/slic_macros.hpp"        // for SLIC_ASSERT()
 
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/core/execution/for_all.hpp"
@@ -59,7 +59,7 @@ template < typename ExecSpace, typename FloatType  >
 void emit_bvh( RadixTree<FloatType, 3>& data,
                BVHData< FloatType, 3 >& bvh_data )
 {
-  AXOM_NVTX_FUNCTION( "emit_bvh3D" );
+  AXOM_ANNOTATE_FUNCTION( "emit_bvh3D" );
 
   const int32 size       = data.m_size;
   const int32 inner_size = data.m_inner_size;
@@ -73,7 +73,7 @@ void emit_bvh( RadixTree<FloatType, 3>& data,
 
   Vec<FloatType,4>* flat_ptr = bvh_data.m_inner_nodes;
 
-  AXOM_NVTX_SECTION( "emit_bvh_parents",
+  AXOM_ANNOTATE_SECTION( "emit_bvh_parents",
     for_all< ExecSpace >( inner_size, AXOM_LAMBDA (int32 node)
     {
       Vec<FloatType,4> vec1;
@@ -140,7 +140,7 @@ void emit_bvh( RadixTree<FloatType, 3>& data,
   int32* radix_tree_leafs = data.m_leafs;
   int32* bvh_leafs        = bvh_data.m_leaf_nodes;
 
-  AXOM_NVTX_SECTION( "emit_bvh_leafs",
+  AXOM_ANNOTATE_SECTION( "emit_bvh_leafs",
     for_all< ExecSpace >( size, AXOM_LAMBDA(int32 i)
     {
       bvh_leafs[ i ] = radix_tree_leafs[ i ];
@@ -154,7 +154,7 @@ template < typename ExecSpace, typename FloatType  >
 void emit_bvh( RadixTree<FloatType, 2>& data,
                BVHData< FloatType, 2 >& bvh_data )
 {
-  AXOM_NVTX_FUNCTION( "emit_bvh2D" );
+  AXOM_ANNOTATE_FUNCTION( "emit_bvh2D" );
 
   const int32 size       = data.m_size;
   const int32 inner_size = data.m_inner_size;
@@ -169,7 +169,7 @@ void emit_bvh( RadixTree<FloatType, 2>& data,
 
   Vec<FloatType,4>* flat_ptr = bvh_data.m_inner_nodes;
 
-  AXOM_NVTX_SECTION( "emit_bvh_parents",
+  AXOM_ANNOTATE_SECTION( "emit_bvh_parents",
     for_all< ExecSpace >( inner_size, AXOM_LAMBDA (int32 node)
     {
       Vec<FloatType,4> vec1;
@@ -236,7 +236,7 @@ void emit_bvh( RadixTree<FloatType, 2>& data,
   int32* radix_tree_leafs = data.m_leafs;
   int32* bvh_leafs        = bvh_data.m_leaf_nodes;
 
-  AXOM_NVTX_SECTION( "emit_bvh_leafs",
+  AXOM_ANNOTATE_SECTION( "emit_bvh_leafs",
     for_all< ExecSpace >( size, AXOM_LAMBDA(int32 i)
     {
       bvh_leafs[ i ] = radix_tree_leafs[ i ];

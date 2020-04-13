@@ -9,7 +9,7 @@
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/core/execution/for_all.hpp"
 
-#include "axom/core/utilities/nvtx/Macros.hpp"  // for NVTX annotations
+#include "axom/core/utilities/AnnotationMacros.hpp"  // for annotations
 
 #include "axom/spin/internal/linear_bvh/BVHData.hpp"
 #include "axom/spin/internal/linear_bvh/RadixTree.hpp"
@@ -110,7 +110,7 @@ void transform_boxes( const FloatType* boxes,
                       int32 size,
                       FloatType scale_factor )
 {
-  AXOM_NVTX_FUNCTION( "transform_boxes3D" );
+  AXOM_ANNOTATE_FUNCTION( "transform_boxes3D" );
 
   constexpr int NDIMS  = 3;
   constexpr int STRIDE = 2 * NDIMS;
@@ -145,7 +145,7 @@ void transform_boxes( const FloatType* boxes,
                       int32 size,
                       FloatType scale_factor )
 {
-  AXOM_NVTX_FUNCTION( "transform_boxes2D" );
+  AXOM_ANNOTATE_FUNCTION( "transform_boxes2D" );
 
   constexpr int NDIMS  = 2;
   constexpr int STRIDE = 2 * NDIMS;
@@ -175,7 +175,7 @@ void transform_boxes( const FloatType* boxes,
 template < typename ExecSpace, typename FloatType >
 AABB<FloatType,3> reduce(AABB<FloatType,3>* aabbs, int32 size)
 {
-  AXOM_NVTX_FUNCTION( "reduce_abbs3D" );
+  AXOM_ANNOTATE_FUNCTION( "reduce_abbs3D" );
 
   constexpr int NDIMS = 3;
 
@@ -221,7 +221,7 @@ AABB<FloatType,3> reduce(AABB<FloatType,3>* aabbs, int32 size)
 template < typename ExecSpace, typename FloatType >
 AABB<FloatType,2> reduce(AABB<FloatType,2>* aabbs, int32 size)
 {
-  AXOM_NVTX_FUNCTION( "reduce_abbs2D" );
+  AXOM_ANNOTATE_FUNCTION( "reduce_abbs2D" );
 
   constexpr int NDIMS = 2;
 
@@ -263,7 +263,7 @@ void get_mcodes( AABB<FloatType,2>* aabbs,
                  const AABB< FloatType,2 > &bounds,
                  uint32* mcodes )
 {
-  AXOM_NVTX_FUNCTION( "get_mcodes2D" );
+  AXOM_ANNOTATE_FUNCTION( "get_mcodes2D" );
 
   constexpr int NDIMS = 2;
 
@@ -302,7 +302,7 @@ void get_mcodes( AABB<FloatType,3>* aabbs,
                  const AABB< FloatType,3 > &bounds,
                  uint32* mcodes )
 {
-  AXOM_NVTX_FUNCTION( "get_mcodes3D" );
+  AXOM_ANNOTATE_FUNCTION( "get_mcodes3D" );
 
   constexpr int NDIMS = 3;
 
@@ -345,7 +345,7 @@ void array_counting( IntType* iterator,
                      const IntType& start,
                      const IntType& step)
 {
-  AXOM_NVTX_FUNCTION( "array_counting" );
+  AXOM_ANNOTATE_FUNCTION( "array_counting" );
 
   for_all< ExecSpace >( size, AXOM_LAMBDA(int32 i)
   {
@@ -363,7 +363,7 @@ void array_counting( IntType* iterator,
 template< typename ExecSpace, typename T>
 void reorder(int32* indices, T*&array, int32 size)
 {
-  AXOM_NVTX_FUNCTION( "reorder" );
+  AXOM_ANNOTATE_FUNCTION( "reorder" );
 
   T* temp = axom::allocate< T >( size );
 
@@ -382,11 +382,11 @@ void reorder(int32* indices, T*&array, int32 size)
 template < typename ExecSpace >
 void custom_sort( ExecSpace, uint32*& mcodes, int32 size, int32* iter )
 {
-  AXOM_NVTX_FUNCTION( "custom_sort" );
+  AXOM_ANNOTATE_FUNCTION( "custom_sort" );
 
   array_counting< ExecSpace >(iter, size, 0, 1);
 
-  AXOM_NVTX_SECTION( "cpu_sort",
+  AXOM_ANNOTATE_SECTION( "cpu_sort",
 
     std::stable_sort( iter,
                       iter + size,
@@ -407,12 +407,12 @@ template < int BLOCK_SIZE >
 void custom_sort( axom::CUDA_EXEC< BLOCK_SIZE >,
                   uint32*& mcodes, int32 size, int32* iter )
 {
-  AXOM_NVTX_FUNCTION( "custom_sort" );
+  AXOM_ANNOTATE_FUNCTION( "custom_sort" );
 
   using ExecSpace = typename axom::CUDA_EXEC< BLOCK_SIZE >;
   array_counting< ExecSpace >(iter, size, 0, 1);
 
-  AXOM_NVTX_SECTION( "gpu_cub_sort",
+  AXOM_ANNOTATE_SECTION( "gpu_cub_sort",
 
     uint32* mcodes_alt_buf = axom::allocate< uint32 >( size );
     int32* iter_alt_buf   = axom::allocate< int32 >( size );
@@ -457,7 +457,7 @@ void custom_sort( axom::CUDA_EXEC< BLOCK_SIZE >,
 template < typename ExecSpace  >
 void sort_mcodes( uint32*& mcodes, int32 size, int32* iter )
 {
-  AXOM_NVTX_FUNCTION( "sort_mcodes" );
+  AXOM_ANNOTATE_FUNCTION( "sort_mcodes" );
 
   // dispatch
   custom_sort( ExecSpace(), mcodes, size, iter );
@@ -492,7 +492,7 @@ AXOM_HOST_DEVICE IntType delta( const IntType &a,
 template < typename ExecSpace, typename FloatType, int NDIMS >
 void build_tree(  RadixTree< FloatType, NDIMS > &data )
 {
-  AXOM_NVTX_FUNCTION( "build_tree" );
+  AXOM_ANNOTATE_FUNCTION( "build_tree" );
 
   // http://research.nvidia.com/sites/default/files/publications/karras2012hpg_paper.pdf
 
@@ -584,7 +584,7 @@ void build_tree(  RadixTree< FloatType, NDIMS > &data )
 template< typename ExecSpace, typename T>
 static void array_memset(T* array, const int32 size, const T val)
 {
-  AXOM_NVTX_FUNCTION( "array_memset" );
+  AXOM_ANNOTATE_FUNCTION( "array_memset" );
 
   for_all< ExecSpace >( size, AXOM_LAMBDA (int32 i)
   {
@@ -596,7 +596,7 @@ static void array_memset(T* array, const int32 size, const T val)
 template < typename ExecSpace, typename FloatType, int NDIMS >
 void propagate_aabbs( RadixTree< FloatType, NDIMS >& data)
 {
-  AXOM_NVTX_FUNCTION( "propagate_abbs" );
+  AXOM_ANNOTATE_FUNCTION( "propagate_abbs" );
 
   const int inner_size = data.m_inner_size;
   const int leaf_size = data.m_inner_size + 1;
@@ -676,15 +676,13 @@ void build_radix_tree( const FloatType* boxes,
                        RadixTree< FloatType, NDIMS >& radix_tree,
                        FloatType scale_factor )
 {
-  AXOM_NVTX_FUNCTION( "build_radix_tree" );
+  AXOM_ANNOTATE_FUNCTION( "build_radix_tree" );
 
   // sanity checks
   SLIC_ASSERT( boxes !=nullptr );
   SLIC_ASSERT( size > 0 );
 
-  AXOM_NVTX_SECTION( "allocate_radix_tree" ,
-    radix_tree.allocate( size );
-  );
+  radix_tree.allocate( size );
 
   // copy so we don't reorder the input
   transform_boxes< ExecSpace >( boxes, radix_tree.m_leaf_aabbs,

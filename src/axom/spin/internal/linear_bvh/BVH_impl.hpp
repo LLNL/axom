@@ -10,7 +10,7 @@
 #include "axom/core/execution/for_all.hpp"              // for generic for_all()
 #include "axom/core/memory_management.hpp"              // for memory functions
 #include "axom/core/numerics/floating_point_limits.hpp" // floating_point_limits
-#include "axom/core/utilities/nvtx/Macros.hpp"          // for NVTX annotations
+#include "axom/core/utilities/AnnotationMacros.hpp"     // for annotations
 
 // slic includes
 #include "axom/slic/interface/slic.hpp"                 // for SLIC macros
@@ -131,7 +131,7 @@ IndexType bvh_get_counts( LeftPredicate&& leftCheck,
                           const FloatType* y,
                           const FloatType* z ) noexcept
 {
-  AXOM_NVTX_FUNCTION( "bvh_get_counts" );
+  AXOM_ANNOTATE_FUNCTION( "bvh_get_counts" );
 
   // sanity checks
   SLIC_ASSERT( inner_nodes != nullptr );
@@ -211,7 +211,7 @@ IndexType bvh_get_raycounts( LeftPredicate&& leftCheck,
                              const FloatType* z0,
                              const FloatType* nz ) noexcept
 {
-  AXOM_NVTX_FUNCTION( "bvh_get_raycounts" );
+  AXOM_ANNOTATE_FUNCTION( "bvh_get_raycounts" );
 
   // sanity checks
   SLIC_ASSERT( inner_nodes != nullptr );
@@ -374,7 +374,7 @@ BVH< NDIMS, ExecSpace, FloatType >::~BVH()
 template< int NDIMS, typename ExecSpace, typename FloatType >
 int BVH< NDIMS, ExecSpace, FloatType >::build()
 {
-  AXOM_NVTX_FUNCTION( "BVH::build" );
+  AXOM_ANNOTATE_FUNCTION( "BVH::build" );
 
   // STEP 0: set the default memory allocator to use for the execution space.
   const int currentAllocatorID = axom::getDefaultAllocatorID();
@@ -454,7 +454,7 @@ void BVH< NDIMS, ExecSpace, FloatType >::findPoints( IndexType* offsets,
                                                      const FloatType* y,
                                                      const FloatType* z ) const
 {
-  AXOM_NVTX_FUNCTION( "BVH::findPoints" );
+  AXOM_ANNOTATE_FUNCTION( "BVH::findPoints" );
 
   SLIC_ASSERT( offsets != nullptr );
   SLIC_ASSERT( counts != nullptr );
@@ -547,7 +547,7 @@ void BVH< NDIMS, ExecSpace, FloatType >::findRays( IndexType* offsets,
                                                    const FloatType* z0,
                                                    const FloatType* nz  ) const
 {
-  AXOM_NVTX_FUNCTION( "BVH::findRays" );
+  AXOM_ANNOTATE_FUNCTION( "BVH::findRays" );
 
   SLIC_ASSERT( offsets != nullptr );
   SLIC_ASSERT( counts != nullptr );
