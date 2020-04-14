@@ -179,6 +179,13 @@ public:
   ~BVH();
 
   /*!
+   * \brief Get the ID of the allocator used by the BVH.
+   * \return allocatorID the ID of the allocator used by the BVH.
+   */
+  int getAllocatorID( ) const
+  { return m_AllocatorID; };
+
+  /*!
    * \brief Sets the scale factor for scaling the supplied bounding boxes.
    * \param [in] scale_factor the scale factor
    *

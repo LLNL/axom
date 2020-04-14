@@ -420,6 +420,10 @@ void check_build_bvh2d( )
   boxes[ 6 ] = boxes[ 7 ] = 2.;
 
   spin::BVH< NDIMS, ExecSpace, FloatType > bvh( boxes, NUM_BOXES );
+
+  int allocatorID = bvh.getAllocatorID();
+  EXPECT_EQ( allocatorID, axom::execution_space< ExecSpace >::allocatorID() );
+
   bvh.setScaleFactor( 1.0 ); // i.e., no scaling
   bvh.build( );
 
@@ -459,6 +463,10 @@ void check_build_bvh3d( )
   boxes[ 9 ] = boxes[ 10 ] = boxes[ 11 ] = 2.;
 
   spin::BVH< NDIMS, ExecSpace, FloatType > bvh( boxes, NUM_BOXES );
+
+  int allocatorID = bvh.getAllocatorID();
+  EXPECT_EQ( allocatorID, axom::execution_space< ExecSpace >::allocatorID() );
+
   bvh.setScaleFactor( 1.0 ); // i.e., no scaling
   bvh.build( );
 
