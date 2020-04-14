@@ -29,15 +29,16 @@ namespace detail
  *
  * \note This routine is called by the intersect AABB/AABB methods for each
  *  spatial dimension.
+ * \note This routine does not have a tolerance parameter for fuzzy
+ *  intersection, but the AABBs can be scaled to achieve the same thing.
  */
 template < typename T >
 AXOM_HOST_DEVICE
-inline bool intersect_bbox_bbox_test( const T& min1,
-                                      const T& max1,
-                                      const T& min2,
-                                      const T& max2 )
+inline bool intersect_bbox_bbox( const T& min1,
+                                 const T& max1,
+                                 const T& min2,
+                                 const T& max2 )
 {
-  AXOM_STATIC_ASSERT( std::is_floating_point< T >::value );
 
   bool status = ( ( max1 < min2 || min1 > max2 ) ? false : true );
   return status;
@@ -69,11 +70,10 @@ inline bool intersect_bounding_box( const T& xmin1,
                                     const T& ymin2,
                                     const T& ymax2 )
 {
-  AXOM_STATIC_ASSERT( std::is_floating_point< T >::value );
 
   bool status = true;
-  status = status && intersect_bbox_bbox_test( xmin1, xmax1, xmin2, xmax2 );
-  status = status && intersect_bbox_bbox_test( ymin1, ymax1, ymin2, ymax2 );
+  status = status && intersect_bbox_bbox( xmin1, xmax1, xmin2, xmax2 );
+  status = status && intersect_bbox_bbox( ymin1, ymax1, ymin2, ymax2 );
   return status;
 }
 
@@ -111,12 +111,11 @@ inline bool intersect_bounding_box( const T& xmin1,
                                     const T& zmin2,
                                     const T& zmax2 )
 {
-  AXOM_STATIC_ASSERT( std::is_floating_point< T >::value );
 
   bool status = true;
-  status = status && intersect_bbox_bbox_test( xmin1, xmax1, xmin2, xmax2 );
-  status = status && intersect_bbox_bbox_test( ymin1, ymax1, ymin2, ymax2 );
-  status = status && intersect_bbox_bbox_test( zmin1, zmax1, zmin2, zmax2 );
+  status = status && intersect_bbox_bbox( xmin1, xmax1, xmin2, xmax2 );
+  status = status && intersect_bbox_bbox( ymin1, ymax1, ymin2, ymax2 );
+  status = status && intersect_bbox_bbox( zmin1, zmax1, zmin2, zmax2 );
   return status;
 }
 

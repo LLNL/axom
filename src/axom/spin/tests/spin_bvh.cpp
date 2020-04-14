@@ -527,7 +527,7 @@ void check_find_bounding_boxes3d()
     EXPECT_DOUBLE_EQ( max[ i ], hi[ i ] );
   }
 
-  // traverse the BVH to find the candidates for all the centroids
+  // traverse the BVH to find the candidates for all the bounding boxes
   IndexType* offsets    = axom::allocate< IndexType >( N );
   IndexType* counts     = axom::allocate< IndexType >( N );
   IndexType* candidates = nullptr;
@@ -535,7 +535,7 @@ void check_find_bounding_boxes3d()
                          ymin, ymax, zmin, zmax );
   EXPECT_TRUE( candidates != nullptr );
 
-  // flag cells that are found by the ray ID
+  // flag cells that are found by the bounding box ID
   int* iblank = mesh.createField< int >( "iblank", mint::CELL_CENTERED );
   mint::for_all_cells< ExecSpace >( &mesh, AXOM_LAMBDA(IndexType cellIdx)
   {
@@ -653,7 +653,7 @@ void check_find_bounding_boxes2d()
     EXPECT_DOUBLE_EQ( max[ i ], hi[ i ] );
   }
 
-  // traverse the BVH to find the candidates for all the centroids
+  // traverse the BVH to find the candidates for all the bounding boxes
   IndexType* offsets    = axom::allocate< IndexType >( N );
   IndexType* counts     = axom::allocate< IndexType >( N );
   IndexType* candidates = nullptr;

@@ -12,10 +12,10 @@
 //------------------------------------------------------------------------------
 TEST( primal_bounding_box_intersect, aabb_aabb_adjacent )
 {
-  constexpr double LO = 0.0f;
-  constexpr double HI = 1.0f;
+  constexpr double LO = 0.0;
+  constexpr double HI = 1.0;
   constexpr int NUM_OFFSETS = 3;
-  const double OFFSETS[] = { -1.0f, 0.0f, 1.0f };
+  const double OFFSETS[] = { -1.0, 0.0, 1.0 };
 
   using namespace axom::primal::detail;
 
@@ -53,10 +53,10 @@ TEST( primal_bounding_box_intersect, aabb_aabb_adjacent )
 //------------------------------------------------------------------------------
 TEST( primal_bounding_box_intersect, aabb_aabb_non_intersecting )
 {
-  constexpr double LO = 0.0f;
-  constexpr double HI = 1.0f;
+  constexpr double LO = 0.0;
+  constexpr double HI = 1.0;
   constexpr int NUM_OFFSETS = 3;
-  const double OFFSETS[] = { -1.01f, 0.0f, 1.01f };
+  const double OFFSETS[] = { -1.01, 0.0, 1.01 };
 
   using namespace axom::primal::detail;
 

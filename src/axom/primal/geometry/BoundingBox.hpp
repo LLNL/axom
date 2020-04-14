@@ -443,10 +443,10 @@ bool BoundingBox< T,NDIMS >::intersectsWith(
   for ( int i=0 ; i < NDIMS ; ++i )
   {
 
-    status = status && detail::intersect_bbox_bbox_test( m_min[ i ],
-                                                         m_max[ i ],
-                                                         otherBB.m_min[ i ],
-                                                         otherBB.m_max[ i ] );
+    status = status && detail::intersect_bbox_bbox( m_min[ i ],
+                                                    m_max[ i ],
+                                                    otherBB.m_min[ i ],
+                                                    otherBB.m_max[ i ] );
   } // END for all dimensions
 
   return status;
