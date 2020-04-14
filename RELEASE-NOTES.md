@@ -13,9 +13,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added new CMake option, `AXOM_ENABLE_ANNOTATIONS`, to enable/disable code 
   annotations in Axom. Default is OFF.
 - Added Axom annotation macros. The macros can be used to annotate functions,
-  using the `AXOM_ANNOTATE_FUNCTION` macro, or at a more fine grain level,
+  using the `AXOM_PERF_MARK_FUNCTION` macro, or at a more fine grain level,
   different sections of code can be annotated by wrapping them within an
-  `AXOM_ANNOTATE_SECTION` block. As a first cut, this works with NVTX tools.
+  `AXOM_PERF_MARK_SECTION` block. As a first cut, this works with NVTX tools.
   However, the hooks are in place to add support for Caliper in the future. 
 - Added a simple interface to NVTX that allows an application to set the color
   and category for NVTX ranges corresponding to annotated code in Axom. The

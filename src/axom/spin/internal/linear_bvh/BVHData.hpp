@@ -68,14 +68,14 @@ struct BVHData
 
   void allocate( int32 size )
   {
-    AXOM_ANNOTATE_FUNCTION( "BVHData::allocate" );
+    AXOM_PERF_MARK_FUNCTION( "BVHData::allocate" );
     m_inner_nodes = axom::allocate< Vec< FloatType,4 > >( (size-1)*4 );
     m_leaf_nodes  = axom::allocate< int32 >( size );
   }
 
   void deallocate()
   {
-    AXOM_ANNOTATE_FUNCTION( "BVHData::deallocate" );
+    AXOM_PERF_MARK_FUNCTION( "BVHData::deallocate" );
     axom::deallocate( m_inner_nodes );
     axom::deallocate( m_leaf_nodes );
   }
