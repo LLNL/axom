@@ -16,6 +16,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   can also be called on the device.
 - Added initial support for ray queries using the BVH. The caller may now supply a set of rays to 
   a BVH and the BVH will return a set of candidate BVH bins that intersect each ray.
+- Added initial support for bounding box queries using the BVH. The caller may
+  now supply a set of bounding boxes to a BVH and the BVH will return a set of 
+  candidate BVH bins that intersect each bounding box.
 
 ### Removed
 
