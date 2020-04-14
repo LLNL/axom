@@ -41,7 +41,7 @@ namespace nvtx
  *    // use scope to auto-start and stop a range
  *    { // begin scope resolution
  *    axom::NVTXRage range ("foo" );
- *    foor();
+ *    foo();
  *    } // end scope resoltuion
  *
  * \endcode

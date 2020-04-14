@@ -11,7 +11,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 ### Added
 - Added new CMake option, `AXOM_ENABLE_ANNOTATIONS`, to enable/disable code 
-  annoations in Axom. Default is OFF.
+  annotations in Axom. Default is OFF.
 - Added Axom annotation macros. The macros can be used to annotate functions,
   using the `AXOM_ANNOTATE_FUNCTION` macro, or at a more fine grain level,
   different sections of code can be annotated by wrapping them within an

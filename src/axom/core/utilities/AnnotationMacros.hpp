@@ -47,7 +47,7 @@
 /*!
  * \def AXOM_ANNOTATE_SECTION( name )
  *  
- * \brief The AXOM_ANNOTATE_SECTION maacro is used to annotate sections of code.
+ * \brief The AXOM_ANNOTATE_SECTION macro is used to annotate sections of code.
  * 
  * \note In contrast to the AXOM_ANNOTATE_FUNCTION, the AXOM_ANNOTATE_SECTION
  *  macro is used to annotate sections of code at a much finer granularity
