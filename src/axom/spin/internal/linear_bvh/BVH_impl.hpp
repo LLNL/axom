@@ -297,6 +297,8 @@ IndexType bvh_get_boxcounts( LeftPredicate&& leftCheck,
                              const FloatType* zmin,
                              const FloatType* zmax ) noexcept
 {
+  AXOM_PERF_MARK_FUNCTION( "bvh_get_boxcounts" );
+
   // sanity checks
   SLIC_ASSERT( inner_nodes != nullptr );
   SLIC_ASSERT( leaf_nodes != nullptr );
@@ -643,6 +645,8 @@ void BVH< NDIMS, ExecSpace, FloatType >::findBoundingBoxes(
   const FloatType* zmin,
   const FloatType* zmax ) const
 {
+  AXOM_PERF_MARK_FUNCTION( "BVH::findBoundingBoxes" );
+
   SLIC_ASSERT( offsets != nullptr );
   SLIC_ASSERT( counts != nullptr );
   SLIC_ASSERT( candidates == nullptr );
