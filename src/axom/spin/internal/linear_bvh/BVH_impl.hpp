@@ -637,11 +637,6 @@ void BVH< NDIMS, ExecSpace, FloatType >::findBoundingBoxes(
   SLIC_ASSERT( ymin != nullptr );
   SLIC_ASSERT( ymax != nullptr );
 
-  // STEP 0: set the default memory allocator to use for the execution space.
-  const int currentAllocatorID = axom::getDefaultAllocatorID();
-  const int allocatorID = axom::execution_space< ExecSpace >::allocatorID();
-  axom::setDefaultAllocator( allocatorID );
-
   using BoundingBoxType     = bounding_box_t< FloatType, NDIMS >;
   using TraversalPredicates = lbvh::TraversalPredicates< NDIMS, FloatType >;
   using QueryAccessor       = lbvh::QueryAccessor< NDIMS, FloatType >;
@@ -679,7 +674,7 @@ void BVH< NDIMS, ExecSpace, FloatType >::findBoundingBoxes(
     counts, counts+numBoxes, offsets, RAJA::operators::plus<IndexType>{} );
 
   IndexType total_candidates = static_cast< IndexType >( total_count );
-  candidates = axom::allocate< IndexType >( total_candidates);
+  candidates = axom::allocate< IndexType >( total_candidates, m_AllocatorID );
 
   // STEP 4: fill in candidates for each bounding box
   for_all< ExecSpace >( numBoxes, AXOM_LAMBDA (IndexType i)
@@ -706,8 +701,6 @@ void BVH< NDIMS, ExecSpace, FloatType >::findBoundingBoxes(
 
   } );
 
-  // STEP 3: restore default allocator
-  axom::setDefaultAllocator( currentAllocatorID );
 }
 
 //------------------------------------------------------------------------------
