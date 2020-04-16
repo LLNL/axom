@@ -103,7 +103,7 @@ enum BVHReturnCodes
  *
  *     // find candidates in parallel, allocates and populates the supplied
  *     // candidates array
- *     bvh.find( offsets, counts, candidates, numPoints, qx, qy, qz );
+ *     bvh.findPoints( offsets, counts, candidates, numPoints, qx, qy, qz );
  *     SLIC_ASSERT( candidates != nullptr );
  *
  *     ...
