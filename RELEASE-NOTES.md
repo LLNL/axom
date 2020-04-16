@@ -10,6 +10,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
+- Added the ability to specify a user-supplied allocator ID to use with the
+  BVH. This allows the application to use a device allocator for the BVH and 
+  avoid use of UM on the GPU, which can hinder perfomrmance, or use a pool
+  allocator to mitigate the latencies associated with allocation/deallocation.
+  The allocator ID is specified as an optional argument to the BVH constructor.
 - Added new CMake option, `AXOM_ENABLE_ANNOTATIONS`, to enable/disable code 
   annotations in Axom. Default is OFF.
 - Added Axom annotation macros. The macros can be used to annotate functions,
