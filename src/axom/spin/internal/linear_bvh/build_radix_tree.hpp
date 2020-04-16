@@ -414,17 +414,24 @@ void custom_sort( axom::CUDA_EXEC< BLOCK_SIZE, EXEC_MODE >,
   using ExecSpace = typename axom::CUDA_EXEC< BLOCK_SIZE, EXEC_MODE >;
   array_counting< ExecSpace >(iter, size, 0, 1);
 
-  AXOM_PERF_MARK_SECTION( "gpu_cub_sort",
+  // temporary buffers
+  uint32* mcodes_alt_buf = nullptr;
+  int32* iter_alt_buf    = nullptr;
+  void* d_temp_storage   = nullptr;
 
-    uint32* mcodes_alt_buf = axom::allocate< uint32 >( size, allocatorID );
-    int32* iter_alt_buf   = axom::allocate< int32 >( size, allocatorID );
+  AXOM_PERF_MARK_SECTION( "allocate_cub_buffers",
+
+    mcodes_alt_buf = axom::allocate< uint32 >( size, allocatorID );
+    iter_alt_buf   = axom::allocate< int32 >( size, allocatorID );
+  );
+ 
+  AXOM_PERF_MARK_SECTION( "gpu_cub_sort",
 
     // create double buffers
     ::cub::DoubleBuffer< uint32 > d_keys( mcodes, mcodes_alt_buf );
     ::cub::DoubleBuffer< int32 >  d_values( iter, iter_alt_buf );
 
     // determine temporary device storage requirements
-    void* d_temp_storage     = nullptr;
     size_t temp_storage_bytes = 0;
     ::cub::DeviceRadixSort::SortPairs( d_temp_storage, temp_storage_bytes,
                                        d_keys, d_values, size );
@@ -447,12 +454,16 @@ void custom_sort( axom::CUDA_EXEC< BLOCK_SIZE, EXEC_MODE >,
       iter[ i ]   = sorted_vals[ i ];
     } );
 
+  );
+
+  AXOM_PERF_MARK_SECTION( "free_cub_buffers",
+
     // Free temporary storage
     axom::deallocate( d_temp_storage );
     axom::deallocate( mcodes_alt_buf );
     axom::deallocate( iter_alt_buf );
-
   );
+
 }
 #endif
 
