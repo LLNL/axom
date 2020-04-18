@@ -8,38 +8,24 @@
  *
  * \file ListCollection.hpp
  *
- * \brief   Header file for Collection classes.
+ * \brief   Header file for ListCollection.
  *
- *          Each of these classes holds a collection of items of a fixed
- *          type that can be accessed by an iterator or sidre::IndexType.
+ *          This is an implementation of ItemCollection to hold a
+ *          collection of items of a fixed type. This implementation
+ *          is intended to hold items that may have no name. If they do
+ *          have names, those names are ignored. To satisfy the parent
+ *          class interface, methods to access items by name are provided
+ *          but the return null or invalid return values.
  *
- *          The primary intent is to decouple the implementation of the
- *          collections from the Group class which owns collections of
- *          View and child Group objects. They may have other uses,
- *          so they are not dependent on the Group class. Each class is
- *          templated on the item type so that the same class can be used
- *          to hold either View or Group object pointers without
- *          having to code a separate class for each.
+ *          This class is templated on the item type so that the same
+ *          class can be used to hold either View or Group object pointers
+ *          without having to code a separate class for each.
  *
- *          By having various collections that obey the same interface,
- *          we can explore alternative collection implementations for
- *          performance (insertion, lookup, etc.) and memory overhead.
- *          The collection used by the Group class can be changed via
- *          the collection type alias in the Group class header file.
- *
- *          To try another collection, encapsulate it in a new class with
- *          the API described below or pass it as a template parameter to
- *          an existing class below if that works.
- *
- *          \attention These classes should be robust against any potential
- *                     user interaction. They don't report errors and leave
+ *          \attention This class should be robust against any potential
+ *                     user interaction. It doesn't report errors and leaves
  *                     checking of return values to calling code.
  *
- *          \attention Template parameter type must provide a method
- *                     "getName()" that returns a reference to a string object.
- *
- *          \attention The common interface each collection class provides
- *                     is as follows:
+ *          \attention The interface is as follows:
  *
  *          \verbatim
  *
@@ -47,19 +33,18 @@
  *
  *               size_t getNumItems() const;
  *
- *          - // Return first valid item index (i.e., smallest index over
- *            // all items).
+ *          - // Return first item index for iteration.
  *            // sidre::InvalidIndex returned if no items in collection
  *
  *               IndexType getFirstValidIndex() const;
  *
- *          - // Return next valid item index after given index (i.e., smallest
- *            // index over all indices larger than given one).
- *            // sidre::InvalidIndex returned
+ *          - // Return next valid item index for iteration.
+ *            // sidre::InvalidIndex returned if there are no further items
  *
  *               IndexType getNextValidIndex(IndexType idx) const;
  *
- *          - // Return true if item with given name in collection; else false.
+ *          - // Return false because this class cannot identify items
+ *            // by name.
  *
  *               bool hasItem(const std::string& name) const;
  *
@@ -67,7 +52,8 @@
  *
  *               bool hasItem(IndexType idx) const;
  *
- *          - // Return pointer to item with given name (nullptr if none).
+ *          - // Return false because this class cannot identify items
+ *            // by name.
  *
  *               TYPE* getItem(const std::string& name);
  *               TYPE const* getItem(const std::string& name) const ;
@@ -77,27 +63,28 @@
  *               TYPE* getItem(IndexType idx);
  *               TYPE const* getItem(IndexType idx) const;
  *
- *          - // Return name of object with given index
- *            // (sidre::InvalidName if none).
+ *          - // Return sidre::InvalidName because this class cannot 
+ *            // identify items by name.
  *
  *               std::string getItemName(IndexType idx) const;
  *
- *          - // Return index of object with given name
- *            // (sidre::InvalidName if none).
+ *          - // Return sidre::InvalidIndex because this class cannot
+ *            // identify items by name.             
  *
  *               IndexType getItemIndex(const std::string& name) const;
  *
- *          - // Insert item with given name; return index if insertion
- *            // succeeded, and InvalidIndex otherwise.
+ *          - // Insert item; the name argument will be ignored.
+ *            // Return index if insertion succeeded, and InvalidIndex
+ *            // otherwise.
  *
  *               IndexType insertItem(TYPE* item, const std::string& name);
  *
- *          - // Remove item with given name if it exists and return a
- *            // pointer to it. If it doesn't exist, return nullptr.
+ *          - // Return nullptr because this class cannot identify items
+ *            // by name. No item will be removed.
  *
  *               TYPE* removeItem(const std::string& name);
  *
- *          - // Remove item with given name if it exists and return a
+ *          - // Remove item with given index if it exists and return a
  *            // pointer to it. If it doesn't exist, return nullptr.
  *
  *               TYPE* removeItem(IndexType idx);
@@ -185,7 +172,8 @@ public:
   ///
   bool hasItem(const std::string& name) const
   {
-    SLIC_ERROR(" ");
+    (void)name;
+    SLIC_WARNING("ListCollection::hasItem cannot identify items by name");
     return false;
   }
 
@@ -200,14 +188,16 @@ public:
   ///
   TYPE* getItem(const std::string& name)
   {
-    SLIC_ERROR(" ");
+    (void)name;
+    SLIC_WARNING("ListCollection::getItem cannot identify items by name");
     return 0;
   }
 
   ///
   TYPE const* getItem(const std::string& name) const
   {
-    SLIC_ERROR(" ");
+    (void)name;
+    SLIC_WARNING("ListCollection::getItem cannot identify items by name");
     return 0;
   }
 
@@ -226,13 +216,16 @@ public:
   ///
   const std::string& getItemName(IndexType idx) const
   {
+    (void)idx;
+    SLIC_WARNING("ListCollection::getItemName Items do not have names");
     return InvalidName;
   }
 
   ///
   IndexType getItemIndex(const std::string& name) const
   {
-    SLIC_ERROR(" ");
+    (void)name;
+    SLIC_WARNING("ListCollection::getItemIndex cannot identify items by name");
     return 0;
   }
 
@@ -328,8 +321,9 @@ IndexType ListCollection<TYPE>::insertItem(TYPE* item,
 template <typename TYPE>
 TYPE* ListCollection<TYPE>::removeItem(const std::string& name)
 {
-  SLIC_ERROR( " " );
-  return 0; 
+    (void)name;
+  SLIC_WARNING("ListCollection::removeItem cannot identify items by name");
+  return 0;
 }
 
 template <typename TYPE>

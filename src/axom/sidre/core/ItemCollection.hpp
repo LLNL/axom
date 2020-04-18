@@ -8,38 +8,29 @@
  *
  * \file ItemCollection.hpp
  *
- * \brief   Header file for Collection classes.
+ * \brief   Header file for ItemCollection.
  *
- *          Each of these classes holds a collection of items of a fixed
+ *          This is a templated abstract base class defining an interface for
+ *          classes holding a collection of items of a fixed
  *          type that can be accessed by string name or sidre::IndexType.
  *
  *          The primary intent is to decouple the implementation of the
  *          collections from the Group class which owns collections of
  *          View and child Group objects. They may have other uses,
- *          so they are not dependent on the Group class. Each class is
- *          templated on the item type so that the same class can be used
+ *          so they are not dependent on the Group class. THis class is
+ *          templated on the item type so that derived classes can be used
  *          to hold either View or Group object pointers without
  *          having to code a separate class for each.
  *
- *          By having various collections that obey the same interface,
- *          we can explore alternative collection implementations for
- *          performance (insertion, lookup, etc.) and memory overhead.
- *          The collection used by the Group class can be changed via
- *          the collection type alias in the Group class header file.
- *
- *          To try another collection, encapsulate it in a new class with
- *          the API described below or pass it as a template parameter to
- *          an existing class below if that works.
+ *          Derived implemenations of this class can be used to explore
+ *          alternative collection implementations for performance
+ *          (insertion, lookup, etc.) and memory overhead.
  *
  *          \attention These classes should be robust against any potential
  *                     user interaction. They don't report errors and leave
  *                     checking of return values to calling code.
  *
- *          \attention Template parameter type must provide a method
- *                     "getName()" that returns a reference to a string object.
- *
- *          \attention The common interface each collection class provides
- *                     is as follows:
+ *          \attention The interface defined by this class is as follows:
  *
  *          \verbatim
  *
@@ -47,15 +38,14 @@
  *
  *               size_t getNumItems() const;
  *
- *          - // Return first valid item index (i.e., smallest index over
- *            // all items).
+ *          - // Return first valid item index for iteration.
  *            // sidre::InvalidIndex returned if no items in collection
  *
  *               IndexType getFirstValidIndex() const;
  *
- *          - // Return next valid item index after given index (i.e., smallest
- *            // index over all indices larger than given one).
- *            // sidre::InvalidIndex returned
+ *          - // Return next valid item index for iteration.
+ *            // sidre::InvalidIndex returned if there are no more items
+ *            // to be iterated over.
  *
  *               IndexType getNextValidIndex(IndexType idx) const;
  *
@@ -83,7 +73,7 @@
  *               std::string getItemName(IndexType idx) const;
  *
  *          - // Return index of object with given name
- *            // (sidre::InvalidName if none).
+ *            // (sidre::InvalidIndex if none).
  *
  *               IndexType getItemIndex(const std::string& name) const;
  *
@@ -97,7 +87,7 @@
  *
  *               TYPE* removeItem(const std::string& name);
  *
- *          - // Remove item with given name if it exists and return a
+ *          - // Remove item with given index if it exists and return a
  *            // pointer to it. If it doesn't exist, return nullptr.
  *
  *               TYPE* removeItem(IndexType idx);
@@ -129,15 +119,6 @@ namespace axom
 {
 namespace sidre
 {
-
-////////////////////////////////////////////////////////////////////////
-//
-// ItemCollection keeps an index constant for each item
-// as long as it remains in the collection; i.e., don't shift indices
-// around.  It has the additional benefit that users can hold on to
-// item indices without them being changed without notice.
-//
-////////////////////////////////////////////////////////////////////////
 
 /*!
  *************************************************************************
