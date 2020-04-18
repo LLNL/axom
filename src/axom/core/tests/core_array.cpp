@@ -39,7 +39,7 @@ IndexType calc_new_capacity( Array< T > & v, IndexType increase )
 }
 
 /*!
- * \brief Check if two Arrays are equivalent. Does not check the resize ratio.
+ * \brief Check if two Arrays are copies. Does not check the resize ratio.
  * \param [in] lhs, the first Array to compare.
  * \param [in] rhs, the second Array to compare.
  * \return the new capacity.
@@ -53,6 +53,24 @@ void check_copy( const Array< T >& lhs, const Array< T >& rhs )
   const T* lhs_data = lhs.data();
   const T* rhs_data = rhs.data();
   EXPECT_EQ( lhs_data, rhs_data );
+}
+
+/*!
+ * \brief Check if two Arrays are equivalent. Does not check the resize ratio.
+ * \param [in] lhs, the first Array to compare.
+ * \param [in] rhs, the second Array to compare.
+ * \return the new capacity.
+ */
+template< typename T >
+void check_equal( const Array< T >& lhs, const Array< T >& rhs )
+{
+  EXPECT_EQ( lhs.size(), rhs.size() );
+  EXPECT_EQ( lhs.capacity(), rhs.capacity() );
+
+  for ( IndexType i = 0 ; i < lhs.size() ; ++i )
+  { 
+      EXPECT_EQ( lhs[ i ], rhs[ i ] ); 
+  }
 }
 
 /*!
@@ -493,7 +511,7 @@ void check_external( Array< T >& v )
   const IndexType num_values = size;
   T* const data_ptr = v.data();
 
-  /* Set the tuples in the array. */
+  /* Set the elements in the array. */
   for ( IndexType i = 0 ; i < size ; ++i )
   {
       v[ i ] = i;
@@ -511,7 +529,7 @@ void check_external( Array< T >& v )
       data_ptr[ i ] = i * i;
   }
 
-  /* Check the tuples using the () operator. */
+  /* Check the elements using the () operator. */
   for ( IndexType i = 0 ; i < size ; ++i )
   {
       EXPECT_EQ( v[ i ], i * i );
@@ -744,6 +762,72 @@ TEST( core_array, checkIterator )
   /* Clear the rest of the array */
   v_int.clear();
   EXPECT_EQ( v_int.size(), 0);
+}
+
+//------------------------------------------------------------------------------ 
+TEST( core_array, check_move_copy) 
+{ 
+  constexpr int MAGIC_INT = 255; 
+  constexpr double MAGIC_DOUBLE = 5683578.8; 
+
+  for ( IndexType capacity = 2 ; capacity < 512 ; capacity *= 2 ) 
+  { 
+    IndexType size = capacity; 
+
+    /* Check copy and move semantics for Array of ints */ 
+    Array< int > v_int( size, capacity ); 
+    v_int.fill(MAGIC_INT); 
+
+    std::vector <int> ints( size , MAGIC_INT ); 
+    Array< int > v_int_external( ints.data(), size, capacity ); 
+
+    Array< int > v_int_copy_ctor( v_int ); 
+    Array< int > v_int_copy_assign( 0, 0 ); 
+    v_int_copy_assign = v_int; 
+    internal::check_equal( v_int, v_int_copy_ctor ); 
+    internal::check_equal( v_int, v_int_copy_assign ); 
+
+    Array< int > v_int_external_copy_ctor( v_int_external ); 
+    Array< int > v_int_external_copy_assign( 0, 0 ); 
+    v_int_external_copy_assign = v_int_external; 
+    internal::check_equal( v_int_external, v_int_external_copy_ctor ); 
+    internal::check_equal( v_int_external, v_int_external_copy_assign ); 
+
+    Array< int > v_int_move_assign( 0, 0 ); 
+    v_int_move_assign = std::move( v_int_copy_assign ); 
+    Array< int > v_int_move_ctor = std::move( v_int_copy_ctor ); 
+    internal::check_equal( v_int, v_int_move_assign ); 
+    internal::check_equal( v_int, v_int_move_ctor ); 
+    EXPECT_EQ( v_int_copy_assign.data(), nullptr ); 
+    EXPECT_EQ( v_int_copy_ctor.data(), nullptr ); 
+
+    /* Check copy and move semantics for Array of doubles */ 
+    Array< double > v_double( size, capacity ); 
+    v_double.fill( MAGIC_DOUBLE ); 
+
+    std::vector <double> doubles( size , MAGIC_DOUBLE ); 
+    Array< double > v_double_external( doubles.data(), size, capacity ); 
+
+    Array< double > v_double_copy_ctor( v_double ); 
+    Array< double > v_double_copy_assign( 0, 0 ); 
+    v_double_copy_assign = v_double; 
+    internal::check_equal( v_double, v_double_copy_ctor ); 
+    internal::check_equal( v_double, v_double_copy_assign ); 
+
+    Array< double > v_double_external_copy_ctor( v_double_external ); 
+    Array< double > v_double_external_copy_assign( 0, 0 ); 
+    v_double_external_copy_assign = v_double_external; 
+    internal::check_equal( v_double_external, v_double_external_copy_ctor ); 
+    internal::check_equal( v_double_external, v_double_external_copy_assign ); 
+
+    Array< double > v_double_move_assign( 0, 0 ); 
+    v_double_move_assign = std::move( v_double_copy_assign );       
+    Array< double > v_double_move_ctor = std::move( v_double_copy_ctor ); 
+    internal::check_equal( v_double, v_double_move_assign ); 
+    internal::check_equal( v_double, v_double_move_ctor ); 
+    EXPECT_EQ( v_double_copy_assign.data(), nullptr ); 
+    EXPECT_EQ( v_double_copy_ctor.data(), nullptr ); 
+  } 
 }
 
 } /* end namespace axom */
