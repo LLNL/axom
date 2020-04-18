@@ -133,6 +133,24 @@ public:
    */
   Array( IndexType num_elements, IndexType capacity=0 );
 
+  /*! 
+   * \brief Copy constructor for an Array instance 
+   * 
+   * \note If you use the copy constructor on an argument Array 
+   *  with data from an external data buffer, the copy-constructed Array 
+   *  will have a deep copy of the data and own the data copy. 
+   */ 
+  Array( const Array& other ); 
+
+  /*! 
+   * \brief Move constructor for an Array instance 
+   *
+   * \note If you use the move constructor on an argument Array with an 
+   *  external data buffer, the move-constructed Array will wrap the external 
+   *  data buffer and the argument Array will be left in a valid empty state. 
+   */ 
+  Array( Array&& other );
+
 /// @}
 
 /// \name External Storage Array Constructors
@@ -163,6 +181,66 @@ public:
 
 /// @}
 
+/// \name Array copy and move operators 
+/// @{ 
+
+  /*! 
+   * \brief Copy assignment operator for Array 
+   * 
+   * \note If you use the copy assignment operator on an argument Array 
+   *  with data from an external data buffer, the copy-assigned Array 
+   *  will have a deep copy of the data and own the data copy. 
+   */ 
+  Array& operator=( const Array& other ) 
+  { 
+
+    if ( this != &other ) 
+    { 
+      m_resize_ratio = other.m_resize_ratio; 
+      m_is_external = false;
+      initialize(other.size(), other.capacity()); 
+      std::memcpy(m_data, other.data(),  
+                  m_num_elements* sizeof(T)); 
+    } 
+
+    return *this; 
+  } 
+
+  /*! 
+   * \brief Move assignment operator for Array 
+   * 
+   * \note If you use the move assignment operator on an argument Array with 
+   *  an external data buffer, the move-assigned Array will wrap the external 
+   *  data buffer and the argument Array will be left in a valid empty state. 
+   */ 
+  Array& operator=( Array&& other ) 
+  { 
+
+    if ( this != &other ) 
+    { 
+      if ( m_data != nullptr && !m_is_external ) 
+      { 
+        axom::deallocate( m_data ); 
+      } 
+
+      m_data = other.m_data; 
+      m_num_elements = other.m_num_elements; 
+      m_capacity = other.m_capacity; 
+      m_resize_ratio = other.m_resize_ratio; 
+      m_is_external = other.m_is_external; 
+
+      other.m_data = nullptr; 
+      other.m_num_elements = 0; 
+      other.m_capacity = 0; 
+      other.m_resize_ratio = DEFAULT_RESIZE_RATIO; 
+      other.m_is_external = false; 
+    } 
+
+    return *this; 
+  } 
+
+/// @}
+
 
   /*!
    * Destructor. Frees the associated buffer unless the memory is external.
@@ -177,7 +255,7 @@ public:
    *
    * \param [in] idx the position of the value to return.
    *
-   * \note equivalent to *(array.getData() + idx).
+   * \note equivalent to *(array.data() + idx).
    *
    * \pre 0 <= idx < m_num_elements
    */
@@ -542,9 +620,6 @@ protected:
   IndexType m_capacity;
   double m_resize_ratio;
   bool m_is_external;
-
-  DISABLE_COPY_AND_ASSIGNMENT( Array );
-  DISABLE_MOVE_AND_ASSIGNMENT( Array );
 };
 
 
@@ -588,6 +663,41 @@ Array< T >::Array( T* data, IndexType num_elements, IndexType capacity ) :
   assert( m_num_elements >= 0 );
   assert( m_num_elements <= m_capacity );
   assert( m_data != nullptr || m_capacity <= 0 );
+}
+
+//------------------------------------------------------------------------------ 
+template< typename T > 
+Array< T >::Array( const Array& other ) : 
+  m_data( nullptr ), 
+  m_num_elements( 0 ), 
+  m_capacity( 0 ),  
+  m_resize_ratio( DEFAULT_RESIZE_RATIO ), 
+  m_is_external( false ) 
+{ 
+  initialize( other.size(), other.capacity() );  
+  std::memcpy( m_data, other.data(),  
+               m_num_elements * sizeof(T) ); 
+}   
+
+//------------------------------------------------------------------------------ 
+template< typename T > 
+Array< T >::Array( Array&& other ) : 
+  m_data( nullptr ), 
+  m_num_elements( 0 ), 
+  m_capacity( 0 ), 
+  m_resize_ratio( 0.0 ), 
+  m_is_external( false ) 
+{ 
+  m_data = other.m_data; 
+  m_num_elements = other.m_num_elements; 
+  m_capacity = other.m_capacity; 
+  m_resize_ratio = other.m_resize_ratio; 
+  m_is_external = other.m_is_external; 
+
+  other.m_data = nullptr; 
+  other.m_capacity = 0; 
+  other.m_resize_ratio = DEFAULT_RESIZE_RATIO; 
+  other.m_is_external = false; 
 }
 
 //------------------------------------------------------------------------------

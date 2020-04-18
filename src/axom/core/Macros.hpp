@@ -255,7 +255,7 @@
  * \endcode
  */
 #define DISABLE_MOVE_AND_ASSIGNMENT(className) \
-  className(const className&&) = delete;       \
-  className& operator=(const className&&) = delete
+  className(className&&) = delete;       \
+  className& operator=(className&&) = delete
 
 #endif /* AXOM_MACROS_HPP_ */
