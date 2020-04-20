@@ -4,12 +4,12 @@
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
 # Example that shows how to use an installed instance of Axom 
-# in a CMake-based build system.
+# in a BLT-based build system.
 #
 # Required configuration variables are stored in a CMake cache file 
 # called 'host-config.cmake' in the same directory
 #
-# This file defines paths to axom and optionally conduit.
+# This file defines paths to BLT, axom and optionally conduit.
 # It also contains information about the compiler used to build axom.
 #------------------------------------------------------------------------------
 #
@@ -18,13 +18,16 @@
 #  cd build
 #  cmake -C ../host-config.cmake ..
 #  make
-#  ./example
+#  ./bin/example
 #
 #------------------------------------------------------------------------------
 
 cmake_minimum_required(VERSION 3.8)
 
-project(using_with_cmake)
+project(using_with_blt)
+
+# Define some config options
+option(EXAMPLE_VERBOSE_OUTPUT "Verbose output about imported targets" OFF)
 
 # Simple function to check validity of a path variable, e.g. `FOO_DIR`
 # and a required file under it of the form `${FOO_DIR}/some/subpath/file`
@@ -42,6 +45,17 @@ function(check_var_and_path)
                              " file '${_file}'.")
     endif()
 endfunction()
+
+
+
+#------------------------------------------------------------------------------
+# Set up BLT with validity checks
+#------------------------------------------------------------------------------
+
+# Check that path to BLT is provided and valid
+check_var_and_path(BLT_SOURCE_DIR ${BLT_SOURCE_DIR}/SetupBLT.cmake)
+
+include(${BLT_SOURCE_DIR}/SetupBLT.cmake)
 
 
 #------------------------------------------------------------------------------
@@ -68,12 +82,18 @@ endif()
 #------------------------------------------------------------------------------
 # Set up example target that depends on axom
 #------------------------------------------------------------------------------
-add_executable(example example.cpp)
 
-# setup the axom include path
-target_include_directories(example PRIVATE ${AXOM_INCLUDE_DIRS})
+blt_add_executable(NAME       example 
+                   SOURCES    example.cpp
+                   DEPENDS_ON axom fmt)
 
-# link to axom targets
-target_link_libraries(example axom)
-target_link_libraries(example fmt)
+
+#------------------------------------------------------------------------------
+# Optionally, print out information about imported targets
+#------------------------------------------------------------------------------
+if(EXAMPLE_VERBOSE_OUTPUT)
+    foreach(_target axom cli11 fmt sparsehash conduit::conduit example)
+        blt_print_target_properties(TARGET ${_target})  
+    endforeach()
+endif()
 
