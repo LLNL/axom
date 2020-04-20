@@ -28,7 +28,7 @@ Using Axom in Your Project
 --------------------------
 
 The install includes examples that demonstrate how to use Axom
-in a CMake-based and Makefile-based build systems.
+in CMake-based, BLT-based and Makefile-based build systems.
 
 CMake-based build system example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -36,9 +36,19 @@ CMake-based build system example
 
 .. literalinclude:: ../../../examples/using-with-cmake/CMakeLists.txt
    :language: cmake
-   :lines: 26-39
+   :lines: 47-78
 
 See:  ``examples/axom/using-with-cmake``
+
+BLT-based build system example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. literalinclude:: ../../../examples/using-with-blt/CMakeLists.txt
+   :language: cmake
+   :lines: 51-88
+
+See:  ``examples/axom/using-with-blt``
 
 
 Makefile-based build system example
