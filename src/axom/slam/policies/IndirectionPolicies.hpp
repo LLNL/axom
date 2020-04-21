@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -294,7 +294,7 @@ bool STLVectorIndirection<PosType,ElemType>::isValid(PosType size,
     // Note: it is valid for the data buffer to have extra space
     PosType firstEltInd = offset;
     PosType lastEltInd = (size - 1) * stride + offset;
-    PosType vecSize = m_vecBuf->size();
+    PosType vecSize = static_cast< PosType >( m_vecBuf->size() );
 
     bool isRangeValid =
       (0 <= firstEltInd) && (firstEltInd < vecSize)

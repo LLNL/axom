@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -6,13 +6,15 @@
 #ifndef TRIANGLE_HPP_
 #define TRIANGLE_HPP_
 
-#include "axom/core/numerics/Determinants.hpp" // For numerics::determinant()
+#include "axom/core/Macros.hpp"
+#include "axom/core/numerics/Determinants.hpp"
 #include "axom/core/utilities/Utilities.hpp"
+
+#include "axom/slic/interface/slic.hpp"
 
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 
-#include "axom/slic/interface/slic.hpp"
 
 #include <cmath>   // for acos()
 #include <ostream> // for std::ostream
@@ -56,6 +58,7 @@ public:
   /*!
    * \brief Default constructor. Creates a degenerate triangle.
    */
+  AXOM_HOST_DEVICE
   Triangle() { }
 
   /*!
@@ -64,6 +67,7 @@ public:
    * \param [in] B point instance corresponding to vertex B of the triangle.
    * \param [in] C point instance corresponding to vertex C of the triangle.
    */
+  AXOM_HOST_DEVICE
   Triangle( const PointType& A,
             const PointType& B,
             const PointType& C );
@@ -71,6 +75,7 @@ public:
   /*!
    * \brief Destructor
    */
+  AXOM_HOST_DEVICE
   ~Triangle() { }
 
   /*!
@@ -78,6 +83,7 @@ public:
    * \param idx The index of the desired vertex
    * \pre idx is 0, 1 or 2
    */
+  AXOM_HOST_DEVICE
   PointType& operator[](int idx)
   {
     SLIC_ASSERT(idx >=0 && idx < NUM_TRI_VERTS);
@@ -89,6 +95,7 @@ public:
    * \param idx The index of the desired vertex
    * \pre idx is 0, 1 or 2
    */
+  AXOM_HOST_DEVICE
   const PointType& operator[](int idx) const
   {
     SLIC_ASSERT(idx >=0 && idx < NUM_TRI_VERTS);
@@ -100,6 +107,7 @@ public:
    * \pre This function is only valid when NDIMS = 3
    * \return n triangle normal when NDIMS=3, zero vector otherwise
    */
+  AXOM_HOST_DEVICE
   VectorType normal() const
   {
     SLIC_CHECK_MSG(NDIMS==3, "Triangle::normal() is only valid in 3D.");
@@ -114,6 +122,7 @@ public:
    * \brief Returns the area of the triangle
    * \pre Only defined when dimension NDIMS is 2 or 3
    */
+  AXOM_HOST_DEVICE
   double area() const
   {
     SLIC_CHECK_MSG( NDIMS == 2 || NDIMS == 3,
@@ -241,6 +250,7 @@ public:
    * \return true iff the triangle is degenerate (0 area)
    * \see primal::Point
    */
+  AXOM_HOST_DEVICE
   bool degenerate(double eps = 1.0e-12) const
   {
     return axom::utilities::isNearlyEqual(area(),  0.0, eps);
@@ -305,12 +315,9 @@ namespace primal
 template < typename T, int NDIMS >
 Triangle< T,NDIMS >::Triangle( const PointType& A,
                                const PointType& B,
-                               const PointType& C  )
-{
-  m_points[0] = A;
-  m_points[1] = B;
-  m_points[2] = C;
-}
+                               const PointType& C)
+   : m_points{A,B,C} 
+{}
 
 //------------------------------------------------------------------------------
 template < typename T, int NDIMS >

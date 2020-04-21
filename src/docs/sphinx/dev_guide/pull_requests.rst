@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level COPYRIGHT file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -12,7 +12,7 @@ Pull Requests and Code Reviews
 
 Before any code is merged into the develop or master branches, it
 must be tested, documented, reviewed, and accepted. Creating a pull request on
-the Axom Bitbucket project to merge a branch into develop or master 
+the Axom Github project to merge a branch into develop or master 
 initiates the test and review processes. All required build configurations
 and tests must pass for a pull request to be approved. Also, new tests 
 (unit, integration, etc.) must be created that exercise any new functionality 
@@ -24,7 +24,7 @@ of the Axom development team other than the originator of the pull
 request. It is recommended that several team members review pull 
 requests, especially when changes affect APIs, dependencies (within Axom
 and external), etc. Pull request reviewers can be 
-selected on Bitbucket when the pull request is created. Changes reviewed by 
+selected on Github when the pull request is created. Changes reviewed by 
 the team are accepted, rejected, or commented on for improvement; e.g., 
 issues to be addressed, suggested changes, etc. Pull requests can be updated
 with additional changes and commits as needed. When a pull request is 
@@ -33,7 +33,7 @@ development, it should be deleted.
 
 In addition to successful compilation and test passing, changes to the 
 develop and master branches should be scrutinized in other ways and using 
-other code health tools we use. See :ref:`bamboo-label` for more information 
+other code health tools we use. See :ref:`github-label` for more information 
 about using our continuous integration tools.
 
 
@@ -44,7 +44,7 @@ Pull Request Summary
 To recap, here is a summary of steps in a pull request:
 
   #. When code is ready to be considered for acceptance, create a pull request
-     on the Axom Bitbucket project. Identify the appropriate reviewers 
+     on the Axom Github project. Identify the appropriate reviewers 
      and add them to the pull request.
 
   #. Code must build successfully and all relevant tests must pass, including
@@ -58,7 +58,7 @@ To recap, here is a summary of steps in a pull request:
 
   #. When a pull request is approved it may be merged. If the merged branch is
      no longer needed, it should be deleted. This can be done when merging
-     with Bitbucket. 
+     with Github. 
 
 .. _review-label:
 

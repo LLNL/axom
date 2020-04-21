@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -161,11 +161,11 @@ TEST( spin_octree, octree_coveringLeafBlocks)
 
     // Each child or the root has two valid face neighbors
     int validNeighborCount = 0;
-    for(int i=0 ; i< blk.numFaceNeighbors() ; ++i)
+    for(int j=0 ; j< blk.numFaceNeighbors() ; ++j)
     {
-      BlockIndex neighborBlk = blk.faceNeighbor(i);
+      BlockIndex neighborBlk = blk.faceNeighbor(j);
 
-      SLIC_INFO(" Face neighbor " << i << " is " << neighborBlk );
+      SLIC_INFO(" Face neighbor " << j << " is " << neighborBlk );
 
       if( octree.coveringLeafBlock(neighborBlk) != BlockIndex::invalid_index() )
         validNeighborCount++;
@@ -194,14 +194,14 @@ TEST( spin_octree, octree_coveringLeafBlocks)
       // .. at a coarser level
       EXPECT_GE( blk.level(), coveringBlock.level());
 
-      for(int i=0 ; i< blk.numFaceNeighbors() ; ++i)
+      for(int k=0 ; k< blk.numFaceNeighbors() ; ++k)
       {
-        BlockIndex neighborBlk = blk.faceNeighbor(i);
+        BlockIndex neighborBlk = blk.faceNeighbor(k);
         BlockIndex coveringBlk = octree.coveringLeafBlock(neighborBlk);
 
         SLIC_INFO(
           "\tFace neighbor "
-          << i << " is " << neighborBlk
+          << k << " is " << neighborBlk
           << " -- Covering block is " << coveringBlk
           << (coveringBlk == BlockIndex::invalid_index()
               ? " -- invalid_index" : "")  );

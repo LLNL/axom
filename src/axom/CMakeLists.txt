@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -60,3 +60,21 @@ else()
     message(STATUS "AXOM_DATA_DIR: <undefined>")
 endif()
 
+#------------------------------------------------------------------------------
+# Fix FOLDER property for some targets
+#------------------------------------------------------------------------------
+if(TARGET axom)
+    set_target_properties(axom PROPERTIES FOLDER "axom")
+endif()
+
+# If Axom is the main project, set FOLDER property for top-level check targets
+if ("${PROJECT_SOURCE_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
+    set(_code_check_targets "docs" "doxygen_docs"
+                            "check" "style" 
+                            "uncrustify_check" "uncrustify_style" )
+    foreach(_tgt ${_code_check_targets})
+        if(TARGET ${_tgt})
+            set_target_properties(${_tgt} PROPERTIES FOLDER "axom/code_checks")
+        endif()
+    endforeach()
+endif()

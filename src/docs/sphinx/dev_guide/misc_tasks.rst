@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level COPYRIGHT file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -30,9 +30,9 @@ Describe how to run the scripts to install third-party libraries for
 testing different versions locally on a branch and for installing new
 libraries for the team to use...
 
-Building and installing TPLs for all compilers on LC CHAOS platforms (CZ)::
+Building and installing TPLs for all compilers on the current LC platform you are on::
 
-   $ python ./scripts/uberenv/llnl_install_scripts/llnl_cz_uberenv_install_chaos_5_x86_64_ib_all_compilers.py
+   $ python ./scripts/llnl_scripts/build_tpls.py -d <output/path/>
 
 Questions we need to answer include:
 

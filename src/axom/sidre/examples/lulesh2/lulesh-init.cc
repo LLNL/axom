@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -7,7 +7,7 @@
 #ifdef AXOM_USE_MPI
 # include <mpi.h>
 #endif
-#if _OPENMP
+#ifdef _OPENMP
 #include <omp.h>
 #endif
 #include <stdio.h>
@@ -110,7 +110,7 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
 
    BuildMesh(nx, edgeNodes, edgeElems);
 
-#if _OPENMP
+#ifdef _OPENMP
    SetupThreadSupportStructures();
 #else
    // These arrays are not used if we're not threaded
@@ -251,7 +251,7 @@ Domain::BuildMesh(Int_t nx, Int_t edgeNodes, Int_t edgeElems)
 void
 Domain::SetupThreadSupportStructures()
 {
-#if _OPENMP
+#ifdef _OPENMP
    Index_t numthreads = omp_get_max_threads();
 #else
    Index_t numthreads = 1;

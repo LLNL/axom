@@ -1,24 +1,27 @@
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+#------------------------------------------------------------------------------
+# Mint component
+#------------------------------------------------------------------------------
 
-################################
+#------------------------------------------------------------------------------
 # Check necessary dependencies
-################################
+#------------------------------------------------------------------------------
 axom_component_requires(NAME       Mint
                         COMPONENTS SLIC)
 
-################################
+#------------------------------------------------------------------------------
 # Add mint options
-################################
+#------------------------------------------------------------------------------
 cmake_dependent_option( AXOM_MINT_USE_SIDRE "Enables Sidre support in Mint" ON
                        "AXOM_ENABLE_SIDRE" OFF)
 
 
-################################
+#------------------------------------------------------------------------------
 # Specify all headers/sources
-################################
+#------------------------------------------------------------------------------
 ## generate mint config
 configure_file ( core/config.hpp.in
                  ${CMAKE_BINARY_DIR}/include/axom/mint/config.hpp )
@@ -106,9 +109,9 @@ set( mint_sources
     utils/su2_utils.cpp
    )
 
-################################
+#------------------------------------------------------------------------------
 # Make/Install the library
-################################
+#------------------------------------------------------------------------------
 set( mint_dependencies
      core
      slic
@@ -118,7 +121,7 @@ blt_list_append( TO mint_dependencies
                  ELEMENTS sidre conduit::conduit
                  IF AXOM_MINT_USE_SIDRE )
 
-blt_list_append( TO mint_dependencies ELEMENTS raja IF RAJA_FOUND )
+blt_list_append( TO mint_dependencies ELEMENTS RAJA IF RAJA_FOUND )
 
 blt_list_append( TO mint_dependencies ELEMENTS openmp IF ENABLE_OPENMP )
 
@@ -144,21 +147,21 @@ install(FILES       ${CMAKE_BINARY_DIR}/include/axom/mint/config.hpp
         )
 
 
-################################
+#------------------------------------------------------------------------------
 # Add examples
-################################
+#------------------------------------------------------------------------------
 if (AXOM_ENABLE_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
-################################
+#------------------------------------------------------------------------------
 # Add tests
-################################
+#------------------------------------------------------------------------------
 if (AXOM_ENABLE_TESTS)
   add_subdirectory(tests)
 endif()
 
-################################
+#------------------------------------------------------------------------------
 # Add code checks
-################################
+#------------------------------------------------------------------------------
 axom_add_code_checks(PREFIX mint)

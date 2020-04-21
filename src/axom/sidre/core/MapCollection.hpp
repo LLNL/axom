@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -25,7 +25,7 @@
  *          we can explore alternative collection implementations for
  *          performance (insertion, lookup, etc.) and memory overhead.
  *          The collection used by the Group class can be changed via
- *          the collection typedef in the Group class header file.
+ *          the collection type alias in the Group class header file.
  *
  *          To try another collection, encapsulate it in a new class with
  *          the API described below or pass it as a template parameter to
@@ -115,8 +115,8 @@
  ******************************************************************************
  */
 
-#ifndef MAP_COLLECTIONS_HPP_
-#define MAP_COLLECTIONS_HPP_
+#ifndef SIDRE_MAP_COLLECTIONS_HPP_
+#define SIDRE_MAP_COLLECTIONS_HPP_
 
 // Standard C++ headers
 #include <map>
@@ -281,9 +281,9 @@ private:
   std::stack< IndexType > m_free_ids;
 
 #if defined(AXOM_USE_SPARSEHASH)
-  typedef google::dense_hash_map<std::string, IndexType> MapType;
+  using MapType = google::dense_hash_map<std::string, IndexType>;
 #else
-  typedef std::unordered_map<std::string, IndexType> MapType;
+  using MapType = std::unordered_map<std::string, IndexType>;
 #endif
 
   MapType m_name2idx_map;
@@ -405,4 +405,4 @@ TYPE* MapCollection<TYPE>::removeItem(IndexType idx)
 } /* end namespace sidre */
 } /* end namespace axom */
 
-#endif /* MAP_COLLECTIONS_HPP_ */
+#endif /* SIDRE_MAP_COLLECTIONS_HPP_ */

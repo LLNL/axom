@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -26,7 +26,7 @@ void check_for_all( )
 {
   EXPECT_TRUE( axom::execution_space< ExecSpace >::valid() );
   std::cout << "checking axom::for_all() with [" <<
-                axom::execution_space< ExecSpace >::name() << "]\n";
+    axom::execution_space< ExecSpace >::name() << "]\n";
 
   // STEP 0: set some constants
   constexpr int VALUE_1 = -42;
@@ -34,19 +34,17 @@ void check_for_all( )
   constexpr int N       = 256;
 
   // STEP 1: set default allocator for the execution space
-#ifdef AXOM_USE_UMPIRE
-  umpire::Allocator current_allocator = axom::getDefaultAllocator();
+  const int currentAllocatorID = axom::getDefaultAllocatorID();
   axom::setDefaultAllocator( axom::execution_space<ExecSpace>::allocatorID() );
-#endif
 
   // STEP 0: allocate buffer
   int* a = axom::allocate< int >( N );
 
   // STEP 1: initialize to VALUE_1
   axom::for_all< ExecSpace >( N, AXOM_LAMBDA(axom::IndexType idx)
-  {
-    a[ idx ] = VALUE_1;
-  } );
+    {
+      a[ idx ] = VALUE_1;
+    } );
 
   if ( axom::execution_space< ExecSpace >::async() )
   {
@@ -61,9 +59,9 @@ void check_for_all( )
 
   // STEP 3: add VALUE_2 to all entries resulting to zero
   axom::for_all< ExecSpace >( 0, N, AXOM_LAMBDA(axom::IndexType idx)
-  {
-    a[ idx ] += VALUE_2;
-  } );
+    {
+      a[ idx ] += VALUE_2;
+    } );
 
 
   if ( axom::execution_space< ExecSpace >::async() )
@@ -80,9 +78,8 @@ void check_for_all( )
   // STEP 5: cleanup
   axom::deallocate( a );
 
-#ifdef AXOM_USE_UMPIRE
-  axom::setDefaultAllocator( current_allocator );
-#endif
+
+  axom::setDefaultAllocator( currentAllocatorID );
 }
 
 } /* end anonymous namespace */

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -22,6 +22,13 @@
 namespace axom
 {
 
+#ifdef AXOM_USE_UMPIRE
+const int DEFAULT_ALLOCATOR_ID =
+  umpire::ResourceManager::getInstance().getAllocator("HOST").getId();
+#else
+constexpr int DEFAULT_ALLOCATOR_ID = 0;
+#endif
+
 constexpr int INVALID_ALLOCATOR_ID = -1;
 
 /// \name Memory Management Routines
@@ -34,7 +41,7 @@ constexpr int INVALID_ALLOCATOR_ID = -1;
  * \param [in] resource_type the Umpire resource type
  * \return ID the id of the predefined umpire allocator.
  */
-inline int getResourceAllocatorID(
+inline int getUmpireResourceAllocatorID(
   umpire::resource::MemoryResourceType resource_type )
 {
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
@@ -42,48 +49,46 @@ inline int getResourceAllocatorID(
   return alloc.getId();
 }
 
-/*!
- * \brief Returns the umpire allocator associated with the given ID.
- * \param [in] allocatorID the ID of the allocator to get.
- */
-inline umpire::Allocator getAllocator( int allocatorID )
-{
-  return umpire::ResourceManager::getInstance().getAllocator( allocatorID );
-}
+#endif
 
 /*!
  * \brief Sets the default memory space to use. Default is set to HOST
- * \param [in] allocator the umpire::Allocator to make default.
- */
-inline void setDefaultAllocator( umpire::Allocator allocator )
-{
-  umpire::ResourceManager::getInstance().setDefaultAllocator( allocator );
-}
-
-/*!
- * \brief Sets the default memory space to use. Default is set to HOST
- * \param [in] allocatorID ID of the umpire::Allocator to use.
+ * \param [in] allocatorID ID of the allocator to use.
  */
 inline void setDefaultAllocator( int allocatorID )
 {
-  setDefaultAllocator( getAllocator( allocatorID ) );
+#ifdef AXOM_USE_UMPIRE
+  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+  umpire::Allocator allocator = rm.getAllocator( allocatorID );
+  rm.setDefaultAllocator( allocator );
+#else
+  static_cast< void >( allocatorID ); // silence compiler warnings
+#endif
 }
 
 /*!
  * \brief Returns the current default memory space used.
+ * \note If Umpire is used, the corresponding umpire allocator can be retrieved
+ * by:
+ *  <code>
+ *    umpire::Allocator alloc =
+ * umpire::ResourceManager::getInstance().getAllocator( allocID );
+ *  </code>
  */
-inline umpire::Allocator getDefaultAllocator()
+inline int getDefaultAllocatorID()
 {
-  return umpire::ResourceManager::getInstance().getDefaultAllocator();
-}
-
+#ifdef AXOM_USE_UMPIRE
+  return umpire::ResourceManager::getInstance().getDefaultAllocator().getId();
+#else
+  return axom::DEFAULT_ALLOCATOR_ID;
 #endif
+}
 
 /*!
  * \brief Allocates a chunk of memory of type T.
  *
  * \param [in] n the number of elements to allocate.
- * \param [in] spaceId the memory space where memory will be allocated
+ * \param [in] allocator the Umpire allocator to use
  *(optional)
  *
  * \tparam T the type of pointer returned.
@@ -94,17 +99,11 @@ inline umpire::Allocator getDefaultAllocator()
  *  axom::setDefaultAllocator().
  *
  * \return p pointer to the new allocation or a nullptr if allocation failed.
- *
- * \pre spaceId >= 0 && spaceId < NUM_MEMORY_SPACES
  */
 template < typename T >
-#ifdef AXOM_USE_UMPIRE
-inline T* allocate( std::size_t n,
-                    umpire::Allocator allocator=
-                      getDefaultAllocator() ) noexcept;
-#else
-inline T* allocate( std::size_t n ) noexcept;
-#endif
+inline T* allocate(std::size_t n,
+                   int allocID=getDefaultAllocatorID() ) noexcept;
+
 
 /*!
  * \brief Frees the chunk of memory pointed to by the supplied pointer, p.
@@ -125,6 +124,10 @@ inline void deallocate( T*& p ) noexcept;
  * \tparam T the type pointer p points to.
  *
  * \return p pointer to the new allocation or a nullptr if allocation failed.
+ *
+ * \note When n == 0, this function returns a valid pointer (of size 0) in the
+ * current allocator's memory space. This follows the semantics of
+ * Umpire's reallocate function.
  */
 template < typename T >
 inline T* reallocate( T* p, std::size_t n ) noexcept;
@@ -148,33 +151,23 @@ inline void copy( void* dst, void* src, std::size_t numbytes ) noexcept;
 //                        IMPLEMENTATION
 //------------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------
+template < typename T >
+inline T* allocate( std::size_t n, int allocID ) noexcept
+{
+  const std::size_t numbytes = n * sizeof( T );
+
 #ifdef AXOM_USE_UMPIRE
 
-template < typename T >
-inline T* allocate( std::size_t n, umpire::Allocator allocator ) noexcept
-{
-  if ( n == 0 )
-    return nullptr;
-
-  const std::size_t numbytes = n * sizeof( T );
-  return static_cast< T* >( allocator.allocate( numbytes )  );
-}
+  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+  umpire::Allocator allocator = rm.getAllocator( allocID );
+  return static_cast< T* >( allocator.allocate( numbytes ) );
 
 #else
-
-template < typename T >
-inline T* allocate( std::size_t n ) noexcept
-{
-  if ( n == 0 )
-    return nullptr;
-
-  const std::size_t numbytes = n * sizeof( T );
-  return static_cast< T* >( std::malloc( numbytes )  );
-}
-
+  static_cast< void >( allocID ); // silence compiler warnings
+  return static_cast< T* >( std::malloc( numbytes ) );
 #endif
 
+}
 //------------------------------------------------------------------------------
 template < typename T >
 inline void deallocate( T*& pointer ) noexcept
@@ -200,22 +193,57 @@ inline void deallocate( T*& pointer ) noexcept
 template < typename T >
 inline T* reallocate( T* pointer, std::size_t n ) noexcept
 {
-  if ( n == 0 )
-  {
-    axom::deallocate( pointer );
-    return nullptr;
-  }
-
   const std::size_t numbytes = n * sizeof( T );
 
-#ifdef AXOM_USE_UMPIRE
+#if defined(AXOM_USE_UMPIRE) && !defined(UMPIRE_VERSION_MAJOR)
 
+  // Workaround for bug in Umpire's handling on reallocate(0)
+  // Fixed in Umpire PR #292 (after v1.1.0)
+
+  // NOTE: The UMPIRE_VERSION_MAJOR macro was added in umpire-v2.0.0. If the
+  // macro is not defined, we assume that the Umpire version is less than 2.0.0
+  // and that the workaround is needed.
+  if(n==0)
+  {
+    axom::deallocate<T>(pointer);
+    pointer = axom::allocate<T>(0);
+    return pointer;
+  }
+
+  umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+
+  // Workaround for bug in Umpire's handling of reallocate
+  // called on a zero-sized allocation
+  // Fixed in Umpire PR #292 (after v1.1.0)
+  if(pointer != nullptr)
+  {
+    auto* allocRecord = rm.findAllocationRecord(pointer);
+    if(allocRecord && allocRecord->size == 0)
+    {
+      axom::deallocate<T>(pointer);
+      pointer = axom::allocate<T>(n);
+      return pointer;
+    }
+  }
+
+  pointer = static_cast< T* >( rm.reallocate( pointer, numbytes ) );
+
+#elif defined(AXOM_USE_UMPIRE) && (UMPIRE_VERSION_MAJOR >= 2) && \
+  (UMPIRE_VERSION_MINOR >= 1)
+
+  // Umpire 2.1.0 and above handles reallocate(0) natively
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
   pointer = static_cast< T* >( rm.reallocate( pointer, numbytes ) );
 
 #else
 
   pointer = static_cast< T* >( std::realloc( pointer, numbytes ) );
+
+  // Consistently handle realloc(0) for std::realloc to match Umpire's behavior
+  if(n==0 && pointer == nullptr)
+  {
+    pointer = axom::allocate<T>(0);
+  }
 
 #endif
 

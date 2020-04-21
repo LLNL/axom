@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -131,7 +131,7 @@ int STLReader::readAsciiSTL()
   }
 
   // Set the number of nodes and faces
-  m_num_nodes = m_nodes.size() / 3;
+  m_num_nodes = static_cast< axom::IndexType >( m_nodes.size() ) / 3;
   m_num_faces = m_num_nodes / 3;
 
   ifs.close();

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -27,7 +27,7 @@ namespace axom
 /*!
  * \brief Indicates sequential execution on the CPU.
  */
-struct SEQ_EXEC{ };
+struct SEQ_EXEC { };
 
 /*!
  * \brief execution_space traits specialization for SEQ_EXEC
@@ -56,9 +56,9 @@ struct execution_space< SEQ_EXEC >
   static int allocatorID() noexcept
   {
 #ifdef AXOM_USE_UMPIRE
-    return axom::getResourceAllocatorID( umpire::resource::Host );
+    return axom::getUmpireResourceAllocatorID( umpire::resource::Host );
 #else
-    return 0;
+    return axom::DEFAULT_ALLOCATOR_ID;
 #endif
   };
 

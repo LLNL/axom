@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -7,6 +7,36 @@
 
 #include "axom/core/utilities/Utilities.hpp"
 
+// C/C++ includes
+#include <type_traits>
+
+//------------------------------------------------------------------------------
+// HELPER METHODS
+//------------------------------------------------------------------------------
+template < typename T >
+void check_random_real( int offset )
+{
+  AXOM_STATIC_ASSERT( std::is_floating_point< T >::value );
+
+  constexpr T min = 0;
+  constexpr T max = 1;
+
+  const T curr_min = min - static_cast< T >( offset );
+  const T curr_max = max - static_cast< T >( offset );
+
+  constexpr int MAX_ITERS = 100;
+  for ( int i=0; i < MAX_ITERS; ++i )
+  {
+    T val = axom::utilities::random_real( curr_min, curr_max );
+    EXPECT_GE( val, curr_min );
+    EXPECT_LT( val, curr_max );
+  }
+
+}
+
+//------------------------------------------------------------------------------
+// UNIT TESTS
+//------------------------------------------------------------------------------
 TEST(core_Utilities,log2)
 {
   std::cout<<"Testing log2 functions."<< std::endl;
@@ -40,34 +70,21 @@ TEST(core_Utilities,log2)
   }
 }
 
+//------------------------------------------------------------------------------
 TEST(core_Utilities,random_real)
 {
   std::cout<<"Testing random_real functions (non-deterministic)."<< std::endl;
 
-  int min = 0;
-  int max = 1;
   for (int offset = 0 ; offset < 10 ; ++offset)
   {
-    int cur_min = min - offset;
-    int cur_max = max + offset;
-    for (int i = 0 ; i < 100 ; ++i)
-    {
-      float f_val = axom::utilities::random_real<float>(cur_min, cur_max);
-      EXPECT_GE(f_val, cur_min);
-      EXPECT_LT(f_val, cur_max);
-
-      double d_val = axom::utilities::random_real<double>(cur_min, cur_max);
-      EXPECT_GE(d_val, cur_min);
-      EXPECT_LT(d_val, cur_max);
-
-      long double ld_val = axom::utilities::random_real<long double>(cur_min,
-                                                                     cur_max);
-      EXPECT_GE(ld_val, cur_min);
-      EXPECT_LT(ld_val, cur_max);
-    }
+    check_random_real< float >( offset );
+    check_random_real< double >( offset );
+    check_random_real< long double >( offset );
   }
+
 }
 
+//------------------------------------------------------------------------------
 TEST( core_Utilities,random_real_with_seed )
 {
   std::cout<<"Testing random_real functions (deterministic)."<< std::endl;
@@ -94,6 +111,7 @@ TEST( core_Utilities,random_real_with_seed )
 
 }
 
+//------------------------------------------------------------------------------
 TEST(core_Utilities,minmax)
 {
   std::cout<<"Testing min and max functions."<< std::endl;

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -1305,11 +1305,11 @@ void check_append_cells( const UnstructuredMesh< MIXED_SHAPE >* mesh,
   /* Check using the other getCell */
   for ( IndexType i = 0 ; i < n_cells ; ++i )
   {
-    const IndexType* cell = mesh->getCellNodeIDs( i );
+    const IndexType* cellNodeIds = mesh->getCellNodeIDs( i );
     IndexType num_nodes = mesh->getNumberOfCellNodes( i );
     for ( IndexType j = 0 ; j < num_nodes ; ++j )
     {
-      EXPECT_EQ( cell[ j ], connecValue( i, j ) );
+      EXPECT_EQ( cellNodeIds[ j ], connecValue( i, j ) );
     }
   }
 }
@@ -2099,7 +2099,7 @@ void resize_nodes( UnstructuredMesh< TOPO >* mesh )
   /* Append one more, should trigger a resize. */
   append_node_single( mesh, 1 );
   n_nodes++;
-  node_capacity = n_nodes * resize_ratio + 0.5;
+  node_capacity = static_cast< IndexType >( n_nodes * resize_ratio + 0.5 );
   ASSERT_EQ( n_nodes, mesh->getNumberOfNodes() );
   ASSERT_EQ( node_capacity, mesh->getNodeCapacity() );
 
@@ -2114,7 +2114,7 @@ void resize_nodes( UnstructuredMesh< TOPO >* mesh )
   mesh->setNodeResizeRatio( resize_ratio );
   append_node_structs( mesh, 100 );
   n_nodes += 100;
-  node_capacity = resize_ratio * n_nodes + 0.5;
+  node_capacity = static_cast< IndexType >( resize_ratio * n_nodes + 0.5 );
   ASSERT_EQ( n_nodes, mesh->getNumberOfNodes() );
   ASSERT_EQ( node_capacity, mesh->getNodeCapacity() );
 
@@ -2195,7 +2195,7 @@ void resize_cells( UnstructuredMesh< TOPO >* mesh )
   /* Append one more, should trigger a resize. */
   append_cell_single( mesh, 1 );
   n_cells++;
-  cell_capacity = n_cells * resize_ratio + 0.5;
+  cell_capacity = static_cast< IndexType >( n_cells * resize_ratio + 0.5 );
   connec_capacity = mesh->getCellNodesCapacity();
   ASSERT_EQ( n_cells, mesh->getNumberOfCells() );
   ASSERT_EQ( cell_capacity, mesh->getCellCapacity() );
@@ -2212,7 +2212,7 @@ void resize_cells( UnstructuredMesh< TOPO >* mesh )
   mesh->setCellResizeRatio( resize_ratio );
   append_cell_multiple( mesh, 100 );
   n_cells += 100;
-  cell_capacity = resize_ratio * n_cells + 0.5;
+  cell_capacity = static_cast< IndexType >( resize_ratio * n_cells + 0.5 );
   ASSERT_EQ( n_cells, mesh->getNumberOfCells() );
   ASSERT_EQ( cell_capacity, mesh->getCellCapacity() );
 

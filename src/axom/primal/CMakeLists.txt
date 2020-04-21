@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -44,6 +44,8 @@ set( primal_headers
 
      operators/detail/clip_impl.hpp
      operators/detail/intersect_bezier_impl.hpp
+     operators/detail/intersect_ray_impl.hpp
+     operators/detail/intersect_bounding_box_impl.hpp
      operators/detail/intersect_impl.hpp
    )
 
@@ -60,6 +62,8 @@ set( primal_dependencies
      core
      slic
      )
+     
+blt_list_append( TO primal_dependencies ELEMENTS cuda IF ENABLE_CUDA )
 
 blt_add_library(
     NAME                  primal

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -60,8 +60,8 @@ void getSphereSurfaceMesh( mint::UnstructuredMesh< mint::SINGLE_SHAPE >* mesh,
   SLIC_ASSERT( mesh->hasMixedCellTypes()==false );
   SLIC_ASSERT( mesh->getCellType()==mint::TRIANGLE );
 
-  const double totalNodes = THETA_RES * PHI_RES;
-  const double totalCells = (2 * THETA_RES) + (THETA_RES * PHI_RES);
+  const IndexType totalNodes = THETA_RES * PHI_RES;
+  const IndexType totalCells = (2 * THETA_RES) + (THETA_RES * PHI_RES);
   mesh->reserve( totalNodes, totalCells );
 
   const double theta_start = 0;

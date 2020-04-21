@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -64,7 +64,10 @@ struct Brood
    */
   static GridPt reconstructGridPt(MortonIndexType morton, int offset)
   {
-    return MortonizerType::demortonize( (morton << DIM) + offset);
+    return
+      static_cast< GridPt >(
+          MortonizerType::demortonize(
+              static_cast< MortonIndexType >( (morton<<DIM)+offset) ) );
   }
 private:
   MortonIndexType m_broodIdx;           /** MortonIndex of the base point of all

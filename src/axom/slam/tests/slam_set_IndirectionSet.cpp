@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -130,7 +130,7 @@ using MyTypes = ::testing::Types<
         slam::VectorIndirectionSet< axom::int32, axom::int64 >
         >;
 
-TYPED_TEST_CASE(IndirectionSetTester, MyTypes);
+TYPED_TEST_SUITE(IndirectionSetTester, MyTypes);
 
 
 TYPED_TEST(IndirectionSetTester, constuct)

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -27,7 +27,7 @@ namespace axom
 /*!
  * \brief Indicates parallel execution on the CPU using OpenMP.
  */
-struct OMP_EXEC{ };
+struct OMP_EXEC { };
 
 /*!
  * \brief execution_space traits specialization for OMP_EXEC
@@ -48,9 +48,9 @@ struct execution_space< OMP_EXEC >
   static int allocatorID() noexcept
   {
 #ifdef AXOM_USE_UMPIRE
-    return axom::getResourceAllocatorID(umpire::resource::Host);
+    return axom::getUmpireResourceAllocatorID(umpire::resource::Host);
 #else
-    return 0;
+    return axom::DEFAULT_ALLOCATOR_ID;
 #endif
   };
 

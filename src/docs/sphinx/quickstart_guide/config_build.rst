@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level COPYRIGHT file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -32,10 +32,10 @@ Basic requirements:
 Compilers we support (listed with minimum supported version):
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  * Clang 3.9.1
+  * Clang 4.0.0
   * GCC 4.9.3
   * IBM XL 13
-  * Intel 15
+  * Intel 18
   * Microsoft Visual Studio 2015
   * Microsoft Visual Studio 2015 with the Intel toolchain
 
@@ -370,7 +370,7 @@ Please see :ref:`using_in_your_project` for examples of how to use Axom in your 
 ..
 .. 1. Add Axom as a git submodule to your project, for example: ::
 ..
-..    $ git submodule add ssh://git@cz-bitbucket.llnl.gov:7999/atk/axom.git <path/to/axom>
+..    $ git submodule add git@github.com:LLNL/axom.git <path/to/axom>
 ..
 .. .. note::
 ..       If you are not using BLT_ in your project, you'll have to issue the

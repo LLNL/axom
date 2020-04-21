@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -170,7 +170,7 @@ struct SimpleQuadMesh
              .fromSet( &elems )
              .toSet( &verts )
              .indices(RelationBuilder::IndicesSetBuilder()
-                      .size( evInds.size() )
+                      .size( static_cast< int >(evInds.size()) )
                       .data( evInds.data() ) );
       // _quadmesh_example_construct_bdry_relation_end
     }
@@ -186,7 +186,7 @@ struct SimpleQuadMesh
                         .size( verts.size() )
                         .data( veBegins.data() ) )
                .indices( RelationBuilder::IndicesSetBuilder()
-                         .size( veInds.size() )
+                         .size( static_cast< int >( veInds.size() ) )
                          .data( veInds.data() ) );
       // _quadmesh_example_construct_cobdry_relation_end
     }

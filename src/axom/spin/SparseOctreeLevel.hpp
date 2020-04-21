@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -376,7 +376,9 @@ public:
   {
     if(empty())
       return 0;
-    return (this->m_level == 0) ? 1 : (m_map.size() * Base::BROOD_SIZE);
+
+    return ( (this->m_level == 0) ?
+                1 : ( static_cast< int >( m_map.size() ) * Base::BROOD_SIZE ) );
   }
 
   /** \brief Returns the number of internal blocks in the level */

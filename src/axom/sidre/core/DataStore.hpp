@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -13,8 +13,8 @@
  ******************************************************************************
  */
 
-#ifndef DATASTORE_HPP_
-#define DATASTORE_HPP_
+#ifndef SIDRE_DATASTORE_HPP_
+#define SIDRE_DATASTORE_HPP_
 
 // Standard C++ headers
 #include <vector>
@@ -442,7 +442,7 @@ private:
 
   ///////////////////////////////////////////////////////////////////
   //
-  typedef MapCollection<Attribute> AttributeCollection;
+  using AttributeCollection = MapCollection<Attribute>;
   ///////////////////////////////////////////////////////////////////
 
   /// Collection of Attributes
@@ -456,4 +456,4 @@ private:
 } /* end namespace sidre */
 } /* end namespace axom */
 
-#endif /* DATASTORE_HPP_ */
+#endif /* SIDRE_DATASTORE_HPP_ */

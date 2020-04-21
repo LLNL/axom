@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -26,13 +26,10 @@ namespace sidre
  */
 int getValidAllocatorID( int allocID )
 {
-#ifdef AXOM_USE_UMPIRE
   if ( allocID == INVALID_ALLOCATOR_ID )
   {
-    allocID = getDefaultAllocator().getId();
+    allocID = getDefaultAllocatorID();
   }
-#endif
-
   return allocID;
 }
 
@@ -422,11 +419,7 @@ void Buffer::detachFromAllViews()
 void* Buffer::allocateBytes(IndexType num_bytes, int allocID)
 {
   allocID = getValidAllocatorID(allocID);
-#ifdef AXOM_USE_UMPIRE
-  return axom::allocate<axom::int8>(num_bytes, getAllocator(allocID));
-#else
-  return axom::allocate<axom::int8>(num_bytes);
-#endif
+  return axom::allocate<axom::int8>(num_bytes, allocID );
 }
 
 /*

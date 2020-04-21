@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -231,7 +231,7 @@ public:
   /** Set each entry in the map to the given value  */
   void        fill(DataType val = DataType())
   {
-    const SetPosition sz = m_data.size();
+    const SetPosition sz = static_cast< SetPosition >( m_data.size() );
 
     for(SetPosition idx = SetPosition() ; idx < sz ; ++idx)
     {

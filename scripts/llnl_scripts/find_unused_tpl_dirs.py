@@ -1,7 +1,7 @@
 #!/bin/sh
 "exec" "python" "-u" "-B" "$0" "$@"
 
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -35,7 +35,7 @@ import sys
 
 from os.path import join as pjoin
 
-from llnl_lc_build_tools import sexe, get_timestamp, get_shared_tpl_builds_dir
+from llnl_lc_build_tools import sexe, get_timestamp, get_shared_libs_dir
 
 
 def unique(lst):
@@ -49,9 +49,18 @@ def lc_tpl_root_dirs():
     """
     Returns list of root dirs Axom have used for tpl installs on LC
     """
-    return [get_shared_tpl_builds_dir(),
-            "/usr/workspace/wsa/axom/thirdparty_libs/builds/", 
-            "/usr/workspace/wsrzc/axom/thirdparty_libs/builds/"]    
+    root_dirs = []
+    for sys_type in ["blueos_3_ppc64le_ib_p9", "blueos_3_ppc64le_ib", "toss_3_x86_64_ib"]:
+        libs_dir = pjoin(get_shared_libs_dir(), sys_type)
+        root_dirs.append(root_dir)
+
+        devtools_dir = pjoin(get_shared_devtool_dir(), sys_type)
+        root_dirs.append(devtools_dir)
+
+    # Add legacy dir until we have moved fully to new directories
+    root_dirs.append("/usr/WS1/axom/thirdparty_libs/builds")
+
+    return root_dirs    
 
 def clone_axom():
     """
@@ -64,7 +73,7 @@ def clone_axom():
     os.mkdir(tmp_dir)
     os.chdir(tmp_dir)
     print "[cloning axom into %s]" % pjoin(tmp_dir,"axom")
-    res = sexe("git clone ssh://git@cz-bitbucket.llnl.gov:7999/atk/axom.git",echo=True)
+    res = sexe("git clone git@github.com:LLNL/axom.git",echo=True)
     if res != 0:
         print "[ERROR: clone of axom repo failed]"
         sys.exit(res)
@@ -187,12 +196,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-
-
-

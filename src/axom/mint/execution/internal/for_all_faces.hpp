@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -317,12 +317,13 @@ inline void for_all_faces_impl( xargs::nodeids,
                                 KernelType&& kernel )
 {
   const IndexType dimension = m.getDimension();
-  const IndexType numIFaces = m.getTotalNumFaces( I_DIRECTION );
   const IndexType* offsets  = m.getCellNodeOffsetsArray();
   const IndexType cellNodeOffset3 = offsets[ 3 ];
 
   if ( dimension == 2 )
   {
+    const IndexType numIFaces = m.getTotalNumFaces( I_DIRECTION );
+
     helpers::for_all_I_faces< ExecPolicy >( xargs::ij(), m,
       AXOM_LAMBDA( IndexType faceID, IndexType AXOM_NOT_USED(i),
                    IndexType AXOM_NOT_USED(j) )

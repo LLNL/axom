@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level COPYRIGHT file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -14,7 +14,7 @@ The quickest path to install Axom and its dependencies is via `uberenv <https://
 
 .. code:: bash
 
-    $ git clone --recursive ssh://git@cz-bitbucket.llnl.gov:7999/atk/axom.git
+    $ git clone --recursive git@github.com:LLNL/axom.git
     $ cd axom
     $ python scripts/uberenv/uberenv.py --install --prefix="build"
 

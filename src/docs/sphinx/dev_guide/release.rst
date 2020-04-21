@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level COPYRIGHT file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -113,10 +113,11 @@ approved. At this point, the release candidate branch can be deleted.
 5: Make a Release Tarball
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* Checkout the master branch locally and run the ``axom/scripts/make_release_tarball.sh``
-  script. This will generate a tarball of the form ``Axom-v0.3.1.tar.gz``
+* Checkout the master branch locally and run ``axom/scripts/make_release_tarball.sh --with-data``
+  This will generate a two tarballs of the form ``Axom-v0.3.1.tar.gz`` and ``AxomData-v0.3.1.tar.gz``
+  each consistsing of the axom source and data respectively.
 
-* Upload the tarball for the corresponding release, by going to the
+* Upload the tarballs for the corresponding release, by going to the
   `Github Releases section <https://github.com/LLNL/axom/releases>`_ and ``Edit``
   the release created earlier.
 

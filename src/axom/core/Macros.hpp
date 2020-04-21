@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -67,6 +67,15 @@
   static void cuda_test_ ## X ## Y()
 #else
 #define AXOM_CUDA_TEST(X, Y) TEST(X, Y)
+#endif
+
+/*!
+ * \def AXOM_DEVICE_CODE
+ *
+ * \brief Convenience macro used for kernel code
+ */
+#if defined (__CUDA_ARCH__)
+#define AXOM_DEVICE_CODE
 #endif
 
 /*!

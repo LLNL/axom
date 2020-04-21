@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -30,11 +30,11 @@
 ### Setup Axom components
 
 # Disable Sidre until we can successfully link to HDF5 and Conduit on Windows
-set(ENABLE_SIDRE OFF CACHE BOOL "")
+set(AXOM_ENABLE_SIDRE OFF CACHE BOOL "")
 #set(HDF5_DIR    ... CACHE PATH "")
 #set(CONDUIT_DIR ... CACHE PATH "")
 
-# Disable Fortran since Visual Studio is not generating modules for our component Fortan interfaces
+# Disable Fortran since Visual Studio is not generating modules for our component Fortran interfaces
 set(ENABLE_FORTRAN OFF CACHE BOOL "")
 set(ENABLE_DOCS    OFF CACHE BOOL "")
 

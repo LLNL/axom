@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -23,6 +23,8 @@
 // C/C++ includes
 #include <cassert> // for assert()
 #include <cmath>   // for sqrt()
+
+#include "axom/core/Macros.hpp"
 
 namespace axom
 {
@@ -85,7 +87,8 @@ inline bool linspace( const T& x0, const T& x1, T* v, int N );
  *
  */
 template < typename T >
-inline void cross_product( const T* u, const T* v, T* w );
+inline AXOM_HOST_DEVICE
+void cross_product( const T* u, const T* v, T* w );
 
 /*!
  * \brief Computes the dot product of the arrays u and v.
@@ -103,7 +106,8 @@ inline void cross_product( const T* u, const T* v, T* w );
  * \pre v has at least dim entries
  */
 template < typename T >
-inline T dot_product( const T* u, const T* v, int dim);
+inline AXOM_HOST_DEVICE
+T dot_product( const T* u, const T* v, int dim);
 
 /*!
  * \brief Makes u orthogonal to v.

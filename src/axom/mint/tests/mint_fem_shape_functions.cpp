@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -181,7 +181,7 @@ void partition_of_unity()
 
     sf.evaluate( nc, phi );
 
-    double sum=0.0;
+    sum=0.0;
     for ( int j=0 ; j < ndofs ; ++j )
     {
       sum += phi[ j ];

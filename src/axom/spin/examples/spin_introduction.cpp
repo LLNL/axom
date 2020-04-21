@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -44,8 +44,8 @@
 #include "fmt/fmt.hpp"
 
 // almost all our examples are in 3D
-const int in3D = 3;
-const int in2D = 2;
+constexpr int in3D = 3;
+constexpr int in2D = 2;
 
 // primitives represented by doubles in 3D
 using BoundingBoxType = axom::primal::BoundingBox<double, in3D>;
@@ -182,8 +182,8 @@ void demoMorton()
   {
     RLGridCell g = iter.first;
     DataContainer dat = iter.second;
-    std::cout << "Grid cell " << g << " holds " << dat.count << " points." <<
-    std::endl;
+    std::cout << "Grid cell " << g << " holds "
+              << dat.count << " points." << std::endl;
   }
   // _morton_use_end
 
@@ -231,7 +231,7 @@ void findTriIntersectionsNaively(
   std::vector< std::pair<int, int> > & clashes
   )
 {
-  int tcount = tris.size();
+  int tcount = static_cast< int >( tris.size() );
 
   for (int i = 0 ; i < tcount ; ++i)
   {
@@ -295,7 +295,7 @@ UniformGridType* buildUniformGrid(std::vector<TriangleType> & tris)
   const PointType & minBBPt = allbbox.getMin();
   const PointType & maxBBPt = allbbox.getMax();
 
-  int tcount = tris.size();
+  int tcount = static_cast< int >( tris.size() );
 
   // The number of bins along one side of the UniformGrid.
   // This is a heuristic.
@@ -358,7 +358,7 @@ void findTriIntersectionsAccel(
   UniformGridType* ugrid,
   std::vector< std::pair<int, int> > & clashes)
 {
-  int tcount = tris.size();
+  int tcount = static_cast< int >( tris.size() );
 
   // For each triangle t1,
   for (int i = 0 ; i < tcount ; ++i)
@@ -368,7 +368,7 @@ void findTriIntersectionsAccel(
     findNeighborCandidates(t1, i, ugrid, neighbors);
 
     // Test for intersection between t1 and each of its neighbors.
-    int ncount = neighbors.size();
+    int ncount = static_cast< int >( neighbors.size() );
     for (int n = 0 ; n < ncount ; ++n)
     {
       int j = neighbors[n];
@@ -400,7 +400,7 @@ void showImplicitGrid()
   // establish the domain of the ImplicitGrid.
   IBBox bbox(ISpacePt::zero(), ISpacePt::ones());
   // room for one hundred elements in the index
-  const int numElts = tris.size();
+  const int numElts = static_cast< int >( tris.size() );
   IGridT grid(bbox, &res, numElts);
 
   // load the bounding box of each triangle, along with its index,
@@ -481,7 +481,7 @@ void makeTriangles(std::vector<Triangle2DType> & tris)
 void printPairs(std::string title,
                 std::vector< std::pair<int, int> > & clashes)
 {
-  int ccount = clashes.size();
+  int ccount = static_cast< int >( clashes.size() );
   std::cout << ccount << title << std::endl;
   for (int i = 0 ; i < ccount ; ++i)
   {
@@ -516,7 +516,7 @@ BVHTree2DType* buildBVHTree(std::vector<Triangle2DType> & tris)
   // Initialize BVHTree with the triangles
   const int MaxBinFill = 1;
   const int MaxLevels = 4;
-  int tricount = tris.size();
+  int tricount = static_cast< int >( tris.size() );
   BVHTree2DType* tree  = new BVHTree2DType( tricount, MaxLevels );
 
   for ( int i=0 ; i < tricount ; ++i )
@@ -578,7 +578,7 @@ void findIntersectionsWithCandidates(std::vector<Triangle2DType> & tris,
                                      std::vector<int> & intersections)
 {
   // Test if ppoint lands in any of its neighbor triangles.
-  int csize = candidates.size();
+  int csize = static_cast< int >( candidates.size() );
   for (int i = 0 ; i < csize ; ++i)
   {
     Triangle2DType & t = tris[candidates[i]];

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -12,6 +12,7 @@
 #ifndef PRIMAL_INTERSECT_HPP_
 #define PRIMAL_INTERSECT_HPP_
 
+#include "axom/core/Macros.hpp"
 #include "axom/core/utilities/Utilities.hpp"
 
 #include "axom/primal/geometry/BoundingBox.hpp"
@@ -24,12 +25,17 @@
 #include "axom/primal/geometry/BezierCurve.hpp"
 
 #include "axom/primal/operators/detail/intersect_impl.hpp"
+#include "axom/primal/operators/detail/intersect_ray_impl.hpp"
+#include "axom/primal/operators/detail/intersect_bounding_box_impl.hpp"
 #include "axom/primal/operators/detail/intersect_bezier_impl.hpp"
 
 namespace axom
 {
 namespace primal
 {
+
+/// \name Triangle Intersection Routines
+/// @{
 
 /*!
  * \brief Tests if 3D Triangles t1 and t2 intersect.
@@ -40,6 +46,7 @@ namespace primal
  * triangle boundaries in intersections, specify includeBoundary as true.
  */
 template < typename T >
+AXOM_HOST_DEVICE
 bool intersect( const Triangle< T, 3 >& t1,
                 const Triangle< T, 3 >& t2,
                 const bool includeBoundary = false)
@@ -61,82 +68,6 @@ bool intersect( const Triangle< T, 2 >& t1,
                 const bool includeBoundary = false)
 {
   return detail::intersect_tri2D_tri2D< T >(t1, t2, includeBoundary);
-}
-
-/*!
- * \brief Computes the intersection of the given ray, R, with the segment, S.
- *      ip returns the intersection point on S.
- * \return status true iff R intersects with S, otherwise, false.
- */
-template < typename T >
-bool intersect( const Ray< T,2 >& R, const Segment< T,2 >& S, Point< T,2 >& ip )
-{
-  return detail::intersect_ray_seg(R, S, ip);
-}
-
-/*!
- * \brief Computes the intersection of the given ray, R, with the Box, bb.
- *      ip the point of intersection on R.
- * \return status true iff bb intersects with R, otherwise, false.
- *
- * Computes Ray Box intersection using the slab method from pg 180 of
- * Real Time Collision Detection by Christer Ericson.
- */
-template < typename T, int DIM >
-bool intersect( const Ray< T,DIM > & R,
-                const BoundingBox< T,DIM > & bb,
-                Point< T,DIM > & ip)
-{
-  return detail::intersect_ray_bbox(R, bb, ip);
-}
-
-/*!
- * \brief Computes the intersection of the given segment, S, with the Box, bb.
- *     ip the point of intersection on S.
- * \return status true iff bb intersects with S, otherwise, false.
- *
- * Computes Segment Box intersection using the slab method from pg 180 of
- * Real Time Collision Detection by Christer Ericson.
- * WIP: More test cases for this
- */
-template < typename T, int DIM >
-bool intersect( const Segment< T,DIM > & S,
-                const BoundingBox< T,DIM > & bb,
-                Point< T,DIM > & ip)
-{
-  return detail::intersect_seg_bbox(S, bb, ip);
-}
-
-/*!
- * \brief Determines if two axis aligned bounding boxes intersect
- * \param [in] bb1 user-supplied axis aligned bounding box.
- * \param [in] bb2 user-supplied axis aligned bounding box.
- * \return true iff bb1 intersects with bb2, otherwise, false.
- */
-template < typename T, int DIM >
-bool intersect( const BoundingBox< T, DIM >& bb1,
-                const BoundingBox< T, DIM >& bb2)
-{
-  return bb1.intersectsWith(bb2);
-}
-
-/*!
- * \brief Determines if two spheres intersect.
- *
- * \param [in] s1 user-supplied sphere object to check for intersection.
- * \param [in] s2 user-supplied sphere object to check for intersection.
- * \param [in] TOL tolerance used for intersection check (optional)
- *
- * \note If TOL is not supplied, the default is 1.e-9.
- *
- * \return status true iff s1 intersects with s2, otherwise, false.
- */
-template < typename T, int DIM >
-bool intersect( const Sphere< T,DIM >& s1,
-                const Sphere< T,DIM >& s2,
-                double TOL=1.e-9 )
-{
-  return s1.intersectsWith( s2, TOL );
 }
 
 /*!
@@ -272,6 +203,125 @@ bool intersect(const Triangle< T, 3 >& tri, const Segment< T,3 >& seg,
   return retval;
 }
 
+/// @}
+
+/// \name Ray Intersection Routines
+/// @{
+
+/*!
+ * \brief Computes the intersection of the given ray, R, with the segment, S.
+ *
+ * \param [in] R the specified ray
+ * \param [in] S the segment to check
+ *
+ * \param [out] ip the intersection point on S, valid only if status=true.
+ *
+ * \return status true iff R intersects with S, otherwise, false.
+ *
+ * \see primal::Ray
+ * \see primal::Segment
+ * \see primal::Point
+ */
+template < typename T >
+bool intersect( const Ray< T,2 >& R, const Segment< T,2 >& S, Point< T,2 >& ip )
+{
+  return detail::intersect_ray(R, S, ip);
+}
+
+/*!
+ * \brief Computes the intersection of the given ray, R, with the Box, bb.
+ *
+ * \param [in] R the specified ray
+ * \param [in] bb the user-supplied axis-aligned bounding box
+ *
+ * \param [out] ip the intersection point where R intersects bb.
+ *
+ * \return status true iff bb intersects with R, otherwise, false.
+ *
+ * \see primal::Ray
+ * \see primal::Segment
+ * \see primal::BoundingBox
+ *
+ * \note Computes Ray Box intersection using the slab method from pg 180 of
+ *  Real Time Collision Detection by Christer Ericson.
+ */
+template < typename T, int DIM >
+bool intersect( const Ray< T,DIM > & R,
+                const BoundingBox< T,DIM > & bb,
+                Point< T,DIM > & ip)
+{
+  return detail::intersect_ray(R, bb, ip);
+}
+
+/// @}
+
+/// \name Segment Intersection Routines
+/// @{
+
+/*!
+ * \brief Computes the intersection of the given segment, S, with the Box, bb.
+ *     ip the point of intersection on S.
+ * \return status true iff bb intersects with S, otherwise, false.
+ *
+ * Computes Segment Box intersection using the slab method from pg 180 of
+ * Real Time Collision Detection by Christer Ericson.
+ * WIP: More test cases for this
+ */
+template < typename T, int DIM >
+bool intersect( const Segment< T,DIM > & S,
+                const BoundingBox< T,DIM > & bb,
+                Point< T,DIM > & ip)
+{
+  return detail::intersect_seg_bbox(S, bb, ip);
+}
+
+/// @}
+
+/// \name Axis-Aligned Bounding Box Intersection Routines
+/// @{
+
+/*!
+ * \brief Determines if two axis aligned bounding boxes intersect
+ * \param [in] bb1 user-supplied axis aligned bounding box.
+ * \param [in] bb2 user-supplied axis aligned bounding box.
+ * \return true iff bb1 intersects with bb2, otherwise, false.
+ */
+template < typename T, int DIM >
+bool intersect( const BoundingBox< T, DIM >& bb1,
+                const BoundingBox< T, DIM >& bb2)
+{
+  return bb1.intersectsWith(bb2);
+}
+
+/// @}
+
+/// \name Sphere Intersection Routines
+/// @{
+
+/*!
+ * \brief Determines if two spheres intersect.
+ *
+ * \param [in] s1 user-supplied sphere object to check for intersection.
+ * \param [in] s2 user-supplied sphere object to check for intersection.
+ * \param [in] TOL tolerance used for intersection check (optional)
+ *
+ * \note If TOL is not supplied, the default is 1.e-9.
+ *
+ * \return status true iff s1 intersects with s2, otherwise, false.
+ */
+template < typename T, int DIM >
+bool intersect( const Sphere< T,DIM >& s1,
+                const Sphere< T,DIM >& s2,
+                double TOL=1.e-9 )
+{
+  return s1.intersectsWith( s2, TOL );
+}
+
+/// @}
+
+/// \name Oriented Bounding Box Intersection Routines
+/// @{
+
 template < typename T >
 bool intersect(const OrientedBoundingBox< T, 1 > & b1,
                const OrientedBoundingBox< T, 1 >& b2)
@@ -306,6 +356,10 @@ bool intersect(const OrientedBoundingBox< T, 3 >& b1,
   return detail::intersect_obb3D_obb3D(b1, b2, EPS);
 }
 
+/// @}
+
+/// \name Bezier Curve Intersection Routines
+/// @{
 
 /*!
  * \brief Tests if two Bezier Curves \a c1 and \a c2 intersect.
@@ -328,7 +382,7 @@ bool intersect(const OrientedBoundingBox< T, 3 >& b1,
  * Specifically, we assume that all intersections are at points and that
  * the curves don't overlap.
  *
- * \note This function assumes the all intersections have multiplicity 
+ * \note This function assumes the all intersections have multiplicity
  * one, i.e. there are no points at which the curves and their derivatives
  * both intersect. Thus, the function does not find tangencies.
  *
@@ -354,6 +408,8 @@ bool intersect( const BezierCurve< T, NDIMS>& c1,
                                          c1.getOrder(), c2.getOrder(),
                                          offset, scale, offset, scale);
 }
+
+/// @}
 
 } /* namespace primal */
 } /* namespace axom */

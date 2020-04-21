@@ -1,9 +1,10 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 // Axom includes
+#include "axom/core/Macros.hpp"
 #include "axom/core/utilities/FileUtilities.hpp"
 #include "axom/core/utilities/Timer.hpp"
 
@@ -31,6 +32,31 @@
 #include "axom/slic/streams/GenericOutputStream.hpp"
 #include "axom/slic/interface/slic.hpp"
 
+// RAJA
+#ifdef AXOM_USE_RAJA
+  #include "RAJA/RAJA.hpp"
+#endif
+
+// RAJA policies
+#include "axom/mint/execution/internal/structured_exec.hpp"
+
+#if defined (AXOM_USE_RAJA)
+  using seq_exec = axom::SEQ_EXEC;
+
+  #if defined(AXOM_USE_OPENMP)
+    using omp_exec = axom::OMP_EXEC;
+  #else
+    using omp_exec = seq_exec;
+  #endif
+
+  #if defined(AXOM_USE_CUDA)
+    constexpr int CUDA_BLOCK_SIZE = 256;
+    using cuda_exec = axom::CUDA_EXEC<CUDA_BLOCK_SIZE>;
+  #else
+    using cuda_exec = seq_exec;
+  #endif
+#endif
+
 #include "CLI11/CLI11.hpp"
 
 // C/C++ includes
@@ -52,10 +78,18 @@ using UniformGrid3 = spin::UniformGrid<int, 3>;
 using Vector3 = primal::Vector<double, 3>;
 using Segment3 = primal::Segment<double, 3>;
 
+enum RuntimePolicy { seq = 0,
+                     raja_seq = 1,
+                     raja_omp = 2,
+                     raja_cuda = 3};
+
 struct Input
 {
+  static const std::set<RuntimePolicy> s_validPolicies;
+
   std::string stlInput;
   std::string vtkOutput;
+  RuntimePolicy policy;
 
   int resolution;
   double weldThreshold;
@@ -64,6 +98,7 @@ struct Input
   Input()
     : stlInput("")
     , vtkOutput("")
+    , policy(seq)
     , resolution(0)
     , weldThreshold(1e-6)
     , skipWeld(false)
@@ -79,14 +114,43 @@ private:
   void fixOutfilePath();
 };
 
+const std::set<RuntimePolicy> Input::s_validPolicies({
+    seq
+  #ifdef AXOM_USE_RAJA
+    , raja_seq
+    #ifdef AXOM_USE_OPENMP
+    , raja_omp
+    #endif
+    #ifdef AXOM_USE_CUDA
+    , raja_cuda
+    #endif
+  #endif
+});
+
 void Input::parse(int argc, char** argv, CLI::App& app)
 {
   app.add_option("-r,--resolution", resolution,
                  "Resolution of uniform grid. \n"
-                 "Set to 1 to run the naive algorithm without a spatial index. \n"
+                 "Set to 1 to run the naive algorithm (without a spatial index). \n"
                  "Set to less than 1 to use the spatial index with a resolution \n"
                  "of the cube root of the number of triangles.")
   ->capture_default_str();
+
+  app.add_option("-p, --policy", policy,
+                 "With \'-r 1\', set runtime policy. \n"
+                 "Set to 0 to use the sequential algorithm (w/o RAJA). \n"
+  #ifdef AXOM_USE_RAJA
+                 "Set to 1 to use the RAJA sequential policy. \n"
+    #ifdef AXOM_USE_OPENMP
+                 "Set to 2 to use the RAJA OpenMP policy. \n"
+    #endif
+    #ifdef AXOM_USE_CUDA
+                 "Set to 3 to use the RAJA CUDA policy."
+    #endif
+  #endif
+  )
+  ->capture_default_str()
+  ->check(CLI::IsMember{Input::s_validPolicies});
 
   app.add_option("-i,--infile", stlInput,"The STL input file")
   ->required()
@@ -118,6 +182,13 @@ void Input::parse(int argc, char** argv, CLI::App& app)
     "Using parameter values: "
     <<"\n  resolution = " << resolution
     << (resolution < 1 ? " (use cube root of triangle count)" : "")
+    << (resolution == 1 ? " (use naive algorithm)" : "")
+    << (resolution == 1 ? "\n  policy = " : "")
+    << (resolution == 1 ? std::to_string(policy) : "")
+    << (resolution == 1 && policy == seq ? " (use sequential policy)" : "")
+    << (resolution == 1 && policy == raja_seq ? " (use RAJA sequential policy)" : "")
+    << (resolution == 1 && policy == raja_omp ? " (use RAJA OpenMP policy)" : "")
+    << (resolution == 1 && policy == raja_cuda ? " (use RAJA CUDA policy)" : "")
     <<"\n  weld threshold = " <<  weldThreshold
     <<"\n  " << (skipWeld ? "" : "not ") << "skipping weld"
     <<"\n  infile = " << stlInput
@@ -137,11 +208,11 @@ void Input::fixOutfilePath()
   std::string outFileBase = futil::joinPath(futil::getCWD(),inFileStem);
 
   // set output file name when not provided
-  int sz = vtkOutput.size();
+  int sz = static_cast< int >( vtkOutput.size() );
   if (sz < 1)
   {
     vtkOutput = outFileBase;
-    sz = vtkOutput.size();
+    sz = static_cast< int >( vtkOutput.size() );
   }
 
   // ensure that output file does not end with '.vtk'
@@ -158,22 +229,26 @@ void Input::fixOutfilePath()
 
 inline bool pointIsNearlyEqual(Point3& p1, Point3& p2, double EPS);
 
-bool checkTT(Triangle3& t1, Triangle3& t2);
+AXOM_HOST_DEVICE bool checkTT(Triangle3& t1, Triangle3& t2);
+
 std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
   mint::Mesh* surface_mesh,
   std::vector<int> & degenerate);
+
 void announceMeshProblems(int triangleCount,
                           int intersectPairCount,
                           int degenerateCount);
+
 void saveProblemFlagsToMesh(mint::Mesh* surface_mesh,
                             const std::vector< std::pair<int, int> > & c,
                             const std::vector<int> & d);
+
 bool writeAnnotatedMesh(mint::Mesh* surface_mesh,
                         const std::string & outfile);
+
 bool writeCollisions(const std::vector< std::pair<int, int> > & c,
                      const std::vector<int> & d,
                      std::string basename);
-
 
 inline bool pointIsNearlyEqual(Point3& p1, Point3& p2, double EPS=1.0e-9)
 {
@@ -182,6 +257,7 @@ inline bool pointIsNearlyEqual(Point3& p1, Point3& p2, double EPS=1.0e-9)
          axom::utilities::isNearlyEqual(p1[2], p2[2], EPS);
 }
 
+AXOM_HOST_DEVICE
 bool checkTT(Triangle3& t1, Triangle3& t2)
 {
   if (t2.degenerate())
@@ -212,6 +288,8 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
   mint::Mesh* surface_mesh,
   std::vector<int> & degenerate)
 {
+  SLIC_INFO("Running naive intersection algorithm.");
+
   // For each triangle, check for intersection against
   // every other triangle with a greater index in the mesh, excluding
   // degenerate triangles.
@@ -249,6 +327,97 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
 
   return retval;
 }
+
+#if defined(AXOM_USE_RAJA)
+template < typename ExecSpace >
+std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
+  mint::Mesh* surface_mesh,
+  std::vector<int> & degenerate)
+{
+  SLIC_INFO("Running naive intersection algorithm "
+    << " in execution Space: "
+    << axom::execution_space< ExecSpace >::name());
+
+  // Get allocator
+  int allocatorID = axom::execution_space< ExecSpace >::allocatorID();
+  axom::setDefaultAllocator( allocatorID );
+
+  std::vector< std::pair<int, int> > retval;
+
+  const int ncells = surface_mesh->getNumberOfCells();
+  SLIC_INFO("Checking mesh with a total of "<< ncells<< " cells.");
+
+  Triangle3 * tris = axom::allocate <Triangle3> (ncells);
+
+  // Get each triangle in the mesh and check for degeneracies
+  for (int i = 0; i < ncells ; i++)
+  {
+    tris[i] = getMeshTriangle(i, surface_mesh);
+    if (tris[i].degenerate())
+    {
+      degenerate.push_back(i);
+    }
+  }
+
+  RAJA::RangeSegment row_range(0, ncells);
+  RAJA::RangeSegment col_range(0, ncells);
+
+  using KERNEL_POL =
+    typename axom::mint::internal::structured_exec< ExecSpace >::loop2d_policy;
+  using REDUCE_POL =
+    typename axom::execution_space< ExecSpace >::reduce_policy;
+  using ATOMIC_POL =
+    typename axom::execution_space< ExecSpace >::atomic_policy;
+
+  RAJA::ReduceSum< REDUCE_POL, int > numIntersect(0);
+
+  // Compute the number of intersections
+  RAJA::kernel<KERNEL_POL>( RAJA::make_tuple(col_range, row_range),
+    AXOM_LAMBDA(int col, int row) {
+    if (row > col)
+    {
+      if (checkTT (tris[row], tris[col]))
+      {
+        numIntersect += 1;
+      }
+    }
+  });
+
+  // Allocation to hold intersection pairs and counter to know where to store
+  int * intersections =
+    axom::allocate <int> (numIntersect.get() * 2);
+  int * counter = axom::allocate <int> (1);
+
+  counter[0] = 0;
+
+  // RAJA loop to populate with intersections
+  RAJA::kernel<KERNEL_POL>( RAJA::make_tuple(col_range, row_range),
+    AXOM_LAMBDA(int col, int row) {
+    if (row > col)
+    {
+      if (checkTT (tris[row], tris[col]))
+      {
+        auto idx = RAJA::atomicAdd<ATOMIC_POL>(counter, 2);
+        intersections[idx] = row;
+        intersections[idx+1] = col;
+      }
+    }
+  });
+
+  // Initialize pairs of clashes
+  for (auto i = 0 ; i < numIntersect.get() * 2 ; i += 2)
+  {
+    retval.push_back(std::make_pair(intersections[i], intersections[i + 1]));
+  }
+
+  // Deallocate
+  axom::deallocate(tris);
+  axom::deallocate(intersections);
+  axom::deallocate(counter);
+
+  return retval;
+}
+#endif // defined(AXOM_USE_RAJA)
 
 void announceMeshProblems(int triangleCount,
                           int intersectPairCount,
@@ -348,11 +517,12 @@ void initializeLogger()
  * The mesh tester checks a triangulated surface mesh for several problems.
  *
  * Currently the mesh tester checks for intersecting triangles.  This is
- * implemented in two ways.  First, a naive algorithm tests each triangle
+ * implemented in three ways.  First, a naive algorithm tests each triangle
  * against each other triangle.  This is easy to understand and verify,
- * but slow.  A second algorithm uses a UniformGrid to index the bounding
- * box of the mesh, and checks each triangle for intersection with the
- * triangles in all the bins the triangle's bounding box falls into.
+ * but slow. Second, the same naive algorithm is run using raja. A third
+ * algorithm uses a UniformGrid to index the bounding box of the mesh,
+ * and checks each triangle for intersection with the triangles in all the
+ * bins the triangle's bounding box falls into.
  *
  * Currently, the mesh tester works only with Triangle meshes.
  */
@@ -421,8 +591,33 @@ int main( int argc, char** argv )
     axom::utilities::Timer timer(true);
     if (params.resolution == 1)
     {
-      // Naive method
+     // Naive method
+     switch (params.policy)
+     {
+     case seq:
       collisions = naiveIntersectionAlgorithm(surface_mesh, degenerate);
+  #ifdef AXOM_USE_RAJA
+     case raja_seq:
+        collisions = naiveIntersectionAlgorithm< seq_exec >(surface_mesh,
+                                                          degenerate);
+       break;
+    #ifdef AXOM_USE_OPENMP
+     case raja_omp:
+        collisions = naiveIntersectionAlgorithm< omp_exec >(surface_mesh,
+                                                          degenerate);
+       break;
+    #endif
+    #ifdef AXOM_USE_CUDA
+     case raja_cuda:
+        collisions = naiveIntersectionAlgorithm< cuda_exec >(surface_mesh,
+                                                          degenerate);
+       break;
+    #endif
+  #endif // AXOM_USE_RAJA
+     default:
+       SLIC_ERROR("Unhandled runtime policy case " << params.policy );
+       break;
+     }
     }
     else
     {
@@ -439,7 +634,9 @@ int main( int argc, char** argv )
               << timer.elapsedTimeInSec() << " seconds.");
 
     announceMeshProblems(surface_mesh->getNumberOfCells(),
-                         collisions.size(), degenerate.size());
+                         static_cast< int >( collisions.size() ),
+                         static_cast< int >( degenerate.size() )
+                         );
 
     saveProblemFlagsToMesh(surface_mesh, collisions, degenerate);
 

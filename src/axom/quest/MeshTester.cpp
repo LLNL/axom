@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -382,7 +382,7 @@ void weldTriMeshVertices(UMesh** surface_mesh,double eps)
         uniqueVertCount++;
         newMesh->appendNodes(vert.data());
       }
-      vertex_remap[i] = res.first->second;
+      vertex_remap[i] = static_cast< int >( res.first->second );
     }
 
     // Next, add triangles into the new mesh using the unique vertex indices

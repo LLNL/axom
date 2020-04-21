@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -407,7 +407,10 @@ TEST( mint_mesh_field_variable, shrink )
   mint::FieldVariable< double > field( "f", SMALL_NUM_TUPLES, NUM_COMPONENTS );
   EXPECT_EQ( field.getName(), "f" );
 
-  axom::IndexType capacity = SMALL_NUM_TUPLES * field.getResizeRatio() + 0.5;
+  const double ratio = field.getResizeRatio();
+  axom::IndexType capacity =
+      static_cast< axom::IndexType >( SMALL_NUM_TUPLES*ratio + 0.5 );
+
   if ( capacity < axom::Array< axom::IndexType >::MIN_DEFAULT_CAPACITY )
   {
     capacity = axom::Array< axom::IndexType >::MIN_DEFAULT_CAPACITY;

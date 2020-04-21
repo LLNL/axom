@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -379,12 +379,12 @@ AXOM_CUDA_TEST( mint_execution_cell_traversals, for_all_cells_nodeids )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
     defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
-    const int UnifiedAllocatorID =
-        axom::getResourceAllocatorID( umpire::resource::Unified );
-    const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
-    axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
-
     using cuda_exec = axom::CUDA_EXEC< 512 >;
+
+    const int exec_space_id  = axom::execution_space<cuda_exec>::allocatorID();
+    const int prev_allocator = axom::getDefaultAllocatorID();
+    axom::setDefaultAllocator( exec_space_id );
+
     check_for_all_cell_nodes< cuda_exec, STRUCTURED_UNIFORM_MESH >(i);
     check_for_all_cell_nodes< cuda_exec, STRUCTURED_CURVILINEAR_MESH >(i);
     check_for_all_cell_nodes< cuda_exec, STRUCTURED_RECTILINEAR_MESH >(i);
@@ -425,12 +425,12 @@ AXOM_CUDA_TEST( mint_execution_cell_traversals, for_all_cells_coords )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
     defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
-    const int UnifiedAllocatorID =
-        axom::getResourceAllocatorID( umpire::resource::Unified );
-    const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
-    axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
-
     using cuda_exec = axom::CUDA_EXEC< 512 >;
+
+    const int exec_space_id  = axom::execution_space<cuda_exec>::allocatorID();
+    const int prev_allocator = axom::getDefaultAllocatorID();
+    axom::setDefaultAllocator( exec_space_id );
+
     check_for_all_cell_coords< cuda_exec, STRUCTURED_UNIFORM_MESH >(i);
     check_for_all_cell_coords< cuda_exec, STRUCTURED_CURVILINEAR_MESH >(i);
     check_for_all_cell_coords< cuda_exec, STRUCTURED_RECTILINEAR_MESH >(i);
@@ -471,12 +471,12 @@ AXOM_CUDA_TEST( mint_execution_cell_traversals, for_all_cells_faceids )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
     defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
-    const int UnifiedAllocatorID =
-        axom::getResourceAllocatorID( umpire::resource::Unified );
-    const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
-    axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
-
     using cuda_exec = axom::CUDA_EXEC< 512 >;
+
+    const int exec_space_id  = axom::execution_space<cuda_exec>::allocatorID();
+    const int prev_allocator = axom::getDefaultAllocatorID();
+    axom::setDefaultAllocator( exec_space_id );
+
     check_for_all_cell_faces< cuda_exec, STRUCTURED_UNIFORM_MESH >(i);
     check_for_all_cell_faces< cuda_exec, STRUCTURED_CURVILINEAR_MESH >(i);
     check_for_all_cell_faces< cuda_exec, STRUCTURED_RECTILINEAR_MESH >(i);
@@ -510,12 +510,12 @@ AXOM_CUDA_TEST( mint_execution_cell_traversals, for_all_cells_ij )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
   defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
-  const int UnifiedAllocatorID =
-      axom::getResourceAllocatorID( umpire::resource::Unified );
-  const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
-  axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
-
   using cuda_exec = axom::CUDA_EXEC< 512 >;
+
+  const int exec_space_id  = axom::execution_space<cuda_exec>::allocatorID();
+  const int prev_allocator = axom::getDefaultAllocatorID();
+  axom::setDefaultAllocator( exec_space_id );
+
   check_for_all_cells_ij< cuda_exec, STRUCTURED_UNIFORM_MESH >();
   check_for_all_cells_ij< cuda_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_cells_ij< cuda_exec, STRUCTURED_RECTILINEAR_MESH >();
@@ -546,13 +546,12 @@ AXOM_CUDA_TEST( mint_execution_cell_traversals, for_all_cells_ijk )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
   defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
-  const int UnifiedAllocatorID =
-      axom::getResourceAllocatorID( umpire::resource::Unified );
-  const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
-  axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
-
-
   using cuda_exec = axom::CUDA_EXEC< 512 >;
+
+  const int exec_space_id  = axom::execution_space<cuda_exec>::allocatorID();
+  const int prev_allocator = axom::getDefaultAllocatorID();
+  axom::setDefaultAllocator( exec_space_id );
+
   check_for_all_cells_ijk< cuda_exec, STRUCTURED_UNIFORM_MESH >();
   check_for_all_cells_ijk< cuda_exec, STRUCTURED_CURVILINEAR_MESH >();
   check_for_all_cells_ijk< cuda_exec, STRUCTURED_RECTILINEAR_MESH >();
@@ -591,12 +590,12 @@ AXOM_CUDA_TEST( mint_execution_cell_traversals, for_all_cells_index )
 #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_CUDA) && \
     defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_UMPIRE)
 
-    const int UnifiedAllocatorID =
-        axom::getResourceAllocatorID( umpire::resource::Unified );
-    const umpire::Allocator prev_allocator = axom::getDefaultAllocator();
-    axom::setDefaultAllocator( axom::getAllocator( UnifiedAllocatorID ) );
-
     using cuda_exec = axom::CUDA_EXEC< 512 >;
+
+    const int exec_space_id  = axom::execution_space<cuda_exec>::allocatorID();
+    const int prev_allocator = axom::getDefaultAllocatorID();
+    axom::setDefaultAllocator( exec_space_id );
+
     check_for_all_cells_idx< cuda_exec, STRUCTURED_UNIFORM_MESH >(i);
     check_for_all_cells_idx< cuda_exec, STRUCTURED_CURVILINEAR_MESH >(i);
     check_for_all_cells_idx< cuda_exec, STRUCTURED_RECTILINEAR_MESH >(i);

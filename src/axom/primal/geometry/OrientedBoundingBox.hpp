@@ -1,10 +1,10 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef ORIENTEDBOUNDINGBOX_HPP_
-#define ORIENTEDBOUNDINGBOX_HPP_
+#ifndef PRIMAL_ORIENTEDBOUNDINGBOX_HPP_
+#define PRIMAL_ORIENTEDBOUNDINGBOX_HPP_
 
 #include <vector>
 
@@ -534,7 +534,7 @@ void OrientedBoundingBox< T, NDIMS >::addBox( OrientedBoundingBox< T,
   }
 
   std::vector< Point< T, NDIMS > > res = obb.vertices();
-  int size = res.size();
+  int size = static_cast< int >( res.size() );
 
   for (int i = 0 ; i < size ; i++)
   {
@@ -660,7 +660,7 @@ bool OrientedBoundingBox< T, NDIMS >::contains(
 {
   std::vector< Point< T, NDIMS > > l = otherOBB.vertices();
 
-  int size = l.size();
+  int size = static_cast< int >( l.size() );
 
   for (int i = 0 ; i < size ; i++)
   {

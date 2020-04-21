@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -27,19 +27,19 @@ namespace slic
 {
 namespace internal
 {
- std::ostringstream test_stream;
+std::ostringstream test_stream;
 
- bool is_stream_empty( )
- {
-   return test_stream.str( ).empty();
- }
+bool is_stream_empty( )
+{
+  return test_stream.str( ).empty();
+}
 
- void clear( )
- {
-   test_stream.clear();
-   test_stream.str( "" );
-   EXPECT_TRUE( is_stream_empty() );
- }
+void clear( )
+{
+  test_stream.clear();
+  test_stream.str( "" );
+  EXPECT_TRUE( is_stream_empty() );
+}
 
 } // namespace internal
 } // namespace slic
@@ -224,7 +224,7 @@ TEST( slic_macros, test_assert_macros )
 
   constexpr int val = 42;
   SLIC_ASSERT(  val < 0 );
-#ifdef AXOM_DEBUG
+#if defined(AXOM_DEBUG) && !defined(AXOM_DEVICE_CODE)
   EXPECT_FALSE( slic::internal::is_stream_empty() );
   check_level( slic::internal::test_stream.str(), "ERROR" );
   check_msg( slic::internal::test_stream.str(), "Failed Assert: val < 0" );
@@ -241,11 +241,11 @@ TEST( slic_macros, test_assert_macros )
   EXPECT_TRUE( slic::internal::is_stream_empty() );
 
   SLIC_ASSERT_MSG( val < 0, "val should be negative!" );
-#ifdef AXOM_DEBUG
+#if defined(AXOM_DEBUG) && !defined(AXOM_DEVICE_CODE)
   EXPECT_FALSE( slic::internal::is_stream_empty() );
   check_level( slic::internal::test_stream.str(), "ERROR" );
   check_msg( slic::internal::test_stream.str(),
-      "Failed Assert: val < 0\nval should be negative!" );
+             "Failed Assert: val < 0\nval should be negative!" );
   check_file( slic::internal::test_stream.str() );
   check_line( slic::internal::test_stream.str(), (__LINE__ - 7) );
   slic::internal::clear( );
@@ -264,7 +264,7 @@ TEST( slic_macros, test_check_macros )
 
   constexpr int val = 42;
   SLIC_CHECK(  val < 0 );
-#ifdef AXOM_DEBUG
+#if defined(AXOM_DEBUG) && !defined(AXOM_DEVICE_CODE)
   EXPECT_FALSE( slic::internal::is_stream_empty() );
   check_level( slic::internal::test_stream.str(), "WARNING" );
   check_msg( slic::internal::test_stream.str(), "Failed Check: val < 0" );
@@ -281,11 +281,11 @@ TEST( slic_macros, test_check_macros )
   EXPECT_TRUE( slic::internal::is_stream_empty() );
 
   SLIC_CHECK_MSG( val < 0, "val should be negative!" );
-#ifdef AXOM_DEBUG
+#if defined(AXOM_DEBUG) && !defined(AXOM_DEVICE_CODE)
   EXPECT_FALSE( slic::internal::is_stream_empty() );
   check_level( slic::internal::test_stream.str(), "WARNING" );
   check_msg( slic::internal::test_stream.str(),
-      "Failed Check: val < 0\nval should be negative!" );
+             "Failed Check: val < 0\nval should be negative!" );
   check_file( slic::internal::test_stream.str() );
   check_line( slic::internal::test_stream.str(), (__LINE__ - 7) );
   slic::internal::clear( );
@@ -312,7 +312,7 @@ int main(int argc, char* argv[])
   std::string msgfmt = "[<LEVEL>]:;;<MESSAGE>;;\n@@<FILE>\n@@<LINE>";
 
   slic::addStreamToAllMsgLevels(
-      new slic::GenericOutputStream( &slic::internal::test_stream, msgfmt) );
+    new slic::GenericOutputStream( &slic::internal::test_stream, msgfmt) );
 
   // finalized when exiting main scope
   result = RUN_ALL_TESTS();

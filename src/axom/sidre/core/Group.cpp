@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -12,9 +12,7 @@
 #include "conduit_relay_io_hdf5.hpp"
 #endif
 
-// Other axom component headers
-
-// Sidre project headers
+// Sidre headers
 #include "MapCollection.hpp"
 #include "Buffer.hpp"
 #include "DataStore.hpp"
@@ -24,6 +22,14 @@ namespace axom
 {
 namespace sidre
 {
+
+// Helper macro for defining a prepend string for sidre::Group log messages
+// We are using it to add the pathName() of the group
+#ifndef SIDRE_GROUP_LOG_PREPEND
+# define SIDRE_GROUP_LOG_PREPEND                             \
+  "[Group: '" << this->getPathName() << "'"                  \
+              << (this->isRoot() ? " (root)" : "") << "] "
+#endif
 
 // Initialization of static path delimiter character for methods that
 // support path syntax.
@@ -106,14 +112,15 @@ View* Group::getView( const std::string& path )
 
   if ( group == nullptr )
   {
-    SLIC_CHECK_MSG( group != nullptr,
-                    "Non-existent group in path " << path );
+    SLIC_CHECK_MSG(group != nullptr,
+                   SIDRE_GROUP_LOG_PREPEND
+                   << "Non-existent group in path " << path );
     return nullptr;
   }
 
-  SLIC_CHECK_MSG( !intpath.empty() && group->hasChildView(intpath),
-                  "Group " << getPathName() <<
-                  " has no View with name '" << intpath << "'");
+  SLIC_CHECK_MSG(!intpath.empty() && group->hasChildView(intpath),
+                 SIDRE_GROUP_LOG_PREPEND
+                 << "No View with name '" << intpath << "'");
 
   return group->m_view_coll->getItem(intpath);
 }
@@ -132,14 +139,15 @@ const View* Group::getView( const std::string& path ) const
 
   if (group == nullptr)
   {
-    SLIC_CHECK_MSG( group != nullptr,
-                    "Non-existent group in path " << path );
+    SLIC_CHECK_MSG(group != nullptr,
+                   SIDRE_GROUP_LOG_PREPEND
+                   << "Non-existent group in path " << path );
     return nullptr;
   }
 
-  SLIC_CHECK_MSG( !intpath.empty() && group->hasChildView(intpath),
-                  "Group " << getPathName() <<
-                  " has no View with name '" << intpath << "'");
+  SLIC_CHECK_MSG(!intpath.empty() && group->hasChildView(intpath),
+                 SIDRE_GROUP_LOG_PREPEND
+                 << "No View with name '" << intpath << "'");
 
   return group->m_view_coll->getItem(intpath);
 }
@@ -167,25 +175,26 @@ View* Group::createView( const std::string& path )
 
   if ( group == nullptr )
   {
-    SLIC_CHECK_MSG( group != nullptr,
-                    "Could not find or create path " << path <<
-                    " since it appears there is already a view with that name" );
+    SLIC_CHECK_MSG(group != nullptr,
+                   SIDRE_GROUP_LOG_PREPEND
+                   << "Could not find or create path '" << path << "'."
+                   << "There is already a view with that name." );
     return nullptr;
   }
   else if ( intpath.empty() || group->hasChildView(intpath) ||
             group->hasChildGroup(intpath) )
   {
-    SLIC_CHECK_MSG( !intpath.empty(),
-                    "Cannot create a View with an empty path in Group " <<
-                    getPathName() << "." );
-    SLIC_CHECK_MSG( !group->hasChildView(intpath),
-                    "Cannot create View with name '" << intpath <<
-                    "' in Group '" << getPathName() <<
-                    " since it already has a View with that name" );
-    SLIC_CHECK_MSG( !group->hasChildGroup(intpath),
-                    "Cannot create View with name '" << intpath <<
-                    "' in Group '" << getPathName() <<
-                    " since it already has a Group with that name" );
+    SLIC_CHECK_MSG(!intpath.empty(),
+                   SIDRE_GROUP_LOG_PREPEND
+                   << "Cannot create a View with an empty path.");
+    SLIC_CHECK_MSG(!group->hasChildView(intpath),
+                   SIDRE_GROUP_LOG_PREPEND
+                   << "Cannot create View with name '" << intpath << "'. "
+                   << "There is already a View with that name." );
+    SLIC_CHECK_MSG(!group->hasChildGroup(intpath),
+                   SIDRE_GROUP_LOG_PREPEND
+                   << "Cannot create View with name '" << intpath << "'. "
+                   << "There is already has a Group with that name." );
     return nullptr;
   }
 
@@ -212,11 +221,13 @@ View* Group::createView( const std::string& path,
   if ( type == NO_TYPE_ID || num_elems < 0 )
   {
     SLIC_CHECK_MSG(type != NO_TYPE_ID,
-                   "Cannot create View with name '" << path <<
-                   "' in Group '" << getPathName() << " without a valid type" );
+                   SIDRE_GROUP_LOG_PREPEND
+                   << "Cannot create View with name '" << path << "'. "
+                   << " Invalid type << " << type );
     SLIC_CHECK_MSG(num_elems >= 0,
-                   "Cannot create View with name '" << path <<
-                   "' in Group '" << getPathName() << " with # elems < 0" );
+                   SIDRE_GROUP_LOG_PREPEND
+                   << "Cannot create View with name '" << path << "'. "
+                   << "Number of elements cannot be less than zero." );
     return nullptr;
   }
 
@@ -244,14 +255,17 @@ View* Group::createView( const std::string& path,
   if ( type == NO_TYPE_ID || ndims < 0 || shape == nullptr )
   {
     SLIC_CHECK_MSG(type != NO_TYPE_ID,
-                   "Cannot create View with name '" << path <<
-                   "' in Group '" << getPathName() << " without a valid type" );
+                   SIDRE_GROUP_LOG_PREPEND
+                   << "Problem creating View with name '" << path << "'. "
+                   <<" Invalid type: " << type );
     SLIC_CHECK_MSG(ndims >= 0,
-                   "Cannot create View with name '" << path <<
-                   "' in Group '" << getPathName() << " with ndims < 0" );
+                   SIDRE_GROUP_LOG_PREPEND
+                   << "Problem creating View with name '" << path << "'. "
+                   << "ndims must be greater than 0." );
     SLIC_CHECK_MSG(shape != nullptr,
-                   "Cannot create View with name '" << path <<
-                   "' in Group '" << getPathName() << " with null shape ptr" );
+                   SIDRE_GROUP_LOG_PREPEND
+                   << "Problem creating View with name '" << path << "'. "
+                   << "shape pointer was null." );
     return nullptr;
   }
 
@@ -690,9 +704,9 @@ View* Group::moveView(View* view)
 {
   if ( view == nullptr )
   {
-    SLIC_CHECK_MSG( view != nullptr,
-                    "Null pointer provided, no View to move to Group " <<
-                    getPathName() << "." );
+    SLIC_CHECK_MSG(view != nullptr,
+                   SIDRE_GROUP_LOG_PREPEND
+                   << "Null pointer provided, no View to move.");
     return nullptr;
   }
 
@@ -705,9 +719,9 @@ View* Group::moveView(View* view)
   else if (hasChildView(view->getName()))
   {
     SLIC_CHECK_MSG(!hasChildView(view->getName()),
-                   "Group '" << getPathName() <<
-                   "' already has a View named'" << view->getName() <<
-                   "' so View move operation cannot happen");
+                   SIDRE_GROUP_LOG_PREPEND
+                   << "Group already has a View named '" << view->getName()
+                   << "' so View move operation cannot happen");
     return nullptr;
   }
 
@@ -730,13 +744,17 @@ View* Group::copyView(View* view)
 {
   if ( view == nullptr || hasChildView(view->getName()) )
   {
-    SLIC_CHECK_MSG( view != nullptr,
-                    "Null pointer provided, no View to copy to Group " <<
-                    getPathName() << "." );
-    SLIC_CHECK_MSG(!hasChildView(view->getName()),
-                   "Group '" << getPathName() <<
-                   "' already has a View named'" << view->getName() <<
-                   "' so View copy operation cannot happen");
+    SLIC_CHECK_MSG(view != nullptr,
+                   SIDRE_GROUP_LOG_PREPEND
+                   << "Null pointer provided, no View to copy.");
+
+    if(view != nullptr)
+    {
+      SLIC_CHECK_MSG(!hasChildView(view->getName()),
+                     SIDRE_GROUP_LOG_PREPEND
+                     << "Group already has a View named '" << view->getName()
+                     << "' so View copy operation cannot happen");
+    }
 
     return nullptr;
   }
@@ -798,14 +816,15 @@ Group* Group::getGroup( const std::string& path )
 
   if (group == nullptr)
   {
-    SLIC_CHECK_MSG( group != nullptr,
-                    "Non-existent group in path " << path );
+    SLIC_CHECK_MSG(group != nullptr,
+                   SIDRE_GROUP_LOG_PREPEND
+                   <<"Non-existent group in path '" << path <<"'.");
     return nullptr;
   }
 
-  SLIC_CHECK_MSG( !intpath.empty() && group->hasChildGroup(intpath),
-                  "Group " << getPathName() <<
-                  " has no descendant Group with name '" << path << "'");
+  SLIC_CHECK_MSG(!intpath.empty() && group->hasChildGroup(intpath),
+                 SIDRE_GROUP_LOG_PREPEND
+                 << "Group has no descendant Group named '" << path << "'.");
 
   return group->m_group_coll->getItem(intpath);
 }
@@ -824,14 +843,16 @@ const Group* Group::getGroup( const std::string& path ) const
 
   if (group == nullptr)
   {
-    SLIC_CHECK_MSG( group != nullptr,
-                    "Non-existent group in path " << path );
+    SLIC_CHECK_MSG(group != nullptr,
+                   SIDRE_GROUP_LOG_PREPEND
+                   << "Non-existent group in path " << path );
     return nullptr;
   }
 
-  SLIC_CHECK_MSG( !intpath.empty() && group->hasChildGroup(intpath),
-                  "Group " << getPathName() <<
-                  " has no descendant Group with name '" << path << "'");
+  SLIC_CHECK_MSG(!intpath.empty() && group->hasChildGroup(intpath),
+                 SIDRE_GROUP_LOG_PREPEND
+                 <<"Group has no descendant Group with name '"
+                 << path << "'.");
 
   return group->m_group_coll->getItem(intpath);
 }
@@ -859,25 +880,26 @@ Group* Group::createGroup( const std::string& path )
 
   if ( group == nullptr )
   {
-    SLIC_CHECK_MSG( group != nullptr,
-                    "Could not find or create path " << path <<
-                    " since it appears there is already a view with that name" );
+    SLIC_CHECK_MSG(group != nullptr,
+                   SIDRE_GROUP_LOG_PREPEND
+                   << "Could not find or create path '" << path
+                   << "'. There is already a Group with that name" );
     return nullptr;
   }
   else if ( intpath.empty() || group->hasChildGroup(intpath) ||
             group->hasChildView(intpath) )
   {
-    SLIC_CHECK_MSG( !intpath.empty(),
-                    "Cannot create a group with an empty path in Group " <<
-                    getPathName() << "." );
-    SLIC_CHECK_MSG( !group->hasChildGroup(intpath),
-                    "Cannot create Group with name '" << path <<
-                    "' in Group '" << getPathName() <<
-                    "' since it already has a Group with that name" );
-    SLIC_CHECK_MSG( !group->hasChildView(intpath),
-                    "Cannot create Group with name '" << path <<
-                    "' in Group '" << getPathName() <<
-                    "' since it already has a View with that name" );
+    SLIC_CHECK_MSG(!intpath.empty(),
+                   SIDRE_GROUP_LOG_PREPEND
+                   << "Cannot create a Group with an empty path.");
+    SLIC_CHECK_MSG(!group->hasChildGroup(intpath),
+                   SIDRE_GROUP_LOG_PREPEND
+                   << "Cannot create Group with name '" << path
+                   << "'. There is already has a Group with that name." );
+    SLIC_CHECK_MSG(!group->hasChildView(intpath),
+                   SIDRE_GROUP_LOG_PREPEND
+                   << "Cannot create Group with name '" << path
+                   << "'. There is already has a View with that name." );
 
     return nullptr;
   }
@@ -965,13 +987,17 @@ Group* Group::moveGroup(Group* group)
 {
   if ( group == nullptr || hasChildGroup(group->getName()))
   {
-    SLIC_CHECK_MSG( group != nullptr,
-                    "Null pointer provided, no Group to move to Group " <<
-                    getPathName() << "." );
-    SLIC_CHECK_MSG(!hasChildGroup(group->getName()),
-                   "Group '" << getPathName() <<
-                   "' already has a child Group named '" << group->getName() <<
-                   "' so Group move operation cannot happen");
+    SLIC_CHECK_MSG(group != nullptr,
+                   SIDRE_GROUP_LOG_PREPEND
+                   << "Null pointer provided, no Group to move." );
+
+    if(group != nullptr)
+    {
+      SLIC_CHECK_MSG(!hasChildGroup(group->getName()),
+                     SIDRE_GROUP_LOG_PREPEND
+                     << "Invalid move operation. Group already has "
+                     << "a child named '" << group->getName() << "'.");
+    }
 
     return nullptr;
   }
@@ -995,38 +1021,40 @@ Group* Group::copyGroup(Group* group)
 {
   if ( group == nullptr || hasChildGroup(group->getName()) )
   {
-    SLIC_CHECK_MSG( group != nullptr,
-                    "Null pointer provided, no Group to copy to Group " <<
-                    getPathName() << "." );
-    SLIC_CHECK_MSG(!hasChildGroup(group->getName()),
-                   "Group '" << getPathName() <<
-                   "' already has a child Group named '" << group->getName() <<
-                   "' so Group copy operation cannot happen");
+    SLIC_CHECK_MSG(group != nullptr,
+                   SIDRE_GROUP_LOG_PREPEND
+                   << "Null pointer provided, no Group to copy." );
+
+    if(group != nullptr)
+    {
+      SLIC_CHECK_MSG(!hasChildGroup( group->getName()),
+                     SIDRE_GROUP_LOG_PREPEND
+                     << "Invalid copy operation. Group already has "
+                     <<"a child named '"<< group->getName() << "'.");
+    }
 
     return nullptr;
   }
-  else
+
+  Group* res = createGroup(group->getName());
+
+  // copy child Groups to new Group
+  IndexType gidx = group->getFirstValidGroupIndex();
+  while ( indexIsValid(gidx) )
   {
-    Group* res = createGroup(group->getName());
-
-    // copy child Groups to new Group
-    IndexType gidx = group->getFirstValidGroupIndex();
-    while ( indexIsValid(gidx) )
-    {
-      res->copyGroup(group->getGroup(gidx));
-      gidx = group->getNextValidGroupIndex(gidx);
-    }
-
-    // copy Views to new Group
-    IndexType vidx = group->getFirstValidViewIndex();
-    while ( indexIsValid(vidx) )
-    {
-      res->copyView(group->getView(vidx));
-      vidx = group->getNextValidViewIndex(vidx);
-    }
-
-    return res;
+    res->copyGroup(group->getGroup(gidx));
+    gidx = group->getNextValidGroupIndex(gidx);
   }
+
+  // copy Views to new Group
+  IndexType vidx = group->getFirstValidViewIndex();
+  while ( indexIsValid(vidx) )
+  {
+    res->copyView(group->getView(vidx));
+    vidx = group->getNextValidViewIndex(vidx);
+  }
+
+  return res;
 }
 
 
@@ -1049,8 +1077,10 @@ bool Group::createNativeLayout(Node& n, const Attribute* attr) const
     const View* view = getView(vidx);
 
     // Check that the view's name is not also a child group name
-    SLIC_CHECK_MSG( !hasChildGroup(view->getName())
-                    , view->getName() << " is the name of a group and a view");
+    SLIC_CHECK_MSG(!hasChildGroup(view->getName()),
+                   SIDRE_GROUP_LOG_PREPEND
+                   << "'" << view->getName()
+                   << "' is the name of both a group and a view.");
 
     if (attr == nullptr || view->hasAttributeValue(attr))
     {
@@ -1102,8 +1132,10 @@ bool Group::createExternalLayout(Node& n,
     const View* view = getView(vidx);
 
     // Check that the view's name is not also a child group name
-    SLIC_CHECK_MSG( !hasChildGroup(view->getName()),
-                    view->getName() << " is the name of a group and a view");
+    SLIC_CHECK_MSG(!hasChildGroup(view->getName()),
+                   SIDRE_GROUP_LOG_PREPEND
+                   << "'" << view->getName()
+                   << "' is the name of both a group and a view.");
 
     if (attr == nullptr || view->hasAttributeValue(attr))
     {
@@ -1360,7 +1392,8 @@ void Group::save(const std::string& path,
   }
   else
   {
-    SLIC_ERROR("Invalid protocol " << protocol << " for file save.");
+    SLIC_ERROR(SIDRE_GROUP_LOG_PREPEND
+               << "Invalid protocol '" << protocol << "' for file save.");
   }
 }
 
@@ -1391,8 +1424,9 @@ void Group::load(const std::string& path,
     Node n;
     conduit::relay::io::load(path,"hdf5", n);
     SLIC_ASSERT_MSG(n.has_path("sidre"),
-                    "Conduit Node " << n.path() << " does not have sidre " <<
-                    "data for Group " << getPathName() << "." );
+                    SIDRE_GROUP_LOG_PREPEND
+                    << "Conduit Node " << n.path() << " does not have sidre "
+                    << "data for this Group " << getPathName() << "." );
     importFrom(n["sidre"], preserve_contents);
     if (n.has_path("sidre_group_name"))
     {
@@ -1404,8 +1438,9 @@ void Group::load(const std::string& path,
     Node n;
     conduit::relay::io::load(path,"conduit_json", n);
     SLIC_ASSERT_MSG(n.has_path("sidre"),
-                    "Conduit Node " << n.path() << " does not have sidre " <<
-                    "data for Group " << getPathName() << "." );
+                    SIDRE_GROUP_LOG_PREPEND
+                    << "Conduit Node " << n.path() << " does not have sidre "
+                    << "data for Group " << getPathName() << "." );
     importFrom(n["sidre"], preserve_contents);
     if (n.has_path("sidre_group_name"))
     {
@@ -1417,8 +1452,9 @@ void Group::load(const std::string& path,
     Node n;
     conduit::relay::io::load(path,"json", n);
     SLIC_ASSERT_MSG(n.has_path("sidre"),
-                    "Conduit Node " << n.path() << " does not have sidre " <<
-                    "data for Group " << getPathName() << "." );
+                    SIDRE_GROUP_LOG_PREPEND
+                    << "Conduit Node " << n.path() << " does not have sidre "
+                    << "data for Group " << getPathName() << "." );
     importFrom(n["sidre"], preserve_contents);
     if (n.has_path("sidre_group_name"))
     {
@@ -1449,7 +1485,8 @@ void Group::load(const std::string& path,
   }
   else
   {
-    SLIC_ERROR("Invalid protocol " << protocol << " for file load.");
+    SLIC_ERROR(SIDRE_GROUP_LOG_PREPEND
+               << "Invalid protocol '" << protocol << "' for file load.");
   }
 }
 
@@ -1466,14 +1503,14 @@ Group* Group::createGroupAndLoad(std::string & group_name,
                                  bool & load_success)
 {
   load_success = false;
-  Group * child = createGroup(group_name);
+  Group* child = createGroup(group_name);
   if (child != nullptr)
   {
     // In a forthcoming PR, load() will return a bool for success/failure
     load_success = true;
     child->load(path, protocol, false, group_name);
   }
-  
+
   return child;
 }
 
@@ -1496,9 +1533,10 @@ void Group::loadExternalData(const std::string& path)
   conduit::relay::io::hdf5_read( path + ":sidre/external", n);
 #else
   AXOM_DEBUG_VAR(path); // Gets rid of warning about unused variable
-  SLIC_WARNING("External data not loaded. "
+  SLIC_WARNING(SIDRE_GROUP_LOG_PREPEND
+               <<"External data not loaded. "
                << "This function requires hdf5 support. "
-               <<" Please reconfigure with hdf5");
+               <<" Please reconfigure with hdf5.");
 #endif
 }
 
@@ -1537,9 +1575,9 @@ void Group::save(const hid_t& h5_id,
   }
   else
   {
-    SLIC_ERROR("Invalid protocol "
-               << protocol
-               << " for save with hdf5 handle.");
+    SLIC_ERROR(SIDRE_GROUP_LOG_PREPEND
+               << "Invalid protocol '" << protocol
+               << "' for save with hdf5 handle.");
   }
 }
 
@@ -1571,8 +1609,9 @@ void Group::load(const hid_t& h5_id,
     Node n;
     conduit::relay::io::hdf5_read(h5_id,n);
     SLIC_ASSERT_MSG(n.has_path("sidre"),
-                    "Conduit Node " << n.path() << " does not have sidre " <<
-                    "data for Group " << getPathName() << "." );
+                    SIDRE_GROUP_LOG_PREPEND
+                    << "Conduit Node " << n.path() << " does not have sidre "
+                    << "data for Group " << getPathName() << "." );
     importFrom(n["sidre"], preserve_contents);
     if (n.has_path("sidre_group_name"))
     {
@@ -1592,7 +1631,8 @@ void Group::load(const hid_t& h5_id,
   }
   else
   {
-    SLIC_ERROR("Invalid protocol " << protocol << " for file load.");
+    SLIC_ERROR(SIDRE_GROUP_LOG_PREPEND
+               << "Invalid protocol '" << protocol << "' for file load.");
   }
 }
 
@@ -1630,14 +1670,14 @@ void Group::loadExternalData(const hid_t& h5_id)
  */
 Group::Group(const std::string& name,
              DataStore* datastore)
-  : m_name(name),
-  m_index(InvalidIndex),
-  m_parent(nullptr),
-  m_datastore(datastore),
-  m_view_coll(new ViewCollection()),
-  m_group_coll(new GroupCollection())
+  : m_name(name)
+  , m_index(InvalidIndex)
+  , m_parent(nullptr)
+  , m_datastore(datastore)
+  , m_view_coll(new ViewCollection())
+  , m_group_coll(new GroupCollection())
 #ifdef AXOM_USE_UMPIRE
-  , m_default_allocator_id(axom::getDefaultAllocator().getId())
+  , m_default_allocator_id(axom::getDefaultAllocatorID())
 #endif
 {}
 
@@ -1672,10 +1712,11 @@ View* Group::attachView(View* view)
   else
   {
     SLIC_ASSERT_MSG(view->m_owning_group == nullptr,
-                    "Provided View " << view->getPathName() << " is already " <<
-                    "attatched to Group " <<
-                    view->m_owning_group->getPathName() << " and can't be " <<
-                    "attatched to Group " << getPathName() << "." );
+                    SIDRE_GROUP_LOG_PREPEND
+                    << "Provided View " << view->getPathName() << " is already "
+                    << "attatched to Group "
+                    << view->m_owning_group->getPathName() << " and can't be "
+                    << "attatched to Group " << getPathName() << "." );
     view->m_owning_group = this;
     view->m_index = m_view_coll->insertItem(view, view->getName());
     return view;
@@ -2103,30 +2144,32 @@ bool Group::importConduitTree(const conduit::Node &node, bool preserve_contents)
       }
       else if (cld_dtype.is_list())
       {
-        SLIC_WARNING( "Group " << getPathName() <<
-        " cannot import Conduit list " << cld_name);
-        success = false; 
+        SLIC_WARNING(SIDRE_GROUP_LOG_PREPEND
+                     << "Group cannot import Conduit list " << cld_name);
+        success = false;
       }
       else
       {
         // All Nodes should have one of the above datatypes, so if
-        // we get here something is wrong. 
-        SLIC_ERROR( "Conduit child Node " << cld_name <<
-                    " does not have a recognized datatype." <<
-                    " Cannot import into Group " << getPathName());
+        // we get here something is wrong.
+        SLIC_ERROR(SIDRE_GROUP_LOG_PREPEND
+                   << "Conduit child Node " << cld_name
+                   << " does not have a recognized datatype."
+                   << " Cannot import into Group " << getPathName());
       }
     }
   }
   else
   {
-    SLIC_ERROR( "Group " << getPathName() <<
-                " cannot import non-object Conduit Node");
+    SLIC_ERROR(SIDRE_GROUP_LOG_PREPEND
+               << "Group cannot import non-object Conduit Node");
   }
 
   return success;
 }
 
-bool Group::importConduitTreeExternal(conduit::Node &node, bool preserve_contents)
+bool Group::importConduitTreeExternal(conduit::Node &node,
+                                      bool preserve_contents)
 {
   bool success = true;
   if (!preserve_contents)
@@ -2183,24 +2226,25 @@ bool Group::importConduitTreeExternal(conduit::Node &node, bool preserve_content
       }
       else if (cld_dtype.is_list())
       {
-        SLIC_WARNING( "Group " << getPathName() <<
-        " cannot import Conduit list " << cld_name);
+        SLIC_WARNING(SIDRE_GROUP_LOG_PREPEND
+                     << "Group  cannot import Conduit list " << cld_name);
         success = false;
       }
       else
       {
         // All Nodes should have one of the above datatypes, so if
         // we get here something is wrong.
-        SLIC_ERROR( "Conduit child Node " << cld_name <<
-                    " does not have a recognized datatype." <<
-                    " Cannot import into Group " << getPathName());
+        SLIC_ERROR(SIDRE_GROUP_LOG_PREPEND
+                   << "Conduit child Node " << cld_name
+                   << " does not have a recognized datatype."
+                   << " Cannot import into Group " << getPathName());
       }
     }
   }
   else
   {
-    SLIC_ERROR( "Group " << getPathName() <<
-                " cannot import non-object Conduit Node");
+    SLIC_ERROR(SIDRE_GROUP_LOG_PREPEND
+               << "Group cannot import non-object Conduit Node");
   }
 
   return success;
@@ -2231,9 +2275,9 @@ Group* Group::walkPath( std::string& path,
     for (std::vector<std::string>::const_iterator iter = tokens.begin() ;
          iter < stop ; ++iter)
     {
-      SLIC_ASSERT_MSG( iter->size() > 0,
-                       "Empty name in provided path " << path << " given " <<
-                       "to Group " << getPathName() << "." );
+      SLIC_ASSERT_MSG(iter->size() > 0,
+                      SIDRE_GROUP_LOG_PREPEND
+                      << "Empty name in provided path '" << path << "'.");
 
       if ( group_ptr->hasChildGroup(*iter) )
       {
@@ -2284,9 +2328,9 @@ const Group* Group::walkPath( std::string& path ) const
     for (std::vector<std::string>::const_iterator iter = tokens.begin() ;
          iter < stop ; ++iter)
     {
-      SLIC_ASSERT_MSG( iter->size() > 0,
-                       "Empty name in provided path " << path << " given " <<
-                       "to Group " << getPathName() << "." );
+      SLIC_ASSERT_MSG(iter->size() > 0,
+                      SIDRE_GROUP_LOG_PREPEND
+                      <<  "Empty name in provided path '" << path << "'.");
 
       if ( group_ptr->hasChildGroup(*iter) )
       {
@@ -2365,8 +2409,8 @@ bool Group::hasView( IndexType idx ) const
 IndexType Group::getViewIndex(const std::string& name) const
 {
   SLIC_CHECK_MSG(hasChildView(name),
-                 "Group " << getPathName() <<
-                 " has no View with name '" << name << "'");
+                 SIDRE_GROUP_LOG_PREPEND
+                 << "Group has no View with name '" << name << "'");
 
   return m_view_coll->getItemIndex(name);
 }
@@ -2383,8 +2427,8 @@ IndexType Group::getViewIndex(const std::string& name) const
 const std::string& Group::getViewName(IndexType idx) const
 {
   SLIC_CHECK_MSG(hasView(idx),
-                 "Group " << getPathName() <<
-                 " has no View with index " << idx);
+                 SIDRE_GROUP_LOG_PREPEND
+                 << "Group has no View with index " << idx);
 
   return m_view_coll->getItemName(idx);
 }
@@ -2400,9 +2444,9 @@ const std::string& Group::getViewName(IndexType idx) const
  */
 View* Group::getView( IndexType idx )
 {
-  SLIC_CHECK_MSG( hasView(idx),
-                  "Group " << getPathName()
-                           << " has no View with index " << idx);
+  SLIC_CHECK_MSG(hasView(idx),
+                 SIDRE_GROUP_LOG_PREPEND
+                 << "Group has no View with index " << idx);
 
   return m_view_coll->getItem(idx);
 }
@@ -2418,9 +2462,9 @@ View* Group::getView( IndexType idx )
  */
 const View* Group::getView( IndexType idx ) const
 {
-  SLIC_CHECK_MSG( hasView(idx),
-                  "Group " << getPathName()
-                           << " has no View with index " << idx);
+  SLIC_CHECK_MSG(hasView(idx),
+                 SIDRE_GROUP_LOG_PREPEND
+                 << "Group has no View with index " << idx);
 
   return m_view_coll->getItem(idx);
 }
@@ -2493,8 +2537,8 @@ bool Group::hasGroup( IndexType idx ) const
 IndexType Group::getGroupIndex(const std::string& name) const
 {
   SLIC_CHECK_MSG(hasChildGroup(name),
-                 "Group " << getPathName() <<
-                 " has no child Group with name '" << name << "'");
+                 SIDRE_GROUP_LOG_PREPEND
+                 << "Group has no child Group with name '" << name << "'");
 
   return m_group_coll->getItemIndex(name);
 }
@@ -2511,8 +2555,8 @@ IndexType Group::getGroupIndex(const std::string& name) const
 const std::string& Group::getGroupName(IndexType idx) const
 {
   SLIC_CHECK_MSG(hasGroup(idx),
-                 "Group " << getPathName() <<
-                 " has no child Group with index " << idx);
+                 SIDRE_GROUP_LOG_PREPEND
+                 << "Group has no child Group with index " << idx);
 
   return m_group_coll->getItemName(idx);
 }
@@ -2529,8 +2573,8 @@ const std::string& Group::getGroupName(IndexType idx) const
 Group* Group::getGroup( IndexType idx )
 {
   SLIC_CHECK_MSG(hasGroup(idx),
-                 "Group " << getPathName() <<
-                 " has no child Group with index " << idx);
+                 SIDRE_GROUP_LOG_PREPEND
+                 << "Group has no child Group with index " << idx);
 
   return m_group_coll->getItem(idx);
 }
@@ -2547,8 +2591,8 @@ Group* Group::getGroup( IndexType idx )
 const Group* Group::getGroup( IndexType idx ) const
 {
   SLIC_CHECK_MSG(hasGroup(idx),
-                 "Group " << getPathName() <<
-                 " has no child Group with index " << idx);
+                 SIDRE_GROUP_LOG_PREPEND
+                 << "Group has no child Group with index " << idx);
 
   return m_group_coll->getItem(idx);
 }
@@ -2600,15 +2644,16 @@ bool Group::rename(const std::string& new_name)
 
     if (new_name.empty())
     {
-      SLIC_WARNING("Cannot rename Group " << getPathName() << " to an empty " <<
-                   "string.");
+      SLIC_WARNING(SIDRE_GROUP_LOG_PREPEND
+                   << "Cannot rename Group to an empty string.");
       do_rename = false;
     }
     else if (new_name.find(s_path_delimiter) != std::string::npos)
     {
-      SLIC_WARNING("Cannot rename Group "<< getPathName() << " to path name " <<
-                   new_name << ". Only strings without path delimiters can " <<
-                   "be passed into the rename method.");
+      SLIC_WARNING(SIDRE_GROUP_LOG_PREPEND
+                   << "Cannot rename Group to path name '" << new_name <<"'. "
+                   << "Only strings without path delimiters can "
+                   << "be passed into the rename method.");
       do_rename = false;
     }
 
@@ -2624,27 +2669,31 @@ bool Group::rename(const std::string& new_name)
 
         if (parent->hasGroup(new_name) || parent->hasView(new_name))
         {
-          SLIC_WARNING("Parent group " << parent->getPathName() <<
-                       " already has a child group named " << new_name <<
-                       ". Group " << getPathName() << " will not be renamed.");
+          SLIC_WARNING(SIDRE_GROUP_LOG_PREPEND
+                       << "Parent group " << parent->getPathName()
+                       << " already has a child group named '" << new_name
+                       << "'. Group " << getPathName()
+                       << " will not be renamed.");
           do_rename = false;
         }
         else
         {
           Group* detached_group = parent->detachGroup(m_name);
           SLIC_CHECK_MSG(detached_group == this,
-                         "Group detatched from parent " <<
-                         detached_group->getPathName() << " is not this Group " <<
-                         getPathName() << "." );
+                         SIDRE_GROUP_LOG_PREPEND
+                         << "Group detatched from parent '"
+                         << detached_group->getPathName() << "' is not "
+                         << "this Group '" << getPathName() << "'." );
 
           m_name = new_name;
 
           Group* attached_group = parent->attachGroup(detached_group);
           AXOM_DEBUG_VAR(attached_group);
           SLIC_CHECK_MSG(attached_group == this,
-                         "Group attached to parent " <<
-                         attached_group->getPathName() << " is not this Group " <<
-                         getPathName() << "." );
+                         SIDRE_GROUP_LOG_PREPEND
+                         << "Group attached to parent '"
+                         << attached_group->getPathName() << "' is not "
+                         << "this Group '" << getPathName() << "'." );
         }
       }
       else

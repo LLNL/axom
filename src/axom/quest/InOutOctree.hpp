@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -421,7 +421,7 @@ public:     // Functions related to the associated triangles
   void reserveTriangles(int count) { m_tris.reserve(count); }
 
   /** Find the number of triangles associated with this leaf */
-  int numTriangles() const { return m_tris.size(); }
+  int numTriangles() const { return static_cast< int >( m_tris.size() ); }
 
   /** Associates the surface triangle with the given index with this block */
   void addTriangle(TriangleIndex tInd) { m_tris.push_back(tInd); }
@@ -840,10 +840,12 @@ public:
         }
       }
 
-      m_elementSet = MeshElementSet( m_tv_data.size() / NUM_TRI_VERTS );
+      m_elementSet =
+          MeshElementSet( static_cast<int>(m_tv_data.size()) / NUM_TRI_VERTS );
       m_triangleToVertexRelation =
         TriangleVertexRelation(&m_elementSet, &m_vertexSet);
-      m_triangleToVertexRelation.bindIndices(m_tv_data.size(), &m_tv_data);
+      m_triangleToVertexRelation.bindIndices(
+          static_cast<int>(m_tv_data.size()), &m_tv_data);
 
 
       // Delete old mesh, and NULL its pointer
@@ -1526,7 +1528,7 @@ void InOutOctree<DIM>::insertMeshTriangles ()
         if( dynamicLeafData.hasTriangles())
         {
           // Set the leaf data in the octree
-          blkData.setData( gvRelData.size() );
+          blkData.setData( static_cast< int >( gvRelData.size() ) );
 
           // Add the vertex index to the gray blocks vertex relation
           gvRelData.push_back( dynamicLeafData.vertexIndex() );
@@ -1535,7 +1537,7 @@ void InOutOctree<DIM>::insertMeshTriangles ()
           std::copy( dynamicLeafData.triangles().begin(),
                      dynamicLeafData.triangles().end(),
                      std::back_inserter(geIndRelData));
-          geSizeRelData.push_back( geIndRelData.size());
+          geSizeRelData.push_back( static_cast< int >( geIndRelData.size() ) );
 
           QUEST_OCTREE_DEBUG_LOG_IF(
             DEBUG_BLOCK_1 == blk || DEBUG_BLOCK_2 == blk,
@@ -1612,7 +1614,7 @@ void InOutOctree<DIM>::insertMeshTriangles ()
         // Add all triangles to intersecting children blocks
         DynamicGrayBlockData::TriangleList& parentTriangles =
           dynamicLeafData.triangles();
-        int numTriangles = parentTriangles.size();
+        int numTriangles = static_cast< int >( parentTriangles.size() );
         for(int i=0 ; i< numTriangles ; ++i)
         {
           TriangleIndex tIdx = parentTriangles[i];
@@ -1678,13 +1680,13 @@ void InOutOctree<DIM>::insertMeshTriangles ()
     if(!levelLeafMap.empty() )
     {
       // Create the relations from gray leaves to mesh vertices and elements
-      m_grayLeafsMap[lev] = GrayLeafSet( gvRelData.size() );
+      m_grayLeafsMap[lev] = GrayLeafSet( static_cast< int >(gvRelData.size()) );
 
       m_grayLeafToVertexRelationLevelMap[lev] =
         GrayLeafVertexRelation(&m_grayLeafsMap[lev],
                                &m_meshWrapper.vertexSet());
       m_grayLeafToVertexRelationLevelMap[lev].
-      bindIndices(gvRelData.size(), &gvRelData);
+      bindIndices( static_cast< int >(gvRelData.size()), &gvRelData);
 
       m_grayLeafToElementRelationLevelMap[lev] =
         GrayLeafElementRelation(&m_grayLeafsMap[lev],
@@ -1692,7 +1694,7 @@ void InOutOctree<DIM>::insertMeshTriangles ()
       m_grayLeafToElementRelationLevelMap[lev].
       bindBeginOffsets(m_grayLeafsMap[lev].size(), &geSizeRelData);
       m_grayLeafToElementRelationLevelMap[lev].
-      bindIndices(geIndRelData.size(), &geIndRelData);
+      bindIndices( static_cast< int >(geIndRelData.size()), &geIndRelData);
     }
 
     currentLevelData.clear();
@@ -1742,14 +1744,13 @@ void InOutOctree<DIM>::colorOctreeLeaves()
     // (or their descendants) is gray
     while(!uncoloredBlocks.empty())
     {
-      int prevCount = uncoloredBlocks.size();
+      int prevCount = static_cast< int >(uncoloredBlocks.size());
       AXOM_DEBUG_VAR(prevCount);
 
       GridPtVec prevVec;
       prevVec.swap(uncoloredBlocks);
-      for(typename GridPtVec::iterator it = prevVec.begin(),
-          itEnd = prevVec.end() ;
-          it < itEnd ; ++it)
+      auto end = prevVec.end();
+      for(auto it = prevVec.begin() ; it < end ; ++it)
       {
         BlockIndex leafBlk(*it, lev);
         if(!colorLeafAndNeighbors( leafBlk, (*this)[leafBlk] ) )

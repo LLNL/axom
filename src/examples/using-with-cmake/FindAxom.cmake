@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -24,7 +24,7 @@ set(AXOM_INCLUDE_DIRS ${AXOM_DIR}/include)
 
 # NOTE: fmt, CLI11 and sparsehash are useful open-source projects that Axom
 # uses internally and we export for other codes use as well
-set(AXOM_LIBRARIES sparsehash CLI11 fmt axom )
+set(AXOM_LIBRARIES sparsehash cli11 fmt axom )
 
 foreach(_library ${AXOM_LIBRARIES})
     

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -220,9 +220,9 @@ inline void for_all_cells_impl( xargs::nodeids,
         const IndexType n0 = i + j * nodeJp;
         IndexType cell_connectivity[ 4 ];
 
-        for ( int i = 0; i < 4; ++i )
+        for ( int ii = 0; ii < 4; ++ii )
         {
-          cell_connectivity[ i ] = n0 + offsets[ i ];
+          cell_connectivity[ ii ] = n0 + offsets[ ii ];
         }
 
         kernel( cellID, cell_connectivity, 4 );
@@ -239,9 +239,9 @@ inline void for_all_cells_impl( xargs::nodeids,
         const IndexType n0 = i + j * nodeJp + k * nodeKp;
         IndexType cell_connectivity[ 8 ];
 
-        for ( int i = 0; i < 8; ++i )
+        for ( int ii = 0; ii < 8; ++ii )
         {
-          cell_connectivity[ i ] = n0 + offsets[ i ];
+          cell_connectivity[ ii ] = n0 + offsets[ ii ];
         }
 
         kernel( cellID, cell_connectivity, 8 );

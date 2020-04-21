@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -61,13 +61,13 @@ void emit_bvh( RadixTree<FloatType, 3>& data,
   const int32 inner_size = data.m_inner_size;
   SLIC_ASSERT( inner_size == size-1 );
 
-  const int32 *lchildren_ptr = data.m_left_children;
-  const int32 *rchildren_ptr = data.m_right_children;
+  const int32* lchildren_ptr = data.m_left_children;
+  const int32* rchildren_ptr = data.m_right_children;
 
-  const AABB<FloatType,3>  *leaf_aabb_ptr  = data.m_leaf_aabbs;
-  const AABB<FloatType,3>  *inner_aabb_ptr = data.m_inner_aabbs;
+  const AABB<FloatType,3>* leaf_aabb_ptr  = data.m_leaf_aabbs;
+  const AABB<FloatType,3>* inner_aabb_ptr = data.m_inner_aabbs;
 
-  Vec<FloatType,4> *flat_ptr = bvh_data.m_inner_nodes;
+  Vec<FloatType,4>* flat_ptr = bvh_data.m_inner_nodes;
 
   for_all< ExecSpace >( inner_size, AXOM_LAMBDA (int32 node)
   {
@@ -149,14 +149,14 @@ void emit_bvh( RadixTree<FloatType, 2>& data,
   const int32 inner_size = data.m_inner_size;
   SLIC_ASSERT( inner_size == size-1 );
 
-  const int32 *lchildren_ptr = data.m_left_children;
-  const int32 *rchildren_ptr = data.m_right_children;
+  const int32* lchildren_ptr = data.m_left_children;
+  const int32* rchildren_ptr = data.m_right_children;
 
-  const AABB<FloatType,2>  *leaf_aabb_ptr  = data.m_leaf_aabbs;
-  const AABB<FloatType,2>  *inner_aabb_ptr = data.m_inner_aabbs;
+  const AABB<FloatType,2>* leaf_aabb_ptr  = data.m_leaf_aabbs;
+  const AABB<FloatType,2>* inner_aabb_ptr = data.m_inner_aabbs;
 
 
-  Vec<FloatType,4> *flat_ptr = bvh_data.m_inner_nodes;
+  Vec<FloatType,4>* flat_ptr = bvh_data.m_inner_nodes;
 
   for_all< ExecSpace >( inner_size, AXOM_LAMBDA (int32 node)
   {

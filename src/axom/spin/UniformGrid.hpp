@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -355,7 +355,7 @@ bool UniformGrid< T, NDIMS >::isValidIndex(int index) const
 template < typename T, int NDIMS >
 int UniformGrid< T, NDIMS >::getNumBins() const
 {
-  return m_bins.size();
+  return static_cast< int >( m_bins.size() );
 }
 
 template < typename T, int NDIMS >
@@ -452,7 +452,7 @@ void UniformGrid< T, NDIMS >::insert(const BoxType& BB,
 
   const std::vector< int > bidxs = getBinsForBbox(BB);
 
-  const int numBins = bidxs.size();
+  const int numBins = static_cast< int >( bidxs.size() );
   for (int i = 0 ; i < numBins ; ++i)
   {
     addObj(obj, bidxs[i]);

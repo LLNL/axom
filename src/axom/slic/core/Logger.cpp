@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -142,7 +142,7 @@ void Logger::addStreamToAllMsgLevels( LogStream* ls )
 //------------------------------------------------------------------------------
 int Logger::getNumStreamsAtMsgLevel( message::Level level )
 {
-  return m_logStreams[ level ].size( );
+  return static_cast< int >( m_logStreams[ level ].size( ) );
 }
 
 //------------------------------------------------------------------------------
@@ -204,7 +204,7 @@ void Logger::logMessage( message::Level level,
 
   } // END if
 
-  unsigned nstreams = m_logStreams[ level ].size();
+  unsigned nstreams = static_cast< unsigned >( m_logStreams[ level ].size() );
   for ( unsigned istream=0 ; istream < nstreams ; ++istream )
   {
 
@@ -231,7 +231,7 @@ void Logger::flushStreams()
   for ( int level=message::Error ; level < message::Num_Levels ; ++level )
   {
 
-    unsigned nstreams = m_logStreams[ level ].size();
+    unsigned nstreams = static_cast< unsigned >( m_logStreams[ level ].size() );
     for ( unsigned istream=0 ; istream < nstreams ; ++istream )
     {
       m_logStreams[ level ][ istream ]->flush( );
@@ -248,7 +248,7 @@ void Logger::pushStreams()
   for ( int level=message::Error ; level < message::Num_Levels ; ++level )
   {
 
-    unsigned nstreams = m_logStreams[ level ].size();
+    unsigned nstreams = static_cast< unsigned >( m_logStreams[ level ].size() );
     for ( unsigned istream=0 ; istream < nstreams ; ++istream )
     {
       m_logStreams[ level ][ istream ]->push( );

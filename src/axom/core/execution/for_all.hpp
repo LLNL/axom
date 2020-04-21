@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -64,7 +64,7 @@ inline void for_all( const IndexType& begin, const IndexType& end,
 
   constexpr bool is_serial = std::is_same< ExecSpace, SEQ_EXEC >::value;
   AXOM_STATIC_ASSERT( is_serial );
-  for ( IndexType i=begin; i < end; ++i )
+  for ( IndexType i=begin ; i < end ; ++i )
   {
     kernel( i );
   }

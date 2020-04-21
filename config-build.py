@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -32,12 +32,13 @@ def extract_cmake_location(file_path):
         content = file_handle.readlines()
         for line in content:
             if line.lower().startswith(cmake_line_prefix):
-                return line.split(" ")[4].strip()
+                return line.partition(":")[2].strip()
     print("Could not find a cmake entry in host config file.\n"
           "Attempting to find cmake on your path...")
     cmake_path = distutils.spawn.find_executable("cmake")
     print("Found: {0}".format(cmake_path))
-    return cmake_path
+    ret_cmake_path = "\"{0}\"".format(cmake_path)
+    return ret_cmake_path
 
 
 def parse_arguments():
@@ -87,6 +88,16 @@ def parse_arguments():
         "-x", "--xcode", action="store_true", help="Create an xcode project."
     )
 
+    # Add supported versions of MS Visual Studio as needed.
+    msvcversions = {'2017': 'Visual Studio 15 2017',
+                    '201764': 'Visual Studio 15 2017 Win64'}
+    parser.add_argument(
+        "--msvc",
+        type=str,
+        choices=msvcversions.keys(),
+        help="Create a MS Visual Studio project."
+    )
+
     parser.add_argument(
         "-ecc",
         "--exportcompilercommands",
@@ -112,6 +123,7 @@ def parse_arguments():
     )
 
     args, unknown_args = parser.parse_known_args()
+    args.msvcversions = msvcversions
     if unknown_args:
         print(
             "[config-build]: Passing the following arguments directly to cmake... %s"
@@ -208,6 +220,7 @@ def create_cmake_command_line(
     args, unknown_args, buildpath, hostconfigpath, installpath
 ):
     cmakeline = extract_cmake_location(hostconfigpath)
+    cmakeline = os.path.normpath(cmakeline) # Fixes path for Windows
     assert cmakeline != None, ("No cmake executable found on path")
     assert executable_exists(cmakeline), (
         "['%s'] invalid path to cmake executable or file does not have execute permissions"
@@ -230,7 +243,7 @@ def create_cmake_command_line(
         os.chmod(ccmake_file, st.st_mode | stat.S_IEXEC)
 
     # Add cache file option
-    cmakeline += " -C %s" % hostconfigpath
+    cmakeline = '"{0}" -C {1}'.format(cmakeline,hostconfigpath)
     # Add build type (opt or debug)
     cmakeline += " -DCMAKE_BUILD_TYPE=" + args.buildtype
     # Set install dir
@@ -244,6 +257,9 @@ def create_cmake_command_line(
 
     if args.xcode:
         cmakeline += ' -G "Xcode"'
+
+    if args.msvc:
+        cmakeline += ' -G "%s"' % args.msvcversions[args.msvc]
 
     if args.docs_only:
         cmakeline += " -DENABLE_ALL_COMPONENTS=OFF"

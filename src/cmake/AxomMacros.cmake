@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -26,34 +26,46 @@ macro(axom_add_code_checks)
     cmake_parse_arguments(arg
          "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
 
-    set(_all_sources)
-    file(GLOB_RECURSE _all_sources
-         "*.cpp" "*.hpp" "*.cxx" "*.hxx" "*.cc" "*.c" "*.h" "*.hh"
-         "*.F" "*.f" "*.f90" "*.F90")
+    # Only do code checks if building Axom by itself and not included in
+    # another project
+    if ("${PROJECT_SOURCE_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
+        set(_all_sources)
+        file(GLOB_RECURSE _all_sources
+             "*.cpp" "*.hpp" "*.cxx" "*.hxx" "*.cc" "*.c" "*.h" "*.hh"
+             "*.F" "*.f" "*.f90" "*.F90")
 
-    # Check for excludes
-    if (NOT DEFINED arg_EXCLUDES)
-        set(_sources ${_all_sources})
-    else()
-        set(_sources)
-        foreach(_source ${_all_sources})
-            set(_to_be_excluded FALSE)
-            foreach(_exclude ${arg_EXCLUDES})
-                if (${_source} MATCHES ${_exclude})
-                    set(_to_be_excluded TRUE)
-                    break()
+        # Check for excludes
+        if (NOT DEFINED arg_EXCLUDES)
+            set(_sources ${_all_sources})
+        else()
+            set(_sources)
+            foreach(_source ${_all_sources})
+                set(_to_be_excluded FALSE)
+                foreach(_exclude ${arg_EXCLUDES})
+                    if (${_source} MATCHES ${_exclude})
+                        set(_to_be_excluded TRUE)
+                        break()
+                    endif()
+                endforeach()
+
+                if (NOT ${_to_be_excluded})
+                    list(APPEND _sources ${_source})
                 endif()
             endforeach()
+        endif()
 
-            if (NOT ${_to_be_excluded})
-                list(APPEND _sources ${_source})
+        blt_add_code_checks(PREFIX    ${arg_PREFIX}
+                            SOURCES   ${_sources}
+                            UNCRUSTIFY_CFG_FILE ${PROJECT_SOURCE_DIR}/uncrustify.cfg)
+
+        # Set FOLDER property for code check targets
+        foreach(_suffix uncrustify_check uncrustify_style)
+            set(_tgt ${arg_PREFIX}_${_suffix})
+            if(TARGET ${_tgt}) 
+                set_target_properties(${_tgt} PROPERTIES FOLDER "axom/code_checks")
             endif()
         endforeach()
     endif()
-
-    blt_add_code_checks(PREFIX    ${arg_PREFIX}
-                        SOURCES   ${_sources}
-                        UNCRUSTIFY_CFG_FILE ${PROJECT_SOURCE_DIR}/uncrustify.cfg)
 
 endmacro(axom_add_code_checks)
 
@@ -287,7 +299,7 @@ macro(axom_write_unified_header)
     string(TOLOWER ${arg_NAME} _lcname)
     set(_header ${CMAKE_BINARY_DIR}/include/axom/${_lcname}.hpp)
 
-    file(WRITE ${_header} "\/\/ Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+    file(WRITE ${_header} "\/\/ Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 \/\/ other Axom Project Developers. See the top-level COPYRIGHT file for details.
 \/\/
 \/\/ SPDX-License-Identifier: (BSD-3-Clause)

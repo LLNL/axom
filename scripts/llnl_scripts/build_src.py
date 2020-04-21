@@ -1,7 +1,7 @@
 #!/bin/sh
 "exec" "python" "-u" "-B" "$0" "$@"
 
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -71,7 +71,7 @@ def main():
         original_wd = os.getcwd()
         os.chdir(repo_dir)
         timestamp = get_timestamp()
-        res = build_and_test_host_configs(repo_dir, job_name, timestamp)
+        res = build_and_test_host_configs(repo_dir, job_name, timestamp, False)
 
         # Archive logs
         if opts["archive"] != "":

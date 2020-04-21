@@ -1,7 +1,10 @@
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+#------------------------------------------------------------------------------
+# Unit tests for Spin component
+#------------------------------------------------------------------------------
 
 set( spin_tests
     spin_bvhtree.cpp
@@ -23,7 +26,7 @@ set( spin_depends
      fmt
     )
 
-blt_list_append( TO spin_depends ELEMENTS raja IF ${RAJA_FOUND} )
+blt_list_append( TO spin_depends ELEMENTS RAJA IF ${RAJA_FOUND} )
 blt_list_append( TO spin_depends ELEMENTS umpire IF ${UMPIRE_FOUND} )
 blt_list_append( TO spin_depends ELEMENTS openmp  IF ${ENABLE_OPENMP} )
 blt_list_append( TO spin_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
@@ -47,7 +50,7 @@ foreach ( test ${spin_tests} )
 
 endforeach()
 
-if ( ${RAJA_FOUND} AND ${UMPIRE_FOUND} )
+if ( RAJA_FOUND AND UMPIRE_FOUND )
 
    blt_add_executable(
       NAME       spin_bvh_test
@@ -60,6 +63,7 @@ if ( ${RAJA_FOUND} AND ${UMPIRE_FOUND} )
    blt_add_test(
       NAME    spin_bvh
       COMMAND spin_bvh_test
+      NUM_OMP_THREADS 4
      )
 
 endif()

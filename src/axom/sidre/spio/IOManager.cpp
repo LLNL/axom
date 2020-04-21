@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -257,10 +257,10 @@ void IOManager::write(sidre::Group* datagroup, int num_files,
   }
   (void)m_baton->pass();
 
+  MPI_Barrier(m_mpi_comm);
 #ifdef AXOM_USE_SCR
   if (m_use_scr)
   {
-    MPI_Barrier(m_mpi_comm);
     int valid = 1;
     SCR_Complete_checkpoint(valid);
   }
@@ -280,6 +280,8 @@ void IOManager::read(
   const std::string& protocol,
   bool preserve_contents)
 {
+  MPI_Barrier(m_mpi_comm);
+
   if (protocol == "sidre_hdf5")
   {
 #ifdef AXOM_USE_HDF5
@@ -331,6 +333,7 @@ void IOManager::read(sidre::Group* datagroup,
                      bool preserve_contents,
                      bool read_with_scr)
 {
+  MPI_Barrier(m_mpi_comm);
 
   if (!read_with_scr)
   {
@@ -1092,7 +1095,7 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
 
   //The final name in mesh_path will be used as the name of the
   //blueprint index.
-  conduit::utils::rsplit_string(mesh_path, delimiter, 
+  conduit::utils::rsplit_string(mesh_path, delimiter,
                                 blueprint_name, path_to_mesh);
 
   std::string bp_index("blueprint_index/" + blueprint_name);
@@ -1112,13 +1115,11 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
                  <<"based on group at path "
                  << domain_path);
   }
-
 #else
   AXOM_DEBUG_VAR(datastore);
   AXOM_DEBUG_VAR(domain_path);
   AXOM_DEBUG_VAR(file_name);
   AXOM_DEBUG_VAR(mesh_path);
-  AXOM_DEBUG_VAR(blueprint_name);
 
   SLIC_WARNING("Axom configured without hdf5. "
                <<"writeBlueprintIndexToRootFile() only currently implemented "

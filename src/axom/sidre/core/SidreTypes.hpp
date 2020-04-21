@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -11,8 +11,8 @@
  *
  */
 
-#ifndef SIDRETYPES_HPP_
-#define SIDRETYPES_HPP_
+#ifndef SIDRE_TYPES_HPP_
+#define SIDRE_TYPES_HPP_
 
 #include "SidreDataTypeIds.h"
 #include "conduit.hpp"
@@ -22,29 +22,29 @@ namespace axom
 {
 namespace sidre
 {
-// Some typedefs to make Conduit usage easier and less visible in the Sidre API.
+// Type aliases to make Conduit usage easier and less visible in the Sidre API
 
 /*!
  * \brief The Node class is the primary object in Conduit.
  */
-typedef conduit::Node Node;
+using Node = conduit::Node;
 
 /*!
  * \brief DataType is a general Conduit descriptor.
  */
-typedef conduit::DataType DataType;
+using DataType = conduit::DataType;
 
 /*!
  * \brief A Conduit Schema describes the data in a Node
  */
-typedef conduit::Schema Schema;
+using Schema = conduit::Schema;
 
 
 /*!
  * \brief IndexType is used for any labeling of a sidre object by an
  *        integer identifier.
  */
-typedef SIDRE_IndexType IndexType;
+using IndexType = SIDRE_IndexType;
 
 /*!
  * \brief Common invalid index identifier used in sidre.
@@ -171,7 +171,7 @@ template<> struct SidreTT<axom::float64>
 /*!
  * \brief TypeID is used to identify the type of a buffer (SIDRE_INT8_ID, etc).
  */
-typedef DataTypeId TypeID;
+using TypeID = DataTypeId;
 
 /*!
  * \brief Convenience function to convert int to TypeID type.
@@ -187,4 +187,4 @@ inline TypeID getTypeID( const int typeID )
 } /* end namespace axom */
 
 
-#endif /* SIDRETYPES_HPP_ */
+#endif /* SIDRE_TYPES_HPP_ */

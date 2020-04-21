@@ -1,7 +1,10 @@
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+#------------------------------------------------------------------------------
+# Examples for Spin component
+#------------------------------------------------------------------------------
 
 set(spin_example_depends
         core
@@ -11,9 +14,6 @@ set(spin_example_depends
         fmt
         )
 
-    #blt_list_append( TO spin_example_depends ELEMENTS raja IF ${RAJA_FOUND} )
-    #blt_list_append( TO spin_example_depends ELEMENTS umpire IF ${UMPIRE_FOUND} )
-    #blt_list_append( TO spin_example_depends ELEMENTS openmp  IF ${ENABLE_OPENMP} )
 blt_list_append( TO spin_example_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
 
 blt_add_executable(

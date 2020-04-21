@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -13,8 +13,8 @@
  ******************************************************************************
  */
 
-#ifndef BUFFER_HPP_
-#define BUFFER_HPP_
+#ifndef SIDRE_BUFFER_HPP_
+#define SIDRE_BUFFER_HPP_
 
 // Standard C++ headers
 #include <set>
@@ -165,8 +165,7 @@ public:
   }
 
   /*!
-   * \brief Return true if data description exists.  It may/may not have been
-   * applied to the data yet.  ( Check isApplied() for that. )
+   * \brief Return true if data description exists.
    */
   bool isDescribed() const
   {
@@ -343,4 +342,4 @@ private:
 } /* end namespace sidre */
 } /* end namespace axom */
 
-#endif /* BUFFER_HPP_ */
+#endif /* SIDRE_BUFFER_HPP_ */

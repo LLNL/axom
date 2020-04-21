@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -13,27 +13,36 @@
  ******************************************************************************
  */
 
-#ifndef DATAVIEW_HPP_
-#define DATAVIEW_HPP_
+#ifndef SIDRE_VIEW_HPP_
+#define SIDRE_VIEW_HPP_
 
 // Standard C++ headers
 #include <string>
 #include <set>
 
 // Other axom headers
+#include "axom/config.hpp"
 #include "axom/core/memory_management.hpp"
 #include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"
-#include "axom/slic/interface/slic.hpp"
+#include "axom/slic.hpp"
 
-// Sidre project headers
+// Sidre headers
 #include "axom/sidre/core/SidreTypes.hpp"
-#include "AttrValues.hpp"
+#include "axom/sidre/core/AttrValues.hpp"
 
 namespace axom
 {
 namespace sidre
 {
+
+
+// Helper macro for defining a prepend string for sidre::View log messages
+// We are using it to add the pathName() of the view
+#ifndef SIDRE_VIEW_LOG_PREPEND
+# define SIDRE_VIEW_LOG_PREPEND  "[View: '" << this->getPathName() << "'] "
+#endif
+
 
 class Buffer;
 class Group;
@@ -634,12 +643,11 @@ public:
     {
       DataTypeId arg_id = detail::SidreTT<ScalarType>::id;
       SLIC_CHECK_MSG(arg_id == m_node.dtype().id(),
-                     "You are setting a scalar value in view "
-                     << getPathName()
-                     << " which has changed the underlying data type."
-                     << "Old type = " << m_node.dtype().name()
-                     << ", new type ="
-                     <<  DataType::id_to_name( arg_id ) << ".");
+                     SIDRE_VIEW_LOG_PREPEND
+                     << "You are setting a scalar value which has changed "
+                     << " the underlying data type. "
+                     << "Old type: " << m_node.dtype().name() <<", "
+                     << "new type: " <<  DataType::id_to_name( arg_id ) << ".");
     }
 #endif
 
@@ -657,9 +665,9 @@ public:
     else
     {
       SLIC_CHECK_MSG(m_state == EMPTY || m_state == SCALAR,
-                     "Unable to set scalar value on view "
-                     << getPathName() << " with state: "
-                     << getStateStringName(m_state)  );
+                     SIDRE_VIEW_LOG_PREPEND
+                     << "Unable to set scalar value on view "
+                     << " with state: " << getStateStringName(m_state)  );
     }
     return this;
   }
@@ -679,11 +687,11 @@ public:
     if (m_state == SCALAR)
     {
       SLIC_CHECK_MSG(value.dtype().id() == m_node.dtype().id(),
-                     "You are setting a scalar value in view "
-                     << getPathName()
-                     << " which has changed the underlying data type."
-                     << "Old type = " << m_node.dtype().name()
-                     << ", new type ="
+                     SIDRE_VIEW_LOG_PREPEND
+                     << "Setting a scalar value in view  which has changed "
+                     << "the underlying data type."
+                     << "Old type: " << m_node.dtype().name() <<", "
+                     << "New type: "
                      <<  DataType::id_to_name( value.dtype().id() ) << ".");
     }
   #endif
@@ -702,8 +710,8 @@ public:
     else
     {
       SLIC_CHECK_MSG(m_state == EMPTY || m_state == SCALAR,
-                     "Unable to set scalar value on view "
-                     << getPathName() << " with state: "
+                     SIDRE_VIEW_LOG_PREPEND
+                     << "Unable to set scalar value on view with state: "
                      << getStateStringName(m_state)  );
     }
     return this;
@@ -734,8 +742,8 @@ public:
     else
     {
       SLIC_CHECK_MSG(m_state == EMPTY || m_state == STRING,
-                     "Unable to set string value on view "
-                     << getPathName() << " with state: "
+                     SIDRE_VIEW_LOG_PREPEND
+                     << "Unable to set string value on view with state: "
                      << getStateStringName(m_state)  );
     }
     return this;
@@ -841,8 +849,9 @@ public:
    */
   Node::ConstValue getScalar() const
   {
-    SLIC_CHECK_MSG( (m_state == SCALAR),
-                    "View::getScalar() called on non-scalar view.");
+    SLIC_CHECK_MSG(m_state == SCALAR,
+                   SIDRE_VIEW_LOG_PREPEND
+                   << "View::getScalar() called on non-scalar view.");
     return getData();
   }
 
@@ -855,31 +864,31 @@ public:
    *
    *  \note The return value already accounts for the View's offset
    *   (when present), so, if the View is an array, getData()[0] already points
-   *   to thefirst element
+   *   to the first element
    */
   /// @{
   Node::Value getData()
   {
-    if ( !isAllocated() || !isDescribed())
-    {
-      SLIC_CHECK_MSG( isAllocated(),
-                      "No view data present, memory has not been allocated.");
-      SLIC_CHECK_MSG( isApplied(),
-                      "View data description not present.");
-    }
+    SLIC_CHECK_MSG(isAllocated(),
+                   SIDRE_VIEW_LOG_PREPEND
+                   << "No view data present, memory has not been allocated.");
+    SLIC_CHECK_MSG(isDescribed(),
+                   SIDRE_VIEW_LOG_PREPEND
+                   << "View data description not present.");
+
     // this will return a default value
     return m_node.value();
   }
 
   Node::ConstValue getData() const
   {
-    if ( !isAllocated() || !isDescribed())
-    {
-      SLIC_CHECK_MSG( isAllocated(),
-                      "No view data present, memory has not been allocated.");
-      SLIC_CHECK_MSG( isApplied(),
-                      "View data description not present.");
-    }
+    SLIC_CHECK_MSG(isAllocated(),
+                   SIDRE_VIEW_LOG_PREPEND
+                   << "No view data present, memory has not been allocated.");
+    SLIC_CHECK_MSG(isDescribed(),
+                   SIDRE_VIEW_LOG_PREPEND
+                   "View data description not present.");
+
     // this will return a default value
     return m_node.value();
   }
@@ -1008,11 +1017,9 @@ public:
    */
   bool hasAttributeValue( const Attribute* attr ) const
   {
-    if (attr == nullptr)
-    {
-      SLIC_CHECK_MSG(attr != nullptr,
-                     "hasAttributeValue: called without an Attribute");
-    }
+    SLIC_CHECK_MSG(attr != nullptr,
+                   SIDRE_VIEW_LOG_PREPEND
+                   << "hasAttributeValue: called with a null Attribute");
 
     return m_attr_values.hasValue(attr);
   }
@@ -1046,11 +1053,9 @@ public:
    */
   bool setAttributeToDefault( const Attribute* attr )
   {
-    if (attr == nullptr)
-    {
-      SLIC_CHECK_MSG(attr != nullptr,
-                     "getAttributeToDefault: called without an Attribute");
-    }
+    SLIC_CHECK_MSG(attr != nullptr,
+                   SIDRE_VIEW_LOG_PREPEND
+                   << "getAttributeToDefault: called with a null Attribute");
 
     return m_attr_values.setToDefault(attr);
   }
@@ -1094,7 +1099,8 @@ public:
     if (attr == nullptr)
     {
       SLIC_CHECK_MSG(attr != nullptr,
-                     "setAttributeScalar: called without an Attribute");
+                     SIDRE_VIEW_LOG_PREPEND
+                     << "setAttributeScalar: called with a null Attribute");
       return false;
     }
 
@@ -1153,7 +1159,8 @@ public:
     if (attr == nullptr)
     {
       SLIC_CHECK_MSG(attr != nullptr,
-                     "getScalar: called without an Attribute");
+                     SIDRE_VIEW_LOG_PREPEND
+                     << "getScalar: called with a null Attribute");
       return m_attr_values.getEmptyNodeRef().value();
     }
 
@@ -1202,11 +1209,9 @@ public:
   template<typename DataType>
   DataType getAttributeScalar(const Attribute* attr)
   {
-    if (attr == nullptr)
-    {
-      SLIC_CHECK_MSG(attr != nullptr,
-                     "getAttributeScalar: called without an Attribute");
-    }
+    SLIC_CHECK_MSG(attr != nullptr,
+                   SIDRE_VIEW_LOG_PREPEND
+                   << "getAttributeScalar: called with a null Attribute");
 
     const Node & node = m_attr_values.getValueNodeRef(attr);
     DataType data = node.value();
@@ -1263,11 +1268,9 @@ public:
    */
   const Node & getAttributeNodeRef( const Attribute* attr ) const
   {
-    if (attr == nullptr)
-    {
-      SLIC_CHECK_MSG(attr != nullptr,
-                     "getAttributeNodeRef: called without an Attribute");
-    }
+    SLIC_CHECK_MSG(attr != nullptr,
+                   SIDRE_VIEW_LOG_PREPEND
+                   << "getAttributeNodeRef: called with a null Attribute");
 
     return m_attr_values.getValueNodeRef(attr);
   }
@@ -1544,4 +1547,4 @@ private:
 } /* end namespace sidre */
 } /* end namespace axom */
 
-#endif /* DATAVIEW_HPP_ */
+#endif /* SIDRE_VIEW_HPP_ */

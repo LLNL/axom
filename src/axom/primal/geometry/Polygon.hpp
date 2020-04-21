@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -71,7 +71,7 @@ public:
   }
 
   /*! Return the number of vertices in the polygon */
-  int numVertices() const { return m_vertices.size(); }
+  int numVertices() const { return static_cast< int >( m_vertices.size() ); }
 
   /*! Appends a vertex to the list of vertices */
   void addVertex(const PointType& pt)

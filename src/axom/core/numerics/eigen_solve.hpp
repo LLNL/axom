@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -138,9 +138,9 @@ int eigen_solve(Matrix< T >& A, int k, T* u, T* lambdas, int numIterations)
       matrix_vector_multiply(A, vec, temp);
 
       // make ortho to previous (for stability)
-      for (int k = 0 ; k < i ; k++)
+      for (int kk = 0 ; kk < i ; kk++)
       {
-        make_orthogonal< T >(temp, u + k*N, N);
+        make_orthogonal< T >(temp, u + kk*N, N);
       }
 
       res = normalize< T >(temp, N);

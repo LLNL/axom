@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -378,7 +378,7 @@ public:
 
   void TearDown() override
   {
-    int allocID = axom::getResourceAllocatorID( umpire::resource::Host );
+    int allocID = axom::getUmpireResourceAllocatorID( umpire::resource::Host );
     axom::setDefaultAllocator( allocID );
   }
 
@@ -454,8 +454,8 @@ TEST_P(UmpireTest, reallocate)
 {
   constexpr int SIZE = 100;
 
-#ifdef AXOM_USE_CUDA
-  if (allocID == axom::getResourceAllocatorID( umpire::resource::Constant ) )
+#if defined(AXOM_USE_CUDA) && defined(UMPIRE_ENABLE_CONST)
+  if (allocID == axom::getUmpireResourceAllocatorID(umpire::resource::Constant))
   {
     return;
   }
@@ -496,12 +496,15 @@ TEST_P(UmpireTest, reallocate_zero)
   constexpr int SIZE = 100;
 
 
-#ifdef AXOM_USE_CUDA
-  if (allocID == axom::getResourceAllocatorID( umpire::resource::Constant ) )
+#if defined(AXOM_USE_CUDA) && defined(UMPIRE_ENABLE_CONST)
+  if (allocID == axom::getUmpireResourceAllocatorID(umpire::resource::Constant))
   {
     return;
   }
 #endif
+
+  // set the default allocator
+  axom::setDefaultAllocator( allocID );
 
   {
     Buffer* buff = ds.createBuffer();
@@ -510,7 +513,7 @@ TEST_P(UmpireTest, reallocate_zero)
     buff->reallocate(0);
     buff->reallocate(SIZE);
 
-    ASSERT_EQ(axom::getDefaultAllocator().getId(),
+    ASSERT_EQ(axom::getDefaultAllocatorID(),
               rm.getAllocator(buff->getVoidPtr()).getId());
 
     buff->deallocate();
@@ -522,7 +525,7 @@ TEST_P(UmpireTest, reallocate_zero)
     buff->reallocate(0);
     buff->reallocate(SIZE);
 
-    ASSERT_EQ(axom::getDefaultAllocator().getId(),
+    ASSERT_EQ(axom::getDefaultAllocatorID(),
               rm.getAllocator(buff->getVoidPtr()).getId());
     buff->deallocate();
   }
@@ -533,23 +536,36 @@ TEST_P(UmpireTest, reallocate_zero)
     buff->reallocate(0);
     buff->reallocate(SIZE);
 
-    ASSERT_EQ(axom::getDefaultAllocator().getId(),
+    ASSERT_EQ(axom::getDefaultAllocatorID(),
               rm.getAllocator(buff->getVoidPtr()).getId());
     buff->deallocate();
   }
 }
 
-const int allocators[] = { 
-     axom::getResourceAllocatorID( umpire::resource::Host )
+const int allocators[] = {
+  axom::getUmpireResourceAllocatorID( umpire::resource::Host )
 #ifdef AXOM_USE_CUDA
-   , axom::getResourceAllocatorID( umpire::resource::Pinned )
-   , axom::getResourceAllocatorID( umpire::resource::Device )
-   , axom::getResourceAllocatorID( umpire::resource::Constant )
-   , axom::getResourceAllocatorID( umpire::resource::Unified )
+
+#ifdef UMPIRE_ENABLE_PINNED
+  , axom::getUmpireResourceAllocatorID( umpire::resource::Pinned )
 #endif
+
+#ifdef UMPIRE_ENABLE_DEVICE
+  , axom::getUmpireResourceAllocatorID( umpire::resource::Device )
+#endif
+
+#ifdef UMPIRE_ENABLE_CONST
+  , axom::getUmpireResourceAllocatorID( umpire::resource::Constant )
+#endif
+
+#ifdef UMPIRE_ENABLE_UM
+  , axom::getUmpireResourceAllocatorID( umpire::resource::Unified )
+#endif
+
+#endif /* AXOM_USE_CUDA */
 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
   sidre_buffer,
   UmpireTest,
   ::testing::ValuesIn(allocators)

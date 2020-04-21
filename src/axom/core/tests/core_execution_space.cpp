@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -33,7 +33,7 @@ template< typename ExecSpace >
 void check_valid( )
 {
   std::cout << "checking execution space:" <<
-               axom::execution_space< ExecSpace >::name() << std::endl;
+    axom::execution_space< ExecSpace >::name() << std::endl;
 
   EXPECT_TRUE( axom::execution_space< ExecSpace >::valid() );
   EXPECT_TRUE( strlen( axom::execution_space< ExecSpace >::name() ) > 0 );
@@ -44,7 +44,7 @@ template < typename ExecSpace >
 void check_invalid( )
 {
   std::cout << "checking execution space:" <<
-              axom::execution_space< ExecSpace >::name() << std::endl;
+    axom::execution_space< ExecSpace >::name() << std::endl;
 
   EXPECT_FALSE( axom::execution_space< ExecSpace >::valid() );
 
@@ -64,7 +64,7 @@ template < typename ExecSpace,
 void check_execution_mappings( int expectedAllocatorID, bool is_async )
 {
   std::cout << "checking execution space: " <<
-               axom::execution_space< ExecSpace >::name() << std::endl;
+    axom::execution_space< ExecSpace >::name() << std::endl;
 
   using loop_pol   = typename axom::execution_space< ExecSpace >::loop_policy;
   using reduce_pol = typename axom::execution_space< ExecSpace >::reduce_policy;
@@ -116,8 +116,12 @@ TEST( core_execution_space, check_invalid )
   check_invalid< InvalidSpace >( );
 }
 
-//------------------------------------------------------------------------------
-#ifdef AXOM_USE_RAJA
+
+//==============================================================================
+// The following tests require RAJA and UMPIRE
+//==============================================================================
+#if defined(AXOM_USE_UMPIRE) && defined(AXOM_USE_RAJA)
+
 TEST( core_execution_space, check_seq_exec )
 {
   check_valid< axom::SEQ_EXEC >( );
@@ -125,7 +129,7 @@ TEST( core_execution_space, check_seq_exec )
   constexpr bool IS_ASYNC = false;
 
 
-  int allocator_id = axom::getResourceAllocatorID( umpire::resource::Host );
+  int allocator_id = axom::getUmpireResourceAllocatorID(umpire::resource::Host);
   check_execution_mappings< axom::SEQ_EXEC,
                             RAJA::loop_exec,
                             RAJA::loop_reduce,
@@ -133,10 +137,9 @@ TEST( core_execution_space, check_seq_exec )
                             void >( allocator_id, IS_ASYNC );
 
 }
-#endif
 
 //------------------------------------------------------------------------------
-#if defined(AXOM_USE_OPENMP) && defined(AXOM_USE_RAJA)
+#if defined(AXOM_USE_OPENMP)
 TEST( core_execution_space, check_omp_exec )
 {
 
@@ -144,7 +147,7 @@ TEST( core_execution_space, check_omp_exec )
 
   constexpr bool IS_ASYNC = false;
 
-  int allocator_id = axom::getResourceAllocatorID( umpire::resource::Host );
+  int allocator_id = axom::getUmpireResourceAllocatorID(umpire::resource::Host);
   check_execution_mappings< axom::OMP_EXEC,
                             RAJA::omp_parallel_for_exec,
                             RAJA::omp_reduce,
@@ -152,10 +155,10 @@ TEST( core_execution_space, check_omp_exec )
                             RAJA::omp_synchronize >( allocator_id, IS_ASYNC );
 
 }
-#endif
+#endif // defined(AXOM_USE_OPENMP)
 
 //------------------------------------------------------------------------------
-#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
+#if defined(AXOM_USE_CUDA)
 
 TEST( core_execution_space, check_cuda_exec )
 {
@@ -165,7 +168,8 @@ TEST( core_execution_space, check_cuda_exec )
 
   constexpr bool IS_ASYNC = false;
 
-  int allocator_id = axom::getResourceAllocatorID( umpire::resource::Unified );
+  int allocator_id =
+    axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
   check_execution_mappings< axom::CUDA_EXEC< BLOCK_SIZE >,
                             RAJA::cuda_exec< BLOCK_SIZE >,
                             RAJA::cuda_reduce,
@@ -183,7 +187,8 @@ TEST( core_execution_space, check_cuda_exec_async )
 
   constexpr bool IS_ASYNC = true;
 
-  int allocator_id = axom::getResourceAllocatorID( umpire::resource::Unified );
+  int allocator_id =
+    axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
   check_execution_mappings< axom::CUDA_EXEC< BLOCK_SIZE, axom::ASYNC >,
                             RAJA::cuda_exec_async< BLOCK_SIZE >,
                             RAJA::cuda_reduce,
@@ -191,7 +196,9 @@ TEST( core_execution_space, check_cuda_exec_async )
                             RAJA::cuda_synchronize >( allocator_id, IS_ASYNC );
 
 }
-#endif
+#endif // defined(AXOM_USE_CUDA)
+
+#endif // defined(AXOM_USE_UMPIRE) && defined(AXOM_USE_RAJA)
 
 //------------------------------------------------------------------------------
 int main(int argc, char* argv[])

@@ -1,11 +1,14 @@
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+#------------------------------------------------------------------------------
+# Sidre unit tests
+#------------------------------------------------------------------------------
 
-#
+#------------------------------------------------------------------------------
 # Specify list of tests
-#
+#------------------------------------------------------------------------------
 
 set(gtest_sidre_tests
    sidre_smoke.cpp
@@ -42,22 +45,21 @@ set(fruit_sidre_tests
    sidre_external_F.f
    sidre_opaque_F.f
    sidre_allocatable_F.f
-)
+   )
 
 
-set(sidre_test_depends 
+set(sidre_test_depends
     sidre
     conduit::conduit
     slic
     )
-    
-if(HDF5_FOUND)
-    list(APPEND sidre_test_depends hdf5)
-endif()    
 
-#
-# Add gtest C++ based tests
-#
+blt_list_append(TO sidre_test_depends ELEMENTS hdf5 IF HDF5_FOUND )
+
+
+#------------------------------------------------------------------------------
+# Add gtest C++ tests
+#------------------------------------------------------------------------------
 foreach(test ${gtest_sidre_tests})
     get_filename_component( test_name ${test} NAME_WE )
     blt_add_executable( NAME ${test_name}_test
@@ -67,15 +69,16 @@ foreach(test ${gtest_sidre_tests})
                         FOLDER axom/sidre/tests
                         )
 
-    blt_add_test( NAME ${test_name} 
+    blt_add_test( NAME ${test_name}
                   COMMAND ${test_name}_test
                   )
 endforeach()
 
-#
-# Add gtest C based tests
-#
+#------------------------------------------------------------------------------
+# Add gtest C tests
+#------------------------------------------------------------------------------
 if (ENABLE_FORTRAN)
+    # Sidre's C API is only built to provide a Fortran interface.
     foreach(test ${gtest_sidre_C_tests})
         get_filename_component( test_name ${test} NAME_WE )
         blt_add_executable( NAME ${test_name}_test
@@ -84,15 +87,15 @@ if (ENABLE_FORTRAN)
                             DEPENDS_ON ${sidre_test_depends} gtest
                             FOLDER axom/sidre/tests
                             )
-        blt_add_test( NAME ${test_name} 
+        blt_add_test( NAME ${test_name}
                       COMMAND ${test_name}_test
                       )
     endforeach()
 endif()
 
-#
-# Add fortran tests
-#
+#------------------------------------------------------------------------------
+# Add Fortran tests
+#------------------------------------------------------------------------------
 if (ENABLE_FORTRAN)
     foreach(test ${fruit_sidre_tests})
         get_filename_component( test_name ${test} NAME_WE )
@@ -102,7 +105,7 @@ if (ENABLE_FORTRAN)
                             DEPENDS_ON ${sidre_test_depends} fruit
                             FOLDER axom/sidre/tests
                             )
-        blt_add_test( NAME ${test_name} 
+        blt_add_test( NAME ${test_name}
                       COMMAND ${test_name}_test
                       )
     endforeach()

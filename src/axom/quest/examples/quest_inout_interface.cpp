@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -247,7 +247,8 @@ int main( int argc, char** argv )
     const double rate =  queryPoints.size() / timer.elapsed();
     SLIC_INFO("  query rate: " <<  rate  << " queries per second.");
 
-    const double intPercent = (100 * numInside) / queryPoints.size();
+    const double intPercent =
+       (100 * numInside) / static_cast< double >( queryPoints.size() );
     SLIC_INFO("  " << numInside << " of " << queryPoints.size()
                    << " (" << intPercent << "%) "
                    << " of the query points were contained in the surface.");

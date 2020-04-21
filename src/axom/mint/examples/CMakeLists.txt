@@ -1,7 +1,10 @@
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+#------------------------------------------------------------------------------
+# Examples for Mint component
+#------------------------------------------------------------------------------
 
 set( mint_examples
      mint_curvilinear_mesh.cpp
@@ -26,7 +29,7 @@ set( mint_example_dependencies
 blt_list_append( TO mint_example_dependencies ELEMENTS sidre conduit::conduit
                  IF ${AXOM_MINT_USE_SIDRE} )
 
-blt_list_append( TO mint_example_dependencies ELEMENTS raja
+blt_list_append( TO mint_example_dependencies ELEMENTS RAJA
                  IF ${RAJA_FOUND} )
 
 blt_list_append( TO mint_example_dependencies ELEMENTS openmp

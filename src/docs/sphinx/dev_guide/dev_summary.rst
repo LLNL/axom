@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level COPYRIGHT file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -16,7 +16,7 @@ Software Development Cycles
 ======================================================
 
 The Axom team uses a sprint-based development process. We collect
-and track issues (bugs, feature requests, tasks, etc.) using ``JIRA``
+and track issues (bugs, feature requests, tasks, etc.) using ``Github``
 and define a set of development tasks (i.e., issues) to complete for each 
 sprint. While the team meets to discuss issues and plan which ones will be 
 worked in each sprint, developers of individual Axom components may plan and 
@@ -24,8 +24,6 @@ schedule work in any way that works for them as long as this is coordinated
 with other team efforts. Work performed in each sprint work period is tracked 
 as a single unified sprint encompassing activities for the entire project.
 
-See :ref:`jira-label` for more information about how we do issue tracking
-and release planning.
 
 
 ======================================================
@@ -50,7 +48,7 @@ See :ref:`semver-label` for a description of semantic versioning.
 Branch Development
 ======================================================
 
-The Axom project has a ``CZ Bitbucket`` project space and the team follows 
+The Axom project has a ``Github`` project space and the team follows 
 the **Gitflow** branching model for software development and reviews. Gitflow 
 is a common workflow centered around software releases. It makes clear which 
 branches correspond to which phases of development and those phases are 
@@ -68,7 +66,7 @@ Code Reviews and Acceptance
 Before any code is merged into one of our main Gitflow branches (i.e., develop 
 or master), it must be adequately tested, documented, and reviewed 
 for acceptance by other team members. The review process is initiated via 
-a *pull request* on the Axom Bitbucket project.
+a *pull request* on the Axom Github project.
 
 See :ref:`pullrequest-label` for a description of our review process and 
 how we use pull requests.
@@ -105,20 +103,21 @@ Developer-level access to Axom project spaces in these tools requires
 membership in the LC group 'axomdev'. If you are not in this group, and need 
 to be, please send an email request to 'axom-dev@llnl.gov'.
 
-The main Atlassian tools we use are listed below. Please navigate the links
+The main tools we use are listed below. Please navigate the links
 provided for details about how we use them and helpful information about 
 getting started with them.
 
 * **Confluence.**  We use the `Axom Confluence space <https://lc.llnl.gov/confluence/display/ASCT>`_ for team discussion (e.g., hashing out design ideas), maintaining meeting notes, etc.
 
-* **Bitbucket.** We use the `Axom Bitbucket project <https://lc.llnl.gov/bitbucket/projects/ATK>`_ to manage our Git repository which contains the Axom source code, build configurations, scripts, test suites, documentation, etc.
+* **Github.** We use the `Axom Github project <https://github.com/LLNL/axom>`_ to manage our issues and Git repository which contains the Axom source code, build configurations, scripts, test suites, documentation, etc.
 
-  * See :ref:`bitbucket-label` for more information about how we use Git and Bitbucket.
+  * See :ref:`github-label` for more information about how we use Git and Github.
 
-* **JIRA.** We use the `Axom JIRA project <https://lc.llnl.gov/jira/projects/ATK>`_ for issue tracking and release planning.
-
-  * See :ref:`jira-label` for more information about how we use JIRA.
-
-* **Bamboo.** We use two Bamboo projects for continuous integration tasks.: `Axom CZ Bamboo project <https://lc.llnl.gov/bamboo/browse/ASC>`_ and `Axom RZ Bamboo project <https://rzlc.llnl.gov/bamboo/browse/ASC>`_
+* **Bamboo.** We use Bamboo for continuous integration to ensure code quality on our LC systems.:  `Axom RZ Bamboo project <https://rzlc.llnl.gov/bamboo/browse/ASC>`_
 
   * See :ref:`bamboo-label` for more information about how we use Bamboo.
+
+* **Azure Pipelines.** We use Azure Pipelines for continuous integration to ensure every code change passes a
+level of quality before being merged.:  `Azure Pipelines <https://azure.microsoft.com/en-us/services/devops/pipelines/>`_
+
+  * See :ref:`azure_pipelines-label` for more information about how we use Azire Pipelines.

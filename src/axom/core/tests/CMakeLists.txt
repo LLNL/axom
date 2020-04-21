@@ -1,11 +1,14 @@
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+#------------------------------------------------------------------------------
+# Tests for Axom's Core component
+#------------------------------------------------------------------------------
 
-#
+#------------------------------------------------------------------------------
 # Specify list of tests
-#
+#------------------------------------------------------------------------------
 
 set(gtest_utils_tests
    core_array.cpp
@@ -24,6 +27,7 @@ set(gtest_utils_tests
    numerics_determinants.cpp
    numerics_eigen_solve.cpp
    numerics_eigen_sort.cpp
+   numerics_floating_point_limits.cpp
    numerics_jacobi_eigensolve.cpp
    numerics_linear_solve.cpp
    numerics_lu.cpp
@@ -32,9 +36,9 @@ set(gtest_utils_tests
    numerics_polynomial_solvers.cpp
    )
 
-#
+#------------------------------------------------------------------------------
 # When MPI is disabled, compile the core_types test with all other tests
-#
+#------------------------------------------------------------------------------
 if ( NOT ENABLE_MPI )
   list( APPEND gtest_utils_tests core_types.cpp )
 endif()
@@ -45,12 +49,12 @@ set(utils_tests_depends
    )
 
 blt_list_append( TO utils_tests_depends ELEMENTS umpire IF ${UMPIRE_FOUND} )
-blt_list_append( TO utils_tests_depends ELEMENTS raja IF ${RAJA_FOUD} )
+blt_list_append( TO utils_tests_depends ELEMENTS RAJA IF ${RAJA_FOUD} )
 blt_list_append( TO utils_tests_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
 
-#
+#------------------------------------------------------------------------------
 # Add gtest based tests
-#
+#------------------------------------------------------------------------------
 foreach(test ${gtest_utils_tests})
     get_filename_component( test_name ${test} NAME_WE )
     blt_add_executable( NAME ${test_name}_test
@@ -62,9 +66,9 @@ foreach(test ${gtest_utils_tests})
                   COMMAND ${test_name}_test )
 endforeach()
 
-#
+#------------------------------------------------------------------------------
 # Add MPI tests if MPI is enabled
-#
+#------------------------------------------------------------------------------
 if ( ENABLE_MPI )
 
   set( core_mpi_tests
@@ -89,9 +93,9 @@ if ( ENABLE_MPI )
 
 endif()
 
-#
+#------------------------------------------------------------------------------
 # Add a test to query properties of the configuration
-#
+#------------------------------------------------------------------------------
 set(utils_config_test_depends core gtest )
 
 blt_list_append( TO utils_config_test_depends ELEMENTS mfem IF ${MFEM_FOUND} )

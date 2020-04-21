@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -88,6 +88,17 @@ struct structured_exec< OMP_EXEC >
 };
 #endif
 
+// CUDA Kernel settings: 
+// 
+// CudaKernel launches 256 threads total
+// - In 2D, the launch configuration is 16 x 16
+// - In 3D, the launch configuration is 8 x 8 x 4
+constexpr int CUDA_KERNEL_FIXED_SIZE = 256;
+constexpr int TILE_SIZE_2D = 16;
+constexpr int TILE_SIZE_X  = 8;
+constexpr int TILE_SIZE_Y  = 8;
+constexpr int TILE_SIZE_Z  = 4;
+
 //--------------------------------------------------------| CUDA_EXEC |---------
 #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA)
 
@@ -97,11 +108,11 @@ struct structured_exec< CUDA_EXEC< BLOCK_SIZE, SYNCHRONOUS > >
   /* *INDENT-OFF* */
 
   using loop2d_policy = RAJA::KernelPolicy<
-    RAJA::statement::CudaKernel<
-      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<16>, RAJA::cuda_block_y_loop,
-        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<16>, RAJA::cuda_block_x_loop,
-          RAJA::statement::For<1, RAJA::cuda_thread_y_loop,
-            RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+    RAJA::statement::CudaKernelFixed< CUDA_KERNEL_FIXED_SIZE,
+      RAJA::statement::Tile<1, RAJA::statement::tile_fixed< TILE_SIZE_2D >, RAJA::cuda_block_y_loop,
+        RAJA::statement::Tile<0, RAJA::statement::tile_fixed< TILE_SIZE_2D >, RAJA::cuda_block_x_loop,
+          RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+            RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
               RAJA::statement::Lambda<0>
             >
           >
@@ -111,13 +122,13 @@ struct structured_exec< CUDA_EXEC< BLOCK_SIZE, SYNCHRONOUS > >
   >;
 
   using loop3d_policy = RAJA::KernelPolicy<
-    RAJA::statement::CudaKernel<
-      RAJA::statement::Tile<2, RAJA::statement::tile_fixed<8>, RAJA::cuda_block_z_loop,
-        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<8>, RAJA::cuda_block_y_loop,
-          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<8>, RAJA::cuda_block_x_loop,
-            RAJA::statement::For<2, RAJA::cuda_thread_z_loop,
-              RAJA::statement::For<1, RAJA::cuda_thread_y_loop,
-                RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+    RAJA::statement::CudaKernelFixed< CUDA_KERNEL_FIXED_SIZE, 
+      RAJA::statement::Tile<2, RAJA::statement::tile_fixed< TILE_SIZE_Z >, RAJA::cuda_block_z_loop,
+        RAJA::statement::Tile<1, RAJA::statement::tile_fixed< TILE_SIZE_Y >, RAJA::cuda_block_y_loop,
+          RAJA::statement::Tile<0, RAJA::statement::tile_fixed< TILE_SIZE_X >, RAJA::cuda_block_x_loop,
+            RAJA::statement::For<2, RAJA::cuda_thread_z_direct,
+              RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+                RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
                   RAJA::statement::Lambda<0>
                 >
               >
@@ -138,11 +149,11 @@ struct structured_exec< CUDA_EXEC< BLOCK_SIZE, ASYNC > >
   /* *INDENT-OFF* */
 
   using loop2d_policy = RAJA::KernelPolicy <
-    RAJA::statement::CudaKernelAsync<
-      RAJA::statement::Tile<1, RAJA::statement::tile_fixed<16>, RAJA::cuda_block_y_loop,
-        RAJA::statement::Tile<0, RAJA::statement::tile_fixed<16>, RAJA::cuda_block_x_loop,
-          RAJA::statement::For<1, RAJA::cuda_thread_y_loop,
-            RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+    RAJA::statement::CudaKernelFixedAsync< CUDA_KERNEL_FIXED_SIZE,
+      RAJA::statement::Tile<1, RAJA::statement::tile_fixed< TILE_SIZE_2D >, RAJA::cuda_block_y_loop,
+        RAJA::statement::Tile<0, RAJA::statement::tile_fixed< TILE_SIZE_2D >, RAJA::cuda_block_x_loop,
+          RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+            RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
               RAJA::statement::Lambda<0>
             >
           >
@@ -152,13 +163,13 @@ struct structured_exec< CUDA_EXEC< BLOCK_SIZE, ASYNC > >
   >;
 
   using loop3d_policy = RAJA::KernelPolicy<
-    RAJA::statement::CudaKernelAsync<
-      RAJA::statement::Tile<2, RAJA::statement::tile_fixed<8>, RAJA::cuda_block_z_loop,
-        RAJA::statement::Tile<1, RAJA::statement::tile_fixed<8>, RAJA::cuda_block_y_loop,
-          RAJA::statement::Tile<0, RAJA::statement::tile_fixed<8>, RAJA::cuda_block_x_loop,
-            RAJA::statement::For<2, RAJA::cuda_thread_z_loop,
-              RAJA::statement::For<1, RAJA::cuda_thread_y_loop,
-                RAJA::statement::For<0, RAJA::cuda_thread_x_loop,
+    RAJA::statement::CudaKernelFixedAsync< CUDA_KERNEL_FIXED_SIZE,
+      RAJA::statement::Tile<2, RAJA::statement::tile_fixed< TILE_SIZE_Z >, RAJA::cuda_block_z_loop,
+        RAJA::statement::Tile<1, RAJA::statement::tile_fixed< TILE_SIZE_Y >, RAJA::cuda_block_y_loop,
+          RAJA::statement::Tile<0, RAJA::statement::tile_fixed< TILE_SIZE_X >, RAJA::cuda_block_x_loop,
+            RAJA::statement::For<2, RAJA::cuda_thread_z_direct,
+              RAJA::statement::For<1, RAJA::cuda_thread_y_direct,
+                RAJA::statement::For<0, RAJA::cuda_thread_x_direct,
                   RAJA::statement::Lambda<0>
                 >
               >

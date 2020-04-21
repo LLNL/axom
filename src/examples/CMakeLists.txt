@@ -1,13 +1,10 @@
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
-
-###############################################################################
-#
-# file: src/examples/CMakeLists.txt
-#
-###############################################################################
+#------------------------------------------------------------------------------
+# Example for using Axom from a CMake project
+#------------------------------------------------------------------------------
 
 # install using examples
 install(DIRECTORY using-with-cmake using-with-make

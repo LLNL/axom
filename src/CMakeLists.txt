@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
@@ -43,10 +43,16 @@ else()
     endif()
 endif()
 
-if (NOT BLT_CXX_STD)
-    set(BLT_CXX_STD "c++11" CACHE STRING "")
+if (“${PROJECT_SOURCE_DIR}” STREQUAL “${CMAKE_SOURCE_DIR}”)
+    # Set some default BLT options before loading BLT only if not included in
+    # another project
+    if (NOT BLT_CXX_STD)
+        set(BLT_CXX_STD "c++11" CACHE STRING "")
+    endif()
+
+    set(ENABLE_ASTYLE      OFF CACHE BOOL "")
+    set(ENABLE_CLANGFORMAT OFF CACHE BOOL "")
 endif()
-set(ENABLE_ASTYLE OFF CACHE BOOL "")
 
 include(${BLT_SOURCE_DIR}/SetupBLT.cmake)
 

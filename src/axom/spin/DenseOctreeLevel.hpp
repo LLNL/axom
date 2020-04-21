@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -71,7 +71,7 @@ public:
 
     IteratorHelper(OctreeLevelType* octLevel, bool begin)
       : m_octreeLevel(octLevel),
-      m_endIdx( octLevel->m_broodCapacity),
+      m_endIdx( static_cast< MortonIndexType >(octLevel->m_broodCapacity) ),
       m_offset(0),
       m_isLevelZero( octLevel->level() == 0)
     {

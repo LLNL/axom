@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -606,7 +606,7 @@ AXOM_HOST_DEVICE Matrix< T >::Matrix( int rows, int cols, T* data,
   }
   else
   {
-#if defined(__CUDA_ARCH__)
+#if defined(AXOM_DEVICE_CODE)
     assert(false);
 #else
     const int nitems = m_rows * m_cols;
@@ -923,7 +923,7 @@ void Matrix< T >::copy( const Matrix< T >& rhs )
 template < typename T >
 AXOM_HOST_DEVICE void Matrix< T >::clear( )
 {
-#if defined(__CUDA_ARCH__)
+#if defined(AXOM_DEVICE_CODE)
   assert(m_usingExternal);
 #else
   if ( !m_usingExternal )

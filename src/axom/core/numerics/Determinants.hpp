@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -9,6 +9,7 @@
 #include "axom/core/numerics/LU.hpp"     // for lu_decompose()
 #include "axom/core/numerics/Matrix.hpp" // for Matrix
 
+#include "axom/core/Macros.hpp"
 
 namespace axom
 {
@@ -27,8 +28,9 @@ namespace numerics
  * \return det the determinant of the 2X2 matrix
  */
 template < typename real >
-inline real determinant( const real& a00, const real& a01,
-                         const real& a10, const real& a11 )
+inline AXOM_HOST_DEVICE 
+real determinant( const real& a00, const real& a01,
+                  const real& a10, const real& a11 )
 {
   const real det = a00*a11 - a10*a01;
   return det;

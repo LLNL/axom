@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -114,7 +114,7 @@ bool initFaces(Mesh * mesh,
       // https://www.vtk.org/wp-content/uploads/2015/04/file-formats.pdf.
       // This routine selects the face nodes as listed in the registered
       // cell info to make sure that face normals point outward.
-      // 
+      //
       // For every face, sort the node IDs and join them together in a
       // string with '.' delimiters.  This is the key for an associative
       // array whose value is a list of cell IDs.
@@ -155,8 +155,8 @@ bool initFaces(Mesh * mesh,
   for (FaceBuilderType::value_type v : workface)
   {
     FaceTypeCellsNodes theFace = v.second;
-    faceNodeTotal += theFace.facenodes.size();
-    int faceCellCount = theFace.facecells.size();
+    faceNodeTotal += static_cast< IndexType >( theFace.facenodes.size() );
+    int faceCellCount = static_cast< int >( theFace.facecells.size() );
     IndexType * faceCells = theFace.facecells.data();
 
     if (faceCellCount < 1 || faceCellCount > 2)
@@ -199,7 +199,7 @@ bool initFaces(Mesh * mesh,
     std::copy(faceNodes.begin(), faceNodes.end(), f2n + faceNodeOffset);
     f2noffsets[fidx] = faceNodeOffset;
     f2ntypes[fidx] = theFace.facetype;
-    faceNodeOffset += faceNodes.size();
+    faceNodeOffset += static_cast< int >( faceNodes.size() );
   }
   f2noffsets[facecount] = faceNodeOffset;
 
@@ -242,7 +242,7 @@ bool initFaces(Mesh * mesh,
       // *SHOULD* have), copy them in.
       std::vector<IndexType> & theCells = cell_to_face[cellID];
       IndexType * faceIDs = theCells.data();
-      int thisCellFaceCount = theCells.size();
+      int thisCellFaceCount = static_cast< int >( theCells.size() );
 
       // Copy in values
       for (int f = 0; f < thisCellFaceCount; ++f)
@@ -253,7 +253,7 @@ bool initFaces(Mesh * mesh,
 
       // Maintain offset
       cellFaceCount += thisCellFaceCount;
-    }        
+    }
   }
   c2foffsets[cellcount] = cellFaceCount;
 

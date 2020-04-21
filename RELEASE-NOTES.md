@@ -10,6 +10,43 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
+- Added a portable floating_point_limits traits class, to return min(), max(), lowest() 
+  and epsilon() of a `float` or `double` type. The functionality is equivalent to that provided by 
+  std::numeric_limits, but, the code is host/device decorated accordingly such that it
+  can also be called on the device.
+- Added initial support for ray queries using the BVH. The caller may now supply a set of rays to 
+  a BVH and the BVH will return a set of candidate BVH bins that intersect each ray.
+- Added initial support for bounding box queries using the BVH. The caller may
+  now supply a set of bounding boxes to a BVH and the BVH will return a set of 
+  candidate BVH bins that intersect each bounding box.
+
+### Removed
+
+### Deprecated
+
+### Changed
+- Modified the API for the BVH to accomodate different query types. The queries are now
+  more explicitly called `BVH::findPoints()` and `BVH::findRays()`.
+- Modified the API of Axom's memory management routines to not leak usage of Umpire. Instead of 
+  passing an `umpire::Allocator` object to specify an allocator, we now use the corresponding
+  integer ID associated with the allocator.
+
+### Fixed
+- Fixed issue with missing the bvh_traverse.hpp from the install prefix, which was preventing
+  applications from using the BVH when pointing to an Axom install prefix.
+- Fixed usage of cuda kernel policies in Mint. Raja v0.11.0 changed the way max threads
+  launch bounds is calculated. Consequently, a large number of threads was being launched
+  leading to max registry count violation when linking. We are now using fixed kernel size
+  of 256 threads (16x16 in 2D and 8x8x4 in 3D).
+- Third-party libraries can now build on the Windows platform through uberenv using vcpkg
+  ("zero-to-axom support on Windows")
+
+### Known Bugs
+
+
+## [Version 0.3.3] - Release date 2020-01-31
+
+### Added
 - Define different execution spaces. This refines and consolidates
   the execution policy concepts from mint and spin, which are now defined in
   Axom core, such that they can be used by other components.
@@ -22,12 +59,20 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Deprecated
 
 ### Changed
-- Updated BLT to develop (30ccea5) as of Nov 21, 2019
+- Updated Conduit to v0.5.1
+- Updated RAJA to v0.11.0
+- Updated Umpire to v2.1.0, which, natively handles zero byte re-allocations consistently. Workaround
+  for older releases of Umpire is in place for backwards compatibility. 
+- Updated BLT to develop (f0ab9a4) as of Jan 15, 2020
 - Set CUDA_SEPARABLE_COMPILATION globally instead of just in a few components.
 - Reduced verbosity of quest's InOutOctree in cases where query point lies on surface.
+- Changed semantics of ``axom::reallocate(_, 0)`` to always return a valid pointer.
+  This matches the semantics of Umpire's ``reallocate(_, 0)``.
+  Note: Umpire's PR-292 fixed a bug in its handling of this case and Axom
+  includes a workaround to get the new behavior until we upgrade to Umpire v2.0+.
 
 ### Fixed
-- Fixed a bug in ``convert_sidre_protocol`` example. Data tructation functionality now
+- Fixed a bug in ``convert_sidre_protocol`` example. Data truncation functionality now
   works properly when multiple Views point to the same data.
 
 ### Known Bugs
@@ -274,7 +319,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Known Bugs
 -
 
-[Unreleased]:    https://github.com/LLNL/axom/compare/v0.3.2...develop
+[Unreleased]:    https://github.com/LLNL/axom/compare/v0.3.3...develop
+[Version 0.3.3]: https://github.com/LLNL/axom/compare/v0.3.2...v0.3.3
 [Version 0.3.2]: https://github.com/LLNL/axom/compare/v0.3.1...v0.3.2
 [Version 0.3.1]: https://github.com/LLNL/axom/compare/v0.3.0...v0.3.1
 [Version 0.3.0]: https://github.com/LLNL/axom/compare/v0.2.9...v0.3.0

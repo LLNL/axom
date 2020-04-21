@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -13,8 +13,8 @@
  ******************************************************************************
  */
 
-#ifndef IOPARALLEL_HPP_
-#define IOPARALLEL_HPP_
+#ifndef SIDRE_IOMANAGER_HPP_
+#define SIDRE_IOMANAGER_HPP_
 
 // Other axom headers
 #include "axom/config.hpp"
@@ -67,6 +67,8 @@ public:
    *
    * The Group, including all of its child groups and views, is written
    * to files according to the given protocol.
+   *
+   * This is an MPI collective call.
    *
    * valid protocols:
    *
@@ -224,7 +226,11 @@ public:
                                      const std::string& mesh_path);
 
   /*!
-   * \brief read from input files
+   * \brief read from input file
+   *
+   * This is an MPI collective call.  Calling code may also need to add
+   * an MPI barrier after this call if invoking subsequent operations that
+   * may change the inpt files.
    *
    * \param group         Group to fill with input data
    * \param file_string   base name of input files
@@ -238,6 +244,10 @@ public:
 
   /*!
    * \brief read from a root file
+   *
+   * This is an MPI collective call.  Calling code may also need to add
+   * an MPI barrier after this call if invoking subsequent operations that
+   * may change the inpt files.
    *
    * \param group      Group to fill with input data
    * \param root_file  root file containing input data
@@ -341,4 +351,4 @@ private:
 } /* end namespace sidre */
 } /* end namespace axom */
 
-#endif /* IOPARALLEL_HPP_ */
+#endif /* SIDRE_IOMANAGER_HPP_ */

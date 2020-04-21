@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -192,7 +192,7 @@ public:
 
     int cur_dump = 0;
     double cur_time = 0.0;
-    const int num_cycles = std::ceil( t_max / dt );
+    const int num_cycles = static_cast< int >( std::ceil( t_max / dt ) );
     for (int cycle = 0 ; cycle < num_cycles ; ++cycle )
     {
       if ( cycle == num_cycles - 1 )
@@ -326,10 +326,10 @@ private:
     IndexType Ni, Nj;
 
     const double lx = axom::utilities::abs( upper_bound[0] - lower_bound[0] );
-    Ni = (lx / h) + 1;
+    Ni = static_cast< IndexType >( (lx / h) + 1 );
 
     const double ly = axom::utilities::abs( upper_bound[1] - lower_bound[1] );
-    Nj = (ly / h) + 1;
+    Nj = static_cast< IndexType >( (ly / h) + 1 );
 
     UniformMesh* mesh = new UniformMesh( lower_bound, upper_bound, Ni, Nj );
     mesh->createField< double >( "temperature", mint::NODE_CENTERED );
@@ -474,7 +474,7 @@ void parse_arguments( Arguments& args, int argc, const char** argv )
               std::strcmp( argv[ i ], "-dumpPeriod" ) == 0 )
     {
       SLIC_ERROR_IF( i >= argc - 1, "Not enough arguments." );
-      args.period = atof( argv[ i + 1 ] );
+      args.period = atoi( argv[ i + 1 ] );
       i++;
     }
     else

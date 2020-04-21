@@ -1,11 +1,14 @@
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 # other Axom Project Developers. See the top-level COPYRIGHT file for details.
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
+#------------------------------------------------------------------------------
+# Axom's Core component
+#------------------------------------------------------------------------------
 
-################################
+#------------------------------------------------------------------------------
 # Specify all headers/sources
-################################
+#------------------------------------------------------------------------------
 set(core_headers
 
     ## utilities
@@ -18,11 +21,12 @@ set(core_headers
     numerics/internal/matrix_norms.hpp
 
     numerics/Determinants.hpp
-    numerics/jacobi_eigensolve.hpp
     numerics/LU.hpp
     numerics/Matrix.hpp
     numerics/eigen_solve.hpp
     numerics/eigen_sort.hpp
+    numerics/floating_point_limits.hpp
+    numerics/jacobi_eigensolve.hpp
     numerics/linear_solve.hpp
     numerics/matvecops.hpp
     numerics/polynomial_solvers.hpp
@@ -54,13 +58,13 @@ set(core_sources
     Types.cpp
     )
 
-################################
+#------------------------------------------------------------------------------
 # Make/Install the library
-################################
+#------------------------------------------------------------------------------
 
 set( core_depends )
 blt_list_append( TO core_depends ELEMENTS umpire IF ${UMPIRE_FOUND} )
-blt_list_append( TO core_depends ELEMENTS raja IF ${RAJA_FOUND} )
+blt_list_append( TO core_depends ELEMENTS RAJA IF ${RAJA_FOUND} )
 blt_list_append( TO core_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
 blt_list_append( TO core_depends ELEMENTS openmp IF ${ENABLE_OPENMP} )
 blt_list_append( TO core_depends ELEMENTS mpi IF ${ENABLE_MPI} )
@@ -82,14 +86,14 @@ axom_install_component( NAME      core
                         )
 
 
-################################
+#------------------------------------------------------------------------------
 # Add tests
-################################
+#------------------------------------------------------------------------------
 if (AXOM_ENABLE_TESTS)
   add_subdirectory(tests)
 endif()
 
-################################
+#------------------------------------------------------------------------------
 # Add code checks
-################################
+#------------------------------------------------------------------------------
 axom_add_code_checks(PREFIX core)

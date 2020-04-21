@@ -1,4 +1,4 @@
-.. ## Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+.. ## Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 .. ## other Axom Project Developers. See the top-level COPYRIGHT file for details.
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
@@ -57,7 +57,7 @@ Note that, besides directories, the top-level component directory contains
 a few files: 
 
 * **CMakeLists.txt** contains CMake information for the component in the Axom build system.
-* **README.md** is the markdown overview file for the component. Its contents appear in the Axom Bitbucket project when you navigate through the source tree.
+* **README.md** is the markdown overview file for the component. Its contents appear in the Axom Github project when you navigate through the source tree.
     
 The **docs** directory contains the component documentation. Subdirectories in 
 the docs directory are named for each type of documentation. The directories 
@@ -210,8 +210,6 @@ add *sidre* as a library is::
                        "${sidre_fortran_sources}"
                    HEADERS
                        "${sidre_headers}"
-                   HEADERS_OUTPUT_SUBDIR
-                       sidre
                    DEPENDS_ON
                        ${sidre_depends}
                    )
@@ -319,7 +317,7 @@ Documentation
 
 Complete documentation for an Axom component consists of several parts
 described in the following sections. All user documentation is accessible 
-on the `Axom LC web space <https://lc.llnl.gov/axom/docs/sphinx/web_docs/html/index.html>`_.
+on `Axom Read The Docs page <https://axom.readthedocs.io>`_.
 
 README File
 ------------
@@ -328,7 +326,7 @@ Each Axom component should have a basic `README.md` markdown file in its
 top-level directory that briefly describes the role and capabilities of the 
 component. The contents of this file will appear when the component source 
 code is viewed on the 
-`Axom Bitbucket project <https://lc.llnl.gov/bitbucket/projects/ATK>`_.
+`Axom Github project <https://github.com/LLNL/axom>`_.
 
 User Documentation
 ------------------

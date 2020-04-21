@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC and
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
@@ -93,7 +93,7 @@ void swap( T& a, T& b )
 template < typename T >
 inline T log2( T& val)
 {
-  return std::log2(val);
+  return static_cast< T >( std::log2(val) );
 }
 
 /*!
@@ -169,7 +169,7 @@ inline T random_real( const T& a, const T& b )
   static std::mt19937_64 mt( rd() );
   static std::uniform_real_distribution< T > dist(0.0, 1.0);
 
-  double temp = dist(mt);
+  T temp = dist(mt);
   return temp * ( b - a ) + a;
 }
 
