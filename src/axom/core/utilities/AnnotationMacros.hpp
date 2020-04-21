@@ -36,9 +36,9 @@
  *   }
  * \endcode
  */
-#if defined(AXOM_ENABLE_ANNOTATIONS) && defined(AXOM_USE_CALIPER)
+#if defined(AXOM_USE_ANNOTATIONS) && defined(AXOM_USE_CALIPER)
 #error "Support for Caliper has not yet been implemented in Axom!"
-#elif defined(AXOM_ENABLE_ANNOTATIONS)
+#elif defined(AXOM_USE_ANNOTATIONS)
 #define AXOM_PERF_MARK_FUNCTION(__func_name__) AXOM_NVTX_FUNCTION(__func_name__)
 #else
 #define AXOM_PERF_MARK_FUNCTION(__func_name__)
@@ -84,9 +84,9 @@
  * \endcode
  * 
  */
-#if defined(AXOM_ENABLE_ANNOTATIONS) && defined(AXOM_USE_CALIPER)
+#if defined(AXOM_USE_ANNOTATIONS) && defined(AXOM_USE_CALIPER)
 #error "Support for Caliper has not yet been implemented in Axom!"
-#elif defined(AXOM_ENABLE_ANNOTATIONS)
+#elif defined(AXOM_USE_ANNOTATIONS)
 #define AXOM_PERF_MARK_SECTION(__name__, ... ) \
         AXOM_NVTX_SECTION( __name__ , __VA_ARGS__ )
 #else

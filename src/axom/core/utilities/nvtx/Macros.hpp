@@ -71,7 +71,7 @@
  * \endcode
  *
  */
-#if defined(AXOM_ENABLE_ANNOTATIONS) && defined(AXOM_USE_CUDA)
+#if defined(AXOM_USE_ANNOTATIONS) && defined(AXOM_USE_CUDA)
 #define AXOM_NVTX_SECTION( __name__, ... )                                    \
   do {                                                                        \
     axom::nvtx::Range r(__name__);                                            \
@@ -105,7 +105,7 @@
  * \endcode
  *
  */
-#if defined(AXOM_ENABLE_ANNOTATIONS) && defined(AXOM_USE_CUDA)
+#if defined(AXOM_USE_ANNOTATIONS) && defined(AXOM_USE_CUDA)
 #define AXOM_NVTX_FUNCTION( __name__ ) axom::nvtx::Range __func_range(__name__)
 #else
 #define AXOM_NVTX_FUNCTION( __name__ )
