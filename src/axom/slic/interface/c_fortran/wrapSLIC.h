@@ -7,7 +7,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 /**
  * \file wrapSLIC.h
- * \brief Shroud generated wrapper for SLIC library
+ * \brief Shroud generated wrapper for slic namespace
  */
 // For C users and C++ implementation
 
@@ -15,6 +15,9 @@
 #define WRAPSLIC_H
 
 #include "typesSLIC.h"
+#ifndef __cplusplus
+#include <stdbool.h>
+#endif
 
 // splicer begin CXX_declarations
 // splicer end CXX_declarations
@@ -23,14 +26,14 @@
 extern "C" {
 #endif
 
-//  Level
-enum SLIC_Level
+//  axom::slic::message::Level
+enum SLIC_message_Level
 {
-  SLIC_Error,
-  SLIC_Warning,
-  SLIC_Info,
-  SLIC_Debug,
-  SLIC_Num_Levels
+  SLIC_message_Error,
+  SLIC_message_Warning,
+  SLIC_message_Info,
+  SLIC_message_Debug,
+  SLIC_message_Num_Levels
 };
 
 // splicer begin C_declarations

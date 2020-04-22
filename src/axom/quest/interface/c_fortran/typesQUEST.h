@@ -15,14 +15,14 @@
 extern "C" {
 #endif
 
-struct s_QUE_SHROUD_capsule_data
+struct s_QUEST_SHROUD_capsule_data
 {
   void* addr;       /* address of C++ memory */
   int idtor;        /* index of destructor */
 };
-typedef struct s_QUE_SHROUD_capsule_data QUE_SHROUD_capsule_data;
+typedef struct s_QUEST_SHROUD_capsule_data QUEST_SHROUD_capsule_data;
 
-void QUEST_SHROUD_memory_destructor(QUE_SHROUD_capsule_data* cap);
+void QUEST_SHROUD_memory_destructor(QUEST_SHROUD_capsule_data* cap);
 
 #ifdef __cplusplus
 }
