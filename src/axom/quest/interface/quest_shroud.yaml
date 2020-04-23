@@ -14,6 +14,7 @@ cxx_header: axom/quest/interface/inout.hpp axom/quest/interface/signed_distance.
 namespace: axom quest
 
 options:
+#  debug: True
   C_line_length: 1000
   F_module_name_library_template: axom_{library_lower}
 #  F_module_per_class: False

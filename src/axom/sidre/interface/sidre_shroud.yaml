@@ -13,6 +13,7 @@ library: Sidre
 namespace: axom sidre
 
 options:
+#  debug: True
   C_line_length: 1000
   F_module_per_class: False
   F_module_name_library_template: axom_{library_lower}
