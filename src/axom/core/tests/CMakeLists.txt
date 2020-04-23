@@ -20,6 +20,7 @@ set(gtest_utils_tests
    utils_TaskTimer.cpp
    utils_endianness.cpp
    utils_fileUtilities.cpp
+   utils_nvtx_settings.cpp
    utils_utilities.cpp
    utils_about.cpp
 

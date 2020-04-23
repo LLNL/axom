@@ -10,6 +10,8 @@
 #include "axom/core/Types.hpp"               // for fixed bitwidth types
 #include "axom/core/memory_management.hpp"   // for alloc()/free()
 
+#include "axom/core/utilities/AnnotationMacros.hpp" // for annotations
+
 // spin includes
 #include "axom/spin/internal/linear_bvh/vec.hpp"
 #include "axom/spin/internal/linear_bvh/aabb.hpp"
@@ -66,12 +68,14 @@ struct BVHData
 
   void allocate( int32 size )
   {
+    AXOM_PERF_MARK_FUNCTION( "BVHData::allocate" );
     m_inner_nodes = axom::allocate< Vec< FloatType,4 > >( (size-1)*4 );
     m_leaf_nodes  = axom::allocate< int32 >( size );
   }
 
   void deallocate()
   {
+    AXOM_PERF_MARK_FUNCTION( "BVHData::deallocate" );
     axom::deallocate( m_inner_nodes );
     axom::deallocate( m_leaf_nodes );
   }

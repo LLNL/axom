@@ -10,6 +10,20 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
+- Added new CMake option, `AXOM_ENABLE_ANNOTATIONS`, to enable/disable code 
+  annotations in Axom. Default is OFF.
+- Added Axom annotation macros. The macros can be used to annotate functions,
+  using the `AXOM_PERF_MARK_FUNCTION` macro, or at a more fine grain level,
+  different sections of code can be annotated by wrapping them within an
+  `AXOM_PERF_MARK_SECTION` block. As a first cut, this works with NVTX tools.
+  However, the hooks are in place to add support for Caliper in the future. 
+- Added a simple interface to NVTX that allows an application to set the color
+  and category for NVTX ranges corresponding to annotated code in Axom. The
+  application can now call `axom::nvtx:set_color()` and 
+  `axom::nvtx::set_category()` to set the corresponding parameters respectively. 
+  This facilitates in the performance evaluation by allowing developers to easily 
+  filter out calls by category or visually by setting a different color to use
+  in GUI tools, such as, NVVP and NSight.
 - Added a portable floating_point_limits traits class, to return min(), max(), lowest() 
   and epsilon() of a `float` or `double` type. The functionality is equivalent to that provided by 
   std::numeric_limits, but, the code is host/device decorated accordingly such that it

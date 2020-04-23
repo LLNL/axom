@@ -34,6 +34,11 @@ foreach(comp ${AXOM_COMPONENTS_ENABLED})
     set(AXOM_USE_${comp_uc} TRUE)
 endforeach()
 
+## Add compile-time options to the config file
+if ( AXOM_ENABLE_ANNOTATIONS )
+  set( AXOM_USE_ANNOTATIONS TRUE )
+endif()
+
 convert_to_native_escaped_file_path(${PROJECT_SOURCE_DIR} AXOM_SRC_DIR)
 convert_to_native_escaped_file_path(${CMAKE_BINARY_DIR} AXOM_BIN_DIR)
 
