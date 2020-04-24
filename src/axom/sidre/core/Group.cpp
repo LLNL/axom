@@ -174,8 +174,19 @@ View* Group::createView( const std::string& path )
 
   Group* group;
   if (intpath.empty())
-  { 
-    group = this;
+  {
+    SLIC_CHECK_MSG(m_is_list,
+                   SIDRE_GROUP_LOG_PREPEND
+                   << "Could not create View with empty string "
+                   << "for the path." );
+    if (m_is_list)
+    {
+      group = this;
+    }
+    else
+    {
+      return nullptr;
+    }
   }
   else
   {
@@ -928,7 +939,21 @@ Group* Group::createGroup( const std::string& path, bool is_list )
 
 Group* Group::createUnnamedGroup( bool is_list )
 {
-  Group* new_group = new(std::nothrow) Group("", getDataStore(), is_list);
+  SLIC_CHECK_MSG(m_is_list,
+                 SIDRE_GROUP_LOG_PREPEND
+                 << "Cannot create an unnamed Group when not using "
+                 << "list format.");
+
+  Group* new_group;
+  if (m_is_list)
+  {
+    new_group = new(std::nothrow) Group("", getDataStore(), is_list);
+  }
+  else
+  {
+    new_group = nullptr;
+  } 
+
   if ( new_group == nullptr )
   {
     return nullptr;
@@ -1700,6 +1725,7 @@ Group::Group(const std::string& name,
   , m_index(InvalidIndex)
   , m_parent(nullptr)
   , m_datastore(datastore)
+  , m_is_list(is_list)
   , m_view_coll(0)
   , m_group_coll(0)
 #ifdef AXOM_USE_UMPIRE

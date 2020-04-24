@@ -106,6 +106,11 @@ template <typename TYPE> class ItemCollection;
  * children of the current Group because an index has no meaning outside
  * of the indexed group.  None of these methods is marked with "Child".
  *
+ * A Group can optionally be created to hold items in a "list format". In
+ * this format, any number of child Group or View items can be created with
+ * empty strings for their names, and none of the methods that access
+ * child items by name or path will return a valid pointer.
+ *
  * \attention when Views or Groups are created, destroyed, copied, or moved,
  * indices of other Views and Groups in associated Group objects may
  * become invalid. This is analogous to iterator invalidation for STL
@@ -427,6 +432,10 @@ public:
    * \brief Create an undescribed (i.e., empty) View object with given name
    * or path in this Group.
    *
+   * If path is an empty string, an unnamed view can be created only if
+   * this Group was created to hold items in a list format.  Otherwise
+   * an empty string will result in a nullptr being returned.
+   *
    * \return pointer to new View object or nullptr if one is not created.
    */
   View* createView( const std::string& path );
@@ -478,8 +487,12 @@ public:
 //! of these methods, the Buffer must be allocated and it must be compatible
 //! with the View data description.
 //!
-//! Each of these methods is a no-op if the given View name is an
-//! empty string or the Group already has a View with given name or path.
+//! Each of these methods is a no-op if Group already has a View or child
+//! Group with the given name or path.
+//!
+//! If this Group was created to hold items in list format, the path can
+//! be an empty string. Otherwise an empty string for the path will result
+//! in a no-op.
 //!
 //! Also, calling one of these methods with a null Buffer pointer is
 //! similar to creating a View with no data association.
@@ -976,11 +989,24 @@ public:
    * If name is an empty string or Group already has a child Group with
    * given name or path, method is a no-op.
    *
+   * The optional is_list argument is used to determine if the created
+   * child Group will hold items in list format.
+   *
    * \return pointer to created Group object or nullptr if new
    * Group is not created.
    */
   Group* createGroup( const std::string& path, bool is_list = false );
 
+  /*
+   * \brief Create a child Group within this Group with no name.
+   *
+   * This is intended only to be called when this Group holds items in list
+   * format.  If this Group does not use list format, this method is a
+   * no-op.
+   *
+   * \return pointer to created Group object or nullptr if new Group is
+   * not created.
+   */
   Group* createUnnamedGroup( bool is_list = false );
 
   /*!
@@ -1439,6 +1465,11 @@ private:
    *
    *  attachGroup must be called on a newly created Group to insert it
    *  into the hierarchy. The root group is an exception to this rule.
+   *
+   *  The boolean argument is_list, if true, allows the Group to hold its
+   *  childe items in list format, which allows those items to have empty
+   *  strings for names.  If not in list format, all items must have unique
+   *  non-empty strings for names.
    */
   Group(const std::string& name, DataStore* datastore, bool is_list);
 
@@ -1612,6 +1643,9 @@ private:
   /// This Group object lives in the tree of this DataStore object.
   DataStore* m_datastore;
 
+  /// This identifies whether this Group holds items in list format.
+  bool m_is_list; 
+
   /// Character used to denote a path string passed to get/create calls.
   static const char s_path_delimiter;
 
@@ -1619,7 +1653,7 @@ private:
   //
   using ViewCollection = ItemCollection<View>;
   //
-  using GroupCollection =  ItemCollection<Group>;
+  using GroupCollection = ItemCollection<Group>;
   ///////////////////////////////////////////////////////////////////
 
   /// Collection of Views

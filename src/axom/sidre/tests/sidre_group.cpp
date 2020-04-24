@@ -466,12 +466,16 @@ TEST(sidre_group, child_lists)
   DataStore* ds = new DataStore();
   Group* root = ds->getRoot();
 
+  // parent is a Group in list format.
   Group* parent = root->createGroup("parent", true);
+
+  // Create 10 unnamed Groups as children of parent.
   for (IndexType i = 0; i < 10; ++i) {
     Group* unnamed_group = parent->createUnnamedGroup();
     unnamed_group->createViewScalar("val", i);
   }
 
+  // Create 15 unnamed Views as children of parent.
   for (IndexType i = 0; i < 15; ++i) {
     View* unnamed_view;
     if (i % 3 == 0) {
@@ -491,8 +495,18 @@ TEST(sidre_group, child_lists)
     }
   }
 
+  // Create Group not in list format, show that it can't create
+  // unnamed children.
+  Group* not_list = root->createGroup("not_list", false);
+  Group* dummy_group = not_list->createUnnamedGroup();
+  View* dummy_view = not_list->createView("");
+  EXPECT_EQ(not_list->getNumGroups(), 0); 
+  EXPECT_EQ(not_list->getNumViews(), 0); 
+  EXPECT_TRUE(dummy_group == nullptr);
+  EXPECT_TRUE(dummy_view == nullptr);
+
+  // Access data from unnamed Groups held by parent.
   std::set<int> scalars;
- 
   for (IndexType idx = parent->getFirstValidGroupIndex() ;
        indexIsValid(idx) ;
        idx = parent->getNextValidGroupIndex(idx))
@@ -509,6 +523,7 @@ TEST(sidre_group, child_lists)
   EXPECT_TRUE(parent->hasGroup(6));
   EXPECT_FALSE(parent->hasGroup(20));
 
+  // Destroy five of the unnamed Groups held by parent.
   for (IndexType idx = parent->getFirstValidGroupIndex() ;
        indexIsValid(idx) ;
        idx = parent->getNextValidGroupIndex(idx))
@@ -519,9 +534,11 @@ TEST(sidre_group, child_lists)
     }
   }
 
+  // Add one more unnamed Group, so there should be six child Groups.
   (void) parent->createUnnamedGroup();
   EXPECT_EQ(parent->getNumGroups(), 6);
 
+  // Access data from the unnamed Views.
   for (IndexType idx = parent->getFirstValidViewIndex() ;
        indexIsValid(idx) ;
        idx = parent->getNextValidViewIndex(idx))
@@ -548,6 +565,7 @@ TEST(sidre_group, child_lists)
 
   root->destroyGroup("parent");
 
+  delete ds;
 }
 
 //------------------------------------------------------------------------------
