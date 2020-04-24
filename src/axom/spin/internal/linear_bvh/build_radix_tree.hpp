@@ -9,6 +9,8 @@
 #include "axom/core/execution/execution_space.hpp"
 #include "axom/core/execution/for_all.hpp"
 
+#include "axom/core/utilities/AnnotationMacros.hpp"  // for annotations
+
 #include "axom/spin/internal/linear_bvh/BVHData.hpp"
 #include "axom/spin/internal/linear_bvh/RadixTree.hpp"
 #include "axom/spin/internal/linear_bvh/vec.hpp"
@@ -108,6 +110,8 @@ void transform_boxes( const FloatType* boxes,
                       int32 size,
                       FloatType scale_factor )
 {
+  AXOM_PERF_MARK_FUNCTION( "transform_boxes3D" );
+
   constexpr int NDIMS  = 3;
   constexpr int STRIDE = 2 * NDIMS;
 
@@ -141,6 +145,8 @@ void transform_boxes( const FloatType* boxes,
                       int32 size,
                       FloatType scale_factor )
 {
+  AXOM_PERF_MARK_FUNCTION( "transform_boxes2D" );
+
   constexpr int NDIMS  = 2;
   constexpr int STRIDE = 2 * NDIMS;
 
@@ -169,6 +175,8 @@ void transform_boxes( const FloatType* boxes,
 template < typename ExecSpace, typename FloatType >
 AABB<FloatType,3> reduce(AABB<FloatType,3>* aabbs, int32 size)
 {
+  AXOM_PERF_MARK_FUNCTION( "reduce_abbs3D" );
+
   constexpr int NDIMS = 3;
 
   using reduce_policy =
@@ -213,6 +221,8 @@ AABB<FloatType,3> reduce(AABB<FloatType,3>* aabbs, int32 size)
 template < typename ExecSpace, typename FloatType >
 AABB<FloatType,2> reduce(AABB<FloatType,2>* aabbs, int32 size)
 {
+  AXOM_PERF_MARK_FUNCTION( "reduce_abbs2D" );
+
   constexpr int NDIMS = 2;
 
   using reduce_policy =
@@ -253,6 +263,8 @@ void get_mcodes( AABB<FloatType,2>* aabbs,
                  const AABB< FloatType,2 > &bounds,
                  uint32* mcodes )
 {
+  AXOM_PERF_MARK_FUNCTION( "get_mcodes2D" );
+
   constexpr int NDIMS = 2;
 
   Vec< FloatType,NDIMS > extent, inv_extent, min_coord;
@@ -290,6 +302,8 @@ void get_mcodes( AABB<FloatType,3>* aabbs,
                  const AABB< FloatType,3 > &bounds,
                  uint32* mcodes )
 {
+  AXOM_PERF_MARK_FUNCTION( "get_mcodes3D" );
+
   constexpr int NDIMS = 3;
 
   Vec< FloatType, NDIMS > extent, inv_extent, min_coord;
@@ -331,6 +345,8 @@ void array_counting( IntType* iterator,
                      const IntType& start,
                      const IntType& step)
 {
+  AXOM_PERF_MARK_FUNCTION( "array_counting" );
+
   for_all< ExecSpace >( size, AXOM_LAMBDA(int32 i)
   {
     iterator[ i ] = start + i * step;
@@ -347,6 +363,8 @@ void array_counting( IntType* iterator,
 template< typename ExecSpace, typename T>
 void reorder(int32* indices, T*&array, int32 size)
 {
+  AXOM_PERF_MARK_FUNCTION( "reorder" );
+
   T* temp = axom::allocate< T >( size );
 
   for_all< ExecSpace >( size, AXOM_LAMBDA (int32 i)
@@ -364,15 +382,20 @@ void reorder(int32* indices, T*&array, int32 size)
 template < typename ExecSpace >
 void custom_sort( ExecSpace, uint32*& mcodes, int32 size, int32* iter )
 {
+  AXOM_PERF_MARK_FUNCTION( "custom_sort" );
+
   array_counting< ExecSpace >(iter, size, 0, 1);
 
-  std::stable_sort( iter,
-                    iter + size,
-                    [=](int32 i1, int32 i2)
-                    {
-                    return mcodes[i1] < mcodes[i2];
-                    } );
+  AXOM_PERF_MARK_SECTION( "cpu_sort",
 
+    std::stable_sort( iter,
+                      iter + size,
+                      [=](int32 i1, int32 i2)
+                      {
+                      return mcodes[i1] < mcodes[i2];
+                      } );
+
+  );
 
   reorder< ExecSpace >(iter, mcodes, size);
 }
@@ -384,43 +407,49 @@ template < int BLOCK_SIZE >
 void custom_sort( axom::CUDA_EXEC< BLOCK_SIZE >,
                   uint32*& mcodes, int32 size, int32* iter )
 {
+  AXOM_PERF_MARK_FUNCTION( "custom_sort" );
+
   using ExecSpace = typename axom::CUDA_EXEC< BLOCK_SIZE >;
   array_counting< ExecSpace >(iter, size, 0, 1);
 
-  uint32* mcodes_alt_buf = axom::allocate< uint32 >( size );
-  int32* iter_alt_buf   = axom::allocate< int32 >( size );
+  AXOM_PERF_MARK_SECTION( "gpu_cub_sort",
 
-  // create double buffers
-  ::cub::DoubleBuffer< uint32 > d_keys( mcodes, mcodes_alt_buf );
-  ::cub::DoubleBuffer< int32 >  d_values( iter, iter_alt_buf );
+    uint32* mcodes_alt_buf = axom::allocate< uint32 >( size );
+    int32* iter_alt_buf   = axom::allocate< int32 >( size );
 
-  // determine temporary device storage requirements
-  void* d_temp_storage     = nullptr;
-  size_t temp_storage_bytes = 0;
-  ::cub::DeviceRadixSort::SortPairs( d_temp_storage, temp_storage_bytes,
-                                     d_keys, d_values, size );
+    // create double buffers
+    ::cub::DoubleBuffer< uint32 > d_keys( mcodes, mcodes_alt_buf );
+    ::cub::DoubleBuffer< int32 >  d_values( iter, iter_alt_buf );
 
-  // Allocate temporary storage
-  d_temp_storage = (void*)axom::allocate< unsigned char >( temp_storage_bytes );
+    // determine temporary device storage requirements
+    void* d_temp_storage     = nullptr;
+    size_t temp_storage_bytes = 0;
+    ::cub::DeviceRadixSort::SortPairs( d_temp_storage, temp_storage_bytes,
+                                       d_keys, d_values, size );
+
+    // Allocate temporary storage
+    d_temp_storage = (void*)axom::allocate< unsigned char >( temp_storage_bytes );
 
 
-  // Run sorting operation
-  ::cub::DeviceRadixSort::SortPairs( d_temp_storage, temp_storage_bytes,
-                                     d_keys, d_values, size );
+    // Run sorting operation
+    ::cub::DeviceRadixSort::SortPairs( d_temp_storage, temp_storage_bytes,
+                                       d_keys, d_values, size );
 
-  uint32* sorted_keys = d_keys.Current();
-  int32* sorted_vals = d_values.Current();
+    uint32* sorted_keys = d_keys.Current();
+    int32* sorted_vals = d_values.Current();
 
-  for_all< ExecSpace >( size, AXOM_LAMBDA (int32 i)
-  {
-    mcodes[ i ] = sorted_keys[ i ];
-    iter[ i ]   = sorted_vals[ i ];
-  } );
+    for_all< ExecSpace >( size, AXOM_LAMBDA (int32 i)
+    {
+      mcodes[ i ] = sorted_keys[ i ];
+      iter[ i ]   = sorted_vals[ i ];
+    } );
 
-  // Free temporary storage
-  axom::deallocate( d_temp_storage );
-  axom::deallocate( mcodes_alt_buf );
-  axom::deallocate( iter_alt_buf );
+    // Free temporary storage
+    axom::deallocate( d_temp_storage );
+    axom::deallocate( mcodes_alt_buf );
+    axom::deallocate( iter_alt_buf );
+
+  );
 }
 #endif
 
@@ -428,6 +457,8 @@ void custom_sort( axom::CUDA_EXEC< BLOCK_SIZE >,
 template < typename ExecSpace  >
 void sort_mcodes( uint32*& mcodes, int32 size, int32* iter )
 {
+  AXOM_PERF_MARK_FUNCTION( "sort_mcodes" );
+
   // dispatch
   custom_sort( ExecSpace(), mcodes, size, iter );
 }
@@ -461,6 +492,8 @@ AXOM_HOST_DEVICE IntType delta( const IntType &a,
 template < typename ExecSpace, typename FloatType, int NDIMS >
 void build_tree(  RadixTree< FloatType, NDIMS > &data )
 {
+  AXOM_PERF_MARK_FUNCTION( "build_tree" );
+
   // http://research.nvidia.com/sites/default/files/publications/karras2012hpg_paper.pdf
 
   // Pointers and vars are redeclared because I have a faint memory
@@ -551,6 +584,8 @@ void build_tree(  RadixTree< FloatType, NDIMS > &data )
 template< typename ExecSpace, typename T>
 static void array_memset(T* array, const int32 size, const T val)
 {
+  AXOM_PERF_MARK_FUNCTION( "array_memset" );
+
   for_all< ExecSpace >( size, AXOM_LAMBDA (int32 i)
   {
     array[ i ] = val;
@@ -561,6 +596,8 @@ static void array_memset(T* array, const int32 size, const T val)
 template < typename ExecSpace, typename FloatType, int NDIMS >
 void propagate_aabbs( RadixTree< FloatType, NDIMS >& data)
 {
+  AXOM_PERF_MARK_FUNCTION( "propagate_abbs" );
+
   const int inner_size = data.m_inner_size;
   const int leaf_size = data.m_inner_size + 1;
   SLIC_ASSERT( leaf_size == data.m_size );
@@ -639,6 +676,8 @@ void build_radix_tree( const FloatType* boxes,
                        RadixTree< FloatType, NDIMS >& radix_tree,
                        FloatType scale_factor )
 {
+  AXOM_PERF_MARK_FUNCTION( "build_radix_tree" );
+
   // sanity checks
   SLIC_ASSERT( boxes !=nullptr );
   SLIC_ASSERT( size > 0 );

@@ -4,11 +4,11 @@
 // Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
 // other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
-// SPDX-License-Identifier (BSD-3-Clause)
-//
-#include <stdlib.h>
-#include "axom/sidre/spio/IOManager.hpp"
+// SPDX-License-Identifier: (BSD-3-Clause)
+#include <cstdlib>
 #include "typesSPIO.h"
+
+#include "axom/sidre/spio/IOManager.hpp"
 
 // splicer begin CXX_definitions
 // splicer end CXX_definitions
@@ -18,8 +18,8 @@ extern "C" {
 // splicer begin C_definitions
 // splicer end C_definitions
 
-// Release C++ allocated memory.
-void SPIO_SHROUD_memory_destructor(SPI_SHROUD_capsule_data* cap)
+// Release library allocated memory.
+void SPIO_SHROUD_memory_destructor(SPIO_SHROUD_capsule_data* cap)
 {
   void* ptr = cap->addr;
   switch (cap->idtor)

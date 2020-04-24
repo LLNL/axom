@@ -397,6 +397,8 @@ class Axom(Package):
 
                 cfg.write(cmake_cache_option("CUDA_SEPARABLE_COMPILATION", True))
 
+                cfg.write(cmake_cache_option("AXOM_ENABLE_ANNOTATIONS",True))
+
                 if on_blueos_p9:
                     cfg.write(cmake_cache_entry("AXOM_CUDA_ARCH", "sm_70"))
                 else:

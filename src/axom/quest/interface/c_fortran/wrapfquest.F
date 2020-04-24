@@ -7,7 +7,7 @@
 ! SPDX-License-Identifier: (BSD-3-Clause)
 !>
 !! \file wrapfquest.F
-!! \brief Shroud generated wrapper for QUEST library
+!! \brief Shroud generated wrapper for quest namespace
 !<
 ! splicer begin file_top
 #include <axom/config.hpp>
@@ -351,10 +351,10 @@ contains
             result(SHT_rv)
         use iso_c_binding, only : C_BOOL, C_INT
         logical, value, intent(IN) :: verbosity
-        logical(C_BOOL) SH_verbosity
         integer(C_INT) :: SHT_rv
-        SH_verbosity = verbosity  ! coerce to C_BOOL
         ! splicer begin function.inout_set_verbose
+        logical(C_BOOL) SH_verbosity
+        SH_verbosity = verbosity  ! coerce to C_BOOL
         SHT_rv = c_inout_set_verbose(SH_verbosity)
         ! splicer end function.inout_set_verbose
     end function quest_inout_set_verbose
@@ -421,9 +421,9 @@ contains
     subroutine quest_signed_distance_set_closed_surface(status)
         use iso_c_binding, only : C_BOOL
         logical, value, intent(IN) :: status
+        ! splicer begin function.signed_distance_set_closed_surface
         logical(C_BOOL) SH_status
         SH_status = status  ! coerce to C_BOOL
-        ! splicer begin function.signed_distance_set_closed_surface
         call c_signed_distance_set_closed_surface(SH_status)
         ! splicer end function.signed_distance_set_closed_surface
     end subroutine quest_signed_distance_set_closed_surface
@@ -431,9 +431,9 @@ contains
     subroutine quest_signed_distance_set_verbose(status)
         use iso_c_binding, only : C_BOOL
         logical, value, intent(IN) :: status
+        ! splicer begin function.signed_distance_set_verbose
         logical(C_BOOL) SH_status
         SH_status = status  ! coerce to C_BOOL
-        ! splicer begin function.signed_distance_set_verbose
         call c_signed_distance_set_verbose(SH_status)
         ! splicer end function.signed_distance_set_verbose
     end subroutine quest_signed_distance_set_verbose
@@ -441,9 +441,9 @@ contains
     subroutine quest_signed_distance_use_shared_memory(status)
         use iso_c_binding, only : C_BOOL
         logical, value, intent(IN) :: status
+        ! splicer begin function.signed_distance_use_shared_memory
         logical(C_BOOL) SH_status
         SH_status = status  ! coerce to C_BOOL
-        ! splicer begin function.signed_distance_use_shared_memory
         call c_signed_distance_use_shared_memory(SH_status)
         ! splicer end function.signed_distance_use_shared_memory
     end subroutine quest_signed_distance_use_shared_memory

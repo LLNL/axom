@@ -10,6 +10,7 @@
 #include "axom/core/execution/for_all.hpp"              // for generic for_all()
 #include "axom/core/memory_management.hpp"              // for memory functions
 #include "axom/core/numerics/floating_point_limits.hpp" // floating_point_limits
+#include "axom/core/utilities/AnnotationMacros.hpp"     // for annotations
 
 // slic includes
 #include "axom/slic/interface/slic.hpp"                 // for SLIC macros
@@ -130,6 +131,8 @@ IndexType bvh_get_counts( LeftPredicate&& leftCheck,
                           const FloatType* y,
                           const FloatType* z ) noexcept
 {
+  AXOM_PERF_MARK_FUNCTION( "bvh_get_counts" );
+
   // sanity checks
   SLIC_ASSERT( inner_nodes != nullptr );
   SLIC_ASSERT( leaf_nodes != nullptr );
@@ -208,6 +211,8 @@ IndexType bvh_get_raycounts( LeftPredicate&& leftCheck,
                              const FloatType* z0,
                              const FloatType* nz ) noexcept
 {
+  AXOM_PERF_MARK_FUNCTION( "bvh_get_raycounts" );
+
   // sanity checks
   SLIC_ASSERT( inner_nodes != nullptr );
   SLIC_ASSERT( leaf_nodes != nullptr );
@@ -292,6 +297,8 @@ IndexType bvh_get_boxcounts( LeftPredicate&& leftCheck,
                              const FloatType* zmin,
                              const FloatType* zmax ) noexcept
 {
+  AXOM_PERF_MARK_FUNCTION( "bvh_get_boxcounts" );
+
   // sanity checks
   SLIC_ASSERT( inner_nodes != nullptr );
   SLIC_ASSERT( leaf_nodes != nullptr );
@@ -369,6 +376,8 @@ BVH< NDIMS, ExecSpace, FloatType >::~BVH()
 template< int NDIMS, typename ExecSpace, typename FloatType >
 int BVH< NDIMS, ExecSpace, FloatType >::build()
 {
+  AXOM_PERF_MARK_FUNCTION( "BVH::build" );
+
   // STEP 0: set the default memory allocator to use for the execution space.
   const int currentAllocatorID = axom::getDefaultAllocatorID();
   const int allocatorID = axom::execution_space< ExecSpace >::allocatorID();
@@ -447,6 +456,8 @@ void BVH< NDIMS, ExecSpace, FloatType >::findPoints( IndexType* offsets,
                                                      const FloatType* y,
                                                      const FloatType* z ) const
 {
+  AXOM_PERF_MARK_FUNCTION( "BVH::findPoints" );
+
   SLIC_ASSERT( offsets != nullptr );
   SLIC_ASSERT( counts != nullptr );
   SLIC_ASSERT( candidates == nullptr );
@@ -538,6 +549,8 @@ void BVH< NDIMS, ExecSpace, FloatType >::findRays( IndexType* offsets,
                                                    const FloatType* z0,
                                                    const FloatType* nz  ) const
 {
+  AXOM_PERF_MARK_FUNCTION( "BVH::findRays" );
+
   SLIC_ASSERT( offsets != nullptr );
   SLIC_ASSERT( counts != nullptr );
   SLIC_ASSERT( candidates == nullptr );
@@ -632,6 +645,8 @@ void BVH< NDIMS, ExecSpace, FloatType >::findBoundingBoxes(
   const FloatType* zmin,
   const FloatType* zmax ) const
 {
+  AXOM_PERF_MARK_FUNCTION( "BVH::findBoundingBoxes" );
+
   SLIC_ASSERT( offsets != nullptr );
   SLIC_ASSERT( counts != nullptr );
   SLIC_ASSERT( candidates == nullptr );

@@ -6,10 +6,11 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 #include "wrapSidre.h"
-#include <stdlib.h>
+#include <cstdlib>
 #include <string>
-#include "axom/sidre/core/DataStore.hpp"
 #include "typesSidre.h"
+
+#include "axom/sidre/core/DataStore.hpp"
 
 // splicer begin CXX_definitions
 // splicer end CXX_definitions
@@ -43,13 +44,13 @@ void sidre_c_loc_(void* addr, void** out)
 
 bool SIDRE_name_is_valid(const char* name)
 {
-// splicer begin function.name_is_valid
+  // splicer begin function.name_is_valid
   return name != NULL;
-// splicer end function.name_is_valid
+  // splicer end function.name_is_valid
 }
 
-// Release C++ allocated memory.
-void SIDRE_SHROUD_memory_destructor(SID_SHROUD_capsule_data* cap)
+// Release library allocated memory.
+void SIDRE_SHROUD_memory_destructor(SIDRE_SHROUD_capsule_data* cap)
 {
   void* ptr = cap->addr;
   switch (cap->idtor)

@@ -9,6 +9,8 @@
 #include "axom/core/memory_management.hpp"
 #include "axom/spin/internal/linear_bvh/aabb.hpp"
 
+#include "axom/core/utilities/AnnotationMacros.hpp" // for annotations
+
 namespace axom
 {
 namespace spin
@@ -42,6 +44,8 @@ struct RadixTree
 
   void allocate( int32 size )
   {
+    AXOM_PERF_MARK_FUNCTION("RadixTree::allocate");
+
     m_size           = size;
     m_inner_size     = m_size-1;
 
@@ -57,6 +61,8 @@ struct RadixTree
 
   void deallocate()
   {
+    AXOM_PERF_MARK_FUNCTION("RadixTree::deallocate");
+
     m_inner_size = 0;
     m_size       = 0;
 
