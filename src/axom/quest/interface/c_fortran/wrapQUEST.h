@@ -7,7 +7,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 /**
  * \file wrapQUEST.h
- * \brief Shroud generated wrapper for QUEST library
+ * \brief Shroud generated wrapper for quest namespace
  */
 // For C users and C++ implementation
 
@@ -18,6 +18,9 @@
 #include "mpi.h"
 #endif
 #include "typesQUEST.h"
+#ifndef __cplusplus
+#include <stdbool.h>
+#endif
 
 // splicer begin CXX_declarations
 // splicer end CXX_declarations

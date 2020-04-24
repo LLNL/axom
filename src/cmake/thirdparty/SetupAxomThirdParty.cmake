@@ -130,9 +130,6 @@ endif()
 # Shroud - Generates C/Fortran/Python bindings
 #------------------------------------------------------------------------------
 if(EXISTS ${SHROUD_EXECUTABLE})
-    if(NOT EXISTS ${PYTHON_EXECUTABLE})
-        message(FATAL_ERROR "Shroud requires PYTHON_EXECUTABLE and SHROUD_EXECUTABLE to be defined and exist.")
-    endif()
     execute_process(COMMAND ${SHROUD_EXECUTABLE}
                     --cmake ${CMAKE_CURRENT_BINARY_DIR}/SetupShroud.cmake
                     ERROR_VARIABLE SHROUD_cmake_error

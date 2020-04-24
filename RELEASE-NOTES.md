@@ -44,6 +44,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Modified the API of Axom's memory management routines to not leak usage of Umpire. Instead of 
   passing an `umpire::Allocator` object to specify an allocator, we now use the corresponding
   integer ID associated with the allocator.
+- All names in the C API now preserve the case of the C++ function.
+  ex. `SIDRE_datastore_new` is now `SIDRE_DataStore_new`.
+- Fortran API in slic module. `axom::slic::message` Level enums are changed
+  from  *enum-name_enumerator* to *namespace_enumerator*.
+  ex. `level_error` is now `message_error`.
 
 ### Fixed
 - Fixed issue with missing the bvh_traverse.hpp from the install prefix, which was preventing

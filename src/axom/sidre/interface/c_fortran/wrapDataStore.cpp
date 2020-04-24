@@ -6,12 +6,12 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 #include "wrapDataStore.h"
-#include <stdlib.h>
+#include <cstddef>
 #include <string>
 #include "axom/sidre/core/Buffer.hpp"
 #include "axom/sidre/core/DataStore.hpp"
 #include "axom/sidre/core/Group.hpp"
-#include "axom/sidre/core/SidreTypes.hpp"
+#include "axom/sidre/interface/SidreTypes.h"
 
 // splicer begin class.DataStore.CXX_definitions
 // splicer end class.DataStore.CXX_definitions
@@ -21,57 +21,57 @@ extern "C" {
 // splicer begin class.DataStore.C_definitions
 // splicer end class.DataStore.C_definitions
 
-SIDRE_datastore* SIDRE_datastore_new(SIDRE_datastore* SHC_rv)
+SIDRE_DataStore* SIDRE_DataStore_new(SIDRE_DataStore* SHC_rv)
 {
-// splicer begin class.DataStore.method.new
+  // splicer begin class.DataStore.method.new
   axom::sidre::DataStore* SHCXX_rv = new axom::sidre::DataStore();
   SHC_rv->addr = static_cast<void*>(SHCXX_rv);
   SHC_rv->idtor = 0;
   return SHC_rv;
-// splicer end class.DataStore.method.new
+  // splicer end class.DataStore.method.new
 }
 
-void SIDRE_datastore_delete(SIDRE_datastore* self)
+void SIDRE_DataStore_delete(SIDRE_DataStore* self)
 {
-// splicer begin class.DataStore.method.delete
   axom::sidre::DataStore* SH_this =
     static_cast<axom::sidre::DataStore*>(self->addr);
+  // splicer begin class.DataStore.method.delete
   delete SH_this;
   self->addr = NULL;
   return;
-// splicer end class.DataStore.method.delete
+  // splicer end class.DataStore.method.delete
 }
 
-SIDRE_group* SIDRE_datastore_get_root(SIDRE_datastore* self,
-                                      SIDRE_group* SHC_rv)
+SIDRE_Group* SIDRE_DataStore_get_root(SIDRE_DataStore* self,
+                                      SIDRE_Group* SHC_rv)
 {
-// splicer begin class.DataStore.method.get_root
   axom::sidre::DataStore* SH_this =
     static_cast<axom::sidre::DataStore*>(self->addr);
+  // splicer begin class.DataStore.method.get_root
   axom::sidre::Group* SHCXX_rv = SH_this->getRoot();
   SHC_rv->addr = static_cast<void*>(SHCXX_rv);
   SHC_rv->idtor = 0;
   return SHC_rv;
-// splicer end class.DataStore.method.get_root
+  // splicer end class.DataStore.method.get_root
 }
 
-size_t SIDRE_datastore_get_num_buffers(const SIDRE_datastore* self)
+size_t SIDRE_DataStore_get_num_buffers(const SIDRE_DataStore* self)
 {
-// splicer begin class.DataStore.method.get_num_buffers
   const axom::sidre::DataStore* SH_this =
     static_cast<const axom::sidre::DataStore*>(self->addr);
+  // splicer begin class.DataStore.method.get_num_buffers
   size_t SHC_rv = SH_this->getNumBuffers();
   return SHC_rv;
-// splicer end class.DataStore.method.get_num_buffers
+  // splicer end class.DataStore.method.get_num_buffers
 }
 
-SIDRE_buffer* SIDRE_datastore_get_buffer(SIDRE_datastore* self,
+SIDRE_Buffer* SIDRE_DataStore_get_buffer(SIDRE_DataStore* self,
                                          SIDRE_IndexType idx,
-                                         SIDRE_buffer* SHC_rv)
+                                         SIDRE_Buffer* SHC_rv)
 {
-// splicer begin class.DataStore.method.get_buffer
   axom::sidre::DataStore* SH_this =
     static_cast<axom::sidre::DataStore*>(self->addr);
+  // splicer begin class.DataStore.method.get_buffer
   axom::sidre::Buffer* SHCXX_rv = SH_this->getBuffer(idx);
   // C_error_pattern
   if (SHCXX_rv == nullptr)
@@ -84,30 +84,30 @@ SIDRE_buffer* SIDRE_datastore_get_buffer(SIDRE_datastore* self,
   SHC_rv->addr = static_cast<void*>(SHCXX_rv);
   SHC_rv->idtor = 0;
   return SHC_rv;
-// splicer end class.DataStore.method.get_buffer
+  // splicer end class.DataStore.method.get_buffer
 }
 
-SIDRE_buffer* SIDRE_datastore_create_buffer_empty(SIDRE_datastore* self,
-                                                  SIDRE_buffer* SHC_rv)
+SIDRE_Buffer* SIDRE_DataStore_create_buffer_empty(SIDRE_DataStore* self,
+                                                  SIDRE_Buffer* SHC_rv)
 {
-// splicer begin class.DataStore.method.create_buffer_empty
   axom::sidre::DataStore* SH_this =
     static_cast<axom::sidre::DataStore*>(self->addr);
+  // splicer begin class.DataStore.method.create_buffer_empty
   axom::sidre::Buffer* SHCXX_rv = SH_this->createBuffer();
   SHC_rv->addr = static_cast<void*>(SHCXX_rv);
   SHC_rv->idtor = 0;
   return SHC_rv;
-// splicer end class.DataStore.method.create_buffer_empty
+  // splicer end class.DataStore.method.create_buffer_empty
 }
 
-SIDRE_buffer* SIDRE_datastore_create_buffer_from_type(SIDRE_datastore* self,
+SIDRE_Buffer* SIDRE_DataStore_create_buffer_from_type(SIDRE_DataStore* self,
                                                       int type,
                                                       SIDRE_IndexType num_elems,
-                                                      SIDRE_buffer* SHC_rv)
+                                                      SIDRE_Buffer* SHC_rv)
 {
-// splicer begin class.DataStore.method.create_buffer_from_type
   axom::sidre::DataStore* SH_this =
     static_cast<axom::sidre::DataStore*>(self->addr);
+  // splicer begin class.DataStore.method.create_buffer_from_type
   axom::sidre::TypeID SHCXX_type = axom::sidre::getTypeID(type);
   axom::sidre::Buffer* SHCXX_rv = SH_this->createBuffer(SHCXX_type, num_elems);
   // C_error_pattern
@@ -121,38 +121,39 @@ SIDRE_buffer* SIDRE_datastore_create_buffer_from_type(SIDRE_datastore* self,
   SHC_rv->addr = static_cast<void*>(SHCXX_rv);
   SHC_rv->idtor = 0;
   return SHC_rv;
-// splicer end class.DataStore.method.create_buffer_from_type
+  // splicer end class.DataStore.method.create_buffer_from_type
 }
 
-void SIDRE_datastore_destroy_buffer(SIDRE_datastore* self, SIDRE_IndexType id)
+void SIDRE_DataStore_destroy_buffer(SIDRE_DataStore* self, SIDRE_IndexType id)
 {
-// splicer begin class.DataStore.method.destroy_buffer
   axom::sidre::DataStore* SH_this =
     static_cast<axom::sidre::DataStore*>(self->addr);
+  // splicer begin class.DataStore.method.destroy_buffer
   SH_this->destroyBuffer(id);
   return;
-// splicer end class.DataStore.method.destroy_buffer
+  // splicer end class.DataStore.method.destroy_buffer
 }
 
-bool SIDRE_datastore_generate_blueprint_index(SIDRE_datastore* self,
+bool SIDRE_DataStore_generate_blueprint_index(SIDRE_DataStore* self,
                                               const char* domain_path,
                                               const char* mesh_name,
                                               const char* index_path,
                                               int num_domains)
 {
-// splicer begin class.DataStore.method.generate_blueprint_index
   axom::sidre::DataStore* SH_this =
     static_cast<axom::sidre::DataStore*>(self->addr);
-  const std::string SH_domain_path(domain_path);
-  const std::string SH_mesh_name(mesh_name);
-  const std::string SH_index_path(index_path);
-  bool SHC_rv = SH_this->generateBlueprintIndex(SH_domain_path, SH_mesh_name,
-                                                SH_index_path, num_domains);
+  // splicer begin class.DataStore.method.generate_blueprint_index
+  const std::string SHCXX_domain_path(domain_path);
+  const std::string SHCXX_mesh_name(mesh_name);
+  const std::string SHCXX_index_path(index_path);
+  bool SHC_rv = SH_this->generateBlueprintIndex(SHCXX_domain_path,
+                                                SHCXX_mesh_name,
+                                                SHCXX_index_path, num_domains);
   return SHC_rv;
-// splicer end class.DataStore.method.generate_blueprint_index
+  // splicer end class.DataStore.method.generate_blueprint_index
 }
 
-bool SIDRE_datastore_generate_blueprint_index_bufferify(SIDRE_datastore* self,
+bool SIDRE_DataStore_generate_blueprint_index_bufferify(SIDRE_DataStore* self,
                                                         const char* domain_path,
                                                         int Ldomain_path,
                                                         const char* mesh_name,
@@ -161,26 +162,27 @@ bool SIDRE_datastore_generate_blueprint_index_bufferify(SIDRE_datastore* self,
                                                         int Lindex_path,
                                                         int num_domains)
 {
-// splicer begin class.DataStore.method.generate_blueprint_index_bufferify
   axom::sidre::DataStore* SH_this =
     static_cast<axom::sidre::DataStore*>(self->addr);
-  const std::string SH_domain_path(domain_path, Ldomain_path);
-  const std::string SH_mesh_name(mesh_name, Lmesh_name);
-  const std::string SH_index_path(index_path, Lindex_path);
-  bool SHC_rv = SH_this->generateBlueprintIndex(SH_domain_path, SH_mesh_name,
-                                                SH_index_path, num_domains);
+  // splicer begin class.DataStore.method.generate_blueprint_index_bufferify
+  const std::string SHCXX_domain_path(domain_path, Ldomain_path);
+  const std::string SHCXX_mesh_name(mesh_name, Lmesh_name);
+  const std::string SHCXX_index_path(index_path, Lindex_path);
+  bool SHC_rv = SH_this->generateBlueprintIndex(SHCXX_domain_path,
+                                                SHCXX_mesh_name,
+                                                SHCXX_index_path, num_domains);
   return SHC_rv;
-// splicer end class.DataStore.method.generate_blueprint_index_bufferify
+  // splicer end class.DataStore.method.generate_blueprint_index_bufferify
 }
 
-void SIDRE_datastore_print(const SIDRE_datastore* self)
+void SIDRE_DataStore_print(const SIDRE_DataStore* self)
 {
-// splicer begin class.DataStore.method.print
   const axom::sidre::DataStore* SH_this =
     static_cast<const axom::sidre::DataStore*>(self->addr);
+  // splicer begin class.DataStore.method.print
   SH_this->print();
   return;
-// splicer end class.DataStore.method.print
+  // splicer end class.DataStore.method.print
 }
 
 }  // extern "C"

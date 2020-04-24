@@ -19,6 +19,7 @@
 #endif
 
 #if PY_MAJOR_VERSION >= 3
+#define PyInt_AsLong PyLong_AsLong
 #define PyInt_FromLong PyLong_FromLong
 #define PyString_FromString PyUnicode_FromString
 #define PyString_FromStringAndSize PyUnicode_FromStringAndSize
@@ -30,6 +31,7 @@ PyObject* PY_error_obj;
 // splicer begin additional_functions
 // splicer end additional_functions
 
+#ifdef AXOM_USE_MPI
 static PyObject*
 PY_inout_init_mpi(
   PyObject* SHROUD_UNUSED(self),
@@ -44,6 +46,7 @@ PY_inout_init_mpi(
     "comm",
     NULL
   };
+  PyObject* SHTPy_rv = NULL;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO:inout_init",
                                    const_cast<char**>(SHT_kwlist), &fileName,
@@ -51,12 +54,14 @@ PY_inout_init_mpi(
     return NULL;
   const std::string SH_fileName(fileName);
   MPI_Comm SH_comm = MPI_Comm_f2c(comm);
-  int SHC_rv = axom::quest::inout_init(SH_fileName, SH_comm);
-  PyObject* SHTPy_rv = PyInt_FromLong(SHC_rv);
+  int SHCXX_rv = axom::quest::inout_init(SH_fileName, SH_comm);
+  SHTPy_rv = PyInt_FromLong(SHCXX_rv);
   return (PyObject*) SHTPy_rv;
 // splicer end function.inout_init_mpi
 }
+#endif // ifdef AXOM_USE_MPI
 
+#ifndef AXOM_USE_MPI
 static PyObject*
 PY_inout_init_serial(
   PyObject* SHROUD_UNUSED(self),
@@ -69,16 +74,18 @@ PY_inout_init_serial(
     "fileName",
     NULL
   };
+  PyObject* SHTPy_rv = NULL;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:inout_init",
                                    const_cast<char**>(SHT_kwlist), &fileName))
     return NULL;
   const std::string SH_fileName(fileName);
-  int SHC_rv = axom::quest::inout_init(SH_fileName);
-  PyObject* SHTPy_rv = PyInt_FromLong(SHC_rv);
+  int SHCXX_rv = axom::quest::inout_init(SH_fileName);
+  SHTPy_rv = PyInt_FromLong(SHCXX_rv);
   return (PyObject*) SHTPy_rv;
 // splicer end function.inout_init_serial
 }
+#endif // ifndef AXOM_USE_MPI
 
 static char PY_inout_initialized__doc__[] =
   "documentation"
@@ -91,9 +98,17 @@ PY_inout_initialized(
   PyObject* SHROUD_UNUSED(kwds))
 {
 // splicer begin function.inout_initialized
-  bool SHC_rv = axom::quest::inout_initialized();
-  PyObject* SHTPy_rv = PyBool_FromLong(SHC_rv);
+  PyObject* SHTPy_rv = NULL;
+
+  bool SHCXX_rv = axom::quest::inout_initialized();
+  SHTPy_rv = PyBool_FromLong(SHCXX_rv);
+  if (SHTPy_rv == NULL)
+    goto fail;
   return (PyObject*) SHTPy_rv;
+
+fail:
+  Py_XDECREF(SHTPy_rv);
+  return NULL;
 // splicer end function.inout_initialized
 }
 
@@ -113,14 +128,15 @@ PY_inout_set_verbose(
     "verbosity",
     NULL
   };
+  PyObject* SHTPy_rv = NULL;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O!:inout_set_verbose",
                                    const_cast<char**>(SHT_kwlist), &PyBool_Type,
                                    &SHPy_verbosity))
     return NULL;
   bool verbosity = PyObject_IsTrue(SHPy_verbosity);
-  int SHC_rv = axom::quest::inout_set_verbose(verbosity);
-  PyObject* SHTPy_rv = PyInt_FromLong(SHC_rv);
+  int SHCXX_rv = axom::quest::inout_set_verbose(verbosity);
+  SHTPy_rv = PyInt_FromLong(SHCXX_rv);
   return (PyObject*) SHTPy_rv;
 // splicer end function.inout_set_verbose
 }
@@ -141,13 +157,14 @@ PY_inout_set_vertex_weld_threshold(
     "thresh",
     NULL
   };
+  PyObject* SHTPy_rv = NULL;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds,
                                    "d:inout_set_vertex_weld_threshold",
                                    const_cast<char**>(SHT_kwlist), &thresh))
     return NULL;
-  int SHC_rv = axom::quest::inout_set_vertex_weld_threshold(thresh);
-  PyObject* SHTPy_rv = PyInt_FromLong(SHC_rv);
+  int SHCXX_rv = axom::quest::inout_set_vertex_weld_threshold(thresh);
+  SHTPy_rv = PyInt_FromLong(SHCXX_rv);
   return (PyObject*) SHTPy_rv;
 // splicer end function.inout_set_vertex_weld_threshold
 }
@@ -173,7 +190,8 @@ PY_inout_evaluate_1(
     "z",
     NULL
   };
-  bool SHC_rv;
+  bool SHCXX_rv;
+  PyObject* SHTPy_rv = NULL;
 
   if (args != NULL)
     SH_nargs += PyTuple_Size(args);
@@ -185,14 +203,23 @@ PY_inout_evaluate_1(
   switch (SH_nargs)
   {
   case 2:
-    SHC_rv = axom::quest::inout_evaluate(x, y);
+    SHCXX_rv = axom::quest::inout_evaluate(x, y);
     break;
   case 3:
-    SHC_rv = axom::quest::inout_evaluate(x, y, z);
+    SHCXX_rv = axom::quest::inout_evaluate(x, y, z);
     break;
+  default:
+    PyErr_SetString(PyExc_ValueError, "Wrong number of arguments");
+    return NULL;
   }
-  PyObject* SHTPy_rv = PyBool_FromLong(SHC_rv);
+  SHTPy_rv = PyBool_FromLong(SHCXX_rv);
+  if (SHTPy_rv == NULL)
+    goto fail;
   return (PyObject*) SHTPy_rv;
+
+fail:
+  Py_XDECREF(SHTPy_rv);
+  return NULL;
 // splicer end function.inout_evaluate
 }
 
@@ -207,8 +234,10 @@ PY_inout_get_dimension(
   PyObject* SHROUD_UNUSED(kwds))
 {
 // splicer begin function.inout_get_dimension
-  int SHC_rv = axom::quest::inout_get_dimension();
-  PyObject* SHTPy_rv = PyInt_FromLong(SHC_rv);
+  PyObject* SHTPy_rv = NULL;
+
+  int SHCXX_rv = axom::quest::inout_get_dimension();
+  SHTPy_rv = PyInt_FromLong(SHCXX_rv);
   return (PyObject*) SHTPy_rv;
 // splicer end function.inout_get_dimension
 }
@@ -224,12 +253,15 @@ PY_inout_finalize(
   PyObject* SHROUD_UNUSED(kwds))
 {
 // splicer begin function.inout_finalize
-  int SHC_rv = axom::quest::inout_finalize();
-  PyObject* SHTPy_rv = PyInt_FromLong(SHC_rv);
+  PyObject* SHTPy_rv = NULL;
+
+  int SHCXX_rv = axom::quest::inout_finalize();
+  SHTPy_rv = PyInt_FromLong(SHCXX_rv);
   return (PyObject*) SHTPy_rv;
 // splicer end function.inout_finalize
 }
 
+#ifdef AXOM_USE_MPI
 static PyObject*
 PY_signed_distance_init_mpi(
   PyObject* SHROUD_UNUSED(self),
@@ -244,6 +276,7 @@ PY_signed_distance_init_mpi(
     "comm",
     NULL
   };
+  PyObject* SHTPy_rv = NULL;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO:signed_distance_init",
                                    const_cast<char**>(SHT_kwlist), &file,
@@ -251,12 +284,14 @@ PY_signed_distance_init_mpi(
     return NULL;
   const std::string SH_file(file);
   MPI_Comm SH_comm = MPI_Comm_f2c(comm);
-  int SHC_rv = axom::quest::signed_distance_init(SH_file, SH_comm);
-  PyObject* SHTPy_rv = PyInt_FromLong(SHC_rv);
+  int SHCXX_rv = axom::quest::signed_distance_init(SH_file, SH_comm);
+  SHTPy_rv = PyInt_FromLong(SHCXX_rv);
   return (PyObject*) SHTPy_rv;
 // splicer end function.signed_distance_init_mpi
 }
+#endif // ifdef AXOM_USE_MPI
 
+#ifndef AXOM_USE_MPI
 static PyObject*
 PY_signed_distance_init_serial(
   PyObject* SHROUD_UNUSED(self),
@@ -269,16 +304,18 @@ PY_signed_distance_init_serial(
     "file",
     NULL
   };
+  PyObject* SHTPy_rv = NULL;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "s:signed_distance_init",
                                    const_cast<char**>(SHT_kwlist), &file))
     return NULL;
   const std::string SH_file(file);
-  int SHC_rv = axom::quest::signed_distance_init(SH_file);
-  PyObject* SHTPy_rv = PyInt_FromLong(SHC_rv);
+  int SHCXX_rv = axom::quest::signed_distance_init(SH_file);
+  SHTPy_rv = PyInt_FromLong(SHCXX_rv);
   return (PyObject*) SHTPy_rv;
 // splicer end function.signed_distance_init_serial
 }
+#endif // ifndef AXOM_USE_MPI
 
 static char PY_signed_distance_initialized__doc__[] =
   "documentation"
@@ -291,9 +328,17 @@ PY_signed_distance_initialized(
   PyObject* SHROUD_UNUSED(kwds))
 {
 // splicer begin function.signed_distance_initialized
-  bool SHC_rv = axom::quest::signed_distance_initialized();
-  PyObject* SHTPy_rv = PyBool_FromLong(SHC_rv);
+  PyObject* SHTPy_rv = NULL;
+
+  bool SHCXX_rv = axom::quest::signed_distance_initialized();
+  SHTPy_rv = PyBool_FromLong(SHCXX_rv);
+  if (SHTPy_rv == NULL)
+    goto fail;
   return (PyObject*) SHTPy_rv;
+
+fail:
+  Py_XDECREF(SHTPy_rv);
+  return NULL;
 // splicer end function.signed_distance_initialized
 }
 
@@ -480,12 +525,13 @@ PY_signed_distance_evaluate(
     "z",
     NULL
   };
+  PyObject* SHTPy_rv = NULL;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "ddd:signed_distance_evaluate",
                                    const_cast<char**>(SHT_kwlist), &x, &y, &z))
     return NULL;
-  double SHC_rv = axom::quest::signed_distance_evaluate(x, y, z);
-  PyObject* SHTPy_rv = PyFloat_FromDouble(SHC_rv);
+  double SHCXX_rv = axom::quest::signed_distance_evaluate(x, y, z);
+  SHTPy_rv = PyFloat_FromDouble(SHCXX_rv);
   return (PyObject*) SHTPy_rv;
 // splicer end function.signed_distance_evaluate
 }
@@ -523,6 +569,7 @@ PY_inout_init(
   if (kwds != NULL)
     SHT_nargs += PyDict_Size(args);
   PyObject* rvobj;
+#ifdef AXOM_USE_MPI
   if (SHT_nargs == 2)
   {
     rvobj = PY_inout_init_mpi(self, args, kwds);
@@ -536,6 +583,8 @@ PY_inout_init(
     }
     PyErr_Clear();
   }
+#endif // ifdef AXOM_USE_MPI
+#ifndef AXOM_USE_MPI
   if (SHT_nargs == 1)
   {
     rvobj = PY_inout_init_serial(self, args, kwds);
@@ -549,6 +598,7 @@ PY_inout_init(
     }
     PyErr_Clear();
   }
+#endif // ifndef AXOM_USE_MPI
   PyErr_SetString(PyExc_TypeError, "wrong arguments multi-dispatch");
   return NULL;
 // splicer end function.inout_init
@@ -571,6 +621,7 @@ PY_signed_distance_init(
   if (kwds != NULL)
     SHT_nargs += PyDict_Size(args);
   PyObject* rvobj;
+#ifdef AXOM_USE_MPI
   if (SHT_nargs == 2)
   {
     rvobj = PY_signed_distance_init_mpi(self, args, kwds);
@@ -584,6 +635,8 @@ PY_signed_distance_init(
     }
     PyErr_Clear();
   }
+#endif // ifdef AXOM_USE_MPI
+#ifndef AXOM_USE_MPI
   if (SHT_nargs == 1)
   {
     rvobj = PY_signed_distance_init_serial(self, args, kwds);
@@ -597,6 +650,7 @@ PY_signed_distance_init(
     }
     PyErr_Clear();
   }
+#endif // ifndef AXOM_USE_MPI
   PyErr_SetString(PyExc_TypeError, "wrong arguments multi-dispatch");
   return NULL;
 // splicer end function.signed_distance_init
@@ -720,7 +774,6 @@ initquest(void)
   if (m == NULL)
     return RETVAL;
   struct module_state* st = GETSTATE(m);
-
 
   PY_error_obj = PyErr_NewException((char*) error_name, NULL, NULL);
   if (PY_error_obj == NULL)

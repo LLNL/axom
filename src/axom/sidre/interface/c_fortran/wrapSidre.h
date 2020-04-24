@@ -7,7 +7,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 /**
  * \file wrapSidre.h
- * \brief Shroud generated wrapper for Sidre library
+ * \brief Shroud generated wrapper for sidre namespace
  */
 // For C users and C++ implementation
 
@@ -15,6 +15,9 @@
 #define WRAPSIDRE_H
 
 #include "typesSidre.h"
+#ifndef __cplusplus
+#include <stdbool.h>
+#endif
 
 // splicer begin CXX_declarations
 // splicer end CXX_declarations
