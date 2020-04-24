@@ -10,7 +10,7 @@
  *
  * \brief   Header file for MapCollection.
  *
- *          MapCollection is an implemenation of ItemCollection to 
+ *          MapCollection is an implemenation of ItemCollection to
  *          hold a collection of items of a fixed type that can be accessed
  *          accessed by string name or sidre::IndexType.
  *

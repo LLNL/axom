@@ -1696,7 +1696,7 @@ public:
   void TearDown() override
   {
     const int allocID =
-        axom::getUmpireResourceAllocatorID( umpire::resource::Host );
+      axom::getUmpireResourceAllocatorID( umpire::resource::Host );
     axom::setDefaultAllocator( allocID );
   }
 

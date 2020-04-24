@@ -63,13 +63,13 @@
  *               TYPE* getItem(IndexType idx);
  *               TYPE const* getItem(IndexType idx) const;
  *
- *          - // Return sidre::InvalidName because this class cannot 
+ *          - // Return sidre::InvalidName because this class cannot
  *            // identify items by name.
  *
  *               std::string getItemName(IndexType idx) const;
  *
  *          - // Return sidre::InvalidIndex because this class cannot
- *            // identify items by name.             
+ *            // identify items by name.
  *
  *               IndexType getItemIndex(const std::string& name) const;
  *
@@ -293,8 +293,8 @@ IndexType ListCollection<TYPE>::insertItem(TYPE* item,
 {
   SLIC_WARNING_IF(!name.empty(),
                   "Item " << name << " added to Group "
-                  << "which holds items in list format. "
-                  << "The name of this item will be ignored.");
+                          << "which holds items in list format. "
+                          << "The name of this item will be ignored.");
 
   bool use_recycled_index = false;
   IndexType idx = m_items.size();
@@ -321,7 +321,7 @@ IndexType ListCollection<TYPE>::insertItem(TYPE* item,
 template <typename TYPE>
 TYPE* ListCollection<TYPE>::removeItem(const std::string& name)
 {
-    (void)name;
+  (void)name;
   SLIC_WARNING("ListCollection::removeItem cannot identify items by name");
   return 0;
 }
@@ -332,7 +332,7 @@ TYPE* ListCollection<TYPE>::removeItem(IndexType idx)
   TYPE* ret_val = nullptr;
   if ( hasItem(idx) )
   {
-    for (auto itr = m_index_list.begin(); itr != m_index_list.end(); ++itr)
+    for (auto itr = m_index_list.begin() ; itr != m_index_list.end() ; ++itr)
     {
       if (*itr == idx)
       {

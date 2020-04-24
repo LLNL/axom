@@ -36,7 +36,7 @@ void sidre_write( MPI_Comm comm,
 
   sidre::DataStore ds;
   sidre::Group* root = ds.getRoot();
-  sidre::View*  view = root->createView( "data" );
+  sidre::View* view = root->createView( "data" );
 
   sidre::IndexType shape[2];
   shape[ 0 ] = numTuples;
@@ -123,14 +123,15 @@ int main ( int argc, char** argv )
   int* data = axom::allocate< int >( NSIZE );
   SLIC_ASSERT( data != nullptr );
 
-  for ( int i=0; i < NSIZE; ++i )
+  for ( int i=0 ; i < NSIZE ; ++i )
   {
     data[ i ] = (i+1) * 10;
   }
 
   // STEP 1: dump the data to a file using sidre
   SLIC_INFO( "Writting data..." );
-  sidre_write( problem_comm, "sidre_external_array_mesh", data, NUM_NODES, DIMENSION );
+  sidre_write( problem_comm, "sidre_external_array_mesh", data, NUM_NODES,
+               DIMENSION );
   SLIC_INFO( "[DONE]" );
 
   // STEP 2: read the data from a file using sidre
@@ -139,13 +140,14 @@ int main ( int argc, char** argv )
   axom::IndexType ncomp   = -1;
 
   SLIC_INFO( "Reading data..." );
-  sidre_read( problem_comm, "sidre_external_array_mesh.root", data2, ntuples, ncomp );
+  sidre_read( problem_comm, "sidre_external_array_mesh.root", data2, ntuples,
+              ncomp );
   SLIC_INFO( "[DONE]" );
 
   // STEP 3: check the data
   SLIC_ASSERT( ntuples == NUM_NODES );
   SLIC_ASSERT( ncomp == DIMENSION );
-  for ( int i=0; i < NSIZE; ++i )
+  for ( int i=0 ; i < NSIZE ; ++i )
   {
     SLIC_ASSERT( data[ i ] == data2[ i ] );
   }
@@ -157,5 +159,3 @@ int main ( int argc, char** argv )
   MPI_Finalize();
   return 0;
 }
-
-

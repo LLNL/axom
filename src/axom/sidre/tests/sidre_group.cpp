@@ -470,26 +470,35 @@ TEST(sidre_group, child_lists)
   Group* parent = root->createGroup("parent", true);
 
   // Create 10 unnamed Groups as children of parent.
-  for (IndexType i = 0; i < 10; ++i) {
+  for (IndexType i = 0 ; i < 10 ; ++i)
+  {
     Group* unnamed_group = parent->createUnnamedGroup();
     unnamed_group->createViewScalar("val", i);
   }
 
   // Create 15 unnamed Views as children of parent.
-  for (IndexType i = 0; i < 15; ++i) {
+  for (IndexType i = 0 ; i < 15 ; ++i)
+  {
     View* unnamed_view;
-    if (i % 3 == 0) {
+    if (i % 3 == 0)
+    {
       unnamed_view = parent->createView("");
-    } else if (i % 3 == 1) {
+    }
+    else if (i % 3 == 1)
+    {
       unnamed_view = parent->createViewScalar("", i*i);
-    } else {
+    }
+    else
+    {
       unnamed_view = parent->createViewString("", "foo");
     }
-    if (!unnamed_view->isApplied()) {
+    if (!unnamed_view->isApplied())
+    {
       unnamed_view->apply(INT_ID, i);
       unnamed_view->allocate(INT_ID, i);
       int* vdata = unnamed_view->getData();
-      for (IndexType j = 0; j < i; ++j) {
+      for (IndexType j = 0 ; j < i ; ++j)
+      {
         vdata[j] = j + 3;
       }
     }
@@ -500,8 +509,8 @@ TEST(sidre_group, child_lists)
   Group* not_list = root->createGroup("not_list", false);
   Group* dummy_group = not_list->createUnnamedGroup();
   View* dummy_view = not_list->createView("");
-  EXPECT_EQ(not_list->getNumGroups(), 0); 
-  EXPECT_EQ(not_list->getNumViews(), 0); 
+  EXPECT_EQ(not_list->getNumGroups(), 0);
+  EXPECT_EQ(not_list->getNumViews(), 0);
   EXPECT_TRUE(dummy_group == nullptr);
   EXPECT_TRUE(dummy_view == nullptr);
 
@@ -544,22 +553,28 @@ TEST(sidre_group, child_lists)
        idx = parent->getNextValidViewIndex(idx))
   {
     View* unnamed_view = parent->getView(idx);
-    if (idx % 3 == 0) {
+    if (idx % 3 == 0)
+    {
       EXPECT_EQ(unnamed_view->getTypeID(), INT_ID);
       IndexType num_elems = unnamed_view->getNumElements();
       EXPECT_EQ(num_elems, idx);
       int* vdata = unnamed_view->getData();
-      for (IndexType j = 0; j < num_elems; ++j) {
+      for (IndexType j = 0 ; j < num_elems ; ++j)
+      {
         EXPECT_EQ(vdata[j], j+3);
       }
-    } else if (idx % 3 == 1) {
+    }
+    else if (idx % 3 == 1)
+    {
       EXPECT_TRUE(unnamed_view->isScalar());
       IndexType val = unnamed_view->getScalar();
       EXPECT_EQ(val, idx*idx);
-    } else {
+    }
+    else
+    {
       EXPECT_TRUE(unnamed_view->isString());
       std::string vstr = unnamed_view->getString();
-      EXPECT_EQ(vstr, std::string("foo")); 
+      EXPECT_EQ(vstr, std::string("foo"));
     }
   }
 

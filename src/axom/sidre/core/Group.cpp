@@ -925,7 +925,8 @@ Group* Group::createGroup( const std::string& path, bool is_list )
     return nullptr;
   }
 
-  Group* new_group = new(std::nothrow) Group(intpath, group->getDataStore(), is_list);
+  Group* new_group = new(std::nothrow) Group(intpath,
+                                             group->getDataStore(), is_list);
   if ( new_group == nullptr )
   {
     return nullptr;
@@ -952,7 +953,7 @@ Group* Group::createUnnamedGroup( bool is_list )
   else
   {
     new_group = nullptr;
-  } 
+  }
 
   if ( new_group == nullptr )
   {
@@ -1736,7 +1737,8 @@ Group::Group(const std::string& name,
   {
     m_view_coll = new ListCollection<View>();
     m_group_coll = new ListCollection<Group>();
-  } else
+  }
+  else
   {
     m_view_coll = new MapCollection<View>();
     m_group_coll = new MapCollection<Group>();
@@ -1767,7 +1769,8 @@ Group::~Group()
  */
 View* Group::attachView(View* view)
 {
-  if ( view == nullptr || (!view->getName().empty() && hasChildView(view->getName())) )
+  if ( view == nullptr ||
+       (!view->getName().empty() && hasChildView(view->getName())) )
   {
     return nullptr;
   }
@@ -1854,7 +1857,8 @@ void Group::destroyViewAndData( View* view )
  */
 Group* Group::attachGroup(Group* group)
 {
-  if ( group == nullptr || (!group->getName().empty() && hasChildGroup(group->getName())) )
+  if ( group == nullptr ||
+       (!group->getName().empty() && hasChildGroup(group->getName())) )
   {
     return nullptr;
   }
