@@ -51,6 +51,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   ex. `level_error` is now `message_error`.
 
 ### Fixed
+- Fixed issue where the BVH would dispatch to the CPU sort() routine when the
+  specified execution policy was CUDA_EXEC async. Now, when the execution policy
+  is CUDA_EXEC the code would correctly dispatch to the GPU sort, using CUB
+  (when CUB is enabled), regardless of whether it's synchronous or asynchronous.
 - Fixed issue with missing the bvh_traverse.hpp from the install prefix, which was preventing
   applications from using the BVH when pointing to an Axom install prefix.
 - Fixed usage of cuda kernel policies in Mint. Raja v0.11.0 changed the way max threads
