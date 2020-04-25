@@ -403,13 +403,13 @@ void custom_sort( ExecSpace, uint32*& mcodes, int32 size, int32* iter )
 //------------------------------------------------------------------------------
 #if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA) && \
   defined(RAJA_ENABLE_CUDA) && defined(AXOM_USE_CUB)
-template < int BLOCK_SIZE >
-void custom_sort( axom::CUDA_EXEC< BLOCK_SIZE >,
+template < int BLOCK_SIZE, axom::ExecutionMode EXEC_MODE >
+void custom_sort( axom::CUDA_EXEC< BLOCK_SIZE, EXEC_MODE >,
                   uint32*& mcodes, int32 size, int32* iter )
 {
   AXOM_PERF_MARK_FUNCTION( "custom_sort" );
 
-  using ExecSpace = typename axom::CUDA_EXEC< BLOCK_SIZE >;
+  using ExecSpace = typename axom::CUDA_EXEC< BLOCK_SIZE, EXEC_MODE >;
   array_counting< ExecSpace >(iter, size, 0, 1);
 
   AXOM_PERF_MARK_SECTION( "gpu_cub_sort",
