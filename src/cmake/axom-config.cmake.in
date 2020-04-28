@@ -14,47 +14,54 @@ if(NOT AXOM_FOUND)
   # Set version and paths
   #----------------------------------------------------------------------------
   
-  set(AXOM_VERSION "@AXOM_VERSION_FULL@")
+  set(AXOM_VERSION       "@AXOM_VERSION_FULL@")
+  set(AXOM_VERSION_MAJOR "@AXOM_VERSION_MAJOR@")
+  set(AXOM_VERSION_MINOR "@AXOM_VERSION_MINOR@")
+  set(AXOM_VERSION_PATCH "@AXOM_VERSION_PATCH@")
   
   set(AXOM_INSTALL_PREFIX "@AXOM_INSTALL_PREFIX@")
-  set(AXOM_INCLUDE_DIRS "${AXOM_INSTALL_PREFIX}/include/axom")
+  set(AXOM_INCLUDE_DIRS "${AXOM_INSTALL_PREFIX}/include")
 
   #----------------------------------------------------------------------------
   # User configuration options and features
   #----------------------------------------------------------------------------
 
+  # Language features
   set(AXOM_ENABLE_FORTRAN     "@ENABLE_FORTRAN@")
-
-  set(AXOM_ENABLE_LUMBERJACK  "@AXOM_ENABLE_LUMBERJACK@")
-  set(AXOM_ENABLE_SLIC        "@AXOM_ENABLE_SLIC@")
-  set(AXOM_ENABLE_SLAM        "@AXOM_ENABLE_SLAM@")
-  set(AXOM_ENABLE_MINT        "@AXOM_ENABLE_MINT@")
-  set(AXOM_ENABLE_PRIMAL      "@AXOM_ENABLE_PRIMAL@")
-  set(AXOM_ENABLE_SPIN        "@AXOM_ENABLE_SPIN@")
-  set(AXOM_ENABLE_SIDRE       "@AXOM_ENABLE_SIDRE@")
-  set(AXOM_ENABLE_QUEST       "@AXOM_ENABLE_QUEST@")
-
-  set(AXOM_USE_CLI11          "@AXOM_USE_CLI11@")
-  set(AXOM_USE_CONDUIT        "@AXOM_USE_CONDUIT@")
   set(AXOM_USE_CUDA           "@AXOM_USE_CUDA@")
-  set(AXOM_USE_FMT            "@AXOM_USE_FMT@")
-  set(AXOM_USE_HDF5           "@AXOM_USE_HDF5@")
-  set(AXOM_USE_MFEM           "@AXOM_USE_MFEM@")
   set(AXOM_USE_MPI            "@AXOM_USE_MPI@")
   set(AXOM_USE_OPENMP         "@AXOM_USE_OPENMP@")
+
+  # Axom components
+  set(AXOM_ENABLE_LUMBERJACK  "@AXOM_ENABLE_LUMBERJACK@")
+  set(AXOM_ENABLE_MINT        "@AXOM_ENABLE_MINT@")
+  set(AXOM_ENABLE_PRIMAL      "@AXOM_ENABLE_PRIMAL@")
+  set(AXOM_ENABLE_QUEST       "@AXOM_ENABLE_QUEST@")
+  set(AXOM_ENABLE_SIDRE       "@AXOM_ENABLE_SIDRE@")
+  set(AXOM_ENABLE_SLAM        "@AXOM_ENABLE_SLAM@")
+  set(AXOM_ENABLE_SLIC        "@AXOM_ENABLE_SLIC@")
+  set(AXOM_ENABLE_SPIN        "@AXOM_ENABLE_SPIN@")
+
+  # Axom built-in TPLs
+  set(AXOM_USE_CLI11          "@AXOM_USE_CLI11@")
+  set(AXOM_USE_FMT            "@AXOM_USE_FMT@")
+  set(AXOM_USE_SPARSEHASH     "@AXOM_USE_SPARSEHASH@")
+
+  # Axom external TPLs
+  set(AXOM_USE_CONDUIT        "@AXOM_USE_CONDUIT@")
+  set(AXOM_USE_HDF5           "@AXOM_USE_HDF5@")
+  set(AXOM_USE_MFEM           "@AXOM_USE_MFEM@")
   set(AXOM_USE_RAJA           "@AXOM_USE_RAJA@")
   set(AXOM_USE_SCR            "@AXOM_USE_SCR@")
-  set(AXOM_USE_SPARSEHASH     "@AXOM_USE_SPARSEHASH@")
   set(AXOM_USE_UMPIRE         "@AXOM_USE_UMPIRE@")
 
-  set(AXOM_CONDUIT_DIR        "@CONDUIT_DIR@")
-  set(AXOM_HDF5_DIR           "@HDF5_DIR@")
-  set(AXOM_MFEM_DIR           "@MFEM_DIR@")
-  set(AXOM_RAJA_DIR           "@RAJA_DIR@")
-  set(AXOM_SCR_DIR            "@SCR_DIR@")
-  set(AXOM_UMPIRE_DIR         "@UMPIRE_DIR@")
-
-  set(AXOM_DATA_DIR           "@AXOM_DATA_DIR@")
+  # Paths to Axom's external TPLs
+  if(AXOM_USE_CONDUIT) set(AXOM_CONDUIT_DIR  "@CONDUIT_DIR@")  endif()
+  if(AXOM_USE_HDF5)    set(AXOM_HDF5_DIR     "@HDF5_DIR@")     endif()
+  if(AXOM_USE_MFEM)    set(AXOM_MFEM_DIR     "@MFEM_DIR@")     endif()
+  if(AXOM_USE_RAJA)    set(AXOM_RAJA_DIR     "@RAJA_DIR@")     endif()
+  if(AXOM_USE_SCR)     set(AXOM_SCR_DIR      "@SCR_DIR@")      endif()
+  if(AXOM_USE_UMPIRE)  set(AXOM_UMPIRE_DIR   "@UMPIRE_DIR@")   endif()
 
   #----------------------------------------------------------------------------
   # Include targets exported by cmake
