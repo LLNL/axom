@@ -178,6 +178,7 @@ class Axom(Package):
                 #error could not find cmake!
                 crash()
             cmake_exe = cmake_exe.command
+        cmake_exe = os.path.realpath(cmake_exe)
 
         host_config_path = self._get_host_config_path(spec)
         cfg = open(host_config_path,"w")
@@ -433,7 +434,10 @@ class Axom(Package):
 
             cmake_args = []
             cmake_args.extend(std_cmake_args)
-            cmake_args.extend(["-C", host_config_path, "../src"])
+            cmake_args.extend(["-C", host_config_path])
+            if self.run_tests == False:
+                cmake_args.extend(["-DENABLE_TESTS=OFF"])
+            cmake_args.extend(["../src"])
             print("Configuring Axom...")
             cmake(*cmake_args)
 
