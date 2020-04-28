@@ -84,6 +84,11 @@ packages:
    paths:
       bzip2: /usr
    buildable: False
+  cmake:
+    version: [3.14.5]
+    paths:
+      cmake: /usr/tce/packages/cmake/cmake-3.14.5
+    buildable: False
   gettext:
    paths:
       gettext: /usr
@@ -114,12 +119,6 @@ packages:
     version: [0.5.1]
 
 # Globally lock in versions of Devtools
-  cmake:
-    version: [3.9.6]
-    paths:
-      cmake: /usr/WS1/axom/devtools/toss_3_x86_64_ib/latest/cmake-3.9.6
-    buildable: False
-
   cppcheck:
     version: [1.87]
     paths:
