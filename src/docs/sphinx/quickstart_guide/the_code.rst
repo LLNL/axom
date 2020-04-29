@@ -27,7 +27,7 @@ SSH keys
 ^^^^^^^^
 
 If you have not used Github before, you should start by creating and adding your SSH keys to Github. 
-Github provides a good tutorial `here <https://help.github.com/en/enterprise/2.18/user/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account>`_.
+Github provides a `good tutorial <https://help.github.com/en/enterprise/2.18/user/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account>`_.
 Performing these two simple steps will make it easier for you to interact with 
 our Git repository without having to repeatedly enter login credentials. 
 

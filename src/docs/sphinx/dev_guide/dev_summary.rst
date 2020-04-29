@@ -118,6 +118,6 @@ getting started with them.
   * See :ref:`bamboo-label` for more information about how we use Bamboo.
 
 * **Azure Pipelines.** We use Azure Pipelines for continuous integration to ensure every code change passes a
-level of quality before being merged.:  `Azure Pipelines <https://azure.microsoft.com/en-us/services/devops/pipelines/>`_
+  level of quality before being merged.:  `Azure Pipelines <https://azure.microsoft.com/en-us/services/devops/pipelines/>`_
 
   * See :ref:`azure_pipelines-label` for more information about how we use Azire Pipelines.
