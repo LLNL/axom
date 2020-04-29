@@ -9,7 +9,7 @@
 # SYS_TYPE: blueos_3_ppc64le_ib
 # Compiler Spec: gcc@7.3.1
 #------------------------------------------------------------------------------
-# CMake executable path: /usr/WS1/axom/devtools/blueos_3_ppc64le_ib/latest/cmake-3.9.6/bin/cmake
+# CMake executable path: /usr/tce/packages/cmake/cmake-3.14.5/bin/cmake
 #------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------
@@ -29,7 +29,7 @@ set(CMAKE_Fortran_COMPILER "/usr/tce/packages/gcc/gcc-7.3.1/bin/gfortran" CACHE 
 #------------------------------------------------------------------------------
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib/2020_04_02_19_22_50/gcc-7.3.1" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib/2020_04_28_19_43_01/gcc-7.3.1" CACHE PATH "")
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.5.1" CACHE PATH "")
 
@@ -55,7 +55,7 @@ set(MPI_CXX_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-releas
 
 set(MPI_Fortran_COMPILER "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-7.3.1/bin/mpif90" CACHE PATH "")
 
-set(MPIEXEC "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-7.3.1/bin/mpirun" CACHE PATH "")
+set(MPIEXEC_EXECUTABLE "/usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-7.3.1/bin/mpirun" CACHE PATH "")
 
 set(MPIEXEC_NUMPROC_FLAG "-np" CACHE PATH "")
 
@@ -66,7 +66,7 @@ set(BLT_MPI_COMMAND_APPEND "mpibind" CACHE PATH "")
 #------------------------------------------------------------------------------
 
 # Root directory for generated developer tools
-set(DEVTOOLS_ROOT "/usr/WS1/axom/devtools/blueos_3_ppc64le_ib/2020_04_02_14_30_58/gcc-8.3.1" CACHE PATH "")
+set(DEVTOOLS_ROOT "/usr/WS1/axom/devtools/blueos_3_ppc64le_ib/2020_04_28_18_56_31/gcc-8.3.1" CACHE PATH "")
 
 set(PYTHON_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.7.4/bin/python" CACHE PATH "")
 
