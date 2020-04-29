@@ -14,7 +14,7 @@
 # Compiler Spec: gcc@8.1.0
 ##################################
 
-# CMake executable path: /home/axom/axom_tpls/gcc-8.1.0/cmake-3.9.6/bin/cmake
+# CMake executable path: /home/axom/axom_tpls/gcc-8.1.0/cmake-3.10.1/bin/cmake
 
 ##############
 # Compilers
@@ -45,7 +45,7 @@ set(CONDUIT_DIR "${TPL_ROOT}/conduit-master" CACHE PATH "")
 set(MFEM_DIR "${TPL_ROOT}/mfem-4.0" CACHE PATH "")
 
 # hdf5 from uberenv
-set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.19" CACHE PATH "")
+set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.21" CACHE PATH "")
 
 # scr not built by uberenv
 
@@ -53,7 +53,7 @@ set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.19" CACHE PATH "")
 set(RAJA_DIR "/usr/local/share/raja" CACHE PATH "")
 
 # umpire from uberenv
-set(UMPIRE_DIR "${TPL_ROOT}/umpire-1.0.0" CACHE PATH "")
+set(UMPIRE_DIR "${TPL_ROOT}/umpire-2.1.0" CACHE PATH "")
 
 # python not built by uberenv
 
@@ -73,13 +73,13 @@ set(ENABLE_DOCS OFF CACHE BOOL "")
 
 set(ENABLE_MPI ON CACHE BOOL "")
 
-set(MPI_C_COMPILER "/home/axom/axom_tpls/gcc-8.1.0/mpich-3.2.1/bin/mpicc" CACHE PATH "")
+set(MPI_C_COMPILER "/home/axom/axom_tpls/gcc-8.1.0/mpich-3.3.2/bin/mpicc" CACHE PATH "")
 
-set(MPI_CXX_COMPILER "/home/axom/axom_tpls/gcc-8.1.0/mpich-3.2.1/bin/mpic++" CACHE PATH "")
+set(MPI_CXX_COMPILER "/home/axom/axom_tpls/gcc-8.1.0/mpich-3.3.2/bin/mpic++" CACHE PATH "")
 
-set(MPI_Fortran_COMPILER "/home/axom/axom_tpls/gcc-8.1.0/mpich-3.2.1/bin/mpif90" CACHE PATH "")
+set(MPI_Fortran_COMPILER "/home/axom/axom_tpls/gcc-8.1.0/mpich-3.3.2/bin/mpif90" CACHE PATH "")
 
-set(MPIEXEC "/home/axom/axom_tpls/gcc-8.1.0/mpich-3.2.1/bin/mpiexec" CACHE PATH "")
+set(MPIEXEC "/home/axom/axom_tpls/gcc-8.1.0/mpich-3.3.2/bin/mpiexec" CACHE PATH "")
 
 set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
 
