@@ -17,7 +17,7 @@
  *          The primary intent is to decouple the implementation of the
  *          collections from the Group class which owns collections of
  *          View and child Group objects. They may have other uses,
- *          so they are not dependent on the Group class. THis class is
+ *          so they are not dependent on the Group class. This class is
  *          templated on the item type so that derived classes can be used
  *          to hold either View or Group object pointers without
  *          having to code a separate class for each.

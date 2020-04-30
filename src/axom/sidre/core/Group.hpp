@@ -1482,7 +1482,7 @@ private:
    *  into the hierarchy. The root group is an exception to this rule.
    *
    *  The boolean argument is_list, if true, allows the Group to hold its
-   *  childe items in list format, which allows those items to have empty
+   *  child items in list format, which allows those items to have empty
    *  strings for names.  If not in list format, all items must have unique
    *  non-empty strings for names.
    */

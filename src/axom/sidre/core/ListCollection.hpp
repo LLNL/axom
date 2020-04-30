@@ -15,7 +15,7 @@
  *          is intended to hold items that may have no name. If they do
  *          have names, those names are ignored. To satisfy the parent
  *          class interface, methods to access items by name are provided
- *          but the return null or invalid return values.
+ *          but they return null or invalid return values.
  *
  *          This class is templated on the item type so that the same
  *          class can be used to hold either View or Group object pointers

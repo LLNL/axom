@@ -1727,8 +1727,8 @@ Group::Group(const std::string& name,
   , m_parent(nullptr)
   , m_datastore(datastore)
   , m_is_list(is_list)
-  , m_view_coll(0)
-  , m_group_coll(0)
+  , m_view_coll(nullptr)
+  , m_group_coll(nullptr)
 #ifdef AXOM_USE_UMPIRE
   , m_default_allocator_id(axom::getDefaultAllocatorID())
 #endif
