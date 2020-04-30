@@ -1159,7 +1159,7 @@ public:
   /*!
    * \brief Return true if this Group holds items in map format.
    */
-  bool usingMap()
+  bool isUsingMap() const
   {
     return !m_is_list;
   }
@@ -1167,7 +1167,7 @@ public:
   /*!
    * \brief Return true if this Group holds items in list format.
    */
-  bool usingList()
+  bool isUsingList() const
   {
     return m_is_list;
   }

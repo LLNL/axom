@@ -509,7 +509,7 @@ TEST(sidre_group, child_lists)
   Group* not_list = root->createGroup("not_list", false);
   Group* dummy_group = not_list->createUnnamedGroup();
   View* dummy_view = not_list->createView("");
-  EXPECT_TRUE(not_list->usingMap());
+  EXPECT_TRUE(not_list->isUsingMap());
   EXPECT_EQ(not_list->getNumGroups(), 0);
   EXPECT_EQ(not_list->getNumViews(), 0);
   EXPECT_TRUE(dummy_group == nullptr);
@@ -529,7 +529,7 @@ TEST(sidre_group, child_lists)
     scalars.insert(val);
   }
 
-  EXPECT_TRUE(parent->usingList());
+  EXPECT_TRUE(parent->isUsingList());
   EXPECT_TRUE(scalars.size() == 10);
   EXPECT_TRUE(parent->hasGroup(6));
   EXPECT_FALSE(parent->hasGroup(20));
