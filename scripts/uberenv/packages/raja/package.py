@@ -35,23 +35,35 @@ class Raja(CMakePackage):
     depends_on('cmake@3.8:', type='build')
     depends_on('cmake@3.9:', when='+cuda', type='build')
 
+    def _get_sys_type(self, spec):
+        sys_type = spec.architecture
+        # if on llnl systems, we can use the SYS_TYPE
+        if "SYS_TYPE" in env:
+            sys_type = env["SYS_TYPE"]
+        return sys_type
+
     def cmake_args(self):
         spec = self.spec
+        sys_type = self._get_sys_type(spec)
+        on_blueos = 'blueos' in sys_type
+        on_blueos_p9 = on_blueos and 'p9' in sys_type
 
         options = []
         options.append('-DENABLE_OPENMP={0}'.format(
             'On' if '+openmp' in spec else 'Off'))
 
         if '+cuda' in spec:
+            if on_blueos_p9:
+                options.extend(['-DCMAKE_CUDA_FLAGS:STRING=-arch sm_70'])
+            elif on_blueos:
+                options.extend(['-DCMAKE_CUDA_FLAGS:STRING=-arch sm_60'])
+
             options.extend([
                 '-DENABLE_CUDA=On',
                 '-DCUDA_TOOLKIT_ROOT_DIR=%s' % (spec['cuda'].prefix)])
 
         # Work around spack adding -march=ppc64le to SPACK_TARGET_ARGS which is used by the spack compiler wrapper
-        sys_type = ""
-        if "SYS_TYPE" in env:
-            sys_type = env["SYS_TYPE"]
-        if "blueos" in sys_type:
+        if on_blueos:
             options.extend(['-DENABLE_TESTS=OFF'])
 
         return options

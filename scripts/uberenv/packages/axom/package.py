@@ -393,8 +393,13 @@ class Axom(Package):
                 cfg.write("#------------------{}\n\n".format("-"*60))
 
                 cfg.write(cmake_cache_option("ENABLE_CUDA", True))
-                cfg.write(cmake_cache_entry("CUDA_TOOLKIT_ROOT_DIR", "/usr/tce/packages/cuda/cuda-10.1.168"))
-                cfg.write(cmake_cache_entry("CMAKE_CUDA_COMPILER", "${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc"))
+
+                cudatoolkitdir = spec['cuda'].prefix
+                cfg.write(cmake_cache_entry("CUDA_TOOLKIT_ROOT_DIR",
+                                            cudatoolkitdir))
+                cudacompiler = "${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc"
+                cfg.write(cmake_cache_entry("CMAKE_CUDA_COMPILER",
+                                            cudacompiler))
 
                 cfg.write(cmake_cache_option("CUDA_SEPARABLE_COMPILATION", True))
 
