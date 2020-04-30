@@ -6,10 +6,8 @@
 # Example that shows how to use an installed instance of Axom 
 # in a BLT-based build system.
 #
-# Required configuration variables are stored in a CMake cache file 
-# called 'host-config.cmake' in the same directory
-#
-# This file defines paths to BLT, axom and optionally conduit.
+# Configuration variables are stored in a CMake cache file 'host-config.cmake'
+# which defines paths to blt, axom and possibly other TPLs.
 # It also contains information about the compiler used to build axom.
 #------------------------------------------------------------------------------
 #
@@ -29,31 +27,15 @@ project(using_with_blt)
 # Define some config options
 option(EXAMPLE_VERBOSE_OUTPUT "Verbose output about imported targets" OFF)
 
-# Simple function to check validity of a path variable, e.g. `FOO_DIR`
-# and a required file under it of the form `${FOO_DIR}/some/subpath/file`
-function(check_var_and_path)
-    set(_variable ${ARGV0})
-    set(_file     ${ARGV1})
-
-    if(NOT DEFINED ${_variable})
-        message(FATAL_ERROR "Required variable '${_variable}' not provided."
-                            " Please supply '${_variable}' to configuration." )
-    endif()
-
-    if(NOT EXISTS ${_file})
-        message (FATAL_ERROR "Path '${_variable}' does not contain required"
-                             " file '${_file}'.")
-    endif()
-endfunction()
-
-
 
 #------------------------------------------------------------------------------
 # Set up BLT with validity checks
 #------------------------------------------------------------------------------
 
 # Check that path to BLT is provided and valid
-check_var_and_path(BLT_SOURCE_DIR ${BLT_SOURCE_DIR}/SetupBLT.cmake)
+if(NOT DEFINED BLT_SOURCE_DIR OR NOT EXISTS ${BLT_SOURCE_DIR}/SetupBLT.cmake)
+    message(FATAL_ERROR "Missing required 'BLT_SOURCE_DIR' variable pointing to a valid blt")
+endif()
 
 include(${BLT_SOURCE_DIR}/SetupBLT.cmake)
 
@@ -61,23 +43,13 @@ include(${BLT_SOURCE_DIR}/SetupBLT.cmake)
 #------------------------------------------------------------------------------
 # Check for AXOM_DIR and use CMake's find_package to import axom's targets
 #------------------------------------------------------------------------------
-check_var_and_path(AXOM_DIR ${AXOM_DIR}/lib/cmake/axom-config.cmake)
+if(NOT DEFINED AXOM_DIR OR NOT EXISTS ${AXOM_DIR}/lib/cmake/axom-config.cmake)
+    message(FATAL_ERROR "Missing required 'AXOM_DIR' variable pointing to an installed axom")
+endif()
 
 find_package(axom REQUIRED
              NO_DEFAULT_PATH 
              PATHS ${AXOM_DIR}/lib/cmake)
-
-#------------------------------------------------------------------------------
-# Check for CONDUIT_DIR -- required if Axom was built with Conduit
-# Note: 'AXOM_USE_CONDUIT' variable is provided by Axom's config file
-#------------------------------------------------------------------------------
-if(AXOM_USE_CONDUIT)
-    check_var_and_path(CONDUIT_DIR ${CONDUIT_DIR}/lib/cmake/ConduitConfig.cmake)
-
-    find_package(Conduit REQUIRED
-                 NO_DEFAULT_PATH 
-                 PATHS ${CONDUIT_DIR}/lib/cmake)
-endif()
 
 #------------------------------------------------------------------------------
 # Set up example target that depends on axom
