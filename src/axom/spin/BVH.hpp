@@ -140,7 +140,7 @@ public:
    *
    * \param [in] boxes buffer consisting of bounding boxes for each entity.
    * \param [in] numItems the total number of items to store in the BVH.
-   * \param [in] allocatorID specify the ID of the allocator to use. Optional.
+   * \param [in] allocatorID Umpire allocator ID to use (optional)
    *
    * \note boxes is an array of length 2*dimension*numItems, that stores the
    *  two corners of the axis-aligned bounding box corresponding to a given

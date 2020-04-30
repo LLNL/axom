@@ -10,7 +10,7 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
-- Added the ability to specify a user-supplied allocator ID to use with the
+- Added the ability to specify an [Umpire] allocator ID to use with the
   BVH. This allows the application to use a device allocator for the BVH and 
   avoid use of UM on the GPU, which can hinder perfomrmance, or use a pool
   allocator to mitigate the latencies associated with allocation/deallocation.
@@ -358,4 +358,4 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 [Scalable Checkpoint Restart (SCR)]: https://computation.llnl.gov/projects/scalable-checkpoint-restart-for-mpi
 [SU2 Mesh file format]: https://su2code.github.io/docs/Mesh-File/
-
+[Umpire]: https://github.com/LLNL/Umpire
