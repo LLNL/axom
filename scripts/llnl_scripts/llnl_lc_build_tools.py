@@ -347,7 +347,7 @@ def build_and_test_host_config(test_root,host_config):
     print "[starting unit tests]"
     print "[log file: %s]" % tst_output_file
 
-    tst_cmd = "cd %s && make CTEST_OUTPUT_ON_FAILURE=1 test ARGS=\"-T Test -VV -j8\"" % build_dir
+    tst_cmd = "cd %s && make CTEST_OUTPUT_ON_FAILURE=1 test ARGS=\"-T Test -VV -j16\"" % build_dir
 
     res = sexe(tst_cmd,
                output_file = tst_output_file,
@@ -362,7 +362,7 @@ def build_and_test_host_config(test_root,host_config):
     print "[starting docs generation]"
     print "[log file: %s]" % docs_output_file
 
-    res = sexe("cd %s && make docs " % build_dir,
+    res = sexe("cd %s && make -j16 docs " % build_dir,
                output_file = docs_output_file,
                echo=True)
 
@@ -375,7 +375,7 @@ def build_and_test_host_config(test_root,host_config):
     print "[starting install]"
     print "[log file: %s]" % inst_output_file
 
-    res = sexe("cd %s && make install " % build_dir,
+    res = sexe("cd %s && make -j16 install " % build_dir,
                output_file = inst_output_file,
                echo=True)
 
