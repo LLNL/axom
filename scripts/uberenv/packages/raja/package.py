@@ -55,9 +55,9 @@ class Raja(CMakePackage):
 
         if '+cuda' in spec:
             if on_blueos_p9:
-                options.extend(['-DCMAKE_CUDA_FLAGS:STRING=-arch sm_70'])
+                options.extend(['-DCUDA_ARCH=sm_70'])
             elif on_blueos:
-                options.extend(['-DCMAKE_CUDA_FLAGS:STRING=-arch sm_60'])
+                options.extend(['-DCUDA_ARCH=sm_60'])
 
             options.extend([
                 '-DENABLE_CUDA=On',
