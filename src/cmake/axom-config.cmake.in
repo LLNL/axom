@@ -23,7 +23,7 @@ if(NOT AXOM_FOUND)
   set(AXOM_INCLUDE_DIRS "${AXOM_INSTALL_PREFIX}/include")
 
   #----------------------------------------------------------------------------
-  # User configuration options and features
+  # Set user configuration options and features
   #----------------------------------------------------------------------------
 
   # Language features
@@ -55,13 +55,54 @@ if(NOT AXOM_FOUND)
   set(AXOM_USE_SCR            "@AXOM_USE_SCR@")
   set(AXOM_USE_UMPIRE         "@AXOM_USE_UMPIRE@")
 
-  # Paths to Axom's external TPLs
-  if(AXOM_USE_CONDUIT) set(AXOM_CONDUIT_DIR  "@CONDUIT_DIR@")  endif()
-  if(AXOM_USE_HDF5)    set(AXOM_HDF5_DIR     "@HDF5_DIR@")     endif()
-  if(AXOM_USE_MFEM)    set(AXOM_MFEM_DIR     "@MFEM_DIR@")     endif()
-  if(AXOM_USE_RAJA)    set(AXOM_RAJA_DIR     "@RAJA_DIR@")     endif()
-  if(AXOM_USE_SCR)     set(AXOM_SCR_DIR      "@SCR_DIR@")      endif()
-  if(AXOM_USE_UMPIRE)  set(AXOM_UMPIRE_DIR   "@UMPIRE_DIR@")   endif()
+  #----------------------------------------------------------------------------
+  # Bring in required  dependencies for this axom configuration
+  #----------------------------------------------------------------------------
+  include(CMakeFindDependencyMacro)
+
+  # conduit
+  if(AXOM_USE_CONDUIT)
+    set(AXOM_CONDUIT_DIR  "@CONDUIT_DIR@")
+    if(NOT CONDUIT_DIR) 
+      set(CONDUIT_DIR ${AXOM_CONDUIT_DIR}) 
+    endif()
+    find_dependency(Conduit REQUIRED NO_DEFAULT_PATH PATHS "${CONDUIT_DIR}/lib/cmake")
+  endif()
+
+  # hdf5
+  if(AXOM_USE_HDF5)
+    set(AXOM_HDF5_DIR     "@HDF5_DIR@")
+    # Note: Targets not imported
+  endif()
+
+  # mfem
+  if(AXOM_USE_MFEM)
+    set(AXOM_MFEM_DIR     "@MFEM_DIR@")
+    # Note: Targets not imported
+  endif()
+
+  # raja
+  if(AXOM_USE_RAJA)
+    set(AXOM_RAJA_DIR     "@RAJA_DIR@")
+    if(NOT RAJA_DIR) 
+      set(RAJA_DIR ${AXOM_RAJA_DIR}) 
+    endif()
+    find_dependency(RAJA REQUIRED NO_DEFAULT_PATH PATHS "${RAJA_DIR}/share/raja/cmake")
+  endif()
+
+  # scr
+  if(AXOM_USE_SCR)
+    set(AXOM_SCR_DIR      "@SCR_DIR@")
+  endif()
+
+  # umpire
+  if(AXOM_USE_UMPIRE)
+    set(AXOM_UMPIRE_DIR   "@UMPIRE_DIR@")
+    if(NOT UMPIRE_DIR) 
+      set(UMPIRE_DIR ${AXOM_UMPIRE_DIR}) 
+    endif()
+    find_dependency(umpire REQUIRED NO_DEFAULT_PATH PATHS "${UMPIRE_DIR}/share/umpire/cmake")
+  endif()
 
   #----------------------------------------------------------------------------
   # Include targets exported by cmake
@@ -69,7 +110,20 @@ if(NOT AXOM_FOUND)
   get_filename_component(AXOM_CMAKE_CONFIG_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
   include(${AXOM_CMAKE_CONFIG_DIR}/axom-targets.cmake)
 
+  # HACK: Clear interface_compile_options so that we don't export OpenMP
+  # This can be removed when we fix how axom/blt's treatment of OpenMP
+  if(AXOM_USE_OPENMP)
+    set(_fix_tgts axom)
+    if(AXOM_USE_RAJA)
+      list(APPEND _fix_tgts RAJA)
+    endif()
+    set_target_properties(${_fix_tgts} PROPERTIES INTERFACE_COMPILE_OPTIONS "")
+    unset(_fix_tgts)
+  endif()
 
+  #----------------------------------------------------------------------------
+  # Indicate that axom is correctly set up
+  #----------------------------------------------------------------------------
   set(AXOM_FOUND TRUE)
 
 endif()
