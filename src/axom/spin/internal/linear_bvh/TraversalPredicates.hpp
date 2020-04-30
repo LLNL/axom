@@ -7,6 +7,7 @@
 #define AXOM_SPIN_BVH_TRAVERSALPREDICATES_HPP_
 
 #include "axom/spin/internal/linear_bvh/vec.hpp"
+#include "axom/spin/internal/linear_bvh/BVHData.hpp"
 
 #include "axom/core/numerics/floating_point_limits.hpp"
 #include "axom/primal/operators/detail/intersect_ray_impl.hpp"
@@ -20,9 +21,6 @@ namespace internal
 {
 namespace linear_bvh
 {
-
-template < typename FloatType >
-using VecType = internal::linear_bvh::Vec< FloatType, 4 >;
 
 /*!
  * \brief TraversalPredicates is a singleton class that defines different
@@ -45,8 +43,6 @@ public:
   AXOM_STATIC_ASSERT_MSG( std::is_floating_point< FloatType >::value,
                           "A valid FloatingType must be used, e.g., double or float" );
 
-  using vec4_t = VecType< FloatType >;
-
   ///\name Predicates for Point Queries
   /// @{
 
@@ -62,8 +58,8 @@ public:
   template < typename PointType >
   AXOM_HOST_DEVICE
   static inline bool pointInLeftBin( const PointType& point,
-                                     const vec4_t& s1,
-                                     const vec4_t& s2  ) noexcept;
+                                     const vec4_t< FloatType >& s1,
+                                     const vec4_t< FloatType >& s2  ) noexcept;
 
   /*!
    * \brief Checks if the supplied point is within the right bin.
@@ -77,8 +73,8 @@ public:
   template < typename PointType >
   AXOM_HOST_DEVICE
   static inline bool pointInRightBin( const PointType& point,
-                                      const vec4_t& s2,
-                                      const vec4_t& s3 ) noexcept;
+                                      const vec4_t< FloatType >& s2,
+                                      const vec4_t< FloatType >& s3 ) noexcept;
 
   /// @}
 
@@ -97,9 +93,11 @@ public:
    */
   template < typename RayType >
   AXOM_HOST_DEVICE
-  static inline bool rayIntersectsLeftBin(
-    const RayType& r, const vec4_t& s1, const vec4_t& s2,
-    FloatType TOL=numerics::floating_point_limits<FloatType>::epsilon()
+  static inline bool rayIntersectsLeftBin( 
+    const RayType& r, 
+    const vec4_t< FloatType >& s1, 
+    const vec4_t< FloatType >& s2,
+    FloatType TOL=numerics::floating_point_limits<FloatType>::epsilon() 
     ) noexcept;
 
   /*!
@@ -115,7 +113,9 @@ public:
   template < typename RayType >
   AXOM_HOST_DEVICE
   static inline bool rayIntersectsRightBin(
-    const RayType& r, const vec4_t& s2, const vec4_t& s3,
+    const RayType& r, 
+    const vec4_t< FloatType >& s2, 
+    const vec4_t< FloatType >& s3,
     FloatType TOL=numerics::floating_point_limits<FloatType>::epsilon()
     ) noexcept;
 
@@ -137,7 +137,10 @@ public:
   template < typename BoundingBoxType >
   AXOM_HOST_DEVICE
   static inline bool boundingBoxIntersectsLeftBin(
-    const BoundingBoxType& b, const vec4_t& s1, const vec4_t& s2 ) noexcept;
+    const BoundingBoxType& b, 
+    const vec4_t< FloatType >& s1, 
+    const vec4_t< FloatType >& s2 
+    ) noexcept;
 
   /*!
    * \brief Checks if the specified bounding box intersects with the right bin.
@@ -152,7 +155,10 @@ public:
   template < typename BoundingBoxType >
   AXOM_HOST_DEVICE
   static inline bool boundingBoxIntersectsRightBin(
-    const BoundingBoxType& b, const vec4_t& s2, const vec4_t& s3 ) noexcept;
+    const BoundingBoxType& b, 
+    const vec4_t< FloatType >& s2, 
+    const vec4_t< FloatType >& s3 
+    ) noexcept;
 
   /// @}
 
@@ -170,13 +176,11 @@ class TraversalPredicates< DIMENSION_2, FloatType >
 
 public:
 
-  using vec4_t = VecType< FloatType >;
-
   template < typename PointType >
   AXOM_HOST_DEVICE
   static inline bool pointInLeftBin( const PointType& point,
-                                     const vec4_t& s1,
-                                     const vec4_t& s2  ) noexcept
+                                     const vec4_t< FloatType >& s1,
+                                     const vec4_t< FloatType >& s2  ) noexcept
   {
     // NOTE: See BVHData.hpp for how the BVH bin is organized in the segments.
     bool in_left = true;
@@ -193,8 +197,8 @@ public:
   template < typename PointType >
   AXOM_HOST_DEVICE
   static inline bool pointInRightBin( const PointType& point,
-                                      const vec4_t& s2,
-                                      const vec4_t& s3  ) noexcept
+                                      const vec4_t< FloatType >& s2,
+                                      const vec4_t< FloatType >& s3  ) noexcept
   {
     // NOTE: See BVHData.hpp for how the BVH bin is organized in the segments.
     bool in_right = true;
@@ -211,7 +215,9 @@ public:
   template < typename RayType >
   AXOM_HOST_DEVICE
   static inline bool rayIntersectsLeftBin(
-    const RayType& r, const vec4_t& s1, const vec4_t& s2,
+    const RayType& r, 
+    const vec4_t< FloatType >& s1, 
+    const vec4_t< FloatType >& s2,
     FloatType TOL=numerics::floating_point_limits<FloatType>::epsilon()
     ) noexcept
   {
@@ -235,7 +241,9 @@ public:
   template < typename RayType >
   AXOM_HOST_DEVICE
   static inline bool rayIntersectsRightBin(
-    const RayType& r, const vec4_t& s2, const vec4_t& s3,
+    const RayType& r, 
+    const vec4_t< FloatType >& s2, 
+    const vec4_t< FloatType >& s3,
     FloatType TOL=numerics::floating_point_limits<FloatType>::epsilon()
     ) noexcept
   {
@@ -259,7 +267,10 @@ public:
   template < typename BoundingBoxType >
   AXOM_HOST_DEVICE
   static inline bool boundingBoxIntersectsLeftBin(
-    const BoundingBoxType& b, const vec4_t& s1, const vec4_t& s2 ) noexcept
+    const BoundingBoxType& b, 
+    const vec4_t< FloatType >& s1, 
+    const vec4_t< FloatType >& s2 
+    ) noexcept
   {
     const FloatType& box_xmin = b[ 0 ];
     const FloatType& box_ymin = b[ 1 ];
@@ -281,7 +292,10 @@ public:
   template < typename BoundingBoxType >
   AXOM_HOST_DEVICE
   static inline bool boundingBoxIntersectsRightBin(
-    const BoundingBoxType& b, const vec4_t& s2, const vec4_t& s3 ) noexcept
+    const BoundingBoxType& b, 
+    const vec4_t< FloatType >& s2, 
+    const vec4_t< FloatType >& s3 
+    ) noexcept
   {
     const FloatType& box_xmin = b[ 0 ];
     const FloatType& box_ymin = b[ 1 ];
@@ -311,13 +325,12 @@ class TraversalPredicates< DIMENSION_3, FloatType >
 
 public:
 
-  using vec4_t = VecType< FloatType >;
-
   template < typename PointType >
   AXOM_HOST_DEVICE
   static inline bool pointInLeftBin( const PointType& point,
-                                     const vec4_t& s1,
-                                     const vec4_t& s2  ) noexcept
+                                     const vec4_t< FloatType >& s1,
+                                     const vec4_t< FloatType >& s2  
+                                     ) noexcept
   {
 
     // NOTE: See BVHData.hpp for how the BVH bin is organized in the segments.
@@ -337,8 +350,9 @@ public:
   template < typename PointType >
   AXOM_HOST_DEVICE
   static inline bool pointInRightBin( const PointType& point,
-                                      const vec4_t& s2,
-                                      const vec4_t& s3 ) noexcept
+                                      const vec4_t< FloatType >& s2,
+                                      const vec4_t< FloatType >& s3 
+                                      ) noexcept
   {
     // NOTE: See BVHData.hpp for how the BVH bin is organized in the segments.
     bool in_right = true;
@@ -357,7 +371,9 @@ public:
   template < typename RayType >
   AXOM_HOST_DEVICE
   static inline bool rayIntersectsLeftBin(
-    const RayType& r, const vec4_t& s1, const vec4_t& s2,
+    const RayType& r, 
+    const vec4_t< FloatType >& s1, 
+    const vec4_t< FloatType >& s2,
     FloatType TOL=numerics::floating_point_limits<FloatType>::epsilon()
     ) noexcept
   {
@@ -386,7 +402,9 @@ public:
   template < typename RayType >
   AXOM_HOST_DEVICE
   static inline bool rayIntersectsRightBin(
-    const RayType& r, const vec4_t& s2, const vec4_t& s3,
+    const RayType& r, 
+    const vec4_t< FloatType >& s2, 
+    const vec4_t< FloatType >& s3,
     FloatType TOL=numerics::floating_point_limits<FloatType>::epsilon()
     ) noexcept
   {
@@ -415,7 +433,10 @@ public:
   template < typename BoundingBoxType >
   AXOM_HOST_DEVICE
   static inline bool boundingBoxIntersectsLeftBin(
-    const BoundingBoxType& b, const vec4_t& s1, const vec4_t& s2 ) noexcept
+    const BoundingBoxType& b, 
+    const vec4_t< FloatType >& s1, 
+    const vec4_t< FloatType >& s2 
+    ) noexcept
   {
     const FloatType& box_xmin = b[ 0 ];
     const FloatType& box_ymin = b[ 1 ];
@@ -443,7 +464,10 @@ public:
   template < typename BoundingBoxType >
   AXOM_HOST_DEVICE
   static inline bool boundingBoxIntersectsRightBin(
-    const BoundingBoxType& b, const vec4_t& s2, const vec4_t& s3 ) noexcept
+    const BoundingBoxType& b, 
+    const vec4_t< FloatType >& s2, 
+    const vec4_t< FloatType >& s3 
+    ) noexcept
   {
     const FloatType& box_xmin = b[ 0 ];
     const FloatType& box_ymin = b[ 1 ];

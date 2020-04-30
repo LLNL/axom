@@ -54,9 +54,6 @@ using floating_point_limits = axom::numerics::floating_point_limits<FloatType>;
 //------------------------------------------------------------------------------
 namespace lbvh = internal::linear_bvh;
 
-template < typename FloatType >
-using vec4_t = internal::linear_bvh::Vec< FloatType, 4 >;
-
 template < typename FloatType, int NDIMS >
 using point_t = internal::linear_bvh::Vec< FloatType, NDIMS >;
 
@@ -123,7 +120,7 @@ template < int NDIMS, typename ExecSpace,
            typename FloatType >
 IndexType bvh_get_counts( LeftPredicate&& leftCheck,
                           RightPredicate&& rightCheck,
-                          const vec4_t< FloatType >* inner_nodes,
+                          const internal::vec4_t< FloatType >* inner_nodes,
                           const int32* leaf_nodes,
                           IndexType N,
                           IndexType* counts,
@@ -200,7 +197,7 @@ template < int NDIMS, typename ExecSpace,
            typename FloatType >
 IndexType bvh_get_raycounts( LeftPredicate&& leftCheck,
                              RightPredicate&& rightCheck,
-                             const vec4_t< FloatType >* inner_nodes,
+                             const internal::vec4_t< FloatType >* inner_nodes,
                              const int32* leaf_nodes,
                              IndexType N,
                              IndexType* counts,
@@ -286,7 +283,7 @@ template < int NDIMS, typename ExecSpace,
            typename FloatType >
 IndexType bvh_get_boxcounts( LeftPredicate&& leftCheck,
                              RightPredicate&& rightCheck,
-                             const vec4_t< FloatType >* inner_nodes,
+                             const internal::vec4_t< FloatType >* inner_nodes,
                              const int32* leaf_nodes,
                              IndexType N,
                              IndexType* counts,
@@ -465,7 +462,7 @@ void BVH< NDIMS, ExecSpace, FloatType >::findPoints( IndexType* offsets,
   using QueryAccessor       = lbvh::QueryAccessor< NDIMS, FloatType >;
 
   // STEP 1: Grab BVH pointers
-  const vec4_t< FloatType >* inner_nodes = m_bvh.m_inner_nodes;
+  const internal::vec4_t< FloatType >* inner_nodes = m_bvh.m_inner_nodes;
   const int32* leaf_nodes  = m_bvh.m_leaf_nodes;
   SLIC_ASSERT( inner_nodes != nullptr );
   SLIC_ASSERT( leaf_nodes != nullptr );
@@ -473,16 +470,16 @@ void BVH< NDIMS, ExecSpace, FloatType >::findPoints( IndexType* offsets,
   // STEP 2: define traversal predicates
   BVH_PREDICATE( leftPredicate,
                  const PointType &p,
-                 const vec4_t< FloatType >&s1,
-                 const vec4_t< FloatType >&s2 )
+                 const internal::vec4_t< FloatType >&s1,
+                 const internal::vec4_t< FloatType >&s2 )
   {
     return TraversalPredicates::pointInLeftBin( p, s1, s2 );
   };
 
   BVH_PREDICATE( rightPredicate,
                  const PointType &p,
-                 const vec4_t< FloatType >&s2,
-                 const vec4_t< FloatType >&s3 )
+                 const internal::vec4_t< FloatType >&s2,
+                 const internal::vec4_t< FloatType >&s3 )
   {
     return TraversalPredicates::pointInRightBin( p, s2, s3 );
   };
@@ -563,7 +560,7 @@ void BVH< NDIMS, ExecSpace, FloatType >::findRays( IndexType* offsets,
   using QueryAccessor       = lbvh::QueryAccessor< NDIMS, FloatType >;
 
   // STEP 1: Grab BVH pointers
-  const vec4_t< FloatType >* inner_nodes = m_bvh.m_inner_nodes;
+  const internal::vec4_t< FloatType >* inner_nodes = m_bvh.m_inner_nodes;
   const int32* leaf_nodes  = m_bvh.m_leaf_nodes;
   SLIC_ASSERT( inner_nodes != nullptr );
   SLIC_ASSERT( leaf_nodes != nullptr );
@@ -571,16 +568,16 @@ void BVH< NDIMS, ExecSpace, FloatType >::findRays( IndexType* offsets,
   // STEP 2: define traversal predicates
   BVH_PREDICATE( leftPredicate,
                  const RayType &r,
-                 const vec4_t< FloatType >&s1,
-                 const vec4_t< FloatType >&s2 )
+                 const internal::vec4_t< FloatType >&s1,
+                 const internal::vec4_t< FloatType >&s2 )
   {
     return TraversalPredicates::rayIntersectsLeftBin( r, s1, s2, TOL );
   };
 
   BVH_PREDICATE( rightPredicate,
                  const RayType &r,
-                 const vec4_t< FloatType >&s2,
-                 const vec4_t< FloatType >&s3 )
+                 const internal::vec4_t< FloatType >&s2,
+                 const internal::vec4_t< FloatType >&s3 )
   {
     return TraversalPredicates::rayIntersectsRightBin( r, s2, s3, TOL );
   };
@@ -659,7 +656,7 @@ void BVH< NDIMS, ExecSpace, FloatType >::findBoundingBoxes(
   using QueryAccessor       = lbvh::QueryAccessor< NDIMS, FloatType >;
 
   // STEP 1: Grab BVH pointers
-  const vec4_t< FloatType >* inner_nodes = m_bvh.m_inner_nodes;
+  const internal::vec4_t< FloatType >* inner_nodes = m_bvh.m_inner_nodes;
   const int32* leaf_nodes  = m_bvh.m_leaf_nodes;
   SLIC_ASSERT( inner_nodes != nullptr );
   SLIC_ASSERT( leaf_nodes != nullptr );
@@ -667,16 +664,16 @@ void BVH< NDIMS, ExecSpace, FloatType >::findBoundingBoxes(
   // STEP 2: define traversal predicates
   BVH_PREDICATE( leftPredicate,
                  const BoundingBoxType &b,
-                 const vec4_t< FloatType >&s1,
-                 const vec4_t< FloatType >&s2 )
+                 const internal::vec4_t< FloatType >&s1,
+                 const internal::vec4_t< FloatType >&s2 )
   {
     return TraversalPredicates::boundingBoxIntersectsLeftBin( b, s1, s2 );
   };
 
   BVH_PREDICATE( rightPredicate,
                  const BoundingBoxType &b,
-                 const vec4_t< FloatType >&s2,
-                 const vec4_t< FloatType >&s3 )
+                 const internal::vec4_t< FloatType >&s2,
+                 const internal::vec4_t< FloatType >&s3 )
   {
     return TraversalPredicates::boundingBoxIntersectsRightBin( b, s2, s3 );
   };

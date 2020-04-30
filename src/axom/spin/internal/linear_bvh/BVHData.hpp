@@ -22,6 +22,11 @@ namespace spin
 {
 namespace internal
 {
+
+// Internal datatype used to store each of the 4 segments of a BVH node.
+template < typename FloatType >
+using vec4_t = linear_bvh::Vec< FloatType, 4 >;
+
 namespace linear_bvh
 {
 
@@ -46,7 +51,7 @@ namespace linear_bvh
  * \endverbatim
  *
  * \note The internal data layout is organized in a flat buffer of 4 segments,
- *  where each segment is a Vec< FloatType, 4 > type, that stores the left
+ *  where each segment is a vec4_t< FloatType > type, that stores the left
  *  and right boxes of a given node, as well as, the IDs of the right and
  *  left children, as illustrated above.
  *
@@ -57,7 +62,7 @@ namespace linear_bvh
 template < typename FloatType, int NDIMS >
 struct BVHData
 {
-  Vec< FloatType, 4 >* m_inner_nodes;  // BVH bins including leafs
+  vec4_t< FloatType >* m_inner_nodes;  // BVH bins including leafs
   int32* m_leaf_nodes;    // leaf data
   AABB< FloatType, NDIMS > m_bounds;
 

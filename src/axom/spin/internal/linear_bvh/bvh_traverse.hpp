@@ -46,8 +46,8 @@ inline bool leaf_node( const int32& nodeIdx )
  * \note The supplied functors, `L`, `R`, are expected to take the following
  *  three arguments:
  *    (1) The supplied primitive, p
- *    (2) a Vec< FloatType, 4 > of the first segment that defines the BVH bin
- *    (3) a Vec< FloatType, 4 > of the second segment that defines the BVH bin
+ *    (2) a vec4_t< FloatType > of the first segment that defines the BVH bin
+ *    (3) a vec4_t< FloatType > of the second segment that defines the BVH bin
  *
  * \see BVHData for the details on the internal data layout of the BVH.
  *
@@ -62,14 +62,14 @@ template< typename FloatType,
           typename InRightCheck,
           typename LeafAction >
 AXOM_HOST_DEVICE
-inline void bvh_traverse( const Vec< FloatType,4>* inner_nodes,
+inline void bvh_traverse( const vec4_t< FloatType >* inner_nodes,
                           const int32* leaf_nodes,
                           const PrimitiveType& p,
                           InLeftCheck&& L,
                           InRightCheck&& R,
                           LeafAction&& A )
 {
-  using vec4_t = Vec< FloatType, 4 >;
+  using VecType = vec4_t< FloatType >;
 
   // setup stack
   constexpr int32 ISIZE = sizeof(int32);
@@ -85,9 +85,9 @@ inline void bvh_traverse( const Vec< FloatType,4>* inner_nodes,
 
     if ( !leaf_node( current_node ) )
     {
-      const vec4_t first4  = inner_nodes[current_node + 0];
-      const vec4_t second4 = inner_nodes[current_node + 1];
-      const vec4_t third4  = inner_nodes[current_node + 2];
+      const VecType first4  = inner_nodes[current_node + 0];
+      const VecType second4 = inner_nodes[current_node + 1];
+      const VecType third4  = inner_nodes[current_node + 2];
 
       const bool in_left  = L( p, first4, second4 );
       const bool in_right = R( p, second4, third4 );
@@ -100,7 +100,7 @@ inline void bvh_traverse( const Vec< FloatType,4>* inner_nodes,
       }
       else
       {
-        vec4_t children = inner_nodes[current_node + 3];
+        VecType children = inner_nodes[current_node + 3];
 
         // memcpy the int bits hidden in the floats
         int32 l_child;
