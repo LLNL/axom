@@ -72,13 +72,13 @@ if(NOT AXOM_FOUND)
   # hdf5
   if(AXOM_USE_HDF5)
     set(AXOM_HDF5_DIR     "@HDF5_DIR@")
-    # Note: Targets not imported
+    # Note: Targets not currently imported
   endif()
 
   # mfem
   if(AXOM_USE_MFEM)
     set(AXOM_MFEM_DIR     "@MFEM_DIR@")
-    # Note: Targets not imported
+    # Note: Targets not currently imported
   endif()
 
   # raja
@@ -93,6 +93,7 @@ if(NOT AXOM_FOUND)
   # scr
   if(AXOM_USE_SCR)
     set(AXOM_SCR_DIR      "@SCR_DIR@")
+    # Note: Targets not currently imported
   endif()
 
   # umpire
@@ -110,8 +111,8 @@ if(NOT AXOM_FOUND)
   get_filename_component(AXOM_CMAKE_CONFIG_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
   include(${AXOM_CMAKE_CONFIG_DIR}/axom-targets.cmake)
 
-  # HACK: Clear interface_compile_options so that we don't export OpenMP
-  # This can be removed when we fix how axom/blt's treatment of OpenMP
+  # HACK: Clear INTERFACE_COMPILE_OPTIONS to avoid requiring OpenMP in user code
+  # This can (hopefully) be removed when we fix axom/blt's treatment of OpenMP
   if(AXOM_USE_OPENMP)
     set(_fix_tgts axom)
     if(AXOM_USE_RAJA)

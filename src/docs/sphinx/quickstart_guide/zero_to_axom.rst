@@ -36,7 +36,7 @@ CMake-based build system example
 
 .. literalinclude:: ../../../examples/using-with-cmake/CMakeLists.txt
    :language: cmake
-   :lines: 47-78
+   :lines: 27-50
 
 See:  ``examples/axom/using-with-cmake``
 
@@ -46,7 +46,7 @@ BLT-based build system example
 
 .. literalinclude:: ../../../examples/using-with-blt/CMakeLists.txt
    :language: cmake
-   :lines: 51-88
+   :lines: 31-61
 
 See:  ``examples/axom/using-with-blt``
 
@@ -56,6 +56,6 @@ Makefile-based build system example
 
 .. literalinclude:: ../../../examples/using-with-make/Makefile
    :language: make
-   :lines: 21-25
+   :lines: 20-25
 
 See: ``examples/axom/using-with-make``
