@@ -44,6 +44,7 @@ class Raja(CMakePackage):
 
     def cmake_args(self):
         spec = self.spec
+
         sys_type = self._get_sys_type(spec)
         on_blueos = 'blueos' in sys_type
         on_blueos_p9 = on_blueos and 'p9' in sys_type

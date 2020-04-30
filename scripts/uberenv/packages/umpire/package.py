@@ -55,13 +55,13 @@ class Umpire(CMakePackage):
     def cmake_args(self):
         spec = self.spec
 
+        sys_type = self._get_sys_type(spec)
+        on_blueos = 'blueos' in sys_type
+        on_blueos_p9 = on_blueos and 'p9' in sys_type
+
         options = []
 
         if '+cuda' in spec:
-            sys_type = self._get_sys_type(spec)
-            on_blueos = 'blueos' in sys_type
-            on_blueos_p9 = on_blueos and 'p9' in sys_type
-
             if on_blueos_p9:
                 options.extend(['-DCMAKE_CUDA_FLAGS:STRING=-arch sm_70'])
             elif on_blueos:
