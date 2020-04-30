@@ -16,9 +16,6 @@ set(CMAKE_Fortran_COMPILER        "@CMAKE_Fortran_COMPILER@" CACHE PATH "")
 set(CMAKE_CXX_STANDARD            11                         CACHE STRING "")
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE                       CACHE BOOL "")
 
-# Needed to deal with bug related to Fortran + OpenMP
-set(ENABLE_FORTRAN  "@ENABLE_FORTRAN@" CACHE PATH "")
-
 # Path to Axom
 set(AXOM_DIR        "@CMAKE_INSTALL_PREFIX@" CACHE PATH "")
 

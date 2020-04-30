@@ -24,13 +24,6 @@ cmake_minimum_required(VERSION 3.8)
 
 project(using_with_cmake)
 
-# Note: For the time being, we need to enable Fortran if Axom was configured using 
-#       Fortran and OpenMP due to a bug with how Axom exports OpenMP flags
-if(ENABLE_FORTRAN)
-    enable_language(Fortran)
-endif()
-    
-
 #------------------------------------------------------------------------------
 # Check for AXOM_DIR and use CMake's find_package to import axom's targets
 #------------------------------------------------------------------------------
