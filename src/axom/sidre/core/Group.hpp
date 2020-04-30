@@ -1156,6 +1156,21 @@ public:
    */
   bool isEquivalentTo(const Group* other, bool checkName = true) const;
 
+  /*!
+   * \brief Return true if this Group holds items in map format.
+   */
+  bool usingMap()
+  {
+    return !m_is_list;
+  }
+
+  /*!
+   * \brief Return true if this Group holds items in list format.
+   */
+  bool usingList()
+  {
+    return m_is_list;
+  }
 
 //@{
 /*!
