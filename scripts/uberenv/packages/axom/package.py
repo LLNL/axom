@@ -407,10 +407,9 @@ class Axom(Package):
 
                 if on_blueos_p9:
                     cfg.write(cmake_cache_entry("AXOM_CUDA_ARCH", "sm_70"))
-                    cfg.write(cmake_cache_option("AXOM_USE_CUB",True))
+                    cfg.write(cmake_cache_option("AXOM_ENABLE_CUB",True))
                 else:
                     cfg.write(cmake_cache_entry("AXOM_CUDA_ARCH", "sm_60"))
-                    cfg.write(cmake_cache_option("AXOM_USE_CUB",True))
 
                 cfg.write(cmake_cache_entry("CMAKE_CUDA_FLAGS" ,"-restrict -arch ${AXOM_CUDA_ARCH} -std=c++11 --expt-extended-lambda -G"))
 
