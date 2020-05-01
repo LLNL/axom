@@ -114,7 +114,9 @@ enum BVHReturnCodes
  *  \endcode
  *
  */
-template < int NDIMS, typename ExecSpace, typename FloatType = double >
+template < int NDIMS, 
+           typename ExecSpace = axom::SEQ_EXEC, 
+           typename FloatType = double >
 class BVH
 {
 private:
