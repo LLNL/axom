@@ -1911,12 +1911,12 @@ AXOM_CUDA_TEST( spin_bvh, single_box3d_cuda )
 }
 
 //------------------------------------------------------------------------------
-AXOM_CUDA_TEST( spin_bvh, use_device_pool_allocator )
+AXOM_CUDA_TEST( spin_bvh, use_pool_allocator )
 {
   // Create a pool allocator on the device
   constexpr size_t POOL_SIZE   = (1024 * 1024 * 1024) + 1; 
   umpire::ResourceManager& rm  = umpire::ResourceManager::getInstance();
-  umpire::Allocator allocator  = rm.getAllocator(umpire::resource::Device);
+  umpire::Allocator allocator  = rm.getAllocator(umpire::resource::Unified);
   
   umpire::Allocator pool_allocator = 
     rm.makeAllocator< umpire::strategy::DynamicPool >( 
