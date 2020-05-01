@@ -33,6 +33,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Added initial support for bounding box queries using the BVH. The caller may
   now supply a set of bounding boxes to a BVH and the BVH will return a set of 
   candidate BVH bins that intersect each bounding box.
+- Added an `axom-config.cmake` file to axom's installation to streamline incorporating axom
+  into user applications. See `<axom-install>/examples/axom` for example usages.
 
 ### Removed
 
