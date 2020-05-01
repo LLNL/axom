@@ -40,12 +40,12 @@ int main ( int argc, char** argv )
   constexpr axom::IndexType NUM_NODES  = 10;
   constexpr axom::IndexType DIMENSION = 4;
   sidre::Array< int > nodes_1(
-      root1->createView("nodes_1/data"),NUM_NODES,DIMENSION);
+    root1->createView("nodes_1/data"),NUM_NODES,DIMENSION);
 
   int value = 0;
-  for ( axom::IndexType i=0; i < NUM_NODES; ++i )
+  for ( axom::IndexType i=0 ; i < NUM_NODES ; ++i )
   {
-    for ( axom::IndexType j=0; j < DIMENSION; ++j )
+    for ( axom::IndexType j=0 ; j < DIMENSION ; ++j )
     {
       nodes_1( i,j ) = value;
       ++value;
@@ -68,25 +68,25 @@ int main ( int argc, char** argv )
   sidre_io.read( root2, "sidre_array_mesh.root");
 
 // DEBUG
-    SLIC_INFO( "Here is the array data in DataStore_2:\n" );
-    root2->print();
-    std::cout << std::endl;
+  SLIC_INFO( "Here is the array data in DataStore_2:\n" );
+  root2->print();
+  std::cout << std::endl;
 // END DEBUG
 
-    sidre::Array< int > nodes_2(root2->getView("nodes_1/data") );
-    SLIC_ASSERT( nodes_2.size() == NUM_NODES );
-    SLIC_ASSERT( nodes_2.numComponents() == DIMENSION );
+  sidre::Array< int > nodes_2(root2->getView("nodes_1/data") );
+  SLIC_ASSERT( nodes_2.size() == NUM_NODES );
+  SLIC_ASSERT( nodes_2.numComponents() == DIMENSION );
 
   // STEP 4: ensure the data is correct
-    int expected_value = 0;
-    for ( axom::IndexType i=0; i < NUM_NODES; ++i )
+  int expected_value = 0;
+  for ( axom::IndexType i=0 ; i < NUM_NODES ; ++i )
+  {
+    for ( axom::IndexType j=0 ; j < DIMENSION ; ++j )
     {
-      for ( axom::IndexType j=0; j < DIMENSION; ++j )
-      {
-        SLIC_ASSERT( nodes_2(i,j) == expected_value );
-        ++expected_value;
-      } // END for all components
-    } // END for all nodes
+      SLIC_ASSERT( nodes_2(i,j) == expected_value );
+      ++expected_value;
+    }   // END for all components
+  }   // END for all nodes
 
   // STEP 5: delete the datastores
   delete dataStore2;
@@ -98,6 +98,3 @@ int main ( int argc, char** argv )
   MPI_Finalize();
   return 0;
 }
-
-
-

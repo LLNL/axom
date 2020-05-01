@@ -13,6 +13,7 @@
 #endif
 
 // Sidre headers
+#include "ListCollection.hpp"
 #include "MapCollection.hpp"
 #include "Buffer.hpp"
 #include "DataStore.hpp"
@@ -170,32 +171,52 @@ const View* Group::getView( const std::string& path ) const
 View* Group::createView( const std::string& path )
 {
   std::string intpath(path);
-  bool create_groups_in_path = true;
-  Group* group = walkPath( intpath, create_groups_in_path );
 
-  if ( group == nullptr )
+  Group* group;
+  if (intpath.empty())
   {
-    SLIC_CHECK_MSG(group != nullptr,
+    SLIC_CHECK_MSG(m_is_list,
                    SIDRE_GROUP_LOG_PREPEND
-                   << "Could not find or create path '" << path << "'."
-                   << "There is already a view with that name." );
-    return nullptr;
+                   << "Could not create View with empty string "
+                   << "for the path." );
+    if (m_is_list)
+    {
+      group = this;
+    }
+    else
+    {
+      return nullptr;
+    }
   }
-  else if ( intpath.empty() || group->hasChildView(intpath) ||
-            group->hasChildGroup(intpath) )
+  else
   {
-    SLIC_CHECK_MSG(!intpath.empty(),
-                   SIDRE_GROUP_LOG_PREPEND
-                   << "Cannot create a View with an empty path.");
-    SLIC_CHECK_MSG(!group->hasChildView(intpath),
-                   SIDRE_GROUP_LOG_PREPEND
-                   << "Cannot create View with name '" << intpath << "'. "
-                   << "There is already a View with that name." );
-    SLIC_CHECK_MSG(!group->hasChildGroup(intpath),
-                   SIDRE_GROUP_LOG_PREPEND
-                   << "Cannot create View with name '" << intpath << "'. "
-                   << "There is already has a Group with that name." );
-    return nullptr;
+    bool create_groups_in_path = true;
+    group = walkPath( intpath, create_groups_in_path );
+
+    if ( group == nullptr )
+    {
+      SLIC_CHECK_MSG(group != nullptr,
+                     SIDRE_GROUP_LOG_PREPEND
+                     << "Could not find or create path '" << path << "'."
+                     << "There is already a view with that name." );
+      return nullptr;
+    }
+    else if ( intpath.empty() || group->hasChildView(intpath) ||
+              group->hasChildGroup(intpath) )
+    {
+      SLIC_CHECK_MSG(!intpath.empty(),
+                     SIDRE_GROUP_LOG_PREPEND
+                     << "Cannot create a View with an empty path.");
+      SLIC_CHECK_MSG(!group->hasChildView(intpath),
+                     SIDRE_GROUP_LOG_PREPEND
+                     << "Cannot create View with name '" << intpath << "'. "
+                     << "There is already a View with that name." );
+      SLIC_CHECK_MSG(!group->hasChildGroup(intpath),
+                     SIDRE_GROUP_LOG_PREPEND
+                     << "Cannot create View with name '" << intpath << "'. "
+                     << "There is already has a Group with that name." );
+      return nullptr;
+    }
   }
 
   View* view = new(std::nothrow) View(intpath);
@@ -872,7 +893,7 @@ const Group* Group::getGroup( const std::string& path ) const
  *
  *************************************************************************
  */
-Group* Group::createGroup( const std::string& path )
+Group* Group::createGroup( const std::string& path, bool is_list )
 {
   std::string intpath(path);
   bool create_groups_in_path = true;
@@ -904,7 +925,8 @@ Group* Group::createGroup( const std::string& path )
     return nullptr;
   }
 
-  Group* new_group = new(std::nothrow) Group(intpath, group->getDataStore());
+  Group* new_group = new(std::nothrow) Group(intpath,
+                                             group->getDataStore(), is_list);
   if ( new_group == nullptr )
   {
     return nullptr;
@@ -915,6 +937,35 @@ Group* Group::createGroup( const std::string& path )
 #endif
   return group->attachGroup(new_group);
 }
+
+Group* Group::createUnnamedGroup( bool is_list )
+{
+  SLIC_CHECK_MSG(m_is_list,
+                 SIDRE_GROUP_LOG_PREPEND
+                 << "Cannot create an unnamed Group when not using "
+                 << "list format.");
+
+  Group* new_group;
+  if (m_is_list)
+  {
+    new_group = new(std::nothrow) Group("", getDataStore(), is_list);
+  }
+  else
+  {
+    new_group = nullptr;
+  }
+
+  if ( new_group == nullptr )
+  {
+    return nullptr;
+  }
+
+#ifdef AXOM_USE_UMPIRE
+  new_group->setDefaultAllocator(getDefaultAllocator());
+#endif
+  return attachGroup(new_group);
+}
+
 
 /*
  *************************************************************************
@@ -1669,17 +1720,30 @@ void Group::loadExternalData(const hid_t& h5_id)
  *************************************************************************
  */
 Group::Group(const std::string& name,
-             DataStore* datastore)
+             DataStore* datastore,
+             bool is_list)
   : m_name(name)
   , m_index(InvalidIndex)
   , m_parent(nullptr)
   , m_datastore(datastore)
-  , m_view_coll(new ViewCollection())
-  , m_group_coll(new GroupCollection())
+  , m_is_list(is_list)
+  , m_view_coll(nullptr)
+  , m_group_coll(nullptr)
 #ifdef AXOM_USE_UMPIRE
   , m_default_allocator_id(axom::getDefaultAllocatorID())
 #endif
-{}
+{
+  if (is_list)
+  {
+    m_view_coll = new ListCollection<View>();
+    m_group_coll = new ListCollection<Group>();
+  }
+  else
+  {
+    m_view_coll = new MapCollection<View>();
+    m_group_coll = new MapCollection<Group>();
+  }
+}
 
 /*
  *************************************************************************
@@ -1705,7 +1769,8 @@ Group::~Group()
  */
 View* Group::attachView(View* view)
 {
-  if ( view == nullptr || hasChildView(view->getName()) )
+  if ( view == nullptr ||
+       (!view->getName().empty() && hasChildView(view->getName())) )
   {
     return nullptr;
   }
@@ -1792,7 +1857,8 @@ void Group::destroyViewAndData( View* view )
  */
 Group* Group::attachGroup(Group* group)
 {
-  if ( group == nullptr || hasChildGroup(group->getName()) )
+  if ( group == nullptr ||
+       (!group->getName().empty() && hasChildGroup(group->getName())) )
   {
     return nullptr;
   }
