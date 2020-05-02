@@ -44,8 +44,6 @@ packages:
     buildable: False
   mpich:
     buildable: False
-  spectrum-mpi:
-    buildable: False
   charmpp:
     buildable: False
   charm:
