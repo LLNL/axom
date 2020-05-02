@@ -34,7 +34,7 @@ packages:
       spectrum-mpi@release%gcc@7.3.1: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-gcc-7.3.1/
       spectrum-mpi@release%clang@upstream_xlf: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2019.08.15/
       spectrum-mpi@release%clang@8.0.1_nvcc_xlf: /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-8.0.1/  
-      spectrum-mpi@release%xl@coral : /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-clang-upstream-2019.08.15/
+      spectrum-mpi@release%xl@coral : /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.08.20/
       spectrum-mpi@release%xl@nvcc : /usr/tce/packages/spectrum-mpi/spectrum-mpi-rolling-release-xl-2019.08.20/
     buildable: False
 # Spack may grab for mpi & we don't want to use them
