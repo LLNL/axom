@@ -2141,7 +2141,7 @@ bool Group::importConduitTree(const conduit::Node &node, bool preserve_contents)
 
   //
   DataType node_dtype = node.dtype();
-  if(node_dtype.is_object())
+  if(node_dtype.is_object() || node_dtype.is_list())
   {
     conduit::NodeConstIterator itr = node.children();
     while (itr.has_next())
@@ -2150,7 +2150,7 @@ bool Group::importConduitTree(const conduit::Node &node, bool preserve_contents)
       std::string cld_name  = itr.name();
       DataType cld_dtype = cld_node.dtype();
 
-      if(cld_dtype.is_object())
+      if(cld_dtype.is_object() || cld_dtype.is_list())
       {
         // create group
         Group* grp = createGroup(cld_name);
@@ -2208,12 +2208,6 @@ bool Group::importConduitTree(const conduit::Node &node, bool preserve_contents)
                       cld_dtype.number_of_elements());
         }
       }
-      else if (cld_dtype.is_list())
-      {
-        SLIC_WARNING(SIDRE_GROUP_LOG_PREPEND
-                     << "Group cannot import Conduit list " << cld_name);
-        success = false;
-      }
       else
       {
         // All Nodes should have one of the above datatypes, so if
@@ -2244,9 +2238,8 @@ bool Group::importConduitTreeExternal(conduit::Node &node,
     destroyViews();
   }
 
-  //
   DataType node_dtype = node.dtype();
-  if(node_dtype.is_object())
+  if(node_dtype.is_object() || node_dtype.is_list())
   {
     conduit::NodeIterator itr = node.children();
     while (itr.has_next())
@@ -2255,7 +2248,7 @@ bool Group::importConduitTreeExternal(conduit::Node &node,
       std::string cld_name  = itr.name();
       DataType cld_dtype = cld_node.dtype();
 
-      if(cld_dtype.is_object())
+      if(cld_dtype.is_object() || cld_dtype.is_list())
       {
         // create group
         Group* grp = createGroup(cld_name);
@@ -2289,12 +2282,6 @@ bool Group::importConduitTreeExternal(conduit::Node &node,
           view->setExternalDataPtr(conduit_ptr);
           view->apply(cld_dtype);
         }
-      }
-      else if (cld_dtype.is_list())
-      {
-        SLIC_WARNING(SIDRE_GROUP_LOG_PREPEND
-                     << "Group  cannot import Conduit list " << cld_name);
-        success = false;
       }
       else
       {
