@@ -20,7 +20,7 @@ packages:
     providers:
       blas: [netlib-lapack]
       lapack: [netlib-lapack]
-      mpi: [mvapich2]
+      mpi: [spectrum-mpi]
   cuda:
     buildable: False
   mvapich2:
