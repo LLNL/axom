@@ -35,9 +35,15 @@ foreach(comp ${AXOM_COMPONENTS_ENABLED})
 endforeach()
 
 ## Add compile-time options to the config file
-if ( AXOM_ENABLE_ANNOTATIONS )
-  set( AXOM_USE_ANNOTATIONS TRUE )
-endif()
+## Check for options of the form AXOM_ENABLE_<OPTION> and sets
+## a corresponding AXOM_USE_<OPTION> accordingly to use when generating
+## the axom/config.hpp
+set(OPTIONS ANNOTATIONS CUB MPI3)
+foreach(option ${OPTIONS})
+    if( AXOM_ENABLE_${option} )
+      set(AXOM_USE_${option} TRUE)
+    endif()
+endforeach()
 
 convert_to_native_escaped_file_path(${PROJECT_SOURCE_DIR} AXOM_SRC_DIR)
 convert_to_native_escaped_file_path(${CMAKE_BINARY_DIR} AXOM_BIN_DIR)

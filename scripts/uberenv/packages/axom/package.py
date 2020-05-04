@@ -407,6 +407,7 @@ class Axom(Package):
 
                 if on_blueos_p9:
                     cfg.write(cmake_cache_entry("AXOM_CUDA_ARCH", "sm_70"))
+                    cfg.write(cmake_cache_option("AXOM_ENABLE_CUB",True))
                 else:
                     cfg.write(cmake_cache_entry("AXOM_CUDA_ARCH", "sm_60"))
 

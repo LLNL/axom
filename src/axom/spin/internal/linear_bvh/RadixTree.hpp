@@ -42,21 +42,22 @@ struct RadixTree
   uint32* m_mcodes;
   AABB< FloatType, NDIMS >* m_leaf_aabbs;
 
-  void allocate( int32 size )
+  void allocate( int32 size, int allocID )
   {
     AXOM_PERF_MARK_FUNCTION("RadixTree::allocate");
 
     m_size           = size;
     m_inner_size     = m_size-1;
 
-    m_left_children  = axom::allocate<int32>( m_inner_size );
-    m_right_children = axom::allocate<int32>( m_inner_size );
-    m_parents        = axom::allocate<int32>( m_size + m_inner_size );
-    m_inner_aabbs    = axom::allocate< AABB< FloatType,NDIMS > >(m_inner_size);
-
-    m_leafs      = axom::allocate< int32 >( m_size );
-    m_mcodes     = axom::allocate< uint32 >( m_size );
-    m_leaf_aabbs = axom::allocate< AABB< FloatType,NDIMS > >( m_size );
+    m_left_children  = axom::allocate<int32>( m_inner_size, allocID );
+    m_right_children = axom::allocate<int32>( m_inner_size, allocID );
+    m_parents        = axom::allocate<int32>( (m_size+m_inner_size), allocID );
+    m_inner_aabbs    = 
+        axom::allocate< AABB< FloatType,NDIMS > >( m_inner_size,allocID );
+        
+    m_leafs      = axom::allocate< int32 >( m_size, allocID );
+    m_mcodes     = axom::allocate< uint32 >( m_size, allocID );
+    m_leaf_aabbs = axom::allocate< AABB< FloatType,NDIMS > >( m_size, allocID );
   }
 
   void deallocate()

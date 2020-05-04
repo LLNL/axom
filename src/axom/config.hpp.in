@@ -41,6 +41,7 @@
  * Platform specific definitions
  */
 #define AXOM_CXX_STD "@BLT_CXX_STD@"
+#cmakedefine AXOM_CUDA_ARCH "@AXOM_CUDA_ARCH@"
 #cmakedefine AXOM_NO_INT64_T
 #cmakedefine AXOM_USE_MPI3
 

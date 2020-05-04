@@ -85,8 +85,8 @@ void write_box3d( const FloatType& xmin,
 
 //------------------------------------------------------------------------------
 template < typename FloatType, int NDIMS >
-void write_leftbox( const Vec< FloatType, 4 >& first,
-                    const Vec< FloatType, 4 >& second,
+void write_leftbox( const vec4_t< FloatType >& first,
+                    const vec4_t< FloatType >& second,
                     int32& numPoints,
                     int32& numBins,
                     std::ostringstream& nodes,
@@ -117,8 +117,8 @@ void write_leftbox( const Vec< FloatType, 4 >& first,
 
 //------------------------------------------------------------------------------
 template < typename FloatType, int NDIMS >
-void write_righbox( const Vec< FloatType, 4 >& second,
-                    const Vec< FloatType, 4 >& third,
+void write_righbox( const vec4_t< FloatType >& second,
+                    const vec4_t< FloatType >& third,
                     int32& numPoints,
                     int32& numBins,
                     std::ostringstream& nodes,
@@ -188,7 +188,7 @@ void write_root( const AABB< FloatType, 3 >& root,
 
 //------------------------------------------------------------------------------
 template < typename FloatType, int NDIMS  >
-void write_recursive( Vec< FloatType, 4 >* inner_nodes,
+void write_recursive( vec4_t< FloatType >* inner_nodes,
                       int32 current_node,
                       int32 level,
                       int32& numPoints,
@@ -198,15 +198,15 @@ void write_recursive( Vec< FloatType, 4 >* inner_nodes,
                       std::ostringstream& levels )
 {
   // STEP 0: get the flat BVH layout
-  const Vec< FloatType, 4> first4  = inner_nodes[current_node + 0];
-  const Vec< FloatType, 4> second4 = inner_nodes[current_node + 1];
-  const Vec< FloatType, 4> third4  = inner_nodes[current_node + 2];
+  const vec4_t< FloatType > first4  = inner_nodes[current_node + 0];
+  const vec4_t< FloatType > second4 = inner_nodes[current_node + 1];
+  const vec4_t< FloatType > third4  = inner_nodes[current_node + 2];
 
   // STEP 1: extract children information
   int32 l_child;
   int32 r_child;
   constexpr int32 isize = sizeof(int32);
-  Vec< FloatType, 4 > children = inner_nodes[current_node + 3];
+  vec4_t< FloatType > children = inner_nodes[current_node + 3];
   memcpy(&l_child,&children[0],isize);
   memcpy(&r_child,&children[1],isize);
 

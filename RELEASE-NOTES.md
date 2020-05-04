@@ -10,6 +10,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
+- Added the ability to specify an [Umpire] allocator ID to use with the
+  BVH. This allows the application to use a device allocator for the BVH and 
+  avoid use of UM on the GPU, which can hinder perfomrmance, or use a pool
+  allocator to mitigate the latencies associated with allocation/deallocation.
+  The allocator ID is specified as an optional argument to the BVH constructor.
 - Added new CMake option, `AXOM_ENABLE_ANNOTATIONS`, to enable/disable code 
   annotations in Axom. Default is OFF.
 - Added Axom annotation macros. The macros can be used to annotate functions,
@@ -41,6 +46,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Deprecated
 
 ### Changed
+- Renamed the `AXOM_USE_MPI3`option to `AXOM_ENABLE_MPI3` for consistency.
+- Renamed the `AXOM_USE_CUB` option to `AXOM_ENABLE_CUB` for consistency.
 - Modified the API for the BVH to accomodate different query types. The queries are now
   more explicitly called `BVH::findPoints()` and `BVH::findRays()`.
 - Modified the API of Axom's memory management routines to not leak usage of Umpire. Instead of 
@@ -353,4 +360,4 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 
 [Scalable Checkpoint Restart (SCR)]: https://computation.llnl.gov/projects/scalable-checkpoint-restart-for-mpi
 [SU2 Mesh file format]: https://su2code.github.io/docs/Mesh-File/
-
+[Umpire]: https://github.com/LLNL/Umpire

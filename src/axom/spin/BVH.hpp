@@ -103,7 +103,7 @@ enum BVHReturnCodes
  *
  *     // find candidates in parallel, allocates and populates the supplied
  *     // candidates array
- *     bvh.find( offsets, counts, candidates, numPoints, qx, qy, qz );
+ *     bvh.findPoints( offsets, counts, candidates, numPoints, qx, qy, qz );
  *     SLIC_ASSERT( candidates != nullptr );
  *
  *     ...
@@ -114,7 +114,9 @@ enum BVHReturnCodes
  *  \endcode
  *
  */
-template < int NDIMS, typename ExecSpace, typename FloatType = double >
+template < int NDIMS, 
+           typename ExecSpace = axom::SEQ_EXEC, 
+           typename FloatType = double >
 class BVH
 {
 private:
@@ -140,6 +142,7 @@ public:
    *
    * \param [in] boxes buffer consisting of bounding boxes for each entity.
    * \param [in] numItems the total number of items to store in the BVH.
+   * \param [in] allocatorID Umpire allocator ID to use (optional)
    *
    * \note boxes is an array of length 2*dimension*numItems, that stores the
    *  two corners of the axis-aligned bounding box corresponding to a given
@@ -157,6 +160,10 @@ public:
    *    double zmax = boxes[ offset+5 ];
    *  \endcode
    *
+   * \note If an allocatorID is not specified, the code will use the default
+   *  allocator ID for the execution space specified via the template argument
+   *  when the BVH object is instantiated.
+   * 
    * \warning The supplied boxes array must point to a buffer in a memory space
    *  that is compatible with the execution space. For example, when using
    *  CUDA_EXEC, boxes must be in unified memory or GPU memory. The code
@@ -165,12 +172,20 @@ public:
    * \pre boxes != nullptr
    * \pre numItems > 0
    */
-  BVH( const FloatType* boxes, IndexType numItems );
+  BVH( const FloatType* boxes, IndexType numItems,
+       int allocatorID=axom::execution_space< ExecSpace >::allocatorID() );
 
   /*!
    * \brief Destructor.
    */
   ~BVH();
+
+  /*!
+   * \brief Get the ID of the allocator used by the BVH.
+   * \return allocatorID the ID of the allocator used by the BVH.
+   */
+  int getAllocatorID( ) const
+  { return m_AllocatorID; };
 
   /*!
    * \brief Sets the scale factor for scaling the supplied bounding boxes.
@@ -355,6 +370,7 @@ private:
 /// \name Private Members
 /// @{
 
+  int m_AllocatorID;
   FloatType m_Tolernace;
   FloatType m_scaleFactor;
   IndexType m_numItems;
