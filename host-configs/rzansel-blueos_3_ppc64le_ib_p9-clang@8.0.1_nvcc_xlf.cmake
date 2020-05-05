@@ -1,11 +1,6 @@
 #------------------------------------------------------------------------------
 # !!!! This is a generated file, edit at own risk !!!!
 #------------------------------------------------------------------------------
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
-#
-# SPDX-License-Identifier: (BSD-3-Clause)
-#------------------------------------------------------------------------------
 # SYS_TYPE: blueos_3_ppc64le_ib_p9
 # Compiler Spec: clang@8.0.1_nvcc_xlf
 #------------------------------------------------------------------------------
@@ -29,13 +24,15 @@ set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-2019.12.23/bin/xlf2003" CACH
 #------------------------------------------------------------------------------
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2020_04_29_19_35_53/clang-8.0.1_nvcc_xlf" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib_p9/2020_05_04_19_55_16/clang-8.0.1_nvcc_xlf" CACHE PATH "")
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.5.1" CACHE PATH "")
 
 set(MFEM_DIR "${TPL_ROOT}/mfem-4.0" CACHE PATH "")
 
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.21" CACHE PATH "")
+
+# Lua not built
 
 # SCR not built
 
@@ -66,17 +63,17 @@ set(BLT_MPI_COMMAND_APPEND "mpibind" CACHE PATH "")
 #------------------------------------------------------------------------------
 
 # Root directory for generated developer tools
-set(DEVTOOLS_ROOT "/usr/WS1/axom/devtools/blueos_3_ppc64le_ib_p9/2020_04_28_18_56_37/gcc-8.3.1" CACHE PATH "")
+set(DEVTOOLS_ROOT "/usr/WS1/axom/devtools/blueos_3_ppc64le_ib_p9/2020_05_04_17_40_12/gcc-8.3.1" CACHE PATH "")
 
-set(PYTHON_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.7.4/bin/python" CACHE PATH "")
+set(PYTHON_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.7.7/bin/python3.7" CACHE PATH "")
 
 set(ENABLE_DOCS ON CACHE BOOL "")
 
 set(DOXYGEN_EXECUTABLE "${DEVTOOLS_ROOT}/doxygen-1.8.14/bin/doxygen" CACHE PATH "")
 
-set(SPHINX_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.7.4/bin/sphinx-build" CACHE PATH "")
+set(SPHINX_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.7.7/bin/sphinx-build" CACHE PATH "")
 
-set(SHROUD_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.7.4/bin/shroud" CACHE PATH "")
+set(SHROUD_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.7.7/bin/shroud" CACHE PATH "")
 
 set(UNCRUSTIFY_EXECUTABLE "${DEVTOOLS_ROOT}/uncrustify-0.61/bin/uncrustify" CACHE PATH "")
 
@@ -86,9 +83,11 @@ set(CPPCHECK_EXECUTABLE "${DEVTOOLS_ROOT}/cppcheck-1.87/bin/cppcheck" CACHE PATH
 # Other machine specifics
 #------------------------------------------------------------------------------
 
+set(ENABLE_OPENMP OFF CACHE BOOL "")
+
 set(ENABLE_GTEST_DEATH_TESTS OFF CACHE BOOL "")
 
-set(CMAKE_Fortran_COMPILER_ID "XL" CACHE PATH "All of BlueOS compilers report clang due to nvcc, override to proper compiler family")
+set(CMAKE_Fortran_COMPILER_ID "XL" CACHE PATH "Override to proper compiler family for XL")
 
 set(BLT_FORTRAN_FLAGS "-WF,-C!  -qxlf2003=polymorphic" CACHE PATH "Converts C-style comments to Fortran style in preprocessed files")
 
@@ -108,11 +107,11 @@ set(CUDA_SEPARABLE_COMPILATION ON CACHE BOOL "")
 
 set(AXOM_ENABLE_ANNOTATIONS ON CACHE BOOL "")
 
-set(AXOM_CUDA_ARCH "sm_70" CACHE PATH "")
-
 set(AXOM_ENABLE_CUB ON CACHE BOOL "")
 
-set(CMAKE_CUDA_FLAGS "-restrict -arch ${AXOM_CUDA_ARCH} -std=c++11 --expt-extended-lambda -G" CACHE PATH "")
+set(AXOM_CUDA_ARCH "sm_70" CACHE PATH "")
+
+set(CMAKE_CUDA_FLAGS "-restrict -arch ${AXOM_CUDA_ARCH} -std=c++11 --expt-extended-lambda -G " CACHE PATH "")
 
 set(CMAKE_CUDA_HOST_COMPILER "${MPI_CXX_COMPILER}" CACHE PATH "")
 
