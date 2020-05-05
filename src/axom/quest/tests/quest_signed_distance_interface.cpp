@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 // Axom utils
+#include "axom/config.hpp"                      // axom compile-time definitions
 #include "axom/core/utilities/Utilities.hpp"
 
 // Mint includes
@@ -429,6 +430,15 @@ TEST( quest_signed_distance_interface, analytic_plane )
   check_analytic_plane( true );
 #endif
 }
+
+//------------------------------------------------------------------------------
+#if defined( AXOM_USE_MPI ) && defined ( AXOM_USE_MPI3 )
+TEST( quest_signed_distance_interface, call_twice_using_shared_memory )
+{
+  check_analytic_plane( true );
+  check_analytic_plane( true );
+}
+#endif
 
 //------------------------------------------------------------------------------
 TEST( quest_signed_distance_interface, analytic_sphere )
