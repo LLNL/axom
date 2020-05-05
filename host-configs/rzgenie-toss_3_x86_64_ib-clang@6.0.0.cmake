@@ -1,11 +1,6 @@
 #------------------------------------------------------------------------------
 # !!!! This is a generated file, edit at own risk !!!!
 #------------------------------------------------------------------------------
-# Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
-# other Axom Project Developers. See the top-level COPYRIGHT file for details.
-#
-# SPDX-License-Identifier: (BSD-3-Clause)
-#------------------------------------------------------------------------------
 # SYS_TYPE: toss_3_x86_64_ib
 # Compiler Spec: clang@6.0.0
 #------------------------------------------------------------------------------
@@ -29,13 +24,15 @@ set(CMAKE_Fortran_COMPILER "/usr/tce/packages/gcc/gcc-4.9.3/bin/gfortran" CACHE 
 #------------------------------------------------------------------------------
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/libs/toss_3_x86_64_ib/2020_04_28_18_37_10/clang-6.0.0" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/toss_3_x86_64_ib/2020_05_04_19_01_32/clang-6.0.0" CACHE PATH "")
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.5.1" CACHE PATH "")
 
 set(MFEM_DIR "${TPL_ROOT}/mfem-4.0" CACHE PATH "")
 
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.21" CACHE PATH "")
+
+# Lua not built
 
 # SCR not built
 
@@ -64,17 +61,17 @@ set(MPIEXEC_NUMPROC_FLAG "-n" CACHE PATH "")
 #------------------------------------------------------------------------------
 
 # Root directory for generated developer tools
-set(DEVTOOLS_ROOT "/usr/WS1/axom/devtools/toss_3_x86_64_ib/2020_04_27_21_23_14/gcc-8.1.0" CACHE PATH "")
+set(DEVTOOLS_ROOT "/usr/WS1/axom/devtools/toss_3_x86_64_ib/2020_05_04_17_39_29/gcc-8.1.0" CACHE PATH "")
 
-set(PYTHON_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.7.4/bin/python" CACHE PATH "")
+set(PYTHON_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.7.7/bin/python3.7" CACHE PATH "")
 
 set(ENABLE_DOCS ON CACHE BOOL "")
 
 set(DOXYGEN_EXECUTABLE "${DEVTOOLS_ROOT}/doxygen-1.8.14/bin/doxygen" CACHE PATH "")
 
-set(SPHINX_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.7.4/bin/sphinx-build" CACHE PATH "")
+set(SPHINX_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.7.7/bin/sphinx-build" CACHE PATH "")
 
-set(SHROUD_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.7.4/bin/shroud" CACHE PATH "")
+set(SHROUD_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.7.7/bin/shroud" CACHE PATH "")
 
 set(UNCRUSTIFY_EXECUTABLE "${DEVTOOLS_ROOT}/uncrustify-0.61/bin/uncrustify" CACHE PATH "")
 
