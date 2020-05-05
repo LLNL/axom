@@ -130,19 +130,19 @@ packages:
       graphviz: /usr/WS1/axom/devtools/blueos_3_ppc64le_ib/latest/graphviz-2.42.2
     buildable: False
   python:
-    version: [3.7.4]
+    version: [3.7.7]
     paths:
-      python: /usr/WS1/axom/devtools/blueos_3_ppc64le_ib/latest/python-3.7.4
+      python: /usr/WS1/axom/devtools/blueos_3_ppc64le_ib/latest/python-3.7.7
     buildable: False
   py-shroud:
     version: [0.11.0]
     paths:
-      py-shroud: /usr/WS1/axom/devtools/blueos_3_ppc64le_ib/latest/python-3.7.4
+      py-shroud: /usr/WS1/axom/devtools/blueos_3_ppc64le_ib/latest/python-3.7.7
     buildable: False
   py-sphinx:
     version: [2.2.0]
     paths:
-      py-sphinx: /usr/WS1/axom/devtools/blueos_3_ppc64le_ib/latest/python-3.7.4
+      py-sphinx: /usr/WS1/axom/devtools/blueos_3_ppc64le_ib/latest/python-3.7.7
     buildable: False
   uncrustify:
     version: [0.61]
