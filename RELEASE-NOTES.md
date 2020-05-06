@@ -60,6 +60,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   ex. `level_error` is now `message_error`.
 
 ### Fixed
+- Fixed issue in Quest's Signed Distance query that would prevent consecutive
+  calls to Quest when MPI-3 shared memory is enabled due to not properly 
+  nullifying internal pointers when finalize is called.
 - Fixed issue where the BVH would dispatch to the CPU sort() routine when the
   specified execution policy was CUDA_EXEC async. Now, when the execution policy
   is CUDA_EXEC the code would correctly dispatch to the GPU sort, using CUB
