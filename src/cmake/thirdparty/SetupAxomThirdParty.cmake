@@ -7,6 +7,12 @@
 # 3rd Party Dependencies
 #------------------------------------------------------------------------------
 
+# Policy to use <PackageName>_ROOT variable in find_<Package> commands
+# Policy added in 3.12+
+if(POLICY CMP0074)
+    cmake_policy(SET CMP0074 NEW)
+endif()
+
 #------------------------------------------------------------------------------
 # UMPIRE
 #------------------------------------------------------------------------------
@@ -68,6 +74,16 @@ endif()
 
 
 #------------------------------------------------------------------------------
+# HDF5
+#------------------------------------------------------------------------------
+if (HDF5_DIR)
+    include(cmake/thirdparty/SetupHDF5.cmake)
+else()
+    message(STATUS "HDF5 support is OFF")
+endif()
+
+
+#------------------------------------------------------------------------------
 # Conduit
 #------------------------------------------------------------------------------
 if (CONDUIT_DIR)
@@ -83,32 +99,6 @@ if (CONDUIT_DIR)
                  "${CONDUIT_INSTALL_PREFIX}/include/conduit/")
 else()
     message(STATUS "Conduit support is OFF")
-endif()
-
-
-#------------------------------------------------------------------------------
-# HDF5
-#------------------------------------------------------------------------------
-if (HDF5_DIR)
-    include(cmake/thirdparty/SetupHDF5.cmake)
-    if(WIN32 AND TARGET hdf5::hdf5-shared)
-        if(BUILD_SHARED_LIBS)
-            blt_register_library(NAME hdf5
-                                 LIBRARIES hdf5::hdf5-shared
-                                 TREAT_INCLUDES_AS_SYSTEM ON)
-        else()
-            # Placeholder: we don't (yet) support static builds on Windows
-            blt_register_library(NAME hdf5
-                                 LIBRARIES hdf5::hdf5-static)
-        endif()
-    else()
-        blt_register_library(NAME hdf5
-                            INCLUDES ${HDF5_INCLUDE_DIRS}
-                            LIBRARIES ${HDF5_LIBRARIES}
-                            TREAT_INCLUDES_AS_SYSTEM ON )
-    endif()
-else()
-    message(STATUS "HDF5 support is OFF")
 endif()
 
 
