@@ -8,7 +8,7 @@
  * \file Map.hpp
  *
  * \brief This file contains the pure virtual base class definition of the
- * Communicator.
+ * Map.
  *******************************************************************************
  */
 

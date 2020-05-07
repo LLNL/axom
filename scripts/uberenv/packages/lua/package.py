@@ -53,11 +53,11 @@ class Lua(Package):
         #          spec['ncurses'].prefix.lib),
         #      'MYLIBS=-lncursesw',
         #      'CC=%s -std=gnu99 %s' % (spack_cc,
-        #                               self.compiler.pic_flag),
+        #                               self.compiler.cc_pic_flag),
         #      target)
         make('INSTALL_TOP=%s' % prefix,
              'CC=%s -std=gnu99 %s' % (spack_cc,
-                                      self.compiler.pic_flag),
+                                      self.compiler.cc_pic_flag),
              target)
         make('INSTALL_TOP=%s' % prefix,
              'install')
