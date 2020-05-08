@@ -264,6 +264,142 @@ TEST(sidre_native_layout,native_layout_with_scalars)
 }
 
 
+//------------------------------------------------------------------------------
+TEST(sidre_native_layout,export_import_conduit)
+{
+  // Checks that we can import an exported conduit node
+  // into a separate datastore
+  // using Group::createNativeLayout() and Group::importConduitTree()
+
+  // Checks for an array with a non-zero size and for one of size zero
+  for( int SZ : {10, 0})
+  {
+    SLIC_INFO("Checking export/import from conduit with array of size " << SZ);
+
+    axom::sidre::DataStore ds1, ds2;
+    conduit::Node node1, node2;
+
+    int* conduit_data = nullptr;
+
+    std::string grpName = "some_group";
+    std::string viewName = "array_view";
+
+    // Simple lambda to return the expected value at an index
+    auto expValue = [=](int i) {
+                      return SZ-i;
+                    };
+
+    // Create datastore with an array view and export to conduit node
+    {
+      // Create views and groups
+      auto* root = ds1.getRoot();
+      auto* grp  = root->createGroup(grpName);
+      auto* view = grp->createViewAndAllocate(viewName, INT32_ID, SZ);
+
+      // initialize the data
+      int* sidre_data = view->getData();
+      EXPECT_NE(nullptr, sidre_data);
+      for(int i=0 ; i<SZ ; ++i)
+      {
+        sidre_data[i] = expValue(i);
+      }
+
+      // Dump to console
+      std::cout << "Datastore1 after initialization: " << std::endl;
+      root->print();
+      std::cout << std::endl;
+
+      // Convert datastore to conduit layout and compare data
+      bool success = root->createNativeLayout(node1);
+      EXPECT_TRUE(success);
+
+      conduit_data = node1[grpName][viewName].as_int_ptr();
+      EXPECT_NE(nullptr, conduit_data);
+      for(int i=0 ; i<SZ ; ++i)
+      {
+        EXPECT_EQ(conduit_data[i], sidre_data[i]);
+      }
+
+      // Dump to console
+      std::cout << "Node1 after createNativeLayout: " << std::endl;
+      node1.print();
+      std::cout << std::endl;
+    }
+
+    // import conduit node into new datastore and check validity
+    {
+      auto* root = ds2.getRoot();
+      bool success = root->importConduitTree(node1);
+      EXPECT_TRUE(success);
+
+      // Dump to console
+      std::cout << "Datastore2 after importing conduit tree: " << std::endl;
+      root->print();
+      std::cout << std::endl;
+
+      // Check for expected views and groups
+      EXPECT_TRUE(root->hasGroup(grpName));
+      auto* grp = root->getGroup(grpName);
+      EXPECT_NE(nullptr, grp);
+
+      EXPECT_TRUE(grp->hasView(viewName));
+      auto* view = grp->getView(viewName);
+      EXPECT_NE(nullptr, view);
+
+      EXPECT_TRUE(view->isAllocated());
+      EXPECT_EQ(SZ, view->getNumElements());
+
+      // compare data
+      int* sidre_data = view->getData();
+      EXPECT_NE(nullptr, sidre_data);
+      for(int i=0 ; i<SZ ; ++i)
+      {
+        EXPECT_EQ(conduit_data[i], sidre_data[i]);
+      }
+
+      // confirm that this is a distinct copy of the first data store's data
+      auto* otherView = ds1.getRoot()->getGroup(grpName)->getView(viewName);
+      EXPECT_NE(sidre_data, otherView->getData<int*>() );
+
+      // Convert to conduit layout and compare data
+      success = root->createNativeLayout(node2);
+      EXPECT_TRUE(success);
+
+      conduit_data = node2[grpName][viewName].as_int_ptr();
+      EXPECT_NE(nullptr, conduit_data);
+      for(int i=0 ; i<SZ ; ++i)
+      {
+        EXPECT_EQ(conduit_data[i], sidre_data[i]);
+      }
+
+      // Dump to console
+      std::cout << "Node2 after createNativeLayout: " << std::endl;
+      node2.print();
+      std::cout << std::endl;
+    }
+
+    // compare the two conduit nodes
+    // first, check compatiblity
+    bool compat = node1.compatible(node2);
+    EXPECT_TRUE(compat);
+
+    // Finally, check the actual array data
+    {
+      int* arr1 = node1[grpName][viewName].as_int_ptr();
+      EXPECT_NE(nullptr, arr1);
+      int* arr2 = node2[grpName][viewName].as_int_ptr();
+      EXPECT_NE(nullptr, arr2);
+
+      for(int i=0 ; i<SZ ; ++i)
+      {
+        EXPECT_EQ(arr1[i], arr2[i]);
+        EXPECT_EQ(expValue(i), arr2[i]);
+      }
+
+    }
+  }
+
+}
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
