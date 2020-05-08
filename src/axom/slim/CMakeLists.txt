@@ -10,10 +10,15 @@
 # Specify all headers/sources
 #------------------------------------------------------------------------------
 set(slim_headers
+    Field.hpp
+    GroupField.hpp
+    IntField.hpp
     Map.hpp
+    Structure.hpp
     )
 
 set(slim_sources
+    Structure.cpp
     )
 
 

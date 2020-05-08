@@ -17,6 +17,11 @@
 #include <string>
 #include <vector>
 
+#include "axom/slim/Field.hpp"
+#include "axom/slim/IntField.hpp"
+#include "axom/slim/GroupField.hpp"
+#include "axom/slim/Map.hpp"
+
 namespace axom
 {
 namespace slim
@@ -34,12 +39,22 @@ namespace slim
 class Structure
 {
 public:
-    axom::slim::Group CreateGroup(const std::string& name, const std::string& description);
-    axom::slim::Group CreateGroup(std::string&& rname, std::string&& rdescription);
+    void map(Map* map) { m_map = map; };
+    Map* map() { return m_map; };
 
-    const std::vector<axom::slim::Group>& Groups() { return m_groups; };
+    GroupField* addGroup(const std::string& name, const std::string& description);
+    GroupField* addGroup(std::string&& rname, std::string&& rdescription);
+
+    IntField* addIntField(const std::string& name,
+                         const std::string& description,
+                         int defaultValue);
+    IntField* addIntField(const std::string& name,
+                         const std::string& description);
+
+    const std::vector<Field*>& fields() { return m_fields; };
 private:
-    std::vector<axom::slim::Group> m_groups;
+    Map* m_map = nullptr;
+    std::vector<Field*> m_fields;
 };
 
 } // end namespace slim

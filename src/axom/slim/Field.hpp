@@ -5,14 +5,14 @@
 
 /*!
  *******************************************************************************
- * \file Group.hpp
+ * \file Field.hpp
  *
- * \brief This file contains the class definition of Group.
+ * \brief This file contains the Abstract base class Field
  *******************************************************************************
  */
 
-#ifndef SLIM_GROUP_HPP
-#define SLIM_GROUP_HPP
+#ifndef SLIM_FIELD_HPP
+#define SLIM_FIELD_HPP
 
 #include <string>
 
@@ -21,29 +21,31 @@ namespace axom
 namespace slim
 {
 
+enum class FieldType {
+  Group,
+  Int,
+  Double,
+  String,
+  Bool
+};
 
 /*!
  *******************************************************************************
- * \class Group
+ * \class Field
  *
- * \brief This class is used to define a group for your input deck.
+ * \brief Abstract base class defining the interface of all Map
+ *  classes.
  *
+ *  Concrete instances need to inherit from this class and implement these
+ *  functions.
  *******************************************************************************
  */
-class Group
+class Field
 {
 public:
-    Group(const std::string& name, const std::string& description)
-    : m_name(name)
-    , m_description(description) {};
-
-    Group(std::string&& rname, std::string&& rdescription)
-    : m_name(std::move(rname))
-    , m_description(std::move(rdescription)) {};
-
-private:
-    std::string m_name;
-    std::string m_description;
+  virtual FieldType type() = 0;
+  virtual std::string name() = 0;
+  virtual std::string description() = 0;
 };
 
 } // end namespace slim

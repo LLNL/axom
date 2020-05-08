@@ -13,6 +13,7 @@
 # Add Serial GTests based tests
 set(gtest_slim_tests
     slim_LuaMap.cpp
+    slim_Structure.cpp
     )
 
 foreach(test ${gtest_slim_tests})
