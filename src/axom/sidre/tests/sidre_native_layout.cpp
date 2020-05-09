@@ -7,6 +7,8 @@
 
 #include "axom/sidre/core/sidre.hpp"
 
+#include "conduit_blueprint.hpp"
+
 #include <vector>
 #include <string>
 #include <iostream>
@@ -267,11 +269,10 @@ TEST(sidre_native_layout,native_layout_with_scalars)
 //------------------------------------------------------------------------------
 TEST(sidre_native_layout,export_import_conduit)
 {
-  // Checks that we can import an exported conduit node
-  // into a separate datastore
-  // using Group::createNativeLayout() and Group::importConduitTree()
+  // Checks that we can import an exported conduit tree into a separate
+  // datastore using Group::createNativeLayout() and Group::importConduitTree()
 
-  // Checks for an array with a non-zero size and for one of size zero
+  // Tests with non-zero- and with zero-sized arrays
   for( int SZ : {10, 0})
   {
     SLIC_INFO("Checking export/import from conduit with array of size " << SZ);
@@ -395,10 +396,123 @@ TEST(sidre_native_layout,export_import_conduit)
         EXPECT_EQ(arr1[i], arr2[i]);
         EXPECT_EQ(expValue(i), arr2[i]);
       }
-
     }
   }
+}
 
+TEST(sidre_native_layout,import_conduit_and_verify_protocol)
+{
+  // This tests is similar to the 'export_import_conduit' test above,
+  // but uses conduit's blueprint_verify on the result
+  // which is expected to be a blueprint multicomponent array (mcarray)
+
+  std::string grpName = "multicomponent_array";
+  const int NCOMP = 5;  // number of components in the array
+
+  // Tests with non-zero- and with zero-sized arrays
+  for(int SZ : {10, 0})
+  {
+    SLIC_INFO("Checking export of blueprint protocol for 'mcarray' with "
+              << NCOMP << " components, each of size " << SZ);
+
+    axom::sidre::DataStore ds1,ds2;
+    conduit::Node node1,node2;
+
+    // Simple lambda to get/check expected value at index (i,j)
+    auto expValue = [=](int i, int j) {
+                      return j*SZ + (SZ-i);
+                    };
+    // Simple lambda to get the name of the i^th component group
+    auto viewName = [=](int j) {
+                      return std::string(1,'a' + j); // i.e. 'a', 'b', 'c', ...
+                    };
+
+    // Initialize datastore, export to conduit and verify 'mcarray
+    {
+      auto* root = ds1.getRoot();
+      auto* grp  = root->createGroup(grpName);
+      for(int j=0 ; j<NCOMP ; ++j)
+      {
+        auto* view = grp->createViewAndAllocate(viewName(j), INT32_ID, SZ);
+
+        int* sidre_data = view->getData();
+        EXPECT_NE(nullptr, sidre_data);
+        for(int i=0 ; i<SZ ; ++i)
+        {
+          sidre_data[i] = expValue(i,j);
+        }
+      }
+
+      // Convert to conduit
+      bool success = root->createNativeLayout(node1);
+      EXPECT_TRUE(success);
+
+      std::cout<<"Conduit native layout of datastore after exporting: \n";
+      node1.print();
+      std::cout << std::endl;
+
+      // Call blueprint::verify to check that it complies with 'mcarray' schema
+      conduit::Node info;
+      bool verified =
+        conduit::blueprint::verify("mcarray", node1[grpName], info);
+      EXPECT_TRUE(verified);
+
+      std::cout<<"Blueprint verify info for 'mcarray' protocol on node 1: \n";
+      info.print();
+      std::cout << std::endl;
+    }
+
+    // Import into sidre, export again to conduit, then verify blueprint
+    {
+      // Import into sidre
+      auto* root = ds1.getRoot();
+      bool success = root->importConduitTree(node1);
+      EXPECT_TRUE(success);
+
+      // export back to conduit
+      success = root->createNativeLayout(node2);
+      EXPECT_TRUE(success);
+
+      std::cout<<"Conduit layout after export-import-export from Sidre: \n";
+      node2.print();
+      std::cout << std::endl;
+
+      // verify the mcarray protocol
+      conduit::Node info;
+      bool verified =
+        conduit::blueprint::verify("mcarray", node2[grpName], info);
+      EXPECT_TRUE(verified);
+
+      std::cout<<"Blueprint verify info for 'mcarray' protocol on node2: \n";
+      info.print();
+      std::cout << std::endl;
+    }
+
+    // Check the results
+    {
+      // Verify the two blueprints are compatible
+      bool compat = node1.compatible(node2);
+      EXPECT_TRUE(compat);
+
+      // Check the data in the final conduit node
+      conduit::Node& mcarr = node2[grpName];
+      for(int j=0 ; j< NCOMP ; ++j)
+      {
+        std::string name = viewName(j);
+
+        EXPECT_TRUE(mcarr.has_child(name));
+        EXPECT_EQ(SZ, mcarr[name].dtype().number_of_elements());
+
+        int* arr = mcarr[name].as_int_ptr();
+        EXPECT_NE(nullptr, arr);
+
+        for(int i=0 ; i<SZ ; ++i)
+        {
+          EXPECT_EQ( expValue(i,j), arr[i]);
+        }
+      }
+    }
+  }
 }
 
 //----------------------------------------------------------------------
