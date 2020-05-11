@@ -2503,7 +2503,7 @@ TEST(sidre_group,import_conduit_lists)
   for (int i = 0 ; i < ndata ; ++i)
   {
     iarray[i] = (conduit::int64)i;
-  } 
+  }
 
   conduit::Node &list_item0 = input["list"].append();
   list_item0.set((conduit::int64)(12));
@@ -2539,7 +2539,7 @@ TEST(sidre_group,import_conduit_lists)
        indexIsValid(idx) ;
        idx = list->getNextValidGroupIndex(idx))
   {
-    Group* child = list->getGroup(idx); 
+    Group* child = list->getGroup(idx);
     EXPECT_EQ(child->getView("val1")->getData<conduit::int64>(),2);
     EXPECT_NEAR(child->getView("val2")->getData<conduit::float64>(),4.0,1e-12);
   }
@@ -2550,17 +2550,20 @@ TEST(sidre_group,import_conduit_lists)
   {
     View* view = list->getView(idx);
     const conduit::Schema& schema = view->getSchema();
-    if (schema.dtype().is_int64()) {
+    if (schema.dtype().is_int64())
+    {
       EXPECT_EQ(view->getData<conduit::int64>(),12);
     }
-    if (schema.dtype().is_float64()) {
+    if (schema.dtype().is_float64())
+    {
       EXPECT_NEAR(view->getData<conduit::float64>(),75.75,1e-12);
     }
-    if (schema.dtype().is_string()) {
+    if (schema.dtype().is_string())
+    {
       EXPECT_EQ(view->getString(),std::string("test_str"));
     }
   }
-} 
+}
 
 
 #ifdef AXOM_USE_UMPIRE
