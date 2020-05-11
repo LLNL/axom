@@ -28,9 +28,11 @@
 #if defined(__CUDACC__)
 #define AXOM_DEVICE __device__
 #define AXOM_HOST_DEVICE __host__ __device__
+#define AXOM_HOST __host__
 #else
 #define AXOM_DEVICE
 #define AXOM_HOST_DEVICE
+#define AXOM_HOST
 #endif
 
 /*!
