@@ -420,6 +420,10 @@ void check_build_bvh2d( )
   boxes[ 6 ] = boxes[ 7 ] = 2.;
 
   spin::BVH< NDIMS, ExecSpace, FloatType > bvh( boxes, NUM_BOXES );
+
+  int allocatorID = bvh.getAllocatorID();
+  EXPECT_EQ( allocatorID, axom::execution_space< ExecSpace >::allocatorID() );
+
   bvh.setScaleFactor( 1.0 ); // i.e., no scaling
   bvh.build( );
 
@@ -459,6 +463,10 @@ void check_build_bvh3d( )
   boxes[ 9 ] = boxes[ 10 ] = boxes[ 11 ] = 2.;
 
   spin::BVH< NDIMS, ExecSpace, FloatType > bvh( boxes, NUM_BOXES );
+
+  int allocatorID = bvh.getAllocatorID();
+  EXPECT_EQ( allocatorID, axom::execution_space< ExecSpace >::allocatorID() );
+
   bvh.setScaleFactor( 1.0 ); // i.e., no scaling
   bvh.build( );
 
@@ -1801,7 +1809,7 @@ TEST( spin_bvh, single_box3d_omp )
 #endif
 
 //------------------------------------------------------------------------------
-#ifdef AXOM_USE_CUDA
+#if defined(AXOM_USE_CUDA) && defined(AXOM_USE_RAJA) && defined(AXOM_USE_UMPIRE)
 
 AXOM_CUDA_TEST( spin_bvh, contruct2D_cuda )
 {
@@ -1902,7 +1910,74 @@ AXOM_CUDA_TEST( spin_bvh, single_box3d_cuda )
   check_single_box3d< exec, float >( );
 }
 
-#endif
+//------------------------------------------------------------------------------
+AXOM_CUDA_TEST( spin_bvh, use_pool_allocator )
+{
+  // Create a pool allocator on the device
+  constexpr size_t POOL_SIZE   = (1024 * 1024 * 1024) + 1; 
+  umpire::ResourceManager& rm  = umpire::ResourceManager::getInstance();
+  umpire::Allocator allocator  = rm.getAllocator(umpire::resource::Unified);
+  
+  umpire::Allocator pool_allocator = 
+    rm.makeAllocator< umpire::strategy::DynamicPool >( 
+      "DEVICE_POOL", allocator,  POOL_SIZE );
+
+  const int allocID = pool_allocator.getId();
+
+  // aliases & constants
+  constexpr int NDIMS = 3;
+
+  constexpr int BLOCK_SIZE = 256;
+  using exec  = axom::CUDA_EXEC< BLOCK_SIZE >;
+
+  constexpr int NUM_BOXES = 1;
+
+  using FloatType = double;
+
+  // single bounding box in [0,1] x [0,1] x [0,1]
+  FloatType* boxes = axom::allocate< FloatType >( 6, allocID );
+  axom::for_all< exec >( 0, 6, AXOM_LAMBDA( axom::IndexType idx )
+  {
+    boxes[ idx ] = (idx < 3) ? 0.0 : 1.0;
+  } );
+
+  // construct a BVH with a single box
+  spin::BVH< NDIMS, exec, FloatType > bvh( boxes, NUM_BOXES, allocID );
+  EXPECT_EQ( bvh.getAllocatorID(), allocID );
+
+  bvh.setScaleFactor( 1.0 ); // i.e., no scaling
+  bvh.build( );
+
+  // run the find algorithm w/ the centroid of the bounding box as input.
+  // Should return one and only one candidate that corresponds to the
+  // single bounding box.
+  FloatType* xc = axom::allocate< FloatType >( NUM_BOXES, allocID );
+  FloatType* yc = axom::allocate< FloatType >( NUM_BOXES, allocID );
+  FloatType* zc = axom::allocate< FloatType >( NUM_BOXES, allocID );
+  axom::for_all< exec >( 0, 1, AXOM_LAMBDA(axom::IndexType idx)
+  { 
+    xc[ idx ] = yc[ idx ] = zc[ idx ] = 0.5;
+  } );
+
+  IndexType* offsets    = axom::allocate< IndexType >( NUM_BOXES, allocID );
+  IndexType* counts     = axom::allocate< IndexType >( NUM_BOXES, allocID );
+  IndexType* candidates = nullptr;
+  bvh.findPoints( offsets, counts, candidates, NUM_BOXES, xc, yc, zc );
+  EXPECT_TRUE( candidates != nullptr );
+
+  // Ensure the BVH uses interally the supplied pool allocator
+  EXPECT_EQ( rm.getAllocator(candidates).getId(), allocID );
+
+  axom::deallocate( xc );
+  axom::deallocate( yc );
+  axom::deallocate( zc );
+  axom::deallocate( boxes );
+  axom::deallocate( offsets );
+  axom::deallocate( counts );
+  axom::deallocate( candidates );
+}
+
+#endif /* AXOM_USE_CUDA && AXOM_USE_RAJA && AXOM_USE_UMPIRE */
 
 //------------------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"

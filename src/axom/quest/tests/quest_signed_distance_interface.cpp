@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: (BSD-3-Clause)
 
 // Axom utils
+#include "axom/config.hpp"                      // axom compile-time definitions
 #include "axom/core/utilities/Utilities.hpp"
 
 // Mint includes
@@ -62,6 +63,8 @@ const char IGNORE_OUTPUT[] = ".*";
 //------------------------------------------------------------------------------
 namespace
 {
+
+constexpr bool USE_MPI3_SHARED_MEMORY = true;
 
 /*!
  * \brief Generate a mesh of 4 triangles along the XY plane.
@@ -426,9 +429,18 @@ TEST( quest_signed_distance_interface, analytic_plane )
   check_analytic_plane( );
 
 #if defined( AXOM_USE_MPI ) && defined( AXOM_USE_MPI3 )
-  check_analytic_plane( true );
+  check_analytic_plane( USE_MPI3_SHARED_MEMORY );
 #endif
 }
+
+//------------------------------------------------------------------------------
+#if defined( AXOM_USE_MPI ) && defined ( AXOM_USE_MPI3 )
+TEST( quest_signed_distance_interface, call_twice_using_shared_memory )
+{
+  check_analytic_plane( USE_MPI3_SHARED_MEMORY );
+  check_analytic_plane( USE_MPI3_SHARED_MEMORY );
+}
+#endif
 
 //------------------------------------------------------------------------------
 TEST( quest_signed_distance_interface, analytic_sphere )

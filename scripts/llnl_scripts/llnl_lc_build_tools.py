@@ -148,6 +148,8 @@ def copy_build_dir_files(build_dir, archive_spec_dir):
     copy_if_exists(pjoin(build_dir, "output.log.make.test.txt"), archive_spec_dir)
     copy_if_exists(pjoin(build_dir, "output.log.make.install.txt"), archive_spec_dir)
     copy_if_exists(pjoin(build_dir, "output.log.make.docs.txt"), archive_spec_dir)
+    copy_if_exists(pjoin(build_dir, "output.log.install_example.cmake.txt"), archive_spec_dir)
+    copy_if_exists(pjoin(build_dir, "output.log.install_example.blt.txt"), archive_spec_dir)
 
     # Note: There should only be one of these per spec
     last_test_logs = glob.glob(pjoin(build_dir, "Testing", "Temporary", "LastTest*.log"))
@@ -345,7 +347,7 @@ def build_and_test_host_config(test_root,host_config):
     print "[starting unit tests]"
     print "[log file: %s]" % tst_output_file
 
-    tst_cmd = "cd %s && make CTEST_OUTPUT_ON_FAILURE=1 test ARGS=\"-T Test -VV -j8\"" % build_dir
+    tst_cmd = "cd %s && make CTEST_OUTPUT_ON_FAILURE=1 test ARGS=\"-T Test -VV -j16\"" % build_dir
 
     res = sexe(tst_cmd,
                output_file = tst_output_file,
@@ -360,7 +362,7 @@ def build_and_test_host_config(test_root,host_config):
     print "[starting docs generation]"
     print "[log file: %s]" % docs_output_file
 
-    res = sexe("cd %s && make docs " % build_dir,
+    res = sexe("cd %s && make -j16 docs " % build_dir,
                output_file = docs_output_file,
                echo=True)
 
@@ -373,7 +375,7 @@ def build_and_test_host_config(test_root,host_config):
     print "[starting install]"
     print "[log file: %s]" % inst_output_file
 
-    res = sexe("cd %s && make install " % build_dir,
+    res = sexe("cd %s && make -j16 install " % build_dir,
                output_file = inst_output_file,
                echo=True)
 
@@ -386,6 +388,73 @@ def build_and_test_host_config(test_root,host_config):
     sexe("ls %s/include" % install_dir, echo=True, error_prefix="WARNING:")
     sexe("ls %s/lib" %     install_dir, echo=True, error_prefix="WARNING:")
     sexe("ls %s/bin" %     install_dir, echo=True, error_prefix="WARNING:")
+
+    # test the installation using installed cmake examples
+    # TODO: enable tests for installed examples in device configurations
+    # TODO: enable tests for installed makefile-based example
+    is_device_build = "nvcc" in host_config
+    should_test_installed_cmake_example = not is_device_build
+    should_test_installed_blt_example = not is_device_build
+    should_test_installed_make_example = False
+
+    if should_test_installed_cmake_example:
+        install_example_dir = pjoin(install_dir, "examples", "axom", "using-with-cmake")
+        install_example_output_file = pjoin(build_dir,"output.log.install_example.cmake.txt")
+        print "[testing installed 'using-with-cmake' example]"
+        print "[log file: %s]" % install_example_output_file
+
+        example_commands = [
+            "cd {0}".format(install_example_dir),
+            "rm -rf build",
+            "mkdir build",
+            "cd build",
+            """echo "[Configuring '{}' example]" """.format("using-with-cmake"),
+            "cmake -C ../host-config.cmake ..",
+            """echo "[Building '{}' example]" """.format("using-with-cmake"),
+            "make ",
+            """echo "[Running '{}' example]" """.format("using-with-cmake"),
+            "./example",
+            """echo "[Done]" """
+        ]
+
+        res = sexe(" && ".join(example_commands),
+                output_file = install_example_output_file,
+                echo=True)
+
+        if res != 0:
+            print "[ERROR: Installed 'using-with-cmake' example for host-config: %s failed]\n\n" % host_config
+            return res
+
+
+    if should_test_installed_blt_example:
+        install_example_dir = pjoin(install_dir, "examples", "axom", "using-with-blt")
+        install_example_output_file = pjoin(build_dir,"output.log.install_example.blt.txt")
+        print "[testing installed 'using-with-blt' example]"
+        print "[log file: %s]" % install_example_output_file
+
+        example_commands = [
+            "cd {0}".format(install_example_dir),
+            "rm -rf build",
+            "mkdir build",
+            "cd build",
+            """echo "[Configuring '{}' example]" """.format("using-with-blt"),
+            "cmake -C ../host-config.cmake ..",
+            """echo "[Building '{}' example]" """.format("using-with-blt"),
+            "make ",
+            """echo "[Running '{}' example]" """.format("using-with-blt"),
+            "./bin/example",
+            """echo "[Done]" """
+        ]
+
+        res = sexe(" && ".join(example_commands),
+                output_file = install_example_output_file,
+                echo=True)
+
+        if res != 0:
+            print "[ERROR: Installed 'using-with-blt' example for host-config: %s failed]\n\n" % host_config
+            return res
+
+
     print "[SUCCESS: Build, test, and install for host-config: %s complete]\n" % host_config
 
     set_axom_group_and_perms(build_dir)

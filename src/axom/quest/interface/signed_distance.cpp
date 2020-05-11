@@ -314,6 +314,7 @@ void signed_distance_finalize( )
 #if defined(AXOM_USE_MPI) && defined(AXOM_USE_MPI3)
   internal::mpi_comm_free( &s_intra_node_comm );
   internal::mpi_win_free( &s_window );
+  s_shared_mesh_buffer = nullptr;
 #endif
 
 }

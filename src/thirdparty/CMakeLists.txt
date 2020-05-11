@@ -19,11 +19,11 @@ target_include_directories(cli11 SYSTEM INTERFACE
             $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/thirdparty>)
 
 install(TARGETS              cli11
-        EXPORT               cli11-targets
+        EXPORT               axom-targets
         INCLUDES DESTINATION include)
 install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/CLI11
         DESTINATION include )
-install(EXPORT cli11-targets DESTINATION lib/cmake)
+install(EXPORT axom-targets DESTINATION lib/cmake)
 
 set(CLI11_FOUND TRUE CACHE INTERNAL "")
 mark_as_advanced(CLI11_FOUND)
@@ -66,12 +66,12 @@ set(FMT_EXCEPTIONS FALSE PARENT_SCOPE)
 set(FMT_HEADER_ONLY TRUE PARENT_SCOPE)
 
 install(TARGETS              fmt
-        EXPORT               fmt-targets
+        EXPORT               axom-targets
         INCLUDES DESTINATION include)
 install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/fmt
         DESTINATION include
         )
-install(EXPORT fmt-targets DESTINATION lib/cmake)
+install(EXPORT axom-targets DESTINATION lib/cmake)
 
 set(FMT_FOUND TRUE CACHE INTERNAL "")
 mark_as_advanced(FMT_FOUND)
@@ -153,13 +153,13 @@ if (AXOM_ENABLE_SPARSEHASH)
     endif()
 
     install(TARGETS              sparsehash
-            EXPORT               sparsehash-targets
+            EXPORT               axom-targets
             INCLUDES DESTINATION include)
 
     install(DIRECTORY   ${PROJECT_SOURCE_DIR}/thirdparty/sparsehash
             DESTINATION include)
 
-    install(EXPORT sparsehash-targets DESTINATION lib/cmake)
+    install(EXPORT axom-targets DESTINATION lib/cmake)
 
   else()
     message(STATUS "Could not configure sparsehash")
