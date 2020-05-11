@@ -7,6 +7,7 @@
 
 #include "axom/lumberjack/TextEqualityCombiner.hpp"
 
+
 TEST(lumberjack_TextEqualityCombiner, case01)
 {
   //Test most basic case: two equal texts
