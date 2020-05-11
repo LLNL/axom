@@ -5,6 +5,8 @@
 
 #include "gtest/gtest.h"
 
+#include "axom/config.hpp"
+#include "axom/core/Macros.hpp"
 #include "axom/sidre/core/sidre.hpp"
 
 #include "conduit_blueprint.hpp"
@@ -286,9 +288,10 @@ TEST(sidre_native_layout,export_import_conduit)
     std::string viewName = "array_view";
 
     // Simple lambda to return the expected value at an index
-    auto expValue = [=](int i) {
-                      return SZ-i;
-                    };
+    auto expValue = AXOM_HOST_LAMBDA(int i)
+    {
+      return SZ-i;
+    };
 
     // Create datastore with an array view and export to conduit node
     {
@@ -419,13 +422,15 @@ TEST(sidre_native_layout,import_conduit_and_verify_protocol)
     conduit::Node node1,node2;
 
     // Simple lambda to get/check expected value at index (i,j)
-    auto expValue = [=](int i, int j) {
-                      return j*SZ + (SZ-i);
-                    };
+    auto expValue = AXOM_HOST_LAMBDA(int i, int j)
+    {
+      return j*SZ + (SZ-i);
+    };
     // Simple lambda to get the name of the i^th component group
-    auto viewName = [=](int j) {
-                      return std::string(1,'a' + j); // i.e. 'a', 'b', 'c', ...
-                    };
+    auto viewName = AXOM_HOST_LAMBDA(int j)
+    {
+      return std::string(1,'a' + j);                 // i.e. 'a', 'b', 'c', ...
+    };
 
     // Initialize datastore, export to conduit and verify 'mcarray
     {
