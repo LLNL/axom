@@ -2491,6 +2491,7 @@ TEST(sidre_group,import_conduit_lists)
 {
   conduit::Node input;
 
+  //Give input some child nodes that are not lists, some that are.
   input["fields/a/i0"] = (conduit::int64)(100);
   input["fields/a/d0"] = (conduit::float64)(3000.00);
   input["fields/b/s0"] = "foo";
@@ -2509,7 +2510,7 @@ TEST(sidre_group,import_conduit_lists)
   conduit::Node &list_item1 = input["list"].append();
   list_item1.set((conduit::float64)(75.75));
   conduit::Node &list_item2 = input["list"].append();
-  list_item2.set("list_string");
+  list_item2.set("test_str");
   conduit::Node &list_item3 = input["list"].append();
   list_item3["val1"] = (conduit::int64)(2);
   list_item3["val2"] = (conduit::float64)(4.0);
@@ -2543,9 +2544,9 @@ TEST(sidre_group,import_conduit_lists)
     EXPECT_NEAR(child->getView("val2")->getData<conduit::float64>(),4.0,1e-12);
   }
 
-  for (IndexType idx = list->getFirstValidGroupIndex() ;
+  for (IndexType idx = list->getFirstValidViewIndex() ;
        indexIsValid(idx) ;
-       idx = list->getNextValidGroupIndex(idx))
+       idx = list->getNextValidViewIndex(idx))
   {
     View* view = list->getView(idx);
     const conduit::Schema& schema = view->getSchema();
@@ -2556,7 +2557,7 @@ TEST(sidre_group,import_conduit_lists)
       EXPECT_NEAR(view->getData<conduit::float64>(),75.75,1e-12);
     }
     if (schema.dtype().is_string()) {
-      EXPECT_EQ(view->getString(),std::string("list_string"));
+      EXPECT_EQ(view->getString(),std::string("test_str"));
     }
   }
 } 

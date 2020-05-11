@@ -2147,13 +2147,14 @@ bool Group::importConduitTree(const conduit::Node &node, bool preserve_contents)
     while (itr.has_next())
     {
       const Node& cld_node  = itr.next();
-      std::string cld_name  = itr.name();
+      std::string cld_name = m_is_list ? "" : itr.name();
       DataType cld_dtype = cld_node.dtype();
 
       if(cld_dtype.is_object() || cld_dtype.is_list())
       {
         // create group
-        Group* grp = createGroup(cld_name);
+        Group* grp = m_is_list ? createUnnamedGroup(cld_dtype.is_list()) :
+                     createGroup(cld_name, cld_dtype.is_list());
         success = grp->importConduitTree(cld_node, preserve_contents);
       }
       else if(cld_dtype.is_empty())
