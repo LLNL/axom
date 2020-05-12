@@ -1128,14 +1128,15 @@ bool Group::createNativeLayout(Node& n, const Attribute* attr) const
     const View* view = getView(vidx);
 
     // Check that the view's name is not also a child group name
-    SLIC_CHECK_MSG(!hasChildGroup(view->getName()),
+    SLIC_CHECK_MSG(m_is_list || !hasChildGroup(view->getName()),
                    SIDRE_GROUP_LOG_PREPEND
                    << "'" << view->getName()
                    << "' is the name of both a group and a view.");
 
     if (attr == nullptr || view->hasAttributeValue(attr))
     {
-      view->createNativeLayout( n[view->getName()] );
+      conduit::Node &child_node = m_is_list ? n.append() : n[view->getName()];
+      view->createNativeLayout( child_node );
       hasSavedViews = true;
     }
     vidx = getNextValidViewIndex(vidx);
@@ -1146,7 +1147,8 @@ bool Group::createNativeLayout(Node& n, const Attribute* attr) const
   while ( indexIsValid(gidx) )
   {
     const Group* group =  getGroup(gidx);
-    if ( group->createNativeLayout(n[group->getName()], attr) )
+    conduit::Node &child_node = m_is_list ? n.append() : n[group->getName()];
+    if ( group->createNativeLayout(child_node, attr) )
     {
       hasSavedViews = true;
     }
