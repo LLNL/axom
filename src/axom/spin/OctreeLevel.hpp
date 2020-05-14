@@ -210,7 +210,8 @@ public:
       >
   {
 public:
-    using iter = BlockIterator<OctreeLevel, IterHelper, DataType>;
+    using GridPt = typename OctreeLevel::GridPt; 
+    using iter   = BlockIterator< OctreeLevel, IterHelper, DataType>;
 
     BlockIterator(OctreeLevel* octLevel, bool begin = false)
       : m_octLevel(octLevel)
