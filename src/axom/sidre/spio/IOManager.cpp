@@ -84,7 +84,15 @@ IOManager::IOManager(MPI_Comm comm,
 {
   MPI_Comm_size(comm, &m_comm_size);
   MPI_Comm_rank(comm, &m_my_rank);
-#ifndef AXOM_USE_SCR
+#ifdef AXOM_USE_SCR
+  int world_size;
+  MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+  if (m_use_scr && m_comm_size != world_size)
+  {
+    SLIC_WARNING(
+      "IOManager constructor called with use_scr = true, but Axom was not compiled with SCR. IOManager will operate without SCR.");
+  }
+#else
   if (m_use_scr)
   {
     SLIC_WARNING(
@@ -173,13 +181,11 @@ void IOManager::write(sidre::Group* datagroup, int num_files,
     m_baton = new IOBaton(m_mpi_comm, num_files, m_comm_size);
   }
 
-  std::string root_string = file_string;
-#ifdef AXOM_USE_SCR
-  if (m_use_scr)
-  {
-    SCR_Start_checkpoint();
+  if (m_use_scr && num_files != m_comm_size) {
+    SLIC_WARNING("SCR requires a file per process");
   }
-#endif
+
+  std::string root_string = file_string;
   if (m_my_rank == 0)
   {
     createRootFile(root_string, num_files, protocol);
@@ -187,12 +193,14 @@ void IOManager::write(sidre::Group* datagroup, int num_files,
   MPI_Barrier(m_mpi_comm);
 
   std::string root_name = root_string + ".root";
+#if 0
   if (m_use_scr)
   {
     m_scr_checkpoint_dir =
       broadcastString(m_scr_checkpoint_dir, m_mpi_comm, m_my_rank);
     root_name = m_scr_checkpoint_dir + "/" + root_name;
   }
+#endif
 
   MPI_Barrier(m_mpi_comm);
 
@@ -209,13 +217,21 @@ void IOManager::write(sidre::Group* datagroup, int num_files,
     hid_t h5_file_id, h5_group_id;
     if (m_baton->isFirstInGroup())
     {
-      std::string dir_name;
-      utilities::filesystem::getDirName(dir_name, hdf5_name);
-      if (!dir_name.empty())
-      {
-        utilities::filesystem::makeDirsForPath(dir_name);
+      // no need to create directories in SCR
+      if (!m_use_scr) {
+        std::string dir_name;
+        utilities::filesystem::getDirName(dir_name, hdf5_name);
+        if (!dir_name.empty())
+        {
+          utilities::filesystem::makeDirsForPath(dir_name);
+        }
+        h5_file_id = conduit::relay::io::hdf5_create_file(hdf5_name);
+      } else {
+        // register original path, and get new path from SCR
+        char scr_name[SCR_MAX_FILENAME];
+        SCR_Route_file(hdf5_name.c_str(), scr_name);
+        h5_file_id = conduit::relay::io::hdf5_create_file(scr_name);
       }
-      h5_file_id = conduit::relay::io::hdf5_create_file(hdf5_name);
     }
     else
     {
@@ -258,13 +274,6 @@ void IOManager::write(sidre::Group* datagroup, int num_files,
   (void)m_baton->pass();
 
   MPI_Barrier(m_mpi_comm);
-#ifdef AXOM_USE_SCR
-  if (m_use_scr)
-  {
-    int valid = 1;
-    SCR_Complete_checkpoint(valid);
-  }
-#endif
 }
 
 /*
@@ -346,20 +355,7 @@ void IOManager::read(sidre::Group* datagroup,
 
     if (m_use_scr)
     {
-      int valid = -1;
-      SCR_Have_restart(&valid, 0);
-      if (valid == 1)
-      {
-        SCR_Start_restart(0);
-        readWithSCR(datagroup, root_file, preserve_contents);
-        SCR_Complete_restart(valid);
-      }
-      else
-      {
-        SLIC_WARNING(
-          "IOManager::read() requested to read files using SCR, but no SCR restart was found. Will attempt to restart without SCR.");
-        read(datagroup, root_file, preserve_contents, false);
-      }
+      readWithSCR(datagroup, root_file, preserve_contents);
     }
     else
     {
@@ -397,7 +393,8 @@ void IOManager::readWithSCR(
   {
     std::string scr_root(file);
     std::string protocol = getProtocol(scr_root);
-    read(datagroup, scr_root, protocol, preserve_contents);
+
+    read(datagroup, root_file, protocol, preserve_contents);
   }
   else
   {
@@ -578,6 +575,7 @@ void IOManager::createRootFile(const std::string& file_base,
     std::string root_name = root_file_name;
     char checkpoint_file[256];
     sprintf(checkpoint_file, "%s", root_name.c_str());
+
     char scr_file[SCR_MAX_FILENAME];
     if (SCR_Route_file(checkpoint_file, scr_file) == SCR_SUCCESS)
     {
@@ -591,17 +589,17 @@ void IOManager::createRootFile(const std::string& file_base,
 
     std::string dir_name;
     utilities::filesystem::getDirName(dir_name, root_file_name);
+#if 0
     if (!dir_name.empty())
     {
       utilities::filesystem::makeDirsForPath(dir_name);
     }
+#endif
     m_scr_checkpoint_dir = dir_name;
   }
 #endif
 
   conduit::relay::io::save(n, root_file_name, relay_protocol);
-
-
 }
 
 /*
@@ -701,9 +699,16 @@ std::string IOManager::getFilePatternFromRoot(const std::string& root_name,
   std::string file_pattern;
   if (m_my_rank == 0)
   {
+    std::string root_path = root_name;
+    if (m_use_scr) {
+      char scr_file[SCR_MAX_FILENAME];
+      SCR_Route_file(root_path.c_str(), scr_file);
+      root_path = std::string(scr_file);
+    }
+
     conduit::Node n;
     std::string relay_protocol = correspondingRelayProtocol(protocol);
-    conduit::relay::io::load(root_name, relay_protocol, n);
+    conduit::relay::io::load(root_path, relay_protocol, n);
     file_pattern = n["file_pattern"].as_string();
   }
 
@@ -727,8 +732,15 @@ std::string IOManager::getHDF5FilePattern(
   std::string file_pattern;
   if (m_my_rank == 0)
   {
+    std::string hdf_root = root_name;
+    if (m_use_scr) {
+      char scr_file[SCR_MAX_FILENAME];
+      SCR_Route_file(hdf_root.c_str(), scr_file);
+      hdf_root = std::string(scr_file);
+    }
+
     conduit::Node n;
-    conduit::relay::io::load(root_name + ":file_pattern", "hdf5", n);
+    conduit::relay::io::load(hdf_root + ":file_pattern", "hdf5", n);
 
     file_pattern = n.as_string();
   }
@@ -784,6 +796,12 @@ void IOManager::readSidreHDF5(sidre::Group* datagroup,
       std::string hdf5_name =
         getFileNameForRank(file_pattern, root_file, set_id);
 
+      if (m_use_scr) {
+        char scr_file[SCR_MAX_FILENAME];
+        SCR_Route_file(hdf5_name.c_str(), scr_file);
+        hdf5_name = std::string(scr_file);
+      }
+
       hid_t h5_file_id = conduit::relay::io::hdf5_open_file_for_read(hdf5_name);
       SLIC_ASSERT(h5_file_id >= 0);
 
@@ -814,6 +832,12 @@ void IOManager::readSidreHDF5(sidre::Group* datagroup,
 
       std::string hdf5_name =
         getFileNameForRank(file_pattern, root_file, input_rank);
+
+      if (m_use_scr) {
+        char scr_file[SCR_MAX_FILENAME];
+        SCR_Route_file(hdf5_name.c_str(), scr_file);
+        hdf5_name = std::string(scr_file);
+      }
 
       hid_t h5_file_id = conduit::relay::io::hdf5_open_file_for_read(hdf5_name);
       SLIC_ASSERT(h5_file_id >= 0);
@@ -883,8 +907,15 @@ int IOManager::getNumFilesFromRoot(const std::string& root_file)
   int read_num_files = 0;
   if (m_my_rank == 0)
   {
+    std::string root_path = root_file;
+    if (m_use_scr) {
+      char scr_file[SCR_MAX_FILENAME];
+      SCR_Route_file(root_path.c_str(), scr_file);
+      root_path = std::string(scr_file);
+    }
+
     conduit::Node n;
-    conduit::relay::io::load(root_file + ":number_of_files","hdf5",n);
+    conduit::relay::io::load(root_path + ":number_of_files","hdf5",n);
     read_num_files = n.to_int();
     SLIC_ASSERT(read_num_files > 0);
   }
@@ -907,8 +938,15 @@ int IOManager::getNumGroupsFromRoot(const std::string& root_file)
   int read_num_trees = 0;
   if (m_my_rank == 0)
   {
+    std::string root_path = root_file;
+    if (m_use_scr) {
+      char scr_file[SCR_MAX_FILENAME];
+      SCR_Route_file(root_path.c_str(), scr_file);
+      root_path = std::string(scr_file);
+    }
+
     conduit::Node n;
-    conduit::relay::io::load(root_file + ":number_of_trees","hdf5",n);
+    conduit::relay::io::load(root_path + ":number_of_trees","hdf5",n);
     read_num_trees = n.to_int();
     SLIC_ASSERT(read_num_trees > 0);
   }
