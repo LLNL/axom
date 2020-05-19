@@ -33,14 +33,16 @@ int main(int argc, char* argv[])
   SCR_Init();
   axom::slic::UnitTestLogger logger;
 
-  SLIC_ERROR_IF(argc != 2,
+  SLIC_ERROR_IF(argc != 3,
                 "Missing command line arguments. \n\t"
-                << "Usage: spio_IOWrite <base_file_name>");
+                << "Usage: spio_IOWrite <num_ckpts> <base_file_name>");
 
+  int num_ckpts;
   std::string file_base;
-  if (argc == 2)
+  if (argc == 3)
   {
-    file_base = argv[1];
+    num_ckpts = atoi(argv[1]);
+    file_base = argv[2];
   }
   else
   {
@@ -50,6 +52,8 @@ int main(int argc, char* argv[])
   int my_rank, num_ranks;
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
   MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
+
+  int t_start = 0;
 
   // restart loop
   int have_restart = 0;
@@ -72,17 +76,24 @@ int main(int argc, char* argv[])
       IOManager reader(MPI_COMM_WORLD, true);
       reader.read(root, root_file, false, true);
     
+      int timestep = root->getView("fields/a/timestep")->getScalar();
+
       delete ds;
 
       // tell SCR whether this process succeeded,
       // return code tells us whether all procs succeeded
       int rc = SCR_Complete_restart(1);
       restarted = (rc == SCR_SUCCESS);
+
+      // update initial state if we successfully restarted
+      if (restarted) {
+        t_start = timestep + 1;
+      }
     }
   } while (have_restart && !restarted);
 
   int t;
-  for (t = 0; t < 10; t++) {
+  for (t = t_start; t < t_start + num_ckpts; t++) {
     // call to ask whether it's time to checkpoint is optional
     int need_checkpoint = 0;
     SCR_Need_checkpoint(&need_checkpoint);
@@ -101,7 +112,7 @@ int main(int argc, char* argv[])
 
       Group* ga = flds->createGroup("a");
       Group* gb = flds2->createGroup("b");
-      //ga->createViewScalar<int>("timestep", timestep);
+      ga->createViewScalar<int>("timestep", t);
       ga->createViewScalar<int>("i0", my_rank + 101);
       gb->createViewScalar<int>("i1", 4*my_rank*my_rank + 404);
 
