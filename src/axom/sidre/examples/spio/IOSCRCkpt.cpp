@@ -189,7 +189,7 @@ int main(int argc, char* argv[])
       // succeeded.
       int valid = 1;
       int complete_rc = SCR_Complete_output(valid);
-      if (complete_rc != SCR_SUCCCESS) {
+      if (complete_rc != SCR_SUCCESS) {
         // some process failed to checkpoint
       }
 
