@@ -58,8 +58,7 @@ int main(int argc, char* argv[])
   // It should also encode enough information that
   // one can construct the full path to the file on the
   // parallel file system.
-  std::string dsetname = "dset.time." + std::to_string(t);
-  SCR_Start_output(dsetname.c_str(), SCR_FLAG_OUTPUT);
+  SCR_Start_output(file_base.c_str(), SCR_FLAG_OUTPUT);
 
   DataStore* ds = new DataStore();
   SLIC_ASSERT(ds);
@@ -84,13 +83,11 @@ int main(int argc, char* argv[])
   MPI_Barrier(MPI_COMM_WORLD);
 #endif
 
-  std::string dset_path = dsetname + "." + file_base;
-
   // One must write with MPI_COMM_WORLD when using SCR.
   // Also, the number of files should be the same as
   // the number of ranks in the job.
   IOManager writer(MPI_COMM_WORLD, true);
-  writer.write(root, num_ranks, dset_path, "sidre_hdf5");
+  writer.write(root, num_ranks, file_base, "sidre_hdf5");
 
   MPI_Barrier(MPI_COMM_WORLD);
 
