@@ -17,6 +17,7 @@ set(example_sources
 if (SCR_FOUND)
     list(APPEND example_sources IOSCRRead.cpp)
     list(APPEND example_sources IOSCRWrite.cpp)
+    list(APPEND example_sources IOSCRCkpt.cpp)
 endif() 
 
 set(spio_example_depends sidre conduit::conduit slic ${EXTRA_LIBS})
