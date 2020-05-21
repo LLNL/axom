@@ -639,7 +639,7 @@ std::string IOManager::getProtocol(
     H5E_auto2_t herr_func;
     void* old_client_data;
     H5Eget_auto(H5E_DEFAULT, &herr_func, &old_client_data);
-    H5Eset_auto(H5E_DEFAULT, NULL, NULL);
+    H5Eset_auto(H5E_DEFAULT, nullptr, nullptr);
 
     hid_t file_id = H5Fopen(root_name.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
     if (file_id > 0)
