@@ -235,8 +235,16 @@ void IOManager::write(sidre::Group* datagroup, int num_files,
     }
     else
     {
-      h5_file_id =
-        conduit::relay::io::hdf5_open_file_for_read_write(hdf5_name);
+      if (!m_use_scr) {
+        h5_file_id =
+          conduit::relay::io::hdf5_open_file_for_read_write(hdf5_name);
+      } else {
+        // register original path, and get new path from SCR
+        char scr_name[SCR_MAX_FILENAME];
+        SCR_Route_file(hdf5_name.c_str(), scr_name);
+        h5_file_id =
+          conduit::relay::io::hdf5_open_file_for_read_write(scr_name);
+      }
     }
     SLIC_ASSERT(h5_file_id >= 0);
 
