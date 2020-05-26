@@ -496,6 +496,101 @@ void check_insert( Array< T >& v )
 }
 
 /*!
+ * \brief Check that the insertion into an Array is working properly
+ *        for iterators.
+ * \param [in] v the Array to check.
+ */
+template < typename T >
+void check_insert_iterator( Array< T >& v )
+{
+  /* Resize the array up to the capacity */
+  IndexType capacity = v.capacity();
+  v.resize( capacity );
+  IndexType size = capacity;
+
+  EXPECT_EQ( v.size(), v.capacity() );
+
+  /* Set the existing data in v */
+  for ( IndexType i = 0 ; i < size ; ++i )
+  {
+      v[ i ] = i - 5 * i + 7 ;
+  }
+
+  /* Insert a new element, should resize. */
+  IndexType old_capacity = capacity;
+  capacity = calc_new_capacity( v, 1 );
+  typename axom::Array< T >::ArrayIterator ret = 
+    v.insert( v.end(), 1, size - 5 * size + 7);
+  size++;
+
+  /* Check that it resized properly */
+  EXPECT_GT( capacity, old_capacity );
+  EXPECT_EQ( v.capacity(), capacity );
+  EXPECT_EQ( v.size(), size );
+  EXPECT_EQ( ret, v.end() - 1);
+  for ( IndexType i = 0 ; i < size ; ++i )
+  {
+    EXPECT_EQ( v[ i ], i - 5 * i + 7 );
+  }
+
+  /* Insert 1000 elements */
+  const IndexType n_elements = 1000;
+  T* values = allocate< T >( n_elements );
+  for ( IndexType i = 0 ; i < n_elements ; ++i )
+  {
+      IndexType i_real = i + size;
+      values[ i ] = i_real - 5 * i_real + 7 ;
+  }
+
+  capacity = calc_new_capacity( v, n_elements );
+  typename axom::Array< T >::ArrayIterator ret2 =
+    v.insert( v.end(), n_elements, values );
+  
+  EXPECT_EQ( ret2, v.begin() + size);
+  size += n_elements;
+
+  /* Check that it resizes properly */
+  EXPECT_EQ( v.capacity(), capacity );
+  EXPECT_EQ( v.size(), size );
+  for ( IndexType i = 0 ; i < size ; ++i )
+  {
+    EXPECT_EQ( v[ i ], i - 5 * i + 7 );
+  }
+
+  capacity = size;
+  v.shrink();
+  IndexType n_insert_front = 100;
+
+  /* Reset the data */
+  T* data_ptr = v.data();
+  for ( IndexType i = 0 ; i < size ; ++i )
+  {
+    data_ptr[ i ] = i + n_insert_front;
+  }
+
+  /* Insert into the front of the Array. */
+  for ( IndexType i = n_insert_front - 1 ; i >= 0 ; i--)
+  {
+    capacity = calc_new_capacity( v, 1 );
+    typename axom::Array< T >::ArrayIterator ret3 =
+      v.insert( v.begin(), 1, i );
+    EXPECT_EQ(ret3, v.begin());
+    size++;
+  }
+
+  /* Check that the insertion worked as expected */
+  EXPECT_EQ( v.capacity(), capacity );
+  EXPECT_EQ( v.size(), size );
+  for ( IndexType i = 0 ; i < size ; ++i )
+  {
+      EXPECT_EQ( v[ i ], i );
+  }
+
+  deallocate( values );
+  values = nullptr;
+}
+
+/*!
  * \brief Check an external array for defects.
  * \param [in] v the external array to check.
  */
@@ -640,6 +735,26 @@ TEST( core_array, checkInsert )
         Array< double > v_double( ZERO, capacity );
         v_double.setResizeRatio( ratio );
         internal::check_insert( v_double );
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+TEST( core_array, checkInsertIterator )
+{
+  constexpr IndexType ZERO = 0;
+
+  for ( double ratio = 1.0 ; ratio <= 2.0 ; ratio += 0.5 )
+  {
+    for ( IndexType capacity = 10 ; capacity <= 512 ; capacity *= 2 )
+    {
+        Array< int > v_int( ZERO, capacity );
+        v_int.setResizeRatio( ratio );
+        internal::check_insert_iterator( v_int );
+
+        Array< double > v_double( ZERO, capacity );
+        v_double.setResizeRatio( ratio );
+        internal::check_insert_iterator( v_double );
     }
   }
 }
