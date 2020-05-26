@@ -345,6 +345,20 @@ public:
   void insert( IndexType pos, const T& value );
 
   /*!
+   * \brief Insert an element into the array at the value before pos.
+   *
+   * \param [in] pos the ArrayIterator before which value will be inserted.
+   * \param [in] value the element value to insert.
+   *
+   * \note Reallocation is done if the new size will exceed the capacity.
+   * \note The size increases by 1.
+   *
+   * \return ArrayIterator to inserted value
+   */
+  ArrayIterator insert( ArrayIterator pos, const T& value );
+
+
+  /*!
    * \brief Insert elements into the array at the given position.
    *
    * \param [in] pos the position at which to begin the insertion.
@@ -360,13 +374,28 @@ public:
   void insert( IndexType pos, IndexType n, const T* values );
 
   /*!
+   * \brief Insert elements into the array at the value before pos.
+   *
+   * \param [in] pos the ArrayIterator before which value will be inserted.
+   * \param [in] n the number of elements to insert.
+   * \param [in] values the element values to insert.
+   *
+   * \note It's assumed that elements is of length n.
+   * \note Reallocation is done if the new size will exceed the capacity.
+   * \note The size increases by n.
+   *
+   * \pre pos <= end()
+   *
+   * \return ArrayIterator to first element inserted (pos if n == 0)
+   */
+  ArrayIterator insert( ArrayIterator pos, IndexType n, const T* values );
+
+  /*!
    * \brief Insert n copies of element into the array at the given position.
    *
    * \param [in] pos the position at which to begin the insertion.
    * \param [in] n the number of elements to insert.
-   * \param [in] value the element value to insert. If not
-   *  specified defaults to the default value of T (zero for most numeric
-   *  types).
+   * \param [in] value the element value to insert.
    *
    * \note Reallocation is done if the new size will exceed the capacity.
    * \note The size increases by n.
@@ -375,7 +404,25 @@ public:
    *
    * \pre pos <= m_num_elements.
    */
-  void insert( IndexType pos, IndexType n, const T& value=T() );
+  void insert( IndexType pos, IndexType n, const T& value );
+
+  /*!
+   * \brief Insert n copies of element into the array at the value before pos.
+   *
+   * \param [in] pos the ArrayIterator before which value will be inserted.
+   * \param [in] n the number of elements to insert.
+   * \param [in] value the element value to insert.
+   *
+   * \note Reallocation is done if the new size will exceed the capacity.
+   * \note The size increases by n.
+   * \note This method is used to create space for elements in the middle of
+   *  the array.
+   *
+   * \pre pos <= end()
+   *
+   * \return ArrayIterator to first element inserted (pos if n == 0)
+   */
+  ArrayIterator insert( ArrayIterator pos, IndexType n, const T& value );
 
   /*!
    * \brief Erases an element from the Array 
@@ -395,20 +442,6 @@ public:
    * \return An ArrayIterator following the last element removed. 
    */
   ArrayIterator erase( ArrayIterator first, ArrayIterator last );  
-
-  /*!
-   * \brief TODO
-   *
-   * \param [in] pos the position to insert at.
-   *
-   * \note Reallocation is done if the new size will exceed the capacity.
-   * \note The size increases by n.
-   * \note This method is used to create space for elements in the middle of
-   *       the array.
-   *
-   * \pre pos <= m_num_elements.
-   */
-  void emplace( IndexType pos );
 
 /// @}
 
@@ -774,6 +807,16 @@ inline void Array< T >::insert( IndexType pos, const T& value )
 
 //------------------------------------------------------------------------------
 template< typename T >
+inline typename Array< T >::ArrayIterator 
+Array< T >::insert( Array< T >::ArrayIterator pos, const T& value )
+{
+  assert( pos >= begin() && pos <= end() );
+  insert( pos - begin(), value);
+  return pos;
+}
+
+//------------------------------------------------------------------------------
+template< typename T >
 inline void Array< T >::insert( IndexType pos, IndexType n, const T* values )
 {
   assert( values != nullptr );
@@ -786,6 +829,18 @@ inline void Array< T >::insert( IndexType pos, IndexType n, const T* values )
 
 //------------------------------------------------------------------------------
 template< typename T >
+inline typename Array< T >::ArrayIterator 
+Array< T >::insert( Array< T >::ArrayIterator pos, 
+                    IndexType n,
+                    const T* values )
+{
+  assert( pos >= begin() && pos <= end() );
+  insert( pos - begin(), n, values);
+  return pos;
+}
+
+//------------------------------------------------------------------------------
+template< typename T >
 inline void Array< T >::insert( IndexType pos, IndexType n, const T& value )
 {
   reserveForInsert( n, pos );
@@ -793,6 +848,18 @@ inline void Array< T >::insert( IndexType pos, IndexType n, const T& value )
   {
     m_data[ pos + i ] = value;
   }
+}
+
+//------------------------------------------------------------------------------
+template< typename T >
+inline typename Array< T >::ArrayIterator
+Array< T >::insert( Array< T >::ArrayIterator pos,
+                    IndexType n, 
+                    const T& value )
+{
+  assert( pos >= begin() && pos <= end() );
+  insert( pos - begin(), n , value );
+  return pos;
 }
 
 //------------------------------------------------------------------------------
@@ -857,16 +924,6 @@ inline typename Array< T >::ArrayIterator Array< T >::erase(
   updateNumElements(m_num_elements - count);
   return first - shifted;
 }
-
-//------------------------------------------------------------------------------
-template< typename T >
-inline void Array< T >::emplace( IndexType pos )
-{
-  // TODO 
-  // this used to do what multiple insert() does.
-  // Does something else according to std::vector
-}
-
 
 //------------------------------------------------------------------------------
 template< typename T >
