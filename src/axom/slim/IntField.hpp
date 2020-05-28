@@ -23,7 +23,7 @@ namespace axom
 namespace slim
 {
 
-class IntField
+class IntField: public Field
 {
 public:
   IntField(const std::string& name, const std::string& description)
