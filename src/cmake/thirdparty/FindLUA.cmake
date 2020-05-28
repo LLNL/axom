@@ -23,6 +23,7 @@ endif()
 # Find includes directory
 find_path( LUA_INCLUDE_DIR lua.hpp
            PATHS  ${LUA_DIR}/include/
+                  ${LUA_DIR}/include/lua
            NO_DEFAULT_PATH
            NO_CMAKE_ENVIRONMENT_PATH
            NO_CMAKE_PATH

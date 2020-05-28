@@ -15,6 +15,8 @@ set(slim_headers
     IntField.hpp
     Map.hpp
     Structure.hpp
+    Backend.hpp
+    MapBackend.hpp
     )
 
 set(slim_sources
