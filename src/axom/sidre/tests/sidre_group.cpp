@@ -2519,50 +2519,105 @@ TEST(sidre_group,import_conduit_lists)
 
   EXPECT_TRUE(ds.getRoot()->importConduitTree(input));
 
-  EXPECT_EQ(ds.getRoot()->getView(
+  {
+    EXPECT_EQ(ds.getRoot()->getView(
               "fields/a/i0")->getData<conduit::int64>(),100);
-  EXPECT_NEAR(ds.getRoot()->getView(
+    EXPECT_NEAR(ds.getRoot()->getView(
                 "fields/a/d0")->getData<conduit::float64>(),3000.00,1e-12);
-  EXPECT_EQ(ds.getRoot()->getView("fields/b/s0")->getString(),
-            std::string("foo"));
+    EXPECT_EQ(ds.getRoot()->getView("fields/b/s0")->getString(),
+              std::string("foo"));
 
-  conduit::int64* sidre_data_ptr =
-    ds.getRoot()->getView("fields/c/int10")->getData();
+    conduit::int64* sidre_data_ptr =
+      ds.getRoot()->getView("fields/c/int10")->getData();
 
-  for(int j=0 ; j< ndata ; j++)
-  {
-    EXPECT_EQ(iarray[j],sidre_data_ptr[j]);
+    for(int j=0 ; j< ndata ; j++)
+    {
+      EXPECT_EQ(iarray[j],sidre_data_ptr[j]);
+    }
+
+    Group* list = ds.getRoot()->getGroup("list");
+    for (IndexType idx = list->getFirstValidGroupIndex() ;
+         indexIsValid(idx) ;
+         idx = list->getNextValidGroupIndex(idx))
+    {
+      Group* child = list->getGroup(idx);
+      EXPECT_EQ(child->getView("val1")->getData<conduit::int64>(),2);
+      EXPECT_NEAR(child->getView("val2")->getData<conduit::float64>(),4.0,1e-12);
+    }
+
+    for (IndexType idx = list->getFirstValidViewIndex() ;
+         indexIsValid(idx) ;
+         idx = list->getNextValidViewIndex(idx))
+    {
+      View* view = list->getView(idx);
+      const conduit::Schema& schema = view->getSchema();
+      if (schema.dtype().is_int64())
+      {
+        EXPECT_EQ(view->getData<conduit::int64>(),12);
+      }
+      if (schema.dtype().is_float64())
+      {
+        EXPECT_NEAR(view->getData<conduit::float64>(),75.75,1e-12);
+      }
+      if (schema.dtype().is_string())
+      {
+        EXPECT_EQ(view->getString(),std::string("test_str"));
+      }
+    }
   }
 
-  Group* list = ds.getRoot()->getGroup("list");
-  for (IndexType idx = list->getFirstValidGroupIndex() ;
-       indexIsValid(idx) ;
-       idx = list->getNextValidGroupIndex(idx))
+  ds.getRoot()->save("lists.hdf5", "sidre_hdf5");
+
+  DataStore load_ds;
+  load_ds.getRoot()->load("lists.hdf5", "sidre_hdf5");
+
   {
-    Group* child = list->getGroup(idx);
-    EXPECT_EQ(child->getView("val1")->getData<conduit::int64>(),2);
-    EXPECT_NEAR(child->getView("val2")->getData<conduit::float64>(),4.0,1e-12);
+    EXPECT_EQ(load_ds.getRoot()->getView(
+              "fields/a/i0")->getData<conduit::int64>(),100);
+    EXPECT_NEAR(load_ds.getRoot()->getView(
+                "fields/a/d0")->getData<conduit::float64>(),3000.00,1e-12);
+    EXPECT_EQ(load_ds.getRoot()->getView("fields/b/s0")->getString(),
+              std::string("foo"));
+
+    conduit::int64* sidre_data_ptr =
+      load_ds.getRoot()->getView("fields/c/int10")->getData();
+
+    for(int j=0 ; j< ndata ; j++)
+    {
+      EXPECT_EQ(iarray[j],sidre_data_ptr[j]);
+    }
+
+    Group* list = load_ds.getRoot()->getGroup("list");
+    for (IndexType idx = list->getFirstValidGroupIndex() ;
+         indexIsValid(idx) ;
+         idx = list->getNextValidGroupIndex(idx))
+    {
+      Group* child = list->getGroup(idx);
+      EXPECT_EQ(child->getView("val1")->getData<conduit::int64>(),2);
+      EXPECT_NEAR(child->getView("val2")->getData<conduit::float64>(),4.0,1e-12);
+    }
+
+    for (IndexType idx = list->getFirstValidViewIndex() ;
+         indexIsValid(idx) ;
+         idx = list->getNextValidViewIndex(idx))
+    {
+      View* view = list->getView(idx);
+      const conduit::Schema& schema = view->getSchema();
+      if (schema.dtype().is_int64())
+      { 
+        EXPECT_EQ(view->getData<conduit::int64>(),12);
+      }
+      if (schema.dtype().is_float64())
+      {
+        EXPECT_NEAR(view->getData<conduit::float64>(),75.75,1e-12);
+      }
+      if (schema.dtype().is_string())
+      { 
+        EXPECT_EQ(view->getString(),std::string("test_str"));
+      }
+    }
   }
 
-  for (IndexType idx = list->getFirstValidViewIndex() ;
-       indexIsValid(idx) ;
-       idx = list->getNextValidViewIndex(idx))
-  {
-    View* view = list->getView(idx);
-    const conduit::Schema& schema = view->getSchema();
-    if (schema.dtype().is_int64())
-    {
-      EXPECT_EQ(view->getData<conduit::int64>(),12);
-    }
-    if (schema.dtype().is_float64())
-    {
-      EXPECT_NEAR(view->getData<conduit::float64>(),75.75,1e-12);
-    }
-    if (schema.dtype().is_string())
-    {
-      EXPECT_EQ(view->getString(),std::string("test_str"));
-    }
-  }
 }
 
 
