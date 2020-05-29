@@ -64,7 +64,9 @@ const char IGNORE_OUTPUT[] = ".*";
 namespace
 {
 
+#if defined( AXOM_USE_MPI ) && defined( AXOM_USE_MPI3 )
 constexpr bool USE_MPI3_SHARED_MEMORY = true;
+#endif
 
 /*!
  * \brief Generate a mesh of 4 triangles along the XY plane.

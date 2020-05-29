@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <time.h>
 
+
 class TestCommunicator : public axom::lumberjack::Communicator
 {
 public:

@@ -11,6 +11,7 @@
 
 #include "axom/lumberjack/Message.hpp"
 
+
 struct TestData
 {
   std::string text;
