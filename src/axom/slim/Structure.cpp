@@ -13,6 +13,7 @@
 
 #include "axom/slim/Structure.hpp"
 
+#include "fmt/fmt.hpp"
 #include "axom/slic.hpp"
 
 namespace axom
@@ -79,6 +80,24 @@ IntField* Structure::addIntField(const std::string& name,
     SLIC_ERROR("Required field is no found in input deck: " + name);
   }
   return intField;
+}
+
+IntField* Structure::getIntField(const std::string& name)
+{
+  SLIC_ASSERT_MSG(m_backend != nullptr, "Backend not set");
+
+  Field* field = m_backend->get(name);
+  if (field == nullptr) {
+    return nullptr;
+  }
+  if (field->type() != FieldType::Int) {
+    std::string error_msg = fmt::format("Integer Field named '{0}' was asked for"
+                                        " but recieved type {1}",
+                                        name, fieldTypeToString(field->type()));
+    SLIC_ERROR(error_msg);
+  }
+
+  return (IntField*)field;
 }
 
 } // end namespace slim

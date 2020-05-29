@@ -29,7 +29,7 @@ class MapBackend : public Backend
 {
 public:
     void add(Field* field) { m_fields[field->name()] = field; }
-    Field* get(std::string name)
+    Field* get(const std::string& name)
     {
         auto p = m_fields.find(name);
         if(p == m_fields.end()) {

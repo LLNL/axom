@@ -27,6 +27,10 @@ TEST(slim_Structure_getBool, getTopLevelInts)
 
   axom::slim::IntField* intfield = nullptr;
 
+  //
+  // Check return values from add
+  //
+
   // Check for existing fields
   intfield = s.addIntField("foo", "foo's description");
   EXPECT_TRUE(intfield != nullptr);
@@ -43,6 +47,28 @@ TEST(slim_Structure_getBool, getTopLevelInts)
 
   // Check one that doesn't exist and doesn't have a default value
   intfield = s.addIntField("nonexistant", "nothing");
+  EXPECT_TRUE(intfield == nullptr);
+
+  //
+  // Check stored values from get
+  //
+  
+  // Check for existing fields
+  intfield = s.getIntField("foo");
+  EXPECT_TRUE(intfield != nullptr);
+  EXPECT_EQ(intfield->value(), 5);
+
+  intfield = s.getIntField("bar");
+  EXPECT_TRUE(intfield != nullptr);
+  EXPECT_EQ(intfield->value(), 15);
+
+  // Check one that doesn't exist but has a default value
+  intfield = s.getIntField("baz");
+  EXPECT_TRUE(intfield != nullptr);
+  EXPECT_EQ(intfield->value(), 100);
+
+  // Check one that doesn't exist and doesn't have a default value
+  intfield = s.getIntField("nonexistant");
   EXPECT_TRUE(intfield == nullptr);
 }
 

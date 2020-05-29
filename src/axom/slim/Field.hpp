@@ -29,6 +29,27 @@ enum class FieldType {
   Bool
 };
 
+inline std::string fieldTypeToString(FieldType ft)
+{
+  if (ft == FieldType::Group){
+    return "Group";
+  }
+  else if (ft == FieldType::Int){
+    return "Integer";
+  }
+  else if (ft == FieldType::Double){
+    return "Double";
+  }
+  else if (ft == FieldType::String){
+    return "String";
+  }
+  else if (ft == FieldType::Bool){
+    return "Boolean";
+  }
+
+  return "Unknown";
+}
+
 /*!
  *******************************************************************************
  * \class Field

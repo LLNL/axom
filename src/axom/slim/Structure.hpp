@@ -55,6 +55,8 @@ public:
     IntField* addIntField(const std::string& name,
                           const std::string& description,
                           bool required=false);
+
+    IntField* getIntField(const std::string& name);
 private:
     Map* m_map = nullptr;
     Backend* m_backend = nullptr;
