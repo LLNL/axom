@@ -2521,9 +2521,9 @@ TEST(sidre_group,import_conduit_lists)
 
   {
     EXPECT_EQ(ds.getRoot()->getView(
-              "fields/a/i0")->getData<conduit::int64>(),100);
+                "fields/a/i0")->getData<conduit::int64>(),100);
     EXPECT_NEAR(ds.getRoot()->getView(
-                "fields/a/d0")->getData<conduit::float64>(),3000.00,1e-12);
+                  "fields/a/d0")->getData<conduit::float64>(),3000.00,1e-12);
     EXPECT_EQ(ds.getRoot()->getView("fields/b/s0")->getString(),
               std::string("foo"));
 
@@ -2542,7 +2542,8 @@ TEST(sidre_group,import_conduit_lists)
     {
       Group* child = list->getGroup(idx);
       EXPECT_EQ(child->getView("val1")->getData<conduit::int64>(),2);
-      EXPECT_NEAR(child->getView("val2")->getData<conduit::float64>(),4.0,1e-12);
+      EXPECT_NEAR(child->getView("val2")->getData<conduit::float64>(),4.0,
+                  1e-12);
     }
 
     for (IndexType idx = list->getFirstValidViewIndex() ;
@@ -2573,9 +2574,9 @@ TEST(sidre_group,import_conduit_lists)
 
   {
     EXPECT_EQ(load_ds.getRoot()->getView(
-              "fields/a/i0")->getData<conduit::int64>(),100);
+                "fields/a/i0")->getData<conduit::int64>(),100);
     EXPECT_NEAR(load_ds.getRoot()->getView(
-                "fields/a/d0")->getData<conduit::float64>(),3000.00,1e-12);
+                  "fields/a/d0")->getData<conduit::float64>(),3000.00,1e-12);
     EXPECT_EQ(load_ds.getRoot()->getView("fields/b/s0")->getString(),
               std::string("foo"));
 
@@ -2594,7 +2595,8 @@ TEST(sidre_group,import_conduit_lists)
     {
       Group* child = list->getGroup(idx);
       EXPECT_EQ(child->getView("val1")->getData<conduit::int64>(),2);
-      EXPECT_NEAR(child->getView("val2")->getData<conduit::float64>(),4.0,1e-12);
+      EXPECT_NEAR(child->getView("val2")->getData<conduit::float64>(),4.0,
+                  1e-12);
     }
 
     for (IndexType idx = list->getFirstValidViewIndex() ;
@@ -2604,7 +2606,7 @@ TEST(sidre_group,import_conduit_lists)
       View* view = list->getView(idx);
       const conduit::Schema& schema = view->getSchema();
       if (schema.dtype().is_int64())
-      { 
+      {
         EXPECT_EQ(view->getData<conduit::int64>(),12);
       }
       if (schema.dtype().is_float64())
@@ -2612,7 +2614,7 @@ TEST(sidre_group,import_conduit_lists)
         EXPECT_NEAR(view->getData<conduit::float64>(),75.75,1e-12);
       }
       if (schema.dtype().is_string())
-      { 
+      {
         EXPECT_EQ(view->getString(),std::string("test_str"));
       }
     }

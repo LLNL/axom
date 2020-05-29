@@ -626,7 +626,7 @@ std::string IOManager::getProtocol(
                  "The root file name should always end in 'root'."
                  << " File name was '"<< root_name <<"'");
 
-  std::string protocol; 
+  std::string protocol;
   if (m_my_rank == 0)
   {
     std::string relay_protocol = "json";
@@ -652,7 +652,7 @@ std::string IOManager::getProtocol(
 
     // Restore error output
     H5Eset_auto(H5E_DEFAULT, herr_func, old_client_data);
- 
+
 #endif
 
     conduit::Node n;

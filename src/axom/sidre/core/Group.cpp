@@ -1234,7 +1234,7 @@ bool Group::createExternalLayout(Node& n,
       else
       {
         n.remove( n.number_of_children()-1 );
-      } 
+      }
     }
 
     gidx = getNextValidGroupIndex(gidx);
@@ -2004,7 +2004,8 @@ bool Group::exportTo(conduit::Node& result,
       const View* view = getView(vidx);
       if (attr == nullptr || view->hasAttributeValue(attr))
       {
-        Node& n_view = m_is_list ? vnode.append() : vnode.fetch(view->getName());
+        Node& n_view =
+          m_is_list ? vnode.append() : vnode.fetch(view->getName());
         view->exportTo( n_view, buffer_indices );
         hasSavedViews = true;
       }
@@ -2024,7 +2025,8 @@ bool Group::exportTo(conduit::Node& result,
     while ( indexIsValid(gidx) )
     {
       const Group* group = getGroup(gidx);
-      Node& n_group = m_is_list ? gnode.append() : gnode.fetch(group->getName());
+      Node& n_group =
+        m_is_list ? gnode.append() : gnode.fetch(group->getName());
       bool hsv = group->exportTo(n_group, attr, buffer_indices);
       hasSavedViews = hasSavedViews || hsv;
       hasSavedGroups = true;
