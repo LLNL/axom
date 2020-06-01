@@ -1227,13 +1227,13 @@ bool Group::createExternalLayout(Node& n,
     else
     {
       // Remove nodes that do not have any external views
-      if (!m_is_list)
+      if (m_is_list)
       {
-        n.remove( group->getName() );
+        n.remove( n.number_of_children()-1 );
       }
       else
       {
-        n.remove( n.number_of_children()-1 );
+        n.remove( group->getName() );
       }
     }
 
@@ -2149,14 +2149,14 @@ void Group::importFrom(conduit::Node& node,
         }
       }
       std::string group_name = groups_itr.name();
-      if (!m_is_list)
+      if (m_is_list)
       {
-        std::string group_name = groups_itr.name();
-        group = createGroup(group_name, create_list);
+        group = createUnnamedGroup(create_list);
       }
       else
       {
-        group = createUnnamedGroup(create_list);
+        std::string group_name = groups_itr.name();
+        group = createGroup(group_name, create_list);
       }
       group->importFrom(n_group, buffer_id_map);
     }
