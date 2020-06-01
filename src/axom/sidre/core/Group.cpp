@@ -1128,14 +1128,15 @@ bool Group::createNativeLayout(Node& n, const Attribute* attr) const
     const View* view = getView(vidx);
 
     // Check that the view's name is not also a child group name
-    SLIC_CHECK_MSG(!hasChildGroup(view->getName()),
+    SLIC_CHECK_MSG(m_is_list || !hasChildGroup(view->getName()),
                    SIDRE_GROUP_LOG_PREPEND
                    << "'" << view->getName()
                    << "' is the name of both a group and a view.");
 
     if (attr == nullptr || view->hasAttributeValue(attr))
     {
-      view->createNativeLayout( n[view->getName()] );
+      conduit::Node &child_node = m_is_list ? n.append() : n[view->getName()];
+      view->createNativeLayout( child_node );
       hasSavedViews = true;
     }
     vidx = getNextValidViewIndex(vidx);
@@ -1146,13 +1147,21 @@ bool Group::createNativeLayout(Node& n, const Attribute* attr) const
   while ( indexIsValid(gidx) )
   {
     const Group* group =  getGroup(gidx);
-    if ( group->createNativeLayout(n[group->getName()], attr) )
+    conduit::Node &child_node = m_is_list ? n.append() : n[group->getName()];
+    if ( group->createNativeLayout(child_node, attr) )
     {
       hasSavedViews = true;
     }
     else
     {
-      n.remove(group->getName());
+      if (m_is_list)
+      {
+        n.remove(group->getName());
+      }
+      else
+      {
+        n.remove(n.number_of_children()-1);
+      }
     }
     gidx = getNextValidGroupIndex(gidx);
   }
@@ -1183,7 +1192,7 @@ bool Group::createExternalLayout(Node& n,
     const View* view = getView(vidx);
 
     // Check that the view's name is not also a child group name
-    SLIC_CHECK_MSG(!hasChildGroup(view->getName()),
+    SLIC_CHECK_MSG(m_is_list || !hasChildGroup(view->getName()),
                    SIDRE_GROUP_LOG_PREPEND
                    << "'" << view->getName()
                    << "' is the name of both a group and a view.");
@@ -1194,7 +1203,8 @@ bool Group::createExternalLayout(Node& n,
       {
         if(view->isDescribed())
         {
-          view->createNativeLayout(  n[view->getName()]  );
+          conduit::Node& vnode = m_is_list ? n.append() : n[view->getName()];
+          view->createNativeLayout( vnode );
         }
         hasExternalViews = true;
       }
@@ -1209,14 +1219,22 @@ bool Group::createExternalLayout(Node& n,
   {
     const Group* group =  getGroup(gidx);
 
-    if( group->createExternalLayout(n[group->getName()], attr) )
+    conduit::Node& gnode = m_is_list ? n.append() : n[group->getName()];
+    if( group->createExternalLayout(gnode, attr) )
     {
       hasExternalViews = true;
     }
     else
     {
       // Remove nodes that do not have any external views
-      n.remove( group->getName() );
+      if (m_is_list)
+      {
+        n.remove( n.number_of_children()-1 );
+      }
+      else
+      {
+        n.remove( group->getName() );
+      }
     }
 
     gidx = getNextValidGroupIndex(gidx);
@@ -1986,7 +2004,8 @@ bool Group::exportTo(conduit::Node& result,
       const View* view = getView(vidx);
       if (attr == nullptr || view->hasAttributeValue(attr))
       {
-        Node& n_view = vnode.fetch(view->getName());
+        Node& n_view =
+          m_is_list ? vnode.append() : vnode.fetch(view->getName());
         view->exportTo( n_view, buffer_indices );
         hasSavedViews = true;
       }
@@ -2006,7 +2025,8 @@ bool Group::exportTo(conduit::Node& result,
     while ( indexIsValid(gidx) )
     {
       const Group* group = getGroup(gidx);
-      Node& n_group = gnode.fetch(group->getName());
+      Node& n_group =
+        m_is_list ? gnode.append() : gnode.fetch(group->getName());
       bool hsv = group->exportTo(n_group, attr, buffer_indices);
       hasSavedViews = hasSavedViews || hsv;
       hasSavedGroups = true;
@@ -2099,7 +2119,7 @@ void Group::importFrom(conduit::Node& node,
     while (views_itr.has_next())
     {
       Node& n_view = views_itr.next();
-      std::string view_name = views_itr.name();
+      std::string view_name = m_is_list ? "" : views_itr.name();
 
       View* view = createView( view_name );
       view->importFrom(n_view, buffer_id_map);
@@ -2111,9 +2131,33 @@ void Group::importFrom(conduit::Node& node,
     conduit::NodeIterator groups_itr = node["groups"].children();
     while (groups_itr.has_next())
     {
+      Group* group;
       Node& n_group = groups_itr.next();
+      bool create_list = false;
+      if (n_group.has_child("views"))
+      {
+        if (n_group["views"].dtype().is_list())
+        {
+          create_list = true;
+        }
+      }
+      if (!create_list && n_group.has_child("groups"))
+      {
+        if (n_group["groups"].dtype().is_list())
+        {
+          create_list = true;
+        }
+      }
       std::string group_name = groups_itr.name();
-      Group* group = createGroup(group_name);
+      if (m_is_list)
+      {
+        group = createUnnamedGroup(create_list);
+      }
+      else
+      {
+        std::string group_name = groups_itr.name();
+        group = createGroup(group_name, create_list);
+      }
       group->importFrom(n_group, buffer_id_map);
     }
   }
@@ -2141,19 +2185,20 @@ bool Group::importConduitTree(const conduit::Node &node, bool preserve_contents)
 
   //
   DataType node_dtype = node.dtype();
-  if(node_dtype.is_object())
+  if(node_dtype.is_object() || node_dtype.is_list())
   {
     conduit::NodeConstIterator itr = node.children();
     while (itr.has_next())
     {
       const Node& cld_node  = itr.next();
-      std::string cld_name  = itr.name();
+      std::string cld_name = m_is_list ? "" : itr.name();
       DataType cld_dtype = cld_node.dtype();
 
-      if(cld_dtype.is_object())
+      if(cld_dtype.is_object() || cld_dtype.is_list())
       {
         // create group
-        Group* grp = createGroup(cld_name);
+        Group* grp = m_is_list ? createUnnamedGroup(cld_dtype.is_list()) :
+                     createGroup(cld_name, cld_dtype.is_list());
         success = grp->importConduitTree(cld_node, preserve_contents);
       }
       else if(cld_dtype.is_empty())
@@ -2208,12 +2253,6 @@ bool Group::importConduitTree(const conduit::Node &node, bool preserve_contents)
                       cld_dtype.number_of_elements());
         }
       }
-      else if (cld_dtype.is_list())
-      {
-        SLIC_WARNING(SIDRE_GROUP_LOG_PREPEND
-                     << "Group cannot import Conduit list " << cld_name);
-        success = false;
-      }
       else
       {
         // All Nodes should have one of the above datatypes, so if
@@ -2244,9 +2283,8 @@ bool Group::importConduitTreeExternal(conduit::Node &node,
     destroyViews();
   }
 
-  //
   DataType node_dtype = node.dtype();
-  if(node_dtype.is_object())
+  if(node_dtype.is_object() || node_dtype.is_list())
   {
     conduit::NodeIterator itr = node.children();
     while (itr.has_next())
@@ -2255,10 +2293,10 @@ bool Group::importConduitTreeExternal(conduit::Node &node,
       std::string cld_name  = itr.name();
       DataType cld_dtype = cld_node.dtype();
 
-      if(cld_dtype.is_object())
+      if(cld_dtype.is_object() || cld_dtype.is_list())
       {
         // create group
-        Group* grp = createGroup(cld_name);
+        Group* grp = createGroup(cld_name, cld_dtype.is_list());
         success = grp->importConduitTreeExternal(cld_node, preserve_contents);
       }
       else if(cld_dtype.is_empty())
@@ -2289,12 +2327,6 @@ bool Group::importConduitTreeExternal(conduit::Node &node,
           view->setExternalDataPtr(conduit_ptr);
           view->apply(cld_dtype);
         }
-      }
-      else if (cld_dtype.is_list())
-      {
-        SLIC_WARNING(SIDRE_GROUP_LOG_PREPEND
-                     << "Group  cannot import Conduit list " << cld_name);
-        success = false;
       }
       else
       {
