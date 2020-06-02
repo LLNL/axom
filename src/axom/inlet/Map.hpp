@@ -90,8 +90,8 @@ public:
    * This performs any necessary retrieval and mapping from the given identifier
    * to what is in the input deck.
    *
-   * \param [in] id The identifier to the bool that will be retrieved from the deck
-   * \param [out] value The value of the bool that was retrieved from the deck
+   * \param [in] id The identifier to the bool that will be retrieved
+   * \param [out] value The value of the bool that was retrieved
    *
    * \return true if the variable was able to be retrieved from the deck
    *****************************************************************************
@@ -105,8 +105,8 @@ public:
    * This performs any necessary retrieval and mapping from the given identifier
    * to what is in the input deck.
    *
-   * \param [in]  id    The identifier to the double that will be retrieved from the deck
-   * \param [out] value The value of the double that was retrieved from the deck
+   * \param [in]  id    The identifier to the double that will be retrieved
+   * \param [out] value The value of the double that was retrieved
    *
    * \return true if the variable was able to be retrieved from the deck
    *****************************************************************************
@@ -120,8 +120,8 @@ public:
    * This performs any necessary retrieval and mapping from the given identifier
    * to what is in the input deck.
    *
-   * \param [in]  id    The identifier to the int that will be retrieved from the deck
-   * \param [out] value The value of the int that was retrieved from the deck
+   * \param [in]  id    The identifier to the int that will be retrieved
+   * \param [out] value The value of the int that was retrieved
    *
    * \return true if the variable was able to be retrieved from the deck
    *****************************************************************************
@@ -135,8 +135,8 @@ public:
    * This performs any necessary retrieval and mapping from the given identifier
    * to what is in the input deck.
    *
-   * \param [in]  id    The identifier to the string that will be retrieved from the deck
-   * \param [out] value The value of the string that was retrieved from the deck
+   * \param [in]  id    The identifier to the string that will be retrieved
+   * \param [out] value The value of the string that was retrieved
    *
    * \return true if the variable was able to be retrieved from the deck
    *****************************************************************************

@@ -26,8 +26,8 @@ namespace inlet
 class Backend
 {
 public:
-    virtual void add(Field* field) = 0;
-    virtual Field* get(const std::string& name) = 0;
+  virtual void add(Field* field) = 0;
+  virtual Field* get(const std::string& name) = 0;
 };
 
 } // end namespace inlet

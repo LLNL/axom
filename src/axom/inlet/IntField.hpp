@@ -23,16 +23,16 @@ namespace axom
 namespace inlet
 {
 
-class IntField: public Field
+class IntField : public Field
 {
 public:
   IntField(const std::string& name, const std::string& description)
-  : m_name(name)
-  , m_description(description) {}
+    : m_name(name)
+    , m_description(description) {}
 
   IntField(std::string&& rname, std::string&& rdescription)
-  : m_name(std::move(rname))
-  , m_description(std::move(rdescription)) {}
+    : m_name(std::move(rname))
+    , m_description(std::move(rdescription)) {}
 
   FieldType type() { return FieldType::Int; }
   std::string name() { return m_name; }

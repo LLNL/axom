@@ -71,7 +71,8 @@ TEST(inlet_LuaMap_getString, getTopLevelStrings)
 TEST(inlet_LuaMap_getString, getInsideStrings)
 {
   axom::inlet::LuaMap lm;
-  lm.parseString("foo = { bar = \"this is a test string\"; baz = \"TesT StrInG\" }");
+  lm.parseString(
+    "foo = { bar = \"this is a test string\"; baz = \"TesT StrInG\" }");
 
   bool retValue;
   std::string value;

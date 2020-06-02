@@ -52,10 +52,12 @@ IntField* Structure::addIntField(const std::string& name,
 
   IntField* intField = new IntField(name, description);
   int v;
-  if(m_map->getInt(name, v)) {
-    intField->value(v);  
+  if(m_map->getInt(name, v))
+  {
+    intField->value(v);
   }
-  else {
+  else
+  {
     intField->value(defaultValue);
   }
   m_backend->add((Field*)intField);
@@ -71,12 +73,14 @@ IntField* Structure::addIntField(const std::string& name,
 
   IntField* intField = nullptr;
   int v;
-  if(m_map->getInt(name, v)) {
+  if(m_map->getInt(name, v))
+  {
     intField = new IntField(name, description);
     intField->value(v);
     m_backend->add((Field*)intField);
   }
-  else if(required) {
+  else if(required)
+  {
     SLIC_ERROR("Required field is no found in input deck: " + name);
   }
   return intField;
@@ -87,13 +91,16 @@ IntField* Structure::getIntField(const std::string& name)
   SLIC_ASSERT_MSG(m_backend != nullptr, "Backend not set");
 
   Field* field = m_backend->get(name);
-  if (field == nullptr) {
+  if (field == nullptr)
+  {
     return nullptr;
   }
-  if (field->type() != FieldType::Int) {
+  if (field->type() != FieldType::Int)
+  {
     std::string error_msg = fmt::format("Integer Field named '{0}' was asked for"
                                         " but recieved type {1}",
-                                        name, fieldTypeToString(field->type()));
+                                        name,
+                                        fieldTypeToString(field->type()));
     SLIC_ERROR(error_msg);
   }
 

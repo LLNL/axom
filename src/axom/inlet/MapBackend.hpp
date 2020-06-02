@@ -28,17 +28,18 @@ namespace inlet
 class MapBackend : public Backend
 {
 public:
-    void add(Field* field) { m_fields[field->name()] = field; }
-    Field* get(const std::string& name)
+  void add(Field* field) { m_fields[field->name()] = field; }
+  Field* get(const std::string& name)
+  {
+    auto p = m_fields.find(name);
+    if(p == m_fields.end())
     {
-        auto p = m_fields.find(name);
-        if(p == m_fields.end()) {
-            return nullptr;
-        }
-        return p->second;
+      return nullptr;
     }
+    return p->second;
+  }
 private:
-    std::map<std::string, Field*> m_fields;
+  std::map<std::string, Field*> m_fields;
 };
 
 } // end namespace inlet

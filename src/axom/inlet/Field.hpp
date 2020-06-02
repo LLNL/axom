@@ -21,7 +21,8 @@ namespace axom
 namespace inlet
 {
 
-enum class FieldType {
+enum class FieldType
+{
   Group,
   Int,
   Double,
@@ -31,19 +32,24 @@ enum class FieldType {
 
 inline std::string fieldTypeToString(FieldType ft)
 {
-  if (ft == FieldType::Group){
+  if (ft == FieldType::Group)
+  {
     return "Group";
   }
-  else if (ft == FieldType::Int){
+  else if (ft == FieldType::Int)
+  {
     return "Integer";
   }
-  else if (ft == FieldType::Double){
+  else if (ft == FieldType::Double)
+  {
     return "Double";
   }
-  else if (ft == FieldType::String){
+  else if (ft == FieldType::String)
+  {
     return "String";
   }
-  else if (ft == FieldType::Bool){
+  else if (ft == FieldType::Bool)
+  {
     return "Boolean";
   }
 

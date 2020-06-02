@@ -52,7 +52,7 @@ TEST(inlet_Structure_getBool, getTopLevelInts)
   //
   // Check stored values from get
   //
-  
+
   // Check for existing fields
   intfield = s.getIntField("foo");
   EXPECT_TRUE(intfield != nullptr);
