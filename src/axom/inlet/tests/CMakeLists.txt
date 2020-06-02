@@ -14,7 +14,7 @@
 if (LUA_FOUND)
     set(gtest_inlet_tests
         inlet_LuaMap.cpp
-        inlet_Structure.cpp )
+        inlet_Inlet.cpp )
 
     foreach(test ${gtest_inlet_tests})
         get_filename_component( test_name ${test} NAME_WE )

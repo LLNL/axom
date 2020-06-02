@@ -12,18 +12,18 @@
 
 #include "axom/inlet/LuaMap.hpp"
 #include "axom/inlet/MapBackend.hpp"
-#include "axom/inlet/Structure.hpp"
+#include "axom/inlet/Inlet.hpp"
 
-TEST(inlet_Structure_getBool, getTopLevelInts)
+TEST(inlet_Inlet_getBool, getTopLevelInts)
 {
   axom::inlet::LuaMap lm;
   lm.parseString("foo = 5; bar = 15");
 
   axom::inlet::MapBackend mb;
 
-  axom::inlet::Structure s;
-  s.map(&lm);
-  s.backend(&mb);
+  axom::inlet::Inlet inlet;
+  inlet.map(&lm);
+  inlet.backend(&mb);
 
   axom::inlet::IntField* intfield = nullptr;
 
@@ -32,21 +32,21 @@ TEST(inlet_Structure_getBool, getTopLevelInts)
   //
 
   // Check for existing fields
-  intfield = s.addIntField("foo", "foo's description");
+  intfield = inlet.addIntField("foo", "foo's description");
   EXPECT_TRUE(intfield != nullptr);
   EXPECT_EQ(intfield->value(), 5);
 
-  intfield = s.addIntField("bar", "bar's description");
+  intfield = inlet.addIntField("bar", "bar's description");
   EXPECT_TRUE(intfield != nullptr);
   EXPECT_EQ(intfield->value(), 15);
 
   // Check one that doesn't exist but has a default value
-  intfield = s.addIntField("baz", "baz's description", 100);
+  intfield = inlet.addIntField("baz", "baz's description", 100);
   EXPECT_TRUE(intfield != nullptr);
   EXPECT_EQ(intfield->value(), 100);
 
   // Check one that doesn't exist and doesn't have a default value
-  intfield = s.addIntField("nonexistant", "nothing");
+  intfield = inlet.addIntField("nonexistant", "nothing");
   EXPECT_TRUE(intfield == nullptr);
 
   //
@@ -54,21 +54,21 @@ TEST(inlet_Structure_getBool, getTopLevelInts)
   //
 
   // Check for existing fields
-  intfield = s.getIntField("foo");
+  intfield = inlet.getIntField("foo");
   EXPECT_TRUE(intfield != nullptr);
   EXPECT_EQ(intfield->value(), 5);
 
-  intfield = s.getIntField("bar");
+  intfield = inlet.getIntField("bar");
   EXPECT_TRUE(intfield != nullptr);
   EXPECT_EQ(intfield->value(), 15);
 
   // Check one that doesn't exist but has a default value
-  intfield = s.getIntField("baz");
+  intfield = inlet.getIntField("baz");
   EXPECT_TRUE(intfield != nullptr);
   EXPECT_EQ(intfield->value(), 100);
 
   // Check one that doesn't exist and doesn't have a default value
-  intfield = s.getIntField("nonexistant");
+  intfield = inlet.getIntField("nonexistant");
   EXPECT_TRUE(intfield == nullptr);
 }
 

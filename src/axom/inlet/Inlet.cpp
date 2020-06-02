@@ -5,13 +5,14 @@
 
 /*!
  *******************************************************************************
- * \file Structure.cpp
+ * \file Inlet.cpp
  *
- * \brief This file contains the class implementation of Structure.
+ * \brief This file contains the class implementation of Inlet, the main class
+ *        for the Inlet component.
  *******************************************************************************
  */
 
-#include "axom/inlet/Structure.hpp"
+#include "axom/inlet/Inlet.hpp"
 
 #include "fmt/fmt.hpp"
 #include "axom/slic.hpp"
@@ -21,8 +22,8 @@ namespace axom
 namespace inlet
 {
 
-GroupField* Structure::addGroup(const std::string& name,
-                                const std::string& description)
+GroupField* Inlet::addGroup(const std::string& name,
+                            const std::string& description)
 {
   SLIC_ASSERT_MSG(m_map != nullptr, "Map not set");
   SLIC_ASSERT_MSG(m_backend != nullptr, "Backend not set");
@@ -32,8 +33,8 @@ GroupField* Structure::addGroup(const std::string& name,
   return group;
 }
 
-GroupField* Structure::addGroup(std::string&& rname,
-                                std::string&& rdescription)
+GroupField* Inlet::addGroup(std::string&& rname,
+                            std::string&& rdescription)
 {
   SLIC_ASSERT_MSG(m_map != nullptr, "Map not set");
   SLIC_ASSERT_MSG(m_backend != nullptr, "Backend not set");
@@ -43,9 +44,9 @@ GroupField* Structure::addGroup(std::string&& rname,
   return group;
 }
 
-IntField* Structure::addIntField(const std::string& name,
-                                 const std::string& description,
-                                 int defaultValue)
+IntField* Inlet::addIntField(const std::string& name,
+                             const std::string& description,
+                             int defaultValue)
 {
   SLIC_ASSERT_MSG(m_map != nullptr, "Map not set");
   SLIC_ASSERT_MSG(m_backend != nullptr, "Backend not set");
@@ -64,9 +65,9 @@ IntField* Structure::addIntField(const std::string& name,
   return intField;
 }
 
-IntField* Structure::addIntField(const std::string& name,
-                                 const std::string& description,
-                                 bool required)
+IntField* Inlet::addIntField(const std::string& name,
+                             const std::string& description,
+                             bool required)
 {
   SLIC_ASSERT_MSG(m_map != nullptr, "Map not set");
   SLIC_ASSERT_MSG(m_backend != nullptr, "Backend not set");
@@ -86,7 +87,7 @@ IntField* Structure::addIntField(const std::string& name,
   return intField;
 }
 
-IntField* Structure::getIntField(const std::string& name)
+IntField* Inlet::getIntField(const std::string& name)
 {
   SLIC_ASSERT_MSG(m_backend != nullptr, "Backend not set");
 

@@ -14,12 +14,12 @@ set(inlet_headers
     GroupField.hpp
     IntField.hpp
     Map.hpp
-    Structure.hpp
+    Inlet.hpp
     Backend.hpp
     MapBackend.hpp )
 
 set(inlet_sources
-    Structure.cpp )
+    Inlet.cpp )
 
 
 blt_list_append(TO inlet_headers ELEMENTS LuaMap.hpp IF LUA_FOUND)

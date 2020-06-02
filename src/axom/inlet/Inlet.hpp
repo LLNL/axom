@@ -5,14 +5,15 @@
 
 /*!
  *******************************************************************************
- * \file Structure.hpp
+ * \file Inlet.hpp
  *
- * \brief This file contains the class definition of Structure.
+ * \brief This file contains the class definition of Inlet, the main class
+ *        for the Inlet component.
  *******************************************************************************
  */
 
-#ifndef INLET_STRUCTURE_HPP
-#define INLET_STRUCTURE_HPP
+#ifndef INLET_INLET_HPP
+#define INLET_INLET_HPP
 
 #include <string>
 #include <vector>
@@ -28,16 +29,7 @@ namespace axom
 namespace inlet
 {
 
-
-/*!
- *******************************************************************************
- * \class Structure
- *
- * \brief This class is used to define the structure of your input deck.
- *
- *******************************************************************************
- */
-class Structure
+class Inlet
 {
 public:
   void map(Map* map) { m_map = map; };
