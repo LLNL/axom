@@ -11,7 +11,7 @@
  *******************************************************************************
  */
 
-#include "axom/slim/LuaMap.hpp"
+#include "axom/inlet/LuaMap.hpp"
 
 #include "axom/core/utilities/FileUtilities.hpp"
 #include "axom/core/utilities/StringUtilities.hpp"
@@ -21,7 +21,7 @@
 
 namespace axom
 {
-namespace slim
+namespace inlet
 {
 
 LuaMap::~LuaMap()
@@ -35,14 +35,14 @@ LuaMap::~LuaMap()
 bool LuaMap::parseFile(const std::string& filePath)
 {
   if (!axom::utilities::filesystem::pathExists(filePath)) {
-    SLIC_WARNING(fmt::format("SLIM: Given Lua input deck does not exist: {0}", filePath));
+    SLIC_WARNING(fmt::format("Inlet: Given Lua input deck does not exist: {0}", filePath));
     return false;
   }
 
   m_luaState = luaL_newstate();
   if (luaL_loadfile(m_luaState, filePath.c_str()) ||
       lua_pcall(m_luaState, 0, 0, 0)) {
-    SLIC_WARNING(fmt::format("SLIM: Given Lua input deck could not be loaded: {0}", filePath));
+    SLIC_WARNING(fmt::format("Inlet: Given Lua input deck could not be loaded: {0}", filePath));
     m_luaState = nullptr;
     return false;
   }
@@ -54,14 +54,14 @@ bool LuaMap::parseFile(const std::string& filePath)
 bool LuaMap::parseString(const std::string& luaString)
 {
   if (luaString.empty()) {
-    SLIC_WARNING("SLIM: Given an empty Lua string to parse.");
+    SLIC_WARNING("Inlet: Given an empty Lua string to parse.");
     return false;
   }
 
   m_luaState = luaL_newstate();
   if (luaL_loadstring(m_luaState, luaString.c_str()) ||
       lua_pcall(m_luaState, 0, 0, 0)) {
-    SLIC_WARNING(fmt::format("SLIM: Given Lua string could not be loaded: {0}", luaString));
+    SLIC_WARNING(fmt::format("Inlet: Given Lua string could not be loaded: {0}", luaString));
     m_luaState = nullptr;
     return false;
   }
@@ -147,5 +147,5 @@ bool LuaMap::getString(const std::string& id, std::string& value)
   return true;
 }
 
-} // end namespace slim
+} // end namespace inlet
 } // end namespace axom

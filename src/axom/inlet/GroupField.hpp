@@ -11,16 +11,16 @@
  *******************************************************************************
  */
 
-#ifndef SLIM_GROUPFIELD_HPP
-#define SLIM_GROUPFIELD_HPP
+#ifndef INLET_GROUPFIELD_HPP
+#define INLET_GROUPFIELD_HPP
 
-#include "axom/slim/Field.hpp"
+#include "axom/inlet/Field.hpp"
 
 #include <string>
 
 namespace axom
 {
-namespace slim
+namespace inlet
 {
 
 class GroupField: public Field
@@ -43,7 +43,7 @@ private:
   std::string m_description;
 };
 
-} // end namespace slim
+} // end namespace inlet
 } // end namespace axom
 
 #endif

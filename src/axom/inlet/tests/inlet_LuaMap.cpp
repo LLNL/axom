@@ -8,11 +8,11 @@
 #include <string>
 #include <vector>
 
-#include "axom/slim/LuaMap.hpp"
+#include "axom/inlet/LuaMap.hpp"
 
-TEST(slim_LuaMap_getBool, getTopLevelBools)
+TEST(inlet_LuaMap_getBool, getTopLevelBools)
 {
-  axom::slim::LuaMap lm;
+  axom::inlet::LuaMap lm;
   lm.parseString("foo = true; bar = false");
 
   bool value, retValue;
@@ -29,9 +29,9 @@ TEST(slim_LuaMap_getBool, getTopLevelBools)
 }
 
 
-TEST(slim_LuaMap_getBool, getInsideBools)
+TEST(inlet_LuaMap_getBool, getInsideBools)
 {
-  axom::slim::LuaMap lm;
+  axom::inlet::LuaMap lm;
   lm.parseString("foo = { bar = false; baz = true }");
 
   bool value, retValue;
@@ -48,9 +48,9 @@ TEST(slim_LuaMap_getBool, getInsideBools)
 }
 
 
-TEST(slim_LuaMap_getString, getTopLevelStrings)
+TEST(inlet_LuaMap_getString, getTopLevelStrings)
 {
-  axom::slim::LuaMap lm;
+  axom::inlet::LuaMap lm;
   lm.parseString("foo = \"this is a test string\"; bar = \"TesT StrInG\"");
 
   bool retValue;
@@ -68,9 +68,9 @@ TEST(slim_LuaMap_getString, getTopLevelStrings)
 }
 
 
-TEST(slim_LuaMap_getString, getInsideStrings)
+TEST(inlet_LuaMap_getString, getInsideStrings)
 {
-  axom::slim::LuaMap lm;
+  axom::inlet::LuaMap lm;
   lm.parseString("foo = { bar = \"this is a test string\"; baz = \"TesT StrInG\" }");
 
   bool retValue;

@@ -11,26 +11,37 @@
  *******************************************************************************
  */
 
-#ifndef SLIM_BACKEND_HPP
-#define SLIM_BACKEND_HPP
+#ifndef INLET_MAPBACKEND_HPP
+#define INLET_MAPBACKEND_HPP
 
 #include <string>
+#include <map>
 
-#include "axom/slim/Field.hpp"
+#include "axom/inlet/Field.hpp"
+#include "axom/inlet/Backend.hpp"
 
 namespace axom
 {
-namespace slim
+namespace inlet
 {
 
-class Backend
+class MapBackend : public Backend
 {
 public:
-    virtual void add(Field* field) = 0;
-    virtual Field* get(const std::string& name) = 0;
+    void add(Field* field) { m_fields[field->name()] = field; }
+    Field* get(const std::string& name)
+    {
+        auto p = m_fields.find(name);
+        if(p == m_fields.end()) {
+            return nullptr;
+        }
+        return p->second;
+    }
+private:
+    std::map<std::string, Field*> m_fields;
 };
 
-} // end namespace slim
+} // end namespace inlet
 } // end namespace axom
 
 #endif

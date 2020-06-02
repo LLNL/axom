@@ -10,22 +10,22 @@
 
 #include <iostream>
 
-#include "axom/slim/LuaMap.hpp"
-#include "axom/slim/MapBackend.hpp"
-#include "axom/slim/Structure.hpp"
+#include "axom/inlet/LuaMap.hpp"
+#include "axom/inlet/MapBackend.hpp"
+#include "axom/inlet/Structure.hpp"
 
-TEST(slim_Structure_getBool, getTopLevelInts)
+TEST(inlet_Structure_getBool, getTopLevelInts)
 {
-  axom::slim::LuaMap lm;
+  axom::inlet::LuaMap lm;
   lm.parseString("foo = 5; bar = 15");
 
-  axom::slim::MapBackend mb;
+  axom::inlet::MapBackend mb;
 
-  axom::slim::Structure s;
+  axom::inlet::Structure s;
   s.map(&lm);
   s.backend(&mb);
 
-  axom::slim::IntField* intfield = nullptr;
+  axom::inlet::IntField* intfield = nullptr;
 
   //
   // Check return values from add

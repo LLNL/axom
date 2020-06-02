@@ -11,21 +11,21 @@
  *******************************************************************************
  */
 
-#ifndef SLIM_STRUCTURE_HPP
-#define SLIM_STRUCTURE_HPP
+#ifndef INLET_STRUCTURE_HPP
+#define INLET_STRUCTURE_HPP
 
 #include <string>
 #include <vector>
 
-#include "axom/slim/Field.hpp"
-#include "axom/slim/IntField.hpp"
-#include "axom/slim/GroupField.hpp"
-#include "axom/slim/Map.hpp"
-#include "axom/slim/Backend.hpp"
+#include "axom/inlet/Field.hpp"
+#include "axom/inlet/IntField.hpp"
+#include "axom/inlet/GroupField.hpp"
+#include "axom/inlet/Map.hpp"
+#include "axom/inlet/Backend.hpp"
 
 namespace axom
 {
-namespace slim
+namespace inlet
 {
 
 
@@ -62,7 +62,7 @@ private:
     Backend* m_backend = nullptr;
 };
 
-} // end namespace slim
+} // end namespace inlet
 } // end namespace axom
 
 #endif

@@ -11,14 +11,14 @@
  *******************************************************************************
  */
 
-#include "axom/slim/Structure.hpp"
+#include "axom/inlet/Structure.hpp"
 
 #include "fmt/fmt.hpp"
 #include "axom/slic.hpp"
 
 namespace axom
 {
-namespace slim
+namespace inlet
 {
 
 GroupField* Structure::addGroup(const std::string& name,
@@ -100,5 +100,5 @@ IntField* Structure::getIntField(const std::string& name)
   return (IntField*)field;
 }
 
-} // end namespace slim
+} // end namespace inlet
 } // end namespace axom

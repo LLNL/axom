@@ -11,16 +11,16 @@
  *******************************************************************************
  */
 
-#ifndef SLIM_INTFIELD_HPP
-#define SLIM_INTFIELD_HPP
+#ifndef INLET_INTFIELD_HPP
+#define INLET_INTFIELD_HPP
 
-#include "axom/slim/Field.hpp"
+#include "axom/inlet/Field.hpp"
 
 #include <string>
 
 namespace axom
 {
-namespace slim
+namespace inlet
 {
 
 class IntField: public Field
@@ -48,7 +48,7 @@ private:
   int m_value;
 };
 
-} // end namespace slim
+} // end namespace inlet
 } // end namespace axom
 
 #endif

@@ -11,14 +11,14 @@
  *******************************************************************************
  */
 
-#ifndef SLIM_FIELD_HPP
-#define SLIM_FIELD_HPP
+#ifndef INLET_FIELD_HPP
+#define INLET_FIELD_HPP
 
 #include <string>
 
 namespace axom
 {
-namespace slim
+namespace inlet
 {
 
 enum class FieldType {
@@ -69,7 +69,7 @@ public:
   virtual std::string description() = 0;
 };
 
-} // end namespace slim
+} // end namespace inlet
 } // end namespace axom
 
 #endif

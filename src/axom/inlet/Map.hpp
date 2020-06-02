@@ -12,14 +12,14 @@
  *******************************************************************************
  */
 
-#ifndef SLIM_MAP_HPP
-#define SLIM_MAP_HPP
+#ifndef INLET_MAP_HPP
+#define INLET_MAP_HPP
 
 #include <string>
 
 namespace axom
 {
-namespace slim
+namespace inlet
 {
 
 
@@ -145,7 +145,7 @@ public:
 
 };
 
-} // end namespace slim
+} // end namespace inlet
 } // end namespace axom
 
 #endif

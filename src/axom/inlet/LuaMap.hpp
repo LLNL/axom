@@ -11,10 +11,10 @@
  *******************************************************************************
  */
 
-#ifndef LUAMAP_HPP
-#define LUAMAP_HPP
+#ifndef INLET_LUAMAP_HPP
+#define INLET_LUAMAP_HPP
 
-#include "axom/slim/Map.hpp"
+#include "axom/inlet/Map.hpp"
 
 extern "C" {
   #include "lua.h"
@@ -24,7 +24,7 @@ extern "C" {
 
 namespace axom
 {
-namespace slim
+namespace inlet
 {
 
 /*!
@@ -158,7 +158,7 @@ private:
   lua_State* m_luaState;
 };
 
-} // end namespace slim
+} // end namespace inlet
 } // end namespace axom
 
 #endif
