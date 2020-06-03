@@ -18,11 +18,9 @@
 #include <string>
 #include <vector>
 
-#include "axom/inlet/Field.hpp"
-#include "axom/inlet/IntField.hpp"
-#include "axom/inlet/GroupField.hpp"
-#include "axom/inlet/Map.hpp"
-#include "axom/inlet/Backend.hpp"
+#include "axom/inlet/Reader.hpp"
+
+#include "axom/sidre.hpp"
 
 namespace axom
 {
@@ -32,26 +30,29 @@ namespace inlet
 class Inlet
 {
 public:
-  void map(Map* map) { m_map = map; };
-  Map* map() { return m_map; };
+  void reader(Reader* reader) { m_reader = reader; };
+  Reader* reader() { return m_reader; };
 
-  void backend(Backend* backend) { m_backend = backend; }
-  std::vector<std::string> names();
+  void datastore(axom::sidre::DataStore* ds) { m_ds = ds; };
+  axom::sidre::DataStore* datastore() { return m_ds; };
 
-  GroupField* addGroup(const std::string& name, const std::string& description);
-  GroupField* addGroup(std::string&& rname, std::string&& rdescription);
+  // Functions that define the input deck schema
 
-  IntField* addIntField(const std::string& name,
-                        const std::string& description,
-                        int defaultValue);
-  IntField* addIntField(const std::string& name,
-                        const std::string& description,
-                        bool required=false);
+  bool addGroup(const std::string& name, const std::string& description);
 
-  IntField* getIntField(const std::string& name);
+  bool addInt(const std::string& name,
+              const std::string& description,
+              int defaultValue);
+  bool addInt(const std::string& name,
+              const std::string& description,
+              bool required=false);
+
+  // Functions that get the values out of the datastore
+  
+  bool get(const std::string& name, int& value);
 private:
-  Map* m_map = nullptr;
-  Backend* m_backend = nullptr;
+  Reader* m_reader = nullptr;
+  axom::sidre::DataStore* m_ds = nullptr;
 };
 
 } // end namespace inlet

@@ -5,13 +5,13 @@
 
 /*!
  *******************************************************************************
- * \file LuaMap.cpp
+ * \file LuaReader.cpp
  *
- * \brief This file contains the class implementation of the LuaMap.
+ * \brief This file contains the class implementation of the LuaReader.
  *******************************************************************************
  */
 
-#include "axom/inlet/LuaMap.hpp"
+#include "axom/inlet/LuaReader.hpp"
 
 #include "axom/core/utilities/FileUtilities.hpp"
 #include "axom/core/utilities/StringUtilities.hpp"
@@ -24,7 +24,7 @@ namespace axom
 namespace inlet
 {
 
-LuaMap::~LuaMap()
+LuaReader::~LuaReader()
 {
   if (m_luaState)
   {
@@ -33,7 +33,7 @@ LuaMap::~LuaMap()
 }
 
 
-bool LuaMap::parseFile(const std::string& filePath)
+bool LuaReader::parseFile(const std::string& filePath)
 {
   if (!axom::utilities::filesystem::pathExists(filePath))
   {
@@ -57,7 +57,7 @@ bool LuaMap::parseFile(const std::string& filePath)
 }
 
 
-bool LuaMap::parseString(const std::string& luaString)
+bool LuaReader::parseString(const std::string& luaString)
 {
   if (luaString.empty())
   {
@@ -78,24 +78,25 @@ bool LuaMap::parseString(const std::string& luaString)
   return true;
 }
 
+#define SCOPE_DELIMITER '/'
 
-bool LuaMap::findVariable(const std::string& id)
+bool LuaReader::findVariable(const std::string& id)
 {
   if (!m_luaState)
   {
     SLIC_WARNING(
-      "Lua state is not initialized. Call LuaMap::parseString or LuaMap::parseFile first!");
+      "Lua state is not initialized. Call LuaReader::parseString or LuaReader::parseFile first!");
     return false;
   }
 
-  if (axom::utilities::string::startsWith(id, scopeDelimiter))
+  std::string temp_id = id;
+  //TODO: support multiple roots?
+  if (axom::utilities::string::startsWith(temp_id, SCOPE_DELIMITER))
   {
-    SLIC_WARNING(fmt::format("Variable cannot start with scope delimiter: {0}",
-                             id));
-    return false;
+    temp_id.erase(0, 1);
   }
 
-  if (axom::utilities::string::endsWith(id, scopeDelimiter))
+  if (axom::utilities::string::endsWith(id, SCOPE_DELIMITER))
   {
     SLIC_WARNING(fmt::format("Variable cannot end with scope delimiter: {0}",
                              id));
@@ -104,7 +105,7 @@ bool LuaMap::findVariable(const std::string& id)
 
   bool atGlobalScope = true;
   std::vector<std::string> tokens;
-  axom::utilities::string::split(tokens, id, scopeDelimiter);
+  axom::utilities::string::split(tokens, temp_id, SCOPE_DELIMITER);
 
   for (std::string token : tokens)
   {
@@ -118,9 +119,7 @@ bool LuaMap::findVariable(const std::string& id)
     }
     if(lua_isnil(m_luaState, -1))
     {
-      SLIC_WARNING(fmt::format(
-                     "Child variable ('{0}') is not defined in parent variable ('{1}')",
-                     token, id));
+      // variable not found
       return false;
     }
     atGlobalScope = false;
@@ -130,7 +129,7 @@ bool LuaMap::findVariable(const std::string& id)
 }
 
 
-bool LuaMap::getBool(const std::string& id, bool& value)
+bool LuaReader::getBool(const std::string& id, bool& value)
 {
   if (!findVariable(id))
   {
@@ -141,7 +140,7 @@ bool LuaMap::getBool(const std::string& id, bool& value)
 }
 
 
-bool LuaMap::getDouble(const std::string& id, double& value)
+bool LuaReader::getDouble(const std::string& id, double& value)
 {
   if (!findVariable(id))
   {
@@ -152,7 +151,7 @@ bool LuaMap::getDouble(const std::string& id, double& value)
 }
 
 
-bool LuaMap::getInt(const std::string& id, int& value)
+bool LuaReader::getInt(const std::string& id, int& value)
 {
   if (!findVariable(id))
   {
@@ -163,7 +162,7 @@ bool LuaMap::getInt(const std::string& id, int& value)
 }
 
 
-bool LuaMap::getString(const std::string& id, std::string& value)
+bool LuaReader::getString(const std::string& id, std::string& value)
 {
   if (!findVariable(id))
   {

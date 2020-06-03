@@ -13,7 +13,7 @@
 # Add Serial GTests based tests
 if (LUA_FOUND)
     set(gtest_inlet_tests
-        inlet_LuaMap.cpp
+        inlet_LuaReader.cpp
         inlet_Inlet.cpp )
 
     foreach(test ${gtest_inlet_tests})
@@ -22,7 +22,7 @@ if (LUA_FOUND)
                             SOURCES    ${test}
                             OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                             DEPENDS_ON inlet gtest 
-                            FOLDER axom/inlet/tests )
+                            FOLDER     axom/inlet/tests )
         blt_add_test( NAME    ${test_name} 
                       COMMAND ${test_name}_test )
     endforeach()

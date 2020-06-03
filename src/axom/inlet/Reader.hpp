@@ -5,15 +5,15 @@
 
 /*!
  *******************************************************************************
- * \file Map.hpp
+ * \file Reader.hpp
  *
  * \brief This file contains the pure virtual base class definition of the
- * Map.
+ * Reader.
  *******************************************************************************
  */
 
-#ifndef INLET_MAP_HPP
-#define INLET_MAP_HPP
+#ifndef INLET_READER_HPP
+#define INLET_READER_HPP
 
 #include <string>
 
@@ -22,28 +22,20 @@ namespace axom
 namespace inlet
 {
 
-
-/*!
- *****************************************************************************
- * \brief Delimiter used for variable scope.
- *****************************************************************************
- */
-const char scopeDelimiter = '.';
-
 /*!
  *******************************************************************************
- * \class Map
+ * \class Reader
  *
- * \brief Abstract base class defining the interface of all Map
+ * \brief Abstract base class defining the interface of all Reader
  *  classes.
  *
  *  Concrete instances need to inherit from this class and implement these
- *  functions.You will need to add your Map using Map::initialize
+ *  functions.You will need to add your Reader using Reader::initialize
  *
- * \see LuaMap
+ * \see LuaReader
  *******************************************************************************
  */
-class Map
+class Reader
 {
 public:
   /*!
@@ -51,14 +43,14 @@ public:
    * \brief Virtual destructor.
    *****************************************************************************
    */
-  virtual ~Map(){};
+  virtual ~Reader(){};
 
   /*!
    *****************************************************************************
    * \brief Parses the given input deck.
    *
    * This performs any setup work and parses the given input deck.
-   * It is required that this is called before using the Map and overrides
+   * It is required that this is called before using the Reader and overrides
    * any state that was previously there.
    *
    * \param [in] filePath The Input deck to be read
@@ -73,7 +65,7 @@ public:
    * \brief Parses the given string.
    *
    * This performs any setup work and parses the given string.
-   * It is required that this is called before using the Map and overrides
+   * It is required that this is called before using the Reader and overrides
    * any state that was previously there.
    *
    * \param [in] inputString The Input deck to be read

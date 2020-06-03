@@ -378,7 +378,7 @@ public:
    *        this DataStore.
    *
    * If this DataStore contains data for a mesh that adheres to Conduit's
-   * Blueprint format, this method genearates a Blueprint index and stores
+   * Blueprint format, this method generates a Blueprint index and stores
    * it at a specified locaiton within this DataStore.  It uses as input a
    * path to a representative domain from that mesh.
    *

@@ -14,7 +14,7 @@
 #ifndef INLET_LUAMAP_HPP
 #define INLET_LUAMAP_HPP
 
-#include "axom/inlet/Map.hpp"
+#include "axom/inlet/Reader.hpp"
 
 extern "C" {
   #include "lua.h"
@@ -29,32 +29,32 @@ namespace inlet
 
 /*!
  *******************************************************************************
- * \class LuaMap
+ * \class LuaReader
  *
- * \brief A Map that is able to read and map the variables from a Lua deck.
+ * \brief A Reader that is able to read variables from a Lua deck.
  *
- * \see Map
+ * \see Reader
  *******************************************************************************
  */
-class LuaMap : public Map
+class LuaReader : public Reader
 {
 public:
   /*!
    *****************************************************************************
-   * \brief Destructor for the LuaMap.
+   * \brief Destructor for the LuaReader.
    *
-   * This performs any cleanup work the Map needs to do before going
+   * This performs any cleanup work the Reader needs to do before going
    * away.
    *****************************************************************************
    */
-  ~LuaMap();
+  ~LuaReader();
 
   /*!
    *****************************************************************************
    * \brief Parses the given input deck.
    *
    * This performs any setup work and parses the given input deck.
-   * It is required that this is called before using the Map and overrides
+   * It is required that this is called before using the Reader and overrides
    * any Lua state that was previously there.
    *
    * \param [in] filePath The Input deck to be read
@@ -69,7 +69,7 @@ public:
    * \brief Parses the given Lua string.
    *
    * This performs any setup work and parses the given Lua string.
-   * It is required that this is called before using the Map and overrides
+   * It is required that this is called before using the Reader and overrides
    * any Lua state that was previously there.
    *
    * \param [in] luaString The Input deck to be read
@@ -146,12 +146,12 @@ private:
    *****************************************************************************
    * \brief Move the Lua state to the given Lua variable id
    *
-   * This performs any necessary retrieval and mapping from the given identifier
-   * to what is in the input deck.
+   * This performs any necessary retrieval and mapping from the given fully
+   * qualified Sidre path name to what is in the input deck.
    *
-   * \param [in] id The identifier to the bool that will be retrieved
+   * \param [in] id The path name to the bool that will be retrieved
    *
-   * \return true if Lua variable id was found and Lua state was moved to
+   * \return true if Lua variable was found and Lua state was moved to
    * variable
    *****************************************************************************
    */

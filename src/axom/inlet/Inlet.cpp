@@ -22,90 +22,98 @@ namespace axom
 namespace inlet
 {
 
-GroupField* Inlet::addGroup(const std::string& name,
-                            const std::string& description)
+bool Inlet::addGroup(const std::string& name,
+                     const std::string& description)
 {
-  SLIC_ASSERT_MSG(m_map != nullptr, "Map not set");
-  SLIC_ASSERT_MSG(m_backend != nullptr, "Backend not set");
+  SLIC_ASSERT_MSG(m_reader != nullptr, "Inlet's Reader class not set");
+  SLIC_ASSERT_MSG(m_ds != nullptr, "Inlet's Sidre Datastore class not set");
 
-  GroupField* group = new GroupField(name, description);
-  m_backend->add((Field*)group);
-  return group;
-}
-
-GroupField* Inlet::addGroup(std::string&& rname,
-                            std::string&& rdescription)
-{
-  SLIC_ASSERT_MSG(m_map != nullptr, "Map not set");
-  SLIC_ASSERT_MSG(m_backend != nullptr, "Backend not set");
-
-  GroupField* group = new GroupField(rname, rdescription);
-  m_backend->add((Field*)group);
-  return group;
-}
-
-IntField* Inlet::addIntField(const std::string& name,
-                             const std::string& description,
-                             int defaultValue)
-{
-  SLIC_ASSERT_MSG(m_map != nullptr, "Map not set");
-  SLIC_ASSERT_MSG(m_backend != nullptr, "Backend not set");
-
-  IntField* intField = new IntField(name, description);
-  int v;
-  if(m_map->getInt(name, v))
+  axom::sidre::Group* root = m_ds->getRoot();
+  if (root->hasGroup(name))
   {
-    intField->value(v);
+    SLIC_WARNING("Inlet: Cannot create Group that already exists: " + name);
+    return false;
   }
-  else
-  {
-    intField->value(defaultValue);
-  }
-  m_backend->add((Field*)intField);
-  return intField;
+  root->createGroup(name);
+  return true;
 }
 
-IntField* Inlet::addIntField(const std::string& name,
-                             const std::string& description,
-                             bool required)
+bool Inlet::addInt(const std::string& name,
+                   const std::string& description,
+                   int defaultValue)
 {
-  SLIC_ASSERT_MSG(m_map != nullptr, "Map not set");
-  SLIC_ASSERT_MSG(m_backend != nullptr, "Backend not set");
+  SLIC_ASSERT_MSG(m_reader != nullptr, "Inlet's Reader class not set");
+  SLIC_ASSERT_MSG(m_ds != nullptr, "Inlet's Sidre Datastore class not set");
 
-  IntField* intField = nullptr;
-  int v;
-  if(m_map->getInt(name, v))
+  int value;
+  if(!m_reader->getInt(name, value))
   {
-    intField = new IntField(name, description);
-    intField->value(v);
-    m_backend->add((Field*)intField);
+    value = defaultValue;
+  }
+
+  axom::sidre::Group* root = m_ds->getRoot();
+  if (root->hasView(name))
+  {
+    SLIC_WARNING("Inlet: Cannot create Integer that already exists: " + name);
+    return false;
+  }
+  root->createViewScalar(name, value);
+
+  return true;
+}
+
+bool Inlet::addInt(const std::string& name,
+                   const std::string& description,
+                   bool required)
+{
+  SLIC_ASSERT_MSG(m_reader != nullptr, "Inlet's Reader class not set");
+  SLIC_ASSERT_MSG(m_ds != nullptr, "Inlet's Sidre Datastore class not set");
+
+  int value;
+  if(m_reader->getInt(name, value))
+  {
+    axom::sidre::Group* root = m_ds->getRoot();
+    if (root->hasView(name))
+    {
+      SLIC_WARNING("Inlet: Cannot create Integer that already exists: " + name);
+      return false;
+    }
+    root->createViewScalar(name, value);
   }
   else if(required)
   {
-    SLIC_ERROR("Required field is no found in input deck: " + name);
+    SLIC_ERROR("Inlet: Required integer was not found in input deck: " + name);
   }
-  return intField;
+  else
+  {
+    // not found in input deck but not required
+    return false;
+  }
+  return true;
 }
 
-IntField* Inlet::getIntField(const std::string& name)
+bool Inlet::get(const std::string& name, int& value)
 {
-  SLIC_ASSERT_MSG(m_backend != nullptr, "Backend not set");
+  SLIC_ASSERT_MSG(m_ds != nullptr, "Inlet's Sidre Datastore class not set");
 
-  Field* field = m_backend->get(name);
-  if (field == nullptr)
+  axom::sidre::Group* root = m_ds->getRoot();
+  
+  if (!root->hasView(name))
   {
-    return nullptr;
+    return false;
   }
-  if (field->type() != FieldType::Int)
+
+  axom::sidre::View* view = root->getView(name);
+  if (view->getTypeID() != axom::sidre::INT_ID)
   {
     std::string error_msg = fmt::format("Integer Field named '{0}' was asked for"
                                         " but recieved type {1}",
-                                        name,
-                                        fieldTypeToString(field->type()));
+                                        name, view->getTypeID());
     SLIC_ERROR(error_msg);
   }
 
-  return (IntField*)field;
+  value = view->getScalar();
+  return true;
 }
 
 } // end namespace inlet

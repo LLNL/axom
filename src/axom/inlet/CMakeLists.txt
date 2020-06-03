@@ -10,25 +10,19 @@
 # Specify all headers/sources
 #------------------------------------------------------------------------------
 set(inlet_headers
-    Field.hpp
-    GroupField.hpp
-    IntField.hpp
-    Map.hpp
-    Inlet.hpp
-    Backend.hpp
-    MapBackend.hpp )
+    Reader.hpp
+    Inlet.hpp )
 
 set(inlet_sources
     Inlet.cpp )
 
-
-blt_list_append(TO inlet_headers ELEMENTS LuaMap.hpp IF LUA_FOUND)
-blt_list_append(TO inlet_sources ELEMENTS LuaMap.cpp IF LUA_FOUND)
+blt_list_append(TO inlet_headers ELEMENTS LuaReader.hpp IF LUA_FOUND)
+blt_list_append(TO inlet_sources ELEMENTS LuaReader.cpp IF LUA_FOUND)
 
 #------------------------------------------------------------------------------
 # Make/Install the library
 #------------------------------------------------------------------------------
-set(inlet_depends core slic fmt)
+set(inlet_depends core slic sidre fmt)
 
 blt_list_append(TO inlet_depends ELEMENTS lua IF LUA_FOUND)
 
@@ -37,15 +31,13 @@ blt_add_library( NAME        inlet
                  HEADERS     ${inlet_headers}
                  DEPENDS_ON  ${inlet_depends}
                  FOLDER      axom/inlet
-                 OBJECT      TRUE
-                 )
+                 OBJECT      TRUE )
 
 axom_write_unified_header(NAME    inlet
-                          HEADERS ${inlet_headers})
+                          HEADERS ${inlet_headers} )
 
-axom_install_component(NAME      inlet
-                       HEADERS   ${inlet_headers}
-                       )
+axom_install_component(NAME    inlet
+                       HEADERS ${inlet_headers} )
 
 
 #------------------------------------------------------------------------------
