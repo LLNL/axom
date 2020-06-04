@@ -84,15 +84,7 @@ IOManager::IOManager(MPI_Comm comm,
 {
   MPI_Comm_size(comm, &m_comm_size);
   MPI_Comm_rank(comm, &m_my_rank);
-#ifdef AXOM_USE_SCR
-  int world_size;
-  MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-  if (m_use_scr && m_comm_size != world_size)
-  {
-    SLIC_WARNING(
-      "IOManager constructor called with use_scr = true, but Axom was not compiled with SCR. IOManager will operate without SCR.");
-  }
-#else
+#ifndef AXOM_USE_SCR
   if (m_use_scr)
   {
     SLIC_WARNING(
@@ -214,6 +206,10 @@ void IOManager::write(sidre::Group* datagroup, int num_files,
     std::string hdf5_name =
       getFileNameForRank(file_pattern, root_name, set_id);
 
+    if (m_use_scr)
+    {
+
+    }
     hid_t h5_file_id, h5_group_id;
     if (m_baton->isFirstInGroup())
     {
@@ -418,8 +414,16 @@ void IOManager::readWithSCR(
 void IOManager::loadExternalData(sidre::Group* datagroup,
                                  const std::string& root_file)
 {
-  int num_files = getNumFilesFromRoot(root_file);
-  int num_groups = getNumGroupsFromRoot(root_file);
+  std::string root_path = root_file;
+  if (m_use_scr && m_my_rank == 0)
+  {
+    char scr_file[SCR_MAX_FILENAME];
+    SCR_Route_file(root_path.c_str(), scr_file);
+    root_path = std::string(scr_file);
+  }
+
+  int num_files = getNumFilesFromRoot(root_path);
+  int num_groups = getNumGroupsFromRoot(root_path);
   SLIC_ASSERT(num_files > 0);
   SLIC_ASSERT(num_groups > 0);
 
@@ -770,8 +774,16 @@ void IOManager::readSidreHDF5(sidre::Group* datagroup,
                               const std::string& root_file,
                               bool preserve_contents)
 {
-  int num_files = getNumFilesFromRoot(root_file);
-  int num_groups = getNumGroupsFromRoot(root_file);
+  std::string root_path = root_file;
+  if (m_use_scr && m_my_rank == 0)
+  {
+    char scr_file[SCR_MAX_FILENAME];
+    SCR_Route_file(root_path.c_str(), scr_file);
+    root_path = std::string(scr_file);
+  }
+
+  int num_files = getNumFilesFromRoot(root_path);
+  int num_groups = getNumGroupsFromRoot(root_path);
   SLIC_ASSERT(num_files > 0);
   SLIC_ERROR_IF(num_groups > m_comm_size && num_groups != num_files,
                 "IOManager attempted to read using a smaller number of processors "
@@ -917,15 +929,8 @@ int IOManager::getNumFilesFromRoot(const std::string& root_file)
   int read_num_files = 0;
   if (m_my_rank == 0)
   {
-    std::string root_path = root_file;
-    if (m_use_scr) {
-      char scr_file[SCR_MAX_FILENAME];
-      SCR_Route_file(root_path.c_str(), scr_file);
-      root_path = std::string(scr_file);
-    }
-
     conduit::Node n;
-    conduit::relay::io::load(root_path + ":number_of_files","hdf5",n);
+    conduit::relay::io::load(root_file + ":number_of_files","hdf5",n);
     read_num_files = n.to_int();
     SLIC_ASSERT(read_num_files > 0);
   }
@@ -948,15 +953,8 @@ int IOManager::getNumGroupsFromRoot(const std::string& root_file)
   int read_num_trees = 0;
   if (m_my_rank == 0)
   {
-    std::string root_path = root_file;
-    if (m_use_scr) {
-      char scr_file[SCR_MAX_FILENAME];
-      SCR_Route_file(root_path.c_str(), scr_file);
-      root_path = std::string(scr_file);
-    }
-
     conduit::Node n;
-    conduit::relay::io::load(root_path + ":number_of_trees","hdf5",n);
+    conduit::relay::io::load(root_file + ":number_of_trees","hdf5",n);
     read_num_trees = n.to_int();
     SLIC_ASSERT(read_num_trees > 0);
   }
