@@ -2486,6 +2486,142 @@ TEST(sidre_group,import_conduit_external)
 
 }
 
+//------------------------------------------------------------------------------
+TEST(sidre_group,import_conduit_lists)
+{
+  conduit::Node input;
+
+  //Give input some child nodes that are not lists, some that are.
+  input["fields/a/i0"] = (conduit::int64)(100);
+  input["fields/a/d0"] = (conduit::float64)(3000.00);
+  input["fields/b/s0"] = "foo";
+
+  int ndata = 10;
+  std::vector<conduit::int64> ivec(ndata);
+  input["fields/c/int10"].set(&ivec[0], ndata);
+  conduit::int64_array iarray = input["fields/c/int10"].as_int64_array();
+  for (int i = 0 ; i < ndata ; ++i)
+  {
+    iarray[i] = (conduit::int64)i;
+  }
+
+  conduit::Node &list_item0 = input["list"].append();
+  list_item0.set((conduit::int64)(12));
+  conduit::Node &list_item1 = input["list"].append();
+  list_item1.set((conduit::float64)(75.75));
+  conduit::Node &list_item2 = input["list"].append();
+  list_item2.set("test_str");
+  conduit::Node &list_item3 = input["list"].append();
+  list_item3["val1"] = (conduit::int64)(2);
+  list_item3["val2"] = (conduit::float64)(4.0);
+
+  DataStore ds;
+
+  EXPECT_TRUE(ds.getRoot()->importConduitTree(input));
+
+  {
+    EXPECT_EQ(ds.getRoot()->getView(
+                "fields/a/i0")->getData<conduit::int64>(),100);
+    EXPECT_NEAR(ds.getRoot()->getView(
+                  "fields/a/d0")->getData<conduit::float64>(),3000.00,1e-12);
+    EXPECT_EQ(ds.getRoot()->getView("fields/b/s0")->getString(),
+              std::string("foo"));
+
+    conduit::int64* sidre_data_ptr =
+      ds.getRoot()->getView("fields/c/int10")->getData();
+
+    for(int j=0 ; j< ndata ; j++)
+    {
+      EXPECT_EQ(iarray[j],sidre_data_ptr[j]);
+    }
+
+    Group* list = ds.getRoot()->getGroup("list");
+    for (IndexType idx = list->getFirstValidGroupIndex() ;
+         indexIsValid(idx) ;
+         idx = list->getNextValidGroupIndex(idx))
+    {
+      Group* child = list->getGroup(idx);
+      EXPECT_EQ(child->getView("val1")->getData<conduit::int64>(),2);
+      EXPECT_NEAR(child->getView("val2")->getData<conduit::float64>(),4.0,
+                  1e-12);
+    }
+
+    for (IndexType idx = list->getFirstValidViewIndex() ;
+         indexIsValid(idx) ;
+         idx = list->getNextValidViewIndex(idx))
+    {
+      View* view = list->getView(idx);
+      const conduit::Schema& schema = view->getSchema();
+      if (schema.dtype().is_int64())
+      {
+        EXPECT_EQ(view->getData<conduit::int64>(),12);
+      }
+      if (schema.dtype().is_float64())
+      {
+        EXPECT_NEAR(view->getData<conduit::float64>(),75.75,1e-12);
+      }
+      if (schema.dtype().is_string())
+      {
+        EXPECT_EQ(view->getString(),std::string("test_str"));
+      }
+    }
+  }
+
+  ds.getRoot()->save("lists.hdf5", "sidre_hdf5");
+
+  DataStore load_ds;
+  load_ds.getRoot()->load("lists.hdf5", "sidre_hdf5");
+
+  {
+    EXPECT_EQ(load_ds.getRoot()->getView(
+                "fields/a/i0")->getData<conduit::int64>(),100);
+    EXPECT_NEAR(load_ds.getRoot()->getView(
+                  "fields/a/d0")->getData<conduit::float64>(),3000.00,1e-12);
+    EXPECT_EQ(load_ds.getRoot()->getView("fields/b/s0")->getString(),
+              std::string("foo"));
+
+    conduit::int64* sidre_data_ptr =
+      load_ds.getRoot()->getView("fields/c/int10")->getData();
+
+    for(int j=0 ; j< ndata ; j++)
+    {
+      EXPECT_EQ(iarray[j],sidre_data_ptr[j]);
+    }
+
+    Group* list = load_ds.getRoot()->getGroup("list");
+    for (IndexType idx = list->getFirstValidGroupIndex() ;
+         indexIsValid(idx) ;
+         idx = list->getNextValidGroupIndex(idx))
+    {
+      Group* child = list->getGroup(idx);
+      EXPECT_EQ(child->getView("val1")->getData<conduit::int64>(),2);
+      EXPECT_NEAR(child->getView("val2")->getData<conduit::float64>(),4.0,
+                  1e-12);
+    }
+
+    for (IndexType idx = list->getFirstValidViewIndex() ;
+         indexIsValid(idx) ;
+         idx = list->getNextValidViewIndex(idx))
+    {
+      View* view = list->getView(idx);
+      const conduit::Schema& schema = view->getSchema();
+      if (schema.dtype().is_int64())
+      {
+        EXPECT_EQ(view->getData<conduit::int64>(),12);
+      }
+      if (schema.dtype().is_float64())
+      {
+        EXPECT_NEAR(view->getData<conduit::float64>(),75.75,1e-12);
+      }
+      if (schema.dtype().is_string())
+      {
+        EXPECT_EQ(view->getString(),std::string("test_str"));
+      }
+    }
+  }
+
+}
+
 
 #ifdef AXOM_USE_UMPIRE
 

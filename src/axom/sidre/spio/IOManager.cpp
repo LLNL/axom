@@ -632,33 +632,35 @@ std::string IOManager::getProtocol(
                  "The root file name should always end in 'root'."
                  << " File name was '"<< root_name <<"'");
 
-  std::string relay_protocol = "json";
-#ifdef AXOM_USE_HDF5
-  // Attempt to open the root file using HDF5.  If it succeeds, set
-  // relay_protocol to "hdf5", otherwise we assume a json protocol.
-  //
-  // Suppress error output for H5Fopen, since failure is acceptable here.
-  H5E_auto2_t herr_func;
-  void* old_client_data;
-  H5Eget_auto(H5E_DEFAULT, &herr_func, &old_client_data);
-  H5Eset_auto(H5E_DEFAULT, NULL, NULL);
-
-  hid_t file_id = H5Fopen(root_name.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
-  if (file_id > 0)
-  {
-    relay_protocol = "hdf5";
-    herr_t errv = H5Fclose(file_id);
-    AXOM_DEBUG_VAR(errv);
-    SLIC_ASSERT(errv >= 0);
-  }
-
-  // Restore error output
-  H5Eset_auto(H5E_DEFAULT, herr_func, old_client_data);
-#endif
-
   std::string protocol;
   if (m_my_rank == 0)
   {
+    std::string relay_protocol = "json";
+#ifdef AXOM_USE_HDF5
+    // Attempt to open the root file using HDF5.  If it succeeds, set
+    // relay_protocol to "hdf5", otherwise we assume a json protocol.
+    //
+    // Suppress error output for H5Fopen, since failure is acceptable here.
+
+    H5E_auto2_t herr_func;
+    void* old_client_data;
+    H5Eget_auto(H5E_DEFAULT, &herr_func, &old_client_data);
+    H5Eset_auto(H5E_DEFAULT, nullptr, nullptr);
+
+    hid_t file_id = H5Fopen(root_name.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+    if (file_id > 0)
+    {
+      relay_protocol = "hdf5";
+      herr_t errv = H5Fclose(file_id);
+      AXOM_DEBUG_VAR(errv);
+      SLIC_ASSERT(errv >= 0);
+    }
+
+    // Restore error output
+    H5Eset_auto(H5E_DEFAULT, herr_func, old_client_data);
+
+#endif
+
     conduit::Node n;
     conduit::relay::io::load(root_name, relay_protocol, n);
 
