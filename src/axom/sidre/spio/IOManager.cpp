@@ -185,14 +185,6 @@ void IOManager::write(sidre::Group* datagroup, int num_files,
   MPI_Barrier(m_mpi_comm);
 
   std::string root_name = root_string + ".root";
-#if 0
-  if (m_use_scr)
-  {
-    m_scr_checkpoint_dir =
-      broadcastString(m_scr_checkpoint_dir, m_mpi_comm, m_my_rank);
-    root_name = m_scr_checkpoint_dir + "/" + root_name;
-  }
-#endif
 
   MPI_Barrier(m_mpi_comm);
 
@@ -206,10 +198,6 @@ void IOManager::write(sidre::Group* datagroup, int num_files,
     std::string hdf5_name =
       getFileNameForRank(file_pattern, root_name, set_id);
 
-    if (m_use_scr)
-    {
-
-    }
     hid_t h5_file_id, h5_group_id;
     if (m_baton->isFirstInGroup())
     {
@@ -599,15 +587,6 @@ void IOManager::createRootFile(const std::string& file_base,
                    " failed. Writing root file without SCR.");
     }
 
-    std::string dir_name;
-    utilities::filesystem::getDirName(dir_name, root_file_name);
-#if 0
-    if (!dir_name.empty())
-    {
-      utilities::filesystem::makeDirsForPath(dir_name);
-    }
-#endif
-    m_scr_checkpoint_dir = dir_name;
   }
 #endif
 
