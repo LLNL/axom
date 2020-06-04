@@ -26,6 +26,7 @@ set(sidre_headers
     core/View.hpp
     core/Attribute.hpp
     core/AttrValues.hpp
+    core/ItemCollection.hpp
     core/Iterator.hpp
     core/ListCollection.hpp
     core/MapCollection.hpp
