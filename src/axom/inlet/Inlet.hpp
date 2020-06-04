@@ -33,11 +33,13 @@ public:
   void reader(Reader* reader) { m_reader = reader; };
   Reader* reader() { return m_reader; };
 
+  //TODO change to datastore group
   void datastore(axom::sidre::DataStore* ds) { m_ds = ds; };
   axom::sidre::DataStore* datastore() { return m_ds; };
 
   // Functions that define the input deck schema
 
+  //TODO rename group to not conflict with sidre group
   bool addGroup(const std::string& name, const std::string& description);
 
   bool addInt(const std::string& name,
@@ -50,6 +52,8 @@ public:
   // Functions that get the values out of the datastore
   
   bool get(const std::string& name, int& value);
+
+  // TODO add update value functions
 private:
   Reader* m_reader = nullptr;
   axom::sidre::DataStore* m_ds = nullptr;

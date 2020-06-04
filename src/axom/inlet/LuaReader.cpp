@@ -78,6 +78,7 @@ bool LuaReader::parseString(const std::string& luaString)
   return true;
 }
 
+// TODO allow alternate delimiter at sidre level
 #define SCOPE_DELIMITER '/'
 
 bool LuaReader::findVariable(const std::string& id)
