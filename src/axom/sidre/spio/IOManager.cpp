@@ -186,12 +186,18 @@ void IOManager::write(sidre::Group* datagroup, int num_files,
 
   std::string root_name = root_string + ".root";
 
-  MPI_Barrier(m_mpi_comm);
-
   if (protocol == "sidre_hdf5")
   {
 #ifdef AXOM_USE_HDF5
-    std::string file_pattern = getHDF5FilePattern(root_name);
+    std::string root_path = root_name;
+    if (m_use_scr && m_my_rank == 0)
+    {
+      char scr_file[SCR_MAX_FILENAME];
+      SCR_Route_file(root_path.c_str(), scr_file);
+      root_path = std::string(scr_file);
+    }
+
+    std::string file_pattern = getHDF5FilePattern(root_path);
 
     int set_id = m_baton->wait();
 
@@ -430,7 +436,7 @@ void IOManager::loadExternalData(sidre::Group* datagroup,
   }
 
 #ifdef AXOM_USE_HDF5
-  std::string file_pattern = getHDF5FilePattern(root_file);
+  std::string file_pattern = getHDF5FilePattern(root_path);
 
   int set_id = m_baton->wait();
 
@@ -725,15 +731,8 @@ std::string IOManager::getHDF5FilePattern(
   std::string file_pattern;
   if (m_my_rank == 0)
   {
-    std::string hdf_root = root_name;
-    if (m_use_scr) {
-      char scr_file[SCR_MAX_FILENAME];
-      SCR_Route_file(hdf_root.c_str(), scr_file);
-      hdf_root = std::string(scr_file);
-    }
-
     conduit::Node n;
-    conduit::relay::io::load(hdf_root + ":file_pattern", "hdf5", n);
+    conduit::relay::io::load(root_name + ":file_pattern", "hdf5", n);
 
     file_pattern = n.as_string();
   }
@@ -783,7 +782,7 @@ void IOManager::readSidreHDF5(sidre::Group* datagroup,
     m_baton = new IOBaton(m_mpi_comm, num_files, num_groups);
   }
 
-  std::string file_pattern = getHDF5FilePattern(root_file);
+  std::string file_pattern = getHDF5FilePattern(root_path);
 
   int set_id = m_baton->wait();
   if (num_groups <= m_comm_size)
