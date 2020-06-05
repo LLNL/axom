@@ -109,8 +109,10 @@ public:
 /// \name Native Storage Array Constructors
 /// @{
 
-  /*! \brief Default constructor.
-   *   Constructs an Array instance with no elements. 
+  /*! 
+   * \brief Default constructor. Constructs an Array instance with no elements
+   *  and default allocator ID. 
+   *
    */
   Array();
 
@@ -119,6 +121,7 @@ public:
    *
    * \param [in] num_elements the number of elements the Array holds.
    * \param [in] capacity the number of elements to allocate space for.
+   * \param [in] allocator_id the ID of the allocator to use (optional)
    *
    * \note If no capacity or capacity less than num_elements is specified
    *  then it will default to at least num_elements * DEFAULT_RESIZE_RATIO.
@@ -131,16 +134,19 @@ public:
    * \post size() == num_elements
    * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
-  Array( IndexType num_elements, IndexType capacity=0 );
+  Array( IndexType num_elements, IndexType capacity=0,
+         int allocator_id = DEFAULT_ALLOCATOR_ID );
 
   /*! 
    * \brief Copy constructor for an Array instance 
    * 
+   * \param [in] allocator_id the ID of the allocator to use (optional)
+   *
    * \note If you use the copy constructor on an argument Array 
    *  with data from an external data buffer, the copy-constructed Array 
    *  will have a deep copy of the data and own the data copy. 
    */ 
-  Array( const Array& other ); 
+  Array( const Array& other, int allocator_id = DEFAULT_ALLOCATOR_ID ); 
 
   /*! 
    * \brief Move constructor for an Array instance 
@@ -190,6 +196,9 @@ public:
    * \note If you use the copy assignment operator on an argument Array 
    *  with data from an external data buffer, the copy-assigned Array 
    *  will have a deep copy of the data and own the data copy. 
+   *
+   * \note The data will be allocated using the allocator ID of the
+   *  copy-assigned Array, not the argument Array.
    */ 
   Array& operator=( const Array& other ) 
   { 
@@ -227,13 +236,15 @@ public:
       m_num_elements = other.m_num_elements; 
       m_capacity = other.m_capacity; 
       m_resize_ratio = other.m_resize_ratio; 
-      m_is_external = other.m_is_external; 
+      m_is_external = other.m_is_external;
+      m_allocator_id = other.m_allocator_id;
 
       other.m_data = nullptr; 
       other.m_num_elements = 0; 
       other.m_capacity = 0; 
       other.m_resize_ratio = DEFAULT_RESIZE_RATIO; 
       other.m_is_external = false; 
+      other.m_allocator_id = INVALID_ALLOCATOR_ID;
     } 
 
     return *this; 
@@ -530,6 +541,11 @@ public:
   void setResizeRatio( double ratio ) { m_resize_ratio = ratio; }
 
   /*!
+   * \brief Get the ID for the umpire allocator
+   */
+  int getAllocatorID() const { return m_allocator_id; }
+
+  /*!
    * \brief Return true iff the external buffer constructor was called.
    */
   bool isExternal() const { return m_is_external; }
@@ -653,6 +669,7 @@ protected:
   IndexType m_capacity;
   double m_resize_ratio;
   bool m_is_external;
+  int m_allocator_id;
 };
 
 
@@ -667,17 +684,20 @@ Array< T >::Array( ) :
   m_num_elements( 0 ),
   m_capacity( 0 ),
   m_resize_ratio( DEFAULT_RESIZE_RATIO ),
-  m_is_external( false )
+  m_is_external( false ),
+  m_allocator_id( DEFAULT_ALLOCATOR_ID )
 {}
 
 //------------------------------------------------------------------------------
 template< typename T >
-Array< T >::Array( IndexType num_elements, IndexType capacity ) :
+Array< T >::Array( IndexType num_elements, IndexType capacity,
+                   int allocator_id ) :
   m_data( nullptr ),
   m_num_elements( 0 ),
   m_capacity( 0 ),
   m_resize_ratio( DEFAULT_RESIZE_RATIO ),
-  m_is_external( false )
+  m_is_external( false ),
+  m_allocator_id( allocator_id )
 {
   initialize( num_elements, capacity );
 }
@@ -689,7 +709,8 @@ Array< T >::Array( T* data, IndexType num_elements, IndexType capacity ) :
   m_num_elements( num_elements ),
   m_capacity( 0 ),
   m_resize_ratio( 0.0 ),
-  m_is_external( true )
+  m_is_external( true ),
+  m_allocator_id( INVALID_ALLOCATOR_ID)
 {
   m_capacity = (capacity < num_elements) ? num_elements : capacity;
 
@@ -700,12 +721,13 @@ Array< T >::Array( T* data, IndexType num_elements, IndexType capacity ) :
 
 //------------------------------------------------------------------------------ 
 template< typename T > 
-Array< T >::Array( const Array& other ) : 
+Array< T >::Array( const Array& other, int allocator_id ) : 
   m_data( nullptr ), 
   m_num_elements( 0 ), 
   m_capacity( 0 ),  
   m_resize_ratio( DEFAULT_RESIZE_RATIO ), 
-  m_is_external( false ) 
+  m_is_external( false ),
+  m_allocator_id( allocator_id )
 { 
   initialize( other.size(), other.capacity() );  
   std::memcpy( m_data, other.data(),  
@@ -719,18 +741,21 @@ Array< T >::Array( Array&& other ) :
   m_num_elements( 0 ), 
   m_capacity( 0 ), 
   m_resize_ratio( 0.0 ), 
-  m_is_external( false ) 
+  m_is_external( false ),
+  m_allocator_id( DEFAULT_ALLOCATOR_ID)
 { 
   m_data = other.m_data; 
   m_num_elements = other.m_num_elements; 
   m_capacity = other.m_capacity; 
   m_resize_ratio = other.m_resize_ratio; 
   m_is_external = other.m_is_external; 
+  m_allocator_id = other.m_allocator_id;
 
   other.m_data = nullptr; 
   other.m_capacity = 0; 
   other.m_resize_ratio = DEFAULT_RESIZE_RATIO; 
   other.m_is_external = false; 
+  other.m_allocator_id = INVALID_ALLOCATOR_ID;
 }
 
 //------------------------------------------------------------------------------
@@ -1065,7 +1090,7 @@ inline void Array< T >::setCapacity( IndexType new_capacity )
     updateNumElements( new_capacity );
   }
 
-  m_data = axom::reallocate< T >( m_data, new_capacity );
+  m_data = axom::reallocate< T >( m_data, new_capacity, m_allocator_id);
   m_capacity = new_capacity;
 
   assert( m_data != nullptr || m_capacity <= 0 );
@@ -1093,7 +1118,7 @@ inline void Array< T >::dynamicRealloc( IndexType new_num_elements )
     utilities::processAbort();
   }
 
-  m_data = axom::reallocate< T >( m_data, new_capacity );
+  m_data = axom::reallocate< T >( m_data, new_capacity, m_allocator_id );
   m_capacity = new_capacity;
 
   assert( m_data != nullptr || m_capacity <= 0 );
