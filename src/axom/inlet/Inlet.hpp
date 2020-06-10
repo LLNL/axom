@@ -33,30 +33,36 @@ public:
   void reader(Reader* reader) { m_reader = reader; };
   Reader* reader() { return m_reader; };
 
-  //TODO change to datastore group
-  void datastore(axom::sidre::DataStore* ds) { m_ds = ds; };
-  axom::sidre::DataStore* datastore() { return m_ds; };
+  void sidreGroup(axom::sidre::Group* group) { m_sidreGroup = group; };
+  axom::sidre::Group* sidreGroup() { return m_sidreGroup; };
 
   // Functions that define the input deck schema
+  axom::sidre::Group* addGroup(const std::string& name,
+                               const std::string& description);
 
-  //TODO rename group to not conflict with sidre group
-  bool addGroup(const std::string& name, const std::string& description);
-
-  bool addInt(const std::string& name,
-              const std::string& description,
-              int defaultValue);
-  bool addInt(const std::string& name,
-              const std::string& description,
-              bool required=false);
+  axom::sidre::Group* addBool(const std::string& name,
+                              const std::string& description);
+  axom::sidre::Group* addDouble(const std::string& name,
+                                const std::string& description);
+  axom::sidre::Group* addInt(const std::string& name,
+                             const std::string& description);
+  axom::sidre::Group* addString(const std::string& name,
+                                const std::string& description);
 
   // Functions that get the values out of the datastore
-  
+  bool get(const std::string& name, bool& value);
+  bool get(const std::string& name, double& value);
   bool get(const std::string& name, int& value);
+  bool get(const std::string& name, std::string& value);
 
   // TODO add update value functions
 private:
+  axom::sidre::Group* add(const std::string& name,
+                          const std::string& description);
+  axom::sidre::View* get(const std::string& name);
+
   Reader* m_reader = nullptr;
-  axom::sidre::DataStore* m_ds = nullptr;
+  axom::sidre::Group* m_sidreGroup = nullptr;
 };
 
 } // end namespace inlet
