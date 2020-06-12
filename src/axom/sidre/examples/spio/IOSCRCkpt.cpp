@@ -155,17 +155,6 @@ int main(int argc, char* argv[])
       ga->createViewScalar<int>("i0", my_rank + 101);
       gb->createViewScalar<int>("i1", 4*my_rank*my_rank + 404);
 
-// SCR creates all directories as needed.
-#if 0
-      if (my_rank == 0)
-      {
-        std::string dir;
-        filesystem::getDirName(dir, file_base);
-        filesystem::makeDirsForPath(dir);
-      }
-      MPI_Barrier(MPI_COMM_WORLD);
-#endif
-
       std::string ckpt_path = ckptname + "." + file_base;
 
       // One must write with MPI_COMM_WORLD when using SCR.
