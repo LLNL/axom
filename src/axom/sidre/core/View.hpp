@@ -525,7 +525,7 @@ public:
    */
   View* attachBuffer( TypeID type,
                       int ndims,
-                      IndexType* shape,
+                      const IndexType* shape,
                       Buffer* buff )
   {
     describe(type, ndims, shape);
@@ -611,7 +611,7 @@ public:
    *
    * \return pointer to this View object.
    */
-  View* apply( TypeID type, int ndims, IndexType* shape );
+  View* apply( TypeID type, int ndims, const IndexType* shape );
 
   /*!
    * \brief Apply data description of given Conduit data type to data view.
@@ -787,7 +787,7 @@ public:
    */
   View* setExternalDataPtr(TypeID type,
                            int ndims,
-                           IndexType* shape,
+                           const IndexType* shape,
                            void* external_ptr)
   {
     describe(type, ndims, shape);
@@ -1361,7 +1361,7 @@ private:
    * If given type of NO_TYPE_ID, or number of dimensions or total
    * number of elements < 0, or view is opaque, method does nothing.
    */
-  void describe(TypeID type, int ndims, IndexType* shape);
+  void describe(TypeID type, int ndims, const IndexType* shape);
 
   /*!
    * \brief Declare a data view with a Conduit data type object.
@@ -1383,7 +1383,7 @@ private:
   /*!
    * \brief Set the shape to be a ndims dimensions with shape.
    */
-  void describeShape(int ndims, IndexType* shape);
+  void describeShape(int ndims, const IndexType* shape);
 
   /*!
    * \brief Copy view contents into an undescribed EMPTY view.

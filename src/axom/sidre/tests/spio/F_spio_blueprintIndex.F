@@ -34,7 +34,7 @@ program spio_blueprint_index
   type(SidreView) nvrtx, nsclr, nmesh, nvals
   type(SidreView) evrtx, esclr, emesh, evals
 
-  type(iomanager) writer
+  type(IOManager) writer
 
   call mpi_init(mpierr)
 
@@ -45,7 +45,7 @@ program spio_blueprint_index
   node_count = 12
   elt_count = 2
 
-  cds = datastore_new()
+  cds = SidreDataStore()
   cdroot = cds%get_root()
   mroot = cdroot%create_group("domain_data/domain")
   coords = mroot%create_group("mesh/coordsets/coords")
@@ -106,7 +106,7 @@ program spio_blueprint_index
   elt_vals(0) = 2.65;
   elt_vals(1) = 1.96;
 
-  writer = iomanager_new(MPI_COMM_WORLD)
+  writer = IOManager(MPI_COMM_WORLD)
 
   call writer%write(mroot, 1, "fbp", "sidre_hdf5")
 

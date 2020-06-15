@@ -24,7 +24,7 @@ program spio_basic_write_read
   type(SidreGroup) ga, gb
   type(SidreView)  view1, view2
 
-  type(iomanager) writer, reader
+  type(IOManager) writer, reader
 
 #ifdef AXOM_USE_HDF5
   character(18) :: protocol = "sidre_hdf5        "
@@ -37,7 +37,7 @@ program spio_basic_write_read
 
   call mpi_init(mpierr)
 
-  ds1 = datastore_new()
+  ds1 = SidreDataStore()
   root1 = ds1%get_root()
 
   flds1 = root1%create_group("fields")
@@ -50,13 +50,13 @@ program spio_basic_write_read
   view2 = gb%create_view_scalar_int("i1", 404)
 
   num_files = 1
-  writer = iomanager_new(MPI_COMM_WORLD)
+  writer = IOManager(MPI_COMM_WORLD)
 
   call writer%write(root1, num_files, "F_out_spio_basic_write_read", protocol )
 
-  ds2 = datastore_new()
+  ds2 = SidreDataStore()
 
-  reader = iomanager_new(MPI_COMM_WORLD)
+  reader = IOManager(MPI_COMM_WORLD)
 
   root2 = ds2%get_root()
   call reader%read(root2, "F_out_spio_basic_write_read" // root_ext )

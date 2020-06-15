@@ -29,7 +29,7 @@ program spio_external_write_read
   type(SidreGroup) ga, gb
   type(SidreView)  view1, view2
 
-  type(iomanager) writer, reader
+  type(IOManager) writer, reader
 
 ! Loading external data is only currently valid for 'sidre_hdf5' protocol
 #ifdef AXOM_USE_HDF5
@@ -53,7 +53,7 @@ program spio_external_write_read
   ! the views are filled with repeatable nonsense data that will vary based
   ! on rank.
 
-  ds1 = datastore_new()
+  ds1 = SidreDataStore()
   root1 = ds1%get_root()
 
   flds = root1%create_group("fields")
@@ -68,16 +68,16 @@ program spio_external_write_read
 
  ! contents of the datastore written to files with io_manager.
   num_files = num_output
-  writer = iomanager_new(MPI_COMM_WORLD)
+  writer = IOManager(MPI_COMM_WORLD)
 
   call writer%write(root1, num_files, "F_out_spio_external_write_read", "sidre_hdf5")
 
   ! create another datastore than holds nothing but the root group.
-  ds2 = datastore_new()
+  ds2 = SidreDataStore()
   root2 = ds2%get_root()
 
   ! read from the files that were written above.
-  reader = iomanager_new(MPI_COMM_WORLD)
+  reader = IOManager(MPI_COMM_WORLD)
 
   call reader%read(root2, "F_out_spio_external_write_read.root")
 

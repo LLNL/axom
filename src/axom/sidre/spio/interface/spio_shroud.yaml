@@ -49,7 +49,10 @@ declarations:
 - decl: class IOManager
   cxx_header: axom/sidre/spio/IOManager.hpp
   declarations:
-  - decl: IOManager(MPI_Comm com, bool use_scr = false) +name(new)
+  - decl: IOManager(MPI_Comm com, bool use_scr = false)
+    default_arg_suffix:
+    -  _default
+    -  _usescr
   - decl: ~IOManager() +name(delete)
   - decl: void write(Group * group,
                      int num_files,

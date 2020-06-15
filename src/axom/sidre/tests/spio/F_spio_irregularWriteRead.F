@@ -29,7 +29,7 @@ program spio_irregularWriteRead
   type(SidreGroup) sg1, sg2
   type(SidreView)  view1, view2
 
-  type(iomanager) writer, reader
+  type(IOManager) writer, reader
 
 #ifdef AXOM_USE_HDF5
   character(18) :: protocol = "sidre_hdf5        "
@@ -57,7 +57,7 @@ program spio_irregularWriteRead
 !
 ! the views are filled with repeatable nonsense data that will vary based
 ! on rank.
-  ds1 = datastore_new()
+  ds1 = SidreDataStore()
   root1 = ds1%get_root()
 
   num_fields = my_rank + 2
@@ -86,15 +86,15 @@ program spio_irregularWriteRead
 
   ! contents of the datastore written to files with io_manager.
   num_files = num_output
-  writer = iomanager_new(MPI_COMM_WORLD)
+  writer = IOManager(MPI_COMM_WORLD)
 
   call writer%write(root1, num_files, "F_out_spio_irregular_write_read", protocol )
 
   ! create another datastore that holds nothing but the root group.
-  ds2 = datastore_new()
+  ds2 = SidreDataStore()
 
   ! read from the files that were written above.
-  reader = iomanager_new(MPI_COMM_WORLD)
+  reader = IOManager(MPI_COMM_WORLD)
 
   root2 = ds2%get_root()
   call reader%read(root2, "F_out_spio_irregular_write_read" // root_ext )
