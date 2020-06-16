@@ -322,6 +322,15 @@ public:
   void push_back( const T& value );
 
   /*!
+   * \brief Push a value to the back of the array.
+   *
+   * \param [in] value the value to move to the back.
+   *
+   * \note Reallocation is done if the new size will exceed the capacity.
+   */
+  void push_back( T&& value );
+
+  /*!
    * \brief Modify the values of existing elements.
    *
    * \param [in] elements the new elements to write.
@@ -453,6 +462,43 @@ public:
    * \return An ArrayIterator following the last element removed. 
    */
   ArrayIterator erase( ArrayIterator first, ArrayIterator last );  
+
+  /*!
+   * \brief Inserts new element into Array at the given position.
+   *
+   * \param [in] pos the position to insert element at.
+   * \param [in] args the arguments to forward to constructor of the element.
+   *
+   * \note Reallocation is done if the new size will exceed the capacity.
+   * \note The size increases by 1.
+   */
+  template < typename... Args>
+  void emplace( IndexType pos, Args&&... args );
+
+  /*!
+   * \brief Inserts new element into Array before pos.
+   *
+   * \param [in] pos the ArrayIterator to insert element before.
+   * \param [in] args the arguments to forward to constructor of the element.
+   *
+   * \note Reallocation is done if the new size will exceed the capacity.
+   * \note The size increases by 1.
+   *
+   * \return An ArrayIterator to the emplaced element.
+   */
+  template < typename... Args>
+  ArrayIterator emplace( ArrayIterator pos, Args&&... args );
+
+  /*!
+   * \brief Inserts new element at the end of the Array.
+   *
+   * \param [in] args the arguments to forward to constructor of the element.
+   *
+   * \note Reallocation is done if the new size will exceed the capacity.
+   * \note The size increases by 1.
+   */
+  template < typename... Args>
+  void emplace_back( Args&&... args );
 
 /// @}
 
@@ -784,14 +830,14 @@ inline void Array< T >::fill( const T& value )
 template< typename T >
 inline void Array< T >::push_back( const T& value )
 {
-  IndexType new_size = m_num_elements + 1;
-  if ( new_size > m_capacity )
-  {
-    dynamicRealloc( new_size );
-  }
+  emplace_back(value);
+}
 
-  m_data[ m_num_elements ] = value;
-  updateNumElements( new_size );
+//------------------------------------------------------------------------------
+template< typename T >
+inline void Array< T >::push_back( T&& value )
+{
+  emplace_back(std::move(value));
 }
 
 //------------------------------------------------------------------------------
@@ -948,6 +994,34 @@ inline typename Array< T >::ArrayIterator Array< T >::erase(
 
   updateNumElements(m_num_elements - count);
   return first - shifted;
+}
+
+//------------------------------------------------------------------------------
+template< typename T >
+template< typename ... Args >
+inline void Array< T >::emplace( IndexType pos, Args&&... args )
+{
+  reserveForInsert( 1, pos );
+  m_data[ pos ] = std::move( T(std::forward<Args>(args)...));
+}
+
+//------------------------------------------------------------------------------
+template< typename T >
+template< typename ... Args >
+inline typename Array< T >::ArrayIterator
+Array< T >::emplace( Array< T >::ArrayIterator pos, Args&&... args )
+{
+  assert( pos >= begin() && pos <= end() );
+  emplace( pos - begin(), args... );
+  return pos;
+}
+
+//------------------------------------------------------------------------------
+template< typename T >
+template< typename ... Args >
+inline void Array< T >::emplace_back( Args&&... args )
+{
+  emplace( m_num_elements, args... );
 }
 
 //------------------------------------------------------------------------------
