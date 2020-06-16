@@ -137,6 +137,12 @@ class Axom(CMakePackage, CudaPackage):
     depends_on("py-shroud", when="+devtools")
     depends_on("uncrustify@0.61", when="+devtools")
 
+    def flag_handler(self, name, flags):
+        if name in ('cflags', 'cxxflags', 'fflags'):
+            # the package manages these flags in another way
+            return (None, None, None)
+        return (flags, None, None)
+
     def _get_sys_type(self, spec):
         sys_type = spec.architecture
         # if on llnl systems, we can use the SYS_TYPE
@@ -211,10 +217,11 @@ class Axom(CMakePackage, CudaPackage):
             cfg.write(cmake_cache_option("ENABLE_FORTRAN", False))
 
         # use global spack compiler flags
-        cflags = ' '.join(spec.compiler_flags['cflags'])
+        cppflags = ' '.join(spec.compiler_flags['cppflags'])
+        cflags = cppflags + ' ' + ' '.join(spec.compiler_flags['cflags'])
         if cflags:
             cfg.write(cmake_cache_entry("CMAKE_C_FLAGS", cflags))
-        cxxflags = ' '.join(spec.compiler_flags['cxxflags'])
+        cxxflags = cppflags + ' ' + ' '.join(spec.compiler_flags['cxxflags'])
         if cxxflags:
             cfg.write(cmake_cache_entry("CMAKE_CXX_FLAGS", cxxflags))
         fflags = ' '.join(spec.compiler_flags['fflags'])
@@ -232,8 +239,6 @@ class Axom(CMakePackage, CudaPackage):
             if flags:
                 cfg.write(cmake_cache_entry("BLT_EXE_LINKER_FLAGS", flags,
                                             description))
-
-
 
         # TPL locations
         cfg.write("#------------------{0}\n".format("-" * 60))
@@ -458,9 +463,9 @@ class Axom(CMakePackage, CudaPackage):
                                       os.path.dirname(f_compiler)), "lib")
                 description = ("Adds a missing rpath for libraries "
                                "associated with the fortran compiler")
+                linker_flags = "${BLT_EXE_LINKER_FLAGS} -Wl,-rpath," + libdir
                 cfg.write(cmake_cache_entry("BLT_EXE_LINKER_FLAGS",
-                                            "${BLT_EXE_LINKER_FLAGS} -Wl,-rpath," + libdir,
-                                            description))
+                                            linker_flags, description))
 
             if "+cuda" in spec:
                 cfg.write("#------------------{0}\n".format("-" * 60))
