@@ -173,3 +173,20 @@ foreach(_target RAJA camp umpire umpire_alloc)
         endforeach()
     endif()
 endforeach()
+
+
+#------------------------------------------------------------------------------
+# LUA
+#------------------------------------------------------------------------------
+if (LUA_DIR)
+    include(cmake/thirdparty/FindLUA.cmake)
+    blt_register_library(
+        NAME          lua
+        INCLUDES      ${LUA_INCLUDE_DIR}
+        LIBRARIES     ${LUA_LIBRARY}
+        TREAT_INCLUDES_AS_SYSTEM ON)
+else()
+    message(STATUS "LUA support is OFF")
+    set(LUA_FOUND OFF CACHE BOOL "")
+endif()
+

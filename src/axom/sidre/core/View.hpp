@@ -979,7 +979,7 @@ public:
 
 
 //@{
-//!  @name View query and accessor methods
+//!  @name Attribute Value query and accessor methods
 
   Attribute* getAttribute(IndexType idx);
 
@@ -988,11 +988,6 @@ public:
   Attribute* getAttribute(const std::string & name);
 
   const Attribute* getAttribute(const std::string & name) const;
-
-//@}
-
-//@{
-//!  @name Attribute Value query and accessor methods
 
   /*!
    * \brief Return true if the attribute has been explicitly set; else false.
