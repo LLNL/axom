@@ -17,7 +17,6 @@ set( mint_tests
      ## mesh tests
      mint_mesh.cpp
      mint_mesh_blueprint.cpp
-     mint_mesh_cell_types.cpp
      mint_mesh_connectivity_array.cpp
      mint_mesh_coordinates.cpp
      mint_mesh_curvilinear_mesh.cpp
@@ -39,6 +38,13 @@ set( mint_tests
      mint_su2_io.cpp
      mint_util_write_vtk.cpp
    )
+
+if(NOT (("${CMAKE_CXX_COMPILER_VERSION}" VERSION_EQUAL "9.0.0") AND
+   ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")))
+    # This test causes a compiler seg fault in clang@9.0.0,
+    # codes are still using mint with that compiler though
+    list(APPEND mint_tests mint_mesh_cell_types.cpp)
+endif()
 
 ## lists all axom depencies used for testing
 set( mint_test_dependencies
