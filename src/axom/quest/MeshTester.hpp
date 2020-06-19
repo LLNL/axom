@@ -62,7 +62,8 @@ void findTriMeshIntersections(
   mint::UnstructuredMesh< mint::SINGLE_SHAPE >* surface_mesh,
   std::vector<std::pair<int, int> > & intersections,
   std::vector<int> & degenerateIndices,
-  int spatialIndexResolution = 0);
+  int spatialIndexResolution = 0,
+  double intersectionThreshold = 1E-8);
 
 
 /*!

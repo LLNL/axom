@@ -49,9 +49,10 @@ template < typename T >
 AXOM_HOST_DEVICE
 bool intersect( const Triangle< T, 3 >& t1,
                 const Triangle< T, 3 >& t2,
-                const bool includeBoundary = false)
+                bool includeBoundary = false,
+                double EPS = 1E-08)
 {
-  return detail::intersect_tri3D_tri3D< T >(t1, t2, includeBoundary);
+  return detail::intersect_tri3D_tri3D< T >(t1, t2, includeBoundary, EPS);
 }
 
 /*!
@@ -65,9 +66,10 @@ bool intersect( const Triangle< T, 3 >& t1,
 template < typename T >
 bool intersect( const Triangle< T, 2 >& t1,
                 const Triangle< T, 2 >& t2,
-                const bool includeBoundary = false)
+                bool includeBoundary = false,
+                double EPS = 1E-08)
 {
-  return detail::intersect_tri2D_tri2D< T >(t1, t2, includeBoundary);
+  return detail::intersect_tri2D_tri2D< T >(t1, t2, includeBoundary, EPS);
 }
 
 /*!
