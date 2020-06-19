@@ -88,24 +88,16 @@ struct Input
 {
   static const std::set<RuntimePolicy> s_validPolicies;
 
-  std::string stlInput;
-  std::string vtkOutput;
-  RuntimePolicy policy;
+  std::string stlInput {""};
+  std::string vtkOutput {""};
+  RuntimePolicy policy {seq};
 
-  int resolution;
-  double weldThreshold;
-  bool skipWeld;
-  bool verboseOutput;
+  int resolution {0};
+  double weldThreshold {1e-6};
+  bool skipWeld {false};
+  bool verboseOutput {false};
 
-  Input()
-    : stlInput("")
-    , vtkOutput("")
-    , policy(seq)
-    , resolution(0)
-    , weldThreshold(1e-6)
-    , skipWeld(false)
-    , verboseOutput(false)
-  { };
+  Input() = default;
 
   void parse(int argc, char** argv, CLI::App& app);
 
