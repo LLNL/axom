@@ -195,6 +195,7 @@ void Input::parse(int argc, char** argv, CLI::App& app)
     << (resolution == 1 && policy == raja_cuda ? " (use RAJA CUDA policy)" : "")
     <<"\n  weld threshold = " <<  weldThreshold
     <<"\n  " << (skipWeld ? "" : "not ") << "skipping weld"
+    <<"\n  intersection tolerance = " <<  intersectionThreshold
     <<"\n  infile = " << stlInput
     <<"\n  collisions outfile = " << collisionsMeshName()
     <<"\n  weld outfile = " << weldMeshName()  );
