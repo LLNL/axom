@@ -51,6 +51,17 @@ compilers:
     modules: []
     operating_system: rhel7
     paths:
+      cc:  /usr/tce/packages/gcc/gcc-8.1.0/bin/gcc
+      cxx: /usr/tce/packages/gcc/gcc-8.1.0/bin/g++
+    spec: gcc@8.1.0_no_fortran
+    target: x86_64
+- compiler:
+    environment: {}
+    extra_rpaths: []
+    flags: {}
+    modules: []
+    operating_system: rhel7
+    paths:
       cc:  /usr/tce/packages/intel/intel-18.0.2/bin/icc
       cxx: /usr/tce/packages/intel/intel-18.0.2/bin/icpc
       f77: /usr/tce/packages/intel/intel-18.0.2/bin/ifort
