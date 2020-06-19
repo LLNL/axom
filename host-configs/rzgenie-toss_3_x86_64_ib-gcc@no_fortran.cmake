@@ -2,7 +2,7 @@
 # !!!! This is a generated file, edit at own risk !!!!
 #------------------------------------------------------------------------------
 # SYS_TYPE: toss_3_x86_64_ib
-# Compiler Spec: gcc@8.1.0_no_fortran
+# Compiler Spec: gcc@no_fortran
 #------------------------------------------------------------------------------
 # CMake executable path: /usr/tce/packages/cmake/cmake-3.14.5/bin/cmake
 #------------------------------------------------------------------------------
@@ -22,7 +22,7 @@ set(ENABLE_FORTRAN OFF CACHE BOOL "")
 #------------------------------------------------------------------------------
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/libs/toss_3_x86_64_ib/2020_06_18_22_06_39/gcc-8.1.0_no_fortran" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/toss_3_x86_64_ib/2020_06_19_12_14_54/gcc-no_fortran" CACHE PATH "")
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.5.1" CACHE PATH "")
 
