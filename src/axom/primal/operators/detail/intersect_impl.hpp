@@ -387,16 +387,12 @@ inline bool intersectTwoPermutedTriangles(const Point3& p1,
      if intersecting, have a line that intersects segments p1r1, p1q1,
      p2q2, and p2r2.  We check if these two intervals overlap:
    */
-
-  if (!isLpeq(Vector3(q1, q2).dot(Triangle3(q1, p2, p1).normal()), 0.0,
-              includeBoundary) ||
-      !isLpeq(Vector3(p1, r2).dot(Triangle3(p1, p2, r1).normal()), 0.0,
-              includeBoundary))
-  {
-    return false;
-  }
-
-  return true;
+  const bool bdr = includeBoundary;
+  const double local_eps = 1e-8;
+  /* *INDENT-OFF* */
+  return isLpeq(Vector3(q1, q2).dot(Triangle3(q1, p2, p1).normal()), 0.0, bdr, local_eps)
+      && isLpeq(Vector3(p1, r2).dot(Triangle3(p1, p2, r1).normal()), 0.0, bdr, local_eps);
+  /* *INDENT-ON* */
 }
 
 /*!
