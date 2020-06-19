@@ -45,6 +45,8 @@ enum class WatertightStatus : signed char
  * \param [out] degenerateIndices indices of degenerate mesh triangles
  * \param [in] spatialIndexResolution The grid resolution for the index
  * structure (default: 0)
+ * \param [in] intersectionThreshold Tolerance threshold for triangle 
+ * intersection tests (default: 1E-8)
  *
  * After running this function over a surface mesh, intersection will be filled
  * with pairs of indices of intersecting triangles and degenerateIndices will

@@ -39,11 +39,17 @@ namespace primal
 
 /*!
  * \brief Tests if 3D Triangles t1 and t2 intersect.
+ *
+ * \param [in] t1 The first triangle
+ * \param [in] t2 The second triangle
+ * \param [in] includeBoundary Indicates if boundaries should be considered
+ * when detecting intersections (default: false)
+ * \param [in] EPS Tolerance threshold for determining intersections (default: 1E-8)
  * \return status true iff t1 intersects with t2, otherwise, false.
  *
- * If parameter includeBoundary is false (default), this function will
+ * If parameter \a includeBoundary is false (default), this function will
  * return true if the interior of t1 intersects the interior of t2.  To include
- * triangle boundaries in intersections, specify includeBoundary as true.
+ * triangle boundaries in intersections, specify \a includeBoundary as true.
  */
 template < typename T >
 AXOM_HOST_DEVICE
@@ -57,11 +63,16 @@ bool intersect( const Triangle< T, 3 >& t1,
 
 /*!
  * \brief Tests if 2D Triangles t1 and t2 intersect.
+ * \param [in] t1 The first triangle
+ * \param [in] t2 The second triangle
+ * \param [in] includeBoundary Indicates if boundaries should be considered
+ * when detecting intersections (default: false)
+ * \param [in] EPS Tolerance threshold for determining intersections (default: 1E-8)
  * \return status true iff t1 intersects with t2, otherwise, false.
  *
- * If parameter includeBoundary is false (default), this function will
+ * If parameter \a includeBoundary is false (default), this function will
  * return true if the interior of t1 intersects the interior of t2.  To include
- * triangle boundaries in intersections, specify includeBoundary as true.
+ * triangle boundaries in intersections, specify \a includeBoundary as true.
  */
 template < typename T >
 bool intersect( const Triangle< T, 2 >& t1,

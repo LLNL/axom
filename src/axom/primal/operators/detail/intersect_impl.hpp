@@ -45,6 +45,7 @@ bool isGt(double x, double y, double EPS=1E-12);
 AXOM_HOST_DEVICE
 bool isLt(double x, double y, double EPS=1E-12);
 
+AXOM_HOST_DEVICE
 bool isLeq(double x, double y, double EPS=1E-12);
 
 AXOM_HOST_DEVICE
