@@ -64,6 +64,7 @@
 #include <iostream>
 #include <utility>
 #include <vector>
+#include <iomanip>
 
 // _read_stl_typedefs_start
 using namespace axom;
@@ -94,6 +95,7 @@ struct Input
   int resolution;
   double weldThreshold;
   bool skipWeld;
+  bool verboseOutput;
 
   Input()
     : stlInput("")
@@ -102,6 +104,7 @@ struct Input
     , resolution(0)
     , weldThreshold(1e-6)
     , skipWeld(false)
+    , verboseOutput(false)
   { };
 
   void parse(int argc, char** argv, CLI::App& app);
@@ -168,6 +171,10 @@ void Input::parse(int argc, char** argv, CLI::App& app)
 
   app.add_flag("--skipWeld", skipWeld,
                "Don't weld vertices (useful for testing, not helpful otherwise).");
+
+  app.add_flag("-v,--verbose", verboseOutput,
+               "Increase logging verbosity.")
+  ->capture_default_str();
 
   app.get_formatter()->column_width(35);
 
@@ -649,6 +656,24 @@ int main( int argc, char** argv )
     {
       SLIC_ERROR("Couldn't write results to "<< params.collisionsTextName());
     }
+
+    if( params.verboseOutput && !collisions.empty() )
+    {
+      SLIC_INFO("Intersecting triangle pairs:");
+      // Initialize pairs of clashes
+      for (auto i : collisions)
+      {
+        auto t1 = getMeshTriangle(i.first, surface_mesh);
+        auto t2 = getMeshTriangle(i.second, surface_mesh);
+
+        SLIC_INFO( "  Triangle " << i.first << " -- "
+            << std::setprecision(17) << t1);
+        SLIC_INFO( "  Triangle " << i.second << " -- "
+            << std::setprecision(17) << t2 << "\n");
+        SLIC_INFO( "  ");
+      }
+    }
+
   }
 
   // Look for holes---must be welded
