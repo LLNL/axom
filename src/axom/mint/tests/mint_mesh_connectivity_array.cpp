@@ -29,8 +29,8 @@ namespace mint
 
 const char IGNORE_OUTPUT[] = ".*";
 
-constexpr IndexType vertex_stride = getCellInfo( VERTEX ).num_nodes;
-constexpr IndexType hex_stride = getCellInfo( HEX ).num_nodes;
+constexpr IndexType vertex_stride = 1;
+constexpr IndexType hex_stride = 8;
 
 namespace internal
 {

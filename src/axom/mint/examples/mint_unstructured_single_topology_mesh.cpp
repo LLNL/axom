@@ -28,11 +28,10 @@ int main( int AXOM_NOT_USED(argc), char** AXOM_NOT_USED(argv) )
   constexpr axom::IndexType X_EXTENT = 11;
   constexpr axom::IndexType Y_EXTENT = 11;
   constexpr double SPACING = 1.0;
-  constexpr mint::CellType CELL_TYPE = mint::QUAD;
-  constexpr axom::IndexType NODES_PER_CELL =
-    mint::getCellInfo( CELL_TYPE ).num_nodes;
-  constexpr axom::IndexType NUM_NODES = X_EXTENT * Y_EXTENT;
-  constexpr axom::IndexType NUM_CELLS = (X_EXTENT - 1) * (Y_EXTENT - 1);
+  constexpr mint::CellType CELL_TYPE       = mint::QUAD;
+  constexpr axom::IndexType NODES_PER_CELL = 4;
+  constexpr axom::IndexType NUM_NODES      = X_EXTENT * Y_EXTENT;
+  constexpr axom::IndexType NUM_CELLS      = (X_EXTENT - 1) * (Y_EXTENT - 1);
 
   constexpr double HI  = -10.0;
   constexpr double LO  = 10.0;
