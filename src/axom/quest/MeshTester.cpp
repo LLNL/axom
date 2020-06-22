@@ -112,10 +112,11 @@ void findTriMeshIntersections(
   UMesh* surface_mesh,
   std::vector<std::pair<int, int> > & intersections,
   std::vector<int> & degenerateIndices,
-  int spatialIndexResolution)
+  int spatialIndexResolution,
+  double intersectionThreshold)
 {
-  Triangle3 t1 = Triangle3();
-  Triangle3 t2 = Triangle3();
+  Triangle3 t1{};
+  Triangle3 t2{};
   SLIC_INFO("Running mesh_tester with UniformGrid index");
 
   // Create a bounding box around mesh to find the minimum point
@@ -198,7 +199,7 @@ void findTriMeshIntersections(
     while (nit != nend)
     {
       t2 = getMeshTriangle(*nit, surface_mesh);
-      if (primal::intersect(t1, t2))
+      if (primal::intersect(t1, t2, false, intersectionThreshold))
       {
         intersections.push_back(std::make_pair(*idx, *nit));
       }

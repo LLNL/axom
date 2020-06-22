@@ -64,6 +64,7 @@
 #include <iostream>
 #include <utility>
 #include <vector>
+#include <iomanip>
 
 // _read_stl_typedefs_start
 using namespace axom;
@@ -87,22 +88,17 @@ struct Input
 {
   static const std::set<RuntimePolicy> s_validPolicies;
 
-  std::string stlInput;
-  std::string vtkOutput;
-  RuntimePolicy policy;
+  std::string stlInput {""};
+  std::string vtkOutput {""};
+  RuntimePolicy policy {seq};
 
-  int resolution;
-  double weldThreshold;
-  bool skipWeld;
+  int resolution {0};
+  double weldThreshold {1e-6};
+  double intersectionThreshold {1e-08};
+  bool skipWeld {false};
+  bool verboseOutput {false};
 
-  Input()
-    : stlInput("")
-    , vtkOutput("")
-    , policy(seq)
-    , resolution(0)
-    , weldThreshold(1e-6)
-    , skipWeld(false)
-  { };
+  Input() = default;
 
   void parse(int argc, char** argv, CLI::App& app);
 
@@ -166,8 +162,16 @@ void Input::parse(int argc, char** argv, CLI::App& app)
                  "Distance threshold for welding vertices.")
   ->capture_default_str();
 
+  app.add_option("--intersectionThresh", intersectionThreshold,
+                 "Tolerance threshold to use when testing for intersecting triangles")
+  ->capture_default_str();
+
   app.add_flag("--skipWeld", skipWeld,
                "Don't weld vertices (useful for testing, not helpful otherwise).");
+
+  app.add_flag("-v,--verbose", verboseOutput,
+               "Increase logging verbosity.")
+  ->capture_default_str();
 
   app.get_formatter()->column_width(35);
 
@@ -191,6 +195,7 @@ void Input::parse(int argc, char** argv, CLI::App& app)
     << (resolution == 1 && policy == raja_cuda ? " (use RAJA CUDA policy)" : "")
     <<"\n  weld threshold = " <<  weldThreshold
     <<"\n  " << (skipWeld ? "" : "not ") << "skipping weld"
+    <<"\n  intersection tolerance = " <<  intersectionThreshold
     <<"\n  infile = " << stlInput
     <<"\n  collisions outfile = " << collisionsMeshName()
     <<"\n  weld outfile = " << weldMeshName()  );
@@ -229,7 +234,7 @@ void Input::fixOutfilePath()
 
 inline bool pointIsNearlyEqual(Point3& p1, Point3& p2, double EPS);
 
-AXOM_HOST_DEVICE bool checkTT(Triangle3& t1, Triangle3& t2);
+AXOM_HOST_DEVICE bool checkTT(Triangle3& t1, Triangle3& t2, double EPS);
 
 std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
   mint::Mesh* surface_mesh,
@@ -258,12 +263,13 @@ inline bool pointIsNearlyEqual(Point3& p1, Point3& p2, double EPS=1.0e-9)
 }
 
 AXOM_HOST_DEVICE
-bool checkTT(Triangle3& t1, Triangle3& t2)
+bool checkTT(Triangle3& t1, Triangle3& t2, double EPS)
 {
   if (t2.degenerate())
     return false;
 
-  if (primal::intersect(t1, t2))
+  const bool includeBoundaries = false; // only check for internal intersections
+  if (primal::intersect(t1, t2, includeBoundaries, EPS))
   {
     return true;
   }
@@ -286,7 +292,8 @@ inline Triangle3 getMeshTriangle(int i, mint::Mesh* surface_mesh)
 
 std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
   mint::Mesh* surface_mesh,
-  std::vector<int> & degenerate)
+  std::vector<int> & degenerate,
+  double EPS)
 {
   SLIC_INFO("Running naive intersection algorithm.");
 
@@ -318,7 +325,7 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
     for (int j = i + 1 ; j < ncells ; j++)
     {
       t2 = getMeshTriangle(j, surface_mesh);
-      if (checkTT(t1, t2))
+      if (checkTT(t1, t2, EPS))
       {
         retval.push_back(std::make_pair(i, j));
       }
@@ -332,7 +339,8 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
 template < typename ExecSpace >
 std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
   mint::Mesh* surface_mesh,
-  std::vector<int> & degenerate)
+  std::vector<int> & degenerate,
+  double EPS)
 {
   SLIC_INFO("Running naive intersection algorithm "
     << " in execution Space: "
@@ -376,7 +384,7 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
     AXOM_LAMBDA(int col, int row) {
     if (row > col)
     {
-      if (checkTT (tris[row], tris[col]))
+      if (checkTT (tris[row], tris[col], EPS))
       {
         numIntersect += 1;
       }
@@ -395,7 +403,7 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
     AXOM_LAMBDA(int col, int row) {
     if (row > col)
     {
-      if (checkTT (tris[row], tris[col]))
+      if (checkTT (tris[row], tris[col], EPS))
       {
         auto idx = RAJA::atomicAdd<ATOMIC_POL>(counter, 2);
         intersections[idx] = row;
@@ -595,22 +603,22 @@ int main( int argc, char** argv )
      switch (params.policy)
      {
      case seq:
-      collisions = naiveIntersectionAlgorithm(surface_mesh, degenerate);
+      collisions = naiveIntersectionAlgorithm(surface_mesh, degenerate, params.intersectionThreshold);
   #ifdef AXOM_USE_RAJA
      case raja_seq:
         collisions = naiveIntersectionAlgorithm< seq_exec >(surface_mesh,
-                                                          degenerate);
+                                                          degenerate, params.intersectionThreshold);
        break;
     #ifdef AXOM_USE_OPENMP
      case raja_omp:
         collisions = naiveIntersectionAlgorithm< omp_exec >(surface_mesh,
-                                                          degenerate);
+                                                          degenerate, params.intersectionThreshold);
        break;
     #endif
     #ifdef AXOM_USE_CUDA
      case raja_cuda:
         collisions = naiveIntersectionAlgorithm< cuda_exec >(surface_mesh,
-                                                          degenerate);
+                                                          degenerate, params.intersectionThreshold);
        break;
     #endif
   #endif // AXOM_USE_RAJA
@@ -626,7 +634,8 @@ int main( int argc, char** argv )
       quest::findTriMeshIntersections(surface_mesh,
                                       collisions,
                                       degenerate,
-                                      params.resolution);
+                                      params.resolution,
+                                      params.intersectionThreshold);
       // _check_repair_intersections_end
     }
     timer.stop();
@@ -649,6 +658,23 @@ int main( int argc, char** argv )
     {
       SLIC_ERROR("Couldn't write results to "<< params.collisionsTextName());
     }
+
+    if( params.verboseOutput && !collisions.empty() )
+    {
+      SLIC_INFO("Intersecting triangle pairs:");
+      // Initialize pairs of clashes
+      for (auto i : collisions)
+      {
+        auto t1 = getMeshTriangle(i.first, surface_mesh);
+        auto t2 = getMeshTriangle(i.second, surface_mesh);
+
+        SLIC_INFO( "  Triangle " << i.first << " -- "
+                                 << std::setprecision(17) << t1);
+        SLIC_INFO( "  Triangle " << i.second << " -- "
+                                 << std::setprecision(17) << t2 << "\n");
+      }
+    }
+
   }
 
   // Look for holes---must be welded
