@@ -79,7 +79,7 @@ TYPED_TEST( ImplicitGridTest, initialization)
   // Tests initializing from primitive types
   GridT grid3( bbox.getMin().data(), bbox.getMax().data(), res.data(), numElts);
   EXPECT_TRUE( grid3.isInitialized() );
-  EXPECT_EQ(grid3.gridResolution(), res.data()); 
+  EXPECT_EQ(grid3.gridResolution(), res); 
   EXPECT_EQ(grid3.numIndexElements(), numElts); 
 }
 
