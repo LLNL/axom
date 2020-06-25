@@ -599,32 +599,33 @@ int main( int argc, char** argv )
     axom::utilities::Timer timer(true);
     if (params.resolution == 1)
     {
-     // Naive method
-     switch (params.policy)
-     {
-     case seq:
-      collisions = naiveIntersectionAlgorithm(surface_mesh, degenerate, params.intersectionThreshold);
-  #ifdef AXOM_USE_RAJA
-     case raja_seq:
+      switch (params.policy)
+      {
+      case seq:
+        collisions = naiveIntersectionAlgorithm(surface_mesh, degenerate, params.intersectionThreshold);
+        break;
+    #ifdef AXOM_USE_RAJA
+      case raja_seq:
         collisions = naiveIntersectionAlgorithm< seq_exec >(surface_mesh,
-                                                          degenerate, params.intersectionThreshold);
-       break;
-    #ifdef AXOM_USE_OPENMP
-     case raja_omp:
+                                                            degenerate, params.intersectionThreshold);
+        break;
+     #ifdef AXOM_USE_OPENMP
+      case raja_omp:
         collisions = naiveIntersectionAlgorithm< omp_exec >(surface_mesh,
-                                                          degenerate, params.intersectionThreshold);
-       break;
-    #endif
-    #ifdef AXOM_USE_CUDA
-     case raja_cuda:
+                                                            degenerate, params.intersectionThreshold);
+        break;
+     #endif
+     #ifdef AXOM_USE_CUDA
+      case raja_cuda:
         collisions = naiveIntersectionAlgorithm< cuda_exec >(surface_mesh,
-                                                          degenerate, params.intersectionThreshold);
-       break;
-    #endif
-  #endif // AXOM_USE_RAJA
+                                                             degenerate, params.intersectionThreshold);
+        break;
+     #endif
+    #endif // AXOM_USE_RAJA
+
      default:
-       SLIC_ERROR("Unhandled runtime policy case " << params.policy );
-       break;
+        SLIC_ERROR("Unhandled runtime policy case " << params.policy );
+        break;
      }
     }
     else
