@@ -15,32 +15,43 @@
 #include "axom/inlet/LuaReader.hpp"
 #include "axom/inlet/Inlet.hpp"
 
+
+using axom::inlet::Inlet;
+using axom::inlet::LuaReader;
+using axom::sidre::DataStore;
+
+
+std::shared_ptr<Inlet> createBasicInlet(DataStore* ds,
+                                        const std::string& luaString)
+{
+  auto lr = std::make_shared<LuaReader>();
+  lr->parseString(luaString);
+
+  return std::make_shared<Inlet>(lr, ds->getRoot());
+}
+
 TEST(inlet_Inlet_basic, getTopLevelBools)
 {
-  axom::inlet::LuaReader lr;
-  lr.parseString("foo = true; bar = false");
-
-  axom::inlet::Inlet inlet;
-  inlet.reader(&lr);
-  axom::sidre::DataStore ds;
-  inlet.sidreGroup(ds.getRoot());
-
-  axom::sidre::Group* group = nullptr;
+  std::string testString = "foo = true; bar = false";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
 
   //
   // Define schema
   //
 
-  // Check for existing fields
-  group = inlet.addBool("foo", "foo's description");
-  EXPECT_TRUE(group != nullptr);
+  std::shared_ptr<axom::inlet::Field> currField;
 
-  group = inlet.addBool("bar", "bar's description");
-  EXPECT_TRUE(group != nullptr);
+  // Check for existing fields
+  currField = inlet->addBool("foo", "foo's description");
+  EXPECT_TRUE(currField);
+
+  currField = inlet->addBool("bar", "bar's description");
+  EXPECT_TRUE(currField);
 
   // Check one that doesn't exist and doesn't have a default value
-  group = inlet.addBool("nonexistant", "nothing");
-  EXPECT_FALSE(group == nullptr);
+  currField = inlet->addBool("nonexistant", "nothing");
+  EXPECT_TRUE(currField);
 
   //
   // Check stored values from get
@@ -50,47 +61,43 @@ TEST(inlet_Inlet_basic, getTopLevelBools)
   bool found = false;
 
   // Check for existing fields
-  found = inlet.get("foo", value);
+  found = inlet->get("foo", value);
   EXPECT_TRUE(found);
   EXPECT_TRUE(value);
 
-  found = inlet.get("bar", value);
+  found = inlet->get("bar", value);
   EXPECT_TRUE(found);
   EXPECT_FALSE(value);
 
   // Check one that doesn't exist and doesn't have a default value
   value = true;
-  found = inlet.get("nonexistant", value);
+  found = inlet->get("nonexistant", value);
   EXPECT_FALSE(found);
   EXPECT_TRUE(value);
 }
 
 TEST(inlet_Inlet_basic, getNestedBools)
 {
-  axom::inlet::LuaReader lr;
-  lr.parseString("foo = { bar = true; baz = false }");
-
-  axom::inlet::Inlet inlet;
-  inlet.reader(&lr);
-  axom::sidre::DataStore ds;
-  inlet.sidreGroup(ds.getRoot());
-
-  axom::sidre::Group* group = nullptr;
+  std::string testString = "foo = { bar = true; baz = false }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
 
   //
   // Define schema
   //
 
-  // Check for existing fields
-  group = inlet.addBool("foo/bar", "bar's description");
-  EXPECT_TRUE(group != nullptr);
+  std::shared_ptr<axom::inlet::Field> currField;
 
-  group = inlet.addBool("foo/baz", "baz's description");
-  EXPECT_TRUE(group != nullptr);
+  // Check for existing fields
+  currField = inlet->addBool("foo/bar", "bar's description");
+  EXPECT_TRUE(currField);
+
+  currField = inlet->addBool("foo/baz", "baz's description");
+  EXPECT_TRUE(currField);
 
   // Check one that doesn't exist and doesn't have a default value
-  group = inlet.addBool("foo/nonexistant", "nothing");
-  EXPECT_FALSE(group == nullptr);
+  currField = inlet->addBool("foo/nonexistant", "nothing");
+  EXPECT_TRUE(currField);
 
   //
   // Check stored values from get
@@ -100,47 +107,43 @@ TEST(inlet_Inlet_basic, getNestedBools)
   bool found = false;
 
   // Check for existing fields
-  found = inlet.get("foo/bar", value);
+  found = inlet->get("foo/bar", value);
   EXPECT_TRUE(found);
   EXPECT_TRUE(value);
 
-  found = inlet.get("foo/baz", value);
+  found = inlet->get("foo/baz", value);
   EXPECT_TRUE(found);
   EXPECT_FALSE(value);
 
   // Check one that doesn't exist and doesn't have a default value
   value = true;
-  found = inlet.get("foo/nonexistant", value);
+  found = inlet->get("foo/nonexistant", value);
   EXPECT_FALSE(found);
   EXPECT_TRUE(value);
 }
 
 TEST(inlet_Inlet_basic, getTopLevelDoubles)
 {
-  axom::inlet::LuaReader lr;
-  lr.parseString("foo = 5.05; bar = 15.1");
-
-  axom::inlet::Inlet inlet;
-  inlet.reader(&lr);
-  axom::sidre::DataStore ds;
-  inlet.sidreGroup(ds.getRoot());
-
-  axom::sidre::Group* group = nullptr;
+  std::string testString = "foo = 5.05; bar = 15.1";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
 
   //
   // Define schema
   //
 
-  // Check for existing fields
-  group = inlet.addDouble("foo", "foo's description");
-  EXPECT_TRUE(group != nullptr);
+  std::shared_ptr<axom::inlet::Field> currField;
 
-  group = inlet.addDouble("bar", "bar's description");
-  EXPECT_TRUE(group != nullptr);
+  // Check for existing fields
+  currField = inlet->addDouble("foo", "foo's description");
+  EXPECT_TRUE(currField);
+
+  currField = inlet->addDouble("bar", "bar's description");
+  EXPECT_TRUE(currField);
 
   // Check one that doesn't exist and doesn't have a default value
-  group = inlet.addDouble("nonexistant", "nothing");
-  EXPECT_FALSE(group == nullptr);
+  currField = inlet->addDouble("nonexistant", "nothing");
+  EXPECT_TRUE(currField);
 
   //
   // Check stored values from get
@@ -150,47 +153,43 @@ TEST(inlet_Inlet_basic, getTopLevelDoubles)
   bool found = false;
 
   // Check for existing fields
-  found = inlet.get("foo", value);
+  found = inlet->get("foo", value);
   EXPECT_TRUE(found);
   EXPECT_EQ(value, 5.05);
 
-  found = inlet.get("bar", value);
+  found = inlet->get("bar", value);
   EXPECT_TRUE(found);
   EXPECT_EQ(value, 15.1);
 
   // Check one that doesn't exist and doesn't have a default value
   value = 1000;
-  found = inlet.get("nonexistant", value);
+  found = inlet->get("nonexistant", value);
   EXPECT_FALSE(found);
   EXPECT_EQ(value, 1000);
 }
 
 TEST(inlet_Inlet_basic, getNestedDoubles)
 {
-  axom::inlet::LuaReader lr;
-  lr.parseString("foo = { bar = 200.5; baz = 100.987654321 }");
-
-  axom::inlet::Inlet inlet;
-  inlet.reader(&lr);
-  axom::sidre::DataStore ds;
-  inlet.sidreGroup(ds.getRoot());
-
-  axom::sidre::Group* group = nullptr;
+  std::string testString = "foo = { bar = 200.5; baz = 100.987654321 }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
 
   //
   // Define schema
   //
 
-  // Check for existing fields
-  group = inlet.addDouble("foo/bar", "bar's description");
-  EXPECT_TRUE(group != nullptr);
+  std::shared_ptr<axom::inlet::Field> currField;
 
-  group = inlet.addDouble("foo/baz", "baz's description");
-  EXPECT_TRUE(group != nullptr);
+  // Check for existing fields
+  currField = inlet->addDouble("foo/bar", "bar's description");
+  EXPECT_TRUE(currField);
+
+  currField = inlet->addDouble("foo/baz", "baz's description");
+  EXPECT_TRUE(currField);
 
   // Check one that doesn't exist and doesn't have a default value
-  group = inlet.addDouble("foo/nonexistant", "nothing");
-  EXPECT_FALSE(group == nullptr);
+  currField = inlet->addDouble("foo/nonexistant", "nothing");
+  EXPECT_TRUE(currField);
 
   //
   // Check stored values from get
@@ -200,47 +199,43 @@ TEST(inlet_Inlet_basic, getNestedDoubles)
   bool found = false;
 
   // Check for existing fields
-  found = inlet.get("foo/bar", value);
+  found = inlet->get("foo/bar", value);
   EXPECT_TRUE(found);
   EXPECT_EQ(value, 200.5);
 
-  found = inlet.get("foo/baz", value);
+  found = inlet->get("foo/baz", value);
   EXPECT_TRUE(found);
   EXPECT_EQ(value, 100.987654321);
 
   // Check one that doesn't exist and doesn't have a default value
   value = 1000;
-  found = inlet.get("foo/nonexistant", value);
+  found = inlet->get("foo/nonexistant", value);
   EXPECT_FALSE(found);
   EXPECT_EQ(value, 1000);
 }
 
 TEST(inlet_Inlet_basic, getTopLevelInts)
 {
-  axom::inlet::LuaReader lr;
-  lr.parseString("foo = 5; bar = 15");
-
-  axom::inlet::Inlet inlet;
-  inlet.reader(&lr);
-  axom::sidre::DataStore ds;
-  inlet.sidreGroup(ds.getRoot());
-
-  axom::sidre::Group* group = nullptr;
+  std::string testString = "foo = 5; bar = 15";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
 
   //
   // Define schema
   //
 
-  // Check for existing fields
-  group = inlet.addInt("foo", "foo's description");
-  EXPECT_TRUE(group != nullptr);
+  std::shared_ptr<axom::inlet::Field> currField;
 
-  group = inlet.addInt("bar", "bar's description");
-  EXPECT_TRUE(group != nullptr);
+  // Check for existing fields
+  currField = inlet->addInt("foo", "foo's description");
+  EXPECT_TRUE(currField);
+
+  currField = inlet->addInt("bar", "bar's description");
+  EXPECT_TRUE(currField);
 
   // Check one that doesn't exist and doesn't have a default value
-  group = inlet.addInt("nonexistant", "nothing");
-  EXPECT_FALSE(group == nullptr);
+  currField = inlet->addInt("nonexistant", "nothing");
+  EXPECT_TRUE(currField);
 
   //
   // Check stored values from get
@@ -250,47 +245,43 @@ TEST(inlet_Inlet_basic, getTopLevelInts)
   bool found = false;
 
   // Check for existing fields
-  found = inlet.get("foo", value);
+  found = inlet->get("foo", value);
   EXPECT_TRUE(found);
   EXPECT_EQ(value, 5);
 
-  found = inlet.get("bar", value);
+  found = inlet->get("bar", value);
   EXPECT_TRUE(found);
   EXPECT_EQ(value, 15);
 
   // Check one that doesn't exist and doesn't have a default value
   value = 1000;
-  found = inlet.get("nonexistant", value);
+  found = inlet->get("nonexistant", value);
   EXPECT_FALSE(found);
   EXPECT_EQ(value, 1000);
 }
 
 TEST(inlet_Inlet_basic, getNestedInts)
 {
-  axom::inlet::LuaReader lr;
-  lr.parseString("foo = { bar = 200; baz = 100 }");
-
-  axom::inlet::Inlet inlet;
-  inlet.reader(&lr);
-  axom::sidre::DataStore ds;
-  inlet.sidreGroup(ds.getRoot());
-
-  axom::sidre::Group* group = nullptr;
+  std::string testString = "foo = { bar = 200; baz = 100 }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
 
   //
   // Define schema
   //
 
-  // Check for existing fields
-  group = inlet.addInt("foo/bar", "bar's description");
-  EXPECT_TRUE(group != nullptr);
+  std::shared_ptr<axom::inlet::Field> currField;
 
-  group = inlet.addInt("foo/baz", "baz's description");
-  EXPECT_TRUE(group != nullptr);
+  // Check for existing fields
+  currField = inlet->addInt("foo/bar", "bar's description");
+  EXPECT_TRUE(currField);
+
+  currField = inlet->addInt("foo/baz", "baz's description");
+  EXPECT_TRUE(currField);
 
   // Check one that doesn't exist and doesn't have a default value
-  group = inlet.addInt("foo/nonexistant", "nothing");
-  EXPECT_FALSE(group == nullptr);
+  currField = inlet->addInt("foo/nonexistant", "nothing");
+  EXPECT_TRUE(currField);
 
   //
   // Check stored values from get
@@ -300,47 +291,43 @@ TEST(inlet_Inlet_basic, getNestedInts)
   bool found = false;
 
   // Check for existing fields
-  found = inlet.get("foo/bar", value);
+  found = inlet->get("foo/bar", value);
   EXPECT_TRUE(found);
   EXPECT_EQ(value, 200);
 
-  found = inlet.get("foo/baz", value);
+  found = inlet->get("foo/baz", value);
   EXPECT_TRUE(found);
   EXPECT_EQ(value, 100);
 
   // Check one that doesn't exist and doesn't have a default value
   value = 1000;
-  found = inlet.get("foo/nonexistant", value);
+  found = inlet->get("foo/nonexistant", value);
   EXPECT_FALSE(found);
   EXPECT_EQ(value, 1000);
 }
 
 TEST(inlet_Inlet_basic, getTopLevelStrings)
 {
-  axom::inlet::LuaReader lr;
-  lr.parseString("foo = 'test string'; bar = '15'");
-
-  axom::inlet::Inlet inlet;
-  inlet.reader(&lr);
-  axom::sidre::DataStore ds;
-  inlet.sidreGroup(ds.getRoot());
-
-  axom::sidre::Group* group = nullptr;
+  std::string testString = "foo = 'test string'; bar = '15'";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
 
   //
   // Define schema
   //
 
-  // Check for existing fields
-  group = inlet.addString("foo", "foo's description");
-  EXPECT_TRUE(group != nullptr);
+  std::shared_ptr<axom::inlet::Field> currField;
 
-  group = inlet.addString("bar", "bar's description");
-  EXPECT_TRUE(group != nullptr);
+  // Check for existing fields
+  currField = inlet->addString("foo", "foo's description");
+  EXPECT_TRUE(currField);
+
+  currField = inlet->addString("bar", "bar's description");
+  EXPECT_TRUE(currField);
 
   // Check one that doesn't exist and doesn't have a default value
-  group = inlet.addString("nonexistant", "nothing");
-  EXPECT_FALSE(group == nullptr);
+  currField = inlet->addString("nonexistant", "nothing");
+  EXPECT_TRUE(currField);
 
   //
   // Check stored values from get
@@ -350,47 +337,43 @@ TEST(inlet_Inlet_basic, getTopLevelStrings)
   bool found = false;
 
   // Check for existing fields
-  found = inlet.get("foo", value);
+  found = inlet->get("foo", value);
   EXPECT_TRUE(found);
   EXPECT_EQ(value, "test string");
 
-  found = inlet.get("bar", value);
+  found = inlet->get("bar", value);
   EXPECT_TRUE(found);
   EXPECT_EQ(value, "15");
 
   // Check one that doesn't exist and doesn't have a default value
   value = "don't change";
-  found = inlet.get("nonexistant", value);
+  found = inlet->get("nonexistant", value);
   EXPECT_FALSE(found);
   EXPECT_EQ(value, "don't change");
 }
 
 TEST(inlet_Inlet_basic, getNestedStrings)
 {
-  axom::inlet::LuaReader lr;
-  lr.parseString("foo = { bar = 'yet another string'; baz = '' }");
-
-  axom::inlet::Inlet inlet;
-  inlet.reader(&lr);
-  axom::sidre::DataStore ds;
-  inlet.sidreGroup(ds.getRoot());
-
-  axom::sidre::Group* group = nullptr;
+  std::string testString = "foo = { bar = 'yet another string'; baz = '' }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
 
   //
   // Define schema
   //
 
-  // Check for existing fields
-  group = inlet.addString("foo/bar", "bar's description");
-  EXPECT_TRUE(group != nullptr);
+  std::shared_ptr<axom::inlet::Field> currField;
 
-  group = inlet.addString("foo/baz", "baz's description");
-  EXPECT_TRUE(group != nullptr);
+  // Check for existing fields
+  currField = inlet->addString("foo/bar", "bar's description");
+  EXPECT_TRUE(currField);
+
+  currField = inlet->addString("foo/baz", "baz's description");
+  EXPECT_TRUE(currField);
 
   // Check one that doesn't exist and doesn't have a default value
-  group = inlet.addString("foo/nonexistant", "nothing");
-  EXPECT_FALSE(group == nullptr);
+  currField = inlet->addString("foo/nonexistant", "nothing");
+  EXPECT_TRUE(currField);
 
   //
   // Check stored values from get
@@ -400,17 +383,17 @@ TEST(inlet_Inlet_basic, getNestedStrings)
   bool found = false;
 
   // Check for existing fields
-  found = inlet.get("foo/bar", value);
+  found = inlet->get("foo/bar", value);
   EXPECT_TRUE(found);
   EXPECT_EQ(value, "yet another string");
 
-  found = inlet.get("foo/baz", value);
+  found = inlet->get("foo/baz", value);
   EXPECT_TRUE(found);
   EXPECT_EQ(value, "");
 
   // Check one that doesn't exist and doesn't have a default value
   value = "1000";
-  found = inlet.get("foo/nonexistant", value);
+  found = inlet->get("foo/nonexistant", value);
   EXPECT_FALSE(found);
   EXPECT_EQ(value, "1000");
 }
