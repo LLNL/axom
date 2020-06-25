@@ -22,122 +22,34 @@ namespace axom
 namespace inlet
 {
 
-axom::sidre::Group* Inlet::addGroup(const std::string& name,
-                                    const std::string& description)
+std::shared_ptr<Group> Inlet::addGroup(const std::string& name,
+                                       const std::string& description)
 {
-  SLIC_ASSERT_MSG(m_reader != nullptr, "Inlet's Reader class not set");
-  SLIC_ASSERT_MSG(m_sidreGroup != nullptr, "Inlet's Sidre Datastore class not set");
-
-  if (m_sidreGroup->hasGroup(name))
-  {
-    SLIC_WARNING("Inlet: Cannot create Group that already exists: " + name);
-    return nullptr;
-  }
-  axom::sidre::Group* group = m_sidreGroup->createGroup(name);
-  group->createViewString("description", description);
-
-  return group;
+  return std::make_shared<Group>(name, description, m_reader, m_sidreRootGroup);
 }
 
-axom::sidre::Group* Inlet::add(const std::string& name,
-                               const std::string& description)
+std::shared_ptr<Field> Inlet::addBool(const std::string& name,
+                                      const std::string& description)
 {
-  SLIC_ASSERT_MSG(m_reader != nullptr, "Inlet's Reader class not set");
-  SLIC_ASSERT_MSG(m_sidreGroup != nullptr, "Inlet's Sidre Datastore Group not set");
-
-  if (m_sidreGroup->hasGroup(name))
-  {
-    SLIC_WARNING("Inlet: Cannot add value that already exists: " + name);
-    return nullptr;
-  }
-
-  axom::sidre::Group* group = m_sidreGroup->createGroup(name);
-  SLIC_ASSERT_MSG(group != nullptr, "Sidre failed to create group");
-  if (description == "")
-  {
-    group->createViewString("description", description);
-  }
-
-  return group;
+  return m_group->addBool(name, description);
 }
 
-axom::sidre::Group* Inlet::addBool(const std::string& name,
-                                   const std::string& description)
+std::shared_ptr<Field> Inlet::addDouble(const std::string& name,
+                                        const std::string& description)
 {
-  axom::sidre::Group* group = add(name, description);
-  if (group == nullptr)
-  {
-    return nullptr;
-  }
-
-  bool value;
-  if(m_reader->getBool(name, value))
-  {
-    if (value)
-    {
-      group->createViewScalar("value", (int8)1);
-    }
-    else
-    {
-      group->createViewScalar("value", (int8)0);
-    }
-  }
-
-  return group;
+  return m_group->addDouble(name, description);
 }
 
-axom::sidre::Group* Inlet::addDouble(const std::string& name,
+std::shared_ptr<Field> Inlet::addInt(const std::string& name,
                                      const std::string& description)
 {
-  axom::sidre::Group* group = add(name, description);
-  if (group == nullptr)
-  {
-    return nullptr;
-  }
-  
-  double value;
-  if(m_reader->getDouble(name, value))
-  {
-    group->createViewScalar("value", value);
-  }
-
-  return group;
+  return m_group->addInt(name, description);
 }
 
-axom::sidre::Group* Inlet::addInt(const std::string& name,
-                                  const std::string& description)
+std::shared_ptr<Field> Inlet::addString(const std::string& name,
+                                        const std::string& description)
 {
-  axom::sidre::Group* group = add(name, description);
-  if (group == nullptr)
-  {
-    return nullptr;
-  }
-  
-  int value;
-  if(m_reader->getInt(name, value))
-  {
-    group->createViewScalar("value", value);
-  }
-
-  return group;
-}
-
-axom::sidre::Group* Inlet::addString(const std::string& name,
-                                     const std::string& description)
-{
-  axom::sidre::Group* group = add(name, description);
-  if (group == nullptr)
-  {
-    return nullptr;
-  }
-  
-  std::string value;
-  if(m_reader->getString(name, value))
-  {
-    group->createViewString("value", value);
-  }
-
-  return group;
+  return m_group->addString(name, description);
 }
 
 
@@ -145,16 +57,16 @@ axom::sidre::Group* Inlet::addString(const std::string& name,
 //   Get values out of the datastore
 //-------------------------------------------------
 
-axom::sidre::View* Inlet::get(const std::string& name)
+axom::sidre::View* Inlet::baseGet(const std::string& name)
 {
-  SLIC_ASSERT_MSG(m_sidreGroup != nullptr, "Inlet's Sidre Datastore Group not set");
+  SLIC_ASSERT_MSG(m_sidreRootGroup != nullptr, "Inlet's Sidre Datastore Group not set");
 
   // All data hangs under the group's name
-  if (!m_sidreGroup->hasGroup(name))
+  if (!m_sidreRootGroup->hasGroup(name))
   {
     return nullptr;
   }
-  axom::sidre::Group* group = m_sidreGroup->getGroup(name);
+  axom::sidre::Group* group = m_sidreRootGroup->getGroup(name);
   if (group == nullptr)
   {
     return nullptr;
@@ -164,17 +76,12 @@ axom::sidre::View* Inlet::get(const std::string& name)
   {
     return nullptr;
   }
-  axom::sidre::View* valueView = group->getView("value");
-  if (valueView == nullptr)
-  {
-    return nullptr;
-  }
-  return valueView;
+  return group->getView("value");
 }
 
 bool Inlet::get(const std::string& name, bool& value)
 {
-  axom::sidre::View* valueView = get(name);
+  axom::sidre::View* valueView = baseGet(name);
   if (valueView == nullptr)
   {
     return false;
@@ -195,7 +102,7 @@ bool Inlet::get(const std::string& name, bool& value)
   {
     std::string msg = fmt::format("Invalid integer value stored in boolean"
                                   " value named {0}",
-                                  name, valueView->getTypeID());
+                                  name);
     SLIC_WARNING(msg);
     return false;
   }
@@ -206,7 +113,7 @@ bool Inlet::get(const std::string& name, bool& value)
 
 bool Inlet::get(const std::string& name, double& value)
 {
-  axom::sidre::View* valueView = get(name);
+  axom::sidre::View* valueView = baseGet(name);
   if (valueView == nullptr)
   {
     return false;
@@ -227,7 +134,7 @@ bool Inlet::get(const std::string& name, double& value)
 
 bool Inlet::get(const std::string& name, int& value)
 {
-  axom::sidre::View* valueView = get(name);
+  axom::sidre::View* valueView = baseGet(name);
   if (valueView == nullptr)
   {
     return false;
@@ -248,7 +155,7 @@ bool Inlet::get(const std::string& name, int& value)
 
 bool Inlet::get(const std::string& name, std::string& value)
 {
-  axom::sidre::View* valueView = get(name);
+  axom::sidre::View* valueView = baseGet(name);
   if (valueView == nullptr)
   {
     return false;

@@ -15,9 +15,13 @@
 #ifndef INLET_INLET_HPP
 #define INLET_INLET_HPP
 
+#include <memory>
 #include <string>
 #include <vector>
 
+//#include "axom/inlet/SchemaCreator.hpp"
+#include "axom/inlet/Group.hpp"
+#include "axom/inlet/Field.hpp"
 #include "axom/inlet/Reader.hpp"
 
 #include "axom/sidre.hpp"
@@ -27,27 +31,32 @@ namespace axom
 namespace inlet
 {
 
-class Inlet
+class Inlet : public SchemaCreator
 {
 public:
-  void reader(Reader* reader) { m_reader = reader; };
-  Reader* reader() { return m_reader; };
+  Inlet(std::shared_ptr<Reader> reader,
+        axom::sidre::Group* sidreRootGroup) :
+    m_reader(reader),
+    m_sidreRootGroup(sidreRootGroup),
+    m_group(std::make_shared<Group>("", "", m_reader, m_sidreRootGroup)) {}
 
-  void sidreGroup(axom::sidre::Group* group) { m_sidreGroup = group; };
-  axom::sidre::Group* sidreGroup() { return m_sidreGroup; };
+  virtual ~Inlet() = default;
+
+  std::shared_ptr<Reader> reader() { return m_reader; };
+  axom::sidre::Group* sidreGroup() { return m_sidreRootGroup; };
 
   // Functions that define the input deck schema
-  axom::sidre::Group* addGroup(const std::string& name,
-                               const std::string& description);
+  std::shared_ptr<Group> addGroup(const std::string& name,
+                                  const std::string& description);
 
-  axom::sidre::Group* addBool(const std::string& name,
-                              const std::string& description);
-  axom::sidre::Group* addDouble(const std::string& name,
+  std::shared_ptr<Field> addBool(const std::string& name,
+                                 const std::string& description);
+  std::shared_ptr<Field> addDouble(const std::string& name,
+                                   const std::string& description);
+  std::shared_ptr<Field> addInt(const std::string& name,
                                 const std::string& description);
-  axom::sidre::Group* addInt(const std::string& name,
-                             const std::string& description);
-  axom::sidre::Group* addString(const std::string& name,
-                                const std::string& description);
+  std::shared_ptr<Field> addString(const std::string& name,
+                                   const std::string& description);
 
   // Functions that get the values out of the datastore
   bool get(const std::string& name, bool& value);
@@ -57,12 +66,11 @@ public:
 
   // TODO add update value functions
 private:
-  axom::sidre::Group* add(const std::string& name,
-                          const std::string& description);
-  axom::sidre::View* get(const std::string& name);
+  axom::sidre::View* baseGet(const std::string& name);
 
-  Reader* m_reader = nullptr;
-  axom::sidre::Group* m_sidreGroup = nullptr;
+  std::shared_ptr<Reader> m_reader;
+  axom::sidre::Group* m_sidreRootGroup = nullptr;
+  std::shared_ptr<Group> m_group;
 };
 
 } // end namespace inlet

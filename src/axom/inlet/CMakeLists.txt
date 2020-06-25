@@ -16,10 +16,15 @@ axom_component_requires(NAME       Inlet
 # Specify all headers/sources
 #------------------------------------------------------------------------------
 set(inlet_headers
+    Field.hpp
+    Group.hpp
+    Inlet.hpp
     Reader.hpp
-    Inlet.hpp )
+    SchemaCreator.hpp )
 
 set(inlet_sources
+    Field.cpp
+    Group.cpp
     Inlet.cpp )
 
 blt_list_append(TO inlet_headers ELEMENTS LuaReader.hpp IF LUA_FOUND)
