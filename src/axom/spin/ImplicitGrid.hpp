@@ -124,8 +124,19 @@ public:
 
     // Set up the grid resolution from the gridRes array
     //   if NULL, GridCell parameter to initialize should also be NULL
+   
+    GridCell res;
+    if(gridRes != nullptr){
+        if(NDIMS == 2){
+            res = GridCell::make_point(gridRes[0], gridRes[1]);
+        }
+        else if(NDIMS == 3){
+            res = GridCell::make_point(gridRes[0], gridRes[1], gridRes[2]);
+        }
+    }
+    
     const GridCell* pRes =
-      (gridRes != nullptr) ? &m_gridRes : nullptr;
+      (gridRes != nullptr) ? &res : nullptr;
 
     initialize(
       SpatialBoundingBox( SpacePoint(bbMin), SpacePoint(bbMax) ),
