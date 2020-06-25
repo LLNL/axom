@@ -127,7 +127,7 @@ public:
    
     GridCell res;
     if(gridRes != nullptr){
-            res = GridCell(gridRes, NDIMS);
+      res = GridCell(gridRes, NDIMS);
     }
 
     initialize(
