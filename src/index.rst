@@ -7,8 +7,6 @@
 Axom
 ****
 
-.. note:: This page is under heavy construction.
-
 Axom is a project in WCI/WSC that is funded by ECP/ATDM.
 Its principal goal is to provide a collection of robust and flexible software 
 components that serve as building blocks for LLNL simulation tools. The 
@@ -62,6 +60,7 @@ for Axom software components:
    Quest (Querying on surface tool) <axom/quest/docs/sphinx/index>
    Mint (Mesh data model) <axom/mint/docs/sphinx/index>
    Primal (Computational geometry primitives) <axom/primal/docs/sphinx/index>
+   Inlet (Input decks) <axom/inlet/docs/sphinx/index>
 
 --------------------------
 Source Code Documentation
@@ -69,6 +68,7 @@ Source Code Documentation
 
   *  `Axom <doxygen/html/index.html>`_
   *  `Core <doxygen/html/coretop.html>`_
+  *  `Inlet <doxygen/html/Inlettop.html>`_
   *  `Lumberjack <doxygen/html/lumberjacktop.html>`_
   *  `Mint <doxygen/html/minttop.html>`_
   *  `Primal <doxygen/html/primaltop.html>`_
@@ -87,6 +87,7 @@ Dependencies between modules are as follows:
 - Slam, Spin, Primal, Mint, Quest, and Sidre depend on Slic
 - Mint optionally depends on Sidre
 - Quest depends on Slam, Spin, Primal, and Mint
+- Inlet depends on Sidre, and Slic
 
 The figure below summarizes the dependencies between the modules.  Solid links
 indicate hard dependencies; dashed links indicate optional dependencies.
