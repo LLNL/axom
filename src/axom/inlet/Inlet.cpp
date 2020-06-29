@@ -22,34 +22,34 @@ namespace axom
 namespace inlet
 {
 
-std::shared_ptr<Group> Inlet::addGroup(const std::string& name,
+std::shared_ptr<Table> Inlet::addTable(const std::string& name,
                                        const std::string& description)
 {
-  return std::make_shared<Group>(name, description, m_reader, m_sidreRootGroup);
+  return std::make_shared<Table>(name, description, m_reader, m_sidreRootGroup);
 }
 
 std::shared_ptr<Field> Inlet::addBool(const std::string& name,
                                       const std::string& description)
 {
-  return m_group->addBool(name, description);
+  return m_globalTable->addBool(name, description);
 }
 
 std::shared_ptr<Field> Inlet::addDouble(const std::string& name,
                                         const std::string& description)
 {
-  return m_group->addDouble(name, description);
+  return m_globalTable->addDouble(name, description);
 }
 
 std::shared_ptr<Field> Inlet::addInt(const std::string& name,
                                      const std::string& description)
 {
-  return m_group->addInt(name, description);
+  return m_globalTable->addInt(name, description);
 }
 
 std::shared_ptr<Field> Inlet::addString(const std::string& name,
                                         const std::string& description)
 {
-  return m_group->addString(name, description);
+  return m_globalTable->addString(name, description);
 }
 
 

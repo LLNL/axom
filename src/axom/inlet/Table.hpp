@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef INLET_GROUP_HPP
-#define INLET_GROUP_HPP
+#ifndef INLET_TABLE_HPP
+#define INLET_TABLE_HPP
 
 #include <memory>
 #include <string>
@@ -21,11 +21,10 @@ namespace inlet
 {
 
 
-//TODO: possibly rename Group not to clash with sidre::Group
-class Group : public SchemaCreator
+class Table : public SchemaCreator
 {
 public:
-  Group(const std::string& name,
+  Table(const std::string& name,
         const std::string& description,
         std::shared_ptr<Reader> reader,
         axom::sidre::Group* sidreRootGroup) : 
@@ -64,12 +63,12 @@ public:
       }
     }
 
-  virtual ~Group() = default;
+  virtual ~Table() = default;
 
   axom::sidre::Group* sidreGroup() { return m_sidreRootGroup->getGroup(m_name); };
 
   // Functions that define the input deck schema
-  std::shared_ptr<Group> addGroup(const std::string& name,
+  std::shared_ptr<Table> addTable(const std::string& name,
                                   const std::string& description);
 
   std::shared_ptr<Field> addBool(const std::string& name,
