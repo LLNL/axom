@@ -92,7 +92,8 @@ public:
   void write(sidre::Group* group,
              int num_files,
              const std::string& file_string,
-             const std::string& protocol);
+             const std::string& protocol,
+             const std::string& pattern = "");
 
   /*!
    * \brief write additional group to existing root file
@@ -294,7 +295,8 @@ private:
 
   void createRootFile(const std::string& file_base,
                       int num_files,
-                      const std::string& protocol);
+                      const std::string& protocol,
+                      const std::string& pattern);
 
   std::string getProtocol(const std::string& root_name);
 

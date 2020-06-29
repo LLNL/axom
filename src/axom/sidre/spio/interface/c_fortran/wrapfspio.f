@@ -31,7 +31,8 @@ module axom_spio
         ! splicer end class.IOManager.component_part
     contains
         procedure :: delete => iomanager_delete
-        procedure :: write => iomanager_write
+        procedure :: write_0 => iomanager_write_0
+        procedure :: write_1 => iomanager_write_1
         procedure :: write_group_to_root_file => iomanager_write_group_to_root_file
         procedure :: write_blueprint_index_to_root_file => iomanager_write_blueprint_index_to_root_file
         procedure :: read_0 => iomanager_read_0
@@ -44,6 +45,7 @@ module axom_spio
         procedure :: set_instance => iomanager_set_instance
         procedure :: associated => iomanager_associated
         generic :: read => read_0, read_1, read_2, read_3, read_4
+        generic :: write => write_0, write_1
         ! splicer begin class.IOManager.type_bound_procedure_part
         ! splicer end class.IOManager.type_bound_procedure_part
     end type iomanager
@@ -88,9 +90,9 @@ module axom_spio
             type(SHROUD_iomanager_capsule), intent(IN) :: self
         end subroutine c_iomanager_delete
 
-        subroutine c_iomanager_write(self, group, num_files, &
+        subroutine c_iomanager_write_0(self, group, num_files, &
                 file_string, protocol) &
-                bind(C, name="SPIO_IOManager_write")
+                bind(C, name="SPIO_IOManager_write_0")
             use axom_sidre, only : SHROUD_group_capsule
             use iso_c_binding, only : C_CHAR, C_INT
             import :: SHROUD_iomanager_capsule
@@ -100,11 +102,11 @@ module axom_spio
             integer(C_INT), value, intent(IN) :: num_files
             character(kind=C_CHAR), intent(IN) :: file_string(*)
             character(kind=C_CHAR), intent(IN) :: protocol(*)
-        end subroutine c_iomanager_write
+        end subroutine c_iomanager_write_0
 
-        subroutine c_iomanager_write_bufferify(self, group, num_files, &
+        subroutine c_iomanager_write_0_bufferify(self, group, num_files, &
                 file_string, Lfile_string, protocol, Lprotocol) &
-                bind(C, name="SPIO_IOManager_write_bufferify")
+                bind(C, name="SPIO_IOManager_write_0_bufferify")
             use axom_sidre, only : SHROUD_group_capsule
             use iso_c_binding, only : C_CHAR, C_INT
             import :: SHROUD_iomanager_capsule
@@ -116,7 +118,41 @@ module axom_spio
             integer(C_INT), value, intent(IN) :: Lfile_string
             character(kind=C_CHAR), intent(IN) :: protocol(*)
             integer(C_INT), value, intent(IN) :: Lprotocol
-        end subroutine c_iomanager_write_bufferify
+        end subroutine c_iomanager_write_0_bufferify
+
+        subroutine c_iomanager_write_1(self, group, num_files, &
+                file_string, protocol, pattern) &
+                bind(C, name="SPIO_IOManager_write_1")
+            use axom_sidre, only : SHROUD_group_capsule
+            use iso_c_binding, only : C_CHAR, C_INT
+            import :: SHROUD_iomanager_capsule
+            implicit none
+            type(SHROUD_iomanager_capsule), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: group
+            integer(C_INT), value, intent(IN) :: num_files
+            character(kind=C_CHAR), intent(IN) :: file_string(*)
+            character(kind=C_CHAR), intent(IN) :: protocol(*)
+            character(kind=C_CHAR), intent(IN) :: pattern(*)
+        end subroutine c_iomanager_write_1
+
+        subroutine c_iomanager_write_1_bufferify(self, group, num_files, &
+                file_string, Lfile_string, protocol, Lprotocol, pattern, &
+                Lpattern) &
+                bind(C, name="SPIO_IOManager_write_1_bufferify")
+            use axom_sidre, only : SHROUD_group_capsule
+            use iso_c_binding, only : C_CHAR, C_INT
+            import :: SHROUD_iomanager_capsule
+            implicit none
+            type(SHROUD_iomanager_capsule), intent(IN) :: self
+            type(SHROUD_group_capsule), intent(IN) :: group
+            integer(C_INT), value, intent(IN) :: num_files
+            character(kind=C_CHAR), intent(IN) :: file_string(*)
+            integer(C_INT), value, intent(IN) :: Lfile_string
+            character(kind=C_CHAR), intent(IN) :: protocol(*)
+            integer(C_INT), value, intent(IN) :: Lprotocol
+            character(kind=C_CHAR), intent(IN) :: pattern(*)
+            integer(C_INT), value, intent(IN) :: Lpattern
+        end subroutine c_iomanager_write_1_bufferify
 
         subroutine c_iomanager_write_group_to_root_file(self, group, &
                 file_name) &
@@ -385,7 +421,7 @@ contains
         ! splicer end class.IOManager.method.delete
     end subroutine iomanager_delete
 
-    subroutine iomanager_write(obj, group, num_files, file_string, &
+    subroutine iomanager_write_0(obj, group, num_files, file_string, &
             protocol)
         use axom_sidre, only : SidreGroup
         use iso_c_binding, only : C_INT
@@ -394,12 +430,30 @@ contains
         integer(C_INT), value, intent(IN) :: num_files
         character(len=*), intent(IN) :: file_string
         character(len=*), intent(IN) :: protocol
-        ! splicer begin class.IOManager.method.write
-        call c_iomanager_write_bufferify(obj%cxxmem, group%cxxmem, &
+        ! splicer begin class.IOManager.method.write_0
+        call c_iomanager_write_0_bufferify(obj%cxxmem, group%cxxmem, &
             num_files, file_string, len_trim(file_string, kind=C_INT), &
             protocol, len_trim(protocol, kind=C_INT))
-        ! splicer end class.IOManager.method.write
-    end subroutine iomanager_write
+        ! splicer end class.IOManager.method.write_0
+    end subroutine iomanager_write_0
+
+    subroutine iomanager_write_1(obj, group, num_files, file_string, &
+            protocol, pattern)
+        use axom_sidre, only : SidreGroup
+        use iso_c_binding, only : C_INT
+        class(iomanager) :: obj
+        type(SidreGroup), intent(IN) :: group
+        integer(C_INT), value, intent(IN) :: num_files
+        character(len=*), intent(IN) :: file_string
+        character(len=*), intent(IN) :: protocol
+        character(len=*), intent(IN) :: pattern
+        ! splicer begin class.IOManager.method.write_1
+        call c_iomanager_write_1_bufferify(obj%cxxmem, group%cxxmem, &
+            num_files, file_string, len_trim(file_string, kind=C_INT), &
+            protocol, len_trim(protocol, kind=C_INT), pattern, &
+            len_trim(pattern, kind=C_INT))
+        ! splicer end class.IOManager.method.write_1
+    end subroutine iomanager_write_1
 
     subroutine iomanager_write_group_to_root_file(obj, group, file_name)
         use axom_sidre, only : SidreGroup

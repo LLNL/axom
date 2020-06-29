@@ -53,37 +53,75 @@ void SPIO_IOManager_delete(SPIO_IOManager* self)
   // splicer end class.IOManager.method.delete
 }
 
-void SPIO_IOManager_write(SPIO_IOManager* self, SIDRE_Group* group,
-                          int num_files, const char* file_string,
-                          const char* protocol)
+void SPIO_IOManager_write_0(SPIO_IOManager* self, SIDRE_Group* group,
+                            int num_files, const char* file_string,
+                            const char* protocol)
 {
   axom::sidre::IOManager* SH_this =
     static_cast<axom::sidre::IOManager*>(self->addr);
-  // splicer begin class.IOManager.method.write
+  // splicer begin class.IOManager.method.write_0
   axom::sidre::Group* SHCXX_group =
     static_cast<axom::sidre::Group*>(group->addr);
   const std::string SHCXX_file_string(file_string);
   const std::string SHCXX_protocol(protocol);
   SH_this->write(SHCXX_group, num_files, SHCXX_file_string, SHCXX_protocol);
   return;
-  // splicer end class.IOManager.method.write
+  // splicer end class.IOManager.method.write_0
 }
 
-void SPIO_IOManager_write_bufferify(SPIO_IOManager* self, SIDRE_Group* group,
-                                    int num_files, const char* file_string,
-                                    int Lfile_string, const char* protocol,
-                                    int Lprotocol)
+void SPIO_IOManager_write_0_bufferify(SPIO_IOManager* self, SIDRE_Group* group,
+                                      int num_files, const char* file_string,
+                                      int Lfile_string, const char* protocol,
+                                      int Lprotocol)
 {
   axom::sidre::IOManager* SH_this =
     static_cast<axom::sidre::IOManager*>(self->addr);
-  // splicer begin class.IOManager.method.write_bufferify
+  // splicer begin class.IOManager.method.write_0_bufferify
   axom::sidre::Group* SHCXX_group =
     static_cast<axom::sidre::Group*>(group->addr);
   const std::string SHCXX_file_string(file_string, Lfile_string);
   const std::string SHCXX_protocol(protocol, Lprotocol);
   SH_this->write(SHCXX_group, num_files, SHCXX_file_string, SHCXX_protocol);
   return;
-  // splicer end class.IOManager.method.write_bufferify
+  // splicer end class.IOManager.method.write_0_bufferify
+}
+
+void SPIO_IOManager_write_1(SPIO_IOManager* self, SIDRE_Group* group,
+                            int num_files, const char* file_string,
+                            const char* protocol, const char* pattern)
+{
+  axom::sidre::IOManager* SH_this =
+    static_cast<axom::sidre::IOManager*>(self->addr);
+  // splicer begin class.IOManager.method.write_1
+  axom::sidre::Group* SHCXX_group =
+    static_cast<axom::sidre::Group*>(group->addr);
+  const std::string SHCXX_file_string(file_string);
+  const std::string SHCXX_protocol(protocol);
+  const std::string SHCXX_pattern(pattern);
+  SH_this->write(SHCXX_group, num_files, SHCXX_file_string, SHCXX_protocol,
+                 SHCXX_pattern);
+  return;
+  // splicer end class.IOManager.method.write_1
+}
+
+void SPIO_IOManager_write_1_bufferify(SPIO_IOManager* self, SIDRE_Group* group,
+                                      int num_files, const char* file_string,
+                                      int Lfile_string, const char* protocol,
+                                      int Lprotocol, const char* pattern,
+                                      int Lpattern)
+{
+  axom::sidre::IOManager* SH_this =
+    static_cast<axom::sidre::IOManager*>(self->addr);
+  // splicer begin class.IOManager.method.write_1_bufferify
+  axom::sidre::Group* SHCXX_group =
+    static_cast<axom::sidre::Group*>(group->addr);
+  const std::string SHCXX_file_string(file_string, Lfile_string);
+  const std::string SHCXX_protocol(protocol, Lprotocol);
+  const std::string SHCXX_pattern(pattern, Lpattern);
+  SH_this->write(SHCXX_group, num_files, SHCXX_file_string, SHCXX_protocol,
+                 SHCXX_pattern);
+  return;
+  // splicer end class.IOManager.method.write_1_bufferify
 }
 
 void SPIO_IOManager_write_group_to_root_file(SPIO_IOManager* self,

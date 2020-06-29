@@ -54,7 +54,8 @@ declarations:
   - decl: void write(Group * group,
                      int num_files,
                      const std::string& file_string,
-                     const std::string& protocol)
+                     const std::string& protocol,
+                     const std::string& pattern = "")
   - decl: void writeGroupToRootFile(Group * group,
                                     const std::string& file_name)
   - decl: void writeBlueprintIndexToRootFile(DataStore* datastore,

@@ -39,14 +39,24 @@ SPIO_IOManager* SPIO_IOManager_new_1(MPI_Fint com, bool use_scr,
 
 void SPIO_IOManager_delete(SPIO_IOManager* self);
 
-void SPIO_IOManager_write(SPIO_IOManager* self, SIDRE_Group* group,
-                          int num_files, const char* file_string,
-                          const char* protocol);
+void SPIO_IOManager_write_0(SPIO_IOManager* self, SIDRE_Group* group,
+                            int num_files, const char* file_string,
+                            const char* protocol);
 
-void SPIO_IOManager_write_bufferify(SPIO_IOManager* self, SIDRE_Group* group,
-                                    int num_files, const char* file_string,
-                                    int Lfile_string, const char* protocol,
-                                    int Lprotocol);
+void SPIO_IOManager_write_0_bufferify(SPIO_IOManager* self, SIDRE_Group* group,
+                                      int num_files, const char* file_string,
+                                      int Lfile_string, const char* protocol,
+                                      int Lprotocol);
+
+void SPIO_IOManager_write_1(SPIO_IOManager* self, SIDRE_Group* group,
+                            int num_files, const char* file_string,
+                            const char* protocol, const char* pattern);
+
+void SPIO_IOManager_write_1_bufferify(SPIO_IOManager* self, SIDRE_Group* group,
+                                      int num_files, const char* file_string,
+                                      int Lfile_string, const char* protocol,
+                                      int Lprotocol, const char* pattern,
+                                      int Lpattern);
 
 void SPIO_IOManager_write_group_to_root_file(SPIO_IOManager* self,
                                              SIDRE_Group* group,
