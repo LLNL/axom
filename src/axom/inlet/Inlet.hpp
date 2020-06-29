@@ -19,8 +19,8 @@
 #include <string>
 #include <vector>
 
-//#include "axom/inlet/SchemaCreator.hpp"
-#include "axom/inlet/Group.hpp"
+#include "axom/inlet/SchemaCreator.hpp"
+#include "axom/inlet/Table.hpp"
 #include "axom/inlet/Field.hpp"
 #include "axom/inlet/Reader.hpp"
 
@@ -38,7 +38,7 @@ public:
         axom::sidre::Group* sidreRootGroup) :
     m_reader(reader),
     m_sidreRootGroup(sidreRootGroup),
-    m_group(std::make_shared<Group>("", "", m_reader, m_sidreRootGroup)) {}
+    m_globalTable(std::make_shared<Table>("", "", m_reader, m_sidreRootGroup)) {}
 
   virtual ~Inlet() = default;
 
@@ -46,7 +46,7 @@ public:
   axom::sidre::Group* sidreGroup() { return m_sidreRootGroup; };
 
   // Functions that define the input deck schema
-  std::shared_ptr<Group> addGroup(const std::string& name,
+  std::shared_ptr<Table> addTable(const std::string& name,
                                   const std::string& description);
 
   std::shared_ptr<Field> addBool(const std::string& name,
@@ -70,7 +70,7 @@ private:
 
   std::shared_ptr<Reader> m_reader;
   axom::sidre::Group* m_sidreRootGroup = nullptr;
-  std::shared_ptr<Group> m_group;
+  std::shared_ptr<Table> m_globalTable;
 };
 
 } // end namespace inlet

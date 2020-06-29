@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#include "axom/inlet/Group.hpp"
+#include "axom/inlet/Table.hpp"
 
 #include "fmt/fmt.hpp"
 #include "axom/slic.hpp"
@@ -25,14 +25,14 @@ std::string getFullName(const std::string& prefix, const std::string& name)
   }
 }
 
-std::shared_ptr<Group> Group::addGroup(const std::string& name,
+std::shared_ptr<Table> Table::addTable(const std::string& name,
                                        const std::string& description)
 {
   std::string fullName = getFullName(m_name, name);
-  return std::make_shared<Group>(fullName, description, m_reader, m_sidreRootGroup);
+  return std::make_shared<Table>(fullName, description, m_reader, m_sidreRootGroup);
 }
 
-axom::sidre::Group* Group::baseFieldAdd(const std::string& name,
+axom::sidre::Group* Table::baseFieldAdd(const std::string& name,
                                         const std::string& description)
 {
   SLIC_ASSERT_MSG(m_reader != nullptr, "Inlet's Reader class not set");
@@ -54,7 +54,7 @@ axom::sidre::Group* Group::baseFieldAdd(const std::string& name,
   return sidreGroup;
 }
 
-std::shared_ptr<Field> Group::addBool(const std::string& name,
+std::shared_ptr<Field> Table::addBool(const std::string& name,
                                       const std::string& description)
 {
   std::string fullName = getFullName(m_name, name);
@@ -81,7 +81,7 @@ std::shared_ptr<Field> Group::addBool(const std::string& name,
   return std::make_shared<Field>(sidreGroup);
 }
 
-std::shared_ptr<Field> Group::addDouble(const std::string& name,
+std::shared_ptr<Field> Table::addDouble(const std::string& name,
                                         const std::string& description)
 {
   std::string fullName = getFullName(m_name, name);
@@ -100,7 +100,7 @@ std::shared_ptr<Field> Group::addDouble(const std::string& name,
   return std::make_shared<Field>(sidreGroup);
 }
 
-std::shared_ptr<Field> Group::addInt(const std::string& name,
+std::shared_ptr<Field> Table::addInt(const std::string& name,
                                      const std::string& description)
 {
   std::string fullName = getFullName(m_name, name);
@@ -119,7 +119,7 @@ std::shared_ptr<Field> Group::addInt(const std::string& name,
   return std::make_shared<axom::inlet::Field>(sidreGroup);
 }
 
-std::shared_ptr<Field> Group::addString(const std::string& name,
+std::shared_ptr<Field> Table::addString(const std::string& name,
                                         const std::string& description)
 {
   std::string fullName = getFullName(m_name, name);

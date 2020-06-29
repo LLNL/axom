@@ -16,13 +16,13 @@ namespace axom
 namespace inlet
 {
 
-class Group;
+class Table;
 
 class SchemaCreator
 {
 public:
   // Functions that define the input deck schema
-  virtual std::shared_ptr<Group> addGroup(const std::string& name,
+  virtual std::shared_ptr<Table> addTable(const std::string& name,
                                           const std::string& description) = 0;
 
   virtual std::shared_ptr<Field> addBool(const std::string& name,
