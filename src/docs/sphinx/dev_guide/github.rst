@@ -3,7 +3,7 @@
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
-.. github-label:
+.. _github-label:
 
 ******************************************************
 Git/Github: Version Control and Branch Development 

@@ -14,7 +14,7 @@
 
 #include "axom/core/utilities/About.hpp"
 
-int main(int argc, char **argv)
+int main()
 {
    axom::about();
 }
