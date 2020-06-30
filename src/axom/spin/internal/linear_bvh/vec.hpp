@@ -38,8 +38,8 @@ public:
   //
   //  Use only default contructors to keep this a POD type
   //
-  inline AXOM_HOST_DEVICE Vec<T,S>() = default;
-  inline AXOM_HOST_DEVICE Vec<T,S>(const Vec<T,S>& v) = default;
+  inline Vec<T,S>() = default;
+  inline Vec<T,S>(const Vec<T,S>& v) = default;
 
   inline AXOM_HOST_DEVICE bool operator==(const Vec<T,S> &other) const
   {
