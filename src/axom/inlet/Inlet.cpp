@@ -179,5 +179,9 @@ bool Inlet::get(const std::string& name, std::string& value)
   return true;
 }
 
+void Inlet::registerDocWriter(std::shared_ptr<DocWriter> writer) {
+  docWriter = writer;
+}
+
 } // end namespace inlet
 } // end namespace axom

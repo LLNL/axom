@@ -26,6 +26,8 @@
 
 #include "axom/sidre.hpp"
 
+#include "axom/inlet/DocWriter.hpp"
+
 namespace axom
 {
 namespace inlet
@@ -249,6 +251,8 @@ public:
    */
   bool get(const std::string& name, std::string& value);
 
+  void registerDocWriter(std::shared_ptr<DocWriter> writer);
+
   // TODO add update value functions
 private:
   axom::sidre::View* baseGet(const std::string& name);
@@ -256,6 +260,9 @@ private:
   std::shared_ptr<Reader> m_reader;
   axom::sidre::Group* m_sidreRootGroup = nullptr;
   std::shared_ptr<Table> m_globalTable;
+
+  std::shared_ptr<DocWriter> docWriter;
+  bool docWriterToggle = false;   // set in constructor?
 };
 
 } // end namespace inlet
