@@ -954,6 +954,21 @@ TEST( primal_intersect, 3D_triangle_triangle_intersection_regression )
     permuteCornersTest(tri3d_1, tri3d_2, msg, true, true);
   }
 
+  {
+    // https://github.com/LLNL/axom/issues/152
+    std::string msg = "From Axom github issue #152";
+    Triangle3 tri3d_1( Point3::make_point(76.648, 54.6752, 15.0012),
+                       Point3::make_point(76.648, 54.6752, 14.5542),
+                       Point3::make_point(76.582, 54.6752, 14.7879) );
+  
+    Triangle3 tri3d_2( Point3::make_point(76.6252, 54.6752, 14.892),
+                       Point3::make_point(76.582, 54.6752, 14.7879),
+                       Point3::make_point(76.5617,54.6752,14.7929) );
+
+    permuteCornersTest(tri3d_1, tri3d_2, msg, false, false);
+    permuteCornersTest(tri3d_1, tri3d_2, msg, true, true);
+  }  
+
   axom::slic::setLoggingMsgLevel( axom::slic::message::Warning);
 }
 
