@@ -44,7 +44,7 @@ namespace primal
  * \param [in] t2 The second triangle
  * \param [in] includeBoundary Indicates if boundaries should be considered
  * when detecting intersections (default: false)
- * \param [in] EPS Tolerance threshold for determining intersections (default: 1E-8)
+ * \param [in] EPS Tolerance for determining intersections (default: 1E-8)
  * \return status true iff t1 intersects with t2, otherwise, false.
  *
  * If parameter \a includeBoundary is false (default), this function will
@@ -67,7 +67,7 @@ bool intersect( const Triangle< T, 3 >& t1,
  * \param [in] t2 The second triangle
  * \param [in] includeBoundary Indicates if boundaries should be considered
  * when detecting intersections (default: false)
- * \param [in] EPS Tolerance threshold for determining intersections (default: 1E-8)
+ * \param [in] EPS Tolerance for determining intersections (default: 1E-8)
  * \return status true iff t1 intersects with t2, otherwise, false.
  *
  * If parameter \a includeBoundary is false (default), this function will

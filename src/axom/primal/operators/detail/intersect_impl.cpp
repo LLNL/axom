@@ -332,8 +332,10 @@ inline bool checkVertex(const Point2& p1,
 {
   // The tests `isGpeq(twoDcross(...))` are checking the orientation
   // of the triangle defined by its three arguments (CCW vs CW)
-  // Note: Comments in this function refer to regions 
+  // Note: Comments in this function refer to regions
   // in Figure 8 of the paper: https://hal.inria.fr/inria-00072100/document
+
+  /* *INDENT-OFF* */
 
   if (isGpeq(twoDcross(r2, p2, q1), 0.0, includeBoundary, EPS))                // q1 is in {R_22, R_23, R_24, R_25}
   {
@@ -359,7 +361,7 @@ inline bool checkVertex(const Point2& p1,
         }
         else
         {
-          return false;                                                                    // no intersection 
+          return false;                                                                    // no intersection
         }
       }
     }
@@ -410,6 +412,8 @@ inline bool checkVertex(const Point2& p1,
       return false;
     }
   }
+
+  /* *INDENT-ON* */
 }
 
 // -----------------------------------------------------------------------------

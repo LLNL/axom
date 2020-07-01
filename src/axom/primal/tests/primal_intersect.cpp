@@ -450,7 +450,7 @@ TEST( primal_intersect, 2D_triangle_triangle_intersection_barycentric )
   // Add some barycentric coordinates w.r.t. the input triangle
   for(double x : {-0.2, -0.1, 0.0, 0.1, 0.2})
   {
-    for(int j = -6; j <= 6; ++j)
+    for(int j = -6 ; j <= 6 ; ++j)
     {
       Bary b;
       b[0] = x;
@@ -466,17 +466,18 @@ TEST( primal_intersect, 2D_triangle_triangle_intersection_barycentric )
   bool includeBdry = true;
 
   int sz = bary.size();
-  for(int i=0; i< sz-1; ++i)
+  for(int i=0 ; i< sz-1 ; ++i)
   {
-    for(int j=i; j<sz; ++j)
+    for(int j=i ; j<sz ; ++j)
     {
-      Triangle2 triB ( p0, 
-                       triA.baryToPhysical(bary[i]), 
+      Triangle2 triB ( p0,
+                       triA.baryToPhysical(bary[i]),
                        triA.baryToPhysical(bary[j]));
 
       if(!triB.degenerate())
       {
-        std::string str = fmt::format("Tri2D-Tri2D from barycenters. b1:{}, b2:{}", bary[i], bary[j]);
+        std::string str = fmt::format(
+          "Tri2D-Tri2D from barycenters. b1:{}, b2:{}", bary[i], bary[j]);
         permuteCornersTest(triA, triB, str, !includeBdry, expectIntersect);
         permuteCornersTest(triA, triB, str, includeBdry, expectIntersect);
       }
@@ -1045,20 +1046,23 @@ TEST( primal_intersect, 3D_triangle_triangle_intersection_regression )
     SLIC_DEBUG("Triangle 1: " << tri3d_1);
     SLIC_DEBUG("Triangle 2: " << tri3d_2);
 
-    for(int i=0; i<3; ++i)
+    for(int i=0 ; i<3 ; ++i)
     {
-      SLIC_DEBUG("t1 " << i << "-- distance " << tri3d_1[i] << " to tri2: " 
-          << std::setprecision(17)
-          << sqrt( primal::squared_distance( tri3d_1[i], tri3d_2 ) )
-          << " -- closest point: " << primal::closest_point(tri3d_1[i], tri3d_2));
+      SLIC_DEBUG("t1 " << i << "-- distance " << tri3d_1[i] << " to tri2: "
+                       << std::setprecision(17)
+                       << sqrt( primal::squared_distance( tri3d_1[i],
+                                                    tri3d_2 ) )
+                       << " -- closest point: "
+                       << primal::closest_point(tri3d_1[i], tri3d_2));
     }
 
-    for(int i=0; i<3; ++i)
+    for(int i=0 ; i<3 ; ++i)
     {
-      SLIC_DEBUG("t2 " << i << "-- distance " << tri3d_2[i] << " to tri1: " 
-          << std::setprecision(17)
-          << sqrt( primal::squared_distance( tri3d_2[i], tri3d_1) )
-          << " -- closest point: " << primal::closest_point(tri3d_2[i], tri3d_1));
+      SLIC_DEBUG("t2 " << i << "-- distance " << tri3d_2[i] << " to tri1: "
+                       << std::setprecision(17)
+                       << sqrt( primal::squared_distance( tri3d_2[i], tri3d_1) )
+                       << " -- closest point: "
+                       << primal::closest_point(tri3d_2[i], tri3d_1));
     }
 
     const bool expectIntersect = true;
@@ -1080,12 +1084,13 @@ TEST( primal_intersect, 3D_triangle_triangle_intersection_regression )
 
     permuteCornersTest(tri3d_1, tri3d_2, msg, false, false);
     permuteCornersTest(tri3d_1, tri3d_2, msg, true, true);
-  }  
+  }
 
 
   {
     // https://github.com/LLNL/axom/issues/152
-    std::string msg = "From Axom github issue #152 (simplified 2) -- one point inside other triangle";
+    std::string msg =
+      "From Axom github issue #152 (simplified 2) -- one point inside other triangle";
     Point3 vdata[] = { Point3::make_point( 1,   0,  0.5 ),
                        Point3::make_point( 1,   0, -0.5 ),
                        Point3::make_point( 0,   0,  0  ),
@@ -1097,11 +1102,12 @@ TEST( primal_intersect, 3D_triangle_triangle_intersection_regression )
 
     permuteCornersTest(tri3d_1, tri3d_2, msg, false, true);
     permuteCornersTest(tri3d_1, tri3d_2, msg, true, true);
-  }  
+  }
 
   {
     // https://github.com/LLNL/axom/issues/152
-    std::string msg = "From Axom github issue #152 (simplified 3) -- one point inside other triangle";
+    std::string msg =
+      "From Axom github issue #152 (simplified 3) -- one point inside other triangle";
     Point3 vdata[] = { Point3::make_point( 1,   0,  0.5 ),
                        Point3::make_point( 1,   0, -0.5 ),
                        Point3::make_point( 0,   0,  0  ),
@@ -1113,12 +1119,13 @@ TEST( primal_intersect, 3D_triangle_triangle_intersection_regression )
 
     permuteCornersTest(tri3d_1, tri3d_2, msg, false, true);
     permuteCornersTest(tri3d_1, tri3d_2, msg, true, true);
-  }  
+  }
 
 
   {
     // https://github.com/LLNL/axom/issues/152
-    std::string msg = "From Axom github issue #152 (simplified 4) -- one point inside other triangle";
+    std::string msg =
+      "From Axom github issue #152 (simplified 4) -- one point inside other triangle";
     Point3 vdata[] = { Point3::make_point( 1,   0,  0.5 ),
                        Point3::make_point( 1,   0, -0.5 ),
                        Point3::make_point( 0,   0,  0  ),
@@ -1130,11 +1137,12 @@ TEST( primal_intersect, 3D_triangle_triangle_intersection_regression )
 
     permuteCornersTest(tri3d_1, tri3d_2, msg, false, true);
     permuteCornersTest(tri3d_1, tri3d_2, msg, true, true);
-  }  
+  }
 
   {
     // https://github.com/LLNL/axom/issues/152
-    std::string msg = "From Axom github issue #152 (simplified 5) -- one point inside other triangle";
+    std::string msg =
+      "From Axom github issue #152 (simplified 5) -- one point inside other triangle";
     Point3 vdata[] = { Point3::make_point( 1,   0,  0.5 ),
                        Point3::make_point( 1,   0, -0.5 ),
                        Point3::make_point( 0,   0,  0  ),
@@ -1146,7 +1154,7 @@ TEST( primal_intersect, 3D_triangle_triangle_intersection_regression )
 
     permuteCornersTest(tri3d_1, tri3d_2, msg, false, true);
     permuteCornersTest(tri3d_1, tri3d_2, msg, true, true);
-  }  
+  }
 
   // Revert logging level to Warning
   axom::slic::setLoggingMsgLevel( axom::slic::message::Warning);
