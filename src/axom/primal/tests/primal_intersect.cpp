@@ -5,6 +5,8 @@
 
 #include "gtest/gtest.h"
 
+#include "fmt/fmt.hpp"
+
 #include "axom/slic/interface/slic.hpp"
 
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
@@ -966,18 +968,124 @@ TEST( primal_intersect, 3D_triangle_triangle_intersection_regression )
   {
     // https://github.com/LLNL/axom/issues/152
     std::string msg = "From Axom github issue #152";
-    Triangle3 tri3d_1( Point3::make_point(76.648, 54.6752, 15.0012),
-                       Point3::make_point(76.648, 54.6752, 14.5542),
-                       Point3::make_point(76.582, 54.6752, 14.7879) );
-  
-    Triangle3 tri3d_2( Point3::make_point(76.6252, 54.6752, 14.892),
-                       Point3::make_point(76.582, 54.6752, 14.7879),
-                       Point3::make_point(76.5617,54.6752,14.7929) );
+    Point3 vdata[] = { Point3::make_point(76.648,  54.6752, 15.0012),
+                       Point3::make_point(76.648,  54.6752, 14.5542),
+                       Point3::make_point(76.582,  54.6752, 14.7879),
+                       Point3::make_point(76.6252, 54.6752, 14.892),
+                       Point3::make_point(76.5617, 54.6752, 14.7929) };
+
+    Triangle3 tri3d_1(vdata[0], vdata[1], vdata[2]);
+    Triangle3 tri3d_2(vdata[3], vdata[2], vdata[4]);
+
+    // Output some debugging information about this configuration
+    // (change logging level to Debug to see these messages)
+    SLIC_DEBUG("Triangle 1: " << tri3d_1);
+    SLIC_DEBUG("Triangle 2: " << tri3d_2);
+
+    for(int i=0; i<3; ++i)
+    {
+      SLIC_DEBUG("t1 " << i << "-- distance " << tri3d_1[i] << " to tri2: " 
+          << std::setprecision(17)
+          << sqrt( primal::squared_distance( tri3d_1[i], tri3d_2 ) )
+          << " -- closest point: " << primal::closest_point(tri3d_1[i], tri3d_2));
+    }
+
+    for(int i=0; i<3; ++i)
+    {
+      SLIC_DEBUG("t2 " << i << "-- distance " << tri3d_2[i] << " to tri1: " 
+          << std::setprecision(17)
+          << sqrt( primal::squared_distance( tri3d_2[i], tri3d_1) )
+          << " -- closest point: " << primal::closest_point(tri3d_2[i], tri3d_1));
+    }
+
+    const bool expectIntersect = true;
+    permuteCornersTest(tri3d_1, tri3d_2, msg, false, expectIntersect);
+    permuteCornersTest(tri3d_1, tri3d_2, msg, true, expectIntersect);
+  }
+
+  {
+    // https://github.com/LLNL/axom/issues/152
+    std::string msg = "From Axom github issue #152 (simplified)";
+    Point3 vdata[] = { Point3::make_point( 0.066,  0,  0.2133).
+                       Point3::make_point( 0.066,  0, -0.2337),
+                       Point3::make_point( 0,      0,  0),
+                       Point3::make_point( 0.0432, 0,  0.1041),
+                       Point3::make_point(-0.0203, 0,  0.005) };
+
+    Triangle3 tri3d_1(vdata[0], vdata[1], vdata[2]);
+    Triangle3 tri3d_2(vdata[3], vdata[2], vdata[4]);
 
     permuteCornersTest(tri3d_1, tri3d_2, msg, false, false);
     permuteCornersTest(tri3d_1, tri3d_2, msg, true, true);
   }  
 
+
+  {
+    // https://github.com/LLNL/axom/issues/152
+    std::string msg = "From Axom github issue #152 (simplified 2) -- one point inside other triangle";
+    Point3 vdata[] = { Point3::make_point( 1,   0,  0.5 ),
+                       Point3::make_point( 1,   0, -0.5 ),
+                       Point3::make_point( 0,   0,  0  ),
+                       Point3::make_point( 0.5, 0,  0.1),
+                       Point3::make_point(-0.1, 0, -0.2) };
+
+    Triangle3 tri3d_1(vdata[0], vdata[1], vdata[2]);
+    Triangle3 tri3d_2(vdata[3], vdata[2], vdata[4]);
+
+    permuteCornersTest(tri3d_1, tri3d_2, msg, false, true);
+    permuteCornersTest(tri3d_1, tri3d_2, msg, true, true);
+  }  
+
+  {
+    // https://github.com/LLNL/axom/issues/152
+    std::string msg = "From Axom github issue #152 (simplified 3) -- one point inside other triangle";
+    Point3 vdata[] = { Point3::make_point( 1,   0,  0.5 ),
+                       Point3::make_point( 1,   0, -0.5 ),
+                       Point3::make_point( 0,   0,  0  ),
+                       Point3::make_point( 0.5, 0,  0.1),
+                       Point3::make_point(-0.1, 0,  0.05) };
+
+    Triangle3 tri3d_1(vdata[0], vdata[1], vdata[2]);
+    Triangle3 tri3d_2(vdata[3], vdata[2], vdata[4]);
+
+    permuteCornersTest(tri3d_1, tri3d_2, msg, false, true);
+    permuteCornersTest(tri3d_1, tri3d_2, msg, true, true);
+  }  
+
+
+  {
+    // https://github.com/LLNL/axom/issues/152
+    std::string msg = "From Axom github issue #152 (simplified 4) -- one point inside other triangle";
+    Point3 vdata[] = { Point3::make_point( 1,   0,  0.5 ),
+                       Point3::make_point( 1,   0, -0.5 ),
+                       Point3::make_point( 0,   0,  0  ),
+                       Point3::make_point( 0.5, 0,  0.1),
+                       Point3::make_point(-0.1, 0,  0.06) };
+
+    Triangle3 tri3d_1(vdata[0], vdata[1], vdata[2]);
+    Triangle3 tri3d_2(vdata[3], vdata[2], vdata[4]);
+
+    permuteCornersTest(tri3d_1, tri3d_2, msg, false, true);
+    permuteCornersTest(tri3d_1, tri3d_2, msg, true, true);
+  }  
+
+  {
+    // https://github.com/LLNL/axom/issues/152
+    std::string msg = "From Axom github issue #152 (simplified 5) -- one point inside other triangle";
+    Point3 vdata[] = { Point3::make_point( 1,   0,  0.5 ),
+                       Point3::make_point( 1,   0, -0.5 ),
+                       Point3::make_point( 0,   0,  0  ),
+                       Point3::make_point( 0.5, 0,  0.1),
+                       Point3::make_point(-0.1, 0,  0.04) };
+
+    Triangle3 tri3d_1(vdata[0], vdata[1], vdata[2]);
+    Triangle3 tri3d_2(vdata[3], vdata[2], vdata[4]);
+
+    permuteCornersTest(tri3d_1, tri3d_2, msg, false, true);
+    permuteCornersTest(tri3d_1, tri3d_2, msg, true, true);
+  }  
+
+  // Revert logging level to Warning
   axom::slic::setLoggingMsgLevel( axom::slic::message::Warning);
 }
 
