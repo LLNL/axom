@@ -1,14 +1,16 @@
 #include "axom/inlet/DocWriter.hpp"
 #include <iostream>
 #include <assert.h>
+#include "axom/slic.hpp"
 
 namespace axom
 {
 namespace inlet
 {
  
-DocWriter::DocWriter(std::string fileName, axom::sidre::Group* root) {
-  assert(root);
+DocWriter::DocWriter(const std::string& fileName, axom::sidre::Group* root) {
+  // assert(root);     // change to SLIC assert - slic is a logging lib
+  SLIC_ASSERT_MSG(root != nullptr, "Sidre Group is null pointer");
   outFile.open(fileName);
   sidreGroupRoot = root;
   rstTable = {{"Field Name", "Description", "Default Value", "Range", "Required"}};
@@ -18,30 +20,45 @@ DocWriter::DocWriter(std::string fileName, axom::sidre::Group* root) {
 }
 
 void DocWriter::writeDocuments(axom::sidre::Group* sidreGroup) {
-  axom::sidre::IndexType i = sidreGroupRoot->getFirstValidGroupIndex();
-  if (!sidreGroup->isRoot() && i == axom::sidre::InvalidIndex) {
+  SLIC_ASSERT_MSG(sidreGroup, "Root passed into writeDocuments shouldn't be nullptr");
+  axom::sidre::IndexType i = sidreGroup->getFirstValidGroupIndex();
+  if (sidreGroup != sidreGroupRoot && i == axom::sidre::InvalidIndex) {    // is root won't work because youre not necessarily wrking from the base
     // means that it is a field
     // so attributes are stored in views
-    std::vector<std::string> fieldAttributes(5, "");
+    std::vector<std::string> fieldAttributes(5, "Not specified");
     fieldAttributes.resize(5);
     fieldAttributes[0] = sidreGroup->getName();
-    assert(sidreGroup->getView(sidreGroup->getViewIndex("description"))->getString());
-    fieldAttributes[1] = std::string(sidreGroup->getView(sidreGroup->getViewIndex("description"))->getString());
+    if (sidreGroup->hasView("description")) {
+      fieldAttributes[1] = std::string(sidreGroup->getView(sidreGroup->getViewIndex("description"))->getString());
+    }
     // fieldAttributes[2] = std::to_string(sidreGroup->getView(sidreGroup->getViewIndex("default values"))->getScalar());
     // fieldAttributes[3] = std::to_string(sidreGroup->getView(sidreGroup->getViewIndex("range"))->getScalar());
-    int8 required = sidreGroup->getView(sidreGroup->getViewIndex("required"))->getData();
-    fieldAttributes[4] = required ? "True" : "False";
+    if (sidreGroup->hasView("required")) {
+      int8 required = sidreGroup->getView(sidreGroup->getViewIndex("required"))->getData();
+      fieldAttributes[4] = required ? "True" : "False";
+    } 
+  
     rstTable.push_back(fieldAttributes);
     // LEFT OFF HERE
   } 
+  // axom::sidre::indexIsValid(i)
+  while (i != axom::sidre::InvalidIndex) {
+    // if (sidreGroup->getGroup(i)) {
+    writeDocuments(sidreGroup->getGroup(i));
+    // } else {
+    //   std::cerr << "GROUP NOT FOUND ERROR?" << std::endl;
+    //   if (!axom::sidre::indexIsValid(i)) {
+    //     std::cerr<< "INDEX NOT VALID" << std::endl;
+    //   } else {
+    //     std::cerr << "index is valid" << std::endl;
+    //   }
+    // }
 
-  while (axom::sidre::indexIsValid(i)) {
-    writeDocuments(sidreGroupRoot->getGroup(i));
     i = sidreGroup->getNextValidGroupIndex(i);
   }
 }
 
-void DocWriter::writeTitle(std::string title) {
+void DocWriter::writeTitle(const std::string& title) {
   assert(outFile.is_open());
   std::string stars;
   for (int i = 0; i < title.length(); i++) {
@@ -50,7 +67,7 @@ void DocWriter::writeTitle(std::string title) {
   outFile << stars << "\n" << title << "\n" << stars << "\n";
 }
 
-void DocWriter::writeSubtitle(std::string sub) {
+void DocWriter::writeSubtitle(const std::string& sub) {
   assert(outFile.is_open());
   std::string pounds;
   for (int i = 0; i < sub.length(); i++) {
@@ -59,7 +76,7 @@ void DocWriter::writeSubtitle(std::string sub) {
   outFile << pounds << "\n" << sub << "\n" << pounds << "\n";
 }
 
-void DocWriter::writeTable(std::string title) {
+void DocWriter::writeTable(const std::string& title) {
   assert(outFile.is_open());
   std::string result = ".. list-table:: " + title;
   result += "\n   :widths: 25 25 25 25 25\n   :header-rows: 1\n   :stub-columns: 1\n\n";

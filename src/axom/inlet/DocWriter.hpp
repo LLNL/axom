@@ -14,16 +14,16 @@ namespace inlet
 
 class DocWriter {
 public: 
-  DocWriter(std::string fileName, axom::sidre::Group* sidreRootGroup);
-  void writeTitle(std::string title);
-  void writeSubtitle(std::string sub);
-  void writeTable(std::string title);
+  DocWriter(const std::string& fileName, axom::sidre::Group* sidreRootGroup);
+  void writeTitle(const std::string& title);
+  void writeSubtitle(const std::string& sub);
+  void writeTable(const std::string& title);
 
   // Entry point for document generation
   void writeDocuments(axom::sidre::Group* sidreGroup);
 
 private:
-  std::ofstream& outFile;
+  std::ofstream outFile;
   axom::sidre::Group* sidreGroupRoot;
   std::vector<std::vector<std::string>> rstTable;
 };

@@ -21,15 +21,15 @@ std::shared_ptr<Inlet> createBasicInlet(DataStore* ds,
 }
 
 int main(int argc, char** argv) {
-  // CLI::App app;
-  // CLI11_PARSE(app, argc, argv);
-  // bool docs_enabled;
-  // app.add_flag("-f", docs_enabled, "Enables documentation generation");
+  CLI::App app {"Description here"};
+  CLI11_PARSE(app, argc, argv);
+  bool docs_enabled{false};
+  app.add_flag("-f", docs_enabled, "Enables documentation generation");
   
   std::string testString = "foo = true; bar = false";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
-  
+
   std::shared_ptr<axom::inlet::Field> currField;
 
   currField = inlet->addBool("foo", "foo's description");
