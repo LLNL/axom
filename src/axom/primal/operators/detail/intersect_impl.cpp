@@ -330,35 +330,40 @@ inline bool checkVertex(const Point2& p1,
                         bool includeBoundary,
                         double EPS)
 {
-  if (isGpeq(twoDcross(r2, p2, q1), 0.0, includeBoundary, EPS))
+  // The tests `isGpeq(twoDcross(...))` are checking the orientation
+  // of the triangle defined by its three arguments (CCW vs CW)
+  // Note: Comments in this function refer to regions 
+  // in Figure 8 of the paper: https://hal.inria.fr/inria-00072100/document
+
+  if (isGpeq(twoDcross(r2, p2, q1), 0.0, includeBoundary, EPS))                // q1 is in {R_22, R_23, R_24, R_25}
   {
-    if (isGpeq(twoDcross(q2, r2, q1), 0.0, includeBoundary, EPS))
+    if (isGpeq(twoDcross(q2, r2, q1), 0.0, includeBoundary, EPS))                  // q1 is in {R_23, R_24} or possibly R_22
     {
-      if (isGpeq(twoDcross(p1, p2, q1), 0.0, includeBoundary, EPS))
+      if (isGpeq(twoDcross(p1, p2, q1), 0.0, includeBoundary, EPS))                    // q1 in in R_23  or possible R_22
       {
         if (isLpeq(twoDcross(p1, q2, q1), 0.0, includeBoundary, EPS))
         {
-          return true;
+          return true;                                                                       // q1 is in R_23  -- intersect
         }
         else
         {
-          return false;
+          return false;                                                                      // q1 in in R_22 -- no intersection
         }
       }
-      else
+      else                                                                             // q1 is in R_24
       {
         if (isGpeq(twoDcross(p1, p2, r1), 0.0, includeBoundary, EPS) &&
-            isGpeq(twoDcross(r2, p2, r1), 0.0, includeBoundary, EPS))
+            isLpeq(twoDcross(q1, p2, r1), 0.0, includeBoundary, EPS))
         {
-          return true;
+          return true;                                                                     // r1 is in R_23 -- intersect!
         }
         else
         {
-          return false;
+          return false;                                                                    // no intersection 
         }
       }
     }
-    else
+    else                                                                           // q1 is in {R_22, R_25}
     {
       if (isLpeq(twoDcross(p1, q2, q1), 0.0, includeBoundary, EPS) &&
           isGpeq(twoDcross(q2, r2, r1), 0.0, includeBoundary, EPS) &&
@@ -372,7 +377,7 @@ inline bool checkVertex(const Point2& p1,
       }
     }
   }
-  else
+  else                                                                         // q1 is in R_21
   {
     if (isGpeq(twoDcross(r2, p2, r1), 0.0, includeBoundary, EPS))
     {
