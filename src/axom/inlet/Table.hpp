@@ -67,31 +67,30 @@ public:
       SLIC_ASSERT_MSG(m_reader, "Inlet's Reader class not valid");
       SLIC_ASSERT_MSG(m_sidreRootGroup != nullptr, "Inlet's Sidre Datastore class not set");
 
-      axom::sidre::Group* sidreGroup = nullptr;
       if (m_name == "")
       {
-        sidreGroup = m_sidreRootGroup;
+        m_sidreGroup = m_sidreRootGroup;
       }
       else
       {
         if (!m_sidreRootGroup->hasGroup(name))
         {
-          sidreGroup = m_sidreRootGroup->createGroup(name);
+          m_sidreGroup = m_sidreRootGroup->createGroup(name);
         }
         else
         {
-          sidreGroup = m_sidreRootGroup->getGroup(name);
+          m_sidreGroup = m_sidreRootGroup->getGroup(name);
         }
       }
 
       if(description == "")
       {
-        if (sidreGroup->hasView("description"))
+        if (m_sidreGroup->hasView("description"))
         {
           //TODO: warn user?
-          sidreGroup->destroyViewAndData("description");
+          m_sidreGroup->destroyViewAndData("description");
         }
-        sidreGroup->createViewString("description", description);
+        m_sidreGroup->createViewString("description", description);
       }
     }
 
@@ -105,7 +104,7 @@ public:
    * information for this Table class.
    *****************************************************************************
    */
-  axom::sidre::Group* sidreGroup() { return m_sidreRootGroup->getGroup(m_name); };
+  axom::sidre::Group* sidreGroup() { return m_sidreGroup; };
 
   //
   // Functions that define the input deck schema
@@ -218,7 +217,10 @@ private:
 
   std::string m_name;
   std::shared_ptr<Reader> m_reader;
+  // Inlet's Root Sidre Group
   axom::sidre::Group* m_sidreRootGroup;
+  // This Table's Sidre Group
+  axom::sidre::Group* m_sidreGroup;
 };
 
 } // end namespace inlet
