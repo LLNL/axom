@@ -776,6 +776,8 @@ INPUT                  = @PROJECT_SOURCE_DIR@/axom/mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/core \
                          @PROJECT_SOURCE_DIR@/axom/core/utilities \
                          @PROJECT_SOURCE_DIR@/axom/core/numerics \
+                         @PROJECT_SOURCE_DIR@/axom/inlet \
+                         @PROJECT_SOURCE_DIR@/axom/inlet/README.md \
                          @PROJECT_SOURCE_DIR@/axom/lumberjack \
                          @PROJECT_SOURCE_DIR@/axom/lumberjack/README.md \
                          @PROJECT_SOURCE_DIR@/axom/mint/README.md \
