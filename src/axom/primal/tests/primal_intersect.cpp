@@ -450,7 +450,7 @@ TEST( primal_intersect, 2D_triangle_triangle_intersection_barycentric )
   // Add some barycentric coordinates w.r.t. the input triangle
   for(double x : {-0.2, -0.1, 0.0, 0.1, 0.2})
   {
-    for(int j = -6; j <= 6; j+=3)
+    for(int j = -6; j <= 6; ++j)
     {
       Bary b;
       b[0] = x;
