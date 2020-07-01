@@ -8,6 +8,7 @@
 using axom::inlet::Inlet;
 using axom::inlet::LuaReader;
 using axom::sidre::DataStore;
+using axom::inlet::DocWriter;
 
 
 std::shared_ptr<Inlet> createBasicInlet(DataStore* ds,
@@ -20,10 +21,10 @@ std::shared_ptr<Inlet> createBasicInlet(DataStore* ds,
 }
 
 int main(int argc, char** argv) {
-  CLI::App app;
-  CLI11_PARSE(app, argc, argv);
-  bool docs_enabled;
-  app.add_flag("-genDocs", docs_enabled, "Enables documentation generation");
+  // CLI::App app;
+  // CLI11_PARSE(app, argc, argv);
+  // bool docs_enabled;
+  // app.add_flag("-f", docs_enabled, "Enables documentation generation");
   
   std::string testString = "foo = true; bar = false";
   DataStore ds;
@@ -35,13 +36,14 @@ int main(int argc, char** argv) {
 
   std::shared_ptr<axom::inlet::Field> currField;
 
-  // Check for existing fields
   currField = inlet->addBool("foo", "foo's description");
   assert(currField);
   currField->required(true);
   currField = inlet->addBool("bar", "bar's description");
   assert(currField);
   currField->required(false);
+
+  DocWriter doc("example_docs.rst", inlet->sidreGroup()); 
 
   return 0;
 }
