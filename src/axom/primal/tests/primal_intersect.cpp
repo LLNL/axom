@@ -424,6 +424,69 @@ TEST( primal_intersect, triangle_aabb_intersection_fromData2 )
   axom::slic::setLoggingMsgLevel( axom::slic::message::Warning);
 }
 
+
+TEST( primal_intersect, 2D_triangle_triangle_intersection_barycentric )
+{
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Info);
+
+  using Triangle2 = primal::Triangle< double,2 >;
+  using Point2 = primal::Point< double,2 >;
+  using Bary = primal::Point<double,3>;
+
+  // Test several 2D triangle-triangle intersection cases
+  // All cases are expected to intersect since one point is inside the triangle
+  const bool expectIntersect = true;
+
+  Triangle2 triA( Point2::make_point(0,0),
+                  Point2::make_point(1,0),
+                  Point2::make_point(1,1) );
+
+  // Set first point to center of triA
+  Point2 p0 = triA.baryToPhysical( Bary::make_point(1./3., 1./3., 1./3.) );
+
+  // Create some points based on barycentric coords
+  std::vector<Bary> bary;
+
+  // Add some barycentric coordinates w.r.t. the input triangle
+  for(double x : {-0.2, -0.1, 0.0, 0.1, 0.2})
+  {
+    for(int j = -6; j <= 6; j+=3)
+    {
+      Bary b;
+      b[0] = x;
+      b[1] = (1.-j/3.) - x/2.;
+      b[2] =     j/3.  - x/2.;
+
+      EXPECT_NEAR( 1., b[0] + b[1] + b[2], 1E-8); // check that they sum to one
+      bary.push_back( b );
+    }
+
+  }
+
+  bool includeBdry = true;
+
+  int sz = bary.size();
+  for(int i=0; i< sz-1; ++i)
+  {
+    for(int j=i; j<sz; ++j)
+    {
+      Triangle2 triB ( p0, 
+                       triA.baryToPhysical(bary[i]), 
+                       triA.baryToPhysical(bary[j]));
+
+      if(!triB.degenerate())
+      {
+        std::string str = fmt::format("Tri2D-Tri2D from barycenters. b1:{}, b2:{}", bary[i], bary[j]);
+        permuteCornersTest(triA, triB, str, !includeBdry, expectIntersect);
+        permuteCornersTest(triA, triB, str, includeBdry, expectIntersect);
+      }
+
+    }
+  }
+
+  axom::slic::setLoggingMsgLevel( axom::slic::message::Warning);
+}
+
 TEST( primal_intersect, 2D_triangle_triangle_intersection )
 {
 
@@ -1088,7 +1151,6 @@ TEST( primal_intersect, 3D_triangle_triangle_intersection_regression )
   // Revert logging level to Warning
   axom::slic::setLoggingMsgLevel( axom::slic::message::Warning);
 }
-
 
 TEST( primal_intersect, triangle_aabb_intersection_boundaryFace )
 {
