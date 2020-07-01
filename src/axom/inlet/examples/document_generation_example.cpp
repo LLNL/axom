@@ -29,11 +29,7 @@ int main(int argc, char** argv) {
   std::string testString = "foo = true; bar = false";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
-
-  //
-  // Define schema
-  //
-
+  
   std::shared_ptr<axom::inlet::Field> currField;
 
   currField = inlet->addBool("foo", "foo's description");
