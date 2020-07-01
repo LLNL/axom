@@ -68,7 +68,7 @@ Source Code Documentation
 
   *  `Axom <doxygen/html/index.html>`_
   *  `Core <doxygen/html/coretop.html>`_
-  *  `Inlet <doxygen/html/Inlettop.html>`_
+  *  `Inlet <doxygen/html/inlettop.html>`_
   *  `Lumberjack <doxygen/html/lumberjacktop.html>`_
   *  `Mint <doxygen/html/minttop.html>`_
   *  `Primal <doxygen/html/primaltop.html>`_
