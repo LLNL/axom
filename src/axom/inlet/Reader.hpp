@@ -7,8 +7,7 @@
  *******************************************************************************
  * \file Reader.hpp
  *
- * \brief This file contains the pure virtual base class definition of the
- * Reader.
+ * \brief This file contains the pure virtual base class definition of Reader.
  *******************************************************************************
  */
 

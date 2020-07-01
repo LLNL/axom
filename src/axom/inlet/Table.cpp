@@ -138,5 +138,56 @@ std::shared_ptr<Field> Table::addString(const std::string& name,
   return std::make_shared<Field>(sidreGroup);
 }
 
+std::shared_ptr<Table> Table::required(bool isRequired)
+{
+  SLIC_ASSERT_MSG(m_sidreGroup != nullptr, "Inlet's Table specific Sidre Datastore Group not set");
+
+  if (m_sidreGroup->hasView("required"))
+  {
+    std::string msg = fmt::format("Inlet Table has already defined required value: {0}",
+                                  m_sidreGroup->getName());
+    SLIC_WARNING(msg);
+    return shared_from_this();
+  }
+
+  if (isRequired)
+  {
+    m_sidreGroup->createViewScalar("required", (int8)1);
+  }
+  else
+  {
+    m_sidreGroup->createViewScalar("required", (int8)0);
+  }
+
+  return shared_from_this();
+}
+
+bool Table::required()
+{
+  SLIC_ASSERT_MSG(m_sidreGroup != nullptr, "Inlet's Table specific Sidre Datastore Group not set");
+
+  if (!m_sidreGroup->hasView("required"))
+  {
+    return false;
+  }
+  axom::sidre::View* valueView = m_sidreGroup->getView("required");
+  if (valueView == nullptr)
+  {
+    //TODO: is this possible after it says it has the view?
+    return false;
+  }
+  int8 intValue = valueView->getScalar();
+  if (intValue < 0 || intValue > 1)
+  {
+    std::string msg = fmt::format("Invalid integer value stored in boolean"
+                                  " value named {0}",
+                                  m_sidreGroup->getName());
+    SLIC_WARNING(msg);
+    return false;
+  }
+
+  return (bool)intValue;
+}
+
 } // end namespace inlet
 } // end namespace axom

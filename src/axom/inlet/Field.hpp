@@ -56,6 +56,8 @@ public:
    *
    * Provides access to the Sidre Group class that holds all the stored
    * information for this Field class.
+   *
+   * \return Pointer to the Sidre Group class for this Field
    *****************************************************************************
    */
   axom::sidre::Group* sidreGroup() { return m_sidreGroup; };
