@@ -31,9 +31,31 @@ namespace axom
 namespace inlet
 {
 
+/*!
+ *******************************************************************************
+ * \class Inlet
+ *
+ * \brief This class is the main access point for all Inlet operations from
+ *        from defining the schema of the users input deck to getting the values
+ *        out of the Sidre DataStore.
+ *
+ * \see Table Field
+ *******************************************************************************
+ */
 class Inlet : public SchemaCreator
 {
 public:
+  /*!
+   *****************************************************************************
+   * \brief Constructor for the Inlet class.
+   *
+   * Creates an Inlet class that can then be used with the given Reader and will
+   * store data under the given Sidre Group.
+   *
+   * \param [in] reader Shared pointer to the input deck Reader class.
+   * \param [in] sidreRootGroup Pointer to the already created Sidre Group.
+   *****************************************************************************
+   */
   Inlet(std::shared_ptr<Reader> reader,
         axom::sidre::Group* sidreRootGroup) :
     m_reader(reader),
@@ -42,26 +64,175 @@ public:
 
   virtual ~Inlet() = default;
 
+  /*!
+   *****************************************************************************
+   * \brief Returns the shared pointer to the Reader class.
+   *
+   * Provides access to the Reader class that is used to access the input deck.
+   *****************************************************************************
+   */
   std::shared_ptr<Reader> reader() { return m_reader; };
+
+  /*!
+   *****************************************************************************
+   * \brief Returns pointer to the root Sidre Group class for all of Inlet.
+   *
+   * Provides access to the Sidre Group class that holds all the stored
+   * information for all of Inlet.
+   *****************************************************************************
+   */
   axom::sidre::Group* sidreGroup() { return m_sidreRootGroup; };
 
+  //
   // Functions that define the input deck schema
+  //
+
+  /*!
+   *****************************************************************************
+   * \brief Add a Table to the input deck schema.
+   *
+   * Adds a Table to the input deck schema. Tables hold a varying amount Fields
+   * defined by the user.  By default, it is not required unless marked with
+   * Table::required(). This creates the Sidre Group class with the given name and
+   * stores the given description.
+   *
+   * \param [in] name Name of the Table expected in the input deck
+   * \param [in] description Description of the Table
+   *****************************************************************************
+   */
   std::shared_ptr<Table> addTable(const std::string& name,
                                   const std::string& description);
 
+  /*!
+   *****************************************************************************
+   * \brief Add a Boolean Field to the input deck schema.
+   *
+   * Adds a Boolean Field to the input deck schema. It may or may not be required
+   * to be present in the input deck. This creates the Sidre Group class with the
+   * given name and stores the given description. If present in the input deck the
+   * value is read and stored in the datastore. 
+   *
+   * \param [in] name Name of the Field expected in the input deck
+   * \param [in] description Description of the Field
+   *****************************************************************************
+   */
   std::shared_ptr<Field> addBool(const std::string& name,
                                  const std::string& description);
+
+  /*!
+   *****************************************************************************
+   * \brief Add a Double Field to the input deck schema.
+   *
+   * Adds a Double Field to the input deck schema. It may or may not be required
+   * to be present in the input deck. This creates the Sidre Group class with the
+   * given name and stores the given description. If present in the input deck the
+   * value is read and stored in the datastore. 
+   *
+   * \param [in] name Name of the Field expected in the input deck
+   * \param [in] description Description of the Field
+   *****************************************************************************
+   */
   std::shared_ptr<Field> addDouble(const std::string& name,
                                    const std::string& description);
+
+  /*!
+   *****************************************************************************
+   * \brief Add a Integer Field to the input deck schema.
+   *
+   * Adds a Integer Field to the input deck schema. It may or may not be required
+   * to be present in the input deck. This creates the Sidre Group class with the
+   * given name and stores the given description. If present in the input deck the
+   * value is read and stored in the datastore. 
+   *
+   * \param [in] name Name of the Field expected in the input deck
+   * \param [in] description Description of the Field
+   *****************************************************************************
+   */
   std::shared_ptr<Field> addInt(const std::string& name,
                                 const std::string& description);
+
+  /*!
+   *****************************************************************************
+   * \brief Add a String Field to the input deck schema.
+   *
+   * Adds a String Field to the input deck schema. It may or may not be required
+   * to be present in the input deck. This creates the Sidre Group class with the
+   * given name and stores the given description. If present in the input deck the
+   * value is read and stored in the datastore. 
+   *
+   * \param [in] name Name of the Table expected in the input deck
+   * \param [in] description Description of the Table
+   *****************************************************************************
+   */
   std::shared_ptr<Field> addString(const std::string& name,
                                    const std::string& description);
 
+  //
   // Functions that get the values out of the datastore
+  //
+
+  /*!
+   *****************************************************************************
+   * \brief Gets a Boolean value out of the Datastore.
+   *
+   * Retrieves the Field value out of the DataStore.  This Field may not have
+   * been actually present in the input deck and will be indicted by the return
+   * value. 
+   *
+   * \param [in] name Name of the Field value to be gotten
+   * \param [out] value Value to be filled
+   *
+   * \return True if the value was found in the Datastore
+   *****************************************************************************
+   */
   bool get(const std::string& name, bool& value);
+
+  /*!
+   *****************************************************************************
+   * \brief Gets a Double value out of the Datastore.
+   *
+   * Retrieves the Field value out of the DataStore.  This Field may not have
+   * been actually present in the input deck and will be indicted by the return
+   * value. 
+   *
+   * \param [in] name Name of the Field value to be gotten
+   * \param [out] value Value to be filled
+   *
+   * \return True if the value was found in the Datastore
+   *****************************************************************************
+   */
   bool get(const std::string& name, double& value);
+
+  /*!
+   *****************************************************************************
+   * \brief Gets a Integer value out of the Datastore.
+   *
+   * Retrieves the Field value out of the DataStore.  This Field may not have
+   * been actually present in the input deck and will be indicted by the return
+   * value. 
+   *
+   * \param [in] name Name of the Field value to be gotten
+   * \param [out] value Value to be filled
+   *
+   * \return True if the value was found in the Datastore
+   *****************************************************************************
+   */
   bool get(const std::string& name, int& value);
+
+  /*!
+   *****************************************************************************
+   * \brief Gets a String value out of the Datastore.
+   *
+   * Retrieves the Field value out of the DataStore.  This Field may not have
+   * been actually present in the input deck and will be indicted by the return
+   * value. 
+   *
+   * \param [in] name Name of the Field value to be gotten
+   * \param [out] value Value to be filled
+   *
+   * \return True if the value was found in the Datastore
+   *****************************************************************************
+   */
   bool get(const std::string& name, std::string& value);
 
   // TODO add update value functions
