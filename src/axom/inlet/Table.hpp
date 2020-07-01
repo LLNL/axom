@@ -83,7 +83,7 @@ public:
         }
       }
 
-      if(description == "")
+      if(description != "")
       {
         if (m_sidreGroup->hasView("description"))
         {
