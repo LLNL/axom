@@ -63,7 +63,8 @@ void permuteCornersTest(const primal::Triangle< double, DIM > & a,
                         const primal::Triangle< double, DIM > & b,
                         const std::string & whattest,
                         const bool includeBdry,
-                        const bool testtrue)
+                        const bool testtrue,
+                        double EPS = 1E-8)
 {
   SCOPED_TRACE(whattest + (includeBdry ?
                            " (including boundary)" :
@@ -76,7 +77,9 @@ void permuteCornersTest(const primal::Triangle< double, DIM > & a,
   {
     for (int j = 0 ; j < 3 ; ++j)
     {
-      if(primal::intersect(roll(a, i), roll(b, j),includeBdry) != testtrue)
+      auto t1 = roll(a, i);
+      auto t2 = roll(b, j);
+      if(primal::intersect(t1, t2,includeBdry, EPS) != testtrue)
       {
         ++numFailures;
       }
@@ -90,7 +93,9 @@ void permuteCornersTest(const primal::Triangle< double, DIM > & a,
   {
     for (int j = 0 ; j < 3 ; ++j)
     {
-      if(primal::intersect(roll(ap, i), roll(bp, j),includeBdry) != testtrue)
+      auto t1 = roll(ap, i);
+      auto t2 = roll(bp, j);
+      if(primal::intersect(t1, t2, includeBdry, EPS) != testtrue)
       {
         ++numFailures;
       }
@@ -103,7 +108,9 @@ void permuteCornersTest(const primal::Triangle< double, DIM > & a,
   {
     for (int j = 0 ; j < 3 ; ++j)
     {
-      if(primal::intersect(roll(b, i), roll(a, j),includeBdry) != testtrue)
+      auto t1 = roll(b, i);
+      auto t2 = roll(a, j);
+      if(primal::intersect(t1, t2, includeBdry) != testtrue)
       {
         ++numFailures;
       }
@@ -114,7 +121,9 @@ void permuteCornersTest(const primal::Triangle< double, DIM > & a,
   {
     for (int j = 0 ; j < 3 ; ++j)
     {
-      if(primal::intersect(roll(bp, i), roll(ap, j),includeBdry) != testtrue)
+      auto t1 = roll(bp, i);
+      auto t2 = roll(ap, j);
+      if(primal::intersect(t1, t2, includeBdry) != testtrue)
       {
         ++numFailures;
       }
