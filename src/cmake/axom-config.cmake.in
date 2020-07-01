@@ -33,6 +33,7 @@ if(NOT AXOM_FOUND)
   set(AXOM_USE_OPENMP         "@AXOM_USE_OPENMP@")
 
   # Axom components
+  set(AXOM_ENABLE_INLET       "@AXOM_ENABLE_INLET@")
   set(AXOM_ENABLE_LUMBERJACK  "@AXOM_ENABLE_LUMBERJACK@")
   set(AXOM_ENABLE_MINT        "@AXOM_ENABLE_MINT@")
   set(AXOM_ENABLE_PRIMAL      "@AXOM_ENABLE_PRIMAL@")
@@ -50,6 +51,7 @@ if(NOT AXOM_FOUND)
   # Axom external TPLs
   set(AXOM_USE_CONDUIT        "@AXOM_USE_CONDUIT@")
   set(AXOM_USE_HDF5           "@AXOM_USE_HDF5@")
+  set(AXOM_USE_LUA            "@AXOM_USE_LUA@")
   set(AXOM_USE_MFEM           "@AXOM_USE_MFEM@")
   set(AXOM_USE_RAJA           "@AXOM_USE_RAJA@")
   set(AXOM_USE_SCR            "@AXOM_USE_SCR@")
@@ -72,6 +74,12 @@ if(NOT AXOM_FOUND)
   # hdf5
   if(AXOM_USE_HDF5)
     set(AXOM_HDF5_DIR     "@HDF5_DIR@")
+    # Note: Targets not currently imported
+  endif()
+
+  # lua
+  if(AXOM_USE_LUA)
+    set(AXOM_LUA_DIR     "@LUA_DIR@")
     # Note: Targets not currently imported
   endif()
 
