@@ -48,6 +48,9 @@ void DocWriter::writeDocuments(axom::sidre::Group* sidreGroup) {
 
   if (i != axom::sidre::InvalidIndex) {
     writeSubtitle(sidreGroup->getName());
+    if (sidreGroup->getName() != "") {
+      outFile << "\nDescription: " << sidreGroup->getView("description")->getString() << "\n\n";
+    }
   }
 
   while (i != axom::sidre::InvalidIndex) {
@@ -59,22 +62,22 @@ void DocWriter::writeDocuments(axom::sidre::Group* sidreGroup) {
 void DocWriter::writeTitle(const std::string& title) {
   SLIC_ASSERT_MSG(outFile.is_open(), "Output file should be open");
   if (title != "") {
-    std::string stars;
+    std::string equals;
     for (int i = 0; i < title.length(); i++) {
-      stars += "*";
+      equals += "=";
     }
-    outFile << stars << "\n" << title << "\n" << stars << "\n";
+    outFile << equals << "\n" << title << "\n" << equals << "\n";
   }
 }
 
 void DocWriter::writeSubtitle(const std::string& sub) {
   SLIC_ASSERT_MSG(outFile.is_open(), "Output file should be open");  
-  std::string pounds;
+  std::string dashes;
   if (sub != "") {
     for (int i = 0; i < sub.length(); i++) {
-      pounds += "#";
+      dashes += "-";
     }
-    outFile << pounds << "\n" << sub << "\n" << pounds << "\n";
+    outFile << dashes << "\n" << sub << "\n" << dashes << "\n";
   }
 }
 
