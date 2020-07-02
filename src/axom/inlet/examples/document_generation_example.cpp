@@ -22,10 +22,10 @@ std::shared_ptr<Inlet> createBasicInlet(DataStore* ds,
 
 int main(int argc, char** argv) {
   CLI::App app {"Description here"};
-  CLI11_PARSE(app, argc, argv);
   bool docs_enabled{false};
   app.add_flag("-f", docs_enabled, "Enables documentation generation");
-  
+  CLI11_PARSE(app, argc, argv);
+
   std::string testString = "foo = true; bar = false";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
@@ -38,8 +38,9 @@ int main(int argc, char** argv) {
   currField = inlet->addBool("bar", "bar's description");
   assert(currField);
   currField->required(false);
-
-  DocWriter doc("example_docs.rst", inlet->sidreGroup()); 
+  if (docs_enabled) {
+    DocWriter doc("example_docs.rst", inlet->sidreGroup());
+  } 
 
   return 0;
 }
