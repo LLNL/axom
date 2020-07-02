@@ -33,11 +33,14 @@ int main(int argc, char** argv) {
   std::shared_ptr<axom::inlet::Field> currField;
 
   currField = inlet->addBool("foo", "foo's description");
-  assert(currField);
   currField->required(true);
   currField = inlet->addBool("bar", "bar's description");
-  assert(currField);
   currField->required(false);
+
+  auto t = inlet->addTable("tableau", "bleu");
+  t->addString("str", "str's description");
+  t->addInt("integer", "a whole number");
+
   if (docs_enabled) {
     DocWriter doc("example_docs.rst", inlet->sidreGroup());
   } 

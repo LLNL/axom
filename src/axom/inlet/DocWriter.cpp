@@ -9,22 +9,27 @@ namespace inlet
 {
  
 DocWriter::DocWriter(const std::string& fileName, axom::sidre::Group* root) {
-  // assert(root);     // change to SLIC assert - slic is a logging lib
   SLIC_ASSERT_MSG(root != nullptr, "Sidre Group is null pointer");
   outFile.open(fileName);
   sidreGroupRoot = root;
+
+  if (root->getName() == "") {
+    writeTitle("Untitled");
+  }  else {
+    writeTitle(root->getName());
+  }
+
   rstTable = {{"Field Name", "Description", "Default Value", "Range", "Required"}};
   writeDocuments(sidreGroupRoot);
-  // TO DO: figure out how to get title -> potentially looking at datastore
-  writeTable("title tbd");
+  writeTable("Fields");
+  outFile.close();
 }
 
 void DocWriter::writeDocuments(axom::sidre::Group* sidreGroup) {
   SLIC_ASSERT_MSG(sidreGroup, "Root passed into writeDocuments shouldn't be nullptr");
   axom::sidre::IndexType i = sidreGroup->getFirstValidGroupIndex();
-  if (sidreGroup != sidreGroupRoot && i == axom::sidre::InvalidIndex) {    // is root won't work because youre not necessarily wrking from the base
-    // means that it is a field
-    // so attributes are stored in views
+  if (sidreGroup != sidreGroupRoot && i == axom::sidre::InvalidIndex) { 
+    // means that it is a field so attributes are stored in views
     std::vector<std::string> fieldAttributes(5, "Not specified");
     fieldAttributes.resize(5);
     fieldAttributes[0] = sidreGroup->getName();
@@ -39,50 +44,44 @@ void DocWriter::writeDocuments(axom::sidre::Group* sidreGroup) {
     } 
   
     rstTable.push_back(fieldAttributes);
-    // LEFT OFF HERE
   } 
-  // axom::sidre::indexIsValid(i)
-  while (i != axom::sidre::InvalidIndex) {
-    // if (sidreGroup->getGroup(i)) {
-    writeDocuments(sidreGroup->getGroup(i));
-    // } else {
-    //   std::cerr << "GROUP NOT FOUND ERROR?" << std::endl;
-    //   if (!axom::sidre::indexIsValid(i)) {
-    //     std::cerr<< "INDEX NOT VALID" << std::endl;
-    //   } else {
-    //     std::cerr << "index is valid" << std::endl;
-    //   }
-    // }
 
+  if (i != axom::sidre::InvalidIndex) {
+    writeSubtitle(sidreGroup->getName());
+  }
+
+  while (i != axom::sidre::InvalidIndex) {
+    writeDocuments(sidreGroup->getGroup(i));
     i = sidreGroup->getNextValidGroupIndex(i);
   }
 }
 
 void DocWriter::writeTitle(const std::string& title) {
-  assert(outFile.is_open());
-  std::string stars;
-  for (int i = 0; i < title.length(); i++) {
-    stars += "*";
+  SLIC_ASSERT_MSG(outFile.is_open(), "Output file should be open");
+  if (title != "") {
+    std::string stars;
+    for (int i = 0; i < title.length(); i++) {
+      stars += "*";
+    }
+    outFile << stars << "\n" << title << "\n" << stars << "\n";
   }
-  outFile << stars << "\n" << title << "\n" << stars << "\n";
 }
 
 void DocWriter::writeSubtitle(const std::string& sub) {
-  assert(outFile.is_open());
+  SLIC_ASSERT_MSG(outFile.is_open(), "Output file should be open");  
   std::string pounds;
-  for (int i = 0; i < sub.length(); i++) {
-    pounds += "#";
+  if (sub != "") {
+    for (int i = 0; i < sub.length(); i++) {
+      pounds += "#";
+    }
+    outFile << pounds << "\n" << sub << "\n" << pounds << "\n";
   }
-  outFile << pounds << "\n" << sub << "\n" << pounds << "\n";
 }
 
 void DocWriter::writeTable(const std::string& title) {
-  assert(outFile.is_open());
+  SLIC_ASSERT_MSG(outFile.is_open(), "Output file should be open");  
   std::string result = ".. list-table:: " + title;
   result += "\n   :widths: 25 25 25 25 25\n   :header-rows: 1\n   :stub-columns: 1\n\n";
-  // RSTtable = {{"Field Name", "Description", "Default Value", "Range", "Required"},
-  // {"x", "number", "anything", "10", "true"}};
-  // expect num cols = 5
   for (int i = 0; i < rstTable.size(); i++) {
     result += "   * - ";
     for (int j = 0; j < rstTable[i].size(); j++) {
@@ -94,20 +93,6 @@ void DocWriter::writeTable(const std::string& title) {
   }
   outFile << result;
 }
-}
-}
 
-// int main() {
-//     std::ofstream file;
-//     file.open("sample.rst");
-//     if (!file.is_open()) {
-//         std::cerr << "ERROR!!" << std::endl;
-//     }
-//     file << writeTitle("This is a title for the sample document");
-//     file << writeSubtitle("This is a subtitle");
-//     std::vector<std::vector<std::string>> v;
-//     std::string str = writeTable("sample table is title", v);
-//     file << str;
-//     file.close();
-//     return 0;
-// }    
+}
+}
