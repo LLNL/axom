@@ -1,4 +1,4 @@
-Spin: Spatial indexes, spatial acceleration data structures {#spintop}
+Spin {#spintop}
 ========
 
 [Spin](@ref axom::spin) provides data structures to index space and their
