@@ -68,14 +68,7 @@ std::shared_ptr<Field> Table::addBool(const std::string& name,
   bool value;
   if(m_reader->getBool(fullName, value))
   {
-    if (value)
-    {
-      sidreGroup->createViewScalar("value", (int8)1);
-    }
-    else
-    {
-      sidreGroup->createViewScalar("value", (int8)0);
-    }
+    sidreGroup->createViewScalar("value", value? int8(1) : int8(0) );
   }
 
   return std::make_shared<Field>(sidreGroup);
