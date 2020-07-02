@@ -1,4 +1,4 @@
-Lumberjack: Log filtering and aggregation {#lumberjacktop}
+Lumberjack {#lumberjacktop}
 ========
 
-[Lumberjack](@ref axom::lumberjack) provides functionality to filter log events based on priority, rate, and volume.  It coordinates with but does not require the [SLIC](@ref slictop) component.
+[Lumberjack](@ref axom::lumberjack) provides functionality to filter log events based on priority, rate, and volume.  It can optionally be used with the [SLIC](@ref slictop) component via the LumberjackStream or by itself directly.
