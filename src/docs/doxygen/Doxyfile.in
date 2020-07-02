@@ -779,7 +779,7 @@ INPUT                  = @PROJECT_SOURCE_DIR@/axom/mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/inlet \
                          @PROJECT_SOURCE_DIR@/axom/inlet/README.md \
                          @PROJECT_SOURCE_DIR@/axom/lumberjack \
-                         @PROJECT_SOURCE_DIR@/axom/lumberjack/README.md \
+                         @PROJECT_SOURCE_DIR@/axom/lumberjack/docs/doxygen/mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/mint/README.md \
                          @PROJECT_SOURCE_DIR@/axom/mint/core \
                          @PROJECT_SOURCE_DIR@/axom/mint/fem \
