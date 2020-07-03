@@ -90,9 +90,9 @@ Component Documentation
       * `Source documentation <doxygen/html/spintop.html>`_
 
 
--------------------------------
+============================
 Component Level Dependencies
--------------------------------
+============================
 
 Dependencies between components are as follows:
 
