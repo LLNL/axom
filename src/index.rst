@@ -48,19 +48,23 @@ Axom Software Documentation
 The following lists contain links to user guides and source code documentation
 for Axom software components:
 
-.. toctree::
-   :maxdepth: 1
-   :caption: Component User Guides
+   * Inlet: Input decks
 
-   Slic (Simple Logging Interface Code) <axom/slic/docs/sphinx/index>
-   Lumberjack (Scalable parallel message logging and filtering) <axom/lumberjack/docs/sphinx/index>
-   Sidre (Simulation data repository) <axom/sidre/docs/sphinx/index>
-   Slam (Set-theoretic lightweight API for meshes) <axom/slam/docs/sphinx/index>
-   Spin (Spatial indexes) <axom/spin/docs/sphinx/index>
-   Quest (Querying on surface tool) <axom/quest/docs/sphinx/index>
-   Mint (Mesh data model) <axom/mint/docs/sphinx/index>
-   Primal (Computational geometry primitives) <axom/primal/docs/sphinx/index>
-   Inlet (Input decks) <axom/inlet/docs/sphinx/index>
+      * :doc:`User Guide <axom/inlet/docs/sphinx/index>`
+      * `Source documentation <doxygen/html/inlettop.html>`_
+
+   * Lumberjack: Scalable parallel message logging and filtering <axom/lumberjack/docs/sphinx/index>
+
+      * :doc:`User Guide <axom/lumberjack/docs/sphinx/index>`
+      * `Source documentation <doxygen/html/lumberjacktop.html>`_
+
+   * Mint: Mesh data model <axom/mint/docs/sphinx/index>
+   * Primal: Computational geometry primitives <axom/primal/docs/sphinx/index>
+   * Quest: Querying on surface tool <axom/quest/docs/sphinx/index>
+   * Sidre: Simulation data repository <axom/sidre/docs/sphinx/index>
+   * Slam: Set-theoretic lightweight API for meshes <axom/slam/docs/sphinx/index>
+   * Slic: Simple Logging Interface Code <axom/slic/docs/sphinx/index>
+   * Spin: Spatial indexes <axom/spin/docs/sphinx/index>
 
 --------------------------
 Source Code Documentation
@@ -68,7 +72,6 @@ Source Code Documentation
 
   *  `Axom <doxygen/html/index.html>`_
   *  `Core <doxygen/html/coretop.html>`_
-  *  `Inlet <doxygen/html/inlettop.html>`_
   *  `Lumberjack <doxygen/html/lumberjacktop.html>`_
   *  `Mint <doxygen/html/minttop.html>`_
   *  `Primal <doxygen/html/primaltop.html>`_
