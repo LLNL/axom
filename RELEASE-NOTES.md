@@ -10,6 +10,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
+- Added new component, Inlet, to assist in retrieving and storing data from
+  an input deck.
 - Added the ability to specify an [Umpire] allocator ID to use with the
   BVH. This allows the application to use a device allocator for the BVH and 
   avoid use of UM on the GPU, which can hinder perfomrmance, or use a pool
