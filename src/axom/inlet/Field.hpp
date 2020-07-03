@@ -70,6 +70,8 @@ public:
    * The default behavior is to not be required.
    *
    * \param [in] isRequired Boolean value of whether Field is required
+   *
+   * \return Shared pointer to this instance of this class
    *****************************************************************************
    */
   std::shared_ptr<Field> required(bool isRequired);
@@ -80,6 +82,8 @@ public:
    *
    * Return that this Field is required, or not, to be in the input deck.
    * The default behavior is to not be required.
+   *
+   * \return Boolean value of whether this Field is required
    *****************************************************************************
    */
   bool required();
