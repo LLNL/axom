@@ -46,11 +46,17 @@ Components
 
    * Inlet: Input decks
 
+    .. hlist::
+      :columns: 2
+
       * :doc:`User Guide <axom/inlet/docs/sphinx/index>`
       * `Source documentation <doxygen/html/inlettop.html>`_
 
    * Lumberjack: Scalable parallel message logging and filtering
 
+     .. hlist::
+      :columns: 2
+ 
       * :doc:`User Guide <axom/lumberjack/docs/sphinx/index>`
       * `Source documentation <doxygen/html/lumberjacktop.html>`_
 
@@ -211,10 +217,7 @@ LLNL-CODE-741217
 .. toctree::
    :hidden:
    :maxdepth: 1
-
-.. toctree::
-   :hidden:
-   :maxdepth: 1
+   :caption: Developer Resources
 
    docs/sphinx/dev_guide/index
    docs/sphinx/coding_guide/index
