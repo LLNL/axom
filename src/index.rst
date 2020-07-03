@@ -40,9 +40,9 @@ Documenation
   * :doc:`Quickstart Guide <docs/sphinx/quickstart_guide/index>`
   *  `Source documentation <doxygen/html/index.html>`_
 
------------------------
-Component Documentation
------------------------
+----------
+Components
+----------
 
    * Inlet: Input decks
 
@@ -124,8 +124,8 @@ projects independent of the Axom. These include:
 Developer Resources
 ===================
 
-  * :doc: `Developer Guide <docs/sphinx/dev_guide/index>`
-  * :doc: `Coding Guide <docs/sphinx/coding_guide/index>`
+  * :doc:`Developer Guide <docs/sphinx/dev_guide/index>`
+  * :doc:`Coding Guide <docs/sphinx/coding_guide/index>`
 
 ================================
 Communicating with the Axom Team
@@ -141,9 +141,9 @@ The project maintains two email lists:
   * 'axom-dev@llnl.gov' is for communication among team members. 
 
 
--------------- 
+---------
 Chat Room
--------------- 
+---------
 
 We also have a chat room on LLNL's Cisco Jabber instance called 
 'Axom Dev'. It is open to anyone on the llnl network. 
@@ -188,6 +188,34 @@ LLNL-CODE-741217
 
 
 .. toctree::
+   :hidden:
    :maxdepth: 1
 
+   docs/sphinx/quickstart_guide/index
+
+.. toctree::
+   :hidden:
+   :maxdepth: 1
+   :caption: Component User Guides
+
+   Slic (Simple Logging Interface Code) <axom/slic/docs/sphinx/index>
+   Lumberjack (Scalable parallel message logging and filtering) <axom/lumberjack/docs/sphinx/index>
+   Sidre (Simulation data repository) <axom/sidre/docs/sphinx/index>
+   Slam (Set-theoretic lightweight API for meshes) <axom/slam/docs/sphinx/index>
+   Spin (Spatial indexes) <axom/spin/docs/sphinx/index>
+   Quest (Querying on surface tool) <axom/quest/docs/sphinx/index>
+   Mint (Mesh data model) <axom/mint/docs/sphinx/index>
+   Primal (Computational geometry primitives) <axom/primal/docs/sphinx/index>
+   Inlet (Input decks) <axom/inlet/docs/sphinx/index>
+
+.. toctree::
+   :hidden:
+   :maxdepth: 1
+
+.. toctree::
+   :hidden:
+   :maxdepth: 1
+
+   docs/sphinx/dev_guide/index
+   docs/sphinx/coding_guide/index
    docs/licenses
