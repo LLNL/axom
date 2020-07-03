@@ -102,6 +102,8 @@ public:
    *
    * Provides access to the Sidre Group class that holds all the stored
    * information for this Table class.
+   *
+   * \return Pointer to the Sidre Group for this Table
    *****************************************************************************
    */
   axom::sidre::Group* sidreGroup() { return m_sidreGroup; };
@@ -121,6 +123,8 @@ public:
    *
    * \param [in] name Name of the Table expected in the input deck
    * \param [in] description Description of the Table
+   *
+   * \return Shared pointer to the created Table
    *****************************************************************************
    */
   std::shared_ptr<Table> addTable(const std::string& name,
@@ -137,6 +141,8 @@ public:
    *
    * \param [in] name Name of the Field expected in the input deck
    * \param [in] description Description of the Field
+   *
+   * \return Shared pointer to the created Field
    *****************************************************************************
    */
   std::shared_ptr<Field> addBool(const std::string& name,
@@ -153,6 +159,8 @@ public:
    *
    * \param [in] name Name of the Field expected in the input deck
    * \param [in] description Description of the Field
+   *
+   * \return Shared pointer to the created Field
    *****************************************************************************
    */
   std::shared_ptr<Field> addDouble(const std::string& name,
@@ -169,6 +177,8 @@ public:
    *
    * \param [in] name Name of the Field expected in the input deck
    * \param [in] description Description of the Field
+   *
+   * \return Shared pointer to the created Field
    *****************************************************************************
    */
   std::shared_ptr<Field> addInt(const std::string& name,
@@ -185,6 +195,8 @@ public:
    *
    * \param [in] name Name of the Table expected in the input deck
    * \param [in] description Description of the Table
+   *
+   * \return Shared pointer to the created Field
    *****************************************************************************
    */
   std::shared_ptr<Field> addString(const std::string& name,
@@ -198,6 +210,8 @@ public:
    * The default behavior is to not be required.
    *
    * \param [in] isRequired Boolean value of whether Table is required
+   *
+   * \return Shared pointer to this instance of Table
    *****************************************************************************
    */
   std::shared_ptr<Table> required(bool isRequired);
@@ -208,10 +222,20 @@ public:
    *
    * Return that this Table is required, or not, to be in the input deck.
    * The default behavior is to not be required.
+   *
+   * \return Boolean value of whether this Table is required
    *****************************************************************************
    */
   bool required();
 private:
+  /*!
+   *****************************************************************************
+   * \brief Creates the basic Sidre Group for this Table and stores the given
+   *        information
+   *
+   * \return Pointer to the created Sidre Group for this Table
+   *****************************************************************************
+   */
   axom::sidre::Group* baseFieldAdd(const std::string& name,
                                    const std::string& description);
 

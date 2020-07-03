@@ -55,6 +55,8 @@ public:
    *
    * \param [in] name Name of the Table expected in the input deck
    * \param [in] description Description of the Table
+   *
+   * \return Shared pointer to the created Table
    *****************************************************************************
    */
   std::shared_ptr<Table> addTable(const std::string& name,
@@ -71,6 +73,8 @@ public:
    *
    * \param [in] name Name of the Field expected in the input deck
    * \param [in] description Description of the Field
+   *
+   * \return Shared pointer to the created Field
    *****************************************************************************
    */
   std::shared_ptr<Field> addBool(const std::string& name,
@@ -87,6 +91,8 @@ public:
    *
    * \param [in] name Name of the Field expected in the input deck
    * \param [in] description Description of the Field
+   *
+   * \return Shared pointer to the created Field
    *****************************************************************************
    */
   std::shared_ptr<Field> addDouble(const std::string& name,
@@ -103,6 +109,8 @@ public:
    *
    * \param [in] name Name of the Field expected in the input deck
    * \param [in] description Description of the Field
+   *
+   * \return Shared pointer to the created Field
    *****************************************************************************
    */
   std::shared_ptr<Field> addInt(const std::string& name,
@@ -119,6 +127,8 @@ public:
    *
    * \param [in] name Name of the Table expected in the input deck
    * \param [in] description Description of the Table
+   *
+   * \return Shared pointer to the created Field
    *****************************************************************************
    */
   std::shared_ptr<Field> addString(const std::string& name,

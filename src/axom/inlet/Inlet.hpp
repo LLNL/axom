@@ -69,6 +69,8 @@ public:
    * \brief Returns the shared pointer to the Reader class.
    *
    * Provides access to the Reader class that is used to access the input deck.
+   *
+   * \return Shared pointer to this instances' Reader class
    *****************************************************************************
    */
   std::shared_ptr<Reader> reader() { return m_reader; };
@@ -79,6 +81,8 @@ public:
    *
    * Provides access to the Sidre Group class that holds all the stored
    * information for all of Inlet.
+   *
+   * \return Pointer to the root Sidre Group for Inlet
    *****************************************************************************
    */
   axom::sidre::Group* sidreGroup() { return m_sidreRootGroup; };
@@ -98,6 +102,8 @@ public:
    *
    * \param [in] name Name of the Table expected in the input deck
    * \param [in] description Description of the Table
+   *
+   * \return Shared pointer to the created Table
    *****************************************************************************
    */
   std::shared_ptr<Table> addTable(const std::string& name,
@@ -114,6 +120,8 @@ public:
    *
    * \param [in] name Name of the Field expected in the input deck
    * \param [in] description Description of the Field
+   *
+   * \return Shared pointer to the created Field
    *****************************************************************************
    */
   std::shared_ptr<Field> addBool(const std::string& name,
@@ -130,6 +138,8 @@ public:
    *
    * \param [in] name Name of the Field expected in the input deck
    * \param [in] description Description of the Field
+   *
+   * \return Shared pointer to the created Field
    *****************************************************************************
    */
   std::shared_ptr<Field> addDouble(const std::string& name,
@@ -146,6 +156,8 @@ public:
    *
    * \param [in] name Name of the Field expected in the input deck
    * \param [in] description Description of the Field
+   *
+   * \return Shared pointer to the created Field
    *****************************************************************************
    */
   std::shared_ptr<Field> addInt(const std::string& name,
@@ -162,6 +174,8 @@ public:
    *
    * \param [in] name Name of the Table expected in the input deck
    * \param [in] description Description of the Table
+   *
+   * \return Shared pointer to the created Field
    *****************************************************************************
    */
   std::shared_ptr<Field> addString(const std::string& name,
