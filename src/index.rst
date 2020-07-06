@@ -56,7 +56,7 @@ Components
 
      .. hlist::
       :columns: 2
- 
+
       * :doc:`User Guide <axom/lumberjack/docs/sphinx/index>`
       * `Source documentation <doxygen/html/lumberjacktop.html>`_
 
