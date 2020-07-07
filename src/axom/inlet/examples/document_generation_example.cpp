@@ -26,6 +26,11 @@ void createInletEx1(std::shared_ptr<Inlet> inlet)
   currField->required(true);
   currField = t->addInt("integer", "a whole number");
   currField->required(false);
+
+  std::string strVal;
+  bool found = inlet->get("NewTable/str", strVal);
+  SLIC_ASSERT_MSG(found == true, "NOT FOUND");
+  SLIC_ASSERT_MSG(strVal == "hello", "STR DIDNT MATCH");
 }
 
 void createInletEx2(std::shared_ptr<Inlet> inlet)
