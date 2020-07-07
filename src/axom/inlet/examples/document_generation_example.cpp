@@ -1,5 +1,6 @@
 // usage : ./document_generation_example_example --enableDocs --deck lua_file
-
+// example 1: field1 = true; field2 = 5632; NewTable = { str = 'hello'; integer = 32 }
+// example 2: foo = false; bar = true; Table1 = { float1 = 3.14 } Table2 = { }; Table3 { }
 #include "axom/inlet/DocWriter.hpp"
 #include "axom/inlet/Inlet.hpp"
 #include "axom/inlet/LuaReader.hpp"
@@ -22,9 +23,7 @@ void createInletEx1(std::shared_ptr<Inlet> inlet)
   auto t = inlet->addTable("NewTable", "It's blue");
   t->required(false);
   currField = t->addString("str", "str's description");
-  // currField = inlet->addString("NewTable/str", "str's description");
   currField->required(true);
-  // currField = inlet->addInt("NewTable/integer", "a whole number");
   currField = t->addInt("integer", "a whole number");
   currField->required(false);
 }
@@ -41,10 +40,10 @@ void createInletEx2(std::shared_ptr<Inlet> inlet)
   t->required(false);
   currField = t->addDouble("float1", "floating point number within table 1");
   currField->required(true);
-  t = inlet->addTable("Table2", "The second table");
-  t->required(true);
-  t = inlet->addTable("Table3", "The third table");
-  t->required(false);
+  // t = inlet->addTable("Table2", "The second table");
+  // t->required(true);
+  // t = inlet->addTable("Table3", "The third table");
+  // t->required(false);
 }
 
 void createInletEx3(std::shared_ptr<Inlet> inlet)
