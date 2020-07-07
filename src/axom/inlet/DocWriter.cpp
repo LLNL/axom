@@ -19,9 +19,6 @@ DocWriter::DocWriter(const std::string& fileName, axom::sidre::Group* root, bool
   }  else {
     writeTitle(root->getName());
   }
-  if (verbose) {
-    root->print();
-  }
   rstTable = {{"Field Name", "Description", "Default Value", "Range", "Required"}};
   writeDocuments(sidreGroupRoot);
   writeTable("Fields");
@@ -37,15 +34,15 @@ void DocWriter::writeDocuments(axom::sidre::Group* sidreGroup) {
     fieldAttributes.resize(5);
     fieldAttributes[0] = sidreGroup->getName();
     if (verbose) {
-      std::cout << "For Field named " << fieldAttributes[0] << std::endl;
+      std::cout << "For Field named " << fieldAttributes[0] << ": ";
     }
     if (sidreGroup->hasView("description")) {
       fieldAttributes[1] = std::string(sidreGroup->getView(sidreGroup->getViewIndex("description"))->getString());
       if (verbose) {
-        std::cout << "view description found; is " << fieldAttributes[1] << std::endl;
+        std::cout << "View description found: " << fieldAttributes[1] << ".";
       }
     } else if (verbose) {
-      std::cout << "view description not found" << std::endl;
+      std::cout << "View description not found.";
     }
     // fieldAttributes[2] = std::to_string(sidreGroup->getView(sidreGroup->getViewIndex("default values"))->getScalar());
     // fieldAttributes[3] = std::to_string(sidreGroup->getView(sidreGroup->getViewIndex("range"))->getScalar());
@@ -53,10 +50,10 @@ void DocWriter::writeDocuments(axom::sidre::Group* sidreGroup) {
       int8 required = sidreGroup->getView(sidreGroup->getViewIndex("required"))->getData();
       fieldAttributes[4] = required ? "True" : "False";
       if (verbose) {
-        std::cout << "view required found; is " << fieldAttributes[4] << std::endl;
+        std::cout << " View required found: " << fieldAttributes[4] << ".\n";
       }
     } else if (verbose) {
-      std::cout << "view required not found" << std::endl;
+      std::cout << " View required not found" << std::endl;
     }
   
     rstTable.push_back(fieldAttributes);
