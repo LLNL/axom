@@ -54,7 +54,7 @@ Documenation
   *  `Source documentation <doxygen/html/index.html>`_
 
 .. list-table::
-   :align: center
+   :align: left
 
    * - Inlet
      - :doc:`User Guide <axom/inlet/docs/sphinx/index>`
