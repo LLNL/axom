@@ -417,7 +417,6 @@ TEST(inlet_Inlet_basic, getNestedValuesAddedUsingTable)
   table->required(true);
 
   currField = table->addString("bar", "bar's description");
-  // currField = inlet->addString("foo/bar", "bar's description");
   EXPECT_TRUE(currField);
   currField->required(true);
 
