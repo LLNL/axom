@@ -32,6 +32,19 @@ The main drivers of the Axom project are to:
   *  Provide capabilities for LLNL research codes, proxy apps, etc. that simplify technology
      transfer from research efforts into production applications
 
+==========
+Components
+==========
+
+   * Inlet: Input deck parsing and information storage/retrieval
+   * Lumberjack: Scalable parallel message logging and filtering
+   * Mint: Mesh data model
+   * Primal: Computational geometry primitives
+   * Quest: Querying on surface tool
+   * Sidre: Simulation data repository
+   * Slam: Set-theoretic lightweight API for meshes
+   * Slic: Simple Logging Interface Code
+   * Spin: Spatial indexes
 
 ============
 Documenation
@@ -40,60 +53,36 @@ Documenation
   * :doc:`Quickstart Guide <docs/sphinx/quickstart_guide/index>`
   *  `Source documentation <doxygen/html/index.html>`_
 
-----------
-Components
-----------
+.. list-table:: Component Documenatation
+   :align: center
 
-   * Inlet: Input decks
-
-    .. hlist::
-      :columns: 2
-
-      * :doc:`User Guide <axom/inlet/docs/sphinx/index>`
-      * `Source documentation <doxygen/html/inlettop.html>`_
-
-   * Lumberjack: Scalable parallel message logging and filtering
-
-     .. hlist::
-      :columns: 2
-
-      * :doc:`User Guide <axom/lumberjack/docs/sphinx/index>`
-      * `Source documentation <doxygen/html/lumberjacktop.html>`_
-
-   * Mint: Mesh data model
-
-      * :doc:`User Guide <axom/mint/docs/sphinx/index>`
-      * `Source documentation <doxygen/html/minttop.html>`_
-
-   * Primal: Computational geometry primitives
-
-      * :doc:`User Guide <axom/primal/docs/sphinx/index>`
-      * `Source documentation <doxygen/html/primaltop.html>`_
-
-   * Quest: Querying on surface tool
-
-      * :doc:`User Guide <axom/quest/docs/sphinx/index>`
-      * `Source documentation <doxygen/html/questtop.html>`_
-
-   * Sidre: Simulation data repository
-
-      * :doc:`User Guide <axom/sidre/docs/sphinx/index>`
-      * `Source documentation <doxygen/html/sidretop.html>`_
-
-   * Slam: Set-theoretic lightweight API for meshes
-
-      * :doc:`User Guide <axom/slam/docs/sphinx/index>`
-      * `Source documentation <doxygen/html/slamtop.html>`_
-
-   * Slic: Simple Logging Interface Code
-
-      * :doc:`User Guide <axom/slic/docs/sphinx/index>`
-      * `Source documentation <doxygen/html/slictop.html>`_
-
-   * Spin: Spatial indexes
-
-      * :doc:`User Guide <axom/spin/docs/sphinx/index>`
-      * `Source documentation <doxygen/html/spintop.html>`_
+   * - Inlet
+     - :doc:`User Guide <axom/inlet/docs/sphinx/index>`
+     - `Source documentation <doxygen/html/inlettop.html>`_
+   * - Lumberjack
+     - :doc:`User Guide <axom/lumberjack/docs/sphinx/index>`
+     - `Source documentation <doxygen/html/lumberjacktop.html>`_
+   * - Mint
+     - :doc:`User Guide <axom/mint/docs/sphinx/index>`
+     - `Source documentation <doxygen/html/minttop.html>`_
+   * - Primal
+     - :doc:`User Guide <axom/primal/docs/sphinx/index>`
+     - `Source documentation <doxygen/html/primaltop.html>`_
+   * - Quest
+     - :doc:`User Guide <axom/quest/docs/sphinx/index>`
+     - `Source documentation <doxygen/html/questtop.html>`_
+   * - Sidre
+     - :doc:`User Guide <axom/sidre/docs/sphinx/index>`
+     - `Source documentation <doxygen/html/sidretop.html>`_
+   * - Slam
+     - :doc:`User Guide <axom/slam/docs/sphinx/index>`
+     - `Source documentation <doxygen/html/slamtop.html>`_
+   * - Slic
+     - :doc:`User Guide <axom/slic/docs/sphinx/index>`
+     - `Source documentation <doxygen/html/slictop.html>`_
+   * - Spin
+     - :doc:`User Guide <axom/spin/docs/sphinx/index>`
+     - `Source documentation <doxygen/html/spintop.html>`_
 
 
 ============================
