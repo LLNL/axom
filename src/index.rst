@@ -46,15 +46,15 @@ Components
    * Slic: Simple Logging Interface Code
    * Spin: Spatial indexes
 
-============
-Documenation
-============
+=============
+Documentation
+=============
 
   * :doc:`Quickstart Guide <docs/sphinx/quickstart_guide/index>`
   *  `Source documentation <doxygen/html/index.html>`_
 
 .. list-table::
-   :align: left
+   :align: center
 
    * - Inlet
      - :doc:`User Guide <axom/inlet/docs/sphinx/index>`
@@ -141,33 +141,16 @@ Chat Room
 ---------
 
 We also have a chat room on LLNL's Cisco Jabber instance called 
-'Axom Dev'. It is open to anyone on the llnl network. 
-Just log onto Jabber and join the room.
+'Axom Dev' and a Microsoft Teams room called "Axom". They open to
+anyone on the llnl network. Just log onto Jabber or Teams and join the room.
 
 
------------------
-Atlassian Tools
------------------
+---------------------------------
+Git repository and Issue Tracking
+---------------------------------
 
-The main interaction hub for the Axom software is the Atlassian tool suite 
-on the Livermore Computing Collaboration Zone (CZ). These tools can be 
-accessed through the `MyLC Portal <https://lc.llnl.gov>`_.
+The main interaction hub for Axom is on `Github <https://github.com/LLNL/axom>`_
 
-Direct links to the Axom Atlassian projects/spaces are:
-
-  * `Bitbucket project/git repository <https://lc.llnl.gov/bitbucket/projects/ATK>`_
-  * `Jira issue tracker <https://lc.llnl.gov/jira/projects/ATK>`_
-  * `Bamboo continuous integration <https://lc.llnl.gov/bamboo/browse/ASC>`_
-  * `Confluence (primarily for developers) <https://lc.llnl.gov/confluence/display/ASCT>`_
-
-
---------------------
-LC Groups
---------------------
-
-Access to Axom projects/spaces in these Atlassian tools requires
-membership in the `axom` group on LC systems. Please contact the team for
-group access by sending an email request to 'axom-dev@llnl.gov'.
 
 
 ======================================================
