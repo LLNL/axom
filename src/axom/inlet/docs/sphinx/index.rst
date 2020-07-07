@@ -23,14 +23,3 @@ Requirements
 
 * Sidre - Inlet stores all data from the input deck in the Sidre DataStore
 * (Optional) Lua - Inlet provides a Lua reader class that assists in Lua input decks
-
-
-Classes
--------
-
-
-Basic
-*****
-
-* :ref:`Inlet <inlet_class_label>` - Performs all high level functionality for the Inlet library.
-
