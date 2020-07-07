@@ -76,7 +76,6 @@ void createInletEx2(std::shared_ptr<Inlet> inlet)
 
   bool found;
   bool boolVal;
-  int intVal;
   double doubleVal;  
 
   found = inlet->get("foo", boolVal);
