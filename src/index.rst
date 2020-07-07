@@ -141,8 +141,8 @@ Chat Room
 ---------
 
 We also have a chat room on LLNL's Cisco Jabber instance called 
-'Axom Dev' and a Microsoft Teams room called "Axom". They open to
-anyone on the llnl network. Just log onto Jabber or Teams and join the room.
+'Axom Dev' and a Microsoft Teams room called 'Axom'. They open to
+anyone on the LLNL network. Just log onto Jabber or Teams and join the room.
 
 
 ---------------------------------
