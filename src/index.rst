@@ -53,7 +53,7 @@ Documenation
   * :doc:`Quickstart Guide <docs/sphinx/quickstart_guide/index>`
   *  `Source documentation <doxygen/html/index.html>`_
 
-.. list-table:: Component Documenatation
+.. list-table::
    :align: center
 
    * - Inlet
