@@ -1,6 +1,7 @@
-// usage : ./document_generation_example_example --enableDocs --deck lua_file
+// usage : ./document_generation_example_example --enableDocs --deck lua_file --verbose --example [example #]
 // example 1: field1 = true; field2 = 5632; NewTable = { str = 'hello'; integer = 32 }
-// example 2: foo = false; bar = true; Table1 = { float1 = 3.14 } Table2 = { }; Table3 { }
+// example 2: foo = false; bar = true; Table1 = { float1 = 3.14; Table1.1 = { Table 1.1.1 = { x = 4 } } }
+// example 3: Table1 = { float1 = 5.6 }; Table2 = { int1 = 95 }; Table3 = { bool1 = true }
 #include "axom/inlet/DocWriter.hpp"
 #include "axom/inlet/Inlet.hpp"
 #include "axom/inlet/LuaReader.hpp"
@@ -26,11 +27,6 @@ void createInletEx1(std::shared_ptr<Inlet> inlet)
   currField->required(true);
   currField = t->addInt("integer", "a whole number");
   currField->required(false);
-
-  std::string strVal;
-  bool found = inlet->get("NewTable/str", strVal);
-  SLIC_ASSERT_MSG(found == true, "NOT FOUND");
-  SLIC_ASSERT_MSG(strVal == "hello", "STR DIDNT MATCH");
 }
 
 void createInletEx2(std::shared_ptr<Inlet> inlet)
@@ -45,23 +41,19 @@ void createInletEx2(std::shared_ptr<Inlet> inlet)
   t->required(false);
   currField = t->addDouble("float1", "floating point number within table 1");
   currField->required(true);
-  // t = inlet->addTable("Table2", "The second table");
-  // t->required(true);
-  // t = inlet->addTable("Table3", "The third table");
-  // t->required(false);
+  t = t->addTable("Table1.1", "Table within Table 1");
+  t = t->addTable("Table1.1.1", "Table within Table 1.1");
+  t->addInt("x", "A variable");
 }
 
 void createInletEx3(std::shared_ptr<Inlet> inlet)
 {
-  std::shared_ptr<axom::inlet::Field> currField;
   auto t = inlet->addTable("Table1", "The first table");
-  t->required(true);
-  currField = t->addDouble("float1", "floating point number within table 1");
-  currField->required(true);
-  t = t->addTable("SubTable", "table within table 1");
-  t->required(false);
-  currField = t->addInt("int1", "an integer within subtable1");
-  currField->required(false);
+  t->addDouble("float1", " A floating point number in Table 1");
+  t = inlet->addTable("Table2", "The second table");
+  t->addInt("int1", "An integer in Table 2");
+  t = inlet->addTable("Table3", "The third table");
+  t->addBool("bool1", "A boolean value in Table 3");
 }
 
 std::shared_ptr<Inlet> createExampleInlet(DataStore* ds,
@@ -93,14 +85,16 @@ int main(int argc, char** argv) {
   int exampleNum{1};
   app.add_option("--example", exampleNum, "Example number to be run");
 
+  bool isVerbose{false};
+  app.add_flag("--verbose",isVerbose, "Enables output of inlet information during run-time");
+
   CLI11_PARSE(app, argc, argv);
 
   DataStore ds;
   std::shared_ptr<Inlet> inlet = createExampleInlet(&ds, strOption, exampleNum);
 
-  // auto inlet = createInlet(&ds, testString);
   if (docs_enabled) {
-    DocWriter doc("example_docs.rst", inlet->sidreGroup(), true);
+    DocWriter doc("example_docs.rst", inlet->sidreGroup(), isVerbose);
   } 
 
   return 0;
