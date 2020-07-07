@@ -14,7 +14,7 @@ namespace inlet
 
 class DocWriter {
 public: 
-  DocWriter(const std::string& fileName, axom::sidre::Group* sidreRootGroup);
+  DocWriter(const std::string& fileName, axom::sidre::Group* sidreRootGroup, bool isVerbose = true);
   void writeTitle(const std::string& title);
   void writeSubtitle(const std::string& sub);
   void writeTable(const std::string& title);
@@ -26,6 +26,7 @@ private:
   std::ofstream outFile;
   axom::sidre::Group* sidreGroupRoot;
   std::vector<std::vector<std::string>> rstTable;
+  bool verbose;
 };
 
 }

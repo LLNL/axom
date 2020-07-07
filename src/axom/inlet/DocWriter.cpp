@@ -8,17 +8,20 @@ namespace axom
 namespace inlet
 {
  
-DocWriter::DocWriter(const std::string& fileName, axom::sidre::Group* root) {
+DocWriter::DocWriter(const std::string& fileName, axom::sidre::Group* root, bool isVerbose) {
   SLIC_ASSERT_MSG(root != nullptr, "Sidre Group is null pointer");
   outFile.open(fileName);
   sidreGroupRoot = root;
+  verbose = isVerbose;
 
   if (root->getName() == "") {
     writeTitle("Untitled");
   }  else {
     writeTitle(root->getName());
   }
-
+  if (verbose) {
+    root->print();
+  }
   rstTable = {{"Field Name", "Description", "Default Value", "Range", "Required"}};
   writeDocuments(sidreGroupRoot);
   writeTable("Fields");
@@ -33,15 +36,28 @@ void DocWriter::writeDocuments(axom::sidre::Group* sidreGroup) {
     std::vector<std::string> fieldAttributes(5, "Not specified");
     fieldAttributes.resize(5);
     fieldAttributes[0] = sidreGroup->getName();
+    if (verbose) {
+      std::cout << "For Field named " << fieldAttributes[0] << std::endl;
+    }
     if (sidreGroup->hasView("description")) {
       fieldAttributes[1] = std::string(sidreGroup->getView(sidreGroup->getViewIndex("description"))->getString());
+      if (verbose) {
+        std::cout << "view description found; is " << fieldAttributes[1] << std::endl;
+      }
+    } else if (verbose) {
+      std::cout << "view description not found" << std::endl;
     }
     // fieldAttributes[2] = std::to_string(sidreGroup->getView(sidreGroup->getViewIndex("default values"))->getScalar());
     // fieldAttributes[3] = std::to_string(sidreGroup->getView(sidreGroup->getViewIndex("range"))->getScalar());
     if (sidreGroup->hasView("required")) {
       int8 required = sidreGroup->getView(sidreGroup->getViewIndex("required"))->getData();
       fieldAttributes[4] = required ? "True" : "False";
-    } 
+      if (verbose) {
+        std::cout << "view required found; is " << fieldAttributes[4] << std::endl;
+      }
+    } else if (verbose) {
+      std::cout << "view required not found" << std::endl;
+    }
   
     rstTable.push_back(fieldAttributes);
   } 
@@ -50,6 +66,11 @@ void DocWriter::writeDocuments(axom::sidre::Group* sidreGroup) {
     writeSubtitle(sidreGroup->getName());
     if (sidreGroup->getName() != "") {
       outFile << "\nDescription: " << sidreGroup->getView("description")->getString() << "\n\n";
+      if (verbose) {
+        std::cout << "For table named " << sidreGroup->getName() << std::endl;
+      }
+    } else if (verbose) {
+      std::cout << "For base table " << std::endl;
     }
   }
 

@@ -1,3 +1,5 @@
+// usage : ./document_generation_example_example --enableDocs --deck lua_file
+
 #include "axom/inlet/DocWriter.hpp"
 #include "axom/inlet/Inlet.hpp"
 #include "axom/inlet/LuaReader.hpp"
@@ -10,39 +12,91 @@ using axom::inlet::LuaReader;
 using axom::sidre::DataStore;
 using axom::inlet::DocWriter;
 
+void createInletEx1(std::shared_ptr<Inlet> inlet)
+{
+  std::shared_ptr<axom::inlet::Field> currField;
+  currField = inlet->addBool("field1", "this is field #1, a boolean value");
+  currField->required(true);
+  currField = inlet->addInt("field2", "this is field #2, an integer");
+  currField->required(false);
+  auto t = inlet->addTable("NewTable", "It's blue");
+  t->required(false);
+  currField = t->addString("str", "str's description");
+  // currField = inlet->addString("NewTable/str", "str's description");
+  currField->required(true);
+  // currField = inlet->addInt("NewTable/integer", "a whole number");
+  currField = t->addInt("integer", "a whole number");
+  currField->required(false);
+}
 
-std::shared_ptr<Inlet> createBasicInlet(DataStore* ds,
-                                        const std::string& luaString)
+void createInletEx2(std::shared_ptr<Inlet> inlet)
+{
+  std::shared_ptr<axom::inlet::Field> currField;
+  currField = inlet->addBool("foo", "foo's description");
+  currField->required(true);
+  currField = inlet->addBool("bar", "bar's description");
+  currField->required(false);
+  
+  auto t = inlet->addTable("Table1", "The first table");
+  t->required(false);
+  currField = t->addDouble("float1", "floating point number within table 1");
+  currField->required(true);
+  t = inlet->addTable("Table2", "The second table");
+  t->required(true);
+  t = inlet->addTable("Table3", "The third table");
+  t->required(false);
+}
+
+void createInletEx3(std::shared_ptr<Inlet> inlet)
+{
+  std::shared_ptr<axom::inlet::Field> currField;
+  auto t = inlet->addTable("Table1", "The first table");
+  t->required(true);
+  currField = t->addDouble("float1", "floating point number within table 1");
+  currField->required(true);
+  t = t->addTable("SubTable", "table within table 1");
+  t->required(false);
+  currField = t->addInt("int1", "an integer within subtable1");
+  currField->required(false);
+}
+
+std::shared_ptr<Inlet> createExampleInlet(DataStore* ds,
+                                        const std::string& luaFile, int exNum)
 {
   auto lr = std::make_shared<LuaReader>();
-  lr->parseString(luaString);
-
-  return std::make_shared<Inlet>(lr, ds->getRoot());
+  // lr->parseString(luaString);
+  lr->parseFile(luaFile);
+  auto inlet = std::make_shared<Inlet>(lr, ds->getRoot());
+  if (exNum == 1) {
+    createInletEx1(inlet);
+  } else if (exNum == 2) {
+    createInletEx2(inlet);
+  } else {
+    createInletEx3(inlet);
+  }
+  return inlet;
 }
 
 int main(int argc, char** argv) {
   CLI::App app {"Description here"};
   bool docs_enabled{false};
-  app.add_flag("-f", docs_enabled, "Enables documentation generation");
+  app.add_flag("--enableDocs", docs_enabled, "Enables documentation generation");
+
+  std::string strOption;
+  auto opt = app.add_option("--deck", strOption, "Path to input deck file");
+  opt->check(CLI::ExistingFile);
+
+  int exampleNum{1};
+  app.add_option("--example", exampleNum, "Example number to be run");
+
   CLI11_PARSE(app, argc, argv);
 
-  std::string testString = "foo = true; bar = false";
   DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
+  std::shared_ptr<Inlet> inlet = createExampleInlet(&ds, strOption, exampleNum);
 
-  std::shared_ptr<axom::inlet::Field> currField;
-
-  currField = inlet->addBool("foo", "foo's description");
-  currField->required(true);
-  currField = inlet->addBool("bar", "bar's description");
-  currField->required(false);
-
-  auto t = inlet->addTable("tableau", "bleu");
-  t->addString("str", "str's description");
-  t->addInt("integer", "a whole number");
-
+  // auto inlet = createInlet(&ds, testString);
   if (docs_enabled) {
-    DocWriter doc("example_docs.rst", inlet->sidreGroup());
+    DocWriter doc("example_docs.rst", inlet->sidreGroup(), true);
   } 
 
   return 0;
