@@ -56,24 +56,6 @@ void check_copy( const Array< T >& lhs, const Array< T >& rhs )
 }
 
 /*!
- * \brief Check if two Arrays are equivalent. Does not check the resize ratio.
- * \param [in] lhs, the first Array to compare.
- * \param [in] rhs, the second Array to compare.
- * \return the new capacity.
- */
-template< typename T >
-void check_equal( const Array< T >& lhs, const Array< T >& rhs )
-{
-  EXPECT_EQ( lhs.size(), rhs.size() );
-  EXPECT_EQ( lhs.capacity(), rhs.capacity() );
-
-  for ( IndexType i = 0 ; i < lhs.size() ; ++i )
-  { 
-      EXPECT_EQ( lhs[ i ], rhs[ i ] ); 
-  }
-}
-
-/*!
  * \brief Check that the storage of an Array is working properly.
  * \param [in] v the Array to check.
  */
@@ -1002,20 +984,20 @@ TEST( core_array, check_move_copy)
     Array< int > v_int_copy_ctor( v_int ); 
     Array< int > v_int_copy_assign( 0, 0 ); 
     v_int_copy_assign = v_int; 
-    internal::check_equal( v_int, v_int_copy_ctor ); 
-    internal::check_equal( v_int, v_int_copy_assign ); 
+    EXPECT_EQ( v_int, v_int_copy_ctor ); 
+    EXPECT_EQ( v_int, v_int_copy_assign ); 
 
     Array< int > v_int_external_copy_ctor( v_int_external ); 
     Array< int > v_int_external_copy_assign( 0, 0 ); 
     v_int_external_copy_assign = v_int_external; 
-    internal::check_equal( v_int_external, v_int_external_copy_ctor ); 
-    internal::check_equal( v_int_external, v_int_external_copy_assign ); 
+    EXPECT_EQ( v_int_external, v_int_external_copy_ctor ); 
+    EXPECT_EQ( v_int_external, v_int_external_copy_assign ); 
 
     Array< int > v_int_move_assign( 0, 0 ); 
     v_int_move_assign = std::move( v_int_copy_assign ); 
     Array< int > v_int_move_ctor = std::move( v_int_copy_ctor ); 
-    internal::check_equal( v_int, v_int_move_assign ); 
-    internal::check_equal( v_int, v_int_move_ctor ); 
+    EXPECT_EQ( v_int, v_int_move_assign ); 
+    EXPECT_EQ( v_int, v_int_move_ctor ); 
     EXPECT_EQ( v_int_copy_assign.data(), nullptr ); 
     EXPECT_EQ( v_int_copy_ctor.data(), nullptr ); 
 
@@ -1029,20 +1011,20 @@ TEST( core_array, check_move_copy)
     Array< double > v_double_copy_ctor( v_double ); 
     Array< double > v_double_copy_assign( 0, 0 ); 
     v_double_copy_assign = v_double; 
-    internal::check_equal( v_double, v_double_copy_ctor ); 
-    internal::check_equal( v_double, v_double_copy_assign ); 
+    EXPECT_EQ( v_double, v_double_copy_ctor ); 
+    EXPECT_EQ( v_double, v_double_copy_assign ); 
 
     Array< double > v_double_external_copy_ctor( v_double_external ); 
     Array< double > v_double_external_copy_assign( 0, 0 ); 
     v_double_external_copy_assign = v_double_external; 
-    internal::check_equal( v_double_external, v_double_external_copy_ctor ); 
-    internal::check_equal( v_double_external, v_double_external_copy_assign ); 
+    EXPECT_EQ( v_double_external, v_double_external_copy_ctor ); 
+    EXPECT_EQ( v_double_external, v_double_external_copy_assign ); 
 
     Array< double > v_double_move_assign( 0, 0 ); 
     v_double_move_assign = std::move( v_double_copy_assign );       
     Array< double > v_double_move_ctor = std::move( v_double_copy_ctor ); 
-    internal::check_equal( v_double, v_double_move_assign ); 
-    internal::check_equal( v_double, v_double_move_ctor ); 
+    EXPECT_EQ( v_double, v_double_move_assign ); 
+    EXPECT_EQ( v_double, v_double_move_ctor ); 
     EXPECT_EQ( v_double_copy_assign.data(), nullptr ); 
     EXPECT_EQ( v_double_copy_ctor.data(), nullptr ); 
   } 
