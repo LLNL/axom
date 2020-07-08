@@ -79,7 +79,7 @@ struct BitTraits<axom::uint8>
  * \return The number of zeros to the right of the first set bit in \word,
  * starting with the least significant bit, or 64 if \a word == 0.
  */
-/* *INDENT-OFF* */
+/* clang-format off */
 inline int trailingZeros(axom::uint64 word)
 {
   // Explicit implementation adapted from bit twiddling hacks
@@ -100,7 +100,7 @@ inline int trailingZeros(axom::uint64 word)
 
   return cnt;
 }
-/* *INDENT-ON* */
+/* clang-format on */
 
 /** Counts the number of set bits in \a word */
 inline int popCount(axom::uint64 word)

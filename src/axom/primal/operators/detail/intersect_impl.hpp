@@ -394,10 +394,10 @@ inline bool intersectTwoPermutedTriangles(const Point3& p1,
      p2q2, and p2r2.  We check if these two intervals overlap:
    */
   const bool bdr = includeBoundary;
-  /* *INDENT-OFF* */
+  /* clang-format off */
   return isLpeq(Vector3(q1, q2).dot(Triangle3(q1, p2, p1).normal()), 0.0, bdr, EPS)
       && isLpeq(Vector3(p1, r2).dot(Triangle3(p1, p2, r1).normal()), 0.0, bdr, EPS);
-  /* *INDENT-ON* */
+  /* clang-format on */
 }
 
 /*! @} */
@@ -703,7 +703,7 @@ bool intersect_tri_bbox( const primal::Triangle< T, 3 >& tri,
   // Create the edge vectors of the triangle
   VectorType f[3] = { v[1] - v[0], v[2] - v[1],  v[0] - v[2] };
 
-/* *INDENT-OFF* */
+/* clang-format off */
 
   // Test cross products of edges between triangle edge vectors f and cube normals (9 tests)
   // -- using separating axis theorem on the cross product of edges of triangle and face normals of AABB
@@ -724,7 +724,7 @@ bool intersect_tri_bbox( const primal::Triangle< T, 3 >& tri,
   {
     return false;
   }
-/* *INDENT-ON* */
+/* clang-format on */
 
 #undef XEDGE_R
 #undef XEDEG_S

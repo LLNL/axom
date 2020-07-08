@@ -13,7 +13,7 @@
 #include "RAJA/RAJA.hpp"
 
 #ifndef RAJA_ENABLE_OPENMP
-#error *** OMP_EXEC requires an OpenMP enabled RAJA ***
+#error "*** OMP_EXEC requires an OpenMP enabled RAJA ***"
 #endif
 
 // Umpire includes

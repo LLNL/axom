@@ -76,15 +76,11 @@ using DataArray = DataType*;
     public:
         void SetUp() {
 
-            volatile int str_vol = STRIDE;  // pass through volatile variable so
-               the
-            str = str_vol;                  // number is not a compile time
-               constant
+            volatile int str_vol = STRIDE;  // pass through volatile variable so the
+            str = str_vol;                  // number is not a compile time constant
 
-            volatile int off_vol = OFFSET;  // pass through volatile variable so
-               the
-            off = off_vol;                  // number is not a compile time
-               constant
+            volatile int off_vol = OFFSET;  // pass through volatile variable so the
+            off = off_vol;                  // number is not a compile time constant
 
             ind = nullptr;
             data = nullptr;

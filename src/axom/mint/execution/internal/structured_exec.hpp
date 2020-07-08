@@ -33,7 +33,7 @@ template < >
 struct structured_exec< SEQ_EXEC >
 {
 #ifdef AXOM_USE_RAJA
-  /* *INDENT-OFF* */
+  /* clang-format off */
   using loop2d_policy = RAJA::KernelPolicy<
     RAJA::statement::For< 1, RAJA::loop_exec,   // j
       RAJA::statement::For< 0, RAJA::loop_exec, // i
@@ -51,7 +51,7 @@ struct structured_exec< SEQ_EXEC >
       > // END j
     > // END k
   >; // END kernel
-  /* *INDENT-ON* */
+  /* clang-format on */
 
 #else
   using loop2d_policy = void;
@@ -64,7 +64,7 @@ struct structured_exec< SEQ_EXEC >
 template < >
 struct structured_exec< OMP_EXEC >
 {
-  /* *INDENT-OFF* */
+  /* clang-format off */
 
   using loop2d_policy = RAJA::KernelPolicy<
     RAJA::statement::For< 1, RAJA::omp_parallel_for_exec, // j
@@ -84,7 +84,7 @@ struct structured_exec< OMP_EXEC >
     > // END k
   >; // END kernel
 
-  /* *INDENT-ON* */
+  /* clang-format on */
 };
 #endif
 
@@ -105,7 +105,7 @@ constexpr int TILE_SIZE_Z  = 4;
 template < int BLOCK_SIZE >
 struct structured_exec< CUDA_EXEC< BLOCK_SIZE, SYNCHRONOUS > >
 {
-  /* *INDENT-OFF* */
+  /* clang-format off */
 
   using loop2d_policy = RAJA::KernelPolicy<
     RAJA::statement::CudaKernelFixed< CUDA_KERNEL_FIXED_SIZE,
@@ -139,14 +139,14 @@ struct structured_exec< CUDA_EXEC< BLOCK_SIZE, SYNCHRONOUS > >
     >
   >;
 
-  /* *INDENT-ON*  */
+  /* clang-format on */
 
 };
 
 template < int BLOCK_SIZE >
 struct structured_exec< CUDA_EXEC< BLOCK_SIZE, ASYNC > >
 {
-  /* *INDENT-OFF* */
+  /* clang-format off */
 
   using loop2d_policy = RAJA::KernelPolicy <
     RAJA::statement::CudaKernelFixedAsync< CUDA_KERNEL_FIXED_SIZE,
@@ -180,7 +180,7 @@ struct structured_exec< CUDA_EXEC< BLOCK_SIZE, ASYNC > >
     >
   >;
 
-  /* *INDENT-ON*  */
+  /* clang-format on */
 };
 
 #endif

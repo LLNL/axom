@@ -168,7 +168,7 @@ TEST(quest_all_nearnbr, cplx_13region_query)
 {
   SLIC_INFO("*** 13-region closely-packed query.");
 
-  // Pre-formatted lines, not to be disturbed by uncrustify: *INDENT-OFF*
+  // Pre-formatted lines, not to be disturbed by clang format: clang-format off
   double x[] = { -2.7, -2.3, -1.5, -1.2, -0.8, -0.9, -1.8,
                  -0.8, -0.3,  0.4,  1.4,  1.5,  0.9,
                  -2.6, -2.5, -2.0, -1.7, -1.4, -1.7, -2.0, -1.3,
@@ -215,7 +215,7 @@ TEST(quest_all_nearnbr, cplx_13region_query)
                     12, 12, 12, 12, 12, 12, 12,
                     13, 13, 13, 13, 13, 13, 13, 13,
                     14, 14, 14, 14 };
-  // *INDENT-ON*
+  // clang-format on
 
   int n = 97;
   double limit = 1.4;

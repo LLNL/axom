@@ -469,7 +469,7 @@ protected:
   {
     /// Setup mesh strings, disable automatic formatting
 
-    /* *INDENT-OFF* */
+    // clang-format off
 
 
     // Prefix string for a single element 2D mfem quad mesh
@@ -537,7 +537,7 @@ protected:
         "-8 4"                          "\n"
         "-7 4"                          "\n";
 
-    /* *INDENT-ON* */
+    // clang-format on
   }
 
 public:
@@ -671,7 +671,7 @@ protected:
   {
     /// Setup mesh strings, disable automatic formatting
 
-    /* *INDENT-OFF* */
+    // clang-format off
 
     // Prefix string for a single element mfem hex mesh in 3D
     m_meshPrefixStr =
@@ -744,7 +744,7 @@ protected:
     // Nodal grid function for a C-shaped quadratic hex
     m_CShapedNodesStr = "";  // undefined for now in 3D
 
-    /* *INDENT-ON* */
+    // clang-format on
   }
 
 public:

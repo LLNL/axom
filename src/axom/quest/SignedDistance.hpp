@@ -170,7 +170,7 @@ public:
    * \return ptr pointer to the underlying bucket tree
    * \post ptr != nullptr
    */
-  const BVHTreeType* getBVHTree( ) const { return m_bvhTree; };
+  const BVHTreeType* getBVHTree( ) const { return m_bvhTree; }
 
 private:
 
@@ -268,7 +268,7 @@ private:
    * \brief Default constructor. Does nothing.
    * \note Made private to prevent its use from the calling application.
    */
-  SignedDistance() : m_surfaceMesh(nullptr), m_bvhTree(nullptr) { };
+  SignedDistance() : m_surfaceMesh(nullptr), m_bvhTree(nullptr) { }
 
 private:
   bool m_isInputWatertight;         /*!< indicates if input is watertight     */
@@ -297,7 +297,7 @@ namespace detail
 class SortByDistance
 {
 public:
-  SortByDistance( double* dist ) : m_dist( dist ) { };
+  SortByDistance( double* dist ) : m_dist( dist ) { }
   ~SortByDistance() { }
   bool operator()( int i, int j) const { return( m_dist[i] < m_dist[j] ); }
 private:

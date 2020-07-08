@@ -114,6 +114,7 @@ private:
   void fixOutfilePath();
 };
 
+// clang-format off
 const std::set<std::string> Input::s_validMethods({
   "bvh",
   "uniform",
@@ -132,6 +133,7 @@ const std::map<std::string, RuntimePolicy> Input::s_validPolicies({
     #endif
   #endif
 });
+// clang-format on
 
 void Input::parse(int argc, char** argv, CLI::App& app)
 {
@@ -295,7 +297,7 @@ bool checkTT(Triangle3& t1, Triangle3& t2, double EPS)
   if (t2.degenerate())
     return false;
 
-  const bool includeBoundaries = false; // only check for internal intersections
+  const bool includeBoundaries = false; // only check internal intersections
   if (primal::intersect(t1, t2, includeBoundaries, EPS))
   {
     return true;
