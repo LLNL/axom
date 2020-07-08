@@ -46,6 +46,17 @@ class Array;
 template< typename T >
 std::ostream& operator<<( std::ostream& os, const Array< T >& arr );
 
+
+/*!
+ * \brief Equality comparison operator for Arrays
+ *
+ * \param [in] lhs left Array to compare
+ * \param [in] rhs right Array to compare
+ * \return true if the Arrays are of equal length and have the same elements.
+ */
+template < typename T >
+bool operator==(const Array< T >& lhs, const Array< T >& rhs);
+
 /// @}
 
 /*!
@@ -1206,6 +1217,25 @@ std::ostream& operator<<( std::ostream& os, const Array< T >& arr )
 {
   arr.print(os);
   return os;
+}
+
+template < typename T >
+bool operator==(const Array< T >& lhs, const Array< T >& rhs)
+{
+    if (lhs.size() != rhs.size())
+    {
+      return false;
+    }
+    
+    for (int i = 0; i < lhs.size(); i++)
+    {
+      if (!(lhs[i] == rhs[i]))
+      {
+        return false;
+      }
+    }
+
+    return true;
 }
 
 } /* namespace axom */
