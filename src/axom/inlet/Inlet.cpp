@@ -180,7 +180,13 @@ bool Inlet::get(const std::string& name, std::string& value)
 }
 
 void Inlet::registerDocWriter(std::shared_ptr<DocWriter> writer) {
-  docWriter = writer;
+  m_docWriter = writer;
+}
+
+void Inlet::writeDocs() {
+  if (m_docWriterToggle) {
+    m_docWriter->writeDocuments(m_sidreRootGroup);
+  }
 }
 
 } // end namespace inlet

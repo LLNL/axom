@@ -451,6 +451,125 @@ TEST(inlet_Inlet_basic, getNestedValuesAddedUsingTable)
 
 }
 
+TEST(inlet_Inlet_views, Example1)
+{
+  std::string testString = "field1 = true; field2 = 5632; NewTable = { str = 'hello'; integer = 32 }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+  std::shared_ptr<axom::inlet::Field> currField;
+  currField = inlet->addBool("field1", "this is field #1, a boolean value");
+  currField->required(true);
+  currField = inlet->addInt("field2", "this is field #2, an integer");
+  currField->required(false);
+  auto t = inlet->addTable("NewTable", "It's blue");
+  t->required(false);
+  currField = t->addString("str", "str's description");
+  currField->required(true);
+  currField = t->addInt("integer", "a whole number");
+  currField->required(false);
+
+  axom::sidre::Group* sidreGroup = inlet->sidreGroup();
+
+  bool found;
+  bool boolVal;
+  int intVal;
+  std::string strVal;
+
+  found = inlet->get("field1", boolVal);
+  EXPECT_TRUE(found);
+  found = inlet->get("field2", intVal);
+  EXPECT_TRUE(found);
+  found = inlet->get("NewTable/str", strVal);
+  EXPECT_TRUE(found);  
+  found = inlet->get("NewTable/integer", intVal);
+  EXPECT_TRUE(found);
+
+  EXPECT_TRUE(sidreGroup->hasView("field1/required"));
+  EXPECT_TRUE(sidreGroup->hasView("field2/required"));
+  EXPECT_TRUE(sidreGroup->hasView("NewTable/str/required"));
+  EXPECT_TRUE(sidreGroup->hasView("NewTable/integer/required"));
+
+  EXPECT_TRUE(sidreGroup->hasView("field1/description"));
+  EXPECT_TRUE(sidreGroup->hasView("field2/description"));
+  EXPECT_TRUE(sidreGroup->hasView("NewTable/str/description"));
+  EXPECT_TRUE(sidreGroup->hasView("NewTable/integer/description"));
+}
+
+TEST(inlet_Inlet_views, Example2)
+{
+  std::string testString = "foo = false; bar = true; Table1 = { float1 = 3.14; Table11 = { Table111 = { x = 4 } } }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+  std::shared_ptr<axom::inlet::Field> currField;
+  currField = inlet->addBool("foo", "foo's description");
+  currField->required(true);
+  currField = inlet->addBool("bar", "bar's description");
+  currField->required(false);
+  
+  auto t = inlet->addTable("Table1", "The first table");
+  t->required(false);
+  currField = t->addDouble("float1", "floating point number within table 1");
+  currField->required(true);
+  t = t->addTable("Table11", "Table within Table 1");
+  t = t->addTable("Table111", "Table within Table 11");
+  t->addInt("x", "A variable");
+
+  axom::sidre::Group* sidreGroup = inlet->sidreGroup();
+
+  bool found;
+  bool boolVal;
+  double doubleVal;  
+
+  found = inlet->get("foo", boolVal);
+  EXPECT_TRUE(found);
+  found = inlet->get("bar", boolVal);
+  EXPECT_TRUE(found);
+  found = inlet->get("Table1/float1", doubleVal);
+  EXPECT_TRUE(found);
+
+  EXPECT_TRUE(sidreGroup->hasView("foo/required"));
+  EXPECT_TRUE(sidreGroup->hasView("bar/required"));
+  EXPECT_TRUE(sidreGroup->hasView("Table1/float1/required"));
+
+  EXPECT_TRUE(sidreGroup->hasView("foo/description"));
+  EXPECT_TRUE(sidreGroup->hasView("bar/description"));
+  EXPECT_TRUE(sidreGroup->hasView("Table1/float1/description"));
+  EXPECT_TRUE(sidreGroup->hasView("Table1/Table11/Table111/x/description"));
+}
+
+TEST(inlet_Inlet_views, Example3)
+{
+  std::string testString = "Table1 = { float1 = 5.6 }; Table2 = { int1 = 95 }; Table3 = { bool1 = true }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  auto t = inlet->addTable("Table1", "The first table");
+  t->addDouble("float1", " A floating point number in Table 1");
+  t = inlet->addTable("Table2", "The second table");
+  t->addInt("int1", "An integer in Table 2");
+  t = inlet->addTable("Table3", "The third table");
+  t->addBool("bool1", "A boolean value in Table 3");
+
+  axom::sidre::Group* sidreGroup = inlet->sidreGroup();
+
+  bool found;
+  bool boolVal;
+  int intVal;
+  double doubleVal;  
+
+  found = inlet->get("Table1/float1", doubleVal);
+  ASSERT_TRUE(found);
+  found = inlet->get("Table2/int1", intVal);
+  ASSERT_TRUE(found);  
+  found = inlet->get("Table3/bool1", boolVal);
+  ASSERT_TRUE(found);
+
+  ASSERT_TRUE(sidreGroup->hasView("Table1/float1/description"));
+  ASSERT_TRUE(sidreGroup->hasView("Table2/int1/description"));
+  ASSERT_TRUE(sidreGroup->hasView("Table3/bool1/description"));
+
+}
+
 //------------------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;

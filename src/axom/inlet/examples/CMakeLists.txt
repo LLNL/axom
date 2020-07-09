@@ -3,17 +3,16 @@
 #
 # SPDX-License-Identifier: (BSD-3-Clause)
 #------------------------------------------------------------------------------
-# Tests for Inlet component
+# Examples for Inlet component
 #------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------
-# Specify list of tests
+# Specify list of examples
 #------------------------------------------------------------------------------
 
-# Add Serial GTests based tests
 if (LUA_FOUND)
     set(inlet_examples
-        document_generation_example.cpp )
+        document_generation.cpp )
 
     foreach(ex ${inlet_examples})
         get_filename_component( ex_name ${ex} NAME_WE )

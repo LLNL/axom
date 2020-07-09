@@ -59,10 +59,11 @@ public:
    *****************************************************************************
    */
   Inlet(std::shared_ptr<Reader> reader,
-        axom::sidre::Group* sidreRootGroup) :
+        axom::sidre::Group* sidreRootGroup, bool docsEnabled = false) :
     m_reader(reader),
     m_sidreRootGroup(sidreRootGroup),
-    m_globalTable(std::make_shared<Table>("", "", m_reader, m_sidreRootGroup)) {}
+    m_globalTable(std::make_shared<Table>("", "", m_reader, m_sidreRootGroup)),
+    m_docWriterToggle(docsEnabled) {}
 
   virtual ~Inlet() = default;
 
@@ -253,6 +254,8 @@ public:
 
   void registerDocWriter(std::shared_ptr<DocWriter> writer);
 
+  void writeDocs();
+
   // TODO add update value functions
 private:
   axom::sidre::View* baseGet(const std::string& name);
@@ -261,8 +264,8 @@ private:
   axom::sidre::Group* m_sidreRootGroup = nullptr;
   std::shared_ptr<Table> m_globalTable;
 
-  std::shared_ptr<DocWriter> docWriter;
-  bool docWriterToggle = false;   // set in constructor?
+  std::shared_ptr<DocWriter> m_docWriter;
+  bool m_docWriterToggle = false; 
 };
 
 } // end namespace inlet
