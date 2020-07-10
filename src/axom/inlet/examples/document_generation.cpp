@@ -31,8 +31,9 @@ void findInt(std::string path, std::shared_ptr<Inlet> inlet) {
 void findDouble(std::string path, std::shared_ptr<Inlet> inlet) {
   double val;
   bool found = inlet->get(path, val);
-  std::cout << path << ": " << std::endl;
+  std::cout << path << ": ";
   found ? std::cout << "found " << val : std::cout << "not found ";
+  std::cout << std::endl;
 } 
 
 void exampleInlet(DataStore* ds, const std::string& luaFile, bool docsEnabled)
@@ -92,7 +93,7 @@ void exampleInlet(DataStore* ds, const std::string& luaFile, bool docsEnabled)
   currField = inlet->addInt("thermal_solver/solver/steps", "description for solver steps");
   currField->required(true);  
 
-  // Checking Values
+  // Checking contents of inlet
 
   findStr("thermal_solver/mesh/filename", inlet);
   findStr("thermal_solver/timestepper", inlet);
@@ -128,6 +129,10 @@ int main(int argc, char** argv) {
 
   DataStore ds;
   exampleInlet(&ds, strOption, docsEnabled);
+
+  if (docsEnabled) {
+    std::cout << "Documentation was written to example.rst" << std::endl;
+  }
 
   return 0;
 }

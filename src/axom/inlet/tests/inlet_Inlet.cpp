@@ -567,6 +567,7 @@ TEST(inlet_Inlet_views, Example3)
   ASSERT_TRUE(sidreGroup->hasView("Table1/float1/description"));
   ASSERT_TRUE(sidreGroup->hasView("Table2/int1/description"));
   ASSERT_TRUE(sidreGroup->hasView("Table3/bool1/description"));
+}
 
 TEST(inlet_Inlet, mixLevelTables)
 {
