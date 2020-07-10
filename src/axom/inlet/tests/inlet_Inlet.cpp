@@ -460,8 +460,8 @@ TEST(inlet_Inlet, mixLevelTables)
   auto luaReader = std::make_shared<axom::inlet::LuaReader>();
   luaReader->parseString(
     "thermal_solver={"
-    "   u0 = { type = \"function\", func = \"BoundaryTemperature\"},"
-    "   kappa = { type = \"constant\", constant = 0.5},"
+    "   u0 = { type = 'function', func = 'BoundaryTemperature'},"
+    "   kappa = { type = 'constant', constant = 0.5},"
     "   solver = {"
     "     rel_tol = 1.e-6,"
     "     abs_tol = 1.e-12,"
@@ -478,13 +478,14 @@ TEST(inlet_Inlet, mixLevelTables)
   // Define input deck schema
   //
 
+  // fields that are expected to not be present in above string
   inlet->addString("thermal_solver/mesh/filename", "filename");
   inlet->addInt("thermal_solver/mesh/serial", "serial");
   inlet->addInt("thermal_solver/mesh/parallel", "parallel");
-
   inlet->addInt("thermal_solver/order", "order");
   inlet->addString("thermal_solver/timestepper", "timestepper");
 
+  // Rest of the fields are present
   inlet->addString("thermal_solver/u0/type", "type");
   inlet->addString("thermal_solver/u0/func", "func");
 
