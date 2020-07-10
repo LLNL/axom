@@ -60,7 +60,11 @@ int main ( int argc, char** argv )
 
   // STEP 2: save the array data in to a file
   sidre::IOManager sidre_io( problem_comm );
+#if defined(AXOM_USE_HDF5)
   sidre_io.write( root1, nranks, "sidre_array_mesh", "sidre_hdf5" );
+#else
+  sidre_io.write( root1, nranks, "sidre_array_mesh", "sidre_conduit_json" );
+#endif
 
   // STEP 3: read the data from the file into a new DataStore
   sidre::DataStore* dataStore2 = new sidre::DataStore();

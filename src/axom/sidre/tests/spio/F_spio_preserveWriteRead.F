@@ -43,7 +43,7 @@ program spio_preserve_write_read
   character(18) :: root_ext = ".root             "
 #else
   character(18) :: protocol = "sidre_conduit_json"
-  character(18) :: root_ext = ".conduit_json.root"
+  character(18) :: root_ext = ".root"
 #endif  
 
   call mpi_init(mpierr)

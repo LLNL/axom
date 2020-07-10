@@ -2567,10 +2567,18 @@ TEST(sidre_group,import_conduit_lists)
     }
   }
 
-  ds.getRoot()->save("lists.hdf5", "sidre_hdf5");
+#if defined(AXOM_USE_HDF5)
+  std::string lists_file = "lists.hdf5";
+  std::string lists_protocol = "sidre_hdf5";
+#else
+  std::string lists_file = "lists.json";
+  std::string lists_protocol = "sidre_json";
+#endif
+
+  ds.getRoot()->save(lists_file, lists_protocol);
 
   DataStore load_ds;
-  load_ds.getRoot()->load("lists.hdf5", "sidre_hdf5");
+  load_ds.getRoot()->load(lists_file, lists_protocol);
 
   {
     EXPECT_EQ(load_ds.getRoot()->getView(
