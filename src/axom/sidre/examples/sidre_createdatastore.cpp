@@ -577,10 +577,15 @@ void generate_spio_blueprint(DataStore* ds) {
   if (conduit::blueprint::verify(bp_protocol, mesh_node[domain_mesh], info))
   {
 
+#if defined(AXOM_USE_HDF5)
+    std::string protocol = "sidre_hdf5";
+#else
+    std::string protocol = "sidre_json";
+#endif
     std::string bp_rootfile("bpspio.root");
 
     writer.write(ds->getRoot()->getGroup(
-                   domain_location), 1, "bpspio", "sidre_hdf5");
+                   domain_location), 1, "bpspio", protocol);
 
     writer.writeBlueprintIndexToRootFile(ds, domain_mesh, bp_rootfile,
                                          mesh_name);
@@ -621,9 +626,14 @@ void generate_spio_blueprint_to_path(DataStore* ds) {
   {
 
     std::string bp_rootfile("pathbpspio.root");
+#if defined(AXOM_USE_HDF5)
+    std::string protocol = "sidre_hdf5";
+#else
+    std::string protocol = "sidre_json";
+#endif
 
     writer.write(ds->getRoot()->getGroup(
-                   "domain_data"), 1, "pathbpspio", "sidre_hdf5");
+                   "domain_data"), 1, "pathbpspio", protocol);
 
     writer.writeBlueprintIndexToRootFile(ds, domain_mesh, bp_rootfile,
                                          "level/domains/domain/" + mesh_name);
@@ -635,18 +645,26 @@ void generate_spio_blueprint_to_path(DataStore* ds) {
 
 void serial_save_datastore_and_load_copy_lower(DataStore* ds)
 {
+#if defined(AXOM_USE_HDF5)
+    std::string protocol = "sidre_hdf5";
+    std::string filename = "example.hdf5";
+#else
+    std::string protocol = "sidre_json";
+    std::string filename = "example.json";
+#endif
+
   // _serial_io_save_start
-  // Save the data store to a file, using the default sidre_hdf5 protocol,
+  // Save the data store to a file,
   // saving all Views
-  ds->getRoot()->save("example.hdf5");
+  ds->getRoot()->save(filename, protocol);
   // Delete the data hierarchy under the root, then load it from the file
-  ds->getRoot()->load("example.hdf5");
+  ds->getRoot()->load(filename, protocol);
   Group* additional = ds->getRoot()->createGroup("additional");
   additional->createGroup("yetanother");
   // Load another copy of the data store into the "additional" group
   // without first clearing all its contents
   std::string groupname;
-  additional->load("example.hdf5", "sidre_hdf5", true, groupname);
+  additional->load(filename, protocol, true, groupname);
   // _serial_io_save_end
 }
 
