@@ -451,6 +451,105 @@ TEST(inlet_Inlet_basic, getNestedValuesAddedUsingTable)
 
 }
 
+TEST(inlet_Inlet, mixLevelTables)
+{
+  // regression test for the lua stack being at the wrong
+  // level with nested tables with non-nested values
+
+  axom::sidre::DataStore dataStore;
+  auto luaReader = std::make_shared<axom::inlet::LuaReader>();
+  luaReader->parseString(
+    "thermal_solver={"
+    "   u0 = { type = \"function\", func = \"BoundaryTemperature\"},"
+    "   kappa = { type = \"constant\", constant = 0.5},"
+    "   solver = {"
+    "     rel_tol = 1.e-6,"
+    "     abs_tol = 1.e-12,"
+    "     print_level = 0,"
+    "     max_iter = 100,"
+    "     dt = 1.0,"
+    "     steps = 1 "
+    "   }"
+    "}");
+
+  auto inlet = std::make_shared<axom::inlet::Inlet>(luaReader, dataStore.getRoot());
+
+  //
+  // Define input deck schema
+  //
+
+  inlet->addString("thermal_solver/mesh/filename", "filename");
+  inlet->addInt("thermal_solver/mesh/serial", "serial");
+  inlet->addInt("thermal_solver/mesh/parallel", "parallel");
+
+  inlet->addInt("thermal_solver/order", "order");
+  inlet->addString("thermal_solver/timestepper", "timestepper");
+
+  inlet->addString("thermal_solver/u0/type", "type");
+  inlet->addString("thermal_solver/u0/func", "func");
+
+  inlet->addString("thermal_solver/kappa/type", "type");
+  inlet->addDouble("thermal_solver/kappa/constant", "constant");
+
+  inlet->addDouble("thermal_solver/solver/rel_tol", "rel_tol");
+  inlet->addDouble("thermal_solver/solver/abs_tol", "abs_tol");
+  inlet->addInt("thermal_solver/solver/print_level", "print_level");
+  inlet->addInt("thermal_solver/solver/max_iter", "max_iter");
+  inlet->addDouble("thermal_solver/solver/dt", "dt");
+  inlet->addInt("thermal_solver/solver/steps", "steps");
+
+  //
+  //  Verify values found in input deck
+  //
+  bool found = false;
+  std::string strVal;
+  int intVal;
+  double doubleVal;
+
+  // u0
+  found = inlet->get("thermal_solver/u0/type", strVal);
+  EXPECT_TRUE(found);
+  EXPECT_EQ(strVal, "function");
+
+  found = inlet->get("thermal_solver/u0/func", strVal);
+  EXPECT_TRUE(found);
+  EXPECT_EQ(strVal, "BoundaryTemperature");
+
+  // kappa
+  found = inlet->get("thermal_solver/kappa/type", strVal);
+  EXPECT_TRUE(found);
+  EXPECT_EQ(strVal, "constant");
+
+  found = inlet->get("thermal_solver/kappa/constant", doubleVal);
+  EXPECT_TRUE(found);
+  EXPECT_EQ(doubleVal, 0.5);
+
+  // solver
+  found = inlet->get("thermal_solver/solver/rel_tol", doubleVal);
+  EXPECT_TRUE(found);
+  EXPECT_EQ(doubleVal, 1.e-6);
+
+  found = inlet->get("thermal_solver/solver/abs_tol", doubleVal);
+  EXPECT_TRUE(found);
+  EXPECT_EQ(doubleVal, 1.e-12);
+
+  found = inlet->get("thermal_solver/solver/print_level", intVal);
+  EXPECT_TRUE(found);
+  EXPECT_EQ(intVal, 0);
+
+  found = inlet->get("thermal_solver/solver/max_iter", intVal);
+  EXPECT_TRUE(found);
+  EXPECT_EQ(intVal, 100);
+
+  found = inlet->get("thermal_solver/solver/dt", doubleVal);
+  EXPECT_TRUE(found);
+  EXPECT_EQ(doubleVal, 1.0);
+
+  found = inlet->get("thermal_solver/solver/steps", intVal);
+  EXPECT_TRUE(found);
+  EXPECT_EQ(intVal, 1);
+}
+
 //------------------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;

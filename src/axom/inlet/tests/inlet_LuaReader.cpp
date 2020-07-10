@@ -88,6 +88,33 @@ TEST(inlet_LuaReader_getString, getInsideStrings)
   EXPECT_EQ(value, "TesT StrInG");
 }
 
+
+TEST(inlet_LuaReader, mixLevelTables)
+{
+  axom::inlet::LuaReader lr;
+  lr.parseString(
+    "t = { innerT = { foo = 1 }, anotherInnerT = {baz = 3}}");
+
+  bool retValue;
+  int value;
+
+  value = 0;
+  retValue = lr.getInt("t/innerT/foo", value);
+  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(value, 1);
+
+  value = 0;
+  retValue = lr.getInt("t/doesntexist", value);
+  EXPECT_EQ(retValue, false);
+  EXPECT_EQ(value, 0);
+
+  value = 0;
+  retValue = lr.getInt("t/anotherInnerT/baz", value);
+  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(value, 3);
+}
+
+
 //------------------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
