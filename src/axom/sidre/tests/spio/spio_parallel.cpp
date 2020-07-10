@@ -49,7 +49,7 @@ const std::string ROOT_EXT = ".root";
 // Note: 'sidre_json' does not work for this test
 // since it doesn't preserve bitwidth sizes (e.g. int)
 const std::string PROTOCOL = "sidre_conduit_json";
-const std::string ROOT_EXT = ".conduit_json.root";
+const std::string ROOT_EXT = ".root";
 #endif
 
 /** Returns the number of output files for spio  */
