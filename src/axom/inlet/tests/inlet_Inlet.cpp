@@ -398,6 +398,59 @@ TEST(inlet_Inlet_basic, getNestedStrings)
   EXPECT_EQ(value, "1000");
 }
 
+TEST(inlet_Inlet_basic, getNestedValuesAddedUsingTable)
+{
+  std::string strVal = "";
+  int intVal = 0;
+  double doubleVal = 0;
+  bool boolVal = false;
+  bool found = false;
+
+  std::string testString = "foo = { bar = 'yet another string'; so = 3.5; re = 9; mi = true }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  std::shared_ptr<axom::inlet::Field> currField;
+
+  // Check for existing fields
+  auto table = inlet->addTable("foo", "A table called foo");
+  table->required(true);
+
+  currField = table->addString("bar", "bar's description");
+  EXPECT_TRUE(currField);
+  currField->required(true);
+
+  currField = table->addDouble("so", "so's description");
+  EXPECT_TRUE(currField);
+
+  currField = table->addInt("re", "re's description");
+  EXPECT_TRUE(currField);
+
+  currField = table->addBool("mi", "mi's description");
+  EXPECT_TRUE(currField);
+
+  //
+  // Check stored values from get
+  //
+
+  found = inlet->get("foo/bar", strVal);
+  EXPECT_TRUE(found);
+  EXPECT_EQ(strVal, "yet another string");
+
+  found = inlet->get("foo/mi", boolVal);
+  EXPECT_TRUE(found);
+  EXPECT_EQ(boolVal, true);
+
+  found = inlet->get("foo/so", doubleVal);
+  EXPECT_TRUE(found);
+  EXPECT_EQ(doubleVal, 3.5);
+
+  found = inlet->get("foo/re", intVal);
+  EXPECT_TRUE(found);
+  EXPECT_EQ(intVal, 9);
+
+}
+
 //------------------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;

@@ -32,64 +32,76 @@ The main drivers of the Axom project are to:
   *  Provide capabilities for LLNL research codes, proxy apps, etc. that simplify technology
      transfer from research efforts into production applications
 
-.. toctree::
-   :maxdepth: 1
-   :caption: Quickstart Guide
+==========
+Components
+==========
 
-   docs/sphinx/quickstart_guide/index
+   * Inlet: Input deck parsing and information storage/retrieval
+   * Lumberjack: Scalable parallel message logging and filtering
+   * Mint: Mesh data model
+   * Primal: Computational geometry primitives
+   * Quest: Querying on surface tool
+   * Sidre: Simulation data repository
+   * Slam: Set-theoretic lightweight API for meshes
+   * Slic: Simple Logging Interface Code
+   * Spin: Spatial indexes
 
-The Axom Quickstart Guide contains information about accessing the code,
-configuring and building, linking with an application, etc.
+=============
+Documentation
+=============
 
-================================
-Axom Software Documentation
-================================
+  * :doc:`Quickstart Guide <docs/sphinx/quickstart_guide/index>`
+  *  `Source documentation <doxygen/html/index.html>`_
 
-The following lists contain links to user guides and source code documentation
-for Axom software components:
+.. list-table::
+   :align: center
 
-.. toctree::
-   :maxdepth: 1
-   :caption: Component User Guides
+   * - Core
+     -
+     - `Source documentation <doxygen/html/coretop.html>`_
+   * - Inlet
+     - :doc:`User Guide <axom/inlet/docs/sphinx/index>`
+     - `Source documentation <doxygen/html/inlettop.html>`_
+   * - Lumberjack
+     - :doc:`User Guide <axom/lumberjack/docs/sphinx/index>`
+     - `Source documentation <doxygen/html/lumberjacktop.html>`_
+   * - Mint
+     - :doc:`User Guide <axom/mint/docs/sphinx/index>`
+     - `Source documentation <doxygen/html/minttop.html>`_
+   * - Primal
+     - :doc:`User Guide <axom/primal/docs/sphinx/index>`
+     - `Source documentation <doxygen/html/primaltop.html>`_
+   * - Quest
+     - :doc:`User Guide <axom/quest/docs/sphinx/index>`
+     - `Source documentation <doxygen/html/questtop.html>`_
+   * - Sidre
+     - :doc:`User Guide <axom/sidre/docs/sphinx/index>`
+     - `Source documentation <doxygen/html/sidretop.html>`_
+   * - Slam
+     - :doc:`User Guide <axom/slam/docs/sphinx/index>`
+     - `Source documentation <doxygen/html/slamtop.html>`_
+   * - Slic
+     - :doc:`User Guide <axom/slic/docs/sphinx/index>`
+     - `Source documentation <doxygen/html/slictop.html>`_
+   * - Spin
+     - :doc:`User Guide <axom/spin/docs/sphinx/index>`
+     - `Source documentation <doxygen/html/spintop.html>`_
 
-   Slic (Simple Logging Interface Code) <axom/slic/docs/sphinx/index>
-   Lumberjack (Scalable parallel message logging and filtering) <axom/lumberjack/docs/sphinx/index>
-   Sidre (Simulation data repository) <axom/sidre/docs/sphinx/index>
-   Slam (Set-theoretic lightweight API for meshes) <axom/slam/docs/sphinx/index>
-   Spin (Spatial indexes) <axom/spin/docs/sphinx/index>
-   Quest (Querying on surface tool) <axom/quest/docs/sphinx/index>
-   Mint (Mesh data model) <axom/mint/docs/sphinx/index>
-   Primal (Computational geometry primitives) <axom/primal/docs/sphinx/index>
-   Inlet (Input decks) <axom/inlet/docs/sphinx/index>
 
---------------------------
-Source Code Documentation
---------------------------
+============================
+Component Level Dependencies
+============================
 
-  *  `Axom <doxygen/html/index.html>`_
-  *  `Core <doxygen/html/coretop.html>`_
-  *  `Inlet <doxygen/html/inlettop.html>`_
-  *  `Lumberjack <doxygen/html/lumberjacktop.html>`_
-  *  `Mint <doxygen/html/minttop.html>`_
-  *  `Primal <doxygen/html/primaltop.html>`_
-  *  `Quest <doxygen/html/questtop.html>`_
-  *  `Sidre <doxygen/html/sidretop.html>`_
-  *  `Spin <doxygen/html/spintop.html>`_
-  *  `Slic <doxygen/html/slictop.html>`_
-  *  `Slam <doxygen/html/slamtop.html>`_
+Dependencies between components are as follows:
 
-Look for documentation to appear for new components as they are developed.
-
-Dependencies between modules are as follows:
-
-- Core has no dependencies, and the other modules depend on Core
+- Core has no dependencies, and the other components depend on Core
 - Slic optionally depends on Lumberjack
 - Slam, Spin, Primal, Mint, Quest, and Sidre depend on Slic
 - Mint optionally depends on Sidre
 - Quest depends on Slam, Spin, Primal, and Mint
 - Inlet depends on Sidre, and Slic
 
-The figure below summarizes the dependencies between the modules.  Solid links
+The figure below summarizes the dependencies between the components.  Solid links
 indicate hard dependencies; dashed links indicate optional dependencies.
 
 .. graphviz:: docs/dependencies.dot
@@ -102,20 +114,20 @@ Other Tools Application Developers May Find Useful
 Axom developers support other tools that can be used by software 
 projects independent of the Axom. These include:
 
-  *  `BLT <https://github.com/LLNL/blt>`_ (CMake-based build system developed by the Axom team to simplify CMake usage and development tool integration)
-  *  `Shroud <https://github.com/LLNL/shroud>`_ (Generator for native C and Fortran APIs from C++ code)
-  *  `Conduit <https://lc.llnl.gov/confluence/display/CON/Conduit+Home>`_ (Library for describing and managing in-memory data structures) 
+  *  `BLT <https://github.com/LLNL/blt>`_: CMake-based build system developed by the Axom team to simplify CMake usage and development tool integration
+  *  `Shroud <https://github.com/LLNL/shroud>`_: Generator for native C and Fortran APIs from C++ code
+  *  `Conduit <https://lc.llnl.gov/confluence/display/CON/Conduit+Home>`_: Library for describing and managing in-memory data structures
 
-.. toctree::
-   :maxdepth: 1
-   :caption: Developer Resources
+===================
+Developer Resources
+===================
 
-   docs/sphinx/dev_guide/index
-   docs/sphinx/coding_guide/index
+  * :doc:`Developer Guide <docs/sphinx/dev_guide/index>`
+  * :doc:`Coding Guide <docs/sphinx/coding_guide/index>`
 
-======================================= 
+================================
 Communicating with the Axom Team
-=======================================
+================================
 
 --------------
 Mailing Lists
@@ -127,38 +139,20 @@ The project maintains two email lists:
   * 'axom-dev@llnl.gov' is for communication among team members. 
 
 
--------------- 
+---------
 Chat Room
--------------- 
+---------
 
-We also have a chat room on LLNL's Cisco Jabber instance called 
-'Axom Dev'. It is open to anyone on the llnl network. 
-Just log onto Jabber and join the room.
-
-
------------------
-Atlassian Tools
------------------
-
-The main interaction hub for the Axom software is the Atlassian tool suite 
-on the Livermore Computing Collaboration Zone (CZ). These tools can be 
-accessed through the `MyLC Portal <https://lc.llnl.gov>`_.
-
-Direct links to the Axom Atlassian projects/spaces are:
-
-  * `Bitbucket project/git repository <https://lc.llnl.gov/bitbucket/projects/ATK>`_
-  * `Jira issue tracker <https://lc.llnl.gov/jira/projects/ATK>`_
-  * `Bamboo continuous integration <https://lc.llnl.gov/bamboo/browse/ASC>`_
-  * `Confluence (primarily for developers) <https://lc.llnl.gov/confluence/display/ASCT>`_
+We also have a chat room on LLNL's Microsoft Teams called 'Axom'. They open to
+anyone on the LLNL network. Just log onto Teams and join the room.
 
 
---------------------
-LC Groups
---------------------
+---------------------------------
+Git repository and Issue Tracking
+---------------------------------
 
-Access to Axom projects/spaces in these Atlassian tools requires
-membership in the `axom` group on LC systems. Please contact the team for
-group access by sending an email request to 'axom-dev@llnl.gov'.
+The main interaction hub for Axom is on `Github <https://github.com/LLNL/axom>`_
+
 
 
 ======================================================
@@ -174,6 +168,31 @@ LLNL-CODE-741217
 
 
 .. toctree::
+   :hidden:
    :maxdepth: 1
 
+   docs/sphinx/quickstart_guide/index
+
+.. toctree::
+   :hidden:
+   :maxdepth: 1
+   :caption: Component User Guides
+
+   Slic (Simple Logging Interface Code) <axom/slic/docs/sphinx/index>
+   Lumberjack (Scalable parallel message logging and filtering) <axom/lumberjack/docs/sphinx/index>
+   Sidre (Simulation data repository) <axom/sidre/docs/sphinx/index>
+   Slam (Set-theoretic lightweight API for meshes) <axom/slam/docs/sphinx/index>
+   Spin (Spatial indexes) <axom/spin/docs/sphinx/index>
+   Quest (Querying on surface tool) <axom/quest/docs/sphinx/index>
+   Mint (Mesh data model) <axom/mint/docs/sphinx/index>
+   Primal (Computational geometry primitives) <axom/primal/docs/sphinx/index>
+   Inlet (Input decks) <axom/inlet/docs/sphinx/index>
+
+.. toctree::
+   :hidden:
+   :maxdepth: 1
+   :caption: Developer Resources
+
+   docs/sphinx/dev_guide/index
+   docs/sphinx/coding_guide/index
    docs/licenses

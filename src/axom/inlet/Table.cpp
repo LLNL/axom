@@ -85,7 +85,7 @@ std::shared_ptr<Field> Table::addDouble(const std::string& name,
   }
   
   double value;
-  if(m_reader->getDouble(name, value))
+  if(m_reader->getDouble(fullName, value))
   {
     sidreGroup->createViewScalar("value", value);
   }
@@ -104,7 +104,7 @@ std::shared_ptr<Field> Table::addInt(const std::string& name,
   }
   
   int value;
-  if(m_reader->getInt(name, value))
+  if(m_reader->getInt(fullName, value))
   {
     sidreGroup->createViewScalar("value", value);
   }
@@ -123,7 +123,7 @@ std::shared_ptr<Field> Table::addString(const std::string& name,
   }
   
   std::string value;
-  if(m_reader->getString(name, value))
+  if(m_reader->getString(fullName, value))
   {
     sidreGroup->createViewString("value", value);
   }
