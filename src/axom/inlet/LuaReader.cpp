@@ -108,6 +108,8 @@ bool LuaReader::findVariable(const std::string& id)
   std::vector<std::string> tokens;
   axom::utilities::string::split(tokens, temp_id, SCOPE_DELIMITER);
 
+  // Clear the lua stack because we always call with fully qualified names
+  lua_settop(m_luaState, 0);
   for (std::string token : tokens)
   {
     if(atGlobalScope)
