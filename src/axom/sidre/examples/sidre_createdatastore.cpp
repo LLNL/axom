@@ -646,11 +646,11 @@ void generate_spio_blueprint_to_path(DataStore* ds) {
 void serial_save_datastore_and_load_copy_lower(DataStore* ds)
 {
 #if defined(AXOM_USE_HDF5)
-    std::string protocol = "sidre_hdf5";
-    std::string filename = "example.hdf5";
+  std::string protocol = "sidre_hdf5";
+  std::string filename = "example.hdf5";
 #else
-    std::string protocol = "sidre_json";
-    std::string filename = "example.json";
+  std::string protocol = "sidre_json";
+  std::string filename = "example.json";
 #endif
 
   // _serial_io_save_start
