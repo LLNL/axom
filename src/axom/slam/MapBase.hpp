@@ -33,10 +33,11 @@ namespace slam
  *
  */
 
+template<typename SetPositionType = slam::DefaultPositionType>
 class MapBase
 {
 public:
-  using SetPosition = slam::DefaultPositionType;
+  using SetPosition = SetPositionType;
 
 public:
   virtual ~MapBase() {};
