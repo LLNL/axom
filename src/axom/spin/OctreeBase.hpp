@@ -259,7 +259,7 @@ public:
       for(int dim =0 ; dim< DIM ; ++dim)
       {
         cPoint[dim] = (m_pt[dim] << 1)
-                      + (childIndex & (1 << dim) ? 1 : 0);
+                      + (childIndex & (CoordType(1) << dim) ? 1 : 0);
       }
 
       return cPoint;
@@ -372,7 +372,7 @@ public:
      */
     bool inBounds() const
     {
-      const CoordType maxVal = (1<<m_lev)-1;
+      const CoordType maxVal = (CoordType(1)<<m_lev)-CoordType(1);
       for(int i = 0 ; i < DIM ; ++i)
         if( (m_pt[i] < 0) || (m_pt[i] > maxVal) )
           return false;
@@ -557,7 +557,7 @@ public:
    */
   static CoordType maxCoordAtLevel(int level)
   {
-    return (1<< level)-1;
+    return (CoordType(1)<< level)-CoordType(1);
   }
 
   /**
