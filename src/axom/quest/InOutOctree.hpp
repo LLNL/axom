@@ -2315,8 +2315,8 @@ public:
   using SpaceTriangle = typename InOutOctreeType::SpaceTriangle;
 
   using LeafVertMap = slam::Map<slam::Set<VertexIndex>, VertexIndex>;
-  using LeafIntMap = slam::Map<slam::Set<int>, int>;
-  using LeafGridPtMap = slam::Map<slam::Set<int>, GridPt>;
+  using LeafIntMap = slam::Map<slam::Set<axom::IndexType>, axom::IndexType>;
+  using LeafGridPtMap = slam::Map<slam::Set<axom::IndexType>, GridPt>;
 
   using DebugMesh = mint::UnstructuredMesh< mint::MIXED_SHAPE>;
 
@@ -2634,10 +2634,10 @@ private:
 
 
     // Add the fields to the mint mesh
-    VertexIndex* vertID = addIntField(debugMesh, "vertID" );
-    VertexIndex* lLevel = addIntField(debugMesh, "level" );
+    auto* vertID = addIntField(debugMesh, "vertID" );
+    auto* lLevel = addIntField(debugMesh, "level" );
 
-    int* blockCoord[3];
+    axom::IndexType* blockCoord[3];
     blockCoord[0] = addIntField(debugMesh, "block_x" );
     blockCoord[1] = addIntField(debugMesh, "block_y" );
     blockCoord[2] = addIntField(debugMesh, "block_z" );
@@ -2654,8 +2654,8 @@ private:
 
     if(hasTriangles)
     {
-      VertexIndex* uniqVertID = addIntField(debugMesh, "uniqVertID" );
-      int* triCount = addIntField(debugMesh, "triCount" );
+      auto* uniqVertID = addIntField(debugMesh, "uniqVertID" );
+      auto* triCount = addIntField(debugMesh, "triCount" );
 
       for ( int i=0 ; i < leafSet.size() ; ++i )
       {
@@ -2666,7 +2666,7 @@ private:
 
     if(hasColors)
     {
-      int* colors = addIntField(debugMesh, "colors" );
+      auto* colors = addIntField(debugMesh, "colors" );
       for ( int i=0 ; i < leafSet.size() ; ++i )
         colors[i] = leafColors[i];
     }
@@ -2697,10 +2697,10 @@ private:
     int numTris = tris.size();
 
     // Index of each triangle within the mesh
-    int* triIdx = addIntField(debugMesh, "triangle_index" );
+    auto* triIdx = addIntField(debugMesh, "triangle_index" );
 
     // Indices of the three boundary vertices of this triangle
-    int* vertIdx[3];
+    axom::IndexType* vertIdx[3];
     vertIdx[0] = addIntField(debugMesh, "vertex_index_0" );
     vertIdx[1] = addIntField(debugMesh, "vertex_index_1" );
     vertIdx[2] = addIntField(debugMesh, "vertex_index_2" );
@@ -2728,9 +2728,9 @@ private:
 
 private:
 
-  int* addIntField(DebugMesh* mesh, const std::string& name ) const
+  axom::IndexType* addIntField(DebugMesh* mesh, const std::string& name ) const
   {
-    int* fld = mesh->createField< int >( name, mint::CELL_CENTERED );
+    axom::IndexType* fld = mesh->createField< axom::IndexType >( name, mint::CELL_CENTERED );
     SLIC_ASSERT( fld != nullptr );
     return fld;
   }
