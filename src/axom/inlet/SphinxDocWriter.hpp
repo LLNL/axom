@@ -29,6 +29,7 @@ private:
   void writeTable(const std::string& title);
 
   std::ofstream m_outFile;
+  std::ostringstream m_oss;
   axom::sidre::Group* m_sidreRootGroup;
   std::vector<std::vector<std::string>> m_rstTable;
   std::string m_fileName;

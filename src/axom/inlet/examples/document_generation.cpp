@@ -48,21 +48,23 @@ void exampleInlet(DataStore* ds, const std::string& luaFile, bool docsEnabled)
   
   std::shared_ptr<axom::inlet::Field> currField;
 
+  // Add the description to the thermal_solver/mesh/filename Field
   currField = inlet->addString("thermal_solver/mesh/filename", "file for thermal solver");
+  // Set the field's required property to true
   currField->required(true);
   
   currField = inlet->addInt("thermal_solver/mesh/serial", "serial value");  
-  currField->required(false);
-  
+  // The property called required is left unspecified here
+
   currField = inlet->addInt("thermal_solver/mesh/parallel", "parallel value");
   currField->required(true);
-  
+
   currField = inlet->addInt("thermal_solver/order", "thermal solver order");
   currField->required(true);
   
   currField = inlet->addString("thermal_solver/timestepper", "thermal solver timestepper");
   currField->required(true);
-  
+
   currField = inlet->addString("thermal_solver/u0/type", "description for u0 type");
   currField->required(true);
 
@@ -74,24 +76,29 @@ void exampleInlet(DataStore* ds, const std::string& luaFile, bool docsEnabled)
 
   currField = inlet->addDouble("thermal_solver/kappa/constant", "description for kappa constant");
   currField->required(true);
-  
-  currField = inlet->addDouble("thermal_solver/solver/rel_tol", "description for solver rel tol");
+
+  // Add description to solver table by using the addTable function
+  auto table = inlet->addTable("thermal_solver/solver", "This is the solver sub-table in the thermal_solver table");
+
+  // Can also add fields through a table
+
+  currField = table->addDouble("rel_tol", "description for solver rel tol");
   currField->required(true);
   
-  currField = inlet->addDouble("thermal_solver/solver/abs_tol", "description for solver abs tol");
+  currField = table->addDouble("abs_tol", "description for solver abs tol");
   currField->required(true);  
 
-  currField = inlet->addInt("thermal_solver/solver/print_level", "description for solver print level");
+  currField = table->addInt("print_level", "description for solver print level");
   currField->required(true);  
 
-  currField = inlet->addInt("thermal_solver/solver/max_iter", "description for solver max iter");
+  currField = table->addInt("max_iter", "description for solver max iter");
   currField->required(true);  
   
-  currField = inlet->addDouble("thermal_solver/solver/dt", "description for solver dt");
+  currField = table->addDouble("dt", "description for solver dt");
   currField->required(true); 
 
-  currField = inlet->addInt("thermal_solver/solver/steps", "description for solver steps");
-  currField->required(true);  
+  currField = table->addInt("steps", "description for solver steps");
+  currField->required(true);
 
   // Checking contents of inlet
 
@@ -113,6 +120,7 @@ void exampleInlet(DataStore* ds, const std::string& luaFile, bool docsEnabled)
   findDouble("thermal_solver/solver/rel_tol", inlet);
   findDouble("thermal_solver/kappa/constant", inlet);
   
+  // Generating documentation
   inlet->writeDocs();
 }
 

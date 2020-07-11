@@ -451,7 +451,7 @@ TEST(inlet_Inlet_basic, getNestedValuesAddedUsingTable)
 
 }
 
-TEST(inlet_Inlet_views, Example1)
+TEST(inlet_Inlet_views, NestedTableViewCheck1)
 {
   std::string testString = "field1 = true; field2 = 5632; NewTable = { str = 'hello'; integer = 32 }";
   DataStore ds;
@@ -495,7 +495,7 @@ TEST(inlet_Inlet_views, Example1)
   EXPECT_TRUE(sidreGroup->hasView("NewTable/integer/description"));
 }
 
-TEST(inlet_Inlet_views, Example2)
+TEST(inlet_Inlet_views, NestedTableViewCheck2)
 {
   std::string testString = "foo = false; bar = true; Table1 = { float1 = 3.14; Table11 = { Table111 = { x = 4 } } }";
   DataStore ds;
@@ -537,7 +537,7 @@ TEST(inlet_Inlet_views, Example2)
   EXPECT_TRUE(sidreGroup->hasView("Table1/Table11/Table111/x/description"));
 }
 
-TEST(inlet_Inlet_views, Example3)
+TEST(inlet_Inlet_views, NestedTableViewCheck3)
 {
   std::string testString = "Table1 = { float1 = 5.6 }; Table2 = { int1 = 95 }; Table3 = { bool1 = true }";
   DataStore ds;

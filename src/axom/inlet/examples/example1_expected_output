@@ -1,0 +1,16 @@
+thermal_solver/mesh/filename: found /data/star.mesh
+thermal_solver/timestepper: found quasistatic
+thermal_solver/u0/type: found function
+thermal_solver/u0/func: found BoundaryTemperature
+thermal_solver/kappa/type: found constant
+thermal_solver/mesh/serial: found 1
+thermal_solver/mesh/parallel: found 1
+thermal_solver/order: found 2
+thermal_solver/solver/print_level: found 0
+thermal_solver/solver/max_iter: found 100
+thermal_solver/solver/steps: found 1
+thermal_solver/solver/dt: found 1
+thermal_solver/solver/abs_tol: found 1e-12
+thermal_solver/solver/rel_tol: found 1e-06
+thermal_solver/kappa/constant: found 0.5
+Documentation was written to example.rst

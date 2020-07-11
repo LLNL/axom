@@ -16,12 +16,12 @@ if (LUA_FOUND)
 
     foreach(ex ${inlet_examples})
         get_filename_component( ex_name ${ex} NAME_WE )
-        blt_add_executable( NAME       ${ex_name}_example
+        blt_add_executable( NAME       inlet_${ex_name}_example 
                             SOURCES    ${ex}
                             OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
                             DEPENDS_ON inlet
                             FOLDER     axom/inlet/examples )
-        blt_add_test( NAME    ${ex_name} 
-                      COMMAND ${ex_name}_example )
+        blt_add_test( NAME    inlet_${ex_name} 
+                      COMMAND inlet_${ex_name}_example --enableDocs --deck ${CMAKE_CURRENT_LIST_DIR}/example1.lua )
     endforeach()
 endif()
