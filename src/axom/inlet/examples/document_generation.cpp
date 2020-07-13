@@ -39,18 +39,8 @@ void findDouble(std::string path, std::shared_ptr<Inlet> inlet) {
   std::cout << std::endl;
 } 
 
-void exampleInlet(const std::string& luaFile, bool docsEnabled)
+void defineSchema(std::shared_ptr<Inlet> inlet)
 {
-  DataStore ds;
-
-  auto lr = std::make_shared<LuaReader>();
-  lr->parseFile(luaFile);
-
-  auto inlet = std::make_shared<Inlet>(lr, ds.getRoot(), docsEnabled);
-
-  auto docWriter = std::make_shared<SphinxDocWriter>("example_docs.rst", inlet->sidreGroup());
-  inlet->registerDocWriter(docWriter);
-  
   std::shared_ptr<axom::inlet::Field> currField;
 
   // Add the description to the thermal_solver/mesh/filename Field
@@ -105,9 +95,10 @@ void exampleInlet(const std::string& luaFile, bool docsEnabled)
 
   currField = table->addInt("steps", "description for solver steps");
   currField->required(true);
+}
 
-  // Checking contents of inlet
-
+// Checking the contents of the passed inlet
+void checkValues(std::shared_ptr<Inlet> inlet) {
   findStr("thermal_solver/mesh/filename", inlet);
   findStr("thermal_solver/timestepper", inlet);
   findStr("thermal_solver/u0/type", inlet);
@@ -125,9 +116,6 @@ void exampleInlet(const std::string& luaFile, bool docsEnabled)
   findDouble("thermal_solver/solver/abs_tol", inlet);
   findDouble("thermal_solver/solver/rel_tol", inlet);
   findDouble("thermal_solver/kappa/constant", inlet);
-  
-  // Generating documentation
-  inlet->writeDocs();
 }
 
 int main(int argc, char** argv) {
@@ -141,7 +129,21 @@ int main(int argc, char** argv) {
 
   CLI11_PARSE(app, argc, argv);
 
-  exampleInlet(inputFileName, docsEnabled);
+  // Create inlet and parse input file data into the inlet
+
+  DataStore ds;
+
+  auto lr = std::make_shared<LuaReader>();
+  lr->parseFile(inputFileName);
+  auto inlet = std::make_shared<Inlet>(lr, ds.getRoot(), docsEnabled);
+  auto docWriter = std::make_shared<SphinxDocWriter>("example_docs.rst", inlet->sidreGroup());
+  inlet->registerDocWriter(docWriter);
+
+  defineSchema(inlet);
+  checkValues(inlet);
+  
+  // Generate the documentation documentation
+  inlet->writeDocs();
 
   if (docsEnabled) {
     std::cout << "Documentation was written to example_docs.rst" << std::endl;
