@@ -24,7 +24,7 @@ void SphinxDocWriter::writeDocuments(axom::sidre::Group* sidreGroup) {
   writeDocumentsHelper(m_sidreRootGroup);
   writeTable("Fields");
   m_outFile.open(m_fileName);
-  m_outFile << m_oss.rdbuf();
+  m_outFile << m_oss.str();
   m_outFile.close();
 }
 

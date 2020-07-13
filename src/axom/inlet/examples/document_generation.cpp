@@ -139,7 +139,7 @@ int main(int argc, char** argv) {
   exampleInlet(&ds, strOption, docsEnabled);
 
   if (docsEnabled) {
-    std::cout << "Documentation was written to example.rst" << std::endl;
+    std::cout << "Documentation was written to example_docs.rst" << std::endl;
   }
 
   return 0;
