@@ -72,7 +72,7 @@ ${gconf} alias.undo "!bash -c \"git reset HEAD~ \""
 ## Usage: git squash-merge <branch-name>
 ##
 ## Merges the branch with the given name into the current branch,
-## typically, main using a squash-merge. All commits in the
+## typically main, using a squash-merge. All commits in the
 ## branch <branch-name> are squashed to a single commit.
 ${gconf} alias.squash-merge "!bash -c \"git merge --squash \$1\""
 
