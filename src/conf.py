@@ -82,7 +82,7 @@ source_suffix = '.rst'
 #source_encoding = 'utf-8-sig'
 
 # The main toctree document.
-main_doc = 'index'
+master_doc = 'index'
 
 # General information about the project.
 project = u'Axom'
@@ -274,7 +274,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  (main_doc, 'Axom.tex', u'Axom Documentation',
+  (master_doc, 'Axom.tex', u'Axom Documentation',
    u'LLNL', 'manual'),
 ]
 
@@ -304,7 +304,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (main_doc, 'axom', u'Axom Documentation',
+    (master_doc, 'axom', u'Axom Documentation',
      [u'Axom Team'], 1)
 ]
 
@@ -318,7 +318,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  (main_doc, 'Axom', u'Axom Documentation',
+  (master_doc, 'Axom', u'Axom Documentation',
    'Axom Team', 'Axom', 'Library of CS utilities for HPC applications.',
    'Miscellaneous'),
 ]
