@@ -110,7 +110,7 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Table> addTable(const std::string& name,
-                                  const std::string& description);
+                                  const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -128,7 +128,7 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Field> addBool(const std::string& name,
-                                 const std::string& description);
+                                 const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -146,7 +146,7 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Field> addDouble(const std::string& name,
-                                   const std::string& description);
+                                   const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -164,7 +164,7 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Field> addInt(const std::string& name,
-                                const std::string& description);
+                                const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -182,7 +182,7 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Field> addString(const std::string& name,
-                                   const std::string& description);
+                                   const std::string& description = "");
 
   //
   // Functions that get the values out of the datastore

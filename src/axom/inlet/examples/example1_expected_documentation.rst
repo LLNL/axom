@@ -40,7 +40,7 @@ Description: This is the solver sub-table in the thermal_solver table
      - Not specified
      - Not specified
    * - parallel
-     - parallel value
+     - Not specified
      - Not specified
      - Not specified
      - True

@@ -39,12 +39,14 @@ void findDouble(std::string path, std::shared_ptr<Inlet> inlet) {
   std::cout << std::endl;
 } 
 
-void exampleInlet(DataStore* ds, const std::string& luaFile, bool docsEnabled)
+void exampleInlet(const std::string& luaFile, bool docsEnabled)
 {
+  DataStore ds;
+
   auto lr = std::make_shared<LuaReader>();
   lr->parseFile(luaFile);
 
-  auto inlet = std::make_shared<Inlet>(lr, ds->getRoot(), docsEnabled);
+  auto inlet = std::make_shared<Inlet>(lr, ds.getRoot(), docsEnabled);
 
   auto docWriter = std::make_shared<SphinxDocWriter>("example_docs.rst", inlet->sidreGroup());
   inlet->registerDocWriter(docWriter);
@@ -59,7 +61,8 @@ void exampleInlet(DataStore* ds, const std::string& luaFile, bool docsEnabled)
   currField = inlet->addInt("thermal_solver/mesh/serial", "serial value");  
   // The property called required is left unspecified here
 
-  currField = inlet->addInt("thermal_solver/mesh/parallel", "parallel value");
+  // The description for thermal_solver/mesh/parallel is left unspecified
+  currField = inlet->addInt("thermal_solver/mesh/parallel");
   currField->required(true);
 
   currField = inlet->addInt("thermal_solver/order", "thermal solver order");
@@ -83,7 +86,7 @@ void exampleInlet(DataStore* ds, const std::string& luaFile, bool docsEnabled)
   // Add description to solver table by using the addTable function
   auto table = inlet->addTable("thermal_solver/solver", "This is the solver sub-table in the thermal_solver table");
 
-  // Can also add fields through a table
+  // You can also add fields through a table
 
   currField = table->addDouble("rel_tol", "description for solver rel tol");
   currField->required(true);
@@ -138,8 +141,7 @@ int main(int argc, char** argv) {
 
   CLI11_PARSE(app, argc, argv);
 
-  DataStore ds;
-  exampleInlet(&ds, inputFileName, docsEnabled);
+  exampleInlet(inputFileName, docsEnabled);
 
   if (docsEnabled) {
     std::cout << "Documentation was written to example_docs.rst" << std::endl;
