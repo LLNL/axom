@@ -319,7 +319,7 @@ class VcpkgEnv(UberEnv):
     def clone_repo(self):
         if not os.path.isdir(self.dest_vcpkg):
             # compose clone command for the dest path, vcpkg url and branch
-            vcpkg_branch = self.project_opts.get("vcpkg_branch", "master")
+            vcpkg_branch = self.project_opts.get("vcpkg_branch", "main")
             vcpkg_url = self.project_opts.get("vcpkg_url", "https://github.com/microsoft/vcpkg")
 
             print("[info: cloning vcpkg '{0}' branch from {1} into {2}]"

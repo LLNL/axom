@@ -72,16 +72,16 @@ ${gconf} alias.undo "!bash -c \"git reset HEAD~ \""
 ## Usage: git squash-merge <branch-name>
 ##
 ## Merges the branch with the given name into the current branch,
-## typically, master using a squash-merge. All commits in the
+## typically, main using a squash-merge. All commits in the
 ## branch <branch-name> are squashed to a single commit.
 ${gconf} alias.squash-merge "!bash -c \"git merge --squash \$1\""
 
 ## Usage: git ffwd-merge <branch-name>
 ## 
 ## Does a fast-forward merge of the given branch into
-## the current branch, typically master. All commits in
+## the current branch, typically main. All commits in
 ## branch <branch-name> are appended/played on top of
-## master. 
+## main. 
 ##
 ## A precondition for a ffwd-merge is that a linear 
 ## commit history is maintained as depicted in the figure
@@ -89,9 +89,9 @@ ${gconf} alias.squash-merge "!bash -c \"git merge --squash \$1\""
 ##
 ##			  D---E---F <branch-name>
 ##			 /
-##  A---B---C <master>
+##  A---B---C <main>
 ##
 ## In order to maintain the topic branch in this state, 
-## `git rebase master` must be issued before the
+## `git rebase main` must be issued before the
 ## `git ffwd-merge <branch-name>`.
 ${gconf} alias.ffwd-merge "!bash -c \"git merge --ff-only \$1\""

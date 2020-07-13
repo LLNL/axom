@@ -70,7 +70,7 @@ echo '
 You may setup your prompt to do tab auto-completion of git commands
 by sourcing the appropriate git-completion script for your shell:
 
-    https://github.com/git/git/tree/master/contrib/completion
+    https://github.com/git/git/tree/main/contrib/completion
 
 In addition, you may want to setup your prompt to dynamically show you
 on what branch you are on, if you have any stashed/staged modifications or
@@ -79,7 +79,7 @@ any untracked files.
 To do this you can just get and follow the instructions in the beginning
 of the git-prompt.sh script that is available here:
 
-    https://github.com/git/git/blob/master/contrib/completion/git-prompt.sh
+    https://github.com/git/git/blob/main/contrib/completion/git-prompt.sh
 
 This only supports Bash/zsh shell environments.
 
