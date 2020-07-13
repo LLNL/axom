@@ -79,9 +79,9 @@ void SphinxDocWriter::writeSubtitle(const std::string& sub) {
 void SphinxDocWriter::writeTable(const std::string& title) {
   std::string result = ".. list-table:: " + title;
   result += "\n   :widths: 25 25 25 25 25\n   :header-rows: 1\n   :stub-columns: 1\n\n";
-  for (int i = 0; i < m_rstTable.size(); i++) {
+  for (unsigned int i = 0; i < m_rstTable.size(); i++) {
     result += "   * - ";
-    for (int j = 0; j < m_rstTable[i].size(); j++) {
+    for (unsigned int j = 0; j < m_rstTable[i].size(); j++) {
       if (j != 0) {
         result += "     - ";
       }
