@@ -1,8 +1,11 @@
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+
 // usage : ./document_generation_example --enableDocs --deck lua_file 
 
-#include "axom/inlet/SphinxDocWriter.hpp"
-#include "axom/inlet/Inlet.hpp"
-#include "axom/inlet/LuaReader.hpp"
+#include "axom/inlet.hpp"
 
 #include "CLI11/CLI11.hpp"
 #include <iostream>
@@ -125,18 +128,18 @@ void exampleInlet(DataStore* ds, const std::string& luaFile, bool docsEnabled)
 }
 
 int main(int argc, char** argv) {
-  CLI::App app {"Description here"};
+  CLI::App app {"Basic example of Axom's Inlet component"};
   bool docsEnabled{false};
   app.add_flag("--enableDocs", docsEnabled, "Enables documentation generation");
 
-  std::string strOption;
-  auto opt = app.add_option("--deck", strOption, "Path to input deck file");
+  std::string inputFileName;
+  auto opt = app.add_option("--deck", inputFileName, "Path to input deck file");
   opt->check(CLI::ExistingFile);
 
   CLI11_PARSE(app, argc, argv);
 
   DataStore ds;
-  exampleInlet(&ds, strOption, docsEnabled);
+  exampleInlet(&ds, inputFileName, docsEnabled);
 
   if (docsEnabled) {
     std::cout << "Documentation was written to example_docs.rst" << std::endl;

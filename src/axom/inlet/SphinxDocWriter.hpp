@@ -1,12 +1,17 @@
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+
+#ifndef INLET_SPHINXDOCWRITER_HPP
+#define INLET_SPHINXDOCWRITER_HPP
+
 #include <string>
 #include <vector>
 #include <fstream>
 
 #include "axom/sidre.hpp"
 #include "axom/inlet/DocWriter.hpp"
-
-#ifndef INLET_SPHINXDOCWRITER_HPP
-#define INLET_SPHINXDOCWRITER_HPP
 
 namespace axom
 {

@@ -1,5 +1,4 @@
--- a simple test to accompany sera_lua_test
---serac-thermal-solver
+-- Basic example of a simulation Input Deck
 thermal_solver={}
 thermal_solver.mesh = {
  filename = "/data/star.mesh",

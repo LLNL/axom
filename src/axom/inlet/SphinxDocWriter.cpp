@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+
 #include "axom/inlet/SphinxDocWriter.hpp"
 #include <iostream>
 #include <assert.h>
@@ -16,7 +21,7 @@ SphinxDocWriter::SphinxDocWriter(const std::string& fileName, axom::sidre::Group
 
 void SphinxDocWriter::writeDocuments(axom::sidre::Group* sidreGroup) {
   if (sidreGroup->getName() == "") {
-    writeTitle("Untitled");
+    writeTitle("Input Deck Options");
   }  else {
     writeTitle(sidreGroup->getName());
   }
@@ -39,6 +44,7 @@ void SphinxDocWriter::writeDocumentsHelper(axom::sidre::Group* sidreGroup) {
     if (sidreGroup->hasView("description")) {
       fieldAttributes[1] = std::string(sidreGroup->getView(sidreGroup->getViewIndex("description"))->getString());
     } 
+    // the following 2 lines will be needed once default values and range are added to inlet fields
     // fieldAttributes[2] = std::to_string(sidreGroup->getView(sidreGroup->getViewIndex("default values"))->getScalar());
     // fieldAttributes[3] = std::to_string(sidreGroup->getView(sidreGroup->getViewIndex("range"))->getScalar());
     if (sidreGroup->hasView("required")) {

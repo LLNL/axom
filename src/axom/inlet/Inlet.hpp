@@ -63,7 +63,7 @@ public:
     m_reader(reader),
     m_sidreRootGroup(sidreRootGroup),
     m_globalTable(std::make_shared<Table>("", "", m_reader, m_sidreRootGroup)),
-    m_docWriterToggle(docsEnabled) {}
+    m_docWriterEnabled(docsEnabled) {}
 
   virtual ~Inlet() = default;
 
@@ -265,7 +265,7 @@ private:
   std::shared_ptr<Table> m_globalTable;
 
   std::shared_ptr<DocWriter> m_docWriter;
-  bool m_docWriterToggle = false; 
+  bool m_docWriterEnabled = false; 
 };
 
 } // end namespace inlet

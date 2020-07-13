@@ -184,7 +184,7 @@ void Inlet::registerDocWriter(std::shared_ptr<DocWriter> writer) {
 }
 
 void Inlet::writeDocs() {
-  if (m_docWriterToggle) {
+  if (m_docWriterEnabled) {
     m_docWriter->writeDocuments(m_sidreRootGroup);
   }
 }
