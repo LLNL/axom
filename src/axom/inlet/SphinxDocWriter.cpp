@@ -25,6 +25,8 @@ void SphinxDocWriter::writeDocuments(axom::sidre::Group* sidreGroup) {
   }  else {
     writeTitle(sidreGroup->getName());
   }
+  m_oss << ".. |uncheck|    unicode:: U+2610 .. REGISTERED SIGN" << std::endl;
+  m_oss << ".. |check|      unicode:: U+2611 .. REGISTERED SIGN" << std::endl;
   writeDocumentsHelper(m_sidreRootGroup);
   m_rstTables.push_back(m_currentTable);
   writeAllTables();
@@ -50,7 +52,7 @@ void SphinxDocWriter::writeDocumentsHelper(axom::sidre::Group* sidreGroup) {
     // fieldAttributes[3] = std::to_string(sidreGroup->getView(sidreGroup->getViewIndex("range"))->getScalar());
     if (sidreGroup->hasView("required")) {
       int8 required = sidreGroup->getView(sidreGroup->getViewIndex("required"))->getData();
-      fieldAttributes[4] = required ? "True" : "False";
+      fieldAttributes[4] = required ? "|check|" : "|uncheck|";
     } 
   
     m_currentTable.rstTable.push_back(fieldAttributes);
@@ -83,7 +85,7 @@ void SphinxDocWriter::writeTitle(const std::string& title) {
 void SphinxDocWriter::writeSubtitle(const std::string& sub) {
   if (sub != "") {
     std::string dashes = std::string(sub.length(), '-');
-    m_oss << dashes << "\n" << sub << "\n" << dashes << "\n";
+    m_oss << "\n" << dashes << "\n" << sub << "\n" << dashes << "\n\n";
   }
 }
 

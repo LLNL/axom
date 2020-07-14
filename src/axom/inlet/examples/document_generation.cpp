@@ -53,13 +53,13 @@ void defineSchema(std::shared_ptr<Inlet> inlet)
 
   // The description for thermal_solver/mesh/parallel is left unspecified
   currField = inlet->addInt("thermal_solver/mesh/parallel");
-  currField->required(true);
+  currField->required(false);
 
   currField = inlet->addInt("thermal_solver/order", "thermal solver order");
   currField->required(true);
   
   currField = inlet->addString("thermal_solver/timestepper", "thermal solver timestepper");
-  currField->required(true);
+  currField->required(false);
 
   currField = inlet->addString("thermal_solver/u0/type", "description for u0 type");
   currField->required(true);
@@ -79,7 +79,7 @@ void defineSchema(std::shared_ptr<Inlet> inlet)
   // You can also add fields through a table
 
   currField = table->addDouble("rel_tol", "description for solver rel tol");
-  currField->required(true);
+  currField->required(false);
   
   currField = table->addDouble("abs_tol", "description for solver abs tol");
   currField->required(true);  
@@ -88,7 +88,7 @@ void defineSchema(std::shared_ptr<Inlet> inlet)
   currField->required(true);  
 
   currField = table->addInt("max_iter", "description for solver max iter");
-  currField->required(true);  
+  currField->required(false);  
   
   currField = table->addDouble("dt", "description for solver dt");
   currField->required(true); 
