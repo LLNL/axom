@@ -13,23 +13,24 @@ namespace axom
 template <typename KType, typename VType>
 class Map
 {
+public:
 
-AXOM_HOST_DEVICE
-Map() {}
+  AXOM_HOST_DEVICE
+  Map() {}
 
-AXOM_HOST_DEVICE
-VType& operator[](KType query){}
+  AXOM_HOST_DEVICE
+  VType& operator[](KType query){}
 
-AXOM_HOST_DEVICE
-const VType& operator[](KType query) const {}
+  AXOM_HOST_DEVICE
+  const VType& operator[](KType query) const {}
 
-AXOM_HOST_DEVICE
-Map(Array&& other);
+  AXOM_HOST_DEVICE
+  Map(Array&& other);
 
-AXOM_HOST_DEVICE
-Map(Array& other);
+  AXOM_HOST_DEVICE
+  Map(Array& other);
 
-}
+};
 
 } /* namespace axom */
 
