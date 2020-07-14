@@ -25,9 +25,9 @@ void SphinxDocWriter::writeDocuments(axom::sidre::Group* sidreGroup) {
   }  else {
     writeTitle(sidreGroup->getName());
   }
-  m_rstTable = {{"Field Name", "Description", "Default Value", "Range", "Required"}};
   writeDocumentsHelper(m_sidreRootGroup);
-  writeTable("Fields");
+  m_rstTables.push_back(m_currentTable);
+  writeAllTables();
   m_outFile.open(m_fileName);
   m_outFile << m_oss.str();
   m_outFile.close();
@@ -36,9 +36,10 @@ void SphinxDocWriter::writeDocuments(axom::sidre::Group* sidreGroup) {
 void SphinxDocWriter::writeDocumentsHelper(axom::sidre::Group* sidreGroup) {
   SLIC_ASSERT_MSG(sidreGroup, "Root was nullptr");
   axom::sidre::IndexType i = sidreGroup->getFirstValidGroupIndex();
+
   if (sidreGroup != m_sidreRootGroup && i == axom::sidre::InvalidIndex) { 
     // means that it is a field so attributes are stored in views
-    std::vector<std::string> fieldAttributes(5, "Not specified");
+    std::vector<std::string> fieldAttributes(5, "");
     fieldAttributes.resize(5);
     fieldAttributes[0] = sidreGroup->getName();
     if (sidreGroup->hasView("description")) {
@@ -52,13 +53,19 @@ void SphinxDocWriter::writeDocumentsHelper(axom::sidre::Group* sidreGroup) {
       fieldAttributes[4] = required ? "True" : "False";
     } 
   
-    m_rstTable.push_back(fieldAttributes);
+    m_currentTable.rstTable.push_back(fieldAttributes);
   } 
 
+  // Current root corresponds to a inlet::Table
+
   if (i != axom::sidre::InvalidIndex) {
-    writeSubtitle(sidreGroup->getName());
+    // writeSubtitle(sidreGroup->getName());
+    m_rstTables.push_back(m_currentTable);
+    m_currentTable = TableData();
+    m_currentTable.tableName = sidreGroup->getName();
     if (sidreGroup->getName() != "" && sidreGroup->hasChildView("description")) {
-      m_oss << "\nDescription: " << sidreGroup->getView("description")->getString() << "\n\n";
+      // m_oss << "\nDescription: " << sidreGroup->getView("description")->getString() << "\n\n";
+      m_currentTable.description = sidreGroup->getView("description")->getString();
     } 
   }
 
@@ -82,19 +89,34 @@ void SphinxDocWriter::writeSubtitle(const std::string& sub) {
   }
 }
 
-void SphinxDocWriter::writeTable(const std::string& title) {
+void SphinxDocWriter::writeTable(const std::string& title, 
+                                 const std::vector<std::vector<std::string>>& rstTable) {
+  SLIC_ASSERT_MSG(rstTable.size() > 1, "vector for corresponding rst table must be nonempty");
   std::string result = ".. list-table:: " + title;
   result += "\n   :widths: 25 25 25 25 25\n   :header-rows: 1\n   :stub-columns: 1\n\n";
-  for (unsigned int i = 0; i < m_rstTable.size(); i++) {
+  for (unsigned int i = 0; i < rstTable.size(); i++) {
     result += "   * - ";
-    for (unsigned int j = 0; j < m_rstTable[i].size(); j++) {
+    for (unsigned int j = 0; j < rstTable[i].size(); j++) {
       if (j != 0) {
         result += "     - ";
       }
-      result += m_rstTable[i][j] + "\n";
+      result += rstTable[i][j] + "\n";
     }
   }
   m_oss << result;
+}
+
+void SphinxDocWriter::writeAllTables() {
+  for (int i = 0; i < m_rstTables.size(); i++) {
+    writeSubtitle(m_rstTables[i].tableName);
+    if (m_rstTables[i].description != "") {
+      m_oss << "Description: " << m_rstTables[i].description << std::endl << std::endl;
+    }
+    if (m_rstTables[i].rstTable.size() > 1) {
+      writeTable("Fields", m_rstTables[i].rstTable);
+    }
+  }
+
 }
 
 }
