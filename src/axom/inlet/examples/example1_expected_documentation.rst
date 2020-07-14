@@ -32,7 +32,7 @@ mesh
      - serial value
      - 
      - 
-     - 
+     - |uncheck|
    * - parallel
      - 
      - 

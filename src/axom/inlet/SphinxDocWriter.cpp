@@ -44,17 +44,22 @@ void SphinxDocWriter::writeDocumentsHelper(axom::sidre::Group* sidreGroup) {
   if (sidreGroup != m_sidreRootGroup && i == axom::sidre::InvalidIndex) { 
     std::vector<std::string> fieldAttributes(5, "");
     fieldAttributes.resize(5);
+    
     fieldAttributes[0] = sidreGroup->getName();
     if (sidreGroup->hasView("description")) {
       fieldAttributes[1] = std::string(sidreGroup->getView(sidreGroup->getViewIndex("description"))->getString());
     } 
+
     // the following 2 lines will be needed once default values and range are added to inlet fields
     // fieldAttributes[2] = std::to_string(sidreGroup->getView(sidreGroup->getViewIndex("default values"))->getScalar());
     // fieldAttributes[3] = std::to_string(sidreGroup->getView(sidreGroup->getViewIndex("range"))->getScalar());
+
     if (sidreGroup->hasView("required")) {
       int8 required = sidreGroup->getView(sidreGroup->getViewIndex("required"))->getData();
       fieldAttributes[4] = required ? "|check|" : "|uncheck|";
-    } 
+    } else {
+      fieldAttributes[4] = "|uncheck|";
+    }
   
     m_currentTable.rstTable.push_back(fieldAttributes);
   } 
