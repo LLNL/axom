@@ -107,7 +107,7 @@ void SphinxDocWriter::writeTable(const std::string& title,
 }
 
 void SphinxDocWriter::writeAllTables() {
-  for (int i = 0; i < m_rstTables.size(); i++) {
+  for (unsigned int i = 0; i < m_rstTables.size(); i++) {
     writeSubtitle(m_rstTables[i].tableName);
     if (m_rstTables[i].description != "") {
       m_oss << "Description: " << m_rstTables[i].description << std::endl << std::endl;

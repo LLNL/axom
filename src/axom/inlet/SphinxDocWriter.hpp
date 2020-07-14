@@ -18,15 +18,6 @@ namespace axom
 namespace inlet
 { 
 
-struct TableData {
-  TableData() {
-    rstTable = {{"Field Name", "Description", "Default Value", "Range", "Required"}};
-  }
-  std::string tableName;
-  std::string description;
-  std::vector<std::vector<std::string>> rstTable;
-};
-
 class SphinxDocWriter : public DocWriter {
 
 public: 
@@ -43,7 +34,14 @@ private:
   void writeTable(const std::string& title, const std::vector<std::vector<std::string>>& rstTable);
   void writeAllTables();
 
-
+  struct TableData {
+    TableData() {
+      rstTable = {{"Field Name", "Description", "Default Value", "Range", "Required"}};
+    }
+    std::string tableName;
+    std::string description;
+    std::vector<std::vector<std::string>> rstTable;
+  };
 
   std::ofstream m_outFile;
   std::ostringstream m_oss;
