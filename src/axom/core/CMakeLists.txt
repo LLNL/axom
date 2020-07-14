@@ -40,6 +40,7 @@ set(core_headers
     ## core
     Array.hpp
     Macros.hpp
+    Map.hpp
     StackArray.hpp
     Types.hpp
     memory_management.hpp
