@@ -30,7 +30,8 @@ namespace inlet
  *******************************************************************************
  * \class SphinxDocWriter
  *
- * \brief A DocWriter that is able write documentation for a given input deck.
+ * \brief A DocWriter that is able write documentation in Sphinx RST format for 
+ * a given input deck.
  *
  * \see DocWriter
  *******************************************************************************

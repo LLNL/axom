@@ -42,14 +42,13 @@ class DocWriter {
 public:
   /*!
    *****************************************************************************
-   * \brief Write documenation for the input deck to a given file
+   * \brief Write documentation for the input deck to a given file
    *
    * This writes the documentation according to the information retrieved from 
    * the sidre group.
    *
    * \param [in]  sidreGroup The sidre group to retrieve information from
    *
-   * \return true if the variable was able to be retrieved from the deck
    *****************************************************************************
    */
   virtual void writeDocuments(axom::sidre::Group* sidreGroup) = 0;
