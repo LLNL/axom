@@ -38,7 +38,7 @@ void SphinxDocWriter::writeDocumentsHelper(axom::sidre::Group* sidreGroup) {
   axom::sidre::IndexType i = sidreGroup->getFirstValidGroupIndex();
 
   if (sidreGroup != m_sidreRootGroup && i == axom::sidre::InvalidIndex) { 
-    // means that it is a field so attributes are stored in views
+    // Means that the current group is a Field so attributes are stored in views
     std::vector<std::string> fieldAttributes(5, "");
     fieldAttributes.resize(5);
     fieldAttributes[0] = sidreGroup->getName();
@@ -59,12 +59,10 @@ void SphinxDocWriter::writeDocumentsHelper(axom::sidre::Group* sidreGroup) {
   // Current root corresponds to a inlet::Table
 
   if (i != axom::sidre::InvalidIndex) {
-    // writeSubtitle(sidreGroup->getName());
     m_rstTables.push_back(m_currentTable);
     m_currentTable = TableData();
     m_currentTable.tableName = sidreGroup->getName();
     if (sidreGroup->getName() != "" && sidreGroup->hasChildView("description")) {
-      // m_oss << "\nDescription: " << sidreGroup->getView("description")->getString() << "\n\n";
       m_currentTable.description = sidreGroup->getView("description")->getString();
     } 
   }
