@@ -3,6 +3,14 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+/*!
+ *******************************************************************************
+ * \file SphinxDocWriter.cpp
+ *
+ * \brief This file contains the class implementation of the SphinxDocWriter.
+ *******************************************************************************
+ */
+
 #include "axom/inlet/SphinxDocWriter.hpp"
 #include <iostream>
 #include <assert.h>
@@ -44,7 +52,7 @@ void SphinxDocWriter::writeDocumentsHelper(axom::sidre::Group* sidreGroup) {
   if (sidreGroup != m_sidreRootGroup && i == axom::sidre::InvalidIndex) { 
     std::vector<std::string> fieldAttributes(5, "");
     fieldAttributes.resize(5);
-    
+
     fieldAttributes[0] = sidreGroup->getName();
     if (sidreGroup->hasView("description")) {
       fieldAttributes[1] = std::string(sidreGroup->getView(sidreGroup->getViewIndex("description"))->getString());

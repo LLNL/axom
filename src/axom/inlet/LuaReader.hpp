@@ -5,9 +5,9 @@
 
 /*!
  *******************************************************************************
- * \file LuaMap.hpp
+ * \file LuaReader.hpp
  *
- * \brief This file contains the class definition of the LuaMap.
+ * \brief This file contains the class definition of the LuaReader.
  *******************************************************************************
  */
 

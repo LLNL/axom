@@ -3,6 +3,14 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
+/*!
+ *******************************************************************************
+ * \file SphinxDocWriter.hpp
+ *
+ * \brief This file contains the class definition of the SphinxDocWriter.
+ *******************************************************************************
+ */
+
 #ifndef INLET_SPHINXDOCWRITER_HPP
 #define INLET_SPHINXDOCWRITER_HPP
 
@@ -18,26 +26,130 @@ namespace axom
 namespace inlet
 { 
 
+/*!
+ *******************************************************************************
+ * \class SphinxDocWriter
+ *
+ * \brief A DocWriter that is able write documentation for a given input deck.
+ *
+ * \see DocWriter
+ *******************************************************************************
+ */
 class SphinxDocWriter : public DocWriter {
-
 public: 
+  /*!
+  *******************************************************************************
+  * \brief A constructor for SphinxDocWriter.
+  * 
+  * \param [in] fileName The name of the file the documentation should be written to.
+  * 
+  * \param [in] sidreRootGroup The root of the sidre group that will be traversed
+  * to create documentation.
+  *
+  *******************************************************************************
+  */
   SphinxDocWriter(const std::string& fileName, axom::sidre::Group* sidreRootGroup);
 
-  // Entry point for document generation
+  /*!
+  *******************************************************************************
+  * \brief Writes all documentation to a file.
+  * 
+  * This generates all RST-syntax documentation and writes it to the pre-specified
+  * file.
+  * 
+  * \param [in] sidreRootGroup The root of the sidre group that will be traversed
+  * to create documentation.
+  *
+  *******************************************************************************
+  */
   void writeDocuments(axom::sidre::Group* sidreGroup);
 
 private:
+  /*!
+   *****************************************************************************
+   * \brief Accumulate the rstTables vector with documentation data.
+   *
+   * This recursively identifies all Fields and Tables for the documentation.
+   *
+   * \param [in] sidreGroup The root of the sidre tree to traverse
+   *
+   *****************************************************************************
+   */
   void writeDocumentsHelper(axom::sidre::Group* sidreGroup);
 
+  /*!
+   *****************************************************************************
+   * \brief Writes the title in RST syntax.
+   *
+   * This writes a title to the ostringstream in RST syntax.
+   *
+   * \param [in] title The title to be written
+   *
+   *****************************************************************************
+   */
   void writeTitle(const std::string& title);
+
+  /*!
+   *****************************************************************************
+   * \brief Writes the sub-title in RST syntax.
+   *
+   * This writes a sub-title to the ostringstream in RST syntax.
+   *
+   * \param [in] sub The sub-title to be written
+   *
+   *****************************************************************************
+   */
   void writeSubtitle(const std::string& sub);
-  void writeTable(const std::string& title, const std::vector<std::vector<std::string>>& rstTable);
+
+  /*!
+   *****************************************************************************
+   * \brief Writes a 4 column table in RST syntax.
+   *
+   * This writes a 4 column table to the ostringstream in RST syntax. The number
+   * of rows are determined by the number of Fields found in the vector.
+   *
+   * \param [in] sub The title of the table written
+   * 
+   * \param [in] rstTable The 2 dimensional vector containing information to
+   * be translated into an RST table
+   *
+   *****************************************************************************
+   */
+  void writeTable(const std::string& title, 
+                  const std::vector<std::vector<std::string>>& rstTable);
+
+  /*!
+   *****************************************************************************
+   * \brief Writes all tables and their respective titles and descriptions.
+   *
+   * This parses all of the information from m_rstTables into RST-syntax 
+   * documentation and writes it to the ostringstream.
+   *
+   *****************************************************************************
+   */
   void writeAllTables();
 
+  /*!
+  *******************************************************************************
+  * \struct TableData
+  *
+  * \brief A struct to store data associated with each inlet::Table.
+  *
+  *******************************************************************************
+  */
   struct TableData {
+    /*!
+    *******************************************************************************
+    * \brief A constructor for the TableData struct
+    * 
+    * This initializes the RST table's column labels.
+    *
+    *******************************************************************************
+    */
     TableData() {
       rstTable = {{"Field Name", "Description", "Default Value", "Range", "Required"}};
     }
+
     std::string tableName;
     std::string description;
     std::vector<std::vector<std::string>> rstTable;

@@ -252,8 +252,27 @@ public:
    */
   bool get(const std::string& name, std::string& value);
 
+  /*!
+   *****************************************************************************
+   * \brief Sets the associated DocWriter for the Inlet instance.
+   *
+   * Sets the associated DocWriter. If the DocWriter is already set, it will be
+   * replaced by the one that was most recently set.
+   *
+   * \param [in] writer A pointer to a DocWriter object
+   *
+   *****************************************************************************
+   */
   void registerDocWriter(std::shared_ptr<DocWriter> writer);
 
+  /*!
+   *****************************************************************************
+   * \brief Writes input deck documentation.
+   *
+   * This writes the input deck's documentation through the registered DocWriter.
+   *
+   *****************************************************************************
+   */
   void writeDocs();
 
   // TODO add update value functions
