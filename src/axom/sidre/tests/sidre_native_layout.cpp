@@ -18,6 +18,7 @@
 
 using axom::sidre::Buffer;
 using axom::sidre::Group;
+using axom::sidre::View;
 using axom::sidre::DataStore;
 using axom::sidre::IndexType;
 using axom::sidre::InvalidIndex;
@@ -519,6 +520,146 @@ TEST(sidre_native_layout,import_conduit_and_verify_protocol)
     }
   }
 }
+
+//------------------------------------------------------------------------------
+
+TEST(sidre_native_layout, basic_demo_compare)
+{
+  //
+  // create demo a datastore that includes:
+  //  groups
+  //  views:
+  //    scalar, string, array, external array, array of sliced buffer
+
+  DataStore ds;
+  Group* root = ds.getRoot();
+
+  // Note:
+  // we use int64 and float64 b/c those types persist even with
+  // json or yaml output
+
+  conduit::int64     sidre_vals_1[5] = {0,1,2,3,4};
+  conduit::float64   sidre_vals_2[6] = { 1.0, 2.0,
+                                         1.0, 2.0,
+                                         1.0, 2.0,};
+
+  Group* group1 = root->createGroup("my_scalars");
+  // two scalars
+  group1->createViewScalar<conduit::int64>("i64", 1);
+  group1->createViewScalar<conduit::float64>("f64", 10.0);
+
+  Group* group2 = root->createGroup("my_strings");
+  // two strings
+  group2->createViewString("s0", "s0 string");
+  group2->createViewString("s1", "s1 string");
+
+  // one basic array
+  Group* group3 = root->createGroup("my_arrays");
+  View* a5_std_view = group3->createViewAndAllocate("a5_i64_std",
+                                                    conduit::DataType::int64(5));
+
+  conduit::int64* a5_std_view_ptr = a5_std_view->getData();
+
+  for(int i=0; i < 5; i++)
+  {
+      a5_std_view_ptr[i] = sidre_vals_1[i];
+  }
+  
+  // one external array
+  group3->createView("a5_i64_ext",
+           conduit::DataType::int64(5))->setExternalDataPtr(sidre_vals_1);
+
+  // change val to make sure this is reflected as external
+  sidre_vals_1[4] = -5;
+
+  // create a buffer that we will access via non std offset + stride combo
+  Buffer* buff = ds.createBuffer(axom::sidre::FLOAT64_ID, 6);
+  buff->allocate();
+
+  conduit::float64* buff_ptr = buff->getData();
+
+  for(int i=0; i < 6; i++)
+  {
+    buff_ptr[i] = sidre_vals_2[i];
+  }
+
+  View *v1 = group3->createView("b_v1");
+  View *v2 = group3->createView("b_v2");
+
+  // with these settings, bv1 should have 1.0 as all vals
+  v1->attachBuffer(buff);
+  v1->apply(conduit::DataType::float64(3,
+                                       0,
+                                       2 * sizeof(conduit::float64)));
+
+  // with these settings, bv2 should have 2.0 as all vals
+  v2->attachBuffer(buff);
+  v2->apply(conduit::DataType::float64(3,
+                                       sizeof(conduit::float64),
+                                       2 * sizeof(conduit::float64)));
+  //
+  // save the data store using several protocols
+  //
+  std::vector<std::string> protocols;
+
+#ifdef AXOM_USE_HDF5
+  protocols.push_back("sidre_hdf5");
+#endif
+  protocols.push_back("sidre_json");
+  protocols.push_back("sidre_conduit_json");
+
+  for (size_t i = 0 ; i < protocols.size() ; ++i)
+  {
+    SLIC_INFO("Testing protocol: " << protocols[i]);
+    const std::string file_path = "texample_sidre_basic_ds_demo." + protocols[i];
+    // save using current protocol
+    ds.getRoot()->save(file_path, protocols[i]);
+  }
+
+  axom::sidre::Node n_sidre;
+  ds.getRoot()->createNativeLayout(n_sidre);
+  SLIC_INFO("Sidre Conduit Native Layout Tree:");
+  n_sidre.print();
+
+  //
+  // create an equiv conduit tree for testing
+  //
+
+  conduit::int64    conduit_vals_1[5] = {0,1,2,3,4};
+  conduit::float64  conduit_vals_2[6] = { 1.0, 2.0,
+                                          1.0, 2.0,
+                                          1.0, 2.0,};
+
+  axom::sidre::Node n;
+  n["my_scalars/i64"].set_int64(1);
+  n["my_scalars/f64"].set_float64(10.0);
+  n["my_strings/s0"] = "s0 string";
+  n["my_strings/s1"] = "s1 string";
+  n["my_arrays/a5_i64_std"].set(conduit_vals_1,5);
+  n["my_arrays/a5_i64_ext"].set_external(conduit_vals_1,5);
+  n["my_arrays/b_v1"].set(conduit_vals_2,
+                          3,
+                          0,
+                          2 * sizeof(conduit::float64));
+  n["my_arrays/b_v2"].set(conduit_vals_2,
+                          3,
+                          sizeof(conduit::float64),
+                          2 * sizeof(conduit::float64));
+
+  // change val to make sure this is reflected as external
+  conduit_vals_1[4] = -5;
+  SLIC_INFO("Conduit Test Tree:");
+  n.print();
+
+  axom::sidre::Node n_info;
+  EXPECT_FALSE(n.diff(n_sidre,n_info));
+  
+  //
+  // TODO: When using newer conduit that has relay support for sidre i/o
+  //       test round trip with relay here.
+
+}
+
 
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
