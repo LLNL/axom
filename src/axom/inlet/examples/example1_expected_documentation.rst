@@ -1,12 +1,18 @@
 ==================
 Input Deck Options
 ==================
+.. |uncheck|    unicode:: U+2610 .. UNCHECKED BOX
+.. |check|      unicode:: U+2611 .. CHECKED BOX
+
 --------------
 thermal_solver
 --------------
+
+
 ----
 mesh
 ----
+
 .. list-table:: Fields
    :widths: 25 25 25 25 25
    :header-rows: 1
@@ -21,7 +27,7 @@ mesh
      - file for thermal solver
      - 
      - 
-     - True
+     - |check|
    * - serial
      - serial value
      - 
@@ -31,20 +37,22 @@ mesh
      - 
      - 
      - 
-     - True
+     - |uncheck|
    * - order
      - thermal solver order
      - 
      - 
-     - True
+     - |check|
    * - timestepper
      - thermal solver timestepper
      - 
      - 
-     - True
+     - |uncheck|
+
 --
 u0
 --
+
 .. list-table:: Fields
    :widths: 25 25 25 25 25
    :header-rows: 1
@@ -59,15 +67,17 @@ u0
      - description for u0 type
      - 
      - 
-     - True
+     - |check|
    * - func
      - description for u0 func
      - 
      - 
-     - True
+     - |check|
+
 -----
 kappa
 -----
+
 .. list-table:: Fields
    :widths: 25 25 25 25 25
    :header-rows: 1
@@ -82,15 +92,17 @@ kappa
      - description for kappa type
      - 
      - 
-     - True
+     - |check|
    * - constant
      - description for kappa constant
      - 
      - 
-     - True
+     - |check|
+
 ------
 solver
 ------
+
 Description: This is the solver sub-table in the thermal_solver table
 
 .. list-table:: Fields
@@ -107,29 +119,29 @@ Description: This is the solver sub-table in the thermal_solver table
      - description for solver rel tol
      - 
      - 
-     - True
+     - |uncheck|
    * - abs_tol
      - description for solver abs tol
      - 
      - 
-     - True
+     - |check|
    * - print_level
      - description for solver print level
      - 
      - 
-     - True
+     - |check|
    * - max_iter
      - description for solver max iter
      - 
      - 
-     - True
+     - |uncheck|
    * - dt
      - description for solver dt
      - 
      - 
-     - True
+     - |check|
    * - steps
      - description for solver steps
      - 
      - 
-     - True
+     - |check|

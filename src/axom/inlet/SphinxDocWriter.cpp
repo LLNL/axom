@@ -25,8 +25,8 @@ void SphinxDocWriter::writeDocuments(axom::sidre::Group* sidreGroup) {
   }  else {
     writeTitle(sidreGroup->getName());
   }
-  m_oss << ".. |uncheck|    unicode:: U+2610 .. REGISTERED SIGN" << std::endl;
-  m_oss << ".. |check|      unicode:: U+2611 .. REGISTERED SIGN" << std::endl;
+  m_oss << ".. |uncheck|    unicode:: U+2610 .. UNCHECKED BOX" << std::endl;
+  m_oss << ".. |check|      unicode:: U+2611 .. CHECKED BOX" << std::endl;
   writeDocumentsHelper(m_sidreRootGroup);
   m_rstTables.push_back(m_currentTable);
   writeAllTables();
@@ -39,8 +39,9 @@ void SphinxDocWriter::writeDocumentsHelper(axom::sidre::Group* sidreGroup) {
   SLIC_ASSERT_MSG(sidreGroup, "Root was nullptr");
   axom::sidre::IndexType i = sidreGroup->getFirstValidGroupIndex();
 
+  // Case 1: the current group is a Field so attributes are stored in views
+
   if (sidreGroup != m_sidreRootGroup && i == axom::sidre::InvalidIndex) { 
-    // Means that the current group is a Field so attributes are stored in views
     std::vector<std::string> fieldAttributes(5, "");
     fieldAttributes.resize(5);
     fieldAttributes[0] = sidreGroup->getName();
@@ -58,7 +59,7 @@ void SphinxDocWriter::writeDocumentsHelper(axom::sidre::Group* sidreGroup) {
     m_currentTable.rstTable.push_back(fieldAttributes);
   } 
 
-  // Current root corresponds to a inlet::Table
+  // Case 2: Current root corresponds to a inlet::Table
 
   if (i != axom::sidre::InvalidIndex) {
     m_rstTables.push_back(m_currentTable);
@@ -91,7 +92,7 @@ void SphinxDocWriter::writeSubtitle(const std::string& sub) {
 
 void SphinxDocWriter::writeTable(const std::string& title, 
                                  const std::vector<std::vector<std::string>>& rstTable) {
-  SLIC_ASSERT_MSG(rstTable.size() > 1, "vector for corresponding rst table must be nonempty");
+  SLIC_ASSERT_MSG(rstTable.size() > 1, "Vector for corresponding rst table must be nonempty");
   std::string result = ".. list-table:: " + title;
   result += "\n   :widths: 25 25 25 25 25\n   :header-rows: 1\n   :stub-columns: 1\n\n";
   for (unsigned int i = 0; i < rstTable.size(); i++) {

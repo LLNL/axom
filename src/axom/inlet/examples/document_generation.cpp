@@ -132,7 +132,6 @@ int main(int argc, char** argv) {
   // Create inlet and parse input file data into the inlet
 
   DataStore ds;
-
   auto lr = std::make_shared<LuaReader>();
   lr->parseFile(inputFileName);
   auto inlet = std::make_shared<Inlet>(lr, ds.getRoot(), docsEnabled);
@@ -142,7 +141,7 @@ int main(int argc, char** argv) {
   defineSchema(inlet);
   checkValues(inlet);
   
-  // Generate the documentation documentation
+  // Generate the documentation
   inlet->writeDocs();
 
   if (docsEnabled) {
