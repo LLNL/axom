@@ -63,7 +63,7 @@ public:
   *
   *******************************************************************************
   */
-  void writeDocuments(axom::sidre::Group* sidreGroup);
+  void writeDocumentation();
 
 private:
   /*!
@@ -76,7 +76,7 @@ private:
    *
    *****************************************************************************
    */
-  void writeDocumentsHelper(axom::sidre::Group* sidreGroup);
+  void writeDocumentationHelper(axom::sidre::Group* sidreGroup);
 
   /*!
    *****************************************************************************
@@ -156,9 +156,9 @@ private:
     std::vector<std::vector<std::string>> rstTable;
   };
 
+  axom::sidre::Group* m_sidreRootGroup;
   std::ofstream m_outFile;
   std::ostringstream m_oss;
-  axom::sidre::Group* m_sidreRootGroup;
   std::vector<TableData> m_rstTables;
   std::string m_fileName;
   TableData m_currentTable;

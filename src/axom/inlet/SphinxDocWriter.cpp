@@ -27,15 +27,15 @@ SphinxDocWriter::SphinxDocWriter(const std::string& fileName, axom::sidre::Group
   m_fileName = fileName;
 }
 
-void SphinxDocWriter::writeDocuments(axom::sidre::Group* sidreGroup) {
-  if (sidreGroup->getName() == "") {
+void SphinxDocWriter::writeDocumentation() {
+  if (m_sidreRootGroup->getName() == "") {
     writeTitle("Input Deck Options");
   }  else {
-    writeTitle(sidreGroup->getName());
+    writeTitle(m_sidreRootGroup->getName());
   }
   m_oss << ".. |uncheck|    unicode:: U+2610 .. UNCHECKED BOX" << std::endl;
   m_oss << ".. |check|      unicode:: U+2611 .. CHECKED BOX" << std::endl;
-  writeDocumentsHelper(m_sidreRootGroup);
+  writeDocumentationHelper(m_sidreRootGroup);
   m_rstTables.push_back(m_currentTable);
   writeAllTables();
   m_outFile.open(m_fileName);
@@ -43,7 +43,7 @@ void SphinxDocWriter::writeDocuments(axom::sidre::Group* sidreGroup) {
   m_outFile.close();
 }
 
-void SphinxDocWriter::writeDocumentsHelper(axom::sidre::Group* sidreGroup) {
+void SphinxDocWriter::writeDocumentationHelper(axom::sidre::Group* sidreGroup) {
   SLIC_ASSERT_MSG(sidreGroup, "Root was nullptr");
   axom::sidre::IndexType i = sidreGroup->getFirstValidGroupIndex();
 
@@ -84,7 +84,7 @@ void SphinxDocWriter::writeDocumentsHelper(axom::sidre::Group* sidreGroup) {
   }
 
   while (i != axom::sidre::InvalidIndex) {
-    writeDocumentsHelper(sidreGroup->getGroup(i));
+    writeDocumentationHelper(sidreGroup->getGroup(i));
     i = sidreGroup->getNextValidGroupIndex(i);
   }
 }

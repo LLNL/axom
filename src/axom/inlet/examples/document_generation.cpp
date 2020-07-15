@@ -135,17 +135,17 @@ int main(int argc, char** argv) {
   auto lr = std::make_shared<LuaReader>();
   lr->parseFile(inputFileName);
   auto inlet = std::make_shared<Inlet>(lr, ds.getRoot(), docsEnabled);
-  auto docWriter = std::make_shared<SphinxDocWriter>("example_docs.rst", inlet->sidreGroup());
+  auto docWriter = std::make_shared<SphinxDocWriter>("example_doc.rst", inlet->sidreGroup());
   inlet->registerDocWriter(docWriter);
 
   defineSchema(inlet);
   checkValues(inlet);
   
   // Generate the documentation
-  inlet->writeDocs();
+  inlet->writeDoc();
 
   if (docsEnabled) {
-    std::cout << "Documentation was written to example_docs.rst" << std::endl;
+    std::cout << "Documentation was written to example_doc.rst" << std::endl;
   }
 
   return 0;

@@ -273,7 +273,7 @@ public:
    *
    *****************************************************************************
    */
-  void writeDocs();
+  void writeDoc();
 
   // TODO add update value functions
 private:

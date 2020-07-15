@@ -51,10 +51,7 @@ public:
    *
    *****************************************************************************
    */
-  virtual void writeDocuments(axom::sidre::Group* sidreGroup) = 0;
-
-private:
-  axom::sidre::Group* m_sidreRootGroup;
+  virtual void writeDocumentation() = 0;
 };
 
 }
