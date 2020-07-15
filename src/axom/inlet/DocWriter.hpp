@@ -47,8 +47,6 @@ public:
    * This writes the documentation according to the information retrieved from 
    * the sidre group.
    *
-   * \param [in]  sidreGroup The sidre group to retrieve information from
-   *
    *****************************************************************************
    */
   virtual void writeDocumentation() = 0;

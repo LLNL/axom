@@ -57,9 +57,6 @@ public:
   * 
   * This generates all RST-syntax documentation and writes it to the pre-specified
   * file.
-  * 
-  * \param [in] sidreRootGroup The root of the sidre group that will be traversed
-  * to create documentation.
   *
   *******************************************************************************
   */
