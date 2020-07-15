@@ -674,14 +674,14 @@ TEST(inlet_Inlet_verify, checkVerify) {
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
   std::shared_ptr<axom::inlet::Field> currField;
-  currField = inlet->addBool("NewTable/field1");
+  currField = inlet->addBool("NewTable/field3");
   ds.getRoot()->getGroup("NewTable")->createViewString("required", "string");
   EXPECT_FALSE(inlet->verify());
-  
+
   ds.getRoot()->getView("NewTable/required")->rename("renamedView");
   currField = inlet->addString("NewTable/str");
   currField->required(true);
-  currField = inlet->addString("NewTable/str");
+  currField = inlet->addInt("NewTable/int");
   EXPECT_TRUE(inlet->verify());
 }
 
