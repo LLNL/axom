@@ -669,6 +669,22 @@ TEST(inlet_Inlet, mixLevelTables)
   EXPECT_EQ(intVal, 1);
 }
 
+TEST(inlet_Inlet_verify, checkVerify) {
+  std::string testString = "field1 = true; field2 = 5632; NewTable = { str = 'hello'; integer = 32 }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+  std::shared_ptr<axom::inlet::Field> currField;
+  currField = inlet->addBool("NewTable/field1");
+  ds.getRoot()->getGroup("NewTable")->createViewString("required", "string");
+  EXPECT_FALSE(inlet->verify());
+  
+  ds.getRoot()->getView("NewTable/required")->rename("renamedView");
+  currField = inlet->addString("NewTable/str");
+  currField->required(true);
+  currField = inlet->addString("NewTable/str");
+  EXPECT_TRUE(inlet->verify());
+}
+
 //------------------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;

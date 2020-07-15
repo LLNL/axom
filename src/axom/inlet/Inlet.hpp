@@ -275,8 +275,35 @@ public:
    */
   void writeDoc();
 
+  /*!
+   *****************************************************************************
+   * \brief Verifies contents of input deck.
+   *
+   * This checks the correctness of each Field and Table in the input deck.
+   * 
+   * \return True if contents are correct. False if not.
+   *
+   *****************************************************************************
+   */
+  bool verify(); 
+
   // TODO add update value functions
 private:
+  /*!
+   *****************************************************************************
+   * \brief Verifies contents of sidreGroup.
+   *
+   * This recrusively checks the correctness of each Field and Table in the sidre
+   * sub-group.
+   * 
+   * \param [in] sidreGroup The root of the sub-group to be verified.
+   * 
+   * \return True if contents are correct. False if not.
+   *
+   *****************************************************************************
+   */
+  bool verifyRecursive(axom::sidre::Group* sidreGroup);
+
   axom::sidre::View* baseGet(const std::string& name);
 
   std::shared_ptr<Reader> m_reader;

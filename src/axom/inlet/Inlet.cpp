@@ -189,5 +189,31 @@ void Inlet::writeDoc() {
   }
 }
 
+bool Inlet::verify() {
+  return verifyRecursive(m_sidreRootGroup);
+}
+
+bool Inlet::verifyRecursive(axom::sidre::Group* sidreGroup) {
+  SLIC_ASSERT_MSG(sidreGroup, "Root was nullptr");
+
+  axom::sidre::IndexType viewIndex = sidreGroup->getFirstValidViewIndex();
+  while (axom::sidre::indexIsValid(viewIndex)) {
+    if (sidreGroup->getView(viewIndex)->getName() == "required"
+        && !sidreGroup->getView(viewIndex)->isScalar()) {
+      return false;
+    }
+    viewIndex = sidreGroup->getNextValidViewIndex(viewIndex);
+  }
+
+  axom::sidre::IndexType groupIndex = sidreGroup->getFirstValidGroupIndex();
+  while (axom::sidre::indexIsValid(groupIndex)) {
+    if (!verifyRecursive(sidreGroup->getGroup(groupIndex))) {
+      return false;
+    }
+    groupIndex = sidreGroup->getNextValidGroupIndex(groupIndex);
+  }
+  return true;
+}
+
 } // end namespace inlet
 } // end namespace axom
