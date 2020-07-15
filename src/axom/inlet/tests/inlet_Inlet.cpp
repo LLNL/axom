@@ -683,6 +683,9 @@ TEST(inlet_Inlet_verify, checkVerify) {
   currField->required(true);
   currField = inlet->addInt("NewTable/int");
   EXPECT_TRUE(inlet->verify());
+
+  ds.getRoot()->getGroup("NewTable/int")->createView("required");
+  EXPECT_FALSE(inlet->verify());
 }
 
 //------------------------------------------------------------------------------
