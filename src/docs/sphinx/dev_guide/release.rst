@@ -19,11 +19,11 @@ informal. However, we want to ensure that the software is in a reasonably
 robust and stable state when a release is done. We follow this process to
 avoid simple oversights and issues that we do not want to pass on to users.
 
-In the :ref:`gitflow-label` section, we noted that the **master branch
+In the :ref:`gitflow-label` section, we noted that the **main branch
 records the official release history of the project**. Specifically,
-whenever, the master branch is changed, it is tagged with a new
+whenever, the main branch is changed, it is tagged with a new
 version number. We use a git 'lightweight tag' for this purpose. Such
-a tag is essentially a pointer to a specific commit on the master branch.
+a tag is essentially a pointer to a specific commit on the main branch.
 
 We finalize preparations for a release on a release branch so that other
 work may continue on the develop branch without interruption.
@@ -47,7 +47,7 @@ description of how version numbers are chosen.
 2: Issue a Pull Request
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-Create a pull request to merge the release candidate branch into master so that
+Create a pull request to merge the release candidate branch into main so that
 release changes can be reviewed. Such changes include:
 
 #. Update the version information (major, minor, and patch version numbers)
@@ -81,7 +81,7 @@ release changes can be reviewed. Such changes include:
 3: Merge Release Candidate
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Merge the release candidate branch into master branch once it is ready and
+Merge the release candidate branch into the main branch once it is ready and
 approved. At this point, the release candidate branch can be deleted.
 
 
@@ -92,14 +92,14 @@ approved. At this point, the release candidate branch can be deleted.
 
 #. Enter the desired tag version, e.g., v0.5.0
 
-#. Select **master** as the target branch to tag a release.
+#. Select **main** as the target branch to tag a release.
 
 #. Enter a Release title. We typically use titles of the following form *Axom-v0.3.1*
 
 #. Copy and paste the information for the release from the
    ``axom/RELEASE-NOTES.md`` into the release description (omit any sections if empty).
 
-#. Publish the release. This will create a tag at the tip of the master
+#. Publish the release. This will create a tag at the tip of the main
    branch and add corresponding entry in the
    `Releases section <https://github.com/LLNL/axom/releases>`_
 
@@ -113,7 +113,7 @@ approved. At this point, the release candidate branch can be deleted.
 5: Make a Release Tarball
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* Checkout the master branch locally and run ``axom/scripts/make_release_tarball.sh --with-data``
+* Checkout the main branch locally and run ``axom/scripts/make_release_tarball.sh --with-data``
   This will generate a two tarballs of the form ``Axom-v0.3.1.tar.gz`` and ``AxomData-v0.3.1.tar.gz``
   each consistsing of the axom source and data respectively.
 
@@ -128,10 +128,10 @@ approved. At this point, the release candidate branch can be deleted.
 
 * Update the release.
 
-6: Merge Master to Develop
+6: Merge Main to Develop
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Create a pull request to merge master into develop. When approved, merge it.
+Create a pull request to merge main into develop. When approved, merge it.
 
 
 .. _release-notes-label:
