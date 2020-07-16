@@ -10,7 +10,7 @@
 .. _Axom Quick Start Guide: ../../../../../docs/sphinx/quickstart_guide/index.html
 .. _Conduit: https://llnl-conduit.readthedocs.io/en/latest/index.html
 .. _Blueprint: https://llnl-conduit.readthedocs.io/en/latest/blueprint.html
-.. _RAJA: https://raja.readthedocs.io/en/master/index.html
+.. _RAJA: https://raja.readthedocs.io/en/main/index.html
 .. _Axom Toolkit: ../../../../../index.html
 .. _Sidre: ../../../../sidre/docs/sphinx/index.html
 .. _WCI: https://wci.llnl.gov/

@@ -1,4 +1,4 @@
-Quest: Query points in meshes {#questtop}
+Quest {#questtop}
 ========
 
 [Quest](@ref axom::quest) provides spatial queries and operations on a mesh.

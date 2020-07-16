@@ -70,7 +70,7 @@ Library dependencies
 .. _Conduit: https://llnl-conduit.readthedocs.io/en/latest
 .. _MFEM: https://mfem.org/
 .. _HDF5: https://www.hdfgroup.org/solutions/hdf5/
-.. _RAJA: https://raja.readthedocs.io/en/master/
+.. _RAJA: https://raja.readthedocs.io/en/main/
 .. _SCR: https://computation.llnl.gov/projects/scalable-checkpoint-restart-for-mpi
 .. _Umpire: https://umpire.readthedocs.io/en/latest/
 

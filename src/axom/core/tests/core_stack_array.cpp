@@ -87,9 +87,9 @@ struct Tensor
 {
   double x, y, z;
 
-  Tensor() :
-    x(), y(), z()
-  {}
+  Tensor() = default;
+  Tensor(const Tensor& other) = default;
+
 
   explicit Tensor( double val ) :
     x( 3 * val ), y( 3 * val + 1 ), z( 3 * val + 2 )

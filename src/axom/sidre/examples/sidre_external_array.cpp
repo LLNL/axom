@@ -20,6 +20,7 @@
 namespace sidre = axom::sidre;
 namespace slic  = axom::slic;
 
+#if defined(AXOM_USE_HDF5)
 //------------------------------------------------------------------------------
 void sidre_write( MPI_Comm comm,
                   const std::string& file,
@@ -106,11 +107,12 @@ void sidre_read( MPI_Comm comm,
   std::cout << std::endl;
 // DEBUG
 }
-
+#endif
 //------------------------------------------------------------------------------
 int main ( int argc, char** argv )
 {
   MPI_Init( &argc, &argv );
+#if defined(AXOM_USE_HDF5)
   MPI_Comm problem_comm = MPI_COMM_WORLD;
 
   slic::UnitTestLogger logger;
@@ -155,6 +157,7 @@ int main ( int argc, char** argv )
   // STEP 4: deallocate
   axom::deallocate( data );
   axom::deallocate( data2 );
+#endif
 
   MPI_Finalize();
   return 0;
