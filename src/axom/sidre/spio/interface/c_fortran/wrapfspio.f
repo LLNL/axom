@@ -121,7 +121,7 @@ module axom_spio
         end subroutine c_iomanager_write_0_bufferify
 
         subroutine c_iomanager_write_1(self, group, num_files, &
-                file_string, protocol, pattern) &
+                file_string, protocol, tree_pattern) &
                 bind(C, name="SPIO_IOManager_write_1")
             use axom_sidre, only : SHROUD_group_capsule
             use iso_c_binding, only : C_CHAR, C_INT
@@ -132,12 +132,12 @@ module axom_spio
             integer(C_INT), value, intent(IN) :: num_files
             character(kind=C_CHAR), intent(IN) :: file_string(*)
             character(kind=C_CHAR), intent(IN) :: protocol(*)
-            character(kind=C_CHAR), intent(IN) :: pattern(*)
+            character(kind=C_CHAR), intent(IN) :: tree_pattern(*)
         end subroutine c_iomanager_write_1
 
         subroutine c_iomanager_write_1_bufferify(self, group, num_files, &
-                file_string, Lfile_string, protocol, Lprotocol, pattern, &
-                Lpattern) &
+                file_string, Lfile_string, protocol, Lprotocol, &
+                tree_pattern, Ltree_pattern) &
                 bind(C, name="SPIO_IOManager_write_1_bufferify")
             use axom_sidre, only : SHROUD_group_capsule
             use iso_c_binding, only : C_CHAR, C_INT
@@ -150,8 +150,8 @@ module axom_spio
             integer(C_INT), value, intent(IN) :: Lfile_string
             character(kind=C_CHAR), intent(IN) :: protocol(*)
             integer(C_INT), value, intent(IN) :: Lprotocol
-            character(kind=C_CHAR), intent(IN) :: pattern(*)
-            integer(C_INT), value, intent(IN) :: Lpattern
+            character(kind=C_CHAR), intent(IN) :: tree_pattern(*)
+            integer(C_INT), value, intent(IN) :: Ltree_pattern
         end subroutine c_iomanager_write_1_bufferify
 
         subroutine c_iomanager_write_group_to_root_file(self, group, &
@@ -438,7 +438,7 @@ contains
     end subroutine iomanager_write_0
 
     subroutine iomanager_write_1(obj, group, num_files, file_string, &
-            protocol, pattern)
+            protocol, tree_pattern)
         use axom_sidre, only : SidreGroup
         use iso_c_binding, only : C_INT
         class(iomanager) :: obj
@@ -446,12 +446,12 @@ contains
         integer(C_INT), value, intent(IN) :: num_files
         character(len=*), intent(IN) :: file_string
         character(len=*), intent(IN) :: protocol
-        character(len=*), intent(IN) :: pattern
+        character(len=*), intent(IN) :: tree_pattern
         ! splicer begin class.IOManager.method.write_1
         call c_iomanager_write_1_bufferify(obj%cxxmem, group%cxxmem, &
             num_files, file_string, len_trim(file_string, kind=C_INT), &
-            protocol, len_trim(protocol, kind=C_INT), pattern, &
-            len_trim(pattern, kind=C_INT))
+            protocol, len_trim(protocol, kind=C_INT), tree_pattern, &
+            len_trim(tree_pattern, kind=C_INT))
         ! splicer end class.IOManager.method.write_1
     end subroutine iomanager_write_1
 

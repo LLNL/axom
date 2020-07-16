@@ -158,7 +158,7 @@ std::string IOManager::correspondingRelayProtocol(
 void IOManager::write(sidre::Group* datagroup, int num_files,
                       const std::string& file_string,
                       const std::string& protocol,
-                      const std::string& pattern)
+                      const std::string& tree_pattern)
 {
   if (m_baton)
   {
@@ -183,7 +183,7 @@ void IOManager::write(sidre::Group* datagroup, int num_files,
 #endif
   if (m_my_rank == 0)
   {
-    createRootFile(root_string, num_files, protocol, pattern);
+    createRootFile(root_string, num_files, protocol, tree_pattern);
   }
   MPI_Barrier(m_mpi_comm);
 
@@ -517,7 +517,7 @@ void IOManager::loadExternalData(sidre::Group* datagroup,
 void IOManager::createRootFile(const std::string& file_base,
                                int num_files,
                                const std::string& protocol,
-                               const std::string& pattern)
+                               const std::string& tree_pattern)
 {
 
   conduit::Node n;
@@ -525,12 +525,6 @@ void IOManager::createRootFile(const std::string& file_base,
   std::string local_file_base;
 
   std::string relay_protocol = correspondingRelayProtocol(protocol);
-
-  std::string tree_pattern(pattern);
-  if (tree_pattern.empty())
-  {
-    tree_pattern = "datagroup_%07d";
-  }
 
   if (protocol == "sidre_hdf5" || protocol == "conduit_hdf5")
   {

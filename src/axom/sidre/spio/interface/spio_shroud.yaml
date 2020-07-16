@@ -55,7 +55,7 @@ declarations:
                      int num_files,
                      const std::string& file_string,
                      const std::string& protocol,
-                     const std::string& pattern = "datagroup_%07d")
+                     const std::string& tree_pattern = "datagroup_%07d")
   - decl: void writeGroupToRootFile(Group * group,
                                     const std::string& file_name)
   - decl: void writeBlueprintIndexToRootFile(DataStore* datastore,

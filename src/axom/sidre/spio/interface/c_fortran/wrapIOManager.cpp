@@ -88,7 +88,7 @@ void SPIO_IOManager_write_0_bufferify(SPIO_IOManager* self, SIDRE_Group* group,
 
 void SPIO_IOManager_write_1(SPIO_IOManager* self, SIDRE_Group* group,
                             int num_files, const char* file_string,
-                            const char* protocol, const char* pattern)
+                            const char* protocol, const char* tree_pattern)
 {
   axom::sidre::IOManager* SH_this =
     static_cast<axom::sidre::IOManager*>(self->addr);
@@ -97,9 +97,9 @@ void SPIO_IOManager_write_1(SPIO_IOManager* self, SIDRE_Group* group,
     static_cast<axom::sidre::Group*>(group->addr);
   const std::string SHCXX_file_string(file_string);
   const std::string SHCXX_protocol(protocol);
-  const std::string SHCXX_pattern(pattern);
+  const std::string SHCXX_tree_pattern(tree_pattern);
   SH_this->write(SHCXX_group, num_files, SHCXX_file_string, SHCXX_protocol,
-                 SHCXX_pattern);
+                 SHCXX_tree_pattern);
   return;
   // splicer end class.IOManager.method.write_1
 }
@@ -107,8 +107,8 @@ void SPIO_IOManager_write_1(SPIO_IOManager* self, SIDRE_Group* group,
 void SPIO_IOManager_write_1_bufferify(SPIO_IOManager* self, SIDRE_Group* group,
                                       int num_files, const char* file_string,
                                       int Lfile_string, const char* protocol,
-                                      int Lprotocol, const char* pattern,
-                                      int Lpattern)
+                                      int Lprotocol, const char* tree_pattern,
+                                      int Ltree_pattern)
 {
   axom::sidre::IOManager* SH_this =
     static_cast<axom::sidre::IOManager*>(self->addr);
@@ -117,9 +117,9 @@ void SPIO_IOManager_write_1_bufferify(SPIO_IOManager* self, SIDRE_Group* group,
     static_cast<axom::sidre::Group*>(group->addr);
   const std::string SHCXX_file_string(file_string, Lfile_string);
   const std::string SHCXX_protocol(protocol, Lprotocol);
-  const std::string SHCXX_pattern(pattern, Lpattern);
+  const std::string SHCXX_tree_pattern(tree_pattern, Ltree_pattern);
   SH_this->write(SHCXX_group, num_files, SHCXX_file_string, SHCXX_protocol,
-                 SHCXX_pattern);
+                 SHCXX_tree_pattern);
   return;
   // splicer end class.IOManager.method.write_1_bufferify
 }

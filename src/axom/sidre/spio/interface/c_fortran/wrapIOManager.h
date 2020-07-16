@@ -50,13 +50,13 @@ void SPIO_IOManager_write_0_bufferify(SPIO_IOManager* self, SIDRE_Group* group,
 
 void SPIO_IOManager_write_1(SPIO_IOManager* self, SIDRE_Group* group,
                             int num_files, const char* file_string,
-                            const char* protocol, const char* pattern);
+                            const char* protocol, const char* tree_pattern);
 
 void SPIO_IOManager_write_1_bufferify(SPIO_IOManager* self, SIDRE_Group* group,
                                       int num_files, const char* file_string,
                                       int Lfile_string, const char* protocol,
-                                      int Lprotocol, const char* pattern,
-                                      int Lpattern);
+                                      int Lprotocol, const char* tree_pattern,
+                                      int Ltree_pattern);
 
 void SPIO_IOManager_write_group_to_root_file(SPIO_IOManager* self,
                                              SIDRE_Group* group,
