@@ -20,12 +20,15 @@ set(inlet_headers
     Inlet.hpp
     Reader.hpp
     SchemaCreator.hpp
-    Table.hpp )
+    Table.hpp 
+    DocWriter.hpp
+    SphinxDocWriter.hpp )
 
 set(inlet_sources
     Field.cpp
     Inlet.cpp
-    Table.cpp )
+    Table.cpp
+    SphinxDocWriter.cpp )
 
 blt_list_append(TO inlet_headers ELEMENTS LuaReader.hpp IF LUA_FOUND)
 blt_list_append(TO inlet_sources ELEMENTS LuaReader.cpp IF LUA_FOUND)
@@ -54,9 +57,9 @@ axom_install_component(NAME    inlet
 #------------------------------------------------------------------------------
 # Add examples
 #------------------------------------------------------------------------------
-#if (AXOM_ENABLE_EXAMPLES)
-#  add_subdirectory(examples)
-#endif()
+if (AXOM_ENABLE_EXAMPLES)
+  add_subdirectory(examples)
+endif()
 
 #------------------------------------------------------------------------------
 # Add tests

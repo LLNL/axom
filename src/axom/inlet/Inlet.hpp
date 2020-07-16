@@ -26,6 +26,8 @@
 
 #include "axom/sidre.hpp"
 
+#include "axom/inlet/DocWriter.hpp"
+
 namespace axom
 {
 namespace inlet
@@ -57,10 +59,11 @@ public:
    *****************************************************************************
    */
   Inlet(std::shared_ptr<Reader> reader,
-        axom::sidre::Group* sidreRootGroup) :
+        axom::sidre::Group* sidreRootGroup, bool docsEnabled = false) :
     m_reader(reader),
     m_sidreRootGroup(sidreRootGroup),
-    m_globalTable(std::make_shared<Table>("", "", m_reader, m_sidreRootGroup)) {}
+    m_globalTable(std::make_shared<Table>("", "", m_reader, m_sidreRootGroup)),
+    m_docWriterEnabled(docsEnabled) {}
 
   virtual ~Inlet() = default;
 
@@ -107,7 +110,7 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Table> addTable(const std::string& name,
-                                  const std::string& description);
+                                  const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -125,7 +128,7 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Field> addBool(const std::string& name,
-                                 const std::string& description);
+                                 const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -143,7 +146,7 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Field> addDouble(const std::string& name,
-                                   const std::string& description);
+                                   const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -161,7 +164,7 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Field> addInt(const std::string& name,
-                                const std::string& description);
+                                const std::string& description = "");
 
   /*!
    *****************************************************************************
@@ -179,7 +182,7 @@ public:
    *****************************************************************************
    */
   std::shared_ptr<Field> addString(const std::string& name,
-                                   const std::string& description);
+                                   const std::string& description = "");
 
   //
   // Functions that get the values out of the datastore
@@ -249,6 +252,29 @@ public:
    */
   bool get(const std::string& name, std::string& value);
 
+  /*!
+   *****************************************************************************
+   * \brief Sets the associated DocWriter for the Inlet instance.
+   *
+   * Sets the associated DocWriter. If the DocWriter is already set, it will be
+   * replaced by the one that was most recently set.
+   *
+   * \param [in] writer A pointer to a DocWriter object
+   *
+   *****************************************************************************
+   */
+  void registerDocWriter(std::shared_ptr<DocWriter> writer);
+
+  /*!
+   *****************************************************************************
+   * \brief Writes input deck documentation.
+   *
+   * This writes the input deck's documentation through the registered DocWriter.
+   *
+   *****************************************************************************
+   */
+  void writeDoc();
+
   // TODO add update value functions
 private:
   axom::sidre::View* baseGet(const std::string& name);
@@ -256,6 +282,9 @@ private:
   std::shared_ptr<Reader> m_reader;
   axom::sidre::Group* m_sidreRootGroup = nullptr;
   std::shared_ptr<Table> m_globalTable;
+
+  std::shared_ptr<DocWriter> m_docWriter;
+  bool m_docWriterEnabled = false; 
 };
 
 } // end namespace inlet
