@@ -93,7 +93,7 @@ public:
              int num_files,
              const std::string& file_string,
              const std::string& protocol,
-             const std::string& pattern = "");
+             const std::string& pattern = "datagroup_%07d");
 
   /*!
    * \brief write additional group to existing root file

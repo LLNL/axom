@@ -526,6 +526,12 @@ void IOManager::createRootFile(const std::string& file_base,
 
   std::string relay_protocol = correspondingRelayProtocol(protocol);
 
+  std::string tree_pattern(pattern);
+  if (tree_pattern.empty())
+  {
+    tree_pattern = "datagroup_%07d";
+  }
+
   if (protocol == "sidre_hdf5" || protocol == "conduit_hdf5")
   {
 #ifdef AXOM_USE_HDF5
@@ -544,7 +550,7 @@ void IOManager::createRootFile(const std::string& file_base,
     }
     n["number_of_trees"] = m_comm_size;
 
-    n["tree_pattern"] = "datagroup_%07d";
+    n["tree_pattern"] = tree_pattern;
     n["protocol/name"] = protocol;
     n["protocol/version"] = "0.0";
 
@@ -562,9 +568,6 @@ void IOManager::createRootFile(const std::string& file_base,
     n["file_pattern"] = file_base + "_" + "%07d." + protocol;
     n["number_of_trees"] = m_comm_size;
 
-    std::string tree_pattern(pattern);
-    if (tree_pattern.empty())
-      tree_pattern = "datagroup_%07d";
     n["tree_pattern"] = tree_pattern;
     n["protocol/name"] = protocol;
     n["protocol/version"] = "0.0";
