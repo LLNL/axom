@@ -535,11 +535,16 @@ def set_axom_group_and_perms(directory):
     return 0
 
 
-def full_build_and_test_of_tpls(builds_dir, job_name, timestamp):
+def full_build_and_test_of_tpls(builds_dir, job_name, timestamp, spec):
     project_file = "scripts/uberenv/project.json"
     config_dir = "scripts/uberenv/spack_configs/{0}".format(get_system_type())
 
-    specs = get_specs_for_current_machine()
+    if spec:
+        if not spec.startswith("%"):
+            spec = "%{0}".format(spec)
+        specs = [spec]
+    else:
+        specs = get_specs_for_current_machine()
     print "[Building and testing tpls for specs: "
     for spec in specs:
         print "{0}".format(spec)

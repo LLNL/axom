@@ -922,6 +922,38 @@ TEST( primal_intersect, 3D_triangle_triangle_intersection_regression )
     permuteCornersTest(tri3d_1, tri3d_2, msg, true, true);
   }
 
+  {
+    std::string msg = "Vertex-adjacent triangles";
+    /* *INDENT-OFF* */
+    Point3 vdata[] = { Point3::make_point(-138.02488708496094,    -14398.0908203125, 111881.2421875),
+                       Point3::make_point(   0.067092768847942352,-14407.21875,      111891.078125),
+                       Point3::make_point(-136.77900695800781,    -14416.4912109375, 111891.078125),
+                       Point3::make_point(   1.1611454486846924,  -14423.3466796875, 111904.359375),
+                       Point3::make_point( 136.91319274902344,    -14397.947265625,  111891.078125)};
+    /* *INDENT-ON* */
+
+    Triangle3 tri3d_1(vdata[0], vdata[1], vdata[2]);
+    Triangle3 tri3d_2(vdata[3], vdata[1], vdata[4]);
+
+    permuteCornersTest(tri3d_1, tri3d_2, msg, false, false);
+    permuteCornersTest(tri3d_1, tri3d_2, msg, true, true);
+  }
+
+  {
+    std::string msg = "Vertex-adjacent triangles (simplified)";
+    Point3 vdata[] = { Point3::make_point(-1,-1,-1),
+                       Point3::make_point( 0, 0, -0.005),
+                       Point3::make_point(-1, 0, 0),
+                       Point3::make_point( 0, 1,-1),
+                       Point3::make_point( 1, 0, 0)};
+
+    Triangle3 tri3d_1(vdata[0], vdata[1], vdata[2]);
+    Triangle3 tri3d_2(vdata[3], vdata[1], vdata[4]);
+
+    permuteCornersTest(tri3d_1, tri3d_2, msg, false, false);
+    permuteCornersTest(tri3d_1, tri3d_2, msg, true, true);
+  }
+
   axom::slic::setLoggingMsgLevel( axom::slic::message::Warning);
 }
 

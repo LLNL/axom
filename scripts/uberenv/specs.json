@@ -14,13 +14,12 @@
     "__comment__":"##############################################################################",
 
     "toss_3_x86_64_ib":
-    [ "clang@4.0.0+devtools+mfem",
-      "clang@6.0.0+devtools+mfem",
-      "gcc@6.1.0+devtools+mfem",
-      "gcc@7.3.0+devtools+mfem",
+    [ "clang@9.0.0+devtools+mfem",
+      "clang@10.0.0+devtools+mfem",
       "gcc@8.1.0+devtools+mfem",
+      "gcc@no_fortran~fortran+devtools+mfem",
       "intel@18.0.2+devtools+mfem",
-      "intel@19.0.0+devtools+mfem" ],
+      "intel@19.0.4+devtools+mfem" ],
 
     "blueos_3_ppc64le_ib":
     [ "clang@upstream_xlf~openmp+devtools+mfem",

@@ -10,6 +10,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
+- Added new component, Inlet, to assist in retrieving and storing data from
+  an input deck.
 - Added the ability to specify an [Umpire] allocator ID to use with the
   BVH. This allows the application to use a device allocator for the BVH and 
   avoid use of UM on the GPU, which can hinder perfomrmance, or use a pool
@@ -60,6 +62,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   ex. `level_error` is now `message_error`.
 
 ### Fixed
+- Fixed issue in Mint that would cause the clang@9.0.0 compiler to segfault. The
+  `mint_cell_types.cpp` test was causing a segfault in the compiler. The main
+  issue triggering this compiler bug was the use of `constexpr` when defining the
+  static `cell_info` array of structs. The code has been modified to use `const`
+  instead.
 - Fixed issue in Quest's Signed Distance query that would prevent consecutive
   calls to Quest when MPI-3 shared memory is enabled due to not properly 
   nullifying internal pointers when finalize is called.

@@ -1,4 +1,4 @@
-Mint: Mesh Data Model {#minttop}
+Mint {#minttop}
 ============
 
 [Mint](@ref axom::mint) is a C++ library that provides:

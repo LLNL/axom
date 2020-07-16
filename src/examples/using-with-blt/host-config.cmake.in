@@ -15,6 +15,11 @@ set(CMAKE_CXX_COMPILER            "@CMAKE_CXX_COMPILER@"     CACHE PATH "")
 set(CMAKE_Fortran_COMPILER        "@CMAKE_Fortran_COMPILER@" CACHE PATH "")
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE                       CACHE BOOL "")
 
+set(BLT_C_FLAGS            "@CMAKE_C_FLAGS@"          CACHE STRING "")
+set(BLT_CXX_FLAGS          "@CMAKE_CXX_FLAGS@"        CACHE STRING "")
+set(BLT_Fortran_FLAGS      "@CMAKE_Fortran_FLAGS@"    CACHE STRING "")
+set(BLT_EXE_LINKER_FLAGS   "@CMAKE_EXE_LINKER_FLAGS@" CACHE STRING "")
+
 # Config related to BLT
 set(BLT_SOURCE_DIR  "@BLT_SOURCE_DIR@" CACHE PATH "")
 set(BLT_CXX_STD     c++11 CACHE STRING "")

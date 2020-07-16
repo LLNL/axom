@@ -15,7 +15,7 @@
 
 #include <iostream>
 
-int main(int argc, char **argv)
+int main()
 {
    // Using fmt library exported by axom
    std::cout << fmt::format(
