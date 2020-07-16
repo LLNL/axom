@@ -673,18 +673,15 @@ TEST(inlet_Inlet_verify, checkVerify) {
   std::string testString = "field1 = true; field2 = 5632; NewTable = { str = 'hello'; integer = 32 }";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
-  std::shared_ptr<axom::inlet::Field> currField;
-  currField = inlet->addBool("NewTable/field3");
-  ds.getRoot()->getGroup("NewTable")->createViewString("required", "string");
-  EXPECT_FALSE(inlet->verify());
 
-  ds.getRoot()->getView("NewTable/required")->rename("renamedView");
-  currField = inlet->addString("NewTable/str");
-  currField->required(true);
-  currField = inlet->addInt("NewTable/int");
+  inlet->addString("NewTable/str")->required(true);
+  inlet->addInt("NewTable/int")->required(false);
+  inlet->addBool("field1")->required(true);
+  inlet->addInt("field2")->required(true);
   EXPECT_TRUE(inlet->verify());
 
-  ds.getRoot()->getGroup("NewTable/int")->createView("required");
+  inlet->addBool("NewTable/field3")->required(true);
+  inlet->addTable("NewTable/LastTable")->addDouble("field4")->required(true);
   EXPECT_FALSE(inlet->verify());
 }
 

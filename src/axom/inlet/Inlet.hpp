@@ -297,12 +297,11 @@ private:
    * sub-group.
    * 
    * \param [in] sidreGroup The root of the sub-group to be verified.
-   * 
-   * \return True if contents are correct. False if not.
    *
+   * \param [out] verifySuccess Indicates whether or not the verification was successful.
    *****************************************************************************
    */
-  bool verifyRecursive(axom::sidre::Group* sidreGroup);
+  void verifyRecursive(axom::sidre::Group* sidreGroup, bool& verifySuccess);
 
   axom::sidre::View* baseGet(const std::string& name);
 
@@ -311,7 +310,7 @@ private:
   std::shared_ptr<Table> m_globalTable;
 
   std::shared_ptr<DocWriter> m_docWriter;
-  bool m_docWriterEnabled = false; 
+  bool m_docWriterEnabled = false;
 };
 
 } // end namespace inlet

@@ -190,29 +190,29 @@ void Inlet::writeDoc() {
 }
 
 bool Inlet::verify() {
-  return verifyRecursive(m_sidreRootGroup);
+  bool verifySuccess = true;
+  verifyRecursive(m_sidreRootGroup, verifySuccess);
+  return verifySuccess;
 }
 
-bool Inlet::verifyRecursive(axom::sidre::Group* sidreGroup) {
+void Inlet::verifyRecursive(axom::sidre::Group* sidreGroup, bool& verifySuccess) {
   SLIC_ASSERT_MSG(sidreGroup, "Root was nullptr");
 
-  axom::sidre::IndexType viewIndex = sidreGroup->getFirstValidViewIndex();
-  while (axom::sidre::indexIsValid(viewIndex)) {
-    if (sidreGroup->getView(viewIndex)->getName() == "required"
-        && !sidreGroup->getView(viewIndex)->isScalar()) {
-      return false;
+  if (sidreGroup->hasView("required")) {
+    int8 required = sidreGroup->getView("required")->getData();
+    if (required && !sidreGroup->hasView("value")) {
+      std::string msg = fmt::format("Inlet: {0}: Required field was not specified in Input Deck", 
+                                                                      sidreGroup->getPathName());
+      SLIC_WARNING(msg);
+      verifySuccess = false;
     }
-    viewIndex = sidreGroup->getNextValidViewIndex(viewIndex);
   }
-
+  
   axom::sidre::IndexType groupIndex = sidreGroup->getFirstValidGroupIndex();
   while (axom::sidre::indexIsValid(groupIndex)) {
-    if (!verifyRecursive(sidreGroup->getGroup(groupIndex))) {
-      return false;
-    }
+    verifyRecursive(sidreGroup->getGroup(groupIndex), verifySuccess);
     groupIndex = sidreGroup->getNextValidGroupIndex(groupIndex);
   }
-  return true;
 }
 
 } // end namespace inlet
