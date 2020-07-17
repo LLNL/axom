@@ -153,6 +153,16 @@ private:
     std::vector<std::vector<std::string>> rstTable;
   };
 
+  /*!
+    *******************************************************************************
+    * \brief Stores all field info into m_rstTables
+    * 
+    * This extracts information about description, required, default values, 
+    * and range from the Sidre Group corresponding to a Field. Then, the information
+    * is stored in m_rstTables.
+    *
+    *******************************************************************************
+    */
   void collectFieldInfo(axom::sidre::Group* sidreGroup);
 
   axom::sidre::Group* m_sidreRootGroup;
