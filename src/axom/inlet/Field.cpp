@@ -117,6 +117,51 @@ std::shared_ptr<Field> Field::addDefaultDouble(double value) {
   return shared_from_this();
 }
 
+std::shared_ptr<Field> Field::addDoubleRange(double startVal, double endVal) {
+  SLIC_ASSERT_MSG(m_type == FieldType::DOUBLE, "Range value type did not match DOUBLE");
+  if (m_sidreGroup->hasView("continuousRange") || m_sidreGroup->hasView("continuousRange")) {
+    std::string msg = fmt::format("Inlet Field has already defined range: {0}",
+                                   m_sidreGroup->getName());
+    SLIC_WARNING(msg);
+  } else {
+    double tuple[2];
+    tuple[0] = startVal;
+    tuple[1] = endVal;
+    auto view = m_sidreGroup->createViewAndAllocate("continuousRange", axom::sidre::DOUBLE_ID, 2);
+    view->getBuffer()->copyBytesIntoBuffer(tuple, 2*sizeof(double));
+  }
+  return shared_from_this();
+}
+
+std::shared_ptr<Field> Field::addIntRange(int startVal, int endVal) {
+  SLIC_ASSERT_MSG(m_type == FieldType::INT, "Range value type did not match INT");
+  if (m_sidreGroup->hasView("continuousRange") || m_sidreGroup->hasView("continuousRange")) {
+    std::string msg = fmt::format("Inlet Field has already defined range: {0}",
+                                   m_sidreGroup->getName());
+    SLIC_WARNING(msg);
+  } else {
+    int tuple[2];
+    tuple[0] = startVal;
+    tuple[1] = endVal;
+    auto view = m_sidreGroup->createViewAndAllocate("continuousRange", axom::sidre::INT_ID, 2);
+    view->getBuffer()->copyBytesIntoBuffer(tuple, 2*sizeof(int));
+  }
+  return shared_from_this();
+}
+
+std::shared_ptr<Field> Field::addDiscreteIntRange(int* set, size_t size) {
+  SLIC_ASSERT_MSG(m_type == FieldType::INT, "Range value type did not match INT");
+  if (m_sidreGroup->hasView("continuousRange") || m_sidreGroup->hasView("continuousRange")) {
+    std::string msg = fmt::format("Inlet Field has already defined range: {0}",
+                                   m_sidreGroup->getName());
+    SLIC_WARNING(msg);
+  } else {
+    auto view = m_sidreGroup->createViewAndAllocate("discreteRange", axom::sidre::INT_ID, size);
+    view->getBuffer()->copyBytesIntoBuffer(set, size*sizeof(int));
+  }
+  return shared_from_this();
+}
+
 
 
 } // end namespace inlet

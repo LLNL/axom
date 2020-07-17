@@ -721,6 +721,40 @@ TEST(inlet_Field, defaultValues) {
   EXPECT_EQ(strVal, "default for old string"); 
 }
 
+TEST(inlet_Field, ranges) {
+  std::string testString = "Table1 = { float1 = 5.6; Table2 = { int1 = 95; Table4 = { str1= 'hi' } } }; Table3 = { bool1 = true }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+  int arr[] = {2,4,6};
+
+  axom::sidre::Group* sidreGroup = inlet->sidreGroup();
+  
+  inlet->addInt("Table1/set")->addDiscreteIntRange(arr, 3);
+  EXPECT_TRUE(sidreGroup->hasView("Table1/set/discreteRange"));
+  int* bufferArr1 = sidreGroup->getView("Table1/set/discreteRange")->getArray();
+  EXPECT_TRUE(bufferArr1);
+  EXPECT_EQ(sidreGroup->getView("Table1/set/discreteRange")->getBuffer()->getNumElements(), 3);
+  EXPECT_EQ(bufferArr1[0], 2);
+  EXPECT_EQ(bufferArr1[1], 4);
+  EXPECT_EQ(bufferArr1[2], 6);
+ 
+  inlet->addDouble("Table1/Table2/Table4/double1")->addDoubleRange(2.0, 5.0);
+  EXPECT_TRUE(sidreGroup->hasView("Table1/Table2/Table4/double1/continuousRange"));
+  double* bufferArr2 = sidreGroup->getView("Table1/Table2/Table4/double1/continuousRange")->getArray();
+  EXPECT_TRUE(bufferArr2);
+  EXPECT_EQ(sidreGroup->getView("Table1/Table2/Table4/double1/continuousRange")->getBuffer()->getNumElements(), 2);
+  EXPECT_EQ(bufferArr2[0], 2.0);
+  EXPECT_EQ(bufferArr2[1], 5.0);
+
+  inlet->addInt("Table1/Table2/int1")->addIntRange(1, 50);
+  EXPECT_TRUE(sidreGroup->hasView("Table1/Table2/int1/continuousRange"));
+  int* bufferArr3 = sidreGroup->getView("Table1/Table2/int1/continuousRange")->getArray();
+  EXPECT_TRUE(bufferArr3);
+  EXPECT_EQ(sidreGroup->getView("Table1/Table2/int1/continuousRange")->getBuffer()->getNumElements(), 2);
+  EXPECT_EQ(bufferArr3[0], 1);
+  EXPECT_EQ(bufferArr3[1], 50);
+}
+
 //------------------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;

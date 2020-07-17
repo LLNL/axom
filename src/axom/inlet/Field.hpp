@@ -92,61 +92,100 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Set the required status of this Field.
+   * \brief Set the default value of this Field.
    *
    * Set the default value for the Field in the input deck.
    *
    * \param [in] value The default string value
    *
-   * \return Shared pointer to this instance of this class
+   * \return Shared pointer to this Field instance
    *****************************************************************************
   */
   std::shared_ptr<Field> addDefaultString(std::string value);
 
   /*!
    *****************************************************************************
-   * \brief Set the required status of this Field.
+   * \brief Set the default value of this Field.
    *
    * Set the default value for the Field in the input deck.
    *
    * \param [in] value The default boolean value
    *
-   * \return Shared pointer to this instance of this class
+   * \return Shared pointer to this Field instance
    *****************************************************************************
   */
   std::shared_ptr<Field> addDefaultBool(bool value);
 
   /*!
    *****************************************************************************
-   * \brief Set the required status of this Field.
+   * \brief Set the default value of this Field.
    *
    * Set the default value for the Field in the input deck.
    *
    * \param [in] value The default integer value
    *
-   * \return Shared pointer to this instance of this class
+   * \return Shared pointer to this Field instance
    *****************************************************************************
   */
   std::shared_ptr<Field> addDefaultInt(int value);
 
   /*!
    *****************************************************************************
-   * \brief Set the required status of this Field.
+   * \brief Set the default value of this Field.
    *
    * Set the default value for the Field in the input deck.
    *
    * \param [in] value The default double value
    *
-   * \return Shared pointer to this instance of this class
+   * \return Shared pointer to this Field instance
    *****************************************************************************
   */
   std::shared_ptr<Field> addDefaultDouble(double value);
 
-  std::shared_ptr<Field> addRangeDouble(double startVal, double endVal,
-                                         bool inclusiveStart, bool inclusiveEnd);
-  
-  std::shared_ptr<Field> addRangeInt(int startVal, int endVal);
-  
+  /*!
+   *****************************************************************************
+   * \brief Set the range of this Field.
+   *
+   * Set the continuous range for the Field in the input deck.
+   *
+   * \param [in] startVal The start of the range
+   * 
+   * \param [in] endVal The end of the range
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> addDoubleRange(double startVal, double endVal);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the range of this Field.
+   *
+   * Set the continuous range for the Field in the input deck.
+   *
+   * \param [in] startVal The start of the range
+   * 
+   * \param [in] endVal The end of the range
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> addIntRange(int startVal, int endVal);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the range of this Field.
+   *
+   * Set the continuous range for the Field in the input deck.
+   *
+   * \param [in] set An integer array indicating the set of allowed values
+   * 
+   * \param [in] size The number of elements in the array
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> addDiscreteIntRange(int* set, size_t size);
 
 private:
   // This Field's sidre group
