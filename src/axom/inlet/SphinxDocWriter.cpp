@@ -58,7 +58,6 @@ void SphinxDocWriter::writeDocumentationHelper(axom::sidre::Group* sidreGroup) {
       fieldAttributes[1] = std::string(sidreGroup->getView("description")->getString());
     } 
 
-    // the following 2 lines will be needed once default values and range are added to inlet fields
     if (sidreGroup->hasView("defaultValue")) {
       axom::sidre::TypeID type = sidreGroup->getView("defaultValue")->getTypeID();
       if (type == axom::sidre::TypeID::INT8_ID) {
@@ -75,6 +74,7 @@ void SphinxDocWriter::writeDocumentationHelper(axom::sidre::Group* sidreGroup) {
       }
     }
     
+    // the following line will be needed once ranges are added to inlet fields
     // fieldAttributes[3] = std::to_string(sidreGroup->getView(sidreGroup->getViewIndex("range"))->getScalar());
 
     if (sidreGroup->hasView("required")) {

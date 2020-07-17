@@ -142,6 +142,12 @@ public:
   */
   std::shared_ptr<Field> addDefaultDouble(double value);
 
+  std::shared_ptr<Field> addRangeDouble(double startVal, double endVal,
+                                         bool inclusiveStart, bool inclusiveEnd);
+  
+  std::shared_ptr<Field> addRangeInt(int startVal, int endVal);
+  
+
 private:
   // This Field's sidre group
   axom::sidre::Group* m_sidreGroup = nullptr;

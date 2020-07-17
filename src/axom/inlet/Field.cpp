@@ -65,9 +65,6 @@ bool Field::required()
 }
 
 std::shared_ptr<Field> Field::addDefaultString(std::string value) {
-  if (m_type == FieldType::UNSPECIFIED) {
-    m_type = FieldType::STRING;
-  }
   SLIC_ASSERT_MSG(m_type == FieldType::STRING, "Default value type did not match STRING");
 
   if (m_sidreGroup->hasView("defaultValue"))
@@ -82,9 +79,6 @@ std::shared_ptr<Field> Field::addDefaultString(std::string value) {
 }
 
 std::shared_ptr<Field> Field::addDefaultBool(bool value) {
-  if (m_type == FieldType::UNSPECIFIED) {
-    m_type = FieldType::BOOL;
-  }
   SLIC_ASSERT_MSG(m_type == FieldType::BOOL, "Default value type did not match BOOL");
   if (m_sidreGroup->hasView("defaultValue"))
   {
@@ -98,9 +92,6 @@ std::shared_ptr<Field> Field::addDefaultBool(bool value) {
 }
 
 std::shared_ptr<Field> Field::addDefaultInt(int value) {
-  if (m_type == FieldType::UNSPECIFIED) {
-    m_type = FieldType::INT;
-  }
   SLIC_ASSERT_MSG(m_type == FieldType::INT, "Default value type did not match BOOL");
   if (m_sidreGroup->hasView("defaultValue"))
   {
@@ -114,9 +105,6 @@ std::shared_ptr<Field> Field::addDefaultInt(int value) {
 }
 
 std::shared_ptr<Field> Field::addDefaultDouble(double value) {
-  if (m_type == FieldType::UNSPECIFIED) {
-    m_type = FieldType::DOUBLE;
-  }
   SLIC_ASSERT_MSG(m_type == FieldType::DOUBLE, "Default value type did not match DOUBLE");
   if (m_sidreGroup->hasView("defaultValue"))
   {
@@ -128,6 +116,8 @@ std::shared_ptr<Field> Field::addDefaultDouble(double value) {
   }
   return shared_from_this();
 }
+
+
 
 } // end namespace inlet
 } // end namespace axom
