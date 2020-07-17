@@ -189,5 +189,31 @@ void Inlet::writeDoc() {
   }
 }
 
+bool Inlet::verify() {
+  bool verifySuccess = true;
+  verifyRecursive(m_sidreRootGroup, verifySuccess);
+  return verifySuccess;
+}
+
+void Inlet::verifyRecursive(axom::sidre::Group* sidreGroup, bool& verifySuccess) {
+  SLIC_ASSERT_MSG(sidreGroup, "Root was nullptr");
+
+  if (sidreGroup->hasView("required")) {
+    int8 required = sidreGroup->getView("required")->getData();
+    if (required && !sidreGroup->hasView("value")) {
+      std::string msg = fmt::format("Inlet: {0}: Required field was not specified in Input Deck", 
+                                                                      sidreGroup->getPathName());
+      SLIC_WARNING(msg);
+      verifySuccess = false;
+    }
+  }
+  
+  axom::sidre::IndexType groupIndex = sidreGroup->getFirstValidGroupIndex();
+  while (axom::sidre::indexIsValid(groupIndex)) {
+    verifyRecursive(sidreGroup->getGroup(groupIndex), verifySuccess);
+    groupIndex = sidreGroup->getNextValidGroupIndex(groupIndex);
+  }
+}
+
 } // end namespace inlet
 } // end namespace axom

@@ -755,6 +755,22 @@ TEST(inlet_Field, ranges) {
   EXPECT_EQ(bufferArr3[1], 50);
 }
 
+TEST(inlet_Inlet_verify, checkVerify) {
+  std::string testString = "field1 = true; field2 = 5632; NewTable = { str = 'hello'; integer = 32 }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  inlet->addString("NewTable/str")->required(true);
+  inlet->addInt("NewTable/int")->required(false);
+  inlet->addBool("field1")->required(true);
+  inlet->addInt("field2")->required(true);
+  EXPECT_TRUE(inlet->verify());
+
+  inlet->addBool("NewTable/field3")->required(true);
+  inlet->addTable("NewTable/LastTable")->addDouble("field4")->required(true);
+  EXPECT_FALSE(inlet->verify());
+}
+
 //------------------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
