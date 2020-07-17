@@ -45,7 +45,7 @@ mesh
      - |check|
    * - timestepper
      - thermal solver timestepper
-     - 
+     - this is default
      - 
      - |uncheck|
 
@@ -95,7 +95,7 @@ kappa
      - |check|
    * - constant
      - description for kappa constant
-     - 
+     - 0.000000
      - 
      - |check|
 
@@ -132,7 +132,7 @@ Description: This is the solver sub-table in the thermal_solver table
      - |check|
    * - max_iter
      - description for solver max iter
-     - 
+     - 10
      - 
      - |uncheck|
    * - dt
