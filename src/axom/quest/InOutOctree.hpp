@@ -2634,8 +2634,8 @@ private:
 
 
     // Add the fields to the mint mesh
-    auto* vertID = addIntField(debugMesh, "vertID" );
-    auto* lLevel = addIntField(debugMesh, "level" );
+    axom::IndexType* vertID = addIntField(debugMesh, "vertID" );
+    axom::IndexType* lLevel = addIntField(debugMesh, "level" );
 
     axom::IndexType* blockCoord[3];
     blockCoord[0] = addIntField(debugMesh, "block_x" );
@@ -2654,8 +2654,8 @@ private:
 
     if(hasTriangles)
     {
-      auto* uniqVertID = addIntField(debugMesh, "uniqVertID" );
-      auto* triCount = addIntField(debugMesh, "triCount" );
+      axom::IndexType* uniqVertID = addIntField(debugMesh, "uniqVertID" );
+      axom::IndexType* triCount = addIntField(debugMesh, "triCount" );
 
       for ( int i=0 ; i < leafSet.size() ; ++i )
       {
@@ -2666,7 +2666,7 @@ private:
 
     if(hasColors)
     {
-      auto* colors = addIntField(debugMesh, "colors" );
+      axom::IndexType* colors = addIntField(debugMesh, "colors" );
       for ( int i=0 ; i < leafSet.size() ; ++i )
         colors[i] = leafColors[i];
     }
@@ -2697,7 +2697,7 @@ private:
     int numTris = tris.size();
 
     // Index of each triangle within the mesh
-    auto* triIdx = addIntField(debugMesh, "triangle_index" );
+    axom::IndexType* triIdx = addIntField(debugMesh, "triangle_index" );
 
     // Indices of the three boundary vertices of this triangle
     axom::IndexType* vertIdx[3];
