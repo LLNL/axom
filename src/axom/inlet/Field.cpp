@@ -119,7 +119,7 @@ std::shared_ptr<Field> Field::addDefaultDouble(double value) {
 
 std::shared_ptr<Field> Field::addDoubleRange(double startVal, double endVal) {
   SLIC_ASSERT_MSG(m_type == FieldType::DOUBLE, "Range value type did not match DOUBLE");
-  if (m_sidreGroup->hasView("continuousRange") || m_sidreGroup->hasView("continuousRange")) {
+  if (m_sidreGroup->hasView("continuousRange") || m_sidreGroup->hasView("discreteRange")) {
     std::string msg = fmt::format("Inlet Field has already defined range: {0}",
                                    m_sidreGroup->getName());
     SLIC_WARNING(msg);
@@ -135,7 +135,7 @@ std::shared_ptr<Field> Field::addDoubleRange(double startVal, double endVal) {
 
 std::shared_ptr<Field> Field::addIntRange(int startVal, int endVal) {
   SLIC_ASSERT_MSG(m_type == FieldType::INT, "Range value type did not match INT");
-  if (m_sidreGroup->hasView("continuousRange") || m_sidreGroup->hasView("continuousRange")) {
+  if (m_sidreGroup->hasView("continuousRange") || m_sidreGroup->hasView("discreteRange")) {
     std::string msg = fmt::format("Inlet Field has already defined range: {0}",
                                    m_sidreGroup->getName());
     SLIC_WARNING(msg);
@@ -151,7 +151,7 @@ std::shared_ptr<Field> Field::addIntRange(int startVal, int endVal) {
 
 std::shared_ptr<Field> Field::addDiscreteIntRange(int* set, size_t size) {
   SLIC_ASSERT_MSG(m_type == FieldType::INT, "Range value type did not match INT");
-  if (m_sidreGroup->hasView("continuousRange") || m_sidreGroup->hasView("continuousRange")) {
+  if (m_sidreGroup->hasView("continuousRange") || m_sidreGroup->hasView("discreteRange")) {
     std::string msg = fmt::format("Inlet Field has already defined range: {0}",
                                    m_sidreGroup->getName());
     SLIC_WARNING(msg);

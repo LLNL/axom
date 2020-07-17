@@ -118,7 +118,7 @@ Description: This is the solver sub-table in the thermal_solver table
    * - rel_tol
      - description for solver rel tol
      - 
-     - 
+     - 0.500000 to 100.700000
      - |uncheck|
    * - abs_tol
      - description for solver abs tol
@@ -128,7 +128,7 @@ Description: This is the solver sub-table in the thermal_solver table
    * - print_level
      - description for solver print level
      - 
-     - 
+     - 1, 3, 5, 7
      - |check|
    * - max_iter
      - description for solver max iter

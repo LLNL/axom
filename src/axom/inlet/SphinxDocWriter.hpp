@@ -153,6 +153,8 @@ private:
     std::vector<std::vector<std::string>> rstTable;
   };
 
+  void collectFieldInfo(axom::sidre::Group* sidreGroup);
+
   axom::sidre::Group* m_sidreRootGroup;
   std::ofstream m_outFile;
   std::ostringstream m_oss;

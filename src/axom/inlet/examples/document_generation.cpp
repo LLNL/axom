@@ -82,12 +82,15 @@ void defineSchema(std::shared_ptr<Inlet> inlet)
 
   currField = table->addDouble("rel_tol", "description for solver rel tol");
   currField->required(false);
+  currField->addDoubleRange(0.5, 100.7);
   
   currField = table->addDouble("abs_tol", "description for solver abs tol");
   currField->required(true);  
 
   currField = table->addInt("print_level", "description for solver print level");
-  currField->required(true);  
+  currField->required(true); 
+  int arr[] = {1, 3, 5, 7};
+  currField->addDiscreteIntRange(arr, 4);
 
   currField = table->addInt("max_iter", "description for solver max iter");
   currField->required(false);

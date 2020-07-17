@@ -50,41 +50,7 @@ void SphinxDocWriter::writeDocumentationHelper(axom::sidre::Group* sidreGroup) {
   // Case 1: the current group is a Field so attributes are stored in views
 
   if (sidreGroup != m_sidreRootGroup && i == axom::sidre::InvalidIndex) { 
-    std::vector<std::string> fieldAttributes(5, "");
-    fieldAttributes.resize(5);
-
-    fieldAttributes[0] = sidreGroup->getName();
-    if (sidreGroup->hasView("description")) {
-      fieldAttributes[1] = std::string(sidreGroup->getView("description")->getString());
-    } 
-
-    if (sidreGroup->hasView("defaultValue")) {
-      axom::sidre::TypeID type = sidreGroup->getView("defaultValue")->getTypeID();
-      if (type == axom::sidre::TypeID::INT8_ID) {
-        int8 val = sidreGroup->getView("defaultValue")->getData();
-        fieldAttributes[2] = std::to_string(val);
-      } else if (type == axom::sidre::TypeID::INT_ID) {
-        int val = sidreGroup->getView("defaultValue")->getData();
-        fieldAttributes[2] = std::to_string(val);
-      } else if (type == axom::sidre::DOUBLE_ID) {
-        double val = sidreGroup->getView("defaultValue")->getData();
-        fieldAttributes[2] = std::to_string(val);
-      } else {
-        fieldAttributes[2] = sidreGroup->getView("defaultValue")->getString();
-      }
-    }
-    
-    // the following line will be needed once ranges are added to inlet fields
-    // fieldAttributes[3] = std::to_string(sidreGroup->getView(sidreGroup->getViewIndex("range"))->getScalar());
-
-    if (sidreGroup->hasView("required")) {
-      int8 required = sidreGroup->getView("required")->getData();
-      fieldAttributes[4] = required ? "|check|" : "|uncheck|";
-    } else {
-      fieldAttributes[4] = "|uncheck|";
-    }
-  
-    m_currentTable.rstTable.push_back(fieldAttributes);
+    collectFieldInfo(sidreGroup);
   } 
 
   // Case 2: Current root corresponds to a inlet::Table
@@ -146,6 +112,67 @@ void SphinxDocWriter::writeAllTables() {
     }
   }
 
+}
+
+void SphinxDocWriter::collectFieldInfo(axom::sidre::Group* sidreGroup) {
+  std::vector<std::string> fieldAttributes(5, "");
+  fieldAttributes.resize(5);
+
+  fieldAttributes[0] = sidreGroup->getName();
+  if (sidreGroup->hasView("description")) {
+    fieldAttributes[1] = std::string(sidreGroup->getView("description")->getString());
+  } 
+
+  if (sidreGroup->hasView("defaultValue")) {
+    axom::sidre::TypeID type = sidreGroup->getView("defaultValue")->getTypeID();
+    if (type == axom::sidre::TypeID::INT8_ID) {
+      int8 val = sidreGroup->getView("defaultValue")->getData();
+      fieldAttributes[2] = std::to_string(val);
+    } else if (type == axom::sidre::TypeID::INT_ID) {
+      int val = sidreGroup->getView("defaultValue")->getData();
+      fieldAttributes[2] = std::to_string(val);
+    } else if (type == axom::sidre::DOUBLE_ID) {
+      double val = sidreGroup->getView("defaultValue")->getData();
+      fieldAttributes[2] = std::to_string(val);
+    } else {
+      fieldAttributes[2] = sidreGroup->getView("defaultValue")->getString();
+    }
+  }
+
+  if (sidreGroup->hasView("continuousRange")) {
+    axom::sidre::TypeID type = sidreGroup->getView("continuousRange")->getTypeID();
+    if (type == axom::sidre::INT_ID) {
+      int* range = sidreGroup->getView("continuousRange")->getArray();
+      fieldAttributes[3] = std::to_string(range[0]) + " to " + std::to_string(range[1]);
+    } else  if (type == axom::sidre::DOUBLE_ID) {
+      double* range = sidreGroup->getView("continuousRange")->getArray();
+      fieldAttributes[3] = std::to_string(range[0]) + " to " + std::to_string(range[1]);
+    } else {
+      SLIC_WARNING("Unexpected range type");
+    }
+  } else if (sidreGroup->hasView("discreteRange")) {
+    SLIC_ASSERT_MSG(sidreGroup->getView("discreteRange")->getTypeID() == axom::sidre::INT_ID,
+                    "discrete range is only valid for integers");
+    int* range = sidreGroup->getView("discreteRange")->getArray();
+    size_t size = sidreGroup->getView("discreteRange")->getBuffer()->getNumElements();
+    std::cout << size << std::endl;
+    for (int i = 0; i < size; i++) {
+      if (i == size-1) {
+        fieldAttributes[3] += std::to_string(range[i]);      
+      } else {
+        fieldAttributes[3] += std::to_string(range[i]) + ", ";
+      }
+    }
+  }
+  
+  if (sidreGroup->hasView("required")) {
+    int8 required = sidreGroup->getView("required")->getData();
+    fieldAttributes[4] = required ? "|check|" : "|uncheck|";
+  } else {
+    fieldAttributes[4] = "|uncheck|";
+  }
+
+  m_currentTable.rstTable.push_back(fieldAttributes);
 }
 
 }
