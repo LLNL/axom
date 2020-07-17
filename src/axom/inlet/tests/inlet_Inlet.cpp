@@ -558,15 +558,15 @@ TEST(inlet_Inlet_views, NestedTableViewCheck3)
   double doubleVal;  
 
   found = inlet->get("Table1/float1", doubleVal);
-  ASSERT_TRUE(found);
+  EXPECT_TRUE(found);
   found = inlet->get("Table2/int1", intVal);
-  ASSERT_TRUE(found);  
+  EXPECT_TRUE(found);  
   found = inlet->get("Table3/bool1", boolVal);
-  ASSERT_TRUE(found);
+  EXPECT_TRUE(found);
 
-  ASSERT_TRUE(sidreGroup->hasView("Table1/float1/description"));
-  ASSERT_TRUE(sidreGroup->hasView("Table2/int1/description"));
-  ASSERT_TRUE(sidreGroup->hasView("Table3/bool1/description"));
+  EXPECT_TRUE(sidreGroup->hasView("Table1/float1/description"));
+  EXPECT_TRUE(sidreGroup->hasView("Table2/int1/description"));
+  EXPECT_TRUE(sidreGroup->hasView("Table3/bool1/description"));
 }
 
 TEST(inlet_Inlet, mixLevelTables)
@@ -667,6 +667,58 @@ TEST(inlet_Inlet, mixLevelTables)
   found = inlet->get("thermal_solver/solver/steps", intVal);
   EXPECT_TRUE(found);
   EXPECT_EQ(intVal, 1);
+}
+
+TEST(inlet_Field, defaultValues) {
+  std::string testString = "Table1 = { float1 = 5.6; Table2 = { int1 = 95; Table4 = { str1= 'hi' } } }; Table3 = { bool1 = true }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  // new fields
+  inlet->addDouble("field1")->addDefaultDouble(2.0); 
+  inlet->addInt("Table1/Table2/field2")->addDefaultInt(5);
+  inlet->addBool("Table1/field3")->addDefaultBool(true);
+  inlet->addString("Table3/field4")->addDefaultString("default for new string");
+
+  // existing fields
+  inlet->addInt("Table1/Table2/int1")->addDefaultInt(100);
+  inlet->addBool("Table3/bool1")->addDefaultBool(false);
+  inlet->addDouble("Table1/float1")->addDefaultDouble(3.14);
+  inlet->addString("Table1/Table2/Table4/str1")->addDefaultString("default for old string");
+
+  axom::sidre::Group* sidreGroup = inlet->sidreGroup();
+
+  EXPECT_TRUE(sidreGroup->hasView("field1/defaultValue"));
+  double doubleVal = sidreGroup->getView("field1/defaultValue")->getScalar();
+  EXPECT_EQ(doubleVal, 2.0);
+
+  EXPECT_TRUE(sidreGroup->hasView("Table1/Table2/field2/defaultValue"));
+  int intVal = sidreGroup->getView("Table1/Table2/field2/defaultValue")->getScalar();
+  EXPECT_EQ(intVal, 5);
+
+  EXPECT_TRUE(sidreGroup->hasView("Table1/field3/defaultValue"));
+  int8_t boolVal = sidreGroup->getView("Table1/field3/defaultValue")->getScalar();
+  EXPECT_EQ(boolVal, 1);
+
+  EXPECT_TRUE(sidreGroup->hasView("Table3/field4/defaultValue"));
+  std::string strVal = sidreGroup->getView("Table3/field4/defaultValue")->getString();
+  EXPECT_EQ(strVal,"default for new string");
+
+  EXPECT_TRUE(sidreGroup->hasView("Table1/Table2/int1/defaultValue"));
+  intVal = sidreGroup->getView("Table1/Table2/int1/defaultValue")->getScalar();
+  EXPECT_EQ(intVal, 100);
+
+  EXPECT_TRUE(sidreGroup->hasView("Table3/bool1/defaultValue"));
+  boolVal = sidreGroup->getView("Table3/bool1/defaultValue")->getScalar();
+  EXPECT_EQ(boolVal, 0);
+
+  EXPECT_TRUE(sidreGroup->hasView("Table1/float1/defaultValue"));
+  doubleVal = sidreGroup->getView("Table1/float1/defaultValue")->getScalar();
+  EXPECT_EQ(doubleVal, 3.14);
+  
+  EXPECT_TRUE(sidreGroup->hasView("Table1/Table2/Table4/str1/defaultValue"));
+  strVal = sidreGroup->getView("Table1/Table2/Table4/str1/defaultValue")->getString();
+  EXPECT_EQ(strVal, "default for old string"); 
 }
 
 //------------------------------------------------------------------------------

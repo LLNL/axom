@@ -23,6 +23,8 @@ namespace axom
 namespace inlet
 {
 
+enum class FieldType {BOOL, INT, DOUBLE, STRING, UNSPECIFIED};
+
 /*!
  *******************************************************************************
  * \class Field
@@ -47,8 +49,8 @@ public:
    * \param [in] sidreGroup Pointer to the already created Sidre Group.
    *****************************************************************************
    */
-  Field(axom::sidre::Group* sidreGroup) :
-    m_sidreGroup(sidreGroup) {}
+  Field(axom::sidre::Group* sidreGroup, FieldType type = FieldType::UNSPECIFIED) :
+    m_sidreGroup(sidreGroup), m_type(type) {}
 
   /*!
    *****************************************************************************
@@ -87,9 +89,63 @@ public:
    *****************************************************************************
    */
   bool required();
+
+  /*!
+   *****************************************************************************
+   * \brief Set the required status of this Field.
+   *
+   * Set the default value for the Field in the input deck.
+   *
+   * \param [in] value The default string value
+   *
+   * \return Shared pointer to this instance of this class
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> addDefaultString(std::string value);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the required status of this Field.
+   *
+   * Set the default value for the Field in the input deck.
+   *
+   * \param [in] value The default boolean value
+   *
+   * \return Shared pointer to this instance of this class
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> addDefaultBool(bool value);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the required status of this Field.
+   *
+   * Set the default value for the Field in the input deck.
+   *
+   * \param [in] value The default integer value
+   *
+   * \return Shared pointer to this instance of this class
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> addDefaultInt(int value);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the required status of this Field.
+   *
+   * Set the default value for the Field in the input deck.
+   *
+   * \param [in] value The default double value
+   *
+   * \return Shared pointer to this instance of this class
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> addDefaultDouble(double value);
+
 private:
   // This Field's sidre group
   axom::sidre::Group* m_sidreGroup = nullptr;
+  FieldType m_type = FieldType::UNSPECIFIED;
 };
 
 } // end namespace inlet

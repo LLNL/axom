@@ -55,15 +55,30 @@ void SphinxDocWriter::writeDocumentationHelper(axom::sidre::Group* sidreGroup) {
 
     fieldAttributes[0] = sidreGroup->getName();
     if (sidreGroup->hasView("description")) {
-      fieldAttributes[1] = std::string(sidreGroup->getView(sidreGroup->getViewIndex("description"))->getString());
+      fieldAttributes[1] = std::string(sidreGroup->getView("description")->getString());
     } 
 
     // the following 2 lines will be needed once default values and range are added to inlet fields
-    // fieldAttributes[2] = std::to_string(sidreGroup->getView(sidreGroup->getViewIndex("default values"))->getScalar());
+    if (sidreGroup->hasView("defaultValue")) {
+      axom::sidre::TypeID type = sidreGroup->getView("defaultValue")->getTypeID();
+      if (type == axom::sidre::TypeID::INT8_ID) {
+        int8 val = sidreGroup->getView("defaultValue")->getData();
+        fieldAttributes[2] = std::to_string(val);
+      } else if (type == axom::sidre::TypeID::INT_ID) {
+        int val = sidreGroup->getView("defaultValue")->getData();
+        fieldAttributes[2] = std::to_string(val);
+      } else if (type == axom::sidre::DOUBLE_ID) {
+        double val = sidreGroup->getView("defaultValue")->getData();
+        fieldAttributes[2] = std::to_string(val);
+      } else {
+        fieldAttributes[2] = sidreGroup->getView("defaultValue")->getString();
+      }
+    }
+    
     // fieldAttributes[3] = std::to_string(sidreGroup->getView(sidreGroup->getViewIndex("range"))->getScalar());
 
     if (sidreGroup->hasView("required")) {
-      int8 required = sidreGroup->getView(sidreGroup->getViewIndex("required"))->getData();
+      int8 required = sidreGroup->getView("required")->getData();
       fieldAttributes[4] = required ? "|check|" : "|uncheck|";
     } else {
       fieldAttributes[4] = "|uncheck|";
