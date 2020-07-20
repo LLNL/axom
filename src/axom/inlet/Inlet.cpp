@@ -25,7 +25,7 @@ namespace inlet
 std::shared_ptr<Table> Inlet::addTable(const std::string& name,
                                        const std::string& description)
 {
-  return std::make_shared<Table>(name, description, m_reader, m_sidreRootGroup);
+  return std::make_shared<Table>(name, description, m_reader, m_sidreRootGroup, m_docEnabled);
 }
 
 std::shared_ptr<Field> Inlet::addBool(const std::string& name,
@@ -184,7 +184,7 @@ void Inlet::registerDocWriter(std::shared_ptr<DocWriter> writer) {
 }
 
 void Inlet::writeDoc() {
-  if (m_docWriterEnabled) {
+  if (m_docEnabled) {
     m_docWriter->writeDocumentation();
   }
 }
@@ -205,6 +205,41 @@ void Inlet::verifyRecursive(axom::sidre::Group* sidreGroup, bool& verifySuccess)
                                                                       sidreGroup->getPathName());
       SLIC_WARNING(msg);
       verifySuccess = false;
+    }
+  }
+
+  if (sidreGroup->hasView("value")) {
+    if (sidreGroup->hasView("continuousRange")) {
+      auto type = sidreGroup->getView("continuousRange")->getTypeID();
+      if (type == axom::sidre::INT_ID) {
+        int* range = sidreGroup->getView("continuousRange")->getArray();
+        int val = sidreGroup->getView("value")->getScalar();
+        if (!(range[0] <= val && val <= range[1])) {
+          verifySuccess = false;
+        }
+      } else if (type == axom::sidre::DOUBLE_ID) {
+        double* range = sidreGroup->getView("continuousRange")->getArray();
+        double val = sidreGroup->getView("value")->getScalar();
+        if (!(range[0] <= val && val <= range[1])) {
+          verifySuccess = false;
+        }
+      } else {
+        verifySuccess = false;
+      }
+    } else if (sidreGroup->hasView("discreteRange")) {
+      int val = sidreGroup->getView("value")->getScalar();
+      int* range = sidreGroup->getView("discreteRange")->getArray();
+      size_t size = sidreGroup->getView("discreteRange")->getBuffer()->getNumElements();
+      bool found = false;
+      for (size_t i = 0; i < size; i++) {
+        if (range[i] == val) {
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        verifySuccess = false;
+      }
     }
   }
   

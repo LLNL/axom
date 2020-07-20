@@ -47,10 +47,14 @@ public:
    * data already read and stored in the given Sidre Group.
    *
    * \param [in] sidreGroup Pointer to the already created Sidre Group.
+   * \param [in] type FieldType specifying the data type of this Field instance.
+   * Default is FieldType::UNSPECIFIED.
+   * \param [in] docEnabled Boolean indicating whether or not documentation
+   * generation is enabled for Input Deck this Field instance belongs to.
    *****************************************************************************
    */
-  Field(axom::sidre::Group* sidreGroup, FieldType type = FieldType::UNSPECIFIED) :
-    m_sidreGroup(sidreGroup), m_type(type) {}
+  Field(axom::sidre::Group* sidreGroup, FieldType type = FieldType::UNSPECIFIED, bool docEnabled = true) :
+        m_sidreGroup(sidreGroup), m_type(type), m_docEnabled(docEnabled) {}
 
   /*!
    *****************************************************************************
@@ -191,6 +195,7 @@ private:
   // This Field's sidre group
   axom::sidre::Group* m_sidreGroup = nullptr;
   FieldType m_type = FieldType::UNSPECIFIED;
+  bool m_docEnabled = false;
 };
 
 } // end namespace inlet

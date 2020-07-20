@@ -155,8 +155,7 @@ void SphinxDocWriter::collectFieldInfo(axom::sidre::Group* sidreGroup) {
                     "discrete range is only valid for integers");
     int* range = sidreGroup->getView("discreteRange")->getArray();
     size_t size = sidreGroup->getView("discreteRange")->getBuffer()->getNumElements();
-    std::cout << size << std::endl;
-    for (int i = 0; i < size; i++) {
+    for (size_t i = 0; i < size; i++) {
       if (i == size-1) {
         fieldAttributes[3] += std::to_string(range[i]);      
       } else {

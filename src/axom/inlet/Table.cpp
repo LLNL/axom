@@ -29,7 +29,7 @@ std::shared_ptr<Table> Table::addTable(const std::string& name,
                                        const std::string& description)
 {
   std::string fullName = getFullName(m_name, name);
-  return std::make_shared<Table>(fullName, description, m_reader, m_sidreRootGroup);
+  return std::make_shared<Table>(fullName, description, m_reader, m_sidreRootGroup, m_docEnabled);
 }
 
 axom::sidre::Group* Table::baseFieldAdd(const std::string& name,
@@ -71,7 +71,7 @@ std::shared_ptr<Field> Table::addBool(const std::string& name,
     sidreGroup->createViewScalar("value", value? int8(1) : int8(0) );
   }
 
-  return std::make_shared<Field>(sidreGroup, FieldType::BOOL);
+  return std::make_shared<Field>(sidreGroup, FieldType::BOOL, m_docEnabled);
 }
 
 std::shared_ptr<Field> Table::addDouble(const std::string& name,
@@ -90,7 +90,7 @@ std::shared_ptr<Field> Table::addDouble(const std::string& name,
     sidreGroup->createViewScalar("value", value);
   }
 
-  return std::make_shared<Field>(sidreGroup, FieldType::DOUBLE);
+  return std::make_shared<Field>(sidreGroup, FieldType::DOUBLE, m_docEnabled);
 }
 
 std::shared_ptr<Field> Table::addInt(const std::string& name,
@@ -109,7 +109,7 @@ std::shared_ptr<Field> Table::addInt(const std::string& name,
     sidreGroup->createViewScalar("value", value);
   }
 
-  return std::make_shared<axom::inlet::Field>(sidreGroup, FieldType::INT);
+  return std::make_shared<axom::inlet::Field>(sidreGroup, FieldType::INT, m_docEnabled);
 }
 
 std::shared_ptr<Field> Table::addString(const std::string& name,
@@ -128,7 +128,7 @@ std::shared_ptr<Field> Table::addString(const std::string& name,
     sidreGroup->createViewString("value", value);
   }
 
-  return std::make_shared<Field>(sidreGroup, FieldType::STRING);
+  return std::make_shared<Field>(sidreGroup, FieldType::STRING, m_docEnabled);
 }
 
 std::shared_ptr<Table> Table::required(bool isRequired)

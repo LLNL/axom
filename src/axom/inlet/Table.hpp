@@ -54,15 +54,19 @@ public:
    * \param [in] description Description of the Table
    * \param [in] reader Shared pointer to the input deck Reader class.
    * \param [in] sidreRootGroup Pointer to the already created Sidre Group.
+   * \param [in] docEnabled Boolean indicating whether or not documentation
+   * generation is enabled for Input Deck this Table instance belongs to.
    *****************************************************************************
    */
   Table(const std::string& name,
         const std::string& description,
         std::shared_ptr<Reader> reader,
-        axom::sidre::Group* sidreRootGroup) : 
+        axom::sidre::Group* sidreRootGroup,
+        bool docEnabled = true) : 
     m_name(name),
     m_reader(reader),
-    m_sidreRootGroup(sidreRootGroup)
+    m_sidreRootGroup(sidreRootGroup),
+    m_docEnabled(docEnabled)
     {
       SLIC_ASSERT_MSG(m_reader, "Inlet's Reader class not valid");
       SLIC_ASSERT_MSG(m_sidreRootGroup != nullptr, "Inlet's Sidre Datastore class not set");
@@ -245,6 +249,7 @@ private:
   axom::sidre::Group* m_sidreRootGroup;
   // This Table's Sidre Group
   axom::sidre::Group* m_sidreGroup;
+  bool m_docEnabled;
 };
 
 } // end namespace inlet

@@ -73,7 +73,12 @@ std::shared_ptr<Field> Field::addDefaultString(std::string value) {
                                   m_sidreGroup->getName());
     SLIC_WARNING(msg);
   } else {
-    m_sidreGroup->createViewString("defaultValue", value);
+    if (m_docEnabled) {
+      m_sidreGroup->createViewString("defaultValue", value);
+    }
+    if (!m_sidreGroup->hasView("value")) {
+      m_sidreGroup->createViewString("value", value);
+    }
   }
   return shared_from_this();
 }
@@ -86,7 +91,12 @@ std::shared_ptr<Field> Field::addDefaultBool(bool value) {
                                   m_sidreGroup->getName());
     SLIC_WARNING(msg);
   } else {
-    m_sidreGroup->createViewScalar("defaultValue", (int8)value);
+    if (m_docEnabled) {
+      m_sidreGroup->createViewScalar("defaultValue", (int8)value);
+    }
+    if (!m_sidreGroup->hasView("value")) {
+      m_sidreGroup->createViewScalar("value", (int8)value);
+    }
   }
   return shared_from_this();
 }
@@ -99,8 +109,14 @@ std::shared_ptr<Field> Field::addDefaultInt(int value) {
                                   m_sidreGroup->getName());
     SLIC_WARNING(msg);
   } else {
-    m_sidreGroup->createViewScalar("defaultValue", value);
+    if (m_docEnabled) {
+      m_sidreGroup->createViewScalar("defaultValue", value);
+    }
+    if (!m_sidreGroup->hasView("value")) {
+      m_sidreGroup->createViewScalar("value", value);
+    }
   }
+  
   return shared_from_this();
 }
 
@@ -112,7 +128,12 @@ std::shared_ptr<Field> Field::addDefaultDouble(double value) {
                                   m_sidreGroup->getName());
     SLIC_WARNING(msg);
   } else {
-    m_sidreGroup->createViewScalar("defaultValue", value);
+    if (m_docEnabled) {
+      m_sidreGroup->createViewScalar("defaultValue", value);
+    }
+    if (!m_sidreGroup->hasView("value")) {
+      m_sidreGroup->createViewScalar("value", value);
+    }
   }
   return shared_from_this();
 }

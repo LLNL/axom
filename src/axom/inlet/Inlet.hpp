@@ -56,14 +56,16 @@ public:
    *
    * \param [in] reader Shared pointer to the input deck Reader class.
    * \param [in] sidreRootGroup Pointer to the already created Sidre Group.
+   * \param [in] docEnabled Boolean indicating whether documentation generation
+   * is enabled. This also toggles the storing of documentation-specific information.
    *****************************************************************************
    */
   Inlet(std::shared_ptr<Reader> reader,
-        axom::sidre::Group* sidreRootGroup, bool docsEnabled = false) :
+        axom::sidre::Group* sidreRootGroup, bool docEnabled = true) :
     m_reader(reader),
     m_sidreRootGroup(sidreRootGroup),
-    m_globalTable(std::make_shared<Table>("", "", m_reader, m_sidreRootGroup)),
-    m_docWriterEnabled(docsEnabled) {}
+    m_globalTable(std::make_shared<Table>("", "", m_reader, m_sidreRootGroup, docEnabled)),
+    m_docEnabled(docEnabled) {}
 
   virtual ~Inlet() = default;
 
@@ -310,7 +312,7 @@ private:
   std::shared_ptr<Table> m_globalTable;
 
   std::shared_ptr<DocWriter> m_docWriter;
-  bool m_docWriterEnabled = false;
+  bool m_docEnabled = false;
 };
 
 } // end namespace inlet
