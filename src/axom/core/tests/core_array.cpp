@@ -655,6 +655,38 @@ void check_emplace( Array< T >& v )
   }
 }
 
+template< typename T >
+void check_swap( Array< T >& v)
+{ 
+  axom::Array< T > v_two ( v.size() );
+
+  /* Push 0...size elements */
+  for (int i = 0; i < v.size(); i++)
+  {
+    v[ i ] = i;
+    v_two[ i ] = -i;
+  }
+
+  /* Create copies */
+  axom::Array< T > v_copy (v);
+  axom::Array< T > v_two_copy (v_two);
+
+  EXPECT_EQ(v, v_copy);
+  EXPECT_EQ(v_two, v_two_copy);
+
+  /* Swap */
+  v.swap(v_two);
+
+  EXPECT_EQ(v_two, v_copy);
+  EXPECT_EQ(v, v_two_copy);
+
+  /* Swap back */
+  v.swap(v_two);
+
+  EXPECT_EQ(v, v_copy);
+  EXPECT_EQ(v_two, v_two_copy);
+}
+
 /*!
  * \brief Check an external array for defects.
  * \param [in] v the external array to check.
@@ -845,6 +877,19 @@ TEST( core_array, checkEmplace )
 }
 
 //------------------------------------------------------------------------------
+TEST( core_array, checkSwap )
+{
+  for ( IndexType size = 10 ; size <= 512 ; size *= 2 )
+  {
+    Array< int > v_int( size );
+    internal::check_swap( v_int );
+
+    Array< double > v_double( size );
+    internal::check_swap( v_double );
+  }
+}
+
+//------------------------------------------------------------------------------
 TEST( core_array_DeathTest, checkExternal )
 {
   constexpr double MAGIC_NUM = 5683578.8;
@@ -879,41 +924,6 @@ TEST( core_array_DeathTest, checkExternal )
       EXPECT_EQ( buffer.doubles[ i ], MAGIC_NUM );
     }
   }
-}
-
-//------------------------------------------------------------------------------
-TEST( core_array, checkSwap )
-{
-  constexpr int SIZE = 1000;
-  
-  axom::Array< int > a ( SIZE );
-  axom::Array< int > b ( SIZE );
-
-  /* Push 0...999 elements */
-  for (int i = 0; i < SIZE; i++)
-  {
-    a[ i ] = i;
-    b[ i ] = -i;
-  }
-
-  /* Create copies */
-  axom::Array< int > a_copy (a);
-  axom::Array< int > b_copy (b);
-
-  EXPECT_EQ(a, a_copy);
-  EXPECT_EQ(b, b_copy);
-
-  /* Swap */
-  a.swap(b);
-
-  EXPECT_EQ(b, a_copy);
-  EXPECT_EQ(a, b_copy);
-
-  /* Swap back */
-  a.swap(b);
-
-  EXPECT_EQ(a, a_copy);
-  EXPECT_EQ(b, b_copy);
 }
 
 //------------------------------------------------------------------------------
