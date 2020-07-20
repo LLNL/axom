@@ -88,11 +88,15 @@ public:
    * \param num_files     number of output data files
    * \param file_string   base name for output files
    * \param protocol      identifies I/O protocol
+   * \param tree_pattern  Optional tree pattern string placed in root file,
+   *                      to set search path for data in the output files
+   *
    */
   void write(sidre::Group* group,
              int num_files,
              const std::string& file_string,
-             const std::string& protocol);
+             const std::string& protocol,
+             const std::string& tree_pattern = "datagroup_%07d");
 
   /*!
    * \brief write additional group to existing root file
@@ -294,7 +298,8 @@ private:
 
   void createRootFile(const std::string& file_base,
                       int num_files,
-                      const std::string& protocol);
+                      const std::string& protocol,
+                      const std::string& tree_pattern);
 
   std::string getProtocol(const std::string& root_name);
 

@@ -113,7 +113,7 @@ TEST(spio_parallel, parallel_writeread)
 
   const std::string file_name = "out_spio_parallel_write_read";
 
-  writer.write(root, num_files, file_name, PROTOCOL);
+  writer.write(root, num_files, file_name, PROTOCOL, "tree_%07d");
 
   std::string root_name = file_name + ROOT_EXT;
   // _parallel_io_save_end
@@ -159,8 +159,14 @@ TEST(spio_parallel, parallel_writeread)
   if ( (my_rank == 1 || num_ranks == 1) && PROTOCOL == "sidre_hdf5" )
   {
 
-    conduit::Node n;
-    conduit::relay::io::load(root_name + ":extra", "hdf5", n);
+    conduit::Node root_node;
+    conduit::relay::io::load(root_name, "hdf5", root_node);
+
+    std::string pattern = root_node["tree_pattern"].as_string();
+
+    const conduit::Node& n = root_node["extra"]; 
+
+    EXPECT_EQ(pattern, "tree_%07d");
 
     double dval = n["dval"].to_double();
 
