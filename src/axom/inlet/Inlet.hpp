@@ -303,6 +303,7 @@ private:
    * \param [out] verifySuccess Indicates whether or not the verification was successful.
    *****************************************************************************
    */
+
   void verifyRecursive(axom::sidre::Group* sidreGroup, bool& verifySuccess);
 
   axom::sidre::View* baseGet(const std::string& name);

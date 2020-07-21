@@ -23,7 +23,8 @@ namespace axom
 namespace inlet
 {
 
-// enum class FieldType {BOOL, INT, DOUBLE, STRING, UNSPECIFIED};
+void issueWarning(bool condition, std::string msg, axom::sidre::Group* root);
+void issueWarning(std::string msg, axom::sidre::Group* root);
 
 /*!
  *******************************************************************************
@@ -47,16 +48,17 @@ public:
    * data already read and stored in the given Sidre Group.
    *
    * \param [in] sidreGroup Pointer to the already created Sidre Group.
+   * \param [in] root Pointer to the sidreRootGroup containing this Field
    * \param [in] type FieldType specifying the data type of this Field instance.
    * Default is FieldType::UNSPECIFIED.
    * \param [in] docEnabled Boolean indicating whether or not documentation
    * generation is enabled for Input Deck this Field instance belongs to.
    *****************************************************************************
    */
-  Field(axom::sidre::Group* sidreGroup, 
+  Field(axom::sidre::Group* sidreGroup, axom::sidre::Group* root,
         axom::sidre::DataTypeId type = axom::sidre::DataTypeId::NO_TYPE_ID,
-        bool docEnabled = true) :
-        m_sidreGroup(sidreGroup), m_type(type), m_docEnabled(docEnabled) {}
+        bool docEnabled = true) : m_sidreGroup(sidreGroup), m_sidreRootGroup(root),
+        m_type(type), m_docEnabled(docEnabled) {}
 
   /*!
    *****************************************************************************
@@ -107,7 +109,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> addDefaultValue(const std::string& value);
+  std::shared_ptr<Field> defaultValue(const std::string& value);
 
    /*!
    *****************************************************************************
@@ -120,7 +122,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> addDefaultValue(const char* value);
+  std::shared_ptr<Field> defaultValue(const char* value);
 
   /*!
    *****************************************************************************
@@ -133,7 +135,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> addDefaultValue(bool value);
+  std::shared_ptr<Field> defaultValue(bool value);
 
   /*!
    *****************************************************************************
@@ -146,7 +148,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> addDefaultValue(int value);
+  std::shared_ptr<Field> defaultValue(int value);
 
   /*!
    *****************************************************************************
@@ -159,7 +161,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> addDefaultValue(double value);
+  std::shared_ptr<Field> defaultValue(double value);
 
   /*!
    *****************************************************************************
@@ -197,18 +199,17 @@ public:
    *
    * Set the continuous range for the Field in the input deck.
    *
-   * \param [in] set An integer array indicating the set of allowed values
-   * 
-   * \param [in] size The number of elements in the array
+   * \param [in] set An integer vector containing the set of allowed values
    *
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> validValues(int* set, size_t size);
+  std::shared_ptr<Field> validValues(std::vector<int> set);
 
 private:
   // This Field's sidre group
   axom::sidre::Group* m_sidreGroup = nullptr;
+  axom::sidre::Group* m_sidreRootGroup = nullptr;
   axom::sidre::DataTypeId m_type = axom::sidre::DataTypeId::NO_TYPE_ID;
   bool m_docEnabled = false;
 };

@@ -60,7 +60,7 @@ void defineSchema(std::shared_ptr<Inlet> inlet)
   
   currField = inlet->addString("thermal_solver/timestepper", "thermal solver timestepper");
   currField->required(false);
-  currField->addDefaultValue("this is default");
+  currField->defaultValue("this is default");
 
   currField = inlet->addString("thermal_solver/u0/type", "description for u0 type");
   currField->required(true);
@@ -73,7 +73,7 @@ void defineSchema(std::shared_ptr<Inlet> inlet)
 
   currField = inlet->addDouble("thermal_solver/kappa/constant", "description for kappa constant");
   currField->required(true);
-  currField->addDefaultValue(0.0);
+  currField->defaultValue(0.0);
 
   // Add description to solver table by using the addTable function
   auto table = inlet->addTable("thermal_solver/solver", "This is the solver sub-table in the thermal_solver table");
@@ -89,12 +89,11 @@ void defineSchema(std::shared_ptr<Inlet> inlet)
 
   currField = table->addInt("print_level", "description for solver print level");
   currField->required(true); 
-  int arr[] = {1, 3, 5, 7};
-  currField->validValues(arr, 4);
+  currField->validValues({1, 3, 5, 7});
 
   currField = table->addInt("max_iter", "description for solver max iter");
   currField->required(false);
-  currField->addDefaultValue(10);
+  currField->defaultValue(10);
   
   currField = table->addDouble("dt", "description for solver dt");
   currField->required(true); 

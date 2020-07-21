@@ -145,7 +145,8 @@ private:
     *******************************************************************************
     */
     TableData() {
-      rstTable = {{"Field Name", "Description", "Default Value", "Range", "Required"}};
+      rstTable = {{"Field Name", "Description", "Default Value", 
+                             "Range/Valid Values", "Required"}};
     }
 
     std::string tableName;

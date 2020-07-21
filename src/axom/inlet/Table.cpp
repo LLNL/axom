@@ -41,7 +41,8 @@ axom::sidre::Group* Table::baseFieldAdd(const std::string& name,
 
   if (m_sidreRootGroup->hasGroup(name))
   {
-    SLIC_WARNING("Inlet: Cannot add value that already exists: " + name);
+    axom::inlet::issueWarning("Inlet: Cannot add value that already exists: " + name,
+                                                                   m_sidreRootGroup);
     return nullptr;
   }
 
@@ -72,8 +73,8 @@ std::shared_ptr<Field> Table::addBool(const std::string& name,
     sidreGroup->createViewScalar("value", value? int8(1) : int8(0) );
   }
 
-  return std::make_shared<Field>(sidreGroup, axom::sidre::DataTypeId::INT8_ID, 
-                                                                m_docEnabled);
+  return std::make_shared<Field>(sidreGroup, m_sidreRootGroup,
+                                 axom::sidre::DataTypeId::INT8_ID, m_docEnabled);
 }
 
 std::shared_ptr<Field> Table::addDouble(const std::string& name,
@@ -92,8 +93,8 @@ std::shared_ptr<Field> Table::addDouble(const std::string& name,
     sidreGroup->createViewScalar("value", value);
   }
 
-  return std::make_shared<Field>(sidreGroup, axom::sidre::DataTypeId::DOUBLE_ID, 
-                                                                  m_docEnabled);
+  return std::make_shared<Field>(sidreGroup, m_sidreRootGroup,
+                                 axom::sidre::DataTypeId::DOUBLE_ID, m_docEnabled);
 }
 
 std::shared_ptr<Field> Table::addInt(const std::string& name,
@@ -112,8 +113,9 @@ std::shared_ptr<Field> Table::addInt(const std::string& name,
     sidreGroup->createViewScalar("value", value);
   }
 
-  return std::make_shared<axom::inlet::Field>(sidreGroup, axom::sidre::DataTypeId::INT_ID,
-                                                                            m_docEnabled);
+  return std::make_shared<axom::inlet::Field>(sidreGroup, m_sidreRootGroup,
+                                              axom::sidre::DataTypeId::INT_ID,
+                                                                m_docEnabled);
 }
 
 std::shared_ptr<Field> Table::addString(const std::string& name,
@@ -132,8 +134,8 @@ std::shared_ptr<Field> Table::addString(const std::string& name,
     sidreGroup->createViewString("value", value);
   }
 
-  return std::make_shared<Field>(sidreGroup, axom::sidre::DataTypeId::CHAR8_STR_ID,
-                                                                     m_docEnabled);
+  return std::make_shared<Field>(sidreGroup, m_sidreRootGroup,
+                                 axom::sidre::DataTypeId::CHAR8_STR_ID, m_docEnabled);
 }
 
 std::shared_ptr<Table> Table::required(bool isRequired)
@@ -144,7 +146,7 @@ std::shared_ptr<Table> Table::required(bool isRequired)
   {
     std::string msg = fmt::format("Inlet Table has already defined required value: {0}",
                                   m_sidreGroup->getName());
-    SLIC_WARNING(msg);
+    axom::inlet::issueWarning(msg, m_sidreRootGroup);
     return shared_from_this();
   }
 
@@ -180,7 +182,7 @@ bool Table::required()
     std::string msg = fmt::format("Invalid integer value stored in boolean"
                                   " value named {0}",
                                   m_sidreGroup->getName());
-    SLIC_WARNING(msg);
+    axom::inlet::issueWarning(msg, m_sidreRootGroup);
     return false;
   }
 

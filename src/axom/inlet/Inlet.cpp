@@ -93,7 +93,7 @@ bool Inlet::get(const std::string& name, bool& value)
     std::string msg = fmt::format("Boolean named '{0}' was asked for"
                                   " but recieved type {1}",
                                   name, valueView->getTypeID());
-    SLIC_WARNING(msg);
+    issueWarning(msg, m_sidreRootGroup);
     return false;
   }
 
@@ -103,7 +103,7 @@ bool Inlet::get(const std::string& name, bool& value)
     std::string msg = fmt::format("Invalid integer value stored in boolean"
                                   " value named {0}",
                                   name);
-    SLIC_WARNING(msg);
+    issueWarning(msg, m_sidreRootGroup);
     return false;
   }
 
@@ -124,7 +124,7 @@ bool Inlet::get(const std::string& name, double& value)
     std::string msg = fmt::format("Double named '{0}' was asked for"
                                   " but recieved type {1}",
                                   name, valueView->getTypeID());
-    SLIC_WARNING(msg);
+    issueWarning(msg, m_sidreRootGroup);
     return false;
   }
 
@@ -145,7 +145,7 @@ bool Inlet::get(const std::string& name, int& value)
     std::string msg = fmt::format("Integer named '{0}' was asked for"
                                   " but recieved type {1}",
                                   name, valueView->getTypeID());
-    SLIC_WARNING(msg);
+    issueWarning(msg, m_sidreRootGroup);
     return false;
   }
 
@@ -166,7 +166,7 @@ bool Inlet::get(const std::string& name, std::string& value)
     std::string msg = fmt::format("String named '{0}' was asked for"
                                   " but recieved type {1}",
                                   name, valueView->getTypeID());
-    SLIC_WARNING(msg);
+    issueWarning(msg, m_sidreRootGroup);
     return false;
   }
 
@@ -197,13 +197,16 @@ bool Inlet::verify() {
 
 void Inlet::verifyRecursive(axom::sidre::Group* sidreGroup, bool& verifySuccess) {
   SLIC_ASSERT_MSG(sidreGroup, "Root was nullptr");
+  if (sidreGroup == m_sidreRootGroup && sidreGroup->hasView("warningFlag")) {
+    verifySuccess = false;
+  }
 
   if (sidreGroup->hasView("required")) {
     int8 required = sidreGroup->getView("required")->getData();
     if (required && !sidreGroup->hasView("value")) {
       std::string msg = fmt::format("Inlet: {0}: Required field was not specified in Input Deck", 
                                     sidreGroup->getPathName());
-      SLIC_WARNING(msg);
+      issueWarning(msg, m_sidreRootGroup);
       verifySuccess = false;
     }
   }

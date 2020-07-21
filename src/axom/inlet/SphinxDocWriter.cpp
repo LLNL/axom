@@ -22,7 +22,7 @@ namespace inlet
 {
  
 SphinxDocWriter::SphinxDocWriter(const std::string& fileName, axom::sidre::Group* root) {
-  SLIC_WARNING_IF(root != nullptr, "Sidre Group is null pointer");
+  SLIC_WARNING_IF(root == nullptr, "Sidre Group is null pointer");
   m_sidreRootGroup = root;
   m_fileName = fileName;
 }
@@ -44,7 +44,7 @@ void SphinxDocWriter::writeDocumentation() {
 }
 
 void SphinxDocWriter::writeDocumentationHelper(axom::sidre::Group* sidreGroup) {
-  SLIC_WARNING_IF(sidreGroup, "Root was nullptr");
+  SLIC_WARNING_IF(!sidreGroup, "Root was nullptr");
   axom::sidre::IndexType i = sidreGroup->getFirstValidGroupIndex();
 
   // Case 1: the current group is a Field so attributes are stored in views
@@ -86,7 +86,7 @@ void SphinxDocWriter::writeSubtitle(const std::string& sub) {
 
 void SphinxDocWriter::writeTable(const std::string& title, 
                                  const std::vector<std::vector<std::string>>& rstTable) {
-  SLIC_WARNING_IF(rstTable.size() > 1, "Vector for corresponding rst table must be nonempty");
+  SLIC_WARNING_IF(rstTable.size() <= 1, "Vector for corresponding rst table must be nonempty");
   std::string result = ".. list-table:: " + title;
   result += "\n   :widths: 25 25 25 25 25\n   :header-rows: 1\n   :stub-columns: 1\n\n";
   for (unsigned int i = 0; i < rstTable.size(); i++) {
@@ -151,7 +151,7 @@ void SphinxDocWriter::collectFieldInfo(axom::sidre::Group* sidreGroup) {
       SLIC_WARNING("Unexpected range type");
     }
   } else if (sidreGroup->hasView("validValues")) {
-    SLIC_WARNING_IF(sidreGroup->getView("validValues")->getTypeID() == axom::sidre::INT_ID,
+    SLIC_WARNING_IF(sidreGroup->getView("validValues")->getTypeID() != axom::sidre::INT_ID,
                                               "discrete range is only valid for integers");
     int* range = sidreGroup->getView("validValues")->getArray();
     size_t size = sidreGroup->getView("validValues")->getBuffer()->getNumElements();

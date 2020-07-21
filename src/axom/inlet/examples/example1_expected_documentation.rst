@@ -21,7 +21,7 @@ mesh
    * - Field Name
      - Description
      - Default Value
-     - Range
+     - Range/Valid Values
      - Required
    * - filename
      - file for thermal solver
@@ -61,7 +61,7 @@ u0
    * - Field Name
      - Description
      - Default Value
-     - Range
+     - Range/Valid Values
      - Required
    * - type
      - description for u0 type
@@ -86,7 +86,7 @@ kappa
    * - Field Name
      - Description
      - Default Value
-     - Range
+     - Range/Valid Values
      - Required
    * - type
      - description for kappa type
@@ -113,7 +113,7 @@ Description: This is the solver sub-table in the thermal_solver table
    * - Field Name
      - Description
      - Default Value
-     - Range
+     - Range/Valid Values
      - Required
    * - rel_tol
      - description for solver rel tol

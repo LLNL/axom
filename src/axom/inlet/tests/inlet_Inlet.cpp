@@ -676,16 +676,16 @@ TEST(inlet_Field, defaultValuesDocsEnabled) {
   auto inlet = createBasicInlet(&ds, testString);
 
   // new fields
-  inlet->addDouble("field1")->addDefaultValue(2.0); 
-  inlet->addInt("Table1/Table2/field2")->addDefaultValue(5);
-  inlet->addBool("Table1/field3")->addDefaultValue(true);
-  inlet->addString("Table3/field4")->addDefaultValue("default for new string");
+  inlet->addDouble("field1")->defaultValue(2.0); 
+  inlet->addInt("Table1/Table2/field2")->defaultValue(5);
+  inlet->addBool("Table1/field3")->defaultValue(true);
+  inlet->addString("Table3/field4")->defaultValue("default for new string");
 
   // existing fields
-  inlet->addInt("Table1/Table2/int1")->addDefaultValue(100);
-  inlet->addBool("Table3/bool1")->addDefaultValue(false);
-  inlet->addDouble("Table1/float1")->addDefaultValue(3.14);
-  inlet->addString("Table1/Table2/Table4/str1")->addDefaultValue("default for old string");
+  inlet->addInt("Table1/Table2/int1")->defaultValue(100);
+  inlet->addBool("Table3/bool1")->defaultValue(false);
+  inlet->addDouble("Table1/float1")->defaultValue(3.14);
+  inlet->addString("Table1/Table2/Table4/str1")->defaultValue("default for old string");
 
   axom::sidre::Group* sidreGroup = inlet->sidreGroup();
 
@@ -728,16 +728,16 @@ TEST(inlet_Field, defaultValuesDocsDisabled) {
   auto inlet = createBasicInlet(&ds, testString);
 
   // new fields
-  inlet->addDouble("field1")->addDefaultValue(2.0); 
-  inlet->addInt("Table1/Table2/field2")->addDefaultValue(5);
-  inlet->addBool("Table1/field3")->addDefaultValue(true);
-  inlet->addString("Table3/field4")->addDefaultValue("default for new string");
+  inlet->addDouble("field1")->defaultValue(2.0); 
+  inlet->addInt("Table1/Table2/field2")->defaultValue(5);
+  inlet->addBool("Table1/field3")->defaultValue(true);
+  inlet->addString("Table3/field4")->defaultValue("default for new string");
 
   // existing fields
-  inlet->addInt("Table1/Table2/int1")->addDefaultValue(100);
-  inlet->addBool("Table3/bool1")->addDefaultValue(false);
-  inlet->addDouble("Table1/float1")->addDefaultValue(3.14);
-  inlet->addString("Table1/Table2/Table4/str1")->addDefaultValue("default for old string");
+  inlet->addInt("Table1/Table2/int1")->defaultValue(100);
+  inlet->addBool("Table3/bool1")->defaultValue(false);
+  inlet->addDouble("Table1/float1")->defaultValue(3.14);
+  inlet->addString("Table1/Table2/Table4/str1")->defaultValue("default for old string");
 
   axom::sidre::Group* sidreGroup = inlet->sidreGroup();
 
@@ -770,11 +770,10 @@ TEST(inlet_Field, ranges) {
   std::string testString = "Table1 = { float1 = 5.6; Table2 = { int1 = 95; Table4 = { str1= 'hi' } } }; Table3 = { bool1 = true }";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
-  int arr[] = {2,4,6};
 
   axom::sidre::Group* sidreGroup = inlet->sidreGroup();
   
-  inlet->addInt("Table1/set")->validValues(arr, 3);
+  inlet->addInt("Table1/set")->validValues({2,4,6});
   EXPECT_TRUE(sidreGroup->hasView("Table1/set/validValues"));
   int* bufferArr1 = sidreGroup->getView("Table1/set/validValues")->getArray();
   EXPECT_TRUE(bufferArr1);
@@ -861,23 +860,20 @@ TEST(inlet_Inlet_verify, verifyDiscreteIntRange) {
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
 
-  int arr1[] = {1,2,3,56,57,58};
   auto field = inlet->addInt("field2");
-  field->validValues(arr1, 6);
+  field->validValues({1,2,3,56,57,58});
   EXPECT_TRUE(inlet->verify());
 
-  int arr2[] = {-1,-2,-6,-18,21};
   field = inlet->addInt("field3");
-  field->validValues(arr2, 5);
+  field->validValues({-1,-2,-6,-18,21});
   EXPECT_TRUE(inlet->verify());
 
-  int arr3[] = {44, 40, 48, 22};
   field = inlet->addInt("NewTable/field4");
-  field->validValues(arr3, 4);
+  field->validValues({44, 40, 48, 22});
   EXPECT_TRUE(inlet->verify());
 
   field = inlet->addInt("NewTable/field5");
-  field->validValues(arr2, 5);
+  field->validValues({-1,-2,-6,-18,21});
   EXPECT_FALSE(inlet->verify());
 }
 
