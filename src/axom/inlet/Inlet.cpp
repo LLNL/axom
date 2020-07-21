@@ -202,7 +202,7 @@ void Inlet::verifyRecursive(axom::sidre::Group* sidreGroup, bool& verifySuccess)
     int8 required = sidreGroup->getView("required")->getData();
     if (required && !sidreGroup->hasView("value")) {
       std::string msg = fmt::format("Inlet: {0}: Required field was not specified in Input Deck", 
-                                                                      sidreGroup->getPathName());
+                                    sidreGroup->getPathName());
       SLIC_WARNING(msg);
       verifySuccess = false;
     }

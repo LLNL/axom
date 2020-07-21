@@ -152,7 +152,7 @@ void SphinxDocWriter::collectFieldInfo(axom::sidre::Group* sidreGroup) {
     }
   } else if (sidreGroup->hasView("validValues")) {
     SLIC_WARNING_IF(sidreGroup->getView("validValues")->getTypeID() == axom::sidre::INT_ID,
-                    "discrete range is only valid for integers");
+                                              "discrete range is only valid for integers");
     int* range = sidreGroup->getView("validValues")->getArray();
     size_t size = sidreGroup->getView("validValues")->getBuffer()->getNumElements();
     for (size_t i = 0; i < size; i++) {

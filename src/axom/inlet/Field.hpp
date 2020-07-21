@@ -30,8 +30,8 @@ namespace inlet
  * \class Field
  *
  * \brief Provides functions to help define how individual field variables in an
- *        input deck are expected to behave.  It also holds the Sidre Group to the
- *        individual field.
+ *        input deck are expected to behave.  It also holds the Sidre Group to 
+ * the individual field.
  *
  * \see Inlet Table
  *******************************************************************************
@@ -54,7 +54,8 @@ public:
    *****************************************************************************
    */
   Field(axom::sidre::Group* sidreGroup, 
-        axom::sidre::DataTypeId type = axom::sidre::DataTypeId::NO_TYPE_ID, bool docEnabled = true) :
+        axom::sidre::DataTypeId type = axom::sidre::DataTypeId::NO_TYPE_ID,
+        bool docEnabled = true) :
         m_sidreGroup(sidreGroup), m_type(type), m_docEnabled(docEnabled) {}
 
   /*!
