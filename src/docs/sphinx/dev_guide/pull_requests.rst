@@ -10,9 +10,9 @@
 Pull Requests and Code Reviews
 ********************************
 
-Before any code is merged into the develop or master branches, it
+Before any code is merged into the develop or main branches, it
 must be tested, documented, reviewed, and accepted. Creating a pull request on
-the Axom Github project to merge a branch into develop or master 
+the Axom Github project to merge a branch into develop or main 
 initiates the test and review processes. All required build configurations
 and tests must pass for a pull request to be approved. Also, new tests 
 (unit, integration, etc.) must be created that exercise any new functionality 
@@ -32,7 +32,7 @@ approved, it can be merged. If the merged branch is no longer needed for
 development, it should be deleted.
 
 In addition to successful compilation and test passing, changes to the 
-develop and master branches should be scrutinized in other ways and using 
+develop and main branches should be scrutinized in other ways and using 
 other code health tools we use. See :ref:`github-label` for more information 
 about using our continuous integration tools.
 

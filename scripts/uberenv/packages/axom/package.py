@@ -51,7 +51,7 @@ class Axom(CMakePackage, CudaPackage):
     homepage = "https://github.com/LLNL/axom"
     git      = "https://github.com/LLNL/axom.git"
 
-    version('master', branch='master', submodules=True)
+    version('main', branch='main', submodules=True)
     version('develop', branch='develop', submodules=True)
     version('0.3.3', tag='v0.3.3', submodules="True")
     version('0.3.2', tag='v0.3.2', submodules="True")

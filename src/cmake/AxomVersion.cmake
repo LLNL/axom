@@ -54,8 +54,8 @@ if (Git_FOUND)
 
   if ( ${is_git_repo} )
 
-    ## get latest tag from master
-    blt_git_tag( OUTPUT_TAG axom_tag RETURN_CODE rc ON_BRANCH master )
+    ## get latest tag from main
+    blt_git_tag( OUTPUT_TAG axom_tag RETURN_CODE rc ON_BRANCH main )
     if ( {rc} EQUAL 0)
       axom_extract_version( "${axom_tag}" AXOM )
     endif()
