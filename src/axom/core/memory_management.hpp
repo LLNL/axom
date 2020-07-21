@@ -109,6 +109,7 @@ inline void deallocate(T*& p) noexcept;
  * nullptr.
  * \param [in] n the number of elements to allocate.
  * \param [in] allocID the ID of the allocator to use if pointer is null
+ * (optional)
  *
  * \tparam T the type pointer p points to.
  *
@@ -117,6 +118,8 @@ inline void deallocate(T*& p) noexcept;
  * \note When n == 0, this function returns a valid pointer (of size 0) in the
  * current allocator's memory space. This follows the semantics of
  * Umpire's reallocate function.
+ * \note When p is a null pointer, allocID is used to allocate the data.
+ * Otherwise, it is unused.
  */
 template <typename T>
 inline T* reallocate(T* p, std::size_t n,
