@@ -676,16 +676,16 @@ TEST(inlet_Field, defaultValuesDocsEnabled) {
   auto inlet = createBasicInlet(&ds, testString);
 
   // new fields
-  inlet->addDouble("field1")->addDefaultDouble(2.0); 
-  inlet->addInt("Table1/Table2/field2")->addDefaultInt(5);
-  inlet->addBool("Table1/field3")->addDefaultBool(true);
-  inlet->addString("Table3/field4")->addDefaultString("default for new string");
+  inlet->addDouble("field1")->addDefaultValue(2.0); 
+  inlet->addInt("Table1/Table2/field2")->addDefaultValue(5);
+  inlet->addBool("Table1/field3")->addDefaultValue(true);
+  inlet->addString("Table3/field4")->addDefaultValue("default for new string");
 
   // existing fields
-  inlet->addInt("Table1/Table2/int1")->addDefaultInt(100);
-  inlet->addBool("Table3/bool1")->addDefaultBool(false);
-  inlet->addDouble("Table1/float1")->addDefaultDouble(3.14);
-  inlet->addString("Table1/Table2/Table4/str1")->addDefaultString("default for old string");
+  inlet->addInt("Table1/Table2/int1")->addDefaultValue(100);
+  inlet->addBool("Table3/bool1")->addDefaultValue(false);
+  inlet->addDouble("Table1/float1")->addDefaultValue(3.14);
+  inlet->addString("Table1/Table2/Table4/str1")->addDefaultValue("default for old string");
 
   axom::sidre::Group* sidreGroup = inlet->sidreGroup();
 
@@ -728,16 +728,16 @@ TEST(inlet_Field, defaultValuesDocsDisabled) {
   auto inlet = createBasicInlet(&ds, testString);
 
   // new fields
-  inlet->addDouble("field1")->addDefaultDouble(2.0); 
-  inlet->addInt("Table1/Table2/field2")->addDefaultInt(5);
-  inlet->addBool("Table1/field3")->addDefaultBool(true);
-  inlet->addString("Table3/field4")->addDefaultString("default for new string");
+  inlet->addDouble("field1")->addDefaultValue(2.0); 
+  inlet->addInt("Table1/Table2/field2")->addDefaultValue(5);
+  inlet->addBool("Table1/field3")->addDefaultValue(true);
+  inlet->addString("Table3/field4")->addDefaultValue("default for new string");
 
   // existing fields
-  inlet->addInt("Table1/Table2/int1")->addDefaultInt(100);
-  inlet->addBool("Table3/bool1")->addDefaultBool(false);
-  inlet->addDouble("Table1/float1")->addDefaultDouble(3.14);
-  inlet->addString("Table1/Table2/Table4/str1")->addDefaultString("default for old string");
+  inlet->addInt("Table1/Table2/int1")->addDefaultValue(100);
+  inlet->addBool("Table3/bool1")->addDefaultValue(false);
+  inlet->addDouble("Table1/float1")->addDefaultValue(3.14);
+  inlet->addString("Table1/Table2/Table4/str1")->addDefaultValue("default for old string");
 
   axom::sidre::Group* sidreGroup = inlet->sidreGroup();
 
@@ -774,28 +774,28 @@ TEST(inlet_Field, ranges) {
 
   axom::sidre::Group* sidreGroup = inlet->sidreGroup();
   
-  inlet->addInt("Table1/set")->addDiscreteIntRange(arr, 3);
-  EXPECT_TRUE(sidreGroup->hasView("Table1/set/discreteRange"));
-  int* bufferArr1 = sidreGroup->getView("Table1/set/discreteRange")->getArray();
+  inlet->addInt("Table1/set")->validValues(arr, 3);
+  EXPECT_TRUE(sidreGroup->hasView("Table1/set/validValues"));
+  int* bufferArr1 = sidreGroup->getView("Table1/set/validValues")->getArray();
   EXPECT_TRUE(bufferArr1);
-  EXPECT_EQ(sidreGroup->getView("Table1/set/discreteRange")->getBuffer()->getNumElements(), 3);
+  EXPECT_EQ(sidreGroup->getView("Table1/set/validValues")->getBuffer()->getNumElements(), 3);
   EXPECT_EQ(bufferArr1[0], 2);
   EXPECT_EQ(bufferArr1[1], 4);
   EXPECT_EQ(bufferArr1[2], 6);
  
-  inlet->addDouble("Table1/Table2/Table4/double1")->addDoubleRange(2.0, 5.0);
-  EXPECT_TRUE(sidreGroup->hasView("Table1/Table2/Table4/double1/continuousRange"));
-  double* bufferArr2 = sidreGroup->getView("Table1/Table2/Table4/double1/continuousRange")->getArray();
+  inlet->addDouble("Table1/Table2/Table4/double1")->range(2.0, 5.0);
+  EXPECT_TRUE(sidreGroup->hasView("Table1/Table2/Table4/double1/range"));
+  double* bufferArr2 = sidreGroup->getView("Table1/Table2/Table4/double1/range")->getArray();
   EXPECT_TRUE(bufferArr2);
-  EXPECT_EQ(sidreGroup->getView("Table1/Table2/Table4/double1/continuousRange")->getBuffer()->getNumElements(), 2);
+  EXPECT_EQ(sidreGroup->getView("Table1/Table2/Table4/double1/range")->getBuffer()->getNumElements(), 2);
   EXPECT_EQ(bufferArr2[0], 2.0);
   EXPECT_EQ(bufferArr2[1], 5.0);
 
-  inlet->addInt("Table1/Table2/int1")->addIntRange(1, 50);
-  EXPECT_TRUE(sidreGroup->hasView("Table1/Table2/int1/continuousRange"));
-  int* bufferArr3 = sidreGroup->getView("Table1/Table2/int1/continuousRange")->getArray();
+  inlet->addInt("Table1/Table2/int1")->range(1, 50);
+  EXPECT_TRUE(sidreGroup->hasView("Table1/Table2/int1/range"));
+  int* bufferArr3 = sidreGroup->getView("Table1/Table2/int1/range")->getArray();
   EXPECT_TRUE(bufferArr3);
-  EXPECT_EQ(sidreGroup->getView("Table1/Table2/int1/continuousRange")->getBuffer()->getNumElements(), 2);
+  EXPECT_EQ(sidreGroup->getView("Table1/Table2/int1/range")->getBuffer()->getNumElements(), 2);
   EXPECT_EQ(bufferArr3[0], 1);
   EXPECT_EQ(bufferArr3[1], 50);
 }
@@ -822,15 +822,15 @@ TEST(inlet_Inlet_verify, verifyDoubleRange) {
   auto inlet = createBasicInlet(&ds, testString);
   
   auto field = inlet->addDouble("field2");
-  field->addDoubleRange(1.0, 57.2);
+  field->range(1.0, 57.2);
   EXPECT_TRUE(inlet->verify());
 
   field = inlet->addDouble("field3");
-  field->addDoubleRange(-10.5, 13.23);
+  field->range(-10.5, 13.23);
   EXPECT_TRUE(inlet->verify());
 
   field = inlet->addDouble("NewTable/field4");
-  field->addDoubleRange(1.0, 22);
+  field->range(1.0, 22.0);
   EXPECT_FALSE(inlet->verify());
 }
 
@@ -840,19 +840,19 @@ TEST(inlet_Inlet_verify, verifyIntRange) {
   auto inlet = createBasicInlet(&ds, testString);
   
   auto field = inlet->addInt("field2");
-  field->addIntRange(0, 56);
+  field->range(0, 56);
   EXPECT_TRUE(inlet->verify());
 
   field = inlet->addInt("field3");
-  field->addIntRange(-12, 13);
+  field->range(-12, 13);
   EXPECT_TRUE(inlet->verify());
 
   field = inlet->addInt("NewTable/field4");
-  field->addIntRange(1, 23);
+  field->range(1, 23);
   EXPECT_TRUE(inlet->verify());
 
   field = inlet->addInt("NewTable/field5");
-  field->addIntRange(1, 7);
+  field->range(1, 7);
   EXPECT_FALSE(inlet->verify());
 }
 
@@ -863,21 +863,21 @@ TEST(inlet_Inlet_verify, verifyDiscreteIntRange) {
 
   int arr1[] = {1,2,3,56,57,58};
   auto field = inlet->addInt("field2");
-  field->addDiscreteIntRange(arr1, 6);
+  field->validValues(arr1, 6);
   EXPECT_TRUE(inlet->verify());
 
   int arr2[] = {-1,-2,-6,-18,21};
   field = inlet->addInt("field3");
-  field->addDiscreteIntRange(arr2, 5);
+  field->validValues(arr2, 5);
   EXPECT_TRUE(inlet->verify());
 
   int arr3[] = {44, 40, 48, 22};
   field = inlet->addInt("NewTable/field4");
-  field->addDiscreteIntRange(arr3, 4);
+  field->validValues(arr3, 4);
   EXPECT_TRUE(inlet->verify());
 
   field = inlet->addInt("NewTable/field5");
-  field->addDiscreteIntRange(arr2, 5);
+  field->validValues(arr2, 5);
   EXPECT_FALSE(inlet->verify());
 }
 

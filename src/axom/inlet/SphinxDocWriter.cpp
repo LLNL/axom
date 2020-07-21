@@ -22,7 +22,7 @@ namespace inlet
 {
  
 SphinxDocWriter::SphinxDocWriter(const std::string& fileName, axom::sidre::Group* root) {
-  SLIC_ASSERT_MSG(root != nullptr, "Sidre Group is null pointer");
+  SLIC_WARNING_IF(root != nullptr, "Sidre Group is null pointer");
   m_sidreRootGroup = root;
   m_fileName = fileName;
 }
@@ -44,7 +44,7 @@ void SphinxDocWriter::writeDocumentation() {
 }
 
 void SphinxDocWriter::writeDocumentationHelper(axom::sidre::Group* sidreGroup) {
-  SLIC_ASSERT_MSG(sidreGroup, "Root was nullptr");
+  SLIC_WARNING_IF(sidreGroup, "Root was nullptr");
   axom::sidre::IndexType i = sidreGroup->getFirstValidGroupIndex();
 
   // Case 1: the current group is a Field so attributes are stored in views
@@ -86,7 +86,7 @@ void SphinxDocWriter::writeSubtitle(const std::string& sub) {
 
 void SphinxDocWriter::writeTable(const std::string& title, 
                                  const std::vector<std::vector<std::string>>& rstTable) {
-  SLIC_ASSERT_MSG(rstTable.size() > 1, "Vector for corresponding rst table must be nonempty");
+  SLIC_WARNING_IF(rstTable.size() > 1, "Vector for corresponding rst table must be nonempty");
   std::string result = ".. list-table:: " + title;
   result += "\n   :widths: 25 25 25 25 25\n   :header-rows: 1\n   :stub-columns: 1\n\n";
   for (unsigned int i = 0; i < rstTable.size(); i++) {
@@ -139,22 +139,22 @@ void SphinxDocWriter::collectFieldInfo(axom::sidre::Group* sidreGroup) {
     }
   }
 
-  if (sidreGroup->hasView("continuousRange")) {
-    axom::sidre::TypeID type = sidreGroup->getView("continuousRange")->getTypeID();
+  if (sidreGroup->hasView("range")) {
+    axom::sidre::TypeID type = sidreGroup->getView("range")->getTypeID();
     if (type == axom::sidre::INT_ID) {
-      int* range = sidreGroup->getView("continuousRange")->getArray();
+      int* range = sidreGroup->getView("range")->getArray();
       fieldAttributes[3] = std::to_string(range[0]) + " to " + std::to_string(range[1]);
     } else  if (type == axom::sidre::DOUBLE_ID) {
-      double* range = sidreGroup->getView("continuousRange")->getArray();
+      double* range = sidreGroup->getView("range")->getArray();
       fieldAttributes[3] = std::to_string(range[0]) + " to " + std::to_string(range[1]);
     } else {
       SLIC_WARNING("Unexpected range type");
     }
-  } else if (sidreGroup->hasView("discreteRange")) {
-    SLIC_ASSERT_MSG(sidreGroup->getView("discreteRange")->getTypeID() == axom::sidre::INT_ID,
+  } else if (sidreGroup->hasView("validValues")) {
+    SLIC_WARNING_IF(sidreGroup->getView("validValues")->getTypeID() == axom::sidre::INT_ID,
                     "discrete range is only valid for integers");
-    int* range = sidreGroup->getView("discreteRange")->getArray();
-    size_t size = sidreGroup->getView("discreteRange")->getBuffer()->getNumElements();
+    int* range = sidreGroup->getView("validValues")->getArray();
+    size_t size = sidreGroup->getView("validValues")->getBuffer()->getNumElements();
     for (size_t i = 0; i < size; i++) {
       if (i == size-1) {
         fieldAttributes[3] += std::to_string(range[i]);      

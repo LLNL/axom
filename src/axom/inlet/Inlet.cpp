@@ -209,16 +209,17 @@ void Inlet::verifyRecursive(axom::sidre::Group* sidreGroup, bool& verifySuccess)
   }
 
   if (sidreGroup->hasView("value")) {
-    if (sidreGroup->hasView("continuousRange")) {
-      auto type = sidreGroup->getView("continuousRange")->getTypeID();
+    if (sidreGroup->hasView("range")) {
+      auto type = sidreGroup->getView("range")->getTypeID();
       if (type == axom::sidre::INT_ID) {
-        int* range = sidreGroup->getView("continuousRange")->getArray();
+        int* range = sidreGroup->getView("range")->getArray();
         int val = sidreGroup->getView("value")->getScalar();
+        // Checks if the value is not within the specified range
         if (!(range[0] <= val && val <= range[1])) {
           verifySuccess = false;
         }
       } else if (type == axom::sidre::DOUBLE_ID) {
-        double* range = sidreGroup->getView("continuousRange")->getArray();
+        double* range = sidreGroup->getView("range")->getArray();
         double val = sidreGroup->getView("value")->getScalar();
         if (!(range[0] <= val && val <= range[1])) {
           verifySuccess = false;
@@ -226,10 +227,11 @@ void Inlet::verifyRecursive(axom::sidre::Group* sidreGroup, bool& verifySuccess)
       } else {
         verifySuccess = false;
       }
-    } else if (sidreGroup->hasView("discreteRange")) {
+    } else if (sidreGroup->hasView("validValues")) {
       int val = sidreGroup->getView("value")->getScalar();
-      int* range = sidreGroup->getView("discreteRange")->getArray();
-      size_t size = sidreGroup->getView("discreteRange")->getBuffer()->getNumElements();
+      int* range = sidreGroup->getView("validValues")->getArray();
+      size_t size = sidreGroup->getView("validValues")->getBuffer()->getNumElements();
+      // Checks if the value specified is one of the valid values
       bool found = false;
       for (size_t i = 0; i < size; i++) {
         if (range[i] == val) {

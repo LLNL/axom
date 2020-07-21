@@ -23,7 +23,7 @@ namespace axom
 namespace inlet
 {
 
-enum class FieldType {BOOL, INT, DOUBLE, STRING, UNSPECIFIED};
+// enum class FieldType {BOOL, INT, DOUBLE, STRING, UNSPECIFIED};
 
 /*!
  *******************************************************************************
@@ -53,7 +53,8 @@ public:
    * generation is enabled for Input Deck this Field instance belongs to.
    *****************************************************************************
    */
-  Field(axom::sidre::Group* sidreGroup, FieldType type = FieldType::UNSPECIFIED, bool docEnabled = true) :
+  Field(axom::sidre::Group* sidreGroup, 
+        axom::sidre::DataTypeId type = axom::sidre::DataTypeId::NO_TYPE_ID, bool docEnabled = true) :
         m_sidreGroup(sidreGroup), m_type(type), m_docEnabled(docEnabled) {}
 
   /*!
@@ -105,7 +106,20 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> addDefaultString(std::string value);
+  std::shared_ptr<Field> addDefaultValue(const std::string& value);
+
+   /*!
+   *****************************************************************************
+   * \brief Set the default value of this Field.
+   *
+   * Set the default value for the Field in the input deck.
+   *
+   * \param [in] value The default string value
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> addDefaultValue(const char* value);
 
   /*!
    *****************************************************************************
@@ -118,7 +132,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> addDefaultBool(bool value);
+  std::shared_ptr<Field> addDefaultValue(bool value);
 
   /*!
    *****************************************************************************
@@ -131,7 +145,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> addDefaultInt(int value);
+  std::shared_ptr<Field> addDefaultValue(int value);
 
   /*!
    *****************************************************************************
@@ -144,7 +158,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> addDefaultDouble(double value);
+  std::shared_ptr<Field> addDefaultValue(double value);
 
   /*!
    *****************************************************************************
@@ -159,7 +173,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> addDoubleRange(double startVal, double endVal);
+  std::shared_ptr<Field> range(double startVal, double endVal);
 
   /*!
    *****************************************************************************
@@ -174,7 +188,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> addIntRange(int startVal, int endVal);
+  std::shared_ptr<Field> range(int startVal, int endVal);
 
   /*!
    *****************************************************************************
@@ -189,12 +203,12 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> addDiscreteIntRange(int* set, size_t size);
+  std::shared_ptr<Field> validValues(int* set, size_t size);
 
 private:
   // This Field's sidre group
   axom::sidre::Group* m_sidreGroup = nullptr;
-  FieldType m_type = FieldType::UNSPECIFIED;
+  axom::sidre::DataTypeId m_type = axom::sidre::DataTypeId::NO_TYPE_ID;
   bool m_docEnabled = false;
 };
 

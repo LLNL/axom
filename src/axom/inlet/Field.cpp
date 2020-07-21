@@ -64,11 +64,14 @@ bool Field::required()
   return (bool)intValue;
 }
 
-std::shared_ptr<Field> Field::addDefaultString(std::string value) {
-  SLIC_ASSERT_MSG(m_type == FieldType::STRING, "Default value type did not match STRING");
+std::shared_ptr<Field> Field::addDefaultValue(const char* value) {
+  return addDefaultValue(std::string(value));
+}
 
-  if (m_sidreGroup->hasView("defaultValue"))
-  {
+std::shared_ptr<Field> Field::addDefaultValue(const std::string& value) {
+  SLIC_WARNING_IF(m_type ==  axom::sidre::DataTypeId::CHAR8_STR_ID, "Default value type did not match STRING");
+
+  if (m_sidreGroup->hasView("defaultValue")) {
     std::string msg = fmt::format("Inlet Field has already defined default value: {0}",
                                   m_sidreGroup->getName());
     SLIC_WARNING(msg);
@@ -83,10 +86,9 @@ std::shared_ptr<Field> Field::addDefaultString(std::string value) {
   return shared_from_this();
 }
 
-std::shared_ptr<Field> Field::addDefaultBool(bool value) {
-  SLIC_ASSERT_MSG(m_type == FieldType::BOOL, "Default value type did not match BOOL");
-  if (m_sidreGroup->hasView("defaultValue"))
-  {
+std::shared_ptr<Field> Field::addDefaultValue(bool value) {
+  SLIC_WARNING_IF(m_type == axom::sidre::DataTypeId::INT8_ID, "Default value type did not match BOOL");
+  if (m_sidreGroup->hasView("defaultValue")) {
     std::string msg = fmt::format("Inlet Field has already defined default value: {0}",
                                   m_sidreGroup->getName());
     SLIC_WARNING(msg);
@@ -101,10 +103,9 @@ std::shared_ptr<Field> Field::addDefaultBool(bool value) {
   return shared_from_this();
 }
 
-std::shared_ptr<Field> Field::addDefaultInt(int value) {
-  SLIC_ASSERT_MSG(m_type == FieldType::INT, "Default value type did not match BOOL");
-  if (m_sidreGroup->hasView("defaultValue"))
-  {
+std::shared_ptr<Field> Field::addDefaultValue(int value) {
+  SLIC_WARNING_IF(m_type ==  axom::sidre::DataTypeId::INT_ID, "Default value type did not match BOOL");
+  if (m_sidreGroup->hasView("defaultValue")) {
     std::string msg = fmt::format("Inlet Field has already defined default value: {0}",
                                   m_sidreGroup->getName());
     SLIC_WARNING(msg);
@@ -120,8 +121,8 @@ std::shared_ptr<Field> Field::addDefaultInt(int value) {
   return shared_from_this();
 }
 
-std::shared_ptr<Field> Field::addDefaultDouble(double value) {
-  SLIC_ASSERT_MSG(m_type == FieldType::DOUBLE, "Default value type did not match DOUBLE");
+std::shared_ptr<Field> Field::addDefaultValue(double value) {
+  SLIC_WARNING_IF(m_type == axom::sidre::DataTypeId::DOUBLE_ID, "Default value type did not match DOUBLE");
   if (m_sidreGroup->hasView("defaultValue"))
   {
     std::string msg = fmt::format("Inlet Field has already defined default value: {0}",
@@ -138,9 +139,9 @@ std::shared_ptr<Field> Field::addDefaultDouble(double value) {
   return shared_from_this();
 }
 
-std::shared_ptr<Field> Field::addDoubleRange(double startVal, double endVal) {
-  SLIC_ASSERT_MSG(m_type == FieldType::DOUBLE, "Range value type did not match DOUBLE");
-  if (m_sidreGroup->hasView("continuousRange") || m_sidreGroup->hasView("discreteRange")) {
+std::shared_ptr<Field> Field::range(double startVal, double endVal) {
+  SLIC_WARNING_IF(m_type ==  axom::sidre::DataTypeId::DOUBLE_ID, "Range value type did not match DOUBLE");
+  if (m_sidreGroup->hasView("range") || m_sidreGroup->hasView("validValues")) {
     std::string msg = fmt::format("Inlet Field has already defined range: {0}",
                                    m_sidreGroup->getName());
     SLIC_WARNING(msg);
@@ -148,15 +149,15 @@ std::shared_ptr<Field> Field::addDoubleRange(double startVal, double endVal) {
     double tuple[2];
     tuple[0] = startVal;
     tuple[1] = endVal;
-    auto view = m_sidreGroup->createViewAndAllocate("continuousRange", axom::sidre::DOUBLE_ID, 2);
+    auto view = m_sidreGroup->createViewAndAllocate("range", axom::sidre::DOUBLE_ID, 2);
     view->getBuffer()->copyBytesIntoBuffer(tuple, 2*sizeof(double));
   }
   return shared_from_this();
 }
 
-std::shared_ptr<Field> Field::addIntRange(int startVal, int endVal) {
-  SLIC_ASSERT_MSG(m_type == FieldType::INT, "Range value type did not match INT");
-  if (m_sidreGroup->hasView("continuousRange") || m_sidreGroup->hasView("discreteRange")) {
+std::shared_ptr<Field> Field::range(int startVal, int endVal) {
+  SLIC_WARNING_IF(m_type ==  axom::sidre::DataTypeId::INT_ID, "Range value type did not match INT");
+  if (m_sidreGroup->hasView("range") || m_sidreGroup->hasView("validValues")) {
     std::string msg = fmt::format("Inlet Field has already defined range: {0}",
                                    m_sidreGroup->getName());
     SLIC_WARNING(msg);
@@ -164,20 +165,20 @@ std::shared_ptr<Field> Field::addIntRange(int startVal, int endVal) {
     int tuple[2];
     tuple[0] = startVal;
     tuple[1] = endVal;
-    auto view = m_sidreGroup->createViewAndAllocate("continuousRange", axom::sidre::INT_ID, 2);
+    auto view = m_sidreGroup->createViewAndAllocate("range", axom::sidre::INT_ID, 2);
     view->getBuffer()->copyBytesIntoBuffer(tuple, 2*sizeof(int));
   }
   return shared_from_this();
 }
 
-std::shared_ptr<Field> Field::addDiscreteIntRange(int* set, size_t size) {
-  SLIC_ASSERT_MSG(m_type == FieldType::INT, "Range value type did not match INT");
-  if (m_sidreGroup->hasView("continuousRange") || m_sidreGroup->hasView("discreteRange")) {
+std::shared_ptr<Field> Field::validValues(int* set, size_t size) {
+  SLIC_WARNING_IF(m_type ==  axom::sidre::DataTypeId::INT_ID, "Range value type did not match INT");
+  if (m_sidreGroup->hasView("range") || m_sidreGroup->hasView("validValues")) {
     std::string msg = fmt::format("Inlet Field has already defined range: {0}",
                                    m_sidreGroup->getName());
     SLIC_WARNING(msg);
   } else {
-    auto view = m_sidreGroup->createViewAndAllocate("discreteRange", axom::sidre::INT_ID, size);
+    auto view = m_sidreGroup->createViewAndAllocate("validValues", axom::sidre::INT_ID, size);
     view->getBuffer()->copyBytesIntoBuffer(set, size*sizeof(int));
   }
   return shared_from_this();
