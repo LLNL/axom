@@ -38,9 +38,6 @@ set( mint_tests
      ## util tests
      mint_su2_io.cpp
      mint_util_write_vtk.cpp
-
-     ## core tests
-     mint_array.cpp
    )
 
 set( mint_test_dependencies axom )

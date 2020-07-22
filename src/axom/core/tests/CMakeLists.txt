@@ -13,6 +13,7 @@
 set(gtest_utils_tests
     core_execution_for_all.hpp
     core_execution_space.hpp
+    core_mcarray.cpp
     core_memory_management.hpp
     core_Path.hpp
     core_stack_array.hpp

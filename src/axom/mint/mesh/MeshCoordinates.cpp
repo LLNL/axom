@@ -37,7 +37,7 @@ MeshCoordinates::MeshCoordinates(int dimension,
   IndexType max_capacity = -1;
   if(capacity == USE_DEFAULT)
   {
-    const double ratio = Array<double>::DEFAULT_RESIZE_RATIO;
+    const double ratio = MCArray<double>::DEFAULT_RESIZE_RATIO;
     max_capacity = utilities::max(DEFAULT_CAPACITY,
                                   static_cast<IndexType>(numNodes * ratio + 0.5));
   }
@@ -77,7 +77,7 @@ MeshCoordinates::MeshCoordinates(IndexType numNodes,
     SLIC_ERROR_IF(ptrs[i] == nullptr,
                   "encountered null coordinate array for i=" << i);
 
-    m_coordinates[i] = new Array<double>(ptrs[i], numNodes, 1, capacity);
+    m_coordinates[i] = new MCArray<double>(ptrs[i], numNodes, 1, capacity);
   }
 
   SLIC_ASSERT(consistencyCheck());

@@ -8,7 +8,7 @@
 
 #include "axom/core/Macros.hpp"  // for disable copy/assignment macro
 #include "axom/core/utilities/Utilities.hpp"  // for memory allocation functions
-#include "axom/mint/core/Array.hpp"           // to inherit
+#include "axom/core/MCArray.hpp"           // to inherit
 #include "axom/core/Types.hpp"
 
 #include "axom/slic/interface/slic.hpp"  // for slic logging macros
@@ -35,7 +35,7 @@ constexpr axom::IndexType ZERO = 0;
  *
  * \brief Provides a generic multi-component array, contained in Sidre.
  *
- *  This sidre::Array class extends axom::utilities::Array by storing
+ *  This sidre::Array class extends axom::MCArray by storing
  *  data in a Sidre `DataStore`.  This class provides a generic
  *  multi-component array container with dynamic re-allocation and insertion.
  *  Each element in the array is a tuple consisting of 1 or more components,
@@ -59,7 +59,7 @@ constexpr axom::IndexType ZERO = 0;
  * \see View
  */
 template <typename T>
-class Array : public axom::mint::Array<T>
+class Array : public axom::MCArray<T>
 {
 public:
   /*!
@@ -237,7 +237,7 @@ protected:
 
 //------------------------------------------------------------------------------
 template <typename T>
-Array<T>::Array(View* view) : axom::mint::Array<T>()
+Array<T>::Array(View* view) : axom::MCArray<T>()
                             , m_view(view)
 {
   SLIC_ERROR_IF(m_view == nullptr, "Provided View cannot be null.");
@@ -287,7 +287,7 @@ Array<T>::Array(View* view,
                 axom::IndexType num_tuples,
                 axom::IndexType num_components,
                 axom::IndexType capacity)
-  : axom::mint::Array<T>()
+  : axom::MCArray<T>()
   , m_view(view)
 {
   SLIC_ERROR_IF(m_view == nullptr, "Provided View cannot be null.");
