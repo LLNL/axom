@@ -83,9 +83,6 @@ set( mint_headers
     ## utils
     utils/vtk_utils.hpp
     utils/su2_utils.hpp
-
-    ## core
-    core/Array.hpp
    )
 
 set( mint_sources

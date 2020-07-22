@@ -810,8 +810,10 @@ TEST( core_array, checkResize )
 //------------------------------------------------------------------------------
 TEST( core_array_DeathTest, checkResize )
 {
+  constexpr IndexType ZERO = 0;
+
   /* Resizing isn't allowed with a ratio less than 1.0. */
-  Array< int > v_int( axom::internal::ZERO, 100 );
+  Array< int > v_int( ZERO, 100 );
   v_int.setResizeRatio( 0.99 );
   EXPECT_DEATH_IF_SUPPORTED( internal::check_resize( v_int ), IGNORE_OUTPUT );
 }
