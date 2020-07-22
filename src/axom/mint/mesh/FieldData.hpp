@@ -7,15 +7,15 @@
 #define MINT_FIELDDATA_HPP_
 
 // Axom includes
-#include "axom/core/Macros.hpp"  // for Axom macros
+#include "axom/core/Macros.hpp"   // for Axom macros
+#include "axom/core/MCArray.hpp"  // for MCArray
 
 #ifdef AXOM_MINT_USE_SIDRE
   #include "axom/sidre/core/sidre.hpp"
 #endif
 
 // Mint includes
-#include "axom/mint/core/Array.hpp"  // for mint::Array
-#include "axom/mint/config.hpp"      // for mint compile time definitions
+#include "axom/mint/config.hpp"  // for mint compile time definitions
 #include "axom/mint/mesh/Field.hpp"             // for mint::Field definition
 #include "axom/mint/mesh/FieldVariable.hpp"     // for mint::FieldVariable
 #include "axom/mint/mesh/FieldAssociation.hpp"  // for mint::FieldAssociation

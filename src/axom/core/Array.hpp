@@ -20,14 +20,6 @@
 namespace axom
 {
 
-
-/* Provided so that 0 doesn't convert to nullptr and lead to ambiguous
- * constructor calls. */
-namespace internal
-{
-constexpr IndexType ZERO = 0;
-}
-
 // Forward declare the templated classes and operator function(s)
 template < typename T >
 class Array;

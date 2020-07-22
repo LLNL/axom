@@ -10,7 +10,7 @@
 
 #include "axom/core/Macros.hpp"
 #include "axom/core/Types.hpp"
-#include "axom/mint/core/Array.hpp"
+#include "axom/core/MCArray.hpp"
 #include "axom/mint/mesh/CellTypes.hpp"
 #include "axom/mint/config.hpp"
 #include "axom/mint/mesh/internal/ConnectivityArrayHelpers.hpp"
@@ -62,13 +62,13 @@ public:
   ConnectivityArray(IndexType ID_capacity = USE_DEFAULT,
                     IndexType value_capacity = USE_DEFAULT)
     : m_values(nullptr)
-    , m_types(new Array<CellType>(axom::mint::internal::ZERO, 1, ID_capacity))
+    , m_types(new MCArray<CellType>(axom::internal::ZERO, 1, ID_capacity))
     , m_offsets(
-        new Array<IndexType>(axom::mint::internal::ZERO, 1, m_types->capacity() + 1))
+        new MCArray<IndexType>(axom::internal::ZERO, 1, m_types->capacity() + 1))
   {
     IndexType new_value_capacity =
       internal::calcValueCapacity(0, getIDCapacity(), 0, value_capacity);
-    m_values = new Array<IndexType>(axom::mint::internal::ZERO, 1, new_value_capacity);
+    m_values = new MCArray<IndexType>(axom::internal::ZERO, 1, new_value_capacity);
 
     m_offsets->append(0);
   }
@@ -112,9 +112,9 @@ public:
                     IndexType ID_capacity = USE_DEFAULT,
                     IndexType value_capacity = USE_DEFAULT)
     : m_values(nullptr)
-    , m_types(new Array<CellType>(types, n_IDs, 1, ID_capacity))
+    , m_types(new MCArray<CellType>(types, n_IDs, 1, ID_capacity))
     , m_offsets(
-        new Array<IndexType>(offsets, n_IDs + 1, 1, m_types->capacity() + 1))
+        new MCArray<IndexType>(offsets, n_IDs + 1, 1, m_types->capacity() + 1))
   {
     SLIC_ERROR_IF(n_IDs < 0,
                   "Number of IDs must be positive, not " << n_IDs << ".");
@@ -128,7 +128,7 @@ public:
                     << "Expected item 0 to be 0 not " << (*m_offsets)[0] << ".");
 
     IndexType n_values = (*m_offsets)[n_IDs];
-    m_values = new Array<IndexType>(values, n_values, 1, value_capacity);
+    m_values = new MCArray<IndexType>(values, n_values, 1, value_capacity);
   }
 
   /// @}
@@ -643,9 +643,9 @@ public:
   /// @}
 
 private:
-  Array<IndexType>* m_values;
-  Array<CellType>* m_types;
-  Array<IndexType>* m_offsets;
+  MCArray<IndexType>* m_values;
+  MCArray<CellType>* m_types;
+  MCArray<IndexType>* m_offsets;
 
   DISABLE_COPY_AND_ASSIGNMENT(ConnectivityArray);
   DISABLE_MOVE_AND_ASSIGNMENT(ConnectivityArray);

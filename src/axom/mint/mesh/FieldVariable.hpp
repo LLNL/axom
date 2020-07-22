@@ -11,9 +11,9 @@
 // axom includes
 #include "axom/core/Macros.hpp"  // for axom Macros
 #include "axom/core/Types.hpp"   // for axom types
+#include "axom/core/MCArray.hpp"  // for axom::MCArray
 
 #include "axom/mint/config.hpp"
-#include "axom/mint/core/Array.hpp"  // for mint::Array
 
 #ifdef AXOM_MINT_USE_SIDRE
   #include "axom/sidre/core/sidre.hpp"
@@ -351,7 +351,7 @@ public:
   /// @}
 
 private:
-  Array<T>* m_field;
+  MCArray<T>* m_field;
 
   DISABLE_COPY_AND_ASSIGNMENT(FieldVariable);
   DISABLE_MOVE_AND_ASSIGNMENT(FieldVariable);
@@ -368,7 +368,7 @@ FieldVariable<T>::FieldVariable(const std::string& name,
                                 IndexType capacity)
   : Field(name, field_traits<T>::type())
 {
-  m_field = new Array<T>(num_tuples, num_components, capacity);
+  m_field = new MCArray<T>(num_tuples, num_components, capacity);
   SLIC_ASSERT(m_field != nullptr);
   SLIC_ERROR_IF(m_type == UNDEFINED_FIELD_TYPE, "Undefined field type!");
 }
@@ -382,7 +382,7 @@ FieldVariable<T>::FieldVariable(const std::string& name,
                                 IndexType capacity)
   : Field(name, field_traits<T>::type())
 {
-  m_field = new Array<T>(data, num_tuples, num_components, capacity);
+  m_field = new MCArray<T>(data, num_tuples, num_components, capacity);
   SLIC_ASSERT(m_field != nullptr);
   SLIC_ASSERT(m_field->isExternal() == true);
   SLIC_ERROR_IF(m_type == UNDEFINED_FIELD_TYPE, "Undefined field type!");
