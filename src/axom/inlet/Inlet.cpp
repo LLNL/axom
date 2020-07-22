@@ -93,7 +93,10 @@ bool Inlet::get(const std::string& name, bool& value)
     std::string msg = fmt::format("Boolean named '{0}' was asked for"
                                   " but recieved type {1}",
                                   name, valueView->getTypeID());
-    issueWarning(msg, m_sidreRootGroup);
+    SLIC_WARNING(msg);
+    if (!m_sidreRootGroup->hasView("warningFlag")) {
+      m_sidreRootGroup->createViewScalar("warningFlag", 1);
+    }    
     return false;
   }
 
@@ -103,7 +106,10 @@ bool Inlet::get(const std::string& name, bool& value)
     std::string msg = fmt::format("Invalid integer value stored in boolean"
                                   " value named {0}",
                                   name);
-    issueWarning(msg, m_sidreRootGroup);
+    SLIC_WARNING(msg);
+    if (!m_sidreRootGroup->hasView("warningFlag")) {
+      m_sidreRootGroup->createViewScalar("warningFlag", 1);
+    }    
     return false;
   }
 
@@ -124,7 +130,10 @@ bool Inlet::get(const std::string& name, double& value)
     std::string msg = fmt::format("Double named '{0}' was asked for"
                                   " but recieved type {1}",
                                   name, valueView->getTypeID());
-    issueWarning(msg, m_sidreRootGroup);
+    SLIC_WARNING(msg);
+    if (!m_sidreRootGroup->hasView("warningFlag")) {
+      m_sidreRootGroup->createViewScalar("warningFlag", 1);
+    }
     return false;
   }
 
@@ -145,7 +154,10 @@ bool Inlet::get(const std::string& name, int& value)
     std::string msg = fmt::format("Integer named '{0}' was asked for"
                                   " but recieved type {1}",
                                   name, valueView->getTypeID());
-    issueWarning(msg, m_sidreRootGroup);
+    SLIC_WARNING(msg);
+    if (!m_sidreRootGroup->hasView("warningFlag")) {
+      m_sidreRootGroup->createViewScalar("warningFlag", 1);
+    }
     return false;
   }
 
@@ -166,7 +178,10 @@ bool Inlet::get(const std::string& name, std::string& value)
     std::string msg = fmt::format("String named '{0}' was asked for"
                                   " but recieved type {1}",
                                   name, valueView->getTypeID());
-    issueWarning(msg, m_sidreRootGroup);
+    SLIC_WARNING(msg);
+    if (!m_sidreRootGroup->hasView("warningFlag")) {
+      m_sidreRootGroup->createViewScalar("warningFlag", 1);
+    }
     return false;
   }
 
@@ -206,7 +221,10 @@ void Inlet::verifyRecursive(axom::sidre::Group* sidreGroup, bool& verifySuccess)
     if (required && !sidreGroup->hasView("value")) {
       std::string msg = fmt::format("Inlet: {0}: Required field was not specified in Input Deck", 
                                     sidreGroup->getPathName());
-      issueWarning(msg, m_sidreRootGroup);
+      SLIC_WARNING(msg);
+    if (!m_sidreRootGroup->hasView("warningFlag")) {
+      m_sidreRootGroup->createViewScalar("warningFlag", 1);
+    }
       verifySuccess = false;
     }
   }

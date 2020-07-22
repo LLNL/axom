@@ -23,9 +23,6 @@ namespace axom
 namespace inlet
 {
 
-void issueWarning(bool condition, std::string msg, axom::sidre::Group* root);
-void issueWarning(std::string msg, axom::sidre::Group* root);
-
 /*!
  *******************************************************************************
  * \class Field

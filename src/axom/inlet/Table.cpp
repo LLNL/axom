@@ -41,8 +41,10 @@ axom::sidre::Group* Table::baseFieldAdd(const std::string& name,
 
   if (m_sidreRootGroup->hasGroup(name))
   {
-    axom::inlet::issueWarning("Inlet: Cannot add value that already exists: " + name,
-                                                                   m_sidreRootGroup);
+    SLIC_WARNING("Inlet: Cannot add value that already exists: " + name);
+    if (!m_sidreRootGroup->hasView("warningFlag")) {
+      m_sidreRootGroup->createViewScalar("warningFlag", 1);
+    }
     return nullptr;
   }
 
@@ -146,7 +148,11 @@ std::shared_ptr<Table> Table::required(bool isRequired)
   {
     std::string msg = fmt::format("Inlet Table has already defined required value: {0}",
                                   m_sidreGroup->getName());
-    axom::inlet::issueWarning(msg, m_sidreRootGroup);
+    
+    SLIC_WARNING(msg);
+    if (!m_sidreRootGroup->hasView("warningFlag")) {
+      m_sidreRootGroup->createViewScalar("warningFlag", 1);
+    }
     return shared_from_this();
   }
 
@@ -182,7 +188,10 @@ bool Table::required()
     std::string msg = fmt::format("Invalid integer value stored in boolean"
                                   " value named {0}",
                                   m_sidreGroup->getName());
-    axom::inlet::issueWarning(msg, m_sidreRootGroup);
+    SLIC_WARNING(msg);
+    if (!m_sidreRootGroup->hasView("warningFlag")) {
+      m_sidreRootGroup->createViewScalar("warningFlag", 1);
+    }
     return false;
   }
 
