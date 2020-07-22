@@ -7,6 +7,7 @@
 
 #include "fmt/fmt.hpp"
 #include "axom/slic.hpp"
+#include "axom/inlet/inlet_utils.hpp"
 
 namespace axom
 {
@@ -42,9 +43,7 @@ axom::sidre::Group* Table::baseFieldAdd(const std::string& name,
   if (m_sidreRootGroup->hasGroup(name))
   {
     SLIC_WARNING("Inlet: Cannot add value that already exists: " + name);
-    if (!m_sidreRootGroup->hasView("warningFlag")) {
-      m_sidreRootGroup->createViewScalar("warningFlag", 1);
-    }
+    setWarningFlag(m_sidreRootGroup);
     return nullptr;
   }
 
@@ -150,9 +149,7 @@ std::shared_ptr<Table> Table::required(bool isRequired)
                                   m_sidreGroup->getName());
     
     SLIC_WARNING(msg);
-    if (!m_sidreRootGroup->hasView("warningFlag")) {
-      m_sidreRootGroup->createViewScalar("warningFlag", 1);
-    }
+    setWarningFlag(m_sidreRootGroup);
     return shared_from_this();
   }
 
@@ -189,9 +186,7 @@ bool Table::required()
                                   " value named {0}",
                                   m_sidreGroup->getName());
     SLIC_WARNING(msg);
-    if (!m_sidreRootGroup->hasView("warningFlag")) {
-      m_sidreRootGroup->createViewScalar("warningFlag", 1);
-    }
+    setWarningFlag(m_sidreRootGroup);
     return false;
   }
 

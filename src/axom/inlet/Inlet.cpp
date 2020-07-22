@@ -16,6 +16,7 @@
 
 #include "fmt/fmt.hpp"
 #include "axom/slic.hpp"
+#include "axom/inlet/inlet_utils.hpp"
 
 namespace axom
 {
@@ -94,9 +95,7 @@ bool Inlet::get(const std::string& name, bool& value)
                                   " but recieved type {1}",
                                   name, valueView->getTypeID());
     SLIC_WARNING(msg);
-    if (!m_sidreRootGroup->hasView("warningFlag")) {
-      m_sidreRootGroup->createViewScalar("warningFlag", 1);
-    }    
+    setWarningFlag(m_sidreRootGroup);    
     return false;
   }
 
@@ -107,9 +106,7 @@ bool Inlet::get(const std::string& name, bool& value)
                                   " value named {0}",
                                   name);
     SLIC_WARNING(msg);
-    if (!m_sidreRootGroup->hasView("warningFlag")) {
-      m_sidreRootGroup->createViewScalar("warningFlag", 1);
-    }    
+    setWarningFlag(m_sidreRootGroup);    
     return false;
   }
 
@@ -131,9 +128,7 @@ bool Inlet::get(const std::string& name, double& value)
                                   " but recieved type {1}",
                                   name, valueView->getTypeID());
     SLIC_WARNING(msg);
-    if (!m_sidreRootGroup->hasView("warningFlag")) {
-      m_sidreRootGroup->createViewScalar("warningFlag", 1);
-    }
+    setWarningFlag(m_sidreRootGroup);
     return false;
   }
 
@@ -155,9 +150,7 @@ bool Inlet::get(const std::string& name, int& value)
                                   " but recieved type {1}",
                                   name, valueView->getTypeID());
     SLIC_WARNING(msg);
-    if (!m_sidreRootGroup->hasView("warningFlag")) {
-      m_sidreRootGroup->createViewScalar("warningFlag", 1);
-    }
+    setWarningFlag(m_sidreRootGroup);
     return false;
   }
 
@@ -179,9 +172,7 @@ bool Inlet::get(const std::string& name, std::string& value)
                                   " but recieved type {1}",
                                   name, valueView->getTypeID());
     SLIC_WARNING(msg);
-    if (!m_sidreRootGroup->hasView("warningFlag")) {
-      m_sidreRootGroup->createViewScalar("warningFlag", 1);
-    }
+    setWarningFlag(m_sidreRootGroup);
     return false;
   }
 
@@ -222,9 +213,7 @@ void Inlet::verifyRecursive(axom::sidre::Group* sidreGroup, bool& verifySuccess)
       std::string msg = fmt::format("Inlet: {0}: Required field was not specified in Input Deck", 
                                     sidreGroup->getPathName());
       SLIC_WARNING(msg);
-    if (!m_sidreRootGroup->hasView("warningFlag")) {
-      m_sidreRootGroup->createViewScalar("warningFlag", 1);
-    }
+    setWarningFlag(m_sidreRootGroup);
       verifySuccess = false;
     }
   }
