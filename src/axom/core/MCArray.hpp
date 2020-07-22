@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-#ifndef MINT_ARRAY_HPP_
-#define MINT_ARRAY_HPP_
+#ifndef AXOM_MCARRAY_HPP_
+#define AXOM_MCARRAY_HPP_
 
 #include "axom/config.hpp"                    // for compile-time defines
 #include "axom/core/Macros.hpp"               // for axom macros
@@ -19,9 +19,6 @@
 namespace axom
 {
 
-namespace mint
-{
-
 /* Provided so that 0 doesn't convert to nullptr and lead to ambiguous
  * constructor calls. */
 namespace internal
@@ -30,44 +27,44 @@ constexpr IndexType ZERO = 0;
 }
 
 /*!
- * \class Array
+ * \class MCArray
  *
  * \brief Provides a generic multi-component array container.
  *
- *  The Array class provides a generic multi-component array container with
- *  dynamic re-allocation and insertion. Each element in the array is a tuple
+ *  The MCArray class provides a generic multi-component array container with
+ *  dynamic re-allocation and insertion. Each element in the MCArray is a tuple
  *  consisting of 1 or more components, which are stored contiguously.
  *
- *  Depending on which constructor is used, the Array object can have two
+ *  Depending on which constructor is used, the MCArray object can have two
  *  different underlying storage types:
  *
  *  * <b> Native Storage </b> <br />
  *
- *     When using native storage, the Array object manages all memory.
- *     Typically, the Array object will allocate extra space to facilitate
+ *     When using native storage, the MCArray object manages all memory.
+ *     Typically, the MCArray object will allocate extra space to facilitate
  *     the insertion of new elements and minimize the number of reallocations.
- *     The actual capacity of the array (i.e., total number of tuples that the
- *     Array can hold) can be queried by calling the capacity() function.
+ *     The actual capacity of the MCArray (i.e., total number of tuples that the
+ *     MCArray can hold) can be queried by calling the capacity() function.
  *     When allocated memory is used up, inserting a new element triggers a
  *     re-allocation.  At each re-allocation, extra space is allocated
  *     according to the <em> resize_ratio </em> parameter, which is set to 2.0
  *     by default. To return all extra memory, an application can call
  *     `shrink()`.
  *
- *     \note The Array destructor deallocates and returns all memory associated
+ *     \note The MCArray destructor deallocates and returns all memory associated
  *      with it to the system.
  *
  *  * <b> External Storage </b> <br />
  *
- *    An Array object may be constructed from an external, user-supplied buffer
+ *    An MCArray object may be constructed from an external, user-supplied buffer
  *    consisting of the given number of tuples and specified number of
- *    components per tuple.  In this case, the Array object does not own the
- *    memory.  Instead, the Array object makes a shallow copy of the pointer.
+ *    components per tuple.  In this case, the MCArray object does not own the
+ *    memory.  Instead, the MCArray object makes a shallow copy of the pointer.
  *
- *    \warning An Array object that points to an external buffer has a fixed
+ *    \warning An MCArray object that points to an external buffer has a fixed
  *     size and cannot be dynamically resized.
  *
- *    \note The Array destructor does not deallocate a user-supplied buffer,
+ *    \note The MCArray destructor does not deallocate a user-supplied buffer,
  *     since it does not manage that memory.
  *
  * \warning Reallocations tend to be costly operations in terms of performance.
@@ -78,20 +75,20 @@ constexpr IndexType ZERO = 0;
  *
  */
 template <typename T>
-class Array
+class MCArray
 {
 public:
   static constexpr double DEFAULT_RESIZE_RATIO = 2.0;
   static constexpr IndexType MIN_DEFAULT_CAPACITY = 32;
 
 public:
-  /// \name Native Storage Array Constructors
+  /// \name Native Storage MCArray Constructors
   /// @{
 
   /*!
-   * \brief Constructs an Array instance with the given number of tuples.
+   * \brief Constructs an MCArray instance with the given number of tuples.
    *
-   * \param [in] num_tuples the number of tuples the Array holds.
+   * \param [in] num_tuples the number of tuples the MCArray holds.
    * \param [in] num_components the number of values per tuple. If not
    *  specified defaults to 1.
    * \param [in] capacity the number of tuples to allocate space for.
@@ -99,7 +96,7 @@ public:
    * \note If no capacity or capacity less than num_tuples is specified
    *  then it will default to at least num_tuples * DEFAULT_RESIZE_RATIO.
    * \note a capacity is specified for the number of tuples to store in the
-   *  array and does not correspond to the actual bytesize.
+   *  MCArray and does not correspond to the actual bytesize.
    *
    * \pre num_tuples >= 0
    * \pre num_components >= 1
@@ -109,19 +106,19 @@ public:
    * \post numComponents() == num_components
    * \post getResizeRatio() == DEFAULT_RESIZE_RATIO
    */
-  Array(IndexType num_tuples, IndexType num_components = 1, IndexType capacity = 0);
+  MCArray(IndexType num_tuples, IndexType num_components = 1, IndexType capacity = 0);
 
   /// @}
 
-  /// \name External Storage Array Constructors
+  /// \name External Storage MCArray Constructors
   /// @{
 
   /*!
-   * \brief Constructs an Array instance with the given number of tuples from
+   * \brief Constructs an MCArray instance with the given number of tuples from
    *  an external data buffer.
    *
-   * \param [in] data the external data this Array will wrap.
-   * \param [in] num_tuples the number of tuples in the Array.
+   * \param [in] data the external data this MCArray will wrap.
+   * \param [in] num_tuples the number of tuples in the MCArray.
    * \param [in] num_components the number of values per tuple. If not
    *  specified defaults to 1.
    * \param [in] capacity the capacity of the external buffer.
@@ -134,14 +131,14 @@ public:
    * \post getResizeRatio == 0.0
    *
    * \note a capacity is specified for the number of tuples to store in the
-   *  array and does not correspond to the actual bytesize.
+   *  MCArray and does not correspond to the actual bytesize.
    * \note If no capacity or capacity less than num_tuples is specified then
    *  it will default to the number of tuples.
    *
    * \note This constructor wraps the supplied buffer and does not own the data.
-   *  Consequently, the Array instance cannot be reallocated.
+   *  Consequently, the MCArray instance cannot be reallocated.
    */
-  Array(T* data,
+  MCArray(T* data,
         IndexType num_tuples,
         IndexType num_components = 1,
         IndexType capacity = 0);
@@ -151,9 +148,9 @@ public:
   /*!
    * Destructor. Frees the associated buffer unless the memory is external.
    */
-  virtual ~Array();
+  virtual ~MCArray();
 
-  /// \name Array tuple access operators
+  /// \name MCArray tuple access operators
   /// @{
 
   /*!
@@ -189,7 +186,7 @@ public:
    *
    * \param [in] idx the position of the value to return.
    *
-   * \note equivalent to *(array.getData() + idx).
+   * \note equivalent to *(mcarray.getData() + idx).
    *
    * \pre 0 <= idx < m_num_tuples * m_num_components
    */
@@ -212,7 +209,7 @@ public:
   /// @}
 
   /*!
-   * \brief Return a pointer to the array of data.
+   * \brief Return a pointer to the MCArray of data.
    */
   /// @{
 
@@ -223,11 +220,11 @@ public:
 
   /// @}
 
-  /// \name Array methods to modify the data.
+  /// \name MCArray methods to modify the data.
   /// @{
 
   /*!
-   * \brief Set all the values of the array.
+   * \brief Set all the values of the MCArray.
    *
    * \param [in] value the value to set to.
    */
@@ -237,7 +234,7 @@ public:
   }
 
   /*!
-   * \brief Append a value to the end of the array.
+   * \brief Append a value to the end of the MCArray.
    *
    * \param [in] value the value to append.
    *
@@ -248,7 +245,7 @@ public:
   void append(const T& value);
 
   /*!
-   * \brief Append tuples to the end of the array.
+   * \brief Append tuples to the end of the MCArray.
    *
    * \param [in] tuples the tuples to append.
    * \param [in] n the number of tuples to append.
@@ -273,7 +270,7 @@ public:
   void set(const T* tuples, IndexType n, IndexType pos);
 
   /*!
-   * \brief Insert a tuple into the array at the given position.
+   * \brief Insert a tuple into the MCArray at the given position.
    *
    * \param [in] value the value to insert.
    * \param [in] pos the position at which to insert.
@@ -286,7 +283,7 @@ public:
   void insert(const T& value, IndexType pos);
 
   /*!
-   * \brief Insert tuples into the array at the given position.
+   * \brief Insert tuples into the MCArray at the given position.
    *
    * \param [in] tuples the tuples to insert.
    * \param [in] n the number of tuples to insert.
@@ -312,7 +309,7 @@ public:
    * \note Reallocation is done if the new size will exceed the capacity.
    * \note The size increases by n.
    * \note This method is used to create space for tuples in the middle of the
-   *  array.
+   *  MCArray.
    *
    * \pre pos <= m_num_tuples.
    */
@@ -320,11 +317,11 @@ public:
 
   /// @}
 
-  /// \name Array methods to query and set attributes
+  /// \name MCArray methods to query and set attributes
   /// @{
 
   /*!
-   * \brief Return the number of tuples allocated for the data array.
+   * \brief Return the number of tuples allocated for the data MCArray.
    */
   IndexType capacity() const { return m_capacity; }
 
@@ -348,19 +345,19 @@ public:
   void shrink() { setCapacity(m_num_tuples); }
 
   /*!
-   * \brief Returns true iff the Array stores no elements.
+   * \brief Returns true iff the MCArray stores no elements.
    *
-   * \note If the Array is empty the capacity can still be greater than zero.
+   * \note If the MCArray is empty the capacity can still be greater than zero.
    */
   bool empty() const { return m_num_tuples == 0; }
 
   /*!
-   * \brief Return the number of tuples stored in the data array.
+   * \brief Return the number of tuples stored in the data MCArray.
    */
   IndexType size() const { return m_num_tuples; }
 
   /*!
-   * \brief Update the number of tuples stored in the data array.
+   * \brief Update the number of tuples stored in the data MCArray.
    *
    * \note Reallocation is done if the new size will exceed the capacity.
    */
@@ -397,12 +394,12 @@ public:
 
 protected:
   /*! \brief Default constructor supports infrastructure in subclasses. */
-  Array();
+  MCArray();
 
   /*!
-   * \brief Initialize an Array instance with the given number of tuples.
+   * \brief Initialize an MCArray instance with the given number of tuples.
    *
-   * \param [in] num_tuples the number of tuples the Array holds.
+   * \param [in] num_tuples the number of tuples the MCArray holds.
    * \param [in] num_components the number of values per tuple. If not
    *  specified defaults to 1.
    * \param [in] capacity the number of tuples to allocate space for.
@@ -410,7 +407,7 @@ protected:
    * \note If no capacity or capacity less than num_tuples is specified
    *  then it will default to at least num_tuples * DEFAULT_RESIZE_RATIO.
    * \note a capacity is specified for the number of tuples to store in the
-   *  array and does not correspond to the actual bytesize.
+   *  MCArray and does not correspond to the actual bytesize.
    *
    * \pre num_tuples >= 0
    * \pre num_components >= 1
@@ -425,7 +422,7 @@ protected:
                   IndexType capacity);
 
   /*!
-   * \brief Make space for a subsequent insertion into the array.
+   * \brief Make space for a subsequent insertion into the MCArray.
    *
    * \param [in] n the number of tuples to insert.
    * \param [in] pos the position at which to begin the insertion.
@@ -444,14 +441,14 @@ protected:
   virtual void updateNumTuples(IndexType new_num_tuples);
 
   /*!
-   * \brief Set the number of tuples allocated for the data array.
+   * \brief Set the number of tuples allocated for the data MCArray.
    *
    * \param [in] capacity the new number of tuples to allocate.
    */
   virtual void setCapacity(IndexType new_capacity);
 
   /*!
-   * \brief Reallocates the data array when the size exceeds the capacity.
+   * \brief Reallocates the data MCArray when the size exceeds the capacity.
    *
    * \param [in] new_num_tuples the number of tuples which exceeds the current
    *  capacity.
@@ -482,17 +479,17 @@ protected:
   double m_resize_ratio;
   bool const m_is_external;
 
-  DISABLE_COPY_AND_ASSIGNMENT(Array);
-  DISABLE_MOVE_AND_ASSIGNMENT(Array);
+  DISABLE_COPY_AND_ASSIGNMENT(MCArray);
+  DISABLE_MOVE_AND_ASSIGNMENT(MCArray);
 };
 
 //------------------------------------------------------------------------------
-//                            Array IMPLEMENTATION
+//                            MCArray IMPLEMENTATION
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
 template <typename T>
-Array<T>::Array()
+MCArray<T>::MCArray()
   : m_data(nullptr)
   , m_num_tuples(0)
   , m_capacity(0)
@@ -503,7 +500,7 @@ Array<T>::Array()
 
 //------------------------------------------------------------------------------
 template <typename T>
-Array<T>::Array(IndexType num_tuples, IndexType num_components, IndexType capacity)
+MCArray<T>::MCArray(IndexType num_tuples, IndexType num_components, IndexType capacity)
   : m_data(nullptr)
   , m_num_tuples(0)
   , m_capacity(0)
@@ -516,7 +513,7 @@ Array<T>::Array(IndexType num_tuples, IndexType num_components, IndexType capaci
 
 //------------------------------------------------------------------------------
 template <typename T>
-Array<T>::Array(T* data,
+MCArray<T>::MCArray(T* data,
                 IndexType num_tuples,
                 IndexType num_components,
                 IndexType capacity)
@@ -537,7 +534,7 @@ Array<T>::Array(T* data,
 
 //------------------------------------------------------------------------------
 template <typename T>
-Array<T>::~Array()
+MCArray<T>::~MCArray()
 {
   if(m_data != nullptr && !m_is_external)
   {
@@ -549,7 +546,7 @@ Array<T>::~Array()
 
 //------------------------------------------------------------------------------
 template <typename T>
-inline void Array<T>::append(const T& value)
+inline void MCArray<T>::append(const T& value)
 {
   assert(m_num_components == 1);
 
@@ -565,7 +562,7 @@ inline void Array<T>::append(const T& value)
 
 //------------------------------------------------------------------------------
 template <typename T>
-inline void Array<T>::append(const T* tuples, IndexType n)
+inline void MCArray<T>::append(const T* tuples, IndexType n)
 {
   IndexType new_size = m_num_tuples + n;
   if(new_size > m_capacity)
@@ -580,7 +577,7 @@ inline void Array<T>::append(const T* tuples, IndexType n)
 
 //------------------------------------------------------------------------------
 template <typename T>
-inline void Array<T>::set(const T* tuples, IndexType n, IndexType pos)
+inline void MCArray<T>::set(const T* tuples, IndexType n, IndexType pos)
 {
   assert(tuples != nullptr);
   assert(pos >= 0);
@@ -593,7 +590,7 @@ inline void Array<T>::set(const T* tuples, IndexType n, IndexType pos)
 
 //------------------------------------------------------------------------------
 template <typename T>
-inline void Array<T>::insert(const T& value, IndexType pos)
+inline void MCArray<T>::insert(const T& value, IndexType pos)
 {
   assert(m_num_components == 1);
   reserveForInsert(1, pos);
@@ -602,7 +599,7 @@ inline void Array<T>::insert(const T& value, IndexType pos)
 
 //------------------------------------------------------------------------------
 template <typename T>
-inline void Array<T>::insert(const T* tuples, IndexType n, IndexType pos)
+inline void MCArray<T>::insert(const T* tuples, IndexType n, IndexType pos)
 {
   assert(tuples != nullptr);
   T* insert_pos = reserveForInsert(n, pos);
@@ -611,7 +608,7 @@ inline void Array<T>::insert(const T* tuples, IndexType n, IndexType pos)
 
 //------------------------------------------------------------------------------
 template <typename T>
-inline void Array<T>::emplace(IndexType n, IndexType pos, const T& value)
+inline void MCArray<T>::emplace(IndexType n, IndexType pos, const T& value)
 {
   T* insert_pos = reserveForInsert(n, pos);
   std::fill_n(insert_pos, n * numComponents(), value);
@@ -619,7 +616,7 @@ inline void Array<T>::emplace(IndexType n, IndexType pos, const T& value)
 
 //------------------------------------------------------------------------------
 template <typename T>
-inline void Array<T>::resize(IndexType new_num_tuples)
+inline void MCArray<T>::resize(IndexType new_num_tuples)
 {
   assert(new_num_tuples >= 0);
 
@@ -633,7 +630,7 @@ inline void Array<T>::resize(IndexType new_num_tuples)
 
 //------------------------------------------------------------------------------
 template <typename T>
-inline void Array<T>::initialize(IndexType num_tuples,
+inline void MCArray<T>::initialize(IndexType num_tuples,
                                  IndexType num_components,
                                  IndexType capacity)
 {
@@ -664,7 +661,7 @@ inline void Array<T>::initialize(IndexType num_tuples,
 
 //------------------------------------------------------------------------------
 template <typename T>
-inline T* Array<T>::reserveForInsert(IndexType n, IndexType pos)
+inline T* MCArray<T>::reserveForInsert(IndexType n, IndexType pos)
 {
   assert(n >= 0);
   assert(pos >= 0);
@@ -694,7 +691,7 @@ inline T* Array<T>::reserveForInsert(IndexType n, IndexType pos)
 
 //------------------------------------------------------------------------------
 template <typename T>
-inline void Array<T>::updateNumTuples(IndexType new_num_tuples)
+inline void MCArray<T>::updateNumTuples(IndexType new_num_tuples)
 {
   assert(new_num_tuples >= 0);
   assert(new_num_tuples <= m_capacity);
@@ -703,7 +700,7 @@ inline void Array<T>::updateNumTuples(IndexType new_num_tuples)
 
 //------------------------------------------------------------------------------
 template <typename T>
-inline void Array<T>::setCapacity(IndexType new_capacity)
+inline void MCArray<T>::setCapacity(IndexType new_capacity)
 {
   assert(new_capacity >= 0);
 
@@ -731,7 +728,7 @@ inline void Array<T>::setCapacity(IndexType new_capacity)
 
 //------------------------------------------------------------------------------
 template <typename T>
-inline void Array<T>::dynamicRealloc(IndexType new_num_tuples)
+inline void MCArray<T>::dynamicRealloc(IndexType new_num_tuples)
 {
   if(m_is_external)
   {
@@ -758,7 +755,6 @@ inline void Array<T>::dynamicRealloc(IndexType new_num_tuples)
   assert(m_data != nullptr || m_capacity <= 0);
 }
 
-} /* namespace mint */
 } /* namespace axom */
 
-#endif /* MINT_ARRAY_HPP_ */
+#endif /* AXOM_MCARRAY_HPP_ */
