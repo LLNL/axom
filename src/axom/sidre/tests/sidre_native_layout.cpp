@@ -538,10 +538,10 @@ TEST(sidre_native_layout, basic_demo_compare)
   // we use int64 and float64 b/c those types persist even with
   // json or yaml output
 
-  conduit::int64     sidre_vals_1[5] = {0,1,2,3,4};
-  conduit::float64   sidre_vals_2[6] = { 1.0, 2.0,
-                                         1.0, 2.0,
-                                         1.0, 2.0,};
+  axom::int64     sidre_vals_1[5] = {0,1,2,3,4};
+  axom::float64   sidre_vals_2[6] = { 1.0, 2.0,
+                                      1.0, 2.0,
+                                      1.0, 2.0,};
 
   Group* group1 = root->createGroup("my_scalars");
   // two scalars
@@ -555,14 +555,14 @@ TEST(sidre_native_layout, basic_demo_compare)
 
   // one basic array
   Group* group3 = root->createGroup("my_arrays");
-  View* a5_std_view = group3->createViewAndAllocate("a5_i64_std",
-                                                    conduit::DataType::int64(5));
+  View* a5_view = group3->createViewAndAllocate("a5_i64",
+                                                 axom::sidre::DataType::int64(5));
 
-  conduit::int64* a5_std_view_ptr = a5_std_view->getData();
+  axom::int64* a5_view_ptr = a5_view->getData();
 
   for(int i=0; i < 5; i++)
   {
-      a5_std_view_ptr[i] = sidre_vals_1[i];
+      a5_view_ptr[i] = sidre_vals_1[i];
   }
   
   // one external array
@@ -625,17 +625,17 @@ TEST(sidre_native_layout, basic_demo_compare)
   // create an equiv conduit tree for testing
   //
 
-  conduit::int64    conduit_vals_1[5] = {0,1,2,3,4};
-  conduit::float64  conduit_vals_2[6] = { 1.0, 2.0,
-                                          1.0, 2.0,
-                                          1.0, 2.0,};
+  axom::int64    conduit_vals_1[5] = {0,1,2,3,4};
+  axom::float64  conduit_vals_2[6] = { 1.0, 2.0,
+                                       1.0, 2.0,
+                                       1.0, 2.0,};
 
   axom::sidre::Node n;
   n["my_scalars/i64"].set_int64(1);
   n["my_scalars/f64"].set_float64(10.0);
   n["my_strings/s0"] = "s0 string";
   n["my_strings/s1"] = "s1 string";
-  n["my_arrays/a5_i64_std"].set(conduit_vals_1,5);
+  n["my_arrays/a5_i64"].set(conduit_vals_1,5);
   n["my_arrays/a5_i64_ext"].set_external(conduit_vals_1,5);
   n["my_arrays/b_v1"].set(conduit_vals_2,
                           3,
