@@ -673,10 +673,11 @@ TEST(inlet_Inlet, mixLevelTables)
 TEST(inlet_Field, defaultValuesDocsEnabled) {
   std::string testString = "Table1 = { float1 = 5.6; Table2 = { int1 = 95; Table4 = { str1= 'hi' } } }; Table3 = { bool1 = true }";
   DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
+  // Creating basic inlet with documentation enabled (indicated by the last param)
+  auto inlet = createBasicInlet(&ds, testString, true);
 
   // new fields
-  inlet->addDouble("field1")->defaultValue(2.0); 
+  inlet->addDouble("field1")->defaultValue(2);  // int argument will get casted to double
   inlet->addInt("Table1/Table2/field2")->defaultValue(5);
   inlet->addBool("Table1/field3")->defaultValue(true);
   inlet->addString("Table3/field4")->defaultValue("default for new string");
@@ -720,12 +721,37 @@ TEST(inlet_Field, defaultValuesDocsEnabled) {
   EXPECT_TRUE(sidreGroup->hasView("Table1/Table2/Table4/str1/defaultValue"));
   strVal = sidreGroup->getView("Table1/Table2/Table4/str1/defaultValue")->getString();
   EXPECT_EQ(strVal, "default for old string"); 
+
+  doubleVal = sidreGroup->getView("field1/value")->getScalar();
+  EXPECT_EQ(doubleVal, 2.0);
+
+  intVal = sidreGroup->getView("Table1/Table2/field2/value")->getScalar();
+  EXPECT_EQ(intVal, 5);
+
+  boolVal = sidreGroup->getView("Table1/field3/value")->getScalar();
+  EXPECT_EQ(boolVal, 1);
+
+  strVal = sidreGroup->getView("Table3/field4/value")->getString();
+  EXPECT_EQ(strVal,"default for new string");
+
+  intVal = sidreGroup->getView("Table1/Table2/int1/value")->getScalar();
+  EXPECT_EQ(intVal, 95);
+
+  boolVal = sidreGroup->getView("Table3/bool1/value")->getScalar();
+  EXPECT_EQ(boolVal, 1);
+
+  doubleVal = sidreGroup->getView("Table1/float1/value")->getScalar();
+  EXPECT_EQ(doubleVal, 5.6);
+  
+  strVal = sidreGroup->getView("Table1/Table2/Table4/str1/value")->getString();
+  EXPECT_EQ(strVal, "hi"); 
 }
 
 TEST(inlet_Field, defaultValuesDocsDisabled) {
   std::string testString = "Table1 = { float1 = 5.6; Table2 = { int1 = 95; Table4 = { str1= 'hi' } } }; Table3 = { bool1 = true }";
   DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
+  // Creating basic inlet with documentation disabled (indicated by the last param)
+  auto inlet = createBasicInlet(&ds, testString, false);
 
   // new fields
   inlet->addDouble("field1")->defaultValue(2.0); 
@@ -741,6 +767,15 @@ TEST(inlet_Field, defaultValuesDocsDisabled) {
 
   axom::sidre::Group* sidreGroup = inlet->sidreGroup();
 
+  EXPECT_FALSE(sidreGroup->hasView("field1/defaultValue"));
+  EXPECT_FALSE(sidreGroup->hasView("Table1/Table2/field2/defaultValue"));
+  EXPECT_FALSE(sidreGroup->hasView("Table1/field3/defaultValue"));
+  EXPECT_FALSE(sidreGroup->hasView("Table3/field4/defaultValue"));
+  EXPECT_FALSE(sidreGroup->hasView("Table1/Table2/int1/defaultValue"));
+  EXPECT_FALSE(sidreGroup->hasView("Table3/bool1/defaultValue"));
+  EXPECT_FALSE(sidreGroup->hasView("Table1/float1/defaultValue"));
+  EXPECT_FALSE(sidreGroup->hasView("Table1/Table2/Table4/str1/defaultValue"));
+ 
   double doubleVal = sidreGroup->getView("field1/value")->getScalar();
   EXPECT_EQ(doubleVal, 2.0);
 
@@ -816,6 +851,8 @@ TEST(inlet_Inlet_verify, verifyRequired) {
 }
 
 TEST(inlet_Inlet_verify, verifyDoubleRange) {
+  
+  // For values
   std::string testString = "field1 = true; field2 = 56.32; NewTable = { str = 'hello'; field4 = 22.19 }";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
@@ -831,9 +868,23 @@ TEST(inlet_Inlet_verify, verifyDoubleRange) {
   field = inlet->addDouble("NewTable/field4");
   field->range(1.0, 22.0);
   EXPECT_FALSE(inlet->verify());
+
+  // For default values
+  std::string testString1 = "field1 = true; field2 = 56.32; NewTable = { str = 'hello'; field4 = 22.19 }";
+  DataStore ds1;
+  auto inlet1 = createBasicInlet(&ds1, testString1);
+  
+  auto field1 = inlet1->addDouble("field2");
+  field1->defaultValue(5)->range(0, 60);   // ints will get casted to double 
+  EXPECT_TRUE(inlet1->verify());
+
+  field1 = inlet1->addDouble("field3");
+  field1->defaultValue(-12)->range(-10.5, 13.23);
+  EXPECT_FALSE(inlet1->verify());
 }
 
-TEST(inlet_Inlet_verify, verifyIntRange) {
+TEST(inlet_Inlet_verify, verifyVIntRange) {
+  // check values
   std::string testString = "field1 = true; field2 = 56; NewTable = { field4 = 22; field5 = 48 }";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
@@ -853,9 +904,26 @@ TEST(inlet_Inlet_verify, verifyIntRange) {
   field = inlet->addInt("NewTable/field5");
   field->range(1, 7);
   EXPECT_FALSE(inlet->verify());
+
+  // check default values
+  std::string testString1 = "field1 = true; field2 = 56; NewTable = { field4 = 22; field5 = 48 }";
+  DataStore ds1;
+  auto inlet1 = createBasicInlet(&ds1, testString1);
+  field = inlet1->addInt("field2");
+  field->range(0, 56)->defaultValue(32);
+  EXPECT_TRUE(inlet1->verify());
+
+  field = inlet1->addInt("field3");
+  field->range(-12, 13)->defaultValue(-3);
+  EXPECT_TRUE(inlet1->verify());
+
+  field = inlet1->addInt("NewTable/field4");
+  field->range(1, 23)->defaultValue(24);
+  EXPECT_FALSE(inlet1->verify());
 }
 
-TEST(inlet_Inlet_verify, verifyDiscreteIntRange) {
+TEST(inlet_Inlet_verify, verifyIntValidValues) {
+  // check values
   std::string testString = "field1 = true; field2 = 56; NewTable = { field4 = 22; field5 = 48 }";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
@@ -875,6 +943,28 @@ TEST(inlet_Inlet_verify, verifyDiscreteIntRange) {
   field = inlet->addInt("NewTable/field5");
   field->validValues({-1,-2,-6,-18,21});
   EXPECT_FALSE(inlet->verify());
+
+  // check default values
+  std::string testString1 = "field1 = true; field2 = 56; NewTable = { field4 = 22; field5 = 48 }";
+  DataStore ds1;
+  auto inlet1 = createBasicInlet(&ds1, testString1);
+
+  field = inlet1->addInt("field2");
+  field->validValues({1,2,3,56,57,58})->defaultValue(2);
+  EXPECT_TRUE(inlet1->verify());
+
+  field = inlet1->addInt("field3");
+  field->validValues({-1,-2,-6,-18,21})->defaultValue(21);
+  EXPECT_TRUE(inlet1->verify());
+
+  field = inlet1->addInt("NewTable/field4");
+  field->validValues({44, 40, 48, 22})->defaultValue(48);
+  EXPECT_TRUE(inlet1->verify());
+
+  field = inlet1->addInt("NewTable/field5");
+  field->validValues({-1,-2,-6,-18,21})->defaultValue(90);
+  EXPECT_FALSE(inlet1->verify());
+
 }
 
 //------------------------------------------------------------------------------

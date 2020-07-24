@@ -28,7 +28,7 @@ namespace inlet
  * \class Field
  *
  * \brief Provides functions to help define how individual field variables in an
- *        input deck are expected to behave.  It also holds the Sidre Group to 
+ * input deck are expected to behave.  It also holds the Sidre Group to 
  * the individual field.
  *
  * \see Inlet Table
@@ -192,9 +192,7 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Set the range of this Field.
-   *
-   * Set the continuous range for the Field in the input deck.
+   * \brief Set the valid values for this Field.
    *
    * \param [in] set An integer vector containing the set of allowed values
    *
@@ -202,6 +200,17 @@ public:
    *****************************************************************************
   */
   std::shared_ptr<Field> validValues(std::vector<int> set);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the valid values for this Field.
+   *
+   * \param [in] set A vector containing the set of allowed string values
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> validValues(std::vector<std::string> set);
 
 private:
   // This Field's sidre group

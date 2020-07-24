@@ -303,8 +303,86 @@ private:
    * \param [out] verifySuccess Indicates whether or not the verification was successful.
    *****************************************************************************
    */
-
   void verifyRecursive(axom::sidre::Group* sidreGroup, bool& verifySuccess);
+
+  /*!
+   *****************************************************************************
+   * \brief Verifies the value of a Field.
+   *
+   * This checks whether the value in the field is within the specified range or
+   * contained in allowed values.
+   * 
+   * \param [in] sidreGroup The Sidre Group containing the value to be verified.
+   *
+   * \return boolean value indicating if verification was successful.
+   *****************************************************************************
+   */
+  bool verifyValue(axom::sidre::Group* sidreGroup);
+
+  /*!
+   *****************************************************************************
+   * \brief Verifies the default value of a Field.
+   *
+   * This checks whether the default value in the Field is within the specified 
+   * range or contained in allowed values.
+   * 
+   * \param [in] sidreGroup The Sidre Group containing the default value to be 
+   * verified.
+   *
+   * \return boolean value indicating if verification was successful.
+   *****************************************************************************
+   */
+  bool verifyDefaultValue(axom::sidre::Group* sidreGroup);
+
+   /*!
+   *****************************************************************************
+   * \brief Checks if the given value is within the range.
+   * 
+   * \param [in] sidreGroup The Sidre Group containing the range.
+   * \param [in] value The integer value that will be checked.
+   * 
+   * \return True if the given value was within its respective range, else false.
+   *****************************************************************************
+   */
+  bool checkRange(axom::sidre::Group* sidreGroup, int value);
+
+  /*!
+   *****************************************************************************
+   * \brief Checks if the given value is within the range.
+   * 
+   * \param [in] sidreGroup The Sidre Group containing the range.
+   * \param [in] value The double value that will be checked.
+   * 
+   * \return True if the given value was within its respective range, else false.
+   *****************************************************************************
+   */
+  bool checkRange(axom::sidre::Group* sidreGroup, double value);
+
+  /*!
+   *****************************************************************************
+   * \brief Checks if the given value is found in the specified valid values.
+   * 
+   * \param [in] sidreGroup The Sidre Group containing the valid values.
+   * \param [in] value The integer value that will be checked.
+   * 
+   * \return True if the given value was found in its respective valid values, 
+   *  else false.
+   *****************************************************************************
+   */
+  bool searchValidValues(axom::sidre::Group* sidreGroup, int value);
+
+  /*!
+   *****************************************************************************
+   * \brief Checks if the given value is found in the specified valid values.
+   * 
+   * \param [in] sidreGroup The Sidre Group containing the valid values.
+   * \param [in] value The string value that will be checked.
+   * 
+   * \return True if the given value was found in its respective valid values, 
+   *  else false.
+   *****************************************************************************
+   */
+  bool searchValidValues(axom::sidre::Group* sidreGroup, std::string value);
 
   axom::sidre::View* baseGet(const std::string& name);
 

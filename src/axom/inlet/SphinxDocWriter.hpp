@@ -154,17 +154,56 @@ private:
     std::vector<std::vector<std::string>> rstTable;
   };
 
+/*!
+  *******************************************************************************
+  * \brief Extracts Field information from the given Sidre Group and stores it
+  * to be written later.
+  * 
+  * This extracts information about the Field stored in the given Sidre Group. 
+  * This information is stored internally by this class and then written to the
+  * document by writeAllTables.
+  * 
+  * \param [in] sidreGroup The Sidre Group from which Field metadata should be
+  * extracted and then stored.
+  *******************************************************************************
+  */
+  void extractFieldMetadata(axom::sidre::Group* sidreGroup);
+
+/*!
+  *******************************************************************************
+  * \brief Gets default value information from the given Sidre View and returns
+  * it as a string.
+  * 
+  * \param [in] view The Sidre View containing default value information.
+  *
+  * \return String representation of default value information.
+  *******************************************************************************
+  */
+  std::string getDefaultValueAsString(axom::sidre::View* view);
+
   /*!
-    *******************************************************************************
-    * \brief Stores all field info into m_rstTables
-    * 
-    * This extracts information about description, required, default values, 
-    * and range from the Sidre Group corresponding to a Field. Then, the information
-    * is stored in m_rstTables.
-    *
-    *******************************************************************************
-    */
-  void collectFieldInfo(axom::sidre::Group* sidreGroup);
+  *******************************************************************************
+  * \brief Gets range information from the given Sidre View and returns
+  * it as a string.
+  * 
+  * \param [in] view The Sidre View containing range information.
+  *
+  * \return String representation of range information.
+  *******************************************************************************
+  */
+  std::string getRangeAsString(axom::sidre::View* view);
+
+  /*!
+  *******************************************************************************
+  * \brief Gets valid value(s) information from the given Sidre View and returns
+  * it as a string.
+  * 
+  * \param [in] view The Sidre View containing valid value(s) information.
+  *
+  * \return String representation of valid value(s) information.
+  *******************************************************************************
+  */
+  std::string getValidValuesAsString(axom::sidre::View* view);
 
   axom::sidre::Group* m_sidreRootGroup;
   std::ofstream m_outFile;

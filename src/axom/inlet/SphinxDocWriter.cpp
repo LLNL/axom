@@ -50,7 +50,7 @@ void SphinxDocWriter::writeDocumentationHelper(axom::sidre::Group* sidreGroup) {
   // Case 1: the current group is a Field so attributes are stored in views
 
   if (sidreGroup != m_sidreRootGroup && i == axom::sidre::InvalidIndex) { 
-    collectFieldInfo(sidreGroup);
+    extractFieldMetadata(sidreGroup);
   } 
 
   // Case 2: Current root corresponds to a inlet::Table
@@ -89,9 +89,9 @@ void SphinxDocWriter::writeTable(const std::string& title,
   SLIC_WARNING_IF(rstTable.size() <= 1, "Vector for corresponding rst table must be nonempty");
   std::string result = ".. list-table:: " + title;
   result += "\n   :widths: 25 25 25 25 25\n   :header-rows: 1\n   :stub-columns: 1\n\n";
-  for (unsigned int i = 0; i < rstTable.size(); i++) {
+  for (unsigned int i = 0; i < rstTable.size(); ++i) {
     result += "   * - ";
-    for (unsigned int j = 0; j < rstTable[i].size(); j++) {
+    for (unsigned int j = 0; j < rstTable[i].size(); ++j) {
       if (j != 0) {
         result += "     - ";
       }
@@ -102,7 +102,7 @@ void SphinxDocWriter::writeTable(const std::string& title,
 }
 
 void SphinxDocWriter::writeAllTables() {
-  for (unsigned int i = 0; i < m_rstTables.size(); i++) {
+  for (unsigned int i = 0; i < m_rstTables.size(); ++i) {
     writeSubtitle(m_rstTables[i].tableName);
     if (m_rstTables[i].description != "") {
       m_oss << "Description: " << m_rstTables[i].description << std::endl << std::endl;
@@ -111,57 +111,67 @@ void SphinxDocWriter::writeAllTables() {
       writeTable("Fields", m_rstTables[i].rstTable);
     }
   }
-
 }
 
-void SphinxDocWriter::collectFieldInfo(axom::sidre::Group* sidreGroup) {
+std::string SphinxDocWriter::getDefaultValueAsString(axom::sidre::View* view) {
+  axom::sidre::TypeID type = view->getTypeID(); 
+  if (type == axom::sidre::TypeID::INT8_ID) {
+    int8 val = view->getData();
+    return val ? "True" : "False";
+  } else if (type == axom::sidre::TypeID::INT_ID) {
+    int val = view->getData();
+    return std::to_string(val);
+  } else if (type == axom::sidre::TypeID::DOUBLE_ID) {
+    double val = view->getData();
+    return std::to_string(val);
+  } 
+  return view->getString();
+}
+
+std::string SphinxDocWriter::getRangeAsString(axom::sidre::View* view) {
+  axom::sidre::TypeID type = view->getTypeID();
+  if (type == axom::sidre::INT_ID) {
+    int* range = view->getArray();
+    return std::to_string(range[0]) + " to " + std::to_string(range[1]);
+  } 
+  double* range = view->getArray();
+  return std::to_string(range[0]) + " to " + std::to_string(range[1]);
+}
+
+std::string SphinxDocWriter::getValidValuesAsString(axom::sidre::View* view) {
+  SLIC_WARNING_IF(view->getTypeID() != axom::sidre::INT_ID,
+                  "discrete range is only valid for integers");
+  int* range = view->getArray();
+  size_t size = view->getBuffer()->getNumElements();
+  std::string result = "";
+  for (size_t i = 0; i < size; ++i) {
+    if (i == size-1) {
+      result += std::to_string(range[i]);      
+    } else {
+      result += std::to_string(range[i]) + ", ";
+    }
+  }
+  return result;
+}
+
+void SphinxDocWriter::extractFieldMetadata(axom::sidre::Group* sidreGroup) {
   std::vector<std::string> fieldAttributes(5, "");
   fieldAttributes.resize(5);
 
   fieldAttributes[0] = sidreGroup->getName();
+
   if (sidreGroup->hasView("description")) {
     fieldAttributes[1] = std::string(sidreGroup->getView("description")->getString());
   } 
 
-  if (sidreGroup->hasView("defaultValue")) {
-    axom::sidre::TypeID type = sidreGroup->getView("defaultValue")->getTypeID();
-    if (type == axom::sidre::TypeID::INT8_ID) {
-      int8 val = sidreGroup->getView("defaultValue")->getData();
-      fieldAttributes[2] = std::to_string(val);
-    } else if (type == axom::sidre::TypeID::INT_ID) {
-      int val = sidreGroup->getView("defaultValue")->getData();
-      fieldAttributes[2] = std::to_string(val);
-    } else if (type == axom::sidre::DOUBLE_ID) {
-      double val = sidreGroup->getView("defaultValue")->getData();
-      fieldAttributes[2] = std::to_string(val);
-    } else {
-      fieldAttributes[2] = sidreGroup->getView("defaultValue")->getString();
-    }
+  if (sidreGroup->hasView("defaultValue")) { 
+    fieldAttributes[2] = getDefaultValueAsString(sidreGroup->getView("defaultValue"));
   }
 
   if (sidreGroup->hasView("range")) {
-    axom::sidre::TypeID type = sidreGroup->getView("range")->getTypeID();
-    if (type == axom::sidre::INT_ID) {
-      int* range = sidreGroup->getView("range")->getArray();
-      fieldAttributes[3] = std::to_string(range[0]) + " to " + std::to_string(range[1]);
-    } else  if (type == axom::sidre::DOUBLE_ID) {
-      double* range = sidreGroup->getView("range")->getArray();
-      fieldAttributes[3] = std::to_string(range[0]) + " to " + std::to_string(range[1]);
-    } else {
-      SLIC_WARNING("Unexpected range type");
-    }
+    fieldAttributes[3] = getRangeAsString(sidreGroup->getView("range"));
   } else if (sidreGroup->hasView("validValues")) {
-    SLIC_WARNING_IF(sidreGroup->getView("validValues")->getTypeID() != axom::sidre::INT_ID,
-                                              "discrete range is only valid for integers");
-    int* range = sidreGroup->getView("validValues")->getArray();
-    size_t size = sidreGroup->getView("validValues")->getBuffer()->getNumElements();
-    for (size_t i = 0; i < size; i++) {
-      if (i == size-1) {
-        fieldAttributes[3] += std::to_string(range[i]);      
-      } else {
-        fieldAttributes[3] += std::to_string(range[i]) + ", ";
-      }
-    }
+    fieldAttributes[3] = getValidValuesAsString(sidreGroup->getView("validValues"));
   }
   
   if (sidreGroup->hasView("required")) {
