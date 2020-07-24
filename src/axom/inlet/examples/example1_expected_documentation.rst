@@ -30,22 +30,22 @@ mesh
      - |check|
    * - serial
      - serial value
-     - 
-     - 
+     - 1
+     - 0 to 2147483647
      - |uncheck|
    * - parallel
      - 
-     - 
-     - 
+     - 1
+     - 1 to 2147483647
      - |uncheck|
    * - order
      - thermal solver order
      - 
-     - 
+     - 1 to 2147483647
      - |check|
    * - timestepper
      - thermal solver timestepper
-     - this is default
+     - quasistatic
      - 
      - |uncheck|
 
@@ -65,9 +65,9 @@ u0
      - Required
    * - type
      - description for u0 type
+     - constant
      - 
-     - 
-     - |check|
+     - |uncheck|
    * - func
      - description for u0 func
      - 
@@ -95,7 +95,7 @@ kappa
      - |check|
    * - constant
      - description for kappa constant
-     - 0.000000
+     - 
      - 
      - |check|
 
@@ -117,31 +117,31 @@ Description: This is the solver sub-table in the thermal_solver table
      - Required
    * - rel_tol
      - description for solver rel tol
-     - 
-     - 0.500000 to 100.700000
+     - 0.000001
+     - 0.000e+00 to 1.798e+308
      - |uncheck|
    * - abs_tol
      - description for solver abs tol
-     - 
-     - 
+     - 0.000000
+     - 0.000e+00 to 1.798e+308
      - |check|
    * - print_level
      - description for solver print level
-     - 
-     - 1, 3, 5, 7
+     - 0
+     - 1 to 3
      - |check|
    * - max_iter
      - description for solver max iter
-     - 10
-     - 
+     - 100
+     - 1 to 2147483647
      - |uncheck|
    * - dt
      - description for solver dt
-     - 
-     - 
+     - 1.000000
+     - 0.000e+00 to 1.798e+308
      - |check|
    * - steps
      - description for solver steps
-     - 
-     - 
+     - 1
+     - 1 to 2147483647
      - |check|

@@ -129,13 +129,19 @@ std::string SphinxDocWriter::getDefaultValueAsString(axom::sidre::View* view) {
 }
 
 std::string SphinxDocWriter::getRangeAsString(axom::sidre::View* view) {
+  std::ostringstream oss;
+  oss.precision(3);
+  oss << std::scientific;
+
   axom::sidre::TypeID type = view->getTypeID();
   if (type == axom::sidre::INT_ID) {
     int* range = view->getArray();
-    return std::to_string(range[0]) + " to " + std::to_string(range[1]);
-  } 
-  double* range = view->getArray();
-  return std::to_string(range[0]) + " to " + std::to_string(range[1]);
+    oss << range[0] << " to " << range[1];
+  } else {
+    double* range = view->getArray();
+    oss << range[0] << " to " << range[1];
+  }
+  return oss.str();
 }
 
 std::string SphinxDocWriter::getValidValuesAsString(axom::sidre::View* view) {
