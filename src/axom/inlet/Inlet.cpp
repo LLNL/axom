@@ -207,20 +207,28 @@ void Inlet::verifyRecursive(axom::sidre::Group* sidreGroup, bool& verifySuccess)
   if (sidreGroup == m_sidreRootGroup && sidreGroup->hasView("warningFlag")) {
     verifySuccess = false;
   }
-
+  
   if (sidreGroup->hasView("required")) {
     int8 required = sidreGroup->getView("required")->getData();
     if (required && !sidreGroup->hasView("value")) {
-      std::string msg = fmt::format("Inlet: {0}: Required field was not specified in Input Deck", 
+      std::string msg = fmt::format("Inlet: {0}: Required field not specified", 
                                     sidreGroup->getPathName());
       SLIC_WARNING(msg);
       setWarningFlag(m_sidreRootGroup);
       verifySuccess = false;
     }
   }
-
-  if (!verifyValue(sidreGroup) || !verifyDefaultValue(sidreGroup)) {
+  if (!verifyValue(sidreGroup)) {
     verifySuccess = false;
+    std::string msg = fmt::format("Inlet: {0}: Value did not meet range/valid "
+                                  "value(s) restrictions", sidreGroup->getPathName());
+    SLIC_WARNING(msg);
+  }
+  if (!verifyDefaultValue(sidreGroup)) {
+    verifySuccess = false;
+    std::string msg = fmt::format("Inlet: {0}: Default value did not meet range/valid "
+                                  "value(s) restrictions", sidreGroup->getPathName());
+    SLIC_WARNING(msg);
   }
   
   axom::sidre::IndexType groupIndex = sidreGroup->getFirstValidGroupIndex();
