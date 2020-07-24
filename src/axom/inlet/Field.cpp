@@ -237,21 +237,25 @@ std::shared_ptr<Field> Field::validValues(std::vector<int> set) {
   return shared_from_this();
 }
 
-std::shared_ptr<Field> Field::validValues(std::vector<std::string> set) {
+std::shared_ptr<Field> Field::validStringValues(std::vector<std::string> set) {
   if (m_type != axom::sidre::DataTypeId::CHAR8_STR_ID) {
     SLIC_WARNING("Field value type did not match STRING");
     setWarningFlag(m_sidreRootGroup);
   }
 
-  if (m_sidreGroup->hasView("range") || m_sidreGroup->hasView("validValues")) {
-    std::string msg = fmt::format("Inlet Field has already defined range: {0}",
+  if (m_sidreGroup->hasView("validStringValues")) {
+    std::string msg = fmt::format("Inlet Field has already defined valid values: {0}",
                                    m_sidreGroup->getPathName());
     SLIC_WARNING(msg);
     setWarningFlag(m_sidreRootGroup);
   } else {
-    auto view = m_sidreGroup->createViewAndAllocate("validValues", 
-                                                    axom::sidre::INT_ID, set.size());
-    view->getBuffer()->copyBytesIntoBuffer(&set[0], sizeof(std::string));
+    auto group = m_sidreGroup->createGroup("validStringValues", true);
+    for (std::string str : set) {
+      group->createViewString("", str);
+    }
+    // auto view = m_sidreGroup->createViewAndAllocate("validValues", 
+    //                                                 axom::sidre::INT_ID, set.size());
+    // view->getBuffer()->copyBytesIntoBuffer(&set[0], sizeof(std::string));
   }
   return shared_from_this();
 }

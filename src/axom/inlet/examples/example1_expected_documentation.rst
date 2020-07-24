@@ -46,7 +46,7 @@ mesh
    * - timestepper
      - thermal solver timestepper
      - quasistatic
-     - 
+     - quasistatic, forwardeuler, backwardeuler
      - |uncheck|
 
 --
@@ -66,7 +66,7 @@ u0
    * - type
      - description for u0 type
      - constant
-     - 
+     - constant, function
      - |uncheck|
    * - func
      - description for u0 func
@@ -91,7 +91,7 @@ kappa
    * - type
      - description for kappa type
      - 
-     - 
+     - constant, function
      - |check|
    * - constant
      - description for kappa constant

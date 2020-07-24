@@ -210,7 +210,7 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> validValues(std::vector<std::string> set);
+  std::shared_ptr<Field> validStringValues(std::vector<std::string> set);
 
 private:
   // This Field's sidre group

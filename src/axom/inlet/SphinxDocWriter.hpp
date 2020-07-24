@@ -205,6 +205,19 @@ private:
   */
   std::string getValidValuesAsString(axom::sidre::View* view);
 
+  /*!
+  *******************************************************************************
+  * \brief Gets valid string value(s) information from the given Sidre Group. 
+  * 
+  * \param [in] sidreGroup The Sidre Group containing valid string value(s) 
+  * information.
+  *
+  * \return String listing the valid string values.
+  *******************************************************************************
+  */
+  std::string getValidStringValues(axom::sidre::Group* sidreGroup);
+
+
   axom::sidre::Group* m_sidreRootGroup;
   std::ofstream m_outFile;
   std::ostringstream m_oss;

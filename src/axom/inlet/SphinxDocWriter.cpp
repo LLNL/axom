@@ -47,7 +47,12 @@ void SphinxDocWriter::writeDocumentationHelper(axom::sidre::Group* sidreGroup) {
   SLIC_WARNING_IF(!sidreGroup, "Root was nullptr");
   axom::sidre::IndexType i = sidreGroup->getFirstValidGroupIndex();
 
-  // Case 1: the current group is a Field so attributes are stored in views
+  if (axom::sidre::indexIsValid(i) && sidreGroup->getGroupName(i) == "validStringValues") {
+    i = axom::sidre::InvalidIndex;
+  } 
+
+  // Case 1: the current group is a Field so attributes are stored in views,
+  // except for the special case of valid string values
 
   if (sidreGroup != m_sidreRootGroup && i == axom::sidre::InvalidIndex) { 
     extractFieldMetadata(sidreGroup);
@@ -145,6 +150,7 @@ std::string SphinxDocWriter::getRangeAsString(axom::sidre::View* view) {
 }
 
 std::string SphinxDocWriter::getValidValuesAsString(axom::sidre::View* view) {
+  // auto
   SLIC_WARNING_IF(view->getTypeID() != axom::sidre::INT_ID,
                   "discrete range is only valid for integers");
   int* range = view->getArray();
@@ -158,6 +164,20 @@ std::string SphinxDocWriter::getValidValuesAsString(axom::sidre::View* view) {
     }
   }
   return result;
+}
+
+std::string SphinxDocWriter::getValidStringValues(axom::sidre::Group* sidreGroup) {
+  auto idx = sidreGroup->getFirstValidViewIndex();
+  std::string validValues = "";
+  while (axom::sidre::indexIsValid(idx)) {
+    validValues += std::string(sidreGroup->getView(idx)->getString());
+    idx = sidreGroup->getNextValidViewIndex(idx);
+    if (axom::sidre::indexIsValid(idx)) {
+      validValues += ", ";
+    }
+  }
+  // TO DO: remove last comma
+  return validValues;
 }
 
 void SphinxDocWriter::extractFieldMetadata(axom::sidre::Group* sidreGroup) {
@@ -178,6 +198,8 @@ void SphinxDocWriter::extractFieldMetadata(axom::sidre::Group* sidreGroup) {
     fieldAttributes[3] = getRangeAsString(sidreGroup->getView("range"));
   } else if (sidreGroup->hasView("validValues")) {
     fieldAttributes[3] = getValidValuesAsString(sidreGroup->getView("validValues"));
+  } else if (sidreGroup->hasGroup("validStringValues")) {
+    fieldAttributes[3] = getValidStringValues(sidreGroup->getGroup("validStringValues"));
   }
   
   if (sidreGroup->hasView("required")) {

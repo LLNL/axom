@@ -852,7 +852,7 @@ TEST(inlet_Inlet_verify, verifyRequired) {
 
 TEST(inlet_Inlet_verify, verifyDoubleRange) {
   
-  // For values
+  // For checking values
   std::string testString = "field1 = true; field2 = 56.32; NewTable = { str = 'hello'; field4 = 22.19 }";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
@@ -869,7 +869,7 @@ TEST(inlet_Inlet_verify, verifyDoubleRange) {
   field->range(1.0, 22.0);
   EXPECT_FALSE(inlet->verify());
 
-  // For default values
+  // For checking default values
   std::string testString1 = "field1 = true; field2 = 56.32; NewTable = { str = 'hello'; field4 = 22.19 }";
   DataStore ds1;
   auto inlet1 = createBasicInlet(&ds1, testString1);
@@ -883,8 +883,8 @@ TEST(inlet_Inlet_verify, verifyDoubleRange) {
   EXPECT_FALSE(inlet1->verify());
 }
 
-TEST(inlet_Inlet_verify, verifyVIntRange) {
-  // check values
+TEST(inlet_Inlet_verify, verifyIntRange) {
+  // For checking values
   std::string testString = "field1 = true; field2 = 56; NewTable = { field4 = 22; field5 = 48 }";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
@@ -905,7 +905,7 @@ TEST(inlet_Inlet_verify, verifyVIntRange) {
   field->range(1, 7);
   EXPECT_FALSE(inlet->verify());
 
-  // check default values
+  // For checking default values
   std::string testString1 = "field1 = true; field2 = 56; NewTable = { field4 = 22; field5 = 48 }";
   DataStore ds1;
   auto inlet1 = createBasicInlet(&ds1, testString1);
@@ -922,7 +922,7 @@ TEST(inlet_Inlet_verify, verifyVIntRange) {
   EXPECT_FALSE(inlet1->verify());
 }
 
-TEST(inlet_Inlet_verify, verifyIntValidValues) {
+TEST(inlet_Inlet_verify, verifyValidIntValues) {
   // check values
   std::string testString = "field1 = true; field2 = 56; NewTable = { field4 = 22; field5 = 48 }";
   DataStore ds;
@@ -964,7 +964,50 @@ TEST(inlet_Inlet_verify, verifyIntValidValues) {
   field = inlet1->addInt("NewTable/field5");
   field->validValues({-1,-2,-6,-18,21})->defaultValue(90);
   EXPECT_FALSE(inlet1->verify());
+}
 
+TEST(inlet_Inlet_verify, verifyValidStringValues) {
+  // check values
+  std::string testString = "field1 = true; field2 = 'abc'; NewTable = { field3 = 'xyz'; field4 = 'yes' }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  auto field = inlet->addString("field2");
+  field->validStringValues({"abc", "defg", "hijk", "lm"});
+  EXPECT_TRUE(inlet->verify());
+
+  field = inlet->addString("NewTable/field3");
+  field->validStringValues({"nop", "qrstuv", "xyz", "wx"});
+  EXPECT_TRUE(inlet->verify());
+
+  field = inlet->addString("Table1/field5");
+  field->validStringValues({"nop", "qrstuv", "xyz", "wx"});
+  EXPECT_TRUE(inlet->verify());
+
+  field = inlet->addString("NewTable/field4");
+  field->validStringValues({"nop", "qrstuv", "xyz", "wx"});
+  EXPECT_FALSE(inlet->verify());
+
+  // check default values
+  std::string testString1 = "field1 = true; NewTable = { field5 = 'nop' }";
+  DataStore ds1;
+  auto inlet1 = createBasicInlet(&ds1, testString1);
+
+  field = inlet1->addString("field2");
+  field->validStringValues({"abc", "defg", "hijk", "lm"})->defaultValue("defg");
+  EXPECT_TRUE(inlet1->verify());
+
+  field = inlet1->addString("field3");
+  field->validStringValues({"nop", "qrstuv", "xyz", "wx"})->defaultValue("wx");
+  EXPECT_TRUE(inlet1->verify());
+
+  field = inlet1->addString("NewTable/field4");
+  field->validStringValues({"nop", "qrstuv", "xyz", "wx"});
+  EXPECT_TRUE(inlet1->verify());
+
+  field = inlet1->addString("NewTable/field5");
+  field->validStringValues({"nop", "qrstuv", "xyz", "wx"})->defaultValue("zyx");
+  EXPECT_FALSE(inlet1->verify());
 }
 
 //------------------------------------------------------------------------------
