@@ -194,7 +194,8 @@ std::shared_ptr<Field> Field::range(int startVal, int endVal) {
     SLIC_WARNING("Field value type did not match INT");
     setWarningFlag(m_sidreRootGroup);
   }
-  if (m_sidreGroup->hasView("range") || m_sidreGroup->hasView("validValues")) {
+  if (m_sidreGroup->hasView("range") || m_sidreGroup->hasView("validValues")
+      || m_sidreGroup->hasView("validStringValues")) {
     std::string msg = fmt::format("Inlet Field has already defined range: {0}",
                                    m_sidreGroup->getPathName());
     SLIC_WARNING(msg);
@@ -224,7 +225,8 @@ std::shared_ptr<Field> Field::validValues(std::vector<int> set) {
     setWarningFlag(m_sidreRootGroup);
   }
 
-  if (m_sidreGroup->hasView("range") || m_sidreGroup->hasView("validValues")) {
+  if (m_sidreGroup->hasView("range") || m_sidreGroup->hasView("validValues")
+      || m_sidreGroup->hasView("validStringValues")) {
     std::string msg = fmt::format("Inlet Field has already defined range: {0}",
                                    m_sidreGroup->getPathName());
     SLIC_WARNING(msg);
@@ -243,7 +245,7 @@ std::shared_ptr<Field> Field::validStringValues(std::vector<std::string> set) {
     setWarningFlag(m_sidreRootGroup);
   }
 
-  if (m_sidreGroup->hasView("validStringValues")) {
+  if (m_sidreGroup->hasView("validStringValues") || m_sidreGroup->hasView("validValues")) {
     std::string msg = fmt::format("Inlet Field has already defined valid values: {0}",
                                    m_sidreGroup->getPathName());
     SLIC_WARNING(msg);
@@ -253,9 +255,6 @@ std::shared_ptr<Field> Field::validStringValues(std::vector<std::string> set) {
     for (std::string str : set) {
       group->createViewString("", str);
     }
-    // auto view = m_sidreGroup->createViewAndAllocate("validValues", 
-    //                                                 axom::sidre::INT_ID, set.size());
-    // view->getBuffer()->copyBytesIntoBuffer(&set[0], sizeof(std::string));
   }
   return shared_from_this();
 }
