@@ -293,14 +293,17 @@ public:
 private:
   /*!
    *****************************************************************************
-   * \brief Verifies contents of sidreGroup.
+   * \brief Verifies the contents of the sidreGroup according to Inlet 
+   * requirements.
    *
    * This recrusively checks the correctness of each Field and Table in the sidre
-   * sub-group.
+   * sub-group. For example, ensuring that each Field's value is within the
+   * specified range, or is equal to one of the valid values.
    * 
    * \param [in] sidreGroup The root of the sub-group to be verified.
    *
-   * \param [out] verifySuccess Indicates whether or not the verification was successful.
+   * \param [out] verifySuccess Indicates whether or not the verification was 
+   * successful.
    *****************************************************************************
    */
   void verifyRecursive(axom::sidre::Group* sidreGroup, bool& verifySuccess);
@@ -309,7 +312,7 @@ private:
    *****************************************************************************
    * \brief Verifies the value of a Field.
    *
-   * This checks whether the value in the field is within the specified range or
+   * This checks whether the value in the Field is within the specified range or
    * contained in allowed values.
    * 
    * \param [in] sidreGroup The Sidre Group containing the value to be verified.
@@ -324,7 +327,7 @@ private:
    * \brief Verifies the default value of a Field.
    *
    * This checks whether the default value in the Field is within the specified 
-   * range or contained in allowed values.
+   * range or is one of the allowed values.
    * 
    * \param [in] sidreGroup The Sidre Group containing the default value to be 
    * verified.
@@ -360,12 +363,12 @@ private:
 
   /*!
    *****************************************************************************
-   * \brief Checks if the given value is found in the specified valid values.
+   * \brief Checks if the given value is found in the list of valid values.
    * 
    * \param [in] sidreGroup The Sidre Group containing the valid values.
-   * \param [in] value The integer value that will be checked.
+   * \param [in] value The target integer value that will be searched for.
    * 
-   * \return True if the given value was found in its respective valid values, 
+   * \return True if the given target was found in its respective valid values, 
    *  else false.
    *****************************************************************************
    */
@@ -373,13 +376,13 @@ private:
 
   /*!
    *****************************************************************************
-   * \brief Checks if the given value is found in the specified valid values.
+   * \brief Checks if the given value is found in the list of valid values.
    * 
    * \param [in] sidreGroup The Sidre Group containing the valid values.
-   * \param [in] value The string value that will be checked.
+   * \param [in] value The target string value that will be searched for.
    * 
-   * \return True if the given value was found in its respective valid values, 
-   *  else false.
+   * \return True if the given target was found in its respective list of valid
+   * values, else false.
    *****************************************************************************
    */
   bool searchValidValues(axom::sidre::Group* sidreGroup, std::string value);
