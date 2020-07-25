@@ -63,18 +63,18 @@ void defineSchema(std::shared_ptr<Inlet> inlet)
   
   currField = inlet->addString("thermal_solver/timestepper", "thermal solver timestepper");
   currField->defaultValue("quasistatic");
-  currField->validStringValues({"quasistatic", "forwardeuler", "backwardeuler"});
+  currField->validValues({"quasistatic", "forwardeuler", "backwardeuler"});
 
   currField = inlet->addString("thermal_solver/u0/type", "description for u0 type");
   currField->defaultValue("constant");
-  currField->validStringValues({"constant", "function"});
+  currField->validValues({"constant", "function"});
 
   currField = inlet->addString("thermal_solver/u0/func", "description for u0 func"); 
   currField->required(true);
   
   currField = inlet->addString("thermal_solver/kappa/type", "description for kappa type");
   currField->required(true);
-  currField->validStringValues({"constant", "function"});
+  currField->validValues({"constant", "function"});
 
   currField = inlet->addDouble("thermal_solver/kappa/constant", "description for kappa constant");
   currField->required(true);

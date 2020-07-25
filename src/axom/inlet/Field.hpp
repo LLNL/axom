@@ -210,7 +210,19 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> validStringValues(std::vector<std::string> set);
+  std::shared_ptr<Field> validValues(const std::vector<std::string>& set);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the valid values for this Field.
+   *
+   * \param [in] set A vector containing the set of allowed C-string values
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> validValues(const std::vector<const char*>& set);
+  
 
 private:
   // This Field's sidre group
