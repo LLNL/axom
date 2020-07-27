@@ -239,7 +239,7 @@ std::shared_ptr<Field> Field::validValues(std::vector<int> set) {
   return shared_from_this();
 }
 
-std::shared_ptr<Field> Field::validStringValues(std::vector<std::string> set) {
+std::shared_ptr<Field> Field::validValues(const std::vector<std::string>& set) {
   if (m_type != axom::sidre::DataTypeId::CHAR8_STR_ID) {
     SLIC_WARNING("Field value type did not match STRING");
     setWarningFlag(m_sidreRootGroup);
@@ -259,7 +259,9 @@ std::shared_ptr<Field> Field::validStringValues(std::vector<std::string> set) {
   return shared_from_this();
 }
 
-
+std::shared_ptr<Field> Field::validValues(const std::initializer_list<const char*>& set) {
+  return validValues(std::vector<std::string>(set.begin(), set.end()));
+}
 
 } // end namespace inlet
 } // end namespace axom

@@ -953,8 +953,9 @@ TEST(inlet_Inlet_verify, verifyValidIntValues) {
   field->validValues({1,2,3,56,57,58})->defaultValue(2);
   EXPECT_TRUE(inlet1->verify());
 
+  std::vector<int> nums = {-1,-2,-6,-18,21};
   field = inlet1->addInt("field3");
-  field->validValues({-1,-2,-6,-18,21})->defaultValue(21);
+  field->validValues(nums)->defaultValue(21);
   EXPECT_TRUE(inlet1->verify());
 
   field = inlet1->addInt("NewTable/field4");
@@ -962,7 +963,7 @@ TEST(inlet_Inlet_verify, verifyValidIntValues) {
   EXPECT_TRUE(inlet1->verify());
 
   field = inlet1->addInt("NewTable/field5");
-  field->validValues({-1,-2,-6,-18,21})->defaultValue(90);
+  field->validValues(nums)->defaultValue(90);
   EXPECT_FALSE(inlet1->verify());
 }
 
@@ -973,19 +974,19 @@ TEST(inlet_Inlet_verify, verifyValidStringValues) {
   auto inlet = createBasicInlet(&ds, testString);
 
   auto field = inlet->addString("field2");
-  field->validStringValues({"abc", "defg", "hijk", "lm"});
+  field->validValues({"abc", "defg", "hijk", "lm"});
   EXPECT_TRUE(inlet->verify());
 
   field = inlet->addString("NewTable/field3");
-  field->validStringValues({"nop", "qrstuv", "xyz", "wx"});
+  field->validValues({"nop", "qrstuv", "xyz", "wx"});
   EXPECT_TRUE(inlet->verify());
 
   field = inlet->addString("Table1/field5");
-  field->validStringValues({"nop", "qrstuv", "xyz", "wx"});
+  field->validValues({"nop", "qrstuv", "xyz", "wx"});
   EXPECT_TRUE(inlet->verify());
 
   field = inlet->addString("NewTable/field4");
-  field->validStringValues({"nop", "qrstuv", "xyz", "wx"});
+  field->validValues({"nop", "qrstuv", "xyz", "wx"});
   EXPECT_FALSE(inlet->verify());
 
   // check default values
@@ -994,20 +995,24 @@ TEST(inlet_Inlet_verify, verifyValidStringValues) {
   auto inlet1 = createBasicInlet(&ds1, testString1);
 
   field = inlet1->addString("field2");
-  field->validStringValues({"abc", "defg", "hijk", "lm"})->defaultValue("defg");
+  field->validValues({"abc", "defg", "hijk", "lm"})->defaultValue("defg");
   EXPECT_TRUE(inlet1->verify());
 
+  std::vector<std::string> strs = {"nop", "qrstuv", "xyz", "wx"};
+
   field = inlet1->addString("field3");
-  field->validStringValues({"nop", "qrstuv", "xyz", "wx"})->defaultValue("wx");
+  field->validValues(strs)->defaultValue("wx");
   EXPECT_TRUE(inlet1->verify());
 
   field = inlet1->addString("NewTable/field4");
-  field->validStringValues({"nop", "qrstuv", "xyz", "wx"});
+  field->validValues(strs);
   EXPECT_TRUE(inlet1->verify());
 
   field = inlet1->addString("NewTable/field5");
-  field->validStringValues({"nop", "qrstuv", "xyz", "wx"})->defaultValue("zyx");
+  field->validValues(strs)->defaultValue("zyx");
   EXPECT_FALSE(inlet1->verify());
+
+  
 }
 
 //------------------------------------------------------------------------------
