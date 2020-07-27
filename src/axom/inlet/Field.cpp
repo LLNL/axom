@@ -259,10 +259,9 @@ std::shared_ptr<Field> Field::validValues(const std::vector<std::string>& set) {
   return shared_from_this();
 }
 
-std::shared_ptr<Field> Field::validValues(const std::vector<const char*>& set) {
+std::shared_ptr<Field> Field::validValues(const std::initializer_list<const char*>& set) {
   return validValues(std::vector<std::string>(set.begin(), set.end()));
 }
-
 
 } // end namespace inlet
 } // end namespace axom

@@ -17,6 +17,7 @@
 #include "axom/sidre.hpp"
 
 #include <memory>
+#include <type_traits>
 
 namespace axom
 {
@@ -190,11 +191,12 @@ public:
   */
   std::shared_ptr<Field> range(int startVal, int endVal);
 
+
   /*!
    *****************************************************************************
    * \brief Set the valid values for this Field.
    *
-   * \param [in] set An integer vector containing the set of allowed values
+   * \param [in] set An vector containing the set of allowed integer values
    *
    * \return Shared pointer to this Field instance
    *****************************************************************************
@@ -216,14 +218,14 @@ public:
    *****************************************************************************
    * \brief Set the valid values for this Field.
    *
-   * \param [in] set A vector containing the set of allowed C-string values
+   * \param [in] set An initializer list containing the set of allowed C-string 
+   * values
    *
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> validValues(const std::vector<const char*>& set);
+  std::shared_ptr<Field> validValues(const std::initializer_list<const char*>& set);
   
-
 private:
   // This Field's sidre group
   axom::sidre::Group* m_sidreGroup = nullptr;
