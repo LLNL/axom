@@ -8,6 +8,26 @@ Input Deck Options
 thermal_solver
 --------------
 
+.. list-table:: Fields
+   :widths: 25 25 25 25 25
+   :header-rows: 1
+   :stub-columns: 1
+
+   * - Field Name
+     - Description
+     - Default Value
+     - Range/Valid Values
+     - Required
+   * - order
+     - thermal solver order
+     - 
+     - 1 to 2147483647
+     - |check|
+   * - timestepper
+     - thermal solver timestepper
+     - quasistatic
+     - quasistatic, forwardeuler, backwardeuler
+     - |uncheck|
 
 ----
 mesh
@@ -37,16 +57,6 @@ mesh
      - 
      - 1
      - 1 to 2147483647
-     - |uncheck|
-   * - order
-     - thermal solver order
-     - 
-     - 1 to 2147483647
-     - |check|
-   * - timestepper
-     - thermal solver timestepper
-     - quasistatic
-     - quasistatic, forwardeuler, backwardeuler
      - |uncheck|
 
 --

@@ -36,7 +36,7 @@ void SphinxDocWriter::writeDocumentation() {
   m_oss << ".. |uncheck|    unicode:: U+2610 .. UNCHECKED BOX" << std::endl;
   m_oss << ".. |check|      unicode:: U+2611 .. CHECKED BOX" << std::endl;
   writeDocumentationHelper(m_sidreRootGroup);
-  m_rstTables.push_back(m_currentTable);
+  // m_rstTables.push_back(m_currentTable);
   writeAllTables();
   m_outFile.open(m_fileName);
   m_outFile << m_oss.str();
@@ -47,25 +47,24 @@ void SphinxDocWriter::writeDocumentationHelper(axom::sidre::Group* sidreGroup) {
   SLIC_WARNING_IF(!sidreGroup, "Root was nullptr");
   axom::sidre::IndexType i = sidreGroup->getFirstValidGroupIndex();
 
+  // Special case for valid string values since it's a Group whereas other
+  // valid values and Field properties are all stored as Views
   if (axom::sidre::indexIsValid(i) && sidreGroup->getGroupName(i) == "validStringValues") {
     i = axom::sidre::InvalidIndex;
   } 
 
-  // Case 1: the current group is a Field so attributes are stored in views,
-  // except for the special case of valid string values
-
+  // Case 1: the current group is a Field
   if (sidreGroup != m_sidreRootGroup && i == axom::sidre::InvalidIndex) { 
     extractFieldMetadata(sidreGroup);
   } 
 
-  // Case 2: Current root corresponds to a inlet::Table
-
+  // Case 2: Current root corresponds to an Inlet::Table
   if (i != axom::sidre::InvalidIndex) {
-    m_rstTables.push_back(m_currentTable);
-    m_currentTable = TableData();
-    m_currentTable.tableName = sidreGroup->getName();
-    if (sidreGroup->getName() != "" && sidreGroup->hasChildView("description")) {
-      m_currentTable.description = sidreGroup->getView("description")->getString();
+    m_inletTablePathNames.push_back(sidreGroup->getPathName());
+    m_rstTables[sidreGroup->getPathName()] = TableData();
+    m_rstTables[sidreGroup->getPathName()].tableName = sidreGroup->getName();
+    if (sidreGroup->getName() != "" && sidreGroup->hasView("description")) {
+      m_rstTables[sidreGroup->getPathName()].description = sidreGroup->getView("description")->getString();
     } 
   }
 
@@ -107,13 +106,14 @@ void SphinxDocWriter::writeTable(const std::string& title,
 }
 
 void SphinxDocWriter::writeAllTables() {
-  for (unsigned int i = 0; i < m_rstTables.size(); ++i) {
-    writeSubtitle(m_rstTables[i].tableName);
-    if (m_rstTables[i].description != "") {
-      m_oss << "Description: " << m_rstTables[i].description << std::endl << std::endl;
+  for (unsigned int i = 0; i < m_inletTablePathNames.size(); ++i) {
+    writeSubtitle(m_rstTables[m_inletTablePathNames[i]].tableName);
+    if (m_rstTables[m_inletTablePathNames[i]].description != "") {
+      m_oss << "Description: " << m_rstTables[m_inletTablePathNames[i]].description 
+            << std::endl << std::endl;
     }
-    if (m_rstTables[i].rstTable.size() > 1) {
-      writeTable("Fields", m_rstTables[i].rstTable);
+    if (m_rstTables[m_inletTablePathNames[i]].rstTable.size() > 1) {
+      writeTable("Fields", m_rstTables[m_inletTablePathNames[i]].rstTable);
     }
   }
 }
@@ -176,11 +176,11 @@ std::string SphinxDocWriter::getValidStringValues(axom::sidre::Group* sidreGroup
       validValues += ", ";
     }
   }
-  // TO DO: remove last comma
   return validValues;
 }
 
 void SphinxDocWriter::extractFieldMetadata(axom::sidre::Group* sidreGroup) {
+  TableData& currentTable = m_rstTables[sidreGroup->getParent()->getPathName()];
   std::vector<std::string> fieldAttributes(5, "");
   fieldAttributes.resize(5);
 
@@ -209,7 +209,7 @@ void SphinxDocWriter::extractFieldMetadata(axom::sidre::Group* sidreGroup) {
     fieldAttributes[4] = "|uncheck|";
   }
 
-  m_currentTable.rstTable.push_back(fieldAttributes);
+  currentTable.rstTable.push_back(fieldAttributes);
 }
 
 }

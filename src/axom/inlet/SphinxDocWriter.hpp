@@ -17,6 +17,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <unordered_map>
 
 #include "axom/sidre.hpp"
 #include "axom/inlet/DocWriter.hpp"
@@ -221,9 +222,10 @@ private:
   axom::sidre::Group* m_sidreRootGroup;
   std::ofstream m_outFile;
   std::ostringstream m_oss;
-  std::vector<TableData> m_rstTables;
+  // This is needed to preserve the traversal order of the Inlet::Tables
+  std::vector<std::string> m_inletTablePathNames;
+  std::unordered_map<std::string, TableData> m_rstTables;
   std::string m_fileName;
-  TableData m_currentTable;
 };
 
 }
