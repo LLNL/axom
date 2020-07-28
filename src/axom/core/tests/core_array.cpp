@@ -687,6 +687,21 @@ void check_swap( Array< T >& v)
   EXPECT_EQ(v_two, v_two_copy);
 }
 
+template< typename T>
+void check_alloc( Array< T >& v, const int& id )
+{
+  // Verify allocation
+  EXPECT_EQ( v.getAllocatorID(), id );
+  EXPECT_EQ( v.size(), v.capacity() );
+
+  // Use introspection to verify pointer if available
+  #if defined(AXOM_USE_UMPIRE)
+    umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
+    auto v_allocator = rm.getAllocator(v.data());
+    EXPECT_EQ( v_allocator.getId(), id);
+  #endif
+}
+
 /*!
  * \brief Check an external array for defects.
  * \param [in] v the external array to check.
@@ -888,6 +903,43 @@ TEST( core_array, checkSwap )
 
     Array< double > v_double( size );
     internal::check_swap( v_double );
+  }
+}
+
+std::vector<int> memory_locations {
+#if defined(AXOM_USE_UMPIRE)
+  axom::getUmpireResourceAllocatorID( umpire::resource::Host )
+#if defined(UMPIRE_ENABLE_DEVICE)
+  , axom::getUmpireResourceAllocatorID( umpire::resource::Device )
+#endif
+#if defined(UMPIRE_ENABLE_UM)
+  , axom::getUmpireResourceAllocatorID( umpire::resource::Unified )
+#endif
+#if defined(UMPIRE_ENABLE_CONST)
+  , axom::getUmpireResourceAllocatorID( umpire::resource::Constant )
+#endif
+#if defined(UMPIRE_ENABLE_PINNED)
+  , axom::getUmpireResourceAllocatorID( umpire::resource::Pinned )
+#endif
+#endif
+};
+
+//------------------------------------------------------------------------------
+TEST( core_array, checkAlloc )
+{
+  for ( int id : memory_locations )
+  {
+    for ( double ratio = 1.0 ; ratio <= 2.0 ; ratio += 0.5 )
+    {
+      for ( IndexType capacity = 4 ; capacity <= 512 ; capacity *= 2 )
+      {
+          Array< int > v_int( capacity, capacity, id );
+          internal::check_alloc( v_int, id );
+
+          Array< double > v_double( capacity, capacity, id );
+          internal::check_alloc( v_double, id );
+      }
+    }
   }
 }
 
