@@ -95,6 +95,15 @@ if (ENABLE_FORTRAN)
     endif()
 endif()
 
+message(STATUS "axom use mfem is ${AXOM_USE_MFEM}")
+message(STATUS "axom found mfem is ${MFEM_FOUND}")
+message(STATUS "axom enable mfem is ${ENABLE_MFEM}")
+
+if (MFEM_FOUND)
+    list(APPEND sidre_headers datacollection/sidredatacollection.hpp)
+    list(APPEND sidre_sources datacollection/sidredatacollection.cpp)
+endif()
+
 #------------------------------------------------------------------------------
 # Build and install the library
 #------------------------------------------------------------------------------
@@ -105,6 +114,7 @@ set(sidre_depends
 
 blt_list_append(TO sidre_depends ELEMENTS hdf5 IF HDF5_FOUND)
 blt_list_append(TO sidre_depends ELEMENTS sparsehash IF SPARSEHASH_FOUND)
+blt_list_append(TO sidre_depends ELEMENTS mfem IF MFEM_FOUND)
 
 # Include additional dependencides for spio when MPI is available
 if(ENABLE_MPI)
