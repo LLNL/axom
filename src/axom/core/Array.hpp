@@ -44,10 +44,22 @@ std::ostream& operator<<( std::ostream& os, const Array< T >& arr );
  *
  * \param [in] lhs left Array to compare
  * \param [in] rhs right Array to compare
- * \return true if the Arrays are of equal length and have the same elements.
+ * \return true if the Arrays have the same allocator ID, are of equal length,
+ * and have the same elements.
  */
 template < typename T >
 bool operator==(const Array< T >& lhs, const Array< T >& rhs);
+
+/*!
+ * \brief Inequality comparison operator for Arrays
+ *
+ * \param [in] lhs left Array to compare
+ * \param [in] rhs right Array to compare
+ * \return true if the Arrays do not have the same allocator ID, are not of
+ * equal length, or do not have the same elements.
+ */
+template < typename T >
+bool operator!=(const Array< T >& lhs, const Array< T >& rhs);
 
 /// @}
 
@@ -1214,6 +1226,11 @@ std::ostream& operator<<( std::ostream& os, const Array< T >& arr )
 template < typename T >
 bool operator==(const Array< T >& lhs, const Array< T >& rhs)
 {
+    if (lhs.getAllocatorID() != rhs.getAllocatorID())
+    {
+      return false;
+    }
+
     if (lhs.size() != rhs.size())
     {
       return false;
@@ -1229,6 +1246,13 @@ bool operator==(const Array< T >& lhs, const Array< T >& rhs)
 
     return true;
 }
+
+template < typename T >
+bool operator!=(const Array< T >& lhs, const Array< T >& rhs)
+{
+  return !(lhs == rhs);
+}
+
 
 } /* namespace axom */
 
