@@ -250,7 +250,7 @@ bool Inlet::verifyValue(axom::sidre::Group* sidreGroup) {
       int val = sidreGroup->getView("value")->getScalar();
       return checkRange(sidreGroup, val);
     } else {
-      double val = sidreGroup->getView("value")->getScalar();;
+      double val = sidreGroup->getView("value")->getScalar();
       return checkRange(sidreGroup, val);
     }
   } else if (sidreGroup->hasGroup("validStringValues")) {
