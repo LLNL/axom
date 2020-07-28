@@ -932,8 +932,10 @@ TEST(inlet_Inlet_verify, verifyValidIntValues) {
   field->validValues({1,2,3,56,57,58});
   EXPECT_TRUE(inlet->verify());
 
+  std::vector<int> nums = {-1,-2,-6,-18,21};
+
   field = inlet->addInt("field3");
-  field->validValues({-1,-2,-6,-18,21});
+  field->validValues(nums);
   EXPECT_TRUE(inlet->verify());
 
   field = inlet->addInt("NewTable/field4");
@@ -941,7 +943,7 @@ TEST(inlet_Inlet_verify, verifyValidIntValues) {
   EXPECT_TRUE(inlet->verify());
 
   field = inlet->addInt("NewTable/field5");
-  field->validValues({-1,-2,-6,-18,21});
+  field->validValues(nums);
   EXPECT_FALSE(inlet->verify());
 
   // check default values
@@ -953,7 +955,6 @@ TEST(inlet_Inlet_verify, verifyValidIntValues) {
   field->validValues({1,2,3,56,57,58})->defaultValue(2);
   EXPECT_TRUE(inlet1->verify());
 
-  std::vector<int> nums = {-1,-2,-6,-18,21};
   field = inlet1->addInt("field3");
   field->validValues(nums)->defaultValue(21);
   EXPECT_TRUE(inlet1->verify());
@@ -977,16 +978,18 @@ TEST(inlet_Inlet_verify, verifyValidStringValues) {
   field->validValues({"abc", "defg", "hijk", "lm"});
   EXPECT_TRUE(inlet->verify());
 
+  std::vector<std::string> strs = {"nop", "qrstuv", "xyz", "wx"};
+
   field = inlet->addString("NewTable/field3");
-  field->validValues({"nop", "qrstuv", "xyz", "wx"});
+  field->validValues(strs);
   EXPECT_TRUE(inlet->verify());
 
   field = inlet->addString("Table1/field5");
-  field->validValues({"nop", "qrstuv", "xyz", "wx"});
+  field->validValues(strs);
   EXPECT_TRUE(inlet->verify());
 
   field = inlet->addString("NewTable/field4");
-  field->validValues({"nop", "qrstuv", "xyz", "wx"});
+  field->validValues(strs);
   EXPECT_FALSE(inlet->verify());
 
   // check default values
@@ -997,8 +1000,6 @@ TEST(inlet_Inlet_verify, verifyValidStringValues) {
   field = inlet1->addString("field2");
   field->validValues({"abc", "defg", "hijk", "lm"})->defaultValue("defg");
   EXPECT_TRUE(inlet1->verify());
-
-  std::vector<std::string> strs = {"nop", "qrstuv", "xyz", "wx"};
 
   field = inlet1->addString("field3");
   field->validValues(strs)->defaultValue("wx");

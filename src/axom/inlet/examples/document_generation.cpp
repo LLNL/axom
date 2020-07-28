@@ -97,7 +97,7 @@ void defineSchema(std::shared_ptr<Inlet> inlet)
   currField = table->addInt("print_level", "description for solver print level");
   currField->required(true); 
   currField->defaultValue(0);
-  currField->range(1, 3);
+  currField->range(0, 3);
 
   currField = table->addInt("max_iter", "description for solver max iter");
   currField->required(false);
@@ -134,6 +134,13 @@ void checkValues(std::shared_ptr<Inlet> inlet) {
   findDouble("thermal_solver/solver/abs_tol", inlet);
   findDouble("thermal_solver/solver/rel_tol", inlet);
   findDouble("thermal_solver/kappa/constant", inlet);
+
+  // Verify that contents of Inlet meet the requirements of the specified schema
+  if (inlet->verify()) {
+    std::cout << "Inlet verify successful" << std::endl;
+  } else {
+    std::cout << "Inlet verify failed" << std::endl;
+  }
 }
 
 int main(int argc, char** argv) {
