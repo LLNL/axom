@@ -333,7 +333,7 @@ private:
                    bool preserve_contents = false);
 #endif
 
-
+  std::string getSCRPath( const std::string & path);
 
   int m_comm_size;  // num procs in the MPI communicator
   int m_my_rank;    // rank of this proc

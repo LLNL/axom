@@ -93,9 +93,8 @@ int main(int argc, char* argv[])
   // succeeded.
   int valid = 1;
   int complete_rc = SCR_Complete_output(valid);
-  if (complete_rc != SCR_SUCCESS) {
-    // some process failed to write its output
-  }
+  SLIC_ERROR_IF(complete_rc != SCR_SUCCESS,
+                "SCR output failed.\n");
 
   SCR_Finalize();
   MPI_Finalize();

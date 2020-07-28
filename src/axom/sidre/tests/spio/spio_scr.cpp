@@ -61,6 +61,8 @@ TEST(spio_scr, spio_scr_writeread)
     i1_vals[i] = (i+10) * (404-my_rank-i);
   }
 
+  SCR_Start_output("out_spio_parallel_write_read", SCR_FLAG_OUTPUT);
+
   /*
    * Contents of the DataStore written to files with IOManager.
    */
@@ -70,6 +72,10 @@ TEST(spio_scr, spio_scr_writeread)
   writer.write(root, num_files, "out_spio_parallel_write_read", "sidre_hdf5");
 
   MPI_Barrier(MPI_COMM_WORLD);
+
+  int valid = 1;
+  int complete_rc = SCR_Complete_output(valid);
+  EXPECT_EQ(complete_rc, SCR_SUCCESS);
 
   /*
    * SCR write operation is complete. Must finalize and initialize
