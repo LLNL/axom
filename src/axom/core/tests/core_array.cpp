@@ -1054,8 +1054,8 @@ TEST( core_array, check_move_copy)
     Array< int > v_int_external_copy_ctor( v_int_external ); 
     Array< int > v_int_external_copy_assign( 0, 0 ); 
     v_int_external_copy_assign = v_int_external; 
-    EXPECT_EQ( v_int_external, v_int_external_copy_ctor ); 
-    EXPECT_EQ( v_int_external, v_int_external_copy_assign ); 
+    EXPECT_NE( v_int_external, v_int_external_copy_ctor ); 
+    EXPECT_NE( v_int_external, v_int_external_copy_assign ); 
 
     Array< int > v_int_move_assign( 0, 0 ); 
     v_int_move_assign = std::move( v_int_copy_assign ); 
@@ -1081,8 +1081,8 @@ TEST( core_array, check_move_copy)
     Array< double > v_double_external_copy_ctor( v_double_external ); 
     Array< double > v_double_external_copy_assign( 0, 0 ); 
     v_double_external_copy_assign = v_double_external; 
-    EXPECT_EQ( v_double_external, v_double_external_copy_ctor ); 
-    EXPECT_EQ( v_double_external, v_double_external_copy_assign ); 
+    EXPECT_NE( v_double_external, v_double_external_copy_ctor ); 
+    EXPECT_NE( v_double_external, v_double_external_copy_assign ); 
 
     Array< double > v_double_move_assign( 0, 0 ); 
     v_double_move_assign = std::move( v_double_copy_assign );       
