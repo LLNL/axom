@@ -848,9 +848,9 @@ addScalarBasedGridFunction(const std::string &field_name, GridFunction *gf,
    // Describe and apply the "values" View.
    // If the data store has buffer for field_name (e.g. AllocNamedBuffer was
    // called, or it was loaded from file), use that buffer.
-   sidre::View *bv = named_buffers_grp()->getView(buffer_name);
-   if (bv)
+   if (named_buffers_grp()->hasView(buffer_name))
    {
+      sidre::View *bv = named_buffers_grp()->getView(buffer_name);
       MFEM_ASSERT(bv->hasBuffer() && bv->isDescribed(), "");
 
       // named buffers always have offset 0
@@ -924,9 +924,9 @@ addVectorBasedGridFunction(const std::string& field_name, GridFunction *gf,
    const int vdim_stride  = (ordering == Ordering::byNODES ? ndof : 1);
    dtype.set_stride(dtype.stride()*entry_stride);
 
-   sidre::View *bv = named_buffers_grp()->getView(buffer_name);
-   if (bv)
+   if (named_buffers_grp()->hasView(buffer_name))
    {
+      sidre::View *bv = named_buffers_grp()->getView(buffer_name);
       MFEM_ASSERT(bv->hasBuffer() && bv->isDescribed(), "");
 
       // named buffers always have offset 0
