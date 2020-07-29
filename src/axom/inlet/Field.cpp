@@ -241,7 +241,7 @@ std::shared_ptr<Field> Field::validValues(const std::vector<double>& set) {
   case axom::sidre::DataTypeId::DOUBLE_ID:
     setScalarValidValues(set);
     break;
-  default:
+  default:  // incompatible type
     SLIC_WARNING("Field value type did not match DOUBLE");
     setWarningFlag(m_sidreRootGroup);
     break;

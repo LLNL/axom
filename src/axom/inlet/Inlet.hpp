@@ -282,10 +282,10 @@ public:
    * \brief Verifies the contents of the sidreGroup according to Inlet 
    * requirements.
    *
-   * This recursively checks the correctness of each Field and Table in the sidre
-   * sub-group: ensuring that required Fields are specified, each Field's value 
+   * This recursively checks the correctness of each Field and Table in the Sidre
+   * Group: ensuring that required Fields are specified, each Field's value 
    * and default value are within the specified range or are equal to a valid 
-   * values, and types are consistent.
+   * value, and types are consistent.
    * 
    * \return true if contents are correct and false if not.
    *
