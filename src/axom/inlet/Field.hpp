@@ -227,6 +227,8 @@ public:
   std::shared_ptr<Field> validValues(const std::initializer_list<const char*>& set);
   
 private:
+  template<typename T>
+  void setRange(T startVal, T endVal);
   // This Field's sidre group
   axom::sidre::Group* m_sidreGroup = nullptr;
   axom::sidre::Group* m_sidreRootGroup = nullptr;

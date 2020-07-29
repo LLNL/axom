@@ -168,50 +168,47 @@ std::shared_ptr<Field> Field::defaultValue(double value) {
   return shared_from_this();
 }
 
-std::shared_ptr<Field> Field::range(double startVal, double endVal) {
-  if (m_type != axom::sidre::DataTypeId::DOUBLE_ID) {
-    SLIC_WARNING("Field value type did not match DOUBLE");
-    setWarningFlag(m_sidreRootGroup);
-  }
-
-  if (m_sidreGroup->hasView("range") || m_sidreGroup->hasView("validValues")) {
+template<typename T>
+void Field::setRange(T startVal, T endVal) {
+  if (m_sidreGroup->hasView("range") || m_sidreGroup->hasView("validValues")
+      || m_sidreGroup->hasView("validStringValues")) {
     std::string msg = fmt::format("Inlet Field has already defined range: {0}",
-                                   m_sidreGroup->getPathName());
+                                  m_sidreGroup->getPathName());
     SLIC_WARNING(msg);
     setWarningFlag(m_sidreRootGroup);
   } else {
-    auto view = m_sidreGroup->createViewAndAllocate("range", axom::sidre::DOUBLE_ID, 2);
-    double* arr = view->getData();
-    arr[0] = startVal; 
-    arr[1] = endVal;
+      auto* view = m_sidreGroup->createViewAndAllocate("range", m_type, 2);
+      T* pair = view->getArray();
+      pair[0] = startVal;
+      pair[1] = endVal;
+  }
+}
+
+std::shared_ptr<Field> Field::range(int startVal, int endVal) {
+  switch(m_type) {
+  case axom::sidre::DataTypeId::INT_ID:
+    this->setRange(startVal, endVal);
+    break;
+  case axom::sidre::DataTypeId::DOUBLE_ID:
+    this->setRange(static_cast<double>(startVal), static_cast<double>(endVal));  
+    break;
+  default: // incompatible type
+    SLIC_WARNING("Field value type did not match INT or DOUBLE");
+    setWarningFlag(m_sidreRootGroup);
+    break;
   }
   return shared_from_this();
 }
 
-std::shared_ptr<Field> Field::range(int startVal, int endVal) {
-  if (m_type != axom::sidre::DataTypeId::INT_ID && m_type != axom::sidre::DataTypeId::DOUBLE_ID) {
-    SLIC_WARNING("Field value type did not match INT");
+std::shared_ptr<Field> Field::range(double startVal, double endVal) {
+  switch(m_type) {
+  case axom::sidre::DataTypeId::DOUBLE_ID:
+    this->setRange(startVal, static_cast<double>(endVal));  
+    break;
+  default: // incompatible type
+    SLIC_WARNING("Field value type did not match INT or DOUBLE");
     setWarningFlag(m_sidreRootGroup);
-  }
-  if (m_sidreGroup->hasView("range") || m_sidreGroup->hasView("validValues")
-      || m_sidreGroup->hasView("validStringValues")) {
-    std::string msg = fmt::format("Inlet Field has already defined range: {0}",
-                                   m_sidreGroup->getPathName());
-    SLIC_WARNING(msg);
-    setWarningFlag(m_sidreRootGroup);
-  } else {
-    if (m_type == axom::sidre::DataTypeId::INT_ID) {
-      auto view = m_sidreGroup->createViewAndAllocate("range", axom::sidre::INT_ID, 2);
-      int* arr = view->getData();
-      arr[0] = startVal; 
-      arr[1] = endVal;
-    } else {
-      auto view = m_sidreGroup->createViewAndAllocate("range", axom::sidre::DOUBLE_ID, 2);
-      double* arr = view->getData();
-      arr[0] = startVal; 
-      arr[1] = endVal;
-    }
-    
+    break;
   }
   return shared_from_this();
 }
