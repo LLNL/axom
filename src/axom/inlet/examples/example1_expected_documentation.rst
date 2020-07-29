@@ -138,7 +138,7 @@ Description: This is the solver sub-table in the thermal_solver table
    * - print_level
      - description for solver print level
      - 0
-     - 1 to 3
+     - 0 to 3
      - |check|
    * - max_iter
      - description for solver max iter

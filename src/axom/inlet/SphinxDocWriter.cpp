@@ -106,14 +106,14 @@ void SphinxDocWriter::writeTable(const std::string& title,
 }
 
 void SphinxDocWriter::writeAllTables() {
-  for (unsigned int i = 0; i < m_inletTablePathNames.size(); ++i) {
-    writeSubtitle(m_rstTables[m_inletTablePathNames[i]].tableName);
-    if (m_rstTables[m_inletTablePathNames[i]].description != "") {
-      m_oss << "Description: " << m_rstTables[m_inletTablePathNames[i]].description 
+  for (std::string& pathName : m_inletTablePathNames) {
+    writeSubtitle(m_rstTables[pathName].tableName);
+    if (m_rstTables[pathName].description != "") {
+      m_oss << "Description: " << m_rstTables[pathName].description 
             << std::endl << std::endl;
     }
-    if (m_rstTables[m_inletTablePathNames[i]].rstTable.size() > 1) {
-      writeTable("Fields", m_rstTables[m_inletTablePathNames[i]].rstTable);
+    if (m_rstTables[pathName].rstTable.size() > 1) {
+      writeTable("Fields", m_rstTables[pathName].rstTable);
     }
   }
 }

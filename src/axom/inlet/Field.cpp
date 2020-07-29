@@ -180,11 +180,10 @@ std::shared_ptr<Field> Field::range(double startVal, double endVal) {
     SLIC_WARNING(msg);
     setWarningFlag(m_sidreRootGroup);
   } else {
-    double tuple[2];
-    tuple[0] = startVal;
-    tuple[1] = endVal;
     auto view = m_sidreGroup->createViewAndAllocate("range", axom::sidre::DOUBLE_ID, 2);
-    view->getBuffer()->copyBytesIntoBuffer(tuple, 2*sizeof(double));
+    double* arr = view->getData();
+    arr[0] = startVal; 
+    arr[1] = endVal;
   }
   return shared_from_this();
 }
@@ -202,17 +201,15 @@ std::shared_ptr<Field> Field::range(int startVal, int endVal) {
     setWarningFlag(m_sidreRootGroup);
   } else {
     if (m_type == axom::sidre::DataTypeId::INT_ID) {
-      int tuple[2];
-      tuple[0] = startVal;
-      tuple[1] = endVal;
       auto view = m_sidreGroup->createViewAndAllocate("range", axom::sidre::INT_ID, 2);
-      view->getBuffer()->copyBytesIntoBuffer(tuple, 2*sizeof(int));
+      int* arr = view->getData();
+      arr[0] = startVal; 
+      arr[1] = endVal;
     } else {
-      double tuple[2];
-      tuple[0] = startVal;
-      tuple[1] = endVal;
       auto view = m_sidreGroup->createViewAndAllocate("range", axom::sidre::DOUBLE_ID, 2);
-      view->getBuffer()->copyBytesIntoBuffer(tuple, 2*sizeof(double));
+      double* arr = view->getData();
+      arr[0] = startVal; 
+      arr[1] = endVal;
     }
     
   }

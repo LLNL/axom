@@ -279,11 +279,12 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Verifies contents of input deck.
+   * \brief Verifies the contents of the sidreGroup according to Inlet 
+   * requirements.
    *
    * This checks the correctness of each Field and Table in the input deck.
    * 
-   * \return True if contents are correct. False if not.
+   * \return true if contents are correct and false if not.
    *
    *****************************************************************************
    */
@@ -297,13 +298,14 @@ private:
    * requirements.
    *
    * This recrusively checks the correctness of each Field and Table in the sidre
-   * sub-group. For example, ensuring that each Field's value is within the
-   * specified range, or is equal to one of the valid values.
+   * sub-group: ensuring that required Fields are specified, each Field's value 
+   * and default value are within the specified range or are equal to a valid 
+   * values, and types are consistent.
    * 
    * \param [in] sidreGroup The root of the sub-group to be verified.
    *
-   * \param [out] verifySuccess Indicates whether or not the verification was 
-   * successful.
+   * \param [out] verifySuccess Indicates whether the verification was 
+   * successful: true if successful and false if not.
    *****************************************************************************
    */
   void verifyRecursive(axom::sidre::Group* sidreGroup, bool& verifySuccess);
@@ -317,7 +319,8 @@ private:
    * 
    * \param [in] sidreGroup The Sidre Group containing the value to be verified.
    *
-   * \return boolean value indicating if verification was successful.
+   * \return boolean value indicating whether the verification was 
+   * successful: true if successful and false if not.
    *****************************************************************************
    */
   bool verifyValue(axom::sidre::Group* sidreGroup);
@@ -332,7 +335,8 @@ private:
    * \param [in] sidreGroup The Sidre Group containing the default value to be 
    * verified.
    *
-   * \return boolean value indicating if verification was successful.
+   * \return boolean value indicating whether the verification was 
+   * successful: true if successful and false if not.
    *****************************************************************************
    */
   bool verifyDefaultValue(axom::sidre::Group* sidreGroup);
@@ -344,7 +348,7 @@ private:
    * \param [in] sidreGroup The Sidre Group containing the range.
    * \param [in] value The integer value that will be checked.
    * 
-   * \return True if the given value was within its respective range, else false.
+   * \return true if the given value was within its respective range, else false.
    *****************************************************************************
    */
   bool checkRange(axom::sidre::Group* sidreGroup, int value);
@@ -356,7 +360,7 @@ private:
    * \param [in] sidreGroup The Sidre Group containing the range.
    * \param [in] value The double value that will be checked.
    * 
-   * \return True if the given value was within its respective range, else false.
+   * \return true if the given value was within its respective range, else false.
    *****************************************************************************
    */
   bool checkRange(axom::sidre::Group* sidreGroup, double value);
@@ -368,7 +372,7 @@ private:
    * \param [in] sidreGroup The Sidre Group containing the valid values.
    * \param [in] value The target integer value that will be searched for.
    * 
-   * \return True if the given target was found in its respective valid values, 
+   * \return true if the given target was found in its respective valid values, 
    *  else false.
    *****************************************************************************
    */
@@ -381,7 +385,7 @@ private:
    * \param [in] sidreGroup The Sidre Group containing the valid values.
    * \param [in] value The target string value that will be searched for.
    * 
-   * \return True if the given target was found in its respective list of valid
+   * \return true if the given target was found in its respective list of valid
    * values, else false.
    *****************************************************************************
    */
