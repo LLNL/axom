@@ -227,11 +227,36 @@ public:
   std::shared_ptr<Field> validValues(const std::initializer_list<const char*>& set);
   
 private:
+  /*!
+   *****************************************************************************
+   * \brief Set the range of this Field.
+   *
+   * Set the continuous range for the Field in the input deck.
+   *
+   * \param [in] startVal The start of the range
+   * 
+   * \param [in] endVal The end of the range
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
   template<typename T>
   void setRange(T startVal, T endVal);
   
+  /*!
+   *****************************************************************************
+   * \brief Set the default value of this Field.
+   *
+   * Set the default value for the Field in the input deck.
+   *
+   * \param [in] value The default value
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
   template<typename T>
   void setDefaultValue(T value);
+
   // This Field's sidre group
   axom::sidre::Group* m_sidreGroup = nullptr;
   axom::sidre::Group* m_sidreRootGroup = nullptr;
