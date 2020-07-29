@@ -282,7 +282,10 @@ public:
    * \brief Verifies the contents of the sidreGroup according to Inlet 
    * requirements.
    *
-   * This checks the correctness of each Field and Table in the input deck.
+   * This recrusively checks the correctness of each Field and Table in the sidre
+   * sub-group: ensuring that required Fields are specified, each Field's value 
+   * and default value are within the specified range or are equal to a valid 
+   * values, and types are consistent.
    * 
    * \return true if contents are correct and false if not.
    *
@@ -297,10 +300,7 @@ private:
    * \brief Verifies the contents of the sidreGroup according to Inlet 
    * requirements.
    *
-   * This recrusively checks the correctness of each Field and Table in the sidre
-   * sub-group: ensuring that required Fields are specified, each Field's value 
-   * and default value are within the specified range or are equal to a valid 
-   * values, and types are consistent.
+   * This is the recursive internal helper for verify().
    * 
    * \param [in] sidreGroup The root of the sub-group to be verified.
    *

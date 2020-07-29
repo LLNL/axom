@@ -241,11 +241,11 @@ void Inlet::verifyRecursive(axom::sidre::Group* sidreGroup, bool& verifySuccess)
 }
 
 bool Inlet::verifyValue(axom::sidre::Group* sidreGroup) {
-  auto type = sidreGroup->getView("value")->getTypeID();
   if (sidreGroup->hasView("validValues")) {
     int val = sidreGroup->getView("value")->getScalar();
     return searchValidValues(sidreGroup, val);
   } else if (sidreGroup->hasView("range")) {
+    auto type = sidreGroup->getView("value")->getTypeID();
     if (type == axom::sidre::INT_ID) {
       int val = sidreGroup->getView("value")->getScalar();
       return checkRange(sidreGroup, val);

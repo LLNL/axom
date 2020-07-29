@@ -22,7 +22,8 @@ namespace inlet
 {
  
 SphinxDocWriter::SphinxDocWriter(const std::string& fileName, axom::sidre::Group* root) {
-  SLIC_WARNING_IF(root == nullptr, "Sidre Group is null pointer");
+  SLIC_WARNING_IF(root == nullptr, " Inlet's Sidre root group was not defined"
+                                   " while writing documentation");
   m_sidreRootGroup = root;
   m_fileName = fileName;
 }
@@ -36,7 +37,6 @@ void SphinxDocWriter::writeDocumentation() {
   m_oss << ".. |uncheck|    unicode:: U+2610 .. UNCHECKED BOX" << std::endl;
   m_oss << ".. |check|      unicode:: U+2611 .. CHECKED BOX" << std::endl;
   writeDocumentationHelper(m_sidreRootGroup);
-  // m_rstTables.push_back(m_currentTable);
   writeAllTables();
   m_outFile.open(m_fileName);
   m_outFile << m_oss.str();
@@ -150,9 +150,6 @@ std::string SphinxDocWriter::getRangeAsString(axom::sidre::View* view) {
 }
 
 std::string SphinxDocWriter::getValidValuesAsString(axom::sidre::View* view) {
-  // auto
-  SLIC_WARNING_IF(view->getTypeID() != axom::sidre::INT_ID,
-                  "discrete range is only valid for integers");
   int* range = view->getArray();
   size_t size = view->getBuffer()->getNumElements();
   std::string result = "";

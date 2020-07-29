@@ -136,7 +136,7 @@ std::shared_ptr<Field> Field::defaultValue(int value) {
   case axom::sidre::DataTypeId::DOUBLE_ID:
     setDefaultValue((double)value);
     break;
-  default:
+  default:  // incompatible type
     SLIC_WARNING("Field value type did not match INT/DOUBLE");
     setWarningFlag(m_sidreRootGroup);
     break;
@@ -155,12 +155,16 @@ std::shared_ptr<Field> Field::defaultValue(double value) {
 
 template<typename T>
 void Field::setRange(T startVal, T endVal) {
-  if (m_sidreGroup->hasView("range") || m_sidreGroup->hasView("validValues")
-      || m_sidreGroup->hasView("validStringValues")) {
+  if (m_sidreGroup->hasView("range")) {
     std::string msg = fmt::format("Inlet Field has already defined range: {0}",
-                                  m_sidreGroup->getPathName());
+                                   m_sidreGroup->getPathName());
     SLIC_WARNING(msg);
     setWarningFlag(m_sidreRootGroup);
+  } else if (m_sidreGroup->hasView("validValues") || m_sidreGroup->hasView("validStringValues")){
+      std::string msg = fmt::format("Cannot set range for Inlet Field after setting valid"
+                                    "values: {0}", m_sidreGroup->getPathName());
+      SLIC_WARNING(msg);
+      setWarningFlag(m_sidreRootGroup);
   } else {
       auto* view = m_sidreGroup->createViewAndAllocate("range", m_type, 2);
       T* pair = view->getArray();
@@ -177,7 +181,7 @@ std::shared_ptr<Field> Field::range(int startVal, int endVal) {
   case axom::sidre::DataTypeId::DOUBLE_ID:
     this->setRange(static_cast<double>(startVal), static_cast<double>(endVal));  
     break;
-  default: // incompatible type
+  default:  // incompatible type
     SLIC_WARNING("Field value type did not match INT or DOUBLE");
     setWarningFlag(m_sidreRootGroup);
     break;
@@ -188,10 +192,10 @@ std::shared_ptr<Field> Field::range(int startVal, int endVal) {
 std::shared_ptr<Field> Field::range(double startVal, double endVal) {
   switch(m_type) {
   case axom::sidre::DataTypeId::DOUBLE_ID:
-    this->setRange(startVal, static_cast<double>(endVal));  
+    this->setRange(startVal, endVal);  
     break;
-  default: // incompatible type
-    SLIC_WARNING("Field value type did not match INT or DOUBLE");
+  default:  // incompatible type
+    SLIC_WARNING("Field value type did not match DOUBLE");
     setWarningFlag(m_sidreRootGroup);
     break;
   }
@@ -204,10 +208,14 @@ std::shared_ptr<Field> Field::validValues(std::vector<int> set) {
     setWarningFlag(m_sidreRootGroup);
   }
 
-  if (m_sidreGroup->hasView("range") || m_sidreGroup->hasView("validValues")
-      || m_sidreGroup->hasView("validStringValues")) {
-    std::string msg = fmt::format("Inlet Field has already defined range: {0}",
-                                   m_sidreGroup->getPathName());
+  if (m_sidreGroup->hasView("validValues") || m_sidreGroup->hasView("validStringValues")){
+      std::string msg = fmt::format("Inlet Field has already defined valid values: {0}",
+                                    m_sidreGroup->getPathName());
+      SLIC_WARNING(msg);
+      setWarningFlag(m_sidreRootGroup);
+  } else if (m_sidreGroup->hasView("range")) {
+    std::string msg = fmt::format("Cannot set valid values after defining range: {0}",
+                                    m_sidreGroup->getPathName());
     SLIC_WARNING(msg);
     setWarningFlag(m_sidreRootGroup);
   } else {
@@ -223,10 +231,14 @@ std::shared_ptr<Field> Field::validValues(const std::vector<std::string>& set) {
     SLIC_WARNING("Field value type did not match STRING");
     setWarningFlag(m_sidreRootGroup);
   }
-
-  if (m_sidreGroup->hasView("validStringValues") || m_sidreGroup->hasView("validValues")) {
-    std::string msg = fmt::format("Inlet Field has already defined valid values: {0}",
-                                   m_sidreGroup->getPathName());
+  if (m_sidreGroup->hasView("validValues") || m_sidreGroup->hasView("validStringValues")){
+      std::string msg = fmt::format("Inlet Field has already defined valid values: {0}",
+                                     m_sidreGroup->getPathName());
+      SLIC_WARNING(msg);
+      setWarningFlag(m_sidreRootGroup);
+  } else if (m_sidreGroup->hasView("range")) {
+    std::string msg = fmt::format("Cannot set valid values after defining range: {0}",
+                                    m_sidreGroup->getPathName());
     SLIC_WARNING(msg);
     setWarningFlag(m_sidreRootGroup);
   } else {
