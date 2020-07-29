@@ -282,7 +282,7 @@ public:
    * \brief Verifies the contents of the sidreGroup according to Inlet 
    * requirements.
    *
-   * This recrusively checks the correctness of each Field and Table in the sidre
+   * This recursively checks the correctness of each Field and Table in the sidre
    * sub-group: ensuring that required Fields are specified, each Field's value 
    * and default value are within the specified range or are equal to a valid 
    * values, and types are consistent.
@@ -378,6 +378,20 @@ private:
    */
   bool searchValidValues(axom::sidre::Group* sidreGroup, int value);
 
+  /*!
+   *****************************************************************************
+   * \brief Checks if the given value is found in the list of valid values.
+   * 
+   * \param [in] sidreGroup The Sidre Group containing the valid values.
+   * \param [in] value The target double value that will be searched for.
+   * 
+   * \return true if the given target was found in its respective valid values, 
+   *  else false.
+   *****************************************************************************
+   */
+  bool searchValidValues(axom::sidre::Group* sidreGroup, double value);
+  
+  
   /*!
    *****************************************************************************
    * \brief Checks if the given value is found in the list of valid values.

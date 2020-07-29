@@ -968,6 +968,52 @@ TEST(inlet_Inlet_verify, verifyValidIntValues) {
   EXPECT_FALSE(inlet1->verify());
 }
 
+TEST(inlet_Inlet_verify, verifyValidDoubleValues) {
+  // check values
+  std::string testString = "field1 = true; field2 = 56.0; NewTable = { field4 = 22.0; field5 = 48.23 }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  auto field = inlet->addDouble("field2");
+  field->validValues({1,2,3,56,57,58});
+  EXPECT_TRUE(inlet->verify());
+
+  std::vector<int> nums = {-1,-2,-6,-18,21};
+
+  field = inlet->addDouble("field3");
+  field->validValues(nums);
+  EXPECT_TRUE(inlet->verify());
+
+  field = inlet->addDouble("NewTable/field4");
+  field->validValues({44.1, 40., 48., 22.});
+  EXPECT_TRUE(inlet->verify());
+
+  field = inlet->addDouble("NewTable/field5");
+  field->validValues(nums);
+  EXPECT_FALSE(inlet->verify());
+
+  // check default values
+  std::string testString1 = "field1 = true; field2 = 56.0; NewTable = { field4 = 22.0; field5 = 48.23 }";
+  DataStore ds1;
+  auto inlet1 = createBasicInlet(&ds1, testString1);
+
+  field = inlet1->addDouble("field2");
+  field->validValues({1,2,3,56,57,58})->defaultValue(2.);
+  EXPECT_TRUE(inlet1->verify());
+
+  field = inlet1->addDouble("field3");
+  field->validValues(nums)->defaultValue(21);
+  EXPECT_TRUE(inlet1->verify());
+
+  field = inlet1->addDouble("NewTable/field4");
+  field->validValues({44.05, 40.13, 48.28, 22.})->defaultValue(48.28);
+  EXPECT_TRUE(inlet1->verify());
+
+  field = inlet1->addDouble("NewTable/field5");
+  field->validValues(nums)->defaultValue(90.1);
+  EXPECT_FALSE(inlet1->verify());
+}
+
 TEST(inlet_Inlet_verify, verifyValidStringValues) {
   // check values
   std::string testString = "field1 = true; field2 = 'abc'; NewTable = { field3 = 'xyz'; field4 = 'yes' }";

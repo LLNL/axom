@@ -202,12 +202,8 @@ std::shared_ptr<Field> Field::range(double startVal, double endVal) {
   return shared_from_this();
 }
 
-std::shared_ptr<Field> Field::validValues(std::vector<int> set) {
-  if (m_type != axom::sidre::DataTypeId::INT_ID) {
-    SLIC_WARNING("Field value type did not match INT");
-    setWarningFlag(m_sidreRootGroup);
-  }
-
+template<typename T>
+void Field::setScalarValidValues(std::vector<T> set) {
   if (m_sidreGroup->hasView("validValues") || m_sidreGroup->hasView("validStringValues")){
       std::string msg = fmt::format("Inlet Field has already defined valid values: {0}",
                                     m_sidreGroup->getPathName());
@@ -219,9 +215,36 @@ std::shared_ptr<Field> Field::validValues(std::vector<int> set) {
     SLIC_WARNING(msg);
     setWarningFlag(m_sidreRootGroup);
   } else {
-    auto view = m_sidreGroup->createViewAndAllocate("validValues", 
-                                                    axom::sidre::INT_ID, set.size());
-    view->getBuffer()->copyBytesIntoBuffer(&set[0], set.size()*sizeof(int));
+    auto view = m_sidreGroup->createViewAndAllocate("validValues", m_type, set.size());
+    view->getBuffer()->copyBytesIntoBuffer(&set[0], set.size()*sizeof(T));
+  }
+}
+
+std::shared_ptr<Field> Field::validValues(const std::vector<int>& set) {
+  switch (m_type) {
+  case axom::sidre::DataTypeId::INT_ID:
+    setScalarValidValues(set);
+    break;
+  case axom::sidre::DataTypeId::DOUBLE_ID:
+    setScalarValidValues(std::vector<double>(set.begin(), set.end()));
+    break;
+  default:  // incompatible type
+    SLIC_WARNING("Field value type did not match INT OR DOUBLE");
+    setWarningFlag(m_sidreRootGroup);
+    break;
+  }
+  return shared_from_this();
+}
+
+std::shared_ptr<Field> Field::validValues(const std::vector<double>& set) {
+  switch (m_type) {
+  case axom::sidre::DataTypeId::DOUBLE_ID:
+    setScalarValidValues(set);
+    break;
+  default:
+    SLIC_WARNING("Field value type did not match DOUBLE");
+    setWarningFlag(m_sidreRootGroup);
+    break;
   }
   return shared_from_this();
 }
@@ -252,6 +275,14 @@ std::shared_ptr<Field> Field::validValues(const std::vector<std::string>& set) {
 
 std::shared_ptr<Field> Field::validValues(const std::initializer_list<const char*>& set) {
   return validValues(std::vector<std::string>(set.begin(), set.end()));
+}
+
+std::shared_ptr<Field> Field::validValues(const std::initializer_list<int>& set) {
+  return validValues(std::vector<int>(set));
+}
+
+std::shared_ptr<Field> Field::validValues(const std::initializer_list<double>& set) {
+  return validValues(std::vector<double>(set));
 }
 
 } // end namespace inlet

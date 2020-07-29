@@ -241,11 +241,16 @@ void Inlet::verifyRecursive(axom::sidre::Group* sidreGroup, bool& verifySuccess)
 }
 
 bool Inlet::verifyValue(axom::sidre::Group* sidreGroup) {
+  auto type = sidreGroup->getView("value")->getTypeID();
   if (sidreGroup->hasView("validValues")) {
-    int val = sidreGroup->getView("value")->getScalar();
-    return searchValidValues(sidreGroup, val);
+    if (type == axom::sidre::INT_ID) {
+      int val = sidreGroup->getView("value")->getScalar();
+      return searchValidValues(sidreGroup, val);
+    } else {
+      double val = sidreGroup->getView("value")->getScalar();
+      return searchValidValues(sidreGroup, val);
+    }
   } else if (sidreGroup->hasView("range")) {
-    auto type = sidreGroup->getView("value")->getTypeID();
     if (type == axom::sidre::INT_ID) {
       int val = sidreGroup->getView("value")->getScalar();
       return checkRange(sidreGroup, val);
@@ -264,8 +269,13 @@ bool Inlet::verifyDefaultValue(axom::sidre::Group* sidreGroup) {
   auto view = sidreGroup->getView("defaultValue");
   auto type = view->getTypeID();
   if (sidreGroup->hasView("validValues")) {
-    int val = view->getScalar();
-    return searchValidValues(sidreGroup, val);
+    if (type == axom::sidre::INT_ID) {
+      int val = view->getScalar();
+      return searchValidValues(sidreGroup, val);
+    } else {
+      double val = view->getScalar();
+      return searchValidValues(sidreGroup, val);
+    }
   } else if (sidreGroup->hasView("range")) {
     if (type == axom::sidre::INT_ID) {
       int val = view->getScalar();
@@ -299,6 +309,14 @@ bool Inlet::searchValidValues(axom::sidre::Group* sidreGroup, int target) {
   return result != valuesArray + size;
 }
 
+bool Inlet::searchValidValues(axom::sidre::Group* sidreGroup, double target) {
+  auto view = sidreGroup->getView("validValues");
+  double* valuesArray = view->getArray();
+  size_t size = view->getBuffer()->getNumElements();
+  double* result = std::find(valuesArray, valuesArray + size, target);
+  return result != valuesArray + size;
+}
+
 bool Inlet::searchValidValues(axom::sidre::Group* sidreGroup, std::string value) {
   auto idx = sidreGroup->getFirstValidViewIndex();
   while(axom::sidre::indexIsValid(idx)) {
@@ -309,6 +327,8 @@ bool Inlet::searchValidValues(axom::sidre::Group* sidreGroup, std::string value)
   }
   return false;
 }
+
+
 
 } // end namespace inlet
 } // end namespace axom

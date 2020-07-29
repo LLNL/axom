@@ -191,7 +191,6 @@ public:
   */
   std::shared_ptr<Field> range(int startVal, int endVal);
 
-
   /*!
    *****************************************************************************
    * \brief Set the valid values for this Field.
@@ -201,7 +200,18 @@ public:
    * \return Shared pointer to this Field instance
    *****************************************************************************
   */
-  std::shared_ptr<Field> validValues(std::vector<int> set);
+  std::shared_ptr<Field> validValues(const std::vector<int>& set);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the valid values for this Field.
+   *
+   * \param [in] set An vector containing the set of allowed double values
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> validValues(const std::vector<double>& set);
 
   /*!
    *****************************************************************************
@@ -225,8 +235,42 @@ public:
    *****************************************************************************
   */
   std::shared_ptr<Field> validValues(const std::initializer_list<const char*>& set);
-  
+
+  /*!
+   *****************************************************************************
+   * \brief Set the valid values for this Field.
+   *
+   * \param [in] set An initializer list containing the valid integer values
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> validValues(const std::initializer_list<int>& set);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the valid values for this Field.
+   *
+   * \param [in] set An initializer list containing the valid double values
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> validValues(const std::initializer_list<double>& set);
 private:
+
+  /*!
+   *****************************************************************************
+   * \brief Set the valid values for this Field.
+   *
+   * \param [in] set A vector containing the set of allowed scalar values
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */  
+  template <typename T> 
+  void setScalarValidValues(std::vector<T> set);
+
   /*!
    *****************************************************************************
    * \brief Set the range of this Field.
