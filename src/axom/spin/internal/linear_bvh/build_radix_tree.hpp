@@ -607,7 +607,7 @@ static void array_memset(T* array, const int32 size, const T val)
 }
 
 /*!
- * \def BVH_THREAD_FENCE_SYSTEM
+ * \def SPIN_BVH_THREAD_FENCE_SYSTEM
  *
  * \brief Macro for __threadfence_system() on NVIDIA GPUs expands
  *  to nothing on all other platforms.
@@ -616,10 +616,10 @@ static void array_memset(T* array, const int32 size, const T val)
  */
 #if defined(__CUDA_ARCH__)
   // on NVIDIA GPUs call __threadfence_system()
-  #define BVH_THREAD_FENCE_SYSTEM __threadfence_system()
+  #define SPIN_BVH_THREAD_FENCE_SYSTEM __threadfence_system()
 #else
   // on CPUs do nothing
-  #define BVH_THREAD_FENCE_SYSTEM
+  #define SPIN_BVH_THREAD_FENCE_SYSTEM
 #endif
 
 //------------------------------------------------------------------------------
@@ -697,7 +697,7 @@ void propagate_aabbs( RadixTree< FloatType, NDIMS >& data, int allocatorID )
       // See Github issue: https://github.com/LLNL/axom/issues/307 
       //
       // This is a workaround for NVIDIA GPUs.
-      BVH_THREAD_FENCE_SYSTEM;
+      SPIN_BVH_THREAD_FENCE_SYSTEM;
 
       current_node = parent_ptr[current_node];
     }
@@ -707,7 +707,7 @@ void propagate_aabbs( RadixTree< FloatType, NDIMS >& data, int allocatorID )
   axom::deallocate(counters_ptr);
 }
 
-#undef BVH_THREAD_FENCE_SYSTEM 
+#undef SPIN_BVH_THREAD_FENCE_SYSTEM 
 
 
 //------------------------------------------------------------------------------
