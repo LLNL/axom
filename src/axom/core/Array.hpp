@@ -1081,14 +1081,26 @@ inline void Array< T >::swap ( Array< T >& other )
 template< typename T >
 inline std::ostream& Array< T >::print(std::ostream& os) const
 {
- os << "[ ";
- for ( IndexType i = 0 ; i < m_num_elements; i++ )
- {
-   os << m_data[i] << " ";
- }
- os << " ]";
 
- return os;
+  #if defined(AXOM_USE_UMPIRE)
+    if (m_allocator_id == 
+          axom::getUmpireResourceAllocatorID( umpire::resource::Device ) ||
+        m_allocator_id ==
+          axom::getUmpireResourceAllocatorID( umpire::resource::Constant ))
+    {
+      std::cerr << "Cannot print Array allocated on the GPU" << std::endl;
+      utilities::processAbort();
+    }
+  #endif
+
+  os << "[ ";
+  for ( IndexType i = 0 ; i < m_num_elements; i++ )
+  {
+    os << m_data[i] << " ";
+  }
+  os << " ]";
+
+  return os;
 }
 
 //------------------------------------------------------------------------------
