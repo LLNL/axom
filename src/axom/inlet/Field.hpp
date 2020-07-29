@@ -229,6 +229,9 @@ public:
 private:
   template<typename T>
   void setRange(T startVal, T endVal);
+  
+  template<typename T>
+  void setDefaultValue(T value);
   // This Field's sidre group
   axom::sidre::Group* m_sidreGroup = nullptr;
   axom::sidre::Group* m_sidreRootGroup = nullptr;

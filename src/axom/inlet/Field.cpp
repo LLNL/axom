@@ -67,19 +67,33 @@ bool Field::required()
   return (bool)intValue;
 }
 
-std::shared_ptr<Field> Field::defaultValue(const char* value) {
-  std::string str = "";
-  if (value) {
-    str = value;
+template <typename T>
+void Field::setDefaultValue(T value) {
+  if (m_sidreGroup->hasView("defaultValue")) {
+    std::string msg = fmt::format("Inlet Field has already defined default value: {0}",
+                                  m_sidreGroup->getPathName());
+    SLIC_WARNING(msg);
+    setWarningFlag(m_sidreRootGroup);
+  } else {
+    if (m_docEnabled) {
+      if (m_type == axom::sidre::DataTypeId::CHAR8_STR_ID) {
+        // m_sidreGroup->createViewString("defaultValue", value);
+      } else {
+        m_sidreGroup->createViewScalar("defaultValue", value);
+      }
+    }
+    if (!m_sidreGroup->hasView("value")) {
+      if (m_type == axom::sidre::DataTypeId::CHAR8_STR_ID) {
+        // m_sidreGroup->createViewString("value", value);
+      } else {
+        m_sidreGroup->createViewScalar("value", value);
+      }
+    }
   }
-  return defaultValue(str);
 }
 
-std::shared_ptr<Field> Field::defaultValue(const std::string& value) {
-  if (m_type != axom::sidre::DataTypeId::CHAR8_STR_ID) {
-    SLIC_WARNING("Field value type did not match STRING");
-    setWarningFlag(m_sidreRootGroup);
-  }
+template<> 
+void Field::setDefaultValue<std::string>(std::string value) {
   if (m_sidreGroup->hasView("defaultValue")) {
     std::string msg = fmt::format("Inlet Field has already defined default value: {0}",
                                   m_sidreGroup->getPathName());
@@ -93,6 +107,25 @@ std::shared_ptr<Field> Field::defaultValue(const std::string& value) {
       m_sidreGroup->createViewString("value", value);
     }
   }
+}
+
+
+std::shared_ptr<Field> Field::defaultValue(const char* value) {
+  std::string str = "";
+  if (value) {
+    str = value;
+  }
+  setDefaultValue(std::string(value));
+  // return defaultValue(str);
+  return shared_from_this();
+}
+
+std::shared_ptr<Field> Field::defaultValue(const std::string& value) {
+  if (m_type != axom::sidre::DataTypeId::CHAR8_STR_ID) {
+    SLIC_WARNING("Field value type did not match STRING");
+    setWarningFlag(m_sidreRootGroup);
+  }
+  setDefaultValue(value);
   return shared_from_this();
 }
 
@@ -101,70 +134,83 @@ std::shared_ptr<Field> Field::defaultValue(bool value) {
     SLIC_WARNING("Field value type did not match BOOL");
     setWarningFlag(m_sidreRootGroup);
   }
-  if (m_sidreGroup->hasView("defaultValue")) {
-    std::string msg = fmt::format("Inlet Field has already defined default value: {0}",
-                                   m_sidreGroup->getPathName());
-    SLIC_WARNING(msg);
-    setWarningFlag(m_sidreRootGroup);
-  } else {
-    if (m_docEnabled) {
-      m_sidreGroup->createViewScalar("defaultValue", (int8)value);
-    }
-    if (!m_sidreGroup->hasView("value")) {
-      m_sidreGroup->createViewScalar("value", (int8)value);
-    }
-  }
+  // if (m_sidreGroup->hasView("defaultValue")) {
+  //   std::string msg = fmt::format("Inlet Field has already defined default value: {0}",
+  //                                  m_sidreGroup->getPathName());
+  //   SLIC_WARNING(msg);
+  //   setWarningFlag(m_sidreRootGroup);
+  // } else {
+  //   if (m_docEnabled) {
+  //     m_sidreGroup->createViewScalar("defaultValue", (int8)value);
+  //   }
+  //   if (!m_sidreGroup->hasView("value")) {
+  //     m_sidreGroup->createViewScalar("value", (int8)value);
+  //   }
+  // }
+  setDefaultValue((int8)value);
   return shared_from_this();
 }
 
 std::shared_ptr<Field> Field::defaultValue(int value) {
-  if (m_type != axom::sidre::DataTypeId::INT_ID 
-      && m_type != axom::sidre::DataTypeId::DOUBLE_ID) {
-    SLIC_WARNING("Field value type did not match INT");
+  // if (m_type != axom::sidre::DataTypeId::INT_ID 
+  //     && m_type != axom::sidre::DataTypeId::DOUBLE_ID) {
+    
+  // }
+  // if (m_sidreGroup->hasView("defaultValue")) {
+  //   std::string msg = fmt::format("Inlet Field has already defined default value: {0}",
+  //                                  m_sidreGroup->getPathName());
+  //   SLIC_WARNING(msg);
+  //   setWarningFlag(m_sidreRootGroup);
+  // } else {
+  //   if (m_docEnabled) {
+  //     if (m_type == axom::sidre::DataTypeId::DOUBLE_ID) {
+  //       m_sidreGroup->createViewScalar("defaultValue", (double)value);
+  //     } else {
+  //       m_sidreGroup->createViewScalar("defaultValue", value);
+  //     }
+  //   }
+  //   if (!m_sidreGroup->hasView("value")) {
+  //     if (m_type == axom::sidre::DataTypeId::DOUBLE_ID) {
+  //       m_sidreGroup->createViewScalar("value", (double)value);
+  //     } else {
+  //       m_sidreGroup->createViewScalar("value", value);
+  //     }
+  //   }
+  // }
+  switch (m_type) {
+  case axom::sidre::DataTypeId::INT_ID:
+    setDefaultValue(value);
+    break;
+  case axom::sidre::DataTypeId::DOUBLE_ID:
+    setDefaultValue((double)value);
+    break;
+  default:
+    SLIC_WARNING("Field value type did not match INT/DOUBLE");
     setWarningFlag(m_sidreRootGroup);
-  }
-  if (m_sidreGroup->hasView("defaultValue")) {
-    std::string msg = fmt::format("Inlet Field has already defined default value: {0}",
-                                   m_sidreGroup->getPathName());
-    SLIC_WARNING(msg);
-    setWarningFlag(m_sidreRootGroup);
-  } else {
-    if (m_docEnabled) {
-      if (m_type == axom::sidre::DataTypeId::DOUBLE_ID) {
-        m_sidreGroup->createViewScalar("defaultValue", (double)value);
-      } else {
-        m_sidreGroup->createViewScalar("defaultValue", value);
-      }
-    }
-    if (!m_sidreGroup->hasView("value")) {
-      if (m_type == axom::sidre::DataTypeId::DOUBLE_ID) {
-        m_sidreGroup->createViewScalar("value", (double)value);
-      } else {
-        m_sidreGroup->createViewScalar("value", value);
-      }
-    }
+    break;
   }
   return shared_from_this();
 }
 
 std::shared_ptr<Field> Field::defaultValue(double value) {
-  if (m_type != axom::sidre::DataTypeId::DOUBLE_ID) {
-    SLIC_WARNING("Field value type did not match DOUBLE");
-    setWarningFlag(m_sidreRootGroup);
-  }
-  if (m_sidreGroup->hasView("defaultValue")) {
-    std::string msg = fmt::format("Inlet Field has already defined default value: {0}",
-                                   m_sidreGroup->getPathName());
-    SLIC_WARNING(msg);
-    setWarningFlag(m_sidreRootGroup);
-  } else {
-    if (m_docEnabled) {
-      m_sidreGroup->createViewScalar("defaultValue", value);
-    }
-    if (!m_sidreGroup->hasView("value")) {
-      m_sidreGroup->createViewScalar("value", value);
-    }
-  }
+  // if (m_type != axom::sidre::DataTypeId::DOUBLE_ID) {
+  //   SLIC_WARNING("Field value type did not match DOUBLE");
+  //   setWarningFlag(m_sidreRootGroup);
+  // }
+  // if (m_sidreGroup->hasView("defaultValue")) {
+  //   std::string msg = fmt::format("Inlet Field has already defined default value: {0}",
+  //                                  m_sidreGroup->getPathName());
+  //   SLIC_WARNING(msg);
+  //   setWarningFlag(m_sidreRootGroup);
+  // } else {
+  //   if (m_docEnabled) {
+  //     m_sidreGroup->createViewScalar("defaultValue", value);
+  //   }
+  //   if (!m_sidreGroup->hasView("value")) {
+  //     m_sidreGroup->createViewScalar("value", value);
+  //   }
+  // }
+  setDefaultValue(value);
   return shared_from_this();
 }
 
