@@ -22,13 +22,15 @@ set(inlet_headers
     SchemaCreator.hpp
     Table.hpp 
     DocWriter.hpp
-    SphinxDocWriter.hpp )
+    SphinxDocWriter.hpp 
+    inlet_utils.hpp )
 
 set(inlet_sources
     Field.cpp
     Inlet.cpp
     Table.cpp
-    SphinxDocWriter.cpp )
+    SphinxDocWriter.cpp 
+    inlet_utils.cpp )
 
 blt_list_append(TO inlet_headers ELEMENTS LuaReader.hpp IF LUA_FOUND)
 blt_list_append(TO inlet_sources ELEMENTS LuaReader.cpp IF LUA_FOUND)

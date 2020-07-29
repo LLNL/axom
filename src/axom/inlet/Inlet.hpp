@@ -56,14 +56,16 @@ public:
    *
    * \param [in] reader Shared pointer to the input deck Reader class.
    * \param [in] sidreRootGroup Pointer to the already created Sidre Group.
+   * \param [in] docEnabled Boolean indicating whether documentation generation
+   * is enabled. This also toggles the storing of documentation-specific information.
    *****************************************************************************
    */
   Inlet(std::shared_ptr<Reader> reader,
-        axom::sidre::Group* sidreRootGroup, bool docsEnabled = false) :
+        axom::sidre::Group* sidreRootGroup, bool docEnabled = true) :
     m_reader(reader),
     m_sidreRootGroup(sidreRootGroup),
-    m_globalTable(std::make_shared<Table>("", "", m_reader, m_sidreRootGroup)),
-    m_docWriterEnabled(docsEnabled) {}
+    m_globalTable(std::make_shared<Table>("", "", m_reader, m_sidreRootGroup, docEnabled)),
+    m_docEnabled(docEnabled) {}
 
   virtual ~Inlet() = default;
 
@@ -275,8 +277,134 @@ public:
    */
   void writeDoc();
 
+  /*!
+   *****************************************************************************
+   * \brief Verifies the contents of the sidreGroup according to Inlet 
+   * requirements.
+   *
+   * This recursively checks the correctness of each Field and Table in the Sidre
+   * Group: ensuring that required Fields are specified, each Field's value 
+   * and default value are within the specified range or are equal to a valid 
+   * value, and types are consistent.
+   * 
+   * \return true if contents are correct and false if not.
+   *
+   *****************************************************************************
+   */
+  bool verify(); 
+
   // TODO add update value functions
 private:
+  /*!
+   *****************************************************************************
+   * \brief Verifies the contents of the sidreGroup according to Inlet 
+   * requirements.
+   *
+   * This is the recursive internal helper for verify().
+   * 
+   * \param [in] sidreGroup The root of the sub-group to be verified.
+   *
+   * \param [out] verifySuccess Indicates whether the verification was 
+   * successful: true if successful and false if not.
+   *****************************************************************************
+   */
+  void verifyRecursive(axom::sidre::Group* sidreGroup, bool& verifySuccess);
+
+  /*!
+   *****************************************************************************
+   * \brief Verifies the value of a Field.
+   *
+   * This checks whether the value in the Field is within the specified range or
+   * contained in allowed values.
+   * 
+   * \param [in] sidreGroup The Sidre Group containing the value to be verified.
+   *
+   * \return boolean value indicating whether the verification was 
+   * successful: true if successful and false if not.
+   *****************************************************************************
+   */
+  bool verifyValue(axom::sidre::Group* sidreGroup);
+
+  /*!
+   *****************************************************************************
+   * \brief Verifies the default value of a Field.
+   *
+   * This checks whether the default value in the Field is within the specified 
+   * range or is one of the allowed values.
+   * 
+   * \param [in] sidreGroup The Sidre Group containing the default value to be 
+   * verified.
+   *
+   * \return boolean value indicating whether the verification was 
+   * successful: true if successful and false if not.
+   *****************************************************************************
+   */
+  bool verifyDefaultValue(axom::sidre::Group* sidreGroup);
+
+   /*!
+   *****************************************************************************
+   * \brief Checks if the given value is within the range.
+   * 
+   * \param [in] sidreGroup The Sidre Group containing the range.
+   * \param [in] value The integer value that will be checked.
+   * 
+   * \return true if the given value was within its respective range, else false.
+   *****************************************************************************
+   */
+  bool checkRange(axom::sidre::Group* sidreGroup, int value);
+
+  /*!
+   *****************************************************************************
+   * \brief Checks if the given value is within the range.
+   * 
+   * \param [in] sidreGroup The Sidre Group containing the range.
+   * \param [in] value The double value that will be checked.
+   * 
+   * \return true if the given value was within its respective range, else false.
+   *****************************************************************************
+   */
+  bool checkRange(axom::sidre::Group* sidreGroup, double value);
+
+  /*!
+   *****************************************************************************
+   * \brief Checks if the given value is found in the list of valid values.
+   * 
+   * \param [in] sidreGroup The Sidre Group containing the valid values.
+   * \param [in] value The target integer value that will be searched for.
+   * 
+   * \return true if the given target was found in its respective valid values, 
+   *  else false.
+   *****************************************************************************
+   */
+  bool searchValidValues(axom::sidre::Group* sidreGroup, int value);
+
+  /*!
+   *****************************************************************************
+   * \brief Checks if the given value is found in the list of valid values.
+   * 
+   * \param [in] sidreGroup The Sidre Group containing the valid values.
+   * \param [in] value The target double value that will be searched for.
+   * 
+   * \return true if the given target was found in its respective valid values, 
+   *  else false.
+   *****************************************************************************
+   */
+  bool searchValidValues(axom::sidre::Group* sidreGroup, double value);
+  
+  
+  /*!
+   *****************************************************************************
+   * \brief Checks if the given value is found in the list of valid values.
+   * 
+   * \param [in] sidreGroup The Sidre Group containing the valid values.
+   * \param [in] value The target string value that will be searched for.
+   * 
+   * \return true if the given target was found in its respective list of valid
+   * values, else false.
+   *****************************************************************************
+   */
+  bool searchValidValues(axom::sidre::Group* sidreGroup, std::string value);
+
   axom::sidre::View* baseGet(const std::string& name);
 
   std::shared_ptr<Reader> m_reader;
@@ -284,7 +412,7 @@ private:
   std::shared_ptr<Table> m_globalTable;
 
   std::shared_ptr<DocWriter> m_docWriter;
-  bool m_docWriterEnabled = false; 
+  bool m_docEnabled = false;
 };
 
 } // end namespace inlet
