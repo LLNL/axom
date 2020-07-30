@@ -15,7 +15,6 @@
 
 // C/C++ includes
 #include <iostream>                 // for std::cerr and std::ostream
-#include <cstring>                  // for std::memcpy
 
 namespace axom
 {
@@ -231,7 +230,7 @@ public:
       m_resize_ratio = other.m_resize_ratio; 
       m_is_external = false;
       initialize(other.size(), other.capacity()); 
-      std::memcpy(m_data, other.data(),  
+      axom::copy( m_data, other.data(),  
                   m_num_elements* sizeof(T)); 
     } 
 
@@ -799,8 +798,8 @@ Array< T >::Array( const Array& other, int allocator_id ) :
   m_allocator_id( allocator_id )
 { 
   initialize( other.size(), other.capacity() );  
-  std::memcpy( m_data, other.data(),  
-               m_num_elements * sizeof(T) ); 
+  axom::copy( m_data, other.data(),  
+              m_num_elements * sizeof(T) ); 
 }   
 
 //------------------------------------------------------------------------------ 
