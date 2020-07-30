@@ -21,6 +21,8 @@
 // _parallel_io_headers_start
 #include "axom/config.hpp"   // for AXOM_USE_HDF5
 
+#include "conduit_blueprint.hpp"
+
 #include "conduit_relay.hpp"
 
 #ifdef AXOM_USE_HDF5
@@ -951,6 +953,86 @@ TEST(spio_parallel, parallel_decrease_procs)
 
 #endif
 
+}
+
+TEST(spio_parallel, sidre_simple_blueprint_example)
+{
+  int my_rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+  int num_ranks;
+  MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
+
+  EXPECT_TRUE(num_ranks > my_rank);
+
+#ifdef AXOM_USE_HDF5
+  /*
+   This tests creates a simple sidre + mesh blueprint example.
+
+   It is run with 4 MPI tasks, each task creates a domain
+   with a very small uniform grid. 
+
+  */
+
+  // create a mesh using conduit's examples
+  axom::sidre::Node n_mesh;
+  // create a 2x2 element uniform mesh for each domain
+  conduit::blueprint::mesh::examples::basic("uniform",
+                                            3,3,1,
+                                            n_mesh);
+
+  // shift example mesh in x using rank to create non-overlapping domains
+  n_mesh["coordsets/coords/origin/x"] = my_rank * 20.0;
+
+  // add an element-assoced field that contains the rank
+  n_mesh["fields/rank/association"] = "element";
+  n_mesh["fields/rank/topology"] = "mesh";
+  n_mesh["fields/rank/values"].set(conduit::DataType::int64(4));
+
+  // fill rank field values
+  axom::int64 *rank_vals_ptr = n_mesh["fields/rank/values"].value();
+
+  for(int i=0;i<4;i++)
+  {
+    rank_vals_ptr[i] = my_rank;
+  }
+
+  // setup the data store
+  DataStore ds;
+  Group* root = ds.getRoot();
+  Group *domain_root = root->createGroup("mesh");
+  // setup sidre group using the conduit tree
+  domain_root->importConduitTree(n_mesh);
+
+  // use SPIO to write to a set of hdf5 files
+  // NOTE:
+  // I (cyrush) tried using json protocols but hit issues in VisIt.
+  // VisIt is tested against general json bp files, but not sidre
+  // flavored json, something we should look into. 
+  axom::sidre::IOManager writer(MPI_COMM_WORLD);
+  const std::string file_name = "out_spio_blueprint_example";
+  writer.write(root, 4, file_name, "sidre_hdf5");
+
+  // make sure all tasks are done writing before we try
+  // to add the blueprint index to the root file
+  MPI_Barrier(MPI_COMM_WORLD);
+  // rank 0 adds the bp index on
+  if(my_rank == 0)
+  {
+    // NOTE:
+    // I (cyrush) used conduit here to keep things simple.
+    // To use sidre, I would first have a conduit bp index tree (like here)
+    // then create a new data store, import the conduit tree into the
+    // new sidre data store, and finally use writeGroupToRootFile().
+
+    // generate blueprint index
+    conduit::Node n_bp_index;
+    conduit::blueprint::mesh::generate_index(n_mesh,"mesh",4,n_bp_index);
+    // add mesh blueprint index to the root file
+    conduit::relay::io::IOHandle hnd;
+    hnd.open(file_name + ".root","hdf5");
+    hnd.write(n_bp_index,"blueprint_index/mesh");
+  }
+#endif
 }
 
 
