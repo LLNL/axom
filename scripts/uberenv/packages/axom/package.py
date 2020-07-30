@@ -84,6 +84,7 @@ class Axom(CMakePackage, CudaPackage):
     variant("raja",     default=True, description="Build with raja")
     variant("cub",      default=True,
             description="Build with RAJA's internal CUB support")
+    variant("yaml",     default=False, description="Build with Yaml")
 
     varmsg = "Build development tools (such as Sphinx, Uncrustify, etc...)"
     variant("devtools", default=False, description=varmsg)
@@ -127,6 +128,8 @@ class Axom(CMakePackage, CudaPackage):
     depends_on("mfem~mpi~hypre~metis~zlib", when="+mfem")
 
     depends_on("python", when="+python")
+
+    depends_on("yamlcpp", when="+yaml")
 
     # Devtools
     depends_on("cppcheck", when="+devtools")
