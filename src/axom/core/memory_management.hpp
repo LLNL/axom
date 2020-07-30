@@ -136,7 +136,7 @@ inline T* reallocate(T* p, std::size_t n,
  *  ResourceManager then the default host allocation strategy is assumed for
  *  that pointer.
  */
-inline void copy(void* dst, void* src, std::size_t numbytes) noexcept;
+inline void copy(void* dst, const void* src, std::size_t numbytes) noexcept;
 
 /// @}
 
@@ -250,7 +250,7 @@ inline T* reallocate(T* pointer, std::size_t n, int allocID) noexcept
 }
 
 //------------------------------------------------------------------------------
-inline void copy(void* dst, void* src, std::size_t numbytes) noexcept
+inline void copy(void* dst, const void* src, std::size_t numbytes) noexcept
 {
 #ifdef AXOM_USE_UMPIRE
   umpire::ResourceManager& rm = umpire::ResourceManager::getInstance();
@@ -270,14 +270,13 @@ inline void copy(void* dst, void* src, std::size_t numbytes) noexcept
     dstStrategy = dstRecord->strategy;
   }
 
-  if(rm.hasAllocator(src))
+  if (rm.hasAllocator(const_cast<void *>(src)))
   {
-    srcRecord = const_cast<AllocationRecord*>(rm.findAllocationRecord(src));
-    srcStrategy = srcRecord->strategy;
+    srcStrategy = rm.findAllocationRecord(const_cast<void *>(src))->strategy;
   }
 
   auto op = op_registry.find("COPY", srcStrategy, dstStrategy);
-  op->transform(src, &dst, srcRecord, dstRecord, numbytes);
+  op->transform(const_cast<void *>(src), &dst, nullptr, nullptr, numbytes);
 #else
   std::memcpy(dst, src, numbytes);
 #endif
