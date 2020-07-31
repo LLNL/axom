@@ -9,8 +9,8 @@
 // terms of the BSD-3 license. We welcome feedback and contributions, see file
 // CONTRIBUTING.md for details.
 
-#ifndef MFEM_SIDREDATACOLLECTION
-#define MFEM_SIDREDATACOLLECTION
+#ifndef SIDRE_DATACOLLECTION_HPP_
+#define SIDRE_DATACOLLECTION_HPP_
 
 #include "axom/config.hpp"
 
@@ -18,19 +18,7 @@
 
 #include "mfem.hpp"
 
-// Ignore warnings from the axom/sidre header (GCC + Clang versions)
-#ifdef MFEM_HAVE_GCC_PRAGMA_DIAGNOSTIC
-# pragma GCC diagnostic push
-# if defined(__clang__)
-#  pragma GCC diagnostic ignored "-Wextra-semi"
-# else // real GCC?
-#  pragma GCC diagnostic ignored "-Wpedantic"
-# endif
-#endif
-#include <axom/sidre.hpp>
-#ifdef MFEM_HAVE_GCC_PRAGMA_DIAGNOSTIC
-# pragma GCC diagnostic pop
-#endif
+#include "axom/sidre/core/sidre.hpp"
 
 namespace mfem
 {

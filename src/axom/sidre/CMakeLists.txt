@@ -95,13 +95,9 @@ if (ENABLE_FORTRAN)
     endif()
 endif()
 
-message(STATUS "axom use mfem is ${AXOM_USE_MFEM}")
-message(STATUS "axom found mfem is ${MFEM_FOUND}")
-message(STATUS "axom enable mfem is ${ENABLE_MFEM}")
-
 if (MFEM_FOUND)
-    list(APPEND sidre_headers datacollection/sidredatacollection.hpp)
-    list(APPEND sidre_sources datacollection/sidredatacollection.cpp)
+    list(APPEND sidre_headers datacollection/SidreDataCollection.hpp)
+    list(APPEND sidre_sources datacollection/SidreDataCollection.cpp)
 endif()
 
 #------------------------------------------------------------------------------

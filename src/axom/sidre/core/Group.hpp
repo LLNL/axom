@@ -1464,6 +1464,8 @@ public:
    */
   bool importConduitTreeExternal(conduit::Node& node,
                                  bool preserve_contents = false);
+                          
+  conduit::Node exportConduitTree();
 
 private:
   DISABLE_DEFAULT_CTOR(Group);

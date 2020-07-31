@@ -14,11 +14,14 @@
 
 #ifdef AXOM_USE_MFEM
 
-#include <axom/sidre.hpp>
-
 #include <string>
 #include <iomanip>      // for setw, setfill
 #include <cstdio>       // for snprintf()
+
+#include "conduit_blueprint.hpp"
+
+#include "SidreDataCollection.hpp"
+
 
 namespace sidre = axom::sidre;
 

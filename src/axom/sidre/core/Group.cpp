@@ -2348,6 +2348,13 @@ bool Group::importConduitTreeExternal(conduit::Node &node,
   return success;
 }
 
+conduit::Node Group::exportConduitTree() 
+{
+  conduit::Node result;
+  exportTo(result, nullptr);
+  return result;
+}
+
 /*
  *************************************************************************
  *
