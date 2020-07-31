@@ -383,6 +383,9 @@ public:
    void FreeNamedBuffer(const std::string& buffer_name)
    { named_buffers_grp()->destroyViewAndData(buffer_name); }
 
+   /// Verifies that the contents of the mesh blueprint data is valid.
+   bool verifyMeshBlueprint();
+
    ///@}
 
 private:
@@ -516,8 +519,8 @@ private:
    void createMeshBlueprintAdjacencies(bool hasBP);
 #endif
 
-   /// Verifies that the contents of the mesh blueprint data is valid.
-   void verifyMeshBlueprint();
+   // /// Verifies that the contents of the mesh blueprint data is valid.
+   // void verifyMeshBlueprint();
 };
 
 } // end namespace mfem

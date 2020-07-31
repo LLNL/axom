@@ -26,6 +26,7 @@ TEST(sidre_datacollection, dc_alloc_no_mesh)
     // Should be empty at initialization when no mesh passed
     EXPECT_EQ(bp_group->getNumGroups(), 0);
     EXPECT_EQ(bp_idx_group->getNumGroups(), 0);
+    EXPECT_TRUE(sdc.verifyMeshBlueprint());
 }
 
 TEST(sidre_datacollection, dc_alloc_mesh)
@@ -39,6 +40,7 @@ TEST(sidre_datacollection, dc_alloc_mesh)
     // Should be empty at initialization when no mesh passed
     EXPECT_EQ(bp_group->getNumGroups(), 4);
     EXPECT_EQ(bp_idx_group->getNumGroups(), 4);
+    EXPECT_TRUE(sdc.verifyMeshBlueprint());
 }
 
 #endif

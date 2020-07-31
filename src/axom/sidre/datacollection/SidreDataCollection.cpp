@@ -111,7 +111,7 @@ void SidreDataCollection::SetComm(MPI_Comm comm)
 // protected method
 sidre::Group *SidreDataCollection::named_buffers_grp() const
 {
-   MFEM_ASSERT(m_named_bufs_grp != NULL,
+   SLIC_ASSERT_MSG(m_named_bufs_grp != NULL,
                "No group 'named_buffers' in data collection.  Verify that"
                " SetMesh was called to set the mesh in the data collection.");
    return m_named_bufs_grp;
@@ -122,13 +122,13 @@ axom::sidre::View *
 SidreDataCollection::alloc_view(axom::sidre::Group *grp,
                                 const std::string &view_name)
 {
-   MFEM_ASSERT(grp, "Group pointer is NULL");
+   SLIC_ASSERT_MSG(grp, "Group pointer is NULL");
    sidre::View *v = NULL;
 
    if (! grp->hasView(view_name) )
    {
       v = grp->createView(view_name);
-      MFEM_ASSERT(v, "error allocating View " << view_name
+      SLIC_ASSERT_MSG(v, "error allocating View " << view_name
                   << " in group " << grp->getPathName());
    }
    else
@@ -145,19 +145,19 @@ SidreDataCollection::alloc_view(axom::sidre::Group *grp,
                                 const std::string &view_name,
                                 const axom::sidre::DataType &dtype)
 {
-   MFEM_ASSERT(grp, "Group pointer is NULL");
+   SLIC_ASSERT_MSG(grp, "Group pointer is NULL");
    sidre::View *v = NULL;
 
    if (! grp->hasView(view_name))
    {
       v = grp->createView(view_name, dtype);
-      MFEM_ASSERT(v, "error allocating View " << view_name
+      SLIC_ASSERT_MSG(v, "error allocating View " << view_name
                   << " in group " << grp->getPathName());
    }
    else
    {
       v = grp->getView(view_name);
-      MFEM_ASSERT(v->getSchema().dtype().equals(dtype), "");
+      SLIC_ASSERT_MSG(v->getSchema().dtype().equals(dtype), "");
    }
    return v;
 }
@@ -167,13 +167,13 @@ axom::sidre::Group *
 SidreDataCollection::alloc_group(axom::sidre::Group *grp,
                                  const std::string &group_name)
 {
-   MFEM_ASSERT(grp, "Group pointer is NULL");
+   SLIC_ASSERT_MSG(grp, "Group pointer is NULL");
    sidre::Group *g = NULL;
 
    if (! grp->hasGroup(group_name) )
    {
       g = grp->createGroup(group_name);
-      MFEM_ASSERT(g, "error allocating Group " << group_name
+      SLIC_ASSERT_MSG(g, "error allocating Group " << group_name
                   << " in group " << grp->getPathName());
    }
    else
@@ -218,7 +218,7 @@ SidreDataCollection::AllocNamedBuffer(const std::string& buffer_name,
    else
    {
       v = f->getView(buffer_name);
-      MFEM_ASSERT(v->getTypeID() == type, "type does not match existing type");
+      SLIC_ASSERT_MSG(v->getTypeID() == type, "type does not match existing type");
 
       // Here v is the view holding the buffer in the named_buffers group, so
       // its size is the full size of the buffer.
@@ -234,7 +234,7 @@ SidreDataCollection::AllocNamedBuffer(const std::string& buffer_name,
          v = f->createViewAndAllocate(buffer_name, dtype);
       }
    }
-   MFEM_ASSERT(v && v->isApplied(), "allocation failed");
+   SLIC_ASSERT_MSG(v && v->isApplied(), "allocation failed");
    return v;
 }
 
@@ -284,7 +284,7 @@ void SidreDataCollection::createMeshBlueprintState(bool hasBP)
 void SidreDataCollection::createMeshBlueprintCoordset(bool hasBP)
 {
    int dim = mesh->SpaceDimension();
-   MFEM_ASSERT(dim >= 1 && dim <= 3, "invalid mesh dimension");
+   SLIC_ASSERT_MSG(dim >= 1 && dim <= 3, "invalid mesh dimension");
 
    // Assuming mfem::Vertex has the layout of a double array.
    const int NUM_COORDS = sizeof(mfem::Vertex) / sizeof(double);
@@ -445,8 +445,8 @@ createMeshBlueprintTopologies(bool hasBP, const std::string& mesh_name)
       {
          mesh->GetBdrElementData(geom, conn_array, *attr_array);
       }
-      MFEM_ASSERT(!conn_array.OwnsData(), "");
-      MFEM_ASSERT(!attr_array->OwnsData(), "");
+      SLIC_ASSERT_MSG(!conn_array.OwnsData(), "");
+      SLIC_ASSERT_MSG(!attr_array->OwnsData(), "");
    }
 
    // If rank 0, set up blueprint index for topologies group
@@ -552,10 +552,16 @@ void SidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
 #endif
 
 // private method
-void SidreDataCollection::verifyMeshBlueprint()
+bool SidreDataCollection::verifyMeshBlueprint()
 {
    // Conduit will have a verify mesh blueprint capability in the future.
    // Add call to that when it's available to check actual contents in sidre.
+   conduit::Node mesh_node = m_bp_grp->exportConduitTree();
+   conduit::Node verify_info;
+   bool result = conduit::blueprint::mesh::verify(mesh_node, verify_info);
+   SLIC_WARNING_IF(!result, 
+                   "SidreDataCollection blueprint verification failed: " << verify_info.to_string());
+   return result;
 }
 
 
@@ -643,7 +649,7 @@ void SidreDataCollection::SetMesh(Mesh *new_mesh)
             // See the comment at the definition of 'hasBP' above.
             if (!hasBP)
             {
-               MFEM_ASSERT(nodes->Size() == sz, "");
+               SLIC_ASSERT_MSG(nodes->Size() == sz, "");
                std::memcpy(gfData, nodes->GetData(), sizeof(double) * sz);
             }
          }
@@ -827,7 +833,7 @@ addScalarBasedGridFunction(const std::string &field_name, GridFunction *gf,
                            axom::sidre::IndexType offset)
 {
    sidre::Group* grp = m_bp_grp->getGroup("fields/" + field_name);
-   MFEM_ASSERT(grp != NULL, "field " << field_name << " does not exist");
+   SLIC_ASSERT_MSG(grp != NULL, "field " << field_name << " does not exist");
 
    const int numDofs = gf->FESpace()->GetVSize();
 
@@ -854,11 +860,11 @@ addScalarBasedGridFunction(const std::string &field_name, GridFunction *gf,
    if (named_buffers_grp()->hasView(buffer_name))
    {
       sidre::View *bv = named_buffers_grp()->getView(buffer_name);
-      MFEM_ASSERT(bv->hasBuffer() && bv->isDescribed(), "");
+      SLIC_ASSERT_MSG(bv->hasBuffer() && bv->isDescribed(), "");
 
       // named buffers always have offset 0
-      MFEM_ASSERT(bv->getSchema().dtype().offset() == 0, "");
-      MFEM_ASSERT(bv->getNumElements() >= offset + numDofs, "");
+      SLIC_ASSERT_MSG(bv->getSchema().dtype().offset() == 0, "");
+      SLIC_ASSERT_MSG(bv->getNumElements() >= offset + numDofs, "");
 
       if (vv->isEmpty())
       {
@@ -874,12 +880,12 @@ addScalarBasedGridFunction(const std::string &field_name, GridFunction *gf,
       // create a view with the external data
       vv->setExternalDataPtr(sidre::DOUBLE_ID, numDofs, gf->GetData());
    }
-   MFEM_ASSERT((numDofs > 0 && vv->isApplied()) ||
+   SLIC_ASSERT_MSG((numDofs > 0 && vv->isApplied()) ||
                (numDofs == 0 && vv->isEmpty() && vv->isDescribed()),
                "invalid View state");
-   MFEM_ASSERT(numDofs == 0 || vv->getData() == gf->GetData(),
+   SLIC_ASSERT_MSG(numDofs == 0 || vv->getData() == gf->GetData(),
                "View data is different from GridFunction data");
-   MFEM_ASSERT(vv->getNumElements() == numDofs,
+   SLIC_ASSERT_MSG(vv->getNumElements() == numDofs,
                "View size is different from GridFunction size");
 }
 
@@ -890,7 +896,7 @@ addVectorBasedGridFunction(const std::string& field_name, GridFunction *gf,
                            axom::sidre::IndexType offset)
 {
    sidre::Group* grp = m_bp_grp->getGroup("fields/" + field_name);
-   MFEM_ASSERT(grp != NULL, "field " << field_name << " does not exist");
+   SLIC_ASSERT_MSG(grp != NULL, "field " << field_name << " does not exist");
 
    const int FLD_SZ = 20;
    char fidxName[FLD_SZ];
@@ -930,10 +936,10 @@ addVectorBasedGridFunction(const std::string& field_name, GridFunction *gf,
    if (named_buffers_grp()->hasView(buffer_name))
    {
       sidre::View *bv = named_buffers_grp()->getView(buffer_name);
-      MFEM_ASSERT(bv->hasBuffer() && bv->isDescribed(), "");
+      SLIC_ASSERT_MSG(bv->hasBuffer() && bv->isDescribed(), "");
 
       // named buffers always have offset 0
-      MFEM_ASSERT(bv->getSchema().dtype().offset() == 0, "");
+      SLIC_ASSERT_MSG(bv->getSchema().dtype().offset() == 0, "");
       dtype.set_offset(dtype.element_bytes()*offset);
 
       for (int d = 0;  d < vdim; d++)
@@ -962,12 +968,12 @@ addVectorBasedGridFunction(const std::string& field_name, GridFunction *gf,
    {
       std::snprintf(fidxName, FLD_SZ, "x%d", d);
       sidre::View *xv = vg->getView(fidxName);
-      MFEM_ASSERT((ndof > 0 && xv->isApplied()) ||
+      SLIC_ASSERT_MSG((ndof > 0 && xv->isApplied()) ||
                   (ndof == 0 && xv->isEmpty() && xv->isDescribed()),
                   "invalid View state");
-      MFEM_ASSERT(ndof == 0 || xv->getData() == gf->GetData() + d*vdim_stride,
+      SLIC_ASSERT_MSG(ndof == 0 || xv->getData() == gf->GetData() + d*vdim_stride,
                   "View data is different from GridFunction data");
-      MFEM_ASSERT(xv->getNumElements() == ndof,
+      SLIC_ASSERT_MSG(xv->getNumElements() == ndof,
                   "View size is different from GridFunction size");
    }
 #endif
@@ -1057,7 +1063,7 @@ void SidreDataCollection::RegisterField(const std::string &field_name,
    // attributes field.
    v = alloc_view(grp, "topology")->setString("mesh");
 
-   MFEM_ASSERT(gf->Size() == gf->FESpace()->GetVSize(),
+   SLIC_ASSERT_MSG(gf->Size() == gf->FESpace()->GetVSize(),
                "GridFunction size does not match FiniteElementSpace size");
 
    // Set the data views of the grid function
@@ -1088,7 +1094,7 @@ void SidreDataCollection::RegisterField(const std::string &field_name,
 void SidreDataCollection::RegisterAttributeField(const std::string& attr_name,
                                                  bool is_bdry)
 {
-   MFEM_ASSERT(
+   SLIC_ASSERT_MSG(
       mesh != NULL,
       "Need to set mesh before registering attributes in SidreDataCollection.");
 
@@ -1134,9 +1140,9 @@ void SidreDataCollection::RegisterAttributeFieldInBPIndex(
 {
    const std::string m_bp_grp_path = m_bp_grp->getPathName();
 
-   MFEM_ASSERT(m_bp_grp->getGroup("fields") != NULL,
+   SLIC_ASSERT_MSG(m_bp_grp->getGroup("fields") != NULL,
                "Mesh blueprint does not have 'fields' group");
-   MFEM_ASSERT(m_bp_index_grp->getGroup("fields") != NULL,
+   SLIC_ASSERT_MSG(m_bp_index_grp->getGroup("fields") != NULL,
                "Mesh blueprint index does not have 'fields' group");
 
    // get the BP attr group
@@ -1195,7 +1201,7 @@ void SidreDataCollection::
 addIntegerAttributeField(const std::string& attr_name, bool is_bdry)
 {
    sidre::Group* fld_grp = m_bp_grp->getGroup("fields");
-   MFEM_ASSERT(fld_grp != NULL, "'fields' group does not exist");
+   SLIC_ASSERT_MSG(fld_grp != NULL, "'fields' group does not exist");
 
    const int num_elem = is_bdry? mesh->GetNBE() : mesh->GetNE();
    std::string topo_name = is_bdry ? "boundary" : "mesh";
