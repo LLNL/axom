@@ -18,6 +18,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <functional>
 
 #include "axom/inlet/SchemaCreator.hpp"
 #include "axom/inlet/Table.hpp"
@@ -293,6 +294,8 @@ public:
    */
   bool verify(); 
 
+  void registerFieldVerifier(std::function<bool(axom::sidre::Group*)> lambda);
+
   // TODO add update value functions
 private:
   /*!
@@ -413,6 +416,7 @@ private:
 
   std::shared_ptr<DocWriter> m_docWriter;
   bool m_docEnabled = false;
+  std::vector<std::function<bool(axom::sidre::Group*)>> m_verificationLambdas;
 };
 
 } // end namespace inlet

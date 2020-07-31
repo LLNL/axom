@@ -199,6 +199,14 @@ void Inlet::writeDoc() {
 bool Inlet::verify() {
   bool verifySuccess = true;
   verifyRecursive(m_sidreRootGroup, verifySuccess);
+  
+  for (auto& lambda : m_verificationLambdas) {
+    if (!lambda(m_sidreRootGroup)) {
+      SLIC_WARNING("registered verification failed");
+      verifySuccess = false;   
+    }  
+  }
+
   return verifySuccess;
 }
 
@@ -328,7 +336,9 @@ bool Inlet::searchValidValues(axom::sidre::Group* sidreGroup, std::string value)
   return false;
 }
 
-
+void Inlet::registerFieldVerifier(std::function<bool(axom::sidre::Group*)> lambda) {
+  m_verificationLambdas.push_back(lambda);
+}
 
 } // end namespace inlet
 } // end namespace axom
