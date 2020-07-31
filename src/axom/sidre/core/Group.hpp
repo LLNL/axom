@@ -1464,7 +1464,15 @@ public:
    */
   bool importConduitTreeExternal(conduit::Node& node,
                                  bool preserve_contents = false);
-                          
+
+   /*!
+   * \brief Export data from a Group into a conduit Node
+   *
+   * This exports the hierarchy from the Sidre Group into a Node with the
+   * same tree structure.
+   *
+   * \return A conduit Node containing hierarchical data.
+   */                        
   conduit::Node exportConduitTree();
 
 private:
@@ -1573,11 +1581,18 @@ private:
    * \brief Private method to copy Group to Conduit Node.
    *
    * Note: This is for the "sidre_{zzz}" protocols.
-   *
+   * 
+   * \param sidre_annotations Whether to add Sidre-specific data annotations like
+   * group and view subnodes, types, and descriptions to \p result. 
+   * Otherwise, only the values are exported.
+   * 
+   * \see View::exportTo
+   * 
    * \return True if the group or any of its children have saved Views,
    * false otherwise.
    */
-  bool exportTo(conduit::Node& result, const Attribute* attr) const;
+  bool exportTo(conduit::Node& result, const Attribute* attr, 
+                const bool sidre_annotations = true) const;
 
   /*!
    * \brief Private method to copy Group to Conduit Node.
@@ -1590,7 +1605,8 @@ private:
    */
   bool exportTo(conduit::Node& data_holder,
                 const Attribute* attr,
-                std::set<IndexType>& buffer_indices) const;
+                std::set<IndexType>& buffer_indices,
+                const bool sidre_annotations = true) const;
 
   /*!
    * \brief Private method to build a Group hierarchy from Conduit Node.

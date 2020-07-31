@@ -176,9 +176,9 @@ public:
        With this constructor, the SidreDataCollection owns the allocated Sidre
        DataStore.
     */
-   SidreDataCollection(const std::string& collection_name,
-                       Mesh *the_mesh = NULL,
-                       bool owns_mesh_data = false);
+   explicit SidreDataCollection(const std::string& collection_name,
+                                Mesh *the_mesh = NULL,
+                                bool owns_mesh_data = false);
 
    /// Constructor that links to an external Sidre DataStore.
    /** Specifically, the global and domain groups can be at arbitrary paths.

@@ -52,7 +52,7 @@ SidreDataCollection::SidreDataCollection(const std::string& collection_name,
 
    if (the_mesh)
    {
-      SetMesh(the_mesh);
+      SidreDataCollection::SetMesh(the_mesh);
    }
 #ifdef MFEM_USE_MPI
    else
@@ -386,7 +386,6 @@ createMeshBlueprintTopologies(bool hasBP, const std::string& mesh_name)
    const std::string mesh_topo_str = "topologies/" + mesh_name;
    const std::string mesh_attr_str = mesh_name + "_material_attribute";
 
-   int element_size = 0;
    int num_indices = 0;
    int geom = 0;
    std::string eltTypeStr = "point";
@@ -396,7 +395,7 @@ createMeshBlueprintTopologies(bool hasBP, const std::string& mesh_name)
       mfem::Element *elem = !isBdry
                             ? mesh->GetElement(0)
                             : mesh->GetBdrElement(0);
-      element_size = elem->GetNVertices();
+      int element_size = elem->GetNVertices();
 
       num_indices = num_elements * element_size;
 
@@ -492,7 +491,7 @@ void SidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
 
    // TODO(JRC): Separate this out into group hierarchy setup and data allocation
    // stages like all of the other "createMeshBlueprint*" functions.
-   MFEM_VERIFY(hasBP == false, "The case hasBP == true is not supported yet!");
+   SLIC_WARNING_IF(hasBP, "The case hasBP == true is not supported yet!");
 
    sidre::Group* adjset_grp = NULL;
    if (pmesh->GetNGroups() > 1)
@@ -554,9 +553,14 @@ void SidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
 // private method
 bool SidreDataCollection::verifyMeshBlueprint()
 {
-   // Conduit will have a verify mesh blueprint capability in the future.
-   // Add call to that when it's available to check actual contents in sidre.
    conduit::Node mesh_node = m_bp_grp->exportConduitTree();
+   // Remove children from node that are not part of Conduit Blueprint
+   // TODO: can exportConduitTree be modified to not include buffers?
+   if (mesh_node.has_child("buffers"))
+   {
+      mesh_node.remove_child("buffers");
+   }
+
    conduit::Node verify_info;
    bool result = conduit::blueprint::mesh::verify(mesh_node, verify_info);
    SLIC_WARNING_IF(!result, 
@@ -633,7 +637,7 @@ void SidreDataCollection::SetMesh(Mesh *new_mesh)
          std::string bp_nodes_name(v_bp_nodes_name->getString());
 
          // Check that the names match, e.g. when loading the collection.
-         MFEM_VERIFY(m_meshNodesGFName == bp_nodes_name,
+         SLIC_WARNING_IF(m_meshNodesGFName == bp_nodes_name,
                      "mismatch of requested and blueprint mesh nodes names");
          // Support renaming bp_nodes_name --> m_meshNodesGFName ?
       }
@@ -660,7 +664,7 @@ void SidreDataCollection::SetMesh(Mesh *new_mesh)
       else
       {
          // Make sure Sidre does not have a named buffer for m_meshNodesGFName.
-         MFEM_VERIFY(GetNamedBuffer(m_meshNodesGFName) == NULL, "");
+         SLIC_WARNING_IF(GetNamedBuffer(m_meshNodesGFName) != NULL, "");
       }
 
       RegisterField(m_meshNodesGFName, nodes);
@@ -671,7 +675,7 @@ void SidreDataCollection::SetMesh(Mesh *new_mesh)
          // and the new_mesh owns its Nodes --> take ownership from new_mesh.
          // When new_mesh does not own its Nodes and (own_data == true), we can
          // not take ownership --> verify that does not happen.
-         MFEM_VERIFY(new_mesh->OwnsNodes(), "mesh does not own its nodes, "
+         SLIC_WARNING_IF(!new_mesh->OwnsNodes(), "mesh does not own its nodes, "
                      "can not take ownership");
          new_mesh->SetNodesOwner(false);
       }
@@ -694,7 +698,7 @@ void SidreDataCollection::
 SetGroupPointers(axom::sidre::Group *bp_index_grp,
                  axom::sidre::Group *domain_grp)
 {
-   MFEM_VERIFY(domain_grp->hasGroup("blueprint"),
+   SLIC_WARNING_IF(!domain_grp->hasGroup("blueprint"),
                "Domain group does not contain a blueprint group.");
 
    m_bp_grp = domain_grp->getGroup("blueprint");
@@ -759,6 +763,10 @@ void SidreDataCollection::UpdateStateFromDS()
 
 void SidreDataCollection::UpdateStateToDS()
 {
+   SLIC_ASSERT_MSG(
+      mesh != NULL,
+      "Need to set mesh before updating state in SidreDataCollection.");
+   
    m_bp_grp->getView("state/cycle")->setScalar(GetCycle());
    m_bp_grp->getView("state/time")->setScalar(GetTime());
    m_bp_grp->getView("state/time_step")->setScalar(GetTimeStep());
@@ -1006,7 +1014,7 @@ void SidreDataCollection::
 DeregisterFieldInBPIndex(const std::string& field_name)
 {
    sidre::Group * fields_grp = m_bp_index_grp->getGroup("fields");
-   MFEM_VERIFY(fields_grp->hasGroup(field_name),
+   SLIC_WARNING_IF(!fields_grp->hasGroup(field_name),
                "No field exists in blueprint index with name " << name);
 
    // Note: This will destroy all orphaned views or buffer classes under this
@@ -1025,6 +1033,10 @@ void SidreDataCollection::RegisterField(const std::string &field_name,
    {
       return;
    }
+
+   SLIC_ASSERT_MSG(
+      mesh != NULL,
+      "Need to set mesh before registering attributes in SidreDataCollection.");
 
    // Register field_name in the blueprint group.
    sidre::Group* f = m_bp_grp->getGroup("fields");
@@ -1138,8 +1150,6 @@ void SidreDataCollection::RegisterAttributeField(const std::string& attr_name,
 void SidreDataCollection::RegisterAttributeFieldInBPIndex(
    const std::string& attr_name)
 {
-   const std::string m_bp_grp_path = m_bp_grp->getPathName();
-
    SLIC_ASSERT_MSG(m_bp_grp->getGroup("fields") != NULL,
                "Mesh blueprint does not have 'fields' group");
    SLIC_ASSERT_MSG(m_bp_index_grp->getGroup("fields") != NULL,
@@ -1164,7 +1174,7 @@ void SidreDataCollection::DeregisterAttributeField(const std::string& attr_name)
    attr_map.Deregister(name, true);
 
    sidre::Group * attr_grp = m_bp_grp->getGroup("fields");
-   MFEM_VERIFY(attr_grp->hasGroup(attr_name),
+   SLIC_WARNING_IF(!attr_grp->hasGroup(attr_name),
                "No field exists in blueprint with name " << attr_name);
 
    // Delete attr_name from the blueprint group.
@@ -1188,7 +1198,7 @@ void SidreDataCollection::DeregisterAttributeFieldInBPIndex(
    const std::string& attr_name)
 {
    sidre::Group * fields_grp = m_bp_index_grp->getGroup("fields");
-   MFEM_VERIFY(fields_grp->hasGroup(attr_name),
+   SLIC_WARNING_IF(!fields_grp->hasGroup(attr_name),
                "No attribute exists in blueprint index with name " << attr_name);
 
    // Note: This will destroy all orphaned views or buffer classes under this
@@ -1218,7 +1228,7 @@ void SidreDataCollection::DeregisterField(const std::string& field_name)
    DataCollection::DeregisterField(field_name);
 
    sidre::Group * fields_grp = m_bp_grp->getGroup("fields");
-   MFEM_VERIFY(fields_grp->hasGroup(field_name),
+   SLIC_WARNING_IF(!fields_grp->hasGroup(field_name),
                "No field exists in blueprint with name " << field_name);
 
    // Delete field_name from the blueprint group.
