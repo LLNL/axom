@@ -1,13 +1,7 @@
-// Copyright (c) 2010-2020, Lawrence Livermore National Security, LLC. Produced
-// at the Lawrence Livermore National Laboratory. All Rights reserved. See files
-// LICENSE and NOTICE for details. LLNL-CODE-806117.
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level COPYRIGHT file for details.
 //
-// This file is part of the MFEM library. For more information and source code
-// availability visit https://mfem.org.
-//
-// MFEM is free software; you can redistribute it and/or modify it under the
-// terms of the BSD-3 license. We welcome feedback and contributions, see file
-// CONTRIBUTING.md for details.
+// SPDX-License-Identifier: (BSD-3-Clause)
 
 
 #include "axom/config.hpp"
@@ -22,10 +16,15 @@
 
 #include "SidreDataCollection.hpp"
 
+using mfem::Array;
+using mfem::GridFunction;
+using mfem::Mesh;
+using mfem::Ordering;
 
-namespace sidre = axom::sidre;
+namespace axom
+{
 
-namespace mfem
+namespace sidre
 {
 
 // Constructor that will automatically create the sidre data store and necessary
@@ -69,8 +68,8 @@ SidreDataCollection::SidreDataCollection(const std::string& collection_name,
 // in the future.  When this is available, all the blueprint index code can be
 // removed from the data collection class.
 SidreDataCollection::SidreDataCollection(const std::string& collection_name,
-                                         axom::sidre::Group* bp_index_grp,
-                                         axom::sidre::Group* domain_grp,
+                                         Group* bp_index_grp,
+                                         Group* domain_grp,
                                          bool own_mesh_data)
    : mfem::DataCollection(collection_name),
      m_owns_datastore(false),
@@ -118,8 +117,8 @@ sidre::Group *SidreDataCollection::named_buffers_grp() const
 }
 
 // protected method
-axom::sidre::View *
-SidreDataCollection::alloc_view(axom::sidre::Group *grp,
+View *
+SidreDataCollection::alloc_view(Group *grp,
                                 const std::string &view_name)
 {
    SLIC_ASSERT_MSG(grp, "Group pointer is NULL");
@@ -140,10 +139,10 @@ SidreDataCollection::alloc_view(axom::sidre::Group *grp,
 }
 
 // protected method
-axom::sidre::View *
-SidreDataCollection::alloc_view(axom::sidre::Group *grp,
+View *
+SidreDataCollection::alloc_view(Group *grp,
                                 const std::string &view_name,
-                                const axom::sidre::DataType &dtype)
+                                const DataType &dtype)
 {
    SLIC_ASSERT_MSG(grp, "Group pointer is NULL");
    sidre::View *v = NULL;
@@ -163,8 +162,8 @@ SidreDataCollection::alloc_view(axom::sidre::Group *grp,
 }
 
 // protected method
-axom::sidre::Group *
-SidreDataCollection::alloc_group(axom::sidre::Group *grp,
+Group *
+SidreDataCollection::alloc_group(Group *grp,
                                  const std::string &group_name)
 {
    SLIC_ASSERT_MSG(grp, "Group pointer is NULL");
@@ -201,10 +200,10 @@ SidreDataCollection::get_file_path(const std::string &filename) const
    return fNameSstr.str();
 }
 
-axom::sidre::View *
+View *
 SidreDataCollection::AllocNamedBuffer(const std::string& buffer_name,
-                                      axom::sidre::IndexType sz,
-                                      axom::sidre::TypeID type)
+                                      IndexType sz,
+                                      TypeID type)
 {
    sz = std::max(sz, sidre::IndexType(0));
    sidre::Group *f = named_buffers_grp();
@@ -434,8 +433,8 @@ createMeshBlueprintTopologies(bool hasBP, const std::string& mesh_name)
          m_bp_grp->getGroup(mesh_topo_str)->getView("elements/connectivity");
 
       // The SidreDataCollection always owns these arrays:
-      Array<int> conn_array(conn_view->getData<int*>(), num_indices);
-      Array<int>* attr_array = attr_map.Get(mesh_attr_str);
+      mfem::Array<int> conn_array(conn_view->getData<int*>(), num_indices);
+      mfem::Array<int>* attr_array = attr_map.Get(mesh_attr_str);
       if (!isBdry)
       {
          mesh->GetElementData(geom, conn_array, *attr_array);
@@ -695,8 +694,8 @@ void SidreDataCollection::SetMesh(MPI_Comm comm, Mesh *new_mesh)
 #endif
 
 void SidreDataCollection::
-SetGroupPointers(axom::sidre::Group *bp_index_grp,
-                 axom::sidre::Group *domain_grp)
+SetGroupPointers(Group *bp_index_grp,
+                 Group *domain_grp)
 {
    SLIC_WARNING_IF(!domain_grp->hasGroup("blueprint"),
                "Domain group does not contain a blueprint group.");
@@ -715,7 +714,7 @@ void SidreDataCollection::Load(const std::string& path,
 #ifdef MFEM_USE_MPI
    if (m_comm != MPI_COMM_NULL)
    {
-      axom::sidre::IOManager reader(m_comm);
+      IOManager reader(m_comm);
       reader.read(m_bp_grp->getDataStore()->getRoot(), path);
    }
    else
@@ -744,7 +743,7 @@ void SidreDataCollection::LoadExternalData(const std::string& path)
 #ifdef MFEM_USE_MPI
    if (m_comm != MPI_COMM_NULL)
    {
-      axom::sidre::IOManager reader(m_comm);
+      IOManager reader(m_comm);
       reader.loadExternalData(m_bp_grp->getDataStore()->getRoot(), path);
    }
    else
@@ -805,7 +804,7 @@ void SidreDataCollection::Save(const std::string& filename,
 #ifdef MFEM_USE_MPI
    if (m_comm != MPI_COMM_NULL)
    {
-      axom::sidre::IOManager writer(m_comm);
+      IOManager writer(m_comm);
       sidre::DataStore *datastore = m_bp_grp->getDataStore();
       writer.write(datastore->getRoot(), num_procs, file_path, protocol);
       if (myid == 0)
@@ -838,7 +837,7 @@ void SidreDataCollection::Save(const std::string& filename,
 void SidreDataCollection::
 addScalarBasedGridFunction(const std::string &field_name, GridFunction *gf,
                            const std::string &buffer_name,
-                           axom::sidre::IndexType offset)
+                           IndexType offset)
 {
    sidre::Group* grp = m_bp_grp->getGroup("fields/" + field_name);
    SLIC_ASSERT_MSG(grp != NULL, "field " << field_name << " does not exist");
@@ -901,7 +900,7 @@ addScalarBasedGridFunction(const std::string &field_name, GridFunction *gf,
 void SidreDataCollection::
 addVectorBasedGridFunction(const std::string& field_name, GridFunction *gf,
                            const std::string &buffer_name,
-                           axom::sidre::IndexType offset)
+                           IndexType offset)
 {
    sidre::Group* grp = m_bp_grp->getGroup("fields/" + field_name);
    SLIC_ASSERT_MSG(grp != NULL, "field " << field_name << " does not exist");
@@ -1026,7 +1025,7 @@ DeregisterFieldInBPIndex(const std::string& field_name)
 void SidreDataCollection::RegisterField(const std::string &field_name,
                                         GridFunction *gf,
                                         const std::string &buffer_name,
-                                        axom::sidre::IndexType offset)
+                                        IndexType offset)
 {
    if ( field_name.empty() || buffer_name.empty() ||
         gf == NULL || gf->FESpace() == NULL )
@@ -1142,7 +1141,7 @@ void SidreDataCollection::RegisterAttributeField(const std::string& attr_name,
    // Register new attribute array with attr_map
    sidre::View* a =
       m_bp_grp->getGroup("fields")->getGroup(attr_name)->getView("values");
-   Array<int>* attr = new Array<int>(a->getData<int*>(), a->getNumElements());
+   mfem::Array<int>* attr = new mfem::Array<int>(a->getData<int*>(), a->getNumElements());
 
    attr_map.Register(attr_name, attr, true);
 }
@@ -1249,7 +1248,7 @@ void SidreDataCollection::DeregisterField(const std::string& field_name)
 }
 
 // private method
-std::string SidreDataCollection::getElementName(Element::Type elementEnum)
+std::string SidreDataCollection::getElementName(mfem::Element::Type elementEnum)
 {
    // Note -- the mapping from Element::Type to string is based on
    //   enum Element::Type { POINT, SEGMENT, TRIANGLE, QUADRILATERAL,
@@ -1258,19 +1257,21 @@ std::string SidreDataCollection::getElementName(Element::Type elementEnum)
 
    switch (elementEnum)
    {
-      case Element::POINT:          return "point";
-      case Element::SEGMENT:        return "line";
-      case Element::TRIANGLE:       return "tri";
-      case Element::QUADRILATERAL:  return "quad";
-      case Element::TETRAHEDRON:    return "tet";
-      case Element::HEXAHEDRON:     return "hex";
-      case Element::WEDGE:
+      case mfem::Element::POINT:          return "point";
+      case mfem::Element::SEGMENT:        return "line";
+      case mfem::Element::TRIANGLE:       return "tri";
+      case mfem::Element::QUADRILATERAL:  return "quad";
+      case mfem::Element::TETRAHEDRON:    return "tet";
+      case mfem::Element::HEXAHEDRON:     return "hex";
+      case mfem::Element::WEDGE:
       default: ;
    }
 
    return "unknown";
 }
 
-} // end namespace mfem
+} /* namespace sidre */
+} /* namespace axom */
+
 
 #endif // AXOM_USE_MFEM
