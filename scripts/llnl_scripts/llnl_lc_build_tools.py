@@ -521,18 +521,30 @@ def set_axom_group_and_perms(directory):
     Sets the proper group and access permissions of given input
     directory. 
     """
-    print "[changing group and access perms of: %s]" % directory
-    # change group to axomdev
-    print "[changing group to axomdev]"
-    sexe("chgrp -f -R axomdev %s" % (directory),echo=True,error_prefix="WARNING:")
-    # change group perms to rwX
-    print "[changing perms for axomdev members to rwX]"
-    sexe("chmod -f -R g+rwX %s" % (directory),echo=True,error_prefix="WARNING:")
-    # change perms for all to rX
-    print "[changing perms for all users to rX]"
-    sexe("chmod -f -R a+rX %s" % (directory),echo=True,error_prefix="WARNING:")
-    print "[done setting perms for: %s]" % directory
-    return 0
+
+    skip = True
+    shared_dirs = [get_shared_base_dir(), get_shared_collab_dir(), get_archive_base_dir()]
+    for shared_dir in shared_dirs:
+        if directory.startswith(shared_dir):
+            skip = False
+            break
+
+    if skip:
+        print "[Skipping, due to not known shared location, changing group and access perms of: %s]" % directory
+        return 0
+    else:
+        print "[changing group and access perms of: %s]" % directory
+        # change group to axomdev
+        print "[changing group to axomdev]"
+        sexe("chgrp -f -R axomdev %s" % (directory),echo=True,error_prefix="WARNING:")
+        # change group perms to rwX
+        print "[changing perms for axomdev members to rwX]"
+        sexe("chmod -f -R g+rwX %s" % (directory),echo=True,error_prefix="WARNING:")
+        # change perms for all to rX
+        print "[changing perms for all users to rX]"
+        sexe("chmod -f -R a+rX %s" % (directory),echo=True,error_prefix="WARNING:")
+        print "[done setting perms for: %s]" % directory
+        return 0
 
 
 def full_build_and_test_of_tpls(builds_dir, job_name, timestamp, spec):
@@ -725,6 +737,10 @@ def get_shared_base_dir():
     return "/usr/WS1/axom"
 
 
+def get_shared_collab_dir():
+    return "/collab/usr/gapps/axom"
+
+
 def get_shared_mirror_dir():
     return pjoin(get_shared_base_dir(), "mirror")
 
@@ -734,7 +750,7 @@ def get_shared_libs_dir():
 
 
 def get_shared_devtool_dir():
-    return pjoin(get_shared_base_dir(), "devtools")
+    return pjoin(get_shared_collab_dir(), "devtools")
 
 
 def get_specs_for_current_machine():
