@@ -557,7 +557,7 @@ bool SidreDataCollection::verifyMeshBlueprint()
    // TODO: can exportConduitTree be modified to not include buffers?
    if (mesh_node.has_child("buffers"))
    {
-      mesh_node.remove_child("buffers");
+      mesh_node.remove("buffers");
    }
 
    conduit::Node verify_info;
