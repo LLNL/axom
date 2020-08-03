@@ -552,13 +552,8 @@ void SidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
 // private method
 bool SidreDataCollection::verifyMeshBlueprint()
 {
-   conduit::Node mesh_node = m_bp_grp->exportConduitTree();
-   // Remove children from node that are not part of Conduit Blueprint
-   // TODO: can exportConduitTree be modified to not include buffers?
-   if (mesh_node.has_child("buffers"))
-   {
-      mesh_node.remove("buffers");
-   }
+    conduit::Node mesh_node;
+    m_bp_grp->createNativeLayout(mesh_node);
 
    conduit::Node verify_info;
    bool result = conduit::blueprint::mesh::verify(mesh_node, verify_info);

@@ -1181,13 +1181,9 @@ View::State View::getStateId(const std::string &name) const
  *************************************************************************
  */
 void View::exportTo(conduit::Node& data_holder,
-                    std::set<IndexType>& buffer_indices, 
-                    const bool sidre_annotations) const
+                    std::set<IndexType>& buffer_indices) const
 {
-  if (sidre_annotations)
-  {
-    data_holder["state"] = getStateStringName(m_state);
-  }
+  data_holder["state"] = getStateStringName(m_state);
   exportAttribute(data_holder);
 
   switch (m_state)
@@ -1200,33 +1196,19 @@ void View::exportTo(conduit::Node& data_holder,
     break;
   case BUFFER: {
     IndexType buffer_id = getBuffer()->getIndex();
-    if (sidre_annotations)
+    data_holder["buffer_id"] = buffer_id;
+    if (isDescribed())
     {
-      data_holder["buffer_id"] = buffer_id;
-      if (isDescribed())
-      {
-        exportDescription(data_holder);
-      }
-      data_holder["is_applied"] =  static_cast<unsigned char>(m_is_applied);
+      exportDescription(data_holder);
     }
-    else
-    {
-      data_holder = getNode();
-    }
+    data_holder["is_applied"] =  static_cast<unsigned char>(m_is_applied);
     buffer_indices.insert(buffer_id);
     break;
   }
   case EXTERNAL:
     if (isDescribed())
     {
-      if (sidre_annotations) 
-      {
-         exportDescription(data_holder);
-      }
-      else
-      {
-        data_holder = getNode();
-      }
+      exportDescription(data_holder);
     }
     else
     {
@@ -1236,15 +1218,7 @@ void View::exportTo(conduit::Node& data_holder,
     break;
   case SCALAR:
   case STRING:
-    if (sidre_annotations) 
-    {
-      data_holder["value"] = getNode();
-    }
-    else
-    {
-      data_holder = getNode();
-    }
-
+    data_holder["value"] = getNode();
     break;
   default:
     SLIC_ASSERT_MSG(false,

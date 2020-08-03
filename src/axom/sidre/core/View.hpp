@@ -1390,12 +1390,9 @@ private:
 
   /*!
    * \brief Add view description and references to it's data to a conduit tree.
-   * \param sidre_annotations Whether to add Sidre-specific data annotations like
-   * types and descriptions to \p data_holder.  Otherwise, only the value is exported.
    */
   void exportTo(conduit::Node& data_holder,
-                std::set<IndexType>& buffer_indices, 
-                const bool sidre_annotations = true) const;
+                std::set<IndexType>& buffer_indices) const;
 
   /*!
    * \brief Restore a view's description and data from a conduit tree.

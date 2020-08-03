@@ -1939,8 +1939,7 @@ Group* Group::detachGroup(IndexType idx)
  *************************************************************************
  */
 bool Group::exportTo(conduit::Node & result,
-                     const Attribute* attr,
-                     const bool sidre_annotations) const
+                     const Attribute* attr) const
 {
   result.set(DataType::object());
   // TODO - This implementation will change in the future.  We want to write
@@ -1957,7 +1956,7 @@ bool Group::exportTo(conduit::Node & result,
   // Tell Group to add itself and all sub-Groups and Views to node.
   // Any Buffers referenced by those Views will be tracked in the
   // buffer_indices
-  bool hasSavedViews = exportTo(result, attr, buffer_indices, sidre_annotations);
+  bool hasSavedViews = exportTo(result, attr, buffer_indices);
 
   if (!buffer_indices.empty())
   {
@@ -1991,15 +1990,14 @@ bool Group::exportTo(conduit::Node & result,
  */
 bool Group::exportTo(conduit::Node& result,
                      const Attribute* attr,
-                     std::set<IndexType>& buffer_indices,
-                     const bool sidre_annotations) const
+                     std::set<IndexType>& buffer_indices) const
 {
   result.set(DataType::object());
   bool hasSavedViews = false;
 
   if (getNumViews() > 0)
   {
-    Node & vnode = sidre_annotations ? result["views"] : result;
+    Node & vnode = result["views"];
     IndexType vidx = getFirstValidViewIndex();
     while ( indexIsValid(vidx) )
     {
@@ -2008,7 +2006,7 @@ bool Group::exportTo(conduit::Node& result,
       {
         Node& n_view =
           m_is_list ? vnode.append() : vnode.fetch(view->getName());
-        view->exportTo( n_view, buffer_indices, sidre_annotations );
+        view->exportTo( n_view, buffer_indices );
         hasSavedViews = true;
       }
       vidx = getNextValidViewIndex(vidx);
@@ -2022,14 +2020,14 @@ bool Group::exportTo(conduit::Node& result,
   bool hasSavedGroups = false;
   if (getNumGroups() > 0)
   {
-    Node & gnode = sidre_annotations ? result["groups"] : result;
+    Node & gnode = result["groups"];
     IndexType gidx = getFirstValidGroupIndex();
     while ( indexIsValid(gidx) )
     {
       const Group* group = getGroup(gidx);
       Node& n_group =
         m_is_list ? gnode.append() : gnode.fetch(group->getName());
-      bool hsv = group->exportTo(n_group, attr, buffer_indices, sidre_annotations);
+      bool hsv = group->exportTo(n_group, attr, buffer_indices);
       hasSavedViews = hasSavedViews || hsv;
       hasSavedGroups = true;
 
@@ -2348,23 +2346,6 @@ bool Group::importConduitTreeExternal(conduit::Node &node,
   }
 
   return success;
-}
-
-/*
- *************************************************************************
- *
- * Exports this Group into a Conduit node tree.
- * This exports a generic conduit tree, not one with sidre conventions.
- *
- *************************************************************************
- */
-
-conduit::Node Group::exportConduitTree() 
-{
-  conduit::Node result;
-  bool sidre_annotations = false;
-  exportTo(result, nullptr, sidre_annotations);
-  return result;
 }
 
 /*
