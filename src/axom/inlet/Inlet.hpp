@@ -286,7 +286,8 @@ public:
    * This recursively checks the correctness of each Field and Table in the Sidre
    * Group: ensuring that required Fields are specified, each Field's value 
    * and default value are within the specified range or are equal to a valid 
-   * value, and types are consistent.
+   * value, and types are consistent. Also ensures that the registered verification
+   * lambdas hold true.
    * 
    * \return true if contents are correct and false if not.
    *
@@ -294,6 +295,12 @@ public:
    */
   bool verify(); 
 
+   /*!
+   *****************************************************************************
+   * \brief Requires the lambda-specified verification to pass when verify() is 
+   * called.
+   *****************************************************************************
+   */
   void registerFieldVerifier(std::function<bool(axom::sidre::Group*)> lambda);
 
   // TODO add update value functions
