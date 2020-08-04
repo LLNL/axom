@@ -53,7 +53,7 @@ SidreDataCollection::SidreDataCollection(const std::string& collection_name,
    {
       SidreDataCollection::SetMesh(the_mesh);
    }
-#ifdef MFEM_USE_MPI
+#ifdef AXOM_USE_MPI
    else
    {
       m_comm = MPI_COMM_NULL;
@@ -75,14 +75,14 @@ SidreDataCollection::SidreDataCollection(const std::string& collection_name,
      m_owns_datastore(false),
      m_owns_mesh_data(own_mesh_data),
      m_meshNodesGFName("mesh_nodes"),
-     m_datastore_ptr(NULL),
+     m_datastore_ptr(nullptr),
      m_bp_index_grp(bp_index_grp)
 {
    m_bp_grp = domain_grp->createGroup("blueprint");
 
    m_named_bufs_grp = domain_grp->createGroup("named_buffers");
 
-#ifdef MFEM_USE_MPI
+#ifdef AXOM_USE_MPI
    m_comm = MPI_COMM_NULL;
 #endif
 }
@@ -96,7 +96,7 @@ SidreDataCollection::~SidreDataCollection()
    }
 }
 
-#ifdef MFEM_USE_MPI
+#ifdef AXOM_USE_MPI
 void SidreDataCollection::SetComm(MPI_Comm comm)
 {
    m_comm = comm;
@@ -110,7 +110,7 @@ void SidreDataCollection::SetComm(MPI_Comm comm)
 // protected method
 sidre::Group *SidreDataCollection::named_buffers_grp() const
 {
-   SLIC_ASSERT_MSG(m_named_bufs_grp != NULL,
+   SLIC_ASSERT_MSG(m_named_bufs_grp != nullptr,
                "No group 'named_buffers' in data collection.  Verify that"
                " SetMesh was called to set the mesh in the data collection.");
    return m_named_bufs_grp;
@@ -121,8 +121,8 @@ View *
 SidreDataCollection::alloc_view(Group *grp,
                                 const std::string &view_name)
 {
-   SLIC_ASSERT_MSG(grp, "Group pointer is NULL");
-   sidre::View *v = NULL;
+   SLIC_ASSERT_MSG(grp, "Group pointer is nullptr");
+   sidre::View *v = nullptr;
 
    if (! grp->hasView(view_name) )
    {
@@ -144,8 +144,8 @@ SidreDataCollection::alloc_view(Group *grp,
                                 const std::string &view_name,
                                 const DataType &dtype)
 {
-   SLIC_ASSERT_MSG(grp, "Group pointer is NULL");
-   sidre::View *v = NULL;
+   SLIC_ASSERT_MSG(grp, "Group pointer is nullptr");
+   sidre::View *v = nullptr;
 
    if (! grp->hasView(view_name))
    {
@@ -166,8 +166,8 @@ Group *
 SidreDataCollection::alloc_group(Group *grp,
                                  const std::string &group_name)
 {
-   SLIC_ASSERT_MSG(grp, "Group pointer is NULL");
-   sidre::Group *g = NULL;
+   SLIC_ASSERT_MSG(grp, "Group pointer is nullptr");
+   sidre::Group *g = nullptr;
 
    if (! grp->hasGroup(group_name) )
    {
@@ -207,7 +207,7 @@ SidreDataCollection::AllocNamedBuffer(const std::string& buffer_name,
 {
    sz = std::max(sz, sidre::IndexType(0));
    sidre::Group *f = named_buffers_grp();
-   sidre::View  *v = NULL;
+   sidre::View  *v = nullptr;
 
    if (! f->hasView(buffer_name) )
    {
@@ -302,7 +302,7 @@ void SidreDataCollection::createMeshBlueprintCoordset(bool hasBP)
       dtype.set_stride(stride*NUM_COORDS);
 
       // Set up views for x, y, z values
-      sidre::View *vx, *vy = NULL, *vz = NULL;
+      sidre::View *vx, *vy = nullptr, *vz = nullptr;
       vx = m_bp_grp->createView("coordsets/coords/values/x", dtype);
 
       if (dim >= 2)
@@ -417,7 +417,7 @@ createMeshBlueprintTopologies(bool hasBP, const std::string& mesh_name)
 
       // If the mesh has nodes, set the name of the GridFunction holding the
       // mesh nodes in the blueprint group.
-      if (!isBdry && mesh->GetNodes() != NULL)
+      if (!isBdry && mesh->GetNodes() != nullptr)
       {
          topology_grp->createViewString("grid_function",m_meshNodesGFName);
       }
@@ -472,7 +472,7 @@ createMeshBlueprintTopologies(bool hasBP, const std::string& mesh_name)
 
       // If the mesh has nodes, set the name of the GridFunction holding the
       // mesh nodes in the blueprint_index group.
-      if (!isBdry && mesh->GetNodes() != NULL)
+      if (!isBdry && mesh->GetNodes() != nullptr)
       {
          bp_index_topo_grp->copyView(topology_grp->getView("grid_function"));
       }
@@ -480,7 +480,7 @@ createMeshBlueprintTopologies(bool hasBP, const std::string& mesh_name)
 }
 
 // private method
-#ifdef MFEM_USE_MPI
+#ifdef AXOM_USE_MPI
 void SidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
 {
    ParMesh *pmesh = dynamic_cast<ParMesh*>(mesh);
@@ -492,7 +492,7 @@ void SidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
    // stages like all of the other "createMeshBlueprint*" functions.
    SLIC_WARNING_IF(hasBP, "The case hasBP == true is not supported yet!");
 
-   sidre::Group* adjset_grp = NULL;
+   sidre::Group* adjset_grp = nullptr;
    if (pmesh->GetNGroups() > 1)
    {
       adjset_grp = m_bp_grp->createGroup("adjsets/mesh");
@@ -569,7 +569,7 @@ bool SidreDataCollection::HasBoundaryMesh() const
    // check if this rank has any boundary elements
    int hasBndElts = mesh->GetNBE() > 0 ? 1 : 0;
 
-#ifdef MFEM_USE_MPI
+#ifdef AXOM_USE_MPI
    // check if any rank has boundary elements
    ParMesh *pmesh = dynamic_cast<ParMesh*>(mesh);
    if (pmesh)
@@ -612,7 +612,7 @@ void SidreDataCollection::SetMesh(Mesh *new_mesh)
       createMeshBlueprintTopologies(hasBP, "boundary");
    }
 
-#ifdef MFEM_USE_MPI
+#ifdef AXOM_USE_MPI
    ParMesh *new_pmesh = dynamic_cast<ParMesh*>(new_mesh);
    m_comm = new_pmesh ? new_pmesh->GetComm() : MPI_COMM_NULL;
    if (new_pmesh)
@@ -659,7 +659,7 @@ void SidreDataCollection::SetMesh(Mesh *new_mesh)
       else
       {
          // Make sure Sidre does not have a named buffer for m_meshNodesGFName.
-         SLIC_WARNING_IF(GetNamedBuffer(m_meshNodesGFName) != NULL, "");
+         SLIC_WARNING_IF(GetNamedBuffer(m_meshNodesGFName) != nullptr, "");
       }
 
       RegisterField(m_meshNodesGFName, nodes);
@@ -677,7 +677,7 @@ void SidreDataCollection::SetMesh(Mesh *new_mesh)
    }
 }
 
-#ifdef MFEM_USE_MPI
+#ifdef AXOM_USE_MPI
 void SidreDataCollection::SetMesh(MPI_Comm comm, Mesh *new_mesh)
 {
    // use SidreDataCollection's custom SetMesh, then set MPI info
@@ -707,7 +707,7 @@ void SidreDataCollection::Load(const std::string& path,
    DataCollection::DeleteAll();
    // Reset DataStore?
 
-#ifdef MFEM_USE_MPI
+#ifdef AXOM_USE_MPI
    if (m_comm != MPI_COMM_NULL)
    {
       IOManager reader(m_comm);
@@ -736,7 +736,7 @@ void SidreDataCollection::Load(const std::string& path,
 
 void SidreDataCollection::LoadExternalData(const std::string& path)
 {
-#ifdef MFEM_USE_MPI
+#ifdef AXOM_USE_MPI
    if (m_comm != MPI_COMM_NULL)
    {
       IOManager reader(m_comm);
@@ -797,7 +797,7 @@ void SidreDataCollection::Save(const std::string& filename,
    std::string file_path = get_file_path(filename);
 
    sidre::Group * blueprint_indicies_grp = m_bp_index_grp->getParent();
-#ifdef MFEM_USE_MPI
+#ifdef AXOM_USE_MPI
    if (m_comm != MPI_COMM_NULL)
    {
       IOManager writer(m_comm);
@@ -836,11 +836,11 @@ addScalarBasedGridFunction(const std::string &field_name, GridFunction *gf,
                            IndexType offset)
 {
    sidre::Group* grp = m_bp_grp->getGroup("fields/" + field_name);
-   SLIC_ASSERT_MSG(grp != NULL, "field " << field_name << " does not exist");
+   SLIC_ASSERT_MSG(grp != nullptr, "field " << field_name << " does not exist");
 
    const int numDofs = gf->FESpace()->GetVSize();
 
-   if (gf->GetData() == NULL)
+   if (gf->GetData() == nullptr)
    {
       AllocNamedBuffer(buffer_name, offset + numDofs);
       // gf->data is set below.
@@ -899,7 +899,7 @@ addVectorBasedGridFunction(const std::string& field_name, GridFunction *gf,
                            IndexType offset)
 {
    sidre::Group* grp = m_bp_grp->getGroup("fields/" + field_name);
-   SLIC_ASSERT_MSG(grp != NULL, "field " << field_name << " does not exist");
+   SLIC_ASSERT_MSG(grp != nullptr, "field " << field_name << " does not exist");
 
    const int FLD_SZ = 20;
    char fidxName[FLD_SZ];
@@ -908,7 +908,7 @@ addVectorBasedGridFunction(const std::string& field_name, GridFunction *gf,
    int ndof = gf->FESpace()->GetNDofs();
    Ordering::Type ordering = gf->FESpace()->GetOrdering();
 
-   if (gf->GetData() == NULL)
+   if (gf->GetData() == nullptr)
    {
       AllocNamedBuffer(buffer_name, offset + vdim*ndof);
       // gf->data is set below.
@@ -966,7 +966,7 @@ addVectorBasedGridFunction(const std::string& field_name, GridFunction *gf,
       }
    }
 
-#ifdef MFEM_DEBUG
+#ifdef AXOM_DEBUG
    for (int d = 0;  d < vdim; d++)
    {
       std::snprintf(fidxName, FLD_SZ, "x%d", d);
@@ -1024,13 +1024,13 @@ void SidreDataCollection::RegisterField(const std::string &field_name,
                                         IndexType offset)
 {
    if ( field_name.empty() || buffer_name.empty() ||
-        gf == NULL || gf->FESpace() == NULL )
+        gf == nullptr || gf->FESpace() == nullptr )
    {
       return;
    }
 
    SLIC_ASSERT_MSG(
-      mesh != NULL,
+      mesh != nullptr,
       "Need to set mesh before registering attributes in SidreDataCollection.");
 
    // Register field_name in the blueprint group.
@@ -1045,12 +1045,12 @@ void SidreDataCollection::RegisterField(const std::string &field_name,
       //    the data collection.
       if (HasField(field_name))
       {
-#ifdef MFEM_DEBUG
+#ifdef AXOM_DEBUG
          // Warn about overwriting field.
          // Skip warning when re-registering the nodal grid function
          if (field_name != m_meshNodesGFName)
          {
-            MFEM_WARNING("field with the name '" << field_name<< "' is already "
+            SLIC_WARNING("field with the name '" << field_name<< "' is already "
                          "registered, overwriting the old field");
          }
 #endif
@@ -1102,7 +1102,7 @@ void SidreDataCollection::RegisterAttributeField(const std::string& attr_name,
                                                  bool is_bdry)
 {
    SLIC_ASSERT_MSG(
-      mesh != NULL,
+      mesh != nullptr,
       "Need to set mesh before registering attributes in SidreDataCollection.");
 
    // Register attr_name in the blueprint group.
@@ -1114,13 +1114,13 @@ void SidreDataCollection::RegisterAttributeField(const std::string& attr_name,
 
       if (isAttr)
       {
-         MFEM_WARNING("field with the name '" << attr_name << "' is already "
+         SLIC_WARNING("field with the name '" << attr_name << "' is already "
                       " registered as an attribute, overwriting old values.");
          DeregisterAttributeField(attr_name);
       }
       else if (isFld)
       {
-         MFEM_WARNING("field with the name '" << attr_name << "' is already "
+         SLIC_WARNING("field with the name '" << attr_name << "' is already "
                       " registered as a field, skipping register attribute.");
          return;
       }
@@ -1145,9 +1145,9 @@ void SidreDataCollection::RegisterAttributeField(const std::string& attr_name,
 void SidreDataCollection::RegisterAttributeFieldInBPIndex(
    const std::string& attr_name)
 {
-   SLIC_ASSERT_MSG(m_bp_grp->getGroup("fields") != NULL,
+   SLIC_ASSERT_MSG(m_bp_grp->getGroup("fields") != nullptr,
                "Mesh blueprint does not have 'fields' group");
-   SLIC_ASSERT_MSG(m_bp_index_grp->getGroup("fields") != NULL,
+   SLIC_ASSERT_MSG(m_bp_index_grp->getGroup("fields") != nullptr,
                "Mesh blueprint index does not have 'fields' group");
 
    // get the BP attr group
@@ -1206,7 +1206,7 @@ void SidreDataCollection::
 addIntegerAttributeField(const std::string& attr_name, bool is_bdry)
 {
    sidre::Group* fld_grp = m_bp_grp->getGroup("fields");
-   SLIC_ASSERT_MSG(fld_grp != NULL, "'fields' group does not exist");
+   SLIC_ASSERT_MSG(fld_grp != nullptr, "'fields' group does not exist");
 
    const int num_elem = is_bdry? mesh->GetNBE() : mesh->GetNE();
    std::string topo_name = is_bdry ? "boundary" : "mesh";

@@ -157,7 +157,7 @@ namespace sidre
 class SidreDataCollection : public mfem::DataCollection
 {
 public:
-   typedef mfem::NamedFieldsMap< mfem::Array<int> > AttributeFieldMap;
+   using AttributeFieldMap = mfem::NamedFieldsMap< mfem::Array<int> >;
    AttributeFieldMap attr_map;
 
 public:
@@ -167,14 +167,14 @@ public:
        @param[in] collection_name  Name of the collection used as a file name
                                    when saving
        @param[in] the_mesh         Mesh shared by all grid functions in the
-                                   collection (can be NULL)
+                                   collection (can be nullptr)
        @param[in] owns_mesh_data   Does the SidreDC own the mesh vertices?
 
        With this constructor, the SidreDataCollection owns the allocated Sidre
        DataStore.
     */
    explicit SidreDataCollection(const std::string& collection_name,
-                                mfem::Mesh *the_mesh = NULL,
+                                mfem::Mesh *the_mesh = nullptr,
                                 bool owns_mesh_data = false);
 
    /// Constructor that links to an external Sidre DataStore.
@@ -198,7 +198,7 @@ public:
                        Group * domain_grp,
                        bool owns_mesh_data = false);
 
-#ifdef MFEM_USE_MPI
+#ifdef AXOM_USE_MPI
    /// Associate an MPI communicator with the collection.
    /** If no mesh was associated with the collection, this method should be
        called before using any of the Load() methods to read parallel data. */
@@ -216,7 +216,7 @@ public:
 
    /// Register a GridFunction in the Sidre DataStore.
    /** The registration procedure is as follows:
-       - if (@a gf's data is NULL), allocate named buffer with the name
+       - if (@a gf's data is nullptr), allocate named buffer with the name
          @a buffer_name with size _offset + gf->FESpace()->GetVSize()_ and use
          its data (plus the given @a offset) to set @a gf's data;
        - else, if (DataStore has a named buffer @a buffer_name), replace @a gf's
@@ -229,7 +229,7 @@ public:
        @note If @a field_name or @a buffer_name is empty, the method does
        nothing.
        @note If the GridFunction pointer @a gf or it's FiniteElementSpace
-       pointer are NULL, the method does nothing.
+       pointer are nullptr, the method does nothing.
     */
    void RegisterField(const std::string &field_name, mfem::GridFunction *gf,
                       const std::string &buffer_name,
@@ -245,7 +245,7 @@ public:
    void DeregisterAttributeField(const std::string& name);
 
    /** Returns a pointer to the attribute field associated with
-       @a field_name, or NULL when there is no associated field */
+       @a field_name, or nullptr when there is no associated field */
    mfem::Array<int>* GetAttributeField(const std::string& field_name) const
    { return attr_map.Get(field_name); }
 
@@ -279,7 +279,7 @@ public:
        to register the mesh nodes GridFunction, if the mesh uses nodes. */
    virtual void SetMesh(mfem::Mesh *new_mesh);
 
-#ifdef MFEM_USE_MPI
+#ifdef AXOM_USE_MPI
    /// Set/change the mesh associated with the collection
    /** Uses the field name "mesh_nodes" or the value set by SetMeshNodesName()
        to register the mesh nodes GridFunction, if the mesh uses nodes. */
@@ -352,7 +352,7 @@ public:
 
    /** @brief Get a pointer to the sidre::View holding the named buffer for
        @a buffer_name. */
-   /** If such named buffer is not allocated, the method returns NULL.
+   /** If such named buffer is not allocated, the method returns nullptr.
        @note To access the underlying pointer, use View::getData().
        @note To query the size of the buffer, use View::getNumElements().
     */
@@ -361,7 +361,7 @@ public:
    {
       return named_buffers_grp()->hasView(buffer_name)
              ? named_buffers_grp()->getView(buffer_name)
-             : NULL;
+             : nullptr;
    }
 
    /// Return newly allocated or existing named buffer for @a buffer_name.
@@ -403,7 +403,7 @@ private:
    std::string m_meshNodesGFName;
 
    // If the data collection owns the datastore, it will store a pointer to it.
-   // Otherwise, this pointer is NULL.
+   // Otherwise, this pointer is nullptr.
    DataStore * m_datastore_ptr;
 
 protected:
@@ -507,7 +507,7 @@ private:
     */
    void createMeshBlueprintTopologies(bool hasBP, const std::string& mesh_name);
 
-#ifdef MFEM_USE_MPI
+#ifdef AXOM_USE_MPI
    /// Sets up the mesh blueprint 'adjacencies' group.
    /**
     * \param hasBP Indicates whether the blueprint has already been set up.
