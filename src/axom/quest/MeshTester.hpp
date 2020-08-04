@@ -106,7 +106,8 @@ inline Triangle3 getMeshTriangle(axom::IndexType i, UMesh* surface_mesh)
  * \param [in] surface_mesh A triangle mesh in three dimensions
  * \param [out] intersection Pairs of indices of intersecting mesh triangles
  * \param [out] degenerateIndices indices of degenerate mesh triangles
- *
+ * \param [in] intersectionThreshold Tolerance threshold for triangle 
+ * intersection tests (default: 1E-8)
  * After running this function over a surface mesh, intersection will be filled
  * with pairs of indices of intersecting triangles and degenerateIndices will
  * be filled with the indices of the degenerate triangles in the mesh.
@@ -120,7 +121,8 @@ template < typename ExecSpace, typename FloatType >
 void findTriMeshIntersectionsBVH(
   mint::UnstructuredMesh< mint::SINGLE_SHAPE >* surface_mesh,
   std::vector<std::pair<int, int> > & intersections,
-  std::vector<int> & degenerateIndices)
+  std::vector<int> & degenerateIndices,
+  double intersectionThreshold = 1E-8)
 {
   SLIC_INFO("Running BVH intersection algorithm "
             << " in execution Space: "
@@ -219,7 +221,8 @@ void findTriMeshIntersectionsBVH(
       int candidate_index = candidates[ offsets[i] + j];
       if (i != candidate_index && i < candidate_index)
       {
-        if (primal::intersect(tris[i], tris[candidate_index]))
+        if (primal::intersect(tris[i], tris[candidate_index],
+                              false, intersectionThreshold))
         {
           auto idx = RAJA::atomicAdd<ATOMIC_POL>(counter, 2);
           intersection_pairs[idx] = i;

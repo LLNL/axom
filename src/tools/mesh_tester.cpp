@@ -246,7 +246,8 @@ AXOM_HOST_DEVICE bool checkTT(Triangle3& t1, Triangle3& t2, double EPS);
 
 std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
   mint::Mesh* surface_mesh,
-  std::vector<int> & degenerate);
+  std::vector<int> & degenerate,
+  double EPS);
 
 void announceMeshProblems(int triangleCount,
                           int intersectPairCount,
@@ -647,25 +648,28 @@ int main( int argc, char** argv )
       switch (params.policy)
       {
       case seq:
-        collisions = naiveIntersectionAlgorithm(surface_mesh, degenerate);
+        collisions = naiveIntersectionAlgorithm(surface_mesh, degenerate, params.intersectionThreshold);
   #ifdef AXOM_USE_RAJA
       case raja_seq:
         quest::findTriMeshIntersectionsBVH< seq_exec, double >(surface_mesh,
                                                                collisions,
-                                                               degenerate);
+                                                               degenerate,
+                                                               params.intersectionThreshold);
         break;
     #ifdef AXOM_USE_OPENMP
       case raja_omp:
         quest::findTriMeshIntersectionsBVH< omp_exec, double >(surface_mesh,
                                                                collisions,
-                                                               degenerate);
+                                                               degenerate,
+                                                               params.intersectionThreshold);
         break;
     #endif
     #ifdef AXOM_USE_CUDA
       case raja_cuda:
         quest::findTriMeshIntersectionsBVH< cuda_exec, double >(surface_mesh,
                                                                 collisions,
-                                                                degenerate);
+                                                                degenerate,
+                                                                params.intersectionThreshold);
         break;
     #endif
   #endif // AXOM_USE_RAJA
