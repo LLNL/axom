@@ -24,15 +24,15 @@ set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-2019.08.20/bin/xlf2003" CACH
 #------------------------------------------------------------------------------
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib/2020_05_04_19_01_41/xl-nvcc" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib/2020_08_03_21_27_04/xl-nvcc" CACHE PATH "")
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.5.1" CACHE PATH "")
 
-set(MFEM_DIR "${TPL_ROOT}/mfem-4.0" CACHE PATH "")
+set(MFEM_DIR "${TPL_ROOT}/mfem-4.1.0" CACHE PATH "")
 
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.21" CACHE PATH "")
 
-# Lua not built
+set(LUA_DIR "${TPL_ROOT}/lua-5.3.5" CACHE PATH "")
 
 # SCR not built
 
@@ -63,7 +63,7 @@ set(BLT_MPI_COMMAND_APPEND "mpibind" CACHE PATH "")
 #------------------------------------------------------------------------------
 
 # Root directory for generated developer tools
-set(DEVTOOLS_ROOT "/usr/WS1/axom/devtools/blueos_3_ppc64le_ib/2020_05_04_17_39_54/gcc-8.3.1" CACHE PATH "")
+set(DEVTOOLS_ROOT "/collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib/2020_08_03_17_57_41/gcc-8.3.1" CACHE PATH "")
 
 set(PYTHON_EXECUTABLE "${DEVTOOLS_ROOT}/python-3.7.7/bin/python3.7" CACHE PATH "")
 
@@ -95,7 +95,9 @@ set(CMAKE_CXX_COMPILER_ID "XL" CACHE PATH "Override to proper compiler family fo
 
 set(BLT_FORTRAN_FLAGS "-WF,-C!  -qxlf2003=polymorphic" CACHE PATH "Converts C-style comments to Fortran style in preprocessed files")
 
-set(BLT_EXE_LINKER_FLAGS "-Wl,-rpath,/usr/tce/packages/xl/xl-2019.08.20/lib" CACHE PATH "Adds a missing rpath for libraries associated with the fortran compiler")
+set(BLT_EXE_LINKER_FLAGS "${BLT_EXE_LINKER_FLAGS} -Wl,-rpath,/usr/tce/packages/xl/xl-2019.08.20/lib" CACHE PATH "Adds a missing rpath for libraries associated with the fortran compiler")
+
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-rpath,/usr/tce/packages/xl/xl-2019.08.20/lib" CACHE PATH "Adds a missing rpath for libraries associated with the fortran compiler")
 
 #------------------------------------------------------------------------------
 # Cuda
