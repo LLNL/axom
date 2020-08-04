@@ -530,7 +530,7 @@ def set_axom_group_and_perms(directory):
             break
 
     if skip:
-        print "[Skipping, due to not known shared location, changing group and access perms of: %s]" % directory
+        print "[Skipping update of group and access permissions. Provided directory was not a known shared location: {0}]".format(directory)
         return 0
     else:
         print "[changing group and access perms of: %s]" % directory
