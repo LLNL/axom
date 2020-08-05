@@ -178,7 +178,6 @@ void findTriMeshIntersectionsBVH(
 
   // Construct BVH
   axom::spin::BVH< NDIMS, ExecSpace, FloatType > bvh( aabbs, ncells );
-  bvh.setScaleFactor( 1.0 ); // no scaling
   bvh.build( );
 
   // Run find algorithm
