@@ -6,6 +6,7 @@ Axom provides libraries that address common computer science needs.  It grew fro
 # Axom components
 
 * @subpage coretop provides shared utility functionality to all components.
+* @subpage inlettop provides input deck functionality.
 * @subpage lumberjacktop provides logging aggregation and filtering capability.
 * @subpage minttop provides a comprehensive mesh data model.
 * @subpage primaltop provides an API for geometric primitives and computational geometry tests.
@@ -19,8 +20,9 @@ Dependencies between components are as follows:
 - Core has no dependencies, and the other modules depend on Core
 - Slic optionally depends on Lumberjack
 - Slam, Primal, Mint, Quest, Spin, and Sidre depend on Slic
+- Inlet depends on Sidre, and Slic
 - Mint optionally depends on Sidre
-- Spin depends on Primal and Slam
+- Spin depends on Primal, and Slam
 - Quest depends on Slam, Primal, Spin, and Mint
 
 The figure below summarizes the dependencies between the modules.  Solid links

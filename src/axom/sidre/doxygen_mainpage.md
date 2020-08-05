@@ -1,4 +1,4 @@
-Sidre: Simulation Data Repository {#sidretop}
+Sidre {#sidretop}
 =========
 
 The Sidre component in Axom provides a data repository library for flexible, low-overhead, hierarchical organization of simulation data. Five concepts are embodied in Sidre classes:

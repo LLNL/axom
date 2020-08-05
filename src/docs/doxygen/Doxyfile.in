@@ -771,14 +771,16 @@ WARN_LOGFILE           = dox.warnings
 # spaces. See also FILE_PATTERNS and EXTENSION_MAPPING
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = @PROJECT_SOURCE_DIR@/axom/mainpage.md \
-                         @PROJECT_SOURCE_DIR@/axom/core/README.md \
+INPUT                  = @PROJECT_SOURCE_DIR@/axom/doxygen_mainpage.md \
+                         @PROJECT_SOURCE_DIR@/axom/core/doxygen_mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/core \
                          @PROJECT_SOURCE_DIR@/axom/core/utilities \
                          @PROJECT_SOURCE_DIR@/axom/core/numerics \
+                         @PROJECT_SOURCE_DIR@/axom/inlet \
+                         @PROJECT_SOURCE_DIR@/axom/inlet/doxygen_mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/lumberjack \
-                         @PROJECT_SOURCE_DIR@/axom/lumberjack/README.md \
-                         @PROJECT_SOURCE_DIR@/axom/mint/README.md \
+                         @PROJECT_SOURCE_DIR@/axom/lumberjack/doxygen_mainpage.md \
+                         @PROJECT_SOURCE_DIR@/axom/mint/doxygen_mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/mint/core \
                          @PROJECT_SOURCE_DIR@/axom/mint/fem \
                          @PROJECT_SOURCE_DIR@/axom/mint/fem/shape_functions \
@@ -791,21 +793,21 @@ INPUT                  = @PROJECT_SOURCE_DIR@/axom/mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/primal/operators \
                          @PROJECT_SOURCE_DIR@/axom/primal/spatial_acceleration \
                          @PROJECT_SOURCE_DIR@/axom/quest \
-                         @PROJECT_SOURCE_DIR@/axom/quest/README.md \
+                         @PROJECT_SOURCE_DIR@/axom/quest/doxygen_mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/quest/interface \
                          @PROJECT_SOURCE_DIR@/axom/quest/geom \
                          @PROJECT_SOURCE_DIR@/axom/quest/stl \
-                         @PROJECT_SOURCE_DIR@/axom/sidre/README.md \
+                         @PROJECT_SOURCE_DIR@/axom/sidre/doxygen_mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/sidre/core \
                          @PROJECT_SOURCE_DIR@/axom/sidre/spio \
                          @PROJECT_SOURCE_DIR@/axom/slam \
-                         @PROJECT_SOURCE_DIR@/axom/slam/README.md \
+                         @PROJECT_SOURCE_DIR@/axom/slam/doxygen_mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/slam/policies \
-                         @PROJECT_SOURCE_DIR@/axom/slic/README.md \
+                         @PROJECT_SOURCE_DIR@/axom/slic/doxygen_mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/slic/core \
                          @PROJECT_SOURCE_DIR@/axom/slic/interface \
                          @PROJECT_SOURCE_DIR@/axom/slic/streams \
-                         @PROJECT_SOURCE_DIR@/axom/spin/README.md \
+                         @PROJECT_SOURCE_DIR@/axom/spin/doxygen_mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/spin
 
 # This tag can be used to specify the character encoding of the source files

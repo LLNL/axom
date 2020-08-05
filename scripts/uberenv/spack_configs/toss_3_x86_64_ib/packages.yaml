@@ -34,13 +34,12 @@ packages:
 # Lock down which MPI we are using
   mvapich2:
     paths:
-      mvapich2@2.3%gcc@6.1.0 process_managers=slurm arch=linux-rhel7-ivybridge: /usr/tce/packages/mvapich2/mvapich2-2.3-gcc-6.1.0
-      mvapich2@2.3%gcc@7.3.0 process_managers=slurm arch=linux-rhel7-ivybridge: /usr/tce/packages/mvapich2/mvapich2-2.3-gcc-7.3.0
+      mvapich2@2.3%clang@9.0.0 process_managers=slurm arch=linux-rhel7-ivybridge: /usr/tce/packages/mvapich2/mvapich2-2.3-clang-9.0.0
+      mvapich2@2.3%clang@10.0.0 process_managers=slurm arch=linux-rhel7-ivybridge: /usr/tce/packages/mvapich2/mvapich2-2.3-clang-10.0.0
       mvapich2@2.3%gcc@8.1.0 process_managers=slurm arch=linux-rhel7-ivybridge: /usr/tce/packages/mvapich2/mvapich2-2.3-gcc-8.1.0
+      mvapich2@2.3%gcc@8.1.0_no_fortran process_managers=slurm arch=linux-rhel7-ivybridge: /usr/tce/packages/mvapich2/mvapich2-2.3-gcc-8.1.0
       mvapich2@2.3%intel@18.0.2 process_managers=slurm arch=linux-rhel7-ivybridge: /usr/tce/packages/mvapich2/mvapich2-2.3-intel-18.0.2
-      mvapich2@2.3%intel@19.0.0 process_managers=slurm arch=linux-rhel7-ivybridge: /usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.0
-      mvapich2@2.3%clang@4.0.0 process_managers=slurm arch=linux-rhel7-ivybridge: /usr/tce/packages/mvapich2/mvapich2-2.3-clang-4.0.0
-      mvapich2@2.3%clang@6.0.0 process_managers=slurm arch=linux-rhel7-ivybridge: /usr/tce/packages/mvapich2/mvapich2-2.3-clang-6.0.0
+      mvapich2@2.3%intel@19.0.4 process_managers=slurm arch=linux-rhel7-ivybridge: /usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.0
     buildable: False
 # Spack may grab for mpi & we don't want to use them
   openmpi:

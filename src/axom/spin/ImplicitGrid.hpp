@@ -124,12 +124,16 @@ public:
 
     // Set up the grid resolution from the gridRes array
     //   if NULL, GridCell parameter to initialize should also be NULL
-    const GridCell* pRes =
-      (gridRes != nullptr) ? &m_gridRes : nullptr;
+   
+    GridCell res;
+    if(gridRes != nullptr){
+      res = GridCell(gridRes, NDIMS);
+    }
 
     initialize(
       SpatialBoundingBox( SpacePoint(bbMin), SpacePoint(bbMax) ),
-      pRes, numElts);
+      (gridRes != nullptr) ? &res : nullptr, 
+      numElts);
   }
 
   /*! Predicate to check if the ImplicitGrid has been initialized */

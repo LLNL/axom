@@ -2,7 +2,7 @@
 # !!!! This is a generated file, edit at own risk !!!!
 #------------------------------------------------------------------------------
 # SYS_TYPE: toss_3_x86_64_ib
-# Compiler Spec: intel@19.0.0
+# Compiler Spec: gcc@no_fortran
 #------------------------------------------------------------------------------
 # CMake executable path: /usr/tce/packages/cmake/cmake-3.14.5/bin/cmake
 #------------------------------------------------------------------------------
@@ -11,28 +11,26 @@
 # Compilers
 #------------------------------------------------------------------------------
 
-set(CMAKE_C_COMPILER "/usr/tce/packages/intel/intel-19.0.0/bin/icc" CACHE PATH "")
+set(CMAKE_C_COMPILER "/usr/tce/packages/gcc/gcc-8.1.0/bin/gcc" CACHE PATH "")
 
-set(CMAKE_CXX_COMPILER "/usr/tce/packages/intel/intel-19.0.0/bin/icpc" CACHE PATH "")
+set(CMAKE_CXX_COMPILER "/usr/tce/packages/gcc/gcc-8.1.0/bin/g++" CACHE PATH "")
 
-set(ENABLE_FORTRAN ON CACHE BOOL "")
-
-set(CMAKE_Fortran_COMPILER "/usr/tce/packages/intel/intel-19.0.0/bin/ifort" CACHE PATH "")
+set(ENABLE_FORTRAN OFF CACHE BOOL "")
 
 #------------------------------------------------------------------------------
 # TPLs
 #------------------------------------------------------------------------------
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/libs/toss_3_x86_64_ib/2020_05_04_19_01_32/intel-19.0.0" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/toss_3_x86_64_ib/2020_06_19_12_14_54/gcc-no_fortran" CACHE PATH "")
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.5.1" CACHE PATH "")
 
-set(MFEM_DIR "${TPL_ROOT}/mfem-4.0" CACHE PATH "")
+set(MFEM_DIR "${TPL_ROOT}/mfem-4.1.0" CACHE PATH "")
 
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.21" CACHE PATH "")
 
-# Lua not built
+set(LUA_DIR "${TPL_ROOT}/lua-5.3.5" CACHE PATH "")
 
 # SCR not built
 
@@ -46,11 +44,9 @@ set(UMPIRE_DIR "${TPL_ROOT}/umpire-2.1.0" CACHE PATH "")
 
 set(ENABLE_MPI ON CACHE BOOL "")
 
-set(MPI_C_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.0/bin/mpicc" CACHE PATH "")
+set(MPI_C_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-8.1.0/bin/mpicc" CACHE PATH "")
 
-set(MPI_CXX_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.0/bin/mpicxx" CACHE PATH "")
-
-set(MPI_Fortran_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.3-intel-19.0.0/bin/mpif90" CACHE PATH "")
+set(MPI_CXX_COMPILER "/usr/tce/packages/mvapich2/mvapich2-2.3-gcc-8.1.0/bin/mpicxx" CACHE PATH "")
 
 set(MPIEXEC_EXECUTABLE "/usr/bin/srun" CACHE PATH "")
 

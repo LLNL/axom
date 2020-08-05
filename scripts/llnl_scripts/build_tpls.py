@@ -30,6 +30,11 @@ def parse_args():
                       dest="directory",
                       default="",
                       help="Location to build all TPL's, timestamp directory will be created (Defaults to shared location)")
+    # Directory to do all the building
+    parser.add_option("-s", "--spec",
+                      dest="spec",
+                      default="",
+                      help="Spack spec to build (defaults to all available on SYS_TYPE)")
     # Whether to archive results
     parser.add_option("-a", "--archive",
                       dest="archive",
@@ -70,7 +75,7 @@ def main():
         os.chdir(repo_dir)
 
         timestamp = get_timestamp()
-        res = full_build_and_test_of_tpls(builds_dir, job_name, timestamp)
+        res = full_build_and_test_of_tpls(builds_dir, job_name, timestamp, opts["spec"])
 
         if opts["archive"] != "":
             # Get information for archiving

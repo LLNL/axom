@@ -1,9 +1,12 @@
 Source: axom
 Version: develop
 Description: Host-config generator for Axom TPLs
-Build-Depends: hdf5, conduit, mfem
-Default-Features: hdf5, conduit, mfem
+Default-Features: conduit, mfem
 
 Feature: mfem
 Description: Adds basic (serial) mfem support to Axom
 Build-Depends: mfem
+
+Feature: conduit
+Description: Enables data exchange using Conduit
+Build-Depends: conduit

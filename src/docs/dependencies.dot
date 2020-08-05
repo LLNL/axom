@@ -7,4 +7,5 @@ digraph dependencies {
   slic -> core;
   slic -> lumberjack [style="dashed"];
   lumberjack -> core;
+  inlet -> {sidre slic core};
 }

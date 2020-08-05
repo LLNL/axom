@@ -25,20 +25,20 @@ Semantic versioning is based on a three part version number `MM.mm.pp`:
     API change is made. That is, the API changes in a way that may break code
     using an earlier release of the software with a smaller major version 
     number. Following Gitflow (above), the major version number may be changed
-    when the develop branch is merged into the master branch.
+    when the develop branch is merged into the main branch.
   * `mm` is the *minor* version number. It changes when functionality is
     added that is backward-compatible. The API may grow to support new 
     functionality. However, the software will function the same as any
     earlier release of the software with a smaller minor version number
     when used through the intersection of two APIs. Following Gitflow (above), 
     the minor version number is always changed when the develop branch is 
-    merged into the master branch, except possibly when the major version 
+    merged into the main branch, except possibly when the major version 
     is changed.
   * `pp` is the *patch* version number. It changes when a bug fix is made that
     is backward compatible. That is, such a bug fix is an internal 
     implementation change that fixes incorrect behavior. Following Gitflow 
     (above), the patch version number is always changed when a hotfix branch
-    is merged into master, or when develop is merged into master and the 
+    is merged into main, or when develop is merged into main and the 
     changes only contain bug fixes.
 
 ===========================================

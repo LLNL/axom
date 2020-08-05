@@ -111,6 +111,7 @@ program spio_external_write_read
 
   call mpi_finalize(mpierr)
 #else
+  return_val = 0
   print *, "Loading external data only valid for 'sidre_hdf5' format &
            & and when Axom is configured with hdf5. Skipping test."
 #endif

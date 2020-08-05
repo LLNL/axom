@@ -3,7 +3,7 @@
 .. ##
 .. ## SPDX-License-Identifier: (BSD-3-Clause)
 
-.. github-label:
+.. _github-label:
 
 ******************************************************
 Git/Github: Version Control and Branch Development 
@@ -160,7 +160,7 @@ Topic Branch Development
 It is worth re-emphasizing a fundamental principle of the Gitflow
 development model that we described in :ref:`gitflow-label`.
 
-.. important:: **We never work directly on the develop or master branches.
+.. important:: **We never work directly on the develop or main branches.
                All development occurs on topic branches.**
 
 When we refer to a *topic branch*, it could be a *feature branch*,
@@ -170,7 +170,7 @@ on a topic branch is:
   #. Create a topic branch off the develop branch and push the new branch
      to Github.
   #. Make changes and commit them to your branch in your local copy of the 
-     repository. Remember to push changes to the main repo on Github 
+     repository. Remember to push changes to the Github repo
      regularly for backup and so you can easily recover earlier versions of
      your work if you need to do so.
   #. If you are working on your topic branch for a while, it is a good idea
@@ -188,7 +188,7 @@ Step 1 -- Create a topic branch
 
     Most development occurs on a topic branch created off the develop branch.
     Occasions where a branch is created from another branch, such as a
-    'hotfix' branch created off master, are described in :ref:`gitflow-label`.
+    'hotfix' branch created off main, are described in :ref:`gitflow-label`.
     To create a branch in Git, provide the ``-b`` option to the 
     ``git checkout`` command, followed by the name of your topic branch. 
     A topic branch name should include your username (i.e., login id) and a 
@@ -229,7 +229,7 @@ Step 2 -- Do development work
     The 'add' command adds a file (or files) to be staged for a commit 
     operation. The 'commit' command moves your staged changes to your local 
     copy of the repository. The 'push' command pushes these changes to the 
-    topic branch in the main Git repo. To push your work, you could also do::
+    topic branch in the Git repo. To push your work, you could also do::
 
       $ git push origin
 
@@ -239,7 +239,7 @@ Step 2 -- Do development work
  
     .. important:: 
        You may perform several local commits before you push your work 
-       to the main repo. Generally, it is a good idea to limit the 
+       to the Github repo. Generally, it is a good idea to limit the 
        amount of modifications contained in any one commit. By 
        restricting individual commits to a reasonable size that 
        contain closely related work, it is easier to refer back to 
@@ -259,7 +259,7 @@ Step 2 -- Do development work
     various tools with the Git version control system. Specifically:
 
     * Commit message subject line is at most 50 characters
-    * Subject line and main body of commit message are separated by a blank line
+    * Subject line and body of commit message are separated by a blank line
     * Main body of commit message is wrapped to 78 characters
 
 .. _keepcurrent-label:
@@ -276,7 +276,7 @@ Step 3 -- Keep current with develop
 
     Before you begin the merge, make sure all outstanding changes to your topic
     branch are committed. Then, make sure your local repo is up-to-date with 
-    the main develop branch by checking it out and pulling in the latest 
+    the develop branch by checking it out and pulling in the latest 
     changes; i.e.,::
 
       $ git checkout develop
@@ -316,7 +316,7 @@ Step 3 -- Keep current with develop
     .. important:: **Git will not let you commit a file with merge conflicts.**
                    After you resolve merge conflicts in a file, you must 
                    stage the file for commit (i.e., `git add <filename>),
-                   commit it (i.e., `git commit`), and push it to the main
+                   commit it (i.e., `git commit`), and push it to the Github
                    repo (i.e., `git push`) before you can merge.
 
 .. _createpr-label:

@@ -72,23 +72,23 @@ constexpr int NUM_CELL_TYPES = static_cast< int >( CellType::NUM_CELL_TYPES );
  * \param FACE_NODES an array; the node offsets specifying each face
  *        (CCW, so normal points out).
  */
-#define REGISTER_CELL_INFO( MINT_CELL_TYPE, MINT_NAME, BP_NAME, VTK_TYPE,   \
+#define REGISTER_CELL_INFO( MINT_CELL_TYPE, MINT_NAME, BP_NAME, VTK_TYPE,    \
                             N_NODES, N_FACES, N_FACE_NODES, FACE_CELL_TYPES, \
-                            FACE_NODES )                                    \
-  namespace internal                                                        \
-  {                                                                         \
-  static constexpr CellInfo MINT_CELL_TYPE ## _INFO =                       \
-  {                                                                         \
-    MINT_CELL_TYPE,                                                         \
-    MINT_NAME,                                                              \
-    BP_NAME,                                                                \
-    VTK_TYPE,                                                               \
-    N_NODES,                                                                \
-    N_FACES,                                                                \
-    N_FACE_NODES,                                                           \
-    FACE_CELL_TYPES,                                                        \
-    FACE_NODES                                                              \
-  };                                                                        \
+                            FACE_NODES )                                     \
+  namespace internal                                                         \
+  {                                                                          \
+  static const CellInfo MINT_CELL_TYPE ## _INFO =                            \
+  {                                                                          \
+    MINT_CELL_TYPE,                                                          \
+    MINT_NAME,                                                               \
+    BP_NAME,                                                                 \
+    VTK_TYPE,                                                                \
+    N_NODES,                                                                 \
+    N_FACES,                                                                 \
+    N_FACE_NODES,                                                            \
+    FACE_CELL_TYPES,                                                         \
+    FACE_NODES                                                               \
+  };                                                                         \
   }
 
 /*!
@@ -219,7 +219,7 @@ REGISTER_CELL_INFO( HEX27, "HEX27", "hex27-no-bp", 29, 27, 6,
  * \note The order at which CellInfo for each type is added has to match
  *  the order of the cell types in the CellTypes enum above.
  */
-static constexpr CellInfo cell_info[ NUM_CELL_TYPES ] = {
+static const CellInfo cell_info[ NUM_CELL_TYPES ] = {
   CELL_INFO( VERTEX ),
   CELL_INFO( SEGMENT ),
   CELL_INFO( TRIANGLE ),
