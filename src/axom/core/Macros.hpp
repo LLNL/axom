@@ -36,17 +36,24 @@
 #endif
 
 /*
+ * \def AXOM_PRAGMA
+ *
+ * \brief Macro used to specify pragma directive
+ */
+#ifdef _WIN32
+#define AXOM_PRAGMA(__supplied_pragma) __pragma(__supplied_pragma)
+#else
+#define AXOM_PRAGMA(__supplied_pragma) _Pragma(#__supplied_pragma)
+#endif
+
+/*
  * \def AXOM_SUPPRESS_HD_WARN
  *
  * \brief Macro used to silence __host__ __device__ compiler warnings
- *  when calling __host__ function from __host__ __device function.
+ *  when calling __host__ function from __host__ __device__ function.
  */
 #if defined(__CUDACC__)
-  #ifdef WIN32
-  #define AXOM_SUPPRESS_HD_WARN __pragma(nv_exec_check_disable)
-  #else
-  #define AXOM_SUPPRESS_HD_WARN _Pragma("nv_exec_check_disable")
-  #endif
+#define AXOM_SUPPRESS_HD_WARN AXOM_PRAGMA(nv_exec_check_disable)
 #else
 #define AXOM_SUPPRESS_HD_WARN
 #endif
