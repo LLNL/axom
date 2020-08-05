@@ -135,7 +135,7 @@ packages:
       python: /usr/WS1/axom/devtools/blueos_3_ppc64le_ib_p9/latest/python-3.7.7
     buildable: False
   py-shroud:
-    version: [0.11.0]
+    version: [0.12.2]
     paths:
       py-shroud: /usr/WS1/axom/devtools/blueos_3_ppc64le_ib_p9/latest/python-3.7.7
     buildable: False
