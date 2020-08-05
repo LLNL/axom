@@ -205,15 +205,6 @@ TEST(core_config,mfem_configuration)
             << std::endl;
   #endif // MFEM_VERSION
 
-  // Verify that this copy of mfem is configured without MPI
-  bool hasMPI = false;
-
-  #ifdef MFEM_USE_MPI
-  hasMPI = true;
-  #endif
-
-  EXPECT_FALSE(hasMPI) << "Axom expects mfem to be built without MPI";
-
   // Verify that this copy of mfem is configured without Sidre
   bool hasSidre = false;
   #ifdef MFEM_USE_SIDRE

@@ -51,11 +51,15 @@ endforeach()
 
 if(MFEM_FOUND)
     set(test_name quest_point_in_cell_mfem)
+
+    set(quest_test_mfem_depends ${quest_tests_depends} mfem core)
+    blt_list_append( TO quest_test_mfem_depends ELEMENTS mpi IF ENABLE_MPI )
+
     blt_add_executable(
         NAME ${test_name}
         SOURCES ${test_name}.cpp
         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-        DEPENDS_ON ${quest_tests_depends} mfem core
+        DEPENDS_ON ${quest_test_mfem_depends}
         FOLDER axom/quest/tests
         )
 

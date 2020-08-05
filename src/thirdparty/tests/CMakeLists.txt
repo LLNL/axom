@@ -98,10 +98,15 @@ endif()
 # Smoke test for mfem third party library
 #------------------------------------------------------------------------------
 if (MFEM_FOUND)
+    
+    set(mfem_smoke_dependencies mfem gtest)
+    
+    blt_list_append( TO mfem_smoke_dependencies ELEMENTS mpi IF ENABLE_MPI)
+
     blt_add_executable(NAME mfem_smoke_test
                        SOURCES mfem_smoke.cpp
                        OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
-                       DEPENDS_ON mfem gtest
+                       DEPENDS_ON ${mfem_smoke_dependencies}
                        FOLDER axom/thirdparty/tests )
     set_property(
         TARGET mfem_smoke_test
