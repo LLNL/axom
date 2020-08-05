@@ -24,11 +24,11 @@ set(CMAKE_Fortran_COMPILER "/usr/tce/packages/xl/xl-2019.12.23/bin/xlf2003" CACH
 #------------------------------------------------------------------------------
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib/2020_08_03_21_27_04/xl-coral" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/blueos_3_ppc64le_ib/2020_08_04_23_19_23/xl-coral" CACHE PATH "")
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.5.1" CACHE PATH "")
 
-set(MFEM_DIR "${TPL_ROOT}/mfem-4.1.0" CACHE PATH "")
+# MFEM not built
 
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.21" CACHE PATH "")
 

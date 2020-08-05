@@ -22,11 +22,11 @@ set(ENABLE_FORTRAN OFF CACHE BOOL "")
 #------------------------------------------------------------------------------
 
 # Root directory for generated TPLs
-set(TPL_ROOT "/usr/WS1/axom/libs/toss_3_x86_64_ib/2020_08_03_17_51_30/gcc-no_fortran" CACHE PATH "")
+set(TPL_ROOT "/usr/WS1/axom/libs/toss_3_x86_64_ib/2020_08_04_22_27_58/gcc-no_fortran" CACHE PATH "")
 
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-0.5.1" CACHE PATH "")
 
-set(MFEM_DIR "${TPL_ROOT}/mfem-4.1.0" CACHE PATH "")
+# MFEM not built
 
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.21" CACHE PATH "")
 
