@@ -41,14 +41,14 @@ namespace axom
 namespace quest
 {
 
-using UMesh = mint::UnstructuredMesh< mint::SINGLE_SHAPE >;
-using Triangle3 = primal::Triangle<double, 3>;
-
-using Point3 = primal::Point<double, 3>;
-using SpatialBoundingBox = primal::BoundingBox<double, 3>;
-using UniformGrid3 = spin::UniformGrid<int, 3>;
-using Vector3 = primal::Vector<double, 3>;
-using Segment3 = primal::Segment<double, 3>;
+namespace detail
+{
+  using UMesh = mint::UnstructuredMesh< mint::SINGLE_SHAPE >;
+  using Triangle3 = primal::Triangle<double, 3>;
+  using SpatialBoundingBox = primal::BoundingBox<double, 3>;
+  using UniformGrid3 = spin::UniformGrid<int, 3>;
+  using Point3 = primal::Point<double, 3>;
+}
 
 /*! Enumeration indicating mesh watertightness */
 enum class WatertightStatus : signed char
@@ -58,9 +58,9 @@ enum class WatertightStatus : signed char
   CHECK_FAILED       ///< Calculation failed (possibly a non-manifold mesh)
 };
 
-inline SpatialBoundingBox compute_bounds(const Triangle3 & tri)
+inline detail::SpatialBoundingBox compute_bounds(const detail::Triangle3 & tri)
 {
-  SpatialBoundingBox triBB;
+  detail::SpatialBoundingBox triBB;
   triBB.addPoint(tri[0]);
   triBB.addPoint(tri[1]);
   triBB.addPoint(tri[2]);
@@ -70,11 +70,12 @@ inline SpatialBoundingBox compute_bounds(const Triangle3 & tri)
   return triBB;
 }
 
-inline Triangle3 getMeshTriangle(axom::IndexType i, UMesh* surface_mesh)
+inline detail::Triangle3 getMeshTriangle(axom::IndexType i, 
+                                         detail::UMesh* surface_mesh)
 {
   SLIC_ASSERT( surface_mesh->getNumberOfCellNodes( i ) == 3);
 
-  Triangle3 tri;
+  detail::Triangle3 tri;
 
   const axom::IndexType* triCell = surface_mesh->getCellNodeIDs( i );
 
@@ -133,7 +134,7 @@ void findTriMeshIntersectionsBVH(
   constexpr int stride = 2 * NDIMS;
   const int ncells = surface_mesh->getNumberOfCells();
 
-  Triangle3* tris = axom::allocate <Triangle3> (ncells);
+  detail::Triangle3* tris = axom::allocate <detail::Triangle3> (ncells);
 
   FloatType* xmin = axom::allocate< FloatType >( ncells );
   FloatType* ymin = axom::allocate< FloatType >( ncells );
@@ -147,8 +148,8 @@ void findTriMeshIntersectionsBVH(
   FloatType* aabbs = axom::allocate< FloatType >( ncells * stride );
 
   // Finding degenerate indices and bounding boxes from Triangles
-  Triangle3 t1 = Triangle3();
-  Triangle3 t2 = Triangle3();
+  detail::Triangle3 t1 = detail::Triangle3();
+  detail::Triangle3 t2 = detail::Triangle3();
 
   for (int i=0 ; i < ncells ; i++)
   {
@@ -160,7 +161,7 @@ void findTriMeshIntersectionsBVH(
       degenerateIndices.push_back(i);
     }
 
-    SpatialBoundingBox triBB = compute_bounds(t1);
+    detail::SpatialBoundingBox triBB = compute_bounds(t1);
 
     const IndexType offset = i * stride;
 
