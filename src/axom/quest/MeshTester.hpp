@@ -6,6 +6,8 @@
 #ifndef MESH_TESTER_HPP_
 #define MESH_TESTER_HPP_
 
+// Axom includes
+#include "axom/config.hpp"
 #include "axom/core.hpp"
 #include "axom/primal.hpp"
 #include "axom/spin.hpp"
@@ -17,11 +19,6 @@
 #include <vector>
 #include <unordered_map>
 #include <functional> // for std::hash
-
-// Axom includes
-#include "axom/config.hpp"
-#include "axom/mint/mesh/UnstructuredMesh.hpp"
-#include "axom/slic/interface/slic.hpp"
 
 // BVH includes
 #if defined(AXOM_USE_RAJA)
