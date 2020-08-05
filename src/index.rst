@@ -57,7 +57,7 @@ Documentation
    :align: center
 
    * - Core
-     -
+     - :doc:`User Guide <axom/core/docs/sphinx/index>`
      - `Source documentation <doxygen/html/coretop.html>`_
    * - Inlet
      - :doc:`User Guide <axom/inlet/docs/sphinx/index>`
