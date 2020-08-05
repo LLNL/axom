@@ -113,6 +113,8 @@ packages:
   conduit:
     version: [0.5.1]
     variants: ~shared
+  mfem:
+    variants: ~hypre~metis~zlib
 
 # Globally lock in versions of Devtools
   cppcheck:

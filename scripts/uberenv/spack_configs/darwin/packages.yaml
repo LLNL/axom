@@ -73,3 +73,5 @@ packages:
   conduit:
     version: [0.5.1]
     variants: ~shared
+  mfem:
+    variants: ~hypre~metis~zlib
