@@ -16,20 +16,22 @@ extern "C" {
 #endif
 
 // helper capsule_SPIO_IOManager
-struct s_SPIO_IOManager {
-    void *addr;     /* address of C++ memory */
-    int idtor;      /* index of destructor */
+struct s_SPIO_IOManager
+{
+  void* addr;       /* address of C++ memory */
+  int idtor;        /* index of destructor */
 };
 typedef struct s_SPIO_IOManager SPIO_IOManager;
 
 // helper capsule_data_helper
-struct s_SPIO_SHROUD_capsule_data {
-    void *addr;     /* address of C++ memory */
-    int idtor;      /* index of destructor */
+struct s_SPIO_SHROUD_capsule_data
+{
+  void* addr;       /* address of C++ memory */
+  int idtor;        /* index of destructor */
 };
 typedef struct s_SPIO_SHROUD_capsule_data SPIO_SHROUD_capsule_data;
 
-void SPIO_SHROUD_memory_destructor(SPIO_SHROUD_capsule_data *cap);
+void SPIO_SHROUD_memory_destructor(SPIO_SHROUD_capsule_data* cap);
 
 #ifdef __cplusplus
 }
