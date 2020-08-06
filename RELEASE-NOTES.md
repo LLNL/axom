@@ -60,6 +60,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 - Fortran API in slic module. `axom::slic::message` Level enums are changed
   from  *enum-name_enumerator* to *namespace_enumerator*.
   ex. `level_error` is now `message_error`.
+- Fortran derived-type constructors are now generic functions named afer the derived type.
+  `datastore_new` is now `SidreDataStore`
+  `iomanager_new` is now `IOManager`
 
 ### Fixed
 - Fixed issue in the parallel construction of the BVH on GPUs, due to incoherent
