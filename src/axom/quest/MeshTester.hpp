@@ -132,6 +132,9 @@ void findTriMeshIntersectionsBVH(
   FloatType* ymax = axom::allocate< FloatType >( ncells );
   FloatType* zmax = axom::allocate< FloatType >( ncells );
 
+  // Marks each cell/triangle as degenerate (1) or not (0)
+  int* degenerate = axom::allocate< int >( ncells );
+
   // Each access-aligned bounding box represented by 2 (x,y,z) points
   FloatType* aabbs = axom::allocate< FloatType >( ncells * stride );
 
@@ -139,27 +142,54 @@ void findTriMeshIntersectionsBVH(
   detail::Triangle3 t1 = detail::Triangle3();
   detail::Triangle3 t2 = detail::Triangle3();
 
-  for (int i=0 ; i < ncells ; i++)
+  // Initialize the bounding box for each Triangle and marks
+  // if the Triangle is degenerate.
+  mint::for_all_cells< ExecSpace, mint::xargs::coords >(
+    surface_mesh, AXOM_LAMBDA( IndexType cellIdx,
+                               numerics::Matrix< double >&coords,
+                               const IndexType* AXOM_NOT_USED(nodeIds) )
   {
-    t1=getMeshTriangle(i, surface_mesh);
-    tris[i] = t1;
+    detail::Triangle3 tri;
 
-    if (t1.degenerate())
+    for ( IndexType inode=0 ; inode < 3 ; ++inode )
+    {
+      const double* node = coords.getColumn( inode );
+      tri[ inode ][ 0 ] = node[ mint::X_COORDINATE ];
+      tri[ inode ][ 1 ] = node[ mint::Y_COORDINATE ];
+      tri[ inode ][ 2 ] = node[ mint::Z_COORDINATE ];
+    } // END for all cells nodes
+
+    if (tri.degenerate())
+    {
+      degenerate[cellIdx] = 1;
+    }
+    else
+    {
+      degenerate[cellIdx] = 0;
+    }
+
+    tris[cellIdx] = tri;
+
+    detail::SpatialBoundingBox triBB = compute_bounding_box(tri);
+
+    const IndexType offset = cellIdx * stride;
+
+    xmin[cellIdx] = aabbs[ offset ]     = triBB.getMin()[0];
+    ymin[cellIdx] = aabbs[ offset + 1 ] = triBB.getMin()[1];
+    zmin[cellIdx] = aabbs[ offset + 2 ] = triBB.getMin()[2];
+
+    xmax[cellIdx] = aabbs[ offset + 3 ] = triBB.getMax()[0];
+    ymax[cellIdx] = aabbs[ offset + 4 ] = triBB.getMax()[1];
+    zmax[cellIdx] = aabbs[ offset + 5 ] = triBB.getMax()[2];
+  } );
+
+  // Return degenerateIndices
+  for (int i = 0 ; i < ncells; i++)
+  {
+    if (degenerate[i] == 1)
     {
       degenerateIndices.push_back(i);
     }
-
-    detail::SpatialBoundingBox triBB = compute_bounding_box(t1);
-
-    const IndexType offset = i * stride;
-
-    xmin[i] = aabbs[ offset ]     = triBB.getMin()[0];
-    ymin[i] = aabbs[ offset + 1 ] = triBB.getMin()[1];
-    zmin[i] = aabbs[ offset + 2 ] = triBB.getMin()[2];
-
-    xmax[i] = aabbs[ offset + 3 ] = triBB.getMax()[0];
-    ymax[i] = aabbs[ offset + 4 ] = triBB.getMax()[1];
-    zmax[i] = aabbs[ offset + 5 ] = triBB.getMax()[2];
   }
 
   // Construct BVH
@@ -182,6 +212,8 @@ void findTriMeshIntersectionsBVH(
 
   //Deallocate no longer needed variables
   axom::deallocate(aabbs);
+  
+  axom::deallocate(degenerate);
 
   axom::deallocate(xmin);
   axom::deallocate(ymin);
