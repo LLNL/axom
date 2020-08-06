@@ -1007,7 +1007,8 @@ TEST(spio_parallel, sidre_simple_blueprint_example)
   // NOTE:
   // I (cyrush) tried using json protocols but hit issues in VisIt.
   // VisIt is tested against general json bp files, but not sidre
-  // flavored json, something we should look into. 
+  // flavored json, something we should look into.
+
   axom::sidre::IOManager writer(MPI_COMM_WORLD);
   const std::string file_name = "out_spio_blueprint_example";
   writer.write(root, 4, file_name, "sidre_hdf5");
@@ -1015,23 +1016,16 @@ TEST(spio_parallel, sidre_simple_blueprint_example)
   // make sure all tasks are done writing before we try
   // to add the blueprint index to the root file
   MPI_Barrier(MPI_COMM_WORLD);
-  // rank 0 adds the bp index on
+
+  // rank 0 adds the bp index to the root file
   if(my_rank == 0)
   {
-    // NOTE:
-    // I (cyrush) used conduit here to keep things simple.
-    // To use sidre, I would first have a conduit bp index tree (like here)
-    // then create a new data store, import the conduit tree into the
-    // new sidre data store, and finally use writeGroupToRootFile().
-
-    // generate blueprint index
-    conduit::Node n_bp_index;
-    conduit::blueprint::mesh::generate_index(n_mesh,"mesh",4,n_bp_index);
-    // add mesh blueprint index to the root file
-    conduit::relay::io::IOHandle hnd;
-    hnd.open(file_name + ".root","hdf5");
-    hnd.write(n_bp_index,"blueprint_index/mesh");
+    writer.writeBlueprintIndexToRootFile(&ds,
+                                         "mesh",
+                                         "out_spio_blueprint_example.root",
+                                         "mesh");
   }
+
 #endif
 }
 
