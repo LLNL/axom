@@ -58,18 +58,6 @@ enum class WatertightStatus : signed char
   CHECK_FAILED       ///< Calculation failed (possibly a non-manifold mesh)
 };
 
-inline detail::SpatialBoundingBox compute_bounds(const detail::Triangle3 & tri)
-{
-  detail::SpatialBoundingBox triBB;
-  triBB.addPoint(tri[0]);
-  triBB.addPoint(tri[1]);
-  triBB.addPoint(tri[2]);
-
-  SLIC_ASSERT( triBB.isValid() );
-
-  return triBB;
-}
-
 inline detail::Triangle3 getMeshTriangle(axom::IndexType i, 
                                          detail::UMesh* surface_mesh)
 {
@@ -161,7 +149,7 @@ void findTriMeshIntersectionsBVH(
       degenerateIndices.push_back(i);
     }
 
-    detail::SpatialBoundingBox triBB = compute_bounds(t1);
+    detail::SpatialBoundingBox triBB = compute_bounding_box(t1);
 
     const IndexType offset = i * stride;
 

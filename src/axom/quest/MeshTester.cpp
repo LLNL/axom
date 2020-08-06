@@ -95,7 +95,7 @@ void findTriMeshIntersections(
     {
       nondegenerateIndices.push_back(i);
 
-      detail::SpatialBoundingBox triBB = compute_bounds(t1);
+      detail::SpatialBoundingBox triBB = compute_bounding_box(t1);
       ugrid.insert(triBB, i);
     }
   }
@@ -113,7 +113,7 @@ void findTriMeshIntersections(
   {
     // Retrieve the triangle at *idx and construct a bounding box around it
     t1 = getMeshTriangle(*idx, surface_mesh);
-    detail::SpatialBoundingBox triBB2 = compute_bounds(t1);
+    detail::SpatialBoundingBox triBB2 = compute_bounding_box(t1);
 
     // Get a list of all triangles in bins this triangle will touch,
     // whose indices are greater than this triangle's index
