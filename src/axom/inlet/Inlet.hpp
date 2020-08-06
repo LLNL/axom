@@ -301,7 +301,7 @@ public:
    * called.
    *****************************************************************************
    */
-  void registerFieldVerifier(std::function<bool(axom::sidre::Group*)> lambda);
+  void registerVerifier(std::function<bool(axom::sidre::Group*)> lambda);
 
   // TODO add update value functions
 private:

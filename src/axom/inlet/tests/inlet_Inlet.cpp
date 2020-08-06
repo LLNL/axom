@@ -1060,7 +1060,7 @@ TEST(inlet_Inlet_verify, verifyValidStringValues) {
   EXPECT_FALSE(inlet1->verify());
 }
 
-TEST(inlet_verify, verifyLambda) {
+TEST(inlet_verify, verifyGlobalLambda) {
   std::string testString = "field1 = true; field2 = 'abc'; NewTable = { field3 = 'xyz'; field4 = 'yes' }";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
@@ -1069,18 +1069,71 @@ TEST(inlet_verify, verifyLambda) {
   auto field2 = inlet->addString("field2");
   auto field3 = inlet->addString("NewTable/field3");
 
-  inlet->registerFieldVerifier([&](axom::sidre::Group* group) -> bool {
+  inlet->registerVerifier([&](axom::sidre::Group* group) -> bool {
     std::string str = group->getView("field2/value")->getString();
     return (str.size() >= 1 && str[0] == 'a');
   });
   EXPECT_TRUE(inlet->verify());
 
-  inlet->registerFieldVerifier([&](axom::sidre::Group* group) -> bool {
+  inlet->registerVerifier([&](axom::sidre::Group* group) -> bool {
     std::string str = group->getView("NewTable/field3/value")->getString();
     return (str.size() >= 1 && str[0] == 'a');
   });
 
   EXPECT_FALSE(inlet->verify());
+}
+
+TEST(inlet_verify, verifyFieldLambda) {
+  std::string testString = "field1 = true; field2 = 'abc'; NewTable = { field3 = 'xyz'; field4 = 'yes' }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  auto field1 = inlet->addBool("field1");
+  auto field2 = inlet->addString("field2");
+  auto field3 = inlet->addString("NewTable/field3");
+
+  field1->registerVerifier([&]() -> bool {
+    std::string str = "";
+    inlet->get("field2", str);
+    return (str.size() >= 1 && str[0] == 'a');
+  });
+  EXPECT_TRUE(inlet->verify());
+
+  field3->registerVerifier([&]() -> bool {
+    std::string str = "";
+    inlet->get("NewTable/field3", str);
+    return (str.size() >= 1 && str[0] == 'a');
+  });
+  EXPECT_FALSE(inlet->verify());
+}
+
+TEST(inlet_verify, verifyTableLambda) {
+  std::string testString = "field1 = true; field2 = 'abc'; NewTable = { field3 = 'xyz'; field4 = 'yes' }";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+
+  auto field1 = inlet->addBool("field1");
+  auto field2 = inlet->addString("field2");
+  auto table1 = inlet->addTable("NewTable");
+  auto field3 = table1->addString("NewTable/field3");
+
+  field1->registerVerifier([&]() -> bool {
+    std::string str = "";
+    inlet->get("field2", str);
+    return (str.size() >= 1 && str[0] == 'a');
+  });
+  EXPECT_TRUE(inlet->verify());
+
+  field3->registerVerifier([&]() -> bool {
+    std::string str = "";
+    inlet->get("NewTable/field3", str);
+    return (str.size() >= 1 && str[0] == 'x');
+  });
+  EXPECT_TRUE(inlet->verify());
+
+  // table1->registerVerifier([&]() -> bool {
+
+  // });
 
 }
 

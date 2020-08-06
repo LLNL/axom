@@ -16,6 +16,7 @@
 
 #include <memory>
 #include <string>
+#include <functional>
 
 #include "axom/inlet/Field.hpp"
 #include "axom/inlet/Reader.hpp"
@@ -231,6 +232,10 @@ public:
    *****************************************************************************
    */
   bool required();
+
+  std::shared_ptr<Table> registerVerifier(std::function<bool()> lambda);
+  bool verify();
+
 private:
   /*!
    *****************************************************************************
@@ -250,6 +255,9 @@ private:
   // This Table's Sidre Group
   axom::sidre::Group* m_sidreGroup;
   bool m_docEnabled;
+  std::vector<std::shared_ptr<Table>> m_tableChildren;
+  std::vector<std::shared_ptr<Field>> m_fieldChildren;
+  std::function<bool()> verifier;
 };
 
 } // end namespace inlet

@@ -207,6 +207,10 @@ bool Inlet::verify() {
     }  
   }
 
+  if (!m_globalTable->verify()) {
+    verifySuccess = false;
+  }
+
   return verifySuccess;
 }
 
@@ -336,7 +340,7 @@ bool Inlet::searchValidValues(axom::sidre::Group* sidreGroup, std::string value)
   return false;
 }
 
-void Inlet::registerFieldVerifier(std::function<bool(axom::sidre::Group*)> lambda) {
+void Inlet::registerVerifier(std::function<bool(axom::sidre::Group*)> lambda) {
   m_verificationLambdas.push_back(lambda);
 }
 

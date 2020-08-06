@@ -18,6 +18,7 @@
 
 #include <memory>
 #include <type_traits>
+#include <functional>
 
 namespace axom
 {
@@ -257,6 +258,10 @@ public:
    *****************************************************************************
   */
   std::shared_ptr<Field> validValues(const std::initializer_list<double>& set);
+
+  std::shared_ptr<Field> registerVerifier(std::function<bool()> lambda);
+  bool verify();
+
 private:
 
   /*!
@@ -306,6 +311,7 @@ private:
   axom::sidre::Group* m_sidreRootGroup = nullptr;
   axom::sidre::DataTypeId m_type = axom::sidre::DataTypeId::NO_TYPE_ID;
   bool m_docEnabled = false;
+  std::function<bool()> verifier;
 };
 
 } // end namespace inlet

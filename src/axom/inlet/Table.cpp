@@ -30,8 +30,10 @@ std::shared_ptr<Table> Table::addTable(const std::string& name,
                                        const std::string& description)
 {
   std::string fullName = getFullName(m_name, name);
-  return std::make_shared<Table>(fullName, description, m_reader, 
+  auto table = std::make_shared<Table>(fullName, description, m_reader, 
                                  m_sidreRootGroup, m_docEnabled);
+  m_tableChildren.push_back(table);
+  return table;
 }
 
 axom::sidre::Group* Table::baseFieldAdd(const std::string& name,
@@ -74,8 +76,10 @@ std::shared_ptr<Field> Table::addBool(const std::string& name,
     sidreGroup->createViewScalar("value", value? int8(1) : int8(0) );
   }
 
-  return std::make_shared<Field>(sidreGroup, m_sidreRootGroup,
+  auto field =  std::make_shared<Field>(sidreGroup, m_sidreRootGroup,
                                  axom::sidre::DataTypeId::INT8_ID, m_docEnabled);
+  m_fieldChildren.push_back(field);
+  return field;                      
 }
 
 std::shared_ptr<Field> Table::addDouble(const std::string& name,
@@ -94,8 +98,10 @@ std::shared_ptr<Field> Table::addDouble(const std::string& name,
     sidreGroup->createViewScalar("value", value);
   }
 
-  return std::make_shared<Field>(sidreGroup, m_sidreRootGroup,
+  auto field = std::make_shared<Field>(sidreGroup, m_sidreRootGroup,
                                  axom::sidre::DataTypeId::DOUBLE_ID, m_docEnabled);
+  m_fieldChildren.push_back(field);
+  return field;                                   
 }
 
 std::shared_ptr<Field> Table::addInt(const std::string& name,
@@ -135,8 +141,10 @@ std::shared_ptr<Field> Table::addString(const std::string& name,
     sidreGroup->createViewString("value", value);
   }
 
-  return std::make_shared<Field>(sidreGroup, m_sidreRootGroup,
+  auto field = std::make_shared<Field>(sidreGroup, m_sidreRootGroup,
                                  axom::sidre::DataTypeId::CHAR8_STR_ID, m_docEnabled);
+  m_fieldChildren.push_back(field);
+  return field;                                    
 }
 
 std::shared_ptr<Table> Table::required(bool isRequired)
@@ -192,6 +200,35 @@ bool Table::required()
 
   return (bool)intValue;
 }
+
+ std::shared_ptr<Table> Table::registerVerifier(std::function<bool()> lambda) {
+   verifier = lambda;
+   return shared_from_this();
+ } 
+
+ bool Table::verify() {
+   bool verified = true;
+   // Verify this Table
+   if (verifier && !verifier()) {
+     verified = false;
+     SLIC_WARNING(fmt::format("Table {0} failed verification", m_sidreGroup->getPathName()));
+   }
+   // Verify the child Fields of this Table
+   for (auto field : m_fieldChildren) {
+     if (!field->verify()) {
+       verified = false;
+     }
+   }
+   // Verify the child Tables of this Table
+   for (auto table : m_tableChildren) {
+     if (!table->verify()) {
+       SLIC_WARNING(fmt::format("Table {0} failed verification", table->sidreGroup()->getPathName()));
+       verified = false;
+     }
+   }
+   
+   return verified;
+ }
 
 } // end namespace inlet
 } // end namespace axom
