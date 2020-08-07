@@ -36,6 +36,8 @@ struct Handle
   Handle() : mID(T()) {}
   explicit Handle(T id) : mID(id) {}
   Handle(const Handle& h) : mID(h.mID) {}
+  Handle& operator=(const Handle& h) = default;
+
   bool operator==(const Handle& h) const { return mID == h.mID; }
 
   static Handle make_handle(T id) { return Handle(id); }

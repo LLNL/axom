@@ -16,8 +16,8 @@ set( mint_tests
 
      ## mesh tests
      mint_mesh.cpp
-     mint_mesh_blueprint.cpp
      mint_mesh_cell_types.cpp
+     mint_mesh_blueprint.cpp
      mint_mesh_connectivity_array.cpp
      mint_mesh_coordinates.cpp
      mint_mesh_curvilinear_mesh.cpp

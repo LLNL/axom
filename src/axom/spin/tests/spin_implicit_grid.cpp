@@ -67,17 +67,20 @@ TYPED_TEST( ImplicitGridTest, initialization)
 
   grid1.initialize(bbox, &res, numElts);
   EXPECT_TRUE( grid1.isInitialized() );
-
-
+  EXPECT_EQ(grid1.gridResolution(), res);
+  EXPECT_EQ(grid1.numIndexElements(), numElts); 
+ 
   // Tests initializing constructor
   GridT grid2( bbox, &res, numElts);
   EXPECT_TRUE( grid2.isInitialized() );
-
+  EXPECT_EQ(grid2.gridResolution(), res); 
+  EXPECT_EQ(grid2.numIndexElements(), numElts); 
 
   // Tests initializing from primitive types
   GridT grid3( bbox.getMin().data(), bbox.getMax().data(), res.data(), numElts);
   EXPECT_TRUE( grid3.isInitialized() );
-
+  EXPECT_EQ(grid3.gridResolution(), res); 
+  EXPECT_EQ(grid3.numIndexElements(), numElts); 
 }
 
 

@@ -14,6 +14,7 @@ set(core_headers
     ## utilities
     utilities/AnnotationMacros.hpp
     utilities/FileUtilities.hpp
+    utilities/StringUtilities.hpp
     utilities/Timer.hpp
     utilities/Utilities.hpp
     utilities/About.hpp
@@ -56,6 +57,7 @@ set(core_headers
 
 set(core_sources
     utilities/FileUtilities.cpp
+    utilities/StringUtilities.cpp
     utilities/Utilities.cpp
     utilities/About.cpp
 

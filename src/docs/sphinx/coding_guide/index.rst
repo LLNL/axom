@@ -59,9 +59,3 @@ and help reduce user and developer errors.
    sec11_portability
    references
 
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`search`

@@ -114,15 +114,8 @@ public:
     , SubsettingPolicyType(builder.m_parent)
   {}
 
-  OrderedSet(const OrderedSet& oset)
-    : SizePolicyType(oset)
-    , OffsetPolicyType(oset)
-    , StridePolicyType(oset)
-    , IndirectionPolicyType(oset)
-    , SubsettingPolicyType(oset)
-  {}
-
-
+  OrderedSet(const OrderedSet& oset) = default;
+  OrderedSet& operator=(const OrderedSet& other) = default;
 
 public:
 
