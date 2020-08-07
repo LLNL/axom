@@ -231,20 +231,28 @@ void findTriMeshIntersectionsBVH(
   int* counter = axom::allocate <int> (1);
   counter[0] = 0;
 
-  for_all< ExecSpace >( ncells, AXOM_LAMBDA (IndexType i)
+  // Initialize triangle indices 
+  IndexType* indices = axom::allocate< IndexType >( totalCandidates );
+  for (int i = 0 ; i < ncells; i++)
   {
-    for (int j = 0 ; j < counts[i] ; j++)
+    for (int j = 0; j < counts[i]; j++)
     {
-      int candidate_index = candidates[ offsets[i] + j];
-      if (i != candidate_index && i < candidate_index)
+      indices[offsets[i] + j] = i;
+    }
+  } 
+
+  for_all< ExecSpace >( totalCandidates, AXOM_LAMBDA (IndexType i)
+  {
+    int index = indices[i];
+    int candidate = candidates[i];
+    if (index < candidate)
+    {
+      if (primal::intersect(tris[index], tris[candidate],
+                            false, intersectionThreshold))
       {
-        if (primal::intersect(tris[i], tris[candidate_index],
-                              false, intersectionThreshold))
-        {
-          auto idx = RAJA::atomicAdd<ATOMIC_POL>(counter, 2);
-          intersection_pairs[idx] = i;
-          intersection_pairs[idx + 1] = candidate_index;
-        }
+        auto idx = RAJA::atomicAdd<ATOMIC_POL>(counter, 2);
+        intersection_pairs[idx] = index;
+        intersection_pairs[idx + 1] = candidate;
       }
     }
   } );
@@ -262,6 +270,7 @@ void findTriMeshIntersectionsBVH(
   axom::deallocate(offsets);
   axom::deallocate(counts);
   axom::deallocate(candidates);
+  axom::deallocate(indices);
 
   axom::deallocate(intersection_pairs);
   axom::deallocate(counter);
