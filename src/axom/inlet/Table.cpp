@@ -32,7 +32,7 @@ std::shared_ptr<Table> Table::addTable(const std::string& name,
   std::string fullName = getFullName(m_name, name);
   auto table = std::make_shared<Table>(fullName, description, m_reader, 
                                  m_sidreRootGroup, m_docEnabled);
-  m_tableChildren.push_back(table);
+  m_tableChildren.insert(table);
   return table;
 }
 
@@ -78,7 +78,7 @@ std::shared_ptr<Field> Table::addBool(const std::string& name,
 
   auto field =  std::make_shared<Field>(sidreGroup, m_sidreRootGroup,
                                  axom::sidre::DataTypeId::INT8_ID, m_docEnabled);
-  m_fieldChildren.push_back(field);
+  m_fieldChildren.insert(field);
   return field;                      
 }
 
@@ -100,7 +100,7 @@ std::shared_ptr<Field> Table::addDouble(const std::string& name,
 
   auto field = std::make_shared<Field>(sidreGroup, m_sidreRootGroup,
                                  axom::sidre::DataTypeId::DOUBLE_ID, m_docEnabled);
-  m_fieldChildren.push_back(field);
+  m_fieldChildren.insert(field);
   return field;                                   
 }
 
@@ -143,7 +143,7 @@ std::shared_ptr<Field> Table::addString(const std::string& name,
 
   auto field = std::make_shared<Field>(sidreGroup, m_sidreRootGroup,
                                  axom::sidre::DataTypeId::CHAR8_STR_ID, m_docEnabled);
-  m_fieldChildren.push_back(field);
+  m_fieldChildren.insert(field);
   return field;                                    
 }
 
@@ -222,13 +222,30 @@ bool Table::required()
    // Verify the child Tables of this Table
    for (auto table : m_tableChildren) {
      if (!table->verify()) {
-       SLIC_WARNING(fmt::format("Table {0} failed verification", table->sidreGroup()->getPathName()));
        verified = false;
      }
    }
    
    return verified;
  }
+
+bool Table::hasField(const std::string& fieldName) {
+  for (auto field : m_fieldChildren) {
+    if (field->sidreGroup()->getName() == fieldName) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool Table::hasTable(const std::string& tableName) {
+  for (auto table : m_tableChildren) {
+    if (table->sidreGroup()->getName() == tableName) {
+      return true;
+    }
+  }
+  return false;
+}
 
 } // end namespace inlet
 } // end namespace axom

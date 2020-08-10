@@ -17,6 +17,7 @@
 #include <memory>
 #include <string>
 #include <functional>
+#include <unordered_set>
 
 #include "axom/inlet/Field.hpp"
 #include "axom/inlet/Reader.hpp"
@@ -236,6 +237,32 @@ public:
   std::shared_ptr<Table> registerVerifier(std::function<bool()> lambda);
   bool verify();
 
+  /*!
+   *****************************************************************************
+   * \brief Return whether this Table has a child Field with the given name.
+   *
+   * \return Boolean value of whether this Table has the child Field.
+   *****************************************************************************
+   */
+  bool hasField(const std::string& fieldName);
+
+  /*!
+   *****************************************************************************
+   * \brief Return whether this Table has a child Table with the given name.
+   *
+   * \return Boolean value of whether this Table has the child Table.
+   *****************************************************************************
+   */
+  bool hasTable(const std::string& tableName);
+
+  std::unordered_set<std::shared_ptr<Field>> getChildFields() {
+    return m_fieldChildren;
+  }
+
+  std::unordered_set<std::shared_ptr<Table>> getChildTables() {
+    return m_tableChildren;
+  }
+
 private:
   /*!
    *****************************************************************************
@@ -255,8 +282,8 @@ private:
   // This Table's Sidre Group
   axom::sidre::Group* m_sidreGroup;
   bool m_docEnabled;
-  std::vector<std::shared_ptr<Table>> m_tableChildren;
-  std::vector<std::shared_ptr<Field>> m_fieldChildren;
+  std::unordered_set<std::shared_ptr<Table>> m_tableChildren;
+  std::unordered_set<std::shared_ptr<Field>> m_fieldChildren;
   std::function<bool()> verifier;
 };
 

@@ -27,7 +27,8 @@ namespace inlet
 std::shared_ptr<Table> Inlet::addTable(const std::string& name,
                                        const std::string& description)
 {
-  return std::make_shared<Table>(name, description, m_reader, m_sidreRootGroup, m_docEnabled);
+  return m_globalTable->addTable(name, description);
+  // return std::make_shared<Table>(name, description, m_reader, m_sidreRootGroup, m_docEnabled);
 }
 
 std::shared_ptr<Field> Inlet::addBool(const std::string& name,

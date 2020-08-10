@@ -1092,7 +1092,7 @@ TEST(inlet_verify, verifyFieldLambda) {
   auto field2 = inlet->addString("field2");
   auto field3 = inlet->addString("NewTable/field3");
 
-  field1->registerVerifier([&]() -> bool {
+  field2->registerVerifier([&]() -> bool {
     std::string str = "";
     inlet->get("field2", str);
     return (str.size() >= 1 && str[0] == 'a');
@@ -1115,9 +1115,9 @@ TEST(inlet_verify, verifyTableLambda) {
   auto field1 = inlet->addBool("field1");
   auto field2 = inlet->addString("field2");
   auto table1 = inlet->addTable("NewTable");
-  auto field3 = table1->addString("NewTable/field3");
+  auto field3 = table1->addString("field3");
 
-  field1->registerVerifier([&]() -> bool {
+  field2->registerVerifier([&]() -> bool {
     std::string str = "";
     inlet->get("field2", str);
     return (str.size() >= 1 && str[0] == 'a');
@@ -1131,10 +1131,15 @@ TEST(inlet_verify, verifyTableLambda) {
   });
   EXPECT_TRUE(inlet->verify());
 
-  // table1->registerVerifier([&]() -> bool {
+  table1->registerVerifier([&]() -> bool {
+    return table1->hasField("field3");
+  });
+  EXPECT_TRUE(inlet->verify());
 
-  // });
-
+  table1->registerVerifier([&]() -> bool {
+    return table1->hasField("field22");
+  });
+  EXPECT_FALSE(inlet->verify());
 }
 
 //------------------------------------------------------------------------------

@@ -291,7 +291,7 @@ std::shared_ptr<Field> Field::registerVerifier(std::function<bool()> lambda) {
 }
 
 bool Field::verify() {
-  if (verifier && ! verifier()) {
+  if (verifier && !verifier()) {
     SLIC_WARNING(fmt::format("Field {0} failed verification", 
                  m_sidreGroup->getPathName()));
     return false;
