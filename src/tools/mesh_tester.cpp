@@ -87,10 +87,12 @@ enum RuntimePolicy { seq = 0,
 
 struct Input
 {
+  static const std::set<std::string> s_validMethods;
   static const std::set<RuntimePolicy> s_validPolicies;
 
   std::string stlInput {""};
   std::string vtkOutput {""};
+  std::string method {"uniform"};
   RuntimePolicy policy {seq};
 
   int resolution {0};
@@ -111,6 +113,12 @@ private:
   void fixOutfilePath();
 };
 
+const std::set<std::string> Input::s_validMethods({
+  "bvh",
+  "uniform",
+  "naive"
+});
+
 const std::set<RuntimePolicy> Input::s_validPolicies({
   seq
   #ifdef AXOM_USE_RAJA
@@ -126,17 +134,23 @@ const std::set<RuntimePolicy> Input::s_validPolicies({
 
 void Input::parse(int argc, char** argv, CLI::App& app)
 {
+  app.add_option("-m, --method", method,
+                 "Method to use. \n"
+                 "Set to \'bvh\' to use the bounding volume hierarchy spatial index.\n"
+                 "Set to \'naive\' to use the naive algorithm (without a spatial index).\n"
+                 "Set to \'uniform\' to use the uniform grid spatial index.")
+  ->capture_default_str()
+  ->check(CLI::IsMember {Input::s_validMethods});
+
   app.add_option("-r,--resolution", resolution,
-                 "Resolution of uniform grid. \n"
-                 "Set to 1 to run the naive algorithm (without a spatial index). \n"
-                 "Set to 2 to use a bounding volume hierarchy spatial index.\n"
+                 "With \'-m uniform\', set resolution of uniform grid. \n"
                  "Set to less than 1 to use the uniform grid spatial index\n"
                  "with a resolution of the cube root of the number of\n"
                  "triangles.")
   ->capture_default_str();
 
   app.add_option("-p, --policy", policy,
-                 "With \'-r 1\' or \'-r 2\', set runtime policy. \n"
+                 "With \'-m bvh\' or \'-m naive\', set runtime policy. \n"
                  "Set to 0 to use the sequential algorithm (w/o RAJA). \n"
   #ifdef AXOM_USE_RAJA
                  "Set to 1 to use the RAJA sequential policy. \n"
@@ -176,7 +190,7 @@ void Input::parse(int argc, char** argv, CLI::App& app)
                "Increase logging verbosity.")
   ->capture_default_str();
 
-  app.get_formatter()->column_width(35);
+  app.get_formatter()->column_width(48);
 
   // Could throw an exception
   app.parse(argc, argv);
@@ -187,19 +201,21 @@ void Input::parse(int argc, char** argv, CLI::App& app)
   // Output parsed information
   SLIC_INFO (
     "Using parameter values: "
-    <<"\n  resolution = " << resolution
-    << (resolution < 1 ? " (use cube root of triangle count)" : "")
-    << (resolution == 1 ? " (use naive algorithm)" : "")
-    << (resolution == 2 ? " (use bounding volume hierarchy)" : "")
-    << (resolution == 1 || resolution == 2 ? "\n  policy = " : "")
-    << (resolution == 1 || resolution == 2 ? std::to_string(policy) : "")
-    << ((resolution == 1 || resolution == 2) &&
+    << "\n  method = " << method
+    << (method == "uniform" ? " (use uniform grid)" : "")
+    << (method == "naive" ? " (use naive algorithm)" : "")
+    << (method == "bvh" ? " (use bounding volume hierarchy)" : "")
+    << (method == "uniform" ? 
+       "\n  resolution = " + std::to_string(resolution) : "")
+    << (method == "naive" || method == "bvh" ? "\n  policy = " : "")
+    << (method == "naive" || method == "bvh" ? std::to_string(policy) : "")
+    << ((method == "naive" || method == "bvh") &&
         policy == seq ? " (use sequential policy)" : "")
-    << ((resolution == 1 || resolution == 2) &&
+    << ((method == "naive" || method == "bvh") &&
         policy == raja_seq ? " (use RAJA sequential policy)" : "")
-    << ((resolution == 1 || resolution == 2) &&
+    << ((method == "naive" || method == "bvh") &&
         policy == raja_omp ? " (use RAJA OpenMP policy)" : "")
-    << ((resolution == 1 || resolution == 2) &&
+    << ((method == "naive" || method == "bvh") &&
         policy == raja_cuda ? " (use RAJA CUDA policy)" : "")
     <<"\n  weld threshold = " <<  weldThreshold
     <<"\n  " << (skipWeld ? "" : "not ") << "skipping weld"
@@ -611,7 +627,7 @@ int main( int argc, char** argv )
     // _check_repair_intersections_containers_end
 
     axom::utilities::Timer timer(true);
-    if (params.resolution == 1)
+    if (params.method == "naive")
     {
       switch (params.policy)
       {
@@ -641,10 +657,9 @@ int main( int argc, char** argv )
         SLIC_ERROR("Unhandled runtime policy case " << params.policy );
         break;
      }
-    } // end of if resolution == 1
-    else if (params.resolution == 2)
+    }
+    else if (params.method == "bvh")
     {
-      // Naive method
       switch (params.policy)
       {
       case seq:
@@ -681,7 +696,7 @@ int main( int argc, char** argv )
     else
     {
       // _check_repair_intersections_start
-      // Use a spatial index
+      // Use a uniform grid spatial index
       quest::findTriMeshIntersections(surface_mesh,
                                       collisions,
                                       degenerate,
