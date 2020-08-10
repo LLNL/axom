@@ -46,9 +46,9 @@ void sleep(int numSeconds)
 // _using_start
 // _using_end
 
+// _fs_string_start
 void demoFileSystemAndString(const char* argv0)
 {
-  // _fs_string_start
   using namespace axom::utilities;
 
   // Get the current directory
@@ -98,15 +98,18 @@ void demoFileSystemAndString(const char* argv0)
   // Does argv0 exist?
   if (filesystem::pathExists(argv0))
   {
-    std::cout << argv0 << "exists ";
+    std::cout << argv0 << " exists ";
   }
   else
   {
-    std::cout << argv0 << "DOES NOT exist ";
+    std::cout << argv0 << " DOES NOT exist ";
   }
   std::cout << "in the current working directory." << std::endl;
-  // _fs_string_end
+
+  // sleep for a second
+  sleep(1);
 }
+// _fs_string_end
 
 int main(int argc, char** argv)
 {
