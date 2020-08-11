@@ -887,8 +887,7 @@ public:
     }
 
 private:
-    SurfaceMesh*& m_surfaceMesh;     /** pointer to pointer to allow changing
-                                        the mesh */
+    SurfaceMesh*& m_surfaceMesh;     // ref to pointer to allow changing the mesh
 
     MeshVertexSet m_vertexSet;
     MeshElementSet m_elementSet;
