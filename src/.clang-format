@@ -9,7 +9,7 @@ AccessModifierOffset: -2
 AllowAllArgumentsOnNextLine: false
 AllowAllConstructorInitializersOnNextLine: false
 AllowAllParametersOfDeclarationOnNextLine: false
-AlwaysBreakTemplateDeclarations: MultiLine
+AlwaysBreakTemplateDeclarations: true
 AlwaysBreakBeforeMultilineStrings: true
 
 BinPackArguments: false
