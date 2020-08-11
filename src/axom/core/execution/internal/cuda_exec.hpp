@@ -13,11 +13,11 @@
 #include "umpire/Umpire.hpp"
 
 #ifndef RAJA_ENABLE_CUDA
-#error "*** CUDA_EXEC requires a CUDA enabled RAJA ***"
+#error CUDA_EXEC requires a CUDA enabled RAJA
 #endif
 
 #if !defined(UMPIRE_ENABLE_CUDA) && !defined(UMPIRE_ENABLE_UM)
-#error "*** CUDA_EXEC requires a CUDA enabled UMPIRE with UM support ***"
+#error CUDA_EXEC requires a CUDA enabled UMPIRE with UM support
 #endif
 
 namespace axom
