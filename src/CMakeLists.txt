@@ -51,7 +51,7 @@ if (“${PROJECT_SOURCE_DIR}” STREQUAL “${CMAKE_SOURCE_DIR}”)
     endif()
 
     set(ENABLE_ASTYLE      OFF CACHE BOOL "")
-    set(ENABLE_UNCRUSFITY  OFF CACHE BOOL "")
+    set(ENABLE_UNCRUSTIFY  OFF CACHE BOOL "")
 endif()
 
 include(${BLT_SOURCE_DIR}/SetupBLT.cmake)

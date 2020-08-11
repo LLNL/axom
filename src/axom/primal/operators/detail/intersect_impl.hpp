@@ -394,10 +394,9 @@ inline bool intersectTwoPermutedTriangles(const Point3& p1,
      p2q2, and p2r2.  We check if these two intervals overlap:
    */
   const bool bdr = includeBoundary;
-  /* clang-format off */
+
   return isLpeq(Vector3(q1, q2).dot(Triangle3(q1, p2, p1).normal()), 0.0, bdr, EPS)
       && isLpeq(Vector3(p1, r2).dot(Triangle3(p1, p2, r1).normal()), 0.0, bdr, EPS);
-  /* clang-format on */
 }
 
 /*! @} */
