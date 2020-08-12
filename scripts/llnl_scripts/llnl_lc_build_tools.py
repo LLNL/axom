@@ -531,7 +531,6 @@ def set_axom_group_and_perms(directory):
 
     if skip:
         print "[Skipping update of group and access permissions. Provided directory was not a known shared location: {0}]".format(directory)
-        return 0
     else:
         print "[changing group and access perms of: %s]" % directory
         # change group to axomdev
@@ -544,7 +543,7 @@ def set_axom_group_and_perms(directory):
         print "[changing perms for all users to rX]"
         sexe("chmod -f -R a+rX %s" % (directory),echo=True,error_prefix="WARNING:")
         print "[done setting perms for: %s]" % directory
-        return 0
+    return 0
 
 
 def full_build_and_test_of_tpls(builds_dir, job_name, timestamp, spec):
