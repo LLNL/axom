@@ -286,6 +286,9 @@ std::shared_ptr<Field> Field::validValues(const std::initializer_list<double>& s
 }
 
 std::shared_ptr<Field> Field::registerVerifier(std::function<bool()> lambda) {
+  SLIC_WARNING_IF(verifier, fmt::format("Verifier for Field {0} already set", 
+                                         m_sidreGroup->getPathName()));
+
   verifier = lambda;
   return shared_from_this();
 }
@@ -299,8 +302,8 @@ bool Field::verify() {
   return true;
 }
 
-std::string Field::getName() {
-  return m_sidreGroup->getName();
+std::string Field::getPathName() {
+  return getPath(m_sidreRootGroup->getPathName(), m_sidreGroup->getPathName());
 }
 
 } // end namespace inlet

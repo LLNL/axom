@@ -32,6 +32,18 @@ void setWarningFlag(axom::sidre::Group* root);
 */
 std::string getFullName(const std::string& prefix, const std::string& name);
 
+/*!
+*****************************************************************************
+* \brief This function extracts the path from the full path.
+*
+* \param [in] The prefix of the path.
+* \param [in] The full string path.
+*
+* \return The extracted string.
+*****************************************************************************
+*/
+std::string getPath(const std::string& prefix, const std::string& pathName);
+
 }
 }
 

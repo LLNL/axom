@@ -24,5 +24,9 @@ std::string getFullName(const std::string& prefix, const std::string& name)
   }
 }
 
+std::string getPath(const std::string& prefix, const std::string& pathName) {
+  return pathName.substr(0, prefix.size());
+}
+
 }
 }

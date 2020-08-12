@@ -278,10 +278,10 @@ public:
 
   /*!
    *****************************************************************************
-   * \return The name of this Field.
+   * \return The path name for this Field.
    *****************************************************************************
   */
-  std::string getName();
+  std::string getPathName();
 
 private:
 

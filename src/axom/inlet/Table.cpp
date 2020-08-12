@@ -193,8 +193,10 @@ bool Table::required()
 }
 
  std::shared_ptr<Table> Table::registerVerifier(std::function<bool()> lambda) {
-   verifier = lambda;
-   return shared_from_this();
+  SLIC_WARNING_IF(verifier, fmt::format("Verifier for Table {0} already set", 
+                                         m_sidreGroup->getPathName()));
+  verifier = lambda;
+  return shared_from_this();
  } 
 
  bool Table::verify() {
@@ -226,6 +228,10 @@ bool Table::hasField(const std::string& fieldName) {
 
 bool Table::hasTable(const std::string& tableName) {
   return m_tableChildren.find(getFullName(m_name, tableName)) != m_tableChildren.end();
+}
+
+std::string Table::getPathName() {
+  return getPath(m_sidreRootGroup->getPathName(), m_name);
 }
 
 } // end namespace inlet

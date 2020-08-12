@@ -295,14 +295,6 @@ public:
    */
   bool verify(); 
 
-   /*!
-   *****************************************************************************
-   * \brief Registers a function object that will be called during the verification
-   * stage via Inlet::verify().
-   *****************************************************************************
-   */
-  void registerVerifier(std::function<bool(axom::sidre::Group*)> lambda);
-
   // TODO add update value functions
 private:
   /*!
@@ -423,7 +415,6 @@ private:
 
   std::shared_ptr<DocWriter> m_docWriter;
   bool m_docEnabled = false;
-  std::vector<std::function<bool(axom::sidre::Group*)>> m_verificationLambdas;
 };
 
 } // end namespace inlet

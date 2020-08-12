@@ -1060,29 +1060,6 @@ TEST(inlet_Inlet_verify, verifyValidStringValues) {
   EXPECT_FALSE(inlet1->verify());
 }
 
-TEST(inlet_verify, verifyGlobalLambda) {
-  std::string testString = "field1 = true; field2 = 'abc'; NewTable = { field3 = 'xyz'; field4 = 'yes' }";
-  DataStore ds;
-  auto inlet = createBasicInlet(&ds, testString);
-
-  auto field1 = inlet->addBool("field1");
-  auto field2 = inlet->addString("field2");
-  auto field3 = inlet->addString("NewTable/field3");
-
-  inlet->registerVerifier([&](axom::sidre::Group* group) -> bool {
-    std::string str = group->getView("field2/value")->getString();
-    return (str.size() >= 1 && str[0] == 'a');
-  });
-  EXPECT_TRUE(inlet->verify());
-
-  inlet->registerVerifier([&](axom::sidre::Group* group) -> bool {
-    std::string str = group->getView("NewTable/field3/value")->getString();
-    return (str.size() >= 1 && str[0] == 'a');
-  });
-
-  EXPECT_FALSE(inlet->verify());
-}
-
 TEST(inlet_verify, verifyFieldLambda) {
   std::string testString = "field1 = true; field2 = 'abc'; NewTable = { field3 = 'xyz'; field4 = 'yes' }";
   DataStore ds;

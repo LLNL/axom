@@ -28,7 +28,6 @@ std::shared_ptr<Table> Inlet::addTable(const std::string& name,
                                        const std::string& description)
 {
   return m_globalTable->addTable(name, description);
-  // return std::make_shared<Table>(name, description, m_reader, m_sidreRootGroup, m_docEnabled);
 }
 
 std::shared_ptr<Field> Inlet::addBool(const std::string& name,
@@ -200,13 +199,6 @@ void Inlet::writeDoc() {
 bool Inlet::verify() {
   bool verifySuccess = true;
   verifyRecursive(m_sidreRootGroup, verifySuccess);
-  
-  for (auto& lambda : m_verificationLambdas) {
-    if (!lambda(m_sidreRootGroup)) {
-      SLIC_WARNING("registered verification failed");
-      verifySuccess = false;   
-    }  
-  }
 
   if (!m_globalTable->verify()) {
     verifySuccess = false;
@@ -339,10 +331,6 @@ bool Inlet::searchValidValues(axom::sidre::Group* sidreGroup, std::string value)
     idx = sidreGroup->getNextValidViewIndex(idx);
   }
   return false;
-}
-
-void Inlet::registerVerifier(std::function<bool(axom::sidre::Group*)> lambda) {
-  m_verificationLambdas.push_back(lambda);
 }
 
 } // end namespace inlet
