@@ -107,9 +107,6 @@ endif()
 #------------------------------------------------------------------------------
 if (MFEM_DIR)
     include(cmake/thirdparty/FindMFEM.cmake)
-
-    blt_list_append(TO MFEM_LIBRARIES ELEMENTS mpi IF ENABLE_MPI)
-
     blt_register_library( NAME      mfem
                           INCLUDES  ${MFEM_INCLUDE_DIRS}
                           LIBRARIES ${MFEM_LIBRARIES}
