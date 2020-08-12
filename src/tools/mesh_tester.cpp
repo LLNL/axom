@@ -372,6 +372,7 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
             << axom::execution_space< ExecSpace >::name());
 
   // Get allocator
+  const int current_allocator = axom::getDefaultAllocatorID();
   int allocatorID = axom::execution_space< ExecSpace >::allocatorID();
   axom::setDefaultAllocator( allocatorID );
 
@@ -450,6 +451,8 @@ std::vector< std::pair<int, int> > naiveIntersectionAlgorithm(
   axom::deallocate(tris);
   axom::deallocate(intersections);
   axom::deallocate(counter);
+
+  axom::setDefaultAllocator( current_allocator );
 
   return retval;
 }

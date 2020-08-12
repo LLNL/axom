@@ -115,6 +115,7 @@ void findTriMeshIntersectionsBVH(
             << axom::execution_space< ExecSpace >::name());
 
   // Get allocator
+  const int current_allocator = axom::getDefaultAllocatorID();
   int allocatorID = axom::execution_space< ExecSpace >::allocatorID();
   axom::setDefaultAllocator( allocatorID );
 
@@ -137,10 +138,6 @@ void findTriMeshIntersectionsBVH(
 
   // Each access-aligned bounding box represented by 2 (x,y,z) points
   FloatType* aabbs = axom::allocate< FloatType >( ncells * stride );
-
-  // Finding degenerate indices and bounding boxes from Triangles
-  detail::Triangle3 t1 = detail::Triangle3();
-  detail::Triangle3 t2 = detail::Triangle3();
 
   // Initialize the bounding box for each Triangle and marks
   // if the Triangle is degenerate.
@@ -279,6 +276,8 @@ void findTriMeshIntersectionsBVH(
 
   axom::deallocate(intersection_pairs);
   axom::deallocate(counter);
+
+  axom::setDefaultAllocator( current_allocator );
 }
 #endif
 
