@@ -110,18 +110,39 @@ void findTriMeshIntersectionsBVH(
   std::vector<int> & degenerateIndices,
   double intersectionThreshold = 1E-8)
 {
+  AXOM_PERF_MARK_FUNCTION( "findTriMeshIntersectionsBVH" );
+
   SLIC_INFO("Running BVH intersection algorithm "
             << " in execution Space: "
             << axom::execution_space< ExecSpace >::name());
 
+  constexpr size_t POOL_SIZE   = (1024 * 1024 * 1024) + 1; 
+  umpire::ResourceManager& rm  = umpire::ResourceManager::getInstance();
+
+  // Use device pool for CUDA policy, host pool otherwise
+  std::string exec_name (axom::execution_space< ExecSpace >::name());
+  umpire::Allocator allocator =
+    (exec_name.find("[CUDA_EXEC]") != std::string::npos ? 
+     rm.getAllocator(umpire::resource::Device) :
+     rm.getAllocator(axom::execution_space< ExecSpace >::allocatorID()));
+  
+  umpire::Allocator pool_allocator = 
+    rm.makeAllocator< umpire::strategy::DynamicPool >( 
+      allocator.getName() + "_POOL", allocator,  POOL_SIZE );
+
+  const int poolID = pool_allocator.getId();
+
   // Get allocator
   const int current_allocator = axom::getDefaultAllocatorID();
-  int allocatorID = axom::execution_space< ExecSpace >::allocatorID();
-  axom::setDefaultAllocator( allocatorID );
+  axom::setDefaultAllocator( poolID );
 
   constexpr int NDIMS = 3;
   constexpr int stride = 2 * NDIMS;
   const int ncells = surface_mesh->getNumberOfCells();
+
+  int * ZERO = axom::allocate< int >( 1, 
+    getUmpireResourceAllocatorID(umpire::resource::Host) );
+  ZERO[0] = 0;
 
   detail::Triangle3* tris = axom::allocate <detail::Triangle3> (ncells);
 
@@ -141,56 +162,63 @@ void findTriMeshIntersectionsBVH(
 
   // Initialize the bounding box for each Triangle and marks
   // if the Triangle is degenerate.
-  mint::for_all_cells< ExecSpace, mint::xargs::coords >(
-    surface_mesh, AXOM_LAMBDA( IndexType cellIdx,
-                               numerics::Matrix< double >&coords,
-                               const IndexType* AXOM_NOT_USED(nodeIds) )
-  {
-    detail::Triangle3 tri;
-
-    for ( IndexType inode=0 ; inode < 3 ; ++inode )
+  AXOM_PERF_MARK_SECTION( "init_tri_bb",
+    mint::for_all_cells< ExecSpace, mint::xargs::coords >(
+      surface_mesh, AXOM_LAMBDA( IndexType cellIdx,
+                                 numerics::Matrix< double >&coords,
+                                 const IndexType* AXOM_NOT_USED(nodeIds) )
     {
-      const double* node = coords.getColumn( inode );
-      tri[ inode ][ 0 ] = node[ mint::X_COORDINATE ];
-      tri[ inode ][ 1 ] = node[ mint::Y_COORDINATE ];
-      tri[ inode ][ 2 ] = node[ mint::Z_COORDINATE ];
-    } // END for all cells nodes
+      detail::Triangle3 tri;
 
-    if (tri.degenerate())
-    {
-      degenerate[cellIdx] = 1;
-    }
-    else
-    {
-      degenerate[cellIdx] = 0;
-    }
+      for ( IndexType inode=0 ; inode < 3 ; ++inode )
+      {
+        const double* node = coords.getColumn( inode );
+        tri[ inode ][ 0 ] = node[ mint::X_COORDINATE ];
+        tri[ inode ][ 1 ] = node[ mint::Y_COORDINATE ];
+        tri[ inode ][ 2 ] = node[ mint::Z_COORDINATE ];
+      } // END for all cells nodes
 
-    tris[cellIdx] = tri;
+      if (tri.degenerate())
+      {
+        degenerate[cellIdx] = 1;
+      }
+      else
+      {
+        degenerate[cellIdx] = 0;
+      }
 
-    detail::SpatialBoundingBox triBB = compute_bounding_box(tri);
+      tris[cellIdx] = tri;
 
-    const IndexType offset = cellIdx * stride;
+      detail::SpatialBoundingBox triBB = compute_bounding_box(tri);
 
-    xmin[cellIdx] = aabbs[ offset ]     = triBB.getMin()[0];
-    ymin[cellIdx] = aabbs[ offset + 1 ] = triBB.getMin()[1];
-    zmin[cellIdx] = aabbs[ offset + 2 ] = triBB.getMin()[2];
+      const IndexType offset = cellIdx * stride;
 
-    xmax[cellIdx] = aabbs[ offset + 3 ] = triBB.getMax()[0];
-    ymax[cellIdx] = aabbs[ offset + 4 ] = triBB.getMax()[1];
-    zmax[cellIdx] = aabbs[ offset + 5 ] = triBB.getMax()[2];
-  } );
+      xmin[cellIdx] = aabbs[ offset ]     = triBB.getMin()[0];
+      ymin[cellIdx] = aabbs[ offset + 1 ] = triBB.getMin()[1];
+      zmin[cellIdx] = aabbs[ offset + 2 ] = triBB.getMin()[2];
+
+      xmax[cellIdx] = aabbs[ offset + 3 ] = triBB.getMax()[0];
+      ymax[cellIdx] = aabbs[ offset + 4 ] = triBB.getMax()[1];
+      zmax[cellIdx] = aabbs[ offset + 5 ] = triBB.getMax()[2];
+    } );
+  );
+
+  // Copy degenerate data back to host
+  int * host_degenerate = axom::allocate< int >( ncells, 
+    getUmpireResourceAllocatorID(umpire::resource::Host) );
+  axom::copy(host_degenerate, degenerate, ncells * sizeof(int));
 
   // Return degenerateIndices
   for (int i = 0 ; i < ncells; i++)
   {
-    if (degenerate[i] == 1)
+    if (host_degenerate[i] == 1)
     {
       degenerateIndices.push_back(i);
     }
   }
 
   // Construct BVH
-  axom::spin::BVH< NDIMS, ExecSpace, FloatType > bvh( aabbs, ncells );
+  axom::spin::BVH< NDIMS, ExecSpace, FloatType > bvh( aabbs, ncells, poolID );
   bvh.build( );
 
   // Run find algorithm
@@ -201,16 +229,23 @@ void findTriMeshIntersectionsBVH(
                          ymin, ymax, zmin, zmax );
 
   // Get the total number of candidates
+
+  // Copy counts data back to host
+  int * host_counts = axom::allocate< int >( ncells, 
+    getUmpireResourceAllocatorID(umpire::resource::Host) );
+  axom::copy(host_counts, counts, ncells * sizeof(int));
+
   int totalCandidates = 0;
   for (int i = 0 ; i < ncells ; i++ )
   {
-    totalCandidates += counts[i];
+    totalCandidates += host_counts[i];
   }
 
   //Deallocate no longer needed variables
   axom::deallocate(aabbs);
   
   axom::deallocate(degenerate);
+  axom::deallocate(host_degenerate);
 
   axom::deallocate(xmin);
   axom::deallocate(ymin);
@@ -226,43 +261,68 @@ void findTriMeshIntersectionsBVH(
   using ATOMIC_POL =
           typename axom::execution_space< ExecSpace >::atomic_policy;
   int* counter = axom::allocate <int> (1);
-  counter[0] = 0;
+  axom::copy(counter, ZERO, sizeof(int));
 
   // Initialize triangle indices and valid candidates
   IndexType* indices = axom::allocate< IndexType >( totalCandidates );
   IndexType* validCandidates = axom::allocate< IndexType >( totalCandidates );
-  int numValidCandidates = 0;
-  for (int i = 0 ; i < ncells; i++)
-  {
-    for (int j = 0; j < counts[i]; j++)
-    {
-      if (i < candidates[offsets[i] + j])
-      {
-        indices[numValidCandidates] = i;
-        validCandidates[numValidCandidates] = candidates[offsets[i] + j];
-        numValidCandidates += 1;
-      }
-    }
-  }
+  // int numValidCandidates = 0;
+  int* numValidCandidates = axom::allocate <int> (1);
+  axom::copy(numValidCandidates, ZERO, sizeof(int));
 
-  for_all< ExecSpace >( numValidCandidates, AXOM_LAMBDA (IndexType i)
-  {
-    int index = indices[i];
-    int candidate = validCandidates[i];
-    if (primal::intersect(tris[index], tris[candidate],
-                          false, intersectionThreshold))
+  AXOM_PERF_MARK_SECTION( "init_candidates",
+    for_all< ExecSpace >( ncells, AXOM_LAMBDA (IndexType i)
     {
-      auto idx = RAJA::atomicAdd<ATOMIC_POL>(counter, 2);
-      intersection_pairs[idx] = index;
-      intersection_pairs[idx + 1] = candidate;
-    }
-  } );
+      // RAJA::atomicAdd<ATOMIC_POL>(numValidCandidates, 1);
+      for (int j = 0; j < counts[i]; j++)
+      {
+        if (i < candidates[offsets[i] + j])
+        {
+          auto idx = RAJA::atomicAdd<ATOMIC_POL>(numValidCandidates, 1);
+          indices[idx] = i;
+          validCandidates[idx] = candidates[offsets[i] + j];
+          // numValidCandidates += 1;
+        }
+      }
+    });
+  );
+
+  // Copy numValidCandidates back to host
+  int * host_numValidCandidates = 
+    axom::allocate< int >( 1, 
+      getUmpireResourceAllocatorID(umpire::resource::Host) );
+  axom::copy(host_numValidCandidates, numValidCandidates, sizeof(int));
+
+  AXOM_PERF_MARK_SECTION( "find_tri_pairs",
+    for_all< ExecSpace >( *host_numValidCandidates, AXOM_LAMBDA (IndexType i)
+    {
+      int index = indices[i];
+      int candidate = validCandidates[i];
+      if (primal::intersect(tris[index], tris[candidate],
+                            false, intersectionThreshold))
+      {
+        auto idx = RAJA::atomicAdd<ATOMIC_POL>(counter, 2);
+        intersection_pairs[idx] = index;
+        intersection_pairs[idx + 1] = candidate;
+      }
+    } );
+  );
+
+  // Copy intersection pairs and counter back to host
+  int* host_counter = axom::allocate <int> (1, 
+    getUmpireResourceAllocatorID(umpire::resource::Host)) ;
+  axom::copy(host_counter, counter, sizeof(int));
+
+  int* host_intersection_pairs = axom::allocate <int> (totalCandidates * 2, 
+    getUmpireResourceAllocatorID(umpire::resource::Host)) ;
+  axom::copy(host_intersection_pairs, intersection_pairs, totalCandidates * 2
+                                                          * sizeof(int));
 
   // Initialize pairs of clashes
-  for (int i = 0 ; i < counter[0] ; i += 2)
+  for (int i = 0 ; i < host_counter[0] ; i += 2)
   {
-    intersections.push_back(std::make_pair(intersection_pairs[i],
-                                           intersection_pairs[i + 1]));
+    intersections.push_back(std::make_pair(host_intersection_pairs[i],
+                                           host_intersection_pairs[i + 1]));
   }
 
   // Deallocate
@@ -270,12 +330,16 @@ void findTriMeshIntersectionsBVH(
 
   axom::deallocate(offsets);
   axom::deallocate(counts);
+  axom::deallocate(host_counts);
   axom::deallocate(candidates);
   axom::deallocate(indices);
   axom::deallocate(validCandidates);
+  axom::deallocate(host_numValidCandidates);
 
   axom::deallocate(intersection_pairs);
+  axom::deallocate(host_intersection_pairs);
   axom::deallocate(counter);
+  axom::deallocate(host_counter);
 
   axom::setDefaultAllocator( current_allocator );
 }
