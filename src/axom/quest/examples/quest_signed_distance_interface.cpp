@@ -11,6 +11,8 @@
 // _quest_distance_interface_include_end
 #include "axom/slic.hpp"
 
+#include "CLI11/CLI11.hpp"
+
 #ifdef AXOM_USE_MPI
   #include <mpi.h>
 #else
@@ -33,12 +35,13 @@ namespace quest     = axom::quest;
 namespace slic      = axom::slic;
 namespace utilities = axom::utilities;
 
+// Predeclare types
+struct Arguments;
+
 // Function prototypes
 void initialize_logger( );
 void finalize_logger( );
-void parse_args( int argc, char** argv );
-void generate_uniform_box_mesh( mint::UniformMesh*& mesh );
-void show_help( );
+void generate_uniform_box_mesh( mint::UniformMesh*& mesh, Arguments& app);
 
 
 
@@ -52,21 +55,65 @@ int numranks;
 /*!
  * \brief Holds command-line arguments
  */
-static struct
+struct Arguments
 {
   std::string fileName;
-  int ndims;
-  int maxLevels;
-  int maxOccupancy;
-  int box_dims[3];
-  double box_min[3];
-  double box_max[3];
-  bool specified_box_min;
-  bool specified_box_max;
-  bool is_water_tight;
-  bool dump_vtk;
-  bool use_shared;
-} Arguments;
+  int ndims{3};
+  int maxLevels{15};
+  int maxOccupancy{5};
+  std::vector<int> box_dims{32,32,32};
+  std::vector<double> box_min;
+  std::vector<double> box_max;
+  bool is_water_tight{true};
+  bool dump_vtk{true};
+  bool use_shared{false};
+
+  void parse( int argc, char** argv, CLI::App& app)
+  {
+    app.add_option("-f,--file", this->fileName, "specifies the input mesh file")
+      ->check(CLI::ExistingFile)
+      ->required();
+
+    app.add_option("--dimension", this->ndims, "the problem dimension")
+      ->capture_default_str();
+
+    app.add_option("--maxLevels", this->maxLevels, "max levels of Subdivision for the BVH")
+      ->capture_default_str();
+
+    app.add_option("--maxOccupancy", this->maxOccupancy, "max number of item per BVH bin")
+      ->capture_default_str();
+
+    app.add_option("--box-dims", box_dims, "the dimensions of the box mesh")
+      ->expected(3);
+
+    auto* minbb = app.add_option("--box-min", box_min, "the lower corner of the box mesh")
+      ->expected(3);
+    auto* maxbb = app.add_option("--box-max", box_max, "the upper corner of the box mesh")
+      ->expected(3);
+    minbb->needs(maxbb);
+    maxbb->needs(minbb);
+
+    app.add_flag("!--no-vtk", this->dump_vtk, "disables VTK output")
+      ->capture_default_str();
+
+    app.add_flag("!--not-watertight", this->is_water_tight, "indicates that input is not water-tight")
+      ->capture_default_str();
+
+    app.add_flag("--use-shared", this->use_shared, "stores the surface using MPI-3 shared memory")
+      ->capture_default_str();
+
+
+    app.get_formatter()->column_width(40);
+
+    // could throw an exception
+    app.parse( argc, argv);
+
+    SLIC_ERROR_IF( (this->ndims != 3),
+                 "The signed distance is currently only supported in 3-D" );
+
+    slic::flushStreams();
+  }
+};
 
 //------------------------------------------------------------------------------
 // PROGRAM MAIN
@@ -91,22 +138,35 @@ int main ( int argc, char** argv )
   initialize_logger( );
 
   // STEP 2: parse command line arguments
-  parse_args( argc, argv );
+  Arguments args;
+  CLI::App app {"Driver for signed distance query"};
+
+  try
+  {
+    args.parse(argc, argv, app);
+  }
+  catch (const CLI::ParseError &e)
+  {
+    // TOOD convert to MPI parsing!
+    //utilities::processAbort();
+    return app.exit(e);
+
+  }
 
   // STEP 3: initialize the signed distance interface
   SLIC_INFO( "initializing signed distance function..." );
-  SLIC_INFO( "input file: " << Arguments.fileName );
-  SLIC_INFO( "max_levels=" << Arguments.maxLevels );
-  SLIC_INFO( "max_occupancy=" << Arguments.maxOccupancy );
+  SLIC_INFO( "input file: " << args.fileName );
+  SLIC_INFO( "max_levels=" << args.maxLevels );
+  SLIC_INFO( "max_occupancy=" << args.maxOccupancy );
   slic::flushStreams();
 
   timer.start();
-  quest::signed_distance_use_shared_memory( Arguments.use_shared );
-  quest::signed_distance_set_closed_surface( Arguments.is_water_tight );
-  quest::signed_distance_set_max_levels( Arguments.maxLevels );
-  quest::signed_distance_set_max_occupancy( Arguments.maxOccupancy );
+  quest::signed_distance_use_shared_memory( args.use_shared );
+  quest::signed_distance_set_closed_surface( args.is_water_tight );
+  quest::signed_distance_set_max_levels( args.maxLevels );
+  quest::signed_distance_set_max_occupancy( args.maxOccupancy );
   // _quest_distance_interface_init_start
-  int rc = quest::signed_distance_init( Arguments.fileName, global_comm );
+  int rc = quest::signed_distance_init( args.fileName, global_comm );
   // _quest_distance_interface_init_end
   timer.stop();
 
@@ -116,7 +176,7 @@ int main ( int argc, char** argv )
 
   // STEP 5: Generate computational mesh
   mint::UniformMesh* mesh = nullptr;
-  generate_uniform_box_mesh( mesh );
+  generate_uniform_box_mesh( mesh, args );
   SLIC_ERROR_IF( mesh==nullptr, "box mesh is null!" );
   double* phi = mesh->createField< double >( "phi", mint::NODE_CENTERED );
 
@@ -141,7 +201,7 @@ int main ( int argc, char** argv )
   slic::flushStreams();
 
   // STEP 7: vtk output
-  if ( Arguments.dump_vtk )
+  if ( args.dump_vtk )
   {
     SLIC_INFO( "writing vtk output" );
     slic::flushStreams();
@@ -171,7 +231,7 @@ int main ( int argc, char** argv )
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-void generate_uniform_box_mesh( mint::UniformMesh*& mesh )
+void generate_uniform_box_mesh( mint::UniformMesh*& mesh, Arguments& args)
 {
   SLIC_ASSERT( mesh == nullptr );
   SLIC_ASSERT( quest::signed_distance_initialized() );
@@ -182,11 +242,11 @@ void generate_uniform_box_mesh( mint::UniformMesh*& mesh )
   double* lo = nullptr;
   double* hi = nullptr;
 
-  if ( Arguments.specified_box_max && Arguments.specified_box_min )
+  if ( !args.box_min.empty() && !args.box_max.empty() )
   {
     SLIC_INFO( "using specified box bounds" );
-    lo = Arguments.box_min;
-    hi = Arguments.box_max;
+    lo = args.box_min.data();
+    hi = args.box_max.data();
   }
   else
   {
@@ -199,125 +259,16 @@ void generate_uniform_box_mesh( mint::UniformMesh*& mesh )
 
   SLIC_INFO( "box min: [" << lo[0] << " " << lo[1] << " " << lo[2] << "]" );
   SLIC_INFO( "box max: [" << hi[0] << " " << hi[1] << " " << hi[2] << "]" );
-  SLIC_INFO( "constructing Uniform Mesh: [" << Arguments.box_dims[0] <<
-             " " << Arguments.box_dims[ 1 ] <<
-             " " << Arguments.box_dims[ 2 ] << "]" );
+  SLIC_INFO( "constructing Uniform Mesh: [" << args.box_dims[0] <<
+             " " << args.box_dims[ 1 ] <<
+             " " << args.box_dims[ 2 ] << "]" );
 
-  axom::IndexType Ni = static_cast< axom::IndexType >( Arguments.box_dims[0] );
-  axom::IndexType Nj = static_cast< axom::IndexType >( Arguments.box_dims[1] );
-  axom::IndexType Nk = static_cast< axom::IndexType >( Arguments.box_dims[2] );
+  axom::IndexType Ni = static_cast< axom::IndexType >( args.box_dims[0] );
+  axom::IndexType Nj = static_cast< axom::IndexType >( args.box_dims[1] );
+  axom::IndexType Nk = static_cast< axom::IndexType >( args.box_dims[2] );
   mesh = new mint::UniformMesh( lo, hi, Ni, Nj, Nk );
 
   SLIC_ASSERT( mesh != nullptr );
-  slic::flushStreams();
-}
-
-//------------------------------------------------------------------------------
-void parse_args( int argc, char** argv )
-{
-  // Set defaults
-  Arguments.ndims         = 3;
-  Arguments.fileName      = "";
-  Arguments.maxLevels     = 15;
-  Arguments.maxOccupancy  = 5;
-  Arguments.box_dims[ 0 ] =
-    Arguments.box_dims[ 1 ] =
-      Arguments.box_dims[ 2 ] = 32;
-  Arguments.specified_box_max = false;
-  Arguments.specified_box_min = false;
-  Arguments.dump_vtk          = true;
-  Arguments.is_water_tight    = true;
-  Arguments.use_shared        = false;
-
-  for ( int i=1 ; i < argc ; ++i )
-  {
-    if ( strcmp( argv[i], "--file" )==0 || strcmp( argv[i], "-f"  )==0 )
-    {
-      Arguments.fileName = std::string( argv[ ++i] );
-    }
-    else if ( strcmp(argv[i], "--dimension")==0 )
-    {
-      Arguments.ndims = std::atoi( argv[++i] );
-    }
-    else if ( strcmp( argv[i], "--maxLevels" )==0 )
-    {
-      Arguments.maxLevels = std::atoi( argv[++i] );
-    }
-    else if ( strcmp( argv[i], "--maxOccupancy" )==0 )
-    {
-      Arguments.maxOccupancy = std::atoi( argv[++i] );
-    }
-    else if ( strcmp( argv[i], "--box-dims" )==0 )
-    {
-      for ( int j=0 ; j < Arguments.ndims ; ++j )
-      {
-        Arguments.box_dims[ j ] = std::atoi( argv[++i] );
-      } // END for all j
-    }
-    else if ( strcmp(argv[i], "--box-min")==0 )
-    {
-      Arguments.specified_box_min = true;
-      for ( int j=0 ; j < Arguments.ndims ; ++j )
-      {
-        Arguments.box_min[ j ] = std::atof( argv[++i] );
-      } // END for all j
-    }
-    else if ( strcmp( argv[i], "--box-max")==0 )
-    {
-      Arguments.specified_box_max = true;
-      for ( int j=0 ; j < Arguments.ndims ; ++j )
-      {
-        Arguments.box_max[ j ] = std::atof( argv[++i] );
-      } // END for all j
-    }
-    else if ( strcmp( argv[i], "--no-vtk")==0 )
-    {
-      Arguments.dump_vtk = false;
-    }
-    else if ( strcmp( argv[i], "--not-watertight" )==0 )
-    {
-      Arguments.is_water_tight = false;
-    }
-    else if ( strcmp( argv[i], "--use-shared" )==0 )
-    {
-      Arguments.use_shared = true;
-    }
-    else if ( strcmp( argv[i], "--help" )==0 )
-    {
-      show_help();
-      utilities::processAbort();
-    }
-    else
-    {
-      SLIC_WARNING( "skipping undefined argument [" << argv[i] << "]..." );
-    }
-
-  } // END for all i
-
-  SLIC_ERROR_IF( (Arguments.ndims != 3),
-                 "The signed distance is currently only supported in 3-D" );
-  SLIC_ERROR_IF( Arguments.fileName.empty(),
-                 "Must provide an STL input file. Provide one with --file" );
-  SLIC_ERROR_IF( Arguments.specified_box_max == !Arguments.specified_box_min,
-                 "Both min/max bounds must be specified.");
-  slic::flushStreams();
-}
-
-//------------------------------------------------------------------------------
-void show_help( )
-{
-  SLIC_INFO( "Usage:./quest_signed_distance_interface_ex -f <file> [options]");
-  SLIC_INFO( "-f, --file <file> specifies the input mesh file" );
-  SLIC_INFO( "--dimension <DIM> the problem dimension" );
-  SLIC_INFO( "--maxLevels <N> max levels of Subdivision for the BVH" );
-  SLIC_INFO( "--maxOccupancy <N> max number of item per BVH bin." );
-  SLIC_INFO( "--box-dims <N0> <N1> <N2> the dimensions of the box mesh");
-  SLIC_INFO( "--box-min <X0> <Y0> <Z0> the lower corner of the box mesh" );
-  SLIC_INFO( "--box-max <XN> <YN> <ZN> the upper cordner of the box mesh" );
-  SLIC_INFO( "--no-vtk disables VTK output." );
-  SLIC_INFO( "--not-watertight indicates that input is not water-tight" );
-  SLIC_INFO( "--use-shared stores the surface using MPI-3 shared memory" );
-  SLIC_INFO( "--help prints this help information" );
   slic::flushStreams();
 }
 
