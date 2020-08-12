@@ -193,16 +193,16 @@ bool Table::required()
 }
 
  std::shared_ptr<Table> Table::registerVerifier(std::function<bool()> lambda) {
-  SLIC_WARNING_IF(verifier, fmt::format("Verifier for Table {0} already set", 
+  SLIC_WARNING_IF(m_verifier, fmt::format("Verifier for Table {0} already set", 
                                          m_sidreGroup->getPathName()));
-  verifier = lambda;
+  m_verifier = lambda;
   return shared_from_this();
  } 
 
  bool Table::verify() {
    bool verified = true;
    // Verify this Table
-   if (verifier && !verifier()) {
+   if (m_verifier && !m_verifier()) {
      verified = false;
      SLIC_WARNING(fmt::format("Table {0} failed verification", m_sidreGroup->getPathName()));
    }

@@ -332,7 +332,7 @@ private:
   axom::sidre::Group* m_sidreRootGroup = nullptr;
   axom::sidre::DataTypeId m_type = axom::sidre::DataTypeId::NO_TYPE_ID;
   bool m_docEnabled = false;
-  std::function<bool()> verifier;
+  std::function<bool()> m_verifier;
 };
 
 } // end namespace inlet

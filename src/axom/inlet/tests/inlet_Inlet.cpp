@@ -1117,6 +1117,48 @@ TEST(inlet_verify, verifyTableLambda) {
     return table1->hasField("field22");
   });
   EXPECT_FALSE(inlet->verify());
+
+  std::string testString2 = "thermal_solver={}\n"
+                            "thermal_solver.order = 2\n"
+                            "thermal_solver.timestepper = 'quasistatic'\n"
+                            "solid_solver={}\n"
+                            "soild_solver.order = 3\n"
+                            "solid_solver.timestepper = 'BackwardEuler'\n"
+                            "material={}\n"
+                            "material.attribute = 1\n"
+                            "material.thermalview = 'isotropic'\n"
+                            "material.solidview = 'hyperelastic'";
+  DataStore ds2;
+  auto inlet2 = createBasicInlet(&ds2, testString2);
+  auto thermalOrder = inlet2->addInt("thermal_solver/order");
+  auto thermalTimeStep = inlet2->addString("thermal_solver/timestepper");
+  auto solidOrder = inlet2->addInt("solid_solver/order");
+  auto soldTimestep = inlet2->addString("solid_solver/timestepper");
+  auto attrib = inlet2->addInt("material/attribute");
+  
+  auto globalTable = inlet2->getGlobalTable();
+
+  globalTable->registerVerifier([&]() -> bool {
+    bool verifySuccess = true;
+    if (globalTable->hasTable("thermal_solver") && 
+        !globalTable->hasField("material/thermalview")) {
+      verifySuccess = false;
+    }
+
+    if (globalTable->hasTable("solid_solver") && 
+        !globalTable->hasField("material/solidview")) {
+      verifySuccess = false;
+    }
+
+    return verifySuccess;
+  });
+  
+  EXPECT_FALSE(inlet2->verify());
+
+  auto thermalView = inlet2->addString("material/thermalview");
+  auto solidView = inlet2->addString("material/solidview");
+
+  EXPECT_TRUE(inlet2->verify());
 }
 
 //------------------------------------------------------------------------------

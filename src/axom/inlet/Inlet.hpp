@@ -295,6 +295,9 @@ public:
    */
   bool verify(); 
 
+  std::shared_ptr<Table> getGlobalTable() {
+    return m_globalTable;
+  }
   // TODO add update value functions
 private:
   /*!
@@ -392,7 +395,6 @@ private:
    *****************************************************************************
    */
   bool searchValidValues(axom::sidre::Group* sidreGroup, double value);
-  
   
   /*!
    *****************************************************************************

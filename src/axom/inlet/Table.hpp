@@ -318,7 +318,7 @@ private:
   bool m_docEnabled;
   std::unordered_map<std::string, std::shared_ptr<Table>> m_tableChildren;
   std::unordered_map<std::string, std::shared_ptr<Field>> m_fieldChildren;
-  std::function<bool()> verifier;
+  std::function<bool()> m_verifier;
 };
 
 } // end namespace inlet
