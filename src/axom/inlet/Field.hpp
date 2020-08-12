@@ -262,6 +262,13 @@ public:
   std::shared_ptr<Field> registerVerifier(std::function<bool()> lambda);
   bool verify();
 
+  /*!
+   *****************************************************************************
+   * \return The name of this Field.
+   *****************************************************************************
+  */
+  std::string getName();
+
 private:
 
   /*!

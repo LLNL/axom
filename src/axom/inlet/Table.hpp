@@ -255,11 +255,23 @@ public:
    */
   bool hasTable(const std::string& tableName);
 
-  std::unordered_set<std::shared_ptr<Field>> getChildFields() {
+  /*!
+   *****************************************************************************
+   * \return An unordered map from Field names to the child Field pointers for 
+   * this Table.
+   *****************************************************************************
+   */
+  std::unordered_map<std::string, std::shared_ptr<Field>> getChildFields() {
     return m_fieldChildren;
   }
 
-  std::unordered_set<std::shared_ptr<Table>> getChildTables() {
+  /*!
+   *****************************************************************************
+   * \return An unordered map from Table names to the child Table pointers for 
+   * this Table.
+   *****************************************************************************
+   */
+  std::unordered_map<std::string, std::shared_ptr<Table>> getChildTables() {
     return m_tableChildren;
   }
 
@@ -282,8 +294,8 @@ private:
   // This Table's Sidre Group
   axom::sidre::Group* m_sidreGroup;
   bool m_docEnabled;
-  std::unordered_set<std::shared_ptr<Table>> m_tableChildren;
-  std::unordered_set<std::shared_ptr<Field>> m_fieldChildren;
+  std::unordered_map<std::string, std::shared_ptr<Table>> m_tableChildren;
+  std::unordered_map<std::string, std::shared_ptr<Field>> m_fieldChildren;
   std::function<bool()> verifier;
 };
 

@@ -299,5 +299,9 @@ bool Field::verify() {
   return true;
 }
 
+std::string Field::getName() {
+  return m_sidreGroup->getName();
+}
+
 } // end namespace inlet
 } // end namespace axom
