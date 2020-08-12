@@ -77,3 +77,10 @@ packages:
 # Globally lock in version of CMake
   cmake:
     version: [3.10.1]
+
+# Globally lock version of third party libraries
+  conduit:
+    version: [0.5.1]
+    variants: ~shared
+  mfem:
+    variants: ~mpi~metis~zlib
