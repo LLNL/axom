@@ -287,7 +287,7 @@ public:
    * Group: ensuring that required Fields are specified, each Field's value 
    * and default value are within the specified range or are equal to a valid 
    * value, and types are consistent. Also ensures that the registered verification
-   * lambdas hold true.
+   * functions hold true.
    * 
    * \return true if contents are correct and false if not.
    *
@@ -297,8 +297,8 @@ public:
 
    /*!
    *****************************************************************************
-   * \brief Requires the lambda-specified verification to pass when verify() is 
-   * called.
+   * \brief Registers a function object that will be called during the verification
+   * stage via Inlet::verify().
    *****************************************************************************
    */
   void registerVerifier(std::function<bool(axom::sidre::Group*)> lambda);

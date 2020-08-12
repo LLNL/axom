@@ -259,7 +259,21 @@ public:
   */
   std::shared_ptr<Field> validValues(const std::initializer_list<double>& set);
 
+  /*!
+   *****************************************************************************
+   * \brief Registers the function object that will verify this Field's contents
+   * during the verification stage.
+   * 
+   * \param [in] The function object that will be called by Field::verify().
+   *****************************************************************************
+  */
   std::shared_ptr<Field> registerVerifier(std::function<bool()> lambda);
+
+  /*!
+   *****************************************************************************
+   * \brief Called by Inlet::verify to verify the contents of this Field.
+   *****************************************************************************
+  */
   bool verify();
 
   /*!

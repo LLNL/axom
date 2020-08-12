@@ -12,5 +12,17 @@ void setWarningFlag(axom::sidre::Group* root) {
   }
 }
 
+std::string getFullName(const std::string& prefix, const std::string& name)
+{
+  if (prefix == "")
+  {
+    return name;
+  }
+  else
+  {
+    return prefix + "/" + name;
+  }
+}
+
 }
 }

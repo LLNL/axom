@@ -234,7 +234,22 @@ public:
    */
   bool required();
 
+  /*!
+   *****************************************************************************
+   * \brief Registers the function object that will verify this Table's contents
+   * during the verification stage.
+   * 
+   * \param [in] The function object that will be called by Table::verify().
+   *****************************************************************************
+  */
   std::shared_ptr<Table> registerVerifier(std::function<bool()> lambda);
+
+   /*!
+   *****************************************************************************
+   * \brief This will be called by Inlet::verify to verify the contents of this
+   *  Table and all child Tables/Fields of this Table.
+   *****************************************************************************
+  */
   bool verify();
 
   /*!

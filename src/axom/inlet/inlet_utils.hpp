@@ -10,15 +10,27 @@ namespace inlet
 
 
 /*!
-  *****************************************************************************
-  * \brief This function is used to mark if anything went wrong during the 
-  * defining phase of inlet so verify() will properly fail.
-  *
-  * \param [in] root Pointer to the Sidre Root Group where the warning flag 
-  * will be set.
-  *****************************************************************************
-  */
+*****************************************************************************
+* \brief This function is used to mark if anything went wrong during the 
+* defining phase of inlet so verify() will properly fail.
+*
+* \param [in] root Pointer to the Sidre Root Group where the warning flag 
+* will be set.
+*****************************************************************************
+*/
 void setWarningFlag(axom::sidre::Group* root);
+
+/*!
+*****************************************************************************
+* \brief This function appends the prefix path to the ending path.
+*
+* \param [in] The prefix string path.
+* \param [in] The ending string path.
+*
+* \return The appended string.
+*****************************************************************************
+*/
+std::string getFullName(const std::string& prefix, const std::string& name);
 
 }
 }

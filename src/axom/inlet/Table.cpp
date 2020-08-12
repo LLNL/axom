@@ -14,17 +14,6 @@ namespace axom
 namespace inlet
 {
 
-std::string getFullName(const std::string& prefix, const std::string& name)
-{
-  if (prefix == "")
-  {
-    return name;
-  }
-  else
-  {
-    return prefix + "/" + name;
-  }
-}
 
 std::shared_ptr<Table> Table::addTable(const std::string& name,
                                        const std::string& description)
@@ -120,9 +109,11 @@ std::shared_ptr<Field> Table::addInt(const std::string& name,
     sidreGroup->createViewScalar("value", value);
   }
 
-  return std::make_shared<axom::inlet::Field>(sidreGroup, m_sidreRootGroup,
+  auto field = std::make_shared<axom::inlet::Field>(sidreGroup, m_sidreRootGroup,
                                               axom::sidre::DataTypeId::INT_ID,
                                                                 m_docEnabled);
+  m_fieldChildren[fullName] = field;
+  return field;
 }
 
 std::shared_ptr<Field> Table::addString(const std::string& name,
