@@ -41,8 +41,8 @@ struct Arguments;
 // Function prototypes
 void initialize_logger( );
 void finalize_logger( );
-void generate_uniform_box_mesh( mint::UniformMesh*& mesh, Arguments& app);
-
+void generate_uniform_box_mesh( mint::UniformMesh*& mesh, Arguments& args);
+void run_batched_query( mint::UniformMesh*& mesh);
 
 
 //------------------------------------------------------------------------------
@@ -67,6 +67,7 @@ struct Arguments
   bool is_water_tight{true};
   bool dump_vtk{true};
   bool use_shared{false};
+  bool use_batched_query{false};
 
   void parse( int argc, char** argv, CLI::App& app)
   {
@@ -102,6 +103,9 @@ struct Arguments
     app.add_flag("--use-shared", this->use_shared, "stores the surface using MPI-3 shared memory")
       ->capture_default_str();
 
+    app.add_flag("--use-batched-query", this->use_batched_query, 
+      "uses a vectorized query instead of many serial queries")
+      ->capture_default_str();
 
     app.get_formatter()->column_width(40);
 
@@ -184,21 +188,29 @@ int main ( int argc, char** argv )
   SLIC_INFO( "evaluating signed distance field on specified box mesh..." );
   slic::flushStreams();
 
-  const axom::IndexType nnodes = mesh->getNumberOfNodes( );
-
-  timer.reset();
-  timer.start();
-  for ( axom::IndexType inode=0 ; inode < nnodes ; ++inode )
+  if(!args.use_batched_query)
   {
-    double pt[ 3 ];
-    mesh->getNode( inode, pt );
-    // _quest_distance_interface_test_start
-    phi[ inode ] = quest::signed_distance_evaluate( pt[0], pt[1], pt[2] );
-    // _quest_distance_interface_test_end
-  } // END for all nodes
-  timer.stop();
-  SLIC_INFO( "time to evaluate: " << timer.elapsed() << "s" );
-  slic::flushStreams();
+    const axom::IndexType nnodes = mesh->getNumberOfNodes( );
+
+    timer.reset();
+    timer.start();
+    for ( axom::IndexType inode=0 ; inode < nnodes ; ++inode )
+    {
+      double pt[ 3 ];
+      mesh->getNode( inode, pt );
+      // _quest_distance_interface_test_start
+      phi[ inode ] = quest::signed_distance_evaluate( pt[0], pt[1], pt[2] );
+      // _quest_distance_interface_test_end
+    } // END for all nodes
+    timer.stop();
+    SLIC_INFO( "time to evaluate: " << timer.elapsed() << "s" );
+    slic::flushStreams();
+  }
+  else
+  {
+    run_batched_query(mesh);
+  }
+  
 
   // STEP 7: vtk output
   if ( args.dump_vtk )
@@ -300,4 +312,49 @@ void finalize_logger( )
 {
   slic::flushStreams();
   slic::finalize( );
+}
+
+//------------------------------------------------------------------------------
+void run_batched_query( mint::UniformMesh*& mesh)
+{
+    double* phi = mesh->getFieldPtr< double >( "phi", mint::NODE_CENTERED );
+
+    const axom::IndexType nnodes = mesh->getNumberOfNodes( );
+
+    utilities::Timer timer;
+    timer.start();
+
+    // Allocate space for the coordinate arrays
+    double* x = axom::allocate< double >( nnodes );
+    double* y = axom::allocate< double >( nnodes );
+    double* z = axom::allocate< double >( nnodes );
+
+    // Determine an appropriate policy
+  #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && defined(RAJA_ENABLE_OPENMP)
+    using ExecPolicy = axom::OMP_EXEC;
+  #else
+    using ExecPolicy = axom::SEQ_EXEC;
+  #endif
+
+    // Fill the coordinate arrays
+    mint::for_all_nodes< ExecPolicy, mint::xargs::xyz >( mesh,
+    AXOM_LAMBDA( axom::IndexType idx, double xx, double yy, double zz )
+      {
+        x[ idx ] = xx;
+        y[ idx ] = yy;
+        z[ idx ] = zz;
+      }
+    );
+
+    // Call the vectorized version of the signed distance query
+    quest::signed_distance_evaluate( x,y,z, nnodes, phi);
+
+    // Deallocate the coordinate arrays
+    axom::deallocate( x );
+    axom::deallocate( y );
+    axom::deallocate( z );
+
+    timer.stop();
+    SLIC_INFO( "time to evaluate batched query: " << timer.elapsed() << "s" );
+    slic::flushStreams();
 }
