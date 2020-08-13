@@ -27,10 +27,3 @@ Handles Message combination and tests whether Message classes should be combined
 * :ref:`Combiner <combiner_class_label>` - Abstract base class that all Combiners must inherit from.
 * :ref:`TextEqualityCombiner <textequalitycombiner_class_label>` - Combines Message classes that have equal Text member variables.
 
-.. toctree::
-   :maxdepth: 1
-
-   lumberjack_class
-   message_class
-   communicator_class
-   combiner_class
