@@ -104,7 +104,7 @@ struct Arguments
     app.add_flag("--use-shared", this->use_shared, "stores the surface using MPI-3 shared memory")
       ->capture_default_str();
 
-    app.add_flag("--use-batched-query", this->use_batched_query, 
+    app.add_flag("--batched", this->use_batched_query, 
       "uses a vectorized query instead of many serial queries")
       ->capture_default_str();
 
