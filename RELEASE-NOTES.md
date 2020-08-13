@@ -10,6 +10,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
+- Added option to quest's `SignedDistance` class and C API to toggle whether
+  the distance query computes the sign.
+- Added batched option to accelerate quest's signed distance query example.
+  This uses OpenMP threading, when available.
 - Added new component, Inlet, to assist in retrieving and storing data from
   an input deck.
 - Added the ability to specify an [Umpire] allocator ID to use with the
