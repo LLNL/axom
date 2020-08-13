@@ -70,14 +70,16 @@ public:
    * \param [in] surfaceMesh user-supplied surface mesh.
    * \param [in] isWatertight indicates if the surface mesh is closed.
    * \param [in] maxObjects max number of objects for spatial decomposition.
-   * \param [in] maxLevels max levels for spatial decomposition (optional).
+   * \param [in] maxLevels max levels for spatial decomposition.
+   * \param [in] computeSign indicates if distance queries should compute signs.
    * \note Default maxLevels is 5 if not specified.
    * \pre surfaceMesh != nullptr
    */
   SignedDistance( const mint::Mesh* surfaceMesh,
                   bool isWatertight,
                   int maxObjects,
-                  int maxLevels   );
+                  int maxLevels,
+                  bool computeSign );
 
   /*!
    * \brief Destructor.
@@ -270,6 +272,7 @@ private:
 
 private:
   bool m_isInputWatertight;         /*!< indicates if input is watertight     */
+  bool m_computeSign;               /*!< indicates if queries compute sign    */
   const mint::Mesh* m_surfaceMesh;  /*!< User-supplied surface mesh.          */
   BoxType m_boxDomain;              /*!< bounding box containing surface mesh */
   BVHTreeType* m_bvhTree;           /*!< Spatial acceleration data-structure. */
@@ -307,8 +310,8 @@ private:
 template < int NDIMS >
 SignedDistance< NDIMS >::SignedDistance(
   const mint::Mesh* surfaceMesh, bool isWatertight,
-  int maxObjects, int maxLevels ) :
-  m_isInputWatertight( isWatertight )
+  int maxObjects, int maxLevels, bool computeSign ) :
+  m_isInputWatertight( isWatertight ), m_computeSign(computeSign)
 {
   // Sanity checks
   SLIC_ASSERT( surfaceMesh != nullptr );
@@ -396,7 +399,9 @@ inline double SignedDistance< NDIMS >::computeDistance(
 #endif
 
   // STEP 3: compute sign
-  double sign = this->computeSign( pt, &cpt, my_elements );
+  double sign = m_computeSign 
+      ? this->computeSign( pt, &cpt, my_elements )
+      : 1.;
 
   // STEP 4: return computed signed distance
   return ( sign*std::sqrt( minSqDist) );

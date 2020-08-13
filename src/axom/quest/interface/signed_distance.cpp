@@ -46,6 +46,7 @@ static struct parameters_t
   bool verbose;           /*!< logger verbosity */
   bool is_closed_surface; /*!< indicates if the input is a closed surface */
   bool use_shared_memory; /*!< use MPI-3 shared memory for the surface mesh */
+  bool compute_sign;      /*!< indicates if sign should be computed */
 
   /*!
    * \brief Default Constructor. Sets default values for the parameters.
@@ -56,7 +57,8 @@ static struct parameters_t
     max_occupancy( 5 ),
     verbose( false ),
     is_closed_surface( true ),
-    use_shared_memory( false )
+    use_shared_memory( false ),
+    compute_sign ( true )
   { }
 
 } Parameters;
@@ -168,7 +170,8 @@ int signed_distance_init( const mint::Mesh* m, MPI_Comm comm )
   s_query = new SignedDistance3D( s_surface_mesh,
                                   Parameters.is_closed_surface,
                                   Parameters.max_occupancy,
-                                  Parameters.max_levels );
+                                  Parameters.max_levels,
+                                  Parameters.compute_sign );
 
   return INIT_SUCCESS;
 }
@@ -210,6 +213,16 @@ void signed_distance_set_closed_surface( bool status )
     "signed distance query already initialized; setting option has no effect!");
 
   Parameters.is_closed_surface = status;
+}
+
+//------------------------------------------------------------------------------
+void signed_distance_set_compute_distance( bool computeSign )
+{
+  SLIC_ERROR_IF(
+    signed_distance_initialized(),
+    "signed distance query already initialized; setting option has no effect!");
+
+  Parameters.compute_sign = computeSign;
 }
 
 //------------------------------------------------------------------------------

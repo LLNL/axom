@@ -131,7 +131,7 @@ TEST( quest_signed_distance, sphere_test )
 
   SLIC_INFO( "Generate BVHTree..." );
   // _quest_distance_cpp_init_start
-  axom::quest::SignedDistance< 3 > signed_distance( surface_mesh,true, 25, 10 );
+  axom::quest::SignedDistance< 3 > signed_distance( surface_mesh,true, 25, 10, true );
   // _quest_distance_cpp_init_end
 
   SLIC_INFO( "Compute signed distance..." );
