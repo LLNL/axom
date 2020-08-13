@@ -7,8 +7,9 @@ provides scalable logging while reducing the amount of messages
 written out the screen or file system.
 
 
-Introduction
-------------
+.. raw:: html
+
+    <h3>Introduction</h3>
 
 Lumberjack was created to provide scalable logging with a simple programming
 model while allowing developers to customize its behavior. It is named Lumberjack
@@ -16,15 +17,16 @@ because it cuts down logs. It uses MPI and a scalable binary tree reduction
 scheme to combine duplicate messages and limit output to only the root node.
 
 
-Requirements
-------------
+.. raw:: html
+
+    <h3>Requirements</h3>
 
 * MPI - MPI is fundamental to Lumberjack and without MPI, Lumberjack is not useful.
-* C++11 - Required for compiling Lumberjack
 
 
-Code Guarding
--------------
+.. raw:: html
+
+    <h3>Code Guarding</h3>
 
 You tell if Axom was built with Lumberjack enabled by using the following
 include and compiler define:
@@ -37,43 +39,22 @@ include and compiler define:
     #endif
 
 
-Classes
--------
+.. raw:: html
 
-Basic
-*****
+    <h3>Contents</h3>
 
-* :ref:`Lumberjack <lumberjack_class_label>` - Performs all high level functionality for the Lumberjack library.
-* :ref:`Message <message_class_label>` - Holds all information pertaining to a Message.
-
-
-Communicators
-*************
-
-Handles all node-to-node Message passing.
-
-* :ref:`Communicator <communicator_class_label>` - Abstract base class that all Communicators must inherit from.
-* :ref:`BinaryTreeCommunicator <binarytreecommunicator_class_label>` - Main Communicator that is implemented with a scalable Binary Tree scheme
-* :ref:`RootCommunicator <rootcommunicator_class_label>` - non-scalable communication scheme that all nodes connect to the root node.  This is given for diagnostic purposes only.
-
-
-Combiners
-*********
-
-Handles Message combination and tests whether Message classes should be combined.
-
-* :ref:`Combiner <combiner_class_label>` - Abstract base class that all Combiners must inherit from.
-* :ref:`TextEqualityCombiner <textequalitycombiner_class_label>` - Combines Message classes that have equal Text member variables.
-
-**Contents:**
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
-   core_concepts
    quick_start
-   lumberjack_class
-   message_class
-   communicator_class
-   combiner_class
+   core_concepts
+   lumberjack_classes
 
+.. raw:: html
+
+    <h3>Additional links</h3>
+
+
+* `API documentation <../../../../doxygen/html/lumberjacktop.html>`_
+* `Axom main docs <../../../../index.html>`_
