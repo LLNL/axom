@@ -6,6 +6,7 @@
 // Axom includes
 #include "axom/core.hpp"
 #include "axom/mint.hpp"
+#include "axom/primal.hpp"
 // _quest_distance_interface_include_start
 #include "axom/quest.hpp"
 // _quest_distance_interface_include_end
@@ -31,6 +32,7 @@ using MPI_Comm = int;
 
 // namespace aliases
 namespace mint      = axom::mint;
+namespace primal    = axom::primal;
 namespace quest     = axom::quest;
 namespace slic      = axom::slic;
 namespace utilities = axom::utilities;
@@ -274,12 +276,16 @@ void generate_uniform_box_mesh( mint::UniformMesh*& mesh, Arguments& args)
     hi = mesh_box_max;
   }
 
-
-  SLIC_INFO( "box min: [" << lo[0] << " " << lo[1] << " " << lo[2] << "]" );
-  SLIC_INFO( "box max: [" << hi[0] << " " << hi[1] << " " << hi[2] << "]" );
-  SLIC_INFO( "constructing Uniform Mesh: [" << args.box_dims[0] <<
-             " " << args.box_dims[ 1 ] <<
-             " " << args.box_dims[ 2 ] << "]" );
+  //output some information
+  {
+    const primal::Point<double,3> lowerPoint(lo, 3);
+    const primal::Point<double,3> upperPoint(hi, 3);
+    auto bbox = primal::BoundingBox<double,3>(lowerPoint, upperPoint);
+    SLIC_INFO( "bounding box " << bbox );
+    
+    const primal::Point<int,3> bdims(args.box_dims.data(), 3);
+    SLIC_INFO( "constructing Uniform Mesh of resolution " << bdims );
+  }
 
   axom::IndexType Ni = static_cast< axom::IndexType >( args.box_dims[0] );
   axom::IndexType Nj = static_cast< axom::IndexType >( args.box_dims[1] );
