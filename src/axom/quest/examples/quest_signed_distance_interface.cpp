@@ -81,7 +81,7 @@ struct Arguments
     app.add_option("--dimension", this->ndims, "the problem dimension")
       ->capture_default_str();
 
-    app.add_option("--maxLevels", this->maxLevels, "max levels of Subdivision for the BVH")
+    app.add_option("--maxLevels", this->maxLevels, "max levels of subdivision for the BVH")
       ->capture_default_str();
 
     app.add_option("--maxOccupancy", this->maxOccupancy, "max number of item per BVH bin")
@@ -108,7 +108,7 @@ struct Arguments
       ->capture_default_str();
 
     app.add_flag("--batched", this->use_batched_query, 
-      "uses a vectorized query instead of many serial queries")
+      "uses a single batched query on all points instead of many individual queries")
       ->capture_default_str();
 
     app.add_flag("--ignore-signs", this->ignore_signs, 
