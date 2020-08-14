@@ -63,7 +63,7 @@ struct Arguments
   int ndims{3};
   int maxLevels{15};
   int maxOccupancy{5};
-  std::vector<int> box_dims{32,32,32};
+  std::vector<axom::IndexType> box_dims{32,32,32};
   std::vector<double> box_min;
   std::vector<double> box_max;
   bool is_water_tight{true};
@@ -90,6 +90,7 @@ struct Arguments
     app.add_option("--box-dims", box_dims, "the dimensions of the box mesh")
       ->expected(3);
 
+    // If either box-min or box-max are provided, they must both be present
     auto* minbb = app.add_option("--box-min", box_min, "the lower corner of the box mesh")
       ->expected(3);
     auto* maxbb = app.add_option("--box-max", box_max, "the upper corner of the box mesh")
@@ -139,7 +140,7 @@ int main ( int argc, char** argv )
   MPI_Comm_rank( global_comm, &mpirank );
   MPI_Comm_size( global_comm, &numranks );
 #else
-  mpirank     = 0;
+  mpirank  = 0;
   numranks = 1;
 #endif
 
@@ -158,9 +159,18 @@ int main ( int argc, char** argv )
   }
   catch (const CLI::ParseError &e)
   {
-    // TOOD convert to MPI parsing!
-    //utilities::processAbort();
-    return app.exit(e);
+    int retval = -1;
+    if(mpirank==0)
+    {
+      retval = app.exit(e);
+    }
+    finalize_logger( );
+
+#ifdef AXOM_USE_MPI
+    MPI_Bcast(&retval, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Finalize();
+#endif
+    exit(retval);
 
   }
 
