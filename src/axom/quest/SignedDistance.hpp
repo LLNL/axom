@@ -71,7 +71,7 @@ public:
    * \param [in] isWatertight indicates if the surface mesh is closed.
    * \param [in] maxObjects max number of objects for spatial decomposition.
    * \param [in] maxLevels max levels for spatial decomposition.
-   * \param [in] computeSign indicates if distance queries should compute signs.
+   * \param [in] computeSign indicates if distance queries should compute signs (optional).
    * \note Default maxLevels is 5 if not specified.
    * \pre surfaceMesh != nullptr
    */
@@ -79,7 +79,7 @@ public:
                   bool isWatertight,
                   int maxObjects,
                   int maxLevels,
-                  bool computeSign );
+                  bool computeSign = true );
 
   /*!
    * \brief Destructor.
