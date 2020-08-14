@@ -51,6 +51,26 @@ public:
 
   /*!
    *****************************************************************************
+   * \brief Constructor for the LuaReader.
+   *
+   * Default constructor initializes m_luaState.
+   *****************************************************************************
+   */
+  LuaReader() : m_luaState(nullptr)
+  {}
+
+  /*!
+   *****************************************************************************
+   * \brief Constructor for the LuaReader.
+   *
+   * This constructor takes in a given luaState and sets m_luaState
+   *****************************************************************************
+   */
+  LuaReader(lua_State* luaState) : m_luaState(luaState) {};
+
+  
+  /*!
+   *****************************************************************************
    * \brief Parses the given input deck.
    *
    * This performs any setup work and parses the given input deck.
@@ -140,6 +160,15 @@ public:
    */
   bool getString(const std::string& id, std::string& value);
 
+  /*!
+   *****************************************************************************
+   * \brief By default the LuaReader will close the luaState
+   *
+   * This call absolves LuaReader from cleaning up the luaState
+   *****************************************************************************
+   */  
+  void releaseLuaState();
+  
 private:
 
   /*!

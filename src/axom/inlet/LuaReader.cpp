@@ -42,7 +42,9 @@ bool LuaReader::parseFile(const std::string& filePath)
     return false;
   }
 
-  m_luaState = luaL_newstate();
+  if (!m_luaState)
+    m_luaState = luaL_newstate();
+  
   if (luaL_loadfile(m_luaState, filePath.c_str()) ||
       lua_pcall(m_luaState, 0, 0, 0))
   {
@@ -65,7 +67,9 @@ bool LuaReader::parseString(const std::string& luaString)
     return false;
   }
 
-  m_luaState = luaL_newstate();
+  if (!m_luaState)
+    m_luaState = luaL_newstate();
+
   if (luaL_loadstring(m_luaState, luaString.c_str()) ||
       lua_pcall(m_luaState, 0, 0, 0))
   {
@@ -175,5 +179,10 @@ bool LuaReader::getString(const std::string& id, std::string& value)
   return true;
 }
 
+  void LuaReader::releaseLuaState()
+  {
+    m_luaState = nullptr;
+  }
+  
 } // end namespace inlet
 } // end namespace axom

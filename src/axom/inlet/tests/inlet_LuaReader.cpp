@@ -114,6 +114,48 @@ TEST(inlet_LuaReader, mixLevelTables)
   EXPECT_EQ(value, 3);
 }
 
+TEST(inlet_LuaReader, constructorState)
+{
+  auto luaState = luaL_newstate();
+  std::unique_ptr<axom::inlet::LuaReader> lr(new axom::inlet::LuaReader(luaState));
+  lr->parseString("a = 4");
+
+  bool retValue;
+  int value;
+
+  value = 0;
+  retValue = lr->getInt("a", value);
+  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(value, 4);
+  
+  // Check to make sure state is still valid
+  EXPECT_NE(luaState, nullptr);
+
+  lua_getglobal(luaState, "a");
+  value = 0;
+  value = (int)lua_tonumber(luaState, -1);
+  EXPECT_EQ(value, 4);
+  
+  // don't wipe luaState
+  lr->releaseLuaState();
+  
+  // invoke the destructor
+  lr.reset();
+
+  lua_getglobal(luaState, "a");
+  value = 0;
+  value = (int)lua_tonumber(luaState, -1);
+  EXPECT_EQ(value, 4);
+
+  std::unique_ptr<axom::inlet::LuaReader> lr2(new axom::inlet::LuaReader(luaState));
+  value = 0;
+  retValue = lr2->getInt("a", value);
+  EXPECT_EQ(retValue, true);
+  EXPECT_EQ(value, 4);
+  
+}
+
+
 
 //------------------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"
