@@ -186,7 +186,7 @@ int main ( int argc, char** argv )
   quest::signed_distance_set_closed_surface( args.is_water_tight );
   quest::signed_distance_set_max_levels( args.maxLevels );
   quest::signed_distance_set_max_occupancy( args.maxOccupancy );
-  quest::signed_distance_set_compute_distance( !args.ignore_signs );
+  quest::signed_distance_set_compute_signs( !args.ignore_signs );
   // _quest_distance_interface_init_start
   int rc = quest::signed_distance_init( args.fileName, global_comm );
   // _quest_distance_interface_init_end

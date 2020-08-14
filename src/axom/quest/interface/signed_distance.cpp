@@ -216,7 +216,7 @@ void signed_distance_set_closed_surface( bool status )
 }
 
 //------------------------------------------------------------------------------
-void signed_distance_set_compute_distance( bool computeSign )
+void signed_distance_set_compute_signs( bool computeSign )
 {
   SLIC_ERROR_IF(
     signed_distance_initialized(),

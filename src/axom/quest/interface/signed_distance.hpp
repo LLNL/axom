@@ -181,7 +181,7 @@ void signed_distance_set_closed_surface( bool status );
  *
  * \note Options must be set before initializing the Signed Distance Query.
  */
-void signed_distance_set_compute_distance( bool computeSign );
+void signed_distance_set_compute_signs( bool computeSign );
 
 /*!
  * \brief Sets the maximum levels of subdivision for the BVH decomposition.
