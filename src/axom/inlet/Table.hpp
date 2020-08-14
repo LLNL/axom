@@ -17,7 +17,7 @@
 #include <memory>
 #include <string>
 #include <functional>
-#include <unordered_set>
+#include <unordered_map>
 
 #include "axom/inlet/Field.hpp"
 #include "axom/inlet/Reader.hpp"
@@ -276,9 +276,7 @@ public:
    * this Table.
    *****************************************************************************
    */
-  std::unordered_map<std::string, std::shared_ptr<Field>> getChildFields() {
-    return m_fieldChildren;
-  }
+  std::unordered_map<std::string, std::shared_ptr<Field>> getChildFields();
 
   /*!
    *****************************************************************************
@@ -286,16 +284,14 @@ public:
    * this Table.
    *****************************************************************************
    */
-  std::unordered_map<std::string, std::shared_ptr<Table>> getChildTables() {
-    return m_tableChildren;
-  }
+  std::unordered_map<std::string, std::shared_ptr<Table>> getChildTables();
 
   /*!
    *****************************************************************************
    * \return The path name of this Table.
    *****************************************************************************
    */
-  std::string getPathName();
+  std::string getName();
 
 private:
   /*!

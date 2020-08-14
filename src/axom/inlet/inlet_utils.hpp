@@ -30,7 +30,7 @@ void setWarningFlag(axom::sidre::Group* root);
 * \return The appended string.
 *****************************************************************************
 */
-std::string getFullName(const std::string& prefix, const std::string& name);
+std::string concatenatePaths(const std::string& prefix, const std::string& name);
 
 /*!
 *****************************************************************************
@@ -42,7 +42,7 @@ std::string getFullName(const std::string& prefix, const std::string& name);
 * \return The extracted string.
 *****************************************************************************
 */
-std::string getPath(const std::string& prefix, const std::string& pathName);
+std::string getName(const std::string& prefix, const std::string& pathName);
 
 }
 }

@@ -302,8 +302,8 @@ bool Field::verify() {
   return true;
 }
 
-std::string Field::getPathName() {
-  return getPath(m_sidreRootGroup->getPathName(), m_sidreGroup->getPathName());
+std::string Field::getName() {
+  return m_name;
 }
 
 } // end namespace inlet

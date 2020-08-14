@@ -1122,7 +1122,7 @@ TEST(inlet_verify, verifyTableLambda) {
                             "thermal_solver.order = 2\n"
                             "thermal_solver.timestepper = 'quasistatic'\n"
                             "solid_solver={}\n"
-                            "soild_solver.order = 3\n"
+                            "solid_solver.order = 3\n"
                             "solid_solver.timestepper = 'BackwardEuler'\n"
                             "material={}\n"
                             "material.attribute = 1\n"
@@ -1135,7 +1135,8 @@ TEST(inlet_verify, verifyTableLambda) {
   auto solidOrder = inlet2->addInt("solid_solver/order");
   auto soldTimestep = inlet2->addString("solid_solver/timestepper");
   auto attrib = inlet2->addInt("material/attribute");
-  
+  auto thing = inlet2->addTable("test")->addTable("test2");
+
   auto globalTable = inlet2->getGlobalTable();
 
   globalTable->registerVerifier([&]() -> bool {

@@ -18,11 +18,29 @@ namespace inlet
 std::shared_ptr<Table> Table::addTable(const std::string& name,
                                        const std::string& description)
 {
-  std::string fullName = getFullName(m_name, name);
-  auto table = std::make_shared<Table>(fullName, description, m_reader, 
+  std::string fullName = concatenatePaths(m_name, name);
+  size_t found = fullName.find("/");
+  auto currTable = shared_from_this();
+  
+  while (found != std::string::npos) {
+    const std::string& currName = fullName.substr(0, found);
+    if (!currTable->hasTable(currName)) {
+      auto table = std::make_shared<Table>(currName, "", m_reader, 
+                                  m_sidreRootGroup, m_docEnabled);
+      currTable->m_tableChildren[currName] = table;
+      currTable = table;
+    }
+    found = fullName.find("/", found+1);
+  }
+
+  if (!currTable->hasTable(fullName)) {
+    auto table = std::make_shared<Table>(fullName, description, m_reader, 
                                  m_sidreRootGroup, m_docEnabled);
-  m_tableChildren[fullName] = table;
-  return table;
+    currTable->m_tableChildren[fullName] = table;
+    currTable = table;
+  }
+
+  return currTable;
 }
 
 axom::sidre::Group* Table::baseFieldAdd(const std::string& name,
@@ -51,8 +69,16 @@ axom::sidre::Group* Table::baseFieldAdd(const std::string& name,
 std::shared_ptr<Field> Table::addBool(const std::string& name,
                                       const std::string& description)
 {
-  std::string fullName = getFullName(m_name, name);
-  axom::sidre::Group* sidreGroup = baseFieldAdd(fullName, description);
+  std::string fullName = concatenatePaths(m_name, name);
+  size_t found =  name.find_last_of("/");
+
+  auto currTable = shared_from_this();
+  if (found != std::string::npos) {
+    const std::string& tablePath = name.substr(0, found);
+    currTable = addTable(tablePath);
+  }
+
+  axom::sidre::Group* sidreGroup = currTable->baseFieldAdd(fullName, description);
   if (sidreGroup == nullptr)
   {
     //TODO: better idea?
@@ -67,15 +93,23 @@ std::shared_ptr<Field> Table::addBool(const std::string& name,
 
   auto field =  std::make_shared<Field>(sidreGroup, m_sidreRootGroup,
                                  axom::sidre::DataTypeId::INT8_ID, m_docEnabled);
-  m_fieldChildren[fullName] = field;
+  currTable->m_fieldChildren[fullName] = field;
   return field;                      
 }
 
 std::shared_ptr<Field> Table::addDouble(const std::string& name,
                                         const std::string& description)
 {
-  std::string fullName = getFullName(m_name, name);
-  axom::sidre::Group* sidreGroup = baseFieldAdd(fullName, description);
+  std::string fullName = concatenatePaths(m_name, name);
+  size_t found =  name.find_last_of("/");
+
+  auto currTable = shared_from_this();
+  if (found != std::string::npos) {
+    const std::string& tablePath = name.substr(0, found);
+    currTable = addTable(tablePath);
+  }
+
+  axom::sidre::Group* sidreGroup = currTable->baseFieldAdd(fullName, description);
   if (sidreGroup == nullptr)
   {
     return std::shared_ptr<Field>(nullptr);
@@ -89,15 +123,23 @@ std::shared_ptr<Field> Table::addDouble(const std::string& name,
 
   auto field = std::make_shared<Field>(sidreGroup, m_sidreRootGroup,
                                  axom::sidre::DataTypeId::DOUBLE_ID, m_docEnabled);
-  m_fieldChildren[fullName] = field;
+  currTable->m_fieldChildren[fullName] = field;
   return field;                                   
 }
 
 std::shared_ptr<Field> Table::addInt(const std::string& name,
                                      const std::string& description)
 {
-  std::string fullName = getFullName(m_name, name);
-  axom::sidre::Group* sidreGroup = baseFieldAdd(fullName, description);
+  std::string fullName = concatenatePaths(m_name, name);
+  size_t found =  name.find_last_of("/");
+
+  auto currTable = shared_from_this();
+  if (found != std::string::npos) {
+    const std::string& tablePath = name.substr(0, found);
+    currTable = addTable(tablePath);
+  }
+
+  axom::sidre::Group* sidreGroup = currTable->baseFieldAdd(fullName, description);
   if (sidreGroup == nullptr)
   {
     return std::shared_ptr<Field>(nullptr);
@@ -112,15 +154,22 @@ std::shared_ptr<Field> Table::addInt(const std::string& name,
   auto field = std::make_shared<axom::inlet::Field>(sidreGroup, m_sidreRootGroup,
                                               axom::sidre::DataTypeId::INT_ID,
                                                                 m_docEnabled);
-  m_fieldChildren[fullName] = field;
+  currTable->m_fieldChildren[fullName] = field;
   return field;
 }
 
 std::shared_ptr<Field> Table::addString(const std::string& name,
                                         const std::string& description)
 {
-  std::string fullName = getFullName(m_name, name);
-  axom::sidre::Group* sidreGroup = baseFieldAdd(fullName, description);
+  std::string fullName = concatenatePaths(m_name, name);
+  size_t found =  name.find_last_of("/");
+
+  auto currTable = shared_from_this();
+  if (found != std::string::npos) {
+    const std::string& tablePath = name.substr(0, found);
+    currTable = addTable(tablePath);
+  }
+  axom::sidre::Group* sidreGroup = currTable->baseFieldAdd(fullName, description);
   if (sidreGroup == nullptr)
   {
     return std::shared_ptr<Field>(nullptr);
@@ -134,7 +183,7 @@ std::shared_ptr<Field> Table::addString(const std::string& name,
 
   auto field = std::make_shared<Field>(sidreGroup, m_sidreRootGroup,
                                  axom::sidre::DataTypeId::CHAR8_STR_ID, m_docEnabled);
-  m_fieldChildren[fullName] = field;
+  currTable->m_fieldChildren[fullName] = field;
   return field;                                    
 }
 
@@ -223,15 +272,23 @@ bool Table::required()
  }
 
 bool Table::hasField(const std::string& fieldName) {
-  return m_fieldChildren.find(getFullName(m_name, fieldName)) != m_fieldChildren.end();
+  return m_fieldChildren.find(concatenatePaths(m_name, fieldName)) != m_fieldChildren.end();
 }
 
 bool Table::hasTable(const std::string& tableName) {
-  return m_tableChildren.find(getFullName(m_name, tableName)) != m_tableChildren.end();
+  return m_tableChildren.find(concatenatePaths(m_name, tableName)) != m_tableChildren.end();
 }
 
-std::string Table::getPathName() {
-  return getPath(m_sidreRootGroup->getPathName(), m_name);
+std::string Table::getName() {
+  return m_name;
+}
+
+std::unordered_map<std::string, std::shared_ptr<Field>> Table::getChildFields() {
+  return m_fieldChildren;
+}
+
+std::unordered_map<std::string, std::shared_ptr<Table>> Table::getChildTables() {
+  return m_tableChildren;
 }
 
 } // end namespace inlet
