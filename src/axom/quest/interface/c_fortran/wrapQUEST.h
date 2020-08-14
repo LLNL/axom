@@ -94,6 +94,8 @@ void QUEST_signed_distance_set_dimension(int dim);
 
 void QUEST_signed_distance_set_closed_surface(bool status);
 
+void QUEST_signed_distance_set_compute_signs(bool computeSign);
+
 void QUEST_signed_distance_set_max_levels(int maxLevels);
 
 void QUEST_signed_distance_set_max_occupancy(int maxOccupancy);
