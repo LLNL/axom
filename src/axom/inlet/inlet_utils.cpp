@@ -12,7 +12,7 @@ void setWarningFlag(axom::sidre::Group* root) {
   }
 }
 
-std::string concatenatePaths(const std::string& prefix, const std::string& name)
+std::string getFullName(const std::string& prefix, const std::string& name)
 {
   if (prefix == "")
   {
@@ -25,7 +25,7 @@ std::string concatenatePaths(const std::string& prefix, const std::string& name)
 }
 
 std::string getName(const std::string& prefix, const std::string& pathName) {
-  return pathName.substr(0, prefix.size());
+  return pathName.substr(prefix.size()-1);
 }
 
 }

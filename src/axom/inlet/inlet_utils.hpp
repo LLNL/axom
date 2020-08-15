@@ -22,22 +22,22 @@ void setWarningFlag(axom::sidre::Group* root);
 
 /*!
 *****************************************************************************
-* \brief This function appends the prefix path to the ending path.
+* \brief This function appends the prefix name to the ending name.
 *
-* \param [in] The prefix string path.
-* \param [in] The ending string path.
+* \param [in] The prefix string name.
+* \param [in] The ending string name.
 *
 * \return The appended string.
 *****************************************************************************
 */
-std::string concatenatePaths(const std::string& prefix, const std::string& name);
+std::string getFullName(const std::string& prefix, const std::string& name);
 
 /*!
 *****************************************************************************
-* \brief This function extracts the path from the full path.
+* \brief This function extracts the Table name from the full name.
 *
-* \param [in] The prefix of the path.
-* \param [in] The full string path.
+* \param [in] The prefix of the name, to be removed.
+* \param [in] The full name.
 *
 * \return The extracted string.
 *****************************************************************************

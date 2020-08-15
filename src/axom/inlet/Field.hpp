@@ -278,10 +278,10 @@ public:
 
   /*!
    *****************************************************************************
-   * \return The path name for this Field.
+   * \return The full name for this Field.
    *****************************************************************************
   */
-  std::string getName();
+  std::string name();
 
 private:
 
@@ -333,7 +333,6 @@ private:
   axom::sidre::DataTypeId m_type = axom::sidre::DataTypeId::NO_TYPE_ID;
   bool m_docEnabled = false;
   std::function<bool()> m_verifier;
-  std::string m_name;
 };
 
 } // end namespace inlet

@@ -1135,19 +1135,18 @@ TEST(inlet_verify, verifyTableLambda) {
   auto solidOrder = inlet2->addInt("solid_solver/order");
   auto soldTimestep = inlet2->addString("solid_solver/timestepper");
   auto attrib = inlet2->addInt("material/attribute");
-  auto thing = inlet2->addTable("test")->addTable("test2");
-
   auto globalTable = inlet2->getGlobalTable();
+  auto material = globalTable->getTable("material");
 
   globalTable->registerVerifier([&]() -> bool {
     bool verifySuccess = true;
     if (globalTable->hasTable("thermal_solver") && 
-        !globalTable->hasField("material/thermalview")) {
+        !material->hasField("thermalview")) {
       verifySuccess = false;
     }
 
     if (globalTable->hasTable("solid_solver") && 
-        !globalTable->hasField("material/solidview")) {
+        !material->hasField("solidview")) {
       verifySuccess = false;
     }
 
@@ -1159,7 +1158,19 @@ TEST(inlet_verify, verifyTableLambda) {
   auto thermalView = inlet2->addString("material/thermalview");
   auto solidView = inlet2->addString("material/solidview");
 
+  EXPECT_TRUE(material->hasField("solidview"));
+  EXPECT_TRUE(material->hasField("thermalview"));
+
   EXPECT_TRUE(inlet2->verify());
+
+  auto thing = inlet2->addTable("test");
+  auto thing2 = thing->addTable("test2");
+  auto thing5 = thing2->addTable("test3/test4/test5");
+  // auto thing3 = thing2->getTable("test3");
+  // auto thing4 = thing3->getTable("test4");
+  EXPECT_EQ(globalTable->getTable("test")->name(), "test");
+  EXPECT_EQ(thing->getTable("test2")->name(), "test/test2");
+  EXPECT_EQ(thing2->getTable("test3/test4/test5")->name(), "test/test2/test3/test4/test5");
 }
 
 //------------------------------------------------------------------------------

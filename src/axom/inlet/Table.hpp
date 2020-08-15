@@ -288,10 +288,34 @@ public:
 
   /*!
    *****************************************************************************
-   * \return The path name of this Table.
+   * \return The full name of this Table.
    *****************************************************************************
    */
-  std::string getName();
+  std::string name();
+
+  /*!
+   *****************************************************************************
+   * \brief Retrieves the matching Table.
+   * 
+   * \param [in] The string indicating the target name of the Table to be searched for.
+   * 
+   * \return The child Table matching the target name. If no such Table is found,
+   * a nullptr is returned.
+   *****************************************************************************
+   */
+  std::shared_ptr<Table> getTable(std::string name);
+
+   /*!
+   *****************************************************************************
+   * \brief Retrieves the matching Field.
+   * 
+   * \param [in] The string indicating the target name of the Field to be searched for.
+   * 
+   * \return The child Field matching the target name. If no such Field is found,
+   * a nullptr is returned.
+   *****************************************************************************
+   */
+  std::shared_ptr<Field> getField(std::string name);
 
 private:
   /*!
