@@ -15,10 +15,10 @@ set(example_sources
     )
 
 if (SCR_FOUND)
-    list(APPEND example_sources IOSCRRead.cpp)
-    list(APPEND example_sources IOSCRWrite.cpp)
-    list(APPEND example_sources IOSCRCkpt.cpp)
-    list(APPEND example_sources IOSCROutput.cpp)
+    list(APPEND example_sources IO_SCR_Read.cpp)
+    list(APPEND example_sources IO_SCR_Write.cpp)
+    list(APPEND example_sources IO_SCR_Ckpt.cpp)
+    list(APPEND example_sources IO_SCR_Output.cpp)
 endif() 
 
 set(spio_example_depends sidre conduit::conduit slic ${EXTRA_LIBS})
