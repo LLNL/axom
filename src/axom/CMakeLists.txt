@@ -76,7 +76,8 @@ endif()
 
 # If Axom is the main project, set FOLDER property for top-level check targets
 if ("${PROJECT_SOURCE_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
-    set(_code_check_targets "docs" "doxygen_docs"
+    #set(_code_check_targets "docs" "doxygen_docs"
+    set(_code_check_targets "docs"
                             "check" "style" 
                             "uncrustify_check" "uncrustify_style" )
     foreach(_tgt ${_code_check_targets})
