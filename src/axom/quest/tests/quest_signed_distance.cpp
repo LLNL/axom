@@ -131,7 +131,15 @@ TEST( quest_signed_distance, sphere_test )
 
   SLIC_INFO( "Generate BVHTree..." );
   // _quest_distance_cpp_init_start
-  axom::quest::SignedDistance< 3 > signed_distance( surface_mesh,true, 25, 10 );
+  constexpr bool is_watertight = true;
+  constexpr int max_objects = 25;
+  constexpr int max_levels = 10;
+  constexpr bool compute_signs = true;
+  axom::quest::SignedDistance< 3 > signed_distance( surface_mesh,
+                                                    is_watertight,
+                                                    max_objects,
+                                                    max_levels,
+                                                    compute_signs );
   // _quest_distance_cpp_init_end
 
   SLIC_INFO( "Compute signed distance..." );

@@ -6,10 +6,13 @@
 // Axom includes
 #include "axom/core.hpp"
 #include "axom/mint.hpp"
+#include "axom/primal.hpp"
 // _quest_distance_interface_include_start
 #include "axom/quest.hpp"
 // _quest_distance_interface_include_end
 #include "axom/slic.hpp"
+
+#include "CLI11/CLI11.hpp"
 
 #ifdef AXOM_USE_MPI
   #include <mpi.h>
@@ -29,17 +32,19 @@ using MPI_Comm = int;
 
 // namespace aliases
 namespace mint      = axom::mint;
+namespace primal    = axom::primal;
 namespace quest     = axom::quest;
 namespace slic      = axom::slic;
 namespace utilities = axom::utilities;
 
+// Predeclare types
+struct Arguments;
+
 // Function prototypes
 void initialize_logger( );
 void finalize_logger( );
-void parse_args( int argc, char** argv );
-void generate_uniform_box_mesh( mint::UniformMesh*& mesh );
-void show_help( );
-
+void generate_uniform_box_mesh( mint::UniformMesh*& mesh, Arguments& args);
+void run_batched_query( mint::UniformMesh*& mesh);
 
 
 //------------------------------------------------------------------------------
@@ -52,21 +57,75 @@ int numranks;
 /*!
  * \brief Holds command-line arguments
  */
-static struct
+struct Arguments
 {
   std::string fileName;
-  int ndims;
-  int maxLevels;
-  int maxOccupancy;
-  int box_dims[3];
-  double box_min[3];
-  double box_max[3];
-  bool specified_box_min;
-  bool specified_box_max;
-  bool is_water_tight;
-  bool dump_vtk;
-  bool use_shared;
-} Arguments;
+  int ndims{3};
+  int maxLevels{15};
+  int maxOccupancy{5};
+  std::vector<axom::IndexType> box_dims{32,32,32};
+  std::vector<double> box_min;
+  std::vector<double> box_max;
+  bool is_water_tight{true};
+  bool dump_vtk{true};
+  bool use_shared{false};
+  bool use_batched_query{false};
+  bool ignore_signs{false};
+
+  void parse( int argc, char** argv, CLI::App& app)
+  {
+    app.add_option("-f,--file", this->fileName, "specifies the input mesh file")
+      ->check(CLI::ExistingFile)
+      ->required();
+
+    app.add_option("--dimension", this->ndims, "the problem dimension")
+      ->capture_default_str();
+
+    app.add_option("--maxLevels", this->maxLevels, "max levels of subdivision for the BVH")
+      ->capture_default_str();
+
+    app.add_option("--maxOccupancy", this->maxOccupancy, "max number of item per BVH bin")
+      ->capture_default_str();
+
+    app.add_option("--box-dims", box_dims, "the dimensions of the box mesh")
+      ->expected(3);
+
+    // If either box-min or box-max are provided, they must both be present
+    auto* minbb = app.add_option("--box-min", box_min, "the lower corner of the box mesh")
+      ->expected(3);
+    auto* maxbb = app.add_option("--box-max", box_max, "the upper corner of the box mesh")
+      ->expected(3);
+    minbb->needs(maxbb);
+    maxbb->needs(minbb);
+
+    app.add_flag("!--no-vtk", this->dump_vtk, "disables VTK output")
+      ->capture_default_str();
+
+    app.add_flag("!--not-watertight", this->is_water_tight, "indicates that input is not water-tight")
+      ->capture_default_str();
+
+    app.add_flag("--use-shared", this->use_shared, "stores the surface using MPI-3 shared memory")
+      ->capture_default_str();
+
+    app.add_flag("--batched", this->use_batched_query, 
+      "uses a single batched query on all points instead of many individual queries")
+      ->capture_default_str();
+
+    app.add_flag("--ignore-signs", this->ignore_signs, 
+      "distance query should ignore signs")
+      ->capture_default_str();
+
+    app.get_formatter()->column_width(40);
+
+    // could throw an exception
+    app.parse( argc, argv);
+
+    SLIC_ERROR_IF( (this->ndims != 3),
+                 "The signed distance is currently only supported in 3-D" );
+
+    slic::flushStreams();
+  }
+};
 
 //------------------------------------------------------------------------------
 // PROGRAM MAIN
@@ -81,7 +140,7 @@ int main ( int argc, char** argv )
   MPI_Comm_rank( global_comm, &mpirank );
   MPI_Comm_size( global_comm, &numranks );
 #else
-  mpirank     = 0;
+  mpirank  = 0;
   numranks = 1;
 #endif
 
@@ -91,22 +150,45 @@ int main ( int argc, char** argv )
   initialize_logger( );
 
   // STEP 2: parse command line arguments
-  parse_args( argc, argv );
+  Arguments args;
+  CLI::App app {"Driver for signed distance query"};
+
+  try
+  {
+    args.parse(argc, argv, app);
+  }
+  catch (const CLI::ParseError &e)
+  {
+    int retval = -1;
+    if(mpirank==0)
+    {
+      retval = app.exit(e);
+    }
+    finalize_logger( );
+
+#ifdef AXOM_USE_MPI
+    MPI_Bcast(&retval, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Finalize();
+#endif
+    exit(retval);
+
+  }
 
   // STEP 3: initialize the signed distance interface
   SLIC_INFO( "initializing signed distance function..." );
-  SLIC_INFO( "input file: " << Arguments.fileName );
-  SLIC_INFO( "max_levels=" << Arguments.maxLevels );
-  SLIC_INFO( "max_occupancy=" << Arguments.maxOccupancy );
+  SLIC_INFO( "input file: " << args.fileName );
+  SLIC_INFO( "max_levels=" << args.maxLevels );
+  SLIC_INFO( "max_occupancy=" << args.maxOccupancy );
   slic::flushStreams();
 
   timer.start();
-  quest::signed_distance_use_shared_memory( Arguments.use_shared );
-  quest::signed_distance_set_closed_surface( Arguments.is_water_tight );
-  quest::signed_distance_set_max_levels( Arguments.maxLevels );
-  quest::signed_distance_set_max_occupancy( Arguments.maxOccupancy );
+  quest::signed_distance_use_shared_memory( args.use_shared );
+  quest::signed_distance_set_closed_surface( args.is_water_tight );
+  quest::signed_distance_set_max_levels( args.maxLevels );
+  quest::signed_distance_set_max_occupancy( args.maxOccupancy );
+  quest::signed_distance_set_compute_signs( !args.ignore_signs );
   // _quest_distance_interface_init_start
-  int rc = quest::signed_distance_init( Arguments.fileName, global_comm );
+  int rc = quest::signed_distance_init( args.fileName, global_comm );
   // _quest_distance_interface_init_end
   timer.stop();
 
@@ -116,7 +198,7 @@ int main ( int argc, char** argv )
 
   // STEP 5: Generate computational mesh
   mint::UniformMesh* mesh = nullptr;
-  generate_uniform_box_mesh( mesh );
+  generate_uniform_box_mesh( mesh, args );
   SLIC_ERROR_IF( mesh==nullptr, "box mesh is null!" );
   double* phi = mesh->createField< double >( "phi", mint::NODE_CENTERED );
 
@@ -124,24 +206,32 @@ int main ( int argc, char** argv )
   SLIC_INFO( "evaluating signed distance field on specified box mesh..." );
   slic::flushStreams();
 
-  const axom::IndexType nnodes = mesh->getNumberOfNodes( );
-
-  timer.reset();
-  timer.start();
-  for ( axom::IndexType inode=0 ; inode < nnodes ; ++inode )
+  if(!args.use_batched_query)
   {
-    double pt[ 3 ];
-    mesh->getNode( inode, pt );
-    // _quest_distance_interface_test_start
-    phi[ inode ] = quest::signed_distance_evaluate( pt[0], pt[1], pt[2] );
-    // _quest_distance_interface_test_end
-  } // END for all nodes
-  timer.stop();
-  SLIC_INFO( "time to evaluate: " << timer.elapsed() << "s" );
-  slic::flushStreams();
+    const axom::IndexType nnodes = mesh->getNumberOfNodes( );
+
+    timer.reset();
+    timer.start();
+    for ( axom::IndexType inode=0 ; inode < nnodes ; ++inode )
+    {
+      double pt[ 3 ];
+      mesh->getNode( inode, pt );
+      // _quest_distance_interface_test_start
+      phi[ inode ] = quest::signed_distance_evaluate( pt[0], pt[1], pt[2] );
+      // _quest_distance_interface_test_end
+    } // END for all nodes
+    timer.stop();
+    SLIC_INFO( "time to evaluate: " << timer.elapsed() << "s" );
+    slic::flushStreams();
+  }
+  else
+  {
+    run_batched_query(mesh);
+  }
+  
 
   // STEP 7: vtk output
-  if ( Arguments.dump_vtk )
+  if ( args.dump_vtk )
   {
     SLIC_INFO( "writing vtk output" );
     slic::flushStreams();
@@ -171,7 +261,7 @@ int main ( int argc, char** argv )
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-void generate_uniform_box_mesh( mint::UniformMesh*& mesh )
+void generate_uniform_box_mesh( mint::UniformMesh*& mesh, Arguments& args)
 {
   SLIC_ASSERT( mesh == nullptr );
   SLIC_ASSERT( quest::signed_distance_initialized() );
@@ -182,11 +272,11 @@ void generate_uniform_box_mesh( mint::UniformMesh*& mesh )
   double* lo = nullptr;
   double* hi = nullptr;
 
-  if ( Arguments.specified_box_max && Arguments.specified_box_min )
+  if ( !args.box_min.empty() && !args.box_max.empty() )
   {
     SLIC_INFO( "using specified box bounds" );
-    lo = Arguments.box_min;
-    hi = Arguments.box_max;
+    lo = args.box_min.data();
+    hi = args.box_max.data();
   }
   else
   {
@@ -196,128 +286,23 @@ void generate_uniform_box_mesh( mint::UniformMesh*& mesh )
     hi = mesh_box_max;
   }
 
+  //output some information
+  {
+    const primal::Point<double,3> lowerPoint(lo, 3);
+    const primal::Point<double,3> upperPoint(hi, 3);
+    auto bbox = primal::BoundingBox<double,3>(lowerPoint, upperPoint);
+    SLIC_INFO( "bounding box " << bbox );
+    
+    const primal::Point<int,3> bdims(args.box_dims.data(), 3);
+    SLIC_INFO( "constructing Uniform Mesh of resolution " << bdims );
+  }
 
-  SLIC_INFO( "box min: [" << lo[0] << " " << lo[1] << " " << lo[2] << "]" );
-  SLIC_INFO( "box max: [" << hi[0] << " " << hi[1] << " " << hi[2] << "]" );
-  SLIC_INFO( "constructing Uniform Mesh: [" << Arguments.box_dims[0] <<
-             " " << Arguments.box_dims[ 1 ] <<
-             " " << Arguments.box_dims[ 2 ] << "]" );
-
-  axom::IndexType Ni = static_cast< axom::IndexType >( Arguments.box_dims[0] );
-  axom::IndexType Nj = static_cast< axom::IndexType >( Arguments.box_dims[1] );
-  axom::IndexType Nk = static_cast< axom::IndexType >( Arguments.box_dims[2] );
+  axom::IndexType Ni = static_cast< axom::IndexType >( args.box_dims[0] );
+  axom::IndexType Nj = static_cast< axom::IndexType >( args.box_dims[1] );
+  axom::IndexType Nk = static_cast< axom::IndexType >( args.box_dims[2] );
   mesh = new mint::UniformMesh( lo, hi, Ni, Nj, Nk );
 
   SLIC_ASSERT( mesh != nullptr );
-  slic::flushStreams();
-}
-
-//------------------------------------------------------------------------------
-void parse_args( int argc, char** argv )
-{
-  // Set defaults
-  Arguments.ndims         = 3;
-  Arguments.fileName      = "";
-  Arguments.maxLevels     = 15;
-  Arguments.maxOccupancy  = 5;
-  Arguments.box_dims[ 0 ] =
-    Arguments.box_dims[ 1 ] =
-      Arguments.box_dims[ 2 ] = 32;
-  Arguments.specified_box_max = false;
-  Arguments.specified_box_min = false;
-  Arguments.dump_vtk          = true;
-  Arguments.is_water_tight    = true;
-  Arguments.use_shared        = false;
-
-  for ( int i=1 ; i < argc ; ++i )
-  {
-    if ( strcmp( argv[i], "--file" )==0 || strcmp( argv[i], "-f"  )==0 )
-    {
-      Arguments.fileName = std::string( argv[ ++i] );
-    }
-    else if ( strcmp(argv[i], "--dimension")==0 )
-    {
-      Arguments.ndims = std::atoi( argv[++i] );
-    }
-    else if ( strcmp( argv[i], "--maxLevels" )==0 )
-    {
-      Arguments.maxLevels = std::atoi( argv[++i] );
-    }
-    else if ( strcmp( argv[i], "--maxOccupancy" )==0 )
-    {
-      Arguments.maxOccupancy = std::atoi( argv[++i] );
-    }
-    else if ( strcmp( argv[i], "--box-dims" )==0 )
-    {
-      for ( int j=0 ; j < Arguments.ndims ; ++j )
-      {
-        Arguments.box_dims[ j ] = std::atoi( argv[++i] );
-      } // END for all j
-    }
-    else if ( strcmp(argv[i], "--box-min")==0 )
-    {
-      Arguments.specified_box_min = true;
-      for ( int j=0 ; j < Arguments.ndims ; ++j )
-      {
-        Arguments.box_min[ j ] = std::atof( argv[++i] );
-      } // END for all j
-    }
-    else if ( strcmp( argv[i], "--box-max")==0 )
-    {
-      Arguments.specified_box_max = true;
-      for ( int j=0 ; j < Arguments.ndims ; ++j )
-      {
-        Arguments.box_max[ j ] = std::atof( argv[++i] );
-      } // END for all j
-    }
-    else if ( strcmp( argv[i], "--no-vtk")==0 )
-    {
-      Arguments.dump_vtk = false;
-    }
-    else if ( strcmp( argv[i], "--not-watertight" )==0 )
-    {
-      Arguments.is_water_tight = false;
-    }
-    else if ( strcmp( argv[i], "--use-shared" )==0 )
-    {
-      Arguments.use_shared = true;
-    }
-    else if ( strcmp( argv[i], "--help" )==0 )
-    {
-      show_help();
-      utilities::processAbort();
-    }
-    else
-    {
-      SLIC_WARNING( "skipping undefined argument [" << argv[i] << "]..." );
-    }
-
-  } // END for all i
-
-  SLIC_ERROR_IF( (Arguments.ndims != 3),
-                 "The signed distance is currently only supported in 3-D" );
-  SLIC_ERROR_IF( Arguments.fileName.empty(),
-                 "Must provide an STL input file. Provide one with --file" );
-  SLIC_ERROR_IF( Arguments.specified_box_max == !Arguments.specified_box_min,
-                 "Both min/max bounds must be specified.");
-  slic::flushStreams();
-}
-
-//------------------------------------------------------------------------------
-void show_help( )
-{
-  SLIC_INFO( "Usage:./quest_signed_distance_interface_ex -f <file> [options]");
-  SLIC_INFO( "-f, --file <file> specifies the input mesh file" );
-  SLIC_INFO( "--dimension <DIM> the problem dimension" );
-  SLIC_INFO( "--maxLevels <N> max levels of Subdivision for the BVH" );
-  SLIC_INFO( "--maxOccupancy <N> max number of item per BVH bin." );
-  SLIC_INFO( "--box-dims <N0> <N1> <N2> the dimensions of the box mesh");
-  SLIC_INFO( "--box-min <X0> <Y0> <Z0> the lower corner of the box mesh" );
-  SLIC_INFO( "--box-max <XN> <YN> <ZN> the upper cordner of the box mesh" );
-  SLIC_INFO( "--no-vtk disables VTK output." );
-  SLIC_INFO( "--not-watertight indicates that input is not water-tight" );
-  SLIC_INFO( "--use-shared stores the surface using MPI-3 shared memory" );
-  SLIC_INFO( "--help prints this help information" );
   slic::flushStreams();
 }
 
@@ -349,4 +334,49 @@ void finalize_logger( )
 {
   slic::flushStreams();
   slic::finalize( );
+}
+
+//------------------------------------------------------------------------------
+void run_batched_query( mint::UniformMesh*& mesh)
+{
+    double* phi = mesh->getFieldPtr< double >( "phi", mint::NODE_CENTERED );
+
+    const axom::IndexType nnodes = mesh->getNumberOfNodes( );
+
+    utilities::Timer timer;
+    timer.start();
+
+    // Allocate space for the coordinate arrays
+    double* x = axom::allocate< double >( nnodes );
+    double* y = axom::allocate< double >( nnodes );
+    double* z = axom::allocate< double >( nnodes );
+
+    // Determine an appropriate policy
+  #if defined(AXOM_USE_RAJA) && defined(AXOM_USE_OPENMP) && defined(RAJA_ENABLE_OPENMP)
+    using ExecPolicy = axom::OMP_EXEC;
+  #else
+    using ExecPolicy = axom::SEQ_EXEC;
+  #endif
+
+    // Fill the coordinate arrays
+    mint::for_all_nodes< ExecPolicy, mint::xargs::xyz >( mesh,
+    AXOM_LAMBDA( axom::IndexType idx, double xx, double yy, double zz )
+      {
+        x[ idx ] = xx;
+        y[ idx ] = yy;
+        z[ idx ] = zz;
+      }
+    );
+
+    // Call the vectorized version of the signed distance query
+    quest::signed_distance_evaluate( x,y,z, nnodes, phi);
+
+    // Deallocate the coordinate arrays
+    axom::deallocate( x );
+    axom::deallocate( y );
+    axom::deallocate( z );
+
+    timer.stop();
+    SLIC_INFO( "time to evaluate batched query: " << timer.elapsed() << "s" );
+    slic::flushStreams();
 }
