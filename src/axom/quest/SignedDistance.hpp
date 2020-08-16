@@ -72,7 +72,7 @@ public:
    * \param [in] maxObjects max number of objects for spatial decomposition.
    * \param [in] maxLevels max levels for spatial decomposition.
    * \param [in] computeSign indicates if distance queries should compute signs (optional).
-   * \note Default maxLevels is 5 if not specified.
+   * \note computeSign defaults to \a true when not specified.
    * \pre surfaceMesh != nullptr
    */
   SignedDistance( const mint::Mesh* surfaceMesh,
