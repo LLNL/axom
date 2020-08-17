@@ -238,6 +238,13 @@ module axom_quest
             logical(C_BOOL), value, intent(IN) :: status
         end subroutine c_signed_distance_set_closed_surface
 
+        subroutine c_signed_distance_set_compute_signs(computeSign) &
+                bind(C, name="QUEST_signed_distance_set_compute_signs")
+            use iso_c_binding, only : C_BOOL
+            implicit none
+            logical(C_BOOL), value, intent(IN) :: computeSign
+        end subroutine c_signed_distance_set_compute_signs
+
         subroutine quest_signed_distance_set_max_levels(maxLevels) &
                 bind(C, name="QUEST_signed_distance_set_max_levels")
             use iso_c_binding, only : C_INT
@@ -427,6 +434,16 @@ contains
         call c_signed_distance_set_closed_surface(SH_status)
         ! splicer end function.signed_distance_set_closed_surface
     end subroutine quest_signed_distance_set_closed_surface
+
+    subroutine quest_signed_distance_set_compute_signs(computeSign)
+        use iso_c_binding, only : C_BOOL
+        logical, value, intent(IN) :: computeSign
+        ! splicer begin function.signed_distance_set_compute_signs
+        logical(C_BOOL) SH_computeSign
+        SH_computeSign = computeSign  ! coerce to C_BOOL
+        call c_signed_distance_set_compute_signs(SH_computeSign)
+        ! splicer end function.signed_distance_set_compute_signs
+    end subroutine quest_signed_distance_set_compute_signs
 
     subroutine quest_signed_distance_set_verbose(status)
         use iso_c_binding, only : C_BOOL

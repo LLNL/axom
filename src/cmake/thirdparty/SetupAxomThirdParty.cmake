@@ -109,7 +109,7 @@ if (MFEM_DIR)
     include(cmake/thirdparty/FindMFEM.cmake)
     blt_register_library( NAME      mfem
                           INCLUDES  ${MFEM_INCLUDE_DIRS}
-                          LIBRARIES ${MFEM_LIBRARY}
+                          LIBRARIES ${MFEM_LIBRARIES}
                           TREAT_INCLUDES_AS_SYSTEM ON)
 else()
     message(STATUS "MFEM support is OFF")
