@@ -113,7 +113,7 @@ AXOM_HOST_DEVICE
 BoundingBox< T, NDIMS > compute_bounding_box( const Triangle< T, NDIMS > &tri)
 {
   BoundingBox< T, NDIMS > res(tri[0]);
-  for (int i = 1; i < NDIMS; i++)
+  for (int i = 1; i < 3; i++)
   {
     res.addPoint(tri[i]);
   }
