@@ -38,12 +38,11 @@ module axom_spio
         procedure :: read_1 => iomanager_read_1
         procedure :: read_2 => iomanager_read_2
         procedure :: read_3 => iomanager_read_3
-        procedure :: read_4 => iomanager_read_4
         procedure :: load_external_data => iomanager_load_external_data
         procedure :: get_instance => iomanager_get_instance
         procedure :: set_instance => iomanager_set_instance
         procedure :: associated => iomanager_associated
-        generic :: read => read_0, read_1, read_2, read_3, read_4
+        generic :: read => read_0, read_1, read_2, read_3
         ! splicer begin class.IOManager.type_bound_procedure_part
         ! splicer end class.IOManager.type_bound_procedure_part
     end type iomanager
@@ -285,35 +284,6 @@ module axom_spio
             logical(C_BOOL), value, intent(IN) :: preserve_contents
         end subroutine c_iomanager_read_3_bufferify
 
-        subroutine c_iomanager_read_4(self, group, root_file, &
-                preserve_contents, use_scr) &
-                bind(C, name="SPIO_IOManager_read_4")
-            use axom_sidre, only : SHROUD_group_capsule
-            use iso_c_binding, only : C_BOOL, C_CHAR
-            import :: SHROUD_iomanager_capsule
-            implicit none
-            type(SHROUD_iomanager_capsule), intent(IN) :: self
-            type(SHROUD_group_capsule), intent(IN) :: group
-            character(kind=C_CHAR), intent(IN) :: root_file(*)
-            logical(C_BOOL), value, intent(IN) :: preserve_contents
-            logical(C_BOOL), value, intent(IN) :: use_scr
-        end subroutine c_iomanager_read_4
-
-        subroutine c_iomanager_read_4_bufferify(self, group, root_file, &
-                Lroot_file, preserve_contents, use_scr) &
-                bind(C, name="SPIO_IOManager_read_4_bufferify")
-            use axom_sidre, only : SHROUD_group_capsule
-            use iso_c_binding, only : C_BOOL, C_CHAR, C_INT
-            import :: SHROUD_iomanager_capsule
-            implicit none
-            type(SHROUD_iomanager_capsule), intent(IN) :: self
-            type(SHROUD_group_capsule), intent(IN) :: group
-            character(kind=C_CHAR), intent(IN) :: root_file(*)
-            integer(C_INT), value, intent(IN) :: Lroot_file
-            logical(C_BOOL), value, intent(IN) :: preserve_contents
-            logical(C_BOOL), value, intent(IN) :: use_scr
-        end subroutine c_iomanager_read_4_bufferify
-
         subroutine c_iomanager_load_external_data(self, group, &
                 root_file) &
                 bind(C, name="SPIO_IOManager_load_external_data")
@@ -491,26 +461,6 @@ contains
             SH_preserve_contents)
         ! splicer end class.IOManager.method.read_3
     end subroutine iomanager_read_3
-
-    subroutine iomanager_read_4(obj, group, root_file, &
-            preserve_contents, use_scr)
-        use axom_sidre, only : SidreGroup
-        use iso_c_binding, only : C_BOOL, C_INT
-        class(iomanager) :: obj
-        type(SidreGroup), intent(IN) :: group
-        character(len=*), intent(IN) :: root_file
-        logical, value, intent(IN) :: preserve_contents
-        logical, value, intent(IN) :: use_scr
-        ! splicer begin class.IOManager.method.read_4
-        logical(C_BOOL) SH_preserve_contents
-        logical(C_BOOL) SH_use_scr
-        SH_preserve_contents = preserve_contents  ! coerce to C_BOOL
-        SH_use_scr = use_scr  ! coerce to C_BOOL
-        call c_iomanager_read_4_bufferify(obj%cxxmem, group%cxxmem, &
-            root_file, len_trim(root_file, kind=C_INT), &
-            SH_preserve_contents, SH_use_scr)
-        ! splicer end class.IOManager.method.read_4
-    end subroutine iomanager_read_4
 
     subroutine iomanager_load_external_data(obj, group, root_file)
         use axom_sidre, only : SidreGroup

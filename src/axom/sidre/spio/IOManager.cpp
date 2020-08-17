@@ -173,7 +173,8 @@ void IOManager::write(sidre::Group* datagroup, int num_files,
     m_baton = new IOBaton(m_mpi_comm, num_files, m_comm_size);
   }
 
-  if (m_use_scr && num_files != m_comm_size) {
+  if (m_use_scr && num_files != m_comm_size)
+  {
     SLIC_WARNING("SCR requires a file per process");
   }
 
@@ -210,7 +211,8 @@ void IOManager::write(sidre::Group* datagroup, int num_files,
     if (m_baton->isFirstInGroup())
     {
       // no need to create directories in SCR
-      if (!m_use_scr) {
+      if (!m_use_scr)
+      {
         std::string dir_name;
         utilities::filesystem::getDirName(dir_name, hdf5_name);
         if (!dir_name.empty())
@@ -326,38 +328,20 @@ void IOManager::read(
  */
 void IOManager::read(sidre::Group* datagroup,
                      const std::string& root_file,
-                     bool preserve_contents,
-                     bool read_with_scr)
+                     bool preserve_contents)
 {
   MPI_Barrier(m_mpi_comm);
 
-  if (!read_with_scr)
+#ifdef AXOM_USE_SCR
+  if (m_use_scr)
+  {
+    readWithSCR(datagroup, root_file, preserve_contents);
+  }
+  else
+#endif
   {
     std::string protocol = getProtocol(root_file);
     read(datagroup, root_file, protocol, preserve_contents);
-  }
-  else
-  {
-#ifdef AXOM_USE_SCR
-
-    if (m_use_scr)
-    {
-      readWithSCR(datagroup, root_file, preserve_contents);
-    }
-    else
-    {
-      SLIC_WARNING(
-        "IOManager::read() requested to read files using SCR, but IOManager was constructed to not use SCR. SCR will not be used");
-      read(datagroup, root_file, preserve_contents, false);
-    }
-
-#else
-
-    SLIC_WARNING(
-      "IOManager::read() requested to read files using SCR, but Axom was not compiled with SCR. SCR will not be used");
-    read(datagroup, root_file, preserve_contents, false);
-
-#endif
   }
 }
 
@@ -391,7 +375,7 @@ std::string IOManager::getSCRPath(const std::string & path)
 {
 #ifdef AXOM_USE_SCR
   SLIC_ASSERT(m_use_scr);
-  char scr_name[SCR_MAX_FILENAME]; 
+  char scr_name[SCR_MAX_FILENAME];
   std::string scr_path;
   if (SCR_Route_file(path.c_str(), scr_name) == SCR_SUCCESS)
   {
@@ -691,7 +675,8 @@ std::string IOManager::getFilePatternFromRoot(const std::string& root_name,
   if (m_my_rank == 0)
   {
     std::string root_path = root_name;
-    if (m_use_scr) {
+    if (m_use_scr)
+    {
       root_path = getSCRPath(root_path);
     }
 
@@ -784,7 +769,8 @@ void IOManager::readSidreHDF5(sidre::Group* datagroup,
       std::string hdf5_name =
         getFileNameForRank(file_pattern, root_file, set_id);
 
-      if (m_use_scr) {
+      if (m_use_scr)
+      {
         hdf5_name = getSCRPath(hdf5_name);
       }
 
@@ -819,8 +805,9 @@ void IOManager::readSidreHDF5(sidre::Group* datagroup,
       std::string hdf5_name =
         getFileNameForRank(file_pattern, root_file, input_rank);
 
-      if (m_use_scr) {
-        hdf5_name = getSCRPath(hdf5_name); 
+      if (m_use_scr)
+      {
+        hdf5_name = getSCRPath(hdf5_name);
       }
 
       hid_t h5_file_id = conduit::relay::io::hdf5_open_file_for_read(hdf5_name);

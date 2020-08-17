@@ -252,13 +252,10 @@ public:
    * \param group      Group to fill with input data
    * \param root_file  root file containing input data
    * \param preserve_contents   Preserves group's existing contents if true
-   * \param use_scr    Use SCR to find and read the files.  This should be
-   *                   set to true only if the files were written with SCR.
    */
   void read(sidre::Group* group,
             const std::string& root_file,
-            bool preserve_contents = false,
-            bool use_scr = false);
+            bool preserve_contents = false);
 
   /**
    * \brief Finds conduit relay protocol corresponding to a sidre protocol

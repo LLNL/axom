@@ -33,7 +33,8 @@ bool loadRestart(MPI_Comm comm, const std::string& file_base, DataStore* ds)
   // until it succeeds or it exhausts all available checkpoints.
   int have_restart = 0;
   int restarted = 0;
-  do {
+  do
+  {
     // Ask SCR if there is a checkpoint to read.
     // SCR loads the next most recent checkpoint that
     // it has not internally marked as "failed".
@@ -45,7 +46,8 @@ bool loadRestart(MPI_Comm comm, const std::string& file_base, DataStore* ds)
     // SCR_Have_restart must be called by all processes in MPI_COMM_WORLD.
     char ckptname[SCR_MAX_FILENAME];
     SCR_Have_restart(&have_restart, ckptname);
-    if (have_restart) {
+    if (have_restart)
+    {
       // Tell SCR we're starting to read the checkpoint.
       // One must only call SCR_Start_restart if SCR_Have_restart
       // reports that there is a checkpoint to restart from.
@@ -62,7 +64,7 @@ bool loadRestart(MPI_Comm comm, const std::string& file_base, DataStore* ds)
       // read the restart data into our dataset
       Group* root = ds->getRoot();
       IOManager reader(comm, true);
-      reader.read(root, root_file, false, true);
+      reader.read(root, root_file, false);
 
       // Tell SCR whether this process succeeded reading its checkpoint.
       // Each process should set valid=1 if it read its portion
@@ -79,7 +81,8 @@ bool loadRestart(MPI_Comm comm, const std::string& file_base, DataStore* ds)
       int rc = SCR_Complete_restart(valid);
       restarted = (rc == SCR_SUCCESS);
     }
-  } while (have_restart && !restarted);
+  }
+  while (have_restart && !restarted);
 
   // tell the caller whether we loaded a restart from SCR
   return (bool)restarted;
@@ -102,7 +105,8 @@ bool needCheckpoint(void)
 }
 
 /** Write a checkpoint via SCR */
-bool dumpCheckpoint(MPI_Comm comm, const std::string& file_base, int t, int num_files, DataStore* ds)
+bool dumpCheckpoint(MPI_Comm comm, const std::string& file_base, int t,
+                    int num_files, DataStore* ds)
 {
   // Tell SCR we're starting a checkpoint.
   // Each SCR output set should be given a name.
@@ -135,7 +139,8 @@ bool dumpCheckpoint(MPI_Comm comm, const std::string& file_base, int t, int num_
   // SCR_Complete_output must be called by all processes in MPI_COMM_WORLD.
   int valid = 1;
   int complete_rc = SCR_Complete_output(valid);
-  if (complete_rc != SCR_SUCCESS) {
+  if (complete_rc != SCR_SUCCESS)
+  {
     // some process failed to checkpoint
     return false;
   }
@@ -244,7 +249,8 @@ int main(int argc, char* argv[])
   std::string file_base = args.m_fileBase;
 
   // Default to write a file per process.
-  if (num_files == 0) {
+  if (num_files == 0)
+  {
     num_files = num_ranks;
   }
 
@@ -266,25 +272,29 @@ int main(int argc, char* argv[])
 
   // Attempt to load a restart from SCR.
   bool restarted = loadRestart(MPI_COMM_WORLD, file_base, ds);
-  if (restarted) {
-      // We successfully read a restart from SCR.
-      // Use the dataset it filled in to initialize our state,
-      // such as our timestep counter.
-      t_start = ds->getRoot()->getView("timestep")->getScalar();
-      my_data = ds->getRoot()->getView("state")->getScalar();
+  if (restarted)
+  {
+    // We successfully read a restart from SCR.
+    // Use the dataset it filled in to initialize our state,
+    // such as our timestep counter.
+    t_start = ds->getRoot()->getView("timestep")->getScalar();
+    my_data = ds->getRoot()->getView("state")->getScalar();
 
-      // The timestep recorded in the checkpoint is one that
-      // was last computed, so start this run on the next step.
-      t_start++;
-  } else {
-      // We did not load a restart, so initialize the datastore.
-      Group* root = ds->getRoot();
-      root->createViewScalar<int>("timestep", t);
-      root->createViewScalar<int>("state", my_data);
+    // The timestep recorded in the checkpoint is one that
+    // was last computed, so start this run on the next step.
+    t_start++;
+  }
+  else
+  {
+    // We did not load a restart, so initialize the datastore.
+    Group* root = ds->getRoot();
+    root->createViewScalar<int>("timestep", t);
+    root->createViewScalar<int>("state", my_data);
   }
 
   // Application work loop
-  for (t = t_start; t < t_start + num_steps; t++) {
+  for (t = t_start ; t < t_start + num_steps ; t++)
+  {
     /////////////////////////
     // Do actual work which changes internal state ...
     /////////////////////////
@@ -293,7 +303,8 @@ int main(int argc, char* argv[])
     // Optionally, one can ask SCR whether it's time to checkpoint.
     // This call is purely advisory for defensive checkpoints,
     // and the application is free to checkpoint whenever it needs to.
-    if (needCheckpoint()) {
+    if (needCheckpoint())
+    {
       // Update the Datastore to capture current state.
       ds->getRoot()->getView("timestep")->setScalar<int>(t);
       ds->getRoot()->getView("state")->setScalar<int>(my_data);
@@ -307,8 +318,9 @@ int main(int argc, char* argv[])
       // When using SCR to cache datasets, the application should
       // exit early enough to leave SCR time to flush those datasets
       // before the job allocation expires.
-      if (shouldExit()) {
-          break;
+      if (shouldExit())
+      {
+        break;
       }
     }
   }

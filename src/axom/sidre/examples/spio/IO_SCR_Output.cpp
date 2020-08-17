@@ -41,7 +41,8 @@ void initializeDS(int my_rank, DataStore* ds)
 }
 
 /** Write an output dataset via SCR */
-bool dumpOutput(MPI_Comm comm, const std::string& file_base, int num_files, DataStore* ds)
+bool dumpOutput(MPI_Comm comm, const std::string& file_base, int num_files,
+                DataStore* ds)
 {
   // Tell SCR we're starting an output dataset.
   // Each SCR output set should be given a name.
@@ -70,7 +71,8 @@ bool dumpOutput(MPI_Comm comm, const std::string& file_base, int num_files, Data
   // SCR_Complete_output must be called by all processes in MPI_COMM_WORLD.
   int valid = 1;
   int complete_rc = SCR_Complete_output(valid);
-  if (complete_rc != SCR_SUCCESS) {
+  if (complete_rc != SCR_SUCCESS)
+  {
     // some process failed to checkpoint
     return false;
   }
@@ -154,7 +156,8 @@ int main(int argc, char* argv[])
   std::string file_base = args.m_fileBase;
 
   // Default to write a file per process.
-  if (num_files == 0) {
+  if (num_files == 0)
+  {
     num_files = num_ranks;
   }
 

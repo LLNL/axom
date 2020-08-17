@@ -96,7 +96,7 @@ TEST(spio_scr, spio_scr_writeread)
    */
   IOManager reader(MPI_COMM_WORLD, true);
 
-  reader.read(ds2->getRoot(), root_name, false, true);
+  reader.read(ds2->getRoot(), root_name, false);
 
   /*
    * Verify that the contents of ds2 match those written from ds.
