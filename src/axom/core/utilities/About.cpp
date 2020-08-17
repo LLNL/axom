@@ -135,5 +135,12 @@ void about(std::ostream &oss)
   oss << " { " << sstr.str() << "}" << std::endl;
 }
 
+//-----------------------------------------------------------------------------
+std::string getVersion()
+{
+  std::ostringstream oss;
+  oss << AXOM_VERSION_FULL << "-" << AXOM_VERSION_EXTRA;
+  return oss.str();
+}
 
 } // end namespace axom

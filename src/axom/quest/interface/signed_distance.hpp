@@ -176,6 +176,14 @@ void signed_distance_set_dimension( int dim );
 void signed_distance_set_closed_surface( bool status );
 
 /*!
+ * \brief Sets whether the distance query should compute or ignore the sign
+ * \param [in] computeSign predicate indicating if sign should be computed
+ *
+ * \note Options must be set before initializing the Signed Distance Query.
+ */
+void signed_distance_set_compute_signs( bool computeSign );
+
+/*!
  * \brief Sets the maximum levels of subdivision for the BVH decomposition.
  * \param [in] maxLevels the maximum levels of subdivision.
  *

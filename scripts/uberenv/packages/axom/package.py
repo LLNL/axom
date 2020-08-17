@@ -65,6 +65,8 @@ class Axom(CMakePackage, CudaPackage):
     # -----------------------------------------------------------------------
     # Variants
     # -----------------------------------------------------------------------
+    variant('shared',   default=True,
+            description='Enable build of shared libraries')
     variant('debug',    default=False,
             description='Build debug instead of optimized version')
 
@@ -97,12 +99,10 @@ class Axom(CMakePackage, CudaPackage):
     depends_on("mpi", when="+mpi")
 
     # Libraries
-    depends_on("conduit~shared+python", when="+python")
-    depends_on("conduit~shared~python", when="~python")
-    depends_on("conduit~shared+python+hdf5", when="+hdf5+python")
-    depends_on("conduit~shared+python~hdf5", when="~hdf5+python")
-    depends_on("conduit~shared~python+hdf5", when="+hdf5~python")
-    depends_on("conduit~shared~python~hdf5", when="~hdf5~python")
+    depends_on("conduit+python", when="+python")
+    depends_on("conduit~python", when="~python")
+    depends_on("conduit+hdf5", when="+hdf5")
+    depends_on("conduit~hdf5", when="~hdf5")
 
     # HDF5 needs to be the same as Conduit's
     depends_on("hdf5@1.8.19:1.8.999~mpi~cxx~shared~fortran", when="+hdf5")
@@ -125,7 +125,8 @@ class Axom(CMakePackage, CudaPackage):
         depends_on('umpire cuda_arch={0}'.format(sm_),
                    when='+umpire cuda_arch={0}'.format(sm_))
 
-    depends_on("mfem~mpi~hypre~metis~zlib", when="+mfem")
+    depends_on("mfem", when="+mfem")
+    depends_on("mfem~mpi", when="+mfem~mpi")
 
     depends_on("python", when="+python")
 
@@ -474,6 +475,11 @@ class Axom(CMakePackage, CudaPackage):
                 linker_flags = "${BLT_EXE_LINKER_FLAGS} -Wl,-rpath," + libdir
                 cfg.write(cmake_cache_entry("BLT_EXE_LINKER_FLAGS",
                                             linker_flags, description))
+                if "+shared" in spec:
+                    linker_flags = "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-rpath," \
+                                   + libdir
+                    cfg.write(cmake_cache_entry("CMAKE_SHARED_LINKER_FLAGS",
+                                                linker_flags, description))
 
             if "+cuda" in spec:
                 cfg.write("#------------------{0}\n".format("-" * 60))
@@ -533,10 +539,17 @@ class Axom(CMakePackage, CudaPackage):
 
         options = []
         options.extend(['-C', host_config_path])
+
         if self.run_tests is False:
             options.append('-DENABLE_TESTS=OFF')
         else:
             options.append('-DENABLE_TESTS=ON')
+
+        if "+shared" in spec:
+            options.append('-DBUILD_SHARED_LIBS=ON')
+        else:
+            options.append('-DBUILD_SHARED_LIBS=OFF')
+
         return options
 
     @run_after('install')

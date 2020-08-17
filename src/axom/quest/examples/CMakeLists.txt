@@ -15,8 +15,8 @@ set(quest_example_depends
         )
 
 blt_list_append(TO quest_example_depends ELEMENTS openmp IF ENABLE_OPENMP)
-
 blt_list_append(TO quest_example_depends ELEMENTS cuda IF ENABLE_CUDA)
+blt_list_append(TO quest_example_depends ELEMENTS RAJA IF RAJA_FOUND)
 
 blt_add_executable(
     NAME        quest_containment_driver_ex
@@ -32,7 +32,7 @@ blt_add_executable(
     NAME       quest_signed_distance_interface_ex
     SOURCES    quest_signed_distance_interface.cpp
     OUTPUT_DIR ${EXAMPLE_OUTPUT_DIRECTORY}
-    DEPENDS_ON ${quest_example_depends}
+    DEPENDS_ON ${quest_example_depends} cli11
     FOLDER      axom/quest/examples
     )
 
