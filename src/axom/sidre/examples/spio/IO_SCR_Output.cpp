@@ -55,9 +55,8 @@ bool dumpOutput(MPI_Comm comm, const std::string& file_base, int num_files,
   SCR_Start_output(file_base.c_str(), SCR_FLAG_OUTPUT);
 
   // write out the Datastore
-  Group* root = ds->getRoot();
   IOManager writer(comm, true);
-  writer.write(root, num_files, file_base, "sidre_hdf5");
+  writer.write(ds->getRoot(), num_files, file_base, "sidre_hdf5");
 
   // Tell SCR this process has completed its checkpoint.
   // Each process should set valid=1 if it wrote its portion
@@ -71,13 +70,7 @@ bool dumpOutput(MPI_Comm comm, const std::string& file_base, int num_files,
   // SCR_Complete_output must be called by all processes in MPI_COMM_WORLD.
   int valid = 1;
   int complete_rc = SCR_Complete_output(valid);
-  if (complete_rc != SCR_SUCCESS)
-  {
-    // some process failed to checkpoint
-    return false;
-  }
-
-  return true;
+  return (complete_rc == SCR_SUCCESS);
 }
 
 /** Simple structure to hold the parsed command line arguments */

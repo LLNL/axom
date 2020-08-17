@@ -62,9 +62,8 @@ bool loadRestart(MPI_Comm comm, const std::string& file_base, DataStore* ds)
       std::string root_file = std::string(ckptname) + "." + file_base + ".root";
 
       // read the restart data into our dataset
-      Group* root = ds->getRoot();
       IOManager reader(comm, true);
-      reader.read(root, root_file, false);
+      reader.read(ds->getRoot(), root_file, false);
 
       // Tell SCR whether this process succeeded reading its checkpoint.
       // Each process should set valid=1 if it read its portion
@@ -85,7 +84,7 @@ bool loadRestart(MPI_Comm comm, const std::string& file_base, DataStore* ds)
   while (have_restart && !restarted);
 
   // tell the caller whether we loaded a restart from SCR
-  return (bool)restarted;
+  return (bool) restarted;
 }
 
 /** Ask SCR whether we should take a defensive checkpoint */
@@ -123,9 +122,8 @@ bool dumpCheckpoint(MPI_Comm comm, const std::string& file_base, int t,
   std::string ckpt_path = ckptname + "." + file_base;
 
   // write out the Datastore
-  Group* root = ds->getRoot();
   IOManager writer(comm, true);
-  writer.write(root, num_files, ckpt_path, "sidre_hdf5");
+  writer.write(ds->getRoot(), num_files, ckpt_path, "sidre_hdf5");
 
   // Tell SCR this process has completed its checkpoint.
   // Each process should set valid=1 if it wrote its portion
@@ -139,13 +137,7 @@ bool dumpCheckpoint(MPI_Comm comm, const std::string& file_base, int t,
   // SCR_Complete_output must be called by all processes in MPI_COMM_WORLD.
   int valid = 1;
   int complete_rc = SCR_Complete_output(valid);
-  if (complete_rc != SCR_SUCCESS)
-  {
-    // some process failed to checkpoint
-    return false;
-  }
-
-  return true;
+  return (complete_rc == SCR_SUCCESS);
 }
 
 /** Ask SCR if the run should stop executing */
@@ -157,7 +149,7 @@ bool shouldExit(void)
   // time for SCR to flush cached datasets to the parallel
   // file system before the job's time limit expires.
   // If SCR_Should_exit indicates that the application should exit,
-  // the application should stop executing and call to SCR_Finalize.
+  // the application should stop executing and call SCR_Finalize.
   // SCR_Should_exit must be called by all processes in MPI_COMM_WORLD.
   int should_exit;
   SCR_Should_exit(&should_exit);
@@ -313,7 +305,7 @@ int main(int argc, char* argv[])
       // One must write with MPI_COMM_WORLD when using SCR.
       // Also, the number of files should be the same as
       // the number of ranks in the job.
-      dumpCheckpoint(MPI_COMM_WORLD, file_base, t, num_ranks, ds);
+      dumpCheckpoint(MPI_COMM_WORLD, file_base, t, num_files, ds);
 
       // When using SCR to cache datasets, the application should
       // exit early enough to leave SCR time to flush those datasets
