@@ -625,6 +625,7 @@ class SpackEnv(UberEnv):
                       return res
         # note: this assumes package extends python when +python
         # this may fail general cases
+        full_spec = self.read_spack_full_spec(self.pkg_name,self.opts["spec"])
         if self.opts["install"] and "+python" in full_spec:
             activate_cmd = "spack/bin/spack activate " + self.pkg_name
             sexe(activate_cmd, echo=True)
