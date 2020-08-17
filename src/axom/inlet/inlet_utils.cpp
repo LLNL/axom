@@ -12,20 +12,16 @@ void setWarningFlag(axom::sidre::Group* root) {
   }
 }
 
-std::string getFullName(const std::string& prefix, const std::string& name)
+std::string appendPrefix(const std::string& prefix, const std::string& name)
 {
-  if (prefix == "")
-  {
-    return name;
-  }
-  else
-  {
-    return prefix + "/" + name;
-  }
+  return (prefix == "") ? name : prefix + "/" + name;
 }
 
-std::string getName(const std::string& prefix, const std::string& pathName) {
-  return pathName.substr(prefix.size()-1);
+std::string removePrefix(const std::string& prefix, const std::string& name) {
+  SLIC_ASSERT_MSG(name.find(prefix) != std::string::npos, 
+                  fmt::format("Provided name {0} does not contain prefix{1}", 
+                  name, prefix));
+  return name.substr(prefix.size()-1);
 }
 
 }

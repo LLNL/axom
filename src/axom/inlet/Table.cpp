@@ -22,9 +22,9 @@ std::shared_ptr<Table> Table::addTable(const std::string& name,
   std::string currName = name;
   size_t found = currName.find("/");
   auto currTable = shared_from_this();
-  
+
   while (found != std::string::npos) {
-    const std::string& currTableName = getFullName(currTable->m_name, currName.substr(0, found));
+    const std::string& currTableName = appendPrefix(currTable->m_name, currName.substr(0, found));
     if (!currTable->hasTable(currTableName)) {
       auto table = std::make_shared<Table>(currTableName, "", m_reader, 
                                   m_sidreRootGroup, m_docEnabled);
@@ -37,7 +37,7 @@ std::shared_ptr<Table> Table::addTable(const std::string& name,
     found = currName.find("/");
   }
 
-  std::string currTableName = getFullName(currTable->m_name, currName.substr(0, found));
+  std::string currTableName = appendPrefix(currTable->m_name, currName.substr(0, found));
 
   if (!currTable->hasTable(currName)) {
     auto table = std::make_shared<Table>(currTableName, description, m_reader, 
@@ -51,7 +51,7 @@ std::shared_ptr<Table> Table::addTable(const std::string& name,
   return currTable;
 }
 
-axom::sidre::Group* Table::baseFieldAdd(const std::string& name,
+axom::sidre::Group* Table::createSidreGroup(const std::string& name,
                                         const std::string& description)
 {
   SLIC_ASSERT_MSG(m_reader != nullptr, "Inlet's Reader class not set");
@@ -74,19 +74,27 @@ axom::sidre::Group* Table::baseFieldAdd(const std::string& name,
   return sidreGroup;
 }
 
-std::shared_ptr<Field> Table::addBool(const std::string& name,
-                                      const std::string& description)
-{
-  std::string fullName = getFullName(m_name, name);
+std::shared_ptr<Field> Table::addField(axom::sidre::Group* sidreGroup, 
+                                       axom::sidre::DataTypeId type, 
+                                       const std::string& fullName,
+                                       const std::string& name) {
   size_t found =  name.find_last_of("/");
-
   auto currTable = shared_from_this();
   if (found != std::string::npos) {
     // This will add any intermediate Tables (if not present) before adding the field
     currTable = addTable(name.substr(0, found));
   }
+  auto field = std::make_shared<axom::inlet::Field>(sidreGroup, m_sidreRootGroup,
+                                                             type, m_docEnabled);
+  currTable->m_fieldChildren[fullName] = field;
+  return field;
+}
 
-  axom::sidre::Group* sidreGroup = currTable->baseFieldAdd(fullName, description);
+std::shared_ptr<Field> Table::addBool(const std::string& name,
+                                      const std::string& description)
+{
+  std::string fullName = appendPrefix(m_name, name);
+  axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
   if (sidreGroup == nullptr)
   {
     //TODO: better idea?
@@ -97,26 +105,15 @@ std::shared_ptr<Field> Table::addBool(const std::string& name,
   if(m_reader->getBool(fullName, value))
   {
     sidreGroup->createViewScalar("value", value? int8(1) : int8(0) );
-  }
-
-  auto field =  std::make_shared<Field>(sidreGroup, m_sidreRootGroup,
-                                 axom::sidre::DataTypeId::INT8_ID, m_docEnabled);
-  currTable->m_fieldChildren[fullName] = field;
-  return field;                      
+  }          
+  return addField(sidreGroup, axom::sidre::DataTypeId::INT8_ID, fullName, name);         
 }
 
 std::shared_ptr<Field> Table::addDouble(const std::string& name,
                                         const std::string& description)
 {
-  std::string fullName = getFullName(m_name, name);
-  size_t found =  name.find_last_of("/");
-
-  auto currTable = shared_from_this();
-  if (found != std::string::npos) {
-    currTable = addTable(name.substr(0, found));
-  }
-
-  axom::sidre::Group* sidreGroup = currTable->baseFieldAdd(fullName, description);
+  std::string fullName = appendPrefix(m_name, name);
+  axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
   if (sidreGroup == nullptr)
   {
     return std::shared_ptr<Field>(nullptr);
@@ -127,25 +124,14 @@ std::shared_ptr<Field> Table::addDouble(const std::string& name,
   {
     sidreGroup->createViewScalar("value", value);
   }
-
-  auto field = std::make_shared<Field>(sidreGroup, m_sidreRootGroup,
-                                 axom::sidre::DataTypeId::DOUBLE_ID, m_docEnabled);
-  currTable->m_fieldChildren[fullName] = field;
-  return field;                                   
+  return addField(sidreGroup, axom::sidre::DataTypeId::DOUBLE_ID, fullName, name);                                 
 }
 
 std::shared_ptr<Field> Table::addInt(const std::string& name,
                                      const std::string& description)
 {
-  std::string fullName = getFullName(m_name, name);
-  size_t found =  name.find_last_of("/");
-
-  auto currTable = shared_from_this();
-  if (found != std::string::npos) {
-    currTable = addTable(name.substr(0, found));
-  }
-
-  axom::sidre::Group* sidreGroup = currTable->baseFieldAdd(fullName, description);
+  std::string fullName = appendPrefix(m_name, name);
+  axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
   if (sidreGroup == nullptr)
   {
     return std::shared_ptr<Field>(nullptr);
@@ -156,25 +142,14 @@ std::shared_ptr<Field> Table::addInt(const std::string& name,
   {
     sidreGroup->createViewScalar("value", value);
   }
-
-  auto field = std::make_shared<axom::inlet::Field>(sidreGroup, m_sidreRootGroup,
-                                              axom::sidre::DataTypeId::INT_ID,
-                                                                m_docEnabled);
-  currTable->m_fieldChildren[fullName] = field;
-  return field;
+  return addField(sidreGroup, axom::sidre::DataTypeId::INT_ID, fullName, name);
 }
 
 std::shared_ptr<Field> Table::addString(const std::string& name,
                                         const std::string& description)
 {
-  std::string fullName = getFullName(m_name, name);
-  size_t found =  name.find_last_of("/");
-
-  auto currTable = shared_from_this();
-  if (found != std::string::npos) {
-    currTable = addTable(name.substr(0, found));
-  }
-  axom::sidre::Group* sidreGroup = currTable->baseFieldAdd(fullName, description);
+  std::string fullName = appendPrefix(m_name, name);
+  axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
   if (sidreGroup == nullptr)
   {
     return std::shared_ptr<Field>(nullptr);
@@ -185,11 +160,7 @@ std::shared_ptr<Field> Table::addString(const std::string& name,
   {
     sidreGroup->createViewString("value", value);
   }
-
-  auto field = std::make_shared<Field>(sidreGroup, m_sidreRootGroup,
-                                 axom::sidre::DataTypeId::CHAR8_STR_ID, m_docEnabled);
-  currTable->m_fieldChildren[fullName] = field;
-  return field;                                    
+  return addField(sidreGroup, axom::sidre::DataTypeId::CHAR8_STR_ID, fullName, name);                            
 }
 
 std::shared_ptr<Table> Table::required(bool isRequired)
@@ -258,7 +229,7 @@ bool Table::required()
    // Verify this Table
    if (m_verifier && !m_verifier()) {
      verified = false;
-     SLIC_WARNING(fmt::format("Table {0} failed verification", m_sidreGroup->getPathName()));
+     SLIC_WARNING(fmt::format("Table {0} failed verification", m_name));
    }
    // Verify the child Fields of this Table
    for (auto field : m_fieldChildren) {
@@ -277,23 +248,24 @@ bool Table::required()
  }
 
 bool Table::hasField(const std::string& fieldName) {
-  return m_fieldChildren.find(getFullName(m_name, fieldName)) != m_fieldChildren.end();
+  return m_fieldChildren.find(appendPrefix(m_name, fieldName)) != m_fieldChildren.end();
 }
 
 bool Table::hasTable(const std::string& tableName) {
-  return m_tableChildren.find(getFullName(m_name, tableName)) != m_tableChildren.end();
+  return m_tableChildren.find(appendPrefix(m_name, tableName)) != m_tableChildren.end();
 }
 
-std::shared_ptr<Table> Table::getTable(std::string name) {
+std::shared_ptr<Table> Table::getTable(const std::string& tableName) {
+  std::string name = tableName;
   size_t found = name.find("/");
   auto currTable = shared_from_this();
 
   while (found != std::string::npos) {
     const std::string& currName = name.substr(0, found);
     if (currTable->hasTable(currName)) {
-      currTable = currTable->m_tableChildren[getFullName(currTable->m_name, currName)];
+      currTable = currTable->m_tableChildren[appendPrefix(currTable->m_name, currName)];
     } else {
-      SLIC_WARNING(fmt::format("Table {0} not found", name));
+      SLIC_WARNING(fmt::format("Table {0} not found", tableName));
       return nullptr;
     }
     name = name.substr(found+1);
@@ -301,13 +273,14 @@ std::shared_ptr<Table> Table::getTable(std::string name) {
   }
   
   if (currTable->hasTable(name)) {
-    return currTable->m_tableChildren[getFullName(currTable->m_name, name)];
+    return currTable->m_tableChildren[appendPrefix(currTable->m_name, name)];
   }
-  SLIC_WARNING(fmt::format("Table {0} not found", name));
+  SLIC_WARNING(fmt::format("Table {0} not found", tableName));
   return nullptr;
 }
 
-std::shared_ptr<Field> Table::getField(std::string name) {
+std::shared_ptr<Field> Table::getField(const std::string& fieldName) {
+  std::string name = fieldName;
   size_t found =  name.find_last_of("/");
   if (found == std::string::npos) {
     if (hasField(name)) {
@@ -320,7 +293,7 @@ std::shared_ptr<Field> Table::getField(std::string name) {
       return m_fieldChildren[fieldName];
     }
   }
-  SLIC_WARNING(fmt::format("Field {0} not found", name));
+  SLIC_WARNING(fmt::format("Field {0} not found", fieldName));
   return nullptr;
 }
 

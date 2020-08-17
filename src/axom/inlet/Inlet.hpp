@@ -295,8 +295,41 @@ public:
    */
   bool verify(); 
 
+  /*!
+   *****************************************************************************
+   * \return The global Table.
+   *****************************************************************************
+   */
   std::shared_ptr<Table> getGlobalTable() {
     return m_globalTable;
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Retrieves the matching Table.
+   * 
+   * \param [in] The string indicating the target name of the Table to be searched for.
+   * 
+   * \return The Table matching the target name. If no such Table is found,
+   * a nullptr is returned.
+   *****************************************************************************
+   */
+  std::shared_ptr<Table> getTable(const std::string& name) {
+    return m_globalTable->getTable(name);
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Retrieves the matching Field.
+   * 
+   * \param [in] The string indicating the target name of the Field to be searched for.
+   * 
+   * \return The child Field matching the target name. If no such Field is found,
+   * a nullptr is returned.
+   *****************************************************************************
+   */
+  std::shared_ptr<Field> getField(const std::string& name) {
+    return m_globalTable->getField(name);
   }
   // TODO add update value functions
 private:

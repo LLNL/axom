@@ -18,6 +18,7 @@
 #include <string>
 #include <functional>
 #include <unordered_map>
+#include <tuple>
 
 #include "axom/inlet/Field.hpp"
 #include "axom/inlet/Reader.hpp"
@@ -303,7 +304,7 @@ public:
    * a nullptr is returned.
    *****************************************************************************
    */
-  std::shared_ptr<Table> getTable(std::string name);
+  std::shared_ptr<Table> getTable(const std::string& tableName);
 
    /*!
    *****************************************************************************
@@ -315,7 +316,7 @@ public:
    * a nullptr is returned.
    *****************************************************************************
    */
-  std::shared_ptr<Field> getField(std::string name);
+  std::shared_ptr<Field> getField(const std::string& fieldName);
 
 private:
   /*!
@@ -326,8 +327,27 @@ private:
    * \return Pointer to the created Sidre Group for this Table
    *****************************************************************************
    */
-  axom::sidre::Group* baseFieldAdd(const std::string& name,
+  axom::sidre::Group* createSidreGroup(const std::string& name,
                                    const std::string& description);
+
+  /*!
+   *****************************************************************************
+   * \brief Adds the Field.
+   * 
+   * \param [in] The Sidre Group corresponding to the Field that will be added.
+   * \param [in] The type ID
+   * \param [in] The complete Table sequence for the Table this Field will be added to.
+   * \param [in] The Table sequence for the Table this Field will be added to, 
+   * relative to this Table.
+   * 
+   * \return The child Field matching the target name. If no such Field is found,
+   * a nullptr is returned.
+   *****************************************************************************
+   */
+  std::shared_ptr<Field> addField(axom::sidre::Group* sidreGroup, 
+                                  axom::sidre::DataTypeId type, 
+                                  const std::string& fullName,
+                                  const std::string& name);
 
   std::string m_name;
   std::shared_ptr<Reader> m_reader;
