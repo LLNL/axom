@@ -202,6 +202,10 @@ void IOManager::write(sidre::Group* datagroup, int num_files,
     std::string hdf5_name =
       getFileNameForRank(file_pattern, root_name, set_id);
 
+    if (m_use_scr)
+    {
+      hdf5_name = getSCRPath(hdf5_name);
+    }
     hid_t h5_file_id, h5_group_id;
     if (m_baton->isFirstInGroup())
     {
@@ -213,30 +217,13 @@ void IOManager::write(sidre::Group* datagroup, int num_files,
         {
           utilities::filesystem::makeDirsForPath(dir_name);
         }
-        h5_file_id = conduit::relay::io::hdf5_create_file(hdf5_name);
-      } else {
-#ifdef AXOM_USE_SCR
-        // register original path, and get new path from SCR
-        char scr_name[SCR_MAX_FILENAME];
-        SCR_Route_file(hdf5_name.c_str(), scr_name);
-        h5_file_id = conduit::relay::io::hdf5_create_file(scr_name);
-#endif
       }
+      h5_file_id = conduit::relay::io::hdf5_create_file(hdf5_name);
     }
     else
     {
-      if (!m_use_scr) {
-        h5_file_id =
-          conduit::relay::io::hdf5_open_file_for_read_write(hdf5_name);
-      } else {
-#ifdef AXOM_USE_SCR
-        // register original path, and get new path from SCR
-        char scr_name[SCR_MAX_FILENAME];
-        SCR_Route_file(hdf5_name.c_str(), scr_name);
-        h5_file_id =
-          conduit::relay::io::hdf5_open_file_for_read_write(scr_name);
-#endif
-      }
+      h5_file_id =
+        conduit::relay::io::hdf5_open_file_for_read_write(hdf5_name);
     }
     SLIC_ASSERT(h5_file_id >= 0);
 
@@ -388,32 +375,36 @@ void IOManager::readWithSCR(
   bool preserve_contents)
 {
   SLIC_ASSERT(m_use_scr);
-  char file[SCR_MAX_FILENAME];
-  if (SCR_Route_file(root_file.c_str(), file) == SCR_SUCCESS)
-  {
-    std::string scr_root(file);
-    std::string protocol = getProtocol(scr_root);
 
-    read(datagroup, root_file, protocol, preserve_contents);
-  }
-  else
+  std::string scr_root = root_file;
+  if (m_my_rank == 0)
   {
-    SLIC_WARNING(
-      "Root file: "
-      << root_file << " not found by SCR. Attempting to read without SCR.");
-
-    read(datagroup, root_file, preserve_contents, false);
+    scr_root = getSCRPath(scr_root);
   }
+  std::string protocol = getProtocol(scr_root);
+
+  read(datagroup, root_file, protocol, preserve_contents);
 }
 #endif
 
 std::string IOManager::getSCRPath(const std::string & path)
 {
 #ifdef AXOM_USE_SCR
-  SLIC_ASSERT(m_use_scr); 
+  SLIC_ASSERT(m_use_scr);
   char scr_name[SCR_MAX_FILENAME]; 
-  SCR_Route_file(path.c_str(), scr_name); 
-  return std::string(scr_name);
+  std::string scr_path;
+  if (SCR_Route_file(path.c_str(), scr_name) == SCR_SUCCESS)
+  {
+    scr_path = scr_name;
+  }
+  else
+  {
+    SLIC_WARNING(
+      "SCR routing of path "
+      << path << " was unsuccessful. Attempting to proceed without routing.");
+    scr_path = path;
+  }
+  return scr_path;
 #else
   return path;
 #endif
@@ -532,6 +523,7 @@ void IOManager::createRootFile(const std::string& file_base,
                                int num_files,
                                const std::string& protocol)
 {
+  SLIC_ASSERT(m_my_rank == 0);
 
   conduit::Node n;
   std::string root_file_name;
@@ -590,20 +582,7 @@ void IOManager::createRootFile(const std::string& file_base,
       n["file_pattern"] = local_file_base + "_" + "%07d.hdf5";
     }
 
-    std::string root_name = root_file_name;
-    char checkpoint_file[256];
-    sprintf(checkpoint_file, "%s", root_name.c_str());
-
-    char scr_file[SCR_MAX_FILENAME];
-    if (SCR_Route_file(checkpoint_file, scr_file) == SCR_SUCCESS)
-    {
-      root_file_name = scr_file;
-    }
-    else
-    {
-      SLIC_WARNING("Attempt to create SCR route for file: " << root_name <<
-                   " failed. Writing root file without SCR.");
-    }
+    root_file_name = getSCRPath(root_file_name);
 
   }
 #endif
@@ -621,21 +600,22 @@ void IOManager::createRootFile(const std::string& file_base,
 std::string IOManager::getProtocol(
   const std::string& root_name)
 {
-  std::string extension;
-  std::string base;
-  std::string dot = ".";
-
-  // Separate the first extension from the root file name
-  // It should always be "root"
-  conduit::utils::rsplit_string(root_name, dot, extension, base);
-
-  SLIC_CHECK_MSG(extension == "root",
-                 "The root file name should always end in 'root'."
-                 << " File name was '"<< root_name <<"'");
-
   std::string protocol;
+
   if (m_my_rank == 0)
   {
+    std::string extension;
+    std::string base;
+    std::string dot = ".";
+
+    // Separate the first extension from the root file name
+    // It should always be "root"
+    conduit::utils::rsplit_string(root_name, dot, extension, base);
+
+    SLIC_CHECK_MSG(extension == "root",
+                   "The root file name should always end in 'root'."
+                   << " File name was '"<< root_name <<"'");
+
     std::string relay_protocol = "json";
 #ifdef AXOM_USE_HDF5
     // Attempt to open the root file using HDF5.  If it succeeds, set
