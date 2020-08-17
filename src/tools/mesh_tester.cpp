@@ -65,6 +65,7 @@
 #include <iostream>
 #include <utility>
 #include <vector>
+#include <map>
 #include <iomanip>
 
 // _read_stl_typedefs_start
@@ -88,7 +89,7 @@ enum RuntimePolicy { seq = 0,
 struct Input
 {
   static const std::set<std::string> s_validMethods;
-  static const std::set<RuntimePolicy> s_validPolicies;
+  static const std::map<std::string, RuntimePolicy> s_validPolicies;
 
   std::string stlInput {""};
   std::string vtkOutput {""};
@@ -119,15 +120,15 @@ const std::set<std::string> Input::s_validMethods({
   "naive"
 });
 
-const std::set<RuntimePolicy> Input::s_validPolicies({
-  seq
+const std::map<std::string, RuntimePolicy> Input::s_validPolicies({
+  {"seq", seq}
   #ifdef AXOM_USE_RAJA
-  , raja_seq
+  , {"raja_seq", raja_seq}
     #ifdef AXOM_USE_OPENMP
-  , raja_omp
+  , {"raja_omp", raja_omp}
     #endif
     #ifdef AXOM_USE_CUDA
-  , raja_cuda
+  , {"raja_cuda", raja_cuda}
     #endif
   #endif
 });
@@ -151,19 +152,20 @@ void Input::parse(int argc, char** argv, CLI::App& app)
 
   app.add_option("-p, --policy", policy,
                  "With \'-m bvh\' or \'-m naive\', set runtime policy. \n"
-                 "Set to 0 to use the sequential algorithm (w/o RAJA). \n"
+                 "Set to \'seq\' or 0 to use the sequential algorithm "
+                 "(w/o RAJA). \n"
   #ifdef AXOM_USE_RAJA
-                 "Set to 1 to use the RAJA sequential policy. \n"
+                 "Set to \'raja_seq\' or 1 to use the RAJA sequential policy.\n"
     #ifdef AXOM_USE_OPENMP
-                 "Set to 2 to use the RAJA OpenMP policy. \n"
+                 "Set to \'raja_omp\' or 2 to use the RAJA OpenMP policy. \n"
     #endif
     #ifdef AXOM_USE_CUDA
-                 "Set to 3 to use the RAJA CUDA policy."
+                 "Set to \'raja_cuda\' or 3 to use the RAJA CUDA policy."
     #endif
   #endif
                  )
   ->capture_default_str()
-  ->check(CLI::IsMember {Input::s_validPolicies});
+  ->transform(CLI::CheckedTransformer(Input::s_validPolicies));
 
   app.add_option("-i,--infile", stlInput,"The STL input file")
   ->required()
@@ -190,7 +192,7 @@ void Input::parse(int argc, char** argv, CLI::App& app)
                "Increase logging verbosity.")
   ->capture_default_str();
 
-  app.get_formatter()->column_width(48);
+  app.get_formatter()->column_width(76);
 
   // Could throw an exception
   app.parse(argc, argv);
@@ -667,6 +669,7 @@ int main( int argc, char** argv )
       {
       case seq:
         collisions = naiveIntersectionAlgorithm(surface_mesh, degenerate, params.intersectionThreshold);
+        break;
   #ifdef AXOM_USE_RAJA
       case raja_seq:
         quest::findTriMeshIntersectionsBVH< seq_exec, double >(surface_mesh,
