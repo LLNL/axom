@@ -173,10 +173,8 @@ void IOManager::write(sidre::Group* datagroup, int num_files,
     m_baton = new IOBaton(m_mpi_comm, num_files, m_comm_size);
   }
 
-  if (m_use_scr && num_files != m_comm_size)
-  {
-    SLIC_WARNING("SCR requires a file per process");
-  }
+  SLIC_ERROR_IF(m_use_scr && num_files != m_comm_size,
+                "SCR requires a file per process");
 
   std::string root_string = file_string;
   if (m_my_rank == 0)
