@@ -69,8 +69,8 @@ bool dumpOutput(MPI_Comm comm, const std::string& file_base, int num_files,
   // succeeded.
   // SCR_Complete_output must be called by all processes in MPI_COMM_WORLD.
   int valid = 1;
-  int complete_rc = SCR_Complete_output(valid);
-  return (complete_rc == SCR_SUCCESS);
+  int rc = SCR_Complete_output(valid);
+  return (rc == SCR_SUCCESS);
 }
 
 /** Simple structure to hold the parsed command line arguments */

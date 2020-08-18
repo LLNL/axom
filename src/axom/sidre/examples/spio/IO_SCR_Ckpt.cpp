@@ -136,8 +136,8 @@ bool dumpCheckpoint(MPI_Comm comm, const std::string& file_base, int t,
   // succeeded.
   // SCR_Complete_output must be called by all processes in MPI_COMM_WORLD.
   int valid = 1;
-  int complete_rc = SCR_Complete_output(valid);
-  return (complete_rc == SCR_SUCCESS);
+  int rc = SCR_Complete_output(valid);
+  return (rc == SCR_SUCCESS);
 }
 
 /** Ask SCR if the run should stop executing */
@@ -263,8 +263,7 @@ int main(int argc, char* argv[])
   SLIC_ASSERT(ds);
 
   // Attempt to load a restart from SCR.
-  bool restarted = loadRestart(MPI_COMM_WORLD, file_base, ds);
-  if (restarted)
+  if (loadRestart(MPI_COMM_WORLD, file_base, ds))
   {
     // We successfully read a restart from SCR.
     // Use the dataset it filled in to initialize our state,
@@ -279,9 +278,8 @@ int main(int argc, char* argv[])
   else
   {
     // We did not load a restart, so initialize the datastore.
-    Group* root = ds->getRoot();
-    root->createViewScalar<int>("timestep", t);
-    root->createViewScalar<int>("state", my_data);
+    ds->getRoot()->createViewScalar<int>("timestep", t);
+    ds->getRoot()->createViewScalar<int>("state", my_data);
   }
 
   // Application work loop
@@ -297,7 +295,7 @@ int main(int argc, char* argv[])
     // and the application is free to checkpoint whenever it needs to.
     if (needCheckpoint())
     {
-      // Update the Datastore to capture current state.
+      // Time for a checkpoint, update the Datastore to capture current state.
       ds->getRoot()->getView("timestep")->setScalar<int>(t);
       ds->getRoot()->getView("state")->setScalar<int>(my_data);
 
