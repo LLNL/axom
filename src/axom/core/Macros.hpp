@@ -36,14 +36,22 @@
 #endif
 
 /*
+ * \def AXOM_STRINGIFY
+ *
+ * \brief Helper Macro to specify strings inside pragmas.
+ */
+#define AXOM_STRINGIFY(x) AXOM_DO_STRINGIFY(x)
+#define AXOM_DO_STRINGIFY(x) #x
+
+/*
  * \def AXOM_PRAGMA
  *
  * \brief Macro used to specify pragma directive
  */
 #ifdef _WIN32
-#define AXOM_PRAGMA(__supplied_pragma) __pragma(__supplied_pragma)
+#define AXOM_PRAGMA(x) __pragma(x)
 #else
-#define AXOM_PRAGMA(__supplied_pragma) _Pragma(#__supplied_pragma)
+#define AXOM_PRAGMA(x) _Pragma(AXOM_STRINGIFY(x))
 #endif
 
 /*
