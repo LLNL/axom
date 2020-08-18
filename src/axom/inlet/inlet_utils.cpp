@@ -18,7 +18,7 @@ std::string appendPrefix(const std::string& prefix, const std::string& name)
 }
 
 std::string removePrefix(const std::string& prefix, const std::string& name) {
-  SLIC_ASSERT_MSG(name.find(prefix) != std::string::npos, 
+  SLIC_ASSERT_MSG(axom::utilities::string::startsWith(name, prefix), 
                   fmt::format("Provided name {0} does not contain prefix{1}", 
                   name, prefix));
   return name.substr(prefix.size()-1);

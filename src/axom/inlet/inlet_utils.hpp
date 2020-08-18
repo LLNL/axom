@@ -1,5 +1,6 @@
 #include "axom/sidre.hpp"
 #include "fmt/fmt.hpp"
+#include "axom/core/utilities/StringUtilities.hpp"
 
 #ifndef INLET_UTILS_HPP
 #define INLET_UTILS_HPP
