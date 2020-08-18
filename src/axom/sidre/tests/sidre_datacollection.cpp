@@ -12,16 +12,16 @@
 #include "gtest/gtest.h"
 
 #include "axom/sidre/core/sidre.hpp"
-#include "axom/sidre/datacollection/SidreDataCollection.hpp"
+#include "axom/sidre/datacollection/MFEMSidreDataCollection.hpp"
 
 using axom::sidre::Group;
-using axom::sidre::SidreDataCollection;
+using axom::sidre::MFEMSidreDataCollection;
 
 const std::string COLL_NAME = "test_collection";
 
 TEST(sidre_datacollection, dc_alloc_no_mesh)
 {
-    SidreDataCollection sdc(COLL_NAME);
+    MFEMSidreDataCollection sdc(COLL_NAME);
     EXPECT_TRUE(sdc.verifyMeshBlueprint());
 }
 
@@ -30,7 +30,7 @@ TEST(sidre_datacollection, dc_alloc_owning_mesh)
     // 1D mesh divided into 10 segments
     mfem::Mesh mesh(10);
     bool owns_mesh = true;
-    SidreDataCollection sdc(COLL_NAME, &mesh, owns_mesh);
+    MFEMSidreDataCollection sdc(COLL_NAME, &mesh, owns_mesh);
     EXPECT_TRUE(sdc.verifyMeshBlueprint());
 }
 
@@ -39,13 +39,13 @@ TEST(sidre_datacollection, dc_alloc_nonowning_mesh)
     // 1D mesh divided into 10 segments
     mfem::Mesh mesh(10);
     bool owns_mesh = false;
-    SidreDataCollection sdc(COLL_NAME, &mesh, owns_mesh);
+    MFEMSidreDataCollection sdc(COLL_NAME, &mesh, owns_mesh);
     EXPECT_TRUE(sdc.verifyMeshBlueprint());
 }
 
 TEST(sidre_datacollection, dc_register_empty_field)
 {
-    SidreDataCollection sdc(COLL_NAME);
+    MFEMSidreDataCollection sdc(COLL_NAME);
     mfem::GridFunction gf;
     sdc.RegisterField("test_field", &gf);
     EXPECT_TRUE(sdc.verifyMeshBlueprint());
@@ -59,7 +59,7 @@ TEST(sidre_datacollection, dc_register_partial_field)
     mfem::FiniteElementSpace fes(&mesh, &fec);
     mfem::GridFunction gf(&fes);
     
-    SidreDataCollection sdc(COLL_NAME, &mesh);
+    MFEMSidreDataCollection sdc(COLL_NAME, &mesh);
     sdc.RegisterField("test_field", &gf);
     EXPECT_TRUE(sdc.verifyMeshBlueprint());
 }
@@ -68,7 +68,7 @@ TEST(sidre_datacollection, dc_update_state)
 {
     // 1D mesh divided into 10 segments
     mfem::Mesh mesh(10);
-    SidreDataCollection sdc(COLL_NAME, &mesh);
+    MFEMSidreDataCollection sdc(COLL_NAME, &mesh);
 
     // Arbitrary values for the "state" part of blueprint
     sdc.SetCycle(3);
@@ -84,7 +84,7 @@ TEST(sidre_datacollection, dc_save)
 {
     // 1D mesh divided into 10 segments
     mfem::Mesh mesh(10);
-    SidreDataCollection sdc(COLL_NAME, &mesh);
+    MFEMSidreDataCollection sdc(COLL_NAME, &mesh);
     
     // The data produced isn't important for this, so just throw it in /tmp
     sdc.SetPrefixPath("/tmp/dc_save_test");
@@ -100,14 +100,14 @@ TEST(sidre_datacollection, dc_reload)
     // The mesh must be owned by Sidre to properly manage data in case of
     // a simulated restart (save -> load)
     bool owns_mesh = true;
-    SidreDataCollection sdc_writer(COLL_NAME, &mesh, owns_mesh);
+    MFEMSidreDataCollection sdc_writer(COLL_NAME, &mesh, owns_mesh);
 
     sdc_writer.SetPrefixPath("/tmp/dc_reload_test");
     sdc_writer.SetCycle(0);
     sdc_writer.PrepareToSave();
     sdc_writer.Save();
     
-    SidreDataCollection sdc_reader(COLL_NAME);
+    MFEMSidreDataCollection sdc_reader(COLL_NAME);
     sdc_reader.SetPrefixPath("/tmp/dc_reload_test");
     sdc_reader.Load();
 
