@@ -10,6 +10,11 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
+- Added option to quest's `SignedDistance` class and C API to toggle whether
+  the distance query computes the sign.
+- Added a `batched` option to quest's signed distance query example application.
+  This computes all distance queries on an array of points using a single call to `computeDistance`.
+  The query uses OpenMP threading, when available.
 - Added new component, Inlet, to assist in retrieving and storing data from
   an input deck.
 - Added the ability to specify an [Umpire] allocator ID to use with the
@@ -62,6 +67,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   ex. `level_error` is now `message_error`.
 
 ### Fixed
+- Fixed issue in the parallel construction of the BVH on GPUs, due to incoherent
+  L1 cache that could result in some data corruption in the BVH. The code now
+  calls ``__threadfence_system()`` after the parent is computed and stored back
+  to global memory to ensure that the *write*  is visible to all threads. 
 - Fixed issue in Mint that would cause the clang@9.0.0 compiler to segfault. The
   `mint_cell_types.cpp` test was causing a segfault in the compiler. The main
   issue triggering this compiler bug was the use of `constexpr` when defining the

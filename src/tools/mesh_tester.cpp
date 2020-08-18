@@ -5,6 +5,7 @@
 
 // Axom includes
 #include "axom/core/Macros.hpp"
+#include "axom/core/utilities/About.hpp"
 #include "axom/core/utilities/FileUtilities.hpp"
 #include "axom/core/utilities/Timer.hpp"
 
@@ -538,6 +539,8 @@ void initializeLogger()
 int main( int argc, char** argv )
 {
   initializeLogger();
+
+  SLIC_INFO( "Axom Version:" << " [" << axom::getVersion() << "]" );
 
   // Parse the command line arguments
   Input params;

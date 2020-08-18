@@ -17,6 +17,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <unordered_map>
 
 #include "axom/sidre.hpp"
 #include "axom/inlet/DocWriter.hpp"
@@ -145,7 +146,8 @@ private:
     *******************************************************************************
     */
     TableData() {
-      rstTable = {{"Field Name", "Description", "Default Value", "Range", "Required"}};
+      rstTable = {{"Field Name", "Description", "Default Value", 
+                             "Range/Valid Values", "Required"}};
     }
 
     std::string tableName;
@@ -153,12 +155,77 @@ private:
     std::vector<std::vector<std::string>> rstTable;
   };
 
+/*!
+  *******************************************************************************
+  * \brief Extracts Field information from the given Sidre Group and stores it
+  * to be written later.
+  * 
+  * This extracts information about the Field stored in the given Sidre Group. 
+  * This information is stored internally by this class and then written to the
+  * document by writeAllTables.
+  * 
+  * \param [in] sidreGroup The Sidre Group from which Field metadata should be
+  * extracted and then stored.
+  *******************************************************************************
+  */
+  void extractFieldMetadata(axom::sidre::Group* sidreGroup);
+
+/*!
+  *******************************************************************************
+  * \brief Gets default value information from the given Sidre View and returns
+  * it as a string.
+  * 
+  * \param [in] view The Sidre View containing default value information.
+  *
+  * \return String representation of default value information.
+  *******************************************************************************
+  */
+  std::string getDefaultValueAsString(axom::sidre::View* view);
+
+  /*!
+  *******************************************************************************
+  * \brief Gets range information from the given Sidre View and returns
+  * it as a string.
+  * 
+  * \param [in] view The Sidre View containing range information.
+  *
+  * \return String representation of range information.
+  *******************************************************************************
+  */
+  std::string getRangeAsString(axom::sidre::View* view);
+
+  /*!
+  *******************************************************************************
+  * \brief Gets valid value(s) information from the given Sidre View and returns
+  * it as a string.
+  * 
+  * \param [in] view The Sidre View containing valid value(s) information.
+  *
+  * \return String representation of valid value(s) information.
+  *******************************************************************************
+  */
+  std::string getValidValuesAsString(axom::sidre::View* view);
+
+  /*!
+  *******************************************************************************
+  * \brief Gets valid string value(s) information from the given Sidre Group. 
+  * 
+  * \param [in] sidreGroup The Sidre Group containing valid string value(s) 
+  * information.
+  *
+  * \return String listing the valid string values.
+  *******************************************************************************
+  */
+  std::string getValidStringValues(axom::sidre::Group* sidreGroup);
+
+
   axom::sidre::Group* m_sidreRootGroup;
   std::ofstream m_outFile;
   std::ostringstream m_oss;
-  std::vector<TableData> m_rstTables;
+  // This is needed to preserve the traversal order of the Inlet::Tables
+  std::vector<std::string> m_inletTablePathNames;
+  std::unordered_map<std::string, TableData> m_rstTables;
   std::string m_fileName;
-  TableData m_currentTable;
 };
 
 }

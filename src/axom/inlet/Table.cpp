@@ -7,6 +7,7 @@
 
 #include "fmt/fmt.hpp"
 #include "axom/slic.hpp"
+#include "axom/inlet/inlet_utils.hpp"
 
 namespace axom
 {
@@ -29,7 +30,8 @@ std::shared_ptr<Table> Table::addTable(const std::string& name,
                                        const std::string& description)
 {
   std::string fullName = getFullName(m_name, name);
-  return std::make_shared<Table>(fullName, description, m_reader, m_sidreRootGroup);
+  return std::make_shared<Table>(fullName, description, m_reader, 
+                                 m_sidreRootGroup, m_docEnabled);
 }
 
 axom::sidre::Group* Table::baseFieldAdd(const std::string& name,
@@ -41,6 +43,7 @@ axom::sidre::Group* Table::baseFieldAdd(const std::string& name,
   if (m_sidreRootGroup->hasGroup(name))
   {
     SLIC_WARNING("Inlet: Cannot add value that already exists: " + name);
+    setWarningFlag(m_sidreRootGroup);
     return nullptr;
   }
 
@@ -71,7 +74,8 @@ std::shared_ptr<Field> Table::addBool(const std::string& name,
     sidreGroup->createViewScalar("value", value? int8(1) : int8(0) );
   }
 
-  return std::make_shared<Field>(sidreGroup);
+  return std::make_shared<Field>(sidreGroup, m_sidreRootGroup,
+                                 axom::sidre::DataTypeId::INT8_ID, m_docEnabled);
 }
 
 std::shared_ptr<Field> Table::addDouble(const std::string& name,
@@ -90,7 +94,8 @@ std::shared_ptr<Field> Table::addDouble(const std::string& name,
     sidreGroup->createViewScalar("value", value);
   }
 
-  return std::make_shared<Field>(sidreGroup);
+  return std::make_shared<Field>(sidreGroup, m_sidreRootGroup,
+                                 axom::sidre::DataTypeId::DOUBLE_ID, m_docEnabled);
 }
 
 std::shared_ptr<Field> Table::addInt(const std::string& name,
@@ -109,7 +114,9 @@ std::shared_ptr<Field> Table::addInt(const std::string& name,
     sidreGroup->createViewScalar("value", value);
   }
 
-  return std::make_shared<axom::inlet::Field>(sidreGroup);
+  return std::make_shared<axom::inlet::Field>(sidreGroup, m_sidreRootGroup,
+                                              axom::sidre::DataTypeId::INT_ID,
+                                                                m_docEnabled);
 }
 
 std::shared_ptr<Field> Table::addString(const std::string& name,
@@ -128,7 +135,8 @@ std::shared_ptr<Field> Table::addString(const std::string& name,
     sidreGroup->createViewString("value", value);
   }
 
-  return std::make_shared<Field>(sidreGroup);
+  return std::make_shared<Field>(sidreGroup, m_sidreRootGroup,
+                                 axom::sidre::DataTypeId::CHAR8_STR_ID, m_docEnabled);
 }
 
 std::shared_ptr<Table> Table::required(bool isRequired)
@@ -139,7 +147,9 @@ std::shared_ptr<Table> Table::required(bool isRequired)
   {
     std::string msg = fmt::format("Inlet Table has already defined required value: {0}",
                                   m_sidreGroup->getName());
+    
     SLIC_WARNING(msg);
+    setWarningFlag(m_sidreRootGroup);
     return shared_from_this();
   }
 
@@ -176,6 +186,7 @@ bool Table::required()
                                   " value named {0}",
                                   m_sidreGroup->getName());
     SLIC_WARNING(msg);
+    setWarningFlag(m_sidreRootGroup);
     return false;
   }
 

@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-// usage : ./document_generation_example --enableDocs --deck lua_file 
+// usage : ./inlet_document_generation_example --enableDocs --deck lua_file.lua 
 
 #include "axom/inlet.hpp"
 
@@ -49,26 +49,32 @@ void defineSchema(std::shared_ptr<Inlet> inlet)
   currField->required(true);
   
   currField = inlet->addInt("thermal_solver/mesh/serial", "serial value");  
-  // The property called required is left unspecified here
+  currField->range(0, INT_MAX);
+  currField->defaultValue(1);
 
   // The description for thermal_solver/mesh/parallel is left unspecified
   currField = inlet->addInt("thermal_solver/mesh/parallel");
-  currField->required(false);
+  currField->range(1, INT_MAX);
+  currField->defaultValue(1);
 
   currField = inlet->addInt("thermal_solver/order", "thermal solver order");
   currField->required(true);
+  currField->range(1, INT_MAX);
   
   currField = inlet->addString("thermal_solver/timestepper", "thermal solver timestepper");
-  currField->required(false);
+  currField->defaultValue("quasistatic");
+  currField->validValues({"quasistatic", "forwardeuler", "backwardeuler"});
 
   currField = inlet->addString("thermal_solver/u0/type", "description for u0 type");
-  currField->required(true);
+  currField->defaultValue("constant");
+  currField->validValues({"constant", "function"});
 
   currField = inlet->addString("thermal_solver/u0/func", "description for u0 func"); 
   currField->required(true);
   
   currField = inlet->addString("thermal_solver/kappa/type", "description for kappa type");
   currField->required(true);
+  currField->validValues({"constant", "function"});
 
   currField = inlet->addDouble("thermal_solver/kappa/constant", "description for kappa constant");
   currField->required(true);
@@ -80,21 +86,33 @@ void defineSchema(std::shared_ptr<Inlet> inlet)
 
   currField = table->addDouble("rel_tol", "description for solver rel tol");
   currField->required(false);
+  currField->defaultValue(1.e-6);
+  currField->range(0.0, __DBL_MAX__);
   
   currField = table->addDouble("abs_tol", "description for solver abs tol");
   currField->required(true);  
+  currField->defaultValue(1.e-12);
+  currField->range(0.0, __DBL_MAX__);
 
   currField = table->addInt("print_level", "description for solver print level");
-  currField->required(true);  
+  currField->required(true); 
+  currField->defaultValue(0);
+  currField->range(0, 3);
 
   currField = table->addInt("max_iter", "description for solver max iter");
-  currField->required(false);  
+  currField->required(false);
+  currField->defaultValue(100);
+  currField->range(1, INT_MAX);
   
   currField = table->addDouble("dt", "description for solver dt");
-  currField->required(true); 
+  currField->required(true);
+  currField->defaultValue(1);
+  currField->range(0.0, __DBL_MAX__);
 
   currField = table->addInt("steps", "description for solver steps");
   currField->required(true);
+  currField->defaultValue(1);
+  currField->range(1, INT_MAX);
 }
 
 // Checking the contents of the passed inlet
@@ -116,6 +134,13 @@ void checkValues(std::shared_ptr<Inlet> inlet) {
   findDouble("thermal_solver/solver/abs_tol", inlet);
   findDouble("thermal_solver/solver/rel_tol", inlet);
   findDouble("thermal_solver/kappa/constant", inlet);
+
+  // Verify that contents of Inlet meet the requirements of the specified schema
+  if (inlet->verify()) {
+    std::cout << "Inlet verify successful" << std::endl;
+  } else {
+    std::cout << "Inlet verify failed" << std::endl;
+  }
 }
 
 int main(int argc, char** argv) {

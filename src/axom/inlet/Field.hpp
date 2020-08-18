@@ -17,6 +17,7 @@
 #include "axom/sidre.hpp"
 
 #include <memory>
+#include <type_traits>
 
 namespace axom
 {
@@ -28,8 +29,8 @@ namespace inlet
  * \class Field
  *
  * \brief Provides functions to help define how individual field variables in an
- *        input deck are expected to behave.  It also holds the Sidre Group to the
- *        individual field.
+ * input deck are expected to behave.  It also holds the Sidre Group to 
+ * the individual field.
  *
  * \see Inlet Table
  *******************************************************************************
@@ -45,10 +46,17 @@ public:
    * data already read and stored in the given Sidre Group.
    *
    * \param [in] sidreGroup Pointer to the already created Sidre Group.
+   * \param [in] root Pointer to the sidreRootGroup containing this Field
+   * \param [in] type FieldType specifying the data type of this Field instance.
+   * Default is FieldType::UNSPECIFIED.
+   * \param [in] docEnabled Boolean indicating whether or not documentation
+   * generation is enabled for Input Deck this Field instance belongs to.
    *****************************************************************************
    */
-  Field(axom::sidre::Group* sidreGroup) :
-    m_sidreGroup(sidreGroup) {}
+  Field(axom::sidre::Group* sidreGroup, axom::sidre::Group* root,
+        axom::sidre::DataTypeId type = axom::sidre::DataTypeId::NO_TYPE_ID,
+        bool docEnabled = true) : m_sidreGroup(sidreGroup), m_sidreRootGroup(root),
+        m_type(type), m_docEnabled(docEnabled) {}
 
   /*!
    *****************************************************************************
@@ -87,9 +95,217 @@ public:
    *****************************************************************************
    */
   bool required();
+
+  /*!
+   *****************************************************************************
+   * \brief Set the default value of this Field.
+   *
+   * Set the default value for the Field in the input deck.
+   *
+   * \param [in] value The default string value
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> defaultValue(const std::string& value);
+
+   /*!
+   *****************************************************************************
+   * \brief Set the default value of this Field.
+   *
+   * Set the default value for the Field in the input deck.
+   *
+   * \param [in] value The default string value
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> defaultValue(const char* value);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the default value of this Field.
+   *
+   * Set the default value for the Field in the input deck.
+   *
+   * \param [in] value The default boolean value
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> defaultValue(bool value);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the default value of this Field.
+   *
+   * Set the default value for the Field in the input deck.
+   *
+   * \param [in] value The default integer value
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> defaultValue(int value);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the default value of this Field.
+   *
+   * Set the default value for the Field in the input deck.
+   *
+   * \param [in] value The default double value
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> defaultValue(double value);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the range of this Field.
+   *
+   * Set the continuous range for the Field in the input deck.
+   *
+   * \param [in] startVal The start of the range
+   * 
+   * \param [in] endVal The end of the range
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> range(double startVal, double endVal);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the range of this Field.
+   *
+   * Set the continuous range for the Field in the input deck.
+   *
+   * \param [in] startVal The start of the range
+   * 
+   * \param [in] endVal The end of the range
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> range(int startVal, int endVal);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the valid values for this Field.
+   *
+   * \param [in] set An vector containing the set of allowed integer values
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> validValues(const std::vector<int>& set);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the valid values for this Field.
+   *
+   * \param [in] set An vector containing the set of allowed double values
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> validValues(const std::vector<double>& set);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the valid values for this Field.
+   *
+   * \param [in] set A vector containing the set of allowed string values
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> validValues(const std::vector<std::string>& set);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the valid values for this Field.
+   *
+   * \param [in] set An initializer list containing the set of allowed C-string 
+   * values
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> validValues(const std::initializer_list<const char*>& set);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the valid values for this Field.
+   *
+   * \param [in] set An initializer list containing the valid integer values
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> validValues(const std::initializer_list<int>& set);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the valid values for this Field.
+   *
+   * \param [in] set An initializer list containing the valid double values
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> validValues(const std::initializer_list<double>& set);
 private:
+
+  /*!
+   *****************************************************************************
+   * \brief Set the valid values for this Field.
+   *
+   * \param [in] set A vector containing the set of allowed scalar values
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */  
+  template <typename T> 
+  void setScalarValidValues(std::vector<T> set);
+
+  /*!
+   *****************************************************************************
+   * \brief Set the range of this Field.
+   *
+   * Set the continuous range for the Field in the input deck.
+   *
+   * \param [in] startVal The start of the range
+   * 
+   * \param [in] endVal The end of the range
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  template<typename T>
+  void setRange(T startVal, T endVal);
+  
+  /*!
+   *****************************************************************************
+   * \brief Set the default value of this Field.
+   *
+   * Set the default value for the Field in the input deck.
+   *
+   * \param [in] value The default value
+   *
+   * \return Shared pointer to this Field instance
+   *****************************************************************************
+  */
+  template<typename T>
+  void setDefaultValue(T value);
+
   // This Field's sidre group
   axom::sidre::Group* m_sidreGroup = nullptr;
+  axom::sidre::Group* m_sidreRootGroup = nullptr;
+  axom::sidre::DataTypeId m_type = axom::sidre::DataTypeId::NO_TYPE_ID;
+  bool m_docEnabled = false;
 };
 
 } // end namespace inlet

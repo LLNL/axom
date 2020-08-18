@@ -396,6 +396,34 @@ PY_signed_distance_set_closed_surface(
 // splicer end function.signed_distance_set_closed_surface
 }
 
+static char PY_signed_distance_set_compute_signs__doc__[] =
+  "documentation"
+;
+
+static PyObject*
+PY_signed_distance_set_compute_signs(
+  PyObject* SHROUD_UNUSED(self),
+  PyObject* args,
+  PyObject* kwds)
+{
+// splicer begin function.signed_distance_set_compute_signs
+  PyObject* SHPy_computeSign;
+  const char* SHT_kwlist[] = {
+    "computeSign",
+    NULL
+  };
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwds,
+                                   "O!:signed_distance_set_compute_signs",
+                                   const_cast<char**>(SHT_kwlist),
+                                   &PyBool_Type, &SHPy_computeSign))
+    return NULL;
+  bool computeSign = PyObject_IsTrue(SHPy_computeSign);
+  axom::quest::signed_distance_set_compute_signs(computeSign);
+  Py_RETURN_NONE;
+// splicer end function.signed_distance_set_compute_signs
+}
+
 static char PY_signed_distance_set_max_levels__doc__[] =
   "documentation"
 ;
@@ -677,6 +705,9 @@ static PyMethodDef PY_methods[] = {
   {"signed_distance_set_closed_surface",
    (PyCFunction)PY_signed_distance_set_closed_surface,
    METH_VARARGS|METH_KEYWORDS, PY_signed_distance_set_closed_surface__doc__},
+  {"signed_distance_set_compute_signs",
+   (PyCFunction)PY_signed_distance_set_compute_signs,
+   METH_VARARGS|METH_KEYWORDS, PY_signed_distance_set_compute_signs__doc__},
   {"signed_distance_set_max_levels",
    (PyCFunction)PY_signed_distance_set_max_levels, METH_VARARGS|METH_KEYWORDS,
    PY_signed_distance_set_max_levels__doc__},
