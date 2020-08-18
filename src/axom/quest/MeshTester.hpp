@@ -120,9 +120,8 @@ void findTriMeshIntersectionsBVH(
   umpire::ResourceManager& rm  = umpire::ResourceManager::getInstance();
 
   // Use device pool for CUDA policy, host pool otherwise
-  std::string exec_name (axom::execution_space< ExecSpace >::name());
   umpire::Allocator allocator =
-    (exec_name.find("[CUDA_EXEC]") != std::string::npos ? 
+    (axom::execution_space< ExecSpace >::onDevice() ? 
      rm.getAllocator(umpire::resource::Device) :
      rm.getAllocator(axom::execution_space< ExecSpace >::allocatorID()));
   
