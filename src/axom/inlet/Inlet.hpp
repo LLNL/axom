@@ -449,7 +449,7 @@ private:
   std::shared_ptr<Table> m_globalTable;
 
   std::shared_ptr<DocWriter> m_docWriter;
-  bool m_docEnabled = false;
+  bool m_docEnabled;
 };
 
 } // end namespace inlet

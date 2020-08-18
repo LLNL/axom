@@ -331,7 +331,7 @@ private:
   axom::sidre::Group* m_sidreGroup = nullptr;
   axom::sidre::Group* m_sidreRootGroup = nullptr;
   axom::sidre::DataTypeId m_type = axom::sidre::DataTypeId::NO_TYPE_ID;
-  bool m_docEnabled = false;
+  bool m_docEnabled;
   std::function<bool()> m_verifier;
 };
 

@@ -217,34 +217,33 @@ bool Table::required()
   return (bool)intValue;
 }
 
- std::shared_ptr<Table> Table::registerVerifier(std::function<bool()> lambda) {
-  SLIC_WARNING_IF(m_verifier, fmt::format("Verifier for Table {0} already set", 
-                                         m_sidreGroup->getPathName()));
+std::shared_ptr<Table> Table::registerVerifier(std::function<bool()> lambda) {
+  SLIC_WARNING_IF(m_verifier, fmt::format("Verifier for Table {0} already set", m_name));
   m_verifier = lambda;
   return shared_from_this();
- } 
+} 
 
- bool Table::verify() {
-   bool verified = true;
-   // Verify this Table
-   if (m_verifier && !m_verifier()) {
-     verified = false;
-     SLIC_WARNING(fmt::format("Table {0} failed verification", m_name));
-   }
-   // Verify the child Fields of this Table
-   for (auto field : m_fieldChildren) {
-     if (!field.second->verify()) {
-       verified = false;
-     }
-   }
-   // Verify the child Tables of this Table
-   for (auto table : m_tableChildren) {
-     if (!table.second->verify()) {
-       verified = false;
-     }
-   }
-   
-   return verified;
+bool Table::verify() {
+  bool verified = true;
+  // Verify this Table
+  if (m_verifier && !m_verifier()) {
+    verified = false;
+    SLIC_WARNING(fmt::format("Table {0} failed verification", m_name));
+  }
+  // Verify the child Fields of this Table
+  for (auto field : m_fieldChildren) {
+    if (!field.second->verify()) {
+      verified = false;
+    }
+  }
+  // Verify the child Tables of this Table
+  for (auto table : m_tableChildren) {
+    if (!table.second->verify()) {
+      verified = false;
+    }
+  }
+  
+  return verified;
  }
 
 bool Table::hasField(const std::string& fieldName) {

@@ -288,7 +288,6 @@ std::shared_ptr<Field> Field::validValues(const std::initializer_list<double>& s
 std::shared_ptr<Field> Field::registerVerifier(std::function<bool()> lambda) {
   SLIC_WARNING_IF(m_verifier, fmt::format("Verifier for Field {0} already set", 
                                          m_sidreGroup->getPathName()));
-
   m_verifier = lambda;
   return shared_from_this();
 }

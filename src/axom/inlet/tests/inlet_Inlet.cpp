@@ -1084,7 +1084,7 @@ TEST(inlet_verify, verifyFieldLambda) {
   EXPECT_FALSE(inlet->verify());
 }
 
-TEST(inlet_verify, verifyTableLambda) {
+TEST(inlet_verify, verifyTableLambda1) {
   std::string testString = "field1 = true; field2 = 'abc'; NewTable = { field3 = 'xyz'; field4 = 'yes' }";
   DataStore ds;
   auto inlet = createBasicInlet(&ds, testString);
@@ -1117,8 +1117,10 @@ TEST(inlet_verify, verifyTableLambda) {
     return table1->hasField("field22");
   });
   EXPECT_FALSE(inlet->verify());
+}
 
-  std::string testString2 = "thermal_solver={}\n"
+TEST(inlet_verify, verifyTableLambda2) {
+  std::string testString = "thermal_solver={}\n"
                             "thermal_solver.order = 2\n"
                             "thermal_solver.timestepper = 'quasistatic'\n"
                             "solid_solver={}\n"
@@ -1128,14 +1130,14 @@ TEST(inlet_verify, verifyTableLambda) {
                             "material.attribute = 1\n"
                             "material.thermalview = 'isotropic'\n"
                             "material.solidview = 'hyperelastic'";
-  DataStore ds2;
-  auto inlet2 = createBasicInlet(&ds2, testString2);
-  auto thermalOrder = inlet2->addInt("thermal_solver/order");
-  auto thermalTimeStep = inlet2->addString("thermal_solver/timestepper");
-  auto solidOrder = inlet2->addInt("solid_solver/order");
-  auto soldTimestep = inlet2->addString("solid_solver/timestepper");
-  auto attrib = inlet2->addInt("material/attribute");
-  auto globalTable = inlet2->getGlobalTable();
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+  auto thermalOrder = inlet->addInt("thermal_solver/order");
+  auto thermalTimeStep = inlet->addString("thermal_solver/timestepper");
+  auto solidOrder = inlet->addInt("solid_solver/order");
+  auto soldTimestep = inlet->addString("solid_solver/timestepper");
+  auto attrib = inlet->addInt("material/attribute");
+  auto globalTable = inlet->getGlobalTable();
   auto material = globalTable->getTable("material");
 
   globalTable->registerVerifier([&]() -> bool {
@@ -1153,21 +1155,20 @@ TEST(inlet_verify, verifyTableLambda) {
     return verifySuccess;
   });
   
-  EXPECT_FALSE(inlet2->verify());
+  EXPECT_FALSE(inlet->verify());
 
-  auto thermalView = inlet2->addString("material/thermalview");
-  auto solidView = inlet2->addString("material/solidview");
+  auto thermalView = inlet->addString("material/thermalview");
+  auto solidView = inlet->addString("material/solidview");
 
   EXPECT_TRUE(material->hasField("solidview"));
   EXPECT_TRUE(material->hasField("thermalview"));
 
-  EXPECT_TRUE(inlet2->verify());
+  EXPECT_TRUE(inlet->verify());
 
-  auto thing = inlet2->addTable("test");
+  auto thing = inlet->addTable("test");
   auto thing2 = thing->addTable("test2");
   auto thing5 = thing2->addTable("test3/test4/test5");
-  // auto thing3 = thing2->getTable("test3");
-  // auto thing4 = thing3->getTable("test4");
+ 
   EXPECT_EQ(globalTable->getTable("test")->name(), "test");
   EXPECT_EQ(thing->getTable("test2")->name(), "test/test2");
   EXPECT_EQ(thing2->getTable("test3/test4/test5")->name(), "test/test2/test3/test4/test5");
