@@ -178,14 +178,7 @@ void findTriMeshIntersectionsBVH(
         tri[ inode ][ 2 ] = node[ mint::Z_COORDINATE ];
       } // END for all cells nodes
 
-      if (tri.degenerate())
-      {
-        degenerate[cellIdx] = 1;
-      }
-      else
-      {
-        degenerate[cellIdx] = 0;
-      }
+      degenerate[ cellIdx ] = ( tri.degenerate() ? 1 : 0 );
 
       tris[cellIdx] = tri;
 
@@ -229,17 +222,14 @@ void findTriMeshIntersectionsBVH(
                          ymin, ymax, zmin, zmax );
 
   // Get the total number of candidates
+  using REDUCE_POL =
+        typename axom::execution_space< ExecSpace >::reduce_policy;
 
-  // Copy counts data back to host
-  int * host_counts = axom::allocate< int >( ncells, 
-    getUmpireResourceAllocatorID(umpire::resource::Host) );
-  axom::copy(host_counts, counts, ncells * sizeof(int));
-
-  int totalCandidates = 0;
-  for (int i = 0 ; i < ncells ; i++ )
+  RAJA::ReduceSum< REDUCE_POL, int> totalCandidates(0); 
+  for_all< ExecSpace >( ncells, AXOM_LAMBDA (IndexType i)
   {
-    totalCandidates += host_counts[i];
-  }
+    totalCandidates += counts[i];
+  });
 
   //Deallocate no longer needed variables
   axom::deallocate(aabbs);
@@ -330,7 +320,6 @@ void findTriMeshIntersectionsBVH(
 
   axom::deallocate(offsets);
   axom::deallocate(counts);
-  axom::deallocate(host_counts);
   axom::deallocate(candidates);
   axom::deallocate(indices);
   axom::deallocate(validCandidates);
