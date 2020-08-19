@@ -55,7 +55,7 @@ MFEMSidreDataCollection::MFEMSidreDataCollection(
   {
     MFEMSidreDataCollection::SetMesh(the_mesh);
   }
-#ifdef AXOM_USE_MPI
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   else
   {
     m_comm = MPI_COMM_NULL;
@@ -85,7 +85,7 @@ MFEMSidreDataCollection::MFEMSidreDataCollection(
 
   m_named_bufs_grp = domain_grp->createGroup("named_buffers");
 
-#ifdef AXOM_USE_MPI
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   m_comm = MPI_COMM_NULL;
 #endif
 }
@@ -99,7 +99,7 @@ MFEMSidreDataCollection::~MFEMSidreDataCollection()
   }
 }
 
-#ifdef AXOM_USE_MPI
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
 void MFEMSidreDataCollection::SetComm(MPI_Comm comm)
 {
   m_comm = comm;
@@ -499,7 +499,7 @@ createMeshBlueprintTopologies(bool hasBP, const std::string& mesh_name)
 }
 
 // private method
-#ifdef AXOM_USE_MPI
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
 void MFEMSidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
 {
   ParMesh* pmesh = dynamic_cast<ParMesh*>(mesh);
@@ -593,7 +593,7 @@ bool MFEMSidreDataCollection::HasBoundaryMesh() const
   // check if this rank has any boundary elements
   int hasBndElts = mesh->GetNBE() > 0 ? 1 : 0;
 
-#ifdef AXOM_USE_MPI
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   // check if any rank has boundary elements
   ParMesh* pmesh = dynamic_cast<ParMesh*>(mesh);
   if (pmesh)
@@ -636,7 +636,7 @@ void MFEMSidreDataCollection::SetMesh(Mesh* new_mesh)
     createMeshBlueprintTopologies(hasBP, "boundary");
   }
 
-#ifdef AXOM_USE_MPI
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   ParMesh* new_pmesh = dynamic_cast<ParMesh*>(new_mesh);
   m_comm = new_pmesh ? new_pmesh->GetComm() : MPI_COMM_NULL;
   if (new_pmesh)
@@ -701,7 +701,7 @@ void MFEMSidreDataCollection::SetMesh(Mesh* new_mesh)
   }
 }
 
-#ifdef AXOM_USE_MPI
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
 void MFEMSidreDataCollection::SetMesh(MPI_Comm comm, Mesh* new_mesh)
 {
   // use MFEMSidreDataCollection's custom SetMesh, then set MPI info
@@ -731,7 +731,7 @@ void MFEMSidreDataCollection::Load(const std::string& path,
   DataCollection::DeleteAll();
   // Reset DataStore?
 
-#ifdef AXOM_USE_MPI
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   if (m_comm != MPI_COMM_NULL)
   {
     IOManager reader(m_comm);
@@ -760,7 +760,7 @@ void MFEMSidreDataCollection::Load(const std::string& path,
 
 void MFEMSidreDataCollection::LoadExternalData(const std::string& path)
 {
-#ifdef AXOM_USE_MPI
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   if (m_comm != MPI_COMM_NULL)
   {
     IOManager reader(m_comm);
@@ -821,7 +821,7 @@ void MFEMSidreDataCollection::Save(const std::string& filename,
   std::string file_path = get_file_path(filename);
 
   sidre::Group* blueprint_indicies_grp = m_bp_index_grp->getParent();
-#ifdef AXOM_USE_MPI
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   if (m_comm != MPI_COMM_NULL)
   {
     IOManager writer(m_comm);

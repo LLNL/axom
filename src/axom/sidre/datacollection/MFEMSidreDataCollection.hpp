@@ -226,7 +226,7 @@ public:
                           Group* domain_grp,
                           bool owns_mesh_data = false);
 
-#ifdef AXOM_USE_MPI
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   /// Associate an MPI communicator with the collection.
   /** If no mesh was associated with the collection, this method should be
       called before using any of the Load() methods to read parallel data. */
@@ -308,7 +308,7 @@ public:
       to register the mesh nodes GridFunction, if the mesh uses nodes. */
   virtual void SetMesh(mfem::Mesh* new_mesh);
 
-#ifdef AXOM_USE_MPI
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   /// Set/change the mesh associated with the collection
   /** Uses the field name "mesh_nodes" or the value set by SetMeshNodesName()
       to register the mesh nodes GridFunction, if the mesh uses nodes. */
@@ -537,7 +537,7 @@ private:
    */
   void createMeshBlueprintTopologies(bool hasBP, const std::string& mesh_name);
 
-#ifdef AXOM_USE_MPI
+#if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   /// Sets up the mesh blueprint 'adjacencies' group.
   /**
    * \param hasBP Indicates whether the blueprint has already been set up.
