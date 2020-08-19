@@ -371,7 +371,7 @@ private:
 
   /*!
    *****************************************************************************
-   * \brief Retrieves the matching Table.
+   * \brief This is the internal implementation of getTable. It retrieves the matching Table.
    * 
    * \param [in] The string indicating the target name of the Table to be searched for.
    * 
@@ -383,7 +383,7 @@ private:
 
   /*!
    *****************************************************************************
-   * \brief Retrieves the matching Field.
+   * \brief This is the internal implementation of getField. It retrieves the matching Field.
    * 
    * \param [in] The string indicating the target name of the Field to be searched for.
    * 
