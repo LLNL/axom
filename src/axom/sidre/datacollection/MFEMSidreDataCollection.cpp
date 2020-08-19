@@ -502,7 +502,7 @@ createMeshBlueprintTopologies(bool hasBP, const std::string& mesh_name)
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
 void MFEMSidreDataCollection::createMeshBlueprintAdjacencies(bool hasBP)
 {
-  ParMesh* pmesh = dynamic_cast<ParMesh*>(mesh);
+  mfem::ParMesh* pmesh = dynamic_cast<mfem::ParMesh*>(mesh);
 
   const int GRP_SZ = 25;
   char group_str[GRP_SZ];
@@ -595,7 +595,7 @@ bool MFEMSidreDataCollection::HasBoundaryMesh() const
 
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
   // check if any rank has boundary elements
-  ParMesh* pmesh = dynamic_cast<ParMesh*>(mesh);
+  mfem::ParMesh* pmesh = dynamic_cast<mfem::ParMesh*>(mesh);
   if (pmesh)
   {
     int hasBndElts_g;
@@ -637,7 +637,7 @@ void MFEMSidreDataCollection::SetMesh(Mesh* new_mesh)
   }
 
 #if defined(AXOM_USE_MPI) && defined(MFEM_USE_MPI)
-  ParMesh* new_pmesh = dynamic_cast<ParMesh*>(new_mesh);
+  mfem::ParMesh* new_pmesh = dynamic_cast<mfem::ParMesh*>(new_mesh);
   m_comm = new_pmesh ? new_pmesh->GetComm() : MPI_COMM_NULL;
   if (new_pmesh)
   {
