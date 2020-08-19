@@ -83,6 +83,7 @@ public:
         if (!m_sidreRootGroup->hasGroup(name))
         {
           m_sidreGroup = m_sidreRootGroup->createGroup(name);
+          m_sidreGroup->createViewString("InletType", "Table");
         }
         else
         {

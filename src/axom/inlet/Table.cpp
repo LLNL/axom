@@ -65,6 +65,7 @@ axom::sidre::Group* Table::createSidreGroup(const std::string& name,
   }
 
   axom::sidre::Group* sidreGroup = m_sidreRootGroup->createGroup(name);
+  sidreGroup->createViewString("InletType", "Field");
   SLIC_ASSERT_MSG(sidreGroup != nullptr, "Sidre failed to create group");
   if (description != "")
   {

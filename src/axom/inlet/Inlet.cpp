@@ -213,14 +213,27 @@ void Inlet::verifyRecursive(axom::sidre::Group* sidreGroup, bool& verifySuccess)
     verifySuccess = false;
   }
 
+  // Checking if the current Group corresponds to a Table.
   if (sidreGroup->hasView("required")) {
-    int8 required = sidreGroup->getView("required")->getData();
-    if (required && !sidreGroup->hasView("value")) {
-      std::string msg = fmt::format("Inlet: {0}: Required field not specified", 
-                                    sidreGroup->getPathName());
-      SLIC_WARNING(msg);
-      setWarningFlag(m_sidreRootGroup);
-      verifySuccess = false;
+    if (sidreGroup->hasView("InletType")
+       && strcmp(sidreGroup->getView("InletType")->getString(), "Table") == 0) {
+      int8 required = sidreGroup->getView("required")->getData();
+      if (required && sidreGroup->getNumGroups() == 0) {
+        std::string msg = fmt::format("Inlet: {0}: Required Table not specified", 
+                                      sidreGroup->getPathName());
+        SLIC_WARNING(msg);
+        setWarningFlag(m_sidreRootGroup);
+        verifySuccess = false;
+      }
+    } else {
+      int8 required = sidreGroup->getView("required")->getData();
+      if (required && !sidreGroup->hasView("value")) {
+        std::string msg = fmt::format("Inlet: {0}: Required Field not specified", 
+                                      sidreGroup->getPathName());
+        SLIC_WARNING(msg);
+        setWarningFlag(m_sidreRootGroup);
+        verifySuccess = false;
+      }
     }
   }
   if (sidreGroup->hasView("value") && !verifyValue(sidreGroup)) {

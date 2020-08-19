@@ -1174,6 +1174,35 @@ TEST(inlet_verify, verifyTableLambda2) {
   EXPECT_EQ(thing2->getTable("test3/test4/test5")->name(), "test/test2/test3/test4/test5");
 }
 
+TEST(inlet_verify, requiredTable) {
+  std::string testString = "thermal_solver={}\n"
+                            "thermal_solver.order = 2\n"
+                            "thermal_solver.timestepper = 'quasistatic'\n"
+                            "solid_solver={}\n"
+                            "solid_solver.order = 3\n"
+                            "solid_solver.timestepper = 'BackwardEuler'\n"
+                            "material={}\n"
+                            "material.attribute = 1\n"
+                            "material.thermalview = 'isotropic'\n"
+                            "material.solidview = 'hyperelastic'";
+  DataStore ds;
+  auto inlet = createBasicInlet(&ds, testString);
+  auto material = inlet->addTable("material");
+  material->required(true);
+  
+  EXPECT_FALSE(inlet->verify());
+
+  DataStore ds2;
+  inlet = createBasicInlet(&ds2, testString);
+  material = inlet->addTable("material");
+  material->required(true);
+  
+  auto thermalView = inlet->addString("material/thermalview");
+  auto solidView = inlet->addString("material/solidview");
+
+  EXPECT_TRUE(inlet->verify());
+}
+
 //------------------------------------------------------------------------------
 #include "axom/slic/core/UnitTestLogger.hpp"
 using axom::slic::UnitTestLogger;
