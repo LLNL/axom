@@ -222,7 +222,6 @@ void Inlet::verifyRecursive(axom::sidre::Group* sidreGroup, bool& verifySuccess)
         std::string msg = fmt::format("Inlet: {0}: Required Table not specified", 
                                       sidreGroup->getPathName());
         SLIC_WARNING(msg);
-        setWarningFlag(m_sidreRootGroup);
         verifySuccess = false;
       }
     } else {
@@ -231,7 +230,6 @@ void Inlet::verifyRecursive(axom::sidre::Group* sidreGroup, bool& verifySuccess)
         std::string msg = fmt::format("Inlet: {0}: Required Field not specified", 
                                       sidreGroup->getPathName());
         SLIC_WARNING(msg);
-        setWarningFlag(m_sidreRootGroup);
         verifySuccess = false;
       }
     }

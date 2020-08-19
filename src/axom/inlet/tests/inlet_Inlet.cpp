@@ -1192,15 +1192,45 @@ TEST(inlet_verify, requiredTable) {
   
   EXPECT_FALSE(inlet->verify());
 
-  DataStore ds2;
-  inlet = createBasicInlet(&ds2, testString);
-  material = inlet->addTable("material");
-  material->required(true);
-  
   auto thermalView = inlet->addString("material/thermalview");
   auto solidView = inlet->addString("material/solidview");
 
   EXPECT_TRUE(inlet->verify());
+}
+
+TEST(inlet_verify, verifyTableLambda3) {
+  std::string testString = "dimensions = 2; vector = { x = 1; y = 2; z = 3; }";
+  DataStore ds;
+  auto myInlet = createBasicInlet(&ds, testString);
+  myInlet->addInt("dimensions")->required(true);
+  auto v = myInlet->addTable("vector")->required(true);
+  v->addInt("x");
+
+  v->registerVerifier([&]() -> bool {
+    int dim;
+    myInlet->get("dimensions", dim);
+    int value;  // field value doesnt matter just that it is present in input deck
+    bool x_present = v->hasChildField("x") && myInlet->get("vector/x", value);
+    bool y_present = v->hasChildField("y") && myInlet->get("vector/y", value);
+    bool z_present = v->hasChildField("z") && myInlet->get("vector/z", value);
+    if(dim == 1 && x_present) {
+      return true;
+    }
+    else if(dim == 2 && x_present && y_present) {
+      return true;
+    }
+    else if(dim == 3 && x_present && y_present && z_present) {
+      return true;
+    }
+    return false;
+  });
+
+  EXPECT_FALSE(myInlet->verify());
+
+  v->addInt("y");
+  v->addInt("z");
+
+  EXPECT_TRUE(myInlet->verify());
 }
 
 //------------------------------------------------------------------------------
