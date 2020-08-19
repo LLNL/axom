@@ -86,13 +86,13 @@ match up with the dimensions of a given vector:
         bool x_present = v->hasChildField("x") && myInlet->get("x", value);
         bool y_present = v->hasChildField("y") && myInlet->get("y", value);
         bool z_present = v->hasChildField("z") && myInlet->get("z", value);
-        if(dim == 1 && x_present && x_present) {
+        if(dim == 1 && x_present) {
           return true;
         }
-        else if(dim == 2 && x_present && x_present) {
+        else if(dim == 2 && x_present && y_present) {
           return true;
         }
-        else if(dim == 3 && x_present && x_present && z_present) {
+        else if(dim == 3 && x_present && y_present && z_present) {
           return true;
         }
         return false;
