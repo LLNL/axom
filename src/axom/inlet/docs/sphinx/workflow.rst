@@ -3,12 +3,7 @@
 Workflow
 ========
 
-Inlet's workflow is broken three main steps:
-
-#. :ref:`_inlet_defining_schema_label`
-#. :ref:`_inlet_verification_label`
-#. :ref:`_inlet_accessing_data_label`
-
+Inlet's workflow is broken into the three following steps.
 
 .. _inlet_defining_schema_label:
 
@@ -19,7 +14,7 @@ The first step in using Inlet is to defining the schema of your input deck.
 Inlet defines an input deck into two basic classes: Tables and Fields. Basically
 Fields are individual values and Tables hold groups of Fields and Tables.
 
-You define the schema by using the following functions, on either the main Inlet class, for
+Define the schema by using the following functions, on either the main Inlet class, for
 global Tables and Fields, or on individual Table classes, for Tables and Fields under that Table:
 
 ========================= ===================
@@ -33,8 +28,24 @@ addString                 Adds a string Field to the global or parent Table with
 ========================= ===================
 
 All possible Tables and Fields that are can be found in the input deck should be defined
-at this step.  You should use ``required()`` on the Table and Field class to indicate that they
-have to present in the given input deck.
+at this step.  Use the ``required`` class member function on the Table and Field class to indicate that
+they have to present in the given input deck. For example, the following indicates that
+the given input deck must defined a global Field named ``dimensions``:
+
+.. code-block:: c
+
+    myInlet->addInt("dimensions")->required(true);
+
+
+The value of the Field is read and stored into the Sidre datastore when you call the appropriate
+add function. You can also set a default value to each field via the type-safe ``Field::defaultValue()``
+member functions. Doing so will populate the corresponding Fields value if the specific Field is not
+present in the input deck. For example, the follwing will set the ``foo`` field value to true if it is 
+not present in the given input deck:
+
+.. code-block:: c
+
+    myInlet->addBool("foo")->defaultValue(true);
 
 
 .. _inlet_verification_label:
@@ -42,9 +53,26 @@ have to present in the given input deck.
 Verification
 ------------
 
-Call ``Inlet::verify()`` to verify that this runs input deck follows all defined rules and verifiers.
+This step helps ensure that the given input deck follows the rules expected by the code.  These
+rules are not verified until you call ``Inlet::verify()``.  Doing so will return true/false and
+output SLIC warnings to indicate which Field or Table violated which rule.
 
-more docs in a bit.
+As shown above, both Tables and Fields can be marked as ``required``. Fields have two additional
+basic rules that can be enforced with the following ``Field`` class member functions:
+
+========================= ===================
+Name                      Description
+========================= ===================
+validValues               Indicates the Field can only be set to a valid values.
+range                     Indicates the Field can only be set to inclusively between two values.
+========================= ===================
+
+Inlet also provides functionality to write your own custom rules via callable lambda verifiers.
+Fields and Tables can both register one lambda each via their ``registerVerifier()`` member functions.
+
+.. note::  ``Inlet::getGlobalTable()->registerVerifier()`` can be used to add a verifier to apply rules
+  to the Fields at the global level.
+
 
 .. _inlet_accessing_data_label:
 
