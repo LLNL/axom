@@ -261,13 +261,32 @@ public:
    * \return Boolean value of whether this Table has the child Field.
    *****************************************************************************
    */
-  bool hasField(const std::string& fieldName);
+  bool hasChildField(const std::string& fieldName);
 
   /*!
    *****************************************************************************
    * \brief Return whether this Table has a child Table with the given name.
    *
    * \return Boolean value of whether this Table has the child Table.
+   *****************************************************************************
+   */
+  bool hasChildTable(const std::string& tableName);
+
+  /*!
+   *****************************************************************************
+   * \brief Return whether a Feld with the given name is present in this Table's
+   *  subtree.
+   *
+   * \return Boolean value of whether this Table's subtree contains this Field.
+   *****************************************************************************
+   */
+  bool hasField(const std::string& fieldName);
+ 
+  /*!
+   *****************************************************************************
+   * \brief Return whether a Table with the given name is present in this Table's subtree.
+   *
+   * \return Boolean value of whether this Table's subtree contains this Table.
    *****************************************************************************
    */
   bool hasTable(const std::string& tableName);
@@ -301,7 +320,7 @@ public:
    * 
    * \param [in] The string indicating the target name of the Table to be searched for.
    * 
-   * \return The child Table matching the target name. If no such Table is found,
+   * \return The Table matching the target name. If no such Table is found,
    * a nullptr is returned.
    *****************************************************************************
    */
@@ -313,7 +332,7 @@ public:
    * 
    * \param [in] The string indicating the target name of the Field to be searched for.
    * 
-   * \return The child Field matching the target name. If no such Field is found,
+   * \return The Field matching the target name. If no such Field is found,
    * a nullptr is returned.
    *****************************************************************************
    */
@@ -349,6 +368,30 @@ private:
                                   axom::sidre::DataTypeId type, 
                                   const std::string& fullName,
                                   const std::string& name);
+
+  /*!
+   *****************************************************************************
+   * \brief Retrieves the matching Table.
+   * 
+   * \param [in] The string indicating the target name of the Table to be searched for.
+   * 
+   * \return The Table matching the target name. If no such Table is found,
+   * a nullptr is returned.
+   *****************************************************************************
+   */
+  std::shared_ptr<Table> getTablePtr(const std::string& tableName);
+
+  /*!
+   *****************************************************************************
+   * \brief Retrieves the matching Field.
+   * 
+   * \param [in] The string indicating the target name of the Field to be searched for.
+   * 
+   * \return The Field matching the target name. If no such Table is found,
+   * a nullptr is returned.
+   *****************************************************************************
+   */
+  std::shared_ptr<Field> getFieldPtr(const std::string& fieldName);
 
   std::string m_name;
   std::shared_ptr<Reader> m_reader;

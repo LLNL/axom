@@ -25,7 +25,7 @@ std::shared_ptr<Table> Table::addTable(const std::string& name,
 
   while (found != std::string::npos) {
     const std::string& currTableName = appendPrefix(currTable->m_name, currName.substr(0, found));
-    if (!currTable->hasTable(currTableName)) {
+    if (!currTable->hasChildTable(currTableName)) {
       auto table = std::make_shared<Table>(currTableName, "", m_reader, 
                                   m_sidreRootGroup, m_docEnabled);
       currTable->m_tableChildren[currTableName] = table;
@@ -39,7 +39,7 @@ std::shared_ptr<Table> Table::addTable(const std::string& name,
 
   std::string currTableName = appendPrefix(currTable->m_name, currName.substr(0, found));
 
-  if (!currTable->hasTable(currName)) {
+  if (!currTable->hasChildTable(currName)) {
     auto table = std::make_shared<Table>(currTableName, description, m_reader, 
                                  m_sidreRootGroup, m_docEnabled);
     currTable->m_tableChildren[currTableName] = table;
@@ -247,53 +247,76 @@ bool Table::verify() {
   return verified;
  }
 
-bool Table::hasField(const std::string& fieldName) {
+bool Table::hasChildTable(const std::string& tableName) {
+  return m_tableChildren.find(appendPrefix(m_name, tableName)) != m_tableChildren.end();
+}
+
+bool Table::hasChildField(const std::string& fieldName) {
   return m_fieldChildren.find(appendPrefix(m_name, fieldName)) != m_fieldChildren.end();
 }
 
 bool Table::hasTable(const std::string& tableName) {
-  return m_tableChildren.find(appendPrefix(m_name, tableName)) != m_tableChildren.end();
+  return static_cast<bool>(getTablePtr(tableName));
+}
+
+bool Table::hasField(const std::string& fieldName) {
+  return static_cast<bool>(getFieldPtr(fieldName));
 }
 
 std::shared_ptr<Table> Table::getTable(const std::string& tableName) {
+  auto table = getTablePtr(tableName);
+  if (!table) {
+    SLIC_WARNING(fmt::format("Table {0} not found", tableName));
+  }
+  return table;
+}
+
+std::shared_ptr<Field> Table::getField(const std::string& fieldName) {
+  auto field = getFieldPtr(fieldName);
+  if (!field) {
+    SLIC_WARNING(fmt::format("Field {0} not found", fieldName));
+  }
+  return field;
+}
+
+std::shared_ptr<Table> Table::getTablePtr(const std::string& tableName) {
   std::string name = tableName;
   size_t found = name.find("/");
   auto currTable = shared_from_this();
 
   while (found != std::string::npos) {
     const std::string& currName = name.substr(0, found);
-    if (currTable->hasTable(currName)) {
+    if (currTable->hasChildTable(currName)) {
       currTable = currTable->m_tableChildren[appendPrefix(currTable->m_name, currName)];
     } else {
-      SLIC_WARNING(fmt::format("Table {0} not found", tableName));
       return nullptr;
     }
     name = name.substr(found+1);
     found = name.find("/");
   }
   
-  if (currTable->hasTable(name)) {
+  if (currTable->hasChildTable(name)) {
     return currTable->m_tableChildren[appendPrefix(currTable->m_name, name)];
   }
-  SLIC_WARNING(fmt::format("Table {0} not found", tableName));
   return nullptr;
 }
 
-std::shared_ptr<Field> Table::getField(const std::string& fieldName) {
+
+std::shared_ptr<Field> Table::getFieldPtr(const std::string& fieldName) {
   std::string name = fieldName;
   size_t found =  name.find_last_of("/");
   if (found == std::string::npos) {
-    if (hasField(name)) {
+    if (hasChildField(name)) {
       return m_fieldChildren[name];
     }
   } else {
     const std::string& fieldName = name.substr(found+1);
-    auto table = getTable(name.substr(0, found));
-    if (table && table->hasField(fieldName)) {
+    auto table = getTablePtr(name.substr(0, found));
+    if (table && table->hasChildField(fieldName)) {
       return m_fieldChildren[fieldName];
     }
   }
-  SLIC_WARNING(fmt::format("Field {0} not found", fieldName));
+  
   return nullptr;
 }
 
@@ -301,13 +324,14 @@ std::string Table::name() {
   return m_name;
 }
 
+std::unordered_map<std::string, std::shared_ptr<Table>> Table::getChildTables() {
+  return m_tableChildren;
+}
+
 std::unordered_map<std::string, std::shared_ptr<Field>> Table::getChildFields() {
   return m_fieldChildren;
 }
 
-std::unordered_map<std::string, std::shared_ptr<Table>> Table::getChildTables() {
-  return m_tableChildren;
-}
 
 } // end namespace inlet
 } // end namespace axom

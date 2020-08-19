@@ -1109,12 +1109,12 @@ TEST(inlet_verify, verifyTableLambda1) {
   EXPECT_TRUE(inlet->verify());
 
   table1->registerVerifier([&]() -> bool {
-    return table1->hasField("field3");
+    return table1->hasChildField("field3");
   });
   EXPECT_TRUE(inlet->verify());
 
   table1->registerVerifier([&]() -> bool {
-    return table1->hasField("field22");
+    return table1->hasChildField("field22");
   });
   EXPECT_FALSE(inlet->verify());
 }
@@ -1142,13 +1142,13 @@ TEST(inlet_verify, verifyTableLambda2) {
 
   globalTable->registerVerifier([&]() -> bool {
     bool verifySuccess = true;
-    if (globalTable->hasTable("thermal_solver") && 
-        !material->hasField("thermalview")) {
+    if (globalTable->hasChildTable("thermal_solver") && 
+        !material->hasChildField("thermalview")) {
       verifySuccess = false;
     }
 
-    if (globalTable->hasTable("solid_solver") && 
-        !material->hasField("solidview")) {
+    if (globalTable->hasChildTable("solid_solver") && 
+        !material->hasChildField("solidview")) {
       verifySuccess = false;
     }
 
@@ -1160,8 +1160,8 @@ TEST(inlet_verify, verifyTableLambda2) {
   auto thermalView = inlet->addString("material/thermalview");
   auto solidView = inlet->addString("material/solidview");
 
-  EXPECT_TRUE(material->hasField("solidview"));
-  EXPECT_TRUE(material->hasField("thermalview"));
+  EXPECT_TRUE(material->hasChildField("solidview"));
+  EXPECT_TRUE(material->hasChildField("thermalview"));
 
   EXPECT_TRUE(inlet->verify());
 
