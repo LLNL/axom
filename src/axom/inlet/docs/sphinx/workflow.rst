@@ -69,6 +69,34 @@ range                     Indicates the Field can only be set to inclusively bet
 
 Inlet also provides functionality to write your own custom rules via callable lambda verifiers.
 Fields and Tables can both register one lambda each via their ``registerVerifier()`` member functions.
+The following example adds a custom verifier that simply verifies that the dimension of the simulation
+match up with the dimensions of a given vector:
+
+.. code-block:: c
+
+    myInlet->addInt("dimensions")->required(true);
+    auto v = myInlet->addTable("vector")->required(true);
+    v->addInt("x");
+    v->addInt("y");
+    v->addInt("z");
+
+    v->registerVerifier([&]() -> bool {
+        int dim = myInlet->get("dimensions");
+        int value;  // field value doesnt matter just that it is present in input deck
+        bool x_present = v->hasChildField("x") && myInlet->get("x", value);
+        bool y_present = v->hasChildField("y") && myInlet->get("y", value);
+        bool z_present = v->hasChildField("z") && myInlet->get("z", value);
+        if(dim == 1 && x_present && x_present) {
+          return true;
+        }
+        else if(dim == 2 && x_present && x_present) {
+          return true;
+        }
+        else if(dim == 3 && x_present && x_present && z_present) {
+          return true;
+        }
+        return false;
+    });
 
 .. note::  ``Inlet::getGlobalTable()->registerVerifier()`` can be used to add a verifier to apply rules
   to the Fields at the global level.
