@@ -74,7 +74,6 @@ match up with the dimensions of a given vector:
 
 .. code-block:: c
 
-    void example() {
     auto lr = std::make_shared<axom::inlet::LuaReader>();
     lr->parseString("dimensions = 2; vector = { x = 1; y = 2; z = 3; }");
     axom::sidre::DataStore ds;
@@ -92,13 +91,13 @@ match up with the dimensions of a given vector:
         bool y_present = v->hasChildField("y") && myInlet->get("vector/y", value);
         bool z_present = v->hasChildField("z") && myInlet->get("vector/z", value);
         if(dim == 1 && x_present) {
-        return true;
+            return true;
         }
         else if(dim == 2 && x_present && y_present) {
-        return true;
+            return true;
         }
         else if(dim == 3 && x_present && y_present && z_present) {
-        return true;
+            return true;
         }
         return false;
     });
@@ -116,7 +115,6 @@ match up with the dimensions of a given vector:
     myInlet->verify() ? std::cout << "Verification was successful\n" 
                         : std::cout << "Verification was unsuccessful\n";
 
-    }
 
 .. note::  ``Inlet::getGlobalTable()->registerVerifier()`` can be used to add a verifier to apply rules
   to the Fields at the global level.
@@ -127,4 +125,28 @@ match up with the dimensions of a given vector:
 Accessing Data
 --------------
 
-Accessing data happens with some functions.. docs incoming.
+After the input deck has been read and verified by the previous steps.  You can access the data by name
+via ``Inlet::get()`` functions.  These functions are type-safe, fill the given variable with what is found,
+and return a boolean whether the Field was present in the input deck or had a default value it could fall
+back on.  Variable are named in a language agnostic way and are converted from Inlet's representation 
+to the language specific version inside of the appropriate ``Reader``. For example, Inlet refers to the
+Lua variable ``vector={x=3}`` as ``vector/x``.
+
+For example, given the previous verificiation example, this access previously read values:
+
+.. code-block:: c
+
+    int dim, x, y;
+    bool dim_found, x_found, y_found;
+    dim_found = myInlet->get("dimensions", dim);
+    if (dim_found) {
+        std::cout << "Dimensions = " << dim << std::endl;
+    }
+
+    x_found = myInlet->get("vector/x", x);
+    y_found = myInlet->get("vector/y", y);
+    if (x_found && y_found) {
+        std::cout << "Vector = " << x << "," << y << std::endl;
+    }
+
+ 
