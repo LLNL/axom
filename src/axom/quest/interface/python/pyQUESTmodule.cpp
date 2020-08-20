@@ -408,18 +408,19 @@ PY_signed_distance_set_compute_signs(
   PyObject* kwds)
 {
 // splicer begin function.signed_distance_set_compute_signs
+  bool computeSign;
   PyObject* SHPy_computeSign;
   const char* SHT_kwlist[] = {
     "computeSign",
-    NULL
+    nullptr
   };
 
   if (!PyArg_ParseTupleAndKeywords(args, kwds,
                                    "O!:signed_distance_set_compute_signs",
                                    const_cast<char**>(SHT_kwlist),
                                    &PyBool_Type, &SHPy_computeSign))
-    return NULL;
-  bool computeSign = PyObject_IsTrue(SHPy_computeSign);
+    return nullptr;
+  computeSign = PyObject_IsTrue(SHPy_computeSign);
   axom::quest::signed_distance_set_compute_signs(computeSign);
   Py_RETURN_NONE;
 // splicer end function.signed_distance_set_compute_signs
