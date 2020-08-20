@@ -69,3 +69,9 @@ packages:
   cmake:
     version: [3.9.6]
 
+# Globally lock version of third party libraries
+  conduit:
+    version: [0.5.1]
+    variants: ~shared
+  mfem:
+    variants: ~mpi~metis~zlib

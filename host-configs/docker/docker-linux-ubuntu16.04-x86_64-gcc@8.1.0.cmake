@@ -41,8 +41,7 @@ set(TPL_ROOT "/home/axom/axom_tpls/gcc-8.1.0" CACHE PATH "")
 # conduit from uberenv
 set(CONDUIT_DIR "${TPL_ROOT}/conduit-master" CACHE PATH "")
 
-# mfem from uberenv
-set(MFEM_DIR "${TPL_ROOT}/mfem-4.0" CACHE PATH "")
+# mfem not built by uberenv
 
 # hdf5 from uberenv
 set(HDF5_DIR "${TPL_ROOT}/hdf5-1.8.21" CACHE PATH "")

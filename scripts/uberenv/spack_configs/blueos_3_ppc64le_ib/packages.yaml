@@ -112,40 +112,43 @@ packages:
 # Globally lock version of third party libraries
   conduit:
     version: [0.5.1]
+    variants: ~shared
+  mfem:
+    variants: ~mpi~metis~zlib
 
 # Globally lock in versions of Devtools
   cppcheck:
     version: [1.87]
     paths:
-      cppcheck: /usr/WS1/axom/devtools/blueos_3_ppc64le_ib/latest/cppcheck-1.87
+      cppcheck: /collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib/latest/cppcheck-1.87
     buildable: False
   doxygen:
     version: [1.8.14]
     paths:
-      doxygen: /usr/WS1/axom/devtools/blueos_3_ppc64le_ib/latest/doxygen-1.8.14
+      doxygen: /collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib/latest/doxygen-1.8.14
     buildable: False
   graphviz:
     version: [2.42.2]
     paths:
-      graphviz: /usr/WS1/axom/devtools/blueos_3_ppc64le_ib/latest/graphviz-2.42.2
+      graphviz: /collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib/latest/graphviz-2.42.2
     buildable: False
   python:
     version: [3.7.7]
     paths:
-      python: /usr/WS1/axom/devtools/blueos_3_ppc64le_ib/latest/python-3.7.7
+      python: /collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib/latest/python-3.7.7
     buildable: False
   py-shroud:
     version: [0.12.2]
     paths:
-      py-shroud: /usr/WS1/axom/devtools/blueos_3_ppc64le_ib/latest/python-3.7.7
+      py-shroud: /collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib/latest/python-3.7.7
     buildable: False
   py-sphinx:
     version: [2.2.0]
     paths:
-      py-sphinx: /usr/WS1/axom/devtools/blueos_3_ppc64le_ib/latest/python-3.7.7
+      py-sphinx: /collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib/latest/python-3.7.7
     buildable: False
   uncrustify:
     version: [0.61]
     paths:
-      uncrustify: /usr/WS1/axom/devtools/blueos_3_ppc64le_ib/latest/uncrustify-0.61
+      uncrustify: /collab/usr/gapps/axom/devtools/blueos_3_ppc64le_ib/latest/uncrustify-0.61
     buildable: False

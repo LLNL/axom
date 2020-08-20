@@ -223,6 +223,14 @@ void QUEST_signed_distance_set_closed_surface(bool status)
   // splicer end function.signed_distance_set_closed_surface
 }
 
+void QUEST_signed_distance_set_compute_signs(bool computeSign)
+{
+  // splicer begin function.signed_distance_set_compute_signs
+  axom::quest::signed_distance_set_compute_signs(computeSign);
+  return;
+  // splicer end function.signed_distance_set_compute_signs
+}
+
 void QUEST_signed_distance_set_max_levels(int maxLevels)
 {
   // splicer begin function.signed_distance_set_max_levels

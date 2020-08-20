@@ -18,6 +18,7 @@
 
 #include <memory>
 #include <type_traits>
+#include <functional>
 
 namespace axom
 {
@@ -257,6 +258,31 @@ public:
    *****************************************************************************
   */
   std::shared_ptr<Field> validValues(const std::initializer_list<double>& set);
+
+  /*!
+   *****************************************************************************
+   * \brief Registers the function object that will verify this Field's contents
+   * during the verification stage.
+   * 
+   * \param [in] The function object that will be called by Field::verify().
+   *****************************************************************************
+  */
+  std::shared_ptr<Field> registerVerifier(std::function<bool()> lambda);
+
+  /*!
+   *****************************************************************************
+   * \brief Called by Inlet::verify to verify the contents of this Field.
+   *****************************************************************************
+  */
+  bool verify();
+
+  /*!
+   *****************************************************************************
+   * \return The full name for this Field.
+   *****************************************************************************
+  */
+  std::string name();
+
 private:
 
   /*!
@@ -305,7 +331,8 @@ private:
   axom::sidre::Group* m_sidreGroup = nullptr;
   axom::sidre::Group* m_sidreRootGroup = nullptr;
   axom::sidre::DataTypeId m_type = axom::sidre::DataTypeId::NO_TYPE_ID;
-  bool m_docEnabled = false;
+  bool m_docEnabled;
+  std::function<bool()> m_verifier;
 };
 
 } // end namespace inlet
