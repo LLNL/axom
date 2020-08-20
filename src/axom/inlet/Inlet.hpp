@@ -18,6 +18,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <functional>
 
 #include "axom/inlet/SchemaCreator.hpp"
 #include "axom/inlet/Table.hpp"
@@ -285,13 +286,73 @@ public:
    * This recursively checks the correctness of each Field and Table in the Sidre
    * Group: ensuring that required Fields are specified, each Field's value 
    * and default value are within the specified range or are equal to a valid 
-   * value, and types are consistent.
+   * value, and types are consistent. Also ensures that the registered verification
+   * functions hold true.
    * 
    * \return true if contents are correct and false if not.
    *
    *****************************************************************************
    */
   bool verify(); 
+
+  /*!
+   *****************************************************************************
+   * \return The global Table.
+   *****************************************************************************
+   */
+  std::shared_ptr<Table> getGlobalTable() {
+    return m_globalTable;
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Retrieves the matching Table.
+   * 
+   * \param [in] The string indicating the target name of the Table to be searched for.
+   * 
+   * \return The Table matching the target name. If no such Table is found,
+   * a nullptr is returned.
+   *****************************************************************************
+   */
+  std::shared_ptr<Table> getTable(const std::string& name) {
+    return m_globalTable->getTable(name);
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Retrieves the matching Field.
+   * 
+   * \param [in] The string indicating the target name of the Field to be searched for.
+   * 
+   * \return The child Field matching the target name. If no such Field is found,
+   * a nullptr is returned.
+   *****************************************************************************
+   */
+  std::shared_ptr<Field> getField(const std::string& name) {
+    return m_globalTable->getField(name);
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Return whether a Table with the given name is present in Inlet.
+   *
+   * \return Boolean value indicating whether this Inlet contains the Table.
+   *****************************************************************************
+   */
+  bool hasTable(const std::string& name) {
+    return m_globalTable->hasTable(name);
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Return whether a Field with the given name is present in Inlet.
+   *
+   * \return Boolean value indicating whether this Inlet contains the Field.
+   *****************************************************************************
+   */
+  bool hasField(const std::string& name) {
+    return m_globalTable->hasField(name);
+  }
 
   // TODO add update value functions
 private:
@@ -391,7 +452,6 @@ private:
    */
   bool searchValidValues(axom::sidre::Group* sidreGroup, double value);
   
-  
   /*!
    *****************************************************************************
    * \brief Checks if the given value is found in the list of valid values.
@@ -412,7 +472,7 @@ private:
   std::shared_ptr<Table> m_globalTable;
 
   std::shared_ptr<DocWriter> m_docWriter;
-  bool m_docEnabled = false;
+  bool m_docEnabled;
 };
 
 } // end namespace inlet
