@@ -1108,13 +1108,15 @@ TEST(inlet_verify, verifyTableLambda1) {
   });
   EXPECT_TRUE(inlet->verify());
 
+  EXPECT_TRUE(table1->hasField("field3"));
+
   table1->registerVerifier([&]() -> bool {
-    return table1->hasChildField("field3");
+    return table1->hasField("field3");
   });
   EXPECT_TRUE(inlet->verify());
 
   table1->registerVerifier([&]() -> bool {
-    return table1->hasChildField("field22");
+    return table1->hasField("field22");
   });
   EXPECT_FALSE(inlet->verify());
 }
@@ -1142,16 +1144,14 @@ TEST(inlet_verify, verifyTableLambda2) {
 
   globalTable->registerVerifier([&]() -> bool {
     bool verifySuccess = true;
-    if (globalTable->hasChildTable("thermal_solver") && 
-        !material->hasChildField("thermalview")) {
+    if (globalTable->hasTable("thermal_solver") && 
+        !material->hasField("thermalview")) {
       verifySuccess = false;
     }
-
-    if (globalTable->hasChildTable("solid_solver") && 
-        !material->hasChildField("solidview")) {
+    if (globalTable->hasTable("solid_solver") && 
+        !material->hasField("solidview")) {
       verifySuccess = false;
     }
-
     return verifySuccess;
   });
   
@@ -1160,8 +1160,8 @@ TEST(inlet_verify, verifyTableLambda2) {
   auto thermalView = inlet->addString("material/thermalview");
   auto solidView = inlet->addString("material/solidview");
 
-  EXPECT_TRUE(material->hasChildField("solidview"));
-  EXPECT_TRUE(material->hasChildField("thermalview"));
+  EXPECT_TRUE(material->hasField("solidview"));
+  EXPECT_TRUE(material->hasField("thermalview"));
 
   EXPECT_TRUE(inlet->verify());
 
@@ -1195,6 +1195,9 @@ TEST(inlet_verify, requiredTable) {
   auto thermalView = inlet->addString("material/thermalview");
   auto solidView = inlet->addString("material/solidview");
 
+  EXPECT_TRUE(inlet->hasField("material/thermalview"));
+  EXPECT_TRUE(inlet->hasField("material/solidview"));
+
   EXPECT_TRUE(inlet->verify());
 }
 
@@ -1210,9 +1213,9 @@ TEST(inlet_verify, verifyTableLambda3) {
     int dim;
     myInlet->get("dimensions", dim);
     int value;  // field value doesnt matter just that it is present in input deck
-    bool x_present = v->hasChildField("x") && myInlet->get("vector/x", value);
-    bool y_present = v->hasChildField("y") && myInlet->get("vector/y", value);
-    bool z_present = v->hasChildField("z") && myInlet->get("vector/z", value);
+    bool x_present = v->hasField("x") && myInlet->get("vector/x", value);
+    bool y_present = v->hasField("y") && myInlet->get("vector/y", value);
+    bool z_present = v->hasField("z") && myInlet->get("vector/z", value);
     if(dim == 1 && x_present) {
       return true;
     }

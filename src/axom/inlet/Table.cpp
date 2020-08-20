@@ -256,15 +256,15 @@ bool Table::hasChildField(const std::string& fieldName) {
 }
 
 bool Table::hasTable(const std::string& tableName) {
-  return static_cast<bool>(getTablePtr(tableName));
+  return static_cast<bool>(getTableInternal(tableName));
 }
 
 bool Table::hasField(const std::string& fieldName) {
-  return static_cast<bool>(getFieldPtr(fieldName));
+  return static_cast<bool>(getFieldInternal(fieldName));
 }
 
 std::shared_ptr<Table> Table::getTable(const std::string& tableName) {
-  auto table = getTablePtr(tableName);
+  auto table = getTableInternal(tableName);
   if (!table) {
     SLIC_WARNING(fmt::format("Table {0} not found", tableName));
   }
@@ -272,14 +272,14 @@ std::shared_ptr<Table> Table::getTable(const std::string& tableName) {
 }
 
 std::shared_ptr<Field> Table::getField(const std::string& fieldName) {
-  auto field = getFieldPtr(fieldName);
+  auto field = getFieldInternal(fieldName);
   if (!field) {
     SLIC_WARNING(fmt::format("Field {0} not found", fieldName));
   }
   return field;
 }
 
-std::shared_ptr<Table> Table::getTablePtr(const std::string& tableName) {
+std::shared_ptr<Table> Table::getTableInternal(const std::string& tableName) {
   std::string name = tableName;
   size_t found = name.find("/");
   auto currTable = shared_from_this();
@@ -302,21 +302,19 @@ std::shared_ptr<Table> Table::getTablePtr(const std::string& tableName) {
 }
 
 
-std::shared_ptr<Field> Table::getFieldPtr(const std::string& fieldName) {
-  std::string name = fieldName;
-  size_t found =  name.find_last_of("/");
+std::shared_ptr<Field> Table::getFieldInternal(const std::string& fieldName) {
+  size_t found = fieldName.find_last_of("/");
   if (found == std::string::npos) {
-    if (hasChildField(name)) {
-      return m_fieldChildren[name];
+    if (hasChildField(fieldName)) {
+      return m_fieldChildren[appendPrefix(m_name, fieldName)];
     }
   } else {
-    const std::string& fieldName = name.substr(found+1);
-    auto table = getTablePtr(name.substr(0, found));
-    if (table && table->hasChildField(fieldName)) {
-      return m_fieldChildren[fieldName];
+    const std::string& name = fieldName.substr(found+1);
+    auto table = getTableInternal(fieldName.substr(0, found));
+    if (table && table->hasChildField(name)) {
+      return table->m_fieldChildren[appendPrefix(table->m_name, name)];
     }
   }
-  
   return nullptr;
 }
 

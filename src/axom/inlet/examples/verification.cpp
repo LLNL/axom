@@ -16,9 +16,9 @@ void example() {
     int dim;
     myInlet->get("dimensions", dim);
     int value;  // field value doesnt matter just that it is present in input deck
-    bool x_present = v->hasChildField("x") && myInlet->get("vector/x", value);
-    bool y_present = v->hasChildField("y") && myInlet->get("vector/y", value);
-    bool z_present = v->hasChildField("z") && myInlet->get("vector/z", value);
+    bool x_present = v->hasField("x") && myInlet->get("vector/x", value);
+    bool y_present = v->hasField("y") && myInlet->get("vector/y", value);
+    bool z_present = v->hasField("z") && myInlet->get("vector/z", value);
     if(dim == 1 && x_present) {
       return true;
     }

@@ -331,6 +331,29 @@ public:
   std::shared_ptr<Field> getField(const std::string& name) {
     return m_globalTable->getField(name);
   }
+
+  /*!
+   *****************************************************************************
+   * \brief Return whether a Table with the given name is present in Inlet.
+   *
+   * \return Boolean value indicating whether this Inlet contains the Table.
+   *****************************************************************************
+   */
+  bool hasTable(const std::string& name) {
+    return m_globalTable->hasTable(name);
+  }
+
+  /*!
+   *****************************************************************************
+   * \brief Return whether a Field with the given name is present in Inlet.
+   *
+   * \return Boolean value indicating whether this Inlet contains the Field.
+   *****************************************************************************
+   */
+  bool hasField(const std::string& name) {
+    return m_globalTable->hasField(name);
+  }
+
   // TODO add update value functions
 private:
   /*!

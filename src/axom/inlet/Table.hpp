@@ -256,40 +256,23 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Return whether this Table has a child Field with the given name.
+   * \brief Return whether a Table with the given name is present in this Table's subtree.
    *
-   * \return Boolean value of whether this Table has the child Field.
+   * \return Boolean value indicating whether this Table's subtree contains this Table.
    *****************************************************************************
    */
-  bool hasChildField(const std::string& fieldName);
+  bool hasTable(const std::string& tableName);
 
-  /*!
+   /*!
    *****************************************************************************
-   * \brief Return whether this Table has a child Table with the given name.
-   *
-   * \return Boolean value of whether this Table has the child Table.
-   *****************************************************************************
-   */
-  bool hasChildTable(const std::string& tableName);
-
-  /*!
-   *****************************************************************************
-   * \brief Return whether a Feld with the given name is present in this Table's
+   * \brief Return whether a Field with the given name is present in this Table's
    *  subtree.
    *
-   * \return Boolean value of whether this Table's subtree contains this Field.
+   * \return Boolean value indicating whether this Table's subtree contains this Field.
    *****************************************************************************
    */
   bool hasField(const std::string& fieldName);
  
-  /*!
-   *****************************************************************************
-   * \brief Return whether a Table with the given name is present in this Table's subtree.
-   *
-   * \return Boolean value of whether this Table's subtree contains this Table.
-   *****************************************************************************
-   */
-  bool hasTable(const std::string& tableName);
 
   /*!
    *****************************************************************************
@@ -379,7 +362,7 @@ private:
    * a nullptr is returned.
    *****************************************************************************
    */
-  std::shared_ptr<Table> getTablePtr(const std::string& tableName);
+  std::shared_ptr<Table> getTableInternal(const std::string& tableName);
 
   /*!
    *****************************************************************************
@@ -391,7 +374,27 @@ private:
    * a nullptr is returned.
    *****************************************************************************
    */
-  std::shared_ptr<Field> getFieldPtr(const std::string& fieldName);
+  std::shared_ptr<Field> getFieldInternal(const std::string& fieldName);
+
+  /*!
+   *****************************************************************************
+   * \brief This is an internal helper. It returns whether this Table has a child 
+   * Table with the given name.
+   *
+   * \return Boolean value of whether this Table has the child Table.
+   *****************************************************************************
+   */
+  bool hasChildTable(const std::string& tableName);
+
+    /*!
+   *****************************************************************************
+   * \brief This is an internal helper. It return whether this Table has a child 
+   * Field with the given name.
+   *
+   * \return Boolean value of whether this Table has the child Field.
+   *****************************************************************************
+   */
+  bool hasChildField(const std::string& fieldName);
 
   std::string m_name;
   std::shared_ptr<Reader> m_reader;
