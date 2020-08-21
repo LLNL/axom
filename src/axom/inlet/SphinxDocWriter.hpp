@@ -63,6 +63,8 @@ public:
   */
   void writeDocumentation();
 
+  virtual ~SphinxDocWriter() = default;
+
 private:
   /*!
    *****************************************************************************
