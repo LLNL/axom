@@ -31,8 +31,6 @@ that the input deck met your criteria and use that information later in your cod
    :maxdepth: 2
 
    quick_start
-   workflow
-   inlet_classes
 
 .. raw:: html
 
