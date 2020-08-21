@@ -85,8 +85,8 @@ bool LuaReader::findVariable(const std::string& id)
 {
   if (!m_luaState)
   {
-    SLIC_WARNING(
-      "Lua state is not initialized. Call LuaReader::parseString or LuaReader::parseFile first!");
+    SLIC_WARNING("[Inlet] Lua state is not initialized. "
+                 "Call LuaReader::parseString or LuaReader::parseFile first!");
     return false;
   }
 
@@ -99,7 +99,8 @@ bool LuaReader::findVariable(const std::string& id)
 
   if (axom::utilities::string::endsWith(id, SCOPE_DELIMITER))
   {
-    SLIC_WARNING(fmt::format("Variable cannot end with scope delimiter: {0}",
+    SLIC_WARNING(fmt::format("[Inlet] Variable cannot end with scope "
+                             "delimiter: {0}",
                              id));
     return false;
   }
