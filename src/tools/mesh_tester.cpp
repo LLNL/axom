@@ -662,7 +662,7 @@ int main( int argc, char** argv )
         SLIC_ERROR("Unhandled runtime policy case " << params.policy );
         break;
      }
-    }
+    } // end of if method == 'naive'
     else if (params.method == "bvh")
     {
       switch (params.policy)
@@ -698,7 +698,7 @@ int main( int argc, char** argv )
         SLIC_ERROR("Unhandled runtime policy case " << params.policy );
         break;
       }
-    } // end of if resolution == 2
+    } // end of if method == 'bvh'
     else
     {
       // _check_repair_intersections_start
