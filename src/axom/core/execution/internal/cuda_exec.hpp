@@ -79,6 +79,7 @@ struct execution_space< CUDA_EXEC< BLOCK_SIZE, ASYNC > >
 
   static constexpr bool async() noexcept { return true; };
   static constexpr bool valid() noexcept { return true; };
+  static constexpr bool onDevice() noexcept { return true; };
   static constexpr char* name() noexcept {
     return (char*)"[CUDA_EXEC] (async)";
   };

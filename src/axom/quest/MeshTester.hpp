@@ -245,7 +245,7 @@ void findTriMeshIntersectionsBVH(
   axom::deallocate(zmax);
 
   int* intersection_pairs =
-    axom::allocate <int> (totalCandidates * 2);
+    axom::allocate <int> (totalCandidates.get() * 2);
 
   using ATOMIC_POL =
           typename axom::execution_space< ExecSpace >::atomic_policy;
@@ -253,16 +253,14 @@ void findTriMeshIntersectionsBVH(
   axom::copy(counter, ZERO, sizeof(int));
 
   // Initialize triangle indices and valid candidates
-  IndexType* indices = axom::allocate< IndexType >( totalCandidates );
-  IndexType* validCandidates = axom::allocate< IndexType >( totalCandidates );
-  // int numValidCandidates = 0;
+  IndexType* indices = axom::allocate< IndexType >( totalCandidates.get() );
+  IndexType* validCandidates = axom::allocate< IndexType >( totalCandidates.get() );
   int* numValidCandidates = axom::allocate <int> (1);
   axom::copy(numValidCandidates, ZERO, sizeof(int));
 
   AXOM_PERF_MARK_SECTION( "init_candidates",
     for_all< ExecSpace >( ncells, AXOM_LAMBDA (IndexType i)
     {
-      // RAJA::atomicAdd<ATOMIC_POL>(numValidCandidates, 1);
       for (int j = 0; j < counts[i]; j++)
       {
         if (i < candidates[offsets[i] + j])
@@ -270,7 +268,6 @@ void findTriMeshIntersectionsBVH(
           auto idx = RAJA::atomicAdd<ATOMIC_POL>(numValidCandidates, 1);
           indices[idx] = i;
           validCandidates[idx] = candidates[offsets[i] + j];
-          // numValidCandidates += 1;
         }
       }
     });
@@ -302,10 +299,11 @@ void findTriMeshIntersectionsBVH(
     getUmpireResourceAllocatorID(umpire::resource::Host)) ;
   axom::copy(host_counter, counter, sizeof(int));
 
-  int* host_intersection_pairs = axom::allocate <int> (totalCandidates * 2, 
-    getUmpireResourceAllocatorID(umpire::resource::Host)) ;
-  axom::copy(host_intersection_pairs, intersection_pairs, totalCandidates * 2
-                                                          * sizeof(int));
+  int* host_intersection_pairs = axom::allocate <int> (
+    totalCandidates.get() * 2, 
+    getUmpireResourceAllocatorID(umpire::resource::Host));
+  axom::copy(host_intersection_pairs, intersection_pairs, 
+             totalCandidates.get() * 2 * sizeof(int));
 
   // Initialize pairs of clashes
   for (int i = 0 ; i < host_counter[0] ; i += 2)
