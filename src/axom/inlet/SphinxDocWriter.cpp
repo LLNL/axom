@@ -22,7 +22,7 @@ namespace inlet
 {
  
 SphinxDocWriter::SphinxDocWriter(const std::string& fileName, axom::sidre::Group* root) {
-  SLIC_WARNING_IF(root == nullptr, " Inlet's Sidre root group was not defined"
+  SLIC_WARNING_IF(root == nullptr, "[Inlet] Sidre root group was not defined"
                                    " while writing documentation");
   m_sidreRootGroup = root;
   m_fileName = fileName;
@@ -44,7 +44,7 @@ void SphinxDocWriter::writeDocumentation() {
 }
 
 void SphinxDocWriter::writeDocumentationHelper(axom::sidre::Group* sidreGroup) {
-  SLIC_WARNING_IF(!sidreGroup, "Root was nullptr");
+  SLIC_WARNING_IF(!sidreGroup, "[Inlet] Root was nullptr");
   axom::sidre::IndexType i = sidreGroup->getFirstValidGroupIndex();
 
   // Special case for valid string values since it's a Group whereas other
@@ -90,9 +90,11 @@ void SphinxDocWriter::writeSubtitle(const std::string& sub) {
 
 void SphinxDocWriter::writeTable(const std::string& title, 
                                  const std::vector<std::vector<std::string>>& rstTable) {
-  SLIC_WARNING_IF(rstTable.size() <= 1, "Vector for corresponding rst table must be nonempty");
+  SLIC_WARNING_IF(rstTable.size() <= 1,
+                "[Inlet] Vector for corresponding rst table must be nonempty");
   std::string result = ".. list-table:: " + title;
-  result += "\n   :widths: 25 25 25 25 25\n   :header-rows: 1\n   :stub-columns: 1\n\n";
+  result += "\n   :widths: 25 25 25 25 25\n";
+  result += "   :header-rows: 1\n   :stub-columns: 1\n\n";
   for (unsigned int i = 0; i < rstTable.size(); ++i) {
     result += "   * - ";
     for (unsigned int j = 0; j < rstTable[i].size(); ++j) {

@@ -16,11 +16,13 @@ namespace inlet
 
 std::shared_ptr<Field> Field::required(bool isRequired)
 {
-  SLIC_ASSERT_MSG(m_sidreGroup != nullptr, "Inlet's Field specific Sidre Datastore Group not set");
+  SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
+                  "[Inlet] Field specific Sidre Datastore Group not set");
 
   if (m_sidreGroup->hasView("required"))
   {
-    std::string msg = fmt::format("Inlet Field has already defined required value: {0}",
+    std::string msg = fmt::format("[Inlet] Field has already defined "
+                                  "required value: {0}",
                                   m_sidreGroup->getPathName());
     SLIC_WARNING(msg);
     setWarningFlag(m_sidreRootGroup);
@@ -41,7 +43,8 @@ std::shared_ptr<Field> Field::required(bool isRequired)
 
 bool Field::required()
 {
-  SLIC_ASSERT_MSG(m_sidreGroup != nullptr, "Inlet's Field specific Sidre Datastore Group not set");
+  SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
+                  "[Inlet] Field specific Sidre Datastore Group not set");
 
   if (!m_sidreGroup->hasView("required"))
   {
@@ -50,14 +53,13 @@ bool Field::required()
   axom::sidre::View* valueView = m_sidreGroup->getView("required");
   if (valueView == nullptr)
   {
-    //TODO: is this possible after it says it has the view?
     return false;
   }
   int8 intValue = valueView->getScalar();
   if (intValue < 0 || intValue > 1)
   {
-    std::string msg = fmt::format("Invalid integer value stored in boolean"
-                                  " value named {0}",
+    std::string msg = fmt::format("[Inlet] Invalid integer value stored in "
+                                  "boolean value named {0}",
                                   m_sidreGroup->getPathName());
     SLIC_WARNING(msg);
     setWarningFlag(m_sidreRootGroup);
@@ -70,7 +72,8 @@ bool Field::required()
 template <typename T>
 void Field::setDefaultValue(T value) {
   if (m_sidreGroup->hasView("defaultValue")) {
-    std::string msg = fmt::format("Inlet Field has already defined default value: {0}",
+    std::string msg = fmt::format("[Inlet] Field has already defined "
+                                  "default value: {0}",
                                   m_sidreGroup->getPathName());
     SLIC_WARNING(msg);
     setWarningFlag(m_sidreRootGroup);
@@ -87,7 +90,8 @@ void Field::setDefaultValue(T value) {
 template<> 
 void Field::setDefaultValue<std::string>(std::string value) {
   if (m_sidreGroup->hasView("defaultValue")) {
-    std::string msg = fmt::format("Inlet Field has already defined default value: {0}",
+    std::string msg = fmt::format("[Inlet] Field has already defined "
+                                  "default value: {0}",
                                   m_sidreGroup->getPathName());
     SLIC_WARNING(msg);
     setWarningFlag(m_sidreRootGroup);
@@ -112,7 +116,7 @@ std::shared_ptr<Field> Field::defaultValue(const char* value) {
 
 std::shared_ptr<Field> Field::defaultValue(const std::string& value) {
   if (m_type != axom::sidre::DataTypeId::CHAR8_STR_ID) {
-    SLIC_WARNING("Field value type did not match STRING");
+    SLIC_WARNING("[Inlet] Field value type did not match STRING");
     setWarningFlag(m_sidreRootGroup);
   }
   setDefaultValue(value);
@@ -121,7 +125,7 @@ std::shared_ptr<Field> Field::defaultValue(const std::string& value) {
 
 std::shared_ptr<Field> Field::defaultValue(bool value) {
   if (m_type != axom::sidre::DataTypeId::INT8_ID) {
-    SLIC_WARNING("Field value type did not match BOOL");
+    SLIC_WARNING("[Inlet] Field value type did not match BOOL");
     setWarningFlag(m_sidreRootGroup);
   }
   setDefaultValue((int8)value);
@@ -137,7 +141,7 @@ std::shared_ptr<Field> Field::defaultValue(int value) {
     setDefaultValue((double)value);
     break;
   default:  // incompatible type
-    SLIC_WARNING("Field value type did not match INT/DOUBLE");
+    SLIC_WARNING("[Inlet] Field value type did not match INT/DOUBLE");
     setWarningFlag(m_sidreRootGroup);
     break;
   }
@@ -146,7 +150,7 @@ std::shared_ptr<Field> Field::defaultValue(int value) {
 
 std::shared_ptr<Field> Field::defaultValue(double value) {
   if (m_type != axom::sidre::DataTypeId::DOUBLE_ID) {
-    SLIC_WARNING("Field value type did not match DOUBLE");
+    SLIC_WARNING("[Inlet] Field value type did not match DOUBLE");
     setWarningFlag(m_sidreRootGroup);
   }
   setDefaultValue(value);
@@ -156,13 +160,14 @@ std::shared_ptr<Field> Field::defaultValue(double value) {
 template<typename T>
 void Field::setRange(T startVal, T endVal) {
   if (m_sidreGroup->hasView("range")) {
-    std::string msg = fmt::format("Inlet Field has already defined range: {0}",
+    std::string msg = fmt::format("[Inlet] Inlet Field has already defined range: {0}",
                                    m_sidreGroup->getPathName());
     SLIC_WARNING(msg);
     setWarningFlag(m_sidreRootGroup);
   } else if (m_sidreGroup->hasView("validValues") || m_sidreGroup->hasView("validStringValues")){
-      std::string msg = fmt::format("Cannot set range for Inlet Field after setting valid"
-                                    "values: {0}", m_sidreGroup->getPathName());
+      std::string msg = fmt::format("[Inlet] Cannot set range for Inlet Field "
+                                    "after setting valid values: {0}",
+                                    m_sidreGroup->getPathName());
       SLIC_WARNING(msg);
       setWarningFlag(m_sidreRootGroup);
   } else {
@@ -182,7 +187,7 @@ std::shared_ptr<Field> Field::range(int startVal, int endVal) {
     this->setRange(static_cast<double>(startVal), static_cast<double>(endVal));  
     break;
   default:  // incompatible type
-    SLIC_WARNING("Field value type did not match INT or DOUBLE");
+    SLIC_WARNING("[Inlet] Field value type did not match INT or DOUBLE");
     setWarningFlag(m_sidreRootGroup);
     break;
   }
@@ -195,7 +200,7 @@ std::shared_ptr<Field> Field::range(double startVal, double endVal) {
     this->setRange(startVal, endVal);  
     break;
   default:  // incompatible type
-    SLIC_WARNING("Field value type did not match DOUBLE");
+    SLIC_WARNING("[Inlet] Field value type did not match DOUBLE");
     setWarningFlag(m_sidreRootGroup);
     break;
   }
@@ -205,12 +210,14 @@ std::shared_ptr<Field> Field::range(double startVal, double endVal) {
 template<typename T>
 void Field::setScalarValidValues(std::vector<T> set) {
   if (m_sidreGroup->hasView("validValues") || m_sidreGroup->hasView("validStringValues")){
-      std::string msg = fmt::format("Inlet Field has already defined valid values: {0}",
+      std::string msg = fmt::format("[Inlet] Inlet Field has already "
+                                    "defined valid values: {0}",
                                     m_sidreGroup->getPathName());
       SLIC_WARNING(msg);
       setWarningFlag(m_sidreRootGroup);
   } else if (m_sidreGroup->hasView("range")) {
-    std::string msg = fmt::format("Cannot set valid values after defining range: {0}",
+    std::string msg = fmt::format("[Inlet] Cannot set valid values "
+                                  "after defining range: {0}",
                                     m_sidreGroup->getPathName());
     SLIC_WARNING(msg);
     setWarningFlag(m_sidreRootGroup);
@@ -229,7 +236,7 @@ std::shared_ptr<Field> Field::validValues(const std::vector<int>& set) {
     setScalarValidValues(std::vector<double>(set.begin(), set.end()));
     break;
   default:  // incompatible type
-    SLIC_WARNING("Field value type did not match INT OR DOUBLE");
+    SLIC_WARNING("[Inlet] Field value type did not match INT OR DOUBLE");
     setWarningFlag(m_sidreRootGroup);
     break;
   }
@@ -242,7 +249,7 @@ std::shared_ptr<Field> Field::validValues(const std::vector<double>& set) {
     setScalarValidValues(set);
     break;
   default:  // incompatible type
-    SLIC_WARNING("Field value type did not match DOUBLE");
+    SLIC_WARNING("[Inlet] Field value type did not match DOUBLE");
     setWarningFlag(m_sidreRootGroup);
     break;
   }
@@ -255,13 +262,15 @@ std::shared_ptr<Field> Field::validValues(const std::vector<std::string>& set) {
     setWarningFlag(m_sidreRootGroup);
   }
   if (m_sidreGroup->hasView("validValues") || m_sidreGroup->hasView("validStringValues")){
-      std::string msg = fmt::format("Inlet Field has already defined valid values: {0}",
+      std::string msg = fmt::format("[Inlet] Inlet Field has already defined "
+                                    "valid values: {0}",
                                      m_sidreGroup->getPathName());
       SLIC_WARNING(msg);
       setWarningFlag(m_sidreRootGroup);
   } else if (m_sidreGroup->hasView("range")) {
-    std::string msg = fmt::format("Cannot set valid values after defining range: {0}",
-                                    m_sidreGroup->getPathName());
+    std::string msg = fmt::format("[Inlet] Cannot set valid values after defining "
+                                  "range: {0}",
+                                  m_sidreGroup->getPathName());
     SLIC_WARNING(msg);
     setWarningFlag(m_sidreRootGroup);
   } else {
@@ -286,15 +295,16 @@ std::shared_ptr<Field> Field::validValues(const std::initializer_list<double>& s
 }
 
 std::shared_ptr<Field> Field::registerVerifier(std::function<bool()> lambda) {
-  SLIC_WARNING_IF(m_verifier, fmt::format("Verifier for Field {0} already set", 
-                                         m_sidreGroup->getPathName()));
+  SLIC_WARNING_IF(m_verifier, fmt::format("[Inlet] Verifier for Field "
+                                          "already set: {0}", 
+                                          m_sidreGroup->getPathName()));
   m_verifier = lambda;
   return shared_from_this();
 }
 
 bool Field::verify() {
   if (m_verifier && !m_verifier()) {
-    SLIC_WARNING(fmt::format("Field {0} failed verification", 
+    SLIC_WARNING(fmt::format("[Inlet] Field failed verification: {0}", 
                  m_sidreGroup->getPathName()));
     return false;
   }

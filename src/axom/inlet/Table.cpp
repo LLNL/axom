@@ -54,19 +54,21 @@ std::shared_ptr<Table> Table::addTable(const std::string& name,
 axom::sidre::Group* Table::createSidreGroup(const std::string& name,
                                         const std::string& description)
 {
-  SLIC_ASSERT_MSG(m_reader != nullptr, "Inlet's Reader class not set");
-  SLIC_ASSERT_MSG(m_sidreRootGroup != nullptr, "Inlet's Sidre Datastore Group not set");
+  SLIC_ASSERT_MSG(m_reader != nullptr, "[Inlet] Reader class not set");
+  SLIC_ASSERT_MSG(m_sidreRootGroup != nullptr,
+                  "[Inlet] Sidre Datastore Group not set");
 
   if (m_sidreRootGroup->hasGroup(name))
   {
-    SLIC_WARNING("Inlet: Cannot add value that already exists: " + name);
+    SLIC_WARNING("[Inlet] Cannot add value that already exists: " + name);
     setWarningFlag(m_sidreRootGroup);
     return nullptr;
   }
 
   axom::sidre::Group* sidreGroup = m_sidreRootGroup->createGroup(name);
   sidreGroup->createViewString("InletType", "Field");
-  SLIC_ASSERT_MSG(sidreGroup != nullptr, "Sidre failed to create group");
+  SLIC_ASSERT_MSG(sidreGroup != nullptr,
+                  "[Inlet] Sidre failed to create group");
   if (description != "")
   {
     sidreGroup->createViewString("description", description);
@@ -98,7 +100,6 @@ std::shared_ptr<Field> Table::addBool(const std::string& name,
   axom::sidre::Group* sidreGroup = createSidreGroup(fullName, description);
   if (sidreGroup == nullptr)
   {
-    //TODO: better idea?
     return std::shared_ptr<Field>(nullptr);
   }
 
@@ -166,11 +167,13 @@ std::shared_ptr<Field> Table::addString(const std::string& name,
 
 std::shared_ptr<Table> Table::required(bool isRequired)
 {
-  SLIC_ASSERT_MSG(m_sidreGroup != nullptr, "Inlet's Table specific Sidre Datastore Group not set");
+  SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
+                  "[Inlet] Table specific Sidre Datastore Group not set");
 
   if (m_sidreGroup->hasView("required"))
   {
-    std::string msg = fmt::format("Inlet Table has already defined required value: {0}",
+    std::string msg = fmt::format("[Inlet] Table has already defined "
+                                  "required value: {0}",
                                   m_sidreGroup->getName());
     
     SLIC_WARNING(msg);
@@ -192,7 +195,8 @@ std::shared_ptr<Table> Table::required(bool isRequired)
 
 bool Table::required()
 {
-  SLIC_ASSERT_MSG(m_sidreGroup != nullptr, "Inlet's Table specific Sidre Datastore Group not set");
+  SLIC_ASSERT_MSG(m_sidreGroup != nullptr,
+                  "[Inlet] Table specific Sidre Datastore Group not set");
 
   if (!m_sidreGroup->hasView("required"))
   {
@@ -207,8 +211,8 @@ bool Table::required()
   int8 intValue = valueView->getScalar();
   if (intValue < 0 || intValue > 1)
   {
-    std::string msg = fmt::format("Invalid integer value stored in boolean"
-                                  " value named {0}",
+    std::string msg = fmt::format("[Inlet] Invalid integer value stored in "
+                                  " boolean value named {0}",
                                   m_sidreGroup->getName());
     SLIC_WARNING(msg);
     setWarningFlag(m_sidreRootGroup);
@@ -219,7 +223,8 @@ bool Table::required()
 }
 
 std::shared_ptr<Table> Table::registerVerifier(std::function<bool()> lambda) {
-  SLIC_WARNING_IF(m_verifier, fmt::format("Verifier for Table {0} already set", m_name));
+  SLIC_WARNING_IF(m_verifier, fmt::format("[Inlet] Verifier for Table "
+                                          "already set: {0}", m_name));
   m_verifier = lambda;
   return shared_from_this();
 } 
@@ -229,7 +234,7 @@ bool Table::verify() {
   // Verify this Table
   if (m_verifier && !m_verifier()) {
     verified = false;
-    SLIC_WARNING(fmt::format("Table {0} failed verification", m_name));
+    SLIC_WARNING(fmt::format("[Inlet] Table failed verification: {0}", m_name));
   }
   // Verify the child Fields of this Table
   for (auto field : m_fieldChildren) {
@@ -266,7 +271,7 @@ bool Table::hasField(const std::string& fieldName) {
 std::shared_ptr<Table> Table::getTable(const std::string& tableName) {
   auto table = getTableInternal(tableName);
   if (!table) {
-    SLIC_WARNING(fmt::format("Table {0} not found", tableName));
+    SLIC_WARNING(fmt::format("[Inlet] Table not found: {0}", tableName));
   }
   return table;
 }
@@ -274,7 +279,7 @@ std::shared_ptr<Table> Table::getTable(const std::string& tableName) {
 std::shared_ptr<Field> Table::getField(const std::string& fieldName) {
   auto field = getFieldInternal(fieldName);
   if (!field) {
-    SLIC_WARNING(fmt::format("Field {0} not found", fieldName));
+    SLIC_WARNING(fmt::format("[Inlet] Field not found: {0}", fieldName));
   }
   return field;
 }
