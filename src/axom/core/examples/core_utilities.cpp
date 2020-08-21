@@ -5,8 +5,6 @@
 
 /*! \file core_utilities.cpp
  *  \brief This example code is a demonstration of the Axom Core utilites.
- *
- *  This file shows how to use Core::utilities
  */
 
  /* This example code contains snippets used in the Primal Sphinx documentation.
@@ -35,16 +33,12 @@ void sleep(int numSeconds)
 #include <vector>
 
 // Axom includes
-// #include "axom/core.hpp"
-#include "axom/core/utilities/AnnotationMacros.hpp"
+// _header_start
 #include "axom/core/utilities/FileUtilities.hpp"
 #include "axom/core/utilities/StringUtilities.hpp"
 #include "axom/core/utilities/Timer.hpp"
-// #include "axom/core/utilities/Utilities.hpp"
 #include "axom/core/utilities/About.hpp"
-
-// _using_start
-// _using_end
+// _header_end
 
 // _fs_string_start
 void demoFileSystemAndString(const char* argv0)
@@ -113,6 +107,15 @@ void demoFileSystemAndString(const char* argv0)
 
 int main(int argc, char** argv)
 {
+  // _about_start
+  std::cout << "Here is a message telling you about Axom." << std::endl;
+  axom::about();
+
+  std::cout << "The version string '" << axom::getVersion() <<
+    "' is part of the previous message, " << std::endl <<
+    " and is also available separately." << std::endl;
+  // _about_end
+
   // _timer_start
   axom::utilities::Timer t;
 

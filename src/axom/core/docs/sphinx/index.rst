@@ -18,12 +18,12 @@ filesystem, and string manipulation utilities in the `axom::utilities`
 namespace.  Axom Core also contains the `axom::Array` and `axom::StackArray`
 container classes.
 
-.. Perhaps we should discuss the execution space and for_all here.
+.. Perhaps we should discuss the execution space and for_all here
 
 **Contents:**
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    core_numerics
    core_utilities

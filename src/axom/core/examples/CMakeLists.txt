@@ -10,6 +10,7 @@
 # List of single source file examples
 #------------------------------------------------------------------------------
 set(example_sources
+    core_numerics.cpp
     core_utilities.cpp
 )
 
