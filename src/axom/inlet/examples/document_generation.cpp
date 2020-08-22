@@ -160,8 +160,11 @@ int main(int argc, char** argv) {
   auto lr = std::make_shared<LuaReader>();
   lr->parseFile(inputFileName);
   auto inlet = std::make_shared<Inlet>(lr, ds.getRoot(), docsEnabled);
+
+  // _inlet_documentation_generation_start
   auto docWriter = std::make_shared<SphinxDocWriter>("example_doc.rst", inlet->sidreGroup());
   inlet->registerDocWriter(docWriter);
+  // _inlet_documentation_generation_end
 
   defineSchema(inlet);
   checkValues(inlet);
