@@ -9,7 +9,7 @@ implement these functions to be used when the Lumberjack class does any communic
 work.
 
 Functions
-#########
+---------
 
 ========================= ===================
 Name                      Description
@@ -24,12 +24,12 @@ isOutputNode              Returns whether this node should output messages.
 ========================= ===================
 
 Concrete Instances
-##################
+------------------
 
 .. _binarytreecommunicator_class_label:
 
 BinaryTreeCommunicator
-**********************
+^^^^^^^^^^^^^^^^^^^^^^
 
 .. note:: This is the recommended Communicator.
 
@@ -42,7 +42,7 @@ all currently held messages to the root node.
 .. _rootcommunicator_class_label:
 
 RootCommunicator
-****************
+^^^^^^^^^^^^^^^^
 
 .. note:: This Communicator is useful for debugging purposes, but will not scale as well as the recommended BinaryTreeCommunicator.
 
