@@ -7,7 +7,8 @@
 
 #include "axom/inlet.hpp"
 
-void example() {
+int main() {
+  // Initialize Inlet
   auto lr = std::make_shared<axom::inlet::LuaReader>();
   lr->parseString("dimensions = 2; vector = { x = 1; y = 2; z = 3; }");
   axom::sidre::DataStore ds;
@@ -76,8 +77,5 @@ void example() {
   }
   // _inlet_workflow_accessing_data_end
 
-}
-
-int main() {
-  example();
+  return 0;
 }

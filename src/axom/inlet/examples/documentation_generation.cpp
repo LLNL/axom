@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-// usage : ./inlet_document_generation_example --enableDocs --deck lua_file.lua 
+// usage : ./inlet_documentation_generation_example --enableDocs --deck lua_file.lua 
 
 #include "axom/inlet.hpp"
 
