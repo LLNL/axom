@@ -3,18 +3,19 @@
 Quick Start
 ===========
 
-Inlet's workflow is broken into the three following steps:  
+Inlet's workflow is broken into the four following steps:  
 
 * Defining the schema of your input deck
 * Verifying that the user given input deck is valid
 * Accessing the read and stored data in your program
+* *Optional* Generating documentation based on defined schema
 
 .. _inlet_defining_schema_label:
 
 Defining Schema
 ---------------
 
-The first step in using Inlet is to defining the schema of your input deck.
+The first step in using Inlet is to define the schema of your input deck.
 Inlet defines an input deck into two basic classes: Tables and Fields. Basically
 Fields are individual values and Tables hold groups of Fields and Tables.
 
@@ -59,14 +60,14 @@ basic rules that can be enforced with the following ``Field`` class member funct
 ========================= ===================
 Name                      Description
 ========================= ===================
-validValues               Indicates the Field can only be set to a valid values.
+validValues               Indicates the Field can only be set to one of the given values.
 range                     Indicates the Field can only be set to inclusively between two values.
 ========================= ===================
 
 Inlet also provides functionality to write your own custom rules via callable lambda verifiers.
 Fields and Tables can both register one lambda each via their ``registerVerifier()`` member functions.
-The following example adds a custom verifier that simply verifies that the dimension of the simulation
-match up with the dimensions of a given vector:
+The following example adds a custom verifier that simply verifies that the given ``dimensions`` field
+match the length the given vector:
 
 .. literalinclude:: ../../examples/verification.cpp
    :start-after: _inlet_workflow_verification_start
@@ -82,12 +83,12 @@ match up with the dimensions of a given vector:
 Accessing Data
 --------------
 
-After the input deck has been read and verified by the previous steps.  You can access the data by name
+After the input deck has been read and verified by the previous steps, you can access the data by name
 via ``Inlet::get()`` functions.  These functions are type-safe, fill the given variable with what is found,
 and return a boolean whether the Field was present in the input deck or had a default value it could fall
-back on.  Variable are named in a language agnostic way and are converted from Inlet's representation 
-to the language specific version inside of the appropriate ``Reader``. For example, Inlet refers to the
-Lua variable ``vector={x=3}`` as ``vector/x``.
+back on.  Variables, on the Inlet side, are used in a language-agnostic way and are then converted 
+to the language-specific version inside of the appropriate ``Reader``. For example, Inlet refers to the
+Lua variable ``vector={x=3}`` or ``vector.x`` as ``vector/x`` on all Inlet function calls.
 
 For example, given the previous verificiation example, this access previously read values:
 
@@ -95,3 +96,29 @@ For example, given the previous verificiation example, this access previously re
    :start-after: _inlet_workflow_accessing_data_start
    :end-before: _inlet_workflow_accessing_data_end
    :language: C++
+
+.. _inlet_generating_documentation_label:
+
+Generating Documentation
+------------------------
+
+We provide a slightly more complex but closer to a real world Inlet usage example of the usage of Inlet.
+You can find that example in our repository `here <https://github.com/LLNL/axom/blob/develop/src/axom/inlet/examples/document_generation.cpp>`_.
+
+After you create your ``Inlet`` class but before you start defining your schema, create a concrete
+instantiation of a ``DocWriter`` class and register it with your ``Inlet`` class.
+
+.. literalinclude:: ../../examples/documentation_generation.cpp
+   :start-after: _inlet_documentation_generation_start
+   :end-before: _inlet_documentation_generation_end
+   :language: C++
+
+Then after you are finishing defining your schema, call ``writeDoc()`` on your ``Inlet`` class
+to write out your documentation to the given file.
+
+.. code-block:: C++
+
+   inlet->writeDoc();
+
+We provided a basic Sphinx documentation writing class but you may want to customize it to your
+own style.
