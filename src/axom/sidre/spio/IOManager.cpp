@@ -195,10 +195,7 @@ void IOManager::write(sidre::Group* datagroup, int num_files,
     std::string hdf5_name =
       getFileNameForRank(file_pattern, root_name, set_id);
 
-    if (m_use_scr)
-    {
-      hdf5_name = getSCRPath(hdf5_name);
-    }
+    hdf5_name = getSCRPath(hdf5_name);
 
     hid_t h5_file_id, h5_group_id;
     if (m_baton->isFirstInGroup())
@@ -352,13 +349,7 @@ void IOManager::readWithSCR(
 {
   SLIC_ASSERT(m_use_scr);
 
-  std::string scr_root = root_file;
-  if (m_my_rank == 0)
-  {
-    scr_root = getSCRPath(scr_root);
-  }
-  std::string protocol = getProtocol(scr_root);
-
+  std::string protocol = getProtocol(root_file);
   read(datagroup, root_file, protocol, preserve_contents);
 }
 #endif
@@ -366,22 +357,31 @@ void IOManager::readWithSCR(
 std::string IOManager::getSCRPath(const std::string & path)
 {
 #ifdef AXOM_USE_SCR
-  SLIC_ASSERT(m_use_scr);
-  char scr_name[SCR_MAX_FILENAME];
-  std::string scr_path;
-  if (SCR_Route_file(path.c_str(), scr_name) == SCR_SUCCESS)
+  if (m_use_scr)
   {
-    scr_path = scr_name;
+    char scr_name[SCR_MAX_FILENAME];
+    std::string scr_path;
+    if (SCR_Route_file(path.c_str(), scr_name) == SCR_SUCCESS)
+    {
+      // SCR gave us a path to use to open this file
+      scr_path = scr_name;
+    }
+    else
+    {
+      SLIC_WARNING(
+        "SCR routing of path "
+        << path << " was unsuccessful. Attempting to proceed without routing.");
+      scr_path = path;
+    }
+    return scr_path;
   }
   else
   {
-    SLIC_WARNING(
-      "SCR routing of path "
-      << path << " was unsuccessful. Attempting to proceed without routing.");
-    scr_path = path;
+    // SCR not enabled, return the path unchanged
+    return path;
   }
-  return scr_path;
 #else
+  // SCR support not compiled in, return path unchanged
   return path;
 #endif
 }
@@ -423,10 +423,7 @@ void IOManager::loadExternalData(sidre::Group* datagroup,
       std::string hdf5_name =
         getFileNameForRank(file_pattern, root_file, set_id);
 
-      if (m_use_scr)
-      {
-        hdf5_name = getSCRPath(hdf5_name);
-      }
+      hdf5_name = getSCRPath(hdf5_name);
 
       hid_t h5_file_id = conduit::relay::io::hdf5_open_file_for_read(hdf5_name);
       SLIC_ASSERT(h5_file_id >= 0);
@@ -456,10 +453,7 @@ void IOManager::loadExternalData(sidre::Group* datagroup,
       std::string hdf5_name =
         getFileNameForRank(file_pattern, root_file, input_rank);
 
-      if (m_use_scr)
-      {
-        hdf5_name = getSCRPath(hdf5_name);
-      }
+      hdf5_name = getSCRPath(hdf5_name);
 
       hid_t h5_file_id = conduit::relay::io::hdf5_open_file_for_read(hdf5_name);
       SLIC_ASSERT(h5_file_id >= 0);
@@ -554,12 +548,7 @@ void IOManager::createRootFile(const std::string& file_base,
     root_file_name = file_base + ".root";
   }
 
-#ifdef AXOM_USE_SCR
-  if (m_use_scr)
-  {
-    root_file_name = getSCRPath(root_file_name);
-  }
-#endif
+  root_file_name = getSCRPath(root_file_name);
 
   conduit::relay::io::save(n, root_file_name, relay_protocol);
 }
@@ -572,12 +561,14 @@ void IOManager::createRootFile(const std::string& file_base,
  *************************************************************************
  */
 std::string IOManager::getProtocol(
-  const std::string& root_name)
+  const std::string& root_orig)
 {
   std::string protocol;
 
   if (m_my_rank == 0)
   {
+    std::string root_name = getSCRPath(root_orig);
+
     std::string extension;
     std::string base;
     std::string dot = ".";
@@ -664,11 +655,7 @@ std::string IOManager::getFilePatternFromRoot(const std::string& root_name,
   std::string file_pattern;
   if (m_my_rank == 0)
   {
-    std::string root_path = root_name;
-    if (m_use_scr)
-    {
-      root_path = getSCRPath(root_path);
-    }
+    std::string root_path = getSCRPath(root_name);
 
     conduit::Node n;
     std::string relay_protocol = correspondingRelayProtocol(protocol);
@@ -696,11 +683,7 @@ std::string IOManager::getHDF5FilePattern(
   std::string file_pattern;
   if (m_my_rank == 0)
   {
-    std::string root_path = root_name;
-    if (m_use_scr)
-    {
-      root_path = getSCRPath(root_path);
-    }
+    std::string root_path = getSCRPath(root_name);
 
     conduit::Node n;
     conduit::relay::io::load(root_path + ":file_pattern", "hdf5", n);
@@ -759,10 +742,7 @@ void IOManager::readSidreHDF5(sidre::Group* datagroup,
       std::string hdf5_name =
         getFileNameForRank(file_pattern, root_file, set_id);
 
-      if (m_use_scr)
-      {
-        hdf5_name = getSCRPath(hdf5_name);
-      }
+      hdf5_name = getSCRPath(hdf5_name);
 
       hid_t h5_file_id = conduit::relay::io::hdf5_open_file_for_read(hdf5_name);
       SLIC_ASSERT(h5_file_id >= 0);
@@ -795,10 +775,7 @@ void IOManager::readSidreHDF5(sidre::Group* datagroup,
       std::string hdf5_name =
         getFileNameForRank(file_pattern, root_file, input_rank);
 
-      if (m_use_scr)
-      {
-        hdf5_name = getSCRPath(hdf5_name);
-      }
+      hdf5_name = getSCRPath(hdf5_name);
 
       hid_t h5_file_id = conduit::relay::io::hdf5_open_file_for_read(hdf5_name);
       SLIC_ASSERT(h5_file_id >= 0);
@@ -868,11 +845,7 @@ int IOManager::getNumFilesFromRoot(const std::string& root_file)
   int read_num_files = 0;
   if (m_my_rank == 0)
   {
-    std::string root_path = root_file;
-    if (m_use_scr)
-    {
-      root_path = getSCRPath(root_path);
-    }
+    std::string root_path = getSCRPath(root_file);
 
     conduit::Node n;
     conduit::relay::io::load(root_path + ":number_of_files","hdf5",n);
@@ -898,11 +871,7 @@ int IOManager::getNumGroupsFromRoot(const std::string& root_file)
   int read_num_trees = 0;
   if (m_my_rank == 0)
   {
-    std::string root_path = root_file;
-    if (m_use_scr)
-    {
-      root_path = getSCRPath(root_path);
-    }
+    std::string root_path = getSCRPath(root_file);
 
     conduit::Node n;
     conduit::relay::io::load(root_path + ":number_of_trees","hdf5",n);
@@ -932,11 +901,7 @@ void IOManager::writeGroupToRootFile(sidre::Group* group,
                                      const std::string& file_name)
 {
 #ifdef AXOM_USE_HDF5
-  std::string tmp_name = file_name;
-  if (m_use_scr)
-  {
-    tmp_name = getSCRPath(tmp_name);
-  }
+  std::string tmp_name = getSCRPath(file_name);
 
   hid_t root_file_id =
     conduit::relay::io::hdf5_open_file_for_read_write(tmp_name);
@@ -990,11 +955,7 @@ void IOManager::writeGroupToRootFileAtPath(sidre::Group* group,
                                            const std::string& group_path)
 {
 #ifdef AXOM_USE_HDF5
-  std::string tmp_name = file_name;
-  if (m_use_scr)
-  {
-    tmp_name = getSCRPath(tmp_name);
-  }
+  std::string tmp_name = getSCRPath(file_name);
 
   hid_t root_file_id =
     conduit::relay::io::hdf5_open_file_for_read_write(tmp_name);
@@ -1053,11 +1014,7 @@ void IOManager::writeViewToRootFileAtPath(sidre::View* view,
                                           const std::string& group_path)
 {
 #ifdef AXOM_USE_HDF5
-  std::string tmp_name = file_name;
-  if (m_use_scr)
-  {
-    tmp_name = getSCRPath(tmp_name);
-  }
+  std::string tmp_name = getSCRPath(file_name);
 
   hid_t root_file_id =
     conduit::relay::io::hdf5_open_file_for_read_write(tmp_name);
@@ -1098,11 +1055,7 @@ void IOManager::writeBlueprintIndexToRootFile(DataStore* datastore,
                                               const std::string& mesh_path)
 {
 #ifdef AXOM_USE_HDF5
-  std::string tmp_name = file_name;
-  if (m_use_scr)
-  {
-    tmp_name = getSCRPath(tmp_name);
-  }
+  std::string tmp_name = getSCRPath(file_name);
 
   hid_t root_file_id =
     conduit::relay::io::hdf5_open_file_for_read_write(tmp_name);
