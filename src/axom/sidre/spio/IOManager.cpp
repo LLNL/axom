@@ -557,11 +557,6 @@ void IOManager::createRootFile(const std::string& file_base,
 #ifdef AXOM_USE_SCR
   if (m_use_scr)
   {
-    if (protocol == "sidre_hdf5")
-    {
-      n["file_pattern"] = local_file_base + "_" + "%07d.hdf5";
-    }
-
     root_file_name = getSCRPath(root_file_name);
   }
 #endif
