@@ -324,12 +324,6 @@ private:
                                  const std::string& root_name,
                                  int rankgroup_id);
 
-#ifdef AXOM_USE_SCR
-  void readWithSCR(sidre::Group* group,
-                   const std::string& root_file,
-                   bool preserve_contents = false);
-#endif
-
   std::string getSCRPath( const std::string & path);
 
   int m_comm_size;  // num procs in the MPI communicator

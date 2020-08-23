@@ -320,39 +320,9 @@ void IOManager::read(sidre::Group* datagroup,
                      bool preserve_contents)
 {
   MPI_Barrier(m_mpi_comm);
-
-#ifdef AXOM_USE_SCR
-  if (m_use_scr)
-  {
-    readWithSCR(datagroup, root_file, preserve_contents);
-  }
-  else
-#endif
-  {
-    std::string protocol = getProtocol(root_file);
-    read(datagroup, root_file, protocol, preserve_contents);
-  }
-}
-
-/*
- *************************************************************************
- *
- * Read based on root file that was dumped in an SCR checkpoint.
- *
- *************************************************************************
- */
-#ifdef AXOM_USE_SCR
-void IOManager::readWithSCR(
-  sidre::Group* datagroup,
-  const std::string& root_file,
-  bool preserve_contents)
-{
-  SLIC_ASSERT(m_use_scr);
-
   std::string protocol = getProtocol(root_file);
   read(datagroup, root_file, protocol, preserve_contents);
 }
-#endif
 
 std::string IOManager::getSCRPath(const std::string & path)
 {
