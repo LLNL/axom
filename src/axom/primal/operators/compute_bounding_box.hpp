@@ -14,8 +14,10 @@
 
 #include "axom/primal/geometry/NumericArray.hpp" // for numeric arrays
 #include "axom/core/numerics/Matrix.hpp" // for Matrix
+#include "axom/core/Macros.hpp" // for AXOM_HOST__DEVICE
 #include "axom/core/numerics/eigen_solve.hpp" // for eigen_solve
 #include "axom/primal/geometry/Point.hpp"
+#include "axom/primal/geometry/Triangle.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 #include "axom/primal/geometry/OrientedBoundingBox.hpp"
 
@@ -91,12 +93,30 @@ OrientedBoundingBox< T, NDIMS > merge_boxes( const OrientedBoundingBox< T, NDIMS
  * \param [in] l left bb
  * \param [in] r right bb
  */
+
 template < typename T, int NDIMS >
 BoundingBox< T, NDIMS > merge_boxes( const BoundingBox< T, NDIMS >
                                      &l, const BoundingBox< T, NDIMS > &r)
 {
   BoundingBox< T, NDIMS > res(l);
   res.addBox(r);
+  return res;
+}
+
+/*!
+ * \brief Creates a bounding box around a Triangle
+ *
+ * \param [in] tri The Triangle
+ */
+template < typename T, int NDIMS >
+AXOM_HOST_DEVICE
+BoundingBox< T, NDIMS > compute_bounding_box( const Triangle< T, NDIMS > &tri)
+{
+  BoundingBox< T, NDIMS > res(tri[0]);
+  for (int i = 1; i < 3; i++)
+  {
+    res.addPoint(tri[i]);
+  }
   return res;
 }
 

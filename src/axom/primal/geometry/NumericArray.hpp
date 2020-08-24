@@ -200,6 +200,7 @@ public:
    * The rest will be set to zero.  Defaults is SIZE.
    * If sz is greater than SIZE, we set all coordinates to val
    */
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE
   explicit NumericArray( T val = T(), int sz = SIZE);
 
@@ -209,6 +210,7 @@ public:
    * \param [in] sz number of coordinates. Defaults to SIZE.
    * \note If sz is greater than SIZE, we only take the first SIZE values.
    */
+  AXOM_SUPPRESS_HD_WARN
   AXOM_HOST_DEVICE
   NumericArray(const T* vals, int sz = SIZE);
 

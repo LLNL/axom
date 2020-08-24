@@ -271,7 +271,7 @@ View* Group::createView( const std::string& path,
 View* Group::createView( const std::string& path,
                          TypeID type,
                          int ndims,
-                         IndexType* shape )
+                         const IndexType* shape )
 {
   if ( type == NO_TYPE_ID || ndims < 0 || shape == nullptr )
   {
@@ -375,7 +375,7 @@ View* Group::createView( const std::string& path,
 View* Group::createView( const std::string& path,
                          TypeID type,
                          int ndims,
-                         IndexType* shape,
+                         const IndexType* shape,
                          Buffer* buff )
 {
   View* view = createView(path, type, ndims, shape);
@@ -465,7 +465,7 @@ View* Group::createView( const std::string& path,
 View* Group::createView( const std::string& path,
                          TypeID type,
                          int ndims,
-                         IndexType* shape,
+                         const IndexType* shape,
                          void* external_ptr )
 {
   View* view = createView(path, type, ndims, shape);
@@ -537,7 +537,7 @@ View* Group::createViewAndAllocate( const std::string& path,
 View* Group::createViewAndAllocate( const std::string& path,
                                     TypeID type,
                                     int ndims,
-                                    IndexType* shape,
+                                    const IndexType* shape,
                                     int allocID )
 {
   allocID = getValidAllocatorID(allocID);

@@ -16,6 +16,9 @@
 
 #include <memory>
 #include <string>
+#include <functional>
+#include <unordered_map>
+#include <tuple>
 
 #include "axom/inlet/Field.hpp"
 #include "axom/inlet/Reader.hpp"
@@ -80,6 +83,7 @@ public:
         if (!m_sidreRootGroup->hasGroup(name))
         {
           m_sidreGroup = m_sidreRootGroup->createGroup(name);
+          m_sidreGroup->createViewString("InletType", "Table");
         }
         else
         {
@@ -231,6 +235,92 @@ public:
    *****************************************************************************
    */
   bool required();
+
+  /*!
+   *****************************************************************************
+   * \brief Registers the function object that will verify this Table's contents
+   * during the verification stage.
+   * 
+   * \param [in] The function object that will be called by Table::verify().
+   *****************************************************************************
+  */
+  std::shared_ptr<Table> registerVerifier(std::function<bool()> lambda);
+
+   /*!
+   *****************************************************************************
+   * \brief This will be called by Inlet::verify to verify the contents of this
+   *  Table and all child Tables/Fields of this Table.
+   *****************************************************************************
+  */
+  bool verify();
+
+  /*!
+   *****************************************************************************
+   * \brief Return whether a Table with the given name is present in this Table's subtree.
+   *
+   * \return Boolean value indicating whether this Table's subtree contains this Table.
+   *****************************************************************************
+   */
+  bool hasTable(const std::string& tableName);
+
+   /*!
+   *****************************************************************************
+   * \brief Return whether a Field with the given name is present in this Table's
+   *  subtree.
+   *
+   * \return Boolean value indicating whether this Table's subtree contains this Field.
+   *****************************************************************************
+   */
+  bool hasField(const std::string& fieldName);
+ 
+
+  /*!
+   *****************************************************************************
+   * \return An unordered map from Field names to the child Field pointers for 
+   * this Table.
+   *****************************************************************************
+   */
+  std::unordered_map<std::string, std::shared_ptr<Field>> getChildFields();
+
+  /*!
+   *****************************************************************************
+   * \return An unordered map from Table names to the child Table pointers for 
+   * this Table.
+   *****************************************************************************
+   */
+  std::unordered_map<std::string, std::shared_ptr<Table>> getChildTables();
+
+  /*!
+   *****************************************************************************
+   * \return The full name of this Table.
+   *****************************************************************************
+   */
+  std::string name();
+
+  /*!
+   *****************************************************************************
+   * \brief Retrieves the matching Table.
+   * 
+   * \param [in] The string indicating the target name of the Table to be searched for.
+   * 
+   * \return The Table matching the target name. If no such Table is found,
+   * a nullptr is returned.
+   *****************************************************************************
+   */
+  std::shared_ptr<Table> getTable(const std::string& tableName);
+
+   /*!
+   *****************************************************************************
+   * \brief Retrieves the matching Field.
+   * 
+   * \param [in] The string indicating the target name of the Field to be searched for.
+   * 
+   * \return The Field matching the target name. If no such Field is found,
+   * a nullptr is returned.
+   *****************************************************************************
+   */
+  std::shared_ptr<Field> getField(const std::string& fieldName);
+
 private:
   /*!
    *****************************************************************************
@@ -240,8 +330,71 @@ private:
    * \return Pointer to the created Sidre Group for this Table
    *****************************************************************************
    */
-  axom::sidre::Group* baseFieldAdd(const std::string& name,
+  axom::sidre::Group* createSidreGroup(const std::string& name,
                                    const std::string& description);
+
+  /*!
+   *****************************************************************************
+   * \brief Adds the Field.
+   * 
+   * \param [in] The Sidre Group corresponding to the Field that will be added.
+   * \param [in] The type ID
+   * \param [in] The complete Table sequence for the Table this Field will be added to.
+   * \param [in] The Table sequence for the Table this Field will be added to, 
+   * relative to this Table.
+   * 
+   * \return The child Field matching the target name. If no such Field is found,
+   * a nullptr is returned.
+   *****************************************************************************
+   */
+  std::shared_ptr<Field> addField(axom::sidre::Group* sidreGroup, 
+                                  axom::sidre::DataTypeId type, 
+                                  const std::string& fullName,
+                                  const std::string& name);
+
+  /*!
+   *****************************************************************************
+   * \brief This is the internal implementation of getTable. It retrieves the matching Table.
+   * 
+   * \param [in] The string indicating the target name of the Table to be searched for.
+   * 
+   * \return The Table matching the target name. If no such Table is found,
+   * a nullptr is returned.
+   *****************************************************************************
+   */
+  std::shared_ptr<Table> getTableInternal(const std::string& tableName);
+
+  /*!
+   *****************************************************************************
+   * \brief This is the internal implementation of getField. It retrieves the matching Field.
+   * 
+   * \param [in] The string indicating the target name of the Field to be searched for.
+   * 
+   * \return The Field matching the target name. If no such Table is found,
+   * a nullptr is returned.
+   *****************************************************************************
+   */
+  std::shared_ptr<Field> getFieldInternal(const std::string& fieldName);
+
+  /*!
+   *****************************************************************************
+   * \brief This is an internal helper. It returns whether this Table has a child 
+   * Table with the given name.
+   *
+   * \return Boolean value of whether this Table has the child Table.
+   *****************************************************************************
+   */
+  bool hasChildTable(const std::string& tableName);
+
+    /*!
+   *****************************************************************************
+   * \brief This is an internal helper. It return whether this Table has a child 
+   * Field with the given name.
+   *
+   * \return Boolean value of whether this Table has the child Field.
+   *****************************************************************************
+   */
+  bool hasChildField(const std::string& fieldName);
 
   std::string m_name;
   std::shared_ptr<Reader> m_reader;
@@ -250,6 +403,9 @@ private:
   // This Table's Sidre Group
   axom::sidre::Group* m_sidreGroup;
   bool m_docEnabled;
+  std::unordered_map<std::string, std::shared_ptr<Table>> m_tableChildren;
+  std::unordered_map<std::string, std::shared_ptr<Field>> m_fieldChildren;
+  std::function<bool()> m_verifier;
 };
 
 } // end namespace inlet

@@ -120,6 +120,7 @@ public:
    * \brief Assignment operator.
    * \param [in] rhs a point instance on the right hand side.
    */
+  AXOM_HOST_DEVICE
   Point& operator=(const Point& rhs)
   { m_components=rhs.m_components; return *this; }
 

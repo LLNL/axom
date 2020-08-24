@@ -27,7 +27,7 @@ namespace inlet
 std::shared_ptr<Table> Inlet::addTable(const std::string& name,
                                        const std::string& description)
 {
-  return std::make_shared<Table>(name, description, m_reader, m_sidreRootGroup, m_docEnabled);
+  return m_globalTable->addTable(name, description);
 }
 
 std::shared_ptr<Field> Inlet::addBool(const std::string& name,
@@ -199,6 +199,11 @@ void Inlet::writeDoc() {
 bool Inlet::verify() {
   bool verifySuccess = true;
   verifyRecursive(m_sidreRootGroup, verifySuccess);
+
+  if (!m_globalTable->verify()) {
+    verifySuccess = false;
+  }
+
   return verifySuccess;
 }
 
@@ -208,14 +213,25 @@ void Inlet::verifyRecursive(axom::sidre::Group* sidreGroup, bool& verifySuccess)
     verifySuccess = false;
   }
 
+  // Checking if the current Group corresponds to a Table.
   if (sidreGroup->hasView("required")) {
-    int8 required = sidreGroup->getView("required")->getData();
-    if (required && !sidreGroup->hasView("value")) {
-      std::string msg = fmt::format("Inlet: {0}: Required field not specified", 
-                                    sidreGroup->getPathName());
-      SLIC_WARNING(msg);
-      setWarningFlag(m_sidreRootGroup);
-      verifySuccess = false;
+    if (sidreGroup->hasView("InletType")
+       && strcmp(sidreGroup->getView("InletType")->getString(), "Table") == 0) {
+      int8 required = sidreGroup->getView("required")->getData();
+      if (required && sidreGroup->getNumGroups() == 0) {
+        std::string msg = fmt::format("Inlet: {0}: Required Table not specified", 
+                                      sidreGroup->getPathName());
+        SLIC_WARNING(msg);
+        verifySuccess = false;
+      }
+    } else {
+      int8 required = sidreGroup->getView("required")->getData();
+      if (required && !sidreGroup->hasView("value")) {
+        std::string msg = fmt::format("Inlet: {0}: Required Field not specified", 
+                                      sidreGroup->getPathName());
+        SLIC_WARNING(msg);
+        verifySuccess = false;
+      }
     }
   }
   if (sidreGroup->hasView("value") && !verifyValue(sidreGroup)) {
@@ -327,8 +343,6 @@ bool Inlet::searchValidValues(axom::sidre::Group* sidreGroup, std::string value)
   }
   return false;
 }
-
-
 
 } // end namespace inlet
 } // end namespace axom

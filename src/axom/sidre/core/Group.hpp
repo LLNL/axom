@@ -465,7 +465,7 @@ public:
   View* createView( const std::string& path,
                     TypeID type,
                     int ndims,
-                    IndexType* shape );
+                    const IndexType* shape );
 
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -557,7 +557,7 @@ public:
   View* createView( const std::string& path,
                     TypeID type,
                     int ndims,
-                    IndexType* shape,
+                    const IndexType* shape,
                     Buffer* buff );
 
   /*!
@@ -654,7 +654,7 @@ public:
   View* createView( const std::string& path,
                     TypeID type,
                     int ndims,
-                    IndexType* shape,
+                    const IndexType* shape,
                     void* external_ptr );
   /*!
    * \brief Create View object with given name or path in this Group that
@@ -723,7 +723,7 @@ public:
   View* createViewAndAllocate( const std::string& path,
                                TypeID type,
                                int ndims,
-                               IndexType* shape,
+                               const IndexType* shape,
                                int allocID=INVALID_ALLOCATOR_ID);
 
   /*!

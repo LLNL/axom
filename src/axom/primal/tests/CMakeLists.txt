@@ -32,6 +32,8 @@ set( primal_tests
 
 set(primal_test_depends fmt primal slic gtest)
 
+blt_list_append( TO primal_test_depends ELEMENTS cuda IF ${ENABLE_CUDA} )
+
 foreach ( test ${primal_tests} )
 
    get_filename_component( test_name ${test} NAME_WE )

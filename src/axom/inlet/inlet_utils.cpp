@@ -12,5 +12,18 @@ void setWarningFlag(axom::sidre::Group* root) {
   }
 }
 
+std::string appendPrefix(const std::string& prefix, const std::string& name)
+{
+  return (prefix == "") ? name : prefix + "/" + name;
+}
+
+std::string removePrefix(const std::string& prefix, const std::string& name) {
+  if (axom::utilities::string::startsWith(name, prefix + "/")) {
+    return name.substr(prefix.size());
+  }
+  SLIC_WARNING(fmt::format("Provided name {0} does not contain prefix {1}", name, prefix));
+  return name;
+}
+
 }
 }

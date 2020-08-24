@@ -49,7 +49,7 @@ contains
 
     call set_case_name("create_views")
 
-    ds = datastore_new()
+    ds = SidreDataStore()
     root = ds%get_root()
 
     dv_0 = root%create_view_and_allocate("field0", SIDRE_INT_ID, 1)
@@ -72,7 +72,7 @@ contains
 
     call set_case_name("get_path_name")
 
-    ds = datastore_new()
+    ds = SidreDataStore()
     root = ds%get_root()
     v1 = root%create_view("test/a/b/v1")
     v2 = root%create_view("test/v2")
@@ -104,7 +104,7 @@ contains
 
     call set_case_name("scalar_view")
 
-    ds = datastore_new()
+    ds = SidreDataStore()
     root = ds%get_root()
 
     i1 = 1
@@ -220,7 +220,7 @@ contains
 
     call set_case_name("int_buffer_from_view")
 
-    ds = datastore_new()
+    ds = SidreDataStore()
     root = ds%get_root()
 
     dv = root%create_view_and_allocate("u0", SIDRE_INT_ID, elem_count)
@@ -251,7 +251,7 @@ contains
 
     call set_case_name("int_buffer_from_view_conduit")
 
-    ds = datastore_new()
+    ds = SidreDataStore()
     root = ds%get_root()
 
     dv = root%create_view_and_allocate("u0", SIDRE_INT_ID, 10_8)
@@ -280,7 +280,7 @@ contains
 
     call set_case_name("int_array_multi_view")
 
-    ds = datastore_new()
+    ds = SidreDataStore()
     root = ds%get_root()
     dbuff = ds%create_buffer(SIDRE_INT_ID, 10_8)
 
@@ -343,7 +343,7 @@ contains
     
     call set_case_name("init_int_array_multi_view")
 
-    ds = datastore_new()
+    ds = SidreDataStore()
     root = ds%get_root()
     dbuff = ds%create_buffer()
     
@@ -416,7 +416,7 @@ contains
     call set_case_name("int_array_depth_view")
 
     ! create our main data store
-    ds = datastore_new()
+    ds = SidreDataStore()
 
     depth_nelems = 10 
     total_nelems = 4 * depth_nelems
@@ -496,7 +496,7 @@ contains
     call set_case_name("int_array_view_attach_buffer")
 
     ! create our main data store
-    ds = datastore_new()
+    ds = SidreDataStore()
 
     ! get access to our root data Group
     root = ds%get_root()
@@ -589,7 +589,7 @@ contains
     call set_case_name("int_array_offset_stride")
 
     ! create our main data store
-    ds = datastore_new()
+    ds = SidreDataStore()
 
     ! get access to our root data Group
     root = ds%get_root()
@@ -715,7 +715,7 @@ contains
     call set_case_name("int_array_multi_view_resize")
 
     ! create our main data store
-    ds = datastore_new()
+    ds = SidreDataStore()
 
     ! get access to our root data Group
     root = ds%get_root()
@@ -870,7 +870,7 @@ contains
     call set_case_name("int_array_realloc")
 
     ! create our main data store
-    ds = datastore_new()
+    ds = SidreDataStore()
 
     ! get access to our root data Group
     root = ds%get_root()
@@ -935,7 +935,7 @@ contains
     call set_case_name("simple_opaque")
 
     ! create our main data store
-    ds = datastore_new()
+    ds = SidreDataStore()
 
     ! get access to our root data Group
     root = ds%get_root()

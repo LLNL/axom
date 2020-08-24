@@ -285,5 +285,25 @@ std::shared_ptr<Field> Field::validValues(const std::initializer_list<double>& s
   return validValues(std::vector<double>(set));
 }
 
+std::shared_ptr<Field> Field::registerVerifier(std::function<bool()> lambda) {
+  SLIC_WARNING_IF(m_verifier, fmt::format("Verifier for Field {0} already set", 
+                                         m_sidreGroup->getPathName()));
+  m_verifier = lambda;
+  return shared_from_this();
+}
+
+bool Field::verify() {
+  if (m_verifier && !m_verifier()) {
+    SLIC_WARNING(fmt::format("Field {0} failed verification", 
+                 m_sidreGroup->getPathName()));
+    return false;
+  }
+  return true;
+}
+
+std::string Field::name() {
+  return removePrefix(m_sidreRootGroup->getPathName(), m_sidreGroup->getPathName());
+}
+
 } // end namespace inlet
 } // end namespace axom

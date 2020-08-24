@@ -31,7 +31,7 @@ program spio_parallel_write_read
   type(SidreGroup) extra_root, extra, child
   type(SidreView) view
 
-  type(iomanager) writer, reader
+  type(IOManager) writer, reader
 
 #ifdef AXOM_USE_HDF5
   character(18) :: protocol = "sidre_hdf5        "
@@ -59,7 +59,7 @@ program spio_parallel_write_read
 !
 ! the views are filled with repeatable nonsense data that will vary based
 ! on rank.
-  ds1 = datastore_new()
+  ds1 = SidreDataStore()
   root1 = ds1%get_root()
 
   flds = root1%create_group("fields")
@@ -79,14 +79,14 @@ program spio_parallel_write_read
 
   ! contents of the datastore written to files with io_manager.
   num_files = num_output
-  writer = iomanager_new(MPI_COMM_WORLD)
+  writer = IOManager(MPI_COMM_WORLD)
 
   call writer%write(root1, num_files, "F_out_spio_parallel_write_read", protocol )
 
   ! Extra stuff to exercise writeGroupToRootFile for 'sidre_hdf5' protocol
   call mpi_barrier(MPI_COMM_WORLD, mpierr)
   if (my_rank == 0 .and. protocol .eq. "sidre_hdf5") then
-     dsextra = datastore_new()
+     dsextra = SidreDataStore()
      extra_root = dsextra%get_root()
      extra = extra_root%create_group("extra")
      view = extra%create_View_Scalar("dval", 1.1d0)
@@ -102,10 +102,10 @@ program spio_parallel_write_read
   call mpi_barrier(MPI_COMM_WORLD, mpierr)
 
   ! create another datastore that holds nothing but the root group.
-  ds2 = datastore_new()
+  ds2 = SidreDataStore()
 
   ! read from the files that were written above.
-  reader = iomanager_new(MPI_COMM_WORLD)
+  reader = IOManager(MPI_COMM_WORLD)
 
   root2 = ds2%get_root()
   call reader%read(root2, "F_out_spio_parallel_write_read" // root_ext )
