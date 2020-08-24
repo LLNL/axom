@@ -6,6 +6,7 @@
 // usage : ./inlet_documentation_generation_example --enableDocs --fil lua_file.lua 
 
 #include "axom/inlet.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 
 #include "CLI11/CLI11.hpp"
 #include <iostream>
@@ -137,13 +138,17 @@ void checkValues(std::shared_ptr<Inlet> inlet) {
 
   // Verify that contents of Inlet meet the requirements of the specified schema
   if (inlet->verify()) {
-    std::cout << "Inlet verify successful" << std::endl;
+    SLIC_INFO("Inlet verify successful.");
   } else {
-    std::cout << "Inlet verify failed" << std::endl;
+    SLIC_INFO("Inlet verify failed.");
   }
 }
 
 int main(int argc, char** argv) {
+  // Inlet requires a SLIC logger to be initialized to output runtime information
+  // This is a generic basic SLIC logger
+  axom::slic::UnitTestLogger logger;
+
   CLI::App app {"Basic example of Axom's Inlet component"};
   bool docsEnabled{false};
   app.add_flag("--enableDocs", docsEnabled, "Enables documentation generation");
@@ -173,7 +178,7 @@ int main(int argc, char** argv) {
   inlet->writeDoc();
 
   if (docsEnabled) {
-    std::cout << "Documentation was written to example_doc.rst" << std::endl;
+    SLIC_INFO("Documentation was written to example_doc.rst\n");
   }
 
   return 0;
