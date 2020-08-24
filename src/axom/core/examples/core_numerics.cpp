@@ -42,7 +42,6 @@ void sleep(int numSeconds)
 // C/C++ includes
 #include <iostream>
 #include <vector>
-#include "core_numerics.h"
 
 void demoVectorOps()
 {
