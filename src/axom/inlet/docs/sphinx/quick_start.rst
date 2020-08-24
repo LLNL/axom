@@ -123,7 +123,7 @@ to write out your documentation to the given file.
    inlet->writeDoc();
 
 We provided a basic Sphinx documentation writing class but you may want to customize it to your
-own style.  The below link shows the example output from the ``documentation_generation.cpp`` example:
+own style.  The link below shows the example output from the ``documentation_generation.cpp`` example:
 
 .. toctree::
    :maxdepth: 1
