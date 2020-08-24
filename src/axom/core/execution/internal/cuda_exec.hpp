@@ -55,6 +55,7 @@ struct execution_space< CUDA_EXEC< BLOCK_SIZE, SYNCHRONOUS > >
 
   static constexpr bool async() noexcept { return false; };
   static constexpr bool valid() noexcept { return true; };
+  static constexpr bool onDevice() noexcept { return true; };
   static constexpr char* name() noexcept { return (char*)"[CUDA_EXEC]"; };
   static int allocatorID() noexcept
   { return axom::getUmpireResourceAllocatorID(umpire::resource::Unified); };
@@ -78,6 +79,7 @@ struct execution_space< CUDA_EXEC< BLOCK_SIZE, ASYNC > >
 
   static constexpr bool async() noexcept { return true; };
   static constexpr bool valid() noexcept { return true; };
+  static constexpr bool onDevice() noexcept { return true; };
   static constexpr char* name() noexcept {
     return (char*)"[CUDA_EXEC] (async)";
   };

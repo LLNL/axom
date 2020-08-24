@@ -10,6 +10,12 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
+- Added BVH spatial index option to the `mesh_tester` utility for calculating
+  triangle-triangle intersection.
+- Added `axom::execution_space< ExecSpace >::onDevice()` to check if execution
+  space is on device.
+- Added Axom macro `AXOM_SUPPRESS_HD_WARN` to silence host device compiler
+  warnings.
 - Added option to quest's `SignedDistance` class and C API to toggle whether
   the distance query computes the sign.
 - Added a `batched` option to quest's signed distance query example application.
@@ -53,6 +59,9 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ### Deprecated
 
 ### Changed
+- Modified the command line interface for `mesh_tester` utility. Interface
+  now uses a *-m, --method* option to select the spatial index, and *-p, policy*
+  option now accepts a string or integer value.
 - Renamed the `AXOM_USE_MPI3`option to `AXOM_ENABLE_MPI3` for consistency.
 - Renamed the `AXOM_USE_CUB` option to `AXOM_ENABLE_CUB` for consistency.
 - Modified the API for the BVH to accomodate different query types. The queries are now
