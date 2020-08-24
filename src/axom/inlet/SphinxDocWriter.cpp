@@ -30,7 +30,7 @@ SphinxDocWriter::SphinxDocWriter(const std::string& fileName, axom::sidre::Group
 
 void SphinxDocWriter::writeDocumentation() {
   if (m_sidreRootGroup->getName() == "") {
-    writeTitle("Input Deck Options");
+    writeTitle("Input file Options");
   }  else {
     writeTitle(m_sidreRootGroup->getName());
   }

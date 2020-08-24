@@ -1,5 +1,5 @@
 ==================
-Input Deck Options
+Input File Options
 ==================
 .. |uncheck|    unicode:: U+2610 .. UNCHECKED BOX
 .. |check|      unicode:: U+2611 .. CHECKED BOX

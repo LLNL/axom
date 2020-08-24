@@ -27,7 +27,7 @@ int main() {
   v->registerVerifier([&]() -> bool {
     int dim;
     myInlet->get("dimensions", dim);
-    int value;  // field value doesnt matter just that it is present in input deck
+    int value;  // field value doesnt matter just that it is present in input file
     bool x_present = v->hasField("x") && myInlet->get("vector/x", value);
     bool y_present = v->hasField("y") && myInlet->get("vector/y", value);
     bool z_present = v->hasField("z") && myInlet->get("vector/z", value);
@@ -63,13 +63,13 @@ int main() {
   int dim, x, y;
   bool dim_found, x_found, y_found;
 
-  // Get dimensions if it was present in input deck
+  // Get dimensions if it was present in input file
   dim_found = myInlet->get("dimensions", dim);
   if (dim_found) {
     std::cout << "Dimensions = " << dim << std::endl;
   }
 
-  // Get vector information if it was present in input deck
+  // Get vector information if it was present in input file
   x_found = myInlet->get("vector/x", x);
   y_found = myInlet->get("vector/y", y);
   if (x_found && y_found) {

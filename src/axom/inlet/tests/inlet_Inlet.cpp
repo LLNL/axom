@@ -594,7 +594,7 @@ TEST(inlet_Inlet, mixLevelTables)
   auto inlet = std::make_shared<axom::inlet::Inlet>(luaReader, dataStore.getRoot());
 
   //
-  // Define input deck schema
+  // Define input file schema
   //
 
   // fields that are expected to not be present in above string
@@ -619,7 +619,7 @@ TEST(inlet_Inlet, mixLevelTables)
   inlet->addInt("thermal_solver/solver/steps", "steps");
 
   //
-  //  Verify values found in input deck
+  //  Verify values found in input file
   //
   bool found = false;
   std::string strVal;
@@ -1212,7 +1212,7 @@ TEST(inlet_verify, verifyTableLambda3) {
   v->registerVerifier([&]() -> bool {
     int dim;
     myInlet->get("dimensions", dim);
-    int value;  // field value doesnt matter just that it is present in input deck
+    int value;  // field value doesnt matter just that it is present in input file
     bool x_present = v->hasField("x") && myInlet->get("vector/x", value);
     bool y_present = v->hasField("y") && myInlet->get("vector/y", value);
     bool z_present = v->hasField("z") && myInlet->get("vector/z", value);
