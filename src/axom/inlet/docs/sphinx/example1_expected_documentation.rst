@@ -1,6 +1,6 @@
-==================
-Input File Options
-==================
+==================================
+Example Output: Input File Options
+==================================
 .. |uncheck|    unicode:: U+2610 .. UNCHECKED BOX
 .. |check|      unicode:: U+2611 .. CHECKED BOX
 
