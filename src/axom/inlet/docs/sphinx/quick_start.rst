@@ -5,9 +5,9 @@ Quick Start
 
 Inlet's workflow is broken into the four following steps:  
 
-* Defining the schema of your input file
-* Verifying that the user given input file is valid
-* Accessing the read and stored data in your program
+* Defining the schema of your input file and reading in the user-provided input file
+* Verifying that the user-provided input file is valid
+* Accessing the input data in your program
 * *Optional* Generating documentation based on defined schema
 
 .. _inlet_defining_schema_label:
@@ -20,7 +20,7 @@ Inlet defines an input file into two basic classes: Tables and Fields. Basically
 Fields are individual values and Tables hold groups of Fields and Tables.
 
 Define the schema by using the following functions, on either the main Inlet class, for
-global Tables and Fields, or on individual Table classes, for Tables and Fields under that Table:
+global Tables and Fields, or on individual Table instances, for Tables and Fields under that Table:
 
 ========================= ===================
 Name                      Description
@@ -50,7 +50,9 @@ if the specific Field is not present in the input file. The following example sh
 Verification
 ------------
 
-This step helps ensure that the given input file follows the rules expected by the code.  These
+This step helps ensure that the given input file follows the rules expected by the code.  This should
+be done after completely defining your schema, which also reads in the values in the input
+file.  This allows you to access any other part of the user-provided input. These
 rules are not verified until you call ``Inlet::verify()``.  Doing so will return true/false and
 output SLIC warnings to indicate which Field or Table violated which rule.
 
@@ -121,4 +123,9 @@ to write out your documentation to the given file.
    inlet->writeDoc();
 
 We provided a basic Sphinx documentation writing class but you may want to customize it to your
-own style.
+own style.  The below link shows the example output from the ``documentation_generation.cpp`` example:
+
+.. toctree::
+   :maxdepth: 1
+
+   example1_expected_documentation

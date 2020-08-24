@@ -6,8 +6,14 @@
 #include <iostream>
 
 #include "axom/inlet.hpp"
+#include "axom/slic/core/UnitTestLogger.hpp"
 
 int main() {
+
+  // Inlet requires a SLIC logger to be initialized to output runtime information
+  // This is a generic basic SLIC logger
+  axom::slic::UnitTestLogger logger;
+
   // Initialize Inlet
   auto lr = std::make_shared<axom::inlet::LuaReader>();
   lr->parseString("dimensions = 2; vector = { x = 1; y = 2; z = 3; }");
@@ -43,20 +49,23 @@ int main() {
     return false;
   });
 
+  std::string msg;
   // We expect verification to be unsuccessful since the only Field
   // in vector is x but 2 dimensions are expected
-  std::cout << "This should fail due to a missing dimension:\n";
-  myInlet->verify() ? std::cout << "Verification was successful\n" 
-                    : std::cout << "Verification was unsuccessful\n";
-  
+  SLIC_INFO("This should fail due to a missing dimension:");
+  myInlet->verify() ? msg = "Verification was successful\n" 
+                    : msg = "Verification was unsuccessful\n";
+  SLIC_INFO(msg);
+
   // Add required dimension to schema
   v->addInt("y");
 
   // We expect the verification to succeed because vector now contains
   // both x and y to match the 2 dimensions
-  std::cout << "After adding the required dimension:\n";
-  myInlet->verify() ? std::cout << "Verification was successful\n" 
-                    : std::cout << "Verification was unsuccessful\n";
+  SLIC_INFO("After adding the required dimension:");
+  myInlet->verify() ? msg = "Verification was successful\n" 
+                    : msg = "Verification was unsuccessful\n";
+  SLIC_INFO(msg);
   // _inlet_workflow_verification_end
 
   // _inlet_workflow_accessing_data_start
@@ -66,14 +75,16 @@ int main() {
   // Get dimensions if it was present in input file
   dim_found = myInlet->get("dimensions", dim);
   if (dim_found) {
-    std::cout << "Dimensions = " << dim << std::endl;
+    msg = "Dimensions = " + std::to_string(dim) + "\n";
+    SLIC_INFO(msg);
   }
 
   // Get vector information if it was present in input file
   x_found = myInlet->get("vector/x", x);
   y_found = myInlet->get("vector/y", y);
   if (x_found && y_found) {
-    std::cout << "Vector = " << x << "," << y << std::endl;
+    msg = "Vector = " + std::to_string(x) + "," + std::to_string(y) + "\n";
+    SLIC_INFO(msg);
   }
   // _inlet_workflow_accessing_data_end
 
