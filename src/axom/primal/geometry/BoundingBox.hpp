@@ -10,6 +10,8 @@
 
 #include "axom/config.hpp"
 
+#include "axom/core/Macros.hpp" // for AXOM_HOST__DEVICE
+
 #include "axom/primal/geometry/Point.hpp"
 #include "axom/primal/geometry/Vector.hpp"
 
@@ -85,6 +87,7 @@ public:
   /*!
    * \brief Constructor. Creates a bounding box containing a single point
    */
+  AXOM_HOST_DEVICE
   BoundingBox( const PointType& pt )
     : m_min( pt), m_max( pt) { }
 
@@ -113,6 +116,7 @@ public:
   /*!
    * \brief Destructor.
    */
+  AXOM_HOST_DEVICE
   ~BoundingBox() { }
 
   /*!
@@ -125,12 +129,14 @@ public:
    * \brief Returns const reference to the min corner of the bounding box.
    * \return const reference to the min corner of the bounding box.
    */
+  AXOM_HOST_DEVICE
   const PointType& getMin() const { return m_min; };
 
   /*!
    * \brief Returns const reference to the max corner of the bounding box.
    * \return const reference to the max corner of the bounding box.
    */
+  AXOM_HOST_DEVICE
   const PointType& getMax() const { return m_max; };
 
   /*!
@@ -150,6 +156,7 @@ public:
    * \param [in] pt to include.
    */
   template < typename OtherType >
+  AXOM_HOST_DEVICE
   void addPoint(const Point< OtherType,NDIMS >& pt);
 
   /*!

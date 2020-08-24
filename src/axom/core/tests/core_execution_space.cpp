@@ -61,7 +61,8 @@ template < typename ExecSpace,
            typename ReducePolicy,
            typename AtomicPolicy,
            typename SyncPolicy >
-void check_execution_mappings( int expectedAllocatorID, bool is_async )
+void check_execution_mappings( int expectedAllocatorID, bool is_async,
+                               bool is_onDevice )
 {
   std::cout << "checking execution space: " <<
     axom::execution_space< ExecSpace >::name() << std::endl;
@@ -83,6 +84,9 @@ void check_execution_mappings( int expectedAllocatorID, bool is_async )
 
   const bool async = axom::execution_space< ExecSpace >::async();
   EXPECT_EQ( async, is_async );
+
+  const bool onDevice = axom::execution_space< ExecSpace >::onDevice();
+  EXPECT_EQ( onDevice, is_onDevice );
 
   int allocatorID = axom::execution_space< ExecSpace >::allocatorID();
   EXPECT_EQ( expectedAllocatorID, allocatorID );
@@ -127,6 +131,7 @@ TEST( core_execution_space, check_seq_exec )
   check_valid< axom::SEQ_EXEC >( );
 
   constexpr bool IS_ASYNC = false;
+  constexpr bool ON_DEVICE = false;
 
 
   int allocator_id = axom::getUmpireResourceAllocatorID(umpire::resource::Host);
@@ -134,7 +139,7 @@ TEST( core_execution_space, check_seq_exec )
                             RAJA::loop_exec,
                             RAJA::loop_reduce,
                             RAJA::loop_atomic,
-                            void >( allocator_id, IS_ASYNC );
+                            void >( allocator_id, IS_ASYNC, ON_DEVICE );
 
 }
 
@@ -146,13 +151,15 @@ TEST( core_execution_space, check_omp_exec )
   check_valid< axom::OMP_EXEC >( );
 
   constexpr bool IS_ASYNC = false;
+  constexpr bool ON_DEVICE = false;
 
   int allocator_id = axom::getUmpireResourceAllocatorID(umpire::resource::Host);
   check_execution_mappings< axom::OMP_EXEC,
                             RAJA::omp_parallel_for_exec,
                             RAJA::omp_reduce,
                             RAJA::omp_atomic,
-                            RAJA::omp_synchronize >( allocator_id, IS_ASYNC );
+                            RAJA::omp_synchronize >( allocator_id, IS_ASYNC,
+                                                     ON_DEVICE );
 
 }
 #endif // defined(AXOM_USE_OPENMP)
@@ -167,6 +174,7 @@ TEST( core_execution_space, check_cuda_exec )
   check_valid< axom::CUDA_EXEC< BLOCK_SIZE > >( );
 
   constexpr bool IS_ASYNC = false;
+  constexpr bool ON_DEVICE = true;
 
   int allocator_id =
     axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
@@ -174,7 +182,8 @@ TEST( core_execution_space, check_cuda_exec )
                             RAJA::cuda_exec< BLOCK_SIZE >,
                             RAJA::cuda_reduce,
                             RAJA::cuda_atomic,
-                            RAJA::cuda_synchronize >( allocator_id, IS_ASYNC );
+                            RAJA::cuda_synchronize >( allocator_id, IS_ASYNC,
+                                                      ON_DEVICE );
 
 }
 
@@ -186,6 +195,7 @@ TEST( core_execution_space, check_cuda_exec_async )
   check_valid< axom::CUDA_EXEC< BLOCK_SIZE, axom::ASYNC > >( );
 
   constexpr bool IS_ASYNC = true;
+  constexpr bool ON_DEVICE = true;
 
   int allocator_id =
     axom::getUmpireResourceAllocatorID(umpire::resource::Unified);
@@ -193,7 +203,8 @@ TEST( core_execution_space, check_cuda_exec_async )
                             RAJA::cuda_exec_async< BLOCK_SIZE >,
                             RAJA::cuda_reduce,
                             RAJA::cuda_atomic,
-                            RAJA::cuda_synchronize >( allocator_id, IS_ASYNC );
+                            RAJA::cuda_synchronize >( allocator_id, IS_ASYNC,
+                                                      ON_DEVICE );
 
 }
 #endif // defined(AXOM_USE_CUDA)

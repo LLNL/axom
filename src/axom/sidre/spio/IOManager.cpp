@@ -157,7 +157,8 @@ std::string IOManager::correspondingRelayProtocol(
  */
 void IOManager::write(sidre::Group* datagroup, int num_files,
                       const std::string& file_string,
-                      const std::string& protocol)
+                      const std::string& protocol,
+                      const std::string& tree_pattern)
 {
   if (m_baton)
   {
@@ -179,7 +180,7 @@ void IOManager::write(sidre::Group* datagroup, int num_files,
   std::string root_string = file_string;
   if (m_my_rank == 0)
   {
-    createRootFile(root_string, num_files, protocol);
+    createRootFile(root_string, num_files, protocol, tree_pattern);
   }
   MPI_Barrier(m_mpi_comm);
 
@@ -465,7 +466,8 @@ void IOManager::loadExternalData(sidre::Group* datagroup,
  */
 void IOManager::createRootFile(const std::string& file_base,
                                int num_files,
-                               const std::string& protocol)
+                               const std::string& protocol,
+                               const std::string& tree_pattern)
 {
   SLIC_ASSERT(m_my_rank == 0);
 
@@ -493,7 +495,7 @@ void IOManager::createRootFile(const std::string& file_base,
     }
     n["number_of_trees"] = m_comm_size;
 
-    n["tree_pattern"] = "datagroup_%07d";
+    n["tree_pattern"] = tree_pattern;
     n["protocol/name"] = protocol;
     n["protocol/version"] = "0.0";
 
@@ -511,7 +513,7 @@ void IOManager::createRootFile(const std::string& file_base,
     n["file_pattern"] = file_base + "_" + "%07d." + protocol;
     n["number_of_trees"] = m_comm_size;
 
-    n["tree_pattern"] = "datagroup_%07d";
+    n["tree_pattern"] = tree_pattern;
     n["protocol/name"] = protocol;
     n["protocol/version"] = "0.0";
 

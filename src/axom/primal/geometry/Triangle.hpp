@@ -59,7 +59,7 @@ public:
    * \brief Default constructor. Creates a degenerate triangle.
    */
   AXOM_HOST_DEVICE
-  Triangle() { }
+  Triangle();
 
   /*!
    * \brief Custom Constructor. Creates a triangle from the 3 points A,B,C.
@@ -312,6 +312,12 @@ namespace axom
 namespace primal
 {
 
+template < typename T, int NDIMS >
+Triangle< T,NDIMS >::Triangle()
+   : m_points{ PointType(), PointType(), PointType() }
+{}
+
+//------------------------------------------------------------------------------
 template < typename T, int NDIMS >
 Triangle< T,NDIMS >::Triangle( const PointType& A,
                                const PointType& B,

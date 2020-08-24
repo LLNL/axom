@@ -101,7 +101,7 @@ contains
 
     call set_case_name("basic_inout")
 
-    ds = datastore_new()
+    ds = SidreDataStore()
     root = ds%get_root()
 
     problem_gp = root%create_group("problem")
@@ -181,7 +181,7 @@ contains
 
     call set_case_name("meshvar_test")
 
-    ds   = datastore_new()
+    ds   = SidreDataStore()
     root = ds%get_root()
 
     problem_gp = root%create_group("problem")

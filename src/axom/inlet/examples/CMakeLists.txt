@@ -12,7 +12,8 @@
 
 if (LUA_FOUND)
     set(inlet_examples
-        document_generation.cpp )
+        document_generation.cpp
+        verification.cpp )
 
     foreach(ex ${inlet_examples})
         get_filename_component( ex_name ${ex} NAME_WE )

@@ -64,7 +64,7 @@ Code Reviews and Acceptance
 ======================================================
 
 Before any code is merged into one of our main Gitflow branches (i.e., develop 
-or master), it must be adequately tested, documented, and reviewed 
+or main), it must be adequately tested, documented, and reviewed 
 for acceptance by other team members. The review process is initiated via 
 a *pull request* on the Axom Github project.
 

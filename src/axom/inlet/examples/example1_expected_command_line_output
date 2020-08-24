@@ -13,4 +13,5 @@ thermal_solver/solver/dt: found 1
 thermal_solver/solver/abs_tol: found 1e-12
 thermal_solver/solver/rel_tol: found 1e-06
 thermal_solver/kappa/constant: found 0.5
+Inlet verify successful
 Documentation was written to example_doc.rst
