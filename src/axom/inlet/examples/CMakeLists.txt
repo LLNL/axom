@@ -26,6 +26,6 @@ if (LUA_FOUND)
                         DEPENDS_ON inlet
                         FOLDER     axom/inlet/examples )
     blt_add_test( NAME    inlet_documentation_generation 
-                  COMMAND inlet_documentation_generation_example --enableDocs --deck ${CMAKE_CURRENT_LIST_DIR}/example1.lua )
+                  COMMAND inlet_documentation_generation_example --enableDocs --file ${CMAKE_CURRENT_LIST_DIR}/example1.lua )
 
 endif()

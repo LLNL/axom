@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: (BSD-3-Clause)
 
-// usage : ./inlet_documentation_generation_example --enableDocs --deck lua_file.lua 
+// usage : ./inlet_documentation_generation_example --enableDocs --fil lua_file.lua 
 
 #include "axom/inlet.hpp"
 
@@ -149,7 +149,7 @@ int main(int argc, char** argv) {
   app.add_flag("--enableDocs", docsEnabled, "Enables documentation generation");
 
   std::string inputFileName;
-  auto opt = app.add_option("--deck", inputFileName, "Path to input deck file");
+  auto opt = app.add_option("--file", inputFileName, "Path to input file");
   opt->check(CLI::ExistingFile);
 
   CLI11_PARSE(app, argc, argv);

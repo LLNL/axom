@@ -37,7 +37,7 @@ bool LuaReader::parseFile(const std::string& filePath)
 {
   if (!axom::utilities::filesystem::pathExists(filePath))
   {
-    SLIC_WARNING(fmt::format("Inlet: Given Lua input deck does not exist: {0}",
+    SLIC_WARNING(fmt::format("Inlet: Given Lua input file does not exist: {0}",
                              filePath));
     return false;
   }
@@ -47,7 +47,7 @@ bool LuaReader::parseFile(const std::string& filePath)
       lua_pcall(m_luaState, 0, 0, 0))
   {
     SLIC_WARNING(fmt::format(
-                   "Inlet: Given Lua input deck could not be loaded: {0}",
+                   "Inlet: Given Lua input file could not be loaded: {0}",
                    filePath));
     m_luaState = nullptr;
     return false;
