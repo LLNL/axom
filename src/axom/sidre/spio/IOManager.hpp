@@ -324,7 +324,24 @@ private:
                                  const std::string& root_name,
                                  int rankgroup_id);
 
-  std::string getSCRPath( const std::string & path);
+  /*!
+   * \brief If needed, get a file path created by SCR.
+   *
+   * When using this class with the SCR library, SCR must create a file path
+   * to a storage location that it controls, where the actual I/O operations
+   * will occur.  This private method invokes this SCR operation and returns
+   * a string containing the SCR-controlled path.
+   *
+   * When SCR is not being used, either because the IOManager instance was
+   * constructed with the SCR flag set to fales, or because Sidre was not
+   * built with SCR, the returned string is identical to the argument string.
+   *
+   * \param  path  The file path in the parallel file system known by the
+   *               calling code.
+   * \return       The path created by SCR for I/O, or a copy of the argument
+   *               string when SCR is not being used.
+   */
+  std::string getSCRPath(const std::string& path);
 
   int m_comm_size;  // num procs in the MPI communicator
   int m_my_rank;    // rank of this proc
