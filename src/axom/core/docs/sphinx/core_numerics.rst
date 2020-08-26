@@ -33,17 +33,31 @@ and extract upper and lower triangular matrices.
    :end-before: _matops_end
    :language: C++
 
+We can also extract rows and columns.  The preceding example shows how to get
+a column.  Since the underlying storage layout of Matrix is column-based, retrieving
+a row is a little more involved: the call to `getRow()` retrieves the stride for
+accessing row elements `p` as well the upper bound for element indexes in the row.
+The next selection shows how to sum the entries in a row.
+
+.. literalinclude:: ../../numerics/internal/matrix_norms.hpp
+   :start-after: _rowsum_start
+   :end-before: _rowsum_end
+   :language: C++
+
 We can use the power method or the Jacobi method to find the eigenvalues and
-vectors of a matrix.  Currently, the API of `eigen_solve` is not consistent
-with `jacobi_eigensolve` (`eigen_solve` takes a `double` pointer as input
-instead of a `Matrix` and the return codes differ); this is an issue we're fixing.
-The power method is a stochastic algorithm, computing many matrix-vector
-multiplications to produce approximations of a matrix's eigenvalues and vectors.
-The Jacobi method is also an iterative algorithm, but it is not stochastic, and
-tends to converge much more quickly and stably than other methods.  However,
-the Jacobi method is only applicable to symmetric matrices.  In the following
-snippet, we show both the power method and the Jacobi method to demonstrate
-that they get the same answer.
+vectors of a matrix.  The power method is a stochastic algorithm, computing many
+matrix-vector multiplications to produce approximations of a matrix's
+eigenvalues and vectors.  The Jacobi method is also an iterative algorithm, but
+it is not stochastic, and tends to converge much more quickly and stably than
+other methods.  However, the Jacobi method is only applicable to symmetric
+matrices.  In the following snippet, we show both the power method and the
+Jacobi method to demonstrate that they get the same answer.
+
+.. note::
+   As of August 2020, the API of `eigen_solve` is not consistent
+   with `jacobi_eigensolve` (`eigen_solve` takes a `double` pointer as input
+   instead of a `Matrix` and the return codes differ).  This is an issue we're
+   fixing.
 
 .. literalinclude:: ../../examples/core_numerics.cpp
    :start-after: _eigs_start

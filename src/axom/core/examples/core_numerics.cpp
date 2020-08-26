@@ -46,7 +46,7 @@ void sleep(int numSeconds)
 void demoVectorOps()
 {
   // _vecops_start
-  using namespace axom::numerics;
+  namespace numerics = axom::numerics;
 
   // First and second vectors
   double u[] = {4., 1., 0.};
@@ -58,16 +58,16 @@ void demoVectorOps()
     "v = [" << v[0] << ", " << v[1] << ", " << v[2] << "]" << std::endl;
 
   // Calculate dot and cross products
-  double dotprod = dot_product(u, v, 3);
-  cross_product(u, v, w);
+  double dotprod = numerics::dot_product(u, v, 3);
+  numerics::cross_product(u, v, w);
 
   std::cout << "The dot product is " << dotprod <<
     " and the cross product is" << std::endl <<
     "[" << w[0] << ", " << w[1] << ", " << w[2] << "]" << std::endl;
 
   // Make u orthogonal to v, then normalize v
-  make_orthogonal(u, v, 3);
-  normalize(v, 3);
+  numerics::make_orthogonal(u, v, 3);
+  numerics::normalize(v, 3);
 
   std::cout << "Now orthogonal u and normalized v are" << std::endl <<
     "u = [" << u[0] << ", " << u[1] << ", " << u[2] << "]" << std::endl <<
@@ -76,7 +76,7 @@ void demoVectorOps()
   // Fill a linear space
   const int lincount = 45;
   double s[lincount];
-  linspace(1., 9., s, lincount);
+  numerics::linspace(1., 9., s, lincount);
 
   // Find the real roots of a cubic equation.
   // (x + 2)(x - 1)(2x - 3) = 0 = 2x^3 - x^2 - 7x + 6 has real roots at
@@ -84,7 +84,7 @@ void demoVectorOps()
   double coeff[] = {6., -7., -1., 2.};
   double roots[3];
   int numRoots;
-  int result = solve_cubic(coeff, roots, numRoots);
+  int result = numerics::solve_cubic(coeff, roots, numRoots);
 
   std::cout << "Root-finding returned " << result << " (should be 0, success)."
     "  Found " << numRoots << " roots (should be 3)" << std::endl <<
@@ -118,17 +118,17 @@ void display_eigs(axom::numerics::Matrix< double > & eigvec,
 void demoMatrix()
 {
   // _matctor_start
-  using namespace axom::numerics;
-
+  namespace numerics = axom::numerics;
+  
   // Here's a 3X3 matrix of double values, initialized from an array.
   const int nrows = 3;
   const int ncols = 3;
   double val[9] = {0.6, 2.4, 1.1, 2.4, 0.6, -.1, 1.1, -.1, 0.6};
-  Matrix< double > A(nrows, ncols, val, true);
+  numerics::Matrix< double > A(nrows, ncols, val, true);
   
   // We'll make a 3X3 identity matrix.
   // The third argument specifies the value to fill the matrix.
-  Matrix< double > m(nrows, ncols, 0.);
+  numerics::Matrix< double > m(nrows, ncols, 0.);
   m.fillDiagonal(1.);
   // _matctor_end
 
@@ -136,33 +136,38 @@ void demoMatrix()
   std::cout << "Originally, the matrix A = " << std::endl << A << std::endl;
 
   // Multiply, add matrices
-  Matrix< double > result(nrows, ncols, 0.);
-  matrix_add(A, m, result);
+  numerics::Matrix< double > result(nrows, ncols, 0.);
+  numerics::matrix_add(A, m, result);
   std::cout << "A + identity matrix = " << std::endl << result << std::endl;
-  matrix_scalar_multiply(m, 2.);
-  matrix_multiply(A, m, result);
+  numerics::matrix_scalar_multiply(m, 2.);
+  numerics::matrix_multiply(A, m, result);
   std::cout << "A * 2*(identity matrix) = " << std::endl << result << std::endl;
 
   double x1[3] = {1., 2., -.5};
   double b1[3];
   std::cout << "Vector x1 = [" << x1[0] << ", " << x1[1] << ", " << x1[2] << 
     "]" << std::endl;
-  matrix_vector_multiply(A, x1, b1);
+  numerics::matrix_vector_multiply(A, x1, b1);
   std::cout << "A * x1 = [" << b1[0] << ", " << b1[1] << ", " << b1[2] <<
     "]" << std::endl;
 
   // Calculate determinant
-  std::cout << "Determinant of A = " << determinant(A) << std::endl;
+  std::cout << "Determinant of A = " << numerics::determinant(A) << std::endl;
 
   // Get lower, upper triangle.  
   // By default the diagonal entries are copied from A, but you can get the
   // identity vector main diagonal entries by passing true as the second
   // argument.
-  Matrix< double > ltri = lower_triangular(A);
-  Matrix< double > utri = upper_triangular(A, true);
+  numerics::Matrix< double > ltri = lower_triangular(A);
+  numerics::Matrix< double > utri = upper_triangular(A, true);
   std::cout << "A's lower triangle = " << std::endl << ltri << std::endl;
   std::cout << "A's upper triangle (with 1s in the main diagonal) = " << 
     std::endl << utri << std::endl;
+
+  // Get a column from the matrix.
+  double * col1 = A.getColumn(1);
+  std::cout << "A's column 1 is [" << col1[0] << ", " << col1[1] << ", " << 
+    col1[2] << "]" << std::endl;
   // _matops_end
 
   // _eigs_start
@@ -171,7 +176,7 @@ void demoMatrix()
   std::srand(std::time(0));
   double eigvec[nrows*ncols];
   double eigval[nrows];
-  int res = eigen_solve(A, nrows, eigvec, eigval);
+  int res = numerics::eigen_solve(A, nrows, eigvec, eigval);
   std::cout << "Tried to find " << nrows << " eigenvectors and values from"
     " matrix " << std::endl << A << std::endl << "and the result code was " <<
     res << " (1 = success)." << std::endl;
@@ -184,13 +189,13 @@ void demoMatrix()
   }
 
   // Solve for eigenvectors and values using the Jacobi method.
-  Matrix< double > evecs(nrows, ncols);
-  res = jacobi_eigensolve(A, evecs, eigval);
+  numerics::Matrix< double > evecs(nrows, ncols);
+  res = numerics::jacobi_eigensolve(A, evecs, eigval);
   std::cout << "Using the Jacobi method, tried to find eigenvectors and "
-    "values of matrix " << std::endl << A << std::endl << 
-    "and the result code was " << res << " (" << JACOBI_EIGENSOLVE_SUCCESS << 
-    " = success)." << std::endl;
-  if (res == JACOBI_EIGENSOLVE_SUCCESS)
+    "eigenvalues of matrix " << std::endl << A << std::endl << 
+    "and the result code was " << res << " (" <<
+    numerics::JACOBI_EIGENSOLVE_SUCCESS << " = success)." << std::endl;
+  if (res == numerics::JACOBI_EIGENSOLVE_SUCCESS)
   {
     for (int i = 0; i < nrows; ++i)
     {
@@ -202,14 +207,14 @@ void demoMatrix()
   // _solve_start
   {
     // Solve a linear system Ax = b
-    Matrix< double > A(nrows, ncols);
+    numerics::Matrix< double > A(nrows, ncols);
     A(0, 0) = 1;  A(0, 1) = 2;  A(0, 2) = 4;
     A(1, 0) = 3;  A(1, 1) = 8;  A(1, 2) = 14;
     A(2, 0) = 2;  A(2, 1) = 6;  A(2, 2) = 13;
     double b[3] = { 3., 13., 4. };
     double x[3];
 
-    int rc = linear_solve(A, b, x);
+    int rc = numerics::linear_solve(A, b, x);
 
     std::cout << "Solved for x in the linear system Ax = b," << std::endl <<
       "A = " << std::endl << A << " and b = [" << b[0] << ", " << b[1] << 
@@ -224,7 +229,7 @@ void demoMatrix()
 
   {
     // Solve a linear system Ax = b using LU decomposition and back-substitution
-    Matrix< double > A(nrows, ncols);
+    numerics::Matrix< double > A(nrows, ncols);
     A(0, 0) = 1;  A(0, 1) = 2;  A(0, 2) = 4;
     A(1, 0) = 3;  A(1, 1) = 8;  A(1, 2) = 14;
     A(2, 0) = 2;  A(2, 1) = 6;  A(2, 2) = 13;
@@ -232,15 +237,15 @@ void demoMatrix()
     double x[3];
     int pivots[3];
 
-    int rc = lu_decompose(A, pivots);
+    int rc = numerics::lu_decompose(A, pivots);
 
     std::cout << "Decomposed to " << std::endl << A << " with pivots [" <<
       pivots[0] << ", " << pivots[1] << ", " << pivots[2] << "]" << 
-      " with result " << rc << " (" << LU_SUCCESS << " is success)" << 
-      std::endl;
+      " with result " << rc << " (" << numerics::LU_SUCCESS <<
+      " is success)" << std::endl;
 
-    rc = lu_solve(A, pivots, b, x);
-    if (rc == LU_SUCCESS)
+    rc = numerics::lu_solve(A, pivots, b, x);
+    if (rc == numerics::LU_SUCCESS)
     {
       std::cout << "Found x = [" << x[0] << ", " << x[1] << ", " << x[2] <<
         "]" << std::endl;

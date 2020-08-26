@@ -18,6 +18,9 @@ filesystem, and string manipulation utilities in the `axom::utilities`
 namespace.  Axom Core also contains the `axom::Array` and `axom::StackArray`
 container classes.
 
+The Core library is used by the rest of Axom, so Core does not use macros from
+Axom Slic for output.
+
 **Contents:**
 
 .. toctree::
