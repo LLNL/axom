@@ -10,6 +10,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
 ## [Unreleased] - Release date yyyy-mm-dd
 
 ### Added
+- Exposed the tolerance parameter `EPS` that is used to determine intersections between
+  triangles in `primal:intersect()` as an optional final parameter.
 - Added BVH spatial index option to the `mesh_tester` utility for calculating
   triangle-triangle intersection.
 - Added `axom::execution_space< ExecSpace >::onDevice()` to check if execution
@@ -79,6 +81,8 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   `iomanager_new` is now `IOManager`
 
 ### Fixed
+- Fixed a triangle-triangle intersection case in primal that produced inconsistent results
+  depending on the order of the triangle's vertices.
 - Fixed issue in the parallel construction of the BVH on GPUs, due to incoherent
   L1 cache that could result in some data corruption in the BVH. The code now
   calls ``__threadfence_system()`` after the parent is computed and stored back
