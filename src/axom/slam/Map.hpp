@@ -62,7 +62,7 @@ template<
   typename DataType,
   typename StridePolicy = policies::StrideOne<typename SetType::PositionType>
   >
-class Map : public MapBase, public StridePolicy
+class Map : public MapBase<typename SetType::PositionType>, public StridePolicy
 {
 public:
 
@@ -214,7 +214,7 @@ public:
   SetPosition size() const { return SetPosition(m_set->size()); }
 
   /*
-   * \brief  Gets the number of component values associalted with each element.
+   * \brief  Gets the number of component values associated with each element.
    *         Equivalent to stride().
    */
   SetPosition numComp() const { return StridePolicyType::stride(); }

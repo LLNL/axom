@@ -81,6 +81,10 @@ The Axom project release numbers follow [Semantic Versioning](http://semver.org/
   `iomanager_new` is now `IOManager`
 
 ### Fixed
+- Spin's octrees can now be used with 64-bit indexes. This allows octrees 
+  with up to 64 levels of resolution when using a 64-bit index type.
+- Resolved issue with `AXOM_USE_64BIT_INDEXTYPE` configurations. Axom can once again
+  be configured with 64-bit index types.
 - Fixed a triangle-triangle intersection case in primal that produced inconsistent results
   depending on the order of the triangle's vertices.
 - Fixed issue in the parallel construction of the BVH on GPUs, due to incoherent

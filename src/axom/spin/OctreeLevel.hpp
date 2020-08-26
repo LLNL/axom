@@ -158,7 +158,7 @@ public:
    */
   CoordType maxCoord() const
   {
-    return (1<< m_level) -1;
+    return (CoordType(1)<< m_level) -CoordType(1);
   }
 
   /**

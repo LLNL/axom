@@ -190,9 +190,9 @@ struct Repository
   // Define the explicit instances of our local (key/value) datastore
   // for int and double
   using SetType = axom::slam::Set<>;
-  using IntsRegistry = slam::FieldRegistry<SetType, int>;
+  using IntsRegistry = slam::FieldRegistry<SetType, SetType::ElementType>;
   using RealsRegistry = slam::FieldRegistry<SetType, double>;
-  using IntField = slam::Map<SetType, int>;
+  using IntField = slam::Map<SetType, SetType::ElementType>;
   using RealField = slam::Map<SetType, double>;
 
   static IntsRegistry intsRegistry;

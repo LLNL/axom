@@ -466,7 +466,7 @@ TEST(slam_set_indirectionset,negative_stride)
                                   SizePol,OffPol,StridePol, ArrIndPol>;
 
   // Set up data -- an array of incrementing integers
-  std::vector<int> intVec(MAX_SET_SIZE);
+  std::vector<SetElement> intVec(MAX_SET_SIZE);
   for(auto i: slam::PositionSet<>(MAX_SET_SIZE) )
   {
     intVec[i] = i;
