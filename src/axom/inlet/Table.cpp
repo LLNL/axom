@@ -79,7 +79,7 @@ std::shared_ptr<Field> Table::addField(axom::sidre::Group* sidreGroup,
                                        axom::sidre::DataTypeId type, 
                                        const std::string& fullName,
                                        const std::string& name) {
-  size_t found =  name.find_last_of("/");
+  size_t found = name.find_last_of("/");
   auto currTable = shared_from_this();
   if (found != std::string::npos) {
     // This will add any intermediate Tables (if not present) before adding the field

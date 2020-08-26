@@ -51,7 +51,7 @@ TEST(inlet_Inlet_basic, getTopLevelBools)
   EXPECT_TRUE(currField);
 
   // Check one that doesn't exist and doesn't have a default value
-  currField = inlet->addBool("nonexistant", "nothing");
+  currField = inlet->addBool("non/existant", "nothing");
   EXPECT_TRUE(currField);
 
   //

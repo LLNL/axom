@@ -11,6 +11,8 @@
  *******************************************************************************
  */
 
+# include <fstream>
+
 #include "axom/inlet/LuaReader.hpp"
 
 #include "axom/core/utilities/FileUtilities.hpp"
@@ -26,10 +28,10 @@ namespace inlet
 
 LuaReader::~LuaReader()
 {
-  if (m_luaState)
-  {
-    lua_close(m_luaState);
-  }
+  // if (m_luaState)
+  // {
+  //   lua_close(m_luaState);
+  // }
 }
 
 
@@ -53,6 +55,12 @@ bool LuaReader::parseFile(const std::string& filePath)
     return false;
   }
 
+  // script = lua.load_file(filePath);
+  lua.script_file(filePath);
+  // std::ifstream ifs(filePath);
+  // std::string content(std::istreambuf_iterator<char>(ifs),
+  //                     std::istreambuf_iterator<char>());
+  // lua.script(content);
   return true;
 }
 
@@ -74,6 +82,9 @@ bool LuaReader::parseString(const std::string& luaString)
     m_luaState = nullptr;
     return false;
   }
+
+  // script = lua.load(luaString);
+  lua.script(luaString);
 
   return true;
 }
@@ -134,23 +145,37 @@ bool LuaReader::findVariable(const std::string& id)
 
 bool LuaReader::getBool(const std::string& id, bool& value)
 {
-  if (!findVariable(id))
-  {
-    return false;
-  }
-  value = (bool)lua_toboolean(m_luaState, -1);
-  return true;
+  // if (!findVariable(id))
+  // {
+  //   return false;
+  // }
+  // std::vector<std::string> tokens;
+  // axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
+  // if (tokens.size() == 1) {
+  //   value = lua[id];
+  // } else {
+  //   auto t = lua[tokens[0]];
+  //   for (size_t i = 1; i < tokens.size()-1; i++) {
+  //     t = t[tokens[i]];
+  //   }
+  //   value = t[tokens.back()];
+  // }
+ 
+  // // value = (bool)lua_toboolean(m_luaState, -1);
+  // return true;
+  return getValue(id, value);
 }
 
 
 bool LuaReader::getDouble(const std::string& id, double& value)
 {
-  if (!findVariable(id))
-  {
-    return false;
-  }
-  value = (double)lua_tonumber(m_luaState, -1);
-  return true;
+  // if (!findVariable(id))
+  // {
+  //   return false;
+  // }
+  // value = (double)lua_tonumber(m_luaState, -1);
+  // return true;
+  return getValue(id, value);
 }
 
 
@@ -162,6 +187,7 @@ bool LuaReader::getInt(const std::string& id, int& value)
   }
   value = (int)lua_tonumber(m_luaState, -1);
   return true;
+  // return getValue(id, value);
 }
 
 
@@ -172,6 +198,27 @@ bool LuaReader::getString(const std::string& id, std::string& value)
     return false;
   }
   value = std::string(lua_tostring(m_luaState, -1));
+  return true;
+  // return getValue(id, value);
+}
+
+template <typename T>
+bool LuaReader::getValue(const std::string& id, T& value) {
+  if (!findVariable(id))
+  {
+    return false;
+  }
+  std::vector<std::string> tokens;
+  axom::utilities::string::split(tokens, id, SCOPE_DELIMITER);
+  if (tokens.size() == 1) {
+    value = lua[id];
+  } else {
+    auto t = lua[tokens[0]];
+    for (size_t i = 1; i < tokens.size()-1; i++) {
+      t = t[tokens[i]];
+    }
+    value = t[tokens.back()];
+  }
   return true;
 }
 

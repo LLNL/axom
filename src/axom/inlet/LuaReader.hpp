@@ -15,6 +15,7 @@
 #define INLET_LUAMAP_HPP
 
 #include "axom/inlet/Reader.hpp"
+#include <sol/sol.hpp>
 
 extern "C" {
   #include "lua.h"
@@ -39,6 +40,10 @@ namespace inlet
 class LuaReader : public Reader
 {
 public:
+  LuaReader() {
+    lua.open_libraries(sol::lib::base);
+  }
+
   /*!
    *****************************************************************************
    * \brief Destructor for the LuaReader.
@@ -157,6 +162,10 @@ private:
    */
   bool findVariable(const std::string& id);
 
+  template<typename T>
+  bool getValue(const std::string& id, T& value);
+
+  sol::state lua;
   lua_State* m_luaState;
 };
 
