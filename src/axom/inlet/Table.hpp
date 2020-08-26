@@ -36,7 +36,7 @@ namespace inlet
  * \class Table
  *
  * \brief Provides functions to help define how individual Table and Field
- *        variables in an input deck are expected to behave.  It also holds the
+ *        variables in an input file are expected to behave.  It also holds the
  *        Sidre Group to the individual Table.
  *
  * \see Inlet Field
@@ -53,12 +53,12 @@ public:
    * data already read and stored in the given Sidre Group. This creates
    * the necessary Sidre Group's and views to store the given name and description.
    *
-   * \param [in] name Name of the Table expected in the input deck
+   * \param [in] name Name of the Table expected in the input file
    * \param [in] description Description of the Table
-   * \param [in] reader Shared pointer to the input deck Reader class.
+   * \param [in] reader Shared pointer to the input file Reader class.
    * \param [in] sidreRootGroup Pointer to the already created Sidre Group.
    * \param [in] docEnabled Boolean indicating whether or not documentation
-   * generation is enabled for Input Deck this Table instance belongs to.
+   * generation is enabled for input feck this Table instance belongs to.
    *****************************************************************************
    */
   Table(const std::string& name,
@@ -117,19 +117,19 @@ public:
   axom::sidre::Group* sidreGroup() { return m_sidreGroup; };
 
   //
-  // Functions that define the input deck schema
+  // Functions that define the input file schema
   //
 
   /*!
    *****************************************************************************
-   * \brief Add a Table to the input deck schema.
+   * \brief Add a Table to the input file schema.
    *
-   * Adds a Table to the input deck schema. Tables hold a varying amount Fields
+   * Adds a Table to the input file schema. Tables hold a varying amount Fields
    * defined by the user.  By default, it is not required unless marked with
    * Table::required(). This creates the Sidre Group class with the given name and
    * stores the given description.
    *
-   * \param [in] name Name of the Table expected in the input deck
+   * \param [in] name Name of the Table expected in the input file
    * \param [in] description Description of the Table
    *
    * \return Shared pointer to the created Table
@@ -140,14 +140,14 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add a Boolean Field to the input deck schema.
+   * \brief Add a Boolean Field to the input file schema.
    *
-   * Adds a Boolean Field to the input deck schema. It may or may not be required
-   * to be present in the input deck. This creates the Sidre Group class with the
-   * given name and stores the given description. If present in the input deck the
+   * Adds a Boolean Field to the input file schema. It may or may not be required
+   * to be present in the input file. This creates the Sidre Group class with the
+   * given name and stores the given description. If present in the input file the
    * value is read and stored in the datastore. 
    *
-   * \param [in] name Name of the Field expected in the input deck
+   * \param [in] name Name of the Field expected in the input file
    * \param [in] description Description of the Field
    *
    * \return Shared pointer to the created Field
@@ -158,14 +158,14 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add a Double Field to the input deck schema.
+   * \brief Add a Double Field to the input file schema.
    *
-   * Adds a Double Field to the input deck schema. It may or may not be required
-   * to be present in the input deck. This creates the Sidre Group class with the
-   * given name and stores the given description. If present in the input deck the
+   * Adds a Double Field to the input file schema. It may or may not be required
+   * to be present in the input file. This creates the Sidre Group class with the
+   * given name and stores the given description. If present in the input file the
    * value is read and stored in the datastore. 
    *
-   * \param [in] name Name of the Field expected in the input deck
+   * \param [in] name Name of the Field expected in the input file
    * \param [in] description Description of the Field
    *
    * \return Shared pointer to the created Field
@@ -176,14 +176,14 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add a Integer Field to the input deck schema.
+   * \brief Add a Integer Field to the input file schema.
    *
-   * Adds a Integer Field to the input deck schema. It may or may not be required
-   * to be present in the input deck. This creates the Sidre Group class with the
-   * given name and stores the given description. If present in the input deck the
+   * Adds a Integer Field to the input file schema. It may or may not be required
+   * to be present in the input file. This creates the Sidre Group class with the
+   * given name and stores the given description. If present in the input file the
    * value is read and stored in the datastore. 
    *
-   * \param [in] name Name of the Field expected in the input deck
+   * \param [in] name Name of the Field expected in the input file
    * \param [in] description Description of the Field
    *
    * \return Shared pointer to the created Field
@@ -194,14 +194,14 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Add a String Field to the input deck schema.
+   * \brief Add a String Field to the input file schema.
    *
-   * Adds a String Field to the input deck schema. It may or may not be required
-   * to be present in the input deck. This creates the Sidre Group class with the
-   * given name and stores the given description. If present in the input deck the
+   * Adds a String Field to the input file schema. It may or may not be required
+   * to be present in the input file. This creates the Sidre Group class with the
+   * given name and stores the given description. If present in the input file the
    * value is read and stored in the datastore. 
    *
-   * \param [in] name Name of the Table expected in the input deck
+   * \param [in] name Name of the Table expected in the input file
    * \param [in] description Description of the Table
    *
    * \return Shared pointer to the created Field
@@ -214,7 +214,7 @@ public:
    *****************************************************************************
    * \brief Set the required status of this Table.
    *
-   * Set whether this Table is required, or not, to be in the input deck.
+   * Set whether this Table is required, or not, to be in the input file.
    * The default behavior is to not be required.
    *
    * \param [in] isRequired Boolean value of whether Table is required
@@ -228,7 +228,7 @@ public:
    *****************************************************************************
    * \brief Return the required status of this Table.
    *
-   * Return that this Table is required, or not, to be in the input deck.
+   * Return that this Table is required, or not, to be in the input file.
    * The default behavior is to not be required.
    *
    * \return Boolean value of whether this Table is required

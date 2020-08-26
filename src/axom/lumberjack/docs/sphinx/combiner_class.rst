@@ -10,7 +10,7 @@ Lumberjack class.
 
 
 Functions
-#########
+---------
 
 ========================= ===================
 Name                      Description
@@ -21,16 +21,16 @@ combine                   Combines the second message into the first.
 ========================= ===================
 
 Concrete Instances
-##################
+------------------
 
 .. _textequalitycombiner_class_label:
 
 TextEqualityCombiner
-********************
-
-.. note:: This is the only Combiner automatically added to Lumberjack for you.  You can remove it by calling Lumberjack::removeCombiner("TextEqualityCombiner").
+^^^^^^^^^^^^^^^^^^^^
 
 This Combiner combines the two given Messages if the Message text strings are equal.
 It does so by adding the second Message's ranks to the first Message (if not past
 the ranksLimit) and incrementing the Message's count as well.  This is handled by
 Message.addRanks().
+
+.. note:: This is the only Combiner automatically added to Lumberjack for you.  You can remove it by calling Lumberjack::removeCombiner("TextEqualityCombiner").

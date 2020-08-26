@@ -32,7 +32,7 @@ namespace inlet
  * \class SphinxDocWriter
  *
  * \brief A DocWriter that is able write documentation in Sphinx RST format for 
- * a given input deck.
+ * a given input file.
  *
  * \see DocWriter
  *******************************************************************************
@@ -62,6 +62,8 @@ public:
   *******************************************************************************
   */
   void writeDocumentation();
+
+  virtual ~SphinxDocWriter() = default;
 
 private:
   /*!

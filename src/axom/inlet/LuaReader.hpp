@@ -31,7 +31,7 @@ namespace inlet
  *******************************************************************************
  * \class LuaReader
  *
- * \brief A Reader that is able to read variables from a Lua deck.
+ * \brief A Reader that is able to read variables from a Lua file.
  *
  * \see Reader
  *******************************************************************************
@@ -51,15 +51,15 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Parses the given input deck.
+   * \brief Parses the given input file.
    *
-   * This performs any setup work and parses the given input deck.
+   * This performs any setup work and parses the given input file.
    * It is required that this is called before using the Reader and overrides
    * any Lua state that was previously there.
    *
-   * \param [in] filePath The Input deck to be read
+   * \param [in] filePath The Input file to be read
    *
-   * \return true if the input deck was able to be parsed
+   * \return true if the input file was able to be parsed
    *****************************************************************************
    */
   bool parseFile(const std::string& filePath);
@@ -72,7 +72,7 @@ public:
    * It is required that this is called before using the Reader and overrides
    * any Lua state that was previously there.
    *
-   * \param [in] luaString The Input deck to be read
+   * \param [in] luaString The Input file to be read
    *
    * \return true if the string was able to be parsed
    *****************************************************************************
@@ -81,61 +81,61 @@ public:
 
   /*!
    *****************************************************************************
-   * \brief Return a boolean out of the input deck
+   * \brief Return a boolean out of the input file
    *
    * This performs any necessary retrieval and mapping from the given identifier
-   * to what is in the input deck.
+   * to what is in the input file.
    *
    * \param [in]  id    The identifier to the bool that will be retrieved
    * \param [out] value The value of the bool that was retrieved
    *
-   * \return true if the variable was able to be retrieved from the deck
+   * \return true if the variable was able to be retrieved from the file
    *****************************************************************************
    */
   bool getBool(const std::string& id, bool& value);
 
   /*!
    *****************************************************************************
-   * \brief Return a double out of the input deck
+   * \brief Return a double out of the input file
    *
    * This performs any necessary retrieval and mapping from the given identifier
-   * to what is in the input deck.
+   * to what is in the input file.
    *
    * \param [in]  id    The identifier to the double that will be retrieved
    * \param [out] value The value of the double that was retrieved
    *
-   * \return true if the variable was able to be retrieved from the deck
+   * \return true if the variable was able to be retrieved from the file
    *****************************************************************************
    */
   bool getDouble(const std::string& id, double& value);
 
   /*!
    *****************************************************************************
-   * \brief Return a int out of the input deck
+   * \brief Return a int out of the input file
    *
    * This performs any necessary retrieval and mapping from the given identifier
-   * to what is in the input deck.
+   * to what is in the input file.
    *
    * \param [in]  id    The identifier to the int that will be retrieved from
-   *the deck
-   * \param [out] value The value of the int that was retrieved from the deck
+   *the file
+   * \param [out] value The value of the int that was retrieved from the file
    *
-   * \return true if the variable was able to be retrieved from the deck
+   * \return true if the variable was able to be retrieved from the file
    *****************************************************************************
    */
   bool getInt(const std::string& id, int& value);
 
   /*!
    *****************************************************************************
-   * \brief Return a string out of the input deck
+   * \brief Return a string out of the input file
    *
    * This performs any necessary retrieval and mapping from the given identifier
-   * to what is in the input deck.
+   * to what is in the input file.
    *
    * \param [in]  id    The identifier to the string that will be retrieved
    * \param [out] value The value of the string that was retrieved
    *
-   * \return true if the variable was able to be retrieved from the deck
+   * \return true if the variable was able to be retrieved from the file
    *****************************************************************************
    */
   bool getString(const std::string& id, std::string& value);
@@ -147,7 +147,7 @@ private:
    * \brief Move the Lua state to the given Lua variable id
    *
    * This performs any necessary retrieval and mapping from the given fully
-   * qualified Sidre path name to what is in the input deck.
+   * qualified Sidre path name to what is in the input file.
    *
    * \param [in] id The path name to the bool that will be retrieved
    *

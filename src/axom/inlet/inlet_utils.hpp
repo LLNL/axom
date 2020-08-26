@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2020, Lawrence Livermore National Security, LLC and
+// other Axom Project Developers. See the top-level COPYRIGHT file for details.
+//
+// SPDX-License-Identifier: (BSD-3-Clause)
+
 #include "axom/sidre.hpp"
 #include "fmt/fmt.hpp"
 #include "axom/core/utilities/StringUtilities.hpp"

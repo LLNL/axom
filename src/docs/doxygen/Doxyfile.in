@@ -791,11 +791,9 @@ INPUT                  = @PROJECT_SOURCE_DIR@/axom/doxygen_mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/primal/doxygen_mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/primal/geometry \
                          @PROJECT_SOURCE_DIR@/axom/primal/operators \
-                         @PROJECT_SOURCE_DIR@/axom/primal/spatial_acceleration \
                          @PROJECT_SOURCE_DIR@/axom/quest \
                          @PROJECT_SOURCE_DIR@/axom/quest/doxygen_mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/quest/interface \
-                         @PROJECT_SOURCE_DIR@/axom/quest/geom \
                          @PROJECT_SOURCE_DIR@/axom/quest/stl \
                          @PROJECT_SOURCE_DIR@/axom/sidre/doxygen_mainpage.md \
                          @PROJECT_SOURCE_DIR@/axom/sidre/core \
