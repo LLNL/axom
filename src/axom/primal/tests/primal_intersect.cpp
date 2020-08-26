@@ -112,7 +112,7 @@ void permuteCornersTest(const primal::Triangle< double, DIM > & a,
     {
       auto t1 = roll(b, i);
       auto t2 = roll(a, j);
-      if(primal::intersect(t1, t2, includeBdry) != testtrue)
+      if(primal::intersect(t1, t2, includeBdry, EPS) != testtrue)
       {
         ++numFailures;
       }
@@ -125,7 +125,7 @@ void permuteCornersTest(const primal::Triangle< double, DIM > & a,
     {
       auto t1 = roll(bp, i);
       auto t2 = roll(ap, j);
-      if(primal::intersect(t1, t2, includeBdry) != testtrue)
+      if(primal::intersect(t1, t2, includeBdry, EPS) != testtrue)
       {
         ++numFailures;
       }
@@ -1048,20 +1048,20 @@ TEST( primal_intersect, 3D_triangle_triangle_intersection_regression )
 
     for(int i=0 ; i<3 ; ++i)
     {
-      SLIC_DEBUG("t1 " << i << "-- distance " << tri3d_1[i] << " to tri2: "
+      SLIC_DEBUG("t1 " << i << "\n\t-- distance " << tri3d_1[i] << " to tri2: "
                        << std::setprecision(17)
                        << sqrt( primal::squared_distance( tri3d_1[i],
                                                     tri3d_2 ) )
-                       << " -- closest point: "
+                       << "\n\t-- closest point: "
                        << primal::closest_point(tri3d_1[i], tri3d_2));
     }
 
     for(int i=0 ; i<3 ; ++i)
     {
-      SLIC_DEBUG("t2 " << i << "-- distance " << tri3d_2[i] << " to tri1: "
+      SLIC_DEBUG("t2 " << i << "\n\t-- distance " << tri3d_2[i] << " to tri1: "
                        << std::setprecision(17)
                        << sqrt( primal::squared_distance( tri3d_2[i], tri3d_1) )
-                       << " -- closest point: "
+                       << "\n\t-- closest point: "
                        << primal::closest_point(tri3d_2[i], tri3d_1));
     }
 
@@ -1073,7 +1073,7 @@ TEST( primal_intersect, 3D_triangle_triangle_intersection_regression )
   {
     // https://github.com/LLNL/axom/issues/152
     std::string msg = "From Axom github issue #152 (simplified)";
-    Point3 vdata[] = { Point3::make_point( 0.066,  0,  0.2133).
+    Point3 vdata[] = { Point3::make_point( 0.066,  0,  0.2133),
                        Point3::make_point( 0.066,  0, -0.2337),
                        Point3::make_point( 0,      0,  0),
                        Point3::make_point( 0.0432, 0,  0.1041),
@@ -1082,8 +1082,10 @@ TEST( primal_intersect, 3D_triangle_triangle_intersection_regression )
     Triangle3 tri3d_1(vdata[0], vdata[1], vdata[2]);
     Triangle3 tri3d_2(vdata[3], vdata[2], vdata[4]);
 
-    permuteCornersTest(tri3d_1, tri3d_2, msg, false, false);
-    permuteCornersTest(tri3d_1, tri3d_2, msg, true, true);
+
+    const bool expectIntersect = true;
+    permuteCornersTest(tri3d_1, tri3d_2, msg, false, expectIntersect);
+    permuteCornersTest(tri3d_1, tri3d_2, msg, true, expectIntersect);
   }
 
 
