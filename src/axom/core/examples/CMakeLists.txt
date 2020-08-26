@@ -12,6 +12,7 @@
 set(example_sources
     core_numerics.cpp
     core_utilities.cpp
+    core_containers.cpp
 )
 
 set(sidre_example_depends
